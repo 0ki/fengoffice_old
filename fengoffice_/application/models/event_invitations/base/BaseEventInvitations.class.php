@@ -14,7 +14,7 @@
     * @var array
     * @static
     */
-    static private $columns = array('event_id' => DATA_TYPE_INTEGER, 'user_id' => DATA_TYPE_INTEGER, 'invitation_state' => DATA_TYPE_INTEGER);
+    static private $columns = array('event_id' => DATA_TYPE_INTEGER, 'contact_id' => DATA_TYPE_INTEGER, 'invitation_state' => DATA_TYPE_INTEGER);
   
     /**
     * Construct
@@ -64,7 +64,7 @@
     * @return array or string
     */
     function getPkColumns() {
-    	return array('event_id', 'user_id');
+    	return array('event_id', 'contact_id');
     } // getPkColumns
     
     /**

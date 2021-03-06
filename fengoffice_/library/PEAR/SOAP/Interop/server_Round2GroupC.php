@@ -16,7 +16,7 @@
 // | Authors: Shane Caraveo <Shane@Caraveo.com>                           |
 // +----------------------------------------------------------------------+
 //
-// $Id: server_Round2GroupC.php,v 1.1 2010/01/22 18:09:24 acio Exp $
+// $Id: server_Round2GroupC.php 7 2010-01-22 18:14:51Z acio $
 //
 require_once 'SOAP/Server.php';
 require_once 'interop_Round2Base.php';

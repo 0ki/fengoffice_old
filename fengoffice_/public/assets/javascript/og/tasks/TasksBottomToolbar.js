@@ -20,7 +20,6 @@ og.TasksBottomToolbar = function(config) {
 	        data : [['nothing', '--' + lang('nothing (groups)') + '--']
 	        	,['milestone', lang('milestone')]
 	        	,['priority',lang('priority')]
-	        	,['workspace', lang('workspace')]
 	        	,['assigned_to', lang('assigned to')]
 	        	,['due_date', lang('due date')]
 	        	,['start_date', lang('start date')]
@@ -29,8 +28,8 @@ og.TasksBottomToolbar = function(config) {
 	        	,['completed_on', lang('completed on')]
 	        	,['completed_by', lang('completed by')]
 	        	,['status', lang('status')]
-	        	,['tag', lang('tag')]
-	        	,['subtype', lang('object type')]]
+	 //       	,['subtype', lang('object type')]
+	        ]
 	    	}),
         displayField:'text',
         typeAhead: true,
@@ -55,7 +54,6 @@ og.TasksBottomToolbar = function(config) {
         store: new Ext.data.SimpleStore({
 	        fields: ['value', 'text'],
 	        data : [['priority',lang('priority')]
-	        	,['workspace', lang('workspace')]
 	        	,['name', lang('task name')]
 	        	,['due_date', lang('due date')]
 	        	,['created_on', lang('created on')]
@@ -92,7 +90,8 @@ og.TasksBottomToolbar = function(config) {
 	        	,['assigned_by', lang('assigned by')]
 	        	,['milestone', lang('milestone')]
 	        	,['priority', lang('priority')]
-	        	,['subtype', lang('object type')]]
+	//        	,['subtype', lang('object type')]
+	        ]
 	    }),
         displayField:'text',
         typeAhead: true,
@@ -165,13 +164,14 @@ og.TasksBottomToolbar = function(config) {
     var usersArray = Ext.util.JSON.decode(document.getElementById(config.usersHfId).value);
     var companiesArray = Ext.util.JSON.decode(document.getElementById(config.companiesHfId).value);
     for (i in usersArray){
-		if (usersArray[i].isCurrent)
-			currentUser = usersArray[i].cid + ':' + usersArray[i].id;
+		if (usersArray[i].isCurrent) {
+			currentUser = usersArray[i].id;
+		}
 	}
-	var ucsData = [[currentUser, lang('me')],['0:0',lang('everyone')],['-1:-1', lang('unassigned')],['0:0','--']];
+	var ucsData = [[currentUser, lang('me')],['0',lang('everyone')],['-1', lang('unassigned')],['0','--']];
 	for (i in companiesArray)
-		if (companiesArray[i].id) ucsData[ucsData.length] = [(companiesArray[i].id + ':0'), companiesArray[i].name];
-	ucsData[ucsData.length] = ['0:0','--'];
+		if (companiesArray[i].id) ucsData[ucsData.length] = [companiesArray[i].id, companiesArray[i].name];
+	ucsData[ucsData.length] = ['0','--'];
 	ucsOtherUsers = [];
 	for (i in usersArray){
 		var companyName = '';
@@ -180,9 +180,9 @@ og.TasksBottomToolbar = function(config) {
 			if (companiesArray[j] && companiesArray[j].id == usersArray[i].cid)
 				companyName = companiesArray[j].name;
 		if (usersArray[i] && usersArray[i].cid) 
-			ucsOtherUsers[ucsOtherUsers.length] = [(usersArray[i].cid + ':' + usersArray[i].id), usersArray[i].name + ' : ' + companyName];
+			ucsOtherUsers[ucsOtherUsers.length] = [usersArray[i].id, usersArray[i].name + ' : ' + companyName];
 		if (usersArray[i].isCurrent)
-			currentUser = usersArray[i].cid + ':' + usersArray[i].id;
+			currentUser = usersArray[i].id;
 	}
 	ucsData = ucsData.concat(ogTasksOrderUsers(ucsOtherUsers));
     
@@ -350,7 +350,7 @@ og.TasksBottomToolbar = function(config) {
     	id: 'ogTasksStatusCombo',
         store: new Ext.data.SimpleStore({
 	        fields: ['value', 'text'],
-	        data : [[2, lang('all')],[0, lang('pending')],[1, lang('complete')], [10, lang('active')], [11, lang('overdue')], [12, lang('today')], [13, lang('overdue')+"+"+lang('today')], [20, lang('my active')], [21, lang('my subscribed')] ]
+	        data : [[2, '--' + lang('no filter') + '--'],[0, lang('pending')],[1, lang('complete')], [10, lang('active')], [11, lang('overdue')], [12, lang('today')], [13, lang('overdue')+"+"+lang('today')], [20, lang('my active')], [21, lang('my subscribed')] ]
 	    }),
         displayField:'text',
         typeAhead: true,
@@ -381,6 +381,12 @@ og.TasksBottomToolbar = function(config) {
     this.add(this.groupcombo);
     this.add('&nbsp;&nbsp;&nbsp;' + lang('order by') + ':');
     this.add(this.ordercombo);
+    
+    if (ogTasks.extraBottomToolbarItems) {
+    	for (i=0; i<ogTasks.extraTopToolbarItems.length; i++) {
+    		this.add(ogTasks.extraTopToolbarItems[i]);
+    	}
+    }
 };
 
 Ext.extend(og.TasksBottomToolbar, Ext.Toolbar, {

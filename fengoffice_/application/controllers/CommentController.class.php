@@ -32,16 +32,9 @@ class CommentController extends ApplicationController {
 		$this->setTemplate('add_comment');
 
 		$object_id = get_id('object_id');
-		$object_manager = array_var($_GET, 'object_manager');
-
-		if(!is_valid_function_name($object_manager)) {
-			flash_error(lang('invalid request'));
-			ajx_current("empty");
-			return;
-		} // if
-
-		$object = get_object_by_manager_and_id($object_id, $object_manager);
-		if(!($object instanceof ProjectDataObject) || !($object->canComment(logged_user()))) {
+		
+		$object = Objects::findObject($object_id);
+		if(!($object instanceof ContentDataObject)) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
@@ -57,28 +50,27 @@ class CommentController extends ApplicationController {
 		if(is_array($comment_data)) {
 			try {
 				try {
-					$attached_files = ProjectFiles::handleHelperUploads(active_or_personal_project());
+					$attached_files = ProjectFiles::handleHelperUploads(active_context());
 				} catch(Exception $e) {
 					$attached_files = null;
 				} // try
 
 				$comment->setFromAttributes($comment_data);
 				$comment->setRelObjectId($object_id);
-				$comment->setRelObjectManager($object_manager);
-//				if(!logged_user()->isMemberOfOwnerCompany()) {
-					$comment->setIsPrivate(false);
-//				} // if
+				$comment->setObjectName(substr_utf($comment->getText(), 0, 250));
 
 				DB::beginWork();
 				$comment->save();
-
+				
+				$comment->addToMembers($object->getMembers());
+				
 				if(is_array($attached_files)) {
 					foreach($attached_files as $attached_file) {
 						$comment->attachFile($attached_file);
 					} // foreach
 				} // if
 
-								// Subscribe user to object
+				// Subscribe user to object
 				if(!$object->isSubscriber(logged_user())) {
 					$object->subscribeUser(logged_user());
 				} // if
@@ -90,7 +82,7 @@ class CommentController extends ApplicationController {
 					else $comment_head = substr($comment->getText(), 0, $lastpos) . "...";
 				}
 				$comment_head = html_to_text($comment_head);
-				ApplicationLogs::createLog($object, $object->getWorkspaces(), ApplicationLogs::ACTION_COMMENT, false, null, true, $comment_head);
+				ApplicationLogs::createLog($comment, ApplicationLogs::ACTION_COMMENT, false, null, true, $comment_head);
 
 				DB::commit();
 
@@ -119,34 +111,33 @@ class CommentController extends ApplicationController {
 			flash_error(lang('comment dnx'));
 			ajx_current("empty");
 			return;
-		} // if
+		}
 
-		$object = $comment->getObject();
-		if(!($object instanceof ProjectDataObject)) {
+		$object = $comment->getRelObject();
+		if(!($object instanceof ContentDataObject)) {
 			flash_error(lang('object dnx'));
 			ajx_current("empty");
 			return;
-		} // if
+		}
 		
 		if(trim($comment->getViewUrl())) {
 			$redirect_to = $comment->getViewUrl();
 		} elseif(trim($object->getObjectUrl())) {
 			$redirect_to = $object->getObjectUrl();
-		} // if
-		
+		}
+
 		if(!$comment->canEdit(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
-		} // if
+		}
 
 		$comment_data = array_var($_POST, 'comment');
 		if(!is_array($comment_data)) {
 			$comment_data = array(
-          'text' => $comment->getText(),
-          'is_private' => $comment->isPrivate(),
-			); // array
-		} // if
+	          'text' => $comment->getText(),
+			);
+		}
 
 		tpl_assign('comment_form_object', $object);
 		tpl_assign('comment', $comment);
@@ -154,16 +145,15 @@ class CommentController extends ApplicationController {
 
 		if(is_array(array_var($_POST, 'comment'))) {
 			try {
-				$old_is_private = $comment->isPrivate();
-
+				
 				$comment->setFromAttributes($comment_data);
-				$comment->setRelObjectId($object->getObjectId());
-				$comment->setRelObjectManager(get_class($object->manager()));
-				if(!logged_user()->isMemberOfOwnerCompany()) $comment->setIsPrivate($old_is_private);
-
+				$comment->setRelObjectId($object->getId());
+				
+				$comment->setObjectName(substr_utf($comment->getText(), 0, 250));
+				
 				DB::beginWork();
 				$comment->save();
-				ApplicationLogs::createLog($comment, $object->getWorkspaces(), ApplicationLogs::ACTION_EDIT);
+				ApplicationLogs::createLog($comment, ApplicationLogs::ACTION_EDIT);
 				$object->onEditComment($comment);
 				DB::commit();
 
@@ -191,8 +181,8 @@ class CommentController extends ApplicationController {
 			return;
 		} // if
 
-		$object = $comment->getObject();
-		if(!($object instanceof ProjectDataObject)) {
+		$object = $comment->getRelObject();
+		if(!($object instanceof ContentDataObject)) {
 			flash_error(lang('object dnx'));
 			ajx_current("empty");
 			return;
@@ -209,7 +199,7 @@ class CommentController extends ApplicationController {
 		try {
 			DB::beginWork();
 			$comment->trash();
-			ApplicationLogs::createLog($comment, $object->getWorkspaces(), ApplicationLogs::ACTION_TRASH);
+			ApplicationLogs::createLog($comment, ApplicationLogs::ACTION_TRASH);
 			DB::commit();
 
 			flash_success(lang('success delete comment'));
@@ -221,6 +211,31 @@ class CommentController extends ApplicationController {
 		} // try
 
 	} // delete
+	
+	
+	function view() {
+		$comment = Comments::findById(get_id());
+		if(!($comment instanceof Comment)) {
+			flash_error(lang('comment dnx'));
+			ajx_current("empty");
+			return;
+		}
+
+		if(!$comment->canView(logged_user())) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
+		
+		$object = $comment->getRelObject();
+		if (!$object instanceof ContentDataObject) {
+			flash_error(lang('object dnx'));
+			ajx_current("empty");
+			return;
+		}
+		
+		redirect_to($object->getViewUrl());		
+	}
 
 } // CommentController
 

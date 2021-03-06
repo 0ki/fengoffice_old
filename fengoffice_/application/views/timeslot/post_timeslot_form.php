@@ -9,14 +9,14 @@
 
 <div id="addwork" style="display:none">
 <table><tr><td>
-	<?php echo label_tag(lang("end work description"),"closeTimeslotDescription",false) ?>
+	<?php echo label_tag(lang("end work description"), "closeTimeslotDescription", false) ?>
     <?php echo textarea_field("timeslot[description]", '', array('class' => 'short', 'id' => 'closeTimeslotDescription', 'tabstop' => '100')) ?>
 </td><td style="padding-left:10px">
-	<?php echo label_tag(lang('total time') /*lang("end work description")*/,"closeTimeslotTotalTime",false) ?>
+	<?php echo label_tag(lang('total time'), "closeTimeslotTotalTime", false) ?>
     <?php echo input_field("timeslot[time]", '', array('class' => 'short', 'id' => 'closeTimeslotTotalTime', 'tabstop' => '200')) ?>&nbsp;<?php echo lang('hours') ?>
 </td></tr></table>
 
-<?php echo submit_button(lang('add work') /*lang('add work')*/) ?>
+<?php echo submit_button(lang('add work')) ?>
 <button class="submit" style="margin-left:15px" id="buttonAddWorkCancel" type="button" onclick="document.getElementById('addwork').style.display='none';document.getElementById('buttonAddWork').style.display='inline';document.getElementById('tdstartwork').style.display='';return false;"><?php echo lang('cancel') ?></button>
 </div>
 

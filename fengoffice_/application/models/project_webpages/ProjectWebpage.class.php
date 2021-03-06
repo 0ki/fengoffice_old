@@ -9,27 +9,13 @@
 class ProjectWebpage extends BaseProjectWebpage {
 
 	/**
-	 * This project object is taggable
-	 *
-	 * @var boolean
-	 */
-	protected $is_taggable = true;
-
-	/**
-	 * Project messages are searchable
-	 *
-	 * @var boolean
-	 */
-	protected $is_searchable = true;
-
-	/**
 	 * Array of searchable columns
 	 *
 	 * @var array
 	 */
-	protected $searchable_columns = array('title', 'description');
+	protected $searchable_columns = array('name', 'description');
 
-	protected $is_commentable = true;
+	
 
 	/**
 	 * Validate before save
@@ -39,7 +25,7 @@ class ProjectWebpage extends BaseProjectWebpage {
 	 * @return null
 	 */
 	function validate(&$errors) {
-		if(!$this->validatePresenceOf('title')) {
+		if(!$this->validatePresenceOf('name')) {
 			$errors[] = lang('webpage title required');
 		} // if
 		if(!$this->validatePresenceOf('url') || $this->getUrl() == 'http://') {
@@ -100,63 +86,6 @@ class ProjectWebpage extends BaseProjectWebpage {
 	//  Permissions
 	// ---------------------------------------------------
 
-	/**
-	 * Returns true if $user can access this webpage
-	 *
-	 * @param User $user
-	 * @return boolean
-	 */
-	function canView(User $user) {
-		return can_read($user,$this);
-	} // canView
-
-	/**
-	 * Check if specific user can add webpages to specific project
-	 *
-	 * @access public
-	 * @param User $user
-	 * @param Project $project
-	 * @return booelean
-	 */
-	function canAdd(User $user, Project $project) {
-		return can_add($user,$project,get_class(ProjectWebpages::instance()));	
-	} // canAdd
-
-	/**
-	 * Check if specific user can edit this webpages
-	 *
-	 * @access public
-	 * @param User $user
-	 * @return boolean
-	 */
-	function canEdit(User $user) {
-		return can_write($user,$this);
-	} // canEdit
-
-	/**
-	 * Check if $user can update webpage options
-	 *
-	 * @param User $user
-	 * @return boolean
-	 */
-	function canUpdateOptions(User $user) {
-		return can_write($user,$this);
-	} // canUpdateOptions
-
-	/**
-	 * Check if specific user can delete this webpages
-	 *
-	 * @access public
-	 * @param User $user
-	 * @return boolean
-	 */
-	function canDelete(User $user) {
-		return can_delete($user,$this);
-	} // canDelete
-
-	// ---------------------------------------------------
-	//  ApplicationDataObject implementation
-	// ---------------------------------------------------
 
 	/**
 	 * Return object name
@@ -166,18 +95,9 @@ class ProjectWebpage extends BaseProjectWebpage {
 	 * @return string
 	 */
 	function getObjectName() {
-		return $this->getTitle();
+		return parent::getObjectName();
 	} // getObjectName
 
-	/**
-	 * Return object type name
-	 *
-	 * @param void
-	 * @return string
-	 */
-	function getObjectTypeName() {
-		return 'webpage';
-	} // getObjectTypeName
 
 	/**
 	 * Return object URl
@@ -196,5 +116,61 @@ class ProjectWebpage extends BaseProjectWebpage {
 		$result["description"] = $this->getDescription();
 		return $result;
 	}
+
+	
+	// ---------------------------------------------------
+	//  Permissions
+	// ---------------------------------------------------
+
+	function canAdd(Contact $user, $context){
+		return can_add($user, $context, ProjectWebpages::instance()->getObjectTypeId());
+	}
+	
+
+	/**
+	 * Returns true if $user can access this webpage
+	 *
+	 * @param Contact $user
+	 * @return boolean
+	 */
+	function canView(Contact $user) {
+		return can_read($user, $this->getMembers(), $this->getObjectTypeId());
+	} // canView
+
+	/**
+	 * Check if specific user can edit this webpage
+	 *
+	 * @access public
+	 * @param Contact $user
+	 * @return boolean
+	 */
+	function canEdit(Contact $user) {
+		return can_write($user, $this->getMembers(), $this->getObjectTypeId());
+	} // canEdit
+
+
+	/**
+	 * Check if specific user can delete this webpage
+	 *
+	 * @access public
+	 * @param Contact $user
+	 * @return boolean
+	 */
+	function canDelete(Contact $user) {
+		return can_delete($user,$this->getMembers(), $this->getObjectTypeId());
+	} // canDelete
+
+	/**
+	 * Check if specific user can comment this webpage
+	 *
+	 * @access public
+	 * @param void
+	 * @return boolean
+	 */
+	function canAddComment(Contact $user) {
+		return can_write($user, $this->getMembers(), $this->getObjectTypeId());
+	} // canAddComment
+
+	
 }
 ?>

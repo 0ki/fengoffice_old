@@ -34,47 +34,25 @@
     } // setObjectId() 
     
     /**
-    * Return value of 'object_manager' field
-    *
-    * @access public
-    * @param void
-    * @return string
-    */
-    function getObjectManager() {
-      return $this->getColumnValue('object_manager');
-    } // getObjectManager()
-    
-    /**
-    * Set value of 'object_manager' field
-    *
-    * @access public   
-    * @param string $value
-    * @return boolean
-    */
-    function setObjectManager($value) {
-      return $this->setColumnValue('object_manager', $value);
-    } // setObjectManager() 
-    
-    /**
-    * Return value of 'user_id' field
+    * Return value of 'contact_id' field
     *
     * @access public
     * @param void
     * @return integer 
     */
-    function getUserId() {
-      return $this->getColumnValue('user_id');
-    } // getUserId()
+    function getContactId() {
+      return $this->getColumnValue('contact_id');
+    } // getContactId()
     
     /**
-    * Set value of 'user_id' field
+    * Set value of 'contact_id' field
     *
     * @access public   
     * @param integer $value
     * @return boolean
     */
-    function setUserId($value) {
-      return $this->setColumnValue('user_id', $value);
+    function setContactId($value) {
+      return $this->setColumnValue('contact_id', $value);
     } // setUserId() 
     
     

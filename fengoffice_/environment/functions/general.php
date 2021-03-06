@@ -26,6 +26,32 @@ function pre_var_dump($var) {
 } // pre_var_dump
 
 /**
+ * Show print_r. pre_print_r() is used for testing only!
+ * @author Pepe
+ * @access public
+ * @param mixed $var
+ * @return null
+ */
+function pre_print_r($var) {
+	print '<pre>';
+	print_r($var);
+	print '</pre>';
+} 
+
+/**
+ * 
+ * @author Ignacio Vazquez - elpepe.uy@gmail.com
+ * @param unknown_type $var
+ */
+function var_alert($var) {
+	if ( is_ajax_request() ) return ;
+	echo "<script>";
+	echo "alert(".json_encode($var).");" ;
+	echo "</script>";
+}
+
+
+/**
  * This function will return clean variable info
  *
  * @param mixed $var
@@ -632,7 +658,25 @@ function zip_supported() {
 	return class_exists('ZipArchive', false);
 }
 
-function remove_scripts_and_redirect(&$script) {
-	header('Location:'.preg_replace('/<script[^>]*>.*(<\/script>|$)/i', '', $script)) ;
+function db_escape_field($field) {
+	return DB::escapeField($field);
 }
-?>
+
+/**
+ * 
+ * @author Ignacio Vazquez - elpepe.uy@gmail.com
+ * @param unknown_type $a 
+ */
+function plugin_sort($a, $b) {
+	if (isset ( $a ['order'] ) && isset ( $b ['order'] )) {
+		if ($a ['order'] == $b ['order']) {
+			return 0;
+		}
+		return ($a ['order'] < $b ['order']) ? - 1 : 1;
+	} elseif (isset ( $a ['order'] )) {
+		return - 1;
+	} elseif (isset ( $b ['order'] )) {
+		return 1;
+	} else
+		return strcasecmp ( $a ['name'], $b ['name'] );
+}

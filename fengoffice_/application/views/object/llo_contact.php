@@ -1,12 +1,12 @@
 <?php 
 //$linked_object = new Contact();
-$icon_class = $linked_object->getObjectTypeName();
+$icon_class = $linked_object->getIconClass();
 if (!isset($attr)) $attr = "";
 ?>
 <tr class="<?php echo $counter % 2 ? 'even' : 'odd' ?>">
 	<td style="padding-left:1px;vertical-align:middle;width:22px">
 		<a class="internalLink" href="<?php echo $linked_object->getObjectUrl() ?>">
-		<div class="db-ico unknown ico-<?php echo clean($icon_class) ?>" title="<?php echo clean($linked_object->getObjectTypeName()) ?>"></div>
+		<div class="db-ico unknown <?php echo clean($icon_class) ?>" title="<?php echo clean($linked_object->getObjectTypeName()) ?>"></div>
 	</a></td>
 	
 	<td><a <?php echo $attr ?> href="<?php echo $linked_object->getObjectUrl() ?>" title="<?php echo clean($linked_object->getObjectName()) ?>">

@@ -14,7 +14,12 @@
     * @var array
     * @static
     */
-    static private $columns = array('rel_object_manager' => DATA_TYPE_STRING, 'rel_object_id' => DATA_TYPE_INTEGER, 'id' => DATA_TYPE_INTEGER, 'name' => DATA_TYPE_STRING, 'value' => DATA_TYPE_STRING);
+    static private $columns = array(
+     'rel_object_id' => DATA_TYPE_INTEGER, 
+     'id' => DATA_TYPE_INTEGER, 
+     'name' => DATA_TYPE_STRING, 
+     'value' => DATA_TYPE_STRING
+    );
   
     /**
     * Construct

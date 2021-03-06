@@ -26,18 +26,19 @@ class Notifier {
 	static public $exchange_compatible = null;
 
 	function notifyAction($object, $action, $log_data) {
-		if (!$object instanceof ProjectDataObject) {
+		
+		if (!$object instanceof ContentDataObject) {
 			return;
 		}
-		$subscribers = $object->getSubscribers();
+		if ($object instanceof Comment) {
+			$subscribers = $object->getRelObject()->getSubscribers();
+		} else {
+			$subscribers = $object->getSubscribers();
+		}
+		
 		if (!is_array($subscribers) || count($subscribers) == 0) return;
 		if ($action == ApplicationLogs::ACTION_ADD) {
-			if ($object instanceof Comment) {
-				//self::newObjectComment($object, $subscribers);
-				// check ProjectDataObject::onAddComment()
-			} else {
-				self::objectNotification($object, $subscribers, logged_user(), 'new');
-			}
+			self::objectNotification($object, $subscribers, logged_user(), 'new');
 		} else if ($action == ApplicationLogs::ACTION_EDIT) {
 			self::objectNotification($object, $subscribers, logged_user(), 'modified');
 		} else if ($action == ApplicationLogs::ACTION_TRASH) {
@@ -45,24 +46,29 @@ class Notifier {
 		} else if ($action == ApplicationLogs::ACTION_CLOSE) {
 			self::objectNotification($object, $subscribers, logged_user(), 'closed');
 		} else if ($action == ApplicationLogs::ACTION_SUBSCRIBE) {
-			self::objectNotification($object, Users::findByIds(explode(",", $log_data)), logged_user(), 'subscribed');
+			$contact = Contacts::instance()->findById(explode(",", $log_data));
+			$contacts = array($contact);
+			self::objectNotification($object, $contacts, logged_user(), 'subscribed');
+		} else if ($action == ApplicationLogs::ACTION_COMMENT) {
+			self::newObjectComment($object, $subscribers);
+			// check ProjectDataObject::onAddComment()
 		}
+		
 	}
-	function shareObject(ProjectDataObject $object, $people) {
-		self::objectNotification($object, $people, logged_user(), 'share');
-	}
+
 	
 	static function objectNotification($object, $people, $sender, $notification, $description = null, $descArgs = null, $properties = array(), $links = array()) {
 		if (!is_array($people) || !count($people)) {
 			return; // nothing here...
-		} // if
-		if ($sender instanceof User) {
+			
+		} 
+		if ($sender instanceof Contact) {
 			$sendername = $sender->getDisplayName();
-			$senderemail = $sender->getEmail();
+			$senderemail = $sender->getEmailAddress('user');
 			$senderid = $sender->getId();
 		} else {
-			$sendername = owner_company()->getName();
-			$senderemail = owner_company()->getEmail();
+			$sendername = owner_company()->getObjectName();
+			$senderemail = owner_company()->getEmailAddress('user');
 			if (!is_valid_email($senderemail)) {
 				$senderemail = 'noreply@fengoffice.com';
 			}
@@ -72,10 +78,10 @@ class Notifier {
 		$type = $object->getObjectTypeName();
 		$typename = lang($object->getObjectTypeName());
 		$uid = $object->getUniqueObjectId();
-		$name = $object instanceof Comment ? $object->getObject()->getObjectName() : $object->getObjectName();
+		$name = $object instanceof Comment ? $object->getRelObject()->getObjectName() : $object->getObjectName();
 		if (!isset($description)) {
 			$description = "$notification notification $type desc";
-			$descArgs = array(clean($object->getObjectName()), $sendername);
+			$descArgs = array(clean($name), $sendername);
 		}
 		if (!isset($descArgs)) {
 			$descArgs = array();
@@ -103,36 +109,26 @@ class Notifier {
 		tpl_assign('second_properties', $second_properties);
 		
 		$emails = array();
+		
 		foreach($people as $user) {
-			if ($user->getId() != $senderid && $object->canView($user)) {
+			if ($user instanceof Contact && $user->getId() != $senderid && $object->canView($user)) {
 				// send notification on user's locale and with user info
 				$locale = $user->getLocale();
 				Localization::instance()->loadSettings($locale, ROOT . '/language');
-				$workspaces = $object->getUserWorkspaces($user);
-				$ws = "";
-				$plain_ws = "";
-				foreach ($workspaces as $w) {
-					if ($ws) $ws .= ", ";
-					if ($plain_ws) $plain_ws .= ", ";
-					$css = get_workspace_css_properties($w->getColor());
-					$ws .= "<span style=\"$css\">" . $w->getPath() . "</span>";
-					$plain_ws .= $w->getPath();
-				}
-				$properties['workspace'] = $ws;
 				
 				tpl_assign('links', $links);
 				tpl_assign('properties', $properties);
 				tpl_assign('description', langA($description, $descArgs));
 				$from = self::prepareEmailAddress($senderemail, $sendername);
 				$emails[] = array(
-					"to" => array(self::prepareEmailAddress($user->getEmail(), $user->getDisplayName())),
+					"to" => array(self::prepareEmailAddress($user->getEmailAddress('user'), $user->getDisplayName())),
 					"from" => self::prepareEmailAddress($senderemail, $sendername),
-					"subject" => $subject = lang("$notification notification $type", $name, $uid, $typename, $plain_ws),
+					"subject" => $subject = lang("$notification notification $type", $name, $uid, $typename),
 					"body" => tpl_fetch(get_template_path('general', 'notifier'))
 				);
 			}
-		} // foreach
-		$locale = logged_user() instanceof User ? logged_user()->getLocale() : DEFAULT_LOCALIZATION;
+		} 
+		$locale = logged_user() instanceof Contact ? logged_user()->getLocale() : DEFAULT_LOCALIZATION;
 		Localization::instance()->loadSettings($locale, ROOT . '/language');
 
 		self::queueEmails($emails);
@@ -146,47 +142,39 @@ class Notifier {
 	 * @throws NotifierConnectionError
 	 */
 	static function newObjectComment(Comment $comment, $all_subscribers) {
-		$object = $comment->getObject();
+		$object = $comment->getRelObject();
 		$subscribers = array();
 		foreach($all_subscribers as $subscriber) {
-			if ($comment->isPrivate()) {
-				if ($subscriber->isMemberOfOwnerCompany()) {
-					$subscribers[] = $subscriber;
-				} // if
-			} else {
-				$subscribers[] = $subscriber;
-			} // of
-		} // foreach
+			$subscribers[] = $subscriber;
+		}
 		self::objectNotification($comment, $subscribers, logged_user(), 'new', "new comment posted", array($object->getObjectName()));
 	} // newObjectComment
 	
 	/**
 	 * Reset password and send forgot password email to the user
 	 *
-	 * @param User $user
+	 * @param Contact $user
 	 * @return boolean
 	 * @throws NotifierConnectionError
 	 */
-	static function forgotPassword(User $user, $token = null) {
+	static function forgotPassword(Contact $user, $token = null) {
 		$administrator = owner_company()->getCreatedBy();
-
-		//$new_password = $user->resetPassword(true);
+		$new_password = $user->resetPassword(true);
 		tpl_assign('user', $user);
 		//tpl_assign('new_password', $new_password);
 		tpl_assign('token',$token);
-		if (! $administrator instanceof User) return;
+		if (! $administrator instanceof Contact) return;
 
 		// send email in user's language
 		$locale = $user->getLocale();
 		Localization::instance()->loadSettings($locale, ROOT . '/language');
-		
-		self::sendEmail(
-			array(self::prepareEmailAddress($user->getEmail(), $user->getDisplayName())),
-			self::prepareEmailAddress($administrator->getEmail(), $administrator->getDisplayName()),
+		self::queueEmail(
+			array(self::prepareEmailAddress($user->getEmailAddress('user'), $user->getDisplayName())),
+			self::prepareEmailAddress($administrator->getEmailAddress('user'), $administrator->getDisplayName()),
 			lang('reset password'),
-			tpl_fetch(get_template_path('forgot_password', 'notifier')), $type = 'text/html', $encoding = '8bit'
+			tpl_fetch(get_template_path('forgot_password', 'notifier'))
 		); // send
-		$locale = logged_user() instanceof User ? logged_user()->getLocale() : DEFAULT_LOCALIZATION;
+		$locale = logged_user() instanceof Contact ? logged_user()->getLocale() : DEFAULT_LOCALIZATION;
 		Localization::instance()->loadSettings($locale, ROOT . '/language');
 	} // forgotPassword
 	
@@ -198,23 +186,23 @@ class Notifier {
 	 * @return boolean
 	 * @throws NotifierConnectionError
 	 */
-	static function passwordExpiration(User $user, $expiration_days) {
+	static function passwordExpiration(Contact $user, $expiration_days) {
 		tpl_assign('user', $user);
 		tpl_assign('exp_days', $expiration_days);
 
-		if (! $user instanceof User) return;
+		if (! $user instanceof Contact) return;
 		
 		$locale = $user->getLocale();
 		Localization::instance()->loadSettings($locale, ROOT . '/language');
 		
 		self::queueEmail(
-			array(self::prepareEmailAddress($user->getEmail(), $user->getDisplayName())),
+			array(self::prepareEmailAddress($user->getEmailAddress('user'), $user->getDisplayName())),
 			self::prepareEmailAddress("noreply@fengoffice.com", "noreply@fengoffice.com"),
 			lang('password expiration reminder'),
 			tpl_fetch(get_template_path('password_expiration_reminder', 'notifier'))
 		); // send
 		
-		$locale = logged_user() instanceof User ? logged_user()->getLocale() : DEFAULT_LOCALIZATION;
+		$locale = logged_user() instanceof Contact ? logged_user()->getLocale() : DEFAULT_LOCALIZATION;
 		Localization::instance()->loadSettings($locale, ROOT . '/language');
 	} // passwordExpiration
 
@@ -222,28 +210,28 @@ class Notifier {
 	 * Send new account notification email to the user whose accout has been created
 	 * (welcome message)
 	 *
-	 * @param User $user
+	 * @param Contact $user
 	 * @param string $raw_password
 	 * @return boolean
 	 * @throws NotifierConnectionError
 	 */
-	static function newUserAccount(User $user, $raw_password) {
+	static function newUserAccount(Contact $user, $raw_password) {
 		tpl_assign('new_account', $user);
 		tpl_assign('raw_password', $raw_password);
 
-		$sender = $user->getCreatedBy() instanceof User ? $user->getCreatedBy() : owner_company()->getCreatedBy();
+		$sender = $user->getCreatedBy() instanceof Contact ? $user->getCreatedBy() : owner_company()->getCreatedBy();
 		
 		$locale = $user->getLocale();
 		Localization::instance()->loadSettings($locale, ROOT . '/language');
 		
 		self::queueEmail(
-			array(self::prepareEmailAddress($user->getEmail(), $user->getDisplayName())),
-			self::prepareEmailAddress($sender->getEmail(), $sender->getDisplayName()),
+			array(self::prepareEmailAddress($user->getEmailAddress('user'), $user->getDisplayName())),
+			self::prepareEmailAddress($sender->getEmailAddress('user'), $sender->getDisplayName()),
 			lang('your account created'),
 			tpl_fetch(get_template_path('new_account', 'notifier'))
 		); // send
 		
-		$locale = logged_user() instanceof User ? logged_user()->getLocale() : DEFAULT_LOCALIZATION;
+		$locale = logged_user() instanceof Contact ? logged_user()->getLocale() : DEFAULT_LOCALIZATION;
 		Localization::instance()->loadSettings($locale, ROOT . '/language');
 	} // newUserAccount
 
@@ -307,7 +295,7 @@ class Notifier {
 	 * @throws NotifierConnectionError
 	 */
 	static function notifEvent(ProjectEvent $object, $people, $notification, $sender) {
-		if(!is_array($people) || !count($people) || !$sender instanceof User) {
+		if(!is_array($people) || !count($people) || !$sender instanceof Contact) {
 			return; // nothing here...
 		} // if
 				
@@ -333,14 +321,8 @@ class Notifier {
 				// send notification on user's locale and with user info
 				$locale = $user->getLocale();
 				Localization::instance()->loadSettings($locale, ROOT . '/language');
-				$workspaces = $object->getUserWorkspaces($user);
-				$ws = "";
-				foreach ($workspaces as $w) {
-					if ($ws) $ws .= ", ";
-					$css = get_workspace_css_properties($w->getColor());
-					$ws .= "<span style=\"$css\">" . $w->getPath() . "</span>";
-				}
-				$properties['workspace'] = $ws;
+
+				
 				$properties['date'] = Localization::instance()->formatDescriptiveDate($object->getStart(), $user->getTimezone());
 				if ($object->getTypeId() != 2) {
 					$properties['meeting_time'] = Localization::instance()->formatTime($object->getStart(), $user->getTimezone());
@@ -358,16 +340,15 @@ class Notifier {
 				tpl_assign('properties', $properties);
 				tpl_assign('second_properties', $second_properties);
 				
-				$from = self::prepareEmailAddress($sender->getEmail(), $sender->getDisplayName());
 				$emails[] = array(
-					"to" => array(self::prepareEmailAddress($user->getEmail(), $user->getDisplayName())),
-					"from" => self::prepareEmailAddress($sender->getEmail(), $sender->getDisplayName()),
+					"to" => array(self::prepareEmailAddress($user->getEmailAddress('user'), $user->getDisplayName())),
+					"from" => self::prepareEmailAddress($sender->getEmailAddress('user'), $sender->getDisplayName()),
 					"subject" => $subject = lang("$notification notification $type", $name, $uid, $typename, $ws),
 					"body" => tpl_fetch(get_template_path('general', 'notifier'))
 				);
 			}
 		} // foreach
-		$locale = logged_user() instanceof User ? logged_user()->getLocale() : DEFAULT_LOCALIZATION;
+		$locale = logged_user() instanceof Contact ? logged_user()->getLocale() : DEFAULT_LOCALIZATION;
 		Localization::instance()->loadSettings($locale, ROOT . '/language');
 		self::queueEmails($emails);
 	} // notifEvent
@@ -381,7 +362,7 @@ class Notifier {
 	 */
 	static function notifEventAssistance(ProjectEvent $event, EventInvitation $invitation, $from_user, $invs = null) {
 		if ((!$event instanceof ProjectEvent) || (!$invitation instanceof EventInvitation) 
-			|| (!$event->getCreatedBy() instanceof User) || (!$from_user instanceof User)) {
+			|| (!$event->getCreatedBy() instanceof Contacts) || (!$from_user instanceof Contact)) {
 			return;
 		}
 		
@@ -397,7 +378,7 @@ class Notifier {
 			foreach ($invs as $inv){
 				if ($inv->getUserId() == ($from_user->getId())) continue;
 				$decision = $inv->getInvitationState();
-				$user_name = Users::findById($inv->getUserId())->getDisplayName();
+				$user_name = Contacts::findById($inv->getUserId())->getDisplayName();
 				if ($decision == 1){
 					$assist[] = ($user_name);
 				}else if ($decision == 2){
@@ -419,24 +400,17 @@ class Notifier {
 			Localization::instance()->loadSettings($locale, ROOT . '/language');
 			$date = Localization::instance()->formatDescriptiveDate($event->getStart(), $user->getTimezone());
 			if ($event->getTypeId() != 2) $date .= " " . Localization::instance()->formatTime($event->getStart(), $user->getTimezone());
-			$workspaces = implode(", ", $event->getUserWorkspacePaths($user));
-			
-			// GET WS COLOR
-			
-			$workspace_color = $event->getWorkspaceColorsCSV(logged_user()->getWorkspacesQuery());
-			
-			tpl_assign('workspace_color', $workspace_color);			
-			tpl_assign('workspaces', $workspaces);
+
 			tpl_assign('date', $date);
 			self::queueEmail(
-				array(self::prepareEmailAddress($user->getEmail(), $user->getDisplayName())),
-				self::prepareEmailAddress($from_user->getEmail(), $from_user->getDisplayName()),
+				array(self::prepareEmailAddress($user->getEmailAddress('user'), $user->getDisplayName())),
+				self::prepareEmailAddress($from_user->getEmailAddress('user'), $from_user->getDisplayName()),
 				lang('event invitation response') . ': ' . $event->getSubject(),
 				tpl_fetch(get_template_path('event_inv_response_notif', 'notifier'))
 			); // send
 		} // foreach
 		
-		$locale = logged_user() instanceof User ? logged_user()->getLocale() : DEFAULT_LOCALIZATION;
+		$locale = logged_user() instanceof Contact ? logged_user()->getLocale() : DEFAULT_LOCALIZATION;
 		Localization::instance()->loadSettings($locale, ROOT . '/language');
 	} // notifEvent
 
@@ -455,17 +429,13 @@ class Notifier {
 		if($milestone->isCompleted()) {
 			return true; // milestone has been already completed...
 		} // if
-		if(!($milestone->getAssignedTo() instanceof User)) {
+		if(!($milestone->getAssignedTo() instanceof Contact)) {
 			return true; // not assigned to user
 		} // if
 
-		// GET WS COLOR
-		$workspace_color = $milestone->getWorkspaceColorsCSV(logged_user()->getWorkspacesQuery());
-
 		tpl_assign('milestone_assigned', $milestone);
-		tpl_assign('workspace_color', $workspace_color);
 		
-		if (! $milestone->getCreatedBy() instanceof User) return;
+		if (! $milestone->getCreatedBy() instanceof Contact) return;
 		
 		$locale = $milestone->getAssignedTo()->getLocale();
 		Localization::instance()->loadSettings($locale, ROOT . '/language');
@@ -475,13 +445,13 @@ class Notifier {
 		}
 		
 		return self::queueEmail(
-			array(self::prepareEmailAddress($milestone->getAssignedTo()->getEmail(), $milestone->getAssignedTo()->getDisplayName())),
-			self::prepareEmailAddress($milestone->getCreatedBy()->getEmail(), $milestone->getCreatedByDisplayName()),
-			lang('milestone assigned to you', $milestone->getName(), $milestone->getProject() instanceof Project ? $milestone->getProject()->getName() : ''),
+			array(self::prepareEmailAddress($milestone->getAssignedTo()->getEmailAddress('user'), $milestone->getAssignedTo()->getDisplayName())),
+			self::prepareEmailAddress($milestone->getCreatedBy()->getEmailAddress('user'), $milestone->getCreatedByDisplayName()),
+			lang('milestone assigned to you', $milestone->getObjectName()),
 			tpl_fetch(get_template_path('milestone_assigned', 'notifier'))
 		); // send
 		
-		$locale = logged_user() instanceof User ? logged_user()->getLocale() : DEFAULT_LOCALIZATION;
+		$locale = logged_user() instanceof Contact ? logged_user()->getLocale() : DEFAULT_LOCALIZATION;
 		Localization::instance()->loadSettings($locale, ROOT . '/language');
 	} // milestoneAssigned
 
@@ -495,17 +465,16 @@ class Notifier {
 	function taskAssigned(ProjectTask $task) {
 		if($task->isCompleted()) {
 			return true; // task has been already completed...
-		} // if
-		if(!($task->getAssignedTo() instanceof User)) {
+		}
+		if(!($task->getAssignedTo() instanceof Contact)) {
 			return true; // not assigned to user
-		} // if
+		}
+		if (!is_valid_email($task->getAssignedTo()->getEmailAddress('user'))) {
+			return true;
+		}
 		
 		
-		// GET WS COLOR
-		$workspace_color = $task->getWorkspaceColorsCSV(logged_user()->getWorkspacesQuery());
-
 		tpl_assign('task_assigned', $task);
-		tpl_assign('workspace_color', $workspace_color);
 
 		$locale = $task->getAssignedTo()->getLocale();
 		Localization::instance()->loadSettings($locale, ROOT . '/language');
@@ -516,15 +485,15 @@ class Notifier {
 		}
 
 		self::queueEmail(
-			array(self::prepareEmailAddress($task->getAssignedTo()->getEmail(), $task->getAssignedTo()->getDisplayName())),
-			self::prepareEmailAddress($task->getUpdatedBy()->getEmail(), $task->getUpdatedByDisplayName()),
-			lang('task assigned to you', $task->getTitle(), $task->getProject() instanceof Project ? $task->getProject()->getName() : ''),
+			array(self::prepareEmailAddress($task->getAssignedTo()->getEmailAddress('user'), $task->getAssignedTo()->getDisplayName())),
+			self::prepareEmailAddress($task->getUpdatedBy()->getEmailAddress('user'), $task->getUpdatedByDisplayName()),
+			lang('task assigned to you', $task->getObjectName(), ''),
 			tpl_fetch(get_template_path('task_assigned', 'notifier'))
-		); // send
+		); 
 		
-		$locale = logged_user() instanceof User ? logged_user()->getLocale() : DEFAULT_LOCALIZATION;
+		$locale = logged_user() instanceof Contact ? logged_user()->getLocale() : DEFAULT_LOCALIZATION;
 		Localization::instance()->loadSettings($locale, ROOT . '/language');
-	} // taskAssigned
+	} 
 
 
 
@@ -627,7 +596,7 @@ class Notifier {
 		;
 				
 		$message->setContentType($type);
-		$to = MailUtilities::prepareEmailAddresses(implode(",", $to));
+		$to = prepare_email_addresses(implode(",", $to));
 		foreach ($to as $address) {
 			$message->addTo(array_var($address, 0), array_var($address, 1));
 		}
@@ -712,7 +681,7 @@ class Notifier {
 				  ->setContentType('text/html')
 				;
 				
-				$to = MailUtilities::prepareEmailAddresses(implode(",", explode(";", $email->getTo())));
+				$to = prepare_email_addresses(implode(",", explode(";", $email->getTo())));
 				foreach ($to as $address) {
 					$message->addTo(array_var($address, 0), array_var($address, 1));
 				}

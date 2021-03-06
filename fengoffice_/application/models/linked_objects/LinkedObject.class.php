@@ -17,11 +17,11 @@
     * @return ProjectDataObject
     */
     function getObject1() {
-      return get_object_by_manager_and_id($this->getRelObjectId(), $this->getRelObjectManager());
+      return Objects::findObject($this->getRelObjectId());
     } // getObject
     
     function getObject2() {
-      return get_object_by_manager_and_id($this->getObjectId(), $this->getObjectManager());
+      return Objects::findObject($this->getObjectId());
     } // getObject
     
     /**
@@ -32,11 +32,10 @@
     * @return ProjectDataObject
     */
     function getOtherObject($object) {
-      if ((get_class($object->manager())!= $this->getObjectManager()) || ($object->getObjectId()!= $this->getObjectId()) )
-      {    				
-      		return get_object_by_manager_and_id($this->getObjectId(), $this->getObjectManager());
+      if (($object->getObjectId()!= $this->getObjectId()) ) {
+      		return Objects::findObject($this->getObjectId());
       } else {
-      		return get_object_by_manager_and_id($this->getRelObjectId(), $this->getRelObjectManager());
+      		return Objects::findObject($this->getRelObjectId());
       }
     } // getObject
     

@@ -1,3 +1,4 @@
+alert("cal manager") ;
 /**
  *  CalendarManager
  */
@@ -20,8 +21,8 @@ og.CalendarManager = function() {
 			listeners: {
 				'load': function() {
 					var d = this.reader.jsonData;
-					var ws = og.clean(Ext.getCmp('workspace-panel').getActiveWorkspace().name);
-					var tag = og.clean(Ext.getCmp('tag-panel').getSelectedTag());
+					/*var ws = og.clean(Ext.getCmp('workspace-panel').getActiveWorkspace().name);
+					var tag = og.clean(Ext.getCmp('tag-panel').getSelectedTag());*/
 				}
 			},
 			renderTo: Ext.getBody()
@@ -39,30 +40,17 @@ og.CalendarManager = function() {
         closable: true
     });
 
-	var tagevid = og.eventManager.addListener("tag changed", function(tag) {
-		if (!this.ownerCt) {
-			og.eventManager.removeListener(tagevid);
-			return;
-		}
-		if (this.ownerCt.active) {
-			this.load({start:0});
-		} else {
-    		this.needRefresh = true;
-    	}
-	}, this);
 };
 
 Ext.extend(og.CalendarManager, Ext.Panel, {
 	load: function(params) {
 		if (!params) params = {};
 		Ext.apply(this.store.baseParams, {
-			tag: Ext.getCmp('tag-panel').getSelectedTag(),
-			active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id
+		      context: og.contextManager.plainContext()
 		});
 		this.store.load({
 			params: Ext.apply(params, {
-				tag: Ext.getCmp('tag-panel').getSelectedTag(),
-				active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id
+		      context: og.contextManager.plainContext()
 			})
 		});
 		this.needRefresh = true;

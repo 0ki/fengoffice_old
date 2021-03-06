@@ -14,7 +14,11 @@
     * @var array
     * @static
     */
-    static private $columns = array('id' => DATA_TYPE_INTEGER, 'name' => DATA_TYPE_STRING, 'icon' => DATA_TYPE_STRING);
+    static private $columns = array(
+    	'id' => DATA_TYPE_INTEGER, 
+    	'name' => DATA_TYPE_STRING, 
+    	'icon' => DATA_TYPE_STRING
+    );
   
     /**
     * Construct
@@ -102,8 +106,6 @@
         return parent::find($arguments);
       } else {
         return ImTypes::instance()->find($arguments);
-        //$instance =& ImTypes::instance();
-        //return $instance->find($arguments);
       } // if
     } // find
     
@@ -119,8 +121,6 @@
         return parent::findAll($arguments);
       } else {
         return ImTypes::instance()->findAll($arguments);
-        //$instance =& ImTypes::instance();
-        //return $instance->findAll($arguments);
       } // if
     } // findAll
     
@@ -136,8 +136,6 @@
         return parent::findOne($arguments);
       } else {
         return ImTypes::instance()->findOne($arguments);
-        //$instance =& ImTypes::instance();
-        //return $instance->findOne($arguments);
       } // if
     } // findOne
     
@@ -154,8 +152,6 @@
         return parent::findById($id, $force_reload);
       } else {
         return ImTypes::instance()->findById($id, $force_reload);
-        //$instance =& ImTypes::instance();
-        //return $instance->findById($id, $force_reload);
       } // if
     } // findById
     
@@ -171,8 +167,6 @@
         return parent::count($condition);
       } else {
         return ImTypes::instance()->count($condition);
-        //$instance =& ImTypes::instance();
-        //return $instance->count($condition);
       } // if
     } // count
     
@@ -188,8 +182,6 @@
         return parent::delete($condition);
       } else {
         return ImTypes::instance()->delete($condition);
-        //$instance =& ImTypes::instance();
-        //return $instance->delete($condition);
       } // if
     } // delete
     
@@ -212,8 +204,6 @@
         return parent::paginate($arguments, $items_per_page, $current_page);
       } else {
         return ImTypes::instance()->paginate($arguments, $items_per_page, $current_page);
-        //$instance =& ImTypes::instance();
-        //return $instance->paginate($arguments, $items_per_page, $current_page);
       } // if
     } // paginate
     

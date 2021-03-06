@@ -31,9 +31,17 @@
 	</div>
 <?php }?>
 
-
-
-<?php if (substr($file->getFilename(), -3) == '.mm') {
+<?php
+   if (substr($file->getFilename(), -3) == 'pdf'){
+      echo'<div>';
+      if($file->getType() != ProjectFiles::TYPE_WEBLINK){       
+        $urlpdf=get_url('files', 'download_image', array('id' => $file->getId(), 'inline' => true, 'modtime' => $modtime));
+      }else{      
+        $urlpdf=$file->getUrl();
+      }
+      echo "<iframe src=".$urlpdf." width='100%' height='900px' frameborder=0 align='center'></iframe>";
+      echo '</div>';
+   }else if (substr($file->getFilename(), -3) == '.mm') {
 	require_javascript('flashobject.js');
 	$flashurl = get_flash_url('visorFreemind.swf') ?>
 	<div id="<?php echo $genid ?>mm">
@@ -77,7 +85,7 @@
 		</td>
 		<td class='line_header' style="background-color:<?php echo $bgColor ?>;">
 			<?php if($revision->getCreatedBy() instanceof User) { ?>
-			    <?php echo lang('file revision title long', $revision->getCreatedBy()->getCardUrl(), clean($revision->getCreatedBy()->getDisplayName()), format_datetime($revision->getCreatedOn())) ?>
+			    <?php echo lang('file revision title long', $revision->getCreatedBy()->getCardUserUrl(), clean($revision->getCreatedBy()->getDisplayName()), format_datetime($revision->getCreatedOn())) ?>
 			<?php } else { ?>
 			    <?php echo lang('file revision title short', format_datetime($revision->getCreatedOn())) ?>
 			<?php } // if ?>

@@ -6,6 +6,8 @@
  * @author Ignacio de Soto
  */
 class TemplateObjects extends BaseTemplateObjects {
+	
+	
 	/**
 	 * Returns all Objects of a Template
 	 *
@@ -17,15 +19,18 @@ class TemplateObjects extends BaseTemplateObjects {
 		if (!is_array($all)) return array();
 		$objs = array();
 		foreach ($all as $obj) {
-			$objs[] = get_object_by_manager_and_id($obj->getObjectId(), $obj->getObjectManager());
+			$objs[] = Objects::findObject($obj->getObjectId());
+		
 		}
+		
 		return $objs;
 	}
 	
+	
 	static function removeObjectFromTemplates($object) {
-		$manager = get_class($object->manager());
-		self::delete(array("`object_manager` = ? AND `object_id` = ?", $manager, $object->getId()));
+		self::delete(array("`object_id` = ?", $object->getId()));
 	}
+	
 	
 	/**
 	 * Returns all Objects of a Template
@@ -37,13 +42,10 @@ class TemplateObjects extends BaseTemplateObjects {
 		return self::delete(array('`template_id` = ?', $template_id));
 	}
 	
+	
 	static function templateHasObject($template, $object) {
-		return self::count(array("`template_id` = ? AND `object_manager` = ? AND `object_id` = ?",
-			$template->getId(),
-			get_class($object->manager()),
-			$object->getId()
-		)) > 0;
+		return self::count(array("`template_id` = ? AND `object_id` = ?",
+			$template->getId(), $object->getId())) > 0;
 	}
-} // TemplateObjects
-
-?>
+	
+} 

@@ -22,93 +22,11 @@ class MilestoneController extends ApplicationController {
 		prepare_company_website_controller($this, 'website');
 	} // __construct
 	
-	function view_milestones() {
-		ajx_current("empty");
-		$project = active_project();
-		$tag = active_tag();
-		$assigned_by = array_var($_GET, 'assigned_by', '');
-		$assigned_to = array_var($_GET, 'assigned_to', '');
-		$status = array_var($_GET, 'status', "pending");
-		
-//		$assigned_to = explode(':', $assigned_to);
-		$to_company = array_var($assigned_to, 0, null);
-		$to_user = array_var($assigned_to, 1, null);
-		$assigned_by = explode(':', $assigned_by);
-		$by_company = array_var($assigned_by, 0, null);
-		$by_user = array_var($assigned_by, 1, null);
-		
-		$milestones = ProjectMilestones::getProjectMilestones($project, null, 'ASC', $tag, $to_company, $to_user, $by_user, $status == 'pending');
-
-		$milestones_bottom_complete = array();
-		$ms = array();
-		foreach ($milestones as $milestone) {
-			if (!$milestone->isCompleted()) {
-				$milestones_bottom_complete[] = $milestone;
-				$ms[] = $this->milestone_item($milestone);
-			}
-		}
-		foreach ($milestones as $milestone) {
-			if ($milestone->isCompleted()) {
-				$milestones_bottom_complete[] = $milestone;
-				$ms[] = $this->milestone_item($milestone);
-			}
-		}
-		
-		ajx_extra_data(array("milestones" => $ms));
-		
-		tpl_assign('milestones', $milestones_bottom_complete);
-		tpl_assign('project', $project);
-	}
-	
-	function quick_add_milestone() {
-		if (logged_user()->isGuest()) {
-			flash_error(lang('no access permissions'));
-			ajx_current("empty");
-			return;
-		}
-		ajx_current("empty");
-		$milestone = new ProjectMilestone();
-		$milestone_data = array_var($_POST, 'milestone');
-		$project = active_or_personal_project();
-		if(!ProjectMilestone::canAdd(logged_user(), $project)) {
-			flash_error(lang('no access permissions'));
-			return;
-		} // if
-		
-		if (is_array($milestone_data)) {
-			try {
-				$milestone->setFromAttributes($milestone_data);
-				$now = DateTimeValueLib::now();
-				$milestone->setDueDate(DateTimeValueLib::make(0, 0, 0, array_var($milestone_data, 'due_date_month', $now->getMonth()), array_var($milestone_data, 'due_date_day', $now->getDay()), array_var($milestone_data, 'due_date_year', $now->getYear())));
-				// Set assigned to
-				$assigned_to = explode(':', array_var($milestone_data, 'assigned_to', ''));
-				$milestone->setAssignedToCompanyId(array_var($assigned_to, 0, 0));
-				$milestone->setAssignedToUserId(array_var($assigned_to, 1, 0));			
-				$milestone->setIsPrivate(false); // Not used, but defined as not null.
-				$urgent = array_var($milestone_data, 'is_urgent') == 'checked';
-				$milestone->setIsUrgent($urgent);
-				DB::beginWork();
-				$milestone->save();
-				$milestone->setProject($project);
-
-				ApplicationLogs::createLog($milestone, $milestone->getWorkspaces(), ApplicationLogs::ACTION_ADD);
-				DB::commit();
-
-				ajx_extra_data(array("milestone" => $this->milestone_item($milestone)));
-				flash_success(lang('success add milestone', $milestone->getName()));
-			} catch(Exception $e) {
-				DB::rollback();
-				flash_error($e->getMessage());
-			} // try
-		} // if
-	}
 	
 	private function milestone_item(ProjectMilestone $milestone) {
 		return array(
 			"id" => $milestone->getId(),
-			"title" => $milestone->getName(),
-			"assignedTo" => $milestone->getAssignedToName(),
-			"workspaces" => $milestone->getProject()->getName(),
+			"title" => $milestone->getObjectName(),
 			"completed" => $milestone->isCompleted(),
 			"completedBy" => $milestone->getCompletedByName(),
 			"isLate" => $milestone->isLate(),
@@ -118,25 +36,6 @@ class MilestoneController extends ApplicationController {
 		);
 	}
 	
-//
-//	/**
-//	 * List all milestones in specific (this) project
-//	 *
-//	 * @access public
-//	 * @param void
-//	 * @return null
-//	 */
-//	function index() {
-//		$this->addHelper('textile');
-//		$project = active_or_personal_project();
-//
-//		tpl_assign('late_milestones', $project->getLateMilestones());
-//		tpl_assign('today_milestones', $project->getTodayMilestones());
-//		tpl_assign('upcoming_milestones', $project->getUpcomingMilestones());
-//		tpl_assign('completed_milestones', $project->getCompletedMilestones());
-//
-//	} // index
-
 	/**
 	 * Show view milestone page
 	 *
@@ -160,11 +59,11 @@ class MilestoneController extends ApplicationController {
 			return;
 		} // if
 
-		ajx_extra_data(array("title" => $milestone->getName(), "urgent" => $milestone->getIsUrgent() ,'icon'=>'ico-milestone'));
+		ajx_extra_data(array("title" => $milestone->getObjectName(), "urgent" => $milestone->getIsUrgent() ,'icon'=>'ico-milestone'));
 		ajx_set_no_toolbar(true);
 		tpl_assign('milestone', $milestone);
 		
-		ApplicationReadLogs::createLog($milestone, $milestone->getWorkspaces(), ApplicationReadLogs::ACTION_READ);
+		ApplicationReadLogs::createLog($milestone, ApplicationReadLogs::ACTION_READ);
 	} // view
 
 	/**
@@ -182,8 +81,8 @@ class MilestoneController extends ApplicationController {
 		}
 		$this->setTemplate('add_milestone');
 
-		if(!ProjectMilestone::canAdd(logged_user(), active_or_personal_project())) {
-			flash_error(lang('no access permissions'));
+		if(!ProjectMilestone::canAdd(logged_user(), active_context())) {
+			flash_error(lang('no context permissions to add',lang("milestones")));
 			ajx_current("empty");
 			return;
 		} // if
@@ -195,7 +94,7 @@ class MilestoneController extends ApplicationController {
 			$milestone_data = array(
 				'due_date' => $due_date,
 				'name' => array_var($_GET, 'name', ''),
-				'assigned_to' => array_var($_GET, 'assigned_to', '0:0'),
+				'assigned_to' => array_var($_GET, 'assigned_to', '0'),
 				'is_template' => array_var($_GET, "is_template", false)
 			); // array
 		} // if
@@ -205,35 +104,23 @@ class MilestoneController extends ApplicationController {
 
 		if (is_array(array_var($_POST, 'milestone'))) {
 			$milestone_data['due_date'] = getDateValue(array_var($milestone_data, 'due_date_value'),DateTimeValueLib::now()->beginningOfDay());
+			$milestone_data['object_type_id'] = $milestone->getObjectTypeId();
 			
-			$assigned_to = explode(':', array_var($milestone_data, 'assigned_to', ''));
-			$milestone->setIsPrivate(false); //Mandatory to set
 			$milestone->setFromAttributes($milestone_data);
+			
 			$urgent = array_var($milestone_data, 'is_urgent') == 'checked';
 			$milestone->setIsUrgent($urgent);
-			if(!logged_user()->isMemberOfOwnerCompany()) $milestone->setIsPrivate(false);
-
-			$project = Projects::findById(array_var($_POST, 'ws_ids', 0));
-			if (!$project instanceof Project && !ProjectMilestone::canAdd(logged_user(), $project)) {
-				flash_error(lang('no access permissions'));
-				ajx_current("empty");
-				return;
-			} // if
-			$milestone->setAssignedToCompanyId(array_var($assigned_to, 0, 0));
-			$milestone->setAssignedToUserId(array_var($assigned_to, 1, 0));
 
 			try {
+				$member_ids = json_decode(array_var($_POST, 'members'));
+				
 				DB::beginWork();
 
 				$milestone->save();
-				$milestone->setTagsFromCSV(array_var($milestone_data, 'tags'));
-			    $object_controller = new ObjectController();
-			    $object_controller->add_to_workspaces($milestone);
-				$object_controller->link_to_new_object($milestone);
-				$object_controller->add_subscribers($milestone);
-				$object_controller->add_custom_properties($milestone);
-				$object_controller->add_reminders($milestone);
-			    
+				$object_controller = new ObjectController();
+			    $object_controller->add_to_members($milestone, $member_ids);
+			    $object_controller->add_subscribers($milestone);
+
 				if (array_var($_GET, 'copyId', 0) > 0) {
 					// copy remaining stuff from the milestone with id copyId
 					$toCopy = ProjectMilestones::findById(array_var($_GET, 'copyId'));
@@ -242,7 +129,7 @@ class MilestoneController extends ApplicationController {
 					}
 				}
 				
-				ApplicationLogs::createLog($milestone, $milestone->getWorkspaces(), ApplicationLogs::ACTION_ADD);
+				ApplicationLogs::createLog($milestone, ApplicationLogs::ACTION_ADD);
 				
 				DB::commit();
 
@@ -256,9 +143,9 @@ class MilestoneController extends ApplicationController {
 				} // try
 
 				if ($milestone->getIsTemplate()) {
-					flash_success(lang('success add template', $milestone->getName()));
+					flash_success(lang('success add template', $milestone->getObjectName()));
 				} else {
-					flash_success(lang('success add milestone', $milestone->getName()));
+					flash_success(lang('success add milestone', $milestone->getObjectName()));
 				}
 				ajx_current("back");
 
@@ -300,15 +187,11 @@ class MilestoneController extends ApplicationController {
 
 		$milestone_data = array_var($_POST, 'milestone');
 		if(!is_array($milestone_data)) {
-			$tag_names = $milestone->getTagNames();
 			$milestone_data = array(
-          'name'        => $milestone->getName(),
-          'due_date'    => $milestone->getDueDate(),
-          'description' => $milestone->getDescription(),
-          'assigned_to' => $milestone->getAssignedToCompanyId() . ':' . $milestone->getAssignedToUserId(),
-          'tags'        => is_array($tag_names) ? implode(', ', $tag_names) : '',
-          'is_private'  => $milestone->isPrivate(),
-          'is_urgent' 	=> $milestone->getIsUrgent()
+	          'name'        => $milestone->getObjectName(),
+	          'due_date'    => $milestone->getDueDate(),
+	          'description' => $milestone->getDescription(),
+	          'is_urgent' 	=> $milestone->getIsUrgent()
 			); // array
 		} // if
 
@@ -323,62 +206,24 @@ class MilestoneController extends ApplicationController {
 				$milestone_data['due_date'] = DateTimeValueLib::make(0, 0, 0, $now->getMonth(), $now->getDay(), $now->getYear());
 			}
 			
-			$old_owner = $milestone->getAssignedTo(); // remember the old owner
-			$assigned_to = explode(':', array_var($milestone_data, 'assigned_to', ''));
-
-			$old_is_private  = $milestone->isPrivate();
 			$milestone->setFromAttributes($milestone_data);
 			$urgent = array_var($milestone_data, 'is_urgent') == 'checked';
 			$milestone->setIsUrgent($urgent);
-			if(!logged_user()->isMemberOfOwnerCompany()) $milestone->setIsPrivate($old_is_private);
-
-			$old_project_id = $milestone->getProjectId();
-			$project_id = array_var($_POST, 'ws_ids');
-			if ($old_project_id != $project_id) {
-				$newProject = Projects::findById($project_id);
-				if(!$milestone->canAdd(logged_user(),$newProject)) {
-					flash_error(lang('no access permissions'));
-					ajx_current("empty");
-					return;
-				} // if
-				$milestone->move_inconsistent_tasks($newProject);
-			}
-			
-			$milestone->setAssignedToCompanyId(array_var($assigned_to, 0, 0));
-			$milestone->setAssignedToUserId(array_var($assigned_to, 1, 0));
 
 			try {
+				$member_ids = json_decode(array_var($_POST, 'members'));
+				
 				DB::beginWork();
 				$milestone->save();
-				$milestone->setTagsFromCSV(array_var($milestone_data, 'tags'));
-
-				$object_controller = new ObjectController();
-				$object_controller->add_to_workspaces($milestone);
-			    $object_controller->link_to_new_object($milestone);
-				$object_controller->add_subscribers($milestone);
-				$object_controller->add_custom_properties($milestone);
-				$object_controller->add_reminders($milestone);
 				
-				ApplicationLogs::createLog($milestone, $milestone->getWorkspaces(), ApplicationLogs::ACTION_EDIT);
+				$object_controller = new ObjectController();
+				$object_controller->add_to_members($milestone, $member_ids);
+			    $object_controller->add_subscribers($milestone);
+			    
+				ApplicationLogs::createLog($milestone, ApplicationLogs::ACTION_EDIT);
 				DB::commit();
 
-				// If owner is changed send notification but don't break submission
-				try {
-					$new_owner = $milestone->getAssignedTo();
-					if(array_var($milestone_data, 'send_notification') == 'checked') {
-						if($old_owner instanceof User) {
-							// We have a new owner and it is different than old owner
-							if($new_owner instanceof User && $new_owner->getId() <> $old_owner->getId()) Notifier::milestoneAssigned($milestone);
-						} else {
-							// We have new owner
-							if($new_owner instanceof User) Notifier::milestoneAssigned($milestone);
-						} // if
-					} // if
-				} catch(Exception $e) {
-
-				} // try
-
-				flash_success(lang('success edit milestone', $milestone->getName()));
+				flash_success(lang('success edit milestone', $milestone->getObjectName()));
 				ajx_current("back");
 
 			} catch(Exception $e) {
@@ -417,13 +262,13 @@ class MilestoneController extends ApplicationController {
 		try {
 			DB::beginWork();
 			$milestone->trash();
-			ApplicationLogs::createLog($milestone, $milestone->getWorkspaces(), ApplicationLogs::ACTION_TRASH);
+			ApplicationLogs::createLog($milestone, ApplicationLogs::ACTION_TRASH);
 			DB::commit();
 
 			if ($is_template) {
-				flash_success(lang('success delete template', $milestone->getName()));
+				flash_success(lang('success delete template', $milestone->getObjectName()));
 			} else {
-				flash_success(lang('success deleted milestone', $milestone->getName()));
+				flash_success(lang('success deleted milestone', $milestone->getObjectName()));
 			}
 			if (array_var($_GET, 'quick', false)) {
 				ajx_current('empty');
@@ -468,10 +313,10 @@ class MilestoneController extends ApplicationController {
 
 			DB::beginWork();
 			$milestone->save();
-			ApplicationLogs::createLog($milestone, $milestone->getWorkspaces(), ApplicationLogs::ACTION_CLOSE);
+			ApplicationLogs::createLog($milestone, ApplicationLogs::ACTION_CLOSE);
 			DB::commit();
 
-			flash_success(lang('success complete milestone', $milestone->getName()));
+			flash_success(lang('success complete milestone', $milestone->getObjectName()));
 			$redirect_to = array_var($_GET, 'redirect_to', false);
 			if (array_var($_GET, 'quick', false)) {
 				ajx_current("empty");
@@ -517,10 +362,10 @@ class MilestoneController extends ApplicationController {
 
 			DB::beginWork();
 			$milestone->save();
-			ApplicationLogs::createLog($milestone, $milestone->getWorkspaces(), ApplicationLogs::ACTION_OPEN);
+			ApplicationLogs::createLog($milestone, ApplicationLogs::ACTION_OPEN);
 			DB::commit();
 
-			flash_success(lang('success open milestone', $milestone->getName()));
+			flash_success(lang('success open milestone', $milestone->getObjectName()));
 			$redirect_to = array_var($_GET, 'redirect_to', false);
 			if (array_var($_GET, 'quick', false)) {
 				ajx_current("empty");
@@ -547,9 +392,9 @@ class MilestoneController extends ApplicationController {
 			ajx_current("empty");
 			return;
 		}
-		$project = active_or_personal_project();
-		if(!ProjectMilestone::canAdd(logged_user(), $project)) {
-			flash_error(lang('no access permissions'));
+		
+		if(!ProjectMilestone::canAdd(logged_user(), active_context())) {
+			flash_error(lang('no context permissions to add',lang("milestones")));
 			ajx_current("empty");
 			return;
 		} // if
@@ -562,10 +407,7 @@ class MilestoneController extends ApplicationController {
 			return;
 		}
 		$milestone_data = array(
-			'name' => $milestone->getIsTemplate() ? $milestone->getName() : lang("copy of", $milestone->getName()),
-			'assigned_to' => $milestone->getAssignedToCompanyId() . ":" . $milestone->getAssignedToUserId(),
-			'tags' => implode(",", $milestone->getTagNames()),
-			'project_id' => $milestone->getProjectId(),
+			'name' => $milestone->getIsTemplate() ? $milestone->getObjectName() : lang("copy of", $milestone->getObjectName()),
 			'description' => $milestone->getDescription(),
 			'copyId' => $milestone->getId(),
 		); // array
@@ -591,9 +433,9 @@ class MilestoneController extends ApplicationController {
 			ajx_current("empty");
 			return;
 		}
-		$project = active_or_personal_project();
-		if(!ProjectMilestone::canAdd(logged_user(), $project)) {
-			flash_error(lang('no access permissions'));
+
+		if(!ProjectMilestone::canAdd(logged_user(), active_context())) {
+			flash_error(lang('no context permissions to add',lang("milestones")));
 			ajx_current("empty");
 			return;
 		} // if
@@ -604,10 +446,7 @@ class MilestoneController extends ApplicationController {
 			$milestone_data = array('is_template' => true);
 		} else {
 			$milestone_data = array(
-				'name' => $milestone->getName(),
-				'assigned_to' => $milestone->getAssignedToCompanyId() . ":" . $milestone->getAssignedToUserId(),
-				'tags' => implode(",", $milestone->getTagNames()),
-				'project_id' => $milestone->getProjectId(),
+				'name' => $milestone->getObjectName(),
 				'description' => $milestone->getDescription(),
 				'copyId' => $milestone->getId(),
 				'is_template' => true,
@@ -647,11 +486,12 @@ class MilestoneController extends ApplicationController {
 	}
 	
 	function render_add_milestone() {
-		$ws_ids = array_var($_GET, 'workspaces', '');
 		$genid = array_var($_GET, 'genid', '');				
-		$workspaces = Projects::findByCSVIds($ws_ids);
-		tpl_assign('workspaces', $workspaces);
 		tpl_assign('genid', $genid);
+		$context = build_context_array(array_var($_GET, 'context', ''));
+		tpl_assign('context', $context);
+		$task_data = array('milestone_id' => array_var($_GET, 'selected'));
+		tpl_assign('task_data', $task_data);
 		$this->setLayout("html");
 		$this->setTemplate("add_select_milestone");	
 	}
@@ -660,23 +500,15 @@ class MilestoneController extends ApplicationController {
 	 * Returns the milestones included in the present workspace and all of its parents. This is because tasks from a particular workspace
 	 * can only be assigned to milestones from that workspace and from any of its parents.
 	 */
-	function get_workspace_milestones() {
+	function get_assignable_milestones() {
 		ajx_current("empty");
-		$ws_id = array_var($_GET, 'ws_id');
-		$workspace = Projects::findById($ws_id);
-		if ($workspace instanceof Project) {
-			$milestones = $workspace->getOpenMilestones();
-			$ms = array();
-			foreach ($milestones as $milestone) {
-				$ms[] = array(
-					'id' => $milestone->getId(),
-					'name' => $milestone->getName(),
-				);
-			}
-			ajx_extra_data(array('milestones' => $ms));
-		} else {
-			ajx_extra_data(array('milestones' => array()));
+		$ms = ProjectMilestones::findAll();
+		if ($ms === null) $ms = array();
+		$ms_info = array();
+		foreach ($ms as $milestone) {
+			$ms_info[] = $milestone->getArrayInfo();
 		}
+		ajx_extra_data(array('milestones' => $ms_info));
 	}
 	
 } // MilestoneController

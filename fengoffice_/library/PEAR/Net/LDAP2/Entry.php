@@ -12,7 +12,7 @@
 * @author    Benedikt Hallinger <beni@php.net>
 * @copyright 2009 Tarjej Huse, Jan Wagner, Benedikt Hallinger
 * @license   http://www.gnu.org/licenses/lgpl-3.0.txt LGPLv3
-* @version   SVN: $Id: Entry.php,v 1.1 2010/03/08 17:12:21 acio Exp $
+* @version   SVN: $Id: Entry.php 37 2010-03-08 17:12:24Z acio $
 * @link      http://pear.php.net/package/Net_LDAP2/
 */
 

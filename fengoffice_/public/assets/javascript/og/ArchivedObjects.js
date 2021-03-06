@@ -19,31 +19,26 @@ og.ArchivedObjects = function() {
 				totalProperty: 'totalCount',
 				id: 'id',
 				fields: [
-					'name', 'object_id', 'type', 'tags', 
+					'name', 'object_id', 'type',
 					'createdBy', 'createdById', 'dateCreated',
 					'updatedBy', 'updatedById',	'dateUpdated',
 					'archivedBy', 'archivedById', 'dateArchived',
-					'icon', 'wsIds', 'manager', 'mimeType', 'url', 'ix'
+					'icon', 'manager', 'mimeType', 'url', 'ix'
 				]
 			}),
 			remoteSort: true,
 			listeners: {
 				'load': function() {
 					var d = this.reader.jsonData;
-					var ws = og.clean(Ext.getCmp('workspace-panel').getActiveWorkspace());
-					var tag = og.clean(Ext.getCmp('tag-panel').getSelectedTag());
 					if (d.totalCount == 0) {
-						if (tag) {
-							this.fireEvent('messageToShow', lang("no archived objects with tag message", lang("objects"), ws, tag));
-						} else if (d.objects.length == 0) {
+						if (d.objects.length == 0) {
 							this.fireEvent('messageToShow', lang("no more objects message", lang("objects")));
 						} else {
-							this.fireEvent('messageToShow', lang("no archived objects message", lang("objects"), ws));
+							this.fireEvent('messageToShow', lang("no archived objects message", lang("objects"), 0));
 						}
 					} else {
 						this.fireEvent('messageToShow', "");
 					}
-					og.showWsPaths();
 					var cmp = Ext.getCmp('archivedobjects-manager');
 					if (cmp) cmp.getView().focusRow(og.lastSelectedRow.archived+1);
 				}
@@ -59,8 +54,6 @@ og.ArchivedObjects = function() {
 	}
 	
 	function renderName(value, p, r) {
-		var projectsString = String.format('<span class="project-replace">{0}</span>&nbsp;', r.data.wsIds);
-
 		var viewUrl = r.data.url;
 		
 		var actions = '';
@@ -74,7 +67,7 @@ og.ArchivedObjects = function() {
 	
 		var name = String.format('<a href="{1}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', og.clean(value), viewUrl);
 		
-		return projectsString + name + actions;
+		return name + actions;
 	}
 
 	function renderType(value, p, r){
@@ -133,7 +126,7 @@ og.ArchivedObjects = function() {
 		} else {
 			var ret = '';
 			for (var i=0; i < selections.length; i++) {
-				ret += "," + selections[i].data.manager + ":" + selections[i].data.object_id;
+				ret += "," + selections[i].data.object_id;
 			}
 			og.lastSelectedRow.archived = selections[selections.length-1].data.ix;
 			return ret.substring(1);
@@ -159,16 +152,14 @@ og.ArchivedObjects = function() {
 				actions.del.setDisabled(true);
 				var selections = sm.getSelections();
 				for (var i=0; i < selections.length; i++) {
-					if (selections[i].data.type != 'project') {
-						actions.del.setDisabled(false);
-						break;
-					}
+					actions.del.setDisabled(false);
+					break;
 				}
 			}
 		});
 	var cm = new Ext.grid.ColumnModel([
 		sm,{
-			id: 'draghandle',
+/*			id: 'draghandle',
 			header: '&nbsp;',
 			width: 18,
         	renderer: renderDragHandle,
@@ -176,7 +167,7 @@ og.ArchivedObjects = function() {
         	resizable: false,
         	hideable:false,
         	menuDisabled: true
-		},{
+		},{*/
         	id: 'icon',
         	header: '&nbsp;',
         	dataIndex: 'icon',
@@ -210,12 +201,6 @@ og.ArchivedObjects = function() {
         	width: 120,
         	renderer: renderUser,
         	hidden: true
-        },{
-			id: 'tags',
-			header: lang("tags"),
-			dataIndex: 'tags',
-			width: 120,
-			hidden: true
         },{
 			id: 'last',
 			header: lang("last update"),
@@ -289,7 +274,7 @@ og.ArchivedObjects = function() {
     };
     
 	og.ArchivedObjects.superclass.constructor.call(this, {
-		enableDrag: true,
+		//enableDrag: true,
 		ddGroup : 'WorkspaceDD',
 		store: this.store,
 		layout: 'fit',
@@ -331,17 +316,6 @@ og.ArchivedObjects = function() {
 		}
 	});
 
-	var tagevid = og.eventManager.addListener("tag changed", function(tag) {
-		if (!this.ownerCt) {
-			og.eventManager.removeListener(tagevid);
-			return;
-		}
-		if (this.ownerCt.active) {
-			this.load({start:0});
-		} else {
-    		this.needRefresh = true;
-    	}
-	}, this);
 };
 
 Ext.extend(og.ArchivedObjects, Ext.grid.GridPanel, {
@@ -352,14 +326,12 @@ Ext.extend(og.ArchivedObjects, Ext.grid.GridPanel, {
 		} else {
 			var start = 0;
 		}
-		Ext.apply(this.store.baseParams, {
-			tag: Ext.getCmp('tag-panel').getSelectedTag(),
-			active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id
-		});
 		this.store.load({
 			params: Ext.applyIf(params, {
 				start: start,
-				limit: og.config['files_per_page']
+				limit: og.config['files_per_page'],
+				context: og.contextManager.plainContext() 
+
 			})
 		});
 		this.needRefresh = false;
@@ -403,14 +375,14 @@ Ext.extend(og.ArchivedObjects, Ext.grid.GridPanel, {
 			}
 			// Tasks and events does not keep ws, only move
 			if (allItemsAreTasksOrMilestones) {
-				this.moveObjectsToWsOrMantainWs(false, ws);
+				this.moveObjectsToWsOrMantainMembers(false, ws);
 			} else {
-				og.moveToWsOrMantainWs(this.id, ws);
+				og.moveToWsOrMantainMembers(this.id, ws);
 			}
 		}
 	},
 	
-	moveObjectsToWsOrMantainWs: function(mantain, ws) {
+	moveObjectsToWsOrMantainMembers: function(mantain, ws) {
 		var selections = this.getSelectionModel().getSelections();
 		var amail = false;
 		for (i=0; i<selections.length; i++) {
@@ -451,20 +423,6 @@ Ext.extend(og.ArchivedObjects, Ext.grid.GridPanel, {
 		}
 	},
 	
-	tagObjects: function(tag) {
-		this.load({
-			action: 'tag',
-			objects: this.getSelectedIds(),
-			tagTag: tag
-		});
-	},
-	
-	removeTags: function() {
-		this.load({
-			action: 'untag',
-			objects: this.getSelectedIds()
-		});
-	},
 	
 	archiveObjects: function() {
 		// do nothing.

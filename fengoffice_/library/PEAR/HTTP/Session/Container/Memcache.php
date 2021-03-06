@@ -21,7 +21,7 @@
  * @author    Torsten Roehr <torsten.roehr@gmx.de>
  * @copyright 1997-2007 The PHP Group
  * @license   http://www.php.net/license/3_0.txt  PHP License 3.0
- * @version   CVS: $Id: Memcache.php,v 1.1 2010/01/22 18:10:45 acio Exp $
+ * @version   CVS: $Id: Memcache.php 7 2010-01-22 18:14:51Z acio $
  * @link      http://pear.php.net/package/HTTP_Session
  * @since     File available since Release 0.5.6
  */

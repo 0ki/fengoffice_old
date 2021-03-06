@@ -19,31 +19,24 @@ og.TrashCan = function() {
 				totalProperty: 'totalCount',
 				id: 'id',
 				fields: [
-					'name', 'object_id', 'type', 'tags', 
+					'name', 'object_id', 'type', 
 					'createdBy', 'createdById', 'dateCreated',
 					'updatedBy', 'updatedById',	'dateUpdated',
 					'deletedBy', 'deletedById',	'dateDeleted',
-					'icon', 'wsIds', 'manager', 'mimeType', 'url'
+					'icon', 'manager', 'mimeType', 'url'
 				]
 			}),
 			remoteSort: true,
 			listeners: {
 				'load': function() {
 					var d = this.reader.jsonData;
-					var ws = og.clean(Ext.getCmp('workspace-panel').getActiveWorkspace().name);
-					var tag = og.clean(Ext.getCmp('tag-panel').getSelectedTag());
 					if (d.totalCount == 0) {
-						if (tag) {
-							this.fireEvent('messageToShow', lang("no deleted objects with tag message", lang("objects"), ws, tag));
-						} else {
-							this.fireEvent('messageToShow', lang("no deleted objects message", lang("objects"), ws));
-						}
+						this.fireEvent('messageToShow', lang("no deleted objects message", lang("objects"), 0));
 					} else if (d.objects.length == 0) {
 						this.fireEvent('messageToShow', lang("no more objects message", lang("objects")));
 					} else {
 						this.fireEvent('messageToShow', "");
 					}
-					og.showWsPaths();
 				}
 			}
 		});
@@ -53,8 +46,6 @@ og.TrashCan = function() {
 	this.store.addListener({messageToShow: {fn: this.showMessage, scope: this}});
 
 	function renderName(value, p, r) {
-		var projectsString = String.format('<span class="project-replace">{0}</span>&nbsp;', r.data.wsIds);
-
 		var viewUrl = r.data.url;
 		
 		var actions = '';
@@ -68,7 +59,7 @@ og.TrashCan = function() {
 	
 		var name = String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', og.clean(value), viewUrl);
 		
-		return projectsString + name + actions;
+		return name + actions;
 	}
 
 	function renderType(value, p, r){
@@ -127,7 +118,7 @@ og.TrashCan = function() {
 		} else {
 			var ret = '';
 			for (var i=0; i < selections.length; i++) {
-				ret += "," + selections[i].data.manager + ":" + selections[i].data.object_id;
+				ret += "," + selections[i].data.object_id;
 			}	
 			return ret.substring(1);
 		}
@@ -186,12 +177,6 @@ og.TrashCan = function() {
         	width: 120,
         	renderer: renderUser,
         	hidden: true
-        },{
-			id: 'tags',
-			header: lang("tags"),
-			dataIndex: 'tags',
-			width: 120,
-			hidden: true
         },{
 			id: 'last',
 			header: lang("last update"),
@@ -289,7 +274,7 @@ og.TrashCan = function() {
     };
     
 	og.TrashCan.superclass.constructor.call(this, {
-		enableDrag: true,
+		//enableDrag: true,
 		ddGroup : 'disabled',
 		id: 'trash-can',
 		store: this.store,
@@ -314,7 +299,6 @@ og.TrashCan = function() {
 			actions.restore,
 			'-',
 			actions.deletePermanently,
-			/*'-',actions.refresh,*/
 			'->', {
 				xtype: 'label',
 				id: 'trash_warning',
@@ -339,17 +323,6 @@ og.TrashCan = function() {
 		}
 	});
 
-	var tagevid = og.eventManager.addListener("tag changed", function(tag) {
-		if (!this.ownerCt) {
-			og.eventManager.removeListener(tagevid);
-			return;
-		}
-		if (this.ownerCt.active) {
-			this.load({start:0});
-		} else {
-    		this.needRefresh = true;
-    	}
-	}, this);
 	og.eventManager.addListener('config option changed', this.updateTrashWarning, this);
 };
 
@@ -367,14 +340,13 @@ Ext.extend(og.TrashCan, Ext.grid.GridPanel, {
 		} else {
 			var start = 0;
 		}
-		Ext.apply(this.store.baseParams, {
-			tag: Ext.getCmp('tag-panel').getSelectedTag(),
-			active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id
-		});
+
 		this.store.load({
 			params: Ext.applyIf(params, {
 				start: start,
-				limit: og.config['files_per_page']
+				limit: og.config['files_per_page'],
+				context: og.contextManager.plainContext() 
+
 			})
 		});
 		this.needRefresh = false;

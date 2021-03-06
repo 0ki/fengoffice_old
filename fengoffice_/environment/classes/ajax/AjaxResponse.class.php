@@ -20,9 +20,9 @@ class AjaxResponse {
 		$this->events = $events;
 	}
 	
-	function addScript($url) {
+	function addScript($url, $plugin) {
 		if (!isset($this->scripts)) $this->scripts = array();
-		$this->scripts[] = is_valid_url($url) ? $url : get_javascript_url($url, true);
+		$this->scripts[] = is_valid_url($url) ? $url : get_javascript_url($url, $plugin);
 	}
 	
 	function addInlineScript($script) {
@@ -133,7 +133,7 @@ class AjaxResponse {
 			$instance = new AjaxResponse();
 		} // if
 		
-		$instance->u = logged_user() instanceof User ? logged_user()->getId() : 0;
+		$instance->u = logged_user() instanceof Contact ? logged_user()->getId() : 0;
 
 		// Return instance...
 		return $instance;

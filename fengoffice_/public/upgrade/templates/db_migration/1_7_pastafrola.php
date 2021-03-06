@@ -17,8 +17,7 @@ INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`
 	('general', 'use_owner_company_logo_at_header', '0', 'BoolConfigHandler', '0', '0', NULL),
 	('mailing', 'sent_mails_sync', '1', 'BoolConfigHandler', '0', '0', 'imap email accounts synchronization possibility'),
 	('mailing', 'check_spam_in_subject', '0', 'BoolConfigHandler', 0, 0, ''),
-	('passwords', 'block_login_after_x_tries', '0', 'BoolConfigHandler', '0', '20', NULL),
-	('general', 'external_users_see_other_users', '0', 'BoolConfigHandler', 0, 0, NULL)	
+	('passwords', 'block_login_after_x_tries', '0', 'BoolConfigHandler', '0', '20', NULL)
 ON DUPLICATE KEY UPDATE id=id;
 
 DELETE FROM `<?php echo $table_prefix ?>config_options` WHERE `category_name`='general' AND `name`='detect_mime_type_from_extension';
@@ -118,38 +117,3 @@ ALTER TABLE `<?php echo $table_prefix ?>mail_accounts`
  ADD COLUMN `sync_folder` VARCHAR( 100 ) <?php echo $default_collation ?> NOT NULL;
 
 ALTER TABLE `<?php echo $table_prefix ?>mail_account_users` ADD COLUMN `last_error_state` INTEGER(1) UNSIGNED NOT NULL DEFAULT 0 COMMENT '0:no error,1:err unread, 2:err read';
-
-
-ALTER TABLE `<?php echo $table_prefix ?>workspace_objects` DROP INDEX `object_manager`,
- ADD INDEX `object_manager` USING BTREE(`object_manager`, `object_id`);
-
-ALTER TABLE `<?php echo $table_prefix ?>tags` DROP INDEX `object_id`,
- ADD INDEX `object_id` USING BTREE(`rel_object_manager`, `rel_object_id`);
-
-ALTER TABLE `<?php echo $table_prefix ?>application_read_logs` DROP INDEX `object_key`,
- ADD INDEX `object_key` USING BTREE(`rel_object_manager`, `rel_object_id`);
- 
-ALTER TABLE `<?php echo $table_prefix ?>application_logs` ADD INDEX `by_object` USING BTREE(`rel_object_manager`, `rel_object_id`);
-ALTER TABLE `<?php echo $table_prefix ?>object_reminders` ADD INDEX `type_date`(`type`, `date`);
-ALTER TABLE `<?php echo $table_prefix ?>object_reminders` ADD INDEX `object` USING BTREE(`object_manager`, `object_id`, `date`);
-ALTER TABLE `<?php echo $table_prefix ?>linked_objects` ADD INDEX `other_obj` USING BTREE(`object_manager`, `object_id`);
-ALTER TABLE `<?php echo $table_prefix ?>projects` ADD INDEX `name` USING BTREE(`name`);
-
-ALTER TABLE `<?php echo $table_prefix ?>project_events` ADD INDEX `trashed_on` USING BTREE(`trashed_on`);
-ALTER TABLE `<?php echo $table_prefix ?>project_file_revisions` ADD INDEX `trashed_on` USING BTREE(`trashed_on`);
-ALTER TABLE `<?php echo $table_prefix ?>project_files` ADD INDEX `trashed_on` USING BTREE(`trashed_on`);
-ALTER TABLE `<?php echo $table_prefix ?>project_forms` ADD INDEX `trashed_on` USING BTREE(`trashed_on`);
-ALTER TABLE `<?php echo $table_prefix ?>project_messages` ADD INDEX `trashed_on` USING BTREE(`trashed_on`);
-ALTER TABLE `<?php echo $table_prefix ?>project_milestones` ADD INDEX `trashed_on` USING BTREE(`trashed_on`);
-ALTER TABLE `<?php echo $table_prefix ?>project_tasks` ADD INDEX `trashed_on` USING BTREE(`trashed_on`);
-ALTER TABLE `<?php echo $table_prefix ?>project_webpages` ADD INDEX `trashed_on` USING BTREE(`trashed_on`);
-ALTER TABLE `<?php echo $table_prefix ?>comments` ADD INDEX `trashed_on` USING BTREE(`trashed_on`);
-ALTER TABLE `<?php echo $table_prefix ?>mail_contents` ADD INDEX `trashed_on` USING BTREE(`trashed_on`);
-ALTER TABLE `<?php echo $table_prefix ?>companies` ADD INDEX `trashed_on` USING BTREE(`trashed_on`);
-ALTER TABLE `<?php echo $table_prefix ?>contacts` ADD INDEX `trashed_on` USING BTREE(`trashed_on`);
-
-ALTER TABLE `<?php echo $table_prefix ?>custom_property_values` ADD INDEX ( `object_id` );
-ALTER TABLE `<?php echo $table_prefix ?>object_properties` ADD INDEX ( `rel_object_id` );
-ALTER TABLE `<?php echo $table_prefix ?>object_reminders` ADD INDEX ( `date` ); 
-ALTER TABLE `<?php echo $table_prefix ?>custom_property_values` ADD INDEX ( `custom_property_id` );
-ALTER TABLE `<?php echo $table_prefix ?>custom_properties` ADD INDEX ( `object_type` ); 

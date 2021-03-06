@@ -556,11 +556,11 @@
   		    $this->setColumnValue('updated_on', DateTimeValueLib::now());
   		  } // if
   		  
-  		  if(function_exists('logged_user') && (logged_user() instanceof User)) {
-    		  if($this->mark_timestamps && $this->columnExists('created_by_id') && !$this->isColumnModified('created_by_id') && (logged_user() instanceof User)) {
+  		  if(function_exists('logged_user') && (logged_user() instanceof Contact)) {
+    		  if($this->mark_timestamps && $this->columnExists('created_by_id') && !$this->isColumnModified('created_by_id') && (logged_user() instanceof Contact)) {
     		    $this->setColumnValue('created_by_id', logged_user()->getId());
     		  } // if
-    		  if($this->mark_timestamps && $this->columnExists('updated_by_id') && !$this->isColumnModified('updated_by_id') && (logged_user() instanceof User)) {
+    		  if($this->mark_timestamps && $this->columnExists('updated_by_id') && !$this->isColumnModified('updated_by_id') && (logged_user() instanceof Contact)) {
     		    $this->setColumnValue('updated_by_id', logged_user()->getId());
     		  } // if
   		  } // if
@@ -592,7 +592,7 @@
   		    $this->setColumnValue('updated_on', DateTimeValueLib::now());
   		  } // if
   		  
-  		  if(function_exists('logged_user') && (logged_user() instanceof User)) {
+  		  if(function_exists('logged_user') && (logged_user() instanceof Contact)) {
     		  if($this->mark_timestamps && $this->columnExists('updated_by_id') && !$this->isColumnModified('updated_by_id')) {
     		    $this->setColumnValue('updated_by_id', logged_user()->getId());
     		  } // if
@@ -664,7 +664,8 @@
 
 					// Add value...
 					//$values[] = DB::escape($key_value);
-  		    
+
+		
   		  } // if
   			
   		} // foreach

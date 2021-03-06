@@ -192,8 +192,7 @@ return array(
 	'field ProjectTasks created_by_id' => 'Created by',
 	'field ProjectTasks updated_by_id' => 'Updated by',
 	'field ProjectTasks milestone_id' => 'Milestone',
-	'field ProjectTasks assigned_to_company_id' => 'Assigned to company',		
-	'field ProjectTasks assigned_to_user_id' => 'Assigned to user',
+	'field ProjectTasks assigned_to_contact_id' => 'Assigned to',
 	'field ProjectTasks completed_by_id' => 'Completed by',
 	'field ProjectTasks archived_on' => 'Archived on',
 	'field ProjectTasks archived_by_id' => 'Archived by',
@@ -205,8 +204,6 @@ return array(
     'field ProjectTasks repeat_m' => 'Repeat month',
     'field ProjectTasks repeat_y' => 'Repeat year',
     'field ProjectTasks object_subtype' => 'Object subtype',
-	'field ProjectTasks state' => 'Status',
-	'field ProjectTasks status' => 'Status',
 
 	// User fields
     'field Users username' => 'Username', 

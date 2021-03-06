@@ -30,5 +30,4 @@
 	'report pdf vertical' => '纵向',
 	'report pdf landscape' => '横向',
 	'report font size' => '字体大小',
-	'columns' => '列',
 ); ?>

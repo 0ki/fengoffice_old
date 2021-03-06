@@ -1,13 +1,13 @@
 INSERT INTO `<?php echo $table_prefix ?>administration_tools` (`name`, `controller`, `action`, `order`) VALUES
-	('test_mail_settings', 'administration', 'tool_test_email', 1),
-	('mass_mailer', 'administration', 'tool_mass_mailer', 2);
+	('test_mail_settings', 'administration', 'tool_test_email', 1);
+		
 
 INSERT INTO `<?php echo $table_prefix ?>config_categories` (`name`, `is_system`, `category_order`) VALUES
 	('system', 1, 0),
 	('general', 0, 1),
 	('mailing', 0, 2),
-	('modules', 0, 3),
 	('passwords', 0, 4);
+
 
 INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
 	('system', 'project_logs_per_page', '10', 'IntegerConfigHandler', 1, 0, NULL),
@@ -34,18 +34,6 @@ INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`
 	('mailing', 'smtp_username', '', 'StringConfigHandler', 0, 0, NULL),
 	('mailing', 'smtp_password', '', 'PasswordConfigHandler', 0, 0, NULL),
 	('mailing', 'smtp_secure_connection', 'no', 'SecureSmtpConnectionConfigHandler', 0, 0, 'Values: no, ssl, tls'),
-	('mailing', 'user_email_fetch_count', '10', 'IntegerConfigHandler', 0, 0, 'How many emails to fetch when checking for email'),
-	('mailing', 'sent_mails_sync', '0', 'BoolConfigHandler', 0, 0, 'imap email accounts synchronization possibility'),
-	('mailing', 'check_spam_in_subject', '0', 'BoolConfigHandler', 0, 0, ''),
-	('modules', 'enable_notes_module', '1', 'BoolConfigHandler', 0, 0, 'Enable or disable notes tab.'),
-	('modules', 'enable_email_module', '1', 'BoolConfigHandler', 0, 0, 'Enable or disable email tab.'),
-	('modules', 'enable_contacts_module', '1', 'BoolConfigHandler', 0, 0, 'Enable or disable contacts tab.'),
-	('modules', 'enable_calendar_module', '1', 'BoolConfigHandler', 0, 0, 'Enable or disable calendar tab.'),
-	('modules', 'enable_documents_module', '1', 'BoolConfigHandler', 0, 0, 'Enable or disable documents tab.'),
-	('modules', 'enable_tasks_module', '1', 'BoolConfigHandler', 0, 0, 'Enable or disable tasks tab.'),
-	('modules', 'enable_weblinks_module', '1', 'BoolConfigHandler', 0, 0, 'Enable or disable weblinks tab.'),
-	('modules', 'enable_time_module', '1', 'BoolConfigHandler', 0, 0, 'Enable or disable time tab.'),
-	('modules', 'enable_reporting_module', '1', 'BoolConfigHandler', 0, 0, 'Enable or disable reporting tab.'),
     ('passwords', 'min_password_length', '0', 'IntegerConfigHandler', 0, '1', NULL),
     ('passwords', 'password_numbers', '0', 'IntegerConfigHandler', 0, '2', NULL),
 	('passwords', 'password_uppercase_characters', '0', 'IntegerConfigHandler', 0, '3', NULL),
@@ -63,8 +51,8 @@ INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`
 	('general', 'show_feed_links', '0', 'BoolConfigHandler', '0', '0', NULL),
 	('general', 'use_owner_company_logo_at_header', '0', 'BoolConfigHandler', '0', '0', NULL),
 	('general', 'ask_administration_autentification', 0, 'BoolConfigHandler', 0, 0, NULL),
-	('general', 'external_users_see_other_users', '0', 'BoolConfigHandler', 0, 0, NULL);
-
+	('general', 'use tasks dependencies', 0, 'BoolConfigHandler', 0, 0, NULL);
+	
 INSERT INTO `<?php echo $table_prefix ?>file_types` (`extension`, `icon`, `is_searchable`, `is_image`) VALUES
 	('zip', 'archive.png', 0, 0),
 	('rar', 'archive.png', 0, 0),
@@ -108,30 +96,39 @@ INSERT INTO `<?php echo $table_prefix ?>im_types` (`name`, `icon`) VALUES
 	('Skype', 'skype.gif'),
 	('Jabber', 'jabber.gif');
 
-INSERT INTO `<?php echo $table_prefix ?>user_ws_config_categories` (`name`, `is_system`, `type`, `category_order`) VALUES 
+
+INSERT INTO `<?php echo $table_prefix ?>cron_events` (`name`, `recursive`, `delay`, `is_system`, `enabled`, `date`) VALUES
+	('purge_trash', '1', '1440', '1', '1', '0000-00-00 00:00:00'),
+	('send_reminders', '1', '10', '0', '1', '0000-00-00 00:00:00'),
+	('send_password_expiration_reminders', '1', '1440', '1', '1', '0000-00-00 00:00:00'),
+	('send_notifications_through_cron', '1', '1', '0', '0', '0000-00-00 00:00:00'),
+	('delete_mails_from_server', '1', '1440', '1', '1', '0000-00-00 00:00:00'),
+	('clear_tmp_folder', '1', '1440', '1', '1', '0000-00-00 00:00:00'),
+	('check_mail', '1', '10', '0', '1', '0000-00-00 00:00:00'),
+	('check_upgrade', '1', '1440', '0', '1', '0000-00-00 00:00:00');
+	
+INSERT INTO `<?php echo $table_prefix ?>object_reminder_types` (`name`) VALUES
+  ('reminder_email'),
+  ('reminder_popup');
+  
+INSERT INTO `<?php echo $table_prefix ?>contact_config_categories` (`name`, `is_system`, `type`, `category_order`) VALUES 
 	('general', 0, 0, 0),
 	('dashboard', 0, 0, 1),
 	('task panel', 0, 0, 2),
-	('time panel', 1, 0, 3),
 	('calendar panel', 0, 0, 4),
-	('mails panel', 0, 0, 5),
-	('context help', 1, 0, 5);
-
-INSERT INTO `<?php echo $table_prefix ?>user_ws_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES 
+	('context help', 1, 0, 5),
+	('time panel', 1, 0, 3);
+	
+INSERT INTO `<?php echo $table_prefix ?>contact_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES 
  ('dashboard', 'show calendar widget', '1', 'BoolConfigHandler', 0, 80, ''),
  ('dashboard', 'show late tasks and milestones widget', '1', 'BoolConfigHandler', 0, 100, ''),
  ('dashboard', 'show pending tasks widget', '1', 'BoolConfigHandler', 0, 200, ''),
- ('dashboard', 'pending tasks widget assigned to filter', '0:0', 'UserCompanyConfigHandler', 0, 210, ''),
- ('dashboard', 'show emails widget', '1', 'BoolConfigHandler', 0, 300, ''),
+ ('dashboard', 'pending tasks widget assigned to filter', '0', 'UserCompanyConfigHandler', 0, 210, ''),
  ('dashboard', 'show messages widget', '1', 'BoolConfigHandler', 0, 400, ''),
  ('dashboard', 'show documents widget', '1', 'BoolConfigHandler', 0, 500, ''),
- ('dashboard', 'show charts widget', '1', 'BoolConfigHandler', 0, 600, ''),
  ('dashboard', 'show tasks in progress widget', '1', 'BoolConfigHandler', 0, 700, ''),
  ('dashboard', 'show comments widget', '1', 'BoolConfigHandler', 0, 800, ''),
- ('dashboard', 'show dashboard info widget', '1', 'BoolConfigHandler', 0, 900, ''),
- ('dashboard', 'always show unread mail in dashboard', '0', 'BoolConfigHandler', 0, 10, 'when false, active workspace email is shown'),
  ('dashboard', 'calendar_widget_expanded', '1', 'BoolConfigHandler', 1, 0, ''),
- ('dashboard', 'emails_widget_expanded', '1', 'BoolConfigHandler', 1, 0, ''),
  ('dashboard', 'messages_widget_expanded', '1', 'BoolConfigHandler', 1, 0, ''),
  ('dashboard', 'active_tasks_widget_expanded', '1', 'BoolConfigHandler', 1, 0, ''),
  ('dashboard', 'pending_tasks_widget_expanded', '1', 'BoolConfigHandler', 1, 0, ''),
@@ -142,7 +139,6 @@ INSERT INTO `<?php echo $table_prefix ?>user_ws_config_options` (`category_name`
  ('dashboard', 'show getting started widget', '1', 'BoolConfigHandler', '0', '1000', NULL),
  ('dashboard', 'getting_started_widget_expanded', '1', 'BoolConfigHandler', '1', '0', NULL),
  ('dashboard', 'dashboard_info_widget_expanded', '1', 'BoolConfigHandler', 1, 0, ''),
- ('dashboard', 'workspace_description_widget_expanded', '1', 'BoolConfigHandler', 1, 0, ''),
  ('dashboard', 'show_two_weeks_calendar', '1', 'BoolConfigHandler', '0', '0', NULL),
  ('dashboard', 'show activity widget', '1', 'BoolConfigHandler', 0, 1000, ''),
  ('dashboard', 'activity widget elements', '30', 'IntegerConfigHandler', '0', '1100', NULL),
@@ -156,52 +152,28 @@ INSERT INTO `<?php echo $table_prefix ?>user_ws_config_options` (`category_name`
  ('task panel', 'tasksOrderBy', 'priority', 'StringConfigHandler', 1, 0, ''),
  ('task panel', 'task panel status', '1', 'IntegerConfigHandler', 1, 0, ''),
  ('task panel', 'task panel filter', 'assigned_to', 'StringConfigHandler', 1, 0, ''),
- ('task panel', 'task panel filter value', '0:0', 'UserCompanyConfigHandler', 1, 0, ''),
+ ('task panel', 'task panel filter value', '0', 'UserCompanyConfigHandler', 1, 0, ''),
  ('task panel', 'noOfTasks', '8', 'IntegerConfigHandler', '0', '100', NULL),
  ('task panel', 'task_display_limit', '500', 'IntegerConfigHandler', '0', '200', NULL),
- ('time panel', 'TM show time type', '0', 'IntegerConfigHandler', 1, 0, ''),
- ('time panel', 'TM report show time type', '0', 'IntegerConfigHandler', 1, 0, ''),
- ('time panel', 'TM user filter', '0', 'IntegerConfigHandler', 1, 0, ''),
- ('time panel', 'TM tasks user filter', '0', 'IntegerConfigHandler', 1, 0, ''),
  ('general', 'localization', '', 'LocalizationConfigHandler', 0, 100, ''),
- ('general', 'initialWorkspace', '0', 'InitialWorkspaceConfigHandler', 0, 200, ''),
  ('general', 'search_engine', 'match', 'SearchEngineConfigHandler', 0, 700, ''),
  ('general', 'lastAccessedWorkspace', '0', 'IntegerConfigHandler', 1, 0, ''),
- ('general', 'rememberGUIState', '1', 'RememberGUIConfigHandler', 0, 300, ''),
  ('general', 'work_day_start_time', '9:00', 'TimeConfigHandler', 0, 400, 'Work day start time'),
  ('general', 'time_format_use_24', '0', 'BoolConfigHandler', 0, 500, 'Use 24 hours time format'),
  ('general', 'date_format', 'd/m/Y', 'DateFormatConfigHandler', 0, 600, 'Date objects will be displayed using this format.'),
  ('general', 'descriptive_date_format', 'l, j F', 'StringConfigHandler', 0, 700, 'Descriptive dates will be displayed using this format.'),
- ('general', 'custom_report_tab', 'tasks', 'StringConfigHandler', '1', '0', NULL),
- ('general', 'show_context_help', 'until_close', 'ShowContextHelpConfigHandler', '0', '0', NULL),
+ ('general', 'custom_report_tab', '5', 'StringConfigHandler', '1', '0', NULL),
  ('general', 'last_mail_format', 'html', 'StringConfigHandler', '1', '0', NULL),
  ('general', 'amount_objects_to_show', '5', 'IntegerConfigHandler', '0', '0', NULL),
  ('general', 'reset_password', '', 'StringConfigHandler', '1', '0', 'Used to store per-user tokens to validate password reset requests'),
- ('general', 'drag_drop_prompt', 'prompt', 'DragDropPromptConfigHandler', '0', '0', NULL),
  ('general', 'autodetect_time_zone', '1', 'BoolConfigHandler', '0', '0', NULL),
  ('general', 'detect_mime_type_from_extension', '0', 'BoolConfigHandler', '0', '0', NULL),
+ ('general', 'root_dimensions', '', 'RootDimensionsConfigHandler', '0', '0', NULL), 
  ('calendar panel', 'calendar view type', 'viewweek', 'StringConfigHandler', 1, 0, ''),
  ('calendar panel', 'calendar user filter', '0', 'IntegerConfigHandler', 1, 0, ''),
  ('calendar panel', 'calendar status filter', '', 'StringConfigHandler', 1, 0, ''),
  ('calendar panel', 'start_monday', '', 'BoolConfigHandler', 0, 0, ''),
  ('calendar panel', 'show_week_numbers', '', 'BoolConfigHandler', 0, 0, ''),
- ('calendar panel', 'displayed events amount', '3', 'IntegerConfigHandler', 0, 0, ''),
- ('mails panel', 'view deleted accounts emails', '1', 'BoolConfigHandler', '0', '0', NULL),
- ('mails panel', 'block_email_images', '1', 'BoolConfigHandler', '0', '0', NULL),
- ('mails panel', 'draft_autosave_timeout', '60', 'IntegerConfigHandler', '0', '100', NULL),
- ('mails panel', 'attach_docs_content', '1', 'BoolConfigHandler', '0', '0', NULL),
- ('mails panel', 'email_polling', '0', 'IntegerConfigHandler', '1', '0', NULL),
- ('mails panel', 'show_unread_on_title', '0', 'BoolConfigHandler', '1', '0', NULL),
- ('mails panel', 'max_spam_level', '0', 'IntegerConfigHandler', '0', '100', NULL),
- ('mails panel', 'create_contacts_from_email_recipients', '0', 'BoolConfigHandler', '0', '101', NULL),
- ('mails panel', 'mail_drag_drop_prompt', 'prompt', 'MailDragDropPromptConfigHandler', '0', '102', NULL),
- ('mails panel', 'show_emails_as_conversations', '1', 'BoolConfigHandler', '0', '0', NULL),
- ('mails panel', 'mails account filter', '', 'StringConfigHandler', '1', '0', NULL),
- ('mails panel', 'mails classification filter', 'all', 'StringConfigHandler', '1', '0', NULL),
- ('mails panel', 'mails read filter', 'all', 'StringConfigHandler', '1', '0', NULL),
- ('mails panel', 'hide_quoted_text_in_emails', '1', 'BoolConfigHandler', 0, 110, NULL),
- ('mails panel', 'mail_account_err_check_interval', '300', 'IntegerConfigHandler', 0, 120, NULL),
- ('mails panel', 'classify_mail_with_conversation', '1', 'BoolConfigHandler', 0, 130, NULL),
  ('context help', 'show_tasks_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
  ('context help', 'show_account_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
  ('context help', 'show_active_tasks_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
@@ -269,30 +241,196 @@ INSERT INTO `<?php echo $table_prefix ?>user_ws_config_options` (`category_name`
  ('context help', 'show_add_event_custom_properties_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
  ('context help', 'show_add_event_subscribers_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
  ('context help', 'show_add_event_linked_objects_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
- ('context help', 'show_add_event_inivitation_context_help', '1', 'BoolConfigHandler', '1', '0', NULL);
+ ('context help', 'show_add_event_inivitation_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+ ('time panel', 'TM show time type', '0', 'IntegerConfigHandler', 1, 0, ''),
+ ('time panel', 'TM report show time type', '0', 'IntegerConfigHandler', 1, 0, ''),
+ ('time panel', 'TM user filter', '0', 'IntegerConfigHandler', 1, 0, ''),
+ ('time panel', 'TM tasks user filter', '0', 'IntegerConfigHandler', 1, 0, ''),
+ ('dashboard', 'show emails widget', '1', 'BoolConfigHandler', 0, 300, ''),
+ ('dashboard', 'always show unread mail in dashboard', '0', 'BoolConfigHandler', 0, 10, 'when false, active workspace email is shown'),
+ ('dashboard', 'emails_widget_expanded', '1', 'BoolConfigHandler', 1, 0, ''),
+ ('general', 'show_context_help', 'until_close', 'ShowContextHelpConfigHandler', '0', '0', NULL),
+ ('dashboard', 'show charts widget', '1', 'BoolConfigHandler', 0, 600, ''),
+ ('dashboard', 'show dashboard info widget', '1', 'BoolConfigHandler', 0, 900, ''),
+ ('general', 'drag_drop_prompt', 'prompt', 'DragDropPromptConfigHandler', '0', '0', NULL),
+ ('general', 'rememberGUIState', '1', 'RememberGUIConfigHandler', 0, 300, '');
+ 
 
-INSERT INTO `<?php echo $table_prefix ?>cron_events` (`name`, `recursive`, `delay`, `is_system`, `enabled`, `date`) VALUES
-	('check_mail', '1', '10', '0', '1', '0000-00-00 00:00:00'),
-	('purge_trash', '1', '1440', '1', '1', '0000-00-00 00:00:00'),
-	('check_upgrade', '1', '1440', '0', '1', '0000-00-00 00:00:00'), 
-	('send_reminders', '1', '10', '0', '1', '0000-00-00 00:00:00'),
-	('send_password_expiration_reminders', '1', '1440', '1', '1', '0000-00-00 00:00:00'),
-	('send_notifications_through_cron', '1', '1', '0', '0', '0000-00-00 00:00:00'),
-	('delete_mails_from_server', '1', '1440', '1', '1', '0000-00-00 00:00:00'),
-	('clear_tmp_folder', '1', '1440', '1', '1', '0000-00-00 00:00:00');
+INSERT INTO `<?php echo $table_prefix ?>object_types` (`id`,`name`,`handler_class`,`table_name`,`type`,`icon`,`plugin_id`) VALUES
+ (1,'workspace', '', '', 'dimension_group', 'workspace', null),
+ (2,'tag', '', '', 'dimension_group', 'tag', null),
+ (3,'message', 'ProjectMessages', 'project_messages', 'content_object', 'message', null),
+ (4,'weblink', 'ProjectWebpages', 'project_webpages', 'content_object', 'weblink', null),
+ (5,'task', 'ProjectTasks', 'project_tasks', 'content_object', 'task', null),
+ (6,'file', 'ProjectFiles', 'project_files', 'content_object', 'file', null),
+ (8,'form', 'ProjectForms', 'project_forms', '', '', null),
+ (9,'chart', 'ProjectCharts', 'project_charts', '', '', null),
+ (10,'milestone', 'ProjectMilestones', 'project_milestones', 'content_object', 'milestone', null),
+ (11,'event', 'ProjectEvents', 'project_events', 'content_object', 'event', null), 
+ (12,'report', 'Reports', 'reports', 'located', 'reporting', null),
+ (13,'template', 'COTemplates', 'templates', 'located', 'template', null),
+ (14,'comment', 'Comments', 'comments', 'comment', 'comment', null), 
+ (15,'billing', 'Billings', 'billings', '', '', null),
+ (16,'contact', 'Contacts', 'contacts', 'content_object', 'contact', null),
+ (17,'file revision', 'ProjectFileRevisions', 'file_revisions', 'content_object', 'file', null),
+ (18,'timeslot', 'Timeslots', 'timeslots', 'located', 'time', null);
 
--- GelSheet
-INSERT INTO `<?php echo $table_prefix ?>gs_fonts` VALUES
-	(1, 'Arial'),
-	(2, 'Times New Roman'),
-	(3, 'Verdana'),
-	(4, 'Courier'),
-	(5, 'Lucida Sans Console'),
-	(6, 'Tahoma');
-	
-INSERT INTO `<?php echo $table_prefix ?>gs_users` VALUES  (1, 'Open', 'Goo', 'open', 'goo', 1);
+INSERT INTO `<?php echo $table_prefix ?>address_types` (`name`,`is_system`) VALUES
+ ('home', 1),
+ ('work', 1),
+ ('other', 1);
 
-INSERT INTO `<?php echo $table_prefix ?>object_reminder_types` (`name`) VALUES
-  ('reminder_email'),
-  ('reminder_popup');
-  
+INSERT INTO `<?php echo $table_prefix ?>telephone_types` (`name`,`is_system`) VALUES
+ ('home', 1),
+ ('work', 1),
+ ('other', 1),
+ ('assistant', 0),
+ ('callback', 0),
+ ('mobile', 1),
+ ('pager', 0),
+ ('fax', 0);
+
+INSERT INTO `<?php echo $table_prefix ?>email_types` (`name`,`is_system`) VALUES
+ ('user',1),
+ ('personal', 1),
+ ('work', 1),
+ ('other', 1);
+ 
+INSERT INTO `<?php echo $table_prefix ?>webpage_types` (`name`,`is_system`) VALUES
+ ('personal', 1),
+ ('work', 1),
+ ('other', 1);
+
+
+INSERT INTO `<?php echo $table_prefix ?>tab_panels` (`id`,`title`,`icon_cls`,`refresh_on_context_change`,`default_controller`,`default_action`,`initial_controller`,`initial_action`,`enabled`,`type`,`ordering`,`plugin_id`,`object_type_id`) VALUES 
+ ('calendar-panel','calendar','ico-calendar',1,'event','view_calendar','','',1,'system',8,0,11),
+ ('contacts-panel','contacts','ico-contacts',1,'contact','init','','',0,'system',7,0,16),
+ ('documents-panel','documents','ico-documents',1,'+files','init','','',1,'system',6,0,6),
+ ('messages-panel','messages','ico-messages',1,'message','init','','',1,'system',5,0,3),
+ ('overview-panel','overview','ico-overview',1,'dashboard','init_overview','','',1,'system',-100,0,0),
+ ('reporting-panel','reporting','ico-reporting',1,'reporting','index','','',1,'system',9,0,12),
+ ('tasks-panel','tasks','ico-tasks',1,'task','new_list_tasks','','',1,'system',3,0,5),
+ ('time-panel','time','ico-time-layout',1,'time','index','','',1,'system',8,0,0),
+ ('webpages-panel','web pages','ico-webpages',1,'webpage','init','','',0,'system',7,0,4);
+ 
+
+
+INSERT INTO `<?php echo $table_prefix ?>permission_groups` (`id`, `name`, `contact_id`, `is_context`, `plugin_id`, `parent_id`) VALUES
+(2,	'Super Administrator',	0,	0,	NULL,	10),
+(3,	'Administrator',	0,	0,	NULL,	10),
+(4,	'Manager',	0,	0,	NULL,	10),
+(5,	'Executive',	0,	0,	NULL,	10),
+(6,	'Collaborator Customer',	0,	0,	NULL,	11),
+(7,	'Internal Collaborator',	0,	0,	NULL,	11),
+(8,	'External Collaborator',	0,	0,	NULL,	11),
+(10,	'ExecutiveGroup',	0,	0,	NULL,	0),
+(11,	'CollaboratorGroup',	0,	0,	NULL,	0),
+(12,	'GuestGroup',	0,	0,	NULL,	0),
+(13,	'Guest Customer',	0,	0,	NULL,	12),
+(14,	'Guest',	0,	0,	NULL,	12),
+(15,	'Non-Exec Director',	0,	0,	NULL,	12);
+
+INSERT INTO `<?php echo $table_prefix ?>tab_panel_permissions` (`permission_group_id`, `tab_panel_id`) VALUES 
+(2,	'calendar-panel'),
+(2,	'documents-panel'),
+(2,	'mails-panel'),
+(2,	'messages-panel'),
+(2,	'overview-panel'),
+(2,	'tasks-panel'),
+(2,	'time-panel'),
+(2,	'webpages-panel'),
+(2,	'contacts-panel'),
+(2, 'reporting-panel'),
+
+(3,	'calendar-panel'),
+(3,	'documents-panel'),
+(3,	'mails-panel'),
+(3,	'messages-panel'),
+(3,	'overview-panel'),
+(3,	'tasks-panel'),
+(3,	'time-panel'),
+(3,	'webpages-panel'),
+(3,	'contacts-panel'),
+(3, 'reporting-panel'),
+
+(4,	'calendar-panel'),
+(4,	'documents-panel'),
+(4,	'mails-panel'),
+(4,	'messages-panel'),
+(4,	'overview-panel'),
+(4,	'tasks-panel'),
+(4,	'time-panel'),
+(4,	'webpages-panel'),
+(4,	'contacts-panel'),
+(4, 'reporting-panel'),
+
+(5,	'calendar-panel'),
+(5,	'documents-panel'),
+(5,	'mails-panel'),
+(5,	'messages-panel'),
+(5,	'overview-panel'),
+(5,	'tasks-panel'),
+(5,	'time-panel'),
+(5,	'webpages-panel'),
+(5,	'contacts-panel'),
+(5, 'reporting-panel'),
+
+(6,	'calendar-panel'),
+(6,	'documents-panel'),
+(6,	'messages-panel'),
+(6,	'overview-panel'),
+(6,	'tasks-panel'),
+(6,	'time-panel'),
+(6,	'webpages-panel'),
+(6,	'contacts-panel'),
+(6, 'reporting-panel'),
+
+(7,	'calendar-panel'),
+(7,	'documents-panel'),
+(7,	'messages-panel'),
+(7,	'overview-panel'),
+(7,	'tasks-panel'),
+(7,	'time-panel'),
+(7,	'webpages-panel'),
+
+(8,	'calendar-panel'),
+(8,	'documents-panel'),
+(8,	'messages-panel'),
+(8,	'overview-panel'),
+(8,	'tasks-panel'),
+(8,	'time-panel'),
+(8,	'webpages-panel'),
+
+(13,	'overview-panel'),
+(13,	'calendar-panel'),
+(13,	'documents-panel'),
+(13,	'messages-panel'),
+(13,	'webpages-panel'),
+
+(14,	'calendar-panel'),
+(14,	'messages-panel'),
+(14,	'webpages-panel'),
+
+(15,	'calendar-panel'),
+(15,	'documents-panel'),
+(15,	'messages-panel'),
+(15,	'overview-panel'),
+(15,	'tasks-panel'),
+(15,	'time-panel'),
+(15,	'webpages-panel'),
+(15,	'contacts-panel'),
+(15,	'reporting-panel');
+
+INSERT INTO `<?php echo $table_prefix ?>system_permissions` (`permission_group_id`, `can_edit_company_data`, `can_manage_security`, `can_manage_members`, `can_manage_configuration`, `can_manage_templates`, `can_manage_reports`, `can_manage_time`, `can_add_mail_accounts`, `can_manage_workspaces`, `can_manage_dimensions`, `can_manage_dimension_members`, `can_manage_tasks`, `can_task_assignee`, `can_manage_billing`, `can_view_billing`, `can_view_time`, `can_record_time`) VALUES
+(2,	1,	1,	1,	1,	1,	1,	1,	1,		1,	1,	1,	1,	1,	1,	1,	1,	1),
+(3,	0,	1,	1,	1,	0,	0,	1,	1,		1,	1,	1,	1,	1,	1,	1,	1,	1),
+(4,	0,	0,	1,	0,	0,	0,	1,	1,		1,	0,	1,	1,	1,	1,	1,	1,	1),
+(5,	0,	0,	1,	0,	0,	0,	1,	1,		1,	0,	1,	0,	1,	0,	1,	1,	1),
+(6,	0,	0,	0,	0,	0,	0,	1,	0,		0,	0,	0,	0,	1,	0,	1,	0,	1),
+(7,	0,	0,	0,	0,	0,	0,	1,	0,		0,	0,	0,	0,	1,	0,	0,	0,	1),
+(8,	0,	0,	0,	0,	0,	0,	1,	0,		0,	0,	0,	0,	1,	0,	0,	0,	1),
+(13,	0,	0,	0,	0,	0,	0,	0,	0,		0,	0,	0,	0,	0,	0,	0,	0,	0),
+(14,	0,	0,	0,	0,	0,	0,	0,	0,		0,	0,	0,	0,	0,	0,	0,	0,	0),
+(15,	0,	0,	0,	0,	0,	0,	0,	0,		0,	0,	0,	0,	0,	0,	1,	1,	0);
+
+

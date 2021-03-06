@@ -41,7 +41,7 @@
  * @author    Philippe Jausions <jausions@php.net>
  * @copyright 1997-2008 The PHP Group
  * @license   http://www.opensource.org/licenses/bsd-license.php New BSD License
- * @version   CVS: $Revision: 1.1 $
+ * @version   CVS: $Revision: 7 $
  * @link      http://pear.php.net/package/Net_Curl
  */
 

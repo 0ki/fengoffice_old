@@ -14,7 +14,12 @@
     * @var array
     * @static
     */
-    static private $columns = array('rel_object_manager' => DATA_TYPE_STRING, 'rel_object_id' => DATA_TYPE_INTEGER, 'user_id' => DATA_TYPE_INTEGER,'is_read' => DATA_TYPE_BOOLEAN, 'created_on' => DATA_TYPE_DATETIME);
+    static private $columns = array(
+    	'rel_object_id' => DATA_TYPE_INTEGER, 
+    	'contact_id' => DATA_TYPE_INTEGER,
+    	'is_read' => DATA_TYPE_BOOLEAN, 
+    	'created_on' => DATA_TYPE_DATETIME
+    );
   
     /**
     * Construct
@@ -64,11 +69,7 @@
     * @return array or string
     */
     function getPkColumns() {
-      return array (
-  0 => 'rel_object_manager',
-  1 => 'rel_object_id',
-  2 => 'user_id',
-);
+      return array ('rel_object_id','contact_id');
     } // getPkColumns
     
     /**
@@ -106,8 +107,6 @@
         return parent::find($arguments);
       } else {
         return ReadObjects::instance()->find($arguments);
-        //$instance =&  ReadObjects::instance();
-        //return $instance->find($arguments);
       } // if
     } // find
     
@@ -123,8 +122,6 @@
         return parent::findAll($arguments);
       } else {
         return  ReadObjects::instance()->findAll($arguments);
-        //$instance =&  ReadObjects::instance();
-        //return $instance->findAll($arguments);
       } // if
     } // findAll
     
@@ -140,8 +137,6 @@
         return parent::findOne($arguments);
       } else {
         return  ReadObjects::instance()->findOne($arguments);
-        //$instance =&  ReadObjects::instance();
-        //return $instance->findOne($arguments);
       } // if
     } // findOne
     
@@ -158,8 +153,6 @@
         return parent::findById($id, $force_reload);
       } else {
         return  ReadObjects::instance()->findById($id, $force_reload);
-        //$instance =&  ReadObjects::instance();
-        //return $instance->findById($id, $force_reload);
       } // if
     } // findById
     
@@ -175,8 +168,6 @@
         return parent::count($condition);
       } else {
         return  ReadObjects::instance()->count($condition);
-        //$instance =&  ReadObjects::instance();
-        //return $instance->count($condition);
       } // if
     } // count
     
@@ -192,8 +183,6 @@
         return parent::delete($condition);
       } else {
         return  ReadObjects::instance()->delete($condition);
-        //$instance =&  ReadObjects::instance();
-        //return $instance->delete($condition);
       } // if
     } // delete
     
@@ -216,8 +205,6 @@
         return parent::paginate($arguments, $items_per_page, $current_page);
       } else {
         return  ReadObjects::instance()->paginate($arguments, $items_per_page, $current_page);
-        //$instance =&  ReadObjects::instance();
-        //return $instance->paginate($arguments, $items_per_page, $current_page);
       } // if
     } // paginate
     

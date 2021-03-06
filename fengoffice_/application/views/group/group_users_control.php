@@ -1,13 +1,8 @@
 <?php
-require_javascript('og/modules/addMessageForm.js'); 
+	if (!isset($genid)) $genid = gen_id(); 
 ?>
 
 <div class="og-add-subscribers">
-<?php
-	if (!isset($users) || !is_array($users)) $users = Users::getAll();
-	if (!isset($groupUserIds) || !is_array($groupUserIds)) $groupUserIds = array(logged_user()->getId());
-	if (!isset($genid)) $genid = gen_id();
-?>
 <?php
 	$grouped = array();
 	$allChecked = true;
@@ -28,9 +23,9 @@ require_javascript('og/modules/addMessageForm.js');
 
 	<?php if(is_array($users) && count($users)) { ?>
 		<div onclick="og.subscribeCompany(this)"  class="container-div company-name<?php echo $allChecked ? ' checked' : ''?>" onmouseout="og.rollOut(this,true)" onmouseover="og.rollOver(this)">
-		<?php $theCompany = Companies::findById($companyId) ?>
+		<?php $theCompany = Contacts::findById($companyId) ?>
 			<label for="<?php echo $genid ?>notifyCompany<?php echo $theCompany->getId() ?>" style="background: url('<?php echo $theCompany->getLogoUrl() ?>') no-repeat;">
-				<span class="ico-company link-ico"><?php echo clean($theCompany->getName()) ?></span>
+				<span class="ico-company link-ico"><?php echo clean($theCompany->getObjectName()) ?></span>
 			</label>
 		</div>
 		<div id="<?php echo $genid . $companyId ?>company_users" style="padding-left:10px;">
@@ -42,7 +37,7 @@ require_javascript('og/modules/addMessageForm.js');
 					<label for="<?php echo $genid ?>notifyUser<?php echo $user->getId() ?>" style=" width: 120px; overflow:hidden; background:url('<?php echo $user->getAvatarUrl() ?>') no-repeat;">
 						<span class="ico-user link-ico"><?php echo clean($user->getDisplayName()) ?></span>
 						<br>
-						<span style="color:#888888;font-size:90%;font-weight:normal;"> <?php echo $user->getEmail()  ?> </span>
+						<span style="color:#888888;font-size:90%;font-weight:normal;"> <?php echo $user->getEmail('user')->getEmailAddress()  ?> </span>
 					</label>
 				</div>
 			

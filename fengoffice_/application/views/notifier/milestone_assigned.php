@@ -1,8 +1,13 @@
 <div style="font-family: Verdana, Arial, sans-serif; font-size: 12px;">
-	<a href="<?php echo str_replace('&amp;', '&', $milestone_assigned->getViewUrl()) ?>" target="_blank" style="font-size: 18px;"><?php echo lang('milestone assigned', $milestone_assigned->getName()) ?></a><br><br>
+	<a href="<?php echo str_replace('&amp;', '&', $milestone_assigned->getViewUrl()) ?>" target="_blank" style="font-size: 18px;"><?php echo lang('milestone assigned', $milestone_assigned->getObjectName()) ?></a><br><br>
 
-	<?php echo lang('workspace') ?>: <span style="<?php echo get_workspace_css_properties($milestone_assigned->getProject()->getColor()); ?>">
-	<?php echo $milestone_assigned->getProject()->getName() ?></span><br><br>
+	<?php echo lang('members') ?>:
+	<?php
+		$members = $milestone->getMembers();
+		foreach ($members as $member) { 
+			echo $member->getName(); 
+		}
+	?><br><br>
 
 	<?php if (isset($date)) {
 		 	echo "<br>";

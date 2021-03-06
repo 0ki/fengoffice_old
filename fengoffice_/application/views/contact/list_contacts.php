@@ -1,15 +1,15 @@
 <?php if(isset($contacts) && is_array($contacts) && count($contacts)) { ?>
 <div id="contactsList">
 <?php $counter = 0; ?>
-<?php foreach($contacts as $contact) { ?>
+<?php foreach($contacts as $contact) {?>
 <?php $counter++; ?>
   <div class="listedContact <?php echo $counter % 2 ? 'even' : 'odd' ?>">
 	<table>
   	<tr><td rowspan=2 style="padding-right:10px; padding-top:3px; padding-left:3px; padding-bottom:3px">
-    <div class="contactPicture"><img src="<?php echo $contact->getPictureUrl() ?>" alt="<?php echo clean($contact->getDisplayName()) ?> <?php echo lang('picture') ?>" /></div>
+    <div class="contactPicture"><img src="<?php echo $contact->getPictureUrl() ?>" alt="<?php echo clean($contact->getObjectName()) ?> <?php echo lang('picture') ?>" /></div>
     </td><td>
-      <div class="contactName"><h2><a class="internalLink" href="<?php echo $contact->getCardUrl() ?>"><?php echo clean($contact->getDisplayName()) ?></a></h2></div>
-<?php
+      <div class="contactName"><h2><a class="internalLink" href="<?php echo $contact->getCardUrl() ?>"><?php echo clean($contact->getObjectName()) ?></a></h2></div>
+    <?php
   $options = array();
   if($contact->canEdit(logged_user())) {
     $options[] = '<a class="internalLink" href="' . $contact->getEditUrl() . '">' . lang('update contact') . '</a>';
@@ -29,4 +29,4 @@
 <?php } else { ?>
 <p><?php echo lang('no contacts in company') ?></p>
 <?php } // if 
-	echo  "<a href='" . $company->getAddContactUrl() . "' class='internalLink'>" . lang('add contact') . "</a>";?>
+	echo  "<a href='" . $company->getAddContactUrl() . "' class='internalLink coViewAction ico-add'>" . lang('add contact') . "</a>"; ?>

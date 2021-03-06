@@ -3,13 +3,7 @@
 	$genid = gen_id();
 ?>
 
-<script>
-og.download_exported_cal = function() {
-	window.open(og.getUrl('event', 'download_exported_file'));
-}
-</script>
-
-<form style="height:100%;background-color:white" id="<?php echo $genid ?>calexport" name="<?php echo $genid ?>calexport" class="internalForm" action="<?php echo $submit_url ?>" method="post" enctype="multipart/form-data">
+<form onsubmit="return false;" style="height:100%;background-color:white" id="<?php echo $genid ?>calexport" name="<?php echo $genid ?>calexport" class="internalForm" action="<?php echo $submit_url ?>" method="post" enctype="multipart/form-data">
 
 <div class="file">
 <div class="coInputHeader">
@@ -17,7 +11,7 @@ og.download_exported_cal = function() {
 <div class="coInputTitle">
 	<table style="width:535px"><tr><td><?php echo lang('export calendar');?></td>
 	<?php if (!isset($result_msg)) { ?>
-	<td style="text-align:right"><?php echo submit_button(lang('export'), 'e', array('style'=>'margin-top:0px;margin-left:10px', 'tabindex' => '1', 'id' => $genid.'cal_export_submit1', 'onclick'=>"javascript:og.openLink(og.getUrl('event', 'icalendar_export'), {callback:og.download_exported_cal});")) ?></td>
+	<td style="text-align:right"><?php echo button(lang('export'), 'e', array('style'=>'margin-top:0px;margin-left:10px', 'tabindex' => '1', 'id' => $genid.'cal_export_submit1', 'onclick'=>"og.submitCalendarExport();")) ?></td>
 	<?php } //if ?>
 	</tr></table>
 </div>
@@ -41,11 +35,11 @@ og.download_exported_cal = function() {
 		<td><?php echo pick_date_widget2('to_date', $to_date, $genid, 30);  ?></td></tr>
 	<tr style="padding-bottom:4px;">
 		<td align="right" style="padding-right:10px;padding-bottom:6px;padding-top:2px"><?php echo lang('name') ?></td>
-		<td><?php echo text_field('calendar_name', logged_user()->getDisplayName(), array("style" => "width:120px;", 'tabindex' => '40')) ?></td><td><span class="desc"><?php echo lang('calendar name desc') ?></span></td></tr>
+		<td><?php echo text_field('calendar_name', logged_user()->getObjectName(), array("style" => "width:120px;", 'tabindex' => '40')) ?></td><td><span class="desc"><?php echo lang('calendar name desc') ?></span></td></tr>
 	</table>
 </fieldset>
 	<table style="width:535px">
-	<tr><td><?php echo submit_button(lang('export'), 'e', array('style'=>'margin-top:0px;margin-left:10px', 'tabindex' => '50', 'id' => $genid.'cal_export_submit1', 'onclick'=>"javascript:og.openLink(og.getUrl('event', 'icalendar_export'), {callback:og.download_exported_cal});")) ?></td></tr></table>
+	<tr><td><?php echo button(lang('export'), 'e', array('style'=>'margin-top:0px;margin-left:10px', 'tabindex' => '50', 'id' => $genid.'cal_export_submit1', 'onclick'=>"og.submitCalendarExport();")) ?></td></tr></table>
 </div>
 <?php } else { ?>
 	<div><b><?php echo $result_msg ?></b></div>
@@ -54,6 +48,21 @@ og.download_exported_cal = function() {
 </div>
 </form>
 <script>
+	
+	var genid = '<?php echo $genid ?>';
+	
+	og.submitCalendarExport = function() {
+		var form = document.getElementById(genid + 'calexport');
+		form.action += "&context=" + escape(og.contextManager.plainContext());
+		og.submit(form, {
+			callback: function() {
+				location.href = og.getUrl('event', 'download_exported_file');
+				og.hideLoading();
+				og.closeView();
+			}
+		});
+	}
+
 	btn = Ext.get('<?php echo $genid ?>cal_export_submit1');
 	if (btn != null) btn.focus()
 </script>

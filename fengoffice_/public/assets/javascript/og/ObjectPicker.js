@@ -1,26 +1,28 @@
-og.ObjectPicker = function(config) {
+og.ObjectPicker = function(config) {	
 	if (!config) config = {};
+	
 	var Grid = function(config) {
 		if (!config) config = {};
 		this.store = new Ext.data.Store({
         	proxy: new Ext.data.HttpProxy(new Ext.data.Connection({
 				method: 'GET',
-            	url: og.getUrl('object', 'list_objects', {ajax: true})
+            	url: og.getUrl('object', 'list_objects', {ajax: true, include_comments:true})
         	})),
         	reader: new Ext.data.JsonReader({
             	root: 'objects',
             	totalProperty: 'totalCount',
             	id: 'id',
             	fields: [
-	                'name', 'object_id', 'type', 'tags', 'createdBy', 'createdById',
-	                'dateCreated',
-					'updatedBy', 'updatedById',
-					'dateUpdated',
-					'icon', 'project', 'projectId', 'manager', 'object_id', 'mimeType'
+	                'name', 'object_id', 'type', 'icon', 'object_id', 'mimeType',
+	                'createdBy', 'createdById', 'dateCreated',
+					'updatedBy', 'updatedById', 'dateUpdated'
             	]
         	}),
         	remoteSort: true
     	});
+		
+
+			
     	this.store.setDefaultSort('dateUpdated', 'desc');
 
 		function renderIcon(value, p, r) {
@@ -69,21 +71,6 @@ og.ObjectPicker = function(config) {
 				width: 60,
 				hidden: true,
 				sortable: false
-			},{
-				id: 'project',
-				header: lang("project"),
-				dataIndex: 'project',
-				width: 60,
-				renderer: og.clean,
-				sortable: false,
-				hidden: true
-	        },{
-				id: 'tags',
-				header: lang("tags"),
-				dataIndex: 'tags',
-				width: 60,
-				sortable: false,
-				hidden: true
 	        },{
 				id: 'last',
 				header: lang("last update"),
@@ -143,12 +130,6 @@ og.ObjectPicker = function(config) {
 			if (filter.filter == 'type') {
 				this.type = filter.type;
 				this.store.baseParams.type = this.type;
-			} else if (filter.filter == 'tag') {
-				this.tag = filter.name;
-				this.store.baseParams.tag = this.tag;
-			} else if (filter.filter == 'ws') {
-				this.ws = filter.id;
-				this.store.baseParams.active_project = this.ws;
 			}
 			this.load();
 		},
@@ -190,18 +171,18 @@ og.ObjectPicker = function(config) {
 		this.addEvents({filterselect: true});
 	};
 	Ext.extend(TypeFilter, Ext.tree.TreePanel, {
-		addFilter: function(filter, config) {
+		addFilter: function(filter, selected, config) {
 			if (!config) config = {};
-			var exists = this.getNodeById(filter.filter + (filter.id?filter.id:filter.name));
+			var exists = this.getNodeById(filter.filter + filter.id);
 			if (exists) {
 				return;
 			}
 			var config = Ext.apply(config, {
-				iconCls: config.iconCls || 'ico-' + filter.filter,
+				iconCls: filter.iconCls || 'ico-' + filter.id,
 				leaf: true,
 				text: filter.name,
-				cls: filter.type == config.selected_type ? 'x-tree-selected' : '',
-				id: filter.filter + (filter.id?filter.id:filter.name)
+				cls: selected ? 'x-tree-selected' : '',
+				id: filter.id
 			});
 			var node = new Ext.tree.TreeNode(config);
 			node.filter = filter;
@@ -210,105 +191,22 @@ og.ObjectPicker = function(config) {
 		},
 		loadFilters: function(types, selected_type) {
 			this.removeAll();
-			if (types) {
-				var csv = "";
-				for (var k in types) {
-					if (types[k]) {
-						if (csv != "") csv += ",";
-						csv += k;
+			
+			for (var i=0; i<og.objPickerTypeFilters.length; i++) {
+				var filter = og.objPickerTypeFilters[i];
+				if (!types) {
+					this.addFilter(filter, filter.type == selected_type);
+				} else {
+					for (var j=0; j<types.length; j++) {
+						if (types[j] == filter.type) {
+							this.addFilter(filter, filter.type == selected_type);
+							break;
+						}
 					}
 				}
-				this.filters.filter.type = csv;
-			} else {
-				types = {
-					'ProjectMessages':true,
-					'MailContents':true,
-					'ProjectEvents':true,
-					'Contacts':true,
-					'Companies':true,
-					'ProjectFiles':true,
-					'ProjectTasks':true,
-					'ProjectMilestones':true,
-					'ProjectWebPages':true
-				}
-				this.filters.filter.type = '';
 			}
-			// load types
-			if (types['ProjectMessages']) {
-				this.addFilter({
-					id: 'messages',
-					name: lang('messages'),
-					type: 'ProjectMessages',
-					filter: 'type'
-				}, {iconCls: 'ico-message', selected_type: selected_type});
-			}
-			if (types['MailContents']) {
-				this.addFilter({
-					id: 'email',
-					name: lang('email'),
-					type: 'MailContents',
-					filter: 'type'
-				}, {iconCls: 'ico-email', selected_type: selected_type});
-			}
-			if (types['ProjectEvents']) {
-				this.addFilter({
-					id: 'calendar',
-					name: lang('calendar'),
-					type: 'ProjectEvents',
-					filter: 'type'
-				}, {iconCls: 'ico-calendar', selected_type: selected_type});
-			}
-			if (types['Contacts']) {
-				this.addFilter({
-					id: 'contacts',
-					name: lang('contacts'),
-					type: 'Contacts',
-					filter: 'type'
-				}, {iconCls: 'ico-contacts', selected_type: selected_type});
-			}
-			if (types['Companies']) {
-				this.addFilter({
-					id: 'companies',
-					name: lang('companies'),
-					type: 'Companies',
-					filter: 'type'
-				}, {iconCls: 'ico-companies', selected_type: selected_type});
-			}
-			if (types['ProjectFiles']) {
-				this.addFilter({
-					id: 'documents',
-					name: lang('documents'),
-					type: 'ProjectFiles',
-					filter: 'type'
-				}, {iconCls: 'ico-documents', selected_type: selected_type});
-			}
-			if (types['ProjectTasks']) {
-				this.addFilter({
-					id: 'tasks',
-					name: lang('tasks'),
-					type: 'ProjectTasks',
-					filter: 'type'
-				}, {iconCls: 'ico-tasks', selected_type: selected_type});
-			}
-			if (types['ProjectMilestones']) {
-				this.addFilter({
-					id: 'milestones',
-					name: lang('milestones'),
-					type: 'ProjectMilestones',
-					filter: 'type'
-				}, {iconCls: 'ico-milestone', selected_type: selected_type});
-			}
-			if (types['ProjectWebPages']) {
-				this.addFilter({
-					id: 'webpages',
-					name: lang('web pages'),
-					type: 'ProjectWebPages',
-					filter: 'type'
-				}, {iconCls: 'ico-webpages', selected_type: selected_type});
-			}
-			if (selected_type) {
-				this.filters.filter.type = selected_type;
-			}
+			this.filters.filter.type = selected_type ? selected_type : '';
+			
 			this.filters.expand();
 			
 			this.pauseEvents = true;
@@ -369,17 +267,12 @@ og.ObjectPicker = function(config) {
 			            tooltip: lang('quick upload desc'),
 			            iconCls: 'ico-upload',
 			            handler: function() {
-							var tagf = this.findById('tagFilter');
-							var seltag = tagf.getSelectedTag();
-							
-							var wsf = Ext.getCmp('workspace-panel');
-							var selws = wsf.getActiveWorkspace().id;
 							var quickId = Ext.id();
 							var picker = this;
-							og.openLink(og.getUrl('files', 'quick_add_files', {workspace: selws, tag: seltag, genid: quickId}), {
+							og.openLink(og.getUrl('files', 'quick_add_files', {genid: quickId}), {
 			        			preventPanelLoad: true,
-								onSuccess: function(data) {								
-				        			og.ExtendedDialog.show({				
+								onSuccess: function(data) {
+				        			og.ExtendedDialog.show({
 				                		html: data.current.data,
 				                		height: 300,
 				                		width: 600,
@@ -398,10 +291,10 @@ og.ObjectPicker = function(config) {
 					        				});
 					                		og.ExtendedDialog.hide();
 				            			}
-				                	});					        			
+				                	});
 				                	return;
 			        			}
-			        		});						
+			        		});
 						},
 						scope: this
 					},
@@ -410,18 +303,18 @@ og.ObjectPicker = function(config) {
 			            tooltip: lang('refresh desc'),
 			            iconCls: 'op-ico-refresh',
 						handler: function() {
-							this.loadFilters();
+							//this.loadFilters();
 							this.grid.store.reload();
 						},
 						scope: this
 					},
 					"-",
 					{
-						xtype : 'label',						
+						xtype : 'label',
 						text: lang('filter') + ': ',
 			            iconCls: 'ico-search',
 						scope: this
-					},					
+					},
 					{
 						xtype: 'textfield',
 						id: 'txtFilreByObjectName',
@@ -446,7 +339,6 @@ og.ObjectPicker = function(config) {
 					this.grid = new Grid()
 				]
 			},
-			//new Grid({region:'center'}),
 			{
 				layout: 'border',
 				split: true,
@@ -455,26 +347,6 @@ og.ObjectPicker = function(config) {
 				collapsible: true,
 				title: lang('filter'),
 				items: [{
-						xtype: 'wstree',
-						id: 'wsFilter',
-						region: 'north',
-						autoScroll: true,
-						loadWorkspacesFrom: 'workspace-panel',
-						split: true,
-						height: 120,
-						listeners: {
-							workspaceselect: {
-								fn: function(ws) {
-									this.filterSelect({
-										filter: 'ws',
-										name: ws.name,
-										id: ws.id
-									});
-								},
-								scope: this.grid
-							}
-						}
-					},{
 						xtype: 'typefilter',
 						id: 'typeFilter',
 						region: 'center',
@@ -485,32 +357,12 @@ og.ObjectPicker = function(config) {
 								scope: this.grid
 							}
 						}
-					},{
-						xtype: 'tagtree',
-						id: 'tagFilter',
-						region: 'south',
-						autoScroll: true,
-						loadTagsFrom: 'tag-panel',
-						split: true,
-						height: 115,
-						listeners: {
-							tagselect: {
-								fn: function(tag) {
-									this.filterSelect({
-										filter: 'tag',
-										name: tag
-									});
-								},
-								scope: this.grid
-							}
-						}
 					}
 				]
 			}
 		]
 	}));
 	this.grid.on('rowdblclick', this.accept, this);
-	//this.grid.load();
 	this.addEvents({'objectselected': true});
 }
 
@@ -527,13 +379,7 @@ Ext.extend(og.ObjectPicker, Ext.Window, {
 	loadFilters: function(config) {
 		if (!config) config = {};
 		delete this.grid.store.baseParams.type;
-		delete this.grid.store.baseParams.tag;
-		delete this.grid.store.baseParams.active_project;
 		var typef = this.findById('typeFilter');
-		var tagf = this.findById('tagFilter');
-		var wsf = this.findById('wsFilter');
-		wsf.loadWorkspaces();
-		tagf.loadTags();
 		typef.loadFilters(config.types, config.selected_type);
 		this.grid.store.baseParams.type = typef.filters.filter.type;
 	},
@@ -541,6 +387,7 @@ Ext.extend(og.ObjectPicker, Ext.Window, {
 		this.grid.store.baseParams.name = value;
 	},
 	load: function() {
+		this.grid.store.baseParams.context = og.contextManager.plainContext();
 		this.grid.load();
 	}
 });
@@ -551,6 +398,9 @@ og.ObjectPicker.show = function(callback, scope, config) {
 	}
 	
 	if (!config) config = {};
+	if (config.context) {
+		this.dialog.grid.store.baseParams.context = config.context ;
+	}
 	this.dialog.loadFilters(config);
 	this.dialog.load();
 	this.dialog.purgeListeners();

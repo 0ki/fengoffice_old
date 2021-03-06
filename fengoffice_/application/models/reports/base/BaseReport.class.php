@@ -5,58 +5,35 @@
   *
   * @author Pablo Kamil <pablokam@gmail.com>
   */
-  abstract class BaseReport extends ApplicationDataObject {
+  abstract class BaseReport extends ContentDataObject {
   
-  	protected $objectTypeIdentifier = 're';
-  
-    // -------------------------------------------------------
+  	// -------------------------------------------------------
     //  Access methods
     // -------------------------------------------------------
   
     /**
-    * Return value of 'id' field
+    * Return value of 'object_id' field
     *
     * @access public
     * @param void
     * @return integer 
     */
     function getId() {
-      return $this->getColumnValue('id');
+      return $this->getColumnValue('object_id');
     } // getId()
     
     /**
-    * Set value of 'id' field
+    * Set value of 'object_id' field
     *
     * @access public   
     * @param integer $value
     * @return boolean
     */
     function setId($value) {
-      return $this->setColumnValue('id', $value);
+      return $this->setColumnValue('object_id', $value);
     } // setId() 
     
-    /**
-    * Return value of 'name' field
-    *
-    * @access public
-    * @param void
-    * @return string 
-    */
-    function getName() {
-      return $this->getColumnValue('name');
-    } // getName()
-    
-    /**
-    * Set value of 'name' field
-    *
-    * @access public   
-    * @param string $value
-    * @return boolean
-    */
-    function setName($value) {
-      return $this->setColumnValue('name', $value);
-    } // setName() 
-    
+       
     /**
     * Return value of 'description' field
     *
@@ -80,26 +57,26 @@
     } // setDescription() 
     
     /**
-    * Return value of 'object_type' field
+    * Return value of 'report_object_type_id' field
     *
     * @access public
     * @param void
     * @return string 
     */
-    function getObjectType() {
-      return $this->getColumnValue('object_type');
-    } // getObjectType()
+    function getReportObjectTypeId() {
+      return $this->getColumnValue('report_object_type_id');
+    } // getReportObjectTypeId()
     
     /**
-    * Set value of 'object_type' field
+    * Set value of 'report_object_type_id' field
     *
     * @access public   
     * @param string $value
     * @return boolean
     */
-    function setObjectType($value) {
-      return $this->setColumnValue('object_type', $value);
-    } // setObjectType() 
+    function setReportObjectTypeId($value) {
+      return $this->setColumnValue('report_object_type_id', $value);
+    } // setReportObjectTypeId() 
     
     /**
     * Return value of 'order_by' field
@@ -145,50 +122,7 @@
       return $this->setColumnValue('is_order_by_asc', $value);
     } // setIsOrderByAsc() 
    
-     /**
-    * Return value of 'workspace' field
-    *
-    * @access public
-    * @param void
-    * @return integer 
-    */
-    function getWorkspace() {
-      return $this->getColumnValue('workspace');
-    } // getId()
-    
-    /**
-    * Set value of 'workspace' field
-    *
-    * @access public   
-    * @param integer $value
-    * @return boolean
-    */
-    function setWorkspace($value) {
-      return $this->setColumnValue('workspace', $value);
-    } // setId() 
-    
-     /**
-    * Return value of 'tags' field
-    *
-    * @access public
-    * @param void
-    * @return string 
-    */
-    function getTags() {
-      return $this->getColumnValue('tags');
-    } // getName()
-    
-    /**
-    * Set value of 'tags' field
-    *
-    * @access public   
-    * @param string $value
-    * @return boolean
-    */
-    function setTags($value) {
-      return $this->setColumnValue('tags', $value);
-    } // setName() 
-    
+
     /**
     * Return manager instance
     *

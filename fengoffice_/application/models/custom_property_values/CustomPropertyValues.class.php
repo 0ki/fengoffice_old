@@ -51,9 +51,9 @@ class CustomPropertyValues extends BaseCustomPropertyValues {
 	 * @param $object_id
 	 * @return array
 	 */
-	static function getCustomPropertyValueCount($object_id, $object_type) {
+	static function getCustomPropertyValueCount($object) {
 		return count(self::findAll(array(
-			'conditions' => array("`object_id` = ? AND `custom_property_id` in (SELECT `id` FROM " . CustomProperties::instance()->getTableName(true) . " where `object_type` = ?)"  , $object_id, $object_type)
+			'conditions' => array("`object_id` = ? AND `custom_property_id` in (SELECT `id` FROM " . CustomProperties::instance()->getTableName(true) . " where `object_type_id` = ?)"  , $object->getObjectId(), $object->getObjectTypeId())
 		))); // findAll
 	} //  getCustomPropertyValue
 	

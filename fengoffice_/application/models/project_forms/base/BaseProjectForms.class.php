@@ -15,22 +15,14 @@
     * @static
     */
     static private $columns = array(
-    	'id' => DATA_TYPE_INTEGER,
-    	'project_id' => DATA_TYPE_INTEGER,
-    	'name' => DATA_TYPE_STRING,
-    	'description' => DATA_TYPE_STRING,
+    	'object_id' => DATA_TYPE_INTEGER,
+       	'description' => DATA_TYPE_STRING,
     	'success_message' => DATA_TYPE_STRING,
     	'action' => DATA_TYPE_STRING,
     	'in_object_id' => DATA_TYPE_INTEGER,
-    	'created_on' => DATA_TYPE_DATETIME,
-    	'created_by_id' => DATA_TYPE_INTEGER,
-    	'updated_on' => DATA_TYPE_DATETIME,
-    	'updated_by_id' => DATA_TYPE_INTEGER,
     	'is_visible' => DATA_TYPE_BOOLEAN,
     	'is_enabled' => DATA_TYPE_BOOLEAN,
-    	'order' => DATA_TYPE_INTEGER,
-    	'trashed_on' => DATA_TYPE_DATETIME,
-     	'trashed_by_id' => DATA_TYPE_INTEGER,
+    	'order' => DATA_TYPE_INTEGER
     );
   
     /**
@@ -81,7 +73,7 @@
     * @return array or string
     */
     function getPkColumns() {
-      return 'id';
+      return 'object_id';
     } // getPkColumns
     
     /**
@@ -92,7 +84,7 @@
     * @return string
     */
     function getAutoIncrementColumn() {
-      return 'id';
+      return null;
     } // getAutoIncrementColumn
     
     // -------------------------------------------------------
@@ -119,8 +111,6 @@
         return parent::find($arguments);
       } else {
         return ProjectForms::instance()->find($arguments);
-        //$instance =& ProjectForms::instance();
-        //return $instance->find($arguments);
       } // if
     } // find
     
@@ -136,8 +126,6 @@
         return parent::findAll($arguments);
       } else {
         return ProjectForms::instance()->findAll($arguments);
-        //$instance =& ProjectForms::instance();
-        //return $instance->findAll($arguments);
       } // if
     } // findAll
     
@@ -153,8 +141,6 @@
         return parent::findOne($arguments);
       } else {
         return ProjectForms::instance()->findOne($arguments);
-        //$instance =& ProjectForms::instance();
-        //return $instance->findOne($arguments);
       } // if
     } // findOne
     
@@ -171,8 +157,6 @@
         return parent::findById($id, $force_reload);
       } else {
         return ProjectForms::instance()->findById($id, $force_reload);
-        //$instance =& ProjectForms::instance();
-        //return $instance->findById($id, $force_reload);
       } // if
     } // findById
     
@@ -188,8 +172,6 @@
         return parent::count($condition);
       } else {
         return ProjectForms::instance()->count($condition);
-        //$instance =& ProjectForms::instance();
-        //return $instance->count($condition);
       } // if
     } // count
     
@@ -205,8 +187,6 @@
         return parent::delete($condition);
       } else {
         return ProjectForms::instance()->delete($condition);
-        //$instance =& ProjectForms::instance();
-        //return $instance->delete($condition);
       } // if
     } // delete
     
@@ -229,8 +209,6 @@
         return parent::paginate($arguments, $items_per_page, $current_page);
       } else {
         return ProjectForms::instance()->paginate($arguments, $items_per_page, $current_page);
-        //$instance =& ProjectForms::instance();
-        //return $instance->paginate($arguments, $items_per_page, $current_page);
       } // if
     } // paginate
     

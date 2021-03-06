@@ -30,5 +30,4 @@
 	'report pdf vertical' => 'Portrait (Vertical)',
 	'report pdf landscape' => 'Paysage (Horizontal)',
 	'report font size' => 'Taille de la police',
-	'columns' => 'Colonnes',
 ); ?>

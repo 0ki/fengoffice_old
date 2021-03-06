@@ -17,8 +17,7 @@
     static private $columns = array(
     	'id' => DATA_TYPE_INTEGER,
     	'object_id' => DATA_TYPE_INTEGER,
-    	'object_manager' => DATA_TYPE_STRING,
-    	'user_id' => DATA_TYPE_INTEGER,
+    	'contact_id' => DATA_TYPE_INTEGER,
     	'type' => DATA_TYPE_STRING,
     	'context' => DATA_TYPE_STRING,
     	'minutes_before' => DATA_TYPE_INTEGER,

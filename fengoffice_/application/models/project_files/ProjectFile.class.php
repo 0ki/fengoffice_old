@@ -7,40 +7,17 @@
  * @author Ilija Studen <ilija.studen@gmail.com>
  */
 class ProjectFile extends BaseProjectFile {
-	/**
-	 * This project object is taggable
-	 *
-	 * @var boolean
-	 */
-	protected $is_taggable = true;
+	
 
-	/**
-	 * Message comments are searchable
-	 *
-	 * @var boolean
-	 */
-	protected $is_searchable = true;
+
 
 	/**
 	 * Array of searchable columns
 	 *
 	 * @var array
 	 */
-	protected $searchable_columns = array('filename', 'filecontent', 'description');
+	protected $searchable_columns = array('description','name');
 
-	/**
-	 * Project file is commentable object
-	 *
-	 * @var boolean
-	 */
-	protected $is_commentable = true;
-
-	/**
-	 * Cached parent folder object
-	 *
-	 * @var ProjectFolder
-	 */
-//	private $folder;
 
 	/**
 	 * Cached file type object
@@ -49,6 +26,7 @@ class ProjectFile extends BaseProjectFile {
 	 */
 	private $file_type;
 
+	
 	/**
 	 * Last revision instance
 	 *
@@ -56,6 +34,7 @@ class ProjectFile extends BaseProjectFile {
 	 */
 	private $last_revision;
 
+	
 	/**
 	 * Cached checkout user object reference
 	 *
@@ -63,6 +42,7 @@ class ProjectFile extends BaseProjectFile {
 	 */
 	private $checked_out_by = null;
 
+	
 	/**
 	 * Contruct the object
 	 *
@@ -78,6 +58,11 @@ class ProjectFile extends BaseProjectFile {
 	function getTitle(){
 		return $this->getFilename();
 	}
+	
+	
+	function getFilename() {
+		return $this->getObjectName() ;
+	}
 
 	/**
 	 * Return all file revisions
@@ -88,7 +73,7 @@ class ProjectFile extends BaseProjectFile {
 	function getRevisions($exclude_last = false, $asc = false) {
 		if($exclude_last) {
 			$last_revision = $this->getLastRevision();
-			if($last_revision instanceof ProjectFileRevision) $conditions = DB::prepareString('`id` <> ? AND `file_id` = ?', array($last_revision->getId(), $this->getId()));
+			if($last_revision instanceof ProjectFileRevision) $conditions = DB::prepareString('`object_id` <> ? AND `file_id` = ?', array($last_revision->getId(), $this->getId()));
 		} // if
 		if ($asc) {
 			$dir = 'ASC';
@@ -97,7 +82,7 @@ class ProjectFile extends BaseProjectFile {
 		}
 		
 		if(!isset($conditions)) $conditions = DB::prepareString('`file_id` = ?', array($this->getId()));
-
+		$conditions.= " AND `trashed_by_id` = 0 AND `trashed_by_id` = 0 ";
 		return ProjectFileRevisions::find(array(
         'conditions' => $conditions,
         'order' => '`created_on` ' . $dir
@@ -135,15 +120,17 @@ class ProjectFile extends BaseProjectFile {
 	 */
 	function getLastRevision() {
 		if(is_null($this->last_revision)) {
+
 			$this->last_revision = ProjectFileRevisions::findOne(array(
           'conditions' => array('`file_id` = ?', $this->getId()),
-          'order' => '`created_on` DESC',
+		  'order' => '`created_on` DESC',
           'limit' => 1,
 			)); // findOne
 		} // if
 		return $this->last_revision;
 	} // getLastRevision
 
+	
 	/**
 	 * Return file type object
 	 *
@@ -155,6 +142,7 @@ class ProjectFile extends BaseProjectFile {
 		return $revision instanceof ProjectFileRevision ? $revision->getFileType() : null;
 	} // getFileType
 
+	
 	/**
 	 * Return URL of file type icon
 	 *
@@ -167,10 +155,12 @@ class ProjectFile extends BaseProjectFile {
 		return $last_revision instanceof ProjectFileRevision ? $last_revision->getTypeIconUrl($showImage, $size) : '';
 	} // getTypeIconUrl
 
+	
 	// ---------------------------------------------------
 	//  Check out
 	// ---------------------------------------------------
 
+	
 	/**
 	 * Checck out file
 	 *
@@ -191,6 +181,7 @@ class ProjectFile extends BaseProjectFile {
 		return true;
 	}// checkOutByLoggedUser
 	
+	
 	function checkIn() {
 		if (!$this->canCheckin(logged_user())) {
 			return false;
@@ -200,6 +191,7 @@ class ProjectFile extends BaseProjectFile {
 		$this->save();
 		return true;
 	}
+	
 	
 	function cancelCheckOut() {
 		if (!$this->canCheckin(logged_user())) {
@@ -212,11 +204,13 @@ class ProjectFile extends BaseProjectFile {
 		return true;
 	}
 	
+	
 	function isCheckedOut()
 	{
 		return $this->getCheckedOutById() > 0;
 	}
 
+	
 	/**
 	 * Return user who checked out this message
 	 *
@@ -226,11 +220,12 @@ class ProjectFile extends BaseProjectFile {
 	 */
 	function getCheckedOutBy() {
 		if(is_null($this->checked_out_by)) {
-			if($this->columnExists('checked_out_by_id')) $this->checked_out_by = Users::findById($this->getCheckedOutById());
+			if($this->columnExists('checked_out_by_id')) $this->checked_out_by = Contacts::findById($this->getCheckedOutById());
 		} //
 		return $this->checked_out_by;
 	} // getCreatedBy
 
+	
 	/**
 	 * Return display name of checkout user
 	 *
@@ -240,9 +235,10 @@ class ProjectFile extends BaseProjectFile {
 	 */
 	function getCheckedOutByDisplayName() {
 		$checked_out_by = $this->getCheckedOutBy();
-		return $checked_out_by instanceof User ? $checked_out_by->getDisplayName() : lang('n/a');
+		return $checked_out_by instanceof Contact ? $checked_out_by->getDisplayName() : lang('n/a');
 	} // getCreatedByDisplayName
 
+	
 	/**
 	 * Return card URL of created by user
 	 *
@@ -251,7 +247,7 @@ class ProjectFile extends BaseProjectFile {
 	 */
 	function getCheckedOutByCardUrl() {
 		$checked_out_by = $this->getCheckedOutBy();
-		return $checked_out_by instanceof User ? $checked_out_by->getCardUrl() : null;
+		return $checked_out_by instanceof Contact ? $checked_out_by->getCardUserUrl() : null;
 	} // getCreatedByCardUrl
 
 
@@ -270,6 +266,7 @@ class ProjectFile extends BaseProjectFile {
 		return $revision instanceof ProjectFileRevision ? $revision->getFileTypeId() : null;
 	} // getFileTypeId
 
+	
 	/**
 	 * Return type string. We need to know mime type when forwarding file
 	 * to the client
@@ -282,6 +279,7 @@ class ProjectFile extends BaseProjectFile {
 		return $revision instanceof ProjectFileRevision ? $revision->getTypeString() : ($this->getType() ==  ProjectFiles::TYPE_WEBLINK ? lang('weblink') : null);
 	} // getTypeString
 
+	
 	/**
 	 * Return file size in bytes
 	 *
@@ -293,6 +291,7 @@ class ProjectFile extends BaseProjectFile {
 		return $revision instanceof ProjectFileRevision ? $revision->getFileSize() : null;
 	} // getFileSize
 
+	
 	/**
 	 * Return file content
 	 *
@@ -327,6 +326,7 @@ class ProjectFile extends BaseProjectFile {
 			$revision = new ProjectFileRevision();
 			$revision->setFileId($this->getId());
 			$revision->setRevisionNumber($this->getNextRevisionNumber());
+			//$revision->setRevisionNumber(78);
 
 			if((trim($revision_comment) == '') && ($this->countRevisions() < 1)) {
 				$revision_comment = lang('initial versions');
@@ -383,10 +383,11 @@ class ProjectFile extends BaseProjectFile {
 		$revision->save();
 
 		$this->last_revision = $revision; // update last revision
-
+		
 		return $revision;
 	} // handleUploadedFile
 
+	
 	/**
 	 * Return next revision number
 	 *
@@ -398,6 +399,7 @@ class ProjectFile extends BaseProjectFile {
 		return $last_revision instanceof ProjectFileRevision ? $last_revision->getRevisionNumber() + 1 : 1;
 	} // getNextRevisionNumber
 
+	
 	function isModifiable(){
 		$co_by = $this->getCheckedOutById();
 		if($co_by && $co_by != logged_user()->getId() )
@@ -408,37 +410,22 @@ class ProjectFile extends BaseProjectFile {
 			|| substr($this->getTypeString(), 0, 4) == "text";
 	}
 	
+	
 	function isDisplayable() {
 		return substr($this->getTypeString(), 0, 4) == "text";
 	}
+	
 	
 	function isMP3() {
 		return $this->getTypeString() == 'audio/mpeg' || $this->getTypeString() == 'audio/mp3';	
 	}
 	
+	
 	function getFileContentWithRealUrls() {
 		$content = $this->getFileContent();
-		/*if ($this->getTypeString() == 'text/html') {
-			// Search for images
-			preg_match_all("/<img[^>]*src=[\"ProjectFiles:']([^\"']*)[\"']/", $content, $matches);
-			$file_ids = array_var($matches, 1);
-			if (is_array($file_ids)) {
-				foreach ($file_ids as $file_id) {
-					$exp = explode(":", $file_id);
-					if (count($exp) < 2) continue;
-					$img_file = ProjectFiles::findById($exp[1]);
-					if (!$img_file) continue;
-					
-					$tmp_fname = $img_file->getId()."_".$img_file->getRevisionNumber()."_" . $img_file->getFilename();
-					if (!is_file(ROOT . "/tmp/$tmp_fname")) {
-						file_put_contents(ROOT . "/tmp/$tmp_fname", $img_file->getFileContent());
-					}
-					$content = str_replace($file_id, ROOT_URL . "/tmp/$tmp_fname", $content);
-				}
-			}
-		}*/
 		return $content;
 	}
+	
 	
 	// ---------------------------------------------------
 	//  URLs
@@ -474,6 +461,7 @@ class ProjectFile extends BaseProjectFile {
 		}
 	} // getModifyUrl
 
+	
 	/**
 	 * Return file viewing URL
 	 *
@@ -500,6 +488,7 @@ class ProjectFile extends BaseProjectFile {
 		}
 	} // getOpenUrl
 	 
+	
 	/**
 	 * Return slideshow URL
 	 *
@@ -512,6 +501,7 @@ class ProjectFile extends BaseProjectFile {
 		); // get_url
 	} // getModifyUrl
 
+	
 	/**
 	 * Return file details URL
 	 *
@@ -524,10 +514,12 @@ class ProjectFile extends BaseProjectFile {
 		)); // get_url
 	} // getDetailsUrl
 	
+	
 	function getViewUrl() {
 		return $this->getDetailsUrl();
 	}
 
+	
 	/**
 	 * Return revisions URL
 	 *
@@ -538,6 +530,7 @@ class ProjectFile extends BaseProjectFile {
 		return $this->getDetailsUrl() . '#revisions';
 	} // getRevisionsUrl
 
+	
 	/**
 	 * Return comments URL
 	 *
@@ -548,6 +541,7 @@ class ProjectFile extends BaseProjectFile {
 		return $this->getDetailsUrl() . '#objectComments';
 	} // getCommentsUrl
 
+	
 	/**
 	 * Return file download URL
 	 *
@@ -560,6 +554,7 @@ class ProjectFile extends BaseProjectFile {
 		); // get_url
 	} // getDownloadUrl
 
+	
 	/**
 	 * Return edit file URL
 	 *
@@ -572,6 +567,7 @@ class ProjectFile extends BaseProjectFile {
 		); // get_url
 	} // getEditUrl
 
+	
 	/**
 	 * Return checkout file URL
 	 *
@@ -584,6 +580,7 @@ class ProjectFile extends BaseProjectFile {
 		); // get_url
 	} // getCheckoutUrl
 
+	
 	/**
 	 * Return checkin file URL
 	 *
@@ -596,6 +593,7 @@ class ProjectFile extends BaseProjectFile {
 		); // get_url
 	} // getCheckinUrl
 
+	
 	/**
 	 * Return copy file URL
 	 *
@@ -607,7 +605,8 @@ class ProjectFile extends BaseProjectFile {
 		));
 	}
 	
-	/* Return undo checkout file URL
+	
+	/** Return undo checkout file URL
 	 *
 	 * @param void
 	 * @return string
@@ -617,7 +616,6 @@ class ProjectFile extends BaseProjectFile {
         	'id' => $this->getId())); // get_url
 	} // getUndoCheckoutUrl
 
-	
 	
 	/**
 	 * Return delete file URL
@@ -631,104 +629,85 @@ class ProjectFile extends BaseProjectFile {
 		); // get_url
 	} // getDeleteUrl
 
+	
 	// ---------------------------------------------------
 	//  Permissions
 	// ---------------------------------------------------
 
-	/**
-	 * Check CAN_MANAGE_FILES permission
-	 *
-	 * @access public
-	 * @param User $user
-	 * @return boolean
-	 */
-	function canManage(User $user) {
-		return can_write($user,$this);
-	} // canManage
+	function canAdd(Contact $user, $context){
+		return can_add($user, $context, ProjectFiles::instance()->getObjectTypeId());
+	}
 
+	
 	/**
 	 * Retrns value of CAN_UPLOAD_FILES permission
 	 *
-	 * @param User $user
+	 * @param Contact $user
 	 * @param Project $project
 	 * @return boolean
 	 */
-	function canUpload(User $user, Project $project) {
-		return $this->canAdd($user, $project);
+	function canUpload(Contact $user, Member $member, $context_members) {
+		return $this->canAddToMember($user, $member, $context_members);
 	} // canUpload
 
+	
 	/**
 	 * Empty implementation of abstract method. Message determins if user have view access
 	 *
 	 * @param void
 	 * @return boolean
 	 */
-	function canView(User $user) {
-		return can_read($user,$this);
+	function canView(Contact $user) {
+		return can_read($user, $this->getMembers(), $this->getObjectTypeId());
 	} // canView
 
+	
 	/**
 	 * Returns true if user can download this file
 	 *
-	 * @param User $user
+	 * @param Contact $user
 	 * @return boolean
 	 */
-	function canDownload(User $user) {
-		return can_read($user,$this);
+	function canDownload(Contact $user) {
+		return can_read($user, $this->getMembers(), $this->getObjectTypeId());
 	} // canDownload
 
-	/**
-	 * Empty implementation of abstract methods. Messages determine does user have
-	 * permissions to add comment
-	 *
-	 * @param void
-	 * @return null
-	 */
-	function canAdd(User $user, Project $project) {		
-		return can_add($user,$project,get_class(ProjectFiles::instance()));
-	} // canAdd
 
 	/**
 	 * Check if specific user can edit this file
 	 *
 	 * @access public
-	 * @param User $user
+	 * @param Contact $user
 	 * @return boolean
 	 */
-	function canEdit(User $user) {
-		return can_write($user,$this) && (!$this->isCheckedOut() || ($this->canCheckin($user)));
+	function canEdit(Contact $user) {
+		return can_write($user, $this->getMembers(), $this->getObjectTypeId());
 	} // canEdit
 
-	/**
-	 * Returns true if $user can update file options
-	 *
-	 * @param User $user
-	 * @return boolean
-	 */
-	function canUpdateOptions(User $user) {
-		return can_write($user,$this);
-	} // canUpdateOptions
-
+	
 	/**
 	 * Check if specific user can delete this comment
 	 *
 	 * @access public
-	 * @param User $user
+	 * @param Contact $user
 	 * @return boolean
 	 */
-	function canDelete(User $user) {
-		return can_delete($user,$this);
+	function canDelete(Contact $user) {
+		return can_delete($user,$this->getMembers(), $this->getObjectTypeId());
 	} // canDelete
 
-	function canCheckout(User $user){
-		return !$this->isCheckedOut() && can_write($user,$this);;
+	
+	function canCheckout(Contact $user){
+		return !$this->isCheckedOut() && can_write($user, $this->getMembers(), $this->getObjectTypeId());
 	}
 
-	function canCheckin(User $user){
-		return $this->isCheckedOut() && can_write($user,$this)
+	
+	function canCheckin(Contact $user){
+		return $this->isCheckedOut() && can_write($user, $this->getMembers(), $this->getObjectTypeId())
 		&& ($user->isAdministrator() || $user->getId() == $this->getCheckedOutById());
 	}
 
+	
 	// ---------------------------------------------------
 	//  System
 	// ---------------------------------------------------
@@ -740,7 +719,7 @@ class ProjectFile extends BaseProjectFile {
 	 * @return null
 	 */
 	function validate(&$errors) {
-		if(!$this->validatePresenceOf('filename')) {
+		if(!$this->validatePresenceOf('name')) {
 			if($this->getType() == ProjectFiles::TYPE_DOCUMENT){
 				$errors[] = lang('filename required');
 			}else{
@@ -749,6 +728,7 @@ class ProjectFile extends BaseProjectFile {
 		} // if
 	} // validate
 
+	
 	/**
 	 * Delete this file and all of its revisions
 	 *
@@ -759,6 +739,7 @@ class ProjectFile extends BaseProjectFile {
 		$this->clearRevisions();
 		return parent::delete();
 	} // delete
+	
 	
 	/**
 	 * Remove all revisions associate with this file
@@ -775,6 +756,7 @@ class ProjectFile extends BaseProjectFile {
 		} // if
 	} // clearRevisions
 
+	
 	/**
 	 * Remove all object relations from the database
 	 *
@@ -785,6 +767,7 @@ class ProjectFile extends BaseProjectFile {
 		return LinkedObjects::clearRelationsByObject($this);
 	} // clearObjectRelations
 
+	
 	/**
 	 * This function will return content of specific searchable column.
 	 *
@@ -812,30 +795,10 @@ class ProjectFile extends BaseProjectFile {
 		} // if
 	} // getSearchableColumnContent
 
+	
 	// ---------------------------------------------------
 	//  ApplicationDataObject implementation
 	// ---------------------------------------------------
-
-	/**
-	 * Return object name
-	 *
-	 * @access public
-	 * @param void
-	 * @return string
-	 */
-	function getObjectName() {
-		return $this->getFilename();
-	} // getObjectName
-
-	/**
-	 * Return object type name
-	 *
-	 * @param void
-	 * @return string
-	 */
-	function getObjectTypeName() {
-		return 'file';
-	} // getObjectTypeName
 
 	/**
 	 * Return object URl
@@ -848,12 +811,28 @@ class ProjectFile extends BaseProjectFile {
 		return $this->getDetailsurl();
 	} // getObjectUrl
 
+	
 	function getDashboardObject() {
 		$ret = parent::getDashboardObject();
 		$ret["mimeType"] = $this->getTypeString();
 		return $ret;
 	}
 	
+	
+	function setFilename($name) {
+		return $this->setObjectName($name) ;
+	}
+	
+	/**
+	 * 
+	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
+	 */
+	function addToSharingTable() {
+		foreach ($this->getRevisions() as $revision) {
+			$revision->addToSharingTable();
+		}
+		parent::addToSharingTable();
+	}
 
 } // ProjectFile
 

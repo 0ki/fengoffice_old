@@ -6,8 +6,7 @@
   */
   abstract class BaseProjectChartParam extends ApplicationDataObject {
   
-  	protected $objectTypeIdentifier = 'cp';
-  
+  	 
     // -------------------------------------------------------
     //  Access methods
     // -------------------------------------------------------

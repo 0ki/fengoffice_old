@@ -1,3 +1,28 @@
+og.reloadCompanies = function ( context, genid ){
+	Ext.Ajax.request({
+		url: og.getUrl('contact', 'list_companies', { 'ajax':true, 'context': Ext.util.JSON.encode(context) }),
+		success:  function(result, request) {
+			var jsonData = Ext.util.JSON.decode(result.responseText);
+			var companies = jsonData.companies ;
+			
+			var combo = document.getElementById(genid+"profileFormCompany");
+			firstOption = combo.options[0];
+			combo.innerHTML = '';
+			
+			combo.appendChild(firstOption);
+			for (var i = 0 ; i < companies.length ; i++ ) {
+				var option = document.createElement('option') ;
+				option.innerHTML = companies[i].name ;
+				option.value = companies[i].value ;
+				combo.appendChild(option);
+			}
+			
+			
+		}
+	});
+}
+
+
 og.addNewCompany = function(genid){
 	var show = document.getElementById(genid + 'new_company').style.display == 'none';
 	document.getElementById(genid + 'new_company').style.display = show ? 'block':'none';
@@ -42,11 +67,11 @@ og.selectCompany = function(genid, index) {
 };
 
 og.companySelectedIndexChanged = function(genid){
-	/*var select = document.getElementById(genid + 'profileFormCompany');
+	select = document.getElementById(genid + 'profileFormCompany');
 	Ext.get(genid + 'submit1').dom.disabled = true;
 	Ext.get(genid + 'submit2').dom.disabled = true;
 	
-    og.openLink(og.getUrl('company','get_company_data', {id: select.options[select.selectedIndex].value}), {
+    og.openLink(og.getUrl('contact','get_company_data', {id: select.options[select.selectedIndex].value}), {
     	caller:this,
     	callback: function(success, data) {
     		if (success) {
@@ -70,6 +95,6 @@ og.companySelectedIndexChanged = function(genid){
     			}
     		}
     	}
-    });*/
+    });
 }
 

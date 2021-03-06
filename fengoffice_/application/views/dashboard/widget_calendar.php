@@ -30,9 +30,10 @@
 	
 	$date_start = new DateTimeValue(mktime(0, 0, 0, $currentmonth, $startday, $currentyear)); 
 	$date_end = new DateTimeValue(mktime(0, 0, 0, $currentmonth, $endday, $currentyear)); 
-	$milestones = ProjectMilestones::getRangeMilestonesByUser($date_start, $date_end, $user_filter, $tags, active_project());
+	//FIXME $milestones = ProjectMilestones::getRangeMilestonesByUser($date_start, $date_end, $user_filter, $tags, active_project());
 	$tmp_tasks = ProjectTasks::getRangeTasksByUser($date_start, $date_end, $user_filter, $tags, active_project());
-	$birthdays = Contacts::instance()->getRangeContactsByBirthday($date_start, $date_end);
+	//FIXME
+	$birthdays = array();//Contacts::instance()->getRangeContactsByBirthday($date_start, $date_end);
 	
 	$tasks = array();
 	if($tmp_tasks) {
@@ -161,7 +162,7 @@
 			
 			$start_value = $dtv->format(user_config_option('date_format'));
 			$popupTitle = lang('add event');
-			$output .= "><div style='z-index:0; min-height:100px; height:100%;cursor:pointer' onclick=\"og.EventPopUp.show(null, {caller:'overview-panel', day:'".$dtv->getDay()."', month:'".$dtv->getMonth()."', year:'".$dtv->getYear()."', type_id:1, hour:'9', minute:'0', durationhour:1, durationmin:0, start_value: '$start_value', start_time:'9:00', title:'".format_datetime($dtv, 'l, j F', logged_user()->getTimezone()) ."', view: 'week', title: '$popupTitle', time_format: '$timeformat', hide_calendar_toolbar: 0},'');\") >
+			$output .= "><div style='z-index:0; min-height:100px; height:100%;cursor:pointer' onclick=\"og.EventPopUp.show(null, {caller:'overview-panel', day:'".$dtv->getDay()."', month:'".$dtv->getMonth()."', year:'".$dtv->getYear()."', type_id:1, hour:'9', minute:'0', durationhour:1, durationmin:0, start_value: '$start_value', start_time:'9:00', title:'".format_datetime($dtv, 'l, j F', logged_user()->getTimezone()) ."', view: 'week', title: '$popupTitle', time_format: '$timeformat', hide_calendar_toolbar: 0, genid:$genid, otype:".$event->manager()->getObjectTypeId()."},'');\") >
 			<div class='$daytitle' style='text-align:right'>";
 			//if($day_of_month >= 1){
 				$output .= "<a class='internalLink' href=\"$p\" onclick=\"og.disableEventPropagation(event);\"  style='color:#5B5B5B' >$w</a>";				
@@ -213,7 +214,7 @@
 								if($subject=="") $subject = "[".lang('CAL_NO_SUBJECT')."]";
 								$subject_toshow = mb_strlen($subject) < $to_show_len ? $subject : mb_substr($subject, 0, $to_show_len-3)."...";
 								$output .= "<span id='o_ev_div_" . $event->getId() . "'>";			
-								$output .= "<a class=\"internalLink link-ico ico-event\" style='vertical-align:bottom;' href='" . get_url('event', 'viewevent', array('id' => $event->getId())) . "' onclick=\"og.disableEventPropagation(event);\" >";
+								$output .= "<a class=\"internalLink link-ico ico-event\" style='vertical-align:bottom;' href='" . get_url('event', 'view', array('id' => $event->getId())) . "' onclick=\"og.disableEventPropagation(event);\" >";
 								$output .= $subject_toshow."</a>";
 								$output .= '</span>';
 								$output .= "</div>";
@@ -242,7 +243,7 @@
 									$output .= '</span>';
 									$output .= "</div>";
 									
-									$tip_text = str_replace("\r", '', lang('assigned to') .': '. clean($milestone->getAssignedToName()) . (trim(clean($milestone->getDescription())) == '' ? '' : '<br><br>'. clean($milestone->getDescription())));
+									$tip_text = str_replace("\r", '', (trim(clean($milestone->getDescription())) == '' ? '' : '<br><br>'. clean($milestone->getDescription())));
 									$tip_text = str_replace("\n", '<br>', $tip_text);
 									if (strlen_utf($tip_text) > 200) $tip_text = substr_utf($tip_text, 0, strpos($tip_text, ' ', 200)) . ' ...';
 									?>
@@ -319,12 +320,12 @@
 								$output .= '<div class="event_block"  id="m_bd_div_'.$contact->getId().'" style="border-left-color: #B1BFAC;">';
 								$output .= "<a style='vertical-align:bottom;' href='".$contact->getViewUrl()."' onclick=\"og.disableEventPropagation(event);\" >";
 								$output .= "<img src='".image_url('/16x16/contacts.png')."' style='vertical-align: middle;'>";
-								$output .= "<span>".$contact->getDisplayName()."</span></a>";
+								$output .= "<span>".$contact->getObjectName()."</span></a>";
 								$output .= "</div>";
 
 								?>
 								<script>
-									addTip('m_bd_div_<?php echo $contact->getId() ?>', '<i>' + '<?php echo escape_single_quotes(lang('birthday')) ?>' + '</i> - ' + <?php echo json_encode(clean($contact->getDisplayName()))?>, '');
+									addTip('m_bd_div_<?php echo $contact->getId() ?>', '<i>' + '<?php echo escape_single_quotes(lang('birthday')) ?>' + '</i> - ' + <?php echo json_encode(clean($contact->getObjectName()))?>, '');
 								</script>
 								<?php
 							

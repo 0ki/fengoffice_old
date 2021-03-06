@@ -15,13 +15,10 @@
     * @static
     */
     static private $columns = array(
-    	'rel_object_manager' => DATA_TYPE_STRING, 
     	'rel_object_id' => DATA_TYPE_INTEGER, 
     	'column_name' => DATA_TYPE_STRING, 
     	'content' => DATA_TYPE_STRING, 
-    	'project_id' => DATA_TYPE_INTEGER, 
-    	'is_private' => DATA_TYPE_BOOLEAN, 
-    	'user_id' => DATA_TYPE_INTEGER);
+    	'contact_id' => DATA_TYPE_INTEGER);
   
     /**
     * Construct
@@ -71,11 +68,7 @@
     * @return array or string
     */
     function getPkColumns() {
-      return array (
-  0 => 'rel_object_manager',
-  1 => 'rel_object_id',
-  2 => 'column_name',
-);
+      return array ('rel_object_id','column_name');
     } // getPkColumns
     
     /**
@@ -113,8 +106,6 @@
         return parent::find($arguments);
       } else {
         return SearchableObjects::instance()->find($arguments);
-        //$instance =& SearchableObjects::instance();
-        //return $instance->find($arguments);
       } // if
     } // find
     
@@ -130,8 +121,6 @@
         return parent::findAll($arguments);
       } else {
         return SearchableObjects::instance()->findAll($arguments);
-        //$instance =& SearchableObjects::instance();
-        //return $instance->findAll($arguments);
       } // if
     } // findAll
     
@@ -147,8 +136,6 @@
         return parent::findOne($arguments);
       } else {
         return SearchableObjects::instance()->findOne($arguments);
-        //$instance =& SearchableObjects::instance();
-        //return $instance->findOne($arguments);
       } // if
     } // findOne
     
@@ -165,8 +152,6 @@
         return parent::findById($id, $force_reload);
       } else {
         return SearchableObjects::instance()->findById($id, $force_reload);
-        //$instance =& SearchableObjects::instance();
-        //return $instance->findById($id, $force_reload);
       } // if
     } // findById
     
@@ -182,8 +167,6 @@
         return parent::count($condition);
       } else {
         return SearchableObjects::instance()->count($condition);
-        //$instance =& SearchableObjects::instance();
-        //return $instance->count($condition);
       } // if
     } // count
     
@@ -199,8 +182,6 @@
         return parent::delete($condition);
       } else {
         return SearchableObjects::instance()->delete($condition);
-        //$instance =& SearchableObjects::instance();
-        //return $instance->delete($condition);
       } // if
     } // delete
     
@@ -223,8 +204,6 @@
         return parent::paginate($arguments, $items_per_page, $current_page);
       } else {
         return SearchableObjects::instance()->paginate($arguments, $items_per_page, $current_page);
-        //$instance =& SearchableObjects::instance();
-        //return $instance->paginate($arguments, $items_per_page, $current_page);
       } // if
     } // paginate
     

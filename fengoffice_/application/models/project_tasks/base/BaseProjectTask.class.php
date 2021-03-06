@@ -5,35 +5,33 @@
  *
  * @author Ilija Studen <ilija.studen@gmail.com>
  */
-abstract class BaseProjectTask extends ProjectDataObject {
+abstract class BaseProjectTask extends ContentDataObject {
   
-  	protected $objectTypeIdentifier = 'ta';
-
-	// -------------------------------------------------------
+  	// -------------------------------------------------------
 	//  Access methods
 	// -------------------------------------------------------
 
 	/**
-	 * Return value of 'id' field
+	 * Return value of 'object_id' field
 	 *
 	 * @access public
 	 * @param void
 	 * @return integer
 	 */
-	function getId() {
-		return $this->getColumnValue('id');
-	} // getId()
+	function getObjectId() {
+		return $this->getColumnValue('object_id');
+	} // getObjectId()
 
 	/**
-	 * Set value of 'id' field
+	 * Set value of 'object_id' field
 	 *
 	 * @access public
 	 * @param integer $value
 	 * @return boolean
 	 */
-	function setId($value) {
-		return $this->setColumnValue('id', $value);
-	} // setId()
+	function setObjectId($value) {
+		return $this->setColumnValue('object_id', $value);
+	} // setObjectId()
 
 	/**
 	 * Return value of 'parent_id' field
@@ -58,28 +56,6 @@ abstract class BaseProjectTask extends ProjectDataObject {
 	} // setparentId()
 
 	/**
-	 * Return value of 'is_private' field
-	 *
-	 * @access public
-	 * @param void
-	 * @return boolean
-	 */
-	function getIsPrivate() {
-		return $this->getColumnValue('is_private');
-	} // getIsPrivate()
-
-	/**
-	 * Set value of 'is_private' field
-	 *
-	 * @access public
-	 * @param boolean $value
-	 * @return boolean
-	 */
-	function setIsPrivate($value) {
-		return $this->setColumnValue('is_private', $value);
-	} // setIsPrivate()
-
-	/**
 	 * Return value of 'text' field
 	 *
 	 * @access public
@@ -102,48 +78,26 @@ abstract class BaseProjectTask extends ProjectDataObject {
 	} // setText()
 
 	/**
-	 * Return value of 'assigned_to_company_id' field
+	 * Return value of 'assigned_to_contact_id' field
 	 *
 	 * @access public
 	 * @param void
 	 * @return integer
 	 */
-	function getAssignedToCompanyId() {
-		return $this->getColumnValue('assigned_to_company_id');
-	} // getAssignedToCompanyId()
+	function getAssignedToContactId() {
+		return $this->getColumnValue('assigned_to_contact_id');
+	} // getAssignedToContactId()
 
 	/**
-	 * Set value of 'assigned_to_company_id' field
+	 * Set value of 'assigned_to_contact_id' field
 	 *
 	 * @access public
 	 * @param integer $value
 	 * @return boolean
 	 */
-	function setAssignedToCompanyId($value) {
-		return $this->setColumnValue('assigned_to_company_id', $value);
-	} // setAssignedToCompanyId()
-
-	/**
-	 * Return value of 'assigned_to_user_id' field
-	 *
-	 * @access public
-	 * @param void
-	 * @return integer
-	 */
-	function getAssignedToUserId() {
-		return $this->getColumnValue('assigned_to_user_id');
-	} // getAssignedToUserId()
-
-	/**
-	 * Set value of 'assigned_to_user_id' field
-	 *
-	 * @access public
-	 * @param integer $value
-	 * @return boolean
-	 */
-	function setAssignedToUserId($value) {
-		return $this->setColumnValue('assigned_to_user_id', $value);
-	} // setAssignedToUserId()
+	function setAssignedToContactId($value) {
+		return $this->setColumnValue('assigned_to_contact_id', $value);
+	} // setAssignedToContactId()
 
 	/**
 	 * Return value of 'completed_on' field
@@ -233,94 +187,6 @@ abstract class BaseProjectTask extends ProjectDataObject {
 	function setStartDate($value) {
 		return $this->setColumnValue('start_date', $value);
 	} // setStartDate()
-
-	/**
-	 * Return value of 'created_on' field
-	 *
-	 * @access public
-	 * @param void
-	 * @return DateTimeValue
-	 */
-	function getCreatedOn() {
-		return $this->getColumnValue('created_on');
-	} // getCreatedOn()
-
-	/**
-	 * Set value of 'created_on' field
-	 *
-	 * @access public
-	 * @param DateTimeValue $value
-	 * @return boolean
-	 */
-	function setCreatedOn($value) {
-		return $this->setColumnValue('created_on', $value);
-	} // setCreatedOn()
-
-	/**
-	 * Return value of 'created_by_id' field
-	 *
-	 * @access public
-	 * @param void
-	 * @return integer
-	 */
-	function getCreatedById() {
-		return $this->getColumnValue('created_by_id');
-	} // getCreatedById()
-
-	/**
-	 * Set value of 'created_by_id' field
-	 *
-	 * @access public
-	 * @param integer $value
-	 * @return boolean
-	 */
-	function setCreatedById($value) {
-		return $this->setColumnValue('created_by_id', $value);
-	} // setCreatedById()
-
-	/**
-	 * Return value of 'updated_on' field
-	 *
-	 * @access public
-	 * @param void
-	 * @return DateTimeValue
-	 */
-	function getUpdatedOn() {
-		return $this->getColumnValue('updated_on');
-	} // getUpdatedOn()
-
-	/**
-	 * Set value of 'updated_on' field
-	 *
-	 * @access public
-	 * @param DateTimeValue $value
-	 * @return boolean
-	 */
-	function setUpdatedOn($value) {
-		return $this->setColumnValue('updated_on', $value);
-	} // setUpdatedOn()
-
-	/**
-	 * Return value of 'updated_by_id' field
-	 *
-	 * @access public
-	 * @param void
-	 * @return integer
-	 */
-	function getUpdatedById() {
-		return $this->getColumnValue('updated_by_id');
-	} // getUpdatedById()
-
-	/**
-	 * Set value of 'updated_by_id' field
-	 *
-	 * @access public
-	 * @param integer $value
-	 * @return boolean
-	 */
-	function setUpdatedById($value) {
-		return $this->setColumnValue('updated_by_id', $value);
-	} // setUpdatedById()
 
 	/**
 	 * Return value of 'order' field
@@ -433,21 +299,6 @@ abstract class BaseProjectTask extends ProjectDataObject {
 		return $this->setColumnValue('time_estimate', $value);
 	} // setTimeEstimate()
 	
-	
-	
-	/**
-	 * Return manager instance
-	 *
-	 * @access protected
-	 * @param void
-	 * @return ProjectTasks
-	 */
-	function manager() {
-		if(!($this->manager instanceof ProjectTasks)) $this->manager = ProjectTasks::instance();
-		return $this->manager;
-	} // manager
-
-
 	/**
 	 * Return value of 'priority' field
 	 *
@@ -537,29 +388,6 @@ abstract class BaseProjectTask extends ProjectDataObject {
 	} // setStartedById()
 
 	/**
-	 * Return value of 'title' field
-	 *
-	 * @access public
-	 * @param void
-	 * @return string
-	 */
-	function getTitle() {
-		return $this->getColumnValue('title');
-	} // getTitle()
-
-	/**
-	 * Set value of 'title' field
-	 *
-	 * @access public
-	 * @param string $value
-	 * @return boolean
-	 */
-	function setTitle($value) {
-		return $this->setColumnValue('title', $value);
-	} // setTitle()
-	
-
-	/**
 	 * Return value of 'is_template' field
 	 *
 	 * @access public
@@ -604,49 +432,6 @@ abstract class BaseProjectTask extends ProjectDataObject {
 		return $this->setColumnValue('from_template_id', $value);
 	} // setFromTemplateId()
 
-	/** Return value of 'trashed_on' field
-    *
-    * @access public
-    * @param void
-    * @return DateTimeValue 
-    */
-    function getTrashedOn() {
-      return $this->getColumnValue('trashed_on');
-    } // getTrashedOn()
-    
-    /**
-    * Set value of 'trashed_on' field
-    *
-    * @access public   
-    * @param DateTimeValue $value
-    * @return boolean
-    */
-    function setTrashedOn($value) {
-      return $this->setColumnValue('trashed_on', $value);
-    } // setTrashedOn() 
-    
-    /**
-    * Return value of 'trashed_by_id' field
-    *
-    * @access public
-    * @param void
-    * @return integer 
-    */
-    function getTrashedById() {
-      return $this->getColumnValue('trashed_by_id');
-    } // getTrashedById()
-    
-    /**
-    * Set value of 'trashed_by_id' field
-    *
-    * @access public   
-    * @param integer $value
-    * @return boolean
-    */
-    function setTrashedById($value) {
-      return $this->setColumnValue('trashed_by_id', $value);
-    } // setTrashedById()
-	
     /**
     * Return value of 'repeat_forever' field
     *
@@ -801,49 +586,6 @@ abstract class BaseProjectTask extends ProjectDataObject {
 	} // setRepeatBy()
 
     /**
-    * Return value of 'archived_by_id' field
-    *
-    * @access public
-    * @param void
-    * @return integer 
-    */
-    function getArchivedById() {
-      return $this->getColumnValue('archived_by_id');
-    } // getArchivedById()
-    
-    /**
-    * Set value of 'archived_by_id' field
-    *
-    * @access public   
-    * @param integer $value
-    * @return boolean
-    */
-    function setArchivedById($value) {
-      return $this->setColumnValue('archived_by_id', $value);
-    } // setArchivedById()
-	
-    /** Return value of 'archived_on' field
-    *
-    * @access public
-    * @param void
-    * @return DateTimeValue 
-    */
-    function getArchivedOn() {
-      return $this->getColumnValue('archived_on');
-    } // getArchivedOn()
-    
-    /**
-    * Set value of 'archived_on' field
-    *
-    * @access public   
-    * @param DateTimeValue $value
-    * @return boolean
-    */
-    function setArchivedOn($value) {
-      return $this->setColumnValue('archived_on', $value);
-    } // setArchivedOn() 
-    
-    /**
     * Return value of 'object_subtype' field
     *
     * @access public
@@ -864,6 +606,42 @@ abstract class BaseProjectTask extends ProjectDataObject {
     function setObjectSubtype($value) {
       return $this->setColumnValue('object_subtype', $value);
     } // setObjectSubtype()
+    
+    
+    /**
+	 * Return value of 'percent_completed' field
+	 *
+	 * @access public
+	 * @param void
+	 * @return integer
+	 */
+	function getPercentCompleted() {
+		return $this->getColumnValue('percent_completed');
+	} //  getPercentCompleted()
+
+	/**
+	 * Set value of 'percent_completed' field
+	 *
+	 * @access public
+	 * @param integer $value
+	 * @return boolean
+	 */
+	function setPercentCompleted($value) {
+		return $this->setColumnValue('percent_completed', $value);
+	} // setPercentCompleted()
+    
+    
+    /**
+	 * Return manager instance
+	 *
+	 * @access protected
+	 * @param void
+	 * @return ProjectTasks
+	 */
+	function manager() {
+		if(!($this->manager instanceof ProjectTasks)) $this->manager = ProjectTasks::instance();
+		return $this->manager;
+	} // manager
     
 } // BaseProjectTask
 

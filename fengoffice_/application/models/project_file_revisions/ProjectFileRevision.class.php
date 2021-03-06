@@ -9,13 +9,6 @@
 class ProjectFileRevision extends BaseProjectFileRevision {
 
 	/**
-	 * Message comments are searchable
-	 *
-	 * @var boolean
-	 */
-	protected $is_searchable = true;
-
-	/**
 	 * Array of searchable columns
 	 *
 	 * @var array
@@ -47,6 +40,7 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 		parent::__construct();
 	} // __construct
 
+	
 	/**
 	 * Return parent file object
 	 *
@@ -60,20 +54,7 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 		return $this->file;
 	} // getFile
 
-	/**
-	 * Return parent workspaces
-	 *
-	 * @param void
-	 * @return array
-	 */
-	function getWorkspaces() {
-		if(is_null($this->workspaces)) {
-			$file = $this->getFile();
-			if($file instanceof ProjectFile) $this->workspaces = $file->getWorkspaces();
-		} // if
-		return $this->workspaces;
-	} // getWorkspaces
-
+	
 	/**
 	 * Return file type object
 	 *
@@ -87,6 +68,7 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 		return $this->file_type;
 	} // getFileType
 
+	
 	/**
 	 * Return content of this file
 	 *
@@ -97,10 +79,12 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 		return FileRepository::getFileContent($this->getRepositoryId());
 	} // getFileContent
 
+	
 	// ---------------------------------------------------
 	//  Utils
 	// ---------------------------------------------------
 
+	
 	/**
 	 * This function will return content of specific searchable column. It uses inherited
 	 * behaviour for all columns except for `filecontent`. In case of this column function
@@ -150,6 +134,7 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 			return parent::getSearchableColumnContent($column_name);
 	} // getSearchableColumnContent
 
+	
 	/**
 	 * Create image thumbnail. This function will return true on success, false otherwise
 	 *
@@ -197,6 +182,7 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 	//  URLs
 	// ---------------------------------------------------
 
+	
 	/**
     * Return object URl
     *
@@ -209,6 +195,7 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 		return $file  instanceof ProjectFile ? $file->getObjectUrl()  : null;
     } // getObjectUrl
 	
+    
 	/**
 	 * Return revision details URL
 	 *
@@ -220,6 +207,7 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 		return $file  instanceof ProjectFile ? $file->getDetailsUrl() . '#revision' . $this->getId() : null;
 	} // getDetailsUrl
 
+	
 	/**
 	 * Show download URL
 	 *
@@ -230,6 +218,7 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 		return get_url('files', 'download_revision', array('id' => $this->getId()));
 	} // getDownloadUrl
 
+	
 	/**
 	 * Return edit revision URL
 	 *
@@ -240,6 +229,7 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 		return get_url('files', 'edit_file_revision', array('id' => $this->getId()));
 	} // getEditUrl
 
+	
 	/**
 	 * Return delete revision URL
 	 *
@@ -250,6 +240,7 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 		return get_url('files', 'delete_file_revision', array('id' => $this->getId()));
 	} // getDeleteUrl
 
+	
 	/**
 	 * Return thumb URL
 	 *
@@ -268,6 +259,7 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 		} // if
 	} // getThumbUrl
 
+	
 	/**
 	 * Return URL of file type icon. If we are working with image file type this function
 	 * will return thumb URL if it success in creating it
@@ -302,20 +294,16 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 		return get_image_url("$size/types/$image");
 	} // getTypeIconUrl
 
+	
 	// ---------------------------------------------------
 	//  Permissions
 	// ---------------------------------------------------
 
-	/**
-	 * Check CAN_MANAGE_DOCUMENS permission
-	 *
-	 * @access public
-	 * @param User $user
-	 * @return boolean
-	 */
-	function canManage(User $user) {
-		return can_write($user,$this);
-	} // canManage
+	
+	function canAdd(Contact $user, $context){
+		return can_add($user, $context, ProjectFileRevisions::instance()->getObjectTypeId());
+	}
+	
 
 	/**
 	 * Empty implementation of abstract method. Message determins if user have view access
@@ -323,57 +311,51 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 	 * @param void
 	 * @return boolean
 	 */
-	function canView(User $user) {
-		return can_read($user,$this);
+	function canView(Contact $user) {
+		return can_read($user, $this->getMembers(), $this->getObjectTypeId());
 	} // canView
 
+	
 	/**
 	 * Returns true if user can download this file
 	 *
-	 * @param User $user
+	 * @param Contact $user
 	 * @return boolean
 	 */
-	function canDownload(User $user) {
-		return can_read($user,$this);
+	function canDownload(Contact $user) {
+		return can_read($user, $this->getMembers(), $this->getObjectTypeId());
 	} // canDownload
 
-	/**
-	 * Empty implementation of abstract methods. Messages determine does user have
-	 * permissions to add comment
-	 *
-	 * @param void
-	 * @return null
-	 */
-	function canAdd(User $user, Project $project) {		
-		return can_add($user,$project,get_class(ProjectFileRevisions::instance()));
-	} // canAdd
-
+	
 	/**
 	 * Check if specific user can edit this file
 	 *
 	 * @access public
-	 * @param User $user
+	 * @param Contact $user
 	 * @return boolean
 	 */
-	function canEdit(User $user) {
-		return can_write($user,$this);
+	function canEdit(Contact $user) {
+		return can_write($user, $this->getMembers(), $this->getObjectTypeId());
 	} // canEdit
 
+	
 	/**
 	 * Check if specific user can delete this comment
 	 *
 	 * @access public
-	 * @param User $user
+	 * @param Contact $user
 	 * @return boolean
 	 */
-	function canDelete(User $user) {
-		return can_delete($user,$this);
+	function canDelete(Contact $user) {
+		return can_delete($user,$this->getMembers(), $this->getObjectTypeId());
 	} // canDelete
 
+	
 	// ---------------------------------------------------
 	//  System
 	// ---------------------------------------------------
 
+	
 	private function cat_file($fname, $extension){
 		if ((defined('CATDOC_PATH') && CATDOC_PATH != '' && $extension == "doc") || 
 			(defined('CATPPT_PATH') && CATPPT_PATH != '' && $extension == "ppt")){
@@ -385,6 +367,7 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 			return trim(implode(" ",$result));
 		} else return false;
 	}
+	
 	
 	/**
 	 * Validate before save. This one is used to keep the data in sync. Users
@@ -407,6 +390,7 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 		}
 	} // validate
 
+	
 	/**
 	 * Delete from DB and from the disk
 	 *
@@ -420,7 +404,6 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 				ob_start();
 				include_once ROOT . "/" . PUBLIC_FOLDER . "/assets/javascript/gelSheet/php/config/settings.php";
 				include_once ROOT . "/" . PUBLIC_FOLDER . "/assets/javascript/gelSheet/php/util/db_functions.php";
-				//include_once ROOT . "/" . PUBLIC_FOLDER . "/assets/javascript/gelSheet/php/util/lang/languages.php";
 				include_once ROOT . "/" . PUBLIC_FOLDER . "/assets/javascript/gelSheet/php/controller/BookController.class.php";
 				$bc = new BookController();
 				$bc->deleteBook($bookId);
@@ -437,6 +420,7 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 		return parent::delete();
 	} // delete
 
+	
 	/**
 	 * Delete thumb
 	 *
@@ -457,10 +441,12 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 		return true;
 	} // deleteThumb
 
+	
 	// ---------------------------------------------------
 	//  ApplicationDataObject implementation
 	// ---------------------------------------------------
 
+	
 	/**
 	 * Return object name
 	 *
@@ -473,20 +459,26 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 		return $file instanceof ProjectFile ? $file->getObjectName() . ' revision #' . $this->getRevisionNumber() : 'Unknown file revision';
 	} // getObjectName
 
-	/**
-	 * Return object type name
-	 *
-	 * @param void
-	 * @return string
-	 */
-	function getObjectTypeName() {
-		return 'file_revision';
-	} // getObjectTypeName
-
-
+	
   	function getUniqueObjectId(){
     	return $this->getFile()->getUniqueObjectId() . 'r' . $this->getRevisionNumber();
     }
+    
+    function getViewUrl() {
+    	if (!$this->isLoaded()){
+    		$fileRevision = ProjectFileRevisions::instance()->findById($this->getId(), 1);
+    		$file = $fileRevision->getFile();
+    	}else{
+    		$file = $this->getFile();
+    	}
+    	
+    	if ( $file ) {
+    		return $file->getViewUrl();
+    	}else{
+    		return "#";
+    	}
+    }
+
     
 } // ProjectFileRevision
 

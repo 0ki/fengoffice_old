@@ -12,7 +12,7 @@ og.TasksTopToolbar = function(config) {
 		});
 		
 	og.TasksTopToolbar.superclass.constructor.call(this, config);
-	
+
 	var allTemplates = [];
 	var allTemplatesArray = Ext.util.JSON.decode(document.getElementById(config.allTemplatesHfId).value);
 	if (allTemplatesArray && allTemplatesArray.length > 0){
@@ -38,7 +38,7 @@ og.TasksTopToolbar = function(config) {
 			};
 		}
 	}
-	
+
 	var menuItems = [
 		{text: lang('new milestone'), iconCls: 'ico-milestone', handler: function() {
 			var url = og.getUrl('milestone', 'add');
@@ -49,22 +49,18 @@ og.TasksTopToolbar = function(config) {
 			var toolbar = Ext.getCmp('tasksPanelBottomToolbarObject');
 			if (toolbar.filterNamesCompaniesCombo.isVisible()){
 				var value = toolbar.filterNamesCompaniesCombo.getValue();
-				if (value){
-					var split = value.split(':');
-					if (split[0] > 0 || split[1] > 0){
-						additionalParams.assigned_to = value;
-					}
-				}
+				if (value) 
+					additionalParams.assigned_to = value;
 			}
 			var url = og.getUrl('task', 'add_task');
 			og.openLink(url, {post:additionalParams});
-		}},/*
+		}}/*,
 		{text: lang('new task time report'), iconCls: 'ico-reporting', handler: function() {
 			var url = og.getUrl('reporting', 'total_task_times_p');
 			og.openLink(url);
-		}},*/
-		'-'];
-	
+		}},
+		'-'*/];
+
 	var projectTemplates = [];
 	var projectTemplatesArray = Ext.util.JSON.decode(document.getElementById(config.projectTemplatesHfId).value);
 	if (projectTemplatesArray && projectTemplatesArray.length > 0){
@@ -92,7 +88,7 @@ og.TasksTopToolbar = function(config) {
 		projectTemplates[projectTemplates.length] = '-';
 		menuItems = menuItems.concat(projectTemplates);
 	}
-	
+
 	menuItems = menuItems.concat([{
 		text: lang('all'),
 		iconCls: 'ico-template',
@@ -100,6 +96,8 @@ og.TasksTopToolbar = function(config) {
 		menu: {
 			items: allTemplates
 		}}]);
+
+	
 	
 	var butt = new Ext.Button({
 		iconCls: 'ico-new',
@@ -135,28 +133,6 @@ og.TasksTopToolbar = function(config) {
 	this.markactions = markactions;
 	
 	var actions = {
-		tag: new Ext.Action({
-			text: lang('tag'),
-            tooltip: lang('tag selected objects'),
-            iconCls: 'ico-tag',
-			disabled: true,
-			menu: new og.TagMenu({
-				listeners: {
-					'tagselect': {
-						fn: function(tag) {
-							ogTasks.executeAction('tag', null, tag);
-						},
-						scope: this
-					},
-					'tagdelete': {
-						fn: function(tag) {
-							ogTasks.executeAction('untag', null, tag);
-						},
-						scope: this
-					}
-				}
-			})
-		}),
 		del: new Ext.Action({
 			text: lang('move to trash'),
             tooltip: lang('move selected objects to trash'),
@@ -211,7 +187,6 @@ og.TasksTopToolbar = function(config) {
 		this.add(butt);
 		this.addSeparator();
 		this.add(actions.complete)
-		this.add(actions.tag);
 		this.add(actions.archive);
 		this.add(actions.del);		
 		this.addSeparator();
@@ -220,17 +195,6 @@ og.TasksTopToolbar = function(config) {
 	this.addSeparator();
 	
 	this.displayOptions = {
-			workspaces: {
-				text: lang('workspaces'),
-				checked: (ogTasks.userPreferences.showWorkspaces == 1),
-				checkHandler: function() {
-					ogTasks.redrawGroups = false;
-					ogTasks.draw();
-					ogTasks.redrawGroups = true;
-	        		var url = og.getUrl('account', 'update_user_preference', {name: 'tasksShowWorkspaces', value:(this.checked?1:0)});
-					og.openLink(url,{hideLoading:true});
-				}
-			},
 			time: {
 		        text: lang('time'),
 				checked: (ogTasks.userPreferences.showTime == 1),
@@ -239,17 +203,6 @@ og.TasksTopToolbar = function(config) {
 					ogTasks.draw();
 					ogTasks.redrawGroups = true;
 					var url = og.getUrl('account', 'update_user_preference', {name: 'tasksShowTime', value:(this.checked?1:0)});
-					og.openLink(url,{hideLoading:true});
-				}
-			},
-			tags: {
-		        text: lang('tags'),
-				checked: (ogTasks.userPreferences.showTags == 1),
-				checkHandler: function() {
-					ogTasks.redrawGroups = false;
-					ogTasks.draw();
-					ogTasks.redrawGroups = true;
-					var url = og.getUrl('account', 'update_user_preference', {name: 'tasksShowTags', value:(this.checked?1:0)});
 					og.openLink(url,{hideLoading:true});
 				}
 			},
@@ -282,9 +235,7 @@ og.TasksTopToolbar = function(config) {
 	       	iconCls: 'op-ico-details',
 			text: lang('show'),
 			menu: {items: [
-				this.displayOptions.workspaces,
 				this.displayOptions.time,
-				this.displayOptions.tags,
 				this.displayOptions.dates,
 				this.displayOptions.empty_milestones
 			]}
@@ -301,6 +252,12 @@ og.TasksTopToolbar = function(config) {
 			},
 			scope: this
 		}));
+    
+    if (ogTasks.extraTopToolbarItems) {
+    	for (i=0; i<ogTasks.extraTopToolbarItems.length; i++) {
+    		this.add(ogTasks.extraTopToolbarItems[i]);
+    	}
+    }
 };
 
 function ogTasksLoadFilterValuesCombo(newValue){
@@ -321,10 +278,9 @@ function ogTasksOrderUsers(usersList){
 Ext.extend(og.TasksTopToolbar, Ext.Toolbar, {
 	getDrawOptions : function(){
 		return {
-			show_workspaces : this.show_menu.items[0].menu.items.items[0].checked,
-			show_time : this.show_menu.items[0].menu.items.items[1].checked,
-			show_tags : this.show_menu.items[0].menu.items.items[2].checked,
-			show_dates : this.show_menu.items[0].menu.items.items[3].checked
+			show_time : this.show_menu.items[0].menu.items.items[0].checked,
+			show_dates : this.show_menu.items[0].menu.items.items[1].checked,
+			show_ms : this.show_menu.items[0].menu.items.items[2].checked
 		}
 	},
 	updateCheckedStatus : function(){
@@ -347,13 +303,11 @@ Ext.extend(og.TasksTopToolbar, Ext.Toolbar, {
 			this.actions.del.disable();
 			this.actions.complete.disable();
 			this.actions.archive.disable();
-			this.actions.tag.disable();
 			this.markactions.markAsRead.disable();
 			this.markactions.markAsUnread.disable();
 		} else {
 			this.actions.del.enable();
 			this.actions.archive.enable();
-			this.actions.tag.enable();
 			if (allUnread) {
 				this.markactions.markAsUnread.disable();
 			} else {

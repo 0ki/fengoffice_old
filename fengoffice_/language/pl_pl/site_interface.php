@@ -349,6 +349,7 @@
 	'activity' => 'Aktywność',
 	'statistics' => 'Statystyki',
 	'time' => 'Czas',
+	'meeting_time' => 'Czas',
 	'task time report' => 'Całkowity czas poświęcony na zadania',
 	'new tasks by user' => 'Nowe zadania użytkownika',
 	'generate report' => 'Generuj raport',

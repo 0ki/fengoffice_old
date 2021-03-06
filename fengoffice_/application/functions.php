@@ -5,13 +5,17 @@
 //  or in application/application.php
 // ---------------------------------------------------
 
+
+
+
 /**
  * Gets called, when an undefined class is being instanciated
  *d
  * @param_string $load_class_name
  */
 function feng__autoload($load_class_name) {
-	static $loader = null;
+	static  $loader ;
+	//$loader = null;
 	$class_name = strtoupper($load_class_name);
 
 	// Try to get this data from index...
@@ -20,13 +24,30 @@ function feng__autoload($load_class_name) {
 			return include $GLOBALS[AutoLoader::GLOBAL_VAR][$class_name];
 		} // if
 	} // if
-
+	//pre_print_r($loader) ;exit;
+	
 	if(!$loader) {
 		$loader = new AutoLoader();
 		$loader->addDir(ROOT . '/application');
 		$loader->addDir(ROOT . '/environment');
 		$loader->addDir(ROOT . '/library');
+		
+		//TODO Pepe: No tengo la conexion ni las clases de DB en este momento.. me conecto derecho 
+		$temp_link  = mysql_connect(DB_HOST, DB_USER, DB_PASS) ;
+		mysql_select_db(DB_NAME) ;
+		$res = mysql_query("SELECT name FROM ".TABLE_PREFIX."plugins WHERE is_installed = 1 AND is_activated = 1;");
+		while ($row = mysql_fetch_object($res)) {	
+			$plugin_name =  strtolower($row->name) ;
+			$dir  = ROOT . '/plugins/'.$plugin_name.'/application' ;
+			if (is_dir($dir)) {
+				$loader->addDir($dir); 
+			}
+		}
+		mysql_close($temp_link);
+		
+		
 		$loader->setIndexFilename(ROOT . '/cache/autoloader.php');
+		
 	} // if
 
 	try {
@@ -291,9 +312,9 @@ function request_action() {
 function prepare_company_website_controller(PageController $controller, $layout = 'website') {
 
 	// If we don't have logged user prepare referer params and redirect user to login page
-	if(!(logged_user() instanceof User)) {
+	if(!(logged_user() instanceof Contact)) {
 		$ref_params = array();
-		foreach($_GET as $k => $v) $ref_params['ref_' . $k] = $v;
+		foreach($_GET as $k => $v) $ref_params['ref_' . $k] = $v;		
 		$controller->redirectTo('access', 'login', $ref_params);
 	} // if
 
@@ -321,68 +342,72 @@ function owner_company() {
  *
  * @access public
  * @param void
- * @return User
+ * @return Contact
  */
 function logged_user() {
 	return CompanyWebsite::instance()->getLoggedUser();
 } // logged_user
 
-/**
- * Return active project if we are on company website
- *
- * @access public
- * @param void
- * @return Project
- */
-function active_project() {
-	return CompanyWebsite::instance()->getProject();
-} // active_project
+//FIXME remove function
+function active_project(){
+	return null;
+}
+
+//FIXME remove function
+function active_tag(){
+	return null;
+}
 
 
-/**
- * Return active tag
- *
- * @access public
- * @param void
- * @return Project
- */
-function active_tag() {
-	return array_var($_GET,'active_tag');
-} // active_tag
-
-/**
- * Return active project if we are on company website
- *
- * @access public
- * @param void
- * @return Project
- */
-function active_or_personal_project() {
-	$act=active_project();
-	return  $act ? $act : personal_project();
-} // active_project
-
-/**
- * Return active project if we are on company website
- *
- * @access public
- * @param void
- * @return array
- */
+//FIXME remove function
 function active_projects() {
-	return logged_user()->getActiveProjects();
-} // active_project
+	return true;
+}
+
+//FIXME remove function
+function active_or_personal_project() {
+	return true;
+}
+
+//FIXME remove function
+function personal_project() {
+	return true;
+}
+/**
+ * 
+ * @Feng 2.0 - ivazquez 
+ * 
+ */
+function active_context() {
+	return CompanyWebsite::instance()->getContext() ;
+}
 
 /**
- * Return personal project
- *
- * @access public
- * @param void
- * @return Project
+ * @author Ignacio Vazquez - elpepe.uy@gmail.com
  */
-function personal_project() {
-	return logged_user() instanceof User ? logged_user()->getPersonalProject():null;
-} // active_project
+function active_context_members() {
+	
+	$ctxMembers  = array ();
+	foreach (active_context() as $ctx) {
+		if ( $ctx instanceof Member ) {
+			/* @var Dimension $ctx */
+			$ctxMembers[$ctx->getId()] = $ctx->getId() ;
+			foreach ( Members::getSubmembers($ctx, 1) as $sub ) {
+				$ctxMembers[$sub->getId()] = $sub->getId() ;		
+			}
+		}elseif  ( $ctx instanceof Dimension ) {
+			/* @var Dimension $ctx */
+			foreach ($ctx->getAllMembers() as $member) {
+				$ctxMembers[$member->getId()] = $member->getId() ;
+				foreach ( Members::getSubmembers($member, 1) as $sub ) {
+					$ctxMembers[$sub->getId()] = $sub->getId() ;
+				}
+			} 
+		}
+	}
+	return $ctxMembers ;
+}
+
 
 /**
  * Return which is the upload hook
@@ -407,18 +432,7 @@ function upload_hook() {
  * @return mixed
  */
 function config_option($option, $default = null) {
-	// check the cache for the option value
-	if (GlobalCache::isAvailable()) {
-		$option_value = GlobalCache::get('config_option_'.$option, $success);
-		if ($success) return $option_value;
-	}
-	// value not found in cache
-	$option_value = ConfigOptions::getOptionValue($option, $default);
-	if (GlobalCache::isAvailable()) {
-		GlobalCache::update('config_option_'.$option, $option_value);
-	}
-	
-	return $option_value;
+	return ConfigOptions::getOptionValue($option, $default);
 } // config_option
 
 /**
@@ -435,12 +449,6 @@ function set_config_option($option_name, $value) {
 	} // if
 
 	$config_option->setValue($value);
-	
-	// update cache if available
-	if (GlobalCache::isAvailable() && GlobalCache::key_exists('config_option_'.$option_name)) {
-		GlobalCache::update('config_option_'.$option_name, $value);
-	}
-	
 	return $config_option->save();
 } // set_config_option
 
@@ -455,41 +463,21 @@ function set_config_option($option_name, $value) {
  */
 function user_config_option($option, $default = null, $user_id = null) {
 	if (is_null($user_id)) {
-		if (logged_user() instanceof User) {
+		if (logged_user() instanceof Contact) {
 			$user_id = logged_user()->getId();
 		} else if (is_null($default)) {
-			$def_value = null;
-			// check the cache for the option default value
-			if (GlobalCache::isAvailable()) {
-				$def_value = GlobalCache::get('user_config_option_def_'.$option, $success);
-				if ($success) return $def_value;
-			}
-			// default value not found in cache
-			$def_value = UserWsConfigOptions::getDefaultOptionValue($option, $default);
-			if (GlobalCache::isAvailable()) {
-				GlobalCache::update('user_config_option_def_'.$option, $def_value);
-			}
-			return $def_value;
+			return ContactConfigOptions::getDefaultOptionValue($option, $default);
 		} else {
 			return $default;
 		}
 	}
-	
-	// check the cache for the option value
-	if (GlobalCache::isAvailable()) {
-		$option_value = GlobalCache::get('user_config_option_'.$user_id.'_'.$option, $success);
-		if ($success) return $option_value;
-	}
-	// default value not found in cache
-	$option_value = UserWsConfigOptions::getOptionValue($option, $user_id, $default);
-	if (GlobalCache::isAvailable()) {
-		GlobalCache::update('user_config_option_'.$user_id.'_'.$option, $option_value);
-	}
-	
-	return $option_value;
+	//return UserWsConfigOptions::getOptionValue($option, $user_id, $default);
+	return ContactConfigOptions::getOptionValue($option, $user_id, $default);
 } // user_config_option
 
 function user_has_config_option($option_name, $user_id = 0, $workspace_id = 0) {
+	//FIXME
+	return;
 	if (!$user_id && logged_user() instanceof User) {
 		$user_id = logged_user()->getId();
 	} else {
@@ -519,7 +507,7 @@ function default_user_config_option($option, $default = null) {
  * @return mixed
  */
 function load_user_config_options_by_category_name($category_name) {
-	UserWsConfigOptions::getOptionsByCategoryName($category_name, true);
+	ContactConfigOptions::getOptionsByCategoryName($category_name, true);
 } // config_option
 
 /**
@@ -531,44 +519,22 @@ function load_user_config_options_by_category_name($category_name) {
  * @return boolean
  */
 function set_user_config_option($option_name, $value, $user_id = null ) {
-	$config_option = UserWsConfigOptions::getByName($option_name);
-	if(!($config_option instanceof UserWsConfigOption)) {
+	$config_option = ContactConfigOptions::getByName($option_name);
+	if(!($config_option instanceof ContactConfigOption)) {
 		return false;
 	} // if
-	$config_option->setUserValue($value, $user_id);
-	
-	// update cache if available
-	if (GlobalCache::isAvailable() && GlobalCache::key_exists('user_config_option_'.$user_id.'_'.$option_name)) {
-		GlobalCache::update('user_config_option_'.$user_id.'_'.$option_name, $value);
-	}
-	
+	$config_option->setContactValue($value, $user_id);
 	return $config_option->save();
 } // set_config_option
 
-/**
- * This function will return object by the manager class and object ID
- *
- * @param integer $object_id
- * @param string $manager_class
- * @return ApplicationDataObject
- */
-function get_object_by_manager_and_id($object_id, $manager_class) {
-	$object_id = (integer) $object_id;
-	$manager_class = trim($manager_class);
-
-	if(!is_valid_function_name($manager_class) || !class_exists($manager_class, true)) {
-		throw new Error("Class '$manager_class' does not exist");
-	} // if
-
-	$code = "return $manager_class::findById($object_id);";
-	$object = eval($code);
-
-	return $object instanceof DataObject ? $object : null;
-} // get_object_by_manager_and_id
 
 function alert($text) {
 	evt_add("popup", array('title' => "Debug", 'message' => $text));
 }
+function alert_r($var) {
+	alert(print_r($var,1));
+}
+
 
 // ---------------------------------------------------
 //  Encryption/Decryption
@@ -628,17 +594,6 @@ function remove_dir($dir) {
 	}
 	@closedir($dh);
 	@rmdir($dir);
-}
-
-function new_personal_project_name($username = null) {
-	Localization::instance()->loadSettings(DEFAULT_LOCALIZATION, ROOT . '/language');
-	$wname = Localization::instance()->lang('personal workspace name');
-	if (is_null($wname)) {
-		$wname = "{0}\'s Workspace";
-	}
-	if ($username != null) $wname = str_replace("{0}", $username, $wname);
-	if (logged_user() != null)Localization::instance()->loadSettings(logged_user()->getLocale(), ROOT . '/language');
-	return $wname;	
 }
 
 function help_link() {
@@ -721,9 +676,13 @@ function get_workspace_css_properties($num) {
     
 }
 
-function module_enabled($module, $default = null) {
-	return config_option("enable_".$module."_module", $default);
+
+function module_enabled($module, $default = null) { 
+	$module .= '-panel';
+	$contact_pg_ids = ContactPermissionGroups::getPermissionGroupIdsByContactCSV(logged_user()->getId(),false);
+	return TabPanelPermissions::instance()->isModuleEnabled($module, $contact_pg_ids);
 }
+
 
 function create_user_from_email($email, $name, $type = 'guest', $send_notification = true) {
 	return create_user(array(
@@ -736,34 +695,88 @@ function create_user_from_email($email, $name, $type = 'guest', $send_notificati
 	), '');
 }
 
+
 function create_user($user_data, $permissionsString) {
-	$user = new User();
-	$user->setUsername(array_var($user_data, 'username'));
-	$user->setDisplayName(array_var($user_data, 'display_name'));
-	$user->setEmail(array_var($user_data, 'email'));
-	$user->setCompanyId(array_var($user_data, 'company_id'));
-	$user->setType(array_var($user_data, 'type'));
-	$user->setTimezone(array_var($user_data, 'timezone'));
-	if (!logged_user() instanceof User || can_manage_security(logged_user())) {
-		$user->setCanEditCompanyData(array_var($user_data, 'can_edit_company_data'));
-		$user->setCanManageSecurity(array_var($user_data, 'can_manage_security'));
-		$user->setCanManageWorkspaces(array_var($user_data, 'can_manage_workspaces'));
-		$user->setCanManageConfiguration(array_var($user_data, 'can_manage_configuration'));
-		$user->setCanManageContacts(array_var($user_data, 'can_manage_contacts'));
-		$user->setCanManageTemplates(array_var($user_data, 'can_manage_templates'));
-		$user->setCanManageReports(array_var($user_data, 'can_manage_reports'));
-		$user->setCanManageTime(array_var($user_data, 'can_manage_time'));
-		$user->setCanAddMailAccounts(array_var($user_data, 'can_add_mail_accounts'));
-		$other_permissions = array();
-		Hook::fire('add_user_permissions', $user, $other_permissions);
-		foreach ($other_permissions as $k => $v) {
-			$user->setColumnValue($k, array_var($user_data, $k));
+		
+	$contact = Contacts::getByEmail(array_var($user_data, 'email'), true);
+	if (!$contact instanceof Contact) {
+			$contact = new Contact();
+			$contact->setUsername(array_var($user_data, 'username'));
+			$contact->setDisplayName(array_var($user_data, 'display_name'));
+			$contact->setCompanyId(array_var($user_data, 'company_id'));
+			$contact->setUserType(array_var($user_data, 'type'));
+			$contact->setTimezone(array_var($user_data, 'timezone'));
+			$contact->setFirstname($contact->getDisplayName() != "" ? $contact->getDisplayName() : $contact->getUsername());
+			$contact->setObjectName();
+			$contact->save();
+			$contact->addEmail(array_var($user_data, 'email'),'user',true);
+			
+	} else {
+			$contact->setUserType(array_var($user_data, 'type'));
+			$contact->setCompanyId(array_var($user_data, 'company_id'));	
+			$contact->setUsername(array_var($user_data, 'username'));
+			$contact->setTimezone(array_var($user_data, 'timezone'));
+			$contact->save();
+			$contact->addEmail(array_var($user_data, 'email'), 'user', true);
+			
+	}
+	
+	//permissions
+	$permission_group = new PermissionGroup();
+	$permission_group->setName('User '.$contact->getId().' Personal');
+	$permission_group->setContactId($contact->getId());
+	$permission_group->setIsContext(false);
+	$permission_group->save();
+	$contact->setPermissionGroupId($permission_group->getId());
+	
+	$contact_pg = new ContactPermissionGroup();
+	$contact_pg->setContactId($contact->getId());
+	$contact_pg->setPermissionGroupId($permission_group->getId());
+	$contact_pg->save();
+
+	if (!logged_user() instanceof Contact || can_manage_security(logged_user())) {
+		
+		$sp = new SystemPermission();
+		$rol_permissions=SystemPermissions::getRolePermissions(array_var($user_data, 'type'));
+		foreach($rol_permissions as $pr){
+			$sp->setPermission($pr);
+		}
+		$sp->setPermissionGroupId($permission_group->getId());
+		$sp->setCanEditCompanyData(array_var($user_data, 'can_edit_company_data'));
+		$sp->setCanManageSecurity(array_var($user_data, 'can_manage_security'));
+		$sp->setCanManageMembers(array_var($user_data, 'can_manage_members'));
+		$sp->setCanManageConfiguration(array_var($user_data, 'can_manage_configuration'));
+		$sp->setCanManageTemplates(array_var($user_data, 'can_manage_templates'));
+		$sp->setCanManageReports(array_var($user_data, 'can_manage_reports'));
+		$sp->setCanManageTime(array_var($user_data, 'can_manage_time'));
+		$sp->setCanAddMailAccounts(array_var($user_data, 'can_add_mail_accounts'));
+		
+		Hook::fire('add_user_permissions', $sp, $other_permissions);
+		if (!is_null($other_permissions) && is_array($other_permissions)) {
+			foreach ($other_permissions as $k => $v) {
+				$sp->setColumnValue($k, array_var($user_data, $k));
+			}
+		}
+		$sp->save();
+	}
+	if(!isset($_POST['sys_perm'])){
+		$rol_permissions=SystemPermissions::getRolePermissions(array_var($user_data, 'type'));
+		$_POST['sys_perm']=array();
+		foreach($rol_permissions as $pr){
+			$_POST['sys_perm'][$pr]=1;
+		}
+		
+	}
+	if(!isset($_POST['mod_perm'])){
+		$tabs_permissions=TabPanelPermissions::getRoleModules(array_var($user_data, 'type'));
+		$_POST['mod_perm']=array();
+		foreach($tabs_permissions as $pr){
+			$_POST['mod_perm'][$pr]=1;
 		}
 	}
-
 	if (array_var($user_data, 'password_generator', 'random') == 'random') {
 		// Generate random password
-		$password = UserPasswords::generateRandomPassword();
+		$password = ContactPasswords::generateRandomPassword();
 	} else {
 		// Validate input
 		$password = array_var($user_data, 'password');
@@ -775,158 +788,45 @@ function create_user($user_data, $permissionsString) {
 		} // if
 	} // if
 	
-	$user->setPassword($password);
-	$user->save();
+	$contact->setPassword($password);
+	$contact->save();
 
-	$user_password = new UserPassword();
-	$user_password->setUserId($user->getId());
+	$user_password = new ContactPassword();
+	$user_password->setContactId($contact->getId());
 	$user_password->setPasswordDate(DateTimeValueLib::now());
 	$user_password->setPassword(cp_encrypt($password, $user_password->getPasswordDate()->getTimestamp()));
 	$user_password->password_temp = $password;
 	$user_password->save();
 	
 	if (array_var($user_data, 'autodetect_time_zone', 1) == 1) {
-		set_user_config_option('autodetect_time_zone', 1, $user->getId());
+		set_user_config_option('autodetect_time_zone', 1, $contact->getId());
 	}
 	
-	if ($user->getType() == 'admin') {
-		if ($user->getCompanyId() != owner_company()->getId() || logged_user() instanceof User && !can_manage_security(logged_user())) {
-			// external users can't be admins or logged user has no rights to create admins => set as Normal 
-			$user->setType('normal');
-		} else {
-			$user->setAsAdministrator(true);
-		}
-	}
-
+//	if ($contact->getUserType() == 'admin') {
+//		if ($contact->getCompanyId() != owner_company()->getId() || logged_user() instanceof Contact && !can_manage_security(logged_user())) {
+//			// external users can't be admins or logged user has no rights to create admins => set as Normal 
+//			$contact->setUserType('normal');
+//		}
+//	}
+	
 	/* create contact for this user*/
-	if (array_var($user_data, 'create_contact') == 1) {
-		// if contact with same email exists take it, else create new
-		$contact = Contacts::getByEmail($user->getEmail(), true);
-		if (!$contact instanceof Contact) {
-			$contact = new Contact();
-			$contact->setEmail($user->getEmail());
-		} else if ($contact->isTrashed()) {
-			$contact->untrash();
-		}
-		$contact->setFirstname($user->getDisplayName());
-		$contact->setUserId($user->getId());
-		$contact->setTimezone($user->getTimezone());
-		$contact->setCompanyId($user->getCompanyId());
-		$contact->save();
-	} else {
-		$contact_id = array_var($user_data, 'contact_id');
-		$contact = Contacts::findById($contact_id);
-		if ($contact instanceof Contact) {
-			// user created from a contact 
-			$contact->setUserId($user->getId());
-			$contact->save();
-		} else {
-			// if contact with same email exists use it as user's contact, without changing it
-			$contact = Contacts::getByEmail($user->getEmail(), true);
-			if ($contact instanceof Contact) {
-				$contact->setUserId($user->getId());
-				if ($contact->isTrashed()) $contact->untrash();
-				$contact->save();
-			}
-		}
-	}
-	$contact = $user->getContact();
-	if ($contact instanceof Contact) {
-		// update contact data with data entered for this user
-		$contact->setCompanyId($user->getCompanyId());
-		if ($contact->getEmail() != $user->getEmail()) {
-			// make user's email the contact's main email address
-			if ($contact->getEmail2() == $user->getEmail()) {
-				$contact->setEmail2($contact->getEmail());
-			} else if ($contact->getEmail3() == $user->getEmail()) {
-				$contact->setEmail3($contact->getEmail());
-			} else if ($contact->getEmail2() == "") {
-				$contact->setEmail2($contact->getEmail());
-			} else {
-				$contact->setEmail3($contact->getEmail());
-			}
-		}
-		$contact->setEmail($user->getEmail());
-		$contact->save();
-	}
 
-	if (!$user->isGuest()) {
-		/* create personal project or assing the selected*/
-		//if recived a personal project assing this 
-		//project as personal project for this user
-		$new_project = null;
-		$personalProjectId = array_var($user_data, 'personal_project', 0);
-		$project = Projects::findById($personalProjectId);
-		if (!$project instanceof Project) {
-			$project = new Project();
-			$wname = new_personal_project_name($user->getUsername());
-			$project->setName($wname);
-			$project->setColor(11);
-			
-			$wdesc = Localization::instance()->lang(lang('personal workspace description'));
-			if (!is_null($wdesc)) {
-				$project->setDescription($wdesc);
-			}
-			$project->setCreatedById($user->getId());
+	ApplicationLogs::createLog($contact, ApplicationLogs::ACTION_ADD);
+
+  	$pg_id = $contact->getPermissionGroupId();
+	save_permissions($pg_id);
+
+	Hook::fire('after_user_add', $contact, $null);
 	
-			$project->save(); //Save to set an ID number
-			$project->setP1($project->getId()); //Set ID number to the first project
-			$project->save();
-			$new_project = $project;		
-		}
-		$user->setPersonalProjectId($project->getId());
-		$project_user = new ProjectUser();
-		$project_user->setProjectId($project->getId());
-		$project_user->setUserId($user->getId());
-		$project_user->setCreatedById($user->getId());
-		$project_user->setAllPermissions(true);
-		
-		$project_user->save();
-		/* end personal project */
-	}
-	$user->save();
-
-	ApplicationLogs::createLog($user, null, ApplicationLogs::ACTION_ADD);
-
-  	//TODO - Make batch update of these permissions
-	if ($permissionsString && $permissionsString != '') {
-		$permissions = json_decode($permissionsString);
-	} else {
-		$permissions = null;
-	}
-  	if (is_array($permissions) && (!logged_user() instanceof User || can_manage_security(logged_user()))) {
-  		foreach ($permissions as $perm) {			  			
-  			if (ProjectUser::hasAnyPermissions($perm->pr, $perm->pc)) {
-  				if (!$personalProjectId || $personalProjectId != $perm->wsid) {
-					$relation = new ProjectUser();
-			  		$relation->setProjectId($perm->wsid);
-			  		$relation->setUserId($user->getId());
-					
-			  		$relation->setCheckboxPermissions($perm->pc, $user->isGuest() ? false : true);
-			  		$relation->setRadioPermissions($perm->pr, $user->isGuest() ? false : true);
-			  		$relation->save();
-  				}
-  			}
-  		}
-	} // if
-	
-	if ($new_project instanceof Project && logged_user() instanceof User && logged_user()->isProjectUser($new_project)) {
-		evt_add("workspace added", array(
-			"id" => $new_project->getId(),
-			"name" => $new_project->getName(),
-			"color" => $new_project->getColor()
-		));
-	}
-
 	// Send notification...
 	try {
 		if (array_var($user_data, 'send_email_notification')) {
-			Notifier::newUserAccount($user, $password);
+			Notifier::newUserAccount($contact, $password);
 		} // if
 	} catch(Exception $e) {
-	
+		Logger::log($e->getTraceAsString());
 	} // try
-	return $user;
+	return $contact;
 }
 
 function utf8_safe($text) {
@@ -979,5 +879,168 @@ function html_to_text($html) {
 	return $h2t->get_text(); 
 }
 
+/**
+ * Returns an array with the enum values of an enum column
+ * @param string $table: name of the table to check
+ * @param string $column: name of the enum column to retrieve its values
+ * @return An array with the enum values of an enum column.
+ */
+function get_enum_values($table, $column) {
+	$sql = "SHOW COLUMNS FROM `$table` LIKE '$column';";
+	$result = DB::execute($sql);
+	$row = $result->fetchRow();
+	preg_match_all( "/'(.*?)'/" , $row['Type'], $enum_array );
+	$enum_fields = $enum_array[1];
+	return $enum_fields;
+}
 
-?>
+
+function get_user_dimensions_ids(){
+		
+	//All dimensions
+		$all_dimensions = Dimensions::findAll();
+		$dimensions_to_show = array();
+		
+		foreach ($all_dimensions as $dim){
+			if (!$dim->getDefinesPermissions()){
+				$dimensions_to_show [$dim->getId()] = $dim->getId();
+			}
+			else{
+				$contact_pg_ids = ContactPermissionGroups::getPermissionGroupIdsByContactCSV(logged_user()->getId(),false);
+				/*if dimension does not deny everything for each contact's PG, show it*/
+				if (!$dim->deniesAllForContact($contact_pg_ids)){
+					$dimensions_to_show [$dim->getId()] = $dim->getId();
+				}
+			}
+		}
+		return $dimensions_to_show;
+}
+
+function build_context_array($context_plain) {
+	$context = null ;
+	if (!empty($context_plain)) {
+		$dimensions = json_decode($context_plain) ;
+		if ($dimensions) {
+			$context = array () ;
+			foreach ($dimensions as $dimensionId => $members) {
+				if ($members && is_array($members)) {
+					//cambiar
+					foreach ($members as $member) {
+						if ($member && is_numeric($member)) { 
+							$member = Members::findById($member) ;													
+							if ($member instanceof Member ){
+								$context[] = $member ;
+							}
+						}elseif($member === 0){
+							// IS root. Retrieve the dimension 
+							$dimension = Dimensions::findById($dimensionId) ;								
+							if ($dimension instanceof Dimension ){					
+								$context[] = $dimension ;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	return $context;
+}
+
+/**
+ * @author Ignacio Vazquez - elpepe.uy@gmail.com
+ * @param string  $tableName
+ * @param array $cols
+ * @param array $rows
+ * @param int $packageSize
+ */
+function massiveInsert($tableName, $cols,  $rows, $packageSize = 100 ) {
+
+	$total = count($rows);
+	$totalPackets = ceil($total/$packageSize);
+	$cols = implode(",", $cols);
+	for ($i = 0 ; $i < $totalPackets ; $i++ ) {
+		$sql = "INSERT INTO $tableName ($cols) VALUES  ";
+		for ($j = $i * $packageSize ; $j < min ( ($i+1) * $packageSize , $total ) ; $j++ ) {
+			$sql.= " (";
+			$sql.="'".implode("','",$rows[$j])."'";
+			$sql.=")";
+			if ($j + 1 <  min ( ($i+1) * $packageSize , $total ) ){
+				$sql.=",";
+			}
+		}
+		//echo alert_r($sql);
+		if (!DB::execute($sql)){
+			throw new DBQueryError($sql);
+		}
+	}
+} 
+
+
+function prepare_email_addresses($addr_str) {
+	// exclude \n \t characters
+	$addr_str = str_replace(array("\n","\r","\t"), "", $addr_str);
+	// replace ; with , to separate email addresses
+	$addr_str = str_replace(";", ",", $addr_str);
+	
+	$result = array();
+	$addresses = explode(",", $addr_str);
+	foreach ($addresses as $addr) {
+		$addr = trim($addr);
+		if ($addr == '') continue;
+		$pos = strpos($addr, "<");
+		if ($pos !== FALSE && strpos($addr, ">", $pos) !== FALSE) {
+			$name = trim(substr($addr, 0, $pos));
+			$val = trim(substr($addr, $pos + 1, -1));
+			if (preg_match(EMAIL_FORMAT, $val)) {
+				$result[] = array($val, $name);
+			}
+		} else {
+			if (preg_match(EMAIL_FORMAT, $addr)) {
+				$result[] = array($addr);
+			}
+		}
+	}
+	return $result;
+}
+
+/**
+ * Iused by installers (plugin installers) 
+ */
+function executeMultipleQueries($sql, &$total_queries = null , &$executed_queries = null ) {
+	if(!trim($sql)) {
+		$total_queries = 0;
+		$executed_queries = 0;
+		return true;
+	} // if
+
+	// Make it work on PHP 5.0.4
+	$sql = str_replace(array("\r\n", "\r"), array("\n", "\n"), $sql);
+
+	$queries = explode(";\n", $sql);
+	if(!is_array($queries) || !count($queries)) {
+		$total_queries = 0;
+		$executed_queries = 0;
+		return true;
+	} 
+
+	$total_queries = count($queries);
+	foreach($queries as $query) {
+		if(trim($query)) {
+			if(@mysql_query(trim($query))) {
+				$executed_queries++;
+			} else {
+				return false; 
+			} 
+		}
+	}
+}
+function getAllRoleUsers($role){
+	$contacts=Contacts::getAllUsers(" AND `user_type` = $role");
+	$pgs=array();
+	if(!$contacts)return false;
+	foreach ($contacts as $contact){
+		alert(" ".$contact->getDisplayName());
+		$pgs[]=$contact->getPermissionGroupId();
+	}
+	return $pgs;
+}

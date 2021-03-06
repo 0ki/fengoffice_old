@@ -9,32 +9,12 @@
 class ProjectEvent extends BaseProjectEvent {
 
 	/**
-	 * This project object is taggable
-	 *
-	 * @var boolean
-	 */
-	protected $is_taggable = true;
-
-	/**
-	 * Message comments are searchable
-	 *
-	 * @var boolean
-	 */
-	protected $is_searchable = true;
-
-	/**
 	 * Array of searchable columns
 	 *
 	 * @var array
 	 */
-	protected $searchable_columns = array('subject', 'description');
+	protected $searchable_columns = array('name', 'description');
 
-	/**
-	 * Project Event is commentable object
-	 *
-	 * @var boolean
-	 */
-	protected $is_commentable = true;
 
 	/**
 	 * Array of invitated Users
@@ -55,8 +35,8 @@ class ProjectEvent extends BaseProjectEvent {
 	} // __construct
 
 	function getUserName(){
-		$user = Users::findById($this->getCreatedById());
-		if ($user instanceof User ) return $user->getUsername();
+		$user = Contacts::findById($this->getCreatedById());
+		if ($user instanceof Contact ) return $user->getUsername();
 		else return null;
 	}
 	
@@ -105,7 +85,7 @@ class ProjectEvent extends BaseProjectEvent {
 	 * @return string
 	 */
 	function getDetailsUrl() {
-		return get_url('event', 'viewevent', array('id' => $this->getId()));
+		return get_url('event', 'view', array('id' => $this->getId()));
 	} // getDetailsUrl
 
 	/**
@@ -151,7 +131,7 @@ class ProjectEvent extends BaseProjectEvent {
 
 	
 	function getViewUrl() {
-		return get_url('event', 'viewevent', array('id' => $this->getId()));
+		return get_url('event', 'view', array('id' => $this->getId()));
 	}
 	
 	
@@ -160,78 +140,52 @@ class ProjectEvent extends BaseProjectEvent {
 	// ---------------------------------------------------
 
 	/**
-	 * Check CAN_MANAGE_EventS permission
-	 *
-	 * @access public
-	 * @param User $user
-	 * @return boolean
-	 */
-	function canManage(User $user) {
-		return can_write($user,$this);
-	} // canManage
-
-
-	/**
 	 * Empty implementation of abstract method. Message determins if user have view access
 	 *
 	 * @param void
 	 * @return boolean
 	 */
-	function canView(User $user) {
-		return can_read($user,$this);
+	function canView(Contact $user) {
+		return can_read($user, $this->getMembers(), $this->getObjectTypeId());
 	} // canView
 
 	/**
 	 * Returns true if user can download this Event
 	 *
-	 * @param User $user
+	 * @param Contact $user
 	 * @return boolean
 	 */
-	function canDownload(User $user) {
-		return can_read($user,$this);
+	function canDownload(Contact $user) {
+		return can_read($user, $this->getMembers(), $this->getObjectTypeId());
 	} // canDownload
+	
+	
+	function canAdd(Contact $user, $context){
+		return can_add($user, $context, ProjectEvents::instance()->getObjectTypeId());
+	}
 
-	/**
-	 * Empty implementation of abstract methods. Messages determine does user have
-	 * permissions to add comment
-	 *
-	 * @param void
-	 * @return null
-	 */
-	function canAdd(User $user, Project $project) {
-		return can_add($user,$project,get_class(ProjectEvents::instance()));	
-	} // canAdd
 
 	/**
 	 * Check if specific user can edit this Event
 	 *
 	 * @access public
-	 * @param User $user
+	 * @param Contact $user
 	 * @return boolean
 	 */
-	function canEdit(User $user) {
-		return can_write($user,$this);
+	function canEdit(Contact $user) {
+		return can_write($user, $this->getMembers(), $this->getObjectTypeId());
 	} // canEdit
 
-	/**
-	 * Returns true if $user can update Event options
-	 *
-	 * @param User $user
-	 * @return boolean
-	 */
-	function canUpdateOptions(User $user) {
-		return can_write($user,$this);
-	} // canUpdateOptions
 
 	/**
 	 * Check if specific user can delete this comment
 	 *
 	 * @access public
-	 * @param User $user
+	 * @param Contact $user
 	 * @return boolean
 	 */
-	function canDelete(User $user) {
-		return can_delete($user,$this);
+	function canDelete(Contact $user) {
+		return can_delete($user,$this->getMembers(), $this->getObjectTypeId());
 	} // canDelete
 
 	// ---------------------------------------------------
@@ -239,12 +193,13 @@ class ProjectEvent extends BaseProjectEvent {
 	// ---------------------------------------------------
 
 	function save() {
-		parent::save();
+		return parent::save();
+		
+		// update reminders
 		$id = $this->getId();
 		$sql = "UPDATE `".TABLE_PREFIX."object_reminders` SET
-			`date` = date_sub((SELECT `start` FROM `".TABLE_PREFIX."project_events` WHERE `id` = $id),
-				interval `minutes_before` minute) WHERE
-				`object_manager` = 'ProjectEvents' AND `object_id` = $id;";
+			`date` = date_sub((SELECT `start` FROM `".TABLE_PREFIX."project_events` WHERE `id` = $id), interval `minutes_before` minute) 
+			WHERE `object_id` = $id;";
 		DB::execute($sql);
 	}
 	
@@ -257,27 +212,10 @@ class ProjectEvent extends BaseProjectEvent {
 	// ---------------------------------------------------
 	//  ApplicationDataObject implementation
 	// ---------------------------------------------------
-
-	/**
-	 * Return object name
-	 *
-	 * @access public
-	 * @param void
-	 * @return string
-	 */
-	function getObjectName() {
-		return $this->getSubject();
-	} // getObjectName
-
-	/**
-	 * Return object type name
-	 *
-	 * @param void
-	 * @return string
-	 */
-	function getObjectTypeName() {
-		return 'event';
-	} // getObjectTypeName
+	
+	function getSubject() {
+		return $this->getObjectName();
+	}
 
 	/**
 	 * Return object URl
@@ -298,28 +236,32 @@ class ProjectEvent extends BaseProjectEvent {
 	 * @return boolean
 	 */
 	function validate(&$errors) {
-		if(!$this->validatePresenceOf('subject')) $errors[] = lang('event subject required');
+		if(!$this->getObject()->validatePresenceOf('name')) $errors[] = lang('event subject required');
 		if(!$this->validateMaxValueOf('description',3000)) $errors[] = lang('event description maxlength');
-		if(!$this->validateMaxValueOf('subject', 100)) $errors[] = lang('event subject maxlength');
+		if(!$this->getObject()->validateMaxValueOf('name', 100)) $errors[] = lang('event subject maxlength');
 	} // validate
+	
 	
 	function getInvitations() {
 		return $this->event_invitations;
 	}
+	
 	
 	function clearInvitations() {
 		$this->event_invitations = array();
 		EventInvitations::delete(array ('`event_id` = ?', $this->getId()));
 	}
 	
+	
 	function addInvitation($inv) {
 		if (!is_array($this->event_invitations)) {
 			$this->event_invitations = array();
 		}
 		if (isset($inv)) {
-			$this->event_invitations[$inv->getUserId()] = $inv;
+			$this->event_invitations[$inv->getContactId()] = $inv;
 		}
 	}
+	
 
 } // projectEvent
 

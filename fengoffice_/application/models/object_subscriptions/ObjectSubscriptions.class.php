@@ -11,28 +11,19 @@
     /**
     * Return array of users that are subscribed to this specific message
     *
-    * @param ProjectDataObject $message
+    * @param ContentDataObject $object
     * @return array
     */
-    static function getUsersByObject(ProjectDataObject $object) {
+    static function getUsersByObject(ContentDataObject$object) {
       $users = array();
       $subscriptions = ObjectSubscriptions::findAll(array(
-        'conditions' => '`object_id` = ' . DB::escape($object->getId()) .
-        		' AND `object_manager` = ' . DB::escape(get_class($object->manager()))
+        'conditions' => '`object_id` = ' . DB::escape($object->getId())
       )); // findAll
       if(is_array($subscriptions)) {
         foreach($subscriptions as $subscription) {
           $user = $subscription->getUser();
-          if(!$user instanceof User) continue;
+          if(!$user instanceof Contact) continue;
           
-		  $user_object_workspaces = $object->getWorkspaces($user->getWorkspacesQuery());
-		  $can_read = true;
-		  foreach ($user_object_workspaces as $ws) {
-			$can_read = can_read_type($user, $ws, get_class($object->manager()));
-			if ($can_read) break;  
-		  }
-		  if (!$can_read) continue;  				
-
           $users[] = $user;
         } // foreach
       } // if
@@ -42,18 +33,18 @@
     /**
     * Return array of objects that $user is subscribed to
     *
-    * @param User $user
+    * @param Contact $user
     * @return array
     */
-    static function getObjectsByUser(User $user) {
+    static function getObjectsByUser(Contact $user) {
       $objects = array();
       $subscriptions = ObjectSubscriptions::findAll(array(
-        'conditions' => '`user_id` = ' . DB::escape($user->getId())
+        'conditions' => '`contact_id` = ' . DB::escape($user->getId())
       )); // findAll
       if(is_array($subscriptions)) {
         foreach($subscriptions as $subscription) {
           $object = $subscription->getObject();
-          if($object instanceof ProjectDataObject) $objects[] = $object;
+          if($object instanceof ContentDataObject) $objects[] = $object;
         } // foreach
       } // if
       return $objects;
@@ -62,24 +53,23 @@
     /**
     * Clear subscriptions by object
     *
-    * @param ProjectDataObject $message
+    * @param ContentDataObject $object
     * @return boolean
     */
-    static function clearByObject(ProjectDataObject $object) {
+    static function clearByObject(ContentDataObject $object) {
       return ObjectSubscriptions::delete(
-      		'`object_id` = ' . DB::escape($object->getId()) .
-      		' AND `object_manager` = ' . DB::escape(get_class($object->manager()))
+      		'`object_id` = ' . DB::escape($object->getId())
       );
     } // clearByObject
     
     /**
     * Clear subscriptions by user
     *
-    * @param User $user
+    * @param Contact $user
     * @return boolean
     */
-    static function clearByUser(User $user) {
-      return ObjectSubscriptions::delete('`user_id` = ' . DB::escape($user->getId()));
+    static function clearByUser(Contact $user) {
+      return ObjectSubscriptions::delete('`contact_id` = ' . DB::escape($user->getId()));
     } // clearByUser
     
   } // ObjectSubscriptions 

@@ -17,7 +17,7 @@
 // | Authors: Dietrich Ayala <dietrich@ganx4.com> Original Author         |
 // +----------------------------------------------------------------------+
 //
-// $Id: interop_Round2GroupB.php,v 1.1 2010/01/22 18:09:24 acio Exp $
+// $Id: interop_Round2GroupB.php 7 2010-01-22 18:14:51Z acio $
 //
 require_once 'params_classes.php';
 

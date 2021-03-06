@@ -69,7 +69,7 @@ if($showOpenSubtasksDiv) { ?>
       
 <!-- Checkbox -->
 <?php if($task->canChangeStatus(logged_user()) && !$task_list->isTrashed()) { ?>
-    <td class="taskCheckbox"><?php echo checkbox_link($task->getCompleteUrl(rawurlencode(get_url('task', 'view_task', array('id' => $task_list->getId())))), false, lang('mark task as completed')) ?></td>
+    <td class="taskCheckbox"><?php echo checkbox_link($task->getCompleteUrl(rawurlencode(get_url('task', 'view', array('id' => $task_list->getId())))), false, lang('mark task as completed')) ?></td>
 <?php } else { ?>
         <td class="taskCheckbox"><img src="<?php echo icon_url('not-checked.jpg') ?>" alt="<?php echo lang('open task') ?>" /></td>
 <?php } // if?>
@@ -79,7 +79,7 @@ if($showOpenSubtasksDiv) { ?>
 <?php if($task->getAssignedTo()) { ?>
           <span class="assignedTo"><?php echo clean($task->getAssignedTo()->getObjectName()) ?>:</span> 
 <?php } // if{ ?>
-          <a class="internalLink" href="<?php echo $task->getObjectUrl() ?>"><?php echo ($task->getTitle() && $task->getTitle()!='' )?clean($task->getTitle()):clean($task->getText()) ?></a> 
+          <a class="internalLink" href="<?php echo $task->getObjectUrl() ?>"><?php echo ($task->getObjectName() && $task->getObjectName()!='' )?clean($task->getObjectName()):clean($task->getText()) ?></a> 
           <?php if($task->canEdit(logged_user()) && !$task->isTrashed()) { ?>
           	<a class="internalLink blank" href="<?php echo $task->getEditListUrl() ?>" title="<?php echo lang('edit task') ?>">
           	<img src="<?php echo icon_url('edit.gif') ?>" alt="" /></a>
@@ -102,7 +102,7 @@ if($showOpenSubtasksDiv) { ?>
       <form class="internalForm" action="<?php echo $task_list->getAddTaskUrl(false) ?>" method="post">
         <div class="taskListAddTaskFields">
           <label for="addTaskTitle<?php echo $task_list->getId() ?>"><?php echo lang('name') ?>:</label>
-          <?php echo text_field("task[title]", null, array('class' => 'title', 'id' => 'addTaskTitle' . $task_list->getId())) ?>
+          <?php echo text_field("task[name]", null, array('class' => 'title', 'id' => 'addTaskTitle' . $task_list->getId())) ?>
           <label for="addTaskText<?php echo $task_list->getId() ?>"><?php echo lang('description') ?>:</label>
           <?php echo textarea_field("task[text]", null, array('class' => 'short', 'id' => 'addTaskText' . $task_list->getId())) ?>
         </div>
@@ -121,15 +121,12 @@ if($showOpenSubtasksDiv) { ?>
 	       </td><td>
 	       	<div class="taskListAddTaskAssignedTo">
 	      	<?php
-	      		$assigned_to = $task_list->getAssignedTo() instanceof User ? $task_list->getAssignedTo()->getCompany()->getId().":".$task_list->getAssignedTo()->getId() : null; 
-	      		echo assign_to_select_box('task[assigned_to]', $task_list->getProject(), $assigned_to);
+	      		echo assign_to_select_box('task[assigned_to_contact_id]', $task_list->getMembers(), $task_list->getAssignedToContactId());
 	      	?>
 	      	</div>
 	      </td></tr></tbody></table>
 		</div>
 		<input type="hidden" id="addTaskMilestoneId<?php echo $task_list->getId() ?>" name="task[milestone_id]" value="<?php echo $task_list->getMilestoneId() ?>"/>
-		<input type="hidden" id="addTaskProjectId<?php echo $task_list->getId() ?>" name="task[project_id]" value="<?php echo $task_list->getProjectId() ?>"/>
-		<input type="hidden" id="addTaskTags<?php echo $task_list->getId() ?>" name="task[tags]" value="<?php echo implode(',',$task_list->getTagNames()) ?>"/>
 		<input type="hidden" id="addTaskPriority<?php echo $task_list->getId() ?>" name="task[priority]" value="<?php echo $task_list->getPriority() ?>"/>
 		<input type="hidden" id="addTaskInputType<?php echo $task_list->getId() ?>" name="task[inputtype]" value="taskview"/>
         <?php echo submit_button(lang('add sub task'), 's', array('id' => 'addTaskSubmit' . $task_list->getId(), 'fromTaskView' => 'true')) ?> <?php echo lang('or') ?> <a href="#" onclick="App.modules.addTaskForm.hideAddTaskForm(<?php echo $task_list->getId() ?>); return false;"><?php echo lang('cancel') ?></a>
@@ -155,12 +152,12 @@ if($showCompletedSubtasksDiv) { ?>
 <?php if($on_list_page || ($counter <= 5)) { ?>
       <tr>
 <?php if($task->canChangeStatus(logged_user()) && !$task->isTrashed()) { ?>
-    <td class="taskCheckbox"><?php echo checkbox_link($task->getOpenUrl(rawurlencode(get_url('task', 'view_task', array('id' => $task_list->getId())))), true, lang('mark task as open')) ?></td>
+    <td class="taskCheckbox"><?php echo checkbox_link($task->getOpenUrl(rawurlencode(get_url('task', 'view', array('id' => $task_list->getId())))), true, lang('mark task as open')) ?></td>
 <?php } else { ?>
         <td class="taskCheckbox"><img src="<?php echo icon_url('checked.jpg') ?>" alt="<?php echo lang('completed task') ?>" /></td>
 <?php } // if ?>
         <td class="taskText">
-        	<a class="internalLink" href="<?php echo $task->getObjectUrl() ?>"><?php echo clean($task->getTitle()) ?></a> 
+        	<a class="internalLink" href="<?php echo $task->getObjectUrl() ?>"><?php echo clean($task->getObjectName()) ?></a> 
           <?php if($task->canEdit(logged_user()) && !$task->isTrashed()) { ?>
           	<a class="internalLink" href="<?php echo $task->getEditListUrl() ?>" class="blank" title="<?php echo lang('edit task') ?>">
           	<img src="<?php echo icon_url('edit.gif') ?>" alt="" /></a>
@@ -171,7 +168,7 @@ if($showCompletedSubtasksDiv) { ?>
           <?php } // if ?>
           <br />
           <?php if ($task->getCompletedBy() instanceof User) {?>
-          	<span class="taskCompletedOnBy">(<?php echo lang('completed on by', format_date($task->getCompletedOn()), $task->getCompletedBy()->getCardUrl(), clean($task->getCompletedBy()->getDisplayName())) ?>)</span>
+          	<span class="taskCompletedOnBy">(<?php echo lang('completed on by', format_date($task->getCompletedOn()), $task->getCompletedBy()->getCardUserUrl(), clean($task->getCompletedBy()->getDisplayName())) ?>)</span>
           <?php } else { ?>
           <span class="taskCompletedOnBy">(<?php echo lang('completed on by', format_date($task->getCompletedOn()), "#", lang("n/a")) ?>)</span>
           <?php } ?>
@@ -192,18 +189,23 @@ if($showCompletedSubtasksDiv) { ?>
 
 
 $time_estimate = $task_list->getTimeEstimate();
-$total_minutes = $task_list->getTotalMinutes();
+$total_minutes = 0;//$total_minutes = $task_list->getTotalMinutes();
 
 if ($time_estimate > 0 || $total_minutes > 0){?>
 <br/>
 <table>
+<tr>
+	<td><div style="font-weight:bold"><?php echo lang('percent completed'). ':&nbsp;'?></div></td>
+	<td><?php echo taskPercentCompletedBar($task_list) //$task_list->getPercentCompleted() . "%"; ?></td>
+</tr>
+
 <?php if ($time_estimate > 0) {?>
 <tr><td>
 	<div style="font-weight:bold"><?php echo lang('time estimate'). ':&nbsp;'?></div></td><td> 
 		<?php echo DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($time_estimate * 60), 'hm', 60) ?></td></tr>
 <?php } ?>
 
-<?php if ($total_minutes > 0 && can_manage_time(logged_user())) {?>
+<?php if (0 && $total_minutes > 0 && can_manage_time(logged_user())) {?>
 	<tr><td><div style="font-weight:bold"><?php echo lang('total time'). ':&nbsp;' ?></div></td><td>
 		<span style="font-size:120%;font-weight:bold;<?php echo ($time_estimate > 0 && $total_minutes > $time_estimate) ? 'color:#FF0000':'' ?>">
 			<?php echo DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($total_minutes * 60), 'hm', 60) ?>
@@ -225,4 +227,13 @@ if ($time_estimate > 0 || $total_minutes > 0){?>
 		else if ($task_list->getRepeatY() > 0) echo lang('n years', $task_list->getRepeatY()) . ".";
 	?>
 	</div>
-<?php } ?>
+<?php }
+
+
+
+if (config_option('use tasks dependencies')) {
+	echo '<div style="margin-top:10px">';
+	$this->includeTemplate(get_template_path('previous_task_list', 'task'));
+	echo '<div>';
+}
+

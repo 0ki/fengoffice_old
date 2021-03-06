@@ -172,3 +172,36 @@
 .ogTasksGroup {
 	border: 1px solid white;
 }
+
+.estimated-time {
+	padding-left: 8px;
+}
+
+.task-percent-completed-0 {
+	background-color: #DD0000;
+}
+
+.task-percent-completed-25 {
+	background-color: #FF8C00;
+}
+
+.task-percent-completed-50 {
+	background-color: #FFE500;
+}
+
+.task-percent-completed-75 {
+	background-color: #66CC22;
+}
+
+.task-percent-completed-100 {
+	background-color: #49940C;
+}
+
+.complete-task-bck {
+	background-color: #D1E8D3;
+}
+
+.incomplete-task-bck {
+	background-color: #FF9088;
+	color: white;
+}

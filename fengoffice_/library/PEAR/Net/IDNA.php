@@ -32,7 +32,7 @@
  * @author  Markus Nix <mnix@docuverse.de>
  * @author  Matthias Sommerfeld <mso@phlylabs.de>
  * @package Net
- * @version $Id: IDNA.php,v 1.1 2010/01/22 18:07:07 acio Exp $
+ * @version $Id: IDNA.php 7 2010-01-22 18:14:51Z acio $
  */
 
 class Net_IDNA

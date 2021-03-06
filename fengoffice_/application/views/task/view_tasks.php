@@ -24,7 +24,6 @@ foreach ($tasks as $task) {
 		"milestone:" . $task->getMilestoneId() . "," .
 		"subtasks:[]," .
 		"assignedTo:'" . str_replace("'", "\\'", $task->getAssignedTo() == null ? '' : $task->getAssignedToName()) . "'," .
-		"workspaceids:'" . str_replace("'", "\\'", $task->getProject()->getId()) . "'," .
 		"expanded:false," .
 		"completed:" . ($task->isCompleted()?"true":"false") . "," .
 		"completedBy:'" . str_replace("'", "\\'", $task->getCompletedByName()) . "'," .
@@ -32,6 +31,7 @@ foreach ($tasks as $task) {
 		"daysLate:" . $task->getLateInDays() . "," .
 		"priority:" . $task->getPriority() . "," .
 		"duedate:" . ($task->getDueDate() ? $task->getDueDate()->getTimestamp() : '0') . "," . 
+		"percentCompleted:" . $task->getPercentCompleted() . "," . 
 		"order:" . $task->getOrder();
 	
 	echo '{' . $taskInfo . '}';

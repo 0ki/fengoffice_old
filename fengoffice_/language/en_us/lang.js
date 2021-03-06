@@ -1,10 +1,15 @@
 locale = 'en_us';
 addLangs({
+	'all' : 'all',
+	'All' : 'All',
+	'filter members' : 'Filter members',
+	'person' : 'Person',
+	'close' : 'close',
+	'information' : 'Information',
 	'check in': '<b>Check in</b>',
 	'cannot check in': 'Cannot check in',
 	'add as new revision to': 'Add as new revision to',
 	'error loading content': 'Error loading content. Try again later.\nIf the problem persists contact the administrator.',
-	'http error': 'Error {0}: {1}',
 	'projects': 'Workspaces',
 	'administration': 'Administration',
 	'open link': 'Open Link',
@@ -15,6 +20,9 @@ addLangs({
 	'help': 'Help',
 	'menu': 'Menu',
 	'back': 'Back',
+	'all': 'All',
+	'All': 'All',
+	'filter members' : 'Filters',
 	'server could not be reached': 'Server could not be reached',
 	'http error': 'Error {0}: {1}',
 	'refesh desc': 'Refresh the view',
@@ -33,14 +41,13 @@ addLangs({
   	'mark as unread': 'Mark as unread',
   	'mark as read desc': 'Mark the selected objects as read.',
   	'confirm inherit permissions': 'Do you want to inherit all permissions from parent workspace?',
-
+  	'filters': 'Filters',
 	/* file manager */
 	'by': 'by',
 	'name': 'Name',
 	'project': 'Workspace',
 	'user': 'User',
 	'tag': 'Tag',
-	'type': 'Type',
 	'tags': 'Tags',
 	'last update': 'Last Update',
 	'created on': 'Created on',
@@ -164,9 +171,8 @@ addLangs({
 	'message': 'Note',
 	
 	'workspaces': 'Workspaces',
-	'add space': 'Add Workspace',
-	'edit space': 'Edit',		
 	'all': 'All',
+	'all customers': 'All Customers',        
 	'create a workspace': 'Create a new workspace',
 	'delete selected workspace': 'Delete the selected workspace',
 	
@@ -287,7 +293,8 @@ addLangs({
 	'most active desc': 'Sort by most activity',
 	'sort desc': 'Sort the view',
 	
-	'no objects message': 'There are no \'{0}\' in \'{1}\'',
+	//'no objects message': 'There are no \'{0}\' in \'{1}\'',
+	'no objects message': 'There are no {0}',
 	'no more objects message': 'There are no more \'{0}\' to display',
 	'no objects with tag message': 'There are no {0} tagged as \'{2}\' in \'{1}\'',
 	'objects': 'Objects',
@@ -436,7 +443,6 @@ addLangs({
 	'password': 'Password',
 	'remember me': 'Remember me',
 	'completed': 'Completed',
-	'open task status' : 'Open',
 	'notify': 'Notify',
 	'hours worked': 'Hours worked',
 	
@@ -806,6 +812,17 @@ addLangs({
     'delete object subtype': 'Delete object subtype',
     'delete object subtype warning': 'If you delete this subtype it will be removed from all objects that have it set. Are you sure you want to delete this subtype?',
     'object subtype deleted': 'Subtype deleted. {0}',
-    'change status': 'Change status',
-    'warning create users automatically email': 'Warning: If you send this email without attaching all of the contents, and the receivers do not have an account in this Feng Office installation, an account will be automatically created for them. Keep in mind that this account will only have access to the documents and nowhere else. \n\n Do you wish to proceed?'
+    
+    'context': 'Context',
+    'none selected': 'None selected',
+    'select context members': 'Select context members',
+    'member fields': 'Member fields',
+    'must be numeric': '{0} must be numeric',
+    'new member': 'New member',
+    'view more': 'View more',
+    'type' : 'Type',
+  	'estimated' : 'Estimated',
+  	'this task has x pending tasks': 'This task has {0} pending open tasks',
+  	'this task has no pending dependencies and can be completed': 'This task has no pending dependencies and can be completed',
+  	'you must select a member from the following dimensions': 'To perform this action you have to select a member of these dimensions: {0}'
 });

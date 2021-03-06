@@ -6,7 +6,7 @@
  *
  * @author Ilija Studen <ilija.studen@gmail.com>
  */
-abstract class BaseProjectMilestones extends ProjectDataObjects {
+abstract class BaseProjectMilestones extends ContentDataObjects {
 
 	/**
 	 * Column name => Column type map
@@ -15,26 +15,14 @@ abstract class BaseProjectMilestones extends ProjectDataObjects {
 	 * @static
 	 */
 	static private $columns = array(
-    	'id' => DATA_TYPE_INTEGER,
-    	'name' => DATA_TYPE_STRING,
+    	'object_id' => DATA_TYPE_INTEGER,
     	'description' => DATA_TYPE_STRING,
     	'due_date' => DATA_TYPE_DATETIME,
-    	'assigned_to_company_id' => DATA_TYPE_INTEGER,
-    	'assigned_to_user_id' => DATA_TYPE_INTEGER,
-    	'is_private' => DATA_TYPE_BOOLEAN,
     	'is_urgent' => DATA_TYPE_BOOLEAN,
     	'completed_on' => DATA_TYPE_DATETIME,
     	'completed_by_id' => DATA_TYPE_INTEGER,
-    	'created_on' => DATA_TYPE_DATETIME,
-    	'created_by_id' => DATA_TYPE_INTEGER,
-    	'updated_on' => DATA_TYPE_DATETIME,
-    	'updated_by_id' => DATA_TYPE_INTEGER,
-		'is_template' => DATA_TYPE_BOOLEAN,
-		'from_template_id' => DATA_TYPE_INTEGER,
-		'trashed_on' => DATA_TYPE_DATETIME,
-     	'trashed_by_id' => DATA_TYPE_INTEGER,
-    	'archived_on' => DATA_TYPE_DATETIME,
-    	'archived_by_id' => DATA_TYPE_INTEGER,
+    	'is_template' => DATA_TYPE_BOOLEAN,
+		'from_template_id' => DATA_TYPE_INTEGER
 	);
 
 	/**
@@ -85,7 +73,7 @@ abstract class BaseProjectMilestones extends ProjectDataObjects {
 	 * @return array or string
 	 */
 	function getPkColumns() {
-		return 'id';
+		return 'object_id';
 	} // getPkColumns
 
 	/**
@@ -96,7 +84,7 @@ abstract class BaseProjectMilestones extends ProjectDataObjects {
 	 * @return string
 	 */
 	function getAutoIncrementColumn() {
-		return 'id';
+		return null;
 	} // getAutoIncrementColumn
 
 	/**
@@ -108,7 +96,7 @@ abstract class BaseProjectMilestones extends ProjectDataObjects {
 	 */
 	function getSystemColumns() {
 		return array_merge(parent::getSystemColumns(), array(
-      		'assigned_to_company_id', 'assigned_to_user_id', 'completed_by_id', 'from_template_id')
+      		'assigned_to_contact_id', 'completed_by_id', 'from_template_id')
 		);
 	} // getSystemColumns
 	
@@ -120,7 +108,7 @@ abstract class BaseProjectMilestones extends ProjectDataObjects {
     * @return array
     */
     function getExternalColumns() {
-      return array_merge(parent::getExternalColumns(), array('assigned_to_company_id', 'assigned_to_user_id'));
+      return array_merge(parent::getExternalColumns(), array('assigned_to_contact_id'));
     } // getExternalColumns
 	
 	/**
@@ -130,9 +118,9 @@ abstract class BaseProjectMilestones extends ProjectDataObjects {
     * @param void
     * @return array
     */
-    function getReportObjectTitleColumns() {
+    /*function getReportObjectTitleColumns() {
       return array('name');
-    } // getReportObjectTitleColumns
+    } // getReportObjectTitleColumns*/
     
     /**
     * Return report object title
@@ -141,10 +129,10 @@ abstract class BaseProjectMilestones extends ProjectDataObjects {
     * @param void
     * @return string
     */
-    function getReportObjectTitle($values) {
+    /*function getReportObjectTitle($values) {
     	$name = isset($values['name']) ? $values['name'] : ''; 
     	return $name;
-    } // getReportObjectTitle
+    } // getReportObjectTitle*/
     
     /**
     * Return template object properties

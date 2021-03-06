@@ -59,18 +59,12 @@ class ConfigController extends ApplicationController {
 		$submited_values = array_var($_POST, 'options');
 		if(is_array($submited_values)) {
 			foreach($options as $option) {
-				//update global cache if available
-				if (GlobalCache::isAvailable() && GlobalCache::key_exists('config_option_'.$option->getName())) {					
-					GlobalCache::delete('config_option_'.$option->getName());					
-				}		
 				$new_value = array_var($submited_values, $option->getName());
 				if(is_null($new_value) || ($new_value == $option->getValue())) continue;
 
 				$option->setValue($new_value);
 				$option->save();
-				
 				evt_add("config option changed", array('name' => $option->getName(), 'value' => $option->getValue()));
-				
 			} // foreach
 			flash_success(lang('success update config category', $category->getDisplayName()));
 			ajx_current("back");
@@ -83,7 +77,7 @@ class ConfigController extends ApplicationController {
 	 *
 	 */
 	function default_user_preferences() {
-		tpl_assign('config_categories', UserWsConfigCategories::getAll());
+		tpl_assign('config_categories', ContactConfigCategories::getAll());
 	} //list_preferences
 
 	/**
@@ -91,8 +85,8 @@ class ConfigController extends ApplicationController {
 	 *
 	 */
 	function update_default_user_preferences(){
-		$category = UserWsConfigCategories::findById(get_id());
-		if(!($category instanceof UserWsConfigCategory)) {
+		$category = ContactConfigCategories::findById(get_id());
+		if(!($category instanceof ContactConfigCategory)) {
 			flash_error(lang('config category dnx'));
 			$this->redirectToReferer(get_url('user','card'));
 		} // if
@@ -102,8 +96,8 @@ class ConfigController extends ApplicationController {
 			$this->redirectToReferer(get_url('user','card'));
 		} // if
 
-		$options = $category->getUserWsOptions(false);
-		$categories = UserWsConfigCategories::getAll(false);
+		$options = $category->getContactOptions(false);
+		$categories = ContactConfigCategories::getAll(false);
 
 		tpl_assign('category', $category);
 		tpl_assign('options', $options);
@@ -116,15 +110,11 @@ class ConfigController extends ApplicationController {
 				foreach ($options as $option) {
 					$new_value = array_var($submited_values, $option->getName());
 					if (is_null($new_value) || ($new_value == $option->getValue())) continue;
-					
+
 					$option->setValue($new_value);
 					$option->save();
-					// update global cache if available					
-					if (GlobalCache::isAvailable() && GlobalCache::key_exists('user_config_option_def_'.$option->getName())) {							
-						GlobalCache::update('user_config_option_def_'.$option->getName(), $new_value);
-					}
 					if (!user_has_config_option($option->getName())) {
-						evt_add('user preference changed', array('name' => $option->getName(), 'value' => $new_value));						
+						evt_add('user preference changed', array('name' => $option->getName(), 'value' => $new_value));
 					}
 				} // foreach
 				DB::commit();
@@ -144,7 +134,7 @@ class ConfigController extends ApplicationController {
 	function remove_getting_started_widget(){
 		try{
 			DB::beginWork();
-			$option = UserWsConfigOptions::getByName('show getting started widget');
+			$option = ContactConfigOptions::getByName('show getting started widget');
 			$option->setUserValue(0, logged_user()->getId());
 			$option->save();
 			DB::commit();

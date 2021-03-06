@@ -49,6 +49,8 @@
       $installation->setTablePrefix((string) trim($this->getFromStorage('database_prefix')));
       $installation->setDatabaseEngine((string) trim($this->getFromStorage('database_engine')));
       $installation->setAbsoluteUrl((string) trim($this->getFromStorage('absolute_url')));
+      $installation->setPlugins($this->getFromStorage('plugins'));
+      
       
       ob_start();
       if($installation->execute()) {

@@ -33,7 +33,7 @@
 // | Co-Author: Damian Fernandez Sosa <damlists@cnba.uba.ar>               |
 // +-----------------------------------------------------------------------+
 //
-// $Id: POP3.php,v 1.1.6.1 2010/11/30 15:42:49 diego Exp $
+// $Id: POP3.php 375 2010-12-10 20:24:52Z  $
 
 require_once('Net/Socket.php');
 

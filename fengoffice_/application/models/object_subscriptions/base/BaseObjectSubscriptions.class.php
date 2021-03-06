@@ -16,8 +16,8 @@
     */
     static private $columns = array(
     	'object_id' => DATA_TYPE_INTEGER,
-    	'object_manager' => DATA_TYPE_STRING,
-    	'user_id' => DATA_TYPE_INTEGER);
+    	'contact_id' => DATA_TYPE_INTEGER
+    );
   
     /**
     * Construct
@@ -67,11 +67,7 @@
     * @return array or string
     */
     function getPkColumns() {
-      return array (
-  0 => 'object_id',
-  1 => 'object_manager',
-  2 => 'user_id',
-);
+      return array ('object_id', 'contact_id');
     } // getPkColumns
     
     /**

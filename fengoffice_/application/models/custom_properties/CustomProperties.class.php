@@ -24,8 +24,8 @@ class  CustomProperties extends  BaseCustomProperties {
 	 * @param $object_type
 	 * @return unknown_type
 	 */
-	static function countHiddenCustomPropertiesByObjectType($object_type) {
-		return self::count(array("`object_type` = ? AND `is_required` = ? AND `visible_by_default` = ?", $object_type, false, false));
+	static function countHiddenCustomPropertiesByObjectType($object_type_id) {
+		return self::count(array("`object_type_id` = ? AND `is_required` = ? AND `visible_by_default` = ?", $object_type_id, false, false));
 	}
 
 	/**
@@ -33,8 +33,11 @@ class  CustomProperties extends  BaseCustomProperties {
 	 *
 	 * @param $object_type
 	 * @return array
+	 * 
 	 */
 	static function getAllCustomPropertiesByObjectType($object_type, $co_type = null) {
+		return array() ; //FIXME Pepe - adaptar al nuevo esquema
+		
 		if ($co_type) {
 			$cond = "`object_type` = '$object_type' AND `id` IN (".CustomPropertiesByCoType::instance()->getCustomPropertyIdsByCoTypeCSV($co_type).")";
 		} else {
@@ -54,6 +57,9 @@ class  CustomProperties extends  BaseCustomProperties {
 	 * @return array
 	 */
 	static function getCustomPropertyIdsByObjectType($object_type) {
+		return array() ; //FIXME Pepe - adaptar al nuevo esquema
+		
+		
 		$rows = DB::executeAll("SELECT `id` FROM " . self::instance()->getTableName(true) . " WHERE `object_type` = '" . $object_type ."'");
 		$result = array();
 		if (is_array($rows) && (count($rows) > 0)){

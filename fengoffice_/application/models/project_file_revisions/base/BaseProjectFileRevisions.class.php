@@ -6,7 +6,7 @@
   *
   * @author Ilija Studen <ilija.studen@gmail.com>
   */
-  abstract class BaseProjectFileRevisions extends ProjectDataObjects {
+  abstract class BaseProjectFileRevisions extends ContentDataObjects {
   
     /**
     * Column name => Column type map
@@ -15,7 +15,7 @@
     * @static
     */
     static private $columns = array(
-    	'id' => DATA_TYPE_INTEGER, 
+    	'object_id' => DATA_TYPE_INTEGER, 
     	'file_id' => DATA_TYPE_INTEGER, 
     	'file_type_id' => DATA_TYPE_INTEGER, 
     	'repository_id' => DATA_TYPE_STRING, 
@@ -23,13 +23,8 @@
     	'revision_number' => DATA_TYPE_INTEGER, 
     	'comment' => DATA_TYPE_STRING, 
     	'type_string' => DATA_TYPE_STRING, 
-    	'filesize' => DATA_TYPE_INTEGER, 
-    	'created_on' => DATA_TYPE_DATETIME, 
-    	'created_by_id' => DATA_TYPE_INTEGER, 
-    	'updated_on' => DATA_TYPE_DATETIME, 
-    	'updated_by_id' => DATA_TYPE_INTEGER,
-    	'trashed_on' => DATA_TYPE_DATETIME,
-     	'trashed_by_id' => DATA_TYPE_INTEGER,
+    	'filesize' => DATA_TYPE_INTEGER 
+
     );
   
     /**
@@ -80,7 +75,7 @@
     * @return array or string
     */
     function getPkColumns() {
-      return 'id';
+      return 'object_id';
     } // getPkColumns
     
     /**
@@ -91,7 +86,7 @@
     * @return string
     */
     function getAutoIncrementColumn() {
-      return 'id';
+      return null;
     } // getAutoIncrementColumn
     
     // -------------------------------------------------------
@@ -118,8 +113,6 @@
         return parent::find($arguments);
       } else {
         return ProjectFileRevisions::instance()->find($arguments);
-        //$instance =& ProjectFileRevisions::instance();
-        //return $instance->find($arguments);
       } // if
     } // find
     
@@ -135,8 +128,6 @@
         return parent::findAll($arguments);
       } else {
         return ProjectFileRevisions::instance()->findAll($arguments);
-        //$instance =& ProjectFileRevisions::instance();
-        //return $instance->findAll($arguments);
       } // if
     } // findAll
     
@@ -152,8 +143,6 @@
         return parent::findOne($arguments);
       } else {
         return ProjectFileRevisions::instance()->findOne($arguments);
-        //$instance =& ProjectFileRevisions::instance();
-        //return $instance->findOne($arguments);
       } // if
     } // findOne
     
@@ -170,8 +159,6 @@
         return parent::findById($id, $force_reload);
       } else {
         return ProjectFileRevisions::instance()->findById($id, $force_reload);
-        //$instance =& ProjectFileRevisions::instance();
-        //return $instance->findById($id, $force_reload);
       } // if
     } // findById
     
@@ -187,8 +174,6 @@
         return parent::count($condition);
       } else {
         return ProjectFileRevisions::instance()->count($condition);
-        //$instance =& ProjectFileRevisions::instance();
-        //return $instance->count($condition);
       } // if
     } // count
     
@@ -204,8 +189,6 @@
         return parent::delete($condition);
       } else {
         return ProjectFileRevisions::instance()->delete($condition);
-        //$instance =& ProjectFileRevisions::instance();
-        //return $instance->delete($condition);
       } // if
     } // delete
     
@@ -228,8 +211,6 @@
         return parent::paginate($arguments, $items_per_page, $current_page);
       } else {
         return ProjectFileRevisions::instance()->paginate($arguments, $items_per_page, $current_page);
-        //$instance =& ProjectFileRevisions::instance();
-        //return $instance->paginate($arguments, $items_per_page, $current_page);
       } // if
     } // paginate
     

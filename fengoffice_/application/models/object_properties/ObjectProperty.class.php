@@ -23,14 +23,13 @@
     */
     function getObject() {
       if(is_null($this->object)) {
-        $this->object = get_object_by_manager_and_id($this->getId(),get_class($this->manager()));
+        $this->object = Objects::findObject($this->getId());
       } // if
       return $this->object;
     } // getObject
     
     function setObject($o) {
     	$this->setRelObjectId($o->getId());
-    	$this->setRelObjectManager(get_class($o->manager()));
     }
     
     /**

@@ -34,27 +34,27 @@
       return $this->setColumnValue('id', $value);
     } // setId() 
     
-   /**
-    * Return value of 'object_type' field
+    /**
+    * Return value of 'object_type_id' field
     *
     * @access public
     * @param void
     * @return string 
     */
-    function getObjectType() {
-      return $this->getColumnValue('object_type');
-    } // getObjectType()
+    function getObjectTypeId() {
+      return $this->getColumnValue('object_type_id');
+    } // getObjectTypeId()
     
     /**
-    * Set value of 'object_type' field
+    * Set value of 'object_type_id' field
     *
     * @access public   
     * @param string $value
     * @return boolean
     */
-    function setObjectType($value) {
-      return $this->setColumnValue('object_type', $value);
-    } // setObjectType() 
+    function setObjectTypeId($value) {
+      return $this->setColumnValue('object_type_id', $value);
+    } // setObjectTypeId() 
       
     /**
     * Return value of 'name' field

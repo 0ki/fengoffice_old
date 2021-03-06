@@ -21,7 +21,7 @@
 @import 'og/tasks.css';
 @import 'og/time.css';
 @import 'og/workspace_panel.css';
+@import 'og/member_chooser.css';
 @import 'file/types.css';
 @import 'admin/admin.css';
 @import 'project/project.css';
-@import 'wizard/wizard.css';

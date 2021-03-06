@@ -1,7 +1,7 @@
 <?php
 	$object = $user;
     set_page_title(lang('update profile'));
- 	$now = DateTimeValueLib::now();
+
 	$genid = gen_id();
 ?>
 <form style="height:100%;background-color:white" class="internalForm" action="<?php echo $user->getEditProfileUrl($redirect_to) ?>" method="post">
@@ -13,7 +13,7 @@
   		<div class="adminTitle"><table style="width:535px"><tr><td>
   			<?php echo lang('update profile') ?>
   		</td><td style="text-align:right">
-  			<?php echo submit_button(lang('save changes'), 's', array('style'=>'margin-top:0px;margin-left:10px', 'tabindex' => '1100', 'onclick'=>'og.getTimezoneFromBrowser(new Date('.$now->getYear().','.($now->getMonth() - 1).','.$now->getDay().','.$now->getHour().','.$now->getMinute().','.$now->getSecond().'))')) ?>
+  			<?php echo submit_button(lang('save changes'), 's', array('style'=>'margin-top:0px;margin-left:10px', 'tabindex' => '1100')) ?>
   		</td></tr></table></div>
   	</div>
   
@@ -24,7 +24,7 @@
     </div>
   
   	<?php $categories = array(); Hook::fire('object_edit_categories', $object, $categories); ?>
-  	<?php $cps = CustomProperties::countHiddenCustomPropertiesByObjectType('Users'); ?>
+  	<?php $cps = CustomProperties::countHiddenCustomPropertiesByObjectType(Contacts::getObjectTypeId()); ?>
   
   	<div style="padding-top:5px">
 		<?php if(logged_user()->isAdministrator()) { ?>
@@ -71,26 +71,20 @@
 		?>
         <?php echo select_company('user[company_id]', array_var($user_data, 'company_id'),  $attributes, false) ?>
       </div>
-      
-      <div class="formBlock">
-        <?php echo label_tag(lang('personal project'), $genid . 'userPersonalProject', true) ?>
-        <div class="desc"><?php echo lang('personal project desc') ?></div>
-        <?php echo select_project2('user[personal_project_id]', $user->getPersonalProjectId(), $genid, false, null, Projects::getActiveProjects()) ?>
-      </div>
-      
+       
 
 	  <!-- user type -->
 	  <div class="formBlock">
-	    <?php echo label_tag(lang('user type'), null, true) ?>
-	    <?php echo simple_select_box('user[type]', array(
-	    		array('admin', lang('admin user')),
-	    		array('normal', lang('normal user')),
-	    		array('guest', lang('guest user')),
-	    		), array_var($user_data, 'type', 'normal')) ?>
+	    <?php echo label_tag(lang('user type'), null, true);
+	     $permission_groups=array();
+	    foreach($groups as $group){
+	    		$permission_groups[]=array($group->getId(),$group->getName());
+	    }
+	  	echo simple_select_box('user[type]', $permission_groups,array_var($user_data, "type"));
+	  	?>
 	  </div>
 
-	<input type="hidden" name="user[auto_assign]" value="0" />
-    </div>
+	</div>
     
     </fieldset>
   </div>
@@ -131,7 +125,7 @@
     <?php echo select_timezone_widget('user[timezone]', array_var($user_data, 'timezone'), 
     	array('id' => 'userFormTimezone', 'class' => 'long', 'tabindex' => '600' )) ?>
     </div>
-      <input id="userFormTimezoneHidden" type="hidden" name="user[timezone]" />
+  
 	  <script type="text/javascript">
 	  
 		og.showSelectTimezone = function(genid)	{
@@ -142,21 +136,8 @@
 			}else{
 				div.style.display= "";
 			}
-		};
-
-		og.getTimezoneFromBrowser = function(server){	
-			check = document.getElementById('userFormAutoDetectTimezoneYes');
-			div = document.getElementById('userFormTimezone');
-			hidden = document.getElementById('userFormTimezoneHidden');						
-			if (check.checked){				
-				var client = new Date();			
-				var diff = client.getTime() - server.getTime();			
-				diff = Math.round(diff*2/3600000);					
-				hidden.value = diff/2;		
-			}else{
-				hidden.value = div.value;
-			}					
-		};
+			
+		  };
 		  
 	  </script>
   </fieldset>
@@ -206,7 +187,7 @@
 		<?php echo render_object_custom_properties($user, 'Users', true) ?>
 	</div>
 	
-  <?php echo submit_button(lang('save changes'),'s',array('tabindex' => '3000', 'onclick'=>'og.getTimezoneFromBrowser(new Date('.$now->getYear().','.($now->getMonth() - 1).','.$now->getDay().','.$now->getHour().','.$now->getMinute().','.$now->getSecond().'))')) ?>
+  <?php echo submit_button(lang('save changes'),'s',array('tabindex' => '3000')) ?>
 
 </div>
 </div>

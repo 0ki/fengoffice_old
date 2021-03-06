@@ -226,9 +226,4 @@
 	'field ProjectEvents repeat_mjump' => 'Répéter le mois',
 	'field ProjectEvents repeat_wnum' => 'Répéter le numéro de semaine',
 	'field Users type' => 'Type',
-	'field MailContents received_date' => 'Date de réception',
-	'field MailContents body' => 'Corps',
-	'field MailContents sync' => 'Synchronisé',
-	'field ProjectFileRevisions filecontent' => 'Contenu du fichier',
-	'field ProjectTasks object_subtype' => 'Sous-type Objet',
 ); ?>

@@ -14,7 +14,12 @@
     * @var array
     * @static
     */
-    static private $columns = array('id' => DATA_TYPE_INTEGER, 'name' => DATA_TYPE_STRING, 'is_system' => DATA_TYPE_BOOLEAN, 'category_order' => DATA_TYPE_INTEGER);
+    static private $columns = array(
+    	'id' => DATA_TYPE_INTEGER, 
+    	'name' => DATA_TYPE_STRING, 
+    	'is_system' => DATA_TYPE_BOOLEAN, 
+    	'category_order' => DATA_TYPE_INTEGER
+    );
   
     /**
     * Construct

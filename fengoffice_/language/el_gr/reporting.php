@@ -30,5 +30,4 @@
 	'report pdf vertical' => 'Κάθετα',
 	'report pdf landscape' => 'Οριζόντια',
 	'report font size' => 'Μέγεθος γραμματοσειράς',
-	'columns' => 'Στήλες',
 ); ?>

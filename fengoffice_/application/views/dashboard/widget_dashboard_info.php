@@ -23,14 +23,14 @@
 					echo '<br/>';
 				$c++;
 				if ($contact->canView(logged_user())) {
-				?><span><a href="<?php echo $contact->getCardUrl()?>" class="internalLink coViewAction ico-contact"><?php echo $contact->getDisplayName() ?></a> - <span class="desc"><?php echo $contact->getRole(active_project())->getRole() ?></span></span><?php
+				?><span><a href="<?php echo $contact->getCardUrl()?>" class="internalLink coViewAction ico-contact"><?php echo $contact->getObjectName() ?></a> - <span class="desc"><?php echo $contact->getRole(active_project())->getRole() ?></span></span><?php
 				}
 			}
 			?></div>
 			</div>
 <?php }//}
 
-	if (logged_user()->isMemberOfOwnerCompany() || (config_option('external_users_see_other_users'))){
+	if (logged_user()->isMemberOfOwnerCompany()){
 		$users = $project->getUsers(false); 
 		if (count($users) > 1){
 			?><div class='endSeparatorDiv' id='workspaceUsersDiv'>

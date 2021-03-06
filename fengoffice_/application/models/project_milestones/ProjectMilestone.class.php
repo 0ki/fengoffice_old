@@ -9,27 +9,6 @@
 class ProjectMilestone extends BaseProjectMilestone {
 
 	/**
-	 * This project object is taggable
-	 *
-	 * @var boolean
-	 */
-	protected $is_taggable = true;
-
-	/**
-	 * Message comments are searchable
-	 *
-	 * @var boolean
-	 */
-	protected $is_searchable = true;
-	
-	/**
-	 * Message comments are searchable
-	 *
-	 * @var boolean
-	 */
-	protected $is_commentable = true;
-
-	/**
 	 * Array of searchable columns
 	 *
 	 * @var array
@@ -37,9 +16,9 @@ class ProjectMilestone extends BaseProjectMilestone {
 	protected $searchable_columns = array('name', 'description');
 
 	/**
-	 * Cached User object of person who completed this milestone
+	 * Cached Contact object of person who completed this milestone
 	 *
-	 * @var User
+	 * @var Contact
 	 */
 	private $completed_by;
 	
@@ -172,8 +151,9 @@ class ProjectMilestone extends BaseProjectMilestone {
 	 * @return array
 	 */
 	function getTasks() {
+		//FIXME check permissions here
 		return ProjectTasks::findAll(array(
-	        'conditions' => '`milestone_id` = ' . DB::escape($this->getId()). " AND `trashed_on` = " . DB::escape(EMPTY_DATETIME) . " AND ". permissions_sql_for_listings(new ProjectTasks(),ACCESS_LEVEL_READ,logged_user()),
+	        'conditions' => '`milestone_id` = ' . DB::escape($this->getId()). " AND `trashed_on` = 0 ",
 	        'order' => 'created_on'
         )); // findAll
 	} // getTasks
@@ -188,14 +168,15 @@ class ProjectMilestone extends BaseProjectMilestone {
 	function getOpenSubTasks() {
 		if(is_null($this->open_tasks)) {
 			$this->open_tasks = ProjectTasks::findAll(array(
-          'conditions' => '`milestone_id` = ' . DB::escape($this->getId()) . ' AND `trashed_on` = ' . DB::escape(EMPTY_DATETIME) . " AND `completed_on` = " . DB::escape(EMPTY_DATETIME) . " AND ". permissions_sql_for_listings(new ProjectTasks(),ACCESS_LEVEL_READ,logged_user()),
+          'conditions' => '`milestone_id` = ' . DB::escape($this->getId()) . ' AND `trashed_on` = 0 AND `completed_on` = ' . DB::escape(EMPTY_DATETIME),
           'order' => '`order`, `created_on`' 
           )); // findAll
 		} // if
 
 		return $this->open_tasks;
 	} // getOpenSubTasks
-
+	
+	
 	/**
 	 * Return completed tasks
 	 *
@@ -206,117 +187,23 @@ class ProjectMilestone extends BaseProjectMilestone {
 	function getCompletedSubTasks() {
 		if(is_null($this->completed_tasks)) {
 			$this->completed_tasks = ProjectTasks::findAll(array(
-          'conditions' => '`milestone_id` = ' . DB::escape($this->getId()) . ' AND `trashed_on` = ' . DB::escape(EMPTY_DATETIME) . " AND `completed_on` > " . DB::escape(EMPTY_DATETIME) . " AND ". permissions_sql_for_listings(new ProjectTasks(),ACCESS_LEVEL_READ,logged_user()),
+          'conditions' => '`milestone_id` = ' . DB::escape($this->getId()) . ' AND `trashed_on` = 0 AND `completed_on` > ' . DB::escape(EMPTY_DATETIME),
           'order' => '`completed_on` DESC'
           )); // findAll
 		} // if
 
 		return $this->completed_tasks;
 	} // getCompletedTasks
-	function countAllTasks() {
-		return ProjectTasks::count('`milestone_id` = ' . DB::escape($this->getId()). " AND `trashed_on` = " . DB::escape(EMPTY_DATETIME) . " AND ". permissions_sql_for_listings(new ProjectTasks(),ACCESS_LEVEL_READ,logged_user()));
-	} // countAllTasks
-	
-	function countOpenTasks() {
-		return ProjectTasks::count('`milestone_id` = ' . DB::escape($this->getId()) . ' AND `trashed_on` = " . DB::escape(EMPTY_DATETIME) . " AND `completed_on` = ' . DB::escape(EMPTY_DATETIME). " AND ". permissions_sql_for_listings(new ProjectTasks(),ACCESS_LEVEL_READ,logged_user()));
-	} // countAllTasks
 	
 	/**
-	 * Returns true if there are task lists in this milestone
-	 *
-	 * @access public
-	 * @param void
-	 * @return boolean
-	 */
-	function hasTasks() {
-		return (boolean) ProjectTasks::count('`milestone_id` = ' . DB::escape($this->getId()). " AND `trashed_on` = " . DB::escape(EMPTY_DATETIME) . " AND ". permissions_sql_for_listings(new ProjectTasks(),ACCESS_LEVEL_READ,logged_user()));
-	} // hasTasks
-
-	/**
-	 * Return all messages related with this message
-	 *
-	 * @access public
-	 * @param void
-	 * @return array
-	 */
-	function getMessages() {
-		return ProjectMessages::findAll(array(
-        'conditions' => '`milestone_id` = ' . DB::escape($this->getId()). " AND `trashed_on` = " . DB::escape(EMPTY_DATETIME) . " AND ". permissions_sql_for_listings(new ProjectMessages(),ACCESS_LEVEL_READ,logged_user()),
-        'order' => 'created_on'
-        )); // findAll
-	} // getMessages
-
-	/**
-	 * Returns true if there is messages in this milestone
-	 *
-	 * @access public
-	 * @param void
-	 * @return boolean
-	 */
-	function hasMessages() {
-		return (boolean) ProjectMessages::count('`milestone_id` = ' . DB::escape($this->getId()) . " AND `trashed_on` = " . DB::escape(EMPTY_DATETIME) . " AND ". permissions_sql_for_listings(new ProjectMessages(),ACCESS_LEVEL_READ,logged_user()));
-	} // hasMessages
-
-	/**
-	 * Return assigned to object. It can be User, Company or nobady (NULL)
-	 *
-	 * @access public
-	 * @param void
-	 * @return ApplicationDataObject
-	 */
-	function getAssignedTo() {
-		if($this->getAssignedToUserId() > 0) {
-			return $this->getAssignedToUser();
-		} elseif($this->getAssignedToCompanyId() > 0) {
-			return $this->getAssignedToCompany();
-		} else {
-			return null;
-		} // if
-	} // getAssignedTo
-	
-	function getAssignedToName() {
-		$user = $this->getAssignedToUser();
-		$company = $this->getAssignedToCompany();
-		if ($user instanceof User) {
-			return $user->getDisplayName();
-		} else if ($company instanceof Company) {
-			return $company->getName();
-		} else {
-			return lang("anyone");
-		} // if
-	} // getAssignedToName
-
-	/**
-	 * Return responsible company
-	 *
-	 * @access public
-	 * @param void
-	 * @return Company
-	 */
-	protected function getAssignedToCompany() {
-		return Companies::findById($this->getAssignedToCompanyId());
-	} // getAssignedToCompany
-
-	/**
-	 * Return responsible user
-	 *
-	 * @access public
-	 * @param void
-	 * @return User
-	 */
-	protected function getAssignedToUser() {
-		return Users::findById($this->getAssignedToUserId());
-	} // getAssignedToUser
-
-	/**
-	 * Return User object of person who completed this milestone
+	 * Return Contact object of person who completed this milestone
 	 *
 	 * @param void
-	 * @return User
+	 * @return Contact
 	 */
 	function getCompletedBy() {
 		if ($this->isCompleted()){
-			if(is_null($this->completed_by)) $this->completed_by = Users::findById($this->getCompletedById());
+			if(is_null($this->completed_by)) $this->completed_by = Contacts::findById($this->getCompletedById());
 			return $this->completed_by;
 		} else return null;
 	} // getCompletedBy
@@ -325,70 +212,52 @@ class ProjectMilestone extends BaseProjectMilestone {
 	//  Permissions
 	// ---------------------------------------------------
 
+	function canAdd(Contact $user, $context){
+		return can_add($user, $context, ProjectMilestones::instance()->getObjectTypeId());
+	}
+	
+	
 	/**
-	 * Returns true if specific user has CAN_MANAGE_MILESTONES permission set to true
+	 * Returns true if $contact can view this milestone
 	 *
-	 * @access public
-	 * @param User $user
+	 * @param Contact $contact
 	 * @return boolean
 	 */
-	function canManage(User $user) {		
-		return can_write($user,$this);
-	} // canManage
-
-	/**
-	 * Returns true if $user can view this milestone
-	 *
-	 * @param User $user
-	 * @return boolean
-	 */
-	function canView(User $user) {
-		return can_read($user,$this);
+	function canView(Contact $contact) {
+		return can_read($contact, $this->getMembers(), $this->getObjectTypeId());
 	} // canView
-
-	/**
-	 * Check if specific user can add new milestones to specific project
-	 *
-	 * @access public
-	 * @param User $user
-	 * @param Project $project
-	 * @return boolean
-	 */
-	function canAdd(User $user, Project $project) {
-		return can_add($user,$project,get_class(ProjectMilestones::instance()));
-	} // canAdd
 
 	/**
 	 * Check if specific user can edit this milestone
 	 *
 	 * @access public
-	 * @param User $user
+	 * @param Contact $contact
 	 * @return boolean
 	 */
-	function canEdit(User $user) {
-		return can_write($user,$this);
+	function canEdit(Contact $user) {
+		return can_write($user, $this->getMembers(), $this->getObjectTypeId());
 	} // canEdit
 
 	/**
 	 * Can chagne status of this milestone (completed / open)
 	 *
 	 * @access public
-	 * @param User $user
+	 * @param Contact $contact
 	 * @return boolean
 	 */
-	function canChangeStatus(User $user) {
-		return can_write($user,$this);
+	function canChangeStatus(Contact $contact) {
+		return can_write($contact, $this->getMembers(), $this->getObjectTypeId());
 	} // canChangeStatus
 
 	/**
 	 * Check if specific user can delete this milestone
 	 *
 	 * @access public
-	 * @param User $user
+	 * @param Contact $contact
 	 * @return boolean
 	 */
-	function canDelete(User $user) {
-		return can_delete($user,$this);
+	function canDelete(Contact $contact) {
+		return can_delete($contact,$this->getMembers(), $this->getObjectTypeId());
 	} // canDelete
 
 	// ---------------------------------------------------
@@ -456,16 +325,6 @@ class ProjectMilestone extends BaseProjectMilestone {
 		return get_url('milestone', 'open', $params);
 	} // getOpenUrl
 
-	/**
-	 * Return add message URL
-	 *
-	 * @access public
-	 * @param void
-	 * @return string
-	 */
-	function getAddMessageUrl() {
-		return get_url('message', 'add', array('milestone_id' => $this->getId()));
-	} // getAddMessageUrl
 
 	/**
 	 * Return add task list URL
@@ -490,7 +349,7 @@ class ProjectMilestone extends BaseProjectMilestone {
 	 * @return boolean
 	 */
 	function validate(&$errors) {
-		if(!$this->validatePresenceOf('name')) $errors[] = lang('milestone name required');
+		if(!$this->getObject()->validatePresenceOf('name')) $errors[] = lang('milestone name required');
 		if(!$this->validatePresenceOf('due_date')) $errors[] = lang('milestone due date required');
 	} // validate
 
@@ -504,14 +363,14 @@ class ProjectMilestone extends BaseProjectMilestone {
 	
 	function save() {
 		parent::save();
-		if ($this->getDueDate() instanceof DateTimeValue) {
+		/*if ($this->getDueDate() instanceof DateTimeValue) {
 			$id = $this->getId();
 			$sql = "UPDATE `".TABLE_PREFIX."object_reminders` SET
 				`date` = date_sub((SELECT `due_date` FROM `".TABLE_PREFIX."project_milestones` WHERE `id` = $id),
 					interval `minutes_before` minute) WHERE
 					`object_manager` = 'ProjectMilestones' AND `object_id` = $id;";
 			DB::execute($sql);
-		}
+		}*/
 	}
 	
 	function delete() {
@@ -523,7 +382,6 @@ class ProjectMilestone extends BaseProjectMilestone {
 			}
 		}
 		try {
-			DB::execute("UPDATE " . ProjectMessages::instance()->getTableName(true) . " SET `milestone_id` = '0' WHERE `milestone_id` = " . DB::escape($this->getId()));
 			DB::execute("UPDATE " . ProjectTasks::instance()->getTableName(true) . " SET `milestone_id` = '0' WHERE `milestone_id` = " . DB::escape($this->getId()));
 			return parent::delete();
 		} catch(Exception $e) {
@@ -545,7 +403,6 @@ class ProjectMilestone extends BaseProjectMilestone {
 			$this->delete();
 		} else {
 			try {
-				DB::execute("UPDATE " . ProjectMessages::instance()->getTableName(true) . " SET `milestone_id` = '0' WHERE `milestone_id` = " . DB::escape($this->getId()));
 				DB::execute("UPDATE " . ProjectTasks::instance()->getTableName(true) . " SET `milestone_id` = '0' WHERE `milestone_id` = " . DB::escape($this->getId()));
 				return parent::trash($trashDate);
 			} catch(Exception $e) {
@@ -559,51 +416,17 @@ class ProjectMilestone extends BaseProjectMilestone {
 	/**
 	 * Moves the tasks that do not comply with the following rule: Tasks of a milestone must belong to its workspace or any of its subworkspaces.
 	 * 
-	 * @param Project $newWorkspace The new workspace
+	 * @param Member $newMember The new member
 	 * @return unknown_type
 	 */
-	function move_inconsistent_tasks(Project $newWorkspace){
-		$oldWorkspace = $this->getProject();
-		$nwCSV = explode(',', $newWorkspace->getAllSubWorkspacesCSV(true));
-		$owCSV = explode(',', $oldWorkspace->getAllSubWorkspacesCSV(true));
-		
-		$inconsistentWs = array();
-		
-		foreach ($owCSV as $ow){
-			$found = false;
-			foreach ($nwCSV as $nw){
-				if ($ow == $nw){
-					$found = true;
-					break;
-				}
-			}
-			if (!$found)
-				$inconsistentWs[] = $ow;
-		}
-		if (count($inconsistentWs) > 0){
-			try {
-				DB::execute('UPDATE ' . WorkspaceObjects::instance()->getTableName(true) . ' SET workspace_id = ' . $newWorkspace->getId() . 
-					' WHERE object_manager = \'ProjectTasks\' and object_id in (SELECT id from ' . ProjectTasks::instance()->getTableName(true) . 
-					' WHERE milestone_id = ' . $this->getId() . ') and workspace_id in (' . implode(',',$inconsistentWs) . ')');
-			} catch(Exception $e) {
-				throw $e;
-			} // try
-		}
+	function move_inconsistent_tasks(Member $newMember){
+		return;
 	}
 	
 	// ---------------------------------------------------
 	//  ApplicationDataObject implementation
 	// ---------------------------------------------------
 
-	/**
-	 * Return object type name
-	 *
-	 * @param void
-	 * @return string
-	 */
-	function getObjectTypeName() {
-		return 'milestone';
-	} // getObjectTypeName
 
 	/**
 	 * Return object URl
@@ -617,25 +440,20 @@ class ProjectMilestone extends BaseProjectMilestone {
 	} // getObjectUrl
 
 	function getTitle() {
-		return $this->getName();
+		return $this->getObjectName();
 	}
 	
 	function getArrayInfo(){
-		$tnum = ProjectTasks::count('milestone_id = ' . $this->getId() . " AND `trashed_on` = " . DB::escape(EMPTY_DATETIME));
-		$tc = ProjectTasks::count('milestone_id = ' . $this->getId() . ' and completed_on > '.DB::escape(EMPTY_DATETIME).' AND `trashed_on` = ' . DB::escape(EMPTY_DATETIME));
+		$tnum = ProjectTasks::count('milestone_id = ' . $this->getId() . " AND `trashed_on` = 0");
+		$tc = ProjectTasks::count('milestone_id = ' . $this->getId() . ' and completed_on > '.DB::escape(EMPTY_DATETIME).' AND `trashed_on` = 0');
 		
 		$result = array(
 			'id' => $this->getId(),
 			't' => $this->getTitle(),
-			'wsid' => $this->getWorkspacesIdsCSV(),
 			'tnum' => $tnum,
 			'tc' => $tc,
 			'dd' => $this->getDueDate()->getTimestamp());
 		
-		$tags = $this->getTagNames();
-		if ($tags)
-			$result['tags'] = $tags;
-			
 		if ($this->getCompletedById() > 0){
 			$result['compId'] = $this->getCompletedById();
 			$result['compOn'] = $this->getCompletedOn()->getTimestamp();
@@ -644,24 +462,6 @@ class ProjectMilestone extends BaseProjectMilestone {
 		$result['is_urgent'] = $this->getIsUrgent();
 		
 		return $result;
-	}
-	
-	/**
-	 * Set the milestone's project
-	 * @param $project
-	 */
-	function setProject($project) {
-		$this->removeFromAllWorkspaces();
-		$this->addToWorkspace($project);
-	}
-	
-	/**
-	 * Get milestone's project's id
-	 */
-	function getProjectId() {
-		$project = $this->getProject();
-		if ($project instanceof Project) return $project->getId();
-		return 0;
 	}
 	
 } // ProjectMilestone

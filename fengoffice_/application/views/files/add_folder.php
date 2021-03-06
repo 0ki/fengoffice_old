@@ -1,12 +1,10 @@
 <?php
   set_page_title($folder->isNew() ? lang('add folder') : lang('edit folder'));
   
-  if(ProjectFile::canAdd(logged_user(), active_project())) {
+  if(ProjectFile::canAdd(logged_user(), active_context())) {
     add_page_action(lang('add file'), get_url('files', 'add_file'), 'ico-add');
   } // if
-//  if(ProjectFolder::canAdd(logged_user(), active_project())) {
-//    add_page_action(lang('add folder'), get_url('files', 'add_folder'));
-//  } // if
+
   
 ?>
 <form class="internalForm" action="<?php echo ($folder->isNew())? get_url('files', 'add_folder') : $folder->getEditUrl()?>" method="post">

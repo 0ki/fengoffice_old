@@ -7,14 +7,13 @@ return array(
     'new comment' => 'New comment',
     'your account created' => 'Your new Feng Office account has been created',
     'your password' => 'Your password',
-    'milestone assigned to you' => 'Milestone has been assigned to you',
+    'milestone assigned to you' => 'Milestone \'{0}\' has been assigned to you',
     'task assigned to you' => 'Task has been assigned to you',
 
 // Interface
-    'hi john doe' => 'Hi {0}',	
+    'hi john doe' => 'Hi {0}',
  
-    'user password reseted desc' => 'If you want to reset your Feng Office password follow the next link.',
-	'user password reseted desc2' => 'If you have not requested to reset your password simply ignore this email.',
+    'user password reseted desc' => 'You have requested to reset your password. If you want to reset your password follow the next link. If you have not requested to reset your password simply ignore this email.',
 	'user password reseted username' => 'Username: {0}',
 	'user password reseted password' => 'Your New password is {0} (we recomend you to change it as soon as login)',
 
@@ -180,8 +179,6 @@ return array(
 	'deleted notification milestone desc' => 'Milestone \'{0}\' has been sent to trash by {1}.',
 	'deleted notification email' => 'Email \'{0}\' has been sent to trash',
 	'deleted notification email desc' => 'Email \'{0}\' has been sent to trash by {1}.',
-	'deleted notification email unclassified desc' => 'Email \'{0}\' has been sent to trash by {1}.',
-	'deleted notification emailunclassified desc' => 'Email \'{0}\' has been sent to trash by {1}.',
 
 	'closed notification task' => 'Task \'{0}\' has been completed',
 	'closed notification task desc' => 'Task \'{0}\' has been completed by {1}.',

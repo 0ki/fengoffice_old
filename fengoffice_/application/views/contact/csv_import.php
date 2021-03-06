@@ -55,18 +55,11 @@ og.submitCsv = function(genid) {
 <?php if (isset($titles)) { ?>
 	<div>
 	<p><b><?php echo lang('you must match the database fields with file fields before executing the import process') ?></b></p>
-	<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('<?php echo $genid ?>import_contact_add_tags_div', this)"><?php echo lang('tags') ?></a>
 	</div>
 <?php } //if ?>
 
 </div>
 <?php if (isset($titles)) { ?>
-	
-	<div id="<?php echo $genid ?>import_contact_add_tags_div" style="display:none">
-	<fieldset><legend><?php echo lang('tags')?></legend>
-		<?php echo autocomplete_tags_field("tags", array_var($contact_data, 'tags'), 50); ?>
-	</fieldset>
-	</div>
 	
 	<div class="coInputMainBlock adminMainBlock">
 	

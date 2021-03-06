@@ -32,7 +32,7 @@
 // | Author: Christian Schmidt <schmidt at php dot net>                    |
 // +-----------------------------------------------------------------------+
 //
-// $Id: URL2.php,v 1.1 2010/01/22 18:07:09 acio Exp $
+// $Id: URL2.php 7 2010-01-22 18:14:51Z acio $
 //
 // Net_URL2 Class (PHP5 Only)
 

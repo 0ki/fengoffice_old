@@ -23,17 +23,19 @@
 			
 			cell = Ext.get(cell_id);
 			
-			if(m > 30) m -= 30;
-			var top = m * 100 / 30;
-			
-			old_line = Ext.get(pre+"currentHourLine");
-			if (old_line) old_line.remove();
-			
-			var title = date.format(og.config['time_format_use_24'] ? 'G:i' : 'g:i A');
-			var new_top = cell.getTop(true) + cell.getHeight() * top / 100;
-			var cant_d = pre == 'w_' ? 7 : (pre == 'w5_' ? 5 : 1);
-			var html = '<div id="'+pre+'currentHourLine" title="'+title+'" style="height:2px; z-index:200; position:absolute; top:'+ new_top +'px; left:'+ (d*100/cant_d) +'%; border-top:2px solid #B95000; width:'+(100/cant_d)+'%; opacity:0.7; filter:alpha(opacity=70);"></div>';
-			Ext.get("eventowner").insertHtml('afterBegin', html);
+			if (cell) {
+				if(m > 30) m -= 30;
+				var top = m * 100 / 30;
+				
+				old_line = Ext.get(pre+"currentHourLine");
+				if (old_line) old_line.remove();
+				
+				var title = date.format(og.config['time_format_use_24'] ? 'G:i' : 'g:i A');
+				var new_top = cell.getTop(true) + cell.getHeight() * top / 100;
+				var cant_d = pre == 'w_' ? 7 : (pre == 'w5_' ? 5 : 1);
+				var html = '<div id="'+pre+'currentHourLine" title="'+title+'" style="height:2px; z-index:200; position:absolute; top:'+ new_top +'px; left:'+ (d*100/cant_d) +'%; border-top:2px solid #B95000; width:'+(100/cant_d)+'%; opacity:0.7; filter:alpha(opacity=70);"></div>';
+				Ext.get("eventowner").insertHtml('afterBegin', html);
+			}
 			
 			var tout = 60*1000;
 			if (og.currentHourLineTOut) clearTimeout(og.currentHourLineTOut);
@@ -473,7 +475,7 @@
 		return ((millis / 1000) / 60); 		
 	}
 	
-	og.showEventPopup = function(day, month, year, hour, minute, use_24hr, st_val) {
+	og.showEventPopup = function(day, month, year, hour, minute, use_24hr, st_val, genid, obj_type) {
 		var typeid = 1, hrs = 1, mins = 0;
 		if (hour == -1 || minute == -1) {
 			hour = 0;
@@ -525,7 +527,9 @@
 								view:'week', 
 								title: lang('add event'),
 								time_format: use_24hr ? 'G:i' : 'g:i A',
-								hide_calendar_toolbar: 1
-								}, '');
+								hide_calendar_toolbar: 1,
+								genid: genid,
+								otype: obj_type
+							}, '');
 		og.clearPaintedCells();								
 	}

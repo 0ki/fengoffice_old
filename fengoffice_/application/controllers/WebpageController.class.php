@@ -41,8 +41,8 @@ class WebpageController extends ApplicationController {
 		}
 		$this->setTemplate('add');
 
-		if(!ProjectWebpage::canAdd(logged_user(), active_or_personal_project())) {
-			flash_error(lang('no access permissions'));
+		if(!ProjectWebpage::canAdd(logged_user(), active_context())) {
+			flash_error(lang('no context permissions to add',lang("webpages")));
 			ajx_current("empty");
 			return;
 		} // if
@@ -50,35 +50,27 @@ class WebpageController extends ApplicationController {
 		$webpage = new ProjectWebpage();
 
 		$webpage_data = array_var($_POST, 'webpage');
-		if(!is_array($webpage_data)) {
-			$webpage_data = array(
-          'milestone_id' => array_var($_GET, 'milestone_id')
-			); // array
-		} // if
-
+		
 		if(is_array(array_var($_POST, 'webpage'))) {
 			try {
 				if(substr_utf($webpage_data['url'],0,7) != 'http://' && substr_utf($webpage_data['url'],0,7) != 'file://' && substr_utf($webpage_data['url'],0,8) != 'https://' && substr_utf($webpage_data['url'],0,6) != 'about:' && substr_utf($webpage_data['url'],0,6) != 'ftp://')
 					$webpage_data['url'] = 'http://' . $webpage_data['url'];
 				$webpage->setFromAttributes($webpage_data);
-
-				$webpage->setIsPrivate(false);
-				// Options are reserved only for members of owner company
-				if(!logged_user()->isMemberOfOwnerCompany()) {
-					$webpage->setIsPrivate(false);
-				} // if
-
+				
 				DB::beginWork();
 				$webpage->save();
-				$webpage->setTagsFromCSV(array_var($webpage_data, 'tags'));
 
-				$object_controller = new ObjectController();
-				$object_controller->add_to_workspaces($webpage);
-				$object_controller->link_to_new_object($webpage);
+				
+				//link it!
+			    $object_controller = new ObjectController();
+			    $object_controller->add_subscribers($webpage);
+			    $member_ids = json_decode(array_var($_POST, 'members'));
+			    $object_controller->add_to_members($webpage, $member_ids);
+			    $object_controller->link_to_new_object($webpage);
 				$object_controller->add_subscribers($webpage);
 				$object_controller->add_custom_properties($webpage);
-					
-				ApplicationLogs::createLog($webpage, $webpage->getWorkspaces(), ApplicationLogs::ACTION_ADD);
+
+				ApplicationLogs::createLog($webpage, ApplicationLogs::ACTION_ADD);
 				DB::commit();
 
 
@@ -127,19 +119,17 @@ class WebpageController extends ApplicationController {
 
 		$webpage_data = array_var($_POST, 'webpage');
 		if(!is_array($webpage_data)) {
-			$tag_names = $webpage->getTagNames();
 			$webpage_data = array(
           'url' => $webpage->getUrl(),
-          'title' => $webpage->getTitle(),
+          'name' => $webpage->getObjectName(),
           'description' => $webpage->getDescription(),
-          'tags' => is_array($tag_names) ? implode(', ', $tag_names) : '',
-          'is_private' => $webpage->isPrivate()
 			); // array
 		} // if
 
 		if(is_array(array_var($_POST, 'webpage'))) {
 			
 			//MANAGE CONCURRENCE WHILE EDITING
+			/* FIXME or REMOVEME
 			$upd = array_var($_POST, 'updatedon');
 			if ($upd && $webpage->getUpdatedOn()->getTimestamp() > $upd && !array_var($_POST,'merge-changes') == 'true')
 			{
@@ -159,28 +149,24 @@ class WebpageController extends ApplicationController {
 				ajx_extra_data(array("title" => $edited_wp->getTitle(), 'icon'=>'ico-webpage'));				
 				return;
 			}
+			*/
 			
 			try {
-				$old_is_private = $webpage->isPrivate();
 				$webpage->setFromAttributes($webpage_data);
-
-				// Options are reserved only for members of owner company
-				if(!logged_user()->isMemberOfOwnerCompany()) {
-					$webpage->setIsPrivate($old_is_private);
-				} // if
-
+				
 				DB::beginWork();
 				
 				$webpage->save();
-				$webpage->setTagsFromCSV(array_var($webpage_data, 'tags'));
 
-				$object_controller = new ObjectController();
-				$object_controller->add_to_workspaces($webpage);
-				$object_controller->link_to_new_object($webpage);
+				//link it!
+			    $object_controller = new ObjectController();
+			    $member_ids = json_decode(array_var($_POST, 'members'));
+			    $object_controller->add_to_members($webpage, $member_ids);
+			    $object_controller->link_to_new_object($webpage);
 				$object_controller->add_subscribers($webpage);
 				$object_controller->add_custom_properties($webpage);
-				  
-				ApplicationLogs::createLog($webpage, $webpage->getWorkspaces(), ApplicationLogs::ACTION_EDIT);
+
+				ApplicationLogs::createLog($webpage, ApplicationLogs::ACTION_EDIT);
 
 				$webpage->resetIsRead();
 				
@@ -230,7 +216,7 @@ class WebpageController extends ApplicationController {
 
 			DB::beginWork();
 			$webpage->trash();
-			ApplicationLogs::createLog($webpage, $webpage->getWorkspaces(), ApplicationLogs::ACTION_TRASH);
+			ApplicationLogs::createLog($webpage, ApplicationLogs::ACTION_TRASH);
 			DB::commit();
 
 			flash_success(lang('success deleted webpage', $webpage->getTitle()));
@@ -244,9 +230,10 @@ class WebpageController extends ApplicationController {
 
 	function list_all() {
 		ajx_current("empty");
-
-		$project = active_project();
-		$isProjectView = ($project instanceof Project);
+		
+		//$project = active_project();
+		$context = active_context() ;
+		//$isProjectView = ($project instanceof Project);
 			
 		$start = (integer)array_var($_GET,'start');
 		$limit = array_var($_GET,'limit');
@@ -260,7 +247,6 @@ class WebpageController extends ApplicationController {
 		if ($order == "updatedOn" || $order == "updated" || $order == "date" || $order == "dateUpdated") $order = "updated_on";
 		else if ($order == "name") $order = "title";
 		$orderdir = array_var($_GET, 'dir');
-		$tag = array_var($_GET,'tag');
 		$page = (integer) ($start / $limit) + 1;
 		$hide_private = !logged_user()->isMemberOfOwnerCompany();
 
@@ -273,7 +259,7 @@ class WebpageController extends ApplicationController {
 					try{
 						DB::beginWork();
 						$web_page->trash();
-						ApplicationLogs::createLog($web_page, $web_page->getWorkspaces(), ApplicationLogs::ACTION_TRASH);
+						ApplicationLogs::createLog($web_page, ApplicationLogs::ACTION_TRASH);
 						DB::commit();
 						$succ++;
 					} catch(Exception $e){
@@ -290,57 +276,7 @@ class WebpageController extends ApplicationController {
 			if ($err > 0) {
 				flash_error(lang("error delete objects", $err));
 			}
-		} else if (array_var($_GET, 'action') == 'tag') {
-			$ids = explode(',', array_var($_GET, 'webpages'));
-			$tagTag = array_var($_GET, 'tagTag');
-			$tagged = 0;
-			$not_tagged = 0;
-			foreach ($ids as $id) {
-				$web_page = ProjectWebpages::findById($id);
-				if (isset($web_page) && $web_page->canEdit(logged_user())) {
-					$arr_tags = $web_page->getTags();
-					$arr = array();
-					foreach ($arr_tags as $t) {
-						$arr[] = $t->getTag();
-					}
-					if (!array_search($tagTag, $arr)) {
-						$arr[] = $tagTag;
-						$web_page->setTagsFromCSV(implode(',', $arr));
-					}
-					$tagged++;
-				} else {
-					$not_tagged++;
-				}
-			}
-			if ($tagged > 0) {
-				flash_success(lang("success tag objects", $tagged));
-			} else {
-				flash_success(lang("error tag objects", $not_tagged));
-			}
-		} else if (array_var($_GET, 'action') == 'untag') {
-			$ids = explode(',', array_var($_GET, 'webpages'));
-			$tagTag = array_var($_GET, 'tagTag');
-			$untagged = 0;
-			$not_untagged = 0;
-			foreach ($ids as $id) {
-				$web_page = ProjectWebpages::findById($id);
-				if (isset($web_page) && $web_page->canEdit(logged_user())) {
-					if ($tagTag != ''){
-						$web_page->deleteTag($tagTag);								
-					}else{
-						$web_page->clearTags();
-					}
-					$untagged++;
-				} else {
-					$not_untagged++;
-				}
-			}
-			if ($untagged > 0) {
-				flash_success(lang("success untag objects", $untagged));
-			} else {
-				flash_success(lang("error untag objects", $not_untagged));
-			}
-		} else if (array_var($_GET, 'action') == 'markasread') {
+		}  else if (array_var($_GET, 'action') == 'markasread') {
 			$ids = explode(',', array_var($_GET, 'ids'));
 			$succ = 0; $err = 0;
 				foreach ($ids as $id) {
@@ -405,7 +341,7 @@ class WebpageController extends ApplicationController {
 							$log_data = "to:$wsid";
 						}
 						$webpage->addToWorkspace($destination);
-						ApplicationLogs::createLog($webpage, $webpage->getWorkspaces(), $log_action, false, null, true, $log_data);
+						ApplicationLogs::createLog($webpage, $log_action, false, null, true, $log_data);
 						$count++;
 					};
 				}; // for
@@ -421,7 +357,7 @@ class WebpageController extends ApplicationController {
 					try{
 						DB::beginWork();
 						$web_page->archive();
-						ApplicationLogs::createLog($web_page, $web_page->getWorkspaces(), ApplicationLogs::ACTION_ARCHIVE);
+						ApplicationLogs::createLog($web_page, ApplicationLogs::ACTION_ARCHIVE);
 						DB::commit();
 						$succ++;
 					} catch(Exception $e){
@@ -439,62 +375,40 @@ class WebpageController extends ApplicationController {
 				flash_error(lang("error archive objects", $err));
 			}
 		}
+		$webpages = ProjectWebpages::getContentObjects($context, ObjectTypes::findById(ProjectWebpages::instance()->getObjectTypeId()), $order, $order_dir)->objects;
 
-		$result = ProjectWebpages::getWebpages($project, $tag, $page, $limit, $order, $orderdir);
-		if (is_array($result)) {
-			list($webpages, $pagination) = $result;
-			if ($pagination->getTotalItems() < (($page - 1) * $limit)){
-				$start = 0;
-				$page = 1;
-				$result = ProjectWebpages::getWebpages($project,$tag,$page,$limit);
-				if (is_array($result)) {
-					list($webpages, $pagination) = $result;
-				}else {
-					$webpages = null;
-					$pagination = 0 ;
-				} // if
-			}
-		} else {
-			$webpages = null;
-			$pagination = 0 ;
-		} // if
-		/*tpl_assign('totalCount', $pagination->getTotalItems());
-		tpl_assign('webpages', $webpages);
-		tpl_assign('pagination', $pagination);
-		tpl_assign('tags', Tags::getTagNames());*/
-
-		$object = array(
-			"totalCount" => $pagination->getTotalItems(),
-			"start" => $start,
-			"webpages" => array()
-		);
 		if (isset($webpages))
 		{
 			$index = 0;
+			$ids = array();
 			foreach ($webpages as $w) {
+				$ids[] = $w->getId();
 				$object["webpages"][] = array(
 					"ix" => $index++,
 					"id" => $w->getId(),
-					"title" => $w->getTitle(),
+					"object_id" => $w->getObjectId(),
+					"title" => $w->getObjectName(),
 					"description" => $w->getDescription(),
 					"url" => $w->getUrl(),
-					"tags" => project_object_tags($w),
-					"wsIds" => $w->getWorkspacesIdsCSV(logged_user()->getWorkspacesQuery()),
 					"updatedOn" => $w->getUpdatedOn() instanceof DateTimeValue ? ($w->getUpdatedOn()->isToday() ? format_time($w->getUpdatedOn()) : format_datetime($w->getUpdatedOn())) : '',
 					"updatedOn_today" => $w->getUpdatedOn() instanceof DateTimeValue ? $w->getUpdatedOn()->isToday() : 0,
 					"updatedBy" => $w->getUpdatedByDisplayName(),
 					"updatedById" => $w->getUpdatedById(),
-					"isRead" => $w->getIsRead(logged_user()->getId()),
 				);
+			}
+			
+			$read_objects = ReadObjects::getReadByObjectList($ids, logged_user()->getId());
+			foreach($object["webpages"] as &$data) {
+				$data['isRead'] = isset($read_objects[$data['object_id']]);
 			}
 		}
 		ajx_extra_data($object);
-		/*tpl_assign("listing", $object);*/
 	}
 	
 	function view() {
 		$this->addHelper("textile");
 		$weblink = ProjectWebpages::findById(get_id());
+		//var_dump(get_id()); exit;
 		if(!($weblink instanceof ProjectWebpage)) {
 			flash_error(lang('weblink dnx'));
 			ajx_current("empty");
@@ -508,14 +422,14 @@ class WebpageController extends ApplicationController {
 		} // if
 		
 		//read object for this user
-		$weblink->setIsRead(logged_user()->getId(),true);
+		//$weblink->setIsRead(logged_user()->getId(),true);
 
 		tpl_assign('object', $weblink);
-		tpl_assign('subscribers', $weblink->getSubscribers());
+		//tpl_assign('subscribers', $weblink->getSubscribers());
 		ajx_extra_data(array("title" => $weblink->getTitle(), 'icon'=>'ico-weblink'));
 		ajx_set_no_toolbar(true);
 		
-		ApplicationReadLogs::createLog($weblink, $weblink->getWorkspaces(), ApplicationReadLogs::ACTION_READ);
+		ApplicationReadLogs::createLog($weblink, ApplicationReadLogs::ACTION_READ);
 	}
 } // WebpageController
 

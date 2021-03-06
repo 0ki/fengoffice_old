@@ -10,7 +10,6 @@ og.LinkedObjectManager = function(config) {
 	var actions, moreActions;
 	
 	var objId = config.linked_object;
-	var objManager = config.linked_manager;
 	var objName = config.linked_object_name;
 	
 	if (objName.length > 20){		
@@ -41,20 +40,14 @@ og.LinkedObjectManager = function(config) {
 			listeners: {
 				'load': function() {
 					var d = this.reader.jsonData;
-					var ws = og.clean(Ext.getCmp('workspace-panel').getActiveWorkspace().name);
-					var tag = og.clean(Ext.getCmp('tag-panel').getSelectedTag());
+
 					if (d.totalCount == 0) {
-						if (tag) {
-							this.fireEvent('messageToShow', lang("no objects with tag message", lang("objects"), ws, tag));
-						} else {
-							this.fireEvent('messageToShow', lang("no objects message", lang("objects"), ws));
-						}
+						this.fireEvent('messageToShow', lang("no objects message", lang("objects"), ws));
 					} else if (d.objects.length == 0) {
 						this.fireEvent('messageToShow', lang("no more objects message", lang("objects")));
 					} else {
 						this.fireEvent('messageToShow', "");
 					}
-					og.showWsPaths();
 					Ext.getCmp('linked-objects-manager').getView().focusRow(og.lastSelectedRow.linkedobjs+1);
 				}
 			}
@@ -131,7 +124,7 @@ og.LinkedObjectManager = function(config) {
 		} else {
 			var ret = '';
 			for (var i=0; i < selections.length; i++) {
-				ret += "," + selections[i].data.manager + ":" + selections[i].data.object_id;
+				ret += "," + selections[i].data.object_id;
 			}
 			og.lastSelectedRow.linkedobjs = selections[selections.length-1].data.ix;
 			return ret.substring(1);
@@ -200,12 +193,6 @@ og.LinkedObjectManager = function(config) {
         	width: 120,
         	renderer: renderUser
         },{
-			id: 'tags',
-			header: lang("tags"),
-			dataIndex: 'tags',
-			width: 120,
-			hidden: true
-        },{
 			id: 'updatedOn',
 			header: lang("last update"),
 			dataIndex: 'dateUpdated',
@@ -240,47 +227,17 @@ og.LinkedObjectManager = function(config) {
 			handler: function() {
 			
 				og.ObjectPicker.show(function (data) {
-					if (data) {
-						
+					if (data && data.length > 0) {
 						object_id = data[0].data.object_id;
-						object_manager = data[0].data.manager;
-							
-						switch(object_manager){
-						case "Contacts":
-							object_ico = "ico-contact";
-							break;
-						case "ProjectMessages":
-							object_ico = "ico-message";
-							break;
-						case "ProjectEvents":
-							object_ico = "ico-event";
-							break;
-						case "ProjectTasks":
-							object_ico = "ico-task";
-							break;
-						case "ProjectWebpages":
-							object_ico = "ico-webpage";
-							break;
-						case "ProjectFiles":
-							object_ico = "ico-file";
-							break;
-						case "ProjectMilestones":
-							object_ico = "ico-milestone";
-							break;
-						default:
-							object_ico = "ico-unknown";
-						break;
-						}
-						
+						object_ico = data[0].data.icon;
 						object_name = data[0].data.name;
-						
+					
+						og.openLink(og.getUrl('object','show_all_linked_objects',{
+							linked_object:object_id,
+							linked_object_ico:object_ico,
+							linked_object_name:object_name
+						}));
 					}
-					og.openLink(og.getUrl('object','show_all_linked_objects',{
-						linked_object:object_id,
-						linked_manager:object_manager,
-						linked_object_ico:object_ico,
-						linked_object_name:object_name
-					}));			
 				});			
 								
 			},
@@ -297,7 +254,6 @@ og.LinkedObjectManager = function(config) {
 					var selections = sm.getSelections();
 					if (selections.length > 0) {
 						og.openLink(og.getUrl('object', 'unlink_from_object', {
-							manager: this.linked_manager,
 							object_id: this.linked_object,
 							rel_objects: getSelectedIds()
 						}));
@@ -320,9 +276,9 @@ og.LinkedObjectManager = function(config) {
 						var objects = '';
 						for (var i=0; i < data.length; i++) {
 							if (objects != '') objects += ',';
-							objects += data[i].data.manager + ':' + data[i].data.object_id;
+							objects += data[i].data.object_id;
 						}
-						og.openLink(og.getUrl('object','link_object',{object_id:lo,manager:lm,objects:objects, reload:1}));
+						og.openLink(og.getUrl('object','link_object',{object_id:lo, objects:objects, reload:1}));
 					}
 				});
 			},
@@ -332,7 +288,7 @@ og.LinkedObjectManager = function(config) {
     
 	og.LinkedObjectManager.superclass.constructor.call(this, {
 		enableDrag: true,
-		ddGroup : 'WorkspaceDD',
+		ddGroup: 'MemberDD',
 		store: this.store,
 		layout: 'fit',
 		autoExpandColumn: 'name',
@@ -373,30 +329,6 @@ og.LinkedObjectManager = function(config) {
 			}
 		}
 	});
-
-	var tagevid = og.eventManager.addListener("tag changed", function(tag) {
-		if (!this.ownerCt) {
-			og.eventManager.removeListener(tagevid);
-			return;
-		}
-		if (this.ownerCt.active) {
-			this.load({start:0});
-		} else {
-    		this.needRefresh = true;
-    	}
-	}, this);
-	
-	var wschevid = og.eventManager.addListener("workspace changed", function() {
-		if (!this.ownerCt) {
-			og.eventManager.removeListener(wschevid);
-			return;
-		}
-		if (this.ownerCt.active) {
-			this.load({start:0});
-		} else {
-    		this.needRefresh = true;
-    	}
-	}, this);
 };
 
 Ext.extend(og.LinkedObjectManager, Ext.grid.GridPanel, {
@@ -408,11 +340,8 @@ Ext.extend(og.LinkedObjectManager, Ext.grid.GridPanel, {
 			var start = 0;
 		}
 		Ext.apply(this.store.baseParams, {
-			tag: Ext.getCmp('tag-panel').getSelectedTag(),
-			//active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id,
-			active_project: 0,
+			context: og.contextManager.plainContext(),
 			linkedobject: this.linked_object,
-			linkedmanager: this.linked_manager,
 			filtermanager: this.filter_manager
 		});
 		this.store.load({
@@ -433,103 +362,6 @@ Ext.extend(og.LinkedObjectManager, Ext.grid.GridPanel, {
 	reset: function() {
 		this.load({start:0});
 	},
-	
-	moveObjects: function(ws) {
-		if (ws == 0) {
-			var selections = this.getSelectionModel().getSelections();
-			var amail = false;
-			for (i=0; i<selections.length; i++) {
-				if (selections[i].data.manager == 'MailContents') {
-					amail = true;
-					break;
-				}
-			}
-			if (amail) {
-				og.confirmMoveToAllWs(this.id, lang('confirm unclassify emails'));
-			}
-		} else {
-			var selections = this.getSelectionModel().getSelections();
-			var allItemsAreTasksOrMilestones = true;
-			for (i=0; i<selections.length; i++) {
-				if (selections[i].data.manager != 'ProjectTasks' && selections[i].data.manager != 'ProjectMilestones') {
-					allItemsAreTasksOrMilestones = false;
-					break;
-				}
-			}
-			// Tasks and events does not keep ws, only move
-			if (allItemsAreTasksOrMilestones) {
-				this.moveObjectsToWsOrMantainWs(false, ws);
-			} else {
-				og.moveToWsOrMantainWs(this.id, ws);
-			}
-		}
-	},
-	
-	moveObjectsToWsOrMantainWs: function(mantain, ws) {
-		var selections = this.getSelectionModel().getSelections();
-		var amail = false;
-		for (i=0; i<selections.length; i++) {
-			if (selections[i].data.manager == 'MailContents') {
-				amail = true;
-				break;
-			}
-		}
-		if (amail) {
-			og.askToClassifyUnclassifiedAttachs(this.id, mantain, ws);
-		} else {
-			this.load({
-				action: 'move',
-				objects: this.getSelectedIds(),
-				moveTo: ws,
-				mantainWs: mantain
-			});
-		}
-	},
-	
-	moveObjectsClassifyingEmails: function(mantain, ws, classifyatts) {
-		this.load({
-			action: 'move',
-			objects: this.getSelectedIds(),
-			moveTo: ws,
-			mantainWs: mantain,
-			classify_atts: classifyatts
-		});
-	},
-	
-	tagObjects: function(tag) {
-		this.load({
-			action: 'tag',
-			objects: this.getSelectedIds(),
-			tagTag: tag
-		});
-	},
-	
-	removeTags: function() {
-		this.load({
-			action: 'untag',
-			objects: this.getSelectedIds()
-		});
-	},
-	
-	trashObjects: function() {
-		if (confirm(lang('confirm move to trash'))) {
-			this.load({
-				action: 'delete',
-				objects: this.getSelectedIds()
-			});
-			this.getSelectionModel().clearSelections();
-		}
-	},
-	
-	archiveObjects: function() {
-		if (confirm(lang('confirm archive selected objects'))) {
-			this.load({
-				action: 'archive',
-				objects: this.getSelectedIds()
-			});
-			this.getSelectionModel().clearSelections();
-		}
-	},	
 	
 	showMessage: function(text) {
 		if (this.innerMessage) {

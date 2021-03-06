@@ -9,21 +9,21 @@
   class  ReadObject extends BaseReadObject {  	
     
     /**
-    * User
+    * Contact
     *
     * @var ObjectType
     */
-    private $user;    
+    private $contact;    
    
     /**
     * Return object connected with this action
     *
     * @access public
     * @param void
-    * @return ProjectDataObject
+    * @return ContentDataObject
     */
     function getObject() {
-      return get_object_by_manager_and_id($this->getRelObjectId(), $this->getRelObjectManager());
+      return Objects::findObject($this->getRelObjectId());
     } // getObject
     
     
@@ -34,10 +34,10 @@
     * @return User
     */
     function getUser() {
-      if(is_null($this->user)) {
-        $this->user = Users::findById($this->getUserId());
+      if(is_null($this->contact)) {
+        $this->contact = Contacts::findById($this->getContactId());
       } // if
-      return $this->user;
+      return $this->contact;
     } // getUser
     
     

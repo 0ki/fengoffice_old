@@ -4,7 +4,7 @@
   /**
   * ContactImValues class
   *
-  * @author Ilija Studen <ilija.studen@gmail.com>
+  * @author Diego Castiglioni <diego20@gmail.com>
   */
   abstract class BaseContactImValues extends DataManager {
   
@@ -14,7 +14,13 @@
     * @var array
     * @static
     */
-    static private $columns = array('contact_id' => DATA_TYPE_INTEGER, 'im_type_id' => DATA_TYPE_INTEGER, 'value' => DATA_TYPE_STRING, 'is_default' => DATA_TYPE_BOOLEAN);
+    static private $columns = array(
+    	'id' => DATA_TYPE_INTEGER,
+    	'contact_id' => DATA_TYPE_INTEGER, 
+    	'im_type_id' => DATA_TYPE_INTEGER, 
+    	'value' => DATA_TYPE_STRING, 
+    	'is_main' => DATA_TYPE_BOOLEAN
+    );
   
     /**
     * Construct
@@ -64,10 +70,7 @@
     * @return array or string
     */
     function getPkColumns() {
-      return array (
-  0 => 'contact_id',
-  1 => 'im_type_id',
-);
+      return 'id';
     } // getPkColumns
     
     /**
@@ -78,7 +81,7 @@
     * @return string
     */
     function getAutoIncrementColumn() {
-      return NULL;
+      return 'id';
     } // getAutoIncrementColumn
     
     // -------------------------------------------------------
@@ -105,8 +108,6 @@
         return parent::find($arguments);
       } else {
         return ContactImValues::instance()->find($arguments);
-        //$instance =& ContactImValues::instance();
-        //return $instance->find($arguments);
       } // if
     } // find
     
@@ -122,8 +123,6 @@
         return parent::findAll($arguments);
       } else {
         return ContactImValues::instance()->findAll($arguments);
-        //$instance =& ContactImValues::instance();
-        //return $instance->findAll($arguments);
       } // if
     } // findAll
     
@@ -139,8 +138,6 @@
         return parent::findOne($arguments);
       } else {
         return ContactImValues::instance()->findOne($arguments);
-        //$instance =& ContactImValues::instance();
-        //return $instance->findOne($arguments);
       } // if
     } // findOne
     
@@ -157,8 +154,6 @@
         return parent::findById($id, $force_reload);
       } else {
         return ContactImValues::instance()->findById($id, $force_reload);
-        //$instance =& ContactImValues::instance();
-        //return $instance->findById($id, $force_reload);
       } // if
     } // findById
     
@@ -174,8 +169,6 @@
         return parent::count($condition);
       } else {
         return ContactImValues::instance()->count($condition);
-        //$instance =& ContactImValues::instance();
-        //return $instance->count($condition);
       } // if
     } // count
     
@@ -191,8 +184,6 @@
         return parent::delete($condition);
       } else {
         return ContactImValues::instance()->delete($condition);
-        //$instance =& ContactImValues::instance();
-        //return $instance->delete($condition);
       } // if
     } // delete
     
@@ -215,8 +206,6 @@
         return parent::paginate($arguments, $items_per_page, $current_page);
       } else {
         return ContactImValues::instance()->paginate($arguments, $items_per_page, $current_page);
-        //$instance =& ContactImValues::instance();
-        //return $instance->paginate($arguments, $items_per_page, $current_page);
       } // if
     } // paginate
     

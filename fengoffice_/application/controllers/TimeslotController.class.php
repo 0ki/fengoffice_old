@@ -27,7 +27,7 @@ class TimeslotController extends ApplicationController {
 	 * @return null
 	 */
 	function open() {
-		if (!can_manage_time(logged_user(),true)) {
+		if (!can_manage_time(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
@@ -35,70 +35,60 @@ class TimeslotController extends ApplicationController {
 		$this->setTemplate('add_timeslot');
 
 		$object_id = get_id('object_id');
-		$object_manager = array_var($_GET, 'object_manager');
 
-		if(!is_valid_function_name($object_manager)) {
-			flash_error(lang('invalid request'));
-			ajx_current("empty");
-			return;
-		} // if
-
-		$object = get_object_by_manager_and_id($object_id, $object_manager);
-		if(!($object instanceof ProjectDataObject) || !($object->canAddTimeslot(logged_user()))) {
+		$object = Objects::findObject($object_id);
+		if(!($object instanceof ContentDataObject) || !($object->canAddTimeslot(logged_user()))) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
-		} // if
+		}
 
 		$timeslot = new Timeslot();
 		$dt = DateTimeValueLib::now();
 		$timeslot->setStartTime($dt);
-		$timeslot->setUserId(logged_user()->getId());
-		$timeslot->setObjectManager($object_manager);
-		$timeslot->setObjectId($object_id);
+		$timeslot->setContactId(logged_user()->getId());
+		$timeslot->setRelObjectId($object_id);
 		
 		try{
 			DB::beginWork();
 			$timeslot->save();
-			ApplicationLogs::createLog($timeslot, $timeslot->getWorkspaces(), ApplicationLogs::ACTION_OPEN);
+			
+			$object_controller = new ObjectController();
+			$object_controller->add_to_members($timeslot, $object->getMemberIds());
+			
+			ApplicationLogs::createLog($timeslot, ApplicationLogs::ACTION_OPEN);
 			DB::commit();
-				
+			
 			flash_success(lang('success open timeslot'));
 			ajx_current("reload");
 		} catch (Exception $e) {
 			DB::rollback();
 			ajx_current("empty");
 			flash_error($e->getMessage());
-		} // try
+		}
 	} 
 	
 	function add_timespan() {
-		if (!can_manage_time(logged_user(),true)) {
+		if (!can_manage_time(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
 		}
 		$object_id = get_id('object_id');
-		$object_manager = array_var($_GET, 'object_manager');
-
-		if(!is_valid_function_name($object_manager)) {
-			flash_error(lang('invalid request'));
-			ajx_current("empty");
-			return;
-		} // if
-
-		$object = get_object_by_manager_and_id($object_id, $object_manager);
-		if(!($object instanceof ProjectDataObject) || !($object->canAddTimeslot(logged_user()))) {
+		
+		$object = Objects::findObject($object_id);
+		if(!($object instanceof ContentDataObject) || !($object->canAddTimeslot(logged_user()))) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
-		} // if
+		}
 
 		$timeslot_data = array_var($_POST, 'timeslot');
 		$hours = array_var($timeslot_data, 'time');
 		
-		if (strpos($hours,',') && !strpos($hours,'.'))
+		if (strpos($hours,',') && !strpos($hours,'.')) {
 			$hours = str_replace(',','.',$hours);
+		}
 		
 		$timeslot = new Timeslot();
 		$dt = DateTimeValueLib::now();
@@ -107,23 +97,26 @@ class TimeslotController extends ApplicationController {
 		$dt2 = $dt2->add('h', -$hours);
 		$timeslot->setStartTime($dt2);
 		$timeslot->setDescription(array_var($timeslot_data, 'description'));
-		$timeslot->setUserId(logged_user()->getId());
-		$timeslot->setObjectManager($object_manager);
-		$timeslot->setObjectId($object_id);
+		$timeslot->setContactId(logged_user()->getId());
+		$timeslot->setRelObjectId($object_id);
 		
-		/* Billing */
-		$billing_category_id = logged_user()->getDefaultBillingId();
+		/* FIXME: Billing */
+/*		$billing_category_id = logged_user()->getDefaultBillingId();
 		$project = $object->getProject();
 		$timeslot->setBillingId($billing_category_id);
 		$hourly_billing = $project->getBillingAmount($billing_category_id);
 		$timeslot->setHourlyBilling($hourly_billing);
 		$timeslot->setFixedBilling($hourly_billing * $hours);
 		$timeslot->setIsFixedBilling(false);
-		
+*/
 		try{
 			DB::beginWork();
 			$timeslot->save();
-			ApplicationLogs::createLog($timeslot, $timeslot->getWorkspaces(), ApplicationLogs::ACTION_OPEN);
+			
+			$object_controller = new ObjectController();
+			$object_controller->add_to_members($timeslot, $object->getMemberIds());
+			
+			ApplicationLogs::createLog($timeslot, ApplicationLogs::ACTION_OPEN);
 			DB::commit();
 				
 			flash_success(lang('success create timeslot'));
@@ -132,7 +125,7 @@ class TimeslotController extends ApplicationController {
 			DB::rollback();
 			ajx_current("empty");
 			flash_error($e->getMessage());
-		} // try
+		}
 	} 
 	
 	/*
@@ -142,7 +135,7 @@ class TimeslotController extends ApplicationController {
 	 * @return null
 	 */
 	function close() {
-		if (!can_manage_time(logged_user(),true)) {
+		if (!can_manage_time(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
@@ -154,26 +147,26 @@ class TimeslotController extends ApplicationController {
 			flash_error(lang('timeslot dnx'));
 			ajx_current("empty");
 			return;
-		} // if
+		}
 
-		$object = $timeslot->getObject();
-		if(!($object instanceof ProjectDataObject)) {
+		$object = $timeslot->getRelObject();
+		if(!($object instanceof ContentDataObject)) {
 			flash_error(lang('object dnx'));
 			ajx_current("empty");
 			return;
-		} // if
+		}
 		
 		if(!($object->canAddTimeslot(logged_user()))) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
-		} // if
+		}
 		$timeslot_data = array_var($_POST, 'timeslot');
 		$timeslot->close();
 		$timeslot->setFromAttributes($timeslot_data);
 		
 		/* Billing */
-		$billing_category_id = logged_user()->getDefaultBillingId();
+/*		$billing_category_id = logged_user()->getDefaultBillingId();
 		$project = $object->getProject();
 		if ($billing_category_id) {
 			$timeslot->setBillingId($billing_category_id);
@@ -182,14 +175,14 @@ class TimeslotController extends ApplicationController {
 			$timeslot->setFixedBilling($hourly_billing * $timeslot->getMinutes() / 60);
 			$timeslot->setIsFixedBilling(false);
 		}
-		
+*/
 		try{
 			DB::beginWork();
 			if (array_var($_GET, 'cancel') && array_var($_GET, 'cancel') == 'true')
 				$timeslot->delete();
 			else
 				$timeslot->save();
-			ApplicationLogs::createLog($timeslot, $timeslot->getWorkspaces(), ApplicationLogs::ACTION_CLOSE);
+			ApplicationLogs::createLog($timeslot, ApplicationLogs::ACTION_CLOSE);
 			DB::commit();
 				
 			if (array_var($_GET, 'cancel') && array_var($_GET, 'cancel') == 'true')
@@ -202,11 +195,11 @@ class TimeslotController extends ApplicationController {
 			DB::rollback();
 			ajx_current("empty");
 			flash_error($e->getMessage());
-		} // try
+		}
 	} 
 	
 	function pause() {
-		if (!can_manage_time(logged_user(),true)) {
+		if (!can_manage_time(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
@@ -217,23 +210,23 @@ class TimeslotController extends ApplicationController {
 		if(!($timeslot instanceof Timeslot)) {
 			flash_error(lang('timeslot dnx'));
 			return;
-		} // if
+		}
 
-		$object = $timeslot->getObject();
-		if(!($object instanceof ProjectDataObject)) {
+		$object = $timeslot->getRelObject();
+		if(!($object instanceof ContentDataObject)) {
 			flash_error(lang('object dnx'));
 			return;
-		} // if
+		}
 		
 		if(!($object->canAddTimeslot(logged_user()))) {
 			flash_error(lang('no access permissions'));
 			return;
-		} // if
+		}
 		
 		if(!($timeslot->canEdit(logged_user()))) {
 			flash_error(lang('no access permissions'));
 			return;
-		} // if
+		}
 		
 		try{
 			DB::beginWork();
@@ -246,11 +239,11 @@ class TimeslotController extends ApplicationController {
 		} catch (Exception $e) {
 			DB::rollback();
 			flash_error($e->getMessage());
-		} // try
+		}
 	} 
 	
 	function resume() {
-		if (!can_manage_time(logged_user(),true)) {
+		if (!can_manage_time(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
@@ -261,23 +254,23 @@ class TimeslotController extends ApplicationController {
 		if(!($timeslot instanceof Timeslot)) {
 			flash_error(lang('timeslot dnx'));
 			return;
-		} // if
+		}
 
-		$object = $timeslot->getObject();
-		if(!($object instanceof ProjectDataObject)) {
+		$object = $timeslot->getRelObject();
+		if(!($object instanceof ContentDataObject)) {
 			flash_error(lang('object dnx'));
 			return;
-		} // if
+		}
 		
 		if(!($object->canAddTimeslot(logged_user()))) {
 			flash_error(lang('no access permissions'));
 			return;
-		} // if
+		}
 		
 		if(!($timeslot->canEdit(logged_user()))) {
 			flash_error(lang('no access permissions'));
 			return;
-		} // if
+		}
 		
 		try{
 			DB::beginWork();
@@ -290,7 +283,7 @@ class TimeslotController extends ApplicationController {
 		} catch (Exception $e) {
 			DB::rollback();
 			flash_error($e->getMessage());
-		} // try
+		}
 	} 
 
 	/**
@@ -300,7 +293,7 @@ class TimeslotController extends ApplicationController {
 	 * @return null
 	 */
 	function edit() {
-		if (!can_manage_time(logged_user(),true)) {
+		if (!can_manage_time(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
@@ -312,26 +305,26 @@ class TimeslotController extends ApplicationController {
 			flash_error(lang('timeslot dnx'));
 			ajx_current("empty");
 			return;
-		} // if
+		}
 
-		$object = $timeslot->getObject();
-		if(!($object instanceof ProjectDataObject)) {
+		$object = $timeslot->getRelObject();
+		if(!($object instanceof ContentDataObject)) {
 			flash_error(lang('object dnx'));
 			ajx_current("empty");
 			return;
-		} // if
+		}
 		
 		if(!($object->canAddTimeslot(logged_user()))) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
-		} // if
+		}
 		
 		if(!($timeslot->canEdit(logged_user()))) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
-		} // if
+		}
 		
 		$timeslot_data = array_var($_POST, 'timeslot');
 		if(!is_array($timeslot_data)) {
@@ -342,8 +335,8 @@ class TimeslotController extends ApplicationController {
           		'is_fixed_billing' => $timeslot->getIsFixedBilling(),
           		'hourly_billing' => $timeslot->getHourlyBilling(),
           		'fixed_billing' => $timeslot->getFixedBilling()
-			); // array
-		} // if
+			);
+		}
 
 		tpl_assign('timeslot_form_object', $object);
 		tpl_assign('timeslot', $timeslot);
@@ -396,8 +389,8 @@ class TimeslotController extends ApplicationController {
 				
 				$timeslot->setSubtract($subtract);
 				
-				/* Billing */
-				$timeslot->setIsFixedBilling(array_var($timeslot_data,'is_fixed_billing',false));
+				/* FIXME Billing */
+			/*	$timeslot->setIsFixedBilling(array_var($timeslot_data,'is_fixed_billing',false));
 				$timeslot->setHourlyBilling(array_var($timeslot_data,'hourly_billing',0));
 				if ($timeslot->getIsFixedBilling()){
 					$timeslot->setFixedBilling(array_var($timeslot_data,'fixed_billing',0));
@@ -407,7 +400,7 @@ class TimeslotController extends ApplicationController {
 				if ($timeslot->getBillingId() == 0 && ($timeslot->getHourlyBilling() > 0 || $timeslot->getFixedBilling() > 0)){
 					$timeslot->setBillingId($timeslot->getUser()->getDefaultBillingId());
 				}
-				
+				*/
 				DB::beginWork();
 				$timeslot->save();
 				DB::commit();
@@ -418,7 +411,7 @@ class TimeslotController extends ApplicationController {
 				DB::rollback();
 				flash_error(lang('error edit timeslot'));
 				ajx_current("empty");
-			} // try
+			}
 		}
 	} // edit
 
@@ -429,7 +422,7 @@ class TimeslotController extends ApplicationController {
 	 * @return null
 	 */
 	function delete() {
-		if (!can_manage_time(logged_user(),true)) {
+		if (!can_manage_time(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
@@ -439,14 +432,14 @@ class TimeslotController extends ApplicationController {
 			flash_error(lang('timeslot dnx'));
 			ajx_current("empty");
 			return;
-		} // if
+		}
 
-		$object = $timeslot->getObject();
-		if(!($object instanceof ProjectDataObject)) {
+		$object = $timeslot->getRelObject();
+		if(!($object instanceof ContentDataObject)) {
 			flash_error(lang('object dnx'));
 			ajx_current("empty");
 			return;
-		} // if
+		}
 
 		if(trim($object->getObjectUrl())) $redirect_to = $object->getObjectUrl();
 
@@ -454,12 +447,12 @@ class TimeslotController extends ApplicationController {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
-		} // if
+		}
 		
 		try {
 			DB::beginWork();
 			$timeslot->delete();
-			ApplicationLogs::createLog($timeslot, $object->getWorkspaces(), ApplicationLogs::ACTION_DELETE);
+			ApplicationLogs::createLog($timeslot, ApplicationLogs::ACTION_DELETE);
 			$object->onDeleteTimeslot($timeslot);
 			DB::commit();
 
@@ -469,7 +462,7 @@ class TimeslotController extends ApplicationController {
 			DB::rollback();
 			flash_error(lang('error delete timeslot'));
 			ajx_current("empty");
-		} // try
+		}
 
 	} // delete
 

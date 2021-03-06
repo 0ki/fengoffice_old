@@ -1,6 +1,6 @@
 <?php
 /**
-* @version $Id: ucwords.php,v 1.1 2010/01/22 18:06:24 acio Exp $
+* @version $Id: ucwords.php 7 2010-01-22 18:14:51Z acio $
 * @package utf8
 * @subpackage strings
 */

@@ -12,20 +12,11 @@
     * @static
     */
     static private $columns = array(
-    	'id' => DATA_TYPE_INTEGER,
+    	'object_id' => DATA_TYPE_INTEGER,
     	'type_id' => DATA_TYPE_INTEGER,
-    	'display_id' => DATA_TYPE_INTEGER, 
-    	'title' => DATA_TYPE_STRING, 
+    	'display_id' => DATA_TYPE_INTEGER,
     	'show_in_project' => DATA_TYPE_BOOLEAN,
-    	'show_in_parents' => DATA_TYPE_BOOLEAN,
-    	'created_on' => DATA_TYPE_DATETIME, 
-    	'created_by_id' => DATA_TYPE_INTEGER, 
-    	'updated_on' => DATA_TYPE_DATETIME, 
-    	'updated_by_id' => DATA_TYPE_INTEGER,
-    	'trashed_on' => DATA_TYPE_DATETIME,
-     	'trashed_by_id' => DATA_TYPE_INTEGER,
-    	'archived_on' => DATA_TYPE_DATETIME,
-    	'archived_by_id' => DATA_TYPE_INTEGER,
+    	'show_in_parents' => DATA_TYPE_BOOLEAN
     );
   
     /**
@@ -76,7 +67,7 @@
     * @return array or string
     */
     function getPkColumns() {
-      return 'id';
+      return 'object_id';
     } // getPkColumns
     
     /**
@@ -87,7 +78,7 @@
     * @return string
     */
     function getAutoIncrementColumn() {
-      return 'id';
+      return null;
     } // getAutoIncrementColumn
     
     // -------------------------------------------------------
@@ -114,8 +105,6 @@
         return parent::find($arguments);
       } else {
         return ProjectCharts::instance()->find($arguments);
-        //$instance =& ProjectCharts::instance();
-        //return $instance->find($arguments);
       } // if
     } // find
     
@@ -131,8 +120,6 @@
         return parent::findAll($arguments);
       } else {
         return ProjectCharts::instance()->findAll($arguments);
-        //$instance =& ProjectCharts::instance();
-        //return $instance->findAll($arguments);
       } // if
     } // findAll
     
@@ -148,8 +135,6 @@
         return parent::findOne($arguments);
       } else {
         return ProjectCharts::instance()->findOne($arguments);
-        //$instance =& ProjectCharts::instance();
-        //return $instance->findOne($arguments);
       } // if
     } // findOne
     
@@ -166,8 +151,6 @@
         return parent::findById($id, $force_reload);
       } else {
         return ProjectCharts::instance()->findById($id, $force_reload);
-        //$instance =& ProjectCharts::instance();
-        //return $instance->findById($id, $force_reload);
       } // if
     } // findById
     
@@ -183,8 +166,6 @@
         return parent::count($condition);
       } else {
         return ProjectCharts::instance()->count($condition);
-        //$instance =& ProjectCharts::instance();
-        //return $instance->count($condition);
       } // if
     } // count
     
@@ -200,8 +181,6 @@
         return parent::delete($condition);
       } else {
         return ProjectCharts::instance()->delete($condition);
-        //$instance =& ProjectCharts::instance();
-        //return $instance->delete($condition);
       } // if
     } // delete
     
@@ -224,8 +203,6 @@
         return parent::paginate($arguments, $items_per_page, $current_page);
       } else {
         return ProjectCharts::instance()->paginate($arguments, $items_per_page, $current_page);
-        //$instance =& ProjectCharts::instance();
-        //return $instance->paginate($arguments, $items_per_page, $current_page);
       } // if
     } // paginate
     

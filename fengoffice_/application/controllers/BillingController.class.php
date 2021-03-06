@@ -19,7 +19,7 @@ class BillingController extends ApplicationController {
 	}
 
 	function add() {
-		if (!logged_user()->isAdministrator()) {
+		if (!can_manage_billing(logged_user())) {
 			flash_error(lang("no access permissions"));
 			ajx_current("empty");
 			return;
@@ -63,7 +63,7 @@ class BillingController extends ApplicationController {
 			return;
 		} // if
 		
-		if (!logged_user()->isAdministrator()) {
+		if (!can_manage_billing(logged_user())) {
 			flash_error(lang("no access permissions"));
 			ajx_current("empty");
 			return;
@@ -122,7 +122,7 @@ class BillingController extends ApplicationController {
 	}
 
 	function assign_users(){
-		if (!logged_user()->isAdministrator()) {
+		if (!can_manage_billing(logged_user())) {
 			flash_error(lang("no access permissions"));
 			ajx_current("empty");
 			return;
@@ -156,7 +156,7 @@ class BillingController extends ApplicationController {
 	function update_unset_billing_values(){
 		ajx_current("empty");
 		
-		if (!logged_user()->isAdministrator()) {
+		if (!can_manage_billing(logged_user())) {
 			flash_error(lang("no access permissions"));
 			return;
 		}

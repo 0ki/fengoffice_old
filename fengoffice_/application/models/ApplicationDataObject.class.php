@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Class that implements method common to all application objects (users, companies, projects etc)
+ * Class that implements method common to all application objects (contacts, projects etc)
  *
  * @version 1.0
  * @author Ilija Studen <ilija.studen@gmail.com>,  Marcos Saiz <marcos.saiz@fengoffice.com>
@@ -26,6 +26,7 @@ abstract class ApplicationDataObject extends DataObject {
 	 * @var array
 	 */
 	protected $searchable_columns = array();
+	
 	protected $searchable_composite_columns = array();
 	 
 	/**
@@ -103,58 +104,34 @@ abstract class ApplicationDataObject extends DataObject {
 				if(trim($content) <> '') {
 					$searchable_object = new SearchableObject();
 					 
-					$searchable_object->setRelObjectManager(get_class($this->manager()));
 					$searchable_object->setRelObjectId($this->getObjectId());
 					$searchable_object->setColumnName($column_name);
 					$searchable_object->setContent($content);
-					$searchable_object->setProjectId(0);
-					$searchable_object->setIsPrivate(false);
 
 					$searchable_object->save();
 				} // if
 			} // foreach
 		} // if
 		 
-		//Add Unique ID to search
-		if ($wasNew){
-			SearchableObjects::dropContentByObjectColumns($this, array('uid')); // Fixes Query failed with message 'Duplicate entry 'xxxxx-31-uid' for key 1'
-			
-			$searchable_object = new SearchableObject();
-
-			$searchable_object->setRelObjectManager(get_class($this->manager()));
-			$searchable_object->setRelObjectId($this->getObjectId());
-			$searchable_object->setColumnName('uid');
-			$searchable_object->setContent($this->getUniqueObjectId());
-			$searchable_object->setProjectId(0);
-			$searchable_object->setIsPrivate(false);
-
-			$searchable_object->save();
-		}
 	}
 
 	function save() {
 		$wasNew = $this->isNew();
+		Hook::fire ( 'before_'.( ($wasNew)?'insert':'update') , $this, $null); 
 		$result = parent::save();
-
+		Hook::fire ( 'after_'.( ($wasNew)?'insert':'update') , $this, $null); 
 		if ($result && $this->isSearchable()){
 			$this->addToSearchableObjects($wasNew);
 		}
-
 		return $result;
-	} // save
+	} 
 	 
 	function delete(){
+		Hook::fire('before_delete',$this, $null);
 		$this->clearEverything();
 		return parent::delete();
+		Hook::fire('after_delete',$this, $null);
 	}
-	
-	/**
-	 * Deletes the object from Searchable Objects
-	 *
-	 */
-    function deleteFromSearchableObjects(){
-    	$this->clearSearchIndex();      	
-    }
 	
 	/**
 	 * This function deletes everything related to the object.
@@ -213,52 +190,25 @@ abstract class ApplicationDataObject extends DataObject {
 	/**
 	 * Cached author object reference
 	 *
-	 * @var User
+	 * @var Contact
 	 */
-	private $created_by = null;
+	protected $created_by = null;
 
 	/**
 	 * Cached reference to user who created last update on object
 	 *
-	 * @var User
+	 * @var Contact
 	 */
-	private $updated_by = null;
+	protected $updated_by = null;
 
 	/**
 	 * Cached reference to user who created last update on object
 	 *
-	 * @var User
+	 * @var Contact
 	 */
-	private $trashed_by = null;
+	protected $trashed_by = null;
 	
 
-
-	/*
-	 * Object type identifier
-	 *
-	 * ch - ProjectChart
-	 * cm - Comment
-	 * ct - Contact
-	 * co - Company
-	 * cp - Chart Parameter
-	 * d - ProjectFile
-	 * d - ProjectFileRevision
-	 * ev - ProjectEvent
-	 * fo - ProjectForm
-	 * gp - Group
-	 * me - ProjectMessage
-	 * mc - Mail Content
-	 * mi - ProjectMilestone
-	 * re - Report
-	 * ro - ProjectContact (Role)
-	 * ta - ProjectTask
-	 * tg - Tag
-	 * ts - Timeslot
-	 * us - User
-	 * wp - WebPages
-	 * ws - Project (Workspace)
-	 */
-	protected $objectTypeIdentifier = '';
 
 	/**
 	 * Return object ID
@@ -280,16 +230,7 @@ abstract class ApplicationDataObject extends DataObject {
 		return $this->columnExists('name') ? $this->getName() : null;
 	} // getObjectName
 
-	function getUniqueObjectId(){
-		$oid = $this->getObjectId();
-		if ($oid < 10)
-			$oid = '00' . $oid;
-		else if ($oid < 100)
-			$oid = '0' . $oid;
-		 
-		return $this->objectTypeIdentifier . $oid;
-	}
-
+	
 	/**
 	 * Return object type name - message, user, project etc
 	 *
@@ -300,15 +241,6 @@ abstract class ApplicationDataObject extends DataObject {
 		return '';
 	} // getObjectTypeName
 	
-	/**
-	 * Returns the object's manager's name.
-	 *
-	 * @return string
-	 */
-	function getObjectManagerName() {
-		return get_class($this->manager());
-	}
-
 	/**
 	 * Return object URL
 	 *
@@ -346,7 +278,7 @@ abstract class ApplicationDataObject extends DataObject {
 	 * @return DateTime
 	 */
 	function getViewHistoryUrl() {
-		return get_url('object','view_history',array('id'=> $this->getId(), 'manager'=> get_class($this->manager)));
+		return get_url('object','view_history',array('id'=> $this->getId()));
 	} // getViewHistoryUrl
 
 	// ---------------------------------------------------
@@ -358,11 +290,11 @@ abstract class ApplicationDataObject extends DataObject {
 	 *
 	 * @access public
 	 * @param void
-	 * @return User
+	 * @return Contact
 	 */
 	function getCreatedBy() {
 		if(is_null($this->created_by)) {
-			if($this->columnExists('created_by_id')) $this->created_by = Users::findById($this->getCreatedById());
+			if($this->columnExists('created_by_id')) $this->created_by = Contacts::findById($this->getCreatedById());
 		} //
 		return $this->created_by;
 	} // getCreatedBy
@@ -376,7 +308,7 @@ abstract class ApplicationDataObject extends DataObject {
 	 */
 	function getCreatedByDisplayName() {
 		$created_by = $this->getCreatedBy();
-		return $created_by instanceof User ? $created_by->getDisplayName() : lang('n/a');
+		return $created_by instanceof Contact ? $created_by->getDisplayName() : lang('n/a');
 	} // getCreatedByDisplayName
 
 	/**
@@ -387,7 +319,7 @@ abstract class ApplicationDataObject extends DataObject {
 	 */
 	function getCreatedByCardUrl() {
 		$created_by = $this->getCreatedBy();
-		return $created_by instanceof User ? $created_by->getCardUrl() : null;
+		return $created_by instanceof Contact ? $created_by->getCardUserUrl() : null;
 	} // getCreatedByCardUrl
 
 	// ---------------------------------------------------
@@ -403,7 +335,7 @@ abstract class ApplicationDataObject extends DataObject {
 	 */
 	function getUpdatedBy() {
 		if(is_null($this->updated_by)) {
-			if($this->columnExists('updated_by_id')) $this->updated_by = Users::findById($this->getUpdatedById());
+			if($this->columnExists('updated_by_id')) $this->updated_by = Contacts::findById($this->getUpdatedById());
 		} //
 		return $this->updated_by;
 	} // getCreatedBy
@@ -417,7 +349,7 @@ abstract class ApplicationDataObject extends DataObject {
 	 */
 	function getUpdatedByDisplayName() {
 		$updated_by = $this->getUpdatedBy();
-		return $updated_by instanceof User ? $updated_by->getDisplayName() : lang('n/a');
+		return $updated_by instanceof Contact ? $updated_by->getDisplayName() : lang('n/a');
 	} // getUpdatedByDisplayName
 
 	/**
@@ -428,7 +360,7 @@ abstract class ApplicationDataObject extends DataObject {
 	 */
 	function getUpdatedByCardUrl() {
 		$updated_by = $this->getUpdatedBy();
-		return $updated_by instanceof User ? $updated_by->getCardUrl() : null;
+		return $updated_by instanceof Contact ? $updated_by->getCardUserUrl() : null;
 	} // getUpdatedByCardUrl
 	
 	// ---------------------------------------------------
@@ -444,7 +376,7 @@ abstract class ApplicationDataObject extends DataObject {
 	 */
 	function getTrashedBy() {
 		if(is_null($this->trashed_by)) {
-			if($this->columnExists('trashed_by_id')) $this->trashed_by = Users::findById($this->getTrashedById());
+			if($this->columnExists('trashed_by_id')) $this->trashed_by = Contacts::findById($this->getTrashedById());
 		} //
 		return $this->trashed_by;
 	} // getTrashedBy
@@ -458,7 +390,7 @@ abstract class ApplicationDataObject extends DataObject {
 	 */
 	function getTrashedByDisplayName() {
 		$trashed_by = $this->getTrashedBy();
-		return $trashed_by instanceof User ? $trashed_by->getDisplayName() : lang('n/a');
+		return $trashed_by instanceof Contact ? $trashed_by->getDisplayName() : lang('n/a');
 	} // getTrashedByDisplayName
 
 	/**
@@ -469,7 +401,7 @@ abstract class ApplicationDataObject extends DataObject {
 	 */
 	function getTrashedByCardUrl() {
 		$trashed_by = $this->getTrashedBy();
-		return $trashed_by instanceof User ? $trashed_by->getCardUrl() : null;
+		return $trashed_by instanceof Contact ? $trashed_by->getCardUserUrl() : null;
 	} // getTrashedByCardUrl
 
 	// ---------------------------------------------------
@@ -493,14 +425,11 @@ abstract class ApplicationDataObject extends DataObject {
 	 * @return LinkedObject
 	 */
 	function linkObject(ApplicationDataObject $object) {
-		$manager_class = get_class($this->manager());
 		$object_id = $this->getObjectId();
 
 		$linked_object = LinkedObjects::findById(array(
-        'rel_object_manager' => $manager_class,
         'rel_object_id' => $object_id,
         'object_id' => $object->getId(),
-        'object_manager' => get_class($object->manager()),
 		)); // findById
 
 		if($linked_object instanceof LinkedObject) {
@@ -509,10 +438,8 @@ abstract class ApplicationDataObject extends DataObject {
 		else
 		{//check inverse link
 			$linked_object = LinkedObjects::findById(array(
-	        'rel_object_manager' => get_class($object->manager()),
 	        'rel_object_id' => $object->getId(),
 	        'object_id' => $object_id,
-	        'object_manager' => $manager_class,
 			)); // findById
 			if($linked_object instanceof LinkedObject) {
 				return $linked_object; // Already linked
@@ -520,17 +447,11 @@ abstract class ApplicationDataObject extends DataObject {
 		} // if
 
 		$linked_object = new LinkedObject();
-		$linked_object->setRelObjectManager($manager_class);
 		$linked_object->setRelObjectId($object_id);
 		$linked_object->setObjectId($object->getId());
-		$linked_object->setObjectManager(get_class($object->manager()));
 
 		$linked_object->save();
-		/*  if(!$object->getIsVisible()) {
-		 $object->setIsVisible(true);
-		 $object->setExpirationTime(EMPTY_DATETIME);
-		 $object->save();
-	  } // if*/
+		
 		return $linked_object;
 	} // linkObject
 
@@ -541,9 +462,7 @@ abstract class ApplicationDataObject extends DataObject {
 	 * @return array
 	 */
 	function getAllLinkedObjects() {
-	//	if(is_null($this->all_linked_objects)) {
-			$this->all_linked_objects = LinkedObjects::getLinkedObjectsByObject($this);
-	//	} // if
+		$this->all_linked_objects = LinkedObjects::getLinkedObjectsByObject($this);
 		return $this->all_linked_objects;
 	} //  getAllLinkedObjects
 
@@ -610,7 +529,6 @@ abstract class ApplicationDataObject extends DataObject {
 	 */
 	function getLinkObjectUrl() {
 		return get_url('object', 'link_to_object', array(
-        'manager' => get_class($this->manager()),
         'object_id' => $this->getObjectId()
 		)); // get_url
 	} // getLinkedObjectsUrl
@@ -623,7 +541,6 @@ abstract class ApplicationDataObject extends DataObject {
 	 */
 	function getObjectPropertiesUrl() {
 		return get_url('object', 'view_properties', array(
-        'manager' => get_class($this->manager()),
         'object_id' => $this->getObjectId()
 		)); // get_url
 	} // getLinkedObjectsUrl
@@ -636,10 +553,8 @@ abstract class ApplicationDataObject extends DataObject {
 	 */
 	function getUnlinkObjectUrl(ApplicationDataObject $object) {
 		return get_url('object', 'unlink_from_object', array(
-        'manager' => get_class($this->manager()),
         'object_id' => $this->getObjectId(),
         'rel_object_id' => $object->getId(),
-        'rel_object_manager' => get_class($object->manager()),
 		)); // get_url
 	} //  getUnlinkedObjectUrl
 
@@ -647,11 +562,10 @@ abstract class ApplicationDataObject extends DataObject {
 	/**
 	 * Returns true if user can link an object to this object
 	 *
-	 * @param User $user
-	 * @param Project $project
+	 * @param Contact $user
 	 * @return boolean
 	 */
-	function canLinkObject(User $user) {
+	function canLinkObject(Contact $user) {
 		if(!$this->isLinkableObject()) return false;
 		return $this->canEdit($user);
 	} // canLinkObject
@@ -663,17 +577,12 @@ abstract class ApplicationDataObject extends DataObject {
 	 * @param ProjectDataObject $object
 	 * @return booealn
 	 */
-	function canUnlinkObject(User $user, ApplicationDataObject $object) {
+	function canUnlinkObject(Contact $user, ApplicationDataObject $object) {
 		return $this->canEdit($user);
 	} // canUnlinkObject
 
 
-
-	function getProject() {
-		//Logger::log("WARNING: Calling getProject() on an object with multiple workspaces.");
-		return null;
-	}
-	
+	//TODO revisar funcion
 	function copy() {
 		$class = get_class($this);
 		$copy = new $class();
@@ -699,7 +608,7 @@ abstract class ApplicationDataObject extends DataObject {
 		return false;
 	}
 	
-// ---------------------------------------------------
+	// ---------------------------------------------------
 	//  Object Properties
 	// ---------------------------------------------------
 	/**
@@ -738,7 +647,6 @@ abstract class ApplicationDataObject extends DataObject {
 					}else{
 						$property = new ObjectProperty();
 						$property->setRelObjectId($this->getId());
-						$property->setRelObjectManager(get_class($this->manager()));
 					}
 					$property->setFromAttributes($object_data["property$i"]);
 					$property->save();
@@ -754,11 +662,9 @@ abstract class ApplicationDataObject extends DataObject {
 	function addPropertyToSearchableObject(ObjectProperty $property){
 		$searchable_object = new SearchableObject();
 		 
-		$searchable_object->setRelObjectManager(get_class($this->manager()));
 		$searchable_object->setRelObjectId($this->getObjectId());
 		$searchable_object->setColumnName('property'.$property->getId());
 		$searchable_object->setContent($property->getPropertyValue());
-		$searchable_object->setIsPrivate(false);
 	  
 		$searchable_object->save();
 	}
@@ -837,7 +743,6 @@ abstract class ApplicationDataObject extends DataObject {
 	function addProperty($name, $value) {
 		$op = new ObjectProperty();
 		$op->setRelObjectId($this->getId());
-		$op->setRelObjectManager(get_class($this->manager()));
 		$op->setPropertyName($name);
 		$op->setPropertyValue($value);
 		$op->save();
@@ -859,19 +764,6 @@ abstract class ApplicationDataObject extends DataObject {
 			SearchableObjects::dropObjectPropertiesByObject($this);
 		}
 	}
-
-	// ---------------------------------------------------
-	//  Utilities
-	// ---------------------------------------------------
-
-	protected function isInCsv($value, $csv){
-		$arr = explode(',',$csv);
-		foreach($arr as $s)
-			if (intval($s) == $value)
-				return true;
-		return false;
-	}
-
 
 } // ApplicationDataObject
 

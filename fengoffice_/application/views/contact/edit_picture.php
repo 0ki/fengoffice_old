@@ -11,7 +11,7 @@
   <fieldset>
     <legend><?php echo lang('current picture') ?></legend>
 <?php if($contact->hasPicture()) { ?>
-    <img src="<?php echo $contact->getPictureUrl() ?>" alt="<?php echo clean($contact->getDisplayName()) ?> picture" />
+    <img src="<?php echo $contact->getPictureUrl() ?>" alt="<?php echo clean($contact->getObjectName()) ?> picture" />
     <p><a class="internalLink" href="<?php echo $contact->getDeletePictureUrl() ?>" onclick="return confirm('<?php echo escape_single_quotes(lang('confirm delete current picture')) ?>')"><?php echo lang('delete current picture') ?></a></p>
 <?php } else { ?>
     <?php echo lang('no current picture') ?>

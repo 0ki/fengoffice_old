@@ -158,5 +158,4 @@
 	'report as spam' => 'Rapporter som søppelpost',
 	'not spam' => 'Ikke søppelpost',
 	'mark as unread' => 'Marker som ulest',
-	'show' => 'Vis',
 ); ?>

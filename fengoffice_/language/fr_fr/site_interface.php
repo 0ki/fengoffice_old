@@ -570,8 +570,4 @@ Le contexte <b>{0}</b> est utilisé comme contexte personnel d\'un utilisateur',
 	'guest user' => 'Invité',
 	'admin user' => 'Administrateur',
 	'user type' => 'Type d\'utilisateur',
-	'password confirmation' => 'Confirmation du mot de passe',
-	'mail account password confirmation' => 'Vous devez utiliser ce champ pour contre-vérifier votre mot de passe',
-	'wrong password confirmation' => 'Attention: Le mot de passe ne correspond pas. Veuillez vérifier',
-	'object subtypes' => 'sous-types Objets',
 ); ?>

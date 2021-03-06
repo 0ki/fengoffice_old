@@ -1,99 +1,114 @@
-<?php 
+<?php
+require_javascript('og/modules/memberListView.js'); 
 require_javascript("og/Permissions.js");
 
 if (!isset($genid)) $genid = gen_id();
 if (!isset($name)) $name = 'permissions';
-?>
-	<input id="<?php echo $genid ?>hfPerms" type="hidden" value="<?php echo $user->isNew()? '' : str_replace('"',"'", json_encode($user->getAllPermissions())) ?>"/>
-	
-	<input id="<?php echo $genid ?>hfPermsSend" name="<?php echo $name ?>" type="hidden" value=""/>
 
+?>
+
+<input id="<?php echo $genid ?>hfPerms" type="hidden" value="<?php echo str_replace('"',"'", json_encode($member_permissions));?>"/>
+<input id="<?php echo $genid ?>hfAllowedOT" type="hidden" value="<?php echo str_replace('"',"'", json_encode($allowed_object_types));?>"/>
+<input id="<?php echo $genid ?>hfAllowedOTbyMemType" type="hidden" value="<?php echo str_replace('"',"'", json_encode($allowed_object_types_by_member_type));?>"/>
+<input id="<?php echo $genid ?>hfMemTypes" type="hidden" value="<?php echo str_replace('"',"'", json_encode($member_types));?>"/>
+
+<input id="<?php echo $genid ?>hfPermsSend" name="<?php echo $name ?>" type="hidden" value=""/>
+
+<?php foreach ($dimensions as $dimension) {?>
+<fieldset>
+	<legend><span class="og-task-expander toggle_expanded" style="padding-left:20px;" title="<?php echo lang('expand-collapse') ?>" id="<?php echo $genid?>expander<?php echo $dimension->getId()?>"
+				onclick="og.editMembers.expandCollapseDim('<?php echo $genid?>dimension<?php echo $dimension->getId()?>', false);"><?php echo $dimension->getName()?></span></legend>
+	<div id="<?php echo $genid?>dimension<?php echo $dimension->getId()?>">
 <table><tr><td>
   <?php	
-  echo select_workspaces("", (isset($projects)?$projects:null), null, "workspace-chooser$genid") ?>
+  		echo render_single_dimension_tree($dimension, $genid, null, array('all_members' => true));
+  ?>
   </td><td style="padding-left:20px">
-  <div id="<?php echo $genid ?>project_permissions" style="display:none">
-  <div id="<?php echo $genid ?>project_name" style="font-weight:bold;font-size:120%;padding-bottom:15px"></div>
-  <a href="#" class="internalLink" onclick="og.ogPermApplyToSubworkspaces('<?php echo $genid ?>');return false;"><?php echo lang('apply to all subworkspaces') ?></a>
-  <br/><br/>
+  <div id="<?php echo $genid ?>member_permissions<?php echo $dimension->getId() ?>" style="display:none;">
+  <div id="<?php echo $genid . "_" . $dimension->getId()?>member_name" style="font-weight:bold;font-size:120%;padding-bottom:5px"></div>
+  
   <table>
   	<col align=left/><col align=center/>
-  	<tr style="border-bottom:1px solid #888;margin-bottom:5px"><td style="vertical-align:middle">
-  		<span class="projectPermission">
-			<?php echo checkbox_field($genid . 'pAll', false, array('id' => $genid . 'pAll', 'onclick' => 'og.ogPermAllChecked("' . $genid . '",this.checked)')) ?> <label style="font-weight:bold" for="<?php echo $genid ?>pAll" class="checkbox"><?php echo lang('all') ?></label>   
+  	<tr style="border-bottom:1px solid #888;margin-bottom:5px">
+  	<td style="vertical-align:middle">
+  		<span>
+			<?php echo checkbox_field($genid . $dimension->getId() . 'pAll', false, array('id' => $genid . $dimension->getId() .'pAll', 'onclick' => 'og.ogPermAllChecked("' . $genid . '", '. $dimension->getId() .', this.checked)')) ?> <label style="font-weight:bold" for="<?php echo $genid .$dimension->getId() ?>pAll" class="checkbox"><?php echo lang('All') ?></label>   
   		</span>
   	</td>
-  	<td align=center style="padding-left:10px;padding-right:10px;width:60px;"><a href="#" class="internalLink" onclick="og.ogPermSetLevel('<?php echo $genid ?>', 2);return false;"><?php echo lang('read and write') ?></a></td>
-  	<td align=center style="padding-left:10px;padding-right:10px;width:60px;"><a href="#" class="internalLink" onclick="og.ogPermSetLevel('<?php echo $genid ?>', 1);return false;"><?php echo lang('read only') ?></a></td>
-  	<td align=center style="padding-left:10px;padding-right:10px;width:60px;"><a href="#" class="internalLink" onclick="og.ogPermSetLevel('<?php echo $genid ?>', 0);return false;"><?php echo lang('none no bars') ?></a></td></tr>
-  	<tr>
-  		<td style="padding-right:20px"><?php echo lang('messages') ?></td>
-  		<td align=center><?php echo radio_field($genid . 'rg_0',false,array('onchange' => 'og.ogPermValueChanged("' . $genid . '")', 'value' => '2', 'style' => 'width:16px', 'class' => "readWritePermission")) ?></td>
-  		<td align=center><?php echo radio_field($genid . 'rg_0',false,array('onchange' => 'og.ogPermValueChanged("' . $genid . '")', 'value' => '1', 'style' => 'width:16px')) ?></td>
-  		<td align=center><?php echo radio_field($genid . 'rg_0',false,array('onchange' => 'og.ogPermValueChanged("' . $genid . '")', 'value' => '0', 'style' => 'width:16px')) ?></td>
+  	<td align=center style="padding-left:10px;padding-right:10px;width:100px;"><a href="#" class="internalLink" onclick="og.ogPermSetLevel('<?php echo $genid ?>', '<?php echo $dimension->getId() ?>', 3);return false;"><?php echo lang('read write and delete') ?></a></td>
+  	<td align=center style="padding-left:10px;padding-right:10px;width:100px;"><a href="#" class="internalLink" onclick="og.ogPermSetLevel('<?php echo $genid ?>', '<?php echo $dimension->getId() ?>', 2);return false;"><?php echo lang('read and write') ?></a></td>
+  	<td align=center style="padding-left:10px;padding-right:10px;width:100px;"><a href="#" class="internalLink" onclick="og.ogPermSetLevel('<?php echo $genid ?>', '<?php echo $dimension->getId() ?>', 1);return false;"><?php echo lang('read only') ?></a></td>
+  	<td align=center style="padding-left:10px;padding-right:10px;width:100px;"><a href="#" class="internalLink" onclick="og.ogPermSetLevel('<?php echo $genid ?>', '<?php echo $dimension->getId() ?>', 0);return false;"><?php echo lang('none no bars') ?></a></td></tr>
+  	
+<?php 
+	$row_cls = "";
+	foreach ($all_object_types as $ot) {
+		if (!in_array($ot->getId(), $allowed_object_types[$dimension->getId()])) continue;
+		$row_cls = $row_cls == "" ? "altRow" : "";
+		$id_suffix = $dimension->getId() . "_" . $ot->getId();
+		$change_parameters = '\'' . $genid . '\', ' . $dimension->getId() . ', ' . $ot->getId();
+?>
+  	<tr class="<?php echo $row_cls?>">
+  		<td style="padding-right:20px"><span id="<?php echo $genid.'obj_type_label'.$id_suffix?>"><?php echo lang($ot->getName()) ?></span></td>
+  		<td align=center><?php echo radio_field($genid .'rg_'.$id_suffix, false, array('onchange' => 'og.ogPermValueChanged('. $change_parameters .')', 'value' => '3', 'style' => 'width:16px', 'id' => $genid . 'rg_3_'.$id_suffix)) ?></td>
+  		<td align=center><?php echo radio_field($genid .'rg_'.$id_suffix, false, array('onchange' => 'og.ogPermValueChanged('. $change_parameters .')', 'value' => '2', 'style' => 'width:16px', 'id' => $genid . 'rg_2_'.$id_suffix)) ?></td>
+  		<td align=center><?php echo radio_field($genid .'rg_'.$id_suffix, false, array('onchange' => 'og.ogPermValueChanged('. $change_parameters .')', 'value' => '1', 'style' => 'width:16px', 'id' => $genid . 'rg_1_'.$id_suffix)) ?></td>
+  		<td align=center><?php echo radio_field($genid .'rg_'.$id_suffix, false, array('onchange' => 'og.ogPermValueChanged('. $change_parameters .')', 'value' => '0', 'style' => 'width:16px', 'id' => $genid . 'rg_0_'.$id_suffix)) ?></td>
     </tr>
-    <tr style="background-color:#F6F6F6">
-  		<td style="padding-right:20px"><?php echo lang('tasks') ?></td>
-  		<td align=center><?php echo radio_field($genid . 'rg_1',false,array('onchange' => 'og.ogPermValueChanged("' . $genid . '")', 'value' => '2', 'style' => 'width:16px', 'class' => "readWritePermission")) ?></td>
-  		<td align=center><?php echo radio_field($genid . 'rg_1',false,array('onchange' => 'og.ogPermValueChanged("' . $genid . '")', 'value' => '1', 'style' => 'width:16px')) ?></td>
-  		<td align=center><?php echo radio_field($genid . 'rg_1',false,array('onchange' => 'og.ogPermValueChanged("' . $genid . '")', 'value' => '0', 'style' => 'width:16px')) ?></td>
-    </tr>
-    <tr>
-  		<td style="padding-right:20px"><?php echo lang('milestones') ?></td>
-  		<td align=center><?php echo radio_field($genid . 'rg_2',false,array('onchange' => 'og.ogPermValueChanged("' . $genid . '")', 'value' => '2', 'style' => 'width:16px', 'class' => "readWritePermission")) ?></td>
-  		<td align=center><?php echo radio_field($genid . 'rg_2',false,array('onchange' => 'og.ogPermValueChanged("' . $genid . '")', 'value' => '1', 'style' => 'width:16px')) ?></td>
-  		<td align=center><?php echo radio_field($genid . 'rg_2',false,array('onchange' => 'og.ogPermValueChanged("' . $genid . '")', 'value' => '0', 'style' => 'width:16px')) ?></td>
-    </tr>
-    <tr style="background-color:#F6F6F6">
-  		<td style="padding-right:20px"><?php echo lang('emails') ?></td>
-  		<td align=center><?php echo radio_field($genid . 'rg_3',false,array('onchange' => 'og.ogPermValueChanged("' . $genid . '")', 'value' => '2', 'style' => 'width:16px', 'class' => "readWritePermission")) ?></td>
-  		<td align=center><?php echo radio_field($genid . 'rg_3',false,array('onchange' => 'og.ogPermValueChanged("' . $genid . '")', 'value' => '1', 'style' => 'width:16px')) ?></td>
-  		<td align=center><?php echo radio_field($genid . 'rg_3',false,array('onchange' => 'og.ogPermValueChanged("' . $genid . '")', 'value' => '0', 'style' => 'width:16px')) ?></td>
-    </tr>
-    <tr>
-  		<td style="padding-right:20px"><?php echo lang('comments') ?></td>
-  		<td align=center><?php echo radio_field($genid . 'rg_4',false,array('onchange' => 'og.ogPermValueChanged("' . $genid . '")', 'value' => '2', 'style' => 'width:16px')) ?></td>
-  		<td align=center><?php echo radio_field($genid . 'rg_4',false,array('onchange' => 'og.ogPermValueChanged("' . $genid . '")', 'value' => '1', 'style' => 'width:16px')) ?></td>
-  		<td align=center><?php echo radio_field($genid . 'rg_4',false,array('onchange' => 'og.ogPermValueChanged("' . $genid . '")', 'value' => '0', 'style' => 'width:16px')) ?></td>
-    </tr>
-    <tr style="background-color:#F6F6F6">
-  		<td style="padding-right:20px"><?php echo lang('contacts') ?></td>
-  		<td align=center><?php echo radio_field($genid . 'rg_5',false,array('onchange' => 'og.ogPermValueChanged("' . $genid . '")', 'value' => '2', 'style' => 'width:16px', 'class' => "readWritePermission")) ?></td>
-  		<td align=center><?php echo radio_field($genid . 'rg_5',false,array('onchange' => 'og.ogPermValueChanged("' . $genid . '")', 'value' => '1', 'style' => 'width:16px')) ?></td>
-  		<td align=center><?php echo radio_field($genid . 'rg_5',false,array('onchange' => 'og.ogPermValueChanged("' . $genid . '")', 'value' => '0', 'style' => 'width:16px')) ?></td>
-    </tr>
-    <tr>
-  		<td style="padding-right:20px"><?php echo lang('weblinks') ?></td>
-  		<td align=center><?php echo radio_field($genid . 'rg_6',false,array('onchange' => 'og.ogPermValueChanged("' . $genid . '")', 'value' => '2', 'style' => 'width:16px', 'class' => "readWritePermission")) ?></td>
-  		<td align=center><?php echo radio_field($genid . 'rg_6',false,array('onchange' => 'og.ogPermValueChanged("' . $genid . '")', 'value' => '1', 'style' => 'width:16px')) ?></td>
-  		<td align=center><?php echo radio_field($genid . 'rg_6',false,array('onchange' => 'og.ogPermValueChanged("' . $genid . '")', 'value' => '0', 'style' => 'width:16px')) ?></td>
-    </tr>
-    <tr style="background-color:#F6F6F6">
-  		<td style="padding-right:20px"><?php echo lang('files') ?></td>
-  		<td align=center><?php echo radio_field($genid . 'rg_7',false,array('onchange' => 'og.ogPermValueChanged("' . $genid . '")', 'value' => '2', 'style' => 'width:16px', 'class' => "readWritePermission")) ?></td>
-  		<td align=center><?php echo radio_field($genid . 'rg_7',false,array('onchange' => 'og.ogPermValueChanged("' . $genid . '")', 'value' => '1', 'style' => 'width:16px')) ?></td>
-  		<td align=center><?php echo radio_field($genid . 'rg_7',false,array('onchange' => 'og.ogPermValueChanged("' . $genid . '")', 'value' => '0', 'style' => 'width:16px')) ?></td>
-    </tr>
-    <tr>
-  		<td style="padding-right:20px"><?php echo lang('events') ?></td>
-  		<td align=center><?php echo radio_field($genid . 'rg_8',false,array('onchange' => 'og.ogPermValueChanged("' . $genid . '")', 'value' => '2', 'style' => 'width:16px', 'class' => "readWritePermission")) ?></td>
-  		<td align=center><?php echo radio_field($genid . 'rg_8',false,array('onchange' => 'og.ogPermValueChanged("' . $genid . '")', 'value' => '1', 'style' => 'width:16px')) ?></td>
-  		<td align=center><?php echo radio_field($genid . 'rg_8',false,array('onchange' => 'og.ogPermValueChanged("' . $genid . '")', 'value' => '0', 'style' => 'width:16px')) ?></td>
-    </tr>
+<?php }?>
     
     </table>
-    <br/>
-    <?php echo checkbox_field($genid . 'chk_0', false, array('id' => $genid . 'chk_0', 'onclick' => 'og.ogPermValueChanged("' . $genid . '")')) ?> <label style="font-weight:normal" for="<?php echo $genid ?>chk_0" class="checkbox"><?php echo lang('can assign to owners') ?></label>
+    <div style="width:100%;text-align:right;">
+	    <div>
+	    	<a href="#" class="internalLink" onclick="og.ogPermApplyToSubmembers('<?php echo $genid ?>', '<?php echo $dimension->getId() ?>');return false;" title="<?php echo lang('apply to all submembers desc') ?>"><?php echo lang('apply to all submembers') ?></a>
+	    </div>
+	    <div>
+	    	<a href="#" class="internalLink" onclick="og.ogPermApplyToAllMembers('<?php echo $genid ?>', '<?php echo $dimension->getId() ?>');return false;" title="<?php echo lang('apply to all members desc') ?>"><?php echo lang('apply to all members') ?></a>
+	    </div>
+    </div>
+<!-- 
+    <br/><?php echo checkbox_field($genid . 'chk_0', false, array('id' => $genid . 'chk_0', 'onclick' => 'og.ogPermValueChanged("' . $genid . '")')) ?> <label style="font-weight:normal" for="<?php echo $genid ?>chk_0" class="checkbox"><?php echo lang('can assign to owners') ?></label>
     <br/><?php echo checkbox_field($genid . 'chk_1', false, array('id' => $genid . 'chk_1', 'onclick' => 'og.ogPermValueChanged("' . $genid . '")')) ?> <label style="font-weight:normal" for="<?php echo $genid ?>chk_1" class="checkbox"><?php echo lang('can assign to other') ?></label>
+ -->
     </div>
    </td></tr></table>
+   </div>
+</fieldset>
+
 <script>
-	og.ogLoadPermissions('<?php echo $genid ?>');
-	var wsch = Ext.getCmp('workspace-chooser<?php echo $genid ?>');
-	wsch.on("wschecked", function(arguments) {
-		og.ogPermAllChecked('<?php echo $genid ?>', arguments['checked'], arguments['id']);
-	}, document);
-	wsch.on("wsselected", function() {
-		og.ogPermSelectedWsChanged('<?php echo $genid ?>');
-	}, document);
+	if (!og.permissionDimensions) og.permissionDimensions = [];
+	og.permissionDimensions.push(<?php echo $dimension->getId() ?>);
+	
+	var memberChoosers = Ext.getCmp('<?php echo "$genid-member-chooser-panel-".$dimension->getId()?>').items;
+	if (memberChoosers) {
+		memberChoosers.each(function(item, index, length) {
+			item.on('click', function(member) {
+				var panel = Ext.get('<?php echo $genid ?>member_permissions<?php echo $dimension->getId() ?>');
+				if (!isNaN(member.id)) {
+					var mili = 0;
+					if(panel.isVisible()) {
+						panel.slideOut('r', {useDisplay:true, duration:0.4});
+						mili = 100;
+					}
+					
+					// wait for the panel slideIn to render the title
+					setTimeout(function() {
+						og.loadMemberPermissions('<?php echo $genid ?>', <?php echo $dimension->getId() ?>, member.id);
+						og.permissionInfo['<?php echo $genid ?>'].selectedMember = member.id;
+						panel.slideIn('l', {useDisplay:true});
+						Ext.get('<?php echo $genid . "_" . $dimension->getId()?>member_name').dom.innerHTML = member.text;
+					}, mili);
+				} else {
+					// All selected
+					panel.slideOut('l', {useDisplay:true});
+				}
+			});
+		});
+	}
+
+</script>
+<?php }?>
+
+<script>
+og.ogLoadPermissions('<?php echo $genid ?>');
 </script>

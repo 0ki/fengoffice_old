@@ -334,3 +334,16 @@ a.iCalSubscribe {
 .textile-rewrite {
 	white-space: pre;
 }
+
+
+#menu-panel .x-toolbar table {
+	width: 100% ;
+}
+
+#menu-panel .x-small-editor {
+	padding-right: 10px ;	
+}
+
+.dimension-panel-textfilter {
+	width: 100% ;
+}

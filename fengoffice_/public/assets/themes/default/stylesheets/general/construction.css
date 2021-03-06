@@ -7,15 +7,11 @@
 }
 
 #headerContent {
-	background-position: 2px 3px;
-	/*background-image: url(../../images/layout/logo.png);*/
-	background-image: url(../../images/layout/header_bottom.gif);
-	background-repeat: repeat-x;
-	background-position: bottom;
-	height: 55px;
+	height: 40px;
 	width: 100%;
 	position: relative;
 	margin: 0 auto;
+	z-index:10000;
 	text-align: left;
 }
 .headerLogoAndWorkspace {
@@ -90,15 +86,38 @@
 }
 
 #logodiv {
-	background-image: url(../../images/layout/logo.png);
 	position: relative;
-	margin: 5 auto;
+	margin: 2 auto;
 	text-align: left;
 	background-repeat: no-repeat;
 	height: 45px;
-	width: 45px;
 	margin-left: 15px;
-	margin-top:6px;
+	margin-top: 3px;
+}
+
+#logodiv img, #logodiv a, #logodiv h1, #logodiv div
+{
+	float: left;
+}
+
+#logodiv a
+{
+	font-size: 10px;
+	color: #fff;
+}
+
+#logodiv h1
+{
+   	color: #FFFFFF;
+    font-size: 22px;
+    font-weight: normal;
+    padding: 0 0 0 5px;
+}
+
+
+#logodiv div
+{
+	padding-top: 15px;
 }
 
 #subWsExpander {
@@ -112,9 +131,7 @@
 }
 
 #searchbox {
-	position: absolute;
-	right: 10px;
-	top: 24px;
+	float: left;
 }
 
 #searchbox input {
@@ -122,16 +139,128 @@
 }
 
 .ico-quick-add {
-	background: transparent url(../../images/16x16/all_16_16_sprite.png) no-repeat scroll 0 -66px !important;
+	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -599px !important;
 }
 
 
 #userboxWrapper {
-	position: absolute;
-	top: -2px;
-	right: 0px;
-	/*color: #666;*/
-	font-size: 10px; 
+	float: left;
+	color: #fff;
+	padding-top: 2px;
+	font-family: lucida grande,tahoma,verdana,arial,sans-serif;	
+}
+
+#userboxWrapper h2{
+	color: #fff;
+	font-weight: bold;
+	padding: 0px 5px 10px 10px;	
+	float: left;
+}
+
+#userboxWrapper h2 a{
+	color: #fff;
+}
+
+#userboxWrapper a.account
+{
+	background: transparent url(../../images/layout/gear.png) no-repeat;
+	padding: 1px 5px 10px 23px;
+	color: #fff	
+}
+
+div.user-box-actions
+{
+	background: #fff;
+	filter: alpha(opacity=85); 
+	opacity: 0.85;
+	postion: absolute;
+	right: 10;
+	padding: 10px;	
+	text-align: left;
+	margin-top: -5px;
+	border: 1px solid #999999;	
+	z-index: 10000;		
+}
+
+div.user-box-actions textarea 
+{
+	border: solid 1px #999999 !important;
+	font-size: 12px !important;
+	margin-top: 3px;
+	height: 45px; !important;	
+}
+
+div.user-box-actions img 
+{
+	filter: alpha(opacity=100); 
+	opacity: 1 !important;	
+}
+
+div.user-box-actions ul li.line-top {
+	border-top: 1px solid #cccccc;
+	margin: 5px 0px 5px 0px;
+}
+
+div.user-box-actions ul li h2
+{
+	padding-left: 55px;
+	font-size: 15px;
+	font-weight: bold;	
+}
+
+div.user-box-actions ul li p
+{
+	padding-left: 55px;
+	font-size: 12px;
+	color: #999999;
+}
+
+div.user-box-actions a
+{
+	font-weight: bold;
+}
+
+
+div.user-box-actions div.theme-color-picker input
+{
+	width: 80px;
+	margin-left: 3px;
+}
+
+div#modcoder_picker, div#modcoder_colorpicker
+{
+	z-index: 15000 !important;
+}
+
+div.user-comment
+{
+	background: #f0f6e6;
+	padding: 5px;
+}
+
+div.user-comment div div.comment-unit
+{
+	border-top: solid 1px #cccccc;
+	margin-top: 5px;
+	padding-top: 5px;
+}
+
+div.user-comment div div.comment-unit .feed-date
+{
+	padding-left: 0px !important;
+}
+
+div.user-comment a
+{
+	font-size: 11px !important;
+}
+
+div.overview-activity textarea, div.overview-activity textarea.huge
+{
+	border: solid 1px #cccccc !important;
+	font-size: 11px !important;
+	width: 400px;
+	height: 16px; !important;
 }
 
 #userbox {
@@ -183,7 +312,6 @@
 }
 
 #searchBox {
-	padding: 1px 0;
 	text-align: right;
 }
 
@@ -298,6 +426,10 @@
 	clear: both;
 	height: 1px;
 	overflow: hidden;
+}
+
+.u-clear {
+	clear: both;
 }
 
 #error, #success {

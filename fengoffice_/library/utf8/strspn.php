@@ -1,6 +1,6 @@
 <?php
 /**
-* @version $Id: strspn.php,v 1.1 2010/01/22 18:06:23 acio Exp $
+* @version $Id: strspn.php 7 2010-01-22 18:14:51Z acio $
 * @package utf8
 * @subpackage strings
 */

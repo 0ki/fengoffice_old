@@ -18,12 +18,11 @@ class  ObjectProperties extends  BaseObjectProperties {
 	static function getAllPropertiesByObject(ApplicationDataObject $obj) {
 		return self::findAll(array(
 			'conditions' => array(
-				"`rel_object_id` = ? and `rel_object_manager` = ?",
-					$obj->getId(), get_class($obj->manager())
-			)
+				"`rel_object_id` = ?",$obj->getId())
 		)); // findAll
 	} //  getAllPropertiesByObject
 
+	
 	/**
 	 * Return one property, given the object and the property name
 	 *
@@ -33,8 +32,8 @@ class  ObjectProperties extends  BaseObjectProperties {
 	 */
 	static function getPropertyByName(ApplicationDataObject $obj, $property_name) {
 		return self::findOne(array(
-        'conditions' => array("`rel_object_id` = ? and `rel_object_manager` = ? and `name` = ? ",
-		$obj->getId(), get_class($obj->manager()), $property_name)
+        'conditions' => array("`rel_object_id` = ? and `name` = ? ",
+		$obj->getId(), $property_name)
 		)); // findAll
 	} //  getProperty
 
@@ -59,17 +58,17 @@ class  ObjectProperties extends  BaseObjectProperties {
 	 */
 	static function getAllProperties(ApplicationDataObject $obj, $property_name) {
 		return self::findAll(array(
-        'conditions' => array("`rel_object_id` = ? and `rel_object_manager` = ? and `name` = ? ",
-		$obj->getId(), get_class($obj->manager()), $property_name)
+        'conditions' => array("`rel_object_id` = ? and `name` = ? ",
+		$obj->getId(), $property_name)
 		)); // findAll
 	} //  getAllProperties
 
 	static function deleteAllByObject(ApplicationDataObject $object){
-		return self::delete('`rel_object_id` = '.$object->getId()." and `rel_object_manager` = '" . get_class($object->manager()) . "'");
+		return self::delete('`rel_object_id` = '.$object->getId());
 	}
 
 	static function deleteByObjectAndName(ApplicationDataObject $object, $name) {
-		return self::delete('`rel_object_id` = '.$object->getId()." AND `rel_object_manager` = '" . get_class($object->manager()) . "' AND `name` = " . DB::escape($name));
+		return self::delete('`rel_object_id` = '.$object->getId()." AND `name` = " . DB::escape($name));
 	}
 
 } // ObjectProperties

@@ -18,35 +18,37 @@ class TimeController extends ApplicationController {
 	function __construct() {
 		parent::__construct();
 		prepare_company_website_controller($this, 'website');
-		if (!can_manage_time(logged_user(),true)) {
+		if (!can_manage_time(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 		}
 	} // __construct
 	
 	function index() {
-		if (!can_manage_time(logged_user(),true)) {
+
+		if (!can_manage_time(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
 		}
-		$tasksUserId = array_var($_GET,'tu');
+		
+		$tasksUserId = array_var($_GET, 'tu');
 		if (is_null($tasksUserId)) {
-			$tasksUserId = user_config_option('TM tasks user filter',logged_user()->getId());
+			$tasksUserId = user_config_option('TM tasks user filter', logged_user()->getId());
 		} else if (user_config_option('TM tasks user filter') != $tasksUserId) {
 			set_user_config_option('TM tasks user filter', $tasksUserId, logged_user()->getId());
 		}
 				
-		$timeslotsUserId = array_var($_GET,'tsu');
+		$timeslotsUserId = array_var($_GET, 'tsu');
 		if (is_null($timeslotsUserId)) {
-			$timeslotsUserId = user_config_option('TM user filter',0);
+			$timeslotsUserId = user_config_option('TM user filter', 0);
 		} else if (user_config_option('TM user filter') != $timeslotsUserId) {
 			set_user_config_option('TM user filter', $timeslotsUserId, logged_user()->getId());
 		}
 				
-		$showTimeType = array_var($_GET,'stt');
+		$showTimeType = array_var($_GET, 'stt');
 		if (is_null($showTimeType)) {
-			$showTimeType = user_config_option('TM show time type',0);
+			$showTimeType = user_config_option('TM show time type', 0);
 		} else if (user_config_option('TM show time type') != $showTimeType) {
 			set_user_config_option('TM show time type', $showTimeType, logged_user()->getId());
 		}
@@ -54,48 +56,36 @@ class TimeController extends ApplicationController {
 		$start = array_var($_GET, 'start', 0);
 		$limit = 20;
 		
-		$tasksUser = Users::findById($tasksUserId);
-		$timeslotsUser = Users::findById($timeslotsUserId);	
+		$tasksUser = Contacts::findById($tasksUserId);
+		$timeslotsUser = Contacts::findById($timeslotsUserId);	
 		
 		//Active tasks view
-		$tasks = ProjectTasks::getOpenTimeslotTasks($tasksUser,logged_user());
-		ProjectTasks::populateData($tasks);
-		$tasks_array = array();
+		$tasks = ProjectTasks::getOpenTimeslotTasks(active_context(), $tasksUser);
+		ProjectTasks::populateTimeslots($tasks);
 		
 		//Timeslots view
 		$total = 0;
 		switch ($showTimeType){
 			case 0: //Show only timeslots added through the time panel
-				$timeslots = Timeslots::getProjectTimeslots(logged_user()->getWorkspacesQuery(), $timeslotsUser, active_project(), $start, $limit);
-				$total = Timeslots::countProjectTimeslots(logged_user()->getWorkspacesQuery(), $timeslotsUser, active_project());
+				$result = Timeslots::getGeneralTimeslots(active_context(), $timeslotsUser, $start, $limit);
+				$timeslots = $result->objects;
+				$total = $result->total;
 				break;
-			case 1: //Show only timeslots added through the tasks panel / tasks
-				throw new Error('not yet implemented' . $showTimeType);
-				/*if (active_project() instanceof Project){
-					$workspacesCSV = active_project()->getAllSubWorkspacesQuery(false,logged_user());
-				} else {
-					$workspacesCSV = logged_user()->getWorkspacesQuery();
-				}
-				$taskTimeslots = Timeslots::getTaskTimeslots(null, $timeslotsUser, $workspacesCSV, null , null, null, null,0,20);*/
-				//break;
-			case 2: //Show timeslots added through both the time and tasks panel / tasks
-				throw new Error('not yet implemented' . $showTimeType);
-				
-				//break;
 			default:
 				throw new Error('Unrecognised TM show time type: ' . $showTimeType);
 		}
 		
 		
 		//Get Users Info
-		if (logged_user()->isMemberOfOwnerCompany())
-			$users = Users::getAll();
-		else
-			$users = logged_user()->getCompany()->getUsers();
+		if (logged_user()->isMemberOfOwnerCompany()) {
+			$users = Contacts::getAllUsers();
+		} else {
+			$users = Contacts::getAllUsers(" AND `company_id` = ". logged_user()->getCompany()->getId());
+		}
 		
 		//Get Companies Info
 		if (logged_user()->isMemberOfOwnerCompany())
-			$companies = Companies::getCompaniesWithUsers();
+			$companies = Contacts::getCompaniesWithUsers();
 		else
 			$companies = array(logged_user()->getCompany());
 			
@@ -109,8 +99,8 @@ class TimeController extends ApplicationController {
 		ajx_set_no_toolbar(true);
 	}
 	
-	function add_project_timeslot(){
-		if (!can_manage_time(logged_user(),true)) {
+	function add_timeslot(){
+		if (!can_manage_time(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
@@ -145,19 +135,19 @@ class TimeController extends ApplicationController {
 			$endTime = $endTime->add('h', 8 - logged_user()->getTimezone() + $hoursToAdd);
 			$timeslot_data['start_time'] = $startTime;
 			$timeslot_data['end_time'] = $endTime;
-			$timeslot_data['object_id'] = array_var($timeslot_data,'project_id');
-			$timeslot_data['object_manager'] = 'Projects';
+			$timeslot_data['name'] = $timeslot_data['description'];
+			$timeslot_data['object_id'] = 0;//array_var($timeslot_data,'project_id');
 			$timeslot = new Timeslot();
 		
 			
 			
 			//Only admins can change timeslot user
-			if (!array_var($timeslot_data,'user_id',false) || !logged_user()->isAdministrator())
-				$timeslot_data['user_id'] = logged_user()->getId();
+			if (!array_var($timeslot_data, 'contact_id', false) || !logged_user()->isAdministrator())
+				$timeslot_data['contact_id'] = logged_user()->getId();
 			$timeslot->setFromAttributes($timeslot_data);
 			
-			/* Billing */
-			$user = Users::findById($timeslot_data['user_id']);
+			/* FIXME: Billing */
+/*			$user = Users::findById($timeslot_data['user_id']);
 			$billing_category_id = $user->getDefaultBillingId();
 			$project = Projects::findById(array_var($timeslot_data,'project_id'));
 			$timeslot->setBillingId($billing_category_id);
@@ -165,12 +155,20 @@ class TimeController extends ApplicationController {
 			$timeslot->setHourlyBilling($hourly_billing);
 			$timeslot->setFixedBilling($hourly_billing * $hoursToAdd);
 			$timeslot->setIsFixedBilling(false);
-			
+*/
 			DB::beginWork();
 			$timeslot->save();
+			
+			$member_ids = array();
+			$context = active_context();
+			foreach ($context as $selection) {
+				if ($selection instanceof Member) $member_ids[] = $selection->getId();
+			}
+			$object_controller = new ObjectController();
+			$object_controller->add_to_members($timeslot, $member_ids);
 			DB::commit();
 			
-			$show_billing = can_manage_security(logged_user()) && logged_user()->isAdministrator();
+			$show_billing = false; //can_manage_security(logged_user()) && logged_user()->isAdministrator();
 			ajx_extra_data(array("timeslot" => $timeslot->getArrayInfo($show_billing)));
 		} catch(Exception $e) {
 			DB::rollback();
@@ -178,8 +176,8 @@ class TimeController extends ApplicationController {
 		} // try
 	}
 	
-	function edit_project_timeslot(){
-		if (!can_manage_time(logged_user(),true)) {
+	function edit_timeslot(){
+		if (!can_manage_time(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
@@ -221,17 +219,16 @@ class TimeController extends ApplicationController {
 			$endTime = $endTime->add('h', 8 - logged_user()->getTimezone() + $hoursToAdd);
 			$timeslot_data['start_time'] = $startTime;
 			$timeslot_data['end_time'] = $endTime;
-			$timeslot_data['object_id'] = array_var($timeslot_data,'project_id');
-			$timeslot_data['object_manager'] = 'Projects';
+			$timeslot_data['name'] = $timeslot_data['description'];
 			
 			//Only admins can change timeslot user
-			if (array_var($timeslot_data,'user_id',false) && !logged_user()->isAdministrator())
-				$timeslot_data['user_id'] = $timeslot->getUserId();
+			if (array_var($timeslot_data, 'contact_id', false) && !logged_user()->isAdministrator())
+				$timeslot_data['contact_id'] = $timeslot->getUserId();
 				
 			$timeslot->setFromAttributes($timeslot_data);
 			
-			/* Billing */
-			$user = Users::findById($timeslot_data['user_id']);
+			/* FIXME: Billing */
+/*			$user = Users::findById($timeslot_data['user_id']);
 			$billing_category_id = $user->getDefaultBillingId();
 			$project = Projects::findById(array_var($timeslot_data,'project_id'));
 			$timeslot->setBillingId($billing_category_id);
@@ -239,20 +236,28 @@ class TimeController extends ApplicationController {
 			$timeslot->setHourlyBilling($hourly_billing);
 			$timeslot->setFixedBilling($hourly_billing * $hoursToAdd);
 			$timeslot->setIsFixedBilling(false);
-			
+*/
 			DB::beginWork();
 			$timeslot->save();
+			
+			$member_ids = array();
+			$context = active_context();
+			foreach ($context as $selection) {
+				if ($selection instanceof Member) $member_ids[] = $selection->getId();
+			}
+			$object_controller = new ObjectController();
+			$object_controller->add_to_members($timeslot, $member_ids);
 			DB::commit();
 			
-			ajx_extra_data(array("timeslot" => $timeslot->getArrayInfo(true)));
+			ajx_extra_data(array("timeslot" => $timeslot->getArrayInfo()));
 		} catch(Exception $e) {
 			DB::rollback();
 			flash_error($e->getMessage());
 		} // try
 	}
 	
-	function delete_project_timeslot(){
-		if (!can_manage_time(logged_user(),true)) {
+	function delete_timeslot(){
+		if (!can_manage_time(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;

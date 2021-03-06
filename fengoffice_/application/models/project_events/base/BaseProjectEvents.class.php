@@ -6,7 +6,7 @@
  *
  * @author Marcos Saiz <marcos.saiz@gmail.com>
  */
-abstract class BaseProjectEvents extends ProjectDataObjects {
+abstract class BaseProjectEvents extends ContentDataObjects {
 
 	/**
 	 * Column name => Column type map
@@ -15,10 +15,9 @@ abstract class BaseProjectEvents extends ProjectDataObjects {
 	 * @static
 	 */
 	static private $columns = array(
-    	'id' => DATA_TYPE_INTEGER,
+    	'object_id' => DATA_TYPE_INTEGER,
     	'duration' => DATA_TYPE_DATETIME,
     	'start' => DATA_TYPE_DATETIME,
-    	'subject' => DATA_TYPE_STRING,
     	'repeat_forever'=>DATA_TYPE_BOOLEAN,
     	'description' => DATA_TYPE_STRING,
     	'private' => DATA_TYPE_STRING,
@@ -30,17 +29,9 @@ abstract class BaseProjectEvents extends ProjectDataObjects {
     	'repeat_h' => DATA_TYPE_INTEGER,
     	'type_id' => DATA_TYPE_INTEGER,
     	'special_id' => DATA_TYPE_INTEGER,
-    	'created_on' => DATA_TYPE_DATETIME,
-    	'created_by_id' => DATA_TYPE_INTEGER,
-    	'updated_on' => DATA_TYPE_DATETIME,
-    	'updated_by_id' => DATA_TYPE_INTEGER,
-    	'trashed_on' => DATA_TYPE_DATETIME,
-     	'trashed_by_id' => DATA_TYPE_INTEGER,
-    	'archived_on' => DATA_TYPE_DATETIME,
-    	'archived_by_id' => DATA_TYPE_INTEGER,
      	'repeat_dow' => DATA_TYPE_INTEGER,
     	'repeat_wnum' => DATA_TYPE_INTEGER,
-    	'repeat_mjump' => DATA_TYPE_INTEGER,
+    	'repeat_mjump' => DATA_TYPE_INTEGER
 	);
 
 	/**
@@ -91,7 +82,7 @@ abstract class BaseProjectEvents extends ProjectDataObjects {
 	 * @return array or string
 	 */
 	function getPkColumns() {
-		return 'id';
+		return 'object_id';
 	} // getPkColumns
 
 	/**
@@ -102,7 +93,7 @@ abstract class BaseProjectEvents extends ProjectDataObjects {
 	 * @return string
 	 */
 	function getAutoIncrementColumn() {
-		return 'id';
+		return null;
 	} // getAutoIncrementColumn
 
 	/**
@@ -176,8 +167,6 @@ abstract class BaseProjectEvents extends ProjectDataObjects {
 			return parent::find($arguments);
 		} else {
 			return ProjectEvents::instance()->find($arguments);
-			//$instance =& ProjectEvents::instance();
-			//return $instance->find($arguments);
 		} // if
 	} // find
 
@@ -193,8 +182,6 @@ abstract class BaseProjectEvents extends ProjectDataObjects {
 			return parent::findAll($arguments);
 		} else {
 			return ProjectEvents::instance()->findAll($arguments);
-			//$instance =& ProjectEvents::instance();
-			//return $instance->findAll($arguments);
 		} // if
 	} // findAll
 
@@ -210,8 +197,6 @@ abstract class BaseProjectEvents extends ProjectDataObjects {
 			return parent::findOne($arguments);
 		} else {
 			return ProjectEvents::instance()->findOne($arguments);
-			//$instance =& ProjectEvents::instance();
-			//return $instance->findOne($arguments);
 		} // if
 	} // findOne
 
@@ -228,8 +213,6 @@ abstract class BaseProjectEvents extends ProjectDataObjects {
 			return parent::findById($id, $force_reload);
 		} else {
 			return ProjectEvents::instance()->findById($id, $force_reload);
-			//$instance =& ProjectEvents::instance();
-			//return $instance->findById($id, $force_reload);
 		} // if
 	} // findById
 
@@ -245,8 +228,6 @@ abstract class BaseProjectEvents extends ProjectDataObjects {
 			return parent::count($condition);
 		} else {
 			return ProjectEvents::instance()->count($condition);
-			//$instance =& ProjectEvents::instance();
-			//return $instance->count($condition);
 		} // if
 	} // count
 
@@ -262,8 +243,6 @@ abstract class BaseProjectEvents extends ProjectDataObjects {
 			return parent::delete($condition);
 		} else {
 			return ProjectEvents::instance()->delete($condition);
-			//$instance =& ProjectEvents::instance();
-			//return $instance->delete($condition);
 		} // if
 	} // delete
 
@@ -286,8 +265,6 @@ abstract class BaseProjectEvents extends ProjectDataObjects {
 			return parent::paginate($arguments, $items_per_page, $current_page);
 		} else {
 			return ProjectEvents::instance()->paginate($arguments, $items_per_page, $current_page);
-			//$instance =& ProjectEvents::instance();
-			//return $instance->paginate($arguments, $items_per_page, $current_page);
 		} // if
 	} // paginate
 

@@ -58,11 +58,8 @@
 				$counter++;
 ?>
 			<div class="comment <?php echo $counter % 2 ? 'even' : 'odd' ?>" id="comment<?php echo $comment->getId() ?>">
-		<?php 	if($comment->isPrivate()) { ?>
-				<div class="private" title="<?php echo lang('private comment') ?>"><span><?php echo lang('private comment') ?></span></div>
-		<?php 	} // if ?>
 		
-		<?php 	if($comment->getCreatedBy() instanceof User) { ?>
+		<?php 	if($comment->getCreatedBy() instanceof Contact) { ?>
 				<div class="commentHead">
 					<table style="width:100%"><tr><td>
 					<span style="font-size:130%"><b>#<?php echo $counter ?>:</b></span> <?php echo lang('comment posted on by', format_datetime($comment->getUpdatedOn()), $comment->getCreatedByCardUrl(), clean($comment->getCreatedByDisplayName())) ?>

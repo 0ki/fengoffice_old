@@ -34,28 +34,6 @@ abstract class BaseTemplateObject extends DataObject {
 	} // setTemplateId()
 	 
 	/**
-	 * Return value of 'object_manager' field
-	 *
-	 * @access public
-	 * @param void
-	 * @return string
-	 */
-	function getObjectManager() {
-		return $this->getColumnValue('object_manager');
-	} // getObjectManager()
-
-	/**
-	 * Set value of 'object_manager' field
-	 *
-	 * @access public
-	 * @param string $value
-	 * @return boolean
-	 */
-	function setObjectManager($value) {
-		return $this->setColumnValue('object_manager', $value);
-	} // setObjectManager()
-
-	/**
 	 * Return value of 'object_id' field
 	 *
 	 * @access public

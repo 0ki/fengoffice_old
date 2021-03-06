@@ -1,4 +1,5 @@
 Ext.onReady(function(){
+
 	Ext.get("loading").hide();
 		
 	// fix cursor not showing on message boxs
@@ -22,254 +23,211 @@ Ext.onReady(function(){
 	}
 	
 	Ext.QuickTips.init();
-
-	// SETUP PANEL LAYOUT
-	og.panels = {};
-	var panels = [
-		og.panels.overview = new og.ContentPanel({
-			title: langhtml('overview'),
-			id: 'overview-panel',
-			iconCls: 'ico-overview',
-			refreshOnWorkspaceChange: true,
-			refreshOnTagChange: true,
-			defaultContent: {
-				type: "url",
-				data: og.getUrl('dashboard','index')
-			},
-			initialContent: {
-				type: "url",
-				data: og.initialURL
-			}
-		}),
-		og.panels.notes = new og.ContentPanel({
-			title: lang('messages'),
-			id: 'messages-panel',
-			iconCls: 'ico-messages-layout',
-			refreshOnWorkspaceChange: true,
-			defaultContent: {
-				type: 'url',
-				data: og.getUrl('message', 'init')
-			}
-		}),
-		og.panels.email = new og.ContentPanel({
-			title: lang('email tab'),
-			id: 'mails-panel',
-			iconCls: 'ico-emails-layout',
-			refreshOnWorkspaceChange: true,
-			defaultContent: {
-				type: 'url',
-				data: og.getUrl('mail', 'init')
-			}
-		}),
-		og.panels.contacts = new og.ContentPanel({
-			title: lang('contacts'),
-			id: 'contacts-panel',
-			iconCls: 'ico-contacts-layout',
-			refreshOnWorkspaceChange: true,
-			defaultContent: {
-				type: 'url',
-				data: og.getUrl('contact', 'init')
-			}
-		}),
-		og.panels.calendar = new og.ContentPanel({
-			title: lang('calendar'),
-			id: 'calendar-panel',
-			iconCls: 'ico-calendar-layout',
-			refreshOnWorkspaceChange: true,
-			refreshOnTagChange: true,
-			defaultContent: {
-				type: 'url',
-				data: og.getUrl('event', 'view_calendar')
-			}
-		}),
-		og.panels.documents = new og.ContentPanel({
-			title: lang('documents'),
-			id: 'documents-panel',
-			iconCls: 'ico-documents-layout',
-			refreshOnWorkspaceChange: true,
-			defaultContent: {
-				type: 'url',
-				data: og.getUrl('files', 'init')
-			}
-		}),
-		og.panels.tasks = new og.ContentPanel({
-			title: lang('tasks'),
-			id: 'tasks-panel',
-			iconCls: 'ico-tasks-layout',
-			refreshOnWorkspaceChange: true,
-			defaultContent: {
-				type: "url",
-				data: og.getUrl('task','new_list_tasks')
-			}
-		}),
-		og.panels.weblinks = new og.ContentPanel({
-			title: lang('web pages'),
-			id: 'webpages-panel',
-			iconCls: 'ico-webpages-layout',
-			refreshOnWorkspaceChange: true,
-			defaultContent: {
-				type: 'url',
-				data: og.getUrl('webpage', 'init')
-			}
-		}),
-		og.panels.time = new og.ContentPanel({
-			title: lang('time'),
-			id: 'time-panel',
-			iconCls: 'ico-time-layout',
-			refreshOnWorkspaceChange: true,
-			defaultContent: {
-				type: "url",
-				data: og.getUrl('time','index')
-			}
-		}),
-		og.panels.reporting = new og.ContentPanel({
-			title: lang('reporting'),
-			id: 'reporting-panel',
-			iconCls: 'ico-reporting-layout',
-			//refreshOnWorkspaceChange: true,
-			defaultContent: {
-				type: "url",
-				data: og.getUrl('reporting','index')
-			}
-		})
-	];
-	var tab_panel = new Ext.TabPanel({
-		id: 'tabs-panel',
-		region:'center',
-		activeTab: 0,
-		enableTabScroll: true,
-		items: panels,
-		listeners: {
-			'render': function() {
-				// hide disabled modules
-				if (!og.config['enable_notes_module']) if (panel = Ext.get('tabs-panel__messages-panel')) panel.setDisplayed(false);
-				if (!og.config['enable_email_module']) if (panel = Ext.get('tabs-panel__mails-panel')) panel.setDisplayed(false);
-				if (!og.config['enable_contacts_module']) if (panel = Ext.get('tabs-panel__contacts-panel')) panel.setDisplayed(false);
-				if (!og.config['enable_calendar_module']) if (panel = Ext.get('tabs-panel__calendar-panel')) panel.setDisplayed(false);
-				if (!og.config['enable_documents_module']) if (panel = Ext.get('tabs-panel__documents-panel')) panel.setDisplayed(false);
-				if (!og.config['enable_tasks_module']) if (panel = Ext.get('tabs-panel__tasks-panel')) panel.setDisplayed(false);
-				if (!og.config['enable_weblinks_module']) if (panel = Ext.get('tabs-panel__webpages-panel')) panel.setDisplayed(false);
-				if (!og.config['enable_time_module']) if (panel = Ext.get('tabs-panel__time-panel')) panel.setDisplayed(false);
-				if (!og.config['enable_reporting_module']) if (panel = Ext.get('tabs-panel__reporting-panel')) panel.setDisplayed(false);
-			}
-		}
-	});
-
-	// ENABLE / DISABLE MODULES
-	var module_tabs = {
-		'notes': ['tabs-panel__messages-panel'],
-		'email': ['tabs-panel__mails-panel'],
-		'contacts': ['tabs-panel__contacts-panel'],
-		'calendar': ['tabs-panel__calendar-panel'],
-		'documents': ['tabs-panel__documents-panel'],
-		'tasks': ['tabs-panel__tasks-panel'],
-		'weblinks': ['tabs-panel__webpages-panel'],
-		'time': ['tabs-panel__time-panel'],
-		'reporting': ['tabs-panel__reporting-panel']
-	};
-	og.eventManager.addListener('config option changed', function(option) {
-		if (option.name.substring(0, 7) == 'enable_' && option.name.substring(option.name.length - 7) == '_module') {
-			var module = option.name.substring(7, option.name.length - 7);
-			var tabs = module_tabs[module] || [];
-			for (var i=0; i < tabs.length; i++) {
-				Ext.get(tabs[i]).setDisplayed(option.value);
-			}
-		}
-	});
 	
-	// BUILD VIEWPORT
-	var viewport = new Ext.Viewport({
-		layout: 'border',
-		stateful: og.preferences['rememberGUIState'],
-		items: [
-			new Ext.BoxComponent({
-				region: 'north',
-				el: 'header'
-			}),
-			new Ext.BoxComponent({
-				region: 'south',
-				el: 'footer'
-			}),
-			/*helpPanel = new og.HelpPanel({
-				region: 'east',
-				collapsible: true,
-				collapsed: true,
-				split: true,
-				width: 225,
-				minSize: 175,
-				maxSize: 400,
-				id: 'help-panel',
-				title: lang('help'),
-				iconCls: 'ico-help'
-			 }),*/
-			 {
-				region: 'west',
-				id: 'menu-panel',
-				title: lang('workspaces'),
-				iconCls: 'ico-workspaces',
-				split: true,
-				width: 200,
-				bodyBorder: false,
-				minSize: 175,
-				maxSize: 400,
-				collapsible: true,
-				margins: '0 0 0 0',
+	//LOAD PANELS AND ADD TO VIEWPORT
+	
+	og.openLink(og.getUrl('panel', 'list_all'), {
+		
+		onSuccess: function(data) {
+			var panelData = data['panels'] ;
+			og.panels = {} ; // Array Map PANEL_NAME => PANEL
+			//alert("antes de viewport") ;
+			var panels = [] ; // Array of PANELS ( backguard compatibiliy )
+			for (var i = 0 ; i < panelData.length ; i++ ) {		
+				var p = new og.ContentPanel(panelData[i]) ;		
+				og.panels[p.title] = p ;
+				panels.push(p);
+				
+				
+				// Add Plugins to QuickAdd
+				var singleId = (p.title.substr(-1) == "s" ) ? p.title.slice(0, -1) : p.title ;
+					
+				if ( p.type == "plugin" ) {
+					quickAdd.menu.add({
+						text: p.quickAddTitle,
+						iconCls: p.iconCls,
+						defaultController: p.defaultController,
+						handler: function() {
+							var url = og.getUrl(this.defaultController, 'add');
+							og.openLink(url);
+						}
+					});
+					
+				}
+			};
+			
+			//alert(panels.toSource());
+			
+			var tab_panel = new Ext.TabPanel({
+				id: 'tabs-panel',
+				region: 'center',
+				activeTab: 0,
+				enableTabScroll: true,
+			
+				items: (panels && panels.length)?panels:null 
+
+			});
+			
+			var center_panel = new Ext.Panel({
+				layout: 'border', 
+				id: 'center-panel',
+				region:'center',
+				enableTabScroll: true,
+				items: [
+				   	new Ext.Panel({
+				   	   id: 'breadcrumbs-panel',	
+					   region: 'north', 
+					   cls : 'breadcrumbs-container',
+					   html: '<div id="breadcrumbs"><h1>'+lang('all customers')+'</h1><ul></ul></div>',
+					   expanded: true,
+					   collapsed: false ,
+					   height: 40,
+					   header: false,
+					   hideBorders: true ,
+					   hideCollapseTool: true,
+					   headerAsText: true
+				   }),
+				   tab_panel
+				]
+			});
+			
+		
+			// ENABLE / DISABLE MODULES
+			og.eventManager.addListener('config option changed', function(option) {
+				if (option.name.substring(0, 7) == 'enable_' && option.name.substring(option.name.length - 7) == '_module') {
+					var module = option.name.substring(7, option.name.length - 7);
+					var tab = tab_panel.id + "__" + og.panels[module].id ;
+					Ext.get(tab).setDisplayed(option.value);					
+				}
+			});
+			
+			var viewport = new Ext.Viewport({
 				layout: 'border',
 				stateful: og.preferences['rememberGUIState'],
-				items: [{
-					id: 'workspaces-tree',
-					xtype: 'wspanel',
-					wstree: {
-						listeners: {
-							workspaceselect: function(ws) {
-								og.eventManager.fireEvent('workspace changed', ws);
-								og.updateWsCrumbs(ws);
-							}
-						},
-						autoLoadWorkspaces: true
-					},
-					listeners: {
-						render: function() {
-							this.getTopToolbar().setHeight(25);
-						}
-					}
-				},{
-					xtype: 'tagpanel',
-					tagtree: {
-						listeners: {
-							tagselect: function(tag) {
-								og.eventManager.fireEvent('tag changed', tag);
-								og.updateWsCrumbsTag(tag);
-							}
-						},
-						autoLoadTags: true
-					}
-				}]
-			},
-			Ext.getCmp('tabs-panel')
-		 ]
-	});
-	
-    og.captureLinks();
+				items: [
+				        new Ext.BoxComponent({
+				        	region: 'north',
+				        	el: 'header'
+				        })
+				        ,new Ext.BoxComponent({
+				        	region: 'south',
+				        	el: 'footer'
+				        })
+				        ,{
+				        	region: 'west',
+				        	id: 'menu-panel',
+				        	split: true,
+				        	width: 242,
+				        	//bodyBorder: false,
+				        	hideCollapseTool:true,
+				        	collapseMode:'mini',
+				        	collapsible:true ,
+				        	//autoWidth: true,
+				        	layout: 'multi-accordion',
+				        	layoutConfig: {
+				        		// layout-specific configs go here
+				        		fill: true,
+				        		titleCollapse: true,
+				        		animate: true,
+				        		maxActiveItems: 3 ,
+				        		autoWidth: true
+				        	},
+				        	stateful: og.preferences['rememberGUIState'],
+				        	items:  og.dimensionPanels  ,
+				        	bbar : [
+				        	    {	
+				        			iconCls: 'ico-workspace-edit',
+				        			tooltip: '<b>'+lang('filters')+'</b>',
+				        			menu: {
+				        				items: og.contextManager.getDimensionMenu(),
+				        				cls: "context-menu"
+				        			}
+				        	    },
+				        	    '->',
+				        	    {	
+				        			iconCls: 'ico-trash',
+				        			tooltip: lang('trash'),
+				        			handler: function() {
+					        	    	var cp = Ext.getCmp('trash-panel');
+										var tp = Ext.getCmp('tabs-panel');
+										if (!cp){
+											cp = new og.ContentPanel({
+												closable: true,
+												title: lang('trash'),
+												id: 'trash-panel',
+												iconCls: 'ico-trash',
+												refreshOnWorkspaceChange: true,
+												refreshOnTagChange: true,
+												defaultContent: {
+													type: "url",
+													data: og.getUrl('object', 'init_trash')
+												}
+											});
+											tp.add(cp);
+										}
+										tp.setActiveTab(cp);
+				        			}
+				        	    },
+				        	    {	
+				        			iconCls: 'ico-archive-obj',
+				        			tooltip: lang('archived objects'),
+				        			handler: function() {
+					        	    	var cp = Ext.getCmp('archivedobjs-panel');
+										var tp = Ext.getCmp('tabs-panel');
+										if (!cp){
+											cp = new og.ContentPanel({
+												closable: true,
+												title: lang('archived objects'),
+												id: 'archivedobjs-panel',
+												iconCls: 'ico-archive-obj',
+												refreshOnWorkspaceChange: true,
+												refreshOnTagChange: true,
+												defaultContent: {
+													type: "url",
+													data: og.getUrl('object', 'init_archivedobjs')
+												}
+											});
+											tp.add(cp);
+										}
+										tp.setActiveTab(cp);
+				        			}
+				        	    }
+				        	]
 
-    if (og.preferences['email_polling'] > 0) {
-    	function updateUnreadCount() {
-    		og.openLink(og.getUrl('mail', 'get_unread_count'), {
-    			onSuccess: function(d) {
-    				if (typeof d.unreadCount != 'undefined') {
-    					og.updateUnreadEmail(d.unreadCount);
-    				}
-    			},
-    			hideLoading: true,
-    			hideErrors: true,
-    			preventPanelLoad: true
-    		});
-    	}
-    	updateUnreadCount();
-    	setInterval(updateUnreadCount, Math.max(og.preferences['email_polling'], 5000));
-    }
-    
-    if (og.hasNewVersions) {
-    	og.msg(lang('new version notification title'), og.hasNewVersions, 0);
-    }
+				        }
+				        ,
+				        	center_panel
+				        ]
+
+			});
+
+			og.captureLinks();
+
+			if (og.preferences['email_polling'] > 0) {
+				function updateUnreadCount() {
+					og.openLink(og.getUrl('mail', 'get_unread_count'), {
+						onSuccess: function(d) {
+							if (typeof d.unreadCount != 'undefined') {
+								og.updateUnreadEmail(d.unreadCount);
+							}
+						},
+						hideLoading: true,
+						hideErrors: true,
+						preventPanelLoad: true
+					});
+				}
+				updateUnreadCount();
+				setInterval(updateUnreadCount, Math.max(og.preferences['email_polling'], 5000));
+			}
+
+			if (og.hasNewVersions) {
+				og.msg(lang('new version notification title'), og.hasNewVersions, 0);
+			}					
+
+		},
+		onError: function(data) {
+		}
+	});
+
+
 });

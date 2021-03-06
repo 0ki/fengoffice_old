@@ -16,7 +16,7 @@
 // | Authors: Shane Caraveo <Shane@Caraveo.com>                           |
 // +----------------------------------------------------------------------+
 //
-// $Id: server_Round3GroupDEmptySA.php,v 1.1 2010/01/22 18:09:23 acio Exp $
+// $Id: server_Round3GroupDEmptySA.php 7 2010-01-22 18:14:51Z acio $
 //
 require_once 'SOAP/Server.php';
 require_once 'interop_Round3GroupD.php';

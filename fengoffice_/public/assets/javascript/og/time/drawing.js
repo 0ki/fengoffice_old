@@ -14,8 +14,6 @@ ogTimeManager.drawTimespans = function(genid){
 	for (i in this.Timeslots)
 		if (this.Timeslots[i] && this.Timeslots[i].id)
 			this.insertRow(genid, this.Timeslots[i], table.rows.length);
-			
-	og.showWsPaths(genid + 'TMTimespanTable', false, true);
 }
 
 ogTimeManager.drawTasks = function(genid){
@@ -28,8 +26,6 @@ ogTimeManager.drawTasks = function(genid){
 	
 	var div = document.getElementById(genid + 'TMActiveTasksContents');
 	div.innerHTML = sb.toString();
-	
-	og.showWsPaths(genid + 'TMActiveTasksContents');
 }
 
 ogTimeManager.orderTasks = function(){
@@ -51,11 +47,6 @@ ogTimeManager.orderTasks = function(){
 	//Center td
 	sb.append('<td align=left style="padding-left:10px">');
 	
-	//Draw Workspaces
-	var ids = String(task.workspaceIds).split(',');
-	var projectsString = '<span class="project-replace">' + ids.join(',') + '</span>&nbsp;';
-	sb.append(projectsString);
-	
 	var taskName = '';
 	//Draw the Assigned user
 	if (task.assignedToId){
@@ -66,7 +57,7 @@ ogTimeManager.orderTasks = function(){
 	if (task.status > 0){
 		taskName = "<span style='text-decoration:line-through'>" + taskName + "</span>";
 	}
-	sb.append('<a class="internalLink" href="#" onclick="og.openLink(\'' + og.getUrl('task', 'view_task', {id: task.id}) + '\')">' + taskName + '</a>');
+	sb.append('<a class="internalLink" href="#" onclick="og.openLink(\'' + og.getUrl('task', 'view', {id: task.id}) + '\')">' + taskName + '</a>');
 	
 	sb.append('</td><td align=right><table style="height:100%"><tr>');
 	
@@ -163,12 +154,6 @@ ogTimeManager.insertRow = function(genid, timeslot, position){
 		var textNode = document.createTextNode(date.dateFormat('M j'));
 	
 	cell.appendChild(textNode);
-	
-	cell = row.insertCell(pos++);
-	var span = document.createElement('span');
-	span.className = 'project-replace';
-	span.innerHTML = timeslot.workspaceId;
-	cell.appendChild(span);
 	
 	cell = row.insertCell(pos++);
 	textNode = document.createTextNode(timeslot.userName);

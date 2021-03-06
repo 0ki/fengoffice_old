@@ -1,26 +1,25 @@
 <?php
 
   /**
-  * ContactImValues, generated on Wed, 22 Mar 2006 15:37:58 +0100 by 
-  * DataObject generation tool
+  * ContactImValues
   *
-  * @author Ilija Studen <ilija.studen@gmail.com>
+  * @author Diego Castiglioni <diego20@gmail.com>
   */
   class ContactImValues extends BaseContactImValues {
   
     /**
-    * Return default contact IM type
+    * Return main contact IM type
     *
     * @access public
     * @param Contact $contact
     * @return ImType
     */
-    function getDefaultContactImType(Contact $contact) {
+    function getContactMainImType(Contact $contact) {
       
       $contact_im_values_table = ContactImValues::instance()->getTableName(true);
       $im_types_table = ImTypes::instance()->getTableName(true);
       
-      $sql = "SELECT $im_types_table.* FROM $im_types_table, $contact_im_values_table WHERE $im_types_table.`id` = $contact_im_values_table.`im_type_id` AND $contact_im_values_table.`is_default` = '1' AND $contact_im_values_table.`contact_id` = ?";
+      $sql = "SELECT $im_types_table.* FROM $im_types_table, $contact_im_values_table WHERE $im_types_table.`id` = $contact_im_values_table.`im_type_id` AND $contact_im_values_table.`is_main` = '1' AND $contact_im_values_table.`contact_id` = ?";
       $row = DB::executeOne($sql, $contact->getId());
       if(is_array($row)) {
         return ImTypes::instance()->loadFromRow($row);
@@ -28,7 +27,7 @@
       
       return null;
       
-    } // getDefaultContactImType
+    } // getContactMainImType
     
     /**
     * Return all values by contact

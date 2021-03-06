@@ -14,7 +14,12 @@
     * @var array
     * @static
     */
-    static private $columns = array('rel_object_manager' => DATA_TYPE_STRING, 'rel_object_id' => DATA_TYPE_INTEGER, 'object_manager' => DATA_TYPE_STRING, 'object_id' => DATA_TYPE_INTEGER, 'created_on' => DATA_TYPE_DATETIME, 'created_by_id' => DATA_TYPE_INTEGER);
+    static private $columns = array(
+	    'rel_object_id' => DATA_TYPE_INTEGER, 
+	    'object_id' => DATA_TYPE_INTEGER, 
+	    'created_on' => DATA_TYPE_DATETIME, 
+	    'created_by_id' => DATA_TYPE_INTEGER
+    );
   
     /**
     * Construct
@@ -64,12 +69,7 @@
     * @return array or string
     */
     function getPkColumns() {
-      return array (
-  0 => 'rel_object_manager',
-  1 => 'rel_object_id',
-  2 => 'object_id',
-  3 => 'object_manager',
-);
+      return array ('rel_object_id', 'object_id');
     } // getPkColumns
     
     /**

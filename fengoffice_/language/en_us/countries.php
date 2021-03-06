@@ -239,7 +239,7 @@
     'country ye' => 'Yemen',
     'country cd' => 'Democratic Republic of the Congo',
     'country zm' => 'Zambia',
-    'country zw' => 'Zimbabwe'
+    'country zw' => 'Zimbawe'
   ); // array
 
 ?>

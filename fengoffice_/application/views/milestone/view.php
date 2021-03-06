@@ -8,8 +8,10 @@ if (isset($milestone) && $milestone instanceof ProjectMilestone) {
 			add_page_action(lang('open milestone'), $milestone->getOpenUrl(rawurlencode(get_url('milestone', 'view', array('id'=>$milestone->getId())))) , 'ico-reopen', null, null, true);
 		}
 		if (!$milestone->isCompleted()) {
-			if(ProjectTask::canAdd(logged_user(), $milestone->getProject()))
-			add_page_action(lang('add task list'), $milestone->getAddTaskUrl(), 'ico-task');
+			$m_members = $milestone->getMembers();
+			if(array_var($m_members, 0) instanceof Member && $milestone->canAddToMember(logged_user(), array_var($m_members, 0), active_context())) {
+				add_page_action(lang('add task list'), $milestone->getAddTaskUrl(), 'ico-task');
+			}
 		} // if
 		if ($milestone->canEdit(logged_user())) {
 			add_page_action(lang('edit'), $milestone->getEditUrl(), 'ico-edit', null, null, true);
@@ -34,9 +36,11 @@ if (isset($milestone) && $milestone instanceof ProjectMilestone) {
 	
 	if (!$milestone->isTrashed() && !logged_user()->isGuest()){
 		if ($milestone->getIsTemplate()) {
+			/*FIXME Fix Copy milestones please!
 			add_page_action(lang('new milestone from template'), get_url("milestone", "copy_milestone", array("id" => $milestone->getId())), 'ico-copy');
+			*/
 		} else {
-			add_page_action(lang('copy milestone'), get_url("milestone", "copy_milestone", array("id" => $milestone->getId())), 'ico-copy');
+			//FIXME Fix Copy milestones please! add_page_action(lang('copy milestone'), get_url("milestone", "copy_milestone", array("id" => $milestone->getId())), 'ico-copy');
 			if (can_manage_templates(logged_user())) {
 				add_page_action(lang('add to a template'), get_url("template", "add_to", array("manager" => 'ProjectMilestones', "id" => $milestone->getId())), 'ico-template');
 			}
@@ -84,7 +88,7 @@ if (isset($milestone) && $milestone instanceof ProjectMilestone) {
 			} // if 
 			
 			$content .= ' <a class="internalLink" href="' . $task->getObjectUrl() . '">' ;
-			$content .=  ($task->getTitle() && $task->getTitle()!='' )?clean($task->getTitle()):clean($task->getText()) ;
+			$content .=  ($task->getObjectName() && $task->getObjectName() != '' ) ? clean($task->getObjectName()) : clean($task->getText());
 			$content .='</a> ';
 			
 				 if($task->canEdit(logged_user())) { 
@@ -125,7 +129,7 @@ $on_list_page = false;
 				    $content .= '<td class="taskCheckbox"><img src="' .  icon_url('checked.jpg') .'" alt="' . lang('completed task') .'" /></td>';
 				} // if 
 			    $content .= '    <td class="taskText">
-			        	<a class="internalLink" href="' . $task->getObjectUrl() .'">'.clean($task->getTitle()) .'</a> ';
+			        	<a class="internalLink" href="' . $task->getObjectUrl() .'">'.clean($task->getObjectName()) .'</a> ';
 	           if($task->canEdit(logged_user())) { 
 	           	$content .= '<a class="internalLink" href="' . $task->getEditListUrl() .'" class="blank" title="'. lang('edit task') .
 	           		'"><img src="'. icon_url('edit.gif') .'" alt="" /></a> ';
@@ -135,7 +139,7 @@ $on_list_page = false;
 						escape_single_quotes(lang('confirm delete task')) . '\')" title="' . lang('delete task') . '"><img src="' . icon_url('cancel_gray.gif') .
 						'" alt="" /></a> ';
 				} // if <br />
-	          $content .= '<span class="taskCompletedOnBy">(' .lang('completed on by', format_date($task->getCompletedOn()), $task->getCompletedBy() instanceof User ? $task->getCompletedBy()->getCardUrl() : '#', $task->getCompletedBy() instanceof User ? clean($task->getCompletedBy()->getDisplayName()) : lang('n/a')) . ')</span>
+	          $content .= '<span class="taskCompletedOnBy">(' .lang('completed on by', format_date($task->getCompletedOn()), $task->getCompletedBy() instanceof Contact ? $task->getCompletedBy()->getCardUserUrl() : '#', $task->getCompletedBy() instanceof Contact ? clean($task->getCompletedBy()->getDisplayName()) : lang('n/a')) . ')</span>
 				        </td> <td></td>  </tr>';
 			 } // if 
 		 } // foreach 

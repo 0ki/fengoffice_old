@@ -79,8 +79,8 @@
 	'remove company from project' => 'Verwijder bedrijf van project',
 	'update profile' => 'Vernieuw profiel',
 	'change password' => 'Verander wachtwoord',
-	'update avatar' => 'Vernieuw gebruikersafbeelding',
-	'delete current avatar' => 'Verwijder huidige gebruikersafbeelding',
+	'update avatar' => 'Vernieuw avatar',
+	'delete current avatar' => 'Verwijder huidige avatar',
 	'add form' => 'Formulier toevoegen',
 	'edit form' => 'Bewerk formulier',
 	'delete form' => 'Verwijder formulier',
@@ -161,5 +161,4 @@
 	'mark as read' => 'Markeer als gelezen',
 	'report as spam' => 'Spam',
 	'not spam' => 'Geen spam',
-	'show' => 'Toon',
 ); ?>

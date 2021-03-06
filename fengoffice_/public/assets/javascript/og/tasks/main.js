@@ -13,19 +13,11 @@ ogTasks.Companies = [];
 ogTasks.Milestones = [];
 
 ogTasks.Groups = [];
-var wp = Ext.getCmp("workspace-panel");
-
-og.workspaces = Ext.getCmp("workspace-panel").getWsList(0,true);
-
-og.wsNames  = [] ;
-for (var i = 0 ; i < og.workspaces.length ; i ++){
-	og.wsNames[og.workspaces[i].id] = og.workspaces[i].name ;
-}
 
 ogTasks.redrawGroups = true;
 
-ogTasks.prevWsValue = -1; //Used to view if ws selector changed its value, to refresh the assingedto combo
-ogTasks.assignedTo = '-1:-1'; //Used to init the assignedto combo when it is refreshed
+//ogTasks.prevWsValue = -1; //Used to view if ws selector changed its value, to refresh the assingedto combo
+ogTasks.assignedTo = '-1'; //Used to init the assignedto combo when it is refreshed
 ogTasks.selectedMilestone = 0;
 
 //************************************
@@ -50,13 +42,15 @@ ogTasksTask = function(){
 	this.workingOnTimes;
 	this.workingOnPauses;
 	this.pauseTime;
-	this.tags;
 	this.isAdditional = false;
 	this.isRead = true;
 	this.completedById;
 	this.completedOn;
 	this.repetitive = false;
 	this.otype;
+	this.percentCompleted = 0;
+	this.members;
+	this.depCount;
 	
 	this.createdByName;
 	this.assignedToName;
@@ -100,29 +94,30 @@ ogTasksTask.prototype.setFromTdata = function(tdata){
 	if (tdata.wt) this.workingOnTimes = tdata.wt; else this.workingOnTimes = null;
 	if (tdata.wp) this.workingOnPauses = tdata.wp; else this.workingOnPauses = null;
 	if (tdata.wpt) this.pauseTime = tdata.wpt; else this.pauseTime = null;
-	if (tdata.tags) this.tags = tdata.tags; else this.tags = null;
 	if (tdata.cbid) this.completedById = tdata.cbid; else this.completedById = null;
 	if (tdata.con) this.completedOn = tdata.con; else this.completedOn = null;
 	if (tdata.rep) this.repetitive = true;
 	if (tdata.isread) this.isRead = true; else this.isRead = false;
 	if (tdata.otype) this.otype = tdata.otype; else this.otype = null;
+	if (tdata.percentCompleted) this.percentCompleted = tdata.percentCompleted; else this.percentCompleted = 0;
+	if (tdata.members) this.members = tdata.members; else this.members = [];
+	//if (tdata.estimatedTime) this.estimatedTime =  Math.round( tdata.estimatedTime * 10  / 60 ) / 10; else this.estimatedTime = '' ;
+	if (tdata.estimatedTime) this.estimatedTime = tdata.estimatedTime ; else this.estimatedTime = '' ;
+	if (tdata.depCount) this.depCount = tdata.depCount; else this.depCount = null;
 }
 
-ogTasksMilestone = function(id, title, dueDate, workspaceIds, totalTasks, completedTasks, isInternal, isUrgent){
+ogTasksMilestone = function(id, title, dueDate, totalTasks, completedTasks, isInternal, isUrgent){
 	this.id = id;
 	this.title = title;
 	
 	var dummyDate = new Date();
 	this.dueDate = dueDate;
 	
-	this.workspaceIds = workspaceIds;
 	this.completedTasks = completedTasks;
 	this.totalTasks = totalTasks;
 	this.isInternal = isInternal;
 	this.isUrgent = isUrgent;
 	this.completedById;
-	
-	this.tags;
 }
 
 ogTasksCompany = function(id, name){
@@ -141,6 +136,11 @@ ogTasksObjectSubtype = function(id, name){
 	this.name = name;
 }
 
+ogTasksDependencyCount = function(id, count, dependants){
+	this.id = id;
+	this.count = count;
+	this.dependants = dependants;
+}
 
 //************************************
 //*		Data loading
@@ -156,6 +156,7 @@ ogTasks.loadDataFromHF = function(){
 	result['allUsers'] = Ext.util.JSON.decode(document.getElementById('hfAllUsers').value);
 	result['companies'] = Ext.util.JSON.decode(document.getElementById('hfCompanies').value);
 	result['objectSubtypes'] = Ext.util.JSON.decode(document.getElementById('hfObjectSubtypes').value);
+	result['dependencyCount'] = Ext.util.JSON.decode(document.getElementById('hfDependencyCount').value);
 	
 	return ogTasks.loadData(result);
 }
@@ -218,9 +219,8 @@ ogTasks.loadData = function(data){
 		var mdata = data['internalMilestones'][i];
 		if (mdata.id){
 			with (mdata) {
-				var milestone = new ogTasksMilestone(id,t,dd,wsid,tnum,tc,true,is_urgent);
+				var milestone = new ogTasksMilestone(id,t,dd,tnum,tc,true,is_urgent);
 			}
-			if (mdata.tags) milestone.tags = mdata.tags;
 			if (mdata.compId) milestone.completedById = mdata.compId;
 			if (mdata.compOn) milestone.completedOn = mdata.compOn;
 			this.Milestones[ogTasks.Milestones.length] = milestone;
@@ -230,9 +230,8 @@ ogTasks.loadData = function(data){
 		var mdata = data['externalMilestones'][i];
 		if (mdata.id){
 			with (mdata) {
-				var milestone = new ogTasksMilestone(id,t,dd,wsid,tnum,tc,false,is_urgent);
+				var milestone = new ogTasksMilestone(id,t,dd,tnum,tc,false,is_urgent);
 			}
-			if (mdata.tags) milestone.tags = mdata.tags;
 			if (mdata.compId) milestone.completedById = mdata.compId;
 			if (mdata.compOn) milestone.completedOn = mdata.compOn;
 			this.Milestones[ogTasks.Milestones.length] = milestone;
@@ -245,6 +244,15 @@ ogTasks.loadData = function(data){
 		if (otdata.id){
 			var ot =  new ogTasksObjectSubtype(otdata.id,otdata.name);
 			this.ObjectSubtypes[ogTasks.ObjectSubtypes.length] = ot;
+		}
+	}
+	
+	this.DependencyCount = [];
+	for (i in data['dependencyCount']){
+		var dcdata = data['dependencyCount'][i];
+		if (dcdata.id){
+			var dc =  new ogTasksDependencyCount(dcdata.id, dcdata.count, dcdata.dependants);
+			this.DependencyCount[ogTasks.DependencyCount.length] = dc;
 		}
 	}
 }
@@ -277,7 +285,6 @@ ogTasks.getGroupData = function(displayCriteria, groups,tasks){
 				name = lang('pending'); break;
 			case 'due_date': name = lang('no due date');break;
 			case 'start_date': name = lang('no start date');break;
-			case 'tag': name = lang('untagged'); break;
 			default:
 				name = lang('ungrouped');
 		}
@@ -307,25 +314,27 @@ ogTasks.getGroupData = function(displayCriteria, groups,tasks){
 					name = og.getFullWorkspacePath(groupId, true);
 					break;
 				case 'assigned_to' : 
-					var split = groupId.split(':'); 
-					if (split[1] > 0){
-						var user = this.getUser(split[1]);
-						if (user){
-							var company = this.getCompany(user.companyId);
-							name = user.name + " : " + company.name;
-						} else name = lang('user not found', split[1]);
-						icon = 'ico-user';
-					} else {
-						if (split[0] > 0){
-							var company = this.getCompany(split[0]);
-							if (company) {
-								name = company.name;
-							} else {
-								name = lang('company not found', split[1])
-							}
+					var contact = this.getUser(groupId);
+					if (contact){
+						var company_name = "";
+						if (contact.companyId > 0) {
+							company_name = " : " + this.getCompany(contact.companyId).name;
+							icon = 'ico-user';
+						} else {
 							icon = 'ico-company';
 						}
+						name = contact.name + company_name;
+					} else {
+						var comp = this.getCompany(groupId);
+						if (comp){
+							name = comp.name;
+							icon = 'ico-company';
+						} else {
+							name = lang('company not found', groupId);
+							icon = 'ico-unknown';
+						}
 					}
+					
 					break;
 				case 'due_date' : name = td[groupId]; break;
 				case 'start_date' : name = td[groupId]; break;
@@ -336,10 +345,6 @@ ogTasks.getGroupData = function(displayCriteria, groups,tasks){
 					var user = this.getUser(groupId);
 					if (user) name = user.name;
 					icon = 'ico-user'; 
-					break;
-				case 'tag' : 
-					icon = 'ico-tags';
-					name = groupId; 
 					break;
 				case 'status' :
 					if (groupId == 0){
@@ -423,41 +428,23 @@ ogTasks.groupTasks = function(displayCriteria, tasksContainer){
 				case 'created_by' : group = task.createdBy; break;
 				case 'status' : group = task.status; break;
 				case 'completed_by' : group = (task.completedById?task.completedById:null); break;
-				case 'tag' : 
-					if (task.tags && task.tags.length > 0)
-					{
-						for (var j = 0; j < task.tags.length; j++){
-							if (groups.indexOf(task.tags[j]) < 0){
-								groups[groups.length] = task.tags[j];
-								tasks[tasks.length] = [];
-							}
-							if (!tasks[groups.indexOf(task.tags[j])])
-								 tasks[groups.indexOf(task.tags[j])] = [];
-							var tasksArray = tasks[groups.indexOf(task.tags[j])]; 
-							tasksArray[tasksArray.length]= task;
-						}
-					} else {
-						tasks[0][tasks[0].length] = task;
-					}
-					break;
 				case 'subtype' : group = task.otype; break;
 				default:
 			}
 			
-			if (displayCriteria.group_by != 'workspace' && displayCriteria.group_by != 'tag'){
-				if (group || group == 0){
-					if (groups.indexOf(group) < 0){
-						groups[groups.length] = group;
-						tasks[tasks.length] = [];
-					}
-					if (!tasks[groups.indexOf(group)])
-						 tasks[groups.indexOf(group)] = [];
-					var tasksArray = tasks[groups.indexOf(group)]; 
-					tasksArray[tasksArray.length]= task;
-				} else {
-					tasks[0][tasks[0].length] = task;
+			if (group || group == 0){
+				if (groups.indexOf(group) < 0){
+					groups[groups.length] = group;
+					tasks[tasks.length] = [];
 				}
+				if (!tasks[groups.indexOf(group)])
+					 tasks[groups.indexOf(group)] = [];
+				var tasksArray = tasks[groups.indexOf(group)]; 
+				tasksArray[tasksArray.length]= task;
+			} else {
+				tasks[0][tasks[0].length] = task;
 			}
+			
 		}
 	}
 	if (displayCriteria.group_by == 'milestone'){ 			//Show all milestones
@@ -492,10 +479,8 @@ ogTasks.orderGroups = function(displayCriteria,groups){
 	
 	//Order the rest
 	switch(displayCriteria.group_by){
-		case 'workspace' : //TODO correct order
 		case 'created_by' :
 		case 'completed_by' :
-		case 'tag' :
 			for (var i = 0; i < groups.length - 2; i++)
 				for (var j = i+1; j < groups.length - 1; j++)
 					if (groups[i].group_name.toUpperCase() > groups[j].group_name.toUpperCase()){
@@ -561,12 +546,6 @@ ogTasks.orderTasks = function(displayCriteria, tasks){
 						} else
 							swap = false;
 					}
-					break;
-				case 'workspace' : //TODO: Correct this sorting method // DONE - Corrected by pepe
-					swap = og.wsNames[tasks[i].workspaceIds].toUpperCase() > og.wsNames[tasks[j].workspaceIds].toUpperCase();
-					//swap = tasks[i].workspaceIds > tasks[j].workspaceIds ;
-					if (!swap && (tasks[i].workspaceIds == tasks[j].workspaceIds))
-						resolveByName = true;
 					break;
 				case 'name' : 
 					swap = tasks[i].title.toUpperCase() > tasks[j].title.toUpperCase();
@@ -708,6 +687,18 @@ ogTasks.setAllExpandedValue = function(expanded){
 }
 
 ogTasks.getUserCompanyName = function(assigned_to){
+	// FIXME: alvaro
+	var user = this.getUser(assigned_to);
+	if (user)
+		return user.name;
+	else {
+		user = this.getCompany(assigned_to);
+		if (user)
+			return user.name;
+	}
+	return "";
+	
+	
 	var split = assigned_to.split(':');
 	var name = '';
 	if (split[1] > 0){ //Look for user
@@ -813,6 +804,13 @@ ogTasks.getObjectSubtype = function(id){
 	for (var i = 0; i < this.ObjectSubtypes.length; i++)
 		if (this.ObjectSubtypes[i].id == id)
 			return this.ObjectSubtypes[i];
+	return null;
+}
+
+ogTasks.getDependencyCount = function(id){
+	for (var i = 0; i < this.DependencyCount.length; i++)
+		if (this.DependencyCount[i].id == id)
+			return this.DependencyCount[i];
 	return null;
 }
 
@@ -991,8 +989,7 @@ og.addTaskUserChanged = function(genid, user_id){
 	var ddUser = document.getElementById(genid + 'taskFormAssignedTo');
 	var chk = document.getElementById(genid + 'taskFormSendNotification');
 	if (ddUser && chk){
-		var values = ddUser.value.split(':');
-		var user = values[1];
+		var user = ddUser.value;
 		chk.checked = (user > 0 && user != user_id);
 		document.getElementById(genid + 'taskFormSendNotificationDiv').style.display = user > 0 ? 'block':'none';
 	}

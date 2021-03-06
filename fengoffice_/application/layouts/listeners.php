@@ -1,17 +1,25 @@
 <script>
-//some event handlers
-og.eventManager.addListener('tag changed', 
- 	function (tag){ 
- 		if (Ext.getCmp('tabs-panel').getActiveTab().id == 'tasks-panel') {
- 			og.openLink('<?php echo get_url('task','new_list_tasks')?>',
- 				{caller:'tasks-panel',
- 				get:{tag:tag}}
- 			);
- 		}
+
+og.eventManager.addListener('reload member restrictions', 
+ 	function (genid){ 
+		App.modules.addMemberForm.drawDimensionRestrictions(genid, document.getElementById(genid + 'dimension_id').value);
  	}
 );
-og.eventManager.addListener('workspace changed', 
- 	function (ws){ 
+
+og.eventManager.addListener('reload member properties', 
+ 	function (genid){
+ 		App.modules.addMemberForm.drawDimensionProperties(genid, document.getElementById(genid + 'dimension_id').value);
+ 	}
+);
+
+og.eventManager.addListener('reload dimension tree', 
+ 	function (dim_id){ 
+ 		var tree = Ext.getCmp("dimension-panel-" + dim_id);
+ 		if (tree) {
+	 		tree.suspendEvents();
+	 		tree.loader.load(tree.getRootNode(), function() {tree.expandAll();});
+	 		tree.resumeEvents();
+ 		}
  	}
 );
 
@@ -90,23 +98,14 @@ og.eventManager.addListener('user preference changed',
 	}
 );
 
-og.eventManager.addListener('select workspace', 
-    function (ws){ 
-        Ext.getCmp('workspace-panel').select(ws);
-    }
+og.eventManager.addListener('tabs changed',
+	function(option) {
+		window.location.href = '<?php echo ROOT_URL?>' ;
+	}
 );
-
-og.eventManager.addListener('back_to_wizard', 
-	    function (ws){ 
-			Ext.getCmp('tabs-panel').setActiveTab(og.panels.overview);
-	    }
+og.eventManager.addListener('logo changed',
+	function(option) {
+		window.location.href = '<?php echo ROOT_URL?>' ;
+	}
 );
-
-og.eventManager.addListener('refresh_assignees', 
-	    function (assign){
-			assigned_user = assign; 
-			og.openLink(og.getUrl('task', 'allowed_users_to_assign', {ws_id:wsVal}), {callback:og.drawUserLists});
-	    }
-);
-
 </script>

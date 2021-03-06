@@ -29,9 +29,7 @@ class TemplateObject extends BaseTemplateObject {
 	function setObject($object) {
 		if ($object instanceof DataObject) {
 			$this->setObjectId($object->getId());
-			$this->setObjectManager(get_class($object->manager()));
+			//$this->setObjectManager(get_class($object->manager())); //TODO Feng 2
 		}
 	}
-} // TemplateObject
-
-?>
+}

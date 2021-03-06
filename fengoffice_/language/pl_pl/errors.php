@@ -121,5 +121,4 @@
 	'error add contact from user' => 'Nie udało się dodać kontaktu opartego o użytkownika',
 	'zip not supported' => 'Format ZIP nie jest obsługiwany przez serwer',
 	'no tag specified' => 'Nie podano taga',
-	'no mailAccount error' => 'Operacja niedostępna. Nie dodano adresu e-mail.',
 ); ?>

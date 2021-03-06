@@ -5,7 +5,7 @@
   *
   * @author Pablo Kamil <pablokam@gmail.com>
   */
-  abstract class BaseReports extends DataManager {
+  abstract class BaseReports extends ContentDataObjects {
   
     /**
     * Column name => Column type map
@@ -14,14 +14,11 @@
     * @static
     */
     static private $columns = array(
-    	'id' => DATA_TYPE_INTEGER,
-    	'name' => DATA_TYPE_STRING,
+    	'object_id' => DATA_TYPE_INTEGER,
     	'description' => DATA_TYPE_STRING,
-    	'object_type' => DATA_TYPE_STRING,
+    	'report_object_type_id' => DATA_TYPE_INTEGER,
     	'order_by' => DATA_TYPE_STRING,
-    	'is_order_by_asc' => DATA_TYPE_BOOLEAN,
-    	'workspace' => DATA_TYPE_INTEGER,
-    	'tags' => DATA_TYPE_STRING
+    	'is_order_by_asc' => DATA_TYPE_BOOLEAN
     );
   
     /**

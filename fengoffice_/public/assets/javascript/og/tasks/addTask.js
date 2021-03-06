@@ -52,15 +52,7 @@ ogTasks.drawAddNewTaskForm = function(group_id,parent_id, level){
 			defaultWorkspace = pm.workspaceIds;
 	}
 	
-	var tags = '';
-	var selectedTag = Ext.getCmp("tag-panel").getSelectedTag();
-	if (selectedTag)
-		tags += og.clean(selectedTag);
-	if (displayCriteria.group_by == 'tag' && group_id != 'unclassified' && !(selectedTag && group_id == selectedTag)){
-		if (tags != '')
-			tags += ',';
-		tags += group_id;
-	}
+	
 	
 	var priority = 200;
 	if (displayCriteria.group_by == 'priority' && group_id != 'unclassified'){
@@ -83,8 +75,7 @@ ogTasks.drawAddNewTaskForm = function(group_id,parent_id, level){
 		dueDate: '',
 		assignedTo: assignedToValue,
 		taskId: 0,
-		isEdit: false,
-		tags: tags
+		isEdit: false
 	});
 }
 
@@ -97,13 +88,12 @@ ogTasks.drawEditTaskForm = function(task_id, group_id){
 			title: task.title,
 			description: task.description,
 			priority: task.priority,
-			workspace: task.workspaceIds,
+			members: task.members,
 			startDate: task.startDate,
 			dueDate: task.dueDate,
 			assignedTo: task.assignedToId,
 			taskId: task.id,
 			isEdit: true,
-			tags: task.tags,
 			otype: task.otype,
 			subtasksCount: task.subtasks.length
 		});
@@ -142,7 +132,7 @@ ogTasks.drawTaskForm = function(container_id, data){
 		html += "<input type='hidden' id='ogTasksPanelATParentId' value='" + data.parentId + "'>";
 	}
 	html += "<b>" + lang('title') + ":</b><br/>";
-	html += "<input id='ogTasksPanelATTitle' type='text' class='title' name='task[title]' tabIndex=1000 value='' onkeypress='return ogTasks.checkEnterPress(event,"+ data.taskId +");' />";
+	html += "<input id='ogTasksPanelATTitle' type='text' class='title' name='task[name]' tabIndex=1000 value='' onkeypress='return ogTasks.checkEnterPress(event,"+ data.taskId +");' />";
 	
 	
 	//First column
@@ -152,8 +142,8 @@ ogTasks.drawTaskForm = function(container_id, data){
 		html += "<textarea id='ogTasksPanelATDescCtl' cols='40' rows='10' name='task[text]' class='short' tabIndex=1100 style='height:50px'></textarea></div>";
 	}
 	
-	var chkIsVisible = data.assignedTo && data.assignedTo.split(':')[1] != '0';
-	var chkIsChecked = chkIsVisible && ogTasks.userPreferences.defaultNotifyValue && data.assignedTo != (this.currentUser.companyId + ':' + this.currentUser.id);
+	var chkIsVisible = data.assignedTo && data.assignedTo != '0';
+	var chkIsChecked = chkIsVisible && ogTasks.userPreferences.defaultNotifyValue && data.assignedTo != this.currentUser.id;
 	
 	html += "<table><tr><td><div id='ogTasksPanelATAssigned' style='padding-top:5px;'><table><tr><td style='width:120px;'><b>" + lang('assigned to') + ":&nbsp;</b></td><td><span id='ogTasksPanelATAssignedCont'></span></td></tr></table></div></td>";
 	html += '<td style="' + (!data.isEdit?'padding-top:7px;':'') + 'padding-left:15px">';
@@ -162,13 +152,14 @@ ogTasks.drawTaskForm = function(container_id, data){
 	html += '</td>';
 	html += '</tr></table>'; 
 	
-	html += "<div id='ogTasksPanelATWorkspace' style='padding-top:5px;" + (data.isEdit? '': 'display:none') + "'><table><tr><td style='width:120px;'><b>" + lang('workspace') + ":&nbsp;</b></td><td><div id='ogTasksPanelWsSelector'></div></td>";
+	html += "<div id='ogTasksPanelATContext' style='padding-top:5px;padding-bottom: 10px;" + (data.isEdit? '': 'display:none') + "'><table><tr><td style='width:120px;'><b>" + lang('context') + ":&nbsp;</b></td><td><input type=\"hidden\" id=\"ogTasksPanelMembers\" name=\"members\" value=\"\"/><div id='ogTasksPanelContextSelector'>";
+	html += og.popupMemberChooserHtml('', ogTasks.tasks_object_type_id, "ogTasksPanelMembers", data.members, true);
+	html += "</div></td>";
 	if (data.isEdit && data.subtasksCount>0) html += "<td style=\"padding-left:15px\"><label for=\"ogTasksPanelApplyWS\"><input style=\"width:14px;\" type=\"checkbox\" name=\"task[apply_ws_subtasks]\" id=\"ogTasksPanelApplyWS\" />&nbsp;" + lang('apply workspace to subtasks') + "</label></td>";
 	html += "</tr></table></div>";
 	html += "<div id='ogTasksPanelATMilestone' style='padding-top:5px;" + (data.isEdit? '': 'display:none') + "'><table><tr><td style='width:120px;'><b>" + lang('milestone') + ":&nbsp;</b></td><td><div id='ogTasksPanelMilestoneSelector'></div></td>";
 	if (data.isEdit && data.subtasksCount>0) html += "<td style=\"padding-left:15px\"><label for=\"ogTasksPanelApplyMI\"><input style=\"width:14px;\" type=\"checkbox\" name=\"task[apply_milestone_subtasks]\" id=\"ogTasksPanelApplyMI\" />&nbsp;" + lang('apply milestone to subtasks') + "</label></td>";
 	html += "</tr></table></div>";	
-	html += "<div id='ogTasksPanelATTags' style='padding-top:5px;" + (data.isEdit? '': 'display:none') + "'><table><tr><td style='width:120px;'><b>" + lang('tags') + ":&nbsp;</b></td><td><input id='ogTasksPanelTagsSelector' style='min-width:120px;max-width:300px' type='text' value='" + (data.tags?data.tags + ',':'') + "' name='task[tags]'/></td></tr></table></div>";
 	html += "<div id='ogTasksPanelATObjectType' style='padding-top:5px;'><table><tr><td style='width:120px;'><b>" + lang('object type') + ":&nbsp;</b></td><td><input id='ogTasksPanelObjectTypeSelector' style='min-width:120px;max-width:300px' type='text' value='" + (data.otype ? data.otype : og.defaultTaskType) + "' name='task[object_subtype]'/></td></tr></table></div>";
 
 	//Second column
@@ -238,26 +229,6 @@ ogTasks.drawTaskForm = function(container_id, data){
    		document.getElementById('ogTasksPanelATObjectType').style.display = 'none';
    	}
 
-	var tags = Ext.getCmp("tag-panel").getTags();
-	var arr = [];
-	for (var i=0; i < tags.length; i++) {
-		arr.push([tags[i].name, og.clean(tags[i].name)]);
-	}
-	new og.CSVCombo({
-		store: new Ext.data.SimpleStore({
-       		fields: ["value", "clean"],
-       		data: arr
-		}),
-		valueField: "value",
-       	displayField: "value",
-       	mode: "local",
-       	forceSelection: true,
-       	triggerAction: "all",
-       	tpl: "<tpl for=\".\"><div class=\"x-combo-list-item\">{clean}</div></tpl>",
-       	emptyText: "",
-       	applyTo: "ogTasksPanelTagsSelector"
-   	});
-   	
    	var milestoneCombo = bottomToolbar.filterMilestonesCombo.cloneConfig({
 		name: 'task[milestone_id]',
 		renderTo: 'ogTasksPanelMilestoneSelector',
@@ -268,14 +239,10 @@ ogTasks.drawTaskForm = function(container_id, data){
 		tabIndex:1220
 	});
 	ogTasks.selectedMilestone = data.milestoneId;
+	og.openLink(og.getUrl('milestone', 'get_assignable_milestones'), {callback:ogTasks.drawMilestonesCombo});
 	
-	og.drawWorkspaceSelector('ogTasksPanelWsSelector', data.workspace, 'task[project_id]');
-	var ws_sel = Ext.get('ogTasksPanelWsSelector');
-	ogTasks.prevWsValue = -1;
-	if(data.assignedTo) ogTasks.assignedTo = data.assignedTo;
-	else ogTasks.assignedTo = '';
-	ws_sel.addListener('click', this.wsSelectorClicked);
-	this.wsSelectorClicked();
+	ogTasks.assignedTo = data.assignedTo ? data.assignedTo : 0;
+	og.openLink(og.getUrl('task', 'allowed_users_to_assign'), {callback:ogTasks.drawAssignedToCombo});
 	
 	document.getElementById('ogTasksPanelATTitle').value = data.title;
 	document.getElementById('ogTasksPanelATTitle').focus();
@@ -345,9 +312,8 @@ ogTasks.addNewTaskShowMore = function(){
 		document.getElementById('ogTasksPanelATPriority').style.display = 'block';
 		
 	document.getElementById('ogTasksPanelATAssigned').style.visibility = 'visible';
-	document.getElementById('ogTasksPanelATWorkspace').style.display = 'block';
+	document.getElementById('ogTasksPanelATContext').style.display = 'block';
 	document.getElementById('ogTasksPanelATMilestone').style.display = 'block';
-	document.getElementById('ogTasksPanelATTags').style.display = 'block';
 	if (ogTasks.ObjectSubtypes && ogTasks.ObjectSubtypes.length > 0) {
 		document.getElementById('ogTasksPanelATObjectType').style.display = 'block';
 	} else {
@@ -413,10 +379,9 @@ ogTasks.GetNewTaskParameters = function(wrapWithTask){
 	parameters["assigned_to"] = Ext.getCmp('ogTasksPanelATUserCompanyCombo').getValue();
 	parameters["milestone_id"] = Ext.getCmp('ogTasksPanelATMilestoneCombo').getValue();
 	parameters["priority"] = Ext.getCmp('ogTasksPanelATPriorityCombo').getValue();
-	parameters["title"] = document.getElementById('ogTasksPanelATTitle').value;
-	parameters["project_id"] = document.getElementById('ogTasksPanelWsSelectorValue').value;
-	parameters["tags"] = document.getElementById('ogTasksPanelTagsSelector').value;
+	parameters["name"] = document.getElementById('ogTasksPanelATTitle').value;
 	parameters["object_subtype"] = Ext.getCmp('ogTasksPanelObjectTypeSelector').getValue();
+	parameters["members"] = document.getElementById('ogTasksPanelMembers').value;
 	
 	if (wrapWithTask){
 		var params2 = [];
@@ -478,38 +443,30 @@ ogTasks.SubmitNewTask = function(task_id){
 	});
 }
 
-ogTasks.wsSelectorClicked = function() {
-	var wsVal = document.getElementById('ogTasksPanelWsSelectorValue').value;
-	
-	if (wsVal != ogTasks.prevWsValue) {
-		og.openLink(og.getUrl('task', 'allowed_users_to_assign', {ws_id:wsVal}), {callback:ogTasks.drawAssignedToCombo});
-		og.openLink(og.getUrl('milestone', 'get_workspace_milestones', {ws_id:wsVal}), {callback:ogTasks.drawMilestonesCombo});
-		ogTasks.prevWsValue = wsVal;
-	}
-}
 
 ogTasks.buildAssignedToComboStore = function(companies) {
-	usersStore = [];
-	comp_array = [];
-	cantU = 0;
-	cantC = 1;
+	var usersStore = [];
+	var comp_array = [];
+	var cantU = 0;
+	var cantC = 1;
 	
-	comp_array[cantC++] = ['0:0', lang('dont assign')];
-	comp_array[cantC++] = ['0:0', '--'];
-	usersStore[cantU++] = ['0:0', '--'];
+	comp_array[cantC++] = ['0', lang('dont assign')];
+	comp_array[cantC++] = ['0', '--'];
+	usersStore[cantU++] = ['0', '--'];
 	
 	if (companies) {
 		for (i=0; i<companies.length; i++) {
 			comp = companies[i];
-			comp_array[cantC++] = [comp.id + ':0', comp.name];
+			comp_array[cantC++] = [comp.id, comp.name];
 			for (j=0; j<comp.users.length; j++) {
 				usr = comp.users[j];
-				usersStore[cantU++] = [comp.id + ':' + usr.id, usr.name];
-				if (usr.isCurrent) comp_array[0] = [comp.id + ':' + usr.id, lang('me')];
+				usersStore[cantU++] = [usr.id, usr.name];
+				if (usr.isCurrent) comp_array[0] = [usr.id, lang('me')];
 			}
 		}
 	}
 	usersStore = comp_array.concat(usersStore);
+		
 	return usersStore;
 }
 
@@ -517,16 +474,16 @@ ogTasks.buildMilestonesComboStore = function(ms) {
 	var milestonesData = [[0,"--" + lang('none') + "--"]];
     for (i in ms){
     	if (ms[i].id)
-    		milestonesData[milestonesData.length] = [ms[i].id, ms[i].name];
+    		milestonesData[milestonesData.length] = [ms[i].id, ms[i].t];
     }
 	return milestonesData;
 }
 
 ogTasks.drawAssignedToCombo = function(success, data) {
-	usersStore = ogTasks.buildAssignedToComboStore(data.companies);
-	prev_combo = Ext.get('ogTasksPanelATUserCompanyCombo');
+	var usersStore = ogTasks.buildAssignedToComboStore(data.companies);
+	var prev_combo = Ext.get('ogTasksPanelATUserCompanyCombo');
 	if (prev_combo) prev_combo.remove();
-	
+		
 	var namesCombo = new Ext.form.ComboBox({
 		name: 'task[assigned_to]',
 		renderTo: 'ogTasksPanelATAssignedCont',
@@ -548,11 +505,12 @@ ogTasks.drawAssignedToCombo = function(success, data) {
 				var checkbox = document.getElementById('ogTasksPanelATNotify');
 				if (checkbox){
 					var checkboxDiv = document.getElementById('ogTasksPanelATNotifyDiv');
-					if (record.data.value != '-1:-1' && record.data.value.split(':')[1] != '0'){
+					var user = this.getUser(record.data.value);
+					if (user && record.data.value != '-1' && record.data.value != '0'){
 						checkboxDiv.style.display = 'block';
 						var currentUser = ogTasks.currentUser;
 						if (ogTasks.userPreferences.defaultNotifyValue == 1)
-							checkbox.checked = (record.data.value != (currentUser.companyId + ':' + currentUser.id));
+							checkbox.checked = (record.data.value != (currentUser.id));
 						else
 							checkbox.checked = false;
 						ogTasks.assignedTo = combo.getValue();

@@ -2,7 +2,7 @@
 /*
  * rfc822_addresses.php
  *
- * @(#) $Id: rfc822_addresses.class.php,v 1.1 2010/01/22 18:13:25 acio Exp $
+ * @(#) $Id: rfc822_addresses.class.php 7 2010-01-22 18:14:51Z acio $
  *
  */
 
@@ -12,7 +12,7 @@
 
 	<package>net.manuellemos.mimeparser</package>
 
-	<version>@(#) $Id: rfc822_addresses.class.php,v 1.1 2010/01/22 18:13:25 acio Exp $</version>
+	<version>@(#) $Id: rfc822_addresses.class.php 7 2010-01-22 18:14:51Z acio $</version>
 	<copyright>Copyright  (C) Manuel Lemos 2006 - 2008</copyright>
 	<title>RFC 822 e-mail addresses parser</title>
 	<author>Manuel Lemos</author>

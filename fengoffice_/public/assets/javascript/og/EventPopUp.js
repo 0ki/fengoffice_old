@@ -1,21 +1,23 @@
+
+
 og.EventPopUp = function(data,config) {
 	if (!config) config = {};
         
     og.EventPopUp.superclass.constructor.call(this, Ext.apply(config, {
 		y: 50,
 		width: 350,
-		height: 230,
+		height: 260,
 		id: 'add-event',
 		layout: 'border',
 		modal: true,
 		resizable: false,
 		closeAction: 'hide',
-		iconCls: 'op-ico',
+		iconCls: 'ico-calendar',
 		title: data.title,
 		border: false,
 		focus : function() {
-                    Ext.get('subject').focus();
-                },
+            Ext.get('name').focus();
+        },
 		buttons: [{
 			text: lang('add event'),
 			handler: this.accept,
@@ -31,116 +33,132 @@ og.EventPopUp = function(data,config) {
 				layout: 'fit',				
 				items: [
 					this.form = new Ext.FormPanel({
-								        labelWidth: 75, // label settings here cascade unless overridden
-								        frame:false,
-								        height: 110,
-								        url: '',
-								        bodyStyle:'padding:20px 20px 0',
-								        defaultType: 'textfield',
-										border:false,
-										bodyBorder: false,									
-								        items: [
-								        	{
-								                fieldLabel: lang('subject'),
-								                name: 'event[subject]',
-								                id: 'subject',
-								                allowBlank:false,
-								                blankText: lang('this field is required')
-								            },
-								            {
-								            	name: 'event[start_time]',
-								                id: 'start_time',
-								                xtype: 'timefield',
-								                width: 80,
-								                fieldLabel: lang('event start time'),
-								                format: data.time_format,
-								                editable: false,
-								                value: data.start_time
-											},
-								            {
-								            	name: 'event[duration]',
-								                id: 'duration',
-								                xtype: 'timefield',
-								                width: 60,
-								                fieldLabel: lang('duration'),
-								                format: 'G:i',
-								                editable: false,
-								                value: data.durationhour + ':' + (data.durationmin < 10 ? '0':'') + data.durationmin
-											},
-											{
-								            	xtype: 'checkbox',
-								                name: 'event[all_day_event]',
-								                id: 'all_day_event',
-								                fieldLabel: lang('all day event'),
-								                value: (data.type_id == 2)
-								            },
-											{
-								            	xtype: 'hidden',
-								                name: 'event[start_day]',
-								                id: 'day',
-								                value: data.day
-								            },
-								            {
-								            	xtype: 'hidden',
-								                name: 'event[start_month]',
-								                id: 'month',
-								                value: data.month
-								            },
-								            {
-								            	xtype: 'hidden',
-								                name: 'event[start_year]',
-								                id: 'year',
-								                value: data.year
-								            },
-								            {
-								            	xtype: 'hidden',
-								                name: 'event[hour]',
-								                id: 'hour',
-								                value: data.hour
-								            },
-								            {
-								            	xtype: 'hidden',
-								                name: 'event[minute]',
-								                id: 'min',
-								                value: data.minute
-								            },
-								            {
-								            	xtype: 'hidden',
-								                name: 'event[type_id]',
-								                id: 'type_id',
-								                value: data.type_id
-								            },
-								            {
-								            	xtype: 'hidden',
-								                name: 'event[durationhour]',
-								                id: 'durationhour',
-								                value: data.durationhour
-								            },
-								            {
-								            	xtype: 'hidden',
-								                name: 'event[durationmin]',
-								                id: 'durationmin',
-								                value: data.durationmin
-								            },
-								            {
-								            	xtype: 'hidden',
-								                name: 'event[start_value]',
-								                id: 'start_value',
-								                value: data.start_value
-								            },
-								            {
-								            	xtype: 'hidden',
-								                id: 'hide_calendar_toolbar',
-								                value: data.hide_calendar_toolbar
-								            },
-								            {
-								            	xtype: 'hidden',
-								                name: 'view',
-								                id: 'view',
-								                value: data.view
-								            }
-								        ]
-								    })
+						id: data.genid + '-ev_popup_form',
+				        labelWidth: 75, // label settings here cascade unless overridden
+				        frame:false,
+				        height: 140,
+				        url: '',
+				        bodyStyle:'padding:20px 20px 0',
+				        defaultType: 'textfield',
+						border:false,
+						bodyBorder: false,
+				        items: [
+				        	{
+				                fieldLabel: lang('name'),
+				                name: 'event[name]',
+				                id: 'name',
+				                allowBlank:false,
+				                blankText: lang('this field is required')
+				            },
+				            {
+				            	name: 'event[start_time]',
+				                id: 'start_time',
+				                xtype: 'timefield',
+				                width: 80,
+				                fieldLabel: lang('event start time'),
+				                format: data.time_format,
+				                editable: false,
+				                value: data.start_time
+							},
+				            {
+				            	name: 'event[duration]',
+				                id: 'duration',
+				                xtype: 'timefield',
+				                width: 60,
+				                fieldLabel: lang('duration'),
+				                format: 'G:i',
+				                editable: false,
+				                value: data.durationhour + ':' + (data.durationmin < 10 ? '0':'') + data.durationmin
+							},
+							{
+				            	xtype: 'checkbox',
+				                name: 'event[all_day_event]',
+				                id: 'all_day_event',
+				                fieldLabel: lang('all day event'),
+				                value: (data.type_id == 2)
+				            },
+				            {
+				            	xtype: 'panel',
+				            	height: 30,
+				            	name: 'sel_members',
+				                id: data.genid + 'sel_members',
+				                border: false,
+				                html: og.popupMemberChooserHtml(data.genid, data.otype, 'ev_popup_members')
+				            },
+				            {
+				            	xtype: 'hidden',
+				                name: 'members',
+				                cls: 'ev_popup_members',
+				                id: data.genid + 'ev_popup_members',
+				                value: ''
+				            },
+				            {
+				            	xtype: 'hidden',
+				                name: 'event[start_day]',
+				                id: 'day',
+				                value: data.day
+				            },
+				            {
+				            	xtype: 'hidden',
+				                name: 'event[start_month]',
+				                id: 'month',
+				                value: data.month
+				            },
+				            {
+				            	xtype: 'hidden',
+				                name: 'event[start_year]',
+				                id: 'year',
+				                value: data.year
+				            },
+				            {
+				            	xtype: 'hidden',
+				                name: 'event[hour]',
+				                id: 'hour',
+				                value: data.hour
+				            },
+				            {
+				            	xtype: 'hidden',
+				                name: 'event[minute]',
+				                id: 'min',
+				                value: data.minute
+				            },
+				            {
+				            	xtype: 'hidden',
+				                name: 'event[type_id]',
+				                id: 'type_id',
+				                value: data.type_id
+				            },
+				            {
+				            	xtype: 'hidden',
+				                name: 'event[durationhour]',
+				                id: 'durationhour',
+				                value: data.durationhour
+				            },
+				            {
+				            	xtype: 'hidden',
+				                name: 'event[durationmin]',
+				                id: 'durationmin',
+				                value: data.durationmin
+				            },
+				            {
+				            	xtype: 'hidden',
+				                name: 'event[start_value]',
+				                id: 'start_value',
+				                value: data.start_value
+				            },
+				            {
+				            	xtype: 'hidden',
+				                id: 'hide_calendar_toolbar',
+				                value: data.hide_calendar_toolbar
+				            },
+				            {
+				            	xtype: 'hidden',
+				                name: 'view',
+				                id: 'view',
+				                value: data.view
+				            }
+				        ]
+				    })
 				]
 			},{
 				region: 'south',
@@ -159,8 +177,9 @@ Ext.extend(og.EventPopUp, Ext.Window, {
 		Ext.getCmp('durationhour').setValue(duration_split[0]);
 		Ext.getCmp('durationmin').setValue(duration_split[1]);
 		
+		var sel_members = document.getElementById('add-event').getElementsByClassName("ev_popup_members");
 		this.hide();
-		og.openLink(og.getUrl('event', 'add'),{post:'popup=true&event[start_day]='+Ext.getCmp('day').getValue()+'&event[start_month]='+Ext.getCmp('month').getValue()+'&event[start_year]='+Ext.getCmp('year').getValue()+'&event[hour]='+Ext.getCmp('hour').getValue()+'&event[minute]='+Ext.getCmp('min').getValue()+'&event[type_id]='+Ext.getCmp('type_id').getValue()+'&event[durationhour]='+Ext.getCmp('durationhour').getValue()+'&event[durationmin]='+Ext.getCmp('durationmin').getValue()+'&view='+Ext.getCmp('view').getValue()+'&event[start_value]='+Ext.getCmp('start_value').getValue()+'&event[start_time]='+Ext.getCmp('start_time').getValue()+'&event[subject]='+Ext.getCmp('subject').getValue()});
+		og.openLink(og.getUrl('event', 'add'),{post:'popup=true&event[start_day]='+Ext.getCmp('day').getValue()+'&event[start_month]='+Ext.getCmp('month').getValue()+'&event[start_year]='+Ext.getCmp('year').getValue()+'&event[hour]='+Ext.getCmp('hour').getValue()+'&event[minute]='+Ext.getCmp('min').getValue()+'&event[type_id]='+Ext.getCmp('type_id').getValue()+'&event[durationhour]='+Ext.getCmp('durationhour').getValue()+'&event[durationmin]='+Ext.getCmp('durationmin').getValue()+'&view='+Ext.getCmp('view').getValue()+'&event[start_value]='+Ext.getCmp('start_value').getValue()+'&event[start_time]='+Ext.getCmp('start_time').getValue()+'&event[name]='+Ext.getCmp('name').getValue()+'&members='+sel_members[0].value});
 	},
 	
 	cancel: function() {
@@ -180,7 +199,7 @@ og.EventPopUp.show = function(callback, data, scope) {
 	Ext.getCmp('hour').setValue(data.hour);	
 	Ext.getCmp('min').setValue(data.minute);	
 	Ext.getCmp('type_id').setValue(data.type_id);	
-	Ext.getCmp('subject').setValue('');
+	Ext.getCmp('name').setValue('');
 	Ext.getCmp('durationhour').setValue(data.durationhour);
 	Ext.getCmp('durationmin').setValue(data.durationmin);
 	Ext.getCmp('start_value').setValue(data.start_value);
@@ -206,12 +225,13 @@ og.EventPopUp.show = function(callback, data, scope) {
 		}
 	});
 	Ext.getCmp('all_day_event').setValue(data.type_id == 2 ? true : false);	
-	Ext.getCmp('subject').focus();
+	Ext.getCmp('name').focus();
+	document.getElementById(data.genid + 'sel_members').getElementsByClassName('x-panel-body x-panel-body-noheader x-panel-body-noborder')[0].innerHTML = og.popupMemberChooserHtml(data.genid, data.otype, 'ev_popup_members');
 }
 
 
 og.EventPopUp.goToEdit = function (){
-	var sub = Ext.getCmp('subject').getValue();	
+	var sub = Ext.getCmp('name').getValue();	
 	var st_time = Ext.getCmp('start_time').getValue();
 	var ev_type = Ext.getCmp('type_id').getValue();
 	var data = this.the_data;
@@ -220,6 +240,6 @@ og.EventPopUp.goToEdit = function (){
 	data.durationhour = duration_split[0];
 	data.durationmin = duration_split[1];
 	
-	og.openLink(og.getUrl('event', 'add', {subject: sub, day:data.day , month: data.month, year: data.year, hour: data.hour, minute: data.minute, durationhour:data.durationhour, durationmin:data.durationmin, start_value:data.start_value, start_time:st_time, type_id:ev_type, view:data.view}), null);
+	og.openLink(og.getUrl('event', 'add', {name: sub, day:data.day , month: data.month, year: data.year, hour: data.hour, minute: data.minute, durationhour:data.durationhour, durationmin:data.durationmin, start_value:data.start_value, start_time:st_time, type_id:ev_type, view:data.view}), null);
 	this.dialog.hide();	
 }

@@ -1,25 +1,8 @@
+
+
 App.modules.addMessageForm = {
-  
-  /**
-   * Show and hide additional text editor
-   *
-   * @param object show_hide_link Expend / Collapse link
-   * @param string editor_id ID of editor
-   * @param string expend_lang Expend in selected language
-   * @param string collapse_lang Collapse in selected language
-   */
-  toggleAdditionalText: function(show_hide_link, editor_id, expand_lang, collapse_lang) {
-    editor = Ext.getDom(editor_id);
-    if(editor.style.display == 'block') {
-      editor.style.display = 'none';
-      show_hide_link.innerHTML = expand_lang;
-    } else {
-      editor.style.display = 'block';
-      show_hide_link.innerHTML = collapse_lang;
-    } // if
-  }, // toggleAdditionalText
-  
-  /**
+   
+	/**
    * Click on company checkbox in email notification box. If checkbox is checked
    * all company members need to be checked. If not all members are unchecked
    *
@@ -116,5 +99,9 @@ App.modules.addMessageForm = {
   	}
     return ids;
   } // emailNotifyClickCompany
-  
+
 };
+
+
+
+

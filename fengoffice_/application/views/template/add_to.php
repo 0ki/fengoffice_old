@@ -28,7 +28,7 @@ foreach($templates as $template) {
 			'id' => $object->getId(),
 			'manager' => get_class($object->manager()),
 			'template' => $template->getId()
-		)) ?>"><?php echo clean($template->getName()) ?></a></td>
+		)) ?>"><?php echo clean($template->getObjectName()) ?></a></td>
 	</tr>
 <?php } // foreach ?>
 </table>

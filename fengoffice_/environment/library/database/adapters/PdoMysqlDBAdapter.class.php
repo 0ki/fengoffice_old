@@ -155,7 +155,7 @@ class PdoMysqlDBAdapter extends AbstractDBAdapter {
 	 * @param void
 	 * @return array
 	 */
-	function listTables() {// TODO
+	function listTables() {
 		$extracted_table_names = $this->executeAll('SHOW TABLES');
 		$table_names = array();
 		if(count($extracted_table_names)) {
@@ -173,7 +173,7 @@ class PdoMysqlDBAdapter extends AbstractDBAdapter {
 	 * @param mixed $table_names Array of table names or single table name
 	 * @return boolean
 	 */
-	function dropTables($table_names) {// TODO
+	function dropTables($table_names) {
 
 		if(empty($table_names)) return true;
 		if(!is_array($table_names)) $table_names = array($table_names);
@@ -193,7 +193,7 @@ class PdoMysqlDBAdapter extends AbstractDBAdapter {
 	 * @param mixed $table_names Single table name or array of table names
 	 * @return boolean
 	 */
-	function emptyTables($table_names) {// TODO
+	function emptyTables($table_names) {
 
 		if(empty($table_names)) return true;
 		if(!is_array($table_names)) $table_names = array($table_names);
@@ -213,7 +213,7 @@ class PdoMysqlDBAdapter extends AbstractDBAdapter {
 	 * @param void
 	 * @return array or NULL if there are no tables in database
 	 */
-	function exportDatabaseStructure() {// TODO
+	function exportDatabaseStructure() {
 		$tables = $this->listTables();
 		if(!is_array($tables) || !count($tables)) return null;
 		$create_commands = array();
@@ -232,7 +232,7 @@ class PdoMysqlDBAdapter extends AbstractDBAdapter {
 	 * @param boolean $clear Clean up the database before execution
 	 * @return boolean
 	 */
-	function importDatabaseStructure(AbstractDBAdapter $adapter, $clear = false) {// TODO
+	function importDatabaseStructure(AbstractDBAdapter $adapter, $clear = false) {
 		if($clear) $this->clearDatabase();
 		$structure = $adapter->exportDatabaseStructure();
 		if(is_array($structure)) {
@@ -247,7 +247,7 @@ class PdoMysqlDBAdapter extends AbstractDBAdapter {
 	 * @param string $table_name
 	 * @return string or NULL if table does not exists
 	 */
-	function exportTableStructure($table_name) {// TODO
+	function exportTableStructure($table_name) {
 		$result = $this->executeOne('SHOW CREATE TABLE ' . $this->escapeField($table_name));
 		return array_var($result, 'Create Table');
 	} // exportTableStructure

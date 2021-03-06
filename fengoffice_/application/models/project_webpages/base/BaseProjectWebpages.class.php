@@ -6,7 +6,7 @@
  *
  * @author Carlos Palma <chonwil@gmail.com>
  */
-abstract class BaseProjectWebpages extends ProjectDataObjects {
+abstract class BaseProjectWebpages extends ContentDataObjects {
 
 	/**
 	 * Column name => Column type map
@@ -15,20 +15,10 @@ abstract class BaseProjectWebpages extends ProjectDataObjects {
 	 * @static
 	 */
 	static private $columns = array(
-    'id' => DATA_TYPE_INTEGER,  
-    'url' => DATA_TYPE_STRING, 
-    'title' => DATA_TYPE_STRING, 
-    'description' => DATA_TYPE_STRING, 
-    'created_on' => DATA_TYPE_DATETIME,
-    'created_by_id' => DATA_TYPE_INTEGER, 
-    'updated_on' => DATA_TYPE_DATETIME,
-    'updated_by_id' => DATA_TYPE_INTEGER, 
-    'is_private' => DATA_TYPE_BOOLEAN,
-    'trashed_on' => DATA_TYPE_DATETIME,
-    'trashed_by_id' => DATA_TYPE_INTEGER,
-    'archived_on' => DATA_TYPE_DATETIME,
-    'archived_by_id' => DATA_TYPE_INTEGER,
-	);
+    	'object_id' => DATA_TYPE_INTEGER,  
+    	'url' => DATA_TYPE_STRING, 
+    	'description' => DATA_TYPE_STRING,
+    );
 
 	/**
 	 * Construct
@@ -78,7 +68,7 @@ abstract class BaseProjectWebpages extends ProjectDataObjects {
 	 * @return array or string
 	 */
 	function getPkColumns() {
-		return 'id';
+		return 'object_id';
 	} // getPkColumns
 
 	/**
@@ -89,7 +79,7 @@ abstract class BaseProjectWebpages extends ProjectDataObjects {
 	 * @return string
 	 */
 	function getAutoIncrementColumn() {
-		return 'id';
+		return null;
 	} // getAutoIncrementColumn
 
 	/**
@@ -161,8 +151,6 @@ abstract class BaseProjectWebpages extends ProjectDataObjects {
 			return parent::find($arguments);
 		} else {
 			return ProjectWebpages::instance()->find($arguments);
-			//$instance =& ProjectWebpages::instance();
-			//return $instance->find($arguments);
 		} // if
 	} // find
 
@@ -178,8 +166,6 @@ abstract class BaseProjectWebpages extends ProjectDataObjects {
 			return parent::findAll($arguments);
 		} else {
 			return ProjectWebpages::instance()->findAll($arguments);
-			//$instance =& ProjectWebpages::instance();
-			//return $instance->findAll($arguments);
 		} // if
 	} // findAll
 
@@ -195,8 +181,6 @@ abstract class BaseProjectWebpages extends ProjectDataObjects {
 			return parent::findOne($arguments);
 		} else {
 			return ProjectWebpages::instance()->findOne($arguments);
-			//$instance =& ProjectWebpages::instance();
-			//return $instance->findOne($arguments);
 		} // if
 	} // findOne
 
@@ -213,8 +197,6 @@ abstract class BaseProjectWebpages extends ProjectDataObjects {
 			return parent::findById($id, $force_reload);
 		} else {
 			return ProjectWebpages::instance()->findById($id, $force_reload);
-			//$instance =& ProjectWebpages::instance();
-			//return $instance->findById($id, $force_reload);
 		} // if
 	} // findById
 
@@ -230,8 +212,6 @@ abstract class BaseProjectWebpages extends ProjectDataObjects {
 			return parent::count($condition);
 		} else {
 			return ProjectWebpages::instance()->count($condition);
-			//$instance =& ProjectWebpages::instance();
-			//return $instance->count($condition);
 		} // if
 	} // count
 
@@ -247,8 +227,6 @@ abstract class BaseProjectWebpages extends ProjectDataObjects {
 			return parent::delete($condition);
 		} else {
 			return ProjectWebpages::instance()->delete($condition);
-			//$instance =& ProjectWebpages::instance();
-			//return $instance->delete($condition);
 		} // if
 	} // delete
 
@@ -271,8 +249,6 @@ abstract class BaseProjectWebpages extends ProjectDataObjects {
 			return parent::paginate($arguments, $items_per_page, $current_page);
 		} else {
 			return ProjectWebpages::instance()->paginate($arguments, $items_per_page, $current_page);
-			//$instance =& ProjectWebpages::instance();
-			//return $instance->paginate($arguments, $items_per_page, $current_page);
 		} // if
 	} // paginate
 

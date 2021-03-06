@@ -9,7 +9,7 @@
   class EventInvitations extends BaseEventInvitations {    
   	function clearByUser($user) {
   		self::delete(array(
-  			'`user_id` = ?',
+  			'`contact_id` = ?',
   			$user->getId()
   		));
   	}

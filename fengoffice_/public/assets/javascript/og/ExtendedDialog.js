@@ -50,6 +50,7 @@ Ext.extend(og.ExtendedDialog, Ext.Window, {
 	cancel: function() { this.hide(); }
 });
 
+
 og.ExtendedDialog.show = function(config) {
 	if (!config)
 		config = {};
@@ -75,6 +76,8 @@ og.ExtendedDialog.show = function(config) {
 	if (pos[0] < 0) pos[0] = 0;
 	if (pos[1] < 0) pos[1] = 0;
 	this.dialog.setPosition(pos[0], pos[1]);
+	
+	return this.dialog;
 }
 
 og.ExtendedDialog.hide = function() {

@@ -20,7 +20,7 @@
     'timezone gmt +1'   => '(GMT+1:00) Amsterdam, Berlin, Rome, Copenhagen, Brussels, Madrid, Paris',
     'timezone gmt +2'   => '(GMT+2:00) Athens, Istanbul, Minsk, Helsinki, Jerusalem, South Africa',
     'timezone gmt +3'   => '(GMT+3:00) Baghdad, Kuwait, Riyadh, Moscow, St. Petersburg',
-    'timezone gmt +3.5' => '(GMT+3:30) Tehran',
+    'timezone gmt +3.5' => '(GMT+3:30) Teheran',
     'timezone gmt +4'   => '(GMT+4:00) Abu Dhabi, Muscat, Baku, Tbilisi',
     'timezone gmt +4.5' => '(GMT+4:30) Kabul',
     'timezone gmt +5'   => '(GMT+5:00) Ekaterinburg, Islamabad, Karachi, Tashkent',

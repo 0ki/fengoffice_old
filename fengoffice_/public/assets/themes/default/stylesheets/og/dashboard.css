@@ -22,17 +22,13 @@
 .dashWorkspace .description{
 }
 
-.dashActions {
-	position: absolute;
-	top: 19px;
-	right: 30px;	
-}
+
 
 .dashActions .viewAsList {
 	backgroud-position: 0pt 2px;
 	height: 16px;
 	padding-left:20px;
-	background: transparent url(../../images/16x16/all_16_16_sprite.png) no-repeat scroll 0 -4069px !important;
+	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -100px !important;
 	cursor: pointer;		
 }
 
@@ -248,3 +244,86 @@
 
 
 
+
+/*----------------------------------------
+		Generic widgets
+----------------------------------------*/
+.dashboard-container {
+	padding: 15px;
+	
+}
+
+.dashActions {
+    position: absolute;
+    right: 30px;
+    top: 0;
+}
+
+
+.widget p {
+	padding-left: 5px;
+}
+
+.widget {
+	margin: 5px	5px 15px 5px;
+	-moz-box-shadow: 5px 5px 7px #CCCCCC;
+	box-shadow: 5px 5px 7px #CCCCCC;
+	-webkit-box-shadow: 5px 5px 7px #CCCCCC;	
+}
+
+.widget h2  {
+	padding: 30px 0 5px;
+	margin-bottom: 10px;
+	border-bottom: 1px solid #CCC ;
+	font-size: 16px;
+	font-weigth: bold ;
+}
+.widget h2.first  {
+	padding-top: 10px;
+}
+
+
+.widget h3  {
+    padding: 2px 3px 0;
+	margin-bottom: 5px;
+	font-size: 12px;
+	text-decoration: none ;
+	font-weigth: bold ;
+}
+
+
+
+.widget-header {
+	cursor: pointer;
+	height: 20px;
+	background: #496AB9 ;
+	color: #FFFFFF;
+	font-weight: bold ;
+	font-size: 13px ;
+	padding: 3px 10px 0 10px;
+
+}
+
+.widget-body {
+	background: #FFFFFF ;
+	padding: 10px;
+}
+
+
+.widget dt, .widget dd { 
+	margin: 0; padding: 2px 0;
+}
+
+.widget  dt { 
+	float: left; 
+	margin-right: 0.3em;
+	color: #003562 ;
+}
+.widget li, .widget dt {
+	margin-left: 10px ;
+}
+
+.widget .dimension-relation {
+	float: left ;
+	margin: 0 20px 20px 0  ;
+}

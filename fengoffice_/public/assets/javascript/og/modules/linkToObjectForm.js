@@ -16,17 +16,13 @@ App.modules.linkToObjectForm = {
 		var count = parent.getElementsByTagName('span').length;
 		var div = document.createElement('div');
 		div.className = "og-add-template-object ico-" + obj.type + (count % 2 ? " odd" : "");
-		/*div.onmouseover = App.modules.linkToObjectForm.mouseOver;
-		div.onmouseout = App.modules.linkToObjectForm.mouseOut;*/
 		var name = og.clean(obj.name);;
 		if (typeof config.renderName == 'function') {
 			name = config.renderName(obj, count);
 		}
 		div.innerHTML =
-			'<input type="hidden" name="linked_objects[' + count + ']" value="' + obj.manager + ":" + obj.object_id + '" />' +
-			'<span class="name">' +
-			name +
-			'</span>' +
+			'<input type="hidden" name="linked_objects[' + count + ']" value="' + obj.object_id + '" />' +
+			'<span class="name">' + name + '</span>' +
 			'<a href="#" onclick="App.modules.linkToObjectForm.removeObject(this.parentNode)" class="removeDiv" style="display:block">' + lang('remove') + '</a>';
 		parent.insertBefore(div, before);
 	},

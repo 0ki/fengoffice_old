@@ -1,4 +1,5 @@
 App.modules.addTaskForm = {
+  objectType: 5,
   task_lists: {},
   
   /**
@@ -58,6 +59,15 @@ App.modules.addTaskForm = {
         App.modules.addTaskForm.hideAddTaskForm(key);
       } // if
     } // for
-  } // hideAllAddTaskForms
+  }, // hideAllAddTaskForms
   
+  checkSubmitAddTask: function(genid, objectType) {
+	var dd = Ext.getCmp(genid + 'due_date').getValue();
+	var sd = Ext.getCmp(genid + 'start_date').getValue();
+	if (sd && dd && dd < sd) {
+		alert(lang('warning start date greater than due date'));
+		return false;
+	}
+	return og.handleMemberChooserSubmit(genid, objectType);
+  }
 };

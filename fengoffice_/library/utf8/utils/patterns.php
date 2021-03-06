@@ -3,7 +3,7 @@
 * PCRE Regular expressions for UTF-8. Note this file is not actually used by
 * the rest of the library but these regular expressions can be useful to have
 * available.
-* @version $Id: patterns.php,v 1.1 2010/01/22 18:09:15 acio Exp $
+* @version $Id: patterns.php 7 2010-01-22 18:14:51Z acio $
 * @see http://www.w3.org/International/questions/qa-forms-utf-8
 * @package utf8
 * @subpackage patterns

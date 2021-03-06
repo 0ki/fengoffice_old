@@ -48,9 +48,6 @@
 	?>
 	<br><br>
 	
-	<?php echo lang('workspace') ?>: <span style='<?php echo get_workspace_css_properties($workspace_color); ?>'>
-	<?php echo $workspaces ?></span><br><br>
-	<br><br>
 	<div style="color: #818283; font-style: italic; border-top: 2px solid #818283; padding-top: 2px; font-family: Verdana, Arial, sans-serif; font-size: 12px;">
 	<?php echo lang('system notification email'); ?><br>
 	<a href="<?php echo ROOT_URL; ?>" target="_blank" style="font-family: Verdana, Arial, sans-serif; font-size: 12px;"><?php echo ROOT_URL; ?></a>

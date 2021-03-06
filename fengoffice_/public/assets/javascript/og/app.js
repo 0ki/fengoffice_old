@@ -32,3 +32,4 @@ function addLangs(langs) {
 		_lang[k] = langs[k];
 	}
 }
+

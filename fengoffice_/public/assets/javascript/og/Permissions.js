@@ -1,134 +1,261 @@
 /**
  *  Permissions
  *
- * Author: Carlos Palma (chonwil@gmail.com)
+ * Author: Alvaro Torterola (alvaro.torterola@fengoffice.com)
  */
 
-var permissionsList = new Array();
 
+/******************************************************
+ * Functions for member selector
+******************************************************/
 
-//--------------------------------------------------
-//			PERMISSIONS CLASS
-//--------------------------------------------------
-
-
-/**
- * This is the main class representing a workspace permission.
- * 		wsid = the workspace id
- * 		pc = an array containing the checkbox permissions, states: [0,1]
- * 		pr = an array containing the radio permissions, states: [0,1,2]
- *		isModified = returns true if the workspace permission was modified from its original value
- */
-og.ogPermission = function(workspace_id, radio_permissions, checkbox_permissions){
-	this.isModified = false;
-	this.wsid = workspace_id;
-	this.pr = radio_permissions;
-	this.pc = checkbox_permissions;
-}
-
-
-//Returns a copy of this permissions object
-og.ogPermission.prototype.clone = function() {
-	var radio_permissions = [];
-	for (var i = 0; i < this.pr.length; i++)
-		radio_permissions[radio_permissions.length] = this.pr[i];
-		
-	var checkbox_permissions = [];
-	for (var i = 0; i < this.pc.length; i++)
-		checkbox_permissions[checkbox_permissions.length] = this.pc[i];
-	
-	var result = new og.ogPermission(this.wsid, radio_permissions, checkbox_permissions);
-	result.isModified = this.isModified;
-	
-	return result;
-}
- 
- 
-//Returns true if the permission has any permission set to a value other than 0
-og.ogPermHasAnyPermission = function(){
-	var allCheckedFalse = true;
-
-	//Checkboxes
-	for (var i = 0; i < this.pc.length; i++)
-		allCheckedFalse = allCheckedFalse && (this.pc[i] == 0);
-		
-	//Radio buttons
-	for (var i = 0; i < this.pr.length; i++)
-		allCheckedFalse = allCheckedFalse && (this.pr[i] == 0);
-	
-	return !allCheckedFalse;
-}
-
-
-//Returns true if the permission has all permissions set to their highest value
-og.ogPermHasAllPermissions = function(genid){
-	var allCheckedTrue = true;
-
-	//Checkboxes
-	for (var i = 0; i < this.pc.length; i++)
-		allCheckedTrue = allCheckedTrue && (this.pc[i] == 1);
-		
-	//Radio buttons
-	for (var i = 0; i < this.pr.length; i++)
-		allCheckedTrue = allCheckedTrue && (i == 4 ? this.pr[i] >= 2 : this.pr[i] >= og.ogPermMax(genid));
-	
-	return allCheckedTrue;
-}
-
-og.ogPermission.prototype.hasAnyPermission = og.ogPermHasAnyPermission;
-og.ogPermission.prototype.hasAllPermissions = og.ogPermHasAllPermissions;
-
-
-
-//--------------------------------------------------
-//				FUNCTIONS
-//--------------------------------------------------
- 
- 
-//-------------------------------------------------- DATA LOAD
- 
 //	Loads the permission info from a hidden field. 
 //	The name of the hidden field must be of the form <genid> + 'hfPerms'
+og.permissionInfo = [];
+
 og.ogLoadPermissions = function(genid, isNew){
 	var hf = document.getElementById(genid + 'hfPerms');
 	if (hf && hf.value != ''){
-	 	var dec = Ext.util.JSON.decode(hf.value);	
-	 	og.ogLoadPermissionsFromArray(genid, dec, isNew);
+		var hf_ot = document.getElementById(genid + 'hfAllowedOT');
+		var hf_ot_mem = document.getElementById(genid + 'hfAllowedOTbyMemType');
+		var hf_memt = document.getElementById(genid + 'hfMemTypes');
+
+		og.permissionInfo[genid] = {
+			permissions: Ext.util.JSON.decode(hf.value),
+			allowedOt: Ext.util.JSON.decode(hf_ot.value),
+			allowedOtByMemType: Ext.util.JSON.decode(hf_ot_mem.value),
+			member_types: Ext.util.JSON.decode(hf_memt.value)
+		}
+
+		Ext.removeNode(hf);
+		Ext.removeNode(hf_ot);
+		Ext.removeNode(hf_ot_mem);
+		Ext.removeNode(hf_memt);
 	} else {
-		permissionsList[genid] = [];
+		og.permissionInfo[genid] = {};
 	}
 }
 
-og.ogLoadPermissionsFromArray = function(genid, dec, isNew) {
-	var tree = Ext.getCmp('workspace-chooser' + genid);
-	tree.uncheckAll();
- 	
-	var permarray = [];
- 	for (var i = 0; i < dec.length; i++){
- 		var perm = new og.ogPermission(dec[i].wsid, dec[i].pr, dec[i].pc);
- 		if (isNew) perm.isModified = true;
- 		permarray[dec[i].wsid] = perm;
- 		var node = tree.getNodeById(tree.nodeId(dec[i].wsid));
- 		if (node){
-			node.suspendEvents();
-			node.ui.toggleCheck(perm.hasAnyPermission());
-			node.attributes.checked = perm.hasAnyPermission();
-			node.resumeEvents();
-		}
- 	}
- 	permissionsList[genid] = permarray;
+og.getPermissionsForMember = function(genid, member_id) {
+	if (!og.permissionInfo[genid].permissions[member_id]) 
+		og.permissionInfo[genid].permissions[member_id] = [];
+	return og.permissionInfo[genid].permissions[member_id];
 }
 
+og.addPermissionsForMember = function(genid, member_id, perm) {
+	og.permissionInfo[genid].permissions[member_id].push(perm);
+}
 
-//	Sets the permission information to send inside a hidden field. 
-//	The id of the hidden field must be of the form: <genid> + 'hfPermsSend'
+og.deletePermissionsForMember = function(genid, member_id) {
+	og.permissionInfo[genid].permissions[member_id] = [];
+}
+
+og.canEditPermissionObjType = function(genid, member_id, obj_type) {
+	var mem_type = og.permissionInfo[genid].member_types[member_id];
+	if (!mem_type) return false;
+	var allowed = og.permissionInfo[genid].allowedOtByMemType[mem_type];
+	for (var i=0; i<allowed.length; i++) {
+		if (allowed[i] == obj_type) return true;
+	}
+	return false;
+}
+
+og.setReadOnlyObjectTypeRow = function(genid, dim_id, obj_type, readonly) {
+	for (var i=0; i<4; i++) {
+		var radio = Ext.get(genid + 'rg_'+ i +'_' + dim_id + '_' + obj_type).dom;
+		if (radio) radio.disabled = readonly;
+	}
+	var label = Ext.get(genid + 'obj_type_label' + dim_id + '_' + obj_type);
+	if (readonly) label.addClass('desc');
+	else label.removeClass('desc');
+}
+
+og.loadMemberPermissions = function(genid, dim_id, member_id) {
+	var allowed_ot = og.permissionInfo[genid].allowedOt;
+	var member_perms = og.getPermissionsForMember(genid, member_id);
+	
+	for (var i=0; i < allowed_ot[dim_id].length; i++) {
+		var val = 0;
+		var found = false;
+		for (var j=0; j<member_perms.length; j++) {
+			var perm = member_perms[j];
+			if (!perm) continue;
+			if (perm.o == allowed_ot[dim_id][i]) {
+				val = perm.w == 1 && perm.d == 1 ? 3 : (perm.w == 1 ? 2 : (perm.r ? 1 : 0));
+				found = true;
+				break;
+			}
+		}
+		if (!found) {
+			og.permissionInfo[genid].permissions[member_id].push({o: allowed_ot[dim_id][i], d:0 , w:0, r:0});
+		}
+		og.ogSetCheckedValue(document.getElementsByName(genid + "rg_" + dim_id + "_" + allowed_ot[dim_id][i]), val);
+		
+		og.setReadOnlyObjectTypeRow(genid, dim_id, allowed_ot[dim_id][i], !og.canEditPermissionObjType(genid, member_id, allowed_ot[dim_id][i]));
+	}
+
+	//Update the 'All' checkbox if all permissions are set
+	var chk = document.getElementById(genid + dim_id + 'pAll');
+	if (chk)
+		chk.checked = og.hasAllPermissions(genid, member_id, member_perms);
+}
+
+//Action to execute when the value of an element of the displayed permission changes
+og.ogPermValueChanged = function(genid, dim_id, obj_type){
+	var member_id = og.permissionInfo[genid].selectedMember;
+	var member_perms = og.getPermissionsForMember(genid, member_id);
+
+	for (var i=0; i<member_perms.length; i++) {
+		var tmp = member_perms[i];
+		if (tmp.o == obj_type) {
+			perm = tmp;
+			break;
+		}
+	}
+	if (!perm) return;
+		
+	var value = og.ogGetCheckedValue(document.getElementsByName(genid + "rg_" + dim_id + "_" + obj_type));
+
+	perm.modified = true;
+	perm.d = (value == 3);
+	perm.w = (value >= 2);
+	perm.r = (value >= 1);
+
+	if (perm.r) {
+		module_check = document.getElementById(genid + 'mod_perm['+perm.o+']');
+		if(module_check && !module_check.checked) module_check.checked = true; 
+	}
+
+	og.markMemberPermissionModified(genid, dim_id, member_id);
+
+	//Update the 'All' checkbox if all permissions are set
+	var chk = document.getElementById(genid + dim_id + 'pAll');
+	if (chk)
+		chk.checked = og.hasAllPermissions(genid, member_id, member_perms);
+}
+
+og.hasAllPermissions = function(genid, member_id, member_permissions) {
+	for (var i=0; i<member_permissions.length; i++) {
+		if (!member_permissions[i] || !og.canEditPermissionObjType(genid, member_id, member_permissions[i].o)) continue;
+		if (!(member_permissions[i].d && member_permissions[i].w && member_permissions[i].r)) return false;
+	}
+	return true;
+}
+
+//Sets all radio permissions to a specific level for a given member
+og.ogPermSetLevel = function(genid, dim_id, level){
+	var member_id = og.permissionInfo[genid].selectedMember;
+	var member_perms = og.getPermissionsForMember(genid, member_id);
+
+	for (var i=0; i<member_perms.length; i++) {
+		//if (!og.canEditPermissionObjType(genid, member_id, member_perms[i].o)) continue;
+		if (!member_perms[i]) {
+			member_perms[i] = {o: og.permissionInfo[genid].allowedOt[dim_id][i], d: 0, w: 0, r: 0};
+			og.addPermissionsForMember(genid, member_id, perms[i]);
+		}
+		
+		member_perms[i].d = (level == 3);
+		member_perms[i].w = (level >= 2);
+		member_perms[i].r = (level >= 1);
+		member_perms[i].modified = true;
+
+		og.ogSetCheckedValue(document.getElementsByName(genid + "rg_" + dim_id + "_" + member_perms[i].o), level);
+
+		if (member_perms[i].r) {
+			module_check = document.getElementById(genid + 'mod_perm['+member_perms[i].o+']');
+			if(module_check && !module_check.checked) module_check.checked = true; 
+		}
+	}
+
+	og.markMemberPermissionModified(genid, dim_id, member_id);
+	
+	//Update the 'All' checkbox if all permissions are set
+	var chk = document.getElementById(genid + dim_id + 'pAll');
+	if (chk)
+		chk.checked = level == 3;
+}
+
+//Action to execute when the 'All' checkbox is checked or unchecked
+og.ogPermAllChecked = function(genid, dim_id, value){
+	var level = value ? 3 : 0;
+	og.ogPermSetLevel(genid, dim_id, level);
+}
+
+//Applies the current member permission settings to all submembers
+og.ogPermApplyToSubmembers = function(genid, dim_id, from_root_node){
+	var member_id = og.permissionInfo[genid].selectedMember;
+	var member_perms = og.getPermissionsForMember(genid, member_id);
+	
+	var tree = Ext.getCmp(genid + '-member-chooser-panel-' + dim_id + '-tree');
+	if (from_root_node) {
+		var node = tree.getRootNode();
+	} else {
+		var node = tree.getNodeById(member_id);
+	}
+	if (!node) return;
+	var ids = og.ogPermGetSubMemberIdsFromNode(node);
+
+	for (var i=0; i<ids.length; i++) {
+		//var old_member_perms = og.getPermissionsForMember(genid, ids[i]);
+		og.deletePermissionsForMember(genid, ids[i]);
+		
+		for (var j=0; j<member_perms.length; j++) {
+			if (!member_perms[j]) {
+				member_perms[j] = {o: og.permissionInfo[genid].allowedOt[dim_id][j].o, d: 0, w: 0, r: 0};
+				og.addPermissionsForMember(genid, member_id, member_perms[j]);
+			}
+			var radio = Ext.get(genid + 'rg_3_' + dim_id + '_' + member_perms[j].o);
+			
+		//	if (!og.canEditPermissionObjType(genid, ids[i], member_perms[j].o)) {
+		//		var perm = {o: member_perms[j].o, d: 0, w: 0, r: 0};
+		//	} else {
+				var perm = {o: member_perms[j].o, d: member_perms[j].d, w: member_perms[j].w, r: member_perms[j].r, modified:true};
+		//	}
+			og.addPermissionsForMember(genid, ids[i], perm);
+			if (member_perms[j].r) {
+				module_check = document.getElementById(genid + 'mod_perm['+member_perms[j].o+']');
+				if(module_check && !module_check.checked) module_check.checked = true; 
+			}
+		}
+		og.markMemberPermissionModified(genid, dim_id, ids[i]);
+	}
+}
+
+//Applies the current member permission settings to all dimension members
+og.ogPermApplyToAllMembers = function(genid, dim_id){
+	og.ogPermApplyToSubmembers(genid, dim_id, true);
+}
+
+og.ogPermGetSubMemberIdsFromNode = function(node){
+	var result = new Array();
+	if (node && node.firstChild){
+		var children = node.childNodes;
+		for (var i = 0; i < children.length; i++){
+			result[result.length] = children[i].id;
+			result = result.concat(og.ogPermGetSubMemberIdsFromNode(children[i]));
+		}
+	}
+	return result;
+}
+
+og.markMemberPermissionModified = function(genid, dim_id, member_id) {
+	var tree = Ext.getCmp(genid + '-member-chooser-panel-' + dim_id + '-tree');
+	var node = tree.getNodeById(member_id);
+	node.getUI().addClass('tree-node-modified');
+}
+
+//Sets the permission information to send inside a hidden field. 
+//The id of the hidden field must be of the form: <genid> + 'hfPermsSend'
 og.ogPermPrepareSendData = function(genid){
 	var result = new Array();
-	var permissions = permissionsList[genid];
-	var i;
+	var permissions = og.permissionInfo[genid].permissions;
 	for (i in permissions){
-		if (permissions[i].isModified)
-			result[result.length] = {'wsid':permissions[i].wsid, 'pr':permissions[i].pr, 'pc':permissions[i].pc};
+		for (var j = 0; j < permissions[i].length; j++){
+			var p = permissions[i][j];
+			if (p && p.modified) {
+				result[result.length] = {'m':i, 'o':p.o, 'd':p.d, 'w':p.w, 'r':p.r};
+			}
+		}
 	}
 	
 	var hf = document.getElementById(genid + 'hfPermsSend');
@@ -138,226 +265,24 @@ og.ogPermPrepareSendData = function(genid){
 		
 	return true;
 }
- 
- 
-//-------------------------------------------------- ACTIONS
 
-//	Applies the current workspace permission settings to all subworkspaces
-og.ogPermApplyToSubworkspaces = function(genid){
-	var ws = og.ogPermGetSelectedWs(genid);
-	var permission = permissionsList[genid][ws.id];
-	if (!permission){
-		permission = new og.ogPermission(ws.id, [0,0,0,0,0,0,0,0,0], [0,0]);
-		permissionsList[genid][ws.id] = permission;
-	}
-	var tree = Ext.getCmp('workspace-chooser' + genid);
-	var node = tree.getNodeById(tree.nodeId(ws.id));
-	var ids = og.ogPermGetSubWsIdsFromNode(node);
-	
-	// holds the nodes that that were expanded once, to avoid expanding again the same node.
-	// 1 expansion per node is needed to fix a view issue when checking collapsed child nodes.
-	var already_expanded_once = []; 
-	
-	var i;
-	var hasPerm = permission.hasAnyPermission();
-	for (i in ids){
-		if (typeof(ids[i]) == 'number'){
-		 	var permissionCopy = permission.clone();
-			permissionCopy.wsid = ids[i];
-		 	permissionCopy.isModified = true;
-		 	permissionsList[genid][ids[i]] = permissionCopy;
-		 	
-		 	//update the treenode 'checked' attribute
-		 	var node2 = tree.getNodeById(tree.nodeId(ids[i]));
-			if (node2){
-			
-				var parent_expanded = false;
-				for (i=0; i<already_expanded_once.length && !parent_expanded; i++)
-					parent_expanded = already_expanded_once[i] == node2.ws.p;
-				// if parent was expanded before then dont do anything, otherwise expand it and add it to 'once expanded nodes' array.
-				if (!parent_expanded) {
-					var parent = tree.getNodeById(tree.nodeId(node2.ws.p));
-					if (parent && !parent.expanded) {
-						parent.expand();
-						parent.collapse();
-					}
-					already_expanded_once[already_expanded_once.length] = node2.ws.p;
-				}
-				
-				node2.suspendEvents();
-				node2.ui.toggleCheck(hasPerm);
-				node2.attributes.checked = true;
-				node2.resumeEvents();
+og.removeAllPermissionsForObjType = function(genid, obj_type) {
+	for (member_id in og.permissionInfo[genid].permissions) {
+		for (var i=0; i<og.permissionInfo[genid].permissions[member_id].length; i++) {
+			var perm = og.permissionInfo[genid].permissions[member_id][i];
+			if (perm.o == obj_type) {
+				perm.r = 0;
+				perm.w = 0;
+				perm.d = 0;
+				break;
 			}
 		}
 	}
-}
-
-
-//	Action to execute when the value of an element of the displayed permission changes
-og.ogPermValueChanged = function(genid){
-	var ws = og.ogPermGetSelectedWs(genid);
-	var permission = permissionsList[genid][ws.id];
-	if (!permission){
-		permission = new og.ogPermission(ws.id, [0,0,0,0,0,0,0,0,0], [0,0]);
-		permissionsList[genid][ws.id] = permission;
+	for (var i=0; i<og.permissionDimensions.length; i++) {
+		var radio = document.getElementsByName(genid + "rg_" + og.permissionDimensions[i] + "_" + obj_type)
+		if (radio) og.ogSetCheckedValue(radio, 0);
 	}
-	og.ogSavePermissions(genid,permission);
-	
-	//Update the tree checkbox if there are any permissions
-	var tree = Ext.getCmp('workspace-chooser' + genid);
-	var node = tree.getNodeById(tree.nodeId(ws.id));
-	if (node){
-		node.suspendEvents();
-		node.ui.toggleCheck(permission.hasAnyPermission());
-		node.resumeEvents();
-	}
-	
-	//Update the 'All' checkbox if all permissions are set
-	var chk = document.getElementById(genid + 'pAll');
-	if (chk)
-		chk.checked = permission.hasAllPermissions(genid);
 }
-
-
-//	Action to execute when the selected workspace changes
-og.ogPermSelectedWsChanged = function(genid){
-	var ws = og.ogPermGetSelectedWs(genid);
-	var permission = permissionsList[genid][ws.id];
-	if (!permission){
-		permission = new og.ogPermission(ws.id, [0,0,0,0,0,0,0,0,0], [0,0]);
-	}
-	og.ogPopulatePermissions(genid,permission);
-	
-	var titleDiv = document.getElementById(genid + 'project_name').innerHTML = ws.n;
-	document.getElementById(genid + 'project_permissions').style.display="block";
-}
-
-// allow up to read-only permission
-og.ogPermReadOnly = function(genid, setReadOnly) {
-	var x = setReadOnly ? 1 : 2;
-	Ext.getDom(genid + "hfPerms").maxPermValue = x;
-	
-	var ws = og.ogPermGetSelectedWs(genid);
-	var permission = permissionsList[genid][ws.id];
-	if (permission) {
-		og.ogPopulatePermissions(genid,permission);
-	}
-};
-
-og.ogPermMax = function(genid) {
-	var ws = og.ogPermGetSelectedWs(genid);
-	return Ext.getDom(genid + "hfPerms").maxPermValue || (ws.g ? 1 : 2);
-};
-
-//	Action to execute when the 'All' checkbox is checked or unchecked
-og.ogPermAllChecked = function(genid,value,wsid){
-	if (!wsid){
-		var ws = og.ogPermGetSelectedWs(genid);
-		wsid = ws.id;
-	}
-	var permission;
-	if (value) {
-		var x = og.ogPermMax(genid);
-		permission = new og.ogPermission(wsid, [x,x,x,x,2,x,x,x,x], [1,1]);
-	} else {
-		permission = new og.ogPermission(wsid, [0,0,0,0,0,0,0,0,0], [0,0]);
-	}
-	
-	permission.isModified = true;
-	permissionsList[genid][wsid] = permission;
-	
-	var ws = og.ogPermGetSelectedWs(genid);
-	if (ws.id == wsid)
-		og.ogPopulatePermissions(genid,permission);
-		
-	var tree = Ext.getCmp('workspace-chooser' + genid);
-	var node = tree.getNodeById(tree.nodeId(wsid));
-	node.suspendEvents();
-	node.ui.toggleCheck(value);
-	node.resumeEvents();
-}
-
- 
-//-------------------------------------------------- UTILITIES
-
-//	Returns the subworkspace ids from a given tree node
-og.ogPermGetSubWsIdsFromNode = function(node){
-	var result = new Array();
-	if (node && node.firstChild){
-		var children = node.childNodes;
-		for (var i = 0; i < children.length; i++){
-			result[result.length] = children[i].ws.id;
-			result = result.concat(og.ogPermGetSubWsIdsFromNode(children[i]));
-		}
-	}
-	return result;
-}
-
-
-//	Returns the selected workspace from the tree control
-og.ogPermGetSelectedWs = function(genid){
-	var tree = Ext.getCmp('workspace-chooser' + genid);
-	var ws = tree.getSelected();
-	return ws;
-}
-
-
-//	Sets all radio permissions to a specific level for a given workspace
-og.ogPermSetLevel = function(genid,level){
-	var ws = og.ogPermGetSelectedWs(genid);
-	var permission = permissionsList[genid][ws.id];
-	var x = Math.min(level, og.ogPermMax(genid));
-	if (!permission){
-		permission = new og.ogPermission(ws.id, [x,x,x,x,level,x,x,x,x], [0,0]);
-	} else {
-		permission.pr = [x,x,x,x,level,x,x,x,x];
-		permission.isModified = true;
-	}
-	
-	permissionsList[genid][ws.id] = permission;
-	og.ogPopulatePermissions(genid,permission);
-	
-	var tree = Ext.getCmp('workspace-chooser' + genid);
-	var node = tree.getNodeById(tree.nodeId(ws.id));
-	node.suspendEvents();
-	node.ui.toggleCheck(permission.hasAnyPermission());
-	node.resumeEvents();
-}
-
-
-//	Displays the permission values
-og.ogPopulatePermissions = function(genid, permission){
-	//Checkboxes
-	for (var i = 0; i < permission.pc.length; i++)
-		document.getElementById(genid + "chk_" + i).checked = (permission.pc[i] == 1);
-		
-	//Radio buttons
-	var x = og.ogPermMax(genid);
-	for (var i = 0; i < permission.pr.length; i++)
-		og.ogSetCheckedValue(document.getElementsByName(genid + "rg_" + i), i == 4 ? permission.pr[i] : Math.min(x, permission.pr[i]));
-	
-	Ext.get(genid + "project_permissions").select('.readWritePermission').setDisplayed(x >= 2);
-	
-	var chk = document.getElementById(genid + 'pAll');
-	if (chk) 
-		chk.checked = permission.hasAllPermissions(genid);
-}
-
-
-//	Gets the values from the displayed permission and saves them to the permission object.
-og.ogSavePermissions = function(genid,permission){
-	//Checkboxes
-	for (var i = 0; i < permission.pc.length; i++)
-		permission.pc[i] = document.getElementById(genid + "chk_" + i).checked ? 1 : 0;
-		
-	//Radio buttons
-	for (var i = 0; i < permission.pr.length; i++)
-		permission.pr[i] = og.ogGetCheckedValue(document.getElementsByName(genid + "rg_" + i));
-		
-	permission.isModified = true;
-}
-
 
 //	Returns the value of the radio button that is checked
 og.ogGetCheckedValue = function(radioObj) {
@@ -393,4 +318,179 @@ og.ogSetCheckedValue = function(radioObj, newValue) {
 			radioObj[i].checked = true;
 		}
 	}
+}
+
+
+/******************************************************
+ * Functions for user selector
+******************************************************/
+
+og.userPermissions = {};
+og.userPermissions.permissionInfo = [];
+
+og.userPermissions.loadPermissions = function (genid, selector_id) {
+	var hf = document.getElementById(genid + 'hfPerms');
+	if (hf && hf.value != ''){
+		var hf_ot = document.getElementById(genid + 'hfAllowedOT');
+
+		og.userPermissions.permissionInfo[genid] = {
+			permissions: Ext.util.JSON.decode(hf.value),
+			allowedOt: Ext.util.JSON.decode(hf_ot.value)		
+		}
+
+		if (selector_id) {
+			og.userPermissions.permissionInfo[genid].selectorId = selector_id;
+			for (pg_id in og.userPermissions.permissionInfo[genid].permissions) {
+				og.userPermissions.setCheckedPG(genid, pg_id);
+			}
+		}
+		
+		Ext.removeNode(hf);
+		Ext.removeNode(hf_ot);
+	} else {
+		og.userPermissions.permissionInfo[genid] = {};
+	}
+}
+
+og.userPermissions.setCheckedPG = function(genid, pg_id) {
+	var selector = Ext.getCmp(genid + og.userPermissions.permissionInfo[genid].selectorId);
+	if (!selector) return;
+	var node = selector.getNodeById(selector.nodeId(pg_id));
+	if (node) {
+		node.ensureVisible();
+		node.suspendEvents();
+		var checked = og.userPermissions.hasAnyPermissions(genid, pg_id);
+		node.ui.toggleCheck(checked);
+		node.user.checked = checked;
+		node.resumeEvents();
+	}
+}
+
+og.userPermissions.getPermissionsForPG = function(genid, pg_id) {
+	if (!og.userPermissions.permissionInfo[genid].permissions[pg_id]) {
+		og.userPermissions.permissionInfo[genid].permissions[pg_id] = [];
+	}
+	return og.userPermissions.permissionInfo[genid].permissions[pg_id];
+}
+
+og.userPermissions.loadPGPermissions = function(genid, pg_id) {
+	var allowed_ot = og.userPermissions.permissionInfo[genid].allowedOt;
+	var permissions = og.userPermissions.getPermissionsForPG(genid, pg_id);
+	
+	for (var i=0; i < allowed_ot.length; i++) {
+		var val = 0;
+		var found = false;
+		for (var j=0; j<permissions.length; j++) {
+			var perm = permissions[j];
+			if (perm.o == allowed_ot[i]) {
+				val = perm.w == 1 && perm.d == 1 ? 3 : (perm.w == 1 ? 2 : (perm.r ? 1 : 0));
+				found = true;
+				break;
+			}
+		}
+		if (!found) {
+			og.userPermissions.permissionInfo[genid].permissions[pg_id].push({o: allowed_ot[i], d:0 , w:0, r:0});
+		}
+		document.getElementById(genid + 'rg_' + val + '_' + allowed_ot[i]).checked = 1;
+	}
+
+	//Update the 'All' checkbox if all permissions are set
+	var chk = document.getElementById(genid + 'pAll');
+	if (chk)
+		chk.checked = og.userPermissions.hasAllPermissions(genid, pg_id);
+}
+
+og.userPermissions.hasAllPermissions = function(genid, pg_id) {
+	var permissions = og.userPermissions.getPermissionsForPG(genid, pg_id);
+	for (var i=0; i<permissions.length; i++) {
+		if (!(permissions[i].d && permissions[i].w && permissions[i].r)) return false;
+	}
+	return true;
+}
+
+og.userPermissions.hasAnyPermissions = function(genid, pg_id) {
+	var permissions = og.userPermissions.getPermissionsForPG(genid, pg_id);
+	for (var i=0; i<permissions.length; i++) {
+		if (permissions[i].d || permissions[i].w || permissions[i].r) return true;
+	}
+	return false;
+}
+
+//Sets all radio permissions to a specific level for a given member
+og.userPermissions.ogPermSetLevel = function(genid, level){
+	var pg_id = og.userPermissions.permissionInfo[genid].selectedPG;
+	var permissions = og.userPermissions.getPermissionsForPG(genid, pg_id);
+
+	for (var i=0; i<permissions.length; i++) {
+		
+		permissions[i].d = (level == 3);
+		permissions[i].w = (level >= 2);
+		permissions[i].r = (level >= 1);
+		permissions[i].modified = true;
+
+		og.ogSetCheckedValue(document.getElementsByName(genid + "rg_" + permissions[i].o), level);
+	}
+
+	og.userPermissions.setCheckedPG(genid, pg_id);
+	
+	//Update the 'All' checkbox if all permissions are set
+	var chk = document.getElementById(genid + 'pAll');
+	if (chk)
+		chk.checked = level == 3;
+}
+
+//Action to execute when the value of an element of the displayed permission changes
+og.userPermissions.ogPermValueChanged = function(genid, obj_type){
+	var pg_id = og.userPermissions.permissionInfo[genid].selectedPG;
+	var permissions = og.userPermissions.getPermissionsForPG(genid, pg_id);
+
+	var perm = null;
+	for (var i=0; i<permissions.length; i++) {
+		var tmp = permissions[i];
+		if (tmp.o == obj_type) {
+			perm = tmp;
+			break;
+		}
+	}
+	if (perm == null) return;
+		
+	var value = og.ogGetCheckedValue(document.getElementsByName(genid + "rg_" + obj_type));
+
+	perm.modified = true;
+	perm.d = (value == 3);
+	perm.w = (value >= 2);
+	perm.r = (value >= 1);
+
+	og.userPermissions.setCheckedPG(genid, pg_id);
+
+	//Update the 'All' checkbox if all permissions are set
+	var chk = document.getElementById(genid + 'pAll');
+	if (chk)
+		chk.checked = og.userPermissions.hasAllPermissions(genid, pg_id);
+}
+
+//Action to execute when the 'All' checkbox is checked or unchecked
+og.userPermissions.ogPermAllChecked = function(genid, value){
+	var level = value ? 3 : 0;
+	og.userPermissions.ogPermSetLevel(genid, level);
+}
+
+og.userPermissions.ogPermPrepareSendData = function(genid){
+	var result = new Array();
+	var permissions = og.userPermissions.permissionInfo[genid].permissions;
+	for (i in permissions){
+		for (var j = 0; j < permissions[i].length; j++){
+			var p = permissions[i][j];
+			if (p && p.modified) {
+				result[result.length] = {'pg':i, 'o':p.o, 'd':p.d, 'w':p.w, 'r':p.r};
+			}
+		}
+	}
+	
+	var hf = document.getElementById(genid + 'hfPermsSend');
+	if (hf) {
+		hf.value = Ext.util.JSON.encode(result);
+	}
+
+	return true;
 }

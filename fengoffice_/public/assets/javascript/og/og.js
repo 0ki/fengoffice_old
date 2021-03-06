@@ -24,12 +24,13 @@ og.msg =  function(title, text, timeout, classname, sound) {
 
 	var click_to_remove_msg = ''; // only show this message if message doesn't vanish by itself
 	if (timeout == 0)
-		click_to_remove_msg = '<div style="text-align:center; font-size:small; font-style:italic"><a>' + lang('click to remove') + '</a></div>';
+		click_to_remove_msg = '<div class="x-clear"></div><div class="click-to-remove">'+ lang('close') + ' X</div><div class="x-clear"></div>';
+	
 
 	var box = ['<div class="' + classname + '" title="' + lang('click to remove') + '">',
 			'<div class="og-box-tl"><div class="og-box-tr"><div class="og-box-tc"></div></div></div>',
 			'<div class="og-box-ml"><div class="og-box-mr"><div class="og-box-mc"><h3>{0}:</h3><p>{1}</p>',
-			//click_to_remove_msg,
+			click_to_remove_msg, 
 			'</div></div></div>',
 			'<input type="hidden" value="' + new Date().getTime() + '" />',
 			'<div class="og-box-bl"><div class="og-box-br"><div class="og-box-bc"></div></div></div>',
@@ -54,15 +55,8 @@ og.msg =  function(title, text, timeout, classname, sound) {
 		m.slideIn('t');
 	}
 	if (sound) {
-		var sound_timeout = 0;
-		if (!og.systemSound) {
-			og.systemSound = new Sound();
-			sound_timeout = 1000;
-		}
-		setTimeout(function() {
-			og.systemSound.loadSound('public/assets/sounds/' + sound + '.mp3', true);
-			og.systemSound.start(0);
-		}, sound_timeout);
+		og.systemSound.loadSound('public/assets/sounds/' + sound + '.mp3', true);
+		og.systemSound.start(0);
 	}
 };
 
@@ -106,7 +100,7 @@ og.err = function(text) {
 	for (var i=0; i < errors.length - maxErrors + 1; i++) {
 		Ext.fly(errors[i]).remove();
 	}
-	og.msg(lang("error"), text, 0, "err");
+	og.msg(lang("information"), text, 0, "err");
 };
 
 og.clearErrors = function(timeout) {
@@ -130,7 +124,7 @@ og.hideAndShow = function(itemToHide, itemToDisplay){
 	Ext.get(itemToDisplay).setDisplayed('block');
 };
 
-og.hideAndShowByClass = function(itemToHide, classToDisplay, containerItemName){
+og.hideAndShowByClass = function(itemToHide, classToDisplay, containerItemName, count){
 	Ext.get(itemToHide).setDisplayed('none');
 	
 	var list;
@@ -143,8 +137,13 @@ og.hideAndShowByClass = function(itemToHide, classToDisplay, containerItemName){
 	
 	for(var i = 0; i < list.length; i++){
 		var obj = list[i];
-		if (obj.className != '' && obj.className.indexOf(classToDisplay) >= 0)
+		if (obj.className != '' && obj.className.indexOf(classToDisplay) >= 0) {
 			obj.style.display = '';
+			if (count) {
+				count--;
+				if (count == 0) break;
+			}
+		}
 	}
 };
 
@@ -184,16 +183,29 @@ og.timeslotTypeSelectChange = function(select, genid) {
 }
 
 og.switchToOverview = function(){
-	var opanel = Ext.getCmp('overview-panel');
+	/*var opanel = Ext.getCmp('overview-panel');
 	opanel.defaultContent = {type: 'url', data: og.getUrl('dashboard', 'init_overview')};
-	opanel.load(opanel.defaultContent);
+	opanel.load(opanel.defaultContent);*/
 };
 
 og.switchToDashboard = function(){
-	var opanel = Ext.getCmp('overview-panel');
+	/*var opanel = Ext.getCmp('overview-panel');
 	opanel.defaultContent = {type: "url", data: og.getUrl('dashboard','index')};
-	opanel.load(opanel.defaultContent);
+	opanel.load(opanel.defaultContent);*/
 };
+
+og.customDashboard = function (controller,action,params, reload) {
+	if (!params) params = {};
+	if (!controller) return false; 
+	if (!action) action = 'init'  ;
+	var opanel = Ext.getCmp('overview-panel');
+	var new_data = og.getUrl(controller,action, params) ;
+	var content = {type: "url", data: new_data};
+	opanel.defaultContent = content ;
+	if (reload) {
+		opanel.load(content);
+	}
+}
 
 og.loading = function() {
 	if (!this.loadingCt) {
@@ -326,6 +338,7 @@ og.toggleAndHide = function(id, btn) {
 
 
 og.getUrl = function(controller, action, args) {
+
 	var url = og.getHostName() + "/index.php";
 	url += "?c=" + controller;
 	url += "&a=" + action;
@@ -357,19 +370,13 @@ og.filesizeFormat = function(fs) {
 
 
 og.makeAjaxUrl = function(url, params) {
+	//og.msg("","Make ajax url"+url , 15);
+	//alert(params.toSource()) ;
 	var q = url.indexOf('?');
 	var n = url.indexOf('#');
 	var ap = "";
-	if (url.indexOf("active_project=") < 0) {
-		if (Ext.getCmp('workspace-panel')) {
-			var ap = "active_project=" + Ext.getCmp('workspace-panel').getActiveWorkspace().id;
-		}
-	}
-	var at = "";
-	if (url.indexOf("active_tag=") < 0) {
-		if (Ext.getCmp('tag-panel') && Ext.getCmp('tag-panel').getSelectedTag() != '') {
-			var at = "&active_tag=" + encodeURIComponent(Ext.getCmp('tag-panel').getSelectedTag());
-		}
+	if ( url.indexOf("context") < 0 && (params && !params.context) ) {
+		var ap = "context=" + og.contextManager.plainContext();
 	}
 	if (url.indexOf("ajax=true") < 0) {
 		var aj = "&ajax=true";
@@ -391,12 +398,12 @@ og.makeAjaxUrl = function(url, params) {
 	
 	if (q < 0) {
 		if (n < 0) {
-			return url + "?" + ap + aj + at + p;
+			return url + "?" + ap + aj +  p;
 		} else {
-			return url.substring(0, n) + "?" + ap + aj + at + (url.substring(n) != ''? "&":"") + url.substring(n) + p;
+			return url.substring(0, n) + "?" + ap + aj + (url.substring(n) != ''? "&":"") + url.substring(n) + p;
 		}
 	} else {
-		return url.substring(0, q + 1) + ap + aj + at + (url.substring(q + 1) != ''? "&":"") + url.substring(q + 1) + p;
+		return url.substring(0, q + 1) + ap + aj + (url.substring(q + 1) != ''? "&":"") + url.substring(q + 1) + p;
 	}
 };
 
@@ -465,14 +472,15 @@ og.captureLinks = function(id, caller) {
 				} catch (e) {
 				}
 			}
-			if (p || typeof p == 'undefined') {
-				og.openLink(this.href, {caller: this.target})
+			if (p || typeof p == 'undefined' ) {
+				og.openLink(this.href, {caller: this.target}) ;
 			}
 			return false;
 		}
 	};
 	forms = element.getElementsByTagName("form");
 	for (var i=0; i < forms.length; i++) {
+		
 		var form = forms[i];
 		if (form.target && form.target[0] == '_') continue;
 		if (caller && !form.target) {
@@ -496,6 +504,8 @@ og.log = function(msg) {
 };
 
 og.openLink = function(url, options) {
+	if (url.indexOf("c=access&a=index") != -1) return ;
+	if (url.indexOf("c=dashborad&a=activity_feed") != -1) return ;
 	if (!options) options = {};
 	if (typeof options.caller == "object") {
 		options.caller = options.caller.id;
@@ -507,6 +517,7 @@ og.openLink = function(url, options) {
 			if (active) options.caller = active.id;
 		}
 	}
+    
 	if (!options.hideLoading && !options.silent) {
 		og.loading();
 	}
@@ -536,6 +547,9 @@ og.openLink = function(url, options) {
 			if (!options.options.hideLoading && !options.silent) {
 				og.hideLoading();
 			}
+            
+           og.eventManager.fireEvent('openLink callback', response);
+            
 			if (success) {
 				UnTip(); //fixes ws tooltip is displayed some times when changing page
 				if (og)
@@ -984,7 +998,6 @@ og.getGooPlayerPanel = function(callback) {
 	if (gppanel) {
 		callback();
 	} else {
-		if (!og.musicSound) og.musicSound = new Sound();
 		og.loadScripts([
 				og.getScriptUrl('og/ObjectPicker.js'),
 				og.getScriptUrl('og/GooPlayer.js')
@@ -1083,15 +1096,16 @@ og.displayFileContents = function(genid, isFull){
 	document.getElementById(genid + 'file_display').innerHTML = text;
 };
 
-og.dashExpand = function(genid,widget_name){
-	var widget = document.getElementById(genid + 'widget');
+og.dashExpand = function(genid){
+	var widget = Ext.get(genid + '_widget_body');
 	if (widget){
-		var setExpanded = widget.style.display == 'none';
-		widget.style.display = (setExpanded) ? 'block':'none';
+		var setExpanded = widget.dom.style.display == 'none';
+		
+		if (setExpanded) widget.slideIn('t', {useDisplay:true, duration:.3});
+		else widget.slideOut('t', {useDisplay:true, duration:.3});
+		
 		var expander = document.getElementById(genid + 'expander');
 		expander.className = (setExpanded) ? "dash-expander ico-dash-expanded":"dash-expander ico-dash-collapsed";
-		var url = og.getUrl('account', 'update_user_preference', {name: widget_name + '_widget_expanded', value:setExpanded?1:0});
-		og.openLink(url,{hideLoading:true});
 	}
 };
 
@@ -1322,20 +1336,16 @@ og.rollOut = function(div,isCompany)
 };
 og.checkUser = function (div){
 	var hiddy = document.getElementById(div.id.substring(3));
-	var check = document.getElementById(div.id+'check');
 	if (hiddy) {
 		if (hiddy.checked) {
 			hiddy.checked = false;
 			div.className = "container-div user-name";
-			check.style.display = "none";
 		} else {
 			hiddy.checked = true;
 			div.className = "container-div checked-user";
-			check.style.display = "block";
 		}
 	}
 };
-
 og.subscribeCompany = function (div){
 		var isChecked = Ext.fly(div).hasClass("checked");
 		var hids = div.parentNode.getElementsByTagName("input");
@@ -1445,17 +1455,17 @@ og.confirmMoveToAllWs = function(manager, text) {
 	og.ExtendedDialog.show(config);
 }
 
-og.moveToWsOrMantainWs = function(manager, ws) {
+og.moveToWsOrMantainMembers = function(manager, ws) {
 	var man = Ext.getCmp(manager);
 	
 	var moveAction = function() {
 		if (og.ExtendedDialog.dialog) og.ExtendedDialog.dialog.destroy();
-		man.moveObjectsToWsOrMantainWs(0, ws);
+		man.moveObjectsToWsOrMantainMembers(0, ws);
 //		man.getSelectionModel().clearSelections();
 	};
 	var mantainAction = function() {
 		if (og.ExtendedDialog.dialog) og.ExtendedDialog.dialog.destroy();
-		man.moveObjectsToWsOrMantainWs(1, ws);
+		man.moveObjectsToWsOrMantainMembers(1, ws);
 //		man.getSelectionModel().clearSelections();
 	};
 	
@@ -1567,10 +1577,11 @@ og.isFlashSupported = function() {
 	return navigator.mimeTypes["application/x-shockwave-flash"] ? true : false;
 };
 
-og.showHide = function(itemId) {
+og.showHide = function(itemId, mode) {
+	if (!mode || (mode != 'block' && mode != 'inline')) mode = 'block';
 	var el = document.getElementById(itemId);
 	if (el) {
-		if (el.style.display == 'none') el.style.display = 'block';
+		if (el.style.display == 'none') el.style.display = mode;
 		else el.style.display = 'none';
 	}
 };
@@ -1582,19 +1593,44 @@ og.calculate_time_zone = function(server) {
 	return diff / 2;
 };
 
-og.redrawLinkedObjects = function(id, manager) {
+og.redrawLinkedObjects = function(id) {
 	var div = Ext.get("linked_objects_in_prop_panel");
 	if (div) {
-		div.load({url: og.getUrl('object', 'redraw_linked_object_list', {id:id, man:manager}), scripts: true});
+		div.load({url: og.getUrl('object', 'redraw_linked_object_list', {id:id}), scripts: true});
 	}
 }
 
-og.redrawSubscribers = function(id, manager, genid) {
+og.redrawSubscribers = function(id, genid) {
 	var div = Ext.get(genid + "subscribers_in_prop_panel");
 	if (div) {
-		div.load({url: og.getUrl('object', 'redraw_subscribers_list', {id:id, man:manager}), scripts: true});
+		div.load({url: og.getUrl('object', 'redraw_subscribers_list', {id:id}), scripts: true});
 	}
 }
+
+og.show_hide_subscribers_list = function(id, genid) {
+	og.openLink(og.getUrl('object', 'add_subscribers_list', {obj_id: id, genid: genid}), {
+		preventPanelLoad:true,
+		onSuccess: function(data) {
+
+			og.ExtendedDialog.show({
+        		html: data.current.data,
+        		height: 450,
+        		width: 685,
+        		ok_fn: function() {
+        			formy = document.getElementById(genid + "add-User-Form");
+        			var params = Ext.Ajax.serializeForm(formy);
+        			var options = {callback: function(data, success){
+            			og.redrawSubscribers(id, genid);
+        			}}
+    				options[formy.method.toLowerCase()] = params;
+    				og.openLink(formy.getAttribute('action'), options);
+    				og.ExtendedDialog.hide();        			
+    			}        			
+        	});
+        	return;
+		}
+	});
+};
 
 /*
  * Adds the listener to manage concurrency while editing objects.
@@ -1798,7 +1834,216 @@ og.getHostName = function() {
 	return og.hostName;
 };
 
+og.handleMemberChooserSubmit = function(genid, objectType, preHfId) {
+	if (!preHfId) preHfId = "";
+	var panels = Ext.getCmp(genid + "-member-chooser-panel-" + objectType);
+	if (panels) {
+		var memberChoosers = panels.items ;
+		var members = [] ;
+		if ( memberChoosers ) {
+			memberChoosers.each(function(item, index, length) {
+				var checked = item.getChecked("id") ;
+				for (var j = 0 ; j < checked.length ; j++ ) {
+					members.push(checked[j]) ;
+				}
+			}) ;
+		}
+		document.getElementById(genid + preHfId + "members").value = Ext.util.JSON.encode(members) ;
+	}
+	return true;
+}
+
 og.getSandboxName = function() {
 	og.sandboxName = og.sandboxName ? og.sandboxName.replace(/\/+$/, "") : og.getHostName();
 	return og.sandboxName;
 };
+
+og.formatPopupMemberChooserSelectedValues = function(genid, selected) {
+	var html = '';
+	var title = '';
+	var memberChoosers = Ext.getCmp("menu-panel").items;
+	for (i=0; i<selected.length; i++) {
+		if ( memberChoosers ) {
+			memberChoosers.each(function(item, index, length) {
+				var node = item.getNodeById(selected[i]);
+				if (node) {
+					title += node.text;
+					if (i < selected.length - 1) title += ',';
+					title += ' ';
+				}
+			});
+		}
+	}
+	html = title.length > 40 ? title.substring(0, 37) + "..." : title;
+	var ico = Ext.get(genid + 'popup_ms_icon');
+	if (ico) {
+		ico.dom.className = 'ico-edit';
+		ico.dom.innerHTML = lang('edit');
+	}
+	
+	return {html:html, title:title};
+}
+
+og.popupMemberChooserHtml = function(genid, obj_type, hf_members_id, selected, no_label) {
+	var ico_cls = 'db-ico ico-add';
+	var action = lang('add');
+	var to_show = {html:'<span class="desc">' + lang('none selected') + '</span>', title:''};
+	if (selected) {
+		to_show = og.formatPopupMemberChooserSelectedValues(genid, selected);
+		ico_cls = 'db-ico ico-edit';
+		action = lang('edit');
+	}
+	var onclick_ev = 'og.showPopupMemberChooser(\''+genid+'\', \''+obj_type+'\', \''+hf_members_id+'\', \''+selected+'\');';
+	var html = '';
+	if (!no_label)
+		html += '<div style="padding-top:5px;"><label style="font-size:100%;display:inline;margin-right:30px;">'+lang('context')+':&nbsp;</label>';
+	html += '<span id="'+genid+'popup_member_selector" onclick="'+ onclick_ev +'" style="cursor:pointer;" title="' + to_show.title + '">' + to_show.html + '</span>';
+	html += '<span id="'+genid+'popup_ms_icon" class="'+ico_cls+'" onclick="'+ onclick_ev +'" style="cursor:pointer; padding:5px 0 0 20px; margin-left:5px;">' + action + '</span>'
+	html += '</div>';
+	return html;
+};
+
+og.showPopupMemberChooser = function(genid, obj_type, hf_members_id, selected) {
+	og.openLink(og.getUrl('object', 'popup_member_chooser', {obj_type: obj_type, genid: genid, selected: selected}), {
+		preventPanelLoad:true,
+		onSuccess: function(data) {
+			var dialog = og.ExtendedDialog.show({
+				html: data.current.data,
+				title: lang('select context members'),
+				iconCls: 'ico-workspace',
+				resizable: true,
+				minHeight: 273,
+				minWidth: 480,
+				height: 273,
+				width: 480,
+				ok_fn: function() {
+					og.handleMemberChooserSubmit(genid, obj_type);	
+					var sel_members = Ext.get(genid + "members").getValue();
+					var hf = Ext.get(genid + hf_members_id);
+					hf.dom.value = sel_members;
+					
+					og.ExtendedDialog.hide();
+					if (sel_members != '') {
+						var to_show = og.formatPopupMemberChooserSelectedValues(genid, Ext.util.JSON.decode(sel_members));
+						var sel = Ext.get(genid + 'popup_member_selector');
+						sel.dom.innerHTML = to_show.html;
+						sel.dom.title = to_show.title;
+					}
+				}        			
+			});
+
+			return;
+		}
+	});
+}
+
+og.drawComboBox = function(config) {
+	if (!config) config = {};
+	if (!config.render_to) config.render_to = '';
+	if (!config.id) config.id = Ext.id();
+	if (!config.name) config.name = Ext.id();
+	if (!config.selected) config.selected = 0;
+	if (!config.store) config.store = [];
+	if (!config.empty_text) config.empty_text = '';
+	if (!config.tab_index) config.tab_index = '500';
+	if (!config.width) config.width = 200;
+	
+	var combo = new Ext.form.ComboBox({
+		renderTo: config.render_to,
+		name: config.name,
+		id: config.id,
+		value: config.selected,
+		store: new Ext.data.SimpleStore({
+	        fields: ['value', 'text'],
+	        data : config.store
+	    }),
+	    emptyText: config.empty_text,
+	    width: config.width,
+        listWidth: config.width,
+        tabIndex: config.tab_index,
+        displayField: 'text',
+        typeAhead: true,
+        mode: 'local',
+        triggerAction: 'all',
+        selectOnFocus: true,
+        valueField: 'value',
+        valueNotFoundText: '',
+        disabled: config.disabled == true,
+        hidden: config.hidden == true
+	});
+	
+	combo.setWidth(config.width);
+	return combo;
+}
+
+
+og.drawDateMenuPicker = function(config) {
+	var datemenu = new Ext.menu.DateMenu({
+	    id: config.id ? config.id : Ext.id(),
+	    format: og.preferences['date_format'],
+	    startDay: og.preferences['start_monday'],
+		altFormats: lang('date format alternatives'),
+		listeners: config.listeners,
+		items: config.items
+	});
+	
+	Ext.apply(datemenu.picker, { 
+		okText: lang('ok'),
+		cancelText: lang('cancel'),
+		monthNames: [lang('month 1'), lang('month 2'), lang('month 3'), lang('month 4'), lang('month 5'), lang('month 6'), lang('month 7'), lang('month 8'), lang('month 9'), lang('month 10'), lang('month 11'), lang('month 12')],
+		dayNames:[lang('sunday'), lang('monday'), lang('tuesday'), lang('wednesday'), lang('thursday'), lang('friday'), lang('saturday')],
+		monthYearText: '',
+		nextText: lang('next month'),
+		prevText: lang('prev month'),
+		todayText: lang('today'),
+		todayTip: lang('today')
+	});
+	
+	return datemenu;
+}
+
+og.quickForm = function (config) {
+	if (!config) return false ;
+	switch (config.type) {
+		case "member":
+			var d = config.dimensionId ;
+			var tree = Ext.getCmp("dimension-panel-"+d);
+			if (tree) {
+				var selected = tree.getSelectionModel().getSelectedNode();
+				if ( selected.getDepth() == 0  ) {
+					var parent = 0 ; 
+				}else{
+					var parent = selected.id ;
+				}
+				
+				var e = $("#"+config.elId) ;
+				if (d) {
+					$("#quick-form .form-container").html('').load(og.getUrl('member', 'quick_add_form',{dimension_id: config.dimensionId, parent_member_id: parent}),function(){
+						$(this).parent().css(e.offset()).slideDown();
+						$("#member-name").focus();
+						return true ;
+					});
+					return false;
+				}
+			}
+			break;
+		default: 
+			break
+	}
+	return false ;
+}
+
+og.flash2img = function() {
+	$.each ( $('embed') , function(k,elem) {
+		var convert =  (typeof elem.get_img_binary == "function") ;
+		if ( convert ) {
+			var base64 = elem.get_img_binary();
+			if ( base64 ){  // Arbitrary min size to check if is image  
+				var image = document.createElement('img');
+				image.src = "data:image/jpg;base64,"+base64 ;
+				$(elem).replaceWith( image );
+			}
+		}
+	});
+
+}

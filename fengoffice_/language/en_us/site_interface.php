@@ -173,6 +173,7 @@ return array(
   	'contact information' => 'Contact Information',
     'first name' => 'First name',
   	'last name' => 'Last name',
+	'surname' => 'Surname',
   	'middle name' => 'Middle name',
   	'contact title' => 'Contact title',
   	'work information' => 'Work information',
@@ -349,6 +350,7 @@ return array(
   'new company' => 'New company',
   'add a new company' => 'Add a new company',
   'new workspace' => 'New workspace',
+  'new tag' => 'New tag',
   'new task list' => 'New task',
   'new event' => 'New event',
   'new webpage' => 'New weblink',
@@ -665,8 +667,7 @@ return array(
 
   'hide options' => 'Hide options',
 
-  //'personal workspace name' => '{0} Personal',
-  'personal workspace name' => '{0}\'s Workspace',
+  'personal workspace name' => '{0} Personal',
   'personal workspace description' => 'Personal workspace',
 
   'wiki help link' => 'http://fengoffice.com/web/wiki',
@@ -707,6 +708,26 @@ return array(
   'user type' => 'User type',
   'object subtypes' => 'Object subtypes',
   'add object subtype' => 'Add object subtype',
+  'view more' => 'View more',
+
+
+
+
+   // TAB MANAGER
+   'email tab' => 'Email',	
+   'calendar' => 'Calendar',	
+   'web pages' => 'Web Links',	
+
+
+	'previous tasks' => 'Previous tasks',
+	'add previous task' => 'Add previous task',
+	'previous tasks must be completed before completion of this task' => 'Previous tasks must be completed before the completion of this task',
+	'task depends on incomplete tasks' => 'This task has previous open tasks',
+	'this task has x previous open tasks' => 'This task has {0} previous open tasks',
+	'task dependency dnx' => 'The task dependency does not exists',
+	'success remove task dependency' => 'Task dependency has been successfully removed',
+	'success add task dependency' => 'Task dependency has been successfully added',
+
 ); // array
 
 ?>

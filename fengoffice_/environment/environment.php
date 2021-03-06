@@ -13,8 +13,10 @@ if(!defined('ENVIRONMENT_PATH')) define('ENVIRONMENT_PATH', dirname(__FILE__));
 //  include_once ENVIRONMENT_PATH . '/classes/Session.class.php'; // required to use manual session handling
 
 if(!ini_get('session.auto_start') || (strtolower(ini_get('session.auto_start')) == 'off')) {
-	//  		new Session(); // required to use manual session handling
-	session_start(); // Start the session
+	 
+	if ( !isset($_GET['avoid_session']) || (isset($_GET['avoid_session']) && !$_GET['avoid_session']) ){
+		session_start(); // Start the session
+	}
 }
 
 include_once ENVIRONMENT_PATH . '/classes/Env.class.php';

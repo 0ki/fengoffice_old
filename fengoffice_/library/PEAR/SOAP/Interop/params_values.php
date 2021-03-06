@@ -16,7 +16,7 @@
 // | Authors: Shane Caraveo <Shane@Caraveo.com>                           |
 // +----------------------------------------------------------------------+
 //
-// $Id: params_values.php,v 1.1 2010/01/22 18:09:24 acio Exp $
+// $Id: params_values.php 7 2010-01-22 18:14:51Z acio $
 //
 
 require_once 'SOAP/Value.php';

@@ -19,9 +19,9 @@ if (!$object->isNew()) {
 	?>
 		<tr class="subscriber<?php echo $counter % 2 ? 'even' : 'odd' ?>">
 		<td style="padding-left:1px;vertical-align:middle;width:22px">
-		<a class="internalLink" href="<?php echo logged_user()->getCardUrl() ?>">
+		<a class="internalLink" href="<?php echo logged_user()->getCardUserUrl() ?>">
 		<div class="db-ico unknown ico-user"></div>
-		</a></td><td><b><a class="internalLink" href="<?php echo logged_user()->getCardUrl() ?>">
+		</a></td><td><b><a class="internalLink" href="<?php echo logged_user()->getCardUserUrl() ?>">
 		<span><?php echo lang("you") ?></span> </a></b> <?php if (!$object->isTrashed()) {?>
 			(<a class="internalLink" href="#" onclick="if (confirm('<?php echo escape_single_quotes(lang("confirm unsubscribe")) ?>')) og.openLink('<?php echo $object->getUnsubscribeUrl() ?>');"><?php echo lang("unsubscribe from object") ?></a>)
 		<?php } ?></td></tr>
@@ -29,16 +29,16 @@ if (!$object->isNew()) {
 	<?php $subscribers = $object->getSubscribers();
 		if($subscribers){
 			foreach ($subscribers as $subscriber) {
-				if (!$subscriber instanceof User || $subscriber->getId() == logged_user()->getId() || !$object->canView($subscriber)) continue;
+				if (!$subscriber instanceof Contact || $subscriber->getId() == logged_user()->getId() || !$object->canView($subscriber)) continue;
 				$counter++;?>
 				<tr class="subscriber<?php echo $counter % 2 ? 'even' : 'odd' ?>">
 				<td style="padding-left:1px;vertical-align:middle;width:22px">
-				<a class="internalLink" href="<?php echo $subscriber->getCardUrl() ?>">
+				<a class="internalLink" href="<?php echo $subscriber->getCardUserUrl() ?>">
 				<div class="db-ico unknown ico-user"></div>
-				</a></td><td><b><a class="internalLink" href="<?php echo $subscriber->getCardUrl() ?>">
+				</a></td><td><b><a class="internalLink" href="<?php echo $subscriber->getCardUserUrl() ?>">
 				<span><?php echo clean($subscriber->getDisplayName()) ?></span> </a></b> </td></tr>
-			<?php 	} // foreach 
-		} 		?>
+	<?php 	} // foreach 
+		} ?>
 	</table>
 	</div>
 <?php } // if ?>

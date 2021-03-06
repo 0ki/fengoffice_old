@@ -71,9 +71,6 @@
 	'config option name ask_administration_autentification' => 'Authenticate administration',
     'config option desc ask_administration_autentification' => 'If "Yes" is chosen, a password authentication dialog will be displayed when accessing the administration panel',
   
-  	'config option name external_users_see_other_users' => 'Allow external users see other users', 
-  	'config option desc external_users_see_other_users' => "If 'Yes' is chosen, users that belong to other companies may see which users have permissions in the workspace they are standing at, as regular users do",
-  
   	'config option name enable_notes_module' => 'Enable Notes Module',
   	'config option name enable_email_module' => 'Enable Email Module',
   	'config option name enable_contacts_module' => 'Enable Contacts Module',
@@ -112,8 +109,7 @@
     'config option name smtp_secure_connection' => 'Use secure SMTP connection',
   	'config option name user_email_fetch_count' => 'Email fetch limit',
   	'config option desc user_email_fetch_count' => 'How many emails to fetch when a user clicks on the "Check mail accounts" button. Using a large value may cause timeout errors to the user. Use 0 for no limit. Note, this doesn\'t affect email fetching through cron.',
-	'config option name check_spam_in_subject' => 'Check email subjects for the text "**SPAM**"',
-	'config option desc check_spam_in_subject' => 'If "**SPAM**" is found in subject then the email is sent to the junk folder.',
+  	'config option name check_spam_in_subject' => 'Check spam in subject',
   
   	// Passwords
   	'config option name min_password_length' => 'Minimum password length',
@@ -141,12 +137,18 @@
   
  	'can edit company data' => 'Can edit owner company data',
   	'can manage security' => 'Can manage security',
+  	'can manage members' => 'Can manage members',
   	'can manage workspaces' => 'Can manage workspaces',
   	'can manage configuration' => 'Can manage configuration',
   	'can manage contacts' => 'Can manage all contacts',
   	'can manage reports' => 'Can manage reports',
   	'group users' => 'Group users',
-    
+  	'timeslot' => 'Time',
+  	'module permissions' => 'Module Permissions',
+  	'module permission uncheck warning' => 'Module Permission Uncheck Warning',
+  	
+  	'apply to all submembers' => 'Apply to all submembers',
+    'apply to all members' => 'Apply to all members',
   	
   	'user ws config category name dashboard' => 'Dashboard options',
   	'user ws config category name task panel' => 'Task options',
@@ -329,10 +331,103 @@
 	'user ws config option desc activity widget elements' => 'Number of items displayed in Activity widget.',
 	'user ws config option name mail_account_err_check_interval' => 'Email accounts error checking interval',
 	'user ws config option desc mail_account_err_check_interval' => 'Time between each verification at email accounts (0 to disable)',
-  
+  	
+  	//account
+  	//General
+  	
+  	'user config option name amount_objects_to_show' => 'Number of Linked Objects to show',
+  	'user config option desc amount_objects_to_show' => 'Sets the number of Linked Object\'s to be displayed on objects views' ,
+  	'user config option name autodetect_time_zone' => 'Autodetect time zone',
+  	'user config option desc autodetect_time_zone' => 'When this option is enabled, the user\'s timezone will be autodetected from browser.',
+  	'user config option name detect_mime_type_from_extension' => 'Detect mime type from extension',
+  	'user config option desc detect_mime_type_from_extension' => 'Enable this to detect file\'s mime type by its extension',
+  	'user config option name root_dimensions' => 'Name root dimensions',
+  	'user config option name show_context_help' => 'Show contextual help',
+  	'user config option desc show_context_help' => 'Select if you want to always view help, never view it, or view it until each box is closed.',
+  	'user config option name drag_drop_prompt' => 'Action to take on drag and drop to workspace',
+  	'user config option desc drag_drop_prompt' => 'Choose which action should be taken when dragging an object to a workspace.',
+  	'user config option name localization' => 'Localization',
+  	'user config option desc localization' => 'Labels and dates will be displayed according to this locale. Need to refresh for it to take effect.',
+  	'user config option name rememberGUIState' => 'Remember the user interface state',
+  	'user config option desc rememberGUIState' => 'This allows you to save the state of the graphical interface (size of panels, expanded/collapsed state, etc) for the next time that you log in. Warning: This feature is in BETA status.',
+  	'user config option name work_day_start_time' => 'Work day start time',
+  	'user config option desc work_day_start_time' => 'Specifies the time when work day starts',
+  	'user config option name time_format_use_24' => 'Use 24 hours format for time descriptions',
+  	'user config option desc time_format_use_24' => 'If enabled time descriptions will be shown as \'hh:mm\' from 00:00 to 23:59, if not hours will go from 1 to 12 using AM or PM.',
+  	'user config option name date_format' => 'Date format',
+  	'user config option desc date_format' => 'Template format to be applied to date values. d = day, m = month, y = year. You need to refresh in order to apply the changes.',
+  	'user config option name search_engine' => 'Search engine',
+  	'user config option desc search_engine' => 'Choose which search engine to use. "Full" will do a more exhaustive search but will take much longer than "Quick". "Full" is not recommended for heavily loaded installations.',
+  	'user config option name descriptive_date_format' => 'Descriptive date format' ,
+  	'user config option desc descriptive_date_format' => 'Template format to be applied to descriptive date values. Code explanations: d = Day number (2 digits with leading zeros), D = Day name (three letters), j = Day number, l = Complete day name, m = Month number (with leading zeros), M = Month name (three letters), n = Month number, F = Complete month name, Y = Year (4 digits), y = Year (2 digits). Refresh required.' ,
   	'search engine mysql like' => 'Full',
   	'search engine mysql match' => 'Quick',
   
+  	//Dasboard
+  	
+  	'user config option name show_two_weeks_calendar' => 'Show two weeks calendar',
+  	'user config option desc show_two_weeks_calendar' => 'Sets the calendar widget to display two weeks',
+  	'user config option name always show unread mail in dashboard' => 'Show unread mail in dashboard',
+  	'user config option desc always show unread mail in dashboard' => 'When NO is chosen emails from the active workspace will be shown',
+  	'user config option name show calendar widget' => 'Show calendar widget',
+  	'user config option name show late tasks and milestones widget' => 'Show late tasks and milestones widget',
+  	'user config option name show pending tasks widget' => 'Show pending tasks widget',
+  	'user config option name pending tasks widget assigned to filter' => 'Pending tasks widget assigned to filter',
+  	'user config option name show emails widget' => 'Show emails widget',
+  	'user config option name show messages widget' => 'Show messages widget',
+  	'user config option name show documents widget' => 'Show documents widget',
+  	'user config option name show charts widget' => 'Show charts widget',
+  	'user config option name show tasks in progress widget' => 'Show tasks in progress widget',
+  	'user config option name show comments widget' => 'Show comments widget',
+  	'user config option name show dashboard info widget' => 'Show dashboard info widget',
+  	'user config option name show getting started widget' => 'Show getting started widget',
+  	'user config option name show activity widget' => 'Show activity widget',
+  	'user config option name activity widget elements' => 'Activity widget size',
+  	'user config option desc activity widget elements' => 'Number of items displayed in Activity widget.',
+  	
+  	//task options
+  	
+  	'user config option name can notify from quick add' => 'Can notify from quick add',
+  	'user config option name noOfTasks' => 'Number Of Tasks',
+  	'user config option name task_display_limit' => 'Maximum number of tasks to display',
+  	'user config option desc task_display_limit' => 'For performance reasons, this number should not be too big. Use 0 for no limit',
+	'config option name use tasks dependencies' => 'Use tasks dependencies',
+	'config option desc use tasks dependencies' => 'Enables the definition of dependencies between tasks',
+  
+  	//calendar
+  	
+  	'user config option name start_monday' => 'Start week on monday',
+  	'user config option desc start_monday' => 'Will show the calendar starting weeks on monday (must refresh to apply changes)',
+  	'user config option name show_week_numbers' => 'Show week numbers',
+  	'user config option desc show_week_numbers' => 'Shows the week numbers on the monthly and weekly views.',
+  
+  	//mail
+  	
+  	'user config option name view deleted accounts emails' => 'View deleted accounts emails',
+  	'user config option desc view deleted accounts emails' => 'Enables you to view the emails from your deleted email accounts (when you delete an account you must not delete emails to use this option)',
+  	'user config option name block_email_images' => 'Block email images',
+  	'user config option desc block_email_images' => 'Do not show images that are embedded in mail objects.',
+  	'user config option name attach_docs_content' => 'Attach files contents',
+  	'user config option desc attach_docs_content' => 'When this option is set to "Yes" file attachments will be added as regular email attachments. When "No" is chosen file attachments will be sent as a link to the file.',
+  	'user config option name show_emails_as_conversations' => 'Show emails as conversations',
+  	'user config option desc show_emails_as_conversations' => 'If enabled email will be grouped into conversations in the Emails listing, showing all emails belonging to a same thread (replies, forwards, etc) as one entry in the listing',
+  	'user config option name draft_autosave_timeout' => 'Draft autosave interval',
+  	'user config option desc draft_autosave_timeout' => 'Seconds between each autosave operation for draft mails (0 to disable autosave)',
+  	'user config option name max_spam_level' => 'Maximum spam level allowed',
+  	'user config option desc max_spam_level' => 'When fetching emails, messages with Spam evaluation greater than this value will be sent to "Junk" folder. Set to 0 for max filtering, 10 no filtering. This option works only if a spam filter tool is installed in your server.',
+  	'user config option name create_contacts_from_email_recipients' => 'Create contacts from email recipients',
+  	'user config option desc create_contacts_from_email_recipients' => 'When this option is set to "Yes" a contact will be automatically created for every email address you send an email to. You need the "Can manage all contacts" permission.',
+  	'user config option name mail_drag_drop_prompt' => 'Classify email attachments on drag and drop?',
+  	'user config option desc mail_drag_drop_prompt' => 'Choose what should be done with email attachments when dragging an email to a workspace.',
+  	'user config option name hide_quoted_text_in_emails' => 'Hide quoted text when viewing emails',
+  	'user config option desc hide_quoted_text_in_emails' => 'If enabled email messages will be displayed without the quoted text. There will be an option to view it while reading.',
+  	'user config option name mail_account_err_check_interval' => 'Email accounts error checking interval',
+  	'user config option desc mail_account_err_check_interval' => 'Time between each verification at email accounts (0 to disable)',
+  	'user config option name classify_mail_with_conversation' => 'Classify mails with its conversation',
+  	'user config option desc classify_mail_with_conversation' => 'If enabled received mails are classified into the conversation workspaces (if email belongs to a conversation).',	
+  
+  	//
+  	
   	'user ws config option name task_display_limit' => 'Maximum number of tasks to display',
   	'user ws config option desc task_display_limit' => 'For performance reasons, this number should not be too big. Use 0 for no limit.',
   	
@@ -341,12 +436,30 @@
   	'sync' => 'Sync',
   	'mails on imap acc already sync' => 'There are no emails left to be synchronized in this account',
   	'cant sync account' => 'This account cannot be synchronized. Check IMAP settings',
-  
-  	'config option name sent_mails_sync' => 'Enable IMAP synchronization', 
-    'config option desc sent_mails_sync' => 'This option enables the synchronization when sending emails from Feng Office with the mail server through IMAP',
+  	'config option name sent_mails_sync' => 'Enable IMAP synchronization when sending emails from Feng Office',
   
   	'succes save object subtypes' => 'Object subtypes saved sucessfully',
   
+	'add member' => 'Add member',
+	'add member to this dimension' => 'Add member to this dimension',
+  	'parent member' => 'Parent member',
+  	'new member' => 'New member',
+  	'member cannot be root' => 'Member of type \'{0}\' cannot be root of the dimension, a parent member must be selected.',
+  	'permissions for member' => 'Permissions for member \'{0}\'',
+	'user selector permissions help' => 'Click on a group or user to modify the permissions',
+  
+  
+  	'dimensions' => 'Dimensions',
+  	'organization data' => 'Organization Data',
+  
+  
+  	//User-box actions
+  	'brand colors' => 'Brand Colors',
+  	'head color' => 'Head Color',
+  	'tabs color' => 'Tabs Color',
+  	'font color' => 'Font Color',
+  	'title color' => 'Title Color',
+  	'save colors' => 'Save Colors',
   ); // array
 
 ?>

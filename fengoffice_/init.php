@@ -3,9 +3,8 @@
 // ---------------------------------------------------
 //  Directories
 // ---------------------------------------------------
-
 define('ROOT', dirname(__FILE__));
-
+define('PLUGIN_PATH',	   ROOT . '/plugins' ) ;
 define('APPLICATION_PATH', ROOT . '/application');
 define('LIBRARY_PATH',     ROOT . '/library');
 define('CACHE_DIR',        ROOT . '/cache');
@@ -76,6 +75,8 @@ define('DEFAULT_ACTION', 'index');
 define('DEFAULT_THEME', 'default');
 
 define('SLIMEY_PATH', ROOT_URL . '/public/assets/javascript/slimey/');
+define('PLUGINS_URL',	   ROOT_URL . '/plugins' ) ;
+
 
 // ---------------------------------------------------
 //  Init...
@@ -156,16 +157,11 @@ if (!defined('DONT_USE_FENG_UTF8') || !DONT_USE_FENG_UTF8) {
 if(Env::isDebugging()) {
 	benchmark_timer_set_marker('Handle request');
 } // if
-$url=urldecode($_SERVER['REQUEST_URI']);
-if (preg_match('/<script[^>]*>.*(<\/script>|$)/i', $url)){
-	Logger::log("Javascript injection from ".$_SERVER['REMOTE_ADDR'] ." in URL:".$url);
-	remove_scripts_and_redirect($url);		
-}
+
 // Get controller and action and execute...
 try {
 	if (!defined( 'CONSOLE_MODE' )) {
-		Env::executeAction(request_controller(), request_action()) or
-		DB::rollback();
+		Env::executeAction(request_controller(), request_action()) ;
 	}
 } catch(Exception $e) {
 	if(Env::isDebugging()) {
@@ -180,14 +176,11 @@ try {
 if (Env::isDebuggingTime()) {
 	TimeIt::stop();
 	$report = TimeIt::getTimeReportByType();
-	//Logger::log(array_var($_SERVER, 'QUERY_STRING', 'No query string')."\n$report");
-	//$report = "\n";
+	Logger::log(array_var($_SERVER, 'QUERY_STRING', 'No query string')."\n$report");
+	$report = "\n";
 	/*foreach (TimeIt::$timeslots as $t) {
 		$report .= $t["type"] . ": (" . $t["start"] . ", " . $t["end"] . ")\n";
 	}*/
-	//Logger::log($report);
-	
-	$to_log = gmdate("Y-m-d H:i:s") ."\n". array_var($_SERVER, 'QUERY_STRING', 'No query string')."\n$report--------------------------------------------------------\n\n";
-	file_put_contents(with_slash(CACHE_DIR) . "log_request_times.txt", $to_log, FILE_APPEND);
+	Logger::log($report);
 }
 ?>

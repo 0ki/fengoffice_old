@@ -62,7 +62,7 @@ class AdministrationLogs extends BaseAdministrationLogs {
 		} // if
 
 		return in_array($action, $valid_actions);
-	} // isValidAction
+	} // isValidCategory
 
 } // AdministrationLogs
 

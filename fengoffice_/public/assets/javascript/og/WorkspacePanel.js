@@ -7,7 +7,6 @@ og.WorkspacePanel = function(config) {
 	if (!og.loggedUser.isGuest) {
 		tbar.push({
 			iconCls: 'ico-workspace-add',
-			text: lang('add space'),
 			tooltip: lang('create a workspace'),
 			handler: function() {
 				this.tree.newWS();
@@ -18,7 +17,6 @@ og.WorkspacePanel = function(config) {
 			id: 'edit',
 			iconCls: 'ico-workspace-edit',
 			tooltip: lang('edit workspace'),
-			text: lang('edit space'),
 			disabled: true,
 			handler: function() {
 				this.tree.editWS();
@@ -34,7 +32,7 @@ og.WorkspacePanel = function(config) {
 			og.updateWsCrumbs({id: 0, name: lang('all')});
 		},
 		scope: this
-	});	
+	});
 	
 	Ext.applyIf(config, {
 		iconCls: 'ico-workspaces',
@@ -139,7 +137,7 @@ og.WorkspaceTree = function(config) {
 		this.getSelectionModel().on({
 			'selectionchange' : function(sm, node) {
 				if (node && !this.pauseEvents) {
-					if (node.id == 'trash'){
+					/*if (node.id == 'trash'){
 						this.pauseEvents = true;
 						this.previousNode.select();
 						this.pauseEvents = false;
@@ -182,8 +180,8 @@ og.WorkspaceTree = function(config) {
 							});
 							tp.add(cp);
 						}
-						tp.setActiveTab(cp);
-					} else {
+						tp.setActiveTab(cp);*/
+					//} else {
 						this.fireEvent("workspaceselect", node.ws);
 						var tf = this.getTopToolbar().items.get(this.id + 'filter');
 						tf.setValue("");
@@ -191,7 +189,7 @@ og.WorkspaceTree = function(config) {
 						node.expand(false, false);
 						node.ensureVisible();
 						this.previousNode = node;
-					}
+					//}
 				}
 			},
 			scope:this
@@ -316,7 +314,7 @@ Ext.extend(og.WorkspaceTree, Ext.tree.TreePanel, {
 		}
 	},
 	
-	addTrash: function(){
+	/*addTrash: function(){
 		var exists = this.getNodeById('trash');
 		if (exists)	return;
 		var config = {
@@ -338,9 +336,9 @@ Ext.extend(og.WorkspaceTree, Ext.tree.TreePanel, {
 		}
 		parent.insertBefore(node, iter);
 		return node;
-	},
+	},*/
 	
-	addArchived: function(){
+	/*addArchived: function(){
 		var exists = this.getNodeById('archived');
 		if (exists)	return;
 		var config = {
@@ -362,7 +360,7 @@ Ext.extend(og.WorkspaceTree, Ext.tree.TreePanel, {
 		}
 		parent.insertBefore(node, iter);
 		return node;
-	},
+	},*/
 	
 	getActiveWorkspace: function() {
 		var s = this.getSelectionModel().getSelectedNode();
@@ -464,8 +462,8 @@ Ext.extend(og.WorkspaceTree, Ext.tree.TreePanel, {
 							this.pauseEvents = false;
 							og.updateWsCrumbs(this.getActiveWorkspace());
 						}
-						this.addArchived();
-						this.addTrash();						
+						//this.addArchived();
+						//this.addTrash();						
 					}
 				},
 				scope: this

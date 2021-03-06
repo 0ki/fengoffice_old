@@ -17,7 +17,7 @@
 // | Authors: Dietrich Ayala <dietrich@ganx4.com> Original Author         |
 // +----------------------------------------------------------------------+
 //
-// $Id: server_Round2GroupB.php,v 1.1 2010/01/22 18:09:25 acio Exp $
+// $Id: server_Round2GroupB.php 7 2010-01-22 18:14:51Z acio $
 //
 require_once 'SOAP/Server.php';
 require_once 'interop_Round2GroupB.php';

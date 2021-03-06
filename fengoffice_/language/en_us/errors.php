@@ -188,7 +188,9 @@
   	'no tag specified' => 'No tag specified',
   
     'no mailAccount error' => 'Action unavailable. You do not have an email account added.',
-	'content too long not loaded' => 'Previous email content is too long and was not loaded, but will be sent with this email.'
+	'content too long not loaded' => 'Previous email content is too long and was not loaded, but will be sent with this email.',
+  
+	'must choose at least one member of' => 'You must choose at least one member of {0}.',
   ); // array
 
 ?>

@@ -1,230 +1,325 @@
 <?php
 class SearchController extends ApplicationController {
 	
+	/**
+	 * Search string
+	 * @var unknown_type
+	 */
+	var $search_for ;
+	
+	/**
+	 * Page size
+	 * @var unknown_type
+	 */
+	var $limit = 10;
+	
+	/**
+	 * Start integer
+	 * @var unknown_type
+	 */
+	var $start = 0 ;
+	
+	/**
+	 * Real limit  SQL satatement.
+	 * We dont make a 'count' on SQL. 
+	 * This will help to guess to total results, o at least, if render the 'next' button  
+	 * Should be Greater than limit, because of PHP result filters
+	 * @var int
+	 */
+	var $limitTest = 100 ;
+	 
+	/**
+	 * Max content size to show on results view
+	 * @var unknown_type
+	 */
+	var $contentSize = 200;
+	
+	/**
+	 * If true search for prefixes, giving more results.
+	 * @var boolean
+	 */
+	var $wildcardSeach = true ;
+	
+	/**
+	 * Max title size to show on results view
+	 * @var integer
+	 */
+	var $titleSize = 100;
+	
+	/**
+	 * True to filter duplicated results in PHP
+	 * This may cause errors on "total" pagination
+	 * @var boolean
+	 */
+	var $filterDuplicate = true ;
+	
+	/**
+	 * Max number of links to show on pagination
+	 * @var unknown_type
+	 */
+	var $maxPageLinks = 5 ;
+	
+	/**
+	 * @var StdClass
+	 */
+	var $pagination = null  ;
+	
 	function __construct() {
+		$this->pagination = new StdClass();
 		parent::__construct();
 		prepare_company_website_controller($this, 'website');
 		ajx_set_panel("search");
+		
 	} // __construct
 	
 	
 	/**
 	 * Execute search
-	 *
+	 * TODO: Performance gus: 
+	 * Fetch only ids and execute a select statement by pk (fer each result)
 	 * @param void
 	 * @return null
 	 */
 	function search() {
-		if(active_project() && !logged_user()->isProjectUser(active_project())) {
-			flash_error(lang('no access permissions'));
-			ajx_current("empty");
-			return;
-		} // if
-		
-		$pageType = array_var($_GET, 'page_type');
+		// Init vars
 		$search_for = array_var($_GET, 'search_for');
-		
-		$objectManagers = array("ProjectWebpages", "ProjectMessages", "MailContents", "ProjectFiles",
-				 "ProjectMilestones", "ProjectTasks", "ProjectEvents");
-		$objectTypes = array(lang('webpages'), lang('messages'), lang('emails'), 
-				lang('files'), lang('milestones'), lang('tasks'), lang('events'));
-		$iconTypes = array('webpage', 'message', 'email', 
-				'file', 'milestone', 'task', 'event');
-		if (user_config_option('show_file_revisions_search')){			
-			array_splice($objectManagers, 4, 0, 'ProjectFileRevisions');
-			array_splice($objectTypes, 4, 0, lang('file contents'));
-			array_splice($iconTypes, 4, 0, 'file');			
-		}                        
-		
-		$search_results = array();
-		
-		$timeBegin = microtime(true);
-		if(trim($search_for) == '') {
-			$search_results = null;
-			$pagination = null;
-		} else {
-			$search_results = $this->searchWorkspaces($search_for,$search_results,5);
-			$search_results = $this->searchUsers($search_for,$search_results,5);
-			$search_results = $this->searchContacts($search_for,$search_results,5);
-			
-			if (array_var($_GET, 'search_all_projects') != "true" && active_project() instanceof Project) {
-				$projects = active_project()->getAllSubWorkspacesCSV(true);
-			} else {
-				$projects = null;
+		$search_pieces= explode(" ", $search_for);
+		$search_string = "";
+		foreach ($search_pieces as $word ) {
+			$search_string.= mysql_escape_string($word);
+			if ($this->wildcardSeach) {
+				$search_string.="*";
 			}
-			
-			$c = 0;
-			foreach ($objectManagers as $om){
-				$user_id = $om == "MailContents" ? logged_user()->getId() : 0;
-				$results = SearchableObjects::searchByType($search_for, $projects, $om, true, 5, 1, null, $user_id);
-				if (count($results[0]) > 0){
-					$sr = array();
-					$sr['result'] = $results[0];
-					$sr['pagination'] = $results[1];
-					$sr['type'] = $objectTypes[$c];
-					$sr['icontype'] = $iconTypes[$c];
-					$sr['manager'] = $om;
-					$search_results[] = $sr;
-				}
-				$c++;
-			}
-		} // if
-		$timeEnd = microtime(true);
-	    if(str_starts_with($search_for,'"') && str_ends_with($search_for,'"')){    		
-    		$search_for = str_replace('"', '', $search_for);    		
+			$search_string.=" ";
 		}
+		$search_string = substr($search_string, 0 , -1);
+		
+		$this->search_for = $search_for ;
+		$limit = $this->limit;
+		$start = array_var($_REQUEST, 'start' , $this->start) ;
+		$this->start = $start ;
+		$limitTest = max( $this->limitTest , $this->limit);
+		$filteredResults = 0 ;
+		$uid = logged_user()->getId();
+		
+		
+		// Build main SQL
+		$sql = "	
+			SELECT  distinct(so.rel_object_id) AS id
+			FROM ".TABLE_PREFIX."searchable_objects so 
+			WHERE
+				so.rel_object_id IN (
+			    SELECT object_id FROM ".TABLE_PREFIX."sharing_table WHERE group_id  IN (
+			      SELECT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups WHERE contact_id = $uid
+			    )
+			 )
+			AND MATCH (so.content) AGAINST ('$search_string' IN BOOLEAN MODE)
+			LIMIT $start, $limitTest ";
+
+		$db_search_results = array();
+		$timeBegin = time();
+		$res = DB::execute($sql);
+		$timeEnd = time();
+		while ($row = $res->fetchRow() ) {
+			$search_results_ids[] = $row['id'] ;
+		}
+		// Prepare results for view to avoid processing at presentation layer 
+		$search_results = $this->prepareResults($search_results_ids, $null, $limit);
+		
+		// Calculate or approximate total for pagination
+		$total = count($search_results_ids) + $start ;
+		
+		if ( count ( $search_results_ids ) < $limitTest ) {
+			$total = count($search_results_ids) + $start ;
+		}else{
+			$total = "Many" ;
+		}
+		//$total -= $filteredResults ;
+		$this->total = $total ;
+		
+		// Pagination
+		$this->buildPagination($search_results);
+		
+		// Extra data
+		$extra = new stdClass() ;
+		$extra->time = $timeEnd-$timeBegin ;
+		$extra->filteredResults = $filteredResults ;
+		
+		// Template asigns
+		tpl_assign('pagination', $this->pagination);
 		tpl_assign('search_string', $search_for);
 		tpl_assign('search_results', $search_results);
-		tpl_assign('time', $timeEnd - $timeBegin);
+		//tpl_assign('extra', $extra );
+
+		//Ajax 
+		if (!$total){
+			$this->setTemplate('no_results');
+		}
 		ajx_set_no_toolbar(true);
-		ajx_replace(true);
-	} // search
-	
-	function searchContacts($search_term, $search_results = null, $row_count = 5, $page = 1){
-		if (!is_array($search_results))
-			$search_results = array();
 		
-		if (array_var($_GET, 'search_all_projects') != "true" && active_project() instanceof Project) {
-			$projects = active_project()->getAllSubWorkspacesCSV(true);
-		} else {
-			$projects = null;
-		}
-			
-		$results = SearchableObjects::searchByType($search_term, $projects, 'Contacts', true, $row_count, $page = 1);
-		if (count($results[0]) > 0){
-			$sr = array();
-			$sr['result'] = $results[0];
-			$sr['pagination'] = $results[1];
-			$sr['type'] = lang('contacts');
-			$sr['icontype'] = 'contact';
-			$sr['manager'] = 'Contacts';
-			$search_results[] = $sr;
-		}
-		
-		$results = SearchableObjects::searchByType($search_term, $projects, 'Companies', true, $row_count, $page = 1);
-		if (count($results[0]) > 0){
-			$sr = array();
-			$sr['result'] = $results[0];
-			$sr['pagination'] = $results[1];
-			$sr['type'] = lang('companies');
-			$sr['icontype'] = 'company';
-			$sr['manager'] = 'Companies';
-			$search_results[] = $sr;
-		}
-		
-		return $search_results;
-	}
-	
-	function searchWorkspaces($search_term, $search_results = null, $row_count = 5, $page = 1){
-		if (!is_array($search_results))
-			$search_results = array();
-		
-		$results = SearchableObjects::searchByType($search_term, '0', 'Projects', true, $row_count, $page);
-		if (count($results[0]) > 0){
-			$sr = array();
-			$sr['result'] = $results[0];
-			$sr['pagination'] = $results[1];
-			$sr['type'] = lang('projects');
-			$sr['icontype'] = 'project';
-			$sr['manager'] = 'Projects';
-			$search_results[] = $sr;
-		}
-		
-		return $search_results;
-	}
-	
-	function searchUsers($search_term, $search_results = null, $row_count = 5, $page = 1){
-		if (!is_array($search_results))
-			$search_results = array();
-		
-		$results = SearchableObjects::searchByType($search_term, '0', 'Users', true, $row_count, $page);
-		if (count($results[0]) > 0){
-			$sr = array();
-			$sr['result'] = $results[0];
-			$sr['pagination'] = $results[1];
-			$sr['type'] = lang('users');
-			$sr['icontype'] = 'user';
-			$sr['manager'] = 'Users';
-			$search_results[] = $sr;
-		}
-		
-		return $search_results;
 	}
 	
 	/**
-	 * Execute search
-	 *
-	 * @param void
-	 * @return null
+	 * Build pagination based on $total, $limit and $search_results
+	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
+	 * @param unknown_type $search_results
 	 */
-	function searchbytype() {
-		$this->setTemplate('search');
-		
-		if(active_project() && !logged_user()->isProjectUser(active_project())) {
-			flash_error(lang('no access permissions'));
-			ajx_current("empty");
-			return;
-		} // if
-		
-		$page = array_var($_GET, 'page');
-		$pageType = array_var($_GET, 'page_type');
-		$search_for = array_var($_GET, 'search_for');
-		$manager = array_var($_GET, 'manager');
-		
-		$objectManagers = array("ProjectWebpages", "ProjectMessages", "MailContents", "ProjectFiles",
-			 "ProjectFileRevisions", "ProjectMilestones", "ProjectTasks", "ProjectEvents");
-		$objectTypes = array(lang('webpages'), lang('messages'), lang('emails'), 
-			lang('files'), lang('files'), lang('milestones'), lang('tasks'), lang('events'));
-		$iconTypes = array('webpage', 'message', 'email', 
-			'file', 'file', 'milestone', 'task', 'event');  
-		
-		$search_results = array();
-		
-		$timeBegin = microtime(true);
-		if(trim($search_for) == '') {
-			$search_results = null;
-			$pagination = null;
-		} else {
-			if (array_var($_GET, 'search_all_projects') != "true" && active_project() instanceof Project) {
-				$projects = active_project()->getAllSubWorkspacesCSV(true);
-			} else {
-				$projects = null;
-			}
+	private function buildPagination($search_results) {
+		$start = $this->start;
+		$limit = $this->limit;
+		$total = $this->total;
+		$search_for = $this->search_for ;
+		$this->pagination = new StdClass() ;
+		$this->pagination->currentPage = ceil (( $start+1 ) / $limit)  ;
+		$this->pagination->currentStart = $start+1 ;
+		$this->pagination->currentEnd = $start + count($search_results) ;
+		$this->pagination->hasNext = ( count($search_results) == $limit ) ;
+		$this->pagination->hasPreviews = ($start-$limit >= 0); 
+		$this->pagination->nextUrl = get_url("search", "search" , array("start" => $start+$limit , "search_for"=>$search_for));
+		$this->pagination->previewsUrl = get_url("search", "search" , array("start" => $start-$limit , "search_for"=>$search_for));
+		$this->pagination->total = $total ;
+		$this->pagination->nextPages = array();
+		$this->pagination->links = $this->buildPaginationLinks();			
+	}
+	
+	
+	
+	/**
+	 * Map parameters and make some grouping, orders limits not done in DB
+	 * 
+	 * 
+	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
+	 * @param unknown_type array of int 
+	 * @param unknown_type $filtered_results
+	 * @param unknown_type $total
+	 */
+	private function prepareResults($ids, &$filtered_results, $limit) {
+		$return = array();
+		foreach ($ids as $search_result_id) {
+			$search_results = array();
+			if (!$limit) break;
+			if (!is_numeric($search_result_id)) continue;
+			
+			$obj = Objects::findObject($search_result_id);
+			/* @var $obj ContentDataObject */
+			
+			/*$search_result = DB::executeOne("		
+				SELECT  o.id AS id, 
+						o.name,  
+						o.created_on as created_on,
+						c.object_id as created_by_id, 
+						c.username AS created_by_name, 
+						t.name as type, 
+						t.handler_class as handler
+	
+				FROM ".TABLE_PREFIX."objects o  
+				LEFT JOIN ".TABLE_PREFIX."object_types t on o.object_type_id = t.id
+				LEFT JOIN ".TABLE_PREFIX."contacts c ON c.object_id = o.created_by_id
 				
-			switch($manager) {
-				case 'Contacts':
-				case 'Companies':
-					$search_results = $this->searchContacts($search_for, array(), 20, $page);
-					break;
-				case 'Projects':
-					$search_results = $this->searchWorkspaces($search_for, array(), 20, $page);
-					break;
-				case 'Users':
-					$search_results = $this->searchUsers($search_for, array(), 20, $page);
-					break;
-				default:
-					$user_id = $manager == "MailContents" ? logged_user()->getId() : 0;
-					$results = SearchableObjects::searchByType($search_for, $projects, $manager, true, 20,$page, null, $user_id);
-					if (count($results[0]) > 0){
-						$c = array_search($manager, $objectManagers);
-						$sr = array();
-						$pagination = $results[1];
-						$sr['result'] = $results[0];
-						$sr['pagination'] = $pagination;
-						$sr['type'] =  $objectTypes[$c];
-						$sr['icontype'] = $iconTypes[$c];
-						$sr['manager'] = $manager;
-						$search_results[] = $sr;
-					}
-					break;
-			}
-		} // if
-		$timeEnd = microtime(true);
+				WHERE
+					o.id =  $search_result_id");*/
+			
+			$search_result['title'] = $this->prepareTitle($obj->getObjectName());
+			$search_result['url'] = $obj->getViewUrl();
+			$search_result['created_by'] = $this->prepareCreatedBy($obj->getCreatedByDisplayName(), $obj->getCreatedById()) ;
+			$search_result['type'] = $obj->getObjectTypeName() ;
+			$search_result['created_on'] = friendly_date($obj->getCreatedOn()) ;
+			$search_result['content'] = $this->highlightResult($obj->getSummary(array(
+				"size" => $this->contentSize,
+				"near" => $this->search_for  
+			)));
+
+			//$search_result['url'] = $this->prepareUrl($search_result['id'], $search_result['handler']);
+			
+
+			
+			$return[] = $search_result;
+			$limit--;
+		}
+		return $return  ;
 		
-		tpl_assign('search_string', $search_for);
-		tpl_assign('search_results', $search_results);
-		tpl_assign('time', $timeEnd - $timeBegin);
-		tpl_assign('enable_pagination', true);
-	} // search
+	} 	
+		
+	private function prepareCreatedBy($name,$id){
+		return "<a href='".get_url('contact', 'card_user', array('id'=>$id))."'>".$name."</a>";
+	}
+	
+	private function prepareContent($content) {
+		return $this->highlightResult($this->cutResult($content, $this->contentSize));
+	}
+
+	private function prepareUrl($id, $handler) {
+		if($handler) {
+			eval('$item_class = '.$handler.'::instance()->getItemClass(); $instance = new $item_class();');
+			$instance->setObjectId($id);
+			$instance->setId($id);
+			return $instance->getViewUrl();
+		}else{
+			return "#";
+		} 
+
+		
+	}
+	
+	private function prepareTitle($title){
+		if (!$title) {
+			return lang("empty title");
+		}
+		return $this->highlightResult($this->cutResult($title, $this->titleSize));
+	}
+	
+	/**
+	 * Emphaisis around search keywords
+	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
+	 * @param unknown_type $content
+	 */
+	private function highlightResult($text) {
+		$pieces = explode(" ", $this->search_for);
+		
+		foreach ($pieces as $word) {
+			$text = str_ireplace($word, "<em>".$word."</em>", $text) ;
+		}
+		return $text;
+    }
+
+    
+	private function buildPaginationLinks() {
+		$currentPage = $this->pagination->currentPage ;
+		$links = array();
+		$totalPages = ceil( $this->total / $this->limit ) ;
+		if ( is_numeric($this->total) ){
+			$links_count =  ceil ( min ( $this->maxPageLinks, $totalPages )) ;
+		}
+		$startPage = min ( max(1,$currentPage - floor($links_count / 2) ), max(1,$totalPages - $links_count) );
+		$endPage =  min ($totalPages , $startPage + $this->maxPageLinks  ) ; 
+		//alert_r($totalPages) ;
+		for ($i = $startPage ; $i <=$endPage ; $i++) {
+			$links[$i] = get_url("search", "search" , array(
+				"start" =>  ($i-1 ) * $this->limit , 
+				"search_for"=>$this->search_for)
+			);
+		}
+		return $links ;
+	}		
+	
+	
+	/**
+	 * Cut results 
+	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
+	 * @param unknown_type $content
+	 * @param unknown_type $size
+	 */
+	private function cutResult($content, $size = 200  ) {
+
+		$position = strpos($content,$this->search_for);
+		$spacesBefore = min(10, $position); 
+		if (strlen($content) > $size ){
+			return substr($content , $position - $spacesBefore, $size)."...";
+			
+		}else{
+			return $content ;
+		}
+	}
+	
+
 }
-?>

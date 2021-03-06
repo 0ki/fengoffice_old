@@ -10,7 +10,7 @@
 * @author    Jan Wagner <wagner@netsols.de>
 * @copyright 2009 Jan Wagner
 * @license   http://www.gnu.org/licenses/lgpl-3.0.txt LGPLv3
-* @version   SVN: $Id: RootDSE.php,v 1.1 2010/03/08 17:12:22 acio Exp $
+* @version   SVN: $Id: RootDSE.php 37 2010-03-08 17:12:24Z acio $
 * @link      http://pear.php.net/package/Net_LDAP2/
 */
 

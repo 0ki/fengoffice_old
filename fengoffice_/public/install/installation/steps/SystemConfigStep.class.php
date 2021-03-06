@@ -30,6 +30,7 @@ class SystemConfigStep extends ScriptInstallerStep {
 		$this->setName('Configuration');
 	} // __construct
 
+
 	/**
 	 * Prepare and process config form
 	 *
@@ -51,18 +52,23 @@ class SystemConfigStep extends ScriptInstallerStep {
 		} // if
 
 		$config_form_data = array_var($_POST, 'config_form');
+		//var_dump($config_form_data) ; exit ;
+		
 		if(!is_array($config_form_data)) {
 			$config_form_data = array(
-	          'database_type'   => $this->getFromStorage('database_type'),
-	          'database_host'   => $this->getFromStorage('database_host', 'localhost'),
-	          'database_user'   => $this->getFromStorage('database_user'),
-	          'database_pass'   => $this->getFromStorage('database_pass'),
-	          'database_name'   => $this->getFromStorage('database_name'),
-	          'database_prefix' => $this->getFromStorage('database_prefix'),
-			  'database_engine' => $this->getFromStorage('database_engine'),
-	          'absolute_url'    => $this->getFromStorage('absolute_url'),
-			); // array
-		} // if
+	          'database_type'   	=> $this->getFromStorage('database_type'),
+	          'database_host'   	=> $this->getFromStorage('database_host', 'localhost'),
+	          'database_user'   	=> $this->getFromStorage('database_user'),
+	          'database_pass'   	=> $this->getFromStorage('database_pass'),
+	          'database_name'   	=> $this->getFromStorage('database_name'),
+	          'database_prefix'		=> $this->getFromStorage('database_prefix'),
+			  'database_engine' 	=> $this->getFromStorage('database_engine'),
+	          'absolute_url'   		=> $this->getFromStorage('absolute_url'),
+			  'plugins'    			=> $this->getFromStorage('plugins'),
+			  'plugins_available' 	=> $this->scanPlugins(),
+				
+			); 
+		} 
 		tpl_assign('installation_url', $installation_url);
 		tpl_assign('config_form_data', $config_form_data);
 
@@ -75,7 +81,7 @@ class SystemConfigStep extends ScriptInstallerStep {
 			$database_prefix = (string) array_var($config_form_data, 'database_prefix');
 			$database_engine = (string) array_var($config_form_data, 'database_engine');
 			$absolute_url    = (string) array_var($config_form_data, 'absolute_url');
-
+			$plugins		 = array_var($config_form_data, 'plugins');
 			$connected = false;
 			$this->database_connection = @mysql_connect($database_host, $database_user, $database_pass);
 			if ($this->database_connection) {
@@ -103,6 +109,7 @@ class SystemConfigStep extends ScriptInstallerStep {
 				$this->addToStorage('database_prefix', $database_prefix);
 				$this->addToStorage('database_engine', $database_engine);
 				$this->addToStorage('absolute_url', $absolute_url);
+				$this->addToStorage('plugins'		, $plugins);
 				return true;
 			} else {
 				$this->addError('Failed to connect to database with data you provided: ' . $error);
@@ -183,8 +190,26 @@ class SystemConfigStep extends ScriptInstallerStep {
 		} // if
 
 		return true;
-	} // executeMultipleQueries
+	}
 
-} // ConfigStep
+	function scanPlugins() {
+		$plugins = array();
+		$dir =	INSTALLATION_PATH."/plugins";
+		if ($dh = opendir($dir)) {
+			while (($file = readdir($dh)) !== false) {
+				if (is_dir($dir ."/". $file) && $file!="." && $file!=".."){
+					if (file_exists($dir ."/". $file . "/info.php" )){
+						
+						$plugin_info = include_once $dir ."/". $file . "/info.php";
+						array_push($plugins, $plugin_info);
+					}
+				}
+			}
+			closedir($dh);
+		} 
+		usort($plugins, 'plugin_sort') ;
+		
+		return $plugins;
+	}
 
-?>
+} 

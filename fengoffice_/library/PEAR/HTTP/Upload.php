@@ -7,7 +7,7 @@
 //
 // **********************************************
 //
-// $Id: Upload.php,v 1.1 2010/01/22 18:07:36 acio Exp $
+// $Id: Upload.php 7 2010-01-22 18:14:51Z acio $
 
 /*
  * Pear File Uploader class. Easy and secure managment of files

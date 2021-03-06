@@ -1,6 +1,6 @@
 <?php
 /**
-* @version $Id: validation.php,v 1.1 2010/01/22 18:09:15 acio Exp $
+* @version $Id: validation.php 7 2010-01-22 18:14:51Z acio $
 * Tools for validing a UTF-8 string is well formed.
 * The Original Code is Mozilla Communicator client code.
 * The Initial Developer of the Original Code is

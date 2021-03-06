@@ -40,7 +40,7 @@ require_javascript('og/modules/massmailerForm.js');
           <script>
             App.modules.massmailerForm.controls['company_' + <?php echo $company_id ?>].push(<?php echo $user->getId() ?>);
           </script>
-          <div class="massmailerRecipeint"><?php echo checkbox_field('massmailer[user_' . $user->getId() . ']', array_var($massmailer_data, 'user_' . $user->getId()), array('id' => 'massmailerFormCompanyUser' . $user->getId(), 'class' => 'checkbox', 'onclick' => 'App.modules.massmailerForm.userCheckboxClick(' . $company_id . ', ' . $user->getId() . ')')) ?> <label for="massmailerFormCompanyUser<?php echo $user->getId() ?>" class="checkbox"><?php echo clean($user->getDisplayName()) ?> <span class="desc">(<?php echo clean($user->getEmail()) ?>)</span></label></div>
+          <div class="massmailerRecipeint"><?php echo checkbox_field('massmailer[user_' . $user->getId() . ']', array_var($massmailer_data, 'user_' . $user->getId()), array('id' => 'massmailerFormCompanyUser' . $user->getId(), 'class' => 'checkbox', 'onclick' => 'App.modules.massmailerForm.userCheckboxClick(' . $company_id . ', ' . $user->getId() . ')')) ?> <label for="massmailerFormCompanyUser<?php echo $user->getId() ?>" class="checkbox"><?php echo clean($user->getDisplayName()) ?> <span class="desc">(<?php echo clean($user->getEmailAddress('user')) ?>)</span></label></div>
 <?php } // foreach ?>
         </div>
         <div class="clear"></div>

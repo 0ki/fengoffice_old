@@ -6,7 +6,7 @@ if (isset($linked_objects) && is_array($linked_objects) && count($linked_objects
 	<strong><?php echo lang("linked main title") ?>:</strong>&nbsp;&nbsp;&nbsp;
 	<span id="bt<?php echo $genid?>">
 	<?php 
-	$amountOfObjects = user_config_option('amount_objects_to_show', null,logged_user()->getId());
+	$amountOfObjects = user_config_option('amount_objects_to_show');
 	$sorted_objects = array();
 	$maxcount = 0;
 	$maxkey = '';
@@ -74,7 +74,7 @@ if (isset($linked_objects) && is_array($linked_objects) && count($linked_objects
 			if  ($linked_object instanceof Contact){ // if it is a contact
 				if (!$linked_object->canView(logged_user()) ) continue; // check permissions on contacts 			
 			} else {
-				if (!can_read(logged_user(), $linked_object ) ) continue; 
+				if (!can_read(logged_user(), $linked_object->getMembers(), $linked_object->getObjectTypeId() ) ) continue; 
 			}
 			
 			tpl_assign('counter', $counter);
@@ -92,10 +92,7 @@ if (isset($linked_objects) && is_array($linked_objects) && count($linked_objects
 			} // switch
 			$counter++;
 			$moreLinkedObjects = ($counter >= $amountOfObjects || $amountOfObjects == null);
-			if ($moreLinkedObjects){
-				$filterManager = $linked_object->getObjectManagerName();
-				break;
-			}
+			if ($counter >= $amountOfObjects) break;
 		} // foreach linked object
 		?>
 		</table>
@@ -105,8 +102,6 @@ if (isset($linked_objects) && is_array($linked_objects) && count($linked_objects
 					'object',
 					'show_all_linked_objects',
 						{linked_object:'<?php echo $linked_objects_object->getId()?>',
-						linked_manager:'<?php  echo get_class($linked_objects_object->manager()) ?>',
-						filter_manager:'<?php  echo $filterManager ?>',
 						linked_object_name:'<?php echo escape_single_quotes(clean($linked_objects_object->getObjectName())) ?>',
 						linked_object_ico:'<?php echo 'ico-' . $linked_objects_object->getObjectTypeName()?>'}),
 					{caller:'linkedobjects'})" >

@@ -77,7 +77,7 @@ function ajx_get_panel($controller = null, $action = null) {
  *
  */
 function ajx_check_login() {
-	if (is_ajax_request() && !logged_user() instanceof User && (array_var($_GET, 'c') != 'access' || array_var($_GET, 'a') != 'relogin')) {
+	if (is_ajax_request() && !logged_user() instanceof Contact && (array_var($_GET, 'c') != 'access' || array_var($_GET, 'a') != 'relogin')) {
 		// error, user not logged in => return error message
 		$response = AjaxResponse::instance();
 		$response->setCurrentContent("empty");
@@ -148,9 +148,11 @@ function ajx_replace($replace = true) {
  * The passed script will be loaded automatically before displaying content
  * @param $url
  */
-function require_javascript($url) {
+function require_javascript($url, $plugin = null) {
 	if (is_ajax_request()) {
-		AjaxResponse::instance()->addScript($url);
+
+		AjaxResponse::instance()->addScript($url, $plugin);
+		
 	}
 }
 

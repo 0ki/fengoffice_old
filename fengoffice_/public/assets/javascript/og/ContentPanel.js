@@ -43,11 +43,11 @@ og.ContentPanel = function(config) {
 	if (config.refreshOnWorkspaceChange) {
 		og.eventManager.addListener('workspace changed', this.reset, this);
 	}
-	if (config.refreshOnTagChange) {
-		og.eventManager.addListener('tag changed', this.reset, this);
-	}
+
 	
 	// dirty stuff to allow refreshing a content panel when clicking on its tab
+	
+	
 	this.on('render', function() {
 		var tab = Ext.get("tabs-panel__" + this.id);
 		if (tab) {
@@ -60,6 +60,7 @@ og.ContentPanel = function(config) {
 					this.reset();
 				}
 			}, this);
+			//og.eventManager.fireEvent("tab selected", tab);
 		}
 		if (this.ownerCt) {
 			this.ownerCt.on('remove', function(ct, item) {
@@ -76,6 +77,8 @@ og.ContentPanel = function(config) {
 Ext.extend(og.ContentPanel, Ext.Panel, {
 
 	activate: function() {
+		og.eventManager.fireEvent('tab activated', this);
+		
 		this.active = true;
 		if (this.getComponent(0).activate) {
 			this.getComponent(0).activate();
@@ -96,9 +99,9 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 	
 	deactivate: function() {
 		this.active = false;
-		if (this.getComponent(0).deactivate) {
+		/*if (this.z(0).deactivate) {
 			this.getComponent(0).deactivate();
-		}
+		}*/ 
 	},
 	
 	setHelp: function(help){
@@ -139,8 +142,13 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 		return !this.preventClose;
 	},
 
+	
+	
+	
 	load: function(content, isBack, isReload, isReset) {
-
+		/*if ( content.data.indexOf("c=customer&a=view") != -1 ) {
+			alert("ENTRA a load - content: "+ content.toSource());
+		}*/
 		if (!this.confirmClose()) {
 			if (isBack) {
 				// put content back to the history stack
@@ -172,75 +180,6 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 			return false;
 		}
 		
-		/*if (!og.addLocation) {
-			og.activeLocation = "";
-			og.addLocation = function(info) {
-				var type = info.content.type == 'html' ? 'url' : info.content.type;
-				var data = info.content.type == 'html' ? info.content.url : info.content.data;
-				if (type == 'url') {
-					if (data.indexOf('?')) {
-						var newargs = [];
-						var args = data.substring(data.indexOf('?') + 1);
-						args = args.split("&");
-						for (var i=0; i < args.length; i++) {
-							var arg = args[i].split("=");
-							if (arg[0] == 'active_project' ||
-									arg[0] == 'active_tag' ||
-									arg[0] == 'ajax' ||
-									arg[0] == 'current' ||
-									arg[0] == '_dc') continue
-							newargs.push(args[i]);
-						}
-						data = "index.php?" + newargs.join("&");
-					}
-				}
-				var loc = encodeURIComponent(info.ws) + "&" +
-					encodeURIComponent(info.tag) + "&" +
-					encodeURIComponent(info.tab) + "&" +
-					encodeURIComponent(type) + "&" +
-					encodeURIComponent(data);
-				//alert(loc);
-				if (og.activeLocation == loc) return;
-				og.activeLocation = loc;
-				location.href = "#" + loc;
-			};
-			setInterval(function() {
-				var newLocation = location.href;
-				var i = newLocation.indexOf('#');
-				if (i >= 0) {
-					newLocation = newLocation.substring(i + 1);
-					if (newLocation != og.activeLocation) {
-						og.activeLocation = newLocation;
-						var parts = newLocation.split("&");
-						var tagp = Ext.getCmp('tag-panel');
-						var wsp = Ext.getCmp('workspace-panel');
-						var ws = decodeURIComponent(parts[0]);
-						var tag = decodeURIComponent(parts[1]);
-						var tab = decodeURIComponent(parts[2]);
-						var type = decodeURIComponent(parts[3]);
-						var data = decodeURIComponent(parts[4]);
-						wsp.select(ws);
-						tagp.select(tag);
-						var tabp = Ext.getCmp(tab);
-						var tabsp = Ext.getCmp('tabs-panel');
-						tabsp.setActiveTab(tabp);
-						tabp.load({
-							type: type,
-							data: data
-						}, true);
-					}
-				}
-			}, 100);
-		}
-		var tag = Ext.getCmp('tag-panel'); if (tag) tag=tag.getSelectedTag();
-		var ws = Ext.getCmp('workspace-panel'); if (ws) ws=ws.getActiveWorkspace();if(ws)ws=ws.id;
-		var tab = Ext.getCmp('tabs-panel'); if (tab) tab=tab.getActiveTab();if(tab)tab=tab.id;
-		og.addLocation({
-			ws: ws,
-			tag: tag,
-			tab: tab,
-			content: content
-		});*/
 		
 		if (this.content && !isBack && this.content.type != 'url' && !content.replace) {
 			var skip = false;
@@ -283,9 +222,7 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 			}
 			this.doLayout();
 		}
-		this.setPreventClose(content.preventClose);
-		
-		
+		this.setPreventClose(content.preventClose);		
 		if (content.type == 'html') {
 			if (this.history.length > 0 && !content.noback) {
 				var tbar = [{
@@ -370,15 +307,20 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 			this.doLayout();
 		} else if (content.type == 'url') {
 			if (this.active) {
-				og.openLink(content.data, {caller: this, preventSwitch: true});
+				context_str = "";
+				if (og.contextManager && og.contextManager.dimensionMembers.length > 0)
+					context_str = "&context=" + escape(og.contextManager.plainContext());
+				og.openLink(content.data + context_str, {caller: this, preventSwitch: true});
 			} else {
 				this.loaded = false;
 			}
 		} else if (content.type == 'panel') {
 			if (!content.panel) {
 				for (var i=0; this.getComponent(i) && !content.panel; i++) {
+					//alert(i);
 					if (this.getComponent(i).getXType() == content.data) {
 						// a panel of this type has already been loaded => use it
+						
 						content.panel = this.getComponent(i);
 					}
 				}
@@ -398,7 +340,9 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 				if (content.panel) content.panel.reset();
 			} else {//if (!isBack) {//if (isReload) {
 				if (!isBack || content.data != 'mails-containerpanel') {
-					if (content.panel) content.panel.load();
+					
+					//if (content.panel) content.panel.load(); //FIXME Pepe
+					if (content.panel.data != "overview") content.panel.load(); //FIXME Pepe
 				}
 			}
 
@@ -422,29 +366,40 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 			this.loaded = true;
 		}
 		
+		og.eventManager.fireEvent("tab loaded", this.id);
 		return true;
 	},
+	
+	
+	
 	
 	back: function() {
 		var prev = this.history.pop();
 		if (!prev) {
 			this.load({type: 'start'});
-/**/	} else if (prev.type == 'html' && prev.url) {
+		} else if (prev.type == 'html' && prev.url) {
 			this.load({type: 'url', data: prev.url}, true);
-/**/	} else { 
+		} else { 
 			this.load(prev, true, true);
 		}
 	},
 	
+	
+	
 	reload: function() {
+    	//og.msg("","reload "+ this.content.toSource(), 15);
 		if (this.content.type == 'html' && this.content.url) {
 			this.load({type:'url',data:this.content.url}, true);
 		} else {
 			this.load(this.content, true, true);
 		}
 	},
-		
+	
+	
+	
+	
 	reset: function() {
+
 		if (!this.confirmClose()) return;
 		this.loaded = false;
 		if (this.active) {

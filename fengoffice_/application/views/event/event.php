@@ -117,7 +117,6 @@ $genid = gen_id();
     Foundation Inc, 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 $object = $event;
-$project = active_or_personal_project();
 
 $day =  array_var($event_data, 'day');
 $month =  array_var($event_data, 'month');
@@ -129,44 +128,44 @@ $filter_user = isset($_GET['user_id']) ? $_GET['user_id'] : logged_user()->getId
 
 $use_24_hours = user_config_option('time_format_use_24');
 
-	// get dates
-	$setlastweek='';
+// get dates
+$setlastweek='';
+$pm = 0;
+if($event->isNew()) { 
+	$username = '';
+	$desc = '';
+	
+	// if adding event to today, make the time current time.  Else just make it 6PM (you can change that)
+	if( "$year-$month-$day" == date("Y-m-d") ) $hour = date('G') + 1;
+	else $hour = 18;
+	// organize time by 24-hour or 12-hour clock.
 	$pm = 0;
-	if($event->isNew()) { 
-			
-		
-		$username = '';
-		$desc = '';
-		
-		// if adding event to today, make the time current time.  Else just make it 6PM (you can change that)
-		if( "$year-$month-$day" == date("Y-m-d") ) $hour = date('G') + 1;
-		else $hour = 18;
-		// organize time by 24-hour or 12-hour clock.
-		$pm = 0;
-		if(!$use_24_hours) {
-			if($hour >= 12) {
-				$hour = $hour - 12;
-				$pm = 1;
-			}
+	if(!$use_24_hours) {
+		if($hour >= 12) {
+			$hour = $hour - 12;
+			$pm = 1;
 		}
-		// set default minute and duration times.
-		$minute = 0;
-		$durhr = 1;
-		$durday = 0;
-		$durmin = 0;
-		// set other defaults
-		$rjump = 1;
-		// set type of event to default of 1 (nothing)
-		$typeofevent = 1;
 	}
-	?>
+	// set default minute and duration times.
+	$minute = 0;
+	$durhr = 1;
+	$durday = 0;
+	$durmin = 0;
+	// set other defaults
+	$rjump = 1;
+	// set type of event to default of 1 (nothing)
+	$typeofevent = 1;
+}
 
-	<?php if($event->isNew()) { ?>
-	<form id="<?php echo $genid ?>submit-edit-form" style="height:100%;background-color:white" class="internalForm" action="<?php echo get_url('event', 'add')."&view=". array_var($_GET, 'view','month'); ?>" method="post">
-	<?php } else { ?>
-	<form id="<?php echo $genid ?>submit-edit-form" style="height:100%;background-color:white" class="internalForm" action="<?php echo $event->getEditUrl()."&view=". array_var($_GET, 'view','month'); ?>" method="post">
-	<?php } // if ?>
+$form_on_submit = "return og.handleMemberChooserSubmit('$genid', ".$event->manager()->getObjectTypeId().");";
 
+if($event->isNew()) {
+	$form_view_url = get_url('event', 'add')."&view=". array_var($_GET, 'view','month');
+} else {
+	$form_view_url = $event->getEditUrl()."&view=". array_var($_GET, 'view','month');
+} 
+?>
+	<form id="<?php echo $genid ?>submit-edit-form" class="add-event" style="height:100%;background-color:white" class="internalForm" action="<?php echo $form_view_url; ?>" method="post" onsubmit="<?php echo $form_on_submit ?>">
 	<input type="hidden" id="event[pm]" name="event[pm]" value="<?php echo $pm?>">
 	<div class="event">	
 	<div class="coInputHeader">
@@ -186,27 +185,20 @@ $use_24_hours = user_config_option('time_format_use_24');
 				</table>
 			</div>		
 		</div>
-		<div style="text-align:left;"><?php echo label_tag(lang('subject'), 'taskListFormName', true) . text_field('event[subject]', array_var($event_data, 'subject'), 
+		<div style="text-align:left;"><?php echo label_tag(lang('subject'), 'taskListFormName', true) . text_field('event[name]', array_var($event_data, 'name'), 
 	    		array('class' => 'title', 'id' => 'eventSubject', 'tabindex' => '1', 'maxlength' => '100', 'tabindex' => '10')) ?>
 	    </div>
 	 
 	 	<?php $categories = array(); Hook::fire('object_edit_categories', $object, $categories); ?>
 	 	
 	 	<div style="padding-top:5px;text-align:left;">
-		<?php if ($all) { ?>
-			<a href="#" class="option" style="font-weight:bold" onclick="og.toggleAndBolden('<?php echo $genid ?>add_event_select_workspace_div',this)"><?php echo lang('workspace') ?></a> - 
-		<?php } else {?>
-			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_event_select_workspace_div',this)"><?php echo lang('workspace') ?></a> -
-		<?php }?> 
-		<a href='#' class='option' onclick="og.ToggleTrap('trap2', 'fs2');og.toggleAndBolden('<?php echo $genid ?>add_event_tags_div', this)"><?php echo lang('tags')?></a> - 
+		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_event_select_workspace_div',this)" <?php echo ($event->isNew() ? 'style="font-weight:bold"' : '')?>><?php echo lang('context') ?></a> -
 		<a href='#' class='option' onclick="og.ToggleTrap('trap3', 'fs3');og.toggleAndBolden('<?php echo $genid ?>add_event_description_div', this)"><?php echo lang('description')?></a> - 
 		<a href='#' class='option' onclick="og.ToggleTrap('trap4', 'fs4');og.toggleAndBolden('<?php echo $genid ?>event_repeat_options_div', this)"><?php echo lang('CAL_REPEATING_EVENT')?></a> -
 		<a href='#' class='option' onclick="og.ToggleTrap('trap5', 'fs5');og.toggleAndBolden('<?php echo $genid ?>add_reminders_div', this)"><?php echo lang('object reminders')?></a> - 
-		<a href='#' class='option' onclick="og.ToggleTrap('trap6', 'fs6');og.toggleAndBolden('<?php echo $genid ?>add_custom_properties_div', this)"><?php echo lang('custom properties')?></a> - 
-		<a href="#" class="option" onclick="og.ToggleTrap('trap7', 'fs7');og.toggleAndBolden('<?php echo $genid ?>add_subscribers_div',this)"><?php echo lang('object subscribers') ?></a>
-		<?php if($object->isNew() || $object->canLinkObject(logged_user(), $project)) { ?> - 
-			<a href="#" class="option" onclick="og.ToggleTrap('trap8', 'fs8');og.toggleAndBolden('<?php echo $genid ?>add_linked_objects_div',this)"><?php echo lang('linked objects') ?></a>
-		<?php } ?> -
+		<?php //FIXME FENG2 or REMOVE <a href='#' class='option' onclick="og.ToggleTrap('trap6', 'fs6');og.toggleAndBolden('<?php echo $genid add_custom_properties_div', this)"><?php echo lang('custom properties')</a> - ?>
+		<a href="#" class="option" onclick="og.ToggleTrap('trap7', 'fs7');og.toggleAndBolden('<?php echo $genid ?>add_subscribers_div',this)"><?php echo lang('object subscribers') ?></a> - 
+		<a href="#" class="option" onclick="og.ToggleTrap('trap8', 'fs8');og.toggleAndBolden('<?php echo $genid ?>add_linked_objects_div',this)"><?php echo lang('linked objects') ?></a> - 
 		<a href="#" class="option" onclick="og.ToggleTrap('trap9', 'fs9');og.toggleAndBolden('<?php echo $genid ?>add_event_invitation_div', this);"><?php echo lang('event invitations') ?></a>
 		<?php foreach ($categories as $category) { ?>
 			- <a href="#" class="option" <?php if ($category['visible']) echo 'style="font-weight: bold"'; ?> onclick="og.toggleAndBolden('<?php echo $genid . $category['name'] ?>', this)"><?php echo lang($category['name'])?></a>
@@ -218,7 +210,7 @@ $use_24_hours = user_config_option('time_format_use_24');
 		<div class="coInputMainBlock">	
 			<input id="<?php echo $genid?>updated-on-hidden" type="hidden" name="updatedon" value="<?php echo $event->isNew() ? '' : $event->getUpdatedOn()->getTimestamp() ?>">
 			<input id="<?php echo $genid?>merge-changes-hidden" type="hidden" name="merge-changes" value="" >
-			<input id="<?php echo $genid?>genid" type="hidden" name="genid" value="<?php echo $genid ?>" >	
+			<input id="<?php echo $genid?>genid" type="hidden" name="genid" value="<?php echo $genid ?>" >
 		<?php 
 			$show_help_option = user_config_option('show_context_help'); 
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_event_context_help', true, logged_user()->getId())) {?>
@@ -227,11 +219,7 @@ $use_24_hours = user_config_option('time_format_use_24');
 			</div>
 		<?php }?>
 		
-		<?php if ($all) { ?>
-			<div id="<?php echo $genid ?>add_event_select_workspace_div" style="display:block"> 
-		<?php } else {?>
-				<div id="<?php echo $genid ?>add_event_select_workspace_div" style="display:none">
-		<?php }?>		
+		<div id="<?php echo $genid ?>add_event_select_workspace_div" <?php echo $event->isNew() ? '' : 'style="display:none"'?>>
 		<fieldset>
 		<?php 
 			$show_help_option = user_config_option('show_context_help'); 
@@ -240,30 +228,17 @@ $use_24_hours = user_config_option('time_format_use_24');
 				<?php render_context_help($this, 'chelp add event workspace','add_event_workspace'); ?>
 			</div>
 		<?php }?>
-		<legend><?php echo lang('workspace') ?></legend>
-			<?php if ($object->isNew()) {
-				echo select_workspaces('ws_ids', null, array($project), $genid.'ws_ids');
-			} else {
-				echo select_workspaces('ws_ids', null, $object->getWorkspaces(), $genid.'ws_ids');
-			} ?>
+		<legend><?php echo lang('context') ?></legend>
+			<?php
+				if ($event->isNew()) {
+					render_dimension_trees($event->manager()->getObjectTypeId(), $genid, null, array('select_current_context' => true));
+				} else {
+					render_dimension_trees($event->manager()->getObjectTypeId(), $genid, $event->getMemberIds());
+				} 
+			?>
 		</fieldset>
 		</div>
 		<div id="trap1"><fieldset id="fs1" style="height:0px;border:0px;padding:0px;display:none"><span style="color:#FFFFFF;"></span></fieldset></div>
-		
-		<div id="<?php echo $genid ?>add_event_tags_div" style="display:none">
-		<fieldset>
-		<?php 
-			$show_help_option = user_config_option('show_context_help'); 
-			if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_event_tag_context_help', true, logged_user()->getId())) {?>
-			<div id="addEventPanelContextHelp" class="contextHelpStyle">
-				<?php render_context_help($this, 'chelp add event tag','add_event_tag'); ?>
-			</div>
-		<?php }?>
-			<legend><?php echo lang('tags')?></legend>
-			<?php echo autocomplete_tags_field("event[tags]", array_var($event_data, 'tags'), "event[tags]", 20); ?>
-		</fieldset>
-		</div>
-		<div id="trap2"><fieldset id="fs2" style="height:0px;border:0px;padding:0px;display:none"><span style="color:#FFFFFF;"></span></fieldset></div>
 		
 		<div id="<?php echo $genid ?>add_event_description_div" style="display:none">
 			<fieldset>
@@ -280,7 +255,8 @@ $use_24_hours = user_config_option('time_format_use_24');
 		</div>
 		<div id="trap3"><fieldset id="fs3" style="height:0px;border:0px;padding:0px;display:none"><span style="color:#FFFFFF;"></span></fieldset></div>
 		
-<?php $occ = array_var($event_data, 'occ'); 
+<?php 
+	$occ = array_var($event_data, 'occ'); 
 	$rsel1 = array_var($event_data, 'rsel1'); 
 	$rsel2 = array_var($event_data, 'rsel2'); 
 	$rsel3 = array_var($event_data, 'rsel3'); 
@@ -444,6 +420,7 @@ $use_24_hours = user_config_option('time_format_use_24');
 	</div>
 	
 	<script>
+	/* FIXME
 	var wsch = Ext.getCmp('<?php echo $genid ?>ws_ids');
 	wsch.on("wschecked", function(arguments) {
 		if (!this.getValue().trim()) return;
@@ -458,27 +435,25 @@ $use_24_hours = user_config_option('time_format_use_24');
 			scripts: true
 		});
 	}, wsch);
+	*/
 	</script>
 	<div id="trap7"><fieldset id="fs7" style="height:0px;border:0px;padding:0px;display:none"><span style="color:#FFFFFF;"></span></fieldset></div>
 
-	<?php if($object->isNew() || $object->canLinkObject(logged_user(), $project)) { ?>
-
 	<div style="display:none" id="<?php echo $genid ?>add_linked_objects_div">
 	<fieldset>
-	<?php 
+		<?php 
 			$show_help_option = user_config_option('show_context_help'); 
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_event_linked_objects_context_help', true, logged_user()->getId())) {?>
-			<div id="addEventPanelContextHelp" class="contextHelpStyle">
-				<?php render_context_help($this, 'chelp add event linked objects','add_event_linked_objects'); ?>
-			</div>
+		<div id="addEventPanelContextHelp" class="contextHelpStyle">
+			<?php render_context_help($this, 'chelp add event linked objects','add_event_linked_objects'); ?>
+		</div>
 		<?php }?>
 		<legend><?php echo lang('linked objects') ?></legend>
 		<?php echo render_object_link_form($object) ?>
 	</fieldset>	
 	</div>
 	<div id="trap8"><fieldset id="fs8" style="height:0px;border:0px;padding:0px;display:none"><span style="color:#FFFFFF;"></span></fieldset></div>
-	<?php } // if ?>
-
+	
 	<div id="<?php echo $genid ?>add_event_invitation_div" style="display:none" class="og-add-subscribers">
 	<fieldset id="emailNotification">
 	<?php 
@@ -617,9 +592,7 @@ $use_24_hours = user_config_option('time_format_use_24');
 
 <script>
 
-var wsch = Ext.getCmp('<?php echo $genid ?>ws_ids');
 og.eventInvitationsUserFilter = '<?php echo $filter_user ?>';
-og.eventInvitationsPrevWsVal = -1;
 
 og.drawInnerHtml = function(companies) {
 	var htmlStr = '';
@@ -651,7 +624,6 @@ og.drawInnerHtml = function(companies) {
 						htmlStr += '<input style="display:none;" type="checkbox" class="checkbox" name="event[invite_user_'+usr.id+']" id="' + genid + 'inviteUser'+usr.id+'" value="checked"></input>';
 						htmlStr += '<label style="overflow:hidden; background: transparent url('+usr.avatar_url+') no-repeat;" ><span class="link-ico ico-user" >'+og.clean(usr.name)+'</span> <br> <span style="color:#888888;font-size:90%;font-weight:normal;">'+ usr.mail+ ' </span></label>';
 						script += 'cos.company_' + comp_id + '.users.push({ id:'+usr.id+', checkbox_id : \'inviteUser' + usr.id + '\'});';
-						htmlStr += '<div   id="div' + genid + 'inviteUser'+usr.id+'check" style="display:none;" class="container-div checked-user-check" ></div>';
 						if (usr.invited)
 							script += 'og.checkUser(document.getElementById(\'div' + genid + 'inviteUser'+usr.id+'\'));'
 						htmlStr += '</div>';
@@ -681,31 +653,44 @@ og.drawUserList = function(success, data) {
 	}
 };
 
-og.redrawUserList = function(wsVal){
-	if (wsVal != og.eventInvitationsPrevWsVal) {
-		og.openLink(og.getUrl('event', 'allowed_users_view_events', {ws_id:wsVal, user:og.eventInvitationsUserFilter, evid:<?php echo $event->isNew() ? 0 : $event->getId()?>}), {callback:og.drawUserList});
-		og.eventInvitationsPrevWsVal = wsVal;
-	}
+og.redrawUserList = function(context){
+	og.openLink(og.getUrl('event', 'allowed_users_view_events', {context:context, user:og.eventInvitationsUserFilter, evid:<?php echo $event->isNew() ? 0 : $event->getId()?>}), {callback:og.drawUserList});
 };
-wsch.on("wschecked", function() {
-	if (!this.getValue().trim()) return;
-	og.redrawUserList(this.getValue());
-}, wsch);
-<?php if ($object->isNew()) {
-	$ws_ids = $project->getId();
-} else {
-	$ws_ids = "";
-	foreach ($object->getWorkspaces() as $w) {
-		if ($ws_ids != "") $ws_ids .= ",";
-		$ws_ids .= $w->getId();
-	}
-}
-?>
-og.redrawUserList('<?php echo $ws_ids ?>');
+og.redrawUserList("");
 
 Ext.getCmp(genid + 'event[start_value]Cmp').on({
 	change: og.updateRepeatHParams
 });
+
+var memberChoosers = Ext.getCmp('<?php echo "$genid-member-chooser-panel-".$event->manager()->getObjectTypeId()?>').items;
+if (memberChoosers) {
+	memberChoosers.each(function(item, index, length) {
+		item.on('all trees updated', function() {
+			var dimensionMembers = {};
+			memberChoosers.each(function(it, ix, l) {
+				dim_id = this.dimensionId;
+				dimensionMembers[dim_id] = [];
+				var checked = it.getChecked("id");
+				for (var j = 0 ; j < checked.length ; j++ ) {
+					dimensionMembers[dim_id].push(checked[j]);
+				}
+			});
+
+			var uids = App.modules.addMessageForm.getCheckedUsers('<?php echo $genid ?>');
+			Ext.get('<?php echo $genid ?>add_subscribers_content').load({
+				url: og.getUrl('object', 'render_add_subscribers', {
+					context: Ext.util.JSON.encode(dimensionMembers),
+					users: uids,
+					genid: '<?php echo $genid ?>',
+					otype: '<?php echo $event->manager()->getObjectTypeId()?>'
+				}),
+				scripts: true
+			});
+
+			og.redrawUserList(Ext.util.JSON.encode(dimensionMembers));
+		});
+	});
+}
 
 Ext.get('eventSubject').focus();
 <?php if (array_var($event_data, 'typeofevent') == 2) echo 'og.toggleDiv(\''.$genid.'event[start_time]\'); og.toggleDiv(\''.$genid.'ev_duration_div\');'; ?>

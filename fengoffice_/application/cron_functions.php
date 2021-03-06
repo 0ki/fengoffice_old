@@ -1,9 +1,11 @@
 <?php
 
 function check_mail() {
-	_log("Checking email...");
-	MailUtilities::getmails(null, $err, $succ, $errAcc, $received);
-	_log("$received emails fetched.");
+	if (Plugins::instance()->isActivePlugin('mail')) {
+		_log("Checking email...");
+		MailUtilities::getmails(null, $err, $succ, $errAcc, $received);
+		_log("$received emails fetched.");
+	}
 }
 
 function purge_trash() {
@@ -44,15 +46,6 @@ function send_reminders() {
 	_log("$sent reminders sent.");
 }
 
-function send_password_expiration_reminders(){
-	$password_expiration_notification = config_option('password_expiration_notification', 0);
-	if($password_expiration_notification > 0){
-		_log("Sending password expiration reminders...");
-		$count = UserPasswords::sendPasswordExpirationReminders();
-		_log("$count password expiration reminders sent.");
-	}
-}
-
 function send_notifications_through_cron() {
 	_log("Sending notifications...");
 	$count = Notifier::sendQueuedEmails();
@@ -60,12 +53,14 @@ function send_notifications_through_cron() {
 }
 
 function delete_mails_from_server() {
-	try {
-		_log("Checking mail accounts to delete mails from server...");
-		$count = MailUtilities::deleteMailsFromServerAllAccounts();
-		_log("Deleted $count mails from server...");
-	} catch (Exception $e) {
-		_log("Error deleting mails from server: " . $e->getMessage());
+	if (Plugins::instance()->isActivePlugin('mail')) {
+		try {
+			_log("Checking mail accounts to delete mails from server...");
+			$count = MailUtilities::deleteMailsFromServerAllAccounts();
+			_log("Deleted $count mails from server...");
+		} catch (Exception $e) {
+			_log("Error deleting mails from server: " . $e->getMessage());
+		}
 	}
 }
 

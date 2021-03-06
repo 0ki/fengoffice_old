@@ -6,17 +6,20 @@ require_javascript("og/modules/addFileForm.js");
 <script>
 	og.pickObjectToZip = function(zip_id) {
 		og.ObjectPicker.show(function(objs) {
-				if (objs.length < 1) return;
-				if (objs[0].data.manager != 'ProjectFiles') {
-					og.msg(lang("error"), lang("must choose a file"));
-					return;
-				}
-				obj_ids = '';
-				for(i=0; i<objs.length; i++) {
-					obj_ids += (obj_ids == '' ? '' : ',') + objs[i].data.object_id;
-				}
-				og.openLink(og.getUrl('files', 'zip_add', {id:zip_id, objects:obj_ids})); 
-			}, this, {});
+			if (objs.length < 1) return;
+			if (objs[0].data.type != 'file') {
+				og.msg(lang("error"), lang("must choose a file"));
+				return;
+			}
+			obj_ids = '';
+			for(i=0; i<objs.length; i++) {
+				obj_ids += (obj_ids == '' ? '' : ',') + objs[i].data.object_id;
+			}
+			og.openLink(og.getUrl('files', 'zip_add', {id:zip_id, objects:obj_ids})); 
+		}, this, {
+			types: ['file'],
+			selected_type: 'file'
+		});
 	}
 </script>
 
@@ -68,7 +71,7 @@ if (isset($file) && $file instanceof ProjectFile) {
 		if (config_option('checkout_notification_dialog')) { 
 			$checkedOutById = $file->getCheckedOutById();
 			if($checkedOutById != 0){
-				$checkedOutByName = ($checkedOutById == logged_user()->getId() ?  "self" : Users::findById($checkedOutById)->getUsername());
+				$checkedOutByName = ($checkedOutById == logged_user()->getId() ?  "self" : Contacts::findById($checkedOutById)->getUsername());
 			}else{
 				$checkedOutByName = '';
 			}
@@ -117,7 +120,7 @@ if (isset($file) && $file instanceof ProjectFile) {
 		}
 	}
 	
-	if (can_add(logged_user(), active_or_personal_project(), 'ProjectFiles') && $file->getType() != ProjectFiles::TYPE_WEBLINK) {
+	 if (/* FIXME can_add(logged_user(), active_or_personal_project(), 'ProjectFiles') &&*/ $file->getType() != ProjectFiles::TYPE_WEBLINK) {
 		add_page_action(lang('copy file'), $file->getCopyUrl(), 'ico-copy');
 	}
 
@@ -132,7 +135,7 @@ if (isset($file) && $file instanceof ProjectFile) {
 	if ($last_revision instanceof ProjectFileRevision) { 
 		$description .= '<div id="fileLastRevision"><span class="propertyName">' . lang('last revision') . ':</span>'; 
 		if ($last_revision->getCreatedBy() instanceof User) {
-			$description .= lang('file revision info long', $last_revision->getRevisionNumber(), $last_revision->getCreatedBy()->getCardUrl(), clean($last_revision->getCreatedBy()->getDisplayName()), format_descriptive_date($last_revision->getCreatedOn()));
+			$description .= lang('file revision info long', $last_revision->getRevisionNumber(), $last_revision->getCreatedBy()->getCardUserUrl(), clean($last_revision->getCreatedBy()->getDisplayName()), format_descriptive_date($last_revision->getCreatedOn()));
 		} else {
 			$description .= lang('file revision info short', $last_revision->getRevisionNumber(), format_descriptive_date($last_revision->getCreatedOn()));
 		}
@@ -142,16 +145,12 @@ if (isset($file) && $file instanceof ProjectFile) {
 	if ($file->isCheckedOut()) {
 		$description .= '<div id="fileCheckedOutBy" class="coViewAction ico-locked">';
 		if($file->getCheckedOutBy() instanceof User) {
-			$description .= lang('file checkout info long', $file->getCheckedOutBy()->getCardUrl(), clean($file->getCheckedOutBy()->getDisplayName()), format_descriptive_date($file->getCheckedOutOn()). ", " . format_time($file->getCheckedOutOn()));
+			$description .= lang('file checkout info long', $file->getCheckedOutBy()->getCardUserUrl(), clean($file->getCheckedOutBy()->getDisplayName()), format_descriptive_date($file->getCheckedOutOn()). ", " . format_time($file->getCheckedOutOn()));
 		} else {
 			$description .= lang('file checkout info short', format_descriptive_date($file->getCheckedOutOn()). ", " . format_time($file->getCheckedOutOn()));
 		} // if
 		$description .= "</div>";
 	} // if
-
-	if ($file->getType() == ProjectFiles::TYPE_WEBLINK){
-		//$description .= '<div id="urlDiv"><b>' . lang('url') . '</b>: <a href="' . clean($file->getUrl()) . '" target="_blank">' . clean($file->getUrl()) . '</a>';
-	}
 
 	if (!$file->isTrashed() && !$file->isArchived() && $file->getType() != ProjectFiles::TYPE_WEBLINK) {
 		tpl_assign('image', '<div class="coViewIconImage"><img src="' . $file->getTypeIconUrl(false) .'" alt="' . clean($file->getFilename()) . '" /></div>');

@@ -8,17 +8,19 @@
  */
 class ApplicationLog extends BaseApplicationLog {
 
+	
 	/**
 	 * Return user who made this acction
 	 *
 	 * @access public
 	 * @param void
-	 * @return User
+	 * @return Contact
 	 */
 	function getTakenBy() {
-		return Users::findById($this->getTakenById());
+		return Contacts::findById($this->getTakenById());
 	} // getTakenBy
 
+	
 	/**
 	 * Return taken by display name
 	 *
@@ -28,9 +30,10 @@ class ApplicationLog extends BaseApplicationLog {
 	 */
 	function getTakenByDisplayName() {
 		$taken_by = $this->getTakenBy();
-		return $taken_by instanceof User ? $taken_by->getDisplayName() : lang('n/a');
+		return $taken_by instanceof Contact ? $taken_by->getObjectName() : lang('n/a');
 	} // getTakenByDisplayName
 
+	
 	/**
 	 * Returns true if this application log is made today
 	 *
@@ -50,6 +53,7 @@ class ApplicationLog extends BaseApplicationLog {
 		$now->getYear() == $created_on->getYear();
 	} // isToday
 
+	
 	/**
 	 * Returnst true if this application log was made yesterday
 	 *
@@ -68,17 +72,7 @@ class ApplicationLog extends BaseApplicationLog {
 		$now->getYear() == $day_after->getYear();
 	} // isYesterday
 
-	/**
-	 * Return project
-	 *
-	 * @access public
-	 * @param void
-	 * @return Project
-	 */
-	function getProject() {
-		return Projects::findById($this->getProjectId());
-	} // getProject
-
+	
 	/**
 	 * Return text message for this entry. If is lang formed as 'log' + action + manager name
 	 *
@@ -91,64 +85,32 @@ class ApplicationLog extends BaseApplicationLog {
 	 * @return string
 	 */
 	function getText() {
-		$code = strtolower('log ' . ($this->getAction()) . ' ' . $this->getRelObjectManager());
+		$code = strtolower('log ' . ($this->getAction()) . ' ' . $this->getObject()->getObjectTypeName());
 		$data = $this->getActionData();
 		if ($data)
 			$code = $code . ' data';
 		return lang($code, clean($this->getObjectName()), $this->getActionData());
 	} // getText
 	
+	
 	function getActionData() {
 		$result = $this->getLogData();
 		
 		if ($this->getLogData() != ''){
-			switch($this->getAction()){
-				case ApplicationLogs::ACTION_LINK: 
+			if($this->getAction()== ApplicationLogs::ACTION_LINK || $this->getAction()== ApplicationLogs::ACTION_UNLINK){
 					$split = explode(':',$this->getLogData());
-					$obj = get_object_by_manager_and_id($split[1], $split[0]);
+					$obj = Objects::findObject($split[1]);
 					if ($obj && $obj->canView(logged_user())){
 						$ico_class = '';
-						switch($split[0]){
-							case 'ProjectMessages': $ico_class = 'ico-message';break;
-							case 'ProjectTasks': $ico_class = 'ico-task';break;
-							case 'ProjectMilestones': $ico_class = 'ico-milestone';break;
-							case 'Contacts': $ico_class = 'ico-contact';break;
-							case 'ProjectFiles': $ico_class = 'ico-file';break;
-							case 'ProjectFileRevisions': $ico_class = 'ico-file';break;
-							case 'ProjectEvents': $ico_class = 'ico-event';break;
-							default:break;
-						}
-						$result = '<a class="internalLink coViewAction ' . $ico_class . '" href="' . $obj->getViewUrl() . '">' .  clean($obj->getObjectName()) . '</a>';
+						$result = '<a class="internalLink coViewAction ' . $obj->getObjectType()->getIconClass() . '" href="' . $obj->getViewUrl() . '">' .  clean($obj->getObjectName()) . '</a>';
 					}
-					break;
-				case ApplicationLogs::ACTION_UNLINK: 
-					$split = explode(':',$this->getLogData());
-					$obj = get_object_by_manager_and_id($split[1], $split[0]);
-					if ($obj && $obj->canView(logged_user())){
-						$ico_class = '';
-						switch($split[0]){
-							case 'ProjectMessages': $ico_class = 'ico-message';break;
-							case 'ProjectTasks': $ico_class = 'ico-task';break;
-							case 'ProjectMilestones': $ico_class = 'ico-milestone';break;
-							case 'Contacts': $ico_class = 'ico-contact';break;
-							case 'ProjectFiles': $ico_class = 'ico-file';break;
-							case 'ProjectFileRevisions': $ico_class = 'ico-file';break;
-							case 'ProjectEvents': $ico_class = 'ico-event';break;
-							default:break;
-						}
-						$result = '<a class="internalLink coViewAction ' . $ico_class . '" href="' . $obj->getViewUrl() . '">' .  clean($obj->getObjectName()) . '</a>';
-					}
-					break;
-				case ApplicationLogs::ACTION_TAG:
-					$result =  clean($this->getLogData());
-					break;
-				default: break;
 			}
 		}
 		
 		return $result;
 	}
 
+	
 	/**
 	 * Return object connected with this action
 	 *
@@ -157,9 +119,10 @@ class ApplicationLog extends BaseApplicationLog {
 	 * @return ApplicationDataObject
 	 */
 	function getObject() {
-		return get_object_by_manager_and_id($this->getRelObjectId(), $this->getRelObjectManager());
+		return Objects::findObject($this->getRelObjectId());
 	} // getObject
 
+	
 	/**
 	 * This function will try load related object and return its YRL. If object is not found '' is retuned
 	 *
@@ -172,6 +135,7 @@ class ApplicationLog extends BaseApplicationLog {
 		return $object instanceof ApplicationDataObject ? $object->getObjectUrl() : null;
 	} // getObjectMessage
 
+	
 	/**
 	 * Return object type name
 	 *
@@ -183,9 +147,10 @@ class ApplicationLog extends BaseApplicationLog {
 		return $object instanceof ApplicationDataObject ? $object->getObjectTypeName() : null;
 	} // getObjectTypeName
 
+	
 	function getActivityData() {
-		$user = Users::findById($this->getCreatedById());
-		$object = get_object_by_manager_and_id($this->getRelObjectId(), $this->getRelObjectManager());
+		$user = Contacts::findById($this->getCreatedById());
+		$object = Objects::findObject($this->getRelObjectId());
 		if (!$user) return false;
 		
 		$icon_class = "";
@@ -198,9 +163,16 @@ class ApplicationLog extends BaseApplicationLog {
 				$acc .= "-";
 			}			
 		}
+		// Build data depending on type
 		if ($object){
+			if ($object instanceof Contact && $object->isUser()) {
+				$type  = "user" ;
+			}else{
+				$type = $object->getObjectTypeName() ;
+			}
+			
 			$object_link = '<a style="font-weight:bold" href="' . $object->getObjectUrl() . '">&nbsp;'.
-			'<span style="padding: 1px 0 3px 18px;" class="db-ico ico-unknown ico-' . $object->getObjectTypeName() . $icon_class . '"/>'.clean($object->getObjectName()).'</a>';
+			'<span style="padding: 1px 0 3px 18px;" class="db-ico ico-unknown ico-' . $type . $icon_class . '"/>'.clean($object->getObjectName()).'</a>';
 		}
 		else{
 			$object_link = clean($this->getObjectName()).'&nbsp;'.lang('object is deleted');
@@ -219,18 +191,17 @@ class ApplicationLog extends BaseApplicationLog {
 			case ApplicationLogs::ACTION_DOWNLOAD :				
 			case ApplicationLogs::ACTION_CHECKIN :
 			case ApplicationLogs::ACTION_CHECKOUT :
-				if ($object)
-					return lang('activity ' . $this->getAction(), lang('the '.$object->getObjectTypeName()), $user->getDisplayName(), $object_link);
-				else
-					return lang('activity ' . $this->getAction(), lang('the '.$this->getRelObjectManager()), $user->getDisplayName(), $object_link);
+				if ($object) {
+					return lang('activity ' . $this->getAction(), lang('the '.$type), $user->getDisplayName(), $object_link);
+				}
 			case ApplicationLogs::ACTION_SUBSCRIBE :
 			case ApplicationLogs::ACTION_UNSUBSCRIBE :
 				$user_ids = explode(",", $this->getLogData());
 				if (count($user_ids) < 8) {
 					$users_str = "";
 					foreach ($user_ids as $usid) {
-						$su = Users::findById($usid);
-						if ($su instanceof User)
+						$su = Contacts::findById($usid);
+						if ($su instanceof Contact)
 							$users_str .= '<a style="font-weight:bold" href="'.$su->getObjectUrl().'">&nbsp;<span style="padding: 0 0 3px 18px;" class="db-ico ico-unknown ico-user"/>'.clean($su->getObjectName()).'</a>, ';
 					}
 					if (count($user_ids) == 1) {
@@ -243,17 +214,14 @@ class ApplicationLog extends BaseApplicationLog {
 				}
 				if ($object)
 					return lang('activity ' . $this->getAction(), lang('the '.$object->getObjectTypeName()), $user->getDisplayName(), $object_link, $users_text);
-				else
-					return lang('activity ' . $this->getAction(), lang('the '.$this->getRelObjectManager()), $user->getDisplayName(), $object_link, $users_text);
 			case ApplicationLogs::ACTION_COMMENT :
-				if ($object)
-					return lang('activity ' . $this->getAction(), lang('the '.$object->getObjectTypeName()), $user->getDisplayName(), $object_link, $this->getLogData());
-				else
-					return lang('activity ' . $this->getAction(), lang('the '.$this->getRelObjectManager()), $user->getDisplayName(), $object_link, $this->getLogData());
+				if ($object) {
+					return lang('activity ' . $this->getAction(), lang('the '.$object->getRelObject()->getObjectTypeName()), $user->getDisplayName(), $object_link, $this->getLogData());
+				}
 			case ApplicationLogs::ACTION_LINK :
 			case ApplicationLogs::ACTION_UNLINK :
 				$exploded = explode(":", $this->getLogData());
-				$linked_object = get_object_by_manager_and_id($exploded[1], $exploded[0]);
+				$linked_object = Objects::findObject($exploded[1]);
 				if ($linked_object instanceof ApplicationDataObject ) {
 					$icon_class = "";
 					if ($linked_object instanceof ProjectFile) {
@@ -267,14 +235,13 @@ class ApplicationLog extends BaseApplicationLog {
 					}
 					$linked_object_link = '<a style="font-weight:bold" href="' . $linked_object->getObjectUrl() . '">&nbsp;<span style="padding: 1px 0 3px 18px;" class="db-ico ico-unknown ico-'.$linked_object->getObjectTypeName() . $icon_class . '"/>'.clean($linked_object->getObjectName()).'</a>';
 				} else $linked_object_link = '';
-				if ($object)
+				if ($object) {
 					return lang('activity ' . $this->getAction(), lang('the '.$object->getObjectTypeName()), $user->getDisplayName(), $object_link, $linked_object instanceof ApplicationDataObject ? lang('the '.$linked_object->getObjectTypeName()) : '', $linked_object_link);
-				else
-					return lang('activity ' . $this->getAction(), lang('the '.$this->getRelObjectManager()), $user->getDisplayName(), $object_link);					
+				}
 			case ApplicationLogs::ACTION_LOGIN :
 			case ApplicationLogs::ACTION_LOGOUT :
 				return lang('activity ' . $this->getAction(), $user->getDisplayName());					
-			case ApplicationLogs::ACTION_MOVE :
+			/*FIXME when D&D is implemented case ApplicationLogs::ACTION_MOVE :
 				$exploded = explode(";", $this->getLogData());
 				$to_str = "";
 				$from_str = "";
@@ -303,17 +270,7 @@ class ApplicationLog extends BaseApplicationLog {
 					} else {
 						return lang('activity ' . $this->getAction() . ' no ws', lang('the '.$object->getObjectTypeName()), $user->getDisplayName(), $object_link);
 					}
-				}else{
-					if ($from_str != "" && $to_str != "") {
-						return lang('activity ' . $this->getAction() . ' from to', lang('the '.$this->getRelObjectManager()), $user->getDisplayName(), $object_link, $from_str, $to_str);
-					} else if ($from_str != "") {
-						return lang('activity ' . $this->getAction() . ' from', lang('the '.$this->getRelObjectManager()), $user->getDisplayName(), $object_link, $from_str);
-					} else if ($to_str != "") {
-						return lang('activity ' . $this->getAction() . ' to', lang('the '.$this->getRelObjectManager()), $user->getDisplayName(), $object_link, $to_str);
-					} else {
-						return lang('activity ' . $this->getAction() . ' no ws', lang('the '.$this->getRelObjectManager()), $user->getDisplayName(), $object_link);
-					}					
-				}			
+				}		
 			case ApplicationLogs::ACTION_COPY :				
 				$to_str = "";
 				$wsids_csv = str_replace("to:", "", $this->getLogData());
@@ -324,25 +281,17 @@ class ApplicationLog extends BaseApplicationLog {
 				if($object){
 					if ($to_str != "") {
 						return lang('activity ' . $this->getAction() . ' to', lang('the '.$object->getObjectTypeName()), $user->getDisplayName(), $object_link, $to_str);
-					} else {
-						return lang('activity ' . $this->getAction(), lang('the '.$object->getObjectTypeName()), $user->getDisplayName(), $object_link);
-					}
+					} 
 				}else{
 					if ($to_str != "") {
 						return lang('activity ' . $this->getAction() . ' to', lang('the '.$this->getRelObjectManager()), $user->getDisplayName(), $object_link, $to_str);
-					} else {
-						return lang('activity ' . $this->getAction(), lang('the '.$this->getRelObjectManager()), $user->getDisplayName(), $object_link);
 					}
-				}			
-			case ApplicationLogs::ACTION_TAG :
-				if($object)					
-					return lang('activity ' . $this->getAction(), lang('the '.$object->getObjectTypeName()), $user->getDisplayName(), $object_link, $this->getLogData());
-				else
-					return lang('activity ' . $this->getAction(), lang('the '.$this->getRelObjectManager()), $user->getDisplayName(), $object_link, $this->getLogData());
+				}	*/		
 			default: return false;
 		}
 		return false;
 	}
+	
 } // ApplicationLog
 
 ?>

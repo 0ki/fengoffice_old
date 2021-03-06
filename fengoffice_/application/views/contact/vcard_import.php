@@ -45,26 +45,9 @@ og.submitVcard = function(genid, processResult) {
         <?php echo file_field('vcard_file', null, array('id' => $genid . 'filenamefield', 'class' => 'title', 'tabindex' => 10, 'size' => '88', "onchange" => 'og.submitVcard(\'' . $genid .'\', 0);')) ?>
     </div>
 <?php } //if ?>
-<?php if (!isset($import_result) && !array_var($_GET, 'from_menu')) { ?>
-	<div>
-		<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('<?php echo $genid ?>import_contact_add_tags_div', this)"><?php echo lang('tags') ?></a>
-	</div>
-<?php } ?>
 </div>
 <div class="coInputMainBlock adminMainBlock">
-<?php
-	if (!isset($import_result)) { ?>
-		<p><b><?php 
-			if (array_var($_GET, 'from_menu')) echo lang('select a vcard file to load its data');
-			else echo lang('you can tag the contacts before running the import');
-		?></b></p>
-		
-		<div id="<?php echo $genid ?>import_contact_add_tags_div" style="display:none">
-			<fieldset><legend><?php echo lang('tags')?></legend>
-				<?php echo autocomplete_tags_field("tags", '', $genid."tags"); ?>
-			</fieldset>
-		</div>
-<?php	}
+<?php	
 	if (isset($import_result)) {
 		if (count($import_result['import_ok'])) {
 			$isAlt = false;

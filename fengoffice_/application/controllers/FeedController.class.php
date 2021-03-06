@@ -51,7 +51,7 @@ class FeedController extends PageController {
 				} // foreach
 			} // if
 
-			$activity_log = ApplicationLogs::getOverallLogs($include_private, $include_silent, $project_ids, config_option('feed_logs_count', 50));
+			//FIXME $activity_log = ApplicationLogs::getOverallLogs($include_private, $include_silent, $project_ids, config_option('feed_logs_count', 50));
 		} // if
 
 		$feed = new Angie_Feed(lang('recent activities feed'), undo_htmlspecialchars(ROOT_URL));
@@ -70,7 +70,7 @@ class FeedController extends PageController {
 		$this->setLayout('xml');
 
 		$logged_user = $this->loginUserByToken();
-		if(!($logged_user instanceof User)) {
+		if(!($logged_user instanceof Contact)) {
 			header("HTTP/1.0 404 Not Found");
 			die();
 		} // if
@@ -89,7 +89,7 @@ class FeedController extends PageController {
 		$include_private = $logged_user->isMemberOfOwnerCompany();
 		$include_silent = $logged_user->isAdministrator();
 
-		$activity_log = ApplicationLogs::getOverallLogs($include_private, $include_silent, array($project->getId()), config_option('feed_logs_count', 50));
+		//FIXME $activity_log = ApplicationLogs::getOverallLogs($include_private, $include_silent, array($project->getId()), config_option('feed_logs_count', 50));
 		$feed = new Angie_Feed(lang('recent project activities feed', $project->getName()), undo_htmlspecialchars($project->getOverviewUrl()));
 		$feed = $this->populateFeedFromLog($feed, $activity_log);
 
@@ -110,7 +110,7 @@ class FeedController extends PageController {
 		$this->setLayout('ical');
 
 		$user = $this->loginUserByToken();
-		if(!($user instanceof User)) {
+		if(!($user instanceof Contact)) {
 			header('HTTP/1.0 404 Not Found');
 			die();
 		} // if
@@ -128,7 +128,7 @@ class FeedController extends PageController {
 		$this->setLayout('ical');
 
 		$user = $this->loginUserByToken();
-		if(!($user instanceof User)) {
+		if(!($user instanceof Contact)) {
 			header('HTTP/1.0 404 Not Found');
 			die();
 		} // if
@@ -148,7 +148,8 @@ class FeedController extends PageController {
 	} // project_ical
 
 	function ical_export() {
-		$this->setLayout('ical');
+		//TODO re implement this function
+		/*$this->setLayout('ical');
 		require_once ROOT.'/environment/classes/event/CalFormatUtilities.php';
 		 
 		if (!isset($_GET['t']) || !isset($_GET['cal'])) {
@@ -170,7 +171,7 @@ class FeedController extends PageController {
 		} else {
 			header('HTTP/1.0 404 Not Found');
 			die();
-		}
+		}*/
 	}
 
 	/**
@@ -229,8 +230,8 @@ class FeedController extends PageController {
 			foreach($activity_log as $activity_log_entry) {
 				$item = $feed->addItem(new Angie_Feed_Item($activity_log_entry->getText(), undo_htmlspecialchars($activity_log_entry->getObjectUrl()), '', $activity_log_entry->getCreatedOn()));
 				$taken_by = $activity_log_entry->getTakenBy();
-				if($taken_by instanceof User) {
-					$item->setAuthor(new Angie_Feed_Author($taken_by->getDisplayName(), $taken_by->getEmail()));
+				if($taken_by instanceof Contact) {
+					$item->setAuthor(new Angie_Feed_Author($taken_by->getDisplayName(), $taken_by->getEmailAddress('user')));
 				} // if
 			} // foreach
 		} // if
@@ -245,8 +246,8 @@ class FeedController extends PageController {
 	 * @return User
 	 */
 	private function loginUserByToken($idname = 'id') {
-		$user = Users::findById(array_var($_GET, $idname));
-		if(!($user instanceof User)) {
+		$user = Contacts::findById(array_var($_GET, $idname));
+		if(!($user instanceof Contact)) {
 			header("HTTP/1.0 404 Not Found");
 			die();
 		} // if

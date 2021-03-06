@@ -5,26 +5,26 @@ if (can_edit_company_data(logged_user())) {
 	$icons[] = array(
 		'ico' => 'ico-large-company',
 		'url' => get_url('administration', 'company'),
-		'name' => lang('owner company'),
+		'name' => lang('organization data'),
 		'extra' => '',
 	);
 }
-if (can_manage_security(logged_user())) {
+/*FIXME FENG2 if (can_manage_security(logged_user())) {
 	$icons[] = array(
 		'ico' => 'ico-large-company',
 		'url' => get_url('administration', 'clients'),
 		'name' => lang('client companies'),
-		'extra' => '<a class="internalLink coViewAction ico-add" href="' . get_url('company', 'add_client') . '">' . lang('add company') . '</a>'
+		'extra' => '<a class="internalLink coViewAction ico-add" href="' . get_url('contact', 'add_company') . '">' . lang('add company') . '</a>'
 	);
-}
-if (can_edit_company_data(logged_user())) {
+}*/
+if (logged_user()->isExecutiveGroup()) {
 	$icons[] = array(
 		'ico' => 'ico-large-user',
 		'url' => get_url('administration', 'members'),
 		'name' => lang('users'),
 		'extra' => '<a class="internalLink coViewAction ico-add" href="' . owner_company()->getAddUserUrl() . '">' . lang('add user') . '</a>',
 	);
-}
+} 
 if (can_manage_security(logged_user())) {
 	$icons[] = array(
 		'ico' => 'ico-large-group',
@@ -33,22 +33,15 @@ if (can_manage_security(logged_user())) {
 		'extra' => '<a class="internalLink coViewAction ico-add" href="' . owner_company()->getAddGroupUrl() . '">' . lang('add group') . '</a>',
 	);
 }
-if (can_manage_workspaces(logged_user())) {
-	$icons[] = array(
-		'ico' => 'ico-large-workspace',
-		'url' => get_url('administration', 'projects'),
-		'name' => lang('projects'),
-		'extra' => '<a class="internalLink coViewAction ico-add" href="' . get_url('project', 'add') . '">' . lang('add project') . '</a>',
-	);
-}
-if (can_manage_security(logged_user())) {
+/*FIXME if (can_manage_security(logged_user()) && Plugins::instance()->isActivePlugin('mail')) {
 	$icons[] = array(
 		'ico' => 'ico-large-email',
 		'url' => get_url('administration', 'mail_accounts'),
 		'name' => lang('mail accounts'),
 		'extra' => '<a class="internalLink coViewAction ico-add" href="' . get_url('mail', 'add_account') . '">' . lang('add mail account') . '</a>',
 	);
-}
+}*/
+
 if (can_manage_templates(logged_user())) {
 	$icons[] = array(
 		'ico' => 'ico-large-template',
@@ -58,16 +51,18 @@ if (can_manage_templates(logged_user())) {
 	);
 }
 
-if (can_manage_security(logged_user())) {
+
+/*FIXME if (can_manage_security(logged_user())) {
 	$icons[] = array(
 		'ico' => 'ico-large-billing',
 		'url' => get_url('billing', 'index'),
 		'name' => lang('billing'),
 		'extra' => '<a class="internalLink coViewAction ico-add" href="' . get_url('billing', 'add') . '">' . lang('add billing category') . '</a>',
 	);	
-}
+}*/
+
 if (can_manage_configuration(logged_user())) {
-	$icons[] = array(
+	/*FIXME FENG 2$icons[] = array(
 		'ico' => 'ico-large-custom-properties',
 		'url' => get_url('administration', 'custom_properties'),
 		'name' => lang('custom properties'),
@@ -78,7 +73,7 @@ if (can_manage_configuration(logged_user())) {
 		'url' => get_url('administration', 'object_subtypes'),
 		'name' => lang('object subtypes'),
 		'extra' => '',
-	);
+	);*/
 	
 	$icons[] = array(
 		'ico' => 'ico-large-configuration',
@@ -92,14 +87,14 @@ if (can_manage_configuration(logged_user())) {
 		'name' => lang('administration tools'),
 		'extra' => '',
 	);
-	if (!defined('ALLOW_UPGRADING') || ALLOW_UPGRADING) {
+	/*FIXME if (!defined('ALLOW_UPGRADING') || ALLOW_UPGRADING) {
 		$icons[] = array(
 			'ico' => 'ico-large-upgrade',
 			'url' => get_url('administration', 'upgrade'),
 			'name' => lang('upgrade'),
 			'extra' => '',
 		);
-	}
+	}*/
 	if (!defined('ALLOW_CONFIGURING_CRON') || ALLOW_CONFIGURING_CRON) {
 		$icons[] = array(
 			'ico' => 'ico-large-cron',
@@ -108,6 +103,23 @@ if (can_manage_configuration(logged_user())) {
 			'extra' => '',
 		);
 	}
+}
+if (can_manage_dimensions(logged_user())) {
+	$icons[] = array(
+		'ico' => 'ico-large-workspace',
+		'url' => get_url('administration', 'edit_members'),
+		'name' => lang('dimensions'),
+		'extra' => '',
+	);
+}
+
+if (can_manage_tabs(logged_user())) {
+	$icons[] = array(
+		'ico' => 'ico-large-tabs',
+		'url' => get_url('administration', 'tabs'),
+		'name' => lang('tabs'),
+		'extra' => '',
+	);
 }
 Hook::fire('render_administration_icons', null, $icons);
 if (count($icons > 0)) {}
@@ -118,7 +130,7 @@ if (count($icons > 0)) {}
   </div>
   <div class="adminSeparator"></div>
   <div class="adminMainBlock">
-    <?php echo lang('welcome to administration info') ?>
+    <?php //FIXME FENG2 echo lang('welcome to administration info') ?>
     <br/>
     <br/>
     <?php 
@@ -143,8 +155,10 @@ foreach ($icons as $icon) {
 <td align="center">
     <div style="width:150px;display:block; margin-right:10px;margin-bottom:40px">
     <table width="100%" align="center"><tr><td align="center">
-    	<a class="internalLink" href="<?php echo $icon['url'] ?>"><span style="display: block;" class="coViewIconImage <?php echo $icon['ico']?>"></span></a>
-        </td></tr><tr><td align="center"><b><a class="internalLink" href="<?php echo $icon['url'] ?>"><?php echo $icon['name'] ?></a></b>
+    	<a class="internalLink" href="<?php echo $icon['url'] ?>" <?php echo isset($icon['target']) ? 'target="'.$icon['target'].'"' : '' ?> <?php echo isset($icon['onclick']) ? 'onclick="'.$icon['onclick'].'"' : '' ?>>
+    		<span style="display: block;" class="coViewIconImage <?php echo $icon['ico']?>"></span>
+    	</a>
+        </td></tr><tr><td align="center"><b><a class="internalLink" href="<?php echo $icon['url'] ?>" <?php echo isset($icon['target']) ? 'target="'.$icon['target'].'"' : '' ?>><?php echo $icon['name'] ?></a></b>
     <?php if (isset($icon['extra'])) { ?>
     </td></tr><tr><td align="center"><?php echo $icon['extra']; ?>
     <?php } ?>
@@ -154,19 +168,6 @@ foreach ($icons as $icon) {
 <?php } ?>
 </tr></table>
 <?php } ?>
-
-<?php /* // alternative print icons (no tables, floating divs, not perfect in IE6)
-foreach ($icons as $icon) { ?>
-<div style="float:left;width:160px;height:120px;text-align:center;">
-	<a class="internalLink" href="<?php echo $icon['url'] ?>">
-		<div style="width:48px;height:48px;margin:auto;" class="<?php echo $icon['ico']?>">.</div>
-		<span style="font-weight:bold"><?php echo $icon['name'] ?></span>
-	</a>
-	<?php if (isset($icon['extra'])) { ?>
-		<div><?php echo $icon['extra']; ?></div>
-	<?php } ?>
-</div>
-<?php } */ ?>
 
 </div>
     

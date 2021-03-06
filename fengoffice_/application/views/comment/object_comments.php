@@ -17,18 +17,14 @@
 				$counter++;
 				$options = array();
 				if ($comment->canEdit(logged_user()) && !$__comments_object->isTrashed()) {
-					$options[] = '<a class="internalLink" href="' . $comment->getEditUrl() . '">' . lang('edit') . '</a>';
-					if ($comment->canLinkObject(logged_user(), $comment->getProject()))
-						$options[] = render_link_to_object($comment,lang('link objects'));
+					if ($comment->canLinkObject(logged_user()))
+						$options[] = render_link_to_object($comment,lang('link objects'),true);
 				}
 				if ($comment->canDelete(logged_user()) && !$__comments_object->isTrashed()) $options[] = '<a class="internalLink" href="' . $comment->getDeleteUrl() . '" onclick="return confirm(\''.escape_single_quotes(lang('confirm move to trash')).'\')">' . lang('move to trash') . '</a>';
 ?>
 			<div class="comment <?php echo $counter % 2 ? 'even' : 'odd' ?>" id="comment<?php echo $comment->getId() ?>">
-		<?php 	if($comment->isPrivate()) { ?>
-				<div class="private" title="<?php echo lang('private comment') ?>"><span><?php echo lang('private comment') ?></span></div>
-		<?php 	} // if ?>
 		
-		<?php 	if($comment->getCreatedBy() instanceof User) { ?>
+		<?php 	if($comment->getCreatedBy() instanceof Contact) { ?>
 				<div class="commentHead">
 					<table style="width:100%"><tr><td>
 					<span><a class="internalLink" href="<?php echo $comment->getViewUrl() ?>" title="<?php echo lang('permalink') ?>">#<?php echo $counter ?></a>:
@@ -49,7 +45,7 @@
 		
 				<div class="commentBody">
 				<table style="width:100%"><tr>
-		<?php 	if(($comment->getCreatedBy() instanceof User) && ($comment->getCreatedBy()->hasAvatar())) { ?>
+		<?php 	if(($comment->getCreatedBy() instanceof Contact) && ($comment->getCreatedBy()->hasAvatar())) { ?>
 					<td style="vertical-align:top;width:60px"><div class="commentUserAvatar"><img src="<?php echo $comment->getCreatedBy()->getAvatarUrl() ?>" alt="<?php echo clean($comment->getCreatedBy()->getDisplayName()) ?>" /></div></td>
 		<?php 	} // if ?>
 					<td style="text-align:left">
@@ -67,6 +63,6 @@
 	</div>
 <?php } ?>
 
-<?php if($__comments_object->canComment(logged_user()) && !$__comments_object->isTrashed()) {?>
+<?php if(!$__comments_object->isTrashed()) {?>
 	<?php echo render_comment_form($__comments_object) ?>
 <?php } // if ?>

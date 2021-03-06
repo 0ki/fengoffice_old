@@ -2,11 +2,11 @@
 
 
 /**
- * ProjectMessages class
+ * BaseProjectMessages class
  *
  * @author Ilija Studen <ilija.studen@gmail.com>
  */
-abstract class BaseProjectMessages extends ProjectDataObjects {
+abstract class BaseProjectMessages extends ContentDataObjects {
 
 	/**
 	 * Column name => Column type map
@@ -15,23 +15,8 @@ abstract class BaseProjectMessages extends ProjectDataObjects {
 	 * @static
 	 */
 	static private $columns = array(
-    	'id' => DATA_TYPE_INTEGER, 
-    	'milestone_id' => DATA_TYPE_INTEGER,  
-    	'title' => DATA_TYPE_STRING, 
-    	'text' => DATA_TYPE_STRING, 
-    	'additional_text' => DATA_TYPE_STRING, 
-    	'is_important' => DATA_TYPE_BOOLEAN, 
-    	'is_private' => DATA_TYPE_BOOLEAN, 
-    	'comments_enabled' => DATA_TYPE_BOOLEAN, 
-    	'anonymous_comments_enabled' => DATA_TYPE_BOOLEAN, 
-    	'created_on' => DATA_TYPE_DATETIME, 
-    	'created_by_id' => DATA_TYPE_INTEGER, 
-    	'updated_on' => DATA_TYPE_DATETIME, 
-    	'updated_by_id' => DATA_TYPE_INTEGER,
-    	'trashed_on' => DATA_TYPE_DATETIME,
-     	'trashed_by_id' => DATA_TYPE_INTEGER,
-    	'archived_on' => DATA_TYPE_DATETIME,
-    	'archived_by_id' => DATA_TYPE_INTEGER,
+    	'object_id' => DATA_TYPE_INTEGER,
+    	'text' => DATA_TYPE_STRING,
 	);
 
 	/**
@@ -82,7 +67,7 @@ abstract class BaseProjectMessages extends ProjectDataObjects {
 	 * @return array or string
 	 */
 	function getPkColumns() {
-		return 'id';
+		return 'object_id';
 	} // getPkColumns
 
 	/**
@@ -93,7 +78,7 @@ abstract class BaseProjectMessages extends ProjectDataObjects {
 	 * @return string
 	 */
 	function getAutoIncrementColumn() {
-		return 'id';
+		return 'object_id';
 	} // getAutoIncrementColumn
 
 	/**
@@ -104,9 +89,7 @@ abstract class BaseProjectMessages extends ProjectDataObjects {
 	 * @return array
 	 */
 	function getSystemColumns() {
-		return array_merge(parent::getSystemColumns(), array(
-      		'milestone_id')
-		);
+		return parent::getSystemColumns();
 	} // getSystemColumns
 	
 	/**
@@ -117,7 +100,7 @@ abstract class BaseProjectMessages extends ProjectDataObjects {
     * @return array
     */
     function getExternalColumns() {
-      return array_merge(parent::getExternalColumns(), array('milestone_id'));
+      return parent::getExternalColumns();
     } // getExternalColumns
 	
 	/**
@@ -127,9 +110,9 @@ abstract class BaseProjectMessages extends ProjectDataObjects {
     * @param void
     * @return array
     */
-    function getReportObjectTitleColumns() {
+    /*function getReportObjectTitleColumns() {
       return array('title');
-    } // getReportObjectTitleColumns
+    }*/ // getReportObjectTitleColumns
     
     /**
     * Return report object title
@@ -138,10 +121,10 @@ abstract class BaseProjectMessages extends ProjectDataObjects {
     * @param void
     * @return string
     */
-    function getReportObjectTitle($values) {
+    /*function getReportObjectTitle($values) {
     	$title = isset($values['title']) ? $values['title'] : ''; 
     	return $title;
-    } // getReportObjectTitle
+    }*/ // getReportObjectTitle
 
 	// -------------------------------------------------------
 	//  Finders
@@ -167,8 +150,6 @@ abstract class BaseProjectMessages extends ProjectDataObjects {
 			return parent::find($arguments);
 		} else {
 			return ProjectMessages::instance()->find($arguments);
-			//$instance =& ProjectMessages::instance();
-			//return $instance->find($arguments);
 		} // if
 	} // find
 
@@ -184,8 +165,6 @@ abstract class BaseProjectMessages extends ProjectDataObjects {
 			return parent::findAll($arguments);
 		} else {
 			return ProjectMessages::instance()->findAll($arguments);
-			//$instance =& ProjectMessages::instance();
-			//return $instance->findAll($arguments);
 		} // if
 	} // findAll
 
@@ -201,8 +180,6 @@ abstract class BaseProjectMessages extends ProjectDataObjects {
 			return parent::findOne($arguments);
 		} else {
 			return ProjectMessages::instance()->findOne($arguments);
-			//$instance =& ProjectMessages::instance();
-			//return $instance->findOne($arguments);
 		} // if
 	} // findOne
 
@@ -219,8 +196,6 @@ abstract class BaseProjectMessages extends ProjectDataObjects {
 			return parent::findById($id, $force_reload);
 		} else {
 			return ProjectMessages::instance()->findById($id, $force_reload);
-			//$instance =& ProjectMessages::instance();
-			//return $instance->findById($id, $force_reload);
 		} // if
 	} // findById
 
@@ -236,8 +211,6 @@ abstract class BaseProjectMessages extends ProjectDataObjects {
 			return parent::count($condition);
 		} else {
 			return ProjectMessages::instance()->count($condition);
-			//$instance =& ProjectMessages::instance();
-			//return $instance->count($condition);
 		} // if
 	} // count
 
@@ -253,8 +226,6 @@ abstract class BaseProjectMessages extends ProjectDataObjects {
 			return parent::delete($condition);
 		} else {
 			return ProjectMessages::instance()->delete($condition);
-			//$instance =& ProjectMessages::instance();
-			//return $instance->delete($condition);
 		} // if
 	} // delete
 
@@ -277,8 +248,6 @@ abstract class BaseProjectMessages extends ProjectDataObjects {
 			return parent::paginate($arguments, $items_per_page, $current_page);
 		} else {
 			return ProjectMessages::instance()->paginate($arguments, $items_per_page, $current_page);
-			//$instance =& ProjectMessages::instance();
-			//return $instance->paginate($arguments, $items_per_page, $current_page);
 		} // if
 	} // paginate
 
@@ -295,6 +264,6 @@ abstract class BaseProjectMessages extends ProjectDataObjects {
 		return $instance;
 	} // instance
 
-} // ProjectMessages
+} // BaseProjectMessages
 
 ?>

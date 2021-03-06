@@ -1,41 +1,40 @@
 <?php
 
 /**
- * Contacts, generated on Sat, 25 Feb 2006 17:37:12 +0100 by
- * DataObject generation tool
+ * Contacts class
  *
- * @author Carlos Palma <chonwil@gmail.com>
+ * @author Carlos Palma <chonwil@gmail.com>, Diego Castiglioni <diego20@gmail.com>
  */
 class Contacts extends BaseContacts {
-
-	public static function getWorkspaceString($ids = '?') {
-		return " `id` IN (SELECT `object_id` FROM `" . TABLE_PREFIX . "workspace_objects` WHERE `object_manager` = 'Contacts' AND `workspace_id` IN ($ids)) ";
-	}
 	
-	/**
-	 * Return all Contacts
-	 *
-	 * @param void
-	 * @return array
-	 */
-	function getAll() {
-		return self::findAll();
-	} // getAll
+	public function __construct() {
+		parent::__construct ();
+		$this->object_type_name = 'contact';
+	}
 
+	
 	/**
 	 * Returns an array containing only the contacts that logged_user can read.
 	 *
 	 * @return array
 	 */
 	function getAllowedContacts($extra_conds = null) {
-		$conditions = permissions_sql_for_listings(Contacts::instance(), ACCESS_LEVEL_READ, logged_user(), '`project_id`', self::instance()->getTableName(true, true));
-		if ($extra_conds) {
-			$conditions .= " AND $extra_conds";
+		$result = array() ;
+		foreach ( $contacts  = Contacts::instance()->findAll() as $c ){
+			/* @var $c Contact */
+			if ($c->canView(logged_user())) {
+				$result[] = $c ;
+			}
 		}
-		return self::findAll(array(
-			'conditions' => $conditions
-		));
+		return $result ;
+		
 	}
+	
+	static function getAllUsers($extra_conditions = "", $include_disabled = false) {
+		if (!$include_disabled) $extra_conditions .= " AND `disabled` = 0";
+		return self::findAll(array("conditions" => "`user_type` <> 0 $extra_conditions"));
+	}
+	
 	
 	/**
 	 * Return Contact object by email
@@ -43,78 +42,77 @@ class Contacts extends BaseContacts {
 	 * @param string $email
 	 * @return Contact
 	 */
-	static function getByEmail($email, $include_trashed = false) {
-		$conditions = array(
-	        'conditions' => "`email` = '". mysql_real_escape_string($email) 
-			."' OR `email2` = '" . mysql_real_escape_string($email)
-			."' OR `email3` = '" . mysql_real_escape_string($email)."'"
-		);
-		if ($include_trashed) {
-			$conditions['include_trashed'] = true;
-		}
-		$rows = self::find($conditions); // find
-		if (count($rows) == 1)
-		return $rows[0];
-		else
-		return null; //Doesnt return any contacts
+	static function getByEmail($email) {
+		$contact_email = ContactEmails::findOne(array('conditions' => array("`email_address` = ?", $email)));
+		if (!is_null($contact_email))
+			return self::findById($contact_email->getContactId());
+		return null;
 	} // getByEmail
+	
+	
+	/**
+	 * Return user by username
+	 *
+	 * @access public
+	 * @param string $username
+	 * @return Contact
+	 */
+	static function getByUsername($username) {
+		return self::findOne(array(
+        	'conditions' => array('`username` = ?', $username)
+		)); // array
+	} // getByUsername
+	
 
 	/**
-	 * Return Contacts grouped by company
+	 * Return all companies that have system users
+	 *
+	 * @param void
+	 * @return array
+	 */
+	static function getCompaniesWithUsers() {
+		$companies =  self::findAll(array('conditions' => array("`is_company` = 1")));
+		$companies_with_users = array();
+        foreach ($companies as $company){
+        	if(!is_null($company->getUsersByCompany()))
+        		$companies_with_users[] = $company;
+        }
+        return $companies_with_users;
+
+	} // getCompaniesWithUsers
+	
+	
+	/**
+	 * Return contacts grouped by company
 	 *
 	 * @param void
 	 * @return array
 	 */
 	static function getGroupedByCompany() {
-		$companies = Companies::getAll();
+		$companies = self::getCompaniesWithUsers();
 		if(!is_array($companies) || !count($companies)) {
 			return null;
-		} // if
+		}
 
 		$result = array();
 		foreach($companies as $company) {
-			$Contacts = $company->getContacts();
-			if(is_array($Contacts) && count($Contacts)) {
-				$result[$company->getName()] = array(
-            'details' => $company,
-            'Contacts' => $Contacts,
-				); // array
-			} // if
-		} // foreach
+			$users = $company->getUsersByCompany();
+			if(is_array($users) && count($users)) {
+				$result[$company->getObjectName()] = array(
+            		'details' => $company,
+            		'users' => $users,
+				);
+			}
+		}
 
 		return count($result) ? $result : null;
 	} // getGroupedByCompany
 
-	/**
-	 * Get contacts in a given project
-	 *
-	 * @param Project $project
-	 * @param array $arguments
-	 * @param integer $items_per_page
-	 * @param integer $current_page
-	 * @return array
-	 */
-	function getByProject(Project $project, $arguments = null, $items_per_page = 10, $current_page = 1) {
-		if (!is_array($arguments)) $arguments = array();
-		$conditions = array_var($arguments, 'conditions', '');		 
-		$conditions .= "`trashed_by_id` = 0 AND " . self::getWorkspaceString($project->getId());
-
-		return self::paginate(array(
-			'conditions' => $conditions,
-			'order' => '`lastname`, `firstname`'
-		), $items_per_page, $current_page);
-	}
-
-	/**
-	 * Set user_id to 0 for all users that that previously were associated with a recently deleted user
-	 *
-	 */
-	function updateUserIdOnUserDelete($user_id){
-		if(!is_numeric($user_id)) return false;
-		$c = new Contact();
-		$name = $c->getTableName(true);
-		$sql = "UPDATE " . $name  . " SET user_id = 0 WHERE user_id = " .$user_id ;
-		return DB::execute($sql);
+	
+	static function getVisibleCompanies(Contact $user, $additional_conditions = null){
+		$conditions = $additional_conditions ? "`is_company` = 1 AND $additional_conditions" : "`is_company` = 1";
+		//FIXME 
+		return self::findAll(array('conditions' => $conditions));
 	}
 	
 	function getRangeContactsByBirthday($from, $to, $tags = '', $project = null) {
@@ -129,18 +127,13 @@ class Contacts extends BaseContacts {
 		$year1 = $from->getYear();
 		$year2 = $to->getYear();
 		if ($year1 == $year2) {
-			$condition = 'DAYOFYEAR(`o_birthday`) >= DAYOFYEAR(' . DB::escape($from) . ')' .
-					' AND DAYOFYEAR(`o_birthday`) <= DAYOFYEAR(' . DB::escape($to) . ')';
+			$condition = 'DAYOFYEAR(`birthday`) >= DAYOFYEAR(' . DB::escape($from) . ')' .
+					' AND DAYOFYEAR(`birthday`) <= DAYOFYEAR(' . DB::escape($to) . ')';
 		} else if ($year2 - $year1 == 1) {
-			$condition = 'DAYOFYEAR(`o_birthday`) >= DAYOFYEAR(' . DB::escape($from) . ')' .
-					' OR DAYOFYEAR(`o_birthday`) <= DAYOFYEAR(' . DB::escape($to) . ')';
+			$condition = 'DAYOFYEAR(`birthday`) >= DAYOFYEAR(' . DB::escape($from) . ')' .
+					' OR DAYOFYEAR(`birthday`) <= DAYOFYEAR(' . DB::escape($to) . ')';
 		} else {
-			$condition = "`o_birthday` <> '0000-00-00 00:00:00'";
-		}
-		
-		$active_project = active_project();
-		if ($active_project instanceof Project){
-			$condition .= " AND " . $this->getWorkspaceString($active_project->getAllSubWorkspacesCSV());
+			$condition = "`birthday` <> '0000-00-00 00:00:00'";
 		}
 		
 		return $this->getAllowedContacts($condition);
@@ -148,7 +141,7 @@ class Contacts extends BaseContacts {
 
 	static function getContactFieldNames() {
 		return array('contact[firstname]' => lang('first name'),
-			'contact[lastname]' => lang('last name'), 
+			'contact[surname]' => lang('surname'), 
 			'contact[email]' => lang('email address'),
 			'contact[company_id]' => lang('company'),
 
@@ -189,25 +182,167 @@ class Contacts extends BaseContacts {
 			'contact[email2]' => lang('email address 2'),
 			'contact[email3]' => lang('email address 3'),
 			'contact[job_title]' => lang('job title'),
-			'contact[department]' => lang('department'), 
-			'contact[middlename]' => lang('middle name'), 
-			'contact[notes]' => lang('notes') 
+			'contact[department]' => lang('department')
 		);
 	}
 	
-	/**
-	 * Returns an array of: (firstname, lastname, email, email2, email3)
-	 * from contacts that the logged user can access. 
-	 * @return array
-	 */
-	function getContactEmailAddresses() {
-		$permissions = permissions_sql_for_listings(Contacts::instance(), ACCESS_LEVEL_READ, logged_user());
-		$sql = "SELECT `firstname`, `lastname`, `email`, `email2`, `email3` FROM `" . TABLE_PREFIX . "contacts` WHERE " .
-			"`trashed_by_id` = 0 AND $permissions AND (`email` <> '' OR `email2` <> '' OR `email3` <> '')";
-		$all = DB::executeAll($sql);
-		if (is_array($all)) return $all;
-		return array();
+	
+	static function getCompanyFieldNames() {
+		return array('company[name]' => lang('name'),
+			'company[address]' => lang('address'),
+			'company[city]' => lang('city'),
+			'company[state]' => lang('state'),
+			'company[zipcode]' => lang('zipcode'),
+			'company[country]' => lang('country'),
+			'company[phone_number]' => lang('phone'),
+			'company[fax_number]' => lang('fax'),
+			'company[email]' => lang('email address'),
+			'company[homepage]' => lang('homepage'),
+		);
 	}
+	
+	
+	/**
+	 * Return owner company
+	 *
+	 * @access public
+	 * @param void
+	 * @return Company
+	 */
+	static function getOwnerCompany() {
+		return Contacts::findById(1);
+	} // getOwnerCompany
+	
+	
+	/**
+	 * Check if specific token already exists in database
+	 *
+	 * @param string $token
+	 * @return boolean
+	 */
+	static function tokenExists($token) {
+		return self::count(array('`token` = ?', $token)) > 0;
+	} // tokenExists
+	
+
+	/**
+	 * Validate unique email.
+	 * Accepets id param when editing contact (and not chaging email )
+	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
+	 * @param unknown_type $email
+	 * @param unknown_type $id
+	 */
+	static function validateUniqueEmail ($email, $id = null) {
+		if ($id) {
+			$id_cond = " AND o.id <> $id ";
+		}else{
+			$id_cond = "" ;
+		} 	
+		$sql = "
+			SELECT DISTINCT(contact_id) FROM ".TABLE_PREFIX."contact_emails ce 
+			INNER JOIN ".TABLE_PREFIX."objects o ON  ce.contact_id = o.id
+			WHERE 
+				o.archived_by_id = 0 AND 
+				o.trashed_by_id = 0 AND 
+				ce.email_address = '$email'
+				$id_cond
+				LIMIT 1 ";
+		
+		$res  = DB::execute($sql);
+		
+		return !(bool)$res->numRows();
+	}
+	
+	
+	
+
+	/**
+	 * Validate unique email.
+	 * Accepets id param when editing contact (and not chaging email )
+	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
+	 * @param unknown_type $email
+	 * @param unknown_type $id
+	 */
+	static function validateUniqueUsername ($username, $id = null) {
+		if ($id) {
+			$id_cond = " AND o.id <> $id ";
+		}else{
+			$id_cond = "" ;
+		} 	
+		
+		$sql = "
+			SELECT distinct(object_id)
+			FROM ".TABLE_PREFIX."contacts c 
+			INNER JOIN ".TABLE_PREFIX."objects o ON o.id = c.object_id
+			WHERE
+			  o.archived_by_id = 0 AND		
+			  o.trashed_by_id = 0 AND
+			  username = '$username' 
+			  $id_cond
+			  LIMIT 1 ";
+	
+		
+		$res  = DB::execute($sql);
+		return !(bool)$res->numRows();
+	}
+	
+	/**
+	 * Do a first validation directly from parameters (before the object is loading)
+	 * 
+	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
+	 * @param array $attributes
+	 */
+	static function validate($attributes, $id = null) {
+		$errors = array() ;
+		//contact form 
+
+/* URL validations removed		
+		if (trim($attributes['w_web_page']) && !preg_match(URL_FORMAT, $attributes['w_web_page'])){
+			$errors[] = lang("invalid webpage");			
+		}
+		
+		//company form
+		if (trim($attributes['homepage']) && !preg_match(URL_FORMAT, $attributes['homepage'])){
+			$errors[] = lang("invalid webpage");			
+		}
+*/		
+		if (trim($attributes['email']) && !self::validateUniqueEmail($attributes['email'], $id)){
+			$errors[] = lang("email address must be unique");
+		}
+		
+		if (trim($attributes['email']) &&  !preg_match(EMAIL_FORMAT, $attributes['email'])) {
+			$errors[] = lang("invalid email");
+		}
+		if(is_array($errors) && count($errors)) {
+			throw new DAOValidationError($this, $errors);
+		} 
+	}
+	
+	/**
+	 * Do a first validation directly from parameters (before the object is loading)
+	 * 
+	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
+	 * @param array $attributes
+	 */
+	static function validateUser($attributes, $id = null) {
+		$errors = array() ;
+
+		if (trim($attributes['email']) && !self::validateUniqueEmail($attributes['email'], $id)){
+			$errors[] = lang("email address must be unique");
+		}
+		
+		if (trim($attributes['email']) &&  !preg_match(EMAIL_FORMAT, $attributes['email'])) {
+			$errors[] = lang("invalid email");
+		}
+
+		if (trim($attributes['username']) && !self::validateUniqueUsername($attributes['username'], $id) ) {
+			$errors[] = lang("username must be unique");
+		}
+		
+		if(is_array($errors) && count($errors)) {
+			throw new DAOValidationError($this, $errors);
+		} 
+	}	
+	
 } // Contacts
 
-?>

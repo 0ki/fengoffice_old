@@ -25,22 +25,21 @@ class GroupController extends ApplicationController {
 	 * @param void
 	 * @return null
 	 */
-	function view_group() {
-		$this->setTemplate('view_group');
-
+	function view() {
 		if(!can_manage_security(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return ;
-		} // if
+		}
 
-		$group = Groups::findById(get_id());
-		if(!($group instanceof Group)) {
+		$group = PermissionGroups::findById(get_id());
+		if(!($group instanceof PermissionGroup)) {
 			flash_error(lang('group dnx'));
 			$this->redirectTo('administration');
-		} // if
+		}
+		tpl_assign('group_users', $group->getUsers());
 		tpl_assign('group', $group);
-	} // view_group
+	}
 	
 	/**
 	 * Add group
@@ -48,8 +47,7 @@ class GroupController extends ApplicationController {
 	 * @param void
 	 * @return null
 	 */
-	function add_group() {
-		$this->setTemplate('add_group');
+	function add() {
 
 		if(!can_manage_security(logged_user())) {
 			flash_error(lang('no access permissions'));
@@ -57,64 +55,59 @@ class GroupController extends ApplicationController {
 			return ;
 		} // if
 
-		if (logged_user()->isAdministrator()) {
-			$projects = Projects::getAll();
-		} else {
-			$projects = null;
-		}
-		
-		$group = new Group();
+		$group = new PermissionGroup();
 		$group_data = array_var($_POST, 'group');
-		tpl_assign('group', $group);
-		tpl_assign('group_data', $group_data);
-		tpl_assign('projects', $projects);
+		
+		if(!is_array($group_data)) {
+			
+			tpl_assign('group', $group);
+			tpl_assign('group_data', $group_data);
 
-		if(is_array($group_data)) {
+			// System permissions
+			tpl_assign('system_permissions', new SystemPermission());
+
+			// Module permissions
+			$module_permissions_info = array();
+			$all_modules = TabPanels::findAll(array("conditions" => "`enabled` = 1", "order" => "ordering"));
+			$all_modules_info = array();
+			foreach ($all_modules as $module) {
+				$all_modules_info[] = array('id' => $module->getId(), 'name' => lang($module->getTitle()), 'ot' => $module->getObjectTypeId());
+			}
+			tpl_assign('module_permissions_info', $module_permissions_info);
+			tpl_assign('all_modules_info', $all_modules_info);
+			
+			// Member permissions
+			$parameters = permission_form_parameters(0);
+			tpl_assign('permission_parameters', $parameters);
+			
+			// users
+			tpl_assign('groupUserIds', array());
+			tpl_assign('users', Contacts::getAllUsers());
+			
+		} else {
 			$group->setFromAttributes($group_data);
 			try {
 				DB::beginWork();
+				$group->setContactId(0);
 				$group->save();
-				//set permissions
-				$permissionsString = array_var($_POST,'permissions');
-				if ($permissionsString && $permissionsString != ''){
-					$permissions = json_decode($permissionsString);
-				}
-			  	if(is_array($permissions) && count($permissions) > 0) {
-			  		//Clear old modified permissions
-			  		$ids = array();
-			  		foreach($permissions as $perm)
-			  			$ids[] = $perm->wsid;
-			  			
-			  		ProjectUsers::clearByUser($group,implode(',',$ids));
-			  		
-			  		//Add new permissions
-			  		//TODO - Make batch update of these permissions
-			  		foreach($permissions as $perm){
-			  			if(ProjectUser::hasAnyPermissions($perm->pr,$perm->pc)){			  				
-				  			$relation = new ProjectUser();
-					  		$relation->setProjectId($perm->wsid);
-					  		$relation->setUserId($group->getId());
-				  			
-					  		$relation->setCheckboxPermissions($perm->pc);
-					  		$relation->setRadioPermissions($perm->pr);
-					  		$relation->save();
-			  			} //endif
-			  			//else if the user has no permissions at all, he is not a project_user. ProjectUser is not created
-			  		} //end foreach
-				} // if
 				
-				$group->save();
-				if (array_var($_POST, 'user')) {
-					foreach (array_var($_POST, 'user') as $user_id => $val){
-						if ($val=='checked' && is_numeric($user_id) && (Users::findById($user_id) instanceof  User)) {
-							$gu = new GroupUser();
-							$gu->setGroupId($group->getId());
-							$gu->setUserId($user_id);
-							$gu->save();
+				// set permissions
+				$pg_id = $group->getId();
+				save_permissions($pg_id);
+				
+				// save users
+				if ($users = array_var($_POST, 'user')) {
+					foreach ($users as $user_id => $val){
+						if ($val=='checked' && is_numeric($user_id) && (Contacts::findById($user_id) instanceof Contact)) {
+							$cpg = new ContactPermissionGroup();
+							$cpg->setPermissionGroupId($pg_id);
+							$cpg->setContactId($user_id);
+							$cpg->save();
 						}
 					}
 				}
-				ApplicationLogs::createLog($group, null, ApplicationLogs::ACTION_ADD);
+				
+				//ApplicationLogs::createLog($group, ApplicationLogs::ACTION_ADD);
 				DB::commit();
 				flash_success(lang('success add group', $group->getName()));
 				ajx_current("back");
@@ -132,8 +125,8 @@ class GroupController extends ApplicationController {
 	 * @param void
 	 * @return null
 	 */
-	function edit_group() {
-		$this->setTemplate('add_group');
+	function edit() {
+		$this->setTemplate('add');
 
 		if(!can_manage_security(logged_user())) {
 			flash_error(lang('no access permissions'));
@@ -141,110 +134,82 @@ class GroupController extends ApplicationController {
 			return ;
 		} // if
 
-		$group = Groups::findById(get_id());
-		if(!($group instanceof Group)) {
+		$group = PermissionGroups::findById(get_id());
+		if(!($group instanceof PermissionGroup)) {
 			flash_error(lang('group dnx'));
 			$this->redirectTo('administration', 'groups');
 		} // if
-		
-		if (logged_user()->isAdministrator()) {
-			$projects = Projects::getAll();
-		} else {
-			$projects = null;
-		}
-		
-		$permissions = ProjectUsers::getNameTextArray();
 
 		$group_data = array_var($_POST, 'group');
 		if(!is_array($group_data)) {
-			$group_data = array(
-	          'name' => $group->getName(),
-	          'can_edit_company_data' => $group->getCanEditCompanyData(),
-	          'can_manage_security' => $group->getCanManageSecurity(),
-	          'can_manage_workspaces' => $group->getCanManageWorkspaces(),
-	          'can_manage_configuration' => $group->getCanManageConfiguration(),
-	          'can_manage_contacts' => $group->getCanManageContacts(),
-			  'can_manage_templates' => $group->getCanManageTemplates(),
-			  'can_manage_reports' => $group->getCanManageReports(),
-			  'can_manage_time' => $group->getCanManageTime(),
-			  'can_add_mail_accounts' => $group->getCanAddMailAccounts(),
-			); // array			
-		} // if
-		$users = GroupUsers::getUsersByGroup($group->getId());
-		if($users)
-			foreach ($users as $usr)
-				$group_data['user['.$usr->getId().']'] = true;
-		tpl_assign('group', $group);
-		tpl_assign('group_data', $group_data);
-		tpl_assign('permissions', $permissions);
-		tpl_assign('projects', $projects);
-		
-		if (is_array(array_var($_POST, 'group'))) {
-			$group->setFromAttributes($group_data);
-			if(array_var($group_data, "can_edit_company_data") != 'checked') $group->setCanEditCompanyData(false);
-			if(array_var($group_data, "can_manage_security") != 'checked') $group->setCanManageSecurity(false);
-			if(array_var($group_data, "can_manage_configuration") != 'checked') $group->setCanManageConfiguration(false);
-			if(array_var($group_data, "can_manage_workspaces") != 'checked') $group->setCanManageWorkspaces(false);
-			if(array_var($group_data, "can_manage_contacts") != 'checked') $group->setCanManageContacts(false);
-			if(array_var($group_data, "can_manage_templates") != 'checked') $group->setCanManageTemplates(false);
-			if(array_var($group_data, "can_manage_reports") != 'checked') $group->setCanManageReports(false);
-			if(array_var($group_data, "can_manage_time") != 'checked') $group->setCanManageTime(false);
-			if(array_var($group_data, "can_add_mail_accounts") != 'checked') $group->setCanAddMailAccounts(false);
+			$pg_id = $group->getId();
+			$parameters = permission_form_parameters($pg_id);
+			
+			// Module Permissions
+			$module_permissions = TabPanelPermissions::findAll(array("conditions" => "`permission_group_id` = $pg_id"));
+			$module_permissions_info = array();
+			foreach ($module_permissions as $mp) {
+				$module_permissions_info[$mp->getTabPanelId()] = 1;
+			}
+			$all_modules = TabPanels::findAll(array("conditions" => "`enabled` = 1", "order" => "ordering"));
+			$all_modules_info = array();
+			foreach ($all_modules as $module) {
+				$all_modules_info[] = array('id' => $module->getId(), 'name' => lang($module->getTitle()), 'ot' => $module->getObjectTypeId());
+			}
+			
+			// System Permissions
+			$system_permissions = SystemPermissions::findById($pg_id);
+			
+			tpl_assign('module_permissions_info', $module_permissions_info);
+			tpl_assign('all_modules_info', $all_modules_info);
+			tpl_assign('system_permissions', $system_permissions);
+			
+			tpl_assign('permission_parameters', $parameters);
+			
+			// users
+			$group_users = array();
+			$cpgs = ContactPermissionGroups::findAll(array("conditions" => "`permission_group_id` = $pg_id"));
+			foreach($cpgs as $cpg) $group_users[] = $cpg->getContactId();
+			tpl_assign('groupUserIds', $group_users);
+			tpl_assign('users', Contacts::getAllUsers());
+			
+			tpl_assign('group', $group);
+			tpl_assign('group_data', array('name' => $group->getName()));
+		} else {
 			try {
+				$group->setFromAttributes($group_data);
 				DB::beginWork();
-				//set permissions
-				$permissionsString = array_var($_POST,'permissions');
-				if ($permissionsString && $permissionsString != ''){
-					$permissions = json_decode($permissionsString);
-				}
-			  	if(is_array($permissions) && count($permissions) > 0) {
-			  		//Clear old modified permissions
-			  		$ids = array();
-			  		foreach($permissions as $perm)
-			  			$ids[] = $perm->wsid;
-			  			
-			  		ProjectUsers::clearByUser($group,implode(',',$ids));
-			  		
-			  		//Add new permissions
-			  		//TODO - Make batch update of these permissions
-			  		foreach($permissions as $perm){
-			  			if(ProjectUser::hasAnyPermissions($perm->pr,$perm->pc)){			  				
-				  			$relation = new ProjectUser();
-					  		$relation->setProjectId($perm->wsid);
-					  		$relation->setUserId($group->getId());
-				  			
-					  		$relation->setCheckboxPermissions($perm->pc);
-					  		$relation->setRadioPermissions($perm->pr);
-					  		$relation->save();
-			  			} //endif
-			  			//else if the user has no permissions at all, he is not a project_user. ProjectUser is not created
-			  		} //end foreach
-				} // if
-				
 				$group->save();
-				GroupUsers::clearByGroup($group);
-				if (array_var($_POST, 'user')){
-					foreach (array_var($_POST, 'user') as $user_id => $val){
-						if ($val == 'checked' && is_numeric($user_id) && (Users::findById($user_id) instanceof User)) {
-							$gu = new GroupUser();
-							$gu->setGroupId($group->getId());
-							$gu->setUserId($user_id);
-							$gu->save();
+				
+				// set permissions
+				$pg_id = $group->getId();
+				save_permissions($pg_id);
+				
+				// save users
+				if ($users = array_var($_POST, 'user')) {
+					ContactPermissionGroups::delete("`permission_group_id` = $pg_id");
+					foreach ($users as $user_id => $val){
+						if ($val=='checked' && is_numeric($user_id) && (Contacts::findById($user_id) instanceof Contact)) {
+							$cpg = new ContactPermissionGroup();
+							$cpg->setPermissionGroupId($pg_id);
+							$cpg->setContactId($user_id);
+							$cpg->save();
 						}
 					}
-				}				
-				ApplicationLogs::createLog($group, null, ApplicationLogs::ACTION_EDIT);
+				}
+				
+				//ApplicationLogs::createLog($group, ApplicationLogs::ACTION_EDIT);
 				DB::commit();
-
 				flash_success(lang('success edit group', $group->getName()));
 				ajx_current("back");
 
 			} catch(Exception $e) {
 				DB::rollback();
 				tpl_assign('error', $e);
-			} // try
-		} // if
-	} // edit_group
+			}
+	
+		}
+	} // edit
 
 	/**
 	 * Delete group
@@ -257,19 +222,25 @@ class GroupController extends ApplicationController {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
-		} // if
+		}
 
-		$group = Groups::findById(get_id());
-		if(!($group instanceof Group)) {
+		$group = PermissionGroups::findById(get_id());
+		if(!($group instanceof PermissionGroup)) {
 			flash_error(lang('group dnx'));
 			ajx_current("empty");
 			return ;
-		} // if
+		}
+		
+		if ($group->getContactId() > 0) {
+			flash_error(lang('cannot delete personal permissions'));
+			ajx_current("empty");
+			return ;
+		}
 
 		try {
 			DB::beginWork();
 			$group->delete();
-			ApplicationLogs::createLog($group, null, ApplicationLogs::ACTION_DELETE);
+			//ApplicationLogs::createLog($group, ApplicationLogs::ACTION_DELETE);
 			DB::commit();
 
 			flash_success(lang('success delete group', $group->getName()));

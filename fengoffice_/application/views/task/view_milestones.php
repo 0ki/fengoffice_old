@@ -14,8 +14,6 @@ foreach ($milestones as $milestone) {
 	$milestoneInfo = "id:" . $milestone->getId() .",".
 		"title:'" . clean(str_replace("\n"," ",str_replace("'", "\\'", $milestone->getName()))) . "'," .
 		"subtasks:[]," .
-		"assignedTo:'" . clean(str_replace("'", "\\'", $milestone->getAssignedTo() == null ? '' : $milestone->getAssignedToName())) . "'," .
-		"workspaceids:'" . str_replace("'", "\\'", $milestone->getProject()->getId()) . "'," .
 		"expanded:false," .
 		"completed:" . ($milestone->isCompleted()?"true":"false") . "," .
 		"completedBy:'" . clean(str_replace("'", "\\'", $milestone->getCompletedByName())) . "'," .

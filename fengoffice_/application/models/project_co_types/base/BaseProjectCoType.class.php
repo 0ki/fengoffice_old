@@ -7,9 +7,7 @@
   */
   abstract class BaseProjectCoType extends DataObject {
   
-  	protected $objectTypeIdentifier = 'd';
-  
-    
+  	    
     // -------------------------------------------------------
     //  Access methods
     // -------------------------------------------------------

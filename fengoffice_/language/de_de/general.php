@@ -219,8 +219,4 @@
 	'advanced' => 'Erweitert',
 	'in capitalized' => 'In',
 	'workspace and tags' => 'Arbeitsbereich und Schlagworte',
-	'email or username' => 'E-Mail / Benutzername',
-	'direct url' => 'Direkte URL',
-	'assigned to description' => 'Wählt den Kontoinhaber aus',
-	'the' => 'der',
 ); ?>

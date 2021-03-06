@@ -13,6 +13,7 @@ require_javascript('og/EventPopUp.js');
 </script>
 
 <?php
+	$genid = gen_id();
 	define('PX_HEIGHT',42);
 	$year = isset($_GET['year']) ? $_GET['year'] : (isset($_SESSION['year']) ? $_SESSION['year'] : date('Y'));
 	$month = isset($_GET['month']) ? $_GET['month'] : (isset($_SESSION['month']) ? $_SESSION['month'] : date('n'));
@@ -25,7 +26,7 @@ require_javascript('og/EventPopUp.js');
 	$user_filter = $userPreferences['user_filter'];
 	$status_filter = $userPreferences['status_filter'];
 	
-	$user = Users::findById(array('id' => $user_filter));
+	$user = Contacts::findById(array('id' => $user_filter));
 	if ($user == null) $user = logged_user();
 	
 	$use_24_hours = user_config_option('time_format_use_24');
@@ -33,7 +34,7 @@ require_javascript('og/EventPopUp.js');
 	if($use_24_hours) $timeformat = 'G:i';
 	else $timeformat = 'g:i A';
 											
-	$tags = active_tag();
+	$tags = '';//active_tag();
 
 	echo stylesheet_tag('event/week.css');
 
@@ -55,9 +56,10 @@ require_javascript('og/EventPopUp.js');
 	$date_start->add('h', logged_user()->getTimezone());
 	$date_end->add('h', logged_user()->getTimezone());
 	
-	$milestones = ProjectMilestones::getRangeMilestonesByUser($date_start, $date_end, ($user_filter != -1 ? $user : null), $tags, active_project());
+	//FIXME $milestones = ProjectMilestones::getRangeMilestonesByUser($date_start, $date_end, ($user_filter != -1 ? $user : null), $tags, active_project());
 	$tasks = ProjectTasks::getRangeTasksByUser($date_start, $date_end, ($user_filter != -1 ? $user : null), $tags, active_project());
-	$birthdays = Contacts::instance()->getRangeContactsByBirthday($date_start, $date_end);
+	// FIXME
+	$birthdays = array(); //Contacts::instance()->getRangeContactsByBirthday($date_start, $date_end);
 
 	$tmp_tasks = array();
 	foreach ($tasks as $task) {
@@ -104,7 +106,7 @@ require_javascript('og/EventPopUp.js');
 		}
 
 		
-		$results[$day_of_week] = ProjectEvents::getDayProjectEvents($dates[$day_of_week], $tags, active_project(), $user_filter, $status_filter); 
+		$results[$day_of_week] = ProjectEvents::getDayProjectEvents($dates[$day_of_week], active_context(), $user_filter, $status_filter); 
 		if(!$results[$day_of_week]) $results[$day_of_week]=array();
 		foreach ($results[$day_of_week] as $key => $event){
 			if ($event->getTypeId()> 1){
@@ -272,9 +274,12 @@ require_javascript('og/EventPopUp.js');
 
 				<div id="alldayeventowner_<?php echo $day_of_week ?>" style="width: <?php echo $width_percent ?>%;position:absolute;left: <?php echo $width ?>%; top: 12px;height: <?php echo $alldaygridHeight ?>px;"
 				<?php if (!logged_user()->isGuest()) { ?>
-				onclick="og.showEventPopup(<?php echo $dtv_temp->getDay() ?>, <?php echo $dtv_temp->getMonth()?>, <?php echo $dtv_temp->getYear()?>, -1, -1, <?php echo ($use_24_hours ? 'true' : 'false'); ?>,'<?php echo $dtv_temp->format($date_format) ?>');"
+				onclick="og.openLink(og.getUrl('event', 'add'));">
+			<!-- 	
+				onclick="og.showEventPopup(<?php echo $dtv_temp->getDay() ?>, <?php echo $dtv_temp->getMonth()?>, <?php echo $dtv_temp->getYear()?>, -1, -1, <?php echo ($use_24_hours ? 'true' : 'false'); ?>,'<?php echo $dtv_temp->format($date_format) ?>', '<?php echo $genid?>', '<?php echo ProjectEvents::instance()->getObjectTypeId()?>');"
+			-->
 				<?php } ?>
-				>
+				<!-- > -->
 					<?php	
 						$top=5;
 						if(is_array(array_var($alldayevents,$day_of_week))){
@@ -285,7 +290,7 @@ require_javascript('og/EventPopUp.js');
 								if ($event instanceof ProjectMilestone ){
 									$div_prefix = 'w5_ms_div_';
 									$objType = 'milestone';									
-									$subject = clean($event->getName());
+									$subject = clean($event->getObjectName());
 									$img_url = image_url('/16x16/milestone.png');
 									$due_date=$event->getDueDate();
 									$divtype = '<i>' . lang('milestone') . '</i> - ';
@@ -317,7 +322,7 @@ require_javascript('og/EventPopUp.js');
 									}
 									$div_prefix = 'w5_ta_div_' . $tip_pre;
 									$objType = 'task';
-									$subject = clean($event->getTitle());
+									$subject = clean($event->getObjectName());
 									$divtype = '<i>' . $tip_title . '</i> - ';
 									$tipBody = lang('assigned to') .': '. clean($event->getAssignedToName()) . (trim(clean($event->getText())) != '' ? '<br><br>' . trim(clean($event->getText())) : '') ;
 								}elseif ($event instanceof ProjectEvent){
@@ -341,11 +346,9 @@ require_javascript('og/EventPopUp.js');
 								
 								if ($event instanceof ProjectEvent || ($due_date instanceof DateTimeValue && $dates[$day_of_week]->getTimestamp() == mktime(0,0,0, $due_date->getMonth(), $due_date->getDay(), $due_date->getYear()))
 																   || ($start_date instanceof DateTimeValue && $dates[$day_of_week]->getTimestamp() == mktime(0,0,0, $start_date->getMonth(), $start_date->getDay(), $start_date->getYear()))) {	
-									$dws = $event->getWorkspaces();
-									$ws_color = 0;
-									if (count($dws) >= 1){
-										$ws_color = $dws[0]->getColor();
-									}
+
+									$ws_color = 1;
+									
 									cal_get_ws_color($ws_color, $ws_style, $ws_class, $txt_color, $border_color);
 					?>
 					<div id="<?php echo $div_prefix . $event->getId() ?>" class="adc" style="left: 4%; top: <?php echo $top ?>px; z-index: 5;width: 92%;margin:1px;position:absolute;">
@@ -446,9 +449,12 @@ require_javascript('og/EventPopUp.js');
 onmouseover="if (!og.selectingCells) og.overCell('<?php echo $div_id?>'); else og.paintSelectedCells('<?php echo $div_id?>');"
 onmouseout="if (!og.selectingCells) og.resetCell('<?php echo $div_id?>');"
 onmousedown="og.selectStartDateTime(<?php echo $date->getDay() ?>, <?php echo $date->getMonth()?>, <?php echo $date->getYear()?>, <?php echo date("G",mktime($hour/2))?>, <?php echo ($hour % 2 == 0) ? 0 : 30 ?>); og.resetCell('<?php echo $div_id?>'); og.paintingDay = <?php echo $day_of_week ?>; og.paintSelectedCells('<?php echo $div_id?>');"
-onmouseup="og.showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMonth()?>, <?php echo $date->getYear()?>, <?php echo date("G",mktime(($hour+1)/2))?>, <?php echo (($hour+1) % 2 == 0) ? 0 : 30 ?>, <?php echo ($use_24_hours ? 'true' : 'false'); ?>,'<?php echo $date->format($date_format) ?>');"
+onmouseup="og.openLink(og.getUrl('event', 'add'));">
+<!-- FIXME
+onmouseup="og.showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMonth()?>, <?php echo $date->getYear()?>, <?php echo date("G",mktime(($hour+1)/2))?>, <?php echo (($hour+1) % 2 == 0) ? 0 : 30 ?>, <?php echo ($use_24_hours ? 'true' : 'false'); ?>,'<?php echo $date->format($date_format) ?>', '<?php echo $genid?>', '<?php echo ProjectEvents::instance()->getObjectTypeId()?>');"
+-->
 <?php } ?>
-></div>
+<!-- > --></div>
 
 <script>
 	og.ev_cell_dates[<?php echo $day_of_week?>] = {day:<?php echo $date->getDay() ?>, month:<?php echo $date->getMonth()?>, year:<?php echo $date->getYear()?>}
@@ -489,25 +495,10 @@ onmouseup="og.showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->ge
 											
 											getEventLimits($event, $dates[$day_of_week], $event_start, $event_duration, $end_modified);
 											
-											$tags = $event->getTags();
-											$eventTagString = '';
-											if (is_array($tags) && count($tags)>0){
-												$eventTagString .= '<span class="ico-tags ogTasksIcon" style="padding-left: 18px; padding-top: 4px; padding-bottom: 2px; font-size: 10px; margin-left: 10px;">';
-												$c= 0;
-												foreach ($tags as $t){
-													$eventTagString .= $t;
-													$c++;
-													count($tags)!=$c? $eventTagString .= ',':$eventTagString .= '</span>';														
-												}													
-											}
-											
 											$event_id = $event->getId();
 											$subject = clean($event->getSubject());
-											$dws = $event->getWorkspaces();
-											$ws_color = 0;
-											if (count($dws) >= 1){
-												$ws_color = $dws[0]->getColor();
-											}	
+
+											$ws_color = 1;
 											
 											cal_get_ws_color($ws_color, $ws_style, $ws_class, $txt_color, $border_color);	
 											
@@ -631,7 +622,7 @@ onmouseup="og.showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->ge
 						<div style="height:100%;border-left: 1px solid;border-right: 1px solid;border-color:<?php echo $border_color ?>;">
 							<table style="width:100%;"><tr><td>
 								<input type="checkbox" style="width:13px;height:13px;vertical-align:top;margin:2px 0 0 2px;border-color: <?php echo $border_color ?>;" id="sel_<?php echo $event->getId()?>" name="obj_selector" onclick="og.eventSelected(this.checked);"></input>
-								<a href='<?php echo get_url('event', 'viewevent', array(
+								<a href='<?php echo get_url('event', 'view', array(
 										'view' => 'viewweek5days',
 										'id' => $event->getId(),
 										'user_id' => $user_filter
@@ -664,9 +655,9 @@ onmouseup="og.showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->ge
 								</div>
 							</td></tr>
 							<tr><td>
-								<div><a href='<?php echo get_url('event', 'viewevent', array('view' => 'week', 'id' => $event->getId(), 'user_id' => $user_filter)); ?>'
+								<div><a href='<?php echo get_url('event', 'view', array('view' => 'week', 'id' => $event->getId(), 'user_id' => $user_filter)); ?>'
 									onclick="og.disableEventPropagation(event);"
-									class='internalLink'><span style="color:<?php echo $txt_color?>!important;padding-left:5px;font-size:93%;font-weight: <?php echo $bold;?>"><?php echo $subject . $eventTagString ;?></span></a>
+									class='internalLink'><span style="color:<?php echo $txt_color?>!important;padding-left:5px;font-size:93%;font-weight: <?php echo $bold;?>"><?php echo $subject;?></span></a>
 								</div>
 							</td></tr>
 							<tr style="height:100%;">

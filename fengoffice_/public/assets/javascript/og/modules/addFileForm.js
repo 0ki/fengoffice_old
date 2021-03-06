@@ -124,22 +124,22 @@ og.checkFileName = function(genid) {
 	  	if (!fileIsNew){
 	 		eid = Ext.get(genid + 'hfFileId').getValue();
 	  	}
-	  	comp = Ext.getCmp(genid + "ws_ids");
-	  	var ws = 0;
-	  	if (comp)
-	  	{
-	  		ws = comp.getValue();
-	  	}else{
-	  		//if it is from the quick add view the ws is on a hidden tag	  		
-	  		elem = document.getElementById(genid + "ws_ids")
-	  		ws = elem.value;
-	  	}
-	 	
+		var memberChoosers = Ext.getCmp(genid + "-member-chooser-panel-6").items ;
+
+		var members = [] ;
+		if ( memberChoosers ) {
+			memberChoosers.each(function(item, index, length) {
+				var checked = item.getChecked("id") ;
+				for (var j = 0 ; j < checked.length ; j++ ) {
+					members.push(checked[j]) ;
+				}
+			}) ;
+		}
 	    og.openLink(og.getUrl('files', 'check_filename', {
-			wsid: ws,
 			id: eid
 		}), {
 			post: {
+				members: Ext.util.JSON.encode(members),
 				filename: name
 			},
 			caller: this,
@@ -226,18 +226,7 @@ og.addFileOption = function(table, file, genid){
 	var fileLink = "<a style='padding-left:18px;line-height:16px' class=\""+ classes + "\" href=\"" + og.getUrl('files','download_file',{id : file.id}) + "\" title=\"" + lang('download') + "\">" + og.clean(file.name) + "</a>";
 	var workspaces = '';
 	
-	if (file.workspace_ids != ''){
-		workspaces = "&nbsp;(";
-		var ids = String(file.workspace_ids).split(',');
-		var names = og.clean(file.workspace_names).split(',');
-		var colors = String(file.workspace_colors).split(',');
-		for (var idi = 0; idi < ids.length; idi++){
-			workspaces +=  "<a href=\"#\" class=\"og-wsname og-wsname-color-" + colors[idi].trim() + "\" onclick=\"Ext.getCmp('workspace-panel').select(" + ids[idi] + ")\">" + names[idi].trim() + "</a>";
-			if (idi < ids.length - 1)
-				workspaces+="&nbsp;";
-		}
-		workspaces += ')';
-	}
+	
 	div.innerHTML = addMessage + fileLink + workspaces;
 	cell.appendChild(div);
 	

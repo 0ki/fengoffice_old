@@ -17,8 +17,7 @@ abstract class BaseApplicationReadLogs extends DataManager {
 	static private $columns = array(
     	'id' => DATA_TYPE_INTEGER,    	
     	'taken_by_id' => DATA_TYPE_INTEGER,    	
-    	'rel_object_id' => DATA_TYPE_INTEGER,    	
-    	'rel_object_manager' => DATA_TYPE_STRING,
+    	'rel_object_id' => DATA_TYPE_INTEGER,
     	'created_on' => DATA_TYPE_DATETIME,
     	'created_by_id' => DATA_TYPE_INTEGER,
     	'action' => DATA_TYPE_STRING    	

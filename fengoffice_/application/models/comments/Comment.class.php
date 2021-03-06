@@ -27,10 +27,10 @@ class Comment extends BaseComment {
 	 *
 	 * @access public
 	 * @param void
-	 * @return ProjectDataObject
+	 * @return ContentDataObject
 	 */
-	function getObject() {
-		return get_object_by_manager_and_id($this->getRelObjectId(), $this->getRelObjectManager());
+	function getRelObject() {
+		return Objects::findObject($this->getRelObjectId());
 	} // getObject
 
 	/**
@@ -49,44 +49,6 @@ class Comment extends BaseComment {
 	}
 	
 	/**
-	 * Return project object
-	 *
-	 * @param void
-	 * @return Project
-	 */
-	function getProject() {
-		if(is_null($this->project)) {
-			$object = $this->getObject();
-			if($object instanceof ProjectDataobject) {
-				$project = $object->getproject();
-				$this->project = $project instanceof Project ? $project : null;
-			} // if
-		} // if
-		return $this->project;
-	} // getProject
-	
-	function getWorkspaces($wsIds = null) {
-		if(is_null($this->workspaces)) {
-			$object = $this->getObject();
-			if($object instanceof ProjectDataobject) {
-				$this->workspaces = $object->getWorkspaces($wsIds);
-			} // if
-		} // if
-		return $this->workspaces;
-	} // getProject
-
-	/**
-	 * Return project ID
-	 *
-	 * @param void
-	 * @return integer
-	 */
-	function getProjectId() {
-		$project = $this->getProject();
-		return $project instanceof Project ? $project->getId() : null;
-	} // getProjectId
-
-	/**
 	 * Return comment #
 	 *
 	 * @param void
@@ -94,8 +56,8 @@ class Comment extends BaseComment {
 	 */
 	function getCommentNum() {
 		if(is_null($this->comment_num)) {
-			$object = $this->getObject();
-			$this->comment_num = $object instanceof ProjectDataObject ? $object->getCommentNum($this) : 0;
+			$object = $this->getRelObject();
+			$this->comment_num = $object instanceof ContentDataObject ? $object->getCommentNum($this) : 0;
 		} // if
 		return $this->comment_num;
 	} // getCommentNum
@@ -111,21 +73,18 @@ class Comment extends BaseComment {
 	 * @return string
 	 */
 	function getViewUrl() {
-		$object = $this->getObject();
-		return $object instanceof ProjectDataObject ? $object->getObjectUrl() : '';// . '#comment' . $this->getId() : '';
+		$object = $this->getRelObject();
+		return $object instanceof ContentDataObject ? $object->getObjectUrl() : '';
 	} // getViewUrl
 
 	/**
 	 * Return add comment URL for specific object
 	 *
-	 * @param ProjectDataObject $object
+	 * @param ContentDataObject $object
 	 * @return string
 	 */
-	static function getAddUrl(ProjectDataObject $object) {
-		return get_url('comment', 'add', array(
-        'object_id' => $object->getObjectId(),
-        'object_manager' => get_class($object->manager())
-		)); // get_url
+	static function getAddUrl(ContentDataObject $object) {
+		return get_url('comment', 'add', array('object_id' => $object->getObjectId()));
 	} // getAddUrl
 
 	/**
@@ -155,49 +114,51 @@ class Comment extends BaseComment {
 	/**
 	 * Can $user view this object
 	 *
-	 * @param User $user
+	 * @param Contact $user
 	 * @return boolean
 	 */
-	function canView(User $user) {
-		return can_read($user,$this);
+	function canView(Contact $user) {
+		$object = $this->getRelObject();
+		return can_read($user, $object->getMembers(), $object->getObjectTypeId());
 	} // canView
 
 	/**
-	 * Empty implementation of static method.
-	 *
-	 * Add tag permissions are done through ProjectDataObject::canComment() method. This
-	 * will return comment permissions for specified object
-	 *
-	 * @param User $user
-	 * @param Project $project
+	 * @param Contact $user
+	 * @param Member $member
 	 * @return boolean
 	 */
-	function canAdd(User $user, Project $project) {		
-		return can_add($user,$project,get_class(Comments::instance()));
+	function canAddToMember(Contact $user, Member $member, $context_members) {		
+		return can_add_to_member($user, $member, $context_members, $this->getRelObject()->getObjectTypeId());
 	} // canAdd
 
+	
+	function canAdd(Contact $user, $context){
+		$object = $this->getRelObject();
+		return can_add($user, $context, $object->getObjectTypeId());
+	}
+	
+	
 	/**
-	 * Empty implementation of static method. Update tag permissions are check by the taggable
-	 * object, not tag itself
-	 *
-	 * @param User $user
+	 * @param Contact $user
 	 * @return boolean
 	 */
-	function canEdit(User $user) {
+	function canEdit(Contact $user) {
 		$userId = $user->getId();
 		$creatorId = $this->getCreatedById();
-		return can_write($user,$this) && ( $user->isAdministrator() || $userId == $creatorId);
+		$object = $this->getRelObject();
+		return can_write($user, $object->getMembers(), $object->getObjectTypeId()) && ($user->isAdministrator() || $userId == $creatorId);
 	} // canEdit
 
 	/**
 	 * Empty implementation of static method. Update tag permissions are check by the taggable
 	 * object, not tag itself
 	 *
-	 * @param User $user
+	 * @param Contact $user
 	 * @return boolean
 	 */
-	function canDelete(User $user) {
-		return can_delete($user,$this);
+	function canDelete(Contact $user) {
+		$object = $this->getRelObject();
+		return can_delete($user, $object->getMembers(), $object->getObjectTypeId());
 	} // canDelete
 
 	// ---------------------------------------------------
@@ -226,19 +187,19 @@ class Comment extends BaseComment {
 		$is_new = $this->isNew();
 		$saved = parent::save();
 		if($saved) {
-			$object = $this->getObject();
+			$object = $this->getRelObject();
 			$object->save(); // update object
 			
-			if($object instanceof ProjectDataObject) {
+			if($object instanceof ContentDataObject) {
 				if($is_new) {
 					$object->onAddComment($this);
 				} else {
 					$object->onEditComment($this);
-				} // if
-			} // if
-		} // if
+				}
+			}
+		}
 		return $saved;
-	} // save
+	}
 
 	/**
 	 * Delete comment
@@ -249,8 +210,8 @@ class Comment extends BaseComment {
 	function delete() {
 		$deleted = parent::delete();
 		if($deleted) {
-			$object = $this->getObject();
-			if($object instanceof ProjectDataObject) {
+			$object = $this->getRelObject();
+			if($object instanceof ContentDataObject) {
 				$object->onDeleteComment($this);
 			} // if
 		} // if
@@ -268,19 +229,9 @@ class Comment extends BaseComment {
 	 * @return string
 	 */
 	function getObjectName() {
-		$object = $this->getObject();
-		return $object instanceof ProjectDataObject ? lang('comment on object', substr_utf($this->getText(), 0, 50) . '...', $object->getObjectName()) : $this->getObjectTypeName();
+		$object = $this->getRelObject();
+		return $object instanceof ContentDataObject ? lang('comment on object', substr_utf($this->getText(), 0, 50) . '...', $object->getObjectName()) : $this->getObjectTypeName();
 	} // getObjectName
-
-	/**
-	 * Return object type name
-	 *
-	 * @param void
-	 * @return string
-	 */
-	function getObjectTypeName() {
-		return 'comment';
-	} // getObjectTypeName
 
 	/**
 	 * Return view tag URL
@@ -291,6 +242,7 @@ class Comment extends BaseComment {
 	function getObjectUrl() {
 		return $this->getViewUrl();
 	} // getObjectUrl
+	
 
 } // Comment
 

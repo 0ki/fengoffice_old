@@ -1,4 +1,6 @@
-<?php $genid = gen_id();
+<?php
+	 
+	$genid = gen_id();
 	$assign_type = 0; //All
 	if (isset($assigned_to_user_filter) && $assigned_to_user_filter > 0){
 		$assigned_to = Users::findById($assigned_to_user_filter);
@@ -161,7 +163,7 @@ if ($hasDocuments) {
 <td style="<?php echo ($hasPendingTasks || $hasLate || $hasToday || $hasDocuments)? 'width:38%;min-width:330px' : 'width:100%' ?>">
 <?php 
 
-if ($hasEmails && (module_enabled('email', defined('SHOW_MAILS_TAB') ? SHOW_MAILS_TAB : 0))) {
+if ($hasEmails && (module_enabled('mails', defined('SHOW_MAILS_TAB') ? SHOW_MAILS_TAB : 0))) {
 	tpl_assign("widgetClass", 'dashUnreadEmails');
 	tpl_assign("widgetTitle", $unread_emails?lang('unread emails'):lang('workspace emails'));
 	tpl_assign("widgetTemplate", 'emails');
@@ -202,6 +204,6 @@ if ($hasCharts) {
 </div>
 </div>
 <script>
-og.showWsPaths('<?php echo $genid ?>-db');
+//og.showWsPaths('<?php echo $genid ?>-db');
 Ext.QuickTips.init();
 </script>

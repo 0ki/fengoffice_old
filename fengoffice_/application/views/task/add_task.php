@@ -1,43 +1,17 @@
 <?php
-	require_javascript('og/modules/addMessageForm.js');
+	require_javascript('og/modules/addTaskForm.js');
 	require_javascript('og/tasks/main.js');
 	require_javascript('og/tasks/addTask.js');
 	require_javascript("og/ObjectPicker.js");
 	$genid = gen_id();
-	$object = $task;
-	$all = true;
-	if (active_project()!= null)
-		$all = false;	
-	if ($task->isNew()) {
-		$project = Projects::findById(array_var($task_data, 'project_id'));
-		if (isset($from_email) && $from_email instanceof MailContent) {
-			$email_workspaces = $from_email->getWorkspaces();
-			// pick the most specific workspace
-			$email_max = 0;
-			foreach ($email_workspaces as $email_workspace) {
-				if ($email_workspace->getDepth() >= $email_max) {
-					$email_max = $email_workspace->getDepth();
-					$project = $email_workspace;
-				}
-			}
-		}
-	} else {
-		$project = $task->getProject();
-	}
 	$co_type = array_var($task_data, 'object_subtype');
-?>
-<script>
-og.checkSubmitAddTask = function(genid) {
-	var dd = Ext.getCmp(genid + 'due_date').getValue();
-	var sd = Ext.getCmp(genid + 'start_date').getValue();
-	if (sd && dd && dd < sd) {
-		alert(lang('warning start date greater than due date'));
-		return false;
+	
+	if (config_option('use tasks dependencies')) {
+		require_javascript('og/tasks/task_dependencies.js');
 	}
-	return true;
-};
-</script>
-<form id="<?php echo $genid ?>submit-edit-form" style='height:100%;background-color:white' class="internalForm" action="<?php echo $task->isNew() ? get_url('task', 'add_task', array("copyId" => array_var($task_data, 'copyId'))) : $task->getEditListUrl() ?>" method="post" onsubmit="return og.checkSubmitAddTask('<?php echo $genid ?>')">
+?>
+
+<form id="<?php echo $genid ?>submit-edit-form" style='height:100%;background-color:white' class="add-task" action="<?php echo $task->isNew() ? get_url('task', 'add_task', array("copyId" => array_var($task_data, 'copyId'))) : $task->getEditListUrl() ?>" method="post" onsubmit="return App.modules.addTaskForm.checkSubmitAddTask('<?php echo $genid; ?>','<?php echo $task->manager()->getObjectTypeId()?>') && og.handleMemberChooserSubmit('<?php echo $genid; ?>', <?php echo $task->manager()->getObjectTypeId() ?>);">
 
 <div class="task">
 <div class="coInputHeader">
@@ -64,26 +38,20 @@ og.checkSubmitAddTask = function(genid) {
 	</div>
 	<div>
 		<?php echo label_tag(lang('name'), $genid . 'taskListFormName', true) ?>
-    	<?php echo text_field('task[title]', array_var($task_data, 'title'), 
+    	<?php echo text_field('task[name]', array_var($task_data, 'name'), 
     		array('class' => 'title', 'id' => $genid . 'taskListFormName', 'tabindex' => '1')) ?>
     </div>
 	
-	<?php $categories = array(); Hook::fire('object_edit_categories', $object, $categories); ?>
+	<?php $categories = array(); Hook::fire('object_edit_categories', $task, $categories); ?>
 	
 	<div style="padding-top:5px">
-	<?php if ($all) { ?>
-			<a href="#" class="option" style="font-weight:bold" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_select_workspace_div',this)"><?php echo lang('workspace') ?></a> - 
-		<?php } else {?>
-			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_select_workspace_div',this)"><?php echo lang('workspace') ?></a> -
-		<?php }?> 
-		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_tags_div', this)"><?php echo lang('tags') ?></a> - 
-		<a href="#" class="option" style="font-weight:bold" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_more_div', this)"><?php echo lang('task data') ?></a> -  
-		<?php /*<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_handins_div', this)"><?php echo lang('handins') ?></a> - */ ?>
+		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_select_workspace_div',this)" <?php echo ($task->isNew() ? 'style="font-weight:bold"' : '')?>><?php echo lang('context') ?></a> -
+		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_more_div', this)" style="font-weight:bold" ><?php echo lang('task data') ?></a> -  
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>task_repeat_options_div',this)"><?php echo lang('repeating task') ?></a>  -
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_reminders_div',this)"><?php echo lang('object reminders') ?></a>  -
-		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_custom_properties_div', this)"><?php echo lang('custom properties') ?></a> -
+		<?php //FIXME FENG2 or REMOVE <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid add_custom_properties_div', this)"><?php echo lang('custom properties') </a> -?>
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_subscribers_div',this)"><?php echo lang('object subscribers') ?></a>
-		<?php if($object->isNew() || $object->canLinkObject(logged_user(), $project)) { ?> - 
+		<?php if($task->isNew() || $task->canLinkObject(logged_user())) { ?> - 
 			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_linked_objects_div',this)"><?php echo lang('linked objects') ?></a>
 		<?php } ?>
 		<?php foreach ($categories as $category) { ?>
@@ -105,11 +73,7 @@ og.checkSubmitAddTask = function(genid) {
 		<?php }?>
 		
 
-	<?php if ($all) { ?>
-			<div id="<?php echo $genid ?>add_task_select_workspace_div" style="display:block"> 
-	<?php } else {?>
-			<div id="<?php echo $genid ?>add_task_select_workspace_div" style="display:none">
-	<?php }?>
+	<div id="<?php echo $genid ?>add_task_select_workspace_div" <?php echo $task->isNew() ? '' : 'style="display:none"'?>>
 	<fieldset>
 	 	<?php 
 			$show_help_option = user_config_option('show_context_help'); 
@@ -118,38 +82,15 @@ og.checkSubmitAddTask = function(genid) {
 				<?php render_context_help($this, 'chelp add new task workspace','add_task_workspace'); ?>
 			</div>
 		<?php }?>
-	<legend><?php echo lang('workspace') ?></legend>
-		<?php if (isset($email_workspaces) && is_array($email_workspaces)) { ?>
-		<div>
-			<label><?php echo lang('suggested workspaces')?>:</label>
-			<ul>
-			<?php foreach ($email_workspaces as $email_workspace) { ?>
-				<li><a href="#" class="link-ico ico-color<?php echo $email_workspace->getColor() ?>" onclick="og.WorkspaceSelected('<?php echo $genid ?>wsSel', {id:'<?php echo $email_workspace->getId()?>',color:'<?php echo $email_workspace->getColor()?>',name:'<?php echo $email_workspace->getName()?>'})"><?php echo $email_workspace->getPath() ?></a></li>
-			<?php } ?>
-			</ul>
-			<br />
-		</div>
-		<?php } ?>
-		<?php echo '<div style="float:left;">' .select_project2('ws_ids', $project instanceof Project ? $project->getId() : 0, $genid) .'</div>'?>
-
-		<?php if (!$task->isNew()) { ?>
-			<div style="float:left; padding:5px;"><?php echo checkbox_field('task[apply_ws_subtasks]', array_var($task_data, 'apply_ws_subtasks', false), array("id" => "$genid-checkapplyws")) ?><label class="checkbox" for="<?php echo "$genid-checkapplyws" ?>"><?php echo lang('apply workspace to subtasks') ?></label></div>
-		<?php } ?>
-		<div style="clear:both"></div>
-	</fieldset>
-	</div>
-
-	<div id="<?php echo $genid ?>add_task_tags_div" style="display:none">
-	<fieldset>
-		<?php 
-			$show_help_option = user_config_option('show_context_help'); 
-			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_task_tags_context_help', true, logged_user()->getId()))) {?>
-			<div id="tasksPanelContextHelp" class="contextHelpStyle">
-				<?php render_context_help($this, 'chelp add new task tag','add_task_tags'); ?>
-			</div>
-		<?php }?>
-	<legend><?php echo lang('tags') ?></legend>
-		<?php echo autocomplete_tags_field("task[tags]", array_var($task_data, 'tags'), null, 30); ?>
+		<legend><?php echo lang('context')?></legend>
+		
+		<?php
+			if ($task->isNew()) {
+				render_dimension_trees($task->manager()->getObjectTypeId(), $genid, null, array('select_current_context' => true));
+			} else {
+				render_dimension_trees($task->manager()->getObjectTypeId(), $genid, $task->getMemberIds());
+			} 
+		?>
 	</fieldset>
 	</div>
 
@@ -161,7 +102,7 @@ og.checkSubmitAddTask = function(genid) {
 	    <label><?php echo lang('milestone') ?>: <span class="desc">(<?php echo lang('assign milestone task list desc') ?>)</span></label>
 	    
 	    <div style="float:left;" id="<?php $genid ?>add_task_more_div_milestone_combo" >
-    		<?php echo select_milestone('task[milestone_id]', $project, array_var($task_data, 'milestone_id'), array('id' => $genid . 'taskListFormMilestone', 'tabindex' => '40')) ?>    		
+    		<?php  echo select_milestone('task[milestone_id]', null, array_var($task_data, 'milestone_id'), array('id' => $genid . 'taskListFormMilestone', 'tabindex' => '40')) ?>    		
     	</div>
     	<?php if (!$task->isNew()) { ?>
 			<div style="float:left; padding:5px;"><?php echo checkbox_field('task[apply_milestone_subtasks]', array_var($task_data, 'apply_milestone_subtasks', false), array("id" => "$genid-checkapplymi")) ?><label class="checkbox" for="<?php echo "$genid-checkapplymi" ?>"><?php echo lang('apply milestone to subtasks') ?></label></div>
@@ -180,9 +121,8 @@ og.checkSubmitAddTask = function(genid) {
     					}
     				}
     			}, before, {
-    				types: {
-    					'ProjectTasks': true
-    				}
+    				types: ['task'],
+    				selected_type: 'task'
     			});
     		};
 
@@ -218,8 +158,8 @@ og.checkSubmitAddTask = function(genid) {
     			<span id="no-task-selected<?php echo $genid?>"><?php echo lang('none')?></span>
     			<a style="margin-left: 10px" id="<?php echo $genid ?>parent_before" href="#" onclick="og.pickParentTask(this)"><?php echo lang('set parent task') ?></a>
     			
-    		<?php }else{ //echo select_task_list('task[parent_id]', $project, array_var($task_data, 'parent_id'), false, array('id' => $genid . 'addTaskTaskList', 'tabindex' => '50')) ?>
- 				<?php $parentTask = ProjectTasks::findById($task_data['parent_id']);
+    		<?php }else{
+ 				$parentTask = ProjectTasks::findById($task_data['parent_id']);
  				if ($parentTask instanceof ProjectTask){?>
  				<span style="display: none;" id="no-task-selected<?php echo $genid?>"><?php echo lang('none')?></span>
     			<a style="display: none;margin-left: 10px" id="<?php echo $genid ?>parent_before" href="#" onclick="og.pickParentTask(this)"><?php echo lang('set parent task') ?></a> 
@@ -276,10 +216,55 @@ og.checkSubmitAddTask = function(genid) {
 		</div>
 		
 		<div style="padding-top:4px">
+		<?php echo label_tag(lang('percent completed')) ?>
+		<?php echo input_field('task[percent_completed]', array_var($task_data, 'percent_completed', 0), array('tabindex' => '100', 'class' => 'short')) ?>
+		</div>
+		
+		<?php if (config_option('use tasks dependencies')) { ?>
+		<div style="padding-top:4px">
+		<?php echo label_tag(lang('previous tasks')) ?>
+		<?php 	
+			if (!$task->isNew())
+				$previous_tasks = ProjectTaskDependencies::findAll(array('conditions' => 'task_id = '.$task->getId()));
+			else $previous_tasks = array();
+		?>
+			<div>
+			<?php if (count($previous_tasks) == 0) { ?>
+				<span id="<?php echo $genid?>no_previous_selected"><?php echo lang('none') ?></span>
+				<script>if (!og.previousTasks) og.previousTasks = []; og.previousTasksIdx = og.previousTasks.length;</script>
+			<?php } else {
+				$k=0; ?>
+				<script>
+					og.previousTasks=[];
+					og.previousTasksIdx = '<?php echo count($previous_tasks)?>';
+				</script>
+				<input type="hidden" name="task[clean_dep]" value="1" />
+				<?php 
+				foreach ($previous_tasks as $task_dep) {
+					$task = ProjectTasks::findById($task_dep->getPreviousTaskId());
+				?>
+					<div class="og-add-template-object ico-task">
+						<input type="hidden" name="task[previous]['<?php echo $k?>']" value="<?php echo $task->getId()?>" />
+						<span class="name"><?php echo clean($task->getTitle()) ?></span>
+						<a href="#" onclick="og.removePreviousTask(this.parentNode, '<?php echo $genid?>', '<?php echo $k?>')" class="removeDiv" style="display: block;"><?php echo lang('remove') ?></a>
+					</div>
+					<script>
+						var obj={id:'<?php echo $task_dep->getPreviousTaskId() ?>'};
+						og.previousTasks[og.previousTasks.length] = obj;
+					</script>
+				<?php $k++;
+				}
+			} ?>
+			</div><a class="coViewAction ico-add" id="<?php echo $genid?>previous_before" href="#" onclick="og.pickPreviousTask(this, '<?php echo $genid?>')"><?php echo lang('add previous task') ?></a>
+		
+		</div>
+		<?php } ?>
+		
+		<div style="padding-top:4px">
 		<?php $task_types = ProjectCoTypes::getObjectTypesByManager('ProjectTasks');
 			if (count($task_types) > 0) {
 				echo label_tag(lang('object type'));
-				echo select_object_type('task[object_subtype]', $task_types, array_var($task_data, 'object_subtype', config_option('default task co type')), array('tabindex' => '95', 'onchange' => "og.onChangeObjectCoType('$genid', 'ProjectTasks', ".($object->isNew() ? "0" : $object->getId()).", this.value)"));
+				echo select_object_type('task[object_subtype]', $task_types, array_var($task_data, 'object_subtype', config_option('default task co type')), array('tabindex' => '95', 'onchange' => "og.onChangeObjectCoType('$genid', 'ProjectTasks', ".($task->isNew() ? "0" : $task->getId()).", this.value)"));
 			}
 		?>
 		</div>
@@ -391,7 +376,7 @@ og.checkSubmitAddTask = function(genid) {
 		<legend><?php echo lang('object reminders') ?></legend>
 		<label><?php echo lang("due date")?>:</label>
 		<div id="<?php echo $genid ?>add_reminders_content">
-			<?php echo render_add_reminders($object, 'due_date', array(
+			<?php echo render_add_reminders($task, 'due_date', array(
 				'type' => 'reminder_email',
 				'duration' => 1,
 				'duration_type' => 1440,
@@ -413,10 +398,10 @@ og.checkSubmitAddTask = function(genid) {
     <legend><?php echo lang('custom properties') ?></legend>
     	<div id="<?php echo $genid ?>not_required_custom_properties_container">
 	    	<div id="<?php echo $genid ?>not_required_custom_properties">
-	      	<?php echo render_object_custom_properties($object, 'ProjectTasks', false, $co_type) ?><br/><br/>
+	      	<?php echo render_object_custom_properties($task, 'ProjectTasks', false, $co_type) ?><br/><br/>
 	      	</div><br />
 	    </div>
-      <?php echo render_add_custom_properties($object); ?>
+      <?php echo render_add_custom_properties($task); ?>
   	</fieldset>
  	</div>
   
@@ -431,40 +416,12 @@ og.checkSubmitAddTask = function(genid) {
 		<?php }?>
 		<legend><?php echo lang('object subscribers') ?></legend>
 		<div id="<?php echo $genid ?>add_subscribers_content">
-			<?php echo render_add_subscribers($object, $genid); ?>
+			<?php echo render_add_subscribers($task, $genid); ?>
 		</div>
 		</fieldset>
 	</div>
 	
-	<script>
-	var wsTree = Ext.get('<?php echo $genid ?>wsSel');
-	wsTree.previousValue = <?php echo $project instanceof Project ? $project->getId() : 0 ?>;
-	wsTree.on("click", function(ws) {
-		var uids = App.modules.addMessageForm.getCheckedUsers('<?php echo $genid ?>');
-		var wsid = Ext.get('<?php echo $genid ?>wsSelValue').getValue();
-		if (wsid != this.previousValue) {
-			this.previousValue = wsid;
-			Ext.get('<?php echo $genid ?>add_subscribers_content').load({
-				url: og.getUrl('object', 'render_add_subscribers', {
-					workspaces: wsid,
-					users: uids,
-					genid: '<?php echo $genid ?>',
-					object_type: '<?php echo get_class($object->manager()) ?>'
-				}),
-				scripts: true
-			});
-			Ext.get('<?php $genid ?>add_task_more_div_milestone_combo').load({
-				url: og.getUrl('milestone', 'render_add_milestone', {
-					workspaces: wsid,
-					genid: '<?php echo $genid ?>'
-				}),
-				scripts: true
-			});		
-		}
-	}, wsTree);
-	</script>
-
-	<?php if($object->isNew() || $object->canLinkObject(logged_user(), $project)) { ?>
+	<?php if($task->isNew() || $task->canLinkObject(logged_user())) { ?>
 	<div style="display:none" id="<?php echo $genid ?>add_linked_objects_div">
 	<fieldset>
 		<?php 
@@ -486,15 +443,17 @@ og.checkSubmitAddTask = function(genid) {
 					}
 				}
 			}
-			echo render_object_link_form($object, $pre_linked_objects)
+			echo render_object_link_form($task, $pre_linked_objects)
+		
 		?>
 	</fieldset>	
 	</div>
 	<?php } // if ?>
 		
    	
-	<div><?php echo label_tag(lang('description'), $genid . 'taskListFormDescription') ?>
-	<?php echo textarea_field('task[text]', array_var($task_data, 'text'), array('class' => 'huge', 'id' => $genid . 'taskListFormDescription', 'tabindex' => '140')) ?>
+	<div>
+		<?php echo label_tag(lang('description'), $genid . 'taskListFormDescription') ?>
+		<?php echo textarea_field('task[text]', array_var($task_data, 'text'), array('class' => 'long', 'rows'=> 3 , 'id' => $genid . 'taskListFormDescription', 'tabindex' => '140')) ?>
 	</div>
 
 	<?php foreach ($categories as $category) { ?>
@@ -509,36 +468,26 @@ og.checkSubmitAddTask = function(genid) {
 	<div>
 		<?php $defaultNotifyValue = user_config_option('can notify from quick add'); ?>
 		<label><?php echo lang('assign to') ?>:</label> 
-		<table>
-			<tr>
-				<td>
-					<input type="hidden" id="<?php echo $genid ?>taskFormAssignedTo" name="task[assigned_to]"></input>
-					<div id="<?php echo $genid ?>assignto_div" class="assignto_div">
-						<div id="<?php echo $genid ?>assignto_container_div"></div>
-					</div>
-				</td>
-				<td style="padding-left:10px">
-					<div  id="<?php echo $genid ?>taskFormSendNotificationDiv" style="display:none">
-						<?php echo checkbox_field('task[send_notification]', array_var($task_data, 'send_notification'), array('id' => $genid . 'taskFormSendNotification')) ?>
-						<label for="<?php echo $genid ?>taskFormSendNotification" class="checkbox"><?php echo lang('send task assigned to notification') ?></label>
-					</div>
-					<?php if (!$task->isNew()) { ?>
-						<?php echo checkbox_field('task[apply_assignee_subtasks]', array_var($task_data, 'apply_assignee_subtasks'), array('id' => $genid . 'taskFormApplyAssignee')) ?>
-						<label for="<?php echo $genid ?>taskFormApplyAssignee" class="checkbox"><?php echo lang('apply assignee to subtasks') ?></label>
-					<?php } ?>
-					<a href="Javascript:;" class="ico-add" onclick="og.openLink(og.getUrl('user', 'add', {refresh_assignees: true}), {caller:'administration'});" style="padding: 2px 0px 0px 18px;">
-						<?php echo lang('add user');?>
-					</a>
-				</td>
-			</tr>
-		</table>
+		<table><tr><td>
+			<input type="hidden" id="<?php echo $genid ?>taskFormAssignedTo" name="task[assigned_to_contact_id]"></input>
+			<div id="<?php echo $genid ?>assignto_container_div"></div>
+			
+		</td><td style="padding-left:10px"><div  id="<?php echo $genid ?>taskFormSendNotificationDiv" style="display:none">
+			<?php echo checkbox_field('task[send_notification]', array_var($task_data, 'send_notification'), array('id' => $genid . 'taskFormSendNotification')) ?>
+			<label for="<?php echo $genid ?>taskFormSendNotification" class="checkbox"><?php echo lang('send task assigned to notification') ?></label>
+		</div>
+		<?php if (!$task->isNew()) { ?>
+			<?php echo checkbox_field('task[apply_assignee_subtasks]', array_var($task_data, 'apply_assignee_subtasks'), array('id' => $genid . 'taskFormApplyAssignee')) ?>
+			<label for="<?php echo $genid ?>taskFormApplyAssignee" class="checkbox"><?php echo lang('apply assignee to subtasks') ?></label>
+		<?php } ?>
+		</td></tr></table>
 		
 	</div>
 	
 	<div id="<?php echo $genid ?>required_custom_properties_container">
 		<div id="<?php echo $genid ?>required_custom_properties">
 			<?php tpl_assign('startTi', 15000) ?>
-			<?php echo render_object_custom_properties($object, 'ProjectTasks', true, $co_type) ?>
+			<?php echo render_object_custom_properties($task, 'ProjectTasks', true, $co_type) ?>
 		</div><br/>
 	</div>
 	<?php echo input_field("task[is_template]", array_var($task_data, 'is_template', false), array("type" => "hidden", 'tabindex' => '160')); ?>
@@ -548,52 +497,24 @@ og.checkSubmitAddTask = function(genid) {
 </form>
 
 <script>
-	var wsSelector = Ext.get('<?php echo $genid ?>wsSel');
-	var prevWsValue = -1;
+
 	var assigned_user = '<?php echo array_var($task_data, 'assigned_to', 0) ?>';
-	
-	og.drawNotificationsInnerHtml = function(companies) {
-		var htmlStr = '';
-		var script = "";
-		htmlStr += '<div id="<?php echo $genid ?>notify_companies"></div>';
-		script += 'var div = Ext.getDom(\'<?php echo $genid ?>notify_companies\');';
-		script += 'div.notify_companies = {};';
-		script += 'var cos = div.notify_companies;';
-		if (companies != null) {
-			for (i = 0; i < companies.length; i++) {
-				comp_id = companies[i].id;
-				comp_name = companies[i].name;
-				script += 'cos.company_' + comp_id + ' = {id:\'<?php echo $genid ?>notifyCompany' + comp_id + '\', checkbox_id : \'notifyCompany' + comp_id + '\',users : []};';
-					
-				htmlStr += '<div class="companyDetails">';
-				htmlStr += '<div class="companyName">';
-				
-				htmlStr += '<input type="checkbox" class="checkbox" name="task[notify_company_'+comp_id+']" id="<?php echo $genid ?>notifyCompany'+comp_id+'" onclick="App.modules.addMessageForm.emailNotifyClickCompany('+comp_id+',\'<?php echo $genid ?>\',\'notify_companies\', \'notification\')"></input>'; 
-				htmlStr += '<label for="<?php echo $genid ?>notifyCompany'+comp_id+'" class="checkbox">'+og.clean(comp_name)+'</label>';
-				
-				htmlStr += '</div>';
-				htmlStr += '<div class="companyMembers">';
-				htmlStr += '<ul>';
-				
-				for (j = 0; j < companies[i].users.length; j++) {
-					usr = companies[i].users[j];
-					htmlStr += '<li><input type="checkbox" class="checkbox" name="task[notify_user_'+usr.id+']" id="<?php echo $genid ?>notifyUser'+usr.id+'" onclick="App.modules.addMessageForm.emailNotifyClickUser('+comp_id+','+usr.id+',\'<?php echo $genid ?>\',\'notify_companies\', \'notification\')"></input>'; 
-					htmlStr += '<label for="<?php echo $genid ?>notifyUser'+usr.id+'" class="checkbox">'+og.clean(usr.name)+'</label>';
-					script += 'cos.company_' + comp_id + '.users.push({ id:'+usr.id+', checkbox_id : \'notifyUser' + usr.id + '\'});';
-				}
-				htmlStr += '</ul>';
-				htmlStr += '</div>';
-				htmlStr += '</div>';
-			}
-		}
-		Ext.lib.Event.onAvailable('<?php echo $genid ?>notify_companies', function() {
-			eval(script);
-		});
-		return htmlStr;
-	}
+	var start = true;
 	
 	og.drawAssignedToSelectBox = function(companies) {
-		usersStore = ogTasks.buildAssignedToComboStore(companies);
+		<?php 
+		if(!can_manage_tasks(logged_user())&&can_task_assignee(logged_user())){
+			?>
+			var usersStore = [];
+			usersStore[0]=['<?php echo logged_user()->getId() ?>', lang('me')];
+			assigned_user=<?php echo logged_user()->getId() ?>;
+			<?php 
+		}else{
+			?>
+			usersStore = ogTasks.buildAssignedToComboStore(companies);
+			<?php 
+		}
+		?>
 		var assignCombo = new Ext.form.ComboBox({
 			renderTo:'<?php echo $genid ?>assignto_container_div',
 			name: 'taskFormAssignedToCombo',
@@ -633,49 +554,47 @@ og.checkSubmitAddTask = function(genid) {
 		var ddUser = document.getElementById(genid + 'taskFormAssignedTo');
 		var chk = document.getElementById(genid + 'taskFormSendNotification');
 		if (ddUser && chk){
-			var values = ddUser.value.split(':');
-			var user = values[1];
+			var user = ddUser.value;
 			var nV = <?php echo $defaultNotifyValue?>;
 			chk.checked = (user > 0 && nV != 0 && user != logged_user_id);
-			document.getElementById(genid + 'taskFormSendNotificationDiv').style.display = user > 0 ? 'block':'none';
+			var user_obj = ogTasks.getUser(user); // check if selected user is a user or a company
+			document.getElementById(genid + 'taskFormSendNotificationDiv').style.display = (user > 0 && user_obj) ? 'block':'none';
 		}
 	}
-
-	var companies;
-	og.drawUserLists = function(success, data) {
-		companies = data.companies;
 	
-		var assign_div = Ext.get('<?php echo $genid ?>assignto_container_div');
-		if (assign_div != null) {
-			assign_div.remove();
-			assign_div = Ext.get('<?php echo $genid ?>assignto_div');
-			if (assign_div != null) {
-				assign_div.insertHtml('beforeEnd', '<div id="<?php echo $genid ?>assignto_container_div"></div>');
-				og.drawAssignedToSelectBox(companies);
+
+	og.redrawUserLists = function(context){
+		if (!og.redrawingUserList) {
+			og.redrawingUserList = true ;
+			var prev_value = 0;
+			var combo = Ext.getCmp('<?php echo $genid ?>taskFormAssignedToCombo');
+			if (combo) {
+				combo.collapse();
+				combo.disable();
+				prev_value = combo.getValue();
 			}
-		}
-
-		var inv_div = Ext.get('<?php echo $genid ?>inv_companies_div');
-		if (inv_div != null) inv_div.remove();
-		inv_div = Ext.get('emailNotification');
-
-		if (inv_div != null) {
-			inv_div.insertHtml('beforeEnd', '<div id="<?php echo $genid ?>inv_companies_div">' + og.drawNotificationsInnerHtml(companies) + '</div>');	
-			inv_div.repaint();
-		}
+			
+			parameters = context ? {context: context} : {};
+			og.openLink(og.getUrl('task', 'allowed_users_to_assign', parameters), {callback: function(success, data){
+				companies = data.companies;
+				if (combo) {
+					combo.reset();
+					combo.store.removeAll();
+					combo.store.loadData(ogTasks.buildAssignedToComboStore(companies));
+					combo.setValue(prev_value);
+					combo.enable();
+				} else {
+					og.drawAssignedToSelectBox(companies);
+				}
+				og.redrawingUserList = false ;
+			}});
+			setTimeout(function() { 
+				og.redrawingUserList = false
+			}, 1500);
+		}		
 	}
 	
-	var wsVal;
-	og.redrawUserLists = function(){
-		wsVal = Ext.get('<?php echo $genid ?>wsSelValue').getValue();
-		
-		if (wsVal != prevWsValue) {
-			og.openLink(og.getUrl('task', 'allowed_users_to_assign', {ws_id:wsVal}), {callback:og.drawUserLists});
-			prevWsValue = wsVal;
-		}
-	}
-	wsSelector.addListener('click', og.redrawUserLists);
-	og.redrawUserLists();
+	og.redrawUserLists(og.contextManager.plainContext());
 	
 	og.changeTaskRepeat = function() {
 		document.getElementById("<?php echo $genid ?>repeat_options").style.display = 'none';
@@ -696,5 +615,48 @@ og.checkSubmitAddTask = function(genid) {
 	}
 	og.changeTaskRepeat();
 
+
+	var memberChoosers = Ext.getCmp('<?php echo "$genid-member-chooser-panel-".$task->manager()->getObjectTypeId()?>').items;
+	if (memberChoosers) {
+		
+		memberChoosers.each(function(item, index, length) {
+			item.on('all trees updated', function() {
+				var dimensionMembers = {};
+				memberChoosers.each(function(it, ix, l) {
+					dim_id = this.dimensionId;
+					dimensionMembers[dim_id] = [];
+					var checked = it.getChecked("id");
+					for (var j = 0 ; j < checked.length ; j++ ) {
+						dimensionMembers[dim_id].push(checked[j]);
+					}
+				});
+
+				Ext.get('<?php $genid ?>add_task_more_div_milestone_combo').load({
+					url: og.getUrl('milestone', 'render_add_milestone', {
+						context: Ext.util.JSON.encode(dimensionMembers),
+						genid: '<?php echo $genid ?>',
+						selected: document.getElementById('<?php echo $genid ?>taskListFormMilestone').value
+					}),
+					scripts: true
+				});
+
+				var uids = App.modules.addMessageForm.getCheckedUsers('<?php echo $genid ?>');
+				Ext.get('<?php echo $genid ?>add_subscribers_content').load({
+					url: og.getUrl('object', 'render_add_subscribers', {
+						context: Ext.util.JSON.encode(dimensionMembers),
+						users: uids,
+						genid: '<?php echo $genid ?>',
+						otype: '<?php echo $task->manager()->getObjectTypeId()?>'
+					}),
+					scripts: true
+				});
+
+				og.redrawUserLists(Ext.util.JSON.encode(dimensionMembers));
+
+			});
+		});
+	}
+
 	Ext.get('<?php echo $genid ?>taskListFormName').focus();
+
 </script>

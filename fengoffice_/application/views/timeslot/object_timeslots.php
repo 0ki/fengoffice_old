@@ -12,7 +12,7 @@
     	<table style="width:100%"><tr><td><?php echo lang('object time slots')?></td>
     		<?php if($__timeslots_object instanceof ProjectTask){ ?>
     			<td align=right><a style="font-weight:normal;font-size:80%" class="coViewAction ico-print" href="<?php echo get_url('reporting','total_task_times_by_task_print',array("id" => $__timeslots_object->getId())) ?>" target="_blank"><?php echo lang('print') ?></a>  </td>
-    		<?php } // if ?>
+    		<?php } ?>
     	</tr></table> 
     </div>
 		<table style="width:100%;max-width:700px" class="objectTimeslots" id="<?php echo $random ?>objectTimeslots" style="<?php echo $countTimeslots > 0? '':'display:none'?>">
@@ -27,15 +27,15 @@
 			if (!$__timeslots_object->isTrashed() && $timeslot->canDelete(logged_user())) 
 				$options[] = '<a class="internalLink" href="' . $timeslot->getDeleteUrl() . '" onclick="return confirm(\'' . escape_single_quotes(lang('confirm delete timeslot')) . '\')">' . lang('delete') . '</a>';
 				
-			if (!$__timeslots_object->isTrashed() && $timeslot->isOpen() && $timeslot->getUserId() == logged_user()->getId() && $timeslot->canEdit(logged_user())){
+			if (!$__timeslots_object->isTrashed() && $timeslot->isOpen() && $timeslot->getContactId() == logged_user()->getId() && $timeslot->canEdit(logged_user())){
 				$open_timeslot = $timeslot;
 				$counter --;
 			} else {
 ?>
 			<tr class="timeslot <?php echo $counter % 2 ? 'even' : 'odd'; echo $timeslot->isOpen() ? ' openTimeslot' : '' ?>" id="timeslot<?php echo $timeslot->getId() ?>">
 			<td style="padding-right:10px"><b><?php echo $counter ?>.</b></td>
-			<?php if ($timeslot->getUser() instanceof User) { ?>
-				<td style="padding-right:10px"><b><a class="internalLink" href="<?php echo $timeslot->getUser()->getCardUrl()?>" title=" <?php echo lang('user card of', clean($timeslot->getUser()->getDisplayName())) ?>"><?php echo clean($timeslot->getUser()->getDisplayName()) ?></a></b></td>
+			<?php if ($timeslot->getUser() instanceof Contact) { ?>
+				<td style="padding-right:10px"><b><a class="internalLink" href="<?php echo $timeslot->getUser()->getCardUserUrl()?>" title=" <?php echo lang('user card of', clean($timeslot->getUser()->getObjectName())) ?>"><?php echo clean($timeslot->getUser()->getObjectName()) ?></a></b></td>
 			<?php } else {?>
 				<td style="padding-right:10px"><b><?php echo lang("n/a") ?></b></td>
 			<?php } ?>
@@ -60,7 +60,7 @@
 			
 			<?php if ($timeslot->getDescription() != '') {?>
 				<tr class="timeslot <?php echo $counter % 2 ? 'even' : 'odd'; echo $timeslot->isOpen() ? ' openTimeslot' : '' ?>" ><td></td>
-				<td colspan=6 style="color:#666666"><?php echo nl2br(clean($timeslot->getDescription())) ?></td></tr>
+				<td colspan=6 style="color:#666666"><?php echo clean($timeslot->getDescription()) ?></td></tr>
 			<?php } //if ?>
 		<?php } //if 
 		} // foreach ?>

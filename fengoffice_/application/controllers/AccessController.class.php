@@ -34,7 +34,7 @@ class AccessController extends ApplicationController {
 		}
 		$this->addHelper('form');
 
-		if(function_exists('logged_user') && (logged_user() instanceof User)) {
+		if(function_exists('logged_user') && (logged_user() instanceof Contact && logged_user()->isUser())) {
 			$ref_controller = null;
 			$ref_action = null;
 			$ref_params = array();
@@ -97,11 +97,12 @@ class AccessController extends ApplicationController {
 			} // if
 			
 			if (preg_match(EMAIL_FORMAT, $username)) {
-				$user = Users::getByEmail($username);
+				$user = Contacts::getByEmail($username);
+				
 			} else {
-				$user = Users::getByUsername($username, owner_company());
+				$user = Contacts::getByUsername($username);
 			}
-			if(!($user instanceof User)) {
+			if(!($user instanceof Contact && $user->isUser()) || $user->getDisabled()) {
 				AdministrationLogs::createLog("invalid login", array_var($_SERVER, 'REMOTE_ADDR'), AdministrationLogs::ADM_LOG_CATEGORY_SECURITY);
 				tpl_assign('error', new Error(lang('invalid login data')));
 				$this->render();
@@ -148,17 +149,17 @@ class AccessController extends ApplicationController {
 			} // if
 			if(!count($ref_params)) $ref_params = null;
 						
-			if(UserPasswords::validatePassword($password)){
-				$newest_password = UserPasswords::getNewestUserPassword($user->getId());
-				if(!$newest_password instanceof UserPassword){
-					$user_password = new UserPassword();
-					$user_password->setUserId($user->getId());
+			if(ContactPasswords::validatePassword($password)){
+				$newest_password = ContactPasswords::getNewestContactPassword($user->getId());
+				if(!$newest_password instanceof ContactPassword){
+					$user_password = new ContactPassword();
+					$user_password->setContactId($user->getId());
 					$user_password->setPasswordDate(DateTimeValueLib::now());
 					$user_password->setPassword(cp_encrypt($password, $user_password->getPasswordDate()->getTimestamp()));
 					$user_password->password_temp = $password;
 					$user_password->save();
 				}else{
-					if(UserPasswords::isUserPasswordExpired($user->getId())){
+					if(ContactPasswords::isContactPasswordExpired($user->getId())){
 						$this->redirectTo('access', 'change_password', 
 						array('id' => $user->getId(),
 							'msg' => 'expired',
@@ -180,7 +181,7 @@ class AccessController extends ApplicationController {
 			try {
 				CompanyWebsite::instance()->logUserIn($user, $remember);
 				$ip  = get_ip_address();
-				ApplicationLogs::createLog($user,null,ApplicationLogs::ACTION_LOGIN,false,false,true,$ip);
+				ApplicationLogs::createLog($user,ApplicationLogs::ACTION_LOGIN,false,false,true,$ip);
 			} catch(Exception $e) {
 				tpl_assign('error', new Error(lang('invalid login data')));
 				$this->render();
@@ -204,18 +205,24 @@ class AccessController extends ApplicationController {
 			$timezone =  array_var($_GET,'utz');
 			if ($timezone && $timezone != ''){
 				$usu = logged_user();
-				if ($usu instanceof User){
+				if ($usu instanceof Contact && $usu->isUser() && !$usu->getDisabled()){
 					$usu->setTimezone($timezone);
 					$usu->save();
 				}
 			}
-			$this->redirectTo('dashboard', 'index');
+			$this->redirectTo('dashboard', 'init_overview');
 		} else {
-			if (!logged_user() instanceof User) {
+			if (!(logged_user() instanceof Contact && logged_user()->isUser())) {
 				$this->redirectTo('access', 'login');
 			}
+			
+			
+			
 			$this->setLayout("website");
 			$this->setTemplate(get_template_path("empty"));
+			
+			
+			
 		}
 	}
 	
@@ -226,9 +233,9 @@ class AccessController extends ApplicationController {
 	 * @return null
 	 */
 	function change_password(){
-		$user = Users::findById(get_id());
+		$user = Contacts::findById(get_id());
 					
-		if(!$user instanceof User) return;
+		if(!($user instanceof Contact && $user->isUser()) || $user->getDisabled()) return;
 		
 		tpl_assign('user_id', get_id());
 		
@@ -273,41 +280,41 @@ class AccessController extends ApplicationController {
 				$this->render();
 			} // if
 
-			if(!UserPasswords::validateMinLength($new_password)){
+			if(!ContactPasswords::validateMinLength($new_password)){
 				$min_pass_length = config_option('min_password_length', 0);
 				tpl_assign('error', new Error(lang('password invalid min length', $min_pass_length)));
 				$this->render();
 			}
 			
-			if(!UserPasswords::validateNumbers($new_password)){
+			if(!ContactPasswords::validateNumbers($new_password)){
 				$pass_numbers = config_option('password_numbers', 0);
 				tpl_assign('error', new Error(lang('password invalid numbers', $pass_numbers)));
 				$this->render();
 			}
 			
-			if(!UserPasswords::validateUppercaseCharacters($new_password)){
+			if(!ContactPasswords::validateUppercaseCharacters($new_password)){
 				$pass_uppercase = config_option('password_uppercase_characters', 0);
 				tpl_assign('error', new Error(lang('password invalid uppercase', $pass_uppercase)));
 				$this->render();
 			}
 			
-			if(!UserPasswords::validateMetacharacters($new_password)){
+			if(!ContactPasswords::validateMetacharacters($new_password)){
 				$pass_metacharacters = config_option('password_metacharacters', 0);
 				tpl_assign('error', new Error(lang('password invalid metacharacters', $pass_metacharacters)));
 				$this->render();
 			}
 			
-			if(!UserPasswords::validateAgainstPasswordHistory($user->getId(), $new_password)){
+			if(!ContactPasswords::validateAgainstPasswordHistory($user->getId(), $new_password)){
 				tpl_assign('error', new Error(lang('password exists history')));
 				$this->render();
 			}
 			
-			if(!UserPasswords::validateCharDifferences($user->getId(), $new_password)){
+			if(!ContactPasswords::validateCharDifferences($user->getId(), $new_password)){
 				tpl_assign('error', new Error(lang('password invalid difference')));
 				$this->render();
 			}
 			
-			$user_password = new UserPassword();
+			$user_password = new ContactPasswords();
 			$user_password->setPasswordDate(DateTimeValueLib::now());
 			$user_password->setUserId($user->getId());
 			$user_password->setPassword(cp_encrypt($new_password, $user_password->getPasswordDate()->getTimestamp()));
@@ -371,7 +378,7 @@ class AccessController extends ApplicationController {
 		$username = array_var($login_data, 'username');
 		$password = array_var($login_data, 'password');
 		$remember = array_var($login_data, 'remember', '') != '';
-		if (function_exists('logged_user') && (logged_user() instanceof User) && logged_user()->getUsername() == $username) {
+		if (function_exists('logged_user') && (logged_user() instanceof Contact) && logged_user()->getUsername() == $username && logged_user()->isUser()) {
 			flash_error(lang("already logged in"));
 			return;
 		} // if
@@ -386,8 +393,8 @@ class AccessController extends ApplicationController {
 			return;
 		} // if
 
-		$user = Users::getByUsername($username, owner_company());
-		if (!($user instanceof User)) {
+		$user = Contacts::getByUsername($username, owner_company());
+		if (!($user instanceof Contact && $user->isUser()) || $user->getDisabled()) {
 			flash_error(lang('invalid login data'));
 			return;
 		} // if
@@ -414,7 +421,7 @@ class AccessController extends ApplicationController {
 	 * @return null
 	 */
 	function logout() {
-		ApplicationLogs::createLog(logged_user(),null,ApplicationLogs::ACTION_LOGOUT,false,false,true,get_ip_address());
+		ApplicationLogs::createLog(logged_user(),ApplicationLogs::ACTION_LOGOUT,false,false,true,get_ip_address());
 		CompanyWebsite::instance()->logUserOut();
 		$this->redirectTo('access', 'login');
 	} // logout
@@ -435,8 +442,8 @@ class AccessController extends ApplicationController {
 				$this->render();
 			} // if
 
-			$user = Users::getByEmail($your_email);
-			if(!($user instanceof User)) {
+			$user = Contacts::getByEmail($your_email);
+			if(!($user instanceof Contact && $user->isUser()) || $user->getDisabled()) {
 				flash_error(lang('email address not in use', $your_email));
 				$this->redirectTo('access', 'forgot_password');
 			} // if
@@ -444,7 +451,7 @@ class AccessController extends ApplicationController {
 			$token = sha1(gen_id() . (defined('SEED') ? SEED : ''));
 			$timestamp = time() + 60*60*24;
 			set_user_config_option('reset_password', $token . ";" . $timestamp, $user->getId());
-			
+
 			try {
 				DB::beginWork();
 				Notifier::forgotPassword($user, $token);
@@ -466,7 +473,8 @@ class AccessController extends ApplicationController {
 	 * @return null
 	 */
 	function complete_installation() {
-		if(Companies::getOwnerCompany() instanceof Company) {
+		
+		if(Contacts::getOwnerCompany() instanceof Contact) {
 			die('Owner company already exists'); // Somebody is trying to access this method even if the user already exists
 		} // if
 
@@ -488,78 +496,102 @@ class AccessController extends ApplicationController {
 
 				DB::beginWork();
 
-				Users::delete(); // clear users table
-				Companies::delete(); // clear companies table
-
-				// Create the administrator user
-				$administrator = new User();
-				$administrator->setId(1);
-				$administrator->setCompanyId(1);
-				$administrator->setUsername(array_var($form_data, 'admin_username'));
-				$administrator->setEmail(array_var($form_data, 'admin_email'));
-				$administrator->setPassword($admin_password);
-				$administrator->setCanEditCompanyData(true);
-				$administrator->setCanManageConfiguration(true);
-				$administrator->setCanManageSecurity(true);
-				$administrator->setCanManageWorkspaces(true);
-				$administrator->setCanManageContacts(true);
-				$administrator->setCanManageTemplates(true);
-				$administrator->setCanManageReports(true);
-				$administrator->setCanManageTime(true);
-				$administrator->setCanAddMailAccounts(true);
-				$administrator->setAutoAssign(false);
-				$administrator->setPersonalProjectId(1);
-				$administrator->setType('admin');
-
-				$administrator->save();
-
-				$group = new Group();
-				$group->setName('administrators');
-				$group->setAllPermissions(true);
-				$group->setId(Group::CONST_ADMIN_GROUP_ID );
-			
-				$group->save();
-
-				$group_user = new GroupUser();
-				$group_user->setGroupId(Group::CONST_ADMIN_GROUP_ID);
-				$group_user->setUserId($administrator->getId());
-
-				$group_user->save();
-
-				$project = new Project();
-				$project->setId(1);
-				$project->setP1(1);
-				$project->setColor(11);
-				$project->setName(new_personal_project_name($administrator->getUsername()));
-				$project->setDescription(lang('files'));
-				$project->setCreatedById($administrator->getId());
-
-				$project->save();
-
-				$project_user = new ProjectUser();
-				$project_user->setProjectId($project->getId());
-				$project_user->setUserId($administrator->getId());
-				$project_user->setCreatedById($administrator->getId());
-				$project_user->setAllPermissions(true);
-
-				$project_user->save();
+				Contacts::delete(); // clear users table
 
 				// Create a company
-				$company = new Company();
+				$company = new Contact();
 				$company->setId(1);
-				$company->setClientOfId(0);
-				$company->setName(array_var($form_data, 'company_name'));
-				$company->setCreatedById(1);
-
+				$company->setFirstName(array_var($form_data, 'company_name'));
+				$company->setObjectName();
+				$company->setCreatedById(2);
+				$company->setUpdatedById(2);
+				$company->setIsCompany(true);
 				$company->save();
 
+				// Create the administrator user
+				$administrator = new Contact();
+				$administrator->setId(2);
+				$administrator->setUserType(2);
+				$administrator->setCompanyId(1);
+				$administrator->setUsername(array_var($form_data, 'admin_username'));
+				$administrator->addEmail(array_var($form_data, 'admin_email'), 'user', true);
+				$administrator->addEmail(array_var($form_data, 'admin_email'), 'personal', true);
+				$administrator->setPassword($admin_password);
+				$administrator->setFirstname($administrator->getDisplayName());
+				$administrator->setObjectName();
+
+				//permissions
+				$permission_group = new PermissionGroup();
+				$permission_group->setName('Account Owner');
+				$permission_group->setContactId(2);
+				$permission_group->setIsContext(false);
+				$permission_group->setId(1);
+				$permission_group->save();
+				
+				$administrator->setPermissionGroupId(1);
+				$administrator->save();
+				
+				$contact_pg = new ContactPermissionGroup();
+				$contact_pg->setContactId(2);
+				$contact_pg->setPermissionGroupId(1);
+				$contact_pg->save();
+				
+				// tab panel permissions
+				$panels = TabPanels::getEnabled();
+				foreach ($panels as $panel) {
+					$tpp = new TabPanelPermission();
+					$tpp->setPermissionGroupId($administrator->getPermissionGroupId());
+					$tpp->setTabPanelId($panel->getId());
+					$tpp->save();
+				}
+				
+				// dimension permissions
+				$dimensions = Dimensions::findAll();
+				foreach ($dimensions as $dimension) {
+					if ($dimension->getDefinesPermissions()) {
+						$cdp = ContactDimensionPermissions::findOne(array("conditions" => "`permission_group_id` = ".$administrator->getPermissionGroupId()." AND `dimension_id` = ".$dimension->getId()));
+						if (!$cdp instanceof ContactDimensionPermission) {
+							$cdp = new ContactDimensionPermission();
+							$cdp->setPermissionGroupId($administrator->getPermissionGroupId());
+							$cdp->setContactDimensionId($dimension->getId());
+						}
+						$cdp->setPermissionType('allow all');
+						$cdp->save();
+						
+						// contact member permisssion entries
+						$members = $dimension->getAllMembers();
+						foreach ($members as $member) {
+							$ots = DimensionObjectTypeContents::getContentObjectTypeIds($dimension->getId(), $member->getObjectTypeId());
+							$ots[]=$member->getObjectId();
+							foreach ($ots as $ot) {
+								$cmp = ContactMemberPermissions::findOne();
+								if (!$cmp instanceof ContactMemberPermission) {
+									$cmp = new ContactMemberPermission(array("conditions" => "`permission_group_id` = ".$administrator->getPermissionGroupId()." AND `member_id` = ".$member->getId()." AND `object_type_id` = $ot"));
+									$cmp->setPermissionGroupId($administrator->getPermissionGroupId());
+									$cmp->setMemberId($member->getId());
+									$cmp->setObjectTypeId($ot);
+								}
+								$cmp->setCanWrite(1);
+								$cmp->setCanDelete(1);
+								$cmp->save();
+							}
+						}
+					}
+				}
+				
+				// system permissions
+				$sp = new SystemPermission();
+				$sp->setPermissionGroupId(1);
+				$sp->setAllPermissions(true);
+				$sp->save();
+				
+				Hook::fire('after_user_add', $administrator, $null);
+				
 				DB::commit();
 
 				$this->redirectTo('access', 'login');
 			} catch(Exception $e) {
 				tpl_assign('error', $e);
-				if($administrator)$administrator->deleteFromSearchableObjects();
-				if($project)$project->deleteFromSearchableObjects();
 				DB::rollback();
 			} // try
 		} // if
@@ -580,21 +612,41 @@ class AccessController extends ApplicationController {
 			$content .= "} catch (e) {}";
 		}
 		
-		//Get Plugin translation files
-		$filenames = get_files($fileDir . "/plugins", "js");
-		if (is_array($filenames) && count($filenames) > 0){
-			sort($filenames);
-			foreach ($filenames as $f) {
-				$content .= "\n/* $f */\n";
-				$content .= "try {";				
-				$content .= file_get_contents($f);
-				$content .= "} catch (e) {}";
+		
+		
+		$plugins = Plugins::instance ()->getActive ();
+		
+		foreach ( $plugins as $plugin ) {
+
+			$plg_dir = $plugin->getLanguagePath () . "/" . Localization::instance()->getLocale ();
+			if (is_dir ( $plg_dir )) {
+				$files = array_merge ( get_files ( $plg_dir, 'js' ));
+				if (is_array ( $files )) {
+					sort ( $files );
+					foreach ( $files as $file ) {
+						$content .= "\n/* $f */\n";
+						$content .= "try {";
+						/**
+						 * @author PEPE elpepe.uy@gmail.com:
+						 * The js file can contain PHP code so use include instead of file_get_contents.
+						 * To avoid sending headers, use output buffer.
+						 * This change help to avoid the need of multiple lang files.. javascripts and phps. 
+						 * You can create only one php file containing all traslations, 
+						 * and this will populate client and server side langs datasorces  
+						 */ 
+						ob_start();  
+						include $file ; 
+						$content .= ob_get_contents();
+						ob_end_clean(); //!important: Clean output buffer to save memory
+						$content .= "} catch (e) {}";
+					}
+				}
 			}
 		}
 		
 		$content .= "\n/* end */\n";
 		$this->setLayout("json");
-		$this->renderText($content, true);
+		$this->renderText($content, true);	
 	}
 	
 	function reset_password() {
@@ -605,8 +657,8 @@ class AccessController extends ApplicationController {
 			flash_error(lang('invalid parameters'));
 			$this->redirectTo('access', 'login');
 		}
-		$user = Users::findById($uid);
-		if (!$user instanceof User ) {
+		$user = Contacts::findById($uid);
+		if (!($user instanceof Contact && $user->isUser()) || $user->getDisabled()) {
 			flash_error(lang('user dnx'));
 			$this->redirectTo('access', 'login');
 		}
@@ -635,17 +687,13 @@ class AccessController extends ApplicationController {
 		tpl_assign('user', $user);
 		$new_password = array_var($_POST, 'new_password');
 		if ($new_password) {
-			//update global cache if available			
-			if (GlobalCache::isAvailable()) {							
-				GlobalCache::delete('logged_user_'.$user->getId());
-			}
 			$repeat_password = array_var($_POST, 'repeat_password');
 			if ($new_password != $repeat_password) {
 				flash_error(lang('passwords dont match'));
 				return;
 			}
-			$user_password = new UserPassword();
-			$user_password->setUserId($user->getId());
+			$user_password = new ContactPassword();
+			$user_password->setContactId($user->getId());
 			$user_password->password_temp = $new_password;
 			$user_password->setPasswordDate(DateTimeValueLib::now());
 			$user_password->setPassword(cp_encrypt($new_password, $user_password->getPasswordDate()->getTimestamp()));

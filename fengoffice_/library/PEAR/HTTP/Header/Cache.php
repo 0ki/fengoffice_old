@@ -12,7 +12,7 @@
  * @author      Michael Wallner <mike@php.net>
  * @copyright   2003-2005 The Authors
  * @license     BSD, revised
- * @version     CVS: $Id: Cache.php,v 1.1 2010/01/22 18:14:44 acio Exp $
+ * @version     CVS: $Id: Cache.php 7 2010-01-22 18:14:51Z acio $
  * @link        http://pear.php.net/package/HTTP_Header
  */
 
@@ -44,7 +44,7 @@ require_once 'HTTP/Header.php';
  * @package     HTTP_Header
  * @category    HTTP
  * @access      public
- * @version     $Revision: 1.1 $
+ * @version     $Revision: 7 $
  */
 class HTTP_Header_Cache extends HTTP_Header
 {

@@ -10,7 +10,7 @@
 
 /*
 $HeadURL: http://svn.textpattern.com/development/4.0/textpattern/lib/classTextile.php $
-$LastChangedRevision: 1141 $
+$LastChangedRevision: 7 $
 */
 
 /*

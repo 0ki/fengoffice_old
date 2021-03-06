@@ -145,9 +145,4 @@
 	'check to include sub ws' => 'Επιλέξτε αυτό για να συμπεριληφθούν επιμέρους περιοχές εργασίας στο url',
 	'week short' => 'Εβδομάδα',
 	'week number x' => 'Εβδομάδα {0}',
-	'also confirmed attendance' => 'Επιβεβαίωση παρεύρεσης',
-	'awaiting confirmation' => 'Αναμονή επιβεβαίωσης',
-	'rejected invitation' => 'Δεν θα παρευρεθώ',
-	'who' => 'Ποιος',
-	'what' => 'Τι',
 ); ?>

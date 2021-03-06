@@ -8,9 +8,9 @@ if (!isset($conditions)) $conditions = array();
 ?>
 <form style='height: 100%; background-color: white' class="internalForm"
 	action="<?php echo $url  ?>" method="post"
-	onsubmit="return og.validateReport('<?php echo $genid ?>');"><input
-	type="hidden" name="report[object_type]" id="report[object_type]"
-	value="<?php echo isset($report_data['object_type']) ? $report_data['object_type'] : "" ?>" />
+	onsubmit="return og.validateReport('<?php echo $genid ?>') && og.handleMemberChooserSubmit('<?php echo $genid; ?>', <?php echo $object->manager()->getObjectTypeId() ?>);"><input
+	type="hidden" name="report[report_object_type_id]" id="report[report_object_type_id]"
+	value="<?php echo array_var($report_data, 'report_object_type_id', '') ?>" />
 <div class="coInputHeader">
 <div class="coInputHeaderUpperRow">
 <div class="coInputTitle">
@@ -43,15 +43,36 @@ foreach ($object_types as $type) {
 		$selected = '';
 	}
 	$options[] = '<option value="'.$type[0].'" '.$selected.'>'.$type[1].'</option>';
-} 
+}
+
+$context_menu_style = $object->isNew() ? "font-weight:bold;" : "";
+$context_div_display = $object->isNew() ? "display:block;" : "display:none;";
 ?>
 <?php $strDisabled = count($options) > 1 ? '' : 'disabled'; 
 echo select_box('objectTypeSel', $options,
 array('id' => 'objectTypeSel' ,'onchange' => 'og.reportObjectTypeChanged("'.$genid.'", "", 1, "")', 'style' => 'width:200px;', $strDisabled => '', 'tabindex' => '10')) ?>
 
 </div>
+
+<div style="padding-top:5px">
+	<a href="#" class="option" style="<?php echo $context_menu_style ?>" onclick="og.toggleAndBolden('<?php echo $genid ?>add_report_select_context_div',this)"><?php echo lang('context') ?></a>
 </div>
+
+</div>
+
 <div id="<?php echo $genid ?>MainDiv" class="coInputMainBlock" style="display:none;">
+
+<div id="<?php echo $genid ?>add_report_select_context_div" style="<?php echo $context_div_display ?>"> 
+	<fieldset><legend><?php echo lang('context')?></legend>
+	<?php
+		if ($object->isNew()) {
+			render_dimension_trees($object->manager()->getObjectTypeId(), $genid, null, array('select_current_context' => true));
+		} else {
+			render_dimension_trees($object->manager()->getObjectTypeId(), $genid, $object->getMemberIds());
+		}
+	?>
+	</fieldset>
+</div>
 
 <fieldset><legend><?php echo lang('conditions') ?></legend>
 <div id="<?php echo $genid ?>"></div>
@@ -73,8 +94,8 @@ array('id' => 'objectTypeSel' ,'onchange' => 'og.reportObjectTypeChanged("'.$gen
 	og.loadReportingFlags();
 	og.reportObjectTypeChanged('<?php echo $genid?>', '<?php echo array_var($report_data, 'order_by') ?>', '<?php echo array_var($report_data, 'order_by_asc') ?>', '<?php echo (isset($columns) ? implode(',', $columns) : '') ?>');
 	<?php if(isset($conditions)){ ?>
-		<?php foreach($conditions as $condition){?>
-		    og.addCondition('<?php echo $genid?>',<?php echo $condition->getId() ?>, <?php echo $condition->getCustomPropertyId() ?> , '<?php echo $condition->getFieldName() ?>', '<?php echo $condition->getCondition() ?>', '<?php echo clean(str_replace("'", "\'", $condition->getValue()))?>', '<?php echo $condition->getIsParametrizable() ?>');		
+		<?php foreach($conditions as $condition){ ?>
+		    og.addCondition('<?php echo $genid?>',<?php echo $condition->getId() ?>, <?php echo $condition->getCustomPropertyId() ?> , '<?php echo $condition->getFieldName() ?>', '<?php echo $condition->getCondition() ?>', '<?php echo $condition->getValue() ?>', '<?php echo $condition->getIsParametrizable() ?>');		
 		<?php 
 		}//foreach ?>
 	<?php }//if ?>

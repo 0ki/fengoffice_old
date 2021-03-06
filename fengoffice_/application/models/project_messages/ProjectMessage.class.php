@@ -8,40 +8,19 @@
  */
 class ProjectMessage extends BaseProjectMessage {
 
+	protected $searchable_columns = array('text', 'name');
+	
 	/**
-	 * This project object is taggable
-	 *
-	 * @var boolean
+	 * @var string
 	 */
-	protected $is_taggable = true;
-
-	/**
-	 * Project messages are searchable
-	 *
-	 * @var boolean
-	 */
-	protected $is_searchable = true;
-
-	/**
-	 * Array of searchable columns
-	 *
-	 * @var array
-	 */
-	protected $searchable_columns = array('title', 'text', 'additional_text');
-
-	/**
-	 * Messages are commentable
-	 *
-	 * @var boolean
-	 */
-	protected $is_commentable = true;
-
+	var $summary_field = "text";
+	
+	
 	/**
 	 * Message is file container
 	 *
 	 * @var boolean
 	 */
-	protected $is_file_container = true;
 
 
 	/**
@@ -67,7 +46,6 @@ class ProjectMessage extends BaseProjectMessage {
 	function addComment($content, $is_private = false) {
 		$comment = new Comment();
 		$comment->setText($content);
-		$comment->setIsPrivate($is_private);
 		return $this->attachComment($comment);
 	} // addComment
 	
@@ -93,73 +71,48 @@ class ProjectMessage extends BaseProjectMessage {
 		return $this->related_forms;
 	} // getRelatedForms
 
+	
+	
 	// ---------------------------------------------------
 	//  Permissions
 	// ---------------------------------------------------
 
-	/**
-	 * Check CAN_MANAGE_MESSAGES permission
-	 *
-	 * @access public
-	 * @param User $user
-	 * @return boolean
-	 */
-	function canManage(User $user) {
-		can_write($user,$this);
-	} // canManage
+	function canAdd(Contact $user, $context){
+		return can_add($user, $context, ProjectMessages::instance()->getObjectTypeId());
+	}
+	
 
 	/**
 	 * Returns true if $user can access this message
 	 *
-	 * @param User $user
+	 * @param Contact $user
 	 * @return boolean
 	 */
-	function canView(User $user) {
-		return can_read($user,$this);
+	function canView(Contact $user) {
+		return can_read($user, $this->getMembers(), $this->getObjectTypeId());
 	} // canView
-
-	/**
-	 * Check if specific user can add messages to specific project
-	 *
-	 * @access public
-	 * @param User $user
-	 * @param Project $project
-	 * @return booelean
-	 */
-	function canAdd(User $user, Project $project) {
-		return can_add($user,$project,get_class(ProjectMessages::instance()));
-	} // canAdd
 
 	/**
 	 * Check if specific user can edit this messages
 	 *
 	 * @access public
-	 * @param User $user
+	 * @param Contact $user
 	 * @return boolean
 	 */
-	function canEdit(User $user) {		
-		return can_write($user,$this);
+	function canEdit(Contact $user) {
+		return can_write($user, $this->getMembers(), $this->getObjectTypeId());
 	} // canEdit
 
-	/**
-	 * Check if $user can update message options
-	 *
-	 * @param User $user
-	 * @return boolean
-	 */
-	function canUpdateOptions(User $user) {
-		return can_write($user,$this);
-	} // canUpdateOptions
 
 	/**
 	 * Check if specific user can delete this messages
 	 *
 	 * @access public
-	 * @param User $user
+	 * @param Contact $user
 	 * @return boolean
 	 */
-	function canDelete(User $user) {
-		return can_delete($user,$this);
+	function canDelete(Contact $user) {
+		return can_delete($user,$this->getMembers(), $this->getObjectTypeId());
 	} // canDelete
 
 	/**
@@ -169,9 +122,10 @@ class ProjectMessage extends BaseProjectMessage {
 	 * @param void
 	 * @return boolean
 	 */
-	function canAddComment(User $user) {
-		return can_write($user,$this);
+	function canAddComment(Contact $user) {
+		return can_write($user, $this->getMembers(), $this->getObjectTypeId());
 	} // canAddComment
+
 
 	// ---------------------------------------------------
 	//  URLS
@@ -245,48 +199,27 @@ class ProjectMessage extends BaseProjectMessage {
 	 * @return null
 	 */
 	function validate(&$errors) {
-		if(!$this->validatePresenceOf('title')) {
+		if(!$this->validatePresenceOf('name')) {
 			$errors[] = lang('message title required');
-		} // if
-		//if(!$this->validatePresenceOf('text')) $errors[] = lang('message text required');
+		} 
 	} // validate
 
-	// ---------------------------------------------------
-	//  Override ApplicationDataObject methods
-	// ---------------------------------------------------
-
+	
 	/**
-	 * Return object name
-	 *
-	 * @access public
-	 * @param void
-	 * @return string
-	 */
-	function getObjectName() {
-		return $this->getTitle();
-	} // getObjectName
-
-	/**
-	 * Return object type name
-	 *
-	 * @param void
-	 * @return string
-	 */
-	function getObjectTypeName() {
-		return 'message';
-	} // getObjectTypeName
-
-	/**
-	 * Return object URl
-	 *
-	 * @access public
-	 * @param void
-	 * @return string
-	 */
+	* Return object URL
+	*
+	* @access public
+	* @param void
+	* @return string
+	*/
 	function getObjectUrl() {
 		return $this->getViewUrl();
 	} // getObjectUrl
 	
+	
+    function getId(){
+    	return parent::getObjectId();
+    }
+    
+    
 } // ProjectMessage
-
-?>

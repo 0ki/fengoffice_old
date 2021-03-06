@@ -16,7 +16,7 @@ og.WebpageManager = function() {
 	            totalProperty: 'totalCount',
 	            id: 'id',
 	            fields: [
-	                'title', 'description', 'url', 'tags', 'wsIds', 'updatedBy', 'updatedById',
+	                'title', 'description', 'url', 'wsIds', 'updatedBy', 'updatedById',
 	                'updatedOn', 'updatedOn_today', 'ix','isRead'
 	            ]
 	        }),
@@ -24,20 +24,14 @@ og.WebpageManager = function() {
 			listeners: {
 				'load': function() {
 					var d = this.reader.jsonData;
-					var ws = og.clean(Ext.getCmp('workspace-panel').getActiveWorkspace().name);
-					var tag = og.clean(Ext.getCmp('tag-panel').getSelectedTag());
+					var ws = null ;
 					if (d.totalCount == 0) {
-						if (tag) {
-							this.fireEvent('messageToShow', lang("no objects with tag message", lang("web pages"), ws, tag));
-						} else {
-							this.fireEvent('messageToShow', lang("no objects message", lang("web pages"), ws));
-						}
+						this.fireEvent('messageToShow', lang("no objects message", lang("web pages"), ws));
 					} else if (d.webpages.length == 0) {
 						this.fireEvent('messageToShow', lang("no more objects message", lang("web pages")));
 					} else {
 						this.fireEvent('messageToShow', "");
 					}
-					og.showWsPaths();
 					Ext.getCmp('webpage-manager').getView().focusRow(og.lastSelectedRow.webpages+1);
 				}
 			}
@@ -144,7 +138,6 @@ og.WebpageManager = function() {
 				}
 			}
 			if (sm.getCount() <= 0) {
-				actions.tag.setDisabled(true);
 				actions.delWebpage.setDisabled(true);
 				actions.editWebpage.setDisabled(true);
 				markactions.markAsRead.setDisabled(true);
@@ -152,7 +145,6 @@ og.WebpageManager = function() {
 				actions.archive.setDisabled(true);
 			} else {
 				actions.editWebpage.setDisabled(sm.getCount() != 1);
-				actions.tag.setDisabled(false);
 				actions.delWebpage.setDisabled(false);
 				if (allUnread) {
 					markactions.markAsUnread.setDisabled(true);
@@ -171,7 +163,7 @@ og.WebpageManager = function() {
 
     var cm = new Ext.grid.ColumnModel([
 		sm,{
-			id: 'draghandle',
+/*			id: 'draghandle',
 			header: '&nbsp;',
 			width: 18,
         	renderer: renderDragHandle,
@@ -179,7 +171,7 @@ og.WebpageManager = function() {
         	resizable: false,
         	hideable:false,
         	menuDisabled: true
-		},{
+		},{*/
 			id: 'icon',
 			header: '&nbsp;',
 			dataIndex: 'type',
@@ -207,12 +199,7 @@ og.WebpageManager = function() {
 			sortable: true,
 			renderer: renderName
         },{
-			id: 'tags',
-			header: lang("tags"),
-			dataIndex: 'tags',
-			width: 90
-        },{
-			id: 'updated',
+        	id: 'updated',
 			header: lang("last updated by"),
 			dataIndex: 'updatedOn',
 			width: 90,
@@ -313,36 +300,6 @@ og.WebpageManager = function() {
 			},
 			scope: this
 		}),
-		tag: new Ext.Action({
-			text: lang('tag'),
-	        tooltip: lang('tag selected webpages'),
-	        iconCls: 'ico-tag',
-			disabled: true,
-			menu: new og.TagMenu({
-				listeners: {
-					'tagselect': {
-						fn: function(tag) {
-							this.load({
-								action: 'tag',
-								webpages: getSelectedIds(),
-								tagTag: tag
-							});
-						},
-						scope: this
-					},
-					'tagdelete': {
-							fn: function(tag) {
-								this.load({
-									action: 'untag',
-									webpages: getSelectedIds(),									
-									tagTag: tag.text
-								});
-							},
-							scope: this
-						}
-				}
-			})
-		}),
 		markAs: new Ext.Action({
 			text: lang('mark as'),
 			tooltip: lang('mark as desc'),
@@ -358,7 +315,6 @@ og.WebpageManager = function() {
 		tbar.push(actions.newWebpage);
 		tbar.push('-');
 		tbar.push(actions.editWebpage);
-		tbar.push(actions.tag);
 		tbar.push(actions.archive);
 		tbar.push(actions.delWebpage);		
 		tbar.push('-');
@@ -369,7 +325,7 @@ og.WebpageManager = function() {
         store: this.store,
 		layout: 'fit',
         cm: cm,
-		enableDrag: true,
+      //enableDrag: true,
 		stateful: og.preferences['rememberGUIState'],
 		ddGroup: 'WorkspaceDD',
         closable: true,
@@ -404,17 +360,7 @@ og.WebpageManager = function() {
 		}
     });
 
-	var tagevid = og.eventManager.addListener("tag changed", function(tag) {
-		if (!this.ownerCt) {
-			og.eventManager.removeListener(tagevid);
-			return;
-		}
-		if (this.ownerCt.active) {
-			this.load({start:0});
-		} else {
-    		this.needRefresh = true;
-    	}
-	}, this);
+
 };
 
 Ext.extend(og.WebpageManager, Ext.grid.GridPanel, {
@@ -426,15 +372,13 @@ Ext.extend(og.WebpageManager, Ext.grid.GridPanel, {
 			var start = 0;
 		}
 		Ext.apply(this.store.baseParams, {
-			tag: Ext.getCmp('tag-panel').getSelectedTag(),
-			active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id
+			context: og.contextManager.plainContext()
 		});
 		this.store.load({
 			params: Ext.apply(params, {
 				start: 0,
 				limit: og.config['files_per_page'],
-				tag: Ext.getCmp('tag-panel').getSelectedTag(),
-				active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id
+				//context: og.contextManager.plainContext()
 			})
 		});
 		this.needRefresh = false;
@@ -454,19 +398,6 @@ Ext.extend(og.WebpageManager, Ext.grid.GridPanel, {
 		this.innerMessage.innerHTML = text;
 	},
 	
-	moveObjects: function(ws) {
-		og.moveToWsOrMantainWs(this.id, ws);
-	},
-	
-	moveObjectsToWsOrMantainWs: function(mantain, ws) {
-		this.load({
-			action: 'move',
-			ids: this.getSelectedIds(),
-			moveTo: ws,
-			mantainWs: mantain
-		});
-	},
-	
 	archiveObjects: function() {
 		if (confirm(lang('confirm archive selected objects'))) {
 			this.load({
@@ -475,21 +406,6 @@ Ext.extend(og.WebpageManager, Ext.grid.GridPanel, {
 			});
 			this.getSelectionModel().clearSelections();
 		}
-	},
-	
-	tagObjects: function(tag) {
-		this.load({
-			action: 'tag',
-			webpages: this.getSelectedIds(),
-			tagTag: tag
-		});
-	},
-	
-	removeTags: function() {
-		this.load({
-			action: 'untag',
-			webpages: this.getSelectedIds()
-		});
 	},
 	
 	trashObjects: function() {

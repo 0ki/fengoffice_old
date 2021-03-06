@@ -10,8 +10,8 @@ class ObjectReminders extends BaseObjectReminders {
 	/**
 	 * Returns reminders that a user has for a specific object.
 	 *
-	 * @param ProjectDataObject $object
-	 * @param User $user
+	 * @param ContentDataObject $object
+	 * @param Contact $user
 	 */
 	function getAllRemindersByObjectAndUser($object, $user, $context = null, $include_subscriber_reminders = false) {
 		if (isset($context)) {
@@ -20,14 +20,13 @@ class ObjectReminders extends BaseObjectReminders {
 			$extra = "";
 		}
 		if ($include_subscriber_reminders) {
-			$usercond = '(`user_id` = ? OR `user_id` = 0)';
+			$usercond = '(`contact_id` = ? OR `contact_id` = 0)';
 		} else {
-			$usercond = '`user_id` = ?';
+			$usercond = '`contact_id` = ?';
 		}
 		$reminders = ObjectReminders::findAll(array(
-        	'conditions' => array("`object_id` = ? AND `object_manager` = ? AND $usercond" . $extra,
+        	'conditions' => array("`object_id` = ? AND $usercond" . $extra,
 					$object->getId(),
-        			get_class($object->manager()),
         			$user->getId()
 		)));
 		return $reminders;
@@ -40,9 +39,8 @@ class ObjectReminders extends BaseObjectReminders {
 	 */
 	function getByObject($object) {
 		return self::findAll(array(
-			'conditions' => array("`object_id` = ? AND `object_manager` = ?",
-				$object->getId(),
-				get_class($object->manager())
+			'conditions' => array("`object_id` = ?",
+				$object->getId()
 		)));
 	}
 	
@@ -60,39 +58,21 @@ class ObjectReminders extends BaseObjectReminders {
 		));
 	}
 	
-	function getNextDueReminders($type = null, DateTimeValue $start, DateTimeValue $end) {
-		if (isset($type)) {
-			$extra = ' AND `type` = ' . DB::escape($type);
-		} else {
-			$extra = "";
-		}
-		// get reminders that will not be shown in time if shown after $end time
-		$reminders = ObjectReminders::findAll(array(
-			'conditions' => array(
-				"`date` > ? AND `date` < ? AND ADDDATE(`date`, INTERVAL `minutes_before` MINUTE) < ?" . $extra, $start, $end, $end,
-			),
-			'limit' => config_option('cron reminder limit', 100)
-		));
-		
-		return $reminders;
-	}
-	
 	/**
 	 * Return array of users that have reminders for an object
 	 *
-	 * @param ProjectDataObject $object
+	 * @param ContentDataObject $object
 	 * @return array
 	 */
-	static function getUsersByObject(ProjectDataObject $object) {
+	static function getUsersByObject(ContentDataObject $object) {
 		$users = array();
 		$reminders = ObjectReminders::findAll(array(
-        	'conditions' => '`object_id` = ' . DB::escape($object->getId()) .
-        		' AND `object_manager` = ' . DB::escape(get_class($object->manager()))
+        	'conditions' => '`object_id` = ' . DB::escape($object->getId())
 		)); // findAll
 		if(is_array($reminders)) {
 			foreach($reminders as $reminder) {
 				$user = $reminder->getUser();
-				if($user instanceof User) $users[] = $user;
+				if($user instanceof Contact) $users[] = $user;
 			} // foreach
 		} // if
 		return count($users) ? $users : null;
@@ -101,18 +81,18 @@ class ObjectReminders extends BaseObjectReminders {
 	/**
 	 * Return array of objects that $user has reminders for
 	 *
-	 * @param User $user
+	 * @param Contact $user
 	 * @return array
 	 */
-	static function getObjectsByUser(User $user) {
+	static function getObjectsByUser(Contact $user) {
 		$objects = array();
 		$reminders = ObjectReminders::findAll(array(
-        	'conditions' => '`user_id` = ' . DB::escape($user->getId())
+        	'conditions' => '`contact_id` = ' . DB::escape($user->getId())
 		)); // findAll
 		if(is_array($Reminders)) {
 			foreach($Reminders as $Reminder) {
 				$object = $Reminder->getObject();
-				if($object instanceof ProjectDataObject) $objects[] = $object;
+				if($object instanceof ContentDataObject) $objects[] = $object;
 			} // foreach
 		} // if
 		return $objects;
@@ -121,37 +101,34 @@ class ObjectReminders extends BaseObjectReminders {
 	/**
 	 * Clear reminders by object
 	 *
-	 * @param ProjectDataObject $object
+	 * @param ContentDataObject $object
 	 * @return boolean
 	 */
-	static function clearByObject(ProjectDataObject $object) {
+	static function clearByObject(ContentDataObject $object) {
 		return ObjectReminders::delete(
-      		'`object_id` = ' . DB::escape($object->getId()) .
-      		' AND `object_manager` = ' . DB::escape(get_class($object->manager()))
-		);
+      		'`object_id` = ' . DB::escape($object->getId()));
 	} // clearByObject
 
-	static function clearByObjectAndUser(ProjectDataObject $object, User $user, $include_subscribers = false) {
+	static function clearByObjectAndUser(ContentDataObject $object, Contact $user, $include_subscribers = false) {
 		if ($include_subscribers) {
-			$usercond = '(`user_id` = '. DB::escape($user->getId()) .' OR `user_id` = 0)';
+			$usercond = '(`contact_id` = '. DB::escape($user->getId()) .' OR `contact_id` = 0)';
 		} else {
-			$usercond = '`user_id` = '. DB::escape($user->getId());
+			$usercond = '`contact_id` = '. DB::escape($user->getId());
 		}
 		return ObjectReminders::delete(
       		'`object_id` = ' . DB::escape($object->getId()) .
-      		' AND `object_manager` = ' . DB::escape(get_class($object->manager())) .
-			" AND $usercond"
+      		" AND $usercond"
 		);
 	}
 	
 	/**
 	 * Clear Reminders by user
 	 *
-	 * @param User $user
+	 * @param Contact $user
 	 * @return boolean
 	 */
-	static function clearByUser(User $user) {
-		return ObjectReminders::delete('`user_id` = ' . DB::escape($user->getId()));
+	static function clearByUser(Contact $user) {
+		return ObjectReminders::delete('`contact_id` = ' . DB::escape($user->getId()));
 	} // clearByUser
 
 } // ObjectReminders

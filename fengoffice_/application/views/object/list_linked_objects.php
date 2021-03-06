@@ -20,7 +20,7 @@ if ($linked_objects_object->isNew()){
 		if  ($linked_object instanceof Contact){ // if it is a contact
 			if (!$linked_object->canView(logged_user()) ) continue; // check permissions on contacts 			
 		} else { // not a contact
-			if (!can_read(logged_user(), $linked_object ) )  //check permissions on other COs
+			if (!can_read(logged_user(), $linked_object->getMembers(), $linked_object->getObjectTypeId() ) )  //check permissions on other COs
 					continue; 
 		}
 		$object_title = $linked_object->getObjectName();
@@ -56,7 +56,7 @@ if ($linked_objects_object->isNew()){
 			<a target="_blank" href="<?php echo $linked_object->getUrl() ?>"><?php echo lang('open weblink')?></a> |
 		<?php }
 		if ($linked_objects_object->canUnlinkObject(logged_user(), $linked_object)) { 
-			$action = 'og.openLink(\'' . $linked_objects_object->getUnlinkObjectUrl($linked_object) . '&dont_reload=1\', {callback: function(){ og.redrawLinkedObjects('. $linked_objects_object->getId() .', \''. get_class($linked_objects_object->manager()) . '\')}});';
+			$action = 'og.openLink(\'' . $linked_objects_object->getUnlinkObjectUrl($linked_object) . '\', {callback: function(){ og.redrawLinkedObjects('. $linked_objects_object->getId() .')}});';
 			echo '<a class="internalLink" href="#"' . '" onclick="if (confirm(\'' . escape_single_quotes(lang('confirm unlink object')) . '\')){'.$action.'}" title="' . lang('unlink object') . '">' . lang('unlink') . '</a>';
 		} ?>
 		</td></tr>

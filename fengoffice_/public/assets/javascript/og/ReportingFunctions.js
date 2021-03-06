@@ -40,7 +40,7 @@ og.reportObjectTypeChanged = function(genid, order_by, order_by_asc, cols){
 			return;
 		}
 		
-		document.getElementById('report[object_type]').value = type;
+		document.getElementById('report[report_object_type_id]').value = type;
 		
 		Ext.get('columnListContainer').load({
 			url: og.getUrl('reporting', 'get_object_column_list', {object_type: type, columns:cols, orderby:order_by, orderbyasc:order_by_asc, genid:genid}),
@@ -53,10 +53,13 @@ og.reportObjectTypeChanged = function(genid, order_by, order_by_asc, cols){
 
 og.reportTask = function(genid, order_by, order_by_asc, cols){
 	type = "ProjectTasks";
-	Ext.get(genid+'columnListContainer').load({
-		url: og.getUrl('reporting', 'get_object_column_list_task', {object_type: type, columns:cols, orderby:order_by, orderbyasc:order_by_asc, genid:genid}),
-		scripts: true
-	});
+	var column_list_container = Ext.get(genid+'columnListContainer');
+	if (column_list_container) {
+		column_list_container.load({
+			url: og.getUrl('reporting', 'get_object_column_list_task', {object_type: type, columns:cols, orderby:order_by, orderbyasc:order_by_asc, genid:genid}),
+			scripts: true
+		});
+	}
 };
 
 og.addCondition = function(genid, id, cpId, fieldName, condition, value, is_parametrizable, is_for_time_report){ //param is_for_time_report only used for time reporting
@@ -65,7 +68,7 @@ og.addCondition = function(genid, id, cpId, fieldName, condition, value, is_para
 		time_report = true;
 	if(!time_report){		
 		var get_object_fields = 'get_object_fields';
-		var type = document.getElementById('report[object_type]').value;
+		var type = document.getElementById('report[report_object_type_id]').value;
 		if(type == ""){
 	  		alert(lang('object type not selected'));
 	  		return;
@@ -169,12 +172,11 @@ og.undoDeleteCondition = function(id, genid){
 	}
 };
 
-og.fieldChanged = function(id, condition, value){	
+og.fieldChanged = function(id, condition, value){
 	var fields = document.getElementById('conditions[' + id + '][custom_property_id]');
-	var selField = fields.selectedIndex;	
+	var selField = fields.selectedIndex;
 	if(selField != -1){
-		var fieldType = fields[selField].className;	
-		if (fields[selField].value == 'state') fieldType = 'boolean';
+		var fieldType = fields[selField].className;
 		var type_and_name = '<input type="hidden" name="conditions[' + id + '][field_name]" value="' + fields[selField].value + '"/>' +
 		'<input type="hidden" name="conditions[' + id + '][field_type]" value="' + fieldType + '"/>'; 
 		var conditions = '<b>' + lang('condition') + '</b>:<br/><select class="reportConditionDD" id="conditions[' + id + '][condition]" name="conditions[' + id + '][condition]">';
@@ -205,16 +207,8 @@ og.fieldChanged = function(id, condition, value){
 			document.getElementById('tdConditions' + id).innerHTML = conditions;
 		}else if(fieldType == "boolean"){
 			var values = '<b>' + lang('value') + '</b>:<br/><select class="reportConditionDD" id="conditions[' + id + '][value]" name="conditions[' + id + '][value]">';
-			if (fields[selField].value != 'state'){
-				var true_text = lang('true');
-				var false_text = lang('false');
-			}else{
-				var true_text = lang('completed');
-				var false_text = lang('open task status');
-			}
-			
-			values += '<option value="1" ' + (value != "" && value == true ? "selected" : "") + '>' + true_text + '</option>';
-			values += '<option value="0"' + (value == false ? "selected" : "") + '>' + false_text + '</option>';
+			values += '<option value="1" ' + (value != "" && value == true ? "selected" : "") + '>' + lang('true') + '</option>';
+			values += '<option value="0"' + (value == false ? "selected" : "") + '>' + lang('false') + '</option>';
 			values += '</select>' + type_and_name;
 			document.getElementById('tdValue' + id).innerHTML = values;
 			conditions += '<option value="=">' + lang('equals') + '</option>';
@@ -241,7 +235,7 @@ og.fieldChanged = function(id, condition, value){
 			var valuesList = fieldValues[id][selField].split(',');
 			var listValueField = '<b>' + lang('value') + '</b>:<br/><select class="reportConditionDD" id="conditions[' + id + '][value]" name="conditions[' + id + '][value]">';
 			for(var i=0; i < valuesList.length; i++){
-				listValueField += '<option ' + 'value="' + valuesList[i] + '" ' + (valuesList[i] == value ? "selected" : "") + '>' + valuesList[i] + '</option>'; //hace un fix para IE, sino no deja guardar los cambios				
+				listValueField += '<option ' + (valuesList[i] == value ? "selected" : "") + '>' + valuesList[i] + '</option>';
 			}
 			listValueField += '</select>' + type_and_name; 
 			document.getElementById('tdValue' + id).innerHTML = listValueField;
@@ -255,7 +249,7 @@ og.fieldChanged = function(id, condition, value){
 				og.drawWorkspaceSelector('containerConditions[' + id + '][value]', value, 'conditions[' + id + '][value]', true, '');
 			}else if(fields[selField].value == 'tag'){
 				document.getElementById('tdValue' + id).innerHTML = tagValueField;
-				var tags = Ext.getCmp("tag-panel").getTags();
+				
 				var arr = [];
 				for (var i=0; i < tags.length; i++) {
 					arr.push([tags[i].name, og.clean(tags[i].name)]);

@@ -2,7 +2,7 @@
 /*
  * mime_parser.php
  *
- * @(#) $Id: mime_parser.class.php,v 1.1.6.1 2010/08/12 16:27:59 alvaro Exp $
+ * @(#) $Id: mime_parser.class.php 375 2010-12-10 20:24:52Z  $
  *
  */
 
@@ -30,7 +30,7 @@ define('MIME_ADDRESS_FIRST',            2);
 
 	<package>net.manuellemos.mimeparser</package>
 
-	<version>@(#) $Id: mime_parser.class.php,v 1.1.6.1 2010/08/12 16:27:59 alvaro Exp $</version>
+	<version>@(#) $Id: mime_parser.class.php 375 2010-12-10 20:24:52Z  $</version>
 	<copyright>Copyright  (C) Manuel Lemos 2006 - 2008</copyright>
 	<title>MIME parser</title>
 	<author>Manuel Lemos</author>

@@ -3,7 +3,7 @@
   /**
   * BaseContactImValue class
   *
-  * @author Ilija Studen <ilija.studen@gmail.com>
+  * @author Diego Castiglioni <diego20@gmail.com>
   */
   abstract class BaseContactImValue extends DataObject {
   
@@ -11,6 +11,28 @@
     //  Access methods
     // -------------------------------------------------------
   
+  	/**
+    * Return value of 'id' field
+    *
+    * @access public
+    * @param void
+    * @return integer 
+    */
+    function getId() {
+      return $this->getColumnValue('id');
+    } // getId()
+    
+    /**
+    * Set value of 'id' field
+    *
+    * @access public   
+    * @param integer $value
+    * @return boolean
+    */
+    function setId($value) {
+      return $this->setColumnValue('id', $value);
+    } // setId() 
+    
     /**
     * Return value of 'contact_id' field
     *
@@ -78,15 +100,15 @@
     } // setValue() 
     
     /**
-    * Return value of 'is_default' field
+    * Return value of 'is_main' field
     *
     * @access public
     * @param void
     * @return boolean 
     */
-    function getIsDefault() {
-      return $this->getColumnValue('is_default');
-    } // getIsDefault()
+    function getIsMain() {
+      return $this->getColumnValue('is_main');
+    } // getIsMain()
     
     /**
     * Set value of 'is_default' field
@@ -95,9 +117,9 @@
     * @param boolean $value
     * @return boolean
     */
-    function setIsDefault($value) {
-      return $this->setColumnValue('is_default', $value);
-    } // setIsDefault() 
+    function setIsMain($value) {
+      return $this->setColumnValue('is_main', $value);
+    } // setIsMain() 
     
     
     /**

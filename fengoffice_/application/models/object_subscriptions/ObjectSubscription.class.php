@@ -11,7 +11,7 @@
     /**
     * User who is subscribed to this message
     *
-    * @var User
+    * @var Contact
     */
     private $user;
     
@@ -26,10 +26,10 @@
     * Return user object
     *
     * @param void
-    * @return User
+    * @return Contact
     */
     function getUser() {
-      if(is_null($this->user)) $this->user = Users::findById($this->getUserId());
+      if(is_null($this->user)) $this->user = Contacts::findById($this->getContactId());
       return $this->user;
     } // getUser
     
@@ -40,7 +40,7 @@
     * @return ApplicationDataObject
     */
     function getObject() {
-      if(is_null($this->object)) $this->object = get_object_by_manager_and_id($this->getObjectId(), $this->getObjectManager()); 
+      if(is_null($this->object)) $this->object = Objects::findObject($this->getObjectId()); 
       return $this->object;
     } // getObject
     

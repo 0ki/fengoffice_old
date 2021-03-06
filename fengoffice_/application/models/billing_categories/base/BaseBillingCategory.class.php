@@ -7,9 +7,7 @@
  */
   abstract class BaseBillingCategory extends ApplicationDataObject {
   
-  	protected $objectTypeIdentifier = 'bc';
-  	
-    // -------------------------------------------------------
+  	// -------------------------------------------------------
     //  Access methods
     // -------------------------------------------------------
   

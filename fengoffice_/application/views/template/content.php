@@ -8,7 +8,8 @@ $objects = array_var($variables, "objects", "");
 if (is_array($objects) && count($objects)) {
 	$isAlt = false;
 	foreach ($objects as $o) {
-		if (!$o instanceof ProjectDataObject) continue; 
+		//alert_r($o);
+		//if (!$o instanceof ContentDataObject) { ;continue; } 
 ?>
 	<div class="og-add-template-object ico-<?php echo $o->getObjectTypeName() ?><?php if ($isAlt) echo " odd" ?>">
 		<a class=" internalLink name" href="<?php echo $o->getViewUrl() ?>">

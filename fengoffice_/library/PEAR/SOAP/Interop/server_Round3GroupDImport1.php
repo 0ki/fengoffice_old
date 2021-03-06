@@ -16,7 +16,7 @@
 // | Authors: Shane Caraveo <Shane@Caraveo.com>                           |
 // +----------------------------------------------------------------------+
 //
-// $Id: server_Round3GroupDImport1.php,v 1.1 2010/01/22 18:09:22 acio Exp $
+// $Id: server_Round3GroupDImport1.php 7 2010-01-22 18:14:51Z acio $
 //
 require_once 'SOAP/Server.php';
 require_once 'params_classes.php';

@@ -8,6 +8,10 @@
 	require_javascript('og/tasks/TasksBottomToolbar.js');
 	require_javascript('og/tasks/print.js');
 
+	if (config_option('use tasks dependencies')) {
+		require_javascript('og/tasks/task_dependencies.js');
+	}
+
 	$genid = gen_id();
 	
 	$all_templates_array = array();
@@ -23,32 +27,70 @@
 	$object_subtypes_array = array();
 	
 	
-	if (isset($all_templates) && !is_null($all_templates))
-		foreach($all_templates as $template)
+	if (isset($all_templates) && !is_null($all_templates)){
+		foreach($all_templates as $template) {
 			$all_templates_array[] = $template->getArrayInfo();
-	if (isset($project_templates) && !is_null($project_templates))
-		foreach($project_templates as $template)
+		}
+	}
+	
+	if (isset($project_templates) && !is_null($project_templates)) {
+		foreach($project_templates as $template) {
 			$project_templates_array[] = $template->getArrayInfo();
-	if (isset($tasks))
-		foreach($tasks as $task)
+		}
+	}
+	
+	if (isset($tasks)) {
+		$ids = array();
+		foreach($tasks as $task) {
+			$ids[] = $task->getId();
 			$tasks_array[] = $task->getArrayInfo();
-	foreach($internalMilestones as $milestone)
-		$internal_milestones_array[] = $milestone->getArrayInfo();
-	foreach($externalMilestones as $milestone)
-		$external_milestones_array[] = $milestone->getArrayInfo();
-	foreach($allUsers as $usr)
+		}
+				
+		$read_objects = ReadObjects::getReadByObjectList($ids, logged_user()->getId());
+		foreach($tasks_array as &$data) {
+			$data['isread'] = isset($read_objects[$data['id']]);
+		}
+	}
+	
+	if (is_array($internalMilestones)) {
+		foreach($internalMilestones as $milestone) {
+			$internal_milestones_array[] = $milestone->getArrayInfo();
+		}
+	}
+	
+	if (is_array($externalMilestones)) {
+		foreach($externalMilestones as $milestone) {
+			$external_milestones_array[] = $milestone->getArrayInfo();
+		}
+	}
+	
+	foreach($users as $user) {
+		$user_info = $user->getArrayInfo();
+		if ($user->getId() == logged_user()->getId())
+			$user_info['isCurrent'] = true;
+		$users_array[] = $user_info;
+	}
+	
+	foreach($allUsers as $usr) {
 		$allUsers_array[] = $usr->getArrayInfo();
-	foreach($users as $user)
-		$users_array[] = $user->getArrayInfo();
-	foreach($companies as $company)
+	}
+	
+	foreach($companies as $company) {
 		$companies_array[] = $company->getArrayInfo();
+	}
+	
 	foreach($object_subtypes as $ot) {
 		$object_subtypes_array[] = $ot->getArrayInfo();
 	}
+	
+	if (!isset($dependency_count)) $dependency_count = array();
 ?>
+
 <script>
-og.noOfTasks = <?php echo user_config_option('noOfTasks') ?>;
+og.noOfTasks = '<?php echo user_config_option('noOfTasks') ?>';
+og.config.use_tasks_dependencies = '<?php echo config_option('use tasks dependencies') ? "1" : "0" ?>';
 </script>
+
 <div id="taskPanelHiddenFields">
 	<input type="hidden" id="hfProjectTemplates" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($project_templates_array)))) ?>"/>
 	<input type="hidden" id="hfAllTemplates" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($all_templates_array)))) ?>"/>
@@ -60,9 +102,11 @@ og.noOfTasks = <?php echo user_config_option('noOfTasks') ?>;
 	<input type="hidden" id="hfCompanies" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($companies_array)))) ?>"/>
 	<input type="hidden" id="hfUserPreferences" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($userPreferences)))) ?>"/>
 	<input type="hidden" id="hfObjectSubtypes" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($object_subtypes_array)))) ?>"/>
+	<input type="hidden" id="hfDependencyCount" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($dependency_count)))) ?>"/>
 </div>
 
 <div id="tasksPanel" class="ogContentPanel" style="background-color:white;background-color:#F0F0F0;height:100%;width:100%;">
+    
 	<div id="tasksPanelTopToolbar" class="x-panel-tbar" style="width:100%;height:30px;display:block;background-color:#F0F0F0;"></div>
 	<div id="tasksPanelBottomToolbar" class="x-panel-tbar" style="width:100%;height:30px;display:block;background-color:#F0F0F0;border-bottom:1px solid #CCC;"></div>
 	<div id="tasksPanelContent" style="background-color:white;padding:7px;padding-top:0px;overflow-y:scroll;position:relative;">
@@ -80,15 +124,14 @@ og.noOfTasks = <?php echo user_config_option('noOfTasks') ?>;
 	<?php } ?>
 		<div id="tasksPanelContainer" style="background-color:white;padding:7px;padding-top:0px;">
 	<?php if(!(isset($tasks) || $userPreferences['groupBy'] == 'milestone')) { ?>
-		<div style="font-size:130%;width:100%;text-align:center;padding-top:10px;color:#777;"><?php echo lang('no tasks to display') ?></div>
+			<div style="font-size:130%;width:100%;text-align:center;padding-top:10px;color:#777;"><?php echo lang('no tasks to display') ?></div>
 	<?php } ?>
-	</div>
+		</div>
 	</div>
 </div>
 
-
-
 <script type="text/javascript">
+	if (!ogTasks.tasks_object_type_id) ogTasks.tasks_object_type_id = '<?php echo ProjectTasks::instance()->getObjectTypeId() ?>';
 	try {
 		if (rx__TasksDrag)
 			rx__TasksDrag.initialize();
@@ -96,39 +139,60 @@ og.noOfTasks = <?php echo user_config_option('noOfTasks') ?>;
 		// by doing this d&d doesn't work but at least tasks are listed in Safari 3.1
 	}
 	ogTasks.userPreferences = Ext.util.JSON.decode(document.getElementById('hfUserPreferences').value);
-	var ogTasksTT = new og.TasksTopToolbar({
-		projectTemplatesHfId:'hfProjectTemplates',
-		allTemplatesHfId:'hfAllTemplates',
-		renderTo:'tasksPanelTopToolbar'
-		});
-	var ogTasksBT = new og.TasksBottomToolbar({
-		renderTo:'tasksPanelBottomToolbar',
-		usersHfId:'hfUsers',
-		companiesHfId:'hfCompanies',
-		internalMilestonesHfId:'hfIMilestones',
-		externalMilestonesHfId:'hfEMilestones',
-		subtypesHfId:'hfObjectSubtypes'
-		});
 
-	og.defaultTaskType = '<?php echo config_option('default task co type', '0') ?>';
+	var mili = 0;
+	if (og.TasksTopToolbar == 'undefined') {
+		mili = 500;
+	}
+
+	// to prevent js execution before the js files are received
+	setTimeout(function () {
+		var ogTasksTT = new og.TasksTopToolbar({
+			projectTemplatesHfId:'hfProjectTemplates',
+			allTemplatesHfId:'hfAllTemplates',
+			renderTo:'tasksPanelTopToolbar'
+			});
+		var ogTasksBT = new og.TasksBottomToolbar({
+			renderTo:'tasksPanelBottomToolbar',
+			usersHfId:'hfUsers',
+			companiesHfId:'hfCompanies',
+			internalMilestonesHfId:'hfIMilestones',
+			externalMilestonesHfId:'hfEMilestones',
+			subtypesHfId:'hfObjectSubtypes'
+			});
 	
-	function resizeTasksPanel(e, id) {
-		var tpc = document.getElementById('tasksPanelContent');
-		if (tpc) {
-			tpc.style.height = (document.getElementById('tasksPanel').clientHeight - 68) + 'px';
-		} else {
-			og.removeDomEventHandler(window, 'resize', id);
+		og.defaultTaskType = <?php echo config_option('default task co type', '0') ?>;
+		
+		function resizeTasksPanel(e, id) {
+			var tpc = document.getElementById('tasksPanelContent');
+			if (tpc) {
+				tpc.style.height = (document.getElementById('tasksPanel').clientHeight - 68) + 'px';
+			} else {
+				og.removeDomEventHandler(window, 'resize', id);
+			}
 		}
-	}
-	if (Ext.isIE) {
-		og.addDomEventHandler(document.getElementById('tasksPanelContent'), 'resize', resizeTasksPanel);
-	} else {
-		og.addDomEventHandler(window, 'resize', resizeTasksPanel);
-	}
-	resizeTasksPanel();
-	ogTasks.loadDataFromHF();
-<?php if(isset($tasks) || $userPreferences['groupBy'] == 'milestone') {?>
-	ogTasks.draw();
-<?php } ?>
+		if (Ext.isIE) {
+			og.addDomEventHandler(document.getElementById('tasksPanelContent'), 'resize', resizeTasksPanel);
+		} else {
+			og.addDomEventHandler(window, 'resize', resizeTasksPanel);
+		}
+		resizeTasksPanel();
+		ogTasks.loadDataFromHF();
+
+	<?php if(isset($tasks) || $userPreferences['groupBy'] == 'milestone') {?>
+		ogTasks.draw();
+	<?php } ?>
+
+	}, mili);
 
 </script>
+
+
+<?php 
+	// to include additional templates in the tasks list
+	$more_content_templates = array();
+	Hook::fire("include_tasks_template", null, $more_content_templates);
+	foreach ($more_content_templates as $ct) {
+		$this->includeTemplate(get_template_path(array_var($ct, 'template'), array_var($ct, 'controller'), array_var($ct, 'plugin')));
+	}
+?>

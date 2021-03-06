@@ -112,3 +112,19 @@
 #userPermissions td.projectName {
   width: 150px;
 }
+
+.tab-manager table {
+	width: 400px;
+	margin: 20px ;
+}
+.tab-manager table tr {
+	height: 20px;
+}
+.tab-manager th , .tab-manager td{
+	vertical-align: middle;
+	padding: 3px 5px ;
+}
+
+.tab-manager input[type=submit] {
+	margin-left: : 20px;
+}

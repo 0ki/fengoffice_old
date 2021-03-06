@@ -26,21 +26,13 @@ og.ContactManager = function() {
 			listeners: {
 				'load': function(result) {
 					var d = this.reader.jsonData;
-					var ws = og.clean(Ext.getCmp('workspace-panel').getActiveWorkspace().name);
-					var tag = og.clean(Ext.getCmp('tag-panel').getSelectedTag());
 					if (d.totalCount == 0) {
-						if (tag) {
-							this.fireEvent('messageToShow', lang("no objects with tag message", lang("contacts"), ws, tag));
-						} else {
-							this.fireEvent('messageToShow', lang("no objects message", lang("contacts"), ws));
-						}
+						this.fireEvent('messageToShow', lang("no objects message", lang("contacts"), ws));
 					} else if (d.contacts.length == 0) {
 						this.fireEvent('messageToShow', lang("no more objects message", lang("contacts")));
 					} else {
 						this.fireEvent('messageToShow', "");
 					}
-					og.showWsPaths();
-					cm.setHidden(cm.getIndexById('role'), Ext.getCmp('workspace-panel').getActiveWorkspace().id == 0);
 					Ext.getCmp('contact-manager').getView().focusRow(og.lastSelectedRow.contacts+1);
 				}
 			}
@@ -63,7 +55,7 @@ og.ContactManager = function() {
 		if (r.data.type == 'company'){
 			name = String.format(
 					'<a style="font-size:120%" href="{1}" onclick="og.openLink(\'{1}\');return false;" title="{2}">{0}</a>',
-					og.clean(value), og.getUrl('company', 'view_client', {id: r.data.object_id}), og.clean(r.data.name));
+					og.clean(value), og.getUrl('contact', 'view_company', {id: r.data.object_id}), og.clean(r.data.name));
 		}
 		else{
 			name = String.format(
@@ -73,7 +65,7 @@ og.ContactManager = function() {
 			if(r.data.companyId != null && r.data.companyId != 0 && r.data.companyName.trim()!=''){
 				name += String.format(
 					' (<a style="font-size:80%" href="{1}" onclick="og.openLink(\'{1}\');return false;" title="{2}">{0}</a>)',
-					og.clean(r.data.companyName), og.getUrl('company', 'view_client', {id: r.data.companyId}), og.clean(r.data.companyName));
+					og.clean(r.data.companyName), og.getUrl('contact', 'view_company', {id: r.data.companyId}), og.clean(r.data.companyName));
 			} //end else
 		}
 		return name;
@@ -84,7 +76,7 @@ og.ContactManager = function() {
     }
     
     function renderCompany(value, p, r) {
-    	return String.format('<a href="{1}" onclick="og.openLink(\'{1}\', null);return false;">{0}</a>', og.clean(value), og.getUrl('company', 'card', {id: r.data.companyId}));
+    	return String.format('<a href="{1}" onclick="og.openLink(\'{1}\', null);return false;">{0}</a>', og.clean(value), og.getUrl('contact', 'company_card', {id: r.data.companyId}));
     }
     
     function renderEmail(value, p, r) {
@@ -112,7 +104,7 @@ og.ContactManager = function() {
 		if (!value) {
 			return "";
 		}
-		var userString = String.format('<a href="{1}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', r.data.updatedBy, og.getUrl('user', 'card', {id: r.data.updatedById}));
+		var userString = String.format('<a href="{1}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', r.data.updatedBy, og.getUrl('contact', 'card_user', {id: r.data.updatedById}));
 	
 		var now = new Date();
 		var dateString = '';
@@ -127,7 +119,7 @@ og.ContactManager = function() {
 		if (!value) {
 			return "";
 		}
-		var userString = String.format('<a href="{1}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', r.data.createdBy, og.getUrl('user', 'card', {id: r.data.createdById}));
+		var userString = String.format('<a href="{1}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', r.data.createdBy, og.getUrl('contact', 'card_user', {id: r.data.createdById}));
 	
 		var now = new Date();
 		var dateString = '';
@@ -185,16 +177,11 @@ og.ContactManager = function() {
 	sm.on('selectionchange',
 		function() {
 			if (sm.getCount() <= 0) {
-				actions.tag.setDisabled(true);
 				actions.delContact.setDisabled(true);
 				actions.editContact.setDisabled(true);
-				actions.assignContact.setDisabled(true);
 				actions.archive.setDisabled(true);
 			} else {
 				actions.editContact.setDisabled(sm.getCount() != 1);
-				if(getFirstSelectedType() == 'contact')
-					actions.assignContact.setDisabled(sm.getCount() != 1);
-				actions.tag.setDisabled(false);
 				actions.delContact.setDisabled(false);
 				actions.archive.setDisabled(false);
 			}
@@ -228,21 +215,6 @@ og.ContactManager = function() {
 			renderer: renderContactName,
 			sortable:true
         },{
-			id: 'workspaces',
-			header: lang("workspaces"),
-			dataIndex: 'wsIds',
-			width: 70,
-			renderer: renderWsCrumbs,
-			sortable:true
-        },
-		{
-			id: 'role',
-			header: lang("role"),
-			dataIndex: 'role',
-			width: 60,
-			renderer: og.clean,
-			sortable:false
-        },{
 			id: 'email',
 			header: lang("email"),
 			dataIndex: 'email',
@@ -250,12 +222,6 @@ og.ContactManager = function() {
 			renderer: renderEmail,
 			sortable:true
 		},{
-			id: 'tags',
-			header: lang("tags"),
-			dataIndex: 'tags',
-			hidden: true,
-			width: 120
-        },{
 			id: 'department',
 			header: lang("department"),
 			dataIndex: 'department',
@@ -370,7 +336,7 @@ og.ContactManager = function() {
 				scope: this
 			}),
 			contacts: new Ext.Action({
-				text: lang('contacts'),
+				text: lang('persons'),
 				iconCls: "ico-contacts",
 				handler: function() {
 					this.viewType = "contacts";
@@ -394,13 +360,12 @@ og.ContactManager = function() {
             tooltip: lang('create contact or client company'),
             iconCls: 'ico-new',
 			menu: {items: [
-				{text: lang('contact'), iconCls: 'ico-contact', handler: function() {
+				{text: lang('person'), iconCls: 'ico-contact', handler: function() {
 					var url = og.getUrl('contact', 'add');
 					og.openLink(url);
 				}},
 				{text: lang('company'), iconCls: 'ico-company', handler: function() {
-					var url = og.getUrl('company', 'add_client');
-					//var url = og.getUrl('contact', 'generate_client_from_wsname');
+					var url = og.getUrl('contact', 'add_company');
 					og.openLink(url);
 				}}				
 			]}
@@ -432,7 +397,7 @@ og.ContactManager = function() {
 				if (getFirstSelectedType() == 'contact')
 					url = og.getUrl('contact', 'edit', {id:getFirstSelectedId()});
 				else
-					url = og.getUrl('company', 'edit_client', {id:getFirstSelectedId()});
+					url = og.getUrl('contact', 'edit_company', {id:getFirstSelectedId()});
 				og.openLink(url, null);
 			},
 			scope: this
@@ -451,17 +416,6 @@ og.ContactManager = function() {
 					});
 					this.getSelectionModel().clearSelections();
 				}
-			},
-			scope: this
-		}),
-		assignContact: new Ext.Action({
-			text: lang('assign roles'),
-            tooltip: lang('assign contact role on workspace'),
-            iconCls: 'ico-workspaces',
-			disabled: true,
-			handler: function() {
-				var url = og.getUrl('contact', 'assign_to_project', {id:getFirstSelectedId()});
-				og.openLink(url, null);
 			},
 			scope: this
 		}),
@@ -485,43 +439,13 @@ og.ContactManager = function() {
 				viewActions.companies
 			]}
 		}),
-		tag: new Ext.Action({
-			text: lang('tag'),
-	        tooltip: lang('tag selected objects'),
-	        iconCls: 'ico-tag',
-			disabled: true,
-			menu: new og.TagMenu({
-				listeners: {
-					'tagselect': {
-						fn: function(tag) {
-							this.load({
-								action: 'tag',
-								ids: getSelectedIds(),
-								types: getSelectedTypes(),
-								tagTag: tag
-							});
-						},
-						scope: this
-					},'tagdelete': {
-						fn: function(tag) {
-							this.load({
-								action: 'untag',
-								ids: getSelectedIds(),
-								types: getSelectedTypes(),
-								tagTag: tag
-							});
-						},
-						scope: this
-					}
-				}
-			})
-		}),
 		imp_exp: new Ext.Action({
+			/* FIXME when Import/Export is fixed 
 			text: lang('import/export'),
             tooltip: lang('contact import - export'),
             menu: { items: [
             	new Ext.Action({
-		            text: lang('contacts'),
+		            text: lang('persons'),
 		            iconCls: 'ico-contact',
 		            menu: { items: [
 		            	new Ext.Action({
@@ -580,7 +504,7 @@ og.ContactManager = function() {
 						}}
 					]}
 				})
-			]}
+			]}*/
 		})
     };
     
@@ -589,11 +513,9 @@ og.ContactManager = function() {
 		tbar.push(actions.newContact);
 		tbar.push('-');
 		tbar.push(actions.editContact);
-		tbar.push(actions.tag);
 		tbar.push(actions.archive);
 		tbar.push(actions.delContact);
 		tbar.push('-');
-		tbar.push(actions.assignContact);
 	}
 	tbar.push(actions.view);
 	if (!og.loggedUser.isGuest) {
@@ -606,7 +528,7 @@ og.ContactManager = function() {
 		layout: 'fit',
         cm: cm,
         enableDrag: true,
-		ddGroup: 'WorkspaceDD',
+		ddGroup: 'MemberDD',
 		stateful: og.preferences['rememberGUIState'],
         closable: true,
 		stripeRows: true,
@@ -640,17 +562,6 @@ og.ContactManager = function() {
 		}
     });
 
-	var tagevid = og.eventManager.addListener("tag changed", function(tag) {
-		if (!this.ownerCt) {
-			og.eventManager.removeListener(tagevid);
-			return;
-		}
-		if (this.ownerCt.active) {
-			this.load({start:0});
-		} else {
-    		this.needRefresh = true;
-    	}
-	}, this);
 };
 
 Ext.extend(og.ContactManager, Ext.grid.GridPanel, {
@@ -662,9 +573,9 @@ Ext.extend(og.ContactManager, Ext.grid.GridPanel, {
 			var start = 0;
 		}
 		Ext.apply(this.store.baseParams, {
-			tag: Ext.getCmp('tag-panel').getSelectedTag(),
 			view_type: this.viewType,
-			active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id
+			context: og.contextManager.plainContext() 
+			
 		});
 		this.store.load({
 			params: Ext.applyIf(params, {
@@ -687,21 +598,6 @@ Ext.extend(og.ContactManager, Ext.grid.GridPanel, {
 	
 	reset: function() {
 		this.load({start:0});
-        this.getSelectionModel().clearSelections();                   
-	},
-	
-	moveObjects: function(ws) {
-		og.moveToWsOrMantainWs(this.id, ws);
-	},
-	
-	moveObjectsToWsOrMantainWs: function(mantain, ws) {
-		this.load({
-			action: 'move',
-			ids: this.getSelectedIds(),
-			types: this.getSelectedTypes(),
-			moveTo: ws,
-			mantainWs: mantain
-		});
 	},
 	
 	trashObjects: function() {
@@ -724,24 +620,8 @@ Ext.extend(og.ContactManager, Ext.grid.GridPanel, {
 			});
 			this.getSelectionModel().clearSelections();
 		}
-	},
-
-	removeTags: function() {
-		this.load({
-			action: 'untag',
-			ids: this.getSelectedIds(),
-			types: this.getSelectedTypes()
-		});
-	},
-	
-	tagObjects: function(tag) {
-		this.load({
-			action: 'tag',
-			ids: this.getSelectedIds(),
-			types: this.getSelectedTypes(),
-			tagTag: tag
-		});
 	}
+
 });
 
 Ext.reg("contacts", og.ContactManager);

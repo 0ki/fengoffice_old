@@ -17,8 +17,6 @@ class ApplicationLogs extends BaseApplicationLogs {
 	const ACTION_OPEN        = 'open';
 	const ACTION_SUBSCRIBE   = 'subscribe';
 	const ACTION_UNSUBSCRIBE = 'unsubscribe';
-	const ACTION_TAG         = 'tag';
-	const ACTION_UNTAG       = 'untag';
 	const ACTION_COMMENT     = 'comment';
 	const ACTION_LINK     	 = 'link';
 	const ACTION_UNLINK      = 'unlink';
@@ -33,11 +31,6 @@ class ApplicationLogs extends BaseApplicationLogs {
 	const ACTION_CHECKOUT    = 'checkout';
 	const ACTION_CHECKIN     = 'checkin';
 	
-	public static function getWorkspaceString($ids = '?') {
-		if (is_array($ids)) $ids = implode(",", $ids);
-		return " `id` IN (SELECT `object_id` FROM `" . TABLE_PREFIX . "workspace_objects` WHERE `object_manager` = 'ApplicationLogs' AND `workspace_id` IN ($ids))";
-	}
-	
 	/**
 	 * Create new log entry and return it
 	 *
@@ -49,7 +42,7 @@ class ApplicationLogs extends BaseApplicationLogs {
 	 * @param boolean $save Save log object before you save it
 	 * @return ApplicationLog
 	 */
-	static function createLog(ApplicationDataObject $object, $workspaces, $action = null, $is_private = false, $is_silent = null, $save = true, $log_data = '') {
+	static function createLog(ApplicationDataObject $object, $action = null, $is_private = false, $is_silent = null, $save = true, $log_data = '') {
 		if(is_null($action)) {
 			$action = self::ACTION_ADD;
 		} // if
@@ -67,25 +60,19 @@ class ApplicationLogs extends BaseApplicationLogs {
 			try {
 				Notifier::notifyAction($object, $action, $log_data);
 			} catch (Exception $ex) {
-				
+				Logger::log($ex->getMessage());
 			}
 		}
-		if($object!=null)
-		$manager = $object->manager();
-		if(!($manager instanceof DataManager)) {
-			throw new Error('Invalid object manager');
-		} // if
-
+		
 		$log = new ApplicationLog();
-
-		if (logged_user() instanceof User) {
+		if (logged_user() instanceof Contact) {
 			$log->setTakenById(logged_user()->getId());
 		} else {
 			$log->setTakenById(0);
 		}
 		$log->setRelObjectId($object->getObjectId());
 		$log->setObjectName($object->getObjectName());
-		$log->setRelObjectManager(get_class($manager));
+		
 		$log->setAction($action);
 		$log->setIsPrivate($is_private);
 		$log->setIsSilent($is_silent);
@@ -95,148 +82,10 @@ class ApplicationLogs extends BaseApplicationLogs {
 			$log->save();
 		} // if
 		
-		// Update is private for this object
-		/*if($object instanceof ProjectDataObject) {
-			ApplicationLogs::setIsPrivateForObject($object);
-		} // if*/
-
-		if ($save) {
-			if ($workspaces instanceof Project) {
-				$wo = new WorkspaceObject();
-				$wo->setObject($log);
-				$wo->setWorkspace($workspaces);
-				$wo->save();
-			} else if (is_array($workspaces)) {
-				foreach ($workspaces as $w) {
-					if ($w instanceof Project) {
-						$wo = new WorkspaceObject();
-						$wo->setObject($log);
-						$wo->setWorkspace($w);
-						$wo->save();
-					}
-				}
-			}
-		}
-
 		return $log;
 	} // createLog
 
-	/**
-	 * Update is_private flag value for all previous related log entries related with specific object
-	 *
-	 * This method is called whenever we need to add new log entry. It will keep old log entries related to that specific
-	 * object with current is_private flag value by updating all of the log entries to new value.
-	 *
-	 * @param ProjectDataObject $object
-	 * @return boolean
-	 */
-	static function setIsPrivateForObject(ProjectDataObject $object) {
-		return DB::execute('UPDATE ' . ApplicationLogs::instance()->getTableName(true) . ' SET `is_private` = ?  WHERE `rel_object_id` = ?  AND `rel_object_manager` = ?',
-		$object->isPrivate(),
-		$object->getObjectId(),
-		get_class($object->manager()
-		)); // execute
-	} // setIsPrivateForObject
-
-	/**
-	 * Mass set is_private for a given type. If $ids is present limit update only to object with given ID-s
-	 *
-	 * @param boolean $is_private
-	 * @param string $type
-	 * @parma array $ids
-	 * @return boolean
-	 */
-	static function setIsPrivateForType($is_private, $type, $ids = null) {
-		$limit_ids = null;
-		if(is_array($ids)) {
-			$limit_ids = array();
-			foreach($ids as $id) {
-				$limit_ids[] = DB::escape($id);
-			} // if
-
-			$limit_ids = count($limit_ids) > 0 ? implode(',', $limit_ids) : null;
-		} // if
-
-		$sql = DB::prepareString('UPDATE ' . ApplicationLogs::instance()->getTableName(true) . ' SET `is_private` = ?  WHERE `rel_object_manager` = ?', array($is_private, $type));
-		if($limit_ids !== null) {
-			$sql .= " AND `rel_object_id` IN ($limit_ids)";
-		} // if
-
-		return DB::execute($sql);
-	} // setIsPrivateForType
-
-	/**
-	 * Return entries related to specific project
-	 *
-	 * If $include_private is set to true private entries will be included in result. If $include_silent is set to true
-	 * logs marked as silent will also be included. $limit and $offset are there to control the range of the result,
-	 * usually we don't want to pull the entire log but just the few most recent entries. If NULL they will be ignored
-	 *
-	 * @param Project $project
-	 * @param boolean $include_private
-	 * @param boolean $include_silent
-	 * @param integer $limit
-	 * @param integer $offset
-	 * @return array
-	 */
-	static function getProjectLogs(Project $project, $include_private = false, $include_silent = false, $limit = null, $offset = null) {
-		$private_filter = $include_private ? 1 : 0;
-		$silent_filter = $include_silent ? 1 : 0;
-
-		return self::findAll(array(
-        'conditions' => array('`is_private` <= ? AND `is_silent` <= ? AND `project_id` = (?)', $private_filter, $silent_filter, $project->getId()),
-        'order' => '`created_on` DESC',
-        'limit' => $limit,
-        'offset' => $offset,
-		)); // findAll
-	} // getProjectLogs
-
-	/**
-	 * Return overall (for dashboard or RSS)
-	 *
-	 * This function will return array of application logs that match the function arguments. Entries can be filtered by
-	 * type (prvivate, silent), projects (if $project_ids is array, if NULL project ID is ignored). Result set can be
-	 * also limited using $limit and $offset params
-	 *
-	 * @param boolean $include_private
-	 * @param boolean $include_silent
-	 * @param mixed $project_ids
-	 * @param integer $limit
-	 * @param integer $offset
-	 * @return array
-	 */
-	static function getOverallLogs($include_private = false, $include_silent = false, $project_ids = null, $limit = null, $offset = null, $user_id = null) {		
-		$private_filter = $include_private ? 1 : 0;
-		$silent_filter = $include_silent ? 1 : 0;
-
-		$userCond = '';
-		if ($user_id)
-		$userCond = " AND `taken_by_id` = " . $user_id;
-
-		if(!is_null($project_ids)) {
-			$conditions = array('`is_private` <= ? AND `is_silent` <= ? AND '.self::getWorkspaceString($project_ids) . $userCond, $private_filter, $silent_filter);
-		} else {
-			$conditions = array('`is_private` <= ? AND `is_silent` <= ?' . $userCond, $private_filter, $silent_filter);
-		} // if
-
-		return self::findAll(array(
-			'conditions' => $conditions,
-			'order' => '`created_on` DESC',
-			'limit' => $limit,
-			'offset' => $offset,
-		)); // findAll
-	} // getOverallLogs
-
-	/**
-	 * Clear all logs related with specific project
-	 *
-	 * @param Project $project
-	 * @return boolean
-	 */
-	static function clearByProject(Project $project) {
-		return self::delete(array(self::getWorkspaceString(), $project->getId()));
-	} // clearByProject
-
+	
 	/**
 	 * Check if specific action is valid
 	 *
@@ -258,8 +107,6 @@ class ApplicationLogs extends BaseApplicationLogs {
 			self::ACTION_UNTRASH,
 			self::ACTION_SUBSCRIBE,
 			self::ACTION_UNSUBSCRIBE,
-			self::ACTION_TAG,
-			self::ACTION_UNTAG,
 			self::ACTION_COMMENT,
 			self::ACTION_LINK,
 			self::ACTION_UNLINK,
@@ -296,25 +143,27 @@ class ApplicationLogs extends BaseApplicationLogs {
 	static function getObjectLogs($object, $include_private = false, $include_silent = false, $limit = null, $offset = null) {
 		$private_filter = $include_private ? 1 : 0;
 		$silent_filter = $include_silent ? 1 : 0;		
-
-		if (get_class($object->manager()) == 'Users'){			
+		
+		// User History
+		if ($object instanceof Contact && $object->isUser()){		
 			$private_filter = $include_private ? 1 : 0;
 			$silent_filter = $include_silent ? 1 : 0;		
 			$userCond = " AND `taken_by_id` = " . $object->getId();
-			if(isset ($project_ids) && $project_ids != null) {
-				$conditions = array('`is_private` <= ? AND `is_silent` <= ? AND '.self::getWorkspaceString($project_ids) . $userCond, $private_filter, $silent_filter);
-			} else {
-				$conditions = array('`is_private` <= ? AND `is_silent` <= ?' . $userCond, $private_filter, $silent_filter);
-			} // if
-			$logs =  self::findAll(array(
+			
+			$conditions =  array(
+				'`is_private` <= ? AND `is_silent` <= ? '.$userCond, 
+				$private_filter, 
+				$silent_filter); 
+				
+			return self::findAll(array(
 				'conditions' => $conditions,
 				'order' => '`created_on` DESC',
 				'limit' => $limit,
 				'offset' => $offset,
 			)); // findAll				
-		} else {			
+		} else {	
 			$logs = self::findAll(array(
-	        'conditions' => array('`is_private` <= ? AND `is_silent` <= ? AND `rel_object_id` = (?) AND `rel_object_manager` = (?) OR `is_private` <= ? AND `is_silent` <= ? AND `rel_object_id`IN (SELECT `id` FROM '.Comments::instance()->getTableName(true).' WHERE `rel_object_id` = (?) AND `rel_object_manager` = (?)) AND `rel_object_manager` = "Comments"', $private_filter, $silent_filter, $object->getId(),get_class($object->manager()),$private_filter, $silent_filter, $object->getId(),get_class($object->manager())),
+	        'conditions' => array('`is_private` <= ? AND `is_silent` <= ? AND `rel_object_id` = (?) OR `is_private` <= ? AND `is_silent` <= ? AND `rel_object_id`IN (SELECT `object_id` FROM '.Comments::instance()->getTableName(true).' WHERE `rel_object_id` = (?))', $private_filter, $silent_filter, $object->getId(),$private_filter, $silent_filter, $object->getId()),
 	        'order' => '`created_on` DESC',
 	        'limit' => $limit,
 	        'offset' => $offset,
@@ -328,28 +177,17 @@ class ApplicationLogs extends BaseApplicationLogs {
 			foreach ($logs as $k => $log) {
 				if ($log->getAction() == 'link') {
 					$id = explode(":", $log->getLogData());
-					$lobj = get_object_by_manager_and_id($id[1], $id[0]);
-					if (!$lobj instanceof ApplicationDataObject || !can_access(logged_user(), $lobj, ACCESS_LEVEL_READ)) {
+					$lobj = Objects::findObject($id[1]);
+					if (!$lobj instanceof ApplicationDataObject || !can_access(logged_user(), $lobj->getMembers(), $lobj->getObjectTypeId(), ACCESS_LEVEL_READ)) {
 						$removed++;
 						unset($logs[$k]);
 					}
-				}else{
-					$lobj=get_object_by_manager_and_id($log->getRelObjectId(), $log->getRelObjectManager());
-					if (!$lobj instanceof ApplicationDataObject || !can_access(logged_user(), $lobj, ACCESS_LEVEL_READ)) {
-						$removed++;
-						unset($logs[$k]);
-					}
-					
 				}
-			}
-			
-			foreach ($logs as $k => $log) {
-				
 			}
 			// Get more objects to substitute the removed ones
 			if ($limit && $removed > 0) {
 				$other_logs = self::findAll(array(
-			        'conditions' => array('`is_private` <= ? AND `is_silent` <= ? AND `rel_object_id` = (?) AND `rel_object_manager` = (?) OR `is_private` <= ? AND `is_silent` <= ? AND `rel_object_id`IN (SELECT `id` FROM '.Comments::instance()->getTableName(true).' WHERE `rel_object_id` = (?) AND `rel_object_manager` = (?)) AND `rel_object_manager` = "Comments"', $private_filter, $silent_filter, $object->getId(),get_class($object->manager()),$private_filter, $silent_filter, $object->getId(),get_class($object->manager())),
+			        'conditions' => array('`is_private` <= ? AND `is_silent` <= ? AND `rel_object_id` = (?) OR `is_private` <= ? AND `is_silent` <= ? AND `rel_object_id`IN (SELECT `id` FROM '.Comments::instance()->getTableName(true).' WHERE `rel_object_id` = (?))', $private_filter, $silent_filter, $object->getId(),$private_filter, $silent_filter, $object->getId()),
 			        'order' => '`created_on` DESC',
 			        'limit' => $next_offset + $removed,
 			        'offset' => $next_offset,
@@ -363,52 +201,6 @@ class ApplicationLogs extends BaseApplicationLogs {
 		return $logs;
 	} // getObjectLogs
 
-	static function getLastActivities($project, $tag, $quantity) {
-		$conditions = "";
-		$object_ids = array();
-		$queries = ObjectController::getDashboardObjectQueries($project, $tag, false, 'all', null, 'updatedOn', '', 'all');
-		$query = '';
-		foreach ($queries as $q){
-			$res = DB::execute($q);
-			if (!$res) continue;
-			$rows = $res->fetchAll();
-			if (is_array($rows) && count($rows) > 0) {
-				$ids = array();
-				$manager = "";
-				foreach ($rows as $row) {
-					//$ids .= ($ids == "" ? "" : ",") . $row['oid'];
-					$ids[] = $row['oid'];
-					$manager = $row['object_manager_value'];
-				}
-				if (isset($object_ids[$manager])) {
-					$object_ids[$manager] = array_merge($object_ids[$manager], $ids); 
-				} else {
-					$object_ids[$manager] = $ids;
-				}
-			}
-		}
-		foreach ($object_ids as $manager => $ids) {
-			$ids_str = implode(",", $ids);
-			$extra_cond = $manager == 'MailContents' ? "AND `action` <> 'add'" : "";
-			$conditions .= ($conditions == "" ? "" : " OR "). "(`rel_object_manager` = '$manager' AND `rel_object_id` IN ($ids_str) $extra_cond)";
-		}
-		// Show user activity only in root ws
-		if (logged_user()->isAdministrator() && $project == null) {
-			$conditions .= ($conditions == "" ? "" : " OR "). "`rel_object_manager` = 'Users'";
-		}
-		if ($project instanceof Project )
-			$project_ids = $project->getAllSubWorkspacesCSV(true, logged_user());
-		else {
-			$project_ids = logged_user()->getActiveProjectIdsCSV();
-		} 
-		$conditions .= ($conditions == "" ? "" : " OR "). "(`rel_object_manager` = 'Projects' AND `rel_object_id` IN ($project_ids))";
-		
-		return self::findAll(array(
-	        'conditions' => $conditions,
-	        'order' => '`created_on` DESC',
-	        'limit' => $quantity
-		));
-	}
 } // ApplicationLogs
 
 ?>

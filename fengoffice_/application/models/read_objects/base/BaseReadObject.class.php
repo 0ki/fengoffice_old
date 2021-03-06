@@ -11,30 +11,7 @@
     //  Access methods
     // -------------------------------------------------------
   
-    /**
-    * Return value of 'rel_object_manager' field
-    *
-    * @access public
-    * @param void
-    * @return string 
-    */
-    function getRelObjectManager() {
-      return $this->getColumnValue('rel_object_manager');
-    } // getRelObjectManager()
-    
-    /**
-    * Set value of 'rel_object_manager' field
-    *
-    * @access public   
-    * @param string $value
-    * @return boolean
-    */
-    function setRelObjectManager($value) {
-      return $this->setColumnValue('rel_object_manager', $value);
-    } // setRelObjectManager() 
-    
-    /**
-    * Return value of 'rel_object_id' field
+    /** Return value of 'rel_object_id' field
     *
     * @access public
     * @param void
@@ -55,29 +32,27 @@
       return $this->setColumnValue('rel_object_id', $value);
     } // setRelObjectId() 
       
-    
-    
     /**
-    * Return value of 'user_id' field
+    * Return value of 'contact_id' field
     *
     * @access public
     * @param void
     * @return integer 
     */
-    function getUserId() {
-      return $this->getColumnValue('user_id');
-    } // getFileId()
+    function getContactId() {
+      return $this->getColumnValue('contact_id');
+    } // getContactId()
     
     /**
-    * Set value of 'user_id' field
+    * Set value of 'contact_id' field
     *
     * @access public   
     * @param integer $value
     * @return boolean
     */
-    function setUserId($value) {
-      return $this->setColumnValue('user_id', $value);
-    } // setFileId() 
+    function setContactId($value) {
+      return $this->setColumnValue('contact_id', $value);
+    } // setContactId() 
     
     /**
     * Return value of 'is_read' field
@@ -85,15 +60,6 @@
     * @access public
     * @param void
     * @return DateTimeValue 
-    */
-    
-    
-    /**
-    * Return value of 'user_id' field
-    *
-    * @access public
-    * @param void
-    * @return boolean 
     */
     function getIsRead() {
       return $this->getColumnValue('is_read');
@@ -109,7 +75,6 @@
     function setIsRead($value) {
       return $this->setColumnValue('is_read', $value);
     } // setIsRead() 
-    
     
     
     /**

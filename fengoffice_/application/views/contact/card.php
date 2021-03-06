@@ -1,10 +1,8 @@
 <?php 
-	//set_page_title(lang('contact card of').' '.$contact->getDisplayName());
 	if (!$contact->isTrashed()){
 		if($contact->canEdit(logged_user())) {
 			add_page_action(lang('edit contact'), $contact->getEditUrl(), 'ico-edit', null, null, true);
 			add_page_action(lang('edit picture'), $contact->getUpdatePictureUrl(), 'ico-picture', null, null, true);
-			add_page_action(lang('assign to project'), $contact->getAssignToProjectUrl(), 'ico-workspace',null, null, true);
 		}
 	}
 	if ($contact->canDelete(logged_user())) {
@@ -16,11 +14,11 @@
 		}
 	} // if
 	if (!$contact->isTrashed()) {
-		if (can_manage_security(logged_user())) {
-			if (! $contact->getUserId() || $contact->getUserId() == 0){
-				add_page_action(lang('create user from contact'), $contact->getCreateUserUrl() , 'ico-user-old');
+		/*FIXME FENG 2if (can_manage_security(logged_user())) {
+			if (!$contact->isUser()){
+				add_page_action(lang('create user from contact'), $contact->getCreateUserUrl() , 'ico-user');
 			}
-		}
+		}*/
 		if ($contact->canEdit(logged_user())) {
 			if (!$contact->isArchived()) {
 				add_page_action(lang('archive'), "javascript:if(confirm(lang('confirm archive object'))) og.openLink('" . $contact->getArchiveUrl() ."');", 'ico-archive-obj');
@@ -42,7 +40,7 @@
 			$image .= '<a class="internalLink" href="' .
 			$contact->getUpdatePictureUrl() .'" title="' . lang('edit picture') . '">';
 		
-		$image .= '<img src="' . $contact->getPictureUrl() .'" alt="'. clean($contact->getDisplayName()) .' picture" />';
+		$image .= '<img src="' . $contact->getPictureUrl() .'" alt="'. clean($contact->getObjectName()) .' picture" />';
 		
 		if ($contact->canEdit(logged_user()))
 			$image .= '</a>';
@@ -53,8 +51,8 @@
 	}
 	$description = "";
 	$company = $contact->getCompany();
-	if ($company instanceof Company)
-		$description = '<a class="internalLink coViewAction ico-company" href="' . $company->getCardUrl() . '">' . clean($company->getName()) . '</a>';
+	if ($company instanceof Contact)
+		$description = '<a class="internalLink coViewAction ico-company" href="' . $company->getCardUrl() . '">' . clean($company->getObjectName()) . '</a>';
 	
 	if ($contact->getJobTitle() != ''){
 		if($description != '')
@@ -73,17 +71,17 @@
 	}
 	
 	$userLink = '';
-	if ($contact->getUserId() > 0 && $contact->getUser()){
+	if ($contact->isUser()){
 		if($description != '')
 			$description .= '<br/>';
-		$description .= '<a class="internalLink coViewAction ico-user" href="' . $contact->getUser()->getCardUrl() . '" title="' . lang('contact linked to user', clean($contact->getUser()->getUsername())) . '">' . clean($contact->getUser()->getUsername()) . '</a>';
+		$description .= '<a class="internalLink coViewAction ico-user" href="' . $contact->getCardUserUrl() . '" title="' . lang('contact linked to user', clean($contact->getUsername())) . '">' . clean($contact->getUsername()) . '</a>';
 	}
 		
     
 	tpl_assign("description", $description);
 	tpl_assign("content_template", array('card_content', 'contact'));
 	tpl_assign("object", $contact);
-	tpl_assign("title", lang('contact') . ': ' . clean($contact->getDisplayName()));
+	tpl_assign("title", lang('person') . ': ' . clean($contact->getObjectName()));
 	tpl_assign('iconclass', $contact->isTrashed()? 'ico-large-contact-trashed' :  ($contact->isArchived() ? 'ico-large-contact-archived' : 'ico-large-contact'));
 		
   	$this->includeTemplate(get_template_path('view', 'co'));

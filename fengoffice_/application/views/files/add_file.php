@@ -1,6 +1,5 @@
 <?php
 require_javascript("og/modules/addFileForm.js");
-require_javascript('og/modules/addMessageForm.js');
 if ($file->isNew()) {
 	$submit_url = get_url('files', 'add_file');
 } else if (isset($checkin) && $checkin) {
@@ -9,20 +8,19 @@ if ($file->isNew()) {
 	$submit_url = $file->getEditUrl();
 }
 
-$project = active_or_personal_project();
-
 $enableUpload = $file->isNew()
 || (isset($checkin) && $checkin) || ($file->getCheckedOutById() == 0) || ($file->getCheckedOutById() != 0 && logged_user()->isAdministrator())
 || ($file->getCheckedOutById() == logged_user()->getId());
 $genid = gen_id();
 $object = $file;
 $comments_required = config_option('file_revision_comments_required');
-$all = true;
-if (active_project()!= null)
-	$all = false;
+
 ?>
 
-<form class="internalForm" style="height: 100%; background-color: white" id="<?php echo $genid ?>addfile" name="<?php echo $genid ?>addfile" action="<?php echo $submit_url ?>" onsubmit="return og.fileCheckSubmit('<?php echo $genid ?>');" method="post">
+<form 
+	onsubmit=" return og.fileCheckSubmit('<?php echo $genid ?>') && og.handleMemberChooserSubmit('<?php echo $genid; ?>', <?php echo $file->manager()->getObjectTypeId() ?>);"
+	class="internalForm" style="height: 100%; background-color: white" id="<?php echo $genid ?>addfile" name="<?php echo $genid ?>addfile" action="<?php echo $submit_url ?>"  method="post"
+>
 	<input id="<?php echo $genid ?>hfFileIsNew" type="hidden" value="<?php echo $file->isNew()?>">
 	<input id="<?php echo $genid ?>hfAddFileAddType" name='file[add_type]' type="hidden" value="regular">
 	<input id="<?php echo $genid ?>hfFileId" name='file[file_id]' type="hidden" value="<?php echo array_var($file_data, 'file_id') ?>">
@@ -105,19 +103,12 @@ if (active_project()!= null)
 	<?php $categories = array(); Hook::fire('object_edit_categories', $object, $categories); ?>
 
 	<div style="padding-top: 5px">
-	<?php if ($all) { ?>
-		<a href="#" class="option" style="font-weight:bold" onclick="og.toggleAndBolden('<?php echo $genid ?>add_file_select_workspace_div',this)"><?php echo lang('workspace') ?></a> 
-	<?php } else {?>
-		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_file_select_workspace_div',this)"><?php echo lang('workspace') ?></a> 
-	<?php }?>
-	- <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_file_tags_div', this)"><?php echo lang('tags') ?></a>
+	<a href="#" class="option"  style="font-weight:bold" onclick="og.toggleAndBolden('<?php echo $genid ?>add_file_select_context_div',this)"><?php echo lang('context') ?></a> 
 	- <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_file_description_div',this)"><?php echo lang('description') ?></a>
-	<?php if(logged_user()->isMemberOfOwnerCompany()) { ?>
-		- <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_file_options_div',this)"><?php echo lang('options') ?></a>
-	<?php } ?>
-	- <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_custom_properties_div',this)"><?php echo lang('custom properties') ?></a>
+	<?php
+	//FIXME FENG2 or REMOVE- <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid add_custom_properties_div',this)"><?php echo lang('custom properties') </a>?>
 	- <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_subscribers_div',this)"><?php echo lang('object subscribers') ?></a>
-	<?php if($object->isNew() || $object->canLinkObject(logged_user(), $project)) { ?>
+	<?php if($object->isNew() || $object->canLinkObject(logged_user())) { ?>
 		- <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_linked_objects_div',this)"><?php echo lang('linked objects') ?></a>
 	<?php } ?>
 	<?php foreach ($categories as $category) { ?>
@@ -156,7 +147,8 @@ if (active_project()!= null)
 					<tr>
 						<td style="height: 20px; padding-right: 4px">
 							<?php echo radio_field('file[upload_option]',true, array("id" => $genid . 'radioAddFileUploadAnyway', "value" => -1, 'tabindex' => '30')) ?>
-						</td><td>
+						</td>
+						<td>
 							<?php echo lang('upload anyway')?>
 						</td>
 					</tr>
@@ -233,17 +225,13 @@ if (active_project()!= null)
 
 
 
-	<?php if ($all) { ?>
-			<div id="<?php echo $genid ?>add_file_select_workspace_div" style="display:block"> 
-	<?php } else {?>
-			<div id="<?php echo $genid ?>add_file_select_workspace_div" style="display:none">
-	<?php }?>
+	<div id="<?php echo $genid ?>add_file_select_context_div" style="display:block">
 		<fieldset>
-			<legend><?php echo lang('workspace') ?></legend>
+			<legend><?php echo lang('context') ?></legend>
 			<?php if ($file->isNew()) {
-				echo select_workspaces('ws_ids', null, array($project), $genid.'ws_ids');
+				render_dimension_trees($file->manager()->getObjectTypeId(), $genid, null, array('select_current_context' => true)); 
 			} else {
-				echo select_workspaces('ws_ids', null, $file->getWorkspaces(), $genid.'ws_ids');
+				render_dimension_trees($file->manager()->getObjectTypeId(), $genid, $file->getMemberIds()); 
 			} ?>
 			<?php if (!$file->isNew()) {?>
 				<div id="<?php echo $genid ?>addFileFilenameCheck" style="display: none">
@@ -260,20 +248,6 @@ if (active_project()!= null)
 		</fieldset>
 	</div>
 
-	<div id="<?php echo $genid ?>add_file_tags_div" style="display: none">
-		<fieldset>
-			<?php 
-			$show_help_option = user_config_option('show_context_help'); 
-					if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_upload_file_tags_context_help', true, logged_user()->getId())) {?>
-			<div id="uploadFileContextHelp" class="contextHelpStyle">
-				<?php render_context_help($this, 'chelp upload file tags','upload_file_tags'); ?>
-			</div>
-		<?php }?>
-			<legend><?php echo lang('tags') ?></legend>
-			<?php echo autocomplete_tags_field("file[tags]", array_var($file_data, 'tags'), null, 85); ?>
-		</fieldset>
-	</div>
-
 	<div id="<?php echo $genid ?>add_file_description_div" style="display: none">
 		<fieldset>
 			<?php 
@@ -287,37 +261,6 @@ if (active_project()!= null)
 		<?php echo textarea_field('file[description]', array_var($file_data, 'description'), array('class' => '', 'id' => $genid.'fileFormDescription', 'tabindex' => '90')) ?>
 		</fieldset>
 	</div>
-
-	<?php if(logged_user()->isMemberOfOwnerCompany()) { ?>
-		<div id="<?php echo $genid ?>add_file_options_div" style="display: none">
-		<fieldset>
-			<legend><?php echo lang('options') ?></legend>
-			<?php /*
-			<div class="objectOption">
-				<div class="optionLabel"><label><?php echo lang('private file') ?>:</label></div>
-				<div class="optionControl"><?php echo yes_no_widget('file[is_private]', 'fileFormIsPrivate', array_var($file_data, 'is_private'), lang('yes'), lang('no')) ?></div>
-				<div class="optionDesc"><?php echo lang('private file desc') ?></div>
-			</div>
-
-			<div class="objectOption">
-				<div class="optionLabel"><label><?php echo lang('important file') ?>:</label></div>
-				<div class="optionControl"><?php echo yes_no_widget('file[is_important]', 'fileFormIsImportant', array_var($file_data, 'is_important'), lang('yes'), lang('no')) ?></div>
-				<div class="optionDesc"><?php echo lang('important file desc') ?></div>
-			</div>
-			*/?>
-			<div class="objectOption">
-				<div class="optionLabel"><label><?php echo lang('enable comments') ?>:</label></div>
-				<div class="optionControl"><?php echo yes_no_widget('file[comments_enabled]', $genid.'fileFormEnableComments', array_var($file_data, 'comments_enabled', true), lang('yes'), lang('no'), 95) ?></div>
-				<div class="optionDesc"><?php echo lang('enable comments desc') ?></div>
-			</div>
-			<div class="objectOption">
-				<div class="optionLabel"><label><?php echo lang('enable anonymous comments') ?>:</label></div>
-				<div class="optionControl"><?php echo yes_no_widget('file[anonymous_comments_enabled]', $genid.'fileFormEnableAnonymousComments', array_var($file_data, 'anonymous_comments_enabled', false), lang('yes'), lang('no'), 100) ?></div>
-				<div class="optionDesc"><?php echo lang('enable anonymous comments desc') ?></div>
-			</div>
-		</fieldset>
-		</div>
-	<?php } // if ?>
 
 	<div id="<?php echo $genid ?>add_custom_properties_div" style="display: none">
 		<fieldset>
@@ -351,7 +294,7 @@ if (active_project()!= null)
 	</div>
 
 	<script>
-		var wsch = Ext.getCmp('<?php echo $genid ?>ws_ids');
+		/*var wsch = Ext.getCmp('<?php echo $genid ?>ws_ids');
 		wsch.on("wschecked", function(arguments) {
 			if (!this.getValue().trim()) return;
 			var uids = App.modules.addMessageForm.getCheckedUsers('<?php echo $genid ?>');
@@ -364,10 +307,10 @@ if (active_project()!= null)
 				}),
 				scripts: true
 			});
-		}, wsch);
+		}, wsch);*/
 	</script>
 
-	<?php if($object->isNew() || $object->canLinkObject(logged_user(), $project)) { ?>
+	<?php if($object->isNew() || $object->canLinkObject(logged_user())) { ?>
 		<div style="display: none" id="<?php echo $genid ?>add_linked_objects_div">
 		<fieldset>
 			<?php 
@@ -428,6 +371,34 @@ if (active_project()!= null)
 </form>
 
 <script>
+	var memberChoosers = Ext.getCmp('<?php echo "$genid-member-chooser-panel-".$file->manager()->getObjectTypeId()?>').items;
+	if (memberChoosers) {
+		memberChoosers.each(function(item, index, length) {
+			item.on('all trees updated', function() {
+				var dimensionMembers = {};
+				memberChoosers.each(function(it, ix, l) {
+					dim_id = this.dimensionId;
+					dimensionMembers[dim_id] = [];
+					var checked = it.getChecked("id");
+					for (var j = 0 ; j < checked.length ; j++ ) {
+						dimensionMembers[dim_id].push(checked[j]);
+					}
+				});
+	
+				var uids = App.modules.addMessageForm.getCheckedUsers('<?php echo $genid ?>');
+				Ext.get('<?php echo $genid ?>add_subscribers_content').load({
+					url: og.getUrl('object', 'render_add_subscribers', {
+						context: Ext.util.JSON.encode(dimensionMembers),
+						users: uids,
+						genid: '<?php echo $genid ?>',
+						otype: '<?php echo $file->manager()->getObjectTypeId()?>'
+					}),
+					scripts: true
+				});
+			});
+		});
+	}
+
 	var ctl = Ext.get('<?php echo $genid ?>fileFormFile');
 	if (ctl) ctl.focus();
 </script>

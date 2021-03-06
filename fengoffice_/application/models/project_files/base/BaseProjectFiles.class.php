@@ -6,7 +6,7 @@
  *
  * @author Ilija Studen <ilija.studen@gmail.com>
  */
-abstract class BaseProjectFiles extends ProjectDataObjects {
+abstract class BaseProjectFiles extends ContentDataObjects {
 
 	/**
 	 * Column name => Column type map
@@ -15,30 +15,17 @@ abstract class BaseProjectFiles extends ProjectDataObjects {
 	 * @static
 	 */
 	static private $columns = array(
-	    'id' => DATA_TYPE_INTEGER, 
-	    'filename' => DATA_TYPE_STRING, 
-	    'description' => DATA_TYPE_STRING, 
-	    'is_private' => DATA_TYPE_BOOLEAN, 
-	    'is_important' => DATA_TYPE_BOOLEAN, 
+	    'object_id' => DATA_TYPE_INTEGER, 
+	    'description' => DATA_TYPE_STRING,
 	    'is_locked' => DATA_TYPE_BOOLEAN, 
 	    'is_visible' => DATA_TYPE_BOOLEAN, 
-	    'expiration_time' => DATA_TYPE_DATETIME, 
-	    'comments_enabled' => DATA_TYPE_BOOLEAN, 
-	    'anonymous_comments_enabled' => DATA_TYPE_BOOLEAN, 
-	    'created_on' => DATA_TYPE_DATETIME, 
-	    'created_by_id' => DATA_TYPE_INTEGER, 
-	    'updated_on' => DATA_TYPE_DATETIME, 
-	    'updated_by_id' => DATA_TYPE_INTEGER,
+	    'expiration_time' => DATA_TYPE_DATETIME,
 	    'checked_out_on' => DATA_TYPE_DATETIME,
 	    'checked_out_by_id' => DATA_TYPE_INTEGER,
 	    'was_auto_checked_out' => DATA_TYPE_BOOLEAN,
-    	'trashed_on' => DATA_TYPE_DATETIME,
-     	'trashed_by_id' => DATA_TYPE_INTEGER,
-		'type' => DATA_TYPE_INTEGER,
+    	'type' => DATA_TYPE_INTEGER,
 		'url' => DATA_TYPE_STRING,
-		'mail_id' => DATA_TYPE_INTEGER,
-    	'archived_on' => DATA_TYPE_DATETIME,
-    	'archived_by_id' => DATA_TYPE_INTEGER,
+		'mail_id' => DATA_TYPE_INTEGER
 	);
 
 	/**
@@ -89,7 +76,7 @@ abstract class BaseProjectFiles extends ProjectDataObjects {
 	 * @return array or string
 	 */
 	function getPkColumns() {
-		return 'id';
+		return 'object_id';
 	} // getPkColumns
 
 	/**
@@ -100,7 +87,7 @@ abstract class BaseProjectFiles extends ProjectDataObjects {
 	 * @return string
 	 */
 	function getAutoIncrementColumn() {
-		return 'id';
+		return null;
 	} // getAutoIncrementColumn
 
 	/**
@@ -114,7 +101,7 @@ abstract class BaseProjectFiles extends ProjectDataObjects {
 		return array_merge(parent::getSystemColumns(), array(
       		'checked_out_by_id', 'was_auto_checked_out', 'mail_id', 'type')
 		);
-	} // getSystemColumns
+	} // getSystemColumns*/
 	
 	/**
     * Return external columns
@@ -145,10 +132,10 @@ abstract class BaseProjectFiles extends ProjectDataObjects {
     * @param void
     * @return string
     */
-    function getReportObjectTitle($values) {
+    /*function getReportObjectTitle($values) {
     	$filename = isset($values['filename']) ? $values['filename'] : ''; 
     	return $filename;
-    } // getReportObjectTitle
+    } // getReportObjectTitle*/
 
 	// -------------------------------------------------------
 	//  Finders
@@ -174,8 +161,6 @@ abstract class BaseProjectFiles extends ProjectDataObjects {
 			return parent::find($arguments);
 		} else {
 			return ProjectFiles::instance()->find($arguments);
-			//$instance =& ProjectFiles::instance();
-			//return $instance->find($arguments);
 		} // if
 	} // find
 
@@ -191,8 +176,6 @@ abstract class BaseProjectFiles extends ProjectDataObjects {
 			return parent::findAll($arguments);
 		} else {
 			return ProjectFiles::instance()->findAll($arguments);
-			//$instance =& ProjectFiles::instance();
-			//return $instance->findAll($arguments);
 		} // if
 	} // findAll
 
@@ -208,8 +191,6 @@ abstract class BaseProjectFiles extends ProjectDataObjects {
 			return parent::findOne($arguments);
 		} else {
 			return ProjectFiles::instance()->findOne($arguments);
-			//$instance =& ProjectFiles::instance();
-			//return $instance->findOne($arguments);
 		} // if
 	} // findOne
 
@@ -226,8 +207,6 @@ abstract class BaseProjectFiles extends ProjectDataObjects {
 			return parent::findById($id, $force_reload);
 		} else {
 			return ProjectFiles::instance()->findById($id, $force_reload);
-			//$instance =& ProjectFiles::instance();
-			//return $instance->findById($id, $force_reload);
 		} // if
 	} // findById
 
@@ -243,8 +222,6 @@ abstract class BaseProjectFiles extends ProjectDataObjects {
 			return parent::count($condition);
 		} else {
 			return ProjectFiles::instance()->count($condition);
-			//$instance =& ProjectFiles::instance();
-			//return $instance->count($condition);
 		} // if
 	} // count
 
@@ -260,8 +237,6 @@ abstract class BaseProjectFiles extends ProjectDataObjects {
 			return parent::delete($condition);
 		} else {
 			return ProjectFiles::instance()->delete($condition);
-			//$instance =& ProjectFiles::instance();
-			//return $instance->delete($condition);
 		} // if
 	} // delete
 
@@ -284,8 +259,6 @@ abstract class BaseProjectFiles extends ProjectDataObjects {
 			return parent::paginate($arguments, $items_per_page, $current_page);
 		} else {
 			return ProjectFiles::instance()->paginate($arguments, $items_per_page, $current_page);
-			//$instance =& ProjectFiles::instance();
-			//return $instance->paginate($arguments, $items_per_page, $current_page);
 		} // if
 	} // paginate
 
@@ -302,6 +275,7 @@ abstract class BaseProjectFiles extends ProjectDataObjects {
 		return $instance;
 	} // instance
 
+	
+	
+	
 } // ProjectFiles
-
-?>

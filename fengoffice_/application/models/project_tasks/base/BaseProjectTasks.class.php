@@ -6,32 +6,24 @@
  *
  * @author Ilija Studen <ilija.studen@gmail.com>
  */
-abstract class BaseProjectTasks extends ProjectDataObjects {
+abstract class BaseProjectTasks extends ContentDataObjects {
 
 	/**
 	 * Column name => Column type map
 	 *
-	 * @var array
 	 * @static
 	 */
 	static private $columns = array(
-    	'id' => DATA_TYPE_INTEGER,
+    	'object_id' => DATA_TYPE_INTEGER,
     	'parent_id' => DATA_TYPE_INTEGER, 
 		'text' => DATA_TYPE_STRING,
-		'assigned_to_user_id' => DATA_TYPE_INTEGER, 
-		'assigned_to_company_id' => DATA_TYPE_INTEGER,
+		'assigned_to_contact_id' => DATA_TYPE_INTEGER,
 		'completed_on' => DATA_TYPE_DATETIME, 
 		'due_date' => DATA_TYPE_DATETIME,
 		'start_date' => DATA_TYPE_DATETIME,
 		'completed_by_id' => DATA_TYPE_INTEGER, 
-		'created_on' => DATA_TYPE_DATETIME,
-		'created_by_id' => DATA_TYPE_INTEGER, 
-		'updated_on' => DATA_TYPE_DATETIME,
-		'updated_by_id' => DATA_TYPE_INTEGER, 
 		'order' => DATA_TYPE_INTEGER,
 		'milestone_id' => DATA_TYPE_INTEGER,
-		'title' => DATA_TYPE_STRING, 
-		'is_private' => DATA_TYPE_BOOLEAN,
 		'started_on' => DATA_TYPE_DATETIME,
 		'priority' => DATA_TYPE_INTEGER, 
 		'state' => DATA_TYPE_INTEGER,
@@ -41,8 +33,6 @@ abstract class BaseProjectTasks extends ProjectDataObjects {
 		'time_estimate' => DATA_TYPE_INTEGER,
 		'is_template' => DATA_TYPE_BOOLEAN,
 		'from_template_id' => DATA_TYPE_INTEGER,
-		'trashed_on' => DATA_TYPE_DATETIME,
-     	'trashed_by_id' => DATA_TYPE_INTEGER,
 		'repeat_forever'=>DATA_TYPE_BOOLEAN,
     	'repeat_end' => DATA_TYPE_DATETIME,
     	'repeat_num' => DATA_TYPE_INTEGER,
@@ -50,9 +40,8 @@ abstract class BaseProjectTasks extends ProjectDataObjects {
     	'repeat_m' => DATA_TYPE_INTEGER,
     	'repeat_y' => DATA_TYPE_INTEGER,
 		'repeat_by' => DATA_TYPE_STRING,
-    	'archived_on' => DATA_TYPE_DATETIME,
-    	'archived_by_id' => DATA_TYPE_INTEGER,
 		'object_subtype' => DATA_TYPE_INTEGER,
+		'percent_completed' => DATA_TYPE_INTEGER,
 	);
 
 	/**
@@ -103,7 +92,7 @@ abstract class BaseProjectTasks extends ProjectDataObjects {
 	 * @return array or string
 	 */
 	function getPkColumns() {
-		return 'id';
+		return 'object_id';
 	} // getPkColumns
 
 	/**
@@ -114,7 +103,7 @@ abstract class BaseProjectTasks extends ProjectDataObjects {
 	 * @return string
 	 */
 	function getAutoIncrementColumn() {
-		return 'id';
+		return null;
 	} // getAutoIncrementColumn
 
 	/**
@@ -126,7 +115,7 @@ abstract class BaseProjectTasks extends ProjectDataObjects {
 	 */
 	function getSystemColumns() {
 		return array_merge(parent::getSystemColumns(), array(
-      		'started_on', 'object_subtype', 'parent_id', 'assigned_to_user_id', 'assigned_to_company_id', 'completed_by_id', 'milestone_id', 'started_by_id', 'assigned_by_id', 'from_template_id', 'order')
+      		'object_subtype', 'parent_id', 'assigned_to_contact_id', 'completed_by_id', 'milestone_id', 'state', 'started_by_id', 'assigned_by_id', 'from_template_id')
 		);
 	} // getSystemColumns
 	
@@ -138,7 +127,7 @@ abstract class BaseProjectTasks extends ProjectDataObjects {
     * @return array
     */
     function getExternalColumns() {
-      return array_merge(parent::getExternalColumns(), array('object_subtype', 'assigned_to_user_id', 'assigned_to_company_id', 'completed_by_id', 'milestone_id'));
+      return array_merge(parent::getExternalColumns(), array('object_subtype', 'assigned_to_contact_id', 'completed_by_id', 'milestone_id'));
     } // getExternalColumns
 	
 	/**
@@ -149,7 +138,7 @@ abstract class BaseProjectTasks extends ProjectDataObjects {
     * @return array
     */
     function getReportObjectTitleColumns() {
-      return array('title');
+      return array('name');
     } // getReportObjectTitleColumns
     
     /**
@@ -160,7 +149,7 @@ abstract class BaseProjectTasks extends ProjectDataObjects {
     * @return string
     */
     function getReportObjectTitle($values) {
-    	$title = isset($values['title']) ? $values['title'] : ''; 
+    	$title = isset($values['name']) ? $values['name'] : ''; 
     	return $title;
     } // getReportObjectTitle
     
@@ -173,11 +162,11 @@ abstract class BaseProjectTasks extends ProjectDataObjects {
     */
     function getTemplateObjectProperties() {
     	return array(
-    		array('id' => 'title', 'type' => self::getColumnType('title')),
+    		array('id' => 'name', 'type' => self::getColumnType('name')),
     		array('id' => 'text', 'type' => self::getColumnType('text')),
     		array('id' => 'start_date', 'type' => self::getColumnType('start_date')),
     		array('id' => 'due_date', 'type' => self::getColumnType('due_date')),
-    		array('id' => 'assigned_to_user_id', 'type' => 'USER')
+    		array('id' => 'assigned_to_contact_id', 'type' => 'USER')
     	);
     } // getTemplateObjectProperties
 
@@ -205,8 +194,6 @@ abstract class BaseProjectTasks extends ProjectDataObjects {
 			return parent::find($arguments);
 		} else {
 			return ProjectTasks::instance()->find($arguments);
-			//$instance =& ProjectTasks::instance();
-			//return $instance->find($arguments);
 		} // if
 	} // find
 
@@ -222,8 +209,6 @@ abstract class BaseProjectTasks extends ProjectDataObjects {
 			return parent::findAll($arguments);
 		} else {
 			return ProjectTasks::instance()->findAll($arguments);
-			//$instance =& ProjectTasks::instance();
-			//return $instance->findAll($arguments);
 		} // if
 	} // findAll
 
@@ -239,8 +224,6 @@ abstract class BaseProjectTasks extends ProjectDataObjects {
 			return parent::findOne($arguments);
 		} else {
 			return ProjectTasks::instance()->findOne($arguments);
-			//$instance =& ProjectTasks::instance();
-			//return $instance->findOne($arguments);
 		} // if
 	} // findOne
 
@@ -257,8 +240,6 @@ abstract class BaseProjectTasks extends ProjectDataObjects {
 			return parent::findById($id, $force_reload);
 		} else {
 			return ProjectTasks::instance()->findById($id, $force_reload);
-			//$instance =& ProjectTasks::instance();
-			//return $instance->findById($id, $force_reload);
 		} // if
 	} // findById
 
@@ -274,8 +255,6 @@ abstract class BaseProjectTasks extends ProjectDataObjects {
 			return parent::count($condition);
 		} else {
 			return ProjectTasks::instance()->count($condition);
-			//$instance =& ProjectTasks::instance();
-			//return $instance->count($condition);
 		} // if
 	} // count
 
@@ -291,8 +270,6 @@ abstract class BaseProjectTasks extends ProjectDataObjects {
 			return parent::delete($condition);
 		} else {
 			return ProjectTasks::instance()->delete($condition);
-			//$instance =& ProjectTasks::instance();
-			//return $instance->delete($condition);
 		} // if
 	} // delete
 
@@ -315,8 +292,6 @@ abstract class BaseProjectTasks extends ProjectDataObjects {
 			return parent::paginate($arguments, $items_per_page, $current_page);
 		} else {
 			return ProjectTasks::instance()->paginate($arguments, $items_per_page, $current_page);
-			//$instance =& ProjectTasks::instance();
-			//return $instance->paginate($arguments, $items_per_page, $current_page);
 		} // if
 	} // paginate
 

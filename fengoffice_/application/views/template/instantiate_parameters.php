@@ -6,25 +6,10 @@
 	<div class="coInputHeaderUpperRow">
 		<div class="coInputTitle"><?php echo lang('template parameters')?></div>
 	</div>
-	<div style="padding-top:5px">
-		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>parameters_select_workspace_div', this)"><?php echo lang('workspace') ?></a> -
-		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>parameters_tags_div', this)"><?php echo lang('tags') ?></a>
-	</div>
+
 </div>
 <div class="coInputMainBlock">
-	<div id="<?php echo $genid ?>parameters_select_workspace_div" style="display:none">
-	<fieldset>
-	<legend><?php echo lang('workspace') ?></legend>
-		<?php echo select_project2('project_id', active_or_personal_project()->getId(), $genid) ?>
-	</fieldset>
-	</div>
-
-	<div id="<?php echo $genid ?>parameters_tags_div" style="display:none">
-	<fieldset>
-	<legend><?php echo lang('tags') ?></legend>
-		<?php echo autocomplete_tags_field('tags', '', 'tags') ?>
-	</fieldset>
-	</div>
+	
 	<div>
 		<table><tbody>
 		<?php foreach($parameters as $parameter) {?>
@@ -37,16 +22,21 @@
 						<?php echo pick_date_widget2('parameterValues['.$parameter['name'].']')?>
 					<?php }else{ ?>
 						<select name="<?php echo 'parameterValues['.$parameter['name'].']'; ?>">
-						<?php 
-							$users = Users::getAll();
-							if ($users) {
-								foreach ($users as $usr) {
-									?>																
-										<option value="<?php echo $usr->getId(); ?>"> <?php echo $usr->getDisplayName(); ?></option>
-									<?php 
+						<?php
+							$companies  = allowed_users_to_assign(active_context());
+							foreach ($companies as $c) {?>
+								<option value="<?php echo $c['id']; ?>"> <?php echo $c['name']; ?></option>
+							<?php 
+								$users = $c['users'];
+								if ( count($users) ) {
+									foreach ($users as $usr) {?>																
+										<option value="<?php echo $usr['id'] ?>"> <?php echo $usr['name'] ?></option>
+										
+								<?php }
 								}
-							}
-						?>						
+							}	
+							 
+						?>
 						</select>
 					<?php } ?>
 				</td>

@@ -14,26 +14,27 @@
  * @param User $user
  * @return null
  */
-function render_user_box(User $user) {
+function render_user_box(Contact $user) {
 	tpl_assign('_userbox_user', $user);
-	tpl_assign('_userbox_projects', $user->getActiveProjects());
-	$crumbs = array();
+	$crumbs = array(); 
 	$crumbs[] = array(
 		'url' => get_url('help','help_options', array('current' => 'help')),
 		'text' => lang('help'),
 	);
 	$crumbs[] = array(
-		'url' => logged_user()->getAccountUrl(),
+		'url' => logged_user()->getAccountUrl(), 
 		'target' => 'account',
 		'text' => lang('account'),
 	);
-	if (logged_user()->isMemberOfOwnerCompany() && logged_user()->isAdministrator()) {
+	
+	if (logged_user()->isExecutiveGroup()) {
 		$crumbs[] = array(
 			'url' => get_url('administration', 'index'),
 			'target' => 'administration',
 			'text' => lang('administration'),
 		);
 	}
+	
 	Hook::fire('render_userbox_crumbs', null, $crumbs);
 	$crumbs = array_reverse($crumbs);
 	tpl_assign('_userbox_crumbs', $crumbs);
@@ -41,50 +42,12 @@ function render_user_box(User $user) {
 } // render_user_box
  
 /**
- * Render project users combo.
- *
- * @param String $name
- * @param array $attributes
- * @return String All users I am sharing something with.
- */
-function render_sharing_users($name, $attributes = null) {
-	//TODO:  This functions must be rebuilt
-	$perms= ObjectUserPermissions::getAllPermissionsByUser(logged_user());
-	$options = array(option_tag(lang('none'), 0));
-	$my_id = logged_user()->getId();
-	if (isset($perms)) {
-		foreach ($perms as $perm)
-		{
-			$file_id=$perm->getFileId();
-			if(trim($file_id) !='')
-			{
-				$users = ObjectUserPermissions::getAllPermissionsByObjectIdAndManager($file_id, 'ProjectFiles');
-				foreach ($users as $user_perm)
-				{
-					$user_id=$user_perm->getUserId();
-					if($user_id!=null && trim($user_id)!='' && $user_id!=$my_id)
-					{
-						$user = Users::findById($user_id);
-						if($user != null )
-						{//foreach user
-							$options[] = option_tag($user->getUserName(),$user->getUserName());
-						}
-					}
-				}
-			}
-		}
-	}
-	$options=array_unique($options);
-	return select_box($name,$options, $attributes);
-} // render_user_box
-
-/**
  * This function will render system notices for this user
  *
- * @param User $user
+ * @param Contact $user
  * @return string
  */
-function render_system_notices(User $user) {
+function render_system_notices(Contact $user) {
 	if(!$user->isAdministrator()) return;
 
 	$system_notices = array();
@@ -105,9 +68,9 @@ function render_system_notices(User $user) {
  */
 function select_company($name, $selected = null, $attributes = null, $allow_none = true, $check_permissions = false) {
 	if (!$check_permissions) {
-		$companies = Companies::findAll(array('order' => 'client_of_id ASC, name ASC'));
+		$companies = Contacts::findAll(array('conditions' => 'is_company = 1 AND trashed_by_id = 0 AND archived_by_id = 0 ', 'order' => 'first_name ASC'));
 	} else {
-		$companies = Companies::getVisibleCompanies(logged_user(), "`id` <> " . owner_company()->getId());
+		$companies = Contacts::getVisibleCompanies(logged_user(), "`id` <> " . owner_company()->getId());
 		if (logged_user()->isMemberOfOwnerCompany() || owner_company()->canAddUser(logged_user())) {
 			// add the owner company
 			$companies = array_merge(array(owner_company()), $companies);
@@ -121,8 +84,7 @@ function select_company($name, $selected = null, $attributes = null, $allow_none
 	if(is_array($companies)) {
 		foreach($companies as $company) {
 			$option_attributes = $company->getId() == $selected ? array('selected' => 'selected') : null;
-			$company_name = $company->getName();
-			//if($company->isOwner()) $company_name .= ' (' . lang('owner company') . ')';
+			$company_name = $company->getObjectName();
 			$options[] = option_tag($company_name, $company->getId(), $option_attributes);
 		} // foreach
 	} // if
@@ -130,204 +92,57 @@ function select_company($name, $selected = null, $attributes = null, $allow_none
 } // select_company
 
 /**
- * Render select project box
- *
- * @param integer $selected ID of selected project
- * @param array $attributes Additional attributes
- * @return string
- */
-function select_project($name, $projects, $selected = null, $attributes = null, $allow_none = null) {
-	$options = array();
-	if($allow_none) {
-		$options[] = option_tag(lang('none'), 0);
-	}
-	if(is_array($projects)) {
-		foreach($projects as $project) {
-			$option_attributes = $project->getId() == $selected ? array('selected' => 'selected') : null;
-			$project_name = $project->getName();
-			$options[] = option_tag($project_name, $project->getId(), $option_attributes);
-		} // foreach
-	} // if
-	return select_box($name, $options, $attributes);
-} // select_project
-
-function select_project2($name, $projectId, $genid, $allowNone = false, $extraWS = null, $workspaces = null) {
-	$extra = "";
-	if (is_array($extraWS)) {
-		foreach ($extraWS as $ws) {
-			if ($extra != "") $extra .= ",";
-			$extra .= json_encode($ws);
-		}
-	}
-	if (is_array($workspaces)) {
-		$workspacesToJson = array();
-		$wsset = array();
-		foreach ($workspaces as $w) {
-			$wsset[$w->getId()] = true;
-		}
-		foreach ($workspaces as $w){
-			$tempParent = $w->getParentId();
-			$x = $w;
-			while ($x instanceof Project && !isset($wsset[$tempParent])) {
-				$tempParent = $x->getParentId();
-				$x = $x->getParentWorkspace();
-			}
-			if (!$x instanceof Project) {
-				$tempParent = 0;
-			}
-			
-			$workspacesToJson[] = array(
-				"id" => $w->getId(),
-				"name" => $w->getName(),
-				"parent" => $tempParent,
-				"realParent" => $w->getParentId(),
-				"depth" => $w->getDepth(),
-				"color" => $w->getColor(),
-				);
-		}
-		$wsList = json_encode($workspacesToJson);
-	} else {
-		$wsList = "null";
-	}
-	$extra = "[$extra]";
-	$html = "<div id='" . $genid  . "wsSel'></div>
-		<script>
-		og.drawWorkspaceSelector('" .  $genid  . "wsSel', $projectId, '$name', " . ($allowNone? 'true':'false') . ", $extra, $wsList);
-		</script>
-	";
-	
-	return $html;
-} // select_project
-
-/**
- * Returns a control to select multiple workspaces
- *
- * @param string $name
- * 		Name for the control
- * @param array $workspaces
- * 		Array of workspaces to choose from. If null the workspaces from the WorkspacePanel will be loaded.
- * @param array $selected
- * 		Array of workspaces selected by default
- * @return string
- * 		HTML for the control
- */
-function select_workspaces($name = "", $workspaces = null, $selected = null, $id = null) {
-	require_javascript('og/WorkspaceChooser.js');
-	
-	if (!isset($id)) $id = gen_id();
-		
-	$selectedCSV = "";
-	if (is_array($selected)) {
-		foreach ($selected as $s) {
-			if ($s instanceof Project) {
-				if ($selectedCSV != "") $selectedCSV .= ",";
-				$selectedCSV .= $s->getId();
-			}
-		}
-	}
-		
-	$workspacesToJson = array();
-
-	$wsset = array();
-	if(is_array($workspaces)){
-		foreach ($workspaces as $w) {
-			$wsset[$w->getId()] = true;
-		}
-		foreach ($workspaces as $w){
-			$tempParent = $w->getParentId();
-			$x = $w;
-			while ($x instanceof Project && !isset($wsset[$tempParent])) {
-				$tempParent = $x->getParentId();
-				$x = $x->getParentWorkspace();
-			}
-			if (!$x instanceof Project) {
-				$tempParent = 0;
-			}
-			
-			$workspacesToJson[] = array(
-				"id" => $w->getId(),
-				"n" => $w->getName(),
-				"p" => $tempParent,
-				"rp" => $w->getParentId(),
-				"d" => $w->getDepth(),
-				"c" => $w->getColor(),
-				);
-		}
-		$loadFrom = 'false';
-	} else {
-		$loadFrom = "'workspace-panel'";
-	}
-	$output = "<div id=\"$id-wsTree\"></div>
-			<input id=\"$id-field\" type=\"hidden\" value=\"$selectedCSV\" name=\"$name\"></input>
-		<script>
-		var wsTree = new og.WorkspaceChooserTree({
-			renderTo: '$id-wsTree',
-			field: '$id-field',
-			loadWorkspacesFrom: $loadFrom,
-			id: '$id',
-			workspaces: " . json_encode($workspacesToJson) . ",
-			height: 320,
-			width: 210
-		});
-		</script>
-	";
-	return $output;
-} // select_workspaces
-
-/**
  * Returns a control to select multiple users or groups
  *
- * @param string $name
- * 		Name for the control
- * @param array $workspaces
- * 		Array of workspaces to choose from. If null the workspaces from the WorkspacePanel will be loaded.
- * @param array $selected
- * 		Array of workspaces selected by default
- * @return string
- * 		HTML for the control
  */
-function select_users_or_groups($name = "", $users = null, $selected = null, $id = null) {
+function select_users_or_groups($name = "", $selected = null, $id = null) {
 	require_javascript('og/UserGroupPicker.js');
 	
 	if (!isset($id)) $id = gen_id();
 		
 	$selectedCSV = "";
-	if (is_array($selected)) {
-		foreach ($selected as $s) {
-			if ($s instanceof Project) {
-				if ($selectedCSV != "") $selectedCSV .= ",";
-				$selectedCSV .= $s->getId();
-			}
-		}
-	}
 	
 	$json = array();
+	
+	$comp_array = array();
+	$companies = Contacts::findAll(array("conditions" => "is_company = 1", 'order' => 'name'));
+	$comp_ids = array();
+	foreach ($companies as $company) {
+		$comp_ids[] = $company->getId();
+		$comp_array[$company->getId()] = array('id' => $company->getId(), 'name' => $company->getObjectName(), 'users' => array() );
+	}
+	
 	if (logged_user()->isMemberOfOwnerCompany()) {
-		$companies = Companies::findAll(array('order' => 'name ASC'));
+		$companies = Contacts::findAll(array("conditions" => "is_company = 1", 'order' => 'name'));
 	} else {
 		$companies = array(owner_company(), logged_user()->getCompany());
 	}
-	foreach ($companies as $company) {
-		$company_users = $company->getUsers();
-		if (count($company_users) > 0) {
+	
+	$company_users = Contacts::getGroupedByCompany();
+	foreach ($company_users as $company_row){
+		$company = $company_row['details'];
+		$users = $company_row['users'];
+		
+		if (count($users) > 0) {
 			$json[] = array(
 				'p' => 'users',
 				't' => 'company',
 				'id' => 'c' . $company->getId(),
-				'n' => $company->getName(),
+				'n' => $company->getObjectName(),
 			);
-			foreach ($company_users as $u) {
+			foreach ($users as $u) {
 				$json[] = array(
 					'p' => 'c' . $company->getId(),
 					't' => 'user',
 					'g' => $u->isGuest() ? 1 : 0,
-					'id' => $u->getId(),
-					'n' => $u->getDisplayName(),
+					'id' => $u->getPermissionGroupId(),
+					'n' => $u->getObjectName(),
 				);	
 			}
 		}
 	}
-	$groups = Groups::findAll(array('order' => 'name ASC'));
+	
+	$groups = PermissionGroups::getNonPersonalPermissionGroups();
 	foreach ($groups as $group) {
 		$json[] = array(
 			'p' => 'groups',
@@ -369,39 +184,33 @@ function intersectCSVs($csv1, $csv2){
 	return implode(',', $final);
 }
 
-function allowed_users_to_assign($wsid) {
-	$ws = Projects::findById($wsid);
-	$comp_array = array();
-	$companies = Companies::findAll();
-	if ($companies != null) {
-		foreach ($companies as $comp) {
-			if ($ws != null) $users = $comp->getUsersOnProject($ws);
-			else continue;
-			if (is_array($users)) {
-				foreach ($users as $k => $user) {
-					// if logged_user can assign tasks to user and user can read tasks the user is allowed
-					if (!can_assign_task(logged_user(), $ws, $user) || !can_read_type($user, $ws, 'ProjectTasks')) {
-						unset($users[$k]);
-					}
-				}
-				if (count($users) > 0) {
-					$comp_data = array(
-									'id' => $comp->getId(),
-									'name' => $comp->getName(),
-									'users' => array() 
-					);
-					foreach ($users as $user) {
-						$comp_data['users'][] = $user->getArrayInfo();
-					}
-					//if ($ws == null || can_assign_task(logged_user(), $ws, $comp)) {
-					if (count($users) > 0) {
-						$comp_array[] = $comp_data;
-					}
-				}
-			}
-		}
+function allowed_users_to_assign($context = null) {
+	if ($context == null) {
+		$context = active_context();
 	}
-	return $comp_array;
+	$comp_array = array();
+	// only companies with users
+	$companies = Contacts::findAll(array(
+		"conditions" => "e.is_company = 1",
+		"join" => array(
+			"table" => Contacts::instance()->getTableName(),
+			"jt_field" => "object_id",
+			"j_sub_q" => "SELECT xx.object_id FROM ".Contacts::instance()->getTableName(true)." xx WHERE xx.is_company=0 AND xx.company_id = e.object_id LIMIT 1"
+		),
+		"order" => "name"
+	));
+
+	$comp_ids = array();
+	foreach ($companies as $company) {
+		$comp_ids[] = $company->getId();
+		$comp_array[$company->getId()] = array('id' => $company->getId(), 'name' => $company->getObjectName(), 'users' => array() );
+	}
+	
+	$contacts = allowed_users_in_context(ProjectTasks::instance()->getObjectTypeId(), $context, ACCESS_LEVEL_READ, "AND `is_company`=0 AND `company_id` IN (".implode(",", $comp_ids).")");
+	foreach ($contacts as $contact) {
+		$comp_array[$contact->getCompanyId()]['users'][] = array('id' => $contact->getId(), 'name' => $contact->getObjectName(), 'isCurrent' => $contact->getId() == logged_user()->getId());
+	}
+	return array_values($comp_array);
 }
 
 
@@ -414,9 +223,8 @@ function allowed_users_to_assign($wsid) {
  * @param array $attributes Array of select box attributes, if needed
  * @return null
  */
-function assign_to_select_box($list_name, $project = null, $selected = null, $attributes = null, $genid = null) {
+function assign_to_select_box($list_name, $context = null, $selected = null, $attributes = null, $genid = null) {
 	if (!$genid) $genid = gen_id();
-	$ws_id = $project instanceof Project ? $project->getId() : 0;
 	require_javascript('og/tasks/main.js');
 	require_javascript('og/tasks/addTask.js');
 	ob_start(); ?>
@@ -449,8 +257,10 @@ function assign_to_select_box($list_name, $project = null, $selected = null, $at
 			assignedto = document.getElementById(genid + 'taskFormAssignedTo');
 			if (assignedto) assignedto.value = combo.getValue();
 		});
+		assignedto = document.getElementById(genid + 'taskFormAssignedTo');
+		if (assignedto) assignedto.value = '<?php echo ($selected ? $selected : '0') ?>';
 	}
-	og.drawAssignedToSelectBoxSimple(<?php echo json_encode(allowed_users_to_assign($ws_id)) ?>, '<?php echo ($selected ? $selected : '0:0') ?>', '<?php echo $genid ?>');
+	og.drawAssignedToSelectBoxSimple(<?php echo json_encode(allowed_users_to_assign($context)) ?>, '<?php echo ($selected ? $selected : '0') ?>', '<?php echo $genid ?>');
 	</script> <?php
 	return ob_get_clean();
 } // assign_to_select_box
@@ -460,14 +270,15 @@ function assign_to_select_box($list_name, $project = null, $selected = null, $at
 function user_select_box($list_name, $selected = null, $attributes = null) {
 	$logged_user = logged_user();
 	
-	$users = Users::getAll();
+	//FIXME Feng 2
+	$users = Contacts::instance()->findAll();
 	
 	if(is_array($users)) {
 		foreach($users as $user) {
 			$option_attributes = $user->getId() == $selected ? array('selected' => 'selected') : null;
 			$options[] = option_tag($user->getDisplayName(), $user->getId(), $option_attributes);
-		} // foreach
-	} // if
+		}
+	} 
 
 	return select_box($list_name, $options, $attributes);
 } // user_select_box
@@ -484,284 +295,27 @@ function user_select_box($list_name, $selected = null, $attributes = null) {
  * @return string
  * @throws InvalidInstanceError
  */
-function select_milestone($name, $project = null, $selected = null, $attributes = null) {
+function select_milestone($name, $context = null, $selected = null, $attributes = null) {
 	if(is_array($attributes)) {
 		if(!isset($attributes['class'])) $attributes['class'] = 'select_milestone';
 	} else {
 		$attributes = array('class' => 'select_milestone');
-	} // if
+	}
 
 	$options = array(option_tag(lang('none'), 0));
-	if($project)
-	 $milestones = $project->getOpenMilestones();
-	else
-	 $milestones = ProjectMilestones::getActiveMilestonesByUser(logged_user()); 
-	 
+	$milestones = ProjectMilestones::getActiveMilestonesByUser(logged_user(), $context); 
+
 	if(is_array($milestones)) {
-		if ($selected){		//Fixes bug: If task is in a subworkspace of it's milestone's workspace, and user is standing on it, the assigned milestone is set to none when task is edited.
-			$is_in_array = false;	
-				foreach($milestones as $milestone)
-				if ($milestone->getId() == $selected) $is_in_array = true;
-				
-			if (!$is_in_array){
-				$milestone = ProjectMilestones::findById($selected);
-				if ($milestone)
-					$milestones[] = $milestone;
-			}
-		}
+
 		foreach($milestones as $milestone) {
 			$option_attributes = $milestone->getId() == $selected ? array('selected' => 'selected') : null;
-			$options[] = option_tag($milestone->getName(), $milestone->getId(), $option_attributes);
-		} // foreach
-	} // if
+			$options[] = option_tag($milestone->getObjectName(), $milestone->getId(), $option_attributes);
+		}
+	}
 
 	return select_box($name, $options, $attributes);
 } // select_milestone
 
-/**
- * Render select task list box
- *
- * @param string $name Form control name
- * @param Project $project
- * @param integer $selected ID of selected object
- * @param boolean $open_only List only active task lists (skip completed)
- * @param array $attach_data Additional attributes
- * @return string
- */
-function select_task_list($name, $project = null, $selected = null, $open_only = false, $attributes = null) {
-	if (is_null($project)) $project = active_or_personal_project();
-	//if (!($project instanceof Project)) throw new InvalidInstanceError('$project', $project, 'Project');
-
-	if (is_array($attributes)) {
-		if (!isset($attributes['class'])) $attributes['class'] = 'select_task_list';
-	} else {
-		$attributes = array('class' => 'select_task_list');
-	} // if
-
-	$options = array(option_tag(lang('none'), 0));
-	if ($project instanceof Project) { 
-		$task_lists = $open_only ? $project->getOpenTasks() : $project->getTasks();
-	} else {
-		$task_lists = $open_only ? ProjectTasks::getProjectTasks(null, null, 'ASC', null, null, null, null, null, null, true) : ProjectTasks::getProjectTasks(null, null, 'ASC', 0, null, null, null, null, null, false);
-	}
-	$selected_exists = is_null($selected);
-	if(is_array($task_lists)) {
-		foreach($task_lists as $task_list) {
-			if ($task_list->getId() == $selected) {
-				$selected_exists = true;
-				$option_attributes =  array('selected' => 'selected');
-			} else {
-				$option_attributes =  null;
-			}
-			$options[] = option_tag($task_list->getTitle(), $task_list->getId(), $option_attributes);
-		} // foreach
-	} // if
-	if (!$selected_exists) {
-		$task = ProjectTasks::findById($selected);
-		if ($task instanceof ProjectTask) {
-			$options[] = option_tag($task->getTitle(), $task->getId(), array("selected" => "selected"));
-		}
-	}
-
-	return select_box($name, $options, $attributes);
-} // select_task_list
-
-/**
- * Return select message control
- *
- * @param string $name Control name
- * @param Project $project
- * @param integer $selected ID of selected message
- * @param array $attributes Additional attributes
- * @return string
- */
-function select_message($name, $project = null, $selected = null, $attributes = null) {
-	if(is_null($project)) $project = active_project();
-	if(!($project instanceof Project)) throw new InvalidInstanceError('$project', $project, 'Project');
-
-	if(is_array($attributes)) {
-		if(!isset($attributes['class'])) $attributes['class'] = 'select_message';
-	} else {
-		$attributes = array('class' => 'select_message');
-	} // if
-
-	$options = array(option_tag(lang('none'), 0));
-	$messages = $project->getMessages();
-	if(is_array($messages)) {
-		foreach($messages as $messages) {
-			$option_attributes = $messages->getId() == $selected ? array('selected' => 'selected') : null;
-			$options[] = option_tag($messages->getTitle(), $messages->getId(), $option_attributes);
-		} // foreach
-	} // if
-
-	return select_box($name, $options, $attributes);
-} // select_message
-
-/**
- * Render select folder box
- *
- * @param string $name Control name
- * @param Project $project
- * @param integer $selected ID of selected folder
- * @param array $attributes Select box attributes
- * @return string
- */
-function select_project_folder($name, $project = null, $selected = null, $attributes = null) {
-	if(is_null($project)) {
-		$project = active_project();
-	} // if
-	if(!($project instanceof Project)) {
-		throw new InvalidInstanceError('$project', $project, 'Project');
-	} // if
-
-	if(is_array($attributes)) {
-		if(!isset($attributes['class'])) $attributes['class'] = 'select_folder';
-	} else {
-		$attributes = array('class' => 'select_folder');
-	} // if
-
-	$options = array(option_tag(lang('none'), 0));
-
-	$folders = $project->getFolders();
-	if(is_array($folders)) {
-		foreach($folders as $folder) {
-			$option_attributes = $folder->getId() == $selected ? array('selected' => true) : null;
-			$options[] = option_tag($folder->getName(), $folder->getId(), $option_attributes);
-		} // foreach
-	} // if
-
-	return select_box($name, $options, $attributes);
-} // select_project_folder
-
-/**
- * Select a project data object
- *
- * @param string $name Control name
- * @param Project $project
- * @param integer $selected ID of selected object
- * @param array $exclude_files Array of IDs of objects that need to be excluded (already linked to object etc)
- * @param array $attributes
- * @return string
- */
-function select_project_object($name, $project = null, $selected = null, $exclude_files = null, $attributes = null) {
-	// look for project
-	if(is_null($project)) {
-		$project = active_project();
-	} // if
-	if(!($project instanceof Project)) {
-		throw new InvalidInstanceError('$project', $project, 'Project');
-	} // if
-	// look for selection
-	$sel_id = 0;
-	$sel_type = '';
-	if(is_array($selected))
-	{
-		$sel_id = $selected['id'];
-		$sel_type = $selected['type'];
-	}
-	//default non-value
-	$all_options = array(option_tag(lang('none'), 0)); // array of options
-	//milestones
-	$milestones = $project->getOpenMilestones();
-	if(is_array($milestones)) {
-		$all_options[] = option_tag('', 0); // separator
-		foreach($milestones as $milestone) {
-			$option_attributes = $sel_type=='ProjectMilestone' && $milestone->getId() == $selected ? array('selected' => 'selected') : null;
-			$all_options[] = option_tag('Milestone:: ' . $milestone->getName(), $milestone->getId() . '::' .
-			get_class($milestone->manager()), $option_attributes);
-		} // foreach
-	} // if
-	//tasklists
-	$tasks = $project->getOpenTasks();
-	if(is_array($tasks)) {
-		$all_options[] = option_tag('', 0); // separator
-		foreach($tasks as $task) {
-			$option_attributes = $sel_type=='ProjectTask' && $task->getId() == $selected ? array('selected' => 'selected') : null;
-			$all_options[] = option_tag('Task:: ' . $task->getTitle(), $task->getId() . '::' .
-			get_class($task->manager()), $option_attributes);
-		} // foreach
-	} // if
-	//messages
-	$messages = $project->getMessages();
-	if(is_array($messages)) {
-		$all_options[] = option_tag('', 0); // separator
-		foreach($messages as $message) {
-			$option_attributes = $sel_type=='ProjectMessage' && $message->getId() == $sel_id ? array('selected' => 'selected') : null;
-			$all_options[] = option_tag('Message:: ' . $message->getTitle(), $message->getId() . '::' .
-			get_class($message->manager()), $option_attributes);
-		} // foreach
-	} // if
-	 
-	//all files are orphans
-	$orphaned_files = $project->getOrphanedFiles();
-	if(is_array($orphaned_files)) {
-		$all_options[] = option_tag('', 0); // separator
-		foreach($orphaned_files as $file) {
-			if(is_array($exclude_files) && in_array($file->getId(), $exclude_files)) continue;
-
-			$option_attrbutes = $sel_type=='ProjectFile' && $file->getId() == $selected ? array('selected' => true) : null;
-			$all_options[] = option_tag('File:: ' . $file->getFilename(), $file->getId() . '::' .
-			get_class($file->manager()), $option_attrbutes);
-		} // foreach
-	} // if
-
-	return select_box($name, $all_options, $attributes);
-}
-
-/**
- * Select a single project file
- *
- * @param string $name Control name
- * @param Project $project
- * @param integer $selected ID of selected file
- * @param array $exclude_files Array of IDs of files that need to be excluded (already attached to object etc)
- * @param array $attributes
- * @return string
- */
-function select_project_file($name, $project = null, $selected = null, $exclude_files = null, $attributes = null) {
-	if(is_null($project)) {
-		$project = active_project();
-	} // if
-	if(!($project instanceof Project)) {
-		throw new InvalidInstanceError('$project', $project, 'Project');
-	} // if
-
-	$all_options = array(option_tag(lang('none'), 0)); // array of options
-
-	$folders = $project->getFolders();
-	if(is_array($folders)) {
-		foreach($folders as $folder) {
-			$files = $folder->getFiles();
-			if(is_array($files)) {
-				$options = array();
-				foreach($files as $file) {
-					if(is_array($exclude_files) && in_array($file->getId(), $exclude_files)) continue;
-
-					$option_attrbutes = $file->getId() == $selected ? array('selected' => true) : null;
-					$options[] = option_tag($file->getFilename(), $file->getId(), $option_attrbutes);
-				} // if
-
-				if(count($options)) {
-					$all_options[] = option_tag('', 0); // separator
-					$all_options[] = option_group_tag($folder->getName(), $options);
-				} // if
-			} // if
-		} // foreach
-	} // if
-
-	$orphaned_files = $project->getOrphanedFiles();
-	if(is_array($orphaned_files)) {
-		$all_options[] = option_tag('', 0); // separator
-		foreach($orphaned_files as $file) {
-			if(is_array($exclude_files) && in_array($file->getId(), $exclude_files)) continue;
-
-			$option_attrbutes = $file->getId() == $selected ? array('selected' => true) : null;
-			$all_options[] = option_tag($file->getFilename(), $file->getId(), $option_attrbutes);
-		} // foreach
-	} // if
-
-	return select_box($name, $all_options, $attributes);
-} // select_project_file
 
 /**
  * Render select chart type box
@@ -782,85 +336,11 @@ function select_chart_type($name, $chart_types, $selected = null, $attributes = 
 	return select_box($name, $options, $attributes);
 } // select_company
 
-/**
- * Show button with javascript to add tag from combo to text box
- * $src source control name
- * $dest destination control name
- */
-function show_addtag_button($src,$dest, $attributes= null)
-{
-	$src='document.getElementById(\'' . $src .'\').value';
-	$dest='document.getElementById(\'' . $dest . '\').value';
-	$js='javascript:'.
-  		'if(' . $dest . '==\'\') '.
-  			' ' . $dest . ' = ' . $src . '; '. 
-  		' else '.
-	// check whether the tag es included, if it is, do not add it
-	// if (dest.substring(1+ dest.lastIndexOf(",",dest.indexOf(src)), dest.indexOf(",",1+dest.lastIndexOf(",",dest.indexOf(src)))).trim().replace(/^\s+|\s+$/g, '') == src)
-	//'if (!((' . $dest . ' + \',\').substring(1+ ' . $dest . '.lastIndexOf(",",' . $dest . '.indexOf(' . $src . ')), ' . $dest . '.indexOf(",",1+' . $dest . '.lastIndexOf(",",' . $dest . '.indexOf(' . $src . ')))).replace(/^\s+|\s+$/g, \'\') == ' . $src . '))' .
-  			' ' . $dest . ' = '.
-  				' ' . $dest . '  + ", " +(' . $src . ')';
-	$attributes['type']= 'button';
-	$attributes['onclick'] = $js;
-	return input_field('addTagButton','>',$attributes);
-	 
-}
-
-/**
- * Return project object tags widget
- *
- * @param string $name
- * @param Project $project
- * @param string $value
- * @Param array $attributes Array of control attributes
- * @return string
- */
-function project_object_tags_widget($name, Project $project, $value, $attributes) {
-	return text_field($name, $value, $attributes) . '<br /><span class="desc">' . lang('tags widget description') . '</span>';
-} // project_object_tag_widget
-
-
-/**
- * Render comma separated tags of specific object that link on project tag page
- *
- * @param ProjectDataObject $object
- * @param Project $project
- * @return string
- */
-function project_object_tags2(ApplicationDataObject $object) {
-	$tag_names = $object->getTagNames();
-	if(!is_array($tag_names) || !count($tag_names)) return '--';
-
-	$links = array();
-	foreach($tag_names as $tag_name) {
-		$links[] = '<a href="#" class="ico-tag coViewAction" onclick="Ext.getCmp(\'tag-panel\').select(\'' . clean($tag_name) . '\')">' . clean($tag_name) . '</a>';
-	} // foreach
-	return implode('<br/>', $links);
-} // project_object_tags
-
-
-/**
- * Render comma separated tags of specific object that link on project tag page
- *
- * @param ProjectDataObject $object
- * @param Project $project
- * @return string
- */
-function project_object_tags(ApplicationDataObject $object) {
-	$tag_names = $object->getTagNames();
-	if(!is_array($tag_names) || !count($tag_names)) return '--';
-
-	$links = array();
-	foreach($tag_names as $tag_name) {
-		$links[] = '<a href="#" onclick="Ext.getCmp(\'tag-panel\').select(\'' . clean($tag_name) . '\')">' . clean($tag_name) . '</a>';
-	} // foreach
-	return implode(', ', $links);
-} // project_object_tags
 
 /**
  * Render Latest Activity
  *
- * @param ProjectDataObject $object
+ * @param ContentDataObject $object
  * @return null
  */
 function render_object_latest_activity($object) {
@@ -875,16 +355,16 @@ function render_object_latest_activity($object) {
 /**
  * Show object comments block
  *
- * @param ProjectDataObject $object Show comments of this object
+ * @param ContentDataObject $object Show comments of this object
  * @return null
  */
-function render_object_comments(ProjectDataObject $object) {
-	if(!$object->isCommentable() || !$object->canReadComments(logged_user())) return '';
+function render_object_comments(ContentDataObject $object) {
+	if(!$object->isCommentable()) return '';
 	tpl_assign('__comments_object', $object);
 	return tpl_fetch(get_template_path('object_comments', 'comment'));
 } // render_object_comments
 
-function render_object_comments_for_print(ProjectDataObject $object) {
+function render_object_comments_for_print(ContentDataObject $object) {
 	if(!$object->isCommentable()) return '';
 	tpl_assign('__comments_object', $object);
 	return tpl_fetch(get_template_path('object_comments_for_print', 'comment'));
@@ -893,7 +373,7 @@ function render_object_comments_for_print(ProjectDataObject $object) {
 /**
  * Show object custom properties block
  *
- * @param ProjectDataObject $object Show custom properties of this object
+ * @param ContentDataObject $object Show custom properties of this object
  * @return null
  */
 function render_object_custom_properties($object, $type, $required, $co_type=null) {
@@ -907,23 +387,23 @@ function render_object_custom_properties($object, $type, $required, $co_type=nul
 /**
  * Show object timeslots block
  *
- * @param ProjectDataObject $object Show timeslots of this object
+ * @param ContentDataObject $object Show timeslots of this object
  * @return null
  */
-function render_object_timeslots(ProjectDataObject $object) {
+function render_object_timeslots(ContentDataObject $object) {
 	if(!$object->allowsTimeslots()) return '';
 	tpl_assign('__timeslots_object', $object);
 	return tpl_fetch(get_template_path('object_timeslots', 'timeslot'));
-} // render_object_comments
+}
 
 /**
  * Render post comment form for specific project object
  *
- * @param ProjectDataObject $object
+ * @param ContentDataObject $object
  * @param string $redirect_to
  * @return string
  */
-function render_comment_form(ProjectDataObject $object) {
+function render_comment_form(ContentDataObject $object) {
 	$comment = new Comment();
 
 	tpl_assign('comment_form_comment', $comment);
@@ -934,10 +414,10 @@ function render_comment_form(ProjectDataObject $object) {
 /**
  * Render timeslot form for specific project object
  *
- * @param ProjectDataObject $object
+ * @param ContentDataObject $object
  * @return string
  */
-function render_timeslot_form(ProjectDataObject $object) {
+function render_timeslot_form(ContentDataObject $object) {
 	$timeslot = new Timeslot();
 	tpl_assign('timeslot_form_timeslot', $timeslot);
 	tpl_assign('timeslot_form_object', $object);
@@ -947,10 +427,10 @@ function render_timeslot_form(ProjectDataObject $object) {
 /**
  * Render open timeslot form for specific project object
  *
- * @param ProjectDataObject $object
+ * @param ContentDataObject $object
  * @return string
  */
-function render_open_timeslot_form(ProjectDataObject $object, Timeslot $timeslot) {
+function render_open_timeslot_form(ContentDataObject $object, Timeslot $timeslot) {
 	tpl_assign('timeslot_form_timeslot', $timeslot);
 	tpl_assign('timeslot_form_object', $object);
 	return tpl_fetch(get_template_path('post_open_timeslot_form', 'timeslot'));
@@ -986,11 +466,11 @@ function render_linked_objects($prefix = 'linked_objects', $max_controls = 5) {
 /**
  * List all fields attached to specific object
  *
- * @param ProjectDataObject $object
+ * @param ContentDataObject $object
  * @param boolean $can_remove Logged user can remove linked objects
  * @return string
  */
-function render_object_links(ApplicationDataObject $object, $can_remove = false, $shortDisplay = false, $enableAdding=true) {
+function render_object_links(ContentDataObject $object, $can_remove = false, $shortDisplay = false, $enableAdding=true) {
 	tpl_assign('linked_objects_object', $object);
 	tpl_assign('shortDisplay', $shortDisplay);
 	tpl_assign('enableAdding', $enableAdding);
@@ -1001,11 +481,11 @@ function render_object_links(ApplicationDataObject $object, $can_remove = false,
 /**
  * List all fields attached to specific object, and renders them in the main view
  *
- * @param ProjectDataObject $object
+ * @param ContentDataObject $object
  * @param boolean $can_remove Logged user can remove linked objects
  * @return string
  */
-function render_object_links_main(ApplicationDataObject $object, $can_remove = false, $shortDisplay = false, $enableAdding=true) {
+function render_object_links_main(ContentDataObject $object, $can_remove = false, $shortDisplay = false, $enableAdding=true) {
 	tpl_assign('linked_objects_object', $object);
 	tpl_assign('shortDisplay', $shortDisplay);
 	tpl_assign('enableAdding', $enableAdding);
@@ -1023,12 +503,12 @@ function render_object_link_form(ApplicationDataObject $object, $extra_objects =
 	return tpl_fetch(get_template_path('linked_objects', 'object'));
 } // render_object_link_form
 
-function render_object_subscribers(ProjectDataObject $object) {
+function render_object_subscribers(ContentDataObject $object) {
 	tpl_assign('object', $object);
 	return tpl_fetch(get_template_path('list_subscribers', 'object'));
 }
 
-function render_add_subscribers(ProjectDataObject $object, $genid = null, $subscribers = null, $workspaces = null) {
+function render_add_subscribers(ContentDataObject $object, $genid = null, $subscribers = null, $context = null) {
 	if (!isset($genid)) {
 		$genid = gen_id();
 	}
@@ -1046,64 +526,27 @@ function render_add_subscribers(ProjectDataObject $object, $genid = null, $subsc
 			}
 		}
 	}
-	if (!isset($workspaces)) {
+	if (!isset($context)) {
 		if ($object->isNew()) {
-			$workspaces = array(active_or_personal_project());
+			$context = active_context();
 		} else {
-			$workspaces = $object->getWorkspaces();
+			$context = $object->getMemberIds();
 		}
 	}
 	tpl_assign('type', get_class($object->manager()));
-	tpl_assign('workspaces', $workspaces);
+	tpl_assign('context', $context);
+	tpl_assign('object_type_id', $object->manager()->getObjectTypeId());
 	tpl_assign('subscriberIds', $subscriberIds);
 	tpl_assign('genid', $genid);
 	return tpl_fetch(get_template_path('add_subscribers', 'object'));
 }
-/**
- * Renders a list of users to add as subscribers, used to add subscribers from the objects view.
- * @param $object
- * @param $genid
- * @param $subscribers
- * @param $workspaces
- * @return html text
- */
-function render_add_subscribers_select(ProjectDataObject $object, $genid = null, $subscribers = null, $workspaces = null) {
-	if (!isset($genid)) {
-		$genid = gen_id();
-	}
-	$subscriberIds = array();
-	if (is_array($subscribers)) {
-		foreach ($subscribers as $u) {
-			$subscriberIds[] = $u->getId();
-		}
-	} else {
-		if ($object->isNew()) {
-			$subscriberIds[] = logged_user()->getId();
-		} else {
-			foreach ($object->getSubscribers() as $u) {
-				$subscriberIds[] = $u->getId();
-			}
-		}
-	}
-	if (!isset($workspaces)) {
-		if ($object->isNew()) {
-			$workspaces = array(active_or_personal_project());
-		} else {
-			$workspaces = $object->getWorkspaces();
-		}
-	}
-	tpl_assign('type', get_class($object->manager()));
-	tpl_assign('workspaces', $workspaces);
-	tpl_assign('subscriberIds', $subscriberIds);
-	tpl_assign('genid', $genid);
-	return tpl_fetch(get_template_path('add_subscribers_list', 'object'));
-}
+
 
 /**
  * Creates a button that shows an object picker to link the object given by $object with the one selected in
  * the it.
  *
- * @param ProjectDataObject $object
+ * @param ContentDataObject $object
  */
 function render_link_to_object($object, $text=null, $reload=false){
 	require_javascript("og/ObjectPicker.js");
@@ -1118,11 +561,11 @@ function render_link_to_object($object, $text=null, $reload=false){
 				'var objects = \'\';' .
 				'for (var i=0; i < data.length; i++) {' .
 					'if (objects != \'\') objects += \',\';' .
-					'objects += data[i].data.manager + \':\' + data[i].data.object_id;' .
+					'objects += data[i].data.object_id;' .
 				'}' .
 				' og.openLink(\'' . get_url("object", "link_object") .
-						'&object_id=' . $id . '&manager=' . $manager. $reload_param . '&objects=\' + objects' . 
-						($reload ? ',{callback: function(){og.redrawLinkedObjects('. $object->getId() .', \''. get_class($object->manager()) .'\')}}' : '') . ');' .
+						'&object_id=' . $id . $reload_param . '&objects=\' + objects' . 
+						($reload ? ',{callback: function(){og.redrawLinkedObjects('. $object->getId() .')}}' : '') . ');' .
 			'}' .
 		'})" id="object_linker">';
 	$result .= $text;
@@ -1130,20 +573,6 @@ function render_link_to_object($object, $text=null, $reload=false){
 	return $result;
 }
 
-function render_link_to_object_2($object, $text=null){
-	require_javascript("og/ObjectPicker.js");
-	
-	$id = $object->getId();
-	$manager = get_class($object->manager());
-	if($text==null)
-	$text=lang('link object');
-	$result = '';
-	$result .= '<a href="#" onclick="og.ObjectPicker.show(function (data){ if(data) og.openLink(\''
-	. get_url('object','link_object') . '&object_id=' . $id . '&manager=' . $manager . '&rel_object_id=\'+data[0].data.object_id + \'&rel_manager=\' + data[0].data.manager);})">';
-	$result .=  $text;
-	$result .= '</a>';
-	return $result;
-}
 
 /**
  * Creates a button that shows an object picker to link an object with an object which has not been created yet
@@ -1180,27 +609,6 @@ function render_application_logs($log_entries, $options = null) {
 	tpl_assign('application_logs_show_project_column', array_var($options, 'show_project_column', true));
 	return tpl_fetch(get_template_path('render_application_logs', 'application'));
 } // render_application_logs
-
-/**
- * Render text that says when action was tacken and by who
- *
- * @param ApplicationLog $application_log_entry
- * @return string
- */
-function render_action_taken_on_by(ApplicationLog $application_log_entry) {
-	if($application_log_entry->isToday()) {
-		$result = '<span class="desc">' . lang('today') . ' ' . clean(format_time($application_log_entry->getCreatedOn()));
-	} elseif($application_log_entry->isYesterday()) {
-		//return '<span class="desc">' . lang('yesterday') . ' ' . clean(format_time($application_log_entry->getCreatedOn()));
-		$result = '<span class="desc">' . lang('yesterday');
-	} else {
-		$result = '<span class="desc">' . clean(format_date($application_log_entry->getCreatedOn()));
-	} // if
-	$result .= '</span>';
-
-	$taken_by = $application_log_entry->getTakenBy();
-	return $taken_by instanceof User ? $result . ', <a class="internalLink" href="' . $taken_by->getCardUrl() . '">' . clean($taken_by->getDisplayName()) . '</a>' : $result;
-} // render_action_taken_on
 
 
 /**
@@ -1346,44 +754,6 @@ function autocomplete_textarea_field($name, $value, $options, $max_options, $att
 }
 
 
-function autocomplete_tags_field($name, $value, $id = null, $tabindex = null) {
-	require_javascript("og/CSVCombo.js");
-	if (!isset($id)) $id = gen_id();
-	$attributes = array(
-		"class" => "long",
-		"id" => $id,
-		"autocomplete" => "off",
-		"onkeypress" => "if (event.keyCode == 13) return false;",
-	);
-	if ($tabindex != null) $attributes['tabindex'] = $tabindex;
-
-	if (trim($value) != "") $value .= ", ";
-	$html = '<div class="og-csvcombo-container">' . text_field($name, $value, $attributes) . '</div>
-		<script>
-		var tags = Ext.getCmp("tag-panel").getTags();
-		var arr = [];
-		for (var i=0; i < tags.length; i++) {
-			arr.push([tags[i].name, og.clean(tags[i].name)]);
-		}
-		new og.CSVCombo({
-			store: new Ext.data.SimpleStore({
-        		fields: ["value", "clean"],
-        		data: arr
-			}),
-			valueField: "value",
-        	displayField: "value",
-        	mode: "local",
-        	forceSelection: true,
-        	tpl: "<tpl for=\".\"><div class=\"x-combo-list-item\">{clean}</div></tpl>",
-        	emptyText: "",
-        	'. ($tabindex != null ? "tabIndex: $tabindex," : "") .'
-        	applyTo: "'.$id.'"
-    	});
-    	</script>
-	';
-	return $html;
-}
-
 function render_add_reminders($object, $context, $defaults = null, $genid = null) {
 	require_javascript('og/Reminders.js');
 	if(!is_array($defaults)) $defaults = array();
@@ -1446,10 +816,10 @@ function render_add_reminders($object, $context, $defaults = null, $genid = null
 /**
  * Renders a form to set an object's custom properties.
  *
- * @param ProjectDataObject $object
+ * @param ContentDataObject $object
  * @return string
  */
-function render_add_custom_properties(ProjectDataObject $object) {
+function render_add_custom_properties(ContentDataObject $object) {
 	$genid = gen_id();
 	$output = '
 		<div id="'.$genid.'" class="og-add-custom-properties">
@@ -1520,7 +890,7 @@ function render_add_custom_properties(ProjectDataObject $object) {
  * @return string
  */
 function render_custom_properties(ApplicationDataObject $object) {
-	//if(!$object->isCommentable()) return '';
+	if(!$object->isCommentable()) return '';
 	tpl_assign('__properties_object', $object);
 	return tpl_fetch(get_template_path('view', 'custom_properties'));
 }
@@ -1585,20 +955,13 @@ function select_object_type($name, $types, $selected = null, $attributes = null)
  * @return null
  */ 
 function filter_assigned_to_select_box($list_name, $project = null, $selected = null, $attributes = null) {
-	$logged_user = logged_user();
-	if ($project) {		
-		$project_ids = $project->getAllSubWorkspacesQuery(true,logged_user());
-	} else {
-		$project_ids = logged_user()->getWorkspacesQuery(true);
-	}
-	$grouped_users = Users::getGroupedByCompanyFromProjectIds($project_ids);
-
+	$grouped_users = Contacts::getGroupedByCompany();
 	$options = array(option_tag(lang('anyone'), '0:0'),option_tag(lang('unassigned'), '-1:-1', '-1:-1' == $selected ? array('selected' => 'selected') : null));
 	
 	if(is_array($grouped_users) && count($grouped_users)) {
 		foreach($grouped_users as $company_id => $users) {
-			$company = Companies::findById($company_id);
-			if(!($company instanceof Company)) {
+			$company = Contacts::findById($company_id);
+			if(!($company instanceof Contact)) {
 				continue;
 			} // if
 
@@ -1610,7 +973,7 @@ function filter_assigned_to_select_box($list_name, $project = null, $selected = 
 			if(is_array($users)) {
 				foreach($users as $user) {
 					$option_attributes = $company_id . ':' . $user->getId() == $selected ? array('selected' => 'selected') : null;
-					$options[] = option_tag($user->getDisplayName() . ' : ' . $company->getName() , $company_id . ':' . $user->getId(), $option_attributes);
+					$options[] = option_tag($user->getDisplayName() . ' : ' . $company->getObjectName() , $company_id . ':' . $user->getId(), $option_attributes);
 				} // foreach
 			} // if
 
@@ -1620,9 +983,6 @@ function filter_assigned_to_select_box($list_name, $project = null, $selected = 
 	return select_box($list_name, $options, $attributes);
 } // assign_to_select_box
 
-function render_initial_workspace_chooser($name, $value) {
-	return select_project2($name, "'$value'", gen_id(), true, array(array('id'=>'remember', 'name'=>lang('remember last'), 'color'=>'remember', 'parent'=>'root')));
-}
 
 /**
  * Renders context help in a view, only if description_key is a valid lang.
@@ -1634,7 +994,7 @@ function render_initial_workspace_chooser($name, $value) {
  * @param string $helpTemplate
  */
 function render_context_help($view, $description_key, $option_name = null, $helpTemplate = null) {
-	if ($view != null && $description_key != null && Localization::instance()->lang_exists($description_key)) {
+	/*FIXME to show context help if ($view != null && $description_key != null && Localization::instance()->lang_exists($description_key)) {
 		
 		if ($option_name != null) { 
 			tpl_assign('option_name' , $option_name);
@@ -1647,7 +1007,384 @@ function render_context_help($view, $description_key, $option_name = null, $help
 		}
 		
 		$view->includeTemplate(get_template_path('context_help', 'help'));
-	}
+	}*/
 }
 
-?>
+
+/**
+ * 
+ * @author Ignacio Vazquez - elpepe.uy@gmail.com
+ * @param unknown_type $content_object_type_id
+ * @param unknown_type $genid
+ * @param unknown_type $selected_members
+ * @param unknown_type $options
+ * @param unknown_type $skipped_dimensions
+ * @param unknown_type $simulate_required
+ */
+function ___render_dimension_trees($content_object_type_id, $genid = null, $selected_members = null, $options = array(), $skipped_dimensions = null, $simulate_required = null) { 
+		if (is_numeric($content_object_type_id)) {
+			if (is_null($genid)) $genid = gen_id();
+			
+			$all_dimensions = Dimensions::getAllowedDimensions($content_object_type_id); // Diemsions for this content type
+			
+			
+			
+			$user_dimensions  = get_user_dimensions_ids(); // User allowed dimensions
+			$dimensions = array() ;
+			foreach ($all_dimensions as $dimension){ // A kind of intersection...
+				if ( isset($user_dimensions[$dimension['dimension_id']] ) ){
+					$dimensions[] = $dimension ;
+				}
+			} 
+			if ($dimensions!= null) {
+				
+				if (is_null($selected_members) && array_var($options, 'select_current_context')) {
+					$context = active_context();
+					$selected_members = array();
+					foreach ($context as $selection) {
+						if ($selection instanceof Member) $selected_members[] = $selection->getId(); 
+					}
+				}
+				
+				$selected_members_json = json_encode($selected_members);
+				$component_id  = "$genid-member-chooser-panel-$content_object_type_id" ;
+				
+				if (isset($options['layout']) && in_array($options['layout'], array('horizontal', 'column'))) {
+					$layout = $options['layout'];
+				} else {
+					//$layout = count($dimensions) > 5 ? "horizontal" : "column";
+					$layout = "column";
+				}
+ 
+				foreach ($dimensions as $dimension) {
+					$dimension_id = $dimension['dimension_id'];
+					if (is_array($skipped_dimensions) && in_array($dimension_id, $skipped_dimensions)) continue;
+					
+					if ( is_array(array_var($options, 'allowedDimensions')) && array_search($dimension_id, $options['allowedDimensions']) === false ){
+						continue;	 
+					}
+
+					if (!$dimension['is_manageable']) continue;
+					
+					$is_required = $dimension['is_required'];				
+					$dimension_name = $dimension['dimension_name'] ;				
+					$dimension_code = $dimension['dimension_code'] ;				
+					if ($is_required) $dimension_name.= " *" ;
+					
+					if (is_array($simulate_required) && in_array($dimension_id, $simulate_required))
+						$is_required = true;
+					
+					if (!isset($id)) $id = gen_id();
+					echo "<input type='hidden' name='members[$dimension_code]' id = 'members-$dimension_code' />" ;
+					echo label_tag($dimension_name);
+					echo "<a href='#' class='mc-button' >Select Members</a>";
+					//	renderTo: 'members-".$dimension_code.",'
+					echo "<script>";
+					echo "var mc = new og.MemberChooser({
+						baseUrl: og.makeAjaxUrl(og.getUrl('dimension','initial_list_dimension_members_tree' )) ,
+						dimensionId: '$dimension_id',
+						objectTypeId: '$content_object_type_id'
+					});	";
+					echo "$('.mc-button').click(function(){mc.toggle($(this))});";
+					//	echo "mc.render()";
+					echo "</script>";
+					
+				}
+					
+ 
+				if (Plugins::instance()->isActivePlugin('core_dimensions')) {
+					$users_dim = Dimensions::findOne(array("conditions" => "`code` = 'feng_users'"));
+					$show_personal_member_warning = $users_dim instanceof Dimension && logged_user()->getPersonalMemberId() > 0;
+					if ($show_personal_member_warning) {
+						?><div class="contextualHelp"><?php echo lang('personal member warning')?></div><?php
+					}
+				}
+			}
+		}
+}
+/**
+ * 
+ * @author Ignacio Vazquez - elpepe.uy@gmail.com
+ * @param unknown_type $content_object_type_id
+ * @param unknown_type $genid
+ * @param unknown_type $selected_members
+ * @param unknown_type $options
+ * @param unknown_type $skipped_dimensions
+ * @param unknown_type $simulate_required
+ * 
+ */
+function render_dimension_trees($content_object_type_id, $genid = null, $selected_members = null, $options = array(), $skipped_dimensions = null, $simulate_required = null) { 
+		if (is_numeric($content_object_type_id)) {
+			if (is_null($genid)) $genid = gen_id();
+			$user_dimensions  = get_user_dimensions_ids(); // User allowed dimensions
+			$dimensions = array() ;
+			if ( $all_dimensions = Dimensions::getAllowedDimensions($content_object_type_id) ) { // Diemsions for this content type
+				foreach ($all_dimensions as $dimension){ // A kind of intersection...
+					if ( isset($user_dimensions[$dimension['dimension_id']] ) ){
+						$dimensions[] = $dimension ;
+					}
+				}
+			} 
+			if ($dimensions!= null && count($dimensions)) {
+				if (is_null($selected_members) && array_var($options, 'select_current_context')) {
+					$context = active_context();
+					$selected_members = array();
+					foreach ($context as $selection) {
+						if ($selection instanceof Member) $selected_members[] = $selection->getId(); 
+					}
+				}
+				
+				$selected_members_json = json_encode($selected_members);
+				$component_id  = "$genid-member-chooser-panel-$content_object_type_id" ;
+				
+				if (isset($options['layout']) && in_array($options['layout'], array('horizontal', 'column'))) {
+					$layout = $options['layout'];
+				} else {
+					//$layout = count($dimensions) > 5 ? "horizontal" : "column";
+					$layout = "column";
+				}
+				?>
+				 
+				<input id='<?php echo $genid; ?>members' name='members' type='hidden' ></input>
+				<div id='<?php echo $component_id ?>-container' class="member-chooser-container" ></div>
+				
+				<script>
+					var memberChooserPanel = new og.MemberChooserPanel({
+						renderTo: '<?php echo $component_id ?>-container',
+						id: '<?php echo $component_id ?>',
+						selectedMembers: <?php echo $selected_members_json?>,
+						layout: '<?php echo $layout; ?>'
+					}) ;
+					
+					<?php  
+					foreach ($dimensions as $dimension) : 
+						$dimension_id = $dimension['dimension_id'];
+						if (is_array($skipped_dimensions) && in_array($dimension_id, $skipped_dimensions)) continue;
+						
+						if ( is_array(array_var($options, 'allowedDimensions')) && array_search($dimension_id, $options['allowedDimensions']) === false ){
+							continue;	 
+						}
+
+						if (!$dimension['is_manageable']) continue;
+						
+						$is_required = $dimension['is_required'];				
+						$dimension_name = $dimension['dimension_name'] ;				
+						if ($is_required) $dimension_name.= " *" ;
+						
+						if (is_array($simulate_required) && in_array($dimension_id, $simulate_required))
+							$is_required = true;
+						
+						if (!isset($id)) $id = gen_id();
+					?>
+					var config = {
+							title: '<?php echo $dimension_name ?>',
+							dimensionId: <?php echo $dimension_id ?>,
+							objectTypeId: <?php echo $content_object_type_id ?>,
+							required: <?php echo $is_required ?>,
+							reloadDimensions: <?php echo json_encode( DimensionMemberAssociations::instance()->getDimensionsToReload($dimension_id) ) ; ?>,
+							isMultiple: <?php echo $dimension['is_multiple'] ?>,
+							selModel: <?php echo ($dimension['is_multiple'])?
+								'new Ext.tree.MultiSelectionModel()':
+								'new Ext.tree.DefaultSelectionModel()'?>
+													
+					};
+
+					
+					<?php if( isset ($options['allowedMemberTypes'])) : ?>
+						config.allowedMemberTypes = <?php  echo json_encode($options['allowedMemberTypes']) ?> ;
+					<?php endif; ?>
+					<?php if( isset ($options['collapsible'])) : ?>
+						config.collapsible = <?php  echo (int)$options['collapsible'] ?> ;
+					<?php endif; ?>
+					<?php if( isset ($options['collapsed'])) : ?>
+						config.collapsed = <?php  echo (int) $options['collapsed'] ?> ;
+					<?php endif; ?>
+
+					config.listeners = {
+						'tree rendered': function(tree) {
+							if (!tree.ownerCt.rendered_trees) tree.ownerCt.rendered_trees = 0;
+							tree.ownerCt.rendered_trees++;
+							if (tree.ownerCt.rendered_trees == tree.ownerCt.items.length) tree.ownerCt.fireEvent('all trees rendered', tree.ownerCt);
+						}
+					};
+
+					var tree = new og.MemberChooserTree ( config );
+					
+					memberChooserPanel.add(tree);
+					<?php endforeach; ?>
+					
+					memberChooserPanel.on('all trees rendered', function(panel) {
+						var trees_to_reload = [];
+						panel.items.each(function(item, index, length) {
+							var checked = item.getLastChecked();
+							if (checked != 0 && item.filterOnChange) trees_to_reload.push(item);
+						});
+						
+						if (trees_to_reload.length > 0) {
+							for (var i=0; i<trees_to_reload.length; i++) {
+								trees_to_reload[i].dont_update_form = true;
+								tree = trees_to_reload[i];
+								setTimeout(function() { tree.dont_update_form = false; }, 2500);
+							}
+							
+							for (var i=1; i<trees_to_reload.length; i++) {
+								var next = trees_to_reload[i];
+								trees_to_reload[i-1].on('all trees updated', function(){
+									next.fireEvent('checkchange', next.getNodeById(next.getLastChecked()), true);
+									next.expand();
+								});
+							}
+
+							var t = trees_to_reload[0];
+							t.fireEvent('checkchange', t.getNodeById(t.getLastChecked()), true);
+							t.expand();
+						}
+					}); 
+					
+					memberChooserPanel.doLayout();
+
+				</script>
+
+<?php 
+				if (Plugins::instance()->isActivePlugin('core_dimensions')) {
+					$users_dim = Dimensions::findOne(array("conditions" => "`code` = 'feng_users'"));
+					$show_personal_member_warning = $users_dim instanceof Dimension && logged_user()->getPersonalMemberId() > 0;
+					if ($show_personal_member_warning) {
+						?><div class="contextualHelp"><?php echo lang('personal member warning')?></div><?php
+					}
+				}
+			}
+		}
+}
+
+
+/**
+ * 
+ * Builds a tree based on generic node types 
+ * @param string $parentField	- Parent Field attribute
+ * @param string $childField	- Children list attribute
+ * @param string $idField		- Node Identificator
+ * @param string $textField 	- The field name to show 	
+ * @author Pepe <elpepe.uy@gmail.com>
+ */
+function buildTree ($nodeList , $parentField = "parent", $childField = "children", $idField = "id", $textField = "name", $checkedField = "_checked") {
+	$tree = array() ;
+	$inserted = array();
+	do {
+		$insertedCount = 0 ;		
+		foreach ($nodeList as $k => &$node) {
+			if ($textField) $node["text"] = $node[$textField] ;
+			$node['leaf'] = true ;			
+			if ($node['selectable']) $node[$checkedField] = false  ;
+			$parentId = $node[$parentField] ;
+			$id = $node[$idField];
+			if ( !isset($inserted[$id])){
+				if ($parentId == 0) {
+					$tree[] = &$node ; 		
+					$inserted[$id] = &$node ;
+					$insertedCount++;
+					unset ($nodeList[$k]);
+				}else{					
+					if (isset ($inserted[$parentId] )) {
+						$inserted[$parentId][$childField][] =  &$node ;
+						$inserted[$parentId]["leaf"] = false ;
+						//$inserted[$parentId]["expanded"] = true ;
+						$inserted[$id] = &$node ;
+						$insertedCount++;
+						unset ($nodeList[$k]);
+					}
+				}
+			}
+			 
+		} 
+	}	while ($insertedCount > 0 ) ;
+	return $tree  ;
+}
+
+
+
+
+	function render_single_dimension_tree($dimension, $genid = null, $selected_members = array(), $options = array()) {
+		if ($dimension instanceof Dimension) {
+			$dimension_info = array('dimension_id' => $dimension->getId(), 'dimension_name' => $dimension->getName(), 'is_multiple' => $dimension->getAllowsMultipleSelection());
+		} else {
+			$dimension_info = $dimension;
+		}
+		
+		$dimension_id  = $dimension_info['dimension_id'];
+		if (is_null($genid)) $genid = gen_id();
+		$selected_members_json = json_encode($selected_members);
+		$component_id = "$genid-member-chooser-panel-$dimension_id";
+		
+		?>
+		 
+		<input id='<?php echo $genid . array_var($options, 'pre_hf_id', '') ?>members' name='<?php echo array_var($options, 'pre_hf_id', '') ?>members' type='hidden' ></input>
+		<div id='<?php echo $component_id ?>-container' class="<?php echo array_var($options, 'pre_class', '')?>single-tree member-chooser-container" ></div>
+		
+		<script>
+			var memberChooserPanel = new og.MemberChooserPanel({
+				renderTo: '<?php echo $component_id ?>-container',
+				id: '<?php echo $component_id ?>',
+				selectedMembers: <?php echo $selected_members_json?>,
+				layout: 'column'
+			}) ;
+			
+			<?php			 
+				if ( is_array(array_var($options, 'allowedDimensions')) && array_search($dimension_id, $options['allowedDimensions']) === false ){
+					continue;	 
+				}					
+				$dimension_name = $dimension_info['dimension_name'];
+				if (!isset($id)) $id = gen_id();
+			?>
+			var config = {
+				id: '<?php echo $component_id ?>-tree',
+				title: '<?php echo $dimension_name ?>',
+				dimensionId: <?php echo $dimension_id ?>,
+				collapsed: <?php echo array_var($options, 'collapsed') ? 'true' : 'false'?>,
+				collapsible: <?php echo array_var($options, 'collapsible') ? 'true' : 'false'?>,
+				all_members: <?php echo array_var($options, 'all_members') ? 'true' : 'false'?>,
+				objectTypeId: '<?php echo array_var($options, 'object_type_id', 0) ?>',
+				isMultiple: '<?php echo array_var($dimension_info, 'is_multiple', 0) ?>',
+				selModel: <?php echo (array_var($dimension_info, 'is_multiple'))?
+					'new Ext.tree.MultiSelectionModel()':
+					'new Ext.tree.DefaultSelectionModel()'?>
+			};
+
+			<?php if( isset ($options['allowedMemberTypes'])) : ?>
+				config.allowedMemberTypes = <?php echo json_encode($options['allowedMemberTypes']) ?> ;
+			<?php endif; ?>
+
+			<?php if( isset ($options['checkBoxes']) && !$options['checkBoxes']) : ?>
+				config.checkBoxes = false ;
+			<?php endif; ?>
+
+			var tree = new og.MemberChooserTree ( config );
+			
+			memberChooserPanel.add(tree);
+			memberChooserPanel.doLayout();
+		</script>
+	
+<?php 
+	}
+
+
+/**
+ * 
+ * @author Ignacio Vazquez - elpepe.uy@gmail.com
+ * @param string  $str
+ * @param lenght $length
+ * @param end $end
+ */
+function wrap_text($str, $length = 20, $end='...'){
+	return  ( mb_strlen($str) > $length ) ? mb_strcut($str,0 ,$length - mb_strlen($end) ).$end : $str ;
+}
+
+/**
+ * 
+ * Renders members vinculations for the object
+ * @param ContentDataObject $object
+ */
+function render_co_view_member_path(ContentDataObject $object) {
+	tpl_assign('object', $object);
+	return tpl_fetch(get_template_path('member_path', 'co'));
+}

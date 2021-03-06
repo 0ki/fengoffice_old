@@ -14,10 +14,10 @@
     * @param ProjectDataObject $object
     * @return array
     */
-    static function getUnreadByObject(ApplicationDataObject $object, int $user_id) {
+    static function getUnreadByObject(ApplicationDataObject $object, int $contact_id) {
       return self::findAll(array(
-        'conditions' => array('(`rel_object_manager` = ? and `rel_object_id` = ?) and `user_id` = ? and is_read = 0', 
-        		get_class($object->manager()), $object->getObjectId(), $user_id),
+        'conditions' => array('(`rel_object_id` = ?) and `contact_id` = ? and is_read = 0', 
+        		$object->getObjectId(), $contact_id),
         'order' => '`created_on`'
       )); // findAll
     } // getUnreadByObject
@@ -25,13 +25,13 @@
     /**
     * Return all read objects ( ReadObjects) for specific object and user
     *
-    * @param ProjectDataObject $object
+    * @param ApplicationDataObject $object
     * @return array
     */
-    static function getReadByObject(ApplicationDataObject $object, int $user_id) {
+    static function getReadByObject(ApplicationDataObject $object, int $contact_id) {
       return self::findAll(array(
-        'conditions' => array('(`rel_object_manager` = ? and `rel_object_id` = ?) and `user_id` = ? and is_read = 1', 
-        		get_class($object->manager()), $object->getObjectId(), $user_id),
+        'conditions' => array('(`rel_object_id` = ?) and `contact_id` = ? and is_read = 1', 
+        		$object->getObjectId(), $contact_id),
         'order' => '`created_on`'
       )); // findAll
     } // getReadByObject
@@ -41,14 +41,12 @@
     /**
     * Return all read objects ( ReadObjects) for specific object and user
     *
-    * @param ProjectDataObject $object
     * @return array
     */
-    static function getReadByObjectList($object_id_list, $object_manager, $user_id) {
+    static function getReadByObjectList($object_id_list, $contact_id) {
     	$idsCSV = implode(',',$object_id_list);
       $rol = self::findAll(array(
-        'conditions' => array("`rel_object_manager` = ? and `rel_object_id` in ($idsCSV) and `user_id` = ? and is_read = 1", 
-        		$object_manager, $user_id)
+        'conditions' => array("`rel_object_id` in ($idsCSV) and `contact_id` = ? and is_read = 1", $contact_id)
       )); // findAll
       if (is_array($rol) && count($rol) > 0){
       	$result = array();
@@ -65,16 +63,14 @@
     * User has read object
     *
     * @param int $object_id
-    * @param int $user_id
+    * @param int $contact_id
     * @return bool
     */
-    static function userHasRead( $user_id, $object ) {
+    static function userHasRead( $contact_id, $object ) {
 	  $perm = self::findOne(array(
-        'conditions' => array('`user_id` = ? and `rel_object_id` = ? AND `rel_object_manager` = ?', $user_id, $object->getId(), get_class($object->manager()))
+        'conditions' => array('`contact_id` = ? and `rel_object_id` = ?', $contact_id, $object->getId())
       )); // findAll
       return $perm!=null && $perm->getIsRead();
     } //  userCanRead    
     
   } // clearRelationsByObject
-
-?>

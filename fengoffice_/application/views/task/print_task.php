@@ -78,13 +78,13 @@ if ($hasIncompleteSubtasks || $hasCompletedSubtasks) { ?>
 	if ($hasIncompleteSubtasks) {
 		$otArray = $task->getOpenSubTasks();
 		foreach ($otArray as $ot){
-			echo '<li>'. ($ot->getAssignedToUser() instanceof User? '<b>' . $ot->getAssignedToName() . ':&nbsp;</b>' : ''). $ot->getTitle() . '</li>';
+			echo '<li>'. ($ot->getAssignedToContact() instanceof Contact ? '<b>' . $ot->getAssignedToName() . ':&nbsp;</b>' : ''). $ot->getTitle() . '</li>';
 		} // foreach
 	} // if
 	if ($hasCompletedSubtasks) {
 		$otArray = $task->getCompletedSubTasks();
 		foreach ($otArray as $ot){
-			echo '<li style="text-decoration:line-through">'. ($ot->getAssignedToUser() instanceof User? '<b>' . $ot->getAssignedToName() . ':&nbsp;</b>' : ''). $ot->getTitle() . '</li>';
+			echo '<li style="text-decoration:line-through">'. ($ot->getAssignedToContact() instanceof Contact ? '<b>' . $ot->getAssignedToName() . ':&nbsp;</b>' : ''). $ot->getTitle() . '</li>';
 		} // foreach
 	} // if?>
 </ul>

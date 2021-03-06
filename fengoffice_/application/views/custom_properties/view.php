@@ -1,6 +1,6 @@
 <?php
 	$properties = $__properties_object->getCustomProperties();	
-	$cpvCount = CustomPropertyValues::getCustomPropertyValueCount($__properties_object->getId(), get_class($__properties_object->manager()));
+	$cpvCount = CustomPropertyValues::getCustomPropertyValueCount($__properties_object);
 	if ((!is_array($properties) || count($properties) == 0) && $cpvCount == 0) 
 		return "";
 ?>

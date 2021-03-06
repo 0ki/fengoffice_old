@@ -14,24 +14,25 @@ final class CompanyWebsite {
 	/**
 	 * Owner company
 	 *
-	 * @var Company
+	 * @var Contact
 	 */
 	private $company;
 
 	/**
 	 * Logged user
 	 *
-	 * @var User
+	 * @var Contact
 	 */
 	private $logged_user;
 
 	/**
-	 * Selected project
-	 *
-	 * @var Project
+	 * Enter description here ...
+	 * @var unknown_type
 	 */
-	private $selected_project;
-
+	private $context ;
+	
+	
+	
 	/**
 	 * Init company website environment
 	 *
@@ -44,7 +45,7 @@ final class CompanyWebsite {
 		if(isset($this) && ($this instanceof CompanyWebsite)) {
 			$this->initCompany();
 			$this->initLoggedUser();
-			$this->initActiveProject();
+			$this->initContext();
 		} else {
 			CompanyWebsite::instance()->init();
 		} // if
@@ -59,61 +60,24 @@ final class CompanyWebsite {
 	 * @throws Error
 	 */
 	private function initCompany() {
-		$company = Companies::getOwnerCompany();
-		if(!($company instanceof Company)) {
+		$company = Contacts::getOwnerCompany();
+		if(!($company instanceof Contact)) {
 			throw new OwnerCompanyDnxError();
 		} // if
 
-		// check the cache if available
-		$owner = null;
-		if (GlobalCache::isAvailable()) {
-			$owner = GlobalCache::get('owner_company_creator', $success);
-		}
-		if (!($owner instanceof User)) {
-			$owner = $company->getCreatedBy();
-			// Update cache if available
-			if ($owner instanceof User && GlobalCache::isAvailable()) {
-				GlobalCache::update('owner_company_creator', $owner);
-			}
-		}
-		if(!($owner instanceof User)) {
+		if(!($company->getCreatedBy() instanceof Contact)) {
 			throw new AdministratorDnxError();
 		} // if
 
 		$this->setCompany($company);
 	} // initCompany
 
-	/**
-	 * Init active project, if we have active_project $_GET var
-	 *
-	 * @access public
-	 * @param void
-	 * @return null
-	 * @throws Error
-	 */
-	private function initActiveProject() {
-		$project_id = array_var($_GET, 'active_project');
-		if (empty($project_id)) {
-			$this->setProject(null);
-		} else {
-			$user = logged_user();
-			if (!($user instanceof User)) return;
-			$do_find = true;
-			// check the cache for the option value
-			if (GlobalCache::isAvailable() && GlobalCache::key_exists('active_ws_'.$user->getId())) {					
-				$active_ws = GlobalCache::get('active_ws_'.$user->getId(), $success);							
-				if ($success && $active_ws != null) $do_find = ($active_ws->getId() != $project_id);				
-			}
-			if ($do_find) {
-				$project = Projects::findById($project_id);
-				if (GlobalCache::isAvailable()) {
-					GlobalCache::update('active_ws_'.$user->getId(), $project);
-				}
-			} else $project = $active_ws;
-			$this->setProject($project);
-		} // if
-	} // initActiveProject
-
+	private function initContext() {
+		$context_plain = array_var($_GET, 'context');
+		$context = build_context_array($context_plain);
+		$this->setContext($context) ;
+	} // initContext
+	
 	/**
 	 * This function will use session ID from session or cookie and if presend log user
 	 * with that ID. If not it will simply break.
@@ -128,35 +92,20 @@ final class CompanyWebsite {
 	private function initLoggedUser() {
 		$user_id       = Cookie::getValue('id');
 		$twisted_token = Cookie::getValue('token');
-		$cn = Cookie::getValue('cn');
 		$remember      = (boolean) Cookie::getValue('remember', false);
 
 		if(empty($user_id) || empty($twisted_token)) {
 			return false; // we don't have a user
 		} // if
 
-		// check the cache if available
-		$user = null;
-		if (GlobalCache::isAvailable()) {
-			$user = GlobalCache::get('logged_user_'.$user_id, $success);
-		}
-		if (!($user instanceof User)) {
-			$user = Users::findById($user_id);
-			// Update cache if available
-			if ($user instanceof User && GlobalCache::isAvailable()) {
-				GlobalCache::update('logged_user_'.$user->getId(), $user);
-			}
-		}
-		if(!($user instanceof User)) {
+		$user = Contacts::findById($user_id);
+		if(!($user instanceof Contact)) {
 			return false; // failed to find user
 		} // if
 		if(!$user->isValidToken($twisted_token)) {
 			return false; // failed to validate token
 		} // if
-		if(!($cn == md5(array_var($_SERVER, 'HTTP_USER_AGENT', "")))) {
-			return false; // failed to check user agent
-		} // if
-		
+
 		$last_act = $user->getLastActivity();
 		if ($last_act) {
 			$session_expires = $last_act->advance(SESSION_LIFETIME, false);
@@ -167,7 +116,7 @@ final class CompanyWebsite {
 			$this->logUserIn($user, $remember);
 		} // if
 		 
-		//$this->selected_project = $user->getPersonalProject();
+		
 	} // initLoggedUser
 
 	// ---------------------------------------------------
@@ -178,13 +127,13 @@ final class CompanyWebsite {
 	 * Log user in
 	 *
 	 * @access public
-	 * @param User $user
+	 * @param Contact $user
 	 * @param boolean $remember
 	 * @return null
 	 */
-	function logUserIn(User $user, $remember = false) {
-		$user->setLastLogin(DateTimeValueLib::now());
-
+	function logUserIn(Contact $user, $remember = false) {
+		$now = DateTimeValueLib::now() ;
+		$user->setLastLogin($now);
 		if(is_null($user->getLastActivity())) {
 			$user->setLastVisit(DateTimeValueLib::now());
 		} else {
@@ -230,7 +179,7 @@ final class CompanyWebsite {
 	 * @param Company $value
 	 * @return null
 	 */
-	function setCompany(Company $value) {
+	function setCompany(Contact $value) {
 		$this->company = $value;
 	} // setCompany
 
@@ -249,28 +198,21 @@ final class CompanyWebsite {
 	 * Set logged_user value
 	 *
 	 * @access public
-	 * @param User $value
+	 * @param Contact $value
 	 * @param boolean $remember Remember this user for 2 weeks (configurable)
 	 * @param DateTimeValue $set_last_activity_time Set last activity time. This property is turned off in case of feed
 	 *   login for instance
 	 * @return null
 	 * @throws DBQueryError
 	 */
-	function setLoggedUser(User $user, $remember = false, $set_last_activity_time = true, $set_cookies = true) {
+	function setLoggedUser(Contact $user, $remember = false, $set_last_activity_time = true, $set_cookies = true) {
 		if($set_last_activity_time) {
-			$last_activity_mod_timestamp = array_var($_SESSION, 'last_activity_mod_timestamp', null);
-			if (!$last_activity_mod_timestamp || $last_activity_mod_timestamp < time() - 60 * 10) {
-				
-				$user->setLastActivity(DateTimeValueLib::now());
-				
-				// Disable updating user info
-				$old_updated_on = $user->getUpdatedOn();
-				$user->setUpdatedOn(DateTimeValueLib::now()); 
-				$user->setUpdatedOn($old_updated_on);
-				
-				$user->save();
-				$_SESSION['last_activity_mod_timestamp'] = time();
-			}
+			$user->setLastActivity(DateTimeValueLib::now());
+			
+			//TODO check this
+			$user->setUpdatedOn(DateTimeValueLib::now()); 
+		
+			//$user->save(); // Because of performance 
 		} // if
 
 		if ($set_cookies) {
@@ -278,7 +220,7 @@ final class CompanyWebsite {
 	
 			Cookie::setValue('id', $user->getId(), $expiration);
 			Cookie::setValue('token', $user->getTwistedToken(), $expiration);
-			Cookie::setValue('cn', md5(array_var($_SERVER, 'HTTP_USER_AGENT', "")), $expiration);
+	
 			if($remember) {
 				Cookie::setValue('remember', 1, $expiration);
 			} else {
@@ -289,27 +231,6 @@ final class CompanyWebsite {
 		$this->logged_user = $user;
 	} // setLoggedUser
 
-	/**
-	 * Get project
-	 *
-	 * @access public
-	 * @param null
-	 * @return Project
-	 */
-	function getProject() {
-		return $this->selected_project;
-	} // getProject
-
-	/**
-	 * Set project value
-	 *
-	 * @access public
-	 * @param Project $value
-	 * @return null
-	 */
-	function setProject($value) {
-		if(is_null($value) || ($value instanceof Project)) $this->selected_project = $value;
-	} // setProject
 
 	/**
 	 * Return single CompanyWebsite instance
@@ -325,7 +246,14 @@ final class CompanyWebsite {
 		} // if
 		return $instance;
 	} // instance
+	
+	
+	function getContext() {
+		return $this->context ;		
+	}
+	
+	function setContext($context) {
+		$this->context = $context ;
+	}
 
 } // CompanyWebsite
-
-?>

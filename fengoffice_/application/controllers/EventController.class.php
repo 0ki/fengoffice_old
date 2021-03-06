@@ -49,7 +49,7 @@ class EventController extends ApplicationController {
 	*/
 	function index($view_type = null, $user_filter = null, $status_filter = null) {
 		//auth check in cal_query_get_eventlist		
-		if( (!(logged_user()->isAdministrator())) && ((active_project() && !(logged_user()->isProjectUser(active_project()))))){	    	
+		if( (!(logged_user()->isAdministrator())) /*&& ((active_project() && !(logged_user()->isProjectUser(active_project()))))*/){	    	
 			flash_error(lang('no access permissions'));
 			$this->redirectTo('dashboard');
 			return ;
@@ -62,9 +62,6 @@ class EventController extends ApplicationController {
 		if ($view_type == null)
 			$this->getUserPreferences($view_type, $user_filter, $status_filter);
 				  
-	    $tag = active_tag();
-		tpl_assign('tags',$tag);
-		
 		$this->setTemplate('calendar');
 		$this->setViewVariables($view_type, $user_filter, $status_filter);
 	}
@@ -74,12 +71,12 @@ class EventController extends ApplicationController {
 		// Invitations
 		$invitations = array_var($data, 'users_to_invite', array());
 		foreach ($invitations as $id => $assist) {
-			$conditions = array('event_id' => $event->getId(), 'user_id' => $id);
+			$conditions = array('event_id' => $event->getId(), 'contact_id' => $id);
 			//insert only if not exists 
 			if (EventInvitations::findById($conditions) == null) { 
 	            $invitation = new EventInvitation();
 	            $invitation->setEventId($event->getId());
-	            $invitation->setUserId($id);
+	            $invitation->setContactId($id);
 	            $invitation->setInvitationState($assist);
 	            $invitation->save();
 	            if (array_var($data, 'subscribe_invited', false) && is_array(array_var($_POST, 'subscribers'))) {
@@ -90,7 +87,7 @@ class EventController extends ApplicationController {
 		// Delete non checked invitations
 		$previuos_invitations = EventInvitations::findAll(array('conditions' => '`event_id` = ' . $event->getId()));
 		foreach ($previuos_invitations as $pinv) {
-			if (!array_key_exists($pinv->getUserId(), $invitations)) $pinv->delete();
+			if (!array_key_exists($pinv->getContactId(), $invitations)) $pinv->delete();
 		}
 	}
 	
@@ -110,12 +107,12 @@ class EventController extends ApplicationController {
 			flash_error('Missing parameters');
 			ajx_current("back");
 		} else {
-			$conditions = array('conditions' => "`event_id` = " . DB::escape($event_id) . " AND `user_id` = ". DB::escape($user_id));
+			$conditions = array('conditions' => "`event_id` = " . DB::escape($event_id) . " AND `contact_id` = ". DB::escape($user_id));
 			$inv = EventInvitations::findOne($conditions);
 			$conditions_all = array('conditions' => "`event_id` = " . DB::escape($event_id));
 			$invs = EventInvitations::findAll($conditions_all);			
 			if ($inv != null) {
-				if ($inv->getUserId() != logged_user()->getId()) {
+				if ($inv->getContactId() != logged_user()->getId()) {
 					flash_error(lang('no access permissions'));					
 					self::view_calendar();
 					return;
@@ -136,7 +133,7 @@ class EventController extends ApplicationController {
 				// Notify creator (only when invitation is accepted or declined)
 				if ($inv->getInvitationState() == 1 || $inv->getInvitationState() == 2) {
 					$event = ProjectEvents::findById(array('id' => $event_id));
-					$user = Users::findById(array('id' => $user_id));
+					$user = Contacts::findById(array('id' => $user_id));
 					session_commit();
 					Notifier::notifEventAssistance($event, $inv, $user, $invs);
 					if ($inv->getInvitationState() == 1) flash_success(lang('invitation accepted'));
@@ -243,7 +240,6 @@ class EventController extends ApplicationController {
 						'wnum' => array_var($event_data, 'repeat_wnum'),
 						'mjump' => array_var($event_data, 'repeat_mjump'),
 					);
-					//if(array_var($event_data, 'cal_holiday_lastweek')) $repeat_h = 2;
 					break;
 			}
 			$repeat_number = $rnum;
@@ -279,7 +275,7 @@ class EventController extends ApplicationController {
 			$data['repeat_forever'] = $forever;
 			$data['repeat_end'] =  $oend;
 			$data['start'] = $timestamp;
-			$data['subject'] =  array_var($event_data,'subject');
+			$data['name'] =  array_var($event_data,'name');
 			$data['description'] =  array_var($event_data,'description');
 			$data['type_id'] = $typeofevent;
 			$data['duration'] = $durationstamp;
@@ -314,16 +310,20 @@ class EventController extends ApplicationController {
 			ajx_current("empty");
 			return;
 		}
-		if(! (ProjectEvent::canAdd(logged_user(), active_or_personal_project()))){	    	
-			flash_error(lang('no access permissions'));
+		
+		if(!(ProjectEvent::canAdd(logged_user(), active_context()))){	    	
+			flash_error(lang('no context permissions to add',lang("events")));
 			ajx_current("empty");
 			return ;
 	    }
+	    
 	    $this->setTemplate('event');
 		$event = new ProjectEvent();		
 		$event_data = array_var($_POST, 'event');
-		$event_subject = array_var($_GET, 'subject'); //if sent from pupup
+				
+		$event_name = array_var($_GET, 'name'); //if sent from pupup
 		
+		//var_dump($event_data) ;
 		$month = isset($_GET['month'])?$_GET['month']:date('n', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600);
 		$day = isset($_GET['day'])?$_GET['day']:date('j', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600);
 		$year = isset($_GET['year'])?$_GET['year']:date('Y', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600);
@@ -351,7 +351,7 @@ class EventController extends ApplicationController {
 				'minute' => $minute,
 				'pm' => (isset($pm) ? $pm : 0),
 				'typeofevent' => isset($_GET['type_id']) ? $_GET['type_id'] : 1,
-				'subject' => $event_subject,
+				'name' => $event_name,
 				'durationhour' => isset($_GET['durationhour']) ? $_GET['durationhour'] : 1,
 				'durationmin' => isset($_GET['durationmin']) ? $_GET['durationmin'] : 0,
 			); // array
@@ -359,21 +359,18 @@ class EventController extends ApplicationController {
 		
 		tpl_assign('event', $event);
 		tpl_assign('event_data', $event_data);
-		tpl_assign('active_projects', logged_user()->getActiveProjects());
-
+		
 		if (is_array(array_var($_POST, 'event'))) {
 			try {
 				$data = $this->getData($event_data);
 				
 			    $event->setFromAttributes($data);
 
-			    if(!logged_user()->isMemberOfOwnerCompany()) $event->setIsPrivate(false);  
-		
 			    DB::beginWork();
 	          	$event->save();
-	          	$event->setTagsFromCSV(array_var($event_data, 'tags'));   
-	            
+	          	
 	            $this->registerInvitations($data, $event);
+			    
 	            if (isset($data['confirmAttendance'])) {
 	            	$this->change_invitation_state($data['confirmAttendance'], $event->getId(), $user_filter);
 	            }
@@ -382,21 +379,19 @@ class EventController extends ApplicationController {
 					$users_to_inv = array();
             		foreach ($data['users_to_invite'] as $us => $v) {
             			if ($us != logged_user()->getId()) {
-            				$users_to_inv[] = Users::findById(array('id' => $us));
+            				$users_to_inv[] = Contacts::findById(array('id' => $us));
             			}
             		}
             		Notifier::notifEvent($event, $users_to_inv, 'new', logged_user());
 		        }
 		        
-		        if (array_var($_POST, 'popup', false)) {
-		        	$_POST['ws_ids'] = active_or_personal_project()->getId();
-		        }
+		        $member_ids = json_decode(array_var($_POST, 'members'));
 		        
 			    $object_controller = new ObjectController();
-			    $object_controller->add_to_workspaces($event);
+			    $object_controller->add_to_members($event, $member_ids);
+			    $object_controller->add_subscribers($event);
 			    $object_controller->link_to_new_object($event);
-				$object_controller->add_subscribers($event);
-				$object_controller->add_custom_properties($event);
+			    $object_controller->add_custom_properties($event);
 				$object_controller->add_reminders($event);
 				
 				if (array_var($_POST, 'popup', false)) {
@@ -415,8 +410,8 @@ class EventController extends ApplicationController {
 					}
 					$reminder->save();
 				}
-				
-				ApplicationLogs::createLog($event, $event->getWorkspaces(), ApplicationLogs::ACTION_ADD);
+
+				ApplicationLogs::createLog($event, ApplicationLogs::ACTION_ADD);
 				
 				if (array_var($_POST, 'popup', false)) {
 	          		$event->subscribeUser(logged_user());
@@ -470,27 +465,25 @@ class EventController extends ApplicationController {
 	    $this->getUserPreferences($view_type, $user_filter, $status_filter);
 		$this->setTemplate($view_type);
 		
-		$tag = active_tag();
-		tpl_assign('tags',$tag);
 		try {
 			foreach ($events as $event) {
 				$notifications = array();
 				$invs = EventInvitations::findAll(array ('conditions' => 'event_id = ' . $event->getId()));
 				if (is_array($invs)) {
 					foreach ($invs as $inv) {
-						if ($inv->getUserId() != logged_user()->getId()) 
-							$notifications[] = Users::findById(array('id' => $inv->getUserId()));
+						if ($inv->getContactId() != logged_user()->getId()) 
+							$notifications[] = Contacts::findById(array('id' => $inv->getContactId()));
 					}
 				} else {
-					if ($invs->getUserId() != logged_user()->getId()) 
-						$notifications[] = Users::findById(array('id' => $invs->getUserId()));
+					if ($invs->getContactId() != logged_user()->getId()) 
+						$notifications[] = Contacts::findById(array('id' => $invs->getContactId()));
 				}
 				Notifier::notifEvent($event, $notifications, 'deleted', logged_user());
 				
 				DB::beginWork();
 				// delete event
 				$event->trash();
-				ApplicationLogs::createLog($event, $event->getWorkspaces(), ApplicationLogs::ACTION_TRASH);
+				ApplicationLogs::createLog($event, ApplicationLogs::ACTION_TRASH);
 				DB::commit();
 			}
 			flash_success(lang('success delete event', ''));
@@ -499,7 +492,6 @@ class EventController extends ApplicationController {
 			          	
 		} catch(Exception $e) {
 			DB::rollback();
-			//Logger::log($e->getTraceAsString());
 			flash_error(lang('error delete event'));
 			ajx_current("empty");
 		} // try
@@ -516,7 +508,6 @@ class EventController extends ApplicationController {
 		if ($event != null) {
 		    if(!$event->canDelete(logged_user())){	    	
 				flash_error(lang('no access permissions'));
-				//$this->redirectTo('event');
 				ajx_current("empty");
 				return ;
 		    }
@@ -538,14 +529,12 @@ class EventController extends ApplicationController {
 	    $this->getUserPreferences($view_type, $user_filter, $status_filter);
 		$this->setTemplate($view_type);
 		
-		$tag = active_tag();
-		tpl_assign('tags',$tag);
 		try {
 			$succ = 0;
 			foreach ($events as $event) {
 				DB::beginWork();
 				$event->archive();
-				ApplicationLogs::createLog($event, $event->getWorkspaces(), ApplicationLogs::ACTION_ARCHIVE);
+				ApplicationLogs::createLog($event, ApplicationLogs::ACTION_ARCHIVE);
 				DB::commit();
 				$succ++;
 			}
@@ -555,15 +544,13 @@ class EventController extends ApplicationController {
 			          	
 		} catch(Exception $e) {
 			DB::rollback();
-			//Logger::log($e->getTraceAsString());
 			flash_error(lang('error archive objects'));
 			ajx_current("empty");
 		} // try
 	}
 	
 	function viewdate($view_type = null, $user_filter = null, $status_filter = null){
-		$tag = active_tag();
-		tpl_assign('tags',$tag);	
+			
 		tpl_assign('cal_action','viewdate');
 		ajx_set_no_toolbar(true);
 		
@@ -577,8 +564,6 @@ class EventController extends ApplicationController {
 	}
 	
 	function viewweek($view_type = null, $user_filter = null, $status_filter = null){
-		$tag = active_tag();
-		tpl_assign('tags',$tag);	
 		tpl_assign('cal_action','viewdate');
 		ajx_set_no_toolbar(true);
 		
@@ -592,8 +577,6 @@ class EventController extends ApplicationController {
 	}
 	
 	function viewweek5days($view_type = null, $user_filter = null, $status_filter = null){
-		$tag = active_tag();
-		tpl_assign('tags',$tag);	
 		tpl_assign('cal_action','viewdate');
 		ajx_set_no_toolbar(true);
 		
@@ -613,17 +596,17 @@ class EventController extends ApplicationController {
 	}
 	
 	function setViewVariables($view_type, $user_filter, $status_filter) {
-		//Get Users Info
-		if (logged_user()->isMemberOfOwnerCompany())
-			$users = Users::getAll();
-		else $users = logged_user()->getCompany()->getUsers();
+		//FIXME
+		//if (logged_user()->isMemberOfOwnerCompany())
+			$users = Contacts::getAllUsers();
+		//else $users = logged_user()->getCompany()->getContacts();
 		
 		//Get Companies Info
-		if (logged_user()->isMemberOfOwnerCompany())
-			$companies = Companies::getCompaniesWithUsers();
-		else $companies = array(logged_user()->getCompany());
+		//if (logged_user()->isMemberOfOwnerCompany())
+			$companies = Contacts::findAll(array("conditions" => "is_company = 1"));
+		//else $companies = array(logged_user()->getCompany());
 		
-		$usr = Users::findById($user_filter);
+		$usr = Contacts::findById($user_filter);
 		$user_filter_comp = $usr != null ? $usr->getCompanyId() : 0;
 		
 		tpl_assign('users', $users);
@@ -669,7 +652,7 @@ class EventController extends ApplicationController {
 	}
 	
 	
-	function viewevent(){
+	function view(){
 		//check auth
 		$this->addHelper('textile');
 		ajx_set_no_toolbar(true);
@@ -683,16 +666,13 @@ class EventController extends ApplicationController {
 
 		 	//read object for this user
 			$event->setIsRead(logged_user()->getId(), true);
-			$this->setTemplate('viewevent');
-			$tag = active_tag();
-			tpl_assign('tags',$tag);	
-			tpl_assign('event',$event);
-			tpl_assign('cal_action','viewevent');	
-			tpl_assign('view', array_var($_GET, 'view','month'));	
-			tpl_assign('active_projects',logged_user()->getActiveProjects());
+			
+			tpl_assign('event', $event);
+			tpl_assign('cal_action', 'view');	
+			tpl_assign('view', array_var($_GET, 'view', 'month'));	
 			ajx_extra_data(array("title" => $event->getSubject(), 'icon'=>'ico-calendar'));
 			
-			ApplicationReadLogs::createLog($event, $event->getWorkspaces(), ApplicationReadLogs::ACTION_READ);
+			ApplicationReadLogs::createLog($event, ApplicationReadLogs::ACTION_READ);
 	    } else {
 	    	flash_error(lang('event dnx'));
 			ajx_current("empty");
@@ -717,7 +697,7 @@ class EventController extends ApplicationController {
 		
 		$user_filter = isset($_GET['user_id']) ? $_GET['user_id'] : logged_user()->getId();
 		
-		$inv = EventInvitations::findById(array('event_id' => $event->getId(), 'user_id' => $user_filter));
+		$inv = EventInvitations::findById(array('event_id' => $event->getId(), 'contact_id' => $user_filter));
 		if ($inv != null) {
 			$event->addInvitation($inv);
 		}
@@ -728,14 +708,12 @@ class EventController extends ApplicationController {
 			return ;
 	    }
 	    
-		tpl_assign('active_projects',logged_user()->getActiveProjects());
-	    
 		$event_data = array_var($_POST, 'event');
 		if(!is_array($event_data)) {
-			$tag_names = $event->getTagNames();
+			
 			$setlastweek = false;
-			$rsel1=false;$rsel2=false; $rsel3=false;
-			$forever= $event->getRepeatForever();
+			$rsel1 = false;$rsel2=false; $rsel3=false;
+			$forever = $event->getRepeatForever();
 			$occ = 1;
 			if($event->getRepeatD() > 0){ $occ = 2; $rjump = $event->getRepeatD();}
 			if($event->getRepeatD() > 0 AND $event->getRepeatD()%7==0){ $occ = 3; $rjump = $event->getRepeatD()/7;}
@@ -743,7 +721,7 @@ class EventController extends ApplicationController {
 			if($event->getRepeatY() > 0){ $occ = 5; $rjump = $event->getRepeatY();}
 			if($event->getRepeatH() > 0){ $occ = 6;}
 			if($event->getRepeatH() == 2){ $setlastweek = true;}
-			if($event->getRepeatEnd()) { $rend = $event->getRepeatEnd();	}
+			if($event->getRepeatEnd()) { $rend = $event->getRepeatEnd();}
 			if($event->getRepeatNum() > 0) $rnum = $event->getRepeatNum();
 			if(!isset($rjump) || !is_numeric($rjump)) $rjump = 1;
 			// decide which repeat type it is
@@ -765,10 +743,9 @@ class EventController extends ApplicationController {
 			}
 				
 			$event_data = array(
-	          'subject' => $event->getSubject(),
 	          'description' => $event->getDescription(),
-	          'name' => $event->getCreatedById(),
-	          'username' => $event->getCreatedById(),
+	          'name' => $event->getObjectName(),
+	          'username' => $event->getCreatedByDisplayName(),
 	          'typeofevent' => $event->getTypeId(),
 	          'forever' => $event->getRepeatForever(),
 	          'usetimeandduration' => ($event->getTypeId())==3?0:1,
@@ -791,7 +768,6 @@ class EventController extends ApplicationController {
 			  'durationhour' => ($durtime / 3600) % 24,
 			  'durday' => floor($durtime / 86400),
 			  'pm' => isset($pm) ? $pm : 0,
-	          'tags' => is_array($tag_names) ? implode(', ', $tag_names) : '',
 			  'repeat_dow' => $event->getRepeatDow(),
 			  'repeat_wnum' => $event->getRepeatWnum(),
 			  'repeat_mjump' => $event->getRepeatMjump(),
@@ -803,7 +779,8 @@ class EventController extends ApplicationController {
 
 		if(is_array(array_var($_POST, 'event'))) {
 			
-			//	MANAGE CONCURRENCE WHILE EDITING			
+			//	MANAGE CONCURRENCE WHILE EDITING
+			/* FIXME or REMOVEME
 			$upd = array_var($_POST, 'updatedon');
 			if ($upd && $event->getUpdatedOn()->getTimestamp() > $upd && !array_var($_POST,'merge-changes') == 'true')
 			{
@@ -818,13 +795,14 @@ class EventController extends ApplicationController {
 			{					
 				$this->setTemplate('view_event');
 				$editedEvent = ProjectEvents::findById($event->getId());
-				$this->viewevent();
+				$this->view();
 				ajx_set_panel(lang ('tab name',array('name'=>$editedEvent->getTitle())));
 				ajx_extra_data(array("title" => $editedEvent->getTitle(), 'icon'=>'ico-event'));
 				ajx_set_no_toolbar(true);
 				ajx_set_panel(lang ('tab name',array('name'=>$editedEvent->getTitle())));
 				return;
 			}
+			*/
 			
 			try {
 				$data = $this->getData($event_data);
@@ -840,28 +818,28 @@ class EventController extends ApplicationController {
 					$users_to_inv = array();
             		foreach ($data['users_to_invite'] as $us => $v) {
             			if ($us != logged_user()->getId()) {
-            				$users_to_inv[] = Users::findById(array('id' => $us));
+            				$users_to_inv[] = Contacts::findById(array('id' => $us));
             			}
             		}
             		Notifier::notifEvent($event, $users_to_inv, 'modified', logged_user());
 	            }
 				    
-			    if(!logged_user()->isMemberOfOwnerCompany()) $event->setIsPrivate(false);  				
-	          
-	          	DB::beginWork();
+			    DB::beginWork();
 	         	$event->save();
-	         	$event->setTagsFromCSV(array_var($event_data, 'tags')); 
-			 	
-			 	$object_controller = new ObjectController();
-			 	$object_controller->add_to_workspaces($event);
+	         	
+			 	$member_ids = json_decode(array_var($_POST, 'members'));
+		        
+			    $object_controller = new ObjectController();
+			    $object_controller->add_to_members($event, $member_ids);
+			    $object_controller->add_subscribers($event);
+			    
 			    $object_controller->link_to_new_object($event);
-				$object_controller->add_subscribers($event);
 				$object_controller->add_custom_properties($event);
 				$object_controller->add_reminders($event);
 			 	
 				$event->resetIsRead();
 				
-	          	ApplicationLogs::createLog($event, $event->getWorkspaces(), ApplicationLogs::ACTION_EDIT);
+	          	ApplicationLogs::createLog($event, ApplicationLogs::ACTION_EDIT);
 	          	DB::commit();
 	          	flash_success(lang('success edit event', clean($event->getObjectName())));
 
@@ -874,51 +852,10 @@ class EventController extends ApplicationController {
 	        } catch(Exception $e) {
 	        	DB::rollback();
 				flash_error($e->getMessage());
-				ajx_current("empty");		          
-	          //tpl_assign('error', $e);
+				ajx_current("empty");
 	        } // try
 		} // if
 	} // edit
-	
-	function tag_events() {
-		if (logged_user()->isGuest()) {
-			flash_error(lang('no access permissions'));
-			ajx_current("empty");
-			return;
-		}
-		$ids = explode(',', array_var($_GET, 'ids', ''));
-		foreach ($ids as $id) {
-			$event = ProjectEvents::findById($id);
-			if ($event instanceof ProjectEvent && $event->canEdit(logged_user())) {
-				$tags_csv = implode(',', $event->getTagNames()) .",". array_var($_GET, 'tags');
-				$event->setTagsFromCSV($tags_csv);				
-			}
-		}
-		flash_success(lang("success tag objects", ''));
-		ajx_current("reload");
-	}
-	
-	function untag_events() {
-		if (logged_user()->isGuest()) {
-			flash_error(lang('no access permissions'));
-			ajx_current("empty");
-			return;
-		}
-		$ids = explode(',', array_var($_GET, 'ids', ''));
-		$tag = array_var($_GET,'tags');
-		foreach ($ids as $id) {
-			$event = ProjectEvents::findById($id);
-			if ($event instanceof ProjectEvent && $event->canEdit(logged_user())) {
-				if ($tag != ''){
-					$event->deleteTag($tag);				
-				}else{
-					$event->clearTags();	
-				}
-			}
-		}
-		flash_success(lang("success untag objects", ''));
-		ajx_current("reload");
-	}
 	
 	/**
 	 * Returns hour and minute in 24 hour format
@@ -946,43 +883,33 @@ class EventController extends ApplicationController {
 	function allowed_users_view_events() {
 		$comp_array = array();
 		$actual_user_id = isset($_GET['user']) ? $_GET['user'] : logged_user()->getId();
-		$wspace_id = isset($_GET['ws_id']) ? $_GET['ws_id'] : 0;
-		$ws = Projects::findByCSVIds($wspace_id);
 		$evid = array_var($_GET, 'evid');
 		
-		$companies = Companies::findAll();
+		$companies = Contacts::findAll(array("conditions" => "is_company = 1"));
+		
+		$context_plain = array_var($_GET, 'context');
+		if (is_null($context_plain) || $context_plain == "") $context = active_context();
+		else $context = build_context_array($context_plain);
 		
 		$i = 0;
 		foreach ($companies as $comp) {
-			$users = $comp->getUsersOnWorkspaces($ws);
+			$users = allowed_users_in_context(ProjectEvents::instance()->getObjectTypeId(), $context, ACCESS_LEVEL_READ, "AND `company_id` = " . $comp->getId());
 			if (is_array($users)) {
-				
-				foreach ($users as $k => $user) { // removing event creator from notification list
-					$keep = false;
-					foreach ($ws as $w) {
-						if (can_read_type($user, $w, 'ProjectEvents')) {
-							$keep = true;
-						}
-					}
-					if (!$keep) {
-						unset($users[$k]);	
-					} 
-				}
 				if (count($users) > 0) {
 					$comp_data = array(
 						'id' => $i++,
 						'object_id' => $comp->getId(),
-						'name' => $comp->getName(),
-						'logo_url' => $comp->getLogoUrl(),
+						'name' => $comp->getObjectName(),
+						'logo_url' => $comp->getPictureUrl(),
 						'users' => array() 
 					);
 					foreach ($users as $user) {
 						$comp_data['users'][] = array(
 							'id' => $user->getId(),
-							'name' => $user->getDisplayName(),
-							'avatar_url'=>$user->getAvatarUrl(),
-							'invited' => $evid == 0 ? ($user->getId() == $actual_user_id) : (EventInvitations::findOne(array('conditions' => "`event_id` = $evid and `user_id` = ".$user->getId())) != null),
-							'mail' => $user->getEmail()
+							'name' => $user->getObjectName(),
+							'avatar_url' => $user->getPictureUrl(),
+							'invited' => $evid == 0 ? ($user->getId() == $actual_user_id) : (EventInvitations::findOne(array('conditions' => "`event_id` = $evid and `contact_id` = ".$user->getId())) != null),
+							'mail' => $user->getEmailAddress()
 						);			
 					}
 					$comp_array[] = $comp_data;
@@ -1024,7 +951,7 @@ class EventController extends ApplicationController {
 						foreach ($events_data as $ev_data) {
 							$event = new ProjectEvent();
 					 		$project = active_or_personal_project();
-							if ($ev_data['subject'] == '') $ev_data['subject'] = lang('no subject');
+							if ($ev_data[''] == '') $ev_data[''] = lang('no ');
 				
 						    $event->setFromAttributes($ev_data);
 						    
@@ -1032,11 +959,11 @@ class EventController extends ApplicationController {
 						    $event->addToWorkspace($project);
 						    $object_controller = new ObjectController();
 						    $object_controller->add_subscribers($event);
-						    ApplicationLogs::createLog($event, null, ApplicationLogs::ACTION_ADD);
+						    ApplicationLogs::createLog($event, ApplicationLogs::ACTION_ADD);
 						    
 						    $this->registerInvitations($ev_data, $event);
 							if (isset($ev_data['confirmAttendance'])) {
-								if ($event->getCreatedBy() instanceof User)
+								if ($event->getCreatedBy() instanceof Contact)
 				            		$this->change_invitation_state($ev_data['confirmAttendance'], $event->getId(), $event->getCreatedBy()->getId());
 				            }
 						}
@@ -1064,9 +991,8 @@ class EventController extends ApplicationController {
 		if ($calendar_name != '') {
 			$from = getDateValue(array_var($_POST, 'from_date'));
 			$to = getDateValue(array_var($_POST, 'to_date'));
-			$tags = '';
 			
-			$events = ProjectEvents::getRangeProjectEvents($from, $to, active_tag(), active_project());
+			$events = ProjectEvents::getRangeProjectEvents($from, $to);
 			
 			$buffer = CalFormatUtilities::generateICalInfo($events, $calendar_name);
 			
@@ -1078,7 +1004,7 @@ class EventController extends ApplicationController {
 			$_SESSION['calendar_export_filename'] = $filename;
 			$_SESSION['calendar_name'] = $calendar_name;
 			flash_success(lang('success export calendar', count($events)));
-			ajx_current("back", 2);
+			ajx_current("empty");
 		} else {
 			unset($_SESSION['calendar_export_filename']);
 			unset($_SESSION['calendar_name']);
@@ -1101,14 +1027,14 @@ class EventController extends ApplicationController {
 	}
 	
 	function generate_ical_export_url() {
-		$ws = active_project();
+		/*FIXME!! $ws = active_project();
 		if ($ws == null) {
 			$cal_name = logged_user()->getDisplayName();
 			$ws_ids = 0;
 		} else {
 			$cal_name = Projects::findById($ws->getId())->getName();
 			if (isset($_GET['inc_subws']) && $_GET['inc_subws'] == 'true') {
-				$ws_ids = $ws->getAllSubWorkspacesQuery(true, logged_user(), ProjectUsers::instance()->getTableName(true).".`can_read_events` = 1");
+				$ws_ids = $ws->getAllSubWorkspacesQuery(true, logged_user(), ProjectContacts::instance()->getTableName(true).".`can_read_events` = 1");
 			} else {
 				$ws_ids = $ws->getId();
 			}			
@@ -1117,7 +1043,7 @@ class EventController extends ApplicationController {
 		$url = ROOT_URL . "/" . PUBLIC_FOLDER . "/tools/ical_export.php?cal=$ws_ids&n=$cal_name&t=$token";
 		
 		$obj = array("url" => $url);
-		ajx_extra_data($obj);
+		ajx_extra_data($obj);*/
 		ajx_current("empty");		
 	}
 	
@@ -1165,7 +1091,7 @@ class EventController extends ApplicationController {
 		if(!$event->canEdit(logged_user())){	    	
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
-			return ;
+			return;
 	    }
 	    $is_read = $event->getIsRead(logged_user()->getId());
 		
@@ -1234,7 +1160,7 @@ class EventController extends ApplicationController {
 	    $ev_data = array (
 	    	'start' => $new_start->format(user_config_option('time_format_use_24') ? "G:i" : "g:i A"),
 	    	'end' => $new_duration->format(user_config_option('time_format_use_24') ? "G:i" : "g:i A"),
-	    	'subject' => clean($event->getSubject()),
+	    	'' => clean($event->getSubject()),
 	    );
 	    return array("ev_data" => $ev_data);
 	}

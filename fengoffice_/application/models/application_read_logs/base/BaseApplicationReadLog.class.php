@@ -78,28 +78,6 @@
     } // setRelObjectId() 
     
     /**
-    * Return value of 'rel_object_manager' field
-    *
-    * @access public
-    * @param void
-    * @return string 
-    */
-    function getRelObjectManager() {
-      return $this->getColumnValue('rel_object_manager');
-    } // getRelObjectManager()
-    
-    /**
-    * Set value of 'rel_object_manager' field
-    *
-    * @access public   
-    * @param string $value
-    * @return boolean
-    */
-    function setRelObjectManager($value) {
-      return $this->setColumnValue('rel_object_manager', $value);
-    } // setRelObjectManager() 
-    
-    /**
     * Return value of 'created_on' field
     *
     * @access public
@@ -165,6 +143,7 @@
       return $this->setColumnValue('action', $value);
     } // setAction() 
     
+
     /**
     * Return manager instance
     *

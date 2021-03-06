@@ -2,10 +2,6 @@
 
   // Set page title and set crumbs to index
   set_page_title(lang('task templates'));
-  
-//  if(owner_company()->canAddClient(logged_user())) {
-//    add_page_action(lang('add client'), get_url('company', 'add_client'), 'ico-add');
-//  } // if
 
 ?>
 
@@ -33,9 +29,6 @@ foreach($task_templates as $task_template) {
     <td style="text-align: center"><?php echo 'XXX' ?></td>
 <?php 
   $options = array(); 
-  if(can_manage_workspaces(logged_user())) {
-    $options[] = '<a class="internalLink" href="' . $task_template->getAssignTemplateToWSUrl() . '">' . lang('assign to workspace') . '</a>';
-  } // if
   if($task_template->canDelete(logged_user())) {
   	$options[] = '<a class="internalLink" href="' . $task_template->getDeleteUrl() . '" onclick="return confirm(\'' . escape_single_quotes(lang('confirm delete task template')) . '\')">' . lang('delete template') . '</a>';
   }

@@ -25,8 +25,8 @@ og.ReportingManager = function() {
 				'load': function() {
 					var d = this.reader.jsonData;
 					og.processResponse(d);
-					var ws = og.clean(Ext.getCmp('workspace-panel').getActiveWorkspace().name);
-					var tag = og.clean(Ext.getCmp('tag-panel').getSelectedTag());
+					/*var ws = og.clean(Ext.getCmp('workspace-panel').getActiveWorkspace().name);
+					var tag = og.clean(Ext.getCmp('tag-panel').getSelectedTag());*/
 					if (d.totalCount == 0) {
 						if (tag) {
 							this.fireEvent('messageToShow', lang("no objects with tag message", lang("charts"), ws, tag));
@@ -203,7 +203,7 @@ og.ReportingManager = function() {
     };
     
 	og.ReportingManager.superclass.constructor.call(this, {
-		enableDrag: true,
+		//enableDrag: true,
 		ddGroup : 'disabled',
         store: this.store,
 		layout: 'fit',
@@ -274,8 +274,8 @@ Ext.extend(og.ReportingManager, Ext.grid.GridPanel, {
 			params: Ext.apply(params, {
 				start: start,
 				limit: og.config['files_per_page'],
-				tag: Ext.getCmp('tag-panel').getSelectedTag(),
-				active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id
+				/*tag: Ext.getCmp('tag-panel').getSelectedTag(),
+				active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id*/
 			})
 		});
 		this.needRefresh = false;

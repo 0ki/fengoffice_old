@@ -4,8 +4,7 @@
   *
   * @author Carlos Palma <chonwil@gmail.com>
   */
-  abstract class BaseContacts extends ProjectDataObjects {
-  
+  abstract class BaseContacts extends ContentDataObjects {  
     /**
     * Column name => Column type map
     *
@@ -13,64 +12,33 @@
     * @static
     */
     static private $columns = array(
-     'id' => DATA_TYPE_INTEGER,
-     'firstname' => DATA_TYPE_STRING,
-     'lastname' => DATA_TYPE_STRING,
-     'middlename' => DATA_TYPE_STRING,
+     'object_id' => DATA_TYPE_INTEGER,
+     'first_name' => DATA_TYPE_STRING,
+     'surname' => DATA_TYPE_STRING,
+     'is_company' => DATA_TYPE_BOOLEAN,
+     'company_id'=> DATA_TYPE_INTEGER,	
      'department' => DATA_TYPE_STRING,
      'job_title' => DATA_TYPE_STRING,
-     'company_id' => DATA_TYPE_INTEGER,
-     'email' => DATA_TYPE_STRING,
-     'email2' => DATA_TYPE_STRING,
-     'email3' => DATA_TYPE_STRING,
-    
-     'w_web_page' => DATA_TYPE_STRING,
-     'w_address' => DATA_TYPE_STRING,
-     'w_city' => DATA_TYPE_STRING,
-     'w_state' => DATA_TYPE_STRING,
-     'w_zipcode' => DATA_TYPE_STRING,
-     'w_country' => DATA_TYPE_STRING,
-     'w_phone_number' => DATA_TYPE_STRING,
-     'w_phone_number2' => DATA_TYPE_STRING,
-     'w_fax_number' => DATA_TYPE_STRING,
-     'w_assistant_number' => DATA_TYPE_STRING,
-     'w_callback_number' => DATA_TYPE_STRING,
-    
-     'h_web_page' => DATA_TYPE_STRING,
-     'h_address' => DATA_TYPE_STRING,
-     'h_city' => DATA_TYPE_STRING,
-     'h_state' => DATA_TYPE_STRING,
-     'h_zipcode' => DATA_TYPE_STRING,
-     'h_country' => DATA_TYPE_STRING,
-     'h_phone_number' => DATA_TYPE_STRING,
-     'h_phone_number2' => DATA_TYPE_STRING,
-     'h_fax_number' => DATA_TYPE_STRING,
-     'h_mobile_number' => DATA_TYPE_STRING,
-     'h_pager_number' => DATA_TYPE_STRING,
-    
-     'o_web_page' => DATA_TYPE_STRING,
-     'o_address' => DATA_TYPE_STRING,
-     'o_city' => DATA_TYPE_STRING,
-     'o_state' => DATA_TYPE_STRING,
-     'o_zipcode' => DATA_TYPE_STRING,
-     'o_country' => DATA_TYPE_STRING,
-     'o_phone_number' => DATA_TYPE_STRING,
-     'o_phone_number2' => DATA_TYPE_STRING,
-     'o_fax_number' => DATA_TYPE_STRING,
-     'o_birthday' => DATA_TYPE_DATETIME,
+     'birthday' => DATA_TYPE_DATETIME,
+     'timezone' => DATA_TYPE_FLOAT,
+     'user_type' => DATA_TYPE_INTEGER,
+     'is_active_user' => DATA_TYPE_BOOLEAN,
+     'token' => DATA_TYPE_STRING, 
+     'salt' => DATA_TYPE_STRING, 
+     'twister' => DATA_TYPE_STRING,
+     'display_name' => DATA_TYPE_STRING,	
+     'permission_group_id' => DATA_TYPE_INTEGER,
+     'username' => DATA_TYPE_STRING,
+     'brand_colors' => DATA_TYPE_STRING,     
+     'contact_passwords_id' => DATA_TYPE_INTEGER,
      'picture_file' => DATA_TYPE_STRING,
-     'timezone' => DATA_TYPE_FLOAT, 
-     'notes' => DATA_TYPE_STRING,
-     'user_id' => DATA_TYPE_INTEGER,
-     'is_private' => DATA_TYPE_BOOLEAN,
-     'created_on' => DATA_TYPE_DATETIME,
-     'created_by_id' => DATA_TYPE_INTEGER,
-     'updated_on' => DATA_TYPE_DATETIME,
-     'updated_by_id' => DATA_TYPE_INTEGER,
-     'trashed_on' => DATA_TYPE_DATETIME,
-     'trashed_by_id' => DATA_TYPE_INTEGER,
-     'archived_on' => DATA_TYPE_DATETIME,
-     'archived_by_id' => DATA_TYPE_INTEGER,
+     'avatar_file' => DATA_TYPE_STRING,	 	
+     'comments' => DATA_TYPE_STRING,
+	 'last_login' => DATA_TYPE_DATETIME,
+	 'last_activity' => DATA_TYPE_DATETIME,
+     'last_visit' => DATA_TYPE_DATETIME,
+	 'personal_member_id' => DATA_TYPE_INTEGER,
+     'disabled' => DATA_TYPE_BOOLEAN
     );
   
     /**
@@ -79,7 +47,7 @@
     * @return BaseContacts 
     */
     function __construct() {
-    	Hook::fire('object_definition', 'Contact', self::$columns);
+      Hook::fire('object_definition', 'Contact', self::$columns);
       parent::__construct('Contact', 'contacts', true);
     } // __construct
     
@@ -121,7 +89,8 @@
     * @return array or string
     */
     function getPkColumns() {
-      return 'id';
+      //return 'id';
+      return 'object_id';
     } // getPkColumns
     
     /**
@@ -132,7 +101,8 @@
     * @return string
     */
     function getAutoIncrementColumn() {
-      return 'id';
+      //return 'id';
+      return 'object_id';      
     } // getAutoIncrementColumn
     
     /**
@@ -156,7 +126,7 @@
     * @return array
     */
     function getExternalColumns() {
-      return array_merge(parent::getExternalColumns(), array('company_id'));
+      return parent::getExternalColumns();
     } // getExternalColumns
     
     /**
@@ -167,7 +137,7 @@
     * @return array
     */
     function getReportObjectTitleColumns() {
-      return array('firstname', 'middlename', 'lastname');
+      return array('name', 'surname');
     } // getReportObjectTitleColumns
     
     /**
@@ -178,10 +148,9 @@
     * @return string
     */
     function getReportObjectTitle($values) {
-    	$firstname = isset($values['firstname']) ? $values['firstname'] : ''; 
-    	$middlename = isset($values['middlename']) ? $values['middlename'] : '';;
-    	$lastname = isset($values['lastname']) ? $values['lastname'] : '';;
-    	return $firstname.' '.$middlename.' '.$lastname;
+    	$name = isset($values['firstname']) ? $values['firstname'] : ''; 
+    	$surname = isset($values['middlename']) ? $values['middlename'] : '';
+    	return $name.' '.$surname;
     } // getReportObjectTitle
     
     // -------------------------------------------------------
@@ -254,8 +223,6 @@
         return parent::findById($id, $force_reload);
       } else {
         return Contacts::instance()->findById($id, $force_reload);
-        //$instance =& Contacts::instance();
-        //return $instance->findById($id, $force_reload);
       } // if
     } // findById
     

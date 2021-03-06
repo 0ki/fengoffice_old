@@ -14,7 +14,7 @@ ogTimeTimeslot = function(){
 	this.id;
 	this.date;
 	this.time;
-	this.workspaceId;
+	this.memberIds;
 	this.userId;
 	this.userName;
 	this.lastUpdated;
@@ -30,7 +30,7 @@ ogTimeTimeslot.prototype.setFromTdata = function(tdata){
 	this.id = tdata.id;
 	this.date = tdata.date;
 	this.time = tdata.time;
-	this.workspaceId = tdata.pid;
+	this.memberIds = tdata.mids;
 	this.userId = tdata.uid;
 	this.userName = tdata.uname;
 	this.lastUpdated = tdata.lastupdated;
@@ -67,6 +67,7 @@ ogTimeManager.loadData = function(data){
 		var tdata = data['tasks'][i];
 		if (tdata.id){
 			var task = new ogTasksTask();
+			//for(x in tdata) alert(x);
 			task.setFromTdata(tdata);
 			if (tdata.s)
 				task.statusOnCreate = tdata.s;
@@ -114,7 +115,7 @@ ogTimeManager.loadData = function(data){
 ogTimeManager.GetNewTimeslotParameters = function(genid){
 	var parameters = [];
 	parameters["timeslot[date]"] = Ext.getCmp(genid + "timeslot[date]Cmp").getValue().format(og.preferences['date_format']);
-	parameters["timeslot[project_id]"] = document.getElementById(genid + 'wsSelValue').value;
+
 	parameters["timeslot[hours]"] = document.getElementById(genid + 'tsHours').value;
 	parameters["timeslot[description]"] = document.getElementById(genid + 'tsDesc').value;
 	var userSel = document.getElementById(genid + 'tsUser');
@@ -141,9 +142,9 @@ ogTimeManager.insertTimeslot = function(timeslot, genid){
 ogTimeManager.SubmitNewTimeslot = function(genid){
 	var parameters = this.GetNewTimeslotParameters(genid);
 	var isEdit = document.getElementById(this.genid + 'TMTimespanSubmitEdit').style.display == 'block';
-	var action = 'add_project_timeslot';
+	var action = 'add_timeslot';
 	if (isEdit)
-		action = 'edit_project_timeslot';
+		action = 'edit_timeslot';
 
 	og.openLink(og.getUrl('time', action), {
 		method: 'POST',
@@ -159,8 +160,6 @@ ogTimeManager.SubmitNewTimeslot = function(genid){
 				document.getElementById(genid + 'tsDesc').value = '';
 				document.getElementById(genid + 'tsHours').value = 0;
 				this.insertTimeslot(timeslot, genid);
-				
-				og.showWsPaths(genid + 'TMTimespanTable');
 			} else {
 				if (!data.errorMessage || data.errorMessage == '')
 					og.err(lang("error adding timeslot"));
@@ -171,7 +170,7 @@ ogTimeManager.SubmitNewTimeslot = function(genid){
 }
 
 ogTimeManager.DeleteTimeslot = function(timeslotId){
-	og.openLink(og.getUrl('time', 'delete_project_timeslot', {id:timeslotId}), {
+	og.openLink(og.getUrl('time', 'delete_timeslot', {id:timeslotId}), {
 		method: 'POST',
 		callback: function(success, data) {
 			if (success && !data.errorCode) {
@@ -208,7 +207,7 @@ ogTimeManager.EditTimeslot = function(timeslotId){
 		document.getElementById(this.genid + 'tsHours').value = (ts.time / 3600);
 		document.getElementById(this.genid + 'tsDesc').value = ts.description;
 		document.getElementById(this.genid + 'tsId').value = timeslotId;
-		og.drawWorkspaceSelector(this.genid + "wsSel", ts.workspaceId, 'timeslot[project_id]', false);
+		
 		var userSel = document.getElementById(this.genid + 'tsUser');
 		if (userSel && userSel.options){
 			for (var i = 0; i < userSel.options.length; i++){
@@ -257,17 +256,15 @@ ogTimeManager.getUser = function(id){
 }
 
 ogTimeManager.getUserCompanyName = function(assigned_to){
-	var split = assigned_to.split(':');
 	var name = '';
-	if (split[1] > 0){ //Look for user
-		var user = this.getUser(split[1]);
-		if (user)
-			name = user.name;
-	} else { //Look for company
-		if (split[0] > 0){
-			var company = this.getCompany(split[0]);
-			if (company)
-				name = company.name;
+	
+	var user = this.getUser(assigned_to);
+	if (user) {
+		name = user.name;
+	} else {
+		var company = this.getCompany(assigned_to);
+		if (company) {
+			name = company.name;
 		}
 	}
 	return name;

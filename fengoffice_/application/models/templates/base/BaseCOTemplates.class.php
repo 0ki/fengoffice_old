@@ -6,7 +6,7 @@
  *
  * @author Ignacio de Soto <ignacio.desoto@fengoffice.com>
  */
-abstract class BaseCOTemplates extends ProjectDataObjects {
+abstract class BaseCOTemplates extends ContentDataObjects {
 
 	/**
 	 * Column name => Column type map
@@ -15,13 +15,8 @@ abstract class BaseCOTemplates extends ProjectDataObjects {
 	 * @static
 	 */
 	static private $columns = array(
-    	'id' => DATA_TYPE_INTEGER,
-    	'name' => DATA_TYPE_STRING,
-    	'description' => DATA_TYPE_STRING,
-    	'created_on' => DATA_TYPE_DATETIME,
-    	'created_by_id' => DATA_TYPE_INTEGER,
-    	'updated_on' => DATA_TYPE_DATETIME,
-    	'updated_by_id' => DATA_TYPE_INTEGER,
+    	'object_id' => DATA_TYPE_INTEGER,
+    	'description' => DATA_TYPE_STRING
 	);
 
 	/**
@@ -72,7 +67,7 @@ abstract class BaseCOTemplates extends ProjectDataObjects {
 	 * @return array or string
 	 */
 	function getPkColumns() {
-		return 'id';
+		return 'object_id';
 	} // getPkColumns
 
 	/**
@@ -83,7 +78,7 @@ abstract class BaseCOTemplates extends ProjectDataObjects {
 	 * @return string
 	 */
 	function getAutoIncrementColumn() {
-		return 'id';
+		return 'null';
 	} // getAutoIncrementColumn
 
 	// -------------------------------------------------------
@@ -110,8 +105,6 @@ abstract class BaseCOTemplates extends ProjectDataObjects {
 			return parent::find($arguments);
 		} else {
 			return COTemplates::instance()->find($arguments);
-			//$instance =& COTemplates::instance();
-			//return $instance->find($arguments);
 		} // if
 	} // find
 
@@ -142,8 +135,6 @@ abstract class BaseCOTemplates extends ProjectDataObjects {
 			return parent::findOne($arguments);
 		} else {
 			return COTemplates::instance()->findOne($arguments);
-			//$instance =& COTemplates::instance();
-			//return $instance->findOne($arguments);
 		} // if
 	} // findOne
 
@@ -160,8 +151,6 @@ abstract class BaseCOTemplates extends ProjectDataObjects {
 			return parent::findById($id, $force_reload);
 		} else {
 			return COTemplates::instance()->findById($id, $force_reload);
-			//$instance =& COTemplates::instance();
-			//return $instance->findById($id, $force_reload);
 		} // if
 	} // findById
 
@@ -177,8 +166,6 @@ abstract class BaseCOTemplates extends ProjectDataObjects {
 			return parent::count($condition);
 		} else {
 			return COTemplates::instance()->count($condition);
-			//$instance =& COTemplates::instance();
-			//return $instance->count($condition);
 		} // if
 	} // count
 
@@ -194,8 +181,6 @@ abstract class BaseCOTemplates extends ProjectDataObjects {
 			return parent::delete($condition);
 		} else {
 			return COTemplates::instance()->delete($condition);
-			//$instance =& COTemplates::instance();
-			//return $instance->delete($condition);
 		} // if
 	} // delete
 
@@ -218,8 +203,6 @@ abstract class BaseCOTemplates extends ProjectDataObjects {
 			return parent::paginate($arguments, $items_per_page, $current_page);
 		} else {
 			return COTemplates::instance()->paginate($arguments, $items_per_page, $current_page);
-			//$instance =& COTemplates::instance();
-			//return $instance->paginate($arguments, $items_per_page, $current_page);
 		} // if
 	} // paginate
 

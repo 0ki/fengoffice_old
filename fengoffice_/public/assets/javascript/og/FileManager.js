@@ -7,9 +7,10 @@ og.FileManager = function() {
 
 	this.doNotRemove = true;
 	this.needRefresh = false;
+	this.objectTypeId = 0;
 	
 	this.fields = [
-		'name', 'object_id', 'type', 'tags', 'createdBy', 'createdById',
+		'name', 'object_id', 'type', 'createdBy', 'createdById', 'size',
 		'dateCreated', 'dateCreated_today',
 		'updatedBy', 'updatedById',
 		'dateUpdated', 'dateUpdated_today',
@@ -29,27 +30,24 @@ og.FileManager = function() {
 				root: 'files',
 				totalProperty: 'totalCount',
 				id: 'id',
+				objType: 'objType',
 				fields:this.fields 
 			}),
 			remoteSort: true,
 			listeners: {
 				'load': function(result) {
 					var d = this.reader.jsonData;
-					var ws = og.clean(Ext.getCmp('workspace-panel').getActiveWorkspace().name);
-					var tag = og.clean(Ext.getCmp('tag-panel').getSelectedTag());
+					
 					if (d.totalCount == 0) {
-						if (tag) {
-							this.fireEvent('messageToShow', lang("no objects with tag message", lang("documents"), ws, tag));
-						} else {
-							this.fireEvent('messageToShow', lang("no objects message", lang("documents"), ws));
-						}
+						//this.fireEvent('messageToShow', lang("no objects message", lang("documents"), ws));
 					} else if (d.files.length == 0) {
 						this.fireEvent('messageToShow', lang("no more objects message", lang("documents")));
 					} else {
 						this.fireEvent('messageToShow', "");
 					}
-					og.showWsPaths();
 					Ext.getCmp('file-manager').getView().focusRow(og.lastSelectedRow.documents+1);
+					
+					Ext.getCmp('file-manager').objectTypeId = d.objType;
 				}
 			}
 		});
@@ -112,7 +110,7 @@ og.FileManager = function() {
 		if (!value) {
 			return "";
 		}
-		var userString = String.format('<a href="{1}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', r.data.updatedBy, og.getUrl('user', 'card', {id: r.data.updatedById}));
+		var userString = String.format('<a href="{1}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', r.data.updatedBy, og.getUrl('contact', 'card_user', {id: r.data.updatedById}));
 	
 		var now = new Date();
 		var dateString = '';
@@ -127,7 +125,7 @@ og.FileManager = function() {
 		if (!value) {
 			return "";
 		}
-		var userString = String.format('<a href="{1}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', r.data.createdBy, og.getUrl('user', 'card', {id: r.data.createdById}));
+		var userString = String.format('<a href="{1}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', r.data.createdBy, og.getUrl('contact', 'card_user', {id: r.data.createdById}));
 	
 		var now = new Date();
 		var dateString = '';
@@ -154,7 +152,7 @@ og.FileManager = function() {
 			else
 				return '<div class="ico-locked" style="display:block;height:16px;background-repeat:no-repeat;padding-left:18px">' +
 					lang('checked out by', String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', 
-					r.data.checkedOutByName, og.getUrl('user', 'card', {id: r.data.checkedOutById}))) + '</div>';
+					r.data.checkedOutByName, og.getUrl('contact', 'card_user', {id: r.data.checkedOutById}))) + '</div>';
 		} else {
 			return "--";
 		}
@@ -261,7 +259,6 @@ og.FileManager = function() {
 			}
 		
 			if (sm.getCount() <= 0) {
-				actions.tag.setDisabled(true);
 				actions.properties.setDisabled(true);
 				actions.zip_add.setDisabled(true);
 				actions.del.setDisabled(true);
@@ -269,7 +266,6 @@ og.FileManager = function() {
 				markactions.markAsUnread.setDisabled(true);
 				actions.archive.setDisabled(true);
 			} else {
-				actions.tag.setDisabled(false);
 				actions.properties.setDisabled(sm.getCount() != 1);
 				actions.zip_add.setDisabled(false);
 				actions.del.setDisabled(false);
@@ -330,18 +326,18 @@ og.FileManager = function() {
 			renderer: renderName,
 			sortable: true
         },{
+			id: 'size',
+			header: lang('size'),
+			dataIndex: 'size',
+			width: 120,
+			sortable: true
+        },{
 			id: 'type',
 			header: lang('type'),
 			dataIndex: 'type',
 			width: 120,
 			hidden: true
 		},{
-			id: 'tags',
-			header: lang("tags"),
-			dataIndex: 'tags',
-			width: 120,
-			hidden: true
-        },{
 			id: 'updated',
 			header: lang("last updated by"),
 			dataIndex: 'dateUpdated',
@@ -416,47 +412,68 @@ og.FileManager = function() {
 				}},'-',
 				{text: lang('document'), iconCls: 'ico-doc', handler: function() {
 					var url = og.getUrl('files', 'add_document');
-					og.openLink(url);
+					
+					var context = Ext.util.JSON.decode(og.contextManager.plainContext());
+					
+					var can_add = true;
+					var dimensions_panel = Ext.getCmp('menu-panel');
+					var dim_names = '';
+					
+					dimensions_panel.items.each(function(item, index, length) {
+						for (x = 0; x < item.initialConfig.requiredObjectTypes.length; x++) {
+							var t = item.initialConfig.requiredObjectTypes[x];
+							var selected_members = og.contextManager.getDimensionMembers(item.dimensionId);
+
+							if (t == Ext.getCmp('file-manager').objectTypeId) {
+								if (!selected_members || selected_members == '0' || selected_members.length == 0) {
+									can_add = false;
+									dim_names += (dim_names == '' ? '"' : '", "') + item.title + '"';
+								}
+							}
+						}
+					});
+					
+					if (can_add) {
+						og.openLink(url);
+					} else {
+						og.err(lang('you must select a member from the following dimensions', dim_names));
+					}
+					
 				}},
 				{text: lang('presentation'), iconCls: 'ico-prsn', handler: function() {
 					var url = og.getUrl('files', 'add_presentation');
-					og.openLink(url);
+					
+					var context = Ext.util.JSON.decode(og.contextManager.plainContext());
+					
+					var can_add = true;
+					var dimensions_panel = Ext.getCmp('menu-panel');
+					var dim_names = '';
+					
+					dimensions_panel.items.each(function(item, index, length) {
+						for (x = 0; x < item.initialConfig.requiredObjectTypes.length; x++) {
+							var t = item.initialConfig.requiredObjectTypes[x];
+							var selected_members = og.contextManager.getDimensionMembers(item.dimensionId);
+
+							if (t == Ext.getCmp('file-manager').objectTypeId) {
+								if (!selected_members || selected_members == '0' || selected_members.length == 0) {
+									can_add = false;
+									dim_names += (dim_names == '' ? '"' : '", "') + item.title + '"';
+								}
+							}
+						}
+					});
+					
+					if (can_add) {
+						og.openLink(url);
+					} else {
+						og.err(lang('you must select a member from the following dimensions', dim_names));
+					}
 				}}/*,
 				{text: lang('spreadsheet') + ' (ALPHA)', iconCls: 'ico-sprd', handler: function() {
 					var url = og.getUrl('files', 'add_spreadsheet');
 					og.openLink(url);
 				}}*/
 			]}
-		}),
-		tag: new Ext.Action({
-			text: lang('tag'),
-            tooltip: lang('tag selected objects'),
-            iconCls: 'ico-tag',
-			disabled: true,
-			menu: new og.TagMenu({
-				listeners: {
-					'tagselect': {
-						fn: function(tag) {
-							this.load({
-								action: 'tag',
-								objects: getSelectedIds(),
-								tagTag: tag
-							});
-						},
-						scope: this
-					},
-					'tagdelete': {
-						fn: function(tag) {
-							this.load({
-								action: 'untag',
-								objects: getSelectedIds(),
-								tagTag: tag
-							});
-						},
-						scope: this
-					}
-				}
-			})
 		}),
 		properties: new Ext.Action({
 			text: lang('update file'),
@@ -544,7 +561,6 @@ og.FileManager = function() {
 		tbar.push(actions.newCO);
 		tbar.push('-');
 		tbar.push(actions.properties);
-		tbar.push(actions.tag);
 		tbar.push(actions.zip_add);
 		tbar.push(actions.archive);
 		tbar.push(actions.del);		
@@ -557,8 +573,8 @@ og.FileManager = function() {
 		layout: 'fit',
 		cm: cm,
 		enableDrag: true,
+		ddGroup: 'MemberDD',
 		stateful: og.preferences['rememberGUIState'],
-		ddGroup: 'WorkspaceDD',
 		stripeRows: true,
 		closable: true,
 		id: 'file-manager',
@@ -597,17 +613,6 @@ og.FileManager = function() {
 	args.sm = sm;
 	og.eventManager.fireEvent('hook_filemanager_actions', args);	
 
-	var tagevid = og.eventManager.addListener("tag changed", function(tag) {
-		if (!this.ownerCt) {
-			og.eventManager.removeListener(tagevid);
-			return;
-		}
-		if (this.ownerCt.active) {
-			this.load({start:0});
-		} else {
-    		this.needRefresh = true;
-    	}
-	}, this);
 };
 
 Ext.extend(og.FileManager, Ext.grid.GridPanel, {
@@ -619,8 +624,8 @@ Ext.extend(og.FileManager, Ext.grid.GridPanel, {
 			var start = 0;
 		}
 		Ext.apply(this.store.baseParams, {
-			tag: Ext.getCmp('tag-panel').getSelectedTag(),
-			active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id
+		      context: og.contextManager.plainContext()
+
 		});
 		this.store.load({
 			params: Ext.applyIf(params, {
@@ -648,10 +653,10 @@ Ext.extend(og.FileManager, Ext.grid.GridPanel, {
 	},
 	
 	moveObjects: function(ws) {
-		og.moveToWsOrMantainWs(this.id, ws);
+		og.moveToWsOrMantainMembers(this.id, ws);
 	},
 	
-	moveObjectsToWsOrMantainWs: function(mantain, ws) {
+	moveObjectsToWsOrMantainMembers: function(mantain, ws) {
 		this.load({
 			action: 'move',
 			ids: this.getSelectedIds(),
@@ -668,21 +673,6 @@ Ext.extend(og.FileManager, Ext.grid.GridPanel, {
 			});
 			this.getSelectionModel().clearSelections();
 		}
-	},
-	
-	tagObjects: function(tag) {
-		this.load({
-			action: 'tag',
-			objects: this.getSelectedIds(),
-			tagTag: tag
-		});
-	},
-	
-	removeTags: function() {
-		this.load({
-			action: 'untag',
-			objects: this.getSelectedIds()
-		});
 	},
 	
 	trashObjects: function() {

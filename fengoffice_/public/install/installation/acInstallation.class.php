@@ -105,6 +105,7 @@ final class acInstallation {
 		$database_prefix = $this->getTablePrefix();
 		$database_engine = $this->getDatabaseEngine();
 		$absolute_url    = $this->getAbsoluteUrl();
+		$plugins   		 = $this->getPlugins();
 		$default_localization = $this->getDefaultLocalization();
 
 		$connected = false;
@@ -137,7 +138,7 @@ final class acInstallation {
 	        'DB_PASS'              => $database_pass,
 	        'DB_NAME'              => $database_name,
 	        'DB_PERSIST'           => true,
-	        'TABLE_PREFIX'         => $database_prefix,
+		    'TABLE_PREFIX'         => $database_prefix,
 			'DB_ENGINE' 	       => $database_engine,
 	        'ROOT_URL'             => $absolute_url,
 	        'DEFAULT_LOCALIZATION' => $default_localization,
@@ -197,8 +198,14 @@ final class acInstallation {
 		}
 		closedir($handle);
 
+		$this->installPlugins($plugins);
+		
+		
+		
+		
 		@mysql_query('COMMIT', $this->database_connection);
 
+		
 		if ($this->writeConfigFile($constants)) {
 			$this->printMessage('Configuration data has been successfully added to the configuration file');
 		} else {
@@ -509,6 +516,20 @@ final class acInstallation {
 	} // setAbsoluteUrl
 
 	/**
+	 * Get plugins
+	 *
+	 * @param null
+	 * @return string
+	 */
+	function getPlugins() {
+		return $this->plugins;
+	}
+
+	function setPlugins($value) {
+		$this->plugins = $value;
+	}
+
+	/**
 	 * Get default_localization
 	 *
 	 * @param null
@@ -526,8 +547,137 @@ final class acInstallation {
 	 */
 	function setDefaultLocalization($value) {
 		$this->default_localization = $value;
-	} // setDefaultLocalization
+	} 
+	
+	/**
+	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
+	 * @param array of string $pluginNames
+	 */
+	function installPlugins($pluginNames) {
 
-} // acInstallation
+		if (count($pluginNames)) {
+			foreach  ($pluginNames as $name ) {
+				$path  = INSTALLATION_PATH."/plugins/$name/info.php";
+				if (file_exists($path)) {
+					//1. Insert into PLUGIN TABLE
+					$pluginInfo = include_once $path;
 
-?>
+					$cols = "name, is_installed, is_activated";
+					$values = "'$name', 1, 1 " ;
+					if (is_numeric(array_var($pluginInfo,'id')) ){
+						$cols = "id, ". $cols ;
+						$values = array_var($pluginInfo,'id').", ".$values ;
+					}
+					$sql = "INSERT INTO ". $this->table_prefix ."plugins ($cols) VALUES ($values) "; 
+					if (@mysql_query($sql)){
+						$id = @mysql_insert_id() ;
+						$pluginInfo['id'] = $id  ;
+					}else{
+						return false ;
+					}
+					
+					
+					//2. IF Plugin defines types, INSERT INTO ITS TABLE
+					if (count(array_var($pluginInfo,'types'))){
+						foreach ($pluginInfo['types'] as $k => $type ) {
+							if (isset($type['name'])) {
+								$sql = "
+									INSERT INTO ". $this->table_prefix ."object_types (name, handler_class, table_name, type, icon, plugin_id)
+									 	VALUES (
+									 	'".array_var($type,"name")."', 
+									 	'".array_var($type,"handler_class")."', 
+									 	'".array_var($type,"table_name")."', 
+									 	'".array_var($type,"type")."', 
+									 	'".array_var($type,"icon")."', 
+										$id
+									)";
+								if (@mysql_query($sql)){
+									$pluginInfo['types'][$k]['id'] = @mysql_insert_id() ;
+									$type['id'] =  @mysql_insert_id() ;
+									
+								}else{
+									echo "FAIL INSTALLING TYPES <br>";
+									echo mysql_error()."<br/>";
+									echo $sql."<br/>";
+								}
+								
+
+							}
+						}
+					}
+					//2. IF Plugin defines tabs, INSERT INTO ITS TABLE
+					if (count(array_var($pluginInfo,'tabs'))){
+						foreach ($pluginInfo['tabs'] as $k => $tab ) {
+							if (isset($tab['title'])) {
+								$type_id = array_var($type,"id") ;
+								$sql = "
+									INSERT INTO ". $this->table_prefix ."tab_panels (
+										id,
+										title, 
+										icon_cls, 
+										refresh_on_context_change, 
+										default_controller, 
+										default_action, 
+										initial_controller, 
+										initial_action, 
+										enabled, 
+										type,  
+										plugin_id, 
+										object_type_id )
+								 	VALUES (
+								 		'".array_var($tab,'id')."', 
+								 		'".array_var($tab,'title')."', 
+								 		'".array_var($tab,'icon_cls')."',
+								 		'".array_var($tab,'refresh_on_context_change')."',
+								 		'".array_var($tab,'default_controller')."',
+								 		'".array_var($tab,'default_action')."',
+										'".array_var($tab,'initial_controller')."',
+										'".array_var($tab,'initial_action')."',
+										'".array_var($tab,'enabled',1)."',
+										'".array_var($tab,'type')."',
+										$id,
+										".array_var($tab,'object_type_id')."
+									)";
+								if (!@mysql_query($sql)){
+									echo $sql ;
+									echo mysql_error();
+								}
+							}
+						}
+					}
+					
+					// Create schema sql query
+					$schema_creation = INSTALLATION_PATH."/plugins/$name/install/sql/mysql_schema.php" ;
+					if ( file_exists($schema_creation) ){
+						$total_queries = 0;
+						$executed_queries = 0;
+						if($this->executeMultipleQueries(tpl_fetch($schema_creation), $total_queries, $executed_queries)) {
+							$this->printMessage("Schema created for plugin $name ");	
+						}else{
+							$this->breakExecution("Error while creating schema for plugin $name".mysql_error());
+							//$this->printMessage("Error while creating schema for plugin $name".mysql_error());
+						}
+					} 
+
+					// Create schema sql query
+					$schema_query = INSTALLATION_PATH."/plugins/$name/install/sql/mysql_initial_data.php" ;
+					if ( file_exists($schema_query) ){
+						$total_queries = 0;
+						$executed_queries = 0;
+						if($this->executeMultipleQueries(tpl_fetch($schema_query), $total_queries, $executed_queries)) {
+							$this->printMessage("Initial data loaded for plugin  '$name'.".mysql_error());	
+						}else{
+							$this->breakExecution("Error while loading inital data for plugin '$name'.".mysql_error());
+						}	
+					}
+						
+					$install_script = INSTALLATION_PATH."/plugins/$name/install/install.php" ;
+					if ( file_exists($install_script) ){
+						include_once $install_script;
+					}
+				}
+			}
+		}
+	}
+}
+

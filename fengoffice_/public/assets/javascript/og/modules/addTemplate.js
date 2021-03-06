@@ -7,6 +7,13 @@ og.loadTemplateVars = function(){
 };
 
 og.pickObjectForTemplate = function(before) {
+	
+	if (! og.contextManager.hasCheckedMembers(13) ){
+		alert(lang("no template members selected"));
+		return ;
+	}
+	
+	og.contextManager.getCheckedMembers();
 	og.ObjectPicker.show(function (objs) {
 		if (objs) {
 			for (var i=0; i < objs.length; i++) {
@@ -15,7 +22,7 @@ og.pickObjectForTemplate = function(before) {
 					og.msg(lang("error"), lang("object type not supported"), 4, "err");
 				} else {
 					for(var k=0; k < og.templateObjects.length; k++){
-						if(og.templateObjects[k]['id'] == obj.object_id && og.templateObjects[k]['type'] == obj.manager){
+						if(og.templateObjects[k]['id'] == obj.object_id){
 							alert(lang('object exists in template'));
 							return;
 						}
@@ -25,14 +32,15 @@ og.pickObjectForTemplate = function(before) {
 			}
 		}
 	}, before, {
-		types: {
-			'ProjectTasks': true,
-			'ProjectMilestones': true
-		}
+		types: ['task','milestone'],
+		selected_type: 'task',
+		context: og.contextManager.plainCheckedMembers(13)
 	});
+	
 };
 
 og.addObjectToTemplate = function(before, obj) {
+	
 	var parent = before.parentNode;
 	var count = 0;
 	var inputs = parent.getElementsByTagName('input');
@@ -46,13 +54,13 @@ og.addObjectToTemplate = function(before, obj) {
 	/*div.onmouseover = og.templateObjectMouseOver;
 	div.onmouseout = og.templateObjectMouseOut;*/
 	div.innerHTML =
-		'<input class="objectID" type="hidden" name="objects[' + count + ']" value="' + obj.manager + ":" + obj.object_id + '" />' +
+		'<input class="objectID" type="hidden" name="objects[' + count + ']" value="' + obj.object_id + '" />' +
 		'<span class="name">' + og.clean(obj.name) + '</span>' +
-		'<a href="#" onclick="og.removeObjectFromTemplate(this.parentNode, ' + obj.object_id + ',\'' + obj.manager + '\')" class="removeDiv">'+lang('remove')+'</a>';
+		'<a href="#" onclick="og.removeObjectFromTemplate(this.parentNode, ' + obj.object_id + ')" class="removeDiv">'+lang('remove')+'</a>';
 	var editPropDiv = document.createElement('div');
 	editPropDiv.id = 'propDiv' + count;
 	editPropDiv.style.paddingLeft = '30px';
-	editPropDiv.innerHTML = '<a href="#" onclick="og.addTemplateObjectProperty(' + obj.object_id + ', \'' + obj.manager + '\',' + count + ',\'\', \'\')" class="link-ico ico-add">'+ lang('edit object property') + '</a>';
+	editPropDiv.innerHTML = '<a href="#" onclick="og.addTemplateObjectProperty(' + obj.object_id + ',' + count + ',\'\', \'\')" class="link-ico ico-add">'+ lang('edit object property') + '</a>';
 	var objectDiv = document.createElement('div');
 	objectDiv.id = 'objectDiv' + count;
 	objectDiv.className = (count % 2 ? " odd" : "");
@@ -61,11 +69,10 @@ og.addObjectToTemplate = function(before, obj) {
 	objectDiv.appendChild(editPropDiv);
 	var newObj = [];
 	newObj['id'] = obj.object_id;
-	newObj['type'] = obj.manager;
 	og.templateObjects.push(newObj);
 };
 
-og.removeObjectFromTemplate = function(div, obj_id, manager) {
+og.removeObjectFromTemplate = function(div, obj_id) {
 	var parent = div.parentNode.parentNode;
 	var removeId = div.parentNode.id;
 	parent.removeChild(div.parentNode);
@@ -93,7 +100,7 @@ og.removeObjectFromTemplate = function(div, obj_id, manager) {
 		}
 	}
 	for(var k=0; k < og.templateObjects.length; k++){
-		if(og.templateObjects[k]['id'] == obj_id && og.templateObjects[k]['type'] == manager){
+		if(og.templateObjects[k]['id'] == obj_id ){
 			og.templateObjects.splice(k,1);
 			break;
 		}
@@ -120,7 +127,7 @@ og.templateObjectMouseOut = function() {
 	}
 };
 
-og.addTemplateObjectProperty = function(obj_id, manager, count, property, value){
+og.addTemplateObjectProperty = function(obj_id, count, property, value){
 	var propDiv = document.getElementById('propDiv' + count);
 	var parent = propDiv.parentNode;
 	var selects = parent.getElementsByTagName('select');
@@ -131,23 +138,24 @@ og.addTemplateObjectProperty = function(obj_id, manager, count, property, value)
 		}
 	}
 	var html = '';
-	html += '<table><tr><td id="deletePropTD' + total + '" style="padding-right:5px;"><div class="clico ico-delete" onclick="og.deleteTemplateObjectProperty(' + obj_id + ',\'' + manager + '\',' + total + ')"></div></td>' +
-		'<td><select class="propertySelect" style="display:none;" id="objectProperties[' + manager + ':' + obj_id + '][' + total + ']" ' + 
-		'name="objectProperties[' + manager + ':' + obj_id + '][' + total + ']" onchange="og.objectPropertyChanged(' + obj_id + ',\'' + manager + '\',' + total + ',\'\')" style="width:150px">' +
-		'</select></td><td style="padding-left:10px;" id="propSel[' + manager + ':' + obj_id + '][' + total + ']"></td></tr></table>';
+	html += '<table><tr><td id="deletePropTD' + total + '" style="padding-right:5px;"><div class="clico ico-delete" onclick="og.deleteTemplateObjectProperty(' + obj_id + ',\'' + total + '\')"></div></td>' +
+		'<td><select class="propertySelect" style="display:none;" id="objectProperties[' + obj_id + '][' + total + ']" ' + 
+		'name="objectProperties[' + obj_id + '][' + total + ']" onchange="og.objectPropertyChanged(' + obj_id + ',\'' + total + '\',\'\')" style="width:150px">' +
+		'</select></td><td style="padding-left:10px;" id="propSel[' + obj_id + '][' + total + ']"></td></tr></table>';
 	var newProp = document.createElement('div');
-	newProp.id = 'propDiv[' + manager + ':' + obj_id + '][' + total + ']';
+	newProp.id = 'propDiv[' + obj_id + '][' + total + ']';
 	newProp.style.paddingLeft = '30px';
 	newProp.style.paddingBottom = '10px';
 	newProp.innerHTML += html;
 	propDiv.parentNode.insertBefore(newProp, propDiv);
 
-	og.openLink(og.getUrl('template', 'get_object_properties', {object_type: manager}), {
+	// FIXME: obtener obj_type para hacer el request
+	og.openLink(og.getUrl('template', 'get_object_properties', {}), {
 		callback: function(success, data) {
 			if (success) {
 				var propSelection = '';
 				if(data.properties.length > 0){
-					var select = document.getElementById('objectProperties[' + manager + ':' + obj_id + '][' + total + ']');
+					var select = document.getElementById('objectProperties[' + obj_id + '][' + total + ']');
 					select.innerHTML = "";
 					var option = document.createElement('option');
 					option.value = "";
@@ -163,15 +171,15 @@ og.addTemplateObjectProperty = function(obj_id, manager, count, property, value)
 						select.appendChild(option);
 					}
 					select.style.display = '';
-					og.objectPropertyChanged(obj_id, manager, total, value);
+					og.objectPropertyChanged(obj_id, total, value);
 				}
 			}
 		}
 	});
 };
 
-og.deleteTemplateObjectProperty = function(obj_id, manager, count){
-	var propDiv = document.getElementById('propDiv[' + manager + ':' + obj_id + '][' + count + ']');
+og.deleteTemplateObjectProperty = function(obj_id, count){
+	var propDiv = document.getElementById('propDiv[' + obj_id + '][' + count + ']');
 	var parent = propDiv.parentNode;
 	propDiv.parentNode.removeChild(propDiv);
 	var selects = parent.getElementsByTagName('select');
@@ -182,25 +190,25 @@ og.deleteTemplateObjectProperty = function(obj_id, manager, count){
 		}
 	}
 	for(var j=count+1; j <= total; j++){
-		propDiv = document.getElementById('propDiv[' + manager + ':' + obj_id + '][' + j + ']');
-		propDiv.id = 'propDiv[' + manager + ':' + obj_id + '][' + (j - 1) + ']';
+		propDiv = document.getElementById('propDiv[' + obj_id + '][' + j + ']');
+		propDiv.id = 'propDiv[' + obj_id + '][' + (j - 1) + ']';
 		deletePropTD = document.getElementById('deletePropTD' + j);
 		deletePropTD.id = 'deletePropTD' + (j - 1);
-		deletePropTD.innerHTML = '<div class="clico ico-delete" onclick="og.deleteTemplateObjectProperty(' + obj_id + ',\'' + manager + '\',' + (j - 1) + ')">';
-		var objectPropSel = document.getElementById('objectProperties[' + manager + ':' + obj_id + '][' + j + ']');
-		objectPropSel.id = 'objectProperties[' + manager + ':' + obj_id + '][' + (j - 1) + ']';
-		objectPropSel.name = 'objectProperties[' + manager + ':' + obj_id + '][' + (j - 1) + ']';
-		objectPropSel.attributes["onchange"].value = 'og.objectPropertyChanged(' + obj_id + ',\'' + manager + '\',' + (j - 1) + ',\'\')';
-		var propSelTD = document.getElementById('propSel[' + manager + ':' + obj_id + '][' + j + ']');
+		deletePropTD.innerHTML = '<div class="clico ico-delete" onclick="og.deleteTemplateObjectProperty(' + obj_id + ',\'' + (j - 1) + '\')">';
+		var objectPropSel = document.getElementById('objectProperties[' + obj_id + '][' + j + ']');
+		objectPropSel.id = 'objectProperties[' + obj_id + '][' + (j - 1) + ']';
+		objectPropSel.name = 'objectProperties[' + obj_id + '][' + (j - 1) + ']';
+		objectPropSel.attributes["onchange"].value = 'og.objectPropertyChanged(' + obj_id + ',' + (j - 1) + ',\'\')';
+		var propSelTD = document.getElementById('propSel[' + obj_id + '][' + j + ']');
 		if(propSelTD != null){
-			propSelTD.id = 'propSel[' + manager + ':' + obj_id + '][' + (j - 1) + ']';
-			var datePropType = document.getElementById('datePropType[' + manager + ':' + obj_id + '][' + j + ']');
+			propSelTD.id = 'propSel[' + obj_id + '][' + (j - 1) + ']';
+			var datePropType = document.getElementById('datePropType[' + obj_id + '][' + j + ']');
 			if(datePropType != null){
-				datePropType.id = 'datePropType[' + manager + ':' + obj_id + '][' + (j - 1) + ']';
-				datePropType.attributes["onchange"].value = 'og.datePropertyTypeSel(' + (j - 1) + ',' + obj_id + '\',\'' + manager + '\')';
-				var datePropTD = document.getElementById('datePropTD[' + manager + ':' + obj_id + '][' + j + ']');
+				datePropType.id = 'datePropType[' + obj_id + '][' + (j - 1) + ']';
+				datePropType.attributes["onchange"].value = 'og.datePropertyTypeSel(' + (j - 1) + ',' + obj_id + '\')';
+				var datePropTD = document.getElementById('datePropTD[' + obj_id + '][' + j + ']');
 				if(datePropTD != null){
-					datePropTD.id = 'datePropTD[' + manager + ':' + obj_id + '][' + (j - 1) + ']';
+					datePropTD.id = 'datePropTD[' + obj_id + '][' + (j - 1) + ']';
 				}
 			}
 		}
@@ -208,18 +216,18 @@ og.deleteTemplateObjectProperty = function(obj_id, manager, count){
 	}
 };
 
-og.objectPropertyChanged = function(obj_id, manager, count, value){
-	var propertySel = document.getElementById('objectProperties[' + manager + ':' + obj_id + '][' + count + ']');
+og.objectPropertyChanged = function(obj_id, count, value){
+	var propertySel = document.getElementById('objectProperties[' + obj_id + '][' + count + ']');
 	var selectedPropIndex = propertySel.selectedIndex; 
 	if(selectedPropIndex != -1){
 		var prop = propertySel[selectedPropIndex];
-		var propValueTD = document.getElementById('propSel[' + manager + ':' + obj_id + '][' + count + ']');
-		var datePropTD = document.getElementById('datePropTD[' + manager + ':' + obj_id + '][' + count + ']');
+		var propValueTD = document.getElementById('propSel[' + obj_id + '][' + count + ']');
+		var datePropTD = document.getElementById('datePropTD[' + obj_id + '][' + count + ']');
 		if(datePropTD != null){
 			datePropTD.innerHTML = '';
 		}
 		var id = 0;
-		var propSel = document.getElementById('objectProperties[' + manager + ':' + obj_id + '][' + id + ']');
+		var propSel = document.getElementById('objectProperties[' + obj_id + '][' + id + ']');
 		while(propSel != null){
 			if(propSel.value == prop.value && selectedPropIndex != 0 && id != count){
 				alert(lang('template property already selected'));
@@ -227,20 +235,20 @@ og.objectPropertyChanged = function(obj_id, manager, count, value){
 				propValueTD.innerHTML = '';
 				return;
 			}
-			propSel = document.getElementById('objectProperties[' + manager + ':' + obj_id + '][' + (++id) + ']');
+			propSel = document.getElementById('objectProperties[' + obj_id + '][' + ++id + ']');
 		}
 		if(prop.className == 'STRING'){
-			propValueTD.innerHTML = '= <input id="propValues[' + manager + ':' + obj_id + '][' + prop.value + ']" name="propValues[' + manager + ':' + obj_id + '][' + prop.value + ']" value="' + value + '" />&nbsp;' +
-				'<a href="#" onclick="og.editStringTemplateObjectProperty(' + obj_id + ',\'' + prop.value + '\',\'' + manager + '\')">[' + lang('open property editor') + ']</a>';
+			propValueTD.innerHTML = '= <input id="propValues[' + obj_id + '][' + prop.value + ']" name="propValues[' + obj_id + '][' + prop.value + ']" value="' + value + '" />&nbsp;' +
+				'<a href="#" onclick="og.editStringTemplateObjectProperty(' + obj_id + ',\'' + prop.value + '\')">[' + lang('open property editor') + ']</a>';
 		}else if(prop.className == 'DATETIME'){
-			propValueTD.innerHTML = '<select id="datePropType[' + manager + ':' + obj_id + '][' + count + ']" onchange="og.datePropertyTypeSel(' + count + ',\'' + obj_id + '\',\'' + manager + '\')">'
+			propValueTD.innerHTML = '<select id="datePropType[' + obj_id + '][' + count + ']" onchange="og.datePropertyTypeSel(' + count + ',\'' + obj_id + '\')">'
 				+ '<option value="-1">Select type</option><option value="0">' + lang('fixed date') + '</option><option value="1">' + lang('parametric date') + '</option></select>';
 			var newTD = document.createElement('td');
-			newTD.id = 'datePropTD[' + manager + ':' + obj_id + '][' + count + ']';
+			newTD.id = 'datePropTD[' + obj_id + '][' + count + ']';
 			newTD.style.paddingLeft = '10px';
 			propValueTD.parentNode.appendChild(newTD);
 			if(value != ''){
-				var datePropTypeSel = document.getElementById('datePropType[' + manager + ':' + obj_id + '][' + count + ']');
+				var datePropTypeSel = document.getElementById('datePropType[' + obj_id + '][' + count + ']');
 				if(value.indexOf("+") != -1 || value.indexOf("-") != -1){
 					var param = "";
 					var operator = "+";
@@ -256,24 +264,24 @@ og.objectPropertyChanged = function(obj_id, manager, count, value){
 					amount = value.substring(posOp + 1, value.length - 1);
 					unit = value.substring(value.length - 1);
 					datePropTypeSel.selectedIndex = 2;
-					og.datePropertyTypeSel(count, obj_id, manager);
-					var paramSel = document.getElementById('propValueParam[' + manager + ':' + obj_id + '][' + prop.value + ']');
+					og.datePropertyTypeSel(count, obj_id);
+					var paramSel = document.getElementById('propValueParam[' + obj_id + '][' + prop.value + ']');
 					for(var i=0; i < paramSel.length; i++){
 						var paramName = '{' + paramSel.options[i].value + '}';
 						if(paramName == param){
 							paramSel.selectedIndex = i;
 						}
 					}
-					var opSel = document.getElementById('propValueOperation[' + manager + ':' + obj_id + '][' + prop.value + ']');
+					var opSel = document.getElementById('propValueOperation[' + obj_id + '][' + prop.value + ']');
 					for(i=0; i < opSel.length; i++){
 						var op = opSel.options[i].value;
 						if(op == operator){
 							opSel.selectedIndex = i;
 						}
 					}
-					var amountInput = document.getElementById('propValueAmount[' + manager + ':' + obj_id + '][' + prop.value + ']');
+					var amountInput = document.getElementById('propValueAmount[' + obj_id + '][' + prop.value + ']');
 					amountInput.value = amount;
-					var unitSel = document.getElementById('propValueUnit[' + manager + ':' + obj_id + '][' + prop.value + ']');
+					var unitSel = document.getElementById('propValueUnit[' + obj_id + '][' + prop.value + ']');
 					for(i=0; i < unitSel.length; i++){
 						var u = unitSel.options[i].value;
 						if(u == unit){
@@ -282,24 +290,24 @@ og.objectPropertyChanged = function(obj_id, manager, count, value){
 					}
 				}else{
 					datePropTypeSel.selectedIndex = 1;
-					og.datePropertyTypeSel(count, obj_id, manager);
-					var dateProp = document.getElementById('propValues[' + manager + ':' + obj_id + '][' + prop.value + ']');
+					og.datePropertyTypeSel(count, obj_id);
+					var dateProp = document.getElementById('propValues[' + obj_id + '][' + prop.value + ']');
 					dateProp.value = value; 
 				}
 			}
 		}else if(prop.className == 'USER'){
-			propValueTD.innerHTML = '<select id="integerPropType[' + manager + ':' + obj_id + '][' + count + ']" onchange="og.integerPropertyTypeSel(' + count + ',\'' + obj_id + '\',\'' + manager + '\')">'
+			propValueTD.innerHTML = '<select id="integerPropType[' + obj_id + '][' + count + ']" onchange="og.integerPropertyTypeSel(' + count + ',\'' + obj_id + '\')">'
 				+ '<option value="-1">Select type</option><option value="0">' + lang('fixed user') + '</option><option value="1">' + lang('parametric user') + '</option></select>';
 			var newTD = document.createElement('td');
-			newTD.id = 'integerPropTD[' + manager + ':' + obj_id + '][' + count + ']';
+			newTD.id = 'integerPropTD[' + obj_id + '][' + count + ']';
 			newTD.style.paddingLeft = '10px';
 			propValueTD.parentNode.appendChild(newTD);
 			if(value != ''){
-				var integerPropTypeSel = document.getElementById('integerPropType[' + manager + ':' + obj_id + '][' + count + ']');
+				var integerPropTypeSel = document.getElementById('integerPropType[' + obj_id + '][' + count + ']');
 				if (value.indexOf("{") != -1) {
 					integerPropTypeSel.selectedIndex = 2;
-					og.integerPropertyTypeSel(count, obj_id, manager);
-					var paramSel = document.getElementById('propValueParam[' + manager + ':' + obj_id + '][' + prop.value + ']');
+					og.integerPropertyTypeSel(count, obj_id);
+					var paramSel = document.getElementById('propValueParam[' + obj_id + '][' + prop.value + ']');
 					for(var i=0; i < paramSel.length; i++){
 						var paramName = '{' + paramSel.options[i].value + '}';
 						if (paramName == value) {
@@ -308,8 +316,8 @@ og.objectPropertyChanged = function(obj_id, manager, count, value){
 					}
 				} else {
 					integerPropTypeSel.selectedIndex = 1;
-					og.integerPropertyTypeSel(count, obj_id, manager, function() {
-						var propSel = document.getElementById('propValues[' + manager + ':' + obj_id + '][' + prop.value + ']');
+					og.integerPropertyTypeSel(count, obj_id, function() {
+						var propSel = document.getElementById('propValues[' + obj_id + '][' + prop.value + ']');
 						for(var i=0; i < propSel.length; i++){
 							var propVal = propSel.options[i].value;
 							if (propVal == value) {
@@ -325,25 +333,28 @@ og.objectPropertyChanged = function(obj_id, manager, count, value){
 	}
 };
 
-og.datePropertyTypeSel = function(count, obj_id, manager){
-	var datePropTD = document.getElementById('datePropTD[' + manager + ':' + obj_id + '][' + count + ']');
-	var datePropTypeSel = document.getElementById('datePropType[' + manager + ':' + obj_id + '][' + count + ']');
+og.datePropertyTypeSel = function(count, obj_id){
+	
+	var datePropTD = document.getElementById('datePropTD[' + obj_id + '][' + count + ']');
+	var datePropTypeSel = document.getElementById('datePropType[' + obj_id + '][' + count + ']');
 	var selectedPropTypeIndex = datePropTypeSel.selectedIndex;
 	datePropTD.innerHTML = '';
 	if(selectedPropTypeIndex != -1){
-		var propertySel = document.getElementById('objectProperties[' + manager + ':' + obj_id + '][' + count + ']');
+		var propertySel = document.getElementById('objectProperties[' + obj_id + '][' + count + ']');
 		var prop = propertySel[propertySel.selectedIndex].value;
 		var type = datePropTypeSel[selectedPropTypeIndex].value;
 		if(type == 0){
 			var dateProp = new og.DateField({
 				renderTo: datePropTD,
-				name: 'propValues[' + manager + ':' + obj_id + '][' + prop + ']',
-				id: 'propValues[' + manager + ':' + obj_id + '][' + prop + ']'
+				name: 'propValues[' + obj_id + '][' + prop + ']',
+				id: 'propValues[' + obj_id + '][' + prop + ']'
 			});
 		}else if(type == 1){
 			var selectParam = '';
+			
 			if(og.templateParameters.length > 0){
-				selectParam = '<select name="propValueParam[' + manager + ':' + obj_id + '][' + prop + ']" id="propValueParam[' + manager + ':' + obj_id + '][' + prop + ']">';
+				
+				selectParam = '<select name="propValueParam[' + obj_id + '][' + prop + ']" id="propValueParam[' + obj_id + '][' + prop + ']">';
 				for(var j=0; j < og.templateParameters.length; j++){
 					var item = og.templateParameters[j];
 					if(item.type == "date"){
@@ -351,11 +362,11 @@ og.datePropertyTypeSel = function(count, obj_id, manager){
 					}
 				}
 				selectParam += '</select>';
-				datePropTD.innerHTML = '= &nbsp;<input type="hidden" name="propValues[' + manager + ':' + obj_id + '][' + prop + ']">' + 
-					selectParam + '&nbsp;<select name="propValueOperation[' + manager + ':' + obj_id + '][' + prop + ']" id="propValueOperation[' + manager + ':' + obj_id + '][' + prop + ']">' +
+				datePropTD.innerHTML = '= &nbsp;<input type="hidden" name="propValues[' + obj_id + '][' + prop + ']">' + 
+					selectParam + '&nbsp;<select name="propValueOperation[' + obj_id + '][' + prop + ']" id="propValueOperation[' + obj_id + '][' + prop + ']">' +
 					'<option>+</option><option>-</option></select>&nbsp;' + 
-					'<input name="propValueAmount[' + manager + ':' + obj_id + '][' + prop + ']" id="propValueAmount[' + manager + ':' + obj_id + '][' + prop + ']" style="width:30px;" />' +
-					'&nbsp;<select name="propValueUnit[' + manager + ':' + obj_id + '][' + prop + ']" id="propValueUnit[' + manager + ':' + obj_id + '][' + prop + ']"><option value="d">'+ lang('days') + '</option>' +
+					'<input name="propValueAmount[' + obj_id + '][' + prop + ']" id="propValueAmount[' + obj_id + '][' + prop + ']" style="width:30px;" />' +
+					'&nbsp;<select name="propValueUnit[' + obj_id + '][' + prop + ']" id="propValueUnit[' + obj_id + '][' + prop + ']"><option value="d">'+ lang('days') + '</option>' +
 					'<option value="w">'+ lang('weeks') + '</option><option value="m">'+ lang('months') + '</option></select>';
 			}
 			if(selectParam == ''){
@@ -366,31 +377,39 @@ og.datePropertyTypeSel = function(count, obj_id, manager){
 	}
 };
 
-og.integerPropertyTypeSel = function(count, obj_id, manager, callback){
-	var integerPropTD = document.getElementById('integerPropTD[' + manager + ':' + obj_id + '][' + count + ']');
-	var integerPropTypeSel = document.getElementById('integerPropType[' + manager + ':' + obj_id + '][' + count + ']');
+og.integerPropertyTypeSel = function(count, obj_id, callback){
+	var integerPropTD = document.getElementById('integerPropTD[' + obj_id + '][' + count + ']');
+	var integerPropTypeSel = document.getElementById('integerPropType[' + obj_id + '][' + count + ']');
 	var selectedPropTypeIndex = integerPropTypeSel.selectedIndex;
 	integerPropTD.innerHTML = '';
 	if(selectedPropTypeIndex != -1){
-		var propertySel = document.getElementById('objectProperties[' + manager + ':' + obj_id + '][' + count + ']');
+		var propertySel = document.getElementById('objectProperties[' + obj_id + '][' + count + ']');
 		var prop = propertySel[propertySel.selectedIndex].value;
 		var type = integerPropTypeSel[selectedPropTypeIndex].value;		
 		if(type == 0){
 			
-			og.openLink(og.getUrl('user', 'list_users'), {
+			og.openLink(og.getUrl('task', 'allowed_users_to_assign'), {
 				callback: function(success, data) {
-					var users = data.users;
-					var integerPropTD = document.getElementById('integerPropTD[' + manager + ':' + obj_id + '][' + count + ']');
+					
+					var companies = data.companies;
+					var integerPropTD = document.getElementById('integerPropTD[' + obj_id + '][' + count + ']');
 					var html = "";
-					html += '<select name="propValues[' + manager + ':' + obj_id + '][' + prop + ']" id="propValues[' + manager + ':' + obj_id + '][' + prop + ']">';
-					if (users.length > 0){
-						for(i=0;i < users.length ;i++){
-							var usu = users[i];
-							html += '<option value="'+ usu.id+'" name="propValue[' + manager + ':' + obj_id + '][' + prop + ']">'+ usu.name + '</option>';
+					html += '<select name="propValues[' + obj_id + '][' + prop + ']" id="propValues[' + obj_id + '][' + prop + ']">';
+					if (companies.length){
+						for (var  i = 0 ; i < companies.length ; i ++) {
+							html += '<option value="'+ companies[i].id+'" name="propValue[' + obj_id + '][' + prop + ']">'+ companies[i].name + '</option>';
+							if (!companies[i] || !companies[i].users.length) continue ;
+							var users  = companies[i].users ;
+							//if (users.length > 0){
+							for(i=0;i < users.length ;i++){
+								var usu = users[i];
+								html += '<option value="'+ usu.id+'" name="propValue[' + obj_id + '][' + prop + ']">'+ usu.name + '</option>';
+							}
 						}
 					}else{
-						html += '<option value="0" name="propValue[' + manager + ':' + obj_id + '][' + prop + ']">'+ lang ('no users to display') + '</option>';
+						html += '<option value="0" name="propValue[' + obj_id + '][' + prop + ']">'+ lang ('no users to display') + '</option>';
 					}
+					
 					html += '</select>';
 					integerPropTD.innerHTML = html;
 					if (typeof callback == 'function') callback();
@@ -401,12 +420,12 @@ og.integerPropertyTypeSel = function(count, obj_id, manager, callback){
 		}else if(type == 1){
 			var selectParam = '';
 			if(og.templateParameters.length > 0){
-				selectParam = '<input type="hidden" name="propValues[' + manager + ':' + obj_id + '][' + prop + ']" id="propValues[' + manager + ':' + obj_id + '][' + prop + ']" value="" />'
-				selectParam += '<select name="propValueParam[' + manager + ':' + obj_id + '][' + prop + ']" id="propValueParam[' + manager + ':' + obj_id + '][' + prop + ']" onChange="og.changeIntegerParam(this)" />';
+				selectParam = '<input type="hidden" name="propValues[' + obj_id + '][' + prop + ']" id="propValues[' + obj_id + '][' + prop + ']" value="" />'
+				selectParam += '<select name="propValueParam[' + obj_id + '][' + prop + ']" id="propValueParam[' + obj_id + '][' + prop + ']" onChange="og.changeIntegerParam(this)" />';
 				for(var j=0; j < og.templateParameters.length; j++){
 					var item = og.templateParameters[j];
 					if(item.type == "user"){
-						// value="{'+ item['name'] +'}" name="propValue[' + manager + ':' + obj_id + '][' + prop + ']"
+						// value="{'+ item['name'] +'}" name="propValue[' + obj_id + '][' + prop + ']"
 						selectParam += '<option>' + item['name'] + '</option>';
 					}
 				}
@@ -422,7 +441,6 @@ og.integerPropertyTypeSel = function(count, obj_id, manager, callback){
 };
 
 og.changeIntegerParam = function(select){
-	alert('asdasda');
 	var id = select.id();
 	id = id.repace("propValueParam","propValues");
 	hidd = document.getElementById(id);
@@ -432,7 +450,7 @@ og.changeIntegerParam = function(select){
 	
 }
 
-og.editStringTemplateObjectProperty = function(obj_id, prop, manager){
+og.editStringTemplateObjectProperty = function(obj_id, prop){
 	var params = [];
 	for(var j=0; j < og.templateParameters.length; j++){
 		var item = og.templateParameters[j];
@@ -440,7 +458,7 @@ og.editStringTemplateObjectProperty = function(obj_id, prop, manager){
 			params.push([item['name']]);
 		}
 	}
-	var valueField = document.getElementById('propValues[' + manager + ':' + obj_id + '][' + prop + ']');
+	var valueField = document.getElementById('propValues[' + obj_id + '][' + prop + ']');
 	var config = {
 			genid: Ext.id(),
 			title: lang('edit object property'),

@@ -104,7 +104,7 @@
     * @return array
     */
     function getSystemColumns() {
-      return array('id', 'is_private', 'created_by_id', 'updated_by_id', 'trashed_on', 'trashed_by_id', 'archived_by_id');
+      return array('id', 'object_id', 'object_type_id', 'created_by_id', 'updated_by_id', 'trashed_on', 'trashed_by_id', 'archived_by_id');
     } // getSystemColumns
     
     /**
@@ -245,6 +245,7 @@
       // Collect attributes...
       $one        = (boolean) array_var($arguments, 'one', false);
       $id         = (boolean) array_var($arguments, 'id', false);
+      $distinct   = (boolean) array_var($arguments, 'distinct', false);
       $conditions = $this->prepareConditions( $conditions );
       $order_by   = array_var($arguments, 'order', '');
       $offset     = (integer) array_var($arguments, 'offset', 0);
@@ -255,16 +256,15 @@
       $where_string = trim($conditions) == '' ? '' : "WHERE " . preg_replace("/\s+in\s*\(\s*\)/i", " = -1", $conditions);
       $order_by_string = trim($order_by) == '' ? '' : "ORDER BY $order_by";
       $limit_string = $limit > 0 ? "LIMIT $offset, $limit" : '';
+      $distinct = $distinct ? "DISTINCT " : "";
       
       if ($columns && is_array($columns) && count($columns) > 0) {
       	$columns_string = "`" . implode('`, `', $columns) . "`";
       } else {
       	$columns_string = ($id ? '`id`' : '*');
       }
-      
-      
       // Prepare SQL
-      $sql = "SELECT " . $columns_string . " FROM " . $this->getTableName(true) . " $where_string $order_by_string $limit_string";
+      $sql = "SELECT $distinct" . $columns_string . " FROM " . $this->getTableName(true) . " $where_string $order_by_string $limit_string";
 
       // Run!
       $rows = DB::executeAll($sql);

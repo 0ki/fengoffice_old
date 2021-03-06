@@ -44,6 +44,7 @@
 	'handins' => 'Entregas',
 	'emailunclassified' => 'Correo',
 	'time' => 'Horas',
+	'report' => 'Reporte',
 	'reporting' => 'Reportes',
 	'modify object subscribers' => 'Modificar Subscriptores',
 	'subscription modified successfully' => 'Subscriptores modificados exitosamente',

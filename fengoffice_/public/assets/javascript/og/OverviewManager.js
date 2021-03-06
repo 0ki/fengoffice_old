@@ -19,7 +19,7 @@ og.OverviewManager = function() {
 				totalProperty: 'totalCount',
 				id: 'id',
 				fields: [
-					'name', 'object_id', 'type', 'tags', 'createdBy', 'createdById', 'dateCreated', 
+					'name', 'object_id', 'type', 'createdBy', 'createdById', 'dateCreated', 
 					'updatedBy', 'updatedById', 'dateUpdated', 'icon', 'wsIds', 'manager', 'mimeType', 'url', 'ix', 'isRead'
 				]
 			}),
@@ -27,20 +27,14 @@ og.OverviewManager = function() {
 			listeners: {
 				'load': function() {
 					var d = this.reader.jsonData;
-					var ws = og.clean(Ext.getCmp('workspace-panel').getActiveWorkspace().name);
-					var tag = og.clean(Ext.getCmp('tag-panel').getSelectedTag());
 					if (d.totalCount == 0) {
-						if (tag) {
-							this.fireEvent('messageToShow', lang("no objects with tag message", lang("objects"), ws, tag));
-						} else {
-							this.fireEvent('messageToShow', lang("no objects message", lang("objects"), ws));
-						}
+						this.fireEvent('messageToShow', lang("no objects message", lang("objects"), 0));
 					} else if (d.objects.length == 0) {
 						this.fireEvent('messageToShow', lang("no more objects message", lang("objects")));
 					} else {
 						this.fireEvent('messageToShow', "");
 					}
-					og.showWsPaths();
+				//	og.showWsPaths();
 					Ext.getCmp('overview-manager').getView().focusRow(og.lastSelectedRow.overview+1);
 				}
 			}
@@ -56,10 +50,10 @@ og.OverviewManager = function() {
 	
 	var readClass = 'read-unread-' + Ext.id();
 	var notReadable = {
-			'Contacts': true,
-			'Companies': true,
-			'Comments': true,
-			'ProjectFileRevisions': true
+		'Contacts': true,
+		'Companies': true,
+		'Comments': true,
+		'ProjectFileRevisions': true
 	};
 	function renderIsRead(value, p, r){
 		if (!notReadable[r.data.manager]) {
@@ -109,7 +103,7 @@ og.OverviewManager = function() {
 	}
 	
 	function renderIcon(value, p, r) {
-		var classes = "db-ico ico-unknown ico-" + r.data.type;
+		var classes = "db-ico ico-unknown " + r.data.icon;
 		if (r.data.mimeType) {
 			var path = r.data.mimeType.replace(/\//ig, "-").split("-");
 			var acc = "";
@@ -127,7 +121,7 @@ og.OverviewManager = function() {
 			var classes = readClass + r.id;
 			if (!r.data.isRead && !notReadable[r.data.manager]) classes += " bold";
 			
-			return String.format('<a href="{1}" class="{2}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', og.clean(value), og.getUrl('user', 'card', {id: r.data.updatedById}), classes);
+			return String.format('<a href="{1}" class="{2}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', og.clean(value), og.getUrl('contact', 'card_user', {id: r.data.updatedById}), classes);
 		} else if (value) {
 			return og.clean(value);
 		} else {
@@ -137,7 +131,7 @@ og.OverviewManager = function() {
 
 	function renderAuthor(value, p, r) {
 		if (r.data.createdById) {
-			return String.format('<a href="{1}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', og.clean(value), og.getUrl('user', 'card', {id: r.data.createdById}));
+			return String.format('<a href="{1}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', og.clean(value), og.getUrl('contact', 'card_user', {id: r.data.createdById}));
 		} else if (value) {
 			return og.clean(value);
 		} else {
@@ -159,7 +153,7 @@ og.OverviewManager = function() {
 		} else {
 			var ret = '';
 			for (var i=0; i < selections.length; i++) {
-				ret += "," + selections[i].data.manager + ":" + selections[i].data.object_id;
+				ret += "," + selections[i].data.object_id;
 			}
 			og.lastSelectedRow.overview = selections[selections.length-1].data.ix;
 			return ret.substring(1);
@@ -192,14 +186,12 @@ og.OverviewManager = function() {
 			}
 		
 			if (sm.getCount() <= 0) {
-				actions.tag.setDisabled(true);
 				actions.del.setDisabled(true);
 				actions.more.setDisabled(true);
 				actions.archive.setDisabled(true);
 				markactions.markAsRead.setDisabled(true);
 				markactions.markAsUnread.setDisabled(true);
 			} else {
-				actions.tag.setDisabled(false);
 				actions.del.setDisabled(false);
 				actions.more.setDisabled(false);
 				actions.archive.setDisabled(false);
@@ -278,12 +270,6 @@ og.OverviewManager = function() {
         	dataIndex: 'updatedBy',
         	width: 120,
         	renderer: renderUser
-        },{
-			id: 'tags',
-			header: lang("tags"),
-			dataIndex: 'tags',
-			width: 120,
-			hidden: true
         },{
 			id: 'updatedOn',
 			header: lang("last update"),
@@ -369,38 +355,12 @@ og.OverviewManager = function() {
 		})
 	}
 	
+	//alert(quickAdd);
 	actions = {
-		newCO: new og.QuickAdd(),
-		tag: new Ext.Action({
-			text: lang('tag'),
-            tooltip: lang('tag selected objects'),
-            iconCls: 'ico-tag',
-			disabled: true,
-			menu: new og.TagMenu({
-				listeners: {
-					'tagselect': {
-						fn: function(tag) {
-							this.load({
-								action: 'tag',
-								objects: getSelectedIds(),
-								tagTag: tag
-							});
-						},
-						scope: this
-					},
-					'tagdelete': {
-						fn: function(tag){
-							this.load({
-								action: 'untag',
-								objects: getSelectedIds(),
-								tagTag: tag.text
-							});
-						},
-						scope: this
-					}
-				}
-			})
-		}),
+		newCO: new og.QuickAdd({
+			menu: quickAdd.menu 
+		}) ,
+		
 		del: new Ext.Action({
 			text: lang('move to trash'),
             tooltip: lang('move selected objects to trash'),
@@ -460,8 +420,9 @@ og.OverviewManager = function() {
 				this.load();
 			},
 			scope: this
-		}),
+		})/*,
 		showAsDashboard: new Ext.Action({
+			id: "view-as-dashboard",
 			text: lang('view as dashboard'),
             tooltip: lang('view as dashboard'),
             iconCls: 'ico-view-as-dashboard',
@@ -469,12 +430,12 @@ og.OverviewManager = function() {
 				og.switchToDashboard();
 			},
 			scope: this
-		})
+		})*/
     };
     
 	og.OverviewManager.superclass.constructor.call(this, {
 		enableDrag: true,
-		ddGroup : 'WorkspaceDD',
+		ddGroup: 'MemberDD',
 		store: this.store,
 		layout: 'fit',
 		autoExpandColumn: 'name',
@@ -497,14 +458,13 @@ og.OverviewManager = function() {
 		tbar:[
 			actions.newCO,
 			'-',
-			actions.tag,
 			actions.archive,
 			actions.del,			
 			'-',
 			actions.more,
 			actions.markAs,
-			'->',
-			actions.showAsDashboard
+			'->' /* ,
+			actions.showAsDashboard*/
 		],
 		listeners: {
 			'render': {
@@ -523,17 +483,6 @@ og.OverviewManager = function() {
 		}
 	});
 
-	var tagevid = og.eventManager.addListener("tag changed", function(tag) {
-		if (!this.ownerCt) {
-			og.eventManager.removeListener(tagevid);
-			return;
-		}
-		if (this.ownerCt.active) {
-			this.load({start:0});
-		} else {
-    		this.needRefresh = true;
-    	}
-	}, this);
 };
 
 Ext.extend(og.OverviewManager, Ext.grid.GridPanel, {
@@ -545,8 +494,7 @@ Ext.extend(og.OverviewManager, Ext.grid.GridPanel, {
 			var start = 0;
 		}
 		Ext.apply(this.store.baseParams, {
-			tag: Ext.getCmp('tag-panel').getSelectedTag(),
-			active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id
+		      context: og.contextManager.plainContext()			
 		});
 		this.store.load({
 			params: Ext.applyIf(params, {
@@ -565,75 +513,6 @@ Ext.extend(og.OverviewManager, Ext.grid.GridPanel, {
 	
 	reset: function() {
 		this.load({start:0});
-	},
-	
-	moveObjectsToAllWs: function() {
-		this.load({
-			action: 'unclassify',
-			objects: this.getSelectedIds()
-		});
-	},
-	
-	moveObjects: function(ws) {
-		if (ws == 0) {
-			var selections = this.getSelectionModel().getSelections();
-			var amail = false;
-			for (i=0; i<selections.length; i++) {
-				if (selections[i].data.manager == 'MailContents') {
-					amail = true;
-					break;
-				}
-			}
-			if (amail) {
-				og.confirmMoveToAllWs(this.id, lang('confirm unclassify emails'));
-			}
-		} else {
-			var selections = this.getSelectionModel().getSelections();
-			var allItemsAreTasksOrMilestones = true;
-			for (i=0; i<selections.length; i++) {
-				if (selections[i].data.manager != 'ProjectTasks' && selections[i].data.manager != 'ProjectMilestones') {
-					allItemsAreTasksOrMilestones = false;
-					break;
-				}
-			}
-			// Tasks and events does not keep ws, only move
-			if (allItemsAreTasksOrMilestones) {
-				this.moveObjectsToWsOrMantainWs(false, ws);
-			} else {
-				og.moveToWsOrMantainWs(this.id, ws);
-			}
-		}
-	},
-	
-	moveObjectsToWsOrMantainWs: function(mantain, ws) {
-		var selections = this.getSelectionModel().getSelections();
-		var amail = false;
-		for (i=0; i<selections.length; i++) {
-			if (selections[i].data.manager == 'MailContents') {
-				amail = true;
-				break;
-			}
-		}
-		if (amail) {
-			og.askToClassifyUnclassifiedAttachs(this.id, mantain, ws);
-		} else {
-			this.load({
-				action: 'move',
-				objects: this.getSelectedIds(),
-				moveTo: ws,
-				mantainWs: mantain
-			});
-		}
-	},
-	
-	moveObjectsClassifyingEmails: function(mantain, ws, classifyatts) {
-		this.load({
-			action: 'move',
-			objects: this.getSelectedIds(),
-			moveTo: ws,
-			mantainWs: mantain,
-			classify_atts: classifyatts
-		});
 	},
 	
 	trashObjects: function() {
@@ -656,21 +535,6 @@ Ext.extend(og.OverviewManager, Ext.grid.GridPanel, {
 		}
 	},
 	
-	tagObjects: function(tag) {
-		this.load({
-			action: 'tag',
-			objects: this.getSelectedIds(),
-			tagTag: tag
-		});
-	},
-	
-	removeTags: function() {
-		this.load({
-			action: 'untag',
-			objects: this.getSelectedIds()
-		});
-	},
-
 	showMessage: function(text) {
 		if (this.innerMessage) {
 			this.innerMessage.innerHTML = text;

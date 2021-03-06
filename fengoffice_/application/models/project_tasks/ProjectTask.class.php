@@ -8,35 +8,10 @@
  * Modif: Marcos Saiz <marcos.saiz@gmail.com> 24/3/08
  */
 class ProjectTask extends BaseProjectTask {
-	 
-	/**
-	 * This project object is taggable
-	 *
-	 * @var boolean
-	 */
-	protected $is_taggable = true;
-	 
-	/**
-	 * Message comments are searchable
-	 *
-	 * @var boolean
-	 */
-	protected $is_searchable = true;
 
-	/**
-	 * Array of searchable columns
-	 *
-	 * @var array
-	 */
-	protected $searchable_columns = array('text','title');
 
-	/**
-	 * Project task is commentable object
-	 *
-	 * @var boolean
-	 */
-	protected $is_commentable = true;
-	
+	protected $searchable_columns = array('name', 'text');
+		
 	protected $allow_timeslots = true;
 
 	/**
@@ -91,7 +66,7 @@ class ProjectTask extends BaseProjectTask {
 	/**
 	 * Cached completed by reference
 	 *
-	 * @var User
+	 * @var Contact
 	 */
 	private $completed_by;
 
@@ -134,17 +109,17 @@ class ProjectTask extends BaseProjectTask {
 	 *
 	 * @access public
 	 * @param void
-	 * @return User
+	 * @return Contact
 	 */
 	function getAssignedBy() {
-		return Users::findById($this->getAssignedById());
+		return Contacts::findById($this->getAssignedById());
 	} // getAssignedBy()
 
 	/**
 	 * Set the user that last assigned the task
 	 *
 	 * @access public
-	 * @param User $value
+	 * @param Contact $value
 	 * @return boolean
 	 */
 	function setAssignedBy($user) {
@@ -159,52 +134,36 @@ class ProjectTask extends BaseProjectTask {
 	 * @return ApplicationDataObject
 	 */
 	function getAssignedTo() {
-		if($this->getAssignedToUserId() > 0) {
-			return $this->getAssignedToUser();
-		} elseif($this->getAssignedToCompanyId() > 0) {
-			return $this->getAssignedToCompany();
+		if($this->getAssignedToContactId() > 0) {
+			return $this->getAssignedToContact();
 		} else {
 			return null;
 		} // if
 	} // getAssignedTo
 	
 	function getAssignedToName() {
-		$user = $this->getAssignedToUser();
-		$company = $this->getAssignedToCompany();
-		if ($user instanceof User) {
+		$user = $this->getAssignedToContact();
+		if ($user instanceof Contact) {
 			return $user->getDisplayName();
-		} else if ($company instanceof Company) {
-			return $company->getName();
 		} else {
 			return lang("anyone");
 		} // if
 	} // getAssignedTo
 	
 	function isAssigned() {
-		return $this->getAssignedToCompanyId() > 0 || $this->getAssignedToUserId() > 0;
+		return $this->getAssignedToContactId() > 0;
 	} // getAssignedTo
-
-	/**
-	 * Return owner comapny
-	 *
-	 * @access public
-	 * @param void
-	 * @return Company
-	 */
-	function getAssignedToCompany() {
-		return Companies::findById($this->getAssignedToCompanyId());
-	} // getAssignedToCompany
 
 	/**
 	 * Return owner user
 	 *
 	 * @access public
 	 * @param void
-	 * @return User
+	 * @return Contact
 	 */
-	function getAssignedToUser() {
-		return Users::findById($this->getAssignedToUserId());
-	} // getAssignedToUser
+	function getAssignedToContact() {
+		return Contacts::findById($this->getAssignedToContactId());
+	} // 
 
 	/**
 	 * Returns true if this task was not completed
@@ -249,10 +208,10 @@ class ProjectTask extends BaseProjectTask {
 	 * @return null
 	 */
 	function isToday() {
-		$now = DateTimeValueLib::now()->add('h', logged_user()->getTimezone())->getTimestamp();
+		$now = DateTimeValueLib::now()->add('h', logged_user()->getTimezone());
 		$due = $this->getDueDate();
-
 		// getDueDate and similar functions can return NULL
+		if(!($now instanceof DateTimeValue)) return false;
 		if(!($due instanceof DateTimeValue)) return false;
 
 		return $now->getDay() == $due->getDay() &&
@@ -276,61 +235,43 @@ class ProjectTask extends BaseProjectTask {
 		return floor(abs($due_date_start->getTimestamp() - $today->getTimestamp()) / 86400);
 	} // getLateInDays
 	
-	/**
-	 * Returns value of is private flag inehrited from parent task list
-	 *
-	 * @param void
-	 * @return boolean
-	 */
-	function isPrivate() {
-		return $this->getIsPrivate();
-	} // isPrivate
+	function getLeftInDays() {
+		if (!$this->getDueDate() instanceof DateTimeValue) return 0;
+		$due_date_start = $this->getDueDate()->endOfDay();
+		$today = DateTimeValueLib::now();
+		$today = $today->add('h', logged_user()->getTimezone())->beginningOfDay();
+		
+		return floor(abs($due_date_start->getTimestamp() - $today->getTimestamp()) / 86400);
+	}
 
 	// ---------------------------------------------------
 	//  Permissions
 	// ---------------------------------------------------
 
-	/**
-	 * Check if user have task management permissions for project this list belongs to
-	 *
-	 * @param User $user
-	 * @return boolean
-	 */
-	function canManage(User $user) {
-		return can_write($user,$this);
-	} // canManage
-
+	function canAdd(Contact $user, $context){
+		return can_add($user, $context, ProjectTasks::instance()->getObjectTypeId());
+	}
+	
+	
 	/**
 	 * Return true if $user can view this task lists
 	 *
-	 * @param User $user
+	 * @param Contact $user
 	 * @return boolean
 	 */
-	function canView(User $user) {
-		return can_read($user,$this);
+	function canView(Contact $user) {
+		return can_read($user, $this->getMembers(), $this->getObjectTypeId());
 	} // canView
-
-
-	/**
-	 * Check if user can add task lists in specific project
-	 *
-	 * @param User $user
-	 * @param Project $project
-	 * @return boolean
-	 */
-	function canAdd(User $user, Project $project) {
-		return can_add($user,$project,get_class(ProjectTasks::instance()));
-	} // canAdd
 	
 	/**
 	 * Private function to check whether a task is asigned to user or company user
 	 *
-	 * @param User $user
+	 * @param Contact $user
 	 * @return unknown
 	 */
-	private function isAsignedToUserOrCompany(User $user){
+	private function isAsignedToUserOrCompany(Contact $user){
 				// Additional check - is this task assigned to this user or its company
-		if($this->getAssignedTo() instanceof User) {
+		if($this->getAssignedTo() instanceof Contact) {
 			if($user->getId() == $this->getAssignedTo()->getObjectId()) return true;
 		} elseif($this->getAssignedTo() instanceof Company) {
 			if($user->getCompanyId() == $this->getAssignedTo()->getObjectId()) return true;
@@ -341,15 +282,15 @@ class ProjectTask extends BaseProjectTask {
 	 * Check if specific user can update this task
 	 *
 	 * @access public
-	 * @param User $user
+	 * @param Contact $user
 	 * @return boolean
 	 */
-	function canEdit(User $user) {
-		if(can_write($user,$this)) {
+	function canEdit(Contact $user) {
+		if(can_write($user, $this->getMembers(), $this->getObjectTypeId())) {
 			return true;
 		} // if
 		$task_list = $this->getParent();
-		return $task_list instanceof ProjectTask ? $task_list->canEdit($user) : false;
+		return $task_list instanceof ProjectTask ? $task_list->canEdit($user, $this->getMembers()) : false;
 	} // canEdit
 	
 	function canAddTimeslot($user) {
@@ -360,10 +301,10 @@ class ProjectTask extends BaseProjectTask {
 	 * Check if specific user can change task status
 	 *
 	 * @access public
-	 * @param User $user
+	 * @param Contact $user
 	 * @return boolean
 	 */
-	function canChangeStatus(User $user) {
+	function canChangeStatus(Contact $user) {
 		return ($this->canEdit($user) || $this->isAsignedToUserOrCompany($user));
 	} // canChangeStatus
 
@@ -371,11 +312,11 @@ class ProjectTask extends BaseProjectTask {
 	 * Check if specific user can delete this task
 	 *
 	 * @access public
-	 * @param User $user
+	 * @param Contact $user
 	 * @return boolean
 	 */
-	function canDelete(User $user) {
-		if (can_delete($user,$this))
+	function canDelete(Contact $user) {
+		if (can_delete($user,$this->getMembers(), $this->getObjectTypeId()))
 			return true;
 		$task_list = $this->getParent();
 		return $task_list instanceof ProjectTask ? $task_list->canDelete($user) : false;
@@ -384,22 +325,22 @@ class ProjectTask extends BaseProjectTask {
 	/**
 	 * Check if user can reorder tasks in this list
 	 *
-	 * @param User $user
+	 * @param Contact $user
 	 * @return boolean
 	 */
-	function canReorderTasks(User $user) {
-		return can_write($user,$this);
+	function canReorderTasks(Contact $user) {
+		return can_write($user, $this->getMembers(), $this->getObjectTypeId());
 	} // canReorderTasks
 
 
 	/**
 	 * Check if specific user can add task to this list
 	 *
-	 * @param User $user
+	 * @param Contact $user
 	 * @return boolean
 	 */
-	function canAddSubTask(User $user) {
-		return can_write($user,$this);
+	function canAddSubTask(Contact $user) {
+		return can_write($user, $this->getMembers(), $this->getObjectTypeId());
 	} // canAddTask
 	// ---------------------------------------------------
 	//  Operations
@@ -415,8 +356,25 @@ class ProjectTask extends BaseProjectTask {
 	function completeTask() {
 		$this->setCompletedOn(DateTimeValueLib::now());
 		$this->setCompletedById(logged_user()->getId());
+		$this->setPercentCompleted(100);
+		
+		// check if all previuos tasks are completed
+		if (config_option('use tasks dependencies')) {
+			$saved_ptasks = ProjectTaskDependencies::findAll(array('conditions' => 'task_id = '. get_id()));
+			foreach ($saved_ptasks as $pdep) {
+				$ptask = ProjectTasks::findById($pdep->getPreviousTaskId());
+				if ($ptask instanceof ProjectTask && !$ptask->isCompleted()) {
+					flash_error(lang('previous tasks must be completed before completion of this task'));
+					ajx_current("empty");
+					return;
+				}
+			}
+		}
+		
 		$this->save();
-	
+
+		//TODO: Agregar funciones de timeslots a ContentDataObject
+/*		
 		$timeslots = $this->getTimeslots();
 		if ($timeslots){
 			foreach ($timeslots as $timeslot){
@@ -425,7 +383,7 @@ class ProjectTask extends BaseProjectTask {
 					$timeslot->save();
 			}
 		}
-
+*/
 		/*
 		 * if this is run then when the user wants to reopen a task
 		 * he will have to manually reopen the subtasks
@@ -441,7 +399,7 @@ class ProjectTask extends BaseProjectTask {
 			$open_tasks = $task_list->getOpenSubTasks();
 			if(empty($open_tasks)) $task_list->complete(DateTimeValueLib::now(), logged_user());
 		} // if*/
-		ApplicationLogs::createLog($this, $this->getWorkspaces(), ApplicationLogs::ACTION_CLOSE);
+		ApplicationLogs::createLog($this, ApplicationLogs::ACTION_CLOSE);
 	} // completeTask
 
 	/**
@@ -456,6 +414,16 @@ class ProjectTask extends BaseProjectTask {
 		$this->setCompletedById(0);
 		$this->save();
 
+		if (config_option('use tasks dependencies')) {
+			$saved_stasks = ProjectTaskDependencies::findAll(array('conditions' => 'previous_task_id = '. $this->getId()));
+			foreach ($saved_stasks as $sdep) {
+				$stask = ProjectTasks::findById($sdep->getTaskId());
+				if ($stask instanceof ProjectTask && $stask->isCompleted()) {
+					$stask->openTask();
+				}
+			}
+		}
+		
 		/*
 		 * this is done in the controller
 		$task_list = $this->getParent();
@@ -463,7 +431,7 @@ class ProjectTask extends BaseProjectTask {
 			$open_tasks = $task_list->getOpenSubTasks();
 			if(!empty($open_tasks)) $task_list->open();
 		} // if*/
-		ApplicationLogs::createLog($this, $this->getWorkspaces(), ApplicationLogs::ACTION_OPEN);
+		ApplicationLogs::createLog($this, ApplicationLogs::ACTION_OPEN);
 	} // openTask
 
 	function getRemainingDays(){
@@ -479,13 +447,13 @@ class ProjectTask extends BaseProjectTask {
 	}
 	
 	function cloneTask($copy_status = false) {
+		//FIXME
 		$new_task = new ProjectTask();
 				
 		$new_task->setParentId($this->getParentId());
 		$new_task->setTitle($this->getTitle());
 		$new_task->setText($this->getText());
-		$new_task->setAssignedToCompanyId($this->getAssignedToCompanyId());
-		$new_task->setAssignedToUserId($this->getAssignedToUserId());
+		$new_task->setAssignedToContactId($this->getAssignedToContactId());
 		$new_task->setAssignedOn($this->getAssignedOn());
 		$new_task->setAssignedById($this->getAssignedById());
 		$new_task->setTimeEstimate($this->getTimeEstimate());
@@ -495,7 +463,6 @@ class ProjectTask extends BaseProjectTask {
 		$new_task->setState($this->getState());
 		$new_task->setOrder($this->getOrder());
 		$new_task->setMilestoneId($this->getMilestoneId());
-		$new_task->setIsPrivate($this->getIsPrivate());
 		$new_task->setIsTemplate($this->getIsTemplate());
 		$new_task->setFromTemplateId($this->getFromTemplateId());
 		if ($this->getDueDate() instanceof DateTimeValue )
@@ -508,9 +475,8 @@ class ProjectTask extends BaseProjectTask {
 		}
 		
 		$new_task->save();
-		$new_task->setTagsFromCSV(implode(",", $this->getTagNames()));
-		
-		foreach ($this->getWorkspaces() as $ws) {
+				
+		foreach (null as $ws) {
 			$new_task->addToWorkspace($ws);
 		}
 		if (is_array($this->getAllLinkedObjects())) {
@@ -540,8 +506,6 @@ class ProjectTask extends BaseProjectTask {
 			$new_com->setCreatedOn($com->getCreatedOn());
 			$new_com->setUpdatedById($com->getUpdatedById());
 			$new_com->setUpdatedOn($com->getUpdatedOn());
-			$new_com->setIsAnonymous($com->getIsAnonymous());
-			$new_com->setIsPrivate($com->getIsPrivate());
 			$new_com->setText($com->getText());
 			$new_com->setRelObjectId($new_task->getId());
 			$new_com->setRelObjectManager("ProjectTasks");
@@ -606,21 +570,17 @@ class ProjectTask extends BaseProjectTask {
 	 * Add subtask to this list
 	 *
 	 * @param string $text
-	 * @param User $assigned_to_user
+	 * @param Contact $assigned_to_user
 	 * @param Company $assigned_to_company
 	 * @return ProjectTask
 	 * @throws DAOValidationError
 	 */
-	function addSubTask($text, $assigned_to_user = null, $assigned_to_company = null) {
+	function addSubTask($text, $assigned_to = null) {
 		$task = new ProjectTask();
 		$task->setText($text);
 
-		if($assigned_to_user instanceof User) {
-			$task->setAssignedToUserId($assigned_to_user->getId());
-			$task->setAssignedToCompanyId($assigned_to_user->getCompanyId());
-		} elseif($assigned_to_company instanceof Company) {
-			$task->setAssignedToCompanyId($assigned_to_company->getId());
-		} // if
+		if($assigned_to instanceof Contact) 
+			$task->setAssignedToContactId($assigned_to->getId());
 
 		$this->attachTask($task); // this one will save task
 		return $task;
@@ -657,17 +617,7 @@ class ProjectTask extends BaseProjectTask {
 		} else {
 			$task->setParentId(0);
 			$task->save();
-		} // if
-
-		$close = true;
-		$open_tasks = $this->getOpenSubTasks();
-		if(is_array($open_tasks)) {
-			foreach($open_tasks as $open_task) {
-				if($open_task->getId() <> $task->getId()) $close = false;
-			} // if
-		} // if
-
-		if($close) $this->complete(DateTimeValueLib::now(), logged_user());
+		}
 	} // detachTask
 
 	/**
@@ -675,15 +625,15 @@ class ProjectTask extends BaseProjectTask {
 	 *
 	 * @access public
 	 * @param DateTimeValue $on Completed on
-	 * @param User $by Completed by
+	 * @param Contact $by Completed by
 	 * @return null
 	 */
 	function complete(DateTimeValue $on, $by) {
-		$by_id = $by instanceof User ? $by->getId() : 0;
+		$by_id = $by instanceof Contact ? $by->getId() : 0;
 		$this->setCompletedOn($on);
 		$this->setCompletedById($by_id);
 		$this->save();
-		ApplicationLogs::createLog($this, $this->getWorkspaces(), ApplicationLogs::ACTION_CLOSE);
+		ApplicationLogs::createLog($this, ApplicationLogs::ACTION_CLOSE);
 	} // complete
 
 	/**
@@ -697,7 +647,7 @@ class ProjectTask extends BaseProjectTask {
 		$this->setCompletedOn(NULL);
 		$this->setCompletedById(0);
 		$this->save();
-		ApplicationLogs::createLog($this, $this->getWorkspaces(), ApplicationLogs::ACTION_OPEN);
+		ApplicationLogs::createLog($this, ApplicationLogs::ACTION_OPEN);
 	} // open
 
 	// ---------------------------------------------------
@@ -763,7 +713,7 @@ class ProjectTask extends BaseProjectTask {
 	function getOpenSubTasks() {
 		if(is_null($this->open_tasks)) {
 			$this->open_tasks = ProjectTasks::findAll(array(
-          'conditions' => '`parent_id` = ' . DB::escape($this->getId()) . ' AND `completed_on` = ' . DB::escape(EMPTY_DATETIME),
+          'conditions' => '`parent_id` = ' . DB::escape($this->getId()) . ' AND `completed_on` = ' . DB::escape(EMPTY_DATETIME) . ' AND `trashed_on` = ' . DB::escape(EMPTY_DATETIME),
           'order' => '`order`, `created_on`'
           )); // findAll
 		} // if
@@ -864,11 +814,11 @@ class ProjectTask extends BaseProjectTask {
 	 *
 	 * @access public
 	 * @param void
-	 * @return User
+	 * @return Contact
 	 */
 	function getCompletedBy() {
-		if(!($this->completed_by instanceof User)) {
-			$this->completed_by = Users::findById($this->getCompletedById());
+		if(!($this->completed_by instanceof Contact)) {
+			$this->completed_by = Contacts::findById($this->getCompletedById());
 		} // if
 		return $this->completed_by;
 	} // getCompletedBy
@@ -878,14 +828,14 @@ class ProjectTask extends BaseProjectTask {
 	 *
 	 * @access public
 	 * @param void
-	 * @return User
+	 * @return Contact
 	 */
 	function getCompletedByName() {
 		if ($this->isCompleted()){
-			if(!($this->completed_by instanceof User)) {
-				$this->completed_by = Users::findById($this->getCompletedById());
+			if(!($this->completed_by instanceof Contact)) {
+				$this->completed_by = Contacts::findById($this->getCompletedById());
 			} // if
-			if ($this->completed_by instanceof User) {
+			if ($this->completed_by instanceof Contact) {
 				return $this->completed_by->getDisplayName();
 			} else {
 				return '';
@@ -894,28 +844,6 @@ class ProjectTask extends BaseProjectTask {
 	} // getCompletedBy
 	
 
-	/**
-	 * Return all handins for this task, NOT the ones associated with its subtasks
-	 *
-	 * @access public
-	 * @param void
-	 * @return array
-	 */
-	function getAllTaskHandins(){
-		return ObjectHandins::getAllHandinsByObject($this);
-	} //getAllTaskHandins
-
-
-	/**
-	 * Return all pending handins for this task, NOT the ones associated with its subtasks
-	 *
-	 * @access public
-	 * @param void
-	 * @return array
-	 */
-	function getPendingTaskHandins(){
-		return ObjectHandins::getPendingHandinsByObject($this);
-	} //getPendingTaskHandins
 
 	// ---------------------------------------------------
 	//  URLs
@@ -1040,7 +968,7 @@ class ProjectTask extends BaseProjectTask {
 	 * @return string
 	 */
 	function getViewUrl() {
-		return get_url('task', 'view_task', array('id' => $this->getId()));
+		return get_url('task', 'view', array('id' => $this->getId()));
 	} // getViewUrl
 	
 	/**
@@ -1060,10 +988,11 @@ class ProjectTask extends BaseProjectTask {
 	 * @return string
 	 */
 	function getOverviewUrl() {
+		/*TODO re-implement
 		$project = $this->getProject();
 		if($project instanceof Project) {
 			return $project->getTasksUrl() . '#taskList' . $this->getId();
-		} // if
+		} // if*/
 		return '';
 	} // getOverviewUrl
 
@@ -1079,7 +1008,9 @@ class ProjectTask extends BaseProjectTask {
 	 * @return null
 	 */
 	function validate(&$errors) {
-		if(!$this->validatePresenceOf('title')) $errors[] = lang('task title required');
+		if(!$this->getObject()->validatePresenceOf('name')) $errors[] = lang('task title required');
+		if(!$this->validateMinValueOf('percent_completed', 0)) $errors[] = lang('task percent completed must be greater than 0');
+		if(!$this->validateMaxValueOf('percent_completed', 100)) $errors[] = lang('task percent completed must be lower than 100');
 	} // validate
 
 	 
@@ -1095,15 +1026,8 @@ class ProjectTask extends BaseProjectTask {
 			$children = $this->getSubTasks();
 			foreach($children as $child)
 				$child->delete(true);
-			$this->deleteHandins();
 		}
-		$related_forms = $this->getRelatedForms();
-		if(is_array($related_forms)) {
-			foreach($related_forms as $related_form) {
-				$related_form->setInObjectId(0);
-				$related_form->save();
-			} // foreach
-		} // if
+
 		$task_list = $this->getParent();
 		if($task_list instanceof ProjectTask) $task_list->detachTask($this);
 		return parent::delete();
@@ -1114,10 +1038,8 @@ class ProjectTask extends BaseProjectTask {
 			$trashDate = DateTimeValueLib::now();
 		if($trash_children)  {
 			$children = $this->getAllSubTasks();
-			foreach($children as $child) {
+			foreach($children as $child)
 				$child->trash(true,$trashDate);
-				ApplicationLogs::createLog($child, $child->getWorkspaces(), ApplicationLogs::ACTION_TRASH);
-			}
 		}
 		return parent::trash($trashDate);
 	} // delete
@@ -1127,10 +1049,8 @@ class ProjectTask extends BaseProjectTask {
 			$archiveDate = DateTimeValueLib::now();
 		if($archive_children)  {
 			$children = $this->getAllSubTasks();
-			foreach($children as $child) {
+			foreach($children as $child)
 				$child->archive(true,$archiveDate);
-				ApplicationLogs::createLog($child, $child->getWorkspaces(), ApplicationLogs::ACTION_ARCHIVE);
-			}
 		}
 		return parent::archive($archiveDate);
 	} // delete
@@ -1145,11 +1065,10 @@ class ProjectTask extends BaseProjectTask {
 		if (!$this->isNew()) {
 			$old_me = ProjectTasks::findById($this->getId(), true);
 			if (!$old_me instanceof ProjectTask) return; // TODO: check this!!!
-			/* This was added cause deleting some tasks was giving an error, couldn't reproduce it again, but this solved it */
+			// This was added cause deleting some tasks was giving an error, couldn't reproduce it again, but this solved it 
 		}
 		if ($this->isNew() ||
-				$this->getAssignedToCompanyId() != $old_me->getAssignedToCompanyId() ||
-				$this->getAssignedToUserId() != $old_me->getAssignedToUserId()) {
+				$this->getAssignedToContactId() != $old_me->getAssignedToContactId()) {
 			$this->setAssignedBy(logged_user());
 			$this->setAssignedOn(DateTimeValueLib::now());
 		}
@@ -1174,24 +1093,20 @@ class ProjectTask extends BaseProjectTask {
 			$id = $this->getId();
 			$sql = "UPDATE `".TABLE_PREFIX."object_reminders` SET
 				`date` = date_sub((SELECT `due_date` FROM `".TABLE_PREFIX."project_tasks` WHERE `id` = $id),
-					interval `minutes_before` minute) WHERE
-					`object_manager` = 'ProjectTasks' AND `object_id` = $id;";
+					interval `minutes_before` minute) WHERE `object_id` = $id;";
 			DB::execute($sql);
 		}
-
+		
 		$tasks = $this->getSubTasks();
 		if(is_array($tasks)) {
 			$task_ids = array();
 			foreach($tasks as $task) {
 				$task_ids[] = $task->getId();
 			} // if
-
-			if(count($task_ids) > 0) {
-				ApplicationLogs::setIsPrivateForType($this->isPrivate(), 'ProjectTasks', $task_ids);
-			} // if
 		} // if
 
 		return true;
+
 	} // save
 
 	function unarchive($unarchive_children = true){
@@ -1214,7 +1129,7 @@ class ProjectTask extends BaseProjectTask {
 				if ($child->isTrashed() && $child->getTrashedOn()->getTimestamp() == $deleteTime->getTimestamp())
 					$child->untrash(false);
 		}
-
+/* FIXME
 		if ($this->hasOpenTimeslots()){
 			$openTimeslots = $this->getOpenTimeslots();
 			foreach ($openTimeslots as $timeslot){
@@ -1224,7 +1139,7 @@ class ProjectTask extends BaseProjectTask {
 					$timeslot->save();
 				}
 			}
-		}
+		}*/
 	}
 
 	/**
@@ -1238,51 +1153,11 @@ class ProjectTask extends BaseProjectTask {
 		return ProjectTasks::delete(DB::escapeField('parent_id') . ' = ' . DB::escape($this->getId()));
 	} // deleteTasks
 
-	/**
-	 * Drop all tasks that are in this list
-	 *
-	 * @access public
-	 * @param void
-	 * @return boolean
-	 */
-	function deleteHandins() {
-		$q=DB::escapeField('rel_object_id') . ' = ' . DB::escape($this->getId()) . ' AND ' .
-		DB::escapeField('rel_object_manager') . ' = ' . DB::escape(get_class($this->manager()));
-		return ObjectHandins::delete($q);
-	} // deleteTasks
 
 	// ---------------------------------------------------
 	//  ApplicationDataObject implementation
 	// ---------------------------------------------------
 
-	/**
-	 * Return object name
-	 *
-	 * @access public
-	 * @param void
-	 * @return string
-	 */
-	function getObjectName($charLimit = 0) {
-		$name = $this->getTitle();
-		if (!$name) {
-			$name = $this->getText();
-		}
-		if ($charLimit > 0 && strlen_utf($name) > $charLimit)
-			return substr_utf($name, 0, $charLimit) . '...';
-		else
-			return $name;
-	} // getObjectName
-	
-
-	/**
-	 * Return object type name
-	 *
-	 * @param void
-	 * @return string
-	 */
-	function getObjectTypeName() {
-		return 'task';
-	} // getObjectTypeName
 
 	/**
 	 * Return object URl
@@ -1301,7 +1176,7 @@ class ProjectTask extends BaseProjectTask {
 	 * @return unknown
 	 */
 	function getDashboardObject(){
-    	if($this->getUpdatedById() > 0 && $this->getUpdatedBy() instanceof User){
+    	if($this->getUpdatedById() > 0 && $this->getUpdatedBy() instanceof Contact){
     		$updated_by_id = $this->getUpdatedBy()->getObjectId();
     		$updated_by_name = $this->getUpdatedByDisplayName();
 			$updated_on = $this->getObjectUpdateTime() instanceof DateTimeValue ? ($this->getObjectUpdateTime()->isToday() ? format_time($this->getObjectUpdateTime()) : format_datetime($this->getObjectUpdateTime())) : lang('n/a');	
@@ -1320,8 +1195,8 @@ class ProjectTask extends BaseProjectTask {
    	
 		$deletedOn = $this->getTrashedOn() instanceof DateTimeValue ? ($this->getTrashedOn()->isToday() ? format_time($this->getTrashedOn()) : format_datetime($this->getTrashedOn(), 'M j')) : lang('n/a');
 		if ($this->getTrashedById() > 0)
-			$deletedBy = Users::findById($this->getTrashedById());
-    	if (isset($deletedBy) && $deletedBy instanceof User) {
+			$deletedBy = Contacts::findById($this->getTrashedById());
+    	if (isset($deletedBy) && $deletedBy instanceof Contact) {
     		$deletedBy = $deletedBy->getDisplayName();
     	} else {
     		$deletedBy = lang("n/a");
@@ -1329,8 +1204,8 @@ class ProjectTask extends BaseProjectTask {
     	
 		$archivedOn = $this->getArchivedOn() instanceof DateTimeValue ? ($this->getArchivedOn()->isToday() ? format_time($this->getArchivedOn()) : format_datetime($this->getArchivedOn(), 'M j')) : lang('n/a');
 		if ($this->getArchivedById() > 0)
-			$archivedBy = Users::findById($this->getArchivedById());
-    	if (isset($archivedBy) && $archivedBy instanceof User) {
+			$archivedBy = Contacts::findById($this->getArchivedById());
+    	if (isset($archivedBy) && $archivedBy instanceof Contact) {
     		$archivedBy = $archivedBy->getDisplayName();
     	} else {
     		$archivedBy = lang("n/a");
@@ -1348,7 +1223,6 @@ class ProjectTask extends BaseProjectTask {
 				"updatedBy" => $updated_by_name,
 				"updatedById" => $updated_by_id,
 				"dateUpdated" => $updated_on,
-				"wsIds" => $this->getWorkspacesIdsCSV(logged_user()->getWorkspacesQuery()),
 				"url" => $this->getObjectUrl(),
 				"parentId" => $parent_id,
 				"status" => "Pending",
@@ -1392,17 +1266,16 @@ class ProjectTask extends BaseProjectTask {
 	function getArrayInfo(){
 		$result = array(
 			'id' => $this->getId(),
-			't' => $this->getTitle(),
-			'wsid' => $this->getWorkspacesIdsCSV(),
+			't' => $this->getObjectName(),
+			'members' => $this->getMemberIds(),
 			'c' => $this->getCreatedOn() instanceof DateTimeValue ? $this->getCreatedOn()->getTimestamp() : 0,
 			'cid' => $this->getCreatedById(),
-			'isread' => $this->getIsRead(logged_user()->getId()),
-			'otype' => $this->getObjectSubtype()
-			);
+			'otype' => $this->getObjectSubtype(),
+			'percentCompleted' => $this->getPercentCompleted()
+		);
 		
 		if ($this->isCompleted())
 			$result['s'] = 1;
-		else $result['s'] = $this->getState();
 			
 		if ($this->getParentId() > 0)
 			$result['pid'] = $this->getParentId();
@@ -1413,9 +1286,9 @@ class ProjectTask extends BaseProjectTask {
 		if ($this->getMilestoneId() > 0)
 			$result['mid'] = $this->getMilestoneId();
 			
-		if ($this->getAssignedToUserId() > 0 || $this->getAssignedToCompanyId() > 0)
-			$result['atid'] = $this->getAssignedToCompanyId() . ':' . $this->getAssignedToUserId();
-			
+		if ($this->getAssignedToContactId() > 0)
+			$result['atid'] = $this->getAssignedToContactId();
+		
 		if ($this->getCompletedById() > 0){
 			$result['cbid'] = $this->getCompletedById();
 			$result['con'] = $this->getCompletedOn()->getTimestamp();
@@ -1425,6 +1298,11 @@ class ProjectTask extends BaseProjectTask {
 			$result['dd'] = $this->getDueDate()->getTimestamp();
 		if ($this->getStartDate())
 			$result['sd'] = $this->getStartDate()->getTimestamp();
+		
+		$time_estimate = $this->getTimeEstimate() ;
+		//$result['estimatedTime'] = $this->getTimeEstimate() ; 
+		$result['estimatedTime'] = DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($time_estimate * 60), 'hm', 60) ;
+		
 		
 		$result['tz'] = logged_user()->getTimezone() * 3600;
 		
@@ -1436,19 +1314,15 @@ class ProjectTask extends BaseProjectTask {
 			$paused = array();
 			foreach ($ot as $t){
 				$time[] = $t->getSeconds();
-				$users[] = $t->getUserId();
+				$users[] = $t->getContactId();
 				$paused[] = $t->isPaused()?1:0;
-				if ($t->isPaused() && $t->getUserId() == logged_user()->getId())
+				if ($t->isPaused() && $t->getContactId() == logged_user()->getId())
 					$result['wpt'] = $t->getPausedOn()->getTimestamp();
 			}
 			$result['wt'] = $time;
 			$result['wid'] = $users;
 			$result['wp'] = $paused;
 		}
-		
-		$tags = $this->getTagNames();
-		if ($tags)
-			$result['tags'] = $tags;
 		
 		if ($this->isRepetitive())
 			$result['rep'] = 1;
@@ -1462,21 +1336,13 @@ class ProjectTask extends BaseProjectTask {
 	}
 	
 	function getOpenTimeslots(){
-		if (is_null($this->timeslots)){
-			return Timeslots::getOpenTimeslotsByObject($this);
-		} else {
-			$result = array();
-			for ($i = 0; $i < count($this->timeslots); $i++)
-				if ($this->timeslots[$i]->isOpen())
-					$result[] = $this->timeslots[$i];
-			return $result;
-		}
+		return Timeslots::getOpenTimeslotsByObject($this);
 	}
 	
 	/**
 	 * Notifies the user of comments and due date of this task
 	 *
-	 * @param User $user
+	 * @param Contact $user
 	 */
 	function subscribeUser($user) {
 		parent::subscribeUser($user);
@@ -1492,25 +1358,4 @@ class ProjectTask extends BaseProjectTask {
 		//ObjectReminders::clearByObject($this);
 	}
 	
-	/**
-	 * Set the task's project
-	 * @param $project
-	 */
-	function setProject($project) {
-		$this->removeFromAllWorkspaces();
-		$this->addToWorkspace($project);
-		$this->project = null;
-	}
-	
-	/**
-	 * Get task's project's id
-	 */
-	function getProjectId() {
-		$project = $this->getProject();
-		if ($project instanceof Project) return $project->getId();
-		return 0;
-	}
-	
 } // ProjectTask
-
-?>

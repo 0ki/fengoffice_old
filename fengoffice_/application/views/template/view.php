@@ -1,4 +1,5 @@
 <?php
+	/* @var $cotemplate COTemplate   */
 	if (!$cotemplate->isTrashed()){
 		if ($cotemplate->canEdit(logged_user())) {
 			add_page_action(lang('edit'), $cotemplate->getEditUrl(), 'ico-edit', null, null, true);

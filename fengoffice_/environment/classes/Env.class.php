@@ -103,24 +103,14 @@ class Env {
 	 */
 	static function executeAction($controller_name, $action) {
    		$max_users = config_option('max_users');
-		if ($max_users && Users::count() > $max_users) {
+		if ($max_users && Contacts::count() > $max_users) {
 	        echo lang("error").": ".lang("maximum number of users exceeded error");
 	        return;
     	}
 		ajx_check_login();
 		
 		if (isset($_GET['active_project']) && logged_user() instanceof User) {
-			$dont_update = false;
-			if (GlobalCache::isAvailable()) {
-				$option_value = GlobalCache::get('user_config_option_'.logged_user()->getId().'_lastAccessedWorkspace', $success);
-				if ($success) $dont_update = ($option_value == $_GET['active_project']);
-			}
-			if (!$dont_update) {
-				set_user_config_option('lastAccessedWorkspace', $_GET['active_project'], logged_user()->getId());
-				if (GlobalCache::isAvailable()) {
-					GlobalCache::update('user_config_option_'.logged_user()->getId().'_lastAccessedWorkspace', $_GET['active_project']);
-				}
-			}
+			set_user_config_option('lastAccessedWorkspace', $_GET['active_project'], logged_user()->getId());
 		}
 		
 		Env::useController($controller_name);
@@ -158,6 +148,7 @@ class Env {
 			}
 			
 			// display the object as json
+
 			tpl_assign("object", $response);
 			$content = tpl_fetch(Env::getTemplatePath("json"));
 			tpl_assign("content_for_layout", $content);
@@ -180,9 +171,32 @@ class Env {
 	 * @param string $controller_name
 	 * @return boolean
 	 * @throws FileDnxError if controller file does not exists
+	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
 	 */
 	static function useController($controller_name) {
 		$controller_class = Env::getControllerClass($controller_name);
+		
+		// Search For Plugin. Execute it if found
+		$plugins = Plugins::instance()->getActive() ;
+		$pluginName = null ; 
+		foreach ($plugins as $plugin) {
+			/* @var $plugin Plugin  */
+			$systemName = $plugin->getSystemName() ;
+			//$controller_file = ROOT."/plugins/$pluginName/application/controllers/$controller_class.class.php";
+			$controller_file = $plugin->getControllerPath()."$controller_class.class.php";
+			//echo $controller_file ."<br/>";
+			if (is_file($controller_file)){
+				$pluginName = $plugin ;
+				Plugins::instance()->setCurrent($plugin) ;
+				include_once $controller_file;
+				return true ;
+			}
+		}
+		
+		
+		// Plugin not found - Search for core controller
+		
+		
 		if(class_exists($controller_class, false)) return true;
 
 		$controller_file = APPLICATION_PATH . "/controllers/$controller_class.class.php";
@@ -202,8 +216,8 @@ class Env {
 	 * @return boolean
 	 * @throws FileDnxError
 	 */
-	static function useHelper($helper) {
-		$helper_file = Env::getHelperPath($helper);
+	static function useHelper($helper, $plugin = null) {
+		$helper_file = Env::getHelperPath($helper, $plugin);
 
 		// If we have it include, else throw exception
 		if(is_file($helper_file)) {
@@ -221,8 +235,8 @@ class Env {
 	 * @param string $helper
 	 * @return boolean
 	 */
-	static function helperExists($helper) {
-		return is_file(self::getHelperPath($helper));
+	static function helperExists($helper, $plugin = null) {
+		return is_file(self::getHelperPath($helper, $plugin));
 	} // helperExists
 
 	/**
@@ -255,7 +269,21 @@ class Env {
 	 * @param string $controller_name
 	 * @return string
 	 */
-	static function getTemplatePath($template, $controller_name = null) {
+	static function getTemplatePath($template, $controller_name = null, $plugin = null ) {
+		if ($plugin) {
+			$template_path = ROOT."/plugins/$plugin/application/views/$controller_name/$template.php";
+			return $template_path;
+		}
+		
+		if ($plugin = Plugins::instance()->getCurrent()){
+			//$template_path = ROOT."/plugins/$plugin/application/views/$controller_name/$template.php";
+			$template_path = $plugin->getViewPath()."$controller_name/$template.php";
+			if ( is_file($template_path) ) {
+				
+				return $template_path ;
+			}
+		}
+		
 		if($controller_name) {
 			return APPLICATION_PATH . "/views/$controller_name/$template.php";
 		} else {
@@ -281,8 +309,11 @@ class Env {
 	 * @param string $helper
 	 * @return string
 	 */
-	static function getHelperPath($helper) {
-		return APPLICATION_PATH . "/helpers/$helper.php";
+	static function getHelperPath($helper, $plugin = null) {
+		if (is_null($plugin))
+			return APPLICATION_PATH . "/helpers/$helper.php";
+		else
+			return ROOT . "/plugins/$plugin/application/helpers/$helper.php";
 	} // getHelperPath
 
 	/**
@@ -311,8 +342,8 @@ class Env {
  * @param string $controller_name
  * @return string
  */
-function get_template_path($template, $controller_name = null) {
-	return Env::getTemplatePath($template, $controller_name);
+function get_template_path($template, $controller_name = null, $plugin = null) {
+	return Env::getTemplatePath($template, $controller_name, $plugin);
 } // get_template_path
 
 ?>

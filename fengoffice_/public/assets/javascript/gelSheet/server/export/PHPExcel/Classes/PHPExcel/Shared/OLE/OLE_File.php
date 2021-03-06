@@ -17,7 +17,7 @@
 // | Based on OLE::Storage_Lite by Kawai, Takanori                        |
 // +----------------------------------------------------------------------+
 //
-// $Id: OLE_File.php,v 1.1 2010/01/22 18:11:45 acio Exp $
+// $Id: OLE_File.php 7 2010-01-22 18:14:51Z acio $
 
 
 //require_once 'PHPExcel/Shared/OLE/OLE_PPS.php';

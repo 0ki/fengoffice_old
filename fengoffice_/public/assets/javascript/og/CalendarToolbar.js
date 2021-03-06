@@ -33,6 +33,7 @@ var actual_status_filter = ' 0 1 3'; // -1=all states
 
 function changeView(action, day, month, year, u_filter, s_filter) {
 	var url = og.getUrl('event', action, {
+		context: og.contextManager.plainContext(),
 		day: day,
 		month: month,
 		year: year,
@@ -198,30 +199,6 @@ var topToolbarItems = {
 			}}
 		]}
 	}),
-	tag: new Ext.Action({
-		text: lang('tag'),
-        tooltip: lang('tag selected events'),
-        iconCls: 'ico-tag',
-		disabled: true,
-		menu: new og.TagMenu({
-			listeners: {
-				'tagselect': {
-					fn: function(tag) {
-						ids = og.getSelectedEventsCsv();
-						og.openLink(og.getUrl('event', 'tag_events', {ids: ids, tags: tag}));
-					},
-					scope: this
-				},
-				'tagdelete': {
-					fn: function(tag) {
-						ids = og.getSelectedEventsCsv();
-						og.openLink(og.getUrl('event', 'untag_events', {ids: ids, tags: tag}));
-				},
-				scope: this
-				}
-			}
-		})
-	}),
 	del: new Ext.Action({
 		text: lang('move to trash'),
         tooltip: lang('move selected objects to trash'),
@@ -292,7 +269,7 @@ og.CalendarTopToolbar = function(config) {
 		this.add(topToolbarItems.add);
 		this.addSeparator();
 		this.add(topToolbarItems.edit);
-		this.add(topToolbarItems.tag);
+		//this.add(topToolbarItems.tag);
 		this.add(topToolbarItems.archive);
 		this.add(topToolbarItems.del);		
 		this.addSeparator();
@@ -309,7 +286,7 @@ Ext.extend(og.CalendarTopToolbar, Ext.Toolbar, {
 		var allunread = true;
 		if (eventsSelected > 0) {
 			topToolbarItems.del.enable();
-			topToolbarItems.tag.enable();
+			//topToolbarItems.tag.enable();
 			if (allunread){
 				markactions.markAsRead.enable();
 				
@@ -320,7 +297,7 @@ Ext.extend(og.CalendarTopToolbar, Ext.Toolbar, {
 			else topToolbarItems.edit.disable();
 		} else {
 			topToolbarItems.del.disable();
-			topToolbarItems.tag.disable();
+			//topToolbarItems.tag.disable();
 			topToolbarItems.edit.disable();
 			markactions.markAsRead.disable();
 			markactions.markAsUnread.disable();

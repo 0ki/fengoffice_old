@@ -130,6 +130,7 @@
     'success add group' => 'Group {0} has been added',
     'success edit group' => 'Group {0} has been updated',
     'success delete group' => 'Group {0} has been deleted',
+  	'no groups in company' => 'No Groups in Company',
     
     'success edit company' => 'Company data has been updated',
     'success edit company logo' => 'Company logo has been updated',
@@ -183,7 +184,7 @@
     'success unlink object' => 'Objects have been successfully unlinked',
     
     'success update config category' => '{0} configuration values have been updated',
-    'success forgot password' => 'Intructions have been emailed to you',
+    'success forgot password' => 'Instructions have been emailed to you',
     
     'success test mail settings' => 'Test mail has been successfully sent',
     'success massmail' => 'Email has been sent',
@@ -250,7 +251,6 @@
   	'success update billing values' => 'Timeslot billing values updated succesfully: {0} entries modified.',
     
     // Failures
-    'error forgot password' => 'Failed to send the new password. Contact your Feng Office administrator.',
     'error edit timeslot' => 'Failed to save timeslot',
   	'error delete timeslot' => 'Failed to delete the selected timeslot',
   	'error add timeslot' => 'Failed to add timeslot',
@@ -339,7 +339,7 @@
     'confirm open project' => 'Are you sure that you want to mark this workspace as open? This will unlock all workspace actions',
     'confirm delete client' => 'Are you sure that you want to delete selected client company and all of its users?\nThis action will also delete the users\' personal workspaces.',
     'confirm delete contact' => 'Are you sure that you want to delete selected contact?',
-    'confirm delete user' => 'Are you sure that you want to delete this user account?\nThis action will also delete the user\'s personal workspace.',
+    'confirm delete user' => 'Are you sure that you want to delete this user account?',
     'confirm reset people form' => 'Are you sure that you want to reset this form? All modifications you made will be lost!',
     'confirm remove user from project' => 'Are you sure that you want to remove this user from this workspace?',
     'confirm remove company from project' => 'Are you sure that you want to remove this company from this workspace?',
@@ -704,10 +704,6 @@
   	'ie browser outdated' => 'Your browser is not officially supported. For a better experience please upgrade your browser.',
   	'outbox mail not sent' => 'You still have {0} electronic mail in your outbox folder which has not been sent yet',
   	'outbox mails not sent' => 'You still have {0} electronic mails in your outbox folder which have not been sent yet',
-  	'mail not sent' => "This email, or another one located in your 'Outbox' folder, has not been sent because there seems to be a problem with your email account settings or email server. The error message is:",
-   	'mail not sent, wrong settings/receiver' => "This email, or another one located in your 'Outbox' folder, has not been sent because there either is a problem in your email account settings or the receiver is not valid. The error message is:",
-  
-  	'success save object subtypes' => 'Object subtype saved successfully',
   
     'short search query warning' => 'You search query is too short. You can try searching for "<b>{0}*</b>" to find words starting with "<b>{0}</b>".',
   	'no attachments found for email' => 'No attachments found for email',
@@ -736,7 +732,9 @@
   	'the ProjectWebpages' => 'the webpage',
   	'the Timeslots' => 'the timeslot',
   
-  
+  	'objects moved to member success' => 'The objects has been added to {0} successfully',
+	'object moved to member success' => 'The object has been added to {0} successfully',
+  	'vinculated to' => 'Vinculated to',
   ); // array
 
 ?>

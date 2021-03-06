@@ -6,7 +6,7 @@
   *
   * @author Ilija Studen <ilija.studen@gmail.com>
   */
-  abstract class BaseComments extends ProjectDataObjects {
+  abstract class BaseComments extends ContentDataObjects {
   
     /**
     * Column name => Column type map
@@ -15,21 +15,12 @@
     * @static
     */
     static private $columns = array(
-    	'id' => DATA_TYPE_INTEGER,
+    	'object_id' => DATA_TYPE_INTEGER,
     	'rel_object_id' => DATA_TYPE_INTEGER,
-    	'rel_object_manager' => DATA_TYPE_STRING,
     	'text' => DATA_TYPE_STRING,
-    	'is_private' => DATA_TYPE_BOOLEAN,
-    	'is_anonymous' => DATA_TYPE_BOOLEAN,
     	'author_name' => DATA_TYPE_STRING,
     	'author_email' => DATA_TYPE_STRING,
     	'author_homepage' => DATA_TYPE_STRING,
-    	'created_on' => DATA_TYPE_DATETIME,
-    	'created_by_id' => DATA_TYPE_INTEGER,
-    	'updated_on' => DATA_TYPE_DATETIME,
-    	'updated_by_id' => DATA_TYPE_INTEGER,
-    	'trashed_on' => DATA_TYPE_DATETIME,
-    	'trashed_by_id' => DATA_TYPE_INTEGER,
     );
   
     /**
@@ -80,7 +71,7 @@
     * @return array or string
     */
     function getPkColumns() {
-      return 'id';
+      return 'object_id';
     } // getPkColumns
     
     /**
@@ -91,7 +82,7 @@
     * @return string
     */
     function getAutoIncrementColumn() {
-      return 'id';
+      return 'object_id';
     } // getAutoIncrementColumn
     
     // -------------------------------------------------------
@@ -118,8 +109,6 @@
         return parent::find($arguments);
       } else {
         return Comments::instance()->find($arguments);
-        //$instance =& Comments::instance();
-        //return $instance->find($arguments);
       } // if
     } // find
     
@@ -135,8 +124,6 @@
         return parent::findAll($arguments);
       } else {
         return Comments::instance()->findAll($arguments);
-        //$instance =& Comments::instance();
-        //return $instance->findAll($arguments);
       } // if
     } // findAll
     
@@ -152,8 +139,6 @@
         return parent::findOne($arguments);
       } else {
         return Comments::instance()->findOne($arguments);
-        //$instance =& Comments::instance();
-        //return $instance->findOne($arguments);
       } // if
     } // findOne
     
@@ -170,8 +155,6 @@
         return parent::findById($id, $force_reload);
       } else {
         return Comments::instance()->findById($id, $force_reload);
-        //$instance =& Comments::instance();
-        //return $instance->findById($id, $force_reload);
       } // if
     } // findById
     
@@ -187,8 +170,6 @@
         return parent::count($condition);
       } else {
         return Comments::instance()->count($condition);
-        //$instance =& Comments::instance();
-        //return $instance->count($condition);
       } // if
     } // count
     
@@ -204,8 +185,6 @@
         return parent::delete($condition);
       } else {
         return Comments::instance()->delete($condition);
-        //$instance =& Comments::instance();
-        //return $instance->delete($condition);
       } // if
     } // delete
     
@@ -228,8 +207,6 @@
         return parent::paginate($arguments, $items_per_page, $current_page);
       } else {
         return Comments::instance()->paginate($arguments, $items_per_page, $current_page);
-        //$instance =& Comments::instance();
-        //return $instance->paginate($arguments, $items_per_page, $current_page);
       } // if
     } // paginate
     

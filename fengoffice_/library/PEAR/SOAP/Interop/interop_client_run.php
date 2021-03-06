@@ -17,7 +17,7 @@
 // | Authors: Shane Caraveo <Shane@Caraveo.com>                           |
 // +----------------------------------------------------------------------+
 //
-// $Id: interop_client_run.php,v 1.1 2010/01/22 18:09:21 acio Exp $
+// $Id: interop_client_run.php 7 2010-01-22 18:14:51Z acio $
 //
 
 if (isset($_SERVER['SERVER_NAME'])) {

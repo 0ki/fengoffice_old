@@ -16,7 +16,6 @@ abstract class BaseTemplateObjectProperties extends DataManager {
 	static private $columns = array(
 		'template_id' => DATA_TYPE_INTEGER,
 		'object_id' => DATA_TYPE_INTEGER,
-		'object_manager' => DATA_TYPE_STRING,
 		'property' => DATA_TYPE_STRING,
 		'value' => DATA_TYPE_STRING
 	);
@@ -69,7 +68,7 @@ abstract class BaseTemplateObjectProperties extends DataManager {
 	 * @return array or string
 	 */
 	function getPkColumns() {
-		return array('template_id', 'object_id', 'object_manager', 'property');
+		return array('template_id', 'object_id');
 	} // getPkColumns
 
 	/**

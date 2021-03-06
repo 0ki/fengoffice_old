@@ -16,7 +16,7 @@
     */
     static private $columns = array(
     	'id' => DATA_TYPE_INTEGER, 
-    	'object_type' => DATA_TYPE_STRING,
+    	'object_type_id' => DATA_TYPE_INTEGER,
     	'name' => DATA_TYPE_STRING,
     	'type' => DATA_TYPE_STRING, 
     	'description' => DATA_TYPE_STRING,

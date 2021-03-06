@@ -126,6 +126,7 @@ class Localization {
 		return $this->loadLanguageSettings();
 
 	} // loadSettings
+	
 
 	/**
 	 * Load language settings
@@ -134,66 +135,74 @@ class Localization {
 	 * @param void
 	 * @throws DirDnxError If language dir does not exists
 	 * @throws FileDnxError If language settings file for this local settings
-	 *   does not exists in lanuage dir
+	 * does not exists in lanuage dir
 	 */
 	private function loadLanguageSettings() {
-
 		// Check dir...
-		if(!is_dir($this->getLanguageDirPath())) {
-			throw new DirDnxError($this->getLanguageDirPath());
+		if (! is_dir ( $this->getLanguageDirPath () )) {
+			throw new DirDnxError ( $this->getLanguageDirPath () );
 		} // if
+		
 
 		// Get settings file path and include it
-		$settings_file = $this->getLanguageDirPath() . '/' . $this->getLocale() . '.php';
-		if (is_file($settings_file)) {
+		$settings_file = $this->getLanguageDirPath () . '/' . $this->getLocale () . '.php';
+		if (is_file ( $settings_file )) {
 			include $settings_file;
 		} else {
-			$base_settings = $this->getLanguageDirPath() . '/default.php';
-			if (is_file($base_settings)) {
+			$base_settings = $this->getLanguageDirPath () . '/default.php';
+			if (is_file ( $base_settings )) {
 				include $base_settings;
 			} else {
-				throw new FileDnxError($settings_file, "Failed to find language settings file. Expected location: '$settings_file'.");
+				throw new FileDnxError ( $settings_file, "Failed to find language settings file. Expected location: '$settings_file'." );
 			}
-		} // if
-
+		}
+		
 		// Clear langs
-		$this->langs->clear();
-
-		// Get langs dir
-		$langs_dir = $this->getLanguageDirPath() . '/' . $this->getLocale();
-		if(is_dir($langs_dir)) {
-			$files = get_files($langs_dir, 'php');
-
-			// Loop through files and add langs
-			if(is_array($files)) {
-				sort($files);
-				foreach($files as $file) {
-					$langs = include $file;
-					if(is_array($langs)) $this->langs->append($langs);
-				} // foreach
-			} // if
+		$this->langs->clear ();
+		
+		// Get langs dir - ONLY PHP langs !
+		$langs_dir = $this->getLanguageDirPath () . '/' . $this->getLocale ();
+		if (is_dir ( $langs_dir )) {
+			$files = get_files ( $langs_dir, 'php' );
 			
-			//Load plugin langs after fengoffice default langs
-			$plugins_dir = $langs_dir . '/plugins';
-			if(is_dir($plugins_dir)) {
-				sort($files);
-				$files = get_files($plugins_dir, 'php');
-	
-				// Loop through files and add langs
-				if(is_array($files)) {
-					foreach($files as $file) {
-						$langs = include $file;
-						if(is_array($langs)) $this->langs->append($langs);
-					} // foreach
-				} // if
-			} // if
+			// Loop through files and add langs
+			if (is_array ( $files )) {
+				sort ( $files );
+				foreach ( $files as $file ) {
+					$langs = include $file;
+					if (is_array ( $langs ))
+						$this->langs->append ( $langs );
+				}
+			}
+			
+			// Plugins - Only PHP langs  
+			$plugins = Plugins::instance ()->getActive ();
+			foreach ( $plugins as $plugin ) {
+				/* @var $plugin Plugin */
+				$plg_dir = $plugin->getLanguagePath () . "/" . $this->getLocale ();
+				if (is_dir ( $plg_dir )) {
+					$files = get_files ( $plg_dir, 'php' );
+					// Loop through files and add langs
+					if (is_array ( $files )) {
+						sort ( $files );
+						foreach ( $files as $file ) {
+							$langs = include $file;
+							
+							if (is_array ( $langs ))
+								$this->langs->append ( $langs );
+						}
+					}
+				}
+			}
+		
 		} else {
-			throw new DirDnxError($langs_dir);
+			throw new DirDnxError ( $langs_dir );
 		} // if
+		
 
 		// Done!
 		return true;
-
+	
 	} // loadLanguageSettings
 
 	/**

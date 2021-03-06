@@ -17,7 +17,7 @@
 // | 		  Ralf Hofmann <ralf.hofmann@verdisoft.com>					  |
 // +----------------------------------------------------------------------+
 //
-// $Id: DIME.php,v 1.1 2010/01/22 18:07:10 acio Exp $
+// $Id: DIME.php 7 2010-01-22 18:14:51Z acio $
 //
 
 require_once 'PEAR.php';
@@ -43,7 +43,7 @@ require_once 'PEAR.php';
  * 
  * @author  Shane Caraveo <shane@caraveo.com>, 
  *          Ralf Hofmann <ralf.hofmann@verdisoft.com>	 
- * @version $Revision: 1.1 $
+ * @version $Revision: 7 $
  * @package Net_DIME
  */
 define('NET_DIME_TYPE_UNCHANGED',0x00);

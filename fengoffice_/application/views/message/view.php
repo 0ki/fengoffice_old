@@ -24,11 +24,7 @@ if (isset($message) && $message instanceof ProjectMessage) {
 <div class="message">
 	<?php 
 		$content = escape_html_whitespace(convert_to_links(clean($message->getText())));
-		if(trim($message->getAdditionalText())) {
-    		$content .= '<div class="messageSeparator">' . lang('message separator') . '</div>' 
-    			. escape_html_whitespace(convert_to_links(clean($message->getAdditionalText())));
-		}
-		
+				
 		tpl_assign("content", $content);
 		tpl_assign("object", $message);
 		tpl_assign('iconclass', $message->isTrashed()? 'ico-large-message-trashed' : ($message->isArchived() ? 'ico-large-message-archived' : 'ico-large-message'));

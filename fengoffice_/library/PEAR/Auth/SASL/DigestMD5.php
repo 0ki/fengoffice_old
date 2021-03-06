@@ -32,7 +32,7 @@
 // | Author: Richard Heyes <richard@php.net>                               | 
 // +-----------------------------------------------------------------------+ 
 // 
-// $Id: DigestMD5.php,v 1.1 2010/01/22 18:11:20 acio Exp $
+// $Id: DigestMD5.php 7 2010-01-22 18:14:51Z acio $
 
 /**
 * Implmentation of DIGEST-MD5 SASL mechanism

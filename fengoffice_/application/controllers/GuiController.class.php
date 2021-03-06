@@ -30,8 +30,8 @@ class GUIController extends ApplicationController {
 			tpl_assign("object", $object);
 			return;
 		}
-		$query = "INSERT INTO `" . TABLE_PREFIX . "guistate` (`user_id`, `name`, `value`) VALUES ";
-		$queryd = "DELETE FROM `" . TABLE_PREFIX . "guistate` WHERE `user_id` = " . logged_user()->getId() . " AND `name` IN (";
+		$query = "INSERT INTO `" . TABLE_PREFIX . "guistate` (`contact_id`, `name`, `value`) VALUES ";
+		$queryd = "DELETE FROM `" . TABLE_PREFIX . "guistate` WHERE `contact_id` = " . logged_user()->getId() . " AND `name` IN (";
 		$values = "";
 		$names = "";
 		$id = logged_user()->getId();
@@ -84,7 +84,7 @@ class GUIController extends ApplicationController {
 		$this->setTemplate(get_template_path('back'));
 		ajx_current("empty");
 		try {
-			$query = "DELETE FROM `" . TABLE_PREFIX . "guistate` WHERE `user_id` = " . DB::escape(logged_user()->getId());
+			$query = "DELETE FROM `" . TABLE_PREFIX . "guistate` WHERE `contact_id` = " . DB::escape(logged_user()->getId());
 			DB::executeAll($query);
 			flash_success(lang("success reset gui state"));
 		} catch (Exception $e) {
@@ -93,7 +93,7 @@ class GUIController extends ApplicationController {
 	}
 	
 	static function getState() {
-		$query = "SELECT `name`, `value` FROM `" . TABLE_PREFIX . "guistate` WHERE `user_id` = " . DB::escape(logged_user()->getId());
+		$query = "SELECT `name`, `value` FROM `" . TABLE_PREFIX . "guistate` WHERE `contact_id` = " . DB::escape(logged_user()->getId());
 		$rows = DB::executeAll($query);
 		$data = array();
 		if ($rows) {

@@ -18,8 +18,7 @@ $object = $file;
 	<input id="<?php echo $genid ?>hfAddFileAddType" name='file[add_type]' type="hidden" value="regular" />
 	<input id="<?php echo $genid ?>hfType" name='file[type]' type="hidden" value="" />
 	<input id="genidhidden" name="file[upload_id]" type="hidden" value="<?php echo $genid ?>" />
-	<input id="<?php echo $genid ?>ws_ids" name='ws_ids' type="hidden" value="<?php echo $workspace? $workspace:logged_user()->getPersonalProjectId() ?> " />
-	<input id="<?php echo $genid ?>tag" name='file[tags]' type="hidden" value="<?php echo $tag ?>" />
+	
 	<input id="<?php echo $genid ?>no_msg" name="no_msg" value="" type="hidden" />
 	<input id="<?php echo $genid ?>temp_id" name="temp_id" value="" type="hidden" />
 	
@@ -86,7 +85,7 @@ $object = $file;
 				<table>
 					<tr>
 						<td style="height: 20px; padding-right: 4px">
-							<?php echo radio_field('file[upload_option]',true, array("id" => $genid . 'radioAddFileAnyway', "value" => -1, 'tabindex' => '30')) ?>
+							<?php echo radio_field('file[_option]',true, array("id" => $genid . 'radioAddFileAnyway', "value" => -1, 'tabindex' => '30')) ?>
 						</td><td>
 							<?php echo lang('upload anyway')?>
 						</td>

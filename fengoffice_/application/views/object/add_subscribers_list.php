@@ -2,41 +2,45 @@
 require_javascript('og/modules/addMessageForm.js'); 
 ?>
 
-<form id="<?php echo $genid . 'add-User-Form'?>" class="internalForm" style="height: 100%;width: 100%; overflow: auto;" action="<?php echo get_url("object","add_subscribers_from_object_view",array('object_id'=>$object->getId(),'object_manager' => $type))?>" method="post">
+<form id="<?php echo $genid . 'add-User-Form'?>" class="internalForm" style="height: 100%;width: 100%; overflow: auto;" action="<?php echo get_url("object","add_subscribers_from_object_view",array('object_id'=>$object->getId()))?>" method="post">
 <div class="og-add-subscribers">
 <?php
-	if (!is_array($subscriberIds)) $subscriberIds = array(logged_user()->getId());
-	if (!isset($workspaces)) $workspaces = array(active_or_personal_project());
 	if (!isset($genid)) $genid = gen_id();
-?>
-<?php
-	// get users with permissions
-	$users = array();
-	foreach ($workspaces as $ws) {
-		$someUsers = $ws->getUsers(false);
-		foreach ($someUsers as $u) {
-			if ($type == 'Contacts' && $u->getCanManageContacts()) {
-				$canRead = true;
-			} else {
-				// see if user can read type of object in the workspace
-				$canRead = can_read_type($u, $ws, $type);
-			}
-			if ($canRead) {
-				$users["u".$u->getId()] = $u;
+	if (!is_array($subscriberIds)) $subscriberIds = array(logged_user()->getId());
+	
+	// build context to retrieve allowed users, exclude users and persons dimensions
+	$context_tmp = active_context();
+	$members = $object->getMembers();
+	$context = array();
+	foreach ($context_tmp as $selection) {
+		$dimension = ($selection instanceof Member ? $selection->getDimension() : $selection);
+		if (in_array($dimension->getCode(), array('feng_persons', 'feng_users'))) continue;
+		$replace_with = null;
+		foreach ($members as $member) {
+			if ($dimension_id == $member->getDimensionId()) {
+				$replace_with = $member;
+				break;
 			}
 		}
+		if (!is_null($replace_with)) $context[] = $replace_with;
+		else $context[] = $dimension;
 	}
-	$users = array_values($users);
-
+	
+	$allowed_users = allowed_users_in_context($object->getObjectTypeId(), $context, ACCESS_LEVEL_READ);
+	$users = array();
+	foreach ($allowed_users as $u) {
+		$users["u".$u->getId()] = $u;
+	}
+	
 	$grouped = array();
 	$allChecked = true;
 	foreach($users as $user) {
 		if (!in_array($user->getId(), $subscriberIds)) $allChecked = false;
 		if(!isset($grouped[$user->getCompanyId()]) || !is_array($grouped[$user->getCompanyId()])) {
 			$grouped[$user->getCompanyId()] = array();
-		} // if
+		}
 		$grouped[$user->getCompanyId()][] = $user;
-	} // foreach
+	}
 	$companyUsers = $grouped;
 ?>
 <div id="<?php echo $genid ?>notify_companies">
@@ -47,8 +51,8 @@ require_javascript('og/modules/addMessageForm.js');
 
 	<?php if(is_array($users) && count($users)) { ?>
 		<div onclick="og.subscribeCompany(this)" class="container-div company-name<?php echo $allChecked ? ' checked' : '' ?>" onmouseout="og.rollOut(this,true)" onmouseover="og.rollOver(this)">
-		<?php $theCompany = Companies::findById($companyId) ?>
-			<label for="<?php echo $genid ?>notifyCompany<?php echo $theCompany->getId() ?>" style="background: url('<?php echo $theCompany->getLogoUrl() ?>') no-repeat;"><?php echo clean($theCompany->getName()) ?></label><br/>
+		<?php $theCompany = Contacts::findById($companyId) ?>
+			<label for="<?php echo $genid ?>notifyCompany<?php echo $theCompany->getId() ?>" style="background: url('<?php echo $theCompany->getPictureUrl() ?>') no-repeat;"><?php echo clean($theCompany->getFirstName()) ?></label><br/>
 		</div>
 		<div style="padding-left:10px;">
 		<?php foreach($users as $user) { ?>
@@ -57,13 +61,12 @@ require_javascript('og/modules/addMessageForm.js');
 				?>
 				<div id="div<?php echo $genid ?>inviteUser<?php echo $user->getId() ?>" class="container-div <?php echo $checked==true? 'checked-user':'user-name' ?>" onmouseout="og.rollOut(this,false <?php echo $checked==true? ',true':',false' ?>)" onmouseover="og.rollOver(this)" onclick="og.checkUser(this)">
 					<input <?php echo $checked? 'checked="checked"':'' ?> id="<?php echo $genid ?>inviteUser<?php echo $user->getId()?>" type="checkbox" style="display:none" name="<?php echo 'subscribers[user_'.$user->getId() .']' ?>" value="checked" />
-					<label for="<?php echo $genid ?>notifyUser<?php echo $user->getId() ?>" style=" width: 120px; overflow:hidden; background:url('<?php echo $user->getAvatarUrl() ?>') no-repeat;">
+					<label for="<?php echo $genid ?>notifyUser<?php echo $user->getId() ?>" style=" width: 120px; overflow:hidden; background:url('<?php echo $user->getPictureUrl() ?>') no-repeat;">
 						<span class="ico-user link-ico"><?php echo clean($user->getDisplayName()) ?></span>
 						<br>
-						<span style="color:#888888;font-size:90%;font-weight:normal;"> <?php echo $user->getEmail()  ?> </span>
+						<span style="color:#888888;font-size:90%;font-weight:normal;"> <?php echo $user->getEmailAddress('user')  ?> </span>
 					</label>
-					<div id="div<?php echo $genid ?>inviteUser<?php echo $user->getId() ?>check" class="container-div checked-user-check" <?php echo $checked==true? '':"style='display:none'" ?>>
-					</div>
+					
 					<br/>
 				</div>
 			

@@ -8,6 +8,11 @@
   */
   class ProjectFileRevisions extends BaseProjectFileRevisions {
   
+  	function __construct() {
+		parent::__construct();
+		$this->object_type_name = 'file revision';
+	}
+  		
   } // ProjectFileRevisions 
 
 ?>

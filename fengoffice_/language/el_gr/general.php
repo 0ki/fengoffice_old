@@ -219,8 +219,4 @@
 	'day at' => '{0} στις {1}',
 	'workspace and tags' => 'Περιοχή εργασίας και Ετικέτες',
 	'in capitalized' => 'Σε',
-	'the' => 'το',
-	'email or username' => 'E-mail ή Χρήστης',
-	'assigned to description' => 'Για να επιλέξετε τον κάτοχο του λογαριασμού e-mail',
-	'direct url' => 'Απ\'ευθείας URL',
 ); ?>

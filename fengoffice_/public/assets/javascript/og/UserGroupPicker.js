@@ -41,7 +41,7 @@ og.UserPicker = function(config) {
 			iconCls: 'ico-users',
 			listeners: {
 				click: function() {
-					this.unselect();
+					//this.unselect();
 					this.select();
 				}
 			}
@@ -49,20 +49,20 @@ og.UserPicker = function(config) {
 	);
 	this.users.user = {id: 0, n: lang('users')};
 	this.groups = this.root.appendChild(
-			new Ext.tree.TreeNode({
-				id: "groups",
-				text: lang('groups'),
-				expanded: true,
-				name: lang('groups'),
-				iconCls: 'ico-groups',
-				listeners: {
-					click: function() {
-						this.unselect();
-						this.select();
-					}
+		new Ext.tree.TreeNode({
+			id: "groups",
+			text: lang('groups'),
+			expanded: true,
+			name: lang('groups'),
+			iconCls: 'ico-groups',
+			listeners: {
+				click: function() {
+					//this.unselect();
+					this.select();
 				}
-			})
-		);
+			}
+		})
+	);
 	this.groups.user = {id: 0, n: lang('groups')};
 	
 	if (users) this.addUsers(users);
@@ -88,12 +88,15 @@ og.UserPicker = function(config) {
 				this.clearFilter();
 				node.expand();
 				node.ensureVisible();
+			} else if (node && !this.pauseEvents && node.user && (node.user.t != 'user' && node.user.t != 'group')) {
+				this.fireEvent("noneselected", node.user);
 			}
 		},
 		scope:this
 	});
 	
 	this.addEvents({userselect: true});
+	this.addEvents({noneselected: true});
 };
 
 Ext.extend(og.UserPicker, Ext.tree.TreePanel, {
@@ -138,11 +141,12 @@ Ext.extend(og.UserPicker, Ext.tree.TreePanel, {
 			id: nid,
 			listeners: {
 				click: function() {
-					this.unselect();
+					//this.unselect();
 					this.select();
 				},
 				checkchange: {
 					fn: function(node, checkedValue) {
+						if (!node) return;
 						node.user.checked = checkedValue;
 						node.select();
 						if (this.userField) {
@@ -159,7 +163,7 @@ Ext.extend(og.UserPicker, Ext.tree.TreePanel, {
 							}
 							this.userField.value = ids.join(",");
 						}
-						this.fireEvent("usercheck", node.user);
+						this.fireEvent("usercheck", node.user, checkedValue);
 					},
 					scope: this
 				}

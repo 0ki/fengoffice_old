@@ -4,7 +4,11 @@
  * @author Carlos Palma <chonwil@gmail.com>
  */
 class ProjectCharts extends BaseProjectCharts {
-
+	public function __construct() {
+		parent::__construct ();
+		$this->object_type_name = 'chart';
+	}
+	
 	public static function getWorkspaceString($ids = '?') {
 		return " `id` IN (SELECT `object_id` FROM `" . TABLE_PREFIX . "workspace_objects` WHERE `object_manager` = 'ProjectCharts' AND `workspace_id` IN ($ids)) ";
 	}

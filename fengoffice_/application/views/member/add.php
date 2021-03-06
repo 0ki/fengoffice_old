@@ -1,0 +1,129 @@
+<?php
+	require_javascript("og/DateField.js");
+	require_javascript("og/modules/addMemberForm.js");
+	set_page_title(lang('members'));
+	$genid = gen_id();
+	if (!isset($parent_sel)) $parent_sel = 0;
+	if (!isset($obj_type_sel)) $obj_type_sel = 0;
+	if (!$member->isNew()) {
+		$memberId = $member->getId();
+	}
+?>
+
+<form id="<?php echo $genid ?>submit-edit-form" ooooonsubmit="return App.modules.addMemberForm.submitForm('<?php echo $genid?>', <?php echo $current_dimension->getId()?>, <?php echo $memberId?$memberId:'null' ?> );" style='height:100%;background-color:white' action="<?php echo $member->isNew() ? get_url('member', 'add') : get_url('member', 'edit', array("id" => $member->getId())) ?>" method="post" enctype="multipart/form-data" >
+
+<div class="coInputHeader">
+<div class="coInputHeaderUpperRow">
+	<div class="coInputTitle">
+		<table style="width:535px"><tr><td>
+			<?php echo $member->isNew() ? lang('new member') : lang('edit member') ?>
+		</td><td style="text-align:right">
+			<?php echo submit_button($member->isNew() ? lang('add member') : lang('save changes'),'s',array('style'=>'margin-top:0px;margin-left:10px', 'tabindex' => '5')) ?>
+		</td></tr></table>
+	</div>
+	
+	</div>
+	<div>
+	<?php echo label_tag(lang('name'), $genid . 'memberFormTitle', true) ?>
+	<?php echo text_field('member[name]', array_var($member_data, 'name'), 
+		array('id' => $genid . 'memberFormTitle', 'class' => 'title', 'tabindex' => '1')) ?>
+	</div>
+	
+	<?php $categories = array(); Hook::fire('object_edit_categories', $member, $categories); ?>
+	
+	<div style="padding-top:10px">
+		<div><span class="bold"><?php echo lang('dimension')?>:&nbsp;</span><span class="desc"><?php echo $current_dimension->getName()?></span></div>
+		<input type="hidden" id="<?php echo $genid?>dimension_id" name="member[dimension_id]" value="<?php echo $current_dimension->getId();?>" />
+		<input type="hidden" id="<?php echo $genid?>member_id" name="member[member_id]" value="<?php echo ($member->isNew() ? '0' : $member->getId());?>" />
+	</div>
+</div>
+<div class="coInputSeparator"></div>
+
+<div class="coInputMainBlock">
+
+	<div>
+		<?php echo label_tag(lang('type'), "", true) ?>
+		<input type="hidden" id="<?php echo $genid ?>memberObjectType" name="member[object_type_id]"></input>
+		<div id="<?php echo $genid ?>object_type_combo_container"></div>
+	</div>
+	
+	<div id="<?php echo $genid?>memberParentContainer" <?php echo ($parent_sel > 0 ? "" : 'style="display:none;"')?>>
+		<?php  
+			
+			$selected_members = array();
+			if ($parent_sel) {
+				$selected_members[] = $parent_sel ;
+			}
+			echo label_tag(lang('parent member'), "", true);
+			render_single_dimension_tree($current_dimension, $genid, $selected_members, array('checkBoxes'=>false,'all_members' => true))  ;
+			
+		?>
+			<input type="hidden" id="<?php echo $genid ?>memberParent" name="member[parent_member_id]"></input>
+			
+		<!-- 
+			<div id="<?php echo $genid ?>parent_combo_container"></div>
+		 -->
+	</div>
+	
+	<div id="<?php echo $genid?>dimension_object_fields" style="display:none;"></div>
+	
+	<div style="margin-top:10px; display:none;" id="<?php echo $genid?>property_links">
+		<span id="<?php echo $genid ?>addPropertiesLink"
+			onclick="App.modules.addMemberForm.drawDimensionProperties('<?php echo $genid;?>', <?php echo $current_dimension->getId();?>);"
+			class="db-ico ico-add bold" style="padding:3px 0 0 20px; cursor:pointer;"><?php echo lang('vinculations')?></span>
+			
+		<span id="<?php echo $genid ?>delPropertiesLink"
+			onclick="App.modules.addMemberForm.deleteDimensionProperties('<?php echo $genid?>');"
+			class="db-ico ico-delete bold" style="padding:3px 0 0 20px; cursor:pointer; display:none;"><?php echo lang('hide vinculations')?></span>
+	</div>
+	
+	<div id="<?php echo $genid?>dimension_properties" style="width:750px;"></div>
+	
+	<div style="margin-top:10px; display:none;" id="<?php echo $genid?>restriction_links">
+		<input type="hidden" id="<?php echo $genid?>ot_with_restrictions" value="" />
+		<span id="<?php echo $genid ?>addRestrictionsLink"
+			onclick="App.modules.addMemberForm.drawDimensionRestrictions('<?php echo $genid;?>', <?php echo $current_dimension->getId();?>);"
+			class="db-ico ico-add bold" style="padding:3px 0 0 20px; cursor:pointer;"><?php echo lang('restrictions')?></span>
+			
+		<span id="<?php echo $genid ?>delRestrictionsLink"
+			onclick="App.modules.addMemberForm.deleteDimensionRestrictions('<?php echo $genid?>');"
+			class="db-ico ico-delete bold" style="padding:3px 0 0 20px; cursor:pointer; display:none;"><?php echo lang('hide restrictions')?></span>
+	</div>
+	
+	<div id="<?php echo $genid?>dimension_restrictions" style="width:750px;"></div>
+<?php if (isset($rest_genid)) { ?>
+	<input type="hidden" name="rest_genid" value="<?php echo $rest_genid?>" />
+<?php } ?>
+<?php if (isset($prop_genid)) { ?>
+	<input type="hidden" name="prop_genid" value="<?php echo $prop_genid?>" />
+<?php } ?>
+<div style="margin-top:10px;"></div>
+<?php echo submit_button($member->isNew() ? lang('add member') : lang('save changes'),'s',array('style'=>'margin-top:0px;margin-left:10px', 'tabindex' => '5')) ?>
+</div>
+</form>
+
+<script>
+	var genid = '<?php echo $genid?>';
+	Ext.get('<?php echo $genid ?>memberFormTitle').focus();
+
+	og.dimRestrictions.ot_with_restrictions = Ext.util.JSON.decode('<?php echo json_encode($ot_with_restrictions)?>');
+	og.dimProperties.ot_with_properties = Ext.util.JSON.decode('<?php echo json_encode($ot_with_associations)?>');
+
+	App.modules.addMemberForm.drawObjectTypesSelectBox(genid, Ext.util.JSON.decode('<?php echo json_encode($dimension_obj_types)?>'), 'object_type_combo_container', 'memberObjectType', '<?php echo (isset($obj_type_sel) ? $obj_type_sel : 0) ?>', '<?php echo (isset($can_change_type) && $can_change_type ? '0' : '1')?>');
+	App.modules.addMemberForm.objectTypeChanged('<?php echo $obj_type_sel ?>', genid);
+
+
+	var trees = Ext.getCmp(genid + "-member-chooser-panel-<?php echo $current_dimension->getId()?>").items;
+	
+	trees.each(function(tree, index, length) {
+		tree.getSelectionModel().on("selectionchange",function(sm,node) {
+			if (node.id) {
+				document.getElementById(genid+"memberParent").value = node.id;
+			}	
+		});			
+	});
+
+	<?php if (count($selected_members) > 0) { ?>
+	App.modules.addMemberForm.drawDimensionProperties('<?php echo $genid;?>', <?php echo $current_dimension->getId();?>);
+	<?php } ?>
+</script>

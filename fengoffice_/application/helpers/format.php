@@ -44,7 +44,7 @@
   * @return string
   */
   function format_datetime($value = null, $format = null, $timezone = null) {
-    if(is_null($timezone) && function_exists('logged_user') && (logged_user() instanceof User)) {
+    if(is_null($timezone) && function_exists('logged_user') && (logged_user() instanceof Contact)) {
       $timezone = logged_user()->getTimezone();
     } // if
     $datetime = $value instanceof DateTimeValue ? $value : new DateTimeValue($value);
@@ -67,7 +67,7 @@
   * @return string
   */
   function format_date($value = null, $format = null, $timezone = null) {
-    if(is_null($timezone) && function_exists('logged_user') && (logged_user() instanceof User)) {
+    if(is_null($timezone) && function_exists('logged_user') && (logged_user() instanceof Contact)) {
       $timezone = logged_user()->getTimezone();
     } // if
     $datetime = $value instanceof DateTimeValue ? $value : new DateTimeValue($value);
@@ -88,7 +88,7 @@
   * @return string
   */
   function format_descriptive_date($value = null, $timezone = null) {
-    if(is_null($timezone) && function_exists('logged_user') && (logged_user() instanceof User)) {
+    if(is_null($timezone) && function_exists('logged_user') && (logged_user() instanceof Contact)) {
       $timezone = logged_user()->getTimezone();
     } // if
     $datetime = $value instanceof DateTimeValue ? $value : new DateTimeValue($value);
@@ -106,7 +106,7 @@
   * @return string
   */
   function format_time($value = null, $format = null, $timezone = null) {
-    if(is_null($timezone) && function_exists('logged_user') && (logged_user() instanceof User)) {
+    if(is_null($timezone) && function_exists('logged_user') && (logged_user() instanceof Contact)) {
       $timezone = logged_user()->getTimezone();
     } // if
     $datetime = $value instanceof DateTimeValue ? $value : new DateTimeValue($value);
@@ -225,5 +225,62 @@ function date_format_tip($format) {
 	
 	return $result;
 }
+
+
+	function format_value_to_print($col, $value, $type, $obj_type_name, $textWrapper='', $dateformat='Y-m-d') {
+		switch ($type) {
+			case DATA_TYPE_STRING: 
+				if(preg_match(EMAIL_FORMAT, strip_tags($value))){
+					$formatted = strip_tags($value);
+				}else{ 
+					$formatted = $textWrapper . clean($value) . $textWrapper;
+				}
+				break;
+			case DATA_TYPE_INTEGER:
+				if ($col == 'priority'){
+					switch($value){
+					case 100:
+						$formatted = lang('low priority'); 
+						break;
+					case 200:
+						$formatted = lang('normal priority');
+						break;
+					case 300:
+						$formatted = lang('high priority');
+						break;
+					case 400:
+						$formatted = lang('urgent priority');
+						break;
+					default: $formatted = clean($value);
+					}					
+				}
+				else{				
+					$formatted = clean($value);
+				}
+				break;
+			case DATA_TYPE_BOOLEAN: $formatted = ($value == 1 ? lang('yes') : lang('no'));
+				break;
+			case DATA_TYPE_DATE:
+				if ($value != 0) { 
+					if (str_ends_with($value, "00:00:00")) $dateformat .= " H:i:s";
+					$dtVal = DateTimeValueLib::dateFromFormatAndString($dateformat, $value);
+					$formatted = format_date($dtVal, null, 0);
+				} else $formatted = '';
+				break;
+			case DATA_TYPE_DATETIME:
+				if ($value != 0) {
+					$dtVal = DateTimeValueLib::dateFromFormatAndString("$dateformat H:i:s", $value);
+					if ($obj_type_name == 'event' && $col == 'start') $formatted = format_datetime($dtVal);
+					else $formatted = format_date($dtVal, null, 0);
+				} else $formatted = '';
+				break;
+			default: $formatted = $value;
+		}
+		if($formatted == ''){
+			$formatted = '--';
+		}
+		
+		return $formatted;
+	}
 
 ?>

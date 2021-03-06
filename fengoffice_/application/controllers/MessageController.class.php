@@ -25,7 +25,6 @@ class MessageController extends ApplicationController {
 	// ---------------------------------------------------
 	
 	function init() {
-//		require_javascript("og/HtmlPanel.js");
 		require_javascript("og/MessageManager.js");
 		ajx_current("panel", "messages", null, null, true);
 		ajx_replace(true);
@@ -44,10 +43,7 @@ class MessageController extends ApplicationController {
 		$attributes = array(
 			"ids" => explode(',', array_var($_GET,'ids')),
 			"types" => explode(',', array_var($_GET,'types')),
-			"tag" => array_var($_GET,'tagTag'),
 			"accountId" => array_var($_GET,'account_id'),
-			"moveTo" => array_var($_GET,'moveTo'),
-			"mantainWs" => array_var($_GET,'mantainWs'),
 		);
 		
 		//Resolve actions to perform
@@ -61,13 +57,34 @@ class MessageController extends ApplicationController {
 			}
 		} 
 
-		// Get all emails and messages to display
-		$project = active_project();
-		list($messages, $pagination) = ProjectMessages::getMessages($tag, $project, $start, $limit, $order, $order_dir);
-		$total = $pagination->getTotalItems();
+		switch ($order){
+			case 'updatedOn':
+				$order = '`updated_on`';
+				break;
+			case 'createdOn':
+				$order = '`created_on`';
+				break;
+			case 'name':
+				$order = '`name`';
+				break;
+			default:
+				$order = '`updated_on`';  
+				break;
+		}
+		if (!$order_dir){
+			switch ($order){
+				case 'name': $order_dir = 'ASC'; break;
+				default: $order_dir = 'DESC';
+			}
+		}
+		
 
+		$context = active_context();
+		$res =  ProjectMessages::instance()->getContentObjects($context, ObjectTypes::findById(ProjectMessages::instance()->getObjectTypeId()), $order, $order_dir,null,null,false, false, $start, $limit);
+		$messages = $res->objects ; 
+		
 		// Prepare response object
-		$object = $this->prepareObject($messages, $start, $limit, $total);
+		$object = $this->prepareObject($messages, $start, $limit, $res->total);
 		ajx_extra_data($object);
 		tpl_assign("listing", $object);
 
@@ -81,6 +98,7 @@ class MessageController extends ApplicationController {
 	 * @return string $message
 	 */
 	private function resolveAction($action, $attributes){
+				 
 		$resultMessage = "";
 		$resultCode = 0;
 		switch ($action){
@@ -88,35 +106,25 @@ class MessageController extends ApplicationController {
 				$succ = 0; $err = 0;
 				for($i = 0; $i < count($attributes["ids"]); $i++){
 					$id = $attributes["ids"][$i];
-					$type = $attributes["types"][$i];
-					
-					switch ($type){
-						case "message":
-							$message = ProjectMessages::findById($id);
-							if (isset($message) && $message->canDelete(logged_user())){
-								try{
-									DB::beginWork();
-									$message->trash();
-									ApplicationLogs::createLog($message, $message->getWorkspaces(), ApplicationLogs::ACTION_TRASH);
-									DB::commit();
-									$succ++;
-								} catch(Exception $e){
-									DB::rollback();
-									$err++;
-								}
-							} else {
-								$err++;
-							}
-							break;
-							
-						default: 
+					$message = ProjectMessages::findById($id);
+					if (isset($message) && $message->canDelete(logged_user())){
+						try{
+							DB::beginWork();
+							$message->trash();
+							ApplicationLogs::createLog($message, ApplicationLogs::ACTION_TRASH);
+							DB::commit();
+							$succ++;
+						} catch(Exception $e){
+							DB::rollback();
 							$err++;
-							break;
-					}; // switch
+						}
+					} else {
+						$err++;
+					}
 				}; // for
 				if ($err > 0) {
 					$resultCode = 2;
-					$resultMessage = lang("error delete objects", $err) . "<br />" . ($succ > 0 ? lang("success delete objects", $succ) : "");
+					$resultMessage = lang("error delete objects", $err) . ($succ > 0 ? "\n".lang("success delete objects", $succ) : "");
 				} else {
 					$resultMessage = lang("success delete objects", $succ);
 				}
@@ -125,108 +133,37 @@ class MessageController extends ApplicationController {
 				$succ = 0; $err = 0;
 				for($i = 0; $i < count($attributes["ids"]); $i++){
 					$id = $attributes["ids"][$i];
-					$type = $attributes["types"][$i];
-					
-					switch ($type){
-						case "message":
-							$message = ProjectMessages::findById($id);
-							try {
-								
-								$message->setIsRead(logged_user()->getId(),true);						
-								$succ++;
-								
-							} catch(Exception $e) {
-								$err ++;
-							} // try
-							break;							
-						default: 
-							$err++;
-							break;
-					}; // switch
+					$message = ProjectMessages::findById($id);
+					try {
+						$message->setIsRead(logged_user()->getId(),true);						
+						$succ++;
+					} catch(Exception $e) {
+						$err ++;
+					} // try
 				}; // for
 				if ($err > 0) {
 					$resultCode = 2;
 					$resultMessage = lang("error markasread objects", $err) . "<br />" . ($succ > 0 ? lang("success markasread objects", $succ) : "");
 				}
 				break;
-				case "markasunread":
+			case "markasunread":
 				$succ = 0; $err = 0;
 				for($i = 0; $i < count($attributes["ids"]); $i++){
 					$id = $attributes["ids"][$i];
-					$type = $attributes["types"][$i];
-					
-					switch ($type){
-						case "message":
-							$message = ProjectMessages::findById($id);
-							try {
-								
-								$message->setIsRead(logged_user()->getId(),false);						
-								$succ++;
-								
-							} catch(Exception $e) {
-								$err ++;
-							} // try
-							break;							
-						default: 
-							$err++;
-							break;
-					}; // switch
+					$message = ProjectMessages::findById($id);
+					try {
+						$message->setIsRead(logged_user()->getId(),false);						
+						$succ++;
+					} catch(Exception $e) {
+						$err ++;
+					} // try
 				}; // for
 				if ($err > 0) {
 					$resultCode = 2;
 					$resultMessage = lang("error markasunread objects", $err) . "<br />" . ($succ > 0 ? lang("success markasunread objects", $succ) : "");
 				}
 				break;
-			case "tag":
-				$tag = $attributes["tag"];
-				for($i = 0; $i < count($attributes["ids"]); $i++){
-					$id = $attributes["ids"][$i];
-					$type = $attributes["types"][$i];
-					switch ($type){
-						case "message":
-							$message = ProjectMessages::findById($id);
-							if (isset($message) && $message->canEdit(logged_user())){
-								Tags::addObjectTag($tag, $message);
-								ApplicationLogs::createLog($message, $message->getWorkspaces(), ApplicationLogs::ACTION_TAG,false,null,true,$tag);
-								$resultMessage = lang("success tag objects", '');
-							};
-							break;
-
-						default:
-							$resultMessage = lang("Unimplemented type: '" . $type . "'");// if
-							$resultCode = 2;
-							break;
-					}; // switch
-				}; // for
-				break;
-				
-				case "untag":
-				$tag = $attributes["tag"];
-				for($i = 0; $i < count($attributes["ids"]); $i++){
-					$id = $attributes["ids"][$i];
-					$type = $attributes["types"][$i];
-					switch ($type){
-						case "message":
-							$message = ProjectMessages::findById($id);
-							if (isset($message) && $message->canEdit(logged_user())){
-								if ($tag != ''){
-									$message->deleteTag($tag);
-								}else{
-									$message->clearTags();
-								}
-								$resultMessage = lang("success untag objects", '');
-							};
-							break;
-
-						default:
-							$resultMessage = lang("Unimplemented type: '" . $type . "'");// if
-							$resultCode = 2;
-							break;
-					}; // switch
-				}; // for
-				break;
-				
-			case "move":
+			/* //FIXME case "move":
 				$wsid = $attributes["moveTo"];
 				$destination = Projects::findById($wsid);
 				if (!$destination instanceof Project) {
@@ -246,7 +183,7 @@ class MessageController extends ApplicationController {
 								if ($message instanceof ProjectMessage && $message->canEdit(logged_user())){
 									if (!$attributes["mantainWs"]) {
 										$removed = "";
-										$ws = $message->getWorkspaces();
+										$ws = $message->getMemberIds();
 										foreach ($ws as $w) {
 											if (can_add(logged_user(), $w, 'ProjectMessages')) {
 												$message->removeFromWorkspace($w);
@@ -261,7 +198,7 @@ class MessageController extends ApplicationController {
 										$log_data = "to:$wsid";
 									}
 									$message->addToWorkspace($destination);
-									ApplicationLogs::createLog($message, $message->getWorkspaces(), $log_action, false, null, true, $log_data);
+									ApplicationLogs::createLog($message, $log_action, false, null, true, $log_data);
 									$count++;
 								};
 								break;
@@ -275,36 +212,26 @@ class MessageController extends ApplicationController {
 					$resultMessage = lang("success move objects", $count);
 					$resultCode = 0;
 				}
-				break;
+				break;*/
 			case "archive":
 				$succ = 0; $err = 0;
 				for($i = 0; $i < count($attributes["ids"]); $i++){
 					$id = $attributes["ids"][$i];
-					$type = $attributes["types"][$i];
-					
-					switch ($type){
-						case "message":
-							$message = ProjectMessages::findById($id);
-							if (isset($message) && $message->canEdit(logged_user())){
-								try{
-									DB::beginWork();
-									$message->archive();
-									ApplicationLogs::createLog($message, $ws, ApplicationLogs::ACTION_ARCHIVE);
-									DB::commit();
-									$succ++;
-								} catch(Exception $e){
-									DB::rollback();
-									$err++;
-								}
-							} else {
-								$err++;
-							}
-							break;
-							
-						default: 
+					$message = ProjectMessages::findById($id);
+					if (isset($message) && $message->canEdit(logged_user())){
+						try{
+							DB::beginWork();
+							$message->archive();
+							ApplicationLogs::createLog($message, ApplicationLogs::ACTION_ARCHIVE);
+							DB::commit();
+							$succ++;
+						} catch(Exception $e){
+							DB::rollback();
 							$err++;
-							break;
-					}; // switch
+						}
+					} else {
+						$err++;
+					}
 				}; // for
 				if ($err > 0) {
 					$resultCode = 2;
@@ -335,6 +262,7 @@ class MessageController extends ApplicationController {
 			"start" => $start,
 			"messages" => array()
 		);
+		$ids = array();
 		for ($i = 0; $i < $limit; $i++){
 			if (isset($totMsg[$i])){
 				$msg = $totMsg[$i];
@@ -345,22 +273,26 @@ class MessageController extends ApplicationController {
 					    "id" => $i,
 						"ix" => $i,
 						"object_id" => $msg->getId(),
-						"type" => 'message',
-						"title" => $msg->getTitle(),
+						"type" => $msg->getObjectTypeName(),
+						"name" => $msg->getObjectName(),
 						"text" => $text,
 						"date" => $msg->getUpdatedOn() instanceof DateTimeValue ? ($msg->getUpdatedOn()->isToday() ? format_time($msg->getUpdatedOn()) : format_datetime($msg->getUpdatedOn())) : '',
 						"is_today" => $msg->getUpdatedOn() instanceof DateTimeValue ? $msg->getUpdatedOn()->isToday() : 0,
-						"wsIds" => $msg->getUserWorkspacesIdsCSV(logged_user()),
 						"userId" => $msg->getCreatedById(),
 						"userName" => $msg->getCreatedByDisplayName(),
 						"updaterId" => $msg->getUpdatedById() ? $msg->getUpdatedById() : $msg->getCreatedById(),
 						"updaterName" => $msg->getUpdatedById() ? $msg->getUpdatedByDisplayName() : $msg->getCreatedByDisplayName(),
-						"tags" => project_object_tags($msg),
-						"isRead" => $msg->getIsRead(logged_user()->getId()),						
 					);
+					$ids[] = $msg->getId();
     			}
 			}
 		}
+		
+		$read_objects = ReadObjects::getReadByObjectList($ids, logged_user()->getId());
+		foreach($object["messages"] as &$data) {
+			$data['isRead'] = isset($read_objects[$data['object_id']]);
+		}
+		
 		return $object;
 	}
 	
@@ -392,16 +324,16 @@ class MessageController extends ApplicationController {
 			return;
 		} // if
 
-		//$this->setHelp("view_message");
+		$this->setHelp("view_message");
 		
 		//read object for this user
 		$message->setIsRead(logged_user()->getId(),true);
 		tpl_assign('message', $message);
 		tpl_assign('subscribers', $message->getSubscribers());
-		ajx_extra_data(array("title" => $message->getTitle(), 'icon'=>'ico-message'));
+		ajx_extra_data(array("title" => $message->getTitle(), 'icon'=>$message->getIconClass()));
 		ajx_set_no_toolbar(true);
 		
-		ApplicationReadLogs::createLog($message, $message->getWorkspaces(), ApplicationReadLogs::ACTION_READ);
+		ApplicationReadLogs::createLog($message, ApplicationReadLogs::ACTION_READ);
 	} // view
 	
 	/**
@@ -444,6 +376,12 @@ class MessageController extends ApplicationController {
 			return;
 		}
 		
+		if(!ProjectMessage::canAdd(logged_user(), active_context())) {
+			flash_error(lang('no context permissions to add',lang("messages")));
+			ajx_current("empty");
+			return;
+		} // if
+		
 		$message = new ProjectMessage();
 		tpl_assign('message', $message);
 
@@ -455,30 +393,29 @@ class MessageController extends ApplicationController {
 
 		if(is_array(array_var($_POST, 'message'))) {
 			try {
+				// Aliases 
+				
 				$message->setFromAttributes($message_data);
-				$message->setIsPrivate(false);
-				// Options are reserved only for members of owner company
-				if(!logged_user()->isMemberOfOwnerCompany()) {
-					$message->setIsImportant(false);
-					$message->setCommentsEnabled(true);
-					$message->setAnonymousCommentsEnabled(false);
-				} // if
-
+				
 				DB::beginWork();
+				
 				$message->save();
-				$message->setTagsFromCSV(array_var($message_data, 'tags'));
+				
 				
 				$object_controller = new ObjectController();
-				$object_controller->add_to_workspaces($message);
+				
+				$member_ids = json_decode(array_var($_POST, 'members'));
+				
+				$object_controller->add_to_members($message, $member_ids);
 			    $object_controller->link_to_new_object($message);
 				$object_controller->add_subscribers($message);
 				$object_controller->add_custom_properties($message);
 				
-				ApplicationLogs::createLog($message, $message->getWorkspaces(), ApplicationLogs::ACTION_ADD);
+				ApplicationLogs::createLog($message, ApplicationLogs::ACTION_ADD);
 			    
 				DB::commit();
 
-				flash_success(lang('success add message', $message->getTitle()));
+				flash_success(lang('success add message', $message->getObjectName()));
 				if (array_var($_POST, 'popup', false)) {
 					ajx_current("reload");
 	          	} else {
@@ -530,17 +467,9 @@ class MessageController extends ApplicationController {
 		
 		$message_data = array_var($_POST, 'message');
 		if(!is_array($message_data)) {
-			$tag_names = $message->getTagNames();
 			$message_data = array(
-				'milestone_id' => $message->getMilestoneId(),
-				'title' => $message->getTitle(),
+				'name' => $message->getObjectName(),
 				'text' => $message->getText(),
-				'additional_text' => $message->getAdditionalText(),
-				'tags' => is_array($tag_names) ? implode(', ', $tag_names) : '',
-				'is_private' => $message->isPrivate(),
-				'is_important' => $message->getIsImportant(),
-				'comments_enabled' => $message->getCommentsEnabled(),
-				'anonymous_comments_enabled' => $message->getAnonymousCommentsEnabled(),
 			); // array
 		} // if
 		
@@ -551,6 +480,7 @@ class MessageController extends ApplicationController {
 			try {
 				
 				//MANAGE CONCURRENCE WHILE EDITING
+				/* FIXME or REMOVEME
 				$upd = array_var($_POST, 'updatedon');
 				if ($upd && $message->getUpdatedOn()->getTimestamp() > $upd && !array_var($_POST,'merge-changes') == 'true')
 				{
@@ -567,44 +497,34 @@ class MessageController extends ApplicationController {
 					$edited_note = ProjectMessages::findById($message->getId());
 					tpl_assign('message', $edited_note);
 					tpl_assign('subscribers', $edited_note->getSubscribers());
-					ajx_extra_data(array("title" => $edited_note->getTitle(), 'icon'=>'ico-message'));
+					ajx_extra_data(array("name" => $edited_note->getObjectName(), 'icon'=>'ico-message'));
 					ajx_set_no_toolbar(true);
-					ajx_set_panel(lang ('tab name',array('name'=>$edited_note->getTitle())));					
+					ajx_set_panel(lang ('tab name',array('name'=>$edited_note->getObjectName())));					
 					return;
 				}
-				
-				$old_is_private = $message->isPrivate();
-				$old_is_important = $message->getIsImportant();
-				$old_comments_enabled = $message->getCommentsEnabled();
-				$old_anonymous_comments_enabled = $message->getAnonymousCommentsEnabled();
+				*/
 
 				$message->setFromAttributes($message_data);
 
-				// Options are reserved only for members of owner company
-				if(!logged_user()->isMemberOfOwnerCompany()) {
-					$message->setIsPrivate($old_is_private);
-					$message->setIsImportant($old_is_important);
-					$message->setCommentsEnabled($old_comments_enabled);
-					$message->setAnonymousCommentsEnabled($old_anonymous_comments_enabled);
-				} // if
-
 				DB::beginWork();
 				$message->save();
-				$message->setTagsFromCSV(array_var($message_data, 'tags'));
 				
 				$object_controller = new ObjectController();
-				$object_controller->add_to_workspaces($message);
+				
+				$member_ids = json_decode(array_var($_POST, 'members'));
+				
+				$object_controller->add_to_members($message, $member_ids);
 			    $object_controller->link_to_new_object($message);
 				$object_controller->add_subscribers($message);
 				$object_controller->add_custom_properties($message);
 				
 				$message->resetIsRead();
 				
-				ApplicationLogs::createLog($message, $message->getWorkspaces(), ApplicationLogs::ACTION_EDIT);
+				ApplicationLogs::createLog($message, ApplicationLogs::ACTION_EDIT);
 			    
 				DB::commit();
 				
-				flash_success(lang('success edit message', $message->getTitle()));
+				flash_success(lang('success edit message', $message->getObjectName()));
 				if (array_var($_POST, 'popup', false)) {
 					ajx_current("reload");
 	          	} else {
@@ -651,11 +571,10 @@ class MessageController extends ApplicationController {
 
 			DB::beginWork();
 			$message->trash();
-			$ws = $message->getWorkspaces();
-			ApplicationLogs::createLog($message, $ws, ApplicationLogs::ACTION_TRASH);
+			ApplicationLogs::createLog($message, ApplicationLogs::ACTION_TRASH);
 			DB::commit();
 
-			flash_success(lang('success deleted message', $message->getTitle()));
+			flash_success(lang('success deleted message', $message->getObjectName()));
 			if (array_var($_POST, 'popup', false)) {
 				ajx_current("reload");
           	} else {

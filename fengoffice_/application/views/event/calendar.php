@@ -19,7 +19,7 @@ require_javascript('og/EventPopUp.js');
     Foundation Inc, 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 	
 */
-
+$genid = gen_id();
 $year = isset($_GET['year']) ? $_GET['year'] : (isset($_SESSION['year']) ? $_SESSION['year'] : date('Y'));
 $month = isset($_GET['month']) ? $_GET['month'] : (isset($_SESSION['month']) ? $_SESSION['month'] : date('n'));
 $day = isset($_GET['day']) ? $_GET['day'] : (isset($_SESSION['day']) ? $_SESSION['day'] : date('j'));
@@ -37,14 +37,13 @@ $status_filter = $userPreferences['status_filter'];
 $max_events_to_show = user_config_option('displayed events amount');
 if (!$max_events_to_show) $max_events_to_show = 3;
 
-$user = Users::findById(array('id' => $user_filter));
+$user = Contacts::findById(array('id' => $user_filter));
 if ($user == null) $user = logged_user(); 
 
 $use_24_hours = user_config_option('time_format_use_24');
 if($use_24_hours) $timeformat = 'G:i';
 else $timeformat = 'g:i A';
 
-global $cal_db;
 // get actual current day info
 $today = DateTimeValueLib::now();
 $today->add('h', logged_user()->getTimezone());
@@ -55,6 +54,8 @@ $currentyear = $today->format("Y");
 if(user_config_option("start_monday")) $firstday = (date("w", mktime(0, 0, 0, $month, 1, $year)) - 1) % 7;
 else $firstday = (date("w", mktime(0, 0, 0, $month, 1, $year))) % 7;
 $lastday = date("t", mktime(0, 0, 0, $month, 1, $year));
+
+$tags = '';
 
 $users_array = array();
 $companies_array = array();
@@ -159,9 +160,10 @@ foreach($companies as $company)
 					<?php
 					$date_start = new DateTimeValue(mktime(0,0,0,$month-1,$firstday,$year)); 
 					$date_end = new DateTimeValue(mktime(0,0,0,$month+1,$lastday,$year)); 
-					$milestones = ProjectMilestones::getRangeMilestonesByUser($date_start, $date_end, ($user_filter != -1 ? $user : null), $tags, active_project());
+					//FIXME $milestones = ProjectMilestones::getRangeMilestonesByUser($date_start, $date_end, ($user_filter != -1 ? $user : null), $tags, active_project());
 					$tasks = ProjectTasks::getRangeTasksByUser($date_start, $date_end, ($user_filter != -1 ? $user : null), $tags, active_project());
-					$birthdays = Contacts::instance()->getRangeContactsByBirthday($date_start, $date_end);
+					// FIXME
+					$birthdays = array(); //Contacts::instance()->getRangeContactsByBirthday($date_start, $date_end);
 					
 					$result = array();
 					if($milestones) {
@@ -284,14 +286,17 @@ foreach($companies as $company)
 					?>	
 						 		<div id="m<?php echo $dtv->getMonth() ?>_d<?php echo $dtv->getDay() ?>" style='z-index:0; min-height:90px; height:100%; cursor:pointer;<?php echo $extra_style ?>'
 						 		<?php if (!logged_user()->isGuest()) { ?>
-						 		onclick="showMonthEventPopup('<?php echo $dtv->getDay() ?>','<?php echo $dtv->getMonth()?>','<?php echo $dtv->getYear()?>','<?php echo $start_value ?>');"
+						 		onclick="og.openLink(og.getUrl('event', 'add'));">
+						 		<!-- 
+						 		onclick="showMonthEventPopup('<?php echo $dtv->getDay() ?>','<?php echo $dtv->getMonth()?>','<?php echo $dtv->getYear()?>','<?php echo $start_value ?>', '<?php echo $genid ?>');"
+						 		-->
 						 		<?php } ?>
-						 		>
+						 		<!-- > -->
 						 			<div class='<?php echo $daytitle?>' style='text-align:right;'>
 							 		<a class='internalLink' href="<?php echo $p ?>" onclick="og.disableEventPropagation(event);return true;"  style='color:#5B5B5B' ><?php echo $w?></a>				
 					<?php
 							// only display this link if the user has permission to add an event
-							if(!active_project() || ProjectEvent::canAdd(logged_user(), active_project())){
+							if(ProjectEvent::canAdd(logged_user(), active_context())){
 								// if single digit, add a zero
 								$dom = $day_of_month;
 								if($dom < 10) $dom = "0" . $dom;
@@ -306,7 +311,7 @@ foreach($companies as $company)
 							// This loop writes the events for the day in the cell
 							if (is_numeric($w)){ //if it is a day after the first of the month
 								
-								$result_evs = ProjectEvents::getDayProjectEvents($dtv, $tags, active_project(), $user_filter, $status_filter); 
+								$result_evs = ProjectEvents::getDayProjectEvents($dtv, active_context(), $user_filter, $status_filter); 
 								if (!is_array($result_evs)) $result_evs = array();
 								
 								if(count($result) + count($result_evs) < 1) { ?> 
@@ -318,8 +323,7 @@ foreach($companies as $company)
 										if($event instanceof ProjectEvent ){
 											$count++;
 											$subject =  clean($event->getSubject());
-											$typeofevent = $event->getTypeId(); 
-											$private = $event->getIsPrivate(); 
+											$typeofevent = $event->getTypeId();
 											$eventid = $event->getId();
 											
 											getEventLimits($event, $dtv, $event_start, $event_duration, $end_modified);
@@ -330,15 +334,15 @@ foreach($companies as $company)
 											$pre_tf = $real_start->getDay() == $real_duration->getDay() ? '' : 'D j, ';
 											if (!$event->isRepetitive() && $real_start->getDay() != $event_start->getDay()) $subject = "... $subject";
 											
-											$dws = $event->getWorkspaces();
-											$ws_color = 0;											
-											if (count($dws) >= 1) $ws_color = $dws[0]->getColor();
+											
+											$ws_color = 1;
+											
 											cal_get_ws_color($ws_color, $ws_style, $ws_class, $txt_color, $border_color);
 											
 											$id_suffix = "_$w";
 										
 											// make the event subjects links or not according to the variable $whole_day in gatekeeper.php
-											if(!$private && $count <= $max_events_to_show){
+											if($count <= $max_events_to_show){
 												$tip_text = str_replace("\r", '', clean($event->getDescription()));
 												$tip_text = str_replace("\n", '<br>', $tip_text);													
 												if (strlen_utf($tip_text) > 200) $tip_text = substr_utf($tip_text, 0, strpos($tip_text, ' ', 200)) . ' ...';
@@ -348,25 +352,14 @@ foreach($companies as $company)
 										$bold = "normal";
 									}
 
-									$ev_tags = $event->getTags();
-									$eventTagString = '';
-									if (is_array($ev_tags) && count($ev_tags)>0){													
-										$eventTagString .= '<span class="ico-tags ogTasksIcon" style="padding-left: 18px; padding-top: 4px; padding-bottom: 2px; font-size: 10px; margin-left: 10px;">';
-										$c= 0;
-										foreach ($ev_tags as $t){
-											$eventTagString .= $t;
-											$c++;
-											count($ev_tags)!=$c? $eventTagString .= ',':$eventTagString .= '</span>';														
-										}
-									}
 								?>
 
 												<div id="m_ev_div_<?php echo $event->getId() . $id_suffix?>" class="<?php echo "og-wsname-color-$ws_color" ?>" style="margin: 1px;padding-left:1px;padding-bottom:0px;<?php echo $extra_style ?>">
 												<div style="border: 1px solid;border-color:<?php echo $border_color ?>;">
 													<table style="width:100%;" class="<?php echo "og-wsname-color-$ws_color" ?>"><tr><td>
-													<a href='<?php echo get_url('event', 'viewevent', array('id' => $event->getId(), 'user_id' => $user_filter)); ?>' class='internalLink' onclick="og.disableEventPropagation(event); return true;" <?php echo "style='color:$txt_color;'" ?>>
+													<a href='<?php echo get_url('event', 'view', array('id' => $event->getId(), 'user_id' => $user_filter)); ?>' class='internalLink' onclick="og.disableEventPropagation(event); return true;" <?php echo "style='color:$txt_color;'" ?>>
 														<img src="<?php echo image_url('/16x16/calendar.png')?>" style="vertical-align: middle;border-width: 0px;">
-														<span style="font-weight: <?php echo $bold ?>"><?php echo (strlen_utf($subject) < 15 ? $subject : substr_utf($subject, 0, 14).'...') . $eventTagString ?></span>															
+														<span style="font-weight: <?php echo $bold ?>"><?php echo (strlen_utf($subject) < 15 ? $subject : substr_utf($subject, 0, 14).'...'); ?></span>															
 													</a>
 													</td><td align="right">
 														<div align="right" style="padding-right:1px;">
@@ -420,10 +413,10 @@ foreach($companies as $company)
 												$count++;
 												if ($count <= $max_events_to_show){
 													$color = 'FFC0B3'; 
-													$subject = "&nbsp;" . clean($milestone->getName())." - <i>Milestone</i>";
-													$cal_text = clean($milestone->getName());
+													$subject = "&nbsp;" . clean($milestone->getObjectName())." - <i>Milestone</i>";
+													$cal_text = clean($milestone->getObjectName());
 													
-													$tip_text = str_replace("\r", '', lang('assigned to') .': '. clean($milestone->getAssignedToName()) . (trim(clean($milestone->getDescription())) == '' ? '' : '<br><br>'. clean($milestone->getDescription())));
+													$tip_text = str_replace("\r", '', (trim(clean($milestone->getDescription())) == '' ? '' : '<br><br>'. clean($milestone->getDescription())));
 													$tip_text = str_replace("\n", '<br>', $tip_text);													
 													if (strlen_utf($tip_text) > 200) $tip_text = substr_utf($tip_text, 0, strpos($tip_text, ' ', 200)) . ' ...';
 													
@@ -475,8 +468,8 @@ foreach($companies as $company)
 												$count++;
 												if ($count <= $max_events_to_show){
 													$color = 'B1BFAC'; 
-													$subject = clean($task->getTitle()).'- <i>Task</i>';
-													$cal_text = clean($task->getTitle());
+													$subject = clean($task->getObjectName()).'- <i>Task</i>';
+													$cal_text = clean($task->getObjectName());
 													
 													$tip_text = str_replace("\r", '', lang('assigned to') .': '. clean($task->getAssignedToName()) . (trim(clean($task->getText())) == '' ? '' : '<br><br>'. clean($task->getText())));
 													$tip_text = str_replace("\n", '<br>', $tip_text);													
@@ -510,16 +503,16 @@ foreach($companies as $company)
 												$count++;
 												if ($count <= $max_events_to_show){
 													$color = 'B1BFAC';
-													$subject = clean($contact->getDisplayName()).' - <i>'.lang('birthday').'</i>';
+													$subject = clean($contact->getObjectName()).' - <i>'.lang('birthday').'</i>';
 								?>
 													<div id="m_bd_div_<?php echo $contact->getId()?>" class="event_block" style="border-left-color: #<?php echo $color?>;">
 														<a href='<?php echo $contact->getViewUrl()?>' class='internalLink' onclick="og.disableEventPropagation(event);return true;"  style="border-width:0px">
 															<img src="<?php echo image_url('/16x16/contacts.png')?>" style="vertical-align: middle;">
-														 	<span><?php echo $contact->getDisplayName() ?></span>
+														 	<span><?php echo $contact->getObjectName() ?></span>
 														</a>
 													</div>
 													<script>
-														addTip('m_bd_div_<?php echo $contact->getId() ?>', '<i>' + '<?php echo escape_single_quotes(lang('birthday')) ?>' + '</i> - ' + <?php echo json_encode(clean($contact->getDisplayName()))?>, '');
+														addTip('m_bd_div_<?php echo $contact->getId() ?>', '<i>' + '<?php echo escape_single_quotes(lang('birthday')) ?>' + '</i> - ' + <?php echo json_encode(clean($contact->getObjectName()))?>, '');
 													</script>
 								<?php
 												}//if count
@@ -585,7 +578,7 @@ foreach($companies as $company)
 
 	Ext.QuickTips.init();
 
-	function showMonthEventPopup(day, month, year, st_val) {
+	function showMonthEventPopup(day, month, year, st_val, genid) {
 		
 		og.EventPopUp.show(null, {day: day,
 								month: month,
@@ -600,7 +593,9 @@ foreach($companies as $company)
 								view:'month', 
 								title: lang('add event'),
 								time_format: '<?php echo $timeformat ?>',
-								hide_calendar_toolbar: 1
+								hide_calendar_toolbar: 1,
+								genid: genid,
+								otype: <?php echo ProjectEvents::instance()->getObjectTypeId(); ?>
 								}, '');
 	}
 

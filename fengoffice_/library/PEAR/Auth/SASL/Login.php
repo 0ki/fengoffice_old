@@ -32,7 +32,7 @@
 // | Author: Richard Heyes <richard@php.net>                               | 
 // +-----------------------------------------------------------------------+ 
 // 
-// $Id: Login.php,v 1.1 2010/01/22 18:11:20 acio Exp $
+// $Id: Login.php 7 2010-01-22 18:14:51Z acio $
 
 /**
 * This is technically not a SASL mechanism, however

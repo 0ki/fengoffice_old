@@ -74,10 +74,10 @@ class FormController extends ApplicationController {
 				DB::beginWork();
 				if($in_object instanceof ProjectMessage) {
 					$comment = $in_object->addComment($content, false);
-					ApplicationLogs::createLog($comment, $object->getWorkspaces(), ApplicationLogs::ACTION_ADD, $comment->isPrivate());
+					ApplicationLogs::createLog($comment, ApplicationLogs::ACTION_ADD, $comment->isPrivate());
 				} elseif($in_object instanceof ProjectTaskList) {
 					$task = $in_object->addTask($content);
-					ApplicationLogs::createLog($task, $object->getWorkspaces(), ApplicationLogs::ACTION_ADD, $in_object->isPrivate());
+					ApplicationLogs::createLog($task, ApplicationLogs::ACTION_ADD, $in_object->isPrivate());
 				} // if
 				DB::commit();
 
@@ -140,7 +140,7 @@ class FormController extends ApplicationController {
 			try {
 				DB::beginWork();
 				$project_form->save();
-				ApplicationLogs::createLog($project_form, $project_form->getWorkspaces(), ApplicationLogs::ACTION_ADD, true);
+				ApplicationLogs::createLog($project_form, ApplicationLogs::ACTION_ADD, true);
 				DB::commit();
 
 				flash_success(lang('success add project form', $project_form->getName()));
@@ -222,7 +222,7 @@ class FormController extends ApplicationController {
 			try {
 				DB::beginWork();
 				$project_form->save();
-				ApplicationLogs::createLog($project_form, $project_form->getWorkspaces(), ApplicationLogs::ACTION_EDIT, true);
+				ApplicationLogs::createLog($project_form, ApplicationLogs::ACTION_EDIT, true);
 				DB::commit();
 
 				flash_success(lang('success edit project form', $project_form->getName()));
@@ -261,7 +261,7 @@ class FormController extends ApplicationController {
 		} // if
 
 		if($project_form->trash()) {
-			ApplicationLogs::createLog($project_form, $form->getWorkspaces(), ApplicationLogs::ACTION_TRASH, true);
+			ApplicationLogs::createLog($project_form, ApplicationLogs::ACTION_TRASH, true);
 			flash_success(lang('success delete project form', $project_form->getName()));
 		} else {
 			flash_error(lang('error delete project form'));

@@ -48,9 +48,11 @@
     'handin' => 'Hand-In',
     'handins' => 'Hand-Ins',
 	'emailunclassified' => 'Email',
+	'mail' => 'Email',
 
     'load file'=> 'Load file',
     'time' => 'Time',
+  	'report' => 'Report',
   	'reporting' => 'Reports',
   
     // Variations

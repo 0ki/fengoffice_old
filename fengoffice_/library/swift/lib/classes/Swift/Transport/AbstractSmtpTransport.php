@@ -401,7 +401,7 @@ abstract class Swift_Transport_AbstractSmtpTransport
     }
     
     if (!$valid)
-    {    
+    {
       $this->_throwException(
         new Swift_TransportException(
           'Expected response code ' . implode('/', $wanted) . ' but got code ' .

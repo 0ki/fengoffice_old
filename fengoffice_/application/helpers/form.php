@@ -234,6 +234,61 @@
     } // if
     return $output . close_html_tag('select') . "\n";
   }
+
+    /**
+   * 
+   * @param $name Control name
+   * @param $options Array of array(value, text)
+   * @param $selected Selected value string
+   * @param $attributes
+   * @author Pepe - elpepe.uy at gmail dot com
+   * @return unknown_type
+   */
+  function multiple_select_box($name, $options, $selected = array(), $attributes = null) {
+  	if(is_array($attributes)) {
+      $attributes['name'] = $name;
+      $attributes['multiple'] = 'multiple' ;
+    } else {
+      $attributes = array('name' => $name);
+      $attributes = array('multiple' => 'multiple');
+    }
+    
+    $output = open_html_tag('select', $attributes) . "\n";
+    if(is_array($options)) {
+      foreach($options as $option) {
+      	if(!$option[0]) continue ;
+      	if (in_array($option[0], $selected) ) {
+        	$output .= option_tag($option[1], $option[0], array( 'selected' => 'selected')) . "\n";
+      	} else {
+      		$output .= option_tag($option[1], $option[0] ) . "\n";
+      	}
+      }
+    }
+    return $output . close_html_tag('select') . "\n";
+  }
+	/**
+	 * 
+	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
+	 * @param unknown_type $table
+	 * @param unknown_type $column
+	 * @param unknown_type $name
+	 * @param unknown_type $selected
+	 * @param unknown_type $attributes
+	 */
+	function enum_select_box($manager, $column, $name, $selected = null, $attributes = null) {
+		eval('$table = '.$manager.'::instance()->getTableName ();');
+		if ($table && $column) {
+			$values = get_enum_values ( $table, $column );
+			$option_values = array (array("","--"));
+			foreach ( $values as $value ) {
+				if ($value)
+					$option_values [] = array ($value, lang($value) );
+			}
+			return  simple_select_box ( $name, $option_values, $selected, $attributes );
+		}
+	}
+	  
+  
   /**
   * Render option tag
   *
@@ -379,6 +434,7 @@
   * @param integer $year_from Start counting from this year. If NULL this value will be set
   *   to current year - 10
   * @param integer $year_to Count to this year. If NULL this value will be set to current
+  * @deprecated
   *   year + 10
   * @return null
   */
@@ -674,4 +730,25 @@
 	return $html;
   }
 
-?>
+  
+  function taskPercentCompletedBar(ProjectTask $task, $options = array()) {
+ 	
+  	$color_cls = 'task-percent-completed-';
+	if ( $task->getPercentCompleted() < 25) $color_cls .= '0';
+	else if ( $task->getPercentCompleted() < 50) $color_cls .= '25';
+	else if ( $task->getPercentCompleted() < 75) $color_cls .= '50';
+	else if ( $task->getPercentCompleted() < 100) $color_cls .= '75';
+	else $color_cls .= '100';
+	
+	$bar_width = array_var($options, 'bar_width', '100px');
+  	$bar_height = array_var($options, 'bar_height', '13px');
+  	$font_size = array_var($options, 'font_size', '11px');
+  	$padding_top = array_var($options, 'padding_top', '1px');
+  	
+  	$html = "<table style='display:inline;'><tr><td style='padding-left:15px;padding-top:$padding_top'>" .
+			"<table style='height:$bar_height;width:$bar_width'><tr><td style='height:$bar_height;width:" . $task->getPercentCompleted() . "%;' class='$color_cls'></td><td style='width:" . (100 - $task->getPercentCompleted()) . "%;background-color:#DDD'></td></tr></table>" .
+			"</td><td style='padding-left:3px;line-height:12px'><span style='font-size:$font_size;color:#333'>" . $task->getPercentCompleted() . "%</span></td></tr></table>";
+  	
+  	return $html;
+  }
+  

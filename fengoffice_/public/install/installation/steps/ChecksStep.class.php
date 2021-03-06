@@ -42,7 +42,7 @@ class ChecksStep extends ScriptInstallerStep {
 		); // array
 
 		$this->check_extensions = array(
-        'mysql', 'gd', 'simplexml', 'mbstring'
+        'mysql', 'gd', 'simplexml'
         ); // array
 	} // __construct
 

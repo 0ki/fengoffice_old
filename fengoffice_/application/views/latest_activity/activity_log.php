@@ -1,9 +1,10 @@
 <?php
 
 if (is_array($logs) && count($logs)> 0) {	
-	$is_user = $logs[0]->getRelObjectManager() == 'Users' ? true : false;
+	//FIXME $is_user = $logs[0]->getRelObjectManager() == 'Users' ? true : false;
+	$is_user = false;
 	if(!isset ($no_permissions)) $no_permissions = '';
-	if ($is_user)$no_permissions = ($user_id && logged_user()->getId()!=$user_id && !logged_user()->isAdministrator()) ? true : false;			
+	if ($is_user)$no_permissions = (logged_user()->getId()!=$user_id && !logged_user()->isAdministrator()) ? true : false;			
 	if (!$is_user || ($is_user && !$no_permissions)){	
 
 ?>
@@ -16,7 +17,7 @@ if (is_array($logs) && count($logs)> 0) {
 $isAlt = true;
 if (is_array($logs)) {
 	foreach ($logs as $log) {		
-		if ($log->getRelObjectManager() == 'Users' && $no_permissions) break;		
+		//FIXME if ($log->getRelObjectManager() == 'Users' && $no_permissions) break;		
 		$isAlt = !$isAlt;
 		echo '<tr' . ($isAlt? ' class="dashAltRow"' : '') . '><td  style="padding:5px;padding-right:15px;">';
 		if ($log->getCreatedOn()->getYear() != DateTimeValueLib::now()->getYear())
@@ -27,9 +28,9 @@ if (is_array($logs)) {
 			else
 				$date = format_time($log->getCreatedOn(), "M d, H:i");
 		}
-		if($log->getRelObjectManager() == 'Timeslots' && ($log->getAction()==ApplicationLogs::ACTION_OPEN || $log->getAction()==ApplicationLogs::ACTION_CLOSE))
+		/*FIXME if($log->getRelObjectManager() == 'Timeslots' && ($log->getAction()==ApplicationLogs::ACTION_OPEN || $log->getAction()==ApplicationLogs::ACTION_CLOSE))
 			echo $date . ' </td><td style="padding:5px;padding-right:15px;"> ' . $log->getText();
-		else
+		else*/
 			echo $date . ' </td><td style="padding:5px;padding-right:15px;"> ' . $log->getActivityData();
 		echo '</td></tr>';
 	}

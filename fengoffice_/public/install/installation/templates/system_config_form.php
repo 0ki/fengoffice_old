@@ -66,4 +66,11 @@
     <td class="optionLabel"><label for="configFormAbsoluteUrl">Absolute script URL:</label></td>
     <td><input type="text" name="config_form[absolute_url]" id="configFormAbsoluteUrl" value="<?php echo array_var($config_form_data, 'absolute_url', $installation_url) ?>" /></td>
   </tr>
+  
+  <tr>
+    <td class="optionLabel"><label for="configFormPlugins">Plugins to install:</label></td>
+    <td class="pluginOptions">
+		<?php include_once 'plugins.php' ;?>
+    </td>
+  </tr>
 </table>

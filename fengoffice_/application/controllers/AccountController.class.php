@@ -35,15 +35,8 @@ class AccountController extends ApplicationController {
 		$this->setTemplate("card");
 		$this->setControllerName("user");
 		tpl_assign('user', logged_user());
-		tpl_assign('user_id', get_id());
+		ajx_set_no_toolbar(true);
 		
-		ajx_set_no_toolbar(true);		
-		$pids = null;
-		if (active_project() instanceof Project) {
-			$pids = active_project()->getAllSubWorkspacesQuery();
-		}
-		$logs = ApplicationLogs::getOverallLogs(false, false, $pids, 15, 0, get_id());
-
 		tpl_assign('logs', $logs);
 	} // index
 
@@ -56,15 +49,16 @@ class AccountController extends ApplicationController {
 	 * @return null
 	 */
 	function edit_profile() {
-		$user = Users::findById(get_id());
-		if(!($user instanceof User)) {
+		$user = Contacts::findById(get_id());
+		if(!($user instanceof Contact && $user->isUser()) || $user->getDisabled()) {
 			flash_error(lang('user dnx'));
 			ajx_current("empty");
 			return;
 		} // if
 
+		
 		$company = $user->getCompany();
-		if(!($company instanceof Company)) {
+		if(!($company instanceof Contact)) {
 			flash_error(lang('company dnx'));
 			ajx_current("empty");
 			return;
@@ -78,7 +72,7 @@ class AccountController extends ApplicationController {
 
 		$redirect_to = array_var($_GET, 'redirect_to');
 		if((trim($redirect_to)) == '' || !is_valid_url($redirect_to)) {
-			$redirect_to = $user->getCardUrl();
+			$redirect_to = $user->getCardUserUrl();
 		} // if
 		tpl_assign('redirect_to', null);
 
@@ -86,14 +80,13 @@ class AccountController extends ApplicationController {
 		if(!is_array($user_data)) {
 			$user_data = array(
 	          'username'      => $user->getUsername(),
-	          'email'         => $user->getEmail(),
+	          'email'         => $user->getEmailAddress(),
 	          'display_name'  => $user->getDisplayName(),
-	          'title'         => $user->getTitle(),
+	          'title'         => $user->getJobTitle(),
 	          'timezone'      => $user->getTimezone(),
-	          'auto_assign'   => $user->getAutoAssign(),
 	          'company_id'    => $user->getCompanyId(),
 	          'is_admin'      => $user->isAdministrator(),
-			  'type'          => $user->getType(),
+			  'type'          => $user->getUserType(),
 			); // array
 
 		} // if
@@ -102,44 +95,75 @@ class AccountController extends ApplicationController {
 		tpl_assign('company', $company);
 		tpl_assign('user_data', $user_data);
 		tpl_assign('billing_categories', BillingCategories::findAll());
-
+		// Permission Groups
+		$groups = PermissionGroups::getNonPersonalSameLevelPermissionsGroups('`parent_id`,`id` ASC');
+		tpl_assign('groups', $groups);
+		$roles= SystemPermissions::getAllRolesPermissions();
+		tpl_assign('roles', $roles);
+		$tabs= TabPanelPermissions::getAllRolesModules();
+		tpl_assign('tabs_allowed', $tabs);
+		// Submit user
 		if(is_array(array_var($_POST, 'user'))) {
-			if(array_var($user_data,'company_id') && !(Companies::findById(array_var($user_data,'company_id')) instanceof Company )){
+			$company_id = array_var($user_data,'company_id');
+			if($company_id && !(Contacts::findById($company_id) instanceof Contact)){
 				ajx_current("empty");
 				flash_error(lang("company dnx"));
 				return ;
 			}
 			try {
 				DB::beginWork();
-				
+				if (!Contacts::validateUniqueEmail($user_data['email'], get_id())) {
+					throw new DAOValidationError($this, array(lang("email address must be unique"))) ; 
+				}
 				$user->setDisplayName(array_var($user_data,'display_name'));
-				$user->setEmail(array_var($user_data,'email'));
-				$user->setType(array_var($user_data,'type'));
+				$user->setFirstName($user->getDisplayName() != "" ? $user->getDisplayName() : $user->getUsername());
+				$user->setObjectName();
+				
+				$user_email = $user->getEmail('user');
+				$email_address = array_var($user_data,'email');
+				if (!is_null($user_email)){
+					$user_email->editEmailAddress($email_address);
+				}
+				else $user->addEmail($email_address, 'user', true);
+				
+				$user->setUserType(array_var($user_data,'type'));
 				$user->setTimezone(array_var($user_data,'timezone'));
-				$user->setTitle(array_var($user_data,'title'));
+				$user->setJobTitle(array_var($user_data,'title'));
 				$user->setUpdatedOn(DateTimeValueLib::now());
+				
 				if (logged_user()->isAdministrator()){
-					if ($user->getId() != 1) { // System admin cannot change it's company
+					if ($user->getId() != 2) { // System admin cannot change it's company (from Feng 2.0 onwards administrador has id = 2)
 						$user->setCompanyId(array_var($user_data,'company_id'));
 					}
-					$user->setDefaultBillingId(array_var($user_data,'default_billing_id'));
+					/* TODO: check this function for Contacts before disabling this comment
+					$user->setDefaultBillingId(array_var($user_data,'default_billing_id'));*/
+					
 					$user->setUsername(array_var($user_data,'username'));
-					$project = Projects::findById(array_var($user_data, 'personal_project_id'));
-					if ($project instanceof Project && $user->getPersonalProjectId() != $project->getId()) {
-						$user->setPersonalProjectId($project->getId());
-						$project_user = ProjectUsers::findById(array('project_id' => $project->getId(), 'user_id' => $user->getId()));
-						if (!$project_user) {
-							$project_user = new ProjectUser();
-							$project_user->setUserId($user->getId());
-							$project_user->setProjectId($project->getId());
-						}
-						$project_user->setAllPermissions(true);
-						$project_user->save();
+					
+				}
+				if(!isset($_POST['sys_perm'])){
+					$rol_permissions=SystemPermissions::getRolePermissions(array_var($user_data, 'type'));
+					$_POST['sys_perm']=array();
+					$not_rol_permissions=SystemPermissions::getNotRolePermissions(array_var($user_data, 'type'));
+					
+					foreach ($not_rol_permissions as $npr){
+						$_POST['sys_perm'][$npr]=0;
+					}
+					foreach($rol_permissions as $pr){
+						$_POST['sys_perm'][$pr]=1;
+					}
+					
+					
+				}
+				if(!isset($_POST['mod_perm'])){
+					$tabs_permissions=TabPanelPermissions::getRoleModules(array_var($user_data, 'type'));
+					$_POST['mod_perm']=array();
+					foreach($tabs_permissions as $pr){
+						$_POST['mod_perm'][$pr]=1;
 					}
 				}
-
 				$user->save();
-							
+				
 				$autotimezone = array_var($user_data, 'autodetect_time_zone', null);
 				if ($autotimezone !== null) {
 					set_user_config_option('autodetect_time_zone', $autotimezone, $user->getId());
@@ -148,24 +172,14 @@ class AccountController extends ApplicationController {
 				$object_controller = new ObjectController();
 			  	$object_controller->add_custom_properties($user);
 			  
-				if ($user->getId() != 1) { //System admin cannot change its own admin status
-					if ($user->getType() == 'admin') {
-						if ($user->getCompanyId() != owner_company()->getId()) {
-							// external users can't be admins => set as Normal 
-							$user->setType('normal');
-							$user->setAsAdministrator(false);
-						} else {
-							$user->setAsAdministrator(true);
-						}
-					} else {
-						$user->setAsAdministrator(false);
-					}
-				}
-								
-				if (GlobalCache::isAvailable()) {	
-					GlobalCache::delete('logged_user_'.$user->getId());
+				if ($user->getId() != 2) { //System admin cannot change its own admin status
+					
 				}
 				
+				$ret = null;
+				Hook::fire('after_edit_profile', $user, $ret);
+				$pg_id = $user->getPermissionGroupId();
+				save_permissions($pg_id);
 				DB::commit();
 
 				flash_success(lang('success update profile'));
@@ -187,8 +201,8 @@ class AccountController extends ApplicationController {
 	 * @return null
 	 */
 	function edit_password() {
-		$user = Users::findById(get_id());
-		if(!($user instanceof User)) {
+		$user = Contacts::findById(get_id());
+		if(!($user instanceof Contact && $user->isUser()) || $user->getDisabled()) {
 			flash_error(lang('user dnx'));
 			ajx_current("empty");
 			return;
@@ -202,7 +216,7 @@ class AccountController extends ApplicationController {
 
 		$redirect_to = array_var($_GET, 'redirect_to');
 		if((trim($redirect_to)) == '' || !is_valid_url($redirect_to)) {
-			$redirect_to = $user->getCardUrl();
+			$redirect_to = $user->getCardUserUrl();
 		} // if
 		tpl_assign('redirect_to', null);
 
@@ -231,8 +245,8 @@ class AccountController extends ApplicationController {
 					throw new Error(lang('passwords dont match'));
 				} // if
 				
-				$user_password = new UserPassword();
-				$user_password->setUserId(get_id());
+				$user_password = new ContactPassword();
+				$user_password->setContactId(get_id());
 				$user_password->password_temp = $new_password;
 				$user_password->setPasswordDate(DateTimeValueLib::now());
 				$user_password->setPassword(cp_encrypt($new_password, $user_password->getPasswordDate()->getTimestamp()));
@@ -241,16 +255,12 @@ class AccountController extends ApplicationController {
 				$user->setPassword($new_password);
 				$user->setUpdatedOn(DateTimeValueLib::now());
 				$user->save();
-											
-				if (GlobalCache::isAvailable()) {	
-					GlobalCache::delete('logged_user_'.$user->getId());
-				}
 				
 				if ($user->getId() == logged_user()->getId()) {
 					CompanyWebsite::instance()->logUserIn($user, Cookie::getValue("remember", 0));
 				}
 
-				ApplicationLogs::createLog($user, null, ApplicationLogs::ACTION_EDIT);
+				ApplicationLogs::createLog($user, ApplicationLogs::ACTION_EDIT);
 				flash_success(lang('success edit user', $user->getUsername()));
 				ajx_current("back");
 
@@ -269,8 +279,8 @@ class AccountController extends ApplicationController {
 	 * @return null
 	 */
 	function update_permissions() {
-		$user = Users::findById(get_id());
-		if(!($user instanceof User)) {
+		$user = Contacts::findById(get_id());
+		if(!($user instanceof Contact && $user->isUser()) || $user->getDisabled()) {
 			flash_error(lang('user dnx'));
 			ajx_current("empty");
 			return;
@@ -282,48 +292,53 @@ class AccountController extends ApplicationController {
 			return;
 		} // if
 
-		$company = $user->getCompany();
-		if(!($company instanceof Company)) {
+		$company = Contacts::findById($user->getCompanyId());
+		if(!($company instanceof Contact && $company->getIsCompany())) {
 			flash_error(lang('company dnx'));
 			ajx_current("empty");
 			return;
 		} // if
 
-		if (logged_user()->isAdministrator()) {
-			$projects = Projects::getAll();
-		} else {
-			$projects = null;
-		}
-
-		$permissions = ProjectUsers::getNameTextArray();
-
 		$redirect_to = array_var($_GET, 'redirect_to');
 		if((trim($redirect_to)) == '' || !is_valid_url($redirect_to)) {
-			$redirect_to = $user->getCardUrl();
+			$redirect_to = $user->getCardUserUrl();
 		} // if
 		
-		$user_data = array_var($_POST, 'user');
-		if(!is_array($user_data)) {
-			$user_data = array(
-	          'can_edit_company_data' => $user->getCanEditCompanyData(),
-	          'can_manage_security' => $user->getCanManageSecurity(),
-	          'can_manage_workspaces' => $user->getCanManageWorkspaces(),
-	          'can_manage_configuration' => $user->getCanManageConfiguration(),
-	          'can_manage_contacts' => $user->getCanManageContacts(),
-			  'can_manage_templates' => $user->getCanManageTemplates(),
-			  'can_manage_reports' => $user->getCanManageReports(),
-			  'can_manage_time' => $user->getCanManageTime(),
-			  'can_add_mail_accounts' => $user->getCanAddMailAccounts(),
-			); // array
+		$sys_permissions_data = array_var($_POST, 'sys_perm');
+		
+		if(!is_array($sys_permissions_data)) {
+			$pg_id = $user->getPermissionGroupId();
+			$parameters = permission_form_parameters($pg_id);
 			
-			Hook::fire('add_user_permissions', $user, $user_data);
-		} // if
-
-		tpl_assign('user_data', $user_data);
+			// Module Permissions
+			$module_permissions = TabPanelPermissions::findAll(array("conditions" => "`permission_group_id` = $pg_id"));
+			$module_permissions_info = array();
+			foreach ($module_permissions as $mp) {
+				$module_permissions_info[$mp->getTabPanelId()] = 1;
+			}
+			$all_modules = TabPanels::findAll(array("conditions" => "`enabled` = 1", "order" => "ordering"));
+			$all_modules_info = array();
+			foreach ($all_modules as $module) {
+				$all_modules_info[] = array('id' => $module->getId(), 'name' => lang($module->getTitle()), 'ot' => $module->getObjectTypeId());
+			}
+			
+			// System Permissions
+			$system_permissions = SystemPermissions::findById($pg_id);
+			
+			tpl_assign('module_permissions_info', $module_permissions_info);
+			tpl_assign('all_modules_info', $all_modules_info);
+			tpl_assign('system_permissions', $system_permissions);
+			
+			tpl_assign('permission_parameters', $parameters);
+			
+			$more_permissions = array();
+			Hook::fire('add_user_permissions', $pg_id, $more_permissions);
+			tpl_assign('more_permissions', $more_permissions);
+		}
+		
+		
 		tpl_assign('user', $user);
 		tpl_assign('company', $company);
-		tpl_assign('projects', $projects);
-		tpl_assign('permissions', $permissions);
 		tpl_assign('redirect_to', $redirect_to);
 
 		if(array_var($_POST, 'submitted') == 'submitted') {
@@ -331,60 +346,10 @@ class AccountController extends ApplicationController {
 			if (!is_array($user_data)) $user_data = array();
 			try{
 				DB::beginWork();
+				$pg_id = $user->getPermissionGroupId();
+				save_permissions($pg_id);
 				
-				$permissionsString = array_var($_POST,'permissions');
-				if ($permissionsString && $permissionsString != ''){
-					$permissions = json_decode($permissionsString);
-				}
-			  	if(is_array($permissions) && count($permissions) > 0) {
-			  		//Clear old modified permissions
-			  		$ids = array();
-			  		foreach($permissions as $perm) {
-			  			$ids[] = $perm->wsid;
-			  		}
-			  			
-			  		ProjectUsers::clearByUser($user, implode(',', $ids));
-			  		
-			  		//Add new permissions
-			  		//TODO - Make batch update of these permissions
-			  		foreach ($permissions as $perm) {
-			  			if (ProjectUser::hasAnyPermissions($perm->pr,$perm->pc)) {			  				
-				  			$relation = new ProjectUser();
-					  		$relation->setProjectId($perm->wsid);
-					  		$relation->setUserId($user->getId());
-				  			
-					  		$relation->setCheckboxPermissions($perm->pc, $user->isGuest() ? false : true);
-					  		$relation->setRadioPermissions($perm->pr, $user->isGuest() ? false : true);
-					  		$relation->save();
-			  			} //endif
-			  			//else if the user has no permissions at all, he is not a project_user. ProjectUser is not created
-			  		} //end foreach
-				} // if
-				
-				$user->setCanEditCompanyData(false);
-				$user->setCanManageSecurity(false);
-				$user->setCanManageConfiguration(false);
-				$user->setCanManageWorkspaces(false);
-				$user->setCanManageContacts(false);
-				$user->setCanManageTemplates(false);
-				$user->setCanManageReports(false);
-				$user->setCanManageTime(false);
-				$user->setCanAddMailAccounts(false);
-				$other_permissions = array();
-				Hook::fire('add_user_permissions', $user, $other_permissions);
-				foreach ($other_permissions as $k => $v) {
-					$user->setColumnValue($k, false);
-				}
-				$user->setFromAttributes($user_data);
-				$user->setUpdatedOn(DateTimeValueLib::now());
-				$user->save();
 				DB::commit();
-				
-				// Delete old global cache so the new permissions are taken into account next time
-				if (GlobalCache::isAvailable()) {
-					GlobalCache::delete('logged_user_'.$user->getId());
-				}				
-	
 				flash_success(lang('success user permissions updated'));
 				ajx_current("back");
 			} catch(Exception $e) {
@@ -402,8 +367,8 @@ class AccountController extends ApplicationController {
 	 * @return null
 	 */
 	function edit_avatar() {
-		$user = Users::findById(get_id());
-		if (!($user instanceof User)) {
+		$user = Contacts::findById(get_id());
+		if (!($user instanceof Contact && $user->isUser()) || $user->getDisabled()) {
 			flash_error(lang('user dnx'));
 			ajx_current("empty");
 			return;
@@ -446,7 +411,7 @@ class AccountController extends ApplicationController {
 					throw new InvalidUploadError($avatar, lang('error edit avatar'));
 				} // if
 
-				ApplicationLogs::createLog($user, null, ApplicationLogs::ACTION_EDIT);
+				ApplicationLogs::createLog($user, ApplicationLogs::ACTION_EDIT);
 				DB::commit();
 
 				if(is_file($old_file)) {
@@ -470,8 +435,8 @@ class AccountController extends ApplicationController {
 	 * @return null
 	 */
 	function delete_avatar() {
-		$user = Users::findById(get_id());
-		if(!($user instanceof User)) {
+		$user = Contacts::findById(get_id());
+		if(!($user instanceof Contact && $user->isUser()) || $user->getDisabled()) {
 			flash_error(lang('user dnx'));
 			ajx_current("empty");
 			return;
@@ -500,7 +465,7 @@ class AccountController extends ApplicationController {
 			$user->setUpdatedOn(DateTimeValueLib::now());
 			$user->deleteAvatar();
 			$user->save();
-			ApplicationLogs::createLog($user, null, ApplicationLogs::ACTION_EDIT);
+			ApplicationLogs::createLog($user, ApplicationLogs::ACTION_EDIT);
 
 			DB::commit();
 
@@ -530,6 +495,70 @@ class AccountController extends ApplicationController {
 			}
 		}
 		
+	}
+	
+	
+	
+	
+	function delete_user() {
+		$user = Contacts::findById(get_id());
+		if (!($user instanceof Contact && $user->isUser())) {
+			flash_error(lang('user dnx'));
+			ajx_current("empty");
+			return;
+		}
+		
+		if (!$user->canDelete(logged_user())) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
+		
+		try {
+			DB::beginWork();
+			
+			$user->disable();
+			
+			DB::commit();
+			flash_success('success delete user');
+			ajx_current("reload");
+			
+		} catch (Exception $e) {
+			flash_error($e->getMessage());
+			DB::rollback();
+			ajx_current("empty");
+		}
+	}
+	
+	function restore_user() {
+		$user = Contacts::findById(get_id());
+		if (!($user instanceof Contact && $user->isUser())) {
+			flash_error(lang('user dnx'));
+			ajx_current("empty");
+			return;
+		}
+		
+		if (!$user->canDelete(logged_user())) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
+		
+		try {
+			DB::beginWork();
+			
+			$user->setDisabled(false);
+			$user->save();
+			
+			DB::commit();
+			flash_success('success delete user');
+			ajx_current("reload");
+			
+		} catch (Exception $e) {
+			flash_error($e->getMessage());
+			DB::rollback();
+			ajx_current("empty");
+		}
 	}
 
 } // AccountController

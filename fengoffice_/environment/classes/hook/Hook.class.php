@@ -16,13 +16,30 @@ class Hook {
 	}
 	
 	static function init() {
-		$handle = opendir(ROOT . "/application/hooks");
-		while ($file = readdir($handle)) {
-			if (is_file(ROOT . "/application/hooks/$file") && substr($file, -4) == '.php') {
-				include_once ROOT . "/application/hooks/$file";
+		$base_hooks_dir = ROOT . "/hooks" ;
+		if (is_dir($base_hooks_dir)) {
+			$handle = opendir($base_hooks_dir);
+			while ($file = readdir($handle)) {
+				if (is_file("$base_hooks_dir/$file") && substr($file, -4) == '.php') {
+					include_once "$base_hooks_dir/$file";
+				}
+			}
+			closedir($handle);
+		}
+		
+		foreach ( Plugins::instance()->getActive() as $plugin ){
+			/* @var $plugin Plugin  */
+			$plugin_hooks_dir = $plugin->getHooksPath();
+			if (is_dir($plugin_hooks_dir)) {
+				$handle = opendir($plugin_hooks_dir);
+				while ($file = readdir($handle)) {
+					if (is_file("$plugin_hooks_dir/$file") && substr($file, -4) == '.php') {
+						include_once "$plugin_hooks_dir/$file";
+					}
+				}
+				$plugin->getSystemName() ;
+				closedir($handle);
 			}
 		}
-		closedir($handle);
 	}
 }
-?>

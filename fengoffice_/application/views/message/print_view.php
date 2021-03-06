@@ -1,5 +1,5 @@
 <?php
-set_page_title($message->getTitle());
+set_page_title($message->getObjectName());
 ?>
 
 <style>
@@ -40,10 +40,10 @@ h2 {
 <div class="print-view-message">
 
 <div class="header">
-<h1><?php echo clean($message->getTitle()); ?></h1>
+<h1><?php echo clean($message->getObjectName()); ?></h1>
 <b><?php echo lang('from') ?>:</b> <?php echo clean($message->getCreatedByDisplayName()) ?><br />
 <b><?php echo lang('date') ?>:</b> <?php echo format_datetime($message->getUpdatedOn(), null, logged_user()->getTimezone()) ?><br />
-<b><?php echo lang('workspace') ?>:</b> <?php echo clean($message->getWorkspacesNamesCSV()) ?><br />
+<b><?php /*FIXME echo lang('workspace') ?>:</b> <?php echo clean($message->getWorkspacesNamesCSV()) */?><br />
 </div>
 
 <div class="body">

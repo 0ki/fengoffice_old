@@ -2,6 +2,9 @@
 
   // Return array of langs
   return array(
+  	'All' => 'All',
+  	'person' => 'Person',
+  	'information' => 'Information',
   	'the' => 'the',
     'username' => 'Username',
 	'email or username' => 'Email or username',
@@ -20,6 +23,8 @@
     'index' => 'Index',
     'view' => 'View',
     'edit' => 'Edit',
+  	'of' => 'Of',
+  	'search results for' => 'Search Result for',
     'delete' => 'Delete',
   	'empty trash can' => 'Empty trash can',
     'save' => 'Save',
@@ -56,7 +61,6 @@
     'options' => 'Options',
     'active' => 'Active',
     'completed' => 'Completed',
-    'open task status' => 'Open',
     'administrator' => 'Administrator',
     'error' => 'Error',
     'yes' => 'Yes',
@@ -66,6 +70,8 @@
     'by' => 'By',
     'on' => 'On',
     'in' => 'In',
+  	'check all' => 'Check All',
+  	'uncheck all' => 'Uncheck All',
     'people' => 'People',
     'dates' => 'Dates',
     'permission' => 'Permission',
@@ -118,7 +124,6 @@
     'events' => 'Events',
     'Event' => 'Event',
     'Events' => 'Events',
-  	'deleted user' => 'a deleted user',
     
     'project calendar' => '{0} calendar',
     'user calendar' => '{0}\'s calendar',
@@ -186,6 +191,7 @@
   	'priority' => 'Priority',
   	'anybody' => 'Anybody',
   
+  	'read write and delete' => 'Read, Write &amp; Delete',
   	'read and write' => 'Read &amp; Write',
   	'read only' => 'Read only',
   	'none no bars' => 'None',
@@ -248,32 +254,25 @@
   	'advanced' => 'Advanced',
 
 	'direct url' => 'Direct URL',
+	'dimension' => 'Dimension',
+  	'the template' => 'the template',
+  	'context' => 'Context',
+  	'next' => 'Next',
+  	'previews' => 'Previews',
+  	'success save member' => '{0} added successfully' ,
+  	'tabs' => 'Tabs',
+  	'tab' => 'Tab',
+	'vinculations' => 'Vinculations',	  
+	'last updated' => 'Last updated',
+	'no data to show' => 'No data to show', 
+	'activity feeds' => 'Activity Feeds',
+  	'estimated' => 'Estimated',
+  	'percent completed' => 'Percent completed',
+  	'task percent completed must be greater than 0' => 'Percent completed must be greater than 0.',
+	'task percent completed must be lower than 100' => 'Percent completed must be equal or lower than 100.',
+  	'field Objects percent_completed' => 'Percent completed',
+  	'field Objects name' => 'Name',
+  	'must choose at least one member' => 'Please select the context', 
   
-  	'wizard title' => 'Getting Started',
-	'wizard intro' => 'Let’s start by creating a workspace. Workspaces allow you to centralize and organize information about a Customer or a Project, making it easy to add tasks and share them with other people.',
-  	'wizard intro project' => 'Here you can invite other people to the Project\'s workspace, set up their permissions and create and assign tasks.',
-  	'wizard intro customer' => 'Know you can create a sub-workspace for a customer’s project, invite other people, assign them permissions, and add and assign tasks.',    
   
-	'wizard new customer title' => 'Add a Customer\'s Workspace',	
-	'wizard new customer' => 'A Customer’s workspace lets you share and centralize all the information related to a customer. All workspaces are listed on the left side panel. Here you can create, search and share with other people a Customer’s Workspace or sub-workspace.',
-   	
-	'wizard new project title' => 'Add a Project\'s Workspace',	
-	'wizard new project' => 'A Project’s workspace lets you share and centralize all the information related to a customer. All workspaces are listed on the left side panel. Here you can create, search and share with other people a Projects Workspace or sub-workspace.',
-  
-	'wizard new customer project title' => 'Add a Customer\'s Project workspace',	
-	'wizard new customer project' => 'Selecting the Customer as "Parent Workspace" indicates that the Project will be a sub- workspace of the Customer’s Workspace.<br/>  A summary of the most relevant information of the selected workspace or sub-workspace will be shown on the Overview tab.',
-  	
-	'wizard new customer task title' => 'Add a task to this Customer',	
-	'wizard new customer task' => 'You can add tasks directly into a Customer\'s Workspace or a Customer\'s Project Workspace. It is also possible to assign tasks to other people – after inviting them to Feng Office -, add a due date, repeating tasks, or set its priority. You can also create sub-tasks, milestones, or attach documents, notes, reminders, emails, working time and more to a task. To see a Proyect’s tasks go to the left side panel and select the project, then click on the Tasks tab on the main menu.',
-	
-	'wizard new project task title' => 'Add a Task to this Project',	
-	'wizard new project task' => 'Assign tasks to other persons –after inviting them to Feng-, add a due date, configure repeating tasks, or set task priority. You are also given the possibility to attach sub-tasks, milestones, documents, notes, and reminders, emails, working time and more. To see the tasks for a project, go to the left panel and select the project, then click on "Tasks" on the main menu.',
-	
-	'wizard new user title' => ' Invite other people',
-  	'wizard new user' => 'To add other people to your workspaces you need to click on invite other people and assign them permissions. You can also add users through the Add User option in the administration panel (you may find the option on the upper right corner of your screen).',
-	
-	'wizard close action' => 'Double-Click on "Overview" tab in the main menu to return to this Wizard.',
-  
-  ); // array
-
-?>
+  );

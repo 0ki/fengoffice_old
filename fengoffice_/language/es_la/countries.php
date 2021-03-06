@@ -29,7 +29,7 @@
     'country bm' => 'Bermudas',
     'country bt' => 'Bután',
     'country bo' => 'Bolivia',
-    'country ba' => 'Bosnia y Hercegovina',
+    'country ba' => 'Bosnia y Herzegovina',
     'country bw' => 'Botsuana',
     'country bv' => 'Isla Bouvet',
     'country br' => 'Brasil',
@@ -72,7 +72,7 @@
     'country et' => 'Etiopía',
     'country fk' => 'Islas Malvinas',
     'country fo' => 'Islas Feroe',
-    'country fj' => 'Fiyi',
+    'country fj' => 'Fidyi',
     'country fi' => 'Finlandia',
     'country fr' => 'Francia',
     'country gf' => 'Guyana Francesa',
@@ -129,7 +129,7 @@
     'country mo' => 'Macao',
     'country mk' => 'Macedonia',
     'country mg' => 'Madagascar',
-    'country mw' => 'Malaui',
+    'country mw' => 'Malawi',
     'country my' => 'Malasia',
     'country mv' => 'Maldivas',
     'country ml' => 'Malí',
@@ -239,7 +239,7 @@
     'country ye' => 'Yemen',
     'country cd' => 'República Democrática del Congo',
     'country zm' => 'Zambia',
-    'country zw' => 'Zimbabue'
+    'country zw' => 'Zimbawe'
   ); // array
 
 ?>

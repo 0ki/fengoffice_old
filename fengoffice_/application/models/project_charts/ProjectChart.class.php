@@ -15,14 +15,6 @@ class ProjectChart extends BaseProjectChart {
 
 	protected $parameters;
 
-	/* This project object is taggable
-	 *
-	 * @var boolean
-	 */
-	protected $is_taggable = true;
-
-	protected $is_searchable = true;
-
 	protected $searchable_columns = array('title');
 
 	protected $is_commentable = false;
@@ -148,17 +140,6 @@ class ProjectChart extends BaseProjectChart {
 	// ---------------------------------------------------
 
 	/**
-	 * Check CAN_MANAGE_MESSAGES permission
-	 *
-	 * @access public
-	 * @param User $user
-	 * @return boolean
-	 */
-	function canManage(User $user) {
-		return true;
-	} // canManage
-
-	/**
 	 * Returns true if $user can access this message
 	 *
 	 * @param User $user
@@ -191,15 +172,6 @@ class ProjectChart extends BaseProjectChart {
 		return true;
 	} // canEdit
 
-	/**
-	 * Check if $user can update message options
-	 *
-	 * @param User $user
-	 * @return boolean
-	 */
-	function canUpdateOptions(User $user) {
-		return true;
-	} // canUpdateOptions
 
 	/**
 	 * Check if specific user can delete this messages

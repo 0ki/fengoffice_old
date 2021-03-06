@@ -23,7 +23,7 @@
  * @author    Chuck Hagenbuch <chuck@horde.org>
  * @copyright 1997-2008 The PHP Group
  * @license   http://www.php.net/license/3_0.txt  PHP License 3.0
- * @version   CVS: $Id: Observer.php,v 1.1 2010/01/22 18:11:58 acio Exp $
+ * @version   CVS: $Id: Observer.php 7 2010-01-22 18:14:51Z acio $
  * @link      http://pear.php.net/package/Net_FTP
  * @since     File available since Release 0.0.1
  */

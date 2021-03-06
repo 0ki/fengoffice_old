@@ -4,7 +4,6 @@
  */
 og.MessageManager = function() {
 	var actions, moreActions, markactions;
-	this.accountId = 0;
 	this.doNotRemove = true;
 	this.needRefresh = false;
 	
@@ -18,28 +17,21 @@ og.MessageManager = function() {
 				totalProperty: 'totalCount',
 				id: 'id',
 				fields: [
-					'object_id', 'type', 'title', 'text', 'date', 'is_today',
-					'wsIds', 'userId', 'userName', 'updaterId', 'updaterName', 'tags', 'workspaceColors', 'ix','isRead'
+					'object_id', 'type', 'name', 'text', 'date', 'is_today',
+					'userId', 'userName', 'updaterId', 'updaterName', 'ix','isRead'
 				]
 			}),
 			remoteSort: true,
 			listeners: {
 				'load': function() {
 					var d = this.reader.jsonData;
-					var ws = og.clean(Ext.getCmp('workspace-panel').getActiveWorkspace().name);
-					var tag = og.clean(Ext.getCmp('tag-panel').getSelectedTag());
 					if (d.totalCount === 0) {
-						if (tag) {
-							this.fireEvent('messageToShow', lang("no objects with tag message", lang("messages"), ws, tag));
-						} else {
-							this.fireEvent('messageToShow', lang("no objects message", lang("messages"), ws));
-						}
+						this.fireEvent('messageToShow', lang("no objects message", lang("messages"), lang('context')));
 					} else if (d.messages.length == 0) {
 						this.fireEvent('messageToShow', lang("no more objects message", lang("messages")));
 					} else {
 						this.fireEvent('messageToShow', "");
 					}
-					og.showWsPaths();
 					Ext.getCmp('message-manager').getView().focusRow(og.lastSelectedRow.messages+1);
 				}
 			}
@@ -64,15 +56,13 @@ og.MessageManager = function() {
 				'<a style="font-size:120%;" class="{3}" href="{1}" onclick="og.openLink(\'{1}\');return false;" title="{2}">{0}</a>',
 				og.clean(value), og.getUrl('message', 'view', {id: r.data.object_id}), og.clean(r.data.text), classes);
 	
-		var wsString = String.format('<span class="project-replace">{0}</span>&nbsp;', r.data.wsIds);
-		
 		var text = '';
 		if (r.data.text != ''){
 			text = '&nbsp;-&nbsp;<span style="color:#888888;white-space:nowrap">';
 			text += og.clean(r.data.text) + "</span></i>";
 		}
 		
-		return wsString + name + text;
+		return name + text;
 	}
 
 	function renderIsRead(value, p, r){
@@ -104,7 +94,7 @@ og.MessageManager = function() {
 		if (!value) {
 			return "";
 		}
-		var userString = String.format('<a href="{1}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', og.clean(r.data.updaterName), og.getUrl('user', 'card', {id: r.data.updaterId}));
+		var userString = String.format('<a href="{1}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', og.clean(r.data.updaterName), og.getUrl('contact', 'card_user', {id: r.data.updaterId}));
 	
 		if (!r.data.is_today) {
 			return lang('last updated by on', userString, value);
@@ -162,14 +152,12 @@ og.MessageManager = function() {
 				}
 			}
 			if (sm.getCount() <= 0) {
-				actions.tag.setDisabled(true);
 				actions.del.setDisabled(true);
 				actions.edit.setDisabled(true);
 				markactions.markAsRead.setDisabled(true);
 				markactions.markAsUnread.setDisabled(true);
 				actions.archive.setDisabled(true);
 			} else {
-				actions.tag.setDisabled(false);
 				actions.del.setDisabled(false);
 				actions.edit.setDisabled(false);
 				if (allUnread) {
@@ -225,15 +213,10 @@ og.MessageManager = function() {
         },{
 			id: 'title',
 			header: lang("title"),
-			dataIndex: 'title',
+			dataIndex: 'name',
 			width: 250,
 			renderer: renderName,
 			sortable:true
-        },{
-			id: 'tags',
-			header: lang("tags"),
-			dataIndex: 'tags',
-			width: 60
         },{
 			id: 'updatedOn',
 			header: lang("last updated by"),
@@ -289,28 +272,6 @@ og.MessageManager = function() {
 				var url = og.getUrl('message', 'add');
 				og.openLink(url, null);
 			}
-		}),
-		tag: new Ext.Action({
-			text: lang('tag'),
-            tooltip: lang('tag selected objects'),
-            iconCls: 'ico-tag',
-			disabled: true,
-			menu: new og.TagMenu({
-				listeners: {
-					'tagselect': {
-						fn: function(tag) {
-							this.tagObjects(tag);
-						},
-						scope: this
-					},
-					'tagdelete': {
-						fn: function(tag){
-							this.untagObjects(tag);
-						},
-						scope: this
-					}
-				}
-			})
 		}),
 		del: new Ext.Action({
 			text: lang('move to trash'),
@@ -373,7 +334,6 @@ og.MessageManager = function() {
 		tbar.push(actions.newCO);
 		tbar.push('-');
 		tbar.push(actions.edit);
-		tbar.push(actions.tag);
 		tbar.push(actions.archive);
 		tbar.push(actions.del);		
 		tbar.push('-');
@@ -385,8 +345,8 @@ og.MessageManager = function() {
 		layout: 'fit',
 		cm: cm,
 		enableDrag: true,
+		ddGroup: 'MemberDD',
 		stateful: og.preferences['rememberGUIState'],
-		ddGroup: 'WorkspaceDD',
 		id: 'message-manager',
 		stripeRows: true,
 		closable: true,
@@ -421,18 +381,6 @@ og.MessageManager = function() {
 		}
 	});
 	
-	var tagevid = og.eventManager.addListener("tag changed", function(tag) {
-		this.resetVars();
-		if (!this.ownerCt) {
-			og.eventManager.removeListener(tagevid);
-			return;
-		}
-		if (this.ownerCt.active) {
-			this.load({start:0});
-		} else {
-    		this.needRefresh = true;
-    	}
-	}, this);
 };
 
 Ext.extend(og.MessageManager, Ext.grid.GridPanel, {
@@ -444,11 +392,13 @@ Ext.extend(og.MessageManager, Ext.grid.GridPanel, {
 		} else {
 			start = 0;
 		}
+		
+		
 		this.store.baseParams = {
-					      tag: Ext.getCmp('tag-panel').getSelectedTag(),
-						  active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id,
-						  account_id: this.accountId
-					    };
+		      context: og.contextManager.plainContext()
+		    };
+		
+		
 		this.store.load({
 			params: Ext.apply(params, {
 				start: start,
@@ -457,8 +407,6 @@ Ext.extend(og.MessageManager, Ext.grid.GridPanel, {
 		});
 	},
 	resetVars: function(){
-		this.viewUnclassified = false;
-		this.accountId = 0;
 	},
 	
 	activate: function() {
@@ -473,20 +421,6 @@ Ext.extend(og.MessageManager, Ext.grid.GridPanel, {
 	
 	showMessage: function(text) {
 		this.innerMessage.innerHTML = text;
-	},
-	
-	moveObjects: function(ws) {
-		og.moveToWsOrMantainWs(this.id, ws);
-	},
-	
-	moveObjectsToWsOrMantainWs: function(mantain, ws) {
-		this.load({
-			action: 'move',
-			ids: this.getSelectedIds(),
-			types: this.getSelectedTypes(),
-			moveTo: ws,
-			mantainWs: mantain
-		});
 	},
 	
 	trashObjects: function() {
@@ -509,31 +443,6 @@ Ext.extend(og.MessageManager, Ext.grid.GridPanel, {
 			});
 			this.getSelectionModel().clearSelections();
 		}
-	},
-
-	removeTags: function() {
-		this.load({
-			action: 'untag',
-			ids: this.getSelectedIds(),
-			types: this.getSelectedTypes()
-		});
-	},
-	
-	tagObjects: function(tag) {
-		this.load({
-			action: 'tag',
-			ids: this.getSelectedIds(),
-			types: this.getSelectedTypes(),
-			tagTag: tag
-		});
-	},
-	untagObjects: function(tag) {
-		this.load({
-			action: 'untag',
-			ids: this.getSelectedIds(),
-			types: this.getSelectedTypes(),
-			tagTag: tag
-		});
 	}
 });
 

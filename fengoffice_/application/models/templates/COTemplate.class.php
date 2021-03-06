@@ -10,13 +10,12 @@ class COTemplate extends BaseCOTemplate {
 
 	protected $is_commentable = true;
 	
-	function getWorkspaces() {
-		if ($this->isNew()) return array();
-		return WorkspaceTemplates::getWorkspacesByTemplate($this->getId());
-	}
+	protected $is_linkable_object= false;
 	
 	function getObjects() {
-		if ($this->isNew()) return array();
+		if ($this->isNew()) {
+			return array();
+		}
 		return TemplateObjects::getObjectsByTemplate($this->getId());
 	}
 	
@@ -30,11 +29,20 @@ class COTemplate extends BaseCOTemplate {
 		return TemplateObjects::templateHasObject($this, $object);
 	}
 	
+
+	
+	
+	/**
+	 * 
+	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
+	 * @param ProjectTask $object
+	 */
 	function addObject($object) {
 		if ($this->hasObject($object)) return;
 		if (!$object->isTemplate() && $object->canBeTemplate()) {
 			// the object isn't a template but can be, create a template copy
 			$copy = $object->copy();
+			
 			$copy->setColumnValue('is_template', true);
 			if ($copy instanceof ProjectTask) {
 				// don't copy milestone and parent task
@@ -42,15 +50,20 @@ class COTemplate extends BaseCOTemplate {
 				$copy->setParentId(0);
 			}
 			$copy->save();
+			
+			//Also copy members..
+			$memberIds = $object->getMemberIds();
+			$controller  = new ObjectController() ;
+			$controller->add_to_members($copy, $memberIds);
+			
 			// copy subtasks
 			if ($copy instanceof ProjectTask) {
 				ProjectTasks::copySubTasks($object, $copy, true);
 			} else if ($copy instanceof ProjectMilestone) {
 				ProjectMilestones::copyTasks($object, $copy, true);
 			}
-			// copy tags
-			$tags = implode(',',$object->getTagNames());
-			$copy->setTagsFromCSV($tags);
+			
+			
 			// copy custom properties			
 			$copy->copyCustomPropertiesFrom($object);
 			// copy linked objects
@@ -62,14 +75,14 @@ class COTemplate extends BaseCOTemplate {
 			}
 			// copy reminders
 			$reminders = ObjectReminders::getByObject($object);
-			foreach ($reminders as $reminder) {
+			foreach ($reminders as $reminder /* @var ObjectReminder $reminder */ ) {
 				$copy_reminder = new ObjectReminder();
 				$copy_reminder->setContext($reminder->getContext());
 				$copy_reminder->setDate(EMPTY_DATETIME);
 				$copy_reminder->setMinutesBefore($reminder->getMinutesBefore());
 				$copy_reminder->setObject($copy);
 				$copy_reminder->setType($reminder->getType());
-				$copy_reminder->setUserId($reminder->getUserId());
+				// $copy_reminder->setContactId($reminder->getContactId()); //TODO Feng 2 -  No  anda 
 				$copy_reminder->save();
 			}
 			$template = $copy;
@@ -81,54 +94,52 @@ class COTemplate extends BaseCOTemplate {
 		$to->setObject($template);
 		$to->setTemplate($this);
 		$to->save();
-		return $template->getId();
+		return $template->getObjectId();
 	}
 	
 	// ---------------------------------------------------
 	//  Permissions
 	// ---------------------------------------------------
 
-	/**
-	 * Returns true if specific user has CAN_MANAGE_TEMPLATES permission set to true
-	 *
-	 * @access public
-	 * @param User $user
-	 * @return boolean
-	 */
-	function canManage(User $user) {		
-		return can_manage_templates($user);
-	} // canManage
-
+	
+	function canAdd(Contact $user, $context){
+		return 1 ;
+		//FIXME: return can_manage_templates($user) && can_add($user, $context, COTemplates::instance()->getObjectTypeId());
+	}
+	
+	
 	/**
 	 * Returns true if $user can view this template
 	 *
-	 * @param User $user
+	 * @param Contact $user
 	 * @return boolean
 	 */
-	function canView(User $user) {
-		return can_manage_templates($user);
+	function canView(Contact $user) {
+		return 1 ;
+		// FIXME return can_manage_templates($user);
 	} // canView
 
+	
 	/**
 	 * Check if specific user can add new templates to specific project
 	 *
 	 * @access public
-	 * @param User $user
-	 * @param Project $project
+	 * @param Contact $user
+	 * @param Member $member
 	 * @return boolean
 	 */
-	function canAdd(User $user, Project $project) {
-		return can_manage_templates($user);
+	function canAddToMember(Contact $contact, Member $member, $context_members) {
+		return can_manage_templates($contact) && can_add_to_member($contact,$member,$context_members,$this->getObjectTypeId());
 	} // canAdd
 
 	/**
 	 * Check if specific user can edit this template
 	 *
 	 * @access public
-	 * @param User $user
+	 * @param Contact $user
 	 * @return boolean
 	 */
-	function canEdit(User $user) {
+	function canEdit(Contact $user) {
 		return can_manage_templates($user);
 	} // canEdit
 
@@ -137,10 +148,10 @@ class COTemplate extends BaseCOTemplate {
 	 * Check if specific user can delete this template
 	 *
 	 * @access public
-	 * @param User $user
+	 * @param Contact $user
 	 * @return boolean
 	 */
-	function canDelete(User $user) {
+	function canDelete(Contact $user) {
 		return can_manage_templates($user);
 	} // canDelete
 
@@ -149,7 +160,7 @@ class COTemplate extends BaseCOTemplate {
 	// ---------------------------------------------------
 
 	function getViewUrl() {
-		return get_url('template', 'view', array('id' => $this->getId()));
+		return get_url('template', 'view', array('id' => $this->getObjectId()));
 	} // getViewUrl
 
 	/**
@@ -160,7 +171,7 @@ class COTemplate extends BaseCOTemplate {
 	 * @return string
 	 */
 	function getEditUrl() {
-		return get_url('template', 'edit', array('id' => $this->getId()));
+		return get_url('template', 'edit', array('id' => $this->getObjectId()));
 	} // getEditUrl
 
 	/**
@@ -171,11 +182,11 @@ class COTemplate extends BaseCOTemplate {
 	 * @return string
 	 */
 	function getDeleteUrl() {
-		return get_url('template', 'delete', array('id' => $this->getId()));
+		return get_url('template', 'delete', array('id' => $this->getObjectId()));
 	} // getDeleteUrl
 
 	function getAssignTemplateToWSUrl() {
-		return get_url('template', 'assign_to_ws', array('id' => $this->getId()));
+		return get_url('template', 'assign_to_ws', array('id' => $this->getObjectId()));
 	}
 	
 	// ---------------------------------------------------
@@ -209,24 +220,14 @@ class COTemplate extends BaseCOTemplate {
 			}
 		}
 		$this->removeObjects();
-		TemplateParameters::deleteParametersByTemplate($this->getId());
-		TemplateObjectProperties::deletePropertiesByTemplate($this->getId());
+		TemplateParameters::deleteParametersByTemplate($this->getObjectId());
+		TemplateObjectProperties::deletePropertiesByTemplate($this->getObjectId());
 		parent::delete();
 	} // delete
 
 	// ---------------------------------------------------
 	//  ApplicationDataObject implementation
 	// ---------------------------------------------------
-
-	/**
-	 * Return object type name
-	 *
-	 * @param void
-	 * @return string
-	 */
-	function getObjectTypeName() {
-		return 'template';
-	} // getObjectTypeName
 
 	/**
 	 * Return object URl
@@ -240,14 +241,13 @@ class COTemplate extends BaseCOTemplate {
 	} // getObjectUrl
 
 	function getTitle() {
-		return $this->getName();
+		return $this->getObjectName();
 	}
 	
 	function getArrayInfo() {
 		return array(
-			'id' => $this->getId(),
-			't' => $this->getName(),
-			//'wsid' => $this->getWorkspacesIdsCSV(),
+			'id' => $this->getObjectId(),
+			't' => $this->getObjectName(),
 			'c' => $this->getCreatedOn() instanceof DateTimeValue ? $this->getCreatedOn()->getTimestamp() : 0,
 			'cid' => $this->getCreatedById()
 		);

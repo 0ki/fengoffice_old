@@ -3,7 +3,10 @@
 	require_javascript('og/time/main.js');
 	require_javascript('og/time/drawing.js');
 
-	$show_billing = can_manage_security(logged_user()) && logged_user()->isAdministrator();
+	// FIXME: para cuando se haga el billing habilitar $show_billing
+	//$show_billing = can_manage_security(logged_user()) && logged_user()->isAdministrator();
+	$show_billing = false;
+	
 	$genid = gen_id();
 	$tasks_array = array();
 	$timeslots_array = array();
@@ -21,6 +24,7 @@
 	if (isset($companies))
 		foreach($companies as $company)
 			$companies_array[] = $company->getArrayInfo();
+
 ?>
 <div class="timePanelContextHelp"><?php	
 	$show_help_option = user_config_option('show_context_help'); 
@@ -111,9 +115,7 @@
 			<td style="padding-right: 10px; width:140px;vertical-align:bottom">
 				<?php echo label_tag(lang('date')) ?>
 			</td>
-			<td style="padding-right:10px; width:140px;vertical-align:bottom">
-				<?php echo label_tag(lang('workspace')); ?>
-			</td>
+			
 			<?php if(logged_user()->isAdministrator()) {?><td style="padding-right: 10px; width:140px;vertical-align:bottom">
 				<?php echo label_tag(lang('user')) ?>
 			</td><?php } else { ?><td style="padding-right: 10px;">				
@@ -130,9 +132,7 @@
 			<td style="padding-right: 10px; width:140px;">
 				<?php echo pick_date_widget2('timeslot[date]', DateTimeValueLib::now(), $genid, 100, false) ?>
 			</td>
-			<td style="padding-right:10px; width:140px;">
-				 <?php echo select_project2('timeslot[project_id]', active_or_personal_project()->getId(), $genid); ?>
-			</td>
+
 			<?php if(logged_user()->isAdministrator()) {?><td style="padding-right: 10px; width:140px;">
 				<?php echo user_select_box("timeslot[user_id]", logged_user()->getId(), array('id' => $genid . 'tsUser', 'tabindex' => '150')) ?>
 			</td><?php } else { ?><td style="padding-right: 10px">	
@@ -179,9 +179,8 @@
 			<table style="width:100%" id="<?php echo $genid ?>TMTimespanTable">
 			<tr>
 				<td width='70px'><b><?php echo lang('date') ?></b></td>
-				<td width='15%'><b><?php echo lang('workspace') ?></b></td>
 				<td width='15%'><b><?php echo lang('user') ?></b></td>
-				<td width='150px'><b><?php echo lang('last updated by') ?></b></td>
+				<td width='180px'><b><?php echo lang('last updated by') ?></b></td>
 				<td width='60px'><b><?php echo lang('time') ?></b></td>
 				<?php if ($show_billing) { ?>
 					<td width="100px"><b><?php echo lang('billing') ?></b></td>
@@ -201,38 +200,38 @@
 		$page = intval($start / $limit);
 		$totalPages = ceil($total / $limit);
 		if ($totalPages > 1) {
-		$a_nav = array(
-			'<span class="x-tbar-page-first" style="padding-left:16px"/>', 
-			'<span class="x-tbar-page-prev" style="padding-left:16px"/>', 
-			'<span class="x-tbar-page-next" style="padding-left:16px"/>', 
-			'<span class="x-tbar-page-last" style="padding-left:16px"/>'
-		);
-		$nav = '';
-		if ($page != 0) { ?>
-			<a class="internalLink" href="<?php echo get_url('time', 'index', array('start' => '0', 'limit' => $limit)) ?>"><span class="x-tbar-page-first db-ico" style="padding-left:16px">&nbsp;</span></a>
-			<a class="internalLink" href="<?php  echo get_url('time', 'index', array('start' => $start - $limit, 'limit' => $limit)) ?>"><span class="x-tbar-page-prev db-ico" style="padding-left:16px">&nbsp;</span></a>&nbsp;
-		<?php } else { ?>
-			<span class="og-disabled x-tbar-page-first db-ico" style="padding-left:16px">&nbsp;</span>
-			<span class="og-disabled x-tbar-page-prev db-ico" style="padding-left:16px">&nbsp;</span>&nbsp;
-		<?php }
-		for ($i = 1; $i < $totalPages + 1; $i++) {
-			$off = $limit * ($i - 1);
-			if(($i != $page + 1) && abs($i - 1 - $page) <= 2 ) { ?>
-				<a class="internalLink" href="<?php echo get_url('time', 'index', array('start' => $off, 'limit' => $limit)) ?>"><?php echo $i ?></a>&nbsp;&nbsp;
-			<?php } else if($i == $page + 1) { ?>
-				<b><?php echo $i ?></b>&nbsp;&nbsp;
+			$a_nav = array(
+				'<span class="x-tbar-page-first" style="padding-left:16px"/>', 
+				'<span class="x-tbar-page-prev" style="padding-left:16px"/>', 
+				'<span class="x-tbar-page-next" style="padding-left:16px"/>', 
+				'<span class="x-tbar-page-last" style="padding-left:16px"/>'
+			);
+			$nav = '';
+			if ($page != 0) { ?>
+				<a class="internalLink" href="<?php echo get_url('time', 'index', array('start' => '0', 'limit' => $limit)) ?>"><span class="x-tbar-page-first db-ico" style="padding-left:16px">&nbsp;</span></a>
+				<a class="internalLink" href="<?php  echo get_url('time', 'index', array('start' => $start - $limit, 'limit' => $limit)) ?>"><span class="x-tbar-page-prev db-ico" style="padding-left:16px">&nbsp;</span></a>&nbsp;
+			<?php } else { ?>
+				<span class="og-disabled x-tbar-page-first db-ico" style="padding-left:16px">&nbsp;</span>
+				<span class="og-disabled x-tbar-page-prev db-ico" style="padding-left:16px">&nbsp;</span>&nbsp;
 			<?php }
-		}
-		if ($page < $totalPages - 1) {
-			$off = $start + $limit; ?>
-			<a class="internalLink" href="<?php echo get_url('time', 'index', array('start' => $off, 'limit' => $limit)) ?>"><span class="x-tbar-page-next db-ico" style="padding-left:16px">&nbsp;</span></a>
-			<?php $off = $limit * ($totalPages - 1); ?>
-			<a class="internalLink" href="<?php echo get_url('time', 'index', array('start' => $off, 'limit' => $limit)) ?>"><span class="x-tbar-page-last db-ico" style="padding-left:16px">&nbsp;</span></a>
-		<?php } else { ?>
-			<span class="og-disabled x-tbar-page-next db-ico" style="padding-left:16px">&nbsp;</span>
-			<span class="og-disabled x-tbar-page-last db-ico" style="padding-left:16px">&nbsp;</span>
-		<?php } ?>
-		<br/><span class='desc'>&nbsp;<?php echo lang('total') . ": " . $totalPages . " " . lang('pages') ?></span>
+			for ($i = 1; $i < $totalPages + 1; $i++) {
+				$off = $limit * ($i - 1);
+				if(($i != $page + 1) && abs($i - 1 - $page) <= 2 ) { ?>
+					<a class="internalLink" href="<?php echo get_url('time', 'index', array('start' => $off, 'limit' => $limit)) ?>"><?php echo $i ?></a>&nbsp;&nbsp;
+				<?php } else if($i == $page + 1) { ?>
+					<b><?php echo $i ?></b>&nbsp;&nbsp;
+				<?php }
+			}
+			if ($page < $totalPages - 1) {
+				$off = $start + $limit; ?>
+				<a class="internalLink" href="<?php echo get_url('time', 'index', array('start' => $off, 'limit' => $limit)) ?>"><span class="x-tbar-page-next db-ico" style="padding-left:16px">&nbsp;</span></a>
+				<?php $off = $limit * ($totalPages - 1); ?>
+				<a class="internalLink" href="<?php echo get_url('time', 'index', array('start' => $off, 'limit' => $limit)) ?>"><span class="x-tbar-page-last db-ico" style="padding-left:16px">&nbsp;</span></a>
+			<?php } else { ?>
+				<span class="og-disabled x-tbar-page-next db-ico" style="padding-left:16px">&nbsp;</span>
+				<span class="og-disabled x-tbar-page-last db-ico" style="padding-left:16px">&nbsp;</span>
+			<?php } ?>
+			<br/><span class='desc'>&nbsp;<?php echo lang('total') . ": " . $totalPages . " " . lang('pages') ?></span>
 		<?php }
 	} ?>
 	</td>
