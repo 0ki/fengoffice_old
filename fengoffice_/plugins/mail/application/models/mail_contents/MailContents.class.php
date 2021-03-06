@@ -235,8 +235,11 @@ class MailContents extends BaseMailContents {
 		// Check for unclassified emails
 		$classified = '';
 		if ($classif_filter != '' && $classif_filter != 'all') {
+			$persons_dim = Dimensions::findByCode('feng_persons');
+			$persons_dim_id = $persons_dim instanceof Dimension ? $persons_dim->getId() : "0";
+			
 			$classified = "AND " . ($classif_filter == 'unclassified' ? "NOT " : "");
-			$classified .= "o.id IN (SELECT object_id FROM ".TABLE_PREFIX."object_members)";
+			$classified .= "o.id IN (SELECT om.object_id FROM ".TABLE_PREFIX."object_members om INNER JOIN ".TABLE_PREFIX."members m ON m.id=om.member_id WHERE m.dimension_id<>$persons_dim_id)";
 		}
 
 		// Check for draft, junk, etc. emails

@@ -1402,13 +1402,68 @@ span.member-path span a:hover {
 }
 .contact_form_container select {
 	margin-left: 0px;
-	min-width: 80px;
 }
 
 .contact_form_container .phone-input-container, .contact_form_container .address-input-container, .contact_form_container .webpage-input-container, .contact_form_container .email-input-container {
 	padding: 2px;
 	padding-left: 0;
 }
+
+.address-input-container {
+	margin-bottom: 2px;
+	min-width: 500px;
+}
+.address-input-container.custom-property {
+	margin-left: 200px;
+}
+.address-input-container input, .address-input-container select, .address-input-container textarea {
+	margin: 1px 2px 0 0;
+}
+
+.address-input-container .address_type_input {
+	float:left;
+}
+.form-container select.address_type_input {
+    min-width: 0;
+}
+
+.address-input-container .address_street_input {
+	height: 34px;
+	width: 514px;
+	float:left;
+	clear:left;
+}
+.address-input-container input.address_city_input {
+	width: 252px;
+	float:left;
+	clear:left;
+}
+.address-input-container input.address_state_input {
+	width: 252px;
+	float:left;
+}
+.address-input-container select.country-selector {
+	width: 260px;
+	float:left;
+	clear:left;
+}
+.address-input-container input.address_zipcode_input {
+	width: 252px;
+	float:left;
+}
+.address-input-container .undo-delete, .address-input-container .delete-link {
+	float: left;
+	margin-left: 390px;
+}
+
+/* language specific css settings for addresses */
+.address-input-container.en_gb input.address_city_input {
+	width: 514px;
+}
+.address-input-container.en_gb input.address_state_input {
+	display: none;
+}
+/* end language specific css settings for addresses */
 
 .contact_form_container .input-container {
 	margin: 2px 0;
@@ -1703,4 +1758,8 @@ span.member-path span a:hover {
 }
 a.underline {
 	text-decoration: underline;
+}
+
+.form-tab .custom-properties {
+	margin-bottom: 12px;
 }

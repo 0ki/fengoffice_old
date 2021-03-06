@@ -1,5 +1,5 @@
 
-	About Feng Office 3.2-beta2
+	About Feng Office 3.2-rc
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -105,6 +105,54 @@
 	Changelog
 	=========
 	
+	Since 3.2-beta2
+	----------------
+	feature: new custom property type : address
+	feature: suppliers dimension (for purchase orders)
+	feature: user config option check attach word on mails.
+	feature: modal view for classify email.
+	feature: more read permissions for guest customers.
+	feature: custom reports for dimension members.
+	feature: confirm delete in members.
+	feature: time on report dates (crpm)
+	
+	bugfix: don't close modal on overlay click.
+	bugfix: users can see all users profiles.
+	bugfix: adapting image size on contact view.
+	bugfix: user disappear from other users view after edit.
+	bugfix: dynamic message when adding linked objects.
+	bugfix: editting web document from view.
+	bugfix: checking url when adding web document.
+	bugfix: in income table definitions and queries.
+	bugfix: save user permissions in background twice.
+	bugfix: converting a contact to user loses custom properties and linked objects.
+	bugfix: when editing an user and changing its user groups the member cache is not recalculated.
+	bugfix: when creating user from contact, if all system permissions are removed, the default are added.
+	bugfix: subscribers are lost if object is saved before the reload subscribers request returns.
+	bugfix: duplicate phone on edit contact view.
+	bugfix: mysql reconnect on executeAll.
+	bugfix: "Cannot read property createChild of null" when adding a task and closing the modal form quickly.
+	bugfix: in user groups permissions when applying permissions to all submembers of a workspace that has no children, the workspace is removed from the tree.
+	bugfix: search input in listings has many bugs.
+	bugfix: do not check feng_persons dimensions when checking for email classification (for listing icon and classification filter)
+	bugfix: create user from contact view.
+	bugfix: cannot export to csv custom reports with date_time custom properties.
+	bugfix: draw located under selector only if member can have parent.
+	bugfix: workspace description value is not rendered when editing a workspace.
+	bugfix: breadcrumbs asking for members where user don't have permissions.
+	bugfix: after add a contact on root.
+	bugfix: feng 3 mobile.
+	bugfix: can't remove "only working days for the tasks" on templates.
+	bugfix: client fee is not saved correctly
+	bugfix: deleting permission for single object types removes all permissions for member (when changing permissions from user form)
+	
+	
+	member custom properties: use "visible_by_default" column to show cp in main tab or "custom props" tab
+	
+	performance: get imap mail function optimization.
+	performance: update timeslots billing values is using too many objects and memory runs out if there are a lot of timeslots to update.
+		
+		
 	Since 3.2-beta
 	----------------
 	feature: php path config.

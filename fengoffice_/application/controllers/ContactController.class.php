@@ -942,6 +942,35 @@ class ContactController extends ApplicationController {
 		$contact_data['all_webpages'] = array();
 		$contact_data['all_emails'] = array();
 		
+		//User From Contact
+		if (array_var($_REQUEST, 'create_user_from_contact')) {			
+			$contact_old = Contacts::findById(get_id());
+			if(!($contact_old instanceof Contact)) {
+				flash_error(lang('contact dnx'));
+				ajx_current("empty");
+				return;
+			} // if
+			
+			if(!$contact_old->canEdit(logged_user())) {
+				flash_error(lang('no access permissions'));
+				ajx_current("empty");
+				return;
+			} // if
+
+			if (array_var($_REQUEST, 'create_user_from_contact')){
+				$contact_data = $this->get_contact_data_from_contact($contact_old);
+				tpl_assign('userFromContactId', get_id());
+				
+				$contact_old->setNew(true);
+				// to keep custom properties and linked objects
+				tpl_assign('object', $contact_old);
+			}
+		}
+		if(array_var($_REQUEST, 'user_from_contact_id') > 0){
+			$contact = Contacts::findById(array_var($_REQUEST, 'user_from_contact_id'));
+		}
+		//END User From Contact
+		
 		tpl_assign('contact', $contact);
 		tpl_assign('contact_data', $contact_data);
 		tpl_assign('im_types', $im_types);
@@ -966,6 +995,13 @@ class ContactController extends ApplicationController {
 			}
 			ajx_current("empty");
 			try {
+				
+				//when creating user from contact remove classification from contact first
+				if(array_var($_REQUEST, 'user_from_contact_id') > 0){
+					$members_to_remove = array_flat(DB::executeAll("SELECT m.id FROM ".TABLE_PREFIX."members m INNER JOIN ".TABLE_PREFIX."dimensions d ON d.id=m.dimension_id WHERE d.defines_permissions=1"));
+					$removedMemebersIds = ObjectMembers::removeObjectFromMembers($contact, logged_user(), null, $members_to_remove, false);					
+				}
+				
 				DB::beginWork();
 				$contact_data['email'] = trim($contact_data['email']);
 				
@@ -1069,7 +1105,7 @@ class ContactController extends ApplicationController {
 				}
 				
 				if ($user) {
-					$user_data = $this->createUserFromContactForm($user, $contact->getId(), $contact_data['email'],isset($_POST['notify-user']));
+					$user_data = $this->createUserFromContactForm($user, $contact->getId(), $contact_data['email'],isset($_POST['notify-user']), false);
 					
 					// add user groups
 					if (isset($_REQUEST['user_groups'])) {
@@ -1213,19 +1249,8 @@ class ContactController extends ApplicationController {
 				$this->setLayout("json");
 				tpl_assign('modal', true);
 			}
-			$contact_data = array(
-				'first_name' => $contact->getFirstName(),
-				'surname' => $contact->getSurname(),
-				'username' => $contact->getUsername(),
-				'department' => $contact->getDepartment(),
-				'job_title' => $contact->getJobTitle(),
-				'email' => $contact->getEmailAddress(),
-				'birthday'=> $contact->getBirthday(),
-				'comments' => $contact->getCommentsField(),
-				'picture_file' => $contact->getPictureFile(),
-                'timezone' => $contact->getTimezone(),
-                'company_id' => $contact->getCompanyId(),
-      	    ); // array
+			
+			$contact_data = $this->get_contact_data_from_contact($contact);
 			
 			if ($contact->isUser()) {
 				$_REQUEST['is_user'] = 1;
@@ -1237,19 +1262,7 @@ class ContactController extends ApplicationController {
       	    		$contact_data['im_' . $im_type->getId()] = $contact->getImValue($im_type);
       	    	} // foreach
       	    } // if
-
-      	    $default_im = $contact->getMainImType();
-      	    $contact_data['default_im'] = $default_im instanceof ImType ? $default_im->getId() : '';
-      	    
-      	    $all_phones = ContactTelephones::findAll(array('conditions' => 'contact_id = '.$contact->getId()));
-      	    $contact_data['all_phones'] = $all_phones;
-      	    $all_addresses = ContactAddresses::findAll(array('conditions' => 'contact_id = '.$contact->getId()));
-      	    $contact_data['all_addresses'] = $all_addresses;
-      	    $all_webpages = ContactWebpages::findAll(array('conditions' => 'contact_id = '.$contact->getId()));
-      	    $contact_data['all_webpages'] = $all_webpages;
-      	    $all_emails = $contact->getNonMainEmails();
-      	    $contact_data['all_emails'] = $all_emails;
-      	    
+      	          	    
       	    $null = null; Hook::fire('before_edit_contact_form', array('object' => $contact), $null);
 		} // if
 		
@@ -1412,13 +1425,17 @@ class ContactController extends ApplicationController {
 							DB::execute("INSERT INTO ".TABLE_PREFIX."contact_permission_groups VALUES $insert_values ON DUPLICATE KEY UPDATE contact_id=contact_id;");
 						}
 						
+						ContactMemberCaches::updateContactMemberCacheAllMembers($contact);
 					}
 					
-					// save user permissions
-					save_user_permissions_background(logged_user(), $contact->getPermissionGroupId(), $contact->isGuest());
 				}
 				
 				DB::commit();
+				
+				// save user permissions
+				if($user && $contact->canUpdatePermissions(logged_user())){
+					save_user_permissions_background(logged_user(), $contact->getPermissionGroupId(), $contact->isGuest());
+				}
 				
 				if (array_var($contact_data, 'isNewCompany') == 'true' && is_array(array_var($_POST, 'company'))){
 					ApplicationLogs::createLog($company,ApplicationLogs::ACTION_ADD);
@@ -1440,6 +1457,46 @@ class ContactController extends ApplicationController {
 		} // if
 	} // edit
 
+	private function get_contact_data_from_contact($contact) {
+		$contact_data = array(
+				'first_name' => $contact->getFirstName(),
+				'surname' => $contact->getSurname(),
+				'username' => $contact->getUsername(),
+				'department' => $contact->getDepartment(),
+				'job_title' => $contact->getJobTitle(),
+				'email' => $contact->getEmailAddress(),
+				'birthday'=> $contact->getBirthday(),
+				'comments' => $contact->getCommentsField(),
+				'picture_file' => $contact->getPictureFile(),
+				'timezone' => $contact->getTimezone(),
+				'company_id' => $contact->getCompanyId(),
+		); // array
+			
+		if ($contact->isUser()) {
+			$_REQUEST['is_user'] = 1;
+			tpl_assign('user_type', $contact->getUserType());
+		}
+		
+		if(is_array($im_types)) {
+			foreach($im_types as $im_type) {
+				$contact_data['im_' . $im_type->getId()] = $contact->getImValue($im_type);
+			} // foreach
+		} // if
+		
+		$default_im = $contact->getMainImType();
+		$contact_data['default_im'] = $default_im instanceof ImType ? $default_im->getId() : '';
+		 
+		$all_phones = ContactTelephones::findAll(array('conditions' => 'contact_id = '.$contact->getId()));
+		$contact_data['all_phones'] = $all_phones;
+		$all_addresses = ContactAddresses::findAll(array('conditions' => 'contact_id = '.$contact->getId()));
+		$contact_data['all_addresses'] = $all_addresses;
+		$all_webpages = ContactWebpages::findAll(array('conditions' => 'contact_id = '.$contact->getId()));
+		$contact_data['all_webpages'] = $all_webpages;
+		$all_emails = $contact->getNonMainEmails();
+		$contact_data['all_emails'] = $all_emails;
+		
+		return $contact_data;
+	}
 	
 	private function cut_max_user_permissions(Contact $user) {
 		$admin_pg = PermissionGroups::findOne(array('conditions' => "`name`='Super Administrator'"));
@@ -3326,7 +3383,7 @@ class ContactController extends ApplicationController {
 	
 	
 
-	private function createUserFromContactForm ($user, $contactId, $email, $sendEmail = true) {
+	private function createUserFromContactForm ($user, $contactId, $email, $sendEmail = true, $save_permissions = true) {
 		$createUser = false;
 		$createPass = false;
 
@@ -3372,7 +3429,7 @@ class ContactController extends ApplicationController {
 					}
 				}
 			}
-			create_user($userData, array_var($_REQUEST, 'permissions', ''), $rp_permissions_data);
+			create_user($userData, array_var($_REQUEST, 'permissions', ''), $rp_permissions_data, $save_permissions);
 		}
 		return $userData;
 		

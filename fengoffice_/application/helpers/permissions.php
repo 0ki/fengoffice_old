@@ -936,7 +936,9 @@
 					$member_object_types_to_delete = array();
 					$allowed_members_ids= array();
 					foreach ($permissions as &$perm) {
-						if (!isset($all_perm_deleted[$perm->m])) $all_perm_deleted[$perm->m] = true;
+						if (!isset($all_perm_deleted[$perm->m])) {
+							$all_perm_deleted[$perm->m] = true;
+						}
 						$allowed_members_ids[$perm->m]=array();
 						$allowed_members_ids[$perm->m]['pg']=$pg_id;
 						if ($perm->r) {
@@ -992,6 +994,11 @@
 							}
 							
 							$all_perm_deleted[$perm->m] = false;
+							
+						} else {
+							if (is_numeric($perm->m) && is_numeric($perm->o)) {
+								DB::execute("DELETE FROM ".TABLE_PREFIX."contact_member_permissions WHERE member_id='".$perm->m."' AND object_type_id='".$perm->o."' AND permission_group_id=$pg_id");
+							}
 						}
 						
 						$changed_members[] = $perm->m;
@@ -1001,7 +1008,11 @@
 						if (count($all_perm_deleted) > 0) {
 							$member_ids_to_delete = array();
 							foreach ($all_perm_deleted as $mid => $del) {
-								if ($del) $member_ids_to_delete[] = $mid;
+								// also check in contact_member_permissions
+								$cmps = ContactMemberPermissions::findAll(array('conditions' => 'permission_group_id='.$pg_id." AND member_id=$mid"));
+								if ($del && (!is_array($cmps) || count($cmps) == 0)) {
+									$member_ids_to_delete[] = $mid;
+								}
 							}
 							if (count($member_ids_to_delete) > 0) {
 								DB::execute("DELETE FROM ".TABLE_PREFIX."contact_member_permissions WHERE member_id IN (".implode(',',$member_ids_to_delete).") AND permission_group_id=$pg_id");
@@ -1505,7 +1516,7 @@
 			exec(PHP_PATH." -r 'echo function_exists(\"foo\") ? \"yes\" : \"no\";' 2>&1", $output, $return_var);
 			if($return_var != 0){
 				Logger::log(print_r("Error executing php command",true));
-				Logger::log(print_r($output,true));//$hola
+				Logger::log(print_r($output,true));
 				Logger::log(print_r("Error code: ".$return_var,true));
 			}
 			//END Test php command
@@ -1550,7 +1561,7 @@
 				$set_root_permissions = true;
 			}
 		}
-		$rp_genid = array_var($_POST, 'root_perm_genid');
+		$rp_genid = array_var($_POST, 'root_perm_genid', '0');
 		if ($rp_genid && $set_root_permissions) {
 			foreach ($_POST as $name => $value) {
 				if (str_starts_with($name, $rp_genid . 'rg_root_')) {
@@ -1593,7 +1604,7 @@
 			exec(PHP_PATH." -r 'echo function_exists(\"foo\") ? \"yes\" : \"no\";' 2>&1", $output, $return_var);
 			if($return_var != 0){
 				Logger::log(print_r("Error executing php command",true));
-				Logger::log(print_r($output,true));//$hola
+				Logger::log(print_r($output,true));
 				Logger::log(print_r("Error code: ".$return_var,true));
 			}
 			//END Test php command
@@ -1615,7 +1626,7 @@
 			exec(PHP_PATH." -r 'echo function_exists(\"foo\") ? \"yes\" : \"no\";' 2>&1", $output, $return_var);
 			if($return_var != 0){
 				Logger::log(print_r("Error executing php command",true));
-				Logger::log(print_r($output,true));//$hola
+				Logger::log(print_r($output,true));
 				Logger::log(print_r("Error code: ".$return_var,true));
 			}
 			//END Test php command
@@ -1640,7 +1651,7 @@
 			exec(PHP_PATH." -r 'echo function_exists(\"foo\") ? \"yes\" : \"no\";' 2>&1", $output, $return_var);
 			if($return_var != 0){
 				Logger::log(print_r("Error executing php command",true));
-				Logger::log(print_r($output,true));//$hola
+				Logger::log(print_r($output,true));
 				Logger::log(print_r("Error code: ".$return_var,true));
 			}
 			//END Test php command
@@ -1664,7 +1675,7 @@
 			exec(PHP_PATH." -r 'echo function_exists(\"foo\") ? \"yes\" : \"no\";' 2>&1", $output, $return_var);
 			if($return_var != 0){
 				Logger::log(print_r("Error executing php command",true));
-				Logger::log(print_r($output,true));//$hola
+				Logger::log(print_r($output,true));
 				Logger::log(print_r("Error code: ".$return_var,true));
 			}
 			//END Test php command

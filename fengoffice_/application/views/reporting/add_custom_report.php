@@ -6,7 +6,7 @@ require_javascript('og/CSVCombo.js');
 $genid = gen_id();
 if (!isset($conditions)) $conditions = array();
 ?>
-<form style='height: 100%; background-color: white' class="internalForm"
+<form style='height: 100%; background-color: white' class="internalForm report"
 	action="<?php echo $url  ?>" method="post"
 	onsubmit="return og.validateReport('<?php echo $genid ?>');"><input
 	type="hidden" name="report[report_object_type_id]" id="report[report_object_type_id]"
@@ -76,8 +76,8 @@ echo select_box('objectTypeSel', $options, array('id' => 'objectTypeSel' ,'oncha
 
 	  <div class="clear"></div>
 	</div>
-	<div class="dataBlock">
-	  <div id="<?php echo $genid ?>add_report_select_context_div" style="<?php echo $context_div_display ?>"> 
+	<div class="dataBlock" id="<?php echo $genid ?>add_report_select_context_div" style="margin:0;<?php echo $context_div_display ?>">
+	  <div> 
 	<?php
 		$listeners = array('on_selection_change' => 'og.reload_subscribers("'.$genid.'",'.$object->manager()->getObjectTypeId().')');
 		if ($object->isNew()) {
@@ -87,6 +87,7 @@ echo select_box('objectTypeSel', $options, array('id' => 'objectTypeSel' ,'oncha
 		}
 	?>
 	  </div>
+	  <div class="clear"></div>
 	</div>
 </div>
 

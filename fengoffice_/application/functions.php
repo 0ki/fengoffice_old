@@ -825,7 +825,7 @@ function create_user_from_email($email, $name, $type = 'guest', $send_notificati
 }
 
 
-function create_user($user_data, $permissionsString, $rp_permissions_data = array()) {
+function create_user($user_data, $permissionsString, $rp_permissions_data = array(), $save_permissions = true) {
     
 	// try to find contact by some properties 
 	$contact_id = array_var($user_data, "contact_id") ;
@@ -845,6 +845,7 @@ function create_user($user_data, $permissionsString, $rp_permissions_data = arra
 		$contact->setTimezone(array_var($user_data, 'timezone'));
 		$contact->setFirstname($contact->getObjectName() != "" ? $contact->getObjectName() : $contact->getUsername());
 		$contact->setObjectName();
+		$user_from_contact = false;
 	} else {
 		// Create user from contact
 		$contact->setUserType(array_var($user_data, 'type'));
@@ -853,6 +854,7 @@ function create_user($user_data, $permissionsString, $rp_permissions_data = arra
 		}	
 		$contact->setUsername(array_var($user_data, 'username'));
 		$contact->setTimezone(array_var($user_data, 'timezone'));
+		$user_from_contact = true;
 	}
 	$contact->save();
 	if (is_valid_email(array_var($user_data, 'email'))) {
@@ -882,10 +884,12 @@ function create_user($user_data, $permissionsString, $rp_permissions_data = arra
 	if ( can_manage_security(logged_user()) ) {
 		
 		$sp = new SystemPermission();
-		$rol_permissions=SystemPermissions::getRolePermissions(array_var($user_data, 'type'));
-		if (is_array($rol_permissions)) {
-			foreach($rol_permissions as $pr){
-				$sp->setPermission($pr);
+		if (!$user_from_contact) {
+			$rol_permissions=SystemPermissions::getRolePermissions(array_var($user_data, 'type'));
+			if (is_array($rol_permissions)) {
+				foreach($rol_permissions as $pr){
+					$sp->setPermission($pr);
+				}
 			}
 		}
 		$sp->setPermissionGroupId($permission_group->getId());
@@ -983,7 +987,7 @@ function create_user($user_data, $permissionsString, $rp_permissions_data = arra
 			}
 		}
 	}
-	if(!isset($_POST['sys_perm'])){
+	if(!isset($_POST['sys_perm']) && !$user_from_contact){
 		$rol_permissions=SystemPermissions::getRolePermissions(array_var($user_data, 'type'));
 		$_POST['sys_perm']=array();
 		if (is_array($rol_permissions)) {
@@ -993,7 +997,7 @@ function create_user($user_data, $permissionsString, $rp_permissions_data = arra
 		}
 		
 	}
-	if(!isset($_POST['mod_perm'])){
+	if(!isset($_POST['mod_perm']) && !$user_from_contact){
 		$tabs_permissions=TabPanelPermissions::getRoleModules(array_var($user_data, 'type'));
 		$_POST['mod_perm']=array();
 		foreach($tabs_permissions as $pr){
@@ -1039,7 +1043,7 @@ function create_user($user_data, $permissionsString, $rp_permissions_data = arra
 	// Set role permissions for active members
 	$active_context = active_context();
 	$sel_members = array();
-	if (is_array($active_context)) {
+	if (is_array($active_context) && !$permissions_sent) {
 		$tmp_perms = array();
 		if ($_POST['permissions'] != "") {
 			$tmp_perms = json_decode($_POST['permissions']);
@@ -1067,9 +1071,11 @@ function create_user($user_data, $permissionsString, $rp_permissions_data = arra
 			$_POST['permissions'] = json_encode($tmp_perms);
 		}
 	}
-	//save_permissions($contact->getPermissionGroupId(), $contact->isGuest());
-	save_user_permissions_background(logged_user(), $contact->getPermissionGroupId(), $contact->isGuest());
 	
+	if($save_permissions){
+		//save_permissions($contact->getPermissionGroupId(), $contact->isGuest());
+		save_user_permissions_background(logged_user(), $contact->getPermissionGroupId(), $contact->isGuest());
+	}
 	Hook::fire('after_user_add', $contact, $null);
 	
 	// add user content object to associated members

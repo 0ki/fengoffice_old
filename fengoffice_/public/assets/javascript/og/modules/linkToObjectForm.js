@@ -23,11 +23,12 @@ App.modules.linkToObjectForm = {
                 if(name.length > 75){
                     name = name.substring(0,75)+'...';
                 }
-		div.innerHTML =
+        div.innerHTML =
 			'<input type="hidden" name="linked_objects[' + count + ']" value="' + obj.object_id + '" />' +
 			'<span class="name">' + name + '</span>' +
 			'<a href="#" onclick="App.modules.linkToObjectForm.removeObject(this.parentNode)" class="removeDiv" style="display:block">' + lang('remove') + '</a>';
-		parent.insertBefore(div, before);
+        $(parent).siblings( ".no_linked_objects_desc" ).hide();
+        $(parent).append($(div));
 	},
 
 
@@ -49,6 +50,13 @@ App.modules.linkToObjectForm = {
 				i++;
 			}
 			d = d.nextSibling;
+		}
+		
+		var links = $(parent).children(".og-add-template-object").length;
+		if (links >0){			
+			$(parent).siblings( ".no_linked_objects_desc" ).hide();
+		}else {
+			$(parent).siblings( ".no_linked_objects_desc" ).show();
 		}
 	}
 };

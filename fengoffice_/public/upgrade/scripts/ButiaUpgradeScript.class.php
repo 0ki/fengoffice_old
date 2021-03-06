@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Butia upgrade script will upgrade FengOffice 3.1.5.3 to FengOffice 3.2-beta2
+ * Butia upgrade script will upgrade FengOffice 3.1.5.3 to FengOffice 3.2-rc
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -39,7 +39,7 @@ class ButiaUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('3.1.5.3');
-		$this->setVersionTo('3.2-beta2');
+		$this->setVersionTo('3.2-rc');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -202,7 +202,8 @@ class ButiaUpgradeScript extends ScriptUpgraderScript {
 			
 			
 			if($mysql_version && version_compare($mysql_version, '5.6', '>=')) {
-				$upgrade_script .= "
+				//bad performance 
+			/*	$upgrade_script .= "
 					CREATE TABLE `".$t_prefix."searchable_objects_new` (
 						`rel_object_id` int(10) unsigned NOT NULL default '0',
 						`column_name` varchar(50) collate utf8_unicode_ci NOT NULL default '',
@@ -218,9 +219,24 @@ class ButiaUpgradeScript extends ScriptUpgraderScript {
 					RENAME TABLE `".$t_prefix."searchable_objects` TO `".$t_prefix."searchable_objects_old`;
 					RENAME TABLE `".$t_prefix."searchable_objects_new` TO `".$t_prefix."searchable_objects`;
 					DROP TABLE `".$t_prefix."searchable_objects_old`;
-				";
+				";*/
 			}
 			
+		}
+		
+		if (version_compare($installed_version, '3.2-rc') < 0) {
+			$upgrade_script .= "
+				INSERT INTO ".$t_prefix."max_role_object_type_permissions (role_id, object_type_id, can_delete, can_write)
+				 SELECT p.id, o.id, 0, 0
+				 FROM `".$t_prefix."object_types` o JOIN `".$t_prefix."permission_groups` p
+				 WHERE o.`name` IN ('message','weblink','file','task','milestone','event','contact','mail','timeslot','report','comment','invoice','expense','objective')
+				 AND p.`name` IN ('Guest Customer')
+				ON DUPLICATE KEY UPDATE role_id=role_id;
+				UPDATE ".$t_prefix."max_system_permissions SET can_see_assigned_to_other_tasks=1
+				WHERE permission_group_id IN (SELECT id FROM ".$t_prefix."permission_groups WHERE `type`='roles' AND name IN ('Guest Customer'));
+				UPDATE ".$t_prefix."system_permissions SET can_see_assigned_to_other_tasks=1
+				WHERE permission_group_id IN (SELECT id FROM ".$t_prefix."permission_groups WHERE `type`='roles' AND name IN ('Guest Customer'));
+			";
 		}
 		
 		

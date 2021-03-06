@@ -241,7 +241,9 @@ class AdministrationController extends ApplicationController {
 					}
 					
 					if($data['deleted'] == "1"){
-						$new_cp->delete();
+						if (!$new_cp->isNew()) {
+							$new_cp->delete();
+						}
 						continue;
 					}
 					$new_cp->setObjectTypeId($obj_type_id);

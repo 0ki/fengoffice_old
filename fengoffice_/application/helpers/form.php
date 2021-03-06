@@ -618,7 +618,9 @@
     
     asort($countries);
     
-    $country_options = array(option_tag(lang('none'), ''));
+    $attributes['class'] = array_var($attributes, 'class') . " country-selector";
+    
+    $country_options = array(option_tag(lang('click to select country'), ''));
     foreach($countries as $country_code => $country_name) {
       $option_attributes = $country_code == $value ? array('selected' => true) : null;
       $country_options[] = option_tag($country_name, $country_code, $option_attributes);

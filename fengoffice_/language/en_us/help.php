@@ -15,9 +15,9 @@ return array(
  	'chelp active tasks panel' => 'All your active tasks are displayed below, regardless of the current workspace. This panel also offers the possibility to pause the task, continue it and set it as complete when finished.',
 	'chelp general timeslots panel' => 'This panel displays timeslots directly assigned to a workspace. ',
 
-	'chelp personal account' => 'This is your personal account.<br/>In this view you can update your profile and avatar, change your password and edit your personal preferences.',
+	'chelp personal account' => 'This is your personal account.<br/>In this view you can update your profile and picture, change your password and edit your personal preferences.',
 	'chelp user account' => 'This is a user account.',
-	'chelp user account admin' => 'This is a user account.<br/>Being an administrator, you may update the user\'s profile and avatar, change his or her password, and edit his or her preferences through this view.',
+	'chelp user account admin' => 'This is a user account.<br/>Being an administrator, you may update the user\'s profile and picture, change his or her password, and edit his or her preferences through this view.',
 
 	'chelp reporting panel' => '<b>Welcome to the Reports panel</b><br/>You can customize reports from the different objects located in the left panel.',
 	'chelp reporting panel manage' => '<b>Welcome to the Reports panel</b><br/>You can customize reports from the different objects located in the left panel.<br/>As you also have report management privileges, you can create and manage custom reports for each object type.',

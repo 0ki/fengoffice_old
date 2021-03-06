@@ -12,6 +12,7 @@ class Contact extends BaseContact {
 	protected $is_read_markable = false;
 	
 	public $notify_myself;
+	public $ignore_permissions_for_notifications = false;
 	
 	/**
 	 * If contact is a company, cache the company users for subsequent calls
@@ -805,7 +806,7 @@ class Contact extends BaseContact {
 	 * @return string
 	 */
 	function getCreateUserUrl() {
-		return get_url ( 'contact', 'add_user', array("contact_id" => $this->getId()) );
+		return get_url ( 'contact', 'add', array("id" => $this->getId(), 'is_user' => 1, 'user_type' => 4, "create_user_from_contact" => true) );
 	} //  getCreateUserUrl
 	
 
@@ -1062,7 +1063,7 @@ class Contact extends BaseContact {
 	 */
 	function canView(Contact $user) {
 		if ( $this->isOwnerCompany()) return true;
-		if ( $user->getId() == logged_user()->getId() ) return true ;
+		if ( $this->getId() == logged_user()->getId() ) return true ;
 		return can_read($user, $this->getMembers(), $this->getObjectTypeId());
 	} // canView
 	

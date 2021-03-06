@@ -921,9 +921,9 @@ addLangs({
 	
 	'phone number': 'Phone number',
 	'address': 'Address',
-	'city': 'City',
+	'city': 'Town/City',
 	'state': 'State',
-	'zip_code': 'Zipcode',
+	'zip_code': 'Postcode',
 	'edit_picture':'Edit picture',
 	
 	'birthdays': 'Birthdays'

@@ -388,6 +388,9 @@
 	'person data' => 'Datos de la persona',
 	'contact data' => 'Datos del contato',
 	'company data' => 'Datos de la empresa',
+		
+	'without a member' => 'Sin',
+	'uncompleted tasks' => 'Tareas sin completar',
 	
 	'menu home' => 'Inicio',
 );

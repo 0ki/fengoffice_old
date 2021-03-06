@@ -738,14 +738,14 @@ class ProjectFile extends BaseProjectFile {
 	 */
 	function validate(&$errors) {
 		if(!$this->validatePresenceOf('name')) {
-			if($this->getType() == ProjectFiles::TYPE_DOCUMENT){
-				$errors[] = lang('filename required');
-			}else{
-				$errors[] = lang('weblink required');
+			$errors[] = lang('filename required');
+		}
+		if ($this->getType() != ProjectFiles::TYPE_DOCUMENT){
+			if(!$this->validatePresenceOf('url') || $this->getUrl() == 'http://') {
+					$errors[] = lang('weblink required');
+				} // if				
 			}
-		} // if
 	} // validate
-
 	
 	/**
 	 * Delete this file and all of its revisions

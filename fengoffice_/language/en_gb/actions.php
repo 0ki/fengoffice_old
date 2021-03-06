@@ -117,8 +117,8 @@
     // Password
     'update profile' => 'Update profile',
     'change password' => 'Change password',
-    'update avatar' => 'Update avatar',
-    'delete current avatar' => 'Delete current avatar',
+    'update avatar' => 'Update profile picture',
+    'delete current avatar' => 'Delete current profile picture',
     
     // Forms
     'add form' => 'Add form',

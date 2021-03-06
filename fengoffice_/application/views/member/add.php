@@ -32,14 +32,14 @@
 		} else {
 			add_page_action(lang('unarchive'), "javascript:if(confirm('".lang('confirm unarchive member',$ot_name)."')) og.openLink('".get_url('member', 'unarchive', array('id' => $member->getId()))."');", 'ico-unarchive-obj');
 		}
-		add_page_action(lang('delete'), "javascript:if(confirm('".lang('confirm delete permanently', $ot_name)."')) og.openLink('".get_url('member', 'delete', array('id' => $member->getId(),'start' => true))."');", 'ico-delete');
+		$delete_url = get_url('member', 'delete', array('id' => $member->getId(),'start' => true));
+		add_page_action(lang('delete'), "javascript:og.deleteMember('".$delete_url."','".$ot_name."');", 'ico-delete');
 	}
 	$form_title = $object_type_name ? ($member->isNew() ? lang('new') : lang('edit')) . strtolower(" $object_type_name") : lang('new member');
 	$new_member_text = $object_type_name ? ($member->isNew() ? lang('add') : lang('edit')) . strtolower(" $object_type_name") : lang('new member');
 
 	$categories = array();
-	Hook::fire('object_edit_categories', $member, $categories);
-	
+	Hook::fire('member_edit_categories', array('member' => $member, 'genid' => $genid), $categories);
 	$has_custom_properties = count(MemberCustomProperties::getCustomPropertyIdsByObjectType($obj_type_sel)) > 0;
 ?>
 
@@ -53,6 +53,8 @@
 <?php endif;?>
 >
 	<input type="hidden" name="member[dimension_id]" value="<?php echo $current_dimension->getId()?>"/>
+	
+	<input type="hidden" name="temp_member_id" id="<?php echo $genid?>member_id" value="<?php echo ($member instanceof Member && !$member->isNew() ? $member->getId() : 0)?>"/>
 
 	<div class="coInputHeader">
 	  <div class="coInputHeaderUpperRow">
@@ -79,6 +81,12 @@
 		<ul id="<?php echo $genid?>tab_titles">
 		
 			<li><a href="#<?php echo $genid?>member_data"><?php echo lang('details') ?></a></li>
+			
+			<?php foreach ($categories as $category) { ?>
+			<li style="<?php echo array_var($category, 'style')?>" class="<?php echo array_var($category, 'class')?>">
+				<a href="#<?php echo $category['id'] ?>" id="<?php echo array_var($category, 'link_id')?>"><?php echo $category['name'] ?></a>
+			</li>
+			<?php } ?>
 			
 			<?php if ($current_dimension->getDefinesPermissions() && can_manage_security(logged_user())) {?>
 			<li><a href="#<?php echo $genid?>member_permissions_div" id="<?php echo $genid?>permissions_tab"><?php echo lang('permissions') ?></a></li>
@@ -117,6 +125,25 @@
 				<div class="clear"></div>
 		</div>
 		<?php } ?>
+		
+		<?php 
+			$additional_member_data_fields = array();
+			Hook::fire('additional_member_data_fields', array('member' => $member, 'genid' => $genid), $additional_member_data_fields);
+			foreach ($additional_member_data_fields as $field) { ?>
+				<div id="<?php echo array_var($field, 'container_id')?>" class="dataBlock">
+					<label><?php echo array_var($field, 'label')?></label>
+					<?php echo array_var($field, 'input_html')?>
+				</div>
+				<div class="x-clear"></div>
+		<?php 
+			}
+		?>
+		
+		<?php 
+		if ($has_custom_properties) { 
+			echo render_member_custom_properties($member, false, 'visible_by_default');
+		}
+		?>
 		
 		<div id="<?php echo $genid?>member_color_input" class="dataBlock"></div>
 		<div class="x-clear"></div>
@@ -168,6 +195,12 @@
 		
 		</div>
 		
+	<?php 
+		foreach ($categories as $category) {
+			echo $category['content'];
+		} 
+	?>
+		
 		<div id="<?php echo $genid?>member_permissions_div" class="form-tab">
 		<?php if ($current_dimension->getDefinesPermissions() && can_manage_security(logged_user())):?>
 			<label><?php echo lang("users and groups with permissions here")?></label>
@@ -183,7 +216,7 @@
 		<?php if ($has_custom_properties) { ?>
 		<div id="<?php echo $genid ?>add_custom_properties_div" class="form-tab"><?php 
 			if($member->getObjectTypeId() > 0){
-				echo render_member_custom_properties($member, false);
+				echo render_member_custom_properties($member, false, 'others');
 			}			
 		?></div>
 		<div class="x-clear"></div>

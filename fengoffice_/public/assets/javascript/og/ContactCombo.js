@@ -192,7 +192,10 @@ og.renderContactSelector = function(config) {
 	input.setAttribute("id", genid + id);
 	input.setAttribute("name", name);
 	input.setAttribute("value", selected);
-	document.getElementById(genid + render_to).appendChild(input);
+	var container = document.getElementById(genid + render_to);
+	if (container) {
+		container.appendChild(input);
+	}
 	
 	if (!isNaN(selected) && selected > 0) {
 		og.selectContactFromCombo(selected, selected_name, contactsCombo, genid+render_to, genid+id, onchange_fn, is_multiple);

@@ -212,11 +212,7 @@ final class ScriptUpgrader {
 					}
 				} // if
 			} // foreach
-			// upgrade plugins
-			if (substr(php_uname(), 0, 7) != "Windows" && is_exec_available()) {
-				$command = "nice -n19 php ". INSTALLATION_PATH . "/public/install/plugin-console.php update_all";
-				exec("$command > /dev/null &");
-			}
+			
 			if (isset($last_correct_version)) {
 				@mysql_query("UPDATE `".TABLE_PREFIX."config_options` SET `value` = 0 WHERE `name` = 'upgrade_last_check_new_version'");
 				tpl_assign('version', $last_correct_version);

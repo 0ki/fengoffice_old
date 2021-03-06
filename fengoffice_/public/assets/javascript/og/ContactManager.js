@@ -59,7 +59,6 @@ og.ContactManager = function() {
 						cmp.getView().focusRow(og.lastSelectedRow.contacts+1);
 						var sm = cmp.getSelectionModel();
 						sm.clearSelections();
-						$("#"+cmp.id+" #text_filter").val('').focus();
 					}
 					
 					Ext.getCmp('contact-manager').reloadGridPagingToolbar('contact','list_all','contact-manager');
@@ -792,7 +791,7 @@ og.ContactManager = function() {
 					var elem = Ext.get(this.getEl());
 					var scroller = elem.select('.x-grid3-scroller');
 					scroller.each(function() {
-						this.dom.appendChild(msg);
+						if (this.dom) this.dom.appendChild(msg);
 					});
 				},
 				scope: this

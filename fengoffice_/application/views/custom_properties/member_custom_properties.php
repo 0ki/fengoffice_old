@@ -6,7 +6,12 @@ if ($ot->getName()=='project_folder' || $ot->getName()=='customer_folder') {
 	$ot = ObjectTypes::findByName('folder');
 }
 
-$cps = MemberCustomProperties::getAllMemberCustomPropertiesByObjectType($ot->getId());
+$cps = MemberCustomProperties::getAllMemberCustomPropertiesByObjectType($ot->getId(), $visibility);
+if ($visibility == 'others' && count($cps) == 0) {
+	echo lang('there are no custom properties defined message', strtolower(lang($ot->getName())), str_replace("'", "\'", $member->getName()));
+	echo '<br />'. lang('there are no custom properties defined link');
+}
+
 $ti = 0;
 
 if (!isset($genid)) $genid = gen_id();
@@ -111,7 +116,7 @@ if(count($cps) > 0){
 						echo '</table>';
 						echo '&nbsp;<a href="#" class="link-ico ico-add" onclick="og.addCPDateValue(\''.$genid.'\','.$customProp->getId().', 1)">'.lang('add value').'</a><br/>';
 					}else{
-						if ($default_value != '') {
+						if ($default_value != '' && $default_value != EMPTY_DATE && $default_value != EMPTY_DATETIME) {
 							try {
 								$value = DateTimeValueLib::dateFromFormatAndString("Y-m-d H:i:s", $default_value);
 							} catch (Exception $e) {
@@ -122,8 +127,10 @@ if(count($cps) > 0){
 									$value = '';
 								}
 							}
+							
 						}
-						echo pick_date_widget2($name, $value, null, $startTi + $ti, null, $genid . 'cp' . $customProp->getId());
+						$dval = $value instanceof DateTimeValue && $value->toMySQL() != EMPTY_DATETIME ? $value : null;
+						echo pick_date_widget2($name, $dval, null, $startTi + $ti, null, $genid . 'cp' . $customProp->getId());
 					}
 					break;
 				case 'list':
@@ -193,6 +200,44 @@ if(count($cps) > 0){
 					$ti += 50*count($columnNames);
 					$print_table_functions = true;
 					echo $html;
+					break;
+				
+				case 'address':
+					$html = '<div id="'.$genid.'addresscontainer-cp'.$customProp->getId().'" class="address-input-container custom-property"></div>';
+					$html .= "<div style='display:none;'>" . select_country_widget('template_country', '', array('id'=>'template_select_country')) . "</div>";
+					$html .= "<script>$(function(){";
+					
+					$all_address_types = AddressTypes::getAllAddressTypesInfo();
+					$html .= "og.address_types = Ext.util.JSON.decode('". json_encode($all_address_types) ."');";
+					
+					$values = MemberCustomPropertyValues::getMemberCustomPropertyValues($member->getId(), $customProp->getId());
+					if (is_array($values) && count($values) > 0) {
+						foreach ($values as $val) {
+							$values = str_replace("\|", "%%_PIPE_%%", $val->getValue());
+							$exploded = explode("|", $values);
+							foreach ($exploded as &$v) {
+								$v = str_replace("%%_PIPE_%%", "|", $v);
+								$v = str_replace("'", "\'", $v);
+							}
+							if (count($exploded) > 0) {
+								$address_type = array_var($exploded, 0, '');
+								$street = array_var($exploded, 1, '');
+								$city = array_var($exploded, 2, '');
+								$state = array_var($exploded, 3, '');
+								$country = array_var($exploded, 4, '');
+								$zip_code = array_var($exploded, 5, '');
+								$sel_data_str = "{street:'$street', city:'$city', state:'$state', zip_code:'$zip_code', country:'$country'}";
+								$html .= "og.renderAddressInput('cp".$customProp->getId()."', '$name', '".$genid."addresscontainer-cp".$customProp->getId()."', '$address_type', $sel_data_str);";
+							} else {
+								$html .= "og.renderAddressInput('cp".$customProp->getId()."', '$name', '".$genid."addresscontainer-cp".$customProp->getId()."', '', {});";
+							}
+						}
+					} else {
+						$html .= "og.renderAddressInput('cp".$customProp->getId()."', '$name', '".$genid."addresscontainer-cp".$customProp->getId()."', '', {});";
+					}
+					$html .= '});</script>';
+					echo $html;
+					
 					break;
 					
 				case 'contact':

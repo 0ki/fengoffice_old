@@ -6,7 +6,7 @@ if (! isset ( $genid )) $genid = gen_id ();
 if (! isset ( $name )) $name = 'permissions';
 if (! isset ( $pg_id )) $pg_id = -1;
 
-$default_user_permissions = DB::executeAll("SELECT * FROM ".TABLE_PREFIX."role_object_type_permissions");
+$default_user_permissions = DB::executeAll("SELECT * FROM ".TABLE_PREFIX."role_object_type_permissions WHERE object_type_id NOT IN (SELECT id FROM ".TABLE_PREFIX."object_types WHERE name IN ('template','comment'))");
 $default_user_permissions_by_role = array();
 foreach ($default_user_permissions as $perm_info) {
 	if (!isset($default_user_permissions_by_role[$perm_info['role_id']])) $default_user_permissions_by_role[$perm_info['role_id']] = array();

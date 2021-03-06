@@ -87,7 +87,7 @@ abstract class BaseWorkspaces extends ContentDataObjects {
 	 * @return array
 	 */
 	function getSystemColumns() {
-		return parent::getSystemColumns();
+		return array_merge(array('show_description_in_overview', 'color'), parent::getSystemColumns());
 	} // getSystemColumns
 	
 	/**

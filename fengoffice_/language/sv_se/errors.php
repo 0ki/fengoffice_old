@@ -57,4 +57,7 @@
 	'report name required' => 'Det krävs ett namn på rapporten',
 	'zip not supported' => 'ZIP stödjs inte av servern',
 	'member name already exists in dimension' => 'Medlemmen \'{0}\' finns redan i den valda dimensionen.',
+	'there are no changes' => 'Inga ändringar är gjorda. Dokumentet har inte uppdaterats.',
+	'task cannot be instantiated more times' => 'Uppgiften kan inte repeteras fler gånger, detta är sista gången.',
+	'you dont have permissions to classify object in member' => 'Du har inte behörighet att klassificera "{0}" i "{1}"',
 ); ?>

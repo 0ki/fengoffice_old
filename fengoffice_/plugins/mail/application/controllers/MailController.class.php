@@ -1594,6 +1594,13 @@ class MailController extends ApplicationController {
 			ajx_current("empty");
 			return;
 		} 
+		
+		// set layout for modal form
+		if (array_var($_REQUEST, 'modal')) {
+			$this->setLayout("json");
+			tpl_assign('modal', true);
+		}
+		
 		MailUtilities::parseMail($email->getContent(), $decoded, $parsedEmail, $warnings);
 		if (array_var($_POST,'submit')){
 			$members = json_decode(array_var($_POST, 'members'));
@@ -2802,6 +2809,13 @@ class MailController extends ApplicationController {
 			}
 		}*/
 /* @var $msg MailContent */
+		
+		$persons_dim = Dimensions::findByCode('feng_persons');
+		$persons_dim_id = $persons_dim instanceof Dimension ? $persons_dim->getId() : "0";
+		$mail_member_ids = array_flat(DB::executeAll("SELECT om.member_id FROM ".TABLE_PREFIX."object_members om
+				INNER JOIN ".TABLE_PREFIX."members m ON m.id=om.member_id 
+				WHERE om.object_id = '".$msg->getId()."' AND om.is_optimization = 0 AND m.dimension_id<>$persons_dim_id"));
+		
 		$properties = array(
 		    "id" => $msg->getId(),
 			"ix" => $i,
@@ -2824,7 +2838,7 @@ class MailController extends ApplicationController {
 			"folder" => $msg->getImapFolderName(),
 			"to" => $msg->getTo(),
 			"memPath" => json_encode($msg->getMembersIdsToDisplayPath()),
-			"memberIds" => implode(",", $msg->getMemberIds()),
+			"memberIds" => implode(",", $mail_member_ids),
 		);
 		
 		if ($show_as_conv) {

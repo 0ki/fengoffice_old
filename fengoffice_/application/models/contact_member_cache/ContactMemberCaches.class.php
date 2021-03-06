@@ -292,4 +292,27 @@ class ContactMemberCaches extends BaseContactMemberCaches {
 		} // foreach
 		return $ids;
 	}
+	
+	
+	/**
+	 * This function updates all user inheritance line cache for all members
+	 * @param Contact $user
+	 */
+	static function updateContactMemberCacheAllMembers($user) {
+		if ($user instanceof Contact && $user->isUser()) {
+			$dimensions = Dimensions::findAll();
+			$dimensions_ids = array();
+			foreach ($dimensions as $dimension) {
+				if ($dimension->getDefinesPermissions()) {
+					$dimensions_ids[] = $dimension->getId();
+				}
+			}
+			
+			$dimensions_ids = implode(",",$dimensions_ids);
+			$root_members = DB::executeAll("SELECT * FROM ".TABLE_PREFIX."members WHERE dimension_id IN (".$dimensions_ids.") AND parent_member_id=0 ORDER BY id");
+			foreach ($root_members as $member) {
+				ContactMemberCaches::updateContactMemberCache($user, $member['id'], $member['parent_member_id']);
+			}
+		}
+	}
 }

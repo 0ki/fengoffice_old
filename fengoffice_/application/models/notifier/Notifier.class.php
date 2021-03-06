@@ -61,7 +61,10 @@ class Notifier {
 						break;
 					}
 				}
-				if (!$is_subscribed) $subscribers[] = $add_user;
+				if (!$is_subscribed) {
+					$subscribers[] = $add_user;
+					$add_user->ignore_permissions_for_notifications = true;
+				}
 			}
 		}
 		
@@ -310,8 +313,8 @@ class Notifier {
 						$user->notify_myself = logged_user()->notify_myself;
 					}
 					
-					if ( ($user->getId() != $senderid || $user->notify_myself) && $object->canView($user) ) {
-						$to_addresses[] = self::prepareEmailAddress($user->getEmailAddress(), $user->getObjectName());
+					if ( ($user->getId() != $senderid || $user->notify_myself) && ($object->canView($user) || $user->ignore_permissions_for_notifications)) {
+						$to_addresses[$user->getId()] = self::prepareEmailAddress($user->getEmailAddress(), $user->getObjectName());
 					}
 				}
 				

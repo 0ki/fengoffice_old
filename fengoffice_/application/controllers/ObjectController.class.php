@@ -403,25 +403,36 @@ class ObjectController extends ApplicationController {
 					
 					Hook::fire('before_save_custom_property_value', array('custom_prop' => $custom_property), $value);
 					
-					//Save multiple values
 					if(is_array($value)){
-						CustomPropertyValues::deleteCustomPropertyValues($object->getId(), $id);
-						foreach($value as &$val){
-							if (is_array($val)) {
-								// CP type == table
-								$str_val = '';
-								foreach ($val as $col_val) {
-									$col_val = str_replace("|", "\|", $col_val);
-									$str_val .= ($str_val == '' ? '' : '|') . $col_val;
+						if ($custom_property->getType() == 'address') {
+							// Address custom property
+							$val = array_var($value, 'type') .'|'. array_var($value, 'street') .'|'. array_var($value, 'city') .'|'. array_var($value, 'state') .'|'. array_var($value, 'country') .'|'. array_var($value, 'zip_code');
+							CustomPropertyValues::deleteCustomPropertyValues($object->getId(), $id);
+							$custom_property_value = new CustomPropertyValue();
+							$custom_property_value->setObjectId($object->getId());
+							$custom_property_value->setCustomPropertyId($id);
+							$custom_property_value->setValue($val);
+							$custom_property_value->save();
+						} else {
+							//Save multiple values
+							CustomPropertyValues::deleteCustomPropertyValues($object->getId(), $id);
+							foreach($value as &$val){
+								if (is_array($val)) {
+									// CP type == table
+									$str_val = '';
+									foreach ($val as $col_val) {
+										$col_val = str_replace("|", "\|", $col_val);
+										$str_val .= ($str_val == '' ? '' : '|') . $col_val;
+									}
+									$val = $str_val;
 								}
-								$val = $str_val;
-							}
-							if($val != ''){
-								$custom_property_value = new CustomPropertyValue();
-								$custom_property_value->setObjectId($object->getId());
-								$custom_property_value->setCustomPropertyId($id);
-								$custom_property_value->setValue($val);
-								$custom_property_value->save();
+								if($val != ''){
+									$custom_property_value = new CustomPropertyValue();
+									$custom_property_value->setObjectId($object->getId());
+									$custom_property_value->setCustomPropertyId($id);
+									$custom_property_value->setValue($val);
+									$custom_property_value->save();
+								}
 							}
 						}
 					}else{

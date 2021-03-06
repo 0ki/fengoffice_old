@@ -273,7 +273,8 @@ og.loggedUser = {
 	isAdmin: <?php echo logged_user()->isAdministrator() ? 'true' : 'false' ?>,
 	isGuest: <?php echo logged_user()->isGuest() ? 'true' : 'false' ?>,
 	tz: <?php echo logged_user()->getTimezone() ?>,
-	type: <?php echo logged_user()->getUserType() ?>
+	type: <?php echo logged_user()->getUserType() ?>,
+	localization: '<?php echo logged_user()->getLocale() ?>'
 };
 og.zipSupported = <?php echo zip_supported() ? 1 : 0 ?>;
 og.hasNewVersions = <?php

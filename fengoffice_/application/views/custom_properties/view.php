@@ -35,7 +35,35 @@
 							$htmlValue = '<div class="db-ico ico-contact" style="padding-left:18px;width:100%;">'.clean($c->getObjectName()).'</div>';
 						}
 					} else if ($customProp->getType() == 'boolean'){
+						
 						$htmlValue = '<div class="db-ico ico-'.($value?'complete':'delete').' '.($value?'cpbooltrue':'cpboolfalse').'">&nbsp;</div>';
+						
+					} else if ($customProp->getType() == 'address'){
+						
+						$values = str_replace("\|", "%%_PIPE_%%", $cpv->getValue());
+						$exploded = explode("|", $values);
+						foreach ($exploded as &$v) {
+							$v = str_replace("%%_PIPE_%%", "|", $v);
+							$v = str_replace("'", "\'", $v);
+						}
+						if (count($exploded) > 0) {
+							$address_type = array_var($exploded, 0, '');
+							$street = array_var($exploded, 1, '');
+							$city = array_var($exploded, 2, '');
+							$state = array_var($exploded, 3, '');
+							$country = array_var($exploded, 4, '');
+							$zip_code = array_var($exploded, 5, '');
+							
+							$out = $street;
+							if($city != '') $out .= ' - ' . $city;
+							if($state != '') $out .= ' - ' . $state;
+							if($country != '') $out .= ' - ' . lang("country $country");
+
+							$htmlValue = '<div class="info-content-item">'. $out .'&nbsp;<a class="map-link coViewAction ico-map" href="http://maps.google.com/?q='. $out .'" target="_blank">'. lang('map') .'</a></div>';
+						} else {
+							$htmlValue = "";
+						}
+						
 					} else if ($customProp->getIsMultipleValues()) {
 						$multValues = CustomPropertyValues::getCustomPropertyValues($__properties_object->getId(), $customProp->getId());
 						$newAlt = $alt;

@@ -42,8 +42,12 @@ class  MemberCustomProperties extends  BaseMemberCustomProperties {
 	 * @return array
 	 * 
 	 */
-	static function getAllMemberCustomPropertiesByObjectType($object_type, $co_type = null) {
-		$cond = array("`object_type_id` = ?", $object_type);
+	static function getAllMemberCustomPropertiesByObjectType($object_type, $visibility='all') {
+		$visibility_cond = "";
+		if ($visibility != 'all') {
+			$visibility_cond = " AND visible_by_default = ". ($visibility == 'visible_by_default' ? '1' : '0');
+		}
+		$cond = array("`object_type_id` = ? $visibility_cond", $object_type);
 		
 		return self::findAll(array(
 			'conditions' => $cond,

@@ -94,7 +94,8 @@
 <?php foreach($columns as $col) {
 	$sorted = false;
 	$asc = false;
-	if($col != '' && array_var($db_columns, $col) == $order_by) {
+	
+	if($col != '' && $col != lang('located_under') && array_var($db_columns, $col) == $order_by) {
 		$sorted = true;
 		$asc = $order_by_asc;
 	}	?>

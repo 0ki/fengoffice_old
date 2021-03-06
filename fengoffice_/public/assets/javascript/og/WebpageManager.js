@@ -48,7 +48,6 @@ og.WebpageManager = function() {
 					if (cmp) {
 						var sm = cmp.getSelectionModel();
 						sm.clearSelections();
-						$("#"+cmp.id+" #text_filter").val('').focus();
 					}
 					Ext.getCmp('webpage-manager').reloadGridPagingToolbar('webpage','list_all','webpage-manager');
 					

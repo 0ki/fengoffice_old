@@ -225,6 +225,45 @@ if(count($cps) > 0){
 					$print_table_functions = true;
 					echo $html;
 					break;
+
+
+				case 'address':
+						$html = '<div id="'.$genid.'addresscontainer-cp'.$customProp->getId().'" class="address-input-container custom-property"></div>';
+						$html .= "<div style='display:none;'>" . select_country_widget('template_country', '', array('id'=>'template_select_country')) . "</div>";
+						$html .= "<script>$(function(){";
+							
+						$all_address_types = AddressTypes::getAllAddressTypesInfo();
+						$html .= "og.address_types = Ext.util.JSON.decode('". json_encode($all_address_types) ."');";
+							
+						$values = CustomPropertyValues::getCustomPropertyValues($_custom_properties_object->getId(), $customProp->getId());
+						if (is_array($values) && count($values) > 0) {
+							foreach ($values as $val) {
+								$values = str_replace("\|", "%%_PIPE_%%", $val->getValue());
+								$exploded = explode("|", $values);
+								foreach ($exploded as &$v) {
+									$v = str_replace("%%_PIPE_%%", "|", $v);
+									$v = str_replace("'", "\'", $v);
+								}
+								if (count($exploded) > 0) {
+									$address_type = array_var($exploded, 0, '');
+									$street = array_var($exploded, 1, '');
+									$city = array_var($exploded, 2, '');
+									$state = array_var($exploded, 3, '');
+									$country = array_var($exploded, 4, '');
+									$zip_code = array_var($exploded, 5, '');
+									$sel_data_str = "{street:'$street', city:'$city', state:'$state', zip_code:'$zip_code', country:'$country'}";
+									$html .= "og.renderAddressInput('cp".$customProp->getId()."', '$name', '".$genid."addresscontainer-cp".$customProp->getId()."', '$address_type', $sel_data_str);";
+								} else {
+									$html .= "og.renderAddressInput('cp".$customProp->getId()."', '$name', '".$genid."addresscontainer-cp".$customProp->getId()."', '', {});";
+								}
+							}
+						} else {
+							$html .= "og.renderAddressInput('cp".$customProp->getId()."', '$name', '".$genid."addresscontainer-cp".$customProp->getId()."', '', {});";
+						}
+						$html .= '});</script>';
+						echo $html;
+						
+						break;
 					
 				case 'contact':
 					$value = '0';
@@ -264,6 +303,7 @@ if(count($cps) > 0){
 					break;
 				default: break;
 			}
+			if (!isset($value)) $value = "";
 			$ret = null;
 			Hook::fire('after_render_cp_input', array('custom_prop' => $customProp, 'value' => $value, 'input_name' => $name), $ret);
 		}

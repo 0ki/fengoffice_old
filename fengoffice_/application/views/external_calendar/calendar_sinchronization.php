@@ -157,6 +157,8 @@ if(array_var($user, 'id')){
     border-radius: 5px;
     width: 530px;
     overflow: auto;
+    min-height: 250px;
+    font-size: 14px;
 }
 .google-cal-classify-modal .submit-btn{	               
 	float:right;
@@ -275,7 +277,6 @@ og.google_calendar_classify = function(original_calendar_id) {
 							}
 					);	
 					
-					console.log(parameters);
 					event.preventDefault();
 				});						
 			},

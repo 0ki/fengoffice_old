@@ -307,6 +307,9 @@
     * @throws DBQueryError
     */
     function executeAll($sql, $arguments = null) {
+      if (!$this->isConnected()) {
+    	$this->reconnect();
+      }
       $result = $this->prepareAndExecute($sql, $arguments);
       if($result instanceof DBResult) {
         $all = $result->fetchAll();

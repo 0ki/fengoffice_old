@@ -284,18 +284,30 @@ function date_format_tip($format) {
 			case DATA_TYPE_DATE:
 				if ($value != 0) { 
 					if (str_ends_with($value, "00:00:00")) $dateformat .= " H:i:s";
-					$dtVal = DateTimeValueLib::dateFromFormatAndString($dateformat, $value);
-					$formatted = format_date($dtVal, null, 0);
+					try {
+						$dtVal = DateTimeValueLib::dateFromFormatAndString($dateformat, $value);
+					} catch (Exception $e) {
+						$formatted = $value;						
+					}
+					if (!isset($formatted)) {
+						$formatted = format_date($dtVal, null, 0);
+					}
 				} else $formatted = '';
 				break;
 			case DATA_TYPE_DATETIME:
 				if ($value != 0) {
-					$dtVal = DateTimeValueLib::dateFromFormatAndString("$dateformat H:i:s", $value);
-					if ($obj_type_id == ProjectEvents::instance()->getObjectTypeId() || $obj_type_id == ProjectTasks::instance()->getObjectTypeId()) {
-						$dtVal->advance(logged_user()->getTimezone() * 3600, true);
+					try {
+						$dtVal = DateTimeValueLib::dateFromFormatAndString("$dateformat H:i:s", $value);
+					} catch (Exception $e) {
+						$formatted = $value;
 					}
-					if ($obj_type_id == ProjectEvents::instance()->getObjectTypeId() && ($col == 'start'|| $col == 'duration')) $formatted = format_datetime($dtVal);
-					else $formatted = format_date($dtVal, null, 0);
+					if ($dtVal instanceof DateTimeValue) {
+						if ($obj_type_id == ProjectEvents::instance()->getObjectTypeId() || $obj_type_id == ProjectTasks::instance()->getObjectTypeId()) {
+							$dtVal->advance(logged_user()->getTimezone() * 3600, true);
+						}
+						if ($obj_type_id == ProjectEvents::instance()->getObjectTypeId() && ($col == 'start'|| $col == 'duration')) $formatted = format_datetime($dtVal);
+						else $formatted = format_date($dtVal, null, 0);
+					}
 				} else $formatted = '';
 				break;
 			default: $formatted = $value;

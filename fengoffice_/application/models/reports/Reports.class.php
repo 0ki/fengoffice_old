@@ -200,6 +200,23 @@ class Reports extends BaseReports {
 			$ot = ObjectTypes::findById($report->getReportObjectTypeId());
 			$table = $ot->getTableName();
 			
+			if ($ot->getType() == 'dimension_object' || $ot->getType() == 'dimension_group') {
+				$hook_parameters = array(
+					'report' => $report,
+					'params' => $params,
+					'order_by_col' => $order_by_col,
+					'order_by_asc' => $order_by_asc,
+					'offset' => $offset,
+					'limit' => $limit,
+					'to_print' => $to_print,
+				);
+				$report_result = null;
+				Hook::fire('replace_execute_report_function', $hook_parameters, $report_result);
+				if ($report_result) {
+					return $report_result;
+				}
+			}
+			
 			eval('$managerInstance = ' . $ot->getHandlerClass() . "::instance();");
 			eval('$item_class = ' . $ot->getHandlerClass() . '::instance()->getItemClass(); $object = new $item_class();');
 			
@@ -714,7 +731,7 @@ class Reports extends BaseReports {
 
 
 	private static $external_columns = array('user_id', 'contact_id', 'assigned_to_contact_id', 'assigned_by_id', 'completed_by_id', 'approved_by_id', 'milestone_id', 'company_id');
-	function getExternalColumnValue($field, $id, $manager = null){
+	function getExternalColumnValue($field, $id, $manager = null, $object = null){
 		$value = '';
 		if($field == 'user_id' || $field == 'contact_id' || $field == 'created_by_id' || $field == 'updated_by_id' || $field == 'assigned_to_contact_id' || $field == 'assigned_by_id' || $field == 'completed_by_id'|| $field == 'approved_by_id'){
 			$contact = Contacts::findById($id);
@@ -730,6 +747,9 @@ class Reports extends BaseReports {
 		} else if ($manager instanceof ContentDataObjects) {
 			$value = $manager->getExternalColumnValue($field, $id);
 		}
+		
+		Hook::fire('custom_reports_get_external_column_value', array('field' => $field, 'external_id' => $id, 'manager' => $manager, 'object' => $object), $value);
+		
 		return $value;
 	}
 

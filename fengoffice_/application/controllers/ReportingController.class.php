@@ -602,6 +602,8 @@ class ReportingController extends ApplicationController {
 		
 		$object_types[] = ObjectTypes::findByName('timeslot');
 		
+		Hook::fire('custom_reports_object_types', array('object_types' => $object_types), $object_types);
+		
 		foreach ($object_types as $ot) {
 			$types[] = array($ot->getId(), lang($ot->getName()));
 		}
@@ -744,6 +746,8 @@ class ReportingController extends ApplicationController {
 			$object_types = ObjectTypes::getAvailableObjectTypes();
 			$object_types[] = ObjectTypes::findByName('timeslot');
 			
+			Hook::fire('custom_reports_object_types', array('object_types' => $object_types), $object_types);
+			
 			foreach ($object_types as $ot) {
 				$types[] = array($ot->getId(), lang($ot->getName()));
 			}
@@ -773,8 +777,12 @@ class ReportingController extends ApplicationController {
 			}
 			
 			$ot = ObjectTypes::findById($report->getReportObjectTypeId());
-			eval('$managerInstance = ' . $ot->getHandlerClass() . "::instance();");
-			$externalCols = $managerInstance->getExternalColumns();
+			if (class_exists($ot->getHandlerClass())) {
+				eval('$managerInstance = ' . $ot->getHandlerClass() . "::instance();");
+				$externalCols = $managerInstance->getExternalColumns();
+			} else {
+				$externalCols = array();
+			}
 			$externalFields = array();
 			foreach($externalCols as $extCol){
 				$externalFields[$extCol] = $this->get_ext_values($extCol, $report->getReportObjectTypeId());
@@ -950,8 +958,12 @@ class ReportingController extends ApplicationController {
 		
 		$types = self::get_report_column_types($report->getId());
 		$ot = ObjectTypes::findById($report->getReportObjectTypeId());
-		eval('$managerInstance = ' . $ot->getHandlerClass() . "::instance();");
-		$externalCols = $managerInstance->getExternalColumns();
+		if (class_exists($ot->getHandlerClass())) {
+			eval('$managerInstance = ' . $ot->getHandlerClass() . "::instance();");
+			$externalCols = $managerInstance->getExternalColumns();
+		} else {
+			$externalCols = array();
+		}
 		$filename = str_replace(' ', '_',$report->getObjectName()).date('_YmdHis');
 		
 		$actual_encoding = function_exists('mb_internal_encoding') ? mb_internal_encoding() : 'utf-8';
@@ -1244,12 +1256,15 @@ class ReportingController extends ApplicationController {
 					$fields[] = array('id' => $cp->getId(), 'name' => $cp->getName(), 'type' => $cp->getType(), 'values' => $cp->getValues(), 'multiple' => $cp->getIsMultipleValues());
 			}
 			$ot = ObjectTypes::findById($object_type);
-			eval('$managerInstance = ' . $ot->getHandlerClass() . "::instance();");
 			
-			if ($include_common_cols) {
-				$common_columns = Objects::instance()->getColumns(false);
-				$common_columns = array_diff_key($common_columns, array_flip($managerInstance->getSystemColumns()));
-				$objectFields = array_merge($objectFields, $common_columns);
+			if (class_exists($ot->getHandlerClass())) {
+				eval('$managerInstance = ' . $ot->getHandlerClass() . "::instance();");
+				
+				if ($include_common_cols) {
+					$common_columns = Objects::instance()->getColumns(false);
+					$common_columns = array_diff_key($common_columns, array_flip($managerInstance->getSystemColumns()));
+					$objectFields = array_merge($objectFields, $common_columns);
+				}
 			}
 			
 			foreach($objectFields as $name => $type){
@@ -1344,6 +1359,9 @@ class ReportingController extends ApplicationController {
 				$values[] = array('id' => $comp->getId(), 'name' => $comp->getObjectName());
 			}
 		}
+		
+		Hook::fire('custom_reports_get_possible_external_column_values', array('field' => $field, 'ot_id' => $manager), $values);
+		
 		return $values;
 	}
 
@@ -1360,18 +1378,26 @@ class ReportingController extends ApplicationController {
 			}
 			
 			$ot = ObjectTypes::findById($object_type);
-			eval('$managerInstance = ' . $ot->getHandlerClass() . "::instance();");
-			$objectColumns = $managerInstance->getColumns();
+			if (class_exists($ot->getHandlerClass())) {
+				eval('$managerInstance = ' . $ot->getHandlerClass() . "::instance();");
+				$objectColumns = $managerInstance->getColumns();
+			} else {
+				$objectColumns = array();
+			}
 			
 			$objectFields = array();
 			
-			$objectColumns = array_diff($objectColumns, $managerInstance->getSystemColumns());
-			foreach($objectColumns as $column){
-				$objectFields[$column] = $managerInstance->getColumnType($column);
+			if (class_exists($ot->getHandlerClass())) {
+				$objectColumns = array_diff($objectColumns, $managerInstance->getSystemColumns());
+				foreach($objectColumns as $column){
+					$objectFields[$column] = $managerInstance->getColumnType($column);
+				}
 			}
 			
 			$common_columns = Objects::instance()->getColumns(false);
-			$common_columns = array_diff_key($common_columns, array_flip($managerInstance->getSystemColumns()));
+			if (class_exists($ot->getHandlerClass())) {
+				$common_columns = array_diff_key($common_columns, array_flip($managerInstance->getSystemColumns()));
+			}
 			$objectFields = array_merge($objectFields, $common_columns);
 
 			foreach($objectFields as $name => $type){
@@ -1398,12 +1424,14 @@ class ReportingController extends ApplicationController {
 				$fields[] = $fields_array;
 			}
 	
-			$externalFields = $managerInstance->getExternalColumns();
-			foreach($externalFields as $extField){
-				$field_name = Localization::instance()->lang('field '.$ot->getHandlerClass().' '.$extField);
-				if (is_null($field_name)) $field_name = lang('field Objects '.$extField);
-				
-				$fields[] = array('id' => $extField, 'name' => $field_name, 'type' => 'external', 'multiple' => 0);
+			if (class_exists($ot->getHandlerClass())) {
+				$externalFields = $managerInstance->getExternalColumns();
+				foreach($externalFields as $extField){
+					$field_name = Localization::instance()->lang('field '.$ot->getHandlerClass().' '.$extField);
+					if (is_null($field_name)) $field_name = lang('field Objects '.$extField);
+					
+					$fields[] = array('id' => $extField, 'name' => $field_name, 'type' => 'external', 'multiple' => 0);
+				}
 			}
 			//if Object type is person
 			$contact_ot = ObjectTypes::findByName('contact');
@@ -1422,7 +1450,7 @@ class ReportingController extends ApplicationController {
 				$fields[] = array('id' => 'other_address', 'name' => lang('other_address'), 'type' => 'text');
 			}
 			if (!array_var($_REQUEST, 'noaddcol')) {
-				Hook::fire('custom_reports_additional_columns', null, $fields);
+				Hook::fire('custom_reports_additional_columns', array('object_type' => $ot), $fields);
 			}
 		}
 		usort($fields, array(&$this, 'compare_FieldName'));

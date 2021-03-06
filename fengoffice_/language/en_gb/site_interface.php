@@ -46,12 +46,12 @@ return array(
     'contact online' => 'Contact online',
     'contact offline' => 'Contact offline',
 
-    'avatar' => 'Avatar',
-    'current avatar' => 'Current avatar',
+    'avatar' => 'Profile picture',
+    'current avatar' => 'Current profile picture',
     'current logo' => 'Current logo',
-    'new avatar' => 'New avatar',
+    'new avatar' => 'New profile picture',
     'new logo' => 'New logo',
-    'new avatar notice' => 'Note that the current avatar will be deleted and replaced with new one!',
+    'new avatar notice' => 'Note that the current profile picture will be deleted and replaced with new one!',
     'new logo notice' => 'Current logo will be deleted and replaced with new one!',
 
     'days late' => '{0} days late',
@@ -194,7 +194,7 @@ return array(
 
     'email and instant messaging' => 'Email and instant messaging',
     'no contacts in project' => 'There are no contacts in this workspace',
-  	'picture' => 'Avatar',
+  	'picture' => 'Picture',
     'current picture' => 'Current picture',
     'delete current picture' => 'Delete current picture',
     'confirm delete current picture' => 'Are you sure you want to delete the current picture?',

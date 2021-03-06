@@ -626,4 +626,20 @@ class Member extends BaseMember {
 			return parent::setParentMemberId(0);
 		}
 	} // setParentMemberId()
+	
+	
+	function canHaveParents() {
+		$dim_id = $this->getDimensionId();
+		$otype_id = $this->getObjectTypeId();
+		
+		$sql = "SELECT count(m.id) as cant from ".TABLE_PREFIX."members m
+				WHERE m.`object_type_id` IN (
+					SELECT `parent_object_type_id` FROM `". DimensionObjectTypeHierarchies::instance()->getTableName() ."`
+					WHERE `dimension_id` = '$dim_id' AND `child_object_type_id` = '$otype_id'
+				)";
+		$rows = DB::executeAll($sql);
+		$cant = $rows[0]['cant'];
+		
+		return $cant > 0;
+	}
 }

@@ -198,14 +198,14 @@ og.MemberTree = function(config) {
 	    			callback: function(success, data){
 	    				
 	    				var dimension_tree = Ext.getCmp('dimension-panel-'+data.dimension);
-	    				
-	    				dimension_tree.addMembersToTree(data.members, data.dimension);
-	    				 				
-	    				dimension_tree.innerCt.unmask();
-	    				
-	    				var current_node = dimension_tree.getNodeById(data.member_id);
-	    				current_node.attributes.gettingChildsFromServer = false;
-	    				
+	    				if (dimension_tree) {
+		    				dimension_tree.addMembersToTree(data.members, data.dimension);
+		    				 				
+		    				dimension_tree.innerCt.unmask();
+		    				
+		    				var current_node = dimension_tree.getNodeById(data.member_id);
+		    				current_node.attributes.gettingChildsFromServer = false;
+	    				}
 	    			}
 	    		});
 	        }
@@ -689,7 +689,6 @@ Ext.extend(og.MemberTree, Ext.tree.TreePanel, {
 				if (node_parent) node_parent.appendChild(new_node);
 			}else{				
 				if (node_parent){
-					console.log(new_node);
 					node_exist.setText(new_node.text);
 				/*	node_parent.removeChild(node_exist);
 					node_parent.appendChild(new_node);*/								

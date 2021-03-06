@@ -98,7 +98,7 @@
 <script>
 
 $(document).ready(function() {
-try {
+
 	og.telephoneCount = 0;
 	og.telephone_types = Ext.util.JSON.decode('<?php echo json_encode($all_telephone_types)?>');
 
@@ -161,8 +161,6 @@ try {
 	<?php if (count(array_var($company_data, 'all_emails')) == 0) { ?>
 		og.addNewEmailInput('<?php echo $genid?>_emails_container', 'company', def_email_type);
 	<?php } ?>
-} catch(e) {
-	console.log(e);
-}
+
 });
 </script>

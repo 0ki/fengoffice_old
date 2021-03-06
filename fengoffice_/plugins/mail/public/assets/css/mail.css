@@ -22,6 +22,15 @@
 	margin-left: 10px;
 }
 
+.mail-classify-selector{
+	display: inline-block;
+	font-size: 15px;
+}
+
+.mail-classify-selector label{
+	min-width: 140px;
+}
+
 #mails-panel .mail-classify-selector .x-column-inner{
 	width: 100%!important;
 }

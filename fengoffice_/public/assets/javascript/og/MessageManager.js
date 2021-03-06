@@ -48,7 +48,6 @@ og.MessageManager = function() {
 						cmp.getView().focusRow(og.lastSelectedRow.messages+1);
 						var sm = cmp.getSelectionModel();
 						sm.clearSelections();
-						$("#"+cmp.id+" #text_filter").val('').focus();
 					}
 					Ext.getCmp('message-manager').reloadGridPagingToolbar('message','list_all','message-manager');
 					

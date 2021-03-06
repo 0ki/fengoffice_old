@@ -29,5 +29,21 @@ addLangs({
 	'delete the selected slide': 'Tag bort vald sida',
 	'move the selected slide down one place': 'Flytta vald sida ner ett steg',
 	'move the selected slide up one place': 'Flytta vald sida upp ett steg',
-	'new slideshow': 'Nytt bildspel'
+	'new slideshow': 'Nytt bildspel',
+	'change font color': 'Ändra färg på font',
+	'change font size': 'Ändra storlek på font',
+	'generic fonts': 'Generell font',
+	'specific fonts': 'Specifika fonter',
+	'delete element': 'Tag bort element',
+	'send element to the back': 'lägg element sist',
+	'bring element to the front': 'lägg element först',
+	'second slide': 'Andra sliden',
+	'align text to the left': 'Ordna text till vänster',
+	'align text to the center': 'Centrera text',
+	'align text to the right': 'Ordna text till höger',
+	'generic tool': 'Övergripande verktyg',
+	'edit the elements content': 'Redigera innehållet i elementet',
+	'what element do you wish to insert?': 'Vad för element vill du infoga?',
+	'insert ordered list': 'Infoga en sorterad lista',
+	'insert unordered list': 'Infoga en osorterad lista'
 });

@@ -1,4 +1,17 @@
 <?php
+
+function get_contact_data_tab_html($genid, $contact, $renderContext, $contact_data, $renderAddCompany = true){
+	ob_start();
+	render_contact_data_tab($genid, $contact, $renderContext, $contact_data, $renderAddCompany);
+	return ob_get_clean();
+}
+
+function get_company_data_tab_html($genid, $company, $renderContext, $company_data){
+	ob_start();
+	render_company_data_tab($genid, $company, $renderContext, $company_data);
+	return ob_get_clean();
+}
+
 function render_contact_data_tab($genid, $contact, $renderContext, $contact_data, $renderAddCompany = true){
 	$object = $contact;
 	

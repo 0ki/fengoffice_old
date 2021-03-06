@@ -278,10 +278,10 @@ og.eventManager.addListener('after apply permissions to submembers',
 		var member_id = data.member_id;
 		
 		og.ogPermRelocateNodesInTrees(genid, dim_id, ids);
-		if (!node.hasChildNodes()) {
+		if (!node.hasChildNodes() && node.ownerTree) {
 			// remove node if it cannot be in its tree.
-			if (tree.getId() == genid + '_with_permissions_' + dim_id + '-tree' && !og.hasAnyPermissions(genid, member_id) || 
-				tree.getId() == genid + '_without_permissions_' + dim_id + '-tree' && og.hasAnyPermissions(genid, member_id)) {
+			if (node.ownerTree.getId() == genid + '_with_permissions_' + dim_id + '-tree' && !og.hasAnyPermissions(genid, member_id) || 
+				node.ownerTree.getId() == genid + '_without_permissions_' + dim_id + '-tree' && og.hasAnyPermissions(genid, member_id)) {
 				
 				node.remove();
 			}
@@ -510,7 +510,7 @@ og.permissionsDDAddRemovePermissions = function(dropEvent) {
 				
 				$('#'+ genid +'ask_to_remove_from_submembers').modal({
 					'escClose': true,
-					'overlayClose': true,
+					'overlayClose': false,
 					'closeHTML': '<a id="'+genid+'_remove_submembers_close_link" class="modal-close" title="'+lang('close')+'"></a>',
 					'onShow': function (dialog) {
 						$("#"+genid+"_close_link").addClass("modal-close-img");
@@ -586,7 +586,7 @@ og.showPermissionsPopup = function(genid, dim_id, mem_id, name, set_default_perm
 	
 	$('#'+ genid +'member_permissions' + dim_id).modal({
 		'escClose': true,
-		'overlayClose': true,
+		'overlayClose': false,
 		'closeHTML': '<a id="'+genid+'_close_link" class="modal-close" title="'+lang('close')+'"></a>',
 		'onShow': function (dialog) {
 			$("#"+genid+"_close_link").addClass("modal-close-img");
@@ -611,8 +611,16 @@ og.showHidePermissionsRadioButtonsByRole = function(genid, dim_id, role_id) {
 		var ot = ot_radios[j].id.substring(ot_radios[j].id.lastIndexOf('_')+1);
 		object_types.push(ot);
 	}
-		
-	for (var i=0; i<object_types.length; i++) {
+	
+	if (!max_perms) { // user groups => show all radiobuttons
+		for (var i=0; i<object_types.length; i++) {
+			var ot = object_types[i];
+			$("#" + genid + "rg_3_" + dim_id + '_' + ot).show();
+			$("#" + genid + "rg_2_" + dim_id + '_' + ot).show();
+			$("#" + genid + "rg_1_" + dim_id + '_' + ot).show();
+		}
+	} else { // user => show/hide radiobuttons depending on the user role
+	  for (var i=0; i<object_types.length; i++) {
 		var ot = object_types[i];
 		
 		if (max_perms[ot] && max_perms[ot].can_delete) $("#" + genid + "rg_3_" + dim_id + '_' + ot).show();
@@ -623,6 +631,7 @@ og.showHidePermissionsRadioButtonsByRole = function(genid, dim_id, role_id) {
 		
 		if (max_perms[ot]) $("#" + genid + "rg_1_" + dim_id + '_' + ot).show();
 		else $("#" + genid + "rg_1_" + dim_id + '_' + ot).hide();
+	  }
 	}
 }
 
@@ -1112,8 +1121,16 @@ og.userPermissions.showHidePermissionsRadioButtonsByRole = function(genid, role_
 		var ot = ot_radios[j].id.substring(ot_radios[j].id.lastIndexOf('_')+1);
 		object_types.push(ot);
 	}
-		
-	for (var i=0; i<object_types.length; i++) {
+	
+	if (!max_perms) { // user groups => show all radiobuttons
+		for (var i=0; i<object_types.length; i++) {
+			var ot = object_types[i];
+			$("#" + genid + "rg_3_" + dim_id + '_' + ot).show();
+			$("#" + genid + "rg_2_" + dim_id + '_' + ot).show();
+			$("#" + genid + "rg_1_" + dim_id + '_' + ot).show();
+		}
+	} else { // user => show/hide radiobuttons depending on the user role
+	  for (var i=0; i<object_types.length; i++) {
 		var ot = object_types[i];
 		
 		if (max_perms[ot] && max_perms[ot].can_delete) $("#" + genid + "rg_3_" + ot).show();
@@ -1124,6 +1141,7 @@ og.userPermissions.showHidePermissionsRadioButtonsByRole = function(genid, role_
 		
 		if (max_perms[ot]) $("#" + genid + "rg_1_" + ot).show();
 		else $("#" + genid + "rg_1_" + ot).hide();
+	  }
 	}
 }
 

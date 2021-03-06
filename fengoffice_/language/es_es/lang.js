@@ -79,6 +79,9 @@ addLangs({
 	'confirm delete webpage': '¿Está seguro de que desea eliminar este enlace web?',
 	'confirm delete workspace': '¿Está seguro de que desea eliminar el área de trabajo \'{0}\'?',
 	'confirm delete project': '¿Está seguro de que desea eliminar esta área de trabajo y todos los datos relacionados con él (notas, tareas, hitos, archivos...)?',
+	'confirm delete permanently this member': 'Está seguro que desea eliminar este {0}?',
+	'confirm delete with keyword': 'Escriba \"DELETE\" para confirmar',
+	
 	'confirm cancel work timeslot': 'Está seguro que desea cancelar el tiempo de trabajo?',
 	'more': 'Más',
 	'more actions': 'Más acciones',
@@ -158,6 +161,7 @@ addLangs({
 	'webpage': 'Enlace web',
 	'message': 'Nota',
 	'workspaces': 'Áreas de trabajo',
+	'folders': 'Carpetas',
 	'all': 'Todo',
 	'all customers': 'Todos los Clientes',
 	'create a workspace': 'Crear nueva área de trabajo',

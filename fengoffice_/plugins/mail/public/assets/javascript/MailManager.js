@@ -67,8 +67,6 @@ og.MailManager = function() {
 					for (i=0; i<manager.maxrowidx; i++) {
 						var el = view.getRow(i);
 						if (el) el.innerHTML = el.innerHTML.replace('x-grid3-td-draghandle "', 'x-grid3-td-draghandle " onmousedown="var sm = Ext.getCmp(\'mails-manager\').getSelectionModel();if (!sm.isSelected('+i+')) {sm.clearSelections();} sm.selectRow('+i+', true);"');
-						
-						$("#"+manager.id+" #text_filter").val('').focus();
 					}
 					
 					//reload columns for this folder
@@ -152,7 +150,7 @@ og.MailManager = function() {
 		if (r.data.memberIds.length > 0) {
 			return '<div class="db-ico ico-email"></div>';
 		} else {
-			return String.format('<a href="#" onclick="og.openLink(\'{0}\')" title={1}><div class="db-ico ico-classify"></div></a>', og.getUrl('mail', 'classify', {id: r.data.object_id}), lang('classify'));
+			return String.format('<a href="#" onclick="{0}" title={1}><div class="db-ico ico-classify"></div></a>', "og.render_modal_form('', {c:'mail', a:'classify', params: {id: "+r.data.object_id+"}})", lang('classify'));
 		}
 	}
 

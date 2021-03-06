@@ -451,8 +451,9 @@ function render_object_custom_properties($object, $required, $co_type=null) {
  * @param ContentDataObject $object Show custom properties of this object
  * @return null
  */
-function render_member_custom_properties($member, $required) {
+function render_member_custom_properties($member, $required, $visibility='all') {
 	tpl_assign('member', $member);
+	tpl_assign('visibility', $visibility);
 	return tpl_fetch(get_template_path('member_custom_properties', 'custom_properties'));
 } // render_member_custom_properties
 

@@ -114,6 +114,7 @@
 }
 .task-data .left-section {
 	min-width: 465px;
+	max-width: 620px;
 	border-right:1px solid #ccc;	
 }
 .task-data .right-section {

@@ -428,11 +428,12 @@ Ext.onReady(function() {
 
 og.checkAttach = function() {
 	var attach = $("#<?php echo $genid;?>attachments").children().length;
-	var editor = og.getCkEditorInstance(genid + 'ckeditor');
+	var editor = og.getCkEditorInstance(genid + 'ckeditor');	
+	var config = <?php echo user_config_option("check_attach_word");?>;
 	text = editor.getData();
 	var originalMail = text.indexOf("original_mail");
-	
-	if(!attach && ((text.indexOf("adjunt") !== -1 && (text.indexOf("adjunt") < originalMail || originalMail == -1)) || (text.indexOf("attach") !== -1 && (text.indexOf("attach") < originalMail || originalMail == -1)))){
+
+	if(config && !attach && ((text.indexOf("adjunt") !== -1 && (text.indexOf("adjunt") < originalMail || originalMail == -1)) || (text.indexOf("attach") !== -1 && (text.indexOf("attach") < originalMail || originalMail == -1)))){
 		var conf = confirm(lang("confirm_mail_without_attach"));
 		if (conf==true){
 			og.setHfValue('<?php echo $genid;?>', 'sendBtnClick', 'true');	

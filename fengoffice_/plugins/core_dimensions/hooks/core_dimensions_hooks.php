@@ -207,6 +207,9 @@ function core_dimensions_after_save_contact_permissions($pg_id, &$ignored) {
 		// add user content object to associated members
 		$obj_controller = new ObjectController();
 		ObjectMembers::addObjectToMembers($user->getId(), $members);
+		
+		// add user content object to sharing table
+		$user->addToSharingTable();
 	}
 }
 

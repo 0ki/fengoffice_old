@@ -128,3 +128,11 @@
 			");
 		}
 	}
+	
+	function mail_update_13_14() {
+		DB::execute("
+			INSERT INTO `".TABLE_PREFIX."contact_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
+				('mails panel', 'check_attach_word', '1', 'BoolConfigHandler', 0, 0, NULL)
+			ON DUPLICATE KEY UPDATE name=name;
+		");
+	}

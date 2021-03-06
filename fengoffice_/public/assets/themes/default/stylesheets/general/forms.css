@@ -631,3 +631,11 @@ div.add-person-form div.field label.checkbox {
 .coInputMainBlock .user-groups-container .user-groups-selector-container {
 	margin-top: 5px;
 }
+
+select.country-selector option[value=""] {
+	color: #777;
+}
+a.wiki-link {
+	text-decoration: underline;
+	font-weight: bold;
+}

@@ -1019,34 +1019,14 @@ class MailUtilities {
 										$lastReceived = $numMessages - $diff_uids;	
 										
 									} else {
-										//get the complete server list of uids and msgids
-										$server_uids_list = $imap->getMessagesListUid();
-										//search the nearest uid from our $max_uid
-										for($e = (count($server_uids_list)-1); $e>=1; $e--){
-											$s_uidl = $server_uids_list[$e]["uidl"];
-											if($s_uidl < $max_uid){
-												$lastReceived = $server_uids_list[$e]["msg_id"];
-												break;
-											}
-										}
-										
-									/*	// if mail with number of message = $numMessages does not exists in server, check from max_uid
-										$tmp_uid = $max_uid + 1;
-										$tmp_sum = $imap->getSummary($tmp_uid);
-										if (!PEAR::isError($tmp_sum)) {
-											$count = 0;
-											while (!$tmp_sum && $count < $numMessages) {//$tmp_uid < $numMessages && $count < 1000
-												$tmp_uid++;
-												$count++;
-												file_put_contents('cache/debug_log.log', "WHILE: ".$tmp_uid." \n ", FILE_APPEND);
-												$tmp_sum = $imap->getSummary($tmp_uid);
-											}
-										} else {
-											$tmp_sum = null;
-										}
-										if ($tmp_sum) {
-											$lastReceived = $tmp_sum[0]['MSG_NUM'];
-										}*/
+										//get the complete server list of uids and msgids since $max_uid
+										$server_uids_list = $imap->getMessagesListUid($max_uid.':*');
+																		
+										if(count($server_uids_list)){
+											$lastReceived = $server_uids_list[0]["msg_id"];
+										}else{
+											$lastReceived = 1;
+										}								
 									}
 								}
 								$lastReceived = $lastReceived - 1;

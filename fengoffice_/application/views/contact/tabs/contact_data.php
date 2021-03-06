@@ -128,10 +128,11 @@
 					$skipped_dimensions[] = $dim_with_perm->getId();
 				}
 				$listeners = array('on_selection_change' => '');
+				$contact_obj = isset($object) && $object instanceof Contact ? $object : $contact;
 				if ($contact->isNew()) {
-					render_member_selectors($contact->manager()->getObjectTypeId(), $genid, null, array('select_current_context' => true, 'listeners' => $listeners, 'hidden_field_name' => 'no_perm_members'), $skipped_dimensions, null, false); 
+					render_member_selectors($contact_obj->manager()->getObjectTypeId(), $genid, null, array('select_current_context' => true, 'listeners' => $listeners, 'hidden_field_name' => 'no_perm_members'), $skipped_dimensions, null, false); 
 				} else {
-					render_member_selectors($contact->manager()->getObjectTypeId(), $genid, $contact->getMemberIds(), array('listeners' => $listeners, 'hidden_field_name' => 'no_perm_members'), $skipped_dimensions, null, false); 
+					render_member_selectors($contact_obj->manager()->getObjectTypeId(), $genid, $contact_obj->getMemberIds(), array('listeners' => $listeners, 'hidden_field_name' => 'no_perm_members'), $skipped_dimensions, null, false); 
 				} 
 			?></div>
 			<?php } ?>

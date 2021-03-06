@@ -88,7 +88,8 @@
 				var mem_el = Ext.get(genid + 'member_id');
 				var mem_id = 0;
 				if (mem_el) mem_id = mem_el.dom.value;
-				var parent_id = document.getElementById(genid + 'memberParent').value;
+				var parent_el = document.getElementById(genid + 'memberParent');
+				var parent_id = parent_el ? parent_el.value : 0;
 				og.openLink(og.getUrl('member', 'get_dimension_object_fields', {id: ot.id, mem_id:mem_id, parent_id:parent_id}), {
 					callback: function(success, data) {
 						if (success) {

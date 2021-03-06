@@ -163,4 +163,12 @@
 	'assigned by' => 'Har tilldelats av',
 	'send milestone assigned to notification' => 'Skicka e-postnotifieringar till användaren',
 	'send task assigned to notification' => 'Skicka e-postnotifieringar till användaren',
+	'personal settings' => 'Personliga inställningar',
+	'other settings' => 'Övriga inställningar',
+	'latest comments' => 'Senaste kommentarerna',
+	'send email notification' => 'Skicka epostnotifieringar',
+	'estimated time' => 'Estimerad tid',
+	'edit company data' => '<a class="internalLink" href="{0}">Edit</a> företagsinfo',
+	'company users involved in project' => '{0} användare är inblandade i {1}',
+	'add a new' => 'Lägg till en ny',
 ); ?>

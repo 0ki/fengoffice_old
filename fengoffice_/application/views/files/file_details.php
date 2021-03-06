@@ -137,7 +137,11 @@ if (isset($file) && $file instanceof ProjectFile) {
 				// if file is checked out, only allow to upload to the user who has checked it out
 				add_page_action(lang('upload new revision'), "javascript:og.uploadNewRevision(".$file->getId().",'".gen_id()."')", 'ico-upload', null, null, true);
 			}
-			add_page_action(lang('edit file properties'), "javascript:og.render_modal_form('', {c:'files', a:'edit_file', params: {id:".$file->getId()."}});", 'ico-properties', null, null, true);
+			if ($file->getType() != ProjectFiles::TYPE_WEBLINK){
+				add_page_action(lang('edit file properties'), "javascript:og.render_modal_form('', {c:'files', a:'edit_file', params: {id:".$file->getId()."}});", 'ico-properties', null, null, true);
+			} else {
+				add_page_action(lang('edit'), "javascript:og.render_modal_form('', {c:'files', a:'edit_weblink', params: {id:".$file->getId()."}});", 'ico-edit', null, null, true);
+			}
 		}
 	}
 		

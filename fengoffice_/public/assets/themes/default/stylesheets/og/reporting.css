@@ -1,3 +1,6 @@
+.report.internalForm .coInputMainBlock label {
+	min-width: 150px;
+}
 .report_selected_menu {
 	background-image: url(../../images/layout/selected_report_menu.png);
 	background-repeat: no-repeat;

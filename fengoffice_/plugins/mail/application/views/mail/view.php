@@ -17,12 +17,8 @@ if (isset($email)){
 		}
 	}
 	if ($email->canEdit(logged_user()) && !$email->isTrashed()){
-		add_page_action(lang('classify'), $email->getClassifyUrl(), 'ico-classify', null, null, true);
-		// if is classified, allow unclassify
-		//TODO Feng 2 members instead of ws
-		/*if ($email->getWorkspacesIdsCSV(logged_user()->getWorkspacesQuery())) {
-			add_page_action(lang('unclassify'), "javascript:if(confirm(lang('confirm unclassify email'))) og.openLink('" . $email->getUnclassifyUrl() ."');", 'ico-unclassify');
-		}*/
+		add_page_action(lang('classify'), "javascript: og.render_modal_form('', {c:'mail', a:'classify', params: {id: '" .$email->getId(). "'}})", 'ico-trash', null, null, true);
+		
 		if (!$email->isArchived()) {
 			add_page_action(lang('archive'), "javascript:if(confirm(lang('confirm archive object'))) og.openLink('" . $email->getArchiveUrl() ."');", 'ico-archive-obj');
 		} else {

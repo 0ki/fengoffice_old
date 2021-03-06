@@ -1,7 +1,9 @@
 <?php
 	require_javascript("og/modules/addContactForm.js");
 	$genid = gen_id();
-	$object = $contact;
+	if (!isset($object)) {
+		$object = $contact;
+	}
 	$renderContext = has_context_to_render($contact->manager()->getObjectTypeId());
 	if ((!$object->isNew() && $object->isUser()) || array_var($_GET, 'is_user')) {
 		$renderContext = false;
@@ -38,6 +40,10 @@
 
 <form id="<?php echo $genid ?>submit-edit-form" onsubmit="<?php echo $on_submit?>" class="internalForm" action="<?php echo $contact->isNew() ? $contact->getAddUrl() : $contact->getEditUrl() ?>" method="post">
 <input id="<?php echo $genid ?>hfIsNewCompany" type="hidden" name="contact[isNewCompany]" value=""/>
+
+<?php if (array_var($_REQUEST, 'create_user_from_contact')) { ?>
+<input id="<?php echo $genid ?>hfUserFromContact" type="hidden" name="user_from_contact_id" value="<?php echo $userFromContactId?>"/>
+<?php } ?>
 
 <div class="contact">
 <div class="coInputHeader">
@@ -136,7 +142,7 @@
 			$member_permissions = array();
 			
 			$allowed_user_type_ids = config_option('give_member_permissions_to_new_users');
-			$role_ot_permissions = RoleObjectTypePermissions::findAll(array('conditions' => "role_id = '$user_type'"));
+			$role_ot_permissions = RoleObjectTypePermissions::findAll(array('conditions' => "role_id = '$user_type' AND object_type_id NOT IN (SELECT id FROM ".TABLE_PREFIX."object_types WHERE name IN ('template','comment'))"));
 			$members_with_permissions = array();
 			
 			if (in_array($user_type, $allowed_user_type_ids)) {
@@ -258,7 +264,7 @@
 	
 	<?php
 	//Basic contact data tab
-	render_contact_data_tab($genid, $contact, $renderContext, $contact_data);
+	render_contact_data_tab($genid, $object, $renderContext, $contact_data);
 	?>
 	
 	
@@ -455,10 +461,6 @@
 			og.email_types = Ext.util.JSON.decode('<?php echo json_encode($all_email_types)?>');
 
 			if (!is_new_contact) {
-			<?php foreach (array_var($contact_data, 'all_phones') as $phone) { ?>
-				og.addNewTelephoneInput('<?php echo $genid?>_phones_container', 'contact', '<?php echo $phone->getTelephoneTypeId()?>', '<?php echo $phone->getNumber()?>', '<?php echo $phone->getName()?>', '<?php echo $phone->getId()?>');
-			<?php } ?>
-
 			<?php foreach (array_var($contact_data, 'all_addresses') as $address) { ?>
 				og.addNewAddressInput('<?php echo $genid?>_addresses_container', 'contact', '<?php echo $address->getAddressTypeId()?>', {
 					street: '<?php echo str_replace("\n", " ", $address->getStreet())?>',
@@ -523,8 +525,10 @@
 			});
 
 			og.resizeAddressContainer = function() {
-		    	var container_w = $('.additional-data').width();
-		    	$('.address-input-container').css('width', (container_w - 220)+'px');
+				setTimeout(function(){
+			    	var container_w = $('.additional-data').width();
+			    	$('.address-input-container').css('width', (container_w - 220)+'px').css('max-width', (container_w - 220)+'px');
+				}, 250);
 		    }
 	    	$(window).resize(function() {
 	    		og.resizeAddressContainer();

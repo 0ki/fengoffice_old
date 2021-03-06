@@ -1314,7 +1314,7 @@ class TaskController extends ApplicationController {
 		
 		//no date EMPTY_DATETIME
 		$group_17 = array();
-		$group_17['group_name'] = lang('unknown');
+		$group_17['group_name'] = lang('uncompleted tasks');
 		$group_17['group_order'] = 17;
 		$group_17['id'] = 'group_undefined';
 		$group_17['conditions'] = $date_field." = '".EMPTY_DATETIME."'";
@@ -1653,7 +1653,8 @@ class TaskController extends ApplicationController {
 		//START unknown group
 		if(is_null($groupId) ||  $groupId == 0){
 			$unknown_group['group_id'] = 0;
-			$unknown_group['group_name'] = lang('unknown');;
+			$dimension = Dimensions::getDimensionById($dim_id);
+			$unknown_group['group_name'] = lang('without a member')." ".lang($dimension->getCode());
 			$join_params['join_type'] = "LEFT ";
 			$join_params['on_extra'] = " LEFT  JOIN `".TABLE_PREFIX."members` `jtm` ON `jt`.`member_id` = `jtm`.`id` AND `jtm`.`dimension_id` = $dim_id AND `jt`.`is_optimization` = 0";
 			

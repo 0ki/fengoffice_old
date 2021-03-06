@@ -64,13 +64,41 @@ class MemberCustomPropertyValue extends BaseMemberCustomPropertyValue {
 					$formatted = '<div class="db-ico ico-'. ($this->getValue() ? 'complete' : 'delete') .'">&nbsp;</div>';
 					break;
 				case 'date':
-					$formatted = format_date($this->getValue());
+					if ($this->getValue() != '' && $this->getValue() != EMPTY_DATE && $this->getValue() != EMPTY_DATETIME) {
+						$dtv = DateTimeValueLib::dateFromFormatAndString(DATE_MYSQL, $this->getValue());
+						if ($dtv instanceof DateTimeValue) {
+							$formatted = format_date($dtv, null, 0);
+						}
+					}
 					break;
 				case 'list':
 					$formatted = $this->getValue();
 					break;
 				case 'table':
 					$formatted = $this->getValue();
+					break;
+				case 'address':
+					$values = str_replace("\|", "%%_PIPE_%%", $this->getValue());
+					$exploded = explode("|", $values);
+					foreach ($exploded as &$v) {
+						$v = str_replace("%%_PIPE_%%", "|", $v);
+						$v = str_replace("'", "\'", $v);
+					}
+					if (count($exploded) > 0) {
+						$address_type = array_var($exploded, 0, '');
+						$street = array_var($exploded, 1, '');
+						$city = array_var($exploded, 2, '');
+						$state = array_var($exploded, 3, '');
+						$country = array_var($exploded, 4, '');
+						$zip_code = array_var($exploded, 5, '');
+							
+						$out = $street;
+						if($city != '') $out .= ' - ' . $city;
+						if($state != '') $out .= ' - ' . $state;
+						if($country != '') $out .= ' - ' . lang("country $country");
+					
+						$formatted = '<div class="info-content-item">'. $out .'&nbsp;<a class="map-link coViewAction ico-map" href="http://maps.google.com/?q='. $out .'" target="_blank">'. lang('map') .'</a></div>';
+					}
 					break;
 				default:
 					$formatted = $this->getValue();

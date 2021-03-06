@@ -377,7 +377,7 @@ ogTasks.drawTaskForm = function(container_id, data){
 	
 	var modal_params = {
 			'escClose': true,
-			'overlayClose': true,
+			'overlayClose': false,
 			'closeHTML': '<a id="ogTasksPanelAT_close_link" class="modal-close"></a>'
 		};
 	if(data.position){
@@ -1057,6 +1057,12 @@ ogTasks.drawAddSubTaskInputs = function(genid, data) {
 }
 
 ogTasks.drawAddSubTaskAssignedToInput = function(usersStore, data, genid, i) {
+	var container = document.getElementById(genid +'_'+ i +'assigned_to_container');
+	if (!container) {
+		// if container no longer exists => do nothing 
+		// for example when modal form is closed before form callback is executed and the container has been removed from dom
+		return;
+	}
 	only_me = data.only_me ? data.only_me : null;
 	var stAssignCombo = new Ext.form.ComboBox({
 		subtask_index: i,

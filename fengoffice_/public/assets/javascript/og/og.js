@@ -2514,14 +2514,20 @@ og.reload_subscribers = function(genid, object_type_id, user_ids) {
 	} else {
 		var uids = user_ids;
 	}
-	Ext.get(genid + 'add_subscribers_content').load({
-		url: og.getUrl('object', 'render_add_subscribers', {
-			context: Ext.util.JSON.encode(member_selector[genid].sel_context),
-			users: uids,
-			genid: genid,
-			otype: object_type_id
-		}),
-		scripts: true
+	
+	Ext.get(genid + 'add_subscribers_content').mask();
+	
+	og.openLink(og.getUrl('object', 'render_add_subscribers', {
+		context: Ext.util.JSON.encode(member_selector[genid].sel_context),
+		users: uids,
+		genid: genid,
+		otype: object_type_id
+	}), {
+		preventPanelLoad: true,
+		callback: function(success, data) {
+			$('#' + genid + 'add_subscribers_content').html(data.current.data);
+			Ext.get(genid + 'add_subscribers_content').unmask();
+		}
 	});
 }
 
@@ -2635,7 +2641,6 @@ og.renderDimCol = function(value, p, r) {
 	var dim_id = p.id.replace(/dim_/, '');
 	var text = '';
 	var mpath = Ext.util.JSON.decode(r.data.memPath);
-	//console.log(value);console.log(p);console.log(r);console.log(mpath);console.log("-------------------------");
 	if (mpath) {
 		var mpath_aux = {};
 		mpath_aux[dim_id] = {};
@@ -2878,7 +2883,7 @@ og.render_modal_form = function(genid, options) {
 
 			var modal_params = {
 				'escClose': typeof(options.escClose) != 'undefined' ? options.escClose : true,
-				'overlayClose': typeof(options.overlayClose) != 'undefined' ? options.overlayClose : true,
+				'overlayClose': typeof(options.overlayClose) != 'undefined' ? options.overlayClose : false,
 				'closeHTML': '<a id="'+genid+'_close_link" class="'+close_cls+' modal-close" title="'+lang('close')+'"></a>',
 				'onShow': function (dialog) {
 					// add close image to close-link
@@ -3238,7 +3243,10 @@ og.renderUserRoleSelector = function(config, parent_type) {
 	sel_role.onchange = "";
 	sel_role.id = config.id + '_role';
 	sel_role.className = "user-type-selector";
-	document.getElementById(container_id).appendChild(sel_role);
+	var container = document.getElementById(container_id);
+	if (container) {
+		container.appendChild(sel_role);
+	}
 	
 	for (role_id in og.userRoles) {
 		if (og.userRoles[role_id].parent == parent_type) {
@@ -3329,5 +3337,43 @@ og.expandAllChildNodes = function(node) {
 				if (n) n.expand(true, false, og.expandAllChildNodes);
 			});
 		}, 1000);
+	}
+}
+
+og.deleteMember = function(delete_url, ot_name){
+	var delMessage = prompt(lang('confirm delete permanently this member', ot_name)+'\n'+lang('confirm delete with keyword'), "");
+	if (delMessage && (delMessage.toUpperCase() == "DELETE")) {			
+		og.openLink(delete_url);
+	}
+}
+
+
+
+og.renderContactDataFields = function(genid, value) {		
+	$(".contact-data-container").hide();
+	$("#"+genid+"-contact-data-"+value).show(300);
+	$("#"+genid+"existing_contact_combo_container").hide();
+
+	var company_ot = null;
+	var contact_ot = null;
+	for (x in og.objectTypes) {
+		if (og.objectTypes[x].name == 'contact') contact_ot = x;
+		else if (og.objectTypes[x].name == 'company') company_ot = x;
+	}
+	
+	//contact tab
+	if(value == contact_ot){
+		$("#"+genid+"contact_data_tab").parent( ".contact-data-container" ).show();
+		$("#"+genid+"add_contact_custom_properties_div").show();			
+	}
+
+	//company tab
+	if(value == company_ot){
+		$("#"+genid+"company_data_tab").parent( ".contact-data-container" ).show();
+		$("#"+genid+"add_contact_custom_properties_div").show();
+	}
+
+	if(value == 0){
+		$("#"+genid+"existing_contact_combo_container").show();
 	}
 }

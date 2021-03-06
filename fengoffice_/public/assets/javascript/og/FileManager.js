@@ -61,7 +61,6 @@ og.FileManager = function() {
 						cmp.objectTypeId = d.objType;
 						var sm = cmp.getSelectionModel();
 						sm.clearSelections();
-						$("#"+cmp.id+" #text_filter").val('').focus();
 					}
 					
 					Ext.getCmp('file-manager').reloadGridPagingToolbar('files','list_files','file-manager');

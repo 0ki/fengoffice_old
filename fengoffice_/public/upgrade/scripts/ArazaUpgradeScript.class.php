@@ -164,6 +164,7 @@ class ArazaUpgradeScript extends ScriptUpgraderScript {
 		}
 		
 		if (version_compare($installed_version, '3.1.4') < 0) {
+		  if (!$this->checkColumnExists($t_prefix."system_permissions", "can_link_objects", $this->database_connection)) {
 			$upgrade_script .= "
 				ALTER TABLE `".$t_prefix."system_permissions`
 				ADD COLUMN `can_link_objects` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0;
@@ -189,6 +190,7 @@ class ArazaUpgradeScript extends ScriptUpgraderScript {
 					SELECT id FROM `".$t_prefix."permission_groups` WHERE `type`='roles' AND `name` IN ('Super Administrator','Administrator','Manager','Executive','Internal Collaborator','Collaborator Customer','External Collaborator')
 				);
 			";
+		  }
 		}
 		
 		if (version_compare($installed_version, '3.1.5') < 0) {

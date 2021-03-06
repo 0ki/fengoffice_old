@@ -139,35 +139,39 @@ class Timeslots extends BaseTimeslots {
 		return $result->objects;
 	}
 	
-	/**
-	 * This function sets the selected billing values for all timeslots which lack any type of billing values (value set to 0). 
-	 * This function is used when users start to use billing in the system.
-	 * 
-	 * @return unknown_type
-	 */
 	static function updateBillingValues() {
-		$timeslots = Timeslots::findAll(array(
-			'conditions' => '`end_time` > 0 AND billing_id = 0 AND is_fixed_billing = 0',
-		));
-		
+		$timeslot_rows = DB::executeAll("SELECT * FROM ".TABLE_PREFIX."timeslots WHERE `end_time` > 0 AND billing_id = 0 AND is_fixed_billing = 0");
+	
 		$users = Contacts::getAllUsers();
 		$usArray = array();
 		foreach ($users as $u){
 			$usArray[$u->getId()] = $u;
 		}
-		$pbidCache = array();
 		$count = 0;
-		
+	
 		$categories_cache = array();
 		
-		foreach ($timeslots as $ts){
-			/* @var $ts Timeslot */
-		    $user = $usArray[$ts->getContactId()];
-		    if ($user instanceof Contact){
+		foreach ($timeslot_rows as $ts_row){
+			
+			if ($ts_row['start_time'] == EMPTY_DATETIME) {
+				$ts_row['minutes'] = 0;
+			} else {
+				$startTime = DateTimeValueLib::makeFromString($ts_row['start_time']);
+				if ($ts_row['start_time'] == EMPTY_DATETIME) {
+					$endTime = $ts_row['is_paused'] ? DateTimeValueLib::makeFromString($ts_row['paused_on']) : DateTimeValueLib::now();
+				} else {
+					$endTime = DateTimeValueLib::makeFromString($ts_row['end_time']);
+				}
+				$timeDiff = DateTimeValueLib::get_time_difference($startTime->getTimestamp(), $endTime->getTimestamp(), $ts_row['subtract']);
+				$ts_row['minutes'] = $timeDiff['days'] * 1440 + $timeDiff['hours'] * 60 + $timeDiff['minutes'];
+			}
+			
+			$user = $usArray[$ts_row['contact_id']];
+			if ($user instanceof Contact){
 				$billing_category_id = $user->getDefaultBillingId();
 				if ($billing_category_id > 0){
 					
-					$hours = $ts->getMinutes() / 60;
+					$hours = $ts_row['minutes'] / 60;
 					
 					$billing_category = array_var($categories_cache, $billing_category_id);
 					if (!$billing_category instanceof BillingCategory) {
@@ -177,23 +181,22 @@ class Timeslots extends BaseTimeslots {
 					
 					if ($billing_category instanceof BillingCategory){
 						$hourly_billing = $billing_category->getDefaultValue();
-						$ts->setBillingId($billing_category_id);
-						$ts->setHourlyBilling($hourly_billing);
-						$ts->setFixedBilling(round($hourly_billing * $hours, 2));
-						$ts->setIsFixedBilling(false);
 						
-						$ts->save();
-						$count ++;
+						DB::execute("UPDATE ".TABLE_PREFIX."timeslots SET billing_id='$billing_category_id', hourly_billing='$hourly_billing', 
+							fixed_billing='".round($hourly_billing * $hours, 2)."', is_fixed_billing=0 
+							WHERE object_id=".$ts_row['object_id']);
+						
+						$count++;
 					}
-					
 				}
 			} else {
-				$ts->setIsFixedBilling(true);
-				$ts->save();
+				DB::execute("UPDATE ".TABLE_PREFIX."timeslots SET is_fixed_billing=1 WHERE object_id=".$ts_row['object_id']);
 			}
 		}
 		return $count;
 	}
+	
+	
 	
 	static function getTimeslotsByUserWorkspacesAndDate(DateTimeValue $start_date, DateTimeValue $end_date, $object_manager, $user = null, $workspacesCSV = null, $object_id = 0){
 		return array(); //FIXME or REMOVEME

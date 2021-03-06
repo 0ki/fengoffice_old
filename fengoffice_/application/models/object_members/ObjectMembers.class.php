@@ -36,7 +36,7 @@
 		 * Removes the object from those members where the user can see the object(and its corresponding parents)
 		 * 
 		 */
-  		static function removeObjectFromMembers(ContentDataObject $object, Contact $contact, $context_members, $members_to_remove = null){
+  		static function removeObjectFromMembers(ContentDataObject $object, Contact $contact, $context_members, $members_to_remove = null, $check_permissions = true){
   			
   			if (is_null($members_to_remove)) {
   				$member_ids = array_flat(DB::executeAll("SELECT member_id FROM ".TABLE_PREFIX."object_members WHERE object_id = " . $object->getId()));
@@ -50,9 +50,12 @@
 				$member = Members::findById($id);
 				if (!$member instanceof Member) continue;
 				
-				//can write this object type in the member
-				$can_write = $object->canAddToMember($contact, $member, $context_members);
-				
+				if($check_permissions){
+					//can write this object type in the member
+					$can_write = $object->canAddToMember($contact, $member, $context_members);
+				}else{
+					$can_write = true;
+				}
 				
 				if ($can_write){
 					$om = self::findById(array('object_id' => $object->getId(), 'member_id' => $id));
@@ -155,7 +158,7 @@
   			return $result;
   		}
   		
-  		static function getMembersIdsByObjectAndExtraCond($object_id, $extra_conditions = "", $limit = ""){
+  		static function getMembersIdsByObjectAndExtraCond($object_id, $extra_conditions = "", $limit = "", $use_contact_member_cache = true){
   			if ($object_id) {
   				// Prepare Limit SQL
   				$SQL_LIMIT = '' ;
@@ -163,10 +166,17 @@
   					$SQL_LIMIT = "LIMIT 0, ".$limit;
   				}
   				
+  				$cache_sql = '';
+  				if($use_contact_member_cache){
+  					$contact_id = logged_user()->getId();
+  					$cache_sql = "INNER JOIN ".TABLE_PREFIX."contact_member_cache cmc ON m.id = cmc.member_id AND cmc.contact_id = '$contact_id'";  						
+  				}
+  				
   				$sql = "
   					SELECT om.member_id
   					FROM ".TABLE_PREFIX."object_members om
   					INNER JOIN ".TABLE_PREFIX."members m ON om.member_id = m.id
+  					$cache_sql
   					WHERE
   						om.object_id = '$object_id'
   						$extra_conditions

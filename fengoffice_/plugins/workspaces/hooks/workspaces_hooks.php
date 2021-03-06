@@ -10,17 +10,23 @@ function workspaces_total_task_timeslots_group_by_criterias($args, &$ret) {
 
 
 function workspaces_custom_reports_additional_columns($args, &$ret) {
+	
+	$ot = array_var($args, 'object_type');
+	if ($ot instanceof ObjectType && in_array($ot->getType(), array('dimension_object','dimension_group'))) return;
+	
 	$dimensions = Dimensions::findAll ( array("conditions" => "code IN ('workspaces','tags')") );
 	foreach ($dimensions as $dimension) {
-		$doptions = $dimension->getOptions(true);
-		
-		if( $doptions && isset($doptions->useLangs) && $doptions->useLangs ) {
-			$name = lang($dimension->getCode());
-		} else {
-			$name = $dimension->getName();
+		if (in_array($dimension->getId(), config_option('enabled_dimensions'))) {
+			$doptions = $dimension->getOptions(true);
+			
+			if( $doptions && isset($doptions->useLangs) && $doptions->useLangs ) {
+				$name = lang($dimension->getCode());
+			} else {
+				$name = $dimension->getName();
+			}
+			
+			$ret[] =  array('id' => 'dim_'.$dimension->getId(), 'name' => $name, 'type' => DATA_TYPE_STRING);
 		}
-		
-		$ret[] =  array('id' => 'dim_'.$dimension->getId(), 'name' => $name, 'type' => DATA_TYPE_STRING);
 	}
 }
 
@@ -190,3 +196,17 @@ function workspaces_after_user_add($object, $ignored) {
 		DB::execute($sql);
 	}
 }
+
+
+function workspaces_custom_reports_object_types($parameters, &$object_types) {
+	$ws_dim = Dimensions::findByCode('workspaces');
+	if (in_array($ws_dim->getId(), config_option('enabled_dimensions'))) {
+		$object_types[] = ObjectTypes::findByName('workspace');
+	}
+	/*
+	$tags_dim = Dimensions::findByCode('tags');
+	if (in_array($tags_dim->getId(), config_option('enabled_dimensions'))) {
+		$object_types[] = ObjectTypes::findByName('tag');
+	}*/
+}
+

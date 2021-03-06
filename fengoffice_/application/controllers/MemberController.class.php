@@ -538,7 +538,7 @@ class MemberController extends ApplicationController {
 					$dimension_object->save();
 					$member->setObjectId($dimension_object->getId());
 					$member->save();
-					Hook::fire("after_add_dimension_object_member", $member, $null);
+					Hook::fire("after_add_dimension_object_member", array('member' => $member, 'is_new' => $is_new), $null);
 				}
 			} else {
 				$member->save();

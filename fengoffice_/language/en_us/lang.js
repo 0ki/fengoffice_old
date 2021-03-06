@@ -177,6 +177,7 @@ addLangs({
 	'message': 'Note',
 	
 	'workspaces': 'Workspaces',
+	'folders': 'Folders',
 	'all': 'All',
 	'all customers': 'All Customers',        
 	'create a workspace': 'Create a new workspace',
@@ -630,7 +631,8 @@ addLangs({
     'remove': 'Remove',
     'object type not supported': 'This object type is not supported for templates', 
     'confirm delete timeslot' : 'Are you sure you want to permanently delete this timeslot?',
-    'confirm delete permanently': 'Are you sure you want to delete this object?',
+    'confirm delete permanently this member': 'Are you sure you want to delete this {0}?',
+    'confirm delete with keyword': 'Enter \"DELETE\" to confirm',
     
     'confirm delete permanently company': 'Are you sure you want to permanently delete this company?\nNote that all company users will also be deleted.',
     'confirm move to trash company': 'Are you sure you want to delete this company?\nNote that all company users will also be deleted.',
