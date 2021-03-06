@@ -164,7 +164,7 @@ og.addObjectToTemplate = function(target, obj, dont_draw_milestone_combo) {
 	editPropDiv.style.paddingLeft = '30px';
 	
 	var addTempObjProp = document.createElement('a');
-	addTempObjProp.innerHTML = '<a href="#" onclick="og.addTemplateObjectProperty(' + obj.object_id + ',' + obj.object_id + ',\'\', \'\')" class="link-ico ico-add">'+ "Add a variable to this task" + '</a>';
+	addTempObjProp.innerHTML = '<a href="#" onclick="og.addTemplateObjectProperty(' + obj.object_id + ',' + obj.object_id + ',\'\', \'\')" class="link-ico ico-add">'+ lang('add a variable to this task') + '</a>';
 	var propertyDiv = document.createElement('fieldset');
 	propertyDiv.id = 'propertyDiv'+ obj.object_id;	
 	propertyDiv.className = 'template-property-div';

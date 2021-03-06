@@ -238,7 +238,11 @@ if ($calendar_panel instanceof TabPanel && $calendar_panel->getEnabled()) {
 							
 									$output .= "<div class='nobr og-wsname-color-$ws_color' style='border-radius:4px;height:17px;margin:1px;padding:1px;z-index:1000;border: 1px solid;border-color:$border_color'>";
 									if($subject=="") $subject = "[".lang('CAL_NO_SUBJECT')."]";
-									$subject_toshow = mb_strlen($subject) < $to_show_len ? $subject : mb_substr($subject, 0, $to_show_len-3)."...";
+									if (function_exists('mb_strlen')) {
+										$subject_toshow = mb_strlen($subject) < $to_show_len ? $subject : mb_substr($subject, 0, $to_show_len-3)."...";
+									} else {
+										$subject_toshow = strlen($subject) < $to_show_len ? $subject : substr($subject, 0, $to_show_len-3)."...";
+									}
 									$output .= "<span id='o_ev_div_" . $event->getId() . "'>";			
 									$output .= "<a class=\"internalLink link-ico ico-event\" style='vertical-align:bottom;' href='" . get_url('event', 'view', array('id' => $event->getId())) . "' onclick=\"og.disableEventPropagation(event);\" >";
 									$output .= $subject_toshow."</a>";
@@ -266,7 +270,11 @@ if ($calendar_panel instanceof TabPanel && $calendar_panel->getEnabled()) {
 									cal_get_ws_color($ws_color, $ws_style, $ws_class, $txt_color, $border_color);
 									
 									$cal_text = clean($milestone->getName());
-									$cal_text = mb_strlen($cal_text) < $to_show_len ? $cal_text : mb_substr($cal_text, 0, $to_show_len-3)."...";
+									if (function_exists('mb_strlen')) {
+										$cal_text = mb_strlen($cal_text) < $to_show_len ? $cal_text : mb_substr($cal_text, 0, $to_show_len-3)."...";
+									} else {
+										$cal_text = strlen($cal_text) < $to_show_len ? $cal_text : substr($cal_text, 0, $to_show_len-3)."...";
+									}
 									$output .= "<div class='nobr og-wsname-color-$ws_color' style='border-radius:4px;height:17px;margin:1px;padding:1px;z-index:1000;border: 1px solid;border-color:$border_color'>";
 									$output .= "<span id='o_ms_div_" . $milestone->getId() . "'>";
 									$output .= "<a class=\"internalLink link-ico ico-milestone\" style='vertical-align:bottom;' href='".$milestone->getViewUrl()."' onclick=\"og.disableEventPropagation(event);\" >";
@@ -327,7 +335,11 @@ if ($calendar_panel instanceof TabPanel && $calendar_panel->getEnabled()) {
 									cal_get_ws_color($ws_color, $ws_style, $ws_class, $txt_color, $border_color);
 									
 									$cal_text = clean($task->getTitle());
-									$cal_text = mb_strlen($cal_text) < $to_show_len ? $cal_text : mb_substr($cal_text, 0, $to_show_len-3)."...";
+									if (function_exists('mb_strlen')) {
+										$cal_text = mb_strlen($cal_text) < $to_show_len ? $cal_text : mb_substr($cal_text, 0, $to_show_len-3)."...";
+									} else {
+										$cal_text = strlen($cal_text) < $to_show_len ? $cal_text : substr($cal_text, 0, $to_show_len-3)."...";
+									}
 									$output .= "<div class='nobr og-wsname-color-$ws_color' style='border-radius:4px;height:17px;margin:1px;padding:1px;z-index:1000;border: 1px solid;border-color:$border_color'>";
 									$output .= "<span id='o_ta_div_$tip_pre" . $task->getId() . "'>";
 									$output .= "<a class=\"internalLink link-ico $ico\" style='vertical-align:bottom;' href='".$task->getViewUrl()."' onclick=\"og.disableEventPropagation(event);\" >";

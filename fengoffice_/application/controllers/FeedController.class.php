@@ -148,8 +148,7 @@ class FeedController extends PageController {
 	} // project_ical
 
 	function ical_export() {
-		//TODO re implement this function
-		/*$this->setLayout('ical');
+		$this->setLayout('ical');
 		require_once ROOT.'/environment/classes/event/CalFormatUtilities.php';
 		 
 		if (!isset($_GET['t']) || !isset($_GET['cal'])) {
@@ -158,20 +157,28 @@ class FeedController extends PageController {
 		}
 		$token = $_GET['t'];
 		$cal = $_GET['cal'];
-		$inc_sub = isset($_GET['isw']) && $_GET['isw'] == 1;
-		if (Users::tokenExists($token)) {
-			$user = Users::getByToken($token);
-			if ($cal == 0) $project = null;
-			else {
-				$project = Projects::findById($cal);
+		if (Contacts::tokenExists($token)) {
+			$user = Contacts::findOne(array('conditions' => "token='$token'"));
+			
+			$conditions = " AND EXISTS (SELECT i.contact_id FROM ".TABLE_PREFIX."event_invitations i WHERE i.event_id=e.object_id AND  i.contact_id=".$user->getId().")";
+			
+			$params = array(
+				"extra_conditions" => $conditions,
+				"count_results" => false,
+				"ignore_context" => true,
+			);
+			if (array_var($_GET, 'cal') != "") {
+				$params["member_ids"] = explode(',', array_var($_GET, 'cal'));
 			}
-			$events = ProjectEvents::getAllEventsByProject($project, false, $inc_sub, $user);
+			$events = ProjectEvents::instance()->listing($params)->objects;
+			
 			$calendar_name = isset($_GET['n']) ? $_GET['n'] : $user->getObjectName();
+			
 			tpl_assign('content', CalFormatUtilities::generateICalInfo($events, $calendar_name, $user));
 		} else {
 			header('HTTP/1.0 404 Not Found');
 			die();
-		}*/
+		}
 	}
 
 	/**

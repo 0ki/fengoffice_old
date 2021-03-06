@@ -67,7 +67,12 @@ foreach ($objects as $obj) {
 	if ($cobj instanceof ContentDataObject) {
 		
 		if (!$cobj instanceof Workspace) {
-			$object_controller->add_to_members($cobj, $cobj->getMemberIds(), $user);
+			$mem_ids = $cobj->getMemberIds();
+			if (count($mem_ids) > 0) {
+				$object_controller->add_to_members($cobj, $mem_ids, $user);
+			} else {
+				$cobj->addToSharingTable();
+			}
 			$cobj->addToSearchableObjects(true);
 		}
 		

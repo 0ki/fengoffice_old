@@ -156,13 +156,18 @@
 		
 		<?php if ($has_billing && can_manage_billing(logged_user())) {?>
 		<tr style='height:30px;'>
-			<td>&nbsp;</td>
-			<td align='left'>
-				<?php echo checkbox_field('report[show_billing]', array_var($report_data, 'show_billing', false), array("id" => "report[show_billing]")); ?> 
-	      		<label for="<?php echo 'report[show_billing]' ?>" class="checkbox"><?php echo lang('show billing information') ?></label>
+			<td><span class="bold"><?php echo lang('show billing information') ?></span></td>
+			<td align='left' style="padding-left:10px;">
+				<?php echo checkbox_field('report[show_billing]', array_var($report_data, 'show_billing', false), array("id" => "report[show_billing]")); ?>
 			</td>
 		</tr>
 		<?php } ?>
+		<tr style='height:30px;'>
+			<td><span class="bold"><?php echo lang('show estimated time column') ?></span></td>
+			<td align='left' style="padding-left:10px;">
+				<?php echo checkbox_field('report[show_estimated_time]', array_var($report_data, 'show_estimated_time', true), array("id" => "report[show_estimated_time]")); ?> 
+			</td>
+		</tr>
 		
 		<?php if (isset($has_custom_properties) && $has_custom_properties) {?>
 		<tr>

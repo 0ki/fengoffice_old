@@ -16,7 +16,13 @@ class TaskdependencyController extends ApplicationController {
 		} else {
 			flash_error(lang('task dependency dnx'));
 		}
-		ajx_current("reload");
+		
+		$reload = array_var($_GET, 'reload', true);
+		if($reload){
+			ajx_current("reload");
+		}else{
+			ajx_current("empty");
+		}		
 	}
 	
 	function add() {
@@ -37,7 +43,13 @@ class TaskdependencyController extends ApplicationController {
 			}
 		}
 		flash_success(lang('success add task dependency'));
-		ajx_current("reload");
+		
+		$reload = array_var($_GET, 'reload', true);
+		if($reload){
+			ajx_current("reload");
+		}else{
+			ajx_current("empty");
+		}	
 	}
 	
 }

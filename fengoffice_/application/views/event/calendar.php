@@ -97,23 +97,11 @@ foreach($companies as $company)
 				<div class="coViewTitle" style="width:100%;padding: 8px 0px;">
 					<table style="width:100%"><tr><td>				
 						<?php echo cal_month_name($month)." ". $year .' - '. ($user_filter == -1 ? lang('all users') : lang('calendar of', clean($user->getObjectName())));?>
-					</td><td style="width:100px;padding:0 24px 0 0;">
-					<?php if (config_option("show_feed_links")) { ?>
-						<?php echo checkbox_field("include_subws", true, array("id" => "include_subws", "style" => "float:right;", "onclick" => "javascript:og.change_link_incws('ical_link', 'include_subws')", "title" => lang('check to include sub ws'))) ?>
-					 	<?php echo label_tag(lang('subws'), "include_subws", false, array("style" => "float:right;font-size:60%;margin:0px 3px;vertical-align:top;", "title" => lang('check to include sub ws')), "") ?>
-					 	<?php 
-					 		$export_name = active_project() != null ? clean(active_project()->getName()) : clean($user->getObjectName());
-					 		$export_ws = active_project() != null ? active_project()->getId() : 0;
-					 	 ?>
-					 	<a class="iCalSubscribe" id="ical_link" style="float:right;" href="<?php echo ROOT_URL ."/index.php?c=feed&a=ical_export&n=$export_name&cal=$export_ws&t=".$user->getToken()."&isw=1" ?>" 
-					 		title="<?php echo lang('copy this url in your calendar client software')?>"
-					 		onclick="Ext.Msg.show({
-									   	title: '<?php echo escape_single_quotes(lang('import events from third party software')) ?>',
-									   	msg: '<?php echo escape_single_quotes(lang('copy this url in your calendar client software')) ."<br><br><br>"?>'+document.getElementById('ical_link').href,
-							   			icon: Ext.MessageBox.INFO }); return false;"
-							></a>
-					<?php } ?>
-					 </td></tr></table>
+					</td><td style="width:100px;padding:0 24px 0 0;"><?php
+					if (config_option("show_feed_links")) {
+						renderCalendarFeedLink();
+					}
+					?></td></tr></table>
 				</div>
 				<div>
 					<table id="calendar" border='0' cellspacing='0' cellpadding='0' width="100%" height="20px">

@@ -21,12 +21,21 @@ try {
 		die();
 	}
 	CompanyWebsite::instance()->setLoggedUser($user, false, false, false);
-		
+	
+	$ids = array();
+	
 	// add object to sharing table
 	$object_id = array_var($argv, 4);
-	$object = Objects::findObject($object_id);
-	if ($object instanceof ContentDataObject) {
-		$object->addToSharingTable();
+	if (is_numeric($object_id)) {
+		$ids[] = $object_id;
+	} else {
+		$ids = explode(',', $object_id);
+	}
+	foreach ($ids as $id) {
+		$object = Objects::findObject($id);
+		if ($object instanceof ContentDataObject) {
+			$object->addToSharingTable();
+		}
 	}
 	
 	DB::commit();

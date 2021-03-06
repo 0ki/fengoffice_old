@@ -916,6 +916,7 @@ addLangs({
 	'save as' : 'Save as {0}',
 	
 	'select contact' : 'Select contact',
-	'viewing all information' : 'Viewing all Information'
+	'viewing all information' : 'Viewing all Information',
+	'add a variable to this task': 'Add a variable to this task'
 	
 });

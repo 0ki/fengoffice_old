@@ -913,13 +913,6 @@ FROM `og_workspace_objects` `c` WHERE `c`.`object_manager` IN ('ProjectMessages'
 	AND EXISTS (SELECT `id` FROM `fo_objects` WHERE `f1_id` = `c`.`object_id` AND `object_type_id` = (SELECT `ot`.`id` FROM `fo_object_types` `ot` WHERE `ot`.`handler_class`=`c`.`object_manager`))
 ON DUPLICATE KEY UPDATE `member_id`=`member_id`;
 
--- object members (tags)
-
-INSERT INTO `fo_object_members` (`object_id`, `member_id`, `is_optimization`)
- SELECT (SELECT `id` FROM `fo_objects` WHERE `f1_id` = `c`.`rel_object_id` AND `object_type_id` = (SELECT `ot`.`id` FROM `fo_object_types` `ot` WHERE IF(`c`.`rel_object_manager`='Companies', `ot`.`name`='company', IF(`c`.`rel_object_manager`='Contacts', `ot`.`name`='contact', `ot`.`handler_class`=`c`.`rel_object_manager`)))) as obj,
- 	(SELECT id FROM fo_members WHERE name = c.tag AND dimension_id = (SELECT id FROM fo_dimensions WHERE code = 'tags')), 0
- FROM og_tags c
-ON DUPLICATE KEY UPDATE object_id=object_id;
 
 -- remove deleted emails from object_members
 DELETE FROM fo_object_members WHERE object_id IN (SELECT m.object_id FROM fo_mail_contents m WHERE m.is_deleted=1);
@@ -1071,13 +1064,6 @@ FROM `og_workspace_objects` `c` WHERE `c`.`object_manager` IN ('Contacts')
 	AND EXISTS (SELECT `id` FROM `fo_objects` WHERE `f1_id` = `c`.`object_id` AND `object_type_id` = (SELECT `ot`.`id` FROM `fo_object_types` `ot` WHERE `ot`.`name`='contact_tmp'))
 ON DUPLICATE KEY UPDATE `member_id`=`member_id`;
 
--- contact object members (tags)
-
-INSERT INTO `fo_object_members` (`object_id`, `member_id`, `is_optimization`)
- SELECT (SELECT `id` FROM `fo_objects` WHERE `f1_id` = `c`.`rel_object_id` AND `object_type_id` = (SELECT `ot`.`id` FROM `fo_object_types` `ot` WHERE `ot`.`name`='contact_tmp')) as obj,
- 	(SELECT id FROM fo_members WHERE name = c.tag AND dimension_id = (SELECT id FROM fo_dimensions WHERE code = 'tags')), 0
- FROM og_tags c
-ON DUPLICATE KEY UPDATE object_id=object_id;
 
 -- companies object members (workspaces)
 
@@ -1088,13 +1074,6 @@ FROM `og_workspace_objects` `c` WHERE `c`.`object_manager` IN ('Companies')
 	AND EXISTS (SELECT `id` FROM `fo_objects` WHERE `f1_id` = `c`.`object_id` AND `object_type_id` = (SELECT `ot`.`id` FROM `fo_object_types` `ot` WHERE `ot`.`name`='company'))
 ON DUPLICATE KEY UPDATE `member_id`=`member_id`;
 
--- companies object members (tags)
-
-INSERT INTO `fo_object_members` (`object_id`, `member_id`, `is_optimization`)
- SELECT (SELECT `id` FROM `fo_objects` WHERE `f1_id` = `c`.`rel_object_id` AND `object_type_id` = (SELECT `ot`.`id` FROM `fo_object_types` `ot` WHERE `ot`.`name`='company')) as obj,
- 	(SELECT id FROM fo_members WHERE name = c.tag AND dimension_id = (SELECT id FROM fo_dimensions WHERE code = 'tags')), 0
-FROM og_tags c
-ON DUPLICATE KEY UPDATE object_id=object_id;
 
 
 
@@ -1174,6 +1153,36 @@ UPDATE `fo_contact_config_options`
  WHERE name='root_dimensions';
 
 
+-- TAGS object members
+
+insert into fo_object_members
+ SELECT
+   (SELECT `id` FROM `fo_objects` WHERE `f1_id` = `c`.`rel_object_id` AND `object_type_id` <> (SELECT `ot`.`id` FROM `fo_object_types` `ot` WHERE `ot`.`name`='contact') AND `object_type_id` = (
+     SELECT `ot`.`id` FROM `fo_object_types` `ot`
+     WHERE IF(`c`.`rel_object_manager`='Companies', `ot`.`name`='company', IF(`c`.`rel_object_manager`='Contacts', `ot`.`name`='contact', `ot`.`handler_class`=`c`.`rel_object_manager`))
+   ) limit 1) as obj,
+ 	(SELECT id FROM fo_members WHERE name = c.tag AND dimension_id = (SELECT id FROM fo_dimensions WHERE code = 'tags') limit 1),
+   0
+ FROM og_tags c
+on duplicate key update member_id=member_id;
+
+insert into fo_object_members
+ SELECT
+   (SELECT `id` FROM `fo_objects` inner join fo_contacts co on co.object_id=id and co.is_company=1
+     WHERE `f1_id` = `c`.`rel_object_id` AND `object_type_id` = (SELECT `ot`.`id` FROM `fo_object_types` `ot` WHERE `ot`.`name`='contact') limit 1) as obj,
+ 	(SELECT id FROM fo_members WHERE name = c.tag AND dimension_id = (SELECT id FROM fo_dimensions WHERE code = 'tags') limit 1),
+   0
+ FROM og_tags c WHERE c.rel_object_manager='Companies'
+on duplicate key update member_id=member_id;
+
+insert into fo_object_members
+ SELECT
+   (SELECT `id` FROM `fo_objects` inner join fo_contacts co on co.object_id=id and co.is_company=0
+     WHERE `f1_id` = `c`.`rel_object_id` AND `object_type_id` = (SELECT `ot`.`id` FROM `fo_object_types` `ot` WHERE `ot`.`name`='contact') limit 1) as obj,
+ 	(SELECT id FROM fo_members WHERE name = c.tag AND dimension_id = (SELECT id FROM fo_dimensions WHERE code = 'tags') limit 1),
+   0
+ FROM og_tags c WHERE c.rel_object_manager='Contacts'
+on duplicate key update member_id=member_id;
 
 
 -- EMAIL CONFIG OPTIONS

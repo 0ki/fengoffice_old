@@ -70,3 +70,7 @@ UPDATE `<?php echo $table_prefix ?>contact_config_options`
 UPDATE `<?php echo $table_prefix ?>contact_config_options`
  SET default_value = ''
  WHERE name='add_timeslot_view_dimensions_combos';
+
+INSERT INTO `<?php echo $table_prefix ?>contact_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES 
+	('general', 'timeReportShowEstimatedTime', '1', 'BoolConfigHandler', 1, 0, '')
+ON DUPLICATE KEY UPDATE name=name;

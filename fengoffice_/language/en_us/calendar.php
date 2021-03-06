@@ -85,7 +85,7 @@
 	"CAL_WEEKLY_EVENT" => "Repeating Weekly",
 	"CAL_MONTHLY_EVENT" => "Repeating Monthly",
 	"CAL_YEARLY_EVENT" => "Repeating Yearly",
-	"CAL_HOLIDAY_EVENT" => "Holiday Repeating",
+	"CAL_HOLIDAY_EVENT" => "Repeat by fixed day",
 	"CAL_UNKNOWN_TIME" => "Unknown Starting Time",
 	"CAL_ADDING_TO" => "Adding To",
 	"CAL_ANON_ALIAS" => "Alias Name",

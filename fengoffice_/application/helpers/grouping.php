@@ -101,7 +101,11 @@
 				
 				foreach ($groups as $l => $g) {
 					if (isset($groups[$l][$pid])) {
-						$groups[$l][$pid]['subgroups'][$member_id] = $gp;
+						if ($pid > 0) {
+							$groups[$l][$pid]['subgroups'][$member_id] = $gp;
+						} else {
+							$groups[1][$member_id] = $gp;
+						}
 						break;
 					}
 				}
@@ -118,7 +122,7 @@
 				$parent_group['subgroups'][$mid] = $group;
 			}
 		}
-
+		
 		return array('groups' => isset($groups[1]) ? $groups[1] : array(), 'grouped_objects' => $grouped_objects);
 	}
 	
@@ -212,16 +216,14 @@
 			}
 			if (is_null($group)) {
 				/* @var $obj ContentDataObject */
-				if (in_array($column, $obj->manager()->getExternalColumns())) {
-					$related_object = Objects::findObject($obj->getColumnValue($column));
-					if ($related_object instanceof ContentDataObject) {
-						$name = $related_object->getObjectName();
-					} else {
-						$name = lang('unclassified');
-					}
+				
+				$related_object = Objects::findObject($obj->getColumnValue($column));
+				if ($related_object instanceof ContentDataObject) {
+					$name = $related_object->getObjectName();
 				} else {
-					$name = lang($gb_val);
+					$name = lang('unclassified');
 				}
+				
 				$group = array('group' => array('id' => $gb_val, 'name' => $name, 'pid' => 0, 'group_type' => 'column'), 'subgroups' => array());
 				$groups[$gb_val] = $group;
 			}

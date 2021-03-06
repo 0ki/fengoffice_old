@@ -490,7 +490,7 @@ class MemberController extends ApplicationController {
 			}
 			
 			// add custom properties
-			if (method_exists('MemberCustomPropertiesController', 'add_custom_properties')) {
+			if (Plugins::instance()->isActivePlugin('crpm')) {
 				$mcp_controller = new MemberCustomPropertiesController();
 				$mcp_controller->add_custom_properties($member);
 			}
@@ -676,6 +676,8 @@ class MemberController extends ApplicationController {
 				if ($old_parent != $member->getParentMemberId()) {
 					$sql = "SELECT om.object_id FROM ".TABLE_PREFIX."object_members om WHERE om.member_id=".$member->getId();
 					$object_ids = DB::executeAll($sql);
+					
+					$ids_str = "";
 					if (!is_array($object_ids)) $object_ids = array();
 					foreach ($object_ids as $row) {
 						$content_object = Objects::findObject($row['object_id']);
@@ -689,10 +691,12 @@ class MemberController extends ApplicationController {
 								DB::execute("DELETE FROM ".TABLE_PREFIX."object_members WHERE object_id=".$content_object->getId()." AND member_id IN (".implode(",",$parent_ids).")");
 							}
 						}
-						
 						$content_object->addToMembers(array($member));
-						$content_object->addToSharingTable();
+						//$content_object->addToSharingTable();
+						$ids_str .= ($ids_str == "" ? "" : ",") . $content_object->getId();
 					}
+					
+					add_multilple_objects_to_sharing_table($ids_str, logged_user());
 				}
 			}
 			
@@ -751,14 +755,12 @@ class MemberController extends ApplicationController {
 			
 			$affectedObjectsRows = DB::executeAll("SELECT distinct(object_id) AS object_id FROM ".TABLE_PREFIX."object_members where member_id = ".$member->getId()." AND is_optimization = 0") ;
 			if (is_array($affectedObjectsRows) && count($affectedObjectsRows) > 0) {
+				$ids_str = "";
 				foreach ( $affectedObjectsRows as $row ) {
 					$oid = $row['object_id'];
-					$object = Objects::findObject($row['object_id']); // return an instance of Message, contact, etc.
-					/* @var $object ContentDataObject */
-					if ($object instanceof ContentDataObject) {
-						$object->addToSharingTable();
-					}
+					$ids_str .= ($ids_str == "" ? "" : ",") . $oid;
 				}
+				add_multilple_objects_to_sharing_table($ids_str, logged_user());
 			}
 			
 			// remove member associations

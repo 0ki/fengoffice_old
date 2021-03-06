@@ -49,8 +49,9 @@ sig.actualHtmlSignature = '';
 <?php 
 
 	tpl_display(get_template_path('form_errors'));
-	
-    $acc_id = array_var($mail_data, 'account_id', (isset($default_account) ? $default_account : $mail_accounts[0]->getId()));
+	$account = isset($default_account) ? $default_account : $mail_accounts[0];
+	$account_member_id = $mail_accounts[0] instanceof MailAccount ? $mail_accounts[0]->getMemberId() : 0;
+    $acc_id = array_var($mail_data, 'account_id', $account instanceof MailAccount ? $account->getId() : 0);
     $acc_id = isset($default_account_replay) ? $default_account_replay : $acc_id;
     
     $orig_textsignature = $orig_htmlsignature = "";
@@ -170,7 +171,7 @@ sig.actualHtmlSignature = '';
 	<div id="add_mail_account" style="display:none;">
 	    <label for="mailAccount"><?php echo lang('mail from')?>: 
 	    <span class="desc"><?php echo lang('mail account desc') ?></span></label>
-	    <?php echo render_select_mail_account('mail[account_id]',  $mail_accounts, isset($mail_data['account_id']) ? $mail_data['account_id'] : (isset($default_account) ? $default_account : (count($mail_accounts) > 0 ? $mail_accounts[0]->getId() : 0)),
+	    <?php echo render_select_mail_account('mail[account_id]',  $mail_accounts, isset($mail_data['account_id']) ? $mail_data['account_id'] : (isset($default_account) ? $default_account->getId() : (count($mail_accounts) > 0 ? $mail_accounts[0]->getId() : 0)),
 	    array('id' => $genid . 'mailAccount', 'tabindex'=>'44', 'onchange' => "og.changeSignature('$genid', this.value);")) ?>
 	</div>
   
@@ -190,7 +191,7 @@ sig.actualHtmlSignature = '';
  		<?php  echo lang('attach from fengoffice') ?>		
  	</a>
  	<br/>
- 	<a href="#" onclick="og.attachFromFileSystem('<?php echo $genid ?>')">
+ 	<a href="#" onclick="og.attachFromFileSystem('<?php echo $genid ?>', '<?php echo $account_member_id?>')">
  		<?php echo lang ('attach from file system') ?>
  	</a>
  	<script type="text/javascript">

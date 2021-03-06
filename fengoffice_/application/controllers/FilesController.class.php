@@ -581,12 +581,14 @@ class FilesController extends ApplicationController {
 			//Add properties
 			$object_controller->add_to_members($file, $member_ids);
 				
-		
-			//Add links
-			$object_controller->link_to_new_object($file);
-			$object_controller->add_subscribers($file);
-			$object_controller->add_custom_properties($file);
-		
+			//If New file
+			if($upload_option == -1){
+				//Add links
+				$object_controller->link_to_new_object($file);
+				$object_controller->add_subscribers($file);
+				$object_controller->add_custom_properties($file);
+			}
+			
 			ApplicationLogs::createLog($file,ApplicationLogs::ACTION_ADD);
 			return $file->getId();
 		}catch(Exception $e) {
@@ -768,18 +770,19 @@ class FilesController extends ApplicationController {
 				$object_controller = new ObjectController();
 				if(count(active_context_members(false)) > 0 ){
 					$object_controller->add_to_members($file, active_context_members(false));
+				}elseif(array_var($file_data, 'member_ids')) {
+					$member_ids = explode(',', array_var($file_data, 'member_ids'));
+					if (is_numeric($member_ids) && $member_ids > 0) $member_ids = array($member_ids);
 				}elseif(array_var($file_data, 'object_id')){
 					$object = Objects::findObject(array_var($file_data, 'object_id'));
 					if ($object instanceof ContentDataObject) {
 						$member_ids = $object->getMemberIds();
 						$object_controller->add_to_members($file, $member_ids);
 					} else {
-						// add only to logged_user's person member
-						$object_controller->add_to_members($file, array());
+						// add only to logged_user's person member						
 					}
 				} else {
-					// add only to logged_user's person member
-					$object_controller->add_to_members($file, array());
+					// add only to logged_user's person member					
 				}
 				
 				DB::commit();
@@ -839,12 +842,17 @@ class FilesController extends ApplicationController {
 			$upload_option = array_var($file_data, 'upload_option',-1);
 			try {
 				DB::beginWork();
-	
+				
 				//members
 				$member_ids = array();
 				$object_controller = new ObjectController();
 				if(count(active_context_members(false)) > 0 ){
 					$member_ids = active_context_members(false);
+					
+				} elseif(array_var($file_data, 'member_ids')) {
+					$member_ids = explode(',', array_var($file_data, 'member_ids'));
+					if (is_numeric($member_ids) && $member_ids > 0) $member_ids = array($member_ids);
+					
 				}elseif(array_var($file_data, 'object_id')){
 					$object = Objects::findObject(array_var($file_data, 'object_id'));
 					if ($object instanceof ContentDataObject) {
@@ -1761,6 +1769,21 @@ class FilesController extends ApplicationController {
 		} // if
 		
 		$extra_conditions = $hide_private ? 'AND `is_visible` = 1' : '';
+		
+		// filter attachments of other people if not filtering
+		$tmp_mids = array();
+		foreach (active_context() as $selection) {
+			if ($selection instanceof Member) {
+				$d = $selection->getDimension();
+				if ($d instanceof Dimension && $d->getIsManageable()) $tmp_mids[] = $selection->getId();
+			}
+		}
+		if (count($tmp_mids) == 0) {
+			if (Plugins::instance()->isActivePlugin('mail')) {
+				$extra_conditions .= " AND IF(e.mail_id=0, true, EXISTS (SELECT mac.contact_id FROM ".TABLE_PREFIX."mail_account_contacts mac 
+					WHERE mac.contact_id=o.created_by_id AND mac.account_id=(SELECT mc.account_id FROM ".TABLE_PREFIX."mail_contents mc WHERE mc.object_id=e.mail_id)))";
+			}
+		}
 		
 		$only_count_result = array_var($_GET, 'only_result',false);
 		

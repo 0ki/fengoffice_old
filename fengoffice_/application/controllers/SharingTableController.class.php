@@ -11,18 +11,19 @@ class  SharingTableController extends ApplicationController {
 	 * 			[r] => 1 //read 
 	 * @throws Exception
 	 */
-	function afterPermissionChanged($groups, $permissions) {
+	function afterPermissionChanged($groups, $permissions, $root_perm_info = null) {
 		if (!is_array($groups)) {
 			if (is_numeric($groups)) $groups = array($groups);
 			else return;
 		}
 		foreach ($groups as $group) {
-			$this->after_permission_changed($group, $permissions);
+			$this->after_permission_changed($group, $permissions, $root_perm_info);
+			$this->adjust_root_permissions($group, $root_perm_info);
 		}
 	}
 	
 	
-	function after_permission_changed($group = null, $permissions = null) {
+	function after_permission_changed($group = null, $permissions = null, $root_perm_info = null) {
 		@set_time_limit(0);
 		$die = false;
 		if ($group == null || $permissions == null) {
@@ -121,5 +122,55 @@ class  SharingTableController extends ApplicationController {
 			}
 		}
 		if ($die) die();
+	}
+	
+	
+	function adjust_root_permissions($group, $root_perm_info = null) {
+		// ROOT PERMISSIONS
+		if (!is_null($root_perm_info)) {
+			// user does not have permissions for object_type_ids
+			$root_permissions_sharing_table_delete = array_var($root_perm_info, 'root_permissions_sharing_table_delete');
+			if (is_array($root_permissions_sharing_table_delete)) {
+				foreach ($root_permissions_sharing_table_delete as $object_type_id) {
+					$cond = "group_id=$group AND object_id IN (SELECT o.id FROM ".TABLE_PREFIX."objects o WHERE o.object_type_id = $object_type_id AND NOT EXISTS(
+						SELECT om.object_id FROM ".TABLE_PREFIX."object_members om WHERE om.object_id=o.id AND om.member_id IN (SELECT m.id FROM ".TABLE_PREFIX."members m WHERE m.dimension_id IN (
+							SELECT d.id FROM ".TABLE_PREFIX."dimensions d WHERE d.is_manageable=1
+						))
+					))";
+					SharingTables::instance()->delete($cond);
+				}
+			}
+			
+			// user has permissions for object_type_ids
+			$root_permissions_sharing_table_add = array_var($root_perm_info, 'root_permissions_sharing_table_add');
+			if (is_array($root_permissions_sharing_table_add)) {
+				$file_ot = ObjectTypes::findByName('file');
+				foreach ($root_permissions_sharing_table_add as $object_type_id) {
+					$additional_where = "";
+					$additional_join = "";
+					if ($file_ot->getId() == $object_type_id && Plugins::instance()->isActivePlugin('mail')) {
+						$additional_join .= "INNER JOIN ".TABLE_PREFIX."project_files e ON e.object_id=o.id";
+						
+						$additional_where .= "AND IF(e.mail_id=0, true, EXISTS (SELECT mac.contact_id FROM ".TABLE_PREFIX."mail_account_contacts mac 
+							WHERE mac.contact_id IN (SELECT cpg.contact_id FROM ".TABLE_PREFIX."contact_permission_groups cpg WHERE permission_group_id=$group) 
+								AND mac.account_id=(SELECT mc.account_id FROM ".TABLE_PREFIX."mail_contents mc WHERE mc.object_id=e.mail_id)))";
+					}
+					
+					$sql = "SELECT o.id FROM ".TABLE_PREFIX."objects o $additional_join WHERE o.object_type_id = $object_type_id AND NOT EXISTS(
+						SELECT om.object_id FROM ".TABLE_PREFIX."object_members om WHERE om.object_id=o.id AND om.member_id IN (SELECT m.id FROM ".TABLE_PREFIX."members m WHERE m.dimension_id IN (
+							SELECT d.id FROM ".TABLE_PREFIX."dimensions d WHERE d.is_manageable=1
+						))
+					) $additional_where";
+					$rows = DB::executeAll($sql);
+					$ids = array_flat($rows);
+					
+					$values = "";
+					foreach ($ids as $id) {
+						$values .= ($values == "" ? "" : ",") . "('$id','$group')";
+					}
+					DB::execute("INSERT INTO ".TABLE_PREFIX."sharing_table (object_id, group_id) VALUES $values;");
+				}
+			}
+		}
 	}
 }

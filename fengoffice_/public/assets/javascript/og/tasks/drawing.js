@@ -459,6 +459,9 @@ ogTasks.draw = function(){
 	var container = document.getElementById('tasksPanelContainer');
 	sb.append("<div style='height:20px'></div>")
 	container.innerHTML = sb.toString();
+	
+	//fire event
+	og.eventManager.fireEvent('after ogTasks.Groups list completely loaded', null);
 }
 
 ogTasks.toggleSubtasks = function(taskId, groupId){

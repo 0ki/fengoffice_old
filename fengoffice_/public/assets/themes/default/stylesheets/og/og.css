@@ -468,6 +468,12 @@
 .ico-desc {
 	background-image: url(../../images/icons/desc.png) !important;
 }
+.ico-plus {
+	background-image: url(../../images/16x16/plus.gif) !important;
+}
+.ico-minus {
+	background-image: url(../../images/16x16/minus.gif) !important;
+}
 
 .link-ico {
 	height: 16px;

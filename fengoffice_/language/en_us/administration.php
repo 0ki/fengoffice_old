@@ -801,6 +801,7 @@
   //HIDDEN 
     'can_task_assignee'=>'Can task asignee',
     'can_manage_billing'=>'Can manage billing',
+    'can_manage_billing description'=>'If enabled then the user will be able to edit billing configurations.',
     'can_view_billing'=>'Can view billing',
   // END HIDDEN
         

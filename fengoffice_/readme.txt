@@ -1,5 +1,5 @@
 
-	About Feng Office 2.6.1
+	About Feng Office 2.6.2.2
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -102,6 +102,92 @@
 	Changelog
 	=========
 
+	Since 2.6.2.1
+	----------------
+	
+	module: expenses	
+	module: objectives
+	
+	feature: set tasks skills requirements for users
+	feature: gantt – task dependencies through drag and drop
+	feature: gantt – complete or open tasks from view
+	feature: calendar feed link recovered from Feng 1
+	feature: new custom time report
+	
+	bugfix: custom report export to csv.
+	bugfix: gantt undefined alert when a link task target is not present.
+	bugfix: gmt errors in calendar when displaying tasks or dragging tasks.
+	bugfix: when uploading a new revision of a file keep old linked objects.
+	bugfix: edit person and company notes text box size.
+	bugfix: members selectors combos breadcrumbs errors.
+	bugfix: milestones gmt problems in calendar view date.
+	bugfix: don't use gmt in task dates if config option Use time in task dates is  disabled.
+	bugfix: day calendar view shows all tasks duration.
+	bugfix: quick adding a task when grouping by milestone sometimes failed.
+	bugfix: line break in timeslots comments.
+	bugfix: view day in calendar is not showing some tasks names.
+	bugfix: performance issue when deleting member
+	bugfix: performance issue when changing member parent
+	bugfix: vcard import
+	bugfix: file upload error when there is no support for multiple file upload
+	bugfix: javascript error when editing a completed task.
+	
+	
+	Since 2.6.2-rc
+	----------------
+	bugfix: javascript error when editing a completed task.
+	bugfix: migration from feng version 1 to feng version 2
+	fetaure: timeslot custom reports, including task columns
+	
+	Since 2.6.2-beta
+	----------------
+	language: Swedish
+	bugfix: error when converting odt or docx to text with tabs
+	
+	Since 2.6.1.6
+	----------------
+	feature: gantt - new GUI
+	feature: gantt - zooming by day, week, month, year
+	feature: gantt - exporting to pdf
+	feature: gantt - exporting to png
+	feature: gantt - editable progress
+	feature: gantt - task completition
+	feature: gantt - groups show their entire progress
+	feature: gantt - major performance improvements
+	feature: gantt - being able to collapse or expand all groups
+	feature: gantt - being able to show or not the tasks names
+	bugfix: link objects list wrong total
+	bugfix: sometimes new mail no signature shown
+		
+	Since 2.6.1.5
+	----------------
+	bugfix: cannot save client permissions
+
+	Since 2.6.1.4
+	----------------
+	bugfix: error when converting odt or docx to text with tabs
+
+	Since 2.6.1.3
+	----------------
+	bugfix: method_exists not working properly depending on php version if using a class method. 
+	
+	Since 2.6.1.2
+	----------------
+	bugfix: cannot download csv report in Internet Explorer.
+	bugfix: time report date range shows the first day of actual month if "last month" is selected (data is correct, only date range info is showing this error).
+	bugfix: check if mail plugin is installed before making queries in mail tables
+	feature: allow to choose if "estimated time" column is shown in time report
+
+	Since 2.6.1.1
+	----------------
+	bugfix: refresh sharing table when root permissions are updated.
+	bugfix: dont call mb_string library functions if mb_string is not installed
+	
+	Since 2.6.1
+	----------------
+	bugfix: permissions in attachments when not classified
+	feature: add 'workspaces' column to cvs export of total tasks times report
+
 	Since 2.6.0.2
 	----------------
 	bugfix: disabled users are not loaded in tasks list.
@@ -123,7 +209,6 @@
 	
 	Since 2.6-rc
 	----------------
-	
 	bugfix: report date parameters are not formatted correctly the first time if they are not saved in contact config options
 	
 	
@@ -681,14 +766,14 @@
 	Since 2.3
 	----------------
 	feature: In the contact panel you can choose contacts in order to send a group mail
-	feature: New user config option, updating an object’s date when it is linked to another object
+	feature: New user config option, updating an objectâ€™s date when it is linked to another object
 	feature: Gantt sub tasks can be out of range of parent task dates.
 	feature: Gantt chart and Task List can be filtered by period.
 	feature: Comments are now displayed on Activity Widget.
 	feature: Gantt Chart now displays tasks with only start or due date
 	feature: archive/unarchive dimension members from administration->dimensions.
 	feature: when uploading a file with the same name as another that has been uploaded by other user and you don't have permissions over it, don't show as if exists.
-	feature: New Projects by default will start with “good” status
+	feature: New Projects by default will start with â€œgoodâ€� status
 	feature: Listing function does not use limit if start parameter is not specified
 	feature: When adding a client/project the initial focus is on name
 	 
@@ -722,7 +807,7 @@
 	bugfix: Trash fails when mail plugin is not installed
 	bugfix: Member selector fixed for IE
 	bugfix: Some permissions were not set when adding new member
-	bugfix: Creating reports of “grouping by user” and “members” at the same time issue fix
+	bugfix: Creating reports of â€œgrouping by userâ€� and â€œmembersâ€� at the same time issue fix
 	bugfix: Report not showing correct Date in condition legend
 	bugfix: SQL issue in Report fixed
 	bugfix: Description not set for all tasks when listing.
@@ -863,7 +948,7 @@
 	bugfix: New client/project from overview fixed.
 	bugfix: Breadcrumbs only show 2 members x dimension.
 	bugfix: Total tasks time reports csv export does not work.
-	bugfix: Fix en c�lculo de porcentaje de avance de tareas.
+	bugfix: Fix en cï¿½lculo de porcentaje de avance de tareas.
 	bugfix: Forwarding or replying mails in German only prints "null".
 	bugfix: Function getCustomPropertyByName fixed.
 	bugfix: Activity widget popup wider to put all buttons in one line.

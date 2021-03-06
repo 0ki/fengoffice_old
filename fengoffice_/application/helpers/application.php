@@ -1526,7 +1526,11 @@ function buildTree ($nodeList , $parentField = "parent", $childField = "children
  * @param end $end
  */
 function wrap_text($str, $length = 20, $end='...'){
-	return  ( mb_strlen($str) > $length ) ? mb_strcut($str,0 ,$length - mb_strlen($end) ).$end : $str ;
+	if (function_exists('mb_strlen')) {
+		return ( mb_strlen($str) > $length ) ? mb_strcut($str,0 ,$length - mb_strlen($end) ).$end : $str;
+	} else {
+		return ( strlen($str) > $length ) ? substr($str, 0, $length - strlen($end)).$end : $str;
+	}
 }
 
 /**

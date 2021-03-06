@@ -287,8 +287,13 @@ class MailController extends ApplicationController {
 		tpl_assign('mail_to', urldecode(array_var($_GET, 'to')));
 		tpl_assign('link_to_objects', array_var($_GET, 'link_to_objects'));
 
-		$def_acc = $this->getDefaultAccountId();
-		if ($def_acc > 0) tpl_assign('default_account', $def_acc);
+		$def_acc_id = $this->getDefaultAccountId();
+		if ($def_acc_id > 0){
+			$def_acc = MailAccounts::getAccountById($def_acc_id);
+			if ($def_acc instanceof MailAccount){
+				tpl_assign('default_account', $def_acc);
+			}			
+		}		
 		tpl_assign('mail', $mail);
 		tpl_assign('mail_data', $mail_data);
 		tpl_assign('mail_accounts', $mail_accounts);
@@ -405,6 +410,7 @@ class MailController extends ApplicationController {
 			// attachment
 			$linked_attachments = array();
  			$attachments = array();
+ 			$project_files_attachments = array();
  			$objects = array_var($_POST, 'linked_objects');
  			$attach_contents = array_var($_POST, 'attach_contents', array());
  			
@@ -447,6 +453,7 @@ class MailController extends ApplicationController {
 //			 						flash_error(lang('no access permissions'));
 //			 						$err++;
 //			 					} // if
+								$project_files_attachments[] = $file;
 			 
 			 					$attachments[] = array(
 			 						"data" => $file->getFileContent(),
@@ -615,6 +622,13 @@ class MailController extends ApplicationController {
 				$mail->save();
 				//$mail->setIsRead(logged_user()->getId(), true);
 				
+				foreach ($project_files_attachments as $pfatt) {
+					if ($pfatt instanceof ProjectFile) {
+						$pfatt->setMailId($mail->getId());
+						$pfatt->save();
+						$pfatt->addToSharingTable();
+					}
+				}
 				
 				$member_ids = active_context_members(false);
 				

@@ -374,6 +374,7 @@ class Reports extends BaseReports {
 					"order" => "$order_by_col",
 					"order_dir" => ($order_by_asc ? "ASC" : "DESC"),
 					"extra_conditions" => $allConditions,
+					"count_results" => true,
 					"join_params" => $join_params
 				);
 				if ($limit > 0) {
@@ -419,6 +420,11 @@ class Reports extends BaseReports {
 									$results['columns'][$field] = lang($field);	
 									$results['db_columns'][lang($field)] = $field;
 								}
+							} else if($ot->getHandlerClass() == 'Timeslots'){
+								if (in_array($field, array('time', 'billing'))){
+									$results['columns'][$field] = lang('field Objects '.$field);
+									$results['db_columns'][lang('field Objects '.$field)] = $field;
+								}
 							}
 						}
 					}
@@ -452,7 +458,8 @@ class Reports extends BaseReports {
 							} else {
 								$dimension = array_var($dimensions_cache, $dim_id);
 							}
-							$members = ObjectMembers::getMembersByObjectAndDimension($object->getId(), $dim_id, " AND om.is_optimization=0");
+							$om_object_id = $object instanceof Timeslot ? $object->getRelObjectId() : $object->getId();
+							$members = ObjectMembers::getMembersByObjectAndDimension($om_object_id, $dim_id, " AND om.is_optimization=0");
 							
 							$value = "";
 							foreach ($members as $member) {/* @var $member Member */
@@ -465,8 +472,34 @@ class Reports extends BaseReports {
 							
 							$row_values[$field] = $value;
 						} else {
-						
-							$value = $object->getColumnValue($field);
+							if ($object instanceof Timeslot) {
+								if ($field == 'id') {
+									$value = $object->getObjectId();
+								} else {
+									$value = $object->getColumnValue($field);
+									// if it is a task column
+									if (in_array($field, ProjectTasks::instance()->getColumns())) {
+										$task = ProjectTasks::findById($object->getRelObjectId());
+										// if task exists
+										if ($task instanceof ProjectTask) {
+											$value = $task->getColumnValue($field);
+											// if it is an external task column
+											if (in_array($field, ProjectTasks::instance()->getExternalColumns())) {
+												$value = self::instance()->getExternalColumnValue($field, $value, ProjectTasks::instance());
+											} else {
+												// if is a date then use format
+												if (ProjectTasks::instance()->getColumnType($field) == DATA_TYPE_DATETIME && $value instanceof DateTimeValue) {
+													$value = format_value_to_print($field, $value->toMySQL(), DATA_TYPE_DATETIME, $report->getReportObjectTypeId());
+												}
+											}
+										}
+										$results['columns'][$field] = lang('field ProjectTasks '.$field);
+										$results['db_columns'][lang('field ProjectTasks '.$field)] = $field;
+									}
+								}
+							} else {
+								$value = $object->getColumnValue($field);
+							}
 								
 							if ($value instanceof DateTimeValue) {
 								$field_type = $managerInstance->columnExists($field) ? $managerInstance->getColumnType($field) : Objects::instance()->getColumnType($field);
@@ -474,7 +507,17 @@ class Reports extends BaseReports {
 							}
 							
 							if(in_array($field, $managerInstance->getExternalColumns())){
-								$value = self::instance()->getExternalColumnValue($field, $value, $managerInstance);
+								if ($object instanceof Timeslot && $field == 'time') {
+									$lastStop = $object->getEndTime() != null ? $object->getEndTime() : ($object->isPaused() ? $object->getPausedOn() : DateTimeValueLib::now());
+									$seconds = $lastStop->getTimestamp() - $object->getStartTime()->getTimestamp();
+									$hours = number_format($seconds / 3600, 2, ',', '.');
+									$value = $hours;
+									//$value = DateTimeValue::FormatTimeDiff($object->getStartTime(), $lastStop, "hm", 60, $object->getSubtract());
+								} else if ($object instanceof Timeslot && $field == 'billing') {
+									$value = config_option('currency_code', '$') .' '. $object->getFixedBilling();
+								} else {
+									$value = self::instance()->getExternalColumnValue($field, $value, $managerInstance);
+								}
 							} else if ($field != 'link'){
 								$value = html_to_text(html_entity_decode($value));
 							}
@@ -526,7 +569,7 @@ class Reports extends BaseReports {
 						$colCp = $column->getCustomPropertyId();
 						$cp = CustomProperties::getCustomProperty($colCp);
 						if ($cp instanceof CustomProperty) { /* @var $cp CustomProperty */
-							$cp_val = CustomPropertyValues::getCustomPropertyValue($object->getId(), $colCp);
+							$cp_val = CustomPropertyValues::getCustomPropertyValue($object instanceof Timeslot ? $object->getRelObjectId() : $object->getId(), $colCp);
 							if ($cp->getType() == 'contact' && $cp_val instanceof CustomPropertyValue) {
 								$cp_contact = Contacts::findById($cp_val->getValue());
 								$cp_val->setValue($cp_contact->getObjectName());
@@ -632,10 +675,10 @@ class Reports extends BaseReports {
 	}
 
 
-	private static $external_columns = array('user_id', 'contact_id', 'assigned_to_contact_id', 'completed_by_id', 'approved_by_id', 'milestone_id', 'company_id');
+	private static $external_columns = array('user_id', 'contact_id', 'assigned_to_contact_id', 'assigned_by_id', 'completed_by_id', 'approved_by_id', 'milestone_id', 'company_id');
 	function getExternalColumnValue($field, $id, $manager = null){
 		$value = '';
-		if($field == 'user_id' || $field == 'contact_id' || $field == 'created_by_id' || $field == 'updated_by_id' || $field == 'assigned_to_contact_id' || $field == 'completed_by_id'|| $field == 'approved_by_id'){
+		if($field == 'user_id' || $field == 'contact_id' || $field == 'created_by_id' || $field == 'updated_by_id' || $field == 'assigned_to_contact_id' || $field == 'assigned_by_id' || $field == 'completed_by_id'|| $field == 'approved_by_id'){
 			$contact = Contacts::findById($id);
 			if($contact instanceof Contact) $value = $contact->getObjectName();
 		} else if($field == 'milestone_id'){
@@ -644,6 +687,8 @@ class Reports extends BaseReports {
 		} else if($field == 'company_id'){
 			$company = Contacts::findById($id);
 			if($company instanceof Contact && $company->getIsCompany()) $value = $company->getObjectName();
+		} else if($field == 'rel_object_id'){
+			$value = $id;
 		} else if ($manager instanceof ContentDataObjects) {
 			$value = $manager->getExternalColumnValue($field, $id);
 		}

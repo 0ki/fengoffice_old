@@ -847,13 +847,37 @@ class ProjectFile extends BaseProjectFile {
 	 * 
 	 */
 	function addToSharingTable() {
-		$revisions = $this->getRevisions();
-		if (is_array($revisions)) {
-			foreach ($revisions as $revision) {
-				$revision->addToSharingTable();
+		// if classified or not belongs to an email
+		$member_ids = array();
+		$members = $this->getMembers();
+		foreach ($members as $m) {
+			$d = $m->getDimension();
+			if ($d instanceof Dimension && $d->getIsManageable()) $member_ids[] = $m->getId();
+		}
+		if ($this->getMailId() == 0 || count($member_ids) > 0) {
+			$revisions = $this->getRevisions();
+			if (is_array($revisions)) {
+				foreach ($revisions as $revision) {
+					$revision->addToSharingTable();
+				}
+			}
+			parent::addToSharingTable();
+		} else {
+			// if not classified and belongs to an email
+			$mail = MailContents::findById($this->getMailId());
+			if ($mail instanceof MailContent) {
+				DB::execute("DELETE FROM ".TABLE_PREFIX."sharing_table WHERE object_id=".$this->getId());
+				
+				$macs = MailAccountContacts::findAll(array('conditions' => array('`account_id` = ?', $mail->getAccountId())));
+				foreach ($macs as $mac) {
+					$c = Contacts::findById($mac->getContactId());
+					if ($c instanceof Contact) {
+						$values = "(".$c->getPermissionGroupId().",".$this->getId().")";
+						DB::execute("INSERT INTO ".TABLE_PREFIX."sharing_table (group_id, object_id) VALUES $values;");
+					}
+				}
 			}
 		}
-		parent::addToSharingTable();
 	}
 
 } // ProjectFile

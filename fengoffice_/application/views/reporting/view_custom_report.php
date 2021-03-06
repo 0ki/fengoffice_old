@@ -101,7 +101,11 @@
 <?php if($to_print){
 		echo clean($col);
 	  }else if($col != ''){
-	  	$echo_link = !(is_numeric(array_var($db_columns, $col)) || str_starts_with(array_var($db_columns, $col), "dim_")); 
+	  	$allow_link = true;
+	  	if ($model == 'Timeslots' && in_array(array_var($db_columns, $col), ProjectTasks::instance()->getColumns())) {
+	  		$allow_link = false;
+	  	}
+	  	$echo_link = $allow_link && !(is_numeric(array_var($db_columns, $col)) || str_starts_with(array_var($db_columns, $col), "dim_") || array_var($db_columns, $col) == 'time' || array_var($db_columns, $col) == 'billing'); 
 	  	?>
 		<a href="<?php echo $echo_link ? get_url('reporting', 'view_custom_report', array('id' => $id, 'replace' => true, 'order_by' => array_var($db_columns,$col), 'order_by_asc' => $asc ? 0 : 1)).$parameterURL : "#" ?>" <?php echo ($echo_link ? "" : 'style="cursor:default;"') ?>>
 			<?php echo clean($col) ?>

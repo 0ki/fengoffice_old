@@ -39,6 +39,32 @@
 	'show always' => 'Show this report always (use the "Related to" options only to check permissions and not to filter the list of reports)',
 	'subtotal'=> 'Subtotal',
 	'print this page'=> 'Print this page',
+  	'show estimated time column' => 'Show estimated time column',
+
+	'field Objects rel_object_id' => 'Task id',
+	'field Objects start_time' => 'Start time',
+	'field Objects end_time' => 'End Time',
+	'field Objects contact_id' => 'Person',
+	'field Objects description' => 'Description',
+	'field Objects paused_on' => 'Paused on',
+	'field Objects subtract' => 'Subtract',
+	'field Objects fixed_billing' => 'Fixed billing',
+	'field Objects hourly_billing' => 'Hourly billing',
+	'field Objects is_fixed_billing' => 'Is fixed billing',
+	'field Objects billing_id' => 'Billing id',
+	'field Objects id' => 'Id',
+	'field Objects name' => 'Name',
+	'field Objects created_on' => 'Created on',
+	'field Objects updated_on' => 'Updated on',
+	'field Objects created_by_id' => 'Created by',
+	'field Objects updated_by_id' => 'Updated by',
+	'field Objects archived_on' => 'Archived on',
+  	'field Objects time' => 'Time',
+  	'field Objects billing' => 'Billing',
+  	'field Timeslots start_time' => 'Timeslot date',
+  
+  	'field ProjectTasks assigned_by_id' => 'Assigned by',
+  	'field ProjectTasks type_content' => 'Type content',
   );
   
 ?>

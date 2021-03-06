@@ -248,7 +248,7 @@
 						break;
 					case 'task':
 						var d_to_change = (div_id.indexOf('_end_') != -1  ? 'due' : (div_id.indexOf('_st_') != -1  ? 'start' : 'both'));
-						og.openLink(og.getUrl('task', 'change_start_due_date', {id:ddata.id, year:ddata.year, month:ddata.month, day:ddata.day, tochange:d_to_change}), {});
+						og.openLink(og.getUrl('task', 'change_start_due_date', {id:ddata.id, year:ddata.year, month:ddata.month, day:ddata.day, conserve_times:1, tochange:d_to_change}), {});
 						break;
 					default: break;
 				}

@@ -422,6 +422,8 @@ class DimensionController extends ApplicationController {
 				);
 			} else {
 				/* @var $m Member */
+				$additional_member_class = "";
+				Hook::fire('additional_member_node_class', $m, $additional_member_class);
 				$member = array(
 					"id" => $m->getId(),
 					"name" => clean($m->getName()),
@@ -430,6 +432,7 @@ class DimensionController extends ApplicationController {
 					"object_id" => $m->getObjectId(),
 					"options"  => $memberOptions,
 					"depth" => $m->getDepth(),
+					"cls" => $additional_member_class,
 					"iconCls" => $m->getIconClass(),
 					"selectable" => isset($selectable) ? $selectable : false,
 					"dimension_id" => $m->getDimensionId(),

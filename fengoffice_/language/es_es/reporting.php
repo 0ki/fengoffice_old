@@ -35,4 +35,5 @@
 	'show always' => 'Mostrar siempre este reporte',
 	'subtotal'=> 'Subtotal',
 	'print this page'=> 'Imprimir esta página',
+  	'show estimated time column' => 'Mostrar la columna de tiempo estimado',
 ); ?>

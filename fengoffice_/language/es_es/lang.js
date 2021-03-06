@@ -815,5 +815,6 @@ addLangs({
 	'general view': 'Vista general',
 	'save as' : 'Guardar como {0}',
 	
-	'viewing all information' : 'Viendo toda la Infomación'
+	'viewing all information' : 'Viendo toda la Infomación',
+	'add a variable to this task': 'Agreagr una variable a esta tarea'
 });

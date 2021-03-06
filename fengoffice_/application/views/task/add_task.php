@@ -577,6 +577,8 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 
 <script>
 
+	og.add_task_genid = '<?php echo $genid ?>';
+
 	var assigned_user = '<?php echo array_var($task_data, 'assigned_to_contact_id', 0) ?>';
 	var start = true;
 	
@@ -757,8 +759,11 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 			this.dialog.setTitle(lang('tasks related'));
 			this.dialog.show();      
 		}
-
-		og.changeTaskRepeat();
+		
+		<?php if(!$task->isCompleted()){ ?>
+			og.changeTaskRepeat();
+		<?php }?>
+		
 		setTimeout(function() {
 			og.reload_task_form_selectors(<?php echo $task->isNew() ? '1' : '0'?>);
 		}, 500);

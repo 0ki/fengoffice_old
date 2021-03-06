@@ -390,18 +390,7 @@ class TemplateMilestone extends BaseTemplateMilestone {
 	 * @return boolean
 	 */
 	function trash($trashDate = null) {
-		$is_template = $this->getIsTemplate();
-		if ($is_template) {
-			$this->delete();
-		} else {
-			try {
-				DB::execute("UPDATE " . TemplateTasks::instance()->getTableName(true) . " SET `milestone_id` = '0' WHERE `milestone_id` = " . DB::escape($this->getId()));
-				return parent::trash($trashDate);
-			} catch(Exception $e) {
-				throw $e;
-			} // try
-		}
-
+		$this->delete();
 	} // trash
 	
 	
@@ -467,6 +456,56 @@ class TemplateMilestone extends BaseTemplateMilestone {
 		$new->setDueDate($this->getDueDate());
 		$new->setFromTemplateId($this->getTemplateId());
 		$new->setFromTemplateObjectId($this->getId());
+		return $new;
+	}
+	
+	/**
+	 * Copy a project Milestone to a template Milestone 
+	 *
+	 * @access public
+	 * @param $project_milestone ProjectMilestone project milestone
+	 * @param $template_id int the template id	
+	 * @param $go_deep bool copy all tasks
+	 * @return null
+	 */
+	function copyFromProjectMilestone($project_milestone, $template_id, $go_deep = true) {
+		$new = new TemplateMilestone();
+		$new->setObjectName($project_milestone->getObjectName());
+		$new->setDescription($project_milestone->getDescription());
+		$new->setIsUrgent($project_milestone->getIsUrgent());
+		$new->setDueDate($project_milestone->getDueDate());
+		
+		$new->setTemplateId($template_id);
+		$new->setSessionId(null);
+		$new->setFromTemplateObjectId($project_milestone->getId());
+		
+		$new->save();
+		
+		//Copy tasks
+		if($go_deep){
+			
+			$mil_tasks = $project_milestone->getTasks();
+			
+			foreach ($mil_tasks as $c) {
+				if($c instanceof ProjectTask){
+					//dont copy subtasks of tasks in this milestone because they are copied as subtasks of milestone tasks
+					$parent = $c->getParent();
+					if($parent && $parent->getMilestoneId() == $project_milestone->getId()){
+						continue;
+					}
+					
+					$sub = TemplateTask::copyFromProjectTaskIncludeSubTasks($c,$template_id,null,$new->getId());
+			
+					//create a TemplateObject
+					$to = new TemplateObject();
+					$to->setObject($sub);
+					$to->setTemplateId($template_id);
+					$to->save();
+				}
+			
+			}
+		}
+		
 		return $new;
 	}
 	

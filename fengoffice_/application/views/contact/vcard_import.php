@@ -64,7 +64,7 @@ og.submitVcard = function(genid) {
                                        <th style="text-align:center"><?php echo lang('status') ?></th></tr>
         <?php 		foreach ($import_result['import_ok'] as $reg) { ?>
                                     <tr<?php echo ($isAlt ? ' class="altRow"': '') ?>>
-                                    <td style="padding-left:10px;"><?php echo array_var($reg, 'firstname') . ' ' . array_var($reg, 'lastname')?></td>
+									<td style="padding-left:10px;"><?php echo array_var($reg, 'name')?></td>
                                     <td style="padding-left:10px;"><?php echo array_var($reg, 'email') ?></td>
                                     <td style="padding-left:10px;"><span class="desc"><?php echo array_var($reg, 'import_status') ?></span></td></tr>
         <?php 			$isAlt = !$isAlt;

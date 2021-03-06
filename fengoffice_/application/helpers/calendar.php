@@ -13,9 +13,9 @@ function getEventLimits($event, $date, &$event_start, &$event_duration, &$end_mo
 		$work_day_start->setHour(substr($wsd, 0, strpos($wsd, ':')));
 		$work_day_start->setMinute(substr($wsd, strpos($wsd, ':')+1));
 		
-		if ($event->getStartDate() instanceof DateTimeValue && $event->getStartDate()->getTimestamp() + 3600 * logged_user()->getTimezone() >= $work_day_start->getTimestamp()) {
+		if ($event->getStartDate() instanceof DateTimeValue) {
 			$event_start = new DateTimeValue($event->getStartDate()->getTimestamp() + 3600 * logged_user()->getTimezone());
-		} else if (!$event->getStartDate() instanceof DateTimeValue && $event->getTimeEstimate() > 0 && $event->getDueDate() instanceof DateTimeValue) {
+		} else if ($event->getTimeEstimate() > 0 && $event->getDueDate() instanceof DateTimeValue) {
 			$event_start = new DateTimeValue($event->getDueDate()->getTimestamp() + 3600 * logged_user()->getTimezone());
 			$event_start->advance($event->getTimeEstimate() * -60);
 		} else {
@@ -27,9 +27,9 @@ function getEventLimits($event, $date, &$event_start, &$event_duration, &$end_mo
 		$work_day_end->setHour(substr($wed, 0, strpos($wed, ':')));
 		$work_day_end->setMinute(substr($wed, strpos($wed, ':')+1));
 		
-		if ($event->getDueDate() instanceof DateTimeValue && $event->getDueDate()->getTimestamp() + 3600 * logged_user()->getTimezone() <= $work_day_end->getTimestamp()) {
+		if ($event->getDueDate() instanceof DateTimeValue) {
 			$event_duration = new DateTimeValue($event->getDueDate()->getTimestamp() + 3600 * logged_user()->getTimezone());
-		} else if (!$event->getDueDate() instanceof DateTimeValue && $event->getTimeEstimate() > 0 && $event->getStartDate() instanceof DateTimeValue) {
+		} else if ($event->getTimeEstimate() > 0 && $event->getStartDate() instanceof DateTimeValue) {
 			$event_duration = new DateTimeValue($event_start->getTimestamp());
 			$event_duration->advance($event->getTimeEstimate() * 60);
 		} else {
@@ -373,4 +373,37 @@ function replicateRepetitiveTaskForCalendarRawTask($task, $from_date, $to_date) 
 }
 
 
-
+function renderCalendarFeedLink() {
+	$user = logged_user();
+	if (!$user instanceof Contact) return;
+/*	
+	$checkbox_html = checkbox_field("include_subws", true, array("id" => "include_subws", "style" => "float:right;", 
+		"onclick" => "javascript:og.change_link_incws('ical_link', 'include_subws')", "title" => lang('check to include sub ws')));
+	$label_html = label_tag(lang('subws'), "include_subws", false, array("style" => "float:right;font-size:60%;margin:0px 3px;vertical-align:top;", 
+		"title" => lang('check to include sub ws')), "");
+*/					 	
+ 	$export_name = "";
+ 	$export_mems = "";
+ 	$context = active_context();
+ 	foreach ($context as $sel) {
+ 		if ($sel instanceof Member) {
+ 			$export_name .= ($export_name == "" ? "" : "-") . urlencode($sel->getName());
+ 			$export_mems .= ($export_mems == "" ? "" : ",") . $sel->getId();
+ 		}
+ 	}
+ 	if ($export_name == "") $export_name = urlencode($user->getObjectName());
+	
+ 	$url = get_url('feed', 'ical_export', array('n' => $export_name, 'cal' => $export_mems, 't' => $user->getToken()));
+ 	$link_title = lang('copy this url in your calendar client software');
+ 	$onclick = "Ext.Msg.show({
+	   	title: '". escape_single_quotes(lang('import events from third party software')) ."',
+	   	msg: '". escape_single_quotes(lang('copy this url in your calendar client software')) ."<br/><br/><br/>'+document.getElementById('ical_link').href,
+   		icon: Ext.MessageBox.INFO,
+   		minWidth: 700,
+	}); return false;";
+ 	
+ 	$link_html = '<a class="iCalSubscribe" id="ical_link" style="float:right;" href="'.$url.'" title="'.$link_title.'" onclick="'.$onclick.'"></a>';
+ 	
+ 	//echo $checkbox_html . $label_html . $link_html;
+ 	echo $link_html;
+}

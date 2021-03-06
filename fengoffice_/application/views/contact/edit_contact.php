@@ -378,7 +378,7 @@
 		<fieldset><legend><?php echo lang('notes') ?></legend>
 		    <div>
 		      <?php echo label_tag(lang('notes'), $genid.'profileFormNotes') ?>
-		      <?php echo textarea_field('contact[comments]', array_var($contact_data, 'comments'), array('id' => $genid.'profileFormNotes', 'tabindex' => '275')) ?>
+		      <?php echo textarea_field('contact[comments]', array_var($contact_data, 'comments'), array('id' => $genid.'profileFormNotes', 'style' => 'width: 100%;', 'tabindex' => '275')) ?>
 		    </div>
 		</fieldset>
 	</div>

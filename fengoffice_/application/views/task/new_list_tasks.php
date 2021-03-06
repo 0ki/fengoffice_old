@@ -128,6 +128,7 @@ og.config.quick_add_task_combos = <?php
 		echo "[".$object."]";
 ?>;
 var task_ids = <?php echo json_encode($ids)?>;
+ogTasks.custom_properties = <?php echo json_encode($cp_values)?>;
 if (!task_ids) task_ids = [];
 </script>
 

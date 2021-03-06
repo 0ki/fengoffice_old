@@ -89,8 +89,22 @@
     
     
 	function getExternalColumns() {
-		return array_merge(parent::getExternalColumns(), array('rel_object_id', 'contact_id'));
+		return array_merge(parent::getExternalColumns(), array('contact_id', 'time', 'billing'));
 	}
+	
+	
+	/**
+	 * Return system columns
+	 *
+	 * @access public
+	 * @param void
+	 * @return array
+	 */
+	function getSystemColumns() {
+		return array_merge(parent::getSystemColumns(), array(
+      		'end_time', 'paused_on', 'subtract', 'fixed_billing', 'hourly_billing', 'is_fixed_billing', 'billing_id'
+		));
+	} // getSystemColumns
     
     // -------------------------------------------------------
     //  Finders

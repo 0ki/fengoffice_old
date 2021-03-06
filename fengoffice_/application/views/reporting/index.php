@@ -13,6 +13,7 @@
 	
 	$reports_by_type = array();
 	$object_types = ObjectTypes::getAvailableObjectTypes();
+	$object_types[] = ObjectTypes::findByName('timeslot');
 	foreach ($object_types as $ot) {
 		$reports_by_type[$ot->getId()] = array("name" => $ot->getName(), "display_name" => lang($ot->getName()), "icon_class" => $ot->getIconClass());
 	}

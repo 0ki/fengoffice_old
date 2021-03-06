@@ -46,7 +46,7 @@
 		
 		
 		echo '<div style="margin-left:' . $margin_left . 'px;" class="report-group-footer">' . $group_name;
-		if(array_var($options, 'timeslot_type') == 0 || array_var($options, 'timeslot_type') == 2){
+		if ((array_var($options, 'timeslot_type') == 0 || array_var($options, 'timeslot_type') == 2) && array_var($options, 'show_estimated_time')) {
 			echo '<div style="float:right;width:140px;" class="bold right">' . DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($estimated_total * 60), "hm", 60) . '</div>';
 		}
 		echo '<div style="float:right;width:140px;" class="bold right">' . DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($group_total * 60), "hm", 60) . '</div>';
@@ -69,7 +69,7 @@
 			echo '<th class="right">' . lang('billing') . '</th>';
 		}
 		echo '<th class="right">' . lang('time') . '</th>';
-		if(array_var($options, 'timeslot_type') == 0 || array_var($options, 'timeslot_type') == 2){
+		if ((array_var($options, 'timeslot_type') == 0 || array_var($options, 'timeslot_type') == 2) && array_var($options, 'show_estimated_time')) {
 			echo '<th class="right">' . lang('estimated') . '</th>';
 		}
 		echo '</tr>';
@@ -96,7 +96,7 @@
 			}
 			$lastStop = $ts->getEndTime() != null ? $ts->getEndTime() : ($ts->isPaused() ? $ts->getPausedOn() : DateTimeValueLib::now());
 			echo "<td class='time nobr right'>" . DateTimeValue::FormatTimeDiff($ts->getStartTime(), $lastStop, "hm", 60, $ts->getSubtract()) ."</td>";
-			if((array_var($options, 'timeslot_type') == 0 || array_var($options, 'timeslot_type') == 2) && $ts->getRelObject() instanceof ProjectTask){
+			if((array_var($options, 'timeslot_type') == 0 || array_var($options, 'timeslot_type') == 2) && $ts->getRelObject() instanceof ProjectTask && array_var($options, 'show_estimated_time')) {
 				echo "<td class='time nobr right'>" . DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($ts->getRelObject()->getTimeEstimate() * 60), 'hm', 60) ."</td>";
 				$task = $ts->getRelObject();
 				
@@ -105,7 +105,7 @@
 					$sub_total_estimated += $task->getTimeEstimate();
 				}
 				$tasks[] = $task->getId();
-			}elseif(array_var($options, 'timeslot_type') == 0 || array_var($options, 'timeslot_type') == 2){
+			}elseif(array_var($options, 'timeslot_type') == 0 || array_var($options, 'timeslot_type') == 2 && array_var($options, 'show_estimated_time')){
 				echo "<td class='time nobr right'> 0 </td>";
 			}
 			echo "</tr>";
@@ -157,9 +157,9 @@
 	$totCols = 6 + count_extra_cols($columns);
 	$date_format = user_config_option('date_format');
 
-	if (array_var($post, 'date_type') == 6) {
-		if ($start_time instanceof DateTimeValue) $start_time->advance(-3600*logged_user()->getTimezone(), true);
-		if ($end_time instanceof DateTimeValue) $end_time->advance(-3600*logged_user()->getTimezone(), true);
+	if (array_var($post, 'date_type') != 6) {
+		if ($start_time instanceof DateTimeValue) $start_time->advance(3600*logged_user()->getTimezone(), true);
+		if ($end_time instanceof DateTimeValue) $end_time->advance(3600*logged_user()->getTimezone(), true);
 	}
 	
 	if ($start_time instanceof DateTimeValue) { ?>
@@ -214,10 +214,10 @@
             ?>
                     <div class="report-group-footer" style="margin-top:20px;">
                             <span class="bold" style="font-size:150%;"><?php echo lang('total').": "; ?></span>
-                    <?php if (array_var(array_var($_SESSION, 'total_task_times_report_data'), 'timeslot_type') == 0 || array_var(array_var($_SESSION, 'total_task_times_report_data'), 'timeslot_type') == 2) { ?>
-                            <div style="float:right;width:150px;" class="bold right"><?php echo DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($estimated_total * 60), "hm", 60) ?></div>
+                    <?php if ((array_var(array_var($_SESSION, 'total_task_times_report_data'), 'timeslot_type') == 0 || array_var(array_var($_SESSION, 'total_task_times_report_data'), 'timeslot_type') == 2 ) && array_var(array_var($_SESSION, 'total_task_times_report_data'), 'show_estimated_time')) { ?>
+                            <div style="float:right;width:140px;" class="bold right"><?php echo DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($estimated_total * 60), "hm", 60) ?></div>
                     <?php } ?>
-                            <div style="float:right;width:150px;" class="bold right"><?php echo DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($total * 60), "hm", 60) ?></div>
+                            <div style="float:right;width:140px;" class="bold right"><?php echo DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($total * 60), "hm", 60) ?></div>
                     <?php if (array_var(array_var($_SESSION, 'total_task_times_report_data'), 'show_billing') == 'checked') { ?>
                             <div style="float:right;" class="bold"><?php echo config_option('currency_code', '$') . " " . number_format($billing_total, 2) ?></div>
                     <?php }?>                    
@@ -279,7 +279,9 @@
 <tr style="padding-top:2px;font-weight:bold;">
 	<td style="padding:4px;border-top:2px solid #888;font-size:90%;color:#AAA;text-align:left;font-weight:normal"><?php echo truncate(clean(getGroupTitle($group_by[$i], $previousTSRow)),40,'&hellip;') ?></td>
 	<td colspan=<?php echo ($showBillingCol)? $totCols -2 : $totCols -1 ?> style="padding:4px;border-top:2px solid #888;text-align:right;"><?php echo lang('total') ?>:&nbsp;<?php echo DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($sumTimes[$i] * 60), "hm", 60) ?></td>
-	<?php if ($showBillingCol) { ?><td style="width:30px;padding:4px;border-top:2px solid #888;text-align:right;"><?php echo config_option('currency_code', '$') ?>&nbsp;<?php echo $sumBillings[$i] ?></td><?php } ?>
+	<?php if ($showBillingCol) {
+		?><td style="width:30px;padding:4px;border-top:2px solid #888;text-align:right;"><?php echo config_option('currency_code', '$') ?>&nbsp;<?php echo $sumBillings[$i] ?></td><?php 
+	} ?>
 </tr></table></div></td></tr><?php
 				}
 				$sumTimes[$i] = 0;

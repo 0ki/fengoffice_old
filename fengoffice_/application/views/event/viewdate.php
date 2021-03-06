@@ -57,7 +57,7 @@ $genid = gen_id();
 	if(!$result) $result = array();	
 	
 	$alldayevents = array();
-	$milestones = ProjectMilestones::getRangeMilestones($today, $today);
+	$milestones = ProjectMilestones::getRangeMilestones($dtv, $dtv);
 	if($task_filter != "hide"){
 		$tasks = ProjectTasks::getRangeTasksByUser($dtv, $dtv, ($user_filter != -1 ? $user : null), $task_filter);
 	}
@@ -145,25 +145,14 @@ $genid = gen_id();
 	<table style="width:100%;height:100%;">
 		<tr>
 			<td class="coViewHeader" id='cal_coViewHeader' colspan=2  rowspan=1>
-				<div class="coViewTitle">				
-					<table style="width:100%"><tr><td>
+				<div class="coViewTitle">
+					<table style="width:100%"><tr><td style="height:25px;vertical-align: middle;">
 						<span id="chead0"><?php echo $view_title .' - '. ($user_filter == -1 ? lang('all users') : lang('calendar of', clean($user->getObjectName()))); ?></span>
-					</td><td style="width:100px;">
-					<?php if (config_option("show_feed_links")) { ?>
-						<?php echo checkbox_field("include_subws", true, array("id" => "include_subws", "style" => "float:right;", "onclick" => "javascript:og.change_link_incws('ical_link', 'include_subws')", "title" => lang('check to include sub ws'))) ?>
-					 	<?php echo label_tag(lang('subws'), "include_subws", false, array("style" => "float:right;font-size:60%;margin:0px 3px;vertical-align:top;", "title" => lang('check to include sub ws')), "") ?>
-					 	<?php 
-					 		$export_name = active_project() != null ? clean(active_project()->getName()) : clean($user->getObjectName());
-					 		$export_ws = active_project() != null ? active_project()->getId() : 0;
-					 	 ?>
-					 	<a class="iCalSubscribe" id="ical_link" style="float:right;" href="<?php echo ROOT_URL ."/index.php?c=feed&a=ical_export&n=$export_name&cal=$export_ws&t=".$user->getToken()."&isw=1" ?>" 
-					 		title="<?php echo lang('copy this url in your calendar client software')?>"
-					 		onclick="Ext.Msg.show({
-									   	title: '<?php echo escape_single_quotes(lang('import events from third party software')) ?>',
-									   	msg: '<?php echo escape_single_quotes(lang('copy this url in your calendar client software')) ."<br><br><br>"?>'+document.getElementById('ical_link').href,
-							   			icon: Ext.MessageBox.INFO });return false;"></a>
-					<?php } ?>
-					 </td></tr></table>	
+					</td><td style="height:25px; vertical-align:middle; padding-right:10px;"><?php 
+					if (config_option("show_feed_links")) {
+						renderCalendarFeedLink();
+					}
+					?></td></tr></table>
 				</div>
 			</td>
 		</tr>
@@ -509,10 +498,18 @@ $genid = gen_id();
 															<a href='<?php echo $event->getViewUrl()."&amp;view=day&amp;user_id=".$user_filter ?>' class='internalLink' onclick="og.disableEventPropagation(event);" >
 															<span name="d_ev_div_<?php echo $event->getId()?>_info" style="color:<?php echo $txt_color?>!important;padding-left:5px;"><?php echo $ev_hour_text; ?></span>
 															</a>
+															
 															<?php
-															if ($ev_duration['hours'] == 0) { ?>
-																-<a href='<?php echo $event->getViewUrl()."&amp;view=day&amp;user_id=".$user_filter ?>' class='internalLink' ><span style="color:<?php echo $txt_color?>!important;padding-left:5px;font-weight: <?php if (isset($bold))echo $bold; ?>;"><?php echo $subject;?></span> </a> 
-															<?php } //if ?>
+																$subject_toshow = $subject;
+																if ($event instanceof ProjectTask && $event->getAssignedToContactId() > 0) {
+																	$subject_toshow = '<span class="bold">'.$event->getAssignedToName().'</span>: '.$subject_toshow;
+																} 
+															?>
+														
+															<a href='<?php echo $event->getViewUrl()."&amp;view=day&amp;user_id=".$user_filter?>'
+																onclick="og.disableEventPropagation(event);"
+																class='internalLink'><span style="color:<?php echo $txt_color?>!important;font-size:93%; font-weight: <?php  if (isset($bold))echo $bold; ?>;"><?php echo $subject_toshow;?></span></a>
+															
 														</td><td align="right">
 														<div align="right" style="padding-right:4px;<?php echo ($ev_duration['hours'] == 0 ? 'height:'.$height.'px;' : '') ?>">
 														<?php
@@ -538,16 +535,7 @@ $genid = gen_id();
 														</div>
 														</td></tr>
 														<tr><td>
-															<?php
-																$subject_toshow = $subject;
-																if ($event instanceof ProjectTask && $event->getAssignedToContactId() > 0) {
-																	$subject_toshow = '<span class="bold">'.$event->getAssignedToName().'</span><br />'.$subject_toshow;
-																} 
-															?>
-															<div><a href='<?php echo $event->getViewUrl()."&amp;view=day&amp;user_id=".$user_filter?>'
-																onclick="og.disableEventPropagation(event);"
-																class='internalLink'><span style="color:<?php echo $txt_color?>!important;padding-left:5px;font-size:93%; font-weight: <?php  if (isset($bold))echo $bold; ?>;"><?php echo $subject_toshow;?></span></a>
-															</div>
+															
 														</td></tr>
 														<tr style="height:100%;">
 															<td style="width:100%;" colspan="2"><div style="height: <?php echo $height - PX_HEIGHT ?>px;"></div></td>

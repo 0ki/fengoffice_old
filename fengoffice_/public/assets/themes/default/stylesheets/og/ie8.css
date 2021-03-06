@@ -26,3 +26,7 @@ input[type=checkbox] {
 	padding: 0;
 	border: 0px none;
 }
+
+button.add-first-btn {
+    min-width: 200px !important;
+}

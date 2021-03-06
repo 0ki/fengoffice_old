@@ -238,7 +238,7 @@ og.removeMailAttachment = function(attachment) {
  	if (container.offsetHeight < 61) container.style.overflowY = 'hidden';
 };
 
-og.attachFromFileSystem = function(genid) {
+og.attachFromFileSystem = function(genid, account_member_id) {
  	var quickId = Ext.id();
  	og.openLink(og.getUrl('files', 'quick_add_files', { genid: quickId}), {
 		preventPanelLoad: true,
@@ -252,6 +252,10 @@ og.attachFromFileSystem = function(genid) {
     				og.doFileUpload(quickId, {
     					callback: function() {
     						var form = document.getElementById(quickId + 'quickaddfile');
+    						
+    						var mem_input = document.getElementById(quickId + 'member_ids');
+    						mem_input.setAttribute("value", account_member_id);
+    						
     						var input = document.getElementById(quickId + 'no_msg');
 							input.setAttribute("value", "1");
     						og.ajaxSubmit(form, {

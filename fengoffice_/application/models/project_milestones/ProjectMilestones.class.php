@@ -140,7 +140,13 @@ class ProjectMilestones extends BaseProjectMilestones {
 	}
 	
 	
-	
+	/**
+	 * Return Day milestones
+	 *
+	 * @access public
+	 * @param DateTimeValue $date_start in user gmt
+	 * @param DateTimeValue $date_end	in user gmt	 * 
+	 */
 	function getRangeMilestones(DateTimeValue $date_start, DateTimeValue $date_end, $archived = false) {
 		
 		$from_date = new DateTimeValue ( $date_start->getTimestamp () );
@@ -148,10 +154,14 @@ class ProjectMilestones extends BaseProjectMilestones {
 		$to_date = new DateTimeValue ( $date_end->getTimestamp () );
 		$to_date = $to_date->endOfDay ();
 		
+		//set dates to gmt 0 for sql
+		$from_date->advance(-logged_user()->getTimezone() * (3600));
+		$to_date->advance(-logged_user()->getTimezone() * (3600));
+		
 		$archived_cond = " AND `archived_on` ".($archived ? "<>" : "=")." 0";
 		
 		$conditions = DB::prepareString(' AND `is_template` = false AND `completed_on` = ? AND (`due_date` >= ? AND `due_date` < ?) ' . $archived_cond, array(EMPTY_DATETIME, $from_date, $to_date));
-
+		
 		$result = self::instance()->listing(array(
 			"extra_conditions" => $conditions
 		));

@@ -115,7 +115,9 @@
 		<div class="x-clear"></div>
 		
 		<div id="<?php echo $genid ?>add_custom_properties_div"><?php 
-			echo render_member_custom_properties($member, false);
+			if($member->getObjectTypeId() > 0){
+				echo render_member_custom_properties($member, false);
+			}			
 		?></div>
 		
 		<div class="x-clear"></div>

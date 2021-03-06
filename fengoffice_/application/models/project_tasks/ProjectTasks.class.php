@@ -109,8 +109,9 @@ class ProjectTasks extends BaseProjectTasks {
 		$to_date = new DateTimeValue ( $date_end->getTimestamp ());
 		$to_date = $to_date->endOfDay ();
 		
-		$from_date->advance(logged_user()->getTimezone() * (3600));
-		$to_date->advance(logged_user()->getTimezone() * (3600));
+		//set dates to gmt 0 for sql
+		$from_date->advance(-logged_user()->getTimezone() * (3600));
+		$to_date->advance(-logged_user()->getTimezone() * (3600));	
 		
 		$assignedFilter = '';
 		if ($assignedUser instanceof Contact) {

@@ -246,7 +246,7 @@ if (!$max_events_to_show) $max_events_to_show = 3;
 	<tr>
 	<td class="coViewHeader" colspan=2 rowspan=1>
 	<div class="coViewTitle">
-		<table style="width:100%;"><tr><td style="height:15px;">
+		<table style="width:100%;"><tr><td style="height:25px;vertical-align: middle;">
 			<span id="chead0">
 			<?php if (user_config_option("show_week_numbers")) {
 				$weeknumber = date("W", mktime(0, 0, 0, $month, $startday, $year));
@@ -254,22 +254,11 @@ if (!$max_events_to_show) $max_events_to_show = 3;
 			}?>
 			<?php echo date($date_format, mktime(0, 0, 0, $month, $startday, $year)) ." - ". date($date_format, mktime(0, 0, 0, $month, $endday-1, $year))
 		 	.' - '. ($user_filter == -1 ? lang('all users') : lang('calendar of', clean($user->getObjectName())));?></span>
-		 </td><td style="width:100px;height:15px;">
-		 	<?php if (config_option("show_feed_links")) { ?>
-			 	<?php echo checkbox_field("include_subws", true, array("id" => "include_subws", "style" => "float:right;", "onclick" => "javascript:og.change_link_incws('ical_link', 'include_subws')", "title" => lang('check to include sub ws'))) ?>
-			 	<?php echo label_tag(lang('subws'), "include_subws", false, array("style" => "float:right;font-size:60%;margin:0px 3px;vertical-align:top;", "title" => lang('check to include sub ws')), "") ?>
-			 	<?php 
-			 		$export_name = active_project() != null ? clean(active_project()->getName()) : clean($user->getObjectName());
-			 		$export_ws = active_project() != null ? active_project()->getId() : 0;
-			 	 ?>
-			 	<a class="iCalSubscribe" id="ical_link" style="float:right;" href="<?php echo ROOT_URL ."/index.php?c=feed&a=ical_export&n=$export_name&cal=$export_ws&t=".$user->getToken()."&isw=1" ?>" 
-			 		title="<?php echo lang('copy this url in your calendar client software')?>"
-			 		onclick="Ext.Msg.show({
-							   	title: '<?php echo escape_single_quotes(lang('import events from third party software')) ?>',
-							   	msg: '<?php echo escape_single_quotes(lang('copy this url in your calendar client software')) ."<br><br><br>"?>'+document.getElementById('ical_link').href,
-					   			icon: Ext.MessageBox.INFO });return false;"></a>
-			<?php } ?>
-		 </td></tr></table>	
+		</td><td style="height:25px; vertical-align:middle; padding-right:10px;"><?php 
+		if (config_option("show_feed_links")) {
+			renderCalendarFeedLink();
+		}
+		?></td></tr></table>
 	</div>		
 	</td>
 	</tr>

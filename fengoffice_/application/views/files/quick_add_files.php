@@ -24,6 +24,8 @@ $object = $file;
 	<input id="<?php echo $genid ?>no_msg" name="no_msg" value="" type="hidden" />
 	<input id="<?php echo $genid ?>temp_id" name="temp_id" value="" type="hidden" />        
 	
+	<input id="<?php echo $genid ?>member_ids" name="file[member_ids]" value="" type="hidden" />
+	
 	<input id="<?php echo $genid ?>subscribers" name="subscribers[user_<?php echo logged_user()->getId()?>]" value="checked" type="hidden" />
 	
 

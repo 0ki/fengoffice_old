@@ -33,7 +33,7 @@ addLangs({
 	'type': 'Type',
 	'tags': 'Étiquettes',
 	'last update': 'dernière Màj',
-	'created on': 'Créé par',
+	'created on': 'Créé le',
 	'download': 'Télécharger',
 	'properties': 'Propriétés',
 	'revisions and comments': 'Révisions & Commentaires',
@@ -806,5 +806,6 @@ addLangs({
 	'stay at': 'Restez à {0}',
 	'general view': 'Vue générale',
 	'save as': 'Enregistrer en tant que {0}',
-	'viewing all information': 'Voir tous les enregistrements'
+	'viewing all information': 'Voir tous les enregistrements',
+	'add a variable to this task': 'Ajouter une variable à cette tâche'
 });

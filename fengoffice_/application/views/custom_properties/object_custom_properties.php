@@ -124,19 +124,96 @@ if(count($cps) > 0){
 					}
 					foreach(explode(',', $customProp->getValues()) as $value){
 						$selected = ($value == $default_value) || ($customProp->getIsMultipleValues() && (in_array($value, explode(',', $default_value)))||in_array($value,$toSelect));
-						if($selected){
-							$options[] = '<option value="'. clean($value) .'" selected>'. clean($value) .'</option>';
-						}else{
-							$options[] = option_tag($value, $value);
-						}
+						$options[] = option_tag($value, $value);
 						$totalOptions++;
 					}
-					if($customProp->getIsMultipleValues()){
-						$name .= '[]';
-						echo select_box($name, $options, array('tabindex' => $startTi + $ti, 'style' => 'min-width:140px',  'size' => $totalOptions, 'multiple' => 'multiple', 'id' => $genid . 'cp' . $customProp->getId()));
-					}else{
-						echo select_box($name, $options, array('tabindex' => $startTi + $ti, 'style' => 'min-width:140px', 'id' => $genid . 'cp' . $customProp->getId()));
+					
+					$cp_id = $customProp->getId();
+					$is_mult = $customProp->getIsMultipleValues() ? '1' : '0';
+					echo select_box('aux_'.$name, $options, array('tabindex' => $startTi + $ti, 'style' => 'min-width:140px',
+						'id' => $genid . 'cp' . $customProp->getId(), 'onchange' => "og.cp_list_selected(this, '$genid', '$name', $cp_id, $is_mult);"));
+					
+					echo '<div id="'.$genid.'cp_list_selected">';
+					$i = 0;
+					foreach ($toSelect as $value) {
+						echo '<div style="width:200px;">'.$value
+							.'&nbsp;<a href="#" onclick="og.cp_list_remove(this, \''.$genid.'\', '.$cp_id.');" class="db-ico coViewAction ico-delete" title="'.lang('remove').'">&nbsp;</a>'
+							.'<input type="hidden" name="'.$name.'['.$i.']" value="'.clean($value).'" /></div>';
+						$i++;
 					}
+					
+					echo '<script>
+						if (!og.cp_list_selected_index) og.cp_list_selected_index = [];
+						if (!og.cp_list_selected_index['.$cp_id.']) og.cp_list_selected_index['.$cp_id.'] = [];
+						og.cp_list_selected_index['.$cp_id.']["'.$genid.'"] = '.$i.';
+						if (!og.cp_list_selected_values) og.cp_list_selected_values = [];
+						if (!og.cp_list_selected_values['.$cp_id.']) og.cp_list_selected_values['.$cp_id.'] = [];
+						og.cp_list_selected_values['.$cp_id.']["'.$genid.'"] = [];';
+					foreach ($toSelect as $value) {
+						echo "og.cp_list_selected_values[$cp_id]['$genid'].push('$value');";
+					}
+					echo '</script>';
+					
+					echo '</div>';
+					
+					$script = "<script>
+						og.cp_list_remove = function(remove_link, genid, cp_id) {
+						
+							var inputs = remove_link.parentNode.getElementsByTagName('input');
+							var input = inputs[0];
+							var value = input.value;
+							
+							var tmp = [];
+							for (var i=0; i<og.cp_list_selected_values[cp_id][genid].length; i++) {
+								if (og.cp_list_selected_values[cp_id][genid][i] != value) {
+									tmp.push(og.cp_list_selected_values[cp_id][genid][i]);
+								}
+							}
+							og.cp_list_selected_values[cp_id][genid] = tmp;
+							
+							og.eventManager.fireEvent('after cp list change', [{
+								cp_id: cp_id,
+								genid: genid,
+								values: og.cp_list_selected_values[cp_id][genid]
+							}]);
+							remove_link.parentNode.parentNode.removeChild(remove_link.parentNode);
+							
+							return false;
+						}
+						
+						og.cp_list_selected = function(combo, genid, name, cp_id, is_multiple) {
+							var i = og.cp_list_selected_index[cp_id][genid];
+							var div = document.getElementById(genid + 'cp_list_selected');
+							
+							if (!og.cp_list_selected_values) og.cp_list_selected_values = [];
+							if (!og.cp_list_selected_values[cp_id]) og.cp_list_selected_values[cp_id] = [];
+							if (!og.cp_list_selected_values[cp_id][genid]) og.cp_list_selected_values[cp_id][genid] = [];
+							
+							var val = combo.options[combo.selectedIndex].value;
+							if (val == '' || og.cp_list_selected_values[cp_id][genid].indexOf(val) >= 0) return;
+							
+							var html = '<div>'+ og.clean(val);
+							html += '&nbsp;<a href=\"#\" onclick=\"og.cp_list_remove(this, \''+genid+'\', '+cp_id+');\" class=\"db-ico coViewAction ico-delete\">&nbsp;</a>';
+							html += '<input type=\"hidden\" name=\"'+name+'['+i+']\" value=\"'+val+'\" /></div>';
+							
+							if (is_multiple) {
+								div.innerHTML += html;
+								og.cp_list_selected_index[cp_id][genid] = i + 1;
+								og.cp_list_selected_values[cp_id][genid].push(val);
+							} else {
+								div.innerHTML = html;
+								og.cp_list_selected_values[cp_id][genid] = [val];
+							}
+							
+							og.eventManager.fireEvent('after cp list change', [{
+								cp_id: cp_id,
+								genid: genid,
+								values: og.cp_list_selected_values[cp_id][genid]
+							}]);
+						}
+					</script>";
+					echo $script;
+					
 					break;
 				case 'table':
 					$columnNames = explode(',', $customProp->getValues());
@@ -192,6 +269,7 @@ if(count($cps) > 0){
 					if (is_array($filters) && count($filters) > 0) {
 						$filters_str = '{';
 						foreach ($filters as $k => $v) {
+							if ($v == '') continue;
 							$filters_str .= ($filters_str=='{' ? '' : ',') . "$k : $v";
 						}
 						$filters_str .= '}';

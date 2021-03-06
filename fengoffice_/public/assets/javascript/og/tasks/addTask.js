@@ -427,6 +427,19 @@ ogTasks.drawTaskForm = function(container_id, data){
 		
 	}
 	
+	var task_cp_vals = ogTasks.custom_properties[data.taskId];
+	
+	if (task_cp_vals) {
+		var extra_params = {};
+		extra_params['cp_list_values'] = [];
+		for (cpi in task_cp_vals) {
+			extra_params['cp_list_values'].push({
+				cp_id: cpi,
+				values: task_cp_vals[cpi]
+			});
+		}
+		get_params['extra_params'] = Ext.util.JSON.encode(extra_params);
+	}
 	ogTasks.assignedTo = data.assignedTo ? data.assignedTo : 0;
 	og.openLink(og.getUrl('task', 'allowed_users_to_assign', get_params), {callback:ogTasks.drawAssignedToCombo});
 	
@@ -981,10 +994,10 @@ ogTasks.drawMilestonesCombo = function(success, data) {
 	mStore = ogTasks.buildMilestonesComboStore(data.milestones);
 	prev_combo = Ext.get('ogTasksPanelATMilestoneCombo');
 	if (prev_combo) {
-		m_val = prev_combo.getValue();
+		m_val = Ext.getCmp('ogTasksPanelATMilestoneCombo').getValue();		
 		var found = false;
 		for (i in mStore) {
-			if (mStore[i][1] == m_val) {
+			if (mStore[i][0] == m_val) {
 				ogTasks.selectedMilestone = mStore[i][0];
 				found = true;
 				break;

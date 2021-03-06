@@ -1,7 +1,7 @@
 <?php return  array(
 	
 	"name" => "mail",
-	"version" => "7",
+	"version" => "8",
 	"author" => "Feng Office",
 	"website" => "http://fengoffice.com",
 	"description" => "Email web client",

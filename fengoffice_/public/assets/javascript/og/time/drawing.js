@@ -180,8 +180,10 @@ ogTimeManager.insertRow = function(genid, timeslot, position){
 	cell.appendChild(textNode);
 	
 	cell = row.insertCell(pos++);
-	textNode = document.createTextNode(timeslot.description);
-	cell.appendChild(textNode);
+		
+	var e = document.createElement('div');
+	e.innerHTML = timeslot.description.replace(/\n/g, "<br />");
+	cell.appendChild(e);
 	
 	if (table.rows[0].cells.length >= 8) {
 		cell = row.insertCell(pos++);

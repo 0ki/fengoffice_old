@@ -259,6 +259,7 @@ class TemplateController extends ApplicationController {
 				'description' => $cotemplate->getDescription(),
 			); // array
 			foreach($cotemplate->getObjects() as $obj){
+				if (!$obj instanceof ContentDataObject) continue;
 				$object_properties[$obj->getObjectId()] = TemplateObjectProperties::getPropertiesByTemplateObject(get_id(), $obj->getObjectId());
 			}
 			

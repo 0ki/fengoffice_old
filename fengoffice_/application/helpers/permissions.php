@@ -686,6 +686,8 @@
 			throw $e;
 		}
 		
+		$root_permissions_sharing_table_delete = array();
+		$root_permissions_sharing_table_add = array();
 		if (logged_user() instanceof Contact && can_manage_security(logged_user()) && logged_user()->isAdminGroup()) {
 			try {
 				DB::beginWork();
@@ -715,7 +717,12 @@
 						if (str_starts_with($name, $rp_genid . 'rg_root_')) {
 							$rp_ot = substr($name, strrpos($name, '_')+1);
 							
+							if (is_numeric($rp_ot) && $rp_ot > 0 && $value == 0) {
+								$root_permissions_sharing_table_delete[] = $rp_ot;
+							}
 							if (!is_numeric($rp_ot) || $rp_ot <= 0 || $value < 1) continue;
+							
+							$root_permissions_sharing_table_add[] = $rp_ot;
 							
 							// save with member_id = 0
 							$root_perm_cmp = new ContactMemberPermission();
@@ -789,7 +796,8 @@
 			
 			try {
 				$sharingTablecontroller = new SharingTableController();
-				$sharingTablecontroller->afterPermissionChanged($pg_id, $permissions);
+				$rp_info = array('root_permissions_sharing_table_delete' => $root_permissions_sharing_table_delete, 'root_permissions_sharing_table_add' => $root_permissions_sharing_table_add);
+				$sharingTablecontroller->afterPermissionChanged($pg_id, $permissions, $rp_info);
 			} catch (Exception $e) {
 				DB::rollback();
 				Logger::log("Error saving permissions to sharing table for permission group $pg_id: ".$e->getMessage()."\n".$e->getTraceAsString());
@@ -1039,7 +1047,11 @@
 					}else{
 						$allowed_pg_ids[$perm->pg]['d']=$perm->d;
 					}
-					if ($save_cmps) $cmp->save();
+
+					if ($save_cmps) {
+						$cmp->setUseOnDuplicateKeyWhenInsert(true);
+						$cmp->save();
+					}
 				} else {
 					if ($save_cmps) $cmp->delete();
 				}
@@ -1332,6 +1344,23 @@
 			$object->addToSharingTable();
 		} else {
 			$command = "nice -n19 php ". ROOT . "/application/helpers/add_object_to_sharing_table.php ".ROOT." ".$user->getId()." ".$user->getTwistedToken()." ".$object->getId();
+			exec("$command > /dev/null &");
+		}
+	}
+	
+	function add_multilple_objects_to_sharing_table($ids_str, $user) {
+		if (!defined('DONT_SAVE_PERMISSIONS_IN_BACKGROUND')) define('DONT_SAVE_PERMISSIONS_IN_BACKGROUND', !is_exec_available());
+		
+		if (substr(php_uname(), 0, 7) == "Windows" || (defined('DONT_SAVE_PERMISSIONS_IN_BACKGROUND') && DONT_SAVE_PERMISSIONS_IN_BACKGROUND)){
+			$ids = explode(',', $ids_str);
+			foreach ($ids as $id) {
+				$object = Objects::instance()->findObject($id);
+				if ($object instanceof ContentDataObject) {
+					$object->addToSharingTable();
+				}
+			}
+		} else {
+			$command = "nice -n19 php ". ROOT . "/application/helpers/add_object_to_sharing_table.php ".ROOT." ".$user->getId()." ".$user->getTwistedToken()." ".$ids_str;
 			exec("$command > /dev/null &");
 		}
 	}

@@ -57,8 +57,39 @@
 	function mail_update_6_7() {
 		if (!check_column_exists(TABLE_PREFIX."mail_accounts", "mark_read_on_server")) {
 			DB::execute("
-					ALTER TABLE `".TABLE_PREFIX."mail_accounts` ADD COLUMN `mark_read_on_server` int(1) NOT NULL default '1';
-					");
+				ALTER TABLE `".TABLE_PREFIX."mail_accounts` ADD COLUMN `mark_read_on_server` int(1) NOT NULL default '1';
+			");
 		}
+	}
+	
+	
+	function mail_update_7_8() {
+		
+		$sent_mails = MailContents::findAll(array('conditions' => "`state`=3 AND `has_attachments`=1"));
+		foreach ($sent_mails as $mail) {
+			if (!$mail instanceof MailContent) continue;
+			/* @var $mail MailContent */
+			$attachments = array();
+			MailUtilities::parseMail($mail->getContent(), $decoded, $parsedEmail, $warnings);
+			if (isset($parsedEmail['Attachments'])) {
+				$attachments = $parsedEmail['Attachments'];
+			} else if ($mail->getHasAttachments() && !in_array($parsedEmail['Type'], array('html', 'text', 'delivery-status')) && isset($parsedEmail['FileName'])) {
+				// if the email is the attachment
+				$attachments = array(array('Data' => $parsedEmail['Data'], 'Type' => $parsedEmail['Type'], 'FileName' => $parsedEmail['FileName']));
+			}
+			foreach ($attachments as $att) {
+				$file = ProjectFiles::getByFilename($att['FileName']);
+				/* @var $file ProjectFile */
+				if ($file instanceof ProjectFile) {
+					$file->setMailId($mail->getId());
+					$file->setMarkTimestamps(false);// dont change updated_on date
+					$file->save();
+					$file->addToSharingTable();
+				}
+			}
+		}
+		DB::executeAll("UPDATE ".TABLE_PREFIX."objects o INNER JOIN ".TABLE_PREFIX."project_files f ON f.object_id=o.id
+			SET o.updated_by_id=o.created_by_id, o.updated_on=o.created_on
+			WHERE f.mail_id>0;");
 	}
 

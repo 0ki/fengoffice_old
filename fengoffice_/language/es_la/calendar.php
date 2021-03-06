@@ -85,7 +85,7 @@
 	"CAL_WEEKLY_EVENT" => "Repetir semanalmente",
 	"CAL_MONTHLY_EVENT" => "Repetir mensualmente",
 	"CAL_YEARLY_EVENT" => "Repetir anualmente",
-	"CAL_HOLIDAY_EVENT" => "Repetir vacaciones",
+	"CAL_HOLIDAY_EVENT" => "Repetir por día fijo",
 	"CAL_UNKNOWN_TIME" => "Tiempo de inicio desconocido",
 	"CAL_ADDING_TO" => "Agregando a",
 	"CAL_ANON_ALIAS" => "Alias",

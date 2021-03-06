@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Choto upgrade script will upgrade FengOffice 2.5.1 to FengOffice 2.6.1
+ * Choto upgrade script will upgrade FengOffice 2.5.1 to FengOffice 2.6.2.2
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -40,7 +40,7 @@ class ChotoUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('2.5.1.5');
-		$this->setVersionTo('2.6.1');
+		$this->setVersionTo('2.6.2.2');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -212,6 +212,14 @@ class ChotoUpgradeScript extends ScriptUpgraderScript {
 					ALTER TABLE `".$t_prefix."member_custom_properties` ADD COLUMN `code` VARCHAR(255) NOT NULL DEFAULT '';
 					";
 				}
+			}
+			
+			if (version_compare($installed_version, '2.6.2-beta') < 0) {
+				$upgrade_script .= "
+					INSERT INTO `".$t_prefix."contact_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES 
+						('general', 'timeReportShowEstimatedTime', '1', 'BoolConfigHandler', 1, 0, '')
+					ON DUPLICATE KEY UPDATE name=name;
+				";
 			}
 			
 			if(!$this->executeMultipleQueries($upgrade_script, $total_queries, $executed_queries, $this->database_connection)) {

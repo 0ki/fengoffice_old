@@ -457,6 +457,7 @@
 	//Hidden
 	'can_task_assignee'=>'Puede asignarsele tareas',
 	'can_manage_billing'=>'Puede manejar facturación',
+	'can_manage_billing description'=>'Si este permiso está marcado el usuario podrá modificar las configuraciones de facturación.',
 	'can_view_billing'=>'Puede ver facturación',
 
 	//END Hidden

@@ -1627,11 +1627,11 @@ function pdf2text($filename) {
 }
 
 function docx2text($filename) {
-    return readZippedXML($filename, "word/document.xml");
+    return readZippedXML($filename, "word/document.xml","docx");
 }
 
 function odt2text($filename) {
-    return readZippedXML($filename, "content.xml");
+    return readZippedXML($filename, "content.xml","odt");
 }
 
 function fodt2text($filename,$id) {    
@@ -1652,7 +1652,7 @@ function fodt2text($filename,$id) {
     return $content;
 }
 
-function readZippedXML($archiveFile, $dataFile) {
+function readZippedXML($archiveFile, $dataFile, $type = null) {
     // Create new ZIP archive
     $zip = new ZipArchive;
 
@@ -1662,6 +1662,16 @@ function readZippedXML($archiveFile, $dataFile) {
         if (($index = $zip->locateName($dataFile)) !== false) {
             // If found, read it to the string
             $data = $zip->getFromIndex($index);
+            
+            //convert tabs to blank spaces
+            if(!is_null($type)){
+            	if($type == "odt"){
+            		$data = str_replace ( "<text:tab/>" , " " , $data);
+            	}elseif ($type == "docx"){
+            		$data = str_replace ( "<w:tab/>" , " " , $data);
+            	}
+            }
+            
             // Close archive file
             $zip->close();
             // Load XML from a string

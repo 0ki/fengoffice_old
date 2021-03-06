@@ -36,4 +36,25 @@
 	'show always' => 'Afficher toujours ce rapport (utiliser l\'option "liés à" uniquement pour vérifier les permissions et non pour filtrer la liste des rapports).',
 	'subtotal' => 'Sous-total',
 	'print this page' => 'Imprimer cette page',
+
+	'field Objects rel_object_id' => 'Id tâche',
+	'field Timeslots rel_object_id' => 'Id tâche',
+	'field Objects contact_id' => 'Personne',
+	'field Objects description' => 'Description',
+	'field Objects id' => 'Id',
+	'field Timeslots id' => 'Temp Id',
+	'field Objects name' => 'Nom',
+	'field Objects created_on' => 'Créé le',
+	'field Objects updated_on' => 'Mise-à-jour le',
+	'field Objects created_by_id' => 'Créé par',
+	'field Objects updated_by_id' => 'Mise-à-jour par',
+	'field Objects archived_on' => 'Archivé le',
+  	'field Objects time' => 'Temps (heures)',
+  	'field Objects billing' => 'Valeurs de facturation',
+  
+  	'field ProjectTasks assigned_by_id' => 'Assigné par',
+  	'field ProjectTasks type_content' => 'Type content',
+
+	'field Timeslots created_by_id' => 'Demandeur',
+	'field Timeslots start_time' => 'Temp date',
 ); ?>

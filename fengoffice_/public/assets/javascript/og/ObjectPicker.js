@@ -8,6 +8,7 @@ og.ObjectPicker = function(config, object_id, object_id_no_select, ignore_contex
 		ajax: true,
 		include_comments: true,
 		id_no_select: object_id_no_select,
+		count_results : true,
 		extra_list_params: extra_list_param
 	};
 	if (ignore_context) {

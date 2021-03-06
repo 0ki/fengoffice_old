@@ -68,8 +68,8 @@ class TaskController extends ApplicationController {
 				if (is_array($duetime)) {
 					$task_data['due_date']->setHour(array_var($duetime, 'hours'));
 					$task_data['due_date']->setMinute(array_var($duetime, 'mins'));
-				}
-				$task_data['due_date']->advance(logged_user()->getTimezone() * -3600);
+					$task_data['due_date']->advance(logged_user()->getTimezone() * -3600);
+				}				
 				$task_data['use_due_time'] = is_array($duetime);
 			}
 			if ($task_data['start_date'] instanceof DateTimeValue) {
@@ -77,8 +77,8 @@ class TaskController extends ApplicationController {
 				if (is_array($starttime)) {
 					$task_data['start_date']->setHour(array_var($starttime, 'hours'));
 					$task_data['start_date']->setMinute(array_var($starttime, 'mins'));
-				}
-				$task_data['start_date']->advance(logged_user()->getTimezone() * -3600);
+					$task_data['start_date']->advance(logged_user()->getTimezone() * -3600);
+				}				
 				$task_data['use_start_time'] = is_array($starttime);
 			}
 
@@ -298,8 +298,8 @@ class TaskController extends ApplicationController {
 				if (is_array($duetime)) {
 					$task_data['due_date']->setHour(array_var($duetime, 'hours'));
 					$task_data['due_date']->setMinute(array_var($duetime, 'mins'));
-				}
-				$task_data['due_date']->advance(logged_user()->getTimezone() * -3600);
+					$task_data['due_date']->advance(logged_user()->getTimezone() * -3600);
+				}				
 				$task_data['use_due_time'] = is_array($duetime);
 			}
 			if ($task_data['start_date'] instanceof DateTimeValue) {
@@ -307,8 +307,8 @@ class TaskController extends ApplicationController {
 				if (is_array($starttime)) {
 					$task_data['start_date']->setHour(array_var($starttime, 'hours'));
 					$task_data['start_date']->setMinute(array_var($starttime, 'mins'));
-				}
-				$task_data['start_date']->advance(logged_user()->getTimezone() * -3600);
+					$task_data['start_date']->advance(logged_user()->getTimezone() * -3600);
+				}				
 				$task_data['use_start_time'] = is_array($starttime);
 			}
 				
@@ -371,13 +371,18 @@ class TaskController extends ApplicationController {
 					$task->setTimeEstimate($totalMinutes);
 				}
 				$task->save();
-
-				$task->calculatePercentComplete();
 				
+				if (!isset($task_data['percent_completed'])) {
+					$task->calculatePercentComplete();
+				}
 				// get member ids
 				$member_ids = array();
 				if (array_var($task_data, 'members')) {
 					$member_ids = json_decode(array_var($task_data, 'members'));					
+				}
+				
+				if(isset($task_data['keep_members']) && $task_data['keep_members']){
+					$member_ids = $task->getMemberIds();					
 				}
 				
 				$remove_members_from_dim = array_var($task_data, 'remove_from_dimension');
@@ -463,7 +468,7 @@ class TaskController extends ApplicationController {
 				DB::commit();
 				
 				// notify asignee
-				if((array_var($task_data, 'notify') == 'true' && $send_edit == false) || (user_config_option("can notify from quick add") && !user_config_option("show_notify_checkbox_in_quick_add") && $send_edit == false)) {
+				if((array_var($task_data, 'notify') == 'true' && $send_edit == false) || (user_config_option("can notify from quick add") && !user_config_option("show_notify_checkbox_in_quick_add") && $send_edit == false && !array_var($task_data, 'notify') == 'false')) {
 					try {
 						Notifier::taskAssigned($task);
 					} catch(Exception $e) {
@@ -942,6 +947,18 @@ class TaskController extends ApplicationController {
 			ObjectMembers::instance()->getCachedObjectMembers(0, $task_ids);
 			ProjectTasks::instance()->findByRelatedCached(0, $task_ids);
 		}
+		$cp_values = array();
+		if (count($task_ids) > 0) {
+			$cp_rows = DB::executeAll("SELECT * FROM ".TABLE_PREFIX."custom_property_values WHERE object_id IN (".implode(',', $task_ids).")");
+			if(is_array($cp_rows)){
+				foreach ($cp_rows as $row) {
+					if (!isset($cp_values[$row['object_id']])) $cp_values[$row['object_id']] = array();
+					if (!isset($cp_values[$row['object_id']][$row['custom_property_id']])) $cp_values[$row['object_id']][$row['custom_property_id']] = array();
+					$cp_values[$row['object_id']][$row['custom_property_id']][] = $row['value'];
+				}
+			}
+		}
+		tpl_assign('cp_values', $cp_values);
 		
 		$int_milestone_ids = array();
 		foreach($internalMilestones as $milestone) {
@@ -1247,8 +1264,8 @@ class TaskController extends ApplicationController {
 					if (is_array($duetime)) {
 						$task_data['due_date']->setHour(array_var($duetime, 'hours'));
 						$task_data['due_date']->setMinute(array_var($duetime, 'mins'));
-					}
-					$task_data['due_date']->advance(logged_user()->getTimezone() * -3600);
+						$task_data['due_date']->advance(logged_user()->getTimezone() * -3600);
+					}					
 					$task_data['use_due_time'] = is_array($duetime);
 				}
 				if ($task_data['start_date'] instanceof DateTimeValue) {
@@ -1256,8 +1273,8 @@ class TaskController extends ApplicationController {
 					if (is_array($starttime)) {
 						$task_data['start_date']->setHour(array_var($starttime, 'hours'));
 						$task_data['start_date']->setMinute(array_var($starttime, 'mins'));
-					}
-					$task_data['start_date']->advance(logged_user()->getTimezone() * -3600);
+						$task_data['start_date']->advance(logged_user()->getTimezone() * -3600);
+					}					
 					$task_data['use_start_time'] = is_array($starttime);
 				}
 				
@@ -2385,7 +2402,7 @@ class TaskController extends ApplicationController {
 			"companies" => $comp_array
 		);
 		
-		Hook::fire('modify_allowed_users_to_assign', null, $object);
+		Hook::fire('modify_allowed_users_to_assign', array('params' => array_var($_REQUEST, 'extra_params')), $object);
 		
 		if(!can_manage_tasks(logged_user()) && can_task_assignee(logged_user())) $object['only_me'] = "1";
 		
@@ -2404,31 +2421,61 @@ class TaskController extends ApplicationController {
 	  
 		$tochange = array_var($_GET, 'tochange', '');
 	  
+		$conserve_times = array_var($_GET, 'conserve_times', 0);
+		
 		if (($tochange == 'both' || $tochange == 'due') && $task->getDueDate() instanceof DateTimeValue ) {
+			$old_due_date =  $task->getDueDate();//gmt 0
+			
 			$year = array_var($_GET, 'year', $task->getDueDate()->getYear());
 			$month = array_var($_GET, 'month', $task->getDueDate()->getMonth());
 			$day = array_var($_GET, 'day', $task->getDueDate()->getDay());
 			$hour = array_var($_GET, 'hour', $task->getDueDate()->getHour());
 			$minute = array_var($_GET, 'min', $task->getDueDate()->getMinute());
 			
-			$new_date = new DateTimeValue(mktime($hour, $minute, 0, $month, $day, $year));
-			if (isset($_GET['hour']) && isset($_GET['min'])) {
-				$new_date->advance(logged_user()->getTimezone() * -3600);
+				
+			
+			if($conserve_times){
+				$old_due_date->advance(logged_user()->getTimezone() * 3600);//in user gmt
+				$hour = $old_due_date->getHour();
+				$minute = $old_due_date->getMinute();
+				
+				$new_date = new DateTimeValue(mktime($hour, $minute, 0, $month, $day, $year));
+				
+				$new_date->advance(logged_user()->getTimezone() * -3600);//gmt 0
+			}else{
+				$new_date = new DateTimeValue(mktime($hour, $minute, 0, $month, $day, $year));
+				if (isset($_GET['hour']) && isset($_GET['min'])) {
+					$new_date->advance(logged_user()->getTimezone() * -3600);
+				}
 			}
-			$task->setDueDate($new_date);
+			
+			$task->setDueDate($new_date);			
 		}
 		if (($tochange == 'both' || $tochange == 'start') && $task->getStartDate() instanceof DateTimeValue ) {
+			$old_start_date =  $task->getStartDate();//gmt 0
+			
 			$year = array_var($_GET, 'year', $task->getStartDate()->getYear());
 			$month = array_var($_GET, 'month', $task->getStartDate()->getMonth());
 			$day = array_var($_GET, 'day', $task->getStartDate()->getDay());
 			$hour = array_var($_GET, 'hour', $task->getStartDate()->getHour());
 			$minute = array_var($_GET, 'min', $task->getStartDate()->getMinute());
 			
-			$new_date = new DateTimeValue(mktime($hour, $minute, 0, $month, $day, $year));
-			if (isset($_GET['hour']) && isset($_GET['min'])) {
-				$new_date->advance(logged_user()->getTimezone() * -3600);
+			if($conserve_times){
+				$old_start_date->advance(logged_user()->getTimezone() * 3600);//in user gmt
+				$hour = $old_start_date->getHour();
+				$minute = $old_start_date->getMinute();
+				
+				$new_date = new DateTimeValue(mktime($hour, $minute, 0, $month, $day, $year));
+				
+				$new_date->advance(logged_user()->getTimezone() * -3600);//gmt 0
+			}else{
+				$new_date = new DateTimeValue(mktime($hour, $minute, 0, $month, $day, $year));
+				if (isset($_GET['hour']) && isset($_GET['min'])) {
+					$new_date->advance(logged_user()->getTimezone() * -3600);
+				}
 			}
-			$task->setStartDate($new_date);
+			
+			$task->setStartDate($new_date);			
 		}
 		
 		try {

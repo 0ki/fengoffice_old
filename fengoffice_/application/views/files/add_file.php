@@ -244,7 +244,7 @@ $visible_cps = CustomProperties::countVisibleCustomPropertiesByObjectType($objec
 	<div id="<?php echo $genid ?>add_file_description_div" style="display: none">
 		<fieldset>
 		<legend><?php echo lang('description') ?></legend>
-		<?php echo textarea_field('file[description]', array_var($file_data, 'description'), array('class' => '', 'id' => $genid.'fileFormDescription', 'tabindex' => '90')) ?>
+		<?php echo textarea_field('file[description]', array_var($file_data, 'description'), array('class' => '', 'style' => 'width: 100%;' , 'id' => $genid.'fileFormDescription', 'tabindex' => '90')) ?>
 		</fieldset>
 	</div>
 

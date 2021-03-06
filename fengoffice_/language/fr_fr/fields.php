@@ -121,7 +121,7 @@
 	'field ProjectTasks title' => 'Titre',
 	'field ProjectTasks started_on' => 'Démarré à ',
 	'field ProjectTasks priority' => 'Priorité',
-	'field ProjectTasks assigned_on' => 'Affecté à ',
+	'field ProjectTasks assigned_on' => 'Affecté le ',
 	'field ProjectTasks created_by_id' => 'Créé par ',
 	'field ProjectFiles updated_by_id' => 'Mis-à-jour par ',
 	'field ProjectMilestones due_date' => 'Date de remise ',

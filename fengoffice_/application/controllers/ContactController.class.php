@@ -1927,14 +1927,22 @@ class ContactController extends ApplicationController {
 		if ($only_first_record) {
 			$result = fgetcsv($handle, null, $delimiter);
 			$aux = array();
-			foreach ($result as $title) $aux[] = mb_convert_encoding($title, "UTF-8", detect_encoding($title));
+			if (function_exists('mb_convert_encoding')) {
+				foreach ($result as $title) $aux[] = mb_convert_encoding($title, "UTF-8", detect_encoding($title));
+			} else {
+				foreach ($result as $title) $aux[] = $title;
+			}
 			$result = $aux;			
 		} else {
 			
 			$result = array();
 			while ($fields = fgetcsv($handle, null, $delimiter)) {
 				$aux = array();
-				foreach ($fields as $field) $aux[] = mb_convert_encoding($field, "UTF-8", detect_encoding($field));
+				if (function_exists('mb_convert_encoding')) {
+					foreach ($fields as $field) $aux[] = mb_convert_encoding($field, "UTF-8", detect_encoding($field));
+				} else {
+					foreach ($fields as $field) $aux[] = $field;
+				}
 				$result[] = $aux;
 			}
 		}
@@ -2181,6 +2189,7 @@ class ContactController extends ApplicationController {
                                                 if ($company == null) {                                                        
                                                         $company = new Contact();
                                                         $company->setObjectName($contact_data['company_name']);
+                                                        $company->setFirstName($contact_data['company_name']);
                                                         $company->setIsCompany(1);
                                                         $company->save();                                                        
                                                         ApplicationLogs::createLog($company, null, ApplicationLogs::ACTION_ADD);
@@ -2205,7 +2214,7 @@ class ContactController extends ApplicationController {
                                                     $contact = new Contact();
                                                     $contact_data['import_status'] = '('.lang('new').')';
                                                     $log_action = ApplicationLogs::ACTION_ADD;
-                                                    $can_import = active_project() != null ? $contact->canAdd(logged_user(), active_project()) : can_manage_contacts(logged_user());
+                                                    $can_import = Contact::canAdd(logged_user(), active_context());
                                             } else {
                                                     $can_import = $contact->canEdit(logged_user());
                                             }
@@ -2258,6 +2267,10 @@ class ContactController extends ApplicationController {
                                                     if($contact_data['email2'] != "") $contact->addEmail($contact_data['email2'], 'personal');
                                                     if($contact_data['email3'] != "") $contact->addEmail($contact_data['email3'], 'personal');
 
+                                                    if(count(active_context_members(false)) > 0 ){
+                                                    	$object_controller->add_to_members($contact, active_context_members(false));
+                                                    }
+                                                    
                                                     ApplicationLogs::createLog($contact, null, $log_action);
                                                     $import_result['import_ok'][] = $contact_data;
                                             } else {

@@ -198,6 +198,7 @@ if(count($cps) > 0){
 					if (is_array($filters) && count($filters) > 0) {
 						$filters_str = '{';
 						foreach ($filters as $k => $v) {
+							if ($v == '') continue;
 							$filters_str .= ($filters_str=='{' ? '' : ',') . "$k : $v";
 						}
 						$filters_str .= '}';
@@ -213,7 +214,7 @@ if(count($cps) > 0){
 						id: "cp'.$customProp->getId().'",
 						name: "'.$name.'",
 						render_to: "contacts_combo_container-cp'.$customProp->getId().'",
-						selected: '.$value.',
+						selected: '.(is_numeric($value) ? "$value" : "0").',
 						selected_name: "'.($contact instanceof Contact ? clean($contact->getObjectName()) : '').'",
 						filters: '.$filters_str.'
 					  });
