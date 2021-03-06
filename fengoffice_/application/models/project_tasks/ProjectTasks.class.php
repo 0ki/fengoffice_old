@@ -464,6 +464,7 @@ class ProjectTasks extends BaseProjectTasks {
 			$new->setIsTemplate($as_template);
 			$new->setParentId($taskTo->getId());
 			$new->setProjectId($taskTo->getProjectId());
+			$new->setMilestoneId($taskTo->getMilestoneId());
 			$new->setOrder(ProjectTasks::maxOrder($new->getParentId(), $new->getMilestoneId()));
 			if ($sub->getIsTemplate()) {
 				$new->setFromTemplateId($sub->getId());

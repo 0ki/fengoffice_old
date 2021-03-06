@@ -343,6 +343,28 @@
     	return $this->setColumnValue('incoming_ssl_port', $value);
     } // setIncomingSslPort()
 
+    /**
+     * Return value of 'del_from_server' field
+     *
+     * @access public
+     * @param void
+     * @return integer
+     */
+    function getDelFromServer() {
+    	return $this->getColumnValue('del_from_server');
+    } // getDelFromServer()
+
+    /**
+     * Set value of 'del_from_server' field
+     *
+     * @access public
+     * @param integer $value
+     * @return boolean
+     */
+    function setDelFromServer($value) {
+    	return $this->setColumnValue('del_from_server', $value);
+    } // setDelFromServer()
+    
 
     /**
     * Return manager instance

@@ -58,21 +58,19 @@ class MailAccount extends BaseMailAccount {
       )); // findAll
 	} // getMailContents
 
-	function getUidls()
-	{
-		try
-		{
-			$sql = "SELECT uid from " . MailContents::instance()->getTableName()." WHERE account_id = ". $this->getId();
-			$rows = DB::executeAll($sql);
-			return $rows;
+	function getUids() {
+		$sql = "SELECT `uid` FROM `" . MailContents::instance()->getTableName() .
+				"` WHERE `account_id` = ". $this->getId();
+		$rows = DB::executeAll($sql);
+		$uids = array();
+		if (isset($rows) && is_array($rows)) {
+			foreach ($rows as $r) {
+				$uids[] = $r['uid'];
+			}
 		}
-		catch(Exception $e)
-		{
-			echo $e;
-		}
+		return $uids;
 	}
-
-
+	
 	// ---------------------------------------------------
 	//  URLs
 	// ---------------------------------------------------
@@ -207,12 +205,12 @@ class MailAccount extends BaseMailAccount {
 	} // getObjectUrl
 
 	
-	function delete(){
-		$mails = $this->getMailContents();
-		if($mails){
-			foreach ($mails as $mail){
-				$mail->delete();
-			}
+	function delete($deleteMails = false){
+		if ($deleteMails) {
+			MailContents::delete('`account_id` = ' . DB::escape($this->getId()));
+		}
+		if ($this->getIsImap()) {
+			MailAccountImapFolders::delete('account_id = ' . $this->getId());
 		}
 		parent::delete();
 	}

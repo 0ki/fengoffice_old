@@ -1,12 +1,10 @@
 <?php
 
-
-define('MYSQLDUMP_COMMAND', 'mysqldump'); // For Windows: define('MYSQLDUMP_COMMAND', '"c:\Program Files\MySQL\MySQL Server 5.0\bin\mysqldump"');
-define('DB_BACKUP_FILENAME', 'db.sql');
-define('BACKUP_FOLDER',"tmp/backup");
-define('BACKUP_TIME_LIMIT',"300");
-define('BACKUP_FILENAME',"opengoo_backup.zip");
-
+if (!defined('MYSQLDUMP_COMMAND')) define('MYSQLDUMP_COMMAND', 'mysqldump'); // For Windows: define('MYSQLDUMP_COMMAND', '"c:\Program Files\MySQL\MySQL Server 5.0\bin\mysqldump"');
+if (!defined('DB_BACKUP_FILENAME')) define('DB_BACKUP_FILENAME', 'db.sql');
+if (!defined('BACKUP_FOLDER')) define('BACKUP_FOLDER', "tmp/backup");
+if (!defined('BACKUP_TIME_LIMIT')) define('BACKUP_TIME_LIMIT', "300");
+if (!defined('BACKUP_FILENAME')) define('BACKUP_FILENAME', "opengoo_backup.zip");
 
 /**
  * Backup controller
@@ -47,12 +45,18 @@ class  BackupController extends ApplicationController {
 		} // if
 		$filename =  BACKUP_FILENAME;
 		$folder = BACKUP_FOLDER;
-		$last_backup=filectime($folder . '/' .$filename );
-		if($last_backup){
+		$last_backup = @filectime($folder . '/' .$filename );
+		if (is_file($folder . '/' .$filename )) {
+			$has_backup = true;
+		} else {
+			$has_backup = false;
+		}
+		if ($last_backup) {
 			$date = new DateTimeValue($last_backup);
 			$date = $date->format("Y/m/d H:i:s");
 		}
-		tpl_assign('last_backup',$date);
+		tpl_assign('has_backup', $has_backup);
+		tpl_assign('last_backup', $date);
 	}
 	
 	/**
@@ -72,21 +76,15 @@ class  BackupController extends ApplicationController {
 			return ;
 		}
 		$filename = BACKUP_FOLDER . '/' . BACKUP_FILENAME;
-		if(file_exists($filename)){
-			$content = file_get_contents($filename);
-		}
-		else {
+		if (!is_file($filename)) {
 			flash_error(lang('file dnx'));
 			ajx_current("empty");
 			return ;
 		}
 		
-		$last_backup=filectime($filename );
-		$date = new DateTimeValue($last_backup);
-		$date_str = $date->format("y_m_d");
-		
 		$size = strlen($content);
-		download_contents( $content, 'application/zip', BACKUP_FILENAME , $size, true);
+		session_commit();
+		download_file($content, 'application/zip', BACKUP_FILENAME , $size, true);
 		die();
 	}
 	
@@ -122,59 +120,88 @@ class  BackupController extends ApplicationController {
 	 * Launch backup process
 	 *
 	 */
-	function launch(){
+	function launch() {
+		ajx_current("empty");
 		// Access permissios
-		if(!(logged_user()->isAccountOwner())){
+		if (!(logged_user()->isAccountOwner())) {
 			flash_error(lang('no access permissions'));
-			ajx_current("empty");
 			return ;
 		} // if
-		try{
+		try {
+			set_time_limit(BACKUP_TIME_LIMIT);
 			$filename = BACKUP_FOLDER .'/'. BACKUP_FILENAME;
 			$folder = BACKUP_FOLDER;
 			if(!dir($folder)){
 				$ret = mkdir($folder);
 				if(!$ret){
-					flash_error(lang('error create backup folder'));						
-					ajx_current("empty");
-					return ;	
+					throw new Exception(lang('error create backup folder'));
 				}		
 			}
 			//start backup
+			$db_host = DB_HOST;
 			$db_user = DB_USER;
 			$db_pass = DB_PASS;
 			$db_name = DB_NAME;
 			$db_backup = BACKUP_FOLDER .'/'. DB_BACKUP_FILENAME;
 			$mysqldump_cmd = MYSQLDUMP_COMMAND;
-			set_time_limit(BACKUP_TIME_LIMIT);
-			exec("$mysqldump_cmd --user=$db_user --password=$db_pass $db_name > $db_backup",$ret);
-			if(filesize ($db_backup)){
+			exec("$mysqldump_cmd --host=$db_host --user=$db_user --password=$db_pass $db_name > $db_backup",$ret);
+			if (is_file($db_backup)) {
 				if(file_exists($filename)){
 					unlink($filename);
 				}
 				$ret = $this->create_zip();
 				unlink($db_backup);
-			}
-			else{
+			} else {
 				unlink($db_backup);
 				flash_error(lang('error db backup'));
-				ajx_current("empty");
 				return ;
 			}
-		}
-		catch (Exception $ex){
+			flash_success(lang('success db backup'));
+		} catch (Exception $ex) {
 				flash_error(lang('error db backup') . $ex);
-				ajx_current("empty");
 				return ;
 		}
 		$this->redirectTo('backup');
 	}
+	
 	private function create_zip(){		
 		$filename = BACKUP_FOLDER .'/'. BACKUP_FILENAME;
-		$test = new zip_file($filename);
-		$test->set_options(array('inmemory' => 0, 'recurse' => 1, 'storepaths' => 1));
-		$test->add_files(array("*")); 
-		$test->create_archive();
+		$files = array();
+		$this->parse_dir(".", $files);
+		if (is_file($filename)) unlink($filename);
+		$backup = new ZipArchive();
+		$backup->open($filename, ZIPARCHIVE::OVERWRITE);
+		$count = 0;
+		foreach ($files as $file) {
+			if (str_starts_with($file, "./tmp")) continue; // don't backup tmp folder
+			$backup->addFile($file, substr($file, 2));
+			$count++;
+			if ($count == 200) {
+				// the ZipArchive class allows upto 200 file descriptors,
+				// so we close the zip to write files and reopen it to continue
+				$backup->close();
+				$backup = new ZipArchive();
+				$backup->open($filename);
+				$count = 0;
+			}
+		}
+		$backup->addFile(BACKUP_FOLDER .'/'. DB_BACKUP_FILENAME, "db.sql");
+		$backup->close();
+	}
+	
+	private function parse_dir($dirname, &$files) {
+		$dir = @opendir($dirname);
+		while ($file = @readdir($dir)) {
+			$fullname = "$dirname/$file";
+			if ($file == "." || $file == "..") {
+				continue;
+			} else if (@is_dir($fullname)) {
+				$this->parse_dir($fullname, $files);
+			} else if (@is_file($fullname)) {
+				$files[] = $fullname;
+			}
+		}
+		@closedir($dir);
 	}
 } // BackupController
 

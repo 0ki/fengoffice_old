@@ -6,11 +6,18 @@
 <script type="text/javascript">
 function submitCsv(genid) {
 	fname = document.getElementById(genid + 'filenamefield');
-	if (fname.value != '') {
-		form = document.getElementById(genid + 'csvimport');
-		og.submit(form, {
-			callback: og.getUrl('contact', 'import_from_csv_file', {calling_back: 1})
-		});
+	ok = true;
+	
+	if (fname.value.lastIndexOf('.csv') == -1 || fname.value.lastIndexOf('.csv') != fname.value.length - 4 ) {
+		ok = confirm(lang('not csv file continue'));
+	}
+	if (ok) {
+		if (fname.value != '') {
+			form = document.getElementById(genid + 'csvimport');
+			og.submit(form, {
+				callback: og.getUrl('contact', 'import_from_csv_file', {calling_back: 1})
+			});
+		}
 	}
 }
 </script>
@@ -21,7 +28,7 @@ function submitCsv(genid) {
 <div class="coInputHeader">
 <div class="coInputHeaderUpperRow">
 <div class="coInputTitle">
-	<table style="width:535px"><tr><td><?php echo isset($import_result) ? lang('import result') : lang('import contacts from csv');?></td>
+	<table style="width:535px"><tr><td><?php echo isset($import_result) ? lang('import result') : ($import_type == 'contact' ? lang('import contacts from csv') : lang('import companies from csv'));?></td>
 <?php if (isset($titles)) { ?>
 	<td style="text-align:right"><?php echo submit_button(lang('import'), 's', array('style'=>'margin-top:0px;margin-left:10px','id' => $genid.'csv_import_submit1')) ?></td>
 <?php } ?>
@@ -32,25 +39,26 @@ function submitCsv(genid) {
 <?php if (!isset($titles) && !isset($import_result)) { ?>
 	<div id="<?php echo $genid ?>selectFileControlDiv">
         <?php echo label_tag(lang('file'), $genid . 'filenamefield', true) ?>
-        <?php echo file_field('csv_file', null, array('id' => $genid . 'filenamefield', 'class' => 'title', 'size' => '88', "onclick" => 'javascript:submitCsv(\'' . $genid .'\')')) ?>
+        <?php echo file_field('csv_file', null, array('id' => $genid . 'filenamefield', 'class' => 'title', 'size' => '88', "onchange" => 'javascript:submitCsv(\'' . $genid .'\')')) ?>
+    </div>
+    <div id="<?php echo $genid ?>first_record_has_names_div">
+    	<table><tr><td><?php echo label_tag(lang('first record contains field names'), $genid . 'first_record_has_names') ?></td>
+    	<td style="padding-left:10px;padding-top:5px;">
+    	<?php echo yes_no_widget('first_record_has_names', $genid.'first_record_has_names', true, lang('yes'), lang('no')) ?></td></tr></table>
     </div>
     <div id="<?php echo $genid ?>delimiter_div">
     	<table><tr><td><?php echo label_tag(lang('field delimiter'), $genid . 'delimiter') ?></td>
     	<td style="padding-left:10px;">
-    	<?php echo text_field('delimiter', ',', array('id' => $genid.'delimiter', 'style' => 'width:10px;')) ?></td></tr></table>
+    	<?php echo text_field('delimiter', '', array('id' => $genid.'delimiter', 'style' => 'width:10px;')) ?></td></tr></table>
     </div>
-    <div id="<?php echo $genid ?>first_record_has_names_div">
-    	<table><tr><td><?php echo label_tag(lang('first record contains field names'), $genid . 'first_record_has_names') ?></td>
-    	<td style="padding-left:10px;">
-    	<?php echo yes_no_widget('first_record_has_names', $genid.'first_record_has_names', true, lang('yes'), lang('no')) ?></td></tr></table>
-    </div>
-<?php } //if ?>
+   	<?php } //if ?>
 <?php if (isset($titles)) { ?>
 	<div>
 	<p><b><?php echo lang('you must match the database fields with file fields before executing the import process') ?></b></p>
 	<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('<?php echo $genid ?>import_contact_add_tags_div', this)"><?php echo lang('tags') ?></a>
 	</div>
-<?php }//if ?>
+<?php } //if ?>
+
 </div>
 <?php if (isset($titles)) { ?>
 	
@@ -62,54 +70,13 @@ function submitCsv(genid) {
 	
 	<div class="coInputMainBlock adminMainBlock">
 	
-	<table><tr><th></th><th><?php echo lang('contact fields'); ?></th><th><?php echo lang('fields from file'); ?></th></tr>
+	<table><tr><th></th><th><?php echo ($import_type == 'contact' ? lang('contact fields') : lang('company fields')); ?></th><th><?php echo lang('fields from file'); ?></th></tr>
 	
 	<?php
-		$contact_fields = array('contact[firstname]' => lang('first name'),
-			'contact[lastname]' => lang('last name'), 
-			'contact[email]' => lang('email address'),
+		if ($import_type == 'contact') 
+			$contact_fields = Contacts::getContactFieldNames();
+		else $contact_fields = Companies::getCompanyFieldNames();
 
-			'contact[w_web_page]' => lang('website'), 
-			'contact[w_address]' => lang('address'),
-			'contact[w_city]' => lang('city'),
-			'contact[w_state]' => lang('state'),
-			'contact[w_zipcode]' => lang('zipcode'),
-			'contact[w_country]' => lang('country'),
-			'contact[w_phone_number]' => lang('phone'),
-			'contact[w_phone_number2]' => lang('phone 2'),
-			'contact[w_fax_number]' => lang('fax'),
-			'contact[w_assistant_number]' => lang('assistant'),
-			'contact[w_callback_number]' => lang('callback'),
-			
-			'contact[h_web_page]' => lang('website'),
-			'contact[h_address]' => lang('address'),
-			'contact[h_city]' => lang('city'),
-			'contact[h_state]' => lang('state'),
-			'contact[h_zipcode]' => lang('zipcode'),
-			'contact[h_country]' => lang('country'),
-			'contact[h_phone_number]' => lang('phone'),
-			'contact[h_phone_number2]' => lang('phone 2'),
-			'contact[h_fax_number]' => lang('fax'),
-			'contact[h_mobile_number]' => lang('mobile'),
-			'contact[h_pager_number]' => lang('pager'),
-			
-			'contact[o_web_page]' => lang('website'),
-			'contact[o_address]' => lang('address'),
-			'contact[o_city]' => lang('city'),
-			'contact[o_state]' => lang('state'),
-			'contact[o_zipcode]' => lang('zipcode'),
-			'contact[o_country]' => lang('country'),
-			'contact[o_phone_number]' => lang('phone'),
-			'contact[o_phone_number2]' => lang('phone 2'),
-			'contact[o_fax_number]' => lang('fax'),
-			'contact[o_birthday]' => lang('birthday'),
-			'contact[email2]' => lang('email address 2'),
-			'contact[email3]' => lang('email address 3'),
-			'contact[job_title]' => lang('job title'),
-			'contact[department]' => lang('department'), 
-			'contact[middlename]' => lang('middle name'), 
-			'contact[notes]' => lang('notes') 
-		);
 		$isAlt = false;
 		$i = 0; $label_w = $label_h = $label_o = false;
 		foreach ($contact_fields as $c_field => $c_label) {
@@ -142,15 +109,21 @@ function submitCsv(genid) {
 	</div>
 <?php } //if?>
 	<div class="coInputMainBlock adminMainBlock">
-<?php if (isset($import_result)) {
+<?php
+	if (!isset($titles) && !isset($import_result)) { ?>
+		<p><b><?php echo lang('select a file in order to load its data') ?></b></p>
+<?php	}
+	if (isset($import_result)) {
 		if (count($import_result['import_ok'])) {
 			$isAlt = false;
 ?>
-	<br><table><tr><th colspan="2" style="text-align:center"><?php echo lang('contacts succesfully imported') ?></th></tr>
+	<br><table><tr><th colspan="2" style="text-align:center"><?php echo ($import_type == 'contact' ? lang('contacts succesfully imported') : lang('companies succesfully imported')) ?></th>
+				   <th style="text-align:center"><?php echo lang('status') ?></th></tr>
 <?php 		foreach ($import_result['import_ok'] as $reg) { ?>
 				<tr<?php echo ($isAlt ? ' class="altRow"': '') ?>>
-				<td style="padding-left:10px;"><?php echo array_var($reg, 'firstname') . ' ' . array_var($reg, 'lastname') ?></td>
-				<td style="padding-left:10px;"><?php echo array_var($reg, 'email') ?></td></tr>
+				<td style="padding-left:10px;"><?php echo $import_type == 'contact' ? array_var($reg, 'firstname') . ' ' . array_var($reg, 'lastname') : array_var($reg, 'name')?></td>
+				<td style="padding-left:10px;"><?php echo array_var($reg, 'email') ?></td>
+				<td style="padding-left:10px;"><span class="desc"><?php echo array_var($reg, 'import_status') ?></span></td></tr>
 <?php 			$isAlt = !$isAlt;
 			} ?>
 	</table>
@@ -158,17 +131,16 @@ function submitCsv(genid) {
 		if (count($import_result['import_fail'])) {
 			$isAlt = false;
 ?>
-	<br><table><tr><th colspan="2" style="text-align:center"><?php echo lang('contacts import fail') ?></th>
+	<br><table><tr><th colspan="2" style="text-align:center"><?php echo ($import_type == 'contact' ? lang('contacts import fail') : lang('companies import fail')) ?></th>
 				   <th style="text-align:center"><?php echo lang('import fail reason') ?></th></tr>
 <?php 		foreach ($import_result['import_fail'] as $reg) { ?>
 				<tr<?php echo ($isAlt ? ' class="altRow"': '') ?>>
-				<td style="padding-left:10px;"><?php echo array_var($reg, 'firstname') . ' ' . array_var($reg, 'lastname') ?></td>
+				<td style="padding-left:10px;"><?php echo $import_type == 'contact' ? array_var($reg, 'firstname') . ' ' . array_var($reg, 'lastname') : array_var($reg, 'name')?></td>
 				<td style="padding-left:10px;"><?php echo array_var($reg, 'email') ?></td>
 				<td style="padding-left:10px;"><?php echo array_var($reg, 'fail_message') ?></td></tr>
 <?php 			$isAlt = !$isAlt;
 			} ?>
 	</table>
-<!-- 	<br><div><p><b><?php echo lang('contacts import fail help') ?></b></p></div>  -->
 <?php 	}
 	} //if?>
 	</div>

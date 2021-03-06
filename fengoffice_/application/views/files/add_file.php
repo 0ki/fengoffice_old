@@ -14,6 +14,7 @@
 	|| (isset($checkin) && $checkin) || ($file->getCheckedOutById() == 0) || ($file->getCheckedOutById() != 0 && logged_user()->isAdministrator()) 
 	|| ($file->getCheckedOutById() == logged_user()->getId()); 
 	$genid = gen_id();
+	$object = $file;
 ?>
 <script type="text/javascript" src="<?php echo get_javascript_url('modules/addFileForm.js') ?>"></script>
 
@@ -29,7 +30,7 @@
 <div class="coInputHeader">
 <div class="coInputHeaderUpperRow">
 <div class="coInputTitle"><table style="width:535px"><tr><td><?php echo $file->isNew() ? lang('upload file') : (isset($checkin) ? lang('checkin file') : lang('edit file properties')) ?>
-	</td><td style="text-align:right"><?php echo submit_button($file->isNew() ? lang('add file') : (isset($checkin) ? lang('checkin file') : lang('save changes')),'s',array("onclick" => 'javascript:submitMe(\'' . $genid .'\')', 'style'=>'margin-top:0px;margin-left:10px','id' => $genid.'add_file_submit1')) ?></td></tr></table>
+	</td><td style="text-align:right"><?php echo submit_button($file->isNew() ? lang('add file') : (isset($checkin) ? lang('checkin file') : lang('save changes')),'s',array("onclick" => 'og.fileCheckSubmit(\'' . $genid .'\')', 'style'=>'margin-top:0px;margin-left:10px','id' => $genid.'add_file_submit1')) ?></td></tr></table>
 	</div>
 	</div>
 	<?php if ($enableUpload) { 
@@ -46,7 +47,7 @@
     
     <div id="<?php echo $genid ?>addFileFilename" style="<?php echo $file->isNew()? 'display:none' : '' ?>">
       	<?php echo label_tag(lang('new filename'), $genid .'fileFormFilename') ?>
-        <?php echo text_field('file[name]',$file->getFilename(), array("id" => $genid .'fileFormFilename',  'onblur' => 'javascript:og.onBlurFileName()', 'onchange' => ('javascript:og.checkFileName(\'' . $genid .  '\')'))) ?>
+        <?php echo text_field('file[name]',$file->getFilename(), array("id" => $genid .'fileFormFilename',  'onchange' => ('javascript:og.checkFileName(\'' . $genid .  '\')'))) ?>
 		<br/>
     </div>
       
@@ -58,9 +59,10 @@
   		<?php if(logged_user()->isMemberOfOwnerCompany()) { ?>
 			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_file_options_div',this)"><?php echo lang('options') ?></a> -
 		<?php } ?>
-		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_file_properties_div',this)"><?php echo lang('custom properties') ?></a>
-  		<?php if($file->isNew() || $file->canLinkObject(logged_user())) { ?> -
-			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_file_linked_objects_div',this)"><?php echo lang('linked objects') ?></a>
+		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_custom_properties_div',this)"><?php echo lang('custom properties') ?></a> -
+  		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_subscribers_div',this)"><?php echo lang('object subscribers') ?></a>
+		<?php if($object->isNew() || $object->canLinkObject(logged_user(), $project)) { ?> - 
+			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_linked_objects_div',this)"><?php echo lang('linked objects') ?></a>
 		<?php } ?>
 	</div>
 </div>
@@ -74,6 +76,9 @@
     <div class="content">
       <div id="<?php echo $genid ?>addFileFilenameCheck" style="display:none">
   		<h2><?php echo lang("checking filename") ?></h2>
+	  </div>
+      <div id="<?php echo $genid ?>addFileUploadingFile" style="display:none">
+  		<h2><?php echo lang("uploading file") ?></h2>
 	  </div>
       
       <div id="<?php echo $genid ?>addFileFilenameExists" style="display:none">
@@ -147,6 +152,9 @@
 	    <div id="<?php echo $genid ?>addFileFilenameCheck" style="display:none">
   		  <h2><?php echo lang("checking filename") ?></h2>
 	    </div>
+      <div id="<?php echo $genid ?>addFileUploadingFile" style="display:none">
+  		<h2><?php echo lang("uploading file") ?></h2>
+	  </div>
         <div id="<?php echo $genid ?>addFileFilenameExists" style="display:none">
           <h2><?php echo lang("duplicate filename")?></h2>
       	  <?php echo lang("filename exists edit") ?>
@@ -202,24 +210,46 @@
   </div>
   <?php } // if ?>
 
-  <div id="<?php echo $genid ?>add_file_properties_div" style="display:none">
+  <div id="<?php echo $genid ?>add_custom_properties_div" style="display:none">
   <fieldset>
     <legend><?php echo lang('custom properties') ?></legend>
-      <?php echo render_object_properties('file',$file); ?>
+      <?php echo render_add_custom_properties($object); ?>
   </fieldset>
   </div>
   
-  <?php if($file->isNew() || $file->canLinkObject(logged_user())) { ?>
-  <div style="display:none" id="<?php echo $genid ?>add_file_linked_objects_div">
-  <fieldset>
-    <legend><?php echo lang('linked objects') ?></legend>
-  	  <table style="width:100%;margin-left:2px;margin-right:3px" id="<?php echo $genid ?>tbl_linked_objects">
-	   	<tbody></tbody>
-		</table>
-      <?php echo render_object_links($file, $file->canEdit(logged_user())) ?>
-  </fieldset>
-  </div>
-  <?php } // if ?>
+ <div id="<?php echo $genid ?>add_subscribers_div" style="display:none">
+		<fieldset>
+		<legend><?php echo lang('object subscribers') ?></legend>
+		<div id="<?php echo $genid ?>add_subscribers_content">
+			<?php echo render_add_subscribers($object, $genid); ?>
+		</div>
+		</fieldset>
+	</div>
+	
+	<script>
+	var wsch = Ext.getCmp('<?php echo $genid ?>ws_ids');
+	wsch.on("wschecked", function(arguments) {
+		var uids = App.modules.addMessageForm.getCheckedUsers('<?php echo $genid ?>');
+		Ext.get('<?php echo $genid ?>add_subscribers_content').load({
+			url: og.getUrl('object', 'render_add_subscribers', {
+				workspaces: this.getValue(),
+				users: uids,
+				genid: '<?php echo $genid ?>',
+				object_type: '<?php echo get_class($object->manager()) ?>'
+			}),
+			scripts: true
+		});
+	}, wsch);
+	</script>
+
+	<?php if($object->isNew() || $object->canLinkObject(logged_user(), $project)) { ?>
+	<div style="display:none" id="<?php echo $genid ?>add_linked_objects_div">
+	<fieldset>
+		<legend><?php echo lang('linked objects') ?></legend>
+		<?php echo render_object_link_form($object) ?>
+	</fieldset>	
+	</div>
+	<?php } // if ?>
   
 
   <div id="<?php echo $genid ?>fileSubmitButton" style="display:inline">
@@ -227,11 +257,11 @@
   <?php 
   if (!$file->isNew())  //Edit file
   	if (isset($checkin) && $checkin)
-	  echo submit_button(lang('checkin file'),'s',array("id" => $genid.'add_file_submit2', "onclick" => 'javascript:submitMe(\'' . $genid .'\')'));
+	  echo submit_button(lang('checkin file'),'s',array("id" => $genid.'add_file_submit2', "onclick" => 'og.fileCheckSubmit(\'' . $genid .'\')'));
 	else
-	  echo submit_button(lang('save changes'),'s',array("id" => $genid.'add_file_submit2', "onclick" => 'javascript:submitMe(\'' . $genid .'\')'));
+	  echo submit_button(lang('save changes'),'s',array("id" => $genid.'add_file_submit2', "onclick" => 'og.fileCheckSubmit(\'' . $genid .'\')'));
   else //New file
-    echo submit_button(lang('add file'),'s',array("id" => $genid.'add_file_submit2', "onclick" => 'javascript:submitMe(\'' . $genid .'\')'));
+    echo submit_button(lang('add file'),'s',array("id" => $genid.'add_file_submit2', "onclick" => 'og.fileCheckSubmit(\'' . $genid .'\')'));
   ?>
   </div>
   

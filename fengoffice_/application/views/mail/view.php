@@ -1,20 +1,25 @@
 <?php
-  add_page_action(lang('reply mail'), $email->getReplyMailUrl()  , 'ico-reply');
-  add_page_action(lang('reply to all mail'), $email->getReplyMailUrl()."&all=1"  , 'ico-reply-all');
-  add_page_action(lang('forward mail'), $email->getForwardMailUrl()  , 'ico-forward');
-  if($email->canDelete(logged_user())) {
-  		if ($email->isTrashed()) {
-    		add_page_action(lang('restore from trash'), "javascript:if(confirm(lang('confirm restore objects'))) og.openLink('" . $email->getUntrashUrl() ."');", 'ico-restore');
-    		add_page_action(lang('delete permanently'), "javascript:if(confirm(lang('confirm delete permanently'))) og.openLink('" . $email->getDeletePermanentlyUrl() ."');", 'ico-delete');
-    	} else {
-    		add_page_action(lang('move to trash'), "javascript:if(confirm(lang('confirm move to trash'))) og.openLink('" . $email->getTrashUrl() ."');", 'ico-trash');
-    	}
-  }
-  if ($email->canEdit(logged_user())){
-    add_page_action(lang('classify'), $email->getClassifyUrl(), 'ico-classify');
-  }
-  $c = 0;
-  $genid = gen_id();
+	if (!$email->isTrashed()) {
+		add_page_action(lang('reply mail'), $email->getReplyMailUrl()  , 'ico-reply');
+		add_page_action(lang('reply to all mail'), $email->getReplyMailUrl()."&all=1"  , 'ico-reply-all');
+		add_page_action(lang('forward mail'), $email->getForwardMailUrl()  , 'ico-forward');
+	}
+	if($email->canDelete(logged_user())) {
+		if ($email->isTrashed()) {
+			add_page_action(lang('restore from trash'), "javascript:if(confirm(lang('confirm restore objects'))) og.openLink('" . $email->getUntrashUrl() ."');", 'ico-restore');
+			add_page_action(lang('delete permanently'), "javascript:if(confirm(lang('confirm delete permanently'))) og.openLink('" . $email->getDeletePermanentlyUrl() ."');", 'ico-delete');
+		} else {
+			add_page_action(lang('move to trash'), "javascript:if(confirm(lang('confirm move to trash'))) og.openLink('" . $email->getTrashUrl() ."');", 'ico-trash');
+		}
+	}
+	if ($email->canEdit(logged_user()) && !$email->isTrashed()){
+		add_page_action(lang('classify'), $email->getClassifyUrl(), 'ico-classify');
+	}
+  
+	$c = 0;
+	$genid = gen_id();
+	$use_24_hours = user_config_option('time_format_use_24');
+	$time_format = $use_24_hours ? 'G:i' : 'g:i a';
 ?>
 
 <?php if ($email instanceof MailContent) {?>
@@ -24,24 +29,24 @@
 	<?php $description = '<div class="coInfo">
 	<table>
 	<tr><td style="width:100px">' . lang('from') . ':</td><td>' . clean($email->getFromName()) . ' (' . clean($email->getFrom()) . ')' . '</td></tr>
-	<tr><td>' . lang('to') . ':</td><td>' . MailUtilities::displayMultipleAddresses($email->getTo()) . '</td></tr>
-	<tr><td>' . lang('date') . ':</td><td>' . $email->getSentDate()->format('D, d M Y H:i:s') . '</td></tr>';
+	<tr><td>' . lang('to') . ':</td><td>' . MailUtilities::displayMultipleAddresses(clean($email->getTo())) . '</td></tr>
+	<tr><td>' . lang('date') . ':</td><td>' . format_datetime($email->getSentDate(), 'l, j F Y - '.$time_format, logged_user()->getTimezone()) . '</td></tr>';
 	
 	if ($email->getHasAttachments()) {
 		$description .=	'<tr><td colspan=2>	<fieldset>
 		<legend class="toggle_collapsed" onclick="og.toggle(\'mv_attachments\',this)">' . lang('attachments') . '</legend>
 		<div id="mv_attachments" style="display:none">
 		<table>';
-		foreach($parsedEmail["Attachments"] as $att) {
+		foreach($attachments as $att) {
 			$fName = iconv_mime_decode($att["FileName"], 0, "UTF-8");
 			$description .= '<tr><td style="padding-right: 10px">';
-			$ext = substr($fName,strrpos($fName,'.') + 1);
+			$ext = substr_utf($fName, strrpos($fName, '.') + 1);
 			$fileType = FileTypes::getByExtension($ext);
 			if (isset($fileType))
 				$icon = $fileType->getIcon();
 			else
 				$icon = "unknown.png";
-      		$description .=	'<img src="' . get_image_url("filetypes/".$icon) .'"></td>
+      		$description .=	'<img src="' . get_image_url("filetypes/" . $icon) .'"></td>
 			<td><a href="' . get_url('mail', 'download_attachment', 
       			array('email_id' => $email->getId(), 'attachment_id' => $c)) . '">' . clean($fName) . '</a></td></tr>';
       		$c++;
@@ -58,9 +63,7 @@
 		} else {
 			if ($email->getBodyPlain() != ''){
 				$content =  '<div>' . nl2br(convert_to_links(clean($email->getBodyPlain()))) . '</div>';
-			} else {
-				$content =  '<div>' . nl2br(convert_to_links(clean($email->getContent()))) . '</div>';
-			}
+			} else $content = '<div></div>';
 		}
 		$strDraft = '';
 		if ($email->getIsDraft()) {
@@ -74,6 +77,7 @@
 		
 		$this->includeTemplate(get_template_path('view', 'co'));
 	?>
+
 </div>
 </div>
 <?php } else { echo lang('email not available'); } //if ?>

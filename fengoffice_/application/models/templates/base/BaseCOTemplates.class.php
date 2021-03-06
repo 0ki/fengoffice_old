@@ -4,7 +4,7 @@
 /**
  * COTemplates class
  *
- * @author Ignacio de Soto <ignacio.desoto@gmail.com>
+ * @author Ignacio de Soto <ignacio.desoto@opengoo.org>
  */
 abstract class BaseCOTemplates extends ProjectDataObjects {
 

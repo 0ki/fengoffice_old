@@ -1,5 +1,4 @@
 App.modules.addMessageForm = {
-  notify_companies: {},
   
   /**
    * Show and hide additional text editor
@@ -27,7 +26,8 @@ App.modules.addMessageForm = {
    * @param integer company_id Company ID
    */
   emailNotifyClickCompany: function(company_id, genid) {
-    var company_details = App.modules.addMessageForm.notify_companies['company_' + company_id]; // get company details from hash
+  	var cos = Ext.getDom(genid + 'notify_companies').notify_companies;
+    var company_details = cos['company_' + company_id]; // get company details from hash
     if(!company_details) return;
     
     var company_checkbox = Ext.getDom(genid + company_details.checkbox_id);
@@ -45,7 +45,8 @@ App.modules.addMessageForm = {
    * @param integer user_id
    */
   emailNotifyClickUser: function(company_id, user_id, genid) {
-    var company_details = App.modules.addMessageForm.notify_companies['company_' + company_id]; // get company details from hash
+  	var cos = Ext.getDom(genid + 'notify_companies').notify_companies;
+    var company_details = cos['company_' + company_id]; // get company details from hash
     if(!company_details) return;
     
     // If we have all users checked check company box, else uncheck it... Simple :)
@@ -55,6 +56,27 @@ App.modules.addMessageForm = {
     } // if
     
     Ext.getDom(genid + company_details.checkbox_id).checked = all_users_checked;
-  } // emailNotifyClickUser
+  }, // emailNotifyClickUser
+  
+  /**
+   * Returned all checked user ids as a CSV string.
+   *
+   * @param integer company_id Company ID
+   */
+  getCheckedUsers: function(genid) {
+  	var cos = Ext.getDom(genid + 'notify_companies').notify_companies;
+  	var ids = "";
+  	for (var k in cos) {
+  		var company_details = cos[k];
+  		if(!company_details) continue;
+  		for(var i=0; i < company_details.users.length; i++) {
+      		if (Ext.getDom(genid + company_details.users[i].checkbox_id).checked) {
+      			if (ids != "") ids += ",";
+      			ids += company_details.users[i].id;
+      		}
+    	}
+  	}
+    return ids;
+  } // emailNotifyClickCompany
   
 };

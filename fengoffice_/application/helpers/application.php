@@ -68,7 +68,7 @@ function render_system_notices(User $user) {
 	if(!$user->isAdministrator()) return;
 
 	$system_notices = array();
-	if(config_option('upgrade_check_enabled', false) && config_option('upgrade_last_check_new_version', false)) $system_notices[] = lang('new OpenGoo version available', get_url('administration', 'upgrade'));
+	if (config_option('upgrade_last_check_new_version', false)) $system_notices[] = lang('new OpenGoo version available', get_url('administration', 'upgrade'));
 
 	if(count($system_notices)) {
 		tpl_assign('_system_notices', $system_notices);
@@ -119,10 +119,18 @@ function select_project($name, $projects, $selected = null, $attributes = null, 
 	return select_box($name, $options, $attributes);
 } // select_project
 
-function select_project2($name, $projectId, $genid, $allowNone = false) {
+function select_project2($name, $projectId, $genid, $allowNone = false, $extraWS = null) {
+	$extra = "";
+	if (is_array($extraWS)) {
+		foreach ($extraWS as $ws) {
+			if ($extra != "") $extra .= ",";
+			$extra .= json_encode($ws);
+		}
+	}
+	$extra = "[$extra]";
 	$html = "<div id='" . $genid  . "wsSel'></div>";
 	$html .= "<script type='text/javascript'>
-	og.drawWorkspaceSelector('" .  $genid  . "wsSel'," . $projectId . ", '" . $name ."', " . ($allowNone? 'true':'false') . " );
+	og.drawWorkspaceSelector('" .  $genid  . "wsSel', $projectId, '$name', " . ($allowNone? 'true':'false') . ", $extra);
 	</script>";
 	
 	return $html;
@@ -823,10 +831,48 @@ function render_object_links(ApplicationDataObject $object, $can_remove = false,
 	return tpl_fetch(get_template_path('list_linked_objects', 'object'));
 } // render_object_links
 
+function render_object_link_form(ApplicationDataObject $object) {
+	tpl_assign('objects', $object->getLinkedObjects());
+	return tpl_fetch(get_template_path('linked_objects', 'object'));
+} // render_object_link_form
+
 function render_object_subscribers(ProjectDataObject $object) {
 	tpl_assign('object', $object);
 	return tpl_fetch(get_template_path('list_subscribers', 'object'));
 }
+
+function render_add_subscribers(ProjectDataObject $object, $genid = null, $subscribers = null, $workspaces = null) {
+	if (!isset($genid)) {
+		$genid = gen_id();
+	}
+	$subscriberIds = array();
+	if (is_array($subscribers)) {
+		foreach ($subscribers as $u) {
+			$subscriberIds[] = $u->getId();
+		}
+	} else {
+		if ($object->isNew()) {
+			$subscriberIds[] = logged_user()->getId();
+		} else {
+			foreach ($object->getSubscribers() as $u) {
+				$subscriberIds[] = $u->getId();
+			}
+		}
+	}
+	if (!isset($workspaces)) {
+		if ($object->isNew()) {
+			$workspaces = array(active_or_personal_project());
+		} else {
+			$workspaces = $object->getWorkspaces();
+		}
+	}
+	tpl_assign('type', get_class($object->manager()));
+	tpl_assign('workspaces', $workspaces);
+	tpl_assign('subscriberIds', $subscriberIds);
+	tpl_assign('genid', $genid);
+	return tpl_fetch(get_template_path('add_subscribers', 'object'));
+}
+
 /**
  * Creates a button that shows an object picker to link the object given by $object with the one selected in
  * the it.
@@ -841,9 +887,18 @@ function render_link_to_object($object, $text=null){
 	$result = '';
 	$result .= '<a href="#">';
 	$result .=  label_tag($text,null,false,
-	array('onclick' => "og.ObjectPicker.show(function (data){ if(data) og.openLink('" . get_url('object','link_object') .
-			"&object_id=$id&manager=$manager&rel_object_id='+data[0].data.object_id + '&rel_manager=' + data[0].data.manager);})", 
-			'id'=>'object_linker' , 'type' => 'button' ),'');
+	array('onclick' => "og.ObjectPicker.show(function (data) {" .
+			"if (data) {" .
+				"var objects = '';" .
+				"for (var i=0; i < data.length; i++) {" .
+					"if (objects != '') objects += ',';" .
+					"objects += data[i].data.manager + ':' + data[i].data.object_id;" .
+				"}" .
+				" og.openLink('" . get_url('object', 'link_object') .
+						"&object_id=$id&manager=$manager&objects=' + objects);" .
+			"}" .
+		"})", 
+		'id'=>'object_linker' , 'type' => 'button' ),'');
 	$result .= '</a>';
 	return $result;
 }
@@ -929,14 +984,14 @@ function render_action_taken_on_by(ApplicationLog $application_log_entry) {
  * @param array $attributes Other control attributes
  * @return string
  */
-function autocomplete_textfield($name, $value, $options, $emptyText, $attributes) {
+function autocomplete_textfield($name, $value, $options, $emptyText, $attributes, $forceSelection = true) {
 	$jsArray = "";
 	foreach ($options as $o) {
 		if ($jsArray != "") $jsArray .= ",";
 		if (count($o) < 2) {
-			$jsArray .= "['$o','$o','".clean($o)."']";
+			$jsArray .= '['.json_encode($o).','.json_encode(clean($o)).','.json_encode(clean($o)).']';
 		} else {
-			$jsArray .= "['$o[0]','$o[1]','".clean($o[1])."']";
+			$jsArray .= '['.json_encode($o[0]).','.json_encode(clean($o[1])).','.json_encode(clean($o[1])).']';
 		}
 	}
 	$jsArray = "[$jsArray]";
@@ -954,7 +1009,7 @@ function autocomplete_textfield($name, $value, $options, $emptyText, $attributes
 			valueField: "value",
         	displayField: "name",
         	mode: "local",
-        	forceSelection: true,
+        	forceSelection: '.($forceSelection?'true':'false').',
         	triggerAction: "all",
         	tpl: "<tpl for=\".\"><div class=\"x-combo-list-item\">{clean}</div></tpl>",
         	emptyText: "",
@@ -995,49 +1050,97 @@ function autocomplete_tags_field($name, $value, $id = null) {
 	return $html;
 }
 
+
 /**
- * Auxiliar to render_object_properties
- *
- * @param string  $object_name
- * @param int  $i
- */
-function aux_print_blank_row($object_name, $i){
-	return "<tr style='background: " . (($i % 2) ? '#fff' : '#e8e8e8') . "'><td>" .
-	text_field($object_name . "[property$i][name]", '' ) . " </td> <td>" .
-	text_field($object_name . "[property$i][value]", '') . " </td> <td>" .
-	text_field($object_name . "[property$i][id]", '',array('type' => 'hidden')) ." </td> </tr>";
-}
-/**
- * Renders the current object properties. If no properties
+ * Renders a form to set an object's custom properties.
  *
  * @param ProjectDataObject $object
- * @param string $object_name is the name of the array that will hold the [propertyX] fields
- * @return unknown
+ * @return string
  */
-function render_object_properties( $object_name,ProjectDataObject $object=null){
-	$output = "<table class='blank'> <tr> <th>".  lang('name') . ":</th><th>" . lang('value') . ":</th> </tr>";
-	if($object)
+function render_add_custom_properties(ProjectDataObject $object) {
+	$genid = gen_id();
+	$output = '
+		<div id="'.$genid.'" class="og-add-custom-properties">
+			<table><tbody><tr>
+			<th>' . lang('name') . '</th>
+			<th>' . lang('value') . '</th>
+			<th class="actions"></th>
+			</tr></tbody></table>
+			<a href="#" onclick="og.addCustomProperty(this.parentNode, \'\', \'\');return false;">' . lang("add custom property") . '</a>
+		</div>
+		<script>
+		og.addCustomProperty = function(parent, name, value) {
+			var count = parent.getElementsByTagName("tr").length - 1;
+			var tbody = parent.getElementsByTagName("tbody")[0];
+			var tr = document.createElement("tr");
+			var td = document.createElement("td");
+			td.innerHTML = \'<input class="name" type="text" name="custom_prop_names[\' + count + \']" value="\' + name + \'">\';;
+			tr.appendChild(td);
+			var td = document.createElement("td");
+			td.innerHTML = \'<input class="value" type="text" name="custom_prop_values[\' + count + \']" value="\' + value + \'">\';;
+			tr.appendChild(td);
+			var td = document.createElement("td");
+			td.innerHTML = \'<div class="ico ico-delete" style="width:16px;height:16px;cursor:pointer" onclick="og.removeCustomProperty(this.parentNode.parentNode);return false;">&nbsp;</div>\';
+			tr.appendChild(td);
+			tbody.appendChild(tr);
+			
+		}
+		og.removeCustomProperty = function(tr) {
+			var parent = tr.parentNode;
+			parent.removeChild(tr);
+			// reorder property names
+			var row = parent.firstChild;
+			var num = -1; // first row has no inputs
+			while (row != null) {
+				if (row.tagName == "TR") {
+					var inputs = row.getElementsByTagName("INPUT");
+					for (var i=0; i < inputs.length; i++) {
+						var input = inputs[i];
+						if (input.className == "name") {
+							input.name = "custom_prop_names[" + num + "]";
+						} else {
+							input.name = "custom_prop_values[" + num + "]";
+						}
+					}
+					num++;
+				}
+				row = row.nextSibling;
+			}
+		}
+		var parent = document.getElementById("'.$genid.'");
+	';
 	$properties = ObjectProperties::getAllPropertiesByObject($object);
-	if($object && $properties){
-		$i=0;
+	if (is_array($properties)) {
 		foreach($properties as $property) {
-			$output .= "<tr style='background: " . (($i % 2) ? '#fff' : '#e8e8e8') . "'><td>" .
-			text_field($object_name . "[property$i][name]", $property->getPropertyName()) . " </td> <td>" .
-			text_field($object_name . "[property$i][value]", $property->getPropertyValue()) . " </td> <td>" .
-			text_field($object_name . "[property$i][id]", $property->getId(),array('type' => 'hidden')) . " </td> </tr>";
-			$i++;
+			$output .= 'og.addCustomProperty(parent, "'.$property->getPropertyName().'", "'.$property->getPropertyValue().'");';
 		} // for
-		$output .= aux_print_blank_row($object_name, $i);
 	} // if
-	else { //no object, print empty table
-		for($i = 0; $i < 4; $i++) {
-			$output .= aux_print_blank_row($object_name, $i);
-		} // for
-	}
-	$output.= "</table>  ";
+	$output .= '
+		og.addCustomProperty(document.getElementById("'.$genid.'"), "", "");
+		</script>
+	';
 	return $output;
 }
 
+/**
+ * Renders an object's custom properties
+ * @return string
+ */
+function render_custom_properties(ProjectDataObject $object) {
+	$properties = $object->getCustomProperties();
+	if (!is_array($properties) || count($properties) == 0) return "";
+	$output = '<span style="color:333333;font-weight:bolder;">' . 
+			lang('custom properties') . ':&nbsp;</span>
+		<table class="og-custom-properties"><tbody>';
+	foreach ($properties as $prop) {
+		$output .= '<tr><td class="name" title="' . $prop->getPropertyName() . '">- ' .
+				truncate($prop->getPropertyName(), 12) . ':&nbsp;</td>';
+		$output .= '<td title="' . $prop->getPropertyValue() . '">' .
+				truncate($prop->getPropertyValue(), 12) . '</td></tr>';
+	}
+	$output .= '</tbody></table>';
+	return $output;
+}
 
 /**
  * Returns a control to select mail account
@@ -1127,4 +1230,7 @@ function filter_assigned_to_select_box($list_name, $project = null, $selected = 
 	return select_box($list_name, $options, $attributes);
 } // assign_to_select_box
 
+function render_initial_workspace_chooser($name, $value) {
+	return select_project2($name, "'$value'", gen_id(), true, array(array('id'=>'remember', 'name'=>lang('remember last'), 'color'=>'remember', 'parent'=>'root')));
+}
 ?>

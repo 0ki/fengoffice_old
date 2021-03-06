@@ -1,5 +1,6 @@
 <?php
 	$genid = gen_id();
+	$object = $contact;
 if (!$contact->isNew())
 {
 	if($contact->canEdit(logged_user())) {
@@ -45,10 +46,12 @@ if (!$contact->isNew())
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_contact_email_and_im', this)"><?php echo lang('email and instant messaging') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_contact_home', this)"><?php echo lang('home') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_contact_other', this)"><?php echo lang('other') ?></a> - 
-		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_contact_notes', this)"><?php echo lang('notes') ?></a>
-		<?php if($contact->isNew() || $contact->canLinkObject(logged_user())) { ?>
-			- <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>edit_contact_linked_objects_div', this)"><?php echo lang('linked objects') ?></a>
-		<?php } //	if($contact->isNew() || $contact->canLinkObject(logged_user())) ?>
+		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_contact_notes', this)"><?php echo lang('notes') ?></a> -
+		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_custom_properties_div',this)"><?php echo lang('custom properties') ?></a> -
+		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_subscribers_div',this)"><?php echo lang('object subscribers') ?></a>
+		<?php if($object->isNew() || $object->canLinkObject(logged_user(), $project)) { ?> - 
+			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_linked_objects_div',this)"><?php echo lang('linked objects') ?></a>
+		<?php } ?>
 	</div>
 </div>
 <div class="coInputSeparator"></div>
@@ -332,18 +335,30 @@ if (!$contact->isNew())
 	</fieldset>
 	</div>
 	
-		<?php if($contact->isNew() || $contact->canLinkObject(logged_user())) { ?>
-	<div style="display:none" id="<?php echo $genid ?>edit_contact_linked_objects_div">
+	<div id='<?php echo $genid ?>add_custom_properties_div' style="display:none">
+		<fieldset>
+			<legend><?php echo lang('custom properties') ?></legend>
+			<?php echo render_add_custom_properties($object); ?>
+		</fieldset>
+	</div>
+	
+	<div id="<?php echo $genid ?>add_subscribers_div" style="display:none">
+		<fieldset>
+		<legend><?php echo lang('object subscribers') ?></legend>
+		<div id="<?php echo $genid ?>add_subscribers_content">
+			<?php echo render_add_subscribers($object, $genid); ?>
+		</div>
+		</fieldset>
+	</div>
+	
+	<?php if($object->isNew() || $object->canLinkObject(logged_user(), $project)) { ?>
+	<div style="display:none" id="<?php echo $genid ?>add_linked_objects_div">
 	<fieldset>
 		<legend><?php echo lang('linked objects') ?></legend>
-	  	  <table style="width:100%;margin-left:2px;margin-right:3px" id="tbl_linked_objects">
-	   	<tbody></tbody>
-		</table>
-		<?php echo render_object_links($contact, $contact->canEdit(logged_user())) ?>
+		<?php echo render_object_link_form($object) ?>
 	</fieldset>	
 	</div>
 	<?php } // if ?>
-	
 	
 	<div id="<?php echo $genid ?>add_contact_add_tags_div" style="display:none">
 	<fieldset><legend><?php echo lang('tags')?></legend>

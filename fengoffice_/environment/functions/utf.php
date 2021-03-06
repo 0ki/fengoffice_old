@@ -16,7 +16,7 @@
     if(is_null($length)) $lenght = strlen_utf($string) - $start;
     
     if(function_exists('mb_substr')) {
-      return mb_substr($string, $start, $length);
+      return mb_substr($string, $start, $length, 'UTF-8');
     } else {
       return substr($string, $start, $length);
     } // if

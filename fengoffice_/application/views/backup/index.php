@@ -15,7 +15,7 @@
 	</div><br>
     <div class="administrationToolName">
     	<?php 
-    	 echo (($last_backup)?(lang ('last backup') . ': <b>' .$last_backup.' </b>'):('<b>' .lang('no backups') . '</b>')) ;
+    	 echo ($has_backup ? (lang('last backup') . ': <b>' . ($last_backup ? $last_backup : lang('unknown')).' </b>') : '<b>' .lang('no backups') . '</b>') ;
 		?>
     </div>
 <br>
@@ -28,10 +28,10 @@
   </div>
   <div class="administrationTool">
     <div class="administrationToolName">
-      <h2><?php if($last_backup) {
+      <h2><?php if($has_backup) {
 	      		echo '<a target="_blank" href="' . get_url('backup','download'). '">';
 	      		echo lang('download backup') ;
-	      		if($last_backup) echo '</a>';
+	      		echo '</a>';
       		}
       		else 
       			echo '<br><br>';
@@ -41,7 +41,7 @@
     <div class="administrationToolDesc"><?php echo lang('download backup desc') ?></div>
   </div>
   <div class="administrationTool">
-  <?php if($last_backup) { ?>
+  <?php if($has_backup) { ?>
     <div class="administrationToolName">
       <h2><a class="internalLink" href="<?php echo get_url('backup','delete') ?>"><?php echo lang('delete backup') ?></a></h2>
     </div>

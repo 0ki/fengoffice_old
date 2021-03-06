@@ -41,6 +41,10 @@ class PdoMysqlDBAdapter extends AbstractDBAdapter {
 
 	} // connect
 
+	function close() {
+		unset($this->link);
+	}
+	
 	function isResource($resource) {
     	return $resource instanceof PDO || $resource instanceof PDOStatement;
     }

@@ -13,11 +13,14 @@ return array(
 		'og/tasks/print.js',
 		'og/time/main.js',
 		'og/time/drawing.js',
+		'og/HttpProvider.js',
+		'og/OpenGooProxy.js',
 		'og/WorkspaceChooser.js',
 		'og/QuickAdd.js',
 		'og/Permissions.js',
 		'og/WorkspaceUtils.js',
 		'og/CalendarDatePicker.js',
+		'og/ConfirmDialog.js',
 		'og/MessageManager.js',
 		'og/MailManager.js',
 		'og/WebpageManager.js',
@@ -68,5 +71,6 @@ return array(
 		'slimey/toolbar.js',
 		'slimey/integration.js',
 		'og/DateField.js',
+		'wztooltip/wz_tooltip.js',
 );
 ?>

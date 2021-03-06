@@ -26,8 +26,7 @@ function showProjectTagsDiv()
 
   <fieldset>
 <legend><?php echo lang('project') ?></legend>
-		<?php echo select_project2('classification[project_id]', (array_var($classification_data, 'project_id'))? array_var($classification_data, 'project_id'):active_or_personal_project()->getId(), $genid) ?>
-
+		<?php echo select_workspaces('classification[project_ids]', null, array_var($classification_data, 'project_ids'), $genid.'wsSel'); ?>
 		<?php echo label_tag(lang('tags')) ?>
 	<?php echo autocomplete_tags_field("classification[tag]", array_var($classification_data, 'tag')); ?>
 </fieldset>

@@ -171,14 +171,13 @@
   	'none no bars' => 'なし', // 'None'
   	'apply to all subworkspaces' => 'パーミッションを全てのサブワークスペースに適用する。', // 'Apply these permissions to all subworkspaces'
   	'weblinks' => 'ウェブリンク', // 'Web links'
-//  	'add work' => '作業を追加', // 'Add work'
  
-  	'date format' => 'm/d/Y', // 'm/d/Y'
-  	'date format description' => '(mm/dd/yyyy)', // '(mm/dd/yyyy)'
+  	'date format' => 'Y/d/m', // 'm/d/Y'
+  	'date format description' => '(yyyy/mm/dd)', // '(mm/dd/yyyy)'
 
   	// ENGLISH MISSING TRANSLATIONS
-  	'add work' => 'Add work',
-    'confirm move to trash' => 'Are you sure you want to move the selected object to the trash?',
+  	'add work' => '作業を追加k', // 'Add work'
+    'confirm move to trash' => '本当に選択したオブジェクトをゴミ箱に移動してもよろしいですか?', // 'Are you sure you want to move the selected object to the trash?',
   
   ); // array
 

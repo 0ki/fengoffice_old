@@ -405,7 +405,7 @@ addLangs({
 	'login dialog desc': 'Ваша сессия была отключена в связи с отсутствием активности. Заполните эту форму, чтобы снова войти.',
 	'user not found': 'Пользователь не найден (id:{0})',
 	'date format': 'd/m/Y',
-	'date format alternatives': 'm/d/y|n/j/Y|n/j/y|m/j/y|n/d/y|m/j/Y|n/d/Y',
+	'date format alternatives': 'd/m/y|j/n/Y|j/n/y|j/m/y|d/n/y|j/m/Y|d/n/Y',
 	'warning start date greater than due date': 'Предупреждение: дата начала позже, чем дата выполнения',
 	'choose an image': 'Выберите картинку',
 	'sort by': 'Сортировать по',

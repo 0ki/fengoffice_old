@@ -12,154 +12,220 @@ Ext.onReady(function(){
 			text.item(0).dom.select();
 	});
 
-	/*Ext.state.Manager.setProvider(new og.HttpProvider({
-		saveUrl: og.getUrl('gui', 'save_state'),
-		readUrl: og.getUrl('gui', 'read_state'),
-		autoRead: false
-	}));
-	Ext.state.Manager.getProvider().initState(og.initialGUIState);*/
+	if (og.rememberGUIState) {
+		Ext.state.Manager.setProvider(new og.HttpProvider({
+			saveUrl: og.getUrl('gui', 'save_state'),
+			readUrl: og.getUrl('gui', 'read_state'),
+			autoRead: false
+		}));
+		Ext.state.Manager.getProvider().initState(og.initialGUIState);
+	}
 	
 	today_date = new Date();
 	Ext.QuickTips.init();
 
+	// SETUP PANEL LAYOUT
+	og.panels = {};
+	var panels = [
+		og.panels.overview = new og.ContentPanel({
+			title: lang('overview'),
+			id: 'overview-panel',
+			iconCls: 'ico-overview',
+			refreshOnWorkspaceChange: true,
+			refreshOnTagChange: true,
+			defaultContent: {
+				type: "url",
+				data: og.getUrl('dashboard','index')
+			},
+			initialContent: {
+				type: "url",
+				data: og.initialURL
+			}
+		}),
+		og.panels.notes = new og.ContentPanel({
+			title: lang('messages'),
+			id: 'messages-panel',
+			iconCls: 'ico-messages',
+			refreshOnWorkspaceChange: true,
+			defaultContent: {
+				type: "panel",
+				data: "messages"
+			}
+		}),
+		og.panels.email = new og.ContentPanel({
+			title: lang('email') + ' (BETA)',
+			id: 'mails-panel',
+			iconCls: 'ico-email',
+			refreshOnWorkspaceChange: true,
+			defaultContent: {
+				type: "panel",
+				data: "mails"
+			}
+		}),
+		og.panels.contacts = new og.ContentPanel({
+			title: lang('contacts'),
+			id: 'contacts-panel',
+			iconCls: 'ico-contacts',
+			refreshOnWorkspaceChange: true,
+			defaultContent: {
+				type: "panel",
+				data: "contacts"
+			}
+		}),
+		og.panels.calendar = new og.ContentPanel({
+			title: lang('calendar'),
+			id: 'calendar-panel',
+			iconCls: 'ico-calendar',
+			refreshOnWorkspaceChange: false, //the handler is in listeners.php
+			defaultContent: {
+				type: "url",
+				data: og.getUrl('event', cal_actual_view, {day: today_date.format('d'), month: today_date.format('n'), year: today_date.format('Y'), user_filter: 0, state_filter: ' 0 1 3'})
+			},
+			baseCls: '',
+			tbar: og.CalendarToolbarItems
+		}),
+		og.panels.documents = new og.ContentPanel({
+			title: lang('documents'),
+			id: 'documents-panel',
+			iconCls: 'ico-documents',
+			refreshOnWorkspaceChange: true,
+			defaultContent: {
+				type: "panel",
+				data: "files"
+			}
+		}),
+		og.panels.tasks = new og.ContentPanel({
+			title: lang('tasks'),
+			id: 'tasks-panel',
+			iconCls: 'ico-tasks',
+			refreshOnWorkspaceChange: true,
+			defaultContent: {
+				type: "url",
+				data: og.getUrl('task','new_list_tasks')
+			}
+		}),
+		og.panels.weblinks = new og.ContentPanel({
+			title: lang('web pages'),
+			id: 'webpages-panel',
+			iconCls: 'ico-webpages',
+			refreshOnWorkspaceChange: true,
+			defaultContent: {
+				type: "panel",
+				data: "webpages"
+			}
+		}),
+		og.panels.time = new og.ContentPanel({
+			title: lang('time'),
+			id: 'time-panel',
+			iconCls: 'ico-time',
+			refreshOnWorkspaceChange: true,
+			defaultContent: {
+				type: "url",
+				data: og.getUrl('time','index')
+			}
+		}),
+		og.panels.reporting = new og.ContentPanel({
+			title: lang('reporting'),
+			id: 'reporting-panel',
+			iconCls: 'ico-reporting',
+			refreshOnWorkspaceChange: false,
+			defaultContent: {
+				type: "url",
+				data: og.getUrl('reporting','index')
+			}
+		})
+	];
 	var tab_panel = new Ext.TabPanel({
 		id: 'tabs-panel',
 		region:'center',
 		activeTab: 0,
 		enableTabScroll: true,
-		items: [
-			new og.ContentPanel({
-				title: lang('overview'),
-				id: 'overview-panel',
-				iconCls: 'ico-overview',
-				refreshOnWorkspaceChange: true,
-				refreshOnTagChange: true,
-				defaultContent: {
-					type: "url",
-					data: og.getUrl('dashboard','index')
-				},
-				initialContent: {
-					type: "url",
-					data: og.initialURL
-				}
-			}),
-			new og.ContentPanel({
-				title: lang('messages'),
-				id: 'messages-panel',
-				iconCls: 'ico-messages',
-				refreshOnWorkspaceChange: true,
-				defaultContent: {
-					type: "panel",
-					data: "messages"
-				}
-			}),
-			new og.ContentPanel({
-				title: lang('email') + ' (BETA)',
-				id: 'mails-panel',
-				iconCls: 'ico-email',
-				refreshOnWorkspaceChange: true,
-				defaultContent: {
-					type: "panel",
-					data: "mails"
-				}
-			}),
-			new og.ContentPanel({
-				title: lang('contacts'),
-				id: 'contacts-panel',
-				iconCls: 'ico-contacts',
-				refreshOnWorkspaceChange: true,
-				defaultContent: {
-					type: "panel",
-					data: "contacts"
-				}
-			}),
-			new og.ContentPanel({
-				title: lang('calendar'),
-				id: 'calendar-panel',
-				iconCls: 'ico-calendar',
-				refreshOnWorkspaceChange: false, //the handler is in listeners.php
-				defaultContent: {
-					type: "url",
-					data: og.getUrl('event', cal_actual_view, {day: today_date.format('d'), month: today_date.format('n'), year: today_date.format('Y'), user_filter: 0, state_filter: ' 0 1 3'})
-				},
-				baseCls: '',
-				tbar: og.CalendarToolbarItems
-			}),
-			new og.ContentPanel({
-				title: lang('documents'),
-				id: 'documents-panel',
-				iconCls: 'ico-documents',
-				refreshOnWorkspaceChange: true,
-				defaultContent: {
-					type: "panel",
-					data: "files"
-				}
-			}),
-			new og.ContentPanel({
-				title: lang('tasks'),
-				id: 'tasks-panel',
-				iconCls: 'ico-tasks',
-				refreshOnWorkspaceChange: true,
-				defaultContent: {
-					type: "url",
-					data: og.getUrl('task','new_list_tasks')
-				}
-			}),
-			new og.ContentPanel({
-				title: lang('web pages'),
-				id: 'webpages-panel',
-				iconCls: 'ico-webpages',
-				refreshOnWorkspaceChange: true,
-				defaultContent: {
-					type: "panel",
-					data: "webpages"
-				}
-			}),
-			new og.ContentPanel({
-				title: lang('time'),
-				id: 'time-panel',
-				iconCls: 'ico-time',
-				refreshOnWorkspaceChange: true,
-				defaultContent: {
-					type: "url",
-					data: og.getUrl('time','index')
-				}
-			})/*,
-			new og.ContentPanel({
-				title: lang('reporting'),
-				id: 'reporting-panel',
-				iconCls: 'ico-reporting',
-				refreshOnWorkspaceChange: false,
-				defaultContent: {
-					type: "url",
-					data: og.getUrl('reporting','index')
-				}
-			})*/
-		]
+		items: panels,
+		listeners: {
+			'render': function() {
+				// hide disabled modules
+				if (!og.enableNotesModule) Ext.get('tabs-panel__messages-panel').setDisplayed(false);
+				if (!og.enableEmailModule) Ext.get('tabs-panel__mails-panel').setDisplayed(false);
+				if (!og.enableContactsModule) Ext.get('tabs-panel__contacts-panel').setDisplayed(false);
+				if (!og.enableCalendarModule) Ext.get('tabs-panel__calendar-panel').setDisplayed(false);
+				if (!og.enableDocumentsModule) Ext.get('tabs-panel__documents-panel').setDisplayed(false);
+				if (!og.enableTasksModule) Ext.get('tabs-panel__tasks-panel').setDisplayed(false);
+				if (!og.enableWeblinksModule) Ext.get('tabs-panel__webpages-panel').setDisplayed(false);
+				if (!og.enableTimeModule) Ext.get('tabs-panel__time-panel').setDisplayed(false);
+				if (!og.enableReportingModule) Ext.get('tabs-panel__reporting-panel').setDisplayed(false);
+			}
+		}
 	});
-	
-	// To enable emails tab go to Administration / Configuration / General / Enable Email Module
-	if (og.showMailsTab == 0) tab_panel.remove('mails-panel');
+
+	// ENABLE / DISABLE MODULES	
+	og.eventManager.addListener('config enable_notes_module changed', function(val) {
+		if (val == 1) {
+			Ext.get('tabs-panel__messages-panel').setDisplayed(true);
+		} else {
+			Ext.get('tabs-panel__messages-panel').setDisplayed(false);
+		}
+	});
 	og.eventManager.addListener('config enable_email_module changed', function(val) {
 		if (val == 1) {
-			this.insert(2, new og.ContentPanel({
-				title: lang('email') + ' (BETA)',
-				id: 'mails-panel',
-				iconCls: 'ico-email',
-				refreshOnWorkspaceChange: true,
-				defaultContent: {
-					type: "panel",
-					data: "mails"
-				}
-			}));
+			Ext.get('tabs-panel__mails-panel').setDisplayed(true);
 		} else {
-			this.remove('mails-panel');
+			Ext.get('tabs-panel__mails-panel').setDisplayed(false);
 		}
-	}, tab_panel);
+	});
+	og.eventManager.addListener('config enable_contacts_module changed', function(val) {
+		if (val == 1) {
+			Ext.get('tabs-panel__contacts-panel').setDisplayed(true);
+		} else {
+			Ext.get('tabs-panel__contacts-panel').setDisplayed(false);
+		}
+	});
+	og.eventManager.addListener('config enable_calendar_module changed', function(val) {
+		if (val == 1) {
+			Ext.get('tabs-panel__calendar-panel').setDisplayed(true);
+		} else {
+			Ext.get('tabs-panel__calendar-panel').setDisplayed(false);
+		}
+	});
+	og.eventManager.addListener('config enable_documents_module changed', function(val) {
+		if (val == 1) {
+			Ext.get('tabs-panel__documents-panel').setDisplayed(true);
+		} else {
+			Ext.get('tabs-panel__documents-panel').setDisplayed(false);
+		}
+	});
+	og.eventManager.addListener('config enable_tasks_module changed', function(val) {
+		if (val == 1) {
+			Ext.get('tabs-panel__tasks-panel').setDisplayed(true);
+		} else {
+			Ext.get('tabs-panel__tasks-panel').setDisplayed(false);
+		}
+	});
+	og.eventManager.addListener('config enable_weblinks_module changed', function(val) {
+		if (val == 1) {
+			Ext.get('tabs-panel__webpages-panel').setDisplayed(true);
+		} else {
+			Ext.get('tabs-panel__webpages-panel').setDisplayed(false);
+		}
+	});
+	og.eventManager.addListener('config enable_time_module changed', function(val) {
+		if (val == 1) {
+			Ext.get('tabs-panel__time-panel').setDisplayed(true);
+		} else {
+			Ext.get('tabs-panel__time-panel').setDisplayed(false);
+		}
+	});
+	og.eventManager.addListener('config enable_reporting_module changed', function(val) {
+		if (val == 1) {
+			Ext.get('tabs-panel__reporting-panel').setDisplayed(true);
+		} else {
+			Ext.get('tabs-panel__reporting-panel').setDisplayed(false);
+		}
+	});
 	
+	// BUILD VIEWPORT
 	var viewport = new Ext.Viewport({
 		layout: 'border',
-		stateful: false,
+		stateful: og.rememberGUIState,
 		items: [
 			new Ext.BoxComponent({
 				region: 'north',
@@ -194,7 +260,7 @@ Ext.onReady(function(){
 				collapsible: true,
 				margins: '0 0 0 0',
 				layout: 'border',
-				stateful: false,
+				stateful: og.rememberGUIState,
 				items: [{
 					id: 'workspaces-tree',
 					xtype: 'wspanel',

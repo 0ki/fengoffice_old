@@ -40,7 +40,7 @@ og._checkFilename = function(iname) {
 }
 </script>
 
-<form class="internalForm" id="<?php echo $instanceName ?>" action="<?php echo get_url('files', 'save_document') ?>" method="post" enctype="multipart/form-data" onsubmit="return og._checkFilename('<?php echo $instanceName ?>')">
+<form class="internalForm" style="height:100%" id="<?php echo $instanceName ?>" action="<?php echo get_url('files', 'save_document') ?>" method="post" enctype="multipart/form-data" onsubmit="return og._checkFilename('<?php echo $instanceName ?>')">
 <input type="hidden" name="instanceName" value="<?php echo $instanceName ?>" />
 <?php tpl_display(get_template_path('form_errors')) ?>
 

@@ -122,6 +122,54 @@
 		$sql = "UPDATE " . $name  . " SET user_id = 0 WHERE user_id = " .$user_id ;
 		return DB::execute($sql);
 	}
+	
+	static function getContactFieldNames() {
+		return array('contact[firstname]' => lang('first name'),
+			'contact[lastname]' => lang('last name'), 
+			'contact[email]' => lang('email address'),
+
+			'contact[w_web_page]' => lang('website'), 
+			'contact[w_address]' => lang('address'),
+			'contact[w_city]' => lang('city'),
+			'contact[w_state]' => lang('state'),
+			'contact[w_zipcode]' => lang('zipcode'),
+			'contact[w_country]' => lang('country'),
+			'contact[w_phone_number]' => lang('phone'),
+			'contact[w_phone_number2]' => lang('phone 2'),
+			'contact[w_fax_number]' => lang('fax'),
+			'contact[w_assistant_number]' => lang('assistant'),
+			'contact[w_callback_number]' => lang('callback'),
+			
+			'contact[h_web_page]' => lang('website'),
+			'contact[h_address]' => lang('address'),
+			'contact[h_city]' => lang('city'),
+			'contact[h_state]' => lang('state'),
+			'contact[h_zipcode]' => lang('zipcode'),
+			'contact[h_country]' => lang('country'),
+			'contact[h_phone_number]' => lang('phone'),
+			'contact[h_phone_number2]' => lang('phone 2'),
+			'contact[h_fax_number]' => lang('fax'),
+			'contact[h_mobile_number]' => lang('mobile'),
+			'contact[h_pager_number]' => lang('pager'),
+			
+			'contact[o_web_page]' => lang('website'),
+			'contact[o_address]' => lang('address'),
+			'contact[o_city]' => lang('city'),
+			'contact[o_state]' => lang('state'),
+			'contact[o_zipcode]' => lang('zipcode'),
+			'contact[o_country]' => lang('country'),
+			'contact[o_phone_number]' => lang('phone'),
+			'contact[o_phone_number2]' => lang('phone 2'),
+			'contact[o_fax_number]' => lang('fax'),
+			'contact[o_birthday]' => lang('birthday'),
+			'contact[email2]' => lang('email address 2'),
+			'contact[email3]' => lang('email address 3'),
+			'contact[job_title]' => lang('job title'),
+			'contact[department]' => lang('department'), 
+			'contact[middlename]' => lang('middle name'), 
+			'contact[notes]' => lang('notes') 
+		);
+	}
   } // Contacts 
   
 ?>

@@ -1,11 +1,11 @@
-<?php
-  set_page_title($tool->getDisplayName());
-  administration_tabbed_navigation(ADMINISTRATION_TAB_TOOLS);
-  administration_crumbs(array(
-    array(lang('administration tools'), get_url('administration', 'tools')),
-    array($tool->getDisplayName())
-  ));
-?>
+
+<div class="adminConfiguration" style="height:100%;background-color:white">
+  <div class="adminHeader">
+  	<div class="adminTitle"><?php echo clean($tool->getDisplayName()) ?></div>
+  </div>
+  <div class="adminSeparator"></div>
+  <div class="adminMainBlock">
+  
 <form class="internalForm" action="<?php echo $tool->getToolUrl() ?>" method="post">
 <?php tpl_display(get_template_path('form_errors')) ?>
 
@@ -21,3 +21,5 @@
   
   <?php echo submit_button(lang('submit')) ?>
 </form>
+</div>
+</div>

@@ -217,10 +217,14 @@ class MilestoneController extends ApplicationController {
 					}
 				}
 			    
-				DB::commit();
+				$object_controller = new ObjectController();
+			    $object_controller->link_to_new_object($milestone);
+				$object_controller->add_subscribers($milestone);
+				$object_controller->add_custom_properties($milestone);
 				
 				ApplicationLogs::createLog($milestone, $milestone->getWorkspaces(), ApplicationLogs::ACTION_ADD);
 				
+				DB::commit();
 
 				// Send notification
 				try {
@@ -320,6 +324,11 @@ class MilestoneController extends ApplicationController {
 				$milestone->save();
 				$milestone->setTagsFromCSV(array_var($milestone_data, 'tags'));
 
+				$object_controller = new ObjectController();
+			    $object_controller->link_to_new_object($milestone);
+				$object_controller->add_subscribers($milestone);
+				$object_controller->add_custom_properties($milestone);
+				
 				ApplicationLogs::createLog($milestone, $milestone->getWorkspaces(), ApplicationLogs::ACTION_EDIT);
 				DB::commit();
 

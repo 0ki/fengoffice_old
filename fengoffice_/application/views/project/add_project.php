@@ -30,7 +30,6 @@
   			<?php echo submit_button($project->isNew() ? lang('add workspace') : lang('save changes'), 's', array('style'=>'margin-top:0px;margin-left:10px')) ?>
   		</td></tr></table></div>
   	</div>
-  	
   	<div>
     <?php echo label_tag(lang('name'), 'projectFormName', true) ?>
     <?php echo text_field('project[name]', array_var($project_data, 'name'), 
@@ -88,12 +87,8 @@
 <?php						 foreach ($users as $user) { ?>
 								<tr class="user">
 									<td>
-<?php							 if ($user->isAccountOwner()) { ?>
-										<img src="<?php echo icon_url('ok.gif') ?>" alt="" /> <label class="checkbox"><?php echo clean($user->getDisplayName()) ?></label>
-										<input type="hidden" name="<?php echo 'project_user_' . $user->getId() ?>" value="checked" />
-<?php							 } else { ?>
-										<?php echo checkbox_field('project_user_' . $user->getId(), $user->isProjectUser(active_or_personal_project()), array('id' => $genid . 'project_user_' . $user->getId(), 'onclick' => "App.modules.updatePermissionsForm.userCheckboxClick(" . $user->getId() . ", " . $company->getId() . ",'".$genid."')")) ?> <label class="checkbox" for="<?php echo 'project_user_' . $user->getId() ?>"><?php echo clean($user->getDisplayName()) ?></label>
-<?php							 } // if ?>
+								<?php echo checkbox_field('project_user_' . $user->getId(), $user->isProjectUser(active_or_personal_project()), array('id' => $genid . 'project_user_' . $user->getId(), 'onclick' => "App.modules.updatePermissionsForm.userCheckboxClick(" . $user->getId() . ", " . $company->getId() . ",'".$genid."')")) ?> <label class="checkbox" for="<?php echo 'project_user_' . $user->getId() ?>"><?php echo clean($user->getDisplayName()) ?></label>
+<?php //							 } // if ?>
 <?php							 if($user->isAdministrator()) {?> 
 										<span class="desc">(<?php echo lang('administrator') ?>)</span>
 <?php							 } // if ?>
@@ -187,6 +182,47 @@
 		</div>
 		
 	<?php echo submit_button($project->isNew() ? lang('add workspace') : lang('save changes'), 's', array('tabindex' => '2')) ?>
+	
+	<?php if (!$project->isNew()) { ?>
+	<br/><br/><br/>
+  	<fieldset>	
+	<legend><?php echo lang('properties') ?></legend>
+	<table><?php if ($project->getCreatedBy() instanceof User){ ?><tr>
+		<td><b><?php echo lang('created by') ?>:</b></td>
+		<td style="padding-left:10px"><?php 
+				if (logged_user()->getId() == $project->getCreatedById())
+					$username = lang('you');
+				else
+					$username = clean($project->getCreatedByDisplayName());
+
+				if ($project->getCreatedOn()->isToday()){
+					$datetime = format_time($project->getCreatedOn());
+					echo lang('user date today at', $project->getCreatedByCardUrl(), $username, $datetime, clean($project->getCreatedByDisplayName()));
+				} else {
+					$datetime = format_datetime($project->getCreatedOn(), lang('date format'), logged_user()->getTimezone());
+					echo lang('user date', $project->getCreatedByCardUrl(), $username, $datetime, clean($project->getCreatedByDisplayName()));
+				}
+			 ?></td>
+	<?php } 
+		if ($project->getUpdatedBy() instanceof User){ ?>
+		<td style="padding-left:40px"><b><?php echo lang('modified by') ?>:</b></td>
+		<td style="padding-left:10px"><?php 
+				if (logged_user()->getId() == $project->getUpdatedById())
+					$username = lang('you');
+				else
+					$username = clean($project->getUpdatedByDisplayName());
+
+				if ($project->getUpdatedOn()->isToday()){
+					$datetime = format_time($project->getUpdatedOn());
+					echo lang('user date today at', $project->getUpdatedByCardUrl(), $username, $datetime, clean($project->getUpdatedByDisplayName()));
+				} else {
+					$datetime = format_datetime($project->getUpdatedOn(), lang('date format'), logged_user()->getTimezone());
+					echo lang('user date', $project->getUpdatedByCardUrl(), $username, $datetime, clean($project->getUpdatedByDisplayName()));
+				}
+			 ?></td>
+	<?php } ?></tr></table>
+	</fieldset>
+	<?php } // if ?>
 </div>
 </div>
 </form>

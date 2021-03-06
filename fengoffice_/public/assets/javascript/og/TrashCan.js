@@ -11,10 +11,9 @@ og.TrashCan = function() {
 
 	if (!og.TrashCan.store) {
 		og.TrashCan.store = new Ext.data.Store({
-			proxy: new Ext.data.HttpProxy(new Ext.data.Connection({
-				method: 'GET',
-				url: og.getUrl('object', 'list_objects', {ajax: true, trashed: "true"})
-			})),
+			proxy: new og.OpenGooProxy({
+				url: og.getUrl('object', 'list_objects', {trashed: "true"})
+			}),
 			reader: new Ext.data.JsonReader({
 				root: 'objects',
 				totalProperty: 'totalCount',
@@ -33,7 +32,6 @@ og.TrashCan = function() {
 			listeners: {
 				'load': function() {
 					var d = this.reader.jsonData;
-					og.processResponse(d);
 					var ws = og.clean(Ext.getCmp('workspace-panel').getActiveWorkspace().name);
 					var tag = og.clean(Ext.getCmp('tag-panel').getSelectedTag().name);
 					if (d.totalCount == 0) {
@@ -45,17 +43,7 @@ og.TrashCan = function() {
 					} else {
 						this.fireEvent('messageToShow', "");
 					}
-					og.hideLoading();
 					og.showWsPaths();
-				},
-				'beforeload': function() {
-					og.loading();
-					return true;
-				},
-				'loadexception': function() {
-					og.hideLoading();
-					var d = this.reader.jsonData;
-					og.processResponse(d);
 				}
 			}
 		});

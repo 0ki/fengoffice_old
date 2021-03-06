@@ -163,7 +163,11 @@ class CompanyController extends ApplicationController {
 					$company->addToWorkspace($w);
 				}
 
-//				$company->save_properties($message_data);
+				$object_controller = new ObjectController();
+			    $object_controller->link_to_new_object($company);
+				$object_controller->add_subscribers($company);
+				$object_controller->add_custom_properties($company);
+				
 				ApplicationLogs::createLog($company, $validWS, ApplicationLogs::ACTION_ADD);
 					
 //				ApplicationLogs::createLog($company, null, ApplicationLogs::ACTION_ADD);
@@ -256,6 +260,12 @@ class CompanyController extends ApplicationController {
 					$company->addToWorkspace($w);
 				}
 				/* </multiples workspaces> */
+				
+				$object_controller = new ObjectController();
+			    $object_controller->link_to_new_object($company);
+				$object_controller->add_subscribers($company);
+				$object_controller->add_custom_properties($company);
+				
 				ApplicationLogs::createLog($company, $company->getWorkspaces(), ApplicationLogs::ACTION_EDIT);
 				DB::commit();
 

@@ -1,3 +1,20 @@
+<script type="text/javascript">
+	og.pickObjectToZip = function(zip_id) {
+		og.ObjectPicker.show(function(objs) {
+				if (objs.length < 1) return;
+				if (objs[0].data.manager != 'ProjectFiles') {
+					og.msg(lang("error"), lang("must choose a file"));
+					return;
+				}
+				obj_ids = '';
+				for(i=0; i<objs.length; i++) {
+					obj_ids += (obj_ids == '' ? '' : ',') + objs[i].data.object_id;
+				}
+				og.openLink(og.getUrl('files', 'zip_add', {id:zip_id, objects:obj_ids})); 
+			}, this, {});
+	}
+</script>
+
 <?php
 if (isset($file) && $file instanceof ProjectFile) {
 	$options = array();
@@ -43,6 +60,10 @@ if (isset($file) && $file instanceof ProjectFile) {
 			if ($file->isModifiable()) { 
 				add_page_action(lang('edit this file'), $file->getModifyUrl(), 'ico-edit');
 			}
+			if ($file->getTypeString() == 'application/zip') {
+				add_page_action(lang('extract'), get_url('files', 'zip_extract', array('id' => $file->getId())), 'ico-zip-extract');
+				add_page_action(lang('add files to zip'), "javascript:og.pickObjectToZip({$file->getId()})", 'ico-zip-add');
+			}
 			
 			add_page_action(lang('edit file properties'), $file->getEditUrl(), 'ico-properties');
 		}
@@ -56,12 +77,11 @@ if (isset($file) && $file instanceof ProjectFile) {
     		add_page_action(lang('move to trash'), "javascript:if(confirm(lang('confirm move to trash'))) og.openLink('" . $file->getTrashUrl() ."');", 'ico-trash');
     	}
 	}
+	
+	if (can_add(logged_user(), active_or_personal_project(), 'ProjectFiles')) {
+		add_page_action(lang('copy file'), $file->getCopyUrl(), 'ico-copy');
+	}
 
-// Fix the slideshow!!!!
-//	if(strcmp($file->getTypeString(),'prsn')==0 ) 
-//		add_page_action($options[] = '<a href="javascript:og.slideshow(' . 	$file->getId()	. ')">' . lang('slideshow') . '</a>';
-
-  //add_javascript_to_page('file/slideshow.js');
 ?>
 
 

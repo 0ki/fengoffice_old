@@ -12,7 +12,6 @@ og.TasksTopToolbar = function(config) {
 		});
 		
 	og.TasksTopToolbar.superclass.constructor.call(this, config);
-	var userPreferences = Ext.util.JSON.decode(document.getElementById(config.userPreferencesHfId).value);
 	
 	var allTemplates = [];
 	var allTemplatesArray = Ext.util.JSON.decode(document.getElementById(config.allTemplatesHfId).value);
@@ -194,7 +193,7 @@ og.TasksTopToolbar = function(config) {
         	}
         }
     });
-    this.filtercombo.setValue(userPreferences.filter);
+    this.filtercombo.setValue(ogTasks.userPreferences.filter);
     
     
     var currentUser = '';
@@ -228,7 +227,7 @@ og.TasksTopToolbar = function(config) {
 	        fields: ['value', 'text'],
 	        data : ucsData
 	    }),
-	    hidden: userPreferences.filter != 'assigned_to',
+	    hidden: ogTasks.userPreferences.filter != 'assigned_to',
         displayField:'text',
         typeAhead: true,
         mode: 'local',
@@ -250,7 +249,7 @@ og.TasksTopToolbar = function(config) {
         	}
         }
     });
-    this.filterNamesCompaniesCombo.setValue(userPreferences.filterValue);
+    this.filterNamesCompaniesCombo.setValue(ogTasks.userPreferences.filterValue);
     
     for (i in usersArray){
 		if (usersArray[i].isCurrent)
@@ -269,7 +268,7 @@ og.TasksTopToolbar = function(config) {
 	        fields: ['value', 'text'],
 	        data : uData
 	    }),
-	    hidden: (userPreferences.filter == 'milestone' || userPreferences.filter == 'priority' || userPreferences.filter == 'assigned_to' || userPreferences.filter == 'no_filter'),
+	    hidden: (ogTasks.userPreferences.filter == 'milestone' || ogTasks.userPreferences.filter == 'priority' || ogTasks.userPreferences.filter == 'assigned_to' || ogTasks.userPreferences.filter == 'no_filter'),
         displayField:'text',
         typeAhead: true,
         mode: 'local',
@@ -286,7 +285,7 @@ og.TasksTopToolbar = function(config) {
         	}
 		}
 	});
-    this.filterNamesCombo.setValue(userPreferences.filterValue);
+    this.filterNamesCombo.setValue(ogTasks.userPreferences.filterValue);
     
     this.filterPriorityCombo = new Ext.form.ComboBox({
     	id: 'ogTasksFilterPriorityCombo',
@@ -294,7 +293,7 @@ og.TasksTopToolbar = function(config) {
 			fields: ['value', 'text'],
 			data : [[100, lang('low')],[200, lang('normal')],[300, lang('high')]]
 	    }),
-	    hidden: userPreferences.filter != 'priority',
+	    hidden: ogTasks.userPreferences.filter != 'priority',
         displayField:'text',
         typeAhead: true,
         mode: 'local',
@@ -312,7 +311,7 @@ og.TasksTopToolbar = function(config) {
         	}
         }
     });
-    this.filterPriorityCombo.setValue(userPreferences.filterValue);
+    this.filterPriorityCombo.setValue(ogTasks.userPreferences.filterValue);
     
     
     var milestones = Ext.util.JSON.decode(document.getElementById(config.internalMilestonesHfId).value);
@@ -329,7 +328,7 @@ og.TasksTopToolbar = function(config) {
 	        data : milestonesData,
 	        sortInfo: {field:'text',direction:'ASC'}
 	    }),
-	    hidden: (userPreferences.filter != 'milestone'),
+	    hidden: (ogTasks.userPreferences.filter != 'milestone'),
         displayField:'text',
         typeAhead: true,
         mode: 'local',
@@ -347,7 +346,7 @@ og.TasksTopToolbar = function(config) {
         	}
         }
     });
-    this.filterMilestonesCombo.setValue(userPreferences.filterValue);
+    this.filterMilestonesCombo.setValue(ogTasks.userPreferences.filterValue);
 	
 	
     this.statusCombo = new Ext.form.ComboBox({
@@ -370,7 +369,7 @@ og.TasksTopToolbar = function(config) {
         	}
         }
     });
-    this.statusCombo.setValue(userPreferences.status);
+    this.statusCombo.setValue(ogTasks.userPreferences.status);
     
     //Add stuff to the toolbar
 	this.add(butt);

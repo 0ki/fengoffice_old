@@ -57,7 +57,7 @@
     
     // Comments
     'add comment' => 'Añadir comentario',
-    'edit comment' => 'Guardar comentario',
+    'edit comment' => 'Editar comentario',
     
     // Task list
     'add task list' => 'Añadir tarea',
@@ -177,7 +177,9 @@
     'unlink' => 'Eliminar vínculo',
     'unlink object' => 'Eliminar vínculo con este objecto',
     'unlink objects' => 'Eliminar vínculo con estos objectos',
-  	
+	'extract' => 'Extraer',
+  	'add files to zip' => 'Agregar archivos',
+    	
     // Tags
     'delete tag'  => 'Eliminar etiqueta',
     
@@ -199,6 +201,8 @@
     'move to trash' => 'Enviar a la papelera',
     'restore from trash' => 'Restaurar de la papelera',
     'delete permanently' => 'Eliminar permanentemente',
+  
+  	'copy file' => 'Copiar este archivo',
   
   ); // array
 

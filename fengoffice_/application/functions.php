@@ -149,9 +149,23 @@ function product_name() {
  * @return string
  */
 function product_version() {
-	// 0.6 is the last version that comes without PRODUCT_VERSION constant that is set up
-	return defined('INSTALLED_VERSION') ? INSTALLED_VERSION : (defined('PRODUCT_VERSION') ? PRODUCT_VERSION : '0.6');
+	return include ROOT . '/version.php';
 } // product_version
+
+/**
+ * Return installed version, wrapper function.
+ *
+ * @param void
+ * @return string
+ */
+function installed_version() {
+	$version = @include ROOT . '/config/installed_version.php';
+	if ($version) {
+		return $version;
+	} else {
+		return "unknown";
+	}
+} // installed_version
 
 /**
  * Returns product signature (name and version). If user is not logged in and
@@ -357,9 +371,14 @@ function set_config_option($option_name, $value) {
  * @return mixed
  */
 function user_config_option($option, $default = null, $user_id = null) {
-	if(!$user_id )
-		$user_id = logged_user()->getId();
-	return UserWsConfigOptions::getOptionValue($option,$user_id, $default);
+	if (!$user_id) {
+		if (logged_user() instanceof User) {
+			$user_id = logged_user()->getId();
+		} else {
+			return $default;
+		}
+	}
+	return UserWsConfigOptions::getOptionValue($option, $user_id, $default);
 } // config_option
 
 /**
@@ -400,4 +419,7 @@ function get_object_by_manager_and_id($object_id, $manager_class) {
 	return $object instanceof DataObject ? $object : null;
 } // get_object_by_manager_and_id
 
+function alert($text) {
+	evt_add("debug", $text);
+}
 ?>

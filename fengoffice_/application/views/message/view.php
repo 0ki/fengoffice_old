@@ -19,7 +19,7 @@ if (isset($message) && $message instanceof ProjectMessage) {
 <div style="padding:7px">
 <div class="message">
 	<?php 
-		$content = nl2br(clean($message->getText()));
+		$content = convert_to_links(nl2br(clean($message->getText())));
 		if(trim($message->getAdditionalText())) {
     		$content .= '<div class="messageSeparator">' . lang('message separator') . '</div>' 
     			. nl2br(clean($message->getAdditionalText()));

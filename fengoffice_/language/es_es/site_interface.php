@@ -77,7 +77,7 @@
     'welcome to administration info' => 'Bienvenido al panel de administración. Esta herramienta le permitirá administrar los datos de su empresa, sus miembros, clientes y las áreas de trabajo a los que pertenece.',
     
     'send new account notification' => '¿Enviar notificación vía correo electrónico?',
-    'send new account notification desc' => 'Si elige "Sí", el usuario recibirá un mensaje de bienvenida, vía correo electrónico, con los datos necesarios para conectarse',
+    'send new account notification desc' => 'Si elige "Sí", el usuario recibirá un mensaje de bienvenida, vía correo electrónico, con los datos necesarios para conectarse (incluyendo la contraseña).',
     
     // Tools
     'administration tools' => 'Herramientas',
@@ -94,7 +94,7 @@
     'welcome to new account' => 'Bienvenido a su reciente creada cuenta',
     'welcome to new account info' => '{0}, bienvenido a su nueva cuenta. De ahora en adelante estará disponible en {1} (Puede almacenar este vínculo). Puede comenzar a utilizar su cuenta tras completar los siguientes pasos:',
     'new account step1' => 'Paso 1: Introduzca los datos de su empresa',
-    'new account step1 info' => '<a class="internalLink" href="{0}">Fije los datos de su empresa</a> como son teléfono, número de fax, dirección, correo electrónico, página web, etc.',
+    'new account step1 info' => '<a class="internalLink" href="{0}">Fije los datos de su empresa</a> como son teléfono, número de fax, dirección, correo electrónico, sitio web, etc.',
     'new account step2' => 'Paso 2: Añada miembros a su equipo',
     'new account step2 info' => 'Usted puede <a class="internalLink" href="{0}">crear nuevas cuentas de usuarios</a> para todos los miembros de su equipo. Cada miembro obtendrá un nombre de usuario y una contraseña, que utilizará para acceder al sistema',
     'new account step3' => 'Paso 3: Añada empresas clientes y sus miembros',
@@ -187,29 +187,44 @@
  	'import contacts from csv' => 'Importación de contactos desde archivos .csv',
 	'import' => 'Importar',
  	'file not exists' => 'El archivo seleccionado no existe',
-	'field delimiter' => 'Delimitador de campos',
+	'field delimiter' => 'Delimitador de campos (opcional)',
 	'first record contains field names' => 'El primer registro contiene los nombres de los campos',
 	'import contact success' => 'Importación de contactos exitosa.',
 	'contact fields' => 'Campos de contactos',
 	'fields from file' => 'Campos obtenidos del archivo',
-	'you must match the database fields with file fields before executing the import process' => 'Debe asegurarse de que los campos de la base de contactos coincidan con los campos especificados en el archivo.',  
+	'you must match the database fields with file fields before executing the import process' => 'Debe asegurarse de que los campos de la base de datos coincidan con los campos especificados en el archivo.',  
 	'import result' => 'Resultado de la importación',
 	'contacts succesfully imported' => 'Contactos importados exitosamente',
 	'contacts import fail' => 'Importación fallida para los contactos',
 	'contacts import fail help' => 'El proceso de importación pudo haber fallado debido a datos existentes en la base de datos, como nombre, email, etc.',
 	'import fail reason' => 'Motivo del fallo',
+	'select a file in order to load its data' => 'Seleccione un archivo csv para poder cargar la información del mismo.',
+  
+  	// Contact export
+  	'export contacts to csv' => 'Exportación de contactos a archivos .csv',
+	'export' => 'Exportar',
+	'fields to export' => 'Datos a exportar',
+	'success export contacts' => 'Los contactos se han exportado existosamente',
+
+	// Company import/export
+	'import companies from csv' => 'Importación de empresas desde archivos .csv',
+	'company fields' => 'Campos de empresas',
+	'companies succesfully imported' => 'Empresas importadas exitosamente',
+	'companies import fail' => 'Importación fallida para las empresas',
+	'export companies to csv' => 'Exportación de empresas a archivos .csv',
+	'success export companies' => 'Las empresas se han exportado existosamente',
   
   //Webpages
-  'add webpage' => 'Añadir página web',
-  'delete webpage' => 'Eliminar página web',
-  'webpages' => 'Páginas web',
-  'private webpage' => 'Página web privada',
+  'add webpage' => 'Añadir enlace web',
+  'delete webpage' => 'Eliminar enlace web',
+  'webpages' => 'Enlaces web',
+  'private webpage' => 'Enlace web privado',
   'url' => 'URL',
-  'no active webpages in project' => 'No se encontraron páginas web en esta área de trabajo',
+  'no active webpages in project' => 'No se encontraron enlaces web en esta área de trabajo',
   'webpage list description' => 'Descripción',
-  'edit webpage' => 'Editar página web',
-  'webpage' => 'Página web',
-  'webpage title required' => 'Título obligatorio para la pagina web',
+  'edit webpage' => 'Editar enlace web',
+  'webpage' => 'Enlace web',
+  'webpage title required' => 'Título obligatorio para en enlace web',
   'webpage url required' => 'Es necesario introducir la URL',
     
   //Email
@@ -247,6 +262,10 @@
   'mail account id description' => 'El nombre de usuario de la cuenta o identificación usada para conectarse al servidor (ej. \'juan@servidor.com\')',
   'mail account password description' => 'La contraseña obligatoria para conectarse a la cuenta',
   'mail account server description' => 'La dirección del serivdor de correo electrónico (ej. \'pop3.servidor.com\')',
+  'folders to check' => 'Carpetas a verificar',
+  'after' => 'luego de',
+  'delete mails from server' => 'Eliminar correos del serviror',
+  'mail account delete mails from server description' => 'Habilite esta opción para que los correos sean eliminados del servidor luego de cierto tiempo.',
   
   //Checkout
   'checkout file' => 'Bloquear archivo',
@@ -275,8 +294,8 @@
   'can write comments' => 'Puede escribir comentarios',
   'can read contacts' => 'Puede leer contactos',
   'can write contacts' => 'Puede escribir contactos',
-  'can read weblinks' => 'Puede leer páginas web',
-  'can write weblinks' => 'Puede añadir páginas web',
+  'can read weblinks' => 'Puede leer enlaces web',
+  'can write weblinks' => 'Puede añadir enlaces web',
   'can read files' => 'Puede leer archivos',
   'can write files' => 'Puede escribir archivos',
   'can read events' => 'Puede leer eventos',
@@ -287,7 +306,7 @@
   'new workspace' => 'Nueva área de trabajo',
   'new task list' => 'Nueva tarea',
   'new event' => 'Nuevo evento',
-  'new webpage' => 'Nueva pagina web',
+  'new webpage' => 'Nuevo enlace web',
   'new milestone' => 'Nuevo hito',
   'new message' => 'Nueva nota',
   'new group' => 'Grupo nuevo',
@@ -460,7 +479,7 @@
   'do complete' => 'Completar',
   
   'task data' => 'Datos de tarea',
-  'search in all workspaces' => 'Buscar en todos los espacios',
+  'search in all workspaces' => 'Buscar en todas las áreas de trabajo',
   
   'total pause time' => 'Tiempo total pausado',
   'pause time cannot be negative' => 'El tiempo de pausa no puede ser negativo',
@@ -486,7 +505,11 @@
   
   'time has to be greater than 0' => 'El tiempo tiene que ser mayor que 0',
   'edit picture' => 'Editar imagen',
-  'deleted by' => 'ELiminado por',
+  'deleted by' => 'Eliminado por',
+  
+  'release notes' => 'Notas de la versión',
+  'remember last' => 'Recordar último',
+  
   
   ); // array
 

@@ -170,6 +170,11 @@ Ext.extend(og.WorkspaceChooserTree, Ext.tree.TreePanel, {
 			iter = iter.nextSibling;
 		}
 		parent.insertBefore(node, iter);
+		var expanded = parent.expanded;
+		if (!expanded){
+			parent.expand();
+			parent.collapse();
+		}
 		return node;
 	},
 	

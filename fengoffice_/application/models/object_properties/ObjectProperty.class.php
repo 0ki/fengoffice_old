@@ -28,6 +28,11 @@
       return $this->object;
     } // getObject
     
+    function setObject($o) {
+    	$this->setRelObjectId($o->getId());
+    	$this->setRelObjectManager(get_class($o->manager()));
+    }
+    
     /**
     * Construct the object
     *

@@ -63,3 +63,57 @@
 	cursor: pointer;
 }
 
+.cronEventsTable > tbody > tr > td, .cronEventsTable > tbody > tr > th {
+	padding: 2px 5px;
+	text-align: center;
+}
+.cronEventsTable td.cronEventsName {
+	text-align: left;
+}
+
+/* <upgrade> */
+.adminUpgrade {
+	height: 100%;
+	background-color: white;
+	border-top: 1px solid #CCC;
+}
+.adminUpgrade h2 {
+	border: 1px solid #CCC;
+	background-color: #E3EEF3;
+	padding: 5px;
+	color: black;
+	text-decoration: none;
+	margin: 10px 0;
+	font-size: 120%;
+}
+.adminUpgrade h3 {
+	color: black;
+	text-decoration: none;
+	font-size: 100%;
+}
+.adminUpgrade > * {
+	padding: 20px;
+}
+.availableVersions {
+	background-color: white;
+}
+.availableVersion {
+	margin-bottom: 20px;
+	border: 1px solid #CCC;
+	background-color: #EEF3FF;
+	padding: 10px;
+}
+.releaseNotes {
+	background-color: white;
+	margin-top: 10px;
+	margin-bottom: 20px;
+	border: 1px solid #CCC;
+	padding: 10px;
+	height: 150px;
+	overflow: auto;
+	white-space: pre-wrap;
+}
+.downloadLinks .desc {
+	margin-left: 20px;
+}
+/* </upgrade> */

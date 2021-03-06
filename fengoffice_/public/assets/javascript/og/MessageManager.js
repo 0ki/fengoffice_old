@@ -13,10 +13,9 @@ og.MessageManager = function() {
 	
 	if (!og.MessageManager.store) {
 		og.MessageManager.store = new Ext.data.Store({
-			proxy: new Ext.data.HttpProxy(new Ext.data.Connection({
-				method: 'GET',
-				url: og.getUrl('message', 'list_all', {ajax:true})
-			})),
+			proxy: new og.OpenGooProxy({
+				url: og.getUrl('message', 'list_all')
+			}),
 			reader: new Ext.data.JsonReader({
 				root: 'messages',
 				totalProperty: 'totalCount',
@@ -30,7 +29,6 @@ og.MessageManager = function() {
 			listeners: {
 				'load': function() {
 					var d = this.reader.jsonData;
-					og.processResponse(d);
 					var ws = og.clean(Ext.getCmp('workspace-panel').getActiveWorkspace().name);
 					var tag = og.clean(Ext.getCmp('tag-panel').getSelectedTag().name);
 					if (d.totalCount === 0) {
@@ -42,17 +40,7 @@ og.MessageManager = function() {
 					} else {
 						this.fireEvent('messageToShow', "");
 					}
-					og.hideLoading();	
 					og.showWsPaths();
-				},
-				'beforeload': function() {
-					og.loading();
-					return true;
-				},
-				'loadexception': function() {
-					og.hideLoading();
-					var d = this.reader.jsonData;
-					og.processResponse(d);
 				}
 			}
 		});
@@ -102,7 +90,7 @@ og.MessageManager = function() {
 	
 		var now = new Date();
 		if (now.dateFormat('Y-m-d') > value.dateFormat('Y-m-d')) {
-			return lang('last updated by on', userString, value.dateFormat('M j'));
+			return lang('last updated by on', userString, value.dateFormat(lang('date format')));
 		} else {
 			return lang('last updated by at', userString, value.dateFormat('h:i a'));
 		}
@@ -177,19 +165,21 @@ og.MessageManager = function() {
 			header: lang("title"),
 			dataIndex: 'title',
 			width: 250,
-			renderer: renderName
+			renderer: renderName,
+			sortable:true
         },{
 			id: 'tags',
 			header: lang("tags"),
 			dataIndex: 'tags',
 			width: 60
         },{
-			id: 'date',
+			id: 'updatedOn',
 			header: lang("last updated by"),
 			dataIndex: 'date',
 			width: 50,
 			sortable: true,
-			renderer: renderDate
+			renderer: renderDate,
+			sortable:true
         }]);
 	cm.defaultSortable = false;
 

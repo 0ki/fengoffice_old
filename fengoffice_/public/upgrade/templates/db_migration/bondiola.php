@@ -3,9 +3,6 @@
 -- <?php echo $default_collation ?> collate utf8_unicode_ci
 -- <?php echo $engine ?> InnoDB
 
-INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`)
-	VALUES ('general', 'enable_email_module', '0', 'BoolConfigHandler', 0, 0, 'Enable or disable email tab.');
-
 UPDATE `<?php echo $table_prefix ?>user_ws_config_options` SET `is_system` = 1 where `id` >= 12 and `id` <=20;
 ALTER TABLE `<?php echo $table_prefix ?>timeslots` ADD COLUMN `paused_on` datetime NOT NULL default '0000-00-00 00:00:00' AFTER `description`, ADD COLUMN `subtract` INTEGER UNSIGNED NOT NULL DEFAULT 0 AFTER `paused_on`;
 

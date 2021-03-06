@@ -67,7 +67,11 @@
     */
     static function deleteFile($delete_file) {
       $destination = self::getFilePath($delete_file);
-      return @unlink($destination);
+      if (is_file($destination)) {
+      	return @unlink($destination);
+      } else {
+      	return false;
+      }
     } // deleteFile
     
     /**

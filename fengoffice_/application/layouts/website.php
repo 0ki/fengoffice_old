@@ -39,7 +39,7 @@
 	<img src="<?php echo get_image_url("layout/loading.gif") ?>" width="32" height="32" style="margin-right:8px;" align="absmiddle"/><?php echo lang("loading") ?>...
 </div>
 
-<div id="subWsExpander" onmouseover="clearTimeout(og.eventTimeouts['swst']);" onmouseout="og.setSubWsTooltipTimeout(100)" style="display:none;"></div>
+<div id="subWsExpander" onmouseover="clearTimeout(og.eventTimeouts['swst']);" onmouseout="og.eventTimeouts['swst'] = setTimeout('og.HideSubWsTooltip()', 2000);" style="display:none;"></div>
 
 <?php echo render_page_javascript() ?>
 <?php echo render_page_inline_js() ?>
@@ -97,21 +97,37 @@
 og.pageSize = <?php echo config_option('files_per_page',10)?>;
 og.hostName = '<?php echo ROOT_URL ?>';
 og.maxUploadSize = <?php echo get_max_upload_size() ?>;
+og.rememberGUIState = <?php echo user_config_option("rememberGUIState", 0) ?>;
+<?php if (user_config_option("rememberGUIState", 0)) { ?>
 og.initialGUIState = <?php echo json_encode(GUIController::getState()) ?>;
+<?php } ?>
 og.initialURL = '<?php echo ROOT_URL . "?" . $_SERVER['QUERY_STRING'] ?>';
+<?php $initialWS = user_config_option('initialWorkspace', 0);
+if ($initialWS == "remember") {
+	$initialWS = user_config_option('lastAccessedWorkspace', 0);
+}
+?>
+og.initialWorkspace = '<?php echo $initialWS ?>';
 og.loggedUser = {
 	id: <?php echo logged_user()->getId() ?>,
 	username: <?php echo json_encode(logged_user()->getUsername()) ?>,
 	displayName: <?php echo json_encode(logged_user()->getDisplayName()) ?>
 };
 
-// To enable emails tab: define('SHOW_MAILS_TAB', 1); in config/config.php
-og.showMailsTab = <?php echo config_option("enable_email_module", defined('SHOW_MAILS_TAB') && SHOW_MAILS_TAB) ? 1 : 0 ?>;
+og.enableNotesModule = <?php echo config_option("enable_notes_module", 1) ? 1 : 0 ?>;
+og.enableEmailModule = <?php echo config_option("enable_email_module", defined('SHOW_MAILS_TAB') && SHOW_MAILS_TAB) ? 1 : 0 ?>;
+og.enableContactsModule = <?php echo config_option("enable_contacts_module", 1) ? 1 : 0 ?>;
+og.enableCalendarModule = <?php echo config_option("enable_calendar_module", 1) ? 1 : 0 ?>;
+og.enableDocumentsModule = <?php echo config_option("enable_documents_module", 1) ? 1 : 0 ?>;
+og.enableTasksModule = <?php echo config_option("enable_tasks_module", 1) ? 1 : 0 ?>;
+og.enableWeblinksModule = <?php echo config_option("enable_weblinks_module", 1) ? 1 : 0 ?>;
+og.enableTimeModule = <?php echo config_option("enable_time_module", 1) ? 1 : 0 ?>;
+og.enableReportingModule = <?php echo config_option("enable_reporting_module", 1) ? 1 : 0 ?>;
 og.daysOnTrash = <?php echo config_option("days_on_trash", 0) ?>;
-Ext.Ajax.timeout = <?php echo get_max_execution_time()*1000 ?>;
+Ext.Ajax.timeout = <?php echo get_max_execution_time()*1100 // give a 10% margin to PHP's timeout ?>;
 og.GooPlayer.sound = new Sound();
 
-var quickAdd = new og.QuickAdd();
+var quickAdd = new og.QuickAdd({renderTo:'quickAdd'});
 
 </script>
 <?php include_once(Env::getLayoutPath("listeners"));?>

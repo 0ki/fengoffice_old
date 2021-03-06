@@ -43,6 +43,10 @@
       
     } // connect
     
+    function close() {
+    	@mysql_close($this->getLink());
+    }
+    
     function isResource($resource) {
     	return is_resource($resource);
     }

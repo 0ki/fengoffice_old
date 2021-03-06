@@ -147,7 +147,7 @@ class AdministrationController extends ApplicationController {
 		} // if
 
 		tpl_assign('versions_feed', $version_feed);
-	} // upgrade
+	} // upgrade	
 
 	// ---------------------------------------------------
 	//  Tool implementations
@@ -272,7 +272,64 @@ class AdministrationController extends ApplicationController {
 			} // try
 		} // if
 	} // tool_mass_mailer
-
+		
+	function cron_events() {
+		$events = CronEvents::getUserEvents();
+		tpl_assign("events", $events);
+		$cron_events = array_var($_POST, 'cron_events');
+		if (is_array($cron_events)) {
+			try {
+				DB::beginWork();
+				foreach ($cron_events as $id => $data) {
+					$event = CronEvents::findById($id);
+					$date = getDateValue($data['date']);
+					if ($date instanceof DateTimeValue) {
+						$this->parseTime($data['time'], $hour, $minute);
+						$date->add("m", $minute);
+						$date->add("h", $hour);
+						$event->setDate($date);
+					}
+					$delay = $data['delay'];
+					if (is_numeric($delay)) {
+						$event->setDelay($delay);
+					}
+					$enabled = $data['enabled'] == 'checked';
+					$event->setEnabled($enabled);
+					$event->save();
+				}
+				DB::commit();
+				flash_success(lang("success update cron events"));
+				ajx_current("back");
+			} catch (Exception $ex) {
+				DB::rollback();
+				flash_error($ex->getMessage());
+			}
+		}
+	}
+	
+	/**
+	 * Returns hour and minute in 24 hour format
+	 *
+	 * @param string $time_str
+	 * @param int $hour
+	 * @param int $minute
+	 */
+	function parseTime($time_str, &$hour, &$minute) {
+		$exp = explode(':', $time_str);
+		$hour = $exp[0];
+		$minute = $exp[1];
+		if (str_ends_with($time_str, 'M')) {
+			$exp = explode(' ', $minute);
+			$minute = $exp[0];
+			if ($exp[1] == 'PM' && $hour < 12) {
+				$hour = ($hour + 12) % 24;
+			}
+			if ($exp[1] == 'AM' && $hour == 12) {
+				$hour = 0;
+			}
+		}
+	}
+	
 } // AdministrationController
 
 ?>

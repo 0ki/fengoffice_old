@@ -4,7 +4,7 @@
 	$genid = gen_id(); ?>
 
 <?php if(($file->getDescription())) { ?>
-      <div id="fileDescription"><?php echo nl2br(clean($file->getDescription())) ?></div>
+      <div id="fileDescription"><?php echo convert_to_links(nl2br(clean($file->getDescription()))) ?></div>
 <?php } // if ?>
 
 <?php if($file->isCheckedOut()) { ?>
@@ -61,7 +61,7 @@
   $options = array();
   if($file->canDownload(logged_user())) $options[] = '<a href="' . $revision->getDownloadUrl() . '" class="downloadLink">' . lang('download') . ' <span>(' . format_filesize($revision->getFileSize()) . ')</span></a>';
   if($file->canEdit(logged_user()) && !$file->isTrashed()) $options[] = '<a class="internalLink" href="' . $revision->getEditUrl() . '">' . lang('edit') . '</a>';
-  if($file->canDelete(logged_user()) && !$file->isTrashed()) $options[] = '<a class="internalLink" href="' . $revision->getDeleteUrl() . '" onclick="return confirm(\'' . lang('confirm move to trash') . '\')">' . lang('move to trash') . '</a>';
+  if($file->canDelete(logged_user()) && !$file->isTrashed()) $options[] = '<a class="internalLink" href="' . $revision->getDeleteUrl() . '" onclick="return confirm(\'' . str_replace("'", "\\'", lang('confirm move to trash')) . '\')">' . lang('move to trash') . '</a>';
 ?>
 <?php if(count($revisions)) { ?>
     <div class="revisionOptions"><?php echo implode(' | ', $options) ?></div>

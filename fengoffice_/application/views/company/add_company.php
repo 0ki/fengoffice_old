@@ -2,6 +2,7 @@
 	$project = active_or_personal_project();
 	$projects =  active_projects();
 	$genid = gen_id();
+	$object = $company;
 	if($company->isNew()) { ?>
 <form style="height:100%;background-color:white" class="internalForm" action="<?php echo get_url('company', 'add_client') ?>" method="post">
 <?php } else { ?>
@@ -30,7 +31,12 @@
 			<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('<?php echo $genid ?>add_company_select_workspace_div',this)"><?php echo lang('workspace') ?></a> - 
 		<?php } ?>
 		<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('<?php echo $genid ?>add_company_add_tags_div', this)"><?php echo lang('tags') ?></a> - 
-		<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('add_company_timezone',this)"><?php echo lang('timezone') ?></a>
+		<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('add_company_timezone',this)"><?php echo lang('timezone') ?></a> -
+		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_custom_properties_div',this)"><?php echo lang('custom properties') ?></a> -
+		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_subscribers_div',this)"><?php echo lang('object subscribers') ?></a>
+		<?php if($object->isNew() || $object->canLinkObject(logged_user(), $project)) { ?> - 
+			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_linked_objects_div',this)"><?php echo lang('linked objects') ?></a>
+		<?php } ?>
 	</div>
   </div>
   <div class="adminSeparator"></div>
@@ -80,7 +86,6 @@
 		</tr>
 	</table>
 	
-
 	<?php if (isset ($projects) && count($projects) > 0) { ?>
 	<div id="<?php echo $genid ?>add_company_select_workspace_div" style="display:none">
 	<fieldset><legend><?php echo lang('workspace')?></legend>
@@ -92,6 +97,47 @@
 	</fieldset>
 	</div>
 	<?php } ?>
+	
+	<div id='<?php echo $genid ?>add_custom_properties_div' style="display:none">
+		<fieldset>
+			<legend><?php echo lang('custom properties') ?></legend>
+			<?php echo render_add_custom_properties($object); ?>
+		</fieldset>
+	</div>
+	
+	<div id="<?php echo $genid ?>add_subscribers_div" style="display:none">
+		<fieldset>
+		<legend><?php echo lang('object subscribers') ?></legend>
+		<div id="<?php echo $genid ?>add_subscribers_content">
+			<?php echo render_add_subscribers($object, $genid); ?>
+		</div>
+		</fieldset>
+	</div>
+	
+	<script>
+	var wsch = Ext.getCmp('<?php echo $genid ?>ws_ids');
+	wsch.on("wschecked", function(arguments) {
+		var uids = App.modules.addMessageForm.getCheckedUsers('<?php echo $genid ?>');
+		Ext.get('<?php echo $genid ?>add_subscribers_content').load({
+			url: og.getUrl('object', 'render_add_subscribers', {
+				workspaces: this.getValue(),
+				users: uids,
+				genid: '<?php echo $genid ?>',
+				object_type: '<?php echo get_class($object->manager()) ?>'
+			}),
+			scripts: true
+		});
+	}, wsch);
+	</script>
+
+	<?php if($object->isNew() || $object->canLinkObject(logged_user(), $project)) { ?>
+	<div style="display:none" id="<?php echo $genid ?>add_linked_objects_div">
+	<fieldset>
+		<legend><?php echo lang('linked objects') ?></legend>
+		<?php echo render_object_link_form($object) ?>
+	</fieldset>	
+	</div>
+	<?php } // if ?>
 		
 	<div id="<?php echo $genid ?>add_company_add_tags_div" style="display:none">
 	<fieldset><legend><?php echo lang('tags')?></legend>

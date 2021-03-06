@@ -10,10 +10,9 @@ og.FileManager = function() {
 
 	if (!og.FileManager.store) {
 		og.FileManager.store = new Ext.data.Store({
-			proxy: new Ext.data.HttpProxy(new Ext.data.Connection({
-				method: 'GET',
-				url: og.getUrl('files', 'list_files', {ajax: true})
-			})),
+			proxy: new og.OpenGooProxy({
+				url: og.getUrl('files', 'list_files')
+			}),
 			reader: new Ext.data.JsonReader({
 				root: 'files',
 				totalProperty: 'totalCount',
@@ -30,9 +29,8 @@ og.FileManager = function() {
 			}),
 			remoteSort: true,
 			listeners: {
-				'load': function() {
+				'load': function(result) {
 					var d = this.reader.jsonData;
-					og.processResponse(d);
 					var ws = og.clean(Ext.getCmp('workspace-panel').getActiveWorkspace().name);
 					var tag = og.clean(Ext.getCmp('tag-panel').getSelectedTag().name);
 					if (d.totalCount == 0) {
@@ -44,17 +42,7 @@ og.FileManager = function() {
 					} else {
 						this.fireEvent('messageToShow', "");
 					}
-					og.hideLoading();
 					og.showWsPaths();
-				},
-				'beforeload': function() {
-					og.loading();
-					return true;
-				},
-				'loadexception': function() {
-					og.hideLoading();
-					var d = this.reader.jsonData;
-					og.processResponse(d);
 				}
 			}
 		});
@@ -102,6 +90,12 @@ og.FileManager = function() {
 					r.id, lang('view slideshow'), lang('slideshow'));
 		}
 		
+		if (r.data.mimeType == "application/zip") {
+			actions += String.format(
+			'<a class="list-action ico-zip-extract" href="#" onclick="og.openLink(og.getUrl(\'files\', \'zip_extract\', {id:{0}}))" title="{1}" ' + actionStyle + '>' + lang('extract') + '</a>',
+			r.data.object_id,lang('extract files'));
+		}
+		
 		if (actions != '')
 			actions = '<span style="padding-left:15px">-&nbsp;' + actions + '</span>';
 		
@@ -131,7 +125,7 @@ og.FileManager = function() {
 		var now = new Date();
 		var dateString = '';
 		if (now.dateFormat('Y-m-d') > value.dateFormat('Y-m-d')) {
-			return lang('last updated by on', userString, value.dateFormat('M j'));
+			return lang('last updated by on', userString, value.dateFormat(lang('date format')));
 		} else {
 			return lang('last updated by at', userString, value.dateFormat('h:i a'));
 		}
@@ -146,7 +140,7 @@ og.FileManager = function() {
 		var now = new Date();
 		var dateString = '';
 		if (now.dateFormat('Y-m-d') > value.dateFormat('Y-m-d')) {
-			return lang('last updated by on', userString, value.dateFormat('M j'));
+			return lang('last updated by on', userString, value.dateFormat(lang('date format')));
 		} else {
 			return lang('last updated by at', userString, value.dateFormat('h:i a'));
 		}
@@ -189,6 +183,23 @@ og.FileManager = function() {
 		}
 		return '';
 	}
+	
+	function zipFiles() {
+		zipFileName = og.ConfirmDialog.getTextBoxValue();
+		og.ConfirmDialog.hide();
+		
+		if (zipFileName.length == 0) zipFileName = 'new compressed file.zip';
+		
+		if (zipFileName.lastIndexOf('.zip') == -1 || zipFileName.lastIndexOf('.zip') != zipFileName.length - 4 ) 
+			zipFileName += '.zip';
+		
+		og.openLink(og.getUrl('files', 'list_files', {
+			action: 'zip_add',
+			filename: zipFileName,
+			objects: getSelectedIds()
+		}));
+		sm.clearSelections();
+	}
 
 	var sm = new Ext.grid.CheckboxSelectionModel();
 	sm.on('selectionchange',
@@ -196,11 +207,13 @@ og.FileManager = function() {
 			if (sm.getCount() <= 0) {
 				actions.tag.setDisabled(true);
 				actions.properties.setDisabled(true);
+				actions.zip_add.setDisabled(true);
 				actions.del.setDisabled(true);
 				actions.download.setDisabled(true);
 			} else {
 				actions.tag.setDisabled(false);
 				actions.properties.setDisabled(sm.getCount() != 1);
+				actions.zip_add.setDisabled(false);
 				actions.del.setDisabled(false);
 				actions.download.setDisabled(sm.getCount() != 1);
 			}
@@ -272,14 +285,14 @@ og.FileManager = function() {
 					var url = og.getUrl('files', 'add_document');
 					og.openLink(url);
 				}},
-				/*{text: lang('spreadsheet'), iconCls: 'ico-sprd', handler: function() {
-					var url = og.getUrl('files', 'add_spreadsheet');
-					og.openLink(url);
-				}},*/
 				{text: lang('presentation'), iconCls: 'ico-prsn', handler: function() {
 					var url = og.getUrl('files', 'add_presentation');
 					og.openLink(url);
-				}}
+				}}/*,
+				{text: lang('spreadsheet') + ' (ALPHA)', iconCls: 'ico-sprd', handler: function() {
+					var url = og.getUrl('files', 'add_spreadsheet');
+					og.openLink(url);
+				}}*/
 			]}
 		}),
 		tag: new Ext.Action({
@@ -322,6 +335,16 @@ og.FileManager = function() {
 				var url = og.getUrl('files', 'download_file', {id: getFirstSelectedId()});
 				window.open(url);
 			}
+		}),
+		zip_add: new Ext.Action({
+			text: lang('compress'),
+            tooltip: lang('compress selected files'),
+            iconCls: 'ico-zip-add',
+			disabled: true,
+			handler: function() {
+				og.ConfirmDialog.show(null, {ok_fn:zipFiles, text_title:lang('name'), title:lang('new compressed file')}, '');
+			},
+			scope: this
 		}),
 		del: new Ext.Action({
 			text: lang('move to trash'),
@@ -374,6 +397,7 @@ og.FileManager = function() {
 			actions.tag,
 			actions.properties,
 			actions.download,
+			actions.zip_add,
 			actions.del/*,
 			'-',
 			actions.refresh*/

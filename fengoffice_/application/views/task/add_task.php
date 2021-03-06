@@ -1,5 +1,11 @@
 <?php
 	$genid = gen_id();
+	$object = $task;
+	if ($task->isNew()) {
+		$project = active_or_personal_project();
+	} else {
+		$project = $task->getProject();
+	}
 ?>
 
 <form style='height:100%;background-color:white' class="internalForm" action="<?php echo $task->isNew() ? get_url('task', 'add_task', array("copyId" => array_var($task_data, 'copyId'))) : $task->getEditListUrl() ?>" method="post">
@@ -36,12 +42,12 @@
 	<div style="padding-top:5px">
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_select_workspace_div', this)"><?php echo lang('workspace') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_tags_div', this)"><?php echo lang('tags') ?></a> - 
-		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_more_div', this)"><?php echo lang('task data') ?></a> - 
-		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_mail_notif_div', this)"><?php echo lang('email notification') ?></a> - 
+		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_more_div', this)"><?php echo lang('task data') ?></a> -  
 		<?php /*<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_handins_div', this)"><?php echo lang('handins') ?></a> - */ ?> 
-		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_properties_div', this)"><?php echo lang('custom properties') ?></a>
-		<?php if($task->isNew() || $task->canLinkObject(logged_user())) { ?>  
-			 - <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_linked_objects_div', this)"><?php echo lang('linked objects') ?></a>
+		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_custom_properties_div', this)"><?php echo lang('custom properties') ?></a> -
+		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_subscribers_div',this)"><?php echo lang('object subscribers') ?></a>
+		<?php if($object->isNew() || $object->canLinkObject(logged_user(), $project)) { ?> - 
+			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_linked_objects_div',this)"><?php echo lang('linked objects') ?></a>
 		<?php } ?>
 	</div>
 </div>
@@ -51,7 +57,7 @@
 	<div id="<?php echo $genid ?>add_task_select_workspace_div" style="display:none">
 	<fieldset>
 	<legend><?php echo lang('workspace') ?></legend>
-		<?php echo select_project2('task[project_id]', (array_var($task_data, 'project_id') > 0) ? array_var($task_data, 'project_id'):active_or_personal_project()->getId(), $genid) ?>
+		<?php echo select_project2('task[project_id]', $project->getId(), $genid) ?>
 	</fieldset>
 	</div>
 
@@ -125,56 +131,6 @@
 		<input type="hidden" name="task[from_template_id]" value="<?php echo $base_task->getId() ?>" />
 	<?php } ?>
 <?php } // if ?>
-	<div id="<?php echo $genid ?>add_task_mail_notif_div" style="display:none">
-	<fieldset id="emailNotification">
-	<legend><?php echo lang('email notification') ?></legend>
-	<p><?php echo lang('email notification desc') ?></p>
-	<?php 
-		$companies = Companies::findAll();
-		foreach($companies as $company) {
-			if ($company->getClientOfId() > 0 || $company->getId() == 1){
-			$users = $company->getUsers();
-			if(is_array($users) && count($users)) { ?>
-		<script type="text/javascript">
-			App.modules.addMessageForm.notify_companies.company_<?php echo $company->getId() ?> = {
-				id          : <?php echo $company->getId() ?>,
-				checkbox_id : 'notifyCompany<?php echo $company->getId() ?>',
-				users       : []
-			};
-		</script>
-		<div class="companyDetails">
-			<div class="companyName">
-				<?php echo checkbox_field('task[notify_company_' . $company->getId() . ']', 
-					array_var($task_data, 'notify_company_' . $company->getId()), 
-					array('id' => $genid.'notifyCompany' . $company->getId(), 
-						'onclick' => 'App.modules.addMessageForm.emailNotifyClickCompany(' . $company->getId() . ',"' . $genid. '")')) ?> 
-				<label for="<?php echo $genid ?>notifyCompany<?php echo $company->getId() ?>" class="checkbox"><?php echo clean($company->getName()) ?></label>
-			</div>
-			
-			<div class="companyMembers">
-			<ul>
-			<?php foreach($users as $user) { ?>
-				<li><?php echo checkbox_field('task[notify_user_' . $user->getId() . ']', 
-					array_var($task_data, 'notify_user_' . $user->getId()), 
-					array('id' => $genid.'notifyUser' . $user->getId(), 
-						'onclick' => 'App.modules.addMessageForm.emailNotifyClickUser(' . $company->getId() . ', ' . $user->getId() . ',"' . $genid. '")')) ?> 
-					<label for="<?php echo $genid ?>notifyUser<?php echo $user->getId() ?>" class="checkbox"><?php echo clean($user->getDisplayName()) ?></label>
-				<script type="text/javascript">
-					App.modules.addMessageForm.notify_companies.company_<?php echo $company->getId() ?>.users.push({
-						id          : <?php echo $user->getId() ?>,
-						checkbox_id : 'notifyUser<?php echo $user->getId() ?>'
-					});
-				</script></li>
-			<?php } // foreach ?>
-			</ul>
-			</div>
-			</div>
-		<?php } // if ?>
-		<?php } // if ?>
-	<?php } // foreach ?>
-	</fieldset>
-	</div>
-
   
 	<?php /*<div style="display:none" id="<?php echo $genid ?>add_task_handins_div">
 	<fieldset>
@@ -204,22 +160,49 @@
   	</div> */ ?>
   
 	
-	<div id='<?php echo $genid ?>add_task_properties_div' style="display:none">
+	<div id='<?php echo $genid ?>add_custom_properties_div' style="display:none">
 	<fieldset>
     <legend><?php echo lang('custom properties') ?></legend>
-      <?php echo render_object_properties('task',$task); ?>
+      <?php echo render_add_custom_properties($object); ?>
   	</fieldset>
  	</div>
   
-    <?php if($task->isNew() || $task->canLinkObject(logged_user())) { ?>
-    <div style="display:none" id="<?php echo $genid ?>add_task_linked_objects_div">
+    <div id="<?php echo $genid ?>add_subscribers_div" style="display:none">
+		<fieldset>
+		<legend><?php echo lang('object subscribers') ?></legend>
+		<div id="<?php echo $genid ?>add_subscribers_content">
+			<?php echo render_add_subscribers($object, $genid); ?>
+		</div>
+		</fieldset>
+	</div>
+	
+	<script>
+	var wsTree = Ext.get('<?php echo $genid ?>wsSel');
+	wsTree.previousValue = <?php echo $project->getId() ?>;
+	wsTree.on("click", function(ws) {
+		var uids = App.modules.addMessageForm.getCheckedUsers('<?php echo $genid ?>');
+		var wsid = Ext.get('<?php echo $genid ?>wsSelValue').getValue();
+		if (wsid != this.previousValue) {
+			this.previousValue = wsid;
+			Ext.get('<?php echo $genid ?>add_subscribers_content').load({
+				url: og.getUrl('object', 'render_add_subscribers', {
+					workspaces: wsid,
+					users: uids,
+					genid: '<?php echo $genid ?>',
+					object_type: '<?php echo get_class($object->manager()) ?>'
+				}),
+				scripts: true
+			});
+		}
+	}, wsTree);
+	</script>
+
+	<?php if($object->isNew() || $object->canLinkObject(logged_user(), $project)) { ?>
+	<div style="display:none" id="<?php echo $genid ?>add_linked_objects_div">
 	<fieldset>
-	  	  <table style="width:100%;margin-left:2px;margin-right:3px" id="tbl_linked_objects">
-	   	<tbody></tbody>
-		</table>
-    <legend><?php echo lang('linked objects') ?></legend>
-    	<?php echo render_object_links($task) ?>
-	</fieldset>
+		<legend><?php echo lang('linked objects') ?></legend>
+		<?php echo render_object_link_form($object) ?>
+	</fieldset>	
 	</div>
 	<?php } // if ?>
 		
@@ -229,23 +212,140 @@
 	</div>
 
 	<div>
+		<?php $showCheckBox = user_config_option('can notify from quick add') != 0; ?>
 		<label><?php echo lang('assign to') ?>:</label> 
-		<table><tr><td><?php echo assign_to_select_box("task[assigned_to]", null, array_var($task_data, 'assigned_to'), array('id' => $genid . 'taskFormAssignedTo', "onchange" => "og.addTaskUserChanged('" . $genid . "')")) ?>
-		</td><td style="padding-left:10px"><div  id="<?php echo $genid ?>taskFormSendNotificationDiv">
+		<table><tr><td>
+			<input type="hidden" id="<?php echo $genid ?>taskFormAssignedTo" name="task[assigned_to]"></input>
+			<div id="<?php echo $genid ?>assignto_div">
+				<div id="<?php echo $genid ?>assignto_container_div"></div>
+			</div>
+		</td><?php if($showCheckBox) { ?><td style="padding-left:10px"><div  id="<?php echo $genid ?>taskFormSendNotificationDiv">
 			<?php echo checkbox_field('task[send_notification]', array_var($task_data, 'send_notification'), array('id' => $genid . 'taskFormSendNotification')) ?>
 			<label for="<?php echo $genid ?>taskFormSendNotification" class="checkbox"><?php echo lang('send task assigned to notification') ?></label>
 		</div>
-		</td></tr></table>
+		</td><?php } ?></tr></table>
 		
 	</div>
-	
 	<?php echo input_field("task[is_template]", array_var($task_data, 'is_template', false), array("type" => "hidden")); ?>
-
   <?php echo submit_button($task->isNew() ? (array_var($task_data, 'is_template', false) ? lang('save template') : lang('add task list')) : lang('save changes'), 's', array('tabindex' => '1')) ?>
 </div>
 </div>
 </form>
 
 <script type="text/javascript">
+
+	var wsSelector = Ext.get('<?php echo $genid ?>wsSel');
+	var prevWsValue = -1;
+	var assigned_user = '<?php echo array_var($task_data, 'assigned_to', 0) ?>';
+	
+	og.drawNotificationsInnerHtml = function(companies) {
+		var htmlStr = '';
+		htmlStr += '<div id="<?php echo $genid ?>notify_companies"></div>';
+		htmlStr += '<script type="text/javascript">';
+		htmlStr += 'var div = Ext.getDom(\'<?php echo $genid ?>notify_companies\');';
+		htmlStr += 'div.notify_companies = {};';
+		htmlStr += 'var cos = div.notify_companies;';
+		htmlStr += '<\/script>';
+		if (companies != null) {
+			for (i = 0; i < companies.length; i++) {
+				comp_id = companies[i].id;
+				comp_name = companies[i].name;
+				htmlStr += '<script type="text/javascript">';
+				htmlStr += 'cos.company_' + comp_id + ' = {id:\'<?php echo $genid ?>notifyCompany' + comp_id + '\', checkbox_id : \'notifyCompany' + comp_id + '\',users : []};';
+				htmlStr += '\<\/script>';
+					
+				htmlStr += '<div class="companyDetails">';
+				htmlStr += '<div class="companyName">';
+				
+				htmlStr += '<input type="checkbox" class="checkbox" name="task[notify_company_'+comp_id+']" id="<?php echo $genid ?>notifyCompany'+comp_id+'" onclick="App.modules.addMessageForm.emailNotifyClickCompany('+comp_id+',\'<?php echo $genid ?>\')"></input>'; 
+				htmlStr += '<label for="<?php echo $genid ?>notifyCompany'+comp_id+'" class="checkbox">'+og.clean(comp_name)+'</label>';
+				
+				htmlStr += '</div>';
+				htmlStr += '<div class="companyMembers">';
+				htmlStr += '<ul>';
+				
+				for (j = 0; j < companies[i].users.length; j++) {
+					usr = companies[i].users[j];
+					htmlStr += '<li><input type="checkbox" class="checkbox" name="task[notify_user_'+usr.id+']" id="<?php echo $genid ?>notifyUser'+usr.id+'" onclick="App.modules.addMessageForm.emailNotifyClickUser('+comp_id+','+usr.id+',\'<?php echo $genid ?>\')"></input>'; 
+					htmlStr += '<label for="<?php echo $genid ?>notifyUser'+usr.id+'" class="checkbox">'+og.clean(usr.name)+'</label></li>';
+					htmlStr += '<script type="text/javascript">';
+					htmlStr += 'cos.company_' + comp_id + '.users.push({ id:'+usr.id+', checkbox_id : \'notifyUser' + usr.id + '\'});';
+					htmlStr += '\<\/script>';
+				}
+				htmlStr += '</ul>';
+				htmlStr += '</div>';
+				htmlStr += '</div>';
+			}
+		}
+		return htmlStr;
+	}
+	
+	og.drawAssignedToSelectBox = function(companies) {
+		usersStore = ogTasks.buildAssignedToComboStore(companies);
+		var assignCombo = new Ext.form.ComboBox({
+			renderTo:'<?php echo $genid ?>assignto_container_div',
+			name: 'taskFormAssignedToCombo',
+			id: '<?php echo $genid ?>taskFormAssignedToCombo',
+			value: assigned_user,
+			store: usersStore,
+			displayField:'text',
+	        typeAhead: true,
+	        mode: 'local',
+	        triggerAction: 'all',
+	        selectOnFocus:true,
+	        width:160,
+	        valueField: 'value',
+	        emptyText: (lang('select user or group') + '...'),
+	        valueNotFoundText: ''
+		});
+		assignCombo.on('select', og.onAssignToComboSelect);
+
+		assignedto = document.getElementById('<?php echo $genid ?>taskFormAssignedTo');
+		if (assignedto) assignedto.value = assigned_user;
+	}
+	
+	og.onAssignToComboSelect = function() {
+		combo = Ext.getCmp('<?php echo $genid ?>taskFormAssignedToCombo');
+		assignedto = document.getElementById('<?php echo $genid ?>taskFormAssignedTo');
+		if (assignedto) assignedto.value = combo.getValue();
+		assigned_user = combo.getValue();
+		
+		og.addTaskUserChanged('<?php echo $genid ?>', '<?php echo logged_user()->getId() ?>');
+	}
+	
+	og.drawUserLists = function(success, data) {
+		companies = data.companies;
+	
+		var assign_div = Ext.get('<?php echo $genid ?>assignto_container_div');
+		if (assign_div != null) {
+			assign_div.remove();
+			assign_div = Ext.get('<?php echo $genid ?>assignto_div');
+			if (assign_div != null) {
+				assign_div.insertHtml('beforeEnd', '<div id="<?php echo $genid ?>assignto_container_div"></div>');
+				og.drawAssignedToSelectBox(companies);
+			}
+		}
+
+		var inv_div = Ext.get('<?php echo $genid ?>inv_companies_div');
+		if (inv_div != null) inv_div.remove();
+		inv_div = Ext.get('emailNotification');
+
+		if (inv_div != null) {
+			inv_div.insertHtml('beforeEnd', '<div id="<?php echo $genid ?>inv_companies_div">' + og.drawNotificationsInnerHtml(companies) + '</div>');	
+			inv_div.repaint();
+		}
+	}
+	
+	og.redrawUserLists = function(){
+		var wsVal = Ext.get('<?php echo $genid ?>wsSelValue').getValue();
+		
+		if (wsVal != prevWsValue) {
+			og.openLink(og.getUrl('task', 'allowed_users_to_assign', {ws_id:wsVal}), {callback:og.drawUserLists});
+			prevWsValue = wsVal;
+		}
+	}
+	wsSelector.addListener('click', og.redrawUserLists);
+	og.redrawUserLists();
+
 	Ext.get('<?php echo $genid ?>taskListFormName').focus();
 </script>

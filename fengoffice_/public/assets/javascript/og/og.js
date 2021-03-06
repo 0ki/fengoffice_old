@@ -176,6 +176,34 @@ og.hideLoading = function() {
 	}
 };
 
+og.otherMsgCt = null;
+og.showOtherMessage = function(msg, left_percent) {
+	if (!og.otherMsgCt) {
+		og.otherMsgCt = document.createElement('div');
+		og.otherMsgCt.innerHTML = msg;
+		og.otherMsgCt.className = 'loading-indicator';
+		og.otherMsgCt.style.position = 'absolute';
+		og.otherMsgCt.style.left = (left_percent != null ? left_percent : '15%');
+		og.otherMsgCt.style.zIndex = 1000000;
+		og.otherMsgCt.style.cursor = 'pointer';
+		og.otherMsgCt.onclick = function() {
+			this.style.visibility = 'hidden';
+			this.instances = 0;
+		};
+		og.otherMsgCt.instances = 0;
+		document.body.appendChild(og.otherMsgCt);
+	}
+	og.otherMsgCt.instances++;
+	og.otherMsgCt.style.visibility = 'visible';
+};
+
+og.hideOtherMessage = function() {
+	og.otherMsgCt.instances--;
+	if (og.otherMsgCt.instances <= 0) {
+		og.otherMsgCt.style.visibility = 'hidden';
+	}
+};
+
 og.toggle = function(id, btn) {
 	var obj = Ext.get(id);
 	if (obj.isDisplayed()) {
@@ -393,7 +421,10 @@ og.openLink = function(url, options) {
 		url = og.makeAjaxUrl(url, params);
 	}
 	if (!options.post) options.post = " ";
-	
+	if (typeof options.timeout != "undefined") {
+		var oldTimeout = Ext.Ajax.timeout;
+		Ext.Ajax.timeout = options.timeout;
+	}
 	Ext.Ajax.request({
 		url: url,
 		method: 'POST',
@@ -418,11 +449,16 @@ og.openLink = function(url, options) {
 						}
 					}
 				}
-				if (options.postProcess) options.postProcess.call(options.scope || this, true, data || response.responseText, options.options);
-				if (options.onSuccess) options.onSuccess.call(options.scope || this, data || response.responseText, options.options);
+				var ok = typeof data == 'object' && data.errorCode == 0;
+				if (options.postProcess) options.postProcess.call(options.scope || this, ok, data || response.responseText, options.options);
+				if (ok) {
+					if (options.onSuccess) options.onSuccess.call(options.scope || this, data || response.responseText, options.options);
+				} else {
+					if (options.onError) options.onError.call(options.scope || this, data || response.responseText, options.options);
+				}
 			} else {
 				og.err(lang("http error", response.status, response.statusText));
-				if (options.postProcess) options.postProcess.call(options.scope || this, false);
+				if (options.postProcess) options.postProcess.call(options.scope || this, false, data || response.responseText, options.options);
 				if (options.onError) options.onError.call(options.scope || this, data || response.responseText, options.options);
 			}
 		},
@@ -434,6 +470,9 @@ og.openLink = function(url, options) {
 		preventPanelLoad: options.preventPanelLoad,
 		options: options
 	});
+	if (typeof oldTimeout != "undefined") {
+		Ext.Ajax.timeout = oldTimeout;
+	}
 };
 
 /**

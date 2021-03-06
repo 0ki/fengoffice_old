@@ -140,6 +140,9 @@
 .ico-large-upgrade {
 	background-image: url(../../images/48x48/upgrade.png);
 }
+.ico-large-cron {
+	background-image: url(../../images/48x48/cron.png);
+}
 .ico-large-workspace {
 	background-image: url(../../images/48x48/workspace.png);
 }
@@ -274,6 +277,27 @@
 }
 .ico-print {
 	background-image: url(../../images/16x16/print.png) !important;
+}
+.ico-sort-alphabetical {
+	background-image: url(../../images/16x16/sort_abc.png) !important;
+}
+.ico-sort-count {
+	background-image: url(../../images/16x16/sort_321.png) !important;
+}
+.ico-sort-asc {
+	background-image: url(../../images/16x16/sort_asc.png) !important;
+}
+.ico-sort-desc {
+	background-image: url(../../images/16x16/sort_desc.png) !important;
+}
+.ico-colorremember {
+	background-image: url(../../images/16x16/remember.png) !important;
+}
+.ico-zip-extract {
+	background-image: url(../../images/16x16/zip-extract.png) !important;
+}
+.ico-zip-add {
+	background-image: url(../../images/16x16/zip-add.png) !important;
 }
 
 

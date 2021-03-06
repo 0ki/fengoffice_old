@@ -1,7 +1,7 @@
 <?php 
   set_page_title($mailAccount->isNew() ? lang('add mail account') : lang('edit mail account'));
   if (!$mailAccount->isNew() && $mailAccount->canDelete(logged_user()))
-  	add_page_action(lang('delete mail account'),  "javascript:if(confirm(lang('confirm delete mail account'))) og.openLink('" . $mailAccount->getDeleteUrl() . "');", 'ico-delete');
+  	add_page_action(lang('delete mail account'),  "javascript:og.promptDeleteAccount();", 'ico-delete');
 ?>
 
 <form style="height:100%;background-color:white" class="internalForm" action="<?php echo $mailAccount->isNew() ? get_url('mail', 'add_account') : $mailAccount->getEditUrl()?>" method="post">
@@ -87,7 +87,16 @@
     ?>
   </div>
 
-  
+  <br>
+  <div>
+    <label for="mailAccountDelMailFromServer"><?php echo lang('delete mails from server')?>
+    <span class="desc"><?php echo lang('mail account delete mails from server description') ?></span></label>
+    <?php echo yes_no_widget('mailAccount[del_mails_from_server]', 'mailAccountDelMailFromServer', array_var($mailAccount_data, 'del_from_server', 0) > 0, lang('yes'), lang('no'), 8) ?>
+    <?php echo '<br>' . lang('after')?>
+    <?php echo text_field('mailAccount[del_from_server]', array_var($mailAccount_data, 'del_from_server', 0), array('id' => 'mailAccountDelFromServer', 'tabindex'=>'9', 'style'=>'width:25px')) ?>
+    <?php echo lang('days'); ?>
+  </div>
+    
   <div id = 'smtp_specific_auth' style='<?php if(array_var($mailAccount_data, 'smtp_use_auth',1)!=2) echo 'display:none';?>'>
   <div>
     <label for="mailSmtpUsername"><?php echo lang('smtp username')?> <span class="label_required"></span>
@@ -105,7 +114,7 @@
   </div>
   <br>
 
-<fieldset style="display:none">
+<fieldset style="display:block">
 	<legend><?php echo lang('email connection method')?></legend>
   <div>
     <?php echo yes_no_widget('mailAccount[is_imap]', 'mailAccountFormIsImap', array_var($mailAccount_data, 'is_imap', false), lang('imap'), lang('pop3')) ?>
@@ -118,6 +127,21 @@
     <?php echo label_tag(lang('incoming ssl port'), 'mailAccountFormIncomingSslPort') ?>
     <?php echo text_field('mailAccount[incoming_ssl_port]', array_var($mailAccount_data, 'incoming_ssl_port'), array('id' => 'mailAccountFormIncomingSslPort')) ?>
   </div>
+  <?php if (!$mailAccount->isNew() && isset($imap_folders) && is_array($imap_folders)) {  ?>
+  	<div id="imap_folders_div">
+  	<table style="min-width:400px;margin-top:10px;">
+  	<tr><th colspan="2" style="text-align:center"><?php echo lang('folders to check') ?></th></tr>
+  	<?php $isAlt = false; 
+  		foreach($imap_folders as $folder) { ?>
+  		<tr<?php echo ($isAlt ? ' class="altRow"': '') ?>>
+  		<td style="padding-left:10px;"><?php echo $folder->getFolderName() ?></td>
+  		<td style="padding-left:30px;"><?php echo checkbox_field('check['.str_replace(array('[',']'), array('¡','!'), $folder->getFolderName()).']', $folder->getCheckFolder()) ?></td>
+  		</tr>
+  	<?php 	$isAlt = !$isAlt;
+  		  } ?>
+  	</table>
+  	</div>
+  <?php } ?>
 </fieldset>
   <?php echo submit_button($mailAccount->isNew() ? lang('add mail account') : lang('save changes'), 's', array('tabindex'=>'11')) ?>
 
@@ -127,4 +151,14 @@
 
 <script type="text/javascript">
 	Ext.get('mailAccountFormName').focus();
+	
+	og.deleteAllMails = function() {
+		checked = og.ConfirmDialog.getConfirmCheckValue();
+		og.openLink(og.getUrl('mail', 'delete_account', {id:<?php echo $mailAccount->isNew() ? 0 : $mailAccount->getId() ?>, deleteMails:checked ? 1 : 0}));
+		og.ConfirmDialog.hide();
+	}
+	
+	og.promptDeleteAccount = function() {
+		og.ConfirmDialog.show(null, {ok_fn:og.deleteAllMails, check_title:lang('delete account emails'), title:lang('confirm delete mail account')}, '');
+	}
 </script>

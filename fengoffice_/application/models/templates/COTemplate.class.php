@@ -39,6 +39,8 @@ class COTemplate extends BaseCOTemplate {
 			$copy->save();
 			if ($copy instanceof ProjectTask) {
 				ProjectTasks::copySubTasks($object, $copy, true);
+			} else if ($copy instanceof ProjectMilestone) {
+				ProjectMilestones::copyTasks($object, $copy, true);
 			}
 			$template = $copy;
 		} else {

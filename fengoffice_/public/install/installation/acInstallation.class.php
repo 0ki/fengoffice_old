@@ -183,10 +183,16 @@ final class acInstallation {
 
 		@mysql_query('COMMIT', $this->database_connection);
 
-		if($this->writeConfigFile($constants)) {
+		if ($this->writeConfigFile($constants)) {
 			$this->printMessage('Configuration data has been successfully added to the configuration file');
 		} else {
 			return $this->breakExecution('Failed to write config data into config file');
+		} // if
+		
+		if ($this->writeInstalledVersionFile($constants['PRODUCT_VERSION'])) {
+			$this->printMessage('File installed_version.php created successfully');
+		} else {
+			return $this->breakExecution('Failed to create installed_version file');
 		} // if
 
 		return true;
@@ -223,6 +229,11 @@ final class acInstallation {
 		return file_put_contents(INSTALLATION_PATH . '/config/config.php', tpl_fetch(get_template_path('config_file.php')));
 	} // writeConfigFile
 
+	function writeInstalledVersionFile($version) {
+		tpl_assign('version', $version);
+		return file_put_contents(INSTALLATION_PATH . '/config/installed_version.php', tpl_fetch(get_template_path('installed_version.php')));
+	}
+	
 	/**
 	 * This function will return true if server we are connected on has InnoDB support
 	 *

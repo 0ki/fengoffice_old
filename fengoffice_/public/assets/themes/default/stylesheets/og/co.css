@@ -532,3 +532,22 @@
 	background-repeat: no-repeat;
 	background-position: bottom left;
 }
+
+/** custom properties **/
+.og-custom-properties td.name {
+	font-weight: bold;
+	padding-left: 15px;
+	padding-right: 5px;
+}
+.og-add-custom-properties th {
+	width: 200px;
+	text-align: center;
+	font-weight: bold;
+}
+.og-add-custom-properties th.actions {
+	width: 16px;
+	background: none;
+}
+.og-add-custom-properties input {
+	width: 200px;
+}

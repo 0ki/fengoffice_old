@@ -37,7 +37,7 @@ $user = Users::findById(array('id' => $user_filter));
  */
 if ($user == null) $user = logged_user(); 
 
-$use_24_hours = config_option('time_format_use_24');
+$use_24_hours = user_config_option('time_format_use_24');
 
 global $cal_db;
 // get actual current day info
@@ -227,52 +227,27 @@ function cancel (evt) {//cancel clic event bubbling. used to cancel opening a Ne
 									foreach($result as $event){
 										if($event instanceof ProjectEvent ){
 											$count++;
-											$subject =  clean($event->getSubject());//truncate($event->getSubject(),30,'','UTF-8',true,true);
+											$subject =  clean($event->getSubject());
 											$typeofevent = $event->getTypeId(); 
 											$private = $event->getIsPrivate(); 
-											$eventid = $event->getId(); 
-										
-											$color = $event->getEventTypeObject() ? $event->getEventTypeObject()->getTypeColor() : ''; 
-											if($color == "") $color = "C2FFBF";
-											// organize the time and duraton data
-											$overlib_time = lang('CAL_UNKNOWN_TIME');
-											switch($typeofevent) {
-												case 1:
-													if($use_24_hours) $timeformat = 'G:i';
-													else $timeformat = 'g:i A';
-													$event_time = date($timeformat, $event->getStart()->getTimestamp()); 
-													$overlib_time = "@ $event_time";
-													break;
-												case 2:
-													$event_time = lang('CAL_FULL_DAY');
-													$overlib_time = lang('CAL_FULL_DAY');
-													break;
-												case 3:
-													$event_time = '??:??';
-													$overlib_time = lang('CAL_UNKNOWN_TIME');
-													break;
-												default: ;
-											} 
+											$eventid = $event->getId();
 											
-											// build overlib text
-											$overlib_text = "$overlib_time<br>" . clean(truncate($event->getDescription(), 195, '...', 'UTF-8'));
-											$overlibtext_color = "#000000";
+											$dws = $event->getWorkspaces();
+											$ws_color = 0;											
+											if (count($dws) >= 1) $ws_color = $dws[0]->getColor();											
+											cal_get_ws_color($ws_color, $ws_style, $ws_class, $txt_color, $border_color);											
+										
 											// make the event subjects links or not according to the variable $whole_day in gatekeeper.php
 											if(!$private && $count <= 3){
-												if($subject == "") $subject = "[".lang('CAL_NO_SUBJECT')."]";
-												$strStyle = '';
-												if($event->getEventTypeObject() && $event->getEventTypeObject()->getTypeColor() == "") { 
-													$strStyle= "style='z-index:1000;border-left-color: #$color;'";
-												}
 												$tip_text = str_replace("\r", '', clean($event->getDescription()));
 												$tip_text = str_replace("\n", '<br>', $tip_text);													
-												if (strlen($tip_text) > 200) $tip_text = substr($tip_text, 0, strpos($tip_text, ' ', 200)) . ' ...';
+												if (strlen_utf($tip_text) > 200) $tip_text = substr_utf($tip_text, 0, strpos($tip_text, ' ', 200)) . ' ...';
 								?>
-												<div id="m_ev_div_<?php echo $event->getId()?>" class="event_block" <?php echo $strStyle ?> > 
-														<a href='<?php echo cal_getlink("index.php?action=viewevent&amp;id=".$event->getId()."&amp;user_id=".$user_filter)?>' class='internalLink' onclick="cancel(event); hideCalendarToolbar(); return true;" >
+												<div id="m_ev_div_<?php echo $event->getId()?>" class="<?php echo ($typeofevent == 2 ? "og-wsname-color-$ws_color ": 'event_block') ?>" style="margin: 1px;padding-left:1px;padding-bottom:2px;"> 
+													<nobr><a href='<?php echo cal_getlink("index.php?action=viewevent&amp;id=".$event->getId()."&amp;user_id=".$user_filter)?>' class='internalLink' onclick="cancel(event); hideCalendarToolbar(); return true;" <?php echo ($typeofevent == 2 ? "style='color:$txt_color;'" : '') ?>>
 															<img src="<?php echo image_url('/16x16/calendar.png')?>" align='absmiddle' border='0'>
 														<?php echo $subject ?>
-														</a>
+													</a></nobr>
 											 	</div>
 										 		<script type="text/javascript">
 													addTip('m_ev_div_<?php echo $event->getId() ?>', '<i>' + lang('event') + '</i> - ' + <?php echo json_encode(clean($event->getSubject())) ?>, <?php echo json_encode($event->getTypeId() == 2 ? lang('CAL_FULL_DAY') : $event->getStart()->format($use_24_hours ? 'G:i' : 'g:i A') .' - '. $event->getDuration()->format($use_24_hours ? 'G:i' : 'g:i A') . ($tip_text != '' ? '<br><br>' . $tip_text : ''));?>);
@@ -290,27 +265,20 @@ function cancel (evt) {//cancel clic event bubbling. used to cancel opening a Ne
 											if ($now == mktime(0, 0, 0, $due_date->getMonth(), $due_date->getDay(), $due_date->getYear())) {	
 												$count++;
 												if ($count <= 3){
-													$overlib_text = clean(truncate($milestone->getDescription(), 195, '...')) . "<br>";
-													
-													if ($milestone->getAssignedTo() instanceof ApplicationDataObject) { 
-														$overlib_text .= 'Assigned to:'. clean($milestone->getAssignedTo()->getObjectName());
-													} else $overlib_text .= 'Assigned to: None';
 													$color = 'FFC0B3'; 
-													
 													$subject = "&nbsp;" . clean($milestone->getName())." - <i>Milestone</i>";
 													$cal_text = clean($milestone->getName());
-													$overlibtext_color = "#000000";
 													
 													$tip_text = str_replace("\r", '', lang('assigned to') .': '. clean($milestone->getAssignedToName()) . (trim(clean($milestone->getDescription())) == '' ? '' : '<br><br>'. clean($milestone->getDescription())));
 													$tip_text = str_replace("\n", '<br>', $tip_text);													
-													if (strlen($tip_text) > 200) $tip_text = substr($tip_text, 0, strpos($tip_text, ' ', 200)) . ' ...';
+													if (strlen_utf($tip_text) > 200) $tip_text = substr_utf($tip_text, 0, strpos($tip_text, ' ', 200)) . ' ...';
 													
 								?>
 													<div id="m_ms_div_<?php echo $milestone->getId()?>" class="event_block" style="border-left-color: #<?php echo $color?>;">
-															<a href='<?php echo $milestone->getViewUrl()?>' class="internalLink" onclick="cancel(event);return true;" >
+														<nobr><a href='<?php echo $milestone->getViewUrl()?>' class="internalLink" onclick="cancel(event);return true;" >
 																<img src="<?php echo image_url('/16x16/milestone.png')?>" align="absmiddle" border="0">
 															<?php echo $cal_text ?>
-															</a>
+														</a></nobr>
 													</div>
 													<script type="text/javascript">
 														addTip('m_ms_div_<?php echo $milestone->getId() ?>', '<i>' + lang('milestone') + '</i> - ' + <?php echo json_encode(clean($milestone->getTitle())) ?>, <?php echo json_encode($tip_text != '' ? $tip_text : '');?>);
@@ -331,26 +299,20 @@ function cancel (evt) {//cancel clic event bubbling. used to cancel opening a Ne
 											if ($now == mktime(0, 0, 0, $due_date->getMonth(), $due_date->getDay(), $due_date->getYear())) {	
 												$count++;
 												if ($count <= 3){
-													$overlib_text = "&nbsp;" . clean($task->getText()) . "<br>";
-													if ($task->getAssignedTo() instanceof ApplicationDataObject) { 
-														$overlib_text .= 'Assigned to:' . clean($task->getAssignedTo()->getObjectName());
-													} else $overlib_text .= 'Assigned to: None';
-													
 													$color = 'B1BFAC'; 
 													$subject = clean($task->getTitle()).'- <i>Task</i>';
 													$cal_text = clean($task->getTitle());
 													
 													$tip_text = str_replace("\r", '', lang('assigned to') .': '. clean($task->getAssignedToName()) . (trim(clean($task->getText())) == '' ? '' : '<br><br>'. clean($task->getText())));
 													$tip_text = str_replace("\n", '<br>', $tip_text);													
-													if (strlen($tip_text) > 200) $tip_text = substr($tip_text, 0, strpos($tip_text, ' ', 200)) . ' ...';
-													$overlibtext_color = "#000000";
+													if (strlen_utf($tip_text) > 200) $tip_text = substr_utf($tip_text, 0, strpos($tip_text, ' ', 200)) . ' ...';
 								?>
 								
 													<div id="m_ta_div_<?php echo $task->getId()?>" class="event_block" style="border-left-color: #<?php echo $color?>;">
-															<a href='<?php echo $task->getViewUrl()?>' class='internalLink' onclick="cancel(event);return true;"  border='0'>
+														<nobr><a href='<?php echo $task->getViewUrl()?>' class='internalLink' onclick="cancel(event);return true;"  border='0'>
 																	<img src="<?php echo image_url('/16x16/tasks.png')?>" align='absmiddle'>
 														 		<?php echo $cal_text ?>
-														 	</a>
+														</a></nobr>
 													</div>
 													<script type="text/javascript">
 														addTip('m_ta_div_<?php echo $task->getId() ?>', '<i>' + lang('task') + '</i> - ' + <?php echo json_encode(clean($task->getTitle()))?>, <?php echo json_encode(trim($tip_text) != '' ? trim($tip_text) : '');?>);

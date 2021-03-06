@@ -167,13 +167,13 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 				}
 				return $result;
 			} else
-			return $this->workspaces;
+				return $this->workspaces;
 		} else {
 			$project = $this->getProject();
 			if ($project)
-			return array($project);
+				return array($project);
 			else
-			return array();
+				return array();
 		}
 	}
 
@@ -186,9 +186,6 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 		if ($this->isNew()) {
 			return active_or_personal_project()->getName();
 		} else {
-			if ($this instanceof MailContent && !$this->getProject() instanceof Project)
-			return '';
-			 
 			$ids = array();
 			$wss = $this->getWorkspaces($wsIds);
 			if($wsIds){
@@ -204,9 +201,6 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 		if ($this->isNew()) {
 			return active_or_personal_project()->getId();
 		} else {
-			if ($this instanceof MailContent && !$this->getProject() instanceof Project)
-			return '';
-
 			$ids = array();
 			$wss = $this->getWorkspaces($wsIds);
 			if($wss){
@@ -222,9 +216,6 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 		if ($this->isNew()) {
 			return active_or_personal_project()->getColor();
 		} else {
-			if ($this instanceof MailContent && !$this->getProject() instanceof Project)
-			return '';
-
 			$ids = array();
 			$wss = $this->getWorkspaces($wsIds);
 			if($wss){
@@ -677,7 +668,7 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 			 
 			$searchable_object->save();
 			try {
-				Notifier::newObjectComment($comment);
+				Notifier::newObjectComment($comment, $this->getSubscribers());
 			} catch(Exception $e) {
 				// nothing here, just suppress error...
 			} // try
@@ -1059,6 +1050,15 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 		}
 		return $ret;
 	}
+	
+	/**
+	 * Returns all ObjectProperties of the object.
+	 *
+	 * @return array
+	 */
+	function getCustomProperties() {
+		return ObjectProperties::getAllPropertiesByObject($this);
+	}
 
 	/**
 	 * Sets the value of a property, removing all its previous values.
@@ -1113,12 +1113,12 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 			throw new Exception(lang('maximum disk space reached'));
 		}
 		if (parent::save()) {
-			try {
+			/*try {
 				$user = logged_user();
 				if ($user instanceof User && $this->isCommentable()) {
 					$this->subscribeUser($user);
 				}
-			} catch (Exception $e) {}
+			} catch (Exception $e) {}*/
 			return true;
 		}
 		return false;
@@ -1240,14 +1240,16 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 		$this->clearSubscriptions();
 		$this->clearReminders();
 		if ($this->allowsTimeslots())
-		$this->clearTimeslots();
+			$this->clearTimeslots();
 		WorkspaceObjects::delete(array("`object_manager` = ? AND `object_id` = ?", $this->getObjectManagerName(), $this->getId()));
 		return parent::delete();
 	} // delete
 
-	function trash() {
+	function trash($trashDate = null) {
+		if(!isset($trashDate))
+			$trashDate = DateTimeValueLib::now();
 		if ($this->columnExists('trashed_on')) {
-			$this->setColumnValue('trashed_on', DateTimeValueLib::now());
+			$this->setColumnValue('trashed_on', $trashDate);
 		}
 		if (function_exists('logged_user') && logged_user() instanceof User &&
 				$this->columnExists('trashed_by_id')) {
@@ -1368,6 +1370,7 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 	 * @return boolean
 	 */
 	function isSubscriber(User $user) {
+		if ($this->isNew()) return false;
 		$subscription = ObjectSubscriptions::findById(array(
         	'object_id' => $this->getId(),
 			'object_manager' => get_class($this->manager()),

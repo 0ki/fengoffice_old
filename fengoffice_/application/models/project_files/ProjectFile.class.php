@@ -523,6 +523,17 @@ class ProjectFile extends BaseProjectFile {
 		); // get_url
 	} // getCheckinUrl
 
+	/**
+	 * Return copy file URL
+	 *
+	 * @return string
+	 */
+	function getCopyUrl() {
+		return get_url('files', 'copy', array(
+			'id' => $this->getId()
+		));
+	}
+	
 	/* Return undo checkout file URL
 	 *
 	 * @param void

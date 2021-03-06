@@ -81,19 +81,26 @@ function setDiscard(val){
 }
 
 </script>
-
+<div id="main_div" style="height:100%;">
 <form style="height:100%;background-color:white;" id="<?php echo $instanceName ?>" name="frmMail"  class="internalForm" action="<?php echo $mail->getSendMailUrl()?>" method="post"  onsubmit="return setBody('<?php echo $instanceName ?>')">
 <input type="hidden" name="instanceName" value="<?php echo $instanceName ?>" />
 <input type="hidden" name="mail[body]" value="" />
 <input type="hidden" name="mail[isDraft]" id="isDraft" value="false" />
 <input type="hidden" name="mail[id]" id="id" value="<?php echo  array_var($mail_data, 'id') ?>" />
-<?php tpl_display(get_template_path('form_errors')) ?>
+<?php 
+	tpl_display(get_template_path('form_errors'));
+	$contacts = Contacts::getAll();
+    $allEmails = array();
+    foreach ($contacts as $contact) {
+    	if (trim($contact->getEmail()) != "") {
+    		$allEmails[] = str_replace(",", " ", $contact->getFirstname() . ' ' . $contact->getLastname() . '<' . $contact->getEmail() . '>');
+    	}
+    } 
+?>
 
 
-
-
-<div class="mail" style="height:80%;">
-<div class="coInputHeader">
+<div class="mail" id="mail_div" style="height:100%;">
+<div class="coInputHeader" id="header_div">
 	<div class="coInputHeaderUpperRow">
   		<div class="coInputTitle"><table style="width:535px"><tr><td>
   			<?php echo lang('send mail') ?>
@@ -115,70 +122,60 @@ function setDiscard(val){
   		</div>
   	</div>
   
-  <div>
-    <label for='mailTo'><?php echo lang('mail to')?> <span class="label_required">*</span>  
-    </label>
-    <?php echo text_field('mail[to]', array_var($mail_data, 'to'), 
-    	array('class' => 'title', 'tabindex'=>'10', 'id' => 'mailTo')) ?>
-  </div>
+	<div>
+    	<label for='mailTo'><?php echo lang('mail to')?> <span class="label_required">*</span>  
+    	</label>
+    	<?php echo autocomplete_textfield('mail[to]', array_var($mail_data, 'to'), $allEmails, '', 
+    		array('class' => 'title', 'tabindex'=>'10', 'id' => 'mailTo'), false); ?>
+	</div>
   
  	<div id="add_mail_CC" style="<?php  array_var($mail_data, 'cc')==''? print('display:none;'):print('')?>">
     	<label for="mailCC"><?php echo lang('mail CC')?> </label>
-    	<?php echo text_field('mail[CC]', array_var($mail_data, 'cc'), 
-    	array('class' => 'title', 'id' => 'mailCC', 'tabindex'=>'20')) ?>
+    	<?php echo autocomplete_textfield('mail[CC]', array_var($mail_data, 'cc'), $allEmails, '', 
+    		array('class' => 'title', 'tabindex'=>'20', 'id' => 'mailCC'), false); ?>
  	</div>
- 	
  	
  	<div id="add_mail_BCC" style="display:none;">
 	    <label for="mailBCC"><?php echo lang('mail BCC')?></label>
-	    <?php echo text_field('mail[BCC]', array_var($mail_data, 'BCC'), 
-	    array('class' => 'title','id' => 'mailBCC', 'tabindex'=>'30')) ?>
+	    <?php echo autocomplete_textfield('mail[BCC]', array_var($mail_data, 'BCC'), $allEmails, '', 
+    		array('class' => 'title', 'tabindex'=>'30', 'id' => 'mailBCC'), false); ?>
 	</div>
  	
- 	
-   
-   
-  <div>
-    <label for='mailSubject'><?php echo lang('mail subject')?> 
-    </label>
-    <?php echo text_field('mail[subject]', array_var($mail_data, 'subject'), 
-    	array('class' => 'title', 'tabindex'=>'40', 'id' => 'mailSubject')) ?>
-  </div>
-  <div style="padding-top:5px">
+	<div>
+    	<label for='mailSubject'><?php echo lang('mail subject')?> 
+    	</label>
+    	<?php echo text_field('mail[subject]', array_var($mail_data, 'subject'), 
+    		array('class' => 'title', 'tabindex'=>'40', 'id' => 'mailSubject')) ?>
+	</div>
 	
-	<a href="#" class="option" onclick="og.toggleAndBolden('add_mail_account', this)"><?php echo lang('mail account') ?></a> - 
-	<a href="#" class="option" onclick="og.toggleAndBolden('add_mail_CC', this)"><?php echo lang('mail CC') ?></a> - 
-	<a href="#" class="option" onclick="og.toggleAndBolden('add_mail_BCC', this)"><?php echo lang('mail BCC') ?></a> - 
-	<a href="#" class="option" onclick="og.toggleAndBolden('add_mail_options', this)"><?php echo lang('mail options') ?></a>	
-  </div>
+	<div style="padding-top:5px">
+		<a href="#" class="option" onclick="og.toggleAndBolden('add_mail_account', this);resizeMailDiv();"><?php echo lang('mail account') ?></a> - 
+		<a href="#" class="option" onclick="og.toggleAndBolden('add_mail_CC', this);resizeMailDiv();"><?php echo lang('mail CC') ?></a> - 
+		<a href="#" class="option" onclick="og.toggleAndBolden('add_mail_BCC', this);resizeMailDiv();"><?php echo lang('mail BCC') ?></a> - 
+		<a href="#" class="option" onclick="og.toggleAndBolden('add_mail_options', this);resizeMailDiv();"><?php echo lang('mail options') ?></a>	
+	</div>
+
+	<div id="add_mail_account" style="display:none;">
+	    <label for="mailAccount"><?php echo lang('mail account')?> 
+	    <span class="desc"><?php echo lang('mail account desc') ?></span></label>
+	    <?php echo render_select_mail_account('mail[account_id]',  $mail_accounts, '1',
+	    array('id' => 'mailAccount', 'tabindex'=>'44')) ?>
+	</div>
+  
+	<div id="add_mail_options" style="display:none;">
+	    <label><?php echo lang('mail options')?></label>
+	    <label><?php echo radio_field('mail[format]',$type=='html', array('id' => 'format_html','value' => 'html', 'tabindex'=>'45','onchange'=>"alertFormat('$instanceName','html')")) ." ".lang('format html') ?></label>
+	    <label><?php echo radio_field('mail[format]',$type=='plain', array('id' => 'format_plain','value' => 'plain', 'tabindex'=>'46', 'onchange'=>"alertFormat('$instanceName','plain')"))." ".lang('format plain')  ?></label>
+	</div>
+  
 </div>
 <div class="coInputSeparator"></div>
 
-<!--
-<div class="coInputMainBlock">
--->
-  <div id="add_mail_account" style="display:none;">
-    <label for="mailAccount"><?php echo lang('mail account')?> 
-    <span class="desc"><?php echo lang('mail account desc') ?></span></label>
-    <?php echo render_select_mail_account('mail[account_id]',  $mail_accounts, '1',
-    array('id' => 'mailAccount', 'tabindex'=>'44')) ?>
-  </div>
- 
-
-  
-  
-  <div id="add_mail_options" style="display:none;">
-    <label><?php echo lang('mail options')?></label>
-    <label><?php echo radio_field('mail[format]',$type=='html', array('id' => 'format_html','value' => 'html', 'tabindex'=>'45','onchange'=>"alertFormat('$instanceName','html')")) ." ".lang('format html') ?></label>
-    <label><?php echo radio_field('mail[format]',$type=='plain', array('id' => 'format_plain','value' => 'plain', 'tabindex'=>'46', 'onchange'=>"alertFormat('$instanceName','plain')"))." ".lang('format plain')  ?></label>
-  </div>
-  
-     
     <?php 
     $display=($type=='html')?'none':'block';
     $display_fck=($type=='html')?'block':'none';
     echo textarea_field('plain_body', array_var($mail_data, 'body'), 
-    array('id' => 'mailBody', 'tabindex'=>'50','style'=>"display:".$display.";width:97%;height:75%;margin-left:1%;margin-right:1%;margin-top:1%;margin-bottom:1%;")) ?>
+    array('id' => 'mailBody', 'tabindex'=>'50','style'=>"display:".$display.";width:97%;height:94%;margin-left:1%;margin-right:1%;margin-top:1%;margin-bottom:1%;")) ?>
     <div id="fck_editor" style="display:<?php echo $display_fck ?>; width:100%; height:100%; padding:0px; margin:0px;">
 		<?php
 			$oFCKeditor = new FCKeditor($instanceName);
@@ -191,12 +188,9 @@ function setDiscard(val){
 			$oFCKeditor->Create();
 		?>
 	</div>
-<!-- 
-	</div>
--->	
 </div>
-
 </form>
+</div>
 
 <script>
 og.eventManager.addListener("email saved", function(obj) {
@@ -210,4 +204,15 @@ og.eventManager.addListener("email saved", function(obj) {
 		Ext.getCmp(p.id).setPreventClose(false);
 	}
 }, null, {replace:true});
+
+function resizeMailDiv() {
+	maindiv = document.getElementById('main_div');
+	headerdiv = document.getElementById('header_div');
+	if (maindiv != null && headerdiv != null) {
+		var divHeight = maindiv.offsetHeight - headerdiv.offsetHeight - 15;
+		document.getElementById('mail_div').style.height = divHeight + 'px';
+	}
+}
+resizeMailDiv();
+window.onresize = resizeMailDiv;
 </script>

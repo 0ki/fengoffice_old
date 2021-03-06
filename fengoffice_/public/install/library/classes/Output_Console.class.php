@@ -15,11 +15,13 @@
     * @return void
     */
     function printMessage($message, $is_error = false) {
-      if($is_error) {
-        print 'Error: ';
-      } // if
-      
-      print "$message\n";
+      if(!defined("CONSOLE_MODE") || CONSOLE_MODE==false) {      	
+	      if($is_error) {
+	        print 'Error: ';
+	      } // if
+	      
+	      print "$message\n";
+      }
     } // printMessage
   
   } // Output_Console

@@ -58,7 +58,7 @@
     
     // Comments
     'add comment' => 'Post comment',
-    'edit comment' => 'Save comment',
+    'edit comment' => 'Edit comment',
     
     // Task list
     'add task list' => 'Add task',
@@ -178,6 +178,8 @@
     'unlink' => 'Unlink',
     'unlink object' => 'Unlink Object',
     'unlink objects' => 'Unlink Objects',
+	'extract' => 'Extract',
+  	'add files to zip' => 'Add files to zip',
   	
     // Tags
     'delete tag'  => 'Delete tag',
@@ -198,6 +200,7 @@
   	'move to trash' => 'Move to trash',
   	'restore from trash' => 'Restore from trash',
   	'delete permanently' => 'Delete permanently',
+  	'copy file' => 'Copy this file',
   ); // array
 
 ?>

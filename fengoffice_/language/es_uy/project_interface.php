@@ -262,7 +262,12 @@ return array(
 	'edit task template' => 'Editar planitlla de tarea',
 
 	'cannot change parent workspace' => 'Usted no tiene permisos suficientes para cambiar el padre de este espacio de trabajo.',
-	'cannot change parent workspace description' => 'Este espacio de trabajo puede pertenecer a un espacio al cual ud. no tiene acceso.'
+	'cannot change parent workspace description' => 'Este espacio de trabajo puede pertenecer a un espacio al cual ud. no tiene acceso.',
+
+	'copy of file' => 'Copia de {0}',
+    'add subscribers desc' => 'Las personas seleccionadas serán suscriptas a este objeto. Usuarios suscritos recibirán correos electrónicos acerca de modificaciones a este objeto.',
+    'add custom property' => 'Agregar propiedad personalizada',
+
 ); // array
 
 ?>

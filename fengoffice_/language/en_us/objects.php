@@ -38,6 +38,7 @@
     'files' => 'Files',
     'file revision' => 'File revision',
     'file revisions' => 'File revisions',
+  	'file contents' => 'File contents',
     'revision' => 'Revision',
     'revisions' => 'Revisions',
     'folder' => 'Folder',

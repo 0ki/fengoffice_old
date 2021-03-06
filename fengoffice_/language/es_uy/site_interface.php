@@ -74,10 +74,10 @@
     
     // Administration
     'welcome to administration' => 'Bienvenido',
-    'welcome to administration info' => 'Bienvenido al panel de administración. Esta herramienta le permitirá administrar los datos de su empresa, sus miembres, clientes y los espacios a los cuales pertenece.',
+    'welcome to administration info' => 'Bienvenido al panel de administración. Esta herramienta le permitirá administrar los datos de su empresa, sus miembros, clientes y los espacios a los cuales pertenece.',
     
     'send new account notification' => '¿Enviar notificación vía mail?',
-    'send new account notification desc' => 'Si elige "Sí", el usuario recibirá un mensaje de bienvenida, vía mail, con los datos necesarios para iniciar',
+    'send new account notification desc' => 'Si elige "Sí", el usuario recibirá un mensaje de bienvenida, vía mail, con los datos necesarios para iniciar (incluyendo la contraseña).',
     
     // Tools
     'administration tools' => 'Herramientas',
@@ -187,28 +187,43 @@
  	'import contacts from csv' => 'Importación de contactos desde archivos .csv',
 	'import' => 'Importar',
  	'file not exists' => 'El archivo seleccionado no existe',
-	'field delimiter' => 'Delimitador de campos',
+	'field delimiter' => 'Delimitador de campos (opcional)',
 	'first record contains field names' => 'El primer registro contiene los nombres de los campos',
 	'import contact success' => 'Importación de contactos exitosa.',
 	'contact fields' => 'Campos de contactos',
 	'fields from file' => 'Campos obtenidos del archivo',
-	'you must match the database fields with file fields before executing the import process' => 'Debe asegurarse de que los campos de la base de contactos coincidan con los campos especificados en el archivo.',  
+	'you must match the database fields with file fields before executing the import process' => 'Debe asegurarse de que los campos de la base de datos coincidan con los campos especificados en el archivo.',  
 	'import result' => 'Resultado de la importación',
 	'contacts succesfully imported' => 'Contactos importados exitosamente',
 	'contacts import fail' => 'Importación fallida para los contactos',
 	'contacts import fail help' => 'El proceso de importación pudo haber fallado debido a datos existentes en la base de datos, como nombre, email, etc.',
 	'import fail reason' => 'Motivo del fallo',
+	'select a file in order to load its data' => 'Seleccione un archivo csv para poder cargar la información del mismo.',
+  	
+  	// Contact export
+  	'export contacts to csv' => 'Exportación de contactos a archivos .csv',
+	'export' => 'Exportar',
+	'fields to export' => 'Datos a exportar',
+	'success export contacts' => 'Los contactos se han exportado existosamente',
     
+	// Company import/export
+	'import companies from csv' => 'Importación de empresas desde archivos .csv',
+	'company fields' => 'Campos de empresas',
+	'companies succesfully imported' => 'Empresas importadas exitosamente',
+	'companies import fail' => 'Importación fallida para las empresas',
+	'export companies to csv' => 'Exportación de empresas a archivos .csv',
+	'success export companies' => 'Las empresas se han exportado existosamente',
+  
   //Webpages
-  'add webpage' => 'Agregar página web',
-  'delete webpage' => 'Eliminar página web',
-  'webpages' => 'Páginas web',
-  'private webpage' => 'Página web privada',
+  'add webpage' => 'Agregar enlace web',
+  'delete webpage' => 'Eliminar enlace web',
+  'webpages' => 'Enlaces web',
+  'private webpage' => 'Enlace web privada',
   'url' => 'Url',
-  'no active webpages in project' => 'No se encontraron páginas web en este espacio',
+  'no active webpages in project' => 'No se encontraron enlaces web en este espacio',
   'webpage list description' => 'Descripción',
-  'edit webpage' => 'Editar página web',
-  'webpage' => 'Página web',
+  'edit webpage' => 'Editar enlace web',
+  'webpage' => 'Enlace web',
   'webpage title required' => 'Título requerido para la pagina web',
   'webpage url required' => 'Es necesario ingresar la URL',
     
@@ -217,7 +232,7 @@
   'add mail account' => 'Agregar cuenta de correo',
   'new mail account' => 'Nueva cuenta de correo',
   'no emails in this account' => 'No hay correos en esta cuenta',
-  'server address' => 'Dirección del servidor POP3',
+  'server address' => 'Dirección del servidor',
   'mail account id' => 'Identificación de cuenta',
   'mail account name' => 'Nombre de la cuenta',
   'is imap' => 'Ésta es una cuenta IMAP',
@@ -247,6 +262,10 @@
   'mail account id description' => 'El nombre de usuario de la cuenta o identificación usada para conectarse al servidor (ej. \'juan@servidor.com\')',
   'mail account password description' => 'La contraseña requerida para conectarse a la cuenta',
   'mail account server description' => 'La dirección del serivdor de correo (ej. \'pop3.servidor.com\')',
+  'folders to check' => 'Carpetas a verificar',
+  'after' => 'luego de',
+  'delete mails from server' => 'Eliminar correos del serviror',
+  'mail account delete mails from server description' => 'Habilite esta opción para que los correos sean eliminados del servidor luego de cierto tiempo.',
   
   //Checkout
   'checkout file' => 'Bloquear archivo',
@@ -275,8 +294,8 @@
   'can write comments' => 'Puede escribir comentarios',
   'can read contacts' => 'Puede leer contactos',
   'can write contacts' => 'Puede escribir contactos',
-  'can read weblinks' => 'Puede leer páginas web',
-  'can write weblinks' => 'Puede incorporar páginas web',
+  'can read weblinks' => 'Puede leer enlaces web',
+  'can write weblinks' => 'Puede incorporar enlaces web',
   'can read files' => 'Puede leer archivos',
   'can write files' => 'Puede escribir archivos',
   'can read events' => 'Puede leer eventos',
@@ -490,7 +509,10 @@
   'edit picture' => 'Editar imágen',
   'deleted by' => 'Eliminado por',
   
-  'time has to be greater than 0' => 'El tiempo tiene que ser mayor que 0'
+  'time has to be greater than 0' => 'El tiempo tiene que ser mayor que 0',
+  
+  'release notes' => 'Notas de la versión',
+  'remember last' => 'Recordar último',
  ); // array
 
 ?>

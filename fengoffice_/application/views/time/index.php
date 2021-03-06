@@ -54,6 +54,8 @@
 </td></tr></table>
 </div>
 <div id="<?php echo $genid ?>TMTimespanAddNew" class="TMTimespanAddNew">
+	<input type="hidden" id="<?php echo $genid ?>tsId" name="timeslot[id]" value=""/>
+	
 	<table style="width:100%"><tr><td>
 	   <?php echo label_tag(lang('date')) ?>
 		<?php echo pick_date_widget2('timeslot[date]', DateTimeValueLib::now(),$genid, false) ?>
@@ -72,7 +74,13 @@
 		<?php echo label_tag(lang('description')) ?>
 		<?php echo textarea_field('timeslot[description]', '', array('class' => 'short', 'style' => 'height:30px;width:100%', 'tabindex' => '200', 'id' => $genid . 'tsDesc')) ?>
 	</td><td style="padding-left: 10px">
-		<br/><?php echo submit_button(lang('save'),'s',array('style'=>'margin-top:0px;margin-left:0px', 'tabindex' => '300', 'onclick' => 'ogTimeManager.SubmitNewTimeslot(\'' .$genid . '\');return false;')) ?>
+		<br/><div id="<?php echo $genid ?>TMTimespanSubmitAdd"><?php echo submit_button(lang('add'),'s',array('style'=>'margin-top:0px;margin-left:0px', 'tabindex' => '300', 'onclick' => 'ogTimeManager.SubmitNewTimeslot(\'' .$genid . '\');return false;')) ?></div>
+		<div id="<?php echo $genid ?>TMTimespanSubmitEdit" style="display:none">
+			<?php echo submit_button(lang('update'),'s',array('style'=>'margin-top:0px;margin-left:0px', 
+				'tabindex' => '300', 'onclick' => 'ogTimeManager.SubmitNewTimeslot(\'' .$genid . '\');return false;')) ?><br/>
+			<?php echo submit_button(lang('cancel'),'c',array('style'=>'margin-top:0px;margin-left:0px', 
+				'tabindex' => '310', 'onclick' => 'ogTimeManager.CancelEdit();return false;')) ?>
+		</div>
 	</td></tr></table>
 </div></td><td class="coViewTopRight">&nbsp;&nbsp;</td></tr>
 <tr>

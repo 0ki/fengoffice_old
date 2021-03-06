@@ -39,7 +39,7 @@ if(active_project() instanceof Project)
 else 
 	echo lang('all projects');
 	
-	$use_24_hours = config_option('time_format_use_24');
+	$use_24_hours = user_config_option('time_format_use_24');
 	if($use_24_hours) $timeformat = 'G:i';
 	else $timeformat = 'g:i A';
 									
@@ -118,7 +118,7 @@ else
 
 <table style="width:100%">
 <tr><td colspan=2>
-<?php if(user_config_option('show calendar widget')) {?>
+<?php if (user_config_option('show calendar widget') && config_option('enable_calendar_module')) {?>
 <div class="dashCalendar">
 <table style="width:100%">
 	<col width=12/><col /><col width=12/><tr>
@@ -317,7 +317,7 @@ else
 								
 								$tip_text = str_replace("\r", '', $event->getTypeId() == 2 ? lang('CAL_FULL_DAY') : $event->getStart()->format($use_24_hours ? 'G:i' : 'g:i A') .' - '. $event->getDuration()->format($use_24_hours ? 'G:i' : 'g:i A') . (trim(clean($event->getDescription())) != '' ? '<br><br>' . clean($event->getDescription()) : ''));
 								$tip_text = str_replace("\n", '<br>', $tip_text);
-								if (strlen($tip_text) > 200) $tip_text = substr($tip_text, 0, strpos($tip_text, ' ', 200)) . ' ...';
+								if (strlen_utf($tip_text) > 200) $tip_text = substr_utf($tip_text, 0, strpos($tip_text, ' ', 200)) . ' ...';
 								?>
 								<script type="text/javascript">
 									addTip('o_ev_div_<?php echo $event->getId() ?>', '<i>' + lang('event') + '</i> - '+<?php echo json_encode(clean($event->getSubject())) ?>, <?php echo json_encode($tip_text);?>);
@@ -348,7 +348,7 @@ else
 									
 									$tip_text = str_replace("\r", '', lang('assigned to') .': '. clean($milestone->getAssignedToName()) . (trim(clean($milestone->getDescription())) == '' ? '' : '<br><br>'. clean($milestone->getDescription())));
 									$tip_text = str_replace("\n", '<br>', $tip_text);
-									if (strlen($tip_text) > 200) $tip_text = substr($tip_text, 0, strpos($tip_text, ' ', 200)) . ' ...';
+									if (strlen_utf($tip_text) > 200) $tip_text = substr_utf($tip_text, 0, strpos($tip_text, ' ', 200)) . ' ...';
 									?>
 									<script type="text/javascript">
 										addTip('o_ms_div_<?php echo $milestone->getId() ?>', '<i>' + lang('milestone') + '</i> - '+<?php echo json_encode(clean($milestone->getTitle())) ?>, <?php echo json_encode($tip_text)?>);
@@ -383,7 +383,7 @@ else
 									
 									$tip_text = str_replace("\r", '', lang('assigned to') .': '. clean($task->getAssignedToName()) . (trim(clean($task->getText())) == '' ? '' : '<br><br>'. clean($task->getText())));
 									$tip_text = str_replace("\n", '<br>', $tip_text);													
-									if (strlen($tip_text) > 200) $tip_text = substr($tip_text, 0, strpos($tip_text, ' ', 200)) . ' ...';
+									if (strlen_utf($tip_text) > 200) $tip_text = substr_utf($tip_text, 0, strpos($tip_text, ' ', 200)) . ' ...';
 									?>
 									<script type="text/javascript">
 										addTip('o_ta_div_' + <?php echo $task->getId() ?>, '<i>' + lang('task') + '</i> - ' + <?php echo json_encode(clean($task->getTitle()))?>, <?php echo json_encode($tip_text);?>);
@@ -445,8 +445,8 @@ echo $output . '</table>';
 			$text = $task->getText();
 			if ($text != '')
 				$text = ": " . $text;
-			if(strlen($text)>100)
-				$text = substr($text,0,100) . " ...";
+			if(strlen_utf($text)>100)
+				$text = substr_utf($text,0,100) . " ...";
 			$text = clean($text);
 			?>
 				<tr class="<?php echo $c % 2 == 1? '':'dashAltRow'?>"><td class="db-ico ico-task"></td><td style="padding-left:5px;padding-bottom:2px">
@@ -644,8 +644,8 @@ echo $output . '</table>';
 			$text = $task->getText();
 			if ($text != '')
 				$text = ": " . $text;
-			if(strlen($text)>100)
-				$text = substr($text,0,100) . " ...";
+			if(strlen_utf($text)>100)
+				$text = substr_utf($text,0,100) . " ...";
 			$text = clean($text);
 			?>
 				<tr class="<?php echo $c % 2 == 1? '':'dashAltRow'; echo ' ' . ($c > 5? 'dashSMTC':''); ?>" style="<?php echo $c > 5? 'display:none':'' ?>">
@@ -715,7 +715,7 @@ echo $output . '</table>';
 					<td class="db-ico ico-email"></td>
 					<td style="padding-left:5px">
 					<?php 
-						/*$mws = $email->getWorkspaces(logged_user()->getActiveProjectIdsCSV());
+						$mws = $email->getWorkspaces(logged_user()->getActiveProjectIdsCSV());
 						$projectLinks = array();
 						foreach ($mws as $ws) {
 							$projectLinks[] = '<span class="project-replace">' . $ws->getId() . '</span>';
@@ -885,7 +885,7 @@ echo $output . '</table>';
 		<?php $c = 0;
 			foreach ($documents as $document){ $c++;?>
 			<tr class="<?php echo $c % 2 == 1? '':'dashAltRow'; echo ' ' . ($c > 5? 'dashSMDC':''); ?>" style="<?php echo $c > 5? 'display:none':'' ?>">
-			<td class="db-ico ico-unknown ico-<?php echo str_replace("/", "-", $document->getTypeString())?>"></td>
+			<td class="db-ico ico-unknown ico-<?php echo str_replace(".", "_", str_replace("/", "-", $document->getTypeString()))?>"></td>
 			<td style="padding-left:5px">
 			<?php 
 				$dws = $document->getWorkspaces(logged_user()->getActiveProjectIdsCSV());

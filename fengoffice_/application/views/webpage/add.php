@@ -1,7 +1,12 @@
 <?php 
   set_page_title($webpage->isNew() ? lang('add webpage') : lang('edit webpage'));
-  $project = $webpage->getProject();
+  if ($webpage->isNew()) {
+  	$project = active_or_personal_project();
+  } else {
+  	$project = $webpage->getProject();
+  }
   $genid = gen_id();
+  $object = $webpage;
   if (!$webpage->isNew()) { 
   		if ($webpage->isTrashed()) {
     		add_page_action(lang('restore from trash'), "javascript:if(confirm(lang('confirm restore objects'))) og.openLink('" . $webpage->getUntrashUrl() ."');", 'ico-restore');
@@ -32,9 +37,10 @@
 		<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('add_webpage_select_workspace_div', this)"><?php echo lang('workspace') ?></a> - 
 		<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('add_webpage_tags_div', this)"><?php echo lang('tags') ?></a> - 
 		<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('add_webpage_description_div', this)"><?php echo lang('description') ?></a> - 
-		<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('add_webpage_properties_div', this)"><?php echo lang('custom properties') ?></a>
-		<?php if($webpage->isNew() || $webpage->canLinkObject(logged_user(), $project)) { ?> - 
-			<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('add_webpage_linked_objects_div', this)"><?php echo lang('linked objects') ?></a>
+		<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('add_custom_properties_div', this)"><?php echo lang('custom properties') ?></a> -
+		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_subscribers_div',this)"><?php echo lang('object subscribers') ?></a>
+		<?php if($object->isNew() || $object->canLinkObject(logged_user(), $project)) { ?> - 
+			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_linked_objects_div',this)"><?php echo lang('linked objects') ?></a>
 		<?php } ?>
 	</div>
 </div>
@@ -63,25 +69,52 @@
     </fieldset>
 	</div>
   
-	<div id='add_webpage_properties_div' style="display:none">
+	<div id='add_custom_properties_div' style="display:none">
 	<fieldset>
 	<legend><?php echo lang('custom properties') ?></legend>
-		<?php echo render_object_properties('webpage', $webpage); ?>
+		<?php echo render_add_custom_properties($object); ?>
 	</fieldset>
 	</div>
   
   
- <?php if($webpage->isNew() || $webpage->canLinkObject(logged_user(), $project)) { ?>
- <div style="display:none" id="add_webpage_linked_objects_div">
-<fieldset>
-    <legend><?php echo lang('linked objects') ?></legend>
-  	  <table style="width:100%;margin-left:2px;margin-right:3px" id="tbl_linked_objects">
-	   	<tbody></tbody>
-		</table>
-    <?php echo render_object_links($webpage, $webpage->canEdit(logged_user())) ?>
-</fieldset>
-</div>
-<?php } // if ?>
+ 	<div id="<?php echo $genid ?>add_subscribers_div" style="display:none">
+		<fieldset>
+		<legend><?php echo lang('object subscribers') ?></legend>
+		<div id="<?php echo $genid ?>add_subscribers_content">
+			<?php echo render_add_subscribers($object, $genid); ?>
+		</div>
+		</fieldset>
+	</div>
+	
+	<script>
+	var wsTree = Ext.get('<?php echo $genid ?>wsSel');
+	wsTree.previousValue = <?php echo $project->getId() ?>;
+	wsTree.on("click", function(ws) {
+		var uids = App.modules.addMessageForm.getCheckedUsers('<?php echo $genid ?>');
+		var wsid = Ext.get('<?php echo $genid ?>wsSelValue').getValue();
+		if (wsid != this.previousValue) {
+			this.previousValue = wsid;
+			Ext.get('<?php echo $genid ?>add_subscribers_content').load({
+				url: og.getUrl('object', 'render_add_subscribers', {
+					workspaces: wsid,
+					users: uids,
+					genid: '<?php echo $genid ?>',
+					object_type: '<?php echo get_class($object->manager()) ?>'
+				}),
+				scripts: true
+			});
+		}
+	}, wsTree);
+	</script>
+
+	<?php if($object->isNew() || $object->canLinkObject(logged_user(), $project)) { ?>
+	<div style="display:none" id="<?php echo $genid ?>add_linked_objects_div">
+	<fieldset>
+		<legend><?php echo lang('linked objects') ?></legend>
+		<?php echo render_object_link_form($object) ?>
+	</fieldset>	
+	</div>
+	<?php } // if ?>
 
   <div>
     <?php echo label_tag(lang('url'), 'webpageFormURL', true) ?>

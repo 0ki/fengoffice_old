@@ -196,11 +196,11 @@
 	'view milestone' => 'マイルストーンの表示',
 
   	// ENGLISH MISSING TRANSLATIONS
-  	'edit file properties' => 'Edit file Properties',
-    'custom properties' => 'Custom Properties',
-    'move to trash' => 'Move to trash',
-    'restore from trash' => 'Restore from trash',
-    'delete permanently' => 'Delete permanently',
+  	'edit file properties' => 'ファイルのプロパティを編集する', // 'Edit file Properties',
+    'custom properties' => 'カスタムプロパティ', // 'Custom Properties',
+    'move to trash' => 'ゴミ箱に移動する', // 'Move to trash',
+    'restore from trash' => 'ゴミ箱から戻す', // 'Restore from trash',
+    'delete permanently' => '完全に削除する', // 'Delete permanently',
   ); // array
 
 ?>

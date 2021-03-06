@@ -27,7 +27,7 @@ class SearchController extends ApplicationController {
 		$objectManagers = array("ProjectWebpages", "ProjectMessages", "MailContents", "ProjectFiles",
 			 "ProjectFileRevisions", "ProjectMilestones", "ProjectTasks", "ProjectEvents");
 		$objectTypes = array(lang('webpages'), lang('messages'), lang('emails'), 
-			lang('files'), lang('file revisions'), lang('milestones'), lang('tasks'), lang('events'));
+			lang('files'), lang('file contents'), lang('milestones'), lang('tasks'), lang('events'));
 		$iconTypes = array('webpage', 'message', 'email', 
 			'file', 'file', 'milestone', 'task', 'event');                        
 		

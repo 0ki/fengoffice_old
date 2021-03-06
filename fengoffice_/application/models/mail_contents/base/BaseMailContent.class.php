@@ -57,28 +57,6 @@ abstract class BaseMailContent extends ProjectDataObject {
 		return $this->setColumnValue('account_id', $value);
 	} // setAccountId()
 
-    /**
-    * Return value of 'project_id' field
-    *
-    * @access public
-    * @param void
-    * @return integer 
-    */
-    function getProjectId() {
-      return $this->getColumnValue('project_id');
-    } // getProjectId()
-    
-    /**
-    * Set value of 'project_id' field
-    *
-    * @access public   
-    * @param integer $value
-    * @return boolean
-    */
-    function setProjectId($value) {
-      return $this->setColumnValue('project_id', $value);
-    } // setProjectId() 
-    
 	/**
 	 * Return value of 'uid' field
 	 *
@@ -522,6 +500,50 @@ abstract class BaseMailContent extends ProjectDataObject {
       return $this->setColumnValue('trashed_by_id', $value);
     } // setTrashedById()
     
+       
+    /**
+    * Return value of 'imap_folder_name' field
+    *
+    * @access public
+    * @param void
+    * @return string 
+    */
+    function getImapFolderName() {
+      return $this->getColumnValue('imap_folder_name');
+    } // getImapFolderName()
+    
+    /**
+    * Set value of 'imap_folder_name' field
+    *
+    * @access public   
+    * @param string $value
+    * @return boolean
+    */
+    function setImapFolderName($value) {
+      return $this->setColumnValue('imap_folder_name', $value);
+    } // setImapFolderName()
+    
+        /**
+    * Return value of 'account_email' field
+    *
+    * @access public
+    * @param void
+    * @return string 
+    */
+    function getAccountEmail() {
+      return $this->getColumnValue('account_email');
+    } // getAccountEmail()
+    
+    /**
+    * Set value of 'account_email' field
+    *
+    * @access public   
+    * @param string $value
+    * @return boolean
+    */
+    function setAccountEmail($value) {
+      return $this->setColumnValue('account_email', $value);
+    } // setAccountEmail()
     
 	/**
 	 * Return manager instance

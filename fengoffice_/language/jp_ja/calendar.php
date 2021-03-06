@@ -131,12 +131,12 @@
 	"years" => "年", // "years"
 
   	// ENGLISH MISSING TRANSLATIONS
-  	'invitations' => 'Invitations',
-    'pending response' => 'Pending response',
-    'participate' => 'Will attend',
-    'no invitations to this event' => 'No invitations were sent to this event',
-    'duration must be at least 15 minutes' => 'Duration must be at least 15 minutes',
-    'event dnx' => 'Requested event does not exists',
+  	'invitations' => '招待', // 'Invitations',
+    'pending response' => '保留中の返答', // 'Pending response',
+    'participate' => '出席', // 'Will attend',
+    'no invitations to this event' => 'このイベントに招待しません。', // 'No invitations were sent to this event',
+    'duration must be at least 15 minutes' => '期間は15分間隔でなければなりません。', // 'Duration must be at least 15 minutes',
+    'event dnx' => '要求されたイベントは存在しません。', // 'Requested event does not exists',
   
   ); // array
 ?>

@@ -81,6 +81,7 @@
     'private task list' => 'Tareas privadas',
     'private comment' => 'Comentario privado',
     'private file' => 'Archivo privado',
+  	'file contents' => 'Contenido del archivo',
     
   ); // array
 

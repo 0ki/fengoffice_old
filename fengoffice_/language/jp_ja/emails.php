@@ -82,8 +82,8 @@ return array(
 	'view task' => 'タスクの表示', // 'View task'
 
 	// ENGLISH MISSING TRANSLATIONS
-	'original message' => 'Original message',
-    'mail sent' => 'Sent',
+	'original message' => 'オリジナルメッセージ', // 'Original message',
+    'mail sent' => '送信済み', // 'Sent',
     ); // array
 
     ?>

@@ -52,7 +52,7 @@ if (isset($milestone) && $milestone instanceof ProjectMilestone) {
 		$content = '<div class="dueDate"><span>' . lang('due date') . ':</span> ' . format_descriptive_date($milestone->getDueDate(), 0) . '</div>';
 	} // if 
 	if ($milestone->getDescription()){
-		$content .= '<div class="description">' . nl2br(clean($milestone->getDescription())) . '</div>';
+		$content .= '<div class="description">' . convert_to_links(nl2br(clean($milestone->getDescription()))) . '</div>';
 	}
 	$openSubtasks = $milestone->getOpenSubTasks();
 	if (is_array($openSubtasks)) { 

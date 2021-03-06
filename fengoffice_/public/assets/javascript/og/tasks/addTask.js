@@ -139,7 +139,9 @@ ogTasks.drawTaskForm = function(container_id, data){
 	var chkIsVisible = data.assignedTo && data.assignedTo.split(':')[1] != '0';
 	var chkIsChecked = chkIsVisible && data.assignedTo != (this.currentUser.companyId + ':' + this.currentUser.id);
 	html += "<table><tr><td><div id='ogTasksPanelATAssigned' style='padding-top:5px;'><table><tr><td><b>" + lang('assigned to') + ":&nbsp;</b></td><td><span id='ogTasksPanelATAssignedCont'></span></td></tr></table></div></td>";
-	html += '<td style="padding-top:7px;padding-left:15px"><div style="display:' + (chkIsVisible?'inline':'none') + '" id="ogTasksPanelATNotifyDiv"><label for="ogTasksPanelATNotify"><input style="width:14px;" type="checkbox" name="task[notify]" id="ogTasksPanelATNotify" ' + (chkIsChecked? 'checked':'') + '/>&nbsp;' + lang('send notification') + '</label></div></td></tr></table>'; 
+	if (ogTasks.userPreferences.enable_notify != '0')
+		html += '<td style="padding-top:7px;padding-left:15px"><div style="display:' + (chkIsVisible?'inline':'none') + '" id="ogTasksPanelATNotifyDiv"><label for="ogTasksPanelATNotify"><input style="width:14px;" type="checkbox" name="task[notify]" id="ogTasksPanelATNotify" ' + (chkIsChecked? 'checked':'') + '/>&nbsp;' + lang('send notification') + '</label></div></td>';
+	html += '</tr></table>'; 
 	
 	html += "<div id='ogTasksPanelATWorkspace' style='padding-top:5px;" + (data.isEdit? '': 'display:none') + "'><table><tr><td><b>" + lang('workspace') + ":&nbsp;</b></td><td><div id='ogTasksPanelWsSelector'></div></td></tr></table></div>";
 	html += "<div id='ogTasksPanelATMilestone' style='padding-top:5px;" + (data.isEdit? '': 'display:none') + "'><table><tr><td><b>" + lang('milestone') + ":&nbsp;</b></td><td><div id='ogTasksPanelMilestoneSelector'></div></td></tr></table></div>";
@@ -210,6 +212,13 @@ ogTasks.drawTaskForm = function(container_id, data){
    	});
 	
 	og.drawWorkspaceSelector('ogTasksPanelWsSelector', data.workspace, 'task[project_id]');
+	var ws_sel = Ext.get('ogTasksPanelWsSelector');
+	ogTasks.prevWsValue = -1;
+	if(data.assignedTo) ogTasks.assignedTo = data.assignedTo;
+	else ogTasks.assignedTo = '';
+	ws_sel.addListener('click', this.wsSelectorClicked);
+	this.wsSelectorClicked();
+	
 	document.getElementById('ogTasksPanelATTitle').value = data.title;
 	document.getElementById('ogTasksPanelATTitle').focus();
 	
@@ -256,30 +265,6 @@ ogTasks.drawTaskForm = function(container_id, data){
 		}
 	});
 
-	var namesCombo = topToolbar.filterNamesCompaniesCombo.cloneConfig({
-		name: 'task[assigned_to]',
-		renderTo: 'ogTasksPanelATAssignedCont',
-		id: 'ogTasksPanelATUserCompanyCombo',
-		hidden: false,
-		width: 200,
-		value: data.assignedTo,
-		tabIndex:1200,
-		listeners: {
-			'select':function(combo, record){
-				var checkbox = document.getElementById('ogTasksPanelATNotify');
-				var checkboxDiv = document.getElementById('ogTasksPanelATNotifyDiv');
-				if (record.data.value != '-1:-1' && record.data.value.split(':')[1] != '0'){
-					checkboxDiv.style.display = 'block';
-					var currentUser = ogTasks.currentUser;
-					checkbox.checked = (record.data.value != (currentUser.companyId + ':' + currentUser.id));
-				} else {
-					checkboxDiv.style.display = 'none';
-					checkbox.checked = false;
-				}
-			}
-		}
-	});
-	
 	var milestoneCombo = topToolbar.filterMilestonesCombo.cloneConfig({
 		name: 'task[milestone_id]',
 		renderTo: 'ogTasksPanelMilestoneSelector',
@@ -356,7 +341,7 @@ ogTasks.GetNewTaskParameters = function(wrapWithTask){
 		parameters["task_due_date"] = duePanel.getValue().format(lang('date format'));
 		
 	var notify = document.getElementById('ogTasksPanelATNotify');
-	if (notify.style.display != 'none' && notify.checked)
+	if (notify && notify.style.display != 'none' && notify.checked)
 		parameters["notify"] = true;
 	else
 		parameters["notify"] = false;
@@ -416,9 +401,83 @@ ogTasks.SubmitNewTask = function(task_id){
 				this.draw();
 				this.redrawGroups = true;
 			} else {
-				og.err(lang("error adding task"));
+				if (!data.errorMessage || data.errorMessage == '')
+					og.err(lang("error adding task"));
 			}
 		},
 		scope: this
+	});
+}
+
+ogTasks.wsSelectorClicked = function() {
+	var wsVal = document.getElementById('ogTasksPanelWsSelectorValue').value;
+	
+	if (wsVal != ogTasks.prevWsValue) {
+		og.openLink(og.getUrl('task', 'allowed_users_to_assign', {ws_id:wsVal}), {callback:ogTasks.drawAssignedToCombo});
+		ogTasks.prevWsValue = wsVal;
+	}
+}
+
+ogTasks.buildAssignedToComboStore = function(companies) {
+	usersStore = [];
+	comp_array = [];
+	cantU = 0;
+	cantC = 1;
+	
+	comp_array[cantC++] = ['0:0', lang('dont assign')];
+	comp_array[cantC++] = ['0:0', '--'];
+	usersStore[cantU++] = ['0:0', '--'];
+	
+	for (i=0; i<companies.length; i++) {
+		comp = companies[i];
+		comp_array[cantC++] = [comp.id + ':0', comp.name];
+		for (j=0; j<comp.users.length; j++) {
+			usr = comp.users[j];
+			usersStore[cantU++] = [comp.id + ':' + usr.id, usr.name];
+			if (usr.isCurrent) comp_array[0] = [comp.id + ':' + usr.id, lang('me')];
+		}
+	}
+	usersStore = comp_array.concat(usersStore);
+	return usersStore;
+}
+
+ogTasks.drawAssignedToCombo = function(success, data) {
+	usersStore = ogTasks.buildAssignedToComboStore(data.companies);
+	prev_combo = Ext.get('ogTasksPanelATUserCompanyCombo');
+	if (prev_combo) prev_combo.remove();
+	
+	var namesCombo = new Ext.form.ComboBox({
+		name: 'task[assigned_to]',
+		renderTo: 'ogTasksPanelATAssignedCont',
+		id: 'ogTasksPanelATUserCompanyCombo',
+		store: usersStore,
+		hidden: false,
+		width: 200,
+		displayField:'text',
+        typeAhead: true,
+        mode: 'local',
+        triggerAction: 'all',
+        selectOnFocus:true,
+        value: ogTasks.assignedTo,
+		emptyText: (lang('select user or group') + '...'),
+	    valueNotFoundText: '',
+		tabIndex:1200,
+		listeners: {
+			'select':function(combo, record){
+				var checkbox = document.getElementById('ogTasksPanelATNotify');
+				if (checkbox){
+					var checkboxDiv = document.getElementById('ogTasksPanelATNotifyDiv');
+					if (record.data.value != '-1:-1' && record.data.value.split(':')[1] != '0'){
+						checkboxDiv.style.display = 'block';
+						var currentUser = ogTasks.currentUser;
+						checkbox.checked = (record.data.value != (currentUser.companyId + ':' + currentUser.id));
+						ogTasks.assignedTo = combo.getValue();
+					} else {
+						checkboxDiv.style.display = 'none';
+						checkbox.checked = false;
+					}
+				}
+			}
+		}
 	});
 }

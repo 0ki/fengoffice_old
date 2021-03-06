@@ -19,7 +19,8 @@ ogTasks.Groups = [];
 
 ogTasks.redrawGroups = true;
 
-
+ogTasks.prevWsValue = -1; //Used to view if ws selector changed its value, to refresh the assingedto combo
+ogTasks.assignedTo = '-1:-1'; //Used to init the assignedto combo when it is refreshed
 
 //************************************
 //*		Structure definitions
@@ -416,13 +417,14 @@ ogTasks.groupTasks = function(displayCriteria, tasksContainer){
 	
 		var topToolbar = Ext.getCmp('tasksPanelTopToolbarObject');
 		var filters = topToolbar.getFilters();
-		if (filters.filter != 'milestone'){
-			for(var i = 0; i < this.Milestones.length; i++)
-				if (groups.indexOf(this.Milestones[i].id) < 0){
+		
+		for(var i = 0; i < this.Milestones.length; i++)
+			if (groups.indexOf(this.Milestones[i].id) < 0){
+				if (filters.filter != 'milestone' || filters.fval == this.Milestones[i].id){
 					groups[groups.length] = this.Milestones[i].id;
 					tasks[tasks.length] = [];
 				}
-		}
+			}
 	}
 	var groupData = this.getGroupData(displayCriteria,groups,tasks);
 	return this.orderGroups(displayCriteria, groupData);
@@ -862,13 +864,13 @@ ogTasks.existsSoloGroup = function(){
 }
 
 //Written for edit task view
-og.addTaskUserChanged = function(genid){
+og.addTaskUserChanged = function(genid, user_id){
 	var ddUser = document.getElementById(genid + 'taskFormAssignedTo');
 	if (ddUser){
 		var values = ddUser.value.split(':');
 		var user = values[1];
 		var chk = document.getElementById(genid + 'taskFormSendNotification');
-		chk.checked = user > 0;
+		chk.checked = (user > 0 && user != user_id);
 		document.getElementById(genid + 'taskFormSendNotificationDiv').style.display = user > 0 ? 'block':'none';
 	}
 }

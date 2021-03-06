@@ -9,12 +9,6 @@
   */
   class ChurroUpgradeScript extends ScriptUpgraderScript {
     
-    /**
-    * Database connection link
-    *
-    * @var resource
-    */
-    private $database_connection = null;
     
     /**
     * Array of files and folders that need to be writable
@@ -23,6 +17,7 @@
     */
     private $check_is_writable = array(
       '/config/config.php',
+    	'/config',
       '/public/files',
       '/cache',
       '/tmp',
@@ -38,6 +33,14 @@
       'mysql', 'gd', 'simplexml'
     ); // array
   
+  	function getCheckIsWritable() {
+		return $this->check_is_writable;
+	}
+
+	function getCheckExtensions() {
+		return $this->check_extensions;
+	}
+    
     /**
     * Construct the ChurroUpgradeScript
     *
@@ -57,59 +60,6 @@
     * @return boolean
     */
     function execute() {
-      define('ROOT', realpath(dirname(__FILE__) . '/../../../'));
-      
-      // ---------------------------------------------------
-      //  Load config
-      // ---------------------------------------------------
-      
-      $config_is_set = require_once INSTALLATION_PATH . '/config/config.php';
-      if(!$config_is_set) {
-        $this->printMessage('Valid config files was not found!', true);
-        return false;
-      } else {
-        $this->printMessage('Config file found and loaded.');
-      } // if
-      
-      // ---------------------------------------------------
-      //  Check if files and folders are writable
-      // ---------------------------------------------------
-      
-      foreach($this->check_is_writable as $relative_path) {
-        $path = ROOT . $relative_path;
-        if(is_file($path)) {
-          if(file_is_writable($path)) {
-            $this->printMessage("File '$relative_path' exists and is writable");
-          } else {
-            $this->printMessage("File '$relative_path' is not writable", true);
-            return false;
-          } // if
-        } elseif(is_dir($path)) {
-          if(folder_is_writable($path)) {
-            $this->printMessage("Folder '$relative_path' exists and is writable");
-          } else {
-            $this->printMessage("Folder '$relative_path' is not writable", true);
-            return false;
-          } // if
-        } else {
-          $this->printMessage("'$relative_path' does not exists on the system", true);
-          return false;
-        } // if
-      } // foreach
-      
-      // ---------------------------------------------------
-      //  Check if extensions are loaded
-      // ---------------------------------------------------
-      
-      foreach($this->check_extensions as $extension_name) {
-        if(extension_loaded($extension_name)) {
-          $this->printMessage("Extension '$extension_name' is loaded");
-        } else {
-          $this->printMessage("Extension '$extension_name' is not loaded", true);
-          return false;
-        } // if
-      } // foreach
-      
       // ---------------------------------------------------
       //  Connect to database
       // ---------------------------------------------------

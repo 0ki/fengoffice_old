@@ -19,6 +19,7 @@
     'edit' => 'Edit',
     'delete' => 'Delete',
     'save' => 'Save',
+  	'add' => 'Add',
     'update' => 'Update',
     'submit' => 'Submit',
     'reset' => 'Reset',

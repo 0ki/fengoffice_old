@@ -11,25 +11,54 @@
       <h1><?php echo clean($upgrader->getName()) ?></h1>
       <div id="installationDesc"><?php echo clean($upgrader->getDescription()) ?></div>
     </div>
+<?php
+$installed_version = installed_version();
+$scripts = $upgrader->getScriptsSince($installed_version);
+if (count($scripts) > 0) {
+?>
     <form class="internalForm" action="index.php" id="upgraderForm" method="post">
       <div id="upgraderControls">
         <table class="formBlock">
           <tr>
             <th colspan="2">Upgrade</th>
           </tr>
+<?php if ($installed_version == "unknown") { ?>
           <tr>
-            <td class="optionLabel"><label for="upgradeFormScript">Script</label></td>
+            <td class="optionLabel"><label for="upgradeFormFrom">Upgrade from: </label></td>
             <td>
-              <select name="form_data[script_class]" id="upgradeFormScript">
-<?php foreach($upgrader->getScripts() as $script) { ?>
-                <option value="<?php echo clean(get_class($script)) ?>"><?php echo clean($script->getScriptName()) ?></option>
-<?php } // foreach ?>
+              <select name="form_data[upgrade_from]" id="upgradeFormFrom">
+	<?php foreach($scripts as $script) { ?>
+                <option value="<?php echo clean($script->getVersionFrom()) ?>">OpenGoo <?php echo clean($script->getVersionFrom()) ?></option>
+	<?php } // foreach ?>
+              </select>
+            </td>
+          </tr>
+<?php } else { ?>
+		<tr>
+			<td class="optionLabel"><label>Upgrade from: </label></td>
+			<td>
+				<input name="form_data[upgrade_from]" type="hidden" value="<?php echo $installed_version ?>" />
+				<?php echo $installed_version ?></td>
+		</tr>
+<?php } ?>
+          <tr>
+            <td class="optionLabel"><label for="upgradeFormTo">Upgrade to: </label></td>
+            <td>
+              <select name="form_data[upgrade_to]" id="upgradeFormTo">
+	<?php foreach($scripts as $script) { ?>
+                <option value="<?php echo clean($script->getVersionTo()) ?>">OpenGoo <?php echo clean($script->getVersionTo()) ?></option>
+	<?php } // foreach ?>
               </select>
             </td>
           </tr>
         </table>
         <button type="submit" accesskey="s">Upgrade (Alt+S)</button>
       </div>
+      <input type="hidden" name="submited" value="submited" />
+    </form>
+<?php } else { ?>
+	<div style="padding: 20px">You already have upgraded to the latest possible version.</div>
+<?php } ?>
       <div id="content">
 <?php if(isset($status_messages) && count($status_messages)) { ?>
         <ul>
@@ -39,8 +68,8 @@
         </ul>
 <?php } // if ?>
       </div>
-      <input type="hidden" name="submited" value="submited" />
-    </form>
+
+	<div class="back"><a href="../../">Back to OpenGoo</a></div>
     <div id="footer">&copy; <?php echo date('Y') ?> <a href="http://www.OpenGoo.org/">OpenGoo</a>. All rights reserved.</div>
   </div>
 

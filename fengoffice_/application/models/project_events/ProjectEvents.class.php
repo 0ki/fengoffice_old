@@ -257,7 +257,7 @@ class ProjectEvents extends BaseProjectEvents {
 				-- 
 				OR 
 				(
-					DATE(`start`) <= '$end_year-$end_month-$end_day' --starts before the end date of the range
+					DATE(`start`) <= '$end_year-$end_month-$end_day'
 					AND
 					(							
 						(
@@ -321,7 +321,7 @@ class ProjectEvents extends BaseProjectEvents {
 					AND 
 					DAYOFWEEK(`start`) = DAYOFWEEK('$start_year-$start_month-$start_day')
 				)				
-			)
+			
 			$limitation  
 			$permissions 
 			$tag_str ";

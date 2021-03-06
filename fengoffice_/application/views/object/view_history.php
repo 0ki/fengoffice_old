@@ -17,7 +17,7 @@ $isAlt = true;
 if (is_array($logs)) {
 	foreach ($logs as $log) {
 		$isAlt = !$isAlt;
-		echo '<tr' . ($isAlt? ' class="altRow"' : '') .  '><td  style="padding-right:10px;">';
+		echo '<tr' . ($isAlt? ' class="altRow"' : '') . '><td  style="padding:5px;padding-right:15px;">';
 		if ($log->getCreatedOn()->getYear() != DateTimeValueLib::now()->getYear())
 			$date = format_time($log->getCreatedOn(), "M d Y, H:i");
 		else{
@@ -26,7 +26,7 @@ if (is_array($logs)) {
 			else
 				$date = format_time($log->getCreatedOn(), "M d, H:i");
 		}
-		echo $date . ' </td><td style="padding-right:10px;"><a class="internalLink" href="' . $log->getTakenBy()->getCardUrl() . '">'  . clean($log->getTakenByDisplayName()) . '</a></td><td style="padding-right:10px;"> ' . clean($log->getText());
+		echo $date . ' </td><td style="padding:5px;padding-right:15px;"><a class="internalLink" href="' . $log->getTakenBy()->getCardUrl() . '">'  . clean($log->getTakenByDisplayName()) . '</a></td><td style="padding:5px;padding-right:15px;"> ' . $log->getText();
 		echo '</td></tr>';
 	}
 }

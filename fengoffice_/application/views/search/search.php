@@ -12,7 +12,6 @@
     <?php echo input_field('search_for', array_var($_GET, 'search_for')) ?>
     <input type="hidden" name="c" value="search" />
     <input type="hidden" name="a" value="search" />
-    <input type="hidden" name="active_project" value="<?php echo (active_project())?active_project()->getId():'' ?>" />
     <?php echo submit_button(lang('search')) ?>
   </form>
 </div>

@@ -21,7 +21,7 @@
       if(is_dir($themes_dir)) {
         $d = dir($themes_dir);
         while(($entry = $d->read()) !== false) {
-          if(str_starts_with($entry, '.')) {
+          if (str_starts_with($entry, '.') || $entry == "CVS") {
             continue;
           } // if
           

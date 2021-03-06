@@ -78,12 +78,12 @@ class CommentController extends ApplicationController {
 					} // foreach
 				} // if
 
-				ApplicationLogs::createLog($comment, $object->getWorkspaces(), ApplicationLogs::ACTION_ADD);
-
-				// Subscribe user to object
+								// Subscribe user to object
 				if(!$object->isSubscriber(logged_user())) {
 					$object->subscribeUser(logged_user());
 				} // if
+				
+				ApplicationLogs::createLog($object, $object->getWorkspaces(), ApplicationLogs::ACTION_COMMENT);
 
 				DB::commit();
 

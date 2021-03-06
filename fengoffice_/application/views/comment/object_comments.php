@@ -21,7 +21,7 @@
 					if ($comment->canLinkObject(logged_user(), $comment->getProject()))
 						$options[] = render_link_to_object_2($comment,lang('link objects'));
 				}
-				if ($comment->canDelete(logged_user()) && !$__comments_object->isTrashed()) $options[] = '<a class="internalLink" href="' . $comment->getDeleteUrl() . '" onclick="return confirm(\''.lang('confirm move to trash').'\')">' . lang('move to trash') . '</a>';
+				if ($comment->canDelete(logged_user()) && !$__comments_object->isTrashed()) $options[] = '<a class="internalLink" href="' . $comment->getDeleteUrl() . '" onclick="return confirm(\''.str_replace("'", "\\'", lang('confirm move to trash')).'\')">' . lang('move to trash') . '</a>';
 ?>
 			<div class="comment <?php echo $counter % 2 ? 'even' : 'odd' ?>" id="comment<?php echo $comment->getId() ?>">
 		<?php 	if($comment->isPrivate()) { ?>

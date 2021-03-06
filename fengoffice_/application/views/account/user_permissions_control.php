@@ -3,7 +3,7 @@
 
 <table><tr><td>
   <?php	
-  echo select_workspaces("", null, null, "workspace-chooser$genid") ?>
+  echo select_workspaces("", $projects, null, "workspace-chooser$genid") ?>
   </td><td style="padding-left:20px">
   <div id="<?php echo $genid ?>project_permissions" style="display:none">
   <div id="<?php echo $genid ?>project_name" style="font-weight:bold;font-size:120%;padding-bottom:15px"></div>

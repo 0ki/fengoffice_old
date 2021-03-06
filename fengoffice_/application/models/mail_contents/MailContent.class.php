@@ -15,7 +15,8 @@ class MailContent extends BaseMailContent {
 	 */
 	private $account;
 
-	protected $project;
+	//protected $project;
+	protected $workspaces = null;
 
 	/**
 	 * This project object is taggable
@@ -39,6 +40,13 @@ class MailContent extends BaseMailContent {
 	protected $searchable_columns = array('from', 'from_name', 'to', 'subject', 'body_plain', );
 	 
 	/**
+	 * Project file is commentable object
+	 *
+	 * @var boolean
+	 */
+	protected $is_commentable = true;
+	
+	/**
 	 * Return Project
 	 *
 	 * @access public
@@ -47,13 +55,7 @@ class MailContent extends BaseMailContent {
 	 */
 	function getProject()
 	{
-		if ($this->getProjectId() == 0)
-			return null;
-		
-		if(!isset($this->project)) {
-			$this->project = Projects::findById($this->getProjectId());
-		} // if
-		return $this->project;
+		return null;
 	}
 	 
 	/**
@@ -91,7 +93,6 @@ class MailContent extends BaseMailContent {
 		$this->setContent("");
 		$this->setBodyHtml("");
 		$this->setBodyPlain("");
-		$this->setProjectId(0);
 		$this->setFrom("");
 		$this->setTo("");
 		$this->setIsDeleted(true);
@@ -115,7 +116,8 @@ class MailContent extends BaseMailContent {
 	 * @return boolean
 	 */
 	function getIsClassified() {
-		return ($this->getColumnValue('project_id') != 0);
+		$wspaces = $this->getWorkspaces();
+		return (is_array($wspaces) && count($wspaces) > 0);
 	} // getIsClassified()
 	
 	
@@ -383,7 +385,7 @@ class MailContent extends BaseMailContent {
 	 * @return string
 	 */
 	function getObjectTypeName() {
-		if ($this->getProjectId() > 0)
+		if (isset($this->workspaces) && is_array($this->workspaces) && count($this->workspaces))
 			return 'email';
 		else
 			return 'emailunclassified';
@@ -418,11 +420,6 @@ class MailContent extends BaseMailContent {
     	$project = "";
     	$type = "emailunclassified";
     	$tags = project_object_tags($this);
-    	if ($this->getProjectId() > 0){
-    		$projectId = $this->getProjectId();
-    		$project = $this->getProject()->getName();
-    		$type = "email";
-    	}
     	
   		$deletedOn = $this->getTrashedOn() ? $this->getTrashedOn()->getTimestamp() : lang('n/a');
     	$deletedBy = Users::findById($this->getTrashedById());
@@ -431,7 +428,7 @@ class MailContent extends BaseMailContent {
     	} else {
     		$deletedBy = lang("n/a");
     	}
-    	
+    	$sentTimestamp = $this->getSentDate() instanceof DateTimeValue ? $this->getSentDate()->getTimestamp() : 0;
     	return array(
 				"id" => $this->getObjectTypeName() . $this->getId(),
 				"object_id" => $this->getId(),
@@ -440,13 +437,13 @@ class MailContent extends BaseMailContent {
 				"tags" => $tags,
 				"createdBy" => $this->getAccount()->getOwner()->getDisplayName(),
 				"createdById" => $this->getAccount()->getOwner()->getId(),
-				"dateCreated" => $this->getSentDate()->getTimestamp(),
+				"dateCreated" => $sentTimestamp,
 				"updatedBy" => $this->getAccount()->getOwner()->getDisplayName(),
 				"updatedById" => $this->getAccount()->getOwner()->getId(),
-				"dateUpdated" => $this->getSentDate()->getTimestamp(),
-				"project" => $project,
-				"projectId" => $projectId,
-    			"workspaceColors" => $this->getWorkspaceColorsCSV(),
+				"dateUpdated" => $sentTimestamp,
+				"project" => $this->getWorkspacesNamesCSV(logged_user()->getActiveProjectIdsCSV()),//$project,
+				"projectId" => $this->getWorkspacesIdsCSV(logged_user()->getActiveProjectIdsCSV()),
+    			"workspaceColors" => $this->getWorkspaceColorsCSV(logged_user()->getActiveProjectIdsCSV()),
 				"url" => $this->getObjectUrl(),
 				"manager" => get_class($this->manager()),
     			"deletedById" => $this->getTrashedById(),

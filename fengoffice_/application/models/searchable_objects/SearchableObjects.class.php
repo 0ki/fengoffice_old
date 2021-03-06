@@ -31,51 +31,25 @@
     * @return array
     */
     static function searchPaginated($search_for, $project_csvs, $include_private = false, $items_per_page = 10, $current_page = 1) {
-        if ((defined('LUCENE_SEARCH') && LUCENE_SEARCH)) {
-      		$conditions = SearchableObjects::getLuceneSearchConditions($search_for, $project_csvs, $include_private);
-      		$hits = LuceneDB::findClean($conditions);
-      		$pagination = new DataPagination(count($hits), $items_per_page, $current_page);
-      		$items = SearchableObjects::doLuceneSearch($hits, $pagination->getItemsPerPage(), $pagination->getLimitStart());
-        } else {
-		    $conditions = SearchableObjects::getSearchConditions($search_for, $project_csvs, $include_private);
-		    $tagconditions = SearchableObjects::getTagSearchConditions($search_for, $project_csvs);
-		    $pagination = new DataPagination(SearchableObjects::countUniqueObjects($conditions, $tagconditions), $items_per_page, $current_page);
-		    $items = SearchableObjects::doSearch($conditions, $tagconditions, $pagination->getItemsPerPage(), $pagination->getLimitStart());
-		}
-        return array($items, $pagination);
+        $conditions = SearchableObjects::getSearchConditions($search_for, $project_csvs, $include_private);
+	    $tagconditions = SearchableObjects::getTagSearchConditions($search_for, $project_csvs);
+	    $pagination = new DataPagination(SearchableObjects::countUniqueObjects($conditions, $tagconditions), $items_per_page, $current_page);
+	    $items = SearchableObjects::doSearch($conditions, $tagconditions, $pagination->getItemsPerPage(), $pagination->getLimitStart());
+		 return array($items, $pagination);
     } // searchPaginated
     
     static function searchByType($search_for, $project_csvs, $object_type = '', $include_private = false, $items_per_page = 10, $current_page = 1, $columns_csv = null, $user_id = 0) {
         $remaining = 0;
-    	if ((defined('LUCENE_SEARCH') && LUCENE_SEARCH)) {
-        	throw new Exception("Not implemented");
-      		/*$conditions = SearchableObjects::getLuceneSearchConditions($search_for, $project_csvs, $include_private);
-      		$hits = LuceneDB::findClean($conditions);
-      		$pagination = new DataPagination(count($hits), $items_per_page, $current_page);
-      		$items = SearchableObjects::doLuceneSearch($hits, $pagination->getItemsPerPage(), $pagination->getLimitStart());*/
-        } else {
-        	$safe_search_for = str_replace("'", '"', $search_for);
-		    $conditions = SearchableObjects::getSearchConditions($safe_search_for, $project_csvs, true, $object_type, $columns_csv, $user_id);
-		    $count = SearchableObjects::countUniqueObjects($conditions);
-		    $pagination = new DataPagination($count, $items_per_page, $current_page);
-		    if ($count > 0)
-		    	$items = SearchableObjects::doSearch($conditions, $pagination->getItemsPerPage(), $pagination->getLimitStart());
-		    else
-		    	$items = array();
-		}
+        $safe_search_for = str_replace("'", '"', $search_for);
+	    $conditions = SearchableObjects::getSearchConditions($safe_search_for, $project_csvs, true, $object_type, $columns_csv, $user_id);
+	    $count = SearchableObjects::countUniqueObjects($conditions);
+	    $pagination = new DataPagination($count, $items_per_page, $current_page);
+	    if ($count > 0)
+	    	$items = SearchableObjects::doSearch($conditions, $pagination->getItemsPerPage(), $pagination->getLimitStart());
+	    else
+	    	$items = array();
         return array($items, $pagination);
     } // searchPaginated
-    
-    
-    function getLuceneSearchConditions($search_for, $project_csvs, $include_private = false){
-    	$workspaces = str_replace(',', ' ', $project_csvs);
-    	$wslist = explode(" ", $workspaces);
-    	$wsList2 = array();
-    	foreach ($wslist as $ws)
-    		$wsList2[] = "ws" . $ws;
-    	$workspaces = implode(" ", $wsList2);
-    	return 'workspaces:('. $workspaces . ') AND text:(' . $search_for . ')';
-    }
     
     /**
     * Prepare search conditions string based on input params
@@ -99,14 +73,16 @@
     	else
     		$wsSearch .= " AND (";
     		
-    	if ($object_type=="ProjectMessages" || $object_type == "ProjectFiles")
+    	if ($object_type=="ProjectMessages" || $object_type == "ProjectFiles" || $object_type == "MailContents")
     		$wsSearch .= "`rel_object_id` IN (SELECT `object_id` FROM `".TABLE_PREFIX."workspace_objects` WHERE `object_manager` = '$object_type' && `workspace_id` IN ($project_csvs))";
     	else if ($object_type=="ProjectFileRevisions")
     		$wsSearch .=  "`rel_object_id` IN (SELECT o.id FROM " . TABLE_PREFIX ."project_file_revisions o where o.file_id IN (SELECT p.`object_id` FROM `".TABLE_PREFIX."workspace_objects` p WHERE p.`object_manager` = 'ProjectFiles' && p.`workspace_id` IN ($project_csvs)))";
+    	else if ($object_type=="Contacts")
+    		$wsSearch .=  " (`rel_object_id` IN (SELECT o.contact_id FROM " . TABLE_PREFIX ."project_contacts o where o.`project_id` IN ($project_csvs)) OR (SELECT COUNT(*) from " . TABLE_PREFIX ."project_contacts o where o.`project_id` IN ($project_csvs) AND o.`contact_id` = `rel_object_id`) = 0)";
     	else
     		$wsSearch .=  "`project_id` in ($project_csvs)";
-    		
-    	$wsSearch .= ')';
+    	$wsSearch .=  ')';
+    	
     	
     	//Check for trashed and other permissions
     	$tableName = eval("return $object_type::instance()->getTableName();");
@@ -122,11 +98,11 @@
     			}
     		} else if ($object_type == "ProjectFileRevisions"){
 				$fileTableName = "`" . TABLE_PREFIX . 'project_files`';
-    			$trashed .= " AND `co`.`id` IN ( SELECT `id` FROM $fileTableName `pf` WHERE `pf`.`id` = `co`.`file_id` AND (" . permissions_sql_for_listings(ProjectFiles::instance(), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`pf`') .'))';
+    			$trashed = " and EXISTS(SELECT * FROM $tableName co where `co`.`id` IN ( SELECT `id` FROM $fileTableName `pf` WHERE `pf`.`id` = `co`.`file_id` AND (" . permissions_sql_for_listings(ProjectFiles::instance(), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`pf`') .'))';
     		}
     		$trashed .= ')';
     	}
-    
+    	
     	if($include_private) {
     		return DB::prepareString('MATCH (`content`) AGAINST (\'' . $search_for . '\' IN BOOLEAN MODE)'  . $wsSearch . $trashed . $otSearch . $columnsSearch );
     	} else {
@@ -134,53 +110,15 @@
     	} // if
     } // getSearchConditions
     
-    /* Prepare search conditions string based on input params
+    /** Prepare search conditions string based on input params
     *
     * @param string $search_for Search string
     * @param string $project_csvs Search in this project
     * @return array
-    */
+   	*/
     function getTagSearchConditions($search_for, $project_csvs) {
       return DB::prepareString(" tag = '$search_for' ");
     } // getTagSearchConditions
-    
-    
-    /**
-    * Do the lucene search
-    *
-    * @param string $conditions
-    * @param integer $limit
-    * @param integer $offset
-    * @return array
-    */
-    function doLuceneSearch($hits, $limit = null, $offset = null) {
-      if((integer) $limit > 0) {
-        $offset = (integer) $offset > 0 ? (integer) $offset : 0;
-      } // if
-      
-      $loaded = array();
-      $objects = array();
-      $c = $offset;
-      while($hits[$c] && $c < $offset + $limit){
-      	$hit = $hits[$c];
-        $manager_class = $hit->manager;	
-        $object_id = $hit->objectid;
-        
-        if(!isset($loaded[$manager_class . '-' . $object_id]) || !($loaded[$manager_class . '-' . $object_id])) {
-          if(class_exists($manager_class)) {
-            $object = get_object_by_manager_and_id($object_id, $manager_class);
-            if($object instanceof ProjectDataObject) {
-              $loaded[$manager_class . '-' . $object_id] = true;
-              $objects[] = $object;
-            } // if
-          } // if
-        } // if
-        
-        $c++;
-      }
-      
-      return count($objects) ? $objects : null;
-    } // doSearch
     
     /**
     * Do the search
@@ -280,11 +218,7 @@
     * @return boolean
     */
     static function dropContentByObject(ApplicationDataObject $object) {
-    	if (!(defined('LUCENE_SEARCH') && LUCENE_SEARCH))
-    		return SearchableObjects::delete(array('`rel_object_manager` = ? AND `rel_object_id` = ?', get_class($object->manager()), $object->getObjectId()));
-    	else {
-    		return LuceneDB::DeleteFromIndex($object, false);
-    	}
+    	return SearchableObjects::delete(array('`rel_object_manager` = ? AND `rel_object_id` = ?', get_class($object->manager()), $object->getObjectId()));
     } // dropContentByObject
     
     /**
@@ -294,11 +228,7 @@
     * @return boolean
     */
     static function dropContentByObjectColumn(ApplicationDataObject $object, $column = '') {
-    	if (!(defined('LUCENE_SEARCH') && LUCENE_SEARCH))
-    		return SearchableObjects::delete(array('`rel_object_manager` = ? AND `rel_object_id` = ? AND `column_name` = '. "'". $column . "'" , get_class($object->manager()), $object->getObjectId(), $column));
-    	else {
-    		return LuceneDB::DeleteFromIndex($object, false);
-    	}
+    	return SearchableObjects::delete(array('`rel_object_manager` = ? AND `rel_object_id` = ? AND `column_name` = '. "'". $column . "'" , get_class($object->manager()), $object->getObjectId(), $column));
     } // dropContentByObject
     
     /**
@@ -310,11 +240,7 @@
     static function dropContentByObjectColumns(ApplicationDataObject $object, $columns = array()) {
     	$columns_csv = "'" . implode("','",$columns) . "'";
     	
-    	if (!(defined('LUCENE_SEARCH') && LUCENE_SEARCH))
-    		return SearchableObjects::delete(array('`rel_object_manager` = ? AND `rel_object_id` = ? AND `column_name` in ('. $columns_csv . ')' , get_class($object->manager()), $object->getObjectId()));
-    	else {
-    		return LuceneDB::DeleteFromIndex($object, false);
-    	}
+    	return SearchableObjects::delete(array('`rel_object_manager` = ? AND `rel_object_id` = ? AND `column_name` in ('. $columns_csv . ')' , get_class($object->manager()), $object->getObjectId()));
     } // dropContentByObject
     
   } // SearchableObjects 

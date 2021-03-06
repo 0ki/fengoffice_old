@@ -141,6 +141,18 @@
 	'duration must be at least 15 minutes' => 'Duration must be at least 15 minutes',
   
 	'event dnx' => 'Requested event does not exists',
+	'no subject' => 'No Subject',
+	'success import events' => '{0} events were imported.',
+	'no events to import' => 'There are no events for import',
+	'import events from file' => 'Event import from file',
+	'file should be in icalendar format' => 'File should be in iCalendar format',
+	'export calendar' => 'Calendar export',
+	'range of events' => 'Event range',
+	'from date' => 'From',
+	'to date' => 'To',
+	'success export calendar' => '{0} Events were exported.',
+	'calendar name desc' => 'Name for the calendar to export',
+	'calendar will be exported in icalendar format' => 'Calendar will be exported in iCalendar format.',
   
   ); // array
 ?>

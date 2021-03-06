@@ -97,7 +97,7 @@ abstract class ApplicationDataObject extends DataObject {
 					$searchable_object->setContent($content);
 					$searchable_object->setProjectId(0);
 					$searchable_object->setIsPrivate(false);
-					 
+
 					$searchable_object->save();
 				} // if
 			} // foreach

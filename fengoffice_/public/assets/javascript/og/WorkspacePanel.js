@@ -57,7 +57,6 @@ og.WorkspaceTree = function(config) {
 	if (!config) config = {};
 	var workspaces = config.workspaces;
 	delete config.workspaces;
-
 	Ext.applyIf(config, {
 		ddGroup: 'WorkspaceDD',
 		enableDD: false,
@@ -70,6 +69,7 @@ og.WorkspaceTree = function(config) {
 		lines: false,
 		root: new Ext.tree.TreeNode(lang('workspaces')),
 		collapseFirst: false,
+		selectedWorkspaceId: og.initialWorkspace,
 		tbar: [{
 			xtype: 'textfield',
 			id: 'workspace-filter',
@@ -173,16 +173,18 @@ og.WorkspaceTree = function(config) {
 		this.addEvents({workspaceselect: true});
 	}
 		
+	if (config.selectedWorkspaceId) {
+		this.initialWorkspaceId = config.selectedWorkspaceId;
+	}
 	if (workspaces) {
 		this.addWorkspaces(workspaces);
+		if (config.selectedWorkspaceId) {
+			this.pauseEvents = true;
+			this.select(config.selectedWorkspaceId);
+			this.pauseEvents = false;
+		}
 	} else if (this.autoLoadWorkspaces) {
 		this.loadWorkspaces(null,null,true);
-	}
-		
-	if (config.selectedWorkspaceId){
-		this.pauseEvents = true;
-		this.select(config.selectedWorkspaceId);
-		this.pauseEvents = false;
 	}
 };
 
@@ -259,13 +261,17 @@ Ext.extend(og.WorkspaceTree, Ext.tree.TreePanel, {
 	},
 	
 	insertIntoTree : function(node){
-		var parent = this.getNodeById('ws' + node.ws.parent);
-		if (!parent) parent = this.workspaces;
-		var iter = parent.firstChild;
-		while (iter && iter.ws /* <-not trash*/ && (node.ws.id == iter.ws.id || (node.text.toLowerCase() > iter.text.toLowerCase()))) {
-			iter = iter.nextSibling;
+		if (node.ws.parent == "root") {
+			this.root.insertBefore(node, this.root.firstChild);
+		} else {
+			var parent = this.getNodeById('ws' + node.ws.parent);
+			if (!parent) parent = this.workspaces;
+			var iter = parent.firstChild;
+			while (iter && iter.ws /* <-not trash*/ && (node.ws.id == iter.ws.id || (node.text.toLowerCase() > iter.text.toLowerCase()))) {
+				iter = iter.nextSibling;
+			}
+			parent.insertBefore(node, iter);
 		}
-		parent.insertBefore(node, iter);
 	},
 	
 	addTrash: function(){
@@ -387,6 +393,10 @@ Ext.extend(og.WorkspaceTree, Ext.tree.TreePanel, {
 							this.pauseEvents = false;
 						}
 						this.addTrash();
+						
+						if (isInitial && this.initialWorkspaceId) {
+							this.select(this.initialWorkspaceId);
+						}
 					}
 				},
 				scope: this
@@ -401,7 +411,7 @@ Ext.extend(og.WorkspaceTree, Ext.tree.TreePanel, {
 	},
 	
 	select: function(id) {
-		if (!id && id !== 0) {
+		if (!id) {
 			this.workspaces.ensureVisible();
 			this.workspaces.select();
 		} else {

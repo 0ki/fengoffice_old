@@ -45,7 +45,7 @@ if (isset($event) && $event instanceof ProjectEvent) {
     $subject = clean($event->getSubject());
 	$private = $event->getIsPrivate();
 	$alias = clean($event->getCreatedBy()->getUsername());
-    $desc = clean($event->getDescription());
+    $desc = convert_to_links(clean($event->getDescription()));
     $start_time = $event->getStart();
 	$mod_username = clean($event->getUpdatedBy()->getUsername());
 	$mod_stamp = $event->getUpdatedOn();
@@ -63,7 +63,7 @@ if (isset($event) && $event instanceof ProjectEvent) {
     $durhr  = ($durtime / 3600) % 24;   //seconds per hour
     $durday = floor($durtime / 86400);  //seconds per day
 
-	if(config_option('time_format_use_24')) $timeformat = 'G:i';
+	if(user_config_option('time_format_use_24')) $timeformat = 'G:i';
 	else $timeformat = 'g:i A';
 	$time = date($timeformat, $start_time->getTimestamp());
 	
@@ -98,7 +98,7 @@ if (isset($event) && $event instanceof ProjectEvent) {
 
 	$att_form = '';
   	if (!$event->isNew() && !$event->isTrashed()) {
-		$event_inv = EventInvitations::findById(array('event_id' => $event->getId(), 'user_id' => $user_id));
+		$event_inv = EventInvitations::findById(array('event_id' => $event->getId(), 'user_id' => logged_user()->getId()));
 		if ($event_inv != null) {
 			$event->addInvitation($event_inv);
 			$event_inv_state = $event_inv->getInvitationState();
@@ -115,14 +115,14 @@ if (isset($event) && $event instanceof ProjectEvent) {
 			$att_form .= '<table><tr><td style="padding-right:6px;"><b>' . lang('attendance') . '<b></td><td>';
 			$att_form .= select_box('event_attendance', $options, array('id' => 'viewEventFormComboAttendance')) . '</td><td>';
 			$att_form .= input_field('event_id', $event->getId(), array('type' => 'hidden'));
-			$att_form .= input_field('user_id', $user_id, array('type' => 'hidden'));
+			$att_form .= input_field('user_id', logged_user()->getId(), array('type' => 'hidden'));
 			$att_form .= submit_button(lang('Save'), null, array('style'=>'margin-top:0px;margin-left:10px')) . '</td></tr></table></form>';
 		} //if
 	} // if
 
 	$otherInvitationsTable = '';
 	if (!$event->isNew()) {
-		$otherInvitations = EventInvitations::findAll(array ('conditions' => 'event_id = ' . $event->getId() . ' AND user_id <> ' . $user_id));
+		$otherInvitations = EventInvitations::findAll(array ('conditions' => 'event_id = ' . $event->getId() . ' AND user_id <> ' . logged_user()->getId()));
 		if (isset($otherInvitations) && is_array($otherInvitations)) {
 			$otherInvitationsTable .= '<div class="coInputMainBlock adminMainBlock" style="width:70%;">';
 			$otherInvitationsTable .= '<table style="width:100%;"><col width="50%" /><col width="50%" />';

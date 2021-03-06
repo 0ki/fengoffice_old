@@ -7,13 +7,19 @@
  */
 class ApplicationLogs extends BaseApplicationLogs {
 
-	const ACTION_ADD    = 'add';
-	const ACTION_EDIT   = 'edit';
-	const ACTION_DELETE = 'delete';
-	const ACTION_TRASH  = 'trash';
-	const ACTION_UNTRASH = 'untrash';
-	const ACTION_CLOSE  = 'close';
-	const ACTION_OPEN   = 'open';
+	const ACTION_ADD         = 'add';
+	const ACTION_EDIT        = 'edit';
+	const ACTION_DELETE      = 'delete';
+	const ACTION_TRASH       = 'trash';
+	const ACTION_UNTRASH     = 'untrash';
+	const ACTION_CLOSE       = 'close';
+	const ACTION_OPEN        = 'open';
+	const ACTION_SUBSCRIBE   = 'subscribe';
+	const ACTION_UNSUBSCRIBE = 'unsubscribe';
+	const ACTION_TAG         = 'tag';
+	const ACTION_COMMENT     = 'comment';
+	const ACTION_LINK     	 = 'link';
+	const ACTION_UNLINK      = 'unlink';
 
 	private static function getWorkspaceString(){
 		return '`id` IN (SELECT `object_id` FROM `'.TABLE_PREFIX.'workspace_objects` WHERE `object_manager` = \'ApplicationLogs\' AND `workspace_id` IN (?))';
@@ -30,7 +36,7 @@ class ApplicationLogs extends BaseApplicationLogs {
 	 * @param boolean $save Save log object before you save it
 	 * @return ApplicationLog
 	 */
-	static function createLog(ApplicationDataObject $object, $workspaces, $action = null, $is_private = false, $is_silent = null, $save = true) {
+	static function createLog(ApplicationDataObject $object, $workspaces, $action = null, $is_private = false, $is_silent = null, $save = true, $log_data = '') {
 		if(is_null($action)) {
 			$action = self::ACTION_ADD;
 		} // if
@@ -44,6 +50,12 @@ class ApplicationLogs extends BaseApplicationLogs {
 			$is_silent = (boolean) $is_silent;
 		} // if
 
+		try {
+			Notifier::notifyAction($object, $action, $log_data);
+		} catch (Exception $ex) {
+			
+		}
+		
 		$manager = $object->manager();
 		if(!($manager instanceof DataManager)) {
 			throw new Error('Invalid object manager');
@@ -51,13 +63,18 @@ class ApplicationLogs extends BaseApplicationLogs {
 
 		$log = new ApplicationLog();
 
-		$log->setTakenById(logged_user()->getId());
+		if (logged_user() instanceof User) {
+			$log->setTakenById(logged_user()->getId());
+		} else {
+			$log->setTakenById(0);
+		}
 		$log->setRelObjectId($object->getObjectId());
 		$log->setObjectName($object->getObjectName());
 		$log->setRelObjectManager(get_class($manager));
 		$log->setAction($action);
 		$log->setIsPrivate($is_private);
 		$log->setIsSilent($is_silent);
+		$log->setLogData($log_data);
 		
 		if($save) {
 			$log->save();
@@ -222,7 +239,13 @@ class ApplicationLogs extends BaseApplicationLogs {
 			self::ACTION_CLOSE,
 			self::ACTION_OPEN,
 			self::ACTION_TRASH,
-			self::ACTION_UNTRASH
+			self::ACTION_UNTRASH,
+			self::ACTION_SUBSCRIBE,
+			self::ACTION_UNSUBSCRIBE,
+			self::ACTION_TAG,
+			self::ACTION_COMMENT,
+			self::ACTION_LINK,
+			self::ACTION_UNLINK
 			); // array
 		} // if
 

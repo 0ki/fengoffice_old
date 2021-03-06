@@ -20,7 +20,9 @@
       ProjectWebpages::findAll(array('conditions' => '`project_id` = ' . $project->getId()));
     }
     
-    function getWebpages($project_ids, $tag = '', $page = 1, $webpages_per_page = 10){
+    function getWebpages($project_ids, $tag = '', $page = 1, $webpages_per_page = 10, $orderBy = 'title', $orderDir = 'ASC') {
+    	$orderDir = strtoupper($orderDir);
+    	if ($orderDir != "ASC" && $orderDir != "DESC") $orderDir = "ASC";
 		if($page < 0) $page = 1;
 
 		//$conditions = logged_user()->isMemberOfOwnerCompany() ? '' : ' `is_private` = 0';
@@ -41,7 +43,7 @@
 		
 		return ProjectWebpages::paginate(
 			array("conditions" => $tagstr . $permission_str . $project_str ,
-	        		'order' => '`title` ASC'),
+	        		'order' => DB::escapeField($orderBy)." $orderDir"),
 			config_option('files_per_page', 10),
 			$page
 		); // paginate

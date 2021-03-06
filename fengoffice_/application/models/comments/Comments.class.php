@@ -54,47 +54,41 @@
       return Comments::delete(array('`rel_object_manager` = ? AND `rel_object_id` = ?', get_class($object->manager()), $object->getObjectId()));
     } // dropCommentsByObject
     
-    static function getSubscriberComments(Project $workspace = null, $orderBy = '`created_on` DESC', $start = 0, $limit = 20) {
-    	$tp = TABLE_PREFIX;
-    	$user = logged_user();
-    	$id = $user->getId();
-    	$sql = "
-    		SELECT `a`.`id` FROM `".$tp."comments` `a`, `".$tp."object_subscriptions` `b`
-    		WHERE `object_id` = `rel_object_id` AND `object_manager` = `rel_object_manager`
-    			AND `user_id` = $id
-			ORDER BY $orderBy
-		";
-		$rows = DB::executeAll($sql);
-		$comments = array();
-		$s = 0; $count = 0;
-		if (!is_array($rows)) return $comments;
-		foreach ($rows as $row) {
-			$comment = Comments::findById($row['id']);
-			$add = false;
-			$object = $comment->getObject();
-			if ($object instanceof ApplicationDataObject && $object->canView($user)) {
-				if ($workspace instanceof Project) {
-					$workspaces = $comment->getWorkspaces();
-					foreach ($workspaces as $w) {
-						if ($w->getId() == $workspace->getId() || $workspace->isParentOf($w)) {
-							$add = true;
-							break;
-						}
-					}
-				} else {
-					$add = true;
-				}
-			}
-			if ($add) {
-				$s++;
-				if ($s >= $start) {
-					$comments[] = $comment;
-					$count++;
-					if ($count >= $limit - $start) break;
+    static function getSubscriberComments(Project $workspace = null, $tag = null, $orderBy = 'created_on', $orderDir = "DESC", $start = 0, $limit = 20) {    	
+    	$oc = new ObjectController();
+    	$queries = $oc->getDashboardObjectQueries($workspace, $tag, false, false, $orderBy);
+		$query = '';
+		foreach ($queries as $name => $q){
+			if (str_ends_with($name, "Comments")) {
+				if($query == '') {
+					$query = $q;
+				} else { 
+					$query .= " \n UNION \n" . $q;
 				}
 			}
 		}
-    	return $comments;
+		$query .= " ORDER BY `order_value` ";
+		if ($orderDir != "ASC" && $orderDir != "DESC") $orderDir = "DESC";
+		$query .= " " . $orderDir . " ";
+
+		$query .=  " LIMIT " . $start . "," . $limit . " ";
+    	$res = DB::execute($query);
+
+    	$objects = array();
+    	if (!$res) return $objects;
+    	$rows = $res->fetchAll();
+    	if (!$rows) return $objects;
+    	foreach ($rows as $row){
+    		$manager = $row['object_manager_value'];
+    		$id = $row['oid'];
+    		if ($id && $manager) {
+    			$obj = get_object_by_manager_and_id($id, $manager);    			
+    			if ($obj->canView(logged_user())) {
+    				$objects[] = $obj;
+    			}
+    		}
+    	}
+    	return $objects;
     }
   } // Comments 
 

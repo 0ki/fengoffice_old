@@ -50,7 +50,7 @@
     */
     static function getOptionValue($name, $user_id, $default = null) {      
       $option = self::getByName($name);
-      return $option instanceof UserWsConfigOption ? $option->getUserValue($user_id,0,$default) : $default;
+      return $option instanceof UserWsConfigOption ? $option->getUserValue($user_id, 0, $default) : $default;
     } // getOptionValue
   
     /**

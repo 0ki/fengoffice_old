@@ -24,13 +24,14 @@ class MessageController extends ApplicationController {
 	//  Index
 	// ---------------------------------------------------
 	
-	function list_all()
-	{
+	function list_all() {
 		ajx_current("empty");
 		
 		// Get all variables from request
 		$start = array_var($_GET,'start');
 		$limit = config_option('files_per_page');
+		$order = array_var($_GET,'sort');
+		$order_dir = array_var($_GET,'dir');
 		if (! $start) {
 			$start = 0;
 		}
@@ -61,7 +62,7 @@ class MessageController extends ApplicationController {
 		$pid = array_var($_GET, 'active_project', 0);
 		$project = Projects::findById($pid);
 //		$emails = $this->getEmails($action, $tag, $attributes, $project);
-		$messages = $this->getMessages($action, $tag, $attributes, $project);
+		$messages = $this->getMessages($action, $tag, $attributes, $project, $order, $order_dir);
 //		$totMsg = $this->addMessagesAndEmails($messages, $emails);
 		
 		// Prepare response object
@@ -82,6 +83,7 @@ class MessageController extends ApplicationController {
 		$resultCode = 0;
 		switch ($action){
 			case "delete":
+				$succ = 0; $err = 0;
 				for($i = 0; $i < count($attributes["ids"]); $i++){
 					$id = $attributes["ids"][$i];
 					$type = $attributes["types"][$i];
@@ -95,21 +97,27 @@ class MessageController extends ApplicationController {
 									$message->trash();
 									ApplicationLogs::createLog($message, $ws, ApplicationLogs::ACTION_TRASH);
 									DB::commit();
-									$resultMessage = lang("success delete objects", '');
+									$succ++;
 								} catch(Exception $e){
 									DB::rollback();
-									$resultMessage .= $e->getMessage();
-									$resultCode = $e->getCode();
+									$err++;
 								}
-							};
+							} else {
+								$err++;
+							}
 							break;
 							
-						default:
-							$resultMessage = lang("Unimplemented type: '" . $type . "'");// if 
-							$resultCode = 2;
+						default: 
+							$err++;
 							break;
 					}; // switch
 				}; // for
+				if ($err > 0) {
+					$resultCode = 2;
+					$resultMessage = lang("error delete objects", $err) . "<br />" . ($succ > 0 ? lang("success delete objects", $succ) : "");
+				} else {
+					$resultMessage = lang("success delete objects", $succ);
+				}
 				break;
 						
 			case "tag":
@@ -122,6 +130,7 @@ class MessageController extends ApplicationController {
 							$message = ProjectMessages::findById($id);
 							if (isset($message) && $message->canEdit(logged_user())){
 								Tags::addObjectTag($tag, $message);
+								ApplicationLogs::createLog($message, $message->getWorkspaces(), ApplicationLogs::ACTION_TAG,false,null,true,$tag);
 								$resultMessage = lang("success tag objects", '');
 							};
 							break;
@@ -194,7 +203,27 @@ class MessageController extends ApplicationController {
 	 * @param Project $project
 	 * @return array
 	 */
-	private function getMessages($action, $tag, $attributes, $project = null) {
+	private function getMessages($action, $tag, $attributes, $project = null, $order = null, $order_dir = null) {
+		switch ($order){
+			case 'updatedOn':
+				$order_crit = 'updated_on';
+				break;
+			case 'createdOn':
+				$order_crit = 'created_on';
+				break;
+			case 'title':
+				$order_crit = 'title';
+				break;
+			default:
+				$order_crit = 'updated_on';
+				break;
+		}
+		if (!$order_dir){
+			switch ($order){
+				case 'name': $order_dir = 'ASC'; break;
+				default: $order_dir = 'DESC';
+			}
+		}
 		if (isset($attributes["viewType"]) && 
 			($attributes["viewType"] != "all" && $attributes["viewType"] != "messages"))
 			return null;
@@ -216,9 +245,9 @@ class MessageController extends ApplicationController {
 		
 		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectMessages::instance(),ACCESS_LEVEL_READ, logged_user(), 'project_id') .')';
 
-		$res = DB::execute("SELECT id, 'ProjectMessages' as manager, `updated_on` as comp_date from " . TABLE_PREFIX. "project_messages where " . 
+		$res = DB::execute("SELECT id, 'ProjectMessages' as manager, $order_crit from " . TABLE_PREFIX. "project_messages where " . 
 			"`trashed_by_id` = 0 AND ".$messageConditions . " AND " . $tagstr . $permissions 
-			. " ORDER BY updated_on DESC");
+			. " ORDER BY $order_crit $order_dir");
 			
 		if(!$res) return null;
 		return $res->fetchAll();
@@ -232,8 +261,7 @@ class MessageController extends ApplicationController {
 	 * @param integer $limit
 	 * @return array
 	 */
-	private function prepareObject($totMsg, $start, $limit, $attributes = null)
-	{
+	private function prepareObject($totMsg, $start, $limit, $attributes = null) {
 		$object = array(
 			"totalCount" => count($totMsg),
 			"start" => (integer)min(array(count($totMsg) - (count($totMsg) % $limit),$start)),
@@ -249,7 +277,7 @@ class MessageController extends ApplicationController {
 					if ($msg instanceof ProjectMessage){
 						$text = $msg->getText();
 						if (strlen($text) > 300)
-							$text = substr($text,0,300) . "...";
+							$text = substr_utf($text,0,300) . "...";
 						$object["messages"][] = array(
 						    "id" => $i,
 							"object_id" => $msg->getId(),
@@ -386,46 +414,15 @@ class MessageController extends ApplicationController {
 				foreach ($validWS as $w) {
 					$message->addToWorkspace($w);
 				}
-
-				$message->save_properties($message_data);
-				ApplicationLogs::createLog($message, $validWS, ApplicationLogs::ACTION_ADD);
-			    
+				
 				$object_controller = new ObjectController();
 			    $object_controller->link_to_new_object($message);
-
+				$object_controller->add_subscribers($message);
+				$object_controller->add_custom_properties($message);
+				
+				ApplicationLogs::createLog($message, $validWS, ApplicationLogs::ACTION_ADD);
+			    
 				DB::commit();
-
-				// Try to send notifications but don't break submission in case of an error
-				try {
-					$notify_people = array();
-					$project_companies = array();
-					$processedCompanies = array();
-					$processedUsers = array();
-					foreach ($validWS as $w) {
-						$workspace_companies = $w->getCompanies();
-						foreach ($workspace_companies as $c) {
-							if (!isset($processedCompanies[$c->getId()])) {
-								$processedCompanies[$c->getId()] = true;
-								$company_users = $c->getUsersOnProject($w);
-								if (is_array($company_users)) {
-									foreach ($company_users as $company_user) {
-										if (!isset($processedUsers[$company_user->getId()])) {
-											$processedUsers[$company_user->getId()] = true;
-											if ((array_var($message_data, 'notify_company_' . $w->getId()) == 'checked') || (array_var($message_data, 'notify_user_' . $company_user->getId()))) {
-												$message->subscribeUser($company_user);
-												$notify_people[] = $company_user;
-											} // if
-										}
-									} // if
-								}
-							}
-						}
-					}
-
-					Notifier::newMessage($message, $notify_people); // send notification email...
-				} catch(Exception $e) {
-					flash_error($e->getMessage());
-				} // try
 
 				flash_success(lang('success add message', $message->getTitle()));
 				if (array_var($_POST, 'popup', false)) {
@@ -528,12 +525,16 @@ class MessageController extends ApplicationController {
 					$message->addToWorkspace($w);
 				}
 				/* </multiples workspaces> */
-
-				$message->save_properties($message_data);
-				ApplicationLogs::createLog($message, $validWS, ApplicationLogs::ACTION_EDIT);
 				
+				$object_controller = new ObjectController();
+			    $object_controller->link_to_new_object($message);
+				$object_controller->add_subscribers($message);
+				$object_controller->add_custom_properties($message);
+				
+				ApplicationLogs::createLog($message, $validWS, ApplicationLogs::ACTION_EDIT);
+			    
 				DB::commit();
-
+				
 				flash_success(lang('success edit message', $message->getTitle()));
 				if (array_var($_POST, 'popup', false)) {
 					ajx_current("reload");

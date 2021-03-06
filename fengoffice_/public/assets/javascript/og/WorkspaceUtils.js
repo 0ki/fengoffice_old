@@ -68,7 +68,7 @@ og.renderWsPath = function(id,showPath, showCurrent){
 					break;
 				node = node.parentNode;
 			}
-			html = '<span class="og-wscont og-wsname"><span style="padding-left:1px;padding-right:1px" class="og-wsname-color-' + originalNode.ws.color + '" onmouseover="og.wsPathMouseBehavior(this,true)" onmouseout="og.wsPathMouseBehavior(this,false)">'+ html + '<a href="#" onclick="Ext.getCmp(\'workspace-panel\').select(' + originalNode.ws.id + ')" name="' + og.clean(og.clean(originalNode.ws.name)).replace('"', '\\"') + '" class="og-wsname-color-' + originalNode.ws.color + '">' + og.trimMax(originalNode.ws.name, 12) + "</a></span></span>";
+			html = '<span class="og-wscont og-wsname"><span style="padding-left:1px;padding-right:1px" class="og-wsname-color-' + originalNode.ws.color + '" onmouseover="og.triggerFPT(this)" onmouseout="og.clearTriggerFPT()">'+ html + '<a href="#" onclick="Ext.getCmp(\'workspace-panel\').select(' + originalNode.ws.id + ')" name="' + og.clean(og.clean(originalNode.ws.name)).replace('"', '\\"') + '" class="og-wsname-color-' + originalNode.ws.color + '">' + og.trimMax(originalNode.ws.name, 12) + "</a></span></span>";
 		}
 	}
 	return html;
@@ -80,33 +80,40 @@ og.swapNames = function(object){
 	object.name = s;
 };
 
-og.wsPathMouseBehavior = function(object, isMouseOver){
-	if (isMouseOver) {
-		object.style.fontSize = "120%";
-		object.style.padding = "4px";
-		var cn = object.childNodes;
-		for (var i = 0; i < cn.length; i++) {
-			if (cn[i].name != null && cn[i].name != ''){
-				var aux = cn[i].innerHTML;
-				cn[i].innerHTML = cn[i].name;
-				cn[i].name = aux;
-			}
-		}
-	} else {
-		object.style.fontSize = "100%";
-		object.style.padding = "0px";
-		object.style.paddingLeft = '1px';
-		object.style.paddingRight = '1px';
-		
-		var cn = object.childNodes;
-		for (var i = 0; i < cn.length; i++) {
-			if (cn[i].name != null && cn[i].name != ''){
-				var aux = cn[i].innerHTML;
-				cn[i].innerHTML = cn[i].name;
-				cn[i].name = aux;
-			}
+og.showFullPathTooltip = function(object, isMouseOver){
+	var object = og.triggerFPTObject;
+	if (object.currentStyle)
+		var bgColor = object.currentStyle['background-color'];
+	else if (window.getComputedStyle)
+		var bgColor = document.defaultView.getComputedStyle(object,null).getPropertyValue('background-color');
+	var cn = object.childNodes;
+	for (var i = 0; i < cn.length; i++) {
+		if (cn[i].name != null && cn[i].name != ''){
+			var aux = cn[i].innerHTML;
+			cn[i].innerHTML = cn[i].name;
+			cn[i].name = aux;
 		}
 	}
+		
+	Tip(object.innerHTML,FOLLOWMOUSE,false,FADEIN,300,STICKY,1,CLICKCLOSE,true,BGCOLOR,bgColor,BORDERCOLOR,bgColor);
+	for (var i = 0; i < cn.length; i++) {
+		if (cn[i].name != null && cn[i].name != ''){
+			var aux = cn[i].innerHTML;
+			cn[i].innerHTML = cn[i].name;
+			cn[i].name = aux;
+		}
+	}
+};
+
+og.triggerFPT = function(object){
+	UnTip();
+	og.triggerFPTObject = object;
+	og.triggerFPTTO = setTimeout(og.showFullPathTooltip,400);
+};
+
+
+og.clearTriggerFPT = function(){
+	clearTimeout(og.triggerFPTTO);
 };
 
 og.trimMax = function(str, size, append){
@@ -128,9 +135,9 @@ og.trimMax = function(str, size, append){
 		
 		
 
-og.expandSubWsCrumbs = function(wsid){
+og.expandSubWsCrumbs = function(){
 	var tree = Ext.getCmp('workspaces-tree');
-	var node = tree.tree.getNode(wsid);
+	var node = tree.tree.getNode(og.triggerSubWsCrumbsID);
 	
 	if (node && node.childNodes.length > 0){
 		og.showSubWsMenu(node);
@@ -154,7 +161,7 @@ og.showSubWsMenu = function(node){
 	clearTimeout(og.eventTimeouts['swst']);
 	expander = Ext.get('subWsExpander');
 	expander.slideIn("l", {duration: 0.5, useDisplay: true});
-	og.eventTimeouts['swst'] = setTimeout("og.HideSubWsTooltip()", 3000);
+	og.eventTimeouts['swst'] = setTimeout("og.HideSubWsTooltip()", 5000);
 };
 
 og.setSubWsTooltipTimeout = function(value){
@@ -213,6 +220,12 @@ og.updateWsCrumbsTag = function(newTag) {
 };
 
 
+if(document.addEventListener)
+	document.addEventListener("mouseup", og.HideSubWsTooltip, false);
+else
+	document.attachEvent("onmouseup", og.HideSubWsTooltip);
+
+
 
 
 
@@ -221,29 +234,46 @@ og.updateWsCrumbsTag = function(newTag) {
 //----------------------------------------
 
 
-og.drawWorkspaceSelector = function(renderTo, workspaceId, name, allowNone){
+og.drawWorkspaceSelector = function(renderTo, workspaceId, name, allowNone, extraWS){
 	var container = document.getElementById(renderTo);
 	if (container){
 		var tree = Ext.getCmp('workspaces-tree');
 		var ws;
-		if (workspaceId || workspaceId == 0)
-			ws = tree.tree.getNodeById('ws' + workspaceId).ws;
-		else
-			ws = tree.tree.getActiveOrPersonalWorkspace();
+		var node = tree.tree.getNodeById('ws' + workspaceId);
+		if (node) {
+			ws = node.ws;
+		} else {
+			// look in the extra workspaces
+			for (var i=0; i < extraWS.length; i++) {
+				if (extraWS[i].id == workspaceId) {
+					ws = extraWS[i];
+					break;
+				}
+			}
+		}
+		if (!ws) ws = tree.tree.getActiveOrPersonalWorkspace();
 	
+		var extra = "";
+		if (extraWS) {
+			for (var i=0; i < extraWS.length; i++) {
+				if (extra != "") extra += ",";
+				extra += Ext.util.JSON.encode(extraWS[i]);
+			}
+		}
+		extra = "[" + extra + "]";
 		var html = "<input type='hidden' id='" + renderTo + "Value' name='" + name + "' value='" + ws.id + "'/>";
 		html +="<div class='x-form-field-wrap'><table><tr><td><div id='" + renderTo + "Header' class='og-ws-selector-header'>";
 		var path = og.getFullWorkspacePath(ws.id,true);
 		if (path == '')
-			path = lang('none');
-		html += "<div class='coViewAction ico-color" + ws.color + " og-ws-selector-input' onclick='og.ShowWorkspaceSelector(\"" + renderTo + "\"," + ws.id + ", " + (allowNone? 'true':'false') + ")' title='" + path + "'>" + path + "</div>";
-		html +="</div></td><td><img class='x-form-trigger x-form-arrow-trigger og-ws-selector-arrow' onclick='og.ShowWorkspaceSelector(\"" + renderTo + "\"," + ws.id + ", " + (allowNone? 'true':'false') + ")' src='s.gif'/></td></tr></table><div id='" + renderTo + "Panel'></div></div>";
+			path = ws.id == 0 && allowNone || !ws.name ? lang('none') : ws.name;
+		html += "<div class='coViewAction ico-color" + ws.color + " og-ws-selector-input' onclick='og.ShowWorkspaceSelector(\"" + renderTo + "\",\"" + ws.id + "\", " + (allowNone? 'true':'false') + ", " + extra + ")' title='" + path + "'>" + path + "</div>";
+		html +="</div></td><td><img class='x-form-trigger x-form-arrow-trigger og-ws-selector-arrow' onclick='og.ShowWorkspaceSelector(\"" + renderTo + "\",\"" + ws.id + "\", " + (allowNone? 'true':'false') + ", " + extra + ")' src='s.gif'/></td></tr></table><div id='" + renderTo + "Panel'></div></div>";
 		
 		container.innerHTML = html;
 	}
 }
 
-og.ShowWorkspaceSelector = function(controlName, workspaceId, allowNone){
+og.ShowWorkspaceSelector = function(controlName, workspaceId, allowNone, extra){
 	if (document.getElementById(controlName + 'Panel').style.display == 'block')
 		document.getElementById(controlName + 'Panel').style.display = 'none';
 	else {
@@ -263,6 +293,11 @@ og.ShowWorkspaceSelector = function(controlName, workspaceId, allowNone){
 				allowNone: allowNone,
 				style: 'border:1px solid #99BBE8'
 			});
+			if (extra) {
+				for (var i=0; i < extra.length; i++) {
+					newTree.addWS(extra[i]);
+				}
+			}
 		}
 		document.getElementById(controlName + 'Panel').style.display = 'block';
 	}
@@ -272,7 +307,7 @@ og.ShowWorkspaceSelector = function(controlName, workspaceId, allowNone){
 og.WorkspaceSelected = function(controlName, workspace){
 	var path =og.getFullWorkspacePath(workspace.id,true);
 	if (path == '')
-		path = lang('none');
+		path = workspace.name || lang('none');
 	document.getElementById(controlName + 'Header').innerHTML = "<div class='coViewAction ico-color" + workspace.color + " og-ws-selector-input' onclick='og.ShowWorkspaceSelector(\"" + controlName + "\"," + workspace.id + ")'>" + og.clean(path) + "</div>";
 	document.getElementById(controlName + 'Panel').style.display = 'none';
 	document.getElementById(controlName + 'Header').style.display = 'block';

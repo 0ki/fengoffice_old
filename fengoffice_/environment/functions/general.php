@@ -84,6 +84,7 @@ function clean($str) {
  * @return DateTimeValue
  */
 function getDateValue($value = '', $default = EMPTY_DATETIME){
+	if ($value instanceof DateTimeValue) return $value;
 	if ($value != '') {
 		$date = explode('/', $value);
 		if (lang('date format') == 'm/d/Y')

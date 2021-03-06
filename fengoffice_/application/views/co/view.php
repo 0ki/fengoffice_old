@@ -147,7 +147,7 @@
 	<?php if($object->isLinkableObject() && !$object->isTrashed()) { ?>
 		<div class="prop-col-div" style="width:200;"><?php echo render_object_links($object, $object->canEdit(logged_user()))?></div>
 	<?php } ?>
-	<?php if ($object instanceof ProjectDataObject && $object->isCommentable()) { ?>
+	<?php if ($object instanceof ProjectDataObject) { ?>
 		<div class="prop-col-div" style="width:200;"><?php echo render_object_subscribers($object)?></div>
 	<?php } ?>
 
@@ -220,6 +220,13 @@
 			 ?></div>
 		<?php } // if ?>
 	</div>
+	
+	<?php if ($object instanceof ProjectDataObject) { ?>
+	<div class="prop-col-div" style="width:200;">
+		<?php echo render_custom_properties($object) ?>
+	</div>
+	<?php } ?>
+	
 	</td></tr>
 	
 	<tr><td class="coViewBottomLeft"></td>

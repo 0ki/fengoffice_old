@@ -71,6 +71,10 @@
       
     } // connect
     
+    static function close() {
+    	self::connection()->close();
+    }
+    
     /**
     * This function will include adapter and try to connect. In case of error DBConnectError will be thrown
     *
@@ -136,12 +140,12 @@
       array_shift($arguments);
       $arguments = count($arguments) ? array_flat($arguments) : null;
       
-      if (defined('DEBUG') && DEBUG && defined('DEBUG_DB') && DEBUG_DB)
+      if (Env::isDebugging() && defined('DEBUG_DB') && DEBUG_DB)
       	$start = microtime(true);
       
       $result = self::connection()->execute($sql, $arguments);
       
-      if (defined('DEBUG') && DEBUG && defined('DEBUG_DB') && DEBUG_DB){
+      if (Env::isDebugging() && defined('DEBUG_DB') && DEBUG_DB){
       	$end = microtime(true);
       	Logger::log(number_format(($end - $start),4) . " - " .  DB::prepareString($sql, $arguments));
       }
@@ -162,12 +166,12 @@
       array_shift($arguments);
       $arguments = count($arguments) ? array_flat($arguments) : null;
       
-      if (defined('DEBUG_DB') && DEBUG_DB)
+      if (Env::isDebugging() && defined('DEBUG_DB') && DEBUG_DB)
       	$start = microtime(true);
       
       $result = self::connection()->executeOne($sql, $arguments);
       
-      if (defined('DEBUG_DB') && DEBUG_DB){
+      if (Env::isDebugging() && defined('DEBUG_DB') && DEBUG_DB){
       	$end = microtime(true);
       	Logger::log(number_format(($end - $start),4) . " - " .  DB::prepareString($sql, $arguments));
       }
@@ -188,12 +192,12 @@
       array_shift($arguments);
       $arguments = count($arguments) ? array_flat($arguments) : null;
       
-      if (defined('DEBUG_DB') && DEBUG_DB)
+      if (Env::isDebugging() && defined('DEBUG_DB') && DEBUG_DB)
       	$start = microtime(true);
       
       $result = self::connection()->executeAll($sql, $arguments);
     
-      if (defined('DEBUG_DB') && DEBUG_DB){
+      if (Env::isDebugging()&& defined('DEBUG_DB') && DEBUG_DB){
       	$end = microtime(true);
       	Logger::log(number_format(($end - $start),4) . " - " .  DB::prepareString($sql, $arguments));
       }

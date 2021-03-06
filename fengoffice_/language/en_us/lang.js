@@ -55,7 +55,7 @@ addLangs({
 	'confirm delete event': 'Are you sure you want to permanenetly delete this event? \nInvitations to this event will also be deleted. \nAfter deleting an event other users won\'t be able to see it in their calendars'   ,
 	'confirm delete file': 'Are you sure you want to delete this file?',
 	'confirm delete mail content': 'Are you sure you want to delete this email?',
-	'confirm delete mail account': 'Warning: All emails belonging to this account will be deleted as well, are you sure that you want to delete this mail account?',
+	'confirm delete mail account': 'Are you sure that you want to delete this mail account?',
     'confirm delete milestone': 'Are you sure you want to delete this milestone?',
 	'confirm delete chart': 'Are you sure you want to delete this chart?',
 	'confirm delete message': 'Are you sure you want to delete this note?',
@@ -81,6 +81,12 @@ addLangs({
 	'checkout': 'Check out',
 	'checked out by': 'Checked out by {0}',
 	'add file checked out by': '{0} was checked out by {1}',
+	'extract': 'Extract',
+	'extract files': 'Extract files',
+	'compress': 'Compress',
+	'compress selected files': 'Compress selected files',
+	'add files to zip': 'Add files to zip',
+	'new compressed file': 'New compressed file',
 
 	'song': 'Song',
 	'artist': 'Artist',
@@ -184,6 +190,10 @@ addLangs({
 	'assign to project': 'Assign to workspace',
 	'assign contact to project': 'Edit contact assignnments',
 	'import': 'Import',
+	'export': 'Export',
+	'import/export': 'Import / Export',
+	'import - export': 'Contacts import and export',
+	'not csv file continue': 'Selected file is not a csv file.\nAre you sure you want to continue?',
 	
 	/* webpage manager*/
 	'description': 'Description',
@@ -223,7 +233,12 @@ addLangs({
 	'check mails' : 'Check mail accounts',
 	'emails' : 'Emails',
 	'create an email' : 'Create an Email',
-
+	'checking email accounts' : 'Checking email accounts...',
+	'folder' : 'Folder',
+	'yes' : 'Yes',
+	'no' : 'No',
+	'delete account emails': 'Also delete e-mails',
+	
 	'filter workspaces': 'Filter workspaces...',
 	'filter tags': 'Filter tags...',
 	'alphabetical': 'Alphabetical',
@@ -333,6 +348,7 @@ addLangs({
 	'task expand tip': 'Show/hide this task\'s subtasks',
 	'task view tip': 'Task: {0} (Click to view more)',
 	'task move down tip': 'Move task down one place',
+	'dont assign': 'Don\'t assign',
 	
 	'new milestone': 'New milestone',
 	'new task': 'New task',
@@ -506,7 +522,7 @@ addLangs({
 	'n/a': '<acronym title="Not Available">n/a</acronym>',
 	'move to trash': 'Move to trash',
     'move selected objects to trash': 'Move selected objects to trash',
-    'confirm move to trash': 'Are you sure you want to move the selected objects to the trash can?',
+    'confirm move to trash': 'Are \'\'you sure you want to move the selected objects to the trash can?',
     'confirm restore objects': 'Are you sure you want to restore the selected objects?',
     
     'file_revision': 'File revision',
@@ -523,5 +539,9 @@ addLangs({
     'untagged': 'Untagged',
     'download selected file': 'Download selected file',
     'edit selected file properties': 'Edit selected file\' properties',
-    'you must enter a name': 'You must enter a name'
+    'you must enter a name': 'You must enter a name',
+    'sort tags': 'Sort tags',
+    'sort tags alphabetically': 'Alphabetically',
+    'sort tags by count': 'By Count',
+    'confirm template with no objects': 'Are you sure you want to create a template with no objects in it? (You can add objects to it later)'
 });

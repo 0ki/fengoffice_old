@@ -42,7 +42,7 @@ class Comment extends BaseComment {
 		if ($len <= 3) return "...";
 		$text = $this->getText();
 		if (strlen_utf($text) > $len) {
-			return substr($text, 0, $len - 3) . "...";
+			return substr_utf($text, 0, $len - 3) . "...";
 		} else {
 			return $text;
 		}

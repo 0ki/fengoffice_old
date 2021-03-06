@@ -132,6 +132,47 @@ class TimeController extends ApplicationController {
 		} // try
 	}
 	
+	function edit_project_timeslot(){
+		ajx_current("empty");
+		$timeslot_data = array_var($_POST, 'timeslot');
+		$timeslot = Timeslots::findById(array_var($timeslot_data,'id',0));
+	
+		if (!$timeslot instanceof Timeslot){
+			flash_error(lang('timeslot dnx'));
+			return;
+		}
+		
+		try {
+			$hoursToAdd = array_var($timeslot_data, 'hours',0);
+			if (strpos($hoursToAdd,',') && !strpos($hoursToAdd,'.'))
+				$hoursToAdd = str_replace(',','.',$hoursToAdd);
+				
+			if ($hoursToAdd <= 0){
+				flash_error(lang('time has to be greater than 0'));
+				return;
+			}
+			
+			$startTime = getDateValue(array_var($timeslot_data, 'date'));
+			$startTime = $startTime->add('h', 8 - logged_user()->getTimezone());
+			$endTime = getDateValue(array_var($timeslot_data, 'date'));
+			$endTime = $endTime->add('h', 8 - logged_user()->getTimezone() + $hoursToAdd);
+			$timeslot_data['start_time'] = $startTime;
+			$timeslot_data['end_time'] = $endTime;
+			$timeslot_data['object_id'] = array_var($timeslot_data,'project_id');
+			$timeslot_data['object_manager'] = 'Projects';
+			$timeslot->setFromAttributes($timeslot_data);
+			
+			DB::beginWork();
+			$timeslot->save();
+			DB::commit();
+			
+			ajx_extra_data(array("timeslot" => $timeslot->getArrayInfo()));
+		} catch(Exception $e) {
+			DB::rollback();
+			flash_error($e->getMessage());
+		} // try
+	}
+	
 
 	function delete_project_timeslot(){
 		ajx_current("empty");

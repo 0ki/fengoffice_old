@@ -24,9 +24,10 @@ CREATE TABLE `<?php echo $table_prefix ?>application_logs` (
   `rel_object_manager` varchar(50) <?php echo $default_collation ?> NOT NULL default '',
   `created_on` datetime NOT NULL default '0000-00-00 00:00:00',
   `created_by_id` int(10) unsigned default NULL,
-  `action` enum('upload','open','close','delete','edit','add','trash','untrash') <?php echo $default_collation ?> default NULL,
+  `action` enum('upload','open','close','delete','edit','add','trash','untrash','subscribe','unsubscribe','tag','comment','link','unlink') <?php echo $default_collation ?> default NULL,
   `is_private` tinyint(1) unsigned NOT NULL default '0',
   `is_silent` tinyint(1) unsigned NOT NULL default '0',
+  `log_data` text <?php echo $default_collation ?>,
   PRIMARY KEY  (`id`),
   KEY `created_on` (`created_on`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
@@ -67,7 +68,7 @@ CREATE TABLE `<?php echo $table_prefix ?>companies` (
   `phone_number` varchar(30) <?php echo $default_collation ?> default NULL,
   `fax_number` varchar(30) <?php echo $default_collation ?> default NULL,
   `logo_file` varchar(44) <?php echo $default_collation ?> default NULL,
-  `timezone` float(2,1) NOT NULL default '0.0',
+  `timezone` float(3,1) NOT NULL default '0.0',
   `hide_welcome_info` tinyint(1) unsigned NOT NULL default '0',
   `created_on` datetime NOT NULL default '0000-00-00 00:00:00',
   `created_by_id` int(10) unsigned default NULL,
@@ -507,7 +508,7 @@ CREATE TABLE `<?php echo $table_prefix ?>users` (
   `display_name` varchar(50) <?php echo $default_collation ?> default NULL,
   `title` varchar(30) <?php echo $default_collation ?> default NULL,
   `avatar_file` varchar(44) <?php echo $default_collation ?> default NULL,
-  `timezone` float(2,1) NOT NULL default '0.0',
+  `timezone` float(3,1) NOT NULL default '0.0',
   `created_on` datetime NOT NULL default '0000-00-00 00:00:00',
   `created_by_id` int(10) unsigned default NULL,
   `updated_on` datetime NOT NULL default '0000-00-00 00:00:00',
@@ -573,7 +574,7 @@ CREATE TABLE `<?php echo $table_prefix ?>contacts`(
     `o_fax_number` varchar(20) <?php echo $default_collation ?> default NULL,
     `o_birthday` datetime default NULL,
     `picture_file` varchar(44) <?php echo $default_collation ?> default NULL,
-	`timezone` float(2,1) NOT NULL default '0.0',
+	`timezone` float(3,1) NOT NULL default '0.0',
 	`notes` text <?php echo $default_collation ?> ,
 	`user_id` int(10),
 	`is_private` tinyint(1) unsigned NOT NULL default '0',	
@@ -626,7 +627,6 @@ CREATE TABLE  `<?php echo $table_prefix ?>project_webpages` (
 CREATE TABLE  `<?php echo $table_prefix ?>mail_contents` (
   `id` int(10) unsigned NOT NULL auto_increment,
   `account_id` int(10) unsigned NOT NULL default '0',
-  `project_id` int(10) unsigned default '0',
   `uid` varchar(100) <?php echo $default_collation ?> NOT NULL default '',
   `from` varchar(100) <?php echo $default_collation ?> NOT NULL default '',
   `from_name` VARCHAR( 250 ) NULL,
@@ -647,8 +647,9 @@ CREATE TABLE  `<?php echo $table_prefix ?>mail_contents` (
   `created_by_id` int(10) unsigned NOT NULL default '0',
   `trashed_on` datetime NOT NULL default '0000-00-00 00:00:00',
   `trashed_by_id` int(10) unsigned default NULL,
+  `imap_folder_name` varchar(100) <?php echo $default_collation ?> NOT NULL default '',
+  `account_email` varchar(100) <?php echo $default_collation ?> default '',
   PRIMARY KEY  (`id`),
-  KEY `project_id` (`project_id`),
   KEY `account_id` (`account_id`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 
@@ -668,7 +669,15 @@ CREATE TABLE  `<?php echo $table_prefix ?>mail_accounts` (
   `smtp_username` VARCHAR(100) <?php echo $default_collation ?>,
   `smtp_password` VARCHAR(100) <?php echo $default_collation ?>,
   `smtp_port` INTEGER UNSIGNED NOT NULL default 25,
+  `del_from_server` INTEGER UNSIGNED NOT NULL default 0,
   PRIMARY KEY  (`id`)
+) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
+
+CREATE TABLE  `<?php echo $table_prefix ?>mail_account_imap_folder` (
+  `account_id` int(10) unsigned NOT NULL default '0',
+  `folder_name` varchar(100) <?php echo $default_collation ?> NOT NULL default '',
+  `check_folder` tinyint(1) NOT NULL default '0',
+  PRIMARY KEY  (`account_id`,`folder_name`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 
 -- save gui state
@@ -817,4 +826,107 @@ CREATE TABLE `<?php echo $table_prefix ?>workspace_templates` (
   PRIMARY KEY  (`workspace_id`, `template_id`),
   INDEX `workspace_id` (`workspace_id`),
   INDEX `object_id` (`template_id`)
+) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
+
+-- GelSheet
+
+CREATE TABLE  `<?php echo $table_prefix ?>gs_books` (
+  `BookId` int(10) unsigned NOT NULL auto_increment,
+  `BookName` varchar(45) <?php echo $default_collation ?> NOT NULL default '',
+  `UserId` int(10) unsigned NOT NULL COMMENT 'Book Owner',
+  PRIMARY KEY  (`BookId`)
+) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?> AUTO_INCREMENT=189809 COMMENT='System Workbooks';
+
+CREATE TABLE  `<?php echo $table_prefix ?>gs_cells` (
+  `SheetId` int(10) unsigned NOT NULL,
+  `DataColumn` int(10) unsigned NOT NULL,
+  `DataRow` int(10) unsigned NOT NULL,
+  `CellFormula` varchar(255) <?php echo $default_collation ?> default NULL,
+  `CellValue` text <?php echo $default_collation ?> NOT NULL,
+  `FontStyleId` int(10) unsigned NOT NULL default '0',
+  `LayoutStyleId` int(11) NOT NULL default '0',
+  PRIMARY KEY  (`SheetId`,`DataColumn`,`DataRow`)
+) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?> COMMENT='Sheet data';
+
+CREATE TABLE  `<?php echo $table_prefix ?>gs_columns` (
+  `SheetId` int(11) NOT NULL,
+  `ColumnIndex` int(11) NOT NULL,
+  `ColumnSize` int(11) NOT NULL,
+  `FontStyleId` int(11) NOT NULL,
+  `LayerStyleId` int(11) NOT NULL,
+  `LayoutStyleId` int(11) NOT NULL,
+  PRIMARY KEY  (`SheetId`,`ColumnIndex`)
+) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
+
+CREATE TABLE  `<?php echo $table_prefix ?>gs_fontStyles` (
+  `FontStyleId` int(11) NOT NULL,
+  `BookId` int(11) NOT NULL,
+  `FontId` int(11) NOT NULL,
+  `FontSize` decimal(8,1) NOT NULL default '10.0',
+  `FontBold` tinyint(1) NOT NULL default '0',
+  `FontItalic` tinyint(1) NOT NULL default '0',
+  `FontUnderline` tinyint(1) NOT NULL default '0',
+  `FontColor` varchar(6) <?php echo $default_collation ?> NOT NULL default '',
+  PRIMARY KEY  USING BTREE (`FontStyleId`,`BookId`)
+) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
+
+CREATE TABLE  `<?php echo $table_prefix ?>gs_fonts` (
+  `FontId` int(11) NOT NULL auto_increment,
+  `FontName` varchar(63) <?php echo $default_collation ?> NOT NULL default '',
+  PRIMARY KEY  (`FontId`)
+) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?> AUTO_INCREMENT=7;
+
+CREATE TABLE  `<?php echo $table_prefix ?>gs_mergedCells` (
+  `SheetId` int(11) NOT NULL,
+  `MergedCellRow` int(11) NOT NULL,
+  `MergedCellCol` int(11) NOT NULL,
+  `MergedRows` int(11) default NULL,
+  `MergedCols` int(11) default NULL
+) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
+
+CREATE TABLE  `<?php echo $table_prefix ?>gs_rows` (
+  `SheetId` int(11) NOT NULL,
+  `RowIndex` int(11) NOT NULL,
+  `RowSize` int(11) NOT NULL,
+  `FontStyleId` int(11) NOT NULL,
+  `LayerStyleId` int(11) NOT NULL,
+  `LayoutStyleId` int(11) NOT NULL,
+  PRIMARY KEY  (`SheetId`,`RowIndex`)
+) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
+
+CREATE TABLE  `<?php echo $table_prefix ?>gs_sheets` (
+  `SheetId` int(10) unsigned NOT NULL auto_increment,
+  `BookId` int(10) unsigned NOT NULL,
+  `SheetName` varchar(45) <?php echo $default_collation ?> NOT NULL default '',
+  `SheetIndex` int(10) unsigned NOT NULL,
+  PRIMARY KEY  (`SheetId`)
+) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?> AUTO_INCREMENT=1142 COMMENT='Workbooks Sheets';
+
+CREATE TABLE  `<?php echo $table_prefix ?>gs_userbooks` (
+  `UserBookId` int(10) unsigned NOT NULL auto_increment,
+  `UserId` int(10) unsigned NOT NULL,
+  `BookId` int(10) unsigned NOT NULL,
+  PRIMARY KEY  (`UserBookId`)
+) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
+
+CREATE TABLE  `<?php echo $table_prefix ?>gs_users` (
+  `UserId` int(10) unsigned NOT NULL auto_increment,
+  `UserName` varchar(45) <?php echo $default_collation ?> NOT NULL default '',
+  `UserLastName` varchar(45) <?php echo $default_collation ?> NOT NULL default '',
+  `UserNickname` varchar(45) <?php echo $default_collation ?> NOT NULL default '',
+  `UserPassword` varchar(45) <?php echo $default_collation ?> NOT NULL default '',
+  `LanguageId` int(10) unsigned NOT NULL,
+  PRIMARY KEY  (`UserId`)
+) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?> AUTO_INCREMENT=4 COMMENT='Sytem Users';
+
+CREATE TABLE `<?php echo $table_prefix ?>cron_events` (
+	`id` int(10) unsigned NOT NULL auto_increment,
+	`name` varchar(45) <?php echo $default_collation ?> NOT NULL default '',
+	`recursive` boolean NOT NULL default '1',
+	`delay` int(10) unsigned NOT NULL default 0,
+	`is_system` boolean NOT NULL default '0',
+	`enabled` boolean NOT NULL default '1',
+	`date` datetime NOT NULL default '0000-00-00 00:00:00',
+	PRIMARY KEY (`id`),
+	UNIQUE KEY `uk_name` (`name`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;

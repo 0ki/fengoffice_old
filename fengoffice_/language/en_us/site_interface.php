@@ -77,7 +77,7 @@
     'welcome to administration info' => 'Welcome to the administration panel. Using this tool you can manage your company data, members, clients and workspaces you are involved in.',
     
     'send new account notification' => 'Send email notification',
-    'send new account notification desc' => 'If you select "Yes" the user will receive an email with a welcome message and login parameters',
+    'send new account notification desc' => 'If you select "Yes" the user will receive an email with a welcome message and login parameters (including the password).',
     
     // Tools
     'administration tools' => 'Tools',
@@ -187,7 +187,7 @@
  	'import contacts from csv' => 'Import contacts from .csv file',
 	'import' => 'Import',
  	'file not exists' => 'The file does not exists',
-	'field delimiter' => 'Field delimiter',
+	'field delimiter' => 'Field delimiter (optional)',
 	'first record contains field names' => 'First record contains field names',
 	'import contact success' => 'Contact import success.',
 	'contact fields' => 'Contact Fields',
@@ -198,7 +198,21 @@
 	'contacts import fail' => 'Import failed for contacts',
 	'contacts import fail help' => 'Import process may have failed due to existing data in the database, like name or email address, etc.',
 	'import fail reason' => 'Fail reason',
-  
+	'select a file in order to load its data' => 'Select a csv file in order to load its data for import',
+
+  	// Contact export
+  	'export contacts to csv' => 'Export contacts to .csv file',
+	'export' => 'Export',
+	'fields to export' => 'Information to export',
+	'success export contacts' => 'Contacts successfully exported',
+
+	// Company import/export
+	'import companies from csv' => 'Import companies from .csv file',
+	'company fields' => 'Company Fields',
+	'companies succesfully imported' => 'Companies succesfully imported',
+	'companies import fail' => 'Import failed for companies',
+	'export companies to csv' => 'Export companies to .csv file',
+	'success export companies' => 'Companies succesfully exported',
   
   //Webpages
   'add webpage' => 'Add web link',
@@ -218,7 +232,7 @@
   'add mail account' => 'Add Email account',
   'new mail account' => 'New Email account',
   'no emails in this account' => 'No emails in this account',
-  'server address' => 'POP3 Server address',
+  'server address' => 'Server address',
   'mail account id' => 'Account ID',
   'mail account name' => 'Account name',
   'is imap' => 'This is an IMAP account',
@@ -248,6 +262,10 @@
   'mail account id description' => 'The account username or ID used to connect to the server (e.g. \'john@mailserver.com\')',
   'mail account password description' => 'The password required for connecting to the account',
   'mail account server description' => 'The mail server\'s address (e.g. \'pop3.mailserver.com\')',
+  'folders to check' => 'Folders to check',
+  'after' => 'after',
+  'delete mails from server' => 'Delete mails from server',
+  'mail account delete mails from server description' => 'Enable this option in order to delete mails from server after desired time.',
   
   //Checkout
   'checkout file' => 'Checkout file',
@@ -489,7 +507,11 @@
   'my tasks in progress' => 'My tasks in progress',
   'tasks in progress for' => 'Tasks in progress for {0}',
   
-  'time has to be greater than 0' => 'Time has to be greater than 0'
+  'time has to be greater than 0' => 'Time has to be greater than 0',
+  
+  'release notes' => 'Release notes',
+  
+  'remember last' => 'Remember last',
   
   ); // array
 

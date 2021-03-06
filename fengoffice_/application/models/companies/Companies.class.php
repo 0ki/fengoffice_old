@@ -61,6 +61,21 @@
       )); // array
     } // getCompanyClients
     
+    
+    static function getCompanyFieldNames() {
+		return array('company[name]' => lang('name'),
+			'company[address]' => lang('address'),
+			'company[address2]' => lang('address2'),
+			'company[city]' => lang('city'),
+			'company[state]' => lang('state'),
+			'company[zipcode]' => lang('zipcode'),
+			'company[country]' => lang('country'),
+			'company[phone_number]' => lang('phone'),
+			'company[fax_number]' => lang('fax'),
+			'company[email]' => lang('email address'),
+			'company[homepage]' => lang('homepage'),
+		);
+    }
   } // Companies
 
 ?>

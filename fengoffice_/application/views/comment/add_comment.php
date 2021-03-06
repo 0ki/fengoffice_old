@@ -7,6 +7,13 @@
   )); // project_crumbs
 
 ?>
+<div class="adminConfiguration" style="height:100%;background-color:white">
+  <div class="adminHeader">
+  	<div class="adminTitle"><?php echo $comment->isNew() ? lang('add comment') : lang('edit comment') ?></div>
+  </div>
+  <div class="adminSeparator"></div>
+  <div class="adminMainBlock">
+  
 <?php if($comment->isNew()) { ?>
 <form class="internalForm" action="<?php echo Comment::getAddUrl($comment_form_object) ?>" method="post">
 <?php } else { ?>
@@ -30,3 +37,6 @@
     
     <?php echo submit_button($comment->isNew() ? lang('add comment') : lang('edit comment')) ?>
 </form>
+
+	</div>
+</div>

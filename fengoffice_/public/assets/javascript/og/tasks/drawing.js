@@ -100,7 +100,9 @@ ogTasks.drawGroup = function(displayCriteria, drawOptions, group){
 					var tooltip = '';
 					if (user){
 						var time = new Date(milestone.completedOn * 1000);
-						tooltip = lang('completed by name on', og.clean(user.name), time.dateFormat('M j')).replace(/'\''/g, '\\\'');
+						var now = new Date();
+						var timeFormatted = time.getYear() != now.getYear() ? time.dateFormat('M j, Y'): time.dateFormat('M j');
+						tooltip = lang('completed by name on', og.clean(user.name), timeFormatted).replace(/'\''/g, '\\\'');
 					}
 					sb.append("<a href='#' style='text-decoration:line-through' class='internalLink' onclick='og.openLink(\"" + og.getUrl('milestone', 'view', {id: group.group_id}) + "\")' title='" + tooltip + "'>" + og.clean(group.group_name) + '</a></div></td>');
 				}
@@ -129,14 +131,15 @@ ogTasks.drawGroup = function(displayCriteria, drawOptions, group){
 		if (drawOptions.show_dates){
 			sb.append('<td><span style="padding-left:12px;color:#888;">');
 			var date = new Date(milestone.dueDate * 1000);
+			var now = new Date();
+			var dateFormatted = date.getYear() != now.getYear() ? date.dateFormat('M j, Y'): date.dateFormat('M j');
 			if (milestone.completedById > 0){
-				sb.append('<span style="text-decoration:line-through">' +  lang('due') + ':&nbsp;' + date.dateFormat('M j') + '</span>');
+				sb.append('<span style="text-decoration:line-through">' +  lang('due') + ':&nbsp;' + dateFormatted + '</span>');
 			} else {
-				var now = new Date();
 				if ((date < now))
-					sb.append('<span style="font-weight:bold;color:#F00">' + lang('due') + ':&nbsp;' + date.dateFormat('M j') + '</span>');
+					sb.append('<span style="font-weight:bold;color:#F00">' + lang('due') + ':&nbsp;' + dateFormatted + '</span>');
 				else
-					sb.append(lang('due') + ':&nbsp;' + date.dateFormat('M j'));
+					sb.append(lang('due') + ':&nbsp;' + dateFormatted);
 			}
 			sb.append('</span></td>');
 		}
@@ -307,7 +310,9 @@ ogTasks.drawTaskRow = function(task, drawOptions, displayCriteria, group_id, lev
 		var tooltip = '';
 		if (user){
 			var time = new Date(task.completedOn * 1000);
-			tooltip = lang('completed by name on', og.clean(user.name), time.dateFormat('M j')).replace(/'\''/g, '\\\'');
+			var now = new Date();
+			var timeFormatted = time.getYear() != now.getYear() ? time.dateFormat('M j, Y'): time.dateFormat('M j');
+			tooltip = lang('completed by name on', og.clean(user.name), timeFormatted).replace(/'\''/g, '\\\'');
 		}
 		taskName = "<span style='text-decoration:line-through' title='" + tooltip + "'>" + taskName + "</span>";
 	}
@@ -343,16 +348,19 @@ ogTasks.drawTaskRow = function(task, drawOptions, displayCriteria, group_id, lev
 		
 		if (task.startDate){
 			var date = new Date(task.startDate * 1000);
-			sb.append(lang('start') + ':&nbsp;' + date.dateFormat('M j'));
+			var now = new Date();
+			var dateFormatted = date.getYear() != now.getYear() ? date.dateFormat('M j, Y'): date.dateFormat('M j');
+			sb.append(lang('start') + ':&nbsp;' + dateFormatted);
 		}
 		if (task.startDate && task.dueDate)
 			sb.append('&nbsp;-&nbsp;');
 		
 		if (task.dueDate){
 			var date = new Date((task.dueDate) * 1000);
-			var dueString = lang('due') + ':&nbsp;' + date.dateFormat('M j');
+			var now = new Date();
+			var dateFormatted = date.getYear() != now.getYear() ? date.dateFormat('M j, Y'): date.dateFormat('M j');
+			var dueString = lang('due') + ':&nbsp;' + dateFormatted;
 			if (task.status == 0){
-				var now = new Date();
 				if (date < now)
 					dueString = '<span style="font-weight:bold;color:#F00">' + dueString + '</span>';
 			}
@@ -444,11 +452,7 @@ ogTasks.ToggleCompleteStatus = function(task_id, status){
 			} else {
 				//Set task data
 				var task = ogTasks.getTask(task_id);
-				task.status = (status == 0)? 1 : 0;
-				task.completedById = ogTasks.currentUser.id;
-				var today = new Date();
-				today = today.clearTime();
-				task.completedOn = (today.format('U'));
+				task.setFromTdata(data.task);
 				
 				//Redraw task, or redraw whole panel
 				var bottomToolbar = Ext.getCmp('tasksPanelBottomToolbarObject');

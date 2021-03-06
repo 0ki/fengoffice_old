@@ -154,7 +154,7 @@ return array(
 
 // Private
     'private message desc' => 'Las notas privadas son únicamente visibles por los miembros de la empresa dueña. Miembros de empresas clientes no podrán verlos.',
-    'private webpage desc' => 'Los vínculos web privados son únicamente visibles por los miembros de la empresa dueña. Miembros de empresas clientes no podrán verlos.',
+    'private webpage desc' => 'Los enlaces web privados son únicamente visibles por los miembros de la empresa dueña. Miembros de empresas clientes no podrán verlos.',
     'private milestone desc' => 'Los hitos privados son únicamente visibles por los miembros de la empresa dueña. Miembros de empresas clientes no podrán verlos.',
     'private task list desc' => 'Las tareas privadas son únicamente visibles por los miembros de la empresa dueña. Miembros de empresas clientes no podrán verlos.',
     'private comment desc' => 'Los comentarios privados son únicamente visibles por los miembros de la empresa dueña. Miembros de empresas clientes no podrán verlos.',
@@ -262,8 +262,12 @@ return array(
 	'assign contact to workspace desc' => 'Para asignar un contacto a un área de trabajo marque el área de trabajo y luego ingrese el rol en el campo de texto.',
 	'edit task template' => 'Editar plantilla de tarea',
 
-	'cannot change parent workspace' => 'Usted no tiene permisos suficientes para cambiar el padre de este espacio de trabajo.',
-	'cannot change parent workspace description' => 'Este espacio de trabajo puede pertenecer a un espacio al cual ud. no tiene acceso.'
+	'cannot change parent workspace' => 'Usted no tiene permisos suficientes para cambiar el padre de este área de trabajo.',
+	'cannot change parent workspace description' => 'Este área de trabajo no puede pertenecer a un área al cual ud. no tiene acceso.',
+
+	'copy of file' => 'Copia de {0}',
+    'add subscribers desc' => 'Las personas seleccionadas serán suscriptas a este objeto. Usuarios suscritos recibirán correos electrónicos acerca de modificaciones a este objeto.',
+    'add custom property' => 'Agregar propiedad personalizada',
 
 ); // array
 

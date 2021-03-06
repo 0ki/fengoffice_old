@@ -261,9 +261,9 @@ return array(
 	'assign contact to workspace desc' => 'コンタクトをワークスペースに割り当てるために、ワークスペースをチェックしてください。次に、テキストフィールドにおけるロールを設定してください。', // 'To assign the contact to a workspace check the workspace and then fill in the role in the text field.'
 
 	// ENGLISH MISSING TRANSLATIONS
-	'edit task template' => 'Edit task template',
-    'cannot change parent workspace' => 'You don\'t have enough access permissions to change this workspace\'s parent.',
-    'cannot change parent workspace description' => 'This workspace might be a child of a workspace you don\'t have access to.',
+	'edit task template' => 'タスクテンプレートを編集する', // 'Edit task template',
+    'cannot change parent workspace' => '親のワークスペースを変更する権限がありません。', // 'You don\'t have enough access permissions to change this workspace\'s parent.',
+    'cannot change parent workspace description' => 'このワークスペースはあなたがアクセスできないワークスペースの子供の可能性があります。', // 'This workspace might be a child of a workspace you don\'t have access to.',
 
 ); // array
 

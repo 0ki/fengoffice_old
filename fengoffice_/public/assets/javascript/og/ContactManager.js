@@ -9,10 +9,9 @@ og.ContactManager = function() {
 	
 	if (!og.ContactManager.store) {
 		og.ContactManager.store = new Ext.data.Store({
-	        proxy: new Ext.data.HttpProxy(new Ext.data.Connection({
-				method: 'GET',
-	            url: og.getUrl('contact', 'list_all', {ajax:true})
-	        })),
+	        proxy: new og.OpenGooProxy({
+	            url: og.getUrl('contact', 'list_all')
+	        }),
 	        reader: new Ext.data.JsonReader({
 	            root: 'contacts',
 	            totalProperty: 'totalCount',
@@ -25,9 +24,8 @@ og.ContactManager = function() {
 	        }),
 	        remoteSort: true,
 			listeners: {
-				'load': function() {
+				'load': function(result) {
 					var d = this.reader.jsonData;
-					og.processResponse(d);
 					var ws = og.clean(Ext.getCmp('workspace-panel').getActiveWorkspace().name);
 					var tag = og.clean(Ext.getCmp('tag-panel').getSelectedTag().name);
 					if (d.totalCount == 0) {
@@ -39,17 +37,7 @@ og.ContactManager = function() {
 					} else {
 						this.fireEvent('messageToShow', "");
 					}
-					og.hideLoading();	
 					og.showWsPaths();
-				},
-				'beforeload': function() {
-					og.loading();
-					return true;
-				},
-				'loadexception': function() {
-					og.hideLoading();
-					var d = this.reader.jsonData;
-					og.processResponse(d);
 				}
 			}
 	    });
@@ -89,7 +77,7 @@ og.ContactManager = function() {
     	return String.format('<a href="#" onclick="og.openLink(\'{1}\', null)">{0}</a>', og.clean(value), og.getUrl('company', 'card', {id: r.data.companyId}));
     }
     function renderEmail(value, p, r) {
-    	return String.format('<a mailto="{0}">{0}</a>', og.clean(value));
+    	return String.format('<a href="mailto:{0}">{0}</a>', og.clean(value));
     }
     function renderWebsite(value, p, r) {
     	return String.format('<a href="" onclick="window.open(\'{0}\'); return false">{0}</a>', og.clean(value));
@@ -117,7 +105,7 @@ og.ContactManager = function() {
 		var now = new Date();
 		var dateString = '';
 		if (now.dateFormat('Y-m-d') > value.dateFormat('Y-m-d')) {
-			return lang('last updated by on', userString, value.dateFormat('M j'));
+			return lang('last updated by on', userString, value.dateFormat(lang('date format')));
 		} else {
 			return lang('last updated by at', userString, value.dateFormat('h:i a'));
 		}
@@ -132,7 +120,7 @@ og.ContactManager = function() {
 		var now = new Date();
 		var dateString = '';
 		if (now.dateFormat('Y-m-d') > value.dateFormat('Y-m-d')) {
-			return lang('last updated by on', userString, value.dateFormat('M j'));
+			return lang('last updated by on', userString, value.dateFormat(lang('date format')));
 		} else {
 			return lang('last updated by at', userString, value.dateFormat('h:i a'));
 		}
@@ -377,12 +365,7 @@ og.ContactManager = function() {
 				{text: lang('company'), iconCls: 'ico-company', handler: function() {
 					var url = og.getUrl('company', 'add_client');
 					og.openLink(url);
-				}},
-				'-',
-				{text: lang('import'), iconCls: 'ico-upload', handler: function() {
-					var url = og.getUrl('contact', 'import_from_csv_file');
-					og.openLink(url);
-				}}
+				}}				
 			]}
 		}),
 		delContact: new Ext.Action({
@@ -468,6 +451,40 @@ og.ContactManager = function() {
 					}
 				}
 			})
+		}),
+		imp_exp: new Ext.Action({
+			text: lang('import/export'),
+            tooltip: lang('import - export'),
+            menu: { items: [
+            	new Ext.Action({
+		            text: lang('contacts'),
+		            iconCls: 'ico-contact',
+		            menu: { items: [
+						{ text: lang('import'), iconCls: 'ico-upload', handler: function() {
+							var url = og.getUrl('contact', 'import_from_csv_file', {type:'contact'});
+							og.openLink(url);
+						}},
+						{ text: lang('export'), iconCls: 'ico-download', handler: function() {
+							var url = og.getUrl('contact', 'export_to_csv_file', {type:'contact'});
+							og.openLink(url);
+						}}
+					]}
+				}),
+				new Ext.Action({
+					text: lang('companies'),
+					iconCls: 'ico-company',
+		            menu: { items: [
+						{ text: lang('import'), iconCls: 'ico-upload', handler: function() {
+							var url = og.getUrl('contact', 'import_from_csv_file', {type:'company'});
+							og.openLink(url);
+						}},
+						{ text: lang('export'), iconCls: 'ico-download', handler: function() {
+							var url = og.getUrl('contact', 'export_to_csv_file', {type:'company'});
+							og.openLink(url);
+						}}
+					]}
+				})
+			]}
 		})
     };
     
@@ -496,9 +513,9 @@ og.ContactManager = function() {
 			actions.delContact,
 			actions.editContact,
 			actions.assignContact,
-			actions.view/*,
+			actions.view,
 			'-',
-			actions.refresh*/
+			actions.imp_exp
         ],
 		listeners: {
 			'render': {

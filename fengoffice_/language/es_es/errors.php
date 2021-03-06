@@ -15,7 +15,7 @@
    
     // Company validation errors
     'company name required' => 'El campo correspondiente al nombre de la empresa/organización  es obligatorio y no fue introducido',
-    'company homepage invalid' => 'La dirección de la página web introducida no es una URL válida',
+    'company homepage invalid' => 'La dirección del sitio web introducida no es una URL válida',
     
     // User validation errors
     'username value required' => 'Nombre de usuario no introducido, inténtelo de nuevo',
@@ -138,6 +138,8 @@
 	'error delete backup' => 'Error al borrar el ultimo respaldo',
 	'success delete backup' => 'Respaldo borrado',
     'name must be unique' => 'El nombre del contacto ya está en uso',
+  	'not implemented' => 'No implementado',
+  	'success db backup' => 'Respaldo creado exitosamente.',
   ); // array
 
 ?>

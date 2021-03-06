@@ -23,7 +23,7 @@ $user = Users::findById(array('id' => $user_filter));
  */
 if ($user == null) $user = logged_user();
 
-$use_24_hours = config_option('time_format_use_24');
+$use_24_hours = user_config_option('time_format_use_24');
 
 $tags = active_tag();	
 ?>
@@ -224,7 +224,7 @@ $tags = active_tag();
 								}
 								$tipBody = str_replace("\r", '', $tipBody);
 								$tipBody = str_replace("\n", '<br>', $tipBody);
-								if (strlen($tipBody) > 200) $tipBody = substr($tipBody, 0, strpos($tipBody, ' ', 200)) . ' ...';
+								if (strlen_utf($tipBody) > 200) $tipBody = substr_utf($tipBody, 0, strpos($tipBody, ' ', 200)) . ' ...';
 								
 								if ($event instanceof ProjectEvent || ($dates[$day_of_week]->getTimestamp() == mktime(0,0,0,$due_date->getMonth(),$due_date->getDay(),$due_date->getYear()))) {	
 									$dws = $event->getWorkspaces();
@@ -374,6 +374,7 @@ onmouseup="showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMo
 											$top = PX_HEIGHT * $hr_start + (PX_HEIGHT*(($min_start*100)/(60*100)));
 											$bottom = PX_HEIGHT * $hr_end + (PX_HEIGHT*(($min_end*100)/(60*100)));
 											$height = $bottom - $top - 5; //substract 4px for the rounded corners, 1px for separation
+											if ($height < PX_HEIGHT/2 - 5) $height = PX_HEIGHT/2 - 5;
 											
 											$evs_same_time = 0;
 											$i = $event->getStart()->getHour();
@@ -449,7 +450,7 @@ onmouseup="showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMo
 											$tipBody = $event->getStart()->format($use_24_hours ? 'G:i' : 'g:i A') .' - '. $event->getDuration()->format($use_24_hours ? 'G:i' : 'g:i A') . (trim(clean($event->getDescription())) != '' ? '<br><br>' . clean($event->getDescription()) : '');
 											$tipBody = str_replace("\r", '', $tipBody);
 											$tipBody = str_replace("\n", '<br>', $tipBody);
-											if (strlen($tipBody) > 200) $tipBody = substr($tipBody, 0, strpos($tipBody, ' ', 200)) . ' ...';
+											if (strlen_utf($tipBody) > 200) $tipBody = substr_utf($tipBody, 0, strpos($tipBody, ' ', 200)) . ' ...';
 											
 											$ev_duration = DateTimeValueLib::get_time_difference($event->getStart()->getTimestamp(), $event->getDuration()->getTimestamp()); 
 ?>
@@ -464,13 +465,13 @@ onmouseup="showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMo
 						<div class="t1 <?php echo $ws_class ?>" style="<?php echo $ws_style ?>;margin:0px 2px 0px 2px;height:0px; border-bottom:1px solid;border-color:<?php echo $border_color ?>"></div>
 						<div class="t2 <?php echo $ws_class ?>" style="<?php echo $ws_style ?>;margin:0px 1px 0px 1px;height:1px; border-left:1px solid;border-right:1px solid;border-color:<?php echo $border_color ?>"></div>
 						<div class="chipbody edit og-wsname-color-<?php echo $ws_color?>">
-						<dl class="<?php echo  $ws_class?>" style="height: <?php echo $height ?>px;<?php echo $ws_style?>;border-left:1px solid;border-right:1px solid;border-color:<?php echo $border_color ?>">
+						<dl class="<?php echo  $ws_class?>" style="height: <?php echo $height ?>px;<?php echo $ws_style?>;border-left:1px solid;border-right:1px solid;border-color:<?php echo $border_color ?>" onclick="og.openLink(og.getUrl('event', 'viewevent', {view:'week', id:<?php echo $event->getId()?>, user_id:<?php echo $user_filter?>}, null));">
 							<dt class="<?php echo  $ws_class?>" style="<?php echo $ws_style?>;">
 							<table width="100%"><tr><td>
 								<a 
 								href='<?php echo cal_getlink("index.php?action=viewevent&amp;view=week&amp;id=".$event->getId())."&amp;user_id=".$user_filter;?>'
-								onclick="hideCalendarToolbar();"
-								class='internalLink'><!-- nobr --><span style="color:<?php echo $txt_color?>!important;padding-left:5px;font-size:93%;"><?php echo "$start_time"?></span></a>
+								onclick="stopPropagation(event);hideCalendarToolbar();"
+								class='internalLink'><div style="color:<?php echo $txt_color?>!important;padding-left:5px;font-size:93%;"><?php echo "$start_time"?></div></a>
 							</td><td align="right">
 								<dd><div align="right" style="padding-right:4px;<?php echo ($ev_duration['hours'] == 0 ? 'height:'.$height.'px;' : '') ?>">
 								<?php
@@ -500,8 +501,8 @@ onmouseup="showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMo
 							<dd>
 							<div><a
 								href='<?php echo cal_getlink("index.php?action=viewevent&amp;view=week&amp;id=".$event->getId())."&amp;user_id=".$user_filter;?>'
-								onclick="hideCalendarToolbar();"
-								class='internalLink'><!-- nobr --><span style="color:<?php echo $txt_color?>!important;padding-left:5px;;font-size:93%;"><?php echo $subject;?></span></a>
+								onclick="stopPropagation(event);hideCalendarToolbar();"
+								class='internalLink'><div style="color:<?php echo $txt_color?>!important;padding-left:5px;font-size:93%;"><?php echo $subject;?></div></a>
 							</div>
 							</dd>
 							<?php } //if ?>
@@ -534,7 +535,7 @@ onmouseup="showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMo
 </div>
 
 <?php
-	$wdst = config_option('work_day_start_time', '09:00');
+	$wdst = user_config_option('work_day_start_time', '09:00');
 	$h_m = explode(':', $wdst);
 	if (str_ends_with($wdst, 'PM')) {
 		$h_m[0] = ($h_m[0] + 12) % 24;

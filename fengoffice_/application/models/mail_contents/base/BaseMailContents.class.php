@@ -17,7 +17,6 @@ abstract class BaseMailContents extends ProjectDataObjects {
 	static private $columns = array(
     'id' => DATA_TYPE_INTEGER,
     'account_id' => DATA_TYPE_INTEGER, 
-    'project_id' => DATA_TYPE_INTEGER, 
     'uid' => DATA_TYPE_STRING,
     'from' => DATA_TYPE_STRING,
     'from_name' => DATA_TYPE_STRING,
@@ -38,6 +37,7 @@ abstract class BaseMailContents extends ProjectDataObjects {
     'created_by_id' => DATA_TYPE_INTEGER,
 	'trashed_on' => DATA_TYPE_DATETIME,
     'trashed_by_id' => DATA_TYPE_INTEGER,
+	'imap_folder_name' => DATA_TYPE_STRING
 	);
 
 	/**

@@ -405,7 +405,7 @@ addLangs({
 	'login dialog desc': 'Faute d\'activité, la session a expiré.',
 	'user not found': 'Utilisateur introuvable (id : {0})',
 	'date format': 'd/m/Y',
-	'date format alternatives': 'm/d/y|n/j/Y|n/j/y|m/j/y|n/d/y|m/j/Y|n/d/Y',
+	'date format alternatives': 'd/m/y|j/n/Y|j/n/y|j/m/y|d/n/y|j/m/Y|d/n/Y',
 	'warning start date greater than due date': 'Attention : La date de début est postérieure à la date de remise',
 	'choose an image': 'Choisir une image',
 	'sort by': 'Trier par',

@@ -28,64 +28,83 @@ App.modules.addFileForm = {
     } else {
       var display_value = 'none';
     } // if
-    Ext.getDom(genid+'fileFormRevisionCommentBlock').style.display = display_value;
+  	  Ext.getDom(genid+'fileFormRevisionCommentBlock').style.display = display_value;
   }
 };
 
-function submitMe(genid) {
+og.fileValidateAttempt = false;
+og.checkFileNameResult = 0;
+
+og.fileCheckSubmit = function(genid) {
+	if (og.fileValidateAttempt){
+		og.fileCheckInterval = setInterval(function() {
+            if (og.checkFileNameResult != 0) {
+                clearInterval(og.fileCheckInterval);
+                if (og.checkFileNameResult == 2) og.fileSubmitMe(genid);
+            }
+        }, 100);
+	} else og.fileSubmitMe(genid);
+}
+
+og.checkFileName = function(genid) {
+	og.fileValidateAttempt = true;
+	og.checkFileNameResult = 0;
+	setTimeout(function(){
+		var name = document.getElementById(genid + 'fileFormFilename').value;
+		var btn = Ext.get(genid + 'add_file_submit2');
+	    Ext.get(genid + "addFileFilenameCheck").setDisplayed(true);
+	    Ext.get(genid + "addFileFilenameExists").setDisplayed(false);
+	    
+		var eid = 0;
+		var fileIsNew = Ext.get(genid + "hfFileIsNew").getValue();
+	  	if (!fileIsNew){
+	 		eid = Ext.get(genid + 'hfFileId').getValue();
+	  	}
+	  	var ws = Ext.getCmp(genid + "ws_ids").getValue();
+	 	
+	    og.openLink(og.getUrl('files','check_filename', {wsid: ws, id: eid}), {
+	    	post: {
+	    		filename: name
+	    	},
+	    	caller:this,
+	    	callback: function(success, data) {
+	    		og.checkFileNameCallback(success,data,genid);
+	    	}
+	    });
+    },100);
+}
+
+og.fileSubmitMe = function(genid) {
 	form = document.getElementById(genid + 'addfile');
+	Ext.get(genid + "addFileUploadingFile").setDisplayed(true);
 	og.submit(form, {
 		callback: og.getUrl('files', 'check_upload', {upload_id: genid})
 	});
 }
 
-og.onBlurFileName = function() {
-	var submitIntent = false;
-}
 
-og.updateFileName = function(genid) {
-	var name = document.getElementById(genid + 'fileFormFile').value;
-	var start = Math.max(0, Math.max(name.lastIndexOf('/'), name.lastIndexOf('\\') + 1));
-	name = name.substring(start);
-	var fff = document.getElementById(genid + 'fileFormFilename');
-	fff.value = name;
-}
+//*************************************************
+//   Filename Checking
+//*************************************************
 
-og.checkFileName = function(genid) {
-	allowSubmit = false;
-	var fff = document.getElementById(genid + 'fileFormFilename');
-	var name = fff.value;
-	//Disable Add file buttons and show corresponding divs
-	Ext.get(genid + 'add_file_submit1').dom.disabled = true;
-	Ext.get(genid + 'add_file_submit2').dom.disabled = true;
-    Ext.get(genid + "addFileFilenameCheck").setDisplayed(true);
-    Ext.get(genid + "addFileFilenameExists").setDisplayed(false);
-    
-	var eid = 0;
-	var fileIsNew = Ext.get(genid + "hfFileIsNew").getValue();
-  	if (!fileIsNew){
- 		eid = Ext.get(genid + 'hfFileId').getValue();
+
+og.checkFileNameCallback = function(success, data, genid){
+	if (success) {
+  		Ext.get(genid + "addFileFilenameCheck").setDisplayed(false);
+		Ext.get(genid + "addFileFilename").setDisplayed('inline');
+
+		var isNew = Ext.get(genid + "hfFileIsNew").dom.value;
+  		og.fileValidateAttempt = false;
+		if (data.files && isNew){
+			og.checkFileNameResult = 1;
+			og.showFileExists(genid, data);
+		} else {
+			og.checkFileNameResult = 2;
+		}
+  	} else {
+  		og.fileValidateAttempt = false;
+  		og.checkFileNameResult = 1;
   	}
-  	var ws = Ext.getCmp(genid + "ws_ids").getValue();
- 	
-    og.openLink(og.getUrl('files','check_filename', {wsid: ws, id: eid}), {
-    	post: {
-    		filename: name
-    	},
-    	caller:this,
-    	callback: function(success, data) {
-    		if (success) {
-    			
-    			Ext.get(genid + "addFileFilenameCheck").setDisplayed(false);
-				Ext.get(genid + "addFileFilename").setDisplayed('inline');
-    			Ext.get(genid + 'add_file_submit1').dom.disabled = false;
-				Ext.get(genid + 'add_file_submit2').dom.disabled = false;
-	
-				if (data.files && Ext.get(genid + "hfFileIsNew").dom.value)
-					og.showFileExists(genid, data);
-    		}
-    	}
-    });
 }
   
 og.showFileExists = function(genid, fileInfo){
@@ -180,3 +199,10 @@ og.addFileOption = function(table, file, genid){
 	}
 }
 
+
+og.updateFileName = function(genid) {
+	var name = document.getElementById(genid + 'fileFormFile').value;
+	var start = Math.max(0, Math.max(name.lastIndexOf('/'), name.lastIndexOf('\\') + 1));
+	name = name.substring(start);
+	document.getElementById(genid + 'fileFormFilename').value = name;
+}

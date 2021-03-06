@@ -73,7 +73,7 @@
     'mobile phone number' => 'Número de teléfono móvil',
     'home phone number' => 'Número de teléfono de casa',
     'settings' => 'Configuraciones',
-    'homepage' => 'Página web',
+    'homepage' => 'Sitio web',
     'address' => 'Dirección',
     'address2' => 'Dirección 2',
     'city' => 'Ciudad',
@@ -168,7 +168,7 @@
   	'read only' => 'Sólo lectura',
   	'none no bars' => 'Ninguno',
   	'apply to all subworkspaces' => 'Aplicar permisos a todas las subáreas',
-  	'weblinks' => 'Páginas Web',
+  	'weblinks' => 'Enlaces Web',
   	'include subworkspaces' => 'Incluir subáreas',
     'timeslot on object' => 'Tiempo de trabajo en {0}',
 	'add work' => 'Agregar trabajo',
@@ -176,6 +176,7 @@
   	'date format' => 'd/m/Y',
   	'date format description' => '(día/mes/año)',
     'confirm move to trash' => 'Está seguro que desea mover el objeto seleccionado a la papelera?',
+  	'add' => 'Agregar',
 
   ); // array
 

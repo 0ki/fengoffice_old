@@ -165,11 +165,15 @@ ogTimeManager.insertRow = function(genid, timeslot, position){
 	cell.appendChild(textNode);
 	
 	cell = row.insertCell(5);
+	cell.innerHTML = '<a class="internalLink coViewAction ico-edit" href="javascript:ogTimeManager.EditTimeslot(' + timeslot.id + ')" style="display: block;width:0;padding-bottom:0;padding-top:0" title="' + lang('edit') + '">&nbsp;</a>';
+	cell.width = 18;
+	
+	cell = row.insertCell(6);
 	cell.innerHTML = '<a class="internalLink coViewAction ico-delete" href="javascript:if(confirm(lang(\'confirm delete timeslot\'))) ogTimeManager.DeleteTimeslot(' + timeslot.id + ')" style="display: block;width:0;padding-bottom:0;padding-top:0" title="' + lang('delete') + '">&nbsp;</a>';
 	cell.width = 18;
 	
 	
-	cell = row.insertCell(6);
+	cell = row.insertCell(7);
 	var textNode = document.createTextNode(timeslot.id);
 	cell.appendChild(textNode);
 	cell.style.display = 'none';

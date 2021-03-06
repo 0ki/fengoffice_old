@@ -25,6 +25,96 @@ class Notifier {
 	 */
 	static public $exchange_compatible = null;
 
+	function notifyAction($object, $action, $log_data) {
+		if (!$object instanceof ProjectDataObject) {
+			return;
+		}
+		$subscribers = $object->getSubscribers();
+		if (!is_array($subscribers) || count($subscribers) == 0) return;
+		if ($action == ApplicationLogs::ACTION_ADD) {
+			if ($object instanceof ProjectMessage) {
+				self::newMessage($object, $subscribers);
+			} else if ($object instanceof Comment) {
+				self::newObjectComment($object);
+			} else {
+				self::newObject($object, $subscribers);
+			}
+		} else if ($action == ApplicationLogs::ACTION_EDIT) {
+			self::objectEdited($object, $subscribers);
+		} else if ($action == ApplicationLogs::ACTION_TRASH) {
+			self::objectDeleted($object, $subscribers);
+		}
+	}
+	
+	function newObject(ProjectDataObject $object, $people) {
+		if(!is_array($people) || !count($people)) {
+			return; // nothing here...
+		} // if
+
+		tpl_assign('object', $object);
+
+		$recepients = array();
+		foreach($people as $user) {
+			if ($user->getId() != $object->getCreatedById()) {
+				$recepients[] = self::prepareEmailAddress($user->getEmail(), $user->getDisplayName());
+			}
+		} // foreach
+		
+		if (count($recepients) == 0) return;
+		return self::sendEmail(
+			$recepients,
+			self::prepareEmailAddress($object->getCreatedBy()->getEmail(), $object->getCreatedByDisplayName()),
+			lang('new notification ' . $object->getObjectTypeName(), $object->getObjectName()),
+			tpl_fetch(get_template_path('new_object', 'notifier'))
+		); // send
+	}
+	
+	function objectEdited(ProjectDataObject $object, $people) {
+		if(!is_array($people) || !count($people)) {
+			return; // nothing here...
+		} // if
+
+		tpl_assign('object', $object);
+
+		$recepients = array();
+		foreach($people as $user) {
+			if ($user->getId() != $object->getCreatedById()) {
+				$recepients[] = self::prepareEmailAddress($user->getEmail(), $user->getDisplayName());
+			}
+		} // foreach
+		
+		if (count($recepients) == 0) return;
+		return self::sendEmail(
+			$recepients,
+			self::prepareEmailAddress($object->getCreatedBy()->getEmail(), $object->getCreatedByDisplayName()),
+			lang('modified notification ' . $object->getObjectTypeName(), $object->getObjectName()),
+			tpl_fetch(get_template_path('object_edited', 'notifier'))
+		); // send
+	}
+	
+	function objectDeleted(ProjectDataObject $object, $people) {
+		if(!is_array($people) || !count($people)) {
+			return; // nothing here...
+		} // if
+
+		tpl_assign('object', $object);
+
+		$recepients = array();
+		foreach($people as $user) {
+			if ($user->getId() != $object->getCreatedById()) {
+				$recepients[] = self::prepareEmailAddress($user->getEmail(), $user->getDisplayName());
+			}
+		} // foreach
+
+		if (count($recepients) == 0) return;
+		return self::sendEmail(
+			$recepients,
+			self::prepareEmailAddress($object->getCreatedBy()->getEmail(), $object->getCreatedByDisplayName()),
+			lang('deleted notification ' . $object->getObjectTypeName(), $object->getObjectName()),
+			tpl_fetch(get_template_path('object_deleted', 'notifier'))
+		); // send
+	}
+	
 	/**
 	 * Reset password and send forgot password email to the user
 	 *
@@ -85,9 +175,12 @@ class Notifier {
 
 		$recepients = array();
 		foreach($people as $user) {
-			$recepients[] = self::prepareEmailAddress($user->getEmail(), $user->getDisplayName());
+			if ($user->getId() != $message->getCreatedById()) {
+				$recepients[] = self::prepareEmailAddress($user->getEmail(), $user->getDisplayName());
+			}
 		} // foreach
 
+		if (count($recepients) == 0) return;
 		return self::sendEmail(
 		$recepients,
 		self::prepareEmailAddress($message->getCreatedBy()->getEmail(), $message->getCreatedByDisplayName()),
@@ -249,15 +342,10 @@ class Notifier {
 	 * @return boolean
 	 * @throws NotifierConnectionError
 	 */
-	static function newObjectComment(Comment $comment) {
+	static function newObjectComment(Comment $comment, $all_subscribers) {
 		$object = $comment->getObject();
 		if(!($object instanceof ApplicationDataObject)) {
 			throw new Error('Invalid comment object');
-		} // if
-
-		$all_subscribers = $object->getSubscribers();
-		if(!is_array($all_subscribers)) {
-			return true; // no subscribers
 		} // if
 
 		$recepients = array();
@@ -281,11 +369,10 @@ class Notifier {
 
 		tpl_assign('new_comment', $comment);
 
-		return self::sendEmail(
-		$recepients,
-		self::prepareEmailAddress($comment->getCreatedBy()->getEmail(), $comment->getCreatedByDisplayName()),
-		lang('new comment') . ' - ' . $comment->getObject()->getTitle(),
-		tpl_fetch(get_template_path('new_comment', 'notifier'))
+		return self::sendEmail($recepients,
+				self::prepareEmailAddress($comment->getCreatedBy()->getEmail(), $comment->getCreatedByDisplayName()),
+				lang('new comment') . ' - ' . $comment->getObject()->getTitle(),
+				tpl_fetch(get_template_path('new_comment', 'notifier'))
 		); // send
 	} // newObjectComment
 
@@ -470,6 +557,33 @@ class Notifier {
 		} // if
 	} // getMailer
 
+	function sendReminders() {
+		$sent = 0;
+		$ors = ObjectReminders::findAll();
+		foreach ($ors as $or) {
+			if ($or->getType() == "due_date") {
+				$task = $or->getObject();
+				if (!$task instanceof ProjectTask || $task->isCompleted()) {
+					$or->delete();
+					continue;
+				}
+				$duedate = $task->getDueDate();
+				if (!$duedate instanceof DateTimeValue) continue;
+				$duedate->add("m", -$or->getMinutesBefore());
+				if (DateTimeValueLib::now()->getTimestamp() >= $duedate->getTimestamp()) {
+					try {
+						Notifier::taskDue($task, array($or->getUser()));
+						$or->delete();
+						$sent++;
+					} catch (Exception $e) {
+						
+					}
+				}
+			}
+		}
+		return $sent;
+	}
+	
 } // Notifier
 
 ?>

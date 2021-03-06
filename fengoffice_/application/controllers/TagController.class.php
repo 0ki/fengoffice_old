@@ -73,19 +73,12 @@ class TagController extends ApplicationController {
 	 *
 	 */
 	function list_tags() {
-		$this->setTemplate(get_template_path("json"));
 		ajx_current("empty");
+		$order = array_var($_GET, 'order', 'count');
 		$ts = array();
-		$tags = Tags::getTagNames('count');
-		if ($tags) {
-			foreach ($tags as $t) {
-				$ts[] = array(
-					"name" => $t
-				);
-			}
-		}
+		$tags = Tags::getTagNames($order);
 		$extra = array();
-		$extra['tags'] = $ts;
+		$extra['tags'] = $tags;
 		ajx_extra_data($extra);
 	}
 	

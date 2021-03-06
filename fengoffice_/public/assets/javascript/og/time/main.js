@@ -110,6 +110,7 @@ ogTimeManager.GetNewTimeslotParameters = function(genid){
 	parameters["timeslot[hours]"] = document.getElementById(genid + 'tsHours').value;
 	parameters["timeslot[description]"] = document.getElementById(genid + 'tsDesc').value;
 	parameters["timeslot[user_id]"] = document.getElementById(genid + 'tsUser').value;
+	parameters["timeslot[id]"] = document.getElementById(genid + 'tsId').value;
 	
 	return parameters;
 }
@@ -128,14 +129,22 @@ ogTimeManager.insertTimeslot = function(timeslot, genid){
 
 ogTimeManager.SubmitNewTimeslot = function(genid){
 	var parameters = this.GetNewTimeslotParameters(genid);
+	var isEdit = document.getElementById(this.genid + 'TMTimespanSubmitEdit').style.display == 'block';
+	var action = 'add_project_timeslot';
+	if (isEdit)
+		action = 'edit_project_timeslot';
 
-	og.openLink(og.getUrl('time', 'add_project_timeslot'), {
+	og.openLink(og.getUrl('time', action), {
 		method: 'POST',
 		post: parameters,
 		callback: function(success, data) {
 			if (success && !data.errorCode) {
 				var timeslot = new ogTimeTimeslot();
 				timeslot.setFromTdata(data.timeslot);
+				if (isEdit){
+					this.deleteTimeslot(timeslot.id);
+					this.CancelEdit();
+				}
 				document.getElementById(genid + 'tsDesc').value = '';
 				document.getElementById(genid + 'tsHours').value = 0;
 				this.insertTimeslot(timeslot, genid);
@@ -165,6 +174,45 @@ ogTimeManager.DeleteTimeslot = function(timeslotId){
 	});
 }
 
+ogTimeManager.CancelEdit = function(){
+	document.getElementById(this.genid + 'TMTimespanSubmitEdit').style.display = 'none';
+	document.getElementById(this.genid + 'TMTimespanSubmitAdd').style.display = 'block';
+	document.getElementById(this.genid + 'TMTimespanAddNew').className = 'TMTimespanAddNew';
+	
+	document.getElementById(this.genid + 'tsHours').value = '0';
+	document.getElementById(this.genid + 'tsDesc').value = '';
+	var datePick = Ext.getCmp(this.genid + 'timeslot[date]Cmp');
+	if (datePick){
+		datePick.setValue(new Date());
+	}
+}
+
+ogTimeManager.EditTimeslot = function(timeslotId){
+	var ts = this.getTimeslot(timeslotId);
+	if (ts){
+		document.getElementById(this.genid + 'TMTimespanSubmitEdit').style.display = 'block';
+		document.getElementById(this.genid + 'TMTimespanSubmitAdd').style.display = 'none';
+		document.getElementById(this.genid + 'TMTimespanAddNew').className = 'TMTimespanEdit';
+		
+		document.getElementById(this.genid + 'tsHours').value = (ts.time / 3600);
+		document.getElementById(this.genid + 'tsDesc').value = ts.description;
+		document.getElementById(this.genid + 'tsId').value = timeslotId;
+		og.drawWorkspaceSelector(this.genid + "wsSel", ts.workspaceId, 'timeslot[project_id]', false);
+		var userSel = document.getElementById(this.genid + 'tsUser');
+		for (var i = 0; i < userSel.options.length; i++){
+			if (userSel.options[i].value == ts.userId){
+				userSel.selectedIndex = i;
+				break;	
+			}
+		}
+		var datePick = Ext.getCmp(this.genid + 'timeslot[date]Cmp');
+		if (datePick){
+			datePick.setValue(new Date(ts.date * 1000));
+		}
+		document.getElementById(this.genid + 'tsHours').focus();
+	}
+}
+
 
 ogTimeManager.deleteTimeslot = function(id){
 	for (var i = 0; i < this.Timeslots.length; i++)
@@ -172,6 +220,13 @@ ogTimeManager.deleteTimeslot = function(id){
 			this.Timeslots.splice(i,1);
 			return;
 		}
+}
+
+ogTimeManager.getTimeslot = function(id){
+	for (var i = 0; i < this.Timeslots.length; i++)
+		if (this.Timeslots[i].id == id)
+			return this.Timeslots[i];
+	return null;
 }
 
 ogTimeManager.getTask = function(id){

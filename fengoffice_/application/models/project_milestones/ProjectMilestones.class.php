@@ -304,12 +304,14 @@
 	 */
 	function copyTasks(ProjectMilestone $milestoneFrom, ProjectMilestone $milestoneTo, $as_template = false) {
 		foreach ($milestoneFrom->getTasks() as $sub) {
+			if ($sub->getParentId() != 0) continue;
 			$new = ProjectTasks::createTaskCopy($sub);
 			$new->setIsTemplate($as_template);
 			$new->setMilestoneId($milestoneTo->getId());
 			if ($sub->getIsTemplate()) {
 				$new->setFromTemplateId($sub->getId());
 			}
+			$new->setProjectId($milestoneTo->getProjectId());
 			$new->save();
 			$new->setTagsFromCSV(implode(",", $sub->getTagNames()));
 			ProjectTasks::copySubTasks($sub, $new, $as_template);

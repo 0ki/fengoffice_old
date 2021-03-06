@@ -110,7 +110,7 @@
         return false;
       } // if
       
-      $this->xml_object = simplexml_load_file($this->getFeedUrl());
+      $this->xml_object = @simplexml_load_file($this->getFeedUrl());
       if(!($this->xml_object instanceof SimpleXMLElement)) {
         $this->xml_object = null;
         return false;

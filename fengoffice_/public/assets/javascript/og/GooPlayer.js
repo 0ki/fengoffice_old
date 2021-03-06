@@ -243,7 +243,7 @@ Ext.extend(og.GooPlayer, Ext.Panel, {
 			this.playback.position = position;
 	
 			var progress = 0;
-			if (this.playback.track.duration) {
+			if (this.playback.track.duration && loaded < 1) {
 				this.playback.duration = this.playback.track.duration;
 			} else {
 				this.playback.duration = this.sound.getDuration() / loaded;
@@ -264,8 +264,8 @@ Ext.extend(og.GooPlayer, Ext.Panel, {
 					this.playback.record.set("album", id3.album || id3.TALB);
 					toSave.songalbum = this.playback.track.album;
 				}
-				if (!this.playback.track.song && (id3.songname || id3.TIT2)) {
-					this.playback.record.set("song", id3.songname || id3.TIT2);
+				if (!this.playback.track.song && (id3.songname || id3.TIT2 || track.filename || track.url)) {
+					this.playback.record.set("song", id3.songname || id3.TIT2 || track.filename || track.url);
 					toSave.songname = this.playback.track.song;
 				}
 				if (!this.playback.track.year && id3.year) {
@@ -276,9 +276,9 @@ Ext.extend(og.GooPlayer, Ext.Panel, {
 					this.playback.record.set("track", this.playback.track.track || id3.track);
 					toSave.songtrack = this.playback.track.track;
 				}
-				if (loaded == 1 && !this.playback.track.duration) {
+				if (loaded == 1 && this.playback.track.duration != this.playback.duration) {
 					this.playback.record.set("duration", this.playback.duration);
-					toSave.songduration = this.playback.track.duration;
+					toSave.songduration = this.playback.duration;
 				}
 				var count = 0;
 				for (var k in toSave) {
@@ -289,10 +289,10 @@ Ext.extend(og.GooPlayer, Ext.Panel, {
 						post: toSave
 					}); 
 				}
-				this.updateInfo();
+				if (count > 0) this.updateInfo();
 			}
 			
-			if (progress == 1 && loaded == 1 && this.playback.duration && position && !this.playback.paused) {
+			if (progress >= 1 && loaded == 1 && this.playback.duration && position && !this.playback.paused) {
 				if (this.playback.loop) {
 					this.next();
 				} else {

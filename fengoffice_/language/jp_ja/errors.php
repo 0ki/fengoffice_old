@@ -141,7 +141,7 @@
 	'success delete backup' => 'バックアップを削除しました', // 'Backup was deleted'
   	
   	// ENGLISH MISSING TRANSLATIONS
-  	'name must be unique' => 'Sorry, but selected name is already taken',
+  	'name must be unique' => '申し訳ございませんが選択された名前はすでに取得されています。', // 'Sorry, but selected name is already taken',
    ); // array
 
 ?>

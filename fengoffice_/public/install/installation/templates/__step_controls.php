@@ -14,4 +14,8 @@
 		<button type="button" onclick="location.href = '../../index.php'">Finish</button>
 	<?php } // if ?>
 <?php } // if ?>
+<?php if ($current_step instanceof ChecksStep) { ?>
+	&nbsp;&nbsp;&nbsp;&nbsp;
+	<button type="button" onclick="location.href = 'index.php?step=2'">Try Again</button>
+<?php } ?>
 </div>

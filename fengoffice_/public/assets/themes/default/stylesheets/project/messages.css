@@ -100,3 +100,35 @@
   display: inline;
   padding-right: 5px;
 }
+
+/** Subscribers **/
+.og-add-subscribers .companyDetails {
+  margin: 10px 0;
+  border: 1px dotted #ccc;
+  padding: 5px 10px;
+}
+
+.og-add-subscribers .companyName {
+	background: #F9F9FC;
+	border: 1px solid #DDD;
+	padding: 2px;
+}
+
+.og-add-subscribers .companyName label {
+  font-weight: bolder;
+}
+
+.og-add-subscribers .companyMembers {
+  padding-top: 5px;
+}
+
+.og-add-subscribers .companyMembers ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.og-add-subscribers .companyMembers ul li {
+  display: inline;
+  padding-left: 5px;
+}

@@ -39,6 +39,29 @@ og.TagPanel = function(config) {
 					this);
 			},
 			scope: this.tree
+		},{
+			iconCls: 'ico-sort-count',
+			tooltip: lang('sort tags'),
+			id: 'sort',
+			menu: {
+				items: [{
+					iconCls: 'ico-sort-alphabetical',
+					text: lang('sort tags alphabetically'),
+					handler: function() {
+						this.tree.loadTags(og.getUrl('tag', 'list_tags', {order: 'name'}));
+						this.getTopToolbar().items.get('sort').setIconClass('ico-sort-alphabetical');
+					},
+					scope: this
+				},{
+					iconCls: 'ico-sort-count',
+					text: lang('sort tags by count'),
+					handler: function() {
+						this.tree.loadTags(og.getUrl('tag', 'list_tags', {order: 'count'}));
+						this.getTopToolbar().items.get('sort').setIconClass('ico-sort-count');
+					},
+					scope: this
+				}]
+			}
 		}]
 	});
 	og.TagPanel.superclass.constructor.call(this, config);
@@ -47,7 +70,6 @@ og.TagPanel = function(config) {
 	
 	this.tree.getSelectionModel().on({
 		'selectionchange' : function(sm, node) {
-			// TODO: disable/enable tb butt
 			this.getTopToolbar().items.get('rename').setDisabled(!node || node == this.tree.tags);
 		},
 		scope:this
@@ -146,11 +168,15 @@ Ext.extend(og.TagTree, Ext.tree.TreePanel, {
 		if (exists) {
 			return;
 		}
+		var text = og.clean(tag.name);
+		if (tag.count) {
+			text += ' <span style="color:#777">(' + tag.count + ')</span>';
+		}
 		var config =  {
 			iconCls: 'ico-tag',
 			leaf: true,
 			cls: 'tag-item',
-			text: og.clean(tag.name),
+			text: text,
 			id: this.nameToId(tag.name),
 			listeners: {
 				click: function() {

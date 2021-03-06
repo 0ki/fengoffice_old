@@ -282,7 +282,7 @@
     * @param string $file_id
     * @return string
     */
-    private function getFilePath($file_id) {
+    function getFilePath($file_id) {
       return with_slash($this->getRepositoryDir()) . $this->idToPath($file_id);
     } // getFilePath
     

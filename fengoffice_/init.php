@@ -13,8 +13,8 @@
   define('THEMES_DIR',       ROOT . '/public/assets/themes');
   
   set_include_path(ROOT . PATH_SEPARATOR . APPLICATION_PATH);
-  
-  set_include_path('library/zend' . PATH_SEPARATOR . get_include_path());
+  set_include_path(LIBRARY_PATH . "/zend" . PATH_SEPARATOR . get_include_path());
+  set_include_path(LIBRARY_PATH . "/PEAR" . PATH_SEPARATOR . get_include_path());
   
   if ((defined('LUCENE_SEARCH') && LUCENE_SEARCH)) {
  	require_once('Zend/Search/Lucene.php');
@@ -52,6 +52,7 @@
   // return NULL. If we get false redirect to install folder
   $config_is_set = @include_once(ROOT . '/config/config.php');
   if(!is_bool($config_is_set) || !$config_is_set) {
+  	header("Location: public/install");
     print "OpenGoo is not installed. Please redirect your browser to <a href=\"" . PUBLIC_FOLDER . "/install\">" . PUBLIC_FOLDER . "/install</a> folder and follow installation procedure";
     die();
   } // if
@@ -61,10 +62,7 @@
   // ---------------------------------------------------
   
   define('PRODUCT_NAME', 'OpenGoo');
-  if(!defined('PRODUCT_VERSION')) {
-    define('PRODUCT_VERSION', '0.9.2');
-  } // if
-  define('INSTALLED_VERSION', include 'version.php');
+  define('PRODUCT_VERSION', include ROOT . '/version.php');
   
   define('MAX_SEARCHABLE_FILE_SIZE', 1048576); // if file type is searchable script will load its content into search index. Using this constant you can set the max filesize of the file that will be imported. Noone wants 500MB in search index for single file
   define('SESSION_LIFETIME', 14400);

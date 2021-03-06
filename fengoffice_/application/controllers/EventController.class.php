@@ -1,4 +1,5 @@
 <?php
+require_once ROOT.'/environment/classes/event/CalFormatUtilities.php';
 
 /**
 * Controller that is responsible for handling project events related requests
@@ -115,20 +116,15 @@ class EventController extends ApplicationController {
 		}
 	}
 	
+	
 	function getData($event_data){
 		// get the day
 			if (array_var($event_data, 'start_value') != '') {
-				$startDate = explode('/', array_var($event_data, 'start_value'));
-				$posD = 0;
-				$posM = 1;
-				$posY = 2;
-				if (lang('date format') == 'm/d/Y') {
-					$posD = 1;
-					$posM = 0;
-				}
-				$day = $startDate[$posD];
-	       		$month = $startDate[$posM];
-	       		$year = $startDate[$posY];
+				$date_from_widget = array_var($event_data, 'start_value');
+				$parsedDate = $this->parseDate($date_from_widget);
+				$day = $parsedDate['day'];
+	       		$month = $parsedDate['month'];
+	       		$year = $parsedDate['year'];
 			} else {
 				$month = isset($_GET['month'])?$_GET['month']:date('n');
 				$day = isset($_GET['day'])?$_GET['day']:date('j');
@@ -290,7 +286,7 @@ class EventController extends ApplicationController {
 				$hour = isset($_GET['hour']) ? $_GET['hour'] : date('G', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600);
 				$minute = isset($_GET['minute']) ? $_GET['minute'] : round((date('i') / 15), 0) * 15; //0,15,30 and 45 min
 			}
-			if(!config_option('time_format_use_24')) {
+			if(!user_config_option('time_format_use_24')) {
 				if($hour >= 12){
 					$pm = 1;
 					$hour = $hour - 12;
@@ -336,7 +332,6 @@ class EventController extends ApplicationController {
 			    DB::beginWork();
 	          	$event->save();
 	          	$event->setTagsFromCSV(array_var($event_data, 'tags'));   
-	            $event->save_properties(array_var($event_data, 'event'));
 	            
 	            $this->registerInvitations($data, $event);
 	            if (isset($data['confirmAttendance'])) {
@@ -355,8 +350,11 @@ class EventController extends ApplicationController {
 		        
 			    $object_controller = new ObjectController();
 			    $object_controller->link_to_new_object($event);
+				$object_controller->add_subscribers($event);
+				$object_controller->add_custom_properties($event);
+				
+				ApplicationLogs::createLog($event, $event->getWorkspaces(), ApplicationLogs::ACTION_ADD);
 	         	DB::commit();
-	          	ApplicationLogs::createLog($event, $event->getWorkspaces(), ApplicationLogs::ACTION_ADD);
 	          	
 	          	flash_success(lang('success add event', $event->getObjectName()));
 
@@ -417,7 +415,9 @@ class EventController extends ApplicationController {
           	ajx_add("overview-panel", "reload");          	
 		} catch(Exception $e) {
 			DB::rollback();
-			Logger::log($e->getTraceAsString());
+			if (Env::isDebugging()) {
+				Logger::log($e->getTraceAsString());
+			}
 			flash_error(lang('error delete event'));
 			ajx_current("empty");
 		} // try
@@ -544,7 +544,7 @@ class EventController extends ApplicationController {
 			$durtime = $event->getDuration()->getTimestamp() - $thetime;
 			$hour = date('G', $thetime);
 			// format time to 24-hour or 12-hour clock.
-			if(!config_option('time_format_use_24')){
+			if(!user_config_option('time_format_use_24')){
 				if($hour >= 12){
 					$pm = 1;
 					$hour = $hour - 12;
@@ -623,7 +623,12 @@ class EventController extends ApplicationController {
 	          	DB::beginWork();
 	         	$event->save();
 	         	$event->setTagsFromCSV(array_var($event_data, 'tags')); 
-			 	$event->save_properties(array_var($event_data,'event'));
+			 	
+			 	$object_controller = new ObjectController();
+			    $object_controller->link_to_new_object($event);
+				$object_controller->add_subscribers($event);
+				$object_controller->add_custom_properties($event);
+			 	
 	          	ApplicationLogs::createLog($event, $event->getWorkspaces(), ApplicationLogs::ACTION_EDIT);
 	          	DB::commit();
 	          	
@@ -666,6 +671,29 @@ class EventController extends ApplicationController {
 				$hour = 0;
 			}
 		}
+	}
+	
+	/**
+	 * returns an array with keys 'day', 'month' and 'year' containing the values for the day, month and year
+	 * taken from a string obtained from pick_date_widget
+	 *
+	 * @param string $date_from_widget
+	 */
+	function parseDate($date_from_widget) {
+		$result = array();
+		$startDate = explode('/', $date_from_widget);
+		$posD = 0;
+		$posM = 1;
+		$posY = 2;
+		if (lang('date format') == 'm/d/Y') {
+			$posD = 1;
+			$posM = 0;
+		}
+		$result['day'] = $startDate[$posD];
+       	$result['month'] = $startDate[$posM];
+       	$result['year'] = $startDate[$posY];
+       	
+       	return $result;
 	}
 	
 	function allowed_users_view_events() {
@@ -711,6 +739,111 @@ class EventController extends ApplicationController {
 		ajx_extra_data($object);
 		ajx_current("empty");
 	}
+	
+	function icalendar_import() {
+		if (isset($_SESSION['history_back'])) {
+			if ($_SESSION['history_back'] > 0) $_SESSION['history_back'] = $_SESSION['history_back'] - 1;
+			if ($_SESSION['history_back'] == 0) unset($_SESSION['history_back']);
+			ajx_current("back");
+		} else {
+			$ok = false;
+			$this->setTemplate('cal_import');
+				
+			$filedata = array_var($_FILES, 'cal_file');
+			if (is_array($filedata)) {
+				
+				$filename = $filedata['tmp_name'].'vcal';
+				copy($filedata['tmp_name'], $filename);
+				
+				$events_data = CalFormatUtilities::decode_ical_file($filename);
+				unset($events_data[0]); //cal headers
+				if (count($events_data)) {
+					DB::beginWork();		
+					foreach ($events_data as $ev_data) {
+						$event = new ProjectEvent();
+				 		$project = active_or_personal_project();
+						if ($ev_data['subject'] == '') $ev_data['subject'] = lang('no subject');
+			
+			        	$event->setProjectId($project->getId());
+					    $event->setFromAttributes($ev_data);
+					    
+					    $event->save();
+					    $object_controller = new ObjectController();
+					    $object_controller->add_subscribers($event);
+					    ApplicationLogs::createLog($event, null, ApplicationLogs::ACTION_ADD);
+					    
+					    $this->registerInvitations($ev_data, $event);
+						if (isset($ev_data['confirmAttendance'])) {
+			            	$this->change_invitation_state($ev_data['confirmAttendance'], $event->getId(), $event->getCreatedBy()->getId());
+			            }
+					}
+					DB::commit();
+					
+					flash_success(lang('success import events', count($events_data)));
+					$_SESSION['history_back'] = 1;
+					$ok = true;
+				} else {
+					flash_error(lang('no events to import'));
+				}
+				unset($filename);
+				if (!$ok) ajx_current("empty");
+			}
+			else if (array_var($_POST, 'atimportform', 0)) ajx_current("empty");
+		}
+	}
+	
+	function icalendar_export() {
+		if (isset($_SESSION['history_back'])) {
+			if ($_SESSION['history_back'] > 0) $_SESSION['history_back'] = $_SESSION['history_back'] - 1;
+			if ($_SESSION['history_back'] == 0) unset($_SESSION['history_back']);
+			ajx_current("back");
+		} else {
+			$this->setTemplate('cal_export');
+			$calendar_name = array_var($_POST, 'calendar_name');			
+			if ($calendar_name != '') {
+				$parsedFrom = $this->parseDate(array_var($_POST, 'from_date'));
+				$parsedTo = $this->parseDate(array_var($_POST, 'to_date'));
+				
+				$from = DateTimeValueLib::make(0, 0, 0, $parsedFrom['month'], $parsedFrom['day'], $parsedFrom['year']);
+				$to = DateTimeValueLib::make(0, 0, 0, $parsedTo['month'], $parsedTo['day'], $parsedTo['year']);
+				$tags = '';
+				
+				$events = ProjectEvents::getRangeProjectEvents($from, $to, $tags, active_project());
+				
+				$buffer = CalFormatUtilities::generateICalInfo($events, $calendar_name);
+				
+				$filename = rand().'.tmp';
+				$handle = fopen(ROOT.'/tmp/'.$filename, 'wb');
+				fwrite($handle, $buffer);
+				fclose($handle);
+				
+				$_SESSION['calendar_export_filename'] = $filename;
+				$_SESSION['calendar_name'] = $calendar_name;
+				$_SESSION['history_back'] = 2;
+				tpl_assign('result_msg', lang('success export calendar', count($events)));
+			} else {
+				unset($_SESSION['history_back']);
+				unset($_SESSION['calendar_export_filename']);
+				unset($_SESSION['calendar_name']);
+				return;
+			}
+		}
+	}
+	
+	function download_exported_file() {
+		$filename = array_var($_SESSION, 'calendar_export_filename', '');
+		$calendar_name = array_var($_SESSION, 'calendar_name', '');
+		if ($filename != '') {
+			$path = ROOT.'/tmp/'.$filename;
+			$size = filesize($path);
+			
+			unset($_SESSION['calendar_export_filename']);
+			download_file($path, 'text/ics', $calendar_name.'_events.ics', $size, false);
+			unlink($path);
+			die();
+		} else $this->setTemplate('cal_export');
+	}
+	
 } // EventController
 
 /***************************************************************************
@@ -720,7 +853,7 @@ class EventController extends ApplicationController {
  *   copyright            : (C) 2001 The phpBB Group
  *   email                : support@phpbb.com
  *
- *   $Id: EventController.class.php,v 1.65.2.1 2008/12/12 20:26:47 alvarotm01 Exp $
+ *   $Id: EventController.class.php,v 1.71 2009/01/20 13:56:54 idesoto Exp $
  *
  ***************************************************************************/
 

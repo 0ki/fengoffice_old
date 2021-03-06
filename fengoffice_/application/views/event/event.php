@@ -1,4 +1,20 @@
 <script type="text/javascript">
+	function cal_hide(id) {
+		document.getElementById(id).style.display = "none";
+	}
+
+	function cal_show(id) {
+		document.getElementById(id).style.display = "block";
+	}
+	
+	function toggleDiv(div_id){
+		var theDiv = document.getElementById(div_id);
+		dis = !theDiv.disabled;
+	    var theFields = theDiv.getElementsByTagName('*');
+	    for (var i=0; i < theFields.length;i++) theFields[i].disabled=dis;
+	    theDiv.disabled=dis;
+	}
+	
 	function changeRepeat() {
 		cal_hide("cal_extra1");
 		cal_hide("cal_extra2");
@@ -41,8 +57,14 @@
     Foundation Inc, 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 $genid = gen_id();
+$object = $event;
 
 $active_projects = logged_user()->getActiveProjects();
+if ($event->isNew()) {
+	$project = active_or_personal_project();
+} else {
+	$project = $event->getProject();
+}
 
 $day =  array_var($event_data, 'day');
 $month =  array_var($event_data, 'month');
@@ -50,7 +72,7 @@ $year =  array_var($event_data, 'year');
 
 $filter_user = isset($_GET['user_id']) ? $_GET['user_id'] : logged_user()->getId();
 
-$use_24_hours = config_option('time_format_use_24');
+$use_24_hours = user_config_option('time_format_use_24');
 
 	// get dates
 	$setlastweek='';
@@ -111,24 +133,28 @@ $use_24_hours = config_option('time_format_use_24');
 	    </div>
 	 
 	 	<div style="padding-top:5px;text-align:left;">
-		<a href='#' class='option' onclick="og.toggleAndBolden('<?php echo $genid ?>add_event_select_workspace_div', this)"><?php echo lang('workspace')?></a> - 
-		<a href='#' class='option' onclick="og.toggleAndBolden('<?php echo $genid ?>add_event_tags_div', this)"><?php echo lang('tags')?></a> - 
-		<a href='#' class='option' onclick="og.toggleAndBolden('<?php echo $genid ?>add_event_description_div', this)"><?php echo lang('description')?></a> - 
-		<a href='#' class='option' onclick="og.toggleAndBolden('<?php echo $genid ?>event_repeat_options_div', this)"><?php echo lang('CAL_REPEATING_EVENT')?></a> -
-		<a href='#' class='option' onclick="og.toggleAndBolden('<?php echo $genid ?>add_event_properties_div', this)"><?php echo lang('custom properties')?></a> - 
-		<a href='#' class='option' onclick="og.toggleAndBolden('<?php echo $genid ?>add_event_linked_objects_div', this)"><?php echo lang('linked objects')?></a> - 
-		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_event_invitation_div', this)"><?php echo lang('event invitations') ?></a>
+		<a href='#' class='option' onclick="og.ToggleTrap('trap1', 'fs1');og.toggleAndBolden('<?php echo $genid ?>add_event_select_workspace_div', this)"><?php echo lang('workspace')?></a> - 
+		<a href='#' class='option' onclick="og.ToggleTrap('trap2', 'fs2');og.toggleAndBolden('<?php echo $genid ?>add_event_tags_div', this)"><?php echo lang('tags')?></a> - 
+		<a href='#' class='option' onclick="og.ToggleTrap('trap3', 'fs3');og.toggleAndBolden('<?php echo $genid ?>add_event_description_div', this)"><?php echo lang('description')?></a> - 
+		<a href='#' class='option' onclick="og.ToggleTrap('trap4', 'fs4');og.toggleAndBolden('<?php echo $genid ?>event_repeat_options_div', this)"><?php echo lang('CAL_REPEATING_EVENT')?></a> -
+		<a href='#' class='option' onclick="og.ToggleTrap('trap5', 'fs5');og.toggleAndBolden('<?php echo $genid ?>add_custom_properties_div', this)"><?php echo lang('custom properties')?></a> - 
+		<a href="#" class="option" onclick="og.ToggleTrap('trap6', 'fs6');og.toggleAndBolden('<?php echo $genid ?>add_subscribers_div',this)"><?php echo lang('object subscribers') ?></a>
+		<?php if($object->isNew() || $object->canLinkObject(logged_user(), $project)) { ?> - 
+			<a href="#" class="option" onclick="og.DrawTrap('trap7', 'fs7');og.toggleAndBolden('<?php echo $genid ?>add_linked_objects_div',this)"><?php echo lang('linked objects') ?></a>
+		<?php } ?> -
+		<a href="#" class="option" onclick="og.DrawTrap('trap8', 'fs8');og.toggleAndBolden('<?php echo $genid ?>add_event_invitation_div', this);"><?php echo lang('event invitations') ?></a>
 		</div></div>
 	
 		<div class="coInputSeparator"></div>
 		<div class="coInputMainBlock">	
-			
+
 		<div id="<?php echo $genid ?>add_event_select_workspace_div" style="display:none">
 		<fieldset>
 		<legend><?php echo lang('workspace') ?></legend>
-			<?php echo select_project2('event[project_id]', ($event->getProject() instanceof Project)? $event->getProject()->getId():active_or_personal_project()->getId(), $genid) ?>
+			<?php echo select_project2('event[project_id]', $project->getId(), $genid) ?>
 		</fieldset>
 		</div>
+		<div id="trap1"><fieldset id="fs1" style="height:0px;border:0px;padding:0px;display:none"><span style="color:#FFFFFF;"></span></fieldset></div>
 		
 		<div id="<?php echo $genid ?>add_event_tags_div" style="display:none">
 		<fieldset>
@@ -136,6 +162,7 @@ $use_24_hours = config_option('time_format_use_24');
 			<?php echo autocomplete_tags_field("event[tags]", array_var($event_data, 'tags'), "event[tags]"); ?>
 		</fieldset>
 		</div>
+		<div id="trap2"><fieldset id="fs2" style="height:0px;border:0px;padding:0px;display:none"><span style="color:#FFFFFF;"></span></fieldset></div>
 		
 		<div id="<?php echo $genid ?>add_event_description_div" style="display:none">
 			<fieldset>
@@ -143,7 +170,8 @@ $use_24_hours = config_option('time_format_use_24');
 				<?php echo textarea_field('event[description]',array_var($event_data, 'description'), array('id' => 'descriptionFormText', 'tabindex' => '2'));?>
 			</fieldset>
 		</div>
-
+		<div id="trap3"><fieldset id="fs3" style="height:0px;border:0px;padding:0px;display:none"><span style="color:#FFFFFF;"></span></fieldset></div>
+		
 <?php $occ = array_var($event_data, 'occ'); 
 	$rsel1 = array_var($event_data, 'rsel1'); 
 	$rsel2 = array_var($event_data, 'rsel2'); 
@@ -238,28 +266,58 @@ $use_24_hours = config_option('time_format_use_24');
 </table>
 		</fieldset>
 		</div>
-		
-		
-			
-	<div id="<?php echo $genid ?>add_event_properties_div" style="display:none">
+	<div id="trap4"><fieldset id="fs4" style="height:0px;border:0px;padding:0px;display:none"><span style="color:#FFFFFF;"></span></fieldset></div>
+
+	<div id="<?php echo $genid ?>add_custom_properties_div" style="display:none">
 	<fieldset>
 	<legend><?php echo lang('custom properties')?></legend>
-		<?php echo render_object_properties('event',isset($event)?$event:null);?>
+		<?php echo render_add_custom_properties($object);?>
 	</fieldset>
 	</div>
-		
-	<div style="display:none" id="<?php echo $genid ?>add_event_linked_objects_div">
-	<fieldset>
-    	<legend><?php echo lang('linked objects') ?></legend>
-    	<div class="objectFiles">
-		<table style="width:100%;margin-left:2px;margin-right:3px" id="tbl_linked_objects">
-	   	<tbody></tbody>
-		</table>
-    	<?php echo render_object_links($event); ?>
+	<div id="trap5"><fieldset id="fs5" style="height:0px;border:0px;padding:0px;display:none"><span style="color:#FFFFFF;"></span></fieldset></div>
+
+	<div id="<?php echo $genid ?>add_subscribers_div" style="display:none">
+		<fieldset>
+		<legend><?php echo lang('object subscribers') ?></legend>
+		<div id="<?php echo $genid ?>add_subscribers_content">
+			<?php echo render_add_subscribers($object, $genid); ?>
 		</div>
-	</fieldset>
+		</fieldset>
 	</div>
 	
+	<script>
+	var wsTree = Ext.get('<?php echo $genid ?>wsSel');
+	wsTree.previousValue = <?php echo $project->getId() ?>;
+	wsTree.on("click", function(ws) {
+		var uids = App.modules.addMessageForm.getCheckedUsers('<?php echo $genid ?>');
+		var wsid = Ext.get('<?php echo $genid ?>wsSelValue').getValue();
+		if (wsid != this.previousValue) {
+			this.previousValue = wsid;
+			Ext.get('<?php echo $genid ?>add_subscribers_content').load({
+				url: og.getUrl('object', 'render_add_subscribers', {
+					workspaces: wsid,
+					users: uids,
+					genid: '<?php echo $genid ?>',
+					object_type: '<?php echo get_class($object->manager()) ?>'
+				}),
+				scripts: true
+			});
+		}
+	}, wsTree);
+	</script>
+	<div id="trap6"><fieldset id="fs6" style="height:0px;border:0px;padding:0px;display:none"><span style="color:#FFFFFF;"></span></fieldset></div>
+
+	<?php if($object->isNew() || $object->canLinkObject(logged_user(), $project)) { ?>
+
+	<div style="display:none" id="<?php echo $genid ?>add_linked_objects_div">
+	<fieldset>
+		<legend><?php echo lang('linked objects') ?></legend>
+		<?php echo render_object_link_form($object) ?>
+	</fieldset>	
+	</div>
+	<div id="trap7"><fieldset id="fs7" style="height:0px;border:0px;padding:0px;display:none"><span style="color:#FFFFFF;"></span></fieldset></div>
+	<?php } // if ?>
+
 	<div id="<?php echo $genid ?>add_event_invitation_div" style="display:none">
 	<fieldset id="emailNotification">
 		<legend><?php echo lang('event invitations') ?></legend>
@@ -294,7 +352,8 @@ $use_24_hours = config_option('time_format_use_24');
 			<label for="eventFormSendNotification" class="checkbox"><?php echo lang('send new event notification') ?></label>
 	</fieldset>
 	</div>	
-	
+	<div id="trap8"><fieldset id="fs8" style="height:0px;border:0px;padding:0px;display:none"><span style="color:#FFFFFF;"></span></fieldset></div>
+
 <div>
 <fieldset><legend><?php echo lang('CAL_TIME_AND_DURATION') ?></legend>
 <table>
@@ -367,7 +426,7 @@ $use_24_hours = config_option('time_format_use_24');
 </table>
 </fieldset>
 </div>
-	
+
 	<input type="hidden" name="cal_origday" value="<?php echo $day?>">
 	<input type="hidden" name="cal_origmonth" value="<?php echo $month?>">
 	<input type="hidden" name="cal_origyear" value="<?php echo $year?>">
@@ -389,13 +448,18 @@ var prevWsVal = -1;
 
 og.drawInnerHtml = function(companies) {
 	var htmlStr = '';
-	
+	htmlStr += '<div id="<?php echo $genid ?>notify_companies"></div>';
+	htmlStr += '<script type="text/javascript">';
+	htmlStr += 'var div = Ext.getDom(\'<?php echo $genid ?>notify_companies\');';
+	htmlStr += 'div.notify_companies = {};';
+	htmlStr += 'var cos = div.notify_companies;';
+	htmlStr += '<\/script>';
 	if (companies != null) {
 		for (i = 0; i < companies.length; i++) {
 			comp_id = companies[i].object_id;
 			comp_name = companies[i].name;
 			htmlStr += '<script type="text/javascript">';
-			htmlStr += 'App.modules.addMessageForm.notify_companies.company_' + comp_id + ' = {id:\'<?php echo $genid ?>notifyCompany' + comp_id + '\', checkbox_id : \'notifyCompany' + comp_id + '\',users : []};';
+			htmlStr += 'cos.company_' + comp_id + ' = {id:\'<?php echo $genid ?>notifyCompany' + comp_id + '\', checkbox_id : \'notifyCompany' + comp_id + '\',users : []};';
 			htmlStr += '\<\/script>';
 				
 			htmlStr += '<div class="companyDetails">';
@@ -413,7 +477,7 @@ og.drawInnerHtml = function(companies) {
 				htmlStr += '<li><input type="checkbox" class="checkbox" name="event[invite_user_'+usr.id+']" id="<?php echo $genid ?>notifyUser'+usr.id+'" onclick="App.modules.addMessageForm.emailNotifyClickUser('+comp_id+','+usr.id+',\'<?php echo $genid ?>\')"></input>'; 
 				htmlStr += '<label for="<?php echo $genid ?>notifyUser'+usr.id+'" class="checkbox">'+og.clean(usr.name)+'</label></li>';
 				htmlStr += '<script type="text/javascript">';
-				htmlStr += 'App.modules.addMessageForm.notify_companies.company_' + comp_id + '.users.push({ id:'+usr.id+', checkbox_id : \'notifyUser' + usr.id + '\'});';
+				htmlStr += 'cos.company_' + comp_id + '.users.push({ id:'+usr.id+', checkbox_id : \'notifyUser' + usr.id + '\'});';
 				htmlStr += '\<\/script>';
 			}
 			htmlStr += '</ul>';
@@ -448,22 +512,16 @@ og.redrawUserList = function(){
 wsTree.addListener('click', og.redrawUserList);
 og.redrawUserList();
 
-function cal_hide(id) {
-	document.getElementById(id).style.display = "none";
-}
-
-function cal_show(id) {
-	document.getElementById(id).style.display = "block";
-}
-
-function toggleDiv(div_id){
-	var theDiv = document.getElementById(div_id);
-	dis = !theDiv.disabled;
-    var theFields = theDiv.getElementsByTagName('*');
-    for (var i=0; i < theFields.length;i++) theFields[i].disabled=dis;
-    theDiv.disabled=dis;
-}
-
 Ext.get('eventSubject').focus();
 <?php if (array_var($event_data, 'typeofevent') == 2) echo 'toggleDiv(\''.$genid.'event[start_time]\'); toggleDiv(\''.$genid.'ev_duration_div\');'; ?>
+
+og.ToggleTrap = function(fsid) {
+	if (Ext.isIE) {
+		if (!Ext.get(fsid).isDisplayed()) {
+			Ext.get(fsid).setDisplayed('block');
+		} else {
+			Ext.get(fsid).setDisplayed('none');
+		}
+	}
+}
 </script>

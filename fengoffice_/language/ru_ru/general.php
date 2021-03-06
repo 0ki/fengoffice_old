@@ -159,7 +159,7 @@
 	'none no bars' => 'Нет',
 	'apply to all subworkspaces' => 'Применить права ко всем субпроектам',
 	'weblinks' => 'Веб-ссылки',
-	'date format' => 'm/d/Y',
+	'date format' => 'd/m/Y',
 	'date format description' => '(мм/дд/гггг)',
 	'add work' => 'Добавить работу',
 	'confirm move to trash' => 'Вы действительно хотите переместить выделенный объект в корзину?',

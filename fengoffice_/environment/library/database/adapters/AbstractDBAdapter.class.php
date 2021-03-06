@@ -55,6 +55,14 @@
     abstract protected function connect($params);
     
     /**
+    * Close connection to the database
+    *
+    * @access protected
+    * @return null
+    */
+    abstract public function close();
+    
+    /**
      * Check whether the resource is a valid connection resource.
      *
      * @param boolean $resource

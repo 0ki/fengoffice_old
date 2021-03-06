@@ -59,8 +59,8 @@
 	$sectionDepth = 0;
 	$totCols = 5;
 ?>
-<?php if ($start_time) { ?><span style="font-weight:bold"><?php echo lang('from')?></span>:&nbsp;<?php echo format_datetime($start_time, 'd/m/Y') ?><?php } // if ?>
-<?php if ($end_time) { ?><span style="font-weight:bold; padding-left:10px"><?php echo lang('to')?></span>:&nbsp;<?php echo format_datetime($end_time, 'd/m/Y') ?><?php } // if ?>
+<?php if ($start_time) { ?><span style="font-weight:bold"><?php echo lang('from')?></span>:&nbsp;<?php echo format_datetime($start_time, lang('date format')) ?><?php } // if ?>
+<?php if ($end_time) { ?><span style="font-weight:bold; padding-left:10px"><?php echo lang('to')?></span>:&nbsp;<?php echo format_datetime($end_time, lang('date format')) ?><?php } // if ?>
 
 <?php if(!isset($task_title)) 
 	$task_title = null;
@@ -84,6 +84,7 @@ if ($task_title) { ?><div style="font-size:120%"><span style="font-weight:bold">
 <?php } else { 
 	
 	//Initialize
+	$headerPrinted = false;
 	$gbvals = array('','','');
 	$sumTimes = array(0,0,0);
 	$hasGroupBy = is_array($group_by) && count($group_by) > 0;
@@ -154,7 +155,7 @@ if ($task_title) { ?><div style="font-size:120%"><span style="font-weight:bold">
 		//Print row info
 ?>
 <tr>
-	<td style="padding:4px;<?php echo $isAlt? 'background-color:#F2F2F2':'' ?>"><?php echo format_datetime($ts->getStartTime(), 'd/m/y')?></td>
+	<td style="padding:4px;<?php echo $isAlt? 'background-color:#F2F2F2':'' ?>"><?php echo format_datetime($ts->getStartTime(), lang('date format'))?></td>
 	<?php if ($showTitleCol) { ?><td style="padding:4px;max-width:250px;<?php echo $isAlt? 'background-color:#F2F2F2':'' ?>"><?php echo ($ts->getObjectManager() == 'Projects' ? lang('workspace') . ':&nbsp;' . clean($ts->getObject()->getName()) : clean($ts->getObject()->getTitle())) ?></td><?php } ?>
 	<td style="padding:4px; width:250px;<?php echo $isAlt? 'background-color:#F2F2F2':'' ?>"><?php echo clean($ts->getDescription()) ?></td>
 	<?php if ($showUserCol) { ?><td style="padding:4px;<?php echo $isAlt? 'background-color:#F2F2F2':'' ?>"><?php echo clean($ts->getUser()->getDisplayName()) ?></td><?php } ?>

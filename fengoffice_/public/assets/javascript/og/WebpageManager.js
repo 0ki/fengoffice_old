@@ -8,23 +8,21 @@ og.WebpageManager = function() {
 	
 	if (!og.WebpageManager.store) {
 		og.WebpageManager.store = new Ext.data.Store({
-	        proxy: new Ext.data.HttpProxy(new Ext.data.Connection({
-				method: 'GET',
-	            url: og.getUrl('webpage', 'list_all', {ajax:true})
-	        })),
+	        proxy: new og.OpenGooProxy({
+	            url: og.getUrl('webpage', 'list_all')
+	        }),
 	        reader: new Ext.data.JsonReader({
 	            root: 'webpages',
 	            totalProperty: 'totalCount',
 	            id: 'id',
 	            fields: [
-	                'name', 'description', 'url', 'tags', 'wsIds'
+	                'title', 'description', 'url', 'tags', 'wsIds'
 	            ]
 	        }),
 	        remoteSort: true,
 			listeners: {
 				'load': function() {
 					var d = this.reader.jsonData;
-					og.processResponse(d);
 					var ws = og.clean(Ext.getCmp('workspace-panel').getActiveWorkspace().name);
 					var tag = og.clean(Ext.getCmp('tag-panel').getSelectedTag().name);
 					if (d.totalCount == 0) {
@@ -36,21 +34,11 @@ og.WebpageManager = function() {
 					} else {
 						this.fireEvent('messageToShow', "");
 					}
-					og.hideLoading();
 					og.showWsPaths();
-				},
-				'beforeload': function() {
-					og.loading();
-					return true;
-				},
-				'loadexception': function() {
-					og.hideLoading();
-					var d = this.reader.jsonData;
-					og.processResponse(d);
 				}
 			}
 	    });
-	    og.WebpageManager.store.setDefaultSort('name', 'asc');
+	    og.WebpageManager.store.setDefaultSort('title', 'asc');
     }
     this.store = og.WebpageManager.store;
     this.store.addListener({messageToShow: {fn: this.showMessage, scope: this}});
@@ -109,10 +97,11 @@ og.WebpageManager = function() {
 		});
     var cm = new Ext.grid.ColumnModel([
 		sm,{
-			id: 'name',
+			id: 'title',
 			header: lang("title"),
-			dataIndex: 'name',
+			dataIndex: 'title',
 			width: 120,
+			sortable: true,
 			renderer: renderName
         },{
 			id: 'description',

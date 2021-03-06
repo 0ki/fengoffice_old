@@ -188,6 +188,9 @@
       ); // array
     } // getNameTextArray
     
+    function getByUserAndProject($project, $user) {
+    	return ProjectUsers::findOne(array('conditions' => array('`user_id` = ? AND `project_id` = ? ',  $user->getId() , $project->getId())));
+    }
     
   } // ProjectUsers 
 

@@ -114,6 +114,14 @@
     </td></tr></table>
     </div>
 </td>
+<td align="center">
+    <div style="width:150px;display:block; margin-right:10px;margin-bottom:40px">
+    <table width="100%" align="center"><tr><td align="center">
+    	<a class="internalLink" href="<?php echo get_url('administration', 'cron_events') ?>"><div class="coViewIconImage ico-large-cron"></div></a>
+    </td></tr><tr><td align="center"><b><a class="internalLink" href="<?php echo get_url('administration', 'cron_events') ?>"><?php echo lang('cron events') ?></a></b>
+    </td></tr></table>
+    </div>
+</td>
 
 <?php if(logged_user()->isAccountOwner()){ ?>
 <td align="center">

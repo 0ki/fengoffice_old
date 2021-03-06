@@ -225,6 +225,7 @@ class TemplateController extends ApplicationController {
 
 		$objects = $template->getObjects();
 		foreach ($objects as $object) {
+			if (!$object instanceof ProjectDataObject) continue;
 			$copy = $object->copy();
 			if ($copy->columnExists('is_template')) {
 				$copy->setColumnValue('is_template', false);
@@ -233,6 +234,8 @@ class TemplateController extends ApplicationController {
 			$copy->addToWorkspace(active_or_personal_project());
 			if ($copy instanceof ProjectTask) {
 				ProjectTasks::copySubTasks($object, $copy, false);
+			} else if ($copy instanceof ProjectMilestone) {
+				ProjectMilestones::copyTasks($object, $copy, false);
 			}
 		}
 		ajx_current("reload");

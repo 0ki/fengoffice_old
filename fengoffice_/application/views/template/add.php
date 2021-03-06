@@ -2,7 +2,7 @@
 	$workspaces = active_projects();
 	$genid = gen_id();
 ?>
-<form style='height:100%;background-color:white' class="internalForm" action="<?php echo $cotemplate->isNew() ? get_url('template', 'add') : $cotemplate->getEditUrl() ?>" method="post" enctype="multipart/form-data">
+<form style='height:100%;background-color:white' class="internalForm" action="<?php echo $cotemplate->isNew() ? get_url('template', 'add') : $cotemplate->getEditUrl() ?>" method="post" enctype="multipart/form-data" onsubmit="return og.templateConfirmSubmit()">
 
 <div class="template">
 <div class="coInputHeader">
@@ -28,7 +28,7 @@
 <div class="coInputSeparator"></div>
 <div class="coInputMainBlock">
 	
-	<div id="<?php echo $genid ?>add_template_objects_div" style="display:none">
+	<div id="<?php echo $genid ?>add_template_objects_div">
 		<fieldset><legend><?php echo lang('objects')?></legend>
 			<a id="<?php echo $genid ?>before" href="#" onclick="og.pickObjectForTemplate(this)"><?php echo lang('add an object to template') ?></a>
 		</fieldset>
@@ -105,6 +105,18 @@ og.removeObjectFromTemplate = function(div) {
 	for (var i=0; i < inputs.length; i++) {
 		inputs[i].name = 'objects[' + i + ']';
 	}
+	var d = parent.firstChild;
+	var i=0;
+	while (d != null) {
+		if (d.tagName == 'DIV') {
+			Ext.fly(d).removeClass("odd");
+			if (i % 2) {
+				Ext.fly(d).addClass("odd");
+			}
+			i++;
+		}
+		d = d.nextSibling;
+	}
 };
 
 og.templateObjectMouseOver = function() {
@@ -125,6 +137,15 @@ og.templateObjectMouseOut = function() {
 	if (close) {
 		close.style.display = 'none';
 	}
+};
+
+og.templateConfirmSubmit = function() {
+	var div = document.getElementById("<?php echo $genid ?>add_template_objects_div");
+	var count = div.getElementsByTagName('input').length;
+	if (count == 0) {
+		return confirm(lang('confirm template with no objects'));
+	}
+	return true;
 };
 
 <?php

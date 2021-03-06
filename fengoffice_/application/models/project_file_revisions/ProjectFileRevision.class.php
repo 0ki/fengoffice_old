@@ -327,6 +327,19 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 	//  System
 	// ---------------------------------------------------
 
+	private function cat_file($fname, $extension){
+		if (strpos(strtoupper($_ENV["OS"]), "WIN") === false){
+			exec(($extension == "doc"? CATDOC_PATH . ' -a ' : CATPPT_PATH) . ' ' . escapeshellarg($fname) . ' 2>&1', $result, $return_var);
+			if ($return_var > 0){
+				if (strpos(($extension == 'doc'?'catdoc':'catppt'),implode(" ",$result)) === false) {
+					Logger::log($result,Logger::ERROR);
+				}
+				return false;
+			}
+			return trim(implode(" ",$result));
+		} else return false;
+	}
+ 
 	function save(){
 		parent::save();
 		
@@ -345,6 +358,30 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 		    $searchable_object->setIsPrivate($this->isPrivate());
 		            
 		    $searchable_object->save();
+		} else if (($this->getFileType()->getExtension() == "doc" || $this->getFileType()->getExtension() == "ppt") && FileRepository::getBackend() instanceof FileRepository_Backend_FileSystem){
+			if (!$this->isNew())
+	    		SearchableObjects::dropContentByObjectColumn($this,'filecontent');
+	    		
+			$backend = FileRepository::getBackend();
+			if (!$backend->isInRepository($this->getRepositoryId()))
+				return;
+			$filepath = $backend->getFilePath($this->getRepositoryId());
+			$fileContents = $this->cat_file($filepath,$this->getFileType()->getExtension());
+			
+			if (!$fileContents)
+				return;
+	    	
+		    $searchable_object = new SearchableObject();
+		          
+		    $searchable_object->setRelObjectManager(get_class($this->manager()));
+		    $searchable_object->setRelObjectId($this->getObjectId());
+		    $searchable_object->setColumnName('filecontent');
+		    $searchable_object->setContent($fileContents);
+	        $searchable_object->setProjectId(0); //TODO: search
+		    $searchable_object->setIsPrivate($this->isPrivate());
+		            
+		    $searchable_object->save();
+			
 		}
 	}
 	
@@ -374,7 +411,27 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 	 * @return boolean
 	 */
 	function delete() {
-		FileRepository::deleteFile($this->getRepositoryId());
+		if ($this->getTypeString() == 'sprd') {
+			try {
+				$bookId = $this->getFileContent();
+				ob_start();
+				include_once ROOT . "/" . PUBLIC_FOLDER . "/assets/javascript/gelSheet/php/config/settings.php";
+				include_once ROOT . "/" . PUBLIC_FOLDER . "/assets/javascript/gelSheet/php/util/db_functions.php";
+				//include_once ROOT . "/" . PUBLIC_FOLDER . "/assets/javascript/gelSheet/php/util/lang/languages.php";
+				include_once ROOT . "/" . PUBLIC_FOLDER . "/assets/javascript/gelSheet/php/controller/BookController.class.php";
+				$bc = new BookController();
+				$bc->deleteBook($bookId);
+				ob_end_clean();
+			} catch (Error $e) {
+			}
+		}
+		try {
+			FileRepository::deleteFile($this->getRepositoryId());
+		} catch (Exception $ex) {
+			if (Env::isDebugging()) {
+				Logger::log($ex->getMessage());
+			}
+		}
 		$this->deleteThumb(false);
 		return parent::delete();
 	} // delete

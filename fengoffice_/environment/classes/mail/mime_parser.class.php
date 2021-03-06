@@ -2,7 +2,7 @@
 /*
  * mime_parser.php
  *
- * @(#) $Id: mime_parser.class.php,v 1.5 2008/11/28 14:20:08 alvarotm01 Exp $
+ * @(#) $Id: mime_parser.class.php,v 1.6 2008/12/16 19:13:13 alvarotm01 Exp $
  *
  */
 
@@ -30,7 +30,7 @@ define('MIME_ADDRESS_FIRST',            2);
 
 	<package>net.manuellemos.mimeparser</package>
 
-	<version>@(#) $Id: mime_parser.class.php,v 1.5 2008/11/28 14:20:08 alvarotm01 Exp $</version>
+	<version>@(#) $Id: mime_parser.class.php,v 1.6 2008/12/16 19:13:13 alvarotm01 Exp $</version>
 	<copyright>Copyright  (C) Manuel Lemos 2006 - 2008</copyright>
 	<title>MIME parser</title>
 	<author>Manuel Lemos</author>
@@ -2010,8 +2010,9 @@ class mime_parser_class
 
 					case 'mixed':
 						$results = $parts[0];
-						for($p = 1; $p < $lp; ++$p)
-							$results['Attachments'][] = $parts[$p];
+						for($p = 1; $p < $lp; ++$p) {
+							if (isset($parts[$p]['FileName'])) $results['Attachments'][] = $parts[$p];
+						}
 						break;
 
 					case 'report':

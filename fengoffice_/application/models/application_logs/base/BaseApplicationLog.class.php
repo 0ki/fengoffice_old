@@ -252,6 +252,28 @@
     function setIsSilent($value) {
       return $this->setColumnValue('is_silent', $value);
     } // setIsSilent() 
+     
+    /**
+    * Return value of 'log_data' field
+    *
+    * @access public
+    * @param void
+    * @return string 
+    */
+    function getLogData() {
+      return $this->getColumnValue('log_data');
+    } // getLogData()
+    
+    /**
+    * Set value of 'log_data' field
+    *
+    * @access public   
+    * @param string $value
+    * @return boolean
+    */
+    function setLogData($value) {
+      return $this->setColumnValue('log_data', $value);
+    } // setLogData()
     
     
     /**

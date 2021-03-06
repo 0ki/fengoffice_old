@@ -262,7 +262,11 @@ return array(
 	'assign contact to workspace desc' => 'To assign the contact to a workspace check the workspace and then fill in the role in the text field.',
 
 	'cannot change parent workspace' => 'You don\'t have enough access permissions to change this workspace\'s parent.',
-	'cannot change parent workspace description' => 'This workspace might be a child of a workspace you don\'t have access to.'
+	'cannot change parent workspace description' => 'This workspace might be a child of a workspace you don\'t have access to.',
+
+	'copy of file' => 'Copy of {0}',
+	'add subscribers desc' => 'Subscribe selected people to this object. Subscribed users will receive notifications about changes made to this object.',
+	'add custom property' => 'Add a custom property',
 ); // array
 
 ?>

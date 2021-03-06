@@ -12,7 +12,6 @@ og.TasksBottomToolbar = function(config) {
 		});
 		
 	og.TasksBottomToolbar.superclass.constructor.call(this, config);
-	var userPreferences = Ext.util.JSON.decode(document.getElementById(config.userPreferencesHfId).value);
 	
     this.groupcombo = new Ext.form.ComboBox({
         store: new Ext.data.SimpleStore({
@@ -48,7 +47,7 @@ og.TasksBottomToolbar = function(config) {
         	}
         }
     });
-    this.groupcombo.setValue(userPreferences.groupBy);
+    this.groupcombo.setValue(ogTasks.userPreferences.groupBy);
 	
     this.ordercombo = new Ext.form.ComboBox({
         store: new Ext.data.SimpleStore({
@@ -79,7 +78,7 @@ og.TasksBottomToolbar = function(config) {
         	}
         }
     });
-    this.ordercombo.setValue(userPreferences.orderBy);
+    this.ordercombo.setValue(ogTasks.userPreferences.orderBy);
     
 	this.add(lang('group by') + ':');
     this.add(this.groupcombo);
@@ -91,7 +90,7 @@ og.TasksBottomToolbar = function(config) {
 		id:'btnShowWorkspaces',
         text: lang('workspaces'),
         enableToggle: true,
-        pressed: (userPreferences.showWorkspaces == 1),
+        pressed: (ogTasks.userPreferences.showWorkspaces == 1),
         listeners: {
         	'toggle' : function(button,isPressed){
 				ogTasks.redrawGroups = false;
@@ -106,7 +105,7 @@ og.TasksBottomToolbar = function(config) {
 		id:'btnShowTime',
         text: lang('time'),
         enableToggle: true,
-        pressed: (userPreferences.showTime == 1),
+        pressed: (ogTasks.userPreferences.showTime == 1),
         listeners: {
         	'toggle' : function(button,isPressed){
 				ogTasks.redrawGroups = false;
@@ -121,7 +120,7 @@ og.TasksBottomToolbar = function(config) {
 		id:'btnShowTags',
         text: lang('tags'),
         enableToggle: true,
-        pressed: (userPreferences.showTags == 1),
+        pressed: (ogTasks.userPreferences.showTags == 1),
         listeners: {
         	'toggle' : function(button,isPressed){
 				ogTasks.redrawGroups = false;
@@ -136,7 +135,7 @@ og.TasksBottomToolbar = function(config) {
 		id:'btnShowDates',
         text: lang('dates'),
         enableToggle: true,
-        pressed: (userPreferences.showDates == 1),
+        pressed: (ogTasks.userPreferences.showDates == 1),
         listeners: {
         	'toggle' : function(button,isPressed){
 				ogTasks.redrawGroups = false;

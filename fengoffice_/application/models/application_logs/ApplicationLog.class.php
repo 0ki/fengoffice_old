@@ -92,8 +92,62 @@ class ApplicationLog extends BaseApplicationLog {
 	 */
 	function getText() {
 		$code = strtolower('log ' . ($this->getAction()) . ' ' . $this->getRelObjectManager());
-		return lang($code, $this->getObjectName());
+		$data = $this->getActionData();
+		if ($data)
+			$code = $code . ' data';
+		return lang($code, $this->getObjectName(), $this->getActionData());
 	} // getText
+	
+	function getActionData() {
+		$result = '';
+		
+		if ($this->getLogData() != ''){
+			switch($this->getAction()){
+				case ApplicationLogs::ACTION_LINK: 
+					$split = explode(':',$this->getLogData());
+					$obj = get_object_by_manager_and_id($split[1], $split[0]);
+					if ($obj && $obj->canView(logged_user())){
+						$ico_class = '';
+						switch($split[0]){
+							case 'ProjectMessages': $ico_class = 'ico-message';break;
+							case 'ProjectTasks': $ico_class = 'ico-task';break;
+							case 'ProjectMilestones': $ico_class = 'ico-milestone';break;
+							case 'Contacts': $ico_class = 'ico-contact';break;
+							case 'ProjectFiles': $ico_class = 'ico-file';break;
+							case 'ProjectFileRevisions': $ico_class = 'ico-file';break;
+							case 'ProjectEvents': $ico_class = 'ico-event';break;
+							default:break;
+						}
+						$result = '<a class="internalLink coViewAction ' . $ico_class . '" href="' . $obj->getViewUrl() . '">' .  clean($obj->getObjectName()) . '</a>';
+					}
+					break;
+				case ApplicationLogs::ACTION_UNLINK: 
+					$split = explode(':',$this->getLogData());
+					$obj = get_object_by_manager_and_id($split[1], $split[0]);
+					if ($obj && $obj->canView(logged_user())){
+						$ico_class = '';
+						switch($split[0]){
+							case 'ProjectMessages': $ico_class = 'ico-message';break;
+							case 'ProjectTasks': $ico_class = 'ico-task';break;
+							case 'ProjectMilestones': $ico_class = 'ico-milestone';break;
+							case 'Contacts': $ico_class = 'ico-contact';break;
+							case 'ProjectFiles': $ico_class = 'ico-file';break;
+							case 'ProjectFileRevisions': $ico_class = 'ico-file';break;
+							case 'ProjectEvents': $ico_class = 'ico-event';break;
+							default:break;
+						}
+						$result = '<a class="internalLink coViewAction ' . $ico_class . '" href="' . $obj->getViewUrl() . '">' .  clean($obj->getObjectName()) . '</a>';
+					}
+					break;
+				case ApplicationLogs::ACTION_TAG:
+					$result =  clean($this->getLogData());
+					break;
+				default: break;
+			}
+		}
+		
+		return $result;
+	}
 
 	/**
 	 * Return object connected with this action

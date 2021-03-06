@@ -14,13 +14,15 @@
     * @return array
     */
     static function getProjectMails(Project $project) {
-       $conditions = array('`project_id` = ?', $project->getId());
-      return self::findAll(array(
-        'conditions' => $conditions
-      )); // findAll
+		$condstr = self::getWorkspaceString();
+		return self::findAll(array(
+			'conditions' => array($condstr, $project->getId())
+		));
     } // getProjectMails
   	
-   
+	private static function getWorkspaceString(){
+		return '`id` IN (SELECT `object_id` FROM `'.TABLE_PREFIX.'workspace_objects` WHERE `object_manager` = \'MailContents\' AND `workspace_id` = ?)';
+	}
     
   } // MailContents 
 

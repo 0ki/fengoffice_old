@@ -221,12 +221,8 @@ class AccountController extends ApplicationController {
 			return;
 		} // if
 
-		$projects = $company->getProjects();
-		if(!is_array($projects) || !count($projects)) {
-			flash_error(lang('no projects owned by company'));
-			ajx_current("empty");
-			return;
-		} // if
+		if (logged_user()->isAdministrator())
+			$projects = Projects::getAll();
 
 		$permissions = ProjectUsers::getNameTextArray();
 

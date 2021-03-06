@@ -157,7 +157,7 @@ class FCKeditor
 	{
 		$HtmlValue = htmlspecialchars( $this->Value ) ;
 
-		$Html = '<div style="overflow:hidden;position:absolute;width:100%;height:100%">' ;
+		$Html = '<div style="overflow:hidden;position:relative;width:100%;height:100%">' ;
 
 		if ( $this->IsCompatible() )
 		{

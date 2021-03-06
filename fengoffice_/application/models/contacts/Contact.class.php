@@ -643,8 +643,12 @@ class Contact extends BaseContact {
 		if (can_manage_contacts($user, true))
 			return true;
 		else {
+			if ($user->getId() == $this->getUserId())
+				return true;
+				
 			if (can_read($user,$this))
 				return true;
+				
 			else{
 				$roles = $this->getRoles();
 				if ($roles){
@@ -680,7 +684,7 @@ class Contact extends BaseContact {
     function canEdit(User $user) {
     	if($this->getUserId()){
     		// a contact that has a user assigned to it can be modified by anybody that can manage security (this is: users and permissions) or the user himself.
-    		return can_manage_security(logged_user()) || $this->getUserId() == logged_user()->getId();
+    		return can_manage_contacts($user, true) || can_manage_security($user) || $this->getUserId() == $user->getId();
     	}
 		else 
 			return can_manage_contacts($user, true);

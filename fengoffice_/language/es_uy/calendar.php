@@ -136,7 +136,19 @@
 	'participate' => 'Participa',
 	'no invitations to this event' => 'No se enviaron invitaciones para este evento',
 	'duration must be at least 15 minutes' => 'La duración debe ser al menos 15 minutos',
-
+	
 	'event dnx' => 'El evento requerido no existe',
+	'no subject' => 'Sin Asunto',
+	'success import events' => 'Se importaron {0} eventos.',
+	'no events to import' => 'No hay eventos para importar',
+	'import events from file' => 'Importación de eventos desde archivo',
+	'file should be in icalendar format' => 'El archivo debe tener formato iCalendar',
+	'export calendar' => 'Exportación de calendario',
+	'range of events' => 'Rango de eventos',
+	'from date' => 'Desde',
+	'to date' => 'Hasta',
+	'success export calendar' => 'Se exportaron {0} eventos.',
+	'calendar name desc' => 'Nombre para el calendario a exportar',
+	'calendar will be exported in icalendar format' => 'El calendario se exportará en formato iCalendar.',
   ); // array
 ?>

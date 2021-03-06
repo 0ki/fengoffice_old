@@ -242,6 +242,23 @@ og.CalendarToolbarItems = [
 				})
 			})
 		]}
+	}),
+	'-',
+	new Ext.Action({
+		text: lang('import/export'),
+           tooltip: lang('import - export'),
+		menu: {items: [
+			{text: lang('import'), iconCls: 'ico-upload', handler: function() {
+				hideCalendarToolbar();
+				var url = og.getUrl('event', 'icalendar_import');
+				og.openLink(url);
+			}},
+			{text: lang('export'), iconCls: 'ico-download', handler: function() {
+				hideCalendarToolbar();
+				var url = og.getUrl('event', 'icalendar_export');
+				og.openLink(url);
+			}}
+		]}
 	})
 	
 ];

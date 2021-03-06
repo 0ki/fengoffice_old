@@ -13,9 +13,12 @@
   define('DATA_TYPE_RESOURCE', 'RESOURCE');
   define('DATA_TYPE_OBJECT',   'OBJECT');
   
+  
   define('EMPTY_IMAGE', 's.gif');
   
   define('LUCENE_SEARCH', false);
+  define('CATDOC_PATH', 'catdoc');
+  define('CATPPT_PATH', 'catppt');
   
   // Some nice to have regexps
   define('EMAIL_FORMAT', "/^([a-z0-9+_]|\\-|\\.)+@(([a-z0-9_]|\\-)+\\.)+[a-z]{2,6}\$/i");

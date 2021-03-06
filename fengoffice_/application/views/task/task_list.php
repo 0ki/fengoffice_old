@@ -15,7 +15,7 @@
   
 <?php if($task_list->getText()) { ?>
   <div style="padding-bottom:20px;color:#333"><table><tr><td style="padding-right:5px;"><b>
-  <?php echo lang('description') ?>:</b></td><td style="padding-left:5px;border-left:0px solid #CCC"><?php echo nl2br(clean($task_list->getText()))?></td></tr></table></div>
+  <?php echo lang('description') ?>:</b></td><td style="padding-left:5px;border-left:0px solid #CCC"><?php echo convert_to_links(nl2br(clean($task_list->getText())))?></td></tr></table></div>
 <?php } // if ?>
 
 
@@ -71,7 +71,7 @@
           <label for="addTaskAssignTo<?php echo $task_list->getId() ?>"><?php echo lang('assign to') ?>:</label>
           <?php echo assign_to_select_box("task[assigned_to]", $task_list->getProject(), null, array('id' => 'addTaskAssignTo' . $task_list->getId())) ?>
         </div>
-        <input type="hidden" id="addTaskMilestoneId<?php echo $task_list->getId() ?>" name="task[milestone_id]" value="<?php echo $task_list->getMilestoneId() ?>"/>
+		<input type="hidden" id="addTaskMilestoneId<?php echo $task_list->getId() ?>" name="task[milestone_id]" value="<?php echo $task_list->getMilestoneId() ?>"/>
 		<input type="hidden" id="addTaskProjectId<?php echo $task_list->getId() ?>" name="task[project_id]" value="<?php echo $task_list->getProjectId() ?>"/>
 		<input type="hidden" id="addTaskTags<?php echo $task_list->getId() ?>" name="task[tags]" value="<?php echo implode(',',$task_list->getTagNames()) ?>"/>
 		<input type="hidden" id="addTaskPriority<?php echo $task_list->getId() ?>" name="task[priority]" value="<?php echo $task_list->getPriority() ?>"/>

@@ -393,6 +393,15 @@ class ProjectTask extends BaseProjectTask {
 		$this->setCompletedOn(DateTimeValueLib::now());
 		$this->setCompletedById(logged_user()->getId());
 		$this->save();
+	
+		$timeslots = $this->getTimeslots();
+		if ($timeslots){
+			foreach ($timeslots as $timeslot){
+				if ($timeslot->isOpen())
+					$timeslot->close();
+					$timeslot->save();
+			}
+		}
 
 		/*
 		 * if this is run then when the user wants to reopen a task
@@ -558,11 +567,12 @@ class ProjectTask extends BaseProjectTask {
 	 * @param void
 	 * @return array
 	 */
-	function getSubTasks() {
+	function getSubTasks($include_trashed = true) {
 		if(is_null($this->all_tasks)) {
 			$this->all_tasks = ProjectTasks::findAll(array(
           'conditions' => '`parent_id` = ' . DB::escape($this->getId()),
-          'order' => '`order`, `created_on`'
+          'order' => '`order`, `created_on`',
+			'include_trashed' => $include_trashed
           )); // findAll
           if (is_null($this->all_tasks)) $this->all_tasks = array();
 		} // if
@@ -570,6 +580,35 @@ class ProjectTask extends BaseProjectTask {
 		return $this->all_tasks;
 	} // getTasks
 
+	/**
+	 * Return all tasks from this list
+	 *
+	 * @access public
+	 * @param void
+	 * @return array
+	 */
+	function getAllSubTasks($include_trashed = true) {
+		if(is_null($this->all_tasks)) {
+			$this->all_tasks = ProjectTasks::findAll(array(
+          'conditions' => '`parent_id` = ' . DB::escape($this->getId()),
+          'order' => '`order`, `created_on`',
+			'include_trashed' => $include_trashed
+          )); // findAll
+          if (is_null($this->all_tasks)) $this->all_tasks = array();
+		} // if
+		
+		$tasks = $this->all_tasks;
+		$result = $tasks;
+		
+		for ($i = 0; $i < count($tasks); $i++){
+			$tsubtasks = $tasks[$i]->getAllSubTasks($include_trashed);
+			for ($j = 0; $j < count($tsubtasks); $j++)
+				$result[] = $tsubtasks[$j];
+		}
+		
+		return $result;
+	} // getTasks
+	
 	/**
 	 * Return open tasks
 	 *
@@ -907,9 +946,11 @@ class ProjectTask extends BaseProjectTask {
 	 * @param boolean $delete_childs
 	 * @return boolean
 	 */
-	function delete($delete_childs = true) {
-		if($delete_childs)  {
-			$this->deleteSubTasks();
+	function delete($delete_children = true) {
+		if($delete_children)  {
+			$children = $this->getSubTasks();
+			foreach($children as $child)
+				$child->delete(true);
 			$this->deleteHandins();
 		}
 		$related_forms = $this->getRelatedForms();
@@ -923,6 +964,17 @@ class ProjectTask extends BaseProjectTask {
 		if($task_list instanceof ProjectTask) $task_list->detachTask($this);
 		return parent::delete();
 	} // delete
+	
+	function trash($trash_children = true, $trashDate = null) {
+		if (is_null($trashDate))
+			$trashDate = DateTimeValueLib::now();
+		if($trash_children)  {
+			$children = $this->getAllSubTasks();
+			foreach($children as $child)
+				$child->trash(true,$trashDate);
+		}
+		return parent::trash($trashDate);
+	} // delete
 
 	/**
 	 * Save this list
@@ -933,6 +985,8 @@ class ProjectTask extends BaseProjectTask {
 	function save() {
 		if (!$this->isNew()) {
 			$old_me = ProjectTasks::findById($this->getId(), true);
+			if (!$old_me instanceof ProjectTask) return; // TODO: check this!!!
+			/* This was added cause deleting some tasks was giving an error, couldn't reproduce it again, but this solved it */
 		}
 		if ($this->isNew() ||
 				$this->getAssignedToCompanyId() != $old_me->getAssignedToCompanyId() ||
@@ -958,9 +1012,15 @@ class ProjectTask extends BaseProjectTask {
 		return true;
 	} // save
 
-	function untrash(){
+	function untrash($untrash_children = true){
 		$deleteTime = $this->getTrashedOn();
 		parent::untrash();
+		if ($untrash_children){
+			$children = $this->getAllSubTasks();
+			foreach($children as $child)
+				if ($child->isTrashed() && $child->getTrashedOn()->getTimestamp() == $deleteTime->getTimestamp())
+					$child->untrash(false);
+		}
 
 		if ($this->hasOpenTimeslots()){
 			$openTimeslots = $this->getOpenTimeslots();

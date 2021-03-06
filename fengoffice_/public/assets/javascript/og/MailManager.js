@@ -10,29 +10,38 @@ og.MailManager = function() {
 	this.stateType = "received";
 	this.doNotRemove = true;
 	this.needRefresh = false;
-	
-	
-	
+	showLoading = true;
+/*	
+	// Check mails every 15 mminutes
+	checkMail = function() {
+		showLoading = false;
+		og.showOtherMessage(lang('checking email accounts'));		
+		og.openLink(og.getUrl('mail', 'checkmail'), {callback:og.hideOtherMessage, doNotShowLoading:true});
+		og.MailManager.store.load();
+		showLoading = true;
+		setTimeout("checkMail()", 15*60*1000); //15 min
+	}
+	setTimeout("checkMail()", 5*1000);
+*/	
 	if (!og.MailManager.store) {
 		og.MailManager.store = new Ext.data.Store({
-			proxy: new Ext.data.HttpProxy(new Ext.data.Connection({
-				method: 'GET',
-				url: og.getUrl('mail', 'list_all', {ajax:true})
-			})),
+			proxy: new og.OpenGooProxy({
+				url: og.getUrl('mail', 'list_all'),
+				timeout: 0//Ext.Ajax.timeout
+			}),
 			reader: new Ext.data.JsonReader({
 				root: 'messages',
 				totalProperty: 'totalCount',
 				id: 'id',
 				fields: [
 					'object_id', 'type', 'accountId', 'accountName', 'hasAttachment', 'title', 'text', {name: 'date', type: 'date', dateFormat: 'timestamp'},
-					'projectId', 'projectName', 'userId', 'userName', 'tags', 'workspaceColors','isRead','from','from_email','isDraft','isSent'
+					'projectId', 'projectName', 'userId', 'userName', 'tags', 'workspaceColors','isRead','from','from_email','isDraft','isSent','folder'
 				]
 			}),
 			remoteSort: true,
 			listeners: {
 				'load': function() {
 					var d = this.reader.jsonData;
-					og.processResponse(d);
 					var ws = og.clean(Ext.getCmp('workspace-panel').getActiveWorkspace().name);
 					var tag = og.clean(Ext.getCmp('tag-panel').getSelectedTag().name);
 					if (d.totalCount === 0) {
@@ -44,17 +53,7 @@ og.MailManager = function() {
 					} else {
 						this.fireEvent('messageToShow', "");
 					}
-					og.hideLoading();
 					og.showWsPaths();
-				},
-				'beforeload': function() {
-					og.loading();
-					return true;
-				},
-				'loadexception': function() {
-					og.hideLoading();
-					var d = this.reader.jsonData;
-					og.processResponse(d);
 				}
 			}
 		});
@@ -82,19 +81,12 @@ og.MailManager = function() {
 		if (r.data.isSent) {
 			name = String.format('<span class="db-ico ico-sent" style="padding-left:18px" title="{1}">{0}</span>',name,lang("mail sent"));
 		}
-
-			
-		var projectstring = '';		
-	    if (r.data.projectId !== ''){
+		
+		var projectstring = '';
+	    if (r.data.projectId != ''){
 			var ids = String(r.data.projectId).split(',');
-			var names = og.clean(r.data.projectName).split(',');
-			var colors = String(r.data.workspaceColors).split(',');
-			projectstring = '<span class="og-wsname">';
-			for(var i = 0; i < ids.length; i++){
-				projectstring += String.format('<a href="#" class="og-wsname og-wsname-color-' + colors[i].trim() +  '" onclick="Ext.getCmp(\'workspace-panel\').select({1})">{0}</a>', names[i].trim(), ids[i].trim()) + "&nbsp";
-			}
-			projectstring += '</span>';
-
+			for(var i = 0; i < ids.length; i++)
+				projectstring += String.format('<span class="project-replace">{0}</span>&nbsp;', ids[i]);
 		}
 		
 		var text = '';
@@ -122,7 +114,7 @@ og.MailManager = function() {
 	
 	
 	function renderIcon(value, p, r) {
-		if (r.data.projectId > 0)
+		if (r.data.projectId.length > 0)
 			return '<div class="db-ico ico-email"></div>';
 		else
 			return String.format('<a href="#" onclick="og.openLink(\'{0}\')" title={1}><div class="db-ico ico-classify"></div></a>', og.getUrl('mail', 'classify', {id: r.data.object_id}), lang('classify'));
@@ -139,17 +131,23 @@ og.MailManager = function() {
 		return String.format('<a href="#" onclick="og.eventManager.fireEvent(\'mail account selected\',\'{1}\')">{0}</a>', og.clean(value), r.data.accountId);
 	}
 	
+	function renderFolder(value, p, r) {
+		if (r.data.folder != 'undefined')
+			return r.data.folder;
+		else
+			return '';
+	}
+	
 	function renderDate(value, p, r) {
 		if (!value) {
 			return "";
 		}
-		var userString = String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', og.clean(r.data.userName), og.getUrl('user', 'card', {id: r.data.userId}));
-	
+
 		var now = new Date();
 		if (now.dateFormat('Y-m-d') > value.dateFormat('Y-m-d')) {
-			return lang('last updated by on', userString, value.dateFormat('M j'));
+			return value.dateFormat(lang('date format') + ' h:i a');
 		} else {
-			return lang('last updated by at', userString, value.dateFormat('h:i a'));
+			return value.dateFormat('h:i a');
 		}
 	}
 
@@ -277,11 +275,18 @@ og.MailManager = function() {
 			width: 60
         },{
 			id: 'date',
-			header: lang("last updated by"),
+			header: lang("date"),
 			dataIndex: 'date',
-			width: 50,
+			width: 60,
 			sortable: true,
 			renderer: renderDate
+        },{
+			id: 'folder',
+			header: lang("folder"),
+			dataIndex: 'folderName',
+			width: 60,
+			sortable: true,
+			renderer: renderFolder
         }]);
 	cm.defaultSortable = false;
 
@@ -671,12 +676,10 @@ og.MailManager = function() {
 				text: lang('check mails'),
 				iconCls: 'ico-check_mails',
 				handler: function() {
-					Ext.Ajax.timeout = Ext.Ajax.timeout * 10;
-					og.openLink(og.getUrl('mail', 'checkmail', {ajax:true}));
-					this.load({});
-							//action: "checkmail"});
+					this.load({
+						action: "checkmail"
+					});
 					this.action = "";
-					Ext.Ajax.timeout = Ext.Ajax.timeout / 10;
 				},
 				scope: this
 			}),
@@ -812,7 +815,10 @@ og.MailManager = function() {
     		this.needRefresh = true;
     	}
 	}, this);
+
+
 };
+
 
 Ext.extend(og.MailManager, Ext.grid.GridPanel, {
 	load: function(params) {

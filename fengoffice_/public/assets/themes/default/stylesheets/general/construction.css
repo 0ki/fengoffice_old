@@ -123,6 +123,9 @@
 	background: transparent url(../../extjs/images/default/button/btn-sprite.gif) repeat-x scroll 0pt -43px !important;
 }
 
+.ico-quick-add {
+	background-image: url(../../images/16x16/add.png) !important;
+}
 .quickAddButton {
 	width: 60px;
 	height: 18px;
@@ -145,9 +148,6 @@
 .quickAddButton .x-btn-right{
 	background: transparent !important;
 	height:19px;
-}
-#quickAdd .x-btn-over{
-	border: 1px solid deepskyblue;
 }
 
 #searchboxSearch button:hover {

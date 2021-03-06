@@ -32,7 +32,7 @@ function cal_get_ws_color($ws_color, &$ws_style, &$ws_class, &$txt_color, &$bord
 		$ws_class = "og-wsname-color-$ws_color";
 	} else if ($ws_color>12) {
 		$ws_style = "";
-		$txt_color = '#333333';
+		$txt_color = '#003562';
 		$ws_class = "og-wsname-color-$ws_color";	
 	}else {
 		$ws_style = "color: #fff;background-color: #C5C7C1;border-color: #C5C7C1;";
@@ -56,6 +56,7 @@ function cal_get_ws_color($ws_color, &$ws_style, &$ws_class, &$txt_color, &$bord
 			case 0: $border_color = '#006633'; break;
 			default: $border_color = '#333333'; break;
 		}
+		if ($ws_color <= 12) $border_color = darkerHtmlColor($border_color, 25);
 	}
 	
 }

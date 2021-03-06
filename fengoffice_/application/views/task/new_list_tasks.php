@@ -12,10 +12,12 @@
 	$companies_array = array();
 	
 	
-	foreach($all_templates as $template)
-		$all_templates_array[] = $template->getArrayInfo();
-	foreach($project_templates as $template)
-		$project_templates_array[] = $template->getArrayInfo();
+	if (isset($all_templates) && !is_null($all_templates))
+		foreach($all_templates as $template)
+			$all_templates_array[] = $template->getArrayInfo();
+	if (isset($project_templates) && !is_null($project_templates))
+		foreach($project_templates as $template)
+			$project_templates_array[] = $template->getArrayInfo();
 	if (isset($tasks))
 		foreach($tasks as $task)
 			$tasks_array[] = $task->getArrayInfo();
@@ -49,7 +51,7 @@
 	</div>
 	<?php } ?>
 		<div id="tasksPanelContainer" style="background-color:white;padding:7px;padding-top:0px;">
-	<?php if(!isset($tasks)) { ?>
+	<?php if(!(isset($tasks) || $userPreferences['groupBy'] == 'milestone')) { ?>
 		<div style="font-size:130%;width:100%;text-align:center;padding-top:10px;color:#777"><?php echo lang('no tasks to display') ?></div>
 	<?php } ?>
 	</div>
@@ -59,18 +61,17 @@
 
 
 <script type="text/javascript">
+	ogTasks.userPreferences = Ext.util.JSON.decode(document.getElementById('hfUserPreferences').value);
 	var ogTasksTT = new og.TasksTopToolbar({
 		projectTemplatesHfId:'hfProjectTemplates',
 		allTemplatesHfId:'hfAllTemplates',
 		usersHfId:'hfUsers',
 		companiesHfId:'hfCompanies',
-		userPreferencesHfId:'hfUserPreferences',
 		internalMilestonesHfId:'hfIMilestones',
 		externalMilestonesHfId:'hfEMilestones',
 		renderTo:'tasksPanelTopToolbar'
 		});
 	var ogTasksBT = new og.TasksBottomToolbar({
-		userPreferencesHfId:'hfUserPreferences',
 		renderTo:'tasksPanelBottomToolbar'
 		});
 
@@ -80,8 +81,8 @@
 	}
 	window.onresize=resizeTasksPanel;
 	resizeTasksPanel();
-<?php if(isset($tasks)) {?>
 	ogTasks.loadDataFromHF();
+<?php if(isset($tasks) || $userPreferences['groupBy'] == 'milestone') {?>
 	ogTasks.draw();
 <?php } ?>
 

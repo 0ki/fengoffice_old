@@ -1,6 +1,12 @@
 <?php 
   $genid = gen_id();
-  $project = $milestone->getProject();
+  $object = $milestone;
+  if ($milestone->isNew()) {
+  	$project = active_or_personal_project();
+  } else {
+  	$project = $milestone->getProject();
+  }
+  
 ?>
 <form style='height:100%;background-color:white' class="internalForm" action="<?php echo $milestone->isNew() ? get_url('milestone', 'add', array("copyId" => array_var($milestone_data, 'copyId'))) : $milestone->getEditUrl() ?>" method="post">
 
@@ -36,9 +42,10 @@
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_milestone_tags_div', this)"><?php echo lang('tags') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_milestone_description_div', this)"><?php echo lang('description') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_milestone_options_div', this)"><?php echo lang('options') ?></a> - 
-		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_milestone_properties_div', this)"><?php echo lang('custom properties') ?></a>
-		<?php if($milestone->isNew() || $milestone->canLinkObject(logged_user())) { ?> - 
-			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_milestone_linked_objects_div', this)"><?php echo lang('linked objects') ?></a>
+		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_custom_properties_div', this)"><?php echo lang('custom properties') ?></a> -
+		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_subscribers_div',this)"><?php echo lang('object subscribers') ?></a>
+		<?php if($object->isNew() || $object->canLinkObject(logged_user(), $project)) { ?> - 
+			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_linked_objects_div',this)"><?php echo lang('linked objects') ?></a>
 		<?php } ?>
 	</div>
 </div>
@@ -52,7 +59,7 @@
 	<div id="<?php echo $genid ?>add_milestone_select_workspace_div" style="display:none">
 	<fieldset>
 	<legend><?php echo lang('workspace') ?></legend>
-		<?php echo select_project2('milestone[project_id]', ($project instanceof Project)? $project->getId():active_or_personal_project()->getId(), $genid) ?>
+		<?php echo select_project2('milestone[project_id]', $project->getId(), $genid) ?>
 	</fieldset>
 	</div>
 
@@ -89,21 +96,48 @@
 	</fieldset>
 	</div>
 	
-	<div id='<?php echo $genid ?>add_milestone_properties_div' style="display:none">
+	<div id='<?php echo $genid ?>add_custom_properties_div' style="display:none">
 	<fieldset>
 	<legend><?php echo lang('custom properties') ?></legend>
-		<?php echo render_object_properties('milestone', $milestone); ?>
+		<?php echo render_add_custom_properties($object); ?>
 	</fieldset>
 	</div>
 	
-	<?php if ($milestone->isNew() || $milestone->canLinkObject(logged_user())) { ?>
-	<div style="display:none" id="<?php echo $genid ?>add_milestone_linked_objects_div">
+	<div id="<?php echo $genid ?>add_subscribers_div" style="display:none">
+		<fieldset>
+		<legend><?php echo lang('object subscribers') ?></legend>
+		<div id="<?php echo $genid ?>add_subscribers_content">
+			<?php echo render_add_subscribers($object, $genid); ?>
+		</div>
+		</fieldset>
+	</div>
+	
+	<script>
+	var wsTree = Ext.get('<?php echo $genid ?>wsSel');
+	wsTree.previousValue = <?php echo $project->getId() ?>;
+	wsTree.on("click", function(ws) {
+		var uids = App.modules.addMessageForm.getCheckedUsers('<?php echo $genid ?>');
+		var wsid = Ext.get('<?php echo $genid ?>wsSelValue').getValue();
+		if (wsid != this.previousValue) {
+			this.previousValue = wsid;
+			Ext.get('<?php echo $genid ?>add_subscribers_content').load({
+				url: og.getUrl('object', 'render_add_subscribers', {
+					workspaces: wsid,
+					users: uids,
+					genid: '<?php echo $genid ?>',
+					object_type: '<?php echo get_class($object->manager()) ?>'
+				}),
+				scripts: true
+			});
+		}
+	}, wsTree);
+	</script>
+
+	<?php if($object->isNew() || $object->canLinkObject(logged_user(), $project)) { ?>
+	<div style="display:none" id="<?php echo $genid ?>add_linked_objects_div">
 	<fieldset>
-	<legend><?php echo lang('linked objects') ?></legend>
-	  	  <table style="width:100%;margin-left:2px;margin-right:3px" id="tbl_linked_objects">
-	   	<tbody></tbody>
-		</table>
-		<?php echo render_object_links($milestone, $milestone->canEdit(logged_user())) ?>
+		<legend><?php echo lang('linked objects') ?></legend>
+		<?php echo render_object_link_form($object) ?>
 	</fieldset>	
 	</div>
 	<?php } // if ?>

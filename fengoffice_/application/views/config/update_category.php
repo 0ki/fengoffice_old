@@ -1,11 +1,11 @@
-<?php
-  set_page_title($category->getDisplayName());
-  administration_tabbed_navigation(ADMINISTRATION_TAB_CONFIGURATION);
-  administration_crumbs(array(
-    array(lang('configuration'), get_url('administration', 'configuration')),
-    array($category->getDisplayName())
-  ));
-?>
+
+<div class="adminConfiguration" style="height:100%;background-color:white">
+  <div class="adminHeader">
+  	<div class="adminTitle"><?php echo clean($category->getDisplayName()) ?></div>
+  </div>
+  <div class="adminSeparator"></div>
+  <div class="adminMainBlock">
+  
 <?php if(isset($options) && is_array($options) && count($options)) { ?>
 <form class="internalForm" action="<?php echo $category->getUpdateUrl() ?>" method="post" onreset="return confirm('<?php echo lang('confirm reset form') ?>')">
   <div id="configCategoryOptions">
@@ -30,3 +30,5 @@
 <?php } else { ?>
 <p><?php echo lang('config category is empty') ?></p>
 <?php } // if ?>
+</div>
+</div>

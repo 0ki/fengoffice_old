@@ -136,10 +136,12 @@
 	'maximum number of users exceeded error' => 'The maximum number of users has been exceeded. The application will not work anymore until this issue is resolved.',
 	'maximum disk space reached' => 'Your disk quota is full. Please delete some object before trying to add new ones, or contact support to enable more users.',
 	'error db backup' => 'Error while creating database backup. Check MYSQLDUMP_COMMAND constant.',
+  	'success db backup' => 'Backup created successfully.',
 	'error create backup folder' => 'Error while creating backup folder. Cannot complete backup',
 	'error delete backup' => 'Error while deleting database backup,',
 	'success delete backup' => 'Backup was deleted',
     'name must be unique' => 'Sorry, but selected name is already taken',
+  	'not implemented' => 'Not implemented',
    ); // array
 
 ?>

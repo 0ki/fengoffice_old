@@ -342,7 +342,7 @@
   function pick_datetime_widget($name, $value = null) {
     return text_field($name, $value);
   } // pick_datetime_widget
-  
+    
   /**
   * Return pick date widget
   *
@@ -406,6 +406,7 @@
   } // pick_date_widget
   
   function pick_date_widget2($name, $value = null, $genid = null, $display_date_info = true) {
+  	if ($genid == null) $genid = gen_id();
   	$dateValue = '';
   	if ($value instanceOf DateTimeValue){
   		if (lang('date format') == 'm/d/Y')
@@ -414,7 +415,7 @@
   			$dateValue =  $value->getDay() . '/' . $value->getMonth() . '/' . $value->getYear();
   	}
   	
-  	$html = "<table><tr><td width=140><span id='" . $genid . $name . "'></span></td></tr></table>";
+  	$html = "<table><tr><td><span id='" . $genid . $name . "'></span></td></tr></table>";
   	if ($display_date_info)
   		$html .= "<td style='padding-top:4px;font-size:80%'><span class='desc'>" . lang('date format description') . "</span></td>";
 	$html .= "<script type='text/javascript'>
@@ -440,7 +441,10 @@
   } // pick_time_widget
   
   function pick_time_widget2($name, $value = null, $genid = null, $format = null) {
-  	if ($format == null) $format = (config_option('time_format_use_24') ? 'G:i' : 'g:i A');
+  	if ($format == null) $format = (user_config_option('time_format_use_24') ? 'G:i' : 'g:i A');
+  	if ($value instanceof DateTimeValue) {
+  		$value = $value->format($format);
+  	}
   	
   	$html = "<table><tr><td><div id='" . $genid . $name . "'></div></td></tr></table>";
 	$html .= "<script type='text/javascript'>
@@ -547,5 +551,33 @@
   	//if (!is_numeric($value)) $value = 0;
   	return text_field($name, $value, array("maxlength" => 9, "style"=> "width:100px", "onkeyup" => "event.target.value = event.target.value.replace(/[^0-9]/g, '')"));
   }
+  
+  /**
+   * Takes an html color and returns it a $percentage % darker
+   *
+   * @param string $htmlColor
+   * @param integer $percentage
+   * @return string $darkerColor
+   */
+  function darkerHtmlColor($htmlColor, $percentage = 20) {
+  	if ($percentage > 100 || $percentage < 0) $percentage = 0;
+    if (substr($htmlColor, 0, 1) == '#') {
+        $htmlColor = substr($htmlColor, 1);
+    }
+    if (strlen($htmlColor)!=6) {
+        return;
+    }
+    $darkerColor = '';
+    $pieces = explode(' ', rtrim(chunk_split($htmlColor, 2, ' ')));
+    foreach ($pieces as $piece) {
+        # convert from base16 to base10, reduce the value then come back to base16
+        $tmp = (int) (base_convert($piece, 16, 10));
+        $amount = (int) ($tmp * $percentage / 100); 
+        $darkpiece = $tmp - $amount;
+        $darkerColor .= sprintf("%02x", $darkpiece);
+    }
+    return '#'. $darkerColor;
+  } // darkerHtmlColor
+  
 
 ?>

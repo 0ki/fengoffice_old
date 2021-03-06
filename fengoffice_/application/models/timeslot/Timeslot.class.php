@@ -18,6 +18,8 @@ class Timeslot extends BaseTimeslot {
 	
 	protected $project = null;
 	
+	protected $object = null;
+	
 	/**
 	 * Return object connected with this action
 	 *
@@ -26,7 +28,10 @@ class Timeslot extends BaseTimeslot {
 	 * @return ProjectDataObject
 	 */
 	function getObject() {
-		return get_object_by_manager_and_id($this->getObjectId(), $this->getObjectManager());
+		if(is_null($this->object)) {
+			$this->object = get_object_by_manager_and_id($this->getObjectId(), $this->getObjectManager());
+		}
+		return $this->object;
 	} // getObject
 
 	/**
@@ -47,13 +52,11 @@ class Timeslot extends BaseTimeslot {
 	} // getProject
 	
 	function getWorkspaces($wsIds = null) {
-		if(is_null($this->workspaces)) {
-			$object = $this->getObject();
-			if($object instanceof ProjectDataobject) {
-				$this->workspaces = $object->getWorkspaces($wsIds);
-			} // if
-		} // if
-		return $this->workspaces;
+		$object = $this->getObject();
+		if($this->getObject() instanceof ProjectDataobject)
+			return $object->getWorkspaces($wsIds);
+		else
+			return null;
 	} // getProject
 
 	/**

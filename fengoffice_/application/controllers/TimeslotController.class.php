@@ -87,13 +87,15 @@ class TimeslotController extends ApplicationController {
 
 		$timeslot_data = array_var($_POST, 'timeslot');
 		$hours = array_var($timeslot_data, 'time');
-		$hours = - $hours;
+		
+		if (strpos($hours,',') && !strpos($hours,'.'))
+			$hours = str_replace(',','.',$hours);
 		
 		$timeslot = new Timeslot();
 		$dt = DateTimeValueLib::now();
 		$dt2 = DateTimeValueLib::now();
 		$timeslot->setEndTime($dt);
-		$dt2 = $dt2->add('h', $hours);
+		$dt2 = $dt2->add('h', -$hours);
 		$timeslot->setStartTime($dt2);
 		$timeslot->setDescription(array_var($timeslot_data, 'description'));
 		$timeslot->setUserId(logged_user()->getId());

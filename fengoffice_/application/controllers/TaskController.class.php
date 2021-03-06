@@ -210,13 +210,15 @@ class TaskController extends ApplicationController {
 				//Add new work timeslot for this task
 				if (array_var($task_data,'hours') != '' && array_var($task_data,'hours') > 0){
 					$hours = array_var($task_data, 'hours');
-					$hours = - $hours;
+					
+					if (strpos($hours,',') && !strpos($hours,'.'))
+						$hours = str_replace(',','.',$hours);
 					
 					$timeslot = new Timeslot();
 					$dt = DateTimeValueLib::now();
 					$dt2 = DateTimeValueLib::now();
 					$timeslot->setEndTime($dt);
-					$dt2 = $dt2->add('h', $hours);
+					$dt2 = $dt2->add('h', -$hours);
 					$timeslot->setStartTime($dt2);
 					$timeslot->setUserId(logged_user()->getId());
 					$timeslot->setObjectManager("ProjectTasks");
@@ -265,6 +267,7 @@ class TaskController extends ApplicationController {
 						if ($task->canEdit(logged_user())){
 							$tag = $options;
 							Tags::addObjectTag($tag, $task);
+							ApplicationLogs::createLog($task, $task->getWorkspaces(), ApplicationLogs::ACTION_TAG,false,null,true,$tag);
 							$tasksToReturn[] = $task->getArrayInfo();
 						}
 						break;
@@ -524,7 +527,7 @@ class TaskController extends ApplicationController {
 			tpl_assign('users', $users);
 			tpl_assign('companies', $companies);
 			tpl_assign('userPreferences', array(
-				'filterValue' => $filter_value,
+				'filterValue' => isset($filter_value)?$filter_value:'',
 				'filter' => $filter,
 				'status' => $status,
 				'showWorkspaces' => user_config_option('tasksShowWorkspaces',1),
@@ -532,7 +535,8 @@ class TaskController extends ApplicationController {
 				'showDates' => user_config_option('tasksShowDates',0),
 				'showTags' => user_config_option('tasksShowTags',0),
 				'groupBy' => user_config_option('tasksGroupBy','milestone'),
-				'orderBy' => user_config_option('tasksOrderBy','priority')
+				'orderBy' => user_config_option('tasksOrderBy','priority'),
+				'enable_notify' => user_config_option('can notify from quick add')
 			));
 			ajx_set_no_toolbar(true);
 		}
@@ -649,8 +653,8 @@ class TaskController extends ApplicationController {
 			
 			$task->setFromAttributes($task_data);
 			
-			$totalMinutes = (array_var($task_data, 'time_estimate_hours') * 60) +
-				(array_var($task_data, 'time_estimate_minutes'));
+			$totalMinutes = (array_var($task_data, 'time_estimate_hours',0) * 60) +
+				(array_var($task_data, 'time_estimate_minutes',0));
 			$task->setTimeEstimate($totalMinutes);
 			
 			$task->setIsPrivate(false); // Not used, but defined as not null.
@@ -701,8 +705,6 @@ class TaskController extends ApplicationController {
 					$handin->setObjectManager(get_class($task->manager()));
 					$handin->save();
 				} // foreach*/
-
-				$task->save_properties($task_data);
 				
 				if (array_var($_GET, 'copyId', 0) > 0) {
 					// copy remaining stuff from the task with id copyId
@@ -712,10 +714,14 @@ class TaskController extends ApplicationController {
 					}
 				}
 				
-				ApplicationLogs::createLog($task, $task->getWorkspaces(), ApplicationLogs::ACTION_ADD);
 				//Link objects
 			    $object_controller = new ObjectController();
 			    $object_controller->link_to_new_object($task);
+				$object_controller->add_subscribers($task);
+				$object_controller->add_custom_properties($task);
+				
+				ApplicationLogs::createLog($task, $task->getWorkspaces(), ApplicationLogs::ACTION_ADD);
+				
 				DB::commit();
 				
 				// notify email recipients
@@ -946,19 +952,24 @@ class TaskController extends ApplicationController {
 				}
 				$task->save();
 				$task->setTagsFromCSV(array_var($task_data, 'tags'));
-		  		$task->save_properties($task_data);
-				ApplicationLogs::createLog($task, $task->getWorkspaces(), ApplicationLogs::ACTION_EDIT);
-   
+
 				try {
 					$subtasks = $task->getSubTasks();
 					foreach ($subtasks as $sub) {
-						if (!$task->getAssignedTo() instanceof ApplicationDataObject) {
+						if (!$sub->getAssignedTo() instanceof ApplicationDataObject) {
 							$sub->setAssignedToCompanyId(array_var($assigned_to, 0, 0));
 							$sub->setAssignedToUserId(array_var($assigned_to, 1, 0));
 						}
 					}
 				} catch (Exception $e) {
 				}
+				
+				$object_controller = new ObjectController();
+			    $object_controller->link_to_new_object($task);
+				$object_controller->add_subscribers($task);
+				$object_controller->add_custom_properties($task);
+				
+				ApplicationLogs::createLog($task, $task->getWorkspaces(), ApplicationLogs::ACTION_EDIT);
 				
 				DB::commit();
 				
@@ -1109,12 +1120,12 @@ class TaskController extends ApplicationController {
 			//Already called in completeTask
 			//ApplicationLogs::createLog($task, $task->getProject(), ApplicationLogs::ACTION_CLOSE);
 			DB::commit();
-
 			flash_success(lang('success complete task'));
 			
 			$redirect_to = array_var($_GET, 'redirect_to', false);
 			if (array_var($_GET, 'quick', false)) {
 				ajx_current("empty");
+				ajx_extra_data(array("task" => $task->getArrayInfo()));
 			} else {
 				ajx_current("reload");
 			}
@@ -1172,6 +1183,7 @@ class TaskController extends ApplicationController {
 			$redirect_to = array_var($_GET, 'redirect_to', false);
 			if (array_var($_GET, 'quick', false)) {
 				ajx_current("empty");
+				ajx_extra_data(array("task" => $task->getArrayInfo()));
 			} else {
 				ajx_current("reload");
 			}
@@ -1304,6 +1316,51 @@ class TaskController extends ApplicationController {
 		$this->setLayout("html");
 		$this->view_tasks();
 	} // print_view
+	
+	function allowed_users_to_assign() {
+		$comp_array = array();
+		$wspace_id = isset($_GET['ws_id']) ? $_GET['ws_id'] : 0;
+		$ws = Projects::findById($wspace_id);
+		
+		if ($ws != null) $companies = $ws->getCompanies();
+		else $companies = Companies::findAll();
+		
+		if ($companies != null) {
+			foreach ($companies as $comp) {
+				if ($ws != null) $users = $comp->getUsersOnProject($ws);
+				else $users = $comp->getUsers();
+				if (is_array($users)) {
+				foreach ($users as $k => $user) {
+					$proj_us = ProjectUsers::findById(array('project_id' => $wspace_id, 'user_id' => $user->getId()));
+						if ($proj_us == null || !$proj_us->getCanReadTasks()) {
+							unset($users[$k]);
+						}
+					}
+					if (count($users) > 0) {
+						$comp_data = array(
+										'id' => $comp->getId(),
+										'name' => $comp->getName(),
+										'users' => array() 
+						);
+						foreach ($users as $user) {
+							$comp_data['users'][] = $user->getArrayInfo();			
+						}
+						$comp_array[] = $comp_data;
+					}
+				}
+			}
+		}
+		$object = array(
+			"totalCount" => count($comp_array),
+			"start" => 0,
+			"companies" => array()
+		);
+		$object['companies'] = $comp_array;
+
+		ajx_extra_data($object);
+		ajx_current("empty");
+	} // allowed_users_to_assign
+	
 } // TaskController
 
 ?>

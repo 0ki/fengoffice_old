@@ -2,3 +2,4 @@ autoloader.php
 log.php
 cache*
 
+importLog.txt

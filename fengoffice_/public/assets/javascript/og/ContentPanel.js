@@ -10,8 +10,9 @@ og.ContentPanel = function(config) {
 	if (!config) config = {};
 	if (!config.listeners) config.listeners = {};
 	this.onClose = config.onClose;
+	this.contentAutoScroll = typeof config.autoscroll == "undefined" || config.autoscroll;
 	Ext.apply(config, {
-		//autoScroll: true,
+		autoscroll: false,
 		layout: 'contentpanel',
 		loaded: false,
 		cls: 'og-content-panel', // identifies ContentPanels (see: og.getParentContentPanel)
@@ -24,7 +25,6 @@ og.ContentPanel = function(config) {
 			deactivate: this.deactivate
 		})
 	});
-	
 	
 	og.ContentPanel.superclass.constructor.call(this, config);
 	
@@ -214,26 +214,11 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 			}
 			var p = new og.HtmlPanel({
 				html: og.extractScripts(content.data),
-				autoScroll: true,
+				autoScroll: this.contentAutoScroll,//this.initialConfig.autoScroll,
 				tbar: tbar
 			});
 			this.add(p);
 			this.doLayout();
-			/** TODO: HISTORY MGMT
-			var url = this.content.url;
-			if (url) {
-				var start = url.indexOf("?") + 1;
-				var end = url.indexOf("#");
-				if (end < 0) {
-					var url = url.substring(start);
-				} else {
-					var url = url.substring(start, end);
-				}
-				if (url) {
-					Ext.History.add(url, true);
-				}
-			}
-			**/
 		} else if (content.type == 'url') {
 			if (this.active) {
 				og.openLink(content.data, {caller: this, preventSwitch: true});

@@ -1,5 +1,4 @@
 <?php 
-  set_page_title(lang('change password'));
   
   if($user->canUpdateProfile(logged_user())) {
 	add_page_action(lang('update profile'), $user->getEditProfileUrl(), 'ico-edit');
@@ -11,6 +10,14 @@
   } // if
 
 ?>
+
+<div class="adminConfiguration" style="height:100%;background-color:white">
+  <div class="adminHeader">
+  	<div class="adminTitle"><?php echo lang('change password') ?></div>
+  </div>
+  <div class="adminSeparator"></div>
+  <div class="adminMainBlock">
+  
 <form class="internalForm" action="<?php echo $user->getEditPasswordUrl($redirect_to) ?>" method="post">
 
   <?php tpl_display(get_template_path('form_errors'));
@@ -39,6 +46,5 @@
   
 </form>
 
-<script type="text/javascript">
-	
-</script>
+	</div>
+</div>
