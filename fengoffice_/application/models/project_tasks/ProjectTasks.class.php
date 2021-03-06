@@ -131,19 +131,16 @@ class ProjectTasks extends BaseProjectTasks {
 		$conditions = DB::prepareString(' AND `is_template` = false AND `completed_on` '. ($task_filter == 'complete' ? '<>' : '=') .' ? AND 
 			(IF(due_date>0,(`due_date` >= ? AND `due_date` < ?),false) OR IF(start_date>0,(`start_date` >= ? AND `start_date` < ?),false) OR ' . $rep_condition . ') ' . $archived_cond . $assignedFilter, array(EMPTY_DATETIME,$from_date, $to_date, $from_date, $to_date));
 		
+		$other_perm_conditions = SystemPermissions::userHasSystemPermission(logged_user(), 'can_see_assigned_to_other_tasks');
+		if(!$other_perm_conditions){
+			$conditions = " AND (`assigned_to_contact_id` = ". logged_user()->getId () ." OR `created_by_id` = ". logged_user()->getId () .")";
+		}
 		$result = self::instance()->listing(array(
 			"extra_conditions" => $conditions,
 			"raw_data" => $raw_data,
 		));
 		
-		$tasks = array();
-		foreach ($result->objects as $task) {
-			if ($task instanceof ProjectTask && $task->canView(logged_user())) {
-				$tasks[] = $task;
-			}
-		}
-		
-		return $tasks;
+		return $result->objects;
 	} // getDayTasksByUser
 	
 

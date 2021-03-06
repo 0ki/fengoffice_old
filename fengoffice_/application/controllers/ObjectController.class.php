@@ -1942,7 +1942,9 @@ class ObjectController extends ApplicationController {
 			$members = $member_ids;
 		} else {
 			// get members from context
-			$members = active_context_members(false);
+			if (!$ignore_context) {
+				$members = active_context_members(false);
+			}
 		}
 		if  (is_array($extra_member_ids)) {
 			if (isset($members)) {
@@ -1951,7 +1953,7 @@ class ObjectController extends ApplicationController {
 				$members = $extra_member_ids;
 			}
 		}
-		if (isset($members) && is_array($members) && count($members) > 0 && !(isset($template_id) || $template_id==0)) {
+		if (isset($members) && is_array($members) && count($members) > 0 && !(isset($template_id) && $template_id > 0)) {
 			$sql_members = "
 				AND (EXISTS (SELECT om.object_id
 					FROM  ".TABLE_PREFIX."object_members om
@@ -1964,9 +1966,14 @@ class ObjectController extends ApplicationController {
 		// --
 		
 		// Permissions filter
-		$sql_permissions = "
-			AND EXISTS (SELECT sh.object_id FROM ".TABLE_PREFIX."sharing_table sh WHERE sh.object_id=o.id AND sh.group_id IN ($logged_user_pg_ids))
-		";
+		if (isset($template_id) && $template_id > 0) {
+			// editing template items do not check permissions
+			$sql_permissions = "";
+		} else {
+			$sql_permissions = "
+				AND EXISTS (SELECT sh.object_id FROM ".TABLE_PREFIX."sharing_table sh WHERE sh.object_id=o.id AND sh.group_id IN ($logged_user_pg_ids))
+			";
+		}
 		
 		// Main select
 		$sql_select = "SELECT * FROM ".TABLE_PREFIX."objects o ";
@@ -1997,7 +2004,6 @@ class ObjectController extends ApplicationController {
 		
 		// Execute query
 		if (!$only_count_result) {
-			Logger::log($sql);
 			$rows = DB::executeAll($sql);
 		}
 		

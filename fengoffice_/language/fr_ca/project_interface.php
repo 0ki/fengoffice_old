@@ -295,4 +295,5 @@ Objet:   {0}
 	'attachment from email' => 'Attaché au courriel "{0}"',
 	'send email notification' => 'Envoyer une notification par messagerie',
 	'undo remove subtasks' => 'Restaurer les sous-tâches supprimées',
+	'linked objective tab' => 'Objectifs',
 ); ?>

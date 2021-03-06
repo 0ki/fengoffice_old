@@ -52,20 +52,10 @@ class Notifier {
 		}
 		
 		if ($object instanceof ProjectTask && $action == ApplicationLogs::ACTION_CLOSE) {
-			$additional_users = ProjectTaskDependencies::getDependantTasksAssignedUsers($object->getId());
-			foreach ($additional_users as $add_user) {
-				$is_subscribed = false;
-				foreach ($subscribers as $sub) {
-					if ($sub->getId() == $add_user->getId()) {
-						$is_subscribed = true;
-						break;
-					}
-				}
-				if (!$is_subscribed) {
-					$subscribers[] = $add_user;
-					$add_user->ignore_permissions_for_notifications = true;
-				}
-			}
+			
+			// notify users assigned to tasks depending on this tasks that this task has been completed
+			self::notifyDependantTaskAssignedUsersOfTaskCompletion($object);
+			
 		}
 		
 		if (!is_array($subscribers) || count($subscribers) == 0) return;
@@ -1651,6 +1641,193 @@ class Notifier {
 	function sendReminders() {
 		include_once "application/cron_functions.php";
 		send_reminders();
+	}
+	
+	
+	/**
+	 * When a task is completed, sends a notification to the assigned users of all the 
+	 * dependant tasks of the completed task to inform that the previous task has been completed.
+	 * @param $object The task that has been completed
+	 */
+	static function notifyDependantTaskAssignedUsersOfTaskCompletion($object) { /* @var $object ProjectTask */
+		$emails = array();
+		// get dependant tasks
+		$dependant_tasks = ProjectTaskDependencies::getDependantTasks($object->getId());
+		
+		// set sender user as the one who completed the task
+		$sender = $object->getCompletedBy();
+		if ($sender instanceof Contact) {
+			$sendername = $sender->getObjectName();
+			$senderemail = $sender->getEmailAddress();
+		} else {
+			return;
+		}
+			
+		foreach ($dependant_tasks as $dep_task) {
+			/* @var $dep_task ProjectTask */
+			$assigned_user = $dep_task->getAssignedTo();
+			
+			// check that dependant task is assigned to a valid user
+			if ($assigned_user instanceof Contact && $assigned_user->isUser()) {
+				
+				// check that all previous tasks are completed
+				$all_previous_completed = true;
+				$previous_tasks = ProjectTaskDependencies::getPreviousTasks($dep_task->getId());
+				foreach ($previous_tasks as $pt) {
+					if ($pt->getId() == $object->getId()) {
+						continue;
+					}
+					if ($pt->getCompletedById() == 0) {
+						$all_previous_completed = false;
+						break;
+					}
+				}
+				// send the notification only if all previous tasks of this task are completed
+				if ($all_previous_completed) {
+					
+					// set notificated user localization
+					Localization::instance()->loadSettings($assigned_user->getLocale(), ROOT . '/language');
+					
+					// format notification data
+					$assigned_by_name = $dep_task->getAssignedBy() instanceof Contact ? $dep_task->getAssignedBy()->getObjectName() : "";
+					$assigned_to_name = $dep_task->getAssignedToName();
+					
+					tpl_assign('object', $dep_task);
+					tpl_assign('title', lang('task x can be started', $dep_task->getObjectName()));
+					tpl_assign('by', $assigned_by_name);
+					tpl_assign('asigned', $assigned_to_name);
+					tpl_assign('description', $dep_task->getDescription());
+					
+					$contexts = self::buildContextObjectForNotification($dep_task);
+					tpl_assign('contexts', $contexts);
+					
+					$priority_data = self::getTaskPriorityData($dep_task);
+					tpl_assign('priority', $priority_data);
+					
+					$start_date = self::getTaskDateFormatted($dep_task, 'start_date', $assigned_user->getTimezone());
+					tpl_assign('start_date', $start_date);
+					
+					$due_date = self::getTaskDateFormatted($dep_task, 'due_date', $assigned_user->getTimezone());
+					tpl_assign('due_date', $due_date);
+					
+					$attachments = array();
+					$attachments['logo'] = self::getLogoAttachmentData($assigned_user->getEmailAddress());
+					tpl_assign('attachments', $attachments);
+					
+					// send notification
+					$to_addresses = array();
+					$to_addresses[$assigned_user->getId()] = self::prepareEmailAddress($assigned_user->getEmailAddress(), $assigned_user->getObjectName());
+					
+					$subject = lang('all previous tasks have been completed', $dep_task->getObjectName());
+					
+					$recipients_field = config_option('notification_recipients_field', 'to');
+					$emails[] = array(
+						"$recipients_field" => $to_addresses,
+						"from" => self::prepareEmailAddress($senderemail, $sendername),
+						"subject" => $subject,
+						"body" => tpl_fetch(get_template_path('previous_task_completed', 'notifier')),
+						"attachments" => $attachments,
+					);
+				}
+			}
+		}
+		if (count($emails) > 0) {
+			self::queueEmails($emails);
+			
+			$locale = logged_user() instanceof Contact ? logged_user()->getLocale() : DEFAULT_LOCALIZATION;
+			Localization::instance()->loadSettings($locale, ROOT . '/language');
+		}
+	}
+	
+	private static function getTaskPriorityData($object) {
+		if ($object instanceof ContentDataObject && $object->columnExists('priority') && trim($object->getColumnValue('priority'))) {
+			if ($object->getColumnValue('priority') >= ProjectTasks::PRIORITY_URGENT) {
+				$priorityColor = "#FF0000";
+				$priority = lang('urgent priority');
+			}else if ($object->getColumnValue('priority') >= ProjectTasks::PRIORITY_HIGH) {
+				$priorityColor = "#FF9088";
+				$priority = lang('high priority');
+			} else if ($object->getColumnValue('priority') <= ProjectTasks::PRIORITY_LOW) {
+				$priorityColor = "white";
+				$priority = lang('low priority');
+			}else{
+				$priorityColor = "#DAE3F0";
+				$priority = lang('normal priority');
+			}
+			return array($priority, $priorityColor);
+		}
+		return "";
+	}
+	
+	private static function getTaskDateFormatted($object, $date_column, $timezone) {
+		$date = "";
+		if ($object->columnExists($date_column) && $object->getColumnValue($date_column)) {
+			$date_val = $object->getColumnValue($date_column);
+			if ($date_val instanceof DateTimeValue) {
+				$date = Localization::instance()->formatDescriptiveDate($date_val, $timezone);
+				$time = Localization::instance()->formatTime($date_val, $timezone);
+				if($time > 0) {
+					$date .= " " . $time;
+				}
+			}
+		}
+		return $date;
+	}
+	
+	private static function getLogoAttachmentData($toemail) {
+		$logo_info = array();
+		try {
+			$content = FileRepository::getBackend()->getFileContent(owner_company()->getPictureFile());
+			if ($content != "") {
+				$file_path = ROOT . "/tmp/logo_empresa.png";
+				$handle = fopen($file_path, 'wb');
+				if ($handle) {
+					fwrite($handle, $content);
+					fclose($handle);
+					if (!$toemail) $toemail = "recipient@";
+					$logo_info = array(
+						'cid' => gen_id() . substr($toemail, strpos($toemail, '@')),
+						'path' => $file_path,
+						'type' => 'image/png',
+						'disposition' => 'inline',
+						'name' => 'logo_empresa.png',
+					);
+				}
+			}
+		} catch (FileNotInRepositoryError $e) {
+			Logger::log("Could not find owner company picture file: ".$e->getMessage());
+		}
+		$logo_info;
+	}
+	
+	private static function buildContextObjectForNotification($object) {
+		$contexts = array();
+		$members = $object->getMembers();
+		if(count($members) > 0){
+			foreach ($members as $member){
+				$dim = $member->getDimension();
+				if($dim->getIsManageable()){
+					/* @var $member Member */
+					$parent_members = $member->getAllParentMembersInHierarchy();
+					$parents_str = '';
+					foreach ($parent_members as $pm) {
+						/* @var $pm Member */
+						if (!$pm instanceof Member) continue;
+						$parents_str .= '<span style="'.get_workspace_css_properties($pm->getMemberColor()).'">'. $pm->getName() .'</span>';
+					}
+					if ($dim->getCode() == "customer_project" || $dim->getCode() == "customers"){
+						$obj_type = ObjectTypes::findById($member->getObjectTypeId());
+						if ($obj_type instanceof ObjectType) {
+							$contexts[$dim->getCode()][$obj_type->getName()][]= $parents_str . '<span style="'.get_workspace_css_properties($member->getMemberColor()).'">'. $member->getName() .'</span>';
+						}
+					}else{
+						$contexts[$dim->getCode()][]= $parents_str . '<span style="'.get_workspace_css_properties($member->getMemberColor()).'">'. $member->getName() .'</span>';
+					}
+				}
+			}
+		}
+		
+		return $contexts;
 	}
 	
 } // Notifier

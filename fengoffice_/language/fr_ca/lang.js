@@ -218,7 +218,7 @@ addLangs({
 	'checkout description': 'Verrouiller ce fichier',
 	'undo checkout description': 'Rendre ce fichier disponible',
 	'checkin description': 'Créer une révision de ce fichier',
-	'created by on': 'Créé par {0} le {1}',
+	'created by on': 'Créé par <a class="internalLink" href="{0}">{1}</a> le {2}',
 	'write': 'Écrire',
 	'write new mail': 'Rédiger un nouveau message',
 	'weblink': 'Lien Web',
@@ -838,5 +838,11 @@ addLangs({
 	'click here': 'Cliquer ici',
 	'more-panel': 'Paramètres',
 	'select user group': 'Sélectionner groupe utilisateur',
-	'at least one dimension must be selected': 'Il faut sélectionner au moins une dimension.'
+	'at least one dimension must be selected': 'Il faut sélectionner au moins une dimension.',
+	'confirm delete permanently this member': 'Etes-vous sûr de vouloir supprimer ce {0}?',
+	'confirm delete with keyword': 'Entrez \\"SUPPRIMER\\" pour confirmer',
+	'push': 'Repousser',
+	'folders': 'Dossiers',
+	'subtasks structure': 'Structure des sous-tâches',
+	'percent completed': '% effectué'
 });

@@ -1,5 +1,5 @@
 
-	About Feng Office 3.2.1-rc
+	About Feng Office 3.2.1
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -105,6 +105,15 @@
 	Changelog
 	=========
 	
+	Since 3.2.1-rc
+	----------------
+	bugfix: linked objects and view as list in dashboard does not filter.
+	bugfix: notification of previous task completed is the same as task completed.
+	bugfix: template instantiation with non-working days does not leave task dates as they are if advanced days are 0
+	bugfix: contact selector langs are always in spanish.
+	bugfix: tasks not showing in dashboard calendar widget.
+	
+	
 	Since 3.2.1-beta
 	----------------
 	bugfix: mobile client's list.
@@ -113,10 +122,22 @@
 	bugfix: when instantiating tasks from template in second step, subscribers are not copied changes: new function to centralize the copy of the subscribers, reminders, linked objs, members and custom props.
 	bugfix: lang unknown group on tasks list for dates groups.
 	bugfix: instantiate template parameters is not filtering by recently created member (when using member templates).
-	bugfix: member custom properties values close div on active feed.
 	bugfix: lang nl_nl contains enters inside the langs and that causes javascript to be broken.
 	bugfix: when adding/editing an email account, if a blank is after mail server address then cannot connect to mail server.
-		
+	
+	
+	Since 3.2.0.4
+	----------------	
+	bugfix: google calendar sync permissions errors
+	
+	Since 3.2.0.3
+	----------------	
+	language: language fr_ca updated.
+	
+	Since 3.2.0.2
+	----------------	
+	bugfix: member custom properties values close div on active feed.
+	
 	Since 3.2
 	----------------
 	bugfix: feng1 upgrade
@@ -128,9 +149,16 @@
 	bugfix: input type checkbox in modals
 	bugfix: in community editions (tasks does not use time in dates) the reports are adding the timezone.
 	bugfix: projects list and clients list links are not included in dashboard list view
+	bugfix: google calendar sync.
 	
 	performance: linked objects list
 	performance: index by object_type_id, trashed_on, archived_on in objects table
+	
+	Since 3.2-rc2
+	----------------
+	bugfix:	ie fixes.
+	bugfix: custom properties description in forms is not aligned.
+	
 	
 	Since 3.2-rc
 	----------------

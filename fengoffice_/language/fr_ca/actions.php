@@ -180,4 +180,5 @@
 	'upload new revision' => 'Nouvelle révision',
 	'write comment' => 'Écrire votre commentaire ici',
 	'restore user' => 'Réactiver l\'utilisateur',
+	'day' => 'Jour',
 ); ?>

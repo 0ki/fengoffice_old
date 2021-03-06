@@ -339,7 +339,7 @@ Hook::fire('object_edit_categories', $object, $categories);
 			<div class="clear"></div>
 			
 			<input type="checkbox" name="file[notify_myself_too]" id="<?php echo $genid?>notifyMyselfToo" style="margin: 3px; float: left;"
-				<?php echo array_var($file_data, 'attach_to_notification', user_config_option('notify_myself_too')) ? 'checked="checked"': ''?>/>
+				<?php echo user_config_option('notify_myself_too') ? 'checked="checked"': ''?>/>
 			<label for="<?php echo $genid ?>notifyMyselfToo" class="checkbox"><?php echo lang('notify myself too') ?></label>
 			<div class="clear"></div>
 			<?php endif; ?>

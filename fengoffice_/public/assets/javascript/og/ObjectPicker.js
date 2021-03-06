@@ -174,7 +174,6 @@ og.ObjectPicker = function(config, object_id, object_id_no_select, ignore_contex
 				for (var mi=0; mi<this.member_filter[x].length; mi++) {
 					member_ids.push(this.member_filter[x][mi]);
 				}
-				//member_ids.push(this.member_filter[x]);
 			}
 			this.store.baseParams.extra_member_ids = Ext.util.JSON.encode(member_ids);
 			this.store.baseParams.ignore_context = this.store.baseParams.ignore_context || member_ids.length > 0;
@@ -424,9 +423,7 @@ og.ObjectPicker = function(config, object_id, object_id_no_select, ignore_contex
 								fn: function(context) {
 									var grid = Ext.getCmp('obj_picker_grid');
 									if (grid) {
-										//console.log(member);
 										grid.member_filter = context;
-										//grid.member_filter[member.dim] = member.id;
 										grid.filterSelect();
 									}
 								}

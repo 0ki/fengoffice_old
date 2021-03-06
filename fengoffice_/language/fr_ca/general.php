@@ -366,4 +366,5 @@
 	'company data' => 'Données de la compagnie',
 	'menu home' => 'Accueil',
 	'select group to add user' => 'Choisissez un groupe dans la liste déroulante ci-dessous pour ajouter l\'utilisateur au groupe',
+	'contact data' => 'Données du contact',
 ); ?>

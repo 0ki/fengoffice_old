@@ -197,7 +197,7 @@
 						break;
 					default: break;
 				}
-				html += '</div>'
+				html += '</div>';
 			}
 			html += '</div>' ;
 			//html += '</fieldset>';

@@ -3828,8 +3828,8 @@ class ContactController extends ApplicationController {
 				}
 			} else {
 				$info = array(
-					array('id' => -1, 'name' => 'Escriba las primeras letras del nombre o apellido de la persona a seleccionar o '),
-					array('id' => -2, 'name' => '<a href="#" class="db-ico ico-expand" style="color:blue;text-decoration:underline;padding-left:20px;">Seleccione una de la lista</a>'),
+					array('id' => -1, 'name' => lang('write the first letters of the name or surname of the person to select')),
+					array('id' => -2, 'name' => '<a href="#" class="db-ico ico-expand" style="color:blue;text-decoration:underline;padding-left:20px;">'.lang('click here to select one from a list').'</a>'),
 				);
 			}
 		}

@@ -143,27 +143,35 @@ class ExternalCalendarController extends ApplicationController {
         $client = new Google_Client();     
 
         // Step 2: The user accepted your access now you need to exchange it.
-        if (isset($_SESSION['google_code'])) {
-        	$credentials = $client->authenticate($_SESSION['google_code']);
-            unset($_SESSION['google_code']);
-            $google_acces_token = $client->getAccessToken();
-                
-            $service = new Google_Service_Oauth2($client);
-            $user_info = $service->userinfo->get();
-                
-            $user_email = ExternalCalendarUsers::findByEmail($user_info['email']);
-            if(!$user_email) {
-            	$user_email = new ExternalCalendarUser();
-                $user_email->setAuthUser($user_info['email']);
-                $user_email->setAuthPass($credentials);
-                $user_email->setContactId(logged_user()->getId());
-                $user_email->setType("google");
-                $user_email->save();
-                		
-                $this->update_sync_cron_events();
-            }else{
-            	$user_email->setAuthPass($credentials);
-            	$user_email->save();
+        $google_code = array_var($_GET, 'google_code',false);
+        if ($google_code) {
+        	try{
+        	
+        		$credentials = $client->authenticate(urldecode(array_var($_GET, 'google_code')));
+        	
+	        	$google_acces_token = $client->getAccessToken();
+	                
+	            $service = new Google_Service_Oauth2($client);
+	            $user_info = $service->userinfo->get();
+	                
+	            $user_email = ExternalCalendarUsers::findByEmail($user_info['email']);
+	            if(!$user_email) {
+	            	$user_email = new ExternalCalendarUser();
+	                $user_email->setAuthUser($user_info['email']);
+	                $user_email->setAuthPass($credentials);
+	                $user_email->setContactId(logged_user()->getId());
+	                $user_email->setType("google");
+	                $user_email->save();
+	                		
+	                $this->update_sync_cron_events();
+	            }else{
+	            	$user_email->setAuthPass($credentials);
+	            	$user_email->save();
+	            }
+            
+            }catch(Exception $e){
+            	Logger::log("ERROR Google Sync Step 2");
+            	Logger::log($e->getMessage());
             }
 		}
                 
@@ -322,7 +330,7 @@ class ExternalCalendarController extends ApplicationController {
             	
         if(!$user || !$service_is_working){
 	    	// Step 1:  The user has not authenticated we give them a link to login
-	        if (!isset($_SESSION['google_code'])) {
+	        if (!$google_code) {
 	        	$client->setScopes(array('https://www.googleapis.com/auth/calendar','https://www.googleapis.com/auth/userinfo.email','https://www.googleapis.com/auth/userinfo.profile'));
 	            $client->setState(ROOT_URL.'/index.php?c=external_calendar&a=calendar_sinchronization');
 	            $authUrl = $client->createAuthUrl();
@@ -534,7 +542,10 @@ class ExternalCalendarController extends ApplicationController {
 	function import_google_calendar() {
 		$users = ExternalCalendarUsers::findAll();
 		foreach ($users as $user){
-			ExternalCalendarController::import_google_calendar_for_user($user);
+			// log user in
+			$contact = Contacts::findById($user->getContactId());
+			CompanyWebsite::instance()->setLoggedUser($contact, false, false, false);
+			ExternalCalendarController::import_google_calendar_for_user($user);			
 		}
 	}
 	
@@ -631,55 +642,64 @@ class ExternalCalendarController extends ApplicationController {
 								$event_updated_date_str = strtotime($event->getUpdated());
 								$event_updated_date = date(DATE_MYSQL,$event_updated_date_str);
 							}
-							
-							//if event exist update it
-							$new_event = ProjectEvents::findBySpecialId($event_id,$calendar->getId());
-							if(!$new_event instanceof ProjectEvent){
-								//Create ProjectEvent from google event
-								$new_event = new ProjectEvent();
+							//Save event							
+							try{
+								DB::beginWork();
+								//if event exist update it
+								$new_event = ProjectEvents::findBySpecialId($event_id,$calendar->getId());
+								if(!$new_event instanceof ProjectEvent){
+									//Create ProjectEvent from google event
+									$new_event = new ProjectEvent();
+								}
+																
+								$new_event->setSpecialID($event_id);
+								$new_event->setStart($event_start_date);
+								$new_event->setDuration($event_end_date);
+								$new_event->setTypeId($event_type);
+								$new_event->setObjectName($event_name);
+								$new_event->setDescription($event_desc);
+								$new_event->setUpdateSync($event_updated_date);
+								$new_event->setExtCalId($calendar->getId());
+								$new_event->save();		
+														
+								//Invitation insert only if not exists
+								$conditions = array('event_id' => $new_event->getId(), 'contact_id' => $user->getContactId());
+								if (EventInvitations::findById($conditions) == null) {
+										$invitation = new EventInvitation();
+										$invitation->setEventId($new_event->getId());
+										$invitation->setContactId($user->getContactId());
+										$invitation->setInvitationState(1);
+										$invitation->setUpdateSync();
+										$invitation->setSpecialId($event_id);
+										$invitation->save();
+								}
+		
+								//Subscription insert only if not exists
+								if (ObjectSubscriptions::findBySubscriptions($new_event->getId(), $contact) == null) {
+										$subscription = new ObjectSubscription();
+										$subscription->setObjectId($new_event->getId());
+										$subscription->setContactId($user->getContactId());
+										$subscription->save();
+								}
+		
+								$member = array();
+								if($calendar->getRelatedTo()){
+										$member_ids = explode(",",$calendar->getRelatedTo());
+										foreach ($member_ids as $member_id){
+											$member[] = $member_id;
+										}									
+								}
+								$object_controller = new ObjectController();
+								$object_controller->add_to_members($new_event, $member,$contact);
+								
+								DB::commit();
 							}
-															
-							$new_event->setSpecialID($event_id);
-							$new_event->setStart($event_start_date);
-							$new_event->setDuration($event_end_date);
-							$new_event->setTypeId($event_type);
-							$new_event->setObjectName($event_name);
-							$new_event->setDescription($event_desc);
-							$new_event->setUpdateSync($event_updated_date);
-							$new_event->setExtCalId($calendar->getId());
-							$new_event->save();		
-													
-							//Invitation insert only if not exists
-							$conditions = array('event_id' => $new_event->getId(), 'contact_id' => $user->getContactId());
-							if (EventInvitations::findById($conditions) == null) {
-									$invitation = new EventInvitation();
-									$invitation->setEventId($new_event->getId());
-									$invitation->setContactId($user->getContactId());
-									$invitation->setInvitationState(1);
-									$invitation->setUpdateSync();
-									$invitation->setSpecialId($event_id);
-									$invitation->save();
+							catch(Exception $e)
+							{
+								DB::rollback();
+								Logger::log("Fail to save event for external calendar user: ". $contact->getId());
+								Logger::log($e->getMessage());
 							}
-	
-							//Subscription insert only if not exists
-							if (ObjectSubscriptions::findBySubscriptions($new_event->getId(), $contact) == null) {
-									$subscription = new ObjectSubscription();
-									$subscription->setObjectId($new_event->getId());
-									$subscription->setContactId($user->getContactId());
-									$subscription->save();
-							}
-	
-							if($calendar->getRelatedTo()){
-									$member = array();
-									$member_ids = explode(",",$calendar->getRelatedTo());
-									foreach ($member_ids as $member_id){
-									$member[] = $member_id;
-									}
-									$object_controller = new ObjectController();									
-									$object_controller->add_to_members($new_event, $member,$contact);
-							}
-							
-							
 						}
 						 
 						 //getNextSyncToken
@@ -825,7 +845,11 @@ class ExternalCalendarController extends ApplicationController {
 	function export_google_calendar() {
 		$users = ExternalCalendarUsers::findAll(array('conditions' => "sync = 1"));
 		foreach ($users as $user){
+			// log user in
+			$contact = Contacts::findById($user->getContactId());
+			CompanyWebsite::instance()->logUserIn($contact);
 			ExternalCalendarController::export_google_calendar_for_user($user);
+			CompanyWebsite::instance()->logUserOut();
 		}
 	}
 		

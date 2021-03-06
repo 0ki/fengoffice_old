@@ -344,7 +344,7 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 				if (content.panel) content.panel.reset();
 			} else {
 				if (content.panel.data != "overview") {
-					content.panel.load(); //FIXME Pepe
+					content.panel.load();
 				}
 			}
 

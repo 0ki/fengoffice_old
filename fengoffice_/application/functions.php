@@ -1328,7 +1328,11 @@ function getAllRoleUsers($role){
 }
 
 function render_mailto($address) {
-	return "<a href='mailto:$address'>$address</a>";
+	if (logged_user()->hasEmailAccounts()){
+		return "<a href=".get_url('mail', 'add_mail', array('to' => clean($address))).">".$address."</a>";
+	}else{
+		return "<a href='mailto:$address'>$address</a>";
+	}
 }
 
 /**

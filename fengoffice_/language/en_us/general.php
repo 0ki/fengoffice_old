@@ -421,4 +421,7 @@ return array(
 	'click to select country' => 'Click to select country',
 	'there are no custom properties defined message' => 'There are no custom properties defined for {0} "{1}".',
 	'there are no custom properties defined link' => 'Please refer to <a href="http://wiki.fengoffice.com/doku.php/custom_properties" target="_blank" class="wiki-link">this article</a> to learn how to add custom properties.',
+	
+	'write the first letters of the name or surname of the person to select' => 'Write the first letters of the name or surname of the person to select',
+	'click here to select one from a list' => 'Click here to select one from a list',
 );

@@ -61,6 +61,32 @@ class  ProjectTaskDependencies extends BaseProjectTaskDependencies {
 		}
 		return $users;
 	}
+	
+	static function getDependantTasks($task_id) {
+		$dependant_tasks = array();
+		$deps = self::getDependantsForTask($task_id);
+		foreach ($deps as $dep) {
+			/* @var $dep ProjectTaskDependency */
+			$task = ProjectTasks::findById($dep->getTaskId());
+			if ($task instanceof ProjectTask) {
+				$dependant_tasks[] = $task;
+			}
+		}
+		return $dependant_tasks;
+	}
+	
+	static function getPreviousTasks($task_id) {
+		$previous_tasks = array();
+		$deps = self::getDependenciesForTask($task_id);
+		foreach ($deps as $dep) {
+			/* @var $dep ProjectTaskDependency */
+			$task = ProjectTasks::findById($dep->getPreviousTaskId());
+			if ($task instanceof ProjectTask) {
+				$previous_tasks[] = $task;
+			}
+		}
+		return $previous_tasks;
+	}
 
 } // ProjectTaskDependencies
 

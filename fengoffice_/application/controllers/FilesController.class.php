@@ -470,7 +470,7 @@ class FilesController extends ApplicationController {
 					$file->setIsVisible(true);
 				}
 				
-				$file->setAttachToNotification(array_var($file_data, 'attach_to_notification') == "true");
+				$file->setAttachToNotification(array_var($file_data, 'attach_to_notification'));
 				if(array_var($file_data, 'default_subject_sel') == 'subject'){
 					$file->setDefaultSubject(array_var($file_data, 'default_subject_text'));
 				}else{
@@ -592,8 +592,8 @@ class FilesController extends ApplicationController {
 			$file->setFromAttributes($file_data);
 	
 			$file->setIsVisible(true);
-		
-			$file->setAttachToNotification(array_var($file_data, 'attach_to_notification') == "true");
+
+			$file->setAttachToNotification(array_var($file_data, 'attach_to_notification'));
 			if(array_var($file_data, 'default_subject_sel') == 'subject'){
 				$file->setDefaultSubject(array_var($file_data, 'default_subject_text'));
 			}else{
@@ -2068,8 +2068,8 @@ class FilesController extends ApplicationController {
 				$revision_comment = trim(array_var($file_data, 'revision_comment')); // user comment?
 
 				$file->setFromAttributes($file_data);
-				
-				$file->setAttachToNotification(array_var($file_data, 'attach_to_notification') == "true");
+
+				$file->setAttachToNotification(array_var($file_data, 'attach_to_notification'));
 				if(array_var($file_data, 'default_subject_sel') == 'subject'){
 					$file->setDefaultSubject(array_var($file_data, 'default_subject_text'));
 				}else{
@@ -2312,7 +2312,7 @@ class FilesController extends ApplicationController {
 				$file->setFilename(array_var($file_data, 'name'));
 				$file->checkIn();
 
-				$file->setAttachToNotification(array_var($file_data, 'attach_to_notification') == "true",0);
+				$file->setAttachToNotification(array_var($file_data, 'attach_to_notification'));
 				if(array_var($file_data, 'default_subject_sel') == 'subject'){
 					$file->setDefaultSubject(array_var($file_data, 'default_subject_text'));
 				}else{
