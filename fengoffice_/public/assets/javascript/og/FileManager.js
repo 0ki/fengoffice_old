@@ -468,10 +468,9 @@ og.FileManager = function() {
 	
 	actions = {
 		newCO: new Ext.Action({
-			id: 'new_button',
 			text: lang('new'),
             tooltip: lang('create an object'),
-            iconCls: 'ico-new',
+            iconCls: 'ico-new new_button',
 			menu: {items: [
 				{text: lang('upload file'), iconCls: 'ico-upload', handler: function() {
 					og.render_modal_form('', {c:'files', a:'add_file'});
@@ -538,11 +537,7 @@ og.FileManager = function() {
 					} else {
 						og.err(lang('you must select a member from the following dimensions', dim_names));
 					}
-				}}/*,
-				{text: lang('spreadsheet') + ' (ALPHA)', iconCls: 'ico-sprd', handler: function() {
-					var url = og.getUrl('files', 'add_spreadsheet');
-					og.openLink(url);
-				}}*/
+				}}
 			]}
 		}),
 		properties: new Ext.Action({

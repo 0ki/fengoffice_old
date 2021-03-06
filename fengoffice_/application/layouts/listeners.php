@@ -350,9 +350,16 @@ og.eventManager.addListener('ask to select member',
 );
 
 og.eventManager.addListener('member tree node click',
-	function (node) {
-		setTimeout( function() {og.Breadcrumbs.refresh(node);}, 700 );
-	}
+	function (node) {			
+		var interval = setInterval(function(){
+			var tree = node.ownerTree;
+			var treenode = tree ? tree.getNodeById(node.id) : null;
+			if (treenode) {			
+				og.Breadcrumbs.refresh(treenode);
+				clearInterval(interval);
+			}
+		}, 700);
+	}	
 );
 
 

@@ -1384,7 +1384,14 @@ class ReportingController extends ApplicationController {
 				$field_name = Localization::instance()->lang('field '.$ot->getHandlerClass().' '.$name);
 				if (is_null($field_name)) $field_name = lang('field Objects '.$name);
 
-				$fields[] = array('id' => $name, 'name' => $field_name, 'type' => $type);
+				$fields_array = array('id' => $name, 'name' => $field_name, 'type' => $type);
+				
+				$task_ot = ObjectTypes::findByName('task');
+				if ($task_ot instanceof ObjectType && $object_type == $task_ot->getId() && $name == 'priority') {
+					$fields_array = array('id' => 'priority', 'name' => lang('priority'), 'type' => 'list', 'values' => '100,200,300,400');
+				}
+				
+				$fields[] = $fields_array;
 			}
 	
 			$externalFields = $managerInstance->getExternalColumns();

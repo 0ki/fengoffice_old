@@ -73,8 +73,12 @@ if($task_list->getAssignedTo()){
 			<div class="member-path-dim-block dueDate"><span class="bold"><?php echo lang('due date') ?>: </span><?php echo format_datetime($task_list->getDueDate(), null, 0) ?></div>
 	  <?php } else { ?> 
 	 		<div class="member-path-dim-block dueDate"><span class="bold"><?php echo lang('due date') ?>: </span><?php
-	 		 
-	 	  	echo format_descriptive_date($task_list->getDueDate());
+	 		
+	 		$tm = null;
+	 		if(!$task_list->getUseDueTime()){
+	 			$tm = 0;
+	 		}	 		
+	 	  	echo format_descriptive_date($task_list->getDueDate(),$tm);
 	 	  	if ($task_list->getUseDueTime()) {
 	 	  		echo " ".lang('by time')." " . format_time($task_list->getDueDate(), user_config_option('time_format_use_24') ? 'G:i' : 'g:i A');
 	 	  	}
@@ -89,7 +93,11 @@ if($task_list->getAssignedTo()){
 	  <?php } else { ?> 
 	 		<div class="member-path-dim-block startDate"><span class="bold"><?php echo lang('start date') ?>: </span><?php
 	 		 
-	 	  	echo format_descriptive_date($task_list->getStartDate());
+	 		$tm = null;
+	 		if(!$task_list->getUseDueTime()){
+	 			$tm = 0;
+	 		}
+	 	  	echo format_descriptive_date($task_list->getStartDate(),$tm);
 	 	  	if ($task_list->getUseDueTime()) {
 	 	  		echo " ".lang('by time')." " . format_time($task_list->getStartDate(), user_config_option('time_format_use_24') ? 'G:i' : 'g:i A');
 	 	  	}

@@ -118,12 +118,16 @@ $show_owner_company_name_header = config_option("show_owner_company_name_header"
 	  <table style="width:100%;"><tr><td id="left-header-cell">
 		<div style="float: left;" class="header-content-left">
 			<div id="logodiv">
-				<div style="" id="logo_company_margin_top">
+				<div style="height: 55px;" id="logo_company_margin_top">
 					<img src="<?php echo ($use_owner_company_logo) ? owner_company()->getPictureUrl() : get_product_logo_url() ?>" name="img_company_margin" id="img_company_margin" style="display: none;"/>
 					<script>
 						$('#img_company_margin').load(function() {
 							var margin = (Ext.isIE) ? 25 : Math.round(parseInt(document.img_company_margin.height) / 2);
 							$("#img_company_margin").show();
+							var img_h = $("#img_company_margin").height();
+							if (img_h < 55) {
+								$("#img_company_margin").css('margin-top', ((55-img_h)/2)+'px')
+							}
 						});
 					</script>
 				</div>
@@ -138,11 +142,14 @@ $show_owner_company_name_header = config_option("show_owner_company_name_header"
 	  </td><td id="center-header-cell">
 	
 		<div id="headerBreadcrumb" class="header-breadcrumb-container">
-			<div class="header-breadcrumb home" onclick="og.Breadcrumbs.resetSelection();"><?php echo lang('menu home')?></div>
+		  <table><tr><td>
+			<div class="header-breadcrumb home" onclick="og.Breadcrumbs.resetSelection();" style="display:none;"><?php echo lang('menu home')?></div>
+		  </td><td>
 			<div class="breadcrumb-members">
 				<div class="primary-breadcrumb"></div>
 				<div class="secondary-breadcrumb"></div>
 			</div>
+		  </td></tr></table>
 		</div>
 		
 	  </td><td id="right-header-cell">
@@ -167,7 +174,7 @@ $show_owner_company_name_header = config_option("show_owner_company_name_header"
 					?>
 					</div>
 				</li>	
-			  	<li id="userboxWrapper" onclick="showUserOptionsPanel()">			  	
+			  	<li id="userboxWrapper" class="texture-n-1" onclick="showUserOptionsPanel()">			  	
 					<img src="<?php echo logged_user()->getPictureUrl(); ?>" alt="" />
 					<a id="userLink" style="margin-right: 5px;" href="#" ><?php echo clean(logged_user()->getObjectName()); ?></a>	
 					<div class="account"></div>										
@@ -232,12 +239,12 @@ if (user_config_option("autodetect_time_zone", null)) {
 og.CurrentPagingToolbar = <?php echo defined('INFINITE_PAGING') && INFINITE_PAGING ? 'og.InfinitePagingToolbar' : 'og.PagingToolbar' ?>;
 og.ownerCompany = {
 	id: '<?php echo owner_company()->getId()?>',
-	name: '<?php echo clean(owner_company()->getObjectName())?>',
+	name: '<?php echo str_replace("'", "\'", clean(owner_company()->getObjectName()))?>',
 	logo_url: '<?php echo (owner_company()->getPictureFile() != '' ? owner_company()->getPictureUrl() : '')?>',
-	email: '<?php echo clean(owner_company()->getEmailAddress('work')) ?>',
-	phone: '<?php echo clean(owner_company()->getPhoneNumber('work')) ?>',
-	address: '<?php echo clean(owner_company()->getStringAddress('work')) ?>',
-	homepage: '<?php echo clean(owner_company()->getWebpageUrl('work')) ?>'
+	email: '<?php echo str_replace("'", "\'", clean(owner_company()->getEmailAddress('work'))) ?>',
+	phone: '<?php echo str_replace("'", "\'", clean(owner_company()->getPhoneNumber('work'))) ?>',
+	address: '<?php echo str_replace("\n", " ", str_replace("'", "\'", clean(owner_company()->getStringAddress('work')))) ?>',
+	homepage: '<?php echo str_replace("'", "\'", clean(owner_company()->getWebpageUrl('work'))) ?>'
 };
 og.loggedUser = {
 	id: <?php echo logged_user()->getId() ?>,
@@ -326,6 +333,8 @@ $rolePermissions = SystemPermissions::getAllRolesPermissions();
 echo "og.userRolesPermissions =".json_encode($rolePermissions).";";
 $maxRolePermissions = MaxSystemPermissions::getAllMaxRolesPermissions();
 echo "og.userMaxRolesPermissions =".json_encode($maxRolePermissions).";";
+
+//echo "og.defaultRoleObjectTypePermissions = ".json_encode(RoleObjectTypePermissions::getAllRoleObjectTypePermissionsInfo());
 ?>
 
 <?php 

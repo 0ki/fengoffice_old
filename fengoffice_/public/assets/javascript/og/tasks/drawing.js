@@ -195,6 +195,7 @@ var rx__TasksDrag = {
 		if (wrapper) {
 			var params2 = [];
 			for (var i in parameters) {
+				if (typeof(parameters[i]) == 'function') continue;
 				if (parameters[i] || parameters[i] === 0) {
 					params2[wrapper + "[" + i + "]"] = parameters[i];
 				}
@@ -1299,7 +1300,8 @@ ogTasks.AddWorkTime = function(task_id) {
 					callback:function(success, data){
 						if (!success || data.errorCode) {
 						} else {
-							ogTasks.closeModal();	
+							ogTasks.closeModal();							
+							ogTasks.UpdateTask(data.real_obj_id, true);
 						}						
 					}
 				}
@@ -1341,19 +1343,37 @@ ogTasks.readTask = function(task_id,isUnRead){
 	}
 }
 
-ogTasks.UpdateTask = function(task_id){
+ogTasks.UpdateTask = function(task_id, from_server){
 	var task = ogTasks.getTask(task_id);
-	for (var i = 0; i < task.divInfo.length; i++){
-		var containerName = 'ogTasksPanelTask' + task.id + 'G' + task.divInfo[i].group_id;
-		var div = document.getElementById(containerName);
-		if (div){
-			div.innerHTML = this.drawTaskRow(task, task.divInfo[i].drawOptions, task.divInfo[i].displayCriteria, task.divInfo[i].group_id, task.divInfo[i].level);
-			if (task.divInfo[i].displayCriteria.group_by == 'milestone') { //Update milestone complete bar
-				var div2 = document.getElementById('ogTasksPanelCompleteBar' + task.divInfo[i].group_id);
-				div2.innerHTML = this.drawMilestoneCompleteBar(this.getGroup(task.divInfo[i].group_id));
+	
+	if (typeof from_server != 'undefined' && from_server) {
+		og.openLink(og.getUrl('task', 'get_task_data', {id: task_id, task_info: true}), {
+			callback: function(success, data) {
+				if (!success || data.errorCode) {
+					
+				} else {
+					//Set task data
+					var task = ogTasks.getTask(data.id);
+					prev_status = task.status;
+					task.setFromTdata(data.task);					
+					this.draw();				
+				}
+			},
+			scope: this
+		});
+	}else{
+		for (var i = 0; i < task.divInfo.length; i++){
+			var containerName = 'ogTasksPanelTask' + task.id + 'G' + task.divInfo[i].group_id;
+			var div = document.getElementById(containerName);
+			if (div){
+				div.innerHTML = this.drawTaskRow(task, task.divInfo[i].drawOptions, task.divInfo[i].displayCriteria, task.divInfo[i].group_id, task.divInfo[i].level);
+				if (task.divInfo[i].displayCriteria.group_by == 'milestone') { //Update milestone complete bar
+					var div2 = document.getElementById('ogTasksPanelCompleteBar' + task.divInfo[i].group_id);
+					div2.innerHTML = this.drawMilestoneCompleteBar(this.getGroup(task.divInfo[i].group_id));
+				}
 			}
 		}
-	}
+	}	
 }
 
 // FIXME: remove this function when wuick add is enabled
@@ -1376,7 +1396,7 @@ ogTasks.buildTaskPercentCompletedBar = function(task) {
             percent_complete = task.percentCompleted;
         }
 	
-	var html = "<span><span class='nobr'><table style='display:inline;'><tr><td style='padding-left:15px;padding-top:5px'>" +
+	var html = "<span><span class='nobr'><table style='display:inline;'><tr><td style='padding-left:15px;padding-top:6px'>" +
 			"<table style='height:7px;width:50px'><tr><td style='height:7px;width:" + percent_complete + "%;' class='"+color_cls+"'></td><td style='width:" + (100 - percent_complete) + "%;background-color:#DDD'></td></tr></table>" +
 			"</td><td style='padding-left:3px;line-height:12px'><span class='percent_num' style='font-size:8px;color:#777'>" + percent_complete + "%</span></td></tr></table></span></span>";
 	

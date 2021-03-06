@@ -59,7 +59,7 @@ class ObjectController extends ApplicationController {
 						$user_ids[] = $user_id;
 					}
 				} else {
-					if (!$checked || $checked=='0') $subscribers_to_remove[] = $user_id;
+					if ((!$checked || $checked=='0') && in_array($user_id, $object->getSubscriberIds())) $subscribers_to_remove[] = $user_id;
 				}
 			}
 			

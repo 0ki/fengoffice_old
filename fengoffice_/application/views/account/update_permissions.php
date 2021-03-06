@@ -62,7 +62,7 @@ setTimeout(function() {
 	og.renderUserTypeSelector({container_id:"<?php echo $genid?>_user_type_container", input_name:'contact[user][type]', selected_value: <?php echo $actual_user_type->getId()?>, id:'<?php echo $genid?>_user_type_sel'});
 	
 	$("#<?php echo $genid?>_user_type_container select.user-type-selector").change(function(){
-		og.addUpdatePermissionsUserTypeChange('<?php echo $genid?>', $(this).val());
+		og.afterUserTypeChange('<?php echo $genid?>', $(this).val());
 		og.ogPermPrepareSendData('<?php echo $genid?>');
 	});
 	<?php } ?>

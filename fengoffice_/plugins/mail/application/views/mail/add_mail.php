@@ -7,7 +7,7 @@
   
 	$genid = gen_id();
  
-	add_page_action(lang('send mail'), "javascript:document.getElementById('sendMail').click();", "mail",null,null,true);
+	add_page_action(lang('send mail'), "javascript:document.getElementById('sendMail').click();", "mail send blue",null,null,true);
 	add_page_action(lang('save')." ".lang('draft'), "javascript:document.getElementById('saveMail').click();", "mail",null,null,true);
 	add_page_action(lang('discard'), "javascript:document.getElementById('discardMail').click();","mail",null,null,true);
  	

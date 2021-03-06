@@ -343,7 +343,7 @@
     if(!is_array($attributes)) {
       $attributes = array();
     } // if
-    $attributes['class'] = 'submit';
+    $attributes['class'] = 'submit '.array_var($attributes, 'class', '');
     $attributes['type'] = 'submit';
     $attributes['accesskey'] = $accesskey;
     

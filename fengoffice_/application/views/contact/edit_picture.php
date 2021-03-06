@@ -9,6 +9,9 @@
   if (isset($new_contact) && $new_contact) {
   	$action .= "&new_contact=$new_contact";
   }
+  if (array_var($_REQUEST, 'is_company')) {
+  	$action .= "&is_company=".array_var($_REQUEST, 'is_company');
+  }
 
   ajx_set_no_toolbar();
 ?>
@@ -19,11 +22,14 @@
 	</div>
   </div>
 </div>
+
+<table><tr><td>
+
 <div id="<?php echo $genid?>current_picture" style="float:left; padding-right:20px; border-right: 1px dotted #999;">
 	
 	<div style="padding:10px;">
 <?php if($contact->hasPicture()) { ?>
-    <img src="<?php echo $contact->getPictureUrl() ?>" alt="<?php echo clean($contact->getObjectName()) ?> picture" />
+    <img src="<?php echo $contact->getPictureUrl() ?>" alt="<?php echo clean($contact->getObjectName()) ?> picture" style="max-width:500px; max-height:500px;"/>
     <p><a class="internalLink link-ico ico-delete" href="<?php echo $contact->getDeletePictureUrl() ?>" onclick="return confirm('<?php echo escape_single_quotes(lang('confirm delete current picture')) ?>')"><?php echo lang('delete current picture') ?></a></p>
 <?php } else { ?>
     <?php echo lang('no current picture') ?>
@@ -31,11 +37,11 @@
 	</div>
 </div>
 
-
+</td><td>
 
 <div style="float: left;" id="<?php echo $genid?>uploadPreviewContainer">
 	<!-- image preview area-->
-	<img id="<?php echo $genid?>uploadPreview" style="display:none;"/>
+	<img id="<?php echo $genid?>uploadPreview" style="display:none; max-width:500px; max-height:500px;"/>
 </div>
 <div style="float: left;padding:10px; margin-left: 20px;">
 	<h1><?php echo lang('new picture')?></h1>
@@ -55,9 +61,12 @@
 	  </form>
 	</div>
 </div>
+
+</td></tr></table>
 <script>
 	
 	var genid = '<?php echo $genid?>';
+	var is_company = <?php echo array_var($_REQUEST, 'is_company') ? 'true' : 'false' ?>;
 
 	og.setPictureInfo = function(i, e) {
 		$('#'+genid+'x').val(e.x1);
@@ -97,17 +106,33 @@
 		});
 	}
 
+	og.set_image_area_selection = function(genid) {
+		
+		setTimeout(function() {
+			var w = $('img#'+genid+'uploadPreview').width();
+			var h = $('img#'+genid+'uploadPreview').height();
+			var min = w > h ? h : w;
+			var size = min < 200 ? min : 200;
+			
+			og.area_sel.setSelection(0, 0, size, size, true);
+			og.area_sel.setOptions({show: true});
+			og.area_sel.update();
+		}, 500);
+	}
+
 	$(document).ready(function() {
 		var p = $("#"+genid+"uploadPreview");
 		//p.focus();
 		
 		// implement imgAreaSelect plug in (http://odyniec.net/projects/imgareaselect/)
-		og.area_sel = $('img#'+genid+'uploadPreview').imgAreaSelect({
-			aspectRatio: '1:1',
-			handles: true,
-			instance: true,
-			onSelectEnd: og.setPictureInfo
-		});
+		if (!is_company) {
+			og.area_sel = $('img#'+genid+'uploadPreview').imgAreaSelect({
+				aspectRatio: '1:1',
+				handles: true,
+				instance: true,
+				onSelectEnd: og.setPictureInfo
+			});
+		}
 
 		// prepare instant preview
 		$("#"+genid+"uploadImage").change(function(){
@@ -124,30 +149,25 @@
 				fr.onload = function (fevent) {
 			   		p.attr('src', fevent.target.result).fadeIn();
 				};
-				
-				setTimeout(function() {
-					og.area_sel.setSelection(0,0,200,200,true);
-					og.area_sel.setOptions({show: true});
-					og.area_sel.update();
-				}, 500);
+				if (!is_company) {
+					og.set_image_area_selection(genid);
+				}
 			} else {
 				// For old browsers (IE 9 or older)
 				og.tmpPictureFileUpload(genid, {
 					callback: function(data) {
 						$("#"+genid+"uploadPreview").attr('src', data.url).fadeIn();
 
-						og.area_sel = $('img#'+genid+'uploadPreview').imgAreaSelect({
-							aspectRatio: '1:1',
-							handles: true,
-							instance: true,
-							onSelectEnd: og.setPictureInfo
-						});
+						if (!is_company) {
+							og.area_sel = $('img#'+genid+'uploadPreview').imgAreaSelect({
+								aspectRatio: '1:1',
+								handles: true,
+								instance: true,
+								onSelectEnd: og.setPictureInfo
+							});
+							og.set_image_area_selection(genid);
+						}
 						
-						setTimeout(function() {
-							og.area_sel.setSelection(0,0,200,200,true);
-							og.area_sel.setOptions({show: true});
-							og.area_sel.update();
-						}, 500);
 					}
 				});
 			}

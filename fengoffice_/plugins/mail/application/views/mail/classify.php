@@ -1,6 +1,6 @@
 <?php $genid = gen_id(); ?>
 
-<form id='formClassify' name='formClassify' style='height:100%;background-color:white'  class="internalForm" action="<?php echo get_url('mail','classify', array('id'=>$email->getId())) ?>" method="post">
+<form id='formClassify' name='formClassify' style='padding: 7px;height:100%;background-color:white'  class="internalForm" action="<?php echo get_url('mail','classify', array('id'=>$email->getId())) ?>" method="post">
 	<div class="classify mail-classify-selector">
 		<?php render_member_selectors(MailContents::instance()->getObjectTypeId(), $genid, $email->getMemberIds()); ?>
 	</div>

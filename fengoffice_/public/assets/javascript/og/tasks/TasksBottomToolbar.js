@@ -8,7 +8,7 @@ og.TasksBottomToolbar = function(config) {
 		{
 			id:"tasksPanelBottomToolbarObject",
 			renderTo: "tasksPanelBottomToolbar",
-			style:"border:0px none; padding-left:12px; padding-top:0;"
+			style:"border:0px none; padding-top:0; padding-left:5px;"
 		});
 		
 	og.TasksBottomToolbar.superclass.constructor.call(this, config);
@@ -29,7 +29,7 @@ og.TasksBottomToolbar = function(config) {
 	
 	if (!og.config.use_milestones) {
 		// remove milestone option from group by select options
-		for (x in groupcombo_store_data) {
+		for (var x=0; x<groupcombo_store_data.length; x++) {
 			if (groupcombo_store_data[x][0] == 'milestone') {
 				groupcombo_store_data.splice(x, 1);
 			}
@@ -119,7 +119,7 @@ og.TasksBottomToolbar = function(config) {
     
     if (!og.config.use_milestones) {
 		// remove milestone option from group by select options
-		for (x in filtercombo_store_data) {
+		for (var x=0; x<filtercombo_store_data.length; x++) {
 			if (filtercombo_store_data[x][0] == 'milestone') {
 				filtercombo_store_data.splice(x, 1);
 			}
@@ -202,7 +202,7 @@ og.TasksBottomToolbar = function(config) {
     var currentUser = '';
     var usersArray = Ext.util.JSON.decode(document.getElementById(config.usersHfId).value);
     var companiesArray = Ext.util.JSON.decode(document.getElementById(config.companiesHfId).value);
-    for (i in usersArray){
+    for (var i=0; i<usersArray.length; i++){
 		if (usersArray[i].isCurrent) {
 			currentUser = usersArray[i].id;
 		}
@@ -210,10 +210,10 @@ og.TasksBottomToolbar = function(config) {
 	var ucsData = [[currentUser, lang('me')],['0',lang('everyone')],['-1', lang('unassigned')],['0','--']];
 	
 	ucsOtherUsers = [];
-	for (i in usersArray){
+	for (var i=0; i<usersArray.length; i++){
 		var companyName = '';
 		var j;
-		for(j in companiesArray) {
+		for (var j=0; j<companiesArray.length; j++){
 			if (companiesArray[j] && companiesArray[j].id == usersArray[i].cid) {
 				companyName = companiesArray[j].name;
 				break;
@@ -231,7 +231,7 @@ og.TasksBottomToolbar = function(config) {
 	var compData = [];
 	if (og.config.can_assign_tasks_to_companies) {
 		compData = compData.concat([['0','--']]);
-		for (i in companiesArray) {
+		for (var i=0; i<companiesArray.length; i++){
 			if (companiesArray[i].id) compData[compData.length] = [companiesArray[i].id, og.clean(companiesArray[i].name)];
 		}
 	}
@@ -279,17 +279,17 @@ og.TasksBottomToolbar = function(config) {
     });
     this.filterNamesCompaniesCombo.setValue(ogTasks.userPreferences.filterValue);
     
-    for (i in usersArray){
+    for (var i=0; i<usersArray.length; i++){
 		if (usersArray[i].isCurrent)
 			currentUser = usersArray[i].id;
 	}
 	var uData = [[currentUser, lang('me')],['0',lang('everyone')],['0','--']];
 	uDOtherUsers = [];
-	for (i in usersArray){
+	for (var i=0; i<usersArray.length; i++){
 		if (usersArray[i] && !usersArray[i].isCurrent && usersArray[i].id) {
 			var companyName = '';
 			var j;
-			for(j in companiesArray) {
+			for (var j=0; j<companiesArray.length; j++){
 				if (companiesArray[j] && companiesArray[j].id == usersArray[i].cid) {
 					companyName = companiesArray[j].name;
 					break;
@@ -389,7 +389,7 @@ og.TasksBottomToolbar = function(config) {
     var milestones = Ext.util.JSON.decode(document.getElementById(config.internalMilestonesHfId).value);
     milestones = milestones.concat(Ext.util.JSON.decode(document.getElementById(config.externalMilestonesHfId).value));
     milestonesData = [[0,"--" + lang('none') + "--"]];
-    for (i in milestones){
+    for (var i=0; i<milestones.length; i++){
     	if (milestones[i].id)
     		milestonesData[milestonesData.length] = [milestones[i].id, og.clean(milestones[i].t)];
     }

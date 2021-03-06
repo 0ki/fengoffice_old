@@ -229,6 +229,7 @@
   	'mark as unread' => 'Mark as unread',
   	'activate' => 'Activate',
   	'disabled' => 'Disabled',
+  	'restore user' => 'Restore user',
   	
   	'template context' => 'Choose the template\'s location',
       

@@ -120,7 +120,7 @@ Ext.override(Ext.tree.TreeNode,{
                 this.renderChildren();
             }
             this.expanded = true;
-            if(!this.isHiddenRoot() && (this.getOwnerTree().animate && anim !== false) || anim){
+            if(!this.isHiddenRoot() && (anim !== false && this.getOwnerTree() && this.getOwnerTree().animate) || anim){
                 this.ui.animExpand(function(){
                     this.fireEvent("expand", this);
                     if(typeof callback == "function"){
@@ -143,6 +143,12 @@ Ext.override(Ext.tree.TreeNode,{
                callback(this);
            }
         }
+    	
+    	if((!this.attributes.gettingChildsFromServer) && this.expanded && this.childNodes.length < this.attributes.realTotalChilds && this.attributes.expandable){
+    		this.expanded = false;  
+        	this.getUI().expand();        	
+    	}
+    	
         if(deep === true){
             this.expandChildNodes(true, callback);
         }
@@ -174,8 +180,9 @@ Ext.override(Ext.tree.TreeNode,{
     expandChildNodes : function(deep, callback){
         var cs = this.childNodes;
         for(var i = 0, len = cs.length; i < len; i++) {
-        	//alert(cs[i].text) ;
-        	cs[i].expand(deep, false, callback);
+        	if (cs[i] && typeof(cs[i]) != 'function') {
+        		cs[i].expand(deep, false, callback);
+        	}
         }
     },
     

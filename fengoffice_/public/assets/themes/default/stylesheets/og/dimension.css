@@ -40,13 +40,16 @@ div.single-dimension-selector div.selector-body {
 
 .completePath{
 	display: inline-block;
-	width: calc(100% - 79px);	
+	width: calc(100% - 20px);/*-79px*/
 	margin-top: 4px;
 	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .single_current_selected{
 	min-height: 20px;
+	border: 1px solid #ccc;
+	border-radius: 2px;
 }
 
 .single_current_selected .completePath{

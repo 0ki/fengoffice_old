@@ -251,11 +251,26 @@ class MoreController extends ApplicationController {
 		
 		$dims = json_decode(array_var($_REQUEST, 'dims'), true);
 		
-		$root_dim_vals = array();
+		$root_dids = explode (",", user_config_option('root_dimensions', null, logged_user()->getId()));
+		$update_root_dimensions = false;
+		
+		$enabled_dim_vals = array();
 		foreach ($dims as $dim_id => $enabled) {
-			if ($enabled) $root_dim_vals[] = $dim_id;
+			if ($enabled) {
+				$enabled_dim_vals[] = $dim_id;
+				
+				if (!in_array($dim_id, $root_dids)) {
+					$root_dids[] = $dim_id;
+					$update_root_dimensions = true;
+				}
+			}
+			
 		}
-		set_config_option('enabled_dimensions', implode(',', $root_dim_vals));
+		set_config_option('enabled_dimensions', implode(',', $enabled_dim_vals));
+		
+		if ($update_root_dimensions) {
+			set_user_config_option('root_dimensions', implode(',', $root_dids), logged_user()->getId());
+		}
 		
 		ajx_extra_data(array('ok' => '1'));
 	}

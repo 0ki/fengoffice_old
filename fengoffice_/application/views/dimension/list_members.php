@@ -5,10 +5,10 @@
 	padding: 10px;
 }
 .dimension-members-container .title {
-	font-weight: bold;
-	font-size: 250%;
+	font-weight: normal;
+	font-size: 200%;
 	margin-top: 20px;
-	margin-left: 10px;
+	margin-left: 20px;
 }
 
 .dimension-members-container .title .titletext {
@@ -46,9 +46,12 @@
 	padding-left:20px;
 	padding-top: 2px;
 	height: 18px;
-	width:400px;
+	width: 400px;
 	margin-left: 5px;
 	float: left;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
 }
 .dimension-members-container .dimension-members-section .section-content .member-row .member-log {
 	float: left;

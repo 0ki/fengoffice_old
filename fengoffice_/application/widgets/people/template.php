@@ -84,7 +84,7 @@
 				?> 
 				<?php if (count($contacts) == $limit) :?>
 					<div class="view-all-container" style="float:right; width: 25%; overflow: hidden; font-size: 14px; margin-top: 0.75em; height: 16px;">
-						<a href="<?php echo get_url('contact', 'init')?>" ><?php echo lang("view all");?></a>
+						<a href="#" onclick="og.openLink(og.getUrl('contact', 'init'), {caller: 'contacts'}); return false;" ><?php echo lang("view all");?></a>
 					</div>
 					<div class="clear"></div>
 				<?php endif;?>

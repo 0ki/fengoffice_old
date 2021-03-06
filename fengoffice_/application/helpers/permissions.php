@@ -343,6 +343,8 @@
 				return $return;
 			}
 			
+			$max_role_ot_perm = RoleObjectTypePermissions::instance()->findOne(array('conditions' => "object_type_id='$object_type_id' AND role_id = '". $user->getUserType() ."'"));
+			
 			$enabled_dimensions = config_option('enabled_dimensions');
 			$dimension_permissions = array();
 			foreach($members as $k => $m){
@@ -380,7 +382,11 @@
 						
 						//check individual members
 						if (!$dimension_permissions[$dimension_id] && ContactMemberPermissions::contactCanReadObjectTypeinMember($contact_pg_ids, $m->getId(), $object_type_id, $write, $delete, $user)){
-							$dimension_permissions[$dimension_id]=true;
+							if ($max_role_ot_perm) {
+								if ($access_level == ACCESS_LEVEL_DELETE && $max_role_ot_perm->getCanDelete() || $access_level == ACCESS_LEVEL_WRITE && $max_role_ot_perm->getCanWrite() || $access_level == ACCESS_LEVEL_READ) { 
+									$dimension_permissions[$dimension_id]=true;
+								}
+							}
 						}
 					} else {
 						unset($dimension_permissions[$dimension_id]);
@@ -456,6 +462,19 @@
 		$write = $access_level == ACCESS_LEVEL_WRITE;
 		$delete = $access_level == ACCESS_LEVEL_DELETE;
 		
+		$tmp_contact = null;
+		$max_role_ot_perm = null;
+		if (count($permission_group_ids) > 0) {
+			$permission_groups = PermissionGroups::findAll(array('conditions' => "id IN (".implode(',', $permission_group_ids).")"));
+			foreach ($permission_groups as $pgroup) {
+				if ($pgroup->getType() == 'permission_groups' && $pgroup->getContactId() > 0) {
+					$tmp_contact = Contacts::findById($pgroup->getContactId());
+					$max_role_ot_perm = RoleObjectTypePermissions::instance()->findOne(array('conditions' => "object_type_id='$object_type_id' AND role_id = '". $tmp_contact->getUserType() ."'"));
+					break;
+				}
+			}
+		}
+		
 		try {
 			$dimension_query_methods = array();
 			$dimension_permissions = array();
@@ -481,19 +500,24 @@
 					continue;
 				}
 				
-				if (!isset($dimension_query_methods[$dimension->getId()])) {
-					$dimension_query_methods[$dimension->getId()] = $dimension->getPermissionQueryMethod();
+				if ($max_role_ot_perm && ($access_level == ACCESS_LEVEL_DELETE && $max_role_ot_perm->getCanDelete() || 
+						$access_level == ACCESS_LEVEL_WRITE && $max_role_ot_perm->getCanWrite() || $access_level == ACCESS_LEVEL_READ)) {
+					
+					if (!isset($dimension_query_methods[$dimension->getId()])) {
+						$dimension_query_methods[$dimension->getId()] = $dimension->getPermissionQueryMethod();
+					}
+					
+					$dimension_id = $dimension->getId();
+					$dimension_permissions[$dimension_id] = array();
+					
+					//dimension defines permissions and user has maximum level of permissions
+					$dimension_permissions[$dimension_id] = array_merge($dimension_permissions[$dimension_id], $dimension->getPermissionGroupsAllowAll($permission_group_ids));
+					
+					//check
+					$dimension_permissions[$dimension_id] = array_merge($dimension_permissions[$dimension_id], 
+						ContactMemberPermissions::instance()->canAccessObjectTypeinMembersPermissionGroups($permission_group_ids, array_keys($info['members']), $object_type_id, $write, $delete));
+					
 				}
-				
-				$dimension_id = $dimension->getId();
-				$dimension_permissions[$dimension_id] = array();
-				
-				//dimension defines permissions and user has maximum level of permissions
-				$dimension_permissions[$dimension_id] = array_merge($dimension_permissions[$dimension_id], $dimension->getPermissionGroupsAllowAll($permission_group_ids));
-				
-				//check
-				$dimension_permissions[$dimension_id] = array_merge($dimension_permissions[$dimension_id], 
-					ContactMemberPermissions::instance()->canAccessObjectTypeinMembersPermissionGroups($permission_group_ids, array_keys($info['members']), $object_type_id, $write, $delete));
 			}
 			
 			
@@ -877,12 +901,17 @@
 			if (isset($permissions) && !is_null($permissions) && is_array($permissions)) {
 				try {
 					$tmp_contact = Contacts::findOne(array('conditions' => 'permission_group_id = '.$pg_id));
-					if ($tmp_contact instanceof Contact) $user_type_name = $tmp_contact->getUserTypeName();
+					if ($tmp_contact instanceof Contact) {
+						$user_type_name = $tmp_contact->getUserTypeName();
+						$role_id = $tmp_contact->getUserType();
+						$max_role_ot_perms = RoleObjectTypePermissions::instance()->findAll(array('conditions' => "role_id = '$role_id'"));
+					}
 					$mail_ot = ObjectTypes::findByName('mail');
 					
 					$sql_insert_values = "";
+					$member_object_types_to_delete = array();
 					$allowed_members_ids= array();
-					foreach ($permissions as $perm) {
+					foreach ($permissions as &$perm) {
 						if (!isset($all_perm_deleted[$perm->m])) $all_perm_deleted[$perm->m] = true;
 						$allowed_members_ids[$perm->m]=array();
 						$allowed_members_ids[$perm->m]['pg']=$pg_id;
@@ -901,6 +930,29 @@
 							}else{
 								$allowed_members_ids[$perm->m]['d'] = $is_guest ? false : $perm->d;
 							}
+
+							// check max permissions for user type
+							if ($tmp_contact instanceof Contact) {
+								$max_perm = null;
+								foreach($max_role_ot_perms as $max_role_ot_perm) {
+									if ($max_role_ot_perm->getObjectTypeId() == $perm->o) {
+										$max_perm = $max_role_ot_perm;
+									}
+								}
+								if ($max_perm) {
+									if (!$max_perm->getCanDelete()) {
+										$perm->d = 0;
+									}
+									if (!$max_perm->getCanWrite()) {
+										$perm->w = 0;
+									}
+								} else {
+									$perm->d = 0;
+									$perm->w = 0;
+									$perm->r = 0;
+								}
+							}
+							
 							if ($save_cmps) {
 								// don't allow to write emails for collaborators and guests
 								if ($tmp_contact instanceof Contact && !in_array($user_type_name, array('Super Administrator','Administrator','Manager','Executive'))) {
@@ -910,6 +962,9 @@
 									}
 								}
 								$sql_insert_values .= ($sql_insert_values == "" ? "" : ",") . "('".$pg_id."','".$perm->m."','".$perm->o."','".$perm->d."','".$perm->w."')";
+								
+								if (!$member_object_types_to_delete[$perm->m]) $member_object_types_to_delete[$perm->m] = array();
+								$member_object_types_to_delete[$perm->m][] = $perm->o;
 							}
 							
 							$all_perm_deleted[$perm->m] = false;
@@ -919,8 +974,19 @@
 					}
 					
 					if ($save_cmps) {
-						if (count($changed_members) > 0) {
-							DB::execute("DELETE FROM ".TABLE_PREFIX."contact_member_permissions WHERE member_id IN (".implode(',',$changed_members).") AND permission_group_id=$pg_id");
+						if (count($all_perm_deleted) > 0) {
+							$member_ids_to_delete = array();
+							foreach ($all_perm_deleted as $mid => $del) {
+								if ($del) $member_ids_to_delete[] = $mid;
+							}
+							if (count($member_ids_to_delete) > 0) {
+								DB::execute("DELETE FROM ".TABLE_PREFIX."contact_member_permissions WHERE member_id IN (".implode(',',$member_ids_to_delete).") AND permission_group_id=$pg_id");
+							}
+						}
+						foreach ($member_object_types_to_delete as $mid => $obj_type_ids) {
+							if (count($obj_type_ids) > 0) {
+								DB::execute("DELETE FROM ".TABLE_PREFIX."contact_member_permissions WHERE member_id=$mid AND object_type_id IN (".implode(',',$obj_type_ids).") AND permission_group_id=$pg_id");
+							}
 						}
 						if ($sql_insert_values != "") {
 							DB::execute("INSERT INTO ".TABLE_PREFIX."contact_member_permissions (permission_group_id, member_id, object_type_id, can_delete, can_write) VALUES $sql_insert_values ON DUPLICATE KEY UPDATE member_id=member_id");
@@ -1170,7 +1236,7 @@
 		if (isset($permissions) && is_array($permissions)) {
 			
 			$allowed_pg_ids= array();
-			foreach ($permissions as &$perm) {
+			foreach ($permissions as $k => &$perm) {
 				if ($perm->r) {
 					$allowed_pg_ids[$perm->pg]=array();
 					if(isset($allowed_pg_ids[$perm->pg]['w'])){
@@ -1186,6 +1252,33 @@
 						}
 					}else{
 						$allowed_pg_ids[$perm->pg]['d']=$perm->d;
+					}
+					
+					// check max permissions for user type
+					$tmp_contact = Contacts::findOne(array('conditions' => 'permission_group_id = '.$perm->pg));
+					if ($tmp_contact instanceof Contact) {
+						$max_role_ot_perms = RoleObjectTypePermissions::instance()->findAll(array('conditions' => "role_id = '". $tmp_contact->getUserType() ."'"));
+						$max_perm = null;
+						foreach($max_role_ot_perms as $max_role_ot_perm) {
+							if ($max_role_ot_perm->getObjectTypeId() == $perm->o) {
+								$max_perm = $max_role_ot_perm;
+							}
+						}
+						$perm->m = $member->getId();
+						if ($max_perm) {
+							if (!$max_perm->getCanDelete()) {
+								$perm->d = 0;
+							}
+							if (!$max_perm->getCanWrite()) {
+								$perm->w = 0;
+							}
+						} else {
+							$perm->d = 0;
+							$perm->w = 0;
+							$perm->r = 0;
+							unset($permissions[$k]);
+							continue;
+						}
 					}
 
 					if ($save_cmps) {

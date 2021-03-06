@@ -39,6 +39,7 @@
    </fieldset>
   
   <?php
+	tpl_assign("user_group_abm", true);
 	$this->includeTemplate(get_template_path('system_permissions', 'account')); 
   ?>
   <?php echo submit_button($group->isNew() ? lang('add group') : lang('save changes')) ?>

@@ -535,6 +535,27 @@ class TaskController extends ApplicationController {
 				$desc = $task->getText();
 				$data['desc'] = $desc;
 			}
+			
+			if (array_var($_REQUEST, 'task_info')) {
+				$col_names = $task->getColumns();
+				$ob_col_names = $task->getObject()->getColumns();
+				$raw_data = array();
+				
+				foreach($ob_col_names as $ob_col_name) {
+					$raw_data[$ob_col_name] = $task->getColumnValue($ob_col_name);
+				}
+				foreach($col_names as $col_name) {
+					$raw_data[$col_name] = $task->getColumnValue($col_name);
+				}				
+				
+				foreach($raw_data as $key => $raw){
+					if($raw instanceof DateTimeValue){
+						$raw_data[$key] = $raw->toMySQL();
+					}
+				}
+								
+				$data['task'] = ProjectTasks::getArrayInfo($raw_data);				
+			}
 		}
 		ajx_extra_data($data);
 	}
@@ -659,6 +680,7 @@ class TaskController extends ApplicationController {
 							$application_logs[] = array($timeslot, ApplicationLogs::ACTION_CLOSE,false,true);
 							$tasksToReturn[] = $task->getArrayInfo();
 							$showSuccessMessage = false;
+							$task->calculatePercentComplete();
 						}
 						break;
 					case 'pause_work':
@@ -1735,9 +1757,17 @@ class TaskController extends ApplicationController {
 			}
 			
 			$this->getRepeatOptions($task, $occ, $rsel1, $rsel2, $rsel3, $rnum, $rend, $rjump);
-			$dd = $task->getDueDate() instanceof DateTimeValue ? $task->getDueDate()->advance(logged_user()->getTimezone() * 3600, false) : null;
-			$sd = $task->getStartDate() instanceof DateTimeValue ? $task->getStartDate()->advance(logged_user()->getTimezone() * 3600, false) : null;
-
+			
+			
+			$dd = $task->getDueDate() instanceof DateTimeValue ? $task->getDueDate() : null;
+			if($dd instanceof DateTimeValue && $task->getUseDueTime()){
+				$dd->advance(logged_user()->getTimezone() * 3600);
+			}
+			$sd = $task->getStartDate() instanceof DateTimeValue ? $task->getStartDate() : null;
+			if($sd instanceof DateTimeValue && $task->getUseStartTime()){
+				$sd->advance(logged_user()->getTimezone() * 3600);
+			}
+			
 			$post_dd = null;
 			if(array_var($_POST, 'task_due_date')){
 				$post_dd = getDateValue(array_var($_POST, 'task_due_date'));
@@ -1746,7 +1776,7 @@ class TaskController extends ApplicationController {
 					if (is_array($duetime)) {
 						$post_dd->setHour(array_var($duetime, 'hours'));
 						$post_dd->setMinute(array_var($duetime, 'mins'));
-						$post_dd->advance(logged_user()->getTimezone() * 3600, false);
+						$post_dd->advance(logged_user()->getTimezone() * 3600);
 					}
 				}
 			}
@@ -1759,7 +1789,7 @@ class TaskController extends ApplicationController {
 					if (is_array($starttime)) {
 						$post_st->setHour(array_var($starttime, 'hours'));
 						$post_st->setMinute(array_var($starttime, 'mins'));
-						$post_st->advance(logged_user()->getTimezone() * 3600, false);
+						$post_st->advance(logged_user()->getTimezone() * 3600);
 					}
 				}
 			}

@@ -3,7 +3,7 @@ $genid = gen_id();
 
 //$user_type_cond = "AND user_type IN (SELECT id FROM ".TABLE_PREFIX."permission_groups WHERE type='roles' AND name IN ('Super Administrator','Administrator','Manager','Executive'))";
 $user_type_cond = "";
-$internal_users = Contacts::instance()->getAllUsers($user_type_cond, false, 'last_activity DESC');
+$internal_users = Contacts::instance()->getAllUsers($user_type_cond, true, 'last_activity DESC');
 /*
 $user_type_cond = "AND user_type>0 AND user_type IN (SELECT id FROM ".TABLE_PREFIX."permission_groups WHERE type='roles' AND name IN ('Collaborator Customer','Internal Collaborator','External Collaborator'))";
 $collaborators = Contacts::instance()->getAllUsers($user_type_cond, false, 'last_activity DESC');
@@ -37,7 +37,7 @@ $guest_user_type = PermissionGroups::findOne(array('conditions' => "type='roles'
 		<?php
 		$count = 0;
 		foreach ($internal_users as $user) {?>
-			<li class="user" style="<?php echo $count > 10 ? "display:none;" : ""?>">
+			<li class="user <?php echo ($user->getDisabled() ? "disabled" : "")?>" style="<?php echo $count > 10 ? "display:none;" : ""?>">
 				<a href="<?php echo $user->getCardUrl()?>" class="internalLink" target="<?php echo array_var($_REQUEST, 'current')?>"><div class="wrapper">
 				<?php if ($user->hasPicture()){ ?>
 					<div class="coViewIconImage"><img src="<?php echo $user->getPictureUrl() ?>" alt="<?php echo clean($user->getObjectName()) ?> picture" /></div>
@@ -46,6 +46,7 @@ $guest_user_type = PermissionGroups::findOne(array('conditions' => "type='roles'
 				<?php } ?>
 					<div class="user-name-container">
 						<?php echo $user->getObjectName() . ($user->getJobTitle() == "" ? "" : " (" .$user->getJobTitle().")")?>
+						<?php if ($user->getDisabled()) echo '<span class="desc"> - '.lang('disabled') . '</span>'?>
 						<div class="desc"><?php echo $user->getUserTypeName()?></div>
 					</div>
 					<div class="clear"></div>
@@ -62,7 +63,7 @@ $guest_user_type = PermissionGroups::findOne(array('conditions' => "type='roles'
 			</div>
 		<?php } ?>
 			<div class="clear"></div>
-			<button title="<?php echo lang('add new internal user')?>" class="add-first-btn" onclick="og.openLink(og.getUrl('contact','add',{is_user:1, user_type:'<?php echo $exe_user_type?>'}));">
+			<button title="<?php echo lang('add new internal user')?>" class="add-first-btn blue" onclick="og.openLink(og.getUrl('contact','add',{is_user:1, user_type:'<?php echo $exe_user_type?>'}));">
 				<img src="public/assets/themes/default/images/16x16/add.png">&nbsp;<?php echo lang('add user')?>
 			</button>
 			<div class="clear"></div>
@@ -180,7 +181,7 @@ foreach ($groups as $gr) {
 	} ?>
 			</ul>
 			<div class="clear"></div>
-			<button title="<?php echo lang('add new group')?>" class="add-first-btn" onclick="og.openLink(og.getUrl('group','add'));">
+			<button title="<?php echo lang('add new group')?>" class="add-first-btn blue" onclick="og.openLink(og.getUrl('group','add'));">
 				<img src="public/assets/themes/default/images/16x16/add.png" />&nbsp;<?php echo lang('add new group')?>
 			</button>
 			<div class="clear"></div>

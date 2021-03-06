@@ -651,23 +651,24 @@
 
 	    	<?php if (array_var($_REQUEST, 'is_user') == 1 && isset($user_type) && $user_type > 0 && $can_change_permissions) { ?>
 		    	og.renderUserTypeSelector({container_id:"<?php echo $genid?>_user_type_container", input_name:'contact[user][type]', selected_value: <?php echo $user_type?>, id:'<?php echo $genid?>_user_type_sel'});
+
+		    	og.with_perm_user_types = Ext.util.JSON.decode('<?php echo json_encode($allowed_user_type_ids)?>');
 		    	
 	    		$("#<?php echo $genid?>_contact_data_role").html($("#user_role_div").html() + '<div class="clear"></div>');
 	    		$("#<?php echo $genid?>_contact_data_role").show();
 	    		$("#<?php echo $genid?>_contact_data_role select.user-type-selector").change(function(){
-		    		og.addUpdatePermissionsUserTypeChange('<?php echo $genid?>', $(this).val());
+		    		og.afterUserTypeChange('<?php echo $genid?>', $(this).val());
 		    		og.ogPermPrepareSendData('<?php echo $genid?>');
-
-		    		<?php if ($contact->isNew()) { // add permissions for allowed user roles, remove for others ?>
-		    			var with_perm_user_types = Ext.util.JSON.decode('<?php echo json_encode($allowed_user_type_ids)?>');
-		    			if (with_perm_user_types.indexOf($(this).val().toString()) >= 0) {
-			    			og.addPermissionsForAllMembers('<?php echo $genid?>', $(this).val().toString());
-		    			} else {
-		    				og.removePermissionsForAllMembers('<?php echo $genid?>');
-		    			}
-		    		<?php } ?>
 		    	});
 	    		og.userPermissions.enableDisableSystemPermissionsByRole('<?php echo $genid?>', <?php echo $user_type ?>);
+
+	    		$("#<?php echo $genid?>permissions_tab").click(function(){
+
+	    			og.afterUserTypeChangeAndPermissionsClick('<?php echo $genid?>');
+	    			
+		    	});
+
+
 	    		
 	    		<?php if ($contact->isNew()) { ?>
 	    		var permissions = og.permissionInfo[genid].permissions;

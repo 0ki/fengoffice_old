@@ -188,9 +188,10 @@ ogTasks.drawTaskForm = function(container_id, data){
 	}
 	
 	html +="<div id='member_selectors_quick_add'>";
-	for (x in og.config.quick_add_task_combos) {
-		if (typeof(og.config.quick_add_task_combos[x]) == 'function') continue;
-		html += dimCombo (og.config.quick_add_task_combos[x]);
+	for (var x=0; x<og.config.quick_add_task_combos.length; x++) {
+		if (og.config.quick_add_task_combos[x]) {
+			html += dimCombo (og.config.quick_add_task_combos[x]);
+		}
 	}
 	html +="</div>";
 	// </MEMBERS SELECTORS>
@@ -945,6 +946,7 @@ ogTasks.buildAssignedToComboStore = function(companies, only_me, groups) {
 ogTasks.buildMilestonesComboStore = function(ms) {
 	var milestonesData = [[0,"--" + lang('none') + "--"]];
     for (i in ms){
+    	if (typeof(ms[i]) == 'function') continue;
     	if (ms[i].id)
     		milestonesData[milestonesData.length] = [ms[i].id, ms[i].t];
     }
@@ -1022,7 +1024,7 @@ ogTasks.drawMilestonesCombo = function(success, data) {
 	if (prev_combo) {
 		m_val = Ext.getCmp('ogTasksPanelATMilestoneCombo').getValue();		
 		var found = false;
-		for (i in mStore) {
+		for (var i=0; i<mStore.length; i++) {
 			if (mStore[i][0] == m_val) {
 				ogTasks.selectedMilestone = mStore[i][0];
 				found = true;

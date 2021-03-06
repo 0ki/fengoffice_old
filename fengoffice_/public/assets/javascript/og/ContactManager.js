@@ -63,6 +63,8 @@ og.ContactManager = function() {
 					}
 					
 					Ext.getCmp('contact-manager').reloadGridPagingToolbar('contact','list_all','contact-manager');
+					
+					og.eventManager.fireEvent('replace all empty breadcrumb', null);
 				}
 			}
 	    });
@@ -541,10 +543,9 @@ og.ContactManager = function() {
 	}
 	actions = {
 		newContact: new Ext.Action({
-			id: 'new_button',
 			text: lang('new'),
             tooltip: lang('create contact or client company'),
-            iconCls: 'ico-new',
+            iconCls: 'ico-new new_button',
 			menu: {items: [
 				{text: lang('contact'), iconCls: 'ico-contact-small', handler: function() {
 					//og.render_modal_form('', {c:'contact', a:'add'});

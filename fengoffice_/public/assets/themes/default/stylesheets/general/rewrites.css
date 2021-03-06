@@ -349,9 +349,23 @@ a.iCalSubscribe {
 
 .dimension-selector-container .dimension-panel-textfilter {
 	width: 100% ;	
-	border-width: 0;	
+	/*border-width: 0;*/	
 	padding-left: 0!important;
     padding-right: 0!important;
+}
+
+.dimension-selector-container .x-toolbar.x-small-editor {
+	border-width: 0;	
+	padding-bottom: 0;
+    padding-left: 0;
+}
+
+.dimension-selector-container .dimension-panel-textfilter.ico-search-m.search-filter {
+	height: 20px!important;
+}
+
+.dimension-selector-container .x-panel-header.x-unselectable {
+	border-width: 0;	
 }
 
 .dimension-panel-textfilter {

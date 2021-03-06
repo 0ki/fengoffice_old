@@ -1,5 +1,5 @@
 
-	About Feng Office 3.0-beta
+	About Feng Office 3.0-rc
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -105,6 +105,12 @@
 	Changelog
 	=========
 	
+	Since 3.0-beta
+	----------------
+	feature: Check max permissions per user role when adding/editing permissions.
+	bugfix: Do not show active context members on activity widget breadcrumbs.
+	bugfix: Activity widget says that some users have been unsubscribed.
+			
 	Since 2.7.1.9
 	----------------
 	feature: Several improvements in user interface, experience and looks.

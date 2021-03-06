@@ -80,3 +80,10 @@ ON DUPLICATE KEY UPDATE dimension_id=dimension_id;
 insert into <?php echo $table_prefix ?>widgets (name,title,plugin_id,path,default_options,default_section,default_order,icon_cls) values
  ('emails','emails',0,'','','right',10,'ico-email')
 on duplicate key update name=name;
+
+INSERT INTO <?php echo $table_prefix ?>role_object_type_permissions (role_id, object_type_id, can_delete, can_write)
+ SELECT p.id, o.id, 1, 1
+ FROM `<?php echo $table_prefix ?>object_types` o JOIN `<?php echo $table_prefix ?>permission_groups` p
+ WHERE o.`name` IN ('mail')
+ AND p.`name` IN ('Super Administrator','Administrator','Manager','Executive')
+ON DUPLICATE KEY UPDATE role_id=role_id;

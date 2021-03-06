@@ -29,6 +29,15 @@
   			
 			$permission = self::findOne(array('conditions' => "`$system_permission` = 1 AND `permission_group_id` IN ($contact_pg_ids)"));
 			
+			// check max system permission
+			$max_role_system_permissions = MaxSystemPermissions::findOne(array('conditions' => 'permission_group_id = '.$user->getUserType()));
+			if ($max_role_system_permissions instanceof MaxSystemPermission) {
+				$max_val = $max_role_system_permissions->getColumnValue($system_permission);
+				if (!$max_val) {
+					$permission = null;
+				}
+			}
+			
 			if (!array_var(self::$permission_cache, $user->getId())) {
 				self::$permission_cache[$user->getId()] = array();
 			}

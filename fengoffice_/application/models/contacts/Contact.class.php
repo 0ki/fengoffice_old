@@ -886,6 +886,10 @@ class Contact extends BaseContact {
 			$attributes['redirect_to'] = str_replace('&amp;', '&', trim($redirect_to));
 		} // if
 
+		if ($this->isCompany()) {
+			$attributes['is_company'] = 1;
+		}
+		
 		return get_url('contact', 'edit_picture', $attributes);
 	}// getUpdatePictureUrl
 	

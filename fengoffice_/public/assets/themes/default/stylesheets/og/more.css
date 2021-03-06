@@ -39,6 +39,14 @@
 	border-radius: 4px;
 	background-color: #fafafa;
 }
+.user-groups-container .user-groups-section .section-content .user.disabled {
+	color: #888;
+	background-color: #eaeaea;
+}
+.user-groups-container .user-groups-section .section-content .user.disabled a, .user-groups-container .user-groups-section .section-content .user.disabled .desc {
+	color: #888;
+}
+
 .user-groups-container .user-groups-section .more-users-msg {
 	margin: 10px 0;
 }
@@ -350,9 +358,10 @@
 
 #tasksPanel #tasksPanelContent #tasksPanelContainer #ogTasksPanelColNames .tasksActionsBtn.tasksBtn.highlighted {
 	background-color: #FDFD9E;
+	color: black;
 }
 
-#new_button.highlighted {
+.new_button.highlighted {
 	background-color: #FDFD9E;
 	border-radius: 4px;
 }

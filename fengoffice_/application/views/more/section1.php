@@ -65,7 +65,7 @@ if (config_option('getting_started_step') < 99 && !$more_settings_expanded) {
 					case "mail":
 					case "contact":
 					case "event":
-						$selector = '#'.$first_tab_panel->getId().' #new_button'; break;
+						$selector = '#'.$first_tab_panel->getId().' .new_button'; break;
 					default: break;
 				}
 				

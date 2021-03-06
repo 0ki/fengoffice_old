@@ -37,6 +37,10 @@
 	font-weight: bold;
 }
 
+.x-tab-strip .x-tab-with-icon {
+	cursor: pointer;
+}
+
 .x-tab-strip .x-tab-with-icon span.x-tab-strip-text {
 	padding-left: 25px;
 	text-transform: uppercase;
@@ -145,9 +149,27 @@ strong{font-weight:bold;}
 
 .og-content-panel .x-toolbar {
 	background: #FFFFFF;
-	min-height: 25px;
-	padding-top: 5px;
+	/*min-height: 25px;
+	padding-top: 5px;*/
 	/*padding: 8px !important*/
+}
+
+.og-content-panel .x-panel-tbar .x-toolbar.x-small-editor {
+ 	min-height: 30px;
+	padding-top: 5px;
+}
+
+.member-chooser-container .x-panel-tbar .x-toolbar.x-small-editor {
+ 	min-height: 0px!important;
+	padding-top: 0px!important;
+}
+
+.x-btn-with-menu .x-btn-center .x-btn-text{
+	padding-top: 3px;
+	padding-bottom: 2px;
+}
+.x-btn-with-menu .x-btn-center em{
+	background-position: right 3px; 
 }
 
 .x-btn-over{
@@ -410,6 +432,8 @@ div#menu-panel .x-panel-tbar-noheader .x-toolbar, div#menu-panel .x-panel-mc .x-
 }
 .x-toolbar .ytb-sep {
 	background-image: none!important;
+	margin: 0;
+	width: 0px;
 }
 
 /* Bugfix for datepickers in chrome */
@@ -420,6 +444,7 @@ div#menu-panel .x-panel-tbar-noheader .x-toolbar, div#menu-panel .x-panel-mc .x-
 
 .x-btn-text-icon .x-btn-center .x-btn-text {
 	/*height: 18px;*/
+	background-position: left center;	
 }
 
 .x-grid3-header {
@@ -432,7 +457,7 @@ div#menu-panel .x-panel-tbar-noheader .x-toolbar, div#menu-panel .x-panel-mc .x-
 	background-image: none!important; 
 }
 .x-btn button, .x-menu-list-item, .x-grid3-hd-row td, .x-grid3-row td, .x-grid3-summary-row td {
-	font-size: 12px;
+	font-size: 13px;
 	font-family: "Open Sans",Arial,sans-serif;
 }
 .x-toolbar .ytb-text {
@@ -535,4 +560,8 @@ div#menu-panel .x-panel-tbar-noheader .x-toolbar, div#menu-panel .x-panel-mc .x-
 .x-tab-scroller-right-disabled {
 	opacity: 1.0;
 	filter: alpha(opacitiy=100);
+}
+
+.x-panel-tl .x-panel-icon, .x-window-tl .x-panel-icon.ico-calendar{
+	padding-left: 25px!important;
 }

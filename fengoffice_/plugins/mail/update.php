@@ -96,4 +96,14 @@
 	function mail_update_8_9() {
 		DB::execute("ALTER TABLE `".TABLE_PREFIX."mail_datas` ADD INDEX `to`(`to`(255)), ADD INDEX `subject`(`subject`(255));");
 	}
+	
+	function mail_update_9_10() {
+
+		DB::execute("INSERT INTO ".TABLE_PREFIX."role_object_type_permissions (role_id, object_type_id, can_delete, can_write)
+		 SELECT p.id, o.id, 1, 1
+		 FROM `".TABLE_PREFIX."object_types` o JOIN `".TABLE_PREFIX."permission_groups` p
+		 WHERE o.`name` IN ('mail')
+		 AND p.`name` IN ('Super Administrator','Administrator','Manager','Executive')
+		ON DUPLICATE KEY UPDATE role_id=role_id;");
+	}
 

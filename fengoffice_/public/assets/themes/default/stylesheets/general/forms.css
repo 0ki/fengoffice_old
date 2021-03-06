@@ -1,6 +1,6 @@
 label {
-  margin: 3px 0;
-  font-weight: bolder;
+ /* margin: 3px 0;
+  font-weight: bolder;*/
   display: block;
 }
 
@@ -14,7 +14,7 @@ label.checkbox, label.yes_no {
   cursor: pointer;
 }
 
-* html label.checkbox, * html label.yes_no {
+label.checkbox, label.yes_no {
   top: 1px;
 }
 
@@ -140,8 +140,34 @@ button.submit, button[reset].submit {
   -moz-box-shadow:    1px 1px 2px 0px rgba(0, 0, 0, 0.22);
 }
 
+.ui-widget button {
+	font-size: 18px !important;
+}
+
 button.submit:HOVER, button[reset].submit:HOVER {
   background: none repeat scroll 0 0 #f0f0f0; 
+}
+
+.coInputHeader .coInputButtons button.submit,
+.coInputMainBlock button.submit,
+.adminConfiguration .adminMainBlock button.submit,
+button.tasksActionsBtn.tasksBtn.addBtn,
+button.x-btn-text.blue,
+#mails-panel button.x-btn-text.mail.blue,
+button.submit.blue, 
+button.add-first-btn.blue {
+	background-color: #4d82cc;
+	color: #fff;
+}
+.coInputHeader .coInputButtons button.submit:hover,
+.coInputMainBlock button.submit:hover, 
+.adminConfiguration .adminMainBlock button.submit:hover,
+button.tasksActionsBtn.tasksBtn.addBtn:hover,
+button.x-btn-text.blue:hover,
+#mails-panel button.x-btn-text.mail.blue:hover,
+button.submit.blue:hover, 
+button.add-first-btn.blue:hover {
+	background-color: #5d92dc;
 }
 
 span.required {
@@ -553,7 +579,7 @@ div.add-person-form div.field label.checkbox {
 	margin: 0px;
 }
 .simplemodal-data .coInputHeader .coInputHeaderUpperRow {
-	margin: 7px 10px 10px 0;
+	margin: 9px 10px 10px 0;
 	float: left;
 }
 .simplemodal-data .coInputHeader .coInputHeaderUpperRow .coInputTitle {

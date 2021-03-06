@@ -442,7 +442,8 @@ og.insertBreadcrumb = function(member_id,target,from_callback) {
 		
 	//calculate the container width and check if thers more elements in the same container
 	var container_width = $(target).closest(container_to_fill).width();//.parent().parent() .closest(container_to_fill)
-	var container_current_childs = $(target).parent().parent().siblings();
+	var real_container_width = container_width;
+	var container_current_childs = $(target).parent().siblings();
 	var container_current_childs_width = 0;
 	for (var j = 0; j < container_current_childs.length; j++) {
 		container_current_childs_width += $(container_current_childs[j]).outerWidth(true);
@@ -519,15 +520,19 @@ og.insertBreadcrumb = function(member_id,target,from_callback) {
 				last = true;
 			}			
 		}else{
-			if(i == 0){
-				$(target).children( ".more-members-separator" ).replaceWith(more_members + member_text);
+			if(i == 0){				
+				if(ordained_members.length > 1){
+					$(target).children( ".more-members-separator" ).replaceWith(more_members + member_text);
+				}else{
+					$(target).children( ".more-members-separator" ).replaceWith(member_text);
+				}
 			}
 			break;
 		}		
 	}
 		
 	//Multiple Breadcrumb	
-	og.checkMultiMemberBreadcrumb(target,container_width);
+	og.checkMultiMemberBreadcrumb(target,real_container_width);
 	
 	//remove the clone
 	var final_container = clone.clone(true);
@@ -557,10 +562,10 @@ og.checkMultiMemberBreadcrumb = function(target, container_width) {
 		}
 	}
 		
-	var total_paths = member_paths_in_container.length + 1;
-		
+	var total_paths = member_paths_in_container.length;
+	
 	//if thers overflow colapse all breadcrumbs to objet types totals
-	if(member_paths_in_container_width > container_width){
+	if(member_paths_in_container_width > container_width && total_paths > 1){
 		var object_types_totals_text = "";
 		
 		object_types_totals_text += "<button class='members-total-colapsed breadcrumbBtn btnPopoverNotInitialized'>";

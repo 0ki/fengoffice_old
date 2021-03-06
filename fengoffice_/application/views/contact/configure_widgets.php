@@ -174,7 +174,7 @@ $title = $default_configuration ? lang('default dashboard options') : lang('dash
 			<?php endforeach;?>
 		</table>
 	</div>
-		<?php echo submit_button(lang('save'))?>
+		<?php echo submit_button(lang('save'), null, array('class' => 'blue'))?>
 </div>
 </form>
 </div>

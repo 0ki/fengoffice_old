@@ -345,6 +345,7 @@
     'confirm delete contact' => 'Are you sure that you want to delete selected contact?',
     'confirm delete user' => 'Are you sure that you want to delete this user account?',
    	'confirm disable user'=> 'The User will be disabled. Continue?',
+   	'confirm restore user'=> 'The User will be activated. Continue?',
     'confirm reset people form' => 'Are you sure that you want to reset this form? All modifications you made will be lost!',
     'confirm remove user from project' => 'Are you sure that you want to remove this user from this workspace?',
     'confirm remove company from project' => 'Are you sure that you want to remove this company from this workspace?',

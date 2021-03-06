@@ -1870,14 +1870,42 @@ function process_uploaded_cropped_picture_file($picture, $crop_data) {
 		if (in_array($ext, $valid_exts)) {
 			$path = 'tmp/' . uniqid() . '.' . $ext;
 			$size = getimagesize($picture['tmp_name']);
-
+			
 			$x = (int) $crop_data['x'];
 			$y = (int) $crop_data['y'];
 			$w = (int) $crop_data['w'] ? $crop_data['w'] : $size[0];
 			$h = (int) $crop_data['h'] ? $crop_data['h'] : $size[1];
-
-			$nw = 200;
-			$nh = 200;
+			
+			$ratio = $w / $h;
+			if ($w < $h) {
+				if ($w < 200) {
+					$nw = 200;
+					$nh = 200 / $ratio;
+				} else {
+					$nw = $w;
+					$nh = $h;
+				}
+			} else {
+				if ($h < 200) {
+					$nh = 200;
+					$nw = 200 * $ratio;
+				} else {
+					$nw = $w;
+					$nh = $h;
+				}
+			}
+			
+			// if image width or height is greater than 500px (preview max size) then resize crop area to fit the same area as in the preview.
+			if ($size[0] > 500 || $size[1] > 500) {
+				$p = 500 / ($size[0] > $size[1] ? $size[0] : $size[1]);
+				
+				$x = $x / $p;
+				$y = $y / $p;
+				$w = $w / $p;
+				$h = $h / $p;
+				$nw = $nw / $p;
+				$nh = $nh / $p;
+			}
 
 			$data = file_get_contents($picture['tmp_name']);
 			$vImg = imagecreatefromstring($data);

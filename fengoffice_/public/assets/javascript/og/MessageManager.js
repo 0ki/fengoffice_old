@@ -303,10 +303,9 @@ og.MessageManager = function() {
 	
 	actions = {
 		newCO: new Ext.Action({
-			id: 'new_button',
 			text: lang('new'),
             tooltip: lang('add new message'),
-            iconCls: 'ico-new',
+            iconCls: 'ico-new new_button',
             handler: function() {
 				og.render_modal_form('', {c:'message', a:'add'});
 			}

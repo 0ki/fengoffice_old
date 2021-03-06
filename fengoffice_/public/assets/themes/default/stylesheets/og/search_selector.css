@@ -16,13 +16,14 @@
 
 .search-selector .search-input-div input{
 	width: 100%;
+	border: 1px solid #333;
 }
 
 .ico-search-m{
 	background-image: url("../../images/16x16/search_m.png")!important;
     background-position: right center!important;
     background-repeat: no-repeat!important;
-    margin: 3px!important;
+   /* margin: 3px!important;*/
     padding-right: 20px!important;
 }
 

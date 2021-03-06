@@ -35,7 +35,10 @@
 		if ($pg->getType() == 'user_groups') {
 			$groups_with_perms[] = $pg;
 		} else {
-			$users_with_perms[] = Contacts::findById($pg->getContactId());
+			$c = Contacts::findById($pg->getContactId());
+			if ($c instanceof Contact && !$c->getDisabled()) {
+				$users_with_perms[] = $c;
+			}
 		}
 	}
 ?>

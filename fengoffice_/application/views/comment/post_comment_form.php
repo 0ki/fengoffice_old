@@ -9,7 +9,7 @@
 	<div class="formAddCommentText">
     	<?php echo textarea_field("comment[text]", '', array('class' => 'long', 'id' => $genid.'addCommentText', 'placeholder' => lang('write comment'))) ?>
 	</div>
-	<div class="button-container" id="<?php echo $genid?>_write_comment_btn"><?php echo submit_button(lang('add comment'), 's', array('id' => 'pcs' . $genid)) ?></div>
+	<div class="button-container" id="<?php echo $genid?>_write_comment_btn"><?php echo submit_button(lang('add comment'), 's', array('id' => 'pcs' . $genid, 'class' => 'blue')) ?></div>
 	<div class="clear"></div>
   </div>
 </form>

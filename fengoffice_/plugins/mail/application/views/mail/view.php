@@ -355,7 +355,7 @@ if (isset($email)){
 							onload="javascipt:iframe=document.getElementById(\''.$genid.'ifr\'); iframe.parentNode.style.height = Math.min(600, iframe.contentWindow.document.body.scrollHeight + 30) + \'px\' ;">
 						</iframe>';
 			'<script>if (Ext.isIE) document.getElementById(\''.$genid.'ifr\').contentWindow.location.reload();</script>';
-			$content .= '<a class="ico-expand" style="display: block; width: 16px; height: 16px; cursor: pointer; position: absolute; right: 20px; top: 2px" title="' . lang('expand') . '" onclick="og.expandDocumentView.call(this)"></a>
+			$content .= '<a class="ico-expand" style="display: block; width: 16px; height: 16px; cursor: pointer; position: absolute; right: 20px; top: 2px" title="' . lang('expand') . '" onclick="og.expandDocumentView(this)"></a>
 				</div>';
 
 			if ($remove_quoted) {

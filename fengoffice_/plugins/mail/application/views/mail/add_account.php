@@ -76,7 +76,7 @@ if (strlen($loc) > 2) $loc = substr($loc, 0, 2);
 	</div>
 	
 	<div class="coInputButtons">
-		<?php echo submit_button($mailAccount->isNew() ? lang('add mail account') : lang('save changes'), '',  array('style'=>'margin-top:30px;margin-left:10px')) ?>
+		<?php echo submit_button($mailAccount->isNew() ? lang('add mail account') : lang('save changes'), '',  array('style'=>'margin-top:24px;margin-left:10px')) ?>
 	</div>
 	<div class="clear"></div>
   </div>
@@ -174,7 +174,7 @@ if (strlen($loc) > 2) $loc = substr($loc, 0, 2);
 				<?php echo lang('delete mails from server')?>
 			</label>
 			<?php $del_from_server = array_var($mailAccount_data, 'del_from_server', 0) ?>
-			<div style="float:left;padding:4px;"><?php 
+			<div style="float:left;padding-right:10px;"><?php 
 				echo yes_no_widget('mailAccount[del_mails_from_server]', 'mailAccountDelMailFromServer', $del_from_server > 0, lang('yes'), lang('no'), 130);
 			?></div>
 			<?php echo '<span style="margin-left: 10px">' . lang('after') . '</span>'?>

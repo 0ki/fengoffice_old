@@ -59,13 +59,16 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 		} else {
 			echo lang('edit task list');
 		}
+		echo ": ";
+		$ignored = null;
+		Hook::fire("object_name_prefix", array('object' => $task), $ignored);
 	?></div>
   </div>
 
   <div>
 	<div class="coInputName">
 	<?php
-		echo text_field('task[name]', array_var($task_data, 'name'), array('class' => 'title', 'id' => 'ogTasksPanelATTitle', "size"=>"255", "maxlength"=>"255", 'placeholder' => lang('task')));
+		echo text_field('task[name]', $task->getName(), array('class' => 'title', 'id' => 'ogTasksPanelATTitle', "size"=>"255", "maxlength"=>"255", 'placeholder' => lang('task')));
 	?>
 	</div>
 		
@@ -202,7 +205,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 		?>
 		
   	</div>
-  	<div class="section-separator" style="float:left; width:1px; border-left:1px solid #ccc;"></div>
+  	<div class="section-separator" style="float:left; width:10px; border-left:1px solid #ccc;"></div>
   	<div class="right-section">
   		<div id="<?php echo $genid ?>add_task_select_context_div" class="context-selector-container">
 		<?php

@@ -171,7 +171,7 @@ og.ogRootPermSetLevel = function (genid, level) {
 <?php }?>
 
 <?php $role_id = isset($user) && $user instanceof Contact ? $user->getUserType() : $pg_id;
-if ($role_id > 0) { ?>
+if ($role_id > 0 && !(isset($user_group_abm) && $user_group_abm)) { ?>
 <script>
 $(function() {
 	var type = '<?php echo $role_id ?>';

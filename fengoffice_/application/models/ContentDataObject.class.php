@@ -1806,7 +1806,7 @@ abstract class ContentDataObject extends ApplicationDataObject {
 	}
 	
 	
-	function getMembersToDisplayPath($member_ids = null, $show_all_members = false) {
+	function getMembersToDisplayPath($member_ids = null, $show_all_members = false, $show_active_context_members = true) {
 		$members_info = array();
 		
 		if (is_null($member_ids)) {
@@ -1827,7 +1827,12 @@ abstract class ContentDataObject extends ApplicationDataObject {
 				if (isset($options->showInPaths) && $options->showInPaths) {
 					if (!isset($members_info[$mem['dimension_id']])) $members_info[$mem['dimension_id']] = array();
 					
-					if (!$show_all_members && count($members_info[$mem['dimension_id']]) < $to_display /*&& !in_array($mem['id'], $active_context_ids)*/) {
+					$active_context_condition = true;
+					if(!$show_active_context_members){
+						$active_context_condition = !in_array($mem['id'], $active_context_ids);
+					}
+					
+					if (!$show_all_members && count($members_info[$mem['dimension_id']]) < $to_display && $active_context_condition) {
 						$members_info[$mem['dimension_id']][$mem['id']] = array(
 							'ot' => $mem['object_type_id'],
 							'c' => Members::getMemberById($mem['id'])->getMemberColor(),

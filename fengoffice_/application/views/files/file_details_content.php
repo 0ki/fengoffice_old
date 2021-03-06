@@ -13,7 +13,7 @@
 								onload="javascipt:iframe=document.getElementById(\''.$genid.'ifr\'); iframe.parentNode.style.height = Math.min(600, iframe.contentWindow.document.body.scrollHeight + 30) + \'px\' ;">
 							</iframe>';
 				'<script>if (Ext.isIE) document.getElementById(\''.$genid.'ifr\').contentWindow.location.reload();</script>';
-		$content .= '<a class="ico-expand" style="display: block; width: 16px; height: 16px; cursor: pointer; position: absolute; right: 20px; top: 2px" title="' . lang('expand') . '" onclick="og.expandDocumentView.call(this)"></a>
+		$content .= '<a class="ico-expand" style="display: block; width: 16px; height: 16px; cursor: pointer; position: absolute; right: 20px; top: 2px" title="' . lang('expand') . '" onclick="og.expandDocumentView(this)"></a>
 					</div>';	
 	    echo lang("blank_google_doc");
 	    echo $content;
@@ -24,9 +24,9 @@
 
 <?php if ($file->isDisplayable()) {?>
 <div>
-	<div id="document-view" style="position: relative; left:0; top: 0; width: 100%; height: 700px; background-color: white">
+	<div id="<?php echo $genid?>document-view" style="position: relative; left:0; top: 0; width: 100%; height: 700px; background-color: white">
 		<iframe class="document-preview" style="width:100%;height:100%;border:1px solid #ddd;" src="<?php echo get_sandbox_url("feed", "display_content", array("id" => $file->getId(), "user_id" => logged_user()->getId(), "token" => logged_user()->getTwistedToken())) ?>"></iframe>
-		<a class="ico-expand" style="display: block; width: 16px; height: 16px; cursor: pointer; position: absolute; right: 20px; top: 2px" title="<?php echo lang('expand') ?>" onclick="og.expandDocumentView.call(this)"></a>
+		<a id="expander" class="ico-expand" style="display: block; width: 16px; height: 16px; cursor: pointer; position: absolute; right: 20px; top: 2px" title="<?php echo lang('expand') ?>" onclick="og.expandDocumentView(this)"></a>
 	</div>
 	
 	<script>
@@ -36,15 +36,23 @@
 			});
 		});
 		
-		//resize document height
+		//resize document height on load
 		var percentView = 70;
 		$( document ).ready(function() {
-			var documentHeidht = $(window).height() * percentView / 100;
-			$("#document-view").height(documentHeidht);
+			var documentHeight = $(window).height() * percentView / 100;
+			$("#<?php echo $genid?>document-view").height(documentHeight);
 		});
+		
+		// resize document height when resizing window
 		$(window).resize(function() {
-			var documentHeidht = $(window).height() * percentView / 100;
-			$("#document-view").height(documentHeidht);
+			var expander = $("#<?php echo $genid?>document-view #expander");
+			var is_expanded = expander.prop('expanded');
+			if (is_expanded) {
+				var documentHeight = $("#<?php echo $genid?>document-view").closest(".x-panel-body").height();
+			} else {
+				var documentHeight = $(window).height() * percentView / 100;
+			}
+			$("#<?php echo $genid?>document-view").height(documentHeight);
 		});
 	</script>
 	

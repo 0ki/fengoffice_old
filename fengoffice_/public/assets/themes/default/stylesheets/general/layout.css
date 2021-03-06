@@ -68,9 +68,14 @@
 	height: 35px;	
 }
 
+#header .header-content-right .options_menu li#userboxWrapper {
+	background-color: #424242;
+	margin-left: 10px;
+}
 #header .header-content-right .options_menu li#userboxWrapper:hover {
-	background: rgb(3, 3, 3);
-	background-color: rgba(3,3,3,0.4);
+	/*background: rgb(3, 3, 3);
+	background-color: rgba(3,3,3,0.4);*/
+	background-color: #4d82cc;
 }
 
 #header .header-content-right .options_menu .account {

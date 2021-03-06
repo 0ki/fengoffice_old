@@ -51,6 +51,8 @@ og.WebpageManager = function() {
 						$("#"+cmp.id+" #text_filter").val('').focus();
 					}
 					Ext.getCmp('webpage-manager').reloadGridPagingToolbar('webpage','list_all','webpage-manager');
+					
+					og.eventManager.fireEvent('replace all empty breadcrumb', null);
 				}
 			}
 	    });
@@ -292,10 +294,9 @@ og.WebpageManager = function() {
 	
 	actions = {
 		newWebpage: new Ext.Action({
-			id: 'new_button',
 			text: lang('new'),
             tooltip: lang('add new webpage'),
-            iconCls: 'ico-new',
+            iconCls: 'ico-new new_button',
             handler: function() {
 				og.render_modal_form('', {c:'webpage', a:'add'});
 			}

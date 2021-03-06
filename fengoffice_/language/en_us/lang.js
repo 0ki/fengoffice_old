@@ -881,6 +881,7 @@ addLangs({
   	'passwords dont match' : 'Passwords don\'t match',
   	'password value missing' : 'Password required',
   	'confirm disable user' : 'The User will be disabled. Continue?',
+  	'confirm restore user' : 'The User will be activated. Continue?',
   	'confirm delete user' : 'Are you sure that you want to delete this user account?',
 	'add sub task' : 'Add subtask',
 	'add first task' : 'Add the first task',

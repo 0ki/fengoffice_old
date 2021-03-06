@@ -1932,30 +1932,40 @@ og.onChangeObjectCoType = function(genid, manager, id, new_cotype) {
 */
 };
 
-og.expandDocumentView = function() {
-	if (this.oldParent) {
-		//this.parentNode.parentNode.removeChild(this.parentNode);
-		//this.oldParent.appendChild(this.parentNode);
-		var parentBody = og.getParentContentPanelBody(this);
-		parentBody.style.overflow = 'auto';
-		this.parentNode.style.position = 'relative';
-		this.parentNode.style.height = this.parentNode.oldHeight + 'px';
-		this.parentNode.style.zIndex = '0';
-		this.title = lang('expand');
-		this.className = 'ico-expand';
-		this.oldParent = false;
+og.expandDocumentView = function(link) {
+	var document_view = $(link).parent();
+	var container = $(link).closest(".x-panel-body");
+
+	if (link.expanded) {
+
+		$(document_view).css({
+			'height': link.old_height + 'px',
+			'position':'relative',
+		});
+		link.title = lang('expand');
+		link.className = 'ico-expand';
+
+		$(container).animate({ scrollTop: 0 }, 0);
+		$(container).css('overflow-y', 'auto');
+		
+		link.expanded = false;
 	} else {
-		this.oldParent = this.parentNode.parentNode;
-		//this.oldParent.removeChild(this.parentNode);
-		//document.body.appendChild(this.parentNode);
-		var parentBody = og.getParentContentPanelBody(this);
-		parentBody.style.overflow = 'hidden';
-		this.parentNode.style.position = 'absolute';
-		this.parentNode.oldHeight = this.parentNode.offsetHeight;
-		this.parentNode.style.height = '100%';
-		this.parentNode.style.zIndex = '1000';
-		this.title = lang('collapse');
-		this.className = 'ico-collapse';
+
+		link.old_height = $(document_view).height();
+		$(document_view).css({
+			'z-index': '500',
+			'top': '0px',
+			'height': '100%',
+			'position':'absolute',
+		});
+
+		link.title = lang('collapse');
+		link.className = 'ico-collapse';
+
+		$(container).animate({ scrollTop: 0 }, 0);
+		$(container).css('overflow-y', 'hidden');
+		
+		link.expanded = true;
 	}
 };
 
@@ -2808,14 +2818,12 @@ og.createBrandColorsSheet = function(brand_colors) {
 	var tabs_font = brand_colors['brand_colors_tabs_font'];
 	var header_font = brand_colors['brand_colors_head_font'];
 
-	var texture = 'background-image: -moz-linear-gradient(45deg, rgba(0, 0, 0, 0.25) 25%, transparent 25%, transparent 75%, rgba(0, 0, 0, 0.25) 75%, rgba(0, 0, 0, 0.25)), -moz-linear-gradient(45deg, rgba(0, 0, 0, 0.25) 25%, transparent 25%, transparent 75%, rgba(0, 0, 0, 0.25) 75%, rgba(0, 0, 0, 0.25));'
-			+ 'background-image: -webkit-linear-gradient(45deg, rgba(0, 0, 0, .25) 25%, transparent 25%, transparent 75%, rgba(0, 0, 0, .25) 75%, rgba(0, 0, 0, .25)), -webkit-linear-gradient(45deg, rgba(0, 0, 0, .25) 25%, transparent 25%, transparent 75%, rgba(0, 0, 0, .25) 75%, rgba(0, 0, 0, .25));'
-			+ 'background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.05) 25%, rgba(0, 0, 0, 0) 25%, rgba(0, 0, 0, 0) 75%, rgba(255, 255, 255, 0.05) 75%, rgba(255, 255, 255, 0.05)), linear-gradient(45deg, rgba(255, 255, 255, 0.05) 25%, rgba(0, 0, 0, 0) 25%, rgba(0, 0, 0, 0) 75%, rgba(255, 255, 255, 0.05) 75%, rgba(255, 255, 255, 0.05));'
+	var texture = //'background-image: -moz-linear-gradient(45deg, rgba(0, 0, 0, 0.25) 25%, transparent 25%, transparent 75%, rgba(0, 0, 0, 0.25) 75%, rgba(0, 0, 0, 0.25)), -moz-linear-gradient(45deg, rgba(0, 0, 0, 0.25) 25%, transparent 25%, transparent 75%, rgba(0, 0, 0, 0.25) 75%, rgba(0, 0, 0, 0.25));'
+			//+ 'background-image: -webkit-linear-gradient(45deg, rgba(0, 0, 0, .25) 25%, transparent 25%, transparent 75%, rgba(0, 0, 0, .25) 75%, rgba(0, 0, 0, .25)), -webkit-linear-gradient(45deg, rgba(0, 0, 0, .25) 25%, transparent 25%, transparent 75%, rgba(0, 0, 0, .25) 75%, rgba(0, 0, 0, .25));'
+			 'background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.05) 25%, rgba(0, 0, 0, 0) 25%, rgba(0, 0, 0, 0) 75%, rgba(255, 255, 255, 0.05) 75%, rgba(255, 255, 255, 0.05)), linear-gradient(45deg, rgba(255, 255, 255, 0.05) 25%, rgba(0, 0, 0, 0) 25%, rgba(0, 0, 0, 0) 75%, rgba(255, 255, 255, 0.05) 75%, rgba(255, 255, 255, 0.05));'
 			+ 'background-position: 0 0pt, 2px 2px;'
 			+ 'background-size: 4px 4px; ';
-	if (Ext.isSafari) {
-		texture = "";
-	}
+	
 	var cssRules = '.x-accordion-hd, ul.x-tab-strip li {background-color: #' + tabs_back + '; ' + texture + '}';
 	cssRules += '.x-accordion-hd, ul.x-tab-strip {background-color: #' + tabs_back + '; ' + texture + '}';
 	cssRules += 'ul.x-tab-strip li {border-color: #' + tabs_back + '}';
@@ -2832,11 +2840,7 @@ og.createBrandColorsSheet = function(brand_colors) {
 	if (node_selected_back) {
 		cssRules += '.x-tree-node .x-tree-selected {background-color: ' + node_selected_back + '; border-color: ' + color_utils.darker_html_color(node_selected_back) + '}';
 	}
-	
-	if (Ext.isSafari) {
-		cssRules += '.widget-header, .texture-n-1 { background-image: none;}';
-	}
-	
+			
 	var styleElement = document.createElement("style");
 	styleElement.type = "text/css";
 	if (styleElement.styleSheet) {
@@ -3000,8 +3004,18 @@ og.checkAndAdjustTabsSize = function() {
 	var container_w = $(".x-tab-strip-wrap").width();
 
 	if (container_w < total_tabs_w) {
+		
 		$(".x-tab-with-icon .x-tab-strip-text").css('width', '0px');
 		$(".x-tab-with-icon.x-tab-strip-active .x-tab-strip-text").css('width', 'auto');
+		
+		$(".x-tab-with-icon .x-tab-left").css('padding-right', '0px');
+		$(".x-tab-with-icon.x-tab-strip-active .x-tab-left").css('padding-right', '10px');
+		
+	} else {
+		
+		$(".x-tab-with-icon .x-tab-left").css('padding-right', '10px');
+		$(".x-tab-with-icon.x-tab-strip-active .x-tab-left").css('padding-right', '10px');
+		
 	}
 }
 

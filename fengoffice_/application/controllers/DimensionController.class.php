@@ -540,7 +540,7 @@ class DimensionController extends ApplicationController {
 						
 			$members = $this->buildMemberList($childs, $mem->getDimension(),  null, null, null, null);
 			
-			ajx_extra_data(array("members" => $members, "dimension" => $mem->getDimensionId()));			
+			ajx_extra_data(array("members" => $members, "dimension" => $mem->getDimensionId(), "member_id" => $mem->getId()));			
 		}
 		ajx_current("empty");
 	}

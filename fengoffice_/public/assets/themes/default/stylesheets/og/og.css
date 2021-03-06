@@ -1305,14 +1305,16 @@ select.select_milestone, select.select_task_list, select.select_message {
 
 span.member-path {
 	font-size: 13px;
-	margin: 0 2px;
-	padding: 3px 3px;
+	/*margin: 0 2px;
+	padding: 3px 3px;*/
 	white-space: nowrap;
 	border-radius: 2px;		
 }
 
 span.member-path.real-breadcrumb {
 	box-shadow: 0 1px 1px rgba(128, 128, 128, 0.3);
+	padding: 3px 7px;
+	margin-right: 3px;
 }
 
 span.members-total-colapsed {
@@ -1366,7 +1368,7 @@ span.members-total-colapsed {
 }
 
 span.member-path span {
-	margin: 0 2px;
+	/*margin: 0 2px;*/
 }
 
 span.member-path span a:hover {
@@ -1540,7 +1542,7 @@ span.member-path span a:hover {
 	color: white;
 	font-size: 22px;
 	padding-top: 10px;
-	margin-left: 25px;
+	margin-left: 0px;
 	height: 45px;
 	float: left;
 }

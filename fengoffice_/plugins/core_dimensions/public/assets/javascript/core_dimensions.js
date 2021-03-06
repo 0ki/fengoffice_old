@@ -2,6 +2,7 @@
 og.core_dimensions = {
 	init: function() {
 		for (x in og.dimension_object_types) {
+			if (!og.dimension_object_types[x] || typeof(og.dimension_object_types[x])=='function') continue;
 			if (og.dimension_object_types[x] == 'contact' || og.dimension_object_types[x] == 'person' || og.dimension_object_types[x] == 'company') {
 				if (!og.before_object_view) og.before_object_view = [];
 				og.before_object_view[x] = 'og.core_dimensions.onContactClick(<parameters>);';

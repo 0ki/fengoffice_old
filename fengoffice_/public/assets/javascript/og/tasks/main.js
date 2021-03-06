@@ -187,7 +187,7 @@ ogTasks.loadData = function(data){
 	
 	var i;
 	this.Tasks = [];
-	for (i in data['tasks']){
+	for (var i = 0; i < data['tasks'].length; i++){
 		var tdata = data['tasks'][i];
 		if (tdata.id){
 			var task = new ogTasksTask();
@@ -210,7 +210,7 @@ ogTasks.loadData = function(data){
 	}
 	
 	this.Users = [];
-	for (i in data['users']){
+	for (var i = 0; i < data['users'].length; i++){
 		var udata = data['users'][i];
 		if (udata.id){
 			var user =  new ogTasksUser(udata.id,udata.name,udata.cid);
@@ -234,7 +234,7 @@ ogTasks.loadData = function(data){
 	}
 	
 	this.AllUsers = [];
-	for (i in data['allUsers']){
+	for (var i = 0; i < data['allUsers'].length; i++){
 		var udata = data['allUsers'][i];
 		if (udata.id){
 			var user =  new ogTasksUser(udata.id,udata.name,udata.cid);
@@ -243,16 +243,15 @@ ogTasks.loadData = function(data){
 	}
 
 	this.Companies = [];
-	for (i in data['companies']){
+	for (var i = 0; i < data['companies'].length; i++){
 		var cdata = data['companies'][i];
 		if (cdata.id)
 			this.Companies[ogTasks.Companies.length] = new ogTasksCompany(cdata.id,cdata.name);
 	}
 	
 	this.Milestones = [];
-	for (i in data['internalMilestones']){
+	for (var i = 0; i < data['internalMilestones'].length; i++){
 		var mdata = data['internalMilestones'][i];
-		if (typeof(mdata) == 'function') continue;
 		if (mdata.id){
 			with (mdata) {
 				var milestone = new ogTasksMilestone(id,t,dd,tnum,tc,true,is_urgent);
@@ -264,9 +263,8 @@ ogTasks.loadData = function(data){
 			}
 		}
 	}
-	for (i in data['externalMilestones']){
+	for (var i = 0; i < data['externalMilestones'].length; i++){
 		var mdata = data['externalMilestones'][i];
-		if (typeof(mdata) == 'function') continue;
 		if (mdata.id){
 			with (mdata) {
 				var milestone = new ogTasksMilestone(id,t,dd,tnum,tc,false,is_urgent);
@@ -278,9 +276,8 @@ ogTasks.loadData = function(data){
 	}
 	
 	this.ObjectSubtypes = [];
-	for (i in data['objectSubtypes']){
+	for (var i = 0; i < data['objectSubtypes'].length; i++){
 		var otdata = data['objectSubtypes'][i];
-		if (typeof(otdata) == 'function') continue;
 		if (otdata.id){
 			var ot =  new ogTasksObjectSubtype(otdata.id,otdata.name);
 			this.ObjectSubtypes[ogTasks.ObjectSubtypes.length] = ot;
@@ -288,9 +285,8 @@ ogTasks.loadData = function(data){
 	}
 	
 	this.DependencyCount = [];
-	for (i in data['dependencyCount']){
+	for (var i = 0; i < data['dependencyCount'].length; i++){
 		var dcdata = data['dependencyCount'][i];
-		if (typeof(dcdata) == 'function') continue;
 		if (dcdata.id){
 			var dc =  new ogTasksDependencyCount(dcdata.id, dcdata.count, dcdata.dependants);
 			this.DependencyCount[ogTasks.DependencyCount.length] = dc;
@@ -451,7 +447,7 @@ ogTasks.groupTasks = function(displayCriteria, tasksContainer){
 		}
 	}
 	
-	var tmp = [];
+	var tmp = {};
 	for (var j = 0; j < tasksContainer.length; j++){
 		var t = tasksContainer[j];
 		if (!tmp[t.parentId]) tmp[t.parentId] = [];
@@ -459,7 +455,6 @@ ogTasks.groupTasks = function(displayCriteria, tasksContainer){
 	}
 	var tmpTasksContainer = [];
 	for (x in tmp){
-		if (typeof(x) == 'function') continue;
 		for (var k = 0; k < tmp[x].length; k++){
 			if (tmp[x][k]) tmpTasksContainer.push(tmp[x][k]);
 		}
@@ -500,7 +495,7 @@ ogTasks.groupTasks = function(displayCriteria, tasksContainer){
 						var dim_id = displayCriteria.group_by.replace('dimension_', '');
 						for (k=0; k<task.members.length; k++) {
 							for (var j in og.dimensions[dim_id]) {
-								if (og.dimensions[dim_id][j] && og.dimensions[dim_id][j].id == task.members[k]) {
+								if (og.dimensions[dim_id][j] && typeof(og.dimensions[dim_id][j]) != 'function' && og.dimensions[dim_id][j].id == task.members[k]) {
 									group = task.members[k];
 									this_task_groups.push(group);
 									break;
@@ -709,7 +704,7 @@ ogTasks.orderTasks = function(displayCriteria, tasks){
 					break;
 				default:
 			}
-			if (!swap && resolveByName && tasks[j]){
+			if (!swap && resolveByName){
 				swap = tasks[i].title.toUpperCase() > tasks[j].title.toUpperCase();
 			}
 			if (swap){

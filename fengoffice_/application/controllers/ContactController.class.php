@@ -830,11 +830,19 @@ class ContactController extends ApplicationController {
 					
 					if ($contact->hasReferences()) {
 						// user-contacts, dont send them to trash, disable them
-						add_page_action(lang('disable'), "javascript:if(confirm(lang('confirm disable user'))) og.openLink('" . $contact->getDisableUrl() ."',{callback:function(){og.customDashboard('contact','init',{},true)}});", 'ico-trash',null, null, true);
+						if ($contact->getDisabled()) {
+							add_page_action(lang('restore user'), "javascript:if(confirm(lang('confirm restore user'))) og.openLink('" .get_url('account', 'restore_user', array('id' => $contact->getId())) ."',{callback:function(){og.customDashboard('contact','init',{},true)}});", 'ico-refresh',null, null, true);
+						} else {
+							add_page_action(lang('disable'), "javascript:if(confirm(lang('confirm disable user'))) og.openLink('" . $contact->getDisableUrl() ."',{callback:function(){og.customDashboard('contact','init',{},true)}});", 'ico-trash',null, null, true);
+						}
 					}else {
 						// user-contacts, dont send them to trash, disable them
 						add_page_action(lang('delete'), "javascript:if(confirm(lang('confirm delete user'))) og.openLink('" . $contact->getDeleteUrl() ."');", 'ico-trash',null, null, true);
-						add_page_action(lang('disable'), "javascript:if(confirm(lang('confirm disable user'))) og.openLink('" . $contact->getDisableUrl() ."',{callback:function(){og.customDashboard('contact','init',{},true)}});", 'ico-trash',null, null, true);
+						if ($contact->getDisabled()) {
+							add_page_action(lang('restore user'), "javascript:if(confirm(lang('confirm restore user'))) og.openLink('" .get_url('account', 'restore_user', array('id' => $contact->getId())) ."',{callback:function(){og.customDashboard('contact','init',{},true)}});", 'ico-refresh',null, null, true);
+						} else {
+							add_page_action(lang('disable'), "javascript:if(confirm(lang('confirm disable user'))) og.openLink('" . $contact->getDisableUrl() ."',{callback:function(){og.customDashboard('contact','init',{},true)}});", 'ico-trash',null, null, true);
+						}
 
 					}
 				}else{
@@ -1298,6 +1306,11 @@ class ContactController extends ApplicationController {
 					$contact_data['name'] = $contact_data['first_name']." ".$contact_data['surname'];
 				}
 				
+				$user_data = array_var($_POST, 'user');
+				if (is_array($user_data) && trim(array_var($user_data, 'username', '')) != "") {
+					$contact_data['username'] = trim(array_var($user_data, 'username', ''));
+				}
+				
 				$contact->setFromAttributes($contact_data);
 				
 				if($newCompany) {
@@ -1550,7 +1563,6 @@ class ContactController extends ApplicationController {
 			
 			ajx_extra_data(array('url' => ROOT_URL . "/tmp/$id"));
 		}
-			Logger::log_r($_FILES);
 	}
 	
 	
@@ -1605,14 +1617,18 @@ class ContactController extends ApplicationController {
 				$old_file = $contact->getPicturePath();
 			
 				DB::beginWork();
-			
-				if (Browser::instance()->getBrowser() == Browser::BROWSER_IE && intval(Browser::instance()->getVersion()) < 10) {
-					$size = getimagesize($picture['tmp_name']);
-					$w = ($size[0] < $size[1] ? $size[0] : $size[1]);
-					$image_path = process_uploaded_cropped_picture_file($picture, array('x' => 0, 'y' => 0, 'w' => $w, 'h' => $w));
+				
+				if (!array_var($_REQUEST, 'is_company')) {
+					if (Browser::instance()->getBrowser() == Browser::BROWSER_IE && intval(Browser::instance()->getVersion()) < 10) {
+						$size = getimagesize($picture['tmp_name']);
+						$w = ($size[0] < $size[1] ? $size[0] : $size[1]);
+						$image_path = process_uploaded_cropped_picture_file($picture, array('x' => 0, 'y' => 0, 'w' => $w, 'h' => $w));
+					} else {
+						$crop_data = array('x' => array_var($_POST, 'x'), 'y' => array_var($_POST, 'y'), 'w' => array_var($_POST, 'w'), 'h' => array_var($_POST, 'h'));
+						$image_path = process_uploaded_cropped_picture_file($picture, $crop_data);
+					}
 				} else {
-					$crop_data = array('x' => array_var($_POST, 'x'), 'y' => array_var($_POST, 'y'), 'w' => array_var($_POST, 'w'), 'h' => array_var($_POST, 'h'));
-					$image_path = process_uploaded_cropped_picture_file($picture, $crop_data);
+					$image_path = $picture['tmp_name'];;
 				}
 				
 				if(!$contact->setPicture($image_path, 'image/png')) {
@@ -1634,13 +1650,17 @@ class ContactController extends ApplicationController {
 					
 			} else {
 				
-				if (Browser::instance()->getBrowser() == Browser::BROWSER_IE && intval(Browser::instance()->getVersion()) < 10) {
-					$size = getimagesize($picture['tmp_name']);
-					$w = ($size[0] < $size[1] ? $size[0] : $size[1]);
-					$image_path = process_uploaded_cropped_picture_file($picture, array('x' => 0, 'y' => 0, 'w' => $w, 'h' => $w));
+				if (!array_var($_REQUEST, 'is_company')) {
+					if (Browser::instance()->getBrowser() == Browser::BROWSER_IE && intval(Browser::instance()->getVersion()) < 10) {
+						$size = getimagesize($picture['tmp_name']);
+						$w = ($size[0] < $size[1] ? $size[0] : $size[1]);
+						$image_path = process_uploaded_cropped_picture_file($picture, array('x' => 0, 'y' => 0, 'w' => $w, 'h' => $w));
+					} else {
+						$crop_data = array('x' => array_var($_POST, 'x'), 'y' => array_var($_POST, 'y'), 'w' => array_var($_POST, 'w'), 'h' => array_var($_POST, 'h'));
+						$image_path = process_uploaded_cropped_picture_file($picture, $crop_data);
+					}
 				} else {
-					$crop_data = array('x' => array_var($_POST, 'x'), 'y' => array_var($_POST, 'y'), 'w' => array_var($_POST, 'w'), 'h' => array_var($_POST, 'h'));
-					$image_path = process_uploaded_cropped_picture_file($picture, $crop_data);
+					$image_path = $picture['tmp_name'];;
 				}
 				if(!$contact->setPicture($image_path, 'image/png')) {
 					throw new InvalidUploadError($picture);

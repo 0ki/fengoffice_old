@@ -468,6 +468,7 @@ class AccountController extends ApplicationController {
 	}
 	
 	function disable() {
+		ajx_set_panel(array_var($_REQUEST, "current"));
 		$user = Contacts::findById(get_id());
 		if (!($user instanceof Contact && $user->isUser())) {
 			flash_error(lang('user dnx'));
@@ -489,11 +490,9 @@ class AccountController extends ApplicationController {
 			DB::commit();
 			ApplicationLogs::createLog($user, ApplicationLogs::ACTION_TRASH);
 			
-			if(array_var($_GET,'current')=="administration") {
-				ajx_current("reload");
-			}else{
+			ajx_current("reload");
+			if(array_var($_GET,'current')!="administration") {
 				evt_add("reload company users", array('company_id' => $user->getCompanyId()));
-				ajx_current("empty");
 			}
 			
 			flash_success(lang('success disable user', $user->getObjectName()));
@@ -544,6 +543,8 @@ class AccountController extends ApplicationController {
 	}
 	
 	function restore_user() {
+		ajx_set_panel(array_var($_REQUEST, "current"));
+		
 		$user = Contacts::findById(get_id());
 		if (!($user instanceof Contact && $user->isUser())) {
 			flash_error(lang('user dnx'));

@@ -464,12 +464,20 @@ class ProjectTasks extends BaseProjectTasks {
 		}
 			
 		if ($raw_data['due_date'] != EMPTY_DATETIME) {
-			$result['dd'] = strtotime($raw_data['due_date']) + logged_user()->getTimezone() * 3600;
 			$result['udt'] = $raw_data['use_due_time'] ? 1 : 0;
+			if($result['udt']){
+				$result['dd'] = strtotime($raw_data['due_date']) + logged_user()->getTimezone() * 3600;
+			}else{
+				$result['dd'] = strtotime($raw_data['due_date']);
+			}			
 		}
 		if ($raw_data['start_date'] != EMPTY_DATETIME) {
-			$result['sd'] = strtotime($raw_data['start_date']) + logged_user()->getTimezone() * 3600;
-			$result['ust'] = $raw_data['use_start_time'] ? 1 : 0;
+			$result['ust'] = $raw_data['use_start_time'] ? 1 : 0;			
+			if($result['ust']){
+				$result['sd'] = strtotime($raw_data['start_date']) + logged_user()->getTimezone() * 3600;
+			}else{
+				$result['sd'] = strtotime($raw_data['start_date']);
+			}			
 		}
 
 		$time_estimate = $raw_data['time_estimate'];
@@ -516,7 +524,7 @@ class ProjectTasks extends BaseProjectTasks {
 			$result['pending_time'] = 0;
 		}
 		
-		if ($raw_data['repeat_forever'] > 0 || $raw_data['repeat_num'] > 0 || $raw_data['repeat_end'] != EMPTY_DATETIME) {
+		if ($raw_data['repeat_forever'] > 0 || $raw_data['repeat_num'] > 0 || ($raw_data['repeat_end'] != EMPTY_DATETIME && $raw_data['repeat_end'] != '')) {
 			$result['rep'] = 1;
 		}
 		

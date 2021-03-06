@@ -664,10 +664,9 @@ og.MailManager = function() {
 	actions = {
 			
 		newCO: new Ext.Action({
-			id: 'new_button',
 			text: lang('new'),
             tooltip: lang('create an email'),
-            iconCls: 'ico-new',
+            iconCls: 'ico-new new_button',
             handler: function() {
             	var url = og.getUrl('mail', 'add_mail');
             	og.openLink(url);

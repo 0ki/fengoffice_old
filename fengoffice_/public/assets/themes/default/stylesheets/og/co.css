@@ -402,6 +402,8 @@
 .company .coViewIcon {
   	background: #CFDFF1;
   	border-color: #80AEF0;
+	height: 72px;
+	vertical-align: middle;
 }
 
 .company .coViewHeader .coViewTitle {

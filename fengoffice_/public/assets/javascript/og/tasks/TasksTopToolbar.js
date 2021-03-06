@@ -7,7 +7,7 @@ og.TasksTopToolbar = function(config) {
 	Ext.applyIf(config,{
 			id: "tasksPanelTopToolbarObject",
 			renderTo: "tasksPanelTopToolbar",
-			style:"border:0px none; padding-left:12px;"
+			style:"border:0px none;"
 		});
 		
 	og.TasksTopToolbar.superclass.constructor.call(this, config);

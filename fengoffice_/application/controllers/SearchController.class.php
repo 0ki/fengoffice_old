@@ -483,6 +483,9 @@ class SearchController extends ApplicationController {
 		$limit = $orig_limit + 1;
 		
 		$useLike = false;
+		if(user_config_option("search_engine") == 'like'){
+			$useLike = true;
+		}
 		if(strlen($search_string) < 4){
 			$useLike = true;
 		}

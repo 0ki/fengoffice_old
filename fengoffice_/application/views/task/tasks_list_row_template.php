@@ -62,9 +62,9 @@
 
 	{{#if draw_options.show_classification}}
     <div class='task-breadcrumb-container'>
-      <div class='task-row-obj'>
+      
         {{{mem_path}}}
-      </div>
+      
     </div>
 	{{/if}}
 
@@ -367,7 +367,7 @@
     </div>
 
     <div class="coInputButtons" style="margin-top:2px;margin-left:10px;">
-    <button type="button" class="tasksActionsBtn tasksBtn" onclick="ogTasks.drawAddNewTaskForm(ogTasks.Groups[0].group_id,null,null,true)">
+    <button type="button" class="tasksActionsBtn tasksBtn addBtn" onclick="ogTasks.drawAddNewTaskForm(ogTasks.Groups[0].group_id,null,null,true)">
               {{lang 'add task'}}
     </button>
     </div>

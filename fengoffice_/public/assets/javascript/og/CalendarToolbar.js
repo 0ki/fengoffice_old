@@ -108,10 +108,9 @@ var markactions = {
 // Toolbar Items
 var topToolbarItems = { 
 	add: new Ext.Action({
-		id: 'new_button',
 		text: lang('add event'),
         tooltip: lang('add new event'),
-        iconCls: 'ico-new',
+        iconCls: 'ico-new new_button',
         handler: function() {
         	/*var date = og.calToolbarDateMenu.picker.getValue();
 			changeView('add', date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_status_filter, actual_task_filter);*/

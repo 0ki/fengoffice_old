@@ -13,7 +13,7 @@ ogTimeManager.drawTimespans = function(genid){
 	}
 	
 	for (i in this.Timeslots) {
-		if (this.Timeslots[i] && this.Timeslots[i].id) {
+		if (this.Timeslots[i] && typeof(this.Timeslots[i]) != 'function' && this.Timeslots[i].id) {
 			this.insertRow(genid, this.Timeslots[i], table.rows.length);
 		}
 	}
@@ -163,7 +163,7 @@ ogTimeManager.insertRow = function(genid, timeslot, position){
 	var mpath = Ext.util.JSON.decode(timeslot.memPath);
 	//if (mpath) mem_path = og.getCrumbHtml(mpath);
 	if (mpath){ 
-		mem_path = "<div class='breadcrumb-container' style='width: 100%;'>";
+		mem_path = "<div class='breadcrumb-container time-breadcrumb-container'>";
 		mem_path += "<div style='display: inline;'>";
 		mem_path += og.getEmptyCrumbHtml(mpath, '.breadcrumb-container');
 		mem_path += "</div>";

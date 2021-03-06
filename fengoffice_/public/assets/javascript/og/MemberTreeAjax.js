@@ -71,6 +71,7 @@ og.MemberTreeAjax = function(config) {
 	        if(node.childNodes.length < node.attributes.realTotalChilds && node.attributes.expandable){
 	        	node.ownerTree.innerCt.mask();
 	        	var tree_id = node.ownerTree.id;
+	        	node.attributes.gettingChildsFromServer = true;
 	        	og.openLink(og.getUrl('dimension', 'get_member_childs', {member:node.id}), {
 	    			hideLoading:true, 
 	    			hideErrors:true,
@@ -78,29 +79,7 @@ og.MemberTreeAjax = function(config) {
 	    				
 	    				var dimension_tree = Ext.getCmp(tree_id);
 	    					    				
-	    				for (var prop in data.members) {  
-	    					var mem = data.members[prop];
-	    					
-	    					if(typeof dimension_tree.allowedMemberTypes != "undefined"){
-	    						if(dimension_tree.allowedMemberTypes.indexOf(mem.object_type_id) == -1){
-	    							continue;
-	    						}
-	    					}
-	    					
-	    					var node_parent = dimension_tree.getNodeById(mem.parent);
-	    					
-	    					mem.leaf = true;
-	    					mem.text = mem.name;
-	    					var new_node = dimension_tree.loader.createNode(mem);
-	    						    												
-							var node_exist = dimension_tree.getNodeById(mem.id);
-							if(!node_exist){
-								if (node_parent) node_parent.appendChild(new_node);
-							}
-							
-							//add member to og.dimensions							
-							og.addMemberToOgDimensions(data.dimension,mem);	
-	    				}
+	    				dimension_tree.addMembersToTree(data.members,data.dimension_id);  
 	    				
 	    				for (var i = 0 ; i < node.childNodes.length ; i++ ) {
 	    					node.childNodes[i].getUI().show();					
@@ -108,6 +87,9 @@ og.MemberTreeAjax = function(config) {
 	    				
 	    				dimension_tree.innerCt.unmask();
 	    				
+	    				var current_node = dimension_tree.getNodeById(data.member_id);
+	    				current_node.attributes.gettingChildsFromServer = false;
+	    					    				
 	    			}
 	    		});
 	        }else{
@@ -285,29 +267,8 @@ Ext.extend(og.MemberTreeAjax, Ext.tree.TreePanel, {
     				var dimension_tree = Ext.getCmp(tree_id);
     					
     				//add nodes to tree
-    				for (var prop in data.members) {  
-    					var mem = data.members[prop];
-    					
-    					if(typeof dimension_tree.allowedMemberTypes != "undefined"){
-    						if(dimension_tree.allowedMemberTypes.indexOf(mem.object_type_id) == -1){
-    							continue;
-    						}
-    					}
-    					
-    					var node_parent = dimension_tree.getNodeById( mem.parent );
-    					
-    					mem.leaf = true;
-    					mem.text = mem.name;
-    					var new_node = dimension_tree.createNode(mem);
-    						    												
-						var node_exist = dimension_tree.getNodeById(mem.id);
-						if(!node_exist){
-							if (node_parent) node_parent.appendChild(new_node);
-						}
-						
-						//add member to og.dimensions
-						og.addMemberToOgDimensions(data.dimension_id,mem);						
-    				}   				
+    				dimension_tree.addMembersToTree(data.members,data.dimension_id);    				
+    			   				
     				dimension_tree.innerCt.unmask();
     				
     				//filter the tree
@@ -424,29 +385,8 @@ Ext.extend(og.MemberTreeAjax, Ext.tree.TreePanel, {
     				var dimension_tree = Ext.getCmp(tree_id);
     					
     				//add nodes to tree
-    				for (var prop in data.dimension_members) {  
-    					var mem = data.dimension_members[prop];
-    					
-    					if(typeof dimension_tree.allowedMemberTypes != "undefined"){
-    						if(dimension_tree.allowedMemberTypes.indexOf(mem.object_type_id) == -1){
-    							continue;
-    						}
-    					}
-    					
-    				    var new_node = dimension_tree.loader.createNode(mem);
-    				   
-    				    var node_parent = dimension_tree.getNodeById(mem.parent);
-    				    if(mem.parent == 0){
-    				    	node_parent = dimension_tree.getRootNode();
-    				    }
-    				    var node_exist = dimension_tree.getNodeById(mem.id);
-    					if(!node_exist){
-    						if (node_parent) node_parent.appendChild(new_node);
-    					}
-						
-						//add member to og.dimensions
-						og.addMemberToOgDimensions(data.dimension_id,mem);						
-    				}    				
+    				dimension_tree.addMembersToTree(data.dimension_members,data.dimension_id);
+    				
     				dimension_tree.innerCt.unmask();
     				
     				//filter the tree    				
@@ -533,6 +473,38 @@ Ext.extend(og.MemberTreeAjax, Ext.tree.TreePanel, {
 	
 	showRoot: function () {
 		this.removeClass("root-hidden");
+	},
+	
+	addMembersToTree: function(members,dimension_id) {
+		var dimension_tree = this;
+		for (var prop in members) {  
+			var mem = members[prop];
+			
+			if(typeof dimension_tree.allowedMemberTypes != "undefined"){
+				if(dimension_tree.allowedMemberTypes.indexOf(mem.object_type_id) == -1){
+					continue;
+				}
+			}
+			
+		    var new_node = dimension_tree.loader.createNode(mem);
+		   
+		    var node_parent = dimension_tree.getNodeById(mem.parent);
+		    if(mem.parent == 0){
+		    	node_parent = dimension_tree.getRootNode();
+		    }
+		    var node_exist = dimension_tree.getNodeById(mem.id);
+			if(!node_exist){
+				if (node_parent) node_parent.appendChild(new_node);
+			}else{				
+				if (node_parent){
+					node_parent.removeChild(node_exist);
+					node_parent.appendChild(new_node);								
+				}							
+			}
+			
+			//add member to og.dimensions
+			og.addMemberToOgDimensions(dimension_id,mem);						
+		}   
 	},
 	
 	createNode: function (attr) {

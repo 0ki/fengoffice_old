@@ -141,8 +141,7 @@ class TimeController extends ApplicationController {
 		$timeslot_data = array_var($_POST, 'timeslot');
 		
 		if($object_id){
-			$object = Objects::findObject($object_id);
-			Logger::log(print_r($object_id,true));//$hola
+			$object = Objects::findObject($object_id);			
 			if(!($object instanceof ContentDataObject) || !($object->canAddTimeslot(logged_user()))) {
 				flash_error(lang('no access permissions'));
 				ajx_current("empty");
@@ -202,8 +201,7 @@ class TimeController extends ApplicationController {
 			if (!array_var($timeslot_data, 'contact_id', false) || !SystemPermissions::userHasSystemPermission(logged_user(), 'can_manage_time')) {
 				$timeslot_data['contact_id'] = logged_user()->getId();
 			}
-			$timeslot->setFromAttributes($timeslot_data);
-			
+			$timeslot->setFromAttributes($timeslot_data);			
 			$user = Contacts::findById($timeslot_data['contact_id']);
 			$billing_category_id = $user->getDefaultBillingId();
 			$bc = BillingCategories::findById($billing_category_id);
@@ -217,6 +215,11 @@ class TimeController extends ApplicationController {
 			DB::beginWork();
 			$timeslot->save();
 			
+			$task = ProjectTasks::findById($object_id);
+			if($task instanceof ProjectTask) {
+				$task->calculatePercentComplete();
+			}
+			
 			$member_ids = json_decode(array_var($_POST, 'members'));
 			$object_controller = new ObjectController();
 			$object_controller->add_to_members($timeslot, $member_ids);
@@ -225,7 +228,7 @@ class TimeController extends ApplicationController {
 			ApplicationLogs::createLog($timeslot, ApplicationLogs::ACTION_ADD);
 			
 			$show_billing = can_manage_billing(logged_user());
-			ajx_extra_data(array("timeslot" => $timeslot->getArrayInfo($show_billing)));
+			ajx_extra_data(array("timeslot" => $timeslot->getArrayInfo($show_billing),"real_obj_id" => $timeslot->getRelObjectId()));
 		} catch(Exception $e) {
 			DB::rollback();
 			flash_error($e->getMessage());

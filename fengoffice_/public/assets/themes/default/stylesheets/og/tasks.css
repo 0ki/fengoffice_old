@@ -452,6 +452,7 @@ button.add-first-btn.no-tasks-add-task-btn {
 .task-list-group-totals-template{
 	border-bottom-width: 0px!important;
 	color:#888;
+	display: inline-block !important;
 	font-size : 10px;
 }
 
@@ -605,6 +606,7 @@ button.add-first-btn.no-tasks-add-task-btn {
     height: 100%;
     min-height: 10px;
     overflow: hidden; 
+    text-overflow: ellipsis;
 }
 
 .task-list-row-template .task-row-obj-container{

@@ -31,7 +31,7 @@
 		} // if
 		if ($company->canEdit(logged_user())) {
 			add_page_action(lang('edit company'), $company->getEditUrl(), 'ico-edit',null, null, true);
-			add_page_action(lang('change logo'), $company->getEditPictureUrl(), 'ico-picture', null, null, true);
+			add_page_action(lang('change logo'), $company->getUpdatePictureUrl(), 'ico-picture', null, null, true);
 			if (!$company->isOwnerCompany()) {
 				if (!$company->isArchived()) {
 					add_page_action(lang('archive'), "javascript:if(confirm(lang('confirm archive object'))) og.openLink('" . $company->getArchiveUrl() ."');", 'ico-archive-obj');

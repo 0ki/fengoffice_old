@@ -94,9 +94,10 @@ og.Breadcrumbs = {
 	
 	resizeHeaderBreadcrumbs: function() {
 		setTimeout(function() {
+			$(".header-breadcrumb.home").show();
 			// left td
 			var left_w = $('.header-content-left').width();
-			if (left_w < 125) left_w=125;
+			if (left_w < 60) left_w=60;
 			$('#left-header-cell').css('min-width', (left_w)+'px');
 			$('#left-header-cell').css('width', (left_w)+'px');
 			// right td
@@ -106,8 +107,10 @@ og.Breadcrumbs = {
 			$('#right-header-cell').css('min-width', (right_w + 30)+'px');
 			$('#right-header-cell').css('width', (right_w + 30)+'px');
 			
+			var center_w = $("#headerContent").outerWidth() - left_w - right_w - 100;
+			$('#center-header-cell').css('width', center_w + 'px');
+			
 			// breadcrumbs
-			var center_w = $('#headerContent').width() - left_w - right_w - 100;
 	    	$('.header-breadcrumb-container').css('max-width', (center_w)+'px');
 	    	$('.breadcrumb-members').css('width', (center_w - $('.header-breadcrumb.home').width() - 15)+'px');
 	    	$('.primary-breadcrumb').css('width', $('.breadcrumb-members').width());

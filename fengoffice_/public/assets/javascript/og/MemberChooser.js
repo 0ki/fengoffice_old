@@ -55,7 +55,7 @@ og.MemberChooser = function(config) {
 		hdr.appendChild(txtBox);
 		
 		for (i in this.members) {
-			if ( this.members[i] ){
+			if ( this.members[i] && typeof(this.members[i]) != 'function'){
 				var member = this.members[i] ;
 				var li = document.createElement('li');
 				var ch = document.createElement('input');

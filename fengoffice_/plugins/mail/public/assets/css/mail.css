@@ -18,6 +18,10 @@
   background: none repeat scroll 0 0 #f0f0f0; 
 }
 
+#mails-panel button.mail.send {
+	margin-left: 10px;
+}
+
 #mails-panel .mail-classify-selector .x-column-inner{
 	width: 100%!important;
 }

@@ -70,7 +70,7 @@ ogTimeManager.loadDataFromHF = function(genid){
 ogTimeManager.loadData = function(data){
 	var i;
 	this.Tasks = [];
-	for (i in data['tasks']){
+	for (var i=0; i<data['tasks'].length; i++){
 		var tdata = data['tasks'][i];
 		if (tdata.id){
 			var task = new ogTasksTask();
@@ -83,7 +83,7 @@ ogTimeManager.loadData = function(data){
 	}
 	
 	this.Users = [];
-	for (i in data['users']){
+	for (var i=0; i<data['users'].length; i++){
 		var udata = data['users'][i];
 		if (udata.id){
 			var user =  new ogTasksUser(udata.id,udata.name,udata.cid);
@@ -93,7 +93,7 @@ ogTimeManager.loadData = function(data){
 		}
 	}
 	this.AllUsers = [];
-	for (i in data['all_users']){
+	for (var i=0; i<data['all_users'].length; i++){
 		var udata = data['all_users'][i];
 		if (udata.id){
 			var user = new ogTasksUser(udata.id,udata.name,udata.cid);
@@ -104,7 +104,7 @@ ogTimeManager.loadData = function(data){
 	}
 	
 	this.Timeslots = [];
-	for (i in data['timeslots']){
+	for (var i=0; i<data['timeslots'].length; i++){
 		var tdata = data['timeslots'][i];
 		if (tdata.id){
 			var timeslot =  new ogTimeTimeslot();
@@ -114,7 +114,7 @@ ogTimeManager.loadData = function(data){
 	}
 	
 	this.Companies = [];
-	for (i in data['companies']){
+	for (var i=0; i<data['companies'].length; i++){
 		var cdata = data['companies'][i];
 		if (cdata.id)
 			this.Companies[this.Companies.length] = new ogTasksCompany(cdata.id,cdata.name);

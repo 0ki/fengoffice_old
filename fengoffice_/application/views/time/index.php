@@ -134,7 +134,7 @@
 		<input type="hidden" id="<?php echo $genid ?>tsId" name="timeslot[id]" value=""/>
 		<div style="padding:7px;">
 			
-			<div class="context-body" style="float: left;">
+			<div class="context-body" style="float: left; margin-bottom: 5px;">
 				<?php
 					//get skipped dimensions for this view
 					$dimensions_to_show = explode(",",user_config_option("add_timeslot_view_dimensions_combos"));
@@ -190,9 +190,9 @@
 			</div>
 			
 			<div class="small-member-selector submit-btns" style="margin-top: 20px;">
-				<div id="<?php echo $genid ?>TMTimespanSubmitAdd"><?php echo submit_button(lang('add'),'s',array('style'=>'margin-top:5px;margin-left:0px;height:40px;', 'tabIndex'=>'1000','onclick' => 'ogTimeManager.SubmitNewTimeslot(\'' .$genid . '\');return false;')) ?></div>
+				<div id="<?php echo $genid ?>TMTimespanSubmitAdd"><?php echo submit_button(lang('add'),'s',array('class'=>'blue', 'style'=>'margin-top:0px;margin-left:0px;', 'tabIndex'=>'1000','onclick' => 'ogTimeManager.SubmitNewTimeslot(\'' .$genid . '\');return false;')) ?></div>
 				<div id="<?php echo $genid ?>TMTimespanSubmitEdit" style="display:none">
-					<?php echo submit_button(lang('save'),'s',array('style'=>'margin-top:0px;margin-left:0px', 
+					<?php echo submit_button(lang('save'),'s',array('style'=>'margin-top:0px;margin-left:0px', 'class'=>'blue',
 								'onclick' => 'ogTimeManager.SubmitNewTimeslot(\'' .$genid . '\');return false;')) ?>
 					<?php echo submit_button(lang('cancel'),'c',array('style'=>'margin-top:0px;margin-left:0px', 
 								'onclick' => 'ogTimeManager.CancelEdit();return false;')) ?>

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Mondongo upgrade script will upgrade FengOffice 2.7.1.1 to FengOffice 3.0-beta
+ * Mondongo upgrade script will upgrade FengOffice 2.7.1.1 to FengOffice 3.0-rc
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -40,7 +40,7 @@ class MondongoUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('2.7.1.1');
-		$this->setVersionTo('3.0-beta');
+		$this->setVersionTo('3.0-rc');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -187,24 +187,29 @@ class MondongoUpgradeScript extends ScriptUpgraderScript {
 			if (!$this->checkTableExists($t_prefix."max_system_permissions", $this->database_connection)) {
 				$upgrade_script .= "
 					CREATE TABLE ".$t_prefix."max_system_permissions LIKE ".$t_prefix."system_permissions;
-					INSERT INTO ".$t_prefix."max_system_permissions SELECT * FROM ".$t_prefix."system_permissions 
-					WHERE permission_group_id in (SELECT id FROM ".$t_prefix."permission_groups WHERE type='roles');
+					
+					INSERT INTO `".$t_prefix."max_system_permissions` (`permission_group_id`, `can_manage_security`, `can_manage_configuration`, `can_manage_templates`, `can_manage_time`, `can_add_mail_accounts`, `can_manage_dimensions`, `can_manage_dimension_members`, `can_manage_tasks`, `can_task_assignee`, `can_manage_billing`, `can_view_billing`, `can_see_assigned_to_other_tasks`, `can_manage_contacts`) VALUES
+					((SELECT id FROM ".$t_prefix."permission_groups WHERE name = 'Super Administrator'),	1,	1,	1,	1,	1,		1,	1,	1,	1,	1,	1,	1, 1),
+					((SELECT id FROM ".$t_prefix."permission_groups WHERE name = 'Administrator'),	1,	1,	1,	1,	1,		1,	1,	1,	1,	1,	1,	1, 1),
+					((SELECT id FROM ".$t_prefix."permission_groups WHERE name = 'Manager'),	1,	0,	1,	1,	1,		0,	1,	1,	1,	1,	1,	1, 1),
+					((SELECT id FROM ".$t_prefix."permission_groups WHERE name = 'Executive'),	1,	0,	0,	0,	1,		0,	1,	1,	1,	0,	1,	1, 1),
+					((SELECT id FROM ".$t_prefix."permission_groups WHERE name = 'Collaborator Customer'),	0,	0,	0,	0,	0,		0,	0,	0,	1,	0,	1,	1, 0),
+					((SELECT id FROM ".$t_prefix."permission_groups WHERE name = 'Internal Collaborator'),	0,	0,	0,	0,	0,		0,	0,	0,	1,	0,	0,	1, 0),
+					((SELECT id FROM ".$t_prefix."permission_groups WHERE name = 'External Collaborator'),	0,	0,	0,	0,	0,		0,	0,	0,	1,	0,	0,	1, 0),
+					((SELECT id FROM ".$t_prefix."permission_groups WHERE name = 'Guest Customer'),	0,	0,	0,	0,	0,		0,	0,	0,	0,	0,	0,	1, 0),
+					((SELECT id FROM ".$t_prefix."permission_groups WHERE name = 'Guest'),	0,	0,	0,	0,	0,		0,	0,	0,	0,	0,	0,	1, 0),
+					((SELECT id FROM ".$t_prefix."permission_groups WHERE name = 'Non-Exec Director'),	0,	0,	0,	0,	0,		0,	0,	0,	0,	0,	1,	1, 0)
+					ON DUPLICATE KEY UPDATE permission_group_id=permission_group_id;
 				";
 			}
-			
-			/*
-INSERT INTO `<?php echo $table_prefix ?>max_system_permissions` (`permission_group_id`, `can_manage_security`, `can_manage_configuration`, `can_manage_templates`, `can_manage_time`, `can_add_mail_accounts`, `can_manage_dimensions`, `can_manage_dimension_members`, `can_manage_tasks`, `can_task_assignee`, `can_manage_billing`, `can_view_billing`, `can_see_assigned_to_other_tasks`, `can_manage_contacts`) VALUES
-((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Super Administrator'),	1,	1,	1,	1,	1,		1,	1,	1,	1,	1,	1,	1, 1),
-((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Administrator'),	1,	1,	1,	1,	1,		1,	1,	1,	1,	1,	1,	1, 1),
-((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Manager'),	1,	0,	1,	1,	1,		0,	1,	1,	1,	1,	1,	1, 1),
-((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Executive'),	1,	0,	0,	0,	1,		0,	1,	0,	1,	0,	1,	1, 1),
-((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Collaborator Customer'),	0,	0,	0,	0,	0,		0,	0,	0,	1,	0,	1,	1, 0),
-((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Internal Collaborator'),	0,	0,	0,	0,	0,		0,	0,	0,	1,	0,	0,	1, 0),
-((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'External Collaborator'),	0,	0,	0,	0,	0,		0,	0,	0,	1,	0,	0,	1, 0),
-((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Guest Customer'),	0,	0,	0,	0,	0,		0,	0,	0,	0,	0,	0,	1, 0),
-((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Guest'),	0,	0,	0,	0,	0,		0,	0,	0,	0,	0,	0,	1, 0),
-((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Non-Exec Director'),	0,	0,	0,	0,	0,		0,	0,	0,	0,	0,	1,	1, 0);
-			 */
+		}
+		
+		if (version_compare($installed_version, '3.0-rc') < 0) {
+			$upgrade_script .= "
+				UPDATE ".$t_prefix."role_object_type_permissions SET can_delete=0, can_write=0 WHERE 
+					object_type_id IN (SELECT id FROM ".$t_prefix."object_types WHERE name NOT IN ('file','timeslot','comment')) AND 
+					role_id IN (SELECT id FROM ".$t_prefix."permission_groups WHERE type='roles' AND name IN ('Internal Collaborator','External Collaborator','Collaborator Customer'));
+			";
 		}
 		
 		// Execute all queries

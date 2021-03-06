@@ -22,7 +22,7 @@
       if(is_array($subscriptions)) {
         foreach($subscriptions as $subscription) {
           $user = $subscription->getUser();
-          if(!$user instanceof Contact) continue;
+          if(!$user instanceof Contact || $user->getDisabled()) continue;
           
           $users[] = $user;
         } // foreach
