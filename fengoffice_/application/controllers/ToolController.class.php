@@ -141,13 +141,13 @@ class ToolController extends ApplicationController {
 			$fullpath = LANG_DIR . "/" . $locale . "/" . $file;
 		}else{
 			$name_plugin = $file;
-			$file = "lang.php";
-			$fullpath = PLUGIN_LANG_DIR . "/" . $name_plugin . "/" . LANG_DIR . "/" . $locale . "/" . $file;
-		}		
+			$fullpath = PLUGIN_LANG_DIR . "/" . $name_plugin . "/" . LANG_DIR . "/" . $locale . "/lang.php";
+		}
+
 		if (!is_file($fullpath)) return array();
-		if (substr($file, -4) == ".php") {
+		if (substr($fullpath, -4) == ".php") {
 			return include $fullpath;
-		} else if (substr($file, -3) == ".js") {
+		} else if (substr($fullpath, -3) == ".js") {
 			$contents = file_get_contents($fullpath);
 			$contents = preg_replace("/.*addLangs\s*\(\s*\{\s*/s", "", $contents);
 			$contents = preg_replace("/\s*\}\s*\)\s*;\s*$/", "", $contents);
@@ -256,10 +256,10 @@ class ToolController extends ApplicationController {
 				$check_root_file = true;
 			} else {
 				$name_plugin = $file;
-				$file = "lang.php";
+				//$file = "lang.php";
 				$rootfile = PLUGIN_LANG_DIR . "/" . $name_plugin . "/" .LANG_DIR . "/" . $locale . ".php";
 				$dirname = PLUGIN_LANG_DIR . "/" . $name_plugin . "/" .LANG_DIR . "/" . $locale;
-				$filename = $dirname . "/" . $file;
+				$filename = $dirname . "/lang.php";
 				$create_plugin_lang_js = true;
 			}
 			
@@ -304,15 +304,16 @@ addLangs(langObj);');
 					$all[$k] = $v;
 				}
 			}
+
 			$f = fopen($filename, "w");
 			// write the translations to the file
-			if (substr($file, -4) == ".php") {
+			if (substr($filename, -4) == ".php") {
 				fwrite($f, "<?php return array(\n");
 				foreach ($all as $k => $v) {
 					fwrite($f, "\t'$k' => '" . $this->escape_lang("$v"). "',\n");
 				}
 				fwrite($f, "); ?>\n");
-			} else if (substr($file, -3) == ".js") {
+			} else if (substr($filename, -3) == ".js") {
 				$total = count($all);
 				fwrite($f, "locale = '$locale';\n");
 				fwrite($f, "addLangs({\n");
@@ -347,7 +348,7 @@ addLangs(langObj);');
 			// load from files
 			$from_files = array();
 			$this->load_language_files($from_files, LANG_DIR . "/$from");
-                        $this->load_language_files_plugins($from_files, LANG_DIR . "/$from", PLUGIN_LANG_DIR);
+			$this->load_language_files_plugins($from_files, LANG_DIR . "/$from", PLUGIN_LANG_DIR);
 			sort($from_files);
 			tpl_assign('from_files', $from_files);
 			
@@ -402,7 +403,7 @@ addLangs(langObj);');
 		}
 	}
 	
-} // TimeController
+} // ToolController
 
 
 ?>

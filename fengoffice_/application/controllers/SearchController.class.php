@@ -269,7 +269,7 @@ class SearchController extends ApplicationController {
 		$timeBegin = time();
 		$res = DB::execute($sql);
 		$timeEnd = time();
-		if ($this->debug) alert_r("<br>SQL:<br>".$sql. "<hr>TIME:".($timeEnd-$timeBegin) );
+		
 		while ($row = $res->fetchRow() ) {
 			$search_results_ids[] = $row['id'] ;
 		}
@@ -448,23 +448,23 @@ class SearchController extends ApplicationController {
 
     
 	private function buildPaginationLinks() {
-		$currentPage = $this->pagination->currentPage ;
+		$currentPage = $this->pagination->currentPage;
 		$links = array();
-		$totalPages = ceil( $this->total / $this->limit ) ;
+		$totalPages = ceil( $this->total / $this->limit );
 		if ( is_numeric($this->total) ){
-			$links_count =  ceil ( min ( $this->maxPageLinks, $totalPages )) ;
+			$links_count =  ceil ( min ( $this->maxPageLinks, $totalPages ));
 		}
 		$startPage = min ( max(1,$currentPage - floor($links_count / 2) ), max(1,$totalPages - $links_count) );
-		$endPage =  min ($totalPages , $startPage + $this->maxPageLinks  ) ; 
-		//alert_r($totalPages) ;
+		$endPage =  min ($totalPages , $startPage + $this->maxPageLinks);
+		
 		for ($i = $startPage ; $i <=$endPage ; $i++) {
-			$links[$i] = get_url("search", "search" , array(
-				"start" =>  ($i-1 ) * $this->limit , 
+			$links[$i] = get_url("search", "search", array(
+				"start" =>  ($i-1 ) * $this->limit,
 				"search_for"=>$this->search_for,
-                                "search_dimension"=>$this->search_dimension)
+				"search_dimension"=>$this->search_dimension)
 			);
 		}
-		return $links ;
+		return $links;
 	}		
 	
 	

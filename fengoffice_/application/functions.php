@@ -1166,7 +1166,7 @@ function massiveInsert($tableName, $cols,  $rows, $packageSize = 100 ) {
 				$sql.=",";
 			}
 		}
-		//echo alert_r($sql);
+		
 		if (!DB::execute($sql)){
 			throw new DBQueryError($sql);
 		}

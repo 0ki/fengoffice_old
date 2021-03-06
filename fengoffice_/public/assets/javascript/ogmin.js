@@ -1483,7 +1483,9 @@ return false;}
 this.cleanCheckedMembers=function(objectTypeId){this.lastCheckedMembers[objectTypeId]={};}
 this.addCheckedMember=function(objectTypeId,member,dimension){if(!this.lastCheckedMembers[objectTypeId]){this.lastCheckedMembers[objectTypeId]={};}
 if(!this.lastCheckedMembers[objectTypeId][dimension]){this.lastCheckedMembers[objectTypeId][dimension]=[];}
-if(this.lastCheckedMembers[objectTypeId][dimension].indexOf(member)==-1){this.lastCheckedMembers[objectTypeId][dimension].push(member);}}}
+if(this.lastCheckedMembers[objectTypeId][dimension].indexOf(member)==-1){this.lastCheckedMembers[objectTypeId][dimension].push(member);}}
+this.getActiveContextNames=function(){var context_names=[];context_ids=Ext.util.JSON.decode(this.plainContext());for(dim_id in context_ids){var mids=context_ids[dim_id];for(i=0;i<mids.length;i++){if(mids[i]>0)context_names.push(this.getMemberName(dim_id,mids[i]));}}
+return context_names;}}
 Ext.onReady(function(){Ext.get("loading").hide();Ext.MessageBox.getDialog().on("show",function(d){var div=Ext.get(d.el);div.setStyle("overflow","auto");var text=div.select(".ext-mb-textarea",true);if(!text.item(0))
 text=div.select(".ext-mb-text",true);if(text.item(0))
 text.item(0).dom.select();});if(og.preferences['rememberGUIState']){Ext.state.Manager.setProvider(new og.HttpProvider({saveUrl:og.getUrl('gui','save_state'),readUrl:og.getUrl('gui','read_state'),autoRead:false}));Ext.state.Manager.getProvider().initState(og.initialGUIState);}

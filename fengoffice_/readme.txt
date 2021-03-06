@@ -1,5 +1,5 @@
 
-    About Feng Office 2.2 - RC
+    About Feng Office 2.2
     ================================
  
     Feng Office is a Collaboration Platform and Project Management System.
@@ -27,12 +27,15 @@
     Recommendations:
 
     PHP 5.2+
-    MySQL 4.1+ with InnoDB support
+    MySQL 5+ with InnoDB support
     Apache 2.0+
  
         * PHP    : http://www.php.net/
         * MySQL  : http://www.mysql.com/
         * Apache : http://www.apache.org/
+        
+    Please have a look at our requirements here:
+    http://www.fengoffice.com/web/wiki/doku.php/installation:server_reqs
  
     Alternatively, if you just want to test Feng Office and you don't care about security
     issues with your files, you can download XAMPP, which includes all that is needed
@@ -50,6 +53,8 @@
     2. Unpack and upload to your web server
     3. Direct your browser to the public/install directory and follow the installation
     procedure
+ 	
+ 	Further information can be found here: http://www.fengoffice.com/web/wiki/doku.php/installation:installation
  
     You should be finished in a matter of minutes.
    
@@ -63,15 +68,15 @@
 	Upgrade
 	=======
 	
-	Run the upgrade script 'public/upgrade'. (Please read the notes above)
+	There currently are two kind of upgrades:
+	1- From 2.X to 2.X (or from 1.X to 1.X)
+	2- From 1.X to 2.X
 	
-	Notes
-	-----
-    
-    - Set at config/config.php the constant TABLE_PREFIX to 'fo_' before running the upgrade.
-   	- After upgrading make sure to run public/upgrade/complete_migration.php to set up object permissions.
-    - Custom reports are not yet migrated due to potential incompatibilites between versions. 
-   
+	Either way, we strongly suggest reading the following article in our Wiki for further information:
+	http://www.fengoffice.com/web/wiki/doku.php/installation:migration
+	
+	Note: Plugins must also be updated (if it corresponds)
+	
     Open Source Libraries
     =====================
    
@@ -98,6 +103,16 @@
     Changelog
     =========
 	
+	Since 2.2-rc
+    ----------------
+    bugfix: calendar monthly view performance upgrades.
+    bugfix: translation tool for plugins fixed.
+    bugfix: email html signature puts br tags when composing email.
+    bugfix: Person email modification does not work.
+    bugfix: Prevent double task completion (when double clicking on complete link).
+    bugfix: Fixed company edit link from people tree.
+    
+	
 	Since 2.2-beta
 	----------------
 	bugfix: several fixes in custom reports display.
@@ -112,16 +127,16 @@
 	bugfix: several fixes in email classification functions.
 	bugfix: company comments are not displayed.
 	bugfix: dashboard's tasks widget breaks right widgets when scrolling (only in chrome).
-	bugfix: permissions check in Administration/Dimensions
-	bugfix: css is being printed in csv exported reports
-	bugfix: error subscribing users when instantiating templates with milestones and subtasks
-	bugfix: don't use $this in static functions
-	bugfix: archiving and unarchiving members is not done in a transaction
-	bugfix: permissions in dimension member selectors
-	bugfix: cannot set task's due date to 12:30 PM, always sets the same time but AM
-	bugfix: tasks drag and drop losses some attributes
+	bugfix: permissions check in Administration/Dimensions.
+	bugfix: css is being printed in csv exported reports.
+	bugfix: error subscribing users when instantiating templates with milestones and subtasks.
+	bugfix: don't use $this in static functions.
+	bugfix: archiving and unarchiving members is not done in a transaction.
+	bugfix: permissions in dimension member selectors.
+	bugfix: cannot set task's due date to 12:30 PM, always sets the same time but AM.
+	bugfix: tasks drag and drop losses some attributes.
 	
-	usability: mouseover highlight on member properties/restrictions tables
+	usability: mouseover highlight on member properties/restrictions tables.
 	
 	
 	Since 2.1

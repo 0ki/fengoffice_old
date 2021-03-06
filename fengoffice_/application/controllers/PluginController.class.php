@@ -281,7 +281,7 @@ class PluginController extends ApplicationController {
 				$total_queries = 0;
 				$executed_queries = 0;
 				if (executeMultipleQueries ( tpl_fetch ( $schema_creation ), $total_queries, $executed_queries )) {
-					logger::log ( "Schema created for plugin $name " );
+					Logger::log ( "Schema created for plugin $name " );
 				} else {
 					//echo tpl_fetch ( $schema_creation );
 					echo mysql_error() ;
@@ -296,7 +296,7 @@ class PluginController extends ApplicationController {
 				$total_queries = 0;
 				$executed_queries = 0;
 				if (executeMultipleQueries ( tpl_fetch ( $schema_query ), $total_queries, $executed_queries )) {
-					logger::log ( "Initial data loaded for plugin  '$name'." . mysql_error () );
+					Logger::log ( "Initial data loaded for plugin  '$name'." . mysql_error () );
 				} else {
 					echo mysql_error ();
 					DB::rollback ();

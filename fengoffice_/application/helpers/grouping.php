@@ -40,7 +40,18 @@
 			$object_id = $object instanceof Timeslot && $object->getColumnValue('rel_object_id') > 0 ? $object->getRelObjectId() : $object->getId();
 			$members = ObjectMembers::getMembersByObjectAndDimension($object_id, $dimension_id, "AND om.is_optimization = 0");
 			if (is_array($members) && count($members) > 0) {
-				$member = $members[0];
+				if (count($members) > 1) {
+					$max_depth = 0;
+					$member = null;
+					foreach ($members as $tmp_m) {
+						if ($tmp_m->getDepth() > $max_depth) {
+							$max_depht = $tmp_m->getDepth();
+							$member = $tmp_m;
+						}
+					}
+				} else {
+					$member = $members[0];
+				}
 				$all_parents = array_reverse($member->getAllParentMembersInHierarchy(true));
 				$all_p_keys = "";
 				

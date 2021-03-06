@@ -108,10 +108,9 @@ class COTemplates extends BaseCOTemplates {
 			// Chcheck if all template members are included in $mebers
 			// TODO: PERFORMENCE This should be done in one sql instead of filtering here
 			if ( !count(array_diff($templateMembers, $members))) {
-				//alert_r($tpl->getObjectName());
 				$tpls[] = $tpl ;
 			}else{
-				//alert_r("error");
+				
 			}
 		}	
 		return $tpls ;

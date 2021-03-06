@@ -376,11 +376,12 @@ if (strlen($loc) > 2) $loc = substr($loc, 0, 2);
 					                language: '<?php echo $loc ?>',
 					                customConfig: '',
 					                toolbar: [
-					                                ['FontSize','-','Bold','Italic','Underline','-', 'SpellChecker', 'Scayt','-',					                              
-					                                'Link','Unlink','-',
-					                                'TextColor','BGColor','-',
-					                                'JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock']
-					                        ],
+												[	'Source','-','Font','FontSize','-','Bold','Italic','Underline','-', 'SpellChecker', 'Scayt','-',
+													'Link','Unlink','-',
+													'TextColor','BGColor','-',
+													'JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock'
+												]
+											],
 					                on: {
 					                        instanceReady: function(ev) {
 					                                og.adjustCkEditorArea('<?php echo $genid ?>');

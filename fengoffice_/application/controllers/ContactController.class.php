@@ -1223,13 +1223,25 @@ class ContactController extends ApplicationController {
 					if($contact_data['h_pager_number'] != "") $contact->addPhone($contact_data['h_pager_number'], 'pager');
 				}
 				
-				//Emails 
 				
-				$mail = $contact->getEmail('personal',true);
+				//Emails 
+				$personal_email_type_id = EmailTypes::getEmailTypeId('personal');
+				$main_emails = ContactEmails::getContactMainEmails($contact, $personal_email_type_id);
+				$more_main_emails = array();
+				$mail = null;
+				foreach ($main_emails as $me) {
+					if ($mail == null) $mail = $me;
+					else $more_main_emails[] = $me;
+				}
+				
 				if($mail){
-						$mail->editEmailAddress($contact_data['email']);
-				}else{ 
-						if($contact_data['email'] != "") $contact->addEmail($contact_data['email'], 'personal' , true);
+					$mail->editEmailAddress($contact_data['email']);
+				}else{
+					if($contact_data['email'] != "") $contact->addEmail($contact_data['email'], 'personal' , true);
+				}
+				foreach ($more_main_emails as $mme) {
+					$mme->setIsMain(false);
+					$mme->save();
 				}
 				
 				$mail2 = !is_null($personal_emails) && isset($personal_emails[0])? $personal_emails[0] : null;
@@ -3012,7 +3024,6 @@ class ContactController extends ApplicationController {
 		//		)
 		//----------------------------------------
 		
-		//alert_r($_POST['contact']);
 		// Init variables
 
 		$max_users = config_option('max_users');

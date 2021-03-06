@@ -145,14 +145,10 @@ class ProjectEvents extends BaseProjectEvents {
 				)
 			)";
 		
-			$start = null ;
-			$limit = null ;
 			$result_events = self::instance()->listing(array(
-				"order" => 	'start',
+				"order" => 'start',
 				"order_dir"=> 'ASC',
-				"extra_conditions" => $conditions ,
-				"start" => $start,
-				"limit" => $limit
+				"extra_conditions" => $conditions,
 			))->objects;
 
 			// Find invitations for events and logged user
@@ -193,7 +189,7 @@ class ProjectEvents extends BaseProjectEvents {
 	 * @param String $tags
 	 * @return unknown
 	 */
-	static function getRangeProjectEvents(DateTimeValue $start_date, DateTimeValue $end_date,  $tags = '', $project = null, $archived = false){
+	static function getRangeProjectEvents(DateTimeValue $start_date, DateTimeValue $end_date, $user_filter=null, $inv_state=null){
 
 		$start_year = date("Y",mktime(0,0,1,$start_date->getMonth(), $start_date->getDay(), $start_date->getYear()));
 		$start_month = date("m",mktime(0,0,1,$start_date->getMonth(), $start_date->getDay(), $start_date->getYear()));
@@ -206,8 +202,14 @@ class ProjectEvents extends BaseProjectEvents {
 		if(!is_numeric($start_day) OR !is_numeric($start_month) OR !is_numeric($start_year) OR !is_numeric($end_day) OR !is_numeric($end_month) OR !is_numeric($end_year)){
 			return NULL;
 		}
+		
+		$user = null;
+		if ($user_filter > 0) {
+			$user = Contacts::findById($user_filter);
+		}
+		if (!$user instanceof Contact) $user = logged_user();
 
-		$invited = " AND `id` IN (SELECT `event_id` FROM `" . TABLE_PREFIX . "event_invitations` WHERE `contact_id` = ".logged_user()->getId().")";
+		$invited = " AND `id` IN (SELECT `event_id` FROM `" . TABLE_PREFIX . "event_invitations` WHERE `contact_id` = ".$user->getId().")";
 		
 		$tz_hm = "'" . floor(logged_user()->getTimezone()) . ":" . (abs(logged_user()->getTimezone()) % 1)*60 . "'";
 
@@ -222,9 +224,13 @@ class ProjectEvents extends BaseProjectEvents {
 		while($first_d > 7) $first_d -= 7;
 		$week_of_first_day = date("W", mktime(0,0,0, $start_month, $first_d, $start_year));
 
-		$conditions = "	AND ((
+		$conditions = "
+			AND (type_id=2 OR type_id=1 AND `duration` > `start`)
+			AND 
+			(
+			  (
 				(
-					`repeat_h` = 0 
+					`repeat_h` = 0
 					AND `duration` >= '$start_date_str' 
 					AND `start` < '$end_date_str' 
 				) 
@@ -240,7 +246,7 @@ class ProjectEvents extends BaseProjectEvents {
 						(
 							DATE_ADD(`start`, INTERVAL (`repeat_num`-1)*`repeat_d` DAY) >= '$start_date_str' 
 							OR
-                                        repeat_forever = 1
+							repeat_forever = 1
 							OR
 							repeat_end >= '$start_year-$start_month-$start_day'
 						)
@@ -275,31 +281,61 @@ class ProjectEvents extends BaseProjectEvents {
 					`repeat_wnum` + $week_of_first_day - 1 = WEEK('$start_date_str', 3) 
 					AND
 					MOD( ABS(PERIOD_DIFF(DATE_FORMAT(`start`, '%Y%m'), DATE_FORMAT('$start_date_str', '%Y%m'))), `repeat_mjump`) = 0					
-				)				
-			)
-			$invited
-		)";
+				)
+			  )
+			  $invited
+			)";
 
 		$result_events = self::instance()->listing(array(
 			"order" => 	'start',
 			"order_dir"=> 'ASC',
-			"extra_conditions" => $conditions ,
-			"start" => $start,
-			"limit" => $limit		
-			
+			"extra_conditions" => $conditions,
 		))->objects ;
+		
 		// Find invitations for events and logged user
-		ProjectEvents::addInvitations($result_events);
-
+		if (!($user_filter == null && $inv_state == null)) {
+			ProjectEvents::addInvitations($result_events, $user->getId());
+			foreach ($result_events as $k => $event) {
+				$conditions = '`event_id` = ' . $event->getId();
+				if ($user_filter != -1) $conditions .= ' AND `contact_id` = ' . $user_filter;
+				$inv = $event->getInvitations();
+				if (!is_array($inv)) {
+					if ($inv == null || (trim($inv_state) != '-1' && !strstr($inv_state, ''.$inv->getInvitationState()) && $inv->getContactId() == logged_user()->getId())) {
+						unset($result_events[$k]);
+					}
+				} else {
+					if (count($inv) > 0){
+						foreach ($inv as $key => $v) {
+							if ($v == null || (trim($inv_state) != '-1' && !strstr($inv_state, ''.$v->getInvitationState()) && $v->getContactId() == logged_user()->getId())) {
+								unset($result_events[$k]);
+								break;
+							}
+						}
+					} else unset($result_events[$k]);
+				}
+			}
+		}
 		return $result_events;
 	}
 
-	static function addInvitations($result_events, $user_id = -1) {
+	static function addInvitations(&$result_events, $user_id = -1) {
 		if ($user_id == -1) $user_id = logged_user()->getId();
 		if (isset($result_events) && is_array($result_events) && count($result_events)) {
+			
+			$event_ids = array();
 			foreach ($result_events as $event) {
-				$inv = EventInvitations::findById(array('event_id' => $event->getId(), 'contact_id' => $user_id));
-				if ($inv != null) {
+				$event_ids[] = $event->getId();
+			}
+			
+			$invitations_res = EventInvitations::findAll(array('conditions' => 'contact_id = ' . $user_id));
+			$invitations = array();
+			foreach ($invitations_res as $i) {
+				if (!isset($invitations[$i->getEventId()])) $invitations[$i->getEventId()] = array();
+				$invitations[$i->getEventId()][] = $i;
+			}
+			
+			foreach ($result_events as $event) {
+				foreach ($invitations[$event->getId()] as $inv) {
 					$event->addInvitation($inv);
 				}
 			}

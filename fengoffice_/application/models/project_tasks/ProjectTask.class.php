@@ -1542,4 +1542,16 @@ class ProjectTask extends BaseProjectTask {
 		//ObjectReminders::clearByObject($this);
 	}
 	
+	
+	
+	function apply_members_to_subtasks($member_ids, $recursive = false) {
+		$object_controller = new ObjectController();
+		$object_controller->add_to_members($this, $member_ids);
+		if ($recursive) {
+			foreach ($this->getSubTasks() as $subtask) {
+				$subtask->apply_members_to_subtasks($member_ids, $recursive);
+			}
+		}
+	}
+	
 } // ProjectTask

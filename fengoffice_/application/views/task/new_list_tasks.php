@@ -7,17 +7,17 @@
 	require_javascript('og/tasks/TasksTopToolbar.js');
 	require_javascript('og/tasks/TasksBottomToolbar.js');
 	require_javascript('og/tasks/print.js');
-        require_javascript('og/tasks/TaskPopUp.js');
+	require_javascript('og/tasks/TaskPopUp.js');
 
 	if (config_option('use tasks dependencies')) {
 		require_javascript('og/tasks/task_dependencies.js');
-	}        
+	}
 
-        if(config_option('multi_assignment') && Plugins::instance()->isActivePlugin('crpm')){
-                require_javascript('multi_assignment.js', 'crpm');
-        }
-        
-        $loc = user_config_option('localization');
+	if(config_option('multi_assignment') && Plugins::instance()->isActivePlugin('crpm')){
+		require_javascript('multi_assignment.js', 'crpm');
+	}
+
+	$loc = user_config_option('localization');
 	if (strlen($loc) > 2) $loc = substr($loc, 0, 2);
 
 	$genid = gen_id();
@@ -242,7 +242,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
                 language: '<?php echo $loc ?>',
                 customConfig: '',               
                 toolbar: [
-                                ['FontSize','-','Bold','Italic','Underline', 'Blockquote','-',
+                                ['Font','FontSize','-','Bold','Italic','Underline', 'Blockquote','-',
 				                'SpellChecker', 'Scayt','-',
                                 'TextColor','BGColor','-',
                                 'Link','Unlink','-',

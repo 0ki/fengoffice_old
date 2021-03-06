@@ -1605,6 +1605,7 @@ class MailController extends ApplicationController {
 	}
 
 	function checkFileWritability($classification_data, $parsedEmail){
+		$userid = logged_user() instanceof Contact ? logged_user()->getId() : "0";
 		$c = 0;
 		while(isset($classification_data["att_".$c]))
 		{
@@ -1612,7 +1613,7 @@ class MailController extends ApplicationController {
 			{
 				$att = $parsedEmail["Attachments"][$c];
 				$fName = iconv_mime_decode($att["FileName"], 0, "UTF-8");
-				$tempFileName = ROOT ."/tmp/". logged_user()->getId()."x".$fName;
+				$tempFileName = ROOT ."/tmp/". $userid ."x".$fName;
 				$fh = fopen($tempFileName, 'w');
 				if (!$fh){
 					return false;
@@ -1795,9 +1796,11 @@ class MailController extends ApplicationController {
 					}
 				}
 				$logged_user_settings = MailAccountContacts::getByAccountAndContact($mailAccount, logged_user());
-				$logged_user_settings->setSignature(array_var($_POST, 'signature'));
-				$logged_user_settings->setSenderName(array_var($_POST, 'sender_name'));
-				$logged_user_settings->save();
+				if ($logged_user_settings instanceof MailAccountContact) {
+					$logged_user_settings->setSignature(array_var($_POST, 'signature'));
+					$logged_user_settings->setSenderName(array_var($_POST, 'sender_name'));
+					$logged_user_settings->save();
+				}
 
 
 				if ($mailAccount->canView(logged_user())) {

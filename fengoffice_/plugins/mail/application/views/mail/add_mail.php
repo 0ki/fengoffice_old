@@ -68,7 +68,7 @@ sig.actualHtmlSignature = '';
     	} else {
     		$sig = "";
     	}
-    	$sig = nl2br($sig);
+    	//$sig = nl2br($sig);
     	$htmlsig = str_replace(array("\r", "\n"), "", "<div class=\"fengoffice_signature\">$sig</div>");
     	$textsig = html_to_text($sig);
     	if ($acc_id) {

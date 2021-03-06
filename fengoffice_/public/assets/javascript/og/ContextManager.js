@@ -312,7 +312,18 @@ og.contextManager  = new function() {
     }
     
     
-    
+    this.getActiveContextNames = function() {
+    	var context_names = [];
+		context_ids = Ext.util.JSON.decode(this.plainContext());
+		for (dim_id in context_ids) {
+			var mids = context_ids[dim_id];
+			for (i=0; i<mids.length; i++) {
+				if (mids[i] > 0) context_names.push(this.getMemberName(dim_id, mids[i]));
+			}
+		}
+		
+		return context_names;
+    }
 }
 
 

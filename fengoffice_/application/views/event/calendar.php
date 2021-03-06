@@ -54,9 +54,13 @@ $currentday = $today->format("j");
 $currentmonth = $today->format("n");
 $currentyear = $today->format("Y");
 
-if(user_config_option("start_monday")) $firstday = (date("w", mktime(0, 0, 0, $month, 1, $year)) - 1) % 7;
-else $firstday = (date("w", mktime(0, 0, 0, $month, 1, $year))) % 7;
 $lastday = date("t", mktime(0, 0, 0, $month, 1, $year));
+$ld_ts = mktime(0, 0, 0, $month, $lastday, $year);
+
+if(user_config_option("start_monday")) (date("w", mktime(0, 0, 0, $month, 1, $year)) - 1) % 7;
+else $fd_ts = mktime(0, 0, 0, $month, 1, $year);
+$firstday = date("w", $fd_ts);
+
 
 $tags = '';
 
@@ -163,8 +167,14 @@ foreach($companies as $company)
 					<th id="ie_scrollbar_adjust" style="display:none;width:15px;padding:0px;margin:0px;"></th>
 				</tr>
 					<?php
-					$date_start = new DateTimeValue(mktime(0,0,0,$month-1,$firstday,$year)); 
-					$date_end = new DateTimeValue(mktime(0,0,0,$month+1,$lastday,$year)); 
+					
+					$date_start = new DateTimeValue($fd_ts);
+					$date_start->advance(-24 * 3600 * $firstday);
+					
+					$ld_dow = date('w', $ld_ts);
+					$date_end = new DateTimeValue($ld_ts);
+					$date_end->advance(24 * 3600 * (6-$ld_dow));
+					
 					$milestones = ProjectMilestones::getRangeMilestones($date_start, $date_end);
 					if($task_filter != "hide"){
 						$tasks = ProjectTasks::getRangeTasksByUser($date_start, $date_end, ($user_filter != -1 ? $user : null),$task_filter);
@@ -184,6 +194,22 @@ foreach($companies as $company)
 					if($birthdays) {
 						$result = array_merge($result, $birthdays );
 					}
+					
+					
+					$all_events = ProjectEvents::getRangeProjectEvents($date_start, $date_end, $user_filter, $status_filter);
+					$all_event_ids = array();
+					foreach ($all_events as $aev) {
+						$all_event_ids[] = $aev->getId();
+					}
+					$read_events = array();
+					if (count($all_event_ids) > 0) {
+						$read_rows = DB::executeAll("SELECT rel_object_id FROM ".TABLE_PREFIX."read_objects WHERE is_read=1 AND contact_id=".logged_user()->getId()." AND rel_object_id IN (".implode(",",$all_event_ids).")");
+						foreach($read_rows as $rr) {
+							$read_events[$rr['rel_object_id']] = 1;
+						}
+					}
+					
+					$can_add_events = ProjectEvent::canAdd(logged_user(), active_context());
 					
 					// Loop to render the calendar
 					for ($week_index = 0;; $week_index++) {
@@ -299,7 +325,7 @@ foreach($companies as $company)
 							 		<a class='internalLink' href="<?php echo $p ?>" onclick="og.disableEventPropagation(event);return true;"  style='color:#5B5B5B' ><?php echo $w?></a>				
 					<?php
 							// only display this link if the user has permission to add an event
-							if(ProjectEvent::canAdd(logged_user(), active_context())){
+							if ($can_add_events) {
 								// if single digit, add a zero
 								$dom = $day_of_month;
 								if($dom < 10) $dom = "0" . $dom;
@@ -314,8 +340,24 @@ foreach($companies as $company)
 							// This loop writes the events for the day in the cell
 							if (is_numeric($w)){ //if it is a day after the first of the month
 								
-								$result_evs = ProjectEvents::getDayProjectEvents($dtv, active_context(), $user_filter, $status_filter); 
-								if (!is_array($result_evs)) $result_evs = array();
+								$result_evs = array();
+								foreach ($all_events as $ev) {
+									if ($ev->getTypeId() == 2) {
+										
+										$std = $ev->getStart()->advance(logged_user()->getTimezone() * 3600, false);
+										if ($std->format("Y-m-d") == $dtv->format("Y-m-d")) {
+											$result_evs[] = $ev;
+										}
+									} else {
+										$std = $ev->getStart()->advance(logged_user()->getTimezone() * 3600, false);
+										$etd = $ev->getDuration()->advance(logged_user()->getTimezone() * 3600, false);
+										$end_dtv = $dtv->advance(24*3600, false);
+										
+										if ($std->format("Y-m-d H:i:s") < $end_dtv->format("Y-m-d H:i:s") && $etd->format("Y-m-d H:i:s") > $dtv->format("Y-m-d H:i:s")) {
+											$result_evs[] = $ev;
+										}
+									}
+								}
 								
 								if(count($result) + count($result_evs) < 1) { ?> 
 									&nbsp; 				
@@ -350,7 +392,7 @@ foreach($companies as $company)
 												if (strlen_utf($tip_text) > 200) $tip_text = substr_utf($tip_text, 0, strpos($tip_text, ' ', 200)) . ' ...';
 							
 												$bold = "bold";
-												if ($event instanceof Contact || $event->getIsRead(logged_user()->getId())){
+												if ($event instanceof Contact || array_var($read_events, $event->getId()) ){
 													$bold = "normal";
 												}
 

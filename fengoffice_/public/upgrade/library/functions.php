@@ -230,7 +230,7 @@ if (!function_exists('massiveInsert')) {
 					$sql.=",";
 				}
 			}
-			//echo alert_r($sql);
+			
 			if (!DB::execute($sql)){
 				throw new DBQueryError($sql);
 			}

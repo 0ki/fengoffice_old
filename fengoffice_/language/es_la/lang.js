@@ -591,7 +591,7 @@ addLangs({
 	'milestones': 'Hitos',
 	'no subject': 'Sin asunto',
 	'add value': 'Agregar valor',
-	'you': 'Usted',
+	'you': 'Mi',
 	'checkout notification': 'Notificación de bloqueo',
 	'document checked out by': 'Este documento está bloqueado por {0}',
 	'checkout confirmation': 'Confirmación de bloqueo',

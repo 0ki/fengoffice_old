@@ -137,11 +137,6 @@ class Timeslots extends BaseTimeslots {
 	static function updateBillingValues() {
 		$timeslots = Timeslots::findAll(array(
 			'conditions' => '`end_time` > 0 AND billing_id = 0 AND is_fixed_billing = 0',
-			'join' => array(
-				'table' => Objects::instance()->getTableName(true),
-				'jt_field' => 'id',
-				'e_field' => 'rel_object_id'
-			)
 		));
 		
 		$users = Contacts::getAllUsers();

@@ -139,7 +139,7 @@ INSERT INTO `<?php echo $table_prefix ?>contact_config_options` (`category_name`
  ('task panel', 'tasksShowDates', '1', 'BoolConfigHandler', 1, 0, ''),
  ('task panel', 'tasksShowTags', '1', 'BoolConfigHandler', 1, 0, ''),
  ('task panel', 'tasksShowEmptyMilestones', '1', 'BoolConfigHandler', 1, 0, ''),
- ('task panel', 'tasksGroupBy', 'milestone', 'StringConfigHandler', 1, 0, ''),
+ ('task panel', 'tasksGroupBy', 'due_date', 'StringConfigHandler', 1, 0, ''),
  ('task panel', 'tasksOrderBy', 'priority', 'StringConfigHandler', 1, 0, ''),
  ('task panel', 'task panel status', '1', 'IntegerConfigHandler', 1, 0, ''),
  ('task panel', 'task panel filter', 'assigned_to', 'StringConfigHandler', 1, 0, ''),

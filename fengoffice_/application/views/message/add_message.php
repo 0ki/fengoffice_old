@@ -124,7 +124,7 @@
             	language: '<?php echo $loc ?>',
             	customConfig: '',
             	toolbar: [
-							['FontSize','-','Bold','Italic','Underline', 'Blockquote','-',
+							['Font','FontSize','-','Bold','Italic','Underline', 'Blockquote','-',
 							 'SpellChecker', 'Scayt','-',
 							 'TextColor','BGColor','-',
 							 'Link','Unlink','-',

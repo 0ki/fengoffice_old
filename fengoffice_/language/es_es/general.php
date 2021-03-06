@@ -62,7 +62,7 @@
 	'by' => 'Por',
 	'on' => 'El',
 	'in' => 'En',
-	'people' => 'Gente',
+	'people' => 'Personas',
 	'dates' => 'Fechas',
 	'permission' => 'Permiso',
 	'permissions' => 'Permisos',

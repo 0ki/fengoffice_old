@@ -371,9 +371,10 @@ class DimensionController extends ApplicationController {
 									$instance = new $itemClass();
 									$instance->setId($m->getObjectId());
 									$instance->setObjectId($m->getObjectId());
-									if ($instance) {
-										$editUrl = $instance->getEditUrl();
+									if ($instance instanceof Contact) {
+										$instance = Contacts::findById($instance->getId());
 									}
+									$editUrl = $instance->getEditUrl();
 								}
 							}
 						}

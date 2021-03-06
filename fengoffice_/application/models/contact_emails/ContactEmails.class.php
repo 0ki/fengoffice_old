@@ -47,6 +47,19 @@
       return DB::execute('DELETE FROM ' . self::instance()->getTableName(true) . ' WHERE `contact_id` = ?', $contact->getId());
     } // clearByContact
     
+
+    /**
+    * Return all main emails
+    *
+    * @access public
+    * @param Contact $contact, integer $type_id
+    * @return array
+    */
+    function getContactMainEmails(Contact $contact, $type_id) {
+      	$contact_emails = self::findAll(array('conditions' => array("`is_main` = 1 AND `contact_id` = ? AND `email_type_id` = ? AND TRIM(email_address) <> '' ", 
+    		$contact->getId(), $type_id)));
+     	return $contact_emails;
+    } // getContactMainEmails
     
 } // ContactEmails 
 
