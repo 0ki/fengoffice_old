@@ -408,7 +408,7 @@ if (!$max_events_to_show) $max_events_to_show = 3;
 										$subject = clean($event->getObjectName());
 										$divtype = '<span class="italic">' . $tip_title . '</span> - ';
 										$task_desc = purify_html($event->getText());
-										$tipBody = lang('assigned to') .': '. clean($event->getAssignedToName()) . (trim(clean($event->getText())) != '' ? '<br><br>' . trim($task_desc) : '');
+										$tipBody = lang('assigned to') .': '. clean($event->getAssignedToName()) . (trim(clean($event->getText())) != '' ? '<br><br>' . html_to_text($task_desc) : '');
 									}elseif ($event instanceof ProjectEvent){
 										$div_prefix = 'w_ev_div_';
 										$objType = 'event';

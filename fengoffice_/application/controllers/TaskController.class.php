@@ -2036,14 +2036,14 @@ class TaskController extends ApplicationController {
 					$reload_view = true;
 				}
 			}
-							
+			
 			DB::commit();
 			flash_success(lang('success complete task'));
-                        
-                        $subt_info = array();
-                        foreach($task->getAllSubTasks() as $sub){
-                                $subt_info[]=$sub->getArrayInfo();
-                        }
+
+			$subt_info = array();
+			foreach($task->getAllSubTasks() as $sub){
+				$subt_info[]=$sub->getArrayInfo();
+			}
 			
 			ajx_extra_data(array("task" => $task->getArrayInfo(),'subtasks' => $subt_info));
 			

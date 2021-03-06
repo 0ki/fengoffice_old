@@ -399,7 +399,7 @@ if (!$max_events_to_show) $max_events_to_show = 3;
 										$objType = 'task';
 										$subject = clean($event->getObjectName());
 										$divtype = '<span class="italic">' . $tip_title . '</span> - ';
-										$task_desc = purify_html($event->getText());
+										$task_desc = html_to_text($event->getText());
 										$tipBody = lang('assigned to') .': '. clean($event->getAssignedToName()) . (trim(clean($event->getText())) != '' ? '<br><br>' . trim($task_desc) : '');
 									}elseif ($event instanceof ProjectEvent){
 										$div_prefix = 'w5_ev_div_';

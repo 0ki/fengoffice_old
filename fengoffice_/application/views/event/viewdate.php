@@ -227,7 +227,7 @@ $genid = gen_id();
 									$div_prefix = 'd_ta_div_' . $tip_pre;
 									$subject = $event->getObjectName();									
 									$divtype = '<span class="italic">' . $tip_title . '</span> - ';
-									$tipBody = lang('assigned to') .': '. clean($event->getAssignedToName()) . (trim(clean($event->getText())) != '' ? '<br><br>' . purify_html($event->getText()) : '');
+									$tipBody = lang('assigned to') .': '. clean($event->getAssignedToName()) . (trim(clean($event->getText())) != '' ? '<br><br>' . html_to_text($event->getText()) : '');
 								}elseif ($event instanceof ProjectEvent){
 									$div_prefix = 'd_ev_div_';
 									$subject = clean($event->getObjectName());

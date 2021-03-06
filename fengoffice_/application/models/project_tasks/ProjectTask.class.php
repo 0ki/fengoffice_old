@@ -368,26 +368,26 @@ class ProjectTask extends BaseProjectTask {
 		}
 		$this->setCompletedOn(DateTimeValueLib::now());
 		$this->setCompletedById(logged_user()->getId());
-                
-                if($options == "yes"){
-                    foreach ($this->getAllSubTasks() as $subt) {
-                            $subt->completeTask($options);
-                    }
-                }                
-                
-                if(user_config_option('close timeslot open')){
-                    $timeslots = $this->getTimeslots();
-                    if ($timeslots){
-                            foreach ($timeslots as $timeslot){
-                                    if ($timeslot->isOpen())
-                                            $timeslot->close();
-                                            $timeslot->save();
-                            }
-                    }
-                }
-		
+
+		if($options == "yes"){
+			foreach ($this->getAllSubTasks() as $subt) {
+				$subt->completeTask($options);
+			}
+		}
+
+		if(user_config_option('close timeslot open')){
+			$timeslots = $this->getTimeslots();
+			if ($timeslots){
+				foreach ($timeslots as $timeslot){
+					if ($timeslot->isOpen())
+					$timeslot->close();
+					$timeslot->save();
+				}
+			}
+		}
+
 		// check if all previuos tasks are completed
-                $log_info = "";
+		$log_info = "";
 		if (config_option('use tasks dependencies')) {
 			$saved_ptasks = ProjectTaskDependencies::findAll(array('conditions' => 'task_id = '. $this->getId()));
 			foreach ($saved_ptasks as $pdep) {
@@ -398,21 +398,21 @@ class ProjectTask extends BaseProjectTask {
 					return;
 				}
 			}
-                        //Seeking the subscribers of the completed task not to repeat in the notifications
-                        $contact_notification = array();
-                        $task = ProjectTasks::findById($this->getId());
-                        foreach ($task->getSubscribers() as $task_sub){
-                            $contact_notification[] = $task_sub->getId();
-                        }
-                        //Send notification to subscribers of the task_dependency on the task completed
-                        $next_dependency = ProjectTaskDependencies::findAll(array('conditions' => 'previous_task_id = '. $this->getId()));
+			//Seeking the subscribers of the completed task not to repeat in the notifications
+			$contact_notification = array();
+			$task = ProjectTasks::findById($this->getId());
+			foreach ($task->getSubscribers() as $task_sub){
+				$contact_notification[] = $task_sub->getId();
+			}
+			//Send notification to subscribers of the task_dependency on the task completed
+			$next_dependency = ProjectTaskDependencies::findAll(array('conditions' => 'previous_task_id = '. $this->getId()));
 			foreach ($next_dependency as $ndep) {
 				$ntask = ProjectTasks::findById($ndep->getTaskId());
 				if ($ntask instanceof ProjectTask) {
-                                        foreach ($ntask->getSubscribers() as $task_dep){
-                                            if(!in_array($task_dep->getId(), $contact_notification))
-                                                $log_info .= $task_dep->getId().",";
-                                        }
+					foreach ($ntask->getSubscribers() as $task_dep){
+						if(!in_array($task_dep->getId(), $contact_notification))
+						$log_info .= $task_dep->getId().",";
+					}
 				}
 			}
 		}

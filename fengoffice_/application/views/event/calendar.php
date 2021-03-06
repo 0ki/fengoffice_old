@@ -523,7 +523,7 @@ foreach($companies as $company)
 													$subject = clean($task->getObjectName()).'- <span class="italic">'.lang('task').'</span>';
 													$cal_text = clean($task->getObjectName());
 													
-													$tip_text = str_replace("\r", '', lang('assigned to') .': '. clean($task->getAssignedToName()) . (trim($task->getText()) == '' ? '' : '<br><br>'. $task->getText()));
+													$tip_text = str_replace("\r", '', lang('assigned to') .': '. clean($task->getAssignedToName()) . (trim($task->getText()) == '' ? '' : '<br><br>'. html_to_text($task->getText())));
 													$tip_text = purify_html(str_replace("\n", '<br>', $tip_text));													
 													if (strlen_utf($tip_text) > 200) $tip_text = substr_utf($tip_text, 0, strpos($tip_text, ' ', 200)) . ' ...';
 								?>

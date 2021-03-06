@@ -1,5 +1,5 @@
 
-	About Feng Office 2.3.2 rc2
+	About Feng Office 2.3.2
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -101,6 +101,14 @@
 	
 	Changelog
 	=========
+	
+	Since 2.3.2-rc2
+	----------------
+	
+	bugfix: Cannot filter overview by tag.
+	bugfix: Tasks tooltip in calendar views shows description as html.
+	bugfix: Permissions issue when editing and subscribing for non-admins for not classiffied objects.
+	
 	
 	Since 2.3.2-rc
 	----------------

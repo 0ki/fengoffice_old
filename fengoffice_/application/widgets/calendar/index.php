@@ -280,13 +280,13 @@ if ($calendar_panel instanceof TabPanel && $calendar_panel->getEnabled()) {
 							$start_of_task = false;
 							$end_of_task = false;
 							if ($task->getDueDate() instanceof DateTimeValue){
-                                                                $due_date = new DateTimeValue($task->getDueDate()->getTimestamp() + logged_user()->getTimezone() * 3600);
-                                                                if ($dtv->getTimestamp() == mktime(0,0,0, $due_date->getMonth(), $due_date->getDay(), $due_date->getYear())) $end_of_task = true;
-                                                        }
-                                                        if ($task->getStartDate() instanceof DateTimeValue){
-                                                                $start_date = new DateTimeValue($task->getStartDate()->getTimestamp() + logged_user()->getTimezone() * 3600);
-                                                                if ($dtv->getTimestamp() == mktime(0,0,0, $start_date->getMonth(), $start_date->getDay(), $start_date->getYear())) $start_of_task = true;
-                                                        }
+								$due_date = new DateTimeValue($task->getDueDate()->getTimestamp() + logged_user()->getTimezone() * 3600);
+								if ($dtv->getTimestamp() == mktime(0,0,0, $due_date->getMonth(), $due_date->getDay(), $due_date->getYear())) $end_of_task = true;
+							}
+							if ($task->getStartDate() instanceof DateTimeValue){
+								$start_date = new DateTimeValue($task->getStartDate()->getTimestamp() + logged_user()->getTimezone() * 3600);
+								if ($dtv->getTimestamp() == mktime(0,0,0, $start_date->getMonth(), $start_date->getDay(), $start_date->getYear())) $start_of_task = true;
+							}
 							if ($start_of_task || $end_of_task) {
 								if ($start_of_task && $end_of_task) {
 									$tip_title = lang('task');

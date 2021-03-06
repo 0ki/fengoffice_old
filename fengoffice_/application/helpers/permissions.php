@@ -317,7 +317,7 @@
 			if (count($manageable_members) == 0) {
 				$return = false;
 				if (config_option('let_users_create_objects_in_root') && $contact_pg_ids != "" && ($user->isAdminGroup() || $user->isExecutive() || $user->isManager())) {
-					$cond = $delete ? 'AND can_delete = 1' : ($write ? 'AND can_delete = 1' : '');
+					$cond = $delete ? 'AND can_delete = 1' : ($write ? 'AND can_write = 1' : '');
 					$cmp = ContactMemberPermissions::findOne(array('conditions' => "member_id=0 AND object_type_id=$object_type_id AND permission_group_id IN ($contact_pg_ids) $cond"));
 					$return = $cmp instanceof ContactMemberPermission;
 				}
@@ -1040,7 +1040,9 @@
 			}
 		}
 		
+		$zero_members = false;
 		if (count($members) == 0) {
+			$zero_members = true;
 			$logged_user_pgs = logged_user()->getPermissionGroupIds();
 			if (count($logged_user_pgs) > 0) {
 				$dimensions = Dimensions::getAllowedDimensions($object_type_id);
@@ -1065,7 +1067,7 @@
 			$all_permission_groups[] = $row['permission_group_id'];
 		}
 		
-		if (count($members) == 0 && config_option('let_users_create_objects_in_root')) {
+		if ($zero_members && config_option('let_users_create_objects_in_root')) {
 			$allowed_permission_groups = array_flat(DB::executeAll("SELECT permission_group_id FROM ".TABLE_PREFIX."contact_member_permissions WHERE member_id=0 AND object_type_id=$object_type_id"));
 		} else {
 			$allowed_permission_groups = can_access_pgids($all_permission_groups, $members, $object_type_id, $access_level);
