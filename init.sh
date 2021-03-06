@@ -8,7 +8,7 @@ ext=.zip
 
 mkdir -p $file
 
-if [ -f "versions.list" ]; then
+if [ ! -f "versions.list" ]; then
  baselist1="$(curl https://sourceforge.net/projects/opengoo/rss?path=/opengoo | grep "download</link>"|striptags | grep -Ei "/(opengoo|fengoffice)[^/]+/download$" | grep -vi upgrade | grep -vi patch | sed -E 's/^\s+//g;s/\s+$//g' |tac)"
  versionlist1="$(echo "$baselist1" | rev | cut -d / -f 2 |rev | sed 's/'"$(echo $ext | sed 's/\./\\./g')"'$//i')"
 
