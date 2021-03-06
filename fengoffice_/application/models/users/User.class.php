@@ -58,6 +58,13 @@
     * @var array
     */
     private $active_projects;
+	
+	/**
+	* Default project for the user
+	*
+	* @var Project
+	*/
+	private $personal_project;
     
     /**
     * Cached value of finished projects
@@ -268,6 +275,20 @@
       } // if
       return $this->active_projects;
     } // getActiveProjects
+	
+	/**
+    * Return the personal project of the user
+    *
+    * @access public
+    * @param void
+    * @return Project
+    */
+    function getPersonalProject() {
+      if(is_null($this->personal_project)) {
+        $this->personal_project = ProjectUsers::getPersonalProjectByUser($this);
+      } // if
+      return $this->personal_project;
+    } // getPersonalProject
     
     /**
     * Return array of finished projects

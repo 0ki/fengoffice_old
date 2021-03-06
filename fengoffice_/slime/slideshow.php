@@ -1,3 +1,6 @@
+<?php 
+session_start();
+?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
 	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 
@@ -25,9 +28,6 @@
 </head>
 <body>
 
-<!--
-<?php session_start(); ?>
--->
 <div class="layout">
 <div id="controls"><!-- DO NOT EDIT --></div>
 <div id="currentSlide"><!-- DO NOT EDIT --></div>
@@ -44,7 +44,8 @@
 <div class="presentation">
 
 <?php 
-echo $_SESSION["s5content"];
+//session_start();
+echo urldecode($_SESSION["s5content"]);
 ?>
 
 

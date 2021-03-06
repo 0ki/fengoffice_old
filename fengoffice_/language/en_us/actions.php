@@ -91,15 +91,26 @@
     'save document' => 'Save document',
     'add spreadsheet' => 'Add spreadsheet',
     'add presentation' => 'Add presentation',
+    'document' => 'Document',
+    'spreadsheet' => 'Spreadsheet',
+    'presentation' => 'Presentation',
 
-    'New document' => 'New document',
-    'New spreadsheet' => 'New spreadsheet',
-    'New presentation' => 'New presentation',
+    'new' => 'New',
+    'upload' => 'Upload',
+    'hide' => 'Hide',
+    'new document' => 'New document',
+    'new spreadsheet' => 'New spreadsheet',
+    'new presentation' => 'New presentation',
 
-    'Slideshow' => 'Slideshow',
-    
+    'slideshow' => 'slideshow',
+    'revisions and comments' =>'Revisions & Comments',
+        
     'Save' => 'Save',
+    'all elements' => 'All elements',
+    'collapse all' => 'Collapse All',
+    'expand all' => 'Expand all',
 
+    'properties' => 'edit properties',
     'edit file' => 'Edit file',
     'edit document' => 'Edit document',
     'edit spreadsheet' => 'Edit spreadsheet',
@@ -112,12 +123,17 @@
     'delete folder' => 'Delete folder',
     
     'edit file revisions' => 'Edit revision',
+    'version' => 'ver',
+    'last modification' => 'Last modification',
     
     'attach file' => 'Attach file',
     'attach files' => 'Attach files',
     'attach more files' => 'Attach more files',
     'detach file' => 'Detach file',
     'detach files' => 'Detach files',
+  	
+    // Tags
+    'delete tag'  => 'Delete tag',
     
     // Permissions
     'update permissions' => 'Update permissions',

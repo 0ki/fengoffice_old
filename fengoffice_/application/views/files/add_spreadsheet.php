@@ -1,23 +1,10 @@
 <?php
-  set_page_title($file->isNew() ? lang('New spreadsheet') : lang('edit spreadsheet'));
+  set_page_title($file->isNew() ? lang('new spreadsheet') : lang('edit spreadsheet'). ' - ' . $file->getFilename());
   project_tabbed_navigation(PROJECT_TAB_FILES);
   project_crumbs(array(
     array(lang('files'), get_url('files')),
     array($file->isNew() ? lang('add spreadsheet') : lang('edit document'))
   ));
-    if(ProjectFile::canAdd(logged_user(), active_project())) {
-    if($current_folder instanceof ProjectFolder) {
-      add_page_action(lang('add document'), $current_folder->getAddDocumentUrl());
-      add_page_action(lang('add spreadsheet'), $current_folder->getAddSpreadsheetUrl());
-      add_page_action(lang('add presentation'), $current_folder->getAddPresentationUrl());
-      add_page_action(lang('upload file'), $current_folder->getAddFileUrl());
-    } else {
-      add_page_action(lang('add document'), get_url('files', 'add_document'));
-      add_page_action(lang('add spreadsheet'), get_url('files', 'add_spreadsheet'));
-      add_page_action(lang('add presentation'), get_url('files', 'add_presentation'));
-      add_page_action(lang('upload file'), get_url('files', 'add_file'));
-    } // if
-  } // if
   add_stylesheet_to_page('project/documents.css');
   add_stylesheet_to_page('project/spreadsheet.css');
   add_stylesheet_to_page('project/spreadsheet_grey.css');

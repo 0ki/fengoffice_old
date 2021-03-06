@@ -205,6 +205,7 @@
       close_html_tag('style') . "\n" . $close;
     
   } // style_tag
+  
 
   /**
   * Page description class
@@ -894,5 +895,17 @@
     
     return get_public_url("assets/themes/$theme/images/$file_name");
   } // get_image_url
+  
+  /**
+  * Add a favicon to page
+  *
+  * @access public
+  * @param string $src URL of favicon
+  * @return string
+  */
+  function add_favicon_to_page($src) {
+    $page = PageDescription::instance();
+    $page->addRelLink(with_slash(ROOT_URL).$src, 'shortcut icon',null);
+  } // add_favicon_to_page
 
 ?>

@@ -21,6 +21,24 @@
     } // __construct
     
     /**
+    * Delete tag URL
+    *
+    * @access public
+    * @param void
+    * @return null
+    */
+    function delete_tag() {
+    	$tag_name=array_var($_GET,'tag_name');
+    	$project_id=array_var($_GET,'project_id');
+    	$object_id=array_var($_GET,'object_id');
+    	$manager_class=array_var($_GET,'manager_class');
+    	if($project_id)
+    		Tags::deleteObjectTag($tag_name,  $object_id,  $manager_class,Projects::findById($project_id));
+    	else 
+    		Tags::deleteObjectTag($tag_name,  $object_id,  $manager_class);
+    	$this->redirectToReferer('');
+    }
+    /**
     * Show project objects tagged with specific tag
     *
     * @access public

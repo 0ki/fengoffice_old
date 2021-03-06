@@ -1,0 +1,87 @@
+/* Copyright 2006 Joost de Valk */
+
+table.sortable tr td.groupBy {
+	font-size: 12px;
+	font-weight: bold;	
+	color: #000;
+}
+
+a img {
+	border: 0;
+}
+
+table.sortable th a {
+	text-decoration: none;
+}
+
+table.sortable {
+	border-spacing: 0;
+	border: 1px solid #AAA;
+	border-collapse: collapse;
+	width: 100%;
+}
+
+table.sortable th, table.sortable td {
+	text-align: left;
+	padding: 2px 4px 2px 4px;
+	cursor: pointer;
+}
+
+table.sortable tr.even:hover, table.sortable tr.odd:hover {
+	outline: 1px solid #BA0101;
+}
+
+table.sortable tr.sorttop th:hover {
+	background-color: #FFE7BB;
+}
+
+table.sortable th {
+	font-size: 12px;
+}
+
+table.sortable td {
+	border-width: 0px 1px 0px 1px;
+}
+
+table.sortable tr.odd td {
+	background-color: #FFF;
+}
+
+table.sortable tr.even td {
+	background-color: #E9F4FF;
+}
+
+table.sortable tr.sortbottom td {
+	border-top: 1px solid #AAA;
+	border-left: 0px;
+	border-right: 0px;
+	font-weight: bold;
+	background-color: #EEEEE6;
+}
+
+table.sortable tr.sorttop th {
+	border-top: 1px solid #AAA;
+	border-left: 0px;
+	border-right: 0px;
+	border-bottom: 1px solid #AAA;
+	font-weight: bold;
+	background-color: #EEEEE6;
+}
+
+div.noarrowicon, div.downarrowicon, div.uparrowicon {
+	width: 20px;
+	display: inline;
+	background-repeat: no-repeat;
+}
+
+div.noarrowicon {
+	background-image: url(../../images/file/arrow-none.gif);
+}
+
+div.downarrowicon {
+	background-image: url(../../images/file/arrow-down.gif);
+}
+
+div.uparrowicon {
+	background-image: url(../../images/file/arrow-up.gif);
+}

@@ -37,23 +37,39 @@
       if((integer) $page < 1) $page = 1;
       
       $hide_private = !logged_user()->isMemberOfOwnerCompany();
-      $result = ProjectFiles::getProjectFiles(active_project(), null, $hide_private, $order, $page, config_option('files_per_page'), true);
+            
+      
+      $tag = array_var($_GET, 'tagfilter');
+      $result = null;            
+      if(trim($tag) == '') {
+      	//are we filtering by tag      
+      	$tag=null;
+      }          
+      $typef = array_var($_GET, 'typefilter');
+       
+      if(trim($typef) == '') {
+      	//are we filtering by type
+      	$typef=null;
+      } 
+      $result = ProjectFiles::getProjectFiles(active_project(), null , 
+      		$hide_private, $order, $page, config_option('files_per_page'), true, $tag,$typef);
       if(is_array($result)) {
         list($files, $pagination) = $result;
       } else {
         $files = null;
-        $pagination = null; 
+        $pagination = null;
       } // if
-      
+                  
       tpl_assign('current_folder', null);
       tpl_assign('order', $order);
       tpl_assign('page', $page);
       tpl_assign('files', $files);
       tpl_assign('pagination', $pagination);
       tpl_assign('folders', active_project()->getFolders());
+      tpl_assign('tags', active_project()->getTagNames());
       tpl_assign('important_files', active_project()->getImportantFiles());
       
-      $this->setSidebar(get_template_path('index_sidebar', 'files'));
+//      $this->setSidebar(get_template_path('index_sidebar', 'files'));
     } // index
     
     /**
@@ -80,7 +96,20 @@
       if((integer) $page < 1) $page = 1;
       
       $hide_private = !logged_user()->isMemberOfOwnerCompany();
-      $result = ProjectFiles::getProjectFiles(active_project(), $folder, $hide_private, $order, $page, config_option('files_per_page'), true);
+      
+      
+      
+      $tag = array_var($_GET, 'tagfilter');
+      if(trim($tag) != '') {
+      	//are we filtering by tag      
+	      $tagged_objects = active_project()->getObjectsByTag($tag);
+	      if(isset($tagged_objects['files']) && is_array($tagged_objects['files']) && count($tagged_objects['files']))
+	      	$result=$tagged_objects['files'];
+      } 
+      else {
+      	//no tag filter, return all elements
+      	$result = ProjectFiles::getProjectFiles(active_project(), $folder, $hide_private, $order, $page, config_option('files_per_page'), true);
+      } //if -- tag filter
       if(is_array($result)) {
         list($files, $pagination) = $result;
       } else {
@@ -96,7 +125,7 @@
       tpl_assign('folders', active_project()->getFolders());
       tpl_assign('important_files', active_project()->getImportantFiles());
       
-      $this->setSidebar(get_template_path('index_sidebar', 'files'));
+     // $this->setSidebar(get_template_path('index_sidebar', 'files'));
     } // browse_folder
     
     // ---------------------------------------------------
@@ -268,15 +297,25 @@
       tpl_assign('important_files', active_project()->getImportantFiles());
       
       $this->setSidebar(get_template_path('index_sidebar', 'files'));
+      
     } // file_details
     
     function slideshow()
     {
-	     $file = ProjectFiles::findById(get_id());
-	     $_SESSION["s5content"]= $file->getFileContent();
-
-	      //header('location: ');
-		$this->redirectToUrl('slime/slideshow.php');
+    	if((array_var($_GET,'fileId'))==null)
+    		$fileId=get_id();
+    	else
+    		$fileId=array_var($_GET,'fileId');
+    	$file = ProjectFiles::findById($fileId);
+    	if(!strcmp($file->getTypeString(),'prsn')){
+		     $_SESSION["s5content"]= $file->getFileContent();
+			$this->redirectToUrl('slime/slideshow.php');
+    	}
+    	else
+    	{
+    		flash_error(lang ('not s5 presentation') );
+    		$this->redirectToUrl(get_url('files','index'));
+    	}
     }//slideshow
     
     
@@ -359,7 +398,8 @@
       } // if
       
       tpl_assign('file', $file);
-      tpl_assign('file_data', $file_data);
+      tpl_assign('file_data', $file_data);      
+      tpl_assign('tags', active_project()->getTagNames());
       
       if(is_array(array_var($_POST, 'file'))) {
         try {
@@ -436,7 +476,7 @@
 			  fputs($handler,$file_content);
 			  fclose($handler);
 	          $file->save();
-	          //$file->setTagsFromCSV(array_var($file_data, 'tags'));
+	          $file->setTagsFromCSV(array_var($file_data, 'tags'));
 //	          if($handle_file) {
 	          $file->handleUploadedFile($file_dt, $post_revision, $revision_comment);
 //	          } // if
@@ -445,12 +485,14 @@
 		      unlink($file_dt['tmp_name']);
 	          
 	          flash_success(lang('success add file', $file->getFilename()));
-	          $this->redirectToUrl($file->getDetailsUrl());
+      		  $this->redirectToUrl(get_url('files'));
 	        } catch(Exception $e) {
 	          //@unlink($file->getFilePath());
 	          DB::rollback();
 		      unlink($file_dt['tmp_name']);
 	          tpl_assign('error', $e);
+	          flash_error(lang('error while saving'));
+	          $this->redirectToUrl(get_url('files'));
 	        } // try
     	  //} // if
 		}
@@ -517,7 +559,7 @@
 		          DB::commit();
 		          flash_success(lang('success add file', $file->getFilename()));
 					unlink($file_dt['tmp_name']);
-		          $this->redirectToUrl($file->getDetailsUrl());
+					$this->redirectToUrl(get_url('files'));
 		        } catch(Exception $e) {
 		          DB::rollback();
 		
@@ -528,6 +570,8 @@
 		          if(isset($revision) && ($revision instanceof ProjectFileRevision) && FileRepository::isInRepository($revision->getRepositoryId())) {
 		            FileRepository::deleteFile($revision->getRepositoryId());
 		          } // if
+	          flash_error(lang('error while saving'));
+	          $this->redirectToUrl(get_url('files'));
 		        } // try
 		      //} // if
 		   //  else echo "MALLLL no es array!!";
@@ -578,12 +622,14 @@
 		      unlink($file_dt['tmp_name']);
 	          
 	          flash_success(lang('success add file', $file->getFilename()));
-	          $this->redirectToUrl($file->getDetailsUrl());
+	          $this->redirectToUrl(get_url('files'));
 	        } catch(Exception $e) {
 	          //@unlink($file->getFilePath());
 	          DB::rollback();
 		      unlink($file_dt['tmp_name']);
 	          tpl_assign('error', $e);
+	          flash_error(lang('error while saving'));
+	          $this->redirectToUrl(get_url('files'));
 	        } // try
     	  //} // if
 		}
@@ -650,7 +696,7 @@
 		          DB::commit();
 		          unlink($file_dt['tmp_name']);
 		          flash_success(lang('success add file', $file->getFilename()));		
-		          $this->redirectToUrl($file->getDetailsUrl());
+				  $this->redirectToUrl(get_url('files'));
 		        } catch(Exception $e) {
 		          DB::rollback();
 		
@@ -661,6 +707,8 @@
 		          if(isset($revision) && ($revision instanceof ProjectFileRevision) && FileRepository::isInRepository($revision->getRepositoryId())) {
 		            FileRepository::deleteFile($revision->getRepositoryId());
 		          } // if
+	          flash_error(lang('error while saving'));
+	          $this->redirectToUrl(get_url('files'));
 		        } // try
 		      //} // if
 			}//new spreadsheet
@@ -710,12 +758,14 @@
 		      unlink($file_dt['tmp_name']);
 	          
 	          flash_success(lang('success add file', $file->getFilename()));
-	          $this->redirectToUrl($file->getDetailsUrl());
+	          $this->redirectToUrl(get_url('files'));
 	        } catch(Exception $e) {
 	          //@unlink($file->getFilePath());
 	          DB::rollback();
 		      unlink($file_dt['tmp_name']);
 	          tpl_assign('error', $e);
+	          flash_error(lang('error while saving'));
+	          $this->redirectToUrl(get_url('files'));
 	        } // try
     	  //} // if
 		}
@@ -793,6 +843,8 @@
 		          if(isset($revision) && ($revision instanceof ProjectFileRevision) && FileRepository::isInRepository($revision->getRepositoryId())) {
 		            FileRepository::deleteFile($revision->getRepositoryId());
 		          } // if
+	          flash_error(lang('error while saving'));
+	          $this->redirectToUrl(get_url('files'));
 		        } // try
 		      //} // if
 		   //  else echo "MALLLL no es array!!";
@@ -981,7 +1033,32 @@
     	}
     }
         
-        
+    
+    /**
+    * Tag file
+    *
+    * @access public
+    * @param void
+    * @return null
+    */
+    function tag_file() {
+		$tag= array_var($_GET, 'tag');
+		$files=explode(',',array_var($_GET, 'files'));
+		if(sizeof($files))
+		{
+			foreach( $files as $file)
+			{
+				if(trim($file)!='')
+					Tags::addFileTag($tag,$file,active_project());
+			}
+		}
+		else 
+			flash_error(lang('no file selected'));
+	    $this->redirectToUrl(get_url('files'));
+    }
+
+    
+       
     /**
     * Edit file properties
     *
@@ -1059,6 +1136,62 @@
     } // edit_file
     
     /**
+    * Delete files given by a comma-separated list of their ids
+    *
+    * @access public
+    * @param void
+    * @return null
+    */
+    function delete_files(){
+    	$ids=explode(',',array_var($_GET,'files'));
+    	$err=0; // count errors
+    	$succ=0; // count files deleted
+    	foreach ($ids as $id)
+    	{
+    		try {
+	    		if(trim($id)!=''){
+	    			FilesController::delete_file_by_id($id);
+	    			$succ ++;
+	    		}
+    		} catch(Exception $e) {
+        		$err ++;
+      		} // try
+    	}
+    	if($err)
+    		flash_error(lang('error delete files', $err));
+    	if ($succ)
+    		flash_success(lang('success delete files'),$succ);
+      $this->redirectTo('files');
+    }
+    
+    /**
+    * Delete file
+    *
+    * @access public
+    * @param void
+    * @return null
+    */
+    function delete_file_by_id($fileId)
+    {
+      $file = ProjectFiles::findById($fileId);
+      
+      
+      if(!$file->canEdit(logged_user())) {
+        return ;
+      } // if
+      
+      
+        DB::beginWork();
+        $file->delete();
+        ApplicationLogs::createLog($file, $file->getProject(), ApplicationLogs::ACTION_DELETE);
+        DB::commit();
+        
+        // flash_success(lang('success delete file', $file->getFilename()));
+      
+      
+    } // delete_file
+    
+    /**
     * Delete file
     *
     * @access public
@@ -1089,7 +1222,8 @@
       } // try
       
       $this->redirectTo('files');
-    } // delete_file
+    }
+    
     
     // ---------------------------------------------------
     //  Revisions

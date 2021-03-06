@@ -39,7 +39,24 @@
       $tags = array();
       foreach($rows as $row) $tags[] = $row['tag'];
       return $tags;
-    } // getTagNamesByObject
+    } // getTagNamesByObject 
+    
+    /**
+    * Return tag names as array for project file id
+    *
+    * @access public
+    * @param int $fileId
+    * @return array
+    */
+    function getTagNamesByFileId( $fileId) {
+      $rows = DB::executeAll('SELECT `tag` FROM ' .  self::instance()->getTableName(true) . ' WHERE `rel_object_id` = ? AND `rel_object_manager` =\'ProjectFiles\' ORDER BY `tag`', $fileId);
+      
+      if(!is_array($rows)) return null;
+      
+      $tags = array();
+      foreach($rows as $row) $tags[] = $row['tag'];
+      return $tags;
+    } // getTagNamesByFileId
     
     /**
     * Clear tags of specific object
@@ -55,6 +72,64 @@
         foreach($tags as $tag) $tag->delete();
       } // if
     } // clearObjectTags
+    
+    /**
+    * Delete a tag for a project object
+    *
+    * @access public
+    * @param tag to delete
+    * @param int fileID
+    * @param Project $project
+    * @return null
+    */
+    
+    function deleteObjectTag($tag_name, $object_id, $manager_class, $project = null) {
+      if (!(isset($object_id) && $object_id))
+      	return true;
+      $file=ProjectFiles::findById($object_id);
+      $prevTags=Tags::getTagsByObject($file,$manager_class);
+      foreach($prevTags as $tag_iter) {
+      	if(strcmp($tag_name,$tag_iter->getTag())==0)
+      	{
+      		$tag_iter->delete();
+      		return true;
+      	}
+      }  
+         
+      return true;
+    } //  addFileTags
+
+    
+    /**
+    * Add tags for a project file
+    *
+    * @access public
+    * @param string $tag_name tag to be added
+    * @param int fileID
+    * @param Project $project
+    * @return null
+    */
+    function addFileTag($tag_name, $fileId, $project = null) {
+      if (!(isset($fileId) && $fileId))
+      	return true;
+      $prevTags=Tags::getTagNamesByFileId($fileId);
+      foreach($prevTags as $tag_iter) {
+      	if(strcmp($tag_name,$tag_iter)==0)
+      		return true; //tag already added
+      }  
+      if(strcmp(trim($tag_name) , '')) {
+        $tag = new Tag();
+        
+        if($project instanceof Project) $tag->setProjectId($project->getId());
+        $tag->setTag($tag_name);
+        $tag->setRelObjectId($fileId);
+        $tag->setRelObjectManager('ProjectFiles');
+        $tag->setIsPrivate(false);            
+        $tag->save();
+      } // if
+         
+      return true;
+    } //  addFileTags
     
     /**
     * Set tags for specific object

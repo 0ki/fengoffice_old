@@ -96,6 +96,29 @@
           DB::beginWork();
           $user->save();
           ApplicationLogs::createLog($user, null, ApplicationLogs::ACTION_ADD);
+		  
+		  /* create personal project */
+		  $project = new Project();
+		  $project->setName($user->getUsername().'_personal');
+		  $project->setDescription(lang('files'));
+		  $project->setCreatedById($user->getId());
+		  
+		  $project->save();
+		  
+		  $project_user = new ProjectUser();
+          $project_user->setProjectId($project->getId());
+          $project_user->setUserId($user->getId());
+		  $project_user->setCreatedById($user->getId());
+		  $project_user->setCanManageMessages(true);
+		  $project_user->setCanManageTasks(true);
+		  $project_user->setCanManageMilestones(true);
+		  $project_user->setCanUploadFiles(true);
+		  $project_user->setCanManageFiles(true);
+		  $project_user->setCanAssignToOwners(true);
+		  $project_user->setCanAssignToOther(true);
+		  
+		  $project_user->save();
+		  /* end personal project */
           
           if(is_array($projects)) {
             foreach($projects as $project) {

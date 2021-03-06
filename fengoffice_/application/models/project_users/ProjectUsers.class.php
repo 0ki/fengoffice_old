@@ -86,6 +86,30 @@
       
       return count($projects) ? $projects : null;
     } // getProjectsByUser
+	
+	/**
+    * Return the users' personal project
+    *
+    * @access public
+    * @param User $user
+    * @param 
+    * @return Project
+    */
+    function getPersonalProjectByUser(User $user) {
+      $projects_table = Projects::instance()->getTableName(true);
+      $project_users_table=  ProjectUsers::instance()->getTableName(true);
+      
+      $sql = "SELECT $projects_table.* FROM $projects_table, $project_users_table WHERE ($projects_table.`id` = $project_users_table.`project_id` AND $project_users_table.`user_id` = " . DB::escape($user->getId()) . ')';
+      
+      $rows = DB::executeAll($sql);
+      if(is_array($rows)) {
+        foreach($rows as $row) {
+          return Projects::instance()->loadFromRow($row);
+        } // foreach
+      } // if
+      
+      return null;
+    } // getPersonalProjectByUser
     
     /**
     * Return all users associated with specific project

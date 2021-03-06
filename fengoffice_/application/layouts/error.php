@@ -2,6 +2,7 @@
 <html>
   <head>
     <title><?php echo get_page_title() ?></title>
+<?php echo add_favicon_to_page('favicon.ico') ?>
 <?php echo meta_tag('content-type', 'text/html; charset=utf-8', true) ?> 
 <?php echo render_page_head() ?>
     <style>

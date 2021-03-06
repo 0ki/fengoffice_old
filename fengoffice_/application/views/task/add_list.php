@@ -41,7 +41,12 @@
   
   <div class="formBlock">
     <?php echo label_tag(lang('tags'), 'taskListFormTags') ?>
-    <?php echo project_object_tags_widget('task_list[tags]', active_project(), array_var($task_list_data, 'tags'), array('id' => 'taskListFormTags', 'class' => 'long')) ?>
+    
+    <?php echo show_project_tags_option(active_project(), 'allTagsCombo', array('id' => 'allTagsCombo','style'=> 'width:100px'));
+    	 echo show_addtag_button('allTagsCombo','taskListFormTags',array('style'=> 'width:20px')); ?>
+
+    
+    <?php echo project_object_tags_widget('task_list[tags]', active_project(), array_var($task_list_data, 'tags'), array('id' => 'taskListFormTags'))//, 'class' => 'long')) ?>
   </div>
   
 <?php if($task_list->isNew()) { ?>

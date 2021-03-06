@@ -77,6 +77,8 @@
   
   <fieldset>
     <legend><?php echo lang('tags') ?></legend>
+        <?php echo show_project_tags_option(active_project(), 'allTagsCombo', array('id' => 'allTagsCombo','style'=> 'width:100px'));
+    	 echo show_addtag_button('allTagsCombo','messageFormTags',array('style'=> 'width:20px')); ?>
     <?php echo project_object_tags_widget('message[tags]', active_project(), array_var($message_data, 'tags'), array('id' => 'messageFormTags', 'class' => 'long')) ?>
   </fieldset>
   

@@ -1,0 +1,13 @@
+
+ul.flipMenu li.flipStatic {
+	cursor: pointer;
+	list-style-image: url(../../images/file/flip_static.png);
+}
+
+ul.flipMenu li.flipFolderOpen {
+	list-style-image: url(../../images/file/flip_open.png);
+}
+
+ul.flipMenu li.flipFolderClosed {
+	list-style-image: url(../../images/file/flip_closed.png);
+}

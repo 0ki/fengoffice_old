@@ -279,6 +279,18 @@
     } // getTagNames
     
     /**
+    * Delete tag for this object
+    *
+    * @access public
+    * @param void
+    * @return array
+    */
+    function deleteTag( $tag) {
+      if(!$this->isTaggable()) throw new Error('Object not taggable');
+      return Tags::deleteFileTag($tag, $this->getId(), get_class($this->manager()));
+    } // deleteTag
+    
+    /**
     * Explode input string and set array of tags
     *
     * @param string $input

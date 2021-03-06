@@ -1,6 +1,6 @@
 <?php
-  set_page_title($file->isNew() ? lang('add file') : lang('edit file'));
-  project_tabbed_navigation(PROJECT_TAB_FILES);
+  set_page_title($file->isNew() ? lang('upload file') : lang('edit file'));
+  /*project_tabbed_navigation(PROJECT_TAB_FILES);
   project_crumbs(array(
     array(lang('files'), get_url('files')),
     array($file->isNew() ? lang('add file') : lang('edit file'))
@@ -21,7 +21,7 @@
 //  if(ProjectFolder::canAdd(logged_user(), active_project())) {
 //    add_page_action(lang('add folder'), get_url('files', 'add_folder'));
 //  } // if
-  
+  */
   add_stylesheet_to_page('project/files.css');
 ?>
 <script type="text/javascript" src="<?php echo get_javascript_url('modules/addFileForm.js') ?>"></script>
@@ -50,6 +50,8 @@
 <?php } else { ?>
   <div class="hint">
     <div class="header"><?php echo checkbox_field('file[update_file]', array_var($file_data, 'update_file'), array('class' => 'checkbox', 'id' => 'fileFormUpdateFile', 'onclick' => 'App.modules.addFileForm.updateFileClick()')) ?> <?php echo label_tag(lang('update file'), 'fileFormUpdateFile', false, array('class' => 'checkbox'), '') ?></div>
+    
+  <?php echo submit_button($file->isNew() ? lang('add file') : lang('edit file')) ?>
     <div class="content">
       <div id="updateFileDescription">
         <p><?php echo lang('replace file description') ?></p>
@@ -90,6 +92,17 @@
   -->
 <?php } // if ?>
 
+
+  <?php echo submit_button($file->isNew() ? lang('add file') : lang('edit file')) ?>
+  
+  <fieldset>
+    <legend><?php echo lang('tags') ?></legend>
+    <?php echo show_project_tags_option(active_project(), 'allTagsCombo', array('id' => 'allTagsCombo','style'=> 'width:100px'));
+    	 echo show_addtag_button('allTagsCombo','fileFormTags',array('style'=> 'width:20px')); ?>
+	<?php echo project_object_tags_widget('file[tags]', active_project(), array_var($file_data, 'tags'), array('id' => 'fileFormTags'))//, 'class' => 'long')) ?>
+
+  </fieldset> 
+  
   <fieldset>
     <legend><?php echo lang('description') ?></legend>
     <?php echo textarea_field('file[description]', array_var($file_data, 'description'), array('class' => 'short', 'id' => 'fileFormDescription')) ?>
@@ -130,16 +143,33 @@
   </fieldset>
 <?php } // if ?>
 
-  <fieldset>
-    <legend><?php echo lang('tags') ?></legend>
-    <?php echo project_object_tags_widget('file[tags]', active_project(), array_var($file_data, 'tags'), array('id' => 'fileFormTags', 'class' => 'long')) ?>
-  </fieldset>
-  
-  <!-- <div class="formBlock">
+  <!--<fieldset>
+    <legend><?php //echo lang('tags') ?></legend>
+    <?php// echo project_object_tags_widget('file[tags]', active_project(), array_var($file_data, 'tags'), array('id' => 'fileFormTags', 'class' => 'long')) ?>
+  </fieldset>-->
+    <!-- <div class="formBlock">
     <?php echo label_tag(lang('tags'), 'fileFormTags') ?>
     <?php echo project_object_tags_widget('file[tags]', active_project(), array_var($file_data, 'tags'), array('id' => 'fileFormTags', 'class' => 'long')) ?>
   </div> -->
   
-  <?php echo submit_button($file->isNew() ? lang('add file') : lang('edit file')) ?>
+  <?php echo submit_button($file->isNew() ? lang('add file') : lang('edit file'),'s'	) ?>
   
 </form>
+
+<script language="javascript">
+function preProcessTags()
+{
+	col = document.getElementsByName('tags');
+	largo = col.length;
+	txt = "";
+	if(largo==0)
+		return txt;
+	for (i = 0; i < largo; i++) {
+		if (col[i].checked) {
+		txt = txt + col[i].value + ",";
+		}
+	}	
+	document.getElementById('file[tags]').value= txt.substring(0,txt.length-1);
+	//alert(document.getElementById('file[tags]').value);
+}
+</script>

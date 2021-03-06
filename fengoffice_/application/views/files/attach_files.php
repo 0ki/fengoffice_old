@@ -1,4 +1,4 @@
-<?php if(!$attach_files_js_included) { ?>
+<!-- <?php if(!$attach_files_js_included) { ?>
 <?php add_stylesheet_to_page('project/attach_files.css'); ?>
 <script type="text/javascript" src="<?php echo get_javascript_url('modules/attachFiles.js') ?>"></script>
 <?php } // if ?>
@@ -14,3 +14,4 @@
   App.modules.attachFiles.initialize(<?php echo $attach_files_max_controls ?>, '<?php echo lang('add attach file control') ?>', '<?php echo lang('remove attach file control') ?>', '<?php echo lang('error attach files max controls', $attach_files_max_controls) ?>');
   App.modules.attachFiles.initSet(1, '<?php echo $attach_files_prefix ?>');
 </script>
+-->

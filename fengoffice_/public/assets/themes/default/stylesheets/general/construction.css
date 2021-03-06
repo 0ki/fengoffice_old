@@ -7,9 +7,12 @@ body {
 }
 
 #header {
-  width: 780px;
+  background-position: 10px 10px;
+  background-image: url('../../images/layout/logo.png');
+  background-repeat: no-repeat;
+  height: 85px;
+  width: 100%;
   margin: 0 auto;
-  padding-top: 10px;
   text-align: left;
 }
 
@@ -58,7 +61,9 @@ body {
 }
 
 #userboxWrapper {
-  margin-left: 500px;
+  margin-top: 10px;
+  margin-right: 200px;
+  float: right;
   color: #666;
   font-size: 10px; 
 }
@@ -108,6 +113,7 @@ body {
 /** Tabs **/
 
 #tabsWrapper {
+  display: none;
   width: 780px;
   margin: 5px auto 0 auto;
   text-align: left;
@@ -138,7 +144,7 @@ body {
   color: #333;
   font-size: 13px;
   font-weight: bolder;
-  line-height: 18px;
+  line-height: 13px;
   text-decoration: none;
 }
 
@@ -167,7 +173,9 @@ body {
 
 #crumbsWrapper {
   clear: both;
-  background: url('../../images/layout/crumbs.gif') repeat-x top left;
+  background: url('../../images/layout/crumbs.png') repeat-x top left;
+  border-top: 1px solid #7777AA;
+  border-bottom: 1px solid #7777AA;
   margin: 0 auto;
   float: left;
   width: 100%;
@@ -175,9 +183,7 @@ body {
 
 #crumbsBlock {
   margin: 0 auto;
-  padding: 0 10px;
-  width: 760px;
-  line-height: 20px;
+  padding: 0 20px;
   text-align: left;
 }
     
@@ -193,7 +199,7 @@ body {
 
 #crumbs ul li {
   display: inline;
-  line-height: 26px;
+  line-height: 24px;
   color: white;
   font-size: 12px;
   font-weight: bolder;
@@ -246,15 +252,9 @@ body {
 /** Content **/
 
 #outerContentWrapper {
-  clear: both;
+  width: 100%;
+  height: 100%;
   background: url('../../images/layout/content-back.gif') repeat-x;
-}
-
-#innerContentWrapper {
-  margin: 0 auto;
-  padding: 10px;
-  width: 760px;
-  text-align: left;
 }
 
 #pageTitle {
@@ -264,24 +264,25 @@ body {
 }
 
 #pageContent {
-  padding: 5px 10px;
   border: 1px solid #ccc;
   border-width: 1px 0;
   background: white;
+  width: 100%;
+  height: 100%;
+  min-height: 300px;
 }
 
 #content {
-  float: left;
-  width: 530px;
-  min-height: 400px;
+  width: 100%;
+  height: 100%;
 }
 
 /** Sidebar **/
 
 #sidebar {
-  margin-left: 535px;
   padding: 0 10px;
   font-size: 10px;
+  max-width: 200px;
 }
 
 #sidebar h2 {
@@ -336,7 +337,7 @@ body {
   clear: both;
   margin: 10px auto;
   padding: 0 10px 10px 10px;
-  width: 760px;
+  width: 90%;
   text-align: left;
   color: #999;
   line-height: 130%;
@@ -468,4 +469,33 @@ div.private {
 
 div.private span {
   display: none;
+}
+
+/* menu items */
+ul.menu_places {
+	margin-left: 10px;
+	font-size: 120%;
+	list-style: none;
+	line-height: 24px;
+}
+
+ul.menu_actions {
+	margin-left: 30px;
+	font-style: italic;
+}
+
+ul.menu_recent {
+	margin-left: 30px;
+	line-height: 16px;
+}
+
+.menu_place_ico {
+	width: 16px;
+	height: 16px;
+	margin-right: 10px;
+	vertical-align: -4px;
+}
+
+#menu_projects_shortcut {
+	width: 80px;
 }

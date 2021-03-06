@@ -13,20 +13,6 @@
   
   project_crumbs($files_crumbs);
   
-  if(ProjectFile::canAdd(logged_user(), active_project())) {
-    if($folder instanceof ProjectFolder) {
-      add_page_action(lang('add document'), $current_folder->getAddDocumentUrl());
-      add_page_action(lang('add spreadsheet'), $current_folder->getAddSpreadsheetUrl());
-      add_page_action(lang('add presentation'), $current_folder->getAddFileUrl());
-      add_page_action(lang('upload file'), $current_folder->getAddFileUrl());
-    } else {
-
-      add_page_action(lang('add document'), get_url('files', 'add_document'));
-      add_page_action(lang('add spreadsheet'), get_url('files', 'add_spreadsheet'));
-      add_page_action(lang('add presentation'), get_url('files', 'add_file'));
-      add_page_action(lang('upload file'), get_url('files', 'add_file'));
-    } // if
-  } // if
 //  if(ProjectFolder::canAdd(logged_user(), active_project())) {
 //    add_page_action(lang('add folder'), get_url('files', 'add_folder'));
 //  } // if
@@ -69,7 +55,7 @@ if($file->canDelete(logged_user())) $options[] = '<a href="' . $file->getDeleteU
 if(strcmp($file->getTypeString(),'txt')==0 || strcmp($file->getTypeString(),'sprd')==0 || strcmp($file->getTypeString(),'prsn')==0 ) 
 $options[] = '<a href="' . 	$file->getModifyUrl()	. '">' . lang('edit') . '</a>';
 if(strcmp($file->getTypeString(),'prsn')==0 ) 
-$options[] = '<a href="' . 	$file->getSlideshowUrl()	. '">' . lang('Slideshow') . '</a>';
+$options[] = '<a href="' . 	$file->getSlideshowUrl()	. '">' . lang('slideshow') . '</a>';
 ?>
 <?php if(count($options)) { ?>
         <div id="fileOptions"><?php echo implode(' | ', $options) ?></div>

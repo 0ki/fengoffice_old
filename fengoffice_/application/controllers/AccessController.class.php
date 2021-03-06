@@ -194,6 +194,28 @@
           $administrator->setAutoAssign(true);
           
           $administrator->save();
+		  
+		  $project = new Project();
+		  $project->setId(1);
+		  $project->setName($administrator->getUsername().'_personal');
+		  $project->setDescription(lang('files'));
+		  $project->setCreatedById($administrator->getId());
+		  
+		  $project->save();
+		  
+		  $project_user = new ProjectUser();
+          $project_user->setProjectId($project->getId());
+          $project_user->setUserId($administrator->getId());
+		  $project_user->setCreatedById($administrator->getId());
+		  $project_user->setCanManageMessages(true);
+		  $project_user->setCanManageTasks(true);
+		  $project_user->setCanManageMilestones(true);
+		  $project_user->setCanUploadFiles(true);
+		  $project_user->setCanManageFiles(true);
+		  $project_user->setCanAssignToOwners(true);
+		  $project_user->setCanAssignToOther(true);
+		  
+		  $project_user->save();
           
           // Create a company
           $company = new Company();

@@ -1,0 +1,112 @@
+html, body {
+	height: 100%;
+	width: 100%;
+}
+
+/* menu */
+#menuContainer, #menuToggle {
+	background-color: #EEEEEE;
+	height: 100%;
+}
+#menuContainer {
+	height: 100%;
+	width: 200px;
+	overflow: auto;
+}
+#menuToggle {
+	border-left: 1px solid #444444;
+	border-right: 1px solid #444444;
+	width: 10px;
+	cursor: pointer;
+	background-position: -3px 250px;
+	background-repeat: no-repeat;
+}
+.toggleHide {
+	background-image: url('../../images/layout/hide.png');
+}
+.toggleShow {
+	background-image: url('../../images/layout/show.png');
+}
+.menuhandle, .menuhandleHover {
+	border: 1px solid #88AACC;
+	background-image: url(../../images/layout/but.png);
+	cursor: pointer;
+	padding: 2px;
+	height: 24px;
+	padding-left: 20px;
+}
+.menuhandleHover {
+	background-image: url(../../images/layout/buth.png);
+}
+.menucont {
+	/*overflow: scroll;*/
+}
+.menu_ico {
+	width: 22px;
+	height: 22px;
+	margin-right: 10px;
+	vertical-align: -6px;
+	border: 0px;
+}
+.menu_text {
+	color: #333333;
+	font-weight: bold;
+}
+
+/* layout tables */
+table.layout {
+	border-width: 0px;
+	border-collapse: collapse;
+}
+table.layout > tbody > tr > td {
+	vertical-align: top;
+	padding: 0px;
+	border: 0px;
+}
+table#menu_layout {
+	height: 100%;
+}
+table#menu_layout > tbody > tr > td {
+	height: 100%;
+}
+table#global_layout {
+	height: 100%;
+	width: 100%;
+}
+tr#global_layout_body {
+	height: 100%;
+}
+table#body_layout {
+	height: 100%;
+	width: 100%;
+}
+td#body_layout_content {
+	height: 100%;
+	width: 100%;
+}
+td#body_layout_menu {
+	height: 100%;
+}
+table#content_layout {
+	width: 100%;
+}
+tr#content_layout_header > td {
+	padding-top: 10px;
+	padding-left: 10px;
+	height: 50px;
+}
+tr#content_layout_body > td {
+	padding-left: 10px;
+	padding-right: 10px;
+}
+table#pagecontent_layout {
+	width: 100%;
+	height: 100%;
+}
+td#pagecontent_layout_content {
+	padding: 10px;
+}
+td#pagecontent_layout_sidebar {
+	padding: 10px;
+}
+

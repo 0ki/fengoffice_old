@@ -309,6 +309,49 @@
   } // select_project_file
   
   /**
+  * Show project tags combo
+  *
+  * @param Project $project
+  * @Param array $attributes Array of control attributes
+  * @return string
+  */
+  function show_project_tags_option(Project $project, $comboName, $attributes) {
+  	$options=array();
+  	foreach ($project->getTagNames() as $tag) {
+  		$tag=trim($tag);
+  		if(strcmp($tag,""))
+  		{//foreach tag
+  			$options[] = option_tag($tag,$tag);
+  		}  		
+  	}
+    return select_box($comboName,$options,$attributes);
+  } 
+  
+  /**
+   * Show button with javascript to add tag from combo to text box
+   * $src source control name
+   * $dest destination control name
+   */
+  function show_addtag_button($src,$dest, $attributes= null)
+  {
+  	$src='document.getElementById(\'' . $src .'\').value';
+  	$dest='document.getElementById(\'' . $dest . '\').value';
+  	$js='javascript:'.   		
+  		'if(' . $dest . '==\'\') '.
+  			' ' . $dest . ' = ' . $src . '; '. 
+  		' else '.
+  		// check whether the tag es included, if it is, do not add it
+  		// if (dest.substring(1+ dest.lastIndexOf(",",dest.indexOf(src)), dest.indexOf(",",1+dest.lastIndexOf(",",dest.indexOf(src)))).trim().replace(/^\s+|\s+$/g, '') == src)
+  			//'if (!((' . $dest . ' + \',\').substring(1+ ' . $dest . '.lastIndexOf(",",' . $dest . '.indexOf(' . $src . ')), ' . $dest . '.indexOf(",",1+' . $dest . '.lastIndexOf(",",' . $dest . '.indexOf(' . $src . ')))).replace(/^\s+|\s+$/g, \'\') == ' . $src . '))' .
+  			' ' . $dest . ' = '.
+  				' ' . $dest . '  + ", " +(' . $src . ')';
+  	$attributes['type']= 'button';
+  	$attributes['onclick'] = $js;
+  	return input_field('addTagButton','>',$attributes);
+  	
+  }
+  
+  /**
   * Return project object tags widget
   *
   * @param string $name
@@ -445,5 +488,19 @@
     $taken_by = $application_log_entry->getTakenBy();
     return $taken_by instanceof User ? $result . ', <a href="' . $taken_by->getCardUrl() . '">' . clean($taken_by->getDisplayName()) . '</a>' : $result;
   } // render_action_taken_on
+  
+  /**
+  * Render menu
+  *
+  * @param $menu_option
+  * @return null
+  */
+  function render_menu($menu_option, $active_projects, $application_log_entries) {
+    tpl_assign('selected_menu_option', $menu_option);
+	tpl_assign('active_projects', $active_projects);
+	tpl_assign('application_logs_entries', $application_log_entries);
+    //tpl_assign('_userbox_projects', $user->getActiveProjects());
+    return tpl_fetch(get_template_path('render_menu', 'menu'));
+  } // render_menu
 
 ?>

@@ -33,9 +33,12 @@
     * @param integer $page Current page
     * @param integer $files_per_page Number of files that will be showed per single page
     * @param boolean $group_by_order Group files by order field
+    * added by msaiz 03/10/07:
+    * @param string for tag filter
     * @return array
+    * 
     */
-    static function getProjectFiles(Project $project, $folder = null, $hide_private = false, $order = null, $page = null, $files_per_page = null, $group_by_order = false) {
+    static function getProjectFiles(Project $project, $folder = null, $hide_private = false, $order = null, $page = null, $files_per_page = null, $group_by_order = false, $tag = null, $type_string = null) {
       if($order == self::ORDER_BY_POSTTIME) {
         $order_by = '`created_on` DESC';
       } else {
@@ -48,18 +51,40 @@
         if((integer) $files_per_page < 1) $files_per_page = 10;
       //} // if
       
+      
+      if($tag=='' ||$tag==null){
+      	$tag='1';
+      	$tagstr = " AND '1'=? "; //this would generate a dummy condition
+      }
+      else
+      {
+      	$tagstr=" AND ( select count(*) from " . TABLE_PREFIX . "tags   where " . TABLE_PREFIX .
+      	 "project_files.id=" . TABLE_PREFIX . "tags.rel_object_id and " . TABLE_PREFIX . "tags.tag=?)>0 ";      
+      }
+      if( $type_string=='' || $type_string==null){
+      	$type_string='1';
+      	$typestr = " AND '1'=? "; //this would generate a dummy condition
+      }
+      else
+      {
+      	$typestr=" AND  (select count(*) from " . TABLE_PREFIX . "project_file_revisions where " .
+      	 TABLE_PREFIX . "project_file_revisions.type_string=? AND " . TABLE_PREFIX .
+      	 "project_files.id=" . TABLE_PREFIX . "project_file_revisions.file_id )";      
+      }
+      
+      $otherConditions=$tagstr . $typestr;
       $folder_ids = array();
       if(($folder instanceof ProjectFolder) && ($folder->getProjectId() == $project->getId())) {
         if($hide_private) {
-          $conditions = array('`project_id` = ? AND `folder_id` = ? AND `is_private` = ? AND `is_visible` = ?', $project->getId(), $folder->getId(), false, true);
+          $conditions = array('`project_id` = ? AND `folder_id` = ? AND `is_private` = ? AND `is_visible` = ? ' . $otherConditions , $project->getId(), $folder->getId(), false, true,$tag, $type_string);
         } else {
-          $conditions = array('`project_id` = ? AND `folder_id` = ? AND `is_visible` = ?', $project->getId(), $folder->getId(), true);
+          $conditions = array('`project_id` = ? AND `folder_id` = ? AND `is_visible` = ?' . $otherConditions, $project->getId(), $folder->getId(), true,$tag, $type_string);
         } // if
       } else {
         if($hide_private) {
-          $conditions = array('`project_id` = ? AND `is_private` = ? AND `is_visible` = ?', $project->getId(), false, true);
+          $conditions = array('`project_id` = ? AND `is_private` = ? AND `is_visible` = ?' . $otherConditions, $project->getId(), false, true,$tag, $type_string);
         } else {
-          $conditions = array('`project_id` = ? AND `is_visible` = ?', $project->getId(), true);
+          $conditions = array('`project_id` = ? AND `is_visible` = ?' . $otherConditions, $project->getId(), true,$tag, $type_string);
         } // if
       } // if
       

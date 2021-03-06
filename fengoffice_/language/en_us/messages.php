@@ -56,6 +56,8 @@
     'folder dnx' => 'Folder you have requested does not exist in database',
     'define project folders' => 'There are no folders in this project. Please defined folders in order to continue',
     'file dnx' => 'Requested file does not exists in the database',
+    'not s5 presentation' => 'Cannot start slideshow because the file is not a valid S5 presentation',
+    'file not selected' => 'There is no selected file',
     'file revision dnx' => 'Requested revision does not exists in the database',
     'no file revisions in file' => 'Invalid file - there are no revisions associated with this file',
     'cant delete only revision' => 'You can\'t delete this reivion. Every file need to have at least one revision posted',
@@ -137,6 +139,7 @@
     'success add file' => 'File \'%s\' has been added',
     'success edit file' => 'File \'%s\' has been updated',
     'success delete file' => 'File \'%s\' has been deleted',
+    'success delete files' => '\'%s\' file have been deleted',
     
     'success edit file revision' => 'Revision has been updated',
     'success delete file revision' => 'File revision has been deleted',
@@ -186,6 +189,7 @@
     'error submit project form' => 'Failed to submit project form',
     'error delete folder' => 'Failed to delete selected folder',
     'error delete file' => 'Failed to delete selected file',
+    'error delete files' => 'Failed to delete \'%s\' files',
     'error delete file revision' => 'Failed to delete file revision',
     'error delete task list' => 'Failed to delete selected task list',
     'error delete task' => 'Failed to delete selected task',
@@ -196,6 +200,7 @@
     'error test mail settings' => 'Failed to send test message',
     'error massmail' => 'Failed to send email',
     'error owner company has all permissions' => 'Owner company has all permissions',
+    'error while saving' => 'An error ocurred while saving the document',
     
     // Access or data errors
     'no access permissions' => 'You don\'t have permissions to access requested page',

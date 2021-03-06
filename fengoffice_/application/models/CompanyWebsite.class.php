@@ -124,6 +124,8 @@
       } else {
         $this->logUserIn($user, $remember);
       } // if
+	  
+	  $this->selected_project = $user->getPersonalProject();
     } // initLoggedUser
     
     // ---------------------------------------------------
@@ -240,6 +242,9 @@
     * @return Project
     */
     function getProject() {
+	  if (! $this->selected_project && $this->logged_user) {
+		$this->selected_project = $this->logged_user->getPersonalProject();
+	  }
       return $this->selected_project;
     } // getProject
     

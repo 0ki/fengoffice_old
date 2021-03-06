@@ -15,7 +15,7 @@ FCKConfig.ToolbarSets["Slides"] = [
 	['TextColor','BGColor'],
 	['FitWindow','-','About']
 ] ;
-
+/*
 // Change the default plugin path.
 FCKConfig.PluginsPath = FCKConfig.BasePath.substr(0, FCKConfig.BasePath.length - 7) + '_samples/_plugins/';
 
@@ -25,6 +25,7 @@ FCKConfig.PluginsPath = FCKConfig.BasePath.substr(0, FCKConfig.BasePath.length -
 //			availableLanguages: a list of available language files for the plugin (separated by a comma).
 FCKConfig.Plugins.Add( 'findreplace', 'en,it,fr' ) ;
 FCKConfig.Plugins.Add( 'samples' ) ;
+*/
 
 // If you want to use plugins found on other directories, just use the third parameter.
 var sOtherPluginPath = FCKConfig.BasePath.substr(0, FCKConfig.BasePath.length - 7) + 'editor/plugins/' ;

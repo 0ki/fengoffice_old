@@ -1232,6 +1232,17 @@
       return get_url('tag', 'project_tag', array('tag' => $tag_name, 'active_project' => $this->getId()));
     } // getTagUrl
     
+    /**
+    * Delete tag URL
+    *
+    * @access public
+    * @param string $tag_name
+    * @return string
+    */
+    function getDeleteTagUrl($tag_name, $object_id, $manager_class) {
+      return get_url('tag', 'delete_tag', array('tag_name' => $tag_name, 'project_id' => $this->getId(), 'object_id' => $object_id, 'manager_class' => $manager_class));
+    } // getDeleteTagUrl
+    
     // ---------------------------------------------------
     //  System functions
     // ---------------------------------------------------

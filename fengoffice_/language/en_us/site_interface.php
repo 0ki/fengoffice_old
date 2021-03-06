@@ -20,7 +20,8 @@
     'dashboard' => 'Dashboard',
     'administration' => 'Administration',
     'my account' => 'My account',
-    
+    'my documents' => 'My documents',
+	'documents' => 'Documents',
     'my projects' => 'My projects',
     'my projects archive desc' => 'List of finished (archived) projects. All actions for these projects are locked, but you can still browse them.',
     
@@ -115,6 +116,11 @@
     'footer copy with homepage' => '&copy; %s by <a href="%s">%s</a>. All rights reserved.',
     'footer copy without homepage' => '&copy; %s by %s. All rights reserved',
     'footer powered' => 'Powered by <a href="%s">%s</a>',
+	
+	// Menu
+	'browse documents' => 'Browse documents',
+	'recent documents' => 'Recent documents',
+	'select' => 'Select',
     
   ); // array
 
