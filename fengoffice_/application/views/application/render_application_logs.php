@@ -21,7 +21,7 @@
   <tr class="logOlder">
 <?php } // if ?>
 
-    <td class="logTypeIcon"><img src="<?php echo image_url('logtypes/' . strtolower($application_log_entry->getRelObjectManager()) . '.gif') ?>" alt="<?php echo $application_log_entry->getObjectTypeName() ?>" title="<?php echo $application_log_entry->getObjectTypeName() ?>" /></td>
+    <td class="logTypeIcon"><?php echo $application_log_entry->getObjectTypeName(); ?>&nbsp;<?php echo $application_log_entry->getObjectTypeName(); ?></td>
     <td class="logDetails">
 <?php if($application_log_entry_url = $application_log_entry->getObjectUrl()) { ?>
       <a href="<?php echo $application_log_entry_url ?>"><?php echo $application_log_entry->getText() ?></a>

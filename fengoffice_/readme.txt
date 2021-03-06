@@ -1,5 +1,5 @@
 
-    About OpenGoo alpha 0.3
+    About OpenGoo alpha 0.4
     =======================
 
     OpenGoo is a free, web based WebOffice, project management and collaboration

@@ -49,10 +49,10 @@ function goToProperties(baseurl) {
 	location.replace(url);	
 }
 
-function slideshow (baseurl)
+function runSlideshow (baseurl)
 {
-	url= baseurl + "&fileId=" + getFirstSelectedFile();
-	location.replace(url);
+	url = baseurl + "&fileId=" + getFirstSelectedFile();
+	slideshow(url);
 }
 
 function gotoURL(url)

@@ -1,0 +1,69 @@
+<!--
+ *  Slimey - SLIdeshow Microformat Editor, part of the OpenGoo weboffice suite - http://www.opengoo.org
+ *  Copyright (C) 2007 Ignacio de Soto
+ *
+ *  Editor.
+-->
+
+<html>
+
+<head>
+	<title>Slimey</title>
+	<script language="javascript" src="functions.js"></script>
+	<script language="javascript" src="stack.js"></script>
+	<script language="javascript" src="editor.js"></script>
+	<script language="javascript" src="navigation.js"></script>
+	<script language="javascript" src="actions.js"></script>
+	<script language="javascript" src="tools.js"></script>
+	<script language="javascript" src="toolbar.js"></script>
+
+	<link rel="stylesheet" href="slimey.css">
+</head>
+
+<body style="margin: 0px; padding: 0px;">
+
+<table style="width: 100%; height: 100%; table-layout: fixed">
+<tr valign="top">
+<td width="195">
+	<!-- slides -->
+	<div id="previewContainer" class="previewContainer">
+		<div id="previewToolbar" class="previewToolbar">
+			<table><tr>
+				<td>
+					<a title="Add a new slide after the selected one" href="javascript:var action = new SlimeyInsertSlideAction(currentSlide + 1);SlimeyEditor.getInstance().performAction(action);">
+						<img src="images/newslide.png"> Add New
+					</a>
+				</td><td>
+					<a title="Delete selected slide" href="javascript:if (currentSlide > 0) {var action = new SlimeyDeleteSlideAction(currentSlide);SlimeyEditor.getInstance().performAction(action);}">
+						<img src="images/delslide.png"> Delete
+					</a>
+				</td>
+			</tr></table>
+		</div>
+</td>
+<td>
+	<!-- editor -->
+	<form name="slimeyForm" id="slimeyForm" method="POST" action="#">
+		<input id="filename" type="hidden" name="filename" value="">
+		<input id="slimContent" type="hidden" name="slimContent" value='<div class="slide"><div style="font-size: 200%; font-weight: bold; font-family: sans-serif; position: absolute; left: 30%; top: 0%; border: 2px solid transparent;">New Slideshow</div></div><div class="slide"><div style="font-size: 200%; font-weight: bold; font-family: sans-serif; position: absolute; left: 30%; top: 0%; border: 2px solid transparent;">Second slide</div></div>'>
+	</form>
+
+	<div id="slimeyToolbar">
+	</div>
+	
+	<div id="slimeyEditor">
+	</div>
+	
+	<script>
+		SlimeyEditor.initInstance('slimeyEditor', window);
+		SlimeyToolbar.getInstance();
+		initNavigation();
+	</script>
+
+</td>
+</tr>
+</table>
+
+</body>
+
+</html>

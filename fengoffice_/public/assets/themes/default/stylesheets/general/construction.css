@@ -7,10 +7,10 @@ body {
 }
 
 #header {
-  background-position: 10px 10px;
+  background-position: 5px 5px;
   background-image: url('../../images/layout/logo.png');
   background-repeat: no-repeat;
-  height: 85px;
+  height: 53px;
   width: 100%;
   margin: 0 auto;
   text-align: left;

@@ -242,7 +242,12 @@
     * @return Project
     */
     function getProject() {
-	  if (! $this->selected_project && $this->logged_user) {
+	  try {
+	    $this->initActiveProject();
+	  } catch (Exception $e) {
+	  }
+
+	  if (is_null($this->selected_project) && $this->logged_user) {
 		$this->selected_project = $this->logged_user->getPersonalProject();
 	  }
       return $this->selected_project;

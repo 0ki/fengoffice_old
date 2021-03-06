@@ -61,6 +61,7 @@
     
     'attach existing file' => 'Attach existing file (from Files section)',
     'upload and attach' => 'Upload new file and attach it to message',
+    'file permissions description' => 'Select users from Combo or write their name on the Text Box. Then press Add user to visualize them on the grid. <br>When you see them, select the approriate permissions in the grid.<br>Note: the Combo Box will only display users you are currently sharing files with.',
     
     'subscribers desc' => 'Subscribers will receive an email notification whenever someone (except themselves) posts a comment on this message',
     'admins can post comments on locked objects desc' => '<strong>Comments are locked</strong>, but you as administrator still have the permissions to post comments. Note that if you expect replies from your clients and non-admin users you need to unlock comments for this object <i>(set "Enable comments" option to "Yes")</i>.',

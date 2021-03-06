@@ -137,9 +137,10 @@
     'success delete folder' => 'Folder \'%s\' has been deleted',
     
     'success add file' => 'File \'%s\' has been added',
+	'success save file' => 'File \'%s\' has been saved',
     'success edit file' => 'File \'%s\' has been updated',
     'success delete file' => 'File \'%s\' has been deleted',
-    'success delete files' => '\'%s\' file have been deleted',
+    'success delete files' => ' \'%s\' file(s) have been deleted',
     
     'success edit file revision' => 'Revision has been updated',
     'success delete file revision' => 'File revision has been deleted',

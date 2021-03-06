@@ -91,15 +91,76 @@
   </div>
   -->
 <?php } // if ?>
-
-
   <?php echo submit_button($file->isNew() ? lang('add file') : lang('edit file')) ?>
+<!-- Permissions -->
+<script language="javascript">
+function add_user(source)
+{
+	var table,row,cell;
+	var innerHtml='<?php 
+	    $all_input = radio_field("__TOKEN__", false , array("id" => "__TOKEN__" . "__YES"  , "value" => 2));
+	    $read_input = radio_field("__TOKEN__", false , array("id" => "__TOKEN__" . "__READ" , "value" => 1));
+	    $no_input = radio_field("__TOKEN__", true , array("id" => "__TOKEN__" . "__NO", "value" => 0));
+	    $all_label = label_tag(lang("all"), "__TOKEN__" . "__YES", false, array("class" => "yes_no"), "");
+	    $read_label = label_tag(lang("read"), "__TOKEN__" ."__READ" , false, array("class" => "yes_no"), "");
+	    $no_label = label_tag(lang("no"), "__TOKEN__" . "__NO", false, array("class" => "yes_no"), "");    
+	    echo  $all_input . " " . $all_label . " " . $read_input . " " . $read_label . " " .  $no_input . " " . $no_label; ?>';
+	var username = 0;
+	if (source=='combo')
+		username=document.getElementById('users_for_sharing').value;
+	if (source=='text')
+		username=document.getElementById('users_for_sharing2').value;
+	if( username != 0 && username != '')
+	{
+		innerHtml=innerHtml.replace(/__TOKEN__/g, username );
+		tablee = (document.all) ? document.all.permissions_table : 
+				document.getElementById('permissions_table');
+		row = tablee.insertRow(-1);
+		row.height=20;
+		cell = row.insertCell(0);
+		cell.innerHTML = username;
+		cell = row.insertCell(1);
+		cell.align='center';
+		cell.innerHTML = innerHtml;
+		document.getElementById('permission_groups').value = document.getElementById('permission_groups').value + ' , ' + username;
+	}	
+}
+</script>
+<fieldset>
+
+    <legend><?php echo lang('permission') ?></legend>
+    <?php echo render_sharing_users('users_for_sharing',array('id'=>'users_for_sharing')) . ' '; 
+	echo input_field('addUserForSharing',lang('add user'),array('type' => 'button', 'onclick' => 'javascript:add_user("combo")')). ' ';
+    echo input_field('users_for_sharing_text','',array('id'=>'users_for_sharing2')). ' ';
+	echo input_field('addUserForSharing',lang('add user'),array('type' => 'button', 'onclick' => 'javascript:add_user("text")')). ' ';
+	echo input_field('permission_groups',$users_csv,array('type' => 'hidden', 'id' => 'permission_groups'))?>
+	<table cellpadding="0" cellspacing="0" id='permissions_table'>
+	<tr><td>Username</td><td>Permissions</td></tr>
+	<?php 
+		foreach ($file_permissions as $perm)
+		{
+			$user_name=Users::findById($perm->getUserId())->getUsername();
+		    $all_input = radio_field($user_name, $perm->getPermission()==2 , array("id" => $user_name . "__YES"  , "value" => 2));
+		    $read_input = radio_field($user_name, $perm->getPermission()==1 , array("id" => $user_name . "__READ" , "value" => 1));
+		    $no_input = radio_field($user_name, false , array("id" => $user_name . "__NO", "value" => 0));
+		    $all_label = label_tag(lang("all"), $user_name . "__YES", false, array("class" => "yes_no"), "");
+		    $read_label = label_tag(lang("read"), $user_name ."__READ" , false, array("class" => "yes_no"), "");
+		    $no_label = label_tag(lang("no"), $user_name . "__NO", false, array("class" => "yes_no"), ""); 
+			echo '<tr><td>' . $user_name .'</td><td align="center">';   
+		    echo  $all_input . " " . $all_label . " " . $read_input . " " . $read_label . " " .  $no_input . " " . $no_label; 
+		    echo '</td></tr>' ;
+		}
+	?>
+	</table>
+	<br /><span class="desc"><?php echo lang('file permissions description') ?></span>
+</fieldset> 
+<!-- End Permissions -->
   
   <fieldset>
     <legend><?php echo lang('tags') ?></legend>
-    <?php echo show_project_tags_option(active_project(), 'allTagsCombo', array('id' => 'allTagsCombo','style'=> 'width:100px'));
+    <?php echo show_project_tags_option(active_project(), 'allTagsCombo', array('id' => 'allTagsCombo'));
     	 echo show_addtag_button('allTagsCombo','fileFormTags',array('style'=> 'width:20px')); ?>
-	<?php echo project_object_tags_widget('file[tags]', active_project(), array_var($file_data, 'tags'), array('id' => 'fileFormTags'))//, 'class' => 'long')) ?>
+	<?php echo project_object_tags_widget('file[tags]', active_project(), array_var($file_data, 'tags'), array('id' => 'fileFormTags', 'class' => 'long')) ?>
 
   </fieldset> 
   

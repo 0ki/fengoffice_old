@@ -18,7 +18,7 @@
 //  } // if
 //  
   add_stylesheet_to_page('project/files.css');
-
+  add_javascript_to_page('file/slideshow.js');
 ?>
 <div id="fileDetails" class="block">
 <?php if($file->isPrivate()) { ?>
@@ -55,7 +55,7 @@ if($file->canDelete(logged_user())) $options[] = '<a href="' . $file->getDeleteU
 if(strcmp($file->getTypeString(),'txt')==0 || strcmp($file->getTypeString(),'sprd')==0 || strcmp($file->getTypeString(),'prsn')==0 ) 
 $options[] = '<a href="' . 	$file->getModifyUrl()	. '">' . lang('edit') . '</a>';
 if(strcmp($file->getTypeString(),'prsn')==0 ) 
-$options[] = '<a href="' . 	$file->getSlideshowUrl()	. '">' . lang('slideshow') . '</a>';
+$options[] = '<a href="javascript:slideshow(\'' . 	$file->getSlideshowUrl()	. '\')">' . lang('slideshow') . '</a>';
 ?>
 <?php if(count($options)) { ?>
         <div id="fileOptions"><?php echo implode(' | ', $options) ?></div>

@@ -18,6 +18,41 @@
     tpl_assign('_userbox_user', $user);
     tpl_assign('_userbox_projects', $user->getActiveProjects());
     return tpl_fetch(get_template_path('user_box', 'application'));
+  } // render_user_box 
+   
+  /**
+  * Render project users combo
+  *
+  * @param String $name
+  * @param array $attributes
+  * @return String
+  */
+  function render_sharing_users($name, $attributes = null) {
+  	$perms= FilePermissions::getAllPermissionsByUser(logged_user());  	
+    $options = array(option_tag(lang('none'), 0));
+  	$my_id = logged_user()->getId();
+  	foreach ($perms as $perm)
+  	{
+  		$file_id=$perm->getFileId();
+  		if(trim($file_id) !='')
+  		{
+	  		$users = FilePermissions::getAllPermissionsByFileId($file_id);
+	  		foreach ($users as $user_perm)
+	  		{
+	  			$user_id=$user_perm->getUserId();
+	  			if($user_id!=null && trim($user_id)!='' && $user_id!=$my_id)
+	  			{
+		  			$user = Users::findById($user_id);
+			  		if($user != null )
+			  		{//foreach user
+			  			$options[] = option_tag($user->getUserName(),$user->getUserName());
+			  		}
+	  			}  
+	  		}
+  		}
+  	}
+  	$options=array_unique($options);
+  	return select_box($name,$options, $attributes);
   } // render_user_box
   
   /**

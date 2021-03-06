@@ -104,6 +104,13 @@ CREATE TABLE `<?php echo $table_prefix ?>config_options` (
   KEY `category_id` (`category_name`)
 ) ENGINE=InnoDB <?php echo $default_charset ?>;
 
+CREATE TABLE `<?php echo $table_prefix ?>file_permissions` (
+  `file_id` INTEGER UNSIGNED NOT NULL,
+  `user_id` INTEGER UNSIGNED NOT NULL,
+  `permission` INTEGER UNSIGNED NOT NULL,
+  PRIMARY KEY(`file_id`, `user_id`)
+) ENGINE = InnoDB <?php echo $default_charset ?>;
+
 CREATE TABLE `<?php echo $table_prefix ?>file_repo` (
   `id` varchar(40) <?php echo $default_collation ?> NOT NULL default '',
   `content` longblob NOT NULL,

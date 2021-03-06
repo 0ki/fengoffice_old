@@ -101,6 +101,7 @@
     'changelog' => 'Changelog',
     'hint' => 'Hint',
     'order' => 'Order',
+    'read' => 'Read',
     
     'project calendar' => '%s calendar',
     'user calendar' => '%s\'s calendar',

@@ -414,18 +414,18 @@
 /**
  * escapes this characters: & ' " < >
  */
-function escapeS5($rawS5) {
+function escapeSLIM($rawSLIM) {
     $search = array('&', '<', '>', '"', "'");
 	$replace = array('&amp;', '&lt;', '&gt;', '&quot;', '&#39;');
-    return str_replace($search, $replace, $rawS5);
+    return str_replace($search, $replace, $rawSLIM);
 }
 
 /**
  * unescapes: &amp; &#39; &quot; &lt; &gt;
  */
-function unescapeS5($encodedS5) {
+function unescapeSLIM($encodedSLIM) {
 	$search = array('&amp;', '&lt;', '&gt;', '&quot;', '&#39;');
 	$replace = array('&', '<', '>', '"', "'");
-    return str_replace($search, $replace, $encodedS5);
+    return str_replace($search, $replace, $encodedSLIM);
 }
 ?>

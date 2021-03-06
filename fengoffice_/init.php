@@ -55,7 +55,7 @@
   
   define('PRODUCT_NAME', 'OpenGoo');
   if(!defined('PRODUCT_VERSION')) {
-    define('PRODUCT_VERSION', '0.3');
+    define('PRODUCT_VERSION', '0.2');
   } // if
   
   define('MAX_SEARCHABLE_FILE_SIZE', 1048576); // if file type is searchable script will load its content into search index. Using this constant you can set the max filesize of the file that will be imported. Noone wants 500MB in search index for single file
@@ -122,7 +122,7 @@
   // We need to call application.php after the routing is executed because
   // some of the application classes may need CONTROLLER, ACTION or $_GET
   // data collected by the matched route
-  require_once 'application.php';
+  require_once APPLICATION_PATH . '/application.php';
   
   // Set handle request timer...
   if(Env::isDebugging()) {

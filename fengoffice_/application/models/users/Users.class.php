@@ -107,7 +107,7 @@
       
       return count($result) ? $result : null;
     } // getGroupedByCompany
-    
+        
   } // Users 
 
 ?>

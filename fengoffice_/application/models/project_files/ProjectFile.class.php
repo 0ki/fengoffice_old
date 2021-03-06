@@ -340,11 +340,9 @@
     * @return string
     */
     function getSlideshowUrl() {
-		if(0==strcmp('prsn',$this->getTypeString()))
-      		return get_url('files', 'slideshow', array(
-	        'id' => $this->getId(), 
-	        'active_project' => $this->getProjectId())
-      		); // get_url
+		return get_url('files', 'slideshow', array(
+			'fileId' => $this->getId())
+		); // get_url
     } // getModifyUrl
     
     /**

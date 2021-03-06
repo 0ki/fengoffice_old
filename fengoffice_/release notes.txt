@@ -1,0 +1,25 @@
+OpenGoo alpha 0.4 release notes
+===============================
+
+Finally, OpenGoo release alpha 0.4 is out!
+
+New to this release is the inclusion of the new slideshow editor, Slimey.
+Slimey is an open source, web based, slideshow editor born from the OpenGoo
+project. This first version includes basic slideshow editing functionality
+but shows a promising future and even now has many great features planned
+in its roadmap. Currently, Fiefox 2, IE 7 and Safari 3 are all fully supported
+and it works correctly on Opera 9 with some small bugs.
+
+Other improvements to this version of OpenGoo include fixing a bug which didn't
+allow you to change the active project, together with some other small bug fixes.
+
+For the next version we wil focus on bug fixing and a lot of work under the hood.
+
+If you would like to help OpenGoo become a fully featured web office, please
+join the project at http://www.opengoo.org. Even if you have no programming
+knowledge you can contribute by reporting bugs or giving your opinion at our
+forums. If you are a developer or a graphic designer and would like to help,
+please contact us at our forums, or by mail to ignacio.desoto@opengoo.org,
+conrado.vina@opengoo.org or marcos.saiz@opengoo.org.
+
+Thank you for trying OpenGoo!

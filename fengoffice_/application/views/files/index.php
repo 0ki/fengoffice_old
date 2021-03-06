@@ -28,6 +28,7 @@
   $files_crumbs[] = array(lang('index'));
   
   project_crumbs($files_crumbs);
+  add_javascript_to_page('file/slideshow.js');
   add_javascript_to_page('file/filehorizontalmenu.js');
   add_javascript_to_page('file/filetreemenu.js');
   add_javascript_to_page('file/filesortablelist.js');
@@ -93,7 +94,7 @@
 				<a href="#"><?php echo lang('more')?></a>
 				<ul>
 					<li>
-						<a href="javascript:slideshow('<?php echo get_url('files', 'slideshow') ?>')"><?php echo lang('slideshow')?></a>
+						<a href="javascript:runSlideshow('<?php echo get_url('files', 'slideshow') ?>')"><?php echo lang('slideshow')?></a>
 					</li>
 					<!--li><a href="#"><?php echo lang('sharing')?></a></li-->
 					<li>

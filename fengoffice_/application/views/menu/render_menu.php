@@ -11,10 +11,6 @@
 	<li><img class="menu_place_ico" src="<?php echo get_image_url('menu/tasks.png')?>"><a href="<?php echo get_url('task', 'index') ?>"><?php echo lang('my tasks') ?></a></li>
 	<li><img class="menu_place_ico" src="<?php echo get_image_url('menu/account2.png')?>"><a href="<?php echo get_url('account', 'index') ?>"><?php echo lang('account') ?></a></li>
 	</ul>
-	<br>
-	<ul class="menu_actions">
-	<li><a href="<?php echo get_url('project', 'add') ?>"><?php echo lang('add project'); ?></a></li>
-	</ul>
 </div>
 <!-- </overview> -->
 
@@ -73,7 +69,7 @@
 </div>
 <div id="projectcont" class="menucont" style="display: none;">
 	<ul class="menu_places">
-	<li><img class="menu_place_ico" src="<?php echo get_image_url('menu/projects.png')?>"><?php echo lang('select') ?>:
+	<li><img class="menu_place_ico" src="<?php echo get_image_url('menu/projects.png')?>"><a href="<?php echo get_url('dashboard', 'my_projects') ?>"><?php echo lang('select') ?></a>:
 		<select id="menu_projects_shortcut" onchange="if (this.value != '') location.href = this.value" value="">
 			<option value="">-- Choose --</option>
 			<?php
@@ -96,9 +92,16 @@
 	<li><img class="menu_place_ico" src="<?php echo get_image_url('menu/forms.png')?>"><a href="<?php echo get_url('form', 'index') ?>"><?php echo lang('forms') ?></a></li>
 	<li><img class="menu_place_ico" src="<?php echo get_image_url('menu/people.png')?>"><a href="<?php echo get_url('project', 'people') ?>"><?php echo lang('people') ?></a></li>
 	</ul>
+	<br>
+	<ul class="menu_actions">
+	<li><a href="<?php echo get_url('project', 'add') ?>"><?php echo lang('add project'); ?></a></li>
+	</ul>
 </div>
 <!-- </project> -->
 
+<?php
+if (CompanyWebsite::instance()->getLoggedUser()->isAdministrator()) {
+?>
 <!-- <administration> -->
 <div id="administration" class="menuhandle" onclick="layoutSelectMenu(this)" onmouseover="layoutMenuOver(this)" onmouseout="layoutMenuOut(this)">
 	<img class="menu_ico" src="<?php echo get_image_url('layout/options.png')?>"><span class="menu_text"><?php echo lang('administration') ?></span>
@@ -115,6 +118,7 @@
 	</ul>
 </div>
 <!-- </administration> -->
+<?php } ?>
 
 <script>
 layoutCurrent = document.getElementById('<?php echo $selected_menu_option ?>cont');

@@ -1,14 +1,13 @@
 <div id="userbox">
-  <?php echo lang('welcome back', $_userbox_user->getDisplayName()) ?> (<a href="<?php echo get_url('access', 'logout') ?>" onclick="return confirm('<?php echo lang('confirm logout') ?>')"><?php echo lang('logout') ?></a>),
-  <ul>
-    <li><a href="<?php echo logged_user()->getAccountUrl() ?>"><?php echo lang('account') ?></a> <?php echo render_icon('bullet_drop_down.gif', '', array('id' => 'account_more_icon', 'class' => 'PopupMenuWidgetAttachTo', 'title' => lang('enable javascript'))) ?></li>
+  <?php echo lang('welcome back', $_userbox_user->getDisplayName()) ?> (<a href="<?php echo get_url('access', 'logout') ?>" onclick="return confirm('<?php echo lang('confirm logout') ?>')"><?php echo lang('logout') ?></a>) : 
+  <a href="<?php echo logged_user()->getAccountUrl() ?>"><?php echo lang('account') ?></a> <?php echo render_icon('bullet_drop_down.gif', '', array('id' => 'account_more_icon', 'class' => 'PopupMenuWidgetAttachTo', 'title' => lang('enable javascript'))) ?>
+
 <?php if(isset($_userbox_projects) && is_array($_userbox_projects) && count($_userbox_projects)) { ?>
-    <li><a href="<?php echo get_url('dashboard', 'my_projects') ?>"><?php echo lang('projects') ?></a> <?php echo render_icon('bullet_drop_down.gif', '', array('id' => 'projects_more_icon', 'class' => 'PopupMenuWidgetAttachTo', 'title' => lang('enable javascript'))) ?></li>
+    <a href="<?php echo get_url('dashboard', 'my_projects') ?>"><?php echo lang('projects') ?></a> <?php echo render_icon('bullet_drop_down.gif', '', array('id' => 'projects_more_icon', 'class' => 'PopupMenuWidgetAttachTo', 'title' => lang('enable javascript'))) ?>
 <?php } // if ?>
 <?php if(logged_user()->isAdministrator()) { ?>
-    <li><a href="<?php echo get_url('administration') ?>"><?php echo lang('administration') ?></a> <?php echo render_icon('bullet_drop_down.gif', '', array('id' => 'administration_more_icon', 'class' => 'PopupMenuWidgetAttachTo', 'title' => lang('enable javascript'))) ?></li>
+    <a href="<?php echo get_url('administration') ?>"><?php echo lang('administration') ?></a> <?php echo render_icon('bullet_drop_down.gif', '', array('id' => 'administration_more_icon', 'class' => 'PopupMenuWidgetAttachTo', 'title' => lang('enable javascript'))) ?>
 <?php } // if ?>
-  </ul>
   
   <div class="PopupMenuWidgetDiv" id="account_more_menu">
     <p><?php echo lang('account') ?>:</p>

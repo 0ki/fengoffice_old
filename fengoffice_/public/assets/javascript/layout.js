@@ -10,6 +10,9 @@ function layoutToggleMenu(obj) {
 		obj.className = 'toggleHide';
 	}
 	layoutMenuVisible = !layoutMenuVisible;
+	if (window.onresize) {
+		window.onresize();
+	}
 }
 
 function layoutSelectMenu(obj) {
