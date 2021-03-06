@@ -20,7 +20,7 @@
 	'milestones' => 'Etapes',
 	'task' => 'Tâche',
 	'subtasks' => 'Sous-tâches',
-	'tasks' => 'Tâche',
+	'tasks' => 'Tâches',
 	'task list' => 'Tâche',
 	'task lists' => 'Tâches',
 	'tag' => 'Étiquette',

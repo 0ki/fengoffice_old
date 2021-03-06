@@ -32,8 +32,8 @@ if (isset($_REQUEST['modules']) && $_REQUEST['modules']) {
 	// members
 	$members = array();
 	$db_res = mysql_query("select count(*) as num, ot.name as type, p.name as plugin from ".TABLE_PREFIX."members m 
-		inner join fo_object_types ot on ot.id=m.object_type_id 
-		left outer join fo_plugins p on p.id=ot.plugin_id
+		inner join ".TABLE_PREFIX."object_types ot on ot.id=m.object_type_id 
+		left outer join ".TABLE_PREFIX."plugins p on p.id=ot.plugin_id
 		group by ot.name order by ot.plugin_id, ot.name");
 	while ($row = mysql_fetch_assoc($db_res)) {
 		$members[$row['type']] = $row;
@@ -72,10 +72,10 @@ if (isset($_REQUEST['logins']) && $_REQUEST['logins']) {
 if (isset($_REQUEST['activity']) && $_REQUEST['activity']) {
 	$activity = array();
 	
-	$db_res = mysql_query("select o.id, o.name, pg.name as `type`, ce.email_address as email, c.last_activity as `date` from fo_contacts c 
-		inner join fo_objects o on o.id=c.object_id 
-		inner join fo_permission_groups pg on pg.id=c.user_type
-		inner join fo_contact_emails ce on ce.contact_id=o.id
+	$db_res = mysql_query("select o.id, o.name, pg.name as `type`, ce.email_address as email, c.last_activity as `date` from ".TABLE_PREFIX."contacts c 
+		inner join ".TABLE_PREFIX."objects o on o.id=c.object_id 
+		inner join ".TABLE_PREFIX."permission_groups pg on pg.id=c.user_type
+		inner join ".TABLE_PREFIX."contact_emails ce on ce.contact_id=o.id
 		where o.trashed_by_id=0 and c.user_type>0 and c.last_activity>0 and ce.is_main=1
 		group by o.id order by c.last_activity desc;", $db_link);
 	

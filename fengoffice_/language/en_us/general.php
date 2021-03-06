@@ -2,6 +2,7 @@
 
 // Return array of langs
 return array(
+	'id' => 'id',
   	'All' => 'All',
   	'person' => 'Person',
 	'contact info' => 'Contact Information', 

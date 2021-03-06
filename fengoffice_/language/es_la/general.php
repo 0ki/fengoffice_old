@@ -1,4 +1,5 @@
 <?php return array(
+	'id' => 'id',
 	'warning' => 'Aviso',
 	'username' => 'Nombre de usuario',
 	'email or username' => 'Email o usuario',

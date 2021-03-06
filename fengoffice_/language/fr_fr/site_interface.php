@@ -278,7 +278,7 @@
 	'end date' => 'Date fin',
 	'end time' => 'Heure fin',
 	'tasks in progress' => 'Tâches en cours',
-	'upcoming events milestones and tasks' => 'Calendrier des evènements, Etapes et Tâches',
+	'upcoming events milestones and tasks' => 'Calendrier des évènements, Étapes et Tâches',
 	'undo checkout' => 'Déverrouiller',
 	'search for in project' => 'Résultats de recherche pour \'<i>{0}</i>\' dans le contexte \'{1}\'',
 	'search for' => 'Résultats de recherche pour \'{0}\' dans tous les contextes',

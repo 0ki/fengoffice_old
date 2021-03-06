@@ -718,7 +718,7 @@ addLangs({
 	'progress': 'En cours',
 	'estimated times': 'Temps estimés',
 	'estimated time': 'Temps estimé',
-	'empty milestones': 'Vider les Etapes',
+	'empty milestones': 'Étapes vides',
 	'print calendar': 'Imprimer le Calendrier',
 	'add object subtype': 'Ajouter le sous-type d\'objet',
 	'delete object subtype': 'Supprimer le sous-type d\'objet',

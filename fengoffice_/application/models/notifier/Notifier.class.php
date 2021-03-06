@@ -210,6 +210,10 @@ class Notifier {
 			// don't interrupt notifications.
 		}
 		
+		if (trim($name) == "") {
+			$name = lang($object->getObjectTypeName()) . " (".lang('id').": " . $object->getId() . ")";
+		}
+		
 		tpl_assign('object', $object);
 		tpl_assign('title', $name);//title
 		tpl_assign('by', $assigned_by);//by
@@ -466,7 +470,8 @@ class Notifier {
 		if (!$toemail) continue;
 		self::queueEmail(
 			array(self::prepareEmailAddress($toemail, $user->getObjectName())),
-			self::prepareEmailAddress($administrator->getEmailAddress(), $administrator->getObjectName()),
+			//self::prepareEmailAddress($administrator->getEmailAddress(), $administrator->getObjectName()),
+			self::prepareEmailAddress('noreply@fengoffice.com', 'Feng Office'),
 			lang('reset password'),
 			tpl_fetch(get_template_path('forgot_password', 'notifier'))
 		); // send

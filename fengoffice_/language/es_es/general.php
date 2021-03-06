@@ -1,4 +1,5 @@
 <?php return array(
+	'id' => 'id',
 	'username' => 'Nombre de usuario',
 	'email or username' => 'Correo o usuario',
 	'password' => 'Contraseña',

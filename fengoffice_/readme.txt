@@ -1,5 +1,5 @@
 
-	About Feng Office 2.5.1-rc
+	About Feng Office 2.5.1
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -101,6 +101,11 @@
 	
 	Changelog
 	=========
+	
+	Since 2.5.1-rc
+	----------------
+	bugfix: can't view object link in notification when an email does not have a subject.
+	
 	
 	Since 2.5.1-beta
 	----------------
