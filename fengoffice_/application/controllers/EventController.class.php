@@ -230,7 +230,7 @@ class EventController extends ApplicationController {
 			$compstr = 'invite_user_';
 			foreach ($event_data as $k => $v) {
 				if (str_starts_with($k, $compstr) && ($v == 'checked' || $v == 'on')) {
-					$data['users_to_invite'][substr_utf($k, strlen_utf($compstr))] = 0; // Pending Answer
+					$data['users_to_invite'][substr($k, strlen($compstr))] = 0; // Pending Answer
 				}
 			}
 			
@@ -860,7 +860,7 @@ class EventController extends ApplicationController {
  *   copyright            : (C) 2001 The phpBB Group
  *   email                : support@phpbb.com
  *
- *   $Id: EventController.class.php,v 1.76.2.1 2009/03/16 20:41:23 idesoto Exp $
+ *   $Id: EventController.class.php,v 1.76.2.2 2009/03/17 18:42:05 idesoto Exp $
  *
  ***************************************************************************/
 

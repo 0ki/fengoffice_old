@@ -23,8 +23,9 @@ class MailUtilities {
 					$accId = $account->getId();
 					$emails = array();
 					if (!$account->getIsImap()) {
-						if (!$account->getIncomingSsl())
-						$mailsReceived += self::getNewPOP3Mails($account, $maxPerAccount);
+						if (!$account->getIncomingSsl()) {
+							$mailsReceived += self::getNewPOP3Mails($account, $maxPerAccount);
+						}
 					} else {
 						$mailsReceived += self::getNewImapMails($account, $maxPerAccount);
 					}
@@ -313,10 +314,12 @@ class MailUtilities {
 	private function getNewImapMails(MailAccount $account, $max = 0) {
 		$received = 0;
 
-		$server_url = ($account->getIncomingSsl() ? "ssl" : "tcp") . "://" . $account->getServer();
-		$imap = new Net_IMAP($server_url, $account->getIncomingSslPort());
+		if ($account->getIncomingSsl()) {
+			$imap = new Net_IMAP("ssl://" . $account->getServer(), $account->getIncomingSslPort());	
+		} else {
+			$imap = new Net_IMAP("tcp://" . $account->getServer());
+		}
 		$ret = $imap->login($account->getEmail(), self::ENCRYPT_DECRYPT($account->getPassword()));
-		
 		$mailboxes = MailAccountImapFolders::getMailAccountImapFolders($account->getId());
 		if (is_array($mailboxes)) {
 			foreach ($mailboxes as $box) {
@@ -367,8 +370,11 @@ class MailUtilities {
 	}
 
 	function getImapFolders(MailAccount $account) {
-		$server_url = ($account->getIncomingSsl() ? "ssl" : "tcp") . "://" . $account->getServer();
-		$imap = new Net_IMAP($server_url, $account->getIncomingSslPort());
+		if ($account->getIncomingSsl()) {
+			$imap = new Net_IMAP("ssl://" . $account->getServer(), $account->getIncomingSslPort());	
+		} else {
+			$imap = new Net_IMAP("tcp://" . $account->getServer());
+		}
 		$ret = $imap->login($account->getEmail(), self::ENCRYPT_DECRYPT($account->getPassword()));
 		
 		$result = array();
@@ -398,8 +404,11 @@ class MailUtilities {
 			$max_date = DateTimeValueLib::now();
 			$max_date->add('d', -1 * $account->getDelFromServer());
 			if ($account->getIsImap()) {
-				$server_url = ($account->getIncomingSsl() ? "ssl" : "tcp") . "://" . $account->getServer();
-				$imap = new Net_IMAP($server_url, $account->getIncomingSslPort());
+				if ($account->getIncomingSsl()) {
+					$imap = new Net_IMAP("ssl://" . $account->getServer(), $account->getIncomingSslPort());	
+				} else {
+					$imap = new Net_IMAP("tcp://" . $account->getServer());
+				}
 				$ret = $imap->login($account->getEmail(), self::ENCRYPT_DECRYPT($account->getPassword()));
 				
 				$result = array();

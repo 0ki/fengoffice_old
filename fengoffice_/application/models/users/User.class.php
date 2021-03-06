@@ -1221,6 +1221,7 @@ class User extends BaseUser {
 		ProjectUsers::clearByUser($this);
 		ObjectSubscriptions::clearByUser($this);
 		ObjectReminders::clearByUser($this);
+		EventInvitations::clearByUser($this);
 		return parent::delete();
 	} // delete
 

@@ -448,7 +448,7 @@ class Project extends BaseProject {
 		if (!is_numeric($billing_category_id)) $billing_category_id = 0;
 		$wsBilling = WorkspaceBillings::findOne(
 			array('conditions' => array(
-				'project_id = ? AND billing_id = ',
+				'project_id = ? AND billing_id = ?',
 				$this->getId(),
 				$billing_category_id
 			))

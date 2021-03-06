@@ -8,18 +8,16 @@
 	<td style="width:12px;height:1px;overflow:hidden;line-height:0px;"></td></tr>
 	<tr>
 	<td colspan=2 rowspan=2 class="dashHeader">
-		<table style="width:100%"><tr>
+		<table style="width:100%;cursor: pointer" onclick="og.dashExpand('<?php echo $widgetGenid ?>','<?php echo $widgetTemplate; ?>')"><tr>
 			<td>
 				<div class="dashTitle"><?php echo $widgetTitle; ?></div>
 			</td>
 			<td align=right style="width:30px">
-				<a href="#" onclick="og.dashExpand('<?php echo $widgetGenid ?>','<?php echo $widgetTemplate; ?>')">
 				<?php if ($isExpanded) { ?>
 					<div id="<?php echo $widgetGenid ?>expander" class="dash-expander ico-dash-expanded"></div>
 				<?php } else { ?>
 					<div id="<?php echo $widgetGenid ?>expander" class="dash-expander ico-dash-collapsed"></div>
 				<?php } ?>
-				</a>
 			</td>
 		</tr></table>
 	</td>

@@ -146,7 +146,7 @@
 	'backup command failed' => 'Error al ejecutar el comando de respaldo. Verificar constante MYSQLDUMP_COMMAND.',
   	'return code' => 'Código de retorno: {0}',
 	'task filter criteria not recognised' => 'El criterio de filtro de tareas \'{0}\' no es válido',
-  
+  	'mail account dnx' => 'La cuenta de correo no existe',
   
  ); // array
 

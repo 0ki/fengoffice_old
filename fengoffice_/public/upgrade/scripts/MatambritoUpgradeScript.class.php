@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Matambrito upgrade script will upgrade OpenGoo 1.2.1 to OpenGoo 1.3
+ * Matambrito upgrade script will upgrade OpenGoo 1.2.1 to OpenGoo 1.3.1
  *
  * @package ScriptUpgrader.scripts
  * @version 1.3
@@ -41,7 +41,7 @@ class MatambritoUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('1.2.1');
-		$this->setVersionTo('1.3');
+		$this->setVersionTo('1.3.1');
 	} // __construct
 
 	function getCheckIsWritable() {

@@ -1,6 +1,6 @@
 
-    About OpenGoo 1.3
-    =================
+    About OpenGoo 1.3.1
+    ===================
 
     OpenGoo is a free and open source WebOffice, project management and collaboration
     tool, licensed under the Affero GPL 3 license.
@@ -61,11 +61,11 @@
     ====================
     
     1. Backup you current installation (important!)
-    2. Download OpenGoo 1.3-rc2 - http://www.opengoo.org/
+    2. Download OpenGoo 1.3.1 - http://www.opengoo.org/
     3. Unpack into your OpenGoo installation, overwriting your previous files and folders,
     	but keeping your config, upload and public/files folders.
     5. Go to <your_opengoo>/public/upgrade in your browser and choose to upgrade
-    	from your current version to 1.3-rc2.
+    	from your current version to 1.3.1.
     6. Refresh your browser or clear its cache to load new javascript, css and images.   
 
     
@@ -87,6 +87,20 @@
 	Changelog
 	=========
 
+	Since 1.3
+	---------
+
+	- bugfix: Fixed an issue with reminders that showed the same reminder several times.
+	- bugfix: Email notifications were not being sent when a task was completed.
+	- bugfix: Email retrieving through IMAP wasn't working correctly.
+	- bugfix: Closing a timeslot throwed an error.
+	- bugfix: Event invitations were not working correctly.
+	- bugfix: Email accounts could not be deleted.
+	- bugfix: URLs with hyphens in object descriptions were not converted correctly to links.
+	- usability: Translate and Minify tools are now always enabled and only available to administrators. 
+	- usability: Improved how IMAP accounts are setup.
+	- usability: Expand / collapse dashboard widgets by clicking anywhere in the titlebar.
+
 	Since 1.3-rc2
 	-------------
 	- usability: Weblinks view now shows URL.
@@ -98,6 +112,7 @@
 	- bugfix: Fixed occasional error about attributes.php.
 	- bugfix: Corrected a problem when displaying revisions on the trash.
 	- bugfix: General timeslots' billing information is now also included in reports.
+	- bugfix: Fixed error when viewing an event with an deleted invited user.
 	- system: Share action was removed.
 	- system: New hooks added.
 

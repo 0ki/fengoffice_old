@@ -111,6 +111,7 @@
   	'user ws config option desc time_format_use_24' => 'If enabled time descriptions will be shown as \'hh:mm\' from 00:00 to 23:59, if not hours will go from 1 to 12 using AM or PM.',
   	'user ws config option name work_day_start_time' => 'Work day start time',
 	'user ws config option desc work_day_start_time' => 'Specifies the time when work day starts',
+  	'user ws config option name show dashboard info widget' => 'Show workspace description widget',
   	
   	'user ws config option name my tasks is default view' => 'Tasks assigned to me is the default view',
   	'user ws config option desc my tasks is default view' => 'If no is selected, the default view of the task panel will show all tasks',

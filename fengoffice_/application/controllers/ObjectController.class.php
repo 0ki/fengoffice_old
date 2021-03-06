@@ -1333,14 +1333,29 @@ class ObjectController extends ApplicationController {
 			$link = '<a href="#" onclick="og.openLink(\''.$url.'\');return false;">'.$object->getObjectName().'</a>';
 			evt_add("popup", array(
 				'title' => lang("$context $type reminder"),
-				'message' => lang("$context $type reminder desc", $link, format_datetime($date)),
+				'message' => lang("$context $type reminder desc", $link, format_datetime($date, null, 0)),
 				'type' => 'reminder',
 				'sound' => 'info'
 			));
-			if ($reminder->getUserId() != 0) {
-				// don't delete if the reminder is for all subscribers
-				$reminder->delete();
+			if ($reminder->getUserId() == 0) {
+				// reminder is for all subscribers, so change it for one reminder per user (except logged_user)
+				// otherwise if deleted it won't notify other subscribers and if not deleted it will keep notifying
+				// logged user
+				$subscribers = $object->getSubscribers();
+				foreach ($subscribers as $subscriber) {
+					if ($subscriber->getId() != logged_user()->getId()) {
+						$new = new ObjectReminder();
+						$new->setContext($reminder->getContext());
+						$new->setDate($reminder->getDate());
+						$new->setMinutesBefore($reminder->getMinutesBefore());
+						$new->setObject($object);
+						$new->setUser($subscriber);
+						$new->setType($reminder->getType());
+						$new->save();
+					}
+				}
 			}
+			$reminder->delete();
 		}
 	}
 	

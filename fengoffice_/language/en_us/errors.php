@@ -147,6 +147,7 @@
   	'not implemented' => 'Not implemented',
   	'return code' => 'Return code: {0}',
   	'task filter criteria not recognised' => 'Task filter criteria \'{0}\' not recognised',
+  	'mail account dnx' => 'Mail account doesn\'t exist',
    ); // array
 
 ?>

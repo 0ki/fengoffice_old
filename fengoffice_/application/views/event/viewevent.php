@@ -131,7 +131,7 @@ if (isset($event) && $event instanceof ProjectEvent) {
 			$cant = 0;
 			foreach ($otherInvitations as $inv) {
 				$inv_user = Users::findById($inv->getUserId());
-				if ($inv_user->hasProjectPermission($event->getProject(), ProjectUsers::CAN_READ_EVENTS)) {
+				if ($inv_user instanceof User && $inv_user->hasProjectPermission($event->getProject(), ProjectUsers::CAN_READ_EVENTS)) {
 					$state_desc = lang('pending response');
 					if ($inv->getInvitationState() == 1) $state_desc = lang('yes');
 					else if ($inv->getInvitationState() == 2) $state_desc = lang('no');

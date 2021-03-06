@@ -1,7 +1,8 @@
-<?php 
+<?php
+  $genid = gen_id(); 
   set_page_title($mailAccount->isNew() ? lang('add mail account') : lang('edit mail account'));
   if (!$mailAccount->isNew() && $mailAccount->canDelete(logged_user()))
-  	add_page_action(lang('delete mail account'),  "javascript:og.promptDeleteAccount();", 'ico-delete');
+  	add_page_action(lang('delete mail account'),  "javascript:og.promptDeleteAccount(".$mailAccount->getId().");", 'ico-delete');
 ?>
 
 <form style="height:100%;background-color:white" class="internalForm" action="<?php echo $mailAccount->isNew() ? get_url('mail', 'add_account') : $mailAccount->getEditUrl()?>" method="post">
@@ -37,24 +38,24 @@
   </div>
 
   <div>
-    <label for="mailAccountFormEmail"><?php echo lang('mail account id')?> <span class="label_required">*</span>
+    <label for="<?php echo $genid ?>email"><?php echo lang('mail account id')?> <span class="label_required">*</span>
     <span class="desc"><?php echo lang('mail account id description') ?></span></label>
     <?php echo text_field('mailAccount[email]', array_var($mailAccount_data, 'email'), 
-    array('id' => 'mailAccountFormEmail', 'tabindex'=>'30')) ?>
+    array('id' => $genid.'email', 'tabindex'=>'30')) ?>
   </div>
 
   <div>
-    <label for="mailAccountFormPassword"><?php echo lang('password')?> <span class="label_required">*</span>
+    <label for="<?php echo $genid?>password"><?php echo lang('password')?> <span class="label_required">*</span>
     <span class="desc"><?php echo lang('mail account password description') ?></span></label>
     <?php echo password_field('mailAccount[password]', array_var($mailAccount_data, 'password'), 
-    array('id' => 'mailAccountFormPassword', 'tabindex'=>'40')) ?>
+    array('id' => $genid.'password', 'tabindex'=>'40')) ?>
   </div>
 
   <div>
-    <label for="mailAccountFormServer"><?php echo lang('server address')?> <span class="label_required">*</span>
+    <label for="<?php echo $genid ?>server"><?php echo lang('server address')?> <span class="label_required">*</span>
     <span class="desc"><?php echo lang('mail account server description') ?></span></label>
     <?php echo text_field('mailAccount[server]', array_var($mailAccount_data, 'server'), 
-    array('id' => 'mailAccountFormServer', 'tabindex'=>'50')) ?>
+    array('id' => $genid.'server', 'tabindex'=>'50')) ?>
   </div>
 
   <div>
@@ -131,32 +132,39 @@
 
 <fieldset style="display:block">
 	<legend><?php echo lang('email connection method')?></legend>
-  <div>
-    <?php echo yes_no_widget('mailAccount[is_imap]', 'mailAccountFormIsImap', array_var($mailAccount_data, 'is_imap', false), lang('imap'), lang('pop3'), 140) ?>
+  <div><?php
+    $options = array();
+    $attributes = array();
+    if (array_var($mailAccount_data, 'is_imap', false)) {
+    	$attributes['selected'] = "selected";
+    }
+  	$options[] = option_tag(lang('imap'), '1', $attributes);
+  	$attributes = array();
+    if (!array_var($mailAccount_data, 'is_imap', false)) {
+    	$attributes['selected'] = "selected";
+    }
+  	$options[] = option_tag(lang('pop3'), '0', $attributes);
+  	$onchange = "if (this.value == 1) document.getElementById('$genid' + 'folders').style.display = 'block'; else document.getElementById('$genid' + 'folders').style.display = 'none'"; 
+    echo select_box('mailAccount[is_imap]', $options, array("onchange" => $onchange, 'tabindex' => '145'));
+    ?>
   </div>
-  <div>
-    <?php echo checkbox_field('mailAccount[incoming_ssl]', array_var($mailAccount_data, 'incoming_ssl'), array('id' => 'mailAccountFormIncomingSsl', 'tabindex'=>'150')) ?>
-    <label for="mailAccountFormIncomingSsl" class="yes_no"><?php echo lang('incoming ssl') ?></label>
+  <div id="<?php echo $genid ?>folders" style="padding:5px;<?php if (!array_var($mailAccount_data, 'is_imap', false)) echo 'display:none'; ?>">
+	  <div>
+	    <?php echo checkbox_field('mailAccount[incoming_ssl]', array_var($mailAccount_data, 'incoming_ssl'), array('id' => $genid.'ssl', 'tabindex'=>'150')) ?>
+	    <label for="<?php echo $genid ?>ssl" class="yes_no"><?php echo lang('incoming ssl') ?></label>
+	  </div>
+	  <div>
+	    <?php echo label_tag(lang('incoming ssl port'), 'mailAccountFormIncomingSslPort') ?>
+	    <?php echo text_field('mailAccount[incoming_ssl_port]', array_var($mailAccount_data, 'incoming_ssl_port', 993), array('id' => $genid.'sslport', 'tabindex'=>'160')) ?>
+	  </div>
+	  <div id="<?php echo $genid ?>imap_folders">
+	    <?php
+	    tpl_assign('imap_folders', $imap_folders);
+	    tpl_assign('genid', $genid);
+	    tpl_display(get_template_path("fetch_imap_folders", "mail"))
+	    ?>
+	  </div>
   </div>
-  <div>
-    <?php echo label_tag(lang('incoming ssl port'), 'mailAccountFormIncomingSslPort') ?>
-    <?php echo text_field('mailAccount[incoming_ssl_port]', array_var($mailAccount_data, 'incoming_ssl_port'), array('id' => 'mailAccountFormIncomingSslPort', 'tabindex'=>'160')) ?>
-  </div>
-  <?php if (!$mailAccount->isNew() && isset($imap_folders) && is_array($imap_folders)) {  ?>
-  	<div id="imap_folders_div">
-  	<table style="min-width:400px;margin-top:10px;">
-  	<tr><th colspan="2" style="text-align:center"><?php echo lang('folders to check') ?></th></tr>
-  	<?php $isAlt = false; $i=0;
-  		foreach($imap_folders as $folder) { ?>
-  		<tr<?php echo ($isAlt ? ' class="altRow"': '') ?>>
-  		<td style="padding-left:10px;"><?php echo $folder->getFolderName() ?></td>
-  		<td style="padding-left:30px;"><?php echo checkbox_field('check['.str_replace(array('[',']'), array('¡','!'), $folder->getFolderName()).']', $folder->getCheckFolder(), array('tabindex'=>170 + $i++)) ?></td>
-  		</tr>
-  	<?php 	$isAlt = !$isAlt;
-  		  } ?>
-  	</table>
-  	</div>
-  <?php } ?>
 </fieldset>
   <?php echo submit_button($mailAccount->isNew() ? lang('add mail account') : lang('save changes'), 's', array('tabindex'=>'300')) ?>
 
@@ -171,13 +179,33 @@
 	
 	og.deleteAllMails = function(acc_id) {
 		checked = og.ConfirmDialog.getConfirmCheckValue();
-		og.openLink(og.getUrl('mail', 'delete_account', {id:account_id, deleteMails:checked ? 1 : 0}));
 		og.ConfirmDialog.hide();
 	}
 	
-	og.promptDeleteAccount = function() {
-		account_id = <?php echo $mailAccount->isNew() ? 0 : $mailAccount->getId() ?>;
-		og.ConfirmDialog.show(null, {ok_fn:og.deleteAllMails, check_title:lang('delete account emails'), title:lang('confirm delete mail account')}, '');
+	og.promptDeleteAccount = function(account_id) {
+		var check_id = Ext.id();
+		var config = {
+			genid: Ext.id(),
+			title: lang('confirm delete mail account'),
+			height: 150,
+			width: 250,
+			labelWidth: 150,
+			ok_fn: function() {
+				var checked = Ext.getCmp(check_id).getValue();
+				og.openLink(og.getUrl('mail', 'delete_account', {
+					id: account_id,
+					deleteMails: checked ? 1 : 0
+				}));
+				og.ExtendedDialog.hide();
+			},
+			dialogItems: {
+				xtype: 'checkbox',
+				fieldLabel: lang('delete account emails'),
+				id: check_id,
+				value: false
+			}
+		};
+		og.ExtendedDialog.show(config);
 	}
 </script>
 

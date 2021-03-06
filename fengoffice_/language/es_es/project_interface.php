@@ -269,6 +269,7 @@ return array(
 	'copy of file' => 'Copia de {0}',
     'add subscribers desc' => 'Las personas seleccionadas serán suscriptas a este objeto. Usuarios suscritos recibirán correos electrónicos acerca de modificaciones a este objeto.',
     'add custom property' => 'Agregar propiedad personalizada',
+	'fetch imap folders' => 'Obtener carpetas IMAP',
 
 ); // array
 

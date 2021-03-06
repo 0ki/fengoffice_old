@@ -84,9 +84,6 @@ INSERT INTO `<?php echo $table_prefix ?>user_ws_config_options` (`category_name`
  ('calendar panel', 'calendar status filter', '', 'StringConfigHandler', 1, 0, '')
 ON DUPLICATE KEY UPDATE id=id;
 
-DROP TABLE `<?php echo $table_prefix ?>eventtypes`;
-ALTER TABLE `<?php echo $table_prefix ?>project_events` DROP COLUMN `eventtype`;
-
 ALTER TABLE `<?php echo $table_prefix ?>mail_accounts` ADD COLUMN `outgoing_transport_type` VARCHAR(5) NOT NULL default '';
 
 CREATE TABLE  `<?php echo $table_prefix ?>billing_categories` (
@@ -157,3 +154,6 @@ UPDATE `<?php echo $table_prefix ?>user_ws_config_options` SET
 
 UPDATE `<?php echo $table_prefix ?>user_ws_config_options` SET `default_value` = 'es_la' WHERE `name` = 'localization' AND `default_value` = 'es_uy';
 UPDATE `<?php echo $table_prefix ?>user_ws_config_option_values` `v`, `<?php echo $table_prefix ?>user_ws_config_options` `o` SET `v`.`value` = 'es_la' WHERE `o`.`name` = 'localization' AND `o`.`id` = `v`.`option_id` AND `v`.`value` = 'es_uy';
+
+DROP TABLE IF EXISTS `<?php echo $table_prefix ?>eventtypes`;
+ALTER TABLE `<?php echo $table_prefix ?>project_events` DROP COLUMN `eventtype`;

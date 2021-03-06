@@ -131,7 +131,7 @@ class Notifier {
 			return; // nothing here...
 		} // if
 		$closedBy = $object->getCompletedBy();
-		if ($closedBy instanceof User) return;
+		if (!$closedBy instanceof User) return;
 		tpl_assign('object', $object);
 		tpl_assign('closedBy', $closedBy);
 

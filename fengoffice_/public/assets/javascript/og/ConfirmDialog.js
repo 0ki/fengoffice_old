@@ -42,7 +42,7 @@ og.ExtendedDialog = function(config) {
 }
 
 Ext.extend(og.ExtendedDialog, Ext.Window, {
-	accept: function() { this.dialog.hide(); },
+	accept: function() { this.hide(); },
 	cancel: function() { this.hide(); }
 });
 
@@ -55,8 +55,9 @@ og.ExtendedDialog.show = function(config) {
 		this.dialog.destroy();
 	this.dialog = new og.ExtendedDialog(config);
 	
-	if (config.ok_fn)
+	if (config.ok_fn) {
 		Ext.getCmp(config.genid + 'ok_button').setHandler(config.ok_fn);
+	}
 	
 	this.dialog.purgeListeners();
 	this.dialog.show();

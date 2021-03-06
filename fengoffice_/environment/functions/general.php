@@ -518,17 +518,17 @@ function unescapeSLIM($encodedSLIM) {
 }
 
 function remove_css_and_scripts($html) {
-	$html = preg_replace('/<style[^<]*>.*<\/style>/i', '', $html);
-	$html = preg_replace('/<script[^<]*>.*(<\/script>|$)/i', '', $html);
+	$html = preg_replace('/<style[^>]*>.*<\/style>/i', '', $html);
+	$html = preg_replace('/<script[^>]*>.*(<\/script>|$)/i', '', $html);
 	return $html;
 }
 
 function remove_css($html) {
-	return preg_replace('/<style[^<]*>.*<\/style>/i', '', $html);
+	return preg_replace('/<style[^>]*>.*<\/style>/i', '', $html);
 }
 
 function remove_scripts($html) {
-	return preg_replace('/<script[^<]*>.*(<\/script>|$)/i', '', $html);
+	return preg_replace('/<script[^>]*>.*(<\/script>|$)/i', '', $html);
 }
 
 function make_ajax_url($url) {

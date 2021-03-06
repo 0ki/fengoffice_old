@@ -86,6 +86,7 @@
   	'user ws config option name show calendar widget' => 'Mostrar widget de calendario',
   	'user ws config option name show charts widget' => 'Mostrar widget de graficas',
   	'user ws config option name show emails widget' => 'Mostrar widget de emails',
+  	'user ws config option name show dashboard info widget' => 'Mostrar widget de información de espacios de trabajo',
   	
  	'user ws config option name my tasks is default view' => 'La vista por defecto muestra sólo las tareas asignadas a mi',
   	'user ws config option desc my tasks is default view' => 'Si se selecciona no, se mostrarán todas las tareas del espacio y sus subespacios',
