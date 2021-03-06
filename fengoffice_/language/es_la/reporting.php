@@ -22,7 +22,7 @@
 	'descending' => 'Descendente',
 	'parametrizable' => 'Parametrizable?',
 	'columns to print' => 'Columnas a imprimir',
-	'columns to print desc' => 'Mueve las columnas que deseas imprimir hacia el cuadro de la derecha.',
+	'columns to print desc' => 'Mueve las columnas que deseas imprimir hacia el cuadro de la derecha presionando los íconos de flecha.',
 	'reporting workspace' => 'Espacio',
 	'reporting user' => 'Usuario',
 ); ?>

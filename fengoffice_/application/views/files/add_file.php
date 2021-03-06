@@ -155,7 +155,12 @@ $comments_required = config_option('file_revision_comments_required');
 				</div>
 			</div>
 		</div>
-		<?php echo input_field('file[revision_comment]', array_var($file_data, 'revision_comment', lang('initial versions')), array('type' => 'hidden', 'id' => $genid.'fileFormRevisionComment')) ?>
+		<?php if ($comments_required) { ?>
+			<?php echo label_tag(lang('revision comment'), $genid.'fileFormRevisionComment', $comments_required) ?>
+			<?php echo textarea_field('file[revision_comment]', array_var($file_data, 'revision_comment', lang('initial versions')), array('id' => $genid.'fileFormRevisionComment', 'class' => 'long')) ?>
+		<?php } else { ?>
+			<?php echo input_field('file[revision_comment]', array_var($file_data, 'revision_comment', lang('initial versions')), array('type' => 'hidden', 'id' => $genid.'fileFormRevisionComment')) ?>
+		<?php } ?>
 		<input type='hidden' id ="<?php echo $genid ?>RevisionCommentsRequired" value="<?php echo $comments_required? '1':'0'?>"/>
 
 	<?php }  else {//----------------------------------------------------------------EDIT?>
@@ -194,8 +199,8 @@ $comments_required = config_option('file_revision_comments_required');
 				</div>
 				<div id="<?php echo $genid ?>revisionControls">
 					<div>
-						<?php echo checkbox_field('file[version_file_change]', array_var($file_data, 'version_file_change', true), array('id' => $genid.'fileFormVersionChange', 'class' => 'checkbox', 'tabindex' => '70', 'onclick' => 'App.modules.addFileForm.versionFileChangeClick(\'' . $genid .'\')')) ?>
-						<?php echo label_tag(lang('version file change'), 'fileFormVersionChange', false, array('class' => 'checkbox'), '') ?>
+						<?php echo checkbox_field('file[version_file_change]', array_var($file_data, 'version_file_change', true), array('id' => $genid.'fileFormVersionChange', 'class' => 'checkbox', 'tabindex' => '70'/*, 'onclick' => 'App.modules.addFileForm.versionFileChangeClick(\'' . $genid .'\')'*/)) ?>
+						<?php echo label_tag(lang('version file change'), $genid.'fileFormVersionChange', false, array('class' => 'checkbox'), '') ?>
 					</div>
 					<div id="<?php echo $genid ?>fileFormRevisionCommentBlock">
 						<?php echo label_tag(lang('revision comment'), $genid.'fileFormRevisionComment', $comments_required) ?>
@@ -206,7 +211,7 @@ $comments_required = config_option('file_revision_comments_required');
 			</div>
 			<?php }else{ ?>
 		    	<div id="<?php echo $genid ?>fileFormRevisionCommentBlock">
-		   			<?php // echo textarea_field('file[revision_comment]', '', array('id' => $genid.'fileFormRevisionComment')) ?>
+		   			<?php //echo textarea_field('file[revision_comment]', '', array('id' => $genid.'fileFormRevisionComment')) ?>
 		   			<input type='hidden' id ="<?php echo $genid ?>RevisionCommentsRequired" value="0"/>
 		        </div>
 		   	<?php } ?>

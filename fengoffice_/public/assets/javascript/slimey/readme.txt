@@ -17,7 +17,7 @@ What is Slimey?
 
 	* Slimey aims to be compatible with most of the modern web browsers.
 
-	* Slimey was born as part of the OpenGoo web office project, but was made a
+	* Slimey was born as part of the Feng Office web office project, but was made a
 	seperate project to let it evolve it's own way and better benefit the open source
 	community.
 	

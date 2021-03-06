@@ -84,7 +84,7 @@ class ProjectEvent extends BaseProjectEvent {
 		
 		//return get_url('event','submitevent',array('id'=> $this->getId() ));
 		//antes: return get_url('event','modify',array('id'=> $this->getId() ));
-		//ejemplo:http://localhost/opengoo/index.php?ajax=true&a=modify&id=8&day=02&month=4&year=2008&c=event&_dc=1208295398801
+		//ejemplo:http://localhost/fengoffice/index.php?ajax=true&a=modify&id=8&day=02&month=4&year=2008&c=event&_dc=1208295398801
 	} // getModifyUrl
 
 	/**
@@ -250,7 +250,7 @@ class ProjectEvent extends BaseProjectEvent {
 	
 	function delete() {
 		// delete invitations
-		EventInvitations::delete(array ('`event_id` = ?', $this->getId()));
+		$this->clearInvitations();
 		parent::delete();
 	}
 	
@@ -307,30 +307,15 @@ class ProjectEvent extends BaseProjectEvent {
 		return $this->event_invitations;
 	}
 	
+	function clearInvitations() {
+		$this->event_invitations = array();
+		EventInvitations::delete(array ('`event_id` = ?', $this->getId()));
+	}
+	
 	function addInvitation($inv) {
 		if (isset($inv)) {
 			$this->event_invitations[$inv->getUserId()] = $inv;
 		}
-	}
-
-	function getProject() {
-		$trace = debug_backtrace();
-	    Logger::log("trace count: ".count($trace));   
-	    foreach($trace as $tn=>$tr) {
-	        if (is_array($tr)) {
-	            Logger::log($tn . ": " . $tr['file'] . " " . $tr['line']);
-	        }
-	    }
-	}
-	
-	function getProjectId() {
-		$trace = debug_backtrace();
-	    Logger::log("trace count: ".count($trace));   
-	    foreach($trace as $tn=>$tr) {
-	        if (is_array($tr)) {
-	            Logger::log($tn . ": " . $tr['file'] . " " . $tr['line']);
-	        }
-	    }
 	}
 
 } // projectEvent

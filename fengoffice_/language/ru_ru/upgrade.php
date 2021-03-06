@@ -1,6 +1,6 @@
 <?php
 /* 
-Translated into Russian for OpenGoo
+Translated into Russian for Feng Office
 Last update:  see readme_rus.txt
 
 http://code.google.com/p/opengooru/
@@ -12,11 +12,11 @@ http://code.google.com/p/opengooru/
 		'upgrade from' => 'Обновление',
 		'upgrade to' => 'Обновить',
 		'already upgraded' => 'У вас установлена последняя версия.',
-		'back to opengoo' => 'Перейти к',
+		'back to fengoffice' => 'Перейти к',
 		'all rights reserved' => 'Все права защищены',
 		'upgrade process log' => 'История процесса обновления',
-		'upgrade opengoo' => 'Обновление ',
-		'upgrade your opengoo installation' => 'Обновите вашу систему',
+		'upgrade fengoffice' => 'Обновление ',
+		'upgrade your fengoffice installation' => 'Обновите вашу систему',
 
 		'error upgrade version must be specified' => 'Не указана версия. Обновление не может быть продолжено автоматически. Пожалуйста, повторите попытку позже или попробуйте обновить вручную.',
 		'error upgrade version not found' => 'Указана неправильеная версия ({0}). Обновление не может быть продолжено автоматически. Пожалуйста, повторите попытку позже или попробуйте обновить вручную.',

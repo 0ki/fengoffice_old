@@ -59,7 +59,7 @@ else
 	$hasComments = isset($comments) && is_array($comments) && count($comments) > 0;
 	
 	$showWorkspaceInfo = active_project() instanceof Project && user_config_option('show dashboard info widget');
-	$showWorkspaceDescription = active_project() instanceof Project && active_project()->getDescription() && active_project()->getDescription() != '';
+	$showWorkspaceDescription = active_project() instanceof Project && active_project()->getShowDescriptionInOverview() && active_project()->getDescription() != '';
 ?>
 </span><span class="description">
 </span>

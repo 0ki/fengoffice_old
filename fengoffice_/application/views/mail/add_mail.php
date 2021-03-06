@@ -76,7 +76,7 @@ sig.actualHtmlSignature = '';
     		$sig = "";
     	}
     	$sig = nl2br($sig);
-    	$htmlsig = str_replace(array("\r", "\n"), "", "<div class=\"opengoo_signature\">$sig</div>");
+    	$htmlsig = str_replace(array("\r", "\n"), "", "<div class=\"fengoffice_signature\">$sig</div>");
     	$textsig = html_to_text($sig);
     	if ($acc_id) {
 	    	if ($m_acc->getId() == $acc_id) {

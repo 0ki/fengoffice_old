@@ -15,11 +15,11 @@ if (!class_exists('Env', false)) {
 }
 
 /**
- * Figazza upgrade script will upgrade OpenGoo 1.4.2 to OpenGoo 1.5.3
+ * Figazza upgrade script will upgrade Feng Office 1.4.2 to Feng Office 1.5.3
  *
  * @package ScriptUpgrader.scripts
  * @version 1.1
- * @author Ignacio de Soto <ignacio.desoto@opengoo.org>
+ * @author Ignacio de Soto <ignacio.desoto@fengoffice.com>
  */
 class FigazzaUpgradeScript extends ScriptUpgraderScript {
 
@@ -267,7 +267,7 @@ class FigazzaUpgradeScript extends ScriptUpgraderScript {
 			$this->printMessage("$count public files migrated to upload directory.");
 		}
 		
-		$this->printMessage('OpenGoo has been upgraded. You are now running OpenGoo '.$this->getVersionTo().' Enjoy!');
+		$this->printMessage('Feng Office has been upgraded. You are now running Feng Office '.$this->getVersionTo().' Enjoy!');
 	} // execute
 } // FigazzaUpgradeScript
 

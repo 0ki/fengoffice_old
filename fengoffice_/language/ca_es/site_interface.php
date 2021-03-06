@@ -1,5 +1,5 @@
 <?php return array(
-	'new OpenGoo version available' => 'Hi ha disponible una nova versió d\'OpenGoo. <a class="internalLink" href="{0}" onclick="{1}">Més detalls</a>.',
+	'new Feng Office version available' => 'Hi ha disponible una nova versió d\'Feng Office. <a class="internalLink" href="{0}" onclick="{1}">Més detalls</a>.',
 	'my tasks' => 'Les meves tasques',
 	'welcome back' => 'Benvingut <strong>{0}</strong>',
 	'online users' => 'Usuaris en línia',
@@ -38,7 +38,7 @@
 	'days left' => 'queden {0} dies',
 	'user card of' => 'Targeta de contacte de {0}',
 	'company card of' => 'Targeta d\'empresa de {0}',
-	'upgrade is not available' => 'No hi ha noves versions d\'OpenGoo disponibles per descarregar',
+	'upgrade is not available' => 'No hi ha noves versions d\'Feng Office disponibles per descarregar',
 	'check for upgrade now' => 'Verifica ara',
 	'forgot password' => 'Heu oblidat la vostra contrasenya',
 	'email me my password' => 'Contrasenya enviada',
@@ -69,7 +69,7 @@
     											Feu clic a {0} que trobareu al tauler de l\'esquerra per crear un nou espai de treball.<br/>
     											El sistema crea automàticament un espai de treball personal per cada usuari ({1}). Per defecte, tota la informació d\'aquest espai de treball és només visible pel seu propi propietari.',
 	'new account step configuration' => 'Passa {0}: Configuració',
-	'new account step configuration info' => '<a class="internalLink" href="{0}">Gestioneu</a> la configuració general d\'OpenGoo, la configuració del correu electrònic, activeu/desactiveu mòduls, i d\'altres opcions',
+	'new account step configuration info' => '<a class="internalLink" href="{0}">Gestioneu</a> la configuració general d\'Feng Office, la configuració del correu electrònic, activeu/desactiveu mòduls, i d\'altres opcions',
 	'new account step profile' => 'Passa {0}: Actualitzeu el perfil',
 	'new account step profile info' => 'Actualitzeu el vostre <a class="internalLink" href="{0}">perfil d\'usuari</a>',
 	'new account step preferences' => 'Passa {0}: Actualitzeu les preferències de l\'usuari',
@@ -505,6 +505,6 @@
 	'hide options' => 'Amaga opcions',
 	'personal workspace name' => '{0} Personal',
 	'personal workspace description' => 'Espai de treball personal',
-	'wiki help link' => 'http://wiki.opengoo.org',
+	'wiki help link' => 'http://fengoffice.com/web/wiki',
 	'last language' => 'Anterior',
 ); ?>

@@ -4,7 +4,7 @@
  * Controller that is responsible for handling project files related requests
  *
  * @version 1.0
- * @author Ilija Studen <ilija.studen@gmail.com>,  Marcos Saiz <marcos.saiz@opengoo.org>
+ * @author Ilija Studen <ilija.studen@gmail.com>,  Marcos Saiz <marcos.saiz@fengoffice.com>
  */
 class FilesController extends ApplicationController {
 
@@ -350,7 +350,8 @@ class FilesController extends ApplicationController {
 					// handle uploaded file
 					$upload_id = array_var($file_data, 'upload_id');
 					$uploaded_file = array_var($_SESSION, $upload_id, array());
-					$revision = $file->handleUploadedFile($uploaded_file, true); // handle uploaded file
+					$revision_comment = array_var($file_data, 'revision_comment');
+					$revision = $file->handleUploadedFile($uploaded_file, true, $revision_comment); // handle uploaded file
 					@unlink($uploaded_file['tmp_name']);
 					unset($_SESSION[$upload_id]);
 				}
@@ -1506,7 +1507,7 @@ class FilesController extends ApplicationController {
 				DB::beginWork();
 				$handle_file      = array_var($file_data, 'update_file') == 'checked'; // change file?
 				$post_revision    = $handle_file && array_var($file_data, 'version_file_change') == 'checked'; // post revision?
-				$revision_comment = $post_revision ? trim(array_var($file_data, 'revision_comment')) : ''; // user comment?
+				$revision_comment = trim(array_var($file_data, 'revision_comment')); // user comment?
 
 				$file->setFromAttributes($file_data);
 				$file->setFilename(array_var($file_data, 'name'));
@@ -1970,6 +1971,10 @@ class FilesController extends ApplicationController {
 	function zip_extract() {
 		$fileId = array_var($_GET, 'id');
 		ajx_current("empty");
+		if (!zip_supported()) {
+			flash_error(lang('zip not supported'));
+			return;
+		}
 
 		$file = ProjectFiles::findById($fileId);
 		if (!$file->canEdit(logged_user())) {
@@ -2061,6 +2066,10 @@ class FilesController extends ApplicationController {
 
 	function zip_add() {
 		ajx_current("empty");
+		if (!zip_supported()) {
+			flash_error(lang('zip not supported'));
+			return;
+		}
 
 		$files = ProjectFiles::findByCSVIds(array_var($_GET, 'objects'), '`type` = 0');
 		if (count($files) == 0) {

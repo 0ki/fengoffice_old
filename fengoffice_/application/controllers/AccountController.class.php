@@ -4,7 +4,7 @@
  * User account controller with all the parts related to it (profile update, private messages etc)
  *
  * @version 1.0
- * @author Ilija Studen <ilija.studen@gmail.com>, Marcos Saiz <marcos.saiz@opengoo.org>
+ * @author Ilija Studen <ilija.studen@gmail.com>, Marcos Saiz <marcos.saiz@fengoffice.com>
  */
 class AccountController extends ApplicationController {
 
@@ -121,6 +121,15 @@ class AccountController extends ApplicationController {
 					}
 					$user->setDefaultBillingId(array_var($user_data,'default_billing_id'));
 					$user->setUsername(array_var($user_data,'username'));
+					$project = Projects::findById(array_var($user_data, 'personal_project_id'));
+					if ($project instanceof Project && $user->getPersonalProjectId() != $project->getId()) {
+						$user->setPersonalProjectId($project->getId());
+						$project_user = new ProjectUser();
+						$project_user->setAllPermissions(true);
+						$project_user->setUserId($user->getId());
+						$project_user->setProjectId($project->getId());
+						$project_user->save();
+					}
 				}
 
 				$user->save();

@@ -235,7 +235,7 @@ class MailAccount extends BaseMailAccount {
       		SearchableObjects::delete(array("`rel_object_manager` = 'MailContents' AND `rel_object_id` IN (SELECT `id` FROM `".TABLE_PREFIX."mail_contents` WHERE `account_id` = " . DB::escape($this->getId()).") "));
 			ReadObjects::delete("`rel_object_manager` = 'MailContents' AND `rel_object_id` IN (SELECT `id` FROM `".TABLE_PREFIX."mail_contents` WHERE `account_id` = " . DB::escape($this->getId()).") ");
 			
-			$account_emails = MailContents::findAll(array('conditions' => '`account_id` = ' . DB::escape($this->getId())));
+			$account_emails = MailContents::findAll(array('conditions' => '`account_id` = ' . DB::escape($this->getId()), 'include_trashed' => true));
 			foreach ($account_emails as $email) {
 				$email->delete();
 			}

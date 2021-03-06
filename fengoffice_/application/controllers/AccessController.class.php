@@ -125,9 +125,9 @@ class AccessController extends ApplicationController {
 				if(!$newest_password instanceof UserPassword){
 					$user_password = new UserPassword();
 					$user_password->setUserId($user->getId());
-					$user_password->setPassword(sha1($password));
-					$user_password->password_temp = $password;
 					$user_password->setPasswordDate(DateTimeValueLib::now());
+					$user_password->setPassword(cp_encrypt($password, $user_password->getPasswordDate()->getTimestamp()));
+					$user_password->password_temp = $password;
 					$user_password->save();
 				}else{
 					if(UserPasswords::isUserPasswordExpired($user->getId())){
@@ -532,7 +532,7 @@ class AccessController extends ApplicationController {
 		$content = "/* start */\n";
 		$fileDir = "./language/" . Localization::instance()->getLocale();
 		
-		//Get OpenGoo translation files
+		//Get Feng Office translation files
 		$filenames = get_files($fileDir, "js");
 		sort($filenames);
 		foreach ($filenames as $f) {

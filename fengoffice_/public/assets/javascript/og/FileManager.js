@@ -193,7 +193,7 @@ og.FileManager = function() {
 					r.id, lang('view slideshow'));
 		}
 		
-		if (og.FileIsZip(r.data.mimeType, r.data.name)) {
+		if (og.FileIsZip(r.data.mimeType, r.data.name) && og.zipSupported) {
 			actions += String.format(
 			'<a class="list-action ico-zip-extract" href="#" onclick="og.openLink(og.getUrl(\'files\', \'zip_extract\', {id:{0}}))" title="{1}" ' + actionStyle + '>&nbsp;</a>',
 			r.data.object_id,lang('extract files'));
@@ -468,6 +468,7 @@ og.FileManager = function() {
             tooltip: lang('compress selected files'),
             iconCls: 'ico-zip-add',
 			disabled: true,
+			hidden: !og.zipSupported,
 			handler: function() {
 				Ext.Msg.prompt(lang('new compressed file'),
 					lang('name'),

@@ -37,7 +37,7 @@ function __autoload($load_class_name) {
 } // __autoload
 
 /**
- * OpenGoo shutdown function
+ * Feng Office shutdown function
  *
  * @param void
  * @return null
@@ -228,7 +228,7 @@ function installed_version() {
  */
 function product_signature() {
 	if(function_exists('logged_user') && (logged_user() instanceof User) && logged_user()->isMemberOfOwnerCompany()) {
-		$result = lang('footer powered', 'http://www.OpenGoo.org/', clean(product_name()) . ' ' . product_version());
+		$result = lang('footer powered', 'http://www.fengoffice.com/', clean(product_name()) . ' ' . product_version());
 		if(Env::isDebugging()) {
 			ob_start();
 			benchmark_timer_display(false);
@@ -239,7 +239,7 @@ function product_signature() {
 		} // if
 		return $result;
 	} else {
-		return  lang('footer powered', 'http://www.OpenGoo.org/', clean(product_name()));
+		return  lang('footer powered', 'http://www.fengoffice.com/', clean(product_name()));
 	} // if
 } // product_signature
 
@@ -385,7 +385,7 @@ function personal_project() {
  * @return string
  */
 function upload_hook() {
-	if (!defined('UPLOAD_HOOK')) define('UPLOAD_HOOK', 'opengoo');
+	if (!defined('UPLOAD_HOOK')) define('UPLOAD_HOOK', 'fengoffice');
 	return UPLOAD_HOOK;
 }
 
@@ -692,10 +692,6 @@ function create_user($user_data, $is_admin, $permissionsString) {
 	$user_password->setPasswordDate(DateTimeValueLib::now());
 	$user_password->setPassword(cp_encrypt($password, $user_password->getPasswordDate()->getTimestamp()));
 	$user_password->password_temp = $password;
-	$user_password->save();
-	
-	$user->save();
-	$user_password->setUserId($user->getId());
 	$user_password->save();
 	
 	if (array_var($user_data, 'autodetect_time_zone', 1) == 1) {

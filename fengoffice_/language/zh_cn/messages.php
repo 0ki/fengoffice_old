@@ -342,8 +342,8 @@
 	'confirm delete group' => '你是否确认想要删除此组?',
     
     // Errors...
-    'system error message' => '非常抱歉，但是一个严重失败阻碍了Opengoo执行你的请求。一个错误报告已被发送给系统管理员。',
-    'execute action error message' => '非常抱歉，但是Opengoo当前不能执行你的请求。一个错误报告已被发送给系统管理员。',
+    'system error message' => '非常抱歉，但是一个严重失败阻碍了Feng Office执行你的请求。一个错误报告已被发送给系统管理员。',
+    'execute action error message' => '非常抱歉，但是Feng Office当前不能执行你的请求。一个错误报告已被发送给系统管理员。',
     
     // Log
     'log add projectmessages' => '\'{0}\' 已添加',

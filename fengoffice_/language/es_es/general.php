@@ -165,7 +165,7 @@
   	'confirm create contact from user' => 'Está seguro de que desea crear un contacto con los datos de este usuario?',
   	'create contact from user desc' => 'Al seleccionar sí, se creará un contacto del sistema asociado a este usuario',
   	'use previous personal workspace' =>'Usar un Espacio de trabajo ya existente como espacio de trabajo personal para este usuario',
-  	'use previous personal workspace desc' =>'Al seleccionar Si deberá determinar que espacio de trabajo utilizar como espacio de trabajo personal para este usuario',
+  	'use previous personal workspace desc' =>'El espacio personal es donde se colocarán los nuevos objetos del usuario por defecto (cuando "Todos" está seleccionado en el panel de Espacios). Al seleccionar Si deberá determinar que espacio de trabajo utilizar como espacio de trabajo personal para este usuario',
   	'select personal workspace' => 'Seleccione un Espacio de Trabajo',
  	 'create personal workspace' => 'Crear un nuevo Espacio de Trabajo',
     'use an existing workspace' => 'Usar un espacio de trabajo existente',

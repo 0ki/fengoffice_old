@@ -48,7 +48,7 @@ if (isset($file) && $file instanceof ProjectFile) {
 			add_page_action(lang('play'), "javascript:og.playXSPF(" . $file->getId() . ")", 'ico-play');
 		}
 		
-		if (file_is_zip($file->getTypeString(), get_file_extension($file->getFilename()))) {
+		if (file_is_zip($file->getTypeString(), get_file_extension($file->getFilename())) && zip_supported()) {
 			add_page_action(lang('extract'), get_url('files', 'zip_extract', array('id' => $file->getId())), 'ico-zip-extract');
 			if ($file->canEdit(logged_user())) {
 				add_page_action(lang('add files to zip'), "javascript:og.pickObjectToZip({$file->getId()})", 'ico-zip-add');

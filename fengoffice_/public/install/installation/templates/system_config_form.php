@@ -52,7 +52,7 @@
   <tr>
     <td colspan="2">
     <b>Note:</b> InnoDB engine is highly recommended. Use MyISAM only as a last resort, and at your own risk, if your database doesn't support InnoDB.<br /><br />
-    <b>Note:</b> If the database doesn't exist OpenGoo will try to create it. However, if the database user you supply doesn't have permissions to create databases, you will have to manually create the database before you can continue.
+    <b>Note:</b> If the database doesn't exist Feng Office will try to create it. However, if the database user you supply doesn't have permissions to create databases, you will have to manually create the database before you can continue.
     </td>
   </tr>
 </table>

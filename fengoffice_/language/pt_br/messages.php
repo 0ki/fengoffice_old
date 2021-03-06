@@ -273,7 +273,7 @@
 	'confirm delete contacts' => 'Tem certeza que deseja eliminar estes contatos?',
 	'confirm delete group' => 'Tem certeza que deseja eliminar este grupo?',
 	'system error message' => 'Desculpe-nos, mas um erro fatal ocorreu na execução de sua requisição. Foi enviada uma mensagem relatando o ocorrido ao administrador.',
-	'execute action error message' => 'Desculpe-nos, mas o OpenGoo não está apto a executar sua requisição. Foi enviada uma mensagem relatando o ocorrido ao administrador.',
+	'execute action error message' => 'Desculpe-nos, mas o Feng Office não está apto a executar sua requisição. Foi enviada uma mensagem relatando o ocorrido ao administrador.',
 	'log add projectmessages' => '\'{0}\' adicionada',
 	'log edit projectmessages' => '\'{0}\' atualizada',
 	'log delete projectmessages' => '\'{0}\' apagada',

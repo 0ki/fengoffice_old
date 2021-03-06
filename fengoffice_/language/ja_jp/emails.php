@@ -1,7 +1,7 @@
 <?php return array(
 	'new message' => '新しいメッセージ',
 	'new comment' => '新しいコメント',
-	'your account created' => 'あなたの新しいOpenGooのアカウントを作成しました。',
+	'your account created' => 'あなたの新しいFeng Officeのアカウントを作成しました。',
 	'your password' => 'あなたのパスワード',
 	'milestone assigned to you' => 'あなたにマイルストーンを割り当てました。',
 	'task assigned to you' => 'あなたにタスクを割り当てました。',

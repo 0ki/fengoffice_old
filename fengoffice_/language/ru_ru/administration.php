@@ -1,6 +1,6 @@
 <?php
 /* 
-Translated into Russian for OpenGoo
+Translated into Russian for Feng Office
 Last update:  see readme_rus.txt
 
 http://code.google.com/p/opengooru/
@@ -255,7 +255,7 @@ http://code.google.com/p/opengooru/
 	'success update cron events' => 'Запланировочные события/задания обновлены',
 	
 	'manual upgrade' => 'Ручное обновление',
-	'manual upgrade desc' => 'Для ручного обновления вам нужно скачать новую версию OpenGoo, извлечь ее на место старой установки и перейти на страницу обновления <a href="public/upgrade">\'public/upgrade\'</a>  для запуска процесса обновления..',
+	'manual upgrade desc' => 'Для ручного обновления вам нужно скачать новую версию Feng Office, извлечь ее на место старой установки и перейти на страницу обновления <a href="public/upgrade">\'public/upgrade\'</a>  для запуска процесса обновления..',
 	'automatic upgrade' => 'Автоматическое обновление',
 	'automatic upgrade desc' => 'Автоматическое обновление позволяет системе самой скачать и распаковать файлы, затем запустить процесс обновления. Web-серверу требуются права на запись во все каталоги системы',
 	'start automatic upgrade' => 'Начать автоматическое обновление',

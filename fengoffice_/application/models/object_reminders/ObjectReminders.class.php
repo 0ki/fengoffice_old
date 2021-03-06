@@ -3,7 +3,7 @@
 /**
  * ObjectReminders
  *
- * @author Ignacio de Soto <ignacio.desoto@opengoo.org>
+ * @author Ignacio de Soto <ignacio.desoto@fengoffice.com>
  */
 class ObjectReminders extends BaseObjectReminders {
 

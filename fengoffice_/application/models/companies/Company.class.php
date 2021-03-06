@@ -16,6 +16,8 @@ class Company extends BaseCompany {
 	protected $is_searchable = true;
 	
 	protected $is_read_markable = false;
+	
+	protected $is_commentable = true;
 
 	/**
 	 * Array of searchable columns

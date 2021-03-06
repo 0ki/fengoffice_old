@@ -9,10 +9,10 @@
 		'upgrade from' => 'Frissítés miről',
 		'upgrade to' => 'Frissítés mire',
 		'already upgraded' => 'Ön már rendelkezik a legfrissebb verzióval.',
-		'back to opengoo' => 'Vissza az OpenGoo-ba',
+		'back to fengoffice' => 'Vissza az Feng Office-ba',
 		'all rights reserved' => 'Minden jog fenntartva',
 		'upgrade process log' => 'Frissítési folyamat napló',
-		'upgrade opengoo' => 'Az OpenGoo frissítése',
-		'upgrade your opengoo installation' => 'Az Ön telepített OpenGoo verziójának frissítése'
+		'upgrade fengoffice' => 'Az Feng Office frissítése',
+		'upgrade your fengoffice installation' => 'Az Ön telepített Feng Office verziójának frissítése'
 	);
 ?>

@@ -1,7 +1,7 @@
 /*
- *  OpenGoo - Open source weboffice suite - http://www.opengoo.org
+ *  Feng Office - Open source weboffice suite - http://www.fengoffice.com
  *
- *  Image chooser for OpenGoo
+ *  Image chooser for Feng Office
  */
 
 og.ImageChooser = function(config) {

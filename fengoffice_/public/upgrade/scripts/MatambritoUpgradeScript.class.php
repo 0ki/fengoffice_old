@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Matambrito upgrade script will upgrade OpenGoo 1.2.1 to OpenGoo 1.3.1
+ * Matambrito upgrade script will upgrade Feng Office 1.2.1 to Feng Office 1.3.1
  *
  * @package ScriptUpgrader.scripts
  * @version 1.3
@@ -129,7 +129,7 @@ class MatambritoUpgradeScript extends ScriptUpgraderScript {
 			@file_put_contents(INSTALLATION_PATH . '/config/config.php', $configfile);
 		}
 
-		$this->printMessage('OpenGoo has been upgraded. You are now running OpenGoo '.$this->getVersionTo().' Enjoy!');
+		$this->printMessage('Feng Office has been upgraded. You are now running Feng Office '.$this->getVersionTo().' Enjoy!');
 	} // execute
 } // MatambritoUpgradeScript
 

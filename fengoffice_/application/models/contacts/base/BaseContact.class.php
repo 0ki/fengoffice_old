@@ -8,7 +8,9 @@
   abstract class BaseContact extends ProjectDataObject {
   
   	protected $objectTypeIdentifier = 'ct';
-  
+  	
+  	protected $is_commentable = true;
+  	
     // -------------------------------------------------------
     //  Access methods
     // -------------------------------------------------------

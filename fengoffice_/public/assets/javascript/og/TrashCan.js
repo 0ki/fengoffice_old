@@ -289,8 +289,8 @@ og.TrashCan = function() {
     };
     
 	og.TrashCan.superclass.constructor.call(this, {
-		/*enableDrag: true,
-		ddGroup : 'WorkspaceDD',*/
+		enableDrag: true,
+		ddGroup : 'disabled',
 		id: 'trash-can',
 		store: this.store,
 		layout: 'fit',

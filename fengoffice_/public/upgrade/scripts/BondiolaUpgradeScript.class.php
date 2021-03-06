@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Bondiola upgrade script will upgrade OpenGoo 1.0 to OpenGoo 1.1
+ * Bondiola upgrade script will upgrade Feng Office 1.0 to Feng Office 1.1
  *
  * @package ScriptUpgrader.scripts
  * @version 1.1
@@ -96,7 +96,7 @@ class BondiolaUpgradeScript extends ScriptUpgraderScript {
 			return false;
 		} // if
 
-		$this->printMessage('OpenGoo has been upgraded. You are now running OpenGoo '.$this->getVersionTo().' Enjoy!');
+		$this->printMessage('Feng Office has been upgraded. You are now running Feng Office '.$this->getVersionTo().' Enjoy!');
 	} // execute
 } // BondiolaUpgradeScript
 

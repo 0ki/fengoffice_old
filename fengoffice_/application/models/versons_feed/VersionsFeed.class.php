@@ -1,9 +1,9 @@
 <?php
 
 /**
- * Model class that provides interface to OpenGoo update feed:
+ * Model class that provides interface to Feng Office update feed:
  *
- * http://www.OpenGoo.org/versions.xml
+ * http://www.fengoffice.com/community/versions.xml
  *
  * @version 1.0
  * @author Ilija Studen <ilija.studen@gmail.com>
@@ -29,7 +29,7 @@ final class VersionsFeed {
 	 *
 	 * @var string
 	 */
-	private $feed_url = 'http://www.opengoo.org/versions.xml';
+	private $feed_url = 'http://www.fengoffice.com/community/versions.xml';
 
 	/**
 	 * Feed format - version

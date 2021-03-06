@@ -232,7 +232,7 @@
 		});
 	}
 	
-	og.createMonthlyViewDrag = function(div_id, obj_id, is_repetitive, origdate, type) {
+	og.createMonthlyViewDrag = function(div_id, obj_id, is_repetitive, type, origdate) {
 		var obj_div = Ext.get(div_id);
 		obj_div.dd = new og.monthViewEventDD(div_id, 'ev_dropzone', {
 			dragData: {id: obj_id, is_repe: is_repetitive, orig_date: origdate},

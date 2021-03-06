@@ -17,7 +17,7 @@ body {
 </style>
 <p>This script allows you to compare translation files in some locale with translation files in english.
 If you are translating to a locale this script can help you detect what translation keys you have missed.</p>
-<p>You can use the <a href="<?php echo get_url('tool', 'translate') ?>">Translate OpenGoo</a> tool to add missing translations.</p>
+<p>You can use the <a href="<?php echo get_url('tool', 'translate') ?>">Translate Feng Office</a> tool to add missing translations.</p>
 <p>Select a locale from the list below. The following locales have been detected on this installation:</p>
 <ul>  <?php
 foreach ($languages as $language) { ?>

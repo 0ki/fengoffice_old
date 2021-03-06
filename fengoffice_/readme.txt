@@ -1,27 +1,27 @@
 
-    About OpenGoo 1.6
-    =================
+    About Feng Office 1.6.1
+    =======================
 
-    OpenGoo is a free and open source WebOffice, project management and collaboration
-    tool, licensed under the Affero GPL 3 license.
+    Feng Office is a free and open source Web Office, project management
+    and collaboration tool, licensed under the Affero GPL 3 license.
 
     visit:
-        * http://www.opengoo.org/
-        * http://forums.opengoo.org/
-        * http://wiki.opengoo.org/
+        * http://www.fengoffice.com/
+        * http://fengoffice.com/web/forums/
+        * http://fengoffice.com/web/wiki/
         * http://sourceforge.net/projects/opengoo
 
     contact:
-        * contact@opengoo.org
+        * contact@fengoffice.com
 
 
     System requirements
     ===================
 
-    OpenGoo requires a web server, PHP (5.0 or greater) and MySQL (InnoDB
+    Feng Office requires a web server, PHP (5.0 or greater) and MySQL (InnoDB
     support recommended). The recommended web server is Apache.
 
-    OpenGoo is not PHP4 compatible and it will not run on PHP versions prior
+    Feng Office is not PHP4 compatible and it will not run on PHP versions prior
     to PHP5.
 
     Recommended:
@@ -34,9 +34,9 @@
         * MySQL  : http://www.mysql.com/
         * Apache : http://www.apache.org/
 
-    Alternatively, if you just want to test OpenGoo and you don't care about security
+    Alternatively, if you just want to test Feng Office and you don't care about security
     issues with your files, you can download XAMPP, which includes all that is needed
-    by OpenGoo (Apache, PHP 5, MySQL) in a single download.
+    by Feng Office (Apache, PHP 5, MySQL) in a single download.
     You can configure MySQL to support InnoDB by commenting or removing
     the line 'skip-innodb' in the file '<INSTALL_DIR>/etc/my.cnf'.
 
@@ -46,7 +46,7 @@
     Installation
     ============
 
-    1. Download OpenGoo - http://www.opengoo.org/
+    1. Download Feng Office - http://fengoffice.com/web/community/
     2. Unpack and upload to your web server
     3. Direct your browser to the public/install directory and follow the installation
     procedure
@@ -54,9 +54,9 @@
     You should be finished in a matter of minutes.
     
     4. Some functionality may require further configuration, like setting up a cron job.
-    Check the wiki for more information: http://wiki.opengoo.org/doku.php/setup
+    Check the wiki for more information: http://fengoffice.com/web/wiki/doku.php/setup
     
-    WARNING: Default memory limit por PHP is 8MB. As a new OpenGoo install consumes about 10 MB,
+    WARNING: Default memory limit por PHP is 8MB. As a new Feng Office install consumes about 10 MB,
     administrators could get a message similar to "Allowed memory size of 8388608 bytes exhausted".
     This can be solved by setting "memory_limit=32" in php.ini.    
 
@@ -65,18 +65,18 @@
     ====================
     
     1. Backup you current installation (important!)
-    2. Download OpenGoo 1.6 - http://www.opengoo.org/
-    3. Unpack into your OpenGoo installation, overwriting your previous files and folders,
+    2. Download Feng Office 1.6.1 - http://fengoffice.com/web/community/
+    3. Unpack into your Feng Office installation, overwriting your previous files and folders,
     	but keeping your config and upload folders.
-    5. Go to <your_opengoo>/public/upgrade in your browser and choose to upgrade
-    	from your current version to 1.6
+    5. Go to <your_feng>/public/upgrade in your browser and choose to upgrade
+    	from your current version to 1.6.1
     6. Refresh your browser or clear its cache to load new javascript, css and images.   
 
     
 	Open Source Libraries 
 	=====================
 	
-	The following open source libraries and applications have been adapted to work with OpenGoo:
+	The following open source libraries and applications have been adapted to work with Feng Office:
 	- ActiveCollab 0.7.1 - http://www.activecollab.com
 	- ExtJs - http://www.extjs.com
 	- Reece Calendar - http://sourceforge.net/projects/reececalendar
@@ -91,6 +91,35 @@
 	Changelog
 	=========
 	
+	Since 1.6
+	---------
+	
+	feature: Allow changing a user's personal workspace.
+	feature: Add comments to Contacts and Companies.
+	
+	bugfix: Email deleted from trash was being fetched again from server.
+	bugfix: Delete mail from server was not working correctly. Could delete non-fetched emails.
+	bugfix: Workspace description on dashboard was always being shown, despite of the "Show description" option in the workspace edit view.
+	bugfix: Owner company's email showed a trailing double quote.
+	bugfix: Unable to add new users under certain password configurations.
+	bugfix: Added an option to reset user interface state.
+	bugfix: An UID for sent emails is now generated when stored in the database.
+	bugfix: Allow the plus sign in rendered URLs.
+	bugfix: Added a missing config option to detect file types by extension.
+	bugfix: Hide zip and unzip actions if Zip extension is not installed on server.
+	bugfix: Users invited to an event were automatically subscribed. Now you can subscibe them by checking a check box.
+	bugfix: Users invited to an event were not uninvited when editing an event and deselecting them.
+	bugfix: Archived completed tasks and milestones were not shown in Archived Objects listing.
+	bugfix: Clicking on a row in the Trash Can doesn't select the row.
+	bugfix: Selecting a draft email and clicking on "Move to trash" didn't send it to the trash.
+	bugfix: Drag and drop of tasks and milestones in calendar monthly view was not working.
+	bugfix: Deleting tags in Overview / View as list was not working.
+	bugfix: Unable to update a file if revision comments are mandatory.
+	bugfix: Unable to classify emails with no attachments by using the Classify button.
+	bugfix: <Hidden quoted text> message in emails is no longer shown for quoted text inside quoted text, only for the top level quoted text.
+	bugfix: Added style to quoted text in sent emails (left border).
+	
+	
 	Since 1.6-rc
 	------------
 	
@@ -99,7 +128,7 @@
 	bugfix: Query error when upgrading from 1.5.3.
 	bugfix: Missing lang for archived objects in objects' history.
 	bugfix: Don't allow trashing the owner company.
-	bugfix: Opengoo stops working if owner company was trashed.
+	bugfix: Feng Office stops working if owner company was trashed.
 	bugfix: When discarding an email, two confirmation prompts pop up.
 	bugfix: When clicking on print report, on time module, the active workspace should be set as the workspace for the report.
 	bugfix: Linked "Weblink files" showed a "Download" shortcut instead of an "Open weblink" shortcut.
@@ -181,7 +210,7 @@
 	usability: Linked objects section in an object's view has no title telling what it is
 		
 	bugfix: Check write permissions for file installed_version.php when upgrading
-	bugfix: CKEditor images should point to the actual image in OpenGoo
+	bugfix: CKEditor images should point to the actual image in Feng Office
 	bugfix: Contact import from csv does not import contacts if user does not have 'can manage contacts' permission but has write permissions on the workspace.
 	bugfix: Custom reports can only be printed once in Chrome.
 	bugfix: Edit comment textbox is too small.
@@ -213,10 +242,10 @@
 	feature: Group emails into conversations.
 	feature: Email attachments from file system.
 	feature: Email Junk folder (mail classified as spam by your mail server is sent to a "Junk" folder)
-	feature: Emails are sent asynchronously (you can continue working on OpenGoo while an email is being sent)
-	feature: Send emails as attachments from OpenGoo
+	feature: Emails are sent asynchronously (you can continue working on Feng Office while an email is being sent)
+	feature: Send emails as attachments from Feng Office
 	feature: Create a task from an email.
-	feature: Insert images into OpenGoo documents and emails
+	feature: Insert images into Feng Office documents and emails
 	feature: Allow events to span more than one day and support drag and drop for these events and repeating events.
 	feature: Upgraded document editor to CKEditor 3.0
 	feature: Editing Concurrency: warn user if object being edited was edited by someone else.
@@ -234,7 +263,7 @@
 	usability: Rearranged toolbar icons
 	usability: Linked objects are now displayed the object's body.
 	usability: Filter the Object Picker* by text (*control used to pick objects when linking)
-	usability: "mailto" (email address) links open opengoo's "add mail" dialog instead of the default mail client (if the user has an email account).
+	usability: "mailto" (email address) links open Feng Office's "add mail" dialog instead of the default mail client (if the user has an email account).
 	usability: Email filters are noew remembered.
 	usability: Reporting: New control to select report columns, allow user to change column order.
 	usability: Sent emails are now marked as read automatically

@@ -4,7 +4,7 @@
  * DB access for PDO MySQL
  *
  * @version 1.0
- * @author Ignacio de Soto <ignacio.desoto@opengoo.org>
+ * @author Ignacio de Soto <ignacio.desoto@fengoffice.com>
  */
 class PdoMysqlDBAdapter extends AbstractDBAdapter {
 

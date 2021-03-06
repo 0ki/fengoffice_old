@@ -1,11 +1,11 @@
 <?php
 
 /**
- * Chivito upgrade script will upgrade OpenGoo 1.5 to OpenGoo 1.6
+ * Chivito upgrade script will upgrade Feng Office 1.5 to Feng Office 1.6.1
  *
  * @package ScriptUpgrader.scripts
  * @version 1.1
- * @author Ignacio de Soto <ignacio.desoto@opengoo.org>
+ * @author Ignacio de Soto <ignacio.desoto@fengoffice.com>
  */
 class ChivitoUpgradeScript extends ScriptUpgraderScript {
 
@@ -41,7 +41,7 @@ class ChivitoUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('1.5.3');
-		$this->setVersionTo('1.6');
+		$this->setVersionTo('1.6.1');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -136,6 +136,14 @@ class ChivitoUpgradeScript extends ScriptUpgraderScript {
 		 			  ADD INDEX `state` (`state`);
 				";
 			}
+			if (version_compare($installed_version, "1.6.1") < 0) {
+				$upgrade_script .= "
+					INSERT INTO `".TABLE_PREFIX."config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
+					  ('general', 'detect_mime_type_from_extension', '0', 'BoolConfigHandler', '0', '0', NULL)
+					ON DUPLICATE KEY UPDATE id=id;
+					UPDATE `".TABLE_PREFIX."user_ws_config_options` SET `config_handler_class` = 'RememberGUIConfigHandler' WHERE `name` = 'rememberGUIState';
+				";
+			}
 		}
 		
 		// rename gelsheet tables before upgrading if name is wrong and if engine is case sensitive
@@ -212,7 +220,7 @@ class ChivitoUpgradeScript extends ScriptUpgraderScript {
 			$this->printMessage("$count public files updated.");
 		}
 
-		$this->printMessage('OpenGoo has been upgraded. You are now running OpenGoo '.$this->getVersionTo().' Enjoy!');
+		$this->printMessage('Feng Office has been upgraded. You are now running Feng Office '.$this->getVersionTo().' Enjoy!');
 	} // execute
 } // ChivitoUpgradeScript
 

@@ -5,7 +5,7 @@ TODO:
 */
 
 /**
- * Author: Ignacio de Soto <ignacio.desoto@opengoo.org>
+ * Author: Ignacio de Soto <ignacio.desoto@fengoffice.com>
  * (c) 2008, 2009
  */
 

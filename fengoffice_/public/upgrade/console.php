@@ -1,8 +1,8 @@
 <?php
 
 define('ROOT', dirname(__FILE__) . '/../..');
-define('PRODUCT_NAME', 'OpenGoo');
-define('PRODUCT_URL', 'http://www.opengoo.org');
+define('PRODUCT_NAME', 'Feng Office');
+define('PRODUCT_URL', 'http://www.fengoffice.com');
 
 require_once dirname(__FILE__) . '/include.php';
 
@@ -22,7 +22,7 @@ if(trim($to_version) == '') {
 } // if
 
 // Construct the upgrader and load the scripts
-$upgrader = new ScriptUpgrader(new Output_Console(), 'Upgrade OpenGoo', 'Upgrade your OpenGoo installation');
+$upgrader = new ScriptUpgrader(new Output_Console(), 'Upgrade Feng Office', 'Upgrade your Feng Office installation');
 $upgrader->upgrade($from_version, $to_version);
 
 ?>

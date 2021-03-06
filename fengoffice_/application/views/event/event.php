@@ -507,8 +507,10 @@ $use_24_hours = user_config_option('time_format_use_24');
 			} // if ?>
 
 			<p><?php echo lang('event invitations desc') ?></p>
-			<?php echo checkbox_field('event[send_notification]', array_var($event_data, 'send_notification', $event->isNew()), array('id' => 'eventFormSendNotification', 'tabindex' => '110')) ?>
-			<label for="eventFormSendNotification" class="checkbox"><?php echo lang('send new event notification') ?></label>
+			<p><?php echo checkbox_field('event[send_notification]', array_var($event_data, 'send_notification', $event->isNew()), array('id' => $genid . 'eventFormSendNotification', 'tabindex' => '110')) ?>
+			<label for="<?php echo $genid ?>eventFormSendNotification" class="checkbox"><?php echo lang('send new event notification') ?></label></p>
+			<p><?php echo checkbox_field('event[subscribe_invited]', array_var($event_data, 'subscribe_invited', false), array('id' => $genid . 'eventFormSubscribeInvited', 'tabindex' => '111')) ?>
+			<label for="<?php echo $genid ?>eventFormSubscribeInvited" class="checkbox"><?php echo lang('subscribe invited users') ?></label></p>
 			
 	</fieldset>
 	</div>	

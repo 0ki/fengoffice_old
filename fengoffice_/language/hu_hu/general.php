@@ -1,16 +1,10 @@
-<?php
-	/*
-	* Első magyar fordítás 1.3 verzióig: Váczy Attila <vaczy.a.m@gmail.com>
-	* Magyar fordítás 1.4.2 verzióig (az 1.3 bázis részbeni újrafordításával, módosításával): Lukács Péter <programozo@lukacspeter.hu>
-	*/
-
- return array(
+<?php return array(
 	'username' => 'Felhasználó',
 	'password' => 'Jelszó',
 	'password again' => 'Ismételje meg a jelszót',
 	'old password' => 'Régi jelszó',
 	'new password' => 'Új jelszó',
- 	'remember me' => 'Emlékezzen rám 14 napig',
+	'remember me' => 'Emlékezzen rám 14 napig',
 	'email address' => 'Email cím',
 	'display name' => 'Megjelenítendő név',
 	'overview' => 'Áttekintés',
@@ -27,8 +21,8 @@
 	'update' => 'Frissít',
 	'submit' => 'Bevitel',
 	'reset' => 'Alapállapot',
- 	'change' => 'Módosít',
- 	'name' => 'Név',
+	'change' => 'Módosít',
+	'name' => 'Név',
 	'title' => 'Főcím',
 	'description' => 'Leírás',
 	'text' => 'Szöveg',
@@ -84,7 +78,7 @@
 	'state' => 'Tagállam',
 	'zipcode' => 'Irányítószám',
 	'country' => 'Ország',
-	'contact' => 'Ügyfél',
+	'contact' => 'Személy',
 	'pagination page' => 'Oldal:',
 	'pagination first' => 'Első oldal',
 	'pagination previous' => 'Előző oldal',
@@ -152,10 +146,10 @@
 	'assign task template to workspace' => '\'{0}\' sablon hozzárendelése projekthez',
 	'confirm delete task template' => 'Biztosan véglegesen törli a sablont? Nem lesz hozzáférhető a továbbiakban.',
 	'no task templates' => 'Nincsenek feladat sablonok',
-	'create contact from user' => 'Ügyfél létrehozása a felhasználó adataiból',
-	'confirm create contact from user' => 'Biztosan létrehoz új ügyfelet a felhasználó adatai alapján?',
-	'create contact from user desc' => 'Ha "igent" választ, a felhasználó ügyféllé változik. ',
-	'go to contact' => 'Menj az ügyfél adataihoz',
+	'create contact from user' => 'Személy létrehozása a felhasználó adataiból',
+	'confirm create contact from user' => 'Biztosan létrehoz új személyt a felhasználó adatai alapján?',
+	'create contact from user desc' => 'Ha "igent" választ, a felhasználó személlyé változik. ',
+	'go to contact' => 'Menj az személy adataihoz',
 	'show assigned to' => 'Mutassa a hozzárendelteket',
 	'timeslot on object' => 'Timeslot on {0}',
 	'show by status' => 'Mutassa állapot szerint',
@@ -163,19 +157,14 @@
 	'task report' => 'Feladat beszámoló',
 	'priority' => 'Prioritás',
 	'anybody' => 'Bárki',
-
 	'read and write' => 'Olvas és Ír',
 	'read only' => 'Csak Olvas',
 	'none no bars' => 'Semmi',
 	'apply to all subworkspaces' => 'Alkalmazza ezeket a jogosultságokat az alprojektekre is',
-	'weblinks' => 'Honlap cím',
+	'weblinks' => 'Honlapcím',
 	'add work' => 'Munka hozzáadása',
-
 	'date format' => 'd/m/Y',
 	'date format description' => '(dd/mm/yyyy)',
 	'confirm move to trash' => 'Biztosan a kukába dobja a kiválasztott elemeket?',
-	
-	'remove' => 'Eltávolít'
-
-	
+	'remove' => 'Eltávolít',
 ); ?>

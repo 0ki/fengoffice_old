@@ -11,6 +11,7 @@ class GUIController extends ApplicationController {
 	 */
 	function __construct() {
 		parent::__construct();
+		prepare_company_website_controller($this, 'dialog');
 	} // __construct
 
 	function save_state() {
@@ -34,8 +35,8 @@ class GUIController extends ApplicationController {
 				$values .= ",";
 				$names .= ",";
 			}
-			$values .= "(" . $id . ",'" . mysql_real_escape_string($a->name) . "','" . mysql_real_escape_string($a->value) . "')";
-			$names .= "'" . mysql_real_escape_string($a->name) . "'";
+			$values .= "(" . $id . "," . DB::escape($a->name) . "," . DB::escape($a->value) . ")";
+			$names .= DB::escape($a->name);
 		}
 		$query .= $values;
 		$queryd .= $names . ")";
@@ -45,8 +46,10 @@ class GUIController extends ApplicationController {
 			$object = array("success" => true);
 			tpl_assign("object", $object);
 		} catch (Exception $e) {
-			$object = array("success" => false);
-			$object = array("message" => $e->getMessage());
+			$object = array(
+				"success" => false,
+				"message" => $e->getMessage()
+			);
 			tpl_assign("object", $object);
 		}
 	}
@@ -63,14 +66,28 @@ class GUIController extends ApplicationController {
 			);
 			tpl_assign("object", $object);
 		} catch (Exception $e) {
-			$object = array("success" => false);
-			$object = array("message" => $e->getMessage());
+			$object = array(
+				"success" => false,
+				"message" => $e->getMessage()
+			);
 			tpl_assign("object", $object);
 		}
 	}
 	
+	function delete_state() {
+		$this->setTemplate(get_template_path('back'));
+		ajx_current("empty");
+		try {
+			$query = "DELETE FROM `" . TABLE_PREFIX . "guistate` WHERE `user_id` = " . DB::escape(logged_user()->getId());
+			DB::executeAll($query);
+			flash_success(lang("success reset gui state"));
+		} catch (Exception $e) {
+			flash_error($e->getMessage());
+		}
+	}
+	
 	static function getState() {
-		$query = "SELECT `name`, `value` FROM `" . TABLE_PREFIX . "guistate` WHERE `user_id` = " . mysql_real_escape_string(logged_user()->getId());
+		$query = "SELECT `name`, `value` FROM `" . TABLE_PREFIX . "guistate` WHERE `user_id` = " . DB::escape(logged_user()->getId());
 		$rows = DB::executeAll($query);
 		$data = array();
 		if ($rows) {

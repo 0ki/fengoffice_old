@@ -27,17 +27,14 @@ class MailUtilities {
 			foreach($accounts as $account) {
 				if (!$account->getServer()) continue;
 				try {
-					DB::beginWork();
 					$lastChecked = $account->getLastChecked();
 					$minutes = 5;
 					if ($lastChecked instanceof DateTimeValue && $lastChecked->getTimestamp() + $minutes*60 >= DateTimeValueLib::now()->getTimestamp()) {
 						$succ++;
-						DB::commit();
 						continue;
 					} else {
 						$account->setLastChecked(DateTimeValueLib::now());
 						$account->save();
-						DB::commit();
 					}
 					$accId = $account->getId();
 					$emails = array();
@@ -277,8 +274,6 @@ class MailUtilities {
 		
 		
 		try {
-			DB::beginWork();
-			
 			if ($in_reply_to_id != "") {
 				if ($message_id != "") {
 					$conv_mail = MailContents::findOne(array("conditions" => "`message_id` = '$in_reply_to_id' OR `in_reply_to_id` = '$message_id'"));
@@ -299,7 +294,7 @@ class MailUtilities {
 			
 			$mail->save();
 
-			// CLASSIFY MAILS IF THE ACCOUNT HAVE A WORKSPACE
+			// CLASSIFY MAILS IF THE ACCOUNT HAS A WORKSPACE
 			if ($account->getColumnValue('workspace',0) != 0) {
 				$workspace = Projects::findById($account->getColumnValue('workspace',0));
 				if ($workspace && $workspace instanceof Project) {
@@ -312,9 +307,7 @@ class MailUtilities {
 			if ($user instanceof User) {
 				$mail->subscribeUser($user);
 			}
-			DB::commit();
 		} catch(Exception $e) {
-			DB::rollback();
 			Logger::log($e->getMessage());
 		}
 		unset($parsedMail);
@@ -704,12 +697,19 @@ class MailUtilities {
 
 	function deleteMailsFromServerAllAccounts() {
 		$accounts = MailAccounts::findAll();
+		$count = 0;
 		foreach ($accounts as $account) {
-			self::deleteMailsFromServer($account);
+			try {
+				$count += self::deleteMailsFromServer($account);
+			} catch (Exception $e) {
+				Logger::log($e->getMessage());
+			}
 		}
+		return $count;
 	}
 	
 	function deleteMailsFromServer(MailAccount $account) {
+		$count = 0;
 		if ($account->getDelFromServer() > 0) {
 			$max_date = DateTimeValueLib::now();
 			$max_date->add('d', -1 * $account->getDelFromServer());
@@ -732,13 +732,14 @@ class MailUtilities {
 						foreach ($mailboxes as $box) {
 							if ($box->getCheckFolder()) {
 								$numMessages = $imap->getNumberOfMessages(utf8_decode($box->getFolderName()));
-								for ($i = 0; $i < $numMessages; $i++) {
+								for ($i = 1; $i <= $numMessages; $i++) {
 									$summary = $imap->getSummary($i);
 									if (is_array($summary)) {
 										$m_date = DateTimeValueLib::makeFromString($summary[0]['INTERNALDATE']);
-										if ($max_date->getTimestamp() > $m_date->getTimestamp()) {
-											if (MailContents::find(array('conditions' => "`uid` = '" . $summary[0]['UID'] . "' AND `imap_folder_name` = '" . $box->getFolderName() . "'")) ) {
+										if ($m_date instanceof DateTimeValue && $max_date->getTimestamp() > $m_date->getTimestamp()) {
+											if (MailContents::mailRecordExists($account->getId(), $summary[0]['UID'], $box->getFolderName(), true)) {
 												$imap->deleteMessages($i);
+												$count++;
 											}
 										} else {
 											break;
@@ -761,11 +762,12 @@ class MailUtilities {
 				}
 				$emails = $pop3->getListing();
 				foreach ($emails as $email) {
-					if (MailContents::find(array('conditions' => "`uid` = '" . $email['uidl']. "'")) ) {
+					if (MailContents::mailRecordExists($account->getId(), $email['uidl'], null, true)) {
 						$headers = $pop3->getParsedHeaders($email['msg_id']);
 						$date = DateTimeValueLib::makeFromString($headers['Date']);
-						if ($max_date->getTimestamp() > $date->getTimestamp()) {
+						if ($date instanceof DateTimeValue && $max_date->getTimestamp() > $date->getTimestamp()) {
 							$pop3->deleteMsg($email['msg_id']);
+							$count++;
 						}
 					}
 				}
@@ -773,6 +775,7 @@ class MailUtilities {
 
 			}
 		}
+		return $count;
 	}
 
 	function getContent($smtp_server, $smtp_port, $transport, $smtp_username, $smtp_password, $body, $attachments)
@@ -842,6 +845,11 @@ class MailUtilities {
 		$start = stripos($html, "<blockquote");
 		while ($start !== false) {
 			$end = stripos($html, "</blockquote>", $start);
+			$next = stripos($html, "<blockquote", $start + 1);
+			while ($next !== false & $end !== false && $next < $end) {
+				$end = stripos($html, "</blockquote>", $end + 1);
+				$next = stripos($html, "<blockquote", $next + 1);
+			}
 			if ($end === false) $end = strlen($html);
 			else $end += strlen("</blockquote>");
 			$html = substr($html, 0, $start) . $replacement . substr($html, $end);

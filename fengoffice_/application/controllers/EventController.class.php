@@ -3,9 +3,9 @@
 /***************************************************************************
  *	Authors:
  *   - Reece Pegues
- *   - Opengoo Development Team
- * 	 - Sadysta (forums.opengoo.org) - iCal Server
- *   - Ras2000 (forums.opengoo.org) - Calendar starting on Mon or Sun 	 
+ *   - Feng Office Development Team
+ * 	 - Sadysta (fengoffice.com/web/forums) - iCal Server
+ *   - Ras2000 (fengoffice.com/web/forums) - Calendar starting on Mon or Sun 	 
  ***************************************************************************/
 
 require_once ROOT.'/environment/classes/event/CalFormatUtilities.php';
@@ -70,8 +70,9 @@ class EventController extends ApplicationController {
 	}
 	
 	function registerInvitations($data, $event) {
+		$event->clearInvitations();
 		// Invitations
-		foreach ($data['users_to_invite'] as $id => $assist) {
+		foreach (array_var($data, 'users_to_invite', array()) as $id => $assist) {
 			$conditions = array('event_id' => $event->getId(), 'user_id' => $id);
 			//insert only if not exists 
 			if (EventInvitations::findById($conditions) == null) { 
@@ -80,7 +81,7 @@ class EventController extends ApplicationController {
 	            $invitation->setUserId($id);
 	            $invitation->setInvitationState($assist);
 	            $invitation->save();
-	            if (is_array(array_var($_POST, 'subscribers'))) {
+	            if (array_var($data, 'subscribe_invited', false) && is_array(array_var($_POST, 'subscribers'))) {
 	            	$_POST['subscribers']['user_' . $id] = 'checked';
 	            }
             }
@@ -278,6 +279,9 @@ class EventController extends ApplicationController {
 			
 			if (isset($event_data['send_notification'])) {
 				$data['send_notification'] = array_var($event_data,'send_notification') == 'checked';
+			}
+			if (isset($event_data['subscribe_invited'])) {
+				$data['subscribe_invited'] = array_var($event_data,'subscribe_invited') == 'checked';
 			}
 			return $data;
 	}
@@ -1202,7 +1206,7 @@ class EventController extends ApplicationController {
  *   copyright            : (C) 2001 The phpBB Group
  *   email                : support@phpbb.com
  *
- *   $Id: EventController.class.php,v 1.104.2.2 2009/12/01 21:02:15 idesoto Exp $
+ *   $Id: EventController.class.php,v 1.104.2.4 2009/12/18 04:14:58 idesoto Exp $
  *
  ***************************************************************************/
 

@@ -113,4 +113,5 @@
 	'this object must belong to a ws to modify its subscribers' => 'El objeto debe pertenecer a un espacio de trabajo para poder modificar sus subscriptores.',
 	'mailAccount dnx' => 'La cuenta de correo no existe',
 	'error add contact from user' => 'No se pudo crear el contacto a partir del usuario.',
+	'zip not supported' => 'El servidor no soporta ZIP.',
 ); ?>

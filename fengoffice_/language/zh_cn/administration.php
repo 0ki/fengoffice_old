@@ -7,7 +7,7 @@
     // ---------------------------------------------------
     
     'administration tool name test_mail_settings' => '测试邮件设置',
-    'administration tool desc test_mail_settings' => '使用简单工具发送测试邮件检查是否OpenGoo邮件系统是否配置正确',
+    'administration tool desc test_mail_settings' => '使用简单工具发送测试邮件检查是否Feng Office邮件系统是否配置正确',
     'administration tool name mass_mailer' => '批量邮件',
     'administration tool desc mass_mailer' => '简单的工具可以让你发送文本消息到组中所有注册用户。',
   
@@ -29,11 +29,11 @@
     
     // Categories
     'config category name general' => '通用',
-    'config category desc general' => '通用 OpenGoo 设置.',
+    'config category desc general' => '通用 Feng Office 设置.',
     'config category name mailing' => '发送邮件',
-    'config category desc mailing' => '使用这些配置可以设置OpenGoo如何处理电子邮件的发送。你可以使用你的php.ini提供的配置选项或者设置为使用其他的SNMP服务器。',
+    'config category desc mailing' => '使用这些配置可以设置Feng Office如何处理电子邮件的发送。你可以使用你的php.ini提供的配置选项或者设置为使用其他的SNMP服务器。',
   	'config category name modules' => '模块',
-    'config category desc modules' => '使用这些配置可以设置OpenGoo模块是否启用。禁用一个模块仅会图形界面中隐藏，它并不移除用户创建或者编辑的内容对象的权限。',
+    'config category desc modules' => '使用这些配置可以设置Feng Office模块是否启用。禁用一个模块仅会图形界面中隐藏，它并不移除用户创建或者编辑的内容对象的权限。',
     
     // ---------------------------------------------------
     //  Options
@@ -47,7 +47,7 @@
     'config option name default_project_folders' => '缺省工作区文件夹',
     'config option desc default_project_folders' => '这些文件夹将在工作区创建时同时被创建，每一行是一个文件夹名称，相同的或者空行将被忽略。',
     'config option name theme' => '主题',
-    'config option desc theme' => '使用主题你可以改变OpenGoo的缺省观感，需要刷新以生效。',
+    'config option desc theme' => '使用主题你可以改变Feng Office的缺省观感，需要刷新以生效。',
   	'config option name days_on_trash' => '垃圾保留天数',
     'config option desc days_on_trash' => '一个内容对象将在保留在垃圾箱中多少天后被自动删除，如果为0，对象将不会自动删除。',
 
@@ -62,12 +62,12 @@
   	'config option name enable_reporting_module' => '启用报告模块',
   
     'config option name upgrade_check_enabled' => '启用升级检测',
-    'config option desc upgrade_check_enabled' => '如果启用系统即将每天一次检查是否有一个新版本的OpenGoo可以下载。',
+    'config option desc upgrade_check_enabled' => '如果启用系统即将每天一次检查是否有一个新版本的Feng Office可以下载。',
 	'config option name work_day_start_time' => '工作日开始时间',
   	'config option desc work_day_start_time' => '指定工作日的时间',
       
   	'config option name use_minified_resources' => '使用压缩的资源',
-  	'config option desc use_minified_resources' => '使用压缩的Javascript 和 CSS 来改进性能。如果你编辑了它们，那么你需要重新压缩JS和CSS，请使用Opengoo目录下的public/tools。',
+  	'config option desc use_minified_resources' => '使用压缩的Javascript 和 CSS 来改进性能。如果你编辑了它们，那么你需要重新压缩JS和CSS，请使用Feng Office目录下的public/tools。',
  
     // Mailing
     'config option name exchange_compatible' => 'Microsoft Exchange 兼容模式',
@@ -118,7 +118,7 @@
   	'user ws config option name can notify from quick add' => '缺省检查任务通告',
   	'user ws config option desc can notify from quick add' => '通告可选框允许当任务被添加或者更新时通知指派的用户。',
  	
-  	'backup process desc' => '备份保存整个应用程序的当前状态到一个压缩的文件夹， 它可以被用来简单备份一个完整的OpenGoo安装。<br> 生成关于数据库和文件系统的备份可能超过几秒，制作一个备份的处理过程有以下三步： <br>1、运行备份程序。 <br>2、下载这个备份包。 <br> 3、可选的，在未来不需要时，一个备份可以被手工删除。<br> ',
+  	'backup process desc' => '备份保存整个应用程序的当前状态到一个压缩的文件夹， 它可以被用来简单备份一个完整的Feng Office安装。<br> 生成关于数据库和文件系统的备份可能超过几秒，制作一个备份的处理过程有以下三步： <br>1、运行备份程序。 <br>2、下载这个备份包。 <br> 3、可选的，在未来不需要时，一个备份可以被手工删除。<br> ',
   	'start backup' => '运行备份程序',
     'start backup desc' => '运行备份程序将删除上一次的备份数据，并生成一个新的。',
   	'download backup' => '下载备份',
@@ -169,7 +169,7 @@
   
   	'cron events' => '定时事件',
   	'about cron events' => '关于定时事件...',
-  	'cron events info' => '定时事件可以让你在OpenGoo中定期执行任务，而不需要登录到系统中。为了启用定时事件你需要配置一个定时作业来周期性的执行文件："cron.php"，这个文件在OpenGoo的根目录下面。这个你运行定时作业的周期决定了你可以运行定时事件的最小时间间隔。 例如：如果你配置定时作业每5分钟一次，并且你配置检查更新的定时事件为每分钟一次， 那么实际上将每5分钟检查一次更新。如何配置定时作业请询问你的系统管理员或者主机提供商。',
+  	'cron events info' => '定时事件可以让你在Feng Office中定期执行任务，而不需要登录到系统中。为了启用定时事件你需要配置一个定时作业来周期性的执行文件："cron.php"，这个文件在Feng Office的根目录下面。这个你运行定时作业的周期决定了你可以运行定时事件的最小时间间隔。 例如：如果你配置定时作业每5分钟一次，并且你配置检查更新的定时事件为每分钟一次， 那么实际上将每5分钟检查一次更新。如何配置定时作业请询问你的系统管理员或者主机提供商。',
   	'cron event name check_mail' => '检查邮件',
   	'cron event desc check_mail' => '这个定时事件将检查所有系统中电子邮件帐户中的新邮件。',
   	'cron event name purge_trash' => '清理垃圾桶',
@@ -177,7 +177,7 @@
   	'cron event name send_reminders' => '发送提醒',
   	'cron event desc send_reminders' => '这个定时事件将自动发送电子邮件提醒。',
   	'cron event name check_upgrade' => '检查更新',
-  	'cron event desc check_upgrade' => '这个定时事件将检测OpenGoo的新版本。',
+  	'cron event desc check_upgrade' => '这个定时事件将检测Feng Office的新版本。',
   	'cron event name create_backup' => '创建一个备份',
   	'cron event desc create_backup' => '创建一个备份让你可以从超级管理员的备份区下载。',
   	'next execution' => '下一次执行',
@@ -187,7 +187,7 @@
   	'success update cron events' => '定时时间更新成功',
   
   	'manual upgrade' => '手动升级',
-  	'manual upgrade desc' => '为了手动升级OpenGoo你需要下载最新版本的OpenGoo,解压缩到你安装的根目录然后在浏览器中定位到<a href="public/upgrade">\'public/upgrade\'</a> 运行升级程序。',
+  	'manual upgrade desc' => '为了手动升级Feng Office你需要下载最新版本的Feng Office,解压缩到你安装的根目录然后在浏览器中定位到<a href="public/upgrade">\'public/upgrade\'</a> 运行升级程序。',
   	'automatic upgrade' => '自动升级',
   	'automatic upgrade desc' => '自动更新将自动下载并且解压缩新版本，并且运行升级程序，web服务器需要对所有的文件夹拥有写权限。',
   	'start automatic upgrade' => '开始自动升级',

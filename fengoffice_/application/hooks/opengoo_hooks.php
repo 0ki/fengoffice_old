@@ -1,5 +1,5 @@
 <?php
-Hook::register("opengoo");
+Hook::register("fengoffice");
 
 /* List of available hooks:
  * 
@@ -132,7 +132,7 @@ Hook::register("opengoo");
  *  	- &$ignored  
  */
 
-function opengoo_reminder_email($reminder, &$ret) {
+function fengoffice_reminder_email($reminder, &$ret) {
 	$object = $reminder->getObject();
 	$date = $object->getColumnValue($reminder->getContext());
 	if ($reminder->getContext() == "due_date" && ($object instanceof ProjectTask || $object instanceof ProjectMilestone)) {
@@ -171,8 +171,8 @@ function opengoo_reminder_email($reminder, &$ret) {
 	$ret++;
 }
 
-function opengoo_render_upload_control($args, &$ret) {
-	if (upload_hook() == 'opengoo') {
+function fengoffice_render_upload_control($args, &$ret) {
+	if (upload_hook() == 'fengoffice') {
 		$attributes = $args['attributes'];
 		echo file_field('file_file', null, $attributes);
 	}

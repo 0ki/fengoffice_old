@@ -5,7 +5,7 @@
  *
  * @package Logger
  * @subpackage backends
- * @author Ignacio de Soto <ignacio.desoto@opengoo.org>
+ * @author Ignacio de Soto <ignacio.desoto@fengoffice.com>
  */
 class Logger_Backend_Null implements Logger_Backend {
 

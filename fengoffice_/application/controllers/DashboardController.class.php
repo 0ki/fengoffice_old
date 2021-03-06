@@ -3,7 +3,7 @@
 /**
  * Dashboard controller
  *
- * @author Ilija Studen <ilija.studen@gmail.com>, Marcos Saiz <marcos.saiz@opengoo.org>
+ * @author Ilija Studen <ilija.studen@gmail.com>, Marcos Saiz <marcos.saiz@fengoffice.com>
  */
 class DashboardController extends ApplicationController {
 

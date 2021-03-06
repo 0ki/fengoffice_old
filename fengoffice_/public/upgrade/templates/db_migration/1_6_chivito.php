@@ -3,6 +3,10 @@
 -- <?php echo $default_collation ?> collate utf8_unicode_ci
 -- <?php echo $engine ?> InnoDB
 
+INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
+ ('general', 'detect_mime_type_from_extension', '0', 'BoolConfigHandler', '0', '0', NULL)
+ON DUPLICATE KEY UPDATE id=id;
+
 INSERT INTO `<?php echo $table_prefix ?>user_ws_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES 
  ('general', 'reset_password', '', 'StringConfigHandler', '1', '0', 'Used to store per-user tokens to validate password reset requests'),
  ('general', 'drag_drop_prompt', 'prompt', 'DragDropPromptConfigHandler', '0', '0', NULL),
@@ -18,6 +22,8 @@ INSERT INTO `<?php echo $table_prefix ?>user_ws_config_options` (`category_name`
  ('mails panel', 'max_spam_level', '0', 'IntegerConfigHandler', '0', '100', NULL),
  ('mails panel', 'create_contacts_from_email_recipients', '0', 'BoolConfigHandler', '0', '101', NULL)
 ON DUPLICATE KEY UPDATE id=id;
+
+UPDATE `<?php echo $table_prefix ?>user_ws_config_options` SET `config_handler_class` = 'RememberGUIConfigHandler' WHERE `name` = 'rememberGUIState';
 
 UPDATE `<?php echo $table_prefix ?>user_ws_config_options` SET `category_name` = 'general' WHERE `name` = 'work_day_start_time';
 

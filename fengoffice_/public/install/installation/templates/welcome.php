@@ -1,5 +1,5 @@
 <h1 class="pageTitle"><span>Step <?php echo $current_step->getStepNumber() ?>:</span> Welcome</h1>
-<p>OpenGoo is an open source web office. It includes document, spreadsheet and presentation web editor as well as a project management system. OpenGoo is:</p>
+<p>Feng Office is an open source web office. It includes document, spreadsheet and presentation web editor as well as a project management system. Feng Office is:</p>
 <ul>
   <li><strong>Easy to use</strong> - basic set of tools that just work</li>
   <li><strong>Easy to install</strong> - here you are, just follow the instructions</li>

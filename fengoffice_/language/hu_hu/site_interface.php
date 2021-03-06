@@ -6,7 +6,7 @@
 	*/
 
 return array(
-	'new OpenGoo version available' => 'Az OpenGoo új verziója hozzáférhető. <a class="internalLink" href="{0}" onclick="{1}">Részletek</a>.',
+	'new Feng Office version available' => 'Az Feng Office új verziója hozzáférhető. <a class="internalLink" href="{0}" onclick="{1}">Részletek</a>.',
 
 	'my tasks' => 'Feladataim',
 	'welcome back' => 'Üdvözöljük, <strong>{0}</strong>',
@@ -15,7 +15,7 @@ return array(
 	'online users desc' => 'Az utolsó 15 perc aktív felhasználói:',
 
 	'charts' => 'Grafikonok',
-	'contacts' => 'Ügyfelek',
+	'contacts' => 'Címlista',
 	'dashboard' => 'Vezérlőpult',
 	'administration' => 'Adminisztráció',
 	'my account' => 'Saját',
@@ -24,7 +24,7 @@ return array(
 	'my projects' => 'Saját projektjeim',
 	'my projects archive desc' => 'Lezárt (archivált) projektek. Ezeken tiltott minden művelet, de tartalmukat lehet böngészni.',
 
-	'company online' => 'Belépett cégek',
+	'company online' => 'Belépett szervezetek',
 
 	'enable javascript' => 'Ehhez engedélyeznie kell a JavaScript futtatását a böngésződben.',
 	
@@ -40,8 +40,8 @@ return array(
 	'im service' => 'IM szolgáltatás',
 	'primary im service' => 'Elsődleges IM',
 	'primary im description' => 'Valamennyi itt felsorolt IM szolgáltatás fel lesz sorolva a névjegykártya oldaladon. Más oldalakon csak az elsődleges IM látható.',
-	'contact online' => 'Bejelentkezett ügyfelek',
-	'contact offline' => 'Kijelentkezett ügyfelek',
+	'contact online' => 'Bejelentkezett személyek',
+	'contact offline' => 'Kijelentkezett személyek',
 	
 	'avatar' => 'Fénykép',
 	'current avatar' => 'Jelenlegi fénykép',
@@ -55,10 +55,10 @@ return array(
 	'days left' => '{0} nap maradt',
 
 	'user card of' => '{0} névjegykártyája',
-	'company card of' => '{0} cég névjegykártyája',
+	'company card of' => '{0} szervezet névjegykártyája',
 	
 	//upgrade
-	'upgrade is not available' => 'Nem tölthető le új OpenGoo verzió',
+	'upgrade is not available' => 'Nem tölthető le új Feng Office verzió',
 	'check for upgrade now' => 'Ellenőrzés most!',
 	    
     // Forgot password
@@ -67,11 +67,11 @@ return array(
    
     // Complete installation
  	'complete installation' => 'A telepítés befejezése',
-	'complete installation desc' => 'Ez ez utolsó lépés a telepítés folyamatában, amikor meg kell adnia az adminisztrátori adatait és néhány adatot a cégéről',
+	'complete installation desc' => 'Ez ez utolsó lépés a telepítés folyamatában, amikor meg kell adnia az adminisztrátori adatait és néhány adatot a szervezetéről',
     
     // Administration
 	'welcome to administration' => 'Üdvözöljük!',
-	'welcome to administration info' => 'Üdvözöljük az adminisztrációs felületen. Ezen eszköz segítségével kezelheti cége(i) adatait, tagjait, azok ügyfeleit és a projektjeit.',
+	'welcome to administration info' => 'Üdvözöljük az adminisztrációs felületen. Ezen eszköz segítségével kezelheti szervezete(i) adatait, tagjait, az azokhoz tartozó személyeket és a projektjeit.',
 
 	'send new account notification' => 'Email értesítést küldése',
 	'send new account notification desc' => 'Ha az "Igen"-t választja, a felhasználó üdvöző email értesítést kap a belépés adataival (ami a jelszót is tartalmazza).',
@@ -92,11 +92,11 @@ return array(
 	'welcome to new account' => 'Üdvözlet új felhasználó!',
 	'welcome to new account info' => 'Üdvözöljük a(z) {0} kezdőoldalán! Mostantól itt érheti el ezt az oldat. (Jótanács: mentse el a könyvjelzői közé!). Kezdje a következő lépésekkel:',
 
-	'new account step1' => '1. lépés: Add meg a céged adatait.',
-	'new account step1 info' => 'A cégével kapcsolatos, és az ott dolgozó felhasználók adatainak megadásához kattintson a jobb felső részen található Adminisztráció hivatkozásra.',
+	'new account step1' => '1. lépés: Add meg a szervezeted adatait.',
+	'new account step1 info' => 'A szervezetével kapcsolatos, és az ott dolgozó felhasználók adatainak megadásához kattintson a jobb felső részen található Adminisztráció hivatkozásra.',
 
-	'new account step1 owner' => '1. lépés: Adja meg a cége adatait.',
-  'new account step1 owner info' => 'A cégével és az ott dolgozó felhasználókkal kapcsolatos adatok megadásához kattintson a jobb felső részen található Adminsiztráció hivatkozásra.',
+	'new account step1 owner' => '1. lépés: Adja meg a szervezete adatait.',
+  'new account step1 owner info' => 'A szervezetével és az ott dolgozó felhasználókkal kapcsolatos adatok megadásához kattintson a jobb felső részen található Adminsiztráció hivatkozásra.',
  
  	'new account step update account' => '{0}. lépés: Frissítse személyes adatait',
   'new account step update account info' => 'Frissítse személyes adataidat, és változtassa meg a jelszavát a lap jobb felső részén látható Saját hivatkozásra kattintva.',
@@ -105,7 +105,7 @@ return array(
 	'new account step add members info' => 'Létrehozhat <a class="internalLink" href="{0}">felhasználói fiókokat</a> a csoportja összes tagjának. Minden felhasználónak lesz önálló azonosítója és jelszava, amivel elérhetik a rendszert.',
 
     'new account step start workspace' => '{0}. lépés: Az adatok rendszerezetté tétele: projekt felület létrehozása',
-    'new account step start workspace info' => 'A projekt felületen tudja tárolni és rendszerezni a cégével kapcsolatos információkat.<br/>
+    'new account step start workspace info' => 'A projekt felületen tudja tárolni és rendszerezni a szervezetével kapcsolatos információkat.<br/>
     											A rendszer automatikusan létrehozott mindenki számára egy személyes projekt felületet (önnek {1} névvel). Ennek tartalma alapértelmezésként csak a tulajdonosa számára látható.',
     
   	'new account step configuration' => '{0}. lépés: A konfiguráció átvizsgálása',
@@ -118,8 +118,8 @@ return array(
   	'new account step preferences info' => 'Frissítse <a class="internalLink" href="{0}">felhasználói beállításait</a> például: általános, vagy a felület, feladatai megjelenésének beállíásait.',
   	
   	'new account step actions' => '{0}. lépés: Az online iroda teljes körű ügymenetének megszervezése',
-  	'new account step actions info' => 'Hozza létre azokat a feladatokat és dokumentumokat a cége projekt felületén, amiket meg kíván osztani kollégáival.<br>
-										Válassza ki azt a projekt felületet, amiben dolgozni akar, és kattintson a lenti lehetőségek egyikére <b>új elem létrehozásához:</b><br/>',
+  	'new account step actions info' => 'Hozza létre azokat a feladatokat és dokumentumokat a szervezete projektfelületén, amiket meg kíván osztani kollégáival.<br>
+										Válassza ki azt a projektet, amiben dolgozni akar, és kattintson a lenti lehetőségek egyikére <b>új elem létrehozásához:</b><br/>',
   
    	'getting started' => 'Kezdeti lépések',
 
@@ -134,7 +134,7 @@ return array(
 	'recent project activities feed' => 'A \'{0}\' projekten végzett legutóbbi tevékenységek.',
     
     // Update company permissions
-	'update company permissions hint' => 'Jelölje be azt a projektet, amihez hozzáférést engedélyez ennek a cégnek. Meg kell azt is határoznia, hogy kiknek engedélyez hozzáférést a projekthez (ezt a projekt Személyek oldalán is megteheti).',
+	'update company permissions hint' => 'Jelölje be azt a projektet, amihez hozzáférést engedélyez ennek a szervezetnek. Meg kell azt is határoznia, hogy kiknek engedélyez hozzáférést a projekthez (ezt a projekt Személyek oldalán is megteheti).',
 
 	'footer copy with homepage' => '© {0} - <a class="internalLink" href="{1}">{2}</a>.  Minden jog fenntartva!',
 	'footer copy without homepage' => '© {0} - {1}. Minden jog fenntartva!',
@@ -154,18 +154,18 @@ return array(
 	'confirm leave page' => 'Ha elhagyja, vagy újra tölti ezt az oldalt, minden nem elmentett adat elvész.',
 
 
-	'add contact' => 'Ügyfél hozzáadása',
-	'edit contact' => 'Ügyfél szerkesztése',
-	'update contact' => 'Ügyfél frissítése',
+	'add contact' => 'Személy hozzáadása',
+	'edit contact' => 'Személy szerkesztése',
+	'update contact' => 'Személy frissítése',
 	'edit picture' => 'Kép szerkesztése',
-	'delete contact' => 'Ügyfél törlése',
+	'delete contact' => 'Személy törlése',
 	'contact card of' => 'Névjegykártya',
 	'email address 2' => 'Email cím2',
 	'email address 3' => 'Email cím3',
 	'website' => 'Honlap',
 	'notes' => 'Feljegyzés',
 	'assigned user' => 'Hozzárendelt felhasználó',
-	'contact information' => 'Ügyfél Információ',
+	'contact information' => 'Személyinformációk',
 	'first name' => 'Keresztnév',
 	'last name' => 'Vezetéknév',
 	'middle name' => 'Középső név',
@@ -186,7 +186,7 @@ return array(
 	'other information' => 'Más információ',
 
 	'email and instant messaging' => 'Email és azonnali üzenetküldés',
-	'no contacts in project' => 'Nincs ügyfél ebben a projektben',
+	'no contacts in project' => 'Nincs személy ebben a projektben',
 	'picture' => 'Bélyegkép',
 	'current picture' => 'Jelenlegi kép',
 	'delete current picture' => 'Jelenlegi kép törlése',
@@ -196,57 +196,57 @@ return array(
 
 	'assign to project' => 'Hozzárendelés projekthez',
 	'role' => 'Szerep',
-	'contact projects' => 'Ügyfél projekt',
-	'contact identifier required' => 'Az ügyfelet legalább a kereszt vagy vezeték nevével kell azonosítani',
+	'contact projects' => 'személy projektje',
+	'contact identifier required' => 'A személyt legalább a kereszt- vagy vezetéknevével kell azonosítani',
 	'birthday' => 'Születésnap',
 	'role in project' => 'Szerepe a \'{0}\' projektben',
-	'all contacts' => 'Összes ügyfél',
-	'project contacts' => 'Ügyfelek a {0}-ban',
+	'all contacts' => 'Összes személy',
+	'project contacts' => 'Személy a {0}-ban',
 	'select' => 'Válasszon!',
 
 
-	'import contacts from csv' => 'Ügyfelek importálása .csv fájlból',
+	'import contacts from csv' => 'Személyek importálása .csv fájlból',
 	'import' => 'Import',
 	'file not exists' => 'A fájl nem létezik',
 	'field delimiter' => 'Nező méret korlátozó (nem kötelező)',
 	'first record contains field names' => 'Az első sor mező neveket tartalmaz',
-	'import contact success' => 'Az ügyfelek importja sikerült.',
-	'contact fields' => 'Ügyfél Mezők',
+	'import contact success' => 'Az személyek importja sikerült.',
+	'contact fields' => 'Személy Mezők',
 	'fields from file' => 'Mezők fájlból',
 	'you must match the database fields with file fields before executing the import process' => 'Össze kell egyeztetni az adatbázisban lévő mező neveket a fájlban lévő mező nevekkel az import előtt',
 	'import result' => 'Az importálás eredménye',
-	'contacts succesfully imported' => 'Az ügyfelek sikeresen importálva',
-	'contacts import fail' => 'Az ügyfelek importja nem sikerült',
-	'contacts import fail help' => 'Az ügyfelek importja talán azért nem sikerült, mert már létezik ilyen adat (név vagy email cím, stb) az adatbázisban',
+	'contacts succesfully imported' => 'A személyek sikeresen importálva',
+	'contacts import fail' => 'A személyek importja nem sikerült',
+	'contacts import fail help' => 'A személyek importja talán azért nem sikerült, mert már létezik ilyen adat (név vagy email cím, stb) az adatbázisban',
 	'import fail reason' => 'A hiba oka',
 	'select a file in order to load its data' => 'Válassza ki az importálandó .csv fájlt',
 
 
-	'export contacts to csv' => 'Ügyfelek exportálása .csv fájlba',
+	'export contacts to csv' => 'Személyek exportálása .csv fájlba',
 	'export' => 'Export',
 	'fields to export' => 'Az exportálandó információk',
-	'success export contacts' => 'Az ügyfelek sikeresen exportálva.',
+	'success export contacts' => 'A személyek sikeresen exportálva.',
 	
 	
-	'import companies from csv' => 'Ügyfél cégek importálása .csv fájlból',
-	'company fields' => 'Cég mezők',
-	'companies succesfully imported' => 'A cégek sikeresen importálva',
-	'companies import fail' => 'A cégek importálása nem sikerült',
-	'export companies to csv' => 'Cégek exportálása .csv fájlba',
-	'success export companies' => 'A cégek exportálása sikerült',
+	'import companies from csv' => 'Szervezetek importálása .csv fájlból',
+	'company fields' => 'Szervezetmezők',
+	'companies succesfully imported' => 'A szervezetek sikeresen importálva',
+	'companies import fail' => 'A szervezetek importálása nem sikerült',
+	'export companies to csv' => 'Szervezetek exportálása .csv fájlba',
+	'success export companies' => 'A szervezet exportálása sikerült',
 
 
-	'add webpage' => 'Honlap cím hozzáadása',
-	'delete webpage' => 'Honlap cím törlése',
-	'webpages' => 'Honlap címek',
-	'private webpage' => 'Magán honlap címek',
-	'url' => 'Url cím',
-	'no active webpages in project' => 'Nincs aktív honlap cím a projektben',
+	'add webpage' => 'Webhely hozzáadása',
+	'delete webpage' => 'Webhely törlése',
+	'webpages' => 'Webhelyek',
+	'private webpage' => 'Magán webhelyek',
+	'url' => 'URL-cím',
+	'no active webpages in project' => 'Nincs aktív webhely a projektben',
 	'webpage list description' => 'Leírás',
-	'edit webpage' => 'Honlap cím szerkesztése',
-	'webpage' => 'Honlap cím',
-	'webpage title required' => 'A honlap cím főcímének megadása kötelező',
-	'webpage url required' => 'A honlap cím URL megadása kötelező',
+	'edit webpage' => 'Webhely szerkesztése',
+	'webpage' => 'Webhely',
+	'webpage title required' => 'A webhely főcímének megadása kötelező',
+	'webpage url required' => 'A webhely URL-ének megadása kötelező',
 
 
 	'emails' => 'Email-ek',
@@ -315,22 +315,22 @@ return array(
 	'can write mails' => 'Írhat email üzenetet',
 	'can read comments' => 'Olvashatja a megjegyzéseket',
 	'can write comments' => 'Írhat megjegyzést',
-	'can read contacts' => 'Olvashatja az ügyfeleket',
-	'can write contacts' => 'Létrehozhat ügyfelet',
-	'can read weblinks' => 'Olvashatja a honlap címeket',
-	'can write weblinks' => 'Írhat honlap címet',
+	'can read contacts' => 'Olvashatja a címlistát',
+	'can write contacts' => 'Létrehozhat személyeket',
+	'can read weblinks' => 'Olvashatja a webhelyeket',
+	'can write weblinks' => 'Írhat webhelyet',
 	'can read files' => 'Olvashatja a fájlokat',
 	'can write files' => 'Írhat fájlokat',
 	'can read events' => 'Olvashatja az eseményeket',
 	'can write events' => 'Írhat eseményt',
 
   'new mail account' => 'Új email fiók',
-	'new company' => 'Új cég',
-	'add a new company' => 'Új cég hozzáadása',
+	'new company' => 'Új szervezet',
+	'add a new company' => 'Új szervezet hozzáadása',
 	'new workspace' => 'Új projekt',
 	'new task list' => 'Új feladat',
 	'new event' => 'Új esemény',
-	'new webpage' => 'Új honlap cím',
+	'new webpage' => 'Új webhely',
 	'new milestone' => 'Új mérföldkő',
 	'new message' => 'Új feljegyzés',
 	'new group' => 'Új csoport',
@@ -473,7 +473,7 @@ return array(
 	'task time report description' => 'Ez a beszámoló bemutatja a felsorolt feladatokra fordított teljes időtartamokat dátum, felhasználó (nem kötelező) és projektek szerint',
 	'no data to display' => 'Nincs adat',
 
-	'new company name' => 'Új cég név',
+	'new company name' => 'Új szervezetnév',
 	'checking' => 'Ellenőrzés',
 	'country' => 'Ország',
 
@@ -556,25 +556,25 @@ return array(
 	'share notification event desc' => '{1} meghívta Önt, hogy megtekintse/szerkessze ezt az eseményt: {0}',
 	'share notification task desc' => '{1} meghívta Önt, hogy megtekintse/szerkessze ezt a feladatot: {0}',
 	'share notification document desc' => '{1} meghívta Önt, hogy megtekintse/szerkessze ezt a dokumentumot: {0}',
-	'share notification contact desc' => '{1} meghívta Önt, hogy megtekintse/szerkessze ezt az ügyfelet: {0}',
-	'share notification company desc' => '{1} meghívta Önt, hogy megtekintse/szerkessze ezt a céget: {0}',
+	'share notification contact desc' => '{1} meghívta Önt, hogy megtekintse/szerkessze ezt a személyt: {0}',
+	'share notification company desc' => '{1} meghívta Önt, hogy megtekintse/szerkessze ezt a szervezetet: {0}',
 	'share notification emailunclassified desc' => '{1} meghívta Önt, hogy megtekintse/szerkessze ezt az email üzenetet: {0}',
 	'share notification email desc' => '{1} meghívta Önt, hogy megtekintse/szerkessze ezt az email üzenetet: {0}',
 	'share notification file desc' => '{1} meghívta Önt, hogy megtekintse/szerkessze ezt a fájlt: {0}',
 	'share notification milestone desc' => '{1} meghívta Önt, hogy megtekintse/szerkessze ezt a mérföldkövet: {0}',
-	'share notification weblink desc' => '{1} meghívta Önt, hogy megtekintse/szerkessze ezt a honlap címet: {0}',
+	'share notification weblink desc' => '{1} meghívta Önt, hogy megtekintse/szerkessze ezt a webhelyet: {0}',
 
 	'new share notification message' => '\'{0}\' feljegyzés megosztásra került',
 	'new share notification event' => '\'{0}\' esemény megosztásra került',
 	'new share notification task' => '\'{0}\' feladat megosztásra került',
 	'new share notification document' => '\'{0}\' dokumentum megosztásra került',
-	'new share notification contact' => '\'{0}\' ügyfél megosztásra került',
-	'new share notification company' => '\'{0}\' cég megosztásra került',
+	'new share notification contact' => '\'{0}\' személy megosztásra került',
+	'new share notification company' => '\'{0}\' szervezet megosztásra került',
 	'new share notification emailunclassified' => '\'{0}\' email üzenet megosztásra került',
 	'new share notification email' => '\'{0}\' email üzenet megosztásra került',
 	'new share notification file' => '\'{0}\' fájl  megosztásra került',
 	'new share notification milestone' => '\'{0}\' márföldkő megosztásra került',
-	'new share notification weblink' => '\'{0}\' honlap cím megosztásra került',
+	'new share notification weblink' => '\'{0}\' webhely megosztásra került',
 	
 	'billing' => 'Számlázás',
 	'category' => 'Kategória',
@@ -602,11 +602,11 @@ return array(
 	'assign billing categories to users' => 'Számlázási kategória felhasználóhoz kapcsolása',
 	'new version notification title' => 'Új verzió',
 
-  'workspace contacts' => 'Ügyfelek',
-  'search contact' => 'Ügyfél keresése',
-  'add new contact' => 'Új ügyfél hozzáadása',
-  'no contacts to display' => 'Nincsenek megjeleníthető ügyfelek',
-  'workspace info' => 'Projekt információk',
+  'workspace contacts' => 'Személyek',
+  'search contact' => 'Személy keresése',
+  'add new contact' => 'Új személy hozzáadása',
+  'no contacts to display' => 'Nincsenek megjeleníthető személyek',
+  'workspace info' => 'Információk a projektről',
   'workspace description' => 'A(z) \'{0}\' projekt részletei',
   'show all amount' => '({0}) egészének megjelenítése',
   'searching' => 'Keresés',

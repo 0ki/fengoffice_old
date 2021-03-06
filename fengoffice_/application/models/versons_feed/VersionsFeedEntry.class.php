@@ -1,7 +1,7 @@
 <?php
 
   /**
-  * Single (version) entry of www.OpenGoo.org version feed
+  * Single (version) entry of www.fengoffice.com version feed
   *
   * @version 1.0
   * @author Ilija Studen <ilija.studen@gmail.com>

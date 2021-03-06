@@ -366,6 +366,16 @@ og.OverviewManager = function() {
 							});
 						},
 						scope: this
+					},
+					'tagdelete': {
+						fn: function(tag){
+							this.load({
+								action: 'untag',
+								objects: getSelectedIds(),
+								tagTag: tag.text
+							});
+						},
+						scope: this
 					}
 				}
 			})

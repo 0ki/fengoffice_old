@@ -23,6 +23,12 @@ html
 	_overflow-y: scroll
 }
 
+blockquote
+{
+	padding-left: 10px;
+	border-left: 1px solid #987ADD;
+}	
+
 img:-moz-broken
 {
 	-moz-force-broken-image-icon : 1;

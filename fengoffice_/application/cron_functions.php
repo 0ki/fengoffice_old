@@ -62,8 +62,8 @@ function send_notifications_through_cron() {
 function delete_mails_from_server() {
 	try {
 		_log("Checking mail accounts to delete mails from server...");
-		MailUtilities::deleteMailsFromServerAllAccounts();
-		_log("Finished deletion of mails from server...");
+		$count = MailUtilities::deleteMailsFromServerAllAccounts();
+		_log("Deleted $count mails from server...");
 	} catch (Exception $e) {
 		_log("Error deleting mails from server: " . $e->getMessage());
 	}
@@ -92,6 +92,8 @@ function clear_tmp_folder($dir = null) {
 						} else {
 							$deleted++;
 						}
+					} else {
+						$left++;
 					}
 				} else if (is_dir($path)) {
 					$deleted += clear_tmp_folder($path);
@@ -100,8 +102,9 @@ function clear_tmp_folder($dir = null) {
 			}
 		}
 		closedir($handle);
-		if ($count == 0) @rmdir($dir);
 		if ($dir == ROOT . "/tmp") _log("$deleted tmp files deleted.");
+		else if ($left == 0) @rmdir($dir);
+
 		return $deleted;
 	} catch (Exception $e) {
 		_log("Error clearing tmp folder: " . $e->getMessage());

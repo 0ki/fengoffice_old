@@ -1,6 +1,6 @@
 <?php
 /* 
-Translated into Russian for OpenGoo
+Translated into Russian for Feng Office
 Last update:  see readme_rus.txt
 
 http://code.google.com/p/opengooru/
@@ -8,7 +8,7 @@ http://code.google.com/p/opengooru/
 */
 
  return array(
-	'new OpenGoo version available' => 'Доступна новая версия OpenGoo. <a class="internalLink" href="{0}">Подробнее...</a>.',
+	'new Feng Office version available' => 'Доступна новая версия Feng Office. <a class="internalLink" href="{0}">Подробнее...</a>.',
 
 	'my tasks' => 'Мои задачи',
 	'welcome back' => 'Добро пожаловать, <strong>{0}</strong>',
@@ -60,7 +60,7 @@ http://code.google.com/p/opengooru/
 	'company card of' => 'Карта компании из {0}',
 
   // Upgrade	
-	'upgrade is not available' => 'Обновления OpenGoo отсутствуют.',
+	'upgrade is not available' => 'Обновления Feng Office отсутствуют.',
 	'check for upgrade now' => 'Проверить сейчас',
 	
   // Forgot password

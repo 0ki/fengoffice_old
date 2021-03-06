@@ -319,7 +319,7 @@ class FileRepository_Backend_FileSystem implements FileRepository_Backend {
 	 */
 	function isInRepository($file_id) {
 		/* directory structure for files has been changed
-		 * since OpenGoo 1.4, because storing files as
+		 * since Feng Office 1.4, because storing files as
 		 * a path of 5 char directories means that at some
 		 * point we will reach the 32.000 subdirectories
 		 * limit in ext2 and ext3 filesystems. To avoid this,

@@ -16,7 +16,7 @@
   require_once INSTALLER_PATH . '/installation/steps/FinishStep.class.php';
   
   // Construct installer
-  $installer = new ScriptInstaller('OpenGoo installation', 'This wizard will guide you through the OpenGoo installation process');
+  $installer = new ScriptInstaller('Feng Office installation', 'This wizard will guide you through the Feng Office installation process');
   
   // Add steps
   define('ACI_WELCOME', $installer->addStep(new WelcomeStep()));

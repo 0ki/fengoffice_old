@@ -8,7 +8,7 @@ return array(
 
 
 	'administration tool name test_mail_settings' => 'Email beállítások tesztelése',
-	'administration tool desc test_mail_settings' => 'Ezzel az egyszerű eszközzel küldhet teszt email üzenetet, hogy ellenőrizze az OpenGoo email beállításait.',
+	'administration tool desc test_mail_settings' => 'Ezzel az egyszerű eszközzel küldhet teszt email üzenetet, hogy ellenőrizze az Feng Office email beállításait.',
 	'administration tool name mass_mailer' => 'Tömeges email küldése',
 	'administration tool desc mass_mailer' => 'Ez egy egyszerű eszköz, amellyel egyszerű szöveges üzenetet küldhet a rendszer valamennyi felhasználójának.',
 	'configuration' => 'Beállítások',
@@ -21,11 +21,11 @@ return array(
 	'file storage mysql' => 'Adatbázis (MySQL)',
 	
 	'config category name general' => 'Általános',
-	'config category desc general' => 'Általános OpenGoo beállítások.',
+	'config category desc general' => 'Általános Feng Office beállítások.',
 	'config category name mailing' => 'Levelezés',
-	'config category desc mailing' => 'Ezekkel a beállításokkal adhatja meg, hogyan kezelje az OpenGoo a levelezést. Használhatja a php.ini-ben meghatározott beállításokat, vagy megadhatja bármelyik (külső) SMTP szerver elérését',
+	'config category desc mailing' => 'Ezekkel a beállításokkal adhatja meg, hogyan kezelje az Feng Office a levelezést. Használhatja a php.ini-ben meghatározott beállításokat, vagy megadhatja bármelyik (külső) SMTP szerver elérését',
 	'config category name modules' => 'Modulok',
-	'config category desc modules' => 'Itt engedélyezheti az OpenGoo moduljait. A nem engedélyezéssel csak elrejti a kezelő felületről. Ettől még más felhasználók létrehozhatnak és szerkeszthetnek elemeket benne.',
+	'config category desc modules' => 'Itt engedélyezheti az Feng Office moduljait. A nem engedélyezéssel csak elrejti a kezelő felületről. Ettől még más felhasználók létrehozhatnak és szerkeszthetnek elemeket benne.',
 	'config category name passwords' => 'Jelszavak',
   'config category desc passwords' => 'Ezen beállítások használata a jelszavak kezeléséhez.',
 	
@@ -36,7 +36,7 @@ return array(
 	'config option name default_project_folders' => 'Alap mappák',
 	'config option desc default_project_folders' => 'Ezeket a mappákat hozza létre a rendszer egy projekt létrehozásakor. Minden nevet új sorba kell írni! Az ismétlődő vagy üres sorok figyelmen kívül lesznek hagyva.',
 	'config option name theme' => 'Téma',
-	'config option desc theme' => 'Témák használatával meg tudja változtatni az OpenGoo megjelenését. Frissítenie kell a böngészőben az oldalt a módosítások láthatóvá válásához.',
+	'config option desc theme' => 'Témák használatával meg tudja változtatni az Feng Office megjelenését. Frissítenie kell a böngészőben az oldalt a módosítások láthatóvá válásához.',
 	'config option name days_on_trash' => 'Napok a kukában',
 	'config option desc days_on_trash' => 'Hány nap elteltével törlődjenek automatikusan a kukába dobott elemek. "0" beállítása esetén a kuka tartalma soha nem fog törlődni.',
 	
@@ -53,21 +53,21 @@ return array(
 	
 	'config option name enable_notes_module' => 'Feljegyzés Modul engedélyezése',
 	'config option name enable_email_module' => 'Email Modul engedélyezése',
-	'config option name enable_contacts_module' => 'Ügyfelek Modul engedélyezése',
+	'config option name enable_contacts_module' => 'Címlista Modul engedélyezése',
 	'config option name enable_calendar_module' => 'Naptár Modul engedélyezése',
 	'config option name enable_documents_module' => 'Dokumentumok Modul engedélyezése',
 	'config option name enable_tasks_module' => 'Feladat Modul engedélyezése',
-	'config option name enable_weblinks_module' => 'Honlapok Modul engedélyezése',
+	'config option name enable_weblinks_module' => 'Webhelyek Modul engedélyezése',
 	'config option name enable_time_module' => 'Idő Modul engedélyezése',
 	'config option name enable_reporting_module' => 'Jelentés Modul engedélyezése',
 	
 	'config option name upgrade_check_enabled' => 'Frissítés ellenőrzésének engedélyezése',
 	
-	'config option desc upgrade_check_enabled' => 'Ha "igen" a beállítás, az OpenGoo naponta ellenőrzi az új verziók elérhetőségét',
+	'config option desc upgrade_check_enabled' => 'Ha "igen" a beállítás, az Feng Office naponta ellenőrzi az új verziók elérhetőségét',
 	'config option name work_day_start_time' => 'A munkanap kezdő időpontja',
 	'config option desc work_day_start_time' => 'Annak meghatározása, hány órakor kezdődik a munkanap',
 	'config option name use_minified_resources' => 'Tömörített erőforrások használata',
-	'config option desc use_minified_resources' => 'Tömörített Javascript és CSS használatával növelheti a rendszer teljesítményét. Újra kell tömörítenie a JS és CSS állományokat, ha módosította azokat, a "http(s)://OpenGooWebhelyed/public/tools" használatával.',
+	'config option desc use_minified_resources' => 'Tömörített Javascript és CSS használatával növelheti a rendszer teljesítményét. Újra kell tömörítenie a JS és CSS állományokat, ha módosította azokat, a "http(s)://Feng OfficeWebhelyed/public/tools" használatával.',
 	
 	  'config option name currency_code' => 'Pénznem',
   	'config option desc currency_code' => 'Pénznem szimbóluma',
@@ -111,11 +111,11 @@ return array(
   	'config option desc checkout_for_editing_online' => 'Amikor a felhasználó online szerkeszt egy dokumentumot, a bejelentést követően egyidőben azt más már nem szerkesztheti.',
   
 
-	'can edit company data' => 'Szerkesztheti a cég adatait',
+	'can edit company data' => 'Szerkesztheti a szervezet adatait',
 	'can manage security' => 'Biztonsági beállításokat adhat meg',
 	'can manage workspaces' => 'Szerkeszthet projekteket',
 	'can manage configuration' => 'Szerkesztheti a beállításokat',
-	'can manage contacts' => 'Szerkeszthet ügyfeleket',
+	'can manage contacts' => 'Szerkesztheti a címlistát',
  	'can manage reports' => 'Szerkesztheti a jelentéseket',
  	'group users' => 'Csoport tagok',
 	
@@ -225,7 +225,7 @@ return array(
 	'assign template to workspace' => 'A sablon hozzárendelése projekthez',
 	'cron events' => 'Ismétlődő események',
 	'about cron events' => 'Az ismétlődő eseményekről...',
-	'cron events info' => 'Az ismétlődő események lehetővé teszik, hogy az OpenGoo a rendszerbe történő bejelentkezés nélkül is végrehajtson feladatokat. Az engedélyezéséhez meg kell határoznia egy ismétlődő feladatot a "cron.php" nevű fájlban, ami az OpenGoo telepítés gyökérkönyvtárában található. A cron futási rendszeressége (milyen időközönként futtatja le a rendszer) meghatározza, milyen időközöket állíthat be; pl. ha a cron 5 percenként fut, hiába állítja be, hogy 1 percenként ellenőrizze új OpenGoo verzió meglétét: akkor is csak 5 percenként tudja elvégezni. A cron beállításokról kérdezze meg a rendszere adminisztrátorát.',
+	'cron events info' => 'Az ismétlődő események lehetővé teszik, hogy az Feng Office a rendszerbe történő bejelentkezés nélkül is végrehajtson feladatokat. Az engedélyezéséhez meg kell határoznia egy ismétlődő feladatot a "cron.php" nevű fájlban, ami az Feng Office telepítés gyökérkönyvtárában található. A cron futási rendszeressége (milyen időközönként futtatja le a rendszer) meghatározza, milyen időközöket állíthat be; pl. ha a cron 5 percenként fut, hiába állítja be, hogy 1 percenként ellenőrizze új Feng Office verzió meglétét: akkor is csak 5 percenként tudja elvégezni. A cron beállításokról kérdezze meg a rendszere adminisztrátorát.',
 	'cron event name check_mail' => 'Email ellenőrzése',
 	'cron event desc check_mail' => 'Ez az ismétlődő esemény a rendszerben beállított valamennyi email postafiókot ellenőrzi.',
 	'cron event name purge_trash' => 'Kuka ürítése',
@@ -233,13 +233,13 @@ return array(
 	'cron event name send_reminders' => 'Emlékeztető küldése',
 	'cron event desc send_reminders' => 'Ez az ismétlődő esemény emlékeztetőket küld.',
 	'cron event name check_upgrade' => 'Rendszer frissítés ellenőrzése',
-	'cron event desc check_upgrade' => 'Ez az ismétlődő esemény ellenőrzi új OpenGoo verzió elérhetőségét',
+	'cron event desc check_upgrade' => 'Ez az ismétlődő esemény ellenőrzi új Feng Office verzió elérhetőségét',
 	'cron event name create_backup' => 'Mentés készítése',
 	'cron event desc create_backup' => 'Mentést készít, amit letölthet az adminisztrációs lapról.',
  	'cron event name send_notifications_through_cron' => 'Emlékeztetők küldése a cron segítségével',
- 	'cron event desc send_notifications_through_cron' => 'Ha ez engedélyezett, az email emlékeztetők a cron beállításoknak megfelelően küldődnek el, és nem  akkor, amikor az OpenGoo létrehozza őket.',
+ 	'cron event desc send_notifications_through_cron' => 'Ha ez engedélyezett, az email emlékeztetők a cron beállításoknak megfelelően küldődnek el, és nem  akkor, amikor az Feng Office létrehozza őket.',
 	'cron event name backup' => 'Biztonsági mentés',
-  'cron event desc backup' => 'Ha ezt engedélyezi, az OpenGoo rendszeréről adott rendszerességgel biztonsági mentés fog készülni. A telepített rendszer adminisztrátora az adminisztrátori oldalon keresztül letöltheti ezeket. Az OpenGoo mentések zip állományok, amik a \'tmp/backup\' könyvtárba kerülnek',
+  'cron event desc backup' => 'Ha ezt engedélyezi, az Feng Office rendszeréről adott rendszerességgel biztonsági mentés fog készülni. A telepített rendszer adminisztrátora az adminisztrátori oldalon keresztül letöltheti ezeket. Az Feng Office mentések zip állományok, amik a \'tmp/backup\' könyvtárba kerülnek',
  	'next execution' => 'Következő végrehajtása',
 	'delay between executions' => 'Várakozás a végrehajtások között',
 	'enabled' => 'Megengedve',
@@ -247,7 +247,7 @@ return array(
 	'success update cron events' => 'Az ismétlődő események frissítése sikeres',
 	
 	'manual upgrade' => 'Kézi frissítés',
-	'manual upgrade desc' => 'az OpenGoo kézi frissítése is elvégezhető az új verzió letöltésével. Bontsa ki a letöltött állomány a telepítés gyökerébe, majd állítsa a böngészőjét a <a href="public/upgrade">\'public/upgrade\'</a> címre a frissítés végrehajtásához',
+	'manual upgrade desc' => 'az Feng Office kézi frissítése is elvégezhető az új verzió letöltésével. Bontsa ki a letöltött állomány a telepítés gyökerébe, majd állítsa a böngészőjét a <a href="public/upgrade">\'public/upgrade\'</a> címre a frissítés végrehajtásához',
 	'automatic upgrade' => 'Automatikus frissítés',
 	'automatic upgrade desc' => 'Az automatikus frissítés automatikusan letölti és kibontja a friss verziót és lefuttatja a szükséges folyamatot. A web szervernek hozzáférésének kell lennie az összes könyvtárhoz!',
 	'start automatic upgrade' => 'Automatikus frissítés megkezdése',

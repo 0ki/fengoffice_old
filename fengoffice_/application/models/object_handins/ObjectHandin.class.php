@@ -4,7 +4,7 @@
   * ObjectHandin class
   * Written on Tue, 27 Oct 2007 16:53:08 -0300
   *
-  * @author Marcos Saiz <marcos.saiz@opengoo.org>
+  * @author Marcos Saiz <marcos.saiz@fengoffice.com>
   */
   class ObjectHandin extends BaseObjectHandin {
         

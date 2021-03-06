@@ -149,7 +149,7 @@ if (!$logged_user_settings instanceof MailAccountUser) {
 			<?php $del_from_server = array_var($mailAccount_data, 'del_from_server', 0) ?>
 			<?php echo yes_no_widget('mailAccount[del_mails_from_server]', 'mailAccountDelMailFromServer', $del_from_server > 0, lang('yes'), lang('no'), 130) ?>
 			<?php echo '<span style="margin-left: 10px">' . lang('after') . '</span>'?>
-			<?php echo text_field('mailAccount[del_from_server]', $del_from_server <= 0 ? 0 : $del_from_server, array('id' => 'mailAccountDelFromServer', 'tabindex'=>'140', 'style'=>'width:25px')) ?>
+			<?php echo text_field('mailAccount[del_from_server]', $del_from_server <= 0 ? 1 : $del_from_server, array('id' => 'mailAccountDelFromServer', 'tabindex'=>'140', 'style'=>'width:25px')) ?>
 			<?php echo lang('days'); ?>
 		</div>
 		

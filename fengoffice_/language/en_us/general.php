@@ -167,7 +167,7 @@
   	'confirm create contact from user' => 'Are you sure you want to create a contact with user data?',
   	'create contact from user desc' => 'If yes is selected, the user will be stored in the system as a contact',
   	'use previous personal workspace' =>'Use an existing workspace as user\'s personal workspace?',
-  	'use previous personal workspace desc' =>'You can choose an existing workspace as the user\'s personal workspace or choose to create a new one',
+  	'use previous personal workspace desc' =>'The personal workspace is the workspace where objects are stored by default (when "All" is selected in the Workspaces panel). You can choose an existing workspace as the user\'s personal workspace or choose to create a new one',
   	'select personal workspace' => 'Select a Workspace',
     'create personal workspace' => 'Create a new one',
     'use an existing workspace' => 'Use an existing Workspace',

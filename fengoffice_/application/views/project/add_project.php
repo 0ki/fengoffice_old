@@ -82,7 +82,7 @@
 	<legend><?php echo lang('description') ?></legend>
 		<?php echo textarea_field('project[description]', array_var($project_data, 'description'), array('id' => 'projectFormDescription', 'tabindex' => '10')) ?>
 		<?php echo label_tag(lang('show project desciption in overview')) ?>
-		<?php echo yes_no_widget('project[show_description_in_overview]', 'projectFormShowDescriptionInOverview', array_var($project_data, 'show_description_in_overview'), lang('yes'), lang('no'), 20) ?>
+		<?php echo yes_no_widget('project[show_description_in_overview]', 'projectFormShowDescriptionInOverview', array_var($project_data, 'show_description_in_overview', true), lang('yes'), lang('no'), 20) ?>
 	</fieldset>
 	</div>
 

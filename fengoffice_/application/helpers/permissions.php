@@ -1,7 +1,7 @@
 <?php
 
 // Functions that check permissions
-// Recomendation: Before changing this, talk with marcos.saiz@opengoo.org
+// Recomendation: Before changing this, talk with marcos.saiz@fengoffice.com
 
   	define('ACCESS_LEVEL_READ', 1);
   	define('ACCESS_LEVEL_WRITE', 2);

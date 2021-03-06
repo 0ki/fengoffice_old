@@ -4,7 +4,7 @@
   * Select search engine
   *
   * @version 1.0
-  * @author Ignacio de Soto <ignacio.desoto@opengoo.org>
+  * @author Ignacio de Soto <ignacio.desoto@fengoffice.com>
   */
   class SearchEngineConfigHandler extends ConfigHandler {
   

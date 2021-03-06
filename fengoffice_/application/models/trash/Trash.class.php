@@ -45,8 +45,8 @@ class Trash {
 							try {
 								DB::beginWork();
 								$ws = $o->getWorkspaces();
-								if ($manager_class == 'MailContents') {
-									$o->mark_as_deleted();
+								if ($o instanceof MailContent) {
+									$o->delete(false);
 								} else {
 									$o->delete();
 								}

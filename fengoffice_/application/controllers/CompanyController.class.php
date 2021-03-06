@@ -4,7 +4,7 @@
  * Company controller
  *
  * @version 1.0
- * @author Ilija Studen <ilija.studen@gmail.com> , Marcos Saiz <marcos.saiz@opengoo.org>
+ * @author Ilija Studen <ilija.studen@gmail.com> , Marcos Saiz <marcos.saiz@fengoffice.com>
  */
 class CompanyController extends ApplicationController {
 	

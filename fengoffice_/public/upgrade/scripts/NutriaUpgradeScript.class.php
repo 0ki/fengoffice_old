@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Nutria upgrade script will upgrade OpenGoo 1.3.1 to OpenGoo 1.4.2
+ * Nutria upgrade script will upgrade Feng Office 1.3.1 to Feng Office 1.4.2
  *
  * @package ScriptUpgrader.scripts
  * @version 1.4
@@ -327,7 +327,7 @@ class NutriaUpgradeScript extends ScriptUpgraderScript {
 		$fp = fopen($config_file, 'w');
 		fwrite($fp, $new_content); 
 
-		$this->printMessage('OpenGoo has been upgraded. You are now running OpenGoo '.$this->getVersionTo().' Enjoy!');
+		$this->printMessage('Feng Office has been upgraded. You are now running Feng Office '.$this->getVersionTo().' Enjoy!');
 	} // execute
 } // NutriaUpgradeScript
 

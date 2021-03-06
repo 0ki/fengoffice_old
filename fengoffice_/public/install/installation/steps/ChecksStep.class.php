@@ -18,7 +18,7 @@ class ChecksStep extends ScriptInstallerStep {
 	private $check_is_writable = null;
 
 	/**
-	 * Array of extensions that need to be present for OpenGoo to be installed
+	 * Array of extensions that need to be present for Feng Office to be installed
 	 *
 	 * @var array
 	 */
@@ -124,7 +124,7 @@ class ChecksStep extends ScriptInstallerStep {
 			if ($memory_limit > 0){
 				$suggested_memory = 12582912;
 				if ( $memory_limit < $suggested_memory ) {
-					$this->addToChecklist("PHP Variable 'memory_limit' is $memory_limit which might not be enough for OpenGoo. You should increase it to at least $suggested_memory in your php.ini.", false);
+					$this->addToChecklist("PHP Variable 'memory_limit' is $memory_limit which might not be enough for Feng Office. You should increase it to at least $suggested_memory in your php.ini.", false);
 				}
 			}
 		}

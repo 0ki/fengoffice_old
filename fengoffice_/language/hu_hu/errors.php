@@ -6,19 +6,19 @@
 
 	return array(
 	'invalid email address' => 'Az email cím formátuma nem érvényes',
-	'company name required' => 'Cég/szervezet név megadása kötelező',
+	'company name required' => 'Cég-, szervezetnév megadása kötelező',
 	'company homepage invalid' => 'A honlap címe (URL) nem érvényes',
 	'username value required' => 'Felhasználói név megadása kötelező',
 	'username must be unique' => 'Sajnálom, de a megadott felhasználói név már létezik',
 	'email value is required' => 'Kötelező érvényes email címet megadni',
 	'email address must be unique' => 'Sajnálom, de a megadott email címmel már regisztrálta magát valaki',
-	'company value required' => 'A felhasználónak kötelező valamelyik cég tagjának lennie',
+	'company value required' => 'A felhasználónak kötelező valamelyik szervezet tagjának lennie',
 	'password value required' => 'Jelszó megadása kötelező',
 	'passwords dont match' => 'Nem egyezik meg a jelszó',
 	'old password required' => 'A régi jelszó megadása kötelező',
 	'invalid old password' => 'A régi jelszó nem érvényes',
-	'users must belong to a company' => 'Az ügyfélnek kötelezően az egyik céghez kell tartoznia, hogy felhasználó jöhessen létre',
-	'contact linked to user' => 'Az ügyfél a {0} felhasználóhoz tartozik',
+	'users must belong to a company' => 'A személynek kötelezően az egyik szervezethez kell tartoznia, hogy felhasználó jöhessen létre',
+	'contact linked to user' => 'A személy a {0} felhasználóhoz tartozik',
 
 	// Password validation errors
   	'password invalid min length' => 'A jelszónak legalább {0} karakter hosszúságúnak kell lennie',
@@ -37,7 +37,7 @@
 	'invalid upload size' => 'Érvénytelen kép méret. A maximális méret {0}',
 	'invalid upload failed to move' => 'Nem sikerült a fájl feltöltése',
 	'terms of services not accepted' => 'Új felhasználói fiók létrehozásához el kell olvasnia és el kell fogadnia a Felhasználási feltételeket',
-	'failed to load company website' => 'Nem sikerült a honlap betöltése. A szülő cég nem található',
+	'failed to load company website' => 'Nem sikerült a honlap betöltése. Az alapszervezet nem található',
 	'failed to load project' => 'Nem sikerült az aktív projekt betöltése',
 	'username value missing' => 'Add meg a felhasználói nevét',
 	'password value missing' => 'Add meg a jelszavát',
@@ -103,7 +103,7 @@
 	'chart title unique' => 'A grafikon címének egyedinek kell lennie',
 	'must choose at least one workspace error' => 'Legalább egy projektet ki kell választania, amihez kapcsolódhat az elem',
 
-	'user has contact' => 'Már egy ügyfél hozzá van rendelve ehhez a felhasználóhoz',
+	'user has contact' => 'Már egy személy hozzá van rendelve ehhez a felhasználóhoz',
 
 	'maximum number of users reached error' => 'A rendszer elérte a felhasználók létszámának lehetséges maximumát',
 	'maximum number of users exceeded error' => 'A felhasználók létszáma túllépte a lehetséges maximumot. A rendszer leáll, és a probléma megoldásáig nem fog működni.',
@@ -131,7 +131,7 @@
 
   	'error assign task user dnx' => 'Nem létező felhasználóhoz próbálta hozzárendelni',
 	'error assign task permissions user' => 'Ön nem rendelkezik a feladat máshoz rendeléséhez szükséges jogokkal',
-	'error assign task company dnx' => 'Nem létező céghez próbálta hozzárendelni',
-	'error assign task permissions company' => 'Ön nem rendelkezik a feladat céghez rendeléséhez szükséges jogokkal',
+	'error assign task company dnx' => 'Nem létező szervezethez próbálta hozzárendelni',
+	'error assign task permissions company' => 'Ön nem rendelkezik a feladat szervezethez rendeléséhez szükséges jogokkal',
 
 ); ?>

@@ -4,7 +4,7 @@
  * Class that implements method common to all application objects (users, companies, projects etc)
  *
  * @version 1.0
- * @author Ilija Studen <ilija.studen@gmail.com>,  Marcos Saiz <marcos.saiz@opengoo.org>
+ * @author Ilija Studen <ilija.studen@gmail.com>,  Marcos Saiz <marcos.saiz@fengoffice.com>
  */
 abstract class ApplicationDataObject extends DataObject {
 
@@ -644,7 +644,7 @@ abstract class ApplicationDataObject extends DataObject {
 
 
 	function getProject() {
-		Logger::log("WARNING: Calling getProject() on an object with multiple workspaces.");
+		//Logger::log("WARNING: Calling getProject() on an object with multiple workspaces.");
 		return null;
 	}
 	

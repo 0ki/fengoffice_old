@@ -84,11 +84,13 @@ class MailContents extends BaseMailContents {
 		return " `id` IN (SELECT `object_id` FROM `" . TABLE_PREFIX . "workspace_objects` WHERE `object_manager` = 'MailContents' AND `workspace_id` IN ($ids)) ";
 	}
 	
-	static function mailRecordExists($account_id, $uid, $folder = null) {
-		$folder_cond = is_null($folder) ? '' : " AND `imap_folder_name` = '$folder'";
-		$sql = "SELECT `id` FROM `". TABLE_PREFIX ."mail_contents` WHERE `account_id` = $account_id AND `uid` = '".mysql_real_escape_string($uid)."' $folder_cond LIMIT 1";
-		$rows = DB::executeAll($sql);
-		return is_array($rows) && count($rows) > 0;
+	static function mailRecordExists($account_id, $uid, $folder = null, $is_deleted = null) {
+		if (!$uid) return false;
+		$folder_cond = is_null($folder) ? '' : " AND `imap_folder_name` = " . DB::escape($folder);
+		$del_cond = is_null($is_deleted) ? "" : " AND `is_deleted` = " . DB::escape($is_deleted ? true : false);
+		$conditions = "`account_id` = " . DB::escape($account_id) . " AND `uid` = " . DB::escape($uid) . $folder_cond . $del_cond;
+		$mail = self::findOne(array('conditions' => $conditions, 'include_trashed' => true));
+		return $mail instanceof MailContent;
 	}
 	 
 	/**
@@ -169,7 +171,7 @@ class MailContents extends BaseMailContents {
 
 		// Show deleted accounts' mails
 		if (user_config_option('view deleted accounts emails')) {
-			$accountConditions = "($accountConditions OR (SELECT count(*) FROM `" . TABLE_PREFIX . "mail_accounts` WHERE `id` = `account_id`) = 0)";
+			$accountConditions = "($accountConditions OR ((SELECT count(*) FROM `" . TABLE_PREFIX . "mail_accounts` WHERE `id` = `account_id`) = 0) AND `created_by_id` = " . DB::escape(logged_user()->getId()) . ")";
 		}
 					
 		// Check for unclassified emails
@@ -226,6 +228,8 @@ class MailContents extends BaseMailContents {
 					TABLE_PREFIX . "tags`.`tag` = " . DB::escape($tag) . " AND `" . TABLE_PREFIX . "tags`.`rel_object_manager` ='MailContents' ) > 0 ";
 		}
 
+		$permissions = ' ( ' . permissions_sql_for_listings(MailContents::instance(), ACCESS_LEVEL_READ, logged_user(), ($project instanceof Project ? $project->getId() : 0)) .')';
+		
 		//Check for projects (uses accountConditions
 		if ($project instanceof Project) {
 			$pids = $project->getAllSubWorkspacesQuery(!$archived, logged_user());
@@ -247,8 +251,9 @@ class MailContents extends BaseMailContents {
 				$projectConditions = "AND ($accountConditions OR $wspace_obj_string)" .
 						(logged_user()->isMemberOfOwnerCompany() ? '' : " AND is_private = 0");
 			}
+			$permissions = "( $permissions OR $accountConditions )";
 		}
-		$permissions = ' AND ( ' . permissions_sql_for_listings(MailContents::instance(), ACCESS_LEVEL_READ, logged_user(), ($project instanceof Project ? $project->getId() : 0)) .')';
+		$permissions = "AND $permissions";
 
 		if ($archived) $archived_cond = "AND `archived_by_id` <> 0";
 		else $archived_cond = "AND `archived_by_id` = 0";

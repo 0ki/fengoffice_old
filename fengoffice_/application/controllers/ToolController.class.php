@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Tools for OpenGoo development
+ * Tools for Feng Office development
  *
  * @version 1.0
  * @author Ignacio de Soto <ignacio.desoto@gmail.com>
@@ -138,7 +138,10 @@ class ToolController extends ApplicationController {
 		}
 	}
 	
-	private function download_zip_lang($locale) {		
+	private function download_zip_lang($locale) {
+		if (!zip_supported()) {
+			die(lang("zip not supported"));
+		}	
 		$filename = "tmp/$locale.zip";
 		if (is_file($filename)) unlink($filename);
 		$zip = new ZipArchive();

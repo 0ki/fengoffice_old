@@ -1,11 +1,11 @@
 <?php
 
 /**
- * Chinchulin upgrade script will upgrade OpenGoo 1.1+ to OpenGoo 1.2.1
+ * Chinchulin upgrade script will upgrade Feng Office 1.1+ to Feng Office 1.2.1
  *
  * @package ScriptUpgrader.scripts
  * @version 1.1
- * @author Ignacio de Soto <ignacio.desoto@opengoo.org>
+ * @author Ignacio de Soto <ignacio.desoto@fengoffice.com>
  */
 class ChinchulinUpgradeScript extends ScriptUpgraderScript {
 
@@ -105,7 +105,7 @@ class ChinchulinUpgradeScript extends ScriptUpgraderScript {
 			return false;
 		} // if
 
-		$this->printMessage('OpenGoo has been upgraded. You are now running OpenGoo '.$this->getVersionTo().' Enjoy!');
+		$this->printMessage('Feng Office has been upgraded. You are now running Feng Office '.$this->getVersionTo().' Enjoy!');
 	} // execute
 } // ChinchulinUpgradeScript
 

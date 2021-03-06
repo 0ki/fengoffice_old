@@ -154,9 +154,10 @@ og.loggedUser = {
 	displayName: <?php echo json_encode(logged_user()->getDisplayName()) ?>,
 	isAdmin: <?php echo logged_user()->isAdministrator() ? 'true' : 'false' ?>
 };
+og.zipSupported = <?php echo zip_supported() ? 1 : 0 ?>;
 og.hasNewVersions = <?php
 	if (config_option('upgrade_last_check_new_version', false) && logged_user()->isAdministrator()) {
-		echo json_encode(lang('new OpenGoo version available', "#", "og.openLink(og.getUrl('administration', 'upgrade'))"));
+		echo json_encode(lang('new Feng Office version available', "#", "og.openLink(og.getUrl('administration', 'upgrade'))"));
 	} else {
 		echo "false";
 	}

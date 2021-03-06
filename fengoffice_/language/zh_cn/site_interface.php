@@ -9,7 +9,7 @@
   
   // Return langs
   return array(
-    'new OpenGoo version available' => '新版本的OpenGoo 当前有效。<a class="internalLink" href="{0}" onclick="{1}">更多信息</a>.',
+    'new Feng Office version available' => '新版本的Feng Office 当前有效。<a class="internalLink" href="{0}" onclick="{1}">更多信息</a>.',
     
     'my tasks' => '我的任务',
     'welcome back' => '欢迎回来<strong>{0}</strong>',
@@ -61,7 +61,7 @@
     'company card of' => '{0}的公司卡片',
     
     // Upgrade
-    'upgrade is not available' => '没有OpenGoo新版本下载',
+    'upgrade is not available' => '没有Feng Office新版本下载',
     'check for upgrade now' => '现在检查',
     
     // Forgot password

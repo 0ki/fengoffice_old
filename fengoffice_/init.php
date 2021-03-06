@@ -52,7 +52,7 @@ if(trim($_SERVER['PHP_SELF']) == '') $_SERVER['PHP_SELF'] = preg_replace("/(\?.*
 $config_is_set = @include_once(ROOT . '/config/config.php');
 if(!is_bool($config_is_set) || !$config_is_set) {
 	header("Location: public/install");
-	print "OpenGoo is not installed. Please redirect your browser to <a href=\"" . PUBLIC_FOLDER . "/install\">" . PUBLIC_FOLDER . "/install</a> folder and follow installation procedure";
+	print "Feng Office is not installed. Please redirect your browser to <a href=\"" . PUBLIC_FOLDER . "/install\">" . PUBLIC_FOLDER . "/install</a> folder and follow installation procedure";
 	die();
 } // if
 
@@ -61,9 +61,9 @@ if(!is_bool($config_is_set) || !$config_is_set) {
 // ---------------------------------------------------
 
 if (!defined('FILES_DIR')) define('FILES_DIR', ROOT . '/upload'); // place where we will upload project files
-define('PRODUCT_NAME', 'OpenGoo');
-define('PRODUCT_URL', 'http://www.opengoo.org');
-define('DEFAULT_HELP_LINK', 'http://wiki.opengoo.org');
+define('PRODUCT_NAME', 'Feng Office');
+define('PRODUCT_URL', 'http://www.fengoffice.com');
+define('DEFAULT_HELP_LINK', 'http://fengoffice.com/web/wiki');
 
 define('MAX_SEARCHABLE_FILE_SIZE', 1048576); // if file type is searchable script will load its content into search index. Using this constant you can set the max filesize of the file that will be imported. Noone wants 500MB in search index for single file
 define('SESSION_LIFETIME', 14400);

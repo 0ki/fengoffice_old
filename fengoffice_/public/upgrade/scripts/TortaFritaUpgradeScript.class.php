@@ -1,11 +1,11 @@
 <?php
 
   /**
-  * TortaFrita upgrade script will upgrade OpenGoo 0.6.6 to OpenGoo 0.7
+  * TortaFrita upgrade script will upgrade Feng Office 0.6.6 to Feng Office 0.7
   *
   * @package ScriptUpgrader.scripts
   * @version 1.0
-  * @author Marcos Saiz <marcos.saiz@opengoo.org>
+  * @author Marcos Saiz <marcos.saiz@fengoffice.com>
   */
   class TortaFritaUpgradeScript extends ScriptUpgraderScript {
         
@@ -91,7 +91,7 @@
         return false;
       } // if
 
-      $this->printMessage('OpenGoo has been upgraded. You are now running OpenGoo '.$this->getVersionTo().' Enjoy!');
+      $this->printMessage('Feng Office has been upgraded. You are now running Feng Office '.$this->getVersionTo().' Enjoy!');
     } // execute
   } // TortaFritaUpgradeScript
 

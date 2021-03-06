@@ -1,7 +1,7 @@
 <?php return array(
 	'new message' => 'Nova nota',
 	'new comment' => 'Nou comentari',
-	'your account created' => 'El vostre compte nou OpenGoo has estat creat',
+	'your account created' => 'El vostre compte nou Feng Office has estat creat',
 	'your password' => 'La vostra contrasenya',
 	'milestone assigned to you' => 'La fita se us ha estat assignada',
 	'task assigned to you' => 'La tasca se us ha estat assignada',

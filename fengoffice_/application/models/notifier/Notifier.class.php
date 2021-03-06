@@ -64,7 +64,7 @@ class Notifier {
 			$sendername = owner_company()->getName();
 			$senderemail = owner_company()->getEmail();
 			if (!is_valid_email($senderemail)) {
-				$senderemail = 'noreply@opengoo.org';
+				$senderemail = 'noreply@fengoffice.com';
 			}
 			$senderid = 0;
 		}
@@ -206,7 +206,7 @@ class Notifier {
 		
 		self::queueEmail(
 			self::prepareEmailAddress($user->getEmail(), $user->getDisplayName()),
-			self::prepareEmailAddress("noreply@opengoo.org", "noreply@opengoo.org"),
+			self::prepareEmailAddress("noreply@fengoffice.com", "noreply@fengoffice.com"),
 			lang('password expiration reminder'),
 			tpl_fetch(get_template_path('password_expiration_reminder', 'notifier'))
 		); // send
@@ -398,7 +398,7 @@ class Notifier {
 		return self::queueEmail(
 			self::prepareEmailAddress($milestone->getAssignedTo()->getEmail(), $milestone->getAssignedTo()->getDisplayName()),
 			self::prepareEmailAddress($milestone->getCreatedBy()->getEmail(), $milestone->getCreatedByDisplayName()),
-			lang('milestone assigned to you'),
+			lang('milestone assigned to you', $milestone->getName(), $milestone->getProject() instanceof Project ? $milestone->getProject()->getName() : ''),
 			tpl_fetch(get_template_path('milestone_assigned', 'notifier'))
 		); // send
 		
@@ -434,7 +434,7 @@ class Notifier {
 		self::queueEmail(
 			array(self::prepareEmailAddress($task->getAssignedTo()->getEmail(), $task->getAssignedTo()->getDisplayName())),
 			self::prepareEmailAddress($task->getUpdatedBy()->getEmail(), $task->getUpdatedByDisplayName()),
-			lang('task assigned to you'),
+			lang('task assigned to you', $task->getTitle(), $task->getProject() instanceof Project ? $task->getProject()->getName() : ''),
 			tpl_fetch(get_template_path('task_assigned', 'notifier'))
 		); // send
 		

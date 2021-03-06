@@ -4,7 +4,7 @@
   /**
   * UserWsConfigCategories class
   *
-  * @author Marcos Saiz <marcos.saiz@opengoo.org>
+  * @author Marcos Saiz <marcos.saiz@fengoffice.com>
   */
   abstract class BaseUserWsConfigCategories extends DataManager {
   

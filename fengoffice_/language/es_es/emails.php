@@ -1,7 +1,7 @@
 <?php return array(
 	'new message' => 'Nueva nota',
 	'new comment' => 'Añadir comentario',
-	'your account created' => 'Su nueva cuenta en OpenGoo ha sido creada',
+	'your account created' => 'Su nueva cuenta en Feng Office ha sido creada',
 	'your password' => 'Contraseña',
 	'milestone assigned to you' => 'Se le ha asignado un hito',
 	'task assigned to you' => 'Se le ha asignado una tarea',

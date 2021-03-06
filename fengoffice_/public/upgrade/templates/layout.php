@@ -39,7 +39,7 @@ if (count($scripts) > 0) {
             <td>
               <select name="form_data[upgrade_from]" id="upgradeFormFrom">
 	<?php foreach($scripts as $script) { ?>
-                <option <?php if ($script->getVersionFrom() == array_var($form_data, 'upgrade_from', '1.1')) echo 'selected="selected"'; ?> value="<?php echo clean($script->getVersionFrom()) ?>">OpenGoo <?php echo clean($script->getVersionFrom()) ?></option>
+                <option <?php if ($script->getVersionFrom() == array_var($form_data, 'upgrade_from', '1.1')) echo 'selected="selected"'; ?> value="<?php echo clean($script->getVersionFrom()) ?>">Feng Office <?php echo clean($script->getVersionFrom()) ?></option>
 	<?php } // foreach ?>
               </select>
             </td>
@@ -80,7 +80,7 @@ if (count($scripts) > 0) {
 <?php } // if ?>
       </div>
 
-	<div class="back"><a href="../../"><?php echo lang('back to opengoo')?></a></div>
+	<div class="back"><a href="../../"><?php echo lang('back to fengoffice')?></a></div>
     <div id="footer">&copy; <?php echo date('Y') ?> <a href="<?php echo PRODUCT_URL?>"><?php echo PRODUCT_NAME?></a>. <?php echo lang('all rights reserved')?>.</div>
   </div>
 

@@ -1,5 +1,5 @@
 <!--
- *  Slimey - SLIdeshows Microformats Editor, part of the OpenGoo weboffice suite - http://www.opengoo.org
+ *  Slimey - SLIdeshows Microformats Editor, part of the Feng Office weboffice suite - http://www.fengoffice.com
  *  Copyright (C) 2007 Ignacio de Soto
  *
  *  Slideshows engine
@@ -7,7 +7,7 @@
 
 <html>
 <head>
-<title>OpenGoo Slideshow</title>
+<title>Feng Office Slideshow</title>
 <style type="text/css">
 body {
 	margin: 0px;

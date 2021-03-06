@@ -1,5 +1,5 @@
 <?php
-$page_title = "Translate OpenGoo" . ($to != "" ? " to $to" : "");
+$page_title = "Translate Feng Office" . ($to != "" ? " to $to" : "");
 set_page_title($page_title) ?>
 <style>
 body {
@@ -91,7 +91,7 @@ if (!isset($to)) $to = ""; ?>
 	
 <!-- h1><?php echo $page_title ?></h1-->
 
-<p>This tool allows you to translate OpenGoo to a locale other than en_us. Your webserver needs permissions to write on the 'language' folder.</p> <?php
+<p>This tool allows you to translate Feng Office to a locale other than en_us. Your webserver needs permissions to write on the 'language' folder.</p> <?php
 
 ?>
 <table class="filters"><tbody>

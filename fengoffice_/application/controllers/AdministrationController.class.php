@@ -418,7 +418,7 @@ class AdministrationController extends ApplicationController {
 			flash_error(lang('error upgrade invalid zip url', $version_number));
 			return;
 		}
-		$zipname = "opengoo_" . str_replace(" ", "_", $version_number) . ".zip";
+		$zipname = "fengoffice_" . str_replace(" ", "_", $version_number) . ".zip";
 		try {
 			$in = fopen($zipurl, "r");
 			$zippath = "tmp/" . $zipname;
@@ -434,8 +434,8 @@ class AdministrationController extends ApplicationController {
 			while ($zip_entry  = zip_read($zip)) {
 				$completePath = dirname(zip_entry_name($zip_entry));
 				$completeName = zip_entry_name($zip_entry);
-				$completePath = substr($completePath, strpos($completePath, "opengoo") + strlen("opengoo") + 1);
-				$completeName = substr($completeName, strpos($completeName, "opengoo") + strlen("opengoo") + 1);
+				$completePath = substr($completePath, strpos($completePath, "fengoffice") + strlen("fengoffice") + 1);
+				$completeName = substr($completeName, strpos($completeName, "fengoffice") + strlen("fengoffice") + 1);
 		
 				@mkdir($completePath, true);
 		

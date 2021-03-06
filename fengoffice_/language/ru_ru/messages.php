@@ -1,6 +1,6 @@
 <?php
 /* 
-Translated into Russian for OpenGoo
+Translated into Russian for Feng Office
 Last update:  see readme_rus.txt
 
 http://code.google.com/p/opengooru/
@@ -355,8 +355,8 @@ http://code.google.com/p/opengooru/
 	'confirm delete group' => 'Вы уверены, что хотите удалить эту группу?',
 	
   // Errors
-	'system error message' => 'Приносим извинения, фатальная ошибка не позволяет OpenGoo выполнить Ваш запрос. Отчет об ошибке послан администратору.',
-	'execute action error message' => 'Извините, в настоящий момент OpenGoo не в состоянии выполнить Ваш запрос. Отчет об ошибке послан администратору.',
+	'system error message' => 'Приносим извинения, фатальная ошибка не позволяет Feng Office выполнить Ваш запрос. Отчет об ошибке послан администратору.',
+	'execute action error message' => 'Извините, в настоящий момент Feng Office не в состоянии выполнить Ваш запрос. Отчет об ошибке послан администратору.',
 	
   // Log
 	'log add projectmessages' => '\'{0}\' добавлено',

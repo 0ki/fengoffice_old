@@ -71,7 +71,7 @@ header("Content-Type: text/plain; charset=UTF-8");
 
 $header = 'msgid ""
 msgstr ""
-"Project-Id-Version: OpenGoo '.(include 'version.php').'\n"
+"Project-Id-Version: Feng Office '.(include 'version.php').'\n"
 "POT-Creation-Date: '.date("Y-m-d H:iO").'\n"
 "PO-Revision-Date: \n"
 "Last-Translator: \n"

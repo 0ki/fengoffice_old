@@ -173,7 +173,7 @@ class Localization {
 				} // foreach
 			} // if
 			
-			//Load plugin langs after opengoo default langs
+			//Load plugin langs after fengoffice default langs
 			$plugins_dir = $langs_dir . '/plugins';
 			if(is_dir($plugins_dir)) {
 				sort($files);

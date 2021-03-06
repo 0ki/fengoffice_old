@@ -2,7 +2,7 @@
 
   /**
   * 
-  * @author Marcos Saiz <marcos.saiz@opengoo.org>
+  * @author Marcos Saiz <marcos.saiz@fengoffice.com>
   */
   class UserWsConfigCategories extends BaseUserWsConfigCategories {
     

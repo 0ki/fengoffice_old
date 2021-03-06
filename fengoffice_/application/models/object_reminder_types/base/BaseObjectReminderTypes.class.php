@@ -4,7 +4,7 @@
 /**
  * BaseObjectReminderTypes class
  *
- * @author Ignacio de Soto <ignacio.desoto@opengoo.org>
+ * @author Ignacio de Soto <ignacio.desoto@fengoffice.com>
  */
 abstract class BaseObjectReminderTypes extends DataManager {
 

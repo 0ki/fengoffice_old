@@ -230,6 +230,7 @@ class MailController extends ApplicationController {
 				Hook::fire('email_base_css', null, $css);
 				str_replace(array("\r","\n"), "", $css);
 				$body = '<div style="' . $css . '">' . $body . '</div>';
+				$body = str_replace('<blockquote>', '<blockquote style="border-left:1px solid #987ADD;padding-left:10px;">', $body);
 			}
 			$type = 'text/' . array_var($mail_data, 'format');
 			
@@ -411,7 +412,7 @@ class MailController extends ApplicationController {
 				$mail->setConversationId($conversation_id);
 				$mail->setInReplyToId($in_reply_to_id);
 				
-				$mail->setUid('UID');
+				$mail->setUid(gen_id());
 				$mail->setState($isDraft ? 2 : 200);
 				$mail->setIsPrivate(true);
 				
@@ -932,8 +933,10 @@ class MailController extends ApplicationController {
 						$csv = array_var($classification_data, 'tag');
 						$conv_email->setTagsFromCSV($csv);
 					
-						//Classify attachments
-						$this->classifyFile($classification_data, $conv_email, $parsedEmail, $validWS, true, $csv);
+						if ($conv_email->getHasAttachments()) {
+							//Classify attachments
+							$this->classifyFile($classification_data, $conv_email, $parsedEmail, $validWS, true, $csv);
+						}
 					}
 					DB::commit();
 					flash_success(lang('success classify email'));	
@@ -1917,10 +1920,15 @@ class MailController extends ApplicationController {
 						case "email":
 							$email = MailContents::findById($id);
 							if (isset($email) && $email->canDelete(logged_user())) {
-								if (user_config_option('show_emails_as_conversations', true, logged_user()->getId())) {
-									$emails_in_conversation = MailContents::getMailsFromConversation($email);
-								} else { 
+								if ($email->getState() == 2) {
+									// we are deleting a draft email
 									$emails_in_conversation = array($email);
+								} else {
+									if (user_config_option('show_emails_as_conversations', true, logged_user()->getId())) {
+										$emails_in_conversation = MailContents::getMailsFromConversation($email);
+									} else { 
+										$emails_in_conversation = array($email);
+									}
 								}
 								foreach ($emails_in_conversation as $email){
 									if ($email->canDelete(logged_user())) {

@@ -53,15 +53,15 @@
     <legend><?php echo lang('administrator update profile notice') ?></legend>
     <div class="content">
       <div>
-        <?php echo label_tag(lang('username'), 'profileFormUsername', true) ?>
+        <?php echo label_tag(lang('username'), $genid . 'profileFormUsername', true) ?>
         <?php echo text_field('user[username]', array_var($user_data, 'username'), 
-        array('id' => 'profileFormUsername', 'tabindex' => '2000')) ?>
+        array('id' => $genid . 'profileFormUsername', 'tabindex' => '2000')) ?>
       </div>
       
       <div>
-        <?php echo label_tag(lang('company'), 'userFormCompany', true) ?>
+        <?php echo label_tag(lang('company'), $genid . 'userFormCompany', true) ?>
         <?php $attributes = array(
-        	'id' => 'userFormCompany',
+        	'id' => $genid . 'userFormCompany',
         	'tabindex' => '2100',
         	'onchange' => "var d = document.getElementById('" . $genid . "options'); var n = document.getElementById('" . $genid . "userFormIsAdminNo'); if (this.value == '1') { if (d) d.style.display = 'block'; if (n) n.checked = true; } else { if (d) d.style.display = 'none'; if(n) n.checked = false; }"
 		);
@@ -70,6 +70,12 @@
 		}
 		?>
         <?php echo select_company('user[company_id]', array_var($user_data, 'company_id'),  $attributes, false) ?>
+      </div>
+      
+      <div>
+        <?php echo label_tag(lang('personal project'), $genid . 'userPersonalProject', true) ?>
+        <div class="desc"><?php echo lang('personal project desc') ?></div>
+        <?php echo select_project2('user[personal_project_id]', $user->getPersonalProjectId()) ?>
       </div>
       
 

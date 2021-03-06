@@ -185,8 +185,9 @@
 				}
 				$html_content = "<html>" . $html_content . "</html>";
 			}
+			//$html_content = convert_to_links($html_content); // commented because it can break HTML (e.g. if an URL or email is found on the title of an element)
 			// links must open in a new tab or window
-			$html_content = str_replace('href', 'target="_blank" href', $html_content);
+			$html_content = str_replace('<a ', '<a target="_blank" ', $html_content);
 			
 			$html_content = str_replace("<head>", '<head><link rel="stylesheet" type="text/css" href="'.ROOT_URL.'/public/assets/javascript/ckeditor/contents.css" />', $html_content);
 			$html_content = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">' . "\n" . $html_content;

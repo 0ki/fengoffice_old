@@ -1054,7 +1054,7 @@ class ObjectController extends ApplicationController {
 			if ($filterName!=''){
 				$fn = " AND title LIKE '%". $filterName ."%'";
 			}
-			$completed = $trashed? '': 'AND `completed_on` = ' . DB::escape(EMPTY_DATETIME);
+			$completed = ($trashed || $archived) ? '': 'AND `completed_on` = ' . DB::escape(EMPTY_DATETIME);
 			$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectTasks::instance(), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`co`') .')';
 			if ($filterManager == '' || $filterManager == "ProjectTasks")
 			$res['Tasks'] = "SELECT  'ProjectTasks' AS `object_manager_value`, `id` AS `oid`, $order_crit_tasks AS `order_value` FROM `" .
@@ -1123,6 +1123,10 @@ class ObjectController extends ApplicationController {
 			if ($filterManager == '' || $filterManager == "Companies")
 			$res['Companies'] = "SELECT  'Companies' AS `object_manager_value`, `id` as `oid`, $order_crit_companies AS `order_value` FROM `" .
 			TABLE_PREFIX . "companies` `co` WHERE " . $trashed_cond ." AND $archived_cond AND ".$proj_cond_companies . str_replace('= `object_manager_value`', "= 'Companies'", $tag_str) . $permissions . $fn2;
+			if ($filterManager == '' || $filterManager == "Comments")
+			$res['CompaniesComments'] = "SELECT  'Comments' AS `object_manager_value`, `id` AS `oid`, $order_crit_comments AS `order_value` FROM `" .
+			TABLE_PREFIX . "comments` WHERE $trashed_cond AND `rel_object_manager` = 'Companies' AND `rel_object_id` IN (SELECT `co`.`id` FROM `" .
+			TABLE_PREFIX . "companies` `co` WHERE " . $trashed_cond ." AND $archived_cond AND ".$proj_cond_companies . str_replace('= `object_manager_value`', "= 'Companies'", $tag_str) . $permissions . $cfn . ")";
 
 			// contacts
 			$permissions = ' AND ( ' . permissions_sql_for_listings(Contacts::instance(), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`co`') . ')';
@@ -1131,10 +1135,19 @@ class ObjectController extends ApplicationController {
 				$res['Contacts'] = "SELECT 'Contacts' AS `object_manager_value`, `id` AS `oid`, $order_crit_contacts AS `order_value` FROM `" .
 				TABLE_PREFIX . "contacts` `co` WHERE $trashed_cond AND $archived_cond AND $proj_cond_contacts " .
 				str_replace('= `object_manager_value`', "= 'Contacts'", $tag_str) . $permissions . $fn;
+				if ($filterManager == '' || $filterManager == "Comments")
+				$res['ContactsComments'] = "SELECT  'Comments' AS `object_manager_value`, `id` AS `oid`, $order_crit_comments AS `order_value` FROM `" .
+				TABLE_PREFIX . "comments` WHERE $trashed_cond AND `rel_object_manager` = 'Contacts' AND `rel_object_id` IN (SELECT `co`.`id` FROM `" .
+				TABLE_PREFIX . "contacts` `co` WHERE $trashed_cond AND $archived_cond AND $proj_cond_contacts " .
+				str_replace('= `object_manager_value`', "= 'Contacts'", $tag_str) . $permissions . $cfn . ")";
 			} else{
 				if ($filterManager == '' || $filterManager == "Contacts")
 				$res['Contacts'] = "SELECT 'Contacts' AS `object_manager_value`, `id` AS `oid`, $order_crit_contacts AS `order_value` FROM `" .
 				TABLE_PREFIX . "contacts` `co` WHERE $trashed_cond AND $archived_cond " . str_replace('= `object_manager_value`', "= 'Contacts'", $tag_str) . $permissions . $fn;
+				if ($filterManager == '' || $filterManager == "Comments")
+				$res['ContactsComments'] = "SELECT  'Comments' AS `object_manager_value`, `id` AS `oid`, $order_crit_comments AS `order_value` FROM `" .
+				TABLE_PREFIX . "comments` WHERE $trashed_cond AND `rel_object_manager` = 'Contacts' AND `rel_object_id` IN (SELECT `co`.`id` FROM `" .
+				TABLE_PREFIX . "contacts` `co` WHERE $trashed_cond AND $archived_cond " . str_replace('= `object_manager_value`', "= 'Contacts'", $tag_str) . $permissions . $cfn . ")";
 			}
 		}
 		
@@ -1393,7 +1406,7 @@ class ObjectController extends ApplicationController {
 		}
 		else if (array_var($_GET, 'action') == 'untag') {
 			$ids = explode(',', array_var($_GET, 'objects'));
-			list($succ, $err) = $this->do_untag_object($ids);
+			list($succ, $err) = $this->do_untag_object(array_var($_GET, 'tagTag'), $ids);
 			if ($err > 0) {
 				flash_error(lang('error untag objects', $err));
 			} else {
@@ -1541,19 +1554,28 @@ class ObjectController extends ApplicationController {
 		return array($succ, $err);
 	}
 	
-	function do_untag_object($ids, $manager = null) {
+	function do_untag_object($tag, $ids, $manager = null) {
 		$err = $succ = 0;
 		foreach ($ids as $id) {
 			if (trim($id) != '') {
 				try {
 					if($manager){
 						$obj = get_object_by_manager_and_id($id, $manager);
-						$obj->clearTags();
+						if ($tag != '') {
+							Tags::deleteObjectTag($tag, $obj->getId(),get_class($obj->manager()));
+						} else {
+							$obj->clearTags();
+						}
 					}
 					else{ //call from dashboard, format is manager:id
 						$split = explode(":", $id);
 						$obj = get_object_by_manager_and_id($split[1], $split[0]);
-						$obj->clearTags();
+						if ($tag != '') {
+							Tags::deleteObjectTag($tag, $obj->getId(),get_class($obj->manager()));
+						} else {
+							$obj->clearTags();
+						}
+							
 					}
 					$succ++;
 				} catch (Exception $e) {
@@ -1593,7 +1615,11 @@ class ObjectController extends ApplicationController {
 						$obj = get_object_by_manager_and_id($id, $manager);
 						if ($obj->canDelete(logged_user())) {
 							if ($permanent) {
-								$obj->delete();
+								if ($obj instanceof MailContent) {
+									$obj->delete(false);
+								} else {
+									$obj->delete();
+								}
 								ApplicationLogs::createLog($obj, $obj->getWorkspaces(), ApplicationLogs::ACTION_DELETE);
 								$succ++;
 							} else if ($obj->isTrashable()) {
@@ -1610,7 +1636,11 @@ class ObjectController extends ApplicationController {
 						}
 						if ($obj->canDelete(logged_user())) {
 							if ($permanent) {
-								$obj->delete();
+								if ($obj instanceof MailContent) {
+									$obj->delete(false);
+								} else {
+									$obj->delete();
+								}
 								ApplicationLogs::createLog($obj, $obj->getWorkspaces(), ApplicationLogs::ACTION_DELETE);
 								$succ++;
 							} else if ($obj->isTrashable()) {

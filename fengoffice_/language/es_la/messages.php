@@ -289,8 +289,8 @@
 	'confirm reset form' => '¿Realmente quiere reiniciar este formulario?',
 	'confirm delete contacts' => '¿Realmente desea eliminar estos contactos?',
 	'confirm delete group' => '¿Realmente desea eliminar este grupo?',
-	'system error message' => 'Lo lamentamos, pero ha ocurrido un error fatal y OpenGoo no fue capaz de ejecutar su pedido. Un informe de lo sucedido ha sido enviado al administrador.',
-	'execute action error message' => 'Lo lamentamos, pero OpenGoo no es capaz de ejecutar su pedido. Un informe de lo sucedido ha sido enviado al administrador.',
+	'system error message' => 'Lo lamentamos, pero ha ocurrido un error fatal y Feng Office no fue capaz de ejecutar su pedido. Un informe de lo sucedido ha sido enviado al administrador.',
+	'execute action error message' => 'Lo lamentamos, pero Feng Office no es capaz de ejecutar su pedido. Un informe de lo sucedido ha sido enviado al administrador.',
 	'log add projectmessages' => '\'{0}\' agregado',
 	'log edit projectmessages' => '\'{0}\' modificado',
 	'log delete projectmessages' => '\'{0}\' eliminado',
@@ -583,4 +583,6 @@
     'log unarchive mailcontents' => '\'{0}\' desarchivado',
     'log archive timeslots' => '\'{0}\' archivado',
     'log unarchive timeslots' => '\'{0}\' desarchivado',
+	'success reset gui state' => 'Estado de la interfaz reestablecido con éxito',
+	'reset gui state' => 'Reestablecer el estado de la interfaz',
 ); ?>

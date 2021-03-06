@@ -2,12 +2,12 @@
 
 // PHP5?
 if(!version_compare(phpversion(), '5.0', '>=')) {
-	die('<strong>Installation error:</strong> in order to run OpenGoo you need PHP5. Your current PHP version is: ' . phpversion());
+	die('<strong>Installation error:</strong> in order to run Feng Office you need PHP5. Your current PHP version is: ' . phpversion());
 } // if
 
 $compatibility = strtolower(ini_get('zend.ze1_compatibility_mode'));
 if($compatibility == 'on' || $compatibility == '1') {
-	die('<strong>Installation error:</strong> OpenGoo will not run on PHP installations that have <strong>zend.ze1_compatibility_mode</strong> set to On. <strong>Please turn it off</strong> (in your php.ini file) in order to continue.');
+	die('<strong>Installation error:</strong> Feng Office will not run on PHP installations that have <strong>zend.ze1_compatibility_mode</strong> set to On. <strong>Please turn it off</strong> (in your php.ini file) in order to continue.');
 } // if
 
 if(!isset($_SESSION)) session_start();
@@ -28,7 +28,7 @@ if (is_file($config_path)) {
 }
 if(is_bool($config_is_set) && $config_is_set) {
 	header("Location: ../../index.php");
-	die('<strong>Installation error:</strong> OpenGoo is already installed');
+	die('<strong>Installation error:</strong> Feng Office is already installed');
 } else {
 	$f = @fopen($config_path, "w");
 	@fwrite($f, "<?php return false ?>");

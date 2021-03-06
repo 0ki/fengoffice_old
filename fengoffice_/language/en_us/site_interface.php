@@ -9,7 +9,7 @@
 
 // Return langs
 return array(
-    'new OpenGoo version available' => 'New version of OpenGoo is available. <a class="internalLink" href="{0}" onclick="{1}">More details</a>.',
+    'new Feng Office version available' => 'New version of Feng Office is available. <a class="internalLink" href="{0}" onclick="{1}">More details</a>.',
 
     'my tasks' => 'My tasks',
     'welcome back' => 'Welcome back <strong>{0}</strong>',
@@ -61,7 +61,7 @@ return array(
     'company card of' => 'Company card of {0}',
 
 // Upgrade
-    'upgrade is not available' => 'There are no new versions of OpenGoo available for download',
+    'upgrade is not available' => 'There are no new versions of Feng Office available for download',
     'check for upgrade now' => 'Check now',
 
 // Forgot password
@@ -114,7 +114,7 @@ return array(
     											The system automatically creates a personal workspace for every user ({1}). All the information in this workspace is only visible to its owner by default.',
 
   	'new account step configuration' => 'Step {0}: Configuration',
-  	'new account step configuration info' => '<a class="internalLink" href="{0}">Manage</a> opengoo general settings, mailing configuration, enable/disable modules, among other options',
+  	'new account step configuration info' => '<a class="internalLink" href="{0}">Manage</a> fengoffice general settings, mailing configuration, enable/disable modules, among other options',
 
   	'new account step profile' => 'Step {0}: Update profile',
   	'new account step profile info' => 'Update your <a class="internalLink" href="{0}">user profile</a>',
@@ -662,7 +662,7 @@ return array(
   'personal workspace name' => '{0} Personal',
   'personal workspace description' => 'Personal workspace',
 
-  'wiki help link' => 'http://wiki.opengoo.org',
+  'wiki help link' => 'http://fengoffice.com/web/wiki',
   'last language' => 'Last',
 
   'reset password expired' => 'Reset password request has expired. Please issue a new one by clicking on "{0}"',
@@ -691,6 +691,9 @@ return array(
 
   'archived by' => 'Archived by',
   'hidden quoted text' => 'Hidden quoted text',
+  'subscribe invited users' => 'Subscribe invited users',
+  'personal project' => 'Personal workspace',
+  'personal project desc' => 'The personal workspace is the workspace where objects are stored by default (when "All" is selected in the Workspaces panel). If you change this workspace the user will be given full access to it. You can later change this by editing user or workspace permissions.',
 ); // array
 
 ?>

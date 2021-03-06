@@ -7,7 +7,7 @@
     // ---------------------------------------------------
     
     'administration tool name test_mail_settings' => 'Test mail settings',
-    'administration tool desc test_mail_settings' => 'Use this simple tool to send test emails to check if OpenGoo mailer is well configured',
+    'administration tool desc test_mail_settings' => 'Use this simple tool to send test emails to check if Feng Office mailer is well configured',
     'administration tool name mass_mailer' => 'Mass mailer',
     'administration tool desc mass_mailer' => 'Simple tool that let you send plain text messages to any group of users registered to the system',
   
@@ -29,11 +29,11 @@
     
     // Categories
     'config category name general' => 'General',
-    'config category desc general' => 'General OpenGoo settings.',
+    'config category desc general' => 'General Feng Office settings.',
     'config category name mailing' => 'Mailing',
-    'config category desc mailing' => 'Use these settings to set up how OpenGoo should handle email sending. You can use configuration options provided in your php.ini or set it so it uses any other SMTP server.',
+    'config category desc mailing' => 'Use these settings to set up how Feng Office should handle email sending. You can use configuration options provided in your php.ini or set it so it uses any other SMTP server.',
   	'config category name modules' => 'Modules',
-    'config category desc modules' => 'Use these settings to enable or disable OpenGoo modules. Disabling a module only hides it from the graphical interface. It doesn\'t remove permissions from users to create or edit content objects.',
+    'config category desc modules' => 'Use these settings to enable or disable Feng Office modules. Disabling a module only hides it from the graphical interface. It doesn\'t remove permissions from users to create or edit content objects.',
 	'config category name passwords' => 'Passwords',
     'config category desc passwords' => 'Use these settings to manage password options.',
 	
@@ -56,7 +56,7 @@
     'config option name default_project_folders' => 'Default folders',
     'config option desc default_project_folders' => 'Folders that will be created when workspace is created. Every folder name should be in a new line. Duplicate or empty lines will be ignored',
     'config option name theme' => 'Theme',
-    'config option desc theme' => 'Using themes you can change the default look and feel of OpenGoo. Need to refresh for it to take effect.',
+    'config option desc theme' => 'Using themes you can change the default look and feel of Feng Office. Need to refresh for it to take effect.',
   	'config option name days_on_trash' => 'Days on trash',
     'config option desc days_on_trash' => 'How many days a content object is kept in the trash before being automatically deleted. If 0, objects won\'t be deleted from trash.',
 	'config option name checkout_notification_dialog' => 'Checkout notification dialog for documents',
@@ -82,7 +82,7 @@
   	'config option name enable_reporting_module' => 'Enable Reporting Module',
   
     'config option name upgrade_check_enabled' => 'Enable upgrade check',
-    'config option desc upgrade_check_enabled' => 'If Yes system will once a day check if there are new versions of OpenGoo available for download',
+    'config option desc upgrade_check_enabled' => 'If Yes system will once a day check if there are new versions of Feng Office available for download',
 	'config option name work_day_start_time' => 'Work day start time',
   	'config option desc work_day_start_time' => 'Specifies the time when work day starts',
   
@@ -91,6 +91,9 @@
     
   	'config option name currency_code' => 'Currency',
   	'config option desc currency_code' => 'Currency symbol',
+  
+	'config option name detect_mime_type_from_extension' => 'Detect mime type from extension',
+  	'config option desc detect_mime_type_from_extension' => 'Enable this to detect file\'s mime type by its extension',
     
     // Mailing
     'config option name exchange_compatible' => 'Microsoft Exchange compatibility mode',
@@ -165,7 +168,7 @@
   	'user ws config option desc time_format_use_24' => 'If enabled time descriptions will be shown as \'hh:mm\' from 00:00 to 23:59, if not hours will go from 1 to 12 using AM or PM.',
   	'user ws config option name work_day_start_time' => 'Work day start time',
 	'user ws config option desc work_day_start_time' => 'Specifies the time when work day starts',
-  	'user ws config option name show dashboard info widget' => 'Show workspace description widget',
+  	'user ws config option name show dashboard info widget' => 'Show workspace information widget',
   	
   	'user ws config option name my tasks is default view' => 'Tasks assigned to me is the default view',
   	'user ws config option desc my tasks is default view' => 'If no is selected, the default view of the task panel will show all tasks',
@@ -240,7 +243,7 @@
   
   	'cron events' => 'Cron events',
   	'about cron events' => 'Learn about cron events...',
-  	'cron events info' => 'Cron events let you execute tasks in OpenGoo periodically, without having to login to the system. To enable cron events you need to configure a cron job to periodically execute the "cron.php" file, located at the root of OpenGoo. The periodicity at which you run the cron job will determine the granularity at which you can run these cron events. For example, if you configure a cron job to run every five minutes, and you configure the cron event to check for upgrades every one minute, it will only be able to check for upgrades every five minutes. To learn about how to configure a cron job ask your system administrator or hosting provider.',
+  	'cron events info' => 'Cron events let you execute tasks in Feng Office periodically, without having to login to the system. To enable cron events you need to configure a cron job to periodically execute the "cron.php" file, located at the root of Feng Office. The periodicity at which you run the cron job will determine the granularity at which you can run these cron events. For example, if you configure a cron job to run every five minutes, and you configure the cron event to check for upgrades every one minute, it will only be able to check for upgrades every five minutes. To learn about how to configure a cron job ask your system administrator or hosting provider.',
   	'cron event name check_mail' => 'Check mail',
   	'cron event desc check_mail' => 'This cron event will check for new email in all email accounts in the system.',
   	'cron event name purge_trash' => 'Purge trash',
@@ -248,9 +251,9 @@
   	'cron event name send_reminders' => 'Send reminders',
   	'cron event desc send_reminders' => 'This cron event will send email reminders.',
   	'cron event name check_upgrade' => 'Check upgrade',
-  	'cron event desc check_upgrade' => 'This cron event will check for new versions of OpenGoo.',
+  	'cron event desc check_upgrade' => 'This cron event will check for new versions of Feng Office.',
   	'cron event name send_notifications_through_cron' => 'Send notifications through cron',
-  	'cron event desc send_notifications_through_cron' => 'If this event is enabled email notifications will be sent through cron and not when generated by OpenGoo.',
+  	'cron event desc send_notifications_through_cron' => 'If this event is enabled email notifications will be sent through cron and not when generated by Feng Office.',
   	'next execution' => 'Next execution',
   	'delay between executions' => 'Delay between executions',
   	'enabled' => 'Enabled',
@@ -258,7 +261,7 @@
   	'success update cron events' => 'Cron events updated successfully',
   
   	'manual upgrade' => 'Manual upgrade',
-  	'manual upgrade desc' => 'To manually upgrade OpenGoo you have to download the new version of OpenGoo, extract it to the root of your installation and then go to <a href="public/upgrade">\'public/upgrade\'</a> in your browser to run the upgrade process.',
+  	'manual upgrade desc' => 'To manually upgrade Feng Office you have to download the new version of Feng Office, extract it to the root of your installation and then go to <a href="public/upgrade">\'public/upgrade\'</a> in your browser to run the upgrade process.',
   	'automatic upgrade' => 'Automatic upgrade',
   	'automatic upgrade desc' => 'The automatic upgrade will automatically download and extract the new version, and will run the upgrade process for you. The webserver needs write access to all folders.',
   	'start automatic upgrade' => 'Start automatic upgrade',

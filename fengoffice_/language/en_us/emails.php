@@ -5,7 +5,7 @@ return array(
 // Titles
     'new message' => 'New note',
     'new comment' => 'New comment',
-    'your account created' => 'Your new OpenGoo account has been created',
+    'your account created' => 'Your new Feng Office account has been created',
     'your password' => 'Your password',
     'milestone assigned to you' => 'Milestone has been assigned to you',
     'task assigned to you' => 'Task has been assigned to you',

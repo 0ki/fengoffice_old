@@ -1,5 +1,5 @@
 <?php return array(
-	'new OpenGoo version available' => 'Uma nova versão de OpenGoo está disponível. <a class="internalLink" href="{0}" onclick="{1}">Mais detalhes</a>.',
+	'new Feng Office version available' => 'Uma nova versão de Feng Office está disponível. <a class="internalLink" href="{0}" onclick="{1}">Mais detalhes</a>.',
 	'my tasks' => 'Minhas tarefas',
 	'welcome back' => 'Bem vindo <strong>{0}</strong>',
 	'online users' => 'Usuários Online',
@@ -38,7 +38,7 @@
 	'days left' => '{0} dias para o previsto',
 	'user card of' => 'Perfil de {0}',
 	'company card of' => 'Cartão da organização {0}',
-	'upgrade is not available' => 'Não há novas versões do OpenGoo para download',
+	'upgrade is not available' => 'Não há novas versões do Feng Office para download',
 	'check for upgrade now' => 'Verificar agora',
 	'forgot password' => 'Esqueceu sua senha',
 	'email me my password' => 'Enviar senha por email',
@@ -474,7 +474,7 @@
 	'new account step add members info' => 'Você pode <a class="internalLink" href="{0}">Criar Contas de Usuário</a> para todos os membros de sua equipe. Cada membro terá seu próprio Nome de Usuário e Senha para acesso ao Sistema.',
 	'new account step start workspace' => 'Passo {0}: Comece organizando suas informações: crie um Espaço de Trabalho',
 	'new account step start workspace info' => 'Espaço de Trabalho é onde você guarda e organiza as informações de sua Empresa.<br/>Espaços podem ser divididos por clientes, projetos, departamentos da empresa ou qualquer outra divisão que você use.<br/>Clique em {0} para criar um novo Espaço de Trabalho quando desejar.<br/>O Sistema cria automaticamente um espaço pessoal para cada usuário.<br/>As informações contidas neste Espaço só serão visíveis ao seu proprietário, por padrão.',
-	'new account step configuration info' => '<a class="internalLink" href="{0}">Gerencie</a> configurações gerais de OpenGoo, configurações de mailing, Habilite / Desabilite Módulos, entre outras opções',
+	'new account step configuration info' => '<a class="internalLink" href="{0}">Gerencie</a> configurações gerais de Feng Office, configurações de mailing, Habilite / Desabilite Módulos, entre outras opções',
 	'new account step profile' => 'Passo {0}: Atualizar Perfil',
 	'new account step profile info' => 'Atualize seu <a class="internalLink" href="{0}">Perfil de Usuário</a>',
 	'new account step preferences' => 'Passo {0}: Atualize suas preferências',
@@ -509,6 +509,6 @@
 	'hide options' => 'Ocultar opções',
 	'personal workspace name' => '{0} Pessoal',
 	'personal workspace description' => 'Espaço Pessoal',
-	'wiki help link' => 'http://wiki.opengoo.org/doku.php/pt:home',
+	'wiki help link' => 'http://fengoffice.com/web/wiki/doku.php/pt:home',
 	'last language' => 'Último',
 ); ?>

@@ -3,7 +3,7 @@
 /**
  * ConfigCategory class
  *
- * @author Marcos Saiz <marcos.saiz@opengoo.org>
+ * @author Marcos Saiz <marcos.saiz@fengoffice.com>
  */
 class UserWsConfigCategory extends BaseUserWsConfigCategory {
 

@@ -1,5 +1,5 @@
 <?php return array(
-	'new OpenGoo version available' => 'Está disponible una nueva versión de OpenGoo. <a class="internalLink" href="{0}" onclick="{1}">Más detalles</a>.',
+	'new Feng Office version available' => 'Está disponible una nueva versión de Feng Office. <a class="internalLink" href="{0}" onclick="{1}">Más detalles</a>.',
 	'my tasks' => 'Mis tareas',
 	'welcome back' => 'Bienvenido <strong>{0}</strong>',
 	'online users' => 'Usuarios conectados',
@@ -38,7 +38,7 @@
 	'days left' => 'quedan {0} días ',
 	'user card of' => 'Tarjeta del contacto: {0}',
 	'company card of' => 'Tarjeta de la empresa: {0}',
-	'upgrade is not available' => 'No hay nuevas versiones de OpenGoo',
+	'upgrade is not available' => 'No hay nuevas versiones de Feng Office',
 	'check for upgrade now' => 'Verificar ahora',
 	'forgot password' => 'Olvidó su contraseña',
 	'email me my password' => 'Enviar contraseña',
@@ -70,7 +70,7 @@
 												Automáticamente se crea un espacio personal para cada usuario ({1}_personal). Este espacio solo será visto por su dueño.
 											',
 	'new account step configuration' => 'Paso {0}: Configuración',
-	'new account step configuration info' => '<a class="internalLink" href="{0}">Maneje</a> la configuración general de opengoo, configuración de correo, habilite/deshabilite módulos, entre otras opciones',
+	'new account step configuration info' => '<a class="internalLink" href="{0}">Maneje</a> la configuración general de fengoffice, configuración de correo, habilite/deshabilite módulos, entre otras opciones',
 	'new account step profile' => 'Paso {0}: Actualizar perfil',
 	'new account step profile info' => 'Actualice su <a class="internalLink" href="{0}">perfil de usuario</a>',
 	'new account step preferences' => 'Paso {0}: Actualice preferencias de usuario',
@@ -525,7 +525,7 @@
 	'hide options' => 'Ocultar opciones',
 	'personal workspace name' => '{0} Personal',
 	'personal workspace description' => 'Espacio personal',
-	'wiki help link' => 'http://wiki.opengoo.org/doku.php/es:home',
+	'wiki help link' => 'http://fengoffice.com/web/wiki/doku.php/es:home',
 	'last language' => 'Anterior',
 	'reset password expired' => 'Ha expirado la solicitud para reestablecer su contraseña. Por favor genere una nueva pinchando en "{0}"',
 	'invalid parameters' => 'Parámetros inválidos',
@@ -557,4 +557,7 @@
 	'can_add_mail_accounts description' => 'Si este permiso está marcado el usuario podrá crear nuevas cuentas de Correo.',
 	'archived by' => 'Archivado por',
 	'hidden quoted text' => 'Texto citado oculto',
+	'subscribe invited users' => 'Subscribir a usuarios invitados',
+	'personal project' => 'Espacio personal',
+	'personal project desc' => 'El espacio personal es donde se colocarán los nuevos objetos del usuario por defecto (cuando "Todos" está seleccionado en el panel de Espacios). Si cambia este espacio el usuario obtendrá todos los permisos sobre el espacio. Puede cambiar esto luego modificando los permisos del usuario o del espacio.',
 ); ?>

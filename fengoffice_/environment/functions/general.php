@@ -568,13 +568,13 @@ function escape_html_whitespace($html) {
 
 function convert_to_links($text){
 	//Replace full urls with hyperinks. Avoids " character for already rendered hyperlinks
-	$text = preg_replace('@([^"\']|^)(https?://([-\w\.]+)+(:\d+)?(/([\w/_\-\.]*(\?\S+)?)?)?)@', '$1<a href="$2" target="_blank">$2</a>', $text);
+	$text = preg_replace('@([^"\']|^)(https?://([-\w\.]+)+(:\d+)?(/([%\w/_\-\.\+]*(\?[^\s<]+)?)?)?)@', '$1<a href="$2" target="_blank">$2</a>', $text);
 
 	//Convert every word starting with "www." into a hyperlink
-	$text = preg_replace('@(>|\s|^)(www.([-\w\.]+)+(:\d+)?(/([\w/_\-\.]*(\?\S+)?)?)?)@', '$1<a href="http://$2" target="_blank">$2</a>', $text);
+	$text = preg_replace('@(>|\s|^)(www.([-\w\.]+)+(:\d+)?(/([%\w/_\-\.\+]*(\?[^\s<]+)?)?)?)@', '$1<a href="http://$2" target="_blank">$2</a>', $text);
 		
 	//Convert every email address into an <a href="mailto:... hyperlink
-	$text = preg_replace('/([^\:a-zA-Z0-9>"])([a-zA-Z0-9]+[a-zA-Z0-9\._\-\+]*@[a-zA-Z0-9_\-]+([a-zA-Z0-9\._\-]+)+)/', '$1<a href="mailto:$2" target="_blank">$2</a>', $text);
+	$text = preg_replace('/([^\:a-zA-Z0-9>"\._\-\+=])([a-zA-Z0-9]+[a-zA-Z0-9\._\-\+]*@[a-zA-Z0-9_\-]+([a-zA-Z0-9\._\-]+)+)/', '$1<a href="mailto:$2" target="_blank">$2</a>', $text);
 	return $text;
 }
 
@@ -619,5 +619,9 @@ function get_ip_address()
       $ip=$_SERVER['REMOTE_ADDR'];
     }
     return $ip;
+}
+
+function zip_supported() {
+	return class_exists('ZipArchive', false);
 }
 ?>

@@ -4,7 +4,7 @@
   * BaseObjectHandin class
   * Written on Tue, 23 Mar 2008 16:53:08 -0300
   *
-  * @author Marcos Saiz <marcos.saiz@opengoo.org>
+  * @author Marcos Saiz <marcos.saiz@fengoffice.com>
   */
   abstract class BaseObjectHandin extends DataObject {
   

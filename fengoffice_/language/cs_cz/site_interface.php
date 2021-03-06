@@ -1,5 +1,5 @@
 <?php return array(
-	'new OpenGoo version available' => 'Je dostupná nová verze OpenGoo. <a class="internalLink" href="{0}" onclick="{1}">Více informací</a>.',
+	'new Feng Office version available' => 'Je dostupná nová verze Feng Office. <a class="internalLink" href="{0}" onclick="{1}">Více informací</a>.',
 	'my tasks' => 'Moje úlohy',
 	'welcome back' => 'Vítejte zpět <strong>{0}</strong>',
 	'online users' => 'Online uživatelé',
@@ -38,7 +38,7 @@
 	'days left' => '{0} dnů zbývá',
 	'user card of' => 'Karta uživatele {0}',
 	'company card of' => 'Karta společnosti {0}',
-	'upgrade is not available' => 'Ke stažení není dostupná žádná nová verze OpenGoo',
+	'upgrade is not available' => 'Ke stažení není dostupná žádná nová verze Feng Office',
 	'check for upgrade now' => 'Zkontrolovat nyní',
 	'forgot password' => 'Zapomenuté heslo',
 	'email me my password' => 'Poslat heslo',
@@ -67,7 +67,7 @@
      Klikněte na (0) se nachází na levém panelu pro vytvoření nového pracovního prostoru. <br/>
      Systém automaticky vytváří osobní pracovní plochu pro každého uživatele ((1)). Ve výchozím nastavení jsou všechny informace v tomto pracovním prostoru viditelné pouze pro jeho majitele.',
 	'new account step configuration' => 'Krok {0}: Konfigurace',
-	'new account step configuration info' => '<a class="internalLink" href="{0}">Správa</a> hlavních nastavení OpenGoo, emailové konfigurace, povolení/nepovolení modulů, a další možnosti',
+	'new account step configuration info' => '<a class="internalLink" href="{0}">Správa</a> hlavních nastavení Feng Office, emailové konfigurace, povolení/nepovolení modulů, a další možnosti',
 	'new account step profile' => 'Krok {0}: Aktualizujte profil',
 	'new account step profile info' => 'Aktualizujte váš <a class="internalLink" href="{0}">uživatelský profil</a>',
 	'new account step preferences' => 'Step {0}: Aktualizujte nastavení uživatele',
@@ -505,6 +505,6 @@ Klikněte na pracovní plochu, kterou chcete pracovat, a <b> Přidejte nový: </
 	'hide options' => 'Skrýt volby',
 	'personal workspace name' => '{0} Osobní',
 	'personal workspace description' => 'Osobní pracovní prostor',
-	'wiki help link' => 'http://wiki.opengoo.org',
+	'wiki help link' => 'http://fengoffice.com/web/wiki',
 	'last language' => 'Poslední',
 ); ?>

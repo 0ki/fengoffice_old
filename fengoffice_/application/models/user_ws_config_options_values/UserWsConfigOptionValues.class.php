@@ -3,7 +3,7 @@
   /**
   * ConfigOptions, generated on Mon, 27 Feb 2006 14:00:37 +0100 by 
   * 
-  * @author Marcos Saiz <marcos.saiz@opengoo.org>
+  * @author Marcos Saiz <marcos.saiz@fengoffice.com>
   */
   class UserWsConfigOptionValues extends BaseUserWsConfigOptionValues {
   	

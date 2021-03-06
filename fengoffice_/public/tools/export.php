@@ -12,7 +12,7 @@ header("Content-type: text/plain; charset=utf-8");
 session_commit(); // we don't need sessions
 @set_time_limit(0); // don't limit execution of cron, if possible
 
-echo "Exporting OpenGoo files to 'tmp/export'...\n\n";
+echo "Exporting Feng Office files to 'tmp/export'...\n\n";
 
 $dir = "tmp/export";
 if (file_exists($dir)) {
@@ -83,5 +83,5 @@ if (FileRepository::getBackend() instanceof FileRepository_Backend_FileSystem) {
 	}
 }
 
-echo "\nReady. Check 'tmp/export' for OpenGoo files.\n";
+echo "\nReady. Check 'tmp/export' for Feng Office files.\n";
 ?>

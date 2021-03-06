@@ -3,7 +3,7 @@
   /**
   * UserWsConfigOption class
   *
-  * @author Marcos Saiz <marcos.saiz@opengoo.org>
+  * @author Marcos Saiz <marcos.saiz@fengoffice.com>
   */
   class UserWsConfigOption extends BaseUserWsConfigOption {
     

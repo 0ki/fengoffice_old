@@ -7,7 +7,7 @@
 	'remember last' => '최근것 기억하기',
 	'auto' => '자동',
 	'print all groups' => '모든그룹 인쇄',
-	'new OpenGoo version available' => '오픈구 새 버전이 가능합니다. <a class="internalLink" href="{0}" onclick="{1}">더 많은 세부사항</a>.',
+	'new Feng Office version available' => '오픈구 새 버전이 가능합니다. <a class="internalLink" href="{0}" onclick="{1}">더 많은 세부사항</a>.',
 	'my tasks' => '내 작업들',
 	'welcome back' => '돌아온걸 환영해요 <strong>{0}</strong>',
 	'online users' => '온라인 사용자',

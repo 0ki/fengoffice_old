@@ -4,7 +4,7 @@
  * Config controller is responsible for handling all config related operations
  *
  * @version 1.0
- * @author Ilija Studen <ilija.studen@gmail.com>, Marcos Saiz <marcos.saiz@opengoo.org>
+ * @author Ilija Studen <ilija.studen@gmail.com>, Marcos Saiz <marcos.saiz@fengoffice.com>
  */
 class ConfigController extends ApplicationController {
 

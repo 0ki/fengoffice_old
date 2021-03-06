@@ -3,7 +3,7 @@
 /**
  * BaseQueuedEmail class
  *
- * @author Ignacio de Soto <ignacio.desoto@opengoo.org>
+ * @author Ignacio de Soto <ignacio.desoto@fengoffice.com>
  */
 abstract class BaseQueuedEmail extends DataObject {
 

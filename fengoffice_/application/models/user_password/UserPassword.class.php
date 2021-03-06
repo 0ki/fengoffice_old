@@ -19,7 +19,7 @@ class UserPassword extends BaseUserPassword {
    			'conditions' => array('`user_id` = ?', $this->getUserId())
    		));
    		
-   		if(sizeof($passwords) > 10){
+   		if(count($passwords) > 10){
    			$oldest = UserPasswords::getOldestUserPassword($this->getUserId());
    			$oldest[0]->delete();
    		}        

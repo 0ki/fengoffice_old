@@ -357,8 +357,8 @@
 	'confirm delete group' => 'Are you sure that you want to delete this group?',
     
     // Errors...
-    'system error message' => 'We are sorry, but a fatal error prevented OpenGoo from executing your request. An Error Report has been sent to the administrator.',
-    'execute action error message' => 'We are sorry, but OpenGoo is not currently able to execute your request. An Error Report has been sent to the administrator.',
+    'system error message' => 'We are sorry, but a fatal error prevented Feng Office from executing your request. An Error Report has been sent to the administrator.',
+    'execute action error message' => 'We are sorry, but Feng Office is not currently able to execute your request. An Error Report has been sent to the administrator.',
     
     // Log
     'log add projectmessages' => '\'{0}\' added',
@@ -674,6 +674,9 @@
   
     'short search query warning' => 'You search query is too short. You can try searching for "<b>{0}*</b>" to find words starting with "<b>{0}</b>".',
   	'no attachments found for email' => 'No attachments found for email',
+  
+  	'success reset gui state' => 'User interface reset successfully',
+	'reset gui state' => 'Reset user interface',
   ); // array
 
 ?>

@@ -4,7 +4,7 @@
   /**
   * BaseUserWsConfigOptions class
   *
-  * @author Marcos Saiz <marcos.saiz@opengoo.org>
+  * @author Marcos Saiz <marcos.saiz@fengoffice.com>
   */
   abstract class BaseUserWsConfigOptions extends DataManager {
   

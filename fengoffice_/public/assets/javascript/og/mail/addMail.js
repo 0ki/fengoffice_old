@@ -70,7 +70,7 @@ og.mailAlertFormat = function(genid, opt) {
 				 // remove line breaks
 				iText = iText.replace(/[\n\r]/ig, "");
 				// replace signature
-				iText = iText.replace(/<div class="opengoo_signature">.*?<\/div>/i, sig.actualTextSignature.replace(/\n/g, "<br />"));
+				iText = iText.replace(/<div class="fengoffice_signature">.*?<\/div>/i, sig.actualTextSignature.replace(/\n/g, "<br />"));
 				// convert html to text
 				iText = og.htmlToText(iText);
 				mailBody.value = iText;
@@ -155,7 +155,7 @@ og.changeSignature = function(genid, acc_id) {
 		var editor = og.getCkEditorInstance(iname);
 		html = editor.getData();
 		html = html.replace(/\n/g, '');
-		html = html.replace(/<div class="opengoo_signature">.*?<\/div>/i, new_htmlsig);
+		html = html.replace(/<div class="fengoffice_signature">.*?<\/div>/i, new_htmlsig);
 		editor.setData(html);
 	} else {
 		if (Ext.getDom('mailBody').value.indexOf('--\n' + sig.actualTextSignature) != -1) {

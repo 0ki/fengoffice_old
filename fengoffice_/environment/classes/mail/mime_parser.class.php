@@ -2,7 +2,7 @@
 /*
  * mime_parser.php
  *
- * @(#) $Id: mime_parser.class.php,v 1.10.2.1 2009/11/12 21:08:45 idesoto Exp $
+ * @(#) $Id: mime_parser.class.php,v 1.10.2.3 2009/12/17 19:52:17 idesoto Exp $
  *
  */
 
@@ -30,7 +30,7 @@ define('MIME_ADDRESS_FIRST',            2);
 
 	<package>net.manuellemos.mimeparser</package>
 
-	<version>@(#) $Id: mime_parser.class.php,v 1.10.2.1 2009/11/12 21:08:45 idesoto Exp $</version>
+	<version>@(#) $Id: mime_parser.class.php,v 1.10.2.3 2009/12/17 19:52:17 idesoto Exp $</version>
 	<copyright>Copyright  (C) Manuel Lemos 2006 - 2008</copyright>
 	<title>MIME parser</title>
 	<author>Manuel Lemos</author>
@@ -1733,11 +1733,11 @@ class mime_parser_class
 								for($w = 0, Reset($addresses->warnings); $w < $tw; Next($addresses->warnings), $w++)
 								{
 									$warning = Key($addresses->warnings);
-									if(!$this->SetPositionedWarning('Address extraction warning from header '.$header.' '.$addresses->warnings[$warning], $warning + $p[$v]))
+									if(!$this->SetPositionedWarning('Address extraction warning from header '.$header.' '.$addresses->warnings[$warning], $warning + (isset($p[$v])?$p[$v]:0)))
 										return(0);
 								}
 							}
-							elseif(!$this->SetPositionedWarning('Address extraction error from header '.$header.' '.$addresses->error, $addresses->error_position + $p[$v]))
+							elseif(!$this->SetPositionedWarning('Address extraction error from header '.$header.' '.$addresses->error, $addresses->error_position + (isset($p[$v])?$p[$v]:0)))
 								return(0);
 						}
 					}
@@ -2048,8 +2048,16 @@ class mime_parser_class
 										$results['Response'] = $body;
 									break;
 							}
+							$results['Type'] = $parameters['report-type'];
 						}
-						$results['Type'] = $parameters['report-type'];
+						else {
+							$results = $parts[0];
+							$results['Type'] = $parts[0]['Type'];
+							if(!$this->ReadMessageBody($parts[0], $body, 'Data'))
+								return(0);
+							if(strlen($body))
+								$results['Response'] = $body;
+						}
 						break;
 
 					case 'signed':

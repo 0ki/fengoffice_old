@@ -104,7 +104,7 @@ class MailContent extends BaseMailContent {
 		} // if
 	} // validate
 
-	function delete(){
+	function delete($delete_db_record = true){
 		if ($this->getContentFileId() != '') {
 			try {
 				FileRepository::deleteFile($this->getContentFileId());
@@ -112,14 +112,19 @@ class MailContent extends BaseMailContent {
 				Logger::log($e->getMessage());
 			}
 		}
-		$rows = DB::executeAll("SELECT count(`id`) as `c` FROM `".TABLE_PREFIX."mail_contents` WHERE `conversation_id` = " . DB::escape($this->getConversationId()));
-		if (is_array($rows) && count($rows) > 0) {
-			if ($rows[0]['c'] < 2) {
-				// if no other emails in conversation, delete conversation
-				DB::execute("DELETE FROM `".TABLE_PREFIX."mail_conversations` WHERE `id` = " . DB::escape($this->getCOnversationId()));
+		if ($delete_db_record) {
+			$rows = DB::executeAll("SELECT count(`id`) as `c` FROM `".TABLE_PREFIX."mail_contents` WHERE `conversation_id` = " . DB::escape($this->getConversationId()));
+			if (is_array($rows) && count($rows) > 0) {
+				if ($rows[0]['c'] < 2) {
+					// if no other emails in conversation, delete conversation
+					DB::execute("DELETE FROM `".TABLE_PREFIX."mail_conversations` WHERE `id` = " . DB::escape($this->getCOnversationId()));
+				}
 			}
+			return parent::delete();
+		} else {
+			$this->setIsDeleted(true);
+			return $this->save();
 		}
-		return parent::delete();
 	}
 	
 	function mark_as_deleted(){

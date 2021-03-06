@@ -1,14 +1,14 @@
 <?php
 @set_time_limit(0);
 define('ROOT', dirname(__FILE__) . '/../..');
-define('PRODUCT_NAME', 'OpenGoo');
-define('PRODUCT_URL', 'http://www.opengoo.org');
+define('PRODUCT_NAME', 'Feng Office');
+define('PRODUCT_URL', 'http://www.fengoffice.com');
 
 
 require_once dirname(__FILE__) . '/include.php';
 
 
-$upgrader = new ScriptUpgrader(new Output_Html(), lang('upgrade opengoo'), lang('upgrade your opengoo installation'));
+$upgrader = new ScriptUpgrader(new Output_Html(), lang('upgrade fengoffice'), lang('upgrade your fengoffice installation'));
 $form_data = array_var($_POST, 'form_data');
 $upgrade_to = array_var($_GET, 'upgrade_to');
 if (!is_array($form_data) && isset($upgrade_to)) {

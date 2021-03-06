@@ -6,7 +6,7 @@
   *  When workspace id is zero, the option is valid for the user in general.
   *  When workspace id is set, the setting should be specific for one Workspace.
   * 
-  * @author Marcos Saiz <marcos.saiz@opengoo.org>
+  * @author Marcos Saiz <marcos.saiz@fengoffice.com>
   */
   class UserWsConfigOptionValue extends BaseUserWsConfigOptionValue {
     
