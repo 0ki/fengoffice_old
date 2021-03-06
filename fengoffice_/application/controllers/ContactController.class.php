@@ -145,9 +145,9 @@ class ContactController extends ApplicationController {
 				break;
 		}
 		if (isset($project)) {
-    		$proj_ids = $project->getAllSubWorkspacesQuery(true, logged_user());
+    		$proj_ids = $project->getAllSubWorkspacesQuery(!$archived, logged_user());
     	} else {
-    		$proj_ids = logged_user()->getWorkspacesQuery();
+    		$proj_ids = logged_user()->getWorkspacesQuery(!$archived);
     	}
     	
     	$proj_cond_companies = ' `id` IN (SELECT `object_id` FROM `'.TABLE_PREFIX.'workspace_objects` WHERE `object_manager` = \'Companies\' AND `workspace_id` IN ('.$proj_ids.'))';
@@ -1925,7 +1925,7 @@ class ContactController extends ApplicationController {
 					$contact_data['import_status'] = '('.lang('updated').')';
 					$fname = mysql_real_escape_string(array_var($contact_data, "firstname"));
 					$lname = mysql_real_escape_string(array_var($contact_data, "lastname"));
-					$contact = Contacts::findOne(array("conditions" => "firstname = '".$fname."' AND lastname = '".$lname."' OR email = '".array_var($contact_data, "email")."'"));
+					$contact = Contacts::findOne(array("conditions" => "firstname = '".$fname."' AND lastname = '".$lname."' OR email <> '' AND email = '".array_var($contact_data, "email")."'"));
 					$log_action = ApplicationLogs::ACTION_EDIT;
 					if (!$contact) {
 						$contact = new Contact();

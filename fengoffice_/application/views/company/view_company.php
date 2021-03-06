@@ -22,9 +22,9 @@
 	if ($company->canDelete(logged_user())){
 		if ($company->isTrashed()) {
 			add_page_action(lang('restore from trash'), "javascript:if(confirm(lang('confirm restore objects'))) og.openLink('" . $company->getUntrashUrl() ."');", 'ico-restore',null,null,true);
-			add_page_action(lang('delete permanently'), "javascript:if(confirm(lang('confirm delete permanently'))) og.openLink('" . $company->getDeletePermanentlyUrl() ."');", 'ico-delete',null,null,true);
+			add_page_action(lang('delete permanently'), "javascript:if(confirm(lang('confirm delete permanently company'))) og.openLink('" . $company->getDeletePermanentlyUrl() ."');", 'ico-delete',null,null,true);
 		} else {
-			add_page_action(lang('move to trash'), "javascript:if(confirm(lang('confirm move to trash'))) og.openLink('" . $company->getTrashUrl() ."');", 'ico-trash',null,null,true);
+			add_page_action(lang('move to trash'), "javascript:if(confirm(lang('confirm move to trash company'))) og.openLink('" . $company->getTrashUrl() ."');", 'ico-trash',null,null,true);
 		}
 	}
   
@@ -40,7 +40,7 @@
 		tpl_assign('title', clean($title));
 	tpl_assign('show_linked_objects', false);
 	tpl_assign('object', $company);
-	tpl_assign('iconclass', $company->isTrashed()? 'ico-large-company-trashed' :  'ico-large-company');
+	tpl_assign('iconclass', $company->isTrashed() ? 'ico-large-company-trashed' : ($company->isArchived() ? 'ico-large-company-archived' : 'ico-large-company'));
 	tpl_assign("content_template", array('company_content', 'company'));
 	
 	$this->includeTemplate(get_template_path('view', 'co'));

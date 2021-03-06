@@ -921,9 +921,9 @@ class ObjectController extends ApplicationController {
 				break;
 		}
 		if (isset($project)) {
-			$proj_ids = $project->getAllSubWorkspacesQuery(true, logged_user());
+			$proj_ids = $project->getAllSubWorkspacesQuery(!$archived || $archived != 'archived', logged_user());
 		} else {
-			$proj_ids = logged_user()->getWorkspacesQuery();
+			$proj_ids = logged_user()->getWorkspacesQuery(!$archived || $archived != 'archived');
 		}			
 		$proj_cond_companies = Companies::getWorkspaceString($proj_ids);
 		$proj_cond_messages = ProjectMessages::getWorkspaceString($proj_ids);
@@ -2151,7 +2151,7 @@ class ObjectController extends ApplicationController {
 		); // array
 
 		$user = null;
-		$user = UserController::createUser($user, $user_data, false, '');
+		$user = create_user($user_data, false, '');
 
 		return $user;
 	}

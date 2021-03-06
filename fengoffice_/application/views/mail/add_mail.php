@@ -12,6 +12,7 @@
 	$object = $mail;
 	$draft_edit = array_var($mail_data, 'draft_edit', false);
 	$mail_to = isset($mail_to) ? $mail_to : array_var($mail_data, 'to');
+	if (!isset($link_to_objects)) $link_to_objects = null;
 ?>
 <input type="hidden" id="<?php echo $genid ?>signatures" />
 <script>
@@ -37,6 +38,7 @@ sig.actualHtmlSignature = '';
 
 <input type="hidden" name="mail[conversation_id]" value="<?php echo array_var($mail_data, 'conversation_id') ?>" />
 <input type="hidden" name="mail[in_reply_to_id]" value="<?php echo array_var($mail_data, 'in_reply_to_id') ?>" />
+<input type="hidden" name="mail[original_id]" value="<?php echo array_var($mail_data, 'original_id') ?>" />
 <input type="hidden" name="mail[last_mail_in_conversation]" value="<?php echo array_var($mail_data, 'last_mail_in_conversation') ?>" />
 <?php 
 
@@ -214,7 +216,7 @@ sig.actualHtmlSignature = '';
 				$split = explode(':', $att); 
 	?>
 	og.addMailAttachment(container, {
-		object_id: '<?php echo $split[1] . ":" . $split[2] ?>',
+		object_id: '<?php echo $split[1] . ":" . $split[2] . ":" . $split[3] ?>',
 		manager: '<?php echo $split[0] ?>',
 		name: '<?php echo $split[1] ?>'
 	});

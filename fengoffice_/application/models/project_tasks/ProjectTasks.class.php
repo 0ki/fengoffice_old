@@ -29,9 +29,9 @@ class ProjectTasks extends BaseProjectTasks {
 	 */
 	static function getPendingTasks(User $user, $project, $tag = null, $archived = false) {
 		if ($project instanceof Project) {
-			$project_ids = $project->getAllSubWorkspacesQuery();
+			$project_ids = $project->getAllSubWorkspacesQuery(!$archived);
 		} else {
-			$project_ids = $user->getWorkspacesQuery();
+			$project_ids = $user->getWorkspacesQuery(!$archived);
 		}
 		
 		if ($archived) $archived_cond = " AND `archived_by_id` <> 0";
@@ -63,9 +63,9 @@ class ProjectTasks extends BaseProjectTasks {
 	 */
 	static function getOpenTimeslotTasks(User $user, User $logged_user, $project = null, $tag = null, $assigned_to_company = null, $assigned_to_user = null, $archived = false) {
 		if ($project)
-			$project_ids = $project->getAllSubWorkspacesQuery(false, $logged_user);
+			$project_ids = $project->getAllSubWorkspacesQuery(!$archived, $logged_user);
 		else{
-			$project_ids = $logged_user->getWorkspacesQuery();
+			$project_ids = $logged_user->getWorkspacesQuery(!$archived);
 		}
 
 		$openTimeslot = " AND id in (SELECT object_id from " . TABLE_PREFIX . "timeslots t WHERE user_id="
@@ -128,9 +128,9 @@ class ProjectTasks extends BaseProjectTasks {
 	 */
 	function getDayTasksByUser(DateTimeValue $date, User $user, $project = null, $tag = null, $assigned_to_company = null, $assigned_to_user = null, $limit = null, $archived = false) {
 		if ($project instanceof Project) {
-			$project_ids = $project->getAllSubWorkspacesQuery();
+			$project_ids = $project->getAllSubWorkspacesQuery(!$archived);
 		} else {
-			$project_ids = $user->getWorkspacesQuery();
+			$project_ids = $user->getWorkspacesQuery(!$archived);
 		}
 		
 		$date = $date->add('h', logged_user()->getTimezone());
@@ -178,9 +178,9 @@ class ProjectTasks extends BaseProjectTasks {
 	 */
 	function getLateTasksByUser(User $user, $project = null, $tag = null, $assigned_to_company = null, $assigned_to_user = null, $limit = null, $archived = false) {
 		if ($project instanceof Project) {
-			$project_ids = $project->getAllSubWorkspacesQuery();
+			$project_ids = $project->getAllSubWorkspacesQuery(!$archived);
 		} else {
-			$project_ids = $user->getWorkspacesQuery();
+			$project_ids = $user->getWorkspacesQuery(!$archived);
 		}
 
 		$to_date = DateTimeValueLib::now()->add('h', logged_user()->getTimezone())->beginningOfDay();
@@ -271,9 +271,9 @@ class ProjectTasks extends BaseProjectTasks {
 		} // if
 
 		if ($project instanceof Project) {
-			$pids = $project->getAllSubWorkspacesQuery(true, logged_user());
+			$pids = $project->getAllSubWorkspacesQuery(!$archived, logged_user());
 		} else {
-			$pids = logged_user()->getWorkspacesQuery();
+			$pids = logged_user()->getWorkspacesQuery(!$archived);
 		}
 		$projectstr = " AND " . self::getWorkspaceString($pids);
 
@@ -362,9 +362,9 @@ class ProjectTasks extends BaseProjectTasks {
 		} // if
 
 		if ($project instanceof Project) {
-			$pids = $project->getAllSubWorkspacesQuery(true, logged_user());
+			$pids = $project->getAllSubWorkspacesQuery(!$archived, logged_user());
 		} else {
-			$pids = logged_user()->getWorkspacesQuery();
+			$pids = logged_user()->getWorkspacesQuery(!$archived);
 		}
 		$projectstr = " AND " . self::getWorkspaceString($pids);
 
@@ -457,9 +457,9 @@ class ProjectTasks extends BaseProjectTasks {
 		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectTasks::instance(),ACCESS_LEVEL_READ, logged_user(), 'project_id') .')';
 
 		if ($project instanceof Project ) {
-			$pids = $project->getAllSubWorkspacesQuery(true, logged_user());
+			$pids = $project->getAllSubWorkspacesQuery(!$archived, logged_user());
 		} else {
-			$pids = logged_user()->getWorkspacesQuery();
+			$pids = logged_user()->getWorkspacesQuery(!$archived);
 		}
 		$limitation = " AND " . self::getWorkspaceString($pids);
 		if (isset($tags) && $tags && $tags!='') {

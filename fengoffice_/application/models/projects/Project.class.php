@@ -20,6 +20,10 @@ class Project extends BaseProject {
 	 */
 	private $all_webpages;
 	
+	private $all_events;
+	
+	private $all_timeslots;
+	
 	private $parent_project;
 
 	
@@ -425,8 +429,12 @@ class Project extends BaseProject {
 			$uquery = $user->getWorkspacesQuery();
 			$condition .= " AND `id` IN ($uquery)";
 		}
-		if ($active) {
-			$condition .= " AND `completed_on` = " . DB::escape(EMPTY_DATETIME);
+		if ($active !== null) {
+			if ($active) {
+				$condition .= " AND `completed_on` = " . DB::escape(EMPTY_DATETIME);
+			} else {
+				$condition .= " AND `completed_on` <> " . DB::escape(EMPTY_DATETIME);
+			}
 		}
 		$query = "SELECT `id` FROM $table WHERE $condition";
 		return $query;

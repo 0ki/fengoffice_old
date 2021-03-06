@@ -50,9 +50,9 @@ class ProjectEvents extends BaseProjectEvents {
 		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectEvents::instance(),ACCESS_LEVEL_READ, logged_user()) .')';
 
 		if ($project instanceof Project ){
-			$pids = $project->getAllSubWorkspacesQuery(true, logged_user());
+			$pids = $project->getAllSubWorkspacesQuery(!$archived, logged_user());
 		} else {
-			$pids = logged_user()->getWorkspacesQuery();
+			$pids = logged_user()->getWorkspacesQuery(!$archived);
 		}
 		$limitation = " AND " . self::getWorkspaceString($pids);
 		if (isset($tags) && $tags && $tags!='') {
@@ -215,9 +215,9 @@ class ProjectEvents extends BaseProjectEvents {
 		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectEvents::instance(),ACCESS_LEVEL_READ, logged_user()) .')';
 
 		if ($project instanceof Project ){
-			$pids = $project->getAllSubWorkspacesQuery(true, logged_user());
+			$pids = $project->getAllSubWorkspacesQuery(!$archived, logged_user());
 		} else {
-			$pids = logged_user()->getWorkspacesQuery();
+			$pids = logged_user()->getWorkspacesQuery(!$archived);
 		}
 		$limitation = " AND " . self::getWorkspaceString($pids);
 		if (isset($tags) && $tags && $tags!='') {
@@ -337,9 +337,9 @@ class ProjectEvents extends BaseProjectEvents {
 	 */
 	static function getAllEventsByProject($project = null, $archived = false) {
 		if ($project instanceof Project) {
-			$pids = $project->getAllSubWorkspacesQuery(true, logged_user());
+			$pids = $project->getAllSubWorkspacesQuery(!$archived, logged_user());
 		} else {
-			$pids = logged_user()->getWorkspacesQuery();
+			$pids = logged_user()->getWorkspacesQuery(!$archived);
 		}
 		if ($archived) $archived_cond = " AND `archived_by_id` <> 0";
 		else $archived_cond = " AND `archived_by_id` = 0";

@@ -319,7 +319,7 @@ og.toggleAndHide = function(id, btn) {
 
 
 og.getUrl = function(controller, action, args) {
-	var url = og.hostName + "/index.php";
+	var url = og.getHostName() + "/index.php";
 	url += "?c=" + controller;
 	url += "&a=" + action;
 	for (var key in args) {
@@ -329,7 +329,7 @@ og.getUrl = function(controller, action, args) {
 };
 
 og.getSandboxUrl = function(controller, action, args) {
-	var url = (og.sandboxName || og.hostName) + "/index.php";
+	var url = og.getSandboxName() + "/index.php";
 	url += "?c=" + controller;
 	url += "&a=" + action;
 	for (var key in args) {
@@ -377,7 +377,7 @@ og.makeAjaxUrl = function(url, params) {
 			}
 		} else {
 			for (var k in params) {
-				p += "&" + k + "=" + params[k];
+				p += "&" + encodeURIComponent(k) + "=" + encodeURIComponent(params[k]);
 			}
 		}
 	}
@@ -1181,7 +1181,7 @@ og.checkDownload = function(url, checkedOutById, checkedOutBy) {
 };
 
 og.getScriptUrl = function(script) {
-	return og.hostName + "/public/assets/javascript/" + script;
+	return og.getHostName() + "/public/assets/javascript/" + script;
 };
 
 og.loadScripts = function(urls, config) {
@@ -1798,4 +1798,14 @@ og.expandDocumentView = function() {
 		this.title = lang('collapse');
 		this.className = 'ico-collapse';
 	}
+};
+
+og.getHostName = function() {
+	og.hostName = og.hostName.replace(/\/+$/, "");
+	return og.hostName;
+};
+
+og.getSandboxName = function() {
+	og.sandboxName = og.sandboxName ? og.sandboxName.replace(/\/+$/, "") : og.getHostName();
+	return og.sandboxName;
 };

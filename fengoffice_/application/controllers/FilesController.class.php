@@ -2140,10 +2140,6 @@ class FilesController extends ApplicationController {
 			$encoding = detect_encoding($html_content, array('UTF-8', 'ISO-8859-1', 'WINDOWS-1252'));
 			$charset = ";charset=".$encoding;
 		}
-		header("Expires: " . gmdate("D, d M Y H:i:s", mktime(date("H") + 2, date("i"), date("s"), date("m"), date("d"), date("Y"))) . " GMT");
-		header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
-		header("Content-Type: " . $file->getTypeString() . $charset);
-		header("Content-Length: " . (string) $file->getFileSize());
 		
 		if ($file->getTypeString() == 'text/html') {
 			// Include stylesheet from FCK Editor
@@ -2152,6 +2148,11 @@ class FilesController extends ApplicationController {
 			$css .= '</style>';
 			$html_content = $css.$html_content;
 		}
+		
+		header("Expires: " . gmdate("D, d M Y H:i:s", mktime(date("H") + 2, date("i"), date("s"), date("m"), date("d"), date("Y"))) . " GMT");
+		header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
+		header("Content-Type: " . $file->getTypeString() . $charset);
+		header("Content-Length: " . (string) strlen($html_content));
 
 		print($html_content);
 		die();

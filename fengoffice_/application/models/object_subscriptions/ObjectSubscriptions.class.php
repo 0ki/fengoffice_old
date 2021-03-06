@@ -25,7 +25,7 @@
           $user = $subscription->getUser();
           if(!$user instanceof User) continue;
           
-		  $user_object_workspaces = $object->getWorkspaces(logged_user()->getWorkspacesQuery());
+		  $user_object_workspaces = $object->getWorkspaces($user->getWorkspacesQuery());
 		  $can_read = true;
 		  foreach ($user_object_workspaces as $ws) {
 			$can_read = can_read_type($user, $ws, get_class($object->manager()));

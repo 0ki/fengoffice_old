@@ -551,7 +551,7 @@ class CompanyController extends ApplicationController {
 		$search_for = array_var($_POST,'search_for',false);
 		if ($search_for){
 			$projects = logged_user()->getActiveProjectIdsCSV();
-			//$projects = logged_user()->getWorkspacesQuery();
+			//$projects = logged_user()->getWorkspacesQuery(true);
 			
 			$search_results = SearchableObjects::searchByType($search_for, $projects, 'Companies', true, 50);
 			$companies = $search_results[0];

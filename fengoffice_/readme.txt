@@ -1,6 +1,6 @@
 
-    About OpenGoo 1.6 beta 3
-    ========================
+    About OpenGoo 1.6 RC
+    ====================
 
     OpenGoo is a free and open source WebOffice, project management and collaboration
     tool, licensed under the Affero GPL 3 license.
@@ -65,11 +65,11 @@
     ====================
     
     1. Backup you current installation (important!)
-    2. Download OpenGoo 1.6 beta 3 - http://www.opengoo.org/
+    2. Download OpenGoo 1.6 RC - http://www.opengoo.org/
     3. Unpack into your OpenGoo installation, overwriting your previous files and folders,
     	but keeping your config and upload folders.
     5. Go to <your_opengoo>/public/upgrade in your browser and choose to upgrade
-    	from your current version to 1.6 beta 3
+    	from your current version to 1.6 RC
     6. Refresh your browser or clear its cache to load new javascript, css and images.   
 
     
@@ -90,6 +90,30 @@
 
 	Changelog
 	=========
+	
+	Since 1.6-beta3
+	---------------
+	
+	feature: User config option to hide quoted text added.
+	feature: Added a cron event to clear tmp folder.
+	
+	usability: Added an icon for archived objects on the object's view, like there is for trashed objects.
+	usability: When deleting a company warn about deleting users.
+	
+	bugfix: Displaying a document in IIS showed "Connection reset error".
+	bugfix: Tags with accents don't filter correctly on IE.
+	bugfix: '24 hour' / 'AM-PM' user config option not respected in listings.
+	bugfix: Add user: billing category is mandatory, it shouldn't be mandatory.
+	bugfix: Error importing companies when no workspace is selected.
+	bugfix: If forwarding an email with attachments, saving a draft, and sending the email, an error pops up about not being able to attach.
+	bugfix: When importing contacts from a vCard file, all contacts with no email were considered as the same contact.
+	bugfix: Fixed several Errors and warnings logged in log.php.
+	bugfix: Objects of archived workspaces were not being filtered out.
+	bugfix: Archived documents and messages were not being filtered out of the Dashboard.
+	bugfix: Search results were printed in reverse modified date order.
+	bugfix: Contact birthdays were not being shown in the dashboard calendar.
+	bugfix: When viewing a custom report, date parameters in conditions were shown as today's date.
+	
 	
 	Since 1.6-beta2
 	---------------

@@ -180,6 +180,10 @@
 	background-image: url(../../images/48x48/note_trashed.png);
 }
 
+.ico-large-message-archived {
+	background-image: url(../../images/48x48/note_archived.png);
+}
+
 /* ----- Template ----- */
 .template .coViewHeader {
   	background: #DDDDDD;
@@ -207,6 +211,10 @@
 
 .ico-large-template-trashed {
 	background-image: url(../../images/48x48/template_trashed.png);
+}
+
+.ico-large-template-archived {
+	background-image: url(../../images/48x48/template_archived.png);
 }
 
 
@@ -244,6 +252,10 @@
 
 .ico-large-email-trashed {
 	background-image: url(../../images/48x48/email_trashed.png);
+}
+
+.ico-large-email-archived {
+	background-image: url(../../images/48x48/email_archived.png);
 }
 
 
@@ -315,6 +327,11 @@
 }
 
 
+.ico-large-contact-archived {
+	background-image: url(../../images/48x48/contact_archived.png);
+}
+
+
 /* -----  Company  ----- */
 
 .company .coViewHeader {
@@ -343,6 +360,10 @@
 
 .ico-large-company-trashed {
 	background-image: url(../../images/48x48/company_trashed.png);
+}
+
+.ico-large-company-archived {
+	background-image: url(../../images/48x48/company_archived.png);
 }
 
 
@@ -413,6 +434,10 @@
 	background-image: url(../../images/48x48/files_trashed.png);
 }
 
+.ico-large-files-archived {
+	background-image: url(../../images/48x48/files_archived.png);
+}
+
 
 /* -----  Tasks  ----- */
 
@@ -448,6 +473,10 @@
 
 .ico-large-tasks-trashed {
 	background-image: url(../../images/48x48/tasks_trashed.png);
+}
+
+.ico-large-tasks-archived {
+	background-image: url(../../images/48x48/tasks_archived.png);
 }
 
 
@@ -487,6 +516,10 @@
 	background-image: url(../../images/48x48/milestone_trashed.png);
 }
 
+.ico-large-milestone-archived {
+	background-image: url(../../images/48x48/milestone_archived.png);
+}
+
 /* ----- Events ----- */
 
 .event .coViewHeader {
@@ -521,6 +554,10 @@
 
 .ico-large-event-trashed {
 	background-image: url(../../images/48x48/event_trashed.png);
+}
+
+.ico-large-event-archived {
+	background-image: url(../../images/48x48/event_archived.png);
 }
 
 
@@ -616,6 +653,10 @@
 
 .ico-large-weblink {
 	background-image: url(../../images/48x48/weblink.png);
+}
+
+.ico-large-weblink-archived {
+	background-image: url(../../images/48x48/weblink_archived.png);
 }
 
 .ico-large-weblink-trashed {

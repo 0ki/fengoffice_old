@@ -556,7 +556,7 @@ class TaskController extends ApplicationController {
 		if ($project instanceof Project) {
 			$pids = $project->getAllSubWorkspacesQuery(true, logged_user());
 		} else {
-			$pids = logged_user()->getWorkspacesQuery();
+			$pids = logged_user()->getWorkspacesQuery(true);
 		}
 		$projectstr = " AND " . ProjectTasks::getWorkspaceString($pids);
 

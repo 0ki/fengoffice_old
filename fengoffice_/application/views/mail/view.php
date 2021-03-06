@@ -33,6 +33,7 @@
 	$c = 0;
 	$genid = gen_id();
 	$use_24_hours = user_config_option('time_format_use_24');
+	$hide_quoted_text_in_emails = user_config_option('hide_quoted_text_in_emails');
 	$time_format = $use_24_hours ? 'G:i' : 'g:i a';
 ?>
 
@@ -180,10 +181,12 @@
 				}
 				$html_content = "<html>" . $html_content . "</html>";
 			}
-			$html_content = str_replace("<head>", '<head><link rel="stylesheet" href="'.ROOT_URL.'/public/assets/javascript/ckeditor/contents.css" />', $html_content);
-			$html_content = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">' . "\n" . $html_content;
 			// links must open in a new tab or window
 			$html_content = str_replace('href', 'target="_blank" href', $html_content);
+			
+			$html_content = str_replace("<head>", '<head><link rel="stylesheet" type="text/css" href="'.ROOT_URL.'/public/assets/javascript/ckeditor/contents.css" />', $html_content);
+			$html_content = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">' . "\n" . $html_content;
+			
 			
 			$mail_html_content = MailUtilities::removeQuotedBlocks($html_content);
 			$html_content = array_var($mail_html_content, 'unquoted', '');
@@ -226,15 +229,20 @@
 				</div>';
 
 			if ($quoted_html_content) {
-				$q_link = "<a id='".$genid."showQuotedText' style='font-family:verdana,arial,helvetica,sans-serif; font-size:11px; line-height:150%; cursor:pointer; color:#003562; padding-left:10px;'";
-				$q_link .= " onclick='og.showQuotedHtml(\"q_".$email->getAccountId().'_'.logged_user()->getId()."\", ".rand().");'>";
-				$q_link .= ":: ".lang('show quoted text')." ::</a>";
-				
-				file_put_contents(ROOT."/tmp/q_".$tmphtml, $html_content . $quoted_html_content);
-				if (isset($content_wimages)) {
-					file_put_contents(ROOT."/tmp/wiq_".$tmphtml, $content_wimages . $quoted_html_content);
+				if ($hide_quoted_text_in_emails) {
+					$q_link = "<a id='".$genid."showQuotedText' style='font-family:verdana,arial,helvetica,sans-serif; font-size:11px; line-height:150%; cursor:pointer; color:#003562; padding-left:10px;'";
+					$q_link .= " onclick='og.showQuotedHtml(\"q_".$email->getAccountId().'_'.logged_user()->getId()."\", ".rand().");'>";
+					$q_link .= ":: ".lang('show quoted text')." ::</a>";
+					
+					file_put_contents(ROOT."/tmp/q_".$tmphtml, $html_content . $quoted_html_content);
+					if (isset($content_wimages)) {
+						file_put_contents(ROOT."/tmp/wiq_".$tmphtml, $content_wimages . $quoted_html_content);
+					}
+					$content .= $q_link;
+				} else {
+
+					$content .= $quoted_html_content;
 				}
-				$content .= $q_link;
 			}
 			
 		} else {
@@ -245,8 +253,12 @@
 				
 				$content =  '<div>' . nl2br(convert_to_links(clean($content))) . '</div>';
 				if ($quoted_content != '') {
-					$content .= "<a class='internalLink' style='padding-left:10px;' href='#' onclick='document.getElementById(\"".$genid."quoted_text\").style.display=\"block\"; this.style.display = \"none\";'>
-					:: ".lang('show quoted text')." ::</a><div id='".$genid."quoted_text' style='display:none'>". nl2br(convert_to_links(clean($quoted_content))) ."</div>";
+					if ($hide_quoted_text_in_emails) {
+						$content .= "<a class='internalLink' style='padding-left:10px;' href='#' onclick='document.getElementById(\"".$genid."quoted_text\").style.display=\"block\"; this.style.display = \"none\";'>
+						:: ".lang('show quoted text')." ::</a><div id='".$genid."quoted_text' style='display:none'>". nl2br(convert_to_links(clean($quoted_content))) ."</div>";
+					} else {
+						$content .= nl2br(convert_to_links(clean($quoted_content)));
+					}
 				}
 				$content = '<div style="max-height: 600px; overflow: auto;">' . $content . '</div>';
 			} else $content = '<div></div>';
@@ -257,7 +269,7 @@
 		}
 				
 		tpl_assign("title", lang('email') . ': ' . clean($email->getSubject()).$strDraft);
-		tpl_assign("iconclass", 'ico-large-email');
+		tpl_assign('iconclass', $email->isTrashed()? 'ico-large-email-trashed' : ($email->isArchived() ? 'ico-large-email-archived' : 'ico-large-email'));
 		tpl_assign("mail_conversation_block" , $conversation_block);
 		tpl_assign("content", $content);
 		tpl_assign("object", $email);

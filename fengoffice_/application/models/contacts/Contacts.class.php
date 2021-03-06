@@ -126,25 +126,24 @@ class Contacts extends BaseContacts {
 	}
 	
 	function getRangeContactsByBirthday($from, $to, $tags = '', $project = null) {
-		if (!$from instanceof DateTimeValue || !$to instanceof DateTimeValue ) {
-			return;
+		if (!$from instanceof DateTimeValue || !$to instanceof DateTimeValue || $from->getTimestamp() > $to->getTimestamp()) {
+			return array();
 		}
 		
 		$from = new DateTimeValue($from->getTimestamp());
 		$from->beginningOfDay();
 		$to = new DateTimeValue($to->getTimestamp());
 		$to->endOfDay();
-		$month1 = $from->getMonth();
-		$month2 = $to->getMonth();
-		if ($month1 == $month2) {
-			$condition = 'DAYOFMONTH(`o_birthday`) >= ' . DB::escape($from->getDay()) .
-					' AND DAYOFMONTH(`o_birthday`) <= ' . DB::escape($to->getDay()) .
-					' AND MONTH(`o_birthday`) = ' . DB::escape($month1);
+		$year1 = $from->getYear();
+		$year2 = $to->getYear();
+		if ($year1 == $year2) {
+			$condition = 'DAYOFYEAR(`o_birthday`) >= DAYOFYEAR(' . DB::escape($from) . ')' .
+					' AND DAYOFYEAR(`o_birthday`) <= DAYOFYEAR(' . DB::escape($to) . ')';
+		} else if ($year2 - $year1 == 1) {
+			$condition = 'DAYOFYEAR(`o_birthday`) >= DAYOFYEAR(' . DB::escape($from) . ')' .
+					' OR DAYOFYEAR(`o_birthday`) <= DAYOFYEAR(' . DB::escape($to) . ')';
 		} else {
-			$condition = 'DAYOFMONTH(`o_birthday`) >= ' . DB::escape($from->getDay()) .
-					' AND MONTH(`o_birthday`) = ' . DB::escape($month1) .
-					' OR DAYOFMONTH(`o_birthday`) <= ' . DB::escape($to->getDay()) .
-					' AND MONTH(`o_birthday`) = ' . DB::escape($month2);
+			$condition = "`o_birthday` <> '0000-00-00 00:00:00'";
 		}
 		
 		return $this->getAllowedContacts($condition);

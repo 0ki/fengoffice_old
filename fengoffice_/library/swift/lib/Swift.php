@@ -804,6 +804,18 @@ class Swift
 				else return false;
 			}
 		}
+		$default_authenticator = defined('DEFAULT_SWIFT_AUTHENTICATOR') ? DEFAULT_SWIFT_AUTHENTICATOR : false;
+		if ($default_authenticator) {
+			if (in_array($default_authenticator, $this->authTypes))
+			{
+				if ($this->authenticators[$default_authenticator]->run($username, $password))
+				{
+					$this->triggerEventHandler('onAuthenticate');
+					return true;
+				}
+				else return false;
+			}
+		}
 		//If we get this far, no authenticators were used
 		$this->logError('The MTA doesn\'t support any of Swift\'s loaded authentication mechanisms', 0);
 		$this->fail();

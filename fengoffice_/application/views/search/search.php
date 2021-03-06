@@ -55,7 +55,7 @@ if($has_search_results) {
 	</div>
 	<div class="searchResults">
 	<table style="width:100%">
-	<?php foreach($search_result['result'] as $srrow) {
+	<?php foreach(array_reverse($search_result['result']) as $srrow) {
 		$alt = !$alt;
 		$object = $srrow['object'];?>
 		<tr style="vertical-align:middle" class="<?php echo $alt? "searchAltRow" : 'searchRow' ?>">

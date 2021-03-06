@@ -130,6 +130,7 @@ class MailController extends ApplicationController {
 				'body' => $re_body,
 				'conversation_id' => $original_mail->getConversationId(),
 				'in_reply_to_id' => $original_mail->getMessageId(),
+				'original_id' => $original_mail->getId(),
 				'last_mail_in_conversation' => MailContents::getLastMailIdInConversation($original_mail->getConversationId(), true),
 			); // array
 		} // if
@@ -205,6 +206,14 @@ class MailController extends ApplicationController {
 				ajx_current("empty");
 				return;
 			}
+			if ($account->getOutgoingTrasnportType() == 'ssl' || $account->getOutgoingTrasnportType() == 'tls') {
+				$available_transports = stream_get_transports();
+				if (array_search($account->getOutgoingTrasnportType(), $available_transports) === FALSE) {
+					flash_error('The server does not support SSL.');
+					ajx_current("empty");
+					return;
+				}
+			}
 			$cp_errs = $this->checkRequiredCustomPropsBeforeSave(array_var($_POST, 'object_custom_properties', array()));
 			if (is_array($cp_errs) && count($cp_errs) > 0) {
 				foreach ($cp_errs as $err) {
@@ -267,24 +276,23 @@ class MailController extends ApplicationController {
  				foreach ($objects as $objid) {
  					$count++;
  					$split = explode(":", $objid);
- 					if (count($split)==2){
+ 					if (count($split) == 2) {
  						$object = get_object_by_manager_and_id($split[1], $split[0]);
- 					} else if (count($split)==3) {
+ 					} else if (count($split) == 4) {
  						if ($split[0] == 'FwdMailAttach') {
- 							$tmp_filename = ROOT . "/tmp/" . logged_user()->getId() . "_" . $mail_data['account_id'] . "_FwdMailAttach_" . $split[1];
+ 							$tmp_filename = ROOT . "/tmp/" . logged_user()->getId() . "_" . $mail_data['account_id'] . "_FwdMailAttach_" . $split[3];
  							if (is_file($tmp_filename)) {	 						
 	 							$attachments[] = array(
 			 						"data" => file_get_contents($tmp_filename),
 			 						"name" => $split[1],
 			 						"type" => $split[2]
 			 					);
-			 					unlink($tmp_filename);
 			 					continue;
  							}
  						}
  					}
  					
- 					if (!$object) {
+ 					if (!isset($object) || !$object) {
  						flash_error(lang('file dnx'));
 	 					$err++;
  					} else {
@@ -344,14 +352,6 @@ class MailController extends ApplicationController {
 			if ($body == '') $body.=' ';
 
 			try {
-				if ($account->getOutgoingTrasnportType() == 'ssl' || $account->getOutgoingTrasnportType() == 'tls') {
-					$available_transports = stream_get_transports();
-					if (array_search($account->getOutgoingTrasnportType(), $available_transports) === FALSE) {
-						flash_error('The server does not support SSL.');
-						ajx_current("empty");
-						return;
-					}
-				}
 				if (count($linked_attachments)) {
 					$linked_atts = $type == 'text/html' ? '<div style="font-family:arial;"><br><br><br><span style="font-size:12pt;font-weight:bold;color:#777">'.lang('linked attachments').'</span><ul>' : "\n\n\n-----------------------------------------\n".lang('linked attachments')."\n\n";
 					foreach ($linked_attachments as $att) {
@@ -395,8 +395,8 @@ class MailController extends ApplicationController {
 				$conversation_id = array_var($mail_data, 'conversation_id');
 				$in_reply_to_id = array_var($mail_data, 'in_reply_to_id');
 				if ($conversation_id) {
-					$in_reply_to = MailContents::getByMessageId($in_reply_to_id);
-					if (!$in_reply_to instanceof MailContent || strpos(strtolower($mail->getSubject()), strtolower($in_reply_to->getSubject())) === false) {
+					$in_reply_to = MailContents::findById(array_var($mail_data, 'original_id'));
+					if ($in_reply_to instanceof MailContent && $in_reply_to->getSubject() && strpos(strtolower($mail->getSubject()), strtolower($in_reply_to->getSubject())) === false) {
 						$conversation_id = null;
 						$in_reply_to_id = '';
 					}
@@ -431,7 +431,7 @@ class MailController extends ApplicationController {
 				// if replying a classified email classify on same workspace
 				$classified = false;
 				if ($in_reply_to_id) {
-					$in_reply_to = MailContents::getByMessageId($in_reply_to_id);
+					$in_reply_to = MailContents::findById(array_var($mail_data, 'original_id'));
 					if ($in_reply_to instanceof MailContent) {
 						$workspaces = $in_reply_to->getWorkspaces();
 						foreach ($workspaces as $w) {
@@ -1621,8 +1621,9 @@ class MailController extends ApplicationController {
 				foreach($attachments as $att) {
 					$fName = iconv_mime_decode($att["FileName"], 0, "UTF-8");
 					$fileType = $att["content-type"];
-					$attachs[] = "FwdMailAttach:$fName:$fileType";
-					file_put_contents(ROOT . "/tmp/" . logged_user()->getId() . "_" .$original_mail->getAccountId() . "_FwdMailAttach_$fName", $att['Data']);
+					$fid = gen_id();
+					$attachs[] = "FwdMailAttach:$fName:$fileType:$fid";
+					file_put_contents(ROOT . "/tmp/" . logged_user()->getId() . "_" .$original_mail->getAccountId() . "_FwdMailAttach_$fid", $att['Data']);
 				}
 			}
 			
@@ -1671,8 +1672,9 @@ class MailController extends ApplicationController {
 				foreach($attachments as $att) {
 					$fName = $att["name"];
 					$fileType = $att["type"];
-					$attachs[] = "FwdMailAttach:$fName:$fileType";
-					file_put_contents(ROOT . "/tmp/" . logged_user()->getId() . "_" .$original_mail->getAccountId() . "_FwdMailAttach_$fName", $att['data']);
+					$fid = gen_id();
+					$attachs[] = "FwdMailAttach:$fName:$fileType:$fid";
+					file_put_contents(ROOT . "/tmp/" . logged_user()->getId() . "_" .$original_mail->getAccountId() . "_FwdMailAttach_$fid", $att['data']);
 				}
 			}
 			
@@ -1686,6 +1688,7 @@ class MailController extends ApplicationController {
 	          'account_id' => $original_mail->getAccountId(),
 			  'conversation_id' => $original_mail->getConversationId(),
 			  'in_reply_to_id' => $original_mail->getMessageId(),
+			  'original_id' => $original_mail->getId(),
 			  'last_mail_in_conversation' => MailContents::getLastMailIdInConversation($original_mail->getConversationId(), true),
 	          'id' => $original_mail->getId(),
 			  'draft_edit' => 1,

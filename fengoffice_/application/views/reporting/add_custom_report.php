@@ -2,7 +2,9 @@
 require_javascript("og/DateField.js");
 require_javascript("og/ReportingFunctions.js");
 require_javascript('og/modules/doubleListSelCtrl.js');
+require_javascript('og/CSVCombo.js');
 $genid = gen_id();
+if (!isset($conditions)) $conditions = array();
 ?>
 <form style='height: 100%; background-color: white' class="internalForm"
 	action="<?php echo $url  ?>" method="post"
@@ -62,7 +64,12 @@ array('id' => 'objectTypeSel' ,'onchange' => 'og.reportObjectTypeChanged("'.$gen
 	</legend>
 	<div id="custom-report-ws<?php echo $genid ?>">
 		
-		<?php foreach($conditions as $condition){ 
+		<?php
+		$hidWs = '';
+		$hidTg = '';
+		$parameter_tag = false;
+		$parameter_ws = false;
+		foreach($conditions as $condition){ 
 			if ($condition->getFieldName()  == 'workspace'){
 				$selected_ws = $condition->getValue();
 				$parameter_ws = $condition->getIsParametrizable();

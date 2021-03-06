@@ -180,6 +180,7 @@ INSERT INTO `<?php echo $table_prefix ?>user_ws_config_options` (`category_name`
  ('mails panel', 'mails account filter', '', 'StringConfigHandler', '1', '0', NULL),
  ('mails panel', 'mails classification filter', 'all', 'StringConfigHandler', '1', '0', NULL),
  ('mails panel', 'mails read filter', 'all', 'StringConfigHandler', '1', '0', NULL),
+ ('mails panel', 'hide_quoted_text_in_emails', '1', 'BoolConfigHandler', 0, 110, NULL),
  ('context help', 'show_tasks_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
  ('context help', 'show_account_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
  ('context help', 'show_active_tasks_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
@@ -256,7 +257,8 @@ INSERT INTO `<?php echo $table_prefix ?>cron_events` (`name`, `recursive`, `dela
 	('send_reminders', '1', '10', '0', '1', '0000-00-00 00:00:00'),
 	('send_password_expiration_reminders', '1', '1440', '1', '1', '0000-00-00 00:00:00'),
 	('send_notifications_through_cron', '1', '1', '0', '0', '0000-00-00 00:00:00'),
-	('delete_mails_from_server', '1', '1440', '1', '1', '0000-00-00 00:00:00');
+	('delete_mails_from_server', '1', '1440', '1', '1', '0000-00-00 00:00:00'),
+	('clear_tmp_folder', '1', '1440', '1', '1', '0000-00-00 00:00:00');
 
 -- GelSheet
 INSERT INTO `<?php echo $table_prefix ?>gs_fonts` VALUES

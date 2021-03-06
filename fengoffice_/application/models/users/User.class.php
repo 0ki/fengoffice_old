@@ -299,8 +299,8 @@ class User extends BaseUser {
 	} // isAdministrator
 
 	function setAsAdministrator($setAsAdmin = true) {
-		if (can_manage_security(logged_user())){
-			if ($setAsAdmin && !$this->isAdministrator()){
+		if (!logged_user() instanceof User || can_manage_security(logged_user())) {
+			if ($setAsAdmin && !$this->isAdministrator()) {
 				$group_user = new GroupUser();
 				$group_user->setUserId($this->getId());
 				$group_user->setGroupId(Group::CONST_ADMIN_GROUP_ID);
@@ -500,17 +500,26 @@ class User extends BaseUser {
 
 	/**
 	 * Return the user's workspaces query that returns user's workspaces ids.
+	 * @param bool $active If null, all projects; if true, only active, if false, only archived
 	 * @return string
 	 */
-	function getWorkspacesQuery() {
+	function getWorkspacesQuery($active = null) {
 		//return $this->getActiveProjectIdsCSV();
 		$project_users_table =  ProjectUsers::instance()->getTableName(true);
 		$group_users_table = GroupUsers::instance()->getTableName(true);
 		
 		$usercond = "($project_users_table.`user_id` = " . DB::escape($this->getId()) . ")";
 		$groupcond = "($project_users_table.`user_id` IN (SELECT `group_id` FROM $group_users_table WHERE $group_users_table.`user_id` = " . DB::escape($this->getId()) . "))";
-
-		return "SELECT $project_users_table.`project_id` FROM $project_users_table WHERE ($usercond OR $groupcond)";
+		
+		if ($active === null) {
+			return "SELECT $project_users_table.`project_id` FROM $project_users_table WHERE ($usercond OR $groupcond)";
+		} else {
+			$projects_table =  Projects::instance()->getTableName(true);
+			$empty_date = DB::escape(EMPTY_DATETIME);
+			$active_cond = $active ? "$projects_table.`completed_on` = $empty_date" : "$projects_table.`completed_on` <> $empty_date";
+			$projectcond = "($project_users_table.`project_id` = $projects_table.`id` AND  $active_cond)";
+			return "SELECT $project_users_table.`project_id` FROM $project_users_table, $projects_table WHERE ($usercond OR $groupcond) AND $projectcond";
+		}
 	}
 	
 	/**

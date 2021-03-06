@@ -270,4 +270,6 @@ Code-Erklärung ist gleich dem Datumsformat.',
 	'user ws config option name drag_drop_prompt' => 'Aktion beim Ziehen eines Objektes in einen Arbeitsbereich',
 	'user ws config option name search_engine' => 'Suchmaschine',
 	'user ws config option desc search_engine' => 'Wähle die Suchmaschine: "Ähnlich" ist eine umfassende Suche, die aber länger dauert als "Treffer"',
+	'search engine mysql like' => 'Ähnlich (Vollsuche)',
+	'search engine mysql match' => 'Treffer (Schnellsuche)',
 ); ?>

@@ -159,4 +159,11 @@ function lang($name) {
 
 } // lang
 
+function help_link() {
+	$link = Localization::instance()->lang('wiki help link');
+	if (is_null($link)) {
+		$link = DEFAULT_HELP_LINK;
+	}
+	return $link;
+}
 ?>

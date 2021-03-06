@@ -171,7 +171,7 @@ og.changeSignature = function(genid, acc_id) {
 
 // <attachments>
 og.addMailAttachment = function(container, obj) {
- 	 	var objid = obj.manager + ":" + obj.object_id;
+ 	var objid = obj.manager + ":" + obj.object_id;
  	var count = container.getElementsByTagName('span').length; // there is one <span> per attachment
  	if (obj.name.length > 40) {
  		var objname = obj.name.substring(0, 40) + '&hellip;';

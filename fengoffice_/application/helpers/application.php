@@ -1479,7 +1479,7 @@ function filter_assigned_to_select_box($list_name, $project = null, $selected = 
 	if ($project) {		
 		$project_ids = $project->getAllSubWorkspacesQuery(true,logged_user());
 	} else {
-		$project_ids = logged_user()->getWorkspacesQuery();
+		$project_ids = logged_user()->getWorkspacesQuery(true);
 	}
 	$grouped_users = Users::getGroupedByCompanyFromProjectIds($project_ids);
 

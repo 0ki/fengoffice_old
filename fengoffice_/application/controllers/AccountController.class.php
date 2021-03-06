@@ -125,7 +125,7 @@ class AccountController extends ApplicationController {
 
 				$user->save();
 				
-				$autotimezone = array_var($_POST, 'autodetect_time_zone', null);
+				$autotimezone = array_var($user_data, 'autodetect_time_zone', null);
 				if ($autotimezone !== null) {
 					set_user_config_option('autodetect_time_zone', $autotimezone, $user->getId());
 				}

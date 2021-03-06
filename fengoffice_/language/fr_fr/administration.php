@@ -18,7 +18,7 @@
 	'config option name site_name' => 'Nom du site',
 	'config option desc site_name' => 'Cette valeur s\'affichera sur la page du tableau de bord',
 	'config option name file_storage_adapter' => 'Dossier d\'enregistrement des fichiers ',
-	'config option desc file_storage_adapter' => 'Sélectionnez où seront stockés les documents chargés. <strong>Changer de dossier rendra les fichiers chargés précédemment indisponible</strong>.',
+	'config option desc file_storage_adapter' => 'Sélectionnez où seront stockés les documents chargés. Changer de dossier rendra indisponibles les fichiers chargés précédemment</strong>.',
 	'config option name default_project_folders' => 'Dossiers par Défaut',
 	'config option desc default_project_folders' => 'Les dossiers qui seront créés en même temps que le contexte. Chaque nom de dossier doit figurer sur une nouvelle ligne. Les lignes en double ou vides seront ignorées',
 	'config option name theme' => 'Thème ',
@@ -267,4 +267,8 @@ Ces valeurs ne s\'appliquent qu\'aux utilisateurs n\'ayant pas encore modifié l
 	'user ws config option desc show_emails_as_conversations' => 'Si cette option est activée, les messages seront groupés et affichés comme discussion. Les messages appartenant à un même fil (réponses, forwards, etc) seront affichés comme une seule entrée dans la liste.',
 	'user ws config option name autodetect_time_zone' => 'Détection automatique du fuseau horaire',
 	'user ws config option desc autodetect_time_zone' => 'Si cette option est activée, le fuseau horaire détecté automatiquement par le navigateur sera utilisé pour l\'utilisateur.',
+	'user ws config option name search_engine' => 'Moteur de recherche',
+	'user ws config option desc search_engine' => 'Choisissez le moteur de recherche à utiliser. L\'utilisation de "Précis" est plus performante mais moins rapide que l\'utilisation de "Rapide".',
+	'search engine mysql like' => 'Précis',
+	'search engine mysql match' => 'Rapide',
 ); ?>

@@ -204,4 +204,5 @@
 	'move all to left' => 'Déplacer à gauche',
 	'move up' => 'Remonter',
 	'move down' => 'Redescendre',
+	'this file is included in document' => 'Ce fichier est inclus dans le document : {0}',
 ); ?>

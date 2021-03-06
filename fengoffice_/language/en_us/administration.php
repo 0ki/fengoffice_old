@@ -278,6 +278,9 @@
 	'user ws config option name max_spam_level' => 'Maximum spam level allowed',
 	'user ws config option desc max_spam_level' => 'When fetching emails, messages with Spam evaluation greater than this value will be sent to "Junk" folder. Set to 0 for max filtering, 10 no filtering. This option works only if a spam filter tool is installed in your server.',
   
+	'user ws config option name hide_quoted_text_in_emails' => 'Hide quoted text when viewing emails',
+	'user ws config option desc hide_quoted_text_in_emails' => 'If enabled email messages will be displayed without the quoted text. There will be an option to view it while reading.',
+  
 	'edit default user preferences' => 'Edit default user preferences',
   	'default user preferences' => 'Default user preferences',
   	'default user preferences desc' => 'Choose the default values for user preferences. This values apply when the user hasn\'t chosen a value for an option yet.',

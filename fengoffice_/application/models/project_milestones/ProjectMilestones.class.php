@@ -122,9 +122,9 @@ class ProjectMilestones extends BaseProjectMilestones {
 		$due_date = DateTimeValueLib::now()->beginningOfDay();
 
 		if ($project instanceof Project) {
-			$project_ids = $project->getAllSubWorkspacesQuery();
+			$project_ids = $project->getAllSubWorkspacesQuery(!$archived);
 		} else {
-			$project_ids = $user->getWorkspacesQuery();
+			$project_ids = $user->getWorkspacesQuery(!$archived);
 		}
 		
 		if ($archived) $archived_cond = "`archived_by_id` <> 0 AND ";
@@ -158,9 +158,9 @@ class ProjectMilestones extends BaseProjectMilestones {
 		$to_date = DateTimeValueLib::now()->add('h', logged_user()->getTimezone())->endOfDay();
 
 		if ($project instanceof Project) {
-			$project_ids = $project->getAllSubWorkspacesQuery();
+			$project_ids = $project->getAllSubWorkspacesQuery(!$archived);
 		} else {
-			$project_ids = $user->getWorkspacesQuery();
+			$project_ids = $user->getWorkspacesQuery(!$archived);
 		}
 		
 		if ($archived) $archived_cond = "`archived_by_id` <> 0 AND ";
@@ -209,9 +209,9 @@ class ProjectMilestones extends BaseProjectMilestones {
 
 	function getDayMilestonesByUserAndProject(DateTimeValue $date,User $user, $project = null, $archived = false) {
 		if ($project instanceof Project) {
-			$project_ids = $project->getAllSubWorkspacesQuery();
+			$project_ids = $project->getAllSubWorkspacesQuery(!$archived);
 		} else {
-			$project_ids = $user->getWorkspacesQuery();
+			$project_ids = $user->getWorkspacesQuery(!$archived);
 		}
 		 
 		$from_date =   (new DateTimeValue($date->getTimestamp()));
@@ -248,9 +248,9 @@ class ProjectMilestones extends BaseProjectMilestones {
 		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectMilestones::instance(),ACCESS_LEVEL_READ, logged_user(), 'project_id') .')';
 		 
 		if ($project instanceof Project ){
-			$pids = $project->getAllSubWorkspacesQuery(true, logged_user());
+			$pids = $project->getAllSubWorkspacesQuery(!$archived, logged_user());
 		} else {
-			$pids = logged_user()->getWorkspacesQuery();
+			$pids = logged_user()->getWorkspacesQuery(!$archived);
 		}
 		$limitation = " AND " . self::getWorkspaceString($pids);
 		if (isset($tags) && $tags && $tags!='') {
@@ -301,9 +301,9 @@ class ProjectMilestones extends BaseProjectMilestones {
 		$order_by = '`due_date` ASC';
 
 		if ($project instanceof Project) {
-			$pids = $project->getAllSubWorkspacesQuery(true, logged_user());
+			$pids = $project->getAllSubWorkspacesQuery(!$archived, logged_user());
 		} else {
-			$pids = logged_user()->getWorkspacesQuery();
+			$pids = logged_user()->getWorkspacesQuery(!$archived);
 		}
 		$projectstr = " AND " . self::getWorkspaceString($pids);
 

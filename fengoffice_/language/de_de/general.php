@@ -167,7 +167,7 @@
 	'new password' => 'Neues Passwort',
 	'change' => 'Ändern',
 	'remove' => 'Entfernen',
-	'empty trash can' => 'Leerer Papierkorb',
+	'empty trash can' => 'Leere Papierkorb',
 	'select personal workspace' => 'Wähle einen Arbeitsbereich',
 	'create personal workspace' => 'Nein - Erzeuge einen Neuen',
 	'use an existing workspace' => 'Ja - Benutze einen Vorhandenen',

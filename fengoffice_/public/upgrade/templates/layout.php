@@ -26,6 +26,9 @@ if (count($scripts) > 0) {
 ?>
     <form class="internalForm" action="index.php" id="upgraderForm" method="post">
       <div id="upgraderControls">
+      	<div class="warning">
+      		<strong><?php echo lang('upgrade warning') ?>:</strong> <?php echo lang('upgrade warning desc', help_link()) ?>
+      	</div>
         <table class="formBlock">
           <tr>
             <th colspan="2"><?php echo lang('upgrade')?></th>

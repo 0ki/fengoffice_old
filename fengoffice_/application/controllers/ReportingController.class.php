@@ -192,7 +192,7 @@ class ReportingController extends ApplicationController {
 		if ($isProjectView) {
 			$pids = $project->getAllSubWorkspacesQuery(true, logged_user());
 		} else {
-			$pids = logged_user()->getWorkspacesQuery();
+			$pids = logged_user()->getWorkspacesQuery(true);
 		}
 		$project_str = " AND " . ProjectCharts::getWorkspaceString($pids);
 
@@ -268,7 +268,7 @@ class ReportingController extends ApplicationController {
 		$workspace = Projects::findById(array_var($report_data, 'project_id'));
 		if ($workspace instanceof Project){
 			if (array_var($report_data, 'include_subworkspaces')) {
-				$workspacesCSV = $workspace->getAllSubWorkspacesQuery(false,logged_user());
+				$workspacesCSV = $workspace->getAllSubWorkspacesQuery(null,logged_user());
 			} else {
 				$workspacesCSV = $workspace->getId();
 			}

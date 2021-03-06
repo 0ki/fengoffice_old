@@ -30,7 +30,7 @@ if (isset($object) && $object instanceof ProjectWebpage) {
 		tpl_assign("desc", $description);
 		tpl_assign("content_template", array('view_content', 'webpage'));
 		tpl_assign("object", $object);
-		tpl_assign('iconclass', $object->isTrashed()? 'ico-large-weblink-trashed' :  'ico-large-weblink');
+		tpl_assign('iconclass', $object->isTrashed()? 'ico-large-weblink-trashed' : ($object->isArchived() ? 'ico-large-weblink-archived' : 'ico-large-weblink')); 
 		tpl_assign('title', "<a class=\"link-ico ico-open-link\" target=\"_blank\" href=\"$url\">$title</a>");
 		
 		$this->includeTemplate(get_template_path('view', 'co'));

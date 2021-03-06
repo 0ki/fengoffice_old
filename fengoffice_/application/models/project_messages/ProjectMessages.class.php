@@ -82,9 +82,9 @@ class ProjectMessages extends BaseProjectMessages {
 		}
 
 		if ($project instanceof Project) {
-			$pids = $project->getAllSubWorkspacesQuery(true, logged_user());
+			$pids = $project->getAllSubWorkspacesQuery(!$archived, logged_user());
 		} else {
-			$pids = logged_user()->getWorkspacesQuery();
+			$pids = logged_user()->getWorkspacesQuery(!$archived);
 		}
 		$messageConditions = self::getWorkspaceString($pids);
 

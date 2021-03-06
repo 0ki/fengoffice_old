@@ -110,11 +110,13 @@
       $timezone = logged_user()->getTimezone();
     } // if
     $datetime = $value instanceof DateTimeValue ? $value : new DateTimeValue($value);
-    if ($format){
+    if (!$format) $format = user_config_option('time_format_use_24') ? 'G:i' : 'g:i A';
+    if ($format) {
     	$l = new Localization();
     	$l->setTimeFormat($format);
-    }else
+    } else {
     	$l = Localization::instance();
+    }
     return $l->formatTime($datetime, $timezone);
   } // format_time
 

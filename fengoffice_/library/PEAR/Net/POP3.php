@@ -33,7 +33,7 @@
 // | Co-Author: Damian Fernandez Sosa <damlists@cnba.uba.ar>               |
 // +-----------------------------------------------------------------------+
 //
-// $Id: POP3.php,v 1.1 2008/11/27 12:11:17 alvarotm01 Exp $
+// $Id: POP3.php,v 1.1.12.1 2009/11/24 18:56:12 idesoto Exp $
 
 require_once('Net/Socket.php');
 
@@ -152,7 +152,7 @@ class Net_POP3 {
         $this->_maildrop  =  array();
         $this->_timeout   =  3;
         $this->_state     =  NET_POP3_STATE_DISCONNECTED;
-        $this->_socket    =& new Net_Socket();
+        $this->_socket    =  new Net_Socket();
         /*
         * Include the Auth_SASL package.  If the package is not available,
         * we disable the authentication methods that depend upon it.

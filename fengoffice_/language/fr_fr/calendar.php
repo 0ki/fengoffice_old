@@ -71,7 +71,7 @@
 	'CAL_WEEKLY_EVENT' => 'Chaque semaine',
 	'CAL_MONTHLY_EVENT' => 'Chaque mois',
 	'CAL_YEARLY_EVENT' => 'Chaque année',
-	'CAL_HOLIDAY_EVENT' => 'Chaque jour de congé',
+	'CAL_HOLIDAY_EVENT' => 'Personnalisé',
 	'CAL_UNKNOWN_TIME' => 'Heure de début inconnue',
 	'CAL_ADDING_TO' => 'Ajouté à',
 	'CAL_ANON_ALIAS' => 'Alias',

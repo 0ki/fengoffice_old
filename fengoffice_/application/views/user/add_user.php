@@ -93,7 +93,7 @@
     <?php echo label_tag(lang('timezone'), 'userFormTimezone', false)?>
     <span class="desc"><?php echo lang('auto detect user timezone') ?></span>
     <div id ="<?php echo $genid?>detectTimeZone">
-    <?php echo yes_no_widget('autodetect_time_zone', 'userFormAutoDetectTimezone', user_config_option('autodetect_time_zone', null, $user->getId()), lang('yes'), lang('no')) ?>
+    <?php echo yes_no_widget('user[autodetect_time_zone]', 'userFormAutoDetectTimezone', user_config_option('autodetect_time_zone', null, $user->getId()), lang('yes'), lang('no')) ?>
     <div id="<?php echo $genid?>selecttzdiv" <?php if (user_config_option('autodetect_time_zone', null, $user->getId())) echo 'style="display:none"'; ?>>
     <?php echo select_timezone_widget('user[timezone]', array_var($user_data, 'timezone'), 
     	array('id' => 'userFormTimezone', 'class' => 'long', 'tabindex' => '600')) ?>
@@ -213,10 +213,13 @@
 	<legend><?php echo lang('billing') ?></legend>
 <?php 
 	$options = array();
+	
+	$options[] = option_tag(lang('none'),0,(0==$user->getDefaultBillingId())?array('selected' => 'selected'):null);
+		
 	foreach ($billing_categories as $category){
 		$options[] = option_tag($category->getName(),$category->getId(),($category->getId()==$user->getDefaultBillingId())?array('selected' => 'selected'):null);	
 	}
-    echo label_tag(lang('billing category'), null, true);
+    echo label_tag(lang('billing category'), null, false);
 	echo select_box('user[default_billing_id]',$options,array('id' => 'userDefaultBilling'))
 ?>
 </fieldset>

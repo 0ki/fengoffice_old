@@ -20,7 +20,7 @@
 		tpl_assign("variables", $variables);
 		tpl_assign("content_template", array('content', 'template'));
 		tpl_assign("object", $cotemplate);
-		tpl_assign('iconclass', $cotemplate->isTrashed()? 'ico-large-template-trashed' :  'ico-large-template');
+		tpl_assign('iconclass', $cotemplate->isTrashed()? 'ico-large-template-trashed' :  ($cotemplate->isArchived() ? 'ico-large-template-archived' : 'ico-large-template'));
 		
 		$this->includeTemplate(get_template_path('view', 'co'));
 	?>

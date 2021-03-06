@@ -21,7 +21,7 @@
       $options[] = option_tag(lang('search engine mysql like'), 'like', $option_attributes);
       
       $option_attributes = $this->getValue() == 'match' ? array('selected' => 'selected') : null;
-      $options[] = option_tag('MySQL MATCH', 'match', $option_attributes);
+      $options[] = option_tag(lang('search engine mysql match'), 'match', $option_attributes);
       
       return select_box($control_name, $options);
     } // render

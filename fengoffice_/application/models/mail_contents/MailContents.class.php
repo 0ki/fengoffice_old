@@ -198,11 +198,19 @@ class MailContents extends BaseMailContents {
 
 		// Check read emails
 		if ($read_filter != "" && $read_filter != "all") {
-			if ($read_filter == "unread") $read = "AND NOT ";
-			else $read = "AND "; 
-			$read .= "`id` IN (SELECT `rel_object_id` FROM `" . TABLE_PREFIX . "read_objects` `t` WHERE `user_id` = " . logged_user()->getId() . " AND `t`.`rel_object_manager` = 'MailContents' AND `t`.`is_read` = '1')";
+			if ($read_filter == "unread") {
+				$read = "AND NOT ";
+				$subread = "AND NOT `mc`.";
+			} else {
+				$read = "AND ";
+				$subread = "AND `mc`."; 
+			}
+			$read2 = "`id` IN (SELECT `rel_object_id` FROM `" . TABLE_PREFIX . "read_objects` `t` WHERE `user_id` = " . logged_user()->getId() . " AND `t`.`rel_object_manager` = 'MailContents' AND `t`.`is_read` = '1')";
+			$read .= $read2;
+			$subread .= $read2;
 		} else {
 			$read = "";
+			$subread = "";
 		}
 
 		//Check for tags
@@ -220,7 +228,7 @@ class MailContents extends BaseMailContents {
 
 		//Check for projects (uses accountConditions
 		if ($project instanceof Project) {
-			$pids = $project->getAllSubWorkspacesQuery(true, logged_user());
+			$pids = $project->getAllSubWorkspacesQuery(!$archived, logged_user());
 			$wspace_obj_string = self::getWorkspaceString($pids);
 
 			if ($singleAccount) {
@@ -230,7 +238,7 @@ class MailContents extends BaseMailContents {
 						$wspace_obj_string : "(($accountConditions AND $wspace_obj_string) OR ($wspace_obj_string AND `is_private` = 0))");
 			}
 		} else {
-			$pids = logged_user()->getWorkspacesQuery();
+			$pids = logged_user()->getWorkspacesQuery(!$archived);
 			$wspace_obj_string = self::getWorkspaceString($pids);
 
 			if ($singleAccount) {
@@ -251,7 +259,7 @@ class MailContents extends BaseMailContents {
 		if (user_config_option('show_emails_as_conversations')) {
 			$archived_by_id = $archived ? "AND `mc`.`archived_by_id` != 0" : "AND `mc`.`archived_by_id` = 0";
 			$trashed_by_id = "AND `mc`.`trashed_by_id` = 0";
-			$conversation_cond = "AND IF(`conversation_id` = 0, $stateConditions, $state_conv_cond_1 NOT EXISTS (SELECT * FROM `".TABLE_PREFIX."mail_contents` `mc` WHERE `".TABLE_PREFIX."mail_contents`.`conversation_id` = `mc`.`conversation_id` AND `".TABLE_PREFIX."mail_contents`.`received_date` < `mc`.`received_date` $archived_by_id AND `mc`.`is_deleted` = 0 $trashed_by_id $subtagstr $state_conv_cond_2))";
+			$conversation_cond = "AND IF(`conversation_id` = 0, $stateConditions, $state_conv_cond_1 NOT EXISTS (SELECT * FROM `".TABLE_PREFIX."mail_contents` `mc` WHERE `".TABLE_PREFIX."mail_contents`.`conversation_id` = `mc`.`conversation_id` AND `".TABLE_PREFIX."mail_contents`.`received_date` < `mc`.`received_date` $archived_by_id AND `mc`.`is_deleted` = 0 $trashed_by_id $subtagstr $subread $state_conv_cond_2))";
 			$box_cond = "AND IF(EXISTS(SELECT * FROM `".TABLE_PREFIX."mail_contents` `mc` WHERE `".TABLE_PREFIX."mail_contents`.`conversation_id` = `mc`.`conversation_id` AND `".TABLE_PREFIX."mail_contents`.`id` <> `mc`.`id` AND `".TABLE_PREFIX."mail_contents`.`account_id` = `mc`.`account_id` $archived_by_id AND `mc`.`is_deleted` = 0 $trashed_by_id AND $stateConditions), TRUE, $stateConditions)";
 		} else {
 			$conversation_cond = "";	

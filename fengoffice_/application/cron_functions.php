@@ -69,6 +69,45 @@ function delete_mails_from_server() {
 	}
 }
 
+function clear_tmp_folder($dir = null) {
+	try {
+		if (!$dir) $dir = ROOT . "/tmp";
+		$handle = opendir($dir);
+		$left = 0;
+		$deleted = 0;
+		while (false !== ($f = readdir($handle))) {
+			if ($f != "." && $f != "..") {
+				if ($f == "CVS") {
+					$left++;
+					continue;
+				}
+				$path = "$dir/$f";
+				if (is_file($path)) {
+					$mtime = @filemtime($path);
+					if ($mtime && (time() - $mtime > 60*60*24*2)) {
+						// if temp file older than 2 days
+						@unlink($path);
+						if (is_file($path)) {
+							$left++;
+						} else {
+							$deleted++;
+						}
+					}
+				} else if (is_dir($path)) {
+					$deleted += clear_tmp_folder($path);
+					if (is_dir($path)) $left++;
+				}
+			}
+		}
+		closedir($handle);
+		if ($count == 0) @rmdir($dir);
+		if ($dir == ROOT . "/tmp") _log("$deleted tmp files deleted.");
+		return $deleted;
+	} catch (Exception $e) {
+		_log("Error clearing tmp folder: " . $e->getMessage());
+	}
+}
+
 function _log($message) {
 	echo date("Y-m-d H:i:s") . " - $message\n";
 }

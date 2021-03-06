@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Chivito upgrade script will upgrade OpenGoo 1.5 to OpenGoo 1.6-beta3
+ * Chivito upgrade script will upgrade OpenGoo 1.5 to OpenGoo 1.6-rc
  *
  * @package ScriptUpgrader.scripts
  * @version 1.1
@@ -41,7 +41,7 @@ class ChivitoUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('1.5.3');
-		$this->setVersionTo('1.6-beta3');
+		$this->setVersionTo('1.6-rc');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -116,9 +116,23 @@ class ChivitoUpgradeScript extends ScriptUpgraderScript {
 		 			UPDATE `".TABLE_PREFIX."user_ws_config_options` SET `default_value` = '1' WHERE `name` = 'autodetect_time_zone';
 				";
 			}
+			if (version_compare($installed_version, "1.6-rc") < 0) {
+				$upgrade_script .= "
+					INSERT INTO `".TABLE_PREFIX."cron_events` (`name`, `recursive`, `delay`, `is_system`, `enabled`, `date`) VALUES
+						('clear_tmp_folder', '1', '1440', '1', '1', '0000-00-00 00:00:00')
+					ON DUPLICATE KEY UPDATE id=id;
+					ALTER TABLE `".TABLE_PREFIX."mail_contents`
+						MODIFY COLUMN `message_id` varchar(255) $default_collation NOT NULL COMMENT 'Message-Id header',
+						MODIFY COLUMN `in_reply_to_id` varchar(255) $default_collation NOT NULL COMMENT 'Message-Id header of the previous email in the conversation',
+						MODIFY COLUMN `uid` varchar(255) $default_collation NOT NULL default '';
+					INSERT INTO `".TABLE_PREFIX."user_ws_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
+						('mails panel', 'hide_quoted_text_in_emails', '1', 'BoolConfigHandler', 0, 110, NULL)
+		 			ON DUPLICATE KEY UPDATE id=id;
+				";
+			}
 		}
 		
-	// rename gelsheet tables before upgrading if name is wrong and if engine is case sensitive
+		// rename gelsheet tables before upgrading if name is wrong and if engine is case sensitive
 		if ($this->checkTableExists(TABLE_PREFIX.'gs_fontStyles', $this->database_connection) && !$this->checkTableExists(TABLE_PREFIX.'gs_fontstyles', $this->database_connection)) {
 			$upgrade_script = "
 				RENAME TABLE `" . TABLE_PREFIX . "gs_fontStyles` TO `" . TABLE_PREFIX . "gs_fontstyles`;

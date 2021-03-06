@@ -138,3 +138,10 @@ table.formBlock th {
 table.formBlock td.optionLabel {
   width: 150px;
 }
+
+.warning {
+	margin: 10px 0;
+	padding: 8px;
+	background-color: #FFF2BF;
+	border: 2px dotted #EFCB3B;
+}

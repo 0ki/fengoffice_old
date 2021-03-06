@@ -638,6 +638,7 @@ function get_ext_language_file($loc) {
 
 function get_language_name($loc) {
 	static $names = array(
+		'ca_es' => 'Català',
 		'cs_cz' => 'Čeština',
 		'da_dk' => 'Dansk',
 		'de_de' => 'Deutsch',
@@ -663,6 +664,176 @@ function get_language_name($loc) {
 
 function module_enabled($module, $default = null) {
 	return config_option("enable_".$module."_module", $default);
+}
+
+function create_user($user_data, $is_admin, $permissionsString) {
+	$user = new User();
+	$user->setFromAttributes($user_data);
+
+	if (array_var($user_data, 'password_generator') == 'random') {
+		// Generate random password
+		$password = UserPasswords::generateRandomPassword();
+	} else {
+		// Validate input
+		$password = array_var($user_data, 'password');
+		if (trim($password) == '') {
+			throw new Error(lang('password value required'));
+		} // if
+		if ($password <> array_var($user_data, 'password_a')) {
+			throw new Error(lang('passwords dont match'));
+		} // if
+	} // if
+	
+	$user->setPassword($password);
+
+	$user_password = new UserPassword();
+	$user_password->setUserId($user->getId());
+	$user_password->setPasswordDate(DateTimeValueLib::now());
+	$user_password->setPassword(cp_encrypt($password, $user_password->getPasswordDate()->getTimestamp()));
+	$user_password->password_temp = $password;
+	$user_password->save();
+	
+	$user->save();
+	$user_password->setUserId($user->getId());
+	$user_password->save();
+	
+	if (array_var($user_data, 'autodetect_time_zone', 1) == 1) {
+		$op = UserWsConfigOptions::getByName('autodetect_time_zone');
+		if ($op instanceof UserWsConfigOption) {
+			$op->setUserValue(1 , $user->getId() , 0);
+		}
+	}
+	
+	if ($is_admin) {
+		$user->setAsAdministrator();
+	}
+
+	/* create contact for this user*/
+	if (array_var($user_data, 'create_contact', 1)) {
+		// if contact with same email exists take it, else create new
+		$contact = Contacts::getByEmail($user->getEmail(), true);
+		if (!$contact instanceof Contact) {
+			$contact = new Contact();
+			$contact->setEmail($user->getEmail());
+		} else if ($contact->isTrashed()) {
+			$contact->untrash();
+		}
+		$contact->setFirstname($user->getDisplayName());
+		$contact->setUserId($user->getId());
+		$contact->setTimezone($user->getTimezone());
+		$contact->setCompanyId($user->getCompanyId());
+		$contact->save();
+	} else {
+		$contact_id = array_var($user_data, 'contact_id');
+		$contact = Contacts::findById($contact_id);
+		if ($contact instanceof Contact) {
+			// user created from a contact 
+			$contact->setUserId($user->getId());
+			$contact->save();
+		} else {
+			// if contact with same email exists use it as user's contact, without changing it
+			$contact = Contacts::getByEmail($user->getEmail(), true);
+			if ($contact instanceof Contact) {
+				$contact->setUserId($user->getId());
+				if ($contact->isTrashed()) $contact->untrash();
+				$contact->save();
+			}
+		}
+	}
+	$contact = $user->getContact();
+	if ($contact instanceof Contact) {
+		// update contact data with data entered for this user
+		$contact->setCompanyId($user->getCompanyId());
+		// make user's email the contact's main email address
+		if ($contact->getEmail2() == $user->getEmail()) {
+			$contact->setEmail2($contact->getEmail());
+		} else if ($contact->getEmail3() == $user->getEmail()) {
+			$contact->setEmail3($contact->getEmail());
+		} else if ($contact->getEmail2() == "") {
+			$contact->setEmail2($contact->getEmail());
+		} else {
+			$contact->setEmail3($contact->getEmail());
+		}
+		$contact->setEmail($user->getEmail());
+		$contact->save();
+	}
+
+	/* create personal project or assing the selected*/
+	//if recived a personal project assing this 
+	//project as personal project for this user
+	$new_project = null;
+	$personalProjectId = array_var($user_data, 'personal_project', 0);
+	$project = Projects::findById($personalProjectId);
+	if (!$project instanceof Project) {
+		$project = new Project();
+		$wname = new_personal_project_name($user->getUsername());
+		$project->setName($wname);
+		
+		$wdesc = Localization::instance()->lang(lang('personal workspace description'));
+		if (!is_null($wdesc)) {
+			$project->setDescription($wdesc);
+		}
+		$project->setCreatedById($user->getId());
+
+		$project->save(); //Save to set an ID number
+		$project->setP1($project->getId()); //Set ID number to the first project
+		$project->save();
+		$new_project = $project;		
+	}
+	
+	$user->setPersonalProjectId($project->getId());
+	$user->save();
+
+	ApplicationLogs::createLog($user, null, ApplicationLogs::ACTION_ADD);
+
+	$project_user = new ProjectUser();
+	$project_user->setProjectId($project->getId());
+	$project_user->setUserId($user->getId());
+	$project_user->setCreatedById($user->getId());
+	$project_user->setAllPermissions(true);
+	
+	$project_user->save();
+	/* end personal project */
+
+  	//TODO - Make batch update of these permissions
+	if ($permissionsString && $permissionsString != '') {
+		$permissions = json_decode($permissionsString);
+	} else {
+		$permissions = null;
+	}
+  	if (is_array($permissions)) {
+  		foreach ($permissions as $perm) {			  			
+  			if (ProjectUser::hasAnyPermissions($perm->pr, $perm->pc)) {
+  				if (!$personalProjectId || $personalProjectId != $perm->wsid) {
+					$relation = new ProjectUser();
+			  		$relation->setProjectId($perm->wsid);
+			  		$relation->setUserId($user->getId());
+					
+			  		$relation->setCheckboxPermissions($perm->pc);
+			  		$relation->setRadioPermissions($perm->pr);
+			  		$relation->save();
+  				}
+  			}
+  		}
+	} // if
+	
+	if ($new_project instanceof Project && logged_user() instanceof User && logged_user()->isProjectUser($new_project)) {
+		evt_add("workspace added", array(
+			"id" => $new_project->getId(),
+			"name" => $new_project->getName(),
+			"color" => $new_project->getColor()
+		));
+	}
+
+	// Send notification...
+	try {
+		if (array_var($user_data, 'send_email_notification')) {
+			Notifier::newUserAccount($user, $password);
+		} // if
+	} catch(Exception $e) {
+	
+	} // try
+	return $user;
 }
 
 ?>

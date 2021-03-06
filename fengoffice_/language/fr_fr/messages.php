@@ -549,4 +549,5 @@
 	'error markasread objects' => 'Impossible de marquer {0} objets comme lus',
 	'success markasunread objects' => '{0} objets marqués comme non lus',
 	'error markasunread objects' => 'Impossible de marquer {0} objets comme non lus',
+	'success update billing values' => 'Les valeurs de facturation de l\'intervale de temps ont été modifiées : {0} entrées modifiées.',
 ); ?>

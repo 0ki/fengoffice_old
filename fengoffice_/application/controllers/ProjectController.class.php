@@ -633,8 +633,12 @@ class ProjectController extends ApplicationController {
 			ajx_current("empty");
 			return;
 		} // if
-
+		
+		$projects = $project->getSubWorkspaces(true, logged_user());
 		$project->complete();
+		foreach ($projects as $p) {
+			$p->complete();
+		}
 		ajx_current("back");
 	} // complete
 

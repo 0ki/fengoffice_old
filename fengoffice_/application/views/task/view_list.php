@@ -122,7 +122,7 @@ tpl_assign("variables", $variables);
 tpl_assign("content_template", array('task_list', 'task'));
 tpl_assign('object', $task_list);
 tpl_assign('title', clean($title));
-tpl_assign('iconclass', $task_list->isTrashed()? 'ico-large-tasks-trashed' :  'ico-large-tasks');
+tpl_assign('iconclass', $task_list->isTrashed()? 'ico-large-tasks-trashed' : ($task_list->isArchived() ? 'ico-large-tasks-archived' : 'ico-large-tasks'));
 
 
 $this->includeTemplate(get_template_path('view', 'co'));

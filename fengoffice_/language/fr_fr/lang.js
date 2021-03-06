@@ -664,5 +664,18 @@ addLangs({
 	'sending outbox mails': 'Envoi des messages de la boite d\'envoi',
 	'fixed user': 'Utilisateur fixe',
 	'parametric user': 'Utilisateur depuis un paramètre',
-	'object type': 'Type d\'objet'
+	'object type': 'Type d\'objet',
+	'attach contents': 'Contenu attaché',
+	'is archived': 'Archivé',
+	'no recipient': 'Pas de destinataire',
+	'applies to': 'S\'applique à :',
+	'select co types to apply': 'Sélectionnez les types d\'objet auxquels vous souhaitez appliquer la propriété.',
+	'write an email to contact': 'Envoyer un courriel à : {0}',
+	'quick upload desc': 'Lier un nouveau fichier depuis votre ordinateur',
+	'expand': 'Déplier',
+	'collapse': 'Replier',
+	'warning': 'Attention',
+	'new email in conversation text': 'Il n\'y a pas de nouveau message dans la conversation à laquele vous répondez. Voulez vous envoyer quand même le message ou le visualiser dans un nouvel onglet ?',
+	'send anyway': 'Envoyer quand même',
+	'view new email': 'Visualiser le message ?'
 });

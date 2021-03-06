@@ -147,7 +147,7 @@
 	'color5' => 'Orange',
 	'color6' => 'Magenta',
 	'color7' => 'Cyan',
-	'color8' => 'Violet',
+	'color8' => 'Violett',
 	'choose a color' => 'Wähle eine Farbe',
 	'show more' => 'Zeige mehr',
 	'show more amount' => 'Zeige mehr ({0})',

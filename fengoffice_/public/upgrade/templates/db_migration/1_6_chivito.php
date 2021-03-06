@@ -12,6 +12,7 @@ INSERT INTO `<?php echo $table_prefix ?>user_ws_config_options` (`category_name`
  ('mails panel', 'mails account filter', '', 'StringConfigHandler', '1', '0', NULL),
  ('mails panel', 'mails classification filter', 'all', 'StringConfigHandler', '1', '0', NULL),
  ('mails panel', 'mails read filter', 'all', 'StringConfigHandler', '1', '0', NULL),
+ ('mails panel', 'hide_quoted_text_in_emails', '1', 'BoolConfigHandler', 0, 110, NULL),
  ('dashboard', 'show_two_weeks_calendar', '1', 'BoolConfigHandler', '0', '0', NULL),
  ('general', 'autodetect_time_zone', '1', 'BoolConfigHandler', '0', '0', NULL),
  ('mails panel', 'max_spam_level', '0', 'IntegerConfigHandler', '0', '100', NULL),
@@ -124,18 +125,23 @@ ALTER TABLE `<?php echo $table_prefix ?>project_tasks` ADD COLUMN `object_subtyp
 
 ALTER TABLE `<?php echo $table_prefix ?>project_contacts` ADD INDEX contact_project_ids(`contact_id`, `project_id`);
 
+INSERT INTO `<?php echo $table_prefix ?>cron_events` (`name`, `recursive`, `delay`, `is_system`, `enabled`, `date`) VALUES
+	('clear_tmp_folder', '1', '1440', '1', '1', '0000-00-00 00:00:00');
+
 ALTER TABLE `<?php echo $table_prefix ?>mail_contents`
  ADD COLUMN `archived_on` DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00',
  ADD COLUMN `archived_by_id` INTEGER UNSIGNED NOT NULL DEFAULT 0,
- ADD COLUMN `message_id` VARCHAR(150) NOT NULL COMMENT 'Message-Id header',
- ADD COLUMN `in_reply_to_id` VARCHAR(150) NOT NULL COMMENT 'Message-Id header of the previous email in the conversation',
+ ADD COLUMN `message_id` varchar(255) <?php echo $default_collation ?> NOT NULL COMMENT 'Message-Id header',
+ ADD COLUMN `in_reply_to_id` varchar(255) <?php echo $default_collation ?> NOT NULL COMMENT 'Message-Id header of the previous email in the conversation',
  ADD COLUMN `conversation_id` int(10) unsigned NOT NULL default '0',
  ADD COLUMN `received_date` datetime NOT NULL default '0000-00-00 00:00:00',
  CHANGE COLUMN `sent_date` `sent_date` datetime NOT NULL default '0000-00-00 00:00:00',
+ CHANGE COLUMN `uid` varchar(255) <?php echo $default_collation ?> NOT NULL default '',
  ADD INDEX `conversation_id` (`conversation_id`),
  ADD INDEX `message_id` (`message_id`),
  ADD INDEX `received_date` (`received_date`),
  ADD INDEX `in_reply_to_id` (`in_reply_to_id`);
+
 
 UPDATE `<?php echo $table_prefix ?>mail_contents` SET `received_date` = `sent_date`;
 

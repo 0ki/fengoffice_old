@@ -29,7 +29,7 @@ class Companies extends BaseCompanies {
 			if ($additional_conditions) return self::findAll(array('conditions' => $additional_conditions));
 			else return self::getAll();
 		} else {
-			return self::getCompaniesByProjects($user->getWorkspacesQuery(), $additional_conditions);
+			return self::getCompaniesByProjects($user->getWorkspacesQuery(true), $additional_conditions);
 		}
 	}
 

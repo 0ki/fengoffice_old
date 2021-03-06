@@ -37,9 +37,9 @@ class DashboardController extends ApplicationController {
 		
 		$logged_user = logged_user();
 		if (active_project() instanceof Project){
-			$wscsv = active_project()->getAllSubWorkspacesQuery();
+			$wscsv = active_project()->getAllSubWorkspacesQuery(true);
 		} else {
-			$wscsv = $logged_user->getWorkspacesQuery();
+			$wscsv = $logged_user->getWorkspacesQuery(true);
 		}
 		$activity_log = null;
 		$include_private = $logged_user->isMemberOfOwnerCompany();
@@ -61,7 +61,7 @@ class DashboardController extends ApplicationController {
 		}
 		if (user_config_option('show messages widget') && module_enabled('notes')) {
 			$messages = ProjectMessages::findAll(array(
-				'conditions' => 'id IN (SELECT `object_id` FROM `' .TABLE_PREFIX. "workspace_objects` WHERE `object_manager` = 'ProjectMessages' && `workspace_id` IN ($wscsv))"
+				'conditions' => '`archived_by_id` = 0 AND id IN (SELECT `object_id` FROM `' .TABLE_PREFIX. "workspace_objects` WHERE `object_manager` = 'ProjectMessages' && `workspace_id` IN ($wscsv))"
 					. ($tag? (" AND id in (SELECT rel_object_id from " . TABLE_PREFIX . "tags t WHERE tag=".DB::escape($tag)." AND t.rel_object_manager='ProjectMessages')"):'')
 					 . ' AND ' .permissions_sql_for_listings(ProjectMessages::instance(),ACCESS_LEVEL_READ,logged_user())
 					, 'order' => 'updated_on DESC', 'limit' => 10));
@@ -73,7 +73,7 @@ class DashboardController extends ApplicationController {
 		}
 		if (user_config_option('show documents widget') && module_enabled('documents')) {
 			$documents = ProjectFiles::findAll(array(
-				'conditions' => "id IN (SELECT `object_id` FROM `" .TABLE_PREFIX. "workspace_objects` WHERE `object_manager` = 'ProjectFiles' && `workspace_id` IN ($wscsv))"
+				'conditions' => "`archived_by_id` = 0 AND id IN (SELECT `object_id` FROM `" .TABLE_PREFIX. "workspace_objects` WHERE `object_manager` = 'ProjectFiles' && `workspace_id` IN ($wscsv))"
 					. ($tag? (" AND id in (SELECT rel_object_id from " . TABLE_PREFIX . "tags t WHERE tag=".DB::escape($tag)." AND t.rel_object_manager='ProjectFiles')"):'')
 					. ' AND ' .permissions_sql_for_listings(ProjectFiles::instance(),ACCESS_LEVEL_READ,logged_user())
 					, 'order' => 'updated_on DESC', 'limit' => 10));

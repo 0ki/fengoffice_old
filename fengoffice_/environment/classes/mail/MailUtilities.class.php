@@ -9,6 +9,9 @@ class MailUtilities {
 		if (is_null($accounts)) {
 			$accounts = MailAccounts::findAll();
 		}
+		if (config_option('max_email_fetch') && ($maxPerAccount == 0 || config_option('max_email_fetch') < $maxPerAccount)) {
+			$maxPerAccount = config_option('max_email_fetch');
+		}
 
 		$old_memory_limit = ini_get('memory_limit');
 		if (php_config_value_to_bytes($old_memory_limit) < 96*1024*1024) {
@@ -208,7 +211,7 @@ class MailUtilities {
 		}else{
 			$mail->setSentDate(new DateTimeValue(DateTimeValueLib::now()));
 		}
-		if (array_key_exists("Received", $parsedMail)) {
+		if (array_key_exists("Received", $parsedMail) && $parsedMail["Received"]) {
 			$mail->setReceivedDate(new DateTimeValue(strtotime($parsedMail["Received"])));
 		}else{
 			$mail->setReceivedDate(new DateTimeValue(DateTimeValueLib::now()));

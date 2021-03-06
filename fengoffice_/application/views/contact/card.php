@@ -83,7 +83,7 @@
 	tpl_assign("content_template", array('card_content', 'contact'));
 	tpl_assign("object", $contact);
 	tpl_assign("title", lang('contact') . ': ' . clean($contact->getDisplayName()));
-	tpl_assign('iconclass', $contact->isTrashed()? 'ico-large-contact-trashed' :  'ico-large-contact');
+	tpl_assign('iconclass', $contact->isTrashed()? 'ico-large-contact-trashed' :  ($contact->isArchived() ? 'ico-large-contact-archived' : 'ico-large-contact'));
 		
   	$this->includeTemplate(get_template_path('view', 'co'));
   	

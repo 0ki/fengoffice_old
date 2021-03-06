@@ -253,4 +253,6 @@
 	'user ws config option desc search_engine' => 'Elija qué motor de búsquedas usar. "Completa" hará una búsqueda más exhaustiva pero tomará más tiempo que "Rápida".',
 	'search engine mysql like' => 'Completa',
 	'search engine mysql match' => 'Rápida',
+	'user ws config option name hide_quoted_text_in_emails' => 'Ocultar texto citado al ver correos',
+	'user ws config option desc hide_quoted_text_in_emails' => 'Si se habilita, los correos se mostraran sin texto citado. Habrá una opción para podrá mostrar el texto citado en la vista del correo.',
 ); ?>

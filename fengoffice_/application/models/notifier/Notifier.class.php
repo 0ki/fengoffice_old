@@ -517,7 +517,7 @@ class Notifier {
 			}
 			$from = self::prepareEmailAddress($smtp_address, $sender_name);
 		}
-		$result = $mailer->send($to, $from, $subject, $body, $type, $encoding);
+		$result = $mailer->send($to, $from, $subject, $body, $type, $encoding, $complete);
 		$mailer->close();
 
 		return $result;
@@ -574,7 +574,8 @@ class Notifier {
 					$email->getSubject(),
 					$email->getBody(),
 					'text/plain',
-					'8bit'
+					'8bit',
+					$complete
 				);
 				$email->delete();
 				$count++;

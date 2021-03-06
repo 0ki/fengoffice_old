@@ -148,7 +148,7 @@ $on_list_page = false;
 	   
 	tpl_assign("content", $content);
 	tpl_assign("object", $milestone);
-	tpl_assign('iconclass', $milestone->isTrashed()? 'ico-large-milestone-trashed' :  'ico-large-milestone');
+	tpl_assign('iconclass', $milestone->isTrashed()? 'ico-large-milestone-trashed' : ($milestone->isArchived() ? 'ico-large-milestone-archived' : 'ico-large-milestone'));
 	
 	$this->includeTemplate(get_template_path('view', 'co'));
 	?>

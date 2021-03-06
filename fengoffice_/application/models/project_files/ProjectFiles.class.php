@@ -66,9 +66,9 @@ class ProjectFiles extends BaseProjectFiles {
 		} // if		
 		
 		if ($project instanceof Project){
-			$pids = $project->getAllSubWorkspacesQuery(true, logged_user());
+			$pids = $project->getAllSubWorkspacesQuery(!$archived, logged_user());
 		} else {
-			$pids = logged_user()->getWorkspacesQuery();
+			$pids = logged_user()->getWorkspacesQuery(!$archived);
 		}
 		$projectstr = " AND " . self::getWorkspaceString($pids);
 		
@@ -133,12 +133,12 @@ class ProjectFiles extends BaseProjectFiles {
 
 		if ($workspace instanceof Project){
 			if ($include_sub_workspaces) {
-				$wsids = $workspace->getAllSubWorkspacesQuery(true, $user);
+				$wsids = $workspace->getAllSubWorkspacesQuery(!$archived, $user);
 			} else {
 				$wsids = "".$workspace->getId();
 			}
 		} else {
-			$wsids = $user->getWorkspacesQuery();
+			$wsids = $user->getWorkspacesQuery(!$archived);
 		}
 		$wscond = self::getWorkspaceString($wsids);
 		

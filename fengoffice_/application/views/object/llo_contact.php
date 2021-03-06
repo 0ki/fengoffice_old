@@ -1,6 +1,7 @@
 <?php 
 //$linked_object = new Contact();
 $icon_class = $linked_object->getObjectTypeName();
+if (!isset($attr)) $attr = "";
 ?>
 <tr class="<?php echo $counter % 2 ? 'even' : 'odd' ?>">
 	<td style="padding-left:1px;vertical-align:middle;width:22px">

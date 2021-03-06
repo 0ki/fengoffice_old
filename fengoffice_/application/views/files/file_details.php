@@ -149,10 +149,17 @@ if (isset($file) && $file instanceof ProjectFile) {
 		//$description .= '<div id="urlDiv"><b>' . lang('url') . '</b>: <a href="' . clean($file->getUrl()) . '" target="_blank">' . clean($file->getUrl()) . '</a>';
 	}
 
-	if (!$file->isTrashed() && $file->getType() != ProjectFiles::TYPE_WEBLINK) {
+	if (!$file->isTrashed() && !$file->isArchived() && $file->getType() != ProjectFiles::TYPE_WEBLINK) {
 		tpl_assign('image', '<div class="coViewIconImage"><img src="' . $file->getTypeIconUrl(false) .'" alt="' . clean($file->getFilename()) . '" /></div>');
 	}
-	tpl_assign('iconclass', $file->isTrashed()? 'ico-large-files-trashed' : ($file->getType() != ProjectFiles::TYPE_WEBLINK? 'ico-large-files':'ico-large-webfile'));
+	if ($file->isTrashed()) {
+		tpl_assign('iconclass', 'ico-large-files-trashed');
+	} else if($file->isArchived()) {
+		tpl_assign('iconclass', 'ico-large-files-archived');
+	} else {
+		tpl_assign('iconclass', $file->getType() != ProjectFiles::TYPE_WEBLINK? 'ico-large-files':'ico-large-webfile');
+	}
+	
 	tpl_assign('description', $description);
 	if ($file->getType() == ProjectFiles::TYPE_WEBLINK){
 		tpl_assign('title', '<a class="link-ico ico-open-link" href="' . $file->getUrl() . '">' . clean($file->getFilename()) . '</a>');

@@ -116,6 +116,7 @@
 		// Build pattern from format ( generates an array with separators and values to parse)
 		$idx = 0;
 		$i = 0;
+		$pattern = array();
 		while ($idx < strlen($format)) {
 			while ($idx < strlen($format) && in_array($format[$idx], $formatChars)) {
 				$pattern[$i++] = array('val' => $format[$idx], 'type' => 'f', 'len' => 1);
@@ -144,10 +145,13 @@
 			} else {
 				if (isset($pattern[$i+1])) {
 					$end = strpos($date_str, $pattern[$i+1]['val'], $ini);
-				} else 
+					if ($end === false) $end = strlen($date_str);
+				} else {
 					$end = strlen($date_str);
+				}
 				$parsed_date[$pat['val']] = substr($date_str, $ini, $end - $ini);
 				$ini = $end;
+				if ($end == strlen($date_str)) break;
 			}
 			$i++;
 		}

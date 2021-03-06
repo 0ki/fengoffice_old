@@ -568,7 +568,7 @@ addLangs({
 	'n/a': '<acronym title="Not Available">n/a</acronym>',
 	'move to trash': 'Move to trash',
     'move selected objects to trash': 'Move selected objects to trash',
-    'confirm move to trash': 'Are \'\'you sure you want to move the selected objects to the trash can?',
+    'confirm move to trash': 'Are you sure you want to move the selected objects to the trash can?',
     'confirm restore objects': 'Are you sure you want to restore the selected objects?',
     
     'file_revision': 'File revision',
@@ -577,6 +577,10 @@ addLangs({
     'object type not supported': 'This object type is not supported for templates', 
     'confirm delete timeslot' : 'Are you sure you want to permanently delete this timeslot?',
     'confirm delete permanently': 'Are you sure you want to delete this object?',
+    
+    'confirm delete permanently company': 'Are you sure you want to permanently delete this company?\nNote that all company users will also be deleted.',
+    'confirm move to trash company': 'Are you sure you want to delete this company?\nNote that all company users will also be deleted.',
+    
     'no items selected' : 'No items selected',
     'error adding timeslot' : 'An error occurred while adding the timeslot',
     'confirm unclassify email' : 'Are you sure you want to unclassify this email?\nThe email will be removed from the workspaces ant its attachments will not appear in Documents tab.',

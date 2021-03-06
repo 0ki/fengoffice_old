@@ -31,7 +31,7 @@ if (isset($message) && $message instanceof ProjectMessage) {
 		
 		tpl_assign("content", $content);
 		tpl_assign("object", $message);
-		tpl_assign('iconclass', $message->isTrashed()? 'ico-large-message-trashed' :  'ico-large-message');
+		tpl_assign('iconclass', $message->isTrashed()? 'ico-large-message-trashed' : ($message->isArchived() ? 'ico-large-message-archived' : 'ico-large-message'));
 		
 		$this->includeTemplate(get_template_path('view', 'co'));
 	?>

@@ -179,7 +179,7 @@ if (isset($event) && $event instanceof ProjectEvent) {
 	tpl_assign("content_template", array('view_event', 'event'));
 	tpl_assign('object', $event);
 	tpl_assign('title', $title);
-	tpl_assign('iconclass', $event->isTrashed()? 'ico-large-event-trashed' :  'ico-large-event');
+	tpl_assign('iconclass', $event->isTrashed()? 'ico-large-event-trashed' : ($event->isArchived() ? 'ico-large-event-archived' : 'ico-large-event'));
 
 	$this->includeTemplate(get_template_path('view', 'co'));
 ?>

@@ -599,7 +599,7 @@ class AccessController extends ApplicationController {
 		if ($new_password) {
 			$repeat_password = array_var($_POST, 'repeat_password');
 			if ($new_password != $repeat_password) {
-				flash_error('passwords dont match');
+				flash_error(lang('passwords dont match'));
 				return;
 			}
 			$user->setPassword($new_password);

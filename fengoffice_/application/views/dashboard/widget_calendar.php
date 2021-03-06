@@ -32,6 +32,8 @@
 	$date_end = new DateTimeValue(mktime(0, 0, 0, $currentmonth, $endday, $currentyear)); 
 	$milestones = ProjectMilestones::getRangeMilestonesByUser($date_start, $date_end, $user_filter, $tags, active_project());
 	$tmp_tasks = ProjectTasks::getRangeTasksByUser($date_start, $date_end, $user_filter, $tags, active_project());
+	$birthdays = Contacts::instance()->getRangeContactsByBirthday($date_start, $date_end);
+	
 	$tasks = array();
 	if($tmp_tasks) {
 		foreach ($tmp_tasks as $task) {
@@ -186,6 +188,10 @@
 				if($tasks)
 					$result = array_merge($result,$tasks );
 				
+				if($birthdays) {
+					$result = array_merge($result, $birthdays );
+				}
+					
 				if(count($result)<1) $output .= "&nbsp;";
 				else{
 					$count=0;
@@ -292,6 +298,35 @@
 								}//if count
 							}
 						}//endif task
+						elseif($event instanceof Contact){
+							
+						$contact = $event;
+											
+						$bday = $contact->getOBirthday();
+
+						$now = mktime(0, 0, 0, $dtv->getMonth(), $dtv->getDay(), $dtv->getYear());
+						
+						if ($now == mktime(0, 0, 0, $bday->getMonth(), $bday->getDay(), $dtv->getYear())) {	
+
+							$count++;
+
+							if ($count <= 3){
+
+								$output .= '<div class="event_block"  id="m_bd_div_'.$contact->getId().'" style="border-left-color: #B1BFAC;">';
+								$output .= "<a style='vertical-align:bottom;' href='".$contact->getViewUrl()."' onclick=\"og.disableEventPropagation(event);\" >";
+								$output .= "<img src='".image_url('/16x16/contacts.png')."' style='vertical-align: middle;'>";
+								$output .= "<span>".$contact->getDisplayName()."</span></a>";
+								$output .= "</div>";
+
+								?>
+								<script>
+									addTip('m_bd_div_<?php echo $contact->getId() ?>', '<i>' + '<?php echo escape_single_quotes(lang('birthday')) ?>' + '</i> - ' + <?php echo json_encode(clean($contact->getDisplayName()))?>, '');
+								</script>
+								<?php
+							
+								}//if count
+							}
+						}//endif birthdays
 					} // end foreach event writing loop
 					if ($count > 3) {
 						$output .= '<div style="witdh:100%;text-align:center;font-size:9px" ><a href="'.$p.'" class="internalLink"  onclick="og.disableEventPropagation(event);nd();">'.($count-3) . ' ' . lang('more') .'</a></div>';
