@@ -172,4 +172,7 @@
 	'x users' => '{0} usuarios {1}',
     
 	'warning file extension type' => "Advertencia: está a punto de guardar un documento con extensión de archivo diferente al guardado previamente",
+    'mail' => 'Correo',
+    'the weblink activity' => 'el enlace{0}',
+    'the file_revision' => 'la revisión',
 ); ?>

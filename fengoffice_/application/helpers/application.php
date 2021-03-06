@@ -177,7 +177,7 @@ function intersectCSVs($csv1, $csv2){
 	return implode(',', $final);
 }
 
-function allowed_users_to_assign($context = null) {
+function allowed_users_to_assign($context = null, $filter_by_permissions = true) {
 	if ($context == null) {
 		$context = active_context();
 	}
@@ -196,7 +196,17 @@ function allowed_users_to_assign($context = null) {
 	if(!can_manage_tasks(logged_user()) && can_task_assignee(logged_user())) {
 		$contacts = array(logged_user());
 	} else if (can_manage_tasks(logged_user())) {
-		$contacts = allowed_users_in_context(ProjectTasks::instance()->getObjectTypeId(), $context, ACCESS_LEVEL_READ, "AND `is_company`=0 AND `company_id` IN (".implode(",", $comp_ids).")");
+		// for task selectors
+		if ($filter_by_permissions) {
+			$contacts = allowed_users_in_context(ProjectTasks::instance()->getObjectTypeId(), $context, ACCESS_LEVEL_READ, "AND `is_company`=0 AND `company_id` IN (".implode(",", $comp_ids).")");
+		} else {
+			// for template variables selectors
+			$tmp_contacts = Contacts::getAllUsers();
+			$contacts = array();
+			foreach ($tmp_contacts as $c) {
+				if (can_task_assignee($c)) $contacts[] = $c;
+			}
+		}
 	} else {
 		$contacts = array();
 	}

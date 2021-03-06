@@ -308,4 +308,5 @@
 	'field Contacts home_address' => 'Dirección personal',
 	'field Contacts work_address' => 'Dirección del trabajo',
 	'field Contacts other_address' => 'Otra dirección',
+    'field ProjectTasks original_task_id' => 'Id de tarea original',
 );

@@ -854,5 +854,20 @@ addLangs({
 	'home': 'Inicio',
 	
 	'push' : 'Mover',
+
+    'confirm restore user' : 'El usuario será activado ¿Continuar?',
+    'subtasks structure' : 'Estructura de subtareas',
+    'select contact' : 'Seleccione un contacto',
+    'address' : 'Dirección',
+    'street address' : 'Calle',
+    'city' : 'Ciudad',
+    'state' : 'Estado',
+    'zip_code' : 'Código zip',
+    'click here' : 'Click aquí',
+    'more-panel' : 'Ajustes',
+    'select user group' : 'Seleccione un grupo',
+    'at least one dimension must be selected' : 'Debe seleccionar al menos una dimensión.',
+    'confirm delete group' : '¿Está seguro que quiere eliminar este grupo?',
+    
 	'move tasks forward' : 'Mover las tareas hacia adelante'
 });

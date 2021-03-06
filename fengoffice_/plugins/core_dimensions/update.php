@@ -231,3 +231,36 @@ function core_dimensions_update_11_12() {
 	}
 }
 
+/**
+ * template tasks depth
+ *
+ */
+function core_dimensions_update_12_13() {
+	//UPDATE depth for all template tasks
+	//update root 
+	DB::execute("UPDATE ".TABLE_PREFIX."template_tasks SET depth = 0  WHERE parent_id = 0;");
+	//clean root 
+	DB::execute("UPDATE ".TABLE_PREFIX."template_tasks SET depth = 1  WHERE parent_id != 0 AND depth = 0;");
+		
+	$tasks_depth = DB::executeAll("SELECT object_id FROM ".TABLE_PREFIX."template_tasks WHERE parent_id =0 ORDER BY object_id");
+	$tasks_depth = array_flat($tasks_depth);
+	$tasks_depth = implode(",", $tasks_depth);
+	
+	$depth = 1;
+	$max_depth = DB::executeOne("SELECT  MAX(depth) AS depth FROM `".TABLE_PREFIX."template_tasks`");
+			
+	//update all depths
+	for ($i = $depth; $i <= $max_depth['depth']; $i++) {
+		//update template tasks depth
+		DB::execute("UPDATE ".TABLE_PREFIX."template_tasks SET depth = ".$depth." WHERE parent_id  IN (".$tasks_depth.");");
+		
+		//Get template tasks from next depth
+		$tasks_depth = DB::executeAll("SELECT object_id FROM ".TABLE_PREFIX."template_tasks WHERE depth= ".$depth." ORDER BY object_id");
+		$tasks_depth = array_flat($tasks_depth);
+		$tasks_depth = implode(",", $tasks_depth);
+		
+		$depth++;
+	}
+	//END UPDATE depth for all template tasks
+}
+

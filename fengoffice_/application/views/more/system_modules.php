@@ -123,7 +123,7 @@ $genid = gen_id();
 			
 		} else {
 			
-			og.openLink(og.getUrl('more', 'set_getting_started_step', {'step': 2}), {
+			og.openLink(og.getUrl('more', 'set_getting_started_step', {'step': 2, 'update_cm_cache':og.must_reload_system_modules}), {
 				callback: function(success, data) {
 					if (og.must_reload_system_modules || og.must_reload_dimensions) {
 						window.location.href='<?php echo ROOT_URL ?>';

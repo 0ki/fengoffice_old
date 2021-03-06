@@ -293,4 +293,7 @@ Asunto:   {0}<br/>
 	'undo remove subtasks' => 'Restaurar las subtareas removidas',
 	'urgent priority' => 'Urgente',
 	'attachment from email' => 'Adjunto al correo "{0}"',
+    'field workspace color' => 'Color del espacio',
+    'pending pl' => 'Pendientes',
+    'email tab' => 'Correo',
 ); ?>

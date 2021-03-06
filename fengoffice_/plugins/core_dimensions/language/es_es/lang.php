@@ -32,4 +32,6 @@
 	'delete selected member' => 'Eliminar {0} seleccionado',
 	'delete member warning' => '¿Esta seguro que desea eliminar este {0}?',
 	'tasks list' => 'Listado de tareas',
+    'do you want to remove permissions for all submembers too' => '¿Desea quitar los permisos para todos los {0} bajo \'{1}\' también?',
+    'do you want to add default permissions in member for users' => '¿Desea agregar permisos por defecto a \'{1}\' en \'{0}\'?',
 );

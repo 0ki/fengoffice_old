@@ -177,3 +177,15 @@ function check_sharing_table_flags() {
 		_log("No permission groups need to be updated.");
 	}
 }
+
+function rebuild_contact_member_cache() {
+	Env::useHelper('permissions');
+	_log("Recalculating contact member cache...");
+	
+	$users = Contacts::getAllUsers();
+	foreach ($users as $user) {
+		ContactMemberCaches::updateContactMemberCacheAllMembers($user);
+	}
+	
+	_log("Member cache updated for ".count($users)." users.");
+}

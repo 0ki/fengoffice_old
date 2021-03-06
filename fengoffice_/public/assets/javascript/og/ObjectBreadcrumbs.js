@@ -458,6 +458,9 @@ og.insertBreadcrumb = function(member_id,target,from_callback) {
 		
 	//calculate the container width and check if thers more elements in the same container
 	var container_width = $(target).closest(container_to_fill).width();//.parent().parent() .closest(container_to_fill)
+	if ($(target).closest(container_to_fill).css('max-width') !== 'none') {
+		container_width = parseFloat($(target).closest(container_to_fill).css('max-width'));
+	}
 	var real_container_width = container_width;
 	var container_current_childs = $(target).parent().siblings();
 	var container_current_childs_width = 0;

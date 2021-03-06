@@ -1748,7 +1748,10 @@ class Notifier {
 					tpl_assign('due_date', $due_date);
 					
 					$attachments = array();
-					$attachments['logo'] = self::getLogoAttachmentData($assigned_user->getEmailAddress());
+					$logo_info = self::getLogoAttachmentData($assigned_user->getEmailAddress());
+					if (is_array($logo_info) && count($logo_info) > 0) {
+						$attachments['logo'] = $logo_info;
+					}
 					tpl_assign('attachments', $attachments);
 					
 					// send notification
@@ -1834,7 +1837,7 @@ class Notifier {
 		} catch (FileNotInRepositoryError $e) {
 			Logger::log("Could not find owner company picture file: ".$e->getMessage());
 		}
-		$logo_info;
+		return $logo_info;
 	}
 	
 	private static function buildContextObjectForNotification($object) {

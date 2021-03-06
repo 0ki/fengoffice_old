@@ -402,4 +402,16 @@
 		
 	'completed by name on' => 'Completado por {0} el {1}',
 	'notify assigned user' => 'Notificar al usuario asignado',
+    'select contact' => 'Seleccione un contacto',
+    'select user' => 'Seleccione un usuario',
+    'settings' => 'Ajustes',
+    'street' => 'calle',
+    'zip_code' => 'Código zip',
+    'field Objects attach_to_notification' => 'Adjuntar documento a notificación',
+    'field Objects default_subject' => 'Asunto por defecto de la notificación',
+    'address field is required' => 'Información sobre {1} para el campo \'{0}\' es requerida.',
+    'select group to add user' => 'Elija un grupo de la lista para agregar el usuario a ese grupo.',
+    'there are no custom properties defined message' => 'No hay propiedades personalizadas para {0} "{1}".',
+    'there are no custom properties defined link' => 'Por favor vea <a href="http://wiki.fengoffice.com/doku.php/custom_properties" target="_blank" class="wiki-link">this article</a> para consultar el uso de las propiedades personalizadas.',
+		
 );

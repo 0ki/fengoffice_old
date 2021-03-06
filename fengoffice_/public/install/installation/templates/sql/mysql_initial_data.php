@@ -138,7 +138,8 @@ INSERT INTO `<?php echo $table_prefix ?>cron_events` (`name`, `recursive`, `dela
 	('import_google_calendar', '1', '10', '0', '0', '0000-00-00 00:00:00'),
 	('export_google_calendar', '1', '10', '0', '0', '0000-00-00 00:00:00'),
 	('sharing_table_partial_rebuild', '1', '1440', '1', '1', '0000-00-00 00:00:00'),
-	('check_sharing_table_flags', '1', '10', '1', '1', '0000-00-00 00:00:00');
+	('check_sharing_table_flags', '1', '10', '1', '1', '0000-00-00 00:00:00'),
+	('rebuild_contact_member_cache', '1', '1440', '1', '1', '0000-00-00 00:00:00');
 	
 INSERT INTO `<?php echo $table_prefix ?>object_reminder_types` (`name`) VALUES
   ('reminder_email'),

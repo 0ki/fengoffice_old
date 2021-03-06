@@ -1445,7 +1445,7 @@ class TemplateTask extends BaseTemplateTask {
 			//set Parents Path
 			$parents_ids = array();
 			$parent = $this->getParent();
-			if(!$parent instanceof ProjectTask){
+			if(!$parent instanceof TemplateTask){
 				return;
 			}
 			$stop = false;

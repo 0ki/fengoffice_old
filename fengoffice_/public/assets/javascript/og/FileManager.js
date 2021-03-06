@@ -88,14 +88,20 @@ og.FileManager = function() {
 		mem_path = "";
 		var mpath = Ext.util.JSON.decode(r.data.memPath);
 		if (mpath){ 
-			mem_path = "<div class='breadcrumb-container' style='display: inline-block;min-width: 250px;'>";
+			mem_path = "<div class='breadcrumb-container' style='display: inline-block;'>";
 			mem_path += og.getEmptyCrumbHtml(mpath, '.breadcrumb-container', og.breadcrumbs_skipped_dimensions);
 			mem_path += "</div>";
 		}
+		
+		var file_name = og.clean(og.removeFileExtension(value));
+		//do not remove . for weblinks
+		if(r.data.ftype == 1){
+			file_name = og.clean(value);
+		}
+		
 		var name = String.format(
 			'<a style="font-size:120%;" class="{3}" href="{2}" onclick="og.openLink(\'{2}\');return false;">{0}</a>',
-			og.clean(og.removeFileExtension(value)), r.data.name, og.getUrl('files', 'file_details', {id: r.data.object_id}), classes) + mem_path;
-		
+			file_name, r.data.name, og.getUrl('files', 'file_details', {id: r.data.object_id}), classes) + mem_path;
 		return name;
 	}
 	function renderIsRead(value, p, r){

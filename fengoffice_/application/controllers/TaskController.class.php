@@ -3889,7 +3889,9 @@ class TaskController extends ApplicationController {
 			$context = $members;
 		}
 		
-		$comp_array = allowed_users_to_assign($context);
+		$for_template_var = array_var($_GET, 'for_template_var');
+		
+		$comp_array = allowed_users_to_assign($context, !$for_template_var);
 		$object = array(
 			"companies" => $comp_array
 		);

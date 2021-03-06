@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Anis upgrade script will upgrade FengOffice 3.2.3 to FengOffice 3.3-beta
+ * Anis upgrade script will upgrade FengOffice 3.2.3 to FengOffice 3.3-rc
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -39,7 +39,7 @@ class AnisUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('3.2.3');
-		$this->setVersionTo('3.3-beta');
+		$this->setVersionTo('3.3-rc');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -200,6 +200,14 @@ class AnisUpgradeScript extends ScriptUpgraderScript {
 			";
 		}
 		
+		
+		if (version_compare($installed_version, '3.3-rc') < 0) {
+			$upgrade_script .= "
+				INSERT INTO `".$t_prefix."cron_events` (`name`, `recursive`, `delay`, `is_system`, `enabled`, `date`) VALUES
+				('rebuild_contact_member_cache', '1', '1440', '1', '1', '0000-00-00 00:00:00')
+				ON DUPLICATE KEY UPDATE name=name;
+			";
+		}
 		
 		
 		// Execute all queries

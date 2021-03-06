@@ -1782,3 +1782,12 @@ a.underline {
 	font-style: italic;
 	background-color: rgb(232, 241, 224);
 }
+
+.breadcrumb-container{
+	max-width: 250px;
+	display: inline-block;
+    line-height: 25px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+}

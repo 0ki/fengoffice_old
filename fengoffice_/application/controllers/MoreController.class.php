@@ -437,6 +437,17 @@ class MoreController extends ApplicationController {
 			}
 		}
 		
+		$update_cm_cache = array_var($_REQUEST, 'update_cm_cache');
+		if ($update_cm_cache) {
+			$cron_event = CronEvents::instance()->getByName('rebuild_contact_member_cache');
+			if ($cron_event instanceof CronEvent && $cron_event->getEnabled()) {
+				$d = DateTimeValueLib::now();
+				$d->add('m', -1 * $cron_event->getDelay());
+				$cron_event->setDate($d);
+				$cron_event->save();
+			}
+		}
+		
 		if (array_var($_REQUEST, 'reload_panel')) {
 			ajx_add('more-panel', 'reload');
 		}

@@ -1,5 +1,5 @@
 
-	About Feng Office 3.3-beta
+	About Feng Office 3.3-rc
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -104,6 +104,21 @@
 	
 	Changelog
 	=========
+	
+	Since 3.3-beta
+	----------------
+	bugfix: breadcrumbs on mail list.
+	bugfix: template tasks depth.
+	bugfix: some template tasks disappear from template view.
+	bugfix: contact member cache is not recalculated when enabling or disabling modules.
+	bugfix: weblinks names.
+	bugfix: non working days - remove option "leave as they are" and set min amount of days to 1.
+	bugfix: user birthday
+	bugfix: administrator cannot edit user in some cases
+	bugfix: in template user variables: dont filter fixed user variables by context or company
+	bugfix: all prev tasks completed notification cant be sent if company logo file does not exists
+	bugfix: dont show member custom properties if plugin not installed.
+
 	
 	Since 3.2.3.2
 	----------------

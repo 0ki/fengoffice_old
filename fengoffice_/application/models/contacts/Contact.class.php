@@ -1074,6 +1074,10 @@ class Contact extends BaseContact {
 	function canView(Contact $user) {
 		if ( $this->isOwnerCompany()) return true;
 		if ( $this->getId() == logged_user()->getId() ) return true ;
+		if ($this->isUser()) {
+			// a contact that has a user assigned to it can be modified by anybody that can manage security (this is: users and permissions) or the user himself.
+			return can_manage_security($user) && ($this->getUserType() > $user->getUserType() || $user->isAdministrator());
+		} 
 		return can_read($user, $this->getMembers(), $this->getObjectTypeId());
 	} // canView
 	

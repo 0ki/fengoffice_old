@@ -162,9 +162,10 @@ class TemplateController extends ApplicationController {
 	 */
 	function add_template_object_to_view($template_id) {
 		$objects = array();
-		$conditions = array('conditions' => '`template_id` = '.$template_id);
-		$tasks = TemplateTasks::findAll($conditions);			
-		$milestones = TemplateMilestones::findAll($conditions);	
+		$tasks_conditions = array('conditions' => '`template_id` = '.$template_id,  "order" => "depth,name");
+		$milestones_conditions = array('conditions' => '`template_id` = '.$template_id,  "order" => "name");
+		$tasks = TemplateTasks::findAll($tasks_conditions);			
+		$milestones = TemplateMilestones::findAll($milestones_conditions);	
 				
 		foreach ($milestones as $milestone){
 			$objectId = $milestone->getObjectId();

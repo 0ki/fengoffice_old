@@ -695,6 +695,15 @@ class FilesController extends ApplicationController {
 				$uploaded_file = array_var($_SESSION, $upload_id, array());
 				$member_ids = json_decode(array_var($_POST, 'members'));
 				
+				$notAllowedMember = '';
+				$members = Members::findAll(array('conditions' => 'id IN ('.implode(',', $member_ids).')'));
+				if(!$file->canAdd(logged_user(), $members, $notAllowedMember )) {
+					if (str_starts_with($notAllowedMember, '-- req dim --')) $err_msg = lang('must choose at least one member of', str_replace_first('-- req dim --', '', $notAllowedMember, $in));
+					else trim($notAllowedMember) == "" ? $err_msg = lang('you must select where to keep', lang('the file')) : $err_msg = lang('no context permissions to add',lang("files"),$notAllowedMember );
+					
+					throw new Exception($err_msg);
+				}
+				
 				//files ids to return
 				$file_ids = array();
 				
