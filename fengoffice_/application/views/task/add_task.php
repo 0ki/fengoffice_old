@@ -425,7 +425,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 		<div id="<?php echo $genid ?>add_reminders_div" class="form-tab">
 			<div id="<?php echo $genid ?>add_reminders_content">
 					<?php 
-					$render_defaults = false;
+					$render_defaults = true;
 					if ($task->isNew()) {
 						$render_defaults = user_config_option("add_task_default_reminder");
 					}

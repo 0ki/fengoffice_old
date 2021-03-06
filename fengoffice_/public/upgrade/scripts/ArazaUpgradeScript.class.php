@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Araza upgrade script will upgrade FengOffice 3.1 to FengOffice 3.1.1
+ * Araza upgrade script will upgrade FengOffice 3.1 to FengOffice 3.1.2
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -39,7 +39,7 @@ class ArazaUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('3.1');
-		$this->setVersionTo('3.1.1');
+		$this->setVersionTo('3.1.2');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -104,7 +104,7 @@ class ArazaUpgradeScript extends ScriptUpgraderScript {
 		
 		
 		// Set upgrade queries	
-		if (version_compare($installed_version, '3.1.1') < 0) {						
+		if (version_compare($installed_version, '3.1.1') < 0) {
 			if (!$this->checkColumnExists($t_prefix."project_tasks", "parents_path", $this->database_connection)) {
 				$upgrade_script .= "
 					ALTER TABLE `".$t_prefix."project_tasks` ADD COLUMN `parents_path` varchar(255) NOT NULL default '';
@@ -134,6 +134,19 @@ class ArazaUpgradeScript extends ScriptUpgraderScript {
 		
 			
 		}		
+		
+		if (version_compare($installed_version, '3.1.2') < 0) {
+			$upgrade_script .= "
+				INSERT INTO `".$t_prefix."config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
+				 ('general', 'last_sharing_table_rebuild', NOW(), 'StringConfigHandler', '1', '0', NULL)
+				ON DUPLICATE KEY UPDATE name=name;
+			";
+			$upgrade_script .= "
+				INSERT INTO `".$t_prefix."cron_events` (`name`, `recursive`, `delay`, `is_system`, `enabled`, `date`) VALUES
+				('sharing_table_partial_rebuild', '1', '1440', '1', '1', '0000-00-00 00:00:00');
+			";
+		}
+		
 		
 		// Execute all queries
 		if(!$this->executeMultipleQueries($upgrade_script, $total_queries, $executed_queries, $this->database_connection)) {

@@ -171,7 +171,20 @@ ogTasks.updateTaskGroupsForTask = function(data){
 			ogTasks.addNewTaskGroup(data, i, true);
 			group = ogTasks.getGroup(data.groups[i].group_id);
 		}else{
-			ogTasks.addTaskToGroup(group, task, true);
+			var bottomToolbar = Ext.getCmp('tasksPanelBottomToolbarObject');
+			var topToolbar = Ext.getCmp('tasksPanelTopToolbarObject');
+			var displayCriteria = bottomToolbar.getDisplayCriteria();
+			var drawOptions = topToolbar.getDrawOptions();
+			
+			//don't add th task if the parent is in this group 
+			if(drawOptions.show_subtasks_structure && task.parentId > 0){
+				if($("#ogTasksPanelTask"+task.parentId+"G"+group.group_id).length == 0){
+					ogTasks.addTaskToGroup(group, task, true);
+				}	
+			}else{
+				ogTasks.addTaskToGroup(group, task, true);
+			}
+					
 		}		
 		
 		task_groups_ids.push(group.group_id);

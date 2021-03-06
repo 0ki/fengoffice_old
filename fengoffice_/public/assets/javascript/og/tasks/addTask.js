@@ -814,7 +814,7 @@ ogTasks.SubmitNewTask = function(task_id,view_popup){
 	ogTasks.hideAddNewTaskForm();
 }
 
-
+//this function is called after edit or add
 ogTasks.drawTaskRowAfterEdit = function(data) {
 	if (!data || !data.task) return;
 	
@@ -822,6 +822,16 @@ ogTasks.drawTaskRowAfterEdit = function(data) {
 	
 	//get the groups that this task belongs to and draw
 	ogTasks.getGroupsForTask(task.id);	
+	
+	
+	var topToolbar = Ext.getCmp('tasksPanelTopToolbarObject');	
+	var drawOptions = topToolbar.getDrawOptions();
+	
+	if(drawOptions.show_subtasks_structure && task.parentId > 0){
+		//redraw all parent views
+		var parent = ogTasksCache.getTask(task.parentId);
+		ogTasks.reDrawTask(task);
+	}
 }
 
 
@@ -890,7 +900,13 @@ ogTasks.buildAssignedToComboStore = function(companies, only_me, groups) {
 		ogTasks.assignedTo = 0;
 	}
 	
-	return usersStore;
+	// remove undefined values
+	var cleanStore = [];
+	for (x in usersStore) {
+		if (usersStore[x] && typeof(usersStore[x]) != 'function') cleanStore.push(usersStore[x]);
+	}
+	
+	return cleanStore;
 }
 
 ogTasks.buildMilestonesComboStore = function(ms) {

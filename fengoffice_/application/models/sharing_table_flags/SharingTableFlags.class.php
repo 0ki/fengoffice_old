@@ -14,7 +14,10 @@ class SharingTableFlags extends BaseSharingTableFlags {
 			
 			try {
 				$obj = Objects::findObject($flag->getObjectId());
-				if (!$obj instanceof ContentDataObject) return;
+				if (!$obj instanceof ContentDataObject) {
+					$flag->delete(); // if object does not exists then delete the flag
+					return;
+				}
 				
 				DB::beginWork();
 				// update sharing table

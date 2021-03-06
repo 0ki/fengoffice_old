@@ -137,6 +137,15 @@ function export_google_calendar() {
 }
 
 
+function sharing_table_partial_rebuild() {
+	$start_date = config_option('last_sharing_table_rebuild');
+	_log("Rebuilding sharing table since $start_date ...");
+
+	$obj_count = SharingTables::instance()->rebuild($start_date);
+	
+	_log("Finished rebuilding sharing table - $obj_count objects.");
+}
+
 function check_sharing_table_flags() {
 	_log("Checking for sharing table pending updates...");
 	

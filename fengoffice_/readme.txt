@@ -1,5 +1,5 @@
 
-	About Feng Office 3.1.1
+	About Feng Office 3.1.2
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -104,6 +104,11 @@
 	
 	Changelog
 	=========
+	
+	Since 3.1.1
+	----------------
+	feature: Cron process to reprocess last objects' sharing table entries
+	
 	
 	Since 3.1
 	----------------

@@ -926,22 +926,33 @@ ogTasks.reDrawTask = function(task) {
 		if(task.parentId > 0){
 			var parent = ogTasksCache.getTask(task.parentId);
 			
-			//if is not rendered and is subtask?
-			if($("[id^='ogTasksPanelTask" + task.id + "']").length == 0){
+				//if is not rendered and is subtask?			
 				$("[id^='ogTasksPanelSubtasksT" + parent.id + "']").each(function( index ) {
 					var group_id = $(this).attr('id');
 					var remove = "ogTasksPanelSubtasksT" + task.id + "G";
 					group_id = group_id.replace(remove, "");
 					
-					var html = ogTasks.drawTask(task, drawOptions, displayCriteria, group_id, 1, null,true);
-					$(this).append(html);
-					//init action btns
-					var btns = $("#ogTasksPanelTask" + task.id + "G"+group_id +" .tasksActionsBtn").toArray();
-					og.initPopoverBtns(btns);
-					
+					if($("#ogTasksPanelTask" + task.id + "G"+group_id).length == 0){						
+						var html = ogTasks.drawTask(task, drawOptions, displayCriteria, group_id, 1, null,true);
+						$(this).append(html);
+						//init action btns
+						var btns = $("#ogTasksPanelTask" + task.id + "G"+group_id +" .tasksActionsBtn").toArray();
+						og.initPopoverBtns(btns);
+					}					
 				});	
-				ogTasks.reDrawTask(parent);
-			}			
+				//update parent task
+				$("[id^='ogTasksPanelTask" + parent.id + "']").each(function( index ) {
+					var group_id = $(this).attr('id');
+					var remove = "ogTasksPanelTask" + parent.id + "G";
+					group_id = group_id.replace(remove, "");
+					
+					var html = ogTasks.drawTask(parent, drawOptions, displayCriteria, group_id, 1, null,true);
+					$("#ogTasksPanelTask" + parent.id + "G"+group_id).replaceWith(html);
+					//init action btns
+					var btns = $("#ogTasksPanelTask" + parent.id + "G"+group_id +" .tasksActionsBtn").toArray();
+					og.initPopoverBtns(btns);
+				});	
+						
 		}else{
 			//if is not rendered redraw all groups from server
 			if($("[id^='ogTasksPanelTask" + task.id + "']").length == 0){
@@ -959,24 +970,19 @@ ogTasks.reDrawTask = function(task) {
 		}
 	}
 	
+	//update this task rows
 	$("[id^='ogTasksPanelTask" + task.id + "']").each(function( index ) {
 		var group_id = $(this).attr('id');
 		var remove = "ogTasksPanelTask" + task.id + "G";
 		group_id = group_id.replace(remove, "");
 		
-		for (var j = 0; j < ogTasks.Groups.length; j++){
-			var group = ogTasks.Groups[j];	
-			if(group.group_id == group_id){
-				var html = ogTasks.drawTask(task, drawOptions, displayCriteria, group_id, 1, null,true);
-				$("#ogTasksPanelTask" + task.id + "G"+group_id).replaceWith(html);
-				//init action btns
-				var btns = $("#ogTasksPanelTask" + task.id + "G"+group_id +" .tasksActionsBtn").toArray();
-				og.initPopoverBtns(btns);		
-							
-				break;
-			}
-		};
-		
+		var html = ogTasks.drawTask(task, drawOptions, displayCriteria, group_id, 1, null,true);
+		console.log("replaceWith");
+		console.log(task);
+		$("#ogTasksPanelTask" + task.id + "G"+group_id).replaceWith(html);
+		//init action btns
+		var btns = $("#ogTasksPanelTask" + task.id + "G"+group_id +" .tasksActionsBtn").toArray();
+		og.initPopoverBtns(btns);
 	});	
 	
 	//start all clocks on the list

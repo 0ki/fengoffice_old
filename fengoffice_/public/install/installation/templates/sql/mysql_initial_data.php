@@ -71,6 +71,7 @@ INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`
     ('general', 'show_owner_company_name_header', '0', 'BoolConfigHandler', 1, 100, ''),
 	('general', 'notify_myself_too', '0', 'BoolConfigHandler', '0', '100', ''),
 	('general', 'enabled_dimensions', '', 'RootDimensionsConfigHandler', '1', '0', NULL),
+	('general', 'last_sharing_table_rebuild', '', 'StringConfigHandler', '1', '0', NULL),
 	('brand_colors', 'brand_colors_head_back', '424242', 'ColorPickerConfigHandler', '0', '0', NULL),
 	('brand_colors', 'brand_colors_head_font', 'FFFFFF', 'ColorPickerConfigHandler', '0', '0', NULL),
 	('brand_colors', 'brand_colors_tabs_back', 'e7e7e7', 'ColorPickerConfigHandler', '1', '0', NULL),
@@ -132,6 +133,7 @@ INSERT INTO `<?php echo $table_prefix ?>cron_events` (`name`, `recursive`, `dela
 	('check_upgrade', '1', '1440', '1', '0', '0000-00-00 00:00:00'),
 	('import_google_calendar', '1', '10', '0', '0', '0000-00-00 00:00:00'),
 	('export_google_calendar', '1', '10', '0', '0', '0000-00-00 00:00:00'),
+	('sharing_table_partial_rebuild', '1', '1440', '1', '1', '0000-00-00 00:00:00'),
 	('check_sharing_table_flags', '1', '10', '1', '1', '0000-00-00 00:00:00');
 	
 INSERT INTO `<?php echo $table_prefix ?>object_reminder_types` (`name`) VALUES

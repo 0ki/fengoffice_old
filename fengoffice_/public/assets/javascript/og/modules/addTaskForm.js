@@ -13,11 +13,18 @@ App.modules.addTaskForm = {
     if(!list_details.can_add_task) return;
     
     // Show this one
-    Ext.getDom(list_details.add_task_link_id).style.display = 'none';
-    Ext.getDom(list_details.task_form_id).style.display = 'block';
+    var el = Ext.getDom(list_details.add_task_link_id);
+    if (el) el.style.display = 'none';
+    
+    el = Ext.getDom(list_details.task_form_id);
+    if (el) el.style.display = 'block';
+    
     //Ext.getDom(list_details.text_id).focus();
-    document.getElementById("addTaskTitle" + task_list_id).focus();
-    Ext.getDom(list_details.submit_id).accesskey = 's';
+    el = document.getElementById("addTaskTitle" + task_list_id);
+    if (el) el.focus();
+    
+    el = Ext.getDom(list_details.submit_id);
+    if (el) el.accesskey = 's';
     
     // Hide all forms
     App.modules.addTaskForm.hideAllAddTaskForms(task_list_id);
