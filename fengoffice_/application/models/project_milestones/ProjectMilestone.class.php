@@ -173,7 +173,7 @@ class ProjectMilestone extends BaseProjectMilestone {
 	 */
 	function getTasks() {
 		return ProjectTasks::findAll(array(
-	        'conditions' => '`milestone_id` = ' . DB::escape($this->getId()). " AND `trashed_by_id` = 0 AND ". permissions_sql_for_listings(ProjectTask::manager(),ACCESS_LEVEL_READ,logged_user()),
+	        'conditions' => '`milestone_id` = ' . DB::escape($this->getId()). " AND `trashed_by_id` = 0 AND ". permissions_sql_for_listings(new ProjectTasks(),ACCESS_LEVEL_READ,logged_user()),
 	        'order' => 'created_on'
         )); // findAll
 	} // getTasks
@@ -188,7 +188,7 @@ class ProjectMilestone extends BaseProjectMilestone {
 	function getOpenSubTasks() {
 		if(is_null($this->open_tasks)) {
 			$this->open_tasks = ProjectTasks::findAll(array(
-          'conditions' => '`milestone_id` = ' . DB::escape($this->getId()) . ' AND `trashed_by_id` = 0 AND `completed_on` = ' . DB::escape(EMPTY_DATETIME) . " AND ". permissions_sql_for_listings(ProjectTask::manager(),ACCESS_LEVEL_READ,logged_user()),
+          'conditions' => '`milestone_id` = ' . DB::escape($this->getId()) . ' AND `trashed_by_id` = 0 AND `completed_on` = ' . DB::escape(EMPTY_DATETIME) . " AND ". permissions_sql_for_listings(new ProjectTasks(),ACCESS_LEVEL_READ,logged_user()),
           'order' => '`order`, `created_on`' 
           )); // findAll
 		} // if
@@ -206,7 +206,7 @@ class ProjectMilestone extends BaseProjectMilestone {
 	function getCompletedSubTasks() {
 		if(is_null($this->completed_tasks)) {
 			$this->completed_tasks = ProjectTasks::findAll(array(
-          'conditions' => '`milestone_id` = ' . DB::escape($this->getId()) . ' AND `trashed_by_id` = 0 AND `completed_on` > ' . DB::escape(EMPTY_DATETIME) . " AND ". permissions_sql_for_listings(ProjectTask::manager(),ACCESS_LEVEL_READ,logged_user()),
+          'conditions' => '`milestone_id` = ' . DB::escape($this->getId()) . ' AND `trashed_by_id` = 0 AND `completed_on` > ' . DB::escape(EMPTY_DATETIME) . " AND ". permissions_sql_for_listings(new ProjectTasks(),ACCESS_LEVEL_READ,logged_user()),
           'order' => '`completed_on` DESC'
           )); // findAll
 		} // if
@@ -214,11 +214,11 @@ class ProjectMilestone extends BaseProjectMilestone {
 		return $this->completed_tasks;
 	} // getCompletedTasks
 	function countAllTasks() {
-		return ProjectTasks::count('`milestone_id` = ' . DB::escape($this->getId()). " AND `trashed_by_id` = 0 AND ". permissions_sql_for_listings(ProjectTask::manager(),ACCESS_LEVEL_READ,logged_user()));
+		return ProjectTasks::count('`milestone_id` = ' . DB::escape($this->getId()). " AND `trashed_by_id` = 0 AND ". permissions_sql_for_listings(new ProjectTasks(),ACCESS_LEVEL_READ,logged_user()));
 	} // countAllTasks
 	
 	function countOpenTasks() {
-		return ProjectTasks::count('`milestone_id` = ' . DB::escape($this->getId()) . ' AND `trashed_by_id` = 0 AND `completed_on` = ' . DB::escape(EMPTY_DATETIME). " AND ". permissions_sql_for_listings(ProjectTask::manager(),ACCESS_LEVEL_READ,logged_user()));
+		return ProjectTasks::count('`milestone_id` = ' . DB::escape($this->getId()) . ' AND `trashed_by_id` = 0 AND `completed_on` = ' . DB::escape(EMPTY_DATETIME). " AND ". permissions_sql_for_listings(new ProjectTasks(),ACCESS_LEVEL_READ,logged_user()));
 	} // countAllTasks
 	
 	/**
@@ -229,7 +229,7 @@ class ProjectMilestone extends BaseProjectMilestone {
 	 * @return boolean
 	 */
 	function hasTasks() {
-		return (boolean) ProjectTasks::count('`milestone_id` = ' . DB::escape($this->getId()). " AND `trashed_by_id` = 0 AND ". permissions_sql_for_listings(ProjectTask::manager(),ACCESS_LEVEL_READ,logged_user()));
+		return (boolean) ProjectTasks::count('`milestone_id` = ' . DB::escape($this->getId()). " AND `trashed_by_id` = 0 AND ". permissions_sql_for_listings(new ProjectTasks(),ACCESS_LEVEL_READ,logged_user()));
 	} // hasTasks
 
 	/**
@@ -241,7 +241,7 @@ class ProjectMilestone extends BaseProjectMilestone {
 	 */
 	function getMessages() {
 		return ProjectMessages::findAll(array(
-        'conditions' => '`milestone_id` = ' . DB::escape($this->getId()). " AND `trashed_by_id` = 0 AND ". permissions_sql_for_listings(ProjectMessage::manager(),ACCESS_LEVEL_READ,logged_user()),
+        'conditions' => '`milestone_id` = ' . DB::escape($this->getId()). " AND `trashed_by_id` = 0 AND ". permissions_sql_for_listings(new ProjectMessages(),ACCESS_LEVEL_READ,logged_user()),
         'order' => 'created_on'
         )); // findAll
 	} // getMessages
@@ -254,7 +254,7 @@ class ProjectMilestone extends BaseProjectMilestone {
 	 * @return boolean
 	 */
 	function hasMessages() {
-		return (boolean) ProjectMessages::count('`milestone_id` = ' . DB::escape($this->getId()) . " AND `trashed_by_id` = 0 AND ". permissions_sql_for_listings(ProjectMessage::manager(),ACCESS_LEVEL_READ,logged_user()));
+		return (boolean) ProjectMessages::count('`milestone_id` = ' . DB::escape($this->getId()) . " AND `trashed_by_id` = 0 AND ". permissions_sql_for_listings(new ProjectMessages(),ACCESS_LEVEL_READ,logged_user()));
 	} // hasMessages
 
 	/**
@@ -519,6 +519,29 @@ class ProjectMilestone extends BaseProjectMilestone {
 
 	} // delete
 
+	/**
+	 * Trash this object and reset all relationship. This function will not trash any of related objects
+	 *
+	 * @access public
+	 * @param void
+	 * @return boolean
+	 */
+	function trash($trashDate = null) {
+		$is_template = $this->getIsTemplate();
+		if ($is_template) {
+			$this->delete();
+		} else {
+			try {
+				DB::execute("UPDATE " . ProjectMessages::instance()->getTableName(true) . " SET `milestone_id` = '0' WHERE `milestone_id` = " . DB::escape($this->getId()));
+				DB::execute("UPDATE " . ProjectTasks::instance()->getTableName(true) . " SET `milestone_id` = '0' WHERE `milestone_id` = " . DB::escape($this->getId()));
+				return parent::trash($trashDate);
+			} catch(Exception $e) {
+				throw $e;
+			} // try
+		}
+
+	} // trash
+	
 	// ---------------------------------------------------
 	//  ApplicationDataObject implementation
 	// ---------------------------------------------------

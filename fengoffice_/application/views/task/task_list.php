@@ -13,10 +13,12 @@
   } // if
 </script>
 
-<?php if ($task_list->getDueDate()->getYear() > DateTimeValueLib::now()->getYear()) { ?> 
-  <div class="dueDate"><span><?php echo lang('due date') ?>: </span><?php echo format_date($task_list->getDueDate(), null, 0) ?></div>
-<?php } else { ?> 
-  <div class="dueDate"><span><?php echo lang('due date') ?>: </span><?php echo format_descriptive_date($task_list->getDueDate(), 0) ?></div>
+<?php if ($task_list->getDueDate() instanceof DateTimeValue) { ?>
+	<?php if ($task_list->getDueDate()->getYear() > DateTimeValueLib::now()->getYear()) { ?> 
+	  <div class="dueDate"><span><?php echo lang('due date') ?>: </span><?php echo format_date($task_list->getDueDate(), null, 0) ?></div>
+	<?php } else { ?> 
+	  <div class="dueDate"><span><?php echo lang('due date') ?>: </span><?php echo format_descriptive_date($task_list->getDueDate(), 0) ?></div>
+	<?php } // if ?>
 <?php } // if ?>
 
 <?php if($task_list->getText()) { ?>

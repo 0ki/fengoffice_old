@@ -354,7 +354,7 @@ ogTasks.groupTasks = function(displayCriteria, tasksContainer){
 		if (!task.parent){
 			var group = null;
 			switch(displayCriteria.group_by){
-				case 'milestone': group = (task.milestoneId?task.milestoneId:null); break;
+				case 'milestone': group = (task.milestoneId?(this.getMilestone(task.milestoneId)?task.milestoneId:null):null); break;
 				case 'priority' : group = (task.priority?task.priority:200); break;
 				case 'workspace' : 
 					var ids = task.workspaceIds.split(',');

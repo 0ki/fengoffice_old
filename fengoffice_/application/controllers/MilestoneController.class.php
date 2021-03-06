@@ -291,8 +291,7 @@ class MilestoneController extends ApplicationController {
 
 		if(is_array(array_var($_POST, 'milestone'))) {
 			if (array_var($milestone_data, 'due_date_value') != ''){
-				$dueDate = explode('/', array_var($milestone_data, 'due_date_value'));
-	       		$milestone_data['due_date'] = DateTimeValueLib::make(0, 0, 0, $dueDate[0], $dueDate[1], $dueDate[2]);
+	       		$milestone_data['due_date'] = getDateValue(array_var($milestone_data, 'due_date_value'));
 			} else {
 				$milestone_data['due_date'] = DateTimeValueLib::make(0, 0, 0, $now->getMonth(), $now->getDay(), $now->getYear());
 			}

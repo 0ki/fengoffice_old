@@ -124,14 +124,14 @@ class FilesController extends ApplicationController {
 
 		if ($file->getTypeString() == 'sprd') echo lang("not implemented");
 		session_commit();
-		if (FileRepository::getBackend() instanceof FileRepository_Backend_FileSystem) {
+		/*if (FileRepository::getBackend() instanceof FileRepository_Backend_FileSystem) {
 			$path = FileRepository::getBackend()->getFilePath($file->getLastRevision()->getRepositoryId());
 			if (is_file($path)) {
 				// this method allows downloading big files without exhausting php's memory
 				download_file($path, $file->getTypeString(), $file->getFilename(), $file->getFileSize(), !$inline);
 				die();
 			}
-		}
+		}*/
 		download_contents($file->getFileContent(), $file->getTypeString(), $file->getFilename(), $file->getFileSize(), !$inline);
 		die();
 	} // download_file
@@ -152,14 +152,14 @@ class FilesController extends ApplicationController {
 			return;
 		} // if
 		session_commit();
-		if (FileRepository::getBackend() instanceof FileRepository_Backend_FileSystem) {
+		/*if (FileRepository::getBackend() instanceof FileRepository_Backend_FileSystem) {
 			$path = FileRepository::getBackend()->getFilePath($file->getLastRevision()->getRepositoryId());
 			if (is_file($path)) {
 				// this method allows downloading big files without exhausting php's memory
 				download_file($path, $file->getTypeString(), $file->getFilename(), $file->getFileSize(), !$inline);
 				die();
 			}
-		}
+		}*/
 		download_contents($file->getFileContent(), $file->getTypeString(), $file->getFilename(), $file->getFileSize(), !$inline);
 		die();
 	} // download_file
@@ -251,14 +251,14 @@ class FilesController extends ApplicationController {
 			return;
 		} // if
 		session_commit();
-		if (FileRepository::getBackend() instanceof FileRepository_Backend_FileSystem) {
+		/*if (FileRepository::getBackend() instanceof FileRepository_Backend_FileSystem) {
 			$path = FileRepository::getBackend()->getFilePath($revision->getRepositoryId());
 			if (is_file($path)) {
 				// this method allows downloading big files without exhausting php's memory
 				download_file($path, $revision->getTypeString(), $file->getFilename(), $file->getFileSize(), !$inline);
 				die();
 			}
-		}
+		}*/
 		download_contents($revision->getFileContent(), $revision->getTypeString(), $file->getFilename(), $file->getFileSize(), !$inline);
 		die();
 	} // download_revision

@@ -61,7 +61,7 @@
      */
     function getUserValue($user_id = 0, $workspace_id = 0, $default = null){
     	$val = UserWsConfigOptionValues::findById(array('option_id' => $this->getId(), 'user_id'=>$user_id,'workspace_id' => $workspace_id));
-    	if (!$val){
+    	if (is_null($val)){
     		if ($user_id == 0 || $workspace_id == 0){
     			//Return default settings
     			if (!is_null($default))

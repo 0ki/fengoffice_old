@@ -102,7 +102,7 @@ og.rememberGUIState = <?php echo user_config_option("rememberGUIState", 0) ?>;
 og.initialGUIState = <?php echo json_encode(GUIController::getState()) ?>;
 <?php } ?>
 <?php $initialWS = user_config_option('initialWorkspace', 0);
-if ($initialWS == "remember") {
+if ($initialWS === "remember") {
 	$initialWS = user_config_option('lastAccessedWorkspace', 0);
 }
 ?>

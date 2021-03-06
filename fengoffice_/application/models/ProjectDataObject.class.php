@@ -420,8 +420,10 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 	 */
 	function getTags() {
 		if(!$this->isTaggable()) throw new Error('Object not taggable');
-		if (is_null($this->tags))
+		if (is_null($this->tags)) {
 			$this->tags = Tags::getTagsByObject($this, get_class($this->manager()));
+			if (is_null($this->tags)) $this->tags = array();
+		}
 		return $this->tags;
 	} // getTags
 
@@ -1358,7 +1360,12 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 	 * @return array
 	 */
 	function getSubscribers() {
-		if(is_null($this->subscribers)) $this->subscribers = ObjectSubscriptions::getUsersByObject($this);
+		if(is_null($this->subscribers)) {
+			$this->subscribers = ObjectSubscriptions::getUsersByObject($this);
+			if (is_null($this->subscribers)) {
+				$this->subscribers = array();
+			}
+		}
 		return $this->subscribers;
 	} // getSubscribers
 

@@ -1,5 +1,5 @@
 
-    About OpenGoo 1.2 RC1 
+    About OpenGoo 1.2 RC2 
     =====================
 
     OpenGoo is a free WebOffice, project management and collaboration
@@ -61,10 +61,10 @@
     ====================
     
     1. Backup you current installation (important !)
-    2. Download OpenGoo 1.2 RC1 - http://www.opengoo.org/
+    2. Download OpenGoo 1.2 RC2 - http://www.opengoo.org/
     3. Unpack into your OpenGoo installation, overwriting your previous files and folders,
     	but keeping your config and upload folders.
-    5. In your browser, go to <your_opengoo>/public/upgrade and choose to upgrade from your current version to 1.2.
+    5. If upgrading from 1.1 or older, go to <your_opengoo>/public/upgrade in your browser and choose to upgrade from your current version to 1.2.
     6. If necessary, refresh your browser or clear its cache so that the new javascript, css and images load.   
 
     
@@ -85,6 +85,16 @@
 
 	Changelog
 	=========
+
+	Since 1.2 RC1
+	-------------
+	- bugfix: could not edit or delete a milestone in PHP 5.1.2	
+	- bugfix: could not view a task with no due date.
+	- bugfix: editing custom properties threw an error on Opera.
+	- bugfix: when setting initial workspace as 'none' the last workspace was being shown.	
+	- bugfix: Workspace crumbs showed only 'All' when an initial workspace was being loaded.	
+	- bugfix: if a milestone with tasks was sent to trash the tasks listing breaks.
+	- bugfix: milestone date was being set incorrectly.
 	
 	Since 1.2 beta 2
 	----------------

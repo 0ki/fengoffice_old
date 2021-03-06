@@ -1,87 +1,76 @@
-<?php
-
-  return array(
-  
-    // Objects
-    'user' => 'ユーザ', // 'User'
-    'group' => 'グループ', // 'Group'
-    'groups' => 'グループ', // 'Groups'
-    'users' => 'ユーザ', // 'Users'
-    'member' => 'メンバ', // 'Member'
-    'members' => 'メンバ', // 'Members'
-    'company' => '会社', // 'Company'
-    'companies' => '会社', // 'Companies'
-    'client' => '顧客', // 'Client'
-    'clients' => '顧客', // 'Clients'
-    'package' => 'パッケージ', // 'Package'
-    'project' => 'ワークスペース', // 'Workspace'
-    'projects' => 'ワークスペース', // 'Workspaces'
-    'message' => 'ノート', // 'Note'
-    'messages' => 'ノート', // 'Notes'
-    'comment' => 'コメント', // 'Comment'
-    'comments' => 'コメント', // 'Comments'
-    'milestone' => 'マイルストーン', // 'Milestone'
-    'milestones' => 'マイルストーン', // 'Milestones'
-    'task' => 'タスク', // 'Task'
-    'subtasks' => 'サブタスク', // 'Subtasks'
-    'tasks' => 'タスク', // 'Tasks'
-    'task list' => 'タスク', // 'Task'
-    'task lists' => 'タスク', // 'Tasks'
-    'tag' => 'タグ', // 'Tag'
-    'tags' => 'タグ', // 'Tags'
-    'attachment' => '添付ファイル', // 'Attachment'
-    'attachments' => '添付ファイル', // 'Attachments'
-    'object subscribers' => '購読者', // 'Subscribers'
-    'form' => 'フォーム', // 'Form'
-    'forms' => 'フォーム', // 'Forms'
-    'file' => 'ファイル', // 'File'
-    'files' => 'ファイル', // 'Files'
-    'file revision' => 'ファイルリビジョン', // 'File revision'
-    'file revisions' => 'ファイルリビジョン', // 'File revisions'
-    'revision' => 'リビジョン', // 'Revision'
-    'revisions' => 'リビジョン', // 'Revisions'
-    'folder' => 'フォルダー', // 'Folder'
-    'folders' => 'フォルダー', // 'Folders'
-    'configuration category' => '環境設定カテゴリ', // 'Configuration category'
-    'configuration categories' => '環境設定カテゴリ', // 'Configuration categories'
-    'handin' => 'ハンドイン', // 'Hand-In'
-    'handins' => 'ハンドイン', // 'Hand-Ins'
-
-    // Variations
-    'owner company' => 'オーナ会社', // 'Owner company'
-  	'client companies' => '顧客企業', // 'Client companies'
-    
-    'open milestone' => 'オープンマイルストーン', // 'Open milestone'
-    'open milestones' => 'オープンマイルストーン', // 'Open milestones'
-    'completed milestone' => 'クローズドマイルストーン', // 'Completed milestone'
-    'completed milestones' => 'クローズドマイルストーン', // 'Completed milestones'
-    'late milestones' => '遅れているマイルストーン', // 'Late milestones'
-    'late milestones and tasks' => '遅れているマイルストーン', // 'Late milestones and tasks'
-    'today milestones' => '今日のマイルストーン', // 'Today milestones'
-    'upcoming milestones' => '次会のマイルストーン', // 'Upcoming milestones'
-    'completed task list' => '完了したタスク', // 'Completed task'
-    'completed task lists' => '完了したタスク', // 'Completed tasks'
-    'open task list' => 'オープンタスク', // 'Open task'
-    'open task lists' => 'オープンタスク', // 'Open tasks'
-    'active project' => 'アクティブなワークスペース', // 'Active workspace'
-    'active projects' => 'アクティブなワークスペース', // 'Active workspaces'
-    'finished project' => 'クローズドなワークスペース', // 'Closed workspace'
-    'finished projects' => 'クローズドなワークスペース', // 'Closed workspaces'
-    'linked object' => 'リンクしているオブジェクト', // 'Linked Object'
-    'linked objects' => 'リンクしているオブジェクト', // 'Linked Objects'
-
-    'important message'  => '重要なノート', // 'Important note'
-    'important messages' => '重要なノート', // 'Important notes'
-    'important file'     => '重要なファイル', // 'Important file'
-    'important files'    => '重要なファイル', // 'Important files'
-    'parent task'    => '親タスク', // 'Parent Task'
-    
-    'private message' => 'プライベートなメッセージ', // 'Private message'
-    'private milestone' => 'プライベートなマイルストーン', // 'Private milestone'
-    'private task list' => 'プライベートなタスク', // 'Private tasks'
-    'private comment' => 'プライベートなコメント', // 'Private comment'
-    'private file' => 'プライベートなファイル', // 'Private file'
-    
-  ); // array
-
-?>
+<?php return array(
+  "user" => "ユーザ",
+  "group" => "グループ",
+  "groups" => "グループ",
+  "users" => "ユーザ",
+  "member" => "メンバー",
+  "members" => "メンバー",
+  "company" => "会社",
+  "companies" => "会社",
+  "client" => "顧客",
+  "clients" => "顧客",
+  "package" => "パッケージ",
+  "project" => "ワークスペース",
+  "projects" => "ワークスペース",
+  "message" => "ノート",
+  "messages" => "ノート",
+  "comment" => "コメント",
+  "comments" => "コメント",
+  "milestone" => "マイルストーン",
+  "milestones" => "マイルストーン",
+  "task" => "タスク",
+  "subtasks" => "サブタスク",
+  "tasks" => "タスク",
+  "task list" => "タスク",
+  "task lists" => "タスク",
+  "tag" => "タグ",
+  "tags" => "タグ",
+  "attachment" => "添付ファイル",
+  "attachments" => "添付ファイル",
+  "object subscribers" => "購読者",
+  "form" => "フォーム",
+  "forms" => "フォーム",
+  "file" => "ファイル",
+  "files" => "ファイル",
+  "file revision" => "ファイルのリビジョン",
+  "file revisions" => "ファイルのリビジョン",
+  "file contents" => "ファイルのコンテンツ",
+  "revision" => "リビジョン",
+  "revisions" => "リビジョン",
+  "folder" => "フォルダ",
+  "folders" => "フォルダ",
+  "configuration category" => "環境設定カテゴリ",
+  "configuration categories" => "環境設定カテゴリ",
+  "handin" => "ハンドイン",
+  "handins" => "ハンドイン",
+  "owner company" => "オーナ会社",
+  "client companies" => "顧客企業",
+  "open milestone" => "オープンマイルストーン",
+  "open milestones" => "オープンマイルストーン",
+  "completed milestone" => "完了したマイルストーン",
+  "completed milestones" => "完了したマイルストーン",
+  "late milestones" => "遅れているマイルストーン",
+  "late milestones and tasks" => "遅れているマイルストーンとタスク",
+  "today milestones" => "今日のマイルストーン",
+  "upcoming milestones" => "次回のマイルストーン",
+  "completed task list" => "完了したタスク",
+  "completed task lists" => "完了したタスク",
+  "open task list" => "オープンタスク",
+  "open task lists" => "オープンタスク",
+  "active project" => "アクティブなワークスペース",
+  "active projects" => "アクティブなワークスペース",
+  "finished project" => "クローズドなワークスペース",
+  "finished projects" => "クローズドなワークスペース",
+  "linked object" => "リンクしているオブジェクト",
+  "linked objects" => "リンクしているオブジェクト",
+  "important message" => "重要なノート",
+  "important messages" => "重要なノート",
+  "important file" => "重要なファイル",
+  "important files" => "重要なファイル",
+  "parent task" => "親タスク",
+  "private message" => "親ノート",
+  "private milestone" => "プライベートなマイルストーン",
+  "private task list" => "プライベートなタスク",
+  "private comment" => "プライベートなコメント",
+  "private file" => "プライベートなファイル",
+); ?>

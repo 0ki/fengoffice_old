@@ -6,6 +6,8 @@
 ALTER TABLE `<?php echo $table_prefix ?>application_logs` MODIFY COLUMN `action` ENUM('upload','open','close','delete','edit','add','trash','untrash', 'subscribe', 'unsubscribe', 'tag', 'comment', 'link', 'unlink') DEFAULT NULL;
 ALTER TABLE `<?php echo $table_prefix ?>application_logs` ADD COLUMN `log_data` TEXT;
 
+DELETE FROM `<?php echo $table_prefix ?>config_options` WHERE `name` IN ('enable_email_module', 'time_format_use_24');
+
 INSERT INTO `<?php echo $table_prefix ?>config_categories` (`name`, `is_system`, `category_order`) VALUES
  ('system', 1, 0),
  ('general', 0, 1),

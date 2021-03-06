@@ -1,6 +1,7 @@
 <?php
 class Trash {
 	function purge_trash() {
+		Env::useHelper("permissions");
 		$days = config_option("days_on_trash", 0);
 		$count = 0;
 		if ($days > 0) {

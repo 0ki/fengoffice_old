@@ -1155,12 +1155,11 @@ function render_add_custom_properties(ProjectDataObject $object) {
 				row = row.nextSibling;
 			}
 		}
-		var parent = document.getElementById("'.$genid.'");
 	';
 	$properties = ObjectProperties::getAllPropertiesByObject($object);
 	if (is_array($properties)) {
 		foreach($properties as $property) {
-			$output .= 'og.addCustomProperty(parent, "'.$property->getPropertyName().'", "'.$property->getPropertyValue().'");';
+			$output .= 'og.addCustomProperty(document.getElementById("'.$genid.'"), "'.$property->getPropertyName().'", "'.$property->getPropertyValue().'");';
 		} // for
 	} // if
 	$output .= '

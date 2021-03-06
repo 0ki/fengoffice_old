@@ -28,7 +28,7 @@ if (count($scripts) > 0) {
             <td>
               <select name="form_data[upgrade_from]" id="upgradeFormFrom">
 	<?php foreach($scripts as $script) { ?>
-                <option value="<?php echo clean($script->getVersionFrom()) ?>">OpenGoo <?php echo clean($script->getVersionFrom()) ?></option>
+                <option <?php if ($script->getVersionTo() == "1.2") echo 'selected="selected"'; ?> value="<?php echo clean($script->getVersionFrom()) ?>">OpenGoo <?php echo clean($script->getVersionFrom()) ?></option>
 	<?php } // foreach ?>
               </select>
             </td>
@@ -46,7 +46,7 @@ if (count($scripts) > 0) {
             <td>
               <select name="form_data[upgrade_to]" id="upgradeFormTo">
 	<?php foreach($scripts as $script) { ?>
-                <option value="<?php echo clean($script->getVersionTo()) ?>">OpenGoo <?php echo clean($script->getVersionTo()) ?></option>
+                <option <?php if ($script->getVersionTo() == "1.2") echo 'selected="selected"'; ?> value="<?php echo clean($script->getVersionTo()) ?>">OpenGoo <?php echo clean($script->getVersionTo()) ?></option>
 	<?php } // foreach ?>
               </select>
             </td>
