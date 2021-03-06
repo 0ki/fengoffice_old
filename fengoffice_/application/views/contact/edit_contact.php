@@ -411,8 +411,11 @@
 				$subscriber_ids = $object->getSubscriberIds();
 			} else {
 				$subscriber_ids[] = logged_user()->getId();
-			} 
+			}
+			if ((!$object->isNew() && $object->isUser()) || array_var($_GET, 'is_user')) {
+			} else {
 		?><input type="hidden" id="<?php echo $genid ?>subscribers_ids_hidden" value="<?php echo implode(',',$subscriber_ids)?>"/>
+		<?php } ?>
 		<div id="<?php echo $genid ?>add_subscribers_content">
 		<?php //echo render_add_subscribers($object, $genid); ?>
 		</div>

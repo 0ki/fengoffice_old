@@ -139,7 +139,7 @@ og.addObjectToTemplate = function(target, obj, dont_draw_milestone_combo) {
 	if (obj.type == 'template_task') {
 		divhtml += '<a href="#" onclick="og.openLink(og.getUrl(\'task\', \'add_task\', {template_task:1, parent_id:'+ obj.object_id +', template_id:'+og.actual_template_id+'}), {caller:\'new_task_template\'})" class="internalLink ico-add coViewAction">'+lang("add sub task")+'</a>';
 	} else if (obj.type == 'template_milestone') {
-		divhtml += '<a href="#" onclick="og.openLink(og.getUrl(\'task\', \'add_task\', {template_task:1, milestone_id:'+ obj.object_id +', template_id:'+og.actual_template_id+'}), {caller:\'new_task_template\'})" class="internalLink ico-add coViewAction">'+lang("add sub task")+'</a>';
+		divhtml += '<a href="#" onclick="og.openLink(og.getUrl(\'task\', \'add_task\', {template_task:1, milestone_id:'+ obj.object_id +', template_id:'+og.actual_template_id+'}), {caller:\'new_task_template\'})" class="internalLink ico-add coViewAction">'+lang("add task")+'</a>';
 	}
 	
 	divhtml += '<a href="#" onclick="og.removeObjectFromTemplate(this.parentNode, ' + obj.object_id + ')" class="internalLink coViewAction ico-delete">'+lang('delete')+'</a>';
@@ -329,7 +329,7 @@ og.addTemplateObjectProperty = function(obj_id, count, property, value){
 	propDiv.parentNode.insertBefore(newProp, propDiv);
 
 	// FIXME: obtener obj_type para hacer el request
-	og.openLink(og.getUrl('template', 'get_object_properties', {}), {
+	og.openLink(og.getUrl('template', 'get_object_properties', {id: obj_id}), {
 		callback: function(success, data) {
 			if (success) {
 				var propSelection = '';

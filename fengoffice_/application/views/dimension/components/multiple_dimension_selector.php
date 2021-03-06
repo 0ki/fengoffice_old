@@ -7,7 +7,7 @@
 	$is_ie = isset($_SERVER['HTTP_USER_AGENT']) && (strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE') !== false);
 
 	$enabled_dimensions = config_option("enabled_dimensions");
-	
+	$dim_count = 0;
 	$members_dimension = array();
 	$sel_mem_ids = array();
 	foreach ($dimensions as $dimension) :
@@ -85,7 +85,9 @@
 	}
 
 	</script>
-<?php endforeach;
+<?php
+		$dim_count++; 
+	endforeach;
 
 	foreach ($listeners as $event => $function) {
 		if ($event == 'after_render_all') {
@@ -99,10 +101,10 @@
 </div>
 <div class="clear"></div>
 <script>
-
+<?php if ($dim_count > 0) { ?>
 member_selector['<?php echo $genid; ?>'].members_dimension = Ext.util.JSON.decode('<?php echo json_encode($members_dimension)?>');
 member_selector['<?php echo $genid; ?>'].context = og.contextManager.plainContext();
 
 member_selector.init('<?php echo $genid; ?>');
-
+<?php } ?>
 </script>

@@ -614,7 +614,9 @@ $(document).ready(function() {
 	og.custom_properties_by_type = [];
 	og.openLink(og.getUrl('object', 'get_cusotm_property_columns'), {
 		callback: function(success, data){
-			og.custom_properties_by_type = data.properties;
+			if (typeof data.properties != 'undefined') {
+				og.custom_properties_by_type = data.properties;
+			}
 		}
 	});
 

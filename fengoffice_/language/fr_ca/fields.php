@@ -278,4 +278,5 @@
 	'field Contacts home_address' => 'Adresse maison',
 	'field Contacts work_address' => 'Adresse travail',
 	'field Contacts other_address' => 'Adresse autre',
+	'field Contacts w_assistant_name' => 'Adjoint(e)',
 ); ?>

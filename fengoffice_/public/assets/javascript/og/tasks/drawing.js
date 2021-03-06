@@ -1386,7 +1386,7 @@ ogTasks.AddWorkTime = function(task_id) {
 		for (i = 0; i < form_params.length; i++) { 
 			    parameters[form_params[i].name] = form_params[i].value;
 		}
-		
+		parameters.use_current_time = true;
 		og.openLink(
 				og.getUrl('time','add_timeslot'),
 				{ method:'POST' , 

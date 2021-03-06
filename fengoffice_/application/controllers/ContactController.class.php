@@ -1034,6 +1034,10 @@ class ContactController extends ApplicationController {
 				if (count($member_ids) && !array_var(array_var($contact_data, 'user'), 'create_user')) {
 					$object_controller->add_to_members($contact, $member_ids);
 				}
+				$no_perm_members_ids = json_decode(array_var($_POST, 'no_perm_members'));
+				if (count($no_perm_members_ids)){
+					$object_controller->add_to_members($contact, $no_perm_members_ids);
+				}
 				if($newCompany) {
 					$object_controller->add_to_members($company, $member_ids);
 				}
@@ -1379,6 +1383,11 @@ class ContactController extends ApplicationController {
 				if (count($member_ids)){
 					$object_controller->add_to_members($contact, $member_ids);
 				}
+				$no_perm_members_ids = json_decode(array_var($_POST, 'no_perm_members'));
+				if (count($no_perm_members_ids)){
+					$object_controller->add_to_members($contact, $no_perm_members_ids);
+				}
+				
 				if ($newCompany) $object_controller->add_to_members($company, $member_ids);
 				$object_controller->link_to_new_object($contact);
 				$object_controller->add_subscribers($contact);

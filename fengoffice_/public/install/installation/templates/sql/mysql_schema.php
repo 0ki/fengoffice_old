@@ -45,6 +45,7 @@ CREATE TABLE `<?php echo $table_prefix ?>members` (
   `depth` int(2) unsigned NOT NULL,
   `name` varchar(160) <?php echo $default_collation ?> NOT NULL default '',
   `object_id` int(10) unsigned,
+  `order` int(10) unsigned NOT NULL default '0',
   `color` int(10) unsigned NOT NULL default '0',
   `archived_on` datetime NOT NULL default '0000-00-00 00:00:00',
   `archived_by_id` int(10) unsigned default NULL,
@@ -141,7 +142,8 @@ CREATE TABLE `<?php echo $table_prefix ?>object_types` (
   `table_name` varchar(50) <?php echo $default_collation ?> NOT NULL default '',
   `type` enum('content_object','dimension_object','dimension_group', 'located', 'comment', '') <?php echo $default_collation ?> default NULL,
   `icon` varchar(50) <?php echo $default_collation ?> NOT NULL default '',
-  `plugin_id` int(10) unsigned,
+  `plugin_id` int(10) unsigned not null default 0,
+  `uses_order` tinyint(1) unsigned NOT NULL default '0',
   PRIMARY KEY  (`id`),
   KEY `name` (`name`),
   KEY `plugin_id` USING HASH (`plugin_id`)

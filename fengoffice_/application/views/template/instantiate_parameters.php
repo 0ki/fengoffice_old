@@ -1,12 +1,21 @@
-<?php $genid = gen_id() ?>
-<form style='height:100%;background-color:white' class="internalForm" action="<?php echo get_url('template', 'instantiate_parameters', array('id' => $id, 'back' => '1')) ?>" method="post">
+<?php
+$genid = gen_id();
+// on submit functions
+if (array_var($_REQUEST, 'modal')) {
+	$on_submit = "og.submit_modal_form('".$genid."template_params', og.reload_active_tab); return false;";
+} else {
+	$on_submit = "return true;";
+}
+?>
+<form onsubmit="<?php echo $on_submit?>" id="<?php echo $genid?>template_params" class="internalForm" action="<?php echo get_url('template', 'instantiate_parameters', array('id' => $id, 'back' => '1')) ?>" method="post">
 
 <div class="template">
 <div class="coInputHeader">
 	<div class="coInputHeaderUpperRow">
 		<div class="coInputTitle"><?php echo lang('template parameters')?></div>
+		<div class="desc"><?php echo lang('template parameters description')?></div>
 	</div>
-
+	<div class="clear"></div>
 </div>
 <div class="coInputMainBlock">
 	

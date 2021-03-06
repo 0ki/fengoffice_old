@@ -156,6 +156,7 @@
 	'field ProjectMessages archived_by_id' => 'Archivado por',
 	'field ProjectTasks id' => 'Id',
 	'field ProjectTasks text' => 'Descripción',
+	'field ProjectTasks description' => 'Descripción',
 	'field ProjectTasks completed_on' => 'Completada',
 	'field ProjectTasks due_date' => 'Fecha de límite',
 	'field ProjectTasks start_date' => 'Fecha de comienzo',

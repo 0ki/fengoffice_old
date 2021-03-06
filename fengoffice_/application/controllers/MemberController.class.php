@@ -252,31 +252,9 @@ class MemberController extends ApplicationController {
 				));
 				$ret = null;
 				Hook::fire('after_add_member', $member, $ret);
-				//evt_add("reload dimension tree", array('dim_id' => $member->getDimensionId(),'node' => $member->getId()));
-				evt_add("external dimension member click", array('dim_id' => $member->getDimensionId(),'member_id' => $member->getId()));
-				/*
-				$member_type = ObjectTypes::findById($member->getObjectTypeId());
-				$context = active_context();
-				$sel_mem = null;
-				if (is_array($context)) {
-					foreach ($context as $selection) {
-						if ($selection instanceof Member && $selection->getDimensionId() == $member->getDimensionId()) $sel_mem = $selection;
-					}
-				}
-				evt_add("ask to select member", array(
-					'id' => $member->getId(),
-					'name' => clean($member->getName()),
-					'type' => clean(lang($member_type->getName())),
-					'dimension_id' => $member->getDimensionId(),
-					'sel_mem' => $sel_mem == null ? '' : clean($sel_mem->getName()),
-				));
-				*/
-				/*evt_add("select member after add", array(
-					'id' => $member->getId(),
-					'parent_id' => $member->getParentMemberId(),
-					'dimension_id' => $member->getDimensionId(),
-				));*/
-				//evt_add('select dimension member', array('dim_id' => $member->getDimensionId(), 'node' => $member->getId()));
+				//evt_add("external dimension member click", array('dim_id' => $member->getDimensionId(),'member_id' => $member->getId()));
+				evt_add("update dimension tree node", array('dim_id' => $member->getDimensionId(), 'member_id' => $member->getId()));
+								
 				if (array_var($_POST, 'rest_genid')) evt_add('reload member restrictions', array_var($_POST, 'rest_genid'));
 				if (array_var($_POST, 'prop_genid')) evt_add('reload member properties', array_var($_POST, 'prop_genid'));
 				if (array_var($_GET, 'current') == 'overview-panel' && array_var($_GET, 'quick') ) {
@@ -379,7 +357,8 @@ class MemberController extends ApplicationController {
 					ApplicationLogs::createLog($member, ApplicationLogs::ACTION_EDIT);
 					$ret = null;
 					Hook::fire('after_edit_member', $member, $ret);
-					evt_add("reload dimension tree", array('dim_id' => $member->getDimensionId(), 'mid' => $member->getId(), 'pid' => $member->getParentMemberId()));
+					//evt_add("reload dimension tree", array('dim_id' => $member->getDimensionId(), 'mid' => $member->getId(), 'pid' => $member->getParentMemberId()));
+					evt_add("update dimension tree node", array('dim_id' => $member->getDimensionId(), 'member_id' => $member->getId()));						
 				}
 			} catch (Exception $e) {
 				DB::rollback();
@@ -1245,6 +1224,8 @@ class MemberController extends ApplicationController {
 				}
 				$urls[] = array('link_text' => $link_text, 'url' => $url, 'iconcls' => $iconcls);
 			}
+			
+			Hook::fire('member_quick_add_urls', array('dimension' => $dimension, 'object_types' => $object_types, 'parent_member' => $parent_member), $urls);
 			
 			if (count($editUrls) > 1) {
 				ajx_extra_data(array('draw_menu' => 1, 'urls' => $urls));

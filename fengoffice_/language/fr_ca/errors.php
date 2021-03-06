@@ -134,4 +134,13 @@
 	'you dont have permissions to classify object in member' => 'Vous n\'avez pas les permissions pour classer \'{0}\' à \'{1}\'',
 	'uploaded file bigger than max upload size' => 'Vous essayez de télécharger un document dont la taille est plus élevé que ​​votre taille limite de téléchargement de {0}.',
 	'date format error' => 'Vous avez une erreur lors de la saisie date d\'échéance ou la date de début, le format de date correcte est "{0}", s\'il vous plaît utiliser ce format ou le changer dans les préférences de votre compte.',
+	'upload error msg UPLOAD_ERR_INI_SIZE' => 'La taille du fichier téléversé excède le maximum permis({0}).',
+	'upload error msg UPLOAD_ERR_FORM_SIZE' => 'La taille du fichier téléversé excède le maximum permis({0}).',
+	'upload error msg UPLOAD_ERR_PARTIAL' => 'Le fichier a été partiellement téléversé.',
+	'upload error msg UPLOAD_ERR_NO_FILE' => 'Le fichier n\'a pas été téléversé.',
+	'upload error msg UPLOAD_ERR_NO_TMP_DIR' => 'Aucun fichier n\'a pu être téléversé, le dossier temporaire est manquant.',
+	'upload error msg UPLOAD_ERR_CANT_WRITE' => 'Impossible d\'écrire sur le disque',
+	'upload error msg UPLOAD_ERR_EXTENSION' => 'Une exception PHP a interrompu le téléversement.',
+	'failed to authenticate email account' => 'Échec lors de l\'authentification du compte courriel',
+	'failed to authenticate email account desc' => 'Impossible de s\'authentifier avec le compte "{0}" pour envoyer les notifications. Assurez-vous que les noms d\'utilisateur et mot de passe sont valides.',
 ); ?>

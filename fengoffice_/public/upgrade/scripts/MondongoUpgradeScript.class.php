@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Mondongo upgrade script will upgrade FengOffice 2.7.1.1 to FengOffice 3.0.7
+ * Mondongo upgrade script will upgrade FengOffice 2.7.1.1 to FengOffice 3.1-beta
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -40,7 +40,7 @@ class MondongoUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('2.7.1.1');
-		$this->setVersionTo('3.0.7');
+		$this->setVersionTo('3.1-beta');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -121,7 +121,7 @@ class MondongoUpgradeScript extends ScriptUpgraderScript {
 				ON DUPLICATE KEY UPDATE tab_panel_id=tab_panel_id;
 				
 				INSERT INTO `".$t_prefix."config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
-				('system', 'getting_started_step', '4', 'IntegerConfigHandler', '1', '0', NULL)
+				('system', 'getting_started_step', '99', 'IntegerConfigHandler', '1', '0', NULL)
 				ON DUPLICATE KEY UPDATE name=name;
 						
 				UPDATE `".$t_prefix."config_options` SET `value`= '0'
@@ -289,6 +289,14 @@ class MondongoUpgradeScript extends ScriptUpgraderScript {
 				);
 			";
 		}
+		
+		if (version_compare($installed_version, '3.0.8') < 0) {
+			$upgrade_script .= "
+				ALTER TABLE `".$t_prefix."object_types` ADD COLUMN `uses_order` INTEGER UNSIGNED NOT NULL DEFAULT 0;
+				ALTER TABLE `".$t_prefix."members` ADD COLUMN `order` INTEGER UNSIGNED NOT NULL DEFAULT 0;
+			";
+		}
+		
 		
 		// Execute all queries
 		if(!$this->executeMultipleQueries($upgrade_script, $total_queries, $executed_queries, $this->database_connection)) {

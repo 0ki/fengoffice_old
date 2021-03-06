@@ -480,9 +480,9 @@ class TemplateController extends ApplicationController {
 	}
 	
 	
-	function instantiate() {
+	function instantiate($arguments = null) {
 		$selected_members = array();
-		$id = get_id();
+		$id = array_var($arguments, 'id', get_id());
 	
 		
 		$template = COTemplates::findById($id);
@@ -492,13 +492,14 @@ class TemplateController extends ApplicationController {
 			return;
 		}
 		$parameters = TemplateParameters::getParametersByTemplate($id);
-		$parameterValues = array_var($_POST, 'parameterValues');
+		$parameterValues = array_var($arguments, 'parameterValues', array_var($_POST, 'parameterValues'));
 		if(count($parameters) > 0 && !isset($parameterValues)) {
 			ajx_current("back");
 			return;
 		}
-		if(array_var($_POST, 'members')){
-			$selected_members = json_decode(array_var($_POST, 'members'));
+		
+		if(array_var($_POST, 'members') || array_var($arguments, 'members')){
+			$selected_members = array_var($arguments, 'members', json_decode(array_var($_POST, 'members')));
 		}else{
 			$context = active_context();
 			
@@ -507,10 +508,9 @@ class TemplateController extends ApplicationController {
 			}
 		}
 		
-		
 		$objects = $template->getObjects() ;
 		$controller  = new ObjectController();
-		if (count($selected_members > 0)) {
+		if (count($selected_members) > 0) {
 			$selected_members_instances = Members::findAll(array('conditions' => 'id IN ('.implode($selected_members).')'));
 		} else {
 			$selected_members_instances = array();
@@ -574,18 +574,22 @@ class TemplateController extends ApplicationController {
 			$template_object_members = $object->getMembers();
 			
 			$object_members = array();
-					
-			//change members according to context 
-			foreach( $active_context as $selection ) {
-				if ($selection instanceof Member) { // member selected
-					foreach( $template_object_members as $i => $object_member){
-						if ($object_member instanceof Member && $object_member->getObjectTypeId() == $selection->getObjectTypeId()) {
-							unset($template_object_members[$i]);
-						}						
+			
+			if (count($selected_members) == 0) {
+				//change members according to context 
+				foreach( $active_context as $selection ) {
+					if ($selection instanceof Member) { // member selected
+						foreach( $template_object_members as $i => $object_member){
+							if ($object_member instanceof Member && $object_member->getObjectTypeId() == $selection->getObjectTypeId()) {
+								unset($template_object_members[$i]);
+							}						
+						}
+						
+						$object_members[] = $selection->getId();
 					}
-					
-					$object_members[] = $selection->getId();
 				}
+			} else {
+				$object_members = $selected_members;
 			}
 			foreach( $template_object_members as $object_member ) {
 				$object_members[] = $object_member->getId();
@@ -797,16 +801,18 @@ class TemplateController extends ApplicationController {
 	}
 
 	function get_object_properties(){
+		$obj_id = get_id();
+		$obj = Objects::findObject($obj_id);		
 		$props = array();
-		$type = "ProjectTasks";
-		eval('$objectProperties = '.$type.'::getTemplateObjectProperties();');
+		$manager = $obj->manager();
+		$objectProperties = $manager->getTemplateObjectProperties();
 		/**
 		 * Allow to add/edit/delete template object properties
 		 */
 		Hook::fire('get_template_object_properties', $type, $objectProperties);
 		
 		foreach($objectProperties as $property){
-			$props[] = array('id' => $property['id'], 'name' => lang('field '.$type.' '.$property['id']), 'type' => $property['type']);
+			$props[] = array('id' => $property['id'], 'name' => lang('field ProjectTasks '.$property['id']), 'type' => $property['type']);
 		}
 		ajx_current("empty");
 		ajx_extra_data(array('properties' => $props));

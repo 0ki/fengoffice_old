@@ -262,7 +262,7 @@ class Notifier {
 				}
 				tpl_assign('subscribers', $string_subscriber);// subscribers
 			}
-			if ($user instanceof Contact && ($user->getId() != $senderid || $user->notify_myself) && $object->canView($user)) {
+			if ($user instanceof Contact && ($user->getId() != $senderid || $user->notify_myself) && $object->canView($user) && !$user->getDisabled()) {
 				// send notification on user's locale and with user info
 				$locale = $user->getLocale();
 				Localization::instance()->loadSettings($locale, ROOT . '/language');
@@ -331,7 +331,9 @@ class Notifier {
 				tpl_assign('guests', '');// invitations
 				tpl_assign('start_date', '');//start_date
 				tpl_assign('due_date', '');//due_date
-				if ($object->getObjectTypeId() == 11) {
+				
+				$event_ot = ObjectTypes::findByName('event');
+				if ($object->getObjectTypeId() == $event_ot->getId()) {
 					//start
 					if ($object->getStart() instanceof DateTimeValue) {
 						$date = Localization::instance()->formatDescriptiveDate($object->getStart(), $user->getTimezone());
@@ -719,7 +721,7 @@ class Notifier {
 		
 		$emails = array();
 		foreach($people as $user) {
-			if ($user->getId() != $sender->getId()) {
+			if ($user->getId() != $sender->getId() && !$user->getDisabled()) {
 				// send notification on user's locale and with user info
 				$locale = $user->getLocale();
 				Localization::instance()->loadSettings($locale, ROOT . '/language');
@@ -1184,28 +1186,34 @@ class Notifier {
 		}
 
 		if($task->getAssignedById() == $task->getAssignedToContactId()){
-			$emails[] = array(
+			if (!$task->getAssignedBy()->getDisabled()) {
+				$emails[] = array(
                             "to" => array(self::prepareEmailAddress($task->getAssignedBy()->getEmailAddress(), $task->getAssignedBy()->getObjectName())),
                             "from" => self::prepareEmailAddress($task->getUpdatedBy()->getEmailAddress(), $task->getUpdatedByDisplayName()),
                             "subject" => lang('work estimate title'),
                             "body" => tpl_fetch(get_template_path('work_estimate', 'notifier')),
                             "attachments" => $attachments
                         ); 
+			}
 		}else{
-			$emails[] = array(
+			if (!$task->getAssignedBy()->getDisabled()) {
+				$emails[] = array(
                             "to" => array(self::prepareEmailAddress($task->getAssignedBy()->getEmailAddress(), $task->getAssignedBy()->getObjectName())),
                             "from" => self::prepareEmailAddress($task->getUpdatedBy()->getEmailAddress(), $task->getUpdatedByDisplayName()),
                             "subject" => lang('work estimate title'),
                             "body" => tpl_fetch(get_template_path('work_estimate', 'notifier')),
                             "attachments" => $attachments
                         );
-			$emails[] = array(
+			}
+			if (!$task->getAssignedTo()->getDisabled()) {
+				$emails[] = array(
                             "to" => array(self::prepareEmailAddress($task->getAssignedTo()->getEmailAddress(), $task->getAssignedTo()->getObjectName())),
                             "from" => self::prepareEmailAddress($task->getUpdatedBy()->getEmailAddress(), $task->getUpdatedByDisplayName()),
                             "subject" => lang('work estimate title'),
                             "body" => tpl_fetch(get_template_path('work_estimate', 'notifier')),
                             "attachments" => $attachments
-			);
+				);
+			}
 		}
 		self::queueEmails($emails);
 		

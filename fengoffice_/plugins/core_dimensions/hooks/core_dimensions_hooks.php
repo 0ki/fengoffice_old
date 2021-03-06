@@ -119,6 +119,8 @@ function core_dim_create_member_associations(Contact $contact, $contact_member, 
 		$del_sub_query = "SELECT member_id FROM ".TABLE_PREFIX."object_members WHERE object_id='".$contact->getId()."'";
 	}
 	
+	if (!$contact_member instanceof Contact) return array();
+	
 	// one way
 	$associations = DimensionMemberAssociations::getAssociatations ( $contact_member->getDimensionId(), $contact_member->getObjectTypeId() );
 	foreach ( $associations as $a ) {
@@ -341,7 +343,7 @@ function core_dimensions_after_add_subscribers($params, &$ignored) {
 function core_dimensions_after_insert($object, &$ignored) {
 	// add member in persons dimension for new contact
 	if ($object instanceof Contact && !isset($_POST['user'])) {
-		core_dim_add_new_contact_to_person_dimension($object);
+		//core_dim_add_new_contact_to_person_dimension($object);
 	}
 }
 

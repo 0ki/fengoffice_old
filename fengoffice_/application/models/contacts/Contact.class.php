@@ -914,7 +914,14 @@ class Contact extends BaseContact {
 	// ---------------------------------------------------
 	//  System functions
 	// ---------------------------------------------------
+
+	private $skip_validations = array();
 	
+	function add_skip_validation($validation) {
+		if (!array_key_exists($validation, $this->skip_validations)) {
+			$this->skip_validations[$validation] = true;
+		}
+	}
 
 	/**
 	 * Validate data before save
@@ -958,23 +965,25 @@ class Contact extends BaseContact {
 			}
 
 	
-			//if email address is entered, it must be unique
-			$user = array_var(array_var($_POST, 'contact'),'user');
-			$main_email = trim(array_var(array_var($_POST, 'contact'),'email'));
-			if($main_email || array_var($user, 'create-user')) {
-				if(!preg_match(EMAIL_FORMAT, $main_email)) {
-					$errors[] = lang('invalid email address');
-					$fields[] = 'email';
-				}
-				
-				$conditions = "email_address=".DB::escape($main_email);
-				if (!$this->isNew()) {
-					$conditions .= " AND contact_id <> ".$this->getId();
-				}
-				$em = ContactEmails::instance()->findOne(array('conditions' => $conditions));
-				if($em instanceof ContactEmail) {
-					$errors[] = lang('email address must be unique');
-					$fields[] = 'email';
+			if (!in_array('email', $this->skip_validations)) {
+				//if email address is entered, it must be unique
+				$user = array_var(array_var($_POST, 'contact'),'user');
+				$main_email = trim(array_var(array_var($_POST, 'contact'),'email'));
+				if($main_email || array_var($user, 'create-user')) {
+					if(!preg_match(EMAIL_FORMAT, $main_email)) {
+						$errors[] = lang('invalid email address');
+						$fields[] = 'email';
+					}
+					
+					$conditions = "email_address=".DB::escape($main_email);
+					if (!$this->isNew()) {
+						$conditions .= " AND contact_id <> ".$this->getId();
+					}
+					$em = ContactEmails::instance()->findOne(array('conditions' => $conditions));
+					if($em instanceof ContactEmail) {
+						$errors[] = lang('email address must be unique');
+						$fields[] = 'email';
+					}
 				}
 			}
 			

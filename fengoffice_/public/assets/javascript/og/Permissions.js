@@ -145,6 +145,7 @@ og.hasAllPermissions = function(genid, member_id, member_permissions) {
 og.hasAnyPermissions = function(genid, member_id) {
 	var member_perms = og.getPermissionsForMember(genid, member_id);
 	for (var x=0; x<member_perms.length; x++) {
+		if (!member_perms[x] || !og.canEditPermissionObjType(genid, member_id, member_perms[x].o)) continue;
 		if (member_perms[x] && member_perms[x].r == 1) return true;
 	}
 	return false;
@@ -365,7 +366,7 @@ og.setDefaultPermissionsForMember = function(genid, dimension_id, member_id, rol
 		else if (perms[ot].w == "1") id = (genid + 'rg_2_'+ dimension_id + '_' + ot);
 		else if (perms[ot].r == "1") id = (genid + 'rg_1_'+ dimension_id + '_' + ot);
 		
-		if (id != '') {
+		if (id != '' && document.getElementById(id)) {
 			var new_p = {o:ot, d:perms[ot].d, w:perms[ot].w, r:perms[ot].r, modified:true};
 			og.addPermissionsForMember(genid, member_id, new_p);
 			$("#"+id).click();

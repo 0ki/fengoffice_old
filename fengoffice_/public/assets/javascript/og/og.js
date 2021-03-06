@@ -2875,12 +2875,14 @@ og.render_modal_form = function(genid, options) {
 			div.innerHTML = data.current.data;
 
 			var modal_params = {
-				'escClose': true,
-				'overlayClose': true,
+				'escClose': typeof(options.escClose) != 'undefined' ? options.escClose : true,
+				'overlayClose': typeof(options.overlayClose) != 'undefined' ? options.overlayClose : true,
 				'closeHTML': '<a id="'+genid+'_close_link" class="'+close_cls+' modal-close" title="'+lang('close')+'"></a>',
 				'onShow': function (dialog) {
 					// add close image to close-link
-					$("#"+genid+"_close_link").addClass("modal-close-img");
+					if (!options.hideCloseIcon) {
+						$("#"+genid+"_close_link").addClass("modal-close-img");
+					}
 					
 					// resize and reposition form when changing tab and content is larger than the available space
 					$(".ui-tabs-anchor").click(function(){ og.resize_modal_form(); });
@@ -3037,6 +3039,13 @@ og.checkAndAdjustTabsSize = function() {
 		
 	}
   }, 500);
+}
+
+og.reload_active_tab = function() {
+	var currentPanel = Ext.getCmp('tabs-panel').getActiveTab();
+	if (currentPanel) {
+		currentPanel.reload();
+	}
 }
 
 og.removeFileExtension = function(filename) {

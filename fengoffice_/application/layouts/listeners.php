@@ -61,6 +61,20 @@ og.eventManager.addListener('reload member properties',
  	}
 );
 
+og.eventManager.addListener('update dimension tree node',
+		function (data){
+			var tree = Ext.getCmp("dimension-panel-" + data.dim_id);
+			if (tree && !tree.hidden){
+
+				var callback_extra_params = {
+												dim_id:data.dim_id,
+												member_id:data.member_id												
+											}; 
+				og.getMemberFromServer(data.member_id, og.updateDimensionTreeNode, callback_extra_params);					
+			}
+		}
+);
+
 og.eventManager.addListener('reload dimension tree',
 	function (data){
 		var tree = Ext.getCmp("dimension-panel-" + data.dim_id);

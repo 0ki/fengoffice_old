@@ -446,7 +446,8 @@ og.checkAttach = function() {
 og.checkFrom = function() {
 	var sel_acc = $('#' + genid + 'mailAccount').val();
 	var def_acc = $('#' + genid + 'def_acc_id').val();
-	if (def_acc == 0) return true;
+	var is_autosaving = $('#' + genid + 'autosave').val();
+	if (is_autosaving == "true" || def_acc == 0) return true;
 	
 	if (sel_acc != def_acc) {
 		var acc_combo = document.getElementById(genid + 'mailAccount');
@@ -463,4 +464,6 @@ og.checkFrom = function() {
 		return true;
 	}
 }
+
+og.changeSignature(genid, $("#"+genid+"mailAccount").val());
 </script>

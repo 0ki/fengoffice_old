@@ -166,6 +166,30 @@
     function setPluginId($value) {
       return $this->setColumnValue('plugin_id', $value);
     } // setPluginId() 
+    
+    
+    /**
+     * Return value of 'uses_order' field
+     *
+     * @access public
+     * @param void
+     * @return bool
+     */
+    function getUsesOrder() {
+    	return $this->getColumnValue('uses_order');
+    } // getUsesOrder()
+    
+    /**
+     * Set value of 'uses_order' field
+     *
+     * @access public
+     * @param bool $value
+     * @return boolean
+     */
+    function setUsesOrder($value) {
+    	return $this->setColumnValue('uses_order', $value);
+    } // setUsesOrder()
+    
   
     /**
     * Return manager instance

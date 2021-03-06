@@ -22,6 +22,7 @@
     	'type' => DATA_TYPE_STRING,
     	'icon' => DATA_TYPE_STRING,
      	'plugin_id' => DATA_TYPE_INTEGER,
+     	'uses_order' => DATA_TYPE_BOOLEAN,
     );
   
     /**

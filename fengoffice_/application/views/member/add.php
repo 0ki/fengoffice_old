@@ -121,6 +121,16 @@
 		<div id="<?php echo $genid?>member_color_input" class="dataBlock"></div>
 		<div class="x-clear"></div>
 		
+		<?php if (ObjectTypes::findById($member->getObjectTypeId())->getUsesOrder()) { ?>
+		
+		<div id="<?php echo $genid?>member_order_div" class="dataBlock">
+			<label><?php echo lang('order')?></label>
+			<input type="number" name="member[order]" value="<?php echo $member->getOrder()?>" />
+		</div>
+		<div class="x-clear"></div>
+		
+		<?php } ?>
+		
 		
 		<div id="<?php echo $genid?>dimension_object_fields" style="display:none;"></div>
 		
@@ -177,6 +187,12 @@
 			}			
 		?></div>
 		<div class="x-clear"></div>
+		<?php } ?>
+		
+		<?php $additional_hidden_fields = array();
+			Hook::fire('additional_member_hidden_fields', $member, $additional_hidden_fields);
+			foreach ($additional_hidden_fields as $name => $value) { ?>
+				<input name="member[<?php echo $name?>]" id="<?php echo $genid.$name?>" value="<?php echo $value?>" type="hidden"/> 
 		<?php } ?>
 		
 	</div>

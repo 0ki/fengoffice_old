@@ -68,3 +68,10 @@
 	background-color: white;
 }
 
+
+.templates-table {
+	border: 1px solid #d7e5f5
+}
+.templates-table td, .templates-table th {
+	padding: 2px 5px;
+}

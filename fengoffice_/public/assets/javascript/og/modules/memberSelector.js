@@ -3,7 +3,8 @@ if (!member_selector) var member_selector = {};
 member_selector.init = function(genid) {
 
 	member_selector[genid].sel_context = {};
-	var selected_member_ids = Ext.util.JSON.decode(Ext.fly(Ext.get(genid + member_selector[genid].hiddenFieldName)).getValue());
+	var json_sel_ids = $("#" + genid + member_selector[genid].hiddenFieldName).val();
+	var selected_member_ids = json_sel_ids == "" ? [] : Ext.util.JSON.decode(json_sel_ids);
 	
 	var dimension_to_get = new Array();
 	for (i=0; i<selected_member_ids.length; i++) {
@@ -28,7 +29,7 @@ member_selector.init = function(genid) {
 	member_selector.preload_members(genid);
 	
 	og.openLink(og.getUrl('member', 'get_dimension_id', {member_id: Ext.util.JSON.encode(dimension_to_get)}), {callback: function(success, data){
-				
+		
 		if (!data.dim_ids) {
 			og.eventManager.fireEvent('after member_selector init', null);
 			return;
@@ -42,7 +43,7 @@ member_selector.init = function(genid) {
 			member_selector[genid].sel_context[data.dim_ids[i].dim_id].push(data.dim_ids[i].member_id);
 			member_selector[genid].members_dimension[data.dim_ids[i].member_id] = data.dim_ids[i].dim_id;
 		}
-						
+		
 		//RENDER
 		if (selected_member_ids.length == i) {
 			var idshf = document.getElementById(genid+'subscribers_ids_hidden');
@@ -292,25 +293,17 @@ member_selector.remove_all_selections = function(genid) {
 }
 
 member_selector.set_selected = function(genid, sel_member_ids, preload) {
-	for (dim_id in member_selector[genid].properties) {
-		var combo = Ext.getCmp(genid + 'add-member-input-dim' + dim_id);
+	for (var idx=0; idx<sel_member_ids.length; idx++) {
+		var sel_id = Number(sel_member_ids[idx]);
+		var members = og.getMemberFromOgDimensions(sel_id);
 		
-		for (var idx=0; idx<sel_member_ids.length; idx++) {
-			var sel_id = Number(sel_member_ids[idx]);
-			var store = combo.store;
-			
-			for (i=0; i<store.data.items.length; i++) {
-				if (store.data.items[i].data.id == sel_id) {
-					member_selector.autocomplete_select(dim_id, genid, combo, store.data.items[i], preload);
-					break;
-				}
-			}
-		}
-	}
-	var member_ids_input = Ext.fly(Ext.get(genid + member_selector[genid].hiddenFieldName));
-	member_ids_input.value = Ext.util.JSON.encode(sel_member_ids);
-	
-	member_selector.init(genid);
+		if (members.length > 0){
+			var member = members[0];
+			if(member_selector[genid].properties[member.dimension_id]){
+				member_selector.add_relation(member.dimension_id, genid, member.id, true);	
+			}			
+		}				
+	}	
 }
 
 member_selector.preload_members = function(genid, d) {

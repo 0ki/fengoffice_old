@@ -664,7 +664,7 @@ class TaskController extends ApplicationController {
 						}
 						break;
 					case 'close_work':
-						if ($task->canEdit(logged_user())){
+						if ($task->canAddTimeslot(logged_user())){
 							$timeslot = $task->closeTimeslots(logged_user(),array_var($_POST, 'options'));
 							$application_logs[] = array($timeslot, ApplicationLogs::ACTION_CLOSE,false,true);
 							$tasksToReturn[] = $task->getArrayInfo();
@@ -673,14 +673,14 @@ class TaskController extends ApplicationController {
 						}
 						break;
 					case 'pause_work':
-						if ($task->canEdit(logged_user())){
+						if ($task->canAddTimeslot(logged_user())){
 							$task->pauseTimeslots(logged_user());
 							$tasksToReturn[] = $task->getArrayInfo();
 							$showSuccessMessage = false;
 						}
 						break;
 					case 'resume_work':
-						if ($task->canEdit(logged_user())){
+						if ($task->canAddTimeslot(logged_user())){
 							$task->resumeTimeslots(logged_user());
 							$tasksToReturn[] = $task->getArrayInfo();
 							$showSuccessMessage = false;
@@ -920,32 +920,32 @@ class TaskController extends ApplicationController {
 		$now_end = $now_date->format('Y-m-d 23:59:59');
 		switch($status){
 			case 0: // Incomplete tasks
-				$task_status_condition = " AND `completed_on` = " . DB::escape(EMPTY_DATETIME);
+				$task_status_condition = " AND `e`.`completed_on` = " . DB::escape(EMPTY_DATETIME);
 				break;
 			case 1: // Complete tasks
-				$task_status_condition = " AND `completed_on` > " . DB::escape(EMPTY_DATETIME);
+				$task_status_condition = " AND `e`.`completed_on` > " . DB::escape(EMPTY_DATETIME);
 				break;
 			case 10: // Active tasks
 				$task_status_condition = " AND (SELECT COUNT(ts.object_id) FROM ".TABLE_PREFIX."timeslots ts WHERE ts.rel_object_id=o.id AND ts.end_time = '".EMPTY_DATETIME."') > 0";
 				break;
 			case 11: // Overdue tasks
-				$task_status_condition = " AND `completed_on` = " . DB::escape(EMPTY_DATETIME) . " AND `due_date` < '$now'";
+				$task_status_condition = " AND `e`.`completed_on` = " . DB::escape(EMPTY_DATETIME) . " AND `e`.`due_date` < '$now'";
 				break;
 			case 12: // Today tasks
-				$task_status_condition = " AND `completed_on` = " . DB::escape(EMPTY_DATETIME) . " AND `due_date` >= '$now' AND `due_date` <= '$now_end'";
+				$task_status_condition = " AND `e`.`completed_on` = " . DB::escape(EMPTY_DATETIME) . " AND `e`.`due_date` >= '$now' AND `e`.`due_date` <= '$now_end'";
 				break;
 			case 13: // Today + Overdue tasks
-				$task_status_condition = " AND `completed_on` = " . DB::escape(EMPTY_DATETIME) . " AND `due_date` <= '$now_end'";
+				$task_status_condition = " AND `e`.`completed_on` = " . DB::escape(EMPTY_DATETIME) . " AND `e`.`due_date` <= '$now_end'";
 				break;
 			case 20: // Actives task by current user
-				$task_status_condition = " AND `completed_on` = " . DB::escape(EMPTY_DATETIME) . " AND `start_date` <= '$now' AND `assigned_to_contact_id` = " . logged_user()->getId();
+				$task_status_condition = " AND `e`.`completed_on` = " . DB::escape(EMPTY_DATETIME) . " AND `e`.`start_date` <= '$now' AND `e`.`assigned_to_contact_id` = " . logged_user()->getId();
 				break;
 			case 21: // Subscribed tasks by current user
 				$res20 = DB::execute("SELECT object_id FROM ". TABLE_PREFIX . "object_subscriptions WHERE `contact_id` = " . logged_user()->getId());
 				$subs_rows = $res20->fetchAll($res20);
 				foreach($subs_rows as $row) $subs[] = $row['object_id'];
 				unset($res20, $subs_rows, $row);
-				$task_status_condition = " AND `completed_on` = " . DB::escape(EMPTY_DATETIME) . " AND `id` IN(" . implode(',', $subs) . ")";
+				$task_status_condition = " AND `e`.`completed_on` = " . DB::escape(EMPTY_DATETIME) . " AND `id` IN(" . implode(',', $subs) . ")";
 				break;
 			case 2: // All tasks
 				break;
@@ -972,6 +972,10 @@ class TaskController extends ApplicationController {
 	
 	
 	//TASK GROUP HELPER START
+	private function cmpGroupOrder($a, $b){
+		return strcmp($a["group_order"], $b["group_order"]);
+	}
+	
 	private function getGroupTotals($conditions, $group_time_estimate = null, $join_on_extra = null){
 		if(is_null($join_on_extra)){
 			$join_on_extra = "";
@@ -1313,19 +1317,19 @@ class TaskController extends ApplicationController {
 			switch ($group['group_id']) {
 				case 100:
 					$groups[$key]['group_icon'] = 'ico-task-low-priority';
-					$groups[$key]['group_order'] = 1;
+					$groups[$key]['group_order'] = 4;
 					break;
 				case 200:
 					$groups[$key]['group_icon'] = 'ico-task';
-					$groups[$key]['group_order'] = 2;
+					$groups[$key]['group_order'] = 3;
 					break;
 				case 300:
 					$groups[$key]['group_icon'] = 'ico-task-high-priority';
-					$groups[$key]['group_order'] = 3;
+					$groups[$key]['group_order'] = 2;
 					break;
 				case 400:
 					$groups[$key]['group_icon'] = 'ico-task-high-priority';
-					$groups[$key]['group_order'] = 4;
+					$groups[$key]['group_order'] = 1;
 					break;
 			}
 						
@@ -1343,10 +1347,11 @@ class TaskController extends ApplicationController {
 		if(!is_null($groupId)){
 			return $more_group_ret;	
 		}else{
+			usort($groups, array("TaskController", "cmpGroupOrder"));
 			return $groups;
 		}			
 	}
-	
+		
 	private function getMilestoneGroups($conditions,$show_more_conditions,$list_subtasks_cond){
 		$milestone_field = "`milestone_id`";
 		$groupId = $show_more_conditions['groupId'];
@@ -2322,7 +2327,8 @@ class TaskController extends ApplicationController {
 				$object_controller->add_subscribers($task);
 				$object_controller->link_to_new_object($task);
 				$object_controller->add_custom_properties($task);
-				if ($task->getDueDate()!= null && user_config_option("add_task_default_reminder")){
+				
+				if (user_config_option("add_task_default_reminder")){
 					$object_controller->add_reminders($task);
 				}
 				
@@ -2388,15 +2394,22 @@ class TaskController extends ApplicationController {
 				if($task->getAssignedToContactId() != $task->getAssignedById()) {
 					$isSailent = false;
 					try {
-						Notifier::taskAssigned($task);
-						
-						foreach ($sub_tasks_to_log['assigned'] as $st_to_log) {
-							Notifier::taskAssigned($st_to_log);
-						}
+						Notifier::taskAssigned($task);						
 					} catch(Exception $e) {
 						evt_add("debug", $e->getMessage());
 					} // try
 				}
+				// notify asignee for subtasks
+				foreach ($sub_tasks_to_log['assigned'] as $st_to_log) {
+					if($st_to_log->getAssignedToContactId() != $st_to_log->getAssignedById()) {
+						try {
+							Notifier::taskAssigned($st_to_log);
+						} catch(Exception $e) {
+							evt_add("debug", $e->getMessage());
+						} // try
+					}
+				}
+				
 				ApplicationLogs::createLog($task, ApplicationLogs::ACTION_ADD, null, $isSailent);
 				
 				if (array_var($_REQUEST, 'modal')) {
@@ -2902,7 +2915,7 @@ class TaskController extends ApplicationController {
 				$object_controller->link_to_new_object($task);
 				$object_controller->add_custom_properties($task);
 				
-				if ($task->getDueDate()!= null && !$task->isCompleted() && $task->getSubscriberIds() != null){ //to make sure the task has a due date and it is not completed yet, and that it has subscribed people											
+				if (!$task->isCompleted() && $task->getSubscriberIds() != null){ //to make sure the task it is not completed yet, and that it has subscribed people											
 					$old_reminders = ObjectReminders::getByObject($task);
 					
 					$object_controller->add_reminders($task); //adding the new reminders, if any

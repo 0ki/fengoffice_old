@@ -330,7 +330,9 @@ $genid = gen_id();
 				trigger: 'hover'
 			});
 		<?php } ?>
-		<?php foreach ($other_modules as $module) { ?>
+		<?php foreach ($other_modules as $module) {
+				if (!is_array($dim) || !isset($dim['id'])) continue; 
+		?>
 			$(".system-modules-section #<?php echo $module['id']?>").popover({
 				content: og.module_hints['<?php echo $module['id']?>'],
 				delay: { show: "100", hide: "200" },
@@ -338,14 +340,18 @@ $genid = gen_id();
 			});
 		<?php } ?>
 
-		<?php foreach ($active_dimensions as $dim) { ?>
+		<?php foreach ($active_dimensions as $dim) {
+				if (!is_array($dim) || !isset($dim['id'])) continue; 
+		?>
 			$(".system-modules-section #dimensions-container #<?php echo $dim['id']?>").popover({
 				content: og.dimension_hints['<?php echo $dim['id']?>'],
 				delay: { show: "100", hide: "200" },
 				trigger: 'hover'
 			});
 		<?php } ?>
-		<?php foreach ($other_dimensions as $dim) { ?>
+		<?php foreach ($other_dimensions as $dim) {
+				if (!is_array($dim) || !isset($dim['id'])) continue; 
+		?>
 			$(".system-modules-section #dimensions-container #<?php echo $dim['id']?>").popover({
 				content: og.dimension_hints['<?php echo $dim['id']?>'],
 				delay: { show: "100", hide: "200" },

@@ -1867,6 +1867,7 @@ class FilesController extends ApplicationController {
 			"order"=>$order,
 			"order_dir" => $order_dir,
 			"extra_conditions"=> $extra_conditions,
+			"show_only_member_objects" => user_config_option('show_only_member_files'),
 			'count_results' => false,
 			'only_count_results' => $only_count_result,
 			"join_params"=> $join_params,

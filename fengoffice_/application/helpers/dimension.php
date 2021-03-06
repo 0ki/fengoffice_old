@@ -32,8 +32,13 @@ function render_member_selectors($content_object_type_id, $genid = null, $select
 			
 			if (is_null($selected_member_ids)) $selected_member_ids = array();
 			
+			$skipped_dimensions_cond = "";
+			if (is_array($skipped_dimensions) && count($skipped_dimensions) > 0) {
+				$skipped_dimensions_cond = " AND dimension_id NOT IN (".implode(',', $skipped_dimensions).")";
+			}
+			
 			// Set view variables
-			$manageable_conds = ' AND dimension_id IN (SELECT id from '.TABLE_PREFIX.'dimensions WHERE is_manageable=1)';
+			$manageable_conds = ' AND dimension_id IN (SELECT id from '.TABLE_PREFIX.'dimensions WHERE is_manageable=1)' . $skipped_dimensions_cond;
 			$selected_members = count($selected_member_ids) > 0 ? Members::findAll(array('conditions' => 'id IN ('.implode(',', $selected_member_ids).') '.$manageable_conds)) : array();
 			$selected_member_ids = array();
 			foreach ($selected_members as $sm) $selected_member_ids[] = $sm->getId();
@@ -87,6 +92,15 @@ function render_single_member_selector(Dimension $dimension, $genid = null, $sel
 	}
 	
 	$dimensions = array($dim_info);
+	
+	foreach ($selected_member_ids as $k => &$v) {
+		if (!is_numeric($v)) unset($selected_member_ids[$k]);
+	}
+	if (count($selected_member_ids) > 0) {
+		$sql = "SELECT m.id FROM ".TABLE_PREFIX."members m WHERE m.id IN (".implode(',', $selected_member_ids).") AND m.dimension_id=".$dimension->getId();
+		$clean_sel_member_ids = array_flat(DB::executeAll($sql));
+		$selected_member_ids = $clean_sel_member_ids;
+	}
 	
 	$content_object_type_id = array_var($options, 'content_object_type_id');
 	$initial_selected_members = $selected_member_ids;

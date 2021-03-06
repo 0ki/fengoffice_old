@@ -209,6 +209,19 @@ class TimeController extends ApplicationController {
 			$startTime = $startTime->add('h', 8 - logged_user()->getTimezone());
 			$endTime = getDateValue(array_var($timeslot_data, 'date'));
 			$endTime = $endTime->add('h', 8 - logged_user()->getTimezone() + $hoursToAdd);
+			
+			//use current time
+			if( array_var($_REQUEST, "use_current_time",false)){
+				$currentStartTime = DateTimeValueLib::now();
+				$currentEndTime = DateTimeValueLib::now();
+				$currentStartTime = $currentStartTime->add('h', -$hoursToAdd);	
+				
+				$startTime->setHour($currentStartTime->getHour());
+				$startTime->setMinute($currentStartTime->getMinute());
+				$endTime->setHour($currentEndTime->getHour());
+				$endTime->setMinute($currentEndTime->getMinute());				
+			}
+			
 			$timeslot_data['start_time'] = $startTime;
 			$timeslot_data['end_time'] = $endTime;
 			$timeslot_data['description'] = html_to_text($timeslot_data['description']);

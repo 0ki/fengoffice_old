@@ -752,16 +752,18 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 		var milestone_el = document.getElementById('<?php echo $genid ?>taskListFormMilestone');
 		var actual_value = milestone_el ? milestone_el.value : 0;
 		var milestone_div = Ext.get('<?php $genid ?>add_task_more_div_milestone_combo');
-		if (milestone_div) {
+	/*	if (milestone_div) {
 			milestone_div.load({
 				url: og.getUrl('milestone', 'render_add_milestone', {
 					context: dimension_members_json,
 					genid: '<?php echo $genid ?>',
-					selected: actual_value
+					selected: actual_value,
+					template_milestone: 1,
+					template_id: '<?php echo $template_id ?>'
 				}),
 				scripts: true
 			});
-		}
+		}*/
 	
 		var uids = App.modules.addMessageForm.getCheckedUsers('<?php echo $genid ?>');
 

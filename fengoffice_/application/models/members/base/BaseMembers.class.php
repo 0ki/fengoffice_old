@@ -23,6 +23,7 @@
     	'archived_on' => DATA_TYPE_DATETIME,
     	'archived_by_id' => DATA_TYPE_INTEGER,
     	'color' => DATA_TYPE_INTEGER,
+    	'order' => DATA_TYPE_INTEGER,
     );
   
     /**
@@ -31,6 +32,7 @@
     * @return BaseMembers 
     */
     function __construct() {
+      Hook::fire('object_definition', 'Member', self::$columns);
       parent::__construct('Member', 'members', true);
     } // __construct
     

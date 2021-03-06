@@ -189,7 +189,7 @@ og.MemberTree = function(config) {
 	this.on({
 		expandnode: function(node){
 			//get childs from server
-	        if(node.childNodes.length < node.attributes.realTotalChilds && node.attributes.expandable){
+	        if(node.childNodes.length < node.attributes.realTotalChilds && node.attributes.expandable && !node.attributes.gettingChildsFromServer){
 	        	node.ownerTree.innerCt.mask();
 	        	node.attributes.gettingChildsFromServer = true;
 	        	og.openLink(og.getUrl('dimension', 'get_member_childs', {member:node.id}), {
@@ -243,17 +243,17 @@ og.MemberTree = function(config) {
 			
 			if (node.getDepth() > 0) { 	
 				//set focus on the selected node
-		        this.suspendEvents();		        
+				node.ownerTree.suspendEvents();		        
 				node.ensureVisible();
-				node.attributes.gettingChildsFromServer = true;
+				
 				node.select();
 				node.expand();
-				this.resumeEvents();
-				
-				
+				node.ownerTree.resumeEvents();
+								
 				//get childs from server
-		        if(node.childNodes.length < node.attributes.realTotalChilds && node.attributes.expandable){
+		        if(node.childNodes.length < node.attributes.realTotalChilds && node.attributes.expandable && !node.attributes.gettingChildsFromServer){
 		        	node.ownerTree.innerCt.mask();
+		        	node.attributes.gettingChildsFromServer = true;
 		        	og.openLink(og.getUrl('dimension', 'get_member_childs', {member:node.id}), {
 		    			hideLoading:true, 
 		    			hideErrors:true,
@@ -673,4 +673,47 @@ Ext.extend(og.MemberTree, Ext.tree.TreePanel, {
 
 // ***** EXTJS REGISTER COMPONENT ******* //
 Ext.reg('member-tree', og.MemberTree);
+
+
+og.updateDimensionTreeNode = function(dimension_id, member, extra_params) {
+	var dimension_tree = Ext.getCmp('dimension-panel-'+dimension_id);
+	var node_parent = dimension_tree.getNodeById(member.parent);
+	if(member.parent == 0){
+		node_parent = dimension_tree.root;
+	}
+		
+	member.leaf = true;
+	member.text = member.name;
+	var new_node = dimension_tree.loader.createNode(member);
+		    												
+	var node_exist = dimension_tree.getNodeById(member.id);			
+
+	if(!node_exist){		
+		if (node_parent) node_parent.appendChild(new_node);
+	}else{	
+		//check if the parent have changed
+		if(node_exist.parentNode.attributes.id == member.parent || (node_exist.parentNode.isRoot && member.parent == 0)){
+			node_parent.removeChild(node_exist);
+		}else{
+			node_exist.parentNode.removeChild(node_exist);			
+		}
+		node_parent.appendChild(new_node);
+		
+		if(!node_parent.isExpanded()){
+			dimension_tree.suspendEvents();
+			node_parent.expand();
+			dimension_tree.resumeEvents();
+		}
+		
+			
+	}
+	
+	new_node.ensureVisible();
+	dimension_tree.suspendEvents();
+	//dimension_tree.selectNodes([new_node.id]);
+	new_node.select();
+	dimension_tree.resumeEvents();
+	og.eventManager.fireEvent('member tree node click', new_node);
+	new_node.expand();
+}
 

@@ -3,7 +3,7 @@
 	<div style="float:left;min-width: 100%;">
 		<div style="float:left;">
 			<?php if ($renderContext): ?>
-			<div id="<?php echo $genid ?>add_contact_select_context_div"><?php 
+			<div id="<?php echo $genid ?>add_contact_select_context_div" class="dataBlock"><?php 
 				$listeners = array('on_selection_change' => 'og.reload_subscribers("'.$genid.'",'.$object->manager()->getObjectTypeId().')');
 				if ($contact->isNew()) {
 					render_member_selectors($contact->manager()->getObjectTypeId(), $genid, null, array('select_current_context' => true, 'listeners' => $listeners), null, null, false); 
@@ -118,6 +118,22 @@
 				
 	            <div class="clear"></div>
 			</div>
+			<?php } ?>
+			
+			<?php if (!$renderContext) { ?>
+			<div id="<?php echo $genid ?>add_contact_select_context_div" class="dataBlock"><?php
+				$skipped_dimensions = array();
+				$dims_with_perm = Dimensions::findAll(array('conditions' => 'defines_permissions=1'));
+				foreach ($dims_with_perm as $dim_with_perm) {
+					$skipped_dimensions[] = $dim_with_perm->getId();
+				}
+				$listeners = array('on_selection_change' => '');
+				if ($contact->isNew()) {
+					render_member_selectors($contact->manager()->getObjectTypeId(), $genid, null, array('select_current_context' => true, 'listeners' => $listeners, 'hidden_field_name' => 'no_perm_members'), $skipped_dimensions, null, false); 
+				} else {
+					render_member_selectors($contact->manager()->getObjectTypeId(), $genid, $contact->getMemberIds(), array('listeners' => $listeners, 'hidden_field_name' => 'no_perm_members'), $skipped_dimensions, null, false); 
+				} 
+			?></div>
 			<?php } ?>
 	</div>		  
 	<div class="clear"></div>

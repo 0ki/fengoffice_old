@@ -628,4 +628,5 @@
 	'set manual permissions' => 'Asignar permisos manualmente',
 	'set manual permissions desc' => 'Si los permisos no se asignan manualmente, serán asignados automáticamente según el rol del usuario (Administradores, Gerentes and Ejecutivos tendrán todos los permisos asignados).',
 	'or you can also' => 'O también puede',
+	'template parameters description' => 'Este formulario contiene los parámetros necesarios para completar los datos de las tareas a generar.',
 );

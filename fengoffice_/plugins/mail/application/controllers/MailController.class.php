@@ -628,6 +628,17 @@ class MailController extends ApplicationController {
 				$mail->save();
 				//$mail->setIsRead(logged_user()->getId(), true);
 				
+				if(Plugins::instance()->isActivePlugin('mail_rules')){
+					if (array_var($mail_data,'format') == 'html') {
+						$img = MailTracks::get_track_mark_img($mail->getId());
+						$body = $body.$img;
+						$mail->setBodyHtml($body);
+						$mail->setBodyPlain(utf8_safe(html_to_text($body)));
+						$mail->save();					
+					}
+					
+				}
+				
 				foreach ($project_files_attachments as $pfatt) {
 					if ($pfatt instanceof ProjectFile) {
 						$pfatt->setMailId($mail->getId());
@@ -2750,6 +2761,7 @@ class MailController extends ApplicationController {
 				$properties = $this->getMailProperties($email, $i);
 				$object["messages"][$i] = $properties;
 			}
+			
 			foreach ($custom_properties as $cp) {
 				$cp_value = CustomPropertyValues::getCustomPropertyValue($email->getId(), $cp->getId());
 				if ($cp->getType() == 'contact' && $cp_value instanceof CustomPropertyValue) {

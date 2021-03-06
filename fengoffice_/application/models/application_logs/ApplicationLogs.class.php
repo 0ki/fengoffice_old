@@ -176,12 +176,12 @@ class ApplicationLogs extends BaseApplicationLogs {
 			$userCond = " AND `taken_by_id` = " . $object->getId();
 			
 			$conditions =  array(
-				'`is_private` <= ? AND `is_silent` <= ? '.$userCond, 
+				'`is_private` <= ? AND `is_silent` <= ? '.$userCond. $extra_conditions, 
 				$private_filter, 
 				$silent_filter); 
 				
 			return self::findAll(array(
-				'conditions' => $conditions . $extra_conditions,
+				'conditions' => $conditions ,
 				'order' => '`created_on` DESC',
 				'limit' => $limit,
 				'offset' => $offset,

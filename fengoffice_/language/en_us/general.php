@@ -183,8 +183,8 @@ return array(
   	'5th' => '5th',
 
   	'copy of' => 'Copy of {0}',
-  	'task templates' => 'Task Templates',
-  	'add task template' => 'Add Task Template',
+  	'task templates' => 'Task templates',
+  	'add task template' => 'Add task template',
   	'template' => 'Template',
   	'workspaces' => 'Workspaces',
   	'assign to workspace' => 'Assign to Workspace',

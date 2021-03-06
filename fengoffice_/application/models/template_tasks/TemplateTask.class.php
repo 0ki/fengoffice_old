@@ -604,24 +604,7 @@ class TemplateTask extends BaseTemplateTask {
 					$cp->save();
 				}
 			}
-		}
-	
-		$reminders = ObjectReminders::getByObject($this);
-		foreach($reminders as $reminder) {
-			$copy_reminder = new ObjectReminder();
-			$copy_reminder->setContext($reminder->getContext());
-			$reminder_date = $new_task->getColumnValue($reminder->getContext());
-			if ($reminder_date instanceof DateTimeValue) {
-				$reminder_date = new DateTimeValue($reminder_date->getTimestamp());
-				$reminder_date->add('m', -$reminder->getMinutesBefore());
-			}
-			$copy_reminder->setDate($reminder_date);
-			$copy_reminder->setMinutesBefore($reminder->getMinutesBefore());
-			$copy_reminder->setObject($new_task);
-			$copy_reminder->setType($reminder->getType());
-			$copy_reminder->setUserId($reminder->getUserId());
-			$copy_reminder->save();
-		}
+		}		
 		
 		return $new_task;
 	}

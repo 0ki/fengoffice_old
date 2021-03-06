@@ -1937,3 +1937,83 @@ function print_modal_json_response($data, $dont_process_response = true, $use_aj
 		echo json_encode($object);
 	}
 }
+
+
+
+
+
+
+function associate_member_to_status_member($project_member, $old_project_status, $status_member_id, $status_dimension, $status_ot=null) {
+
+	if ($status_dimension instanceof Dimension && in_array($status_dimension->getId(), config_option('enabled_dimensions'))) {
+
+		// asociate project objects to the new project_status member
+		if ($old_project_status != $status_member_id) {
+
+			$object_members = ObjectMembers::instance()->findAll(array('conditions' => "member_id = ".$project_member->getId()." AND is_optimization=0"));
+
+			// remove objects from old project_type member
+			if ($old_project_status > 0) {
+				foreach ($object_members as $om) {
+					$obj = Objects::findObject($om->getObjectId());
+					if ($obj instanceof ContentDataObject) {
+						ObjectMembers::removeObjectFromMembers($obj, logged_user(), null, array($old_project_status));
+					}
+				}
+			}
+
+			// add objects to new project_type member
+			if ($status_member_id > 0) {
+				$member_to_add = Members::findById($status_member_id);
+				foreach ($object_members as $om) {
+					ObjectMembers::addObjectToMembers($om->getObjectId(), array($member_to_add));
+				}
+			}
+			
+		}
+
+
+		$member_dimension = $project_member->getDimension();
+
+		$a = DimensionMemberAssociations::instance()->findOne(array('conditions' => array('dimension_id=? AND object_type_id=? AND associated_dimension_id=?'.
+				($status_ot instanceof ObjectType ? ' AND associated_object_type_id='.$status_ot->getId() : ''),
+				$member_dimension->getId(), $project_member->getObjectTypeId(), $status_dimension->getId())));
+
+		// create relation between members and remove old relations
+		if ($a instanceof DimensionMemberAssociation) {
+			if (is_numeric($status_member_id) && $status_member_id > 0) {
+
+				$mpm = MemberPropertyMembers::findOne(array('id' => true, 'conditions' => array('association_id = ? AND member_id = ? AND property_member_id = ?', $a->getId(), $project_member->getId(), $status_member_id)));
+				if (is_null($mpm)) {
+					$sql = "INSERT INTO " . TABLE_PREFIX . "member_property_members (association_id, member_id, property_member_id, is_active, created_on, created_by_id)
+						VALUES (" . $a->getId() . "," . $project_member->getId() . "," . $status_member_id . ", 1, NOW()," . logged_user()->getId() . ");";
+
+					DB::executeAll($sql);
+				}
+
+			}
+			MemberPropertyMembers::instance()->delete('association_id = '.$a->getId().' AND member_id = '.$project_member->getId() . " AND property_member_id <> '$status_member_id'");
+		}
+	}
+}
+
+
+function get_associated_status_member_id($member, $dimension, $ot=null) {
+	if ($member instanceof Member) {
+		$member_dimension = $member->getDimension();
+
+		$a = DimensionMemberAssociations::instance()->findOne(array('conditions' => array('dimension_id=? AND object_type_id=? AND associated_dimension_id=?'.
+				($ot instanceof ObjectType ? ' AND associated_object_type_id='.$ot->getId() : ''),
+				$member_dimension->getId(), $member->getObjectTypeId(), $dimension->getId())));
+		
+		// create relation between members and remove old relations
+		if ($a instanceof DimensionMemberAssociation) {
+			$mpm = MemberPropertyMembers::findOne(array('conditions' => array('association_id = ? AND member_id = ?', $a->getId(), $member->getId())));
+			if ($mpm instanceof MemberPropertyMember) {
+				return $mpm->getPropertyMemberId();
+			}
+		}
+	}
+	return 0;
+}
+

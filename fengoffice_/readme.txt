@@ -1,5 +1,5 @@
 
-	About Feng Office 3.0.7
+	About Feng Office 3.1-beta
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -104,6 +104,34 @@
 	
 	Changelog
 	=========
+	
+	Since 3.0.8
+	----------------
+	feature: hierarchy filter on documents tab.
+	feature: in custom reports if object name is printed now it is a link to the object
+	
+	performance: tree node asks for childrens to the server twice after click .
+	
+	bugfix: reminders on template tasks.
+	bugfix: after adding a client, the client tree shows the client twice.
+	bugfix: do not reload member trees after editing a member.
+	bugfix: use current time when adding timeslots from tasks list.
+	bugfix: permission errors when adding timeslots from tasks list.
+	bugfix: on tasks list after add the first task remove  "There are no tasks in".
+	bugfix: wrong order when grouping by priority on tasks list.
+	bugfix: wrong signature when replying mail from a non default account.
+	bugfix: after add subtasks send assignment notifications.
+	bugfix: when dragging members to no-permissions tree children are not moved.
+	bugfix: cannot edit user tags.
+	bugfix: select milestones on templates.
+	bugfix: when composing an email with other email address the autosave asks if you want to send with that adddess (it must ask only when sending or saving draft).
+	bugfix: collaborators should not have access to mail tab
+	
+	language: fr_ca updated.
+
+	Since 3.0.7
+	----------------
+	
 	
 	Since 3.0.6
 	----------------

@@ -148,7 +148,7 @@
 		<br /><br />
 	  	<div id="<?php echo $genid ?>hbilling" style="<?php echo $timeslot_data['is_fixed_billing']?'display:none':'' ?>">
 	    	<?php echo label_tag(lang('hourly rates'), 'addTimeslotHourlyBilling', false, array('style'=>'min-width:110px;')) ?>
-	  		<?php echo text_field('timeslot[hourly_billing]',array_var($timeslot_data, 'hourly_billing'), array('id' => 'addTimeslotHourlyBilling')) ?>
+	  		<?php echo text_field('timeslot[hourly_billing]',array_var($timeslot_data, 'hourly_billing'), array('id' => 'addTimeslotHourlyBilling', 'readonly' => 'readonly')) ?>
 	  	</div>
 	  	<div id="<?php echo $genid ?>fbilling" style="<?php echo $timeslot_data['is_fixed_billing']?'':'display:none' ?>">
 	    	<?php echo label_tag(lang('billing amount'), 'addTimeslotFixedBilling', false, array('style'=>'min-width:110px;')) ?>

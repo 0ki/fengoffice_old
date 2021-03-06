@@ -438,14 +438,38 @@ abstract class ContentDataObjects extends DataManager {
 		}
 		
 		$SQL_CONTEXT_CONDITION = " true ";
+		//show only objects that are on this members by classification not by hierarchy
+		$show_only_member_objects = array_var($args,'show_only_member_objects',false);
+		$exclusive_in_member = '';
+		if($show_only_member_objects){
+			$exclusive_in_member = " AND om.`is_optimization` = 0";
+		}
 		if (!empty($members) && count($members)) {
 			$SQL_CONTEXT_CONDITION = "(EXISTS (SELECT om.object_id
 					FROM  ".TABLE_PREFIX."object_members om
-					WHERE	om.member_id IN (" . implode ( ',', $members ) . ") AND o.id = om.object_id
+					WHERE	om.member_id IN (" . implode ( ',', $members ) . ") AND o.id = om.object_id $exclusive_in_member
 					GROUP BY object_id
 					HAVING count(member_id) = ".count($members)."
-			))";
-			
+			))";			
+		}else{
+			//show only objects that are on root
+			if($show_only_member_objects){				
+				if (is_array(active_context())) {
+					$active_dims_ids = array();
+					foreach (active_context() as $ctx) {
+						if($ctx instanceof Dimension ) {							
+							$active_dims_ids[] = $ctx->getId();
+						}
+					}
+					if(count($active_dims_ids) > 0){
+						$SQL_CONTEXT_CONDITION = "(NOT EXISTS (SELECT om.object_id
+							FROM  ".TABLE_PREFIX."object_members om
+							INNER JOIN  ".TABLE_PREFIX."members mem ON mem.id = om.member_id AND mem.dimension_id IN (" . implode(",", $active_dims_ids) . ")
+							WHERE	o.id = om.object_id
+							))";
+					}
+				}				
+			}
 		}
 		
 		// Trash && Archived CONDITIONS

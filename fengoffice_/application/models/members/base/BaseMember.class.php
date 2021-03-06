@@ -232,6 +232,30 @@
       return $this->setColumnValue('color', $value);
     } // setColor() 
     
+    
+    /**
+     * Return value of 'order' field
+     *
+     * @access public
+     * @param void
+     * @return integer
+     */
+    function getOrder() {
+    	return $this->getColumnValue('order');
+    } // getOrder()
+    
+    /**
+     * Set value of 'order' field
+     *
+     * @access public
+     * @param integer $value
+     * @return boolean
+     */
+    function setOrder($value) {
+    	return $this->setColumnValue('order', $value);
+    } // setOrder()
+    
+    
     /**
     * Return manager instance
     *
