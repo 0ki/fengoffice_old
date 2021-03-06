@@ -31,7 +31,9 @@
 		require_javascript('og/tasks/task_dependencies.js');
 	}
 	
-	$has_custom_properties = CustomProperties::countAllCustomPropertiesByObjectType(ProjectTasks::instance()->getObjectTypeId()) > 0;
+
+	$main_cp_count = CustomProperties::countVisibleCustomPropertiesByObjectType(ProjectTasks::instance()->getObjectTypeId());
+	$other_cp_count = CustomProperties::countHiddenCustomPropertiesByObjectType(ProjectTasks::instance()->getObjectTypeId());
 	
 	$categories = array(); Hook::fire('object_edit_categories', $task, $categories);
 	
@@ -104,7 +106,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 			<li><a href="#<?php echo $genid?>add_task_more_details_div"><?php echo lang('more details') ?></a></li>
 			
 			
-			<?php if (false && ($has_custom_properties || config_option('use_object_properties')) ) { ?>
+			<?php if ($other_cp_count || config_option('use_object_properties')) { ?>
 			<li><a href="#<?php echo $genid?>add_custom_properties_div"><?php echo lang('custom properties') ?></a></li>
 			<?php } ?>
 			
@@ -204,16 +206,11 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 		?>
 		
 		
-		<?php if ($has_custom_properties || config_option('use_object_properties')) { ?>
-		<div id="<?php echo $genid ?>add_custom_properties_div">
-			<div id="<?php echo $genid ?>not_required_custom_properties_container">
-		    	<div id="<?php echo $genid ?>not_required_custom_properties">
-		      	<?php echo render_object_custom_properties($task, false, $co_type) ?>
-		      	</div>
-		    </div>
-	      <?php echo render_add_custom_properties($task); ?>
-	 	</div>
-	 	<?php } ?>
+		<div class="main-custom-properties-div"><?php
+			if ($main_cp_count) {
+				echo render_object_custom_properties($object, false, null, 'visible_by_default');
+			}
+		?></div>
 		
   	</div>
   	
@@ -417,6 +414,17 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 		</script>
 	<?php }?>
 	</div>
+	
+	<?php if ($other_cp_count || config_option('use_object_properties')) { ?>
+	<div id="<?php echo $genid ?>add_custom_properties_div" class="task-data form-tab">
+		<div id="<?php echo $genid ?>not_required_custom_properties_container">
+	    	<div id="<?php echo $genid ?>not_required_custom_properties">
+	      	<?php echo render_object_custom_properties($task, false, $co_type, 'other') ?>
+	      	</div>
+	    </div>
+      <?php echo render_add_custom_properties($task); ?>
+ 	</div>
+ 	<?php } ?>
 
   	<div id="<?php echo $genid ?>add_task_more_details_div" class="task-data form-tab">
 		

@@ -1,5 +1,5 @@
 
-	About Feng Office 3.4.3-beta
+	About Feng Office 3.4.3-rc
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -106,6 +106,11 @@
 	Changelog
 	=========
 	
+	Since 3.4.3-beta
+	----------------
+	bugfix: cut user permissions when changing role must be done only if downgraded and executed in background when possible.
+	bugfix: main custom properties are not shown in main tab
+	
 	Since 3.4.2.x
 	----------------
 	feature: allow to select for every dimension if its selector is shown when adding/editing an object
@@ -125,6 +130,19 @@
 	bugfix: when ids are stored as string instead of int in the tree the associated dimensions does not filter other trees
 	bugfix: remove strtolower usage from custom property views
 
+	Since 3.4.2.20
+    ----------------
+    bugfix: When completing a repetitive task, sometimes not all original subscribers were added to the next task.
+
+	Since 3.4.2.18
+    ----------------
+    feature: document types plugin.
+
+	Since 3.4.2.17
+    ----------------
+	bugfix: updateContactMemberCache prevent error 500 on this function if the parameter user is not a contact.
+	bugfix: dont use member cache for tags listing.
+	
 	Since 3.4.2.16
     ----------------
     bugfix: js error when printing total worked time report

@@ -176,7 +176,8 @@ if($event->isNew()) {
 $categories = array();
 Hook::fire('object_edit_categories', $object, $categories);
 
-$has_custom_properties = CustomProperties::countAllCustomPropertiesByObjectType($object->getObjectTypeId()) > 0;
+$main_cp_count = CustomProperties::countVisibleCustomPropertiesByObjectType($object->getObjectTypeId());
+$other_cp_count = CustomProperties::countHiddenCustomPropertiesByObjectType($object->getObjectTypeId());
 
 ?>
 	<form id="<?php echo $genid ?>submit-edit-form" class="add-event" onsubmit="<?php echo $on_submit?>" class="internalForm" action="<?php echo $form_view_url; ?>" method="post">
@@ -221,7 +222,7 @@ $has_custom_properties = CustomProperties::countAllCustomPropertiesByObjectType(
 			<li><a href="#<?php echo $genid?>time_and_duration"><?php echo lang('basic data') ?></a></li>
 			<li><a href="#<?php echo $genid?>add_more_details_div"><?php echo lang('more details') ?></a></li>
 			
-			<?php if ($has_custom_properties || config_option('use_object_properties')) { ?>
+			<?php if ($other_cp_count || config_option('use_object_properties')) { ?>
 			<li><a href="#<?php echo $genid?>add_custom_properties_div"><?php echo lang('custom properties') ?></a></li>
 			<?php } ?>
 			
@@ -315,11 +316,17 @@ $has_custom_properties = CustomProperties::countAllCustomPropertiesByObjectType(
 		  <div class="clear"></div>
 		  
 		  
+			<div class="main-custom-properties-div"><?php
+				if ($main_cp_count) {
+					echo render_object_custom_properties($object, false, null, 'visible_by_default');
+				}
+			?></div>
+			
 		</div>
 		
-		<?php if ($has_custom_properties || config_option('use_object_properties')) { ?>
+		<?php if ($other_cp_count || config_option('use_object_properties')) { ?>
 		  <div id="<?php echo $genid ?>add_custom_properties_div" class="form-tab">
-			<?php echo render_object_custom_properties($object, false) ?>
+			<?php echo render_object_custom_properties($object, false, null, 'other') ?>
 			<?php echo render_add_custom_properties($object);?>
 		  </div>
 		<?php } ?>

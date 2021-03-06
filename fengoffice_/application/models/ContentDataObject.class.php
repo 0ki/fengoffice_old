@@ -1336,6 +1336,11 @@ abstract class ContentDataObject extends ApplicationDataObject {
 		return $this->members ;
 	}
 	
+	function resetCachedVars() {
+		$this->memberIds = null;
+		$this->members = null;
+		$this->subscribers = null;
+	}
 	
 	function getDimensionObjectTypes(){
 		return DimensionObjectTypeContents::getDimensionObjectTypesforObject($this->getObjectTypeId());
@@ -1360,6 +1365,9 @@ abstract class ContentDataObject extends ApplicationDataObject {
 				$comment->addToSharingTable();
 			}
 		}
+		
+		// clear this object's cached variables
+		$this->resetCachedVars();
 	}
 	
 	/**

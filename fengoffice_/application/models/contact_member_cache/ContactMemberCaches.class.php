@@ -158,11 +158,15 @@ class ContactMemberCaches extends BaseContactMemberCaches {
 	
 	/**
 	 * This function updates all user inheritance line cache for a member
-	 * @param unknown_type $user
+	 * @param Contact $user
 	 * @param int $member_id
 	 * @param int $parent_member_id - is better for performance if you pass this param
 	 */
 	static function updateContactMemberCache($user, $member_id, $parent_member_id = null) {
+		if(!$user instanceof Contact){
+			return;
+		}
+
 		$contact_member_cache_to_save = array();
 		//Contact Permission Group Ids
 		$contact_pg_ids = ContactPermissionGroups::getPermissionGroupIdsByContactCSV($user->getId());

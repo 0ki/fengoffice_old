@@ -1460,14 +1460,17 @@ class ContactController extends ApplicationController {
 				// User settings
 				$user = array_var(array_var($_POST, 'contact'),'user');
 				if($user && $contact->canUpdatePermissions(logged_user())){
+					$new_user_type_is_lower = false;
 					$user_type_changed = false;
 					if (array_var($user, 'type')) {
 						$user_type_changed = $contact->getUserType() != array_var($user, 'type');
+						$new_user_type_is_lower = $contact->getUserType() < array_var($user, 'type'); // greater user type id means lower user type rank
 						$contact->setUserType(array_var($user, 'type'));
 						$contact->save();
 					}
 					
-					if ($user_type_changed) {
+					// cut the permissions only if new user type has lower rank than before
+					if ($user_type_changed && $new_user_type_is_lower) {
 						$this->cut_max_user_permissions($contact);
 					}
 					
@@ -1599,20 +1602,7 @@ class ContactController extends ApplicationController {
 		}
 		
 		// rebuild sharing table for permission group $pg_id
-		$cmp_rows = DB::executeAll("SELECT * FROM ".TABLE_PREFIX."contact_member_permissions WHERE permission_group_id=$pg_id");
-		$permissions_array = array();
-		foreach ($cmp_rows as $row) {
-			$p = new stdClass();
-			$p->m = array_var($row, 'member_id');
-			$p->o = array_var($row, 'object_type_id');
-			$p->d = array_var($row, 'can_delete');
-			$p->w = array_var($row, 'can_write');
-			$p->r = 1;
-			$permissions_array[] = $p;
-		}
-		
-		$sharing_table_controller = new SharingTableController();
-		$sharing_table_controller->after_permission_changed($pg_id, $permissions_array);
+		rebuild_sharing_table_for_pg_background($pg_id);
 	}
 	
 	

@@ -14,7 +14,8 @@
 		$on_submit = "og.setDescription();";
 	}
 	
-	$has_custom_properties = CustomProperties::countAllCustomPropertiesByObjectType($object->getObjectTypeId()) > 0;
+	$main_cp_count = CustomProperties::countVisibleCustomPropertiesByObjectType($object->getObjectTypeId());
+	$other_cp_count = CustomProperties::countHiddenCustomPropertiesByObjectType($object->getObjectTypeId());
 ?>
 <form onsubmit="<?php echo $on_submit?>" class="add-message" id="<?php echo $genid ?>submit-edit-form" style='height:100%;background-color:white' action="<?php echo $message->isNew() ? get_url('message', 'add') : $message->getEditUrl() ?>" method="post" enctype="multipart/form-data" >
 <div class="message">
@@ -53,7 +54,7 @@
 			<li><a href="#<?php echo $genid?>add_message_text"><?php echo lang('details') ?></a></li>
 			<li><a href="#<?php echo $genid?>add_message_select_context_div"><?php echo lang('related to') ?></a></li>
 			
-			<?php if ($has_custom_properties || config_option('use_object_properties')) { ?>
+			<?php if ($other_cp_count || config_option('use_object_properties')) { ?>
 			<li><a href="#<?php echo $genid?>add_custom_properties_div"><?php echo lang('custom properties') ?></a></li>
 			<?php } ?>
 			
@@ -70,7 +71,8 @@
 			<?php } ?>
 		</ul>
 	
-		<div id="<?php echo $genid ?>add_message_select_context_div" class="context-selector-container form-tab">
+		<div id="<?php echo $genid ?>add_message_select_context_div">
+			<div class="context-selector-container form-tab">
 		<?php
 			$listeners = array('on_selection_change' => 'og.reload_subscribers("'.$genid.'",'.$object->manager()->getObjectTypeId().')');
 			if ($message->isNew()) {
@@ -79,6 +81,12 @@
 				render_member_selectors($message->manager()->getObjectTypeId(), $genid, $message->getMemberIds(), array('listeners' => $listeners), null, null, false);
 			} 
 		?>
+			</div>
+			<div class="main-custom-properties-div"><?php
+				if ($main_cp_count) {
+					echo render_object_custom_properties($object, false, null, 'visible_by_default');
+				}
+			?></div>
 		</div>
 		
 		<div id="<?php echo $genid ?>add_message_text" class="editor-container form-tab">
@@ -168,9 +176,9 @@
 	
 		</div>
 		
-		<?php if ($has_custom_properties || config_option('use_object_properties')) { ?>
+		<?php if ($other_cp_count || config_option('use_object_properties')) { ?>
 		<div id="<?php echo $genid ?>add_custom_properties_div" class="form-tab">
-			<?php  echo render_object_custom_properties($message, false) ?>
+			<?php  echo render_object_custom_properties($object, false, null, 'other') ?>
 			<?php  echo render_add_custom_properties($object); ?>
 		</div>
 		<?php } ?>

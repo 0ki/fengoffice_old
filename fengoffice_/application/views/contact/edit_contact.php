@@ -20,7 +20,8 @@
 		$on_submit = "og.ogPermPrepareSendData('$genid');" . $on_submit;
 	}
 	
-	$has_custom_properties = CustomProperties::countAllCustomPropertiesByObjectType($object->getObjectTypeId()) > 0;
+	$main_cp_count = CustomProperties::countVisibleCustomPropertiesByObjectType($object->getObjectTypeId());
+	$other_cp_count = CustomProperties::countHiddenCustomPropertiesByObjectType($object->getObjectTypeId());
 	
 	$categories = array(); Hook::fire('object_edit_categories', $object, $categories);
 	
@@ -99,7 +100,7 @@
 				<?php } ?>
 			<?php } ?>
 			
-			<?php if ($has_custom_properties || config_option('use_object_properties')) { ?>
+			<?php if ($other_cp_count || config_option('use_object_properties')) { ?>
 			<li><a id="<?php echo $genid?>add_custom_properties_div_tab" href="#<?php echo $genid?>add_custom_properties_div"><?php echo lang('custom properties') ?></a></li>
 			<?php } ?>
 			
@@ -266,8 +267,14 @@
 	
 	<?php
 	//Basic contact data tab
-	render_contact_data_tab($genid, $object, $renderContext, $contact_data);
+	render_contact_data_tab($genid, $object, $renderContext, $contact_data, $main_cp_count);
 	?>
+	
+	<div class="main-custom-properties-div"><?php
+		if ($main_cp_count) {
+		//	echo render_object_custom_properties($object, false, null, 'visible_by_default');
+		}
+	?></div>
 	
 	
 	<div class="contact_form_container form-tab" id="<?php echo $genid?>additional_data">
@@ -341,9 +348,9 @@
 	</div>
 	
 	
-	<?php if ($has_custom_properties || config_option('use_object_properties')) { ?>
+	<?php if ($other_cp_count || config_option('use_object_properties')) { ?>
 	<div id='<?php echo $genid ?>add_custom_properties_div' class="form-tab">
-		<?php echo render_object_custom_properties($object, false) ?>
+		<?php echo render_object_custom_properties($object, false, null, 'other') ?>
 		<?php echo render_add_custom_properties($object); ?>
 	</div>
 	<?php } ?>

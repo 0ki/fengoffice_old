@@ -30,7 +30,9 @@ if (array_var($_REQUEST, 'modal')) {
 $object = $file;
 $comments_required = config_option('file_revision_comments_required');
 
-$has_custom_properties = CustomProperties::countAllCustomPropertiesByObjectType($object->getObjectTypeId()) > 0;
+$main_cp_count = CustomProperties::countVisibleCustomPropertiesByObjectType($object->getObjectTypeId());
+$other_cp_count = CustomProperties::countHiddenCustomPropertiesByObjectType($object->getObjectTypeId());
+
 $categories = array();
 Hook::fire('object_edit_categories', $object, $categories);
 ?>
@@ -144,7 +146,7 @@ Hook::fire('object_edit_categories', $object, $categories);
 		
 			<li><a href="#<?php echo $genid?>file_data"><?php echo lang('file details') ?></a></li>
 			
-			<?php if ($has_custom_properties || config_option('use_object_properties')) { ?>
+			<?php if ($other_cp_count || config_option('use_object_properties')) { ?>
 			<li><a href="#<?php echo $genid?>add_custom_properties_div"><?php echo lang('custom properties') ?></a></li>
 			<?php } ?>
 			
@@ -308,16 +310,22 @@ Hook::fire('object_edit_categories', $object, $categories);
 			<?php echo textarea_field('file[description]', array_var($file_data, 'description'), array('rows' => '5', 'style' => 'width: 500px;' , 'id' => $genid.'fileFormDescription')) ?>
 		</div>
 		<div class="clear"></div>
+		
+		
+		<div class="main-custom-properties-div"><?php
+			if ($main_cp_count) {
+				echo render_object_custom_properties($object, false, null, 'visible_by_default');
+			}
+		?></div>
 	</div>
 
 
 	
 
-	<?php if ($has_custom_properties || config_option('use_object_properties')) { ?>
+	<?php if ($other_cp_count || config_option('use_object_properties')) { ?>
 	<div id="<?php echo $genid ?>add_custom_properties_div" class="form-tab">
-			<?php echo render_object_custom_properties($object, false) ?>
+			<?php echo render_object_custom_properties($object, false, null, 'other') ?>
       		<?php echo render_add_custom_properties($object); ?>
-		</fieldset>
 	</div>
 	<?php } ?>
 

@@ -126,6 +126,7 @@
 			</div>
 			<?php //} ?>
 			
+			
 			<?php if (!$renderContext) { ?>
 			<div id="<?php echo $genid ?>add_contact_select_context_div" class="dataBlock"><?php
 				$skipped_dimensions = array();
@@ -143,8 +144,13 @@
 				} 
 			?></div>
 			<?php } ?>
-	</div>		  
+	</div>
+	
+	<div class="main-custom-properties-div"><?php
+		echo render_object_custom_properties($object, false, null, 'visible_by_default');
+	?></div>
 	<div class="clear"></div>
+	
   </div>
 </div>
 

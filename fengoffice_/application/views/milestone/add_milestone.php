@@ -13,7 +13,8 @@
   	$on_submit = "return true";
   }
   
-  $has_custom_properties = CustomProperties::countAllCustomPropertiesByObjectType($object->getObjectTypeId()) > 0;
+  $main_cp_count = CustomProperties::countVisibleCustomPropertiesByObjectType($object->getObjectTypeId());
+  $other_cp_count = CustomProperties::countHiddenCustomPropertiesByObjectType($object->getObjectTypeId());
 ?>
 <form class="add-milestone" id="<?php echo $genid?>submit-edit-form" onsubmit="<?php echo $on_submit?>" class="internalForm" action="<?php echo $milestone->isNew() ? get_url('milestone', 'add', array("copyId" => array_var($milestone_data, 'copyId'))) : $milestone->getEditUrl() ?>" method="post">
 
@@ -58,7 +59,7 @@
 		
 			<li><a href="#<?php echo $genid?>add_milestone_data"><?php echo lang('details') ?></a></li>
 			
-			<?php if ($has_custom_properties || config_option('use_object_properties')) { ?>
+			<?php if ($other_cp_count || config_option('use_object_properties')) { ?>
 			<li><a href="#<?php echo $genid?>add_custom_properties_div"><?php echo lang('custom properties') ?></a></li>
 			<?php } ?>
 			
@@ -98,6 +99,12 @@
 				<label><?php echo lang("description")?>:</label>
 				<?php echo textarea_field('milestone[description]', array_var($milestone_data, 'description'), array('class' => 'long', 'id' => $genid . 'milestoneFormDesc', 'tabindex' => '20')) ?>
 			</div>
+			
+			<div class="main-custom-properties-div"><?php
+				if ($main_cp_count) {
+					echo render_object_custom_properties($object, false, null, 'visible_by_default');
+				}
+			?></div>
 		</div>
 	
   
@@ -117,7 +124,7 @@
 		</div>
 	
 		<div id="<?php echo $genid ?>add_custom_properties_div" class="form-tab">
-			<?php echo render_object_custom_properties($milestone, false) ?>
+			<?php echo render_object_custom_properties($milestone, false, null, 'other') ?>
 			<?php echo render_add_custom_properties($milestone); ?>
 		</div>
 	

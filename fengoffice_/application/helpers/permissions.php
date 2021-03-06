@@ -1674,3 +1674,43 @@
 			return array();
 		}
 	}
+	
+	
+	
+	function rebuild_sharing_table_for_pg_background($pg_id) {
+		
+		if (substr(php_uname(), 0, 7) == "Windows" || !can_save_permissions_in_background()){
+			
+			rebuild_sharing_table_for_pg($pg_id);
+			
+		} else {
+			$user = logged_user();
+			
+			$command = "nice -n19 ".PHP_PATH." ". ROOT . "/application/helpers/rebuild_sharing_table_for_pg.php ".ROOT." ".$user->getId()." ".$user->getTwistedToken()." ".$pg_id;
+			exec("$command > /dev/null &");
+			
+		}
+	}
+	
+	
+	function rebuild_sharing_table_for_pg($pg_id) {
+		
+		$cmp_rows = DB::executeAll("SELECT * FROM ".TABLE_PREFIX."contact_member_permissions WHERE permission_group_id=$pg_id");
+		$permissions_array = array();
+		foreach ($cmp_rows as $row) {
+			$p = new stdClass();
+			$p->m = array_var($row, 'member_id');
+			$p->o = array_var($row, 'object_type_id');
+			$p->d = array_var($row, 'can_delete');
+			$p->w = array_var($row, 'can_write');
+			$p->r = 1;
+			$permissions_array[] = $p;
+		}
+		
+		$sharing_table_controller = new SharingTableController();
+		$sharing_table_controller->after_permission_changed($pg_id, $permissions_array);
+		
+	}
+	
+	
+	
