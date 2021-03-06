@@ -171,8 +171,8 @@
 			}
 		?>
 		
-		<?php // used for dimension associations
-		Hook::fire('render_additional_member_add_fields', array('member' => $member, 'is_new' => $member->isNew()), $member); 
+		<?php
+			render_associated_dimensions_selectors(array('member' => $member, 'is_new' => $member->isNew()));
 		?>
 		<div class="x-clear"></div>
 		

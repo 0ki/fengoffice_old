@@ -124,6 +124,7 @@
 	'user ws config category name calendar panel' => 'Opciones del Calendario',
 	'user ws config category name mails panel' => 'Opciones del módulo de Correo',
 	'user ws config category name listing preferences' => 'Opciones de listados',
+	'user ws config category name reporting' => 'Opciones de reportes',
 	'user config option name show pending tasks widget' => 'Mostrar widget de tareas pendientes',
 	'user config option name pending tasks widget assigned to filter' => 'Mostrar tareas asignadas a',
 	'user config option name show late tasks and milestones widget' => 'Mostrar widget de hitos y tareas atrasadas',
@@ -609,6 +610,10 @@
   	'user config option name tasksUseDateFilters' => 'Utilizar filtros de fechas en tareas',
   	'user config option desc tasksUseDateFilters' => 'Si se habilita se podrán filtrar las tareas utilizando un rango de fechas.',
 		
+	'user config option name report_time_colums_display' => 'Formato de columnas de tiempo',
+	'user config option desc report_time_colums_display' => 'Si se selcciona el formato usual se mostrarán las fechas de forma descriptiva (ej.: 2 horas, 15 minutos), de lo contrario se mostrará la cantidad de minutos o segundos.',
+		
+		
 		'billing and invoicing' => 'Facturación',
 		'billing categories description' => 'En esta sección se pueden definir las tarifas de las personas.',
 		'income config general' => 'Configuraciones generales de facturas',
@@ -657,5 +662,5 @@
 		'dim assoc config name autoclassify_in_property_member' => 'Autoclasificar en {1} al clasificar en {0}',
 		'dim assoc config desc autoclassify_in_property_member' => 'Utilice esta opción si desea pre-seleccionar el {1} del {0} seleccionado en los formularios de clasificación.',
 		
-		
+		'config option name brand_colors_texture' => 'Utilizar textura en los colores',
 ); ?>

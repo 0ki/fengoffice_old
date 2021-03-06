@@ -1430,14 +1430,6 @@ class TemplateTask extends BaseTemplateTask {
 			DB::execute($sql);
 		}
 		
-		$tasks = $this->getSubTasks();
-		if(is_array($tasks)) {
-			$task_ids = array();
-			foreach($tasks as $task) {
-				$task_ids[] = $task->getId();
-			} // if
-		} // if
-		
 		//update Depth And Parents Path for subtasks
 		$subtasks = $this->getSubTasks();
 		if(is_array($subtasks)) {

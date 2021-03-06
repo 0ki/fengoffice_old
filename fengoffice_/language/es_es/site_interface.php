@@ -236,6 +236,7 @@
 	'checkin file' => 'Subir una nueva versión del archivo',
 	'new filename' => 'Nuevo nombre de documento',
 	'new weblink' => 'Nuevo enlace web',
+	'add weblink' => 'Agregar enlace',
 	'add as revision' => 'Agregar como revision',
 	'duplicate filename' => 'Duplicar nombre de documento',
 	'filename exists' => 'Ya existen documentos bajo ese nombre. Puede cambiar el nombre, o elegir entre las siguientes opciones',

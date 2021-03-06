@@ -99,7 +99,7 @@ class MailController extends ApplicationController {
 		
 	}
 	
-	private function cleanMailBodyAndGetMailData($original_mail, $copy_attachments = false) {
+	function cleanMailBodyAndGetMailData($original_mail, $copy_attachments = false) {
 		$return_mail_data = array();
 		
 		if ($original_mail->getBodyHtml() != '') $type = 'html';
@@ -643,7 +643,7 @@ class MailController extends ApplicationController {
 					$mail->setBodyHtml('');
 				}
 				$mail->setFrom($account->getEmailAddress());
-				if ($accountUser->getIsDefault() && $accountUser->getSenderName()=="") {
+				if (trim($accountUser->getSenderName()) == "") {
 					$mail->setFromName(logged_user()->getObjectName());
 				} else {
 					$mail->setFromName($accountUser->getSenderName());
@@ -898,15 +898,37 @@ class MailController extends ApplicationController {
 					
 						$errorMailId = $mail->getId();
 						$to = $mail->getTo();
-						if (!$accountUser instanceof MailAccountContact) {
-							$from = array($account->getEmailAddress() => $account->getFromName());
+						
+						// get the from_name saved in the mail object
+						if ($mail->getFromName() != "") {
+							$from_name = $mail->getFromName();
 						} else {
-							if ($user instanceof Contact && $accountUser->getIsDefault() && $accountUser->getSenderName()=="") {
-								$from = array($account->getEmailAddress() => $user->getObjectName());
+							// if not saved in mail then use the user data associated to the account or the $user name
+							if ($accountUser instanceof MailAccountContact) {
+								if ($user instanceof Contact && $accountUser->getSenderName() == "") {
+									$from_name = $user->getObjectName();
+								} else {
+									$from_name = $accountUser->getSenderName();
+								}
 							} else {
-								$from = array($account->getEmailAddress() => $accountUser->getSenderName());
+								// if no sender name is found in the account data for the user or the user is invalid use the from name of the account
+								$from_name = $account->getFromName();
 							}
 						}
+						// if none of the previous data is found try to get the user name using the email address
+						if (trim($from_name) == "") {
+							$c = Contacts::getByEmail($account->getEmailAddress());
+							if ($c instanceof Contact) {
+								$from_name = $c->getObjectName();
+							} else {
+								// if no user is found then use the owner company name as the seneder name
+								$from_name = owner_company()->getObjectName();
+							}
+						}
+						
+						// the $from_name should never be emtpy
+						$from = array($account->getEmailAddress() => $from_name);
+						
 						$subject = $mail->getSubject();
 						$body = $mail->getBodyHtml() != '' ? $mail->getBodyHtml() : $mail->getBodyPlain();
 						$cc = $mail->getCc();
@@ -2599,23 +2621,7 @@ class MailController extends ApplicationController {
 		$mail_data = array_var($_POST, 'mail', null);
 
 		if(!is_array($mail_data)) {
-			$fwd_subject = str_starts_with(strtolower($original_mail->getSubject()),'fwd:') ? $original_mail->getSubject() : 'Fwd: ' . $original_mail->getSubject();
-			
-			$clean_mail = $this->cleanMailBodyAndGetMailData($original_mail, true);
-						
-			$mail_data = array(
-	          'to' => '',
-	          'subject' => $fwd_subject,
-	          'body' =>  '<div id="original_mail">'.$clean_mail['clean_body'].'</div>',
-	          'type' => $clean_mail['type'],
-			  'attachs' => $clean_mail['attachs'],
-	          'account_id' => $original_mail->getAccountId(),
-			  'conversation_id' => $original_mail->getConversationId(),
-			  'in_reply_to_id' => $original_mail->getMessageId(),
-			  'original_id' => $original_mail->getId(),
-			  'last_mail_in_conversation' => MailContents::getLastMailIdInConversation($original_mail->getConversationId(), true),
-			
-			); // array
+			$mail_data = MailUtilities::construct_mail_data_foward($original_mail);
 		} // if
 		$mail_accounts = MailAccounts::getMailAccountsByUser(logged_user());
 		tpl_assign('link_to_objects', 'MailContents-' . $original_mail->getId());

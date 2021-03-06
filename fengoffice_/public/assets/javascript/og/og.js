@@ -585,7 +585,7 @@ og.openLink = function(url, options) {
 		Ext.Ajax.timeout = options.timeout;
 	}
 	var startTime = new Date().getTime();
-	Ext.Ajax.request({
+	var requestId = Ext.Ajax.request({
 		url: url,
 		params: options.post,
 		callback: function(options, success, response) {
@@ -623,6 +623,7 @@ og.openLink = function(url, options) {
 						og.processResponse(data, options);
 					}
 				} catch (e) {
+					console.log(e);
 					og.err(e.message);
 				}
 				var ok = typeof data == 'object' && data.errorCode == 0;
@@ -654,6 +655,9 @@ og.openLink = function(url, options) {
 	if (typeof oldTimeout != "undefined") {
 		Ext.Ajax.timeout = oldTimeout;
 	}
+	
+	// if this function returns an object then when og.openLink is called in Firefox from an "href" attribute if fails and no action is performed
+	//return requestId;
 };
 
 /**
@@ -895,6 +899,7 @@ og.eventManager = {
 								}
 							}
 						} catch (e) {
+							console.log(e);
 							 if (!Ext.isIE) og.err(e.message);
 						}
 					}
@@ -918,6 +923,7 @@ og.eventManager = {
 					ret = list[i].callback.call(list[i].scope, arguments, list[i].id);
 				}
 			} catch (e) {
+				console.log(e);
 				og.err(e.message);
 			}
 			if (list[i] && list[i].options.single || ret == 'remove') {
@@ -948,6 +954,7 @@ og.extractScripts = function(html) {
 							window.eval(match[2]);
 						}
 					} catch (e) {
+						console.log(e);
 						og.err(e.message);
 					}
 				}
@@ -1358,6 +1365,7 @@ og.loadScripts = function(urls, config) {
 					success[urls[i]] = true;
 					count++;
 				} catch (e) {
+					console.log(e);
 					og.err(e.message);
 				}
 			}
@@ -2848,13 +2856,17 @@ og.createBrandColorsSheet = function(brand_colors) {
 	var tabs_back = brand_colors['brand_colors_tabs_back'];
 	var tabs_font = brand_colors['brand_colors_tabs_font'];
 	var header_font = brand_colors['brand_colors_head_font'];
+	var brand_texture = brand_colors['brand_colors_texture'];
 
-	var texture = //'background-image: -moz-linear-gradient(45deg, rgba(0, 0, 0, 0.25) 25%, transparent 25%, transparent 75%, rgba(0, 0, 0, 0.25) 75%, rgba(0, 0, 0, 0.25)), -moz-linear-gradient(45deg, rgba(0, 0, 0, 0.25) 25%, transparent 25%, transparent 75%, rgba(0, 0, 0, 0.25) 75%, rgba(0, 0, 0, 0.25));'
+	var texture = '';
+	if(brand_texture){
+		texture = //'background-image: -moz-linear-gradient(45deg, rgba(0, 0, 0, 0.25) 25%, transparent 25%, transparent 75%, rgba(0, 0, 0, 0.25) 75%, rgba(0, 0, 0, 0.25)), -moz-linear-gradient(45deg, rgba(0, 0, 0, 0.25) 25%, transparent 25%, transparent 75%, rgba(0, 0, 0, 0.25) 75%, rgba(0, 0, 0, 0.25));'
 			//+ 'background-image: -webkit-linear-gradient(45deg, rgba(0, 0, 0, .25) 25%, transparent 25%, transparent 75%, rgba(0, 0, 0, .25) 75%, rgba(0, 0, 0, .25)), -webkit-linear-gradient(45deg, rgba(0, 0, 0, .25) 25%, transparent 25%, transparent 75%, rgba(0, 0, 0, .25) 75%, rgba(0, 0, 0, .25));'
-			 'background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.05) 25%, rgba(0, 0, 0, 0) 25%, rgba(0, 0, 0, 0) 75%, rgba(255, 255, 255, 0.05) 75%, rgba(255, 255, 255, 0.05)), linear-gradient(45deg, rgba(255, 255, 255, 0.05) 25%, rgba(0, 0, 0, 0) 25%, rgba(0, 0, 0, 0) 75%, rgba(255, 255, 255, 0.05) 75%, rgba(255, 255, 255, 0.05));'
+			'background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.05) 25%, rgba(0, 0, 0, 0) 25%, rgba(0, 0, 0, 0) 75%, rgba(255, 255, 255, 0.05) 75%, rgba(255, 255, 255, 0.05)), linear-gradient(45deg, rgba(255, 255, 255, 0.05) 25%, rgba(0, 0, 0, 0) 25%, rgba(0, 0, 0, 0) 75%, rgba(255, 255, 255, 0.05) 75%, rgba(255, 255, 255, 0.05));'
 			+ 'background-position: 0 0pt, 2px 2px;'
 			+ 'background-size: 4px 4px; ';
-	
+	}
+
 	var cssRules = '.x-accordion-hd, ul.x-tab-strip li {background-color: #' + tabs_back + '; ' + texture + '}';
 	cssRules += '.x-accordion-hd, ul.x-tab-strip {background-color: #' + tabs_back + '; ' + texture + '}';
 	cssRules += 'ul.x-tab-strip li {border-color: #' + tabs_back + '}';
@@ -3527,7 +3539,7 @@ og.renderAddressInput = function(id, name, container_id, sel_type, sel_data) {
 
 
 
-og.onAssociatedMemberTypeRemove = function (genid, hf_id){
+og.onAssociatedMemberTypeRemove = function (genid, dimension_id, hf_id){
 	document.getElementById(genid + hf_id).value = [];
 }
 
@@ -3541,6 +3553,8 @@ og.onAssociatedMemberTypeSelect = function (genid, dimension_id, member_id, hf_i
 	
 	member_selector.add_relation(dimension_id, genid, member_id, false);
 	document.getElementById(genid + hf_id).value = "["+member_id+"]";
+	
+	og.selectDefaultAssociatedMembers(genid, dimension_id, member_id);
 }
 
 
@@ -3556,6 +3570,8 @@ og.onAssociatedMemberTypeSelectMultiple = function (genid, dimension_id, member_
 		$("#"+genid+"-member-chooser-panel-"+dimension_id+"-tree-textfilter").focus();
 		og.dont_show_tree = null;
 	},100);
+	
+	og.selectDefaultAssociatedMembers(genid, dimension_id, member_id);
 }
 
 og.onAssociatedMemberTypeRemoveMultiple = function (genid, dimension_id, hf_id){
@@ -3714,7 +3730,10 @@ og.ajaxMemberTreeViewMoreCallback = function(tree, pnode) {
 		tree.limit = 100;
 	}
 	
-	og.memberTreeAjaxLoad(tree, pnode, tree.limit, tree.last_offset);
+	og.memberTreeAjaxLoad(tree, pnode, tree.limit, tree.last_offset, {
+		ignore_context_filters: '',
+		context: og.contextManager.plainContext()
+	});
 	
 	// ensure tree is visible
 	var tree_id = tree.id;
@@ -3801,7 +3820,7 @@ og.initialMemberTreeAjaxLoad = function(tree, limit, offset, add_params) {
 	});
 }
 
-og.memberTreeAjaxLoad = function(tree, pnode, limit, offset) {
+og.memberTreeAjaxLoad = function(tree, pnode, limit, offset, add_params) {
 	var tree_id = tree.id;
 	var parameters = {
 		dimension_id: tree.dimensionId,
@@ -3816,6 +3835,12 @@ og.memberTreeAjaxLoad = function(tree, pnode, limit, offset) {
 	}
 	if (offset && !isNaN(offset)) {
 		parameters.offset = offset;
+	}
+	
+	if (add_params) {
+		for (key in add_params) {
+			parameters[key] = add_params[key];
+		}
 	}
 	
 	og.openLink(og.getUrl('dimension', 'get_member_childs', parameters), {
@@ -3899,10 +3924,11 @@ og.selectDefaultAssociatedMembers = function(genid, dimension_id, member_id) {
 	  	var assoc = d_associations[i];
 	  	
   		if (assoc.allows_default_selection) {
+  			
 	  		og.openLink(og.getUrl('dimension', 'get_default_associated_members', {member_id: member_id, assoc_id:assoc.id, dim_id:assoc.assoc_dimension_id}), {
 		  		hideLoading: true,
 		  		callback: function(success, data) {
-		
+		  			
 			  		var hf = Ext.get(genid + member_selector[genid].hiddenFieldName);
 			  		var form_id = hf.dom.form.id;
 			  		
@@ -3942,5 +3968,14 @@ og.get_dimension_member_association_by_id = function (dim_assoc_id) {
 	}
 	return null;
 }
+
+
+og.gridObjectNameRenderer = function(value, p, r) {
+	if (r.data.id == '__total_row__' || r.data.id <= 0) return value;
+	
+	var onclick = "og.openLink(og.getUrl('"+ r.store.baseParams.url_controller +"', 'view', {id: "+ r.data.object_id +"})); return false;";
+	return String.format('<a href="#" onclick="{1}" title="{2}" style="font-size:120%;"><span class="bold">{0}</span></a>', og.clean(value), onclick, og.clean(value));
+}
+
 
 

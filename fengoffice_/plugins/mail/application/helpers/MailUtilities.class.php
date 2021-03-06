@@ -9,10 +9,16 @@ require_once "Net/POP3.php";
 if (!defined('LOG_SWIFT')) {
 	define('LOG_SWIFT', 1);
 }
+if (!defined('MAIL_SIGNATURE_DIV_ATTRIBUTES')) {
+	define('MAIL_SIGNATURE_DIV_ATTRIBUTES', 'class="fengoffice_signature" contenteditable="false"');
+}
 
 class MailUtilities {
 
 	function getmails($accounts = null, &$err, &$succ, &$errAccounts, &$mailsReceived, $maxPerAccount = 0) {
+		if (defined('DONT_CHECK_MAIL') && DONT_CHECK_MAIL) {
+			return;
+		}
 		Env::useHelper('permissions');
 		Env::useHelper('format');
 		if (is_null($accounts)) {
@@ -500,9 +506,9 @@ class MailUtilities {
 				}
 				
 			} elseif ($in_reply_to_id != ""){
-				$conv_mail = MailContents::findOne(array("conditions" => "`account_id`=".$account->getId()." AND `message_id` = '$in_reply_to_id'"));
+				$conv_mail = MailContents::findOne(array("conditions" => "`account_id`=".$account->getId()." AND `message_id` = ".DB::escape($in_reply_to_id)));
 			} elseif ($message_id != ""){
-				$conv_mail = MailContents::findOne(array("conditions" => "`account_id`=".$account->getId()." AND `in_reply_to_id` = '$message_id'"));
+				$conv_mail = MailContents::findOne(array("conditions" => "`account_id`=".$account->getId()." AND `in_reply_to_id` = ".DB::escape($message_id)));
 			} 
 			
 			if ($conv_mail instanceof MailContent) {
@@ -1584,5 +1590,48 @@ class MailUtilities {
 		return $invalid_addresses;
 	}
 
+	static function add_mail($mail_data, $linked_objects) {
+		$_POST['mail']=array();
+
+		$_POST['mail']=$mail_data;
+		$_POST['linked_objects']=$linked_objects;
+
+		$mail_contr = new MailController();
+		$mail_contr->add_mail();
+	}
+
+	static function add_mail_foward($mail, $to) {
+		//Mail data
+		$mail_data = MailUtilities::construct_mail_data_foward($mail);
+
+		$mail_data['to'] = $to;
+		$mail_data['format'] = $mail->getBodyHtml() != '' ? 'html' : 'plain';
+
+		MailUtilities::add_mail($mail_data, $mail_data['attachs']);
+	}
+
+	static function construct_mail_data_foward($original_mail) {
+		$mail_contr = new MailController();
+
+		$fwd_subject = str_starts_with(strtolower($original_mail->getSubject()),'fwd:') ? $original_mail->getSubject() : 'Fwd: ' . $original_mail->getSubject();
+
+		$clean_mail = $mail_contr->cleanMailBodyAndGetMailData($original_mail, true);
+
+		$mail_data = array(
+			'to' => '',
+			'subject' => $fwd_subject,
+			'body' =>  '<div id="original_mail">'.$clean_mail['clean_body'].'</div>',
+			'type' => $clean_mail['type'],
+			'attachs' => $clean_mail['attachs'],
+			'account_id' => $original_mail->getAccountId(),
+			'conversation_id' => $original_mail->getConversationId(),
+			'in_reply_to_id' => $original_mail->getMessageId(),
+			'original_id' => $original_mail->getId(),
+			'last_mail_in_conversation' => MailContents::getLastMailIdInConversation($original_mail->getConversationId(), true),
+
+		); // array
+
+		return $mail_data;
+	}
 }
 ?>

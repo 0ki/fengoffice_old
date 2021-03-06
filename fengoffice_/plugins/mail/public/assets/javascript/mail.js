@@ -16,6 +16,8 @@ og.eventManager.addListener('update email list', function (data) {
 
 og.mail = {};
 
+og.mail.signature_div_attributes = 'class="fengoffice_signature" contenteditable="false"';
+
 og.mail.removeMailsFromList = function(ids) {
 	var man = Ext.getCmp("mails-manager");
 	var processed = 0;

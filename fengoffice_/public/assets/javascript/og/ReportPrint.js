@@ -44,11 +44,12 @@ og.reports.closePrintWindow = function(printWindow) {
 
 og.reports.printReport = function(genid, title, report_id) {
 	
-	var str = $("#post"+genid).val();
-	str = str.replace(/'/ig, '"');
-	var params = $.parseJSON(str);
-	delete params.c;
-	delete params.a;
+	var params = {id: report_id};
+	var params_json = $("#params_"+genid).val();
+	var p = Ext.util.JSON.decode(params_json);
+	for (var x in p) {
+		params['params['+x+']'] = p[x];
+	}
 	
 	og.openLink(og.getUrl('reporting', 'print_custom_report', params), {
 		callback: function(success, data) {
@@ -84,12 +85,21 @@ og.reports.go_to_custom_report_page = function(params) {
 
 	// initial parameters
 	var report_config = $.parseJSON(str);
+	
+	// more params
+	var more_params_el = $(params.link).closest("form").children("[name='params']");
+	if (more_params_el) {
+		var more_str = $(more_params_el[0]).val().replace(/'/ig, '"').replace(/\\/g, "");;
+		if (more_str) {
+			report_config['params'] = more_str;
+		}
+	}
 
 	// fixed parameters
 	report_config.offset = offset;
 	report_config.limit = limit;
 	report_config.replace = 1;
-
+	
 	og.openLink(og.getUrl(report_config.c, report_config.a, report_config));
 	
 }

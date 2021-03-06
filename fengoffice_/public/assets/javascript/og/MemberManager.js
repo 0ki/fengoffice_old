@@ -447,7 +447,7 @@ og.MemberManager = function() {
 				dataIndex: 'cp_' + cps[i].id,
 				align: cps[i].cp_type=='numeric' ? 'right' : 'left',
 				sortable: true,
-				renderer: og.clean
+				//renderer: og.clean
 			});
 		}
 	}
@@ -464,7 +464,7 @@ og.MemberManager = function() {
 			id: 'dimassoc_' + assoc.id,
 			header: assoc.name,
 			dataIndex: 'dimassoc_' + assoc.id,
-			sortable: false,
+			sortable: true,
 			renderer: renderDimAssociation,
 			groupRenderer: renderMemberGroupName
 		});

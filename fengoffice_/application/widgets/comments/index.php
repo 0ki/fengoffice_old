@@ -20,7 +20,7 @@
 		foreach ($active_members as $member) {
 			$mnames[] = clean($member->getName());
 		}
-		$widget_title = lang('latest comments'). ' '. lang('in').' '. implode(", ", $mnames);
+		$widget_title = lang('latest comments'). ' '. lang('in m').' '. implode(", ", $mnames);
 	}
 		
 	$total = $result->total;

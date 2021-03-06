@@ -106,6 +106,18 @@ class  CustomProperties extends  BaseCustomProperties {
 	} //  getCustomPropertyByName
 
 	/**
+	 * Return one custom property, given the object type and the property code
+	 *
+	 * @param String $custom_property_name
+	 * @return array
+	 */
+	static function getCustomPropertyByCode($object_type, $custom_property_code) {
+		return self::findOne(array(
+			'conditions' => array("`object_type_id` = ? and `code` = ? ", $object_type, $custom_property_code)
+		));
+	} //  getCustomPropertyByCode
+
+	/**
 	 * Return one custom property given the id
 	 *
 	 * @param int $prop_id

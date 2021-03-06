@@ -388,7 +388,9 @@ class FilesController extends ApplicationController {
 				//link it!
 				$object_controller = new ObjectController();
 				$object_controller->add_subscribers($file);
-				$object_controller->add_to_members($file, $member_ids);
+				if (!is_null($member_ids)) {
+					$object_controller->add_to_members($file, $member_ids);
+				}
 				$object_controller->link_to_new_object($file);
 				$object_controller->add_subscribers($file);
 				$object_controller->add_custom_properties($file);
@@ -535,7 +537,7 @@ class FilesController extends ApplicationController {
 				$member_ids = json_decode(array_var($_POST, 'members'));
 				
 				//Add properties
-				if (!$skipSettings){
+				if (!$skipSettings && !is_null($member_ids)){
 					$object_controller->add_to_members($file, $member_ids);
 				}
 
@@ -643,7 +645,6 @@ class FilesController extends ApplicationController {
 			}
 					
 			$object_controller = new ObjectController();
-			//$member_ids = json_decode(array_var($_POST, 'members'));
 		
 			if (count($member_ids) > 0 || !array_var($file_data, 'composing_mail')) {
 				$object_controller->add_to_members($file, $member_ids);
@@ -2158,8 +2159,11 @@ class FilesController extends ApplicationController {
 				} // if
 
 				$member_ids = json_decode(array_var($_POST, 'members'));
+				
 				$object_controller = new ObjectController();
-				$object_controller->add_to_members($file, $member_ids);
+				if (!is_null($member_ids)) {
+					$object_controller->add_to_members($file, $member_ids);
+				}
 				$object_controller->link_to_new_object($file);
 				$object_controller->add_subscribers($file);
 				$object_controller->add_custom_properties($file);
@@ -2265,9 +2269,10 @@ class FilesController extends ApplicationController {
 				$member_ids = json_decode(array_var($_POST, 'members'));
 	
 				//link it!
-				$member_ids = json_decode(array_var($_POST, 'members'));
 				$object_controller = new ObjectController();
-				$object_controller->add_to_members($file, $member_ids);
+				if (!is_null($member_ids)) {
+					$object_controller->add_to_members($file, $member_ids);
+				}
 				$object_controller->link_to_new_object($file);
 				$object_controller->add_subscribers($file);
 				$object_controller->add_custom_properties($file);

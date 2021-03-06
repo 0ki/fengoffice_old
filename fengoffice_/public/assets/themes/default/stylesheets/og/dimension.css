@@ -72,9 +72,7 @@ div.selected-members.with-checkbox div.selected-member-div div.selected-member-a
 	font-size: 13px;
 	line-height: 18px;
 }
-.member-chooser-container.single-selection .x-tree-node-indent img.x-tree-icon {
-	width: 0px;
-}
+
 
 div.selector-body.loading {
 	color: #999999;

@@ -173,7 +173,7 @@ og.MemberTreeAjax = function(config) {
 				node.ensureVisible();
 				node.select();
 								
-				var params = '"' + this.genid +'",'+ node.attributes.dimension_id +','+ node.attributes.id;
+				var params = '"' + this.genid +'",'+ node.attributes.dimension_id +','+ node.attributes.id + ',"' + member_selector[this.genid].hiddenFieldName +'"';
 				eval(this.selectFunction + '(' + params + ')');
 				if(this.selectFunction == ""){
 					member_selector.add_relation(node.attributes.dimension_id, this.genid, node.attributes.id);
@@ -183,10 +183,13 @@ og.MemberTreeAjax = function(config) {
 				}
 			}else{ 
 				//root
-				var params = '"' + this.genid +'",'+ this.dimensionId +','+ 0;
+				var params = '"' + this.genid +'",'+ this.dimensionId +','+ 0 + ',"' + member_selector[this.genid].hiddenFieldName +'"';
 				eval(this.selectFunction + '(' + params + ')');
 				if(!this.isMultiple && node.getOwnerTree()){
 					$("#"+ node.getOwnerTree().id +"-current-selected .empty-text").show();
+				}
+				if(!this.isMultiple) {
+					member_selector.remove_all_dimension_selections(this.genid, this.dimensionId);
 				}
 			}
 			

@@ -40,7 +40,10 @@
 				$name = $cp->getName();
 				
 			} else {
-				$name = lang('field ' . $model . ' ' . $condition->getFieldName());
+				$name = Localization::instance()->lang('field ' . $model . ' ' . $condition->getFieldName());
+				if (!$name) {
+					$name = lang('field Objects ' . $condition->getFieldName());
+				}
 			}
 			$tiCount ++;
 			?>
@@ -76,7 +79,7 @@
 						$model_instance = new $model();
 						$col_type = $model_instance->getColumnType($condition->getFieldName());
 						
-						if(in_array($condition->getFieldName(), $external_fields)){
+						if(in_array($condition->getFieldName(), array_keys($external_fields))){
 				?>
 						<select id="<?php echo $condId; ?>" name="params[<?php echo $condition->getId() ?>]">
 				<?php 		foreach($external_fields[$condition->getFieldName()] as $value){ ?>

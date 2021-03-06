@@ -54,6 +54,7 @@ return array(
   	'assigned to description' => 'To select the electronic mail account owner',
         'late' => 'Late',
         'upcoming' => 'Upcoming',
+		'upcoming tasks w' => 'Upcoming',
         'today' => 'Today',
         'yesterday' => 'Yesterday',
         'tomorrow' => 'Tomorrow',
@@ -81,6 +82,7 @@ return array(
         'at' => 'at',
         'on' => 'On',
         'in' => 'In',
+		'in m' => 'in',
   	'check all' => 'Check All',
   	'uncheck all' => 'Uncheck All',
         'people' => 'People',
@@ -445,4 +447,6 @@ return array(
 	'task status' => 'Task status',
 	'time report task status desc' => 'If a status is selected then the tasks timeslots will be filtered by it\'s task status. This filter does not apply to timeslots created in Time panel.',
 	'all tasks' => 'All tasks',
+	'general' => 'General',
+	'friendly date' => 'Friendly date',
 );

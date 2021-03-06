@@ -170,6 +170,11 @@ ogTasks.drawGroup = function(displayCriteria, drawOptions, group){
 		} 		
 	}
 
+	//Member Path
+	var mem_path = "";
+	var mpath = Ext.util.JSON.decode(group.group_memPath);
+	if (mpath) mem_path = og.getEmptyCrumbHtml(mpath,".task-breadcrumb-container");
+
 	//get template for the row
 	var source = $("#task-list-group-template").html(); 
 	//compile the template
@@ -178,6 +183,7 @@ ogTasks.drawGroup = function(displayCriteria, drawOptions, group){
 	//template data
 	var data = {			
 		group : group,
+		mem_path: mem_path,
 		cols_total : ogTasks.TasksList.tasks_list_cols.length
 	}
 	

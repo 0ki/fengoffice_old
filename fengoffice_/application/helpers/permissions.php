@@ -1344,7 +1344,17 @@
 		return $users_with_permissions;
 		
 	}
-	
+
+	function get_users_with_system_permission($system_permission_name) {
+		$permission_group_ids = SystemPermissions::getAllPermissionGroupIdsWithSystemPermission($system_permission_name);
+		$contacts_ids = ContactPermissionGroups::getAllContactsIdsByPermissionGroupIds($permission_group_ids);
+
+		$users_with_permissions = Contacts::findAll(array("conditions" => "
+						disabled=0 AND object_id IN (".implode(",", $contacts_ids).")
+					"));
+
+		return $users_with_permissions;
+	}
 
 	function can_save_permissions_in_background() {
 		if (defined('DONT_SAVE_PERMISSIONS_IN_BACKGROUND') && DONT_SAVE_PERMISSIONS_IN_BACKGROUND) {

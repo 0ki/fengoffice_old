@@ -52,6 +52,8 @@ foreach ($css as $c) {
 	
 <?php tpl_display(get_template_path('form_errors')) ?>
 
+<?php $null=null; Hook::fire('login_form_before_form', $null, $null)?>
+
 <div class="form-container">
 
 <?php $null=null; Hook::fire('login_form_before_inputs', $null, $null)?>
@@ -96,8 +98,14 @@ foreach ($css as $c) {
 		</div>
 	</div>
   	
+  	<?php $null=null; Hook::fire('login_form_after_inputs', $null, $null)?>
+  	
 </div>
+
+<?php $null=null; Hook::fire('login_form_after_form', $null, $null)?>
+
 </form>
+
 
 </div>
 

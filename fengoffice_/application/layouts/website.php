@@ -194,7 +194,7 @@ $show_owner_company_name_header = config_option("show_owner_company_name_header"
 					?>
 					</div>
 				</li>	
-			  	<li id="userboxWrapper" class="texture-n-1" onclick="showUserOptionsPanel()">			  	
+			  	<li id="userboxWrapper" class="<?php echo config_option('brand_colors_texture',1)?'texture-n-1':''; ?>" onclick="showUserOptionsPanel()">
 					<img src="<?php echo logged_user()->getPictureUrl(); ?>" alt="" />
 					<a id="userLink" style="margin-right: 5px;" href="#" ><?php echo clean(logged_user()->getObjectName()); ?></a>	
 					<div class="account"></div>										
@@ -310,7 +310,8 @@ og.config = {
 		brand_colors_head_back: '<?php echo config_option('brand_colors_head_back')?>',
 		brand_colors_head_font: '<?php echo config_option('brand_colors_head_font')?>',
 		brand_colors_tabs_back: '<?php echo config_option('brand_colors_tabs_back')?>',
-		brand_colors_tabs_font: '<?php echo config_option('brand_colors_tabs_font')?>'
+		brand_colors_tabs_font: '<?php echo config_option('brand_colors_tabs_font')?>',
+		brand_colors_texture: '<?php echo config_option('brand_colors_texture')?>'
 	},
 	'with_perm_user_types': Ext.util.JSON.decode('<?php echo json_encode(config_option('give_member_permissions_to_new_users'))?>'),
 	'member_selector_page_size': 100,
@@ -507,14 +508,20 @@ foreach ($actions as $action) {
 	og.emailFilters = {};
 	og.emailFilters.classif = '<?php echo user_config_option('mails classification filter') ?>';
 	og.emailFilters.read = '<?php echo user_config_option('mails read filter') ?>';
-	og.emailFilters.account = '<?php echo user_config_option('mails account filter') ?>';
-	if (og.emailFilters.account != 0 && og.emailFilters.account != '') {
-		og.emailFilters.accountName = '<?php
-			$acc_id = user_config_option('mails account filter');
-			$acc = $acc_id > 0 ? MailAccounts::findById($acc_id) : null; 
-			echo ($acc instanceof MailAccount ? mysql_real_escape_string($acc->getName()) : ''); 
-		?>';
-	} else og.emailFilters.accountName = '';
+	<?php
+		$acc = MailAccounts::findById(user_config_option('mails account filter'));
+		if ($acc instanceof MailAccount) {
+			?>
+			og.emailFilters.account = '<?php echo user_config_option('mails account filter') ?>';
+			og.emailFilters.accountName = '<?php echo mysql_real_escape_string($acc->getName()) ?>';
+			<?php
+		} else { 
+			?>
+			og.emailFilters.account = '';
+			og.emailFilters.accountName = '';
+			<?php
+		}
+	?>
 <?php } ?>
 og.lastSelectedRow = {messages:0, mails:0, contacts:0, documents:0, weblinks:0, overview:0, linkedobjs:0, archived:0};
 

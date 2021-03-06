@@ -146,7 +146,7 @@ ogTasks.checkEnterPress = function (e,id)
 
 ogTasks.drawAddNewTaskFromData = function(container_id){
 	var task = {
-		name:'lala'
+		name:''
 	};
 	$("#"+container_id+" :input").each(function(){
 		var input = $(this);

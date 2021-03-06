@@ -86,6 +86,7 @@ member_selector.autocomplete_select = function(dimension_id, genid, combo, recor
 }
 
 member_selector.add_relation = function(dimension_id, genid, member_id, show_actions, dont_reload_dep_selectors) {
+	
 	if (typeof member_id == "undefined") {
 		var combo = Ext.getCmp(genid + 'add-member-input-dim' + dimension_id);
 		var member = combo.selected_member;
@@ -96,7 +97,7 @@ member_selector.add_relation = function(dimension_id, genid, member_id, show_act
 	}
 		
 	if (typeof show_actions == "undefined") {
-		var show_actions = true;
+		var show_actions = member_selector[genid].properties[dimension_id].isMultiple;
 	}
 	
 	var json_sel_ids = $.parseJSON(document.getElementById(genid + member_selector[genid].hiddenFieldName).value);
@@ -110,7 +111,12 @@ member_selector.add_relation = function(dimension_id, genid, member_id, show_act
 	while (selected_member_ids[i] != member.id && i < selected_member_ids.length) i++;
 	
 	if (!member_selector[genid].sel_context[dimension_id]) member_selector[genid].sel_context[dimension_id] = [];
-	member_selector[genid].sel_context[dimension_id].push(member.id);
+	if (member_selector[genid].properties[dimension_id].isMultiple) {
+		member_selector[genid].sel_context[dimension_id].push(member.id);
+	} else {
+		member_selector[genid].sel_context[dimension_id] = [member.id];
+	}
+	
 	
 	var sel_members_div = Ext.get(genid + 'selected-members-dim' + dimension_id);
 	if (sel_members_div) {
@@ -142,7 +148,11 @@ member_selector.add_relation = function(dimension_id, genid, member_id, show_act
 
 	var sep = sel_members_div.select('div.separator').elements;
 	for (x in sep) Ext.fly(sep[x]).remove();
-	sel_members_div.insertHtml('beforeEnd', html);
+	if (member_selector[genid].properties[dimension_id].isMultiple) {
+		sel_members_div.insertHtml('beforeEnd', html);
+	} else {
+		$("#"+sel_members_div.id).html(html);
+	}
 	
 	//add mem_path after insert completePath div to calculate the correct width
 	
@@ -164,11 +174,14 @@ member_selector.add_relation = function(dimension_id, genid, member_id, show_act
 	}
 
 	// refresh member_ids input
+	var sel_members_str = "";
+	for (dim_id in member_selector[genid].sel_context) {
+		sel_members_str += (sel_members_str=="" ? "" : ",") + member_selector[genid].sel_context[dim_id].join(',');
+	}
+	sel_members_str = "["+ sel_members_str +"]";
+	
 	var member_ids_input = Ext.fly(Ext.get(genid + member_selector[genid].hiddenFieldName));
-	var json_mem_ids = $.parseJSON(member_ids_input.getValue());
-	var member_ids = json_mem_ids ? json_mem_ids : [];
-	member_ids.push(member.id);
-	member_ids_input.dom.value = Ext.util.JSON.encode(member_ids);
+	member_ids_input.dom.value = sel_members_str;
 
 	// on selection change listener
 	if (member_selector[genid].properties[dimension_id].listeners.on_selection_change) {
@@ -256,7 +269,7 @@ member_selector.reload_dependant_selectors = function(dimension_id, genid) {
 	}
 
 	var hf = Ext.get(genid + member_selector[genid].hiddenFieldName);
-	var form_id = hf.dom.form.id;
+	var form_id = hf && hf.dom && hf.dom.form ? hf.dom.form.id : null;
 	
 	if (typeof(form_id) != 'string') return;
 
@@ -321,20 +334,23 @@ member_selector.reload_dependant_selectors = function(dimension_id, genid) {
 	}
 }
 
+member_selector.remove_all_dimension_selections = function(genid, dim_id) {
+	
+	member_selector[genid].properties[dim_id];
+		
+	if (member_selector[genid].sel_context[dim_id]) {
+		var length = member_selector[genid].sel_context[dim_id].length;
+		for (var i=0;i<length;i++){
+			var member_id = member_selector[genid].sel_context[dim_id][0];
+			member_selector.remove_relation(dim_id, genid, member_id, true);
+		}
+		member_selector.reload_dependant_selectors(dim_id, genid);
+	}	
+}
 
 member_selector.remove_all_selections = function(genid) {
 	for (dim_id in member_selector[genid].properties) {
-		member_selector[genid].properties[dim_id];
-			
-		if (member_selector[genid].sel_context[dim_id]) {
-			var length = member_selector[genid].sel_context[dim_id].length;
-			for (var i=0;i<length;i++){
-				var member_id = member_selector[genid].sel_context[dim_id][0];
-				member_selector.remove_relation(dim_id, genid, member_id, true);
-			}
-			member_selector.reload_dependant_selectors(dim_id, genid);
-		}
-		
+		member_selector.remove_all_dimension_selections(genid, dim_id);
 	}
 }
 

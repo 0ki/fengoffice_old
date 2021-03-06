@@ -1,5 +1,5 @@
 
-	About Feng Office 3.4.3-rc
+	About Feng Office 3.4.4
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -106,9 +106,201 @@
 	Changelog
 	=========
 	
+	Since 3.4.3.34
+	----------------
+	bugfix: member name length is limited to 160 chars.
+	bugfix: after searching in the member selector, the child nodes are not indented.
+	bugfix: dont show disabled dimensions as listing columns
+	bugfix: in invoicing module when hiding a column, the payments columns are wrong
+	bugfix: after adding member it is always appended to the end of the left panel.
+	
+    language: de_de, fr_ca updated
+    
+
+	Since 3.4.3.33
+    ----------------
+    bugfix: limit repetitive tasks shown in calendar.
+
+	Since 3.4.3.32
+    ----------------
+    bugfix: executive users cannot edit expenses or link to other objects.
+
+	Since 3.4.3.31
+    ----------------
+    bugfix: when editing a client, the custom properties inputs are duplicated.
+
+	Since 3.4.3.30
+    ----------------
+    bugfix: error message appears when trying to reload uninitialized panel.
+    bugfix: mail account dropdown menu doesn't have scroll.
+	
+	Since 3.4.3.29
+    ----------------
+    bugfix: list bullets not shown in tasks description in IE 11.
+
+	Since 3.4.3.28
+    ----------------
+    bugfix: order of groups in task list when grouped by members.
+
+	Since 3.4.3.27
+    ----------------
+	bugfix: inherit parent milestone and classification when creating sub tasks
+
+    Since 3.4.3.26
+    ----------------
+    bugfix: In contact reports address conditions are not working.
+
+    Since 3.4.3.25
+    ----------------
+    bugfix: task assigned to filter error when "Let users create objects without classifying them" is false.
+
+	Since 3.4.3.24
+    ----------------
+	feature: breadcrumb on task group name for member groups.
+
+    Since 3.4.3.23
+    ----------------
+	bugfix: confidential users are shown in mail account permissions section.
+	
+    Since 3.4.3.22
+    ----------------
+	bugfix: mails signatures were not editable.
+	bugfix: subtasks use parent dates.
+	
+    Since 3.4.3.21
+    ----------------
+    bugfix: when changing member parent the expand/collapse element is not updated.
+    bugfix: if og.openlink function returns an object then when it is called from an "href" in Firefox attribute if fails and no action is performed
+
+    Since 3.4.3.20
+    ----------------
+    bugfix: when writing an email if content is put inside the signature div then it is not saved.
+
+    Since 3.4.3.19
+    ----------------
+    bugfix: sql error when grouping by milestone and filtering by dates on the task list.
+
+    Since 3.4.3.18
+    ----------------
+    bugfix: report pagination does not work when report has conditions.
+    bugfix: client and project list tab title.
+    bugfix: error printing advanced reports.
+    bugfix: inherit parent dates when creating sub tasks.
+    bugfix: milestone order in tasks list.
+    feature: gantt weekend color.
+    feature: allow to order member listings by associated dimensions
+
+    Since 3.4.3.17
+    ----------------
+    bugfix: widget client statistics langs.
+    bugfix: spanish lang 'in'  was  'En'.
+    bugfix: client and project list tab title.
+    bugfix: estimated and worked time widget language fixes.
+	bugfix: completed tasks with worked time message.
+	bugfix: special custom properties langs in member information widget.
+	bugfix: lang fixes in member listing buttons.
+	feature: dont show dimensions that are not selectable in object breadcrumbs.
+	feature: show default color icon in activity widget for members that doesn't have icons.
+	feature: show status with colors in clients list.
+
+    Since 3.4.3.16
+    ----------------
+    config: header texture config.
+    bugfix: notification logo width.
+    bugfix: customer and project widget "view all" not working
+    plugin demo_web: send all spam mails to inbox.
+    bugfix: unread mails widget
+    bugfix: widget late and upcoming tasks add new tasks.
+    bugfix: widget: latest comments.
+    bugfix: clients widget does not show tasks graph
+    bugfix: project and clients statistics widget does not show status meter
+    bugfix: member listing shows custom properties without localization settings
+    bugfix: dont show status property column if status dimension is being used.
+
+    Since 3.4.3.15
+    ----------------
+    bugfix: calendar print
+
+    Since 3.4.3.14
+    ----------------
+    bugfix: performance fixed in tasks list when using subtasks structure and no filters or groups are used.
+
+    Since 3.4.3.13
+    ----------------
+	feature: user preference to select the time column format in custom reports
+
+    Since 3.4.3.12
+    ----------------
+    bugfix: prevent double request when double clicking the export to csv/excel button in custom reports.
+
+    Since 3.4.3.11
+    ----------------
+    bugfix: member templates dont override the associated member with the one defined in the template initial data if the user has changed it when adding a member.
+    
+    Since 3.4.3.10
+    ----------------
+    bugfix: when saving suppliers the secondary email addresses are not saved.
+
+    Since 3.4.3.9
+    ----------------
+    bugfix: mail account filter css error.
+
+    Since 3.4.3.8
+    ----------------
+    bugfix: task and time reporting errors
+    bugfix: css fixes to prevent vertical scroll in body element when using browser zoom
+
+	Since 3.4.3.7
+    ----------------
+	bugfix: mail rules action foward mail.
+
+	Since 3.4.3.6
+	----------------
+	bugfix: custom report reorder fixed when clicking in column header.
+	bugfix: dont process the member search response if it is not from the last request.
+	bugfix: users with mail account permissions cannot see unclassified emails if they are not the account owners.
+	bugfix: cant add clients because of contact custom properties.
+	
+	Since 3.4.3.5
+	----------------
+	feature: cancel prevous search request when the search criteria has changed and the response has not returned yet.
+	feature: tasks workflow - config option to select which dimensions should be copied from the completed task to the next task in workflow.
+	
+	Since 3.4.3.4
+	----------------
+	bugfix: tree nodes show more does not apply associated dimension filters
+	feature: more custom login customizations
+	
+	Since 3.4.3.3
+	----------------
+	bugfix: member reports fixed when using column object_subtype_id and no object subtype is defined.
+	bugfix: fix pdf export process when the exported report is too large.
+	bugfix: dimension search cache is not cleared when associated dimension changes.
+	bugfix: associated dimensions are fully loaded when selecting a member with no associations.
+
+	Since 3.4.3.2
+	----------------
+	bugfix: template tasks conditional actions edition fixed.
+
+	Since 3.4.3.1
+	----------------
+	bugfix: when disabling all the dimension selectors for an object type and editing an object of this type, the members were removed.
+
+	Since 3.4.3.0
+	----------------
+	bugfix: after deleting mail account the account filter of the listing must remove the deleted id
+	bugfix: google calendar sync, exception management.
+	bugfix: classification component for single selection dimensions fixed.
+	bugfix: permission error over file revisions.
+	bugfix: when reopening a task, only the first level of dependencies are reopened.
+	bugfix: task conditional actions are not replicated if the task is generated later in the workflow.
+	bugfix: task workflow boolean conditions fixed.
+	bugfix: when saving template task, the members and workflow should not be copied to subtasks.
+	
 	Since 3.4.3-rc
 	----------------
 	bugfix: if user does not manage permissions then don't let to create members without parent, otherwise no one will see it as user cant assign its permissions.
+	language updates: fr_fr, fr_ca, tr_tr, nl_nl
 	
 	Since 3.4.3-beta
 	----------------

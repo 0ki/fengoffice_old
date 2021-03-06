@@ -172,6 +172,7 @@
     * @return string 
     */
     function getDefaultValue() {
+      Hook::fire('before_get_obj_cp_default_value',$this, $null);
       return $this->getColumnValue('default_value');
     } // getDefaultValue()
     

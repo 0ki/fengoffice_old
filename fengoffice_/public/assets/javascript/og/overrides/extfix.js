@@ -228,6 +228,7 @@ Ext.grid.GridPanel.override({
 			bba_before.loading.disable();
 		}
 		var params = Ext.getCmp(manager).store.lastOptions.params;
+		
 		if(typeof params != 'undefined'){
 			delete params.action;
 			params.only_result = 1;
@@ -249,17 +250,21 @@ Ext.grid.GridPanel.override({
 				
 				// enable toolbar
 				bba.enable();
+				
+				var current_page = $("#"+manager+" .x-tbar-page-number").val();
+				
 				// disable prev,first buttons if first page
-				if(parseInt(data.start) == 0) {					
+				if(parseInt(current_page) == 1) {					
 					bba.first.disable();
 					bba.prev.disable();
 				}
-				if(parseInt(data.start) == 0 && total_pag > 1){
+				if(parseInt(current_page) == 1 && total_pag > 1){
 					bba.last.enable();
 					bba.next.enable();
 				}
 				
-				if((parseInt(data.totalCount) - parseInt(data.start))<= parseInt(bba.pageSize)){
+				//if((parseInt(data.totalCount) - parseInt(data.start))<= parseInt(bba.pageSize)){
+				if(Math.ceil(parseInt(data.totalCount) / parseInt(bba.pageSize)) == current_page){
 					bba.last.disable();
 					bba.next.disable();
 				}

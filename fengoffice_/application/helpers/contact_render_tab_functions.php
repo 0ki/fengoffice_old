@@ -12,7 +12,7 @@ function get_company_data_tab_html($genid, $company, $renderContext, $company_da
 	return ob_get_clean();
 }
 
-function render_contact_data_tab($genid, $contact, $renderContext, $contact_data, $renderAddCompany = true, $main_cp_count=0){
+function render_contact_data_tab($genid, $contact, $renderContext, $contact_data, $renderAddCompany = true, $main_cp_count=0, $render_custom_prop = true){
 	$object = $contact;
 	
 	if ($contact instanceof Contact && !$contact->isNew()) {
@@ -41,6 +41,7 @@ function render_contact_data_tab($genid, $contact, $renderContext, $contact_data
 	}
 	
 	tpl_assign('main_cp_count', $main_cp_count);
+	tpl_assign('render_custom_prop', $render_custom_prop);
 	
 	// telephone types
 	$all_telephone_types = TelephoneTypes::getAllTelephoneTypesInfo();

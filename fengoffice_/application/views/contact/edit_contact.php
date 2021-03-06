@@ -349,7 +349,7 @@
 	
 	
 	<?php if ($other_cp_count || config_option('use_object_properties')) { ?>
-	<div id='<?php echo $genid ?>add_custom_properties_div' class="form-tab">
+	<div id='<?php echo $genid ?>add_custom_properties_div' class="form-tab other-custom-properties-div">
 		<?php echo render_object_custom_properties($object, false, null, 'other') ?>
 		<?php echo render_add_custom_properties($object); ?>
 	</div>

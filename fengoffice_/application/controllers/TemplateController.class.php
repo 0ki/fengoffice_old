@@ -528,8 +528,8 @@ class TemplateController extends ApplicationController {
 			$instantiation_id = $this->save_instantiated_parameters($template, $parameters, $parameterValues);
 		}
 		
-		if(array_var($_POST, 'members') || array_var($arguments, 'members')){
-			$selected_members = array_var($arguments, 'members', json_decode(array_var($_POST, 'members')));
+		if(array_var($_REQUEST, 'members') || array_var($arguments, 'members')){
+			$selected_members = array_var($arguments, 'members', json_decode(array_var($_REQUEST, 'members')));
 		}else{
 			$context = active_context();
 			
@@ -537,8 +537,8 @@ class TemplateController extends ApplicationController {
 				if ($selection instanceof Member) $selected_members[] = $selection->getId();
 			}
 		}
-		if (array_var($_POST, 'additional_member_ids')) {
-			$add_mem_ids = explode(',', array_var($_POST, 'additional_member_ids'));
+		if (array_var($_REQUEST, 'additional_member_ids')) {
+			$add_mem_ids = json_decode(array_var($_REQUEST, 'additional_member_ids'));
 			if (is_array($add_mem_ids)) {
 				foreach ($add_mem_ids as $add_mem_id) {
 					if (is_numeric($add_mem_id)) $selected_members[] = $add_mem_id;
@@ -547,8 +547,8 @@ class TemplateController extends ApplicationController {
 		}
 
 		//Linked objects
-		if (array_var($_POST, 'linked_objects')) {
-			$linked_objects_ids = json_decode(array_var($_POST, 'linked_objects'));
+		if (array_var($_REQUEST, 'linked_objects')) {
+			$linked_objects_ids = json_decode(array_var($_REQUEST, 'linked_objects'));
 			$linked_objects = array();
 			if (is_array($linked_objects_ids)) {
 				foreach ($linked_objects_ids as $linked_object_id) {
@@ -745,7 +745,12 @@ class TemplateController extends ApplicationController {
 			$this->instantiate();
 		}else{
 			$id = get_id();
-			$member_id = get_id('member_id');
+
+			$additional_member_ids = array();
+			if(get_id('member_id')){
+				$additional_member_ids[] = get_id('member_id');
+			}
+			$linked_objects = array();
 			$parameters = TemplateParameters::getParametersByTemplate($id);
 			$params = array();
 			foreach($parameters as $parameter){
@@ -759,8 +764,17 @@ class TemplateController extends ApplicationController {
 				return;
 			}
 
+			if (array_var($_REQUEST, 'additional_member_ids')) {
+				$additional_member_ids = array_merge($additional_member_ids,json_decode(array_var($_REQUEST, 'additional_member_ids')));
+			}
+
+			if (array_var($_REQUEST, 'linked_objects')) {
+				$linked_objects = json_decode(array_var($_REQUEST, 'linked_objects'));
+			}
+
 			tpl_assign('id', $id);
-			tpl_assign('member_id', $member_id);
+			tpl_assign('additional_member_ids', $additional_member_ids);
+			tpl_assign('linked_objects', $linked_objects);
 			tpl_assign('parameters', $params);
 			tpl_assign('template', $template);
 		}

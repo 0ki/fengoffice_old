@@ -43,7 +43,7 @@ CREATE TABLE `<?php echo $table_prefix ?>members` (
   `object_type_id` int(10) unsigned NOT NULL,
   `parent_member_id` int(10) unsigned NOT NULL default '0',
   `depth` int(2) unsigned NOT NULL,
-  `name` varchar(160) <?php echo $default_collation ?> NOT NULL default '',
+  `name` varchar(511) <?php echo $default_collation ?> NOT NULL default '',
   `description` TEXT NOT NULL,
   `object_id` int(10) unsigned,
   `order` int(10) unsigned NOT NULL default '0',
@@ -309,7 +309,7 @@ CREATE TABLE `<?php echo $table_prefix ?>contacts` (
   `department` varchar(50) <?php echo $default_collation ?> default NULL,
   `job_title` varchar(50) <?php echo $default_collation ?> default NULL,
   `birthday` datetime default NULL,
-  `timezone` float(3,1) NOT NULL default '0.0',
+  `timezone` decimal(3,1) NOT NULL default '0.0',
   `user_type` smallint unsigned NOT NULL default '0',
   `is_active_user` tinyint(1) unsigned NOT NULL default '0',
   `token` varchar(40) <?php echo $default_collation ?> NOT NULL default '',
@@ -1271,4 +1271,10 @@ CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>dimension_member_associat
   `member_id` INTEGER UNSIGNED NOT NULL,
   `selected_member_id` INTEGER UNSIGNED NOT NULL,
   PRIMARY KEY (`association_id`, `member_id`, `selected_member_id`)
+) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
+
+CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>object_type_dependencies` (
+  `object_type_id` INTEGER UNSIGNED NOT NULL,
+  `dependant_object_type_id` INTEGER UNSIGNED NOT NULL,
+  PRIMARY KEY (`object_type_id`,`dependant_object_type_id`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;

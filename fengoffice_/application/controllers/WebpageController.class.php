@@ -79,7 +79,9 @@ class WebpageController extends ApplicationController {
 				//link it!
 				$object_controller = new ObjectController();
 				$object_controller->add_subscribers($webpage);
-				$object_controller->add_to_members($webpage, $member_ids);
+				if (!is_null($member_ids)) {
+					$object_controller->add_to_members($webpage, $member_ids);
+				}
 				$object_controller->link_to_new_object($webpage);
 				$object_controller->add_subscribers($webpage);
 				$object_controller->add_custom_properties($webpage);
@@ -163,7 +165,9 @@ class WebpageController extends ApplicationController {
 				$member_ids = json_decode(array_var($_POST, 'members'));
 				
 				$object_controller = new ObjectController();
-				$object_controller->add_to_members($webpage, $member_ids);
+				if (!is_null($member_ids)) {
+					$object_controller->add_to_members($webpage, $member_ids);
+				}
 				$object_controller->link_to_new_object($webpage);
 				$object_controller->add_subscribers($webpage);
 				$object_controller->add_custom_properties($webpage);

@@ -29,7 +29,7 @@ if (!isset($allow_export)) $allow_export = true;
 			if ($allow_export) {
 				
 				render_report_header_button(array(
-					'name' => 'exportCSV', 'text' => lang("export csv"), 'onclick' => "og.submit_csv_form('$genid');return false;", 'iconcls' => "ico-text"
+					'name' => 'exportCSV', 'text' => lang("export csv"), 'onclick' => "og.submit_csv_form('$genid', this);return false;", 'iconcls' => "ico-text"
 				));
 				
 				render_report_header_button(array(
@@ -46,7 +46,7 @@ if (!isset($allow_export)) $allow_export = true;
 				'name' => 'print', 'text' => lang("print view"), 'onclick' => "og.reports.printNoPaginatedReport('$genid','".escape_character($title)."', '$id');return false;", 'iconcls' => "ico-print"
 			));
 			render_report_header_button(array(
-				'name' => 'exportCSV', 'text' => lang("export csv"), 'onclick' => "og.submit_fixed_report_csv_form('$genid');return false;", 'iconcls' => "ico-text"
+				'name' => 'exportCSV', 'text' => lang("export csv"), 'onclick' => "og.submit_fixed_report_csv_form('$genid', this);return false;", 'iconcls' => "ico-text"
 			));
 	
 		  } ?>
@@ -119,6 +119,23 @@ if (!isset($allow_export)) $allow_export = true;
 
 <script>
 
+og.reorderCustomReport = function(link, report_id, order, order_by_asc) {
+
+	var params_json = $(link).closest('form').children('input[name="params"]').val();
+	var p = Ext.util.JSON.decode(params_json);
+
+	var params = {};
+	params.id = report_id;
+	params.order_by = order;
+	params.order_by_asc = order_by_asc;
+	params.replace = 1;
+
+	for (var x in p) {
+		params['params['+x+']'] = p[x];
+	}
+	
+	og.openLink(og.getUrl('reporting', 'view_custom_report', params));
+};
 
 og.openPDFOptions = function(genid) {
 	var html = $("#pdfOptions").html();
@@ -164,7 +181,17 @@ og.get_report_parameters_of_form = function(genid) {
 	return params;
 }
 
-og.submit_export_excel_form = function(genid) {
+og.disable_export_report_link = function(elem) {
+	$(elem).attr('disabled','disabled');
+	if (og.export_report_ts) {
+		clearTimeout(og.export_report_ts);
+	}
+	og.export_report_ts = setTimeout(function() {
+		$(elem).removeAttr('disabled');
+	}, 1000);
+}
+
+og.submit_export_excel_form = function(genid, elem) {
 
 	var params = og.get_report_parameters_of_form(genid);
 	params['exportCSV'] = true;
@@ -182,10 +209,13 @@ og.submit_export_excel_form = function(genid) {
 			$form.appendTo('body').submit().remove();				
 		}
 	});
+
+	og.disable_export_report_link(elem);
+	
 	return false;
 }
 
-og.submit_csv_form = function(genid) {
+og.submit_csv_form = function(genid, elem) {
 
 	var params = og.get_report_parameters_of_form(genid);
 	params['exportCSV'] = true;
@@ -200,13 +230,16 @@ og.submit_csv_form = function(genid) {
 			$form.append('<input type="text" name="file_name" value="'+data.filename+'" />');
 			$form.append('<input type="text" name="file_type" value="application/csv" />');
 			
-			$form.appendTo('body').submit().remove();				
+			$form.appendTo('body').submit().remove();
 		}
 	});
+
+	og.disable_export_report_link(elem);
+	
 	return false;
 }
 
-og.submit_fixed_report_csv_form = function(genid) {
+og.submit_fixed_report_csv_form = function(genid, elem) {
 	var form_id = 'form' + genid;
 	var form = document.getElementById(form_id);
 	
@@ -225,6 +258,9 @@ og.submit_fixed_report_csv_form = function(genid) {
 			$form.appendTo('body').submit().remove();				
 		}
 	});
+
+	og.disable_export_report_link(elem);
+	
 	return false;
 }
 
@@ -244,6 +280,9 @@ og.submit_pdf_form = function(genid) {
 			$form.attr("method", "post");
 			$form.append('<input type="text" name="file_name" value="'+data.filename+'" />');
 			$form.append('<input type="text" name="file_type" value="application/pdf" />');
+			if (data.size) {
+				$form.append('<input type="text" name="file_size" value="'+data.size+'" />');
+			}
 			
 			$form.appendTo('body').submit().remove();
 		  }				

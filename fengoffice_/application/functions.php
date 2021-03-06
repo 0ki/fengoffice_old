@@ -1918,7 +1918,8 @@ function pdf_convert_and_download($html_filename, $download_filename=null, $orie
 	if (!$download_filename) $download_filename = gen_id() . '.pdf';
 	
 	//generate the pdf
-	$pdf_filename = convert_to_pdf($html_to_convert, $orientation, gen_id());
+	$pdf_data = convert_to_pdf($html_to_convert, $orientation, gen_id());
+	$pdf_filename = $pdf_data['name'];
 	
 	if($pdf_filename) {
 		include_once ROOT . "/library/browser/Browser.php";
@@ -1951,7 +1952,7 @@ function convert_to_pdf($html_to_convert, $orientation='Portrait', $genid) {
 			
 			$command = "\"$command_location\" -s A4 --encoding utf8 -O $orientation \"".$tmp_html_path."\" \"".$pdf_path."\"";
 		} else {
-			$command = "wkhtmltopdf -s A4 --encoding utf8 -O $orientation \"".$tmp_html_path."\" \"".$pdf_path."\" > /dev/null &";
+			$command = "wkhtmltopdf -s A4 --encoding utf8 -O $orientation \"".$tmp_html_path."\" \"".$pdf_path."\"";
 		}
 		exec($command, $result, $return_var);
 		
@@ -1960,23 +1961,22 @@ function convert_to_pdf($html_to_convert, $orientation='Portrait', $genid) {
 			return false;
 		}
 			
-		//wait for the file
-		$seconds = 8;
-		while (!file_exists(ROOT."/tmp/".$pdf_filename) && $seconds > 0){
-			sleep(1);
-			$seconds = $seconds - 1;
-		}
-		//give time to finish
-		sleep(2);
-			
 		//delete the png file
 		unlink($tmp_html_path);
 			
+		$file_path = ROOT."/tmp/".$pdf_filename;
+		
 		//check if pdf exist
-		if (!file_exists(ROOT."/tmp/".$pdf_filename)) {
+		if (!file_exists($file_path)) {
 			return false;
 		}
-		return $pdf_filename;
+		
+		clearstatcache(true, $file_path);
+		$filesize = filesize($file_path);
+		
+		$data = array('name' => $pdf_filename, 'size' => $filesize);
+		
+		return $data;
 	}
 	
 }
@@ -2204,19 +2204,26 @@ function get_all_associated_status_member_ids($member, $dimension, $ot=null, $re
 }
 
 
-function get_associated_status_member_id($member, $dimension, $ot=null) {
+function get_associated_status_member_id($member, $dimension, $ot=null, $reverse=false) {
 	if ($member instanceof Member && $dimension instanceof Dimension) {
 		$member_dimension = $member->getDimension();
 		if (!$member_dimension instanceof Dimension) return 0;
 
-		$a = DimensionMemberAssociations::instance()->findOne(array('conditions' => array('dimension_id=? AND object_type_id=? AND associated_dimension_id=?'.
+		if (!$reverse) {
+			$a = DimensionMemberAssociations::instance()->findOne(array('conditions' => array('dimension_id=? AND object_type_id=? AND associated_dimension_id=?'.
 				($ot instanceof ObjectType ? ' AND associated_object_type_id='.$ot->getId() : ''),
 				$member_dimension->getId(), $member->getObjectTypeId(), $dimension->getId())));
+		} else {
+			$a = DimensionMemberAssociations::instance()->findOne(array('conditions' => array('associated_dimension_id=? AND associated_object_type_id=? AND dimension_id=?'.
+					($ot instanceof ObjectType ? ' AND object_type_id='.$ot->getId() : ''),
+					$member_dimension->getId(), $member->getObjectTypeId(), $dimension->getId())));
+		}
 		
 		if ($a instanceof DimensionMemberAssociation) {
-			$mpm = MemberPropertyMembers::findOne(array('conditions' => array('association_id = ? AND member_id = ?', $a->getId(), $member->getId())));
+			$memcol = $reverse ? "property_member_id" : "member_id";
+			$mpm = MemberPropertyMembers::findOne(array('conditions' => array('association_id = ? AND '.$memcol.' = ?', $a->getId(), $member->getId())));
 			if ($mpm instanceof MemberPropertyMember) {
-				return $mpm->getPropertyMemberId();
+				return $reverse ? $mpm->getMemberId() : $mpm->getPropertyMemberId();
 			}
 		}
 	}

@@ -829,7 +829,7 @@
 }
 .wysiwyg-description ul{
 	padding-left: 25px;
-	list-style: inherit !important;
+	list-style: disc !important;
 }
 
 .wysiwyg-description ol{

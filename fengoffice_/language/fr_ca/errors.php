@@ -143,4 +143,5 @@
 	'upload error msg UPLOAD_ERR_EXTENSION' => 'Une exception PHP a interrompu le téléversement.',
 	'failed to authenticate email account' => 'Échec lors de l\'authentification du compte courriel',
 	'failed to authenticate email account desc' => 'Impossible de s\'authentifier avec le compte "{0}" pour envoyer les notifications. Assurez-vous que les noms d\'utilisateur et mot de passe sont valides.',
+	'you cant add member without security permissions' => 'Vous ne pouvez pas ajouter {0} sans permissions car vous ne possédez pas les autorisations. S\'il vous plaît choisir une autre dimension {0}.',
 ); ?>

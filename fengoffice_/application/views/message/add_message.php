@@ -71,7 +71,7 @@
 			<?php } ?>
 		</ul>
 	
-		<div id="<?php echo $genid ?>add_message_select_context_div">
+		<div id="<?php echo $genid ?>add_message_select_context_div" class="form-tab">
 			<div class="context-selector-container form-tab">
 		<?php
 			$listeners = array('on_selection_change' => 'og.reload_subscribers("'.$genid.'",'.$object->manager()->getObjectTypeId().')');
@@ -82,6 +82,9 @@
 			} 
 		?>
 			</div>
+			
+			<?php $null = null; Hook::fire('before_render_main_custom_properties', array('object' => $object), $null);?>
+			
 			<div class="main-custom-properties-div"><?php
 				if ($main_cp_count) {
 					echo render_object_custom_properties($object, false, null, 'visible_by_default');
@@ -177,7 +180,7 @@
 		</div>
 		
 		<?php if ($other_cp_count || config_option('use_object_properties')) { ?>
-		<div id="<?php echo $genid ?>add_custom_properties_div" class="form-tab">
+		<div id="<?php echo $genid ?>add_custom_properties_div" class="form-tab other-custom-properties-div">
 			<?php  echo render_object_custom_properties($object, false, null, 'other') ?>
 			<?php  echo render_add_custom_properties($object); ?>
 		</div>

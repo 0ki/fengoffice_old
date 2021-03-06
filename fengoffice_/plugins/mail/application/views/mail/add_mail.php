@@ -72,7 +72,7 @@ sig.actualHtmlSignature = '';
     		$sig = "";
     	}
     	//$sig = nl2br($sig);
-    	$htmlsig = str_replace(array("\r", "\n"), "", "<div class=\"fengoffice_signature\">$sig</div>");
+    	$htmlsig = str_replace(array("\r", "\n"), "", "<div ".MAIL_SIGNATURE_DIV_ATTRIBUTES."><div contenteditable='true'>$sig</div></div>");
     	$textsig = html_to_text($sig);
     	if ($acc_id) {
 	    	if ($m_acc->getId() == $acc_id) {
@@ -273,9 +273,9 @@ sig.actualHtmlSignature = '';
     	$idx = stripos($body, '<body');
     	if (false) {
     		$end_tag = strpos($body, '>', $idx) + 1;
-    		$html_body = utf8_substr($body, 0, $end_tag) . "<br />--<br />$orig_htmlsignature" . utf8_substr($body, $end_tag); 
+    		$html_body = utf8_substr($body, 0, $end_tag) . "<br /><br />$orig_htmlsignature" . utf8_substr($body, $end_tag); 
     	} else {
-    		$html_body = "<br />--<br />$orig_htmlsignature" . $body;
+    		$html_body = "<br /><br />$orig_htmlsignature" . $body;
     	}
     } else $html_body = array_var($mail_data, 'body');
     
@@ -306,9 +306,9 @@ var h = document.getElementById(genid+"ck_editor").offsetHeight;
 try {
 var editor = CKEDITOR.replace(genid+'ckeditor', {
 	height: (h) + 'px',
-	enterMode: CKEDITOR.ENTER_BR,
 	allowedContent: true,
-	shiftEnterMode: CKEDITOR.ENTER_P,
+	enterMode: CKEDITOR.ENTER_BR,
+	shiftEnterMode: CKEDITOR.ENTER_BR,
 	disableNativeSpellChecker: false,
 	resize_enabled: false, //this causes a bug when pasting info into Google Chrome and other browsers 
 	customConfig: '',
@@ -482,5 +482,7 @@ og.checkFrom = function() {
 	}
 }
 
+<?php if (!$draft_edit) { ?>
 og.changeSignature(genid, $("#"+genid+"mailAccount").val());
+<?php } ?>
 </script>

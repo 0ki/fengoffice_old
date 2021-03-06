@@ -58,6 +58,13 @@ if (!($visibility == 'all' || $visibility == 'visible_by_default')) {
 						if($c instanceof Contact){
 							$htmlValue = clean($c->getObjectName());
 						}
+						
+					} else if ($customProp->getType() == 'list'){
+						if ($customProp->getIsSpecial()) {
+							$lang_value = Localization::instance()->lang($value);
+							$htmlValue = is_null($lang_value) ? $value : $lang_value;
+						}
+						
 					} else if ($customProp->getType() == 'boolean'){
 						
 						$htmlValue = '<div class="db-ico ico-'.($value?'complete':'delete').' '.($value?'cpbooltrue':'cpboolfalse').'">&nbsp;</div>';

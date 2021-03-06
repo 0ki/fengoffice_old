@@ -600,4 +600,31 @@ og.eventManager.addListener('add tasks info to tasks list',
 		}
 	}
 );
+
+
+og.eventManager.addListener('member parent changed', 
+	function (data) {
+		var tree = Ext.getCmp("dimension-panel-"+data.d);
+		if (tree) {
+			// update old parent
+			var old_parent = tree.getNodeById(data.op);
+			if (old_parent && !old_parent.hasChildNodes()) {
+				var mobj = old_parent.attributes;
+				mobj.expandable = false;
+				
+				og.updateDimensionTreeNode(data.d, mobj, {});
+			}
+
+			// update current parent
+			var parent = tree.getNodeById(data.p);
+			if (parent) {
+				var mobj = parent.attributes;
+				mobj.expandable = true;
+				og.updateDimensionTreeNode(data.d, mobj, {});
+			}
+		}
+	}
+);
+
+
 </script>

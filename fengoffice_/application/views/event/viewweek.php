@@ -71,7 +71,7 @@ $(function(){
 	$tasks = array();
 	$milestones = ProjectMilestones::getRangeMilestones($date_start, $date_end);
     if($task_filter != "hide"){
-    	$tasks = ProjectTasks::getRangeTasksByUser($date_start, $date_end, ($user_filter != -1 ? $user : null), $task_filter);
+    	$tasks = ProjectTasks::getRangeTasksByUser($date_start, $date_end, ($user_filter != -1 ? $user : null), $task_filter, false, false, 250);
     }
     
     if (user_config_option('show_birthdays_in_calendar')) {

@@ -42,7 +42,13 @@
       </div>
 
       <div class='ogTasksGroupHeaderName task-single-div'>{{{group.group_name}}}</div>
-      
+
+      {{#if group.group_memPath}}
+      <div class='task-single-div task-breadcrumb-container' style="float: none; width: 300px;">
+        {{{mem_path}}}
+      </div>
+      {{/if}}
+
       {{#each  group.view}}
         <div id='{{this.id}}' class='ogTasksGroupHeaderName task-single-div {{this.css_class}}'>{{{this.text}}}</div>
       {{/each }} 

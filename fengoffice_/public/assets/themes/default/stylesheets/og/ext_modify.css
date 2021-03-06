@@ -604,3 +604,9 @@ div#menu-panel .x-panel-tbar-noheader .x-toolbar, div#menu-panel .x-panel-mc .x-
 .x-btn-pressed{
 	background-color: #e6e6e6;
 }
+
+
+.x-menu-list {
+    max-height: 500px;
+    overflow-y: auto;
+}

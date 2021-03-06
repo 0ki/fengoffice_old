@@ -1723,6 +1723,12 @@ abstract class ContentDataObject extends ApplicationDataObject {
 			foreach ($members as $mem) {
 				$dimension = Dimensions::getDimensionById($mem['dimension_id']);
 				
+				$hook_return = null;
+				Hook::fire("hidden_breadcrumbs", array('ot_id' => $this->getObjectTypeId(), 'dim_id' => $mem['dimension_id']), $hook_return);
+				if (!is_null($hook_return) && array_var($hook_return, 'hidden')) {
+					continue;
+				}
+				
 				if (intval($dimension->getOptionValue('showInPaths')) && $dimension->getIsManageable()) {
 					if (!isset($members_info[$mem['dimension_id']])) $members_info[$mem['dimension_id']] = array();
 					
@@ -1763,6 +1769,13 @@ abstract class ContentDataObject extends ApplicationDataObject {
 			foreach ($dimensions as $dimension) {
 				$dim = Dimensions::getDimensionById($dimension['dimension_id']);
 				if (intval($dim->getOptionValue('showInPaths')) && $dim->getIsManageable()) {
+					
+					$hook_return = null;
+					Hook::fire("hidden_breadcrumbs", array('ot_id' => $this->getObjectTypeId(), 'dim_id' => $dimension['dimension_id']), $hook_return);
+					if (!is_null($hook_return) && array_var($hook_return, 'hidden')) {
+						continue;
+					}
+					
 					$dimensions_ids[] = $dimension['dimension_id'];
 					$to_display = user_config_option('breadcrumb_member_count');
 					$extra_cond = " AND m.dimension_id = ".$dimension['dimension_id'];
@@ -1913,4 +1926,11 @@ abstract class ContentDataObject extends ApplicationDataObject {
 		}
 		
 	}
+	
+	
+	
+	function getExternalColumnValue($column) {
+		return "";
+	}
+	
 }

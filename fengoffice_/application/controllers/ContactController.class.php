@@ -3408,7 +3408,9 @@ class ContactController extends ApplicationController {
 				
 				$object_controller = new ObjectController();
 				
-				$object_controller->add_to_members($company, $member_ids);
+				if (!is_null($member_ids)) {
+					$object_controller->add_to_members($company, $member_ids);
+				}
 		    	$object_controller->link_to_new_object($company);
 				$object_controller->add_subscribers($company);
 				$object_controller->add_custom_properties($company);

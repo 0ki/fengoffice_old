@@ -19,11 +19,12 @@ og.MemberTree = function(config) {
 
 							// Calculate the difference in milliseconds
 							var timeDiff = now.getTime() - this.tbar.history.date.getTime();
-							//convert to hours
-							timeDiff = timeDiff/(1000*60*60);
 							
-							//refresh history after 24 hours
-							if(timeDiff > 24){
+							// convert to minutes
+							timeDiff = timeDiff/(1000*60);
+							
+							// refresh history after 10 minutes
+							if(timeDiff > 10){
 								this.tbar.history = undefined;
 							}						
 						}
@@ -46,10 +47,6 @@ og.MemberTree = function(config) {
 							}							
 						}
 
-						//save the text on the histroy only if we search on the server
-						if(from_server && e.target.value.trim() != ''){
-							this.tbar.history.prevTextFilters.push(e.target.value);
-						}
 
 						this.filterTree(e.target.value, from_server);
 					},
@@ -556,13 +553,29 @@ Ext.extend(og.MemberTree, Ext.tree.TreePanel, {
 			if(from_server){
 				//search on server
 				this.innerCt.mask();
-				og.openLink(og.getUrl('dimension', 'search_dimension_members_tree', {dimension_id:this.id.replace("dimension-panel-", ""),query:Ext.escapeRe(text.toLowerCase())}), {
+				// if there is an active search request it must be cancelled
+				/*if (og.last_search_request_id && Ext.Ajax.isLoading(og.last_search_request_id)) {
+					Ext.Ajax.abort(og.last_search_request_id);
+				}*/
+				
+				var d = new Date();
+				this.tbar.last_search_time = d.getTime();
+				
+				og.last_search_request_id = og.openLink(og.getUrl('dimension', 'search_dimension_members_tree', {
+					dimension_id: this.id.replace("dimension-panel-", ""),
+					query: Ext.escapeRe(text.toLowerCase()),
+					time: d.getTime()
+				}), {
 	    			hideLoading:true, 
 	    			hideErrors:true,
 	    			callback: function(success, data){
 	    				if(success){
 		    				var dimension_tree = Ext.getCmp('dimension-panel-'+data.dimension_id);
-		    				    	
+		    				// don't process response if it isn't the last one
+		    				if (dimension_tree.tbar.last_search_time != data.time) {
+		    					dimension_tree.innerCt.unmask();
+		    					return;
+		    				}
 		    				//add nodes to tree
 		    				dimension_tree.addMembersToTree(data.members, data.dimension_id);
 		    								
@@ -571,6 +584,14 @@ Ext.extend(og.MemberTree, Ext.tree.TreePanel, {
 		    				//get the text from the filter
 		    				var search_text = dimension_tree.getTopToolbar().items.get(dimension_tree.id + '-textfilter').el.getValue();
 		    				re_search_text = new RegExp(Ext.escapeRe(search_text.toLowerCase()), 'i');
+		    				
+		    				//add the last search criteria to the search history
+		    				if(data.query && data.query.trim() != ''){
+		    					if(dimension_tree.tbar.history == undefined){
+		    						dimension_tree.tbar.history = {prevTextFilters: [], date: new Date()};
+								}
+		    					dimension_tree.tbar.history.prevTextFilters.push(data.query);
+							}
 
 		    				//filter the tree
 		    				dimension_tree.filterNode(dimension_tree.getRootNode(), re_search_text);
@@ -788,18 +809,29 @@ Ext.extend(og.MemberTree, Ext.tree.TreePanel, {
 
 		tree.expandMode = "root";
 		
+		// reset search cache
+		tree.getTopToolbar().container.history = undefined;
+		
 		//this.collapseAll() ;
 		
 		this.loader =  new og.MemberChooserTreeLoader({
 			dataUrl: 'index.php?c=dimension&a=initial_list_dimension_members_tree_root&ajax=true&dimension_id='+this.dimensionId+'&selected_ids='+ Ext.util.JSON.encode(memberIds) +'&avoid_session=1',	
 			ownerTree: this
 		});
-		this.loader.load(this.getRootNode(), function() {
+		this.loader.load(this.getRootNode(), function(loader, node, response_object) {
 			tree.init(
 				function() {
+					var was_filtered = true;
+					if (response_object && response_object.list_was_filtered_by) {
+						if (response_object.list_was_filtered_by.length==0) {
+							was_filtered = false;
+						}
+					}
+					// dont expand if the list was filtered by an associated dimension
+					var expand = response_object && !(response_object.list_was_filtered_by && response_object.list_was_filtered_by.length > 0);
 					
 					// expand filtered nodes
-					if (nodeClicked.getDepth() > 0) {
+					if (nodeClicked.getDepth() > 0 && expand) {
 						og.expandAllChildNodes(tree.getRootNode());
 					}
 					
@@ -890,6 +922,9 @@ Ext.extend(og.MemberTree, Ext.tree.TreePanel, {
 							if (n.getOwnerTree()) n.select();
 							og.eventManager.fireEvent('member tree node click', n);
 						}
+						
+						// ensure that first level nodes are ordered after the insertion
+						dimension_tree.root.sort(og.sortNodesFn);
 					}
 				}
 			});
@@ -945,5 +980,13 @@ og.updateDimensionTreeNode = function(dimension_id, member, extra_params) {
 		og.eventManager.fireEvent('member tree node click', new_node);
 	}
 	new_node.expand();
+	
+	// ensure that first level nodes are ordered after the insertion
+	dimension_tree.root.sort(og.sortNodesFn);
 }
 
+og.sortNodesFn = function(node1, node2) {
+	if (node1 && node2) {
+		return node1.text.toLowerCase().localeCompare(node2.text.toLowerCase());
+	}
+}

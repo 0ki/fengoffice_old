@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Bauru upgrade script will upgrade FengOffice 3.3.2-beta to FengOffice 3.4.3
+ * Bauru upgrade script will upgrade FengOffice 3.3.2-beta to FengOffice 3.4.4-beta
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -39,7 +39,7 @@ class BauruUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('3.3.2-beta');
-		$this->setVersionTo('3.4.3');
+		$this->setVersionTo('3.4.4-beta');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -324,6 +324,9 @@ class BauruUpgradeScript extends ScriptUpgraderScript {
 					ALTER TABLE `".$t_prefix."dimension_member_associations` ADD `allows_default_selection` tinyint(1) unsigned NOT NULL;
 				";
 			}
+		}
+		
+		if (version_compare($installed_version, '3.4.3.7') < 0) {
 			
 			$upgrade_script .= "
 				INSERT INTO ".$t_prefix."dimension_associations_config (association_id, config_name, value)
@@ -341,6 +344,44 @@ class BauruUpgradeScript extends ScriptUpgraderScript {
 				UPDATE ".$t_prefix."dimensions SET is_manageable=1 WHERE is_manageable=0 AND code!='feng_persons';
 			";
 		}
+		
+		
+		if (version_compare($installed_version, '3.4.3.14') < 0) {
+			
+			$upgrade_script .= "
+				INSERT INTO `".$t_prefix."contact_config_categories` (`name`, `is_system`, `type`, `category_order`) VALUES 
+				('reporting', 0, 0, 15);
+		
+				INSERT INTO `".$t_prefix."contact_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
+				('reporting', 'report_time_colums_display', 'friendly', 'TimeFormatConfigHandler', 0, 1, '');
+			";
+		}
+
+		if (version_compare($installed_version, '3.4.3.17') < 0) {
+
+			$upgrade_script .= "
+				INSERT INTO `".$t_prefix."config_options` (`category_name`,`name`,`value`,`config_handler_class`,`is_system`) VALUES
+					('brand_colors', 'brand_colors_texture', 1, 'BoolConfigHandler', 0)
+				ON DUPLICATE KEY UPDATE name=name;
+			";
+		}
+		
+		if (version_compare($installed_version, '3.4.4-beta') < 0) {
+				
+			$upgrade_script .= "
+				ALTER TABLE `".TABLE_PREFIX."members`
+				CHANGE `name` `name` varchar(511) COLLATE 'utf8_unicode_ci' NOT NULL DEFAULT '';
+			";
+			
+			$upgrade_script .= "
+				CREATE TABLE IF NOT EXISTS `".TABLE_PREFIX."object_type_dependencies` (
+				  `object_type_id` INTEGER UNSIGNED NOT NULL,
+				  `dependant_object_type_id` INTEGER UNSIGNED NOT NULL,
+				  PRIMARY KEY (`object_type_id`,`dependant_object_type_id`)
+				) ENGINE = InnoDB;
+			";
+		}
+		
 		
 		
 		// Execute all queries

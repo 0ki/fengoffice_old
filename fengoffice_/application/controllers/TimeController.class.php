@@ -268,7 +268,9 @@ class TimeController extends ApplicationController {
 				$member_ids = json_decode(array_var($_POST, 'members'));
 			}
 			$object_controller = new ObjectController();
-			$object_controller->add_to_members($timeslot, $member_ids);
+			if (!is_null($member_ids)) {
+				$object_controller->add_to_members($timeslot, $member_ids);
+			}
 			
 			DB::commit();
 			ApplicationLogs::createLog($timeslot, ApplicationLogs::ACTION_ADD);

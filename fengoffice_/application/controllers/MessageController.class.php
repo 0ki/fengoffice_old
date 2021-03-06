@@ -418,8 +418,10 @@ class MessageController extends ApplicationController {
 				
 				$member_ids = json_decode(array_var($_POST, 'members'));
 				
-				$object_controller->add_to_members($message, $member_ids);
-                                $object_controller->add_subscribers($message);
+				if (!is_null($member_ids)) {
+					$object_controller->add_to_members($message, $member_ids);
+				}
+				$object_controller->add_subscribers($message);
 				$object_controller->link_to_new_object($message);				
 				$object_controller->add_custom_properties($message);
 				
@@ -542,7 +544,9 @@ class MessageController extends ApplicationController {
 				
 				$member_ids = json_decode(array_var($_POST, 'members'));
 				
-				$object_controller->add_to_members($message, $member_ids);
+				if (!is_null($member_ids)) {
+					$object_controller->add_to_members($message, $member_ids);
+				}
 			    $object_controller->link_to_new_object($message);
 				$object_controller->add_subscribers($message);
 				$object_controller->add_custom_properties($message);

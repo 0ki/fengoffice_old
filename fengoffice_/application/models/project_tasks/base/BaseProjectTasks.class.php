@@ -134,6 +134,15 @@ abstract class BaseProjectTasks extends ContentDataObjects {
     function getExternalColumns() {
       return array_merge(parent::getExternalColumns(), array('object_subtype', 'assigned_to_contact_id', 'completed_by_id', 'assigned_by_id', 'milestone_id'));
     } // getExternalColumns
+    
+
+    /**
+     * Returns the numeric fields that store a time value
+     * Must be overriden by the specific object classes
+     */
+    function getTimeColumns() {
+    	return array('time_estimate', 'total_worked_time');
+    }
 	
 	/**
     * Return report object title columns

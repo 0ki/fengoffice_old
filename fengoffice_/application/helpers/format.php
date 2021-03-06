@@ -237,7 +237,35 @@ function date_format_tip($format) {
 
 
 	function format_value_to_print($col, $value, $type, $obj_type_id, $textWrapper='', $dateformat='Y-m-d') {
-		switch ($type) {
+		
+		$is_time_column = false;
+		
+		$ot = ObjectTypes::findById($obj_type_id);
+		if ($ot instanceof ObjectType && $ot->getHandlerClass() != '') {
+			eval('$manager = '.$ot->getHandlerClass()."::instance();");
+			if ($manager) {
+				
+				$time_cols = $manager->getTimeColumns();
+				if (in_array($col, $time_cols)) {
+					$format = user_config_option('report_time_colums_display');
+					$is_time_column = true;
+					
+					switch ($format) {
+						case 'seconds': $formatted = $value * 60; break;
+						case 'minutes': $formatted = $value; break;
+						default: 
+							$formatted = '';
+							if($value > 0) {
+								$formatted = DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($value * 60), 'hm', 60);
+							}
+							break;
+					}
+				}
+			}
+		}
+		
+		if (!$is_time_column) {
+		  switch ($type) {
 			case DATA_TYPE_STRING: 
 				if(preg_match(EMAIL_FORMAT, strip_tags($value))){
 					$formatted = strip_tags($value);
@@ -269,13 +297,6 @@ function date_format_tip($format) {
 					default: $formatted = clean($value);
 					}
 					
-				} elseif ($col == 'time_estimate' || $col == 'total_worked_time'){
-					if($value > 0) {
-						$formatted = DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($value * 60), 'hm', 60);
-					} else {
-						$formatted = '';
-					}
-					
 				} else{
 					$formatted = clean($value);
 				}
@@ -283,7 +304,9 @@ function date_format_tip($format) {
 			case DATA_TYPE_BOOLEAN: $formatted = ($value == 1 ? lang('yes') : lang('no'));
 				break;
 			case DATA_TYPE_DATE:
-				if ($value != 0) { 
+				if ($value instanceof DateTimeValue) {
+					$formatted = $value->format("$dateformat");
+				} else if ($value != 0) { 
 					if (str_ends_with($value, "00:00:00")) $dateformat .= " H:i:s";
 					try {
 						$dtVal = DateTimeValueLib::dateFromFormatAndString($dateformat, $value);
@@ -296,7 +319,9 @@ function date_format_tip($format) {
 				} else $formatted = '';
 				break;
 			case DATA_TYPE_DATETIME:
-				if ($value != 0) {
+				if ($value instanceof DateTimeValue) {
+					$formatted = $value->format("$dateformat H:i:s");
+				} else if ($value != 0) {
 					try {
 						$dtVal = DateTimeValueLib::dateFromFormatAndString("$dateformat H:i:s", $value);
 					} catch (Exception $e) {
@@ -312,6 +337,7 @@ function date_format_tip($format) {
 				} else $formatted = '';
 				break;
 			default: $formatted = $value;
+		  }
 		}
 		if($formatted == ''){
 			$formatted = '--';
@@ -363,6 +389,13 @@ function date_format_tip($format) {
 				if ($cp->getType() == 'boolean' && $cp_val instanceof CustomPropertyValue) {
 					$formatted = $cp_val->getValue() > 0 ? lang('yes') : lang('no');
 					$cp_val->setValue($formatted);
+				}
+				
+				if ($cp->getType() == 'list' && $cp->getIsSpecial()) {
+					$lang_value = Localization::instance()->lang($cp_val->getValue());
+					if (!is_null($lang_value)) {
+						$cp_val->setValue($lang_value);
+					}
 				}
 				
 				if ($cp->getType() == 'date' && $cp_val instanceof CustomPropertyValue) {

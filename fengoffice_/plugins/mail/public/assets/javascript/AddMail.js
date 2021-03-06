@@ -70,10 +70,13 @@ og.mailAlertFormat = function(genid, opt) {
 				var sig = Ext.getDom(genid + 'signatures');
 
 				var iText = oEditor.getData();
-				 // remove line breaks
+				// remove line breaks
 				iText = iText.replace(/[\n\r]/ig, "");
+				
 				// replace signature
-				iText = iText.replace(/<div class="fengoffice_signature">.*?<\/div>/i, sig.actualTextSignature.replace(/\n/g, "<br />"));
+				var sig_regex = new RegExp('<div '+ og.mail.signature_div_attributes +'>.*?<\/div>', 'gi');
+				iText = iText.replace(sig_regex, sig.actualTextSignature.replace(/\n/g, "<br />"));
+				
 				// convert html to text
 				iText = og.htmlToText(iText);
 				mailBody.value = iText;
@@ -92,7 +95,7 @@ og.mailAlertFormat = function(genid, opt) {
 		Ext.getDom(genid + 'ck_editor').style.display = 'block';
 		var html = mailBody.value;
 		html = og.clean(html);
-		html = html.replace('--\n' + og.htmlToText(sig.actualTextSignature.replace(/\n/g, "<br />")), '--<br />' + sig.actualHtmlSignature);
+		html = html.replace('--\n' + og.htmlToText(sig.actualTextSignature.replace(/\n/g, "<br />")), '<br />' + sig.actualHtmlSignature);
 		html = html.replace(/\r\n/g, "<br />");
 		html = html.replace(/\r|\n/g, "<br />");
 		oEditor.setData(html);
@@ -169,7 +172,9 @@ og.changeSignature = function(genid, acc_id) {
 		}
 		
 		html = html.replace(/\n/g, '');
-		html = html.replace(/<div class="fengoffice_signature">.*<\/div>/i, new_htmlsig) + original_content;
+		var sig_regex = new RegExp('<div '+ og.mail.signature_div_attributes +'>.*<\/div>', 'gi');
+		html = html.replace(sig_regex, new_htmlsig) + original_content;
+		
 		editor.setData(html);
 		
 	} else {

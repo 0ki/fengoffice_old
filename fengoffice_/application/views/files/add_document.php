@@ -71,7 +71,7 @@ var h = document.getElementById("<?php echo $genid ?>ckcontainer").offsetHeight;
 var editor = CKEDITOR.replace('<?php echo $genid ?>ckeditor', {
 	height: (h-100) + 'px',
 	allowedContent: true,
-	//enterMode: CKEDITOR.ENTER_DIV,
+	enterMode: CKEDITOR.ENTER_BR,
 	shiftEnterMode: CKEDITOR.ENTER_BR,
 	disableNativeSpellChecker: false,
 	language: '<?php echo $loc ?>',
@@ -121,7 +121,8 @@ var editor = CKEDITOR.replace('<?php echo $genid ?>ckeditor', {
 			Ext.getCmp(p.id).setPreventClose(editor.checkDirty());
 		}
 	},
-	removePlugins: 'magicline',
+	fillEmptyBlocks: false,
+	removePlugins: 'scayt,liststyle,tabletools,magicline',
 	entities_additional : '#336,#337,#368,#369'
 });
 

@@ -256,11 +256,16 @@ class DimensionController extends ApplicationController {
 			if (count($associations) > 0) {
 				$associated_members_ids = array();
 	
+				$filter_by_mem_ids = array($member->getId());
+				$child_ids = Members::instance()->getAllChildrenInHierarchy(array($member->getId()), true);
+				$filter_by_mem_ids = array_merge($filter_by_mem_ids, $child_ids);
+				$filter_by_mem_ids_csv = implode(',', array_filter($filter_by_mem_ids));
+				
 				foreach ($associations as $assoc){ /* @var $assoc DimensionMemberAssociation */
 					if ($assoc->getDimensionId() == $dimension->getId()) {
-						$tmp_ids_csv = MemberPropertyMembers::getAllMemberIds($assoc->getId(), $member->getId());
+						$tmp_ids_csv = MemberPropertyMembers::getAllMemberIds($assoc->getId(), $filter_by_mem_ids_csv);
 					} else {
-						$tmp_ids_csv = MemberPropertyMembers::getAllPropertyMemberIds($assoc->getId(), $member->getId());
+						$tmp_ids_csv = MemberPropertyMembers::getAllPropertyMemberIds($assoc->getId(), $filter_by_mem_ids_csv);
 					}
 					$mem_ids = array_merge($mem_ids, explode(',', $tmp_ids_csv));
 					
@@ -288,104 +293,16 @@ class DimensionController extends ApplicationController {
 			}
 			
 			$sql_str = " AND id IN (". implode(',', $mem_ids) .")";
+		} else {
+			// if is filtering but there is no association then return empty result
+			if (isset($association_ids) && count($association_ids) > 0) {
+				$sql_str = " AND false";
+			}
 		}
 	
 		return $sql_str;
 	}
 	
-	function apply_association_filters($dimension, $dimension_members, $selected_members) {
-		
-		$members_to_retrieve = array();
-		$all_associated_members_ids = array();
-		
-		foreach ($selected_members as $member) {
-			// ignore selected members that are from the same dimension that is going to be filtered
-			if (!$member instanceof Member || $member->getDimensionId() == $dimension->getId()) continue;
-			
-			// get dimension associations for selected member object type and the dimension to be filtered
-			$association_ids = DimensionMemberAssociations::getAllAssociationIds($member->getDimensionId(), $dimension->getId(), $member->getObjectTypeId());
-			
-			if (count($association_ids) > 0) {
-				$associated_members_ids = array();
-				
-				foreach ($association_ids as $id){
-					$property_members_members = null;
-					$property_members_props = null;
-					
-					$association = DimensionMemberAssociations::findById($id);
-				//	$children = $member->getAllChildrenInHierarchy();
-					
-					if ($association->getDimensionId() == $dimension->getId()){
-						if (is_null($property_members_members)) $property_members_members = MemberPropertyMembers::getAllPropertyMembers($id);
-						
-						$tmp_assoc_member_ids = array_var($property_members_members, $member->getId(), array());
-				/*		foreach ($children as $child){
-							$tmp_assoc_member_ids = array_merge($tmp_assoc_member_ids, array_var($property_members_members, $child->getId(), array()));
-						}
-				*/		
-						$associated_members_ids = array_unique(array_merge($associated_members_ids, $tmp_assoc_member_ids));
-					
-					} else {
-						if (is_null($property_members_props)) $property_members_props = MemberPropertyMembers::getAllPropertyMembers($id, true);
-						
-						$tmp_assoc_member_ids = array_var($property_members_props, $member->getId(), array());
-				/*		foreach ($children as $child){
-							$tmp_assoc_member_ids = array_merge($tmp_assoc_member_ids, array_var($property_members_props, $child->getId(), array()));
-						}
-				*/		
-						$associated_members_ids = array_unique(array_merge($associated_members_ids, $tmp_assoc_member_ids));
-					
-					}
-				}
-				
-				$all_associated_members_ids[] = array_unique($associated_members_ids);
-			
-			}
-		}
-		
-		
-		if (isset($association_ids) && count($association_ids) > 0 && count($all_associated_members_ids) > 0) {
-			$intersection = array_var($all_associated_members_ids, 0);
-			if (count($all_associated_members_ids) > 1) {
-	    		$k = 1;
-	    		while ($k < count($all_associated_members_ids)) {
-	    			$intersection = array_intersect($intersection, $all_associated_members_ids[$k++]);
-	    		}
-	    	}
-	    	
-	    	$all_associated_members_ids = $intersection;
-		
-		
-			if (count($all_associated_members_ids) > 0) {
-				$dimension_member_ids = array();
-				foreach ($dimension_members as $dm) {
-					$dimension_member_ids[] = $dm->getId();
-				}
-				
-				$members_to_retrieve_ids = array();
-				$associated_members = Members::findAll(array('conditions' => 'id IN ('.implode(',', $all_associated_members_ids).')'));
-				foreach ($associated_members as $associated_member){
-	
-					$context_hierarchy_members = $associated_member->getAllParentMembersInHierarchy(true);
-					foreach ($context_hierarchy_members as $context_member){
-						if (!in_array($context_member->getId(), $members_to_retrieve_ids) && in_array($context_member->getId(), $dimension_member_ids)) {
-							$members_to_retrieve [$context_member->getName()."_".$context_member->getId()] = $context_member;
-							$members_to_retrieve_ids[] = $context_member->getId();
-						}
-					}
-					
-				}
-				// alphabetical order
-				$members_to_retrieve = array_ksort($members_to_retrieve);
-				
-			}
-		
-		} else {
-			$members_to_retrieve = $dimension_members;
-		}
-		
-		return $members_to_retrieve;
-	}
 
 	
 	
@@ -504,6 +421,7 @@ class DimensionController extends ApplicationController {
 		$limit = array_var($_REQUEST, 'limit');
 		$order = array_var($_REQUEST, 'order', 'id');
 		$parents = array_var($_REQUEST, 'parents' , true);
+		$ignore_context_filters = array_var($_REQUEST, 'ignore_context_filters');
 		
 		$allowed_member_types_str = array_var($_REQUEST, 'allowed_member_types' , '');
 		if ($allowed_member_types_str != '') {
@@ -531,18 +449,21 @@ class DimensionController extends ApplicationController {
 				if (count($allowed_member_types) > 0) {
 					$member_type_cond = " AND object_type_id IN (".implode(',', $allowed_member_types).")";
 				}
-				$memberList = Members::findAll(array('conditions' => array("`dimension_id`=? AND archived_by_id=0 $search_name_cond $member_type_cond", $dimension_id), 'order' => '`'.$order.'` ASC', 'offset' => $start, 'limit' => $limit_t));
 				
-				// filter $childs by other dimension associations
-				$ignore_context_filters = array_var($_REQUEST, 'ignore_context_filters');
+				$more_conds = "";
 				if (!$ignore_context_filters) {
-					$context = active_context();
 					$filter_by_members = array();
+					$context = active_context();
 					foreach ($context as $selection) {
 						if ($selection instanceof Member) $filter_by_members[] = $selection;
 					}
-					$memberList = $this->apply_association_filters($dimension, $memberList, $filter_by_members);
+					
+					$real_applied_filters = null;
+					$filter_by_members_sql = $this->get_association_filter_conditions($dimension, $filter_by_members, $real_applied_filters);
+					$more_conds .= $filter_by_members_sql;
 				}
+				
+				$memberList = Members::findAll(array('conditions' => array("`dimension_id`=? AND archived_by_id=0 $search_name_cond $member_type_cond $more_conds", $dimension_id), 'order' => '`'.$order.'` ASC', 'offset' => $start, 'limit' => $limit_t));
 				
 				//include all parents
 				//Check hierarchy
@@ -611,7 +532,9 @@ class DimensionController extends ApplicationController {
 				ajx_extra_data(array('members' => $allMemebers));
 			}
 		}
+		ajx_extra_data(array('query' => $name));
 		ajx_extra_data(array('dimension_id' => $dimension_id));
+		ajx_extra_data(array('time' => array_var($_REQUEST, 'time')));
 		ajx_current("empty");			
 	}
 	
@@ -657,9 +580,11 @@ class DimensionController extends ApplicationController {
 	function load_dimensions_info() {
 		ajx_current("empty");
 		$dimensions = Dimensions::findAll();
+		$enabled_dimension_ids = config_option('enabled_dimensions');
 		
 		$dim_names = array();
 		foreach ($dimensions as $dim) {
+			if (!in_array($dim->getId(), $enabled_dimension_ids)) continue;
 			$dim_name = clean($dim->getName());
 			
 			$dim_names[$dim->getId()] = array("name" => $dim_name);

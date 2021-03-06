@@ -259,7 +259,7 @@ addLangs({
 	'alphabetical desc': 'Ordenar por orden alfabético',
 	'most active desc': 'Ordenar por más activo',
 	'sort desc': 'Ordenar',
-	'no objects message': 'No hay {0} in {1}',
+	'no objects message': 'No hay {0} en {1}',
 	'no objects with tag message': 'No hay {0} etiquetados como \'{2}\' en \'{1}\'',
 	'objects': 'Objetos',
 	'checkout description': 'Bloquear documento para edición',

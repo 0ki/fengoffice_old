@@ -64,6 +64,7 @@
 	'at' => 'A las',
 	'on' => 'El',
 	'in' => 'En',
+	'in m' => 'en',
 	'people' => 'Personas',
 	'dates' => 'Fechas',
 	'permission' => 'Permiso',
@@ -308,6 +309,7 @@
 	'dont assign' => 'No asignar',
 	'me' => 'Usted',
 	'late tasks and upcoming tasks' => 'Tareas atrasadas y próximas',
+	'upcoming tasks w' => 'Próximas',
 	'people in' => 'Personas en {0}',
 	'users in' => 'Usuarios en {0}',
 	'field Objects type_content' => 'Tipo de contenido',
@@ -420,4 +422,6 @@
 	'task status' => 'Estado de tareas',
 	'time report task status desc' => 'Si se selecciona un estado, los tiempos de trabajo de tareas serán filtrados por el estado de su tarea. No aplica a los tiempos de trabajo ingresados desde el panel de Horas.',
 	'all tasks' => 'Todas las tareas',
+	'general' => 'General',
+	'friendly date' => 'Formato usual',
 );

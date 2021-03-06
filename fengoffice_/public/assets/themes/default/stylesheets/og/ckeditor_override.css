@@ -1,5 +1,9 @@
 .cke_editable {
 	font-size: 14px;
+	line-height: normal;
+}
+.cke_editable p {
+	margin: 2px 0;
 }
 .cke_combo__fontsize .cke_combo_text {
 	width: auto;

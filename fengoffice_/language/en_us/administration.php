@@ -205,6 +205,7 @@
   	'config option desc brand_colors_head_back' => '',
   	'config option name brand_colors_head_font' => 'Header font color',
   	'config option desc brand_colors_head_font' => '',
+	'config option name brand_colors_texture' => 'Use texture on colors',
   		
   	'notify myself too' => 'Include myself in automatic notifications',
   	
@@ -225,6 +226,7 @@
     'user ws config category name calendar panel' => 'Calendar options',
     'user ws config category name mails panel' => 'Email options',
 	'user ws config category name listing preferences' => 'Listing options',
+	'user ws config category name reporting' => 'Report options',
     'user config option name show pending tasks widget' => 'Show pending tasks widget',
     'user config option name pending tasks widget assigned to filter' => 'Show tasks assigned to',
     'user config option name show late tasks and milestones widget' => 'Show late tasks and milestones widget',
@@ -855,6 +857,9 @@
   		
   	'user config option name tasksUseDateFilters' => 'Use task date filters',
   	'user config option desc tasksUseDateFilters' => 'If enabled then you will be able to filter tasks list using a date range.',
+  		
+  	'user config option name report_time_colums_display' => 'Time column format',
+  	'user config option desc report_time_colums_display' => 'If friendly format is selected then the time columns will be shown in a descriptive mode (e.g.: 2 hours, 15 minutes). If not then they will show the amount of minutes or seconds',
   		
 	'member custom properties' => 'Dimension custom properties',
 	'select member type' => 'Select type',

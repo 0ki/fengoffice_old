@@ -53,18 +53,27 @@ class ExternalCalendarController extends ApplicationController {
 	 * @return Google_Service_Calendar
 	 */
 	private function connect_with_google_calendar($user) {
-		$client = new Google_Client();
-		$client->setAccessToken($user->getAuthPass());
-		
-		//if isAccessTokenExpired then refresh the token and store it
-		if($client->isAccessTokenExpired()) {
-			$credentials = json_decode($user->getAuthPass());
-			$client->refreshToken($credentials->refresh_token);
-			$user->setAuthPass($client->getAccessToken());
-			$user->save();
-		}
-			
-		$service = new Google_Service_Calendar($client);
+			try{
+				$client = new Google_Client();
+				$client->setAccessToken($user->getAuthPass());
+
+				//if isAccessTokenExpired then refresh the token and store it
+				if($client->isAccessTokenExpired()) {
+					$credentials = json_decode($user->getAuthPass());
+					$client->refreshToken($credentials->refresh_token);
+					$user->setAuthPass($client->getAccessToken());
+					$user->save();
+				}
+
+				$service = new Google_Service_Calendar($client);
+			}
+			catch(Exception $e)
+			{
+				Logger::log("Fail to get connect to external calendar user: ". $user->getId());
+				Logger::log($e->getMessage());
+				throw $e;
+			}
+
 		
 		return $service;
 	}
@@ -125,8 +134,10 @@ class ExternalCalendarController extends ApplicationController {
 		if($calendar){
 			$member_ids = json_decode(array_var($_POST, 'members'));
             $members = "";
-            foreach($member_ids as $member_id){
-            	$members .= $member_id.",";
+            if (!is_null($member_ids)) {
+				foreach($member_ids as $member_id){
+            		$members .= $member_id.",";
+				}
             }
             $members = rtrim($members, ",");
             $calendar->setRelatedTo($members);
@@ -545,18 +556,27 @@ class ExternalCalendarController extends ApplicationController {
 		$users = ExternalCalendarUsers::findAll();
 		foreach ($users as $user){
 			// log user in
-			$contact = Contacts::findById($user->getContactId());
-			CompanyWebsite::instance()->setLoggedUser($contact, false, false, false);
-			ExternalCalendarController::import_google_calendar_for_user($user);			
+			try
+			{
+				$contact = Contacts::findById($user->getContactId());
+				CompanyWebsite::instance()->setLoggedUser($contact, false, false, false);
+				ExternalCalendarController::import_google_calendar_for_user($user);
+			}catch(Exception $e){
+				Logger::log("Fail to get events from external calendar user: ". $user->getId());
+				Logger::log($e->getMessage());
+				continue;
+			}
 		}
 	}
 	
 	function import_google_calendar_for_user($user) {
 		if($user instanceof ExternalCalendarUser){
 			$calendars = ExternalCalendars::findByExtCalUserId($user->getId());
-			
+
 			$service = $this->connect_with_google_calendar($user);
-			
+			if(!$service instanceof Google_Service_Calendar){
+				return;
+			}
 			$contact = Contacts::findById($user->getContactId());		
 			
 			try
@@ -846,43 +866,59 @@ class ExternalCalendarController extends ApplicationController {
 	}
 	
 	function sync_event_on_extern_calendar($event, $user = null, $calendar = null){				
-		//check external user
-		if(is_null($user)){
-			$user = ExternalCalendarUsers::findByContactId();
-		}		
-		if (!$user instanceof ExternalCalendarUser) return;
-		
-		//check external calendar
-		if(is_null($calendar)){
-			$calendar = ExternalCalendars::findById($event->getExtCalId());
-		}		
-		if (!$calendar instanceof ExternalCalendar) return;
+		try {
+			//check external calendar
+			if (is_null($calendar)) {
+				$calendar = ExternalCalendars::findById($event->getExtCalId());
+			}
+			if (!$calendar instanceof ExternalCalendar) return;
 
-		//check if calendar sync is activated
-		if($calendar->getSync() == 0){
-			return;
+			//check if calendar sync is activated
+			if ($calendar->getSync() == 0) {
+				return;
+			}
+
+
+			//check external user
+			if (is_null($user)) {
+				$user = ExternalCalendarUsers::findById($calendar->getExtCalUserId());
+			}
+			if (!$user instanceof ExternalCalendarUser) return;
+
+			//connect with google
+			$service = $this->connect_with_google_calendar($user);
+
+			$this->update_event_on_google_calendar($event, $calendar, $user, $service);
+		}catch(Exception $e){
+			Logger::log("Fail to sync event on external calendar, event: ". $event->getId());
+			Logger::log($e->getMessage());
 		}
-		
-		//connect with google
-		$service = $this->connect_with_google_calendar($user);
-		
-		$this->update_event_on_google_calendar($event,$calendar,$user,$service);
 			
 	}    
    
 	function export_google_calendar() {
 		$users = ExternalCalendarUsers::findAll(array('conditions' => "sync = 1"));
 		foreach ($users as $user){
-			// log user in
-			$contact = Contacts::findById($user->getContactId());
-			CompanyWebsite::instance()->logUserIn($contact);
-			ExternalCalendarController::export_google_calendar_for_user($user);
-			CompanyWebsite::instance()->logUserOut();
+			try{
+                // log user in
+                $contact = Contacts::findById($user->getContactId());
+                CompanyWebsite::instance()->logUserIn($contact);
+                ExternalCalendarController::export_google_calendar_for_user($user);
+                CompanyWebsite::instance()->logUserOut();
+            }catch(Exception $e){
+                Logger::log("Fail to get events from external calendar user: ". $user->getId());
+                Logger::log($e->getMessage());
+                continue;
+            }
 		}
 	}
 		
 	function export_google_calendar_for_user($user) {
-        $service = $this->connect_with_google_calendar($user);     
+        $service = $this->connect_with_google_calendar($user);
+
+		if(!$service instanceof Google_Service_Calendar){
+			return;
+		}
         
         if($user->getSync() == 1){
         	$calendar_feng = ExternalCalendars::findFengCalendarByExtCalUserIdValue($user->getId());

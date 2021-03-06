@@ -320,6 +320,7 @@ return array(
 
   'new filename' => 'New filename',
   'new weblink' => 'New link',
+  'add weblink' => 'Add link',
   'add as revision' => 'Add as revision',
   'duplicate filename' => 'Duplicate filename',
   'filename exists' => 'Files with the specified filename already exists. You can select a different filename or choose among the following options',

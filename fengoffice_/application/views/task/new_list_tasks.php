@@ -56,7 +56,7 @@
 			$data['isread'] = isset($read_objects[$data['id']]);
 		}
 	}
-	
+
 	if (is_array($internalMilestones)) {
 		foreach($internalMilestones as $milestone) {
 			$internal_milestones_array[] = $milestone->getArrayInfo();
@@ -85,7 +85,7 @@
 			if ($user instanceof Contact) $users_array[] = $user->getArrayInfo();
 		}
 	}
-	
+
 	foreach($allUsers as $usr) {
 		$allUsers_array[] = $usr->getArrayInfo();
 	}
@@ -305,6 +305,16 @@ ogTasks.custom_properties = <?php echo json_encode($cp_values)?>;
 	
 	
 
+
+	// tasks group by dimensions
+	var dimensions_panel = Ext.getCmp('menu-panel');
+	ogTasks.additional_groupby_dimensions = [];
+	dimensions_panel.items.each(function(item, index, length) {
+		ogTasks.additional_groupby_dimensions.push({
+			id: item.dimensionId,
+			name: item.title
+		});
+	});
 	
 	
 	

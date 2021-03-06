@@ -119,13 +119,17 @@ function report_table_html_plain($results, $report, $parametersUrl="", $to_print
 	<table class="report">
 		<tr>
 	<?php
+	
+		$last_order_by = array_var($_REQUEST, 'order_by', $report->getOrderBy());
+		$last_order_by_asc = array_var($_REQUEST, 'order_by_asc', $report->getIsOrderByAsc());
+		
 		foreach ($columns['order'] as $col) {
 			$sorted = false;
-			$asc = false;
+			$asc = true;
 			
-			if($col != 'link' && $col != 'located_under' && $col == $report->getOrderBy()) {
+			if($col != 'link' && $col != 'located_under' && $col == $last_order_by) {
 				$sorted = true;
-				$asc = $report->getIsOrderByAsc();
+				$asc = !$last_order_by_asc;
 			}
 		?>
 			<td style="padding-right:10px;border-bottom:1px solid #666" class="bold">
@@ -140,14 +144,14 @@ function report_table_html_plain($results, $report, $parametersUrl="", $to_print
 			  	if ($ot instanceof Timeslot && in_array($col, ProjectTasks::instance()->getColumns())) {
 			  		$allow_link = false;
 			  	}
-			  	$echo_link = $allow_link && !(is_numeric($col) || str_starts_with($col, "dim_") || $col == 'time' || $col == 'billing'); 
+			  	$echo_link = $allow_link && !(is_numeric($col) || str_starts_with($col, "dim_") || $col == 'time' || $col == 'billing');
 			  	?>
-				<a href="<?php echo $echo_link ? get_url('reporting', 'view_custom_report', array('id' => $report->getId(), 'replace' => true, 'order_by' => $col, 'order_by_asc' => $asc ? 0 : 1)).$parametersUrl : "#" ?>" <?php echo ($echo_link ? "" : 'style="cursor:default;"') ?>>
+				<a href="#" onclick="<?php echo $echo_link ? "og.reorderCustomReport(this, ".$report->getId().",'$col',".($asc ? '1' : '0').");" : "#" ?>" <?php echo ($echo_link ? "" : 'style="cursor:default;"') ?>>
 					<?php echo clean(array_var($columns['names'], $col)) ?>
 				</a>
 		<?php }
 			  if(!$to_print && $sorted){ ?>
-				<span class="db-ico ico-<?php echo $asc ? 'asc' : 'desc' ?>" style="padding:2px 0 0 18px;">&nbsp;</span>
+				<span class="db-ico ico-<?php echo !$asc ? 'asc' : 'desc' ?>" style="padding:2px 0 0 18px;">&nbsp;</span>
 		<?php } ?>
 			</td>
 		<?php 
@@ -166,8 +170,10 @@ function report_table_html_plain($results, $report, $parametersUrl="", $to_print
 				if ($col == 'object_type_id') continue;
 				
 				$value = array_var($row, $col);
+				$type = array_var($columns['types'], $col);
+				$numeric_type = in_array($type, array(DATA_TYPE_INTEGER, DATA_TYPE_FLOAT, 'numeric'));
 		?>
-			<td style="padding-right:10px;" <?php echo is_numeric($value) ? 'class="right"' : ''?>>
+			<td style="padding-right:10px;" <?php echo $numeric_type ? 'class="right"' : ''?>>
 		<?php 
 				$val_type = ($col == 'link' ? '' : array_var($types, $col));
 				$date_format = is_numeric($col) ? "Y-m-d" : user_config_option('date_format');
@@ -398,9 +404,41 @@ function get_report_grouped_values_as_array($group_data, $results, $report, $lev
 }
 
 
+function build_custom_report_group_name($gbk, $row, $ot) {
+	$name = array_var($row, $gbk['n']);
+	
+	// fixed properties
+	if (str_starts_with($gbk['k'], "_group_id_fp_")) {
+		$property = str_replace("_group_id_fp_", "", $gbk['k']);
+		$prop_val = trim(array_var($row, $gbk['n']));
+		
+		switch ($property) {
+			case 'priority':
+				$name = lang('priority ' . $prop_val);
+				break;
+			default:
+				eval('$managerInstance = ' . $ot->getHandlerClass() . "::instance();");
+				if ($managerInstance && ($managerInstance->getColumnType($property) == DATA_TYPE_DATE || $managerInstance->getColumnType($property) == DATA_TYPE_DATETIME)) {
+					if ($prop_val == EMPTY_DATETIME || $prop_val == EMPTY_DATE) {
+						$name = lang('unclassified');
+					} else {
+						if ($managerInstance->getColumnType($col) == DATA_TYPE_DATE) {
+							$name = format_datetime(DateTimeValueLib::dateFromFormatAndString(DATE_MYSQL, $prop_val));
+						} else {
+							$name = format_datetime(DateTimeValueLib::dateFromFormatAndString(DATE_MYSQL, $prop_val));
+						}
+					}
+				} else {
+					$name = $prop_val;
+				}
+		}
+	}
+	
+	return $name;
+}
 
 
-function group_custom_report_results($rows, $group_by_criterias) {
+function group_custom_report_results($rows, $group_by_criterias, $ot) {
 	
 	$linear_groups = array();
 
@@ -412,7 +450,11 @@ function group_custom_report_results($rows, $group_by_criterias) {
 			case 'association': $gkey = '_group_id_a_'.$gb['id']; break;
 			case 'custom_property': $gkey = '_group_id_cp_'.$gb['id']; break;
 			case 'parent_member': $gkey = '_group_id_pm_'.$gb['id']; break;
+			case 'classification': $gkey = '_group_id_dim_'.$gb['id']; break;
+			case 'fixed_property': $gkey = '_group_id_fp_'.$gb['id']; break;
 		}
+		
+		if (!$gkey) $gkey = "";
 		$gname = str_replace("_id_", "_name_", $gkey);
 		$gb_keys[] = array('k' => $gkey, 'n' => $gname);
 	}
@@ -423,8 +465,11 @@ function group_custom_report_results($rows, $group_by_criterias) {
 		$row_g_name = "";
 		$original_gkey = "";
 		foreach ($gb_keys as $gbk) {
-			$row_g_key .= ($row_g_key == "" ? "" : "_") . $row[$gbk['k']];
-			$row_g_name .= ($row_g_name == "" ? "" : "%|%") . $row[$gbk['n']];
+			
+			$gb_name = build_custom_report_group_name($gbk, $row, $ot);
+			
+			$row_g_key .= ($row_g_key == "" ? "" : "_") . array_var($row, $gbk['k']);
+			$row_g_name .= ($row_g_name == "" ? "" : "%|%") . $gb_name;
 			
 			$original_gkey .= ($original_gkey == "" ? "" : ",") . $gbk['k'];
 		}
@@ -503,6 +548,7 @@ function build_report_conditions_html($report_id, $parameters=array()) {
 	$types = $rc->get_report_column_types($report_id);
 	
 	$conditions = ReportConditions::getAllReportConditions($report->getId());
+	$conditionHtml = "";
 	
 	if (count($conditions) > 0) {
 		$model = $object_type instanceof ObjectType ? $object_type->getHandlerClass() : "Objects";
@@ -524,7 +570,10 @@ function build_report_conditions_html($report_id, $parameters=array()) {
 					$coltype = $cp->getOgType();
 				}
 			}else{
-				$name = lang('field ' . $model . ' ' . $condition->getFieldName());
+				$name = Localization::instance()->lang('field ' . $model . ' ' . $condition->getFieldName());
+				if (!$name) {
+					$name = lang('field Objects ' . $condition->getFieldName());
+				}
 					
 				$coltype = array_key_exists($condition->getFieldName(), $types)? $types[$condition->getFieldName()]:'';
 				$paramName = $condition->getFieldName();
@@ -595,3 +644,228 @@ function custom_report_info_blocks($params) {
 <?php 
 }
 
+
+
+function parse_custom_report_group_by($group_by) {
+	
+	$group_by_criterias = array();
+	
+	if (is_array($group_by)) {
+		$group_by = array_filter($group_by);
+		foreach ($group_by as $gb) {
+			$exploded = explode('_', $gb);
+			$type = array_shift($exploded);
+			$id = implode('_', $exploded);
+			
+			switch ($type) {
+				case 'a': $group_by_criterias[] = array('type' => 'association', 'id' => $id);
+					break;
+				case 'cp': $group_by_criterias[] = array('type' => 'custom_property', 'id' => $id);
+					break;
+				case 'pm': $group_by_criterias[] = array('type' => 'parent_member', 'id' => $id);
+					break;
+				case 'dim': $group_by_criterias[] = array('type' => 'classification', 'id' => $id);
+					break;
+				case 'fp': $group_by_criterias[] = array('type' => 'fixed_property', 'id' => $id);
+					break;
+				default:
+					break;
+			}
+		}
+	}
+	return $group_by_criterias;
+}
+
+
+
+
+function build_report_conditions_sql($parameters) {
+	
+	$report = array_var($parameters, 'report');
+	if (!$report instanceof Report) {
+		return;
+	}
+	
+	$params = array_var($parameters, 'params');
+	
+	$ot = ObjectTypes::instance()->findById($report->getReportObjectTypeId());
+	
+	$model = $ot->getHandlerClass();
+	$model_instance = null;
+	if ($model) {
+		$model_instance = new $model();
+	}
+	
+	$allConditions = "";
+	
+	$conditionsFields = ReportConditions::getAllReportConditionsForFields($report->getId());
+	$conditionsCp = ReportConditions::getAllReportConditionsForCustomProperties($report->getId());
+	
+	$show_archived = false;
+	
+	if(count($conditionsFields) > 0){
+		foreach($conditionsFields as $condField){
+			if($condField->getFieldName() == "archived_on"){
+				$show_archived = true;
+			}
+			$skip_condition = false;
+			if ($model_instance) {
+				$col_type = $model_instance->getColumnType($condField->getFieldName());
+			}
+	
+			$allConditions .= ' AND ';
+			$dateFormat = 'm/d/Y';
+			if(isset($params[$condField->getId()])){
+				$value = $params[$condField->getId()];
+				if ($col_type == DATA_TYPE_DATE || $col_type == DATA_TYPE_DATETIME) {
+					$dateFormat = user_config_option('date_format');
+				}
+				if ($value == date_format_tip($dateFormat)) $value = "";
+				
+			} else {
+				$value = $condField->getValue();
+			}
+			
+			if ($value == '' && $condField->getIsParametrizable()) $skip_condition = true;
+	
+			if (!$skip_condition) {
+				$field_name = $condField->getFieldName();
+					
+				if (in_array($ot->getType(), array('dimension_object', 'dimension_group'))) {
+					if (in_array($condField->getFieldName(), Members::getColumns())) {
+						$field_name = 'm`.`'.$condField->getFieldName();
+		
+					} else  if (in_array($condField->getFieldName(), Objects::getColumns())) {
+						$field_name = 'o`.`'.$condField->getFieldName();
+					}
+				} else {
+					if (in_array($condField->getFieldName(), Objects::getColumns())) {
+						$field_name = 'o`.`'.$condField->getFieldName();
+					} else {
+						$field_name = $condField->getFieldName();
+					}
+				}
+				
+				if($condField->getCondition() == 'like' || $condField->getCondition() == 'not like'){
+					$value = '%'.$value.'%';
+				}
+				if ($col_type == DATA_TYPE_DATE || $col_type == DATA_TYPE_DATETIME) {
+					if ($value == date_format_tip($dateFormat)) {
+						$value = EMPTY_DATE;
+					} else {
+						Logger::log_r(array('f' => $dateFormat, 'v' => $value));
+						$dtValue = DateTimeValueLib::dateFromFormatAndString($dateFormat, $value);
+						$value = $dtValue->format('Y-m-d');
+					}
+				}
+				if($condField->getCondition() != '%'){
+					if ($col_type == DATA_TYPE_INTEGER || $col_type == DATA_TYPE_FLOAT) {
+						$allConditions .= '`'.$field_name.'` '.$condField->getCondition().' '.DB::escape($value);
+					} else {
+						if ($condField->getCondition()=='=' || $condField->getCondition()=='<=' || $condField->getCondition()=='>='){
+							if ($col_type == DATA_TYPE_DATETIME || $col_type == DATA_TYPE_DATE) {
+								$equal = 'datediff('.DB::escape($value).', `'.$field_name.'`)=0';
+							} else {
+								$equal = '`'.$field_name.'` '.$condField->getCondition().' '.DB::escape($value);
+							}
+							switch($condField->getCondition()){
+								case '=':
+									$allConditions .= $equal;
+									break;
+								case '<=':
+								case '>=':
+									$allConditions .= '(`'.$field_name.'` '.$condField->getCondition().' '.DB::escape($value).' OR '.$equal.') ';
+									break;
+							}
+						} else {
+							$allConditions .= '`'.$field_name.'` '.$condField->getCondition().' '.DB::escape($value);
+						}
+					}
+				} else {
+					$allConditions .= '`'.$field_name.'` like '.DB::escape("%$value");
+				}
+				
+			} else $allConditions .= ' true';
+	
+		}
+	}
+	
+	if(count($conditionsCp) > 0){
+		$dateFormat = user_config_option('date_format');
+		$date_format_tip = date_format_tip($dateFormat);
+	
+		foreach($conditionsCp as $condCp){
+			if (in_array($ot->getType(), array('dimension_object', 'dimension_group'))) {
+				if (Plugins::instance()->isActivePlugin('member_custom_properties')) {
+					$cp = MemberCustomProperties::getCustomProperty($condCp->getCustomPropertyId());
+				} else {
+					continue;
+				}
+			} else {
+				$cp = CustomProperties::getCustomProperty($condCp->getCustomPropertyId());
+			}
+	
+			$skip_condition = false;
+				
+			if(isset($params[$condCp->getId()."_".$cp->getName()])){
+				$value = $params[$condCp->getId()."_".$cp->getName()];
+			}else{
+				$value = $condCp->getValue();
+			}
+			if ($value == '' && $condCp->getIsParametrizable()) $skip_condition = true;
+			if (!$skip_condition) {
+				$current_condition = ' AND ';
+				if (in_array($ot->getType(), array('dimension_object', 'dimension_group'))) {
+					$current_condition .= 'm.id IN ( SELECT member_id as id FROM '.TABLE_PREFIX.'member_custom_property_values cpv WHERE ';
+				} else {
+					$current_condition .= 'o.id IN ( SELECT object_id as id FROM '.TABLE_PREFIX.'custom_property_values cpv WHERE ';
+				}
+				$current_condition .= ' cpv.custom_property_id = '.$condCp->getCustomPropertyId();
+					
+				if($condCp->getCondition() == 'like' || $condCp->getCondition() == 'not like'){
+					$value = '%'.$value.'%';
+				}
+				if ($cp->getType() == 'date') {
+					if ($value == $date_format_tip) continue;
+					$dtValue = DateTimeValueLib::dateFromFormatAndString($dateFormat, $value);
+					$value = $dtValue->format('Y-m-d H:i:s');
+				}
+				if($condCp->getCondition() != '%'){
+					if ($cp->getType() == 'numeric' && is_numeric($value)) {
+						$current_condition .= ' AND cpv.value '.$condCp->getCondition().' '.$value;
+					}else if ($cp->getType() == 'boolean') {
+						$current_condition .= ' AND cpv.value '.$condCp->getCondition().' '.($value ? '1' : '0');
+						if (!$value) {
+							if (in_array($ot->getType(), array('dimension_object', 'dimension_group'))) {
+								$current_condition .= ') OR m.id NOT IN (SELECT member_id as id FROM '.TABLE_PREFIX.'member_custom_property_values cpv2 
+									WHERE cpv2.member_id=o.id AND cpv2.value=1 AND cpv2.custom_property_id = '.$condCp->getCustomPropertyId();
+							} else {
+								$current_condition .= ') OR o.id NOT IN (SELECT object_id as id FROM '.TABLE_PREFIX.'custom_property_values cpv2
+									WHERE cpv2.object_id=o.id AND cpv2.value=1 AND cpv2.custom_property_id = '.$condCp->getCustomPropertyId();
+							}
+						}
+					}else{
+						$current_condition .= ' AND cpv.value '.$condCp->getCondition().' '.DB::escape($value);
+					}
+				}else{
+					$current_condition .= ' AND cpv.value like '.DB::escape("%$value");
+				}
+				$current_condition .= ')';
+				$allConditions .= $current_condition;
+			}
+		}
+	}
+	
+	if (!$show_archived) {
+		if (in_array($ot->getType(), array('dimension_object', 'dimension_group'))) {
+			$allConditions .= " AND m.archived_by_id=0 ";
+		} else {
+			$allConditions .= " AND o.archived_by_id=0 ";
+		}
+	}
+	
+	
+	return array(
+			'all_conditions' => $allConditions,
+	);
+}

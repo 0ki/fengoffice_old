@@ -1183,10 +1183,10 @@ INSERT INTO `fo_contact_member_permissions` (`permission_group_id`, `member_id`,
 
 
 UPDATE `fo_contact_config_options` 
- SET default_value = concat((SELECT `id` FROM `fo_dimensions` WHERE `code`='workspaces'),',', (SELECT `id` FROM `fo_dimensions` WHERE `code`='feng_persons'),',', (SELECT `id` FROM `fo_dimensions` WHERE `code`='tags')) 
+ SET default_value = concat((SELECT `id` FROM `fo_dimensions` WHERE `code`='workspaces'),',', (SELECT `id` FROM `fo_dimensions` WHERE `code`='tags')) 
  WHERE name='root_dimensions';
 UPDATE `fo_config_options` 
- SET value = concat((SELECT `id` FROM `fo_dimensions` WHERE `code`='workspaces'),',', (SELECT `id` FROM `fo_dimensions` WHERE `code`='feng_persons'),',', (SELECT `id` FROM `fo_dimensions` WHERE `code`='tags')) 
+ SET value = concat((SELECT `id` FROM `fo_dimensions` WHERE `code`='workspaces'),',', (SELECT `id` FROM `fo_dimensions` WHERE `code`='tags')) 
  WHERE name='enabled_dimensions';
 
 -- TAGS object members
@@ -1293,3 +1293,11 @@ update fo_contacts set last_visit='0000-00-00 00:00:00' where last_visit is null
 update fo_contacts set personal_member_id=0 where personal_member_id is null;
 update fo_members set archived_by_id=0 where archived_by_id is null;
 update fo_members set archived_on='0000-00-00 00:00:00' where archived_on is null;
+
+
+INSERT INTO fo_dimension_options (`dimension_id`, `name`, `value`) VALUES
+ ((SELECT `id` FROM `fo_dimensions` WHERE `code`='workspaces'),'useLangs','1'),
+ ((SELECT `id` FROM `fo_dimensions` WHERE `code`='workspaces'),'showInPaths','1'),
+ ((SELECT `id` FROM `fo_dimensions` WHERE `code`='tags'),'useLangs','1'),
+ ((SELECT `id` FROM `fo_dimensions` WHERE `code`='tags'),'showInPaths','1')
+ON DUPLICATE KEY UPDATE `value`=`value`;

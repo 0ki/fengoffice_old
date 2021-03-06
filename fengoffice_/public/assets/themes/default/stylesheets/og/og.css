@@ -679,6 +679,13 @@
 	text-align: center;
 }
 
+.x-grid3-scroller .inner-message.warning {
+	border-radius: 2px;
+	background-color: #FFDADA;
+	color: #330000;
+	padding: 10px 0;
+}
+
 .subwscrumbs {
 	font-weight: bold;
 	padding-bottom:2px;
@@ -1778,6 +1785,9 @@ a.underline {
 
 .form-tab .custom-properties {
 	margin-bottom: 12px;
+}
+.form-tab .custom-properties label {
+	margin-top: 3px;
 }
 
 .custom-properties .multiple-list-custom-property {

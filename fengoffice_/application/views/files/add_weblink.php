@@ -97,7 +97,7 @@
 			</div>
 		</div>
 	        
-		<div id="<?php echo $genid ?>add_custom_properties_div" class="form-tab">
+		<div id="<?php echo $genid ?>add_custom_properties_div" class="form-tab other-custom-properties-div">
 			<?php echo render_object_custom_properties($file, false) ?>
 			<?php echo render_add_custom_properties($file); ?>
 	    </div>

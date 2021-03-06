@@ -104,6 +104,26 @@ class MemberController extends ApplicationController {
 					} else {
 						$order = 'mem.`name`';
 					}
+					
+				} else if (str_starts_with($order, "dimassoc_")) {
+					// check if order column is an associated dimension
+					$assoc_id = str_replace("dimassoc_", "", $order);
+					$assoc = DimensionMemberAssociations::findById($assoc_id);
+					if ($assoc instanceof DimensionMemberAssociation) {
+						if ($assoc->getObjectTypeId() == $member_type->getId()) {
+							$order_join_sql .= "
+								LEFT JOIN ".TABLE_PREFIX."member_property_members ord_mpm ON ord_mpm.member_id=mem.id AND ord_mpm.association_id=$assoc_id
+								LEFT JOIN ".TABLE_PREFIX."members ord_mem ON ord_mem.id=ord_mpm.property_member_id";
+						} else {
+							$order_join_sql .= "
+								LEFT JOIN ".TABLE_PREFIX."member_property_members ord_mpm ON ord_mpm.property_member_id=mem.id AND ord_mpm.association_id=$assoc_id
+								LEFT JOIN ".TABLE_PREFIX."members ord_mem ON ord_mem.id=ord_mpm.member_id";
+						}
+						$order = "ord_mem.`name`";
+					} else {
+						$order = 'mem.`name`';
+					}
+					
 				} else {
 					// check if order column is specific from associated member type table
 					
@@ -221,7 +241,12 @@ class MemberController extends ApplicationController {
 			  }
 			}
 		}
-		$parent_member_cond = $parent instanceof Member ? "AND mem.parent_member_id=".$parent->getId() : "";
+		$all_parent_ids = array();
+		if ($parent instanceof Member) {
+			$all_parent_ids = $parent->getAllChildrenIds(true);
+			$all_parent_ids[] = $parent->getId();
+		}
+		$parent_member_cond = count($all_parent_ids)>0 ? "AND mem.parent_member_id IN (".implode(',',$all_parent_ids).")" : "";
 		
 		return $parent_member_cond;
 	}
@@ -549,8 +574,6 @@ class MemberController extends ApplicationController {
 			tpl_assign('permission_parameters', $permission_parameters);
 			//--
 			
-			tpl_assign("member", $member);
-			
 			$sel_dim = get_id("dim_id");
 			$current_dimension = Dimensions::getDimensionById($sel_dim);
 			if (!$current_dimension instanceof Dimension) {
@@ -558,6 +581,9 @@ class MemberController extends ApplicationController {
 				ajx_current("empty");
 				return;
 			}
+			$member->setDimensionId($current_dimension->getId());
+			
+			tpl_assign("member", $member);
 			tpl_assign("current_dimension", $current_dimension);
 			
 			$ot_ids = implode(",", DimensionObjectTypes::getObjectTypeIdsByDimension($current_dimension->getId()));
@@ -836,11 +862,11 @@ class MemberController extends ApplicationController {
 	}
 	
 	function saveMember($member_data, Member $member, $is_new = true) {
-		if (!array_var($member_data, 'parent_member_id') && !SystemPermissions::userHasSystemPermission(logged_user(), 'can_manage_security')) {
+		/*if (!array_var($member_data, 'parent_member_id') && !SystemPermissions::userHasSystemPermission(logged_user(), 'can_manage_security')) {
 			$ot = ObjectTypes::findById(array_var($member_data, 'object_type_id'));
 			$ot_name = $ot instanceof ObjectType ? lang('the '.$ot->getName()) : ' ';
 			throw new Exception(lang('you cant add member without security permissions', $ot_name));
-		}
+		}*/
 		
 		try {
 			DB::beginWork();
@@ -941,6 +967,8 @@ class MemberController extends ApplicationController {
 				$mcp_controller->add_custom_properties($member);
 			}
 			
+			// save associated members
+			save_associated_dimension_members(array('member' => $member, 'request' => $_REQUEST, 'is_new' => $is_new));
 			
 			// Other dimensions member restrictions
 			$restricted_members = array_var($_POST, 'restricted_members');
@@ -1135,6 +1163,8 @@ class MemberController extends ApplicationController {
 				if ($old_parent != $member->getParentMemberId()) {
 					Env::useHelper('dimension');
 					update_all_childs_depths($member, $old_parent);
+					
+					evt_add('member parent changed', array('m' => $member->getId(), 'p' => $member->getParentMemberId(), 'op' => $old_parent, 'd' => $member->getDimensionId()));
 				}
 			}
 			

@@ -78,6 +78,7 @@ INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`
 	('general', 'mandatory_address_fields', '', 'AddressFieldsConfigHandler', 0, 0, NULL),
 	('system', 'last_template_instantiation_id', '0', 'IntegerConfigHandler', 1, 0, NULL),
 	('brand_colors', 'brand_colors_head_back', '424242', 'ColorPickerConfigHandler', '0', '0', NULL),
+    ('brand_colors', 'brand_colors_texture', '1', 'BoolConfigHandler', '0', '0', NULL),
 	('brand_colors', 'brand_colors_head_font', 'FFFFFF', 'ColorPickerConfigHandler', '0', '0', NULL),
 	('brand_colors', 'brand_colors_tabs_back', 'e7e7e7', 'ColorPickerConfigHandler', '1', '0', NULL),
 	('brand_colors', 'brand_colors_tabs_font', '333333', 'ColorPickerConfigHandler', '1', '0', NULL);
@@ -154,7 +155,8 @@ INSERT INTO `<?php echo $table_prefix ?>contact_config_categories` (`name`, `is_
 	('calendar panel', 0, 0, 4),
 	('context help', 1, 0, 5),
 	('time panel', 0, 0, 3),
-	('listing preferences', 0, 0, 10);
+	('listing preferences', 0, 0, 10),
+	('reporting', 0, 0, 15);
 	
 INSERT INTO `<?php echo $table_prefix ?>contact_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES 
  ('task panel','tasksDateStart','0000-00-00 00:00:00','DateTimeConfigHandler',1,0,'date from to filter out task list'),
@@ -334,7 +336,8 @@ INSERT INTO `<?php echo $table_prefix ?>contact_config_options` (`category_name`
  ('general', 'can_modify_navigation_panel', '1', 'BoolConfigHandler', 1, 0, ''),
  ('general', 'view_mail_attachs_expanded', '1', 'BoolConfigHandler', 1, 0, ''),
  ('general', 'timeReportShowBilling', '0', 'BoolConfigHandler', 1, 0, ''),
- ('general', 'settings_closed', '0', 'BoolConfigHandler', 1, 0, '');
+ ('general', 'settings_closed', '0', 'BoolConfigHandler', 1, 0, ''),
+ ('reporting', 'report_time_colums_display', 'friendly', 'TimeFormatConfigHandler', 0, 1, '');
 
 INSERT INTO `<?php echo $table_prefix ?>object_types` (`name`,`handler_class`,`table_name`,`type`,`icon`,`plugin_id`) VALUES
  ('workspace', 'Workspaces', 'workspaces', 'dimension_object', 'workspace', 0),
@@ -632,3 +635,15 @@ INSERT INTO `<?php echo $table_prefix ?>currencies` (`symbol`, `name`, `short_na
 INSERT INTO <?php echo $table_prefix ?>custom_properties (`object_type_id`,`name`,`code`,`type`,`visible_by_default`,`is_special`) VALUES
 ((SELECT id FROM <?php echo $table_prefix ?>object_types WHERE name='contact'), 'Job title', 'job_title', 'text', 1, 1);
 
+
+
+
+INSERT INTO <?php echo $table_prefix ?>dimension_associations_config (association_id, config_name, value)
+	SELECT id, 'autoclassify_in_property_member', '1'
+	FROM <?php echo $table_prefix ?>dimension_member_associations WHERE associated_dimension_id NOT IN (SELECT id FROM <?php echo $table_prefix ?>dimensions WHERE code='feng_persons')
+ON DUPLICATE KEY UPDATE value=value;
+
+INSERT INTO <?php echo $table_prefix ?>dimension_associations_config (association_id, config_name, value)
+	SELECT id, 'allow_remove_from_property_member', '1'
+	FROM <?php echo $table_prefix ?>dimension_member_associations WHERE associated_dimension_id NOT IN (SELECT id FROM <?php echo $table_prefix ?>dimensions WHERE code='feng_persons')
+ON DUPLICATE KEY UPDATE value=value;

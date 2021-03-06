@@ -182,4 +182,6 @@
 	'restore user' => 'Réactiver l\'utilisateur',
 	'day' => 'Jour',
 	'year' => 'Année',
+	'dont filter' => 'Ne pas filtrer',
+	'select all' => 'Sélectionner tous',
 ); ?>

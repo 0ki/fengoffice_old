@@ -874,12 +874,12 @@ class TaskController extends ApplicationController {
 			}
 			if((($filter_from_date != '0000-00-00 00:00:00')) && (($filter_to_date != '0000-00-00 00:00:00'))){
 		
-				$tasks_from_date = " AND (((`start_date` BETWEEN '" . $dateFrom ."' AND '".$dateTo."') AND `start_date` != ". DB::escape(EMPTY_DATETIME) .") OR ((`due_date` BETWEEN '" . $dateFrom ."' AND '".$dateTo."') AND `due_date` != ". DB::escape(EMPTY_DATETIME) ."))";
+				$tasks_from_date = " AND (((`e`.`start_date` BETWEEN '" . $dateFrom ."' AND '".$dateTo."') AND `e`.`start_date` != ". DB::escape(EMPTY_DATETIME) .") OR ((`e`.`due_date` BETWEEN '" . $dateFrom ."' AND '".$dateTo."') AND `e`.`due_date` != ". DB::escape(EMPTY_DATETIME) ."))";
 			}elseif (($filter_from_date != '0000-00-00 00:00:00')){
-				$tasks_from_date = " AND (`start_date` > '" . $dateFrom ."' OR `due_date` > '" . $dateFrom."') ";
+				$tasks_from_date = " AND (`e`.`start_date` > '" . $dateFrom ."' OR `e`.`due_date` > '" . $dateFrom."') ";
 			}else{
 					
-				$tasks_from_date = "AND ((`start_date` < '".$dateTo."' AND `start_date` != ". DB::escape(EMPTY_DATETIME) .") OR (`due_date` < '".$dateTo."' AND `due_date` != ".DB::escape(EMPTY_DATETIME)."))";
+				$tasks_from_date = "AND ((`e`.`start_date` < '".$dateTo."' AND `e`.`start_date` != ". DB::escape(EMPTY_DATETIME) .") OR (`e`.`due_date` < '".$dateTo."' AND `e`.`due_date` != ".DB::escape(EMPTY_DATETIME)."))";
 		
 			}
 		}else{
@@ -1459,15 +1459,22 @@ class TaskController extends ApplicationController {
 		$groupId = $show_more_conditions['groupId'];
 		$start = $show_more_conditions['start'];
 		$limit = $show_more_conditions['limit'];
-	
+
+		$join_params['join_type'] = "LEFT ";
+		$join_params['table'] = TABLE_PREFIX."project_milestones";
+		$join_params['jt_field'] = "object_id";
+		$join_params['e_field'] = "milestone_id";
 		$groups = ProjectTasks::instance()->listing(array(
 				"select_columns" => array($milestone_field." AS group_id ", $milestone_field." AS group_name ", "COUNT(o.id) AS total"),
 				"extra_conditions" => $conditions.$list_subtasks_cond,
 				"group_by" => " `group_name`",
+				"order" => " ISNULL(`jt`.`due_date`), `jt`.`due_date`",
+				"order_dir" => 'ASC',
+				"join_params"=> $join_params,
 				"count_results" => false,
 				"raw_data" => true,
 		))->objects;
-	
+
 		$more_group_ret = array();
 		foreach($groups as $key => $group){
 			if(!is_null($groupId) && $group['group_id'] != $groupId){
@@ -1673,14 +1680,16 @@ class TaskController extends ApplicationController {
 		
 		if(is_null($groupId) || $groupId > 0){
 			$groups = ProjectTasks::instance()->listing(array(
-					"select_columns" => array("`jtm`.`id` AS group_id " , "`jtm`.`name` AS group_name ", "`jtm`.`color` AS group_icon ", "SUM(time_estimate) AS group_time_estimate ", "COUNT(`e`.`object_id`) AS total"),
+					"select_columns" => array("`jtm`.`id` AS group_id " , "`jtm`.`parent_member_id` AS group_parent " , "`jtm`.`name` AS group_name ", "`jtm`.`color` AS group_icon ", "SUM(time_estimate) AS group_time_estimate ", "COUNT(`e`.`object_id`) AS total"),
 					"extra_conditions" => $conditions.$list_subtasks_cond,
 					"group_by" => " `jtm`.`id`",
+				    "order" => " `jtm`.`name`",
+					"order_dir" => " ASC",
 					"join_params"=> $join_params,
 					"count_results" => false,
 					"raw_data" => true,
 			))->objects;
-		
+
 		
 			foreach($groups as $key => $group){
 				if(!is_null($groupId) && $group['group_id'] != $groupId){
@@ -1713,7 +1722,12 @@ class TaskController extends ApplicationController {
 					$groups[$key][$total_key] = $total;
 				}
 								
-				$groups[$key]['group_icon'] = "ico-color".$group['group_icon'];			
+				$groups[$key]['group_icon'] = "ico-color".$group['group_icon'];
+
+				//breadcrumb
+				if($group['group_parent']) {
+					$groups[$key]['group_memPath'] = json_encode(array($dim_id => array($group['group_parent'] => $group['group_parent'])));
+				}
 			}		
 		}
 		
@@ -1797,32 +1811,29 @@ class TaskController extends ApplicationController {
 		//START tasks tree
 		$list_subtasks = user_config_option('tasksShowSubtasksStructure') && !user_config_option('show_tasks_list_as_gantt');
 		if($list_subtasks){
-			$tasks_tree = ProjectTasks::instance()->listing(array(
+			// get the sql that brings all the root tasks ids
+			$listing_sql = ProjectTasks::instance()->listing(array(
 					"select_columns" => array("e.object_id","e.parent_id","e.depth","e.parents_path"),
 					"extra_conditions" => $conditions,
 					"join_params"=> $join_params,
 					"group_by" => $group_by,				
 					"count_results" => false,
 					"raw_data" => true,
-			))->objects;
-			if(is_array($tasks_tree)){
-				$root_nodes = $this->getRootNodes($tasks_tree);
-				if (is_array($root_nodes) && count($root_nodes) > 0) {
-					$see_roots_ids = implode(',', $root_nodes);
-					$conditions .= " AND e.object_id  IN ($see_roots_ids)";
-					$total_see_roots_tasks = count($root_nodes);
-				} else {
-					$total_see_roots_tasks = 0;
-				}
-			}else{
-				$total_see_roots_tasks = 0;
-			}
-		}else{
-			$total_see_roots_tasks = 0;
+					"only_return_query_string" => true,
+			));
+			
+			// generate the sql that appends to the general conditions the part to exclude the tasks that 
+			// have their parent in the current group with the same conditions
+			$sub_listing_sql = str_replace(array("`e`.","e."), "e2.", $listing_sql);
+			$sub_listing_sql = str_replace("project_tasks e", "project_tasks e2", $sub_listing_sql);
+			$sub_listing_sql = str_replace("WHERE", "WHERE e2.object_id IN (e.parents_path) AND ", $sub_listing_sql);
+			
+			$conditions = $conditions . " AND NOT EXISTS($sub_listing_sql)";
+		
 		}
 		//END tasks tree
 		
-		$tasks = ProjectTasks::instance()->listing(array(
+		$tasks_listing = ProjectTasks::instance()->listing(array(
 				"select_columns" => array("e.*","o.*"),
 				"extra_conditions" => $conditions,
 				"join_params"=> $join_params,
@@ -1831,9 +1842,12 @@ class TaskController extends ApplicationController {
 				"limit" => $limit,
 				"order" => $order,
 				"order_dir" => $order_dir,
-				"count_results" => false,
+				"count_results" => true,
 				"raw_data" => true,
-		))->objects;
+		));
+		
+		$tasks = $tasks_listing->objects;
+		$total_see_roots_tasks = $tasks_listing->total;
 		
 		$task_ids = array();
 		$tasks_array = array();
@@ -2094,8 +2108,9 @@ class TaskController extends ApplicationController {
 		if (logged_user()->isGuest()) {
 			$users = array(logged_user());
 		} else {
-			$users = allowed_users_in_context(ProjectTasks::instance()->getObjectTypeId(), active_context(), ACCESS_LEVEL_READ, '', true);
+			$users = allowed_users_to_assign(null,true,false);
 		}
+
 		$allUsers = Contacts::getAllUsers(null, true);
 		
 		$user_ids = array(-1);
@@ -2422,6 +2437,7 @@ class TaskController extends ApplicationController {
 				}
 				$task->setUseStartTime(is_array($starttime));
 			}
+
 			$time_estimate = (array_var($_POST, 'hours', 0) * 60) + array_var($_POST, 'minutes', 0);
 			if(config_option("wysiwyg_tasks")){
 				$text_post = preg_replace("/[\n|\r|\n\r]/", '', array_var($_POST, 'text', ''));
@@ -2446,6 +2462,37 @@ class TaskController extends ApplicationController {
 				'object_subtype' => array_var($_POST, "object_subtype", config_option('default task co type')),
 				'send_notification_subscribers' => user_config_option("can notify subscribers"),
 			); // array
+
+
+			//if is subtask copy parent dates and assigned
+			if(array_var($_REQUEST, 'parent_id', 0)){
+				$parent_task = ProjectTasks::findById(array_var($_REQUEST, 'parent_id'));
+				if($parent_task instanceof ProjectTask){
+					$dd = $parent_task->getDueDate() instanceof DateTimeValue ? $parent_task->getDueDate() : null;
+					if($dd instanceof DateTimeValue && $parent_task->getUseDueTime()){
+						$dd->advance(logged_user()->getTimezone() * 3600);
+					}
+					$task->setUseDueTime($parent_task->getUseDueTime());
+
+					$sd = $parent_task->getStartDate() instanceof DateTimeValue ? $parent_task->getStartDate() : null;
+					if($sd instanceof DateTimeValue && $parent_task->getUseStartTime()){
+						$sd->advance(logged_user()->getTimezone() * 3600);
+					}
+					$task->setUseStartTime($parent_task->getUseStartTime());
+
+					$task_data['start_date'] = $sd;
+					$task_data['due_date'] = $dd;
+				}
+
+				//copy assigned
+				$task_data['assigned_to_contact_id']= $parent_task->getAssignedToContactId();
+
+				//copy milestone
+				$task_data['milestone_id']= $parent_task->getMilestoneId();
+
+				//copy clasification
+				$task_data['selected_members_ids']= $parent_task->getMemberIds();
+			}
 			
 			if (Plugins::instance()->isActivePlugin('mail')) {
 				$from_email = array_var($_GET, 'from_email');
@@ -2609,12 +2656,12 @@ class TaskController extends ApplicationController {
 				//Link objects
 				$object_controller = new ObjectController();
 				
-				if($task instanceof TemplateTask ){
-					//if(!empty($member_ids)){
+				if (!is_null($member_ids)) {
+					if($task instanceof TemplateTask ){
 						$object_controller->add_to_members($task, $member_ids, null, false);
-					//}
-				}else{
-					$object_controller->add_to_members($task, $member_ids);
+					}else{
+						$object_controller->add_to_members($task, $member_ids);
+					}
 				}				
 				$is_template = $task instanceof TemplateTask;
 				$object_controller->add_subscribers($task,null,!$is_template);
@@ -2816,6 +2863,24 @@ class TaskController extends ApplicationController {
 					
 					if ($stdata['assigned_to'] > 0 && $stdata['assigned_to'] != $st->getAssignedToContactId()) {
 						$to_log['assigned'][] = $st;
+					}
+
+					if($new_subtask){
+						//if is new subtask copy parent dates
+						$dd = $parent_task->getDueDate();
+						if($dd instanceof DateTimeValue){
+							$st->setDueDate($dd);
+						}
+						$st->setUseDueTime($parent_task->getUseDueTime());
+
+						$sd = $parent_task->getStartDate();
+						if($sd instanceof DateTimeValue){
+							$st->setStartDate($sd);
+						}
+						$st->setUseStartTime($parent_task->getUseStartTime());
+
+						//copy milestone
+						$st->setMilestoneId($parent_task->getMilestoneId());
 					}
 					
 					$st->setParentId($parent_task->getId());
@@ -3235,10 +3300,12 @@ class TaskController extends ApplicationController {
 				}
 
 				$object_controller = new ObjectController();
-				if($isTemplateTask){
-					$object_controller->add_to_members($task, $member_ids, null, false);
-				}else{
-					$object_controller->add_to_members($task, $member_ids);
+				if (!is_null($member_ids)) {
+					if($isTemplateTask){
+						$object_controller->add_to_members($task, $member_ids, null, false);
+					}else{
+						$object_controller->add_to_members($task, $member_ids);
+					}
 				}
 				$is_template = $task instanceof TemplateTask;
 				$object_controller->add_subscribers($task,null,!$is_template);
@@ -3275,9 +3342,12 @@ class TaskController extends ApplicationController {
 				}
 				
 
-				if (!is_array($member_ids) || count($member_ids) == 0) $member_ids = array(0);
-				$members = Members::findAll(array('conditions' => "id IN (".implode(',', $member_ids).")"));
-				$task->apply_members_to_subtasks($members, true);
+				// copy members to subtask only for tasks, not template tasks
+				if ($task instanceof ProjectTask) {
+					if (!is_array($member_ids) || count($member_ids) == 0) $member_ids = array(0);
+					$members = Members::findAll(array('conditions' => "id IN (".implode(',', $member_ids).")"));
+					$task->apply_members_to_subtasks($members, true);
+				}
 
 				// apply values to subtasks
 				$assigned_to = $task->getAssignedToContactId();

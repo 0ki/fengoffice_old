@@ -340,7 +340,7 @@ if(count($cps) > 0){
 			
 			if (!isset($value)) $value = "";
 			$ret = null;
-			Hook::fire('after_render_cp_input', array('custom_prop' => $customProp, 'value' => $value, 'input_name' => $name), $ret);
+			Hook::fire('after_render_cp_input', array('custom_prop' => $customProp, 'value' => $value, 'input_name' => $name, 'object' => $_custom_properties_object), $ret);
 			
 			if ($customProp->getDescription() != ''){
 				// the label is set to pad the description

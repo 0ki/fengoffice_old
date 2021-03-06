@@ -594,7 +594,9 @@ class ReportingController extends ApplicationController {
 					$no_need_to_add_to_members = count($member_ids) == 0 && (logged_user()->isManager() || logged_user()->isAdminGroup());
 					if (!$no_need_to_add_to_members) {
 						$object_controller = new ObjectController();
-						$object_controller->add_to_members($newReport, $member_ids);
+						if (!is_null($member_ids)) {
+							$object_controller->add_to_members($newReport, $member_ids);
+						}
 					} else {
 						$newReport->addToSharingTable();
 					}
@@ -716,7 +718,9 @@ class ReportingController extends ApplicationController {
 				}
 				
 				$object_controller = new ObjectController();
-				$object_controller->add_to_members($report, $member_ids);
+				if (!is_null($member_ids)) {
+					$object_controller->add_to_members($report, $member_ids);
+				}
 					
 				DB::commit();
 				flash_success(lang('custom report updated'));
@@ -836,6 +840,7 @@ class ReportingController extends ApplicationController {
 			
 			$parametersUrl = '';
 			if ($params) {
+				if (!is_array($params)) $params = json_decode($params, true);
 				foreach($params as $id => $value){
 					$parametersUrl .= '&params['.$id.']='.$value;
 				}
@@ -895,8 +900,9 @@ class ReportingController extends ApplicationController {
 		$filename = "report_print_".gen_id().".html";
 		$filepath = ROOT . "/tmp/$filename";
 		
+		$params = array();
 		$params_str = array_var($_REQUEST, 'params');
-		if ($params_str) $params = json_decode(str_replace("'", '"',$params_str), true); 
+		if ($params_str) $params = json_decode(str_replace("'", '"',$params_str), true);
 		
 		$_GET['limit'] = 0;
 		$results = $this->view_custom_report($report_id, null, $params);
@@ -986,9 +992,10 @@ class ReportingController extends ApplicationController {
 		// convert html to pdf
 		$orientation = array_var($_REQUEST, 'pdfPageLayout') == 'L' ? 'Landscape' : 'Portrait';
 		
-		$real_pdf_filename = convert_to_pdf($html, $orientation, str_replace(" ", "_", $report->getObjectName()));
+		$pdf_data = convert_to_pdf($html, $orientation, str_replace(" ", "_", $report->getObjectName()));
+		$real_pdf_filename = $pdf_data['name'];
 		
-		ajx_extra_data(array("filename" => $real_pdf_filename));
+		ajx_extra_data(array("filename" => $real_pdf_filename, 'size' => $pdf_data['size']));
 		
 	}
 	
@@ -1061,18 +1068,25 @@ class ReportingController extends ApplicationController {
 		if(array_var($_REQUEST, 'file_type')){
 			$file_type = array_var($_REQUEST, 'file_type');
 		}
+		if(array_var($_REQUEST, 'file_size')){
+			$size = array_var($_REQUEST, 'file_size');
+		}
 		
-		$file_path = "tmp/".$file_name;
-		$size = filesize($file_path);
+		$file_path = ROOT."/tmp/".$file_name;
+		if(!file_exists($file_path)) {
+			exit;
+		}
+		
+		if (!isset($size)) $size = filesize($file_path);
 		
 		//user current date
 		$now_date = DateTimeValueLib::now();
 		$now_date->advance(logged_user()->getTimezone() * 3600);
 		$now = $now_date->format('Y-m-d_H:i:s');
 		
-		download_file($file_path, $file_type, $file_name, $size, true);
+		download_file($file_path, $file_type, $file_name, true, true, $size);
 		
-		unlink($file_path);
+	//	unlink($file_path);
 		
 		die();
 	}
@@ -1536,8 +1550,10 @@ class ReportingController extends ApplicationController {
 			if (class_exists($ot->getHandlerClass())) {
 				eval('$managerInstance = ' . $ot->getHandlerClass() . "::instance();");
 				$objectColumns = $managerInstance->getColumns();
+				$externalFields = $managerInstance->getExternalColumns();
 			} else {
 				$objectColumns = array();
+				$externalFields = array();
 			}
 			
 			$objectFields = array();
@@ -1545,11 +1561,17 @@ class ReportingController extends ApplicationController {
 			if (class_exists($ot->getHandlerClass())) {
 				$objectColumns = array_diff($objectColumns, $managerInstance->getSystemColumns());
 				foreach($objectColumns as $column){
-					$objectFields[$column] = $managerInstance->getColumnType($column);
+					if (!in_array($column, $externalFields)) {
+						$objectFields[$column] = $managerInstance->getColumnType($column);
+					}
 				}
 			}
 			
-			$common_columns = Objects::instance()->getColumns(false);
+			if ($ot->getType() == 'dimension_group') {
+				$common_columns = array('id' => DATA_TYPE_INTEGER, 'name' => DATA_TYPE_STRING, 'archived_on' => DATA_TYPE_DATETIME, 'archived_by_id' => DATA_TYPE_INTEGER);
+			} else {
+				$common_columns = Objects::instance()->getColumns(false);
+			}
 			if (class_exists($ot->getHandlerClass())) {
 				$system_columns = $managerInstance->getSystemColumns();
 				$common_columns = array_diff_key($common_columns, array_flip($system_columns));
@@ -1581,7 +1603,7 @@ class ReportingController extends ApplicationController {
 			}
 	
 			if (class_exists($ot->getHandlerClass())) {
-				$externalFields = $managerInstance->getExternalColumns();
+				
 				foreach($externalFields as $extField){
 					$field_name = Localization::instance()->lang('field '.$ot->getHandlerClass().' '.$extField);
 					if (is_null($field_name)) $field_name = lang('field Objects '.$extField);

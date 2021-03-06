@@ -177,43 +177,61 @@ function intersectCSVs($csv1, $csv2){
 	return implode(',', $final);
 }
 
-function allowed_users_to_assign($context = null, $filter_by_permissions = true) {
+function allowed_users_to_assign($context = null, $filter_by_permissions = true, $return_company_array = true) {
 	if ($context == null) {
 		$context = active_context();
 	}
-	
+
 	if(!can_manage_tasks(logged_user()) && can_task_assignee(logged_user())) {
 		$contacts = array(logged_user());
 	} else if (can_manage_tasks(logged_user())) {
+		$contacts = array();
+		$tmp_contacts = array();
 		// for task selectors
 		if ($filter_by_permissions) {
-			$contacts = allowed_users_in_context(ProjectTasks::instance()->getObjectTypeId(), $context, ACCESS_LEVEL_READ);
+			//check if context is empty
+			$root_context = true;
+			if (isset($context) && is_array($context)) {
+				foreach ($context as $selection) {
+					if ($selection instanceof Member && $selection->getDimension()->getDefinesPermissions() && $selection->getDimension()->getIsManageable()) {
+						$root_context = false;
+						break;
+					}
+				}
+			}
+			//get users with can_task_assignee permissions
+			if($root_context){
+				$tmp_contacts = get_users_with_system_permission('can_task_assignee');
+			}else{
+				$tmp_contacts = allowed_users_in_context(ProjectTasks::instance()->getObjectTypeId(), $context, ACCESS_LEVEL_READ);
+			}
 		} else {
 			// for template variables selectors
 			$tmp_contacts = Contacts::getAllUsers();
-			$contacts = array();
-			foreach ($tmp_contacts as $c) {
-				if (can_task_assignee($c)) $contacts[] = $c;
-			}
+		}
+		foreach ($tmp_contacts as $c) {
+			if (can_task_assignee($c)) $contacts[] = $c;
 		}
 	} else {
 		$contacts = array();
 	}
-	
+
+	if(!$return_company_array){
+		return $contacts;
+	}
+
 	$comp_array = array();
 	Hook::fire('contact_check_can_view_in_array', null, $contacts);
 	foreach ($contacts as $contact) { /* @var $contact Contact */
-		
 		if (!isset($comp_array[$contact->getCompanyId()])) {
 			if ($contact->getCompanyId() == 0) {
-				$comp_array[0] = array('id' => "0", 'name' => lang('without company'), 'users' => array() );
+				$comp_array[0] = array('id' => "0", 'name' => lang('without company'), 'users' => array());
 			} else {
 				$comp = Contacts::findById($contact->getCompanyId());
 				$comp_array[$contact->getCompanyId()] = array('id' => $contact->getCompanyId(), 'name' => $comp->getObjectName(), 'users' => array());
 			}
 		}
 		$comp_array[$contact->getCompanyId()]['users'][] = array('id' => $contact->getId(), 'name' => $contact->getObjectName(), 'isCurrent' => $contact->getId() == logged_user()->getId());
-		
 	}
 	
 	return array_values($comp_array);

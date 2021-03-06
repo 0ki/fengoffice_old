@@ -40,6 +40,15 @@ abstract class ContentDataObjects extends DataManager {
 		return array();
 	}
 	
+	
+	/**
+	 * Returns the numeric fields that store a time value
+	 * Must be overriden by the specific object classes
+	 */
+	function getTimeColumns() {
+		return array();
+	}
+	
 	/**
 	 * Return system columns
 	 *
@@ -52,6 +61,20 @@ abstract class ContentDataObjects extends DataManager {
 		Hook::fire('additional_system_columns', $this, $system_columns);
 		
 		return $system_columns;
+	}
+	
+	/**
+	 * Return system columns
+	 *
+	 * @access public
+	 * @param void
+	 * @return array
+	 */
+	function getExternalColumns() {
+		$external_columns = parent::getExternalColumns();
+		Hook::fire('additional_external_columns', $this, $external_columns);
+		
+		return $external_columns;
 	}
 	
 	/**
@@ -399,6 +422,10 @@ abstract class ContentDataObjects extends DataManager {
 			$select_columns = array('*');
 		}
 		
+		$only_return_query_string = array_var($args, 'only_return_query_string');
+		
+		$EXTRA_CONTEXT_CONDITIONS = array_var($args, 'extra_context_conditions');
+		
 		//template objects
 		$template_objects = (bool) array_var($args,'template_objects',false);
 				
@@ -616,7 +643,7 @@ abstract class ContentDataObjects extends DataManager {
 				$SQL_EXTRA_JOINS
 				WHERE
 					$permissions_condition
-					AND	$SQL_CONTEXT_CONDITION
+					AND	($SQL_CONTEXT_CONDITION $EXTRA_CONTEXT_CONDITIONS)
 					AND $SQL_TYPE_CONDITION
 					AND $SQL_TRASHED_CONDITION $SQL_ARCHIVED_CONDITION $SQL_EXTRA_CONDITIONS
 				$SQL_GROUP_BY
@@ -635,10 +662,15 @@ abstract class ContentDataObjects extends DataManager {
 				$SQL_EXTRA_JOINS
 				WHERE
 					$permissions_condition
-					AND	$SQL_CONTEXT_CONDITION
+					AND	($SQL_CONTEXT_CONDITION $EXTRA_CONTEXT_CONDITIONS)
 					AND $SQL_TYPE_CONDITION
 					AND $SQL_TRASHED_CONDITION $SQL_ARCHIVED_CONDITION $SQL_EXTRA_CONDITIONS							
 			";
+			
+			
+			if ($only_return_query_string) {
+				return $sql;
+			}
 
 			
 		    if(!$only_count_results){

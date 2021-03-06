@@ -347,6 +347,8 @@ class ApplicationLog extends BaseApplicationLog {
 					$onclick = "";
 			}
 			
+			$icon_class .= " ico-color" . $object->getColor();
+			
 			$object_link =  '<br /><a class="internalLink" href="javascript:void(0);" onclick="'.$onclick.'">'.
 					'<span style="padding: 1px 0 3px 18px;" class="db-ico ico-unknown ico-' . $type . $icon_class . '"/>'.clean($this->getObjectName()).'</a>';
 			

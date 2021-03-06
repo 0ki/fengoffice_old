@@ -232,6 +232,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 		</div>
 		<?php }?>
 		
+		<?php $null = null; Hook::fire('before_render_main_custom_properties', array('object' => $object), $null);?>
 		
 
 		
@@ -349,7 +350,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
   		<?php if ($has_custom_properties || config_option('use_object_properties')) { ?>
 		<div>
 			<div id="<?php echo $genid ?>not_required_custom_properties_container">
-		    	<div id="<?php echo $genid ?>not_required_custom_properties">
+		    	<div id="<?php echo $genid ?>not_required_custom_properties" class="main-custom-properties-div">
 		      	<?php
 		      	if ($cp_count <= 10) {
 		      		echo render_object_custom_properties($task, false, null, 'visible_by_default');
@@ -616,10 +617,10 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 		</div>
   	</div>
   	
-  	
+  		
   
 		<?php if ($cp_count_others > 0 || config_option('use_object_properties') ) { ?>
-		<div id="<?php echo $genid ?>add_custom_properties_div" class="form-tab">
+		<div id="<?php echo $genid ?>add_custom_properties_div" class="form-tab other-custom-properties-div">
 			<div id="<?php echo $genid ?>not_required_custom_properties_container">
 		    	<div id="<?php echo $genid ?>not_required_custom_properties">
 		      	<?php echo render_object_custom_properties($task, false, null, 'others') ?>

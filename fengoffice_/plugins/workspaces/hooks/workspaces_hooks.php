@@ -45,14 +45,6 @@ function workspaces_total_tasks_times_csv_column_values($ts, &$new_values) {
 	}
 }
 
-function workspaces_include_tasks_template($ignored, &$more_content_templates) {
-	$more_content_templates[] = array(
-		'template' => 'groupby',
-		'controller' => 'task',
-		'plugin' => 'workspaces'
-	);
-}
-
 
 function workspaces_quickadd_extra_fields($parameters) {
 	if (array_var($parameters, 'dimension_id') == Dimensions::findByCode("workspaces")->getId()) {

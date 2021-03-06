@@ -273,18 +273,18 @@ $genid = gen_id();
 		<?php } ?>
 		
 		<?php foreach ($disabled_modules as $module) { ?>
-			og.module_hints['<?php echo $module['id']?>'] = '<?php echo escape_character($module['hint'],null,true)?>';
+			og.module_hints['<?php echo $module['id']?>'] = '<?php echo escape_character(array_var($module, 'hint'),null,true)?>';
 		<?php } ?>
 		<?php foreach ($other_modules as $module) { ?>
-			og.module_hints['<?php echo $module['id']?>'] = '<?php echo escape_character($module['hint'],null,true)?>';
+			og.module_hints['<?php echo $module['id']?>'] = '<?php echo escape_character(array_var($module, 'hint'),null,true)?>';
 		<?php } ?>
 
 		og.dimension_hints = {};
 		<?php foreach ($active_dimensions as $dim) { ?>
-			og.dimension_hints['<?php echo $dim['id']?>'] = '<?php echo escape_character($dim['hint'],null,true)?>';
+			og.dimension_hints['<?php echo $dim['id']?>'] = '<?php echo escape_character(array_var($dim, 'hint'),null,true)?>';
 		<?php } ?>
 		<?php foreach ($other_dimensions as $dim) { ?>
-			og.dimension_hints['<?php echo $dim['id']?>'] = '<?php echo escape_character($dim['hint'],null,true)?>';
+			og.dimension_hints['<?php echo $dim['id']?>'] = '<?php echo escape_character(array_var($dim, 'hint'),null,true)?>';
 		<?php } ?>
 
 		og.order_dimensions();

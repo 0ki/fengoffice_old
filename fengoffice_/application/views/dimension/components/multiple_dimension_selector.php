@@ -10,6 +10,9 @@
 	$dim_count = 0;
 	$members_dimension = array();
 	$sel_mem_ids = array();
+	
+	$original_options = $options;
+	
 	foreach ($dimensions as $dimension) :
 	
 		$dimension_id = $dimension['dimension_id'];
@@ -20,6 +23,11 @@
 		}
 
 		if (!array_var($options, 'allow_non_manageable') && !$dimension['is_manageable']) continue;
+		
+		$options = $original_options;
+		if (!isset($options['is_multiple'])) {
+			$options['is_multiple'] = array_var($dimension, 'is_multiple');
+		}
 		
 		$is_required = array_var($dimension, 'is_required');
 		$dimension_name = array_var($dimension, 'dimension_name');
