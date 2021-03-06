@@ -94,14 +94,14 @@ member_selector.add_relation = function(dimension_id, genid, member_id) {
 	
 
 	var selected_member_ids = Ext.util.JSON.decode(Ext.fly(Ext.get(genid + member_selector[genid].hiddenFieldName)).getValue());
+	
+	//check if is selected
+	var ind = selected_member_ids.indexOf(member_id);
+	if(ind >= 0) return;
+		
 	var i = 0;
 	while (selected_member_ids[i] != member.id && i < selected_member_ids.length) i++;
-	if (i < selected_member_ids.length) {
-		combo.clearValue();
-		combo.selected_member = null;
-		return;
-	}
-
+	
 	if (!member_selector[genid].sel_context[dimension_id]) member_selector[genid].sel_context[dimension_id] = [];
 	member_selector[genid].sel_context[dimension_id].push(member.id);
 	
@@ -128,9 +128,6 @@ member_selector.add_relation = function(dimension_id, genid, member_id) {
 	mem_path = og.getCrumbHtmlWithoutLinks(member.id,dimension_id,genid);
 	$("#"+genid+"selected-member"+member.id+" .completePath").append(mem_path);
 
-	combo.clearValue();
-	combo.selected_member = null;
-
 	if (!member_selector[genid].properties[dimension_id].isMultiple) {
 		var form = Ext.get(genid + 'add-member-form-dim' + dimension_id);
 		if (form) {
@@ -145,9 +142,6 @@ member_selector.add_relation = function(dimension_id, genid, member_id) {
 	var member_ids = Ext.util.JSON.decode(member_ids_input.getValue());
 	member_ids.push(member.id);
 	member_ids_input.dom.value = Ext.util.JSON.encode(member_ids);
-
-	// reload dependant selectors
-	member_selector.reload_dependant_selectors(dimension_id, genid);
 
 	// on selection change listener
 	if (member_selector[genid].properties[dimension_id].listeners.on_selection_change) {
@@ -302,7 +296,7 @@ member_selector.set_selected = function(genid, sel_member_ids, preload) {
 }
 
 member_selector.preload_members = function(genid, d) {
-	for (dim_id in member_selector[genid].properties) {
+	/*for (dim_id in member_selector[genid].properties) {
 		if (typeof d != 'undefined' && d != dim_id) continue;
 		
 		var combo = Ext.getCmp(genid + 'add-member-input-dim' + dim_id);
@@ -315,7 +309,7 @@ member_selector.preload_members = function(genid, d) {
 			// ["id", "name", "path", "to_show", "ico", "dim"]
 			
 			// check permissions
-			if (!m.archived && og.member_permissions[dim_id] && og.member_permissions[dim_id][m.id] && og.member_permissions[dim_id][m.id][member_selector[genid].otid]) {
+			//if (!m.archived && og.member_permissions[dim_id] && og.member_permissions[dim_id][m.id] && og.member_permissions[dim_id][m.id][member_selector[genid].otid]) {
 				
 				var to_show = m.path == '' ? m.name : m.name + " ("+m.path+")";
 				var record = new Ext.data.Record(
@@ -323,7 +317,7 @@ member_selector.preload_members = function(genid, d) {
 					m.id
 				);
 				records.push(record);
-			}
+			//}
 		}
 	
 		if (records.length > 0) {
@@ -334,5 +328,5 @@ member_selector.preload_members = function(genid, d) {
 			combo.enable();
 		}
 	
-	}
+	}*/
 }

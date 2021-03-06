@@ -241,95 +241,51 @@ class ToolController extends ApplicationController {
 		}
 		
 		// save submissions
-		$lang = array_var($_POST, 'lang');
 		$added = 0;
-		if (isset($lang)) {
-			$file = array_var($_POST, 'file');
-			$locale = array_var($_POST, 'locale');
-			$create_plugin_lang_js = false;
-			$check_root_file = false;
+		$lang = array_var($_POST, 'lang');
+		$file = array_var($_POST, 'file');
+		$locale = array_var($_POST, 'locale');
+		
+		if (is_array($lang)) {
 			
-			if (substr($file, -4) == '.php' || substr($file, -3) == '.js') {
-				$rootfile = LANG_DIR . "/" . $locale . ".php";
-				$dirname = LANG_DIR . "/" . $locale;
-				$filename = $dirname . "/" . $file;
-				$check_root_file = true;
+			if ($file != '') {
+				// langs of one file submitted
+				$added += $this->write_translations($locale, $file, $lang);
+				
 			} else {
-				$name_plugin = $file;
-				//$file = "lang.php";
-				$rootfile = PLUGIN_LANG_DIR . "/" . $name_plugin . "/" .LANG_DIR . "/" . $locale . ".php";
-				$dirname = PLUGIN_LANG_DIR . "/" . $name_plugin . "/" .LANG_DIR . "/" . $locale;
-				$filename = $dirname . "/lang.php";
-				$create_plugin_lang_js = true;
-			}
-			
-			if ($check_root_file && !is_file($rootfile)) {
-				$f = fopen($rootfile, "w");
-				fwrite($f, '<?php if(!isset($this) || !($this instanceof Localization)) {
-					throw new InvalidInstanceError(\'$this\', $this, "Localization", "File \'" . __FILE__ . "\' can be included only from Localization class");
-				} ?>');
-				fclose($f);
-			}
-			
-			if (!is_dir($dirname)) {
-				mkdir($dirname);
-			}
-			if (!is_file($filename)) {
-				// create the file
-				$f = fopen($filename, "w");
-				fclose($f);
-			}
-			if ($create_plugin_lang_js) {
-				$jsfilename = PLUGIN_LANG_DIR . "/$name_plugin/" .LANG_DIR . "/$locale/lang.js";
-				if (!is_file($jsfilename)) {
-					$f = fopen($jsfilename, "w");
-					fwrite($f, 'locale = "'.$locale.'";
-var langObj = {};
-<?php $lang_array = include "lang.php"; ?>
-<?php foreach ($lang_array as $k => $v): ?>
-langObj["<?php echo $k ;?>"] = "<?php echo $v ;?>";
-<?php endforeach ;?>
-addLangs(langObj);');
-					fclose($f);
+				// langs of several files submitted (e.g.: a result of a search query)
+				
+				// load all files
+				$from = array_var($_GET, 'from', 'en_us');
+				$from_files = array();
+				$this->load_language_files($from_files, LANG_DIR . "/$from");
+				$this->load_language_files_plugins($from_files, LANG_DIR . "/$from", PLUGIN_LANG_DIR);
+				
+				// regroup langs foreach file
+				$grouped_langs = array();
+				$original_langs = array();
+				foreach ($from_files as $f) {
+					$original_langs[$f] = $this->load_file_translations($from, $f);
+					$grouped_langs[$f] = array();
 				}
-			}
-			
-			$all = $this->load_file_translations($locale, $file);
-			if (!is_array($all)) $all = array();
-			foreach ($lang as $k => $v) {
-				if (trim($v) != "") {
-					if (!isset($all[$k])) {
-						$added++;
-					}
-					$all[$k] = $v;
-				}
-			}
-
-			$f = fopen($filename, "w");
-			// write the translations to the file
-			if (substr($filename, -4) == ".php") {
-				fwrite($f, "<?php return array(\n");
-				foreach ($all as $k => $v) {
-					fwrite($f, "\t'$k' => '" . $this->escape_lang("$v"). "',\n");
-				}
-				fwrite($f, "); ?>\n");
-			} else if (substr($filename, -3) == ".js") {
-				$total = count($all);
-				fwrite($f, "locale = '$locale';\n");
-				fwrite($f, "addLangs({\n");
-				$count = 0;
-				foreach ($all as $k => $v) {
-					$count++;
-					fwrite($f, "\t'$k': '" . $this->escape_lang_js($v). "'");
-					if ($count == $total) {
-						fwrite($f, "\n");
-					} else {
-						fwrite($f, ",\n");
+				
+				foreach ($lang as $key => $value) {
+					// determine which file is foreach lang
+					foreach ($original_langs as $fname => $langs) {
+						// if found in a file => set the (key,value) in the grouped langs for this file and continue with next translation
+						if (array_key_exists($key, $langs)) {
+							$grouped_langs[$fname][$key] = $value;
+							//break;
+						}
 					}
 				}
-				fwrite($f, "});\n");
+				
+				// save each file
+				foreach ($grouped_langs as $fname => $langs) {
+					$added += $this->write_translations($locale, $fname, $langs);
+				}
 			}
-			fclose($f);
+			
 		}
 		
 		// parameters
@@ -339,6 +295,7 @@ addLangs(langObj);');
 		$filter = array_var($_GET, "filter", "all");
 		$start = array_var($_GET, 'start', 0);
 		$pagesize = array_var($_POST, 'pagesize', array_var($_GET, 'pagesize', 30));
+		$search = array_var($_REQUEST, 'search', '');
 		
 		// load languages
 		$languages = $this->load_languages(LANG_DIR, $from);
@@ -353,8 +310,33 @@ addLangs(langObj);');
 			tpl_assign('from_files', $from_files);
 			
 			if ($file != "") {
+				
 				tpl_assign('from_file_translations', $this->load_file_translations($from, $file));
 				tpl_assign('to_file_translations', $this->load_file_translations($to, $file));
+				
+			} else {
+				// filter by search criteria
+				if ($search != '') {
+					$from_file_langs = array();
+					$to_file_langs = array();
+					
+					foreach ($from_files as $f) {
+						$from_file_langs = array_merge($from_file_langs, $this->load_file_translations($from, $f));
+					}
+					foreach ($from_files as $f) {
+						$to_file_langs = array_merge($to_file_langs, $this->load_file_translations($to, $f));
+					}
+						
+					$from_filtered_langs = $this->filter_langs($from_file_langs, $search);
+					$to_filtered_langs = $this->filter_langs($to_file_langs, $search);
+					
+					foreach ($from_filtered_langs as $k => $v) {
+						if (isset($to_file_langs[$k])) $to_filtered_langs[$k] = $to_file_langs[$k];
+					}
+						
+					tpl_assign('from_file_translations', $from_filtered_langs);
+					tpl_assign('to_file_translations', $to_filtered_langs);
+				}
 			}
 		}
 		
@@ -363,9 +345,126 @@ addLangs(langObj);');
 		tpl_assign('to', $to);
 		tpl_assign('file', $file);
 		tpl_assign('filter', $filter);
+		tpl_assign('search', $search);
 		tpl_assign('start', $start);
 		tpl_assign('pagesize', $pagesize);
 		tpl_assign('languages', $languages);
+		
+	}
+	
+	/**
+	 * Filter langs by key or value
+	 * @param $langs: Array of traductions
+	 * @param $filter: string to match in $langs array
+	 * @return An array with the traductions that its key or value contains the string $filter
+	 */
+	private function filter_langs($langs, $filter) {
+		$filtered = array();
+		
+		foreach ($langs as $key => $value) {
+			if (strpos($key, $filter) !== false || strpos($value, $filter) !== false) {
+				$filtered[$key] = $value;
+			}
+		}
+		
+		return $filtered;
+	}
+	
+	/**
+	 * Write language file
+	 * @param $locale: the language (e.g.: es_la)
+	 * @param $file: the language file to save
+	 * @param $lang: An array (key => value) containing the translations 
+	 */
+	private function write_translations($locale, $file, $lang) {
+		
+		$create_plugin_lang_js = false;
+		$check_root_file = false;
+			
+		if (substr($file, -4) == '.php' || substr($file, -3) == '.js') {
+			$rootfile = LANG_DIR . "/" . $locale . ".php";
+			$dirname = LANG_DIR . "/" . $locale;
+			$filename = $dirname . "/" . $file;
+			$check_root_file = true;
+		} else {
+			$name_plugin = $file;
+			//$file = "lang.php";
+			$rootfile = PLUGIN_LANG_DIR . "/" . $name_plugin . "/" .LANG_DIR . "/" . $locale . ".php";
+			$dirname = PLUGIN_LANG_DIR . "/" . $name_plugin . "/" .LANG_DIR . "/" . $locale;
+			$filename = $dirname . "/lang.php";
+			$create_plugin_lang_js = true;
+		}
+			
+		if ($check_root_file && !is_file($rootfile)) {
+			$f = fopen($rootfile, "w");
+			fwrite($f, '<?php if(!isset($this) || !($this instanceof Localization)) {
+					throw new InvalidInstanceError(\'$this\', $this, "Localization", "File \'" . __FILE__ . "\' can be included only from Localization class");
+				} ?>');
+			fclose($f);
+		}
+			
+		if (!is_dir($dirname)) {
+			mkdir($dirname);
+		}
+		if (!is_file($filename)) {
+			// create the file
+			$f = fopen($filename, "w");
+			fclose($f);
+		}
+		if ($create_plugin_lang_js) {
+			$jsfilename = PLUGIN_LANG_DIR . "/$name_plugin/" .LANG_DIR . "/$locale/lang.js";
+			if (!is_file($jsfilename)) {
+				$f = fopen($jsfilename, "w");
+				fwrite($f, 'locale = "'.$locale.'";
+var langObj = {};
+<?php $lang_array = include "lang.php"; ?>
+<?php foreach ($lang_array as $k => $v): ?>
+langObj["<?php echo $k ;?>"] = "<?php echo $v ;?>";
+<?php endforeach ;?>
+addLangs(langObj);');
+				fclose($f);
+			}
+		}
+		
+		$added = 0;
+		$all = $this->load_file_translations($locale, $file);
+		if (!is_array($all)) $all = array();
+		foreach ($lang as $k => $v) {
+			if (trim($v) != "") {
+				if (!isset($all[$k])) {
+					$added++;
+				}
+				$all[$k] = $v;
+			}
+		}
+		
+		$f = fopen($filename, "w");
+		// write the translations to the file
+		if (substr($filename, -4) == ".php") {
+			fwrite($f, "<?php return array(\n");
+			foreach ($all as $k => $v) {
+				fwrite($f, "\t'$k' => '" . $this->escape_lang("$v"). "',\n");
+			}
+			fwrite($f, "); ?>\n");
+		} else if (substr($filename, -3) == ".js") {
+			$total = count($all);
+			fwrite($f, "locale = '$locale';\n");
+			fwrite($f, "addLangs({\n");
+			$count = 0;
+			foreach ($all as $k => $v) {
+				$count++;
+				fwrite($f, "\t'$k': '" . $this->escape_lang_js($v). "'");
+				if ($count == $total) {
+					fwrite($f, "\n");
+				} else {
+					fwrite($f, ",\n");
+				}
+			}
+			fwrite($f, "});\n");
+		}
+		fclose($f);
+		
+		return $added;
 	}
 	
 	function checklang() {
@@ -406,4 +505,3 @@ addLangs(langObj);');
 } // ToolController
 
 
-?>

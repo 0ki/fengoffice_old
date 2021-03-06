@@ -620,4 +620,7 @@
 	'map' => 'Mapa',
 	'logo' => 'Logo',
 	'update logo' => 'Actualizar logo',
-); ?>
+	'add new email address' => 'Agregar nuevo correo',
+	'main email' => 'Correo principal',
+	'other email addresses' => 'Otros correos',
+);

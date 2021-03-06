@@ -228,6 +228,9 @@ og.MemberTree = function(config) {
 							if(!node_exist){
 								if (node_parent) node_parent.appendChild(new_node);
 							}
+							
+							//add member to og.dimensions							
+							og.addMemberToOgDimensions(data.dimension,mem);	
 	    				}	    				
 	    				dimension_tree.innerCt.unmask();
 	    				
@@ -237,6 +240,10 @@ og.MemberTree = function(config) {
 			
 		},
 		click: function(node, e){
+			//clear search filter
+			this.clearFilter();
+			$("#" + this.id + '-textfilter').val("");
+						
 			og.contextManager.currentDimension = self.dimensionId ;
 			og.eventManager.fireEvent("member tree node click", node);
 			var treeConf = node.attributes.loader.ownerTree.initialConfig ;
@@ -255,19 +262,49 @@ og.MemberTree = function(config) {
 				if ( node.options && node.options.defaultAjax && node.options.defaultAjax.controller && node.options.defaultAjax.action) {
 					var reload = ( this.getSelectionModel() && this.getSelectionModel().getSelectedNode() && this.getSelectionModel().getSelectedNode().id  ==  node.id );
 					og.customDashboard( node.options.defaultAjax.controller, node.options.defaultAjax.action, {id: node.object_id}, reload);
-				  /*this.clearFilter();
-
-					if (og.additional_on_dimension_object_click[node.object_type_id]) {
-						//eval(og.additional_on_dimension_object_click[node.object_type_id].replace('<parameters>', node.id));
-					}
-					
-					//node.expand();
-					
-					$("#" + this.id + '-textfilter').val("");*/
+				  
 				} else {
 					og.resetDashboard();
 				}
 			
+			}
+			
+			if (node.getDepth() > 0) { 
+				//set focus on the selected node
+				node.ensureVisible();
+				node.select();
+				node.expand();
+				//get childs from server
+		        if(node.childNodes.length < node.attributes.realTotalChilds && node.attributes.expandable){
+		        	node.ownerTree.innerCt.mask();
+		        	og.openLink(og.getUrl('dimension', 'get_member_childs', {member:node.id}), {
+		    			hideLoading:true, 
+		    			hideErrors:true,
+		    			callback: function(success, data){
+		    				
+		    				var dimension_tree = Ext.getCmp('dimension-panel-'+data.dimension);
+		    					    				
+		    				for (var prop in data.members) {  
+		    					var mem = data.members[prop];
+		    					var node_parent = dimension_tree.getNodeById(mem.parent);
+		    					
+		    					mem.leaf = true;
+		    					mem.text = mem.name;
+		    					var new_node = dimension_tree.loader.createNode(mem);
+		    						    												
+								var node_exist = dimension_tree.getNodeById(mem.id);
+								if(!node_exist){
+									if (node_parent) node_parent.appendChild(new_node);
+								}
+								
+								//add member to og.dimensions							
+								og.addMemberToOgDimensions(data.dimension,mem);	
+		    				}	    				
+		    				dimension_tree.innerCt.unmask();
+		    				
+		    			}
+		    		});
+		        }				
 			}
 		},
 		dblclick: function(node, e){
@@ -421,6 +458,9 @@ Ext.extend(og.MemberTree, Ext.tree.TreePanel, {
 						if(!node_exist){
 							if (node_parent) node_parent.appendChild(new_node);
 						}
+						
+						//add member to og.dimensions
+						og.addMemberToOgDimensions(data.dimension_id,mem);						
     				}    				
     				//dimension_tree.innerCt.unmask();
     				

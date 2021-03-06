@@ -372,15 +372,14 @@ ogTasks.getGroupData = function(displayCriteria, groups,tasks){
 					if (displayCriteria.group_by.indexOf('dimension_') == 0) {
 						// Group by dimension
 						var dim_id = displayCriteria.group_by.replace('dimension_', '');
-						if (og.dimensions[dim_id]) {
-							for (var j in og.dimensions[dim_id]) {
-								if (og.dimensions[dim_id][j].id == groupId) {
-									name = og.dimensions[dim_id][j].name;
-									icon = og.dimensions[dim_id][j].ico;
-									break;
-								}
-							}
-						}
+						var members = og.getMemberFromOgDimensions(groupId);
+						var member = members[0];
+						
+						if (member.id == groupId) {
+							name = member.name;
+							icon = member.ico;	
+							break;
+						}						
 					}
 			}
 		}

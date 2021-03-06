@@ -306,6 +306,9 @@ class ObjectController extends ApplicationController {
 			$val = remove_scripts($val);
 		}
 		
+		$date_format = user_config_option('date_format');
+		$date_format_tip = date_format_tip($date_format);
+		
 		$required_custom_props = array();
 		$customProps = CustomProperties::getAllCustomPropertiesByObjectType($object->getObjectTypeId());
 		//Sets all boolean custom properties to 0. If any boolean properties are returned, they are subsequently set to 1.
@@ -349,13 +352,19 @@ class ObjectController extends ApplicationController {
 						if(is_array($value)){
 							$newValues = array();
 							foreach ($value as $val) {
-								$dtv = DateTimeValueLib::dateFromFormatAndString(user_config_option('date_format'), $val);
-								$newValues[] = $dtv->format("Y-m-d H:i:s");
+								if (trim($val) != '' && trim($val) != $date_format_tip ) {
+									$dtv = DateTimeValueLib::dateFromFormatAndString($date_format, $val);
+									$newValues[] = $dtv->format("Y-m-d H:i:s");
+								}
 							}
 							$value = $newValues;
 						} else {
-							$dtv = DateTimeValueLib::dateFromFormatAndString(user_config_option('date_format'), $value);
-							$value = $dtv->format("Y-m-d H:i:s");
+							if (trim($value) != '' && trim($val) != $date_format_tip) {
+								$dtv = DateTimeValueLib::dateFromFormatAndString($date_format, $value);
+								$value = $dtv->format("Y-m-d H:i:s");
+							} else {
+								$value = '';
+							}
 						}
 					}
 					
@@ -1181,7 +1190,7 @@ class ObjectController extends ApplicationController {
 			
 			$info_elem['isRead'] = $instance->getIsRead(logged_user()->getId()) ;
 			$info_elem['manager'] = get_class($instance->manager()) ;
-			$info_elem['memPath'] = json_encode($instance->getMembersToDisplayPath());
+			$info_elem['memPath'] = json_encode($instance->getMembersIdsToDisplayPath());
 			/* @var $instance Contact  */
 			if ($instance instanceof  Contact /* @var $instance Contact  */ ) {
 				if( $instance->isCompany() ) {
@@ -1189,7 +1198,7 @@ class ObjectController extends ApplicationController {
 					$info_elem['type'] = 'company';
 					
 				}else{
-					$info_elem['memPath'] = json_encode($instance->getUserType()?"":$instance->getMembersToDisplayPath());
+					$info_elem['memPath'] = json_encode($instance->getUserType()?"":$instance->getMembersIdsToDisplayPath());
 				}
 			} else if ($instance instanceof ProjectFile) {
 				$info_elem['mimeType'] = $instance->getTypeString();

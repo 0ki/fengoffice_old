@@ -397,7 +397,7 @@ class Timeslot extends BaseTimeslot {
 			'uname' => $displayname,
 			'lastupdated' => $general_info['dateUpdated'],
 			'lastupdatedby' => $general_info['updatedBy'],
-			'memPath' => json_encode($this->getMembersToDisplayPath()),
+			'memPath' => json_encode($this->getMembersIdsToDisplayPath()),
 			'otid' => Timeslots::instance()->getObjectTypeId(),
 		);
 		if ($return_billing) {

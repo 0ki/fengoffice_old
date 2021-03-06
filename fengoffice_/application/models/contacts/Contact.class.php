@@ -473,6 +473,15 @@ class Contact extends BaseContact {
 		return ContactEmails::getContactEmails($this, $email_type_id);
 	 }
 	 
+	 
+	 function getNonMainEmails() {
+	 	return ContactEmails::findAll(array('conditions' => 'is_main=0 AND contact_id = '.$this->getId()));
+	 }
+	 
+	 function getMainEmails() {
+	 	return ContactEmails::findAll(array('conditions' => 'is_main=1 AND contact_id = '.$this->getId()));
+	 }
+	 
 
 	/**
 	 * Return  Address for this contact.

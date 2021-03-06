@@ -313,3 +313,51 @@ og.addNewWebpageInput = function(container_id, pre_id, sel_type, sel_url, sel_id
 
 	og.webpageCount++;
 }
+
+
+
+og.renderEmailTypeSelector = function(id, name, container_id, selected_value) {
+	
+	var select = $('<select name="'+name+'" id="'+id+'"></select>');
+	for (var i=0; i<og.email_types.length; i++) {
+		var type = og.email_types[i];
+		var option = $('<option></option>');
+		option.attr('value', type.id);
+		if (selected_value == type.id) option.attr('selected', 'selected');
+		option.text(type.name);
+		select.append(option);
+	}
+	$('#'+container_id).empty().append(select);
+}
+
+og.renderEmailInput = function(id, name, container_id, sel_type, sel_address, sel_id) {
+	if (!sel_address) sel_address = '';
+	if (!sel_id) sel_id = 0;
+
+	$('#'+container_id).append('<input type="hidden" name="'+name+'[id]" id="'+id+'_id" value="'+sel_id+'" />');
+	$('#'+container_id).append('<input type="hidden" name="'+name+'[deleted]" id="'+id+'_deleted" value="0" />');
+	
+	$('#'+container_id).append('<span id="'+id+'_type"></span>');
+	og.renderEmailTypeSelector(id+'_type', name+'[type]', id+'_type', sel_type);
+
+	var email_input = $('<input name="'+name+'[email_address]" id="'+id+'_email_address" value="'+sel_address+'" placeholder="'+lang('email address')+'"/>');
+	$('#'+container_id).append(email_input);
+
+	var delete_link = $('<a href="#" onclick="og.markAsDeleted(this, \''+container_id+'\', \''+id+'\');" class="coViewAction ico-delete delete-link" title="'+lang('delete')+'">'+lang('delete')+'</a>');
+	$('#'+container_id).append(delete_link);
+	var undo_delete_link = $('<a href="#" onclick="og.undoMarkAsDeleted(this, \''+container_id+'\', \''+id+'\');" class="coViewAction ico-undo undo-delete" style="display:none;" title="'+lang('undo')+'">'+lang('undo')+'</a>');
+	$('#'+container_id).append(undo_delete_link);
+}
+
+og.addNewEmailInput = function(container_id, pre_id, sel_type, sel_address, sel_id) {
+	if (!pre_id) pre_id = 'contact';
+	if (!og.emailCount) og.emailCount = 0;
+	var id = pre_id+'Email_' + og.emailCount;
+	var name = pre_id + '[emails][' + og.emailCount + ']';
+
+	$('#'+container_id).append('<div id="'+ container_id + og.emailCount +'" class="email-input-container"></div>');
+	
+	og.renderEmailInput(id, name, container_id + og.emailCount, sel_type, sel_address, sel_id);
+
+	og.emailCount++;
+}

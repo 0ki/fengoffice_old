@@ -1834,6 +1834,33 @@ abstract class ContentDataObject extends ApplicationDataObject {
 		return $members_info;
 	}
 	
+	function getMembersIdsToDisplayPath() {
+		$members_ids = array();
+		$dimensions_ids = array();
+		$selected_members_ids = $this->getMemberIds();
+		if(count($selected_members_ids) > 0){
+			$selected_members_cond = ' AND id IN ('.implode(',',$selected_members_ids).')';
+			
+			//get all dimensions ids to showInPaths
+			$dimensions = Dimensions::getAllowedDimensions($this->getObjectTypeId());
+			foreach ($dimensions as $dimension) {
+				$options = json_decode ( $dimension['dimension_options'] );
+				if (isset($options->showInPaths) && $options->showInPaths) {
+					$dimensions_ids[] = $dimension['dimension_id'];
+					$to_display = user_config_option('breadcrumb_member_count');
+					$extra_cond = " AND m.dimension_id = ".$dimension['dimension_id'];
+					$extra_cond .= $selected_members_cond;
+					$dim_members = ObjectMembers::getMembersIdsByObjectAndExtraCond($this->getId(), $extra_cond,$to_display);
+					foreach ($dim_members as $mem) {
+						$member_ids[$dimension['dimension_id']][$mem] = $mem;
+					}
+				}
+			}
+		}
+		
+		return $member_ids;
+	}
+	
 	
 	function getObjectColor($default = null) {
 		$color = is_null($default) || !is_numeric($default) ? 1 : $default;

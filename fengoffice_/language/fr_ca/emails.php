@@ -34,7 +34,7 @@
 	'mail BCC desc' => ' Ces destinataires en Copie Cachée recevront le message à l\'identique, discrètement',
 	'mail from' => 'De',
 	'mail body' => 'Message',
-	'send mail' => 'Envoyer le message',
+	'send mail' => 'Envoyer un courriel',
 	'smtp server' => 'Serveur SMTP',
 	'mail account smtp server description' => ' Le serveur SMTP est le serveur utilisé pour envoyer les messages',
 	'smtp use auth' => 'Authentification du Serveur SMTP',

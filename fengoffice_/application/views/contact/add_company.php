@@ -102,6 +102,15 @@
 	            	<a href="#" onclick="og.addNewWebpageInput('<?php echo $genid?>_webpages_container', 'company')" class="coViewAction ico-add"><?php echo lang('add new webpage') ?></a>
 	            </div>
 	        </div>
+				
+			<div class="input-container">
+	            <div><?php echo label_tag(lang('other email addresses')) ?></div>
+	            <div style="float:left;" id="<?php echo $genid?>_emails_container"></div>
+	            <div class="clear"></div>
+	            <div style="margin:5px 0 10px 200px;">
+	            	<a href="#" onclick="og.addNewEmailInput('<?php echo $genid?>_emails_container', 'company')" class="coViewAction ico-add"><?php echo lang('add new email address') ?></a>
+	            </div>
+	        </div>
 	        
 	        <div class="input-container">
 				<div><?php echo label_tag(lang('logo')) ?></div>
@@ -235,6 +244,10 @@ $(document).ready(function() {
 	<?php foreach ($company_data['all_webpages'] as $webpage) { ?>
 		og.addNewWebpageInput('<?php echo $genid?>_webpages_container', 'company', '<?php echo $webpage->getWebTypeId()?>', '<?php echo $webpage->getUrl()?>', '<?php echo $webpage->getId()?>');
 	<?php } ?>
+
+	<?php foreach (array_var($company_data, 'all_emails') as $email) { ?>
+		og.addNewEmailInput('<?php echo $genid?>_emails_container', 'company', '<?php echo $email->getEmailTypeId()?>', '<?php echo $email->getEmailAddress()?>', '<?php echo $email->getId()?>');
+	<?php } ?>
 	}
 
 	for (var i=0; i<og.telephone_types.length; i++) {
@@ -246,6 +259,9 @@ $(document).ready(function() {
 	for (var i=0; i<og.webpage_types.length; i++) {
 		if (og.webpage_types[i].code == 'work') def_web_type = og.webpage_types[i].id;
 	}
+	for (var i=0; i<og.email_types.length; i++) {
+		if (og.email_types[i].code == 'work') def_email_type = og.email_types[i].id;
+	}
 	
 	<?php if (count(array_var($company_data, 'all_phones')) == 0) { ?>
 		og.addNewTelephoneInput('<?php echo $genid?>_phones_container', 'company', def_phone_type);
@@ -255,6 +271,9 @@ $(document).ready(function() {
 	<?php } ?>
 	<?php if (count(array_var($company_data, 'all_webpages')) == 0) { ?>
 		og.addNewWebpageInput('<?php echo $genid?>_webpages_container', 'company', def_web_type);
+	<?php } ?>
+	<?php if (count(array_var($company_data, 'all_emails')) == 0) { ?>
+		og.addNewEmailInput('<?php echo $genid?>_emails_container', 'company', def_email_type);
 	<?php } ?>
 	
 	Ext.get('<?php echo $genid ?>clientFormName').focus();

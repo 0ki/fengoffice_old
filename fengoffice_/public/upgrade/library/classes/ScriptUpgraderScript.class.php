@@ -165,6 +165,23 @@ abstract class ScriptUpgraderScript {
 	} // checkColumnExists
 	
 	/**
+	 * Checks if a keys exists in a table
+	 *
+	 *  This function returns true if the key exists
+	 *
+	 * @param string $table_name Name of the table
+	 * @param string $col_name Name of the column
+	 * @return boolean
+	 */
+	function checkKeyExists($table_name, $key_name, $connection) {
+		$res = mysql_query("SHOW KEYS FROM `$table_name`");
+		while($row = mysql_fetch_array($res)) {
+			if ($row['Key_name'] == $key_name) return true;
+		}
+		return false;
+	} // checkKeyExists
+	
+	/**
 	 * Checks if a table exists
 	 *
 	 *  This function returns true if the table exists

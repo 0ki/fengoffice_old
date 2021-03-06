@@ -417,7 +417,7 @@ og.objectPropertyChanged = function(obj_id, count, value){
 			propSel = document.getElementById('objectProperties[' + obj_id + '][' + ++id + ']');
 		}
 		if(prop.className == 'STRING'){
-			propValueTD.innerHTML = '= <input id="propValues[' + obj_id + '][' + prop.value + ']" name="propValues[' + obj_id + '][' + prop.value + ']" value="' + value + '" />&nbsp;' +
+			propValueTD.innerHTML = ' <textarea id="propValues[' + obj_id + '][' + prop.value + ']" name="propValues[' + obj_id + '][' + prop.value + ']">' + value + '</textarea>&nbsp;' +
 				'<a href="#" onclick="og.editStringTemplateObjectProperty(' + obj_id + ',\'' + prop.value + '\')">[' + lang('open property editor') + ']</a>';
 		}else if(prop.className == 'DATETIME'){
 			propValueTD.innerHTML = '<select id="datePropType[' + obj_id + '][' + count + ']" onchange="og.datePropertyTypeSel(' + count + ',\'' + obj_id + '\')">'

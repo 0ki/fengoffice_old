@@ -93,7 +93,9 @@ if(count($cps) > 0){
 						}
 						echo '<table id="table'.$genid.$customProp->getId().'">';
 						foreach($fieldValues as $val){
-							$value = DateTimeValueLib::dateFromFormatAndString("Y-m-d H:i:s", $val->getValue());
+							if (trim($val) != '') {
+								$value = DateTimeValueLib::dateFromFormatAndString("Y-m-d H:i:s", $val->getValue());
+							}
 							echo '<tr><td style="width:150px;">';
 							echo pick_date_widget2($name, $value, null, $startTi + $ti, null, $genid . 'cp' . $customProp->getId());
 							echo '</td><td>';
@@ -104,16 +106,24 @@ if(count($cps) > 0){
 						echo '</table>';
 						echo '&nbsp;<a href="#" class="link-ico ico-add" onclick="og.addCPDateValue(\''.$genid.'\','.$customProp->getId().')">'.lang('add value').'</a><br/>';
 					}else{
-						if ($default_value == '') {
-							$default_value = DateTimeValueLib::now()->advance(logged_user()->getTimezone()*3600, false)->toMySQL();
+						if ($default_value != '') {
+							try {
+								$value = DateTimeValueLib::dateFromFormatAndString("Y-m-d H:i:s", $default_value);
+							} catch (Exception $e) {
+								try {
+									$value = DateTimeValueLib::dateFromFormatAndString(user_config_option('date_format'), $default_value);
+								} catch (Exception $e2) {
+									Logger::log("Error when setting date custom property value:\n".$e2->getMessage()."\n\n".get_back_trace());
+									$value = '';
+								}
+							}
 						}
-						$value = DateTimeValueLib::dateFromFormatAndString("Y-m-d H:i:s", $default_value);
 						echo pick_date_widget2($name, $value, null, $startTi + $ti, null, $genid . 'cp' . $customProp->getId());
 					}
 					break;
 				case 'list':
 					$options = array();
-					if(!$customProp->getIsRequired()){
+					if(!$customProp->getIsRequired() || ($customProp->getIsRequired() || $default_value == '')) {
 						$options[] = '<option value=""></option>';
 					}
 					$totalOptions = 0;
@@ -123,8 +133,10 @@ if(count($cps) > 0){
 						$toSelect[] = $m->getValue();
 					}
 					foreach(explode(',', $customProp->getValues()) as $value){
-						$selected = ($value == $default_value) || ($customProp->getIsMultipleValues() && (in_array($value, explode(',', $default_value)))||in_array($value,$toSelect));
-						$options[] = option_tag($value, $value);
+						$selected = ($value == $default_value) || ($customProp->getIsMultipleValues() && (in_array($value, explode(',', $default_value))) || in_array($value,$toSelect));
+						$attr = array();
+						if ($selected) $attr['selected'] = 'selected';
+						$options[] = option_tag($value, $value, $attr);
 						$totalOptions++;
 					}
 					
@@ -133,12 +145,18 @@ if(count($cps) > 0){
 					echo select_box('aux_'.$name, $options, array('tabindex' => $startTi + $ti, 'style' => 'min-width:140px',
 						'id' => $genid . 'cp' . $customProp->getId(), 'onchange' => "og.cp_list_selected(this, '$genid', '$name', $cp_id, $is_mult);"));
 					
-					echo '<div id="'.$genid.'cp_list_selected">';
+					echo '<div id="'.$genid.'cp_list_selected'.$cp_id.'">';
 					$i = 0;
 					foreach ($toSelect as $value) {
 						echo '<div style="width:200px;">'.$value
 							.'&nbsp;<a href="#" onclick="og.cp_list_remove(this, \''.$genid.'\', '.$cp_id.');" class="db-ico coViewAction ico-delete" title="'.lang('remove').'">&nbsp;</a>'
 							.'<input type="hidden" name="'.$name.'['.$i.']" value="'.clean($value).'" /></div>';
+						$i++;
+					}
+					if (count($toSelect) == 0 && $default_value != '') {
+						echo '<div style="width:200px;">'.$default_value
+							.'&nbsp;<a href="#" onclick="og.cp_list_remove(this, \''.$genid.'\', '.$cp_id.');" class="db-ico coViewAction ico-delete" title="'.lang('remove').'">&nbsp;</a>'
+							.'<input type="hidden" name="'.$name.'['.$i.']" value="'.clean($default_value).'" /></div>';
 						$i++;
 					}
 					
@@ -152,71 +170,14 @@ if(count($cps) > 0){
 					foreach ($toSelect as $value) {
 						echo "og.cp_list_selected_values[$cp_id]['$genid'].push('$value');";
 					}
+					if (count($toSelect) == 0 && $default_value != '') {
+						echo "og.cp_list_selected_values[$cp_id]['$genid'].push('$default_value');";
+					}
 					echo '</script>';
 					
 					echo '<input type="hidden" id="'.$genid.'_remove_cp_'.$cp_id.'" name="remove_custom_properties['.$cp_id.']" value="0"/>';
 					
 					echo '</div>';
-					
-					$script = "<script>
-						og.cp_list_remove = function(remove_link, genid, cp_id) {
-							document.getElementById(genid+'_remove_cp_'+cp_id).value = 1;
-						
-							var inputs = remove_link.parentNode.getElementsByTagName('input');
-							var input = inputs[0];
-							var value = input.value;
-							
-							var tmp = [];
-							for (var i=0; i<og.cp_list_selected_values[cp_id][genid].length; i++) {
-								if (og.cp_list_selected_values[cp_id][genid][i] != value) {
-									tmp.push(og.cp_list_selected_values[cp_id][genid][i]);
-								}
-							}
-							og.cp_list_selected_values[cp_id][genid] = tmp;
-							
-							og.eventManager.fireEvent('after cp list change', [{
-								cp_id: cp_id,
-								genid: genid,
-								values: og.cp_list_selected_values[cp_id][genid]
-							}]);
-							remove_link.parentNode.parentNode.removeChild(remove_link.parentNode);
-							
-							return false;
-						}
-						
-						og.cp_list_selected = function(combo, genid, name, cp_id, is_multiple) {
-							document.getElementById(genid+'_remove_cp_'+cp_id).value = 0;
-							var i = og.cp_list_selected_index[cp_id][genid];
-							var div = document.getElementById(genid + 'cp_list_selected');
-							
-							if (!og.cp_list_selected_values) og.cp_list_selected_values = [];
-							if (!og.cp_list_selected_values[cp_id]) og.cp_list_selected_values[cp_id] = [];
-							if (!og.cp_list_selected_values[cp_id][genid]) og.cp_list_selected_values[cp_id][genid] = [];
-							
-							var val = combo.options[combo.selectedIndex].value;
-							if (val == '' || og.cp_list_selected_values[cp_id][genid].indexOf(val) >= 0) return;
-							
-							var html = '<div>'+ og.clean(val);
-							html += '&nbsp;<a href=\"#\" onclick=\"og.cp_list_remove(this, \''+genid+'\', '+cp_id+');\" class=\"db-ico coViewAction ico-delete\">&nbsp;</a>';
-							html += '<input type=\"hidden\" name=\"'+name+'['+i+']\" value=\"'+val+'\" /></div>';
-							
-							if (is_multiple) {
-								div.innerHTML += html;
-								og.cp_list_selected_index[cp_id][genid] = i + 1;
-								og.cp_list_selected_values[cp_id][genid].push(val);
-							} else {
-								div.innerHTML = html;
-								og.cp_list_selected_values[cp_id][genid] = [val];
-							}
-							
-							og.eventManager.fireEvent('after cp list change', [{
-								cp_id: cp_id,
-								genid: genid,
-								values: og.cp_list_selected_values[cp_id][genid]
-							}]);
-						}
-					</script>";
-					echo $script;
 					
 					break;
 				case 'table':

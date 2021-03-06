@@ -229,7 +229,7 @@
 	'advanced' => 'Avancé',
 	'specify username?' => 'Spéciifier un Identifiant?',
 	'specify password?' => 'Spécifier un Mot de Passe?',
-	'will this person use feng office?' => 'Cette personne utilisera Intranet?',
+	'will this person use feng office?' => 'Cette personne utilisera Feng Office?',
 	'late tasks and upcoming tasks' => 'Tâches en retards et à venir',
 	'no data to show' => 'Aucune Informations à présenter',
 	'viewing all information' => 'Toutes les informations affichées',

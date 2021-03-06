@@ -476,7 +476,7 @@ class SearchController extends ApplicationController {
 			$search_result['id'] = $obj->getId();
 			$search_result['otid'] = $obj->getObjectTypeId();
 			$search_result['title'] = $this->prepareTitle($obj->getObjectName());
-			$search_result['memPath'] = json_encode($obj->getMembersToDisplayPath());
+			$search_result['memPath'] = json_encode($obj->getMembersIdsToDisplayPath());
 			$search_result['url'] = $obj->getViewUrl();
 			$search_result['created_by'] = $this->prepareCreatedBy($obj->getCreatedByDisplayName(), $obj->getCreatedById());
 			$search_result['updated_by'] = $this->prepareCreatedBy($obj->getUpdatedByDisplayName(), $obj->getUpdatedById());

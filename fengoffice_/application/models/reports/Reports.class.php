@@ -519,7 +519,12 @@ class Reports extends BaseReports {
 									$value = self::instance()->getExternalColumnValue($field, $value, $managerInstance);
 								}
 							} else if ($field != 'link'){
-								$value = html_to_text(html_entity_decode($value));
+								//$value = html_to_text(html_entity_decode($value));
+								if ($object->getColumnType($field) == DATA_TYPE_STRING) {
+									// change html block end tags and brs to \n, then remove all other html tags, then replace \n with <br>, to remove all styles and keep the enters
+									$value = str_replace(array("</div>", "</p>", "<br>", "<br />", "<br/>"), "\n", $value);
+									$value = nl2br(strip_tags($value));
+								}
 							}
 							if(self::isReportColumnEmail($value)) {
 								if(logged_user()->hasMailAccounts()){

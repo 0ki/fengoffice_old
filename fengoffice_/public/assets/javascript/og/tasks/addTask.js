@@ -166,22 +166,18 @@ ogTasks.drawTaskForm = function(container_id, data){
 	
 	// <MEMBERS SELECTORS>
 	//this function only return a visual combo to display, must be repleaced by ajax.
-	function dimCombo (name){
-		var comboHtml = "<div id='og_1396374293_867959member-seleector-dim2' class='small-member-selector' style='min-height: 50px;'>" +
-							"<label style='font-size: 100%;'><b>"+ name +":</b></label>" +
-							"<div class='selector-body' id='og_1396374878_972175selector-body-dim2'>" +
-								"<div id='og_1396374293_867959selected-members-dim2' class='selected-members'></div>" +
-								"<div id='og_1396374293_867959add-member-form-dim2' class='' style='display:block;'>" +
-									"<div id='ext-gen1481' class='og-membercombo-container'>" +
-										"<div style='width: 248px;' id='ext-gen1482' class='x-form-field-wrap'>" +
-											"<input class='member-name-input x-form-text x-form-field x-form-empty-field ' style='width : 240px' is_ajax='is_ajax' id='og_1396374878_246291' autocomplete='off' onkeypress='if (event.keyCode == 13) return false;' name='member_autocomplete-dim2' value='' type=text'>" +
-											"<img id='ext-gen1483' src='s.gif' class='x-form-trigger x-form-arrow-trigger'>" +
-										"</div>" +
-									"</div>" +
-									"<div class='clear'></div>" +
-								"</div>" +
-							"</div>" +
-						"</div>";
+	function dimCombo (dim){
+		var comboHtml = '<div style="width: 100%; display: table;">' +
+							'<label style="font-size: 100%;"><b>'+ dim.name +':</b></label>' +
+							'<div style="float: right; width: 267px;">' +
+								'<div class="search-selector" id="og_1409320459_864588member-seleector-dim3">' +
+									'<div class="search-input-div">' +
+										'<input type="text" placeholder="'+ dim.desc +'" class="search-input ico-search-m">' +
+									'</div>' +								
+								'</div>' +
+							'</div>' +
+						'</div>' +
+						'<div style="height: 4px;"></div>';
 		return comboHtml;
 	}
 	
@@ -457,7 +453,7 @@ ogTasks.drawTaskForm = function(container_id, data){
 				
 				//add selection change listener to members selectors combos
 				if(og.genid in member_selector){
-					for (var dim in og.dimensions) {
+					for (var dim in og.dimensions_info) {
 						if(dim in member_selector[og.genid].properties){
 							member_selector[og.genid].properties[dim].listeners["on_selection_change"] = 'ogTasks.renderAssignedToCombo()';
 						}

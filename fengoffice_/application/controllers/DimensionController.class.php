@@ -366,25 +366,85 @@ class DimensionController extends ApplicationController {
 		$dimension_id = array_var($_REQUEST, 'dimension_id');
 		$dimension = Dimensions::getDimensionById($dimension_id);
 		$name = trim(array_var($_REQUEST, 'query', ''));
-	
-		//search condition
-		$extra_cond = $name == "" ? "" : " AND name LIKE '%".$name."%'";
+		$random = trim(array_var($_REQUEST, 'random', 0));
+		$start = array_var($_REQUEST, 'start' , 0);
+		$limit = array_var($_REQUEST, 'limit');
+		$order = array_var($_REQUEST, 'order', 'id');
+		$parents = array_var($_REQUEST, 'parents' , true);
+
+		if(strlen($name) > 0 || $random){
+			//get the member list
+			//Super admins are not using the contact member cache
+			if(logged_user()->isAdministrator() || !$dimension->getDefinesPermissions()){
+				$limit_t = '';
+				if(isset($limit)){
+					$limit_t = $limit+1;
+				}
 				
-		//use the contact member cache
-		$params = array(
-				"dimension" => $dimension,
-				"contact_id" => logged_user()->getId(),
-				"get_all_parent_in_hierarchy" => true,
-				"member_name" => $name
-		);
-		
-		//get the member list
-		$memberList = ContactMemberCaches::getAllMembersWithCachedParentId($params);
+				$search_name_cond = "";
+				if(!$random){
+					$name = mysql_real_escape_string($name);
+					$search_name_cond = " AND name LIKE '%".$name."%'";
+				}
+				$memberList = Members::findAll(array('conditions' => array("`dimension_id`=? ".$search_name_cond, $dimension_id), 'order' => '`'.$order.'` ASC', 'offset' => $start, 'limit' => $limit_t));
+				//include all parents
+				//Check hierarchy
+				if($parents){
+					$members_ids = array();
+					$parent_members = array();
+					foreach ($memberList as $mem){
+						$members_ids[] = $mem->getId();
+					}
+					foreach ($memberList as $mem){
+						$parents = $mem->getAllParentMembersInHierarchy(false);
+						foreach ($parents as $parent){
+							if(!in_array($parent->getId(), $members_ids)){
+								$members_ids[] = $parent->getId();	
+								$parent_members[] = $parent;
+							}
+						}				
+					}
+					$memberList = array_merge($memberList,$parent_members);
+				}
+			}else{
+				//Use contact member cache
+				$params = array();
+				$params["dimension"] = $dimension;
+				$params["contact_id"] = logged_user()->getId();
+				$params["get_all_parent_in_hierarchy"] = $parents;
+				$params["order"] = $order;
+				if(!$random){
+					$params["member_name"] = $name;
+				}
+				if(isset($limit)){
+					$params["start"] = $start;
+					$params["limit"] = $limit + 1;
+				}
 				
-		if(!empty($memberList)){
-			$allMemebers = $this->buildMemberList($memberList, $dimension, array(),array(), null, null);
-					
-			ajx_extra_data(array('members' => $allMemebers));
+				$memberList = ContactMemberCaches::getAllMembersWithCachedParentId($params);
+			}
+			
+			//show more
+			$show_more = false;
+			if(isset($limit) && count($memberList) > $limit){
+				array_pop($memberList); 
+				$show_more = true;
+			}			
+			
+			if(!empty($memberList)){
+				$allMemebers = $this->buildMemberList($memberList, $dimension, array(),array(), null, null);
+						
+				if(isset($limit)){
+					ajx_extra_data(array('show_more' => $show_more));
+				}
+
+				$row = "search-result-row-medium";
+				if(!$dimension->canHaveHierarchies()){
+					$row = "search-result-row-small";
+				}
+				ajx_extra_data(array('row_class' => $row));
+				ajx_extra_data(array('members' => $allMemebers));
+			}
 		}
 		ajx_extra_data(array('dimension_id' => $dimension_id));
 		ajx_current("empty");			
@@ -569,6 +629,7 @@ class DimensionController extends ApplicationController {
 				Hook::fire('additional_member_node_class', $m, $additional_member_class);
 				$member = array(
 					"id" => $m->getId(),
+					"color" => $m->getMemberColor(),
 					"name" => clean($m->getName()),
 					"parent" => $tempParent,
 					"realParent" => $m->getParentMemberId(),

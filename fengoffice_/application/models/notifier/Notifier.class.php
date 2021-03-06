@@ -1102,13 +1102,21 @@ class Notifier {
 			foreach ($members as $member){
 				$dim = $member->getDimension();
 				if($dim->getIsManageable()){
+					/* @var $member Member */
+					$parent_members = $member->getAllParentMembersInHierarchy();
+					$parents_str = '';
+					foreach ($parent_members as $pm) {
+						/* @var $pm Member */
+						if (!$pm instanceof Member) continue;
+						$parents_str .= '<span style="'.get_workspace_css_properties($pm->getMemberColor()).'">'. $pm->getName() .'</span>';
+					}
 					if ($dim->getCode() == "customer_project"){
 						$obj_type = ObjectTypes::findById($member->getObjectTypeId());
 						if ($obj_type instanceof ObjectType) {
-							$contexts[$dim->getCode()][$obj_type->getName()][]= '<span style="'.get_workspace_css_properties($member->getMemberColor()).'">'. $member->getName() .'</span>';
+							$contexts[$dim->getCode()][$obj_type->getName()][]= $parents_str . '<span style="'.get_workspace_css_properties($member->getMemberColor()).'">'. $member->getName() .'</span>';
 						}
 					}else{
-						$contexts[$dim->getCode()][]= '<span style="'.get_workspace_css_properties($member->getMemberColor()).'">'. $member->getName() .'</span>';
+						$contexts[$dim->getCode()][]= $parents_str . '<span style="'.get_workspace_css_properties($member->getMemberColor()).'">'. $member->getName() .'</span>';
 					}
 				}
 			}

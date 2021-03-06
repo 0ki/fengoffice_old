@@ -69,6 +69,11 @@ Ext.extend(og.MemberChooserTreeLoader , Ext.tree.TreeLoader, {
 			var dimension_id = this.ownerTree.dimensionId;
 			if (!og.tmp_members_to_add) og.tmp_members_to_add = [];
 			
+			//add members to og.dimensions
+			for (i=0; i<json_obj.dimension_members.length; i++) {
+				og.addMemberToOgDimensions(dimension_id,json_obj.dimension_members[i]);
+			}		
+			
 			// build tmp member arrays
 			var tmp_member_array = [];
 			var count = 0;

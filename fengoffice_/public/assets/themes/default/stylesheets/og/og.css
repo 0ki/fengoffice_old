@@ -1156,7 +1156,7 @@ span.member-path span a:hover {
 	min-width: 80px;
 }
 
-.contact_form_container .phone-input-container, .contact_form_container .address-input-container, .contact_form_container .webpage-input-container {
+.contact_form_container .phone-input-container, .contact_form_container .address-input-container, .contact_form_container .webpage-input-container, .contact_form_container .email-input-container {
 	padding: 2px;
 	padding-left: 0;
 }

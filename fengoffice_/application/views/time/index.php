@@ -143,7 +143,7 @@
 					$listeners = array();
 					$listeners = array('on_selection_change' => 'ogTimeManager.renderUserCombo("'.$genid.'")');
 					if(!empty($dimensions_to_show)){
-						render_member_selectors(Timeslots::instance()->getObjectTypeId(), $genid, null, array('select_current_context' => true, 'listeners' => $listeners), $dimensions_to_skip, null, false);	
+						render_member_selectors(Timeslots::instance()->getObjectTypeId(), $genid, null, array('select_current_context' => true, 'listeners' => $listeners), $dimensions_to_skip, null, true);	
 					}
 					?>
 					

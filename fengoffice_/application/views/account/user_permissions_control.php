@@ -36,11 +36,11 @@ $dimensions = array_merge($with_order, $with_no_order);
 ?>
 <fieldset>
 	<legend><span class="og-task-expander <?php echo $class?>" style="padding-left:20px;" title="<?php echo lang('expand-collapse') ?>" id="<?php echo $genid?>expander<?php echo $dimension->getId()?>"
-				onclick="og.editMembers.expandCollapseDim('<?php echo $genid?>dimension<?php echo $dimension->getId()?>', <?php echo $expand?>);"><?php echo $dimension->getName()?></span></legend>
+				onclick="og.dimensionTreeDoLayout('<?php echo $genid?>', '<?php echo $dimension->getId()?>');og.editMembers.expandCollapseDim('<?php echo $genid?>dimension<?php echo $dimension->getId()?>', <?php echo $expand?>);"><?php echo $dimension->getName()?></span></legend>
 	<div id="<?php echo $genid?>dimension<?php echo $dimension->getId()?>" style="<?php echo $dimension->getIsManageable() ? '' : 'display:none;'?>">
 	<table><tr><td>
   <?php	
-  		echo render_single_dimension_tree($dimension, $genid, null, array('all_members' => true, 'select_root' => true));
+  		echo render_single_dimension_tree($dimension, $genid, null, array('all_members' => true, 'select_root' => true, 'dont_load' => !$dimension->getIsManageable()));
   ?>
   </td><td style="padding-left:20px">
   <div id="<?php echo $genid ?>member_permissions<?php echo $dimension->getId() ?>" style="display:none;">

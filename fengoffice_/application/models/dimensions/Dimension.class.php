@@ -176,6 +176,19 @@ class Dimension extends BaseDimension {
 		}
 	}
 	
+	function canHaveHierarchies() {
+		$sql =  "SELECT 1
+					FROM `fo_dimension_object_type_hierarchies`
+					WHERE dimension_id = ".$this->getId();	
+					
+		$result = DB::executeOne($sql);
+		
+		if($result){
+			return true;
+		}
+		return false;
+	}
+	
 	function useLangs() {
 		$options = $this->getOptions(true);
 		return (isset($options->useLangs) && $options->useLangs);

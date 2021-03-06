@@ -465,20 +465,11 @@ setInterval(function() {
 				dims_check_date: Math.floor(og.dimensions_check_date.getTime()/1000)
 			},
 			callback: function(success, data) {
-				
+
+				//reload og.dimensions
 				if (data.reload_dims) {
-					og.openLink(og.getUrl('dimension', 'reload_dimensions_js'), {
-						hideLoading: true,
-						hideErrors: true,
-						preventPanelLoad: true,
-						callback: function(s, d) {
-							if (d.dims) {
-								og.dimensions = d.dims;
-								og.dimensions_check_date = new Date();
-								if (d.perms) og.member_permissions = d.perms;
-							}
-						}
-					});
+					og.dimensions = {};
+					og.dimensions_check_date = new Date();					
 				}
 			}
 		});

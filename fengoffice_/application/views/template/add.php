@@ -191,8 +191,9 @@
 						if(isset($object_properties[$oid])){
 							foreach($object_properties[$oid] as $objProp){  
 								$property = $objProp->getProperty();
-								$value =  str_replace("'","\'",$objProp->getValue());
-
+								
+								$value =  str_replace("\n","\\n",$objProp->getValue());
+								$value =  str_replace("'","\'",$value);								
 							?>
 							og.addTemplateObjectProperty(<?php echo $oid ?>, <?php echo $oid ?>, '<?php echo $property ?>', '<?php echo $value ?>');
 					  <?php }

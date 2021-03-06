@@ -181,9 +181,11 @@ class ChotoUpgradeScript extends ScriptUpgraderScript {
 			}
 			
 			if (version_compare($installed_version, '2.6-rc') < 0) {
-				$upgrade_script .= "
-					ALTER TABLE `".$t_prefix."application_logs` ADD INDEX `member`(`member_id`, `created_on`, `is_silent`);
-				";
+				if (!$this->checkKeyExists($t_prefix."application_logs", "member", $this->database_connection)) {
+					$upgrade_script .= "
+						ALTER TABLE `".$t_prefix."application_logs` ADD INDEX `member`(`member_id`, `created_on`, `is_silent`);
+					";
+				}
 				
 				$upgrade_script .="
 					UPDATE `".$t_prefix."config_options` SET `value` = '1' WHERE `name` = 'use tasks dependencies';

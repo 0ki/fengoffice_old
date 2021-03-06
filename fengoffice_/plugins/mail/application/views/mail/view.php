@@ -219,11 +219,16 @@ if (isset($email)){
 				if ($pos === false) {
 					$end_while = true;
 				} else {
-					$pos = strpos($html_content, 'src="', $pos) + 5;
-					$end_pos = strpos($html_content, '"', $pos);
-					$matches[] = substr($html_content, $pos, $end_pos - $pos);
-					
-					$offset = $end_pos;
+					$pos_src = strpos($html_content, 'src="', $pos) + 5;
+					if($pos_src < $pos){
+						$pos = $pos + 5;
+						$offset = $pos;
+					}else{
+						$end_pos = strpos($html_content, '"', $pos);
+						$matches[] = substr($html_content, $pos, $end_pos - $pos);
+							
+						$offset = $end_pos;
+					}					
 				}
 			}
 			

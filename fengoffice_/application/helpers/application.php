@@ -1513,7 +1513,11 @@ function buildTree ($nodeList , $parentField = "parent", $childField = "children
 			var tree = new og.MemberChooserTree ( config );
 			memberChooserPanel.add(tree);
 			og.can_submit_members = true;
+
+			<?php if (!isset($options['dont_load']) || !$options['dont_load']) : ?>
+			memberChooserPanel.initialized = true;
 			memberChooserPanel.doLayout();
+			<?php endif; ?>
 		</script>
 	
 <?php 

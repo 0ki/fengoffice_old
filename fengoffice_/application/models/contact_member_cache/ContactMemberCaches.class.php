@@ -22,6 +22,7 @@ class ContactMemberCaches extends BaseContactMemberCaches {
 	static function getAllContactMemberCache($args = array()) {
 		$start = array_var($args,'start');
 		$limit = array_var($args,'limit');
+		$order = array_var($args,'order', 'id');
 		$dimension = array_var($args,'dimension');
 		$parent_member_id = array_var($args,'parent_member_id',null);
 		$contact_id = array_var($args,'contact_id',null);
@@ -39,6 +40,7 @@ class ContactMemberCaches extends BaseContactMemberCaches {
 		}
 		
 		if (!is_null($member_name)) {
+			$member_name = mysql_real_escape_string($member_name, DB::connection()->getLink());
 			$SQL_CONDITION .= " AND m.name LIKE '%".$member_name."%'";
 		}
 		
@@ -58,7 +60,7 @@ class ContactMemberCaches extends BaseContactMemberCaches {
 					INNER JOIN  ".TABLE_PREFIX."members m ON cmc.member_id = m.id 					
 					WHERE m.dimension_id = ".$dimension->getId()."
 					$SQL_CONDITION
-					ORDER BY id DESC 
+					ORDER BY $order DESC 
 					$SQL_LIMIT ;
 		";
 		

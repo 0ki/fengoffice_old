@@ -430,7 +430,7 @@ class ProjectTasks extends BaseProjectTasks {
 			'cid' => (int)$raw_data['created_by_id'],
 			'otype' => $raw_data['object_subtype'],
 			'pc' => (int)$raw_data['percent_completed'],
-			'memPath' => str_replace('"',"'", str_replace("'", "\'", json_encode($tmp_task->getMembersToDisplayPath($member_ids))))
+			'memPath' => str_replace('"',"'", str_replace("'", "\'", json_encode($tmp_task->getMembersIdsToDisplayPath())))
 		);
 
 		$result['mas'] = (int)array_var($raw_data, 'multi_assignment');

@@ -91,7 +91,7 @@ foreach($companies as $company)
 <table style="width:100%;height:100%;">
 <tr>
 <td>
-	<table style="width:100%;height:100%;">
+	<table style="width:100%;height:100%;min-height: 600px;">
 		<tr>
 			<td id="calendarMonthTitle" class="coViewHeader" colspan=1 rowspan=1 style="padding: 0;">
 				<div class="coViewTitle" style="width:100%;padding: 8px 0px;">

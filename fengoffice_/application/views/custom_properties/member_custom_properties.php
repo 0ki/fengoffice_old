@@ -98,7 +98,9 @@ if(count($cps) > 0){
 						}
 						echo '<table id="table'.$genid.$customProp->getId().'">';
 						foreach($fieldValues as $val){
-							$value = DateTimeValueLib::dateFromFormatAndString("Y-m-d H:i:s", $val->getValue());
+							if (trim($val) != '') {
+								$value = DateTimeValueLib::dateFromFormatAndString("Y-m-d H:i:s", $val->getValue());
+							}
 							echo '<tr><td style="width:150px;">';
 							echo pick_date_widget2($name, $value, null, $startTi + $ti, null, $genid . 'cp' . $customProp->getId());
 							echo '</td><td>';
@@ -109,10 +111,18 @@ if(count($cps) > 0){
 						echo '</table>';
 						echo '&nbsp;<a href="#" class="link-ico ico-add" onclick="og.addCPDateValue(\''.$genid.'\','.$customProp->getId().', 1)">'.lang('add value').'</a><br/>';
 					}else{
-						if ($default_value == '') {
-							$default_value = DateTimeValueLib::now()->advance(logged_user()->getTimezone()*3600, false)->toMySQL();
+						if ($default_value != '') {
+							try {
+								$value = DateTimeValueLib::dateFromFormatAndString("Y-m-d H:i:s", $default_value);
+							} catch (Exception $e) {
+								try {
+									$value = DateTimeValueLib::dateFromFormatAndString(user_config_option('date_format'), $default_value);
+								} catch (Exception $e2) {
+									Logger::log("Error when setting date custom property value:\n".$e2->getMessage()."\n\n".get_back_trace());
+									$value = '';
+								}
+							}
 						}
-						$value = DateTimeValueLib::dateFromFormatAndString("Y-m-d H:i:s", $default_value);
 						echo pick_date_widget2($name, $value, null, $startTi + $ti, null, $genid . 'cp' . $customProp->getId());
 					}
 					break;

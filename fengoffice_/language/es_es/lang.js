@@ -821,5 +821,6 @@ addLangs({
 	'phone number': 'Teléfono',
 	'edit_picture':'Editar foto',
 	
-	'birthdays': 'Cumpleaños'
+	'birthdays': 'Cumpleaños',
+	'email address': 'Correo'
 });

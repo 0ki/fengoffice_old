@@ -82,7 +82,7 @@
 			echo "<tr $alt_cls>";
 			echo "<td class='date'>" . format_date($ts->getStartTime()) . "</td>";
 			echo "<td class='name'>" . ($ts->getRelObjectId() == 0 ? clean($ts->getObjectName()) : clean($ts->getRelObject()->getObjectName())) ."</td>";
-			echo "<td class='name'>" . clean($ts->getDescription()) ."</td>";
+			echo "<td class='name'>" . nl2br(clean($ts->getDescription())) ."</td>";
 			echo "<td class='person'>" . clean($ts->getUser() instanceof Contact ? $ts->getUser()->getObjectName() : '') ."</td>";
 			if (array_var($options, 'show_billing') == 'checked') {
 				if($ts->getIsFixedBilling()){
@@ -339,7 +339,7 @@
 ?>
 <tr>
 	<td style="padding:4px;<?php echo $isAlt? 'background-color:#F2F2F2':'' ?>"><?php echo format_datetime($ts->getStartTime(), $date_format)?></td>
-	<td style="padding:4px; width:250px;<?php echo $isAlt? 'background-color:#F2F2F2':'' ?>"><?php echo clean($ts->getDescription()) ?></td>
+	<td style="padding:4px; width:250px;<?php echo $isAlt? 'background-color:#F2F2F2':'' ?>"><?php echo nl2br(clean($ts->getDescription())) ?></td>
 	<?php if ($showUserCol) { ?><td style="padding:4px;<?php echo $isAlt? 'background-color:#F2F2F2':'' ?>"><?php echo clean(Contacts::getUserDisplayName($ts->getContactId())) ?></td><?php } ?>
 	<?php $lastStop = $ts->getEndTime() != null ? $ts->getEndTime() : ($ts->isPaused() ? $ts->getPausedOn() : DateTimeValueLib::now()); ?>
 	<td style="padding:4px;text-align:right;<?php echo $isAlt? 'background-color:#F2F2F2':'' ?>"><?php echo DateTimeValue::FormatTimeDiff($ts->getStartTime(), $lastStop, "hm", 60, $ts->getSubtract()) ?></td>

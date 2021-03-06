@@ -28,3 +28,5 @@
 @import 'admin/admin.css';
 @import 'project/project.css';
 @import 'og/templates.css';
+@import 'og/search_selector.css';
+@import '../jquery/smoothness/jquery-ui.css';

@@ -10,10 +10,12 @@
 	$all_phones = ContactTelephones::findAll(array('conditions' => 'contact_id = '.$contact->getId()));
 	$all_addresses = ContactAddresses::findAll(array('conditions' => 'contact_id = '.$contact->getId()));
 	$all_webpages = ContactWebpages::findAll(array('conditions' => 'contact_id = '.$contact->getId()));
+	$all_other_emails = ContactEmails::findAll(array('conditions' => 'is_main=0 AND contact_id = '.$contact->getId()));
 
 	$all_telephone_types = TelephoneTypes::getAllTelephoneTypesInfo();
 	$all_address_types = AddressTypes::getAllAddressTypesInfo();
 	$all_webpage_types = WebpageTypes::getAllWebpageTypesInfo();
+	$all_email_types = EmailTypes::getAllEmailTypesInfo();
 	
 	// types ordered
 	$all_type_codes = array('work','mobile','home','personal','other','assistant','callback','pager','fax');
@@ -67,13 +69,15 @@ $is_alt = true;
 $is_alt_box = true;
 
 if ($main_email) { ?>
-	<div class="info-type" ><?php echo lang('email') ?></div>
+	<div class="info-type" ><?php echo (count($all_other_emails) > 0 ? lang('main email') : lang('email')) ?></div>
 	<div class="info-content"><?php 
-	$is_alt = !$is_alt;
-	echo render_mailto($main_email);
+		$is_alt = !$is_alt;
+		echo render_mailto($main_email);
 	?></div>
-	<div class="clear"></div><?php
+	<div class="clear"></div>
+<?php 
 }
+
 
 foreach ($all_type_codes as $type_code) {
 	$is_alt_box = !$is_alt_box;
@@ -84,6 +88,8 @@ foreach ($all_type_codes as $type_code) {
 	foreach ($all_address_types as $type) if ($type['code'] == $type_code) $add_type = $type;
 	$web_type = null;
 	foreach ($all_webpage_types as $type) if ($type['code'] == $type_code) $web_type = $type;
+	$mail_type = null;
+	foreach ($all_email_types as $type) if ($type['code'] == $type_code) $mail_type = $type;
 	
 	?>
 
@@ -135,6 +141,19 @@ foreach ($all_type_codes as $type_code) {
 			</div>
 	<?php }
 	}
+	
+	if ($mail_type) {
+		foreach ($all_other_emails as $oemail) {
+			if ($oemail->getEmailTypeId() != $mail_type['id']) continue;
+			$any_obj = true;
+			$is_alt = !$is_alt;
+			?>
+			<div class="<?php echo ($is_alt ? 'alt-row' : '')?> info-content-item">
+				<strong><?php echo lang('email')?>: </strong><?php echo render_mailto($oemail->getEmailAddress()) ?>
+			</div>
+	<?php }
+	}
+	
 	
 	if (!$any_obj) { ?>
 	<script>

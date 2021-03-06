@@ -131,7 +131,7 @@ og.config.quick_add_task_combos = <?php
 			$dim = Dimensions::instance()->getDimensionById($dimension_id);
 			if($dim instanceof Dimension){
 				if($key!=0) $object .=",";
-				$object .= "'".$dim->getName()."'";
+				$object .= "{name : '". $dim->getName()."', desc : '".lang('add new relation ' . $dim->getCode())."'}";
 			}
 		}		
 		echo "[".$object."]";

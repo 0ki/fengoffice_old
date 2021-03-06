@@ -1,4 +1,4 @@
-locale = 'fr_fr';
+locale = 'fr_ca';
 addLangs({
 	'enter the url of the image': 'Saisissez l\'URL de l\'image',
 	'enter a color': 'Saisissez une couleur',

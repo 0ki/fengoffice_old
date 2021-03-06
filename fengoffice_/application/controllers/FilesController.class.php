@@ -1873,7 +1873,7 @@ class FilesController extends ApplicationController {
 					"songInfo" => $songInfo,
 					"ftype" => $o->getType(),
 					"url" => $o->getUrl(),
-					"memPath" => json_encode($o->getMembersToDisplayPath()),
+					"memPath" => json_encode($o->getMembersIdsToDisplayPath()),
 				);
 				if ($o->isMP3()) {
 					$values['isMP3'] = true;

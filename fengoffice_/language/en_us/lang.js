@@ -926,6 +926,7 @@ addLangs({
 	'zip_code': 'Zipcode',
 	'edit_picture':'Edit picture',
 	
-	'birthdays': 'Birthdays'
+	'birthdays': 'Birthdays',
+	'email address': 'Email address'
 	
 });

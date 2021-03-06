@@ -6,7 +6,26 @@
     
     <div  class="link-ico ico-email"><h2><?php echo lang('email address') ?></h2></div>
     <div class="cardBlock">
-      <a <?php echo logged_user()->hasMailAccounts() ? 'href="' . get_url('mail', 'add_mail', array('to' => clean($company->getEmailAddress()))) . '"' :  'target="_self" href="mailto:' . clean($company->getEmailAddress()) . '"' ?>><?php echo clean($company->getEmailAddress()) ?></a>
+      <?php 
+		$all_emails = ContactEmails::findAll(array('conditions' => 'contact_id='.$company->getId(), 'order' => 'is_main DESC'));
+		foreach ($all_emails as $email) {
+			if ($email->getIsMain()) { ?>
+				<div><a <?php echo logged_user()->hasMailAccounts() ? 
+					'href="' . get_url('mail', 'add_mail', array('to' => clean($email->getEmailAddress()))) . '"' : 
+					'target="_self" href="mailto:' . clean($email->getEmailAddress()) . '"' ?>><?php 
+				echo clean($email->getEmailAddress());
+			?></a></div>
+<?php 		} else {
+				$type = $email->getEmailType();
+				$type_name = $type instanceof EmailType ? '<span class="bold">'.lang($type->getName()) . ': </span>' : ''; ?>
+				<div><?php echo $type_name; ?><a <?php echo logged_user()->hasMailAccounts() ? 
+					'href="' . get_url('mail', 'add_mail', array('to' => clean($email->getEmailAddress()))) . '"' : 
+					'target="_self" href="mailto:' . clean($email->getEmailAddress()) . '"' ?>><?php 
+				echo clean($email->getEmailAddress());
+			?></a></div>
+<?php 		}
+		}
+      ?>
     </div>
     
     <div  class="link-ico ico-phone"><h2><?php echo lang('phone number') ?></h2></div>

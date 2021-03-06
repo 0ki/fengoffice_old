@@ -61,7 +61,7 @@ class SharingTableFlags extends BaseSharingTableFlags {
 				
 			} catch(Exception $e) {
 				DB::rollback();
-				Logger::log("Failed to heal permission group $permission_group_id (flag_id = ".$flag->getId().")");
+				Logger::log("Failed to heal permission group $permission_group_id (flag_id = ".$flag->getId().")\n".$e->getTraceAsString());
 				return false;
 			}
 		}

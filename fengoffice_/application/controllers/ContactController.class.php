@@ -695,7 +695,7 @@ class ContactController extends ApplicationController {
 						"updatedOn_today" => $c->getUpdatedOn() instanceof DateTimeValue ? $c->getUpdatedOn()->isToday() : 0,
 						"updatedBy" => $c->getUpdatedByDisplayName(),
 						"updatedById" => $c->getUpdatedById(),
-						"memPath" => json_encode($c->getMembersToDisplayPath()),
+						"memPath" => json_encode($c->getMembersIdsToDisplayPath()),
 						"userType" => $c->getUserType(),
 					);
 				} else if ($c instanceof Contact){
@@ -733,7 +733,7 @@ class ContactController extends ApplicationController {
 						"updatedOn_today" => $c->getUpdatedOn() instanceof DateTimeValue ? $c->getUpdatedOn()->isToday() : 0,
 						"updatedBy" => $c->getUpdatedByDisplayName(),
 						"updatedById" => $c->getUpdatedById(),
-						"memPath" => json_encode($c->getMembersToDisplayPath()),
+						"memPath" => json_encode($c->getMembersIdsToDisplayPath()),
 						"contacts" => $c->getContactsByCompany(),
 						"users" => $c->getUsersByCompany(),
 					);
@@ -942,7 +942,7 @@ class ContactController extends ApplicationController {
 		$all_webpage_types = WebpageTypes::getAllWebpageTypesInfo();
 		tpl_assign('all_webpage_types', $all_webpage_types);
 		// email types
-		$all_email_types = WebpageTypes::getAllWebpageTypesInfo();
+		$all_email_types = EmailTypes::getAllEmailTypesInfo();
 		tpl_assign('all_email_types', $all_email_types);
 		
 		// Submit
@@ -989,10 +989,11 @@ class ContactController extends ApplicationController {
 				$this->save_phones_addresses_webpages($contact_data, $contact);
 					
 				
-				//Emails and instant messaging form
+				// main email
 				if($contact_data['email'] != "") $contact->addEmail($contact_data['email'], 'personal', true);
-				if($contact_data['email2'] != "") $contact->addEmail($contact_data['email2'], 'personal');
-				if($contact_data['email3'] != "") $contact->addEmail($contact_data['email3'], 'personal');
+				
+				// save additional emails
+				$this->save_non_main_emails($contact_data, $contact);
 
 				// autodetect timezone
 				$autotimezone = array_var($contact_data, 'autodetect_time_zone', null);
@@ -1057,30 +1058,33 @@ class ContactController extends ApplicationController {
 			} catch(Exception $e) {
 				DB::rollback();
 				flash_error($e->getMessage());
+				return;
 			} // try
 			
 			
 			try {
-				$user_data = $this->createUserFromContactForm($user, $contact->getId(), $contact_data['email'],isset($_POST['notify-user']));
-				
-				if (array_var($contact_data, 'isNewCompany') == 'true' && is_array(array_var($_POST, 'company'))){
-					ApplicationLogs::createLog($company, ApplicationLogs::ACTION_ADD);
-				}
-				ApplicationLogs::createLog($contact, ApplicationLogs::ACTION_ADD);
-				
-				// Send notification
-				send_notification($user_data, $contact->getId());
-				
-				if (isset($contact_data['new_contact_from_mail_div_id'])) {
-					$combo_val = trim($contact->getFirstName() . ' ' . $contact->getSurname() . ' <' . $contact->getEmailAddress('personal') . '>');
-					evt_add("contact added from mail", array("div_id" => $contact_data['new_contact_from_mail_div_id'], "combo_val" => $combo_val, "hf_contacts" => $contact_data['hf_contacts']));
+				if ($user) {
+					$user_data = $this->createUserFromContactForm($user, $contact->getId(), $contact_data['email'],isset($_POST['notify-user']));
+					
+					if (array_var($contact_data, 'isNewCompany') == 'true' && is_array(array_var($_POST, 'company'))){
+						ApplicationLogs::createLog($company, ApplicationLogs::ACTION_ADD);
+					}
+					ApplicationLogs::createLog($contact, ApplicationLogs::ACTION_ADD);
+					
+					// Send notification
+					send_notification($user_data, $contact->getId());
+					
+					if (isset($contact_data['new_contact_from_mail_div_id'])) {
+						$combo_val = trim($contact->getFirstName() . ' ' . $contact->getSurname() . ' <' . $contact->getEmailAddress('personal') . '>');
+						evt_add("contact added from mail", array("div_id" => $contact_data['new_contact_from_mail_div_id'], "combo_val" => $combo_val, "hf_contacts" => $contact_data['hf_contacts']));
+					}
 				}
 				flash_success(lang('success add contact', $contact->getObjectName()));
 				ajx_current("back");
 				
 			} catch(Exception $e) {
-				
 				flash_error($e->getMessage());
+				ajx_current("empty");
 			}
 
 		} // if
@@ -1137,7 +1141,6 @@ class ContactController extends ApplicationController {
 		} // if
 
 		$im_types = ImTypes::findAll(array('order' => '`id`'));
-		$personal_emails = $contact->getContactEmails('personal');
 		
 		// telephone types
 		$all_telephone_types = TelephoneTypes::getAllTelephoneTypesInfo();
@@ -1149,7 +1152,7 @@ class ContactController extends ApplicationController {
 		$all_webpage_types = WebpageTypes::getAllWebpageTypesInfo();
 		tpl_assign('all_webpage_types', $all_webpage_types);
 		// email types
-		$all_email_types = WebpageTypes::getAllWebpageTypesInfo();
+		$all_email_types = EmailTypes::getAllEmailTypesInfo();
 		tpl_assign('all_email_types', $all_email_types);
 		
 		
@@ -1163,11 +1166,7 @@ class ContactController extends ApplicationController {
 				'department' => $contact->getDepartment(),
 				'job_title' => $contact->getJobTitle(),
 				'email' => $contact->getEmailAddress(),
-				'email2' => !is_null($personal_emails) && isset($personal_emails[0]) ? $personal_emails[0]->getEmailAddress() : '',
-				'email3' => !is_null($personal_emails) && isset($personal_emails[1])? $personal_emails[1]->getEmailAddress() : '',
-
 				'birthday'=> $contact->getBirthday(),
-				
 				'comments' => $contact->getCommentsField(),
 				'picture_file' => $contact->getPictureFile(),
                 'timezone' => $contact->getTimezone(),
@@ -1190,7 +1189,7 @@ class ContactController extends ApplicationController {
       	    $contact_data['all_addresses'] = $all_addresses;
       	    $all_webpages = ContactWebpages::findAll(array('conditions' => 'contact_id = '.$contact->getId()));
       	    $contact_data['all_webpages'] = $all_webpages;
-      	    $all_emails = ContactEmails::findAll(array('conditions' => 'contact_id = '.$contact->getId()));
+      	    $all_emails = $contact->getNonMainEmails();
       	    $contact_data['all_emails'] = $all_emails;
 		} // if
 		
@@ -1258,17 +1257,17 @@ class ContactController extends ApplicationController {
 				
 				//Emails 
 				$personal_email_type_id = EmailTypes::getEmailTypeId('personal');
-				$main_emails = ContactEmails::getContactMainEmails($contact, $personal_email_type_id);
+				$main_emails = $contact->getMainEmails();
 				$more_main_emails = array();
-				$mail = null;
+				$main_mail = null;
 				foreach ($main_emails as $me) {
-					if ($mail == null) $mail = $me;
+					if ($main_mail == null) $main_mail = $me;
 					else $more_main_emails[] = $me;
 				}
 				
-				if($mail){
-					$mail->editEmailAddress($contact_data['email']);
-				}else{
+				if ($main_mail) {
+					$main_mail->editEmailAddress($contact_data['email']);
+				} else {
 					if($contact_data['email'] != "") $contact->addEmail($contact_data['email'], 'personal' , true);
 				}
 				foreach ($more_main_emails as $mme) {
@@ -1276,21 +1275,9 @@ class ContactController extends ApplicationController {
 					$mme->save();
 				}
 				
-				$mail2 = !is_null($personal_emails) && isset($personal_emails[0])? $personal_emails[0] : null;
-				if($mail2){
-						$mail2->editEmailAddress($contact_data['email2']);
-				}else{ 
-						if($contact_data['email2'] != "") $contact->addEmail($contact_data['email2'], 'personal');
-				}
+				// save additional emails
+				$this->save_non_main_emails($contact_data, $contact);
 				
-				$mail3 = !is_null($personal_emails) && isset($personal_emails[1])? $personal_emails[1] : null;
-				if($mail3){
-						$mail3->editEmailAddress($contact_data['email3']);
-				}else{ 
-						if($contact_data['email3'] != "") $contact->addEmail($contact_data['email3'], 'personal');
-				}
-				
-
 				// autodetect timezone
 				$autotimezone = array_var($contact_data, 'autodetect_time_zone', null);
 				if ($autotimezone !== null) {
@@ -1354,6 +1341,32 @@ class ContactController extends ApplicationController {
 		} // if
 	} // edit
 
+	
+	
+	private function save_non_main_emails($contact_data, $contact) {
+		$emails_data = array_var($contact_data, 'emails');
+		if (is_array($emails_data)) {
+			foreach ($emails_data as $data) {
+				$obj = null;
+				if ($data['id'] > 0) {
+					$obj = ContactEmails::findById($data['id']);
+				} else {
+					if (trim($data['email_address']) == '') continue;
+				}
+				if ($data['deleted'] && $obj instanceof ContactEmail) {
+					$obj->delete();
+					continue;
+				}
+				if (!$obj instanceof ContactEmail) {
+					$obj = new ContactEmail();
+					$obj->setContactId($contact->getId());
+				}
+				$obj->setEmailTypeId($data['type']);
+				$obj->setEmailAddress($data['email_address']);
+				$obj->save();
+			}
+		}
+	}
 	
 
 	private function save_phones_addresses_webpages($contact_data, $contact) {
@@ -2788,7 +2801,7 @@ class ContactController extends ApplicationController {
 			$all_webpage_types = WebpageTypes::getAllWebpageTypesInfo();
 			tpl_assign('all_webpage_types', $all_webpage_types);
 			// email types
-			$all_email_types = WebpageTypes::getAllWebpageTypesInfo();
+			$all_email_types = EmailTypes::getAllEmailTypesInfo();
 			tpl_assign('all_email_types', $all_email_types);
 			
 			$all_phones = ContactTelephones::findAll(array('conditions' => 'contact_id = '.$company->getId()));
@@ -2797,7 +2810,8 @@ class ContactController extends ApplicationController {
 			$company_data['all_addresses'] = $all_addresses;
 			$all_webpages = ContactWebpages::findAll(array('conditions' => 'contact_id = '.$company->getId()));
 			$company_data['all_webpages'] = $all_webpages;
-			//$all_emails = ContactEmails::findAll(array('conditions' => 'contact_id = '.$company->getId()));
+			$all_emails = $company->getNonMainEmails();
+			$company_data['all_emails'] = $all_emails;
 		} // if
 
 		tpl_assign('company', $company);
@@ -2813,11 +2827,22 @@ class ContactController extends ApplicationController {
 				
 				$company->setFromAttributes($company_data);
 				
-				$mail = $company->getEmail();
-				if($mail){
-					$mail->editEmailAddress($company_data['email']);
+				$main_emails = $company->getMainEmails();
+				$more_main_emails = array();
+				$main_mail = null;
+				foreach ($main_emails as $me) {
+					if ($main_mail == null) $main_mail = $me;
+					else $more_main_emails[] = $me;
+				}
+				
+				if($main_mail){
+					$main_mail->editEmailAddress($company_data['email']);
 				}else{ 
 					if($company_data['email'] != "") $company->addEmail($company_data['email'], 'work' , true);
+				}
+				foreach ($more_main_emails as $mme) {
+					$mme->setIsMain(false);
+					$mme->save();
 				}
 				
 				$company->setObjectName();
@@ -2826,6 +2851,8 @@ class ContactController extends ApplicationController {
 				// save phones, addresses and webpages
 				$this->save_phones_addresses_webpages($company_data, $company);
 				
+				// save additional emails
+				$this->save_non_main_emails($company_data, $company);
 				
 				$member_ids = json_decode(array_var($_POST, 'members'));
 				
@@ -2904,7 +2931,7 @@ class ContactController extends ApplicationController {
 		$all_webpage_types = WebpageTypes::getAllWebpageTypesInfo();
 		tpl_assign('all_webpage_types', $all_webpage_types);
 		// email types
-		$all_email_types = WebpageTypes::getAllWebpageTypesInfo();
+		$all_email_types = EmailTypes::getAllEmailTypesInfo();
 		tpl_assign('all_email_types', $all_email_types);
 		
 		
@@ -2930,6 +2957,8 @@ class ContactController extends ApplicationController {
 				$this->save_phones_addresses_webpages($company_data, $company);
 				
 				if($company_data['email'] != "") $company->addEmail($company_data['email'], 'work' , true);
+				// save additional emails
+				$this->save_non_main_emails($company_data, $company);
 				
 				$object_controller = new ObjectController();
 				$object_controller->add_subscribers($company);

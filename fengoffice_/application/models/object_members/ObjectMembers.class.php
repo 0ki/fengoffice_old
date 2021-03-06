@@ -150,6 +150,40 @@
   			}
   			return $result;
   		}
+  		
+  		static function getMembersIdsByObjectAndExtraCond($object_id, $extra_conditions = "", $limit = ""){
+  			if ($object_id) {
+  				// Prepare Limit SQL
+  				$SQL_LIMIT = '' ;
+  				if (is_numeric($limit) && $limit>0){
+  					$SQL_LIMIT = "LIMIT 0, ".$limit;
+  				}
+  				
+  				$sql = "
+  					SELECT om.member_id
+  					FROM ".TABLE_PREFIX."object_members om
+  					INNER JOIN ".TABLE_PREFIX."members m ON om.member_id = m.id
+  					WHERE
+  						om.object_id = '$object_id'
+  						$extra_conditions
+  					ORDER BY om.member_id
+  					$SQL_LIMIT
+  				";
+  				$db_res = DB::execute($sql);
+  				$rows = $db_res->fetchAll();
+  			} else {
+  				return array();
+  			}
+  		
+  			$member_ids = array();
+  			if(count($rows) > 0){
+  				foreach ($rows as $row){
+  					$member_ids[] = $row['member_id'];
+  				}
+  			}
+  				
+  			return $member_ids;
+  		}
      
   		
   } // ObjectMembers 

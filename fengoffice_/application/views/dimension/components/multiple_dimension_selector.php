@@ -34,14 +34,23 @@
 		$expgenid = gen_id();
 
 		// Render view by obj type
+		
+		$container_id = $genid."member-seleector-dim".$dimension_id;
+		$search_placeholder = lang('add new relation ' . $dimension['dimension_code']);
+		$search_function = "ogSearchSelector.searchMember";
+		$result_limit = "5";
+		$select_function = "ogSearchSelector.onItemMemberSelect";
+		$search_minLength = 0;
+		$extra_param = "$dimension_id";		
 		if(!$default_view && file_exists(get_template_path("components/small_view", "dimension"))){
 			include get_template_path("components/small_view", "dimension");
 		}else{
 			include get_template_path("components/default_view", "dimension");
-		}		
-?>
+		}		 
+		
+	?>
 	
-
+	
 	<script>
 	if (!member_selector['<?php echo $genid; ?>']) member_selector['<?php echo $genid; ?>'] = {};
 	if (!member_selector['<?php echo $genid; ?>'].properties) member_selector['<?php echo $genid; ?>'].properties = {};

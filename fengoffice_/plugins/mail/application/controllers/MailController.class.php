@@ -2795,7 +2795,7 @@ class MailController extends ApplicationController {
 			"isSent" => $msg->getIsSent(),
 			"folder" => $msg->getImapFolderName(),
 			"to" => $msg->getTo(),
-			"memPath" => json_encode($msg->getMembersToDisplayPath()),
+			"memPath" => json_encode($msg->getMembersIdsToDisplayPath()),
 			"memberIds" => implode(",", $msg->getMemberIds()),
 		);
 		

@@ -72,12 +72,12 @@ og.eventManager.addListener('reload dimension tree',
 						if(selection){
 							setTimeout(function(){
 								if (data.node) {
-									var treenode = tree.getNodeById(data.node);
+									var treenode = data.node;
 								} else {
-									var treenode = tree.getNodeById(selection.id);
+									var treenode = selection.id;
 								}
-								og.Breadcrumbs.refresh(treenode);
-								treenode.fireEvent('click', treenode);
+
+								og.memberTreeExternalClick(tree.dimensionCode,treenode);								
 							}, 200);
 							og.contextManager.addActiveMember(selection.id, data.dim_id, selection.id);
 						}
@@ -205,20 +205,9 @@ og.eventManager.addListener('expand menu panel',
 
 og.eventManager.addListener('after member save', 
 	function (member){
-		if (og.dimensions[member.dimension_id]){
-			if (!og.dimensions[member.dimension_id][member.member_id]) {
-				og.dimensions[member.dimension_id][member.member_id] = {};
-				og.dimensions[member.dimension_id][member.member_id].id = member.member_id;
-			}
-			og.dimensions[member.dimension_id][member.member_id].name = member.name;
-			og.dimensions[member.dimension_id][member.member_id].path = member.path;
-			og.dimensions[member.dimension_id][member.member_id].ico = member.ico;
-			og.dimensions[member.dimension_id][member.member_id].ot = member.object_type_id;
-			og.dimensions[member.dimension_id][member.member_id].archived = member.archived;
-		}
-		if (member.perms) {
-			og.member_permissions[member.dimension_id][member.member_id] = member.perms;
-		}
+		//add member to og.dimension
+		og.addMemberToOgDimensions(member.dimension_id,member);		
+		
 	}
 );
 

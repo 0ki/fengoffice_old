@@ -349,7 +349,7 @@ class WebpageController extends ApplicationController {
 					"updatedOn_today" => $w->getUpdatedOn() instanceof DateTimeValue ? $w->getUpdatedOn()->isToday() : 0,
 					"updatedBy" => $w->getUpdatedByDisplayName(),
 					"updatedById" => $w->getUpdatedById(),
-					"memPath" => json_encode($w->getMembersToDisplayPath()),
+					"memPath" => json_encode($w->getMembersIdsToDisplayPath()),
 				);
 				
 				foreach ($custom_properties as $cp) {

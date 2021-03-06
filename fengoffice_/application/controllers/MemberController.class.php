@@ -284,7 +284,7 @@ class MemberController extends ApplicationController {
 				));
 				$ret = null;
 				Hook::fire('after_add_member', $member, $ret);
-				evt_add("reload dimension tree", array('dim_id' => $member->getDimensionId()));
+				evt_add("reload dimension tree", array('dim_id' => $member->getDimensionId(),'node' => $member->getId()));
 				/*
 				$member_type = ObjectTypes::findById($member->getObjectTypeId());
 				$context = active_context();

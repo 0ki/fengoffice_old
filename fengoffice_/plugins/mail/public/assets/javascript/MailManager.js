@@ -405,7 +405,7 @@ og.MailManager = function() {
 		});
 	}
 	// dimension columns
-	for (did in og.dimensions) {
+	for (did in og.dimensions_info) {
 		if (isNaN(did)) continue;
 		var key = 'lp_dim_' + did + '_show_as_column';
 		if (og.preferences['listing_preferences'][key]) {

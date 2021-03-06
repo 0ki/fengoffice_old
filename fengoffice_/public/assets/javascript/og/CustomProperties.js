@@ -143,3 +143,61 @@ og.removeTableCustomPropertyRow = function(tr) {
 	var parent = tr.parentNode;
 	parent.removeChild(tr);
 }
+
+
+og.cp_list_remove = function(remove_link, genid, cp_id) {
+	document.getElementById(genid+'_remove_cp_'+cp_id).value = 1;
+
+	var inputs = remove_link.parentNode.getElementsByTagName('input');
+	var input = inputs[0];
+	var value = input.value;
+	
+	var tmp = [];
+	for (var i=0; i<og.cp_list_selected_values[cp_id][genid].length; i++) {
+		if (og.cp_list_selected_values[cp_id][genid][i] != value) {
+			tmp.push(og.cp_list_selected_values[cp_id][genid][i]);
+		}
+	}
+	og.cp_list_selected_values[cp_id][genid] = tmp;
+	
+	og.eventManager.fireEvent('after cp list change', [{
+		cp_id: cp_id,
+		genid: genid,
+		values: og.cp_list_selected_values[cp_id][genid]
+	}]);
+	remove_link.parentNode.parentNode.removeChild(remove_link.parentNode);
+	
+	return false;
+}
+
+og.cp_list_selected = function(combo, genid, name, cp_id, is_multiple) {
+	document.getElementById(genid+'_remove_cp_'+cp_id).value = 0;
+	var i = og.cp_list_selected_index[cp_id][genid];
+	var div = document.getElementById(genid + 'cp_list_selected' + cp_id);
+	
+	if (!og.cp_list_selected_values) og.cp_list_selected_values = [];
+	if (!og.cp_list_selected_values[cp_id]) og.cp_list_selected_values[cp_id] = [];
+	if (!og.cp_list_selected_values[cp_id][genid]) og.cp_list_selected_values[cp_id][genid] = [];
+	
+	var val = combo.options[combo.selectedIndex].value;
+	if (val == '' || og.cp_list_selected_values[cp_id][genid].indexOf(val) >= 0) return;
+	
+	var html = '<div>'+ og.clean(val);
+	html += '&nbsp;<a href=\"#\" onclick=\"og.cp_list_remove(this, \''+genid+'\', '+cp_id+');\" class=\"db-ico coViewAction ico-delete\">&nbsp;</a>';
+	html += '<input type=\"hidden\" name=\"'+name+'['+i+']\" value=\"'+val+'\" /></div>';
+	
+	if (is_multiple) {
+		div.innerHTML += html;
+		og.cp_list_selected_index[cp_id][genid] = i + 1;
+		og.cp_list_selected_values[cp_id][genid].push(val);
+	} else {
+		div.innerHTML = html;
+		og.cp_list_selected_values[cp_id][genid] = [val];
+	}
+	
+	og.eventManager.fireEvent('after cp list change', [{
+		cp_id: cp_id,
+		genid: genid,
+		values: og.cp_list_selected_values[cp_id][genid]
+	}]);
+}

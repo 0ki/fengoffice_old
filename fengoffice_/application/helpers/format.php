@@ -247,7 +247,7 @@ function date_format_tip($format) {
 					} else {
 						if (strpos($value, "\xA0") !== false) $value = preg_replace('/\xA0/s', ' ', $value);
 						$value = utf8_safe($value);
-						$formatted = $textWrapper . clean($value) . $textWrapper;
+						$formatted = $textWrapper . $value . $textWrapper;
 					}
 				}
 				break;

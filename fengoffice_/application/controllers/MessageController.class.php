@@ -263,7 +263,7 @@ class MessageController extends ApplicationController {
 						"userName" => $msg->getCreatedByDisplayName(),
 						"updaterId" => $msg->getUpdatedById() ? $msg->getUpdatedById() : $msg->getCreatedById(),
 						"updaterName" => $msg->getUpdatedById() ? $msg->getUpdatedByDisplayName() : $msg->getCreatedByDisplayName(),
-						"memPath" => json_encode($msg->getMembersToDisplayPath()),
+						"memPath" => json_encode($msg->getMembersIdsToDisplayPath()),
 					);
 					$ids[] = $msg->getId();
 					

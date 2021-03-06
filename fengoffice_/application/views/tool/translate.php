@@ -61,6 +61,14 @@ table.options td {
 	vertical-align: middle;
 	padding: 5px 10px;
 }
+table.lang em {
+	background-color: yellow;
+	font-style: normal;
+}
+div.msg {
+	padding: 10px;
+	font-style: italic;
+}
 </style>
 <script>
 function addLangs(langs) {
@@ -102,6 +110,7 @@ if (!isset($to)) $to = ""; ?>
 		<input type="hidden" name="a" value="translate">
 		<input type="hidden" name="from" value="<?php echo $from ?>" />
 		<input type="hidden" name="pagesize" value="<?php echo $pagesize ?>" />
+		<input type="hidden" name="search" value="<?php echo $search ?>" />
 		<script>
 			function localeChosen() {
 				var select = this.getElementsByTagName("select")[0];
@@ -137,7 +146,12 @@ if (!isset($to)) $to = ""; ?>
 			<option value="new">&lt;New&gt;</option>
 		</select>
 		<button type="submit">Go</button>
-	</form> <br />
+	</form>
+<?php if ($to != '') { ?>
+	<div id="checklang-div" style="max-width:200px; margin-top:5px;">
+		<a href="index.php?c=tool&a=checklang&to=<?php echo $to ?>" target="_blank">Show all "Missing langs" for <?php echo $to?></a>
+	</div>
+<?php } ?>
 </td><?php
 
 if ($to != "") { 
@@ -163,6 +177,7 @@ if ($to != "") {
 		<input type="hidden" name="to" value="<?php echo $to ?>" />
 		<input type="hidden" name="filter" value="<?php echo $filter ?>" />
 		<input type="hidden" name="pagesize" value="<?php echo $pagesize ?>" />
+		<input type="hidden" name="search" value="<?php echo $search ?>" />
 		<script>
 			function fileChosen() {
 				if (this.value != "") {
@@ -180,8 +195,39 @@ if ($to != "") {
 		</select>
 		<button type="submit">Go</button>
 	</form>
-	</td> <?php
-	if ($file != "") { 
+	</td>
+	
+	<td>
+	<label>Search:</label>
+	<form action="index.php" method="get">
+		<input type="hidden" name="c" value="tool">
+		<input type="hidden" name="a" value="translate">
+		<input type="hidden" name="from" value="<?php echo $from ?>" />
+		<input type="hidden" name="to" value="<?php echo $to ?>" />
+		<input type="hidden" name="pagesize" value="<?php echo $pagesize ?>" />
+		<input type="text" name="search" id="search_field" value="<?php echo $search ?>" placeholder="Enter search criteria..." />
+		<button id="search_submit" type="submit">Search</button>
+	</form>
+	<script>
+		function clearSearchField(link) {
+			var f = document.getElementById("search_field");
+			if (f) {
+				f.value = '';
+				if (link) link.style.display = 'none';
+				var ss = document.getElementById("search_submit");
+				if (ss) ss.click();
+			}
+		}
+	</script>
+	<?php if ($search != '') { ?>
+	<div style="max-width:200px; margin-top:5px;">
+		<a href="#" onclick="clearSearchField(this);">Clear search criteria</a>
+	</div>
+	<?php } ?>
+	</td>
+	
+	<?php
+	if ($file != "" || $search != '') { 
 		if ($start >= $added && $filter == "missing") $start -= $added; ?>
 		<td>
 		<label>View:</label>
@@ -191,6 +237,7 @@ if ($to != "") {
 			<input type="hidden" name="from" value="<?php echo $from ?>" />
 			<input type="hidden" name="to" value="<?php echo $to ?>" />
 			<input type="hidden" name="file" value="<?php echo $file ?>" />
+			<input type="hidden" name="search" value="<?php echo $search ?>" />
 			<input type="hidden" name="pagesize" value="<?php echo $pagesize ?>" />
 			<script>
 				function filterChosen() {
@@ -263,6 +310,7 @@ if ($to != "") {
 			</div>
 			<input type="hidden" name="locale" value="<?php echo $to ?>" />
 			<input type="hidden" name="file" value="<?php echo $file ?>" />
+			<input type="hidden" name="search" value="<?php echo $search ?>" />
 			<table class="lang"><tbody>
 			<tr>
 				<th class="key">Key</th>
@@ -276,10 +324,14 @@ if ($to != "") {
 			$count = 0;
 			foreach ($locales[$from][$file] as $key => $value) {
 				if ($filter == "all" || $filter == "missing" && !isset($locales[$to][$file][$key])) {
+					$key_str = $key;
+					if ($search != '') {
+						$key_str = str_replace($search, "<em>$search</em>", $key_str);
+					}
 					$count++;
 					if ($count > $start && $count <= $start + $pagesize) { ?>
 					<tr>
-						<td class="key"><?php echo $key ?></td>
+						<td class="key"><?php echo $key_str ?></td>
 						<td class="from"><textarea readonly="readonly" tabindex="-1"><?php echo $value ?></textarea></td> <?php
 					if (!isset($locales[$to][$file]) || !isset($locales[$to][$file][$key])) { ?>
 						<td class="to"><textarea name="lang[<?php echo $key ?>]" onfocus="textFocus.call(this)" onblur="textBlur.call(this)" onchange="textChange()"></textarea></td> <?php
@@ -300,19 +352,20 @@ if ($to != "") {
 			</tbody></table> <br /> <?php
 			if ($start > 0) {
 				$remaining = min($start, $pagesize); ?>
-				<button onclick="this.parentNode.action += '&start=<?php echo $start - $remaining?>'" type="submit">Previous <?php echo $remaining  ?></button><?php
+				<button onclick="this.parentNode.action += '&start=<?php echo ($start - $remaining) . ($search != '' ? '&search='.$search : '')?>'" type="submit">Previous <?php echo $remaining  ?></button><?php
 			}
 			// when filter is "missing" start was already calculated to reflect the langs that were added
 			$nextstart = $start + $pagesize;
 			$remaining = min(array($pagesize, $count - $nextstart));
 			if ($remaining > 0) { ?>
-				<button onclick="this.parentNode.action += '&start=<?php echo $nextstart ?>'" type="submit">Next <?php echo $remaining  ?></button><?php
+				<button onclick="this.parentNode.action += '&start=<?php echo $nextstart . ($search != '' ? '&search='.$search : '')?>'" type="submit">Next <?php echo $remaining  ?></button><?php
 			}
 			if ($count > 0) { ?>
 				Showing <?php echo $start + 1 ?> to <?php echo min($start + $pagesize, $count) ?> of <?php echo $count ?> <?php
 			} ?>
 		</form><?php
 	} else { ?>
-		</tr></tbody></table> <?php
+		</tr></tbody></table>
+		<div class="msg">Select a file or use the search to list the translations.</div><?php
 	}
 } ?>

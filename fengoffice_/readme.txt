@@ -1,5 +1,5 @@
 
-	About Feng Office 2.7.0.1
+	About Feng Office 2.7.1-beta
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -101,6 +101,33 @@
 	
 	Changelog
 	=========
+			
+	Since 2.7.0.4
+	----------------
+	feature: Workspaces, tags, etc. selectors upgraded.
+	
+	bugfix: Performance upgrade in initial loading.
+	bugfix: When editing permissions don't load information for hidden components, load data when expanding them.
+	bugfix: date custom properties does not allow blank values, and cannot be deleted.
+	bugfix: in custom reports remove text styles and leave new lines.
+	bugfix: enters in timeslots descriptions are skipped in time report and task view.
+	bugfix: after add new members on the tree select them.
+	bugfix: can not print monthly calendar.
+	bugfix: expenses and objectives installer: new users permissions.
+
+	language: translation tool upgrade: Link to checklang tool to list missing langs foreach language file.
+	language: translation tool upgrade: Added search functionality (searchs in keys and values)
+	
+	Since 2.7.0.2
+	----------------
+	bugfix: email components in contact and company edition
+	bugfix: show all emails in contact and company views
+	bugfix: required list custom properties with default value are not filled with it when creating a new object
+	
+	Since 2.7.0.1
+	----------------
+	bugfix: date format selector saves incorrect date format when selecting m.d.Y or m-d-Y
+	
 	
 	Since 2.7
 	----------------

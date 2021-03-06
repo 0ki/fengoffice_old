@@ -1425,7 +1425,7 @@ class ProjectTask extends BaseProjectTask {
 			'cid' => $this->getCreatedById(),
 			'otype' => $this->getObjectSubtype(),
 			'pc' => $this->getPercentCompleted(),
-			'memPath' => str_replace('"',"'", str_replace("'", "\'", json_encode($this->getMembersToDisplayPath($member_ids))))
+			'memPath' => str_replace('"',"'", str_replace("'", "\'", json_encode($this->getMembersIdsToDisplayPath())))
 		);
 
 		if ($full) {
