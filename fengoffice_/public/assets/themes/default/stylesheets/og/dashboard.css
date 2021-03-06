@@ -307,12 +307,13 @@
 	padding-left: 5px;
 }
 
-.widget h2  {
-	padding: 30px 0 5px;
-	margin-bottom: 10px;
+.view-container .widget h2  {
+	padding: 15px 0 5px;
+	margin-bottom: 0px;
 	border-bottom: 1px solid #CCC;
 	font-size: 16px;
 	font-weigth: bold;
+	color: #666;
 }
 .widget h2.first  {
 	padding-top: 10px;

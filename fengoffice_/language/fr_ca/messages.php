@@ -320,7 +320,7 @@
 	'admin cannot be removed from admin group' => 'Le premier utilisateur ne peut être supprimé du groupe d\'administrateurs.',
 	'open this link in a new window' => 'Ouvrir le lien dans une nouvelle fenêtre.',
 	'confirm delete template' => 'Êtes-vous sûr de vouloir supprimer ce modèle ?',
-	'success delete template' => 'Le modèle \'{0}\' a été supprimé.',
+	'success delete template' => 'Le modèle \'{0}\' a été supprimé',
 	'success add template' => 'Le modèle a été ajouté.',
 	'log add companies' => '\'{0}\' ajouté.',
 	'log edit companies' => '\'{0}\' modifié.',

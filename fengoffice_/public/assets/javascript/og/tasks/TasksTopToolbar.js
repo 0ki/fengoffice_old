@@ -39,6 +39,7 @@ og.TasksTopToolbar = function(config) {
 	}
 
 	var menuItems = [{
+		id: 'new_button_task',
 		text: lang('new task'),
 		iconCls: 'ico-task',
 		cls: 'tasks-panel-add-button',
@@ -55,14 +56,18 @@ og.TasksTopToolbar = function(config) {
 			og.render_modal_form('', {c:'task', a:'add_task', params: additionalParams});
 		}
 	}];
+	
+	if (og.replace_list_new_action && og.replace_list_new_action.task) {
+		for (var k=0; k<og.replace_list_new_action.task.menu.items.items.length; k++) {
+			menuItems.push(og.replace_list_new_action.task.menu.items.items[k]);
+		}
+	}
 
 	if (og.config.use_milestones) {
 		menuItems = menuItems.concat([{
 			text: lang('new milestone'),
 			iconCls: 'ico-milestone',
 			handler: function() {
-				/*var url = og.getUrl('milestone', 'add');
-				og.openLink(url);*/
 				og.render_modal_form('', {c:'milestone', a:'add'});
 			}
 		}]);
@@ -120,7 +125,7 @@ og.TasksTopToolbar = function(config) {
 	var butt = new Ext.Button({
 		iconCls: 'ico-new',
 		text: lang('new'),
-		id: 'tasks-panel-new-menu',
+		id: 'new_menu_task',
 		menu: {
 			cls:'scrollable-menu',
 			items: menuItems
@@ -507,12 +512,29 @@ og.TasksTopToolbar = function(config) {
 			og.breadcrumbs_skipped_dimensions[did] = did;
 		}
 	}
+	
+	if (ogTasks.additional_task_list_columns) {
+		for (var i=0; i<ogTasks.additional_task_list_columns.length; i++) {
+			var col = ogTasks.additional_task_list_columns[i];
+			menu_items.push({
+		        text: col.name,
+				checked: (ogTasks.userPreferences[col.id] == 1),
+				checkHandler: function() {
+					var url = og.getUrl('account', 'update_user_preference', {name: col.id, value:(this.checked?1:0)});
+					og.openLink(url,{hideLoading:true});
+					ogTasks.redrawGroups = false;
+					ogTasks.draw();
+					ogTasks.redrawGroups = true;					
+				}
+			});
+		}
+	}
 
 	this.show_menu = new Ext.Action({
-	       	iconCls: 'op-ico-details',
-			text: lang('show'),
-			menu: {items: menu_items}
-		});
+       	iconCls: 'op-ico-details',
+		text: lang('show'),
+		menu: {items: menu_items}
+	});
 		
 	this.add(this.show_menu);
 	
@@ -596,7 +618,7 @@ function ogTasksOrderUsers(usersList){
 
 Ext.extend(og.TasksTopToolbar, Ext.Toolbar, {
 	getDrawOptions : function(){
-		return {
+		var draw_options = {
 			show_by : this.show_menu.items[0].menu.items.items[0].checked,
 			show_time : this.show_menu.items[0].menu.items.items[1].checked,
 			show_start_dates : this.show_menu.items[0].menu.items.items[2].checked,
@@ -614,6 +636,14 @@ Ext.extend(og.TasksTopToolbar, Ext.Toolbar, {
             show_subtasks_structure : this.show_menu.items[0].menu.items.items[14].checked,
             show_dimension_cols : ogTasks.userPreferences.showDimensionCols
 		}
+		
+		if (ogTasks.additional_task_list_columns) {
+			for (var i=0; i<ogTasks.additional_task_list_columns.length; i++) {
+				var col = ogTasks.additional_task_list_columns[i];
+				draw_options[col.id] = ogTasks.userPreferences[col.id] ? true : false;
+			}
+		}
+		return draw_options;
 	},
 	updateCheckedStatus : function(){
 		var checked = false;

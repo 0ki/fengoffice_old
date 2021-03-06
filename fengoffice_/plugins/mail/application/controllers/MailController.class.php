@@ -1090,6 +1090,12 @@ class MailController extends ApplicationController {
 			ajx_current("empty");
 			return;
 		}	
+		
+		if (!function_exists('imap_open')) {
+			flash_error(lang('php-imap extension not installed'));
+			ajx_current("empty");
+			return;
+		}
 
 		$id = get_id();
 		$account = MailAccounts::findById($id);
@@ -1273,7 +1279,11 @@ class MailController extends ApplicationController {
 				
 				// dont show inline images in attachments box
 				if (array_var($attach, 'FileDisposition') == 'inline' && array_var($parsedEmail, 'Type') == 'html') {
-					$attach['hide'] = true;
+					$ext = get_file_extension(array_var($attach, 'FileName'));
+					$fileType = FileTypes::getByExtension($ext);
+					if ($fileType instanceof FileType && $fileType->getIsImage()) {
+						$attach['hide'] = true;
+					}
 				}
 				if (array_var($attach, 'Type') == 'html') {
 					$attach_tmp = $attach['Data'];
@@ -1655,7 +1665,7 @@ class MailController extends ApplicationController {
 							
 						if (count($members) > 0) {
 							$member_instances = Members::findAll(array('conditions' => 'id IN ('.implode(',',$members).')'));
-							MailUtilities::parseMail($email->getContent(), $decoded, $parsedEmail, $warnings);
+							if (!$parsedEmail) MailUtilities::parseMail($email->getContent(), $decoded, $parsedEmail, $warnings);
 							$this->classifyFile($classification_data, $email, $parsedEmail, $member_instances, false, !$after_receiving);
 						}
 					}
@@ -1934,6 +1944,7 @@ class MailController extends ApplicationController {
 		@set_time_limit(0);
 		$accounts = MailAccounts::getMailAccountsByUser(logged_user());
 		session_commit();
+		
 		if (is_array($accounts) && count($accounts) > 0){
 			// check a maximum of $max emails per account
 			$max = config_option("user_email_fetch_count", 10);
@@ -2650,6 +2661,7 @@ class MailController extends ApplicationController {
 			"mantainWs" => array_var($_GET, 'mantainWs'),
 			"classify_atts" => array_var($_GET, 'classify_atts'),
 		);
+		
 		$dir = array_var($_GET,'dir');
 		if ($dir != 'ASC' && $dir != 'DESC') {
 			$dir = 'ASC';

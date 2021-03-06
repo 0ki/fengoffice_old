@@ -309,7 +309,7 @@ INSERT INTO `<?php echo $table_prefix ?>contact_config_options` (`category_name`
  ('mails panel', 'attach_to_notification', '0', 'BoolConfigHandler', '0', '0', NULL),
  ('general', 'access_member_after_add', '1', 'BoolConfigHandler', '0', '1300', NULL),
  ('general', 'access_member_after_add_remember', '0', 'BoolConfigHandler', '0', '1301', NULL),
- ('general', 'sendEmailNotification', '1', 'BoolConfigHandler', '1', '0', 'Send email notification to new user'),
+ ('general', 'sendEmailNotification', '1', 'BoolConfigHandler', '0', '0', 'Send email notification to new user'),
  ('general', 'viewContactsChecked', '1', 'BoolConfigHandler', '1', '0', 'in people panel is view contacts checked'),
  ('general', 'viewUsersChecked', '1', 'BoolConfigHandler', '1', '0', 'in people panel is view users checked'),
  ('general', 'viewCompaniesChecked', '1', 'BoolConfigHandler', '1', '0', 'in people panel is view companies checked'),
@@ -619,3 +619,6 @@ UPDATE `<?php echo $table_prefix ?>config_options` SET `value`=(
 	SELECT GROUP_CONCAT(id) FROM <?php echo $table_prefix ?>permission_groups WHERE `name` IN ('Super Administrator', 'Administrator', 'Manager', 'Executive')
 )
 WHERE `name`='give_member_permissions_to_new_users';
+
+INSERT INTO `<?php echo $table_prefix ?>currencies` (`symbol`, `name`, `short_name`, `is_default`) VALUES
+('$', 'Dollar', 'USD', 0);

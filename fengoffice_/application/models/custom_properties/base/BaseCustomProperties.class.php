@@ -33,6 +33,7 @@
     * @return BaseCustomProperties 
     */
     function __construct() {
+      Hook::fire('object_definition', 'CustomProperty', self::$columns);
       parent::__construct('CustomProperty', 'custom_properties', true);
     } // __construct
     

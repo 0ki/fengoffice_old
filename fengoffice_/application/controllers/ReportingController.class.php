@@ -196,6 +196,7 @@ class ReportingController extends ApplicationController {
 		$report_data['alt_group_by_3'] = array_var($altGroup, 2);
 		
 		$report_data['show_billing'] = user_config_option('timeReportShowBilling');
+		$report_data['show_cost'] = user_config_option('timeReportShowCost');
 		
 		$cp_ids = CustomProperties::getCustomPropertyIdsByObjectType(ProjectTasks::instance()->getObjectTypeId());
 		tpl_assign('has_custom_properties', count($cp_ids) > 0);
@@ -209,7 +210,7 @@ class ReportingController extends ApplicationController {
 		$_SESSION['total_task_times_report_data'] = $report_data;
 		tpl_assign('report_data', $report_data);
 		tpl_assign('users', $users);
-		tpl_assign('has_billing', BillingCategories::count() > 0);
+		tpl_assign('has_billing', BillingCategories::count() > 0 || Plugins::instance()->isActivePlugin('advanced_billing'));
 	}
 	
 	function total_task_times_print(){
@@ -247,6 +248,7 @@ class ReportingController extends ApplicationController {
 			set_user_config_option('timeReportPerson', $report_data['user'] , logged_user()->getId());
 			set_user_config_option('timeReportTimeslotType', $report_data['timeslot_type'] , logged_user()->getId());
 			set_user_config_option('timeReportShowBilling', isset($report_data['show_billing']) ? 1:0 , logged_user()->getId());
+			set_user_config_option('timeReportShowCost', isset($report_data['show_cost']) ? 1:0 , logged_user()->getId());
 			
 			$group = $report_data['group_by_1'].", ".$report_data['group_by_2'].", ".$report_data['group_by_3'];
 			$altGroup = $report_data['alt_group_by_1'].",".$report_data['alt_group_by_2'].",".$report_data['alt_group_by_3'];
@@ -1396,7 +1398,8 @@ class ReportingController extends ApplicationController {
 			
 			$common_columns = Objects::instance()->getColumns(false);
 			if (class_exists($ot->getHandlerClass())) {
-				$common_columns = array_diff_key($common_columns, array_flip($managerInstance->getSystemColumns()));
+				$system_columns = $managerInstance->getSystemColumns();
+				$common_columns = array_diff_key($common_columns, array_flip($system_columns));
 			}
 			$objectFields = array_merge($objectFields, $common_columns);
 

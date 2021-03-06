@@ -256,14 +256,25 @@ og.MemberTreeAjax = function(config) {
 				});	
 			}else{
 				$("#"+this.tbar.id).focusin(function() {
-					setTimeout(function(){
-						tree.body.show();
-						var top = $("#"+tree.tbar.id).offset().top + $("#"+tree.tbar.id).height();
-						$("#"+tree.body.id).css({top: top+'px'});
-						if(!tree.initialized){
-							tree.init();
-						}
-				 	}, 300);
+					
+					// dont display tree if og.dont_show_tree = tree.dimensionId, sometimes we want to focus in text input and not display tree
+					if (!og.dont_show_tree || og.dont_show_tree != tree.dimensionId) {
+						setTimeout(function(){
+							tree.body.show();
+							var top = $("#"+tree.tbar.id).offset().top + $("#"+tree.tbar.id).height();
+							$("#"+tree.body.id).css({top: top+'px'});
+							if(!tree.initialized){
+								tree.init();
+							}
+					 	}, 300);
+					}
+				});
+				
+				$("#"+this.tbar.id).keyup(function() {
+					// if tree is not visible, show it after a key is pressed.
+					if ($("#"+tree.body.id).css('display') == 'none') {
+						$(this).focus();
+					}
 				});
 				
 				$("#"+this.tbar.id).focusout(function() {
@@ -271,7 +282,7 @@ og.MemberTreeAjax = function(config) {
 				 		if(!tree.body.hasClass( "have-focus" )){
 				 			tree.body.hide();
 				 			tree.clearFilter();
-				 					 			
+				 			
 				 			$("#" + tree.id + '-textfilter').val("");
 				 			
 				 		}

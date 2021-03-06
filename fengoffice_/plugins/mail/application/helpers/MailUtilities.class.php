@@ -364,11 +364,17 @@ class MailUtilities {
 			$mail->setMessageId($message_id);
 			$mail->setInReplyToId($in_reply_to_id);
 	
-			// set hasAttachments=true onlu if there is any attachment with FileDisposition='attachment'
+			// set hasAttachments=true onlu if there is any attachment with FileDisposition='attachment' or is not an image
 			$has_attachments = false;
 			foreach (array_var($parsedMail, "Attachments", array()) as $attachment) {
 				if (array_var($attachment, 'FileDisposition') == 'attachment') {
 					$has_attachments = true;
+				} else {
+					$ext = get_file_extension(array_var($attach, 'FileName'));
+					$fileType = FileTypes::getByExtension($ext);
+					if (!$fileType instanceof FileType || !$fileType->getIsImage()) {
+						$has_attachments = true;
+					}
 				}
 			}
 			$mail->setHasAttachments($has_attachments);
@@ -1284,6 +1290,13 @@ class MailUtilities {
 	
 	// to check an IMAP mailbox for syncrhonization
 	function checkSyncMailbox($server, $with_ssl, $transport, $ssl_port, $box, $from, $password){
+		
+		if (!function_exists('imap_open')) {
+			flash_error(lang('php-imap extension not installed'));
+			ajx_current("empty");
+			return false;
+		}
+		
 		$check = true;
 		$password = self::ENCRYPT_DECRYPT($password);
 		$ssl = ($with_ssl=='1' || $transport == 'ssl') ? '/ssl' : '';
@@ -1306,7 +1319,14 @@ class MailUtilities {
 	}
 	
 	// to send an email to the email server through IMAP 	
-	function sendToServerThroughIMAP($server, $with_ssl, $transport, $ssl_port, $box, $from, $password, $content){	
+	function sendToServerThroughIMAP($server, $with_ssl, $transport, $ssl_port, $box, $from, $password, $content){
+		
+		if (!function_exists('imap_open')) {
+			flash_error(lang('php-imap extension not installed'));
+			ajx_current("empty");
+			return false;
+		}
+		
 		$password = self::ENCRYPT_DECRYPT($password);
 		$ssl = ($with_ssl=='1' || $transport == 'ssl') ? '/ssl' : '';
 		$tls = ($transport =='tls') ? '/tls' : '';

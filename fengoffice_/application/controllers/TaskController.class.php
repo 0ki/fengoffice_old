@@ -695,12 +695,12 @@ class TaskController extends ApplicationController {
 							$time_push = 0;
 							$time = array_var($_POST, 'time');
 							
-							if(isset($time["days"]) && (int)$time["days"] > 0){
+							if(isset($time["days"]) && (int)$time["days"] != 0){
 								$time_push = (int)$time["days"] * 24;
 							}
 							
 							if (config_option('use_time_in_task_dates')) {
-								if(isset($time["hours"]) && (int)$time["hours"] > 0){
+								if(isset($time["hours"]) && (int)$time["hours"] != 0){
 									$time_push += (int)$time["hours"];
 								}
 							}
@@ -709,7 +709,7 @@ class TaskController extends ApplicationController {
 								set_user_config_option('pushUseWorkingDays', $time["use_only_working_days"], logged_user()->getId());
 							}
 													
-							if($time_push > 0){								
+							if($time_push != 0){
 								$dd = $task->getDueDate() instanceof DateTimeValue ? $task->getDueDate() : null;
 								$sd = $task->getStartDate() instanceof DateTimeValue ? $task->getStartDate() : null;
 									
@@ -926,7 +926,13 @@ class TaskController extends ApplicationController {
 				$task_filter_condition = "";
 				break;
 			default:
-				flash_error(lang('task filter criteria not recognised', $filter));
+				$result = null;
+				Hook::fire('additional_task_list_filter_conditions', array('filter' => $filter, 'filter_value' => $filter_value), $result);
+				if (!$result) {
+					flash_error(lang('task filter criteria not recognised', $filter));
+				} else {
+					$task_filter_condition = implode(' ', array_var($result, 'conditions', array()));
+				}
 		}
 		
 		$task_status_condition = "";
@@ -3270,6 +3276,7 @@ class TaskController extends ApplicationController {
 					$task->save();
 				}
 				
+
 				if(config_option('repeating_task') == 1 && $task instanceof ProjectTask){
 					$opt_rep_day['saturday'] = false;
 					$opt_rep_day['sunday'] = false;

@@ -564,6 +564,8 @@ class ProjectTasks extends BaseProjectTasks {
 			$result['previous_tasks_total'] = ProjectTaskDependencies::countPendingPreviousTasks($tmp_task->getId());	
 		}
 		
+		Hook::fire('task_info_additional_data', $raw_data, $result);
+		
 		return $result;
 	}
 	

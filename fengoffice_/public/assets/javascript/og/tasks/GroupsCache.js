@@ -90,7 +90,7 @@ ogTasks.updateTaskGroups = function(data, add_new_tasks){
 		
 		//update group params
 		for (var key in data.groups[i]){							
-			if(key != 'group_tasks'){
+			if(key != 'group_tasks' && data.groups[i]){
 				group[key] = data.groups[i][key];
 			}												
 		}

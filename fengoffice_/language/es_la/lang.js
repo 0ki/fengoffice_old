@@ -866,5 +866,7 @@ addLangs({
     'more-panel' : 'Ajustes',
     'select user group' : 'Seleccione un grupo',
     'at least one dimension must be selected' : 'Debe seleccionar al menos una dimensión.',
-    'confirm delete group' : '¿Está seguro que quiere eliminar este grupo?'
+    'confirm delete group' : '¿Está seguro que quiere eliminar este grupo?',
+    'birthday' : 'Cumpleaños',
+    'job title' : 'Título'
 });

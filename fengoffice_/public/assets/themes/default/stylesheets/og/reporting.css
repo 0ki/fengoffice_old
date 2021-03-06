@@ -455,3 +455,8 @@
 .report-print-header .company-info .phone-container {
 	float: left;
 }
+
+.reporting-table .member-path, .tasks-report-container .member-path {
+	display: inline-block;
+	margin: 1px 0;
+}

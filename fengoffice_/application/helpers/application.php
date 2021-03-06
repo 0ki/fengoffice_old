@@ -448,8 +448,9 @@ function render_object_comments_for_print(ContentDataObject $object) {
  * @param ContentDataObject $object Show custom properties of this object
  * @return null
  */
-function render_object_custom_properties($object, $required, $co_type=null) {
+function render_object_custom_properties($object, $required, $co_type=null, $visibility='all') {
 	tpl_assign('_custom_properties_object', $object);
+	tpl_assign('visibility', $visibility);
 	//tpl_assign('required', $required);
 	tpl_assign('co_type', $co_type);
 	return tpl_fetch(get_template_path('object_custom_properties', 'custom_properties'));
@@ -467,12 +468,18 @@ function render_member_custom_properties($member, $required, $visibility='all', 
 		tpl_assign('visibility', $visibility);
 		tpl_assign('parent_member', $parent_member);
 		tpl_assign('member_is_new', $member_is_new);
-		return tpl_fetch(get_template_path('member_custom_properties', 'custom_properties'));
+		return tpl_fetch(get_template_path('member_custom_properties', 'member_custom_properties', 'member_custom_properties'));
 	} else {
 		return "";
 	}
 } // render_member_custom_properties
 
+function member_has_custom_properties($type_id) {
+	if (Plugins::instance()->isActivePlugin('member_custom_properties')) {
+		return count(MemberCustomProperties::getCustomPropertyIdsByObjectType($type_id)) > 0;
+	}
+	return false;
+}
 
 /**
  * Show object timeslots block
@@ -1500,7 +1507,7 @@ function buildTree ($nodeList , $parentField = "parent", $childField = "children
 			<input id='<?php echo $genid . array_var($options, 'pre_hf_id', '') ?>members' name='<?php echo array_var($options, 'pre_hf_id', '') ?>members' type='hidden' ></input> 
 		<?php } ?>
 
-		<div id='<?php echo $component_id ?>-container' class="<?php echo array_var($options, 'pre_class', '')?>single-tree member-chooser-container" ></div>
+		<div id='<?php echo $component_id ?>-container' class="<?php echo array_var($options, 'pre_class', '')?>single-tree member-chooser-container <?php echo array_var($dimension_info, 'is_multiple') ? "multiple-selection" : "single-selection"; ?>" ></div>
 		
 		<script>
 			var memberChooserPanel = new og.MemberChooserPanel({

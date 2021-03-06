@@ -22,7 +22,8 @@
 
   <div class="coInputHeaderUpperRow">
 	<div class="coInputTitle">
-		<?php echo $message->isNew() ? lang('new message') : lang('edit message') ?>
+			
+		<?php echo $object->getAddEditFormTitle(); ?>
 	</div>
   </div>
 
@@ -33,7 +34,7 @@
 	</div>
 		
 	<div class="coInputButtons">
-		<?php echo submit_button($message->isNew() ? lang('add message') : lang('save changes'),'s',array('style'=>'margin-top:0px;margin-left:10px')) ?>
+		<?php echo submit_button($object->getSubmitButtonFormTitle(),'s',array('style'=>'margin-top:0px;margin-left:10px')) ?>
 	</div>
 	<div class="clear"></div>
   </div>
@@ -62,7 +63,9 @@
 			<li><a href="#<?php echo $genid?>add_linked_objects_div"><?php echo lang('linked objects') ?></a></li>
 			<?php } ?>
 			
-			<?php foreach ($categories as $category) { ?>
+			<?php foreach ($categories as $category) {
+					if (array_var($category, 'hidden')) continue;
+				?>
 			<li><a href="#<?php echo $genid . $category['name'] ?>"><?php echo $category['name'] ?></a></li>
 			<?php } ?>
 		</ul>

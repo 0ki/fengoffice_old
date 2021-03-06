@@ -626,6 +626,9 @@ ogTasks.newTaskGroupTotals = function(group) {
 			group : group,
 			total_cols: total_cols				
 	}
+	if (ogTasks.additional_task_list_columns) {
+		data.additional_task_list_columns = ogTasks.additional_task_list_columns;
+	}
 	
 	//instantiate the template
 	var html = template(data);
@@ -1036,12 +1039,15 @@ ogTasks.drawTaskRow = function(task, drawOptions, displayCriteria, group_id, lev
 		dim_mem_path = "";
 		
 		if (typeof mpath[did] != "undefined") dim_mem_path = og.getEmptyCrumbHtml(dim_mpath,".task-breadcrumb-container");
-		dim_classification.push(
+		var key = 'lp_dim_' + did + '_show_as_column';
+		if (og.preferences['listing_preferences'][key]) {
+			dim_classification.push(
 				{
 					id: 'task_clasification_dim_'+did,
 					dim_mem_path: dim_mem_path 
 				}
-		);
+			);
+		}
 	}
 
 	//Dates
@@ -1238,6 +1244,18 @@ ogTasks.drawTaskRow = function(task, drawOptions, displayCriteria, group_id, lev
 			row_total_cols : row_total_cols			
 	}
 	
+	if (ogTasks.additional_task_list_columns) {
+		data.additional_task_list_columns = [];
+		for (var i=0; i<ogTasks.additional_task_list_columns.length; i++) {
+			var col = ogTasks.additional_task_list_columns[i];
+			data.additional_task_list_columns.push({
+				id: col.id,
+				cls: col.cls ? col.cls : '',
+				html: task.additional_data[col.id] ? task.additional_data[col.id].html : ''
+			});
+		}
+	}
+	
 	//instantiate the template
 	var html = ogTasks.task_list_row_template(data);
 	
@@ -1370,6 +1388,26 @@ ogTasks.ToggleCompleteStatusOk = function(task_id, status, opt){
 	});
 }
 
+ogTasks.loadTimeslotUsers = function(genid, task_id) {
+	
+	og.openLink(og.getUrl('timeslot', 'get_users_for_timeslot', {task_id:task_id}), {
+		callback: function(success, data) {
+			if (data.users && data.users.length > 0) {
+				for (var i=0; i<data.users.length; i++) {
+					var u = data.users[i];
+					$('#' + genid + 'tsUser').append('<option value="'+ u.id +'">'+ u.name +'</option>');
+				}
+				$('#' + genid + 'tsUserContainer').show();
+				
+			} else {
+				$('#' + genid + 'tsUser').remove();
+				$('#' + genid + 'tsUserContainer').append('<input type="hidden" name="timeslot[contact_id]" value="'+ og.loggedUser.id +'" />');
+			}
+		}
+	});
+	
+}
+
 ogTasks.AddWorkTime = function(task_id) {
 	//get template
 	var source = $("#task-timespan-template").html(); 
@@ -1402,6 +1440,8 @@ ogTasks.AddWorkTime = function(task_id) {
 		};
 		
 	$.modal(html,modal_params);
+	
+	ogTasks.loadTimeslotUsers(og.genid, task_id);
 	
 	// DatePicker Menu  
 	var dateCond = new og.DateField({
@@ -1606,7 +1646,9 @@ ogTasks.initTasksList = function() {
 	for(x in  drawOptions.show_dimension_cols){
 		did = drawOptions.show_dimension_cols[x];
 		if (isNaN(did) || did == 0) continue;
-		tasks_list_cols.push(
+		var key = 'lp_dim_' + did + '_show_as_column';
+		if (og.preferences['listing_preferences'][key]) {
+			tasks_list_cols.push(
 				{
 					id: 'task_clasification'+did,
 					css_class: 'task_clasification',
@@ -1615,7 +1657,8 @@ ogTasks.initTasksList = function() {
 					group_total_field: '', 
 					col_width: 'auto'
 				}
-		);
+			);
+		}
 	}
 	
 	//percent complete bar
@@ -1695,6 +1738,25 @@ ogTasks.initTasksList = function() {
 				}
 		);		
 	}
+	
+	// additional columns
+	if (ogTasks.additional_task_list_columns) {
+		for (var i=0; i<ogTasks.additional_task_list_columns.length; i++) {
+			var col = ogTasks.additional_task_list_columns[i];
+			var field = col.row_field ? col.row_field : col.id;
+			var width = col.width ? col.width : '100px';
+			
+			if (drawOptions[col.id]){
+				tasks_list_cols.push({
+					id: col.id,
+					title: col.name, 
+					group_total_field: '', 
+					row_field: field,
+					col_width: width
+				});		
+			}
+		}
+	}
     	
 	//previous tasks
 	if (drawOptions.show_previous_pending_tasks){
@@ -1708,6 +1770,7 @@ ogTasks.initTasksList = function() {
 				}
 		);		
 	}
+	
 	
 	//quick actions
 	tasks_list_cols.push(

@@ -1,7 +1,8 @@
 <?php
 	$dimensions_info = array();
 	
-	$dimensions = Dimensions::findAll();
+	$enabled_dimensions = config_option('enabled_dimensions');
+	$dimensions = Dimensions::findAll(array('conditions' => 'id IN ('.implode(',',$enabled_dimensions).') AND is_manageable=1'));
 	foreach ($dimensions as $dimension) {
 		if (in_array($dimension->getCode(), array('feng_users', 'feng_persons'))) continue;
 		if (!isset($dimensions_info[$dimension->getName()])) {
@@ -13,7 +14,9 @@
 	foreach ($members as $member) {
 		/* @var $member Member */
 		$dimension = $member->getDimension();
-		if (in_array($dimension->getCode(), array('feng_users', 'feng_persons'))) continue;
+		if (in_array($dimension->getCode(), array('feng_users', 'feng_persons')) || !in_array($dimension->getId(), $enabled_dimensions) || !$dimension->getIsManageable()) {
+			continue;
+		}
 		
 		$obj_is_user = $object instanceof Contact && $object->isUser();
 		
@@ -96,6 +99,8 @@
 			}
 		?></div><?php
 		}
+		
+		$ret=null; Hook::fire('object_view_member_path_dims', $object, $ret);
 		
 	?></div>
 	<?php 

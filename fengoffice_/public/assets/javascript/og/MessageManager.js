@@ -17,6 +17,13 @@ og.MessageManager = function() {
    		cp_names.push('cp_' + cps[i].id);
    	}
    	this.fields = this.fields.concat(cp_names);
+   	
+   	var dim_names = [];
+   	for (did in og.dimensions_info) {
+		if (isNaN(did)) continue;
+		dim_names.push('dim_' + did);
+	}
+   	this.fields = this.fields.concat(dim_names);
 	
 	if (!og.MessageManager.store) {
 		og.MessageManager.store = new Ext.data.Store({
@@ -241,6 +248,7 @@ og.MessageManager = function() {
 	for (i=0; i<cps.length; i++) {
 		cm_info.push({
 			id: 'cp_' + cps[i].id,
+			hidden: parseInt(cps[i].visible_def) == 0,
 			header: cps[i].name,
 			dataIndex: 'cp_' + cps[i].id,
 			sortable: true,
@@ -256,7 +264,7 @@ og.MessageManager = function() {
 				id: 'dim_' + did,
 				header: og.dimensions_info[did].name,
 				dataIndex: 'dim_' + did,
-				sortable: false,
+				sortable: true,
 				renderer: og.renderDimCol
 			});
 			og.breadcrumbs_skipped_dimensions[did] = did;
@@ -302,9 +310,11 @@ og.MessageManager = function() {
 	
 	actions = {
 		newCO: new Ext.Action({
+			id: 'new_button_message',
 			text: lang('new'),
             tooltip: lang('add new message'),
             iconCls: 'ico-new new_button',
+            hidden: og.replace_list_new_action && og.replace_list_new_action.message,
             handler: function() {
 				og.render_modal_form('', {c:'message', a:'add'});
 			}
@@ -331,8 +341,6 @@ og.MessageManager = function() {
             iconCls: 'ico-edit',
 			disabled: true,
 			handler: function() {
-				/*var url = og.getUrl('message', 'edit', {id:getFirstSelectedId()});
-				og.openLink(url, null);*/
 				og.render_modal_form('', {c:'message', a:'edit', params: {id:getFirstSelectedId()}});
 			},
 			scope: this
@@ -365,6 +373,10 @@ og.MessageManager = function() {
     
 	var tbar = [];
 	if (!og.loggedUser.isGuest) {
+		
+		if (og.replace_list_new_action && og.replace_list_new_action.message) {
+			tbar.push(og.replace_list_new_action.message);
+		}
 		tbar.push(actions.newCO);
 		tbar.push('-');
 		tbar.push(actions.edit);

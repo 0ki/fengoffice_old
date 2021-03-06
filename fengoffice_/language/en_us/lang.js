@@ -955,6 +955,8 @@ addLangs({
 	'classified under' : 'Classified under',
 	'percent completed' : 'Percent completed',
 	'birthdays': 'Birthdays',
+	'birthday': 'Birthday',
+	'job title': 'Job title',
 	'email address': 'Email address',
 	'home': 'Home',
 	'click here': 'Click here',

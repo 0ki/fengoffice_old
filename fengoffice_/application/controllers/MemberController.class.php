@@ -110,8 +110,14 @@ class MemberController extends ApplicationController {
 			default:
 				if (str_starts_with($order, "cp_")) {
 					$cp_id = str_replace("cp_", "", $order);
+					$cp = MemberCustomProperties::findById($cp_id);
 					$join_sql = "LEFT JOIN ".TABLE_PREFIX."member_custom_property_values cpv ON cpv.member_id=mem.id AND cpv.custom_property_id=$cp_id";
-					$order = "LPAD(cpv.`value`, 25, ' ')";
+					if ($cp->getType() == 'contact' || $cp->getType() == 'user') {
+						$join_sql .= " LEFT JOIN ".TABLE_PREFIX."objects ocpv ON ocpv.id=cpv.`value`";
+						$order = "ocpv.`name`";
+					} else {
+						$order = "LPAD(cpv.`value`, 25, ' ')";
+					}
 				} else {
 					$order = 'mem.`name`';
 				}
@@ -202,13 +208,39 @@ class MemberController extends ApplicationController {
 				$ids[] = $m['id'];
 			}
 		}
-	
+		
+		// association columns
+		$dimension_association_joins = array();
+		$dimension_association_sel_cols = "";
+		$group_by = "";
+		$da = 0;
+		foreach ($dimension_associations as $dassoc) {
+			$da++;
+			/* @var $da DimensionMemberAssociation */
+			if ($dassoc->getDimensionId() == $dimension->getId()) {
+				$join_str = "LEFT JOIN ".TABLE_PREFIX."member_property_members mem_pm".$da." ON mem_pm".$da.".member_id=mem.id";
+				$dimension_association_sel_cols .= ", GROUP_CONCAT(COALESCE(mem_pm".$da.".property_member_id, '0')) AS dimassoc_".$dassoc->getId()."";
+			} else {
+				$join_str = "LEFT JOIN ".TABLE_PREFIX."member_property_members mem_pm".$da." ON mem_pm".$da.".property_member_id=mem.id";
+				$dimension_association_sel_cols .= ", GROUP_CONCAT(COALESCE(mem_pm".$da.".member_id, '0')) AS dimassoc_".$dassoc->getId()."";
+			}
+			$join_str .= " AND mem_pm".$da.".association_id=".$dassoc->getId();
+			$dimension_association_joins[] = $join_str;
+		}
+		$dimension_association_joins_sql = "";
+		if (count($dimension_association_joins)) {
+			$dimension_association_joins_sql = implode(" ", $dimension_association_joins);
+			$group_by = "GROUP BY mem.id";
+		}
+		
 		if (count($ids) == 0) $ids[] = 0;
 
-		$sql = "SELECT mem.*, mem.id as member_id FROM ".TABLE_PREFIX."members mem
+		$sql = "SELECT mem.*, mem.id as member_id $dimension_association_sel_cols FROM ".TABLE_PREFIX."members mem
 		--	LEFT JOIN ".TABLE_PREFIX."member_additional_data d ON c.object_id=d.customer_id
 			$join_sql
+			$dimension_association_joins_sql
 			WHERE mem.id IN (".implode(',', $ids).") AND mem.dimension_id=".$dimension->getId()."
+			$group_by
 			ORDER BY $order $order_dir
 			LIMIT $start, $limit";
 		
@@ -230,7 +262,6 @@ class MemberController extends ApplicationController {
 	
 	private function prepareObject($rows, $start, $limit, $dimension, $member_type_id, $total) {
 		
-		$custom_properties = MemberCustomProperties::getAllMemberCustomPropertiesByObjectType($member_type_id);
 		$ot = ObjectTypes::findById($member_type_id);
 		
 		$object = array(
@@ -252,6 +283,9 @@ class MemberController extends ApplicationController {
 				
 				$path_ids = array();
 				$m = Members::findById(array_var($row, 'member_id'));
+				if (!$m instanceof Member) {
+					continue;
+				}
 				$all_parents = $m->getAllParentMembersInHierarchy();
 				foreach ($all_parents as $parent) {
 					if (!isset($path_ids[$dimension->getId()])) $path_ids[$dimension->getId()] = array();
@@ -276,32 +310,11 @@ class MemberController extends ApplicationController {
 			}
 		}
 		
-		// set custom properties
 		foreach ($member_ids as $k => &$mid) {
 			if (!is_numeric($mid) || $mid==0) unset($member_ids[$k]);
 		}
-		if (Plugins::instance()->isActivePlugin('member_custom_properties') && count($member_ids) > 0) {
-			
-			foreach ($custom_properties as $cp) {
-				$cp_rows = DB::executeAll("SELECT * FROM ".TABLE_PREFIX."member_custom_property_values cpv 
-					WHERE cpv.member_id IN (".implode(',', $member_ids).") 
-					AND cpv.custom_property_id = '".$cp->getId()."' AND cpv.value != ''
-					AND cpv.value != '".EMPTY_DATETIME."' AND cpv.value != '".EMPTY_DATE."'
-					ORDER BY cpv.member_id");
-			
-				$mcpv = new MemberCustomPropertyValue();
-				foreach ($cp_rows as $cp_row) {
-					$mcpv->setValue($cp_row['value']);
-					$cp_val = get_member_custom_property_value_for_listing($cp, $cp_row['member_id'], array($mcpv));
-					foreach ($object["members"] as &$x) {
-						if ($x['member_id'] == $cp_row['member_id']) {
-							$x['cp_'.$cp->getId()] = $cp_val;
-							break;
-						}
-					}
-				}
-			}
-		}
+		
+		Hook::fire('after_member_prepare_object', array('member_ids' => $member_ids, 'member_type_id' => $member_type_id, 'field' => 'members'), $object);
 	
 		return $object;
 	}

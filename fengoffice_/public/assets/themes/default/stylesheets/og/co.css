@@ -773,7 +773,7 @@
 }
 .og-add-custom-properties th {
 	width: 200px;
-	text-align: center;
+	padding-left: 4px;
 	font-weight: bold;
 }
 .og-add-custom-properties th.actions {
@@ -870,7 +870,8 @@
 	background-image: url(../../images/48x48/objective.png);
 }
 .og-add-custom-properties {
-	margin: 12px 0;
+	margin: 0 0 12px;
+	float: left;
 }
 .event .og-add-custom-properties {
 	margin-left: 200px;
@@ -888,4 +889,28 @@
 .history .pagination .pagitem.text {
 	padding-left: 0px;
 	margin-left: 5px;
+}
+
+.og-add-custom-properties th {
+	background-color: #4f4f4f;
+	color: #d1d1d1;
+	font-weight: normal;
+	
+}
+.og-add-custom-properties table {
+	border: 1px solid #888;
+	margin-bottom: 5px;
+}
+.og-add-custom-properties td input {
+	border-left: 0px none;
+	border-top: 0px none;
+}
+
+.og-custom-properties .og-add-custom-properties {
+	border: 1px solid #ccc;
+}
+.og-custom-properties .og-add-custom-properties td {
+	border-right: 1px solid #ccc;
+	border-bottom: 1px solid #ccc;
+	padding-left: 4px;
 }

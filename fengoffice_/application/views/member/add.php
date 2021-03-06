@@ -40,7 +40,7 @@
 
 	$categories = array();
 	Hook::fire('member_edit_categories', array('member' => $member, 'genid' => $genid), $categories);
-	$has_custom_properties = count(MemberCustomProperties::getCustomPropertyIdsByObjectType($obj_type_sel)) > 0;
+	$has_custom_properties = member_has_custom_properties($obj_type_sel);
 	
 	$member_ot = ObjectTypes::findById($member->getObjectTypeId());
 	
@@ -62,7 +62,9 @@
 		}
 	}
 ?>
+<style>
 
+</style>
 <form 
 	id="<?php echo $genid ?>submit-edit-form" 
 	class="edit-member" 

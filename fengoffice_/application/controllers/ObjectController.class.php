@@ -251,10 +251,12 @@ class ObjectController extends ApplicationController {
 		if ((!can_add($user, $check_allowed_members ? $object->getAllowedMembersToAdd($user, $manageable_members):$manageable_members, $object->getObjectTypeId()))
 			&& !($object instanceof TemplateTask || $object instanceof TemplateMilestone || ($object instanceof Contact && $object->isUser()))) {
 			
-			$dinfos = DB::executeAll("SELECT name, code, options FROM ".TABLE_PREFIX."dimensions WHERE is_manageable = 1");
+			$dinfos = DB::executeAll("SELECT id, name, code, options FROM ".TABLE_PREFIX."dimensions WHERE is_manageable = 1");
 			$dimension_names = array();
 			foreach ($dinfos as $dinfo) {
-				$dimension_names[] = json_decode($dinfo['options'])->useLangs ? lang($dinfo['code']) : $dinfo['name'];
+				if (in_array($dinfo['id'], config_option('enabled_dimensions'))) {
+					$dimension_names[] = json_decode($dinfo['options'])->useLangs ? lang($dinfo['code']) : $dinfo['name'];
+				}
 			}
 			throw new Exception(lang('must choose at least one member of', implode(', ', $dimension_names)));
 			ajx_current("empty");
@@ -321,7 +323,11 @@ class ObjectController extends ApplicationController {
 		$required_custom_props = array();
 		$object_type_id = $object instanceof TemplateTask ? ProjectTasks::instance()->getObjectTypeId() : $object->getObjectTypeId();
 		
-		$customProps = CustomProperties::getAllCustomPropertiesByObjectType($object_type_id);
+		$extra_conditions = "";
+		Hook::fire('object_form_custom_prop_extra_conditions', array('ot_id' => $object->getObjectTypeId(), 'object' => $object), $extra_conditions);
+		
+		$customProps = CustomProperties::getAllCustomPropertiesByObjectType($object_type_id, 'all', $extra_conditions, true);
+		
 		//Sets all boolean custom properties to 0. If any boolean properties are returned, they are subsequently set to 1.
 		foreach($customProps as $cp){
 			if($cp->getType() == 'boolean'){
@@ -363,6 +369,7 @@ class ObjectController extends ApplicationController {
 						if(is_array($value)){
 							$newValues = array();
 							foreach ($value as $val) {
+								$val = str_replace($date_format_tip, "", $val);
 								if (trim($val) != '' && trim($val) != $date_format_tip ) {
 									$dtv = DateTimeValueLib::dateFromFormatAndString($date_format, $val);
 									$newValues[] = $dtv->format("Y-m-d H:i:s");
@@ -370,6 +377,7 @@ class ObjectController extends ApplicationController {
 							}
 							$value = $newValues;
 						} else {
+							$value = str_replace($date_format_tip, "", $value);
 							if (trim($value) != '' && trim($val) != $date_format_tip) {
 								$dtv = DateTimeValueLib::dateFromFormatAndString($date_format, $value);
 								$value = $dtv->format("Y-m-d H:i:s");
@@ -432,7 +440,7 @@ class ObjectController extends ApplicationController {
 						}
 					}else{
 						if($custom_property->getType() == 'boolean'){
-							$value = isset($value);
+							$value = isset($value) && $value && $value != "0";
 						}
 						$cpv = CustomPropertyValues::getCustomPropertyValue($object->getId(), $id);
 						if($cpv instanceof CustomPropertyValue){
@@ -514,7 +522,7 @@ class ObjectController extends ApplicationController {
 				$reminder->setType($type);
 				$reminder->setContext($context);
 				$reminder->setObject($object);
-				if (isset($subscribers[$i])) {
+				if (isset($subscribers[$i]) && $subscribers[$i]) {
 					$reminder->setUserId(0);
 				} else {
 					$reminder->setUser(logged_user());
@@ -1617,14 +1625,14 @@ class ObjectController extends ApplicationController {
 
 	function get_cusotm_property_columns() {
 		$grouped = array();
-		$cp_rows = DB::executeAll("SELECT cp.id, cp.name as cp_name, cp.code as cp_code, ot.name as obj_type 
+		$cp_rows = DB::executeAll("SELECT cp.id, cp.name as cp_name, cp.code as cp_code, ot.name as obj_type, cp.visible_by_default as visible_def
 				FROM ".TABLE_PREFIX."custom_properties cp INNER JOIN ".TABLE_PREFIX."object_types ot on ot.id=cp.object_type_id 
 				ORDER BY ot.name");
 		
 		if (is_array($cp_rows)) {
 			foreach ($cp_rows as $row) {
 				if (!isset($grouped[$row['obj_type']])) $grouped[$row['obj_type']] = array();
-				$grouped[$row['obj_type']][] = array('id' => $row['id'], 'name' => $row['cp_name'], 'code' => $row['cp_code']);
+				$grouped[$row['obj_type']][] = array('id' => $row['id'], 'name' => $row['cp_name'], 'code' => $row['cp_code'], 'visible_def' => $row['visible_def']);
 			}
 		}
 		Hook::fire("get_cusotm_property_columns", array(), $grouped);
@@ -1799,6 +1807,9 @@ class ObjectController extends ApplicationController {
 		$ignore_context = (bool) array_var($_GET, 'ignore_context');
 		$member_ids = json_decode(array_var($_GET, 'member_ids'));
 		$extra_member_ids = json_decode(array_var($_GET, 'extra_member_ids'));
+		$type_filter = array_var($_GET, 'type_filter', 0);
+		
+		if (!is_numeric($type_filter)) $type_filter = 0;
 		
 		$orderdir = array_var($_GET,'dir');
 		if (!in_array(strtoupper($orderdir), array('ASC', 'DESC'))) $orderdir = 'ASC';
@@ -1884,6 +1895,9 @@ class ObjectController extends ApplicationController {
 		$type_condition = "";
 		if ($types) {
 			$type_condition = " AND name IN ('".implode("','",$types) ."')";  
+		}
+		if ($type_filter > 0) {
+			$type_condition .= " AND id=$type_filter";
 		}
 		
 		
@@ -2091,7 +2105,7 @@ class ObjectController extends ApplicationController {
 				
 				if (!$instance instanceof ContentDataObject) continue;
 				
-				$info_elem = $instance->getObject()->getArrayInfo();
+				$info_elem = $instance->getObject()->getArrayInfo($trashed, $archived);
 				
 				$info_elem['url'] = $instance->getViewUrl();
 				$info_elem['isRead'] = $instance->getIsRead(logged_user()->getId()) ;
@@ -2117,6 +2131,18 @@ class ObjectController extends ApplicationController {
 			"totalCount" => $total_items,
 			"start" => $start,
 			"objects" => $info
+		);
+		
+		$object_types = ObjectTypes::findAll(array('conditions' => "type IN ('content_object', 'dimension_object', 'dimension_group')"));
+		$object_types_info = array();
+		foreach ($object_types as $ot) {
+			if (in_array($ot->getName(), array('template_task','template_milestone','project_folder','customer_folder','file revision','company','person'))) {
+				continue;
+			}
+			$object_types_info[] = array('id' => $ot->getId(), 'name' => clean(lang($ot->getName().'s')));
+		}
+		$listing['filters'] = array(
+			'types' => $object_types_info,
 		);
 		
 		ajx_extra_data($listing);

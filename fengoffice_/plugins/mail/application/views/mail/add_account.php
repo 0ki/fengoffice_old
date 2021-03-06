@@ -98,6 +98,10 @@ if (strlen($loc) > 2) $loc = substr($loc, 0, 2);
 			
 		<?php if ($logged_user_can_edit) { ?>	
 			<li><a href="#<?php echo $genid?>account_permissions_div"><?php echo lang('mail account permissions') ?></a></li>
+			
+			<?php if (config_option("sent_mails_sync")) { ?>
+			<li><a href="#<?php echo $genid?>sent_mails_sync"><?php echo lang('sent mails sync') ?></a></li>
+			<?php } ?>
 		<?php } ?>
 		
 		</ul>
@@ -279,7 +283,7 @@ if (strlen($loc) > 2) $loc = substr($loc, 0, 2);
 	
 	<?php		
 		if (config_option("sent_mails_sync")) { ?>
-			<div id="<?php echo $genid ?>sent_mails_sync" class="form-tab">
+			<div id="<?php echo $genid ?>sent_mails_sync" class="form-tab" style="display:none;">
 				
 							<div class="mail-account-item dataBlock">
 								<label for="<?php echo $genid ?>sync_addr">

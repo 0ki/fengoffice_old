@@ -110,7 +110,9 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 			
 			<li><a href="#<?php echo $genid?>add_subscribers_div"><?php echo lang('object subscribers') ?></a></li>
 			
-			<?php foreach ($categories as $category) { ?>
+			<?php foreach ($categories as $category) {
+					if (array_var($category, 'hidden')) continue;
+				?>
 			<li><a href="#<?php echo $genid . $category['id'] ?>"><?php echo $category['name'] ?></a></li>
 			<?php } ?>
 		</ul>
@@ -220,7 +222,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 		<?php
 			$listeners = array('on_selection_change' => 'og.reload_task_form_selectors()');
 			if ($task->isNew()) {
-				render_member_selectors($projectTask->getObjectTypeId(), $genid, null, array('select_current_context' => true, 'listeners' => $listeners), null, null, false);
+				render_member_selectors($projectTask->getObjectTypeId(), $genid, null, array('select_current_context' => false, 'listeners' => $listeners), null, null, false);
 			} else {
 				render_member_selectors($projectTask->getObjectTypeId(), $genid, array_var($task_data, 'selected_members_ids', $task->getMemberIds()), array('listeners' => $listeners), null, null, false);
 			}
@@ -749,7 +751,13 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 		} else opt_display = 'none';
 		
 		document.getElementById("<?php echo $genid ?>word").innerHTML = word;
-		if (ro) ro.style.display = opt_display;	
+		if (ro) ro.style.display = opt_display;
+
+		// if no option selected => select repeat forever
+		if (!$("#<?php echo $genid ?>repeat_opt_forever").attr('checked') && !$("#<?php echo $genid ?>repeat_opt_times").attr('checked') 
+				&& !$("#<?php echo $genid ?>repeat_opt_until").attr('checked')) {
+			$("#<?php echo $genid ?>repeat_opt_forever").attr('checked', 'checked');
+		}
 
 		if(document.getElementById("<?php echo $genid ?>today").selected){
 			og.viewDays(false);
@@ -770,18 +778,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 		var milestone_el = document.getElementById('<?php echo $genid ?>taskListFormMilestone');
 		var actual_value = milestone_el ? milestone_el.value : 0;
 		var milestone_div = Ext.get('<?php $genid ?>add_task_more_div_milestone_combo');
-	/*	if (milestone_div) {
-			milestone_div.load({
-				url: og.getUrl('milestone', 'render_add_milestone', {
-					context: dimension_members_json,
-					genid: '<?php echo $genid ?>',
-					selected: actual_value,
-					template_milestone: 1,
-					template_id: '<?php echo $template_id ?>'
-				}),
-				scripts: true
-			});
-		}*/
+	
 	
 		var uids = App.modules.addMessageForm.getCheckedUsers('<?php echo $genid ?>');
 

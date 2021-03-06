@@ -24,9 +24,9 @@
 	
 	$categories = array(); Hook::fire('object_edit_categories', $object, $categories);
 	
-	$add_contact_lang = lang('add contact');
-	$new_contact_lang = lang('new contact');
-	$edit_contact_lang = lang('edit contact');
+	$add_contact_lang = $object->getSubmitButtonFormTitle();
+	$new_contact_lang = $object->getAddEditFormTitle();
+	$edit_contact_lang = $object->getAddEditFormTitle();
 	if (array_var($_REQUEST, 'is_user') == 1 && isset($user_type) && $user_type > 0) {
 		$add_contact_lang = lang('add user');
 		$new_contact_lang = lang('new user');
@@ -111,7 +111,9 @@
 			<li><a id="<?php echo $genid?>add_linked_objects_div_tab" href="#<?php echo $genid?>add_linked_objects_div"><?php echo lang('linked objects') ?></a></li>
 			<?php } ?>
 			
-			<?php foreach ($categories as $category) { ?>
+			<?php foreach ($categories as $category) {
+					if (array_var($category, 'hidden')) continue;
+				?>
 			<li><a id="<?php echo $genid . $category['id']?>_tab" href="#<?php echo $genid . $category['id'] ?>"><?php echo $category['name'] ?></a></li>
 			<?php } ?>
 	</ul>

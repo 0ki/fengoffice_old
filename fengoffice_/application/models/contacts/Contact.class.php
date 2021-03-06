@@ -1077,7 +1077,7 @@ class Contact extends BaseContact {
 		if ($this->isUser()) {
 			// a contact that has a user assigned to it can be modified by anybody that can manage security (this is: users and permissions) or the user himself.
 			return can_manage_security($user) && ($this->getUserType() > $user->getUserType() || $user->isAdministrator());
-		} 
+		}
 		return can_read($user, $this->getMembers(), $this->getObjectTypeId());
 	} // canView
 	
@@ -1521,13 +1521,14 @@ class Contact extends BaseContact {
     
 	
     function getPictureUrl($size = 'small') {
+    	$default_img_file = $this->getIsCompany() ? 'default-company.png' : 'default-avatar.png';
     	switch ($size) {
     		case 'small':
-    			return ($this->getPictureFileSmall() != '' ? get_url('files', 'get_public_file', array('id' => $this->getPictureFileSmall())): get_image_url('default-avatar.png'));
+    			return ($this->getPictureFileSmall() != '' ? get_url('files', 'get_public_file', array('id' => $this->getPictureFileSmall())): get_image_url($default_img_file));
     		case 'medium':
-    			return ($this->getPictureFileMedium() != '' ? get_url('files', 'get_public_file', array('id' => $this->getPictureFileMedium())): get_image_url('default-avatar.png'));
+    			return ($this->getPictureFileMedium() != '' ? get_url('files', 'get_public_file', array('id' => $this->getPictureFileMedium())): get_image_url($default_img_file));
     		case 'large':
-    			return ($this->getPictureFile() != '' ? get_url('files', 'get_public_file', array('id' => $this->getPictureFile())): get_image_url('default-avatar.png'));
+    			return ($this->getPictureFile() != '' ? get_url('files', 'get_public_file', array('id' => $this->getPictureFile())): get_image_url($default_img_file));
     	}
 	} // getPictureUrl
 	
@@ -1569,7 +1570,9 @@ class Contact extends BaseContact {
 		if(!$result && $public_fileId) {
 			FileRepository::deleteFile($public_fileId);
 		}
-		@unlink($temp_file);
+		if (file_exists($temp_file)) {
+			@unlink($temp_file);
+		}
 
 		return $public_fileId;
 	} // setPicture
@@ -1583,7 +1586,7 @@ class Contact extends BaseContact {
 			
 			$result = array();
 			
-			$temp_file_name = CACHE_DIR . "/contact-" . $this->getId() . ".png";
+			$temp_file_name = CACHE_DIR . "/contact-" . $this->getId() . "_" . gen_id() . ".png";
 			
 			$content = FileRepository::getFileContent($repository_id);
 			file_put_contents($temp_file_name, $content);
@@ -1615,6 +1618,8 @@ class Contact extends BaseContact {
 			if ($save) {
 				$this->save();
 			}
+			
+			@unlink($temp_file_name);
 			
 			return $result;
 			
@@ -1673,7 +1678,11 @@ class Contact extends BaseContact {
 	function deletePicture() {
 		if($this->hasPicture()) {
 			FileRepository::deleteFile($this->getPictureFile());
+			FileRepository::deleteFile($this->getPictureFileMedium());
+			FileRepository::deleteFile($this->getPictureFileSmall());
 			$this->setPictureFile('');
+			$this->setPictureFileMedium('');
+			$this->setPictureFileSmall('');
 		} // if
 	} // deletePicture
 	

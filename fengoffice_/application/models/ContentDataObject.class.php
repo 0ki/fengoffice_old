@@ -1667,7 +1667,7 @@ abstract class ContentDataObject extends ApplicationDataObject {
 			foreach ($members as $mem) {
 				$dimension = Dimensions::getDimensionById($mem['dimension_id']);
 				
-				if (intval($dimension->getOptionValue('showInPaths'))) {
+				if (intval($dimension->getOptionValue('showInPaths')) && $dimension->getIsManageable()) {
 					if (!isset($members_info[$mem['dimension_id']])) $members_info[$mem['dimension_id']] = array();
 					
 					$active_context_condition = true;
@@ -1705,8 +1705,8 @@ abstract class ContentDataObject extends ApplicationDataObject {
 			//get all dimensions ids to showInPaths
 			$dimensions = Dimensions::getAllowedDimensions($this->getObjectTypeId());
 			foreach ($dimensions as $dimension) {
-				$options = json_decode ( $dimension['dimension_options'] );
-				if (isset($options->showInPaths) && $options->showInPaths) {
+				$dim = Dimensions::getDimensionById($dimension['dimension_id']);
+				if (intval($dim->getOptionValue('showInPaths')) && $dim->getIsManageable()) {
 					$dimensions_ids[] = $dimension['dimension_id'];
 					$to_display = user_config_option('breadcrumb_member_count');
 					$extra_cond = " AND m.dimension_id = ".$dimension['dimension_id'];
@@ -1761,4 +1761,46 @@ abstract class ContentDataObject extends ApplicationDataObject {
 		return can_add_timeslots($user, $this->getMembers());
 	}
 	
+	
+	function getAddEditFormTitle() {
+		$ot = ObjectTypes::findById($this->manager()->getObjectTypeId());
+		if ($ot instanceof ObjectType) {
+			$otname = $ot->getName();
+			$title = $this->isNew() ? lang("new $otname") : lang("edit $otname");
+		} else {
+			$title = $this->isNew() ? lang("new object") : lang("edit object");
+		}
+		
+		Hook::fire('override_add_edit_form_title', array('object' => $this, 'ot' => $ot), $title);
+		
+		return $title;
+		
+	}
+	
+	function getSubmitButtonFormTitle() {
+		$ot = ObjectTypes::findById($this->manager()->getObjectTypeId());
+		if ($ot instanceof ObjectType) {
+			$otname = $ot->getName();
+			$title = $this->isNew() ? lang("add $otname") : lang("save changes");
+		} else {
+			$title = $this->isNew() ? lang("add object") : lang("save changes");
+		}
+		
+		Hook::fire('override_submit_button_form_title', array('object' => $this, 'ot' => $ot), $title);
+		
+		return $title;
+	}
+	
+	function getObjectTypeNameLang() {
+		$ot = ObjectTypes::findById($this->manager()->getObjectTypeId());
+		if ($ot instanceof ObjectType) {
+			$otname = lang($ot->getName());
+		} else {
+			$otname = lang('object');
+		}
+		
+		Hook::fire('override_get_object_type_name', $this, $otname);
+		
+		return $otname;
+	}
 }

@@ -49,11 +49,9 @@ og.eventManager.addListener('reload tab panel',
 
 og.eventManager.addListener('reload user picture', 
  	function (data){
- 		var el = document.getElementById(data.el_id);
- 		if (el) el.src=data.url;
+ 		$("#"+data.el_id).attr('src', data.url);
  		if (data.file_id && data.hf_picture) {
- 	 		var hf = document.getElementById(data.hf_picture);
- 	 		if (hf) hf.value = data.file_id;
+ 			$("#"+data.hf_picture).val(data.file_id);
  		}
  	}
 );
@@ -194,7 +192,7 @@ og.eventManager.addListener('draft mail autosaved',
 
 og.eventManager.addListener('popup',
 	function (args) {
-		og.msg(args.title, args.message, 0, args.type, args.sound);
+		og.msg(args.title, args.message, args.timeout | 0, args.type, args.sound);
 	}
 );
 

@@ -1196,34 +1196,6 @@ CREATE TABLE `<?php echo $table_prefix ?>contact_widget_options` (
   PRIMARY KEY (`widget_name`,`contact_id`,`member_type_id`,`option`) USING BTREE
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 
-CREATE TABLE `<?php echo $table_prefix ?>member_custom_properties` (
-  `id` int(10) NOT NULL AUTO_INCREMENT,
-  `object_type_id` int(10) unsigned NOT NULL,
-  `name` varchar(255) <?php echo $default_collation ?> NOT NULL,
-  `code` varchar(255) <?php echo $default_collation ?> NOT NULL,
-  `type` varchar(255) <?php echo $default_collation ?> NOT NULL,
-  `description` text <?php echo $default_collation ?> NOT NULL,
-  `values` text <?php echo $default_collation ?> NOT NULL,
-  `default_value` text <?php echo $default_collation ?> NOT NULL,
-  `is_system` tinyint(1) NOT NULL,
-  `is_required` tinyint(1) NOT NULL,
-  `is_multiple_values` tinyint(1) NOT NULL,
-  `property_order` int(10) NOT NULL,
-  `visible_by_default` tinyint(1) NOT NULL,
-  `is_special` tinyint(1) NOT NULL,
-  `is_disabled` tinyint(1) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
-
-CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>member_custom_property_values` (
-  `id` int(10) NOT NULL AUTO_INCREMENT,
-  `member_id` int(10) NOT NULL,
-  `custom_property_id` int(10) NOT NULL,
-  `value` text <?php echo $default_collation ?> NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `member_id` USING HASH (`member_id`)
-) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
-
 CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>contact_member_cache` (
   `contact_id` int(10) UNSIGNED NOT NULL,
   `member_id` int(10) UNSIGNED NOT NULL,
@@ -1256,4 +1228,13 @@ CREATE TABLE `<?php echo $table_prefix ?>sent_notifications` (
  `attachments` text <?php echo $default_collation ?>,
  `timestamp` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
  PRIMARY KEY (`id`)
+) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
+
+CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>currencies` (
+  `id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
+  `symbol` VARCHAR(5) NOT NULL,
+  `name` VARCHAR(128) NOT NULL,
+  `short_name` VARCHAR(50) NOT NULL,
+  `is_default` BOOLEAN NOT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;

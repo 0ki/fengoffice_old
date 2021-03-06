@@ -177,7 +177,9 @@ sig.actualHtmlSignature = '';
  		<a href="#" class="option" onclick="og.toggleAndBolden('add_mail_attachments', this);og.resizeMailDiv();"><?php echo lang('mail attachments') ?></a> -
 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_mail_add_contacts',this);og.resizeMailDiv();"><?php echo lang('mail add contacts') ?></a>
-		<?php foreach ($categories as $category) { ?>
+		<?php foreach ($categories as $category) {
+				if (array_var($category, 'hidden')) continue;
+			?>
 			- <a href="#" class="option" <?php if ($category['visible']) echo 'style="font-weight: bold"'; ?> onclick="og.toggleAndBolden('<?php echo $genid . $category['name'] ?>', this);og.resizeMailDiv();"><?php echo lang($category['name'])?></a>
 		<?php } ?>
 	</div>

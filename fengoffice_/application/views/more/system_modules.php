@@ -6,8 +6,8 @@ $genid = gen_id();
 	
 	<div class="title">
 		<div class="titletext"><?php echo lang('modules and dimensions')?></div>
-		<button title="<?php echo lang('close')?>" style="float:left; margin: -10px 0 0 10px;" class="add-first-btn" onclick="og.save_system_modules_changes(this)">
-			<img src="public/assets/themes/default/images/layout/close16.png">&nbsp;<?php echo lang('close')?>
+		<button title="<?php echo lang('done apply changes')?>" style="float:left; margin: -10px 0 0 10px;" class="add-first-btn blue" onclick="og.save_system_modules_changes(this)">
+			<?php echo lang('done apply changes')?>
 		</button>
 		<div class="clear"></div>
 	</div>
@@ -123,7 +123,7 @@ $genid = gen_id();
 			
 		} else {
 			
-			og.openLink(og.getUrl('more', 'set_getting_started_step', {'step': 2, 'update_cm_cache':og.must_reload_system_modules}), {
+			og.openLink(og.getUrl('more', 'set_getting_started_step', {'step': 2}), {
 				callback: function(success, data) {
 					if (og.must_reload_system_modules || og.must_reload_dimensions) {
 						window.location.href='<?php echo ROOT_URL ?>';

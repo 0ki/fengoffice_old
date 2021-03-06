@@ -79,17 +79,6 @@ function workspaces_quickadd_extra_fields($parameters) {
 	}
 }
 
-function workspaces_render_widget_member_information(Member $member, &$prop_html="") {
-	$ws_ot = ObjectTypes::findByName('workspace');
-	if ($member->getObjectTypeId() == $ws_ot->getId()) {
-		
-		$ws = Workspaces::getWorkspaceById($member->getObjectId());
-		if ($ws instanceof Workspace && trim($member->getDescription()) != "" && $ws->getColumnValue('show_description_in_overview')) {
-			$prop_html .= '<div style="margin-bottom:5px;">'.escape_html_whitespace(convert_to_links(clean($member->getDescription()))).'</div>';
-		}
-		
-	}
-}
 
 
 
@@ -180,35 +169,41 @@ function workspaces_custom_reports_object_types($parameters, &$object_types) {
 
 function workspaces_additional_dashboard_actions($ignored, &$actions) {
 	
+	$enabled_dimensions = config_option("enabled_dimensions");
+	
 	$ws_dim = Dimensions::findByCode('workspaces');
-	$wot = ObjectTypes::findByName('workspace');
-	$wdot = DimensionObjectTypes::findOne(array('conditions' => 'dimension_id='.$ws_dim->getId().' AND object_type_id='.$wot->getId()));
-	if ($wdot instanceof DimensionObjectType && $wdot->getEnabled()) {
-		if (active_context_can_contain_member_type($ws_dim->getId(), $wot->getId())) {
-			$actions[] = array(
-				'id' => 'workspaces-list',
-				'assoc_ot' => $wot->getId(),
-				'assoc_dim' => $ws_dim->getId(),
-				'name' => lang('workspaces list'),
-				'class' => 'link-ico ico-workspace',
-				'onclick' => "og.openLink(og.getUrl('member', 'init', {dim_id:".$ws_dim->getId().", type_id:".$wot->getId()."}), {caller:'".$ws_dim->getCode()."'}); return false;",
-			);
+	if (in_array($ws_dim->getId(), $enabled_dimensions)) {
+		$wot = ObjectTypes::findByName('workspace');
+		$wdot = DimensionObjectTypes::findOne(array('conditions' => 'dimension_id='.$ws_dim->getId().' AND object_type_id='.$wot->getId()));
+		if ($wdot instanceof DimensionObjectType && $wdot->getEnabled()) {
+			if (active_context_can_contain_member_type($ws_dim->getId(), $wot->getId())) {
+				$actions[] = array(
+					'id' => 'workspaces-list',
+					'assoc_ot' => $wot->getId(),
+					'assoc_dim' => $ws_dim->getId(),
+					'name' => lang('workspaces list'),
+					'class' => 'link-ico ico-workspace',
+					'onclick' => "og.openLink(og.getUrl('member', 'init', {dim_id:".$ws_dim->getId().", type_id:".$wot->getId()."}), {caller:'".$ws_dim->getCode()."'}); return false;",
+				);
+			}
 		}
 	}
 	
 	$tags_dim = Dimensions::findByCode('tags');
-	$tot = ObjectTypes::findByName('tag');
-	$tdot = DimensionObjectTypes::findOne(array('conditions' => 'dimension_id='.$tags_dim->getId().' AND object_type_id='.$tot->getId()));
-	if ($tdot instanceof DimensionObjectType && $tdot->getEnabled()) {
-		if (active_context_can_contain_member_type($tags_dim->getId(), $tot->getId())) {
-			$actions[] = array(
-				'id' => 'tags-list',
-				'assoc_ot' => $tot->getId(),
-				'assoc_dim' => $tags_dim->getId(),
-				'name' => lang('tags list'),
-				'class' => 'link-ico ico-tag',
-				'onclick' => "og.openLink(og.getUrl('member', 'init', {dim_id:".$tags_dim->getId().", type_id:".$tot->getId()."}), {caller:'".$tags_dim->getCode()."'}); return false;",
-			);
+	if (in_array($ws_dim->getId(), $enabled_dimensions)) {
+		$tot = ObjectTypes::findByName('tag');
+		$tdot = DimensionObjectTypes::findOne(array('conditions' => 'dimension_id='.$tags_dim->getId().' AND object_type_id='.$tot->getId()));
+		if ($tdot instanceof DimensionObjectType && $tdot->getEnabled()) {
+			if (active_context_can_contain_member_type($tags_dim->getId(), $tot->getId())) {
+				$actions[] = array(
+					'id' => 'tags-list',
+					'assoc_ot' => $tot->getId(),
+					'assoc_dim' => $tags_dim->getId(),
+					'name' => lang('tags list'),
+					'class' => 'link-ico ico-tag',
+					'onclick' => "og.openLink(og.getUrl('member', 'init', {dim_id:".$tags_dim->getId().", type_id:".$tot->getId()."}), {caller:'".$tags_dim->getCode()."'}); return false;",
+				);
+			}
 		}
 	}
 }

@@ -768,7 +768,7 @@ return array(
 	'update logo' => 'Update logo',
 	
 	'set manual permissions' => 'Set manual permissions',
-	'set manual permissions desc' => 'If you don\'t set the permissions manually, they will be assinged automatically depending on the user role (Administrators, Managers and Executives will be granted with all permissions).',
+	'set manual permissions desc' => 'If you don\'t set the permissions manually, they will be assigned automatically depending on the user role (Administrators, Managers and Executives will be granted with all permissions).',
 	'or you can also' => 'Or you can also',
 	'template parameters description' => 'This form contains the parameters that are needed to fill the tasks to be generated.',
 	'template_task' => 'Template task',

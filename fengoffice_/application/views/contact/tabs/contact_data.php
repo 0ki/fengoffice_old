@@ -1,3 +1,4 @@
+<?php require_javascript("og/modules/addContactForm.js"); ?>
 <div class="contact_form_container form-tab" id="<?php echo $genid?>contact_data">
   <div class="information-block no-border-bottom">
 	<div style="float:left;min-width: 100%;">

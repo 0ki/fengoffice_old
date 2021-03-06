@@ -388,7 +388,7 @@
 	'statistics' => 'Estadísticas',
 	'time' => 'Horas',
 	'meeting_time' => 'Hora',
-	'task time report' => 'Tiempo total de ejecución',
+	'task time report' => 'Horas',
 	'new tasks by user' => 'Nuevas tareas por usuario',
 	'generate report' => 'Generar reporte',
 	'task title' => 'Título de la tarea',

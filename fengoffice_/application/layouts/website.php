@@ -398,10 +398,14 @@ $object_types = ObjectTypes::getAllObjectTypes();
 
 foreach ($object_types as $ot) {
 	$types[$ot->getId()] = array(
-								"name" => $ot->getName(),
-								"icon" => $ot->getIconClass(),
-								"type" => $ot->getType()
-							);
+		"name" => $ot->getName(),
+		"icon" => $ot->getIconClass(),
+		"type" => $ot->getType()
+	);
+	if ($ot->getType() == 'content_object') {
+		$types[$ot->getId()]['controller'] = $ot->getObjectTypeController();
+		$types[$ot->getId()]['add_action'] = $ot->getObjectTypeAddAction();
+	}
 }
 ?>
 og.objectTypes =  <?php echo clean(str_replace('"',"'", escape_character(json_encode($types)))) ?>;
@@ -422,7 +426,8 @@ Ext.Ajax.timeout = <?php echo get_max_execution_time()*1100 // give a 10% margin
 og.musicSound = new Sound();
 og.systemSound = new Sound();
 
-
+<?php $all_dimension_associations = DimensionMemberAssociations::instance()->getAllAssociationsInfo(); ?>
+og.dimension_member_associations = Ext.util.JSON.decode('<?php echo json_encode($all_dimension_associations)?>');
 
 <?php if (!defined('DISABLE_JS_POLLING') || !DISABLE_JS_POLLING) { ?>
 var isActiveBrowserTab = true;
@@ -695,10 +700,16 @@ $(document).ready(function() {
 	});
 });
 
-
+<?php
+$default_currency = Currencies::getDefaultCurrencyInfo();
+if (is_array($default_currency) && count($default_currency) > 0) {
+	?>og.default_currency = Ext.util.JSON.decode('<?php echo json_encode($default_currency)?>');<?php
+} 
+?>
 
 </script>
 <?php include_once(Env::getLayoutPath("listeners"));?>
+	<div style="height:100%;width:100%;display:none;position:fixed;top:0px;left:0px;z-index: 2000;overflow-y: auto;" id="modal-forms-container"></div>
 
 	<div id="quick-form" > 
             <div id="close_text" style="float: right; cursor: pointer;height: 12px;position: absolute;right: 19px;top: 2px;"><a href="#" onclick="$('.close').click();"><?php echo lang('close')?></a></div>

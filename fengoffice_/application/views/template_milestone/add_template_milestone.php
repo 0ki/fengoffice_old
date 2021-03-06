@@ -69,7 +69,9 @@
 			<li><a href="#<?php echo $genid?>add_linked_objects_div"><?php echo lang('linked objects') ?></a></li>
 			<?php } ?>
 			
-			<?php foreach ($categories as $category) { ?>
+			<?php foreach ($categories as $category) {
+					if (array_var($category, 'hidden')) continue;
+				?>
 			<li><a href="#<?php echo $genid . $category['name'] ?>"><?php echo $category['name'] ?></a></li>
 			<?php } ?>
 		</ul>
@@ -80,7 +82,7 @@
 			<?php
 				$listeners = array('on_selection_change' => 'og.reload_milestone_form_selectors()');
 				if ($milestone->isNew()) {
-					render_member_selectors($milestone->manager()->getObjectTypeId(), $genid, null, array('select_current_context' => true, 'listeners' => $listeners), null, null, false);
+					render_member_selectors($milestone->manager()->getObjectTypeId(), $genid, null, array('select_current_context' => false, 'listeners' => $listeners), null, null, false);
 				} else {
 					render_member_selectors($milestone->manager()->getObjectTypeId(), $genid, $milestone->getMemberIds(), array('listeners' => $listeners), null, null, false);
 				} 

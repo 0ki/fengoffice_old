@@ -245,6 +245,17 @@ class WebpageController extends ApplicationController {
 		$order = array_var($_GET, 'sort');
 		if ($order == "updatedOn" || $order == "updated" || $order == "date" || $order == "dateUpdated") $order = "updated_on";
 		
+		$dim_order = null;
+		if (str_starts_with($order, "dim_")) {
+			$dim_order = substr($order, 4);
+			$order = 'dimensionOrder';
+		}
+		$cp_order = null;
+		if (str_starts_with($order, "cp_")) {
+			$cp_order = substr($order, 3);
+			$order = 'customProp';
+		}
+		
 		$order_dir = array_var($_GET, 'dir');
 		$page = (integer) ($start / $limit) + 1;
 		$hide_private = !logged_user()->isMemberOfOwnerCompany();
@@ -345,6 +356,8 @@ class WebpageController extends ApplicationController {
 			"limit" => $limit,
 			"order" => $order , 
 			"order_dir" => $order_dir,
+			"dim_order" => $dim_order,
+			"cp_order" => $cp_order,
 			"extra_conditions" => $extra_conditions,
 			'count_results' => false,
 			'only_count_results' => $only_count_result

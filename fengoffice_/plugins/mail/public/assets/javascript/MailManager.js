@@ -28,6 +28,13 @@ og.MailManager = function() {
    	}
    	this.fields = this.fields.concat(cp_names);
    	
+   	var dim_names = [];
+   	for (did in og.dimensions_info) {
+		if (isNaN(did)) continue;
+		dim_names.push('dim_' + did);
+	}
+   	this.fields = this.fields.concat(dim_names);
+   	
 	this.Record = Ext.data.Record.create(this.fields);
 	
 	if (!og.MailManager.store) {
@@ -405,6 +412,7 @@ og.MailManager = function() {
 	for (i=0; i<cps.length; i++) {
 		cm_info.push({
 			id: 'cp_' + cps[i].id,
+			hidden: parseInt(cps[i].visible_def) == 0,
 			header: cps[i].name,
 			dataIndex: 'cp_' + cps[i].id,
 			sortable: false,
@@ -420,7 +428,7 @@ og.MailManager = function() {
 				id: 'dim_' + did,
 				header: og.dimensions_info[did].name,
 				dataIndex: 'dim_' + did,
-				sortable: false,
+				sortable: true,
 				renderer: og.renderDimCol
 			});
 			og.breadcrumbs_skipped_dimensions[did] = did;
@@ -669,6 +677,7 @@ og.MailManager = function() {
 			text: lang('new'),
             tooltip: lang('create an email'),
             iconCls: 'ico-new new_button',
+            hidden: og.replace_list_new_action && og.replace_list_new_action.mail,
             handler: function() {
             	var url = og.getUrl('mail', 'add_mail');
             	og.openLink(url);
@@ -1086,6 +1095,9 @@ og.MailManager = function() {
 
 	var top1 = [];
 	if (!og.loggedUser.isGuest) {
+		if (og.replace_list_new_action && og.replace_list_new_action.mail) {
+			top1.push(og.replace_list_new_action.mail);
+		}
 		top1.push(actions.newCO);
 		top1.push('-');
 		top1.push(actions.archive);

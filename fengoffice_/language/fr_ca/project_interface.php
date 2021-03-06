@@ -184,7 +184,7 @@
 	'current' => 'Actuel',
 	'executed' => 'Réalisé',
 	'not executed' => 'Non exécuté',
-	'success deleted chart' => 'Graphique \'{0}\' supprimé',
+	'success deleted chart' => 'Graphique \'{0}\' supprimé avec succès',
 	'error deleted chart' => 'Une erreur est survenue pendant la suppression du graphique',
 	'task priority' => 'Priorité',
 	'high priority' => 'Haute',

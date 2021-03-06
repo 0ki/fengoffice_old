@@ -1747,6 +1747,8 @@ class FilesController extends ApplicationController {
 		$page = (integer) ($start / $limit)+1;
 		$type = array_var($_GET,'type');
 		$user = array_var($_GET,'user');
+		$dim_order = null;
+		$cp_order = null;
 
 		// if there's an action to execute, do so 
 		if (array_var($_GET, 'action') == 'delete') {
@@ -1847,8 +1849,11 @@ class FilesController extends ApplicationController {
 		$select_columns = null;
 		$extra_conditions = "";
 		if (strpos($order, 'p_') == 1 ){
-			$cpId = substr($order, 3);
+			$cp_order = substr($order, 3);
 			$order = 'customProp';
+		} else if (str_starts_with($order, "dim_")) {
+			$dim_order = substr($order, 4);
+			$order = 'dimensionOrder';
 		}
 		if ($order == ProjectFiles::ORDER_BY_POSTTIME) {
 			$order = '`created_on`';
@@ -1862,15 +1867,6 @@ class FilesController extends ApplicationController {
 				'e_field' => 'object_id',
 			);
 			$extra_conditions .= " AND `jt`.`object_id` = (SELECT max(`x`.`object_id`) FROM ".TABLE_PREFIX."project_file_revisions `x` WHERE `x`.`file_id` = `e`.`object_id`)";
-		}else if ($order == 'customProp') {
-			$order = 'IF(ISNULL(jt.value),1,0),jt.value';
-			$join_params['join_type'] = "LEFT ";
-			$join_params['table'] = "".TABLE_PREFIX."custom_property_values";
-			$join_params['jt_field'] = "object_id";
-			$join_params['e_field'] = "object_id";
-			$join_params['on_extra'] = "AND custom_property_id = ".$cpId;
-			$extra_conditions .= " AND ( custom_property_id = ".$cpId. " OR custom_property_id IS NULL)";
-			$select_columns = array("DISTINCT o.*", "e.*");
 		} else {
 			$order = '`name`';
 		} // if
@@ -1898,6 +1894,8 @@ class FilesController extends ApplicationController {
 		$objects = ProjectFiles::instance()->listing(array(
 			"order"=>$order,
 			"order_dir" => $order_dir,
+			"dim_order" => $dim_order,
+			"cp_order" => $cp_order,
 			"extra_conditions"=> $extra_conditions,
 			"show_only_member_objects" => user_config_option('show_only_member_files'),
 			'count_results' => false,

@@ -188,7 +188,7 @@ $has_custom_properties = CustomProperties::countAllCustomPropertiesByObjectType(
 	
 	  <div class="coInputHeaderUpperRow">
 		<div class="coInputTitle">
-			<?php echo $event->isNew() ? lang('new event') : lang('edit event') ?>
+			<?php echo $object->getAddEditFormTitle(); ?>
 		</div>
 	  </div>
 	
@@ -201,7 +201,7 @@ $has_custom_properties = CustomProperties::countAllCustomPropertiesByObjectType(
 		<div class="coInputButtons">
 		<?php
 			$is_repetitive = $event->isRepetitive() ? 'true' : 'false'; 
-			echo submit_button($event->isNew() ? lang('add event') : lang('save changes'),'e',array('style'=>'margin-top:0px;margin-left:10px', 'onclick' => (!$event->isNew() ? "javascript:if(!og.confirmEditRepEvent('".$event->getId()."',$is_repetitive)) return false;" : '')));
+			echo submit_button($object->getSubmitButtonFormTitle(),'e',array('style'=>'margin-top:0px;margin-left:10px', 'onclick' => (!$event->isNew() ? "javascript:if(!og.confirmEditRepEvent('".$event->getId()."',$is_repetitive)) return false;" : '')));
 		?>
 		</div>
 		<div class="clear"></div>
@@ -221,11 +221,17 @@ $has_custom_properties = CustomProperties::countAllCustomPropertiesByObjectType(
 			<li><a href="#<?php echo $genid?>time_and_duration"><?php echo lang('basic data') ?></a></li>
 			<li><a href="#<?php echo $genid?>add_more_details_div"><?php echo lang('more details') ?></a></li>
 			
+			<?php if ($has_custom_properties || config_option('use_object_properties')) { ?>
+			<li><a href="#<?php echo $genid?>add_custom_properties_div"><?php echo lang('custom properties') ?></a></li>
+			<?php } ?>
+			
 			<li><a href="#<?php echo $genid?>add_event_invitation_div"><?php echo lang('event invitations') ?></a></li>
 			
 			<li><a href="#<?php echo $genid?>add_subscribers_div"><?php echo lang('object subscribers') ?></a></li>
 			
-			<?php foreach ($categories as $category) { ?>
+			<?php foreach ($categories as $category) {
+					if (array_var($category, 'hidden')) continue;
+				?>
 			<li><a href="#<?php echo $genid . $category['name'] ?>"><?php echo $category['name'] ?></a></li>
 			<?php } ?>
 		</ul>
@@ -308,14 +314,15 @@ $has_custom_properties = CustomProperties::countAllCustomPropertiesByObjectType(
 		  </div>
 		  <div class="clear"></div>
 		  
+		  
+		</div>
+		
 		<?php if ($has_custom_properties || config_option('use_object_properties')) { ?>
-		  <div id="<?php echo $genid ?>add_custom_properties_div">
+		  <div id="<?php echo $genid ?>add_custom_properties_div" class="form-tab">
 			<?php echo render_object_custom_properties($object, false) ?>
 			<?php echo render_add_custom_properties($object);?>
 		  </div>
-		<?php } ?>		  
-		  
-		</div>
+		<?php } ?>
 		
 		<div id="<?php echo $genid ?>add_more_details_div"  class="form-tab">
 		
@@ -564,7 +571,7 @@ $has_custom_properties = CustomProperties::countAllCustomPropertiesByObjectType(
 
 	</div>
 	<?php if (!array_var($_REQUEST, 'modal')) {
-		echo submit_button($event->isNew() ? lang('add event') : lang('save changes'),'e',array('onclick' => (!$event->isNew() ? "javascript:if(!og.confirmEditRepEvent('".$event->getId()."',$is_repetitive)) return false;" : ''))); 
+		echo submit_button($object->getSubmitButtonFormTitle(),'e',array('onclick' => (!$event->isNew() ? "javascript:if(!og.confirmEditRepEvent('".$event->getId()."',$is_repetitive)) return false;" : ''))); 
 	}?>
   </div>
 </form>

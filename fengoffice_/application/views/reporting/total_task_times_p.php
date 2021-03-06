@@ -162,6 +162,10 @@
 			</td>
 		</tr>
 		<?php } ?>
+		
+		<?php $null = null; Hook::fire('render_more_total_task_times_report_params', $report_data, $null); ?>
+		
+		
 		<tr style='height:30px;'>
 			<td><span class="bold"><?php echo lang('show estimated time column') ?></span></td>
 			<td align='left' style="padding-left:10px;">

@@ -9,6 +9,12 @@
  */
 class ProjectTask extends BaseProjectTask {
 
+	/**
+	 * set to false when completing or reopening a task, no need to recalculate the parents path in that actions
+	 * 
+	 * @var boolean
+	 */
+	protected $update_parents_path = true;
 
 	protected $searchable_columns = array('name', 'text');
 		
@@ -436,6 +442,7 @@ class ProjectTask extends BaseProjectTask {
 			}
 		}
 		$this->setPercentCompleted(100);
+		$this->update_parents_path = false;
 		$this->save();
 		return $log_info;
 	} // completeTask
@@ -455,6 +462,7 @@ class ProjectTask extends BaseProjectTask {
 		}
 		$this->setCompletedOn(null);
 		$this->setCompletedById(0);
+		$this->update_parents_path = false;
 		$this->save();
 
 		$this->calculatePercentComplete();
@@ -1265,8 +1273,8 @@ class ProjectTask extends BaseProjectTask {
 		$parent_id_changed = false;
 		$new_parent_id = $this->getParentId();
 		if (!$this->isNew()) {
-			$old_parent_id = $old_me->getParentId();			
-			if($old_parent_id != $new_parent_id){				
+			$old_parent_id = isset($old_me) && $old_me instanceof ProjectTask ? $old_me->getParentId() : 0;
+			if($this->update_parents_path && $old_parent_id != $new_parent_id){
 				$this->updateDepthAndParentsPath($new_parent_id);
 			}
 		}else{
@@ -1284,7 +1292,7 @@ class ProjectTask extends BaseProjectTask {
 		}
 		
 		$old_parent_id = isset($old_me) && $old_me instanceof ProjectTask ? $old_me->getParentId() : 0;
-		if ($this->isNew() || $old_parent_id != $new_parent_id) {
+		if ($this->isNew() || ($this->update_parents_path && $old_parent_id != $new_parent_id)) {
 			//update Depth And Parents Path for subtasks
 			$subtasks = $this->getSubTasks();
 			if(is_array($subtasks)) {

@@ -308,6 +308,17 @@ class TemplateTask extends BaseTemplateTask {
 		return $this->canChangeStatus($user) || can_manage_time($user) || can_access_pgids($user->getPermissionGroupIds(), $this->getMembers(), Timeslots::instance()->getObjectTypeId(), ACCESS_LEVEL_WRITE);
 	}
 	
+	
+	function canLinkObject(Contact $user) {
+		if(!$this->isLinkableObject()) return false;
+	
+		if(can_link_objects($user)){
+			return can_write($user, $this->getMembers(), ProjectTasks::instance()->getObjectTypeId());
+		}else{
+			return false;
+		}
+	}
+	
 	/**
 	 * Check if specific user can change task status
 	 *

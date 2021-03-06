@@ -6,11 +6,13 @@ INSERT INTO `<?php echo $table_prefix ?>tab_panels` (`id`,`ordering`,`title`,`ic
  ('mails-panel', 12, 'email tab', 'ico-mail', 1, 'mail', 'init', '', '', 'system', (SELECT id FROM <?php echo $table_prefix ?>object_types WHERE name='mail'), 1, (SELECT id FROM <?php echo $table_prefix ?>plugins WHERE name='mail'))
 ON DUPLICATE KEY UPDATE id=id;
 
+INSERT INTO `<?php echo $table_prefix ?>config_categories` (`name`, `is_system`, `category_order`) VALUES ('mail module', 0, 60);
 
 INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
- ('mailing', 'user_email_fetch_count', '10', 'IntegerConfigHandler', 0, 0, 'How many emails to fetch when checking for email'),
- ('mailing', 'sent_mails_sync', '0', 'BoolConfigHandler', 0, 0, 'imap email accounts synchronization possibility'),
- ('mailing', 'check_spam_in_subject', '0', 'BoolConfigHandler', 0, 0, '')
+ ('mail module', 'user_email_fetch_count', '10', 'IntegerConfigHandler', 0, 0, 'How many emails to fetch when checking for email'),
+ ('mail module', 'sent_mails_sync', '0', 'BoolConfigHandler', 0, 0, 'imap email accounts synchronization possibility'),
+ ('mail module', 'check_spam_in_subject', '0', 'BoolConfigHandler', 0, 0, ''),
+ ('mail module', 'use_mail_accounts_to_send_nots', '0', 'BoolConfigHandler', 0, 0, '')
  ON DUPLICATE KEY UPDATE name=name;
 
 INSERT INTO <?php echo $table_prefix ?>contact_config_options (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES

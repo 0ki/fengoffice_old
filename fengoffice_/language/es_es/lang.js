@@ -869,5 +869,7 @@ addLangs({
     'at least one dimension must be selected' : 'Debe seleccionar al menos una dimensión.',
     'confirm delete group' : '¿Está seguro que quiere eliminar este grupo?',
     
-	'move tasks forward' : 'Mover las tareas hacia adelante'
+	'move tasks forward' : 'Mover las tareas hacia adelante',
+    'birthday' : 'Cumpleaños',
+    'job title' : 'Título'
 });

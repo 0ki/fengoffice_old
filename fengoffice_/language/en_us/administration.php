@@ -6,7 +6,7 @@
     //  Administration tools
     // ---------------------------------------------------
     
-    'administration tool name test_mail_settings' => 'Test mail settings',
+    'administration tool name test_mail_settings' => 'Test outgoing mail settings',
     'administration tool desc test_mail_settings' => 'Use this simple tool to send test emails to check if Feng Office mailer is well configured',
     'administration tool name mass_mailer' => 'Mass mailer',
     'administration tool desc mass_mailer' => 'Simple tool that let you send plain text messages to any group of users registered to the system',
@@ -15,7 +15,7 @@
     //  Configuration categories and options
     // ---------------------------------------------------
   
-    'configuration' => 'Configuration',
+    'configuration' => 'General configuration',
     
     'mail transport mail()' => 'Default PHP settings',
     'mail transport smtp' => 'SMTP server',
@@ -30,7 +30,7 @@
     // Categories
     'config category name general' => 'General',
     'config category desc general' => 'General Feng Office settings.',
-    'config category name mailing' => 'Mailing',
+    'config category name mailing' => 'Notifications',
     'config category desc mailing' => 'Use these settings to set up how Feng Office should handle email sending. You can use configuration options provided in your php.ini or set it so it uses any other SMTP server.',
     'config category name modules' => 'Modules',
     'config category desc modules' => 'Use these settings to enable or disable Feng Office modules. Disabling a module only hides it from the graphical interface. It doesn\'t remove permissions from users to create or edit content objects.',
@@ -851,6 +851,21 @@
 	'member custom properties' => 'Dimension custom properties',
 	'select member type' => 'Select type',
   		
+  		'object custom properties' => 'Object custom properties',
+  		'custom properties for' => 'Custom properties for {0}',
+  		'default value' => 'Default value',
+  		'list values comma separated' => 'List values (comma separated)',
+  		'cp list values hint' => 'Only for list properties.',
+  		'is required' => 'Is required',
+  		'is multiple' => 'Multiple values',
+  		'show in main tab' => 'Show in main tab',
+		'numeric' => 'Numeric',
+		'boolean' => 'Boolean',
+		'list' => 'List',
+		'memo' => 'Large text',
+  		'add new custom property' => 'Add new custom property for {0}',
+  		'custom property name empty'=> 'Custom property names cannot be empty',
+  		'custom properties reorder help' => 'The defined properties can be reordered by dragging (click and hold property number) and dropping it in the desired order.',
   		
   		'invalid parent member' => 'Cannot save \'{0}\' under \'{1}\'',
       
@@ -871,6 +886,29 @@
   		'default name' => 'Default name',
   		'custom name' => 'Custom name',
   		'custom name placeholder' => 'Type here to define a custom name',
+  		
+  		
+  		'billing and invoicing' => 'Billing and Invoicing',
+  		'billing categories description' => 'In this section you can define the billing rates for persons.',
+  		'income config general' => 'General invoicing configuration',
+  		'income general config description' => 'General options for invoicing configuration.',
+  		'invoice copies' => 'Invoice copies',
+  		'copies config description' => 'Add, edit and delete invoice copy definitions',
+  		'invoice types' => 'Invoice types',
+  		'invoice types config description' => 'Manage the invoice types for your organization.',
+  		'invoice notebooks' => 'Invoice notebooks',
+  		'invoice notebooks config description' => 'Manage the invoice notebooks used in your organization.',
+  		'taxes' => 'Taxes',
+  		'taxes config description' => 'Manage the taxes that will be included in invoices',
+  		'invoice logo' => 'Invoice logo',
+  		'invoice logo config description' => 'Edit the logo to include in invoices',
+
+  		'config category name mail module' => 'Email module',
+  		'config category desc mail module' => 'General configurations of email module',
+
+  		'default value must be numeric' => 'Default value for {0} must be numeric.',
+  		'default value must be date' => 'Default value for {0} must be a date.',
+  		
   ); // array
 
 ?>

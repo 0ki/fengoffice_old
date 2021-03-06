@@ -62,8 +62,12 @@ class Notifier {
 		if ($action == ApplicationLogs::ACTION_ADD) {
 			self::objectNotification($object, $subscribers, logged_user(), 'new');
 		} else if ($action == ApplicationLogs::ACTION_EDIT) {
-			$contactIds = $log_data ;
-			if ($contactIds) {
+			$contactIds = $log_data;
+			$contactIds = explode(',', $contactIds);
+			foreach ($contactIds as $k => &$contactId) {
+				if (!is_numeric($contactId)) unset($contactIds[$k]);
+			}
+			if (count($contactIds)) {
 				$contacts = Contacts::instance()->findAll(array("conditions"=>" o.id IN (".$contactIds.")"));
 				foreach ($contacts as $contact){
 					$subscribers[] = $contact;
@@ -73,8 +77,12 @@ class Notifier {
 		} else if ($action == ApplicationLogs::ACTION_TRASH) {
 			self::objectNotification($object, $subscribers, logged_user(), 'deleted');
 		} else if ($action == ApplicationLogs::ACTION_CLOSE) {
-			$contactIds = $log_data ;
-			if ($contactIds) {
+			$contactIds = $log_data;
+			$contactIds = explode(',', $contactIds);
+			foreach ($contactIds as $k => &$contactId) {
+				if (!is_numeric($contactId)) unset($contactIds[$k]);
+			}
+			if (count($contactIds)) {
 				$contacts = Contacts::instance()->findAll(array("conditions"=>" o.id IN (".$contactIds.")"));
 				foreach ($contacts as $contact){
 					$subscribers[] = $contact;
@@ -82,8 +90,12 @@ class Notifier {
 			}
 			self::objectNotification($object, $subscribers, logged_user(), 'closed');
 		} else if ($action == ApplicationLogs::ACTION_OPEN) {
-			$contactIds = $log_data ;
-			if ($contactIds) {
+			$contactIds = $log_data;
+			$contactIds = explode(',', $contactIds);
+			foreach ($contactIds as $k => &$contactId) {
+				if (!is_numeric($contactId)) unset($contactIds[$k]);
+			}
+			if (count($contactIds)) {
 				$contacts = Contacts::instance()->findAll(array("conditions"=>" o.id IN (".$contactIds.")"));
 				foreach ($contacts as $contact){
 					$subscribers[] = $contact;
@@ -91,12 +103,17 @@ class Notifier {
 			}
 			self::objectNotification($object, $subscribers, logged_user(), 'open');
 		} else if ($action == ApplicationLogs::ACTION_SUBSCRIBE) {
-			$contactIds = $log_data ;
-			if ($contactIds) {
+			$contactIds = $log_data;
+			$contactIds = explode(',', $contactIds);
+			foreach ($contactIds as $k => &$contactId) {
+				if (!is_numeric($contactId)) unset($contactIds[$k]);
+			}
+			if (count($contactIds)) {
 				$contacts = Contacts::instance()->findAll(array("conditions"=>" o.id IN (".$contactIds.")"));
 			}else {
 				$contacts = array();
 			}
+		
 			self::objectNotification($object, $contacts, logged_user(), 'subscribed');
 		} else if ($action == ApplicationLogs::ACTION_COMMENT) {
 			self::newObjectComment($object, $subscribers);
@@ -703,15 +720,22 @@ class Notifier {
 				}
 			}
 		} else {
-			$people = array($reminder->getUser());
-			if ($isEvent){
-				$string_date = format_datetime($date, 0, $reminder->getUser()->getTimezone());
-			}else{
-				$string_date = $date->format("Y/m/d H:i:s");
+			$people = array();
+			$rem_user = $reminder->getUser();
+			file_put_contents(ROOT."/cache/rem.txt", "obj(".$object->getId().") - send reminder to: ".$rem_user->getObjectName());
+			if ($rem_user instanceof Contact && $object->isSubscriber($rem_user)) {
+				$people = array($reminder->getUser());
+				if ($isEvent){
+					$string_date = format_datetime($date, 0, $reminder->getUser()->getTimezone());
+				}else{
+					$string_date = $date->format("Y/m/d H:i:s");
+				}
+			} else {
+				file_put_contents(ROOT."/cache/rem.txt", "obj(".$object->getId().") - not a subscriber: ".$rem_user->getObjectName());
 			}
 		}
 		
-		if(!$several_event_subscribers) {
+		if(!$several_event_subscribers && count($people) > 0) {
 			if (!isset($string_date)) $string_date = format_datetime($date);
 			self::objectNotification($object, $people, null, "$context reminder", "$context $type reminder desc");
 		}
@@ -1390,8 +1414,10 @@ class Notifier {
 			if ($pos !== false) {
 				//$sender_address = trim(substr($from, $pos + 1), "> ");
 				$sender_name = trim(substr($from, 0, $pos));
+				$from_address = str_replace(array("<",">"),array("",""), trim(substr($from, $pos, strlen($from)-1)));
 			} else {
 				$sender_name = "";
+				$from_address = $from;
 			}
 			$from = array($smtp_address => $sender_name);
 		} else {
@@ -1404,6 +1430,26 @@ class Notifier {
 				$sender_address = $from;
 			}
 			$from = array($sender_address => $sender_name);
+			$from_address = $sender_address;
+		}
+		
+		if (Plugins::instance()->isActivePlugin('mail') && config_option('use_mail_accounts_to_send_nots')) {
+			$ma = MailAccounts::instance()->findOne(array("conditions" => "email_addr = '$from_address'"));
+			if ($ma instanceof MailAccount) {
+				
+				$mu = new MailUtilities();
+				$from = array($ma->getEmailAddress() => ($sender_name != "" ? $sender_name : $ma->getFromName()));
+			
+				$mailer = self::getMailer(array(
+						'smtp_server' => $ma->getSmtpServer(),
+						'smtp_port' => $ma->getSmtpPort(),
+						'smtp_secure_connection' => $ma->getOutgoingTrasnportType(),
+						'smtp_username' => $ma->smtpUsername(),
+						'smtp_password' => $mu->ENCRYPT_DECRYPT($ma->smtpPassword()),
+				));
+			} else {
+				$mailer = $default_mailer;
+			}
 		}
 
 		//Create the message
@@ -1516,7 +1562,8 @@ class Notifier {
 		if (count($emails) <= 0) return 0;
 		
 		Env::useLibrary('swift');
-		$mailer = self::getMailer();
+		$default_mailer = self::getMailer();
+		$mailer = $default_mailer;
 		if(!($mailer instanceof Swift_Mailer)) {
 			throw new NotifierConnectionError();
 		} // if
@@ -1534,8 +1581,10 @@ class Notifier {
 					$pos = strrpos($email->getFrom(), "<");
 					if ($pos !== false) {
 						$sender_name = trim(substr($email->getFrom(), 0, $pos));
+						$from_address = str_replace(array("<",">"),array("",""), trim(substr($email->getFrom(), $pos, strlen($email->getFrom())-1)));
 					} else {
 						$sender_name = "";
+						$from_address = $email->getFrom();
 					}
 					$from = array(config_option("smtp_address") => $sender_name);
 				} else {
@@ -1548,7 +1597,29 @@ class Notifier {
 						$sender_address = $email->getFrom();
 					}
 					$from = array($sender_address => $sender_name);
+					$from_address = $sender_address;
 				}
+				
+				// if exists an email account defined for the sender => use it to send the notification
+				if (Plugins::instance()->isActivePlugin('mail') && config_option('use_mail_accounts_to_send_nots')) {
+					$ma = MailAccounts::instance()->findOne(array("conditions" => "email_addr = '$from_address'"));
+					if ($ma instanceof MailAccount) {
+						
+						$mu = new MailUtilities();
+						$from = array($ma->getEmailAddress() => ($sender_name != "" ? $sender_name : $ma->getFromName()));
+					
+						$mailer = self::getMailer(array(
+								'smtp_server' => $ma->getSmtpServer(),
+								'smtp_port' => $ma->getSmtpPort(),
+								'smtp_secure_connection' => $ma->getOutgoingTrasnportType(),
+								'smtp_username' => $ma->smtpUsername(),
+								'smtp_password' => $mu->ENCRYPT_DECRYPT($ma->smtpPassword()),
+						));
+					} else {
+						$mailer = $default_mailer;
+					}
+				}
+				
 				$message = Swift_Message::newInstance($subject)
 				  ->setFrom($from)
 				  ->setBody($body)
@@ -1631,24 +1702,39 @@ class Notifier {
 	 * @param void
 	 * @return Swift
 	 */
-	static function getMailer() {
-		$mail_transport_config = config_option('mail_transport', self::MAIL_TRANSPORT_MAIL);
-
+	static function getMailer($parameters = null) {
+		
+		if (is_array($parameters)) {
+			$mail_transport_config = self::MAIL_TRANSPORT_SMTP;
+			$smtp_authenticate = true;
+		
+			$smtp_server = array_var($parameters, 'smtp_server');
+			$smtp_port = array_var($parameters, 'smtp_port', 25);
+			$smtp_secure_connection = array_var($parameters, 'smtp_secure_connection', self::SMTP_SECURE_CONNECTION_NO);
+			$smtp_username = array_var($parameters, 'smtp_username');
+			$smtp_password = array_var($parameters, 'smtp_password');
+		
+		} else {
+			$mail_transport_config = config_option('mail_transport', self::MAIL_TRANSPORT_MAIL);
+		}
+		
 		// Emulate mail() - use NativeMail
 		if($mail_transport_config == self::MAIL_TRANSPORT_MAIL) {
 			return Swift_Mailer::newInstance(Swift_MailTransport::newInstance());
 			// Use SMTP server
 		} elseif($mail_transport_config == self::MAIL_TRANSPORT_SMTP) {
-
-			// Load SMTP config
-			$smtp_server = config_option('smtp_server');
-			$smtp_port = config_option('smtp_port', 25);
-			$smtp_secure_connection = config_option('smtp_secure_connection', self::SMTP_SECURE_CONNECTION_NO);
-			$smtp_authenticate = config_option('smtp_authenticate', false);
-			if($smtp_authenticate) {
-				$smtp_username = config_option('smtp_username');
-				$smtp_password = config_option('smtp_password');
-			} // if
+			
+			if (!is_array($parameters)) {
+				// Load SMTP config
+				$smtp_server = config_option('smtp_server');
+				$smtp_port = config_option('smtp_port', 25);
+				$smtp_secure_connection = config_option('smtp_secure_connection', self::SMTP_SECURE_CONNECTION_NO);
+				$smtp_authenticate = config_option('smtp_authenticate', false);
+				if($smtp_authenticate) {
+					$smtp_username = config_option('smtp_username');
+					$smtp_password = config_option('smtp_password');
+				} // if
+			}
 
 			switch($smtp_secure_connection) {
 				case self::SMTP_SECURE_CONNECTION_SSL:

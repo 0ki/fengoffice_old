@@ -51,8 +51,17 @@ class  CustomProperties extends  BaseCustomProperties {
 	 * @return array
 	 * 
 	 */
-	static function getAllCustomPropertiesByObjectType($object_type, $co_type = null) {
-		$cond = array("`object_type_id` = ?", $object_type);
+	static function getAllCustomPropertiesByObjectType($object_type, $visibility = 'all', $extra_cond = "", $fire_cond_hook=false) {
+		
+		if ($fire_cond_hook) {
+			Hook::fire('get_custom_properties_conditions', array('ot' => $object_type), $extra_cond);
+		}
+		
+		if ($visibility != 'all') {
+			$extra_cond .= " AND visible_by_default = ". ($visibility == 'visible_by_default' ? '1' : '0');
+		}
+		
+		$cond = array("`object_type_id` = ? $extra_cond", $object_type);
 		
 		return self::findAll(array(
 			'conditions' => $cond,

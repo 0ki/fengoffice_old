@@ -2902,18 +2902,26 @@ og.render_modal_form = function(genid, options) {
 			div.innerHTML = data.current.data;
 
 			var modal_params = {
+				'appendTo': '#modal-forms-container',
 				'focus': typeof(options.focusFirst) != 'undefined' ? options.focusFirst : true,
 				'escClose': typeof(options.escClose) != 'undefined' ? options.escClose : true,
 				'overlayClose': typeof(options.overlayClose) != 'undefined' ? options.overlayClose : false,
-				'closeHTML': '<a id="'+genid+'_close_link" class="'+close_cls+' modal-close" title="'+lang('close')+'"></a>',
+				'closeHTML': '<a id="'+genid+'_close_link" class="'+close_cls+' modal-close modal-close-img" title="'+lang('close')+'"></a>',
+				'onClose': function (dialog) {
+					$("#modal-forms-container").hide();
+					$.modal.close();
+				},
 				'onShow': function (dialog) {
+					$(".simplemodal-container").css('position', 'absolute');
+					$("#modal-forms-container").show();
+					
 					// add close image to close-link
-					if (!options.hideCloseIcon) {
-						$("#"+genid+"_close_link").addClass("modal-close-img");
+					if (options.hideCloseIcon) {
+						$("#"+genid+"_close_link").hide();
 					}
 					
 					// resize and reposition form when changing tab and content is larger than the available space
-					$(".ui-tabs-anchor").click(function(){ og.resize_modal_form(); });
+					//$(".ui-tabs-anchor").click(function(){ og.resize_modal_form(); });
 					
 					// first execution sometimes fails to center the modal
 					var offset = $(".simplemodal-data").offset();
@@ -2932,6 +2940,9 @@ og.render_modal_form = function(genid, options) {
 					og.update_modal_main_input_width();
 			    }
 			};
+			if (options.position) {
+				modal_params.position = options.position;
+			}
 			setTimeout(function() {
 				$.modal(div, modal_params);
 			}, 100);
@@ -3486,15 +3497,23 @@ og.onAssociatedMemberTypeSelect = function (genid, dimension_id, member_id, hf_i
 		return;
 	}
 	
-	member_selector.add_relation(dimension_id, genid, member_id,false);
+	member_selector.add_relation(dimension_id, genid, member_id, false);
 	document.getElementById(genid + hf_id).value = "["+member_id+"]";
 }
 
 
 og.onAssociatedMemberTypeSelectMultiple = function (genid, dimension_id, member_id, hf_id){
 	
-	member_selector.add_relation(dimension_id, genid, member_id,false);
+	member_selector.add_relation(dimension_id, genid, member_id, true);
 	document.getElementById(genid + hf_id).value = Ext.util.JSON.encode(member_selector[genid].sel_context[dimension_id]);
+	
+	// prevent showing whole tree
+	og.dont_show_tree = dimension_id;
+	setTimeout(function(){
+		// only focus in text input without displaying tree
+		$("#"+genid+"-member-chooser-panel-"+dimension_id+"-tree-textfilter").focus();
+		og.dont_show_tree = null;
+	},100);
 }
 
 og.onAssociatedMemberTypeRemoveMultiple = function (genid, dimension_id, hf_id){
@@ -3546,7 +3565,7 @@ og.clickRootNodeAndCallNext = function(dimId, currentCall) {
 		for (i in all_tabs.items.items) {
 			var tab = all_tabs.items.items[i];
 			// update panel url if necessary
-			if (tab && tab.content && tab.content.type == 'html') {
+			if (tab && tab.content && tab.content.type == 'html' && tab.content.url) {
 				tab.content.url = tab.content.url.replace("context=", "ignored=") + "&context=" + og.contextManager.plainContext();
 			}
 			// reset panel
@@ -3772,4 +3791,38 @@ og.memberTreeAjaxLoad = function(tree, pnode, limit, offset) {
 			dimension_tree.initialized = true;
 		}
 	});
+}
+
+og.reloadCurrentPanel = function() {
+	var currentPanel = Ext.getCmp('tabs-panel').getActiveTab();
+	if (currentPanel) {
+		currentPanel.reload();
+	}
+}
+
+
+og.addTableCustomPropertyRow = function(parent, focus, values, col_count, ti, cpid, is_member_cp) {
+	
+	var field_name = is_member_cp ? 'member_custom_properties' : 'object_custom_properties';
+	
+	var count = parent.getElementsByTagName("tr").length;
+	var tbody = parent.getElementsByTagName("tbody")[0];
+	var tr = document.createElement("tr");
+	ti = ti + col_count * count;
+	var cell_w = (600 / col_count) + 'px';					
+	for (row = 0; row < col_count; row++) {
+		var td = document.createElement("td");						
+		var row_val = values && values[row] ? values[row] : "";
+		td.innerHTML = '<input class="value" style="width:'+cell_w+';min-width:120px;" type="text" name="'+field_name+'[' + cpid + '][' + count + '][' + row + ']" value="' + row_val + '" tabindex=' + ti + '>';
+		if (td.children && row == 0) var input = td.children[0];
+		tr.appendChild(td);
+		ti += 1;
+	}
+	tbody.appendChild(tr);
+	var td = document.createElement("td");
+	td.innerHTML = '<div class="ico ico-delete" style="width: 20px;height: 20px;cursor: pointer;margin-left: 2px;margin-top: 1px;" onclick="og.removeTableCustomPropertyRow(this.parentNode.parentNode);return false;">&nbsp;</div>';
+	tr.appendChild(td);
+	tbody.appendChild(tr);
+	if (input && focus)
+		input.focus();
 }

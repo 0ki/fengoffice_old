@@ -1,15 +1,19 @@
 <?php
 Hook::register('mail');
 
-function mail_render_administration_icons($ignored, &$icons){
-	if (can_manage_security(logged_user())) {
-		$icons[] = array(
-			'ico' => 'ico-large-email',
+
+function mail_additional_general_config_option($params, &$options) {
+	$cat = array_var($params, 'category');
+	$cat_name = $cat instanceof ConfigCategory ? $cat->getName() : "";
+	
+	if ($cat_name == 'mail module') {
+		$options[] = array(
+			'id' => 'mail_accounts',
 			'url' => get_url('administration', 'mail_accounts'),
 			'name' => lang('mail accounts'),
-			'extra' => '<a class="internalLink coViewAction ico-add" href="' . get_url('mail', 'add_account') . '">' . lang('add mail account') . '</a>',
 		);
 	}
+	
 }
 
 function mail_allowed_subscribers($object, &$contacts) {

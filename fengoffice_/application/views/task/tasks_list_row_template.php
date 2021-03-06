@@ -182,6 +182,12 @@
   </td>
   {{/each}} 
 
+	{{#if additional_task_list_columns}}
+		{{#each additional_task_list_columns}}
+			{{{html}}}
+		{{/each}}
+	{{/if}}
+
   {{#if draw_options.show_previous_pending_tasks}}
   <td>  
     {{#if task.previous_tasks_total}}

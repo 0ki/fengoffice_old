@@ -481,19 +481,23 @@ function get_context_from_array($ids){
 
 function active_context_can_contain_member_type($dimension_id, $member_type_id) {
 	$context = active_context();
-	foreach ($context as $selection) {
-		if ($selection instanceof Dimension && $selection->getId() == $dimension_id) {
-			// if no member of this dimension is selected return true
-			return true;
-		} else {
-			if ($selection instanceof Member && $selection->getDimensionId() == $dimension_id) {
+	$any_member_selected = false;
+
+	if (is_array($context)) {
+	  foreach ($context as $selection) {
+		
+		if ($selection instanceof Member) {
+			$any_member_selected = true;
+			
+			if ($selection->getDimensionId() == $dimension_id) {
 				// check if member type parameter can be descendant of the selected member type
 				$child_ots = DimensionObjectTypeHierarchies::getAllChildrenObjectTypeIds($dimension_id, $selection->getObjectTypeId());
 				return in_array($member_type_id, $child_ots);
 			}
 		}
+	  }
 	}
-	return true;
+	return !$any_member_selected;
 }
 
 /**
@@ -1724,6 +1728,9 @@ function fodt2text($filename,$id) {
 }
 
 function readZippedXML($archiveFile, $dataFile, $type = null) {
+	if (!zip_supported()) {
+		return "";
+	}
     // Create new ZIP archive
     $zip = new ZipArchive;
 
@@ -1999,18 +2006,38 @@ function print_modal_json_response($data, $dont_process_response = true, $use_aj
 function associate_member_to_status_member($project_member, $old_project_status, $status_member_id, $status_dimension, $status_ot=null, $remove_prev_associations=true) {
 
 	if ($status_dimension instanceof Dimension && in_array($status_dimension->getId(), config_option('enabled_dimensions'))) {
-
+		
 		// asociate project objects to the new project_status member
 		if ($old_project_status != $status_member_id) {
+			
+			$object_type_cond = " AND (SELECT o.object_type_id FROM ".TABLE_PREFIX."objects o WHERE o.id=".TABLE_PREFIX."object_members.object_id) 
+				NOT IN (SELECT ot.id FROM ".TABLE_PREFIX."object_types ot WHERE ot.name LIKE 'template_%')";
 
-			$object_members = ObjectMembers::instance()->findAll(array('conditions' => "member_id = ".$project_member->getId()." AND is_optimization=0"));
+			$object_members = ObjectMembers::instance()->findAll(array('conditions' => "member_id = ".$project_member->getId()." AND is_optimization=0 $object_type_cond"));
 
-			// remove objects from old project_type member
-			if ($old_project_status > 0) {
+			// if has old status or status removed => remove objects from old project_type member
+			if ($old_project_status > 0 || $status_member_id == 0) {
 				foreach ($object_members as $om) {
 					$obj = Objects::findObject($om->getObjectId());
 					if ($obj instanceof ContentDataObject) {
-						ObjectMembers::removeObjectFromMembers($obj, logged_user(), null, array($old_project_status));
+						$mems_to_remove = array();
+						
+						if ($old_project_status > 0) {
+							$mems_to_remove = array($old_project_status);
+						}
+						
+						if (!is_numeric($status_member_id) || $status_member_id == 0) {
+							// remove from all
+							$mems_to_remove = array_flat(DB::executeAll("
+								SELECT om.member_id FROM ".TABLE_PREFIX."object_members om
+		  						INNER JOIN ".TABLE_PREFIX."members m ON m.id=om.member_id
+		  						WHERE om.object_id = " . $obj->getId() . " AND m.dimension_id=".$status_dimension->getId()
+							));
+						}
+						
+						if (count($mems_to_remove) > 0) {
+							ObjectMembers::removeObjectFromMembers($obj, logged_user(), null, $mems_to_remove);
+						}
 					}
 				}
 			}
@@ -2084,21 +2111,30 @@ function associate_member_to_status_member($project_member, $old_project_status,
 	}
 }
 
-function get_all_associated_status_member_ids($member, $dimension, $ot=null) {
+function get_all_associated_status_member_ids($member, $dimension, $ot=null, $reverse=false) {
 	$ids = array();
 	if ($member instanceof Member && $dimension instanceof Dimension) {
 		$member_dimension = $member->getDimension();
 		if (!$member_dimension instanceof Dimension) return 0;
 
-		$a = DimensionMemberAssociations::instance()->findOne(array('conditions' => array('dimension_id=? AND object_type_id=? AND associated_dimension_id=?'.
+		if ($reverse) {
+			$a = DimensionMemberAssociations::instance()->findOne(array('conditions' => array('associated_dimension_id=? AND associated_object_type_id=? AND dimension_id=?'.
+				($ot instanceof ObjectType ? ' AND object_type_id='.$ot->getId() : ''),
+				$member_dimension->getId(), $member->getObjectTypeId(), $dimension->getId())));
+		} else {
+			$a = DimensionMemberAssociations::instance()->findOne(array('conditions' => array('dimension_id=? AND object_type_id=? AND associated_dimension_id=?'.
 				($ot instanceof ObjectType ? ' AND associated_object_type_id='.$ot->getId() : ''),
 				$member_dimension->getId(), $member->getObjectTypeId(), $dimension->getId())));
-
+		}
+		
 		// create relation between members and remove old relations
 		if ($a instanceof DimensionMemberAssociation) {
-			$mpms = MemberPropertyMembers::findAll(array('conditions' => array('association_id = ? AND member_id = ?', $a->getId(), $member->getId())));
+			$field_sql = $reverse ? 'AND property_member_id' : 'AND member_id';
+			
+			$mpms = MemberPropertyMembers::findAll(array('conditions' => array('association_id = ? '.$field_sql.' = ?', $a->getId(), $member->getId())));
 			foreach ($mpms as $mpm) {
-				$ids[] = intval($mpm->getPropertyMemberId());
+				if ($reverse) $ids[] = intval($mpm->getMemberId());
+				else $ids[] = intval($mpm->getPropertyMemberId());
 			}
 		}
 	}
@@ -2364,4 +2400,62 @@ function escape_character($string, $char="'", $all = false) {
 	}else{
 		return str_replace($char, "\\".$char, $string);
 	}
+}
+
+
+
+
+/**
+ * @abstract Collects all the subsets of $set of size $subsets_size.
+ * @param array $set Original set to calcualte the subsets.
+ * @param int $pos current position, only for recursion purposes.
+ * @param int $subsets_size Size of the resulting subsets of $set.
+ * @param int $start_pos starting position, only for recursion purposes.
+ * @param array $all_subsets variable in which the subsets will be returned.
+ * @example get_all_subsets($set, 0, 4, 0, $all_subsets); collects all subsets of $set of size 4 and put them in $all_subsets array
+ */
+function get_all_subsets($set, $pos, $subsets_size, $start_pos, &$all_subsets) {
+	if ($pos == $subsets_size) {
+		$result = array();
+		for ($i = 0; $i < $subsets_size; $i++) {
+			$result[] = $set[$i];
+		}
+		$all_subsets[] = $result;
+		return;
+	}
+
+	for ($i = $start_pos; $i < count($set); $i++) {
+		// optimization - not enough elements left
+		if ($subsets_size - $pos + $i > count($set)) {
+			return;
+		}
+
+		// swap pos and i
+		$temp = $set[$pos];
+		$set[$pos] = $set[$i];
+		$set[$i] = $temp;
+
+		get_all_subsets($set, $pos+1, $subsets_size, $i+1, $all_subsets);
+
+		// swap pos and i back - otherwise things just gets messed up
+		$temp = $set[$pos];
+		$set[$pos] = $set[$i];
+		$set[$i] = $temp;
+	}
+}
+
+
+function check_member_custom_prop_exists($table_prefix, $cp_code, $ot_name) {
+	$exists_cp = false;
+
+	$ot_subquery = "SELECT id FROM ".$table_prefix."object_types WHERE name='$ot_name'";
+	$sql = "SELECT count(id) as total FROM ".$table_prefix."member_custom_properties WHERE code='$cp_code' AND object_type_id = ($ot_subquery)";
+	$mysql_res = mysql_query($sql);
+	if ($mysql_res) {
+		$rows = mysql_fetch_assoc($mysql_res);
+		if (is_array($rows) && count($rows) > 0) {
+			$exists_cp = $rows['total'] > 0;
+		}
+	}
+	return $exists_cp;
 }

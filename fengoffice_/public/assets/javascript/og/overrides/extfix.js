@@ -241,6 +241,18 @@ Ext.grid.GridPanel.override({
 			params.only_result = 0;
 			params.count_results = 0;
 		}
+	},
+	columnModelHasDimensionAssociations: function() {
+		var man = this;
+		var has_associations = false;
+		var cm = man.getColumnModel();
+		for (var i=0; i<cm.config.length; i++) {
+			if (cm.config[i].id.indexOf('dimassoc_') == 0) {
+				has_associations = true;
+				break;
+			}
+		}
+		return has_associations;
 	}
 });
 

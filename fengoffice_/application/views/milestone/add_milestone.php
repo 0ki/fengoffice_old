@@ -28,10 +28,10 @@
 			} else if (isset($milestone_task ) && $milestone_task instanceof ProjectTask) {
 				echo lang('new milestone from template');
 			} else {
-				echo lang('new milestone');
+				echo $object->getAddEditFormTitle();
 			}
 		} else {
-			echo lang('edit milestone');
+			echo $object->getAddEditFormTitle();
 		}
 	?></div>
   </div>
@@ -43,7 +43,7 @@
 	</div>
 		
 	<div class="coInputButtons">
-		<?php echo submit_button($milestone->isNew() ? (array_var($milestone_data, 'is_template', false) ? lang('save template') : lang('add milestone')) : lang('save changes'),'s',array('style'=>'margin-top:0px;margin-left:10px')) ?>
+		<?php echo submit_button($milestone->isNew() ? (array_var($milestone_data, 'is_template', false) ? lang('save template') : $object->getSubmitButtonFormTitle()) : lang('save changes'),'s',array('style'=>'margin-top:0px;margin-left:10px')) ?>
 	</div>
 	<div class="clear"></div>
   </div>
@@ -68,7 +68,9 @@
 			<li><a href="#<?php echo $genid?>add_linked_objects_div"><?php echo lang('linked objects') ?></a></li>
 			<?php } ?>
 			
-			<?php foreach ($categories as $category) { ?>
+			<?php foreach ($categories as $category) {
+					if (array_var($category, 'hidden')) continue;
+				?>
 			<li><a href="#<?php echo $genid . $category['name'] ?>"><?php echo $category['name'] ?></a></li>
 			<?php } ?>
 		</ul>
@@ -152,7 +154,7 @@
 		
 	</div>
 	<?php if (!array_var($_REQUEST, 'modal')) {
-			echo submit_button($milestone->isNew() ? (array_var($milestone_data, 'is_template', false) ? lang('save template') : lang('add milestone')) : lang('save changes'), 's', array('tabindex' => '20000'));
+			echo submit_button($milestone->isNew() ? (array_var($milestone_data, 'is_template', false) ? lang('save template') : $object->getSubmitButtonFormTitle()) : lang('save changes'), 's', array('tabindex' => '20000'));
 		} ?>
 </div>
 </div>

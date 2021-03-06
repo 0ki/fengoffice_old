@@ -8,6 +8,7 @@ og.OverviewManager = function() {
 
 	this.doNotRemove = true;
 	this.needRefresh = false;
+	this.actual_type_filter = 0;
 
 	if (!og.OverviewManager.store) {
 		og.OverviewManager.store = new Ext.data.Store({
@@ -42,6 +43,20 @@ og.OverviewManager = function() {
 						cmp.getView().focusRow(og.lastSelectedRow.overview+1);
 						var sm = cmp.getSelectionModel();
 						sm.clearSelections();
+					}
+					
+					if (d.filters.types) {
+						var items = [['0', '-- ' + lang('All') + ' --']];
+						for (i=0; i<d.filters.types.length; i++) {
+							items[items.length] = [d.filters.types[i].id, d.filters.types[i].name];
+						}
+						var types_filter = Ext.getCmp('ogOverviewTypeFilterCombo');
+						types_filter.reset();
+						types_filter.store.removeAll();
+						types_filter.store.loadData(items);
+						
+						types_filter.setValue(cmp.actual_type_filter);
+						types_filter.collapse();
 					}
 					
 					Ext.getCmp('overview-manager').store.lastOptions.params.count_results = 1;
@@ -110,7 +125,7 @@ og.OverviewManager = function() {
 		mem_path = "";
 		var mpath = Ext.util.JSON.decode(r.data.memPath);
 		if (mpath){ 
-			mem_path = "<div class='breadcrumb-container' style='display: inline-block;'>";
+			mem_path = "&nbsp;<div class='breadcrumb-container' style='display: inline-block;'>";
 			mem_path += og.getEmptyCrumbHtml(mpath, '.breadcrumb-container', og.breadcrumbs_skipped_dimensions);
 			mem_path += "</div>";
 		}
@@ -458,6 +473,29 @@ og.OverviewManager = function() {
 			scope: this
 		})
     };
+	filters = {
+		type_filter: new Ext.form.ComboBox({
+	    	id: 'ogOverviewTypeFilterCombo',
+	    	store: new Ext.data.SimpleStore({
+		        fields: ['value', 'text'],
+		        data : []
+		    }),
+		    displayField:'text',
+	        mode: 'local',
+	        triggerAction: 'all',
+	        selectOnFocus:true,
+	        width:160,
+	        valueField: 'value',
+	        valueNotFoundText: '',
+	        listeners: {
+	        	'select' : function(combo, record) {
+					var man = Ext.getCmp("overview-manager");
+					man.actual_type_filter = combo.getValue();
+					man.load();
+	        	}
+	        }
+		})
+	}
 	
 	var toolbar = [
 		actions.newCO,
@@ -466,7 +504,9 @@ og.OverviewManager = function() {
 		actions.del,			
 		'-',
 		actions.more,
-		actions.markAs,
+		actions.markAs,			
+		'-',
+		filters.type_filter,
 		'->'
 	];
 	for (var i=0; i<og.additional_dashboard_actions.length; i++) {
@@ -540,6 +580,7 @@ Ext.extend(og.OverviewManager, Ext.grid.GridPanel, {
 		this.store.load({
 			params: Ext.applyIf(params, {
 				start: start,
+				type_filter: params.type_filter ? params.type_filter : this.actual_type_filter,
 				limit: og.config['files_per_page']
 			})
 		});
@@ -553,7 +594,10 @@ Ext.extend(og.OverviewManager, Ext.grid.GridPanel, {
 	},
 	
 	reset: function() {
-		this.load({start:0});
+		var params = {start:0};
+		if (this.actual_type_filter) params.type_filter = this.actual_type_filter;
+		
+		this.load(params);
 	},
 	
 	trashObjects: function() {

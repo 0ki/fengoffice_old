@@ -190,6 +190,7 @@ static function executeInstaller($name) {
 					$values = array_var ( $pluginInfo, 'id' ) . ", " . $values;
 				}
 				$sql = "INSERT INTO " . TABLE_PREFIX . "plugins ($cols) VALUES ($values) ON DUPLICATE KEY UPDATE version='".array_var ( $pluginInfo, 'version' )."'";
+				
 				DB::executeOne($sql);
 				$id = DB::lastInsertId();
 				$pluginInfo ['id'] = $id;
@@ -197,6 +198,8 @@ static function executeInstaller($name) {
 			} else {
 				$id = $plg_obj['id'];
 				$pluginInfo ['id'] = $id;
+				
+				DB::executeOne("UPDATE " . TABLE_PREFIX . "plugins SET version='".array_var ( $pluginInfo, 'version' )."' WHERE id='".array_var ( $pluginInfo, 'id' )."'");
 			}
 			
 			if (isset($pluginInfo['dependences']) && is_array($pluginInfo['dependences'])) {
@@ -312,8 +315,20 @@ static function executeInstaller($name) {
 			
 			$install_script = ROOT . "/plugins/$name/install/install.php";
 			if (file_exists ( $install_script )) {
+				$queries = array();
+			
 				include_once $install_script;
+				$function_name = $name."_get_additional_install_queries";
+				if (function_exists($function_name)) {
+					$queries = $function_name(TABLE_PREFIX);
+				}
+			
+				$total_queries = 0;
+				$executed_queries = 0;
+				executeMultipleQueries ( implode("\n", $queries), $total_queries, $executed_queries );
+				Logger::log ( "File install.php processed for plugin  '$name'." . mysql_error () );
 			}
+			
 			DB::commit ();
 			return true;
 		}

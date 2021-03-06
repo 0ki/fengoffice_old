@@ -168,7 +168,7 @@
 	'confirm delete permanently' => '{0} ögesini kalıcı olarak silmek istediğinize emin misiniz?',
 	'report as spam' => 'Önemsiz Posta Olarak İşaretle',
 	'not spam' => 'Önemsiz Posta Değil',
-	'mark as unread' => 'Okunmadı Olarak İşaretle',
+	'mark as unread' => 'Okunmamış olarak işaretle',
 	'activate' => 'Etkinleştir',
 	'disabled' => 'Devre Dışı Bırak',
 	'restore user' => 'Kullanıcıyı geri yükle',

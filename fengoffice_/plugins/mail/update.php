@@ -196,3 +196,24 @@
 			ON DUPLICATE KEY UPDATE name=name;
 		");
 	}
+	
+	function mail_update_16_17() {
+		DB::execute("
+			INSERT INTO `".TABLE_PREFIX."config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
+			 ('mailing', 'use_mail_accounts_to_send_nots', '0', 'BoolConfigHandler', 0, 0, '')
+			ON DUPLICATE KEY UPDATE name=name;
+		");
+	}
+	
+	function mail_update_17_18() {
+		// organize general config options
+		DB::execute("
+			UPDATE `".TABLE_PREFIX."config_categories` set `category_order`=`category_order`*10;
+		");
+		DB::execute("
+			INSERT INTO `".TABLE_PREFIX."config_categories` (`name`, `is_system`, `category_order`) VALUES ('mail module', 0, 60);
+		");
+		DB::execute("
+			update ".TABLE_PREFIX."config_options set category_name='mail module' where name in ('show images in document notifications','user_email_fetch_count','sent_mails_sync','check_spam_in_subject');
+		");
+	}

@@ -30,7 +30,7 @@ $(function() {
 	});
 
 	$('#'+genid+'addCommentText').keyup(function(){
-		var max_height = 200;
+		var max_height = 2000;
 		if ($(this)[0].scrollHeight > $(this)[0].clientHeight && $(this)[0].clientHeight < max_height) {
 			var h = $(this)[0].scrollHeight + 10;
 			if (h > max_height) {

@@ -15,6 +15,10 @@ class BillingController extends ApplicationController {
 	}
 	
 	function index() {
+		
+	}
+	
+	function list_all() {
 		tpl_assign('billing_categories', BillingCategories::findAll());
 	}
 

@@ -166,7 +166,7 @@ class ContactController extends ApplicationController {
 			
 			// Module permissions
 			$module_permissions_info = array();
-			$all_modules = TabPanels::findAll(array("conditions" => "`enabled` = 1", "order" => "ordering"));
+			$all_modules = TabPanels::findAll(array("conditions" => "`enabled` = 1 AND (plugin_id is NULL OR plugin_id = 0 OR plugin_id IN (SELECT id FROM ".TABLE_PREFIX."plugins WHERE is_activated > 0 AND is_installed > 0))", "order" => "ordering"));
 			$all_modules_info = array();
 			foreach ($all_modules as $module) {
 				$all_modules_info[] = array('id' => $module->getId(), 'name' => lang($module->getTitle()), 'ot' => $module->getObjectTypeId());
@@ -438,6 +438,8 @@ class ContactController extends ApplicationController {
 		$order = array_var($_GET,'sort');
 		$order_dir = array_var($_GET,'dir');
 		$action = array_var($_GET,'action');
+		$dim_order = null;
+		$cp_order = null;
 		
 		$attributes = array(
 			"ids" => explode(',', array_var($_GET, 'ids')),
@@ -479,8 +481,11 @@ class ContactController extends ApplicationController {
 		//$extra_conditions.= " AND disabled = 0 " ;
 		
 		if (strpos($order, 'p_') == 1 ){
-			$cpId = substr($order, 3);
+			$cp_order = substr($order, 3);
 			$order = 'customProp';
+		} else if (str_starts_with($order, "dim_")) {
+			$dim_order = substr($order, 4);
+			$order = 'dimensionOrder';
 		}
 		$select_columns = array('*');
 		$join_params = array();
@@ -492,18 +497,19 @@ class ContactController extends ApplicationController {
 			case 'createdOn':
 				$order = '`created_on`';
 				break;
-			case 'name':
-				$order = ' concat(surname, first_name) ';
+			case 'jobTitle':
+				$order = '`job_title`';
 				break;
-			case 'customProp':
-				$order = 'IF(ISNULL(jt.value),1,0),jt.value';
-				$join_params['join_type'] = "LEFT ";
-				$join_params['table'] = TABLE_PREFIX."custom_property_values";
-				$join_params['jt_field'] = "object_id";
-				$join_params['e_field'] = "object_id";
-				$join_params['on_extra'] = "AND custom_property_id = ".$cpId;
-				$extra_conditions.= " AND ( custom_property_id = ".$cpId. " OR custom_property_id IS NULL)";
-				$select_columns = array("DISTINCT o.*", "e.*");
+			case 'birthday':
+				if (!$order_dir) $order_dir = "ASC";
+				$order = 'MONTH(`birthday`) '.$order_dir.',DAY(`birthday`)';
+				break;
+			case 'name':
+				if(user_config_option("listingContactsBy")){
+					$order = ' concat(first_name, surname) ';
+				} else {
+					$order = ' concat(surname, first_name) ';
+				}
 				break;
 			case 'email':
 				$join_params['join_type'] = "LEFT ";
@@ -537,6 +543,8 @@ class ContactController extends ApplicationController {
 		$content_objects = Contacts::instance()->listing(array(
 			"order" => $order,
 			"order_dir" => $order_dir,
+			"dim_order" => $dim_order,
+			"cp_order" => $cp_order,
 			"extra_conditions" => $extra_conditions,
 			"start" =>$start,
 			"limit" => $limit,
@@ -658,7 +666,7 @@ class ContactController extends ApplicationController {
 			if (isset($objects[$i])){
 				$c= $objects[$i];
 					
-				if ($c instanceof Contact && !$c->isCompany()){						
+				if ($c instanceof Contact && !$c->isCompany()){
 					$company = $c->getCompany();
 					$companyName = '';
 					if (!is_null($company))
@@ -709,6 +717,7 @@ class ContactController extends ApplicationController {
 						"updatedById" => $c->getUpdatedById(),
 						"memPath" => json_encode($c->getMembersIdsToDisplayPath()),
 						"userType" => $c->getUserType(),
+						"birthday" => $c->getBirthday() instanceof DateTimeValue ? $c->getBirthday()->format('M, j') : '',
 					);
 				} else if ($c instanceof Contact){
 					
@@ -720,6 +729,7 @@ class ContactController extends ApplicationController {
 						"ot_id" => $c->getObjectTypeId(),
 						"type" => 'company',
 						'name' => $c->getObjectName(),
+						"picture" => $c->getPictureUrl(),
 						'email' => $c->getEmailAddress(),
 						'website' => $c->getWebpage('work') ? cleanUrl($c->getWebpageUrl('work'), false) : '',
 						'workPhone1' => $c->getPhone('work',true) ? $c->getPhoneNumber('work',true) : '',
@@ -748,6 +758,7 @@ class ContactController extends ApplicationController {
 						"memPath" => json_encode($c->getMembersIdsToDisplayPath()),
 						"contacts" => $c->getContactsByCompany(),
 						"users" => $c->getUsersByCompany(),
+						"birthday" => '',
 					);
 				}
 				
@@ -1409,15 +1420,22 @@ class ContactController extends ApplicationController {
 						$contact_im_value->save();
 					} // if
 				} // foreach
+				
 
+				$member_ids_to_add = array();
+				
 				$member_ids = json_decode(array_var($_POST, 'members'));
 				$object_controller = new ObjectController();
-				if (!is_null($member_ids)){
-					$object_controller->add_to_members($contact, $member_ids);
+				if (!is_null($member_ids) && count($member_ids) > 0){
+					$member_ids_to_add = array_merge($member_ids_to_add, $member_ids);
 				}
 				$no_perm_members_ids = json_decode(array_var($_POST, 'no_perm_members'));
-				if (count($no_perm_members_ids)){
-					$object_controller->add_to_members($contact, $no_perm_members_ids);
+				if (count($no_perm_members_ids) > 0){
+					$member_ids_to_add = array_merge($member_ids_to_add, $no_perm_members_ids);
+				}
+				
+				if (count($member_ids_to_add) > 0) {
+					$object_controller->add_to_members($contact, $member_ids_to_add);
 				}
 				
 				if ($newCompany) $object_controller->add_to_members($company, $member_ids);
@@ -1511,7 +1529,7 @@ class ContactController extends ApplicationController {
 			tpl_assign('user_type', $contact->getUserType());
 		}
 		
-		if(is_array($im_types)) {
+		if(isset($im_types) && is_array($im_types)) {
 			foreach($im_types as $im_type) {
 				$contact_data['im_' . $im_type->getId()] = $contact->getImValue($im_type);
 			} // foreach

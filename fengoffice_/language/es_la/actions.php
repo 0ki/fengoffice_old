@@ -181,4 +181,6 @@
 	'add project' => 'Agregar proyecto',
 	'day' => 'Día',
 	'restore user' => 'Restaurar usuario',
+    'select all' => 'Seleccionar todos',
+  	'dont filter' => 'No filtrar',
 ); ?>

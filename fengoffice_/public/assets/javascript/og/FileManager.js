@@ -24,6 +24,13 @@ og.FileManager = function() {
 		cp_names.push('cp_' + cps[i].id);
 	}
 	this.fields = this.fields.concat(cp_names);
+   	
+   	var dim_names = [];
+   	for (did in og.dimensions_info) {
+		if (isNaN(did)) continue;
+		dim_names.push('dim_' + did);
+	}
+   	this.fields = this.fields.concat(dim_names);
 
 	og.eventManager.fireEvent('hook_document_classification', this);
 	
@@ -102,6 +109,7 @@ og.FileManager = function() {
 		var name = String.format(
 			'<a style="font-size:120%;" class="{3}" href="{2}" onclick="og.openLink(\'{2}\');return false;">{0}</a>',
 			file_name, r.data.name, og.getUrl('files', 'file_details', {id: r.data.object_id}), classes) + mem_path;
+		
 		return name;
 	}
 	function renderIsRead(value, p, r){
@@ -412,6 +420,7 @@ og.FileManager = function() {
 	for (i=0; i<cps.length; i++) {
 		cm_info.push({
 			id: 'cp_' + cps[i].id,
+			hidden: parseInt(cps[i].visible_def) == 0,
 			header: cps[i].name,
 			dataIndex: 'cp_' + cps[i].id,
 			sortable: true,
@@ -427,7 +436,7 @@ og.FileManager = function() {
 				id: 'dim_' + did,
 				header: og.dimensions_info[did].name,
 				dataIndex: 'dim_' + did,
-				sortable: false,
+				sortable: true,
 				renderer: og.renderDimCol
 			});
 			og.breadcrumbs_skipped_dimensions[did] = did;
@@ -470,79 +479,93 @@ og.FileManager = function() {
 		})
 	};
 	
+	
+	addMenuItems = [];
+	addMenuItems.push(
+		{text: lang('upload file'), iconCls: 'ico-upload', handler: function() {
+			og.render_modal_form('', {c:'files', a:'add_file'});
+		}}
+	);
+	
+	if (og.replace_list_new_action && og.replace_list_new_action.file) {
+		for (var k=0; k<og.replace_list_new_action.file.menu.items.items.length; k++) {
+			addMenuItems.push(og.replace_list_new_action.file.menu.items.items[k]);
+		}
+	}
+	
+	addMenuItems.push('-');
+	
+	addMenuItems.push({text: lang('document'), iconCls: 'ico-doc', handler: function() {
+		var url = og.getUrl('files', 'add_document');
+		
+		var context = Ext.util.JSON.decode(og.contextManager.plainContext());
+		
+		var can_add = true;
+		var dimensions_panel = Ext.getCmp('menu-panel');
+		var dim_names = '';
+		
+		dimensions_panel.items.each(function(item, index, length) {
+			for (x = 0; x < item.initialConfig.requiredObjectTypes.length; x++) {
+				var t = item.initialConfig.requiredObjectTypes[x];
+				var selected_members = og.contextManager.getDimensionMembers(item.dimensionId);
+
+				if (t == Ext.getCmp('file-manager').objectTypeId) {
+					if (!selected_members || selected_members == '0' || selected_members.length == 0) {
+						can_add = false;
+						dim_names += (dim_names == '' ? '"' : '", "') + item.title + '"';
+					}
+				}
+			}
+		});
+		
+		if (can_add) {
+			og.openLink(url);
+		} else {
+			og.err(lang('you must select a member from the following dimensions', dim_names));
+		}
+		
+	}});
+
+	addMenuItems.push({text: lang('web document'), iconCls: 'ico-weblink', handler: function() {
+		og.render_modal_form('', {c:'files', a:'add_weblink'});
+	}});
+
+	addMenuItems.push({text: lang('presentation'), iconCls: 'ico-prsn', handler: function() {
+		var url = og.getUrl('files', 'add_presentation');
+		
+		var context = Ext.util.JSON.decode(og.contextManager.plainContext());
+		
+		var can_add = true;
+		var dimensions_panel = Ext.getCmp('menu-panel');
+		var dim_names = '';
+		
+		dimensions_panel.items.each(function(item, index, length) {
+			for (x = 0; x < item.initialConfig.requiredObjectTypes.length; x++) {
+				var t = item.initialConfig.requiredObjectTypes[x];
+				var selected_members = og.contextManager.getDimensionMembers(item.dimensionId);
+
+				if (t == Ext.getCmp('file-manager').objectTypeId) {
+					if (!selected_members || selected_members == '0' || selected_members.length == 0) {
+						can_add = false;
+						dim_names += (dim_names == '' ? '"' : '", "') + item.title + '"';
+					}
+				}
+			}
+		});
+		
+		if (can_add) {
+			og.openLink(url);
+		} else {
+			og.err(lang('you must select a member from the following dimensions', dim_names));
+		}
+	}});
+	
 	actions = {
 		newCO: new Ext.Action({
 			text: lang('new'),
             tooltip: lang('create an object'),
             iconCls: 'ico-new new_button',
-			menu: {items: [
-				{text: lang('upload file'), iconCls: 'ico-upload', handler: function() {
-					og.render_modal_form('', {c:'files', a:'add_file'});
-				}},
-				'-',
-				{text: lang('document'), iconCls: 'ico-doc', handler: function() {
-					var url = og.getUrl('files', 'add_document');
-					
-					var context = Ext.util.JSON.decode(og.contextManager.plainContext());
-					
-					var can_add = true;
-					var dimensions_panel = Ext.getCmp('menu-panel');
-					var dim_names = '';
-					
-					dimensions_panel.items.each(function(item, index, length) {
-						for (x = 0; x < item.initialConfig.requiredObjectTypes.length; x++) {
-							var t = item.initialConfig.requiredObjectTypes[x];
-							var selected_members = og.contextManager.getDimensionMembers(item.dimensionId);
-
-							if (t == Ext.getCmp('file-manager').objectTypeId) {
-								if (!selected_members || selected_members == '0' || selected_members.length == 0) {
-									can_add = false;
-									dim_names += (dim_names == '' ? '"' : '", "') + item.title + '"';
-								}
-							}
-						}
-					});
-					
-					if (can_add) {
-						og.openLink(url);
-					} else {
-						og.err(lang('you must select a member from the following dimensions', dim_names));
-					}
-					
-				}},
-				{text: lang('web document'), iconCls: 'ico-weblink', handler: function() {
-					og.render_modal_form('', {c:'files', a:'add_weblink'});
-				}},
-				{text: lang('presentation'), iconCls: 'ico-prsn', handler: function() {
-					var url = og.getUrl('files', 'add_presentation');
-					
-					var context = Ext.util.JSON.decode(og.contextManager.plainContext());
-					
-					var can_add = true;
-					var dimensions_panel = Ext.getCmp('menu-panel');
-					var dim_names = '';
-					
-					dimensions_panel.items.each(function(item, index, length) {
-						for (x = 0; x < item.initialConfig.requiredObjectTypes.length; x++) {
-							var t = item.initialConfig.requiredObjectTypes[x];
-							var selected_members = og.contextManager.getDimensionMembers(item.dimensionId);
-
-							if (t == Ext.getCmp('file-manager').objectTypeId) {
-								if (!selected_members || selected_members == '0' || selected_members.length == 0) {
-									can_add = false;
-									dim_names += (dim_names == '' ? '"' : '", "') + item.title + '"';
-								}
-							}
-						}
-					});
-					
-					if (can_add) {
-						og.openLink(url);
-					} else {
-						og.err(lang('you must select a member from the following dimensions', dim_names));
-					}
-				}}
-			]}
+			menu: {items: addMenuItems}
 		}),
 		properties: new Ext.Action({
 			text: lang('update file'),

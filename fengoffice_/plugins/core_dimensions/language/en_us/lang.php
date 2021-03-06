@@ -34,4 +34,7 @@
 	'delete selected member' => 'Delete selected {0}',
 	'delete member warning' => 'Are you sure you want to delete this {0}?',
 	'tasks list' => 'Tasks list',
+	
+	'add timeslot' => 'Add timeslot',
+	'add new row' => 'Add new row',
 );

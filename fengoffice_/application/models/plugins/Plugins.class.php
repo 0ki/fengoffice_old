@@ -40,6 +40,9 @@
   	}
   	
   	function isActivePlugin($name) {
+  		if (!$this instanceof Plugins) {
+  			return self::instance()->isActivePlugin($name);
+  		}
 		$this->getActive();
   		foreach ($this->active as $active_plugin) {
   			if ($active_plugin->getName() == $name) return true;

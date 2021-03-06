@@ -300,11 +300,25 @@ class MailContents extends BaseMailContents {
 		
 		Hook::fire("listing_extra_conditions", null, $extra_conditions);
 		
+		$dim_order = null;
+		if (str_starts_with($order_by, "dim_")) {
+			$dim_order = substr($order, 4);
+			$order_by = 'dimensionOrder';
+		}
+		
+		$cp_order = null;
+		if (str_starts_with($order_by, "cp_")) {
+			$cp_order = substr($order, 3);
+			$order_by = 'customProp';
+		}
+		
 		return self::instance()->listing(array(
 			'limit' => $limit, 
 			'start' => $start, 
 			'order' => $order_by,
 			'order_dir' => $dir,
+			"dim_order" => $dim_order,
+			"cp_order" => $cp_order,
 			'extra_conditions' => $extra_conditions,
 			'count_results' => false,
 			'only_count_results' => $only_count_result,

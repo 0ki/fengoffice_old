@@ -16,6 +16,13 @@ og.WebpageManager = function() {
    		cp_names.push('cp_' + cps[i].id);
    	}
    	this.fields = this.fields.concat(cp_names);
+   	
+   	var dim_names = [];
+   	for (did in og.dimensions_info) {
+		if (isNaN(did)) continue;
+		dim_names.push('dim_' + did);
+	}
+   	this.fields = this.fields.concat(dim_names);
 	
 	if (!og.WebpageManager.store) {
 		og.WebpageManager.store = new Ext.data.Store({
@@ -239,6 +246,7 @@ og.WebpageManager = function() {
 	for (i=0; i<cps.length; i++) {
 		cm_info.push({
 			id: 'cp_' + cps[i].id,
+			hidden: parseInt(cps[i].visible_def) == 0,
 			header: cps[i].name,
 			dataIndex: 'cp_' + cps[i].id,
 			sortable: false,
@@ -254,7 +262,7 @@ og.WebpageManager = function() {
 				id: 'dim_' + did,
 				header: og.dimensions_info[did].name,
 				dataIndex: 'dim_' + did,
-				sortable: false,
+				sortable: true,
 				renderer: og.renderDimCol
 			});
 			og.breadcrumbs_skipped_dimensions[did] = did;
@@ -297,9 +305,11 @@ og.WebpageManager = function() {
 	
 	actions = {
 		newWebpage: new Ext.Action({
+			id: 'new_button_weblink',
 			text: lang('new'),
             tooltip: lang('add new webpage'),
             iconCls: 'ico-new new_button',
+            hidden: og.replace_list_new_action && og.replace_list_new_action.weblink,
             handler: function() {
 				og.render_modal_form('', {c:'webpage', a:'add'});
 			}
@@ -366,6 +376,10 @@ og.WebpageManager = function() {
     
 	var tbar = [];
 	if (!og.loggedUser.isGuest) {
+		if (og.replace_list_new_action && og.replace_list_new_action.weblink) {
+			tbar.push(og.replace_list_new_action.weblink);
+		}
+		
 		tbar.push(actions.newWebpage);
 		tbar.push('-');
 		tbar.push(actions.editWebpage);
@@ -375,10 +389,10 @@ og.WebpageManager = function() {
 	}
 	tbar.push(actions.markAs);
 
-	if (og.additional_list_actions && og.additional_list_actions.webpage) {
+	if (og.additional_list_actions && og.additional_list_actions.weblink) {
 		tbar.push('-');
-		for (var i=0; i<og.additional_list_actions.webpage.length; i++) {
-			tbar.push(og.additional_list_actions.webpage[i]);
+		for (var i=0; i<og.additional_list_actions.weblink.length; i++) {
+			tbar.push(og.additional_list_actions.weblink[i]);
 		}
 	}
 	

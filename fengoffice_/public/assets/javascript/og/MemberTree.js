@@ -841,7 +841,7 @@ Ext.extend(og.MemberTree, Ext.tree.TreePanel, {
 		var n = this.getNodeById(member_id);
 		if (n) {
 			if (n.parentNode) this.expandPath(n.parentNode.getPath(), false);
-			n.select();
+			if (n.getOwnerTree()) n.select();
 			og.eventManager.fireEvent('member tree node click', n);
 		}else {
 			this.innerCt.mask();
@@ -861,7 +861,7 @@ Ext.extend(og.MemberTree, Ext.tree.TreePanel, {
 							dimension_tree.suspendEvents();
 							if (n.parentNode) dimension_tree.expandPath(n.parentNode.getPath(), false);
 							dimension_tree.resumeEvents();
-							n.select();
+							if (n.getOwnerTree()) n.select();
 							og.eventManager.fireEvent('member tree node click', n);
 						}
 					}

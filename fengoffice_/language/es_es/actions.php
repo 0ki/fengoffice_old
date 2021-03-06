@@ -181,4 +181,6 @@
 	'template context' => 'Elija la ubicación de la plantilla',
     'day' => 'Día',
     'restore user' => 'Restaurar usuario',
+    'select all' => 'Seleccionar todos',
+  	'dont filter' => 'No filtrar',
 ); ?>

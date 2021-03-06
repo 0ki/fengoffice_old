@@ -21,7 +21,12 @@
 	
 	// on submit functions
 	if (array_var($_REQUEST, 'modal')) {
-		$on_submit = "og.setDescription(); og.submit_modal_form('".$genid."submit-edit-form', ogTasks.drawTaskRowAfterEdit); return false;";
+		if (array_var($_REQUEST, 'from_email') > 0) {
+			$callback_fn = "og.reloadCurrentPanel";
+		} else {
+			$callback_fn = "ogTasks.drawTaskRowAfterEdit";
+		}
+		$on_submit = "og.setDescription(); og.submit_modal_form('".$genid."submit-edit-form', $callback_fn); return false;";
 	} else {
 		$on_submit = "return App.modules.addTaskForm.checkSubmitAddTask('".$genid."','". $task->manager()->getObjectTypeId()."') && og.setDescription()". 
 		((array_var($task_data, 'multi_assignment') && Plugins::instance()->isActivePlugin('crpm')) ? "&& typeof('og.TaskMultiAssignment')=='function' ? og.TaskMultiAssignment() : true" : "").";";
@@ -63,10 +68,10 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 			} else if (isset($base_task) && $base_task instanceof ProjectTask) {
 				echo lang('new task from template');
 			} else {
-				echo lang('new task list');
+				echo $object->getAddEditFormTitle();
 			}
 		} else {
-			echo lang('edit task list');
+			echo $object->getAddEditFormTitle();
 		}
 		echo ": ";
 		//$ignored = null; Hook::fire("object_name_prefix", array('object' => $task), $ignored);
@@ -84,7 +89,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 	</div>
 		
 	<div class="coInputButtons">
-		<?php echo submit_button($task->isNew() ? (array_var($task_data, 'is_template', false) ? lang('save template') : lang('add task list')) : lang('save changes'),'s',array('style'=>'margin-top:0px;margin-left:10px')) ?>
+		<?php echo submit_button($task->isNew() ? (array_var($task_data, 'is_template', false) ? lang('save template') : $object->getSubmitButtonFormTitle()) : lang('save changes'),'s',array('style'=>'margin-top:0px;margin-left:10px')) ?>
 	</div>
 	<div class="clear"></div>
   </div>
@@ -118,7 +123,9 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 			
 			<li><a href="#<?php echo $genid?>add_subscribers_div"><?php echo lang('object subscribers') ?></a></li>
 			
-			<?php foreach ($categories as $category) { ?>
+			<?php foreach ($categories as $category) {
+					if (array_var($category, 'hidden')) continue;
+				?>
 			<li><a href="#<?php echo $genid . $category['name'] ?>"><?php echo $category['name'] ?></a></li>
 			<?php } ?>
 		</ul>
@@ -375,7 +382,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 			}
 			
 			var editor = CKEDITOR.replace('<?php echo $genid ?>ckeditor', {
-				height: h,
+				height: '300px',
 				allowedContent: true,
 				enterMode: CKEDITOR.ENTER_DIV,
 				shiftEnterMode: CKEDITOR.ENTER_BR,
@@ -554,7 +561,9 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 			</div>
 		</div>
 		
-		
+		<?php if (isset($from_email) && $from_email instanceof MailContent) { ?>
+			<input type="hidden" name="task[from_email]" value="<?php echo $from_email->getId()?>"/>
+		<?php } ?>
 		
 		<?php if($task->isNew() || $task->canLinkObject(logged_user())) { ?>
 		<div class="linked-objects-div sub-section-div">
@@ -790,7 +799,13 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 		} else opt_display = 'none';
 		
 		document.getElementById("<?php echo $genid ?>word").innerHTML = word;
-		if (ro) ro.style.display = opt_display;	
+		if (ro) ro.style.display = opt_display;
+
+		// if no option selected => select repeat forever
+		if (!$("#<?php echo $genid ?>repeat_opt_forever").attr('checked') && !$("#<?php echo $genid ?>repeat_opt_times").attr('checked') 
+				&& !$("#<?php echo $genid ?>repeat_opt_until").attr('checked')) {
+			$("#<?php echo $genid ?>repeat_opt_forever").attr('checked', 'checked');
+		}
 
 		if(document.getElementById("<?php echo $genid ?>today").selected){
 			og.viewDays(false);

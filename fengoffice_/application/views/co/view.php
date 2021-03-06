@@ -31,7 +31,7 @@
 				<div class="coViewTitleContainer">
 					<div class="coViewTitle">
 						<table><tr><td>
-						<?php echo isset($title)? $title : lang($object->getObjectTypeName()) . ": " . clean($object->getObjectName());?>
+						<?php echo isset($title)? $title : $object->getObjectTypeNameLang() . ": " . clean($object->getObjectName());?>
 						</td>
 						
 						</tr></table>

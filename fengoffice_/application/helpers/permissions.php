@@ -634,10 +634,12 @@
 				$dimensions[] = $dim;
 				$root_members = DB::executeAll("SELECT * FROM ".TABLE_PREFIX."members WHERE dimension_id=".$dim->getId()." AND parent_member_id=0 ORDER BY name ASC");
 				$tmp_mem_ids = array();
-				foreach ($root_members as $mem) {
+				if (is_array($root_members)) {
+				  foreach ($root_members as $mem) {
 					if (!isset($members[$dim->getId()])) $members[$dim->getId()] = array();
 					$members[$dim->getId()][] = $mem;
 					$members[$dim->getId()] = array_merge($members[$dim->getId()], get_all_children_sorted($mem));
+				  }
 				}
 				
 				$allowed_object_types[$dim->getId()] = array();
@@ -1011,7 +1013,7 @@
 					}
 					
 					if ($save_cmps) {
-						if (count($all_perm_deleted) > 0) {
+						if (isset($all_perm_deleted) && count($all_perm_deleted) > 0) {
 							$member_ids_to_delete = array();
 							foreach ($all_perm_deleted as $mid => $del) {
 								// also check in contact_member_permissions

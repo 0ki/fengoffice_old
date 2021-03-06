@@ -21,7 +21,7 @@
 					if ($customProp->getType() == 'date') {
 						$dtv = DateTimeValueLib::dateFromFormatAndString("Y-m-d H:i:s", $cpv->getValue());
 						$format = user_config_option('date_format');
-						Hook::fire("custom_property_date_format", null, $format);
+						//Hook::fire("custom_property_date_format", null, $format);
 						$value = $dtv->format($format);
 					} else {
 						$value = clean($cpv->getValue());
@@ -29,14 +29,45 @@
 					
 					$title = '';
 					$style = '';
-					if ($customProp->getType() == 'contact'){
+					if ($customProp->getType() == 'contact' || $customProp->getType() == 'user'){
 						$c = Contacts::findById($value);
 						if($c instanceof Contact){
-							$htmlValue = '<div class="db-ico ico-contact" style="padding-left:18px;width:100%;">'.clean($c->getObjectName()).'</div>';
+							$htmlValue = clean($c->getObjectName());
 						}
 					} else if ($customProp->getType() == 'boolean'){
 						
 						$htmlValue = '<div class="db-ico ico-'.($value?'complete':'delete').' '.($value?'cpbooltrue':'cpboolfalse').'">&nbsp;</div>';
+						
+					} else if ($customProp->getType() == 'table'){
+					
+						$headers = explode(',', $customProp->getValues());
+						$rows = array();
+						
+						$cpvs = CustomPropertyValues::getCustomPropertyValues($__properties_object->getId(), $customProp->getId());
+						foreach ($cpvs as $cpval) {
+							$row = array();
+							$values = str_replace("\|", "%%_PIPE_%%", $cpval->getValue());
+							$exploded = explode("|", $values);
+							foreach ($exploded as &$v) {
+								$v = str_replace("%%_PIPE_%%", "|", $v);
+								$v = escape_character($v);
+								$row[] = $v;
+							}
+							$rows[] = $row;
+						}
+						
+						$table_html = '<table class="og-add-custom-properties"><tr>';
+						foreach ($headers as $h) $table_html .= '<th>'.$h.'</th>';
+						$table_html .= '</tr>';
+						
+						foreach ($rows as $row) {
+							$table_html .= '<tr>';
+							foreach ($row as $rowval) $table_html .= '<td>'.$rowval.'</td>';
+							$table_html .= '</tr>';
+						}
+						$table_html .= '</table>';
+						
+						$htmlValue = $table_html;
 						
 					} else if ($customProp->getType() == 'address'){
 						

@@ -32,6 +32,9 @@ if (isset($task_list) && $task_list instanceof ProjectTask) {
 	} // if
 
 	if (!$task_list->isTrashed() && !logged_user()->isGuest()){
+		
+		$ret=null; Hook::fire('view_task_actions', $task_list, $ret);
+		
 		if ($task_list->isRepetitive()) {
 			add_page_action(lang('generate repetitition'), get_url("task", "generate_new_repetitive_instance", array("id" => $task_list->getId())), 'ico-recurrent', null, null, true);
 		} else {

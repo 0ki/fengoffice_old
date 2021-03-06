@@ -23,7 +23,20 @@ og.MemberManager = function() {
 	  	}
   	}
   	this.fields = this.fields.concat(cp_names);
-  	
+	
+  	// add associated dimensions fields 
+  	var dim_assocs = [];
+  	var d_associations = null;
+  	if (og.dimension_member_associations[this.dimension_id]) {
+  		d_associations = og.dimension_member_associations[this.dimension_id][this.object_type_id];
+  	}
+  	if (d_associations) {
+	  	for (var i=0; i<d_associations.length; i++) {
+	  		var assoc = d_associations[i];
+	  		dim_assocs.push('dimassoc_' + assoc.id);
+	  	}
+	  	this.fields = this.fields.concat(dim_assocs);
+  	}
   	
 	if (!this.store) {
 		//this.store = new Ext.data.GroupingStore({
@@ -42,6 +55,7 @@ og.MemberManager = function() {
 			remoteSort: true,
 			listeners: {
 				'load': function() {
+					try {
 					var d = this.reader.jsonData;
 					
 					if (d.totalCount === 0) {
@@ -51,8 +65,24 @@ og.MemberManager = function() {
 					} else {
 						this.fireEvent('messageToShow', "");
 					}
-				
+					
+					this.dimension_id = d.dimension_id;
 					og.eventManager.fireEvent('replace all empty breadcrumb', null);
+					} catch (e) {
+						console.log(e);
+					}
+				},
+				'datachanged': function() {
+					if (this.dimension_id > 0) {
+						var man = Ext.getCmp('member-manager-'+this.dimension_id);
+						if (man) {
+							var has_associations = man.columnModelHasDimensionAssociations();
+							if (has_associations) {
+								man.needRefresh = !man.needRefresh;
+								man.activate();
+							}
+						}
+					}
 				}
 			}
 	        
@@ -84,7 +114,7 @@ og.MemberManager = function() {
 		var mem_path = "";
 		if (r.data.mem_path) {
 			var mpath = Ext.util.JSON.decode(r.data.mem_path);
-			if (mpath){ 
+			if (mpath){
 				mem_path = "<div class='breadcrumb-container' style='display: inline-block;'>";
 				mem_path += og.getEmptyCrumbHtml(mpath, '.breadcrumb-container', og.breadcrumbs_skipped_dimensions);
 				mem_path += "</div>";
@@ -108,6 +138,54 @@ og.MemberManager = function() {
 		if (mins < 10) mins = '0'+ mins;
 		
 		return hours +":"+ mins;
+	}
+	
+	function renderDimAssociation(value, p, r) {
+		if (value != "") {
+		  try {
+			var assoc_id = p.id.replace('dimassoc_', '');
+			var assoc_def = null;
+			
+			if (og.dimension_member_associations[og.member_list_params.dimension_id] && 
+					og.dimension_member_associations[og.member_list_params.dimension_id][og.member_list_params.object_type_id]) {
+				
+		  		d_associations = og.dimension_member_associations[og.member_list_params.dimension_id][og.member_list_params.object_type_id];
+		  	  	if (d_associations) {
+			  		for (var i=0; i<d_associations.length; i++) {
+			  	  		var assoc = d_associations[i];
+			  	  		if (assoc.id == assoc_id) {
+			  	  			assoc_def = assoc;
+			  	  			break;
+			  	  		}
+			  		}
+		  	  	}
+		  	}
+			
+			if (assoc_def) {
+				var values = value.split(',');
+				
+				mem_path = "";
+				var mem_obj = {};
+				mem_obj[assoc_def.assoc_dimension_id] = {};
+				
+				for (var j=0; j<values.length; j++) {
+					var val = values[j];
+					if (val == '0' || val == '') continue;
+					
+					mem_obj[assoc_def.assoc_dimension_id][val] = val;
+				}
+				
+				mem_path += "<div class='breadcrumb-container' style='display: inline-block;'>";
+				mem_path += og.getEmptyCrumbHtml(mem_obj, '.breadcrumb-container', og.breadcrumbs_skipped_dimensions);
+				mem_path += "</div>";
+				
+				return mem_path;
+			}
+		  } catch (e) {
+			  
+		  }
+		}
+		return "";
 	}
 
 	function getSelectedIds() {
@@ -239,12 +317,30 @@ og.MemberManager = function() {
 	for (i=0; i<cps.length; i++) {
 		cm_info.push({
 			id: 'cp_' + cps[i].id,
+			hidden: parseInt(cps[i].visible_def) == 0,
 			header: cps[i].name,
 			dataIndex: 'cp_' + cps[i].id,
 			sortable: true,
 			renderer: og.clean
 		});
 	}
+	
+	// add associated dimensions fields 
+  	var dim_assocs = [];
+  	var d_associations = [];
+  	if (og.dimension_member_associations[this.dimension_id] && og.dimension_member_associations[this.dimension_id][this.object_type_id]) {
+  		d_associations = og.dimension_member_associations[this.dimension_id][this.object_type_id];
+  	}
+  	for (var i=0; i<d_associations.length; i++) {
+  		var assoc = d_associations[i];
+  		cm_info.push({
+			id: 'dimassoc_' + assoc.id,
+			header: assoc.name,
+			dataIndex: 'dimassoc_' + assoc.id,
+			sortable: false,
+			renderer: renderDimAssociation
+		});
+  	}
 	
     var cm = new Ext.grid.ColumnModel(cm_info);
 	cm.defaultSortable = false;
