@@ -355,8 +355,8 @@ function core_dim_add_company_to_users_dimension($object, $user_dim, $company_ot
 }
 
 
-function core_dimensions_quickadd_extra_fields($dimId) {
-	if ($dimId == Dimensions::findByCode("feng_persons")->getId()) {
+function core_dimensions_quickadd_extra_fields($parameters) {
+	if (array_var($parameters, 'dimension_id') == Dimensions::findByCode("feng_persons")->getId()) {
 		tpl_display(PLUGIN_PATH."/core_dimensions/templates/quickadd_extra_fields.php");
 	}
 }

@@ -1,5 +1,5 @@
 
-    About Feng Office 2.2 - Beta
+    About Feng Office 2.2 - RC
     ================================
  
     Feng Office is a Collaboration Platform and Project Management System.
@@ -97,6 +97,32 @@
  
     Changelog
     =========
+	
+	Since 2.2-beta
+	----------------
+	bugfix: several fixes in custom reports display.
+	bugfix: custom reports csv/pdf export always show status column.
+	bugfix: dashboard activity widget does not control permissions correctly.
+	bugfix: dashboard activity widget shows username instead of person complete name.
+	bugfix: subworkspace creation does not inherit color.
+	bugfix: email autoclassification does not classify attachments.
+	bugfix: email view shows wrong "To" value when "To" field is empty or undefined.
+	bugfix: unclassified mails allows to subscribe other users.
+	bugfix: error when forwarding another user's account emails with attachments.
+	bugfix: several fixes in email classification functions.
+	bugfix: company comments are not displayed.
+	bugfix: dashboard's tasks widget breaks right widgets when scrolling (only in chrome).
+	bugfix: permissions check in Administration/Dimensions
+	bugfix: css is being printed in csv exported reports
+	bugfix: error subscribing users when instantiating templates with milestones and subtasks
+	bugfix: don't use $this in static functions
+	bugfix: archiving and unarchiving members is not done in a transaction
+	bugfix: permissions in dimension member selectors
+	bugfix: cannot set task's due date to 12:30 PM, always sets the same time but AM
+	bugfix: tasks drag and drop losses some attributes
+	
+	usability: mouseover highlight on member properties/restrictions tables
+	
 	
 	Since 2.1
 	----------------

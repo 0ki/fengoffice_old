@@ -41,8 +41,8 @@
 			<div style="float:right; margin-top:2px;">
 				<a href="#" onclick="$('.add-person-form').slideToggle();$(this).hide();$('#add-person-form-show').show();" id="add-person-form-hide" style="display:none;">
 					<?php echo lang('hide')?></a>
-				<a href="#" onclick="$('.add-person-form').slideToggle();$(this).hide();$('#add-person-form-hide').show();" id="add-person-form-show">
-					<?php echo lang('new person')?></a>
+				<a href="#" onclick="$('.add-person-form').slideToggle();$(this).hide();$('#add-person-form-hide').show();" id="add-person-form-show" class="coViewAction ico-add">
+					<?php echo lang('add new contact')?></a>
 			</div>
 			<div id="person-form-<?php echo $genid ?>" class="add-person-form" style="display:none;">
 				<h2><?php echo lang('new person') ?></h2>

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Molleja upgrade script will upgrade FengOffice 2.1 to FengOffice 2.2-beta
+ * Molleja upgrade script will upgrade FengOffice 2.1 to FengOffice 2.2-rc
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -40,7 +40,7 @@ class PamplonaUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('2.1');
-		$this->setVersionTo('2.2-beta');
+		$this->setVersionTo('2.2-rc');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -184,26 +184,28 @@ class PamplonaUpgradeScript extends ScriptUpgraderScript {
 			return false;
 		}
 		
-		// drop brand_colors column and use config options
-		if ($this->checkColumnExists($t_prefix."contacts", 'brand_colors', $this->database_connection)) {
-			$db_res = mysql_query("SELECT brand_colors FROM ".$t_prefix."contacts WHERE is_company=1 LIMIT 1", $this->database_connection);
-			$row = mysql_fetch_assoc($db_res);
-			$colors = explode("#", $row['brand_colors']);
-			$head_back = (isset($colors[1]) && $colors[1] != "" ? $colors[1] : "000000");
-			$tabs_back = (isset($colors[2]) && $colors[2] != "" ? $colors[2] : "14780e");
-			$tabs_font = (isset($colors[3]) && $colors[3] != "" ? $colors[3] : "ffffff");
-			$head_font = (isset($colors[4]) && $colors[4] != "" ? $colors[4] : "ffffff");
-			
-			$sqls = "
-				UPDATE ".$t_prefix."config_options SET value='$head_back' WHERE name='brand_colors_head_back';
-				UPDATE ".$t_prefix."config_options SET value='$head_font' WHERE name='brand_colors_head_font';
-				UPDATE ".$t_prefix."config_options SET value='$tabs_back' WHERE name='brand_colors_tabs_back';
-				UPDATE ".$t_prefix."config_options SET value='$tabs_font' WHERE name='brand_colors_tabs_font';
-				ALTER TABLE ".$t_prefix."contacts DROP COLUMN brand_colors;
-			";
-			$this->executeMultipleQueries($sqls, $t_queries, $e_queries, $this->database_connection);
+		if (version_compare($installed_version, '2.2-beta') < 0) {
+			// drop brand_colors column and use config options
+			if ($this->checkColumnExists($t_prefix."contacts", 'brand_colors', $this->database_connection)) {
+				$db_res = mysql_query("SELECT brand_colors FROM ".$t_prefix."contacts WHERE is_company=1 LIMIT 1", $this->database_connection);
+				$row = mysql_fetch_assoc($db_res);
+				$colors = explode("#", $row['brand_colors']);
+				$head_back = (isset($colors[1]) && $colors[1] != "" ? $colors[1] : "000000");
+				$tabs_back = (isset($colors[2]) && $colors[2] != "" ? $colors[2] : "14780e");
+				$tabs_font = (isset($colors[3]) && $colors[3] != "" ? $colors[3] : "ffffff");
+				$head_font = (isset($colors[4]) && $colors[4] != "" ? $colors[4] : "ffffff");
+				
+				$sqls = "
+					UPDATE ".$t_prefix."config_options SET value='$head_back' WHERE name='brand_colors_head_back';
+					UPDATE ".$t_prefix."config_options SET value='$head_font' WHERE name='brand_colors_head_font';
+					UPDATE ".$t_prefix."config_options SET value='$tabs_back' WHERE name='brand_colors_tabs_back';
+					UPDATE ".$t_prefix."config_options SET value='$tabs_font' WHERE name='brand_colors_tabs_font';
+					ALTER TABLE ".$t_prefix."contacts DROP COLUMN brand_colors;
+				";
+				$this->executeMultipleQueries($sqls, $t_queries, $e_queries, $this->database_connection);
+			}
 		}
-
+		
 		$this->printMessage('Feng Office has been upgraded. You are now running Feng Office '.$this->getVersionTo().' Enjoy!');
 
 		tpl_assign('additional_steps', $additional_upgrade_steps);

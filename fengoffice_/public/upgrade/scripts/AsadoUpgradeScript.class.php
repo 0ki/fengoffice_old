@@ -505,7 +505,7 @@ class AsadoUpgradeScript extends ScriptUpgraderScript {
 				$upgrade_script = "";
                                 
 				$upgrade_script .= "INSERT INTO `".$t_prefix."config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`)
-					VALUES ('general', 'working_days', '1,2,3,4,5', 'StringConfigHandler', '0', '0', NULL);
+					VALUES ('general', 'working_days', '1,2,3,4,5,6,7', 'StringConfigHandler', '0', '0', NULL);
 					ALTER TABLE `".$t_prefix."project_tasks` ADD `original_task_id` INT( 10 ) UNSIGNED NULL DEFAULT '0';
 					ALTER TABLE `".$t_prefix."project_tasks` ADD `type_content` ENUM( 'text', 'html' ) NOT NULL DEFAULT 'text';
 					ALTER TABLE `".$t_prefix."project_events` ADD `original_event_id` INT( 10 ) UNSIGNED NULL DEFAULT '0';

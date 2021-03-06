@@ -347,7 +347,7 @@
   	//User-box actions
   	'brand colors' => 'Configuración de colores',
   	'head color' => 'Color de Cabecera',
-  	'tabs color' => 'Color de las Tabs',
+  	'tabs color' => 'Color de las Pestañas',
   	'font color' => 'Color de las Fuentes',
   	'title color' => 'Color del Título',
   	'save colors' => 'Guardar',

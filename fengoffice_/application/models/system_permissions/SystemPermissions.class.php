@@ -49,24 +49,23 @@
   	
   		function getRolePermissions($role_id){
   			$permission = self::findOne(array('conditions'=>"`permission_group_id` = '$role_id'"));
-  			if (permission instanceof SystemPermission) {
+  			if ($permission instanceof SystemPermission) {
   				return $permission->getSettedPermissions();
   			}
   		}
   		
   		function getNotRolePermissions($role_id){
-  			$permission=self::findOne(array('conditions'=>"`permission_group_id` = '$role_id'"));
-  			if (permission instanceof SystemPermission) {
+  			$permission = self::findOne(array('conditions'=>"`permission_group_id` = '$role_id'"));
+  			if ($permission instanceof SystemPermission) {
   				return $permission->getNotSettedPermissions();
   			}
 		}
   		
   		function getAllRolesPermissions(){
-  			$groups=PermissionGroups::getNonPersonalPermissionGroups('`parent_id`,`id` ASC');
-  			$roles_permissions=array();
+  			$groups = PermissionGroups::getNonPersonalPermissionGroups('`parent_id`,`id` ASC');
+  			$roles_permissions = array();
   			foreach($groups as $group){
-  				$roles_permissions[$group->getId()]=array();
-  				$roles_permissions[$group->getId()]=self::getRolePermissions($group->getId());
+  				$roles_permissions[$group->getId()] = self::getRolePermissions($group->getId());
   			}
   			return $roles_permissions;
   		}

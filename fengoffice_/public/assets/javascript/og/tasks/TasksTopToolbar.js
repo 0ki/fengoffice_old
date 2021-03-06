@@ -90,7 +90,7 @@ og.TasksTopToolbar = function(config) {
 	}
 
 	menuItems = menuItems.concat([{
-		text: lang('all'),
+		text: lang('templates'),
 		iconCls: 'ico-template',
 		cls: 'scrollable-menu',
 		menu: {

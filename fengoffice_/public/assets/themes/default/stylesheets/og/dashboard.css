@@ -333,6 +333,10 @@
 	overflow: hidden;
 }
 
+.widget .widget-body .separator {
+	border-top: 1px solid #DDDDDD;
+	margin: 5px 0;
+}
 
 .widget dt, .widget dd { 
 	margin: 0; padding: 2px 0;
@@ -419,7 +423,7 @@
 }
 
 .widget-body .view-all-container {
-	float:right;
+	text-align: right;
 }
 
 .widget-body.loading {

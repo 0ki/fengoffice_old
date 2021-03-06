@@ -265,45 +265,46 @@ class TaskController extends ApplicationController {
 				$task_data['start_date']->advance(logged_user()->getTimezone() * -3600);
 				$task_data['use_start_time'] = is_array($starttime);
 			}
+			
+			//control date subtask with parent
+			if(array_var($task_data, 'control_dates') == "child"){
+				$parent = $task->getParent();
+					if ($parent->getStartDate() instanceof DateTimeValue && $task_data['start_date'] instanceof DateTimeValue) {
+							if($task_data['start_date']->getTimestamp() < $parent->getStartDate()->getTimestamp()){
+								$parent->setStartDate($task_data['start_date']);
+								$parent->setUseStartTime($task_data['use_start_time']);
+							}
+					}else{
+						$parent->setStartDate($task_data['start_date']);
+						$parent->setUseStartTime(array_var($task_data, 'use_start_time',0));
+					}
+					if ($parent->getDueDate() instanceof DateTimeValue && $task_data['due_date'] instanceof DateTimeValue) {
+							if($task_data['due_date']->getTimestamp() > $parent->getDueDate()->getTimestamp()){
+								$parent->setDueDate($task_data['due_date']);
+								$parent->setUseDueTime($task_data['use_due_time']);
+						}
+					}else{
+						$parent->setDueDate($task_data['due_date']);
+						$parent->setUseDueTime(array_var($task_data, 'use_due_time',0));
+					}
+					// calculate and set estimated time
+					$totalMinutes = (array_var($task_data, 'hours') * 60) + (array_var($task_data, 'minutes'));
+					$parent->setTimeEstimate($totalMinutes);
+					$parent->save();
+			}
+			
+			if(config_option("wysiwyg_tasks")){
+					$task_data['type_content'] = "html";
+					$task_data['text'] = preg_replace("/[\n|\r|\n\r]/", '', array_var($task_data, 'text'));
+			}else{
+				$task_data['type_content'] = "text";  
+			}			
+			$task->setFromAttributes($task_data);
+			
+			if (array_var($_GET, 'dont_mark_as_read')) {
+					$is_read = $task->getIsRead(logged_user()->getId());
+			}
                         
-                        //control date subtask whit parent
-                        if(array_var($task_data, 'control_dates') == "child"){
-                            $parent = $task->getParent();
-                                if ($parent->getStartDate() instanceof DateTimeValue && $task_data['start_date'] instanceof DateTimeValue) {
-                                        if($task_data['start_date']->getTimestamp() < $parent->getStartDate()->getTimestamp()){
-                                            $parent->setStartDate($task_data['start_date']);
-                                            $parent->setUseStartTime($task_data['use_start_time']);
-                                        }
-                                }else{
-                                    $parent->setStartDate($task_data['start_date']);
-                                    $parent->setUseStartTime(array_var($task_data, 'use_start_time',0));
-                                }
-                                if ($parent->getDueDate() instanceof DateTimeValue && $task_data['due_date'] instanceof DateTimeValue) {
-                                        if($task_data['due_date']->getTimestamp() > $parent->getDueDate()->getTimestamp()){
-                                            $parent->setDueDate($task_data['due_date']);
-                                            $parent->setUseDueTime($task_data['use_due_time']);
-                                    }
-                                }else{
-                                    $parent->setDueDate($task_data['due_date']);
-                                    $parent->setUseDueTime(array_var($task_data, 'use_due_time',0));
-                                }
-                                // calculate and set estimated time
-                                $totalMinutes = (array_var($task_data, 'hours') * 60) + (array_var($task_data, 'minutes'));
-                                $parent->setTimeEstimate($totalMinutes);
-                                $parent->save();
-                        }
-
-                        if(config_option("wysiwyg_tasks")){
-                                $task_data['type_content'] = "html";
-                                $task_data['text'] = preg_replace("/[\n|\r|\n\r]/", '', array_var($task_data, 'text'));
-                        }else{
-                            $task_data['type_content'] = "text";  
-                        }			
-                        $task->setFromAttributes($task_data);
-
-                        if (array_var($_GET, 'dont_mark_as_read')) {
-                                $is_read = $task->getIsRead(logged_user()->getId());
-                        }
             try {
                 DB::beginWork();
                                 

@@ -21,17 +21,17 @@ if($current_member){
             <table style="width:100%;" cellpadding="0" cellspacing="0" id="dashTableActivity">
 			<?php 
             $c = 0;
-			foreach ($acts['data'] as $k => $activity):
-                                $c++;
-                                $user = $acts['created_by'][$k];
-				$crumbOptions = json_encode($activity->getMembersToDisplayPath());
-				$crumbJs = " og.getCrumbHtml($crumbOptions) ";
-                                $class = "";
-                                $style = "";
-                                if($c > $total){
-                                    $class = "noViewActivity";
-                                    $style = "style='display:none'";
-                                }
+            foreach ($acts['data'] as $k => $activity):
+            $c++;
+            $user = $acts['created_by'][$k];
+            $crumbOptions = json_encode($activity->getMembersToDisplayPath());
+            $crumbJs = " og.getCrumbHtml($crumbOptions) ";
+            $class = "";
+            $style = "";
+            if($c > $total){
+            	$class = "noViewActivity";
+            	$style = "style='display:none'";
+            }
 			?>
 				<tr class=" activity-row <?php echo $c % 2 == 1? '':'dashAltRow';?>  <?php echo $class?>" id="<?php echo "activity-".$c?>" <?php echo $style?>>
                                     <td style="width:32px"><img src="<?php echo $user->getAvatarUrl() ?>" width="32px;"/></td>
@@ -61,7 +61,7 @@ if($current_member){
                         
                         <?php if (count($acts['data']) > $total) :?>
                             <tr>
-                                <td colspan="2" align="right" style="padding:20px 0 5px; width: 20px;">
+                                <td colspan="2" align="right" style="padding:20px 0 5px; width: 20px; color: #003562;">
                                         <span onclick="og.hideActivity('<?php echo $genid?>')" id="hidelnk<?php echo $genid?>" style="cursor:pointer; display:none;" title="<?php echo lang('hide') ?>"><?php echo lang('hide') ?></span>
                                         <span onclick="og.showActivity('<?php echo $genid?>')" id="showlnk<?php echo $genid?>" style="cursor:pointer;" title="<?php echo lang('view more') ?>"><?php echo lang('view more') ?></span>
                                 </td>

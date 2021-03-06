@@ -260,18 +260,23 @@ a.button {
     background-position: 0 36px;
 }
 
-#quick-form a.more  {
-	margin: 10px 0 0 5px;
+#quick-form div.action {
+	margin-top: 2px;
+}
+
+#quick-form a.more {
+	margin: 2px 0 0 5px;
 	float: right;
 }
 
-#quick-form input  {
+#quick-form input {
 	border-radius: 2px;
 	padding: 3px 5px ;
 	margin-bottom: 3px;
 	border: 1px solid #CCC;
 	clear: both ;
 }
+
 #quick-form input[type=text], #quick-form input[type=email] {
 	width:95%;
 }

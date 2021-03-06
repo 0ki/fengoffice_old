@@ -366,7 +366,7 @@ class Contacts extends BaseContacts {
 			$errors[] = lang("invalid email");
 		}
 		if(is_array($errors) && count($errors)) {
-			throw new DAOValidationError($this, $errors);
+			throw new DAOValidationError(self::instance(), $errors);
 		} 
 	}
 	
@@ -392,7 +392,7 @@ class Contacts extends BaseContacts {
 		}
 		
 		if(is_array($errors) && count($errors)) {
-			throw new DAOValidationError($this, $errors);
+			throw new DAOValidationError(self::instance(), $errors);
 		} 
 	}
         

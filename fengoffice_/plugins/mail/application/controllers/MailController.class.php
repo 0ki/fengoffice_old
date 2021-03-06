@@ -403,6 +403,8 @@ class MailController extends ApplicationController {
  			$objects = array_var($_POST, 'linked_objects');
  			$attach_contents = array_var($_POST, 'attach_contents', array());
  			
+ 			$original_email = isset($mail_data['original_id']) ? MailContents::findById($mail_data['original_id']) : null;
+ 			
  			if (is_array($objects)) {
  				$err = 0;
  				$count = -1;
@@ -413,7 +415,7 @@ class MailController extends ApplicationController {
  						$object = Objects::instance()->findObject($split[1]);
  					}else if (count($split) == 4) {
  						if ($split[0] == 'FwdMailAttach') {
- 							$tmp_filename = ROOT . "/tmp/" . logged_user()->getId() . "_" . $mail_data['account_id'] . "_FwdMailAttach_" . $split[3];
+ 							$tmp_filename = ROOT . "/tmp/" . logged_user()->getId() . "_" . ($original_email ? $original_email->getAccountId() : $mail_data['account_id']) . "_FwdMailAttach_" . $split[3];
  							if (is_file($tmp_filename)) {
 	 							$attachments[] = array(
 			 						"data" => file_get_contents($tmp_filename),
@@ -619,7 +621,7 @@ class MailController extends ApplicationController {
 					$object_controller->add_to_members($mail, $member_ids);
 				}
 				$object_controller->link_to_new_object($mail);
-                                $object_controller->add_subscribers($mail);
+				$object_controller->add_subscribers($mail);
 				
 				/*
 				if (array_var($mail_data, 'link_to_objects') != ''){
@@ -1402,133 +1404,158 @@ class MailController extends ApplicationController {
 		} 
 		MailUtilities::parseMail($email->getContent(), $decoded, $parsedEmail, $warnings);
 		if (array_var($_POST,'submit')){
-			try {
-				$ctrl = new ObjectController();
-				$create_task = array_var($classification_data, 'create_task') == 'checked';
-				$canWriteFiles = $this->checkFileWritability($classification_data, $parsedEmail);
-				if ($canWriteFiles) {
-					DB::beginWork();
-					if( $members = json_decode(array_var($_POST, 'members')) ){
-						$ctrl->add_to_members($email, $members);
-					}
-					$conversation = MailContents::getMailsFromConversation($email);
-					
-					foreach ($conversation as $conv_email) {
-						$ctrl->add_to_members($conv_email, $members);
-						MailUtilities::parseMail($conv_email->getContent(), $decoded, $parsedEmail, $warnings);
-						if ($conv_email->getHasAttachments()) {
-							$this->classifyFile($classification_data, $conv_email, $parsedEmail, $members, true);
-						}
-					}
-					DB::commit();
-					flash_success(lang('success classify email'));
-					if ($create_task) {
-						ajx_replace(true);
-						$this->redirectTo('task', 'add_task', array('from_email' => $email->getId(), 'replace' =>  1));
-					} else {
-						ajx_current("back");
-						evt_add("reload mails panel", array());
-					}
-				} else {
-					flash_error(lang("error classifying attachment cant open file"));
-					ajx_current("empty");
-				} // If can write files
-				// Error...
-			} catch(Exception $e) {
-				DB::rollback();
-				flash_error($e->getMessage());
-				ajx_current("empty");
-			} 
+			$members = json_decode(array_var($_POST, 'members'));
+			$this->do_classify_mail($email, $members); 
 		} 
 		tpl_assign('email', $email);
 		tpl_assign('parsedEmail', $parsedEmail);
 	}
+	
+	function do_classify_mail($email, $members, $classification_data = null) {
+		try {
+			$ctrl = new ObjectController();
+			$create_task = false;//array_var($classification_data, 'create_task') == 'checked';
+			
+			if (is_null($classification_data)) {
+				$classification_data = array();
+				MailUtilities::parseMail($email->getContent(), $decoded, $parsedEmail, $warnings);
+				for ($j=0; $j < count(array_var($parsedEmail, "Attachments", array())); $j++) {
+					$classification_data["att_".$j] = true;
+				}
+			}
+			
+			$canWriteFiles = $this->checkFileWritability($classification_data, $parsedEmail);
+			if ($canWriteFiles) {
+				DB::beginWork();
+				if ($members) {
+					$account_owner = Contacts::findById($email->getAccount()->getContactId());
+					$ctrl->add_to_members($email, $members, $account_owner);
+				}
+				$conversation = MailContents::getMailsFromConversation($email);
+				
+				if (count($members) > 0) {
+					$member_instances = Members::findAll(array('conditions' => 'id IN ('.implode(',',$members).')'));
+					foreach ($conversation as $conv_email) {
+						$account_owner = Contacts::findById($conv_email->getAccount()->getContactId());
+						$ctrl->add_to_members($conv_email, $members, $account_owner);
+						MailUtilities::parseMail($conv_email->getContent(), $decoded, $parsedEmail, $warnings);
+						if ($conv_email->getHasAttachments()) {
+							$this->classifyFile($classification_data, $conv_email, $parsedEmail, $member_instances, true);
+						}
+					}
+				}
+				DB::commit();
+				flash_success(lang('success classify email'));
+				if ($create_task) {
+					ajx_replace(true);
+					$this->redirectTo('task', 'add_task', array('from_email' => $email->getId(), 'replace' =>  1));
+				} else {
+					ajx_current("back");
+					evt_add("reload mails panel", array());
+				}
+			} else {
+				flash_error(lang("error classifying attachment cant open file"));
+				ajx_current("empty");
+			} // If can write files
+			// Error...
+		} catch(Exception $e) {
+			DB::rollback();
+			flash_error($e->getMessage());
+			ajx_current("empty");
+		}
+	}
 
-	function classifyFile($classification_data, $email, $parsedEmail, $member, $remove_prev) {
+	function classifyFile($classification_data, $email, $parsedEmail, $members, $remove_prev) {
 		if (!is_array($classification_data)) $classification_data = array();
 
 		if (!isset($parsedEmail["Attachments"])) throw new Exception(lang('no attachments found for email'));
+		
+		$account_owner = Contacts::findById($email->getAccount()->getContactId());
 		
 		for ($c = 0; $c < count($classification_data); $c++) {
 			if (isset($classification_data["att_".$c]) && $classification_data["att_".$c]) {
 				$att = $parsedEmail["Attachments"][$c];
 				$fName = str_starts_with($att["FileName"], "=?") ? iconv_mime_decode($att["FileName"], 0, "UTF-8") : utf8_safe($att["FileName"]);
 				if (trim($fName) == "" && strlen($att["FileName"]) > 0) $fName = utf8_encode($att["FileName"]);
-                                
-                                $extension = get_file_extension(basename($fName));
-                                $type_file_allow = FileTypes::getByExtension($extension);
-                                if(!($type_file_allow instanceof FileType) || $type_file_allow->getIsAllow() == 1){                                    
-                                        try {
-                                                //$sql = "SELECT o.id FROM ".TABLE_PREFIX."objects o,".TABLE_PREFIX."project_files f WHERE o.id = f.object_id AND f.mail_id = ".$email->getId()." AND o.name = ".DB::escape($fName)."";
-                                                $sql = "SELECT o.id FROM ".TABLE_PREFIX."objects o,".TABLE_PREFIX."project_files f WHERE o.id = f.object_id AND o.name = ".DB::escape($fName)."";
-                                                $db_res = DB::execute($sql);
-                                                $row = $db_res->fetchRow();
-                                                
-                                                $file = ProjectFiles::findById($row['id']);
-                                                DB::beginWork();
-                                                if ($file == null){
-                                                        $fileIsNew = true;
-                                                        $file = new ProjectFile();
-                                                        $file->setFilename($fName);
-                                                        $file->setIsVisible(true);
-                                                        $file->setMailId($email->getId());
-                                                        $file->save();
 
-                                                        $object_controller = new ObjectController();
-                                                        $object_controller->add_to_members($file, array());
-                                                } else {
-                                                        $fileIsNew = false;
-                                                }
+				$extension = get_file_extension(basename($fName));
+				$type_file_allow = FileTypes::getByExtension($extension);
+				if(!($type_file_allow instanceof FileType) || $type_file_allow->getIsAllow() == 1){
+					try {
+						//$sql = "SELECT o.id FROM ".TABLE_PREFIX."objects o,".TABLE_PREFIX."project_files f WHERE o.id = f.object_id AND f.mail_id = ".$email->getId()." AND o.name = ".DB::escape($fName)."";
+						$sql = "SELECT o.id FROM ".TABLE_PREFIX."objects o,".TABLE_PREFIX."project_files f WHERE o.id = f.object_id AND o.name = ".DB::escape($fName)."";
+						$db_res = DB::execute($sql);
+						$row = $db_res->fetchRow();
 
-                                                if($remove_prev){
-                                                    ObjectMembers::delete('`object_id` = ' . $file->getId() . ' AND `member_id` IN (SELECT `m`.`id` FROM `'.TABLE_PREFIX.'members` `m` WHERE `m`.`dimension_id` = '.$member->getDimensionId().')');
-                                                }
+						$file = ProjectFiles::findById($row['id']);
+						DB::beginWork();
+						if ($file == null){
+							$fileIsNew = true;
+							$file = new ProjectFile();
+							$file->setFilename($fName);
+							$file->setIsVisible(true);
+							$file->setMailId($email->getId());
+							$file->save();
 
-                                                $file->addToMembers(array($member));  
+							$object_controller = new ObjectController();
+							$object_controller->add_to_members($file, array(), $account_owner);
+						} else {
+							$fileIsNew = false;
+						}
 
-                                                $enc = array_var($parsedMail,'Encoding','UTF-8');					
-                                                $ext = utf8_substr($fName, strrpos($fName, '.') + 1, utf8_strlen($fName, $enc), $enc);					
+						if($remove_prev){
+							$dim_ids = array(0);
+							foreach ($members as $m) $dim_ids[$m->getDimensionId()] = $m->getDimensionId();
+							ObjectMembers::delete('`object_id` = ' . $file->getId() . ' AND `member_id` IN (SELECT `m`.`id` FROM `'.TABLE_PREFIX.'members` `m` WHERE `m`.`dimension_id` IN ('.implode(',',$dim_ids).'))');
+						}
 
-                                                $mime_type = '';
-                                                if (Mime_Types::instance()->has_type($att["content-type"])) {
-                                                        $mime_type = $att["content-type"]; //mime type is listed & valid
-                                                } else {
-                                                        $mime_type = Mime_Types::instance()->get_type($ext); //Attempt to infer mime type
-                                                }
-                                                
-                                                $tempFileName = ROOT ."/tmp/". logged_user()->getId()."x".gen_id();
-                                                $fh = fopen($tempFileName, 'w') or die("Can't open file");
-                                                fwrite($fh, $att["Data"]);
-                                                fclose($fh);
+						$file->addToMembers($members);
+						$file->addToSharingTable();
 
-                                                $fileToSave = array(
-                                                "name" => $fName, 
-                                                "type" => $mime_type, 
-                                                "tmp_name" => $tempFileName,
-                                                "error" => 0,
-                                                "size" => filesize($tempFileName));
+						$enc = array_var($parsedMail,'Encoding','UTF-8');
+						$ext = utf8_substr($fName, strrpos($fName, '.') + 1, utf8_strlen($fName, $enc), $enc);
 
-                                                if ($fileIsNew) {
-                                                        $revision = $file->handleUploadedFile($fileToSave, true, lang('attachment from email', $email->getSubject())); // handle uploaded file
-                                                        ApplicationLogs::createLog($file, ApplicationLogs::ACTION_ADD);
-                                                }else{
-                                                        $revision = $file->getLastRevision();
-                                                        $new_hash = hash_file("sha256", $tempFileName);
-                                                        if ($revision->getHash() != $new_hash) {
-                                                                $revision = $file->handleUploadedFile($fileToSave, true, lang('attachment from email', $email->getSubject())); // handle uploaded file
-                                                                ApplicationLogs::createLog($file, ApplicationLogs::ACTION_ADD);
-                                                        }                                                        
-                                                }
-                                                DB::commit();
-                                                // Error...
-                                        } catch(Exception $e) {
-                                                DB::rollback();
-                                                flash_error($e->getMessage());
-                                                ajx_current("empty");
-                                        }                                    
-                                }else{
-                                    flash_error(lang('file extension no allow classify', $fName));
-                                }
+						$mime_type = '';
+						if (Mime_Types::instance()->has_type($att["content-type"])) {
+							$mime_type = $att["content-type"]; //mime type is listed & valid
+						} else {
+							$mime_type = Mime_Types::instance()->get_type($ext); //Attempt to infer mime type
+						}
+
+						$tempFileName = ROOT ."/tmp/". logged_user()->getId()."x".gen_id();
+						$fh = fopen($tempFileName, 'w') or die("Can't open file");
+						fwrite($fh, $att["Data"]);
+						fclose($fh);
+
+						$fileToSave = array(
+							"name" => $fName,
+							"type" => $mime_type,
+							"tmp_name" => $tempFileName,
+							"error" => 0,
+							"size" => filesize($tempFileName)
+						);
+
+						if ($fileIsNew) {
+							$revision = $file->handleUploadedFile($fileToSave, true, lang('attachment from email', $email->getSubject())); // handle uploaded file
+							ApplicationLogs::createLog($file, ApplicationLogs::ACTION_ADD);
+						}else{
+							$revision = $file->getLastRevision();
+							$new_hash = hash_file("sha256", $tempFileName);
+							if ($revision->getHash() != $new_hash) {
+								$revision = $file->handleUploadedFile($fileToSave, true, lang('attachment from email', $email->getSubject())); // handle uploaded file
+								ApplicationLogs::createLog($file, ApplicationLogs::ACTION_ADD);
+							}
+						}
+						DB::commit();
+						// Error...
+					} catch(Exception $e) {
+						DB::rollback();
+						flash_error($e->getMessage());
+						ajx_current("empty");
+					}
+				}else{
+					flash_error(lang('file extension no allow classify', $fName));
+				}
 				
 				if (isset($tempFileName) && is_file($tempFileName)) unlink($tempFileName);
 			}

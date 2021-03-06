@@ -28,7 +28,7 @@
 	'help manual' => 'Aide et Assistance Intranet',
 	'about us' => '',
 	'add ticket' => '',
-	'add ticket desc' => "",
+	'add ticket desc' => '',
 	'success enable all context help' => 'Tous les messages d\'aides ont été réactivés.',
 	'success enable context help' => 'L\'aide contextuelle est désormais affichée.',
 	'success disable context help' => 'L\'aide contextuelle est désormais cachée.',

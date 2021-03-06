@@ -310,9 +310,9 @@ class AccountController extends ApplicationController {
 			// Permission Groups
 			$groups = PermissionGroups::getNonPersonalSameLevelPermissionsGroups('`parent_id`,`id` ASC');
 			tpl_assign('groups', $groups);
-			$roles= SystemPermissions::getAllRolesPermissions();
+			$roles = SystemPermissions::getAllRolesPermissions();
 			tpl_assign('roles', $roles);
-			$tabs= TabPanelPermissions::getAllRolesModules();
+			$tabs = TabPanelPermissions::getAllRolesModules();
 			tpl_assign('tabs_allowed', $tabs);
 			tpl_assign('guest_groups', PermissionGroups::instance()->getGuestPermissionGroups());
 		}

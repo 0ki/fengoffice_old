@@ -12,6 +12,7 @@
   define('DATA_TYPE_ARRAY',    'ARRAY');
   define('DATA_TYPE_RESOURCE', 'RESOURCE');
   define('DATA_TYPE_OBJECT',   'OBJECT');
+  define('DATA_TYPE_WSCOLOR',  'WSCOLOR');
   
   
   define('EMPTY_IMAGE', 's.gif');

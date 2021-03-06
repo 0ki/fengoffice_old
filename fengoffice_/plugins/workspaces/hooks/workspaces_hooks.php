@@ -64,3 +64,28 @@ function workspaces_override_member_color($member, &$color) {
 		}
 	}
 }
+
+function workspaces_quickadd_extra_fields($parameters) {
+	if (array_var($parameters, 'dimension_id') == Dimensions::findByCode("workspaces")->getId()) {
+		$parent_member = Members::findById(array_var($parameters, 'parent_id'));
+		if ($parent_member instanceof Member && $parent_member->getObjectId() > 0) {
+			$dimension_object = Objects::findObject($parent_member->getObjectId());
+			
+			$fields = $dimension_object->manager()->getPublicColumns();
+			$color_columns = array();
+			foreach ($fields as $f) {
+				if ($f['type'] == DATA_TYPE_WSCOLOR) {
+					$color_columns[] = $f['col'];
+				}
+			}
+			foreach ($color_columns as $col) {
+				foreach ($fields as &$f) {
+					if ($f['col'] == $col && $dimension_object->columnExists($col)) {
+						$color_code = $dimension_object->getColumnValue($col);
+						echo '<input type="hidden" name="dim_obj['.$col.']" value="'.$color_code.'" />';
+					}
+				}
+			}
+		}
+	}
+}

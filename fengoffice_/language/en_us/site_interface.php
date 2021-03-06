@@ -567,7 +567,7 @@ return array(
   'do complete' => 'Complete',
 
   'task data' => 'Task data',
-  'search in all workspaces' => 'Search in all dimensions',
+  'search in all workspaces' => 'Search everywhere',
 
   'paused time' => 'Paused time',
   'total pause time' => 'Total pause time',

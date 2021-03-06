@@ -277,14 +277,23 @@ class ReportingController extends ApplicationController {
 		tpl_assign('has_billing', BillingCategories::count() > 0);
 	}
 
-	function total_task_times($report_data = null, $task = null){
+	function total_task_times_print(){
+		$this->setLayout("html");
+
+		$report_data = json_decode(str_replace("'",'"', array_var($_POST, 'post')),true);
+
+		$this->total_task_times($report_data, null, true);
+		$this->setTemplate('report_printer');
+	}
+	
+	function total_task_times($report_data = null, $task = null, $csv = null){
 		if (!$report_data) {
 			$report_data = array_var($_POST, 'report');
 			// save selections into session
 			$_SESSION['total_task_times_report_data'] = $report_data;
 		}
 		
-		if (array_var($_GET, 'export') == 'csv') {
+		if (array_var($_GET, 'export') == 'csv' || (isset($csv) && $csv == true)){
 			$context = build_context_array(array_var($_REQUEST, 'context'));
 			$report_data = json_decode(str_replace("'",'"', $_REQUEST['parameters']), true);
 			tpl_assign('context', $context);
@@ -381,14 +390,16 @@ class ReportingController extends ApplicationController {
 		tpl_assign('end_time', $et);
 		tpl_assign('user', $user);
 		tpl_assign('post', $report_data);
-		tpl_assign('template_name', 'total_task_times');
 		tpl_assign('title', lang('task time report'));
 		tpl_assign('allow_export', false);
-		if (array_var($_GET, 'export') == 'csv') {
+		if (array_var($_GET, 'export') == 'csv' || (isset($csv) && $csv == true)) {	
+			tpl_assign('template_name', 'total_task_times_csv');		
 			$this->setTemplate('total_task_times_csv');
-			ajx_current("empty");
+		//	ajx_current("empty");
+		}else{
+			tpl_assign('template_name', 'total_task_times');
+		 	$this->setTemplate('report_wrapper');
 		}
-		else $this->setTemplate('report_wrapper');
 	}
 
 	function total_task_times_by_task_print(){
@@ -841,7 +852,10 @@ class ReportingController extends ApplicationController {
 	}
 	
 	function generateCSVReport($report, $results){
-                $results['columns'][] = lang("status");
+		
+		$ot = ObjectTypes::findById($report->getReportObjectTypeId());
+		Hook::fire("report_header", $ot, $results['columns']);
+		
 		$types = self::get_report_column_types($report->getId());
 		$filename = str_replace(' ', '_',$report->getObjectName()).date('_YmdHis');
 		header('Expires: 0');
@@ -855,15 +869,15 @@ class ReportingController extends ApplicationController {
 		}
 		echo "\n";
 		foreach($results['rows'] as $row) {
-                    $i = 0;
+			$i = 0;
 			foreach($row as $k => $value){
 				if ($k == 'object_type_id') continue;
-				$db_col = isset($results['db_columns'][$results['columns'][$i]]) ? $results['db_columns'][$results['columns'][$i]] : '';
-                                
-                                $cell = format_value_to_print($db_col, html_to_text($value), ($k == 'link'?'':array_var($types, $k)), array_var($row, 'object_type_id'), '', is_numeric(array_var($results['db_columns'], $k)) ? "Y-m-d" : user_config_option('date_format'));
+				$db_col = isset($results['columns'][$i]) && isset($results['db_columns'][$results['columns'][$i]]) ? $results['db_columns'][$results['columns'][$i]] : '';
+
+				$cell = format_value_to_print($db_col, html_to_text($value), ($k == 'link'?'':array_var($types, $k)), array_var($row, 'object_type_id'), '', is_numeric(array_var($results['db_columns'], $k)) ? "Y-m-d" : user_config_option('date_format'));
 				$cell = iconv(mb_internal_encoding(),"ISO-8859-1",html_entity_decode($cell ,ENT_COMPAT));
 				echo $cell.';';
-                                $i++;
+				$i++;
 			}
 			echo "\n";
 		}
@@ -871,12 +885,15 @@ class ReportingController extends ApplicationController {
 	}
 	
 	function generatePDFReport(Report $report, $results){
-                $results['columns'][] = lang("status");
+		
 		$types = self::get_report_column_types($report->getId());
 		$ot = ObjectTypes::findById($report->getReportObjectTypeId());
 		eval('$managerInstance = ' . $ot->getHandlerClass() . "::instance();");
 		$externalCols = $managerInstance->getExternalColumns();
 		$filename = str_replace(' ', '_',$report->getObjectName()).date('_YmdHis');
+		
+		Hook::fire("report_header", $ot, $results['columns']);
+		
 		$pageLayout = $_POST['pdfPageLayout'];
 		$fontSize = $_POST['pdfFontSize'];
 		include_once(LIBRARY_PATH . '/pdf/fpdf.php');
@@ -886,15 +903,15 @@ class ReportingController extends ApplicationController {
 		$pdf->SetFont('Arial','',$fontSize);
 		$pdf->Cell(80);
 		$report_title = iconv(mb_internal_encoding(), "ISO-8859-1", html_entity_decode($report->getObjectName(), ENT_COMPAT));
-                $pdf->Cell(30, 10, $report_title);
-                $pdf->Ln(20);
-                $colSizes = array();
-                $maxValue = array();
-                $fixed_col_sizes = array();
+		$pdf->Cell(30, 10, $report_title);
+		$pdf->Ln(20);
+		$colSizes = array();
+		$maxValue = array();
+		$fixed_col_sizes = array();
 		foreach($results['rows'] as $row) {
-			$i = 0;			
-                        array_shift ($row);
-			foreach($row as $k => $value){	
+			$i = 0;
+			array_shift ($row);
+			foreach($row as $k => $value){
 				if(!isset($maxValue[$i])) $maxValue[$i] = '';
 				if(strlen(strip_tags($value)) > strlen($maxValue[$i])){
 					$maxValue[$i] = strip_tags($value);
@@ -904,9 +921,9 @@ class ReportingController extends ApplicationController {
     	}
     	$k=0;
     	foreach ($maxValue as $str) {
-    		$col_title_len = $pdf->GetStringWidth($results['columns'][$k]);
+    		$col_title_len = $pdf->GetStringWidth(array_var($results['columns'], $k));
     		$colMaxTextSize = max($pdf->GetStringWidth($str), $col_title_len);
-    		$db_col = $results['columns'][$k];
+    		$db_col = array_var($results['columns'], $k);
     		$colType = array_var($types, array_var($results['db_columns'], $db_col, ''), '');
     		if($colType == DATA_TYPE_DATETIME && !($report->getObjectTypeName() == 'event' && $results['db_columns'][$db_col] == 'start')){
     			$colMaxTextSize = $colMaxTextSize / 2;
@@ -937,14 +954,14 @@ class ReportingController extends ApplicationController {
 			$i = 0;
 			$more_lines = array();
 			$col_offsets = array();
-			foreach($row as $k => $value){                                
-                                if ($k == 'object_type_id') continue;
-				$db_col = isset($results['db_columns'][$results['columns'][$i]]) ? $results['db_columns'][$results['columns'][$i]] : '';
-                                
-                                $cell = format_value_to_print($db_col, html_to_text($value), ($k == 'link'?'':array_var($types, $k)), array_var($row, 'object_type_id'), '', is_numeric(array_var($results['db_columns'], $k)) ? "Y-m-d" : user_config_option('date_format'));
-							
+			foreach($row as $k => $value){
+				if ($k == 'object_type_id') continue;
+				$db_col = isset($results['columns'][$i]) && isset($results['db_columns'][$results['columns'][$i]]) ? $results['db_columns'][$results['columns'][$i]] : '';
+
+				$cell = format_value_to_print($db_col, html_to_text($value), ($k == 'link'?'':array_var($types, $k)), array_var($row, 'object_type_id'), '', is_numeric(array_var($results['db_columns'], $k)) ? "Y-m-d" : user_config_option('date_format'));
+					
 				$cell = iconv(mb_internal_encoding(), "ISO-8859-1", html_entity_decode($cell, ENT_COMPAT));
-				
+
 				$splitted = self::split_column_value($cell, $max_char_len[$i]);
 				$cell = $splitted[0];
 				if (count($splitted) > 1) {
@@ -1274,12 +1291,13 @@ class ReportingController extends ApplicationController {
 
 		foreach ($columns as $col) {
 			$cp_id = $col->getCustomPropertyId();
-			if ($cp_id == 0)
-			$col_types[$col->getFieldName()] = $manager->getColumnType($col->getFieldName());
-			else {
+			if ($cp_id == 0) {
+				$col_types[$col->getFieldName()] = $manager->getColumnType($col->getFieldName());
+			} else {
 				$cp = CustomProperties::getCustomProperty($cp_id);
-				if ($cp)
-				$col_types[$cp->getName()] = $cp->getOgType();
+				if ($cp) {
+					$col_types[$cp->getName()] = $cp->getOgType();
+				}
 			}
 		}
 

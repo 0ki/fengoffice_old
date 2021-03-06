@@ -150,6 +150,13 @@ class ObjectController extends ApplicationController {
 	function add_to_members($object, $member_ids, $user = null, $check_allowed_members = true) {
 		if (!$user instanceof Contact) $user = logged_user();
 		
+		// clean member_ids
+		$tmp_mids = array();
+		foreach ($member_ids as $mid) {
+			if (!is_null($mid) && trim($mid) != "") $tmp_mids[] = $mid;
+		}
+		$member_ids = $tmp_mids;
+		
 		if ($user->isGuest()) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
@@ -201,7 +208,7 @@ class ObjectController extends ApplicationController {
 			}
 		}
 		
-		$object->addToMembers($validMembers);
+		$object->addToMembers($validMembers, true);
 		
 		Hook::fire ('after_add_to_members', $object, $null);
 		

@@ -170,7 +170,7 @@ $visible_cps = CustomProperties::countVisibleCustomPropertiesByObjectType($objec
 ?>
 	<form id="<?php echo $genid ?>submit-edit-form" class="add-event" style="height:100%;background-color:white" class="internalForm" action="<?php echo $form_view_url; ?>" method="post">
 	<input type="hidden" id="event[pm]" name="event[pm]" value="<?php echo $pm?>">
-        <input id="<?php echo $genid?>view_related" type="hidden" name="view_related" value="<?php echo $event_related ?>" />
+        <input id="<?php echo $genid?>view_related" type="hidden" name="view_related" value="<?php echo isset($event_related) ? $event_related : ""; ?>" />
         <input id="<?php echo $genid?>type_related" type="hidden" name="type_related" value="only" />
 	<div class="event">	
 	<div class="coInputHeader">

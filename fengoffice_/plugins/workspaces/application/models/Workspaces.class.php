@@ -22,7 +22,7 @@ class Workspaces extends BaseWorkspaces {
             ),
             array(
             	'col' => 'color',
-            	'type' => 'WSCOLOR', 
+            	'type' => DATA_TYPE_WSCOLOR, 
             )
         );
        

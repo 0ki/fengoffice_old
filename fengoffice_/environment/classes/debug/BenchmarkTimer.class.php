@@ -270,7 +270,7 @@
   * @return null
   */
   function benchmark_timer_start() {
-    $timer =& BenchmarkTimer::instance();
+    $timer = BenchmarkTimer::instance();
     $timer->start();
   } // benchmark_timer_start
   
@@ -294,7 +294,7 @@
   * @return null
   */
   function benchmark_timer_set_marker($marker_name) {
-    $timer =& BenchmarkTimer::instance();
+    $timer = BenchmarkTimer::instance();
     $timer->setMarker($marker_name);
   } // benchmark_timer_set_marker
   

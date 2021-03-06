@@ -17,6 +17,12 @@ if (!member_selector) var member_selector = {};
 		}
 	}
 	
+	$tmp = array();
+	foreach ($initial_selected_members as $ism) {
+		if ($ism->getDimension()->getIsManageable()) $tmp[] = $ism;
+	}
+	$initial_selected_members = $tmp;
+	
 	$members_dimension = array();
 	$sel_mem_ids = array();
 	foreach ($dimensions as $dimension) :
@@ -30,8 +36,8 @@ if (!member_selector) var member_selector = {};
 
 		if (!$dimension['is_manageable']) continue;
 		
-		$is_required = $dimension['is_required'];				
-		$dimension_name = $dimension['dimension_name'];				
+		$is_required = $dimension['is_required'];
+		$dimension_name = $dimension['dimension_name'];
 		if ($is_required) $dimension_name .= " *";
 		
 		if (is_array($simulate_required) && in_array($dimension_id, $simulate_required)) $is_required = true;
@@ -61,9 +67,10 @@ if (!member_selector) var member_selector = {};
 		<div class="selector-body" id="<?php echo $expgenid?>selector-body-dim<?php echo $dimension_id ?>">
 			<div id="<?php echo $genid; ?>selected-members-dim<?php echo $dimension_id?>" class="selected-members">
 	
-	<?php if (count($dimension_selected_members) > 0) : 
+	<?php
+		$dimension_has_selection = false; 
+		if (count($dimension_selected_members) > 0) : 
 			$alt_cls = "";
-			$dimension_has_selection = false;
 			foreach ($dimension_selected_members as $selected_member) :
 				$allowed_members = array_keys($members_dimension);
 				if (!in_array($selected_member->getId(), $allowed_members)) continue;

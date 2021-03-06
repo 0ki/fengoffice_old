@@ -30,13 +30,11 @@ function langA($name, $args) {
 			$value = $base->lang ( $name );
 		}
 		if (is_null ( $value )) {
+			$value = Localization::instance ()->lang ( str_replace ( " ", "_", $name ) );
 			if (is_null ( $value )) {
-				$value = Localization::instance ()->lang ( str_replace ( " ", "_", $name ) );
+				$value = Localization::instance ()->lang ( str_replace ( "_", " ", $name ) );
 				if (is_null ( $value )) {
-					$value = Localization::instance ()->lang ( str_replace ( "_", " ", $name ) );
-					if (is_null ( $value )) {
-						return "Missing lang: $name";
-					}
+					return "Missing lang: $name";
 				}
 			}
 		}

@@ -39,7 +39,7 @@ og.FileManager = function() {
 					var d = this.reader.jsonData;
 					
 					if (d.totalCount == 0) {
-						//this.fireEvent('messageToShow', lang("no objects message", lang("documents"), ws));
+						this.fireEvent('messageToShow', lang("no objects message", lang("documents"), lang('context')));
 					} else if (d.files.length == 0) {
 						this.fireEvent('messageToShow', lang("no more objects message", lang("documents")));
 					} else {
@@ -48,9 +48,9 @@ og.FileManager = function() {
 					Ext.getCmp('file-manager').getView().focusRow(og.lastSelectedRow.documents+1);
 					
 					Ext.getCmp('file-manager').objectTypeId = d.objType;
-                                        
-                                        var sm = Ext.getCmp('file-manager').getSelectionModel();
-                                        sm.clearSelections();
+					
+					var sm = Ext.getCmp('file-manager').getSelectionModel();
+					sm.clearSelections();
 				}
 			}
 		});

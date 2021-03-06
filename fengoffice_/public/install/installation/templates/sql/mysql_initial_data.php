@@ -54,7 +54,7 @@ INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`
 	('general', 'use tasks dependencies', 0, 'BoolConfigHandler', 0, 0, NULL),
     ('general', 'untitled_notes', '0', 'BoolConfigHandler', '0', '0', NULL),
     ('general', 'repeating_task', '0', 'BoolConfigHandler', '0', '0', NULL),
-    ('general', 'working_days', '1,2,3,4,5', 'StringConfigHandler', '0', '0', NULL),
+    ('general', 'working_days', '1,2,3,4,5,6,7', 'StringConfigHandler', '0', '0', NULL),
     ('general', 'wysiwyg_tasks', '1', 'BoolConfigHandler', '0', '0', NULL),
     ('general', 'wysiwyg_messages', '1', 'BoolConfigHandler', '0', '0', NULL),
     ('general', 'wysiwyg_projects', '0', 'BoolConfigHandler', '0', '0', NULL),

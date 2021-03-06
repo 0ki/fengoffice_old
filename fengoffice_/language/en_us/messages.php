@@ -647,6 +647,12 @@
     'log edit users' => 'user {0} edited',
   	'log delete users' => 'user {0} deleted',
   	'log add users' => 'user {0} added',
+  	'log login contact data' => 'user {0} logged from IP: {1}',
+  	'log login contact' => 'user {0} logged',
+    'log logout contact data' => 'user {0} logged out',  
+    'log edit contact' => 'user {0} edited',
+  	'log delete contact' => 'user {0} deleted',
+  	'log add contact' => 'user {0} added',
   
   	'log read projectfiles' => 'Viewed \'{0}\'',
   	'log download projectfiles' => 'Downloaded \'{0}\'',

@@ -678,6 +678,28 @@ class MemberController extends ApplicationController {
 					$field['val'] = $value;
 				}
 			}
+		} else {
+			// inherit color from parent
+			$color_columns = array();
+			foreach ($fields as $f) {
+				if ($f['type'] == DATA_TYPE_WSCOLOR) {
+					$color_columns[] = $f['col'];
+				}
+			}
+			$parent_id = get_id('parent_id');
+			if (count($color_columns) > 0 && $parent_id > 0) {
+				$parent_member = Members::findById($parent_id);
+				if ($parent_member instanceof Member) {
+					$dimension_object = Objects::findObject($parent_member->getObjectId());
+					foreach ($color_columns as $col) {
+						foreach ($fields as &$f) {
+							if ($f['col'] == $col && $dimension_object->columnExists($col)) {
+								$f['val'] = $dimension_object->getColumnValue($col);
+							}
+						}
+					}
+				}
+			}
 		}
 
 		$data = array( 'fields' => $fields, 'title' => lang($object_type->getName()) );
@@ -1121,20 +1143,20 @@ class MemberController extends ApplicationController {
 				$obj->addToMembers(array($member));
 				$obj->addToSharingTable();
 				$objects[] = $obj;
-                                
-                                if ($obj instanceof MailContent) {
-                                        $conversation = MailContents::getMailsFromConversation($obj);
-                                        foreach ($conversation as $conv_email) {
-                                                if (array_var($_POST, 'attachment') && $conv_email->getHasAttachments()) {
-                                                        MailUtilities::parseMail($conv_email->getContent(), $decoded, $parsedEmail, $warnings);
-                                                        $classification_data = array();
-                                                        for ($j=0; $j < count(array_var($parsedEmail, "Attachments", array())); $j++) {
-                                                                $classification_data["att_".$j] = true;		
-                                                        }
-                                                        MailController::classifyFile($classification_data, $conv_email, $parsedEmail, $member, array_var($_POST, 'remove_prev'));
-                                                }
-                                        }
-                                }
+
+				if ($obj instanceof MailContent) {
+					$conversation = MailContents::getMailsFromConversation($obj);
+					foreach ($conversation as $conv_email) {
+						if (array_var($_POST, 'attachment') && $conv_email->getHasAttachments()) {
+							MailUtilities::parseMail($conv_email->getContent(), $decoded, $parsedEmail, $warnings);
+							$classification_data = array();
+							for ($j=0; $j < count(array_var($parsedEmail, "Attachments", array())); $j++) {
+								$classification_data["att_".$j] = true;
+							}
+							MailController::classifyFile($classification_data, $conv_email, $parsedEmail, array($member), array_var($_POST, 'remove_prev'));
+						}
+					}
+				}
 			}
 			
 			DB::commit();

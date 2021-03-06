@@ -468,6 +468,8 @@ class MailUtilities {
 			if (count($member_ids) > 0) {
 				$ctrl = new ObjectController();
 				$ctrl->add_to_members($mail, $member_ids, $account_owner);
+				$mail_controller = new MailController();
+				$mail_controller->do_classify_mail($mail, $member_ids);
 			}
 		
 			$user = Contacts::findById($account->getContactId());
@@ -629,24 +631,22 @@ class MailUtilities {
 		$name = $email;
 		$url = "";
 
-		$user = Contacts::getByEmail($email);
-		if ($user instanceof Contact && $user->canSeeUser(logged_user())){
-			$name = $clean ? clean($user->getObjectName()) : $user->getObjectName();
-			$url = $user->getCardUrl();
-		} else {
-			$contact = Contacts::getByEmail($email);
-			if ($contact instanceof Contact && $contact->canView(logged_user()))
-			{
-				$name = $clean ? clean($contact->getObjectName()) : $contact->getObjectName();
-				$url = $contact->getCardUrl();
-			}
+		if (trim($email) == "") return "";
+		if (!is_valid_email($email)) return $email;
+		
+		$contact = Contacts::getByEmail($email);
+		if ($contact instanceof Contact && $contact->canView(logged_user())){
+			$name = $clean ? clean($contact->getObjectName()) : $contact->getObjectName();
+			$url = $contact->getCardUrl();
 		}
 		if ($url != ""){
 			return '<a class="internalLink" href="'.$url.'" title="'.$email.'">'.$name." &lt;$email&gt;</a>";
 		} else {
-			if(!(active_project() instanceof Project ? Contact::canAdd(logged_user(),active_project()) : can_manage_contacts(logged_user()))) {
+			$null = null;
+			if(!Contact::canAdd(logged_user(), active_context(), $null)) {
 				return $email;
 			} else {
+				if (trim($email) == "") return "";
 				$url = get_url('contact', 'add', array('ce' => $email));
 				$to_show = $addr_name == '' ? $email : $addr_name." &lt;$email&gt;";
 				return $to_show . ($add_contact_link ? '&nbsp;<a class="internalLink link-ico ico-add" style="padding-left:12px;" href="'.$url.'" title="'.lang('add contact').'">&nbsp;</a>' : '');

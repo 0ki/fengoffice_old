@@ -25,9 +25,10 @@ og.MemberTree = function(config) {
 	    	ctCls: 'member-quick-form-link', 
 			autoEl: {
 				id: 'quick-form-'+config.dimensionId,
-				tag: 'a', 
-				href: '#', 
-				html: lang('add')+'+',
+				tag: 'a',
+				cls: 'coViewAction ico-add',
+				href: '#',
+				html: lang('add'),
 				onclick: "og.quickForm({ dimensionId: "+config.dimensionId+",type: 'member', treeId: '"+config.id+"', elId: 'quick-form-"+config.dimensionId+"'});"
 			}
 		});

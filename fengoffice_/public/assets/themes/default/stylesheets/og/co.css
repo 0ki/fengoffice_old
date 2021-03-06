@@ -340,13 +340,13 @@
 /* -----  Company  ----- */
 
 .company .coViewHeader {
-  	background: #80AEF0;
-  	border-color: #3581D7;
+  	background: #9CBDEA;
+  	border-color: #579AE8;
   	color: #003E89;
 }
 
 .company .coViewIcon {
-  	background: #ACCEF5;
+  	background: #CFDFF1;
   	border-color: #80AEF0;
 }
 
@@ -355,7 +355,7 @@
 }
 
 .company .coViewClose {
-  	background: #ACCEF5;
+  	background: #CFDFF1;
   	color: #3581D7;
 }
 

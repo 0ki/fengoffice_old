@@ -121,4 +121,11 @@
 	'error add contact from user' => 'Impossible de créer un contact depuis l\'utilisateur.',
 	'zip not supported' => 'Le format ZIP n\'est pas pris en charge par le serveur',
 	'no tag specified' => 'Aucune étiquette spécifiée',
+	'no context permissions to add' => 'Vous n\'avez pas la possibilité d\'ajouter un {0} dans {1}',
+	'error invalid recipients' => 'Certaines adresse email on un problème "{0}": {1}',
+	'error cannot assign task to user' => 'La tâche {0} ne peut pas être assignée à {1}',
+	'no mailAccount error' => 'Vous ne pouvez pas envoyer de mail car vous n\'avez pas de compte email.',
+	'content too long not loaded' => 'Le mail joint ne peut être affiché, mais sera envoyé avec ce mail.',
+	'member name already exists in dimension' => 'Ce membre \'{0}\' existe déjà dans la dimension (traduction approx.)',
+	'must choose at least one member of' => 'Vous devez au moins choisir un membre de {0}.',
 ); ?>

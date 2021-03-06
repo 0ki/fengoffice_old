@@ -27,7 +27,7 @@ ogTasks.selectedMilestone = 0;
 ogTasksTask = function(){
 	this.id;
 	this.title;
-        this.description;
+	this.description;
 	this.createdOn;
 	this.createdBy;
 	this.status = 0;
@@ -54,7 +54,7 @@ ogTasksTask = function(){
 	this.memPath;
 	this.useDueTime = false;
 	this.useStartTime = false;
-        this.multiAssignment = 0;
+	this.multiAssignment = 0;
 	
 	this.createdByName;
 	this.assignedToName;
@@ -72,16 +72,18 @@ ogTasksTask = function(){
 
 ogTasksTask.prototype.flatten = function(){
 	var result = [this];
-	if (this.subtasks.length > 0)
-		for (var i = 0; i < this.subtasks.length; i++)
+	if (this.subtasks.length > 0) {
+		for (var i = 0; i < this.subtasks.length; i++) {
 			result = result.concat(this.subtasks[i].flatten());
+		}
+	}
 	return result;
 }
 
 ogTasksTask.prototype.setFromTdata = function(tdata){
 	this.id = tdata.id;
 	this.title = tdata.t;
-        this.description = tdata.desc;
+	this.description = tdata.desc;
 	this.createdOn = tdata.c;
 	this.createdBy = tdata.cid;
 		
@@ -107,12 +109,12 @@ ogTasksTask.prototype.setFromTdata = function(tdata){
 	if (tdata.members) this.members = tdata.members; else this.members = [];
 	//if (tdata.estimatedTime) this.estimatedTime =  Math.round( tdata.estimatedTime * 10  / 60 ) / 10; else this.estimatedTime = '' ;
 	if (tdata.estimatedTime) this.estimatedTime = tdata.estimatedTime ; else this.estimatedTime = '' ;
-        if (tdata.TimeEstimate) this.TimeEstimate = tdata.TimeEstimate ; else this.TimeEstimate = 0 ;
+	if (tdata.TimeEstimate) this.TimeEstimate = tdata.TimeEstimate ; else this.TimeEstimate = 0 ;
 	if (tdata.depCount) this.depCount = tdata.depCount; else this.depCount = null;
 	if (tdata.memPath) this.memPath = tdata.memPath; else this.memPath = [];
 	if (tdata.udt) this.useDueTime = tdata.udt;
 	if (tdata.ust) this.useStartTime = tdata.ust;
-        if (tdata.multiAssignment) this.multiAssignment = tdata.multiAssignment;
+	if (tdata.multiAssignment) this.multiAssignment = tdata.multiAssignment;
 }
 
 ogTasksMilestone = function(id, title, dueDate, totalTasks, completedTasks, isInternal, isUrgent){

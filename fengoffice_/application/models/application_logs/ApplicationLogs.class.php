@@ -207,37 +207,34 @@ class ApplicationLogs extends BaseApplicationLogs {
 		
 		return $logs;
 	} // getObjectLogs
-        
-        static function getLastActivities() {
-            $members = active_context_members(false); // Context Members Ids
-            $options = explode(",",user_config_option("filters_dashboard",null,null,true));
-            
-            $extra_conditions = "action <> 'login' AND action <> 'logout' AND action <> 'subscribe' ";
-            if($options[1] == 0){//no view timeslot
-                $extra_conditions .= "AND action <> 'open' AND action <> 'close' AND ((action <> 'add' OR action <> 'edit' OR action <> 'delete') AND object_name NOT LIKE 'Timeslot%')";
-            }
-            
-            $members_sql = "";
-            if(count($members) > 0){
-                $members_sql = "rel_object_id IN (SELECT object_id FROM " . TABLE_PREFIX . "object_members om WHERE member_id IN (" . implode ( ',', $members ) . ")  
-                                GROUP BY object_id
-                                HAVING count(member_id) = ".count($members).")";
-            }
-            
-            $permissions_sql = '';
-//            $permissions_sql = "AND rel_object_id IN ( 
-//    			SELECT object_id FROM ".TABLE_PREFIX."sharing_table
-//    			WHERE group_id  IN (
-//	     			SELECT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups WHERE contact_id = ".logged_user()->getId()."
-//				)
-//			)";
-            
-            $condition = ($members_sql != "" ? $members_sql . " AND " : "") . $extra_conditions . $permissions_sql;
-            return ApplicationLogs::findAll(array( 
-                "condition" => $condition,
-                "order" => "created_on DESC",
-                "limit" => "100"
-            ));
+
+	static function getLastActivities() {
+		$members = active_context_members(false); // Context Members Ids
+		$options = explode(",",user_config_option("filters_dashboard",null,null,true));
+
+		$extra_conditions = "action <> 'login' AND action <> 'logout' AND action <> 'subscribe' ";
+		if($options[1] == 0){//no view timeslot
+			$extra_conditions .= "AND action <> 'open' AND action <> 'close' AND ((action <> 'add' OR action <> 'edit' OR action <> 'delete') AND object_name NOT LIKE 'Timeslot%')";
+		}
+
+		$members_sql = "";
+		if(count($members) > 0){
+			$members_sql = "rel_object_id IN (
+				SELECT object_id FROM " . TABLE_PREFIX . "object_members om WHERE member_id IN (" . implode ( ',', $members ) . ")
+				GROUP BY object_id HAVING count(member_id) = ".count($members).")";
+		}
+
+		$permissions_sql = "AND rel_object_id IN (
+			SELECT object_id FROM ".TABLE_PREFIX."sharing_table
+			WHERE group_id  IN (SELECT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups WHERE contact_id = ".logged_user()->getId().")
+		)";
+
+		$condition = ($members_sql != "" ? $members_sql . " AND " : "") . $extra_conditions . $permissions_sql;
+		return ApplicationLogs::findAll(array(
+			"condition" => $condition,
+			"order" => "created_on DESC",
+			"limit" => "100"
+		));
 	}
 
 } // ApplicationLogs

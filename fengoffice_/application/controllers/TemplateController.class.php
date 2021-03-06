@@ -528,7 +528,7 @@ class TemplateController extends ApplicationController {
 			if ($copy instanceof ProjectTask) {
 				foreach($copy->getOpenSubTasks(false) as $m_task){
 					if ($m_task->getAssignedTo() instanceof Contact) {
-						$m_task->subscribeUser($copy->getAssignedTo());
+						$m_task->subscribeUser($m_task->getAssignedTo());
 					}
 				}
 				if ($copy->getAssignedTo() instanceof Contact) {
@@ -537,7 +537,7 @@ class TemplateController extends ApplicationController {
 			} else if ($copy instanceof ProjectMilestone) {
 				foreach($copy->getTasks(false) as $m_task){
 					if ($m_task->getAssignedTo() instanceof Contact) {
-						$m_task->subscribeUser($copy->getAssignedTo());
+						$m_task->subscribeUser($m_task->getAssignedTo());
 					}
 				}
 			}

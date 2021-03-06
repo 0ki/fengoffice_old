@@ -24,13 +24,13 @@
 	</div>
 <?php endif;?>
 	<div class="extra-fields" >
-		<?php Hook::fire("quickadd_extra_fields", $dimension_id, $ret)?>
+		<?php Hook::fire("quickadd_extra_fields", array('dimension_id' => $dimension_id, 'parent_id' => $parent_member_id), $ret)?>
 	</div>
 
 	<div class="action">
 		<input type="submit" class="submit" value="<?php echo lang("save")?>" />
 		<?php foreach ($editUrls as $k => $url) : ?>
-			<a onclick="return false;" class="object-type-<?php echo $k ?> more" href="<?php echo $url  ?>"><?php echo lang ('more') ?>>> </a>
+			<a onclick="return false;" class="object-type-<?php echo $k ?> more coViewAction ico-edit" href="<?php echo $url ?>"><?php echo lang ('details') ?></a>
 		<?php endforeach;?>
 	</div>
 </form>

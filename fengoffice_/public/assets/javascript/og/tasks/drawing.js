@@ -140,30 +140,39 @@ var rx__TasksDrag = {
 	},
 	parametersFromTask: function(task) {
 		var parameters = [];
-		/* // optional //
-		parameters["parent_id"] = parentField.value;
-		parameters["hours"] = hoursPanel.value;
-		parameters["task_start_date"] = startPanel.getValue().format(lang('date format'));
-		parameters["task_due_date"] = duePanel.getValue().format(lang('date format'));
-		parameters["notify"] = true;
-		parameters["text"] = description.value;		*/
 		
 		// mandatory
 		parameters["assigned_to_contact_id"] = task.assignedToId;
 		parameters["milestone_id"] = task.milestoneId;
 		parameters["priority"] = task.priority;
 		parameters["title"] = task.title;
+		parameters["text"] = task.description;
+		
+		var ehours = Math.floor(task.TimeEstimate / 60);
+		var emins = task.TimeEstimate - ehours*60;
+		parameters["hours"] = ehours;
+		parameters["minutes"] = emins;
 		
 		// add dates to parameters
 		if (task.dueDate) {
 			var d1 = new Date();
-			d1.setTime(task.dueDate * 1000);
+			var seconds = task.dueDate + (task.useDueTime ? -og.loggedUser.tz * 3600 : 0);
+			d1.setTime(seconds * 1000);
 			parameters["task_due_date"] = d1.format(og.preferences['date_format']);
+			if (task.useDueTime) {
+				parameters["use_due_time"] = true;
+				parameters["task_due_time"] = d1.format(og.config.time_format_use_24_duetime);
+			}
 		}
 		if (task.startDate) {
 			var d2 = new Date();
-			d2.setTime(task.startDate * 1000);
+			var seconds = task.startDate + (task.useStartTime ? -og.loggedUser.tz * 3600 : 0);
+			d2.setTime(seconds * 1000);
 			parameters["task_start_date"] = d2.format(og.preferences['date_format']);
+			if (task.useStartTime) {
+				parameters["use_start_time"] = true;
+				parameters["task_start_time"] = d2.format(og.config.time_format_use_24_duetime);
+			}
 		}
 		
 		return parameters;

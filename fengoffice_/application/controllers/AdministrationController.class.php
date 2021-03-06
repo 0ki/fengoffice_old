@@ -761,7 +761,7 @@ class AdministrationController extends ApplicationController {
 			$dimensions = Dimensions::findAll(array('conditions' => '`is_manageable` = 1'));
 			$members = array();
 			foreach($dimensions as $dim) {
-				if ($dim->deniesAllForContact($logged_user_pgs)) continue;
+				//if ($dim->deniesAllForContact($logged_user_pgs)) continue;
 				
 				$allows_all = $dim->hasAllowAllForContact($logged_user_pgs);
 				
@@ -802,13 +802,22 @@ class AdministrationController extends ApplicationController {
 		} 
 		foreach ($_POST['tabs'] as $id => $tab) {
 			$ordering = (int) $tab['ordering'];
-			$title = mysql_escape_string($tab['title']);
+			$title = mysql_real_escape_string($tab['title']);
 			$enabled = (array_var($tab, 'enabled') == "on") ? 1 : 0;
 			
 			if ($tp = TabPanels::instance()->findById($id)){
 				$tp->setOrdering($ordering);
 				$tp->setTitle($title);
 				$tp->setEnabled($enabled);
+				if ($enabled){
+					$pg_id = logged_user()->getPermissionGroupId();
+					if(!TabPanelPermissions::isModuleEnabled($tp->getId(), $pg_id)){					
+						$tpp = new TabPanelPermission();
+						$tpp->setPermissionGroupId($pg_id);
+						$tpp->setTabPanelId($tp->getId());
+						$tpp->save();
+					}
+				}
 				$tp->save();
 			}
 			

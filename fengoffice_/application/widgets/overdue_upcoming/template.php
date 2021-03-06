@@ -98,6 +98,9 @@
 	<?php endif; ?>
 	
 	<?php if ($render_add) : ?>
+		<?php if (isset ($overdue_upcoming_objects) && count($overdue_upcoming_objects) > 0) : ?>
+		<div class="separator"></div>
+		<?php endif; ?>
 		<div class="new-task">
 		
 			<div class="field name">

@@ -126,7 +126,7 @@ class DimensionController extends ApplicationController {
 			
 			$tmp_array = array();
 			foreach ($filter_by_members as $filter_id) {
-				if (trim($filter_id) != "") $tmp_array[] = $filter_id;
+				if ($filter_id) $tmp_array[] = $filter_id;
 			}
 			$filter_by_members = $tmp_array;
 			

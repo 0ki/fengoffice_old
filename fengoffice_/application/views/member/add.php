@@ -27,6 +27,7 @@
 		add_page_action(lang('delete'), "javascript:if(confirm('".lang('confirm delete permanently', $ot_name)."')) og.openLink('".get_url('member', 'delete', array('id' => $member->getId(),'start' => true))."');", 'ico-delete');
 	}
 	$form_title = $object_type_name ? ($member->isNew() ? lang('new') : lang('edit')) . " $object_type_name" : lang('new member');
+
 ?>
 
 <form 
@@ -34,8 +35,8 @@
 	class="edit-member" 
 	method="post" enctype="multipart/form-data"  
 	action="<?php echo $member == null || $member->isNew() ? get_url('member', 'add') : get_url('member', 'edit', array("id" => $member->getId())) ?>"
-<?php if ( $current_dimension->getDefinesPermissions()):?>
-	onsubmit="og.userPermissions.ogPermPrepareSendData('<?php echo $genid ?>'); return true">
+<?php if ( $current_dimension instanceof Dimension && $current_dimension->getDefinesPermissions()):?>
+	onsubmit="if (og.userPermissions) og.userPermissions.ogPermPrepareSendData('<?php echo $genid ?>'); return true">
 <?php endif;?>
 
 	<div class="coInputHeader">
@@ -81,7 +82,7 @@
 					$selected_members[] = $parent_sel ;
 				}
 				echo label_tag(lang('parent member'), "", false);
-				render_single_dimension_tree($current_dimension, $genid, $selected_members, array('checkBoxes'=>false,'all_members' => true))  ;
+				render_single_dimension_tree($current_dimension, $genid, $selected_members, array('checkBoxes'=>false,'all_members' => true));
 				
 			?>
 				<input type="hidden" id="<?php echo $genid ?>memberParent" value="<?php echo $parent_sel; ?>" name="member[parent_member_id]"></input>

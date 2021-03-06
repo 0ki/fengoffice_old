@@ -27,15 +27,15 @@ if(is_array($dimensions) && count($dimensions) > 0) {
 				$parent = $mem->getParentMemberId();
 				$m_id = $mem->getId();
 				$indent = 16 * $mem->getDepth();
-				$row_cls = $row_cls == '' ? 'altRow' : '';
+				$row_cls = $row_cls == '' ? ' altRow' : '';
 ?>
-				<tr class="<?php echo $row_cls?>">
+				<tr class="add-member-table-row<?php echo $row_cls?>">
 					<td>
 						<span style="margin-left:<?php echo $indent?>px;width:<?php echo 500 - $indent?>px;" id="<?php echo $genid?>name_<?php echo $d_id?>_<?php echo $m_id?>">
 							<?php echo $mem->getName();?>
 						</span>
 					</td>
-					<td style="text-align:center;">
+					<td style="text-align:center;width:90px;">
 						<input type="checkbox" style="width:16px;" name="restricted_members[<?php echo $d_id?>][<?php echo $m_id?>][restricted]" 
 							id="<?php echo $genid?>restricted_members_<?php echo $d_id?>_<?php echo $m_id?>" 
 							value="<?php echo (isset($restrictions[$m_id]) ? '1' : '')?>" <?php echo (isset($restrictions[$m_id]) ? 'checked' : '')?>

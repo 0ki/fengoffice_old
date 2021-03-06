@@ -65,10 +65,10 @@ if(is_array($dimensions) && count($dimensions) > 0) {
 				if (!$mem instanceof Member) continue;
 				$parent = $mem->getParentMemberId();
 				$m_id = $mem->getId();
-				$row_cls = $row_cls == '' ? 'altRow' : '';
+				$row_cls = $row_cls == '' ? ' altRow' : '';
 				$padding = 20 * $mem->getDepth();
 ?>
-				<tr class="<?php echo $row_cls?>">
+				<tr class="add-member-table-row<?php echo $row_cls?>">
 					<td>
 						<span id="<?php echo $genid?>name_<?php echo $d_id?>_<?php echo $m_id?>" style="padding-left:<?php echo $padding?>px;">
 							<?php echo $mem->getName();?>

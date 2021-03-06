@@ -28,7 +28,7 @@
 		</ul>	
 		<?php if (count($messages)<$total) :?>
 		<div class="view-all-container">
-			<a href="<?php echo get_url('message', 'init')?>" ><?php echo lang("view all") ?></a>
+			<a href="<?php echo get_url('message', 'init')?>" target="messages-panel"><?php echo lang("view all") ?></a>
 		</div>
 		<?php endif;?>
 		<div class="x-clear"></div>

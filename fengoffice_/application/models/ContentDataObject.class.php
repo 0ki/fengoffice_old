@@ -1336,13 +1336,23 @@ abstract class ContentDataObject extends ApplicationDataObject {
 		return DimensionObjectTypeContents::getDimensionObjectTypesforObject($this->getObjectTypeId());
 	}
 	
-	function addToMembers($members_array){
+	function addToMembers($members_array, $remove_old_comment_members = false){
 		ObjectMembers::addObjectToMembers($this->getId(),$members_array);
 		if ($this instanceof ProjectFile) {
 			$inline_images = ProjectFiles::findAll(array("conditions" => "mail_id = ".$this->getId()));
 			foreach ($inline_images as $inline_img) {
 				$inline_img->addToMembers($members_array);
 				$inline_img->addToSharingTable();
+			}
+		}
+		if ($this->isCommentable()) {
+			$comments = $this->getComments(true);
+			foreach ($comments as $comment) {
+				if ($remove_old_comment_members) {
+					ObjectMembers::instance()->delete("object_id = ".$comment->getId());
+				}
+				$comment->addToMembers($members_array);
+				$comment->addToSharingTable();
 			}
 		}
 	}

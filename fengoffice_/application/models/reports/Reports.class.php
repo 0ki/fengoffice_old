@@ -81,7 +81,9 @@ class Reports extends BaseReports {
 	 * @return array
 	 */
 	static function executeReport($id, $params, $order_by_col = '', $order_by_asc = true, $offset=0, $limit=50, $to_print = false) {
-		
+		if (is_null(active_context())) {
+			CompanyWebsite::instance()->setContext(build_context_array(array_var($_REQUEST, 'context')));
+		}
 		$results = array();
 		$report = self::getReport($id);
 		if($report instanceof Report){

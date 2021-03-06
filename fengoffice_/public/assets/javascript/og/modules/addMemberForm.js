@@ -88,7 +88,8 @@
 				var mem_el = Ext.get(genid + 'member_id');
 				var mem_id = 0;
 				if (mem_el) mem_id = mem_el.dom.value;
-				og.openLink(og.getUrl('member', 'get_dimension_object_fields', {id: ot.id, mem_id:mem_id}), {
+				var parent_id = document.getElementById(genid + 'memberParent').value;
+				og.openLink(og.getUrl('member', 'get_dimension_object_fields', {id: ot.id, mem_id:mem_id, parent_id:parent_id}), {
 					callback: function(success, data) {
 						if (success) {
 							App.modules.addMemberForm.renderDimensionObjectFields(data.fields, data.title);

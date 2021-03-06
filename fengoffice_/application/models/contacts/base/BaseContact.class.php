@@ -424,9 +424,9 @@
     * @param void
     * @return string 
     */
-    function getComments() {
+    function getCommentsField() {
       return $this->getColumnValue('comments');
-    } // getComments()
+    } // getCommentsField()
     
     /**
     * Set value of 'comments' field
@@ -435,9 +435,9 @@
     * @param string $value
     * @return boolean
     */
-    function setComments($value) {
+    function setCommentsField($value) {
       return $this->setColumnValue('comments', $value);
-    } // setComments() 
+    } // setCommentsField() 
     
     
     /**

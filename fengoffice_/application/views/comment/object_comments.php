@@ -1,8 +1,9 @@
 <?php
 	$comments = $__comments_object->getComments();
 	$countComments = 0;
-	if (is_array($comments) && count($comments))
+	if (is_array($comments) && count($comments)) {
 		$countComments = count($comments);
+	}
 	$random = rand();
 ?>
 
@@ -56,14 +57,14 @@
 						<?php echo escape_html_whitespace(convert_to_links(clean($comment->getText()))) ?>
 					</td><?php $object_links_render = render_object_links($comment, ($comment->canEdit(logged_user()) && !$__comments_object->isTrashed()), true, false);
 						if ($object_links_render != '') { ?><td style="width:173px">
-						<?php echo $object_links_render  ?>
+						<?php echo $object_links_render; ?>
 					</td><?php } ?></tr></table>
 				</div>
 			</div>
-		<?php } // foreach ?>
-<?php } else { ?>
+	<?php } // foreach ?>
+<?php 	} else { ?>
 		<p><?php echo lang('no comments associated with object') ?></p>
-<?php } // if ?>
+<?php	} // if ?>
 	</div>
 <?php } ?>
 

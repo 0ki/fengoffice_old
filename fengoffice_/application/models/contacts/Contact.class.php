@@ -249,7 +249,7 @@ class Contact extends BaseContact {
 	 */
 	function getDisplayName() {
 		$display = parent::getDisplayName();
-		return trim($display) == '' ? $this->getUsername() : $display;
+		return trim($display) == '' ? "".$this->getFirstName()." ".$this->getSurname() : $display;
 	} // getDisplayName
 	
 

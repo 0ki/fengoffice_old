@@ -258,3 +258,10 @@ div.edit-mem-alt {
 	background-color: #E0F0FA;
 }
 /****/
+
+
+tr.add-member-table-row:hover {
+	font-weight: bold;
+	letter-spacing: -1px;
+	background-color: #D6F4D9;
+}

@@ -4,7 +4,7 @@
         <div class="left-column-wrapper">
             <div class="left-column view-container">
                 <div class="person-view">
-                	<?php $oncloseclick = $object instanceof Contact && Plugins::instance()->isActivePlugin('core_dimensions') ? "og.onPersonClose()" : "og.closeView()" ?>
+                	<?php $oncloseclick = $contact instanceof Contact && Plugins::instance()->isActivePlugin('core_dimensions') ? "og.onPersonClose()" : "og.closeView()" ?>
                 	<div class="close-wrapper" onclick="<?php echo $oncloseclick; ?>"><?php echo lang("close");?><div class="close"></div></div>
                     <div class="person-information">
                         <div class="picture">

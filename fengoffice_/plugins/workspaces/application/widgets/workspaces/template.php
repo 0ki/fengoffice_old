@@ -39,7 +39,9 @@ $row_cls = "";
 	<?php endif; ?>
 	
 	<?php if (can_manage_dimension_members(logged_user())) : ?>
-	
+		<?php if (count($data_ws) > 0) : ?>
+			<div class="separator"></div>
+		<?php endif; ?>
 		<label><?php echo lang('add workspace')?></label>
 		<input type="text" class="ws-name" />
 		<button class="submit-ws" ><?php echo lang('add')?></button>

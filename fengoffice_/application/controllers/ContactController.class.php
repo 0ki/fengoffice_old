@@ -413,46 +413,16 @@ class ContactController extends ApplicationController {
 				default: $order_dir = 'DESC';
 			}
 		}
-
-		$context = active_context();
-		if (context_type() == 'mixed') {
-			// There are members selected
-			$content_objects = Contacts::instance()->listing(array(
-				"order" => $order,
-				"order_dir" => $order_dir,
-				"extra_conditions" => $extra_conditions,
-				"start" =>$start,
-				"limit" => $limit
-			));
-				
-			
-		}else{
-			// Estoy parado en 'All'. Filtro solo por permisos TODO: Fix this !
-			$conditions = "archived_on = '0000-00-00 00:00:00' AND trashed_on = '0000-00-00 00:00:00' $extra_conditions";
-			$content_objects = new stdClass();
-			$content_objects->objects = Contacts::instance()->findAll(array(
-				"conditions" => $conditions,
-				"order"=> "$order $order_dir",
-				"offset" => $start,
-				"limit" => $limit			
-			));
-			$content_objects->total =  Contacts::instance()->count(array("conditions" => $conditions));
-			
-			foreach ( $content_objects->objects as $k => $contact ) { /* @var $contact Contact */
-				if (Plugins::instance()->isActivePlugin("core_dimensions")) {
-					$m = array_var(Members::instance()->findByObjectId($contact->getId(), Dimensions::findByCode("feng_persons")->getId()),0);
-					if ($m instanceof Member) {
-						$mid = $m->getId();
-						if (! ContactMemberPermissions::instance()->contactCanReadMember(logged_user()->getPermissionGroupId(),$mid, logged_user())) {
-							unset($content_objects->objects[$k]);
-							$content_objects->total--;
-						}
-					}
-				}
-			}
-			$content_objects->objects = array_values($content_objects->objects) ;
-			
-		}
+		
+		$content_objects = Contacts::instance()->listing(array(
+			"order" => $order,
+			"order_dir" => $order_dir,
+			"extra_conditions" => $extra_conditions,
+			"start" =>$start,
+			"limit" => $limit
+		));
+		
+		
 		// Prepare response object
 		$object = $this->newPrepareObject($content_objects->objects, $content_objects->total, $start, $attributes);
 		ajx_extra_data($object);
@@ -1627,6 +1597,7 @@ class ContactController extends ApplicationController {
 				$import_result = array('import_ok' => array(), 'import_fail' => array());
 
 				$i = $first_record_has_names ? 1 : 0;
+				$object_controller = new ObjectController();
 				while ($i < count($registers)) {
 					try {
 						DB::beginWork();
@@ -1670,37 +1641,43 @@ class ContactController extends ApplicationController {
 								$contact->save();
 
 								//Home form
-                                                                if($contact_data['h_address'] != "")
-                                                                    $contact->addAddress($contact_data['h_address'], $contact_data['h_city'], $contact_data['h_state'], $contact_data['h_country'], $contact_data['h_zipcode'], 'home');
-                                                                if($contact_data['h_phone_number'] != "") $contact->addPhone($contact_data['h_phone_number'], 'home', true);
-                                                                if($contact_data['h_phone_number2'] != "") $contact->addPhone($contact_data['h_phone_number2'], 'home');
-                                                                if($contact_data['h_mobile_number'] != "") $contact->addPhone($contact_data['h_mobile_number'], 'mobile');
-                                                                if($contact_data['h_fax_number'] != "") $contact->addPhone($contact_data['h_fax_number'], 'fax');
-                                                                if($contact_data['h_pager_number'] != "") $contact->addPhone($contact_data['h_pager_number'], 'pager');
-                                                                if($contact_data['h_web_page'] != "") $contact->addWebpage($contact_data['h_web_page'], 'personal');
-
-                                                                //Work form
-                                                                if($contact_data['w_address'] != "")
-                                                                    $contact->addAddress($contact_data['w_address'], $contact_data['w_city'], $contact_data['w_state'], $contact_data['w_country'], $contact_data['w_zipcode'], 'work');
-                                                                if($contact_data['w_phone_number'] != "") $contact->addPhone($contact_data['w_phone_number'], 'work', true);
-                                                                if($contact_data['w_phone_number2'] != "") $contact->addPhone($contact_data['w_phone_number2'], 'work');
-                                                                if($contact_data['w_assistant_number'] != "") $contact->addPhone($contact_data['w_assistant_number'], 'assistant');
-                                                                if($contact_data['w_callback_number'] != "") $contact->addPhone($contact_data['w_callback_number'], 'callback');
-                                                                if($contact_data['w_fax_number'] != "") $contact->addPhone($contact_data['w_fax_number'], 'fax', true);
-                                                                if($contact_data['w_web_page'] != "") $contact->addWebpage($contact_data['w_web_page'], 'work');
-
-                                                                //Other form
-                                                                if($contact_data['o_address'] != "")
-                                                                    $contact->addAddress($contact_data['o_address'], $contact_data['o_city'], $contact_data['o_state'], $contact_data['o_country'], $contact_data['o_zipcode'], 'other');
-                                                                if($contact_data['o_phone_number'] != "") $contact->addPhone($contact_data['o_phone_number'], 'other', true);
-                                                                if($contact_data['o_phone_number2'] != "") $contact->addPhone($contact_data['o_phone_number2'], 'other');
-                                                                if($contact_data['o_web_page'] != "") $contact->addWebpage($contact_data['o_web_page'], 'other');
-
-                                                                //Emails and instant messaging form
-                                                                if($contact_data['email'] != "") $contact->addEmail($contact_data['email'], 'personal', true);
-                                                                if($contact_data['email2'] != "") $contact->addEmail($contact_data['email2'], 'personal');
-                                                                if($contact_data['email3'] != "") $contact->addEmail($contact_data['email3'], 'personal');
-
+                                if($contact_data['h_address'] != ""){
+									$contact->addAddress($contact_data['h_address'], $contact_data['h_city'], $contact_data['h_state'], $contact_data['h_country'], $contact_data['h_zipcode'], 'home');
+								}
+								if($contact_data['h_phone_number'] != "") $contact->addPhone($contact_data['h_phone_number'], 'home', true);
+								if($contact_data['h_phone_number2'] != "") $contact->addPhone($contact_data['h_phone_number2'], 'home');
+								if($contact_data['h_mobile_number'] != "") $contact->addPhone($contact_data['h_mobile_number'], 'mobile');
+								if($contact_data['h_fax_number'] != "") $contact->addPhone($contact_data['h_fax_number'], 'fax');
+								if($contact_data['h_pager_number'] != "") $contact->addPhone($contact_data['h_pager_number'], 'pager');
+								if($contact_data['h_web_page'] != "") $contact->addWebpage($contact_data['h_web_page'], 'personal');
+								
+								//Work form
+								if($contact_data['w_address'] != ""){
+									$contact->addAddress($contact_data['w_address'], $contact_data['w_city'], $contact_data['w_state'], $contact_data['w_country'], $contact_data['w_zipcode'], 'work');
+								}
+								if($contact_data['w_phone_number'] != "") $contact->addPhone($contact_data['w_phone_number'], 'work', true);
+								if($contact_data['w_phone_number2'] != "") $contact->addPhone($contact_data['w_phone_number2'], 'work');
+								if($contact_data['w_assistant_number'] != "") $contact->addPhone($contact_data['w_assistant_number'], 'assistant');
+								if($contact_data['w_callback_number'] != "") $contact->addPhone($contact_data['w_callback_number'], 'callback');
+								if($contact_data['w_fax_number'] != "") $contact->addPhone($contact_data['w_fax_number'], 'fax', true);
+								if($contact_data['w_web_page'] != "") $contact->addWebpage($contact_data['w_web_page'], 'work');
+								
+								//Other form
+								if($contact_data['o_address'] != ""){
+									$contact->addAddress($contact_data['o_address'], $contact_data['o_city'], $contact_data['o_state'], $contact_data['o_country'], $contact_data['o_zipcode'], 'other');
+								}
+								if($contact_data['o_phone_number'] != "") $contact->addPhone($contact_data['o_phone_number'], 'other', true);
+								if($contact_data['o_phone_number2'] != "") $contact->addPhone($contact_data['o_phone_number2'], 'other');
+								if($contact_data['o_web_page'] != "") $contact->addWebpage($contact_data['o_web_page'], 'other');
+								
+								//Emails and instant messaging form
+								if($contact_data['email'] != "") $contact->addEmail($contact_data['email'], 'personal', true);
+								if($contact_data['email2'] != "") $contact->addEmail($contact_data['email2'], 'personal');
+								if($contact_data['email3'] != "") $contact->addEmail($contact_data['email3'], 'personal');                              
+									
+							    if(count(active_context_members(false)) > 0 ){
+                                    $object_controller->add_to_members($contact, active_context_members(false));
+                                }
 								ApplicationLogs::createLog($contact, null, $log_action);
 								$import_result['import_ok'][] = $contact_data;
 							} else {
@@ -1727,6 +1704,10 @@ class ContactController extends ApplicationController {
 								$contact_data['is_company'] = 1;
 								$company->setFromAttributes($contact_data);
 								$company->save();
+								
+								if(count(active_context_members(false)) > 0 ){
+                                    $object_controller->add_to_members($company, active_context_members(false));
+                                }
 								ApplicationLogs::createLog($company, null, $log_action);
 								
 								$import_result['import_ok'][] = $contact_data;
