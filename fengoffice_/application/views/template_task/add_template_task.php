@@ -69,6 +69,8 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
         <input id="<?php echo $genid?>multi_assignment_aplly_change" type="hidden" name="task[multi_assignment_aplly_change]" value="" />
         <input id="<?php echo $genid?>view_add" type="hidden" name="view_add" value="true" />
         <input id="<?php echo $genid?>control_dates" type="hidden" name="control_dates" value="false" />
+        <input id="<?php echo $genid?>template_id" type="hidden" name="template_id" value="<?php echo $template_id ?>" />
+        
 	
 	<div id="<?php echo $genid ?>add_task_select_context_div" style="display:none">
 	<fieldset>
@@ -250,7 +252,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 				<input type="hidden" name="task[clean_dep]" value="1" />
 				<?php 
 				foreach ($previous_tasks as $task_dep) {
-					$task = ProjectTasks::findById($task_dep->getPreviousTaskId());
+					$task = TemplateTasks::findById($task_dep->getPreviousTaskId());
 				?>
 					<div class="og-add-template-object ico-task">
 						<input type="hidden" name="task[previous]['<?php echo $k?>']" value="<?php echo $task->getId()?>" />
@@ -264,7 +266,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 				<?php $k++;
 				}
 			} ?>
-			</div><a class="coViewAction ico-add" id="<?php echo $genid?>previous_before" href="#" onclick="og.pickPreviousTask(this, '<?php echo $genid?>', '<?php echo $task->getId()?>')"><?php echo lang('add previous task') ?></a>
+			</div><a class="coViewAction ico-add" id="<?php echo $genid?>previous_before" href="#" onclick="og.pickPreviousTemplateTask(this, '<?php echo $genid?>', '<?php echo $task->getId()?>', '<?php echo $template_id?>')"><?php echo lang('add previous task') ?></a>
 		
 		</div>
 		<?php } ?>
@@ -279,13 +281,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 		</div>
   	</fieldset>
   	</div>
-
-<?php if($task->isNew()) { ?>
-	<?php if (isset($base_task) && $base_task instanceof ProjectTask && $base_task->getIsTemplate()) { ?>
-		<input type="hidden" name="task[from_template_id]" value="<?php echo $base_task->getId() ?>" />
-	<?php } ?>
-<?php } // if ?>
-  	
+ 	
 	<div id="<?php echo $genid ?>task_repeat_options_div" style="display:none">
 		<fieldset>
 			<legend><?php echo lang('repeating task')?></legend>
@@ -724,16 +720,6 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 	});
 	
 	$(document).ready(function() {
-		if($("#<?php echo $genid?>view_related").val()){
-			<?php if($task->isCompleted()){ ?>
-			this.dialog = new og.TaskPopUp('task_complete','');
-			<?php }else{?>
-			this.dialog = new og.TaskPopUp('','');
-		<?php }?>
-			this.dialog.setTitle(lang('tasks related'));
-			this.dialog.show();      
-		}
-
 		og.changeTaskRepeat();
 		og.reload_task_form_selectors();
 	});

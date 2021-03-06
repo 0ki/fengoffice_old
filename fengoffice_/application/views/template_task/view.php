@@ -1,5 +1,6 @@
 <?php
 require_javascript("og/modules/addTaskForm.js");
+require_javascript('og/tasks/task_dependencies.js');
 
 /* 
  * This section builds the actions menu 
@@ -12,32 +13,14 @@ if (isset($task_list) && ($task_list instanceof ProjectTask || $task_list instan
 	}
 
 	if ($task_list->canDelete(logged_user())) {
-		if ($task_list->isTemplate()) { //FIXME pepe
-			add_page_action(lang('delete'), "javascript:if(confirm(lang('confirm delete task'))) og.openLink('" . $task_list->getDeletePermanentlyUrl() ."');", 'ico-delete', null, null, true);
-		} else if ($task_list->isTrashed()) {
+		if ($task_list->isTrashed()) {
 			add_page_action(lang('restore from trash'), "javascript:if(confirm(lang('confirm restore objects'))) og.openLink('" . $task_list->getUntrashUrl() ."');", 'ico-restore', null, null, true);
 			add_page_action(lang('delete permanently'), "javascript:if(confirm(lang('confirm delete permanently'))) og.openLink('" . $task_list->getDeletePermanentlyUrl() ."');", 'ico-delete', null, null, true);
 		} else {
 			add_page_action(lang('move to trash'), "javascript:if(confirm(lang('confirm move to trash'))) og.openLink('" . $task_list->getTrashUrl() ."');", 'ico-trash', null, null, true);
 		} // if
 	} // if
-
-	if (!$task_list->isTrashed() && !logged_user()->isGuest()){
-		if ($task_list->getIsTemplate()) {
-			/*FIXME Fix Copy tasks please!
-			add_page_action(lang('new task from template'), get_url("task", "copy_task", array("id" => $task_list->getId())), 'ico-copy');
-			*/
-		} else {
-			if ($task_list->isRepetitive()) {
-				add_page_action(lang('generate repetitition'), get_url("task", "generate_new_repetitive_instance", array("id" => $task_list->getId())), 'ico-recurrent', null, null, true);
-			} else {
-				add_page_action(lang('copy task'), get_url("task", "copy_task", array("id" => $task_list->getId())), 'ico-copy');
-			}
-			if (can_manage_templates(logged_user())) {
-				add_page_action(lang('add to a template'), get_url("template", "add_to", array("manager" => 'ProjectTasks', "id" => $task_list->getId())), 'ico-template');
-			} // if
-		} // if
-	} // if
+	
 		
 	$this->assign('on_list_page', true);
 	?>
@@ -96,7 +79,7 @@ if ($task_list->getAssignedTo()){
 }
 
 $milestone = '';
-if ($task_list->getMilestone() instanceof ProjectMilestone){
+if ($task_list->getMilestone() instanceof TemplateMilestone){
 	$m = $task_list->getMilestone();
 	$milestone .= '<div class="member-path-dim-block"><div class="og-ico ico-milestone"><b>'.lang('milestones').': </b><a class=\'internalLink\' href=\''
 	. $m->getViewUrl() . '\' title=\'' . escape_single_quotes(lang('view milestone') . '\'>' . clean($m->getObjectName())) . '</a></div>';

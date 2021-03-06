@@ -391,7 +391,8 @@ CREATE TABLE `<?php echo $table_prefix ?>application_logs` (
   `log_data` text <?php echo $default_collation ?>,
   PRIMARY KEY  (`id`),
   KEY `created_on` USING BTREE (`created_on`,`is_silent`),
-  KEY `object` (`rel_object_id`,`created_on`,`is_silent`)
+  KEY `object` (`rel_object_id`,`created_on`,`is_silent`),
+  KEY `member` (`member_id`,`created_on`,`is_silent`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 
 CREATE TABLE `<?php echo $table_prefix ?>comments` (

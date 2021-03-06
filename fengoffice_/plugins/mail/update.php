@@ -51,11 +51,14 @@
 			DB::execute("
 				ALTER TABLE `".TABLE_PREFIX."mail_contents` ADD COLUMN `conversation_last` int(1) NOT NULL default '1' AFTER conversation_id;
 			");
-		}
+		}		
+	}
+	
+	function mail_update_6_7() {
 		if (!check_column_exists(TABLE_PREFIX."mail_accounts", "mark_read_on_server")) {
 			DB::execute("
-				ALTER TABLE `".TABLE_PREFIX."mail_accounts` ADD COLUMN `mark_read_on_server` int(1) NOT NULL default '1';
-			");
+					ALTER TABLE `".TABLE_PREFIX."mail_accounts` ADD COLUMN `mark_read_on_server` int(1) NOT NULL default '1';
+					");
 		}
 	}
 

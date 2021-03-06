@@ -127,8 +127,7 @@ class MilestoneController extends ApplicationController {
 				$member_ids = json_decode(array_var($_POST, 'members'));
 				
 				if($milestone instanceof TemplateMilestone){
-					$milestone->setSessionId(logged_user()->getId());
-					$milestone->setIsTemplate(true);
+					$milestone->setSessionId(logged_user()->getId());					
 				}
 				DB::beginWork();
 
@@ -168,14 +167,14 @@ class MilestoneController extends ApplicationController {
 
 				// Send notification
 				try {
-					if(!$milestone->getIsTemplate() && array_var($milestone_data, 'send_notification') == 'checked') {
+					if(!$milestone instanceof TemplateMilestone && array_var($milestone_data, 'send_notification') == 'checked') {
 						Notifier::milestoneAssigned($milestone); // send notification
 					} // if
 				} catch(Exception $e) {
 
 				} // try
 
-				if ($milestone->getIsTemplate()) {
+				if ($milestone instanceof TemplateMilestone) {
 					flash_success(lang('success add template', $milestone->getObjectName()));
 				} else {
 					flash_success(lang('success add milestone', $milestone->getObjectName()));
@@ -469,7 +468,7 @@ class MilestoneController extends ApplicationController {
 			return;
 		}
 		$milestone_data = array(
-			'name' => $milestone->getIsTemplate() ? $milestone->getObjectName() : lang("copy of", $milestone->getObjectName()),
+			'name' => $milestone instanceof TemplateMilestone ? $milestone->getObjectName() : lang("copy of", $milestone->getObjectName()),
 			'description' => $milestone->getDescription(),
 			'copyId' => $milestone->getId(),
 		); // array

@@ -230,6 +230,7 @@ class ApplicationLogs extends BaseApplicationLogs {
 		$extra_conditions .= " AND IF((SELECT o.object_type_id FROM ".TABLE_PREFIX."objects o WHERE o.id=rel_object_id)=(SELECT ot.id FROM ".TABLE_PREFIX."object_types ot WHERE ot.name='template_task'), false, true)";
 
 		$members_sql = "";
+		$is_member_child = "";
 		if(count($members) > 0){
 			$members_sql = "(EXISTS(
 				SELECT om.object_id FROM  ".TABLE_PREFIX."object_members om
@@ -237,6 +238,8 @@ class ApplicationLogs extends BaseApplicationLogs {
 				GROUP BY object_id
 				HAVING count(member_id) = ".count($members)."
 			))";
+			
+			$is_member_child = "AND mem.parent_member_id IN (" . implode ( ',', $members ) . ")";
 		}
 
 		
@@ -248,11 +251,17 @@ class ApplicationLogs extends BaseApplicationLogs {
 		$sql .= " ORDER BY created_on DESC LIMIT 100";
 		$id_rows = array_flat(DB::executeAll($sql));
 		
-		$member_logs_sql = "SELECT al.id FROM ".TABLE_PREFIX."application_logs al INNER JOIN ".TABLE_PREFIX."contact_member_permissions cmp ON cmp.member_id=al.member_id
-				WHERE al.rel_object_id=0 AND al.member_id>0 AND cmp.permission_group_id IN (
-					SELECT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups
-					WHERE contact_id = ".logged_user()->getId()."
-				) ORDER BY created_on DESC LIMIT 100";
+		
+		$member_logs_sql = "SELECT al.id FROM ".TABLE_PREFIX."application_logs al 
+			INNER JOIN ".TABLE_PREFIX."contact_member_permissions cmp ON cmp.member_id=al.member_id
+			INNER JOIN ".TABLE_PREFIX."members mem ON mem.id=al.member_id
+				WHERE al.member_id>0 
+					$is_member_child
+					AND cmp.permission_group_id IN (
+						SELECT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups
+						WHERE contact_id = ".logged_user()->getId()."
+					) 
+			ORDER BY created_on DESC LIMIT 100";
 		$m_id_rows = array_flat(DB::executeAll($member_logs_sql));
 		
 		$id_rows = array_filter(array_merge($id_rows, $m_id_rows));

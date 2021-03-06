@@ -11,6 +11,10 @@ div.member-selectors-container {
 	overflow: hidden;
 }
 
+.small-member-selector label{
+	font-size: 100%;
+}
+
 div.single-dimension-selector {
 	float: left;
 	margin-right: 10px;

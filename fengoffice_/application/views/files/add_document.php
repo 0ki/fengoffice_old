@@ -22,10 +22,7 @@
 		$ckEditorContent = HTMLPurifier::instance()->purify($content);
 		$filename = $file->getName();
 	}
-	if (config_option('checkout_for_editing_online')) {
-		ajx_on_leave("og.openLink('" . get_url('files', 'release_file', array('id' => $file->getId())) . "')");
-		add_page_action(lang("checkin file"), "javascript:(function(){ var form = document.getElementById('{$genid}form'); form.checkin.value = '1'; form.new_revision_document.value = 'checked'; form.rename = false; form.onsubmit(); })()", "ico-checkin");
-	}
+	
 
 	add_page_action(lang("save as").' <b>'.$filename.'</b>', "javascript:(function(){ var form = document.getElementById('{$genid}form'); form.new_revision_document.value = 'checked'; form.rename = false; form.onsubmit(); })()", "save",
 		null, array('id' => $genid . 'save_as_name'));

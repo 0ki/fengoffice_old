@@ -57,7 +57,7 @@ class ProjectMilestones extends BaseProjectMilestones {
 			$member_conditions = "";
 		}
 		
-		$conditions = "$permission_conditions $member_conditions";
+		$conditions = "trashed_by_id = 0 AND archived_by_id = 0 AND $permission_conditions $member_conditions";
 		$milestones = ProjectMilestones::findAll(array('conditions' => $conditions, 'order' => 'name'));
 
 		return $milestones;
@@ -109,11 +109,9 @@ class ProjectMilestones extends BaseProjectMilestones {
 		foreach ($milestoneFrom->getTasks($as_template) as $sub) {
 			if ($sub->getParentId() != 0) continue;
 			$new = ProjectTasks::createTaskCopy($sub);
-			$new->setIsTemplate($as_template);
+			
 			$new->setMilestoneId($milestoneTo->getId());
-			if ($sub->getIsTemplate()) {
-				$new->setFromTemplateId($sub->getId());
-			}
+			
 			$new->save();
 			
 			$object_controller = new ObjectController();

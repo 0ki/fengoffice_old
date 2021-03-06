@@ -583,7 +583,7 @@ class MailUtilities {
 		$tmp_uids_to_get = array();
 		$uids = MailContents::getUidsFromAccount($account->getId());
 		foreach ($summary as $k => $info) {
-			if (!in_array($info['uidl'], $uids) && !in_array($info['uidl'], $tmp_uids_to_get)) {
+			if (!in_array($info['uidl'], $uids ,true) && !in_array($info['uidl'], $tmp_uids_to_get ,true)) {
 				$mailsToGet[] = $k;
 				$tmp_uids_to_get[] = $info['uidl'];
 			}
@@ -976,7 +976,7 @@ class MailUtilities {
 							if (PEAR::isError($summary)) {
 								Logger::log($summary->getMessage());
 							} else {
-								if (!in_array($summary[0]['UID'], $uids)) {
+								if (!in_array($summary[0]['UID'], $uids, true)) {
 									if ($imap->isDraft($index)) $state = 2;
 									else $state = 0;
 									

@@ -212,7 +212,7 @@ class ObjectController extends ApplicationController {
 		$required_dimensions = Dimensions::findAll(array("conditions" => "id IN (".implode(",",$required_dimension_ids).") OR is_required=1"));
 		
 		// If not entered members
-		if (count($member_ids) <= 0){
+		/*if (count($member_ids) <= 0){
 			$throw_error = true;
 			if (Plugins::instance()->isActivePlugin('core_dimensions')) {
 				$personal_member = Members::findById($user->getPersonalMemberId());
@@ -220,7 +220,7 @@ class ObjectController extends ApplicationController {
 					$member_ids[] = $user->getPersonalMemberId();
 				}
 			}
-		}
+		}*/
 		
 		if (count($member_ids) > 0) {
 			$enteredMembers = Members::findAll(array('conditions' => 'id IN ('.implode(",", $member_ids).')'));
@@ -884,6 +884,8 @@ class ObjectController extends ApplicationController {
 			$orderdir = "";
 		}
 		
+		$extra_list_params = array_var($_GET,'extra_list_params');
+		$extra_list_params = json_decode($extra_list_params);
 		
 		$page = (integer) ($start / $limit) + 1;
 		$hide_private = !logged_user()->isMemberOfOwnerCompany();
@@ -1054,12 +1056,19 @@ class ObjectController extends ApplicationController {
 		$template_object_names = "";
 		$template_extra_condition = "true";
 		
+		$template_objects = false;
+		
 		if(in_array("template_task", array_var($filters, 'types', array())) || in_array("template_milestone", array_var($filters, 'types', array()))){
+			$template_id = 0;
+			$template_objects = true;
+			if(isset($extra_list_params->template_id)){
+				$template_id = $extra_list_params->template_id;
+			}					
 			$tmpl_task = TemplateTasks::findById(intval($id_no_select));
 			if($tmpl_task instanceof TemplateTask){
-				$template_extra_condition = "o.id IN (SELECT object_id from ".TABLE_PREFIX."template_tasks WHERE `template_id` =".$tmpl_task->getTemplateId().")";
+				$template_extra_condition = "o.id IN (SELECT object_id from ".TABLE_PREFIX."template_tasks WHERE `template_id` IN (".$tmpl_task->getTemplateId().", 0) )";
 			}else{
-				$template_extra_condition = "o.id IN (SELECT object_id from ".TABLE_PREFIX."template_tasks WHERE `template_id` =".intval($id_no_select).")";
+				$template_extra_condition = "o.id IN (SELECT object_id from ".TABLE_PREFIX."template_tasks WHERE `template_id` IN (".intval($template_id).", 0) )";
 			}
 		}else{
 			$template_object_names = "AND name <> 'template_task' AND name <> 'template_milestone'" ;
@@ -1123,7 +1132,8 @@ class ObjectController extends ApplicationController {
 				"types" => $types,
 				"extra_conditions" => " AND ".implode(" AND ", $extra_conditions),
 				"ignore_context" => $ignore_context,
-				"extra_member_ids" => $extra_member_ids
+				"extra_member_ids" => $extra_member_ids,
+				"template_objects" => $template_objects
 			));
 		}
 		
@@ -1540,7 +1550,7 @@ class ObjectController extends ApplicationController {
 		$object_id = get_id('object_id');
 		$dont_reload = array_var($_GET, 'dont_reload');
 		$object = Objects::findObject($object_id);
-		if (($object instanceof ContentDataObject && $object->canDelete(logged_user()) && (!$object instanceof Contact || !$object->isUser())) || $object instanceof TemplateTask || $object instanceof TemplateMilestone) {
+		if (($object instanceof ContentDataObject && $object->canDelete(logged_user()) && (!$object instanceof Contact || !$object->isUser()))) {
 			try {
 				$errorMessage = null;
 				DB::beginWork();

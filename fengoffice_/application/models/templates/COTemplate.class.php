@@ -36,89 +36,46 @@ class COTemplate extends BaseCOTemplate {
 	 * 
 	 * 
 	 * @param ContentDataObject $object
+	 * @param $additional_attributes array 
+	 * @param $go_deep bool copy all subtasks or if is a milestone copy all tasks 
+	 * @return int Template Object id
 	 */
-	function addObject($object, $additional_attributes = array()) {
-		if ($this->hasObject($object)) return;
-		if (!$object->isTemplate() && $object->canBeTemplate()) {
-			// the object isn't a template but can be, create a template copy
-			$copy = $object->copy();
-			
-			$copy->setColumnValue('is_template', true);
-			if ($copy instanceof ProjectTask) {
-				// don't copy milestone and parent task
-				$copy->setMilestoneId(0);
-				$copy->setParentId(0);
-				if (isset($additional_attributes['milestone'])) {
-					$copy->setMilestoneId($additional_attributes['milestone']);
-				}
+	function addObject($object, $additional_attributes = array(), $go_deep = true) {
+		//if ($this->hasObject($object)) return;
+		
+		//if object is a ProjectTask
+		if ($object instanceof ProjectTask) {
+			if($go_deep){
+				$object = TemplateTask::copyFromProjectTaskIncludeSubTasks($object,$this->getId());
+			}else{
+				$object = TemplateTask::copyFromProjectTask($object,$this->getId());
 			}
-			$copy->save();
+		
+		//if object is a ProjectMilestone
+		}else if ($object instanceof ProjectMilestone) {
+			$object = TemplateMilestone::copyFromProjectMilestone($object,$this->getId(), $go_deep);
 			
-			//Also copy members..
-// 			$memberIds = json_decode(array_var($_POST, 'members'));
-// 			$controller  = new ObjectController() ;
-// 			$controller->add_to_members($copy, $memberIds);
-			
-			// copy subtasks
-			if ($copy instanceof ProjectTask) {
-				ProjectTasks::copySubTasks($object, $copy, true);
-			} else if ($copy instanceof ProjectMilestone) {
-				ProjectMilestones::copyTasks($object, $copy, true);
-			}
-			
-			
-			// copy custom properties			
-			$copy->copyCustomPropertiesFrom($object);
-			// copy linked objects
-			$linked_objects = $object->getAllLinkedObjects();
-			if (is_array($linked_objects)) {
-				foreach ($linked_objects as $lo) {
-					$copy->linkObject($lo);
-				}
-			}
-			// copy reminders
-			$reminders = ObjectReminders::getByObject($object);
-			foreach ($reminders as $reminder /* @var ObjectReminder $reminder */ ) {
-				$copy_reminder = new ObjectReminder();
-				$copy_reminder->setContext($reminder->getContext());
-				$copy_reminder->setDate(EMPTY_DATETIME);
-				$copy_reminder->setMinutesBefore($reminder->getMinutesBefore());
-				$copy_reminder->setObject($copy);
-				$copy_reminder->setType($reminder->getType());
-				// $copy_reminder->setContactId($reminder->getContactId()); //TODO Feng 2 -  No  anda 
-				$copy_reminder->save();
-			}
-			$template = $copy;
-		} else {
-			if ($object instanceof ProjectTask && isset($additional_attributes['milestone'])) {
+		//if object is a TemplateTask
+		}else if ($object instanceof TemplateTask) { 
+			$object->setColumnValue('template_id', $this->getId());
+			$object->setColumnValue('session_id', null);
+			if (isset($additional_attributes['milestone'])) {
 				$object->setMilestoneId($additional_attributes['milestone']);
-				$object->save();
 			}
-			
-			//if object is a TemplateTask
-			if ($object instanceof TemplateTask) {
-				$object->setColumnValue('is_template', true);
-				$object->setColumnValue('template_id', $this->getId());
-				$object->setColumnValue('session_id', null);
-				if (isset($additional_attributes['milestone'])) {
-					$object->setMilestoneId($additional_attributes['milestone']);
-				}
-				$object->save();
-			}
-			
-			//if object is a TemplateMilestone
-			if ($object instanceof TemplateMilestone) {
-				$object->setColumnValue('is_template', true);
-				$object->setColumnValue('template_id', $this->getId());
-				$object->setColumnValue('session_id', null);
+			$object->save();
+		
+		//if object is a TemplateMilestone
+		}else if ($object instanceof TemplateMilestone) {
+			$object->setColumnValue('template_id', $this->getId());
+			$object->setColumnValue('session_id', null);
 				
-				$object->save();
-			}
-			
-			
-			// the object is already a template or can't be one, use it as it is
-			$template = $object;
+			$object->save();
 		}
+		
+			
+		// the object is already a template or can't be one, use it as it is
+		$template = $object;
+		
 		//create a TemplateObject
 		$to = new TemplateObject();
 		$to->setObject($template);
@@ -246,9 +203,7 @@ class COTemplate extends BaseCOTemplate {
 		// permanently delete objects set as template (were created specifically for this template)
 		$objs = $this->getObjects();
 		foreach ($objs as $o) {
-			if ($o->isTemplate()) {
-				$o->delete();
-			}
+			$o->delete();			
 		}
 		$this->removeObjects();
 		TemplateParameters::deleteParametersByTemplate($this->getObjectId());

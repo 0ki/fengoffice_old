@@ -24,7 +24,7 @@ if (isset($milestone) && $milestone instanceof ProjectMilestone) {
 	}
 	
 	if ($milestone->canDelete(logged_user())) {
-		if ($milestone->isTemplate()) {
+		if ($milestone instanceof TemplateMilestone) {
 			add_page_action(lang('delete'), "javascript:if(confirm(lang('confirm delete milestone'))) og.openLink('" . $milestone->getDeletePermanentlyUrl() ."');", 'ico-delete', null, null, true);
 		} else if ($milestone->isTrashed()) {
 			add_page_action(lang('restore from trash'), "javascript:if(confirm(lang('confirm restore objects'))) og.openLink('" . $milestone->getUntrashUrl() ."');", 'ico-restore', null, null, true);
@@ -35,7 +35,7 @@ if (isset($milestone) && $milestone instanceof ProjectMilestone) {
 	} // if
 	
 	if (!$milestone->isTrashed() && !logged_user()->isGuest()){
-		if ($milestone->getIsTemplate()) {
+		if ($milestone instanceof TemplateMilestone) {
 			/*FIXME Fix Copy milestones please!
 			add_page_action(lang('new milestone from template'), get_url("milestone", "copy_milestone", array("id" => $milestone->getId())), 'ico-copy');
 			*/

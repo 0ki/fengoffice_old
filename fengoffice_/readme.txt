@@ -1,5 +1,5 @@
 
-	About Feng Office 2.6-beta
+	About Feng Office 2.6-rc
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -101,6 +101,28 @@
 	
 	Changelog
 	=========
+	
+	Since 2.6-beta
+	----------------
+	
+	bugfix: after contact csv inport, msg says "Company NULL" if contact has no comapany
+	bugfix: templates import tasks, milestones (and several templates bugs)
+	bugfix: activity widget fixed
+	bugfix: email plugin upgrade script fixed
+	bugfix: missing langs in advanced reports (es_es, es_la)
+	bugfix: don't add the object to personal workspace if no workspace is selected
+	bugfix: city is not imported if contact has no address when importing companies or contacts from csv.
+	bugfix: if config option 'checkout_for_editing_online' is enabled don't show button to upload new revision when editing a document.
+	bugfix: cannot link objects when editing tasks
+	bugfix: after adding previous tasks in a template task the icon is broken
+	bugfix: several fixes in templates and tasks dependencies.
+	bugfix: do not notify my self quick add/edit tasks
+	bugfix: if gantt plugin is installed there are restrictions with start date in task dependencies.
+	bugfix: delete task dependencies after delete task.
+	bugfix: don't show trashed or archived milestones in milestone combo.
+	bugfix: performance in activity widget for members query
+	bugfix: company name in person view is not a link to the company
+
 	
 	Since 2.5.1.5
 	----------------

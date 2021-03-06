@@ -217,6 +217,8 @@
 	'add template' => 'Agregar plantilla',
 	'confirm delete template' => 'Está seguro de que desea borrar esta plantilla?',
 	'no templates' => 'No hay plantillas',
+	'copy task subtasks' => '¿Desea también copiar las subtareas a la plantilla?',
+	'copy milestone tasks' => '¿Desea también copiar las tareas del hito a la plantilla?',
 	'template name required' => 'El nombre de la plantilla es requerido',
 	'new template' => 'Nueva plantilla',
 	'edit template' => 'Editar plantilla',

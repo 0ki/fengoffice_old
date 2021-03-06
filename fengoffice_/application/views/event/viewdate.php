@@ -40,8 +40,12 @@ $genid = gen_id();
 
 	echo stylesheet_tag('event/day.css');
 
+	//today in gmt 0
 	$today = DateTimeValueLib::now();
-	//$today->add('h', logged_user()->getTimezone());
+		
+	//user today 
+//	$today->add('h', logged_user()->getTimezone());
+	
 	$currentday = $today->format("j");
 	$currentmonth = $today->format("n");
 	$currentyear = $today->format("Y");
@@ -609,8 +613,8 @@ $genid = gen_id();
 	});
 
 	// Mantain the actual values after refresh by clicking Calendar tab.
-	var dtv = new Date('<?php echo $month.'/'.$day.'/'.$year ?>');
-	og.calToolbarDateMenu.picker.setValue(dtv);
+	var dtv = new Date('<?php echo $dtv->getMonth().'/'.$dtv->getDay().'/'.$dtv->getYear() ?>');
+	og.calToolbarDateMenu.picker.setValue(dtv);	
 
 	// scroll to first event
 	var scroll_pos = (scroll_to == -1 ? <?php echo $defaultScrollTo ?> : scroll_to);

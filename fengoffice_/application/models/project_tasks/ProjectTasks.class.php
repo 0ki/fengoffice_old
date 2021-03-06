@@ -95,21 +95,22 @@ class ProjectTasks extends BaseProjectTasks {
 	}
 	
 	/**
-	 * Return Day tasks this user have access on
+	 * Return Day tasks this user have access on 
 	 *
 	 * @access public
-	 * @param void
+	 * @param DateTimeValue $date_start in user gmt
+	 * @param DateTimeValue $date_end	in user gmt 
 	 * @return array
 	 */
 	function getRangeTasksByUser(DateTimeValue $date_start, DateTimeValue $date_end, $assignedUser, $task_filter = null, $archived = false, $raw_data = false) {
 		
-		$from_date = new DateTimeValue ( $date_start->getTimestamp () - logged_user()->getTimezone() * 3600 );
+		$from_date = new DateTimeValue ( $date_start->getTimestamp ());
 		$from_date = $from_date->beginningOfDay ();
-		$to_date = new DateTimeValue ( $date_end->getTimestamp () - logged_user()->getTimezone() * 3600);
+		$to_date = new DateTimeValue ( $date_end->getTimestamp ());
 		$to_date = $to_date->endOfDay ();
 		
-		$from_date->advance(logged_user()->getTimezone() * (-3600));
-		$to_date->advance(logged_user()->getTimezone() * (-3600));
+		$from_date->advance(logged_user()->getTimezone() * (3600));
+		$to_date->advance(logged_user()->getTimezone() * (3600));
 		
 		$assignedFilter = '';
 		if ($assignedUser instanceof Contact) {
@@ -164,13 +165,10 @@ class ProjectTasks extends BaseProjectTasks {
 		foreach ( $taskFrom->getSubTasks () as $sub ) {
 			if ($sub->getId() == $taskTo->getId()) continue;
 			$new = ProjectTasks::createTaskCopy ( $sub );
-			$new->setIsTemplate ( $as_template );
 			$new->setParentId ( $taskTo->getId () );
 			$new->setMilestoneId ( $taskTo->getMilestoneId () );
 			$new->setOrder ( ProjectTasks::maxOrder ( $new->getParentId (), $new->getMilestoneId () ) );
-			if ($sub->getIsTemplate ()) {
-				$new->setFromTemplateId ( $sub->getId () );
-			}
+			
 			$new->save ();
 			
 			$object_controller = new ObjectController();
@@ -333,7 +331,7 @@ class ProjectTasks extends BaseProjectTasks {
 	    $rows = DB::executeAll($sql);
 		foreach ($rows as $row) {
     		$task =  ProjectTasks::findById($row['id']);
-    		if ( ( $task && $task instanceof ProjectTask ) && !$task->isTemplate() ) {
+    		if ($task && $task instanceof ProjectTask) {
     			if($task->getDueDate()){
 	    			$k  = "#".$task->getDueDate()->getTimestamp().$task->getId();
 					$result->objects[$k] = $task ;

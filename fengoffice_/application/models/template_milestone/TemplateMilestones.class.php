@@ -104,11 +104,9 @@ class TemplateMilestones extends BaseTemplateMilestones {
 		foreach ($milestoneFrom->getTasks($as_template) as $sub) {
 			if ($sub->getParentId() != 0) continue;
 			$new = TemplateTasks::createTaskCopy($sub);
-			$new->setIsTemplate($as_template);
+			
 			$new->setMilestoneId($milestoneTo->getId());
-			if ($sub->getIsTemplate()) {
-				$new->setFromTemplateId($sub->getId());
-			}
+			
 			$new->save();
 			
 			$object_controller = new ObjectController();

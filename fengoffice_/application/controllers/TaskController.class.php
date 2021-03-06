@@ -133,26 +133,16 @@ class TaskController extends ApplicationController {
 				$object_controller = new ObjectController();
 				$object_controller->add_to_members($task, $member_ids);
 				
-				//Add new work timeslot for this task
-//				if (array_var($task_data,'hours') != '' && array_var($task_data,'hours') > 0){
-//					$hours = array_var($task_data, 'hours');
-//					$hours = - $hours;
-//						
-//					$timeslot = new Timeslot();
-//					$dt = DateTimeValueLib::now();
-//					$dt2 = DateTimeValueLib::now();
-//					$timeslot->setEndTime($dt);
-//					$dt2 = $dt2->add('h', $hours);
-//					$timeslot->setStartTime($dt2);
-//					$timeslot->setContactId(logged_user()->getId());
-//					$timeslot->setObjectId($task->getId());
-//					$timeslot->save();
-//				}
-
-				
 				$assignee = $task->getAssignedToContact();
+				$assignee_to_me = false;
 				if ($assignee instanceof Contact) {
 					$task->subscribeUser($assignee);
+					
+					//do not notify my self
+					if($assignee->getId() == logged_user()->getId()){
+						$assignee_to_me = true;
+					}
+						
 				}
 				
 				// create default reminder by user config option
@@ -204,7 +194,7 @@ class TaskController extends ApplicationController {
 				DB::commit();
 				$isSailent = true;
 				// notify asignee
-				if(array_var($task_data, 'notify') == 'true' || (user_config_option("can notify from quick add") && !user_config_option("show_notify_checkbox_in_quick_add"))) {
+				if((array_var($task_data, 'notify') == 'true' || (user_config_option("can notify from quick add") && !user_config_option("show_notify_checkbox_in_quick_add"))) && !$assignee_to_me) {
 					$isSailent = false;
 					try {
 						Notifier::taskAssigned($task);
@@ -473,7 +463,7 @@ class TaskController extends ApplicationController {
 				DB::commit();
 				
 				// notify asignee
-				if((array_var($task_data, 'notify') == 'true' && $send_edit == false) || (user_config_option("can notify from quick add") && !user_config_option("show_notify_checkbox_in_quick_add"))) {
+				if((array_var($task_data, 'notify') == 'true' && $send_edit == false) || (user_config_option("can notify from quick add") && !user_config_option("show_notify_checkbox_in_quick_add") && $send_edit == false)) {
 					try {
 						Notifier::taskAssigned($task);
 					} catch(Exception $e) {
@@ -1301,24 +1291,19 @@ class TaskController extends ApplicationController {
 				if($task instanceof TemplateTask){
 					//evt_add("template task added", array("id_template_task" => $file->getId()));
 					
-					$task->setIsTemplate(true);
 					$parent = TemplateTasks::findById($id);
 					if ($parent instanceof TemplateTask) {
 						$task->setParentId($id);
-						$member_ids = $parent->getMemberIds();
-						if ($parent->getIsTemplate()) {
-							$task->setIsTemplate(true);
-						}
+						$member_ids = $parent->getMemberIds();						
 					}
 					
+					//template id
+					$task->setTemplateId($template_id);
 				}else{
 					$parent = ProjectTasks::findById($id);
 					if ($parent instanceof ProjectTask) {
 						$task->setParentId($id);
-						$member_ids = $parent->getMemberIds();
-						if ($parent->getIsTemplate()) {
-							$task->setIsTemplate(true);
-						}
+						$member_ids = $parent->getMemberIds();						
 					}
 				}
 
@@ -1443,7 +1428,7 @@ class TaskController extends ApplicationController {
 				}
 				ApplicationLogs::createLog($task, ApplicationLogs::ACTION_ADD, null, $isSailent);
 
-				if ($task->getIsTemplate()) {
+				if ($task instanceof TemplateTask) {
 					flash_success(lang('success add template', $task->getObjectName()));
 				} else {
 					flash_success(lang('success add task list', $task->getObjectName()));
@@ -1491,7 +1476,7 @@ class TaskController extends ApplicationController {
 			ajx_current("empty");
 			return;
 		}
-		$title = $task->getIsTemplate() ? $task->getObjectName() : lang("copy of", $task->getObjectName());
+		$title = $task instanceof TemplateTask ? $task->getObjectName() : lang("copy of", $task->getObjectName());
 		$dd = $task->getDueDate() instanceof DateTimeValue ? $task->getDueDate()->advance(logged_user()->getTimezone() * 3600, false) : null;
 		$sd = $task->getStartDate() instanceof DateTimeValue ? $task->getStartDate()->advance(logged_user()->getTimezone() * 3600, false) : null;
 		
@@ -1770,7 +1755,7 @@ class TaskController extends ApplicationController {
 
 				$member_ids = json_decode(array_var($_POST, 'members'));
 
-				$was_template = $task->getIsTemplate();
+				
 
 				if(config_option("wysiwyg_tasks")){
 					$task_data['type_content'] = "html";
@@ -1779,7 +1764,7 @@ class TaskController extends ApplicationController {
 					$task_data['type_content'] = "text";
 				}
 				$task->setFromAttributes($task_data);
-				$task->setIsTemplate($was_template); // is_template value must not be changed from ui
+				
 
 				$totalMinutes = (array_var($task_data, 'time_estimate_hours') * 60) + (array_var($task_data, 'time_estimate_minutes'));
 				$task->setTimeEstimate($totalMinutes);
@@ -2033,7 +2018,7 @@ class TaskController extends ApplicationController {
 
 		try {
 			DB::beginWork();
-			$is_template = $task->getIsTemplate();
+			$is_template = $task instanceof TemplateTask;
 			$task->trash();
 			DB::commit();
 			ApplicationLogs::createLog($task, ApplicationLogs::ACTION_TRASH);
@@ -2691,10 +2676,8 @@ class TaskController extends ApplicationController {
         }
         
         function repetitive_task_related_edit($task,$task_data){
-            $was_template = $task->getIsTemplate();
             $task->setFromAttributes($task_data);
-            $task->setIsTemplate($was_template); // is_template value must not be changed from ui
-
+            
             $totalMinutes = (array_var($task_data, 'time_estimate_hours') * 60) + (array_var($task_data, 'time_estimate_minutes'));
             $task->setTimeEstimate($totalMinutes);
 

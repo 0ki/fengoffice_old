@@ -6,7 +6,6 @@ INSERT INTO `<?php echo $table_prefix ?>config_categories` (`name`, `is_system`,
 	('general', 0, 1),
 	('mailing', 0, 2),
 	('passwords', 0, 4);
-('general', 'milestone_selector_filter', 'current_and_parents', 'MilestoneSelectorFilterConfigHandler', 0, 0, NULL)
 
 INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
 	('system', 'project_logs_per_page', '10', 'IntegerConfigHandler', 1, 0, NULL),
@@ -51,7 +50,7 @@ INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`
 	('general', 'show_feed_links', '0', 'BoolConfigHandler', '0', '0', NULL),
 	('general', 'use_owner_company_logo_at_header', '1', 'BoolConfigHandler', '0', '0', NULL),
 	('general', 'ask_administration_autentification', 0, 'BoolConfigHandler', 0, 0, NULL),
-	('general', 'use tasks dependencies', 0, 'BoolConfigHandler', 0, 0, NULL),
+	('general', 'use tasks dependencies', 1, 'BoolConfigHandler', 0, 0, NULL),
     ('general', 'untitled_notes', '0', 'BoolConfigHandler', '0', '0', NULL),
     ('general', 'repeating_task', '0', 'BoolConfigHandler', '0', '0', NULL),
     ('general', 'working_days', '1,2,3,4,5,6,7', 'StringConfigHandler', '0', '0', NULL),

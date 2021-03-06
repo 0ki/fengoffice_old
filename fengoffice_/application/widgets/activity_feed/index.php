@@ -2,6 +2,7 @@
     $options = explode(",",user_config_option("filters_dashboard"));
     
     $activities =  ApplicationLogs::getLastActivities();
+    
     $limit = $options[2];
     $acts = array();
     $acts['data'] = array();

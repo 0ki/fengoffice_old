@@ -63,3 +63,7 @@ UPDATE <?php echo $table_prefix ?>dimension_object_type_contents SET is_multiple
 
 INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
 ('general', 'milestone_selector_filter', 'current_and_parents', 'MilestoneSelectorFilterConfigHandler', 0, 0, NULL);
+
+ALTER TABLE `<?php echo $table_prefix ?>application_logs` ADD INDEX `member`(`member_id`, `created_on`, `is_silent`);
+
+UPDATE `<?php echo $table_prefix ?>config_options` SET `value` = '1' WHERE `name` = 'use tasks dependencies';

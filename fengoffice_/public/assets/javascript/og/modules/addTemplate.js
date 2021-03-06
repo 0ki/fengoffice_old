@@ -222,10 +222,29 @@ og.toggleTemplatePropertys = function(object_id){
 }
 
 og.removeObjectFromTemplate = function(div, obj_id) {
-	og.openLink(og.getUrl('object','delete_permanently', {object_id: obj_id, dont_reload: true}));
 	var parent = div.parentNode.parentNode;
+	var ob_type = "template_task";
+	//search ob type
+	var removed_object = [];
+	for(var k=0; k < og.templateObjects.length; k++){
+		if(og.templateObjects[k].object_id == obj_id ){
+			removed_object = og.templateObjects.splice(k,1);
+			break;
+		}
+	}
+	
+	//keep the milestone tasks
+	if (removed_object.length > 0 && removed_object[0].type == 'template_milestone') {
+		ob_type = "template_milestone";
+		var milestoneTasksDiv = document.getElementById('subTasksDiv' + obj_id);
+			
+		var milestoneTasksDivs = $("#"+milestoneTasksDiv.getAttribute("id")).children("[id^='objectDiv']")
+	}
+	
+	//remove
 	var removeId = div.parentNode.id;
 	parent.removeChild(div.parentNode);
+		
 	var inputs = parent.getElementsByTagName('input');
 	var count = 0;
 	for (var i=0; i < inputs.length; i++) {
@@ -245,6 +264,11 @@ og.removeObjectFromTemplate = function(div, obj_id) {
 		}
 	}
 	
+	//add the milestone tasks to parent container
+	if (ob_type == "template_milestone") {
+		$("#"+parent.getAttribute("id")).append(milestoneTasksDivs);
+	}
+	
 	//rebuild colors 
 	$("#"+parent.getAttribute("id")).children("[id^='objectDiv']").each(function( index ) {
 		if (index%2==0){
@@ -256,35 +280,8 @@ og.removeObjectFromTemplate = function(div, obj_id) {
 		}
 	});
 	
-	var removed_objects = [];
-	for(var k=0; k < og.templateObjects.length; k++){
-		if(og.templateObjects[k].object_id == obj_id ){
-			removed_objects = og.templateObjects.splice(k,1);
-			break;
-		}
-	}
-	if (removed_objects.length > 0 && removed_objects[0].type == 'milestone') {
-		og.add_template_input_divs = [];
-		var inputs = parent.getElementsByTagName('input');
-		for (var i=0; i < inputs.length; i++) {
-			if(inputs[i].className == 'objectID') {
-				og.add_template_input_divs[inputs[i].value] = inputs[i].parentNode.parentNode.id;
-			}
-		}
-		for (var k=0; k<og.templateObjects.length; k++) {
-			if (og.templateObjects[k].type == 'task') {
-				og.drawTemplateObjectMilestonesCombo(Ext.get(og.add_template_input_divs[og.templateObjects[k].object_id]).dom, og.templateObjects[k]);
-			}
-		}
-	}
-
-	//subtasks div empty?
-	/*
-	if (parent.getAttribute("id").match(/subTasksDiv.*//*)) {
-		if($("#"+parent.getAttribute("id")+ " > div").length == 0){
-			$("#"+parent.getAttribute("id")).hide();
-		}
-	}*/
+	
+		
 };
 
 og.templateObjectMouseOver = function() {

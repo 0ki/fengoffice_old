@@ -15,12 +15,15 @@
                         </div>
                         <div class="basic-info">
                         
-                            <h2>
-                                <?php echo clean($contact->getObjectName()) ?>
-                            </h2>
+                            <h2><?php echo clean($contact->getObjectName()) ?></h2>
                             <h3><?php
                             	$jt = clean($contact->getJobTitle());
                             	$cn = $company instanceof Contact && $company->getIsCompany() ? clean($company->getObjectName()) : '';
+                            	$comp_view_url = '';
+                            	if ($company instanceof Contact && $company->getIsCompany() ) {
+                            		$comp_view_url = $company->getViewUrl();
+                            		$cn = '<a href="'.$comp_view_url.'">'.$cn.'</a>';
+                            	}
                             	$sep = ($jt != '' && $cn != '') ? '<span> | </span>' : '';
                             	echo $jt . $sep . $cn; 
                             ?></h3>

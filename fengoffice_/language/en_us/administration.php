@@ -329,6 +329,8 @@
     'add template' => 'Add template',
     'confirm delete template' => 'Are you sure you want to delete this template?',
     'no templates' => 'There are no templates',
+  	'copy task subtasks' => 'Would you like to copy the subtasks into the template as well?',
+  	'copy milestone tasks' => 'Would you like to copy the milestone\'s tasks into the template as well?',  		
     'template name required' => 'The template\'s name is required',
     'can manage templates' => 'Can manage templates',
     'can manage time' => 'Can manage time',

@@ -33,8 +33,6 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 			} else {
 				echo lang('new task list');
 			}
-		} else if ($task->getIsTemplate()) {
-			echo lang('edit task template');
 		} else {
 			echo lang('edit task list');
 		}
@@ -281,11 +279,6 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
   	</fieldset>
   	</div>
 
-<?php if($task->isNew()) { ?>
-	<?php if (isset($base_task) && $base_task instanceof ProjectTask && $base_task->getIsTemplate()) { ?>
-		<input type="hidden" name="task[from_template_id]" value="<?php echo $base_task->getId() ?>" />
-	<?php } ?>
-<?php } // if ?>
   	
 	<div id="<?php echo $genid ?>task_repeat_options_div" style="display:none">
 		<fieldset>

@@ -520,7 +520,6 @@ class TemplateTask extends BaseTemplateTask {
 		$new_task->setState($this->getState());
 		$new_task->setOrder($this->getOrder());
 		$new_task->setMilestoneId($this->getMilestoneId());
-		$new_task->setIsTemplate($this->getIsTemplate());
 		$new_task->setFromTemplateId($this->getTemplateId());
 		$new_task->setUseStartTime($this->getUseStartTime());
 		$new_task->setUseDueTime($this->getUseDueTime());
@@ -560,20 +559,6 @@ class TemplateTask extends BaseTemplateTask {
 				$new_task->linkObject($lo);
 			}
 		}
-	
-		/*$sub_tasks = $this->getAllSubTasks();
-		foreach ($sub_tasks as $st) {
-			$new_dates = $this->getNextRepetitionDatesSubtask($st,$new_task, $new_st_date, $new_due_date);
-			if ($st->getParentId() == $this->getId()) {
-				$new_st = $st->cloneTask(array_var($new_dates, 'st'),array_var($new_dates, 'due'),$copy_status, $copy_repeat_options, $new_task->getId());
-				if ($copy_status) {
-					$new_st->setCompletedById($st->getCompletedById());
-					$new_st->setCompletedOn($st->getCompletedOn());
-					$new_st->save();
-				}
-				$new_task->attachTask($new_st);
-			}
-		}*/
 	
 		foreach ($this->getAllComments() as $com) {
 			$new_com = new Comment();
@@ -641,6 +626,153 @@ class TemplateTask extends BaseTemplateTask {
 		return $new_task;
 	}
 	
+	/**
+	 * Copy a project task to a template task
+	 *
+	 * @access public
+	 * @param $project_task ProjectTask project task
+	 * @param $template_id int the template id
+	 * @param $parent_id int the parent id if is a subtask
+	 * @return TemplateTask
+	 */
+	function copyFromProjectTask($project_task, $template_id, $parent_id = 0, $milestone_id = 0) {
+		//param
+		$parent_subtask=0;
+		$new_st_date='';
+		$new_due_date='';
+			
+		$new_task = new TemplateTask();			
+		$new_task->setObjectName($project_task->getObjectName());
+		$new_task->setText($project_task->getText());
+		$new_task->setAssignedToContactId($project_task->getAssignedToContactId());
+		$new_task->setAssignedOn($project_task->getAssignedOn());
+		$new_task->setAssignedById($project_task->getAssignedById());
+		$new_task->setTimeEstimate($project_task->getTimeEstimate());
+		$new_task->setStartedOn($project_task->getStartedOn());
+		$new_task->setStartedById($project_task->getStartedById());
+		$new_task->setPriority(($project_task->getPriority()));
+		$new_task->setOrder($project_task->getOrder());
+		$new_task->setUseStartTime($project_task->getUseStartTime());
+		$new_task->setUseDueTime($project_task->getUseDueTime());
+		$new_task->setTypeContent($project_task->getTypeContent());
+		$new_task->setParentId($project_task->getParentId());
+		$new_task->setOriginalTaskId($project_task->getId());
+		$new_task->setTemplateId($template_id);
+		$new_task->setSessionId(null);
+		$new_task->setParentId($parent_id);
+		$new_task->setMilestoneId($milestone_id);
+		if ($project_task->getDueDate() instanceof DateTimeValue ) {
+			$new_task->setDueDate(new DateTimeValue($project_task->getDueDate()->getTimestamp()));
+		}
+		if ($project_task->getStartDate() instanceof DateTimeValue ) {
+			$new_task->setStartDate(new DateTimeValue($project_task->getStartDate()->getTimestamp()));
+		}
+		
+		if($new_st_date != "") {
+			if ($new_task->getStartDate() instanceof DateTimeValue) $new_task->setStartDate($new_st_date);
+		}
+		if($new_due_date != "") {
+			if ($new_task->getDueDate() instanceof DateTimeValue) $new_task->setDueDate($new_due_date);
+		}
+		$new_task->save();
+	
+		//Link to the same LinkedObjects of the task
+		if (is_array($project_task->getAllLinkedObjects())) {
+			foreach ($project_task->getAllLinkedObjects() as $lo) {
+				$new_task->linkObject($lo);
+			}
+		}
+		
+		//Copy Subscribers
+		$_POST['subscribers'] = array();
+		foreach ($project_task->getSubscribers() as $sub) {
+			$_POST['subscribers']["user_" . $sub->getId()] = "checked";
+		}	
+		$obj_controller = new ObjectController();		
+		$obj_controller->add_subscribers($new_task);
+	
+		/*
+		foreach($project_task->getCustomProperties() as $prop) {
+			$new_prop = new ObjectProperty();
+			$new_prop->setRelObjectId($new_task->getId());
+			$new_prop->setPropertyName($prop->getPropertyName());
+			$new_prop->setPropertyValue($prop->getPropertyValue());
+			$new_prop->save();
+		}*/
+	
+		//Copy Custom Properties
+		$custom_props = CustomProperties::getAllCustomPropertiesByObjectType("TemplateTasks");
+		foreach ($custom_props as $c_prop) {
+			$values = CustomPropertyValues::getCustomPropertyValues($project_task->getId(), $c_prop->getId());
+			if (is_array($values)) {
+				foreach ($values as $val) {
+					$cp = new CustomPropertyValue();
+					$cp->setObjectId($new_task->getId());
+					$cp->setCustomPropertyId($val->getCustomPropertyId());
+					$cp->setValue($val->getValue());
+					$cp->save();
+				}
+			}
+		}
+		
+		// Copy Reminders
+		/*$reminders = ObjectReminders::getByObject($project_task);
+		foreach($reminders as $reminder) {
+			$copy_reminder = new ObjectReminder();
+			$copy_reminder->setContext($reminder->getContext());
+			$reminder_date = $new_task->getColumnValue($reminder->getContext());
+			if ($reminder_date instanceof DateTimeValue) {
+				$reminder_date = new DateTimeValue($reminder_date->getTimestamp());
+				$reminder_date->add('m', -$reminder->getMinutesBefore());
+			}
+			$copy_reminder->setDate($reminder_date);
+			$copy_reminder->setMinutesBefore($reminder->getMinutesBefore());
+			$copy_reminder->setObject($new_task);
+			$copy_reminder->setType($reminder->getType());
+			$copy_reminder->setUserId($reminder->getUserId());
+			$copy_reminder->save();
+		}*/
+		
+		//Copy Members
+		$members = $project_task->getMemberIds();
+		$obj_controller->add_to_members($new_task, $members);
+		
+		return $new_task;
+	}
+	
+	/**
+	 * Copy a project task to a template task and all subtasks (go deep)
+	 *
+	 * @access public
+	 * @param $project_task ProjectTask project task
+	 * @param $template_id int the template id
+	 * @param $parent_id int the parent id if is a subtask
+	 * @return TemplateTask
+	 */
+	function copyFromProjectTaskIncludeSubTasks($project_task, $template_id, $parent_id = 0, $milestone_id = 0) {
+		//Copy task
+		$tmp_task = TemplateTask::copyFromProjectTask($project_task, $template_id, $parent_id, $milestone_id);
+		
+		// Copy Subtasks
+		
+		$tmp_sub_tasks = $project_task->getSubTasks(false,false);
+				
+		foreach ($tmp_sub_tasks as $c) {
+			if($c instanceof ProjectTask){				
+				$sub = TemplateTask::copyFromProjectTaskIncludeSubTasks($c,$template_id,$tmp_task->getId(),$milestone_id);
+				
+				//create a TemplateObject
+				$to = new TemplateObject();
+				$to->setObject($sub);
+				$to->setTemplateId($template_id);
+				$to->save();
+			}
+				
+		}
+		
+		return $tmp_task;
+	}
+	
 	function cloneTask($new_st_date='',$new_due_date='',$copy_status = false,$copy_repeat_options = true,$parent_subtask=0) {
 
 		$new_task = new TemplateTask();
@@ -662,7 +794,6 @@ class TemplateTask extends BaseTemplateTask {
 		$new_task->setState($this->getState());
 		$new_task->setOrder($this->getOrder());
 		$new_task->setMilestoneId($this->getMilestoneId());
-		$new_task->setIsTemplate($this->getIsTemplate());
 		$new_task->setFromTemplateId($this->getFromTemplateId());
 		$new_task->setUseStartTime($this->getUseStartTime());
 		$new_task->setUseDueTime($this->getUseDueTime());
@@ -1312,7 +1443,10 @@ class TemplateTask extends BaseTemplateTask {
 			foreach($children as $child)
 				$child->delete(true);
 		}
-
+		ProjectTaskDependencies::delete('( task_id = '. $this->getId() .' OR previous_task_id = '.$this->getId().')');
+		
+		TemplateObjects::removeObjectFromTemplates($this);
+		
 		$task_list = $this->getParent();
 		if($task_list instanceof TemplateTask) $task_list->detachTask($this);
 		return parent::delete();

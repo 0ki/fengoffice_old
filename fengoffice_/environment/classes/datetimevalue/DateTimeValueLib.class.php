@@ -9,7 +9,7 @@
   class DateTimeValueLib {
   
     /**
-    * Returns current time object
+    * Returns current time object in gmt 0
     *
     * @param void
     * @return DateTimeValue

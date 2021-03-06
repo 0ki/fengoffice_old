@@ -59,9 +59,6 @@
 <div class="coInputMainBlock">
 	<input id="<?php echo $genid?>updated-on-hidden" type="hidden" name="updatedon" value="<?php echo $milestone->isNew() ? '' : $milestone->getUpdatedOn()->getTimestamp() ?>">
 	
-	<?php if ($milestone->isNew() && isset($base_milestone) && $base_milestone instanceof ProjectMilestone && $base_milestone->getIsTemplate()) { ?>
-		<input type="hidden" name="milestone[from_template_id]" value="<?php echo $base_milestone->getId() ?>" />
-	<?php } ?>
 	
 	<div id="<?php echo $genid ?>add_milestone_select_context_div" style="display:none">
 	<fieldset>

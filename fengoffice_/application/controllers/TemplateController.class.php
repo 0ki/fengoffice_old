@@ -35,9 +35,7 @@ class TemplateController extends ApplicationController {
 				);
 			
 			//delete old temporaly template tasks
-			$conditions = array('conditions' => '`session_id` =  '.logged_user()->getId().' AND `template_id` = 0');
-			TemplateTasks::delete($conditions);
-			TemplateMilestones::delete($conditions);
+			self::deleteOldTemporalyTemplateObj();
 			
 		} else {
 			//No le agrego miembros
@@ -209,6 +207,25 @@ class TemplateController extends ApplicationController {
 		return $object;
 	}
 	
+	//delete old temporaly template tasks
+	private function deleteOldTemporalyTemplateObj(){
+		//delete Dependencies
+		$temp_tasks = TemplateTasks::getAllTaskTemplatesBySessionId(logged_user()->getId());
+		foreach ($temp_tasks as $tmp){
+			$id = $tmp->getId();
+			$dep = ProjectTaskDependencies::findOne(array('conditions' => "(`previous_task_id` = $id OR `task_id` = $id )"));
+			if ($dep instanceof ProjectTaskDependency) {
+				$dep->delete();				
+			} 
+		}
+		
+		//delete obj
+		$conditions = array('conditions' => '`session_id` =  '.logged_user()->getId());
+		if(logged_user()->getId() > 0){
+			TemplateTasks::delete($conditions);
+			TemplateMilestones::delete($conditions);
+		}
+	}
 	
 	
 	
@@ -246,21 +263,20 @@ class TemplateController extends ApplicationController {
 			}
 			
 			//delete old temporaly template tasks
-			$conditions = array('conditions' => '`session_id` =  '.logged_user()->getId().' AND `template_id` = 0');
-			TemplateTasks::delete($conditions);
-			TemplateMilestones::delete($conditions);
+			self::deleteOldTemporalyTemplateObj();
 		} else {
 			$cotemplate->setFromAttributes($template_data);
 			try {
 				$member_ids = json_decode(array_var($_POST, 'members'));
 				DB::beginWork();
-				$cotemplate->save();
+				$tmp_objects = $cotemplate->getObjects();
 				$cotemplate->removeObjects();
+				$cotemplate->save();
 				$objects = array_var($_POST, 'objects');
 				foreach ($objects as $objid) {
 					
 					$object = Objects::findObject($objid);
-					//COTemplates::validateObjectContext($object, $member_ids);
+					
 					$additional_attributes = array();
 					if ($object instanceof ProjectTask) {
 						$add_attr_milestones = array_var($_POST, "milestones");
@@ -286,7 +302,6 @@ class TemplateController extends ApplicationController {
 							$templateObjPropValue = new TemplateObjectProperty();
 							$templateObjPropValue->setTemplateId($cotemplate->getId());
 							$templateObjPropValue->setObjectId($object_ids[$objInfo]);
-							//$templateObjPropValue->setObjectManager($split[0]);
 							$templateObjPropValue->setProperty($property);
 							$propValue = '';
 							if(isset($propValueParams[$objInfo][$property])){
@@ -319,9 +334,16 @@ class TemplateController extends ApplicationController {
 					}
 				}
 				
-//				$object_controller = new ObjectController();
-//				$object_controller->add_to_members($cotemplate, $member_ids);
-				
+				//delete permanently objs
+				foreach ($tmp_objects as $obj){
+					if(is_null($objects)){
+						$objects = array();
+					}
+					if(!in_array($obj->getId(), $objects)){
+						$obj->delete();
+					}
+				}
+								
 				DB::commit();
 				ApplicationLogs::createLog($cotemplate, ApplicationLogs::ACTION_EDIT);
 				flash_success(lang("success edit template"));
@@ -409,16 +431,21 @@ class TemplateController extends ApplicationController {
 			return;
 		}
 		$manager = array_var($_GET, 'manager');
-		$id = get_id();
+		$id = get_id('id',$_REQUEST);
+		
+		$template_data = array_var($_POST, 'add_to_temp');
 		
 		$object = Objects::findObject($id);
-		$template_id = array_var($_GET, 'template');
-		if ($template_id) {
+		
+		if (is_array($template_data)) {
+			$template_id =  array_var($template_data, 'template');
+			$go_deep = array_var($template_data, 'copy-tasks',false);
+						
 			$template = COTemplates::findById($template_id);
 			if ($template instanceof COTemplate) {
 				try {
 					DB::beginWork();
-					$template->addObject($object);
+					$template->addObject($object, null, $go_deep);
 					DB::commit();
 					flash_success(lang('success add object to template'));
 					ajx_current("start");
@@ -431,6 +458,7 @@ class TemplateController extends ApplicationController {
 		tpl_assign('templates', COTemplates::findAll());
 		tpl_assign("object", $object);
 	}
+	
 
 	function template_parameters(){
 		$id = get_id();
@@ -492,11 +520,22 @@ class TemplateController extends ApplicationController {
 		
 		$active_context = active_context();
 		$copies = array();
+		$copiesIds = array();
+		$dependencies = array();
 		
 		foreach ($objects as $object) {
 			if (!$object instanceof ContentDataObject) continue;
 			// copy object
 			if ($object instanceof TemplateTask) {
+				
+				//dependencies
+				$ptasks = ProjectTaskDependencies::getDependenciesForTemplateTask($object->getId());
+				if(!empty( $ptasks )){
+					foreach ($ptasks as $d) {
+						$dependencies[] = $d;
+					}											
+				}
+											
 				$copy = $object->copyToProjectTask();
 				//if is subtask
 				if($copy->getParentId() > 0){	
@@ -522,15 +561,10 @@ class TemplateController extends ApplicationController {
 			if ($copy->columnExists('is_template')) {
 				$copy->setColumnValue('is_template', false);
 			}
-			
-			if ($copy instanceof ProjectTask) {
-				// don't copy parent task and milestone
-				//$copy->setMilestoneId(0);
-				//$copy->setParentId(0);
-			}
-			
+						
 			$copy->save();
 			$copies[] = $copy;
+			$copiesIds[$object->getId()] = $copy->getId();
 			
 			
 			/* Set instantiated object members:
@@ -562,10 +596,6 @@ class TemplateController extends ApplicationController {
 			$copy->copyLinkedObjectsFrom($object);
 			// copy subtasks if applicable
 			if ($copy instanceof ProjectTask) {
-				/*ProjectTasks::copySubTasks($object, $copy, false);
-				foreach($copy->getOpenSubTasks(false) as $m_task){
-					$controller->add_to_members($m_task, $object_members);
-				}*/
 				$manager = $copy->manager();
 			} else if ($copy instanceof ProjectMilestone) {
 				$manager = $copy->manager();
@@ -576,7 +606,6 @@ class TemplateController extends ApplicationController {
 			// set property values as defined in template
 			$objProp = TemplateObjectProperties::getPropertiesByTemplateObject($id, $object->getId());
 			
-			//$manager = $copy->manager();
 			foreach($objProp as $property) {
 				
 				$propName = $property->getProperty();
@@ -675,6 +704,16 @@ class TemplateController extends ApplicationController {
 						}
 					}
 				}
+			}			
+		}
+		
+		//copy dependencies
+		foreach ($dependencies as $dependencie) {
+			if ($dependencie instanceof ProjectTaskDependency) {
+				$dep = new ProjectTaskDependency();
+				$dep->setPreviousTaskId($copiesIds[$dependencie->getPreviousTaskId()]);
+				$dep->setTaskId($copiesIds[$dependencie->getTaskId()]);
+				$dep->save();						
 			}
 		}
 		

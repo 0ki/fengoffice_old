@@ -1,0 +1,69 @@
+{
+  "title": {
+    "text": ""
+  },
+  "elements": [
+    {
+      "type": "line",
+      "colour": "#0000AA",
+      "text": "Presupuestado",
+      "font-size": 10,
+      "width": 3,
+      "values": [
+        0,
+        0,
+        55,
+        89.5,
+        223.5,
+        223.5,
+        346.5,
+        1846.5
+      ]
+    },
+    {
+      "type": "line",
+      "colour": "#00AA00",
+      "text": "Ejecutado",
+      "font-size": 10,
+      "width": 3,
+      "values": [
+        100,
+        150,
+        150,
+        165,
+        165,
+        288,
+        288,
+        288
+      ]
+    }
+  ],
+  "x_axis": {
+    "colour": "#87C4FA",
+    "grid-colour": "#D4E8FA",
+    "min": 0,
+    "max": 7,
+    "steps": 1,
+    "labels": {
+      "labels": [
+        "2014-02-03",
+        "2014-02-21",
+        "2014-02-26",
+        "2014-03-04",
+        "2014-03-06",
+        "2014-03-07",
+        "2014-03-12",
+        "2014-03-29"
+      ],
+      "steps": 1
+    }
+  },
+  "y_axis": {
+    "colour": "#87C4FA",
+    "grid-colour": "#D4E8FA",
+    "min": 0,
+    "max": 3000,
+    "steps": 150
+  },
+  "bg_colour": "#FFFFFF"
+}

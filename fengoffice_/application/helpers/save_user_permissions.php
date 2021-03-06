@@ -6,7 +6,7 @@ include "init.php";
 
 session_commit(); // we don't need sessions
 @set_time_limit(0); // don't limit execution of cron, if possible
-ini_set('memory_limit', '1024M');
+ini_set('memory_limit', '2048M');
 
 try {
 	Env::useHelper('permissions');
@@ -17,7 +17,7 @@ try {
 	// log user in
 	$user = Contacts::findById($user_id);
 	if(!($user instanceof Contact) || !$user->isValidToken($token)) {
-		die();
+		throw new Exception("Cannot login with user $user_id and token '$token'");
 	}
 
 	CompanyWebsite::instance()->setLoggedUser($user, false, false, false);

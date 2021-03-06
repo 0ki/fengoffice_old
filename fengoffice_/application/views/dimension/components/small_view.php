@@ -1,6 +1,6 @@
 
 <div id="<?php echo $genid; ?>member-seleector-dim<?php echo $dimension_id?>" class="small-member-selector" style="min-height: 50px;" <?php echo $is_ie ? 'style="max-width:330px;"' : ''?>>
-		<label><?php echo $dimension_name?>:</label>
+		<label style="font-size: 100%;"><b><?php echo $dimension_name?>:</b></label>
 		<div class="selector-body" id="<?php echo $expgenid?>selector-body-dim<?php echo $dimension_id ?>">
 			<div id="<?php echo $genid; ?>selected-members-dim<?php echo $dimension_id?>" class="selected-members">
 

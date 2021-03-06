@@ -1597,9 +1597,9 @@ class MailController extends ApplicationController {
 						}
 
 						$file->addToMembers($members);
-						
 						// fill sharing table in background
-						add_object_to_sharing_table($file, logged_user());
+						$user = logged_user() instanceof Contact ? logged_user() : $email->getAccount()->getOwner();
+						add_object_to_sharing_table($file, $user);
 						//$file->addToSharingTable();
 
 						$enc = array_var($parsedMail,'Encoding','UTF-8');

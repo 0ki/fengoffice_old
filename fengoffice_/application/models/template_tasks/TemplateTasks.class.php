@@ -83,6 +83,19 @@ class TemplateTasks extends BaseTemplateTasks {
 		return $tasks;
 	}
 	
+	/**
+	 * Returns all task templates for a session_id 
+	 *@param template_id
+	 */
+	static function getAllTaskTemplatesBySessionId($session_id) {
+	
+		$conditions = "`session_id` = $session_id";
+		$tasks = TemplateTasks::find ( array ('conditions' => $conditions) );
+		if (! is_array ( $tasks ))
+			$tasks = array ();
+		return $tasks;
+	}
+	
 	function maxOrder($parentId = null, $milestoneId = null) {
 		$condition = "`trashed_on` = 0 AND `is_template` = false AND `archived_on` = 0";
 		if (is_numeric ( $parentId )) {
@@ -182,13 +195,11 @@ class TemplateTasks extends BaseTemplateTasks {
 		foreach ( $taskFrom->getSubTasks () as $sub ) {
 			if ($sub->getId() == $taskTo->getId()) continue;
 			$new = TemplateTasks::createTaskCopy ( $sub );
-			$new->setIsTemplate ( $as_template );
+			
 			$new->setParentId ( $taskTo->getId () );
 			$new->setMilestoneId ( $taskTo->getMilestoneId () );
 			$new->setOrder ( TemplateTasks::maxOrder ( $new->getParentId (), $new->getMilestoneId () ) );
-			if ($sub->getIsTemplate ()) {
-				$new->setFromTemplateId ( $sub->getId () );
-			}
+			
 			$new->save ();
 			
 			$object_controller = new ObjectController();
@@ -342,7 +353,7 @@ class TemplateTasks extends BaseTemplateTasks {
 	    $rows = DB::executeAll($sql);
 		foreach ($rows as $row) {
     		$task =  TemplateTasks::findById($row['id']);
-    		if ( ( $task && $task instanceof TemplateTask ) && !$task->isTemplate() ) {
+    		if ($task && $task instanceof TemplateTask) {
     			if($task->getDueDate()){
 	    			$k  = "#".$task->getDueDate()->getTimestamp().$task->getId();
 					$result->objects[$k] = $task ;

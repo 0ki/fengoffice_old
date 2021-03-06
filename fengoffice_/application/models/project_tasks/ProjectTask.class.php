@@ -507,7 +507,6 @@ class ProjectTask extends BaseProjectTask {
 		$new_task->setState($this->getState());
 		$new_task->setOrder($this->getOrder());
 		$new_task->setMilestoneId($this->getMilestoneId());
-		$new_task->setIsTemplate($this->getIsTemplate());
 		$new_task->setFromTemplateId($this->getFromTemplateId());
 		$new_task->setUseStartTime($this->getUseStartTime());
 		$new_task->setUseDueTime($this->getUseDueTime());
@@ -791,12 +790,18 @@ class ProjectTask extends BaseProjectTask {
 	 * @param void
 	 * @return array
 	 */
-	function getSubTasks($include_trashed = true) {
+	function getSubTasks($include_trashed = true, $include_archived = true) {
+		$include = "";
+		if(!$include_trashed){
+			$include = "`trashed_by_id` = 0 AND ";
+		}
+		if(!$include_archived){
+			$include .= "`archived_by_id` = 0 AND ";
+		}
 		if(is_null($this->all_tasks)) {
 			$this->all_tasks = ProjectTasks::findAll(array(
-          'conditions' => '`parent_id` = ' . DB::escape($this->getId()),
-          'order' => '`order`, `created_on`',
-			'include_trashed' => $include_trashed
+          'conditions' => $include.'`parent_id` = ' . DB::escape($this->getId()),
+          'order' => '`order`, `created_on`'			
           )); // findAll
           if (is_null($this->all_tasks)) $this->all_tasks = array();
 		} // if
@@ -1157,7 +1162,8 @@ class ProjectTask extends BaseProjectTask {
 			foreach($children as $child)
 				$child->delete(true);
 		}
-
+		ProjectTaskDependencies::delete('( task_id = '. $this->getId() .' OR previous_task_id = '.$this->getId().')');
+				
 		$task_list = $this->getParent();
 		if($task_list instanceof ProjectTask) $task_list->detachTask($this);
 		return parent::delete();

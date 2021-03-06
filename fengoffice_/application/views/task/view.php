@@ -23,9 +23,7 @@ if (isset($task_list) && $task_list instanceof ProjectTask) {
 	}
 
 	if ($task_list->canDelete(logged_user())) {
-		if ($task_list->isTemplate()) { //FIXME pepe
-			add_page_action(lang('delete'), "javascript:if(confirm(lang('confirm delete task'))) og.openLink('" . $task_list->getDeletePermanentlyUrl() ."');", 'ico-delete', null, null, true);
-		} else if ($task_list->isTrashed()) {
+		if ($task_list->isTrashed()) {
 			add_page_action(lang('restore from trash'), "javascript:if(confirm(lang('confirm restore objects'))) og.openLink('" . $task_list->getUntrashUrl() ."');", 'ico-restore', null, null, true);
 			add_page_action(lang('delete permanently'), "javascript:if(confirm(lang('confirm delete permanently'))) og.openLink('" . $task_list->getDeletePermanentlyUrl() ."');", 'ico-delete', null, null, true);
 		} else {
@@ -34,19 +32,13 @@ if (isset($task_list) && $task_list instanceof ProjectTask) {
 	} // if
 
 	if (!$task_list->isTrashed() && !logged_user()->isGuest()){
-		if ($task_list->getIsTemplate()) {
-			/*FIXME Fix Copy tasks please!
-			add_page_action(lang('new task from template'), get_url("task", "copy_task", array("id" => $task_list->getId())), 'ico-copy');
-			*/
+		if ($task_list->isRepetitive()) {
+			add_page_action(lang('generate repetitition'), get_url("task", "generate_new_repetitive_instance", array("id" => $task_list->getId())), 'ico-recurrent', null, null, true);
 		} else {
-			if ($task_list->isRepetitive()) {
-				add_page_action(lang('generate repetitition'), get_url("task", "generate_new_repetitive_instance", array("id" => $task_list->getId())), 'ico-recurrent', null, null, true);
-			} else {
-				add_page_action(lang('copy task'), get_url("task", "copy_task", array("id" => $task_list->getId())), 'ico-copy');
-			}
-			if (can_manage_templates(logged_user())) {
-				add_page_action(lang('add to a template'), get_url("template", "add_to", array("manager" => 'ProjectTasks', "id" => $task_list->getId())), 'ico-template');
-			} // if
+			add_page_action(lang('copy task'), get_url("task", "copy_task", array("id" => $task_list->getId())), 'ico-copy');
+		}
+		if (can_manage_templates(logged_user())) {
+			add_page_action(lang('add to a template'), get_url("template", "add_to", array("manager" => 'ProjectTasks', "id" => $task_list->getId())), 'ico-template');
 		} // if
 	} // if
 	

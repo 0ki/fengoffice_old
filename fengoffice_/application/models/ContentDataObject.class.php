@@ -1150,7 +1150,6 @@ abstract class ContentDataObject extends ApplicationDataObject {
 		if($this->isPropertyContainer()){
 			$this->clearObjectProperties();
 		}
-		$this->removeFromCOTemplates();
 		$this->clearSubscriptions();
 		$this->clearReminders();
 
@@ -1180,38 +1179,6 @@ abstract class ContentDataObject extends ApplicationDataObject {
 	}
 	
 	
-	// ---------------------------------------------------
-	//  Templates
-	// ---------------------------------------------------
-	
-	
-	/**
-	 * Returns true if the object can be set as a template
-	 *
-	 * @return boolean
-	 */
-	function canBeTemplate() {
-		return $this->columnExists("is_template");
-	}
-	
-	/**
-	 * Returns true if the object is a template
-	 * 
-	 * @return boolean
-	 */
-	function isTemplate() {
-		if (!$this->canBeTemplate()) return false;
-		return $this->getColumnValue("is_template");
-	}
-	
-	
-	/**
-	 * Removes this object from COTemplate objects
-	 *
-	 */
-	function removeFromCOTemplates() {
-		TemplateObjects::removeObjectFromTemplates($this);
-	}
 	
 	
 	// ---------------------------------------------------

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Choto upgrade script will upgrade FengOffice 2.5.1 to FengOffice 2.6-beta
+ * Choto upgrade script will upgrade FengOffice 2.5.1 to FengOffice 2.6-rc
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -40,7 +40,7 @@ class ChotoUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('2.5.1.5');
-		$this->setVersionTo('2.6-beta');
+		$this->setVersionTo('2.6-rc');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -185,6 +185,16 @@ class ChotoUpgradeScript extends ScriptUpgraderScript {
 					UPDATE ".$t_prefix."dimension_object_type_contents SET is_multiple=1 
 					 WHERE content_object_type_id =(SELECT id FROM ".$t_prefix."object_types WHERE name = 'milestone') 
 					 AND dimension_object_type_id IN (SELECT id FROM ".$t_prefix."object_types WHERE name IN ('customer','project','folder','project_folder','customer_folder'));
+				";
+			}
+			
+			if (version_compare($installed_version, '2.6-rc') < 0) {
+				$upgrade_script .= "
+					ALTER TABLE `".$t_prefix."application_logs` ADD INDEX `member`(`member_id`, `created_on`, `is_silent`);
+				";
+				
+				$upgrade_script .="
+					UPDATE `".$t_prefix."config_options` SET `value` = '1' WHERE `name` = 'use tasks dependencies';
 				";
 			}
 			

@@ -1781,6 +1781,9 @@ class ContactController extends ApplicationController {
 							}
 							if ($can_import) {
 								$comp_name = DB::escape(array_var($contact_data, "company_id"));
+								if (trim(strtoupper($comp_name)) == 'NULL') {
+									$comp_name = '';
+								}
 								if ($comp_name != '') {
 									$company = Contacts::findOne(array("conditions" => "first_name = $comp_name AND is_company = 1"));
 									if ($company) {
@@ -1796,7 +1799,7 @@ class ContactController extends ApplicationController {
 								$contact->save();
 
 								//Home form
-                                if($contact_data['h_address'] != ""){
+                                if($contact_data['h_address'] != "" || $contact_data['h_city'] != "" || $contact_data['h_state'] != "" || $contact_data['h_country'] != "" || $contact_data['h_zipcode'] != ""){
 									$contact->addAddress($contact_data['h_address'], $contact_data['h_city'], $contact_data['h_state'], $contact_data['h_country'], $contact_data['h_zipcode'], 'home');
 								}
 								if($contact_data['h_phone_number'] != "") $contact->addPhone($contact_data['h_phone_number'], 'home', true);
@@ -1807,7 +1810,7 @@ class ContactController extends ApplicationController {
 								if($contact_data['h_web_page'] != "") $contact->addWebpage($contact_data['h_web_page'], 'personal');
 								
 								//Work form
-								if($contact_data['w_address'] != ""){
+								if($contact_data['w_address'] != "" || $contact_data['w_city'] != "" || $contact_data['w_state'] != "" || $contact_data['w_country'] != "" || $contact_data['w_zipcode'] != ""){
 									$contact->addAddress($contact_data['w_address'], $contact_data['w_city'], $contact_data['w_state'], $contact_data['w_country'], $contact_data['w_zipcode'], 'work');
 								}
 								if($contact_data['w_phone_number'] != "") $contact->addPhone($contact_data['w_phone_number'], 'work', true);
@@ -1818,7 +1821,8 @@ class ContactController extends ApplicationController {
 								if($contact_data['w_web_page'] != "") $contact->addWebpage($contact_data['w_web_page'], 'work');
 								
 								//Other form
-								if($contact_data['o_address'] != ""){
+								
+								if($contact_data['o_address'] != "" || $contact_data['o_city'] != "" || $contact_data['o_state'] != "" || $contact_data['o_country'] != "" || $contact_data['o_zipcode'] != ""){
 									$contact->addAddress($contact_data['o_address'], $contact_data['o_city'], $contact_data['o_state'], $contact_data['o_country'], $contact_data['o_zipcode'], 'other');
 								}
 								if($contact_data['o_phone_number'] != "") $contact->addPhone($contact_data['o_phone_number'], 'other', true);
@@ -1860,7 +1864,9 @@ class ContactController extends ApplicationController {
 								$company->setFromAttributes($contact_data);
 								$company->save();
 								
-								if($contact_data['address'] != "") $company->addAddress($contact_data['address'], $contact_data['city'], $contact_data['state'], $contact_data['country'], $contact_data['zipcode'], 'work', true);
+								if($contact_data['address'] != "" || $contact_data['city'] != "" || $contact_data['state'] != "" || $contact_data['country'] != "" || $contact_data['zipcode'] != "" ){
+									 $company->addAddress($contact_data['address'], $contact_data['city'], $contact_data['state'], $contact_data['country'], $contact_data['zipcode'], 'work', true);
+								}
 								if($contact_data['phone_number'] != "") $company->addPhone($contact_data['phone_number'], 'work', true);
 								if($contact_data['fax_number'] != "") $company->addPhone($contact_data['fax_number'], 'fax', true);
 								if($contact_data['homepage'] != "") $company->addWebpage($contact_data['homepage'], 'work');

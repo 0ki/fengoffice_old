@@ -1,11 +1,15 @@
 og.ObjectPicker = function(config,object_id,object_id_no_select) {
 	if (!config) config = {};
+	
+	if (!config.extra_list_params) config.extra_list_params = {};
+	extra_list_param = Ext.util.JSON.encode(config.extra_list_params);
+		
 	var Grid = function(config) {
 		if (!config) config = {};
 		this.store = new Ext.data.Store({
         	proxy: new Ext.data.HttpProxy(new Ext.data.Connection({
 				method: 'GET',
-            	url: og.getUrl('object', 'list_objects', {ajax: true, include_comments:true, id_no_select : object_id_no_select })
+            	url: og.getUrl('object', 'list_objects', {ajax: true, include_comments:true, id_no_select : object_id_no_select, extra_list_params: extra_list_param})
         	})),
         	reader: new Ext.data.JsonReader({
             	root: 'objects',

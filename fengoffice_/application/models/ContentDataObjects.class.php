@@ -382,6 +382,8 @@ abstract class ContentDataObjects extends DataManager {
 			$select_columns = array('*');
 		}
 		
+		//template objects
+		$template_objects = (bool) array_var($args,'template_objects',false);
 				
 		$handler_class = "Objects";
 	
@@ -466,6 +468,11 @@ abstract class ContentDataObjects extends DataManager {
 			if ($this instanceof Contacts && $this->object_type_name == 'contact' && can_manage_contacts(logged_user())) {
 				$permissions_condition = "true";
 			}
+			
+			if($template_objects){
+				$permissions_condition = "true";
+				$SQL_BASE_JOIN .= " INNER JOIN  ".TABLE_PREFIX."template_objects temob ON temob.object_id = o.id ";
+			}
 			$sql = "
 				SELECT $SQL_FOUND_ROWS $SQL_COLUMNS FROM ".TABLE_PREFIX."objects o
 				$SQL_BASE_JOIN
@@ -492,6 +499,7 @@ abstract class ContentDataObjects extends DataManager {
 		    if(!$only_count_results){
 				// Execute query and build the resultset
 		    	$rows = DB::executeAll($sql);
+		    	
 		    	if ($return_raw_data) {
 		    		$result->objects = $rows;
 		    	} else {

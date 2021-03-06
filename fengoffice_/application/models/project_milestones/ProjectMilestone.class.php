@@ -374,13 +374,6 @@ class ProjectMilestone extends BaseProjectMilestone {
 	}
 	
 	function delete() {
-		$is_template = $this->getIsTemplate();
-		if ($is_template) {
-			$tasks = $this->getTasks(true);
-			foreach ($tasks as $t) {
-				$t->delete();
-			}
-		}
 		try {
 			DB::execute("UPDATE " . ProjectTasks::instance()->getTableName(true) . " SET `milestone_id` = '0' WHERE `milestone_id` = " . DB::escape($this->getId()));
 			return parent::delete();
@@ -398,17 +391,13 @@ class ProjectMilestone extends BaseProjectMilestone {
 	 * @return boolean
 	 */
 	function trash($trashDate = null) {
-		$is_template = $this->getIsTemplate();
-		if ($is_template) {
-			$this->delete();
-		} else {
-			try {
-				DB::execute("UPDATE " . ProjectTasks::instance()->getTableName(true) . " SET `milestone_id` = '0' WHERE `milestone_id` = " . DB::escape($this->getId()));
-				return parent::trash($trashDate);
-			} catch(Exception $e) {
-				throw $e;
-			} // try
-		}
+		try {
+			DB::execute("UPDATE " . ProjectTasks::instance()->getTableName(true) . " SET `milestone_id` = '0' WHERE `milestone_id` = " . DB::escape($this->getId()));
+			return parent::trash($trashDate);
+		} catch(Exception $e) {
+			throw $e;
+		} // try
+		
 
 	} // trash
 	

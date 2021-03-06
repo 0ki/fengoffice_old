@@ -168,7 +168,7 @@ ogTasks.drawTaskForm = function(container_id, data){
 	//this function only return a visual combo to display, must be repleaced by ajax.
 	function dimCombo (name){
 		var comboHtml = "<div id='og_1396374293_867959member-seleector-dim2' class='small-member-selector' style='min-height: 50px;'>" +
-							"<label>"+ name +":</label>" +
+							"<label style='font-size: 100%;'><b>"+ name +":</b></label>" +
 							"<div class='selector-body' id='og_1396374878_972175selector-body-dim2'>" +
 								"<div id='og_1396374293_867959selected-members-dim2' class='selected-members'></div>" +
 								"<div id='og_1396374293_867959add-member-form-dim2' class='' style='display:block;'>" +
