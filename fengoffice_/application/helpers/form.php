@@ -372,9 +372,12 @@
     if(!is_array($attributes)) {
       $attributes = array();
     } // if
+    $more_classes = array_var($attributes, 'class');
     $attributes['class'] = 'submit';
     $attributes['type'] = 'button';
     $attributes['accesskey'] = $accesskey;
+    
+    if (trim($more_classes) != '') $attributes['class'] .= " $more_classes";
     
     if($accesskey) {
       if(strpos($title, $accesskey) !== false) {

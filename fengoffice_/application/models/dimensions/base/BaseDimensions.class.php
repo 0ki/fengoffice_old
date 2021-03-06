@@ -1,6 +1,20 @@
 <?php 
 
-  
+/**
+ * 
+ * If a dimension uses this method then users MUST HAVE permissions over the 
+ * object's members of this dimension in order to see the object, 
+ * no matter if user has permissions over other members of other dimensions.
+ */
+define('DIMENSION_PERMISSION_QUERY_METHOD_MANDATORY', 'mandatory');
+/**
+ * 
+ * If a dimension uses this method then users may not have permissions over the 
+ * object's members of this dimension but he/she can see it because it has
+ * permissions over other object's members of other dimensions.
+ */
+define('DIMENSION_PERMISSION_QUERY_METHOD_NOT_MANDATORY', 'not_mandatory');
+
   /**
   * BaseDimensions class
   *
@@ -25,7 +39,8 @@
     	'is_system' => DATA_TYPE_BOOLEAN,
     	'is_default' => DATA_TYPE_BOOLEAN,
     	'default_order' => DATA_TYPE_INTEGER,
-    	'options' => DATA_TYPE_STRING
+    	'options' => DATA_TYPE_STRING,
+    	'permission_query_method' => DATA_TYPE_STRING,
     );
   
     /**

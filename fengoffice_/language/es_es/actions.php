@@ -121,7 +121,7 @@
 	'edit folder' => 'Editar carpeta',
 	'delete folder' => 'Eliminar carpeta',
 	'edit file revisions' => 'Editar revisiones',
-	'version' => 'ver',
+	'version' => 'versión',
 	'last modification' => 'Última modificación',
 	'link object' => 'Vincular este objeto',
 	'link objects' => 'Vincular estos objetos',

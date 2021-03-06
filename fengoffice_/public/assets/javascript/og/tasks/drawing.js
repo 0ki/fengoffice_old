@@ -404,11 +404,15 @@ ogTasks.draw = function(){
 	}
 	
 	// *** <RX ***
-	if(this.Groups.length==1 && this.Groups[0].group_tasks.length==0) { // there are no tasks to display
-		sb.append('<div class="inner-message" style="text-align: center; color: gray; font-size: 14px;">'+lang('no tasks to display')+ '</div>'+
-		'<div id="rx__no_tasks_info" style="text-align: center; "><a href="#" class="internalLink ogTasksGroupAction ico-add" '+
-		'onClick="document.getElementById(\'rx__no_tasks_info\').style.display=\'none\'; document.getElementById(\'rx__hidden_group\').style.display=\'block\'; ogTasks.drawAddNewTaskForm(\'' + this.Groups[0].group_id + '\')" '+
-		'title="' + lang('add task') + '">' + (lang('add task')) + '</a>'+
+	if(this.Groups.length==1 && this.Groups[0].group_tasks.length==0) {
+		var context_names = og.contextManager.getActiveContextNames();
+		if (context_names.length == 0) context_names.push(lang('all'));
+		
+		sb.append('<div id="rx__no_tasks_info">' +
+		'<button title="' + lang('add task') + '" class="no-tasks-add-task-btn"' + 
+			'onClick="document.getElementById(\'rx__no_tasks_info\').style.display=\'none\'; document.getElementById(\'rx__hidden_group\').style.display=\'block\'; ogTasks.drawAddNewTaskForm(\'' + this.Groups[0].group_id + '\')">' + '<img src="public/assets/themes/default/images/16x16/add.png"/>&nbsp;' +
+			(lang('add first task')) + '</button>'+
+			'<div class="inner-message">'+lang('no tasks to display', '"'+context_names.join('", "')+'"')+ '</div>'+
 		'</div>');
 		var rx__hidden_group = new String();
 		rx__hidden_group = this.drawGroup(displayCriteria, drawOptions, this.Groups[0]);

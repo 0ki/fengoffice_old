@@ -31,3 +31,9 @@ function core_dimensions_update_1_2() {
 		ON DUPLICATE KEY UPDATE member_id=member_id;
 	");
 }
+
+function core_dimensions_update_2_3() {
+	DB::execute("
+		UPDATE ".TABLE_PREFIX."dimensions SET permission_query_method='not_mandatory' WHERE code='feng_persons';
+	");
+}

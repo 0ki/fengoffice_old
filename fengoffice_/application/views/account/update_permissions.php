@@ -52,7 +52,7 @@
 	$can_change_type = false;
 	$permission_groups = array();
 	foreach($groups as $group){
-		$permission_groups[] = array($group->getId(),$group->getName());
+		$permission_groups[] = array($group->getId(), lang($group->getName()));
 		if ($group->getId() == $actual_user_type->getId()) $can_change_type = true;
 	}
 

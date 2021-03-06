@@ -29,6 +29,7 @@ CREATE TABLE `<?php echo $table_prefix ?>dimensions` (
   `is_default` tinyint(1) unsigned NOT NULL default '0',
   `default_order` int(10) NOT NULL default '0',
   `options` TEXT NOT NULL,
+  `permission_query_method` enum('mandatory','not_mandatory') COLLATE utf8_unicode_ci NOT NULL DEFAULT 'mandatory',
   PRIMARY KEY  (`id`),
   UNIQUE KEY `code` (`code`) USING BTREE,
   KEY `by_name` (`name`),
@@ -717,7 +718,8 @@ CREATE TABLE `<?php echo $table_prefix ?>event_invitations` (
   `event_id` int(10) unsigned NOT NULL default '0',
   `contact_id` int(10) unsigned NOT NULL default '0',
   `invitation_state` int(10) unsigned NOT NULL default '0',
-  PRIMARY KEY (`event_id`, `contact_id`)
+  PRIMARY KEY (`event_id`, `contact_id`),
+  KEY `contact_id` (`contact_id`,`event_id`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 
 CREATE TABLE `<?php echo $table_prefix ?>templates` (

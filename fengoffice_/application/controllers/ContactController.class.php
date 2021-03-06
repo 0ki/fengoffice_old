@@ -693,7 +693,7 @@ class ContactController extends ApplicationController {
         tpl_assign('feeds', $info);
         */ // Performance Killer
         
-		ajx_extra_data(array("title" => $contact->getObjectName(), 'icon'=>'ico-contact'));
+		ajx_extra_data(array("title" => $contact->getObjectName(), 'icon'=>'ico-user'));
 		ajx_set_no_toolbar(true);
 		
 		if (!$contact->isTrashed()){
@@ -1041,6 +1041,7 @@ class ContactController extends ApplicationController {
 				'o_phone_number'=> $contact->getPhoneNumber('other',true),
 				'o_phone_number2'=> $contact->getPhoneNumber('other'),
 				
+				'comments' => $contact->getCommentsField(),
 				'picture_file' => $contact->getPictureFile(),
                 'timezone' => $contact->getTimezone(),
                 'company_id' => $contact->getCompanyId(),

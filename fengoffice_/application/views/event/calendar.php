@@ -57,12 +57,10 @@ $currentyear = $today->format("Y");
 $lastday = date("t", mktime(0, 0, 0, $month, 1, $year));
 $ld_ts = mktime(0, 0, 0, $month, $lastday, $year);
 
-if(user_config_option("start_monday")) (date("w", mktime(0, 0, 0, $month, 1, $year)) - 1) % 7;
-else $fd_ts = mktime(0, 0, 0, $month, 1, $year);
-$firstday = date("w", $fd_ts);
+$fd_ts = mktime(0, 0, 0, $month, 1, $year);
+if(user_config_option("start_monday")) $firstday = (date("w", $fd_ts) - 1) % 7;
+else $firstday = date("w", $fd_ts);
 
-
-$tags = '';
 
 $users_array = array();
 $companies_array = array();
@@ -76,7 +74,7 @@ foreach($companies as $company)
 	<input type="hidden" id="hfCalUsers" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($users_array)))) ?>"/>
 	<input type="hidden" id="hfCalCompanies" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($companies_array)))) ?>"/>
 	<input type="hidden" id="hfCalUserPreferences" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($userPreferences)))) ?>"/>
-        <input id="<?php echo $genid?>type_related" type="hidden" name="type_related" value="only" />
+	<input id="<?php echo $genid?>type_related" type="hidden" name="type_related" value="only" />
 </div>
 
 <script>
@@ -84,7 +82,7 @@ foreach($companies as $company)
 	og.events_selected = 0;
 	og.eventSelected(0);
 	var ev_dropzone = new Ext.dd.DropZone('calendar', {ddGroup:'ev_dropzone'});
-        og.config.genid = '<?php echo $genid ?>';
+	og.config.genid = '<?php echo $genid ?>';
 </script>
 
 <div id="cal_main_div" class="calendar" style="position:relative;width:100%;height:100%;overflow:hidden">
@@ -204,10 +202,25 @@ foreach($companies as $company)
 					$read_events = array();
 					if (count($all_event_ids) > 0) {
 						$read_rows = DB::executeAll("SELECT rel_object_id FROM ".TABLE_PREFIX."read_objects WHERE is_read=1 AND contact_id=".logged_user()->getId()." AND rel_object_id IN (".implode(",",$all_event_ids).")");
-						foreach($read_rows as $rr) {
-							$read_events[$rr['rel_object_id']] = 1;
+						if (is_array($read_rows)) {
+							foreach($read_rows as $rr) {
+								$read_events[$rr['rel_object_id']] = 1;
+							}
 						}
 					}
+					
+					// generate repetitive event instances
+					$repeated_instances = array();
+					foreach ($all_events as $k => $aev) {
+						if ($aev->isRepetitive()) {
+							$rep = $aev->getRepetitiveInstances($date_start, $date_end);
+							if (count($rep) > 0) {
+								$repeated_instances[] = $rep;
+								unset($all_events[$k]);
+							}
+						}
+					}
+					$all_events = array_merge($all_events, array_flat($repeated_instances));
 					
 					$can_add_events = ProjectEvent::canAdd(logged_user(), active_context());
 					
@@ -315,8 +328,7 @@ foreach($companies as $company)
 								$dtv = DateTimeValueLib::make(0, 0, 0, $month_aux, $w, $year_aux);
 							}
 							$start_value = $dtv->format(user_config_option('date_format'));
-														
-					?>	
+					?>
 						 		<div id="m<?php echo $dtv->getMonth() ?>_d<?php echo $dtv->getDay() ?>" style='z-index:0; min-height:90px; height:100%; cursor:pointer;<?php echo $extra_style ?>'
 						 		<?php if (!logged_user()->isGuest()) { ?>
 							 		onclick="showMonthEventPopup('<?php echo $dtv->getDay() ?>','<?php echo $dtv->getMonth()?>','<?php echo $dtv->getYear()?>','<?php echo $start_value ?>', '<?php echo $genid ?>');">
@@ -332,8 +344,7 @@ foreach($companies as $company)
 								// make sure user is allowed to edit the past
 									
 							}
-					?>			
-							
+					?>
 									</div>
 					<?php
 							
@@ -342,14 +353,12 @@ foreach($companies as $company)
 								
 								$result_evs = array();
 								foreach ($all_events as $ev) {
+									$std = $ev->getStart()->advance(logged_user()->getTimezone() * 3600, false);
 									if ($ev->getTypeId() == 2) {
-										
-										$std = $ev->getStart()->advance(logged_user()->getTimezone() * 3600, false);
 										if ($std->format("Y-m-d") == $dtv->format("Y-m-d")) {
 											$result_evs[] = $ev;
 										}
 									} else {
-										$std = $ev->getStart()->advance(logged_user()->getTimezone() * 3600, false);
 										$etd = $ev->getDuration()->advance(logged_user()->getTimezone() * 3600, false);
 										$end_dtv = $dtv->advance(24*3600, false);
 										
@@ -439,9 +448,7 @@ foreach($companies as $company)
 													<?php if (!logged_user()->isGuest()) { ?>
 													og.createMonthlyViewDrag('m_ev_div_<?php echo $event->getId() . $id_suffix ?>', '<?php echo $event->getId()?>', <?php echo $is_repetitive ?>, 'event', '<?php echo $event_start->format('Y-m-d H:i:s') ?>'); // Drag
 													<?php } ?>
-												</script>
-											 	
-								<?php
+												</script><?php
 											}
 										}
 									}
@@ -466,7 +473,6 @@ foreach($companies as $company)
 													if (strlen_utf($tip_text) > 200) $tip_text = substr_utf($tip_text, 0, strpos($tip_text, ' ', 200)) . ' ...';
 													
 								?>
-													
 													<div id="m_ms_div_<?php echo $milestone->getId()?>" class="<?php echo "og-wsname-color-$ws_color" ?>" style="height:20px;margin: 1px;padding-left:1px;padding-bottom:0px;border-radius:4px;border: 1px solid;border-color:<?php echo $border_color ?>;<?php echo $extra_style ?>">
 														<a href='<?php echo $milestone->getViewUrl()?>' class="internalLink" onclick="og.disableEventPropagation(event);return true;" >
 															<img src="<?php echo image_url('/16x16/milestone.png')?>" style="vertical-align: middle;border-width: 0px;">
@@ -481,9 +487,6 @@ foreach($companies as $company)
 													</script>
 								<?php
 												}//if count
-								?>
-												
-								<?php
 											}
 											
 										}//endif milestone
@@ -538,9 +541,6 @@ foreach($companies as $company)
 													</script>
 								<?php
 												}//if count
-								?>
-													
-								<?php
 											}
 										}//endif task
 										elseif($event instanceof Contact){
@@ -568,9 +568,7 @@ foreach($companies as $company)
 										}
 									} // end foreach event writing loop
 									if ($count > $max_events_to_show) {
-								?>
-									
-										<div style="witdh:100%;text-align:center;font-size:9px" ><a href="<?php echo $p?>" class="internalLink"  onclick="og.disableEventPropagation(event);return true;"><?php echo ($count-$max_events_to_show) . ' ' . lang('more');?> </a></div>
+								?><div style="witdh:100%;text-align:center;font-size:9px" ><a href="<?php echo $p?>" class="internalLink"  onclick="og.disableEventPropagation(event);return true;"><?php echo ($count-$max_events_to_show) . ' ' . lang('more');?> </a></div>
 								<?php
 									}
 								}

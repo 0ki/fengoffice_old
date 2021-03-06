@@ -31,8 +31,7 @@ class PanelController extends ApplicationController {
 					"title" => lang($row ['title']), 
 					"id" => $row ['id'], 
 				 	"quickAddTitle" => lang ($row['default_controller']), 
-					"iconCls" => $row ['icon_cls'], 
-				 	"refreshOnWorkspaceChange" => (bool) $row ['refresh_on_context_change'] , 
+					"refreshOnWorkspaceChange" => (bool) $row ['refresh_on_context_change'] , 
 				 	"defaultController" => $row['default_controller'] ,
 					"defaultContent" => array (
 						"type" => "url", 
@@ -41,6 +40,10 @@ class PanelController extends ApplicationController {
 					"enabled" => $row ['enabled'], 
 					"type" => $row ['type'],
 				);
+				
+				if (config_option('show_tab_icons')) {
+					$object["iconCls"] = $row ['icon_cls'];
+				}
 
 				
 				if ( $row ['initial_controller'] && $row['initial_action'] ) {

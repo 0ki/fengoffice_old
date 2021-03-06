@@ -2112,7 +2112,7 @@ class FilesController extends ApplicationController {
 			$file->save();
 			$ctrl = new ObjectController() ;
 			if (is_array($members)) {
-				$ctrl->add_to_members($file, $members);
+				$ctrl->add_to_members($file, array_flat($members));
 			}
 			
 			$revision = $file->handleUploadedFile($file_dt, true, '');
@@ -2170,7 +2170,7 @@ class FilesController extends ApplicationController {
 		
 		$tmp_dir = ROOT.'/tmp/'.rand().'/';
 		mkdir($tmp_dir);
-                $members = array();
+		$members = array();
 		foreach ($files as $file_to_add) {
 			if (FileRepository::getBackend() instanceof FileRepository_Backend_FileSystem) {
 				$file_to_add_path = FileRepository::getBackend()->getFilePath($file_to_add->getLastRevision()->getRepositoryId());
@@ -2181,13 +2181,12 @@ class FilesController extends ApplicationController {
 				fclose($handle);
 			}
 			$zip->addFile($file_to_add_path, utf8_safe($file_to_add->getFilename()));
-                        $members []= $file_to_add->getMemberIds();
-
+			$members[] = $file_to_add->getMemberIds();
 		}
 		$zip->close();
 		delete_dir($tmp_dir);
                 
-		$this->upload_file($file, $filename, $tmp_zip_path,$members);
+		$this->upload_file($file, $filename, $tmp_zip_path, $members);
 		unlink($tmp_zip_path);
 		
 		flash_success(lang('success compressing files', count($files)));

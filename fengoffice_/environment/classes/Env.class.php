@@ -109,10 +109,6 @@ class Env {
     	}
 		ajx_check_login();
 		
-		if (isset($_GET['active_project']) && logged_user() instanceof User) {
-			set_user_config_option('lastAccessedWorkspace', $_GET['active_project'], logged_user()->getId());
-		}
-		
 		Env::useController($controller_name);
 
 		$controller_class = Env::getControllerClass($controller_name);

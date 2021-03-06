@@ -365,7 +365,8 @@ class ApplicationLog extends BaseApplicationLog {
 					return lang('activity ' . $this->getAction(), lang('the '.$object->getObjectTypeName()," "), $user->getObjectName(), $object_link, $users_text);
 			case ApplicationLogs::ACTION_COMMENT :
 				if ($object) {
-					return lang('activity ' . $this->getAction(), lang('the '.$object->getRelObject()->getObjectTypeName()," "), $user->getObjectName(), $object_link, $this->getLogData());
+					$rel_object = Objects::findObject($this->getRelObjectId());
+					return lang('activity ' . $this->getAction(), lang('the '.$rel_object->getObjectTypeName()," "), $user->getObjectName(), $object_link, $this->getLogData());
 				}
 			case ApplicationLogs::ACTION_LINK :
 			case ApplicationLogs::ACTION_UNLINK :

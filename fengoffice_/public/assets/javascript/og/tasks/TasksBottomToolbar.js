@@ -28,6 +28,15 @@ og.TasksBottomToolbar = function(config) {
 		,['status', lang('status')]
 	];
 	
+	if (!og.config.use_milestones) {
+		// remove milestone option from group by select options
+		for (x in groupcombo_store_data) {
+			if (groupcombo_store_data[x][0] == 'milestone') {
+				groupcombo_store_data.splice(x, 1);
+			}
+		}
+	}
+	
 	if (ogTasks.additional_groupby_dimensions) {
 		for (i=0; i<ogTasks.additional_groupby_dimensions.length; i++) {
 			var gb = ogTasks.additional_groupby_dimensions[i];
@@ -77,7 +86,7 @@ og.TasksBottomToolbar = function(config) {
 	        	,['completed_on', lang('completed on')]
 	        	,['assigned_to', lang('assigned to')]
 	        	,['start_date', lang('start date')]
-                        ,['percent_completed', lang('progress')]]
+	        	,['percent_completed', lang('progress')]]
 	    	}),
         displayField:'text',
         typeAhead: true,
@@ -91,27 +100,37 @@ og.TasksBottomToolbar = function(config) {
 				ogTasks.redrawGroups = false;
 				ogTasks.draw();
 				ogTasks.redrawGroups = true;
-                                var url = og.getUrl('account', 'update_user_preference', {name: 'tasksOrderBy', value:record.data.value});
+				var url = og.getUrl('account', 'update_user_preference', {name: 'tasksOrderBy', value:record.data.value});
 				og.openLink(url,{hideLoading:true});
         	}
         }
     });
     this.ordercombo.setValue(ogTasks.userPreferences.orderBy);
     
+    var filtercombo_store_data = [['no_filter','--' + lang('no filter') + '--']
+		,['created_by',lang('created by')]
+		,['completed_by', lang('completed by')]
+		,['assigned_to', lang('assigned to')]
+		,['assigned_by', lang('assigned by')]
+		,['milestone', lang('milestone')]
+		,['priority', lang('priority')]
+		,['subscribed_to', lang('subscribed to')]
+	];
+    
+    if (!og.config.use_milestones) {
+		// remove milestone option from group by select options
+		for (x in filtercombo_store_data) {
+			if (filtercombo_store_data[x][0] == 'milestone') {
+				filtercombo_store_data.splice(x, 1);
+			}
+		}
+	}
+    
     this.filtercombo = new Ext.form.ComboBox({
     	id: 'ogTasksFilterCombo',
         store: new Ext.data.SimpleStore({
 	        fields: ['value', 'text'],
-	        data : [['no_filter','--' + lang('no filter') + '--']
-	        	,['created_by',lang('created by')]
-	        	,['completed_by', lang('completed by')]
-	        	,['assigned_to', lang('assigned to')]
-	        	,['assigned_by', lang('assigned by')]
-	        	,['milestone', lang('milestone')]
-	        	,['priority', lang('priority')]
-                        ,['subscribed_to', lang('subscribed to')]
-	//        	,['subtype', lang('object type')]
-	        ]
+	        data : filtercombo_store_data
 	    }),
         displayField:'text',
         typeAhead: true,

@@ -40,10 +40,6 @@ og.TasksTopToolbar = function(config) {
 	}
 
 	var menuItems = [
-		{text: lang('new milestone'), iconCls: 'ico-milestone', handler: function() {
-			var url = og.getUrl('milestone', 'add');
-			og.openLink(url);
-		}},
 		{text: lang('new task'), iconCls: 'ico-task', handler: function() {
 			var additionalParams = {};
 			var toolbar = Ext.getCmp('tasksPanelBottomToolbarObject');
@@ -59,8 +55,20 @@ og.TasksTopToolbar = function(config) {
 			var url = og.getUrl('reporting', 'total_task_times_p');
 			og.openLink(url);
 		}},
-		'-'*/];
+		'-'*/
+	];
 
+	if (og.config.use_milestones) {
+		menuItems = menuItems.concat([{
+			text: lang('new milestone'),
+			iconCls: 'ico-milestone',
+			handler: function() {
+				var url = og.getUrl('milestone', 'add');
+				og.openLink(url);
+			}
+		}]);
+	}
+	
 	var projectTemplates = [];
 	var projectTemplatesArray = Ext.util.JSON.decode(document.getElementById(config.projectTemplatesHfId).value);
 	if (projectTemplatesArray && projectTemplatesArray.length > 0){

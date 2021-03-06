@@ -57,13 +57,13 @@ $genid = gen_id();
 
 <?php if($task_list->getText()) { ?>
   <fieldset><legend><?php echo lang('description') ?></legend>
-  	<?php 
-            if($task_list->getTypeContent() == "text"){
-                echo escape_html_whitespace(convert_to_links(clean($task_list->getText())));
-            }else{
-                echo purify_html(nl2br($task_list->getText()));
-            }
-        ?>
+	<div class="wysiwyg-description"><?php
+		if($task_list->getTypeContent() == "text"){
+			echo escape_html_whitespace(convert_to_links(clean($task_list->getText())));
+		}else{
+			echo purify_html(nl2br($task_list->getText()));
+		}
+	?></div>
   </fieldset>
 <?php } // if 
 

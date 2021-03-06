@@ -1,5 +1,5 @@
 
-    About Feng Office 2.2
+    About Feng Office 2.2.1 rc
     ================================
  
     Feng Office is a Collaboration Platform and Project Management System.
@@ -102,6 +102,27 @@
  
     Changelog
     =========
+	
+	Since 2.2
+	----------------
+	bugfix: Calendar monthly view bugs with repeating events.
+	bugfix: Permissions system fix.
+	bugfix: Projects appear in object picker.
+	bugfix: language fixes (en_us, es_la, es_es).
+	bugfix: Error in calendar when user has timezone=0.
+	bugfix: Formatted tasks description and notes content does not shows italics and quotes when viewing.
+	bugfix: Compressing files does not create compressed file in the current context.
+	bugfix: Sometimes can subscribe users with no permissions to the object.
+	bugfix: Activity widget bug with general timeslots.
+	bugfix: Error when selecting default workspace in mail account edition.
+	bugfix: User types are not transalted.
+	bugfix: Prevent double generation of tasks when completing a repetitive task instance (double click on complete link).
+	bugfix: CSV export fixes at Total tasks times report.
+	
+	usability: Create events according the filtered user.
+	usability: Config option to show tab icons.
+	usability: Config option to enable/disable milestones.
+	
 	
 	Since 2.2-rc
     ----------------

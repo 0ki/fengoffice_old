@@ -74,6 +74,46 @@ class DimensionController extends ApplicationController {
 	}
 	
 	/** 
+	 * Returns the dimension members the user has permission to with latest activity so that they can be displayed
+	 *  
+	 * $dimension_id = id of the dimension to look at
+	 * $object_type_id = id of the dimension member type
+	 * $logs_amount_range = amount of logs to look for in the application_logs
+	 * $minimum_display = minimum amount of dimension members to return, otherwise return all
+	 * $maximum_display = maximum amount of dimension members to return  
+	*/
+	function latest_active_dimension_members($dimension_id, $object_type_id, $allowed_member_type_ids = null, $logs_amount_range, $minimum_display, $maximum_display) {		
+		//sql query created to filter the members with latest activity through the $extra_conditions variable below     
+        $sql = "SELECT DISTINCT `".TABLE_PREFIX."object_members`.`member_id`,`".TABLE_PREFIX."application_logs`.`id`
+				FROM `".TABLE_PREFIX."application_logs`, `".TABLE_PREFIX."object_members`, `".TABLE_PREFIX."members`
+				WHERE (`".TABLE_PREFIX."application_logs`.`rel_object_id` = `".TABLE_PREFIX."object_members`.`object_id`) 
+					  AND (`".TABLE_PREFIX."object_members`.`member_id` = `".TABLE_PREFIX."members`.`id` AND `".TABLE_PREFIX."members`.`object_type_id` = '".mysql_real_escape_string($object_type_id)."')
+				ORDER BY `".TABLE_PREFIX."application_logs`.`id` DESC LIMIT ".mysql_real_escape_string($logs_amount_range);        
+        $members_to_filter = DB::executeAll($sql);             
+        $member_amount = 0;  
+        //if the dimension members in the search are below the minimum amount to be displayed, show all dimension members the user can access to
+        if (is_array($members_to_filter)){	
+        	$members_to_filter_string = '';  
+        	foreach ($members_to_filter as $row) {        		
+        		//do not repeat member_ids that already are in the array
+        		if (!stristr($members_to_filter_string, ($row['member_id']))){        			    		
+        			$members_to_filter_string .= "'".$row['member_id']."',";
+        			$member_amount++;    
+        		} 
+        		//show only up to the limit specified
+        		if ($member_amount >= $maximum_display) break;        		 		        		
+        	}     
+        	$members_to_filter_string = substr_replace($members_to_filter_string ,"",-1);	
+        }
+        if ($member_amount > $minimum_display){             
+            $extra_conditions = " AND id IN (".$members_to_filter_string.")";                  
+		}else{			 
+			$extra_conditions = "";
+		}                  
+        return $this->initial_list_dimension_members($dimension_id, $object_type_id,$allowed_member_type_ids, false, $extra_conditions);	
+	}
+	
+	/** 
 	 * Returns all the members to be displayed in the panel that corresponds to the dimension whose id is received by
 	 * parameter. It is called when the application is first loaded. 
 	*/
@@ -309,6 +349,7 @@ class DimensionController extends ApplicationController {
 			$tempParent = $m->getParentMemberId();
 			$x = $m;
 			while ($x instanceof Member && !isset($membersset[$tempParent])) {
+				if ($x->getParentMemberId() == 0) break;
 				$tempParent = $x->getParentMemberId();
 				$x = $x->getParentMember();
 			}
@@ -325,7 +366,7 @@ class DimensionController extends ApplicationController {
 					if (empty($dot_array['dimension_id'])) {
 						$dot_array[$dimension->getId()] = array();
 					}
-					$dot_array[$dimension->getId()][$m->getObjectTypeId()]= $dot ;
+					$dot_array[$dimension->getId()][$m->getObjectTypeId()] = $dot;
 				}
 			}
 			if ( !empty($dot_array[$dimension->getId()]) || ($dot_array[$dimension->getId()][$m->getObjectTypeId()]) instanceof DimensionObjectType ) {
@@ -340,7 +381,7 @@ class DimensionController extends ApplicationController {
 					"name" => $m->getName(),
 					"path" => $path,
 					"to_show" => $m->getName() . ($path != "" ? " ($path)" : ""),
-					"dim" => $m->getDimensionId() ,
+					"dim" => $m->getDimensionId(),
 					"ico" => $m->getIconClass(),
 				);
 			} else {
@@ -355,7 +396,7 @@ class DimensionController extends ApplicationController {
 					"depth" => $m->getDepth(),
 					"iconCls" => $m->getIconClass(),
 					"selectable" => isset($selectable) ? $selectable : false,
-					"dimension_id" => $m->getDimensionId() ,
+					"dimension_id" => $m->getDimensionId(),
 					"object_type_id" => $m->getObjectTypeId(),
 					"allow_childs" => $m->allowChilds()
 				);
@@ -381,7 +422,7 @@ class DimensionController extends ApplicationController {
 					}
 					// Take default membewr edit url if not overwitten
 					if (!$editUrl) {
-						$editUrl =  get_url('member', 'edit', array('id'=> $m->getId())) ;
+						$editUrl = get_url('member', 'edit', array('id'=> $m->getId()));
 					}
 					$member['actions'] = array(array(
 						'url' => $editUrl,

@@ -691,10 +691,12 @@ class MemberController extends ApplicationController {
 				$parent_member = Members::findById($parent_id);
 				if ($parent_member instanceof Member) {
 					$dimension_object = Objects::findObject($parent_member->getObjectId());
-					foreach ($color_columns as $col) {
-						foreach ($fields as &$f) {
-							if ($f['col'] == $col && $dimension_object->columnExists($col)) {
-								$f['val'] = $dimension_object->getColumnValue($col);
+					if ($dimension_object instanceof ContentDataObject) {
+						foreach ($color_columns as $col) {
+							foreach ($fields as &$f) {
+								if ($f['col'] == $col && $dimension_object->columnExists($col)) {
+									$f['val'] = $dimension_object->getColumnValue($col);
+								}
 							}
 						}
 					}

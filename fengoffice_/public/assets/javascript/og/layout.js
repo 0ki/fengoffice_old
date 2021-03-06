@@ -142,7 +142,7 @@ Ext.onReady(function(){
 				        	},
 				        	stateful: false,
 				        	//stateful: og.preferences['rememberGUIState'],
-				        	items:  og.dimensionPanels  ,
+				        	items:  og.dimensionPanels,
 				        	bbar : [
 				        	    {	
 				        			iconCls: 'ico-workspace-edit ico-see-more',

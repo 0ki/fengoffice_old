@@ -85,6 +85,10 @@
 	'config option desc wysiwyg_tasks' => 'Habilite esta opción para poder escribir las descripciones de sus tareas utilizando formato de texto enriquecido.',
 	'config option name wysiwyg_projects' => 'Descripción de los proyectos con WYSIWYG',
 	'config option desc wysiwyg_projects' => 'Habilite esta opción para poder escribir las descripciones de sus Proyectos utilizando formato de texto enriquecido.',
+	'config option name use_milestones' => 'Utilizar hitos',
+	'config option desc use_milestones' => 'Habilitando esta opción se podrán crear hitos y asociar tareas a los mismos.',
+	'config option name show_tab_icons' => 'Mostrar íconos de pestañas',
+	'config option desc show_tab_icons' => 'Habilitando esta opción se podrá ver el ícono de cada pestaña.',
 	
 	'user ws config category name dashboard' => 'Opciones del panel de resumen',
 	'user ws config category name task panel' => 'Opciones del panel de tareas',

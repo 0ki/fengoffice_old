@@ -15,6 +15,9 @@
 .ico-mailcontent, .ico-email, .ico-mail {
 	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -438px !important;
 }
+.x-tab-strip-text.ico-mail {
+	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -436px !important;
+}
 .ico-emailunclassified {
 	background-image: url(../../images/16x16/types/classify.png) !important;
 }

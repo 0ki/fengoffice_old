@@ -73,7 +73,7 @@
 	'recent project activities feed' => 'Aktuelles im Arbeitsbereich „{0}“',
 	'update company permissions hint' => 'Wählen Sie den Arbeitsbereich aus, um dieser Firma Zugangsberechtigungen zu geben. Wichtig: Setzten Sie die Berechtigungen für alle Mitglieder der Firma, die Zugriff auf diesen Arbeitsbereich haben sollen (auf der Benutzerseite, im Benutzerprofil).',
 	'footer copy with homepage' => '© {0} - <a class="internalLink" href="{1}">{2}</a>',
-	'footer copy without homepage' => '© {0} - {1}',
+	'footer copy without homepage' => '© {0} - {1}.',
 	'footer powered' => 'Powered by <a target="_blank" href="{0}">{1}</a>',
 	'all documents' => 'Alle Dokumente',
 	'created by me' => 'Von Ihnen erstellt',

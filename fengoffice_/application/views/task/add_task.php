@@ -98,7 +98,8 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
   	<fieldset>
     <legend><?php echo lang('task data') ?></legend>
     
-	    <label><?php echo lang('milestone') ?>: <span class="desc">(<?php echo lang('assign milestone task list desc') ?>)</span></label>
+    <?php if (config_option('use_milestones')) : ?>
+		<label><?php echo lang('milestone') ?>: <span class="desc">(<?php echo lang('assign milestone task list desc') ?>)</span></label>
 	    
 	    <div style="float:left;" id="<?php $genid ?>add_task_more_div_milestone_combo" >
     		<?php  echo select_milestone('task[milestone_id]', null, array_var($task_data, 'milestone_id'), array('id' => $genid . 'taskListFormMilestone', 'tabindex' => '40')) ?>    		
@@ -106,6 +107,11 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
     	<?php if (!$task->isNew()) { ?>
 			<div style="float:left; padding:5px;"><?php echo checkbox_field('task[apply_milestone_subtasks]', array_var($task_data, 'apply_milestone_subtasks', false), array("id" => "$genid-checkapplymi")) ?><label class="checkbox" for="<?php echo "$genid-checkapplymi" ?>"><?php echo lang('apply milestone to subtasks') ?></label></div>
 		<?php } ?>
+	<?php else : ?>
+		<input type="hidden" value="<?php echo array_var($task_data, 'milestone_id', '0')?>" name="task[milestone_id]" id="<?php echo $genid;?>taskListFormMilestone"/>
+		<input type="hidden" value="<?php echo array_var($task_data, 'apply_milestone_subtasks', '0')?>" name="task[apply_milestone_subtasks]" id="<?php echo $genid;?>-checkapplymi"/>
+	<?php endif; ?>
+	
     	<div style="clear:both"></div>
     	<div style="padding-top:4px">
     		<script>
@@ -696,14 +702,17 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 		var dimension_members_json = Ext.util.JSON.encode(member_selector['<?php echo $genid ?>'].sel_context);
 		var milestone_el = document.getElementById('<?php echo $genid ?>taskListFormMilestone');
 		var actual_value = milestone_el ? milestone_el.value : 0;
-		Ext.get('<?php $genid ?>add_task_more_div_milestone_combo').load({
-			url: og.getUrl('milestone', 'render_add_milestone', {
-				context: dimension_members_json,
-				genid: '<?php echo $genid ?>',
-				selected: actual_value
-			}),
-			scripts: true
-		});
+		var milestone_div = Ext.get('<?php $genid ?>add_task_more_div_milestone_combo');
+		if (milestone_div) {
+			milestone_div.load({
+				url: og.getUrl('milestone', 'render_add_milestone', {
+					context: dimension_members_json,
+					genid: '<?php echo $genid ?>',
+					selected: actual_value
+				}),
+				scripts: true
+			});
+		}
 	
 		var uids = App.modules.addMessageForm.getCheckedUsers('<?php echo $genid ?>');
 	

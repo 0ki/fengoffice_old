@@ -266,7 +266,7 @@
   	'field Objects name' => 'Nombre',
 
   	'new person' => 'Nueva Persona',
-	'fee' => 'Facturación',  
+	'fee' => 'Tarifa',  
 	'user info' => 'Información de Usuario',
 	'change logo' => 'Cambiar logo',
 	'without company' => 'Sin Organización',
@@ -295,4 +295,14 @@
         'and' => ' y ',
         'apply everywhere' => 'Aplicar a todo',
         'apply for this' => 'Aplicar para este {0}',
+	'Super Administrator' => 'Super Administrador',
+	'Administrator' => 'Administrador',
+	'Manager' => 'Gerente',
+	'Executive' => 'Ejecutivo',
+	'Collaborator Customer' => 'Cliente colaborador',
+	'Internal Collaborator' => 'Colaborador interno',
+	'External Collaborator' => 'Colaborador externo',
+	'Guest Customer' => 'Cliente invitado',
+	'Guest' => 'Invitado',
+	'Non-Exec Director' => 'Director no ejecutivo',
 ); ?>

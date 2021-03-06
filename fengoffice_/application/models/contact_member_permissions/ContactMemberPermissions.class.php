@@ -65,7 +65,9 @@ class ContactMemberPermissions extends BaseContactMemberPermissions {
 		$can_write_cond = $can_write ? " AND `can_write` = 1" : "";
 		$can_delete_cond = $can_delete ? " AND `can_delete` = 1" : "";
 		
-		$sql = "SELECT permission_group_id FROM ".TABLE_PREFIX."contact_member_permissions WHERE `member_id` IN (".$member_ids.") AND `object_type_id` = '$object_type_id' AND `permission_group_id` IN ( $permission_group_ids ) $can_write_cond $can_delete_cond";
+		$ot_cond = $object_type_id > 0 ? "AND `object_type_id` = '$object_type_id'" : "";
+		
+		$sql = "SELECT permission_group_id FROM ".TABLE_PREFIX."contact_member_permissions WHERE `member_id` IN (".$member_ids.") $ot_cond AND `permission_group_id` IN ( $permission_group_ids ) $can_write_cond $can_delete_cond";
 		$rows = DB::executeAll($sql);
 
 		$res = array();

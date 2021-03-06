@@ -104,6 +104,7 @@ og.config.time_format_use_24_duetime = '<?php echo user_config_option('time_form
 og.config.work_day_start_time = '<?php echo strtotime(user_config_option('work_day_start_time')) ?>';
 og.config.work_day_end_time = '<?php echo strtotime(user_config_option('work_day_end_time')) ?>';
 og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Plugins::instance()->isActivePlugin('crpm') ? '1' : '0' ?>';
+og.config.use_milestones = <?php echo config_option('use_milestones') ? 'true' : 'false' ?>;
 </script>
 
 <div id="taskPanelHiddenFields">

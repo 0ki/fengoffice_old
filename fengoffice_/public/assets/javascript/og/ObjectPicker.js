@@ -132,6 +132,14 @@ og.ObjectPicker = function(config,object_id,object_id_no_select) {
 			if (filter && filter.filter == 'type') {
 				this.type = filter.type;
 				this.store.baseParams.type = this.type;
+				// no filter selected => only allowed object types
+				if (this.store.baseParams.type == '') {
+					var types = [];
+					for (var i=0; i<og.objPickerTypeFilters.length; i++) {
+						types.push(og.objPickerTypeFilters[i].type);
+					}
+					this.store.baseParams.type = types.join(',');
+				}
 			}
 			var member_ids = [];
 			for (x in this.member_filter) {
@@ -200,7 +208,7 @@ og.ObjectPicker = function(config,object_id,object_id_no_select) {
 		},
 		loadFilters: function(types, selected_type) {
 			this.removeAll();
-			
+			var all_types = [];
 			for (var i=0; i<og.objPickerTypeFilters.length; i++) {
 				var filter = og.objPickerTypeFilters[i];
 				if (!types) {
@@ -213,8 +221,9 @@ og.ObjectPicker = function(config,object_id,object_id_no_select) {
 						}
 					}
 				}
+				all_types.push(filter.type);
 			}
-			this.filters.filter.type = selected_type ? selected_type : '';
+			this.filters.filter.type = selected_type ? selected_type : all_types.join(',');
 			
 			this.filters.expand();
 			

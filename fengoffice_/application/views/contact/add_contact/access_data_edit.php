@@ -2,7 +2,7 @@
 	$permission_groups = array(); 
 	$groups = PermissionGroups::getNonPersonalSameLevelPermissionsGroups('id');
 	foreach($groups as $group){
-    	$permission_groups[]=array($group->getId(),$group->getName());
+    	$permission_groups[] = array($group->getId(), lang($group->getName()));
     }
     $genid = gen_id();
     $jqid = "#$genid";

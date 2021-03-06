@@ -818,10 +818,10 @@ class TaskController extends ApplicationController {
 				'showTime' => user_config_option('tasksShowTime'),
 				'showDates' => user_config_option('tasksShowDates'),
 				'showTags' => user_config_option('tasksShowTags',0),
-                                'showEmptyMilestones' => user_config_option('tasksShowEmptyMilestones',1),
+				'showEmptyMilestones' => user_config_option('tasksShowEmptyMilestones',1),
 				'showTimeEstimates' => user_config_option('tasksShowTimeEstimates',1),
-				'groupBy' => user_config_option('tasksGroupBy','milestone'),
-				'orderBy' => user_config_option('tasksOrderBy','priority'),
+				'groupBy' => user_config_option('tasksGroupBy'),
+				'orderBy' => user_config_option('tasksOrderBy'),
 				'defaultNotifyValue' => user_config_option('can notify from quick add'),
 			);
 			hook::fire('tasks_user_preferences', null, $userPref);

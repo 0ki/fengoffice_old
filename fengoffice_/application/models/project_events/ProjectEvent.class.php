@@ -245,6 +245,9 @@ class ProjectEvent extends BaseProjectEvent {
 	function getInvitations() {
 		return $this->event_invitations;
 	}
+	function setInvitations($invitations) {
+		$this->event_invitations = $invitations;
+	}
 	
 	
 	function clearInvitations() {
@@ -261,73 +264,196 @@ class ProjectEvent extends BaseProjectEvent {
 			$this->event_invitations[$inv->getContactId()] = $inv;
 		}
 	}
-        
+
 	function cloneEvent($new_st_date,$new_due_date) {
 		$new_event = new ProjectEvent();
-				
+
 		$new_event->setObjectName($this->getObjectName());
 		$new_event->setDescription($this->getDescription());
-		$new_event->setTypeId($this->getTypeId());		
-		if ($this->getDuration() instanceof DateTimeValue )
+		$new_event->setTypeId($this->getTypeId());
+		if ($this->getDuration() instanceof DateTimeValue ) {
 			$new_event->setDuration(new DateTimeValue($this->getDuration()->getTimestamp()));
-			if ($this->getStart() instanceof DateTimeValue )
+		}
+		if ($this->getStart() instanceof DateTimeValue ) {
 			$new_event->setStart(new DateTimeValue($this->getStart()->getTimestamp()));
+		}
 		$new_event->setOriginalEventId($this->getObjectId());
 		$new_event->save();
-                
-                // set next values for repetetive task
-                if ($new_event->getStart() instanceof DateTimeValue ) $new_event->setStart($new_st_date);
-                if ($new_event->getDuration() instanceof DateTimeValue ) $new_event->setDuration($new_due_date);
-                
-                $invitations = EventInvitations::findByEvent($this->getId());
-                if ($invitations) { 
-                    foreach($invitations as $invitation){
-                        $invit = new EventInvitation();
-                        $invit->setEventId($new_event->getId());
-                        $invit->setContactId($invitation->getContactId());
-                        $invit->setInvitationState(logged_user() instanceof Contact && logged_user()->getId() == $invitation->getContactId() ? 1 : 0);
-                        $invit->save();
-                    }
-                    
-                }
-                $subscriptions = ObjectSubscriptions::findByEvent($this->getId());
-                if ($subscriptions) { 
-                    foreach($subscriptions as $subscription){
-                        $subscrip = new ObjectSubscription();
-                        $subscrip->setObjectId($new_event->getId());
-                        $subscrip->setContactId($subscription->getContactId());
-                        $subscrip->save();
-                    }                    
-                }
-                $reminders = ObjectReminders::findByEvent($this->getId());
-                if ($reminders) { 
-                    foreach($reminders as $reminder){
-                        $remind = new ObjectReminder();
-                        $remind->setObjectId($new_event->getId());
-                        $remind->setMinutesBefore($reminder->getMinutesBefore());                        
-                        $remind->setType($reminder->getType());
-                        $remind->setContext($reminder->getContext());
-                        $remind->setUserId(0);
-                        $date = $new_event->getStart();
-                        if ($date instanceof DateTimeValue) {
-                                $rdate = new DateTimeValue($date->getTimestamp() - $reminder->getMinutesBefore() * 60);
-                                $remind->setDate($rdate);
-                        }
-                        $remind->save();
-                    }                    
-                }
 
-                $member_ids = array();
-                $context = active_context();
-                foreach ($context as $selection) {
-                        if ($selection instanceof Member) $member_ids[] = $selection->getId();
-                }
-                $object_controller = new ObjectController();
-                $object_controller->add_to_members($new_event, $member_ids); 
+		// set next values for repetetive task
+		if ($new_event->getStart() instanceof DateTimeValue ) $new_event->setStart($new_st_date);
+		if ($new_event->getDuration() instanceof DateTimeValue ) $new_event->setDuration($new_due_date);
+
+		$invitations = EventInvitations::findByEvent($this->getId());
+		if ($invitations) {
+			foreach($invitations as $invitation){
+				$invit = new EventInvitation();
+				$invit->setEventId($new_event->getId());
+				$invit->setContactId($invitation->getContactId());
+				$invit->setInvitationState(logged_user() instanceof Contact && logged_user()->getId() == $invitation->getContactId() ? 1 : 0);
+				$invit->save();
+			}
+
+		}
+		$subscriptions = ObjectSubscriptions::findByEvent($this->getId());
+		if ($subscriptions) {
+			foreach($subscriptions as $subscription){
+				$subscrip = new ObjectSubscription();
+				$subscrip->setObjectId($new_event->getId());
+				$subscrip->setContactId($subscription->getContactId());
+				$subscrip->save();
+			}
+		}
+		$reminders = ObjectReminders::findByEvent($this->getId());
+		if ($reminders) {
+			foreach($reminders as $reminder){
+				$remind = new ObjectReminder();
+				$remind->setObjectId($new_event->getId());
+				$remind->setMinutesBefore($reminder->getMinutesBefore());
+				$remind->setType($reminder->getType());
+				$remind->setContext($reminder->getContext());
+				$remind->setUserId(0);
+				$date = $new_event->getStart();
+				if ($date instanceof DateTimeValue) {
+					$rdate = new DateTimeValue($date->getTimestamp() - $reminder->getMinutesBefore() * 60);
+					$remind->setDate($rdate);
+				}
+				$remind->save();
+			}
+		}
+
+		$member_ids = array();
+		$context = active_context();
+		foreach ($context as $selection) {
+			if ($selection instanceof Member) $member_ids[] = $selection->getId();
+		}
+		$object_controller = new ObjectController();
+		$object_controller->add_to_members($new_event, $member_ids); 
 
 		return $new_event;
 	}
 
+	
+	
+	private function forwardRepDate($min_date) {
+		if ($this->isRepetitive()) {
+			if (!$this->getStart() instanceof DateTimeValue ||	!$min_date instanceof DateTimeValue) {
+				return array('date' => $min_date, 'count' => 0); //This should not happen...
+			}
+			
+			$date = new DateTimeValue($this->getStart()->getTimestamp());
+			$count = 0;
+			if($date->getTimestamp() >= $min_date->getTimestamp()) {
+				return array('date' => $date, 'count' => $count);
+			}
+			
+			while ($date->getTimestamp() < $min_date->getTimestamp()) {
+				if ($this->getRepeatD() > 0) { 
+					$date = $date->add('d', $this->getRepeatD());
+				} else if ($this->getRepeatM() > 0) { 
+					$date = $date->add('M', $this->getRepeatM());
+				} else if ($this->getRepeatY() > 0) { 
+					$date = $date->add('y', $this->getRepeatY());
+				}
+				$count++;
+			}
+			return array('date' => $date, 'count' => $count);
+		} else {
+			return array('date' => $min_date, 'count' => 0);
+		}
+	}
+	
+	
+	function getRepetitiveInstances($from_date, $to_date) {
+		$instances = array();
+		if ($this->isRepetitive()) {
+			$res = $this->forwardRepDate($from_date);
+			
+			$ref_date = $res['date'];
+			$top_repeat_num = $this->getRepeatNum() - $res['count'];
+
+			$last_repeat = $this->getRepeatEnd() instanceof DateTimeValue ? new DateTimeValue($this->getRepeatEnd()->getTimestamp()) : null;
+			if (($this->getRepeatNum() > 0 && $top_repeat_num <= 0) || ($last_repeat instanceof DateTimeValue && $last_repeat->getTimestamp() < $ref_date->getTimestamp())) {
+				return array();
+			}
+			
+			$info = array();
+			foreach ($this->getColumns() as $col) $info[$col] = $this->getColumnValue($col);
+			foreach ($this->getObject()->getColumns() as $col) $info[$col] = $this->getObject()->getColumnValue($col);
+			$event = new ProjectEvent();
+			$event->setFromAttributes($info);
+			$event->setStart(new DateTimeValue($this->getStart()->getTimestamp()));
+			$event->setDuration(new DateTimeValue($this->getDuration()->getTimestamp()));
+			$event->setId($this->getId());
+			$event->setNew(false);
+			$event->setInvitations($this->getInvitations());
+			
+			$instances[] = $event;
+			$num_repetitions = 0;
+			while ($ref_date->getTimestamp() < $to_date->getTimestamp()) {
+				if (!($event->getStart() instanceof DateTimeValue)) return $instances;
+				
+				$diff = $ref_date->getTimestamp() - $event->getStart()->getTimestamp();
+				$event->setStart(new DateTimeValue($ref_date->getTimestamp()));
+				if ($event->getDuration() instanceof DateTimeValue) {
+					$event->getDuration()->advance($diff);
+				}
+				
+				$info = array();
+				foreach ($event->getColumns() as $col) $info[$col] = $event->getColumnValue($col);
+				foreach ($event->getObject()->getColumns() as $col) $info[$col] = $event->getObject()->getColumnValue($col);
+				$new_event = new ProjectEvent();
+				$new_event->setFromAttributes($info);
+				$new_event->setId($event->getId());
+				$new_event->setNew(false);
+				$new_event->setInvitations($event->getInvitations());
+				
+				
+				$new_due_date = null;
+				$new_st_date = null;
+				if ($event->getStart() instanceof DateTimeValue ) {
+					$new_st_date = new DateTimeValue($event->getStart()->getTimestamp());
+				}
+				if ($event->getDuration() instanceof DateTimeValue ) {
+					$new_due_date = new DateTimeValue($event->getDuration()->getTimestamp());
+				}
+				
+				if ($event->getRepeatD() > 0) {
+					if ($new_st_date instanceof DateTimeValue)
+						$new_st_date = $new_st_date->add('d', $event->getRepeatD());
+					if ($new_due_date instanceof DateTimeValue)
+						$new_due_date = $new_due_date->add('d', $event->getRepeatD());
+					$ref_date->add('d', $event->getRepeatD());
+				}
+				else if ($event->getRepeatM() > 0) {
+					if ($new_st_date instanceof DateTimeValue)
+						$new_st_date = $new_st_date->add('M', $event->getRepeatM());
+					if ($new_due_date instanceof DateTimeValue)
+						$new_due_date = $new_due_date->add('M', $event->getRepeatM());
+					$ref_date->add('M', $event->getRepeatM());
+				}
+				else if ($task->getRepeatY() > 0) {
+					if ($new_st_date instanceof DateTimeValue)
+						$new_st_date = $new_st_date->add('y', $event->getRepeatY());
+					if ($new_due_date instanceof DateTimeValue)
+						$new_due_date = $new_due_date->add('y', $event->getRepeatY());
+					$ref_date->add('y', $event->getRepeatY());
+				}
+				
+				if ($new_st_date instanceof DateTimeValue) $new_event->setStart($new_st_date);
+				if ($new_due_date instanceof DateTimeValue) $new_event->setDuration($new_due_date);
+				
+				$num_repetitions++;
+				if ($top_repeat_num > 0 && $top_repeat_num == $num_repetitions) break;
+				if ($last_repeat instanceof DateTimeValue && $last_repeat->getTimestamp() < $ref_date->getTimestamp()) break;
+
+				$instances[] = $new_event;
+				$event = $new_event;
+			}
+		}
+
+		return $instances;
+	}
 } // projectEvent
 
 ?>

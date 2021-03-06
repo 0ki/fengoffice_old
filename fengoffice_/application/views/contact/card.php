@@ -129,6 +129,37 @@
 
                         </div>
                     </div>
+                    <div class="clear"></div>
+                    <div style="padding:10px;"><?php
+                    
+                    $bc = 'background-color:#EEEEF3;';
+                    if($contact->isLinkableObject() && !$contact->isTrashed() && !$contact->isUser()) {
+                    	echo '<div style="margin:20px 0; padding: 2px 0 5px;">';
+						echo render_object_links_main($contact, $contact->canEdit(logged_user()));
+						echo '</div>';
+						$back_color = $bc;
+                    }
+                    
+                    if ($contact instanceof ApplicationDataObject) {
+                    	echo '<div style="margin:20px 0;'.$back_color.'">';
+                    	echo render_custom_properties($contact);
+                    	echo '</div>';
+                    	$back_color = $back_color == '' ? $bc : '';
+                    }
+                    	
+                    if (!$contact->isUser() && $contact->isCommentable()) {
+                    	echo '<div style="margin:20px 0;">';
+                    	echo render_object_comments($contact, $contact->getViewUrl());
+                    	echo '</div>';
+                    	$back_color = $back_color == '' ? $bc : '';
+                    }
+                    
+                    if ($contact->getCommentsField()) {
+                    	echo '<div class="commentsTitle">'.lang('notes').'</div>';
+                    	echo escape_html_whitespace(convert_to_links(clean($contact->getCommentsField())));
+                    }
+                    
+                    ?></div>
                     <div class="clear"></div>                    
 	                <?php Hook::fire('after_contact_view', $contact, $null); ?>
                 </div>
@@ -141,8 +172,9 @@
 	                        <li class="<?php echo array_var($feed, 'icon') ?>">
 	                            <em class="feed-date"><?php echo ucfirst (array_var($feed, 'type')); ?> - <?php echo array_var($feed, 'dateUpdated');?></em>
 	                            - <a href="Javascript:;" onclick="og.openLink('<?php echo array_var($feed, 'url') ?>');"><?php echo array_var($feed, 'name') ?></a>
-	                            <?php if(array_var($feed, 'content') != '') ?>
+	                            <?php if(array_var($feed, 'content') != '') { ?>
 	                                <p><?php echo array_var($feed, 'content'); ?></p>
+	                            <?php } ?>
 	                        </li>
 	                    <?php endif ;?> 
                     <?php endforeach ?>

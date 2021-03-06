@@ -155,6 +155,10 @@
     'config option desc checkout_for_editing_online' => 'When a user edits a document online it will be checkout so that no one else can edit it at the same time',
     'config option name block_login_after_x_tries' => 'Block login after 5 wrong tries',
     'config option desc block_login_after_x_tries' => 'If a user tries to login 5 times without success in the last 10 minutes, then the account will be blocked for 10 minutes.',
+	'config option name use_milestones' => 'Use milestones',
+	'config option desc use_milestones' => 'Enabling this option will allow to create milestones and associate tasks to them.',
+	'config option name show_tab_icons' => 'Show tab icons',
+	'config option desc show_tab_icons' => 'Enabling this option will show each tab\'s icon.',
 
     'group users' => 'Group users',
     'timeslot' => 'Time',

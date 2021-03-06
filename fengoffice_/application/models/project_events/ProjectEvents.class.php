@@ -207,9 +207,12 @@ class ProjectEvents extends BaseProjectEvents {
 		if ($user_filter > 0) {
 			$user = Contacts::findById($user_filter);
 		}
-		if (!$user instanceof Contact) $user = logged_user();
+		if ($user_filter != -1 && !$user instanceof Contact) $user = logged_user();
 
-		$invited = " AND `id` IN (SELECT `event_id` FROM `" . TABLE_PREFIX . "event_invitations` WHERE `contact_id` = ".$user->getId().")";
+		$invited = "";
+		if ($user instanceof Contact) {
+			$invited = " AND `id` IN (SELECT `event_id` FROM `" . TABLE_PREFIX . "event_invitations` WHERE `contact_id` = ".$user->getId().")";
+		}
 		
 		$tz_hm = "'" . floor(logged_user()->getTimezone()) . ":" . (abs(logged_user()->getTimezone()) % 1)*60 . "'";
 
@@ -293,11 +296,10 @@ class ProjectEvents extends BaseProjectEvents {
 		))->objects ;
 		
 		// Find invitations for events and logged user
-		if (!($user_filter == null && $inv_state == null)) {
+		if (!($user_filter == null && $inv_state == null) && $user_filter != -1) {
 			ProjectEvents::addInvitations($result_events, $user->getId());
 			foreach ($result_events as $k => $event) {
-				$conditions = '`event_id` = ' . $event->getId();
-				if ($user_filter != -1) $conditions .= ' AND `contact_id` = ' . $user_filter;
+				
 				$inv = $event->getInvitations();
 				if (!is_array($inv)) {
 					if ($inv == null || (trim($inv_state) != '-1' && !strstr($inv_state, ''.$inv->getInvitationState()) && $inv->getContactId() == logged_user()->getId())) {
@@ -335,7 +337,8 @@ class ProjectEvents extends BaseProjectEvents {
 			}
 			
 			foreach ($result_events as $event) {
-				foreach ($invitations[$event->getId()] as $inv) {
+				$event_invitations = array_var($invitations, $event->getId(), array());
+				foreach ($event_invitations as $inv) {
 					$event->addInvitation($inv);
 				}
 			}

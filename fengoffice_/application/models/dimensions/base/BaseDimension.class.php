@@ -203,8 +203,30 @@
     
     function setDefaultOrder($value) {
       return $this->setColumnValue('default_order', $value);
-    }    
-      
+    }
+    
+    
+    /**
+    * Return value of 'permission_query_method' field
+    *
+    * @access public
+    * @param void
+    * @return string 
+    */
+    function getPermissionQueryMethod() {
+      return $this->getColumnValue('permission_query_method');
+    } // getPermissionQueryMethod()
+    
+    /**
+    * Set value of 'permission_query_method' field
+    *
+    * @access public   
+    * @param string $value
+    * @return string
+    */
+    function setPermissionQueryMethod($value) {
+      return $this->setColumnValue('permission_query_method', $value);
+    } // setPermissionQueryMethod()
     
     
     /**

@@ -380,7 +380,7 @@
 	'print view' => 'Vista de impresión',
 	'activity' => 'Actividad',
 	'statistics' => 'Estadísticas',
-	'time' => 'Tiempo',
+	'time' => 'Horas',
 	'meeting_time' => 'Hora',
 	'task time report' => 'Tiempo total de ejecución',
 	'new tasks by user' => 'Nuevas tareas por usuario',

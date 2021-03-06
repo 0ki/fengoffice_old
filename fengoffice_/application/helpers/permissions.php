@@ -294,6 +294,7 @@
 		try {
 			$contact_pg_ids = ContactPermissionGroups::getPermissionGroupIdsByContactCSV($user->getId(),false);
 			$allow_all_cache = array();
+			$dimension_query_methods = array();
 			
 			$dimension_permissions = array();
 			foreach($members as $k => $m){
@@ -313,6 +314,10 @@
 										
 				if (!$dimension_permissions[$dimension_id]){
 					if ($m->canContainObject($object_type_id)){
+						
+						if (!isset($dimension_query_methods[$dimension->getId()])) {
+							$dimension_query_methods[$dimension->getId()] = $dimension->getPermissionQueryMethod();
+						}
 						
 						//dimension defines permissions and user has maximum level of permissions
 						if (isset($allow_all_cache[$dimension_id])) {
@@ -336,13 +341,32 @@
 			}
 
 			$allowed = true;
-			foreach($dimension_permissions as $perm){
-				if (!$perm) {
-					$allowed = false;	
-				} else {
-					return true; // if user has permission in one of the object's members then can access = true 	
+			// check that user has permissions in all mandatory query method dimensions
+			$mandatory_count = 0;
+			foreach ($dimension_query_methods as $dim_id => $qmethod) {
+				if ($qmethod == DIMENSION_PERMISSION_QUERY_METHOD_MANDATORY) {
+					$mandatory_count++;
+					if (!array_var($dimension_permissions, $dim_id)) {
+						// if one of the members belong to a mandatory dimension and user does not have permissions on it then return false
+						return false;
+					}
 				}
-			}			
+			}
+			
+			// If no members in mandatory dimensions then check for not mandatory ones 
+			if ($allowed && $mandatory_count == 0) {
+				foreach ($dimension_query_methods as $dim_id => $qmethod) {
+					if ($qmethod == DIMENSION_PERMISSION_QUERY_METHOD_NOT_MANDATORY) {
+						if (array_var($dimension_permissions, $dim_id)) {
+							// if has permissions over any member of a non mandatory dimension then return true
+							return true;
+						} else {
+							$allowed = false;
+						}
+					}
+				}
+			}
+
 			if ($allowed && count($dimension_permissions)) {
 				return true;	
 			}
@@ -384,6 +408,7 @@
 		$delete = $access_level == ACCESS_LEVEL_DELETE;
 		
 		try {
+			$dimension_query_methods = array();
 			$dimension_permissions = array();
 			
 			$dimension_info = array();
@@ -404,6 +429,11 @@
 				if(!$dimension->getDefinesPermissions()){
 					continue;
 				}
+				
+				if (!isset($dimension_query_methods[$dimension->getId()])) {
+					$dimension_query_methods[$dimension->getId()] = $dimension->getPermissionQueryMethod();
+				}
+				
 				$dimension_id = $dimension->getId();
 				$dimension_permissions[$dimension_id] = array();
 				
@@ -415,7 +445,35 @@
 					ContactMemberPermissions::instance()->canAccessObjectTypeinMembersPermissionGroups($permission_group_ids, array_keys($info['members']), $object_type_id, $write, $delete));
 			}
 			
-			$all_permission_groups = array_unique(array_flat($dimension_permissions), SORT_NUMERIC);
+			
+			$mandatory_dimension_ids = array();
+			foreach ($dimension_query_methods as $dim_id => $qmethod) {
+				if ($qmethod == DIMENSION_PERMISSION_QUERY_METHOD_MANDATORY) {
+					$mandatory_dimension_ids[] = $dim_id;
+				}
+			}
+			// if there are mandatory dimensions involved then intersect the allowed permission groups of each dimension
+			if (count($mandatory_dimension_ids) > 0) {
+				$first_mdid = array_pop($mandatory_dimension_ids);
+				$pgs_accomplishing_mandatory = $dimension_permissions[$first_mdid];
+				foreach ($mandatory_dimension_ids as $mdid) {
+					$pgs_accomplishing_mandatory = array_intersect($pgs_accomplishing_mandatory, $dimension_permissions[$mdid]);
+				}
+				
+				$all_permission_groups = array_unique($pgs_accomplishing_mandatory);
+				
+			} else {
+				// No mandatory dimensions involved => return all allowed permission groups
+				$other_pgs = array();
+				foreach ($dimension_query_methods as $dim_id => $qmethod) {
+					if ($qmethod == DIMENSION_PERMISSION_QUERY_METHOD_NOT_MANDATORY) {
+						$other_pgs = array_merge($other_pgs, $dimension_permissions[$dim_id]);
+					}
+				}
+				
+				$all_permission_groups = array_unique($other_pgs);
+			}
+			
 			
 			return $all_permission_groups;
 		}

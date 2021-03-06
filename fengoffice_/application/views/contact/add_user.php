@@ -43,19 +43,6 @@
   	echo "og.tabs_allowed=".json_encode($tabs_allowed).";";
   ?>
   og.addUserTypeChange = function(genid, type) {
-//	  Ext.get(genid + 'userSystemPermissions').setDisplayed(type != 'guest');
-//	  og.ogPermReadOnly(genid, type == 'guest');
-//	  var div = document.getElementById(genid + 'userSystemPermissions');
-//	  var cbs = div.getElementsByTagName('input');
-//	  for (var i=0; i < cbs.length; i++) {
-//		  if (cbs[i].type == 'checkbox') {
-//			  if (cbs[i].name == 'user[can_manage_time]') {
-//				  cbs[i].checked = true;
-//			  } else {
-//				  cbs[i].checked = type == 'admin';
-//			  }
-//		  }
-//	  }	  
 	  $('#'+genid+'userSystemPermissions :input').attr('checked', false);
 	  $('#'+genid+'userModulePermissions :input').attr('checked', false);
 	  for(i=0; i< og.roles[type].length;i++){
@@ -72,20 +59,17 @@
     echo label_tag(lang('user type'), null, true);
     $permission_groups=array();
     foreach($groups as $group){
-    		$permission_groups[]=array($group->getId(),$group->getName());
+    	$permission_groups[] = array($group->getId(), lang($group->getName()));
     }
-    ?>
-  	<?php echo simple_select_box('user[type]', $permission_groups,null,
-	    		array(
-	    			'onchange' => "og.addUserTypeChange('$genid', this.value)",
-	    			'tabindex' => "300"
-	    		)) ?>
+    
+    echo simple_select_box('user[type]', $permission_groups, null, array('onchange' => "og.addUserTypeChange('$genid', this.value)", 'tabindex' => "300")); 
+  	?>
   </div>
   
 	  <?php $categories = array(); Hook::fire('object_add_categories', $object, $categories); ?>
-	  <?php /*TODO Check this line*/$cps = CustomProperties::countHiddenCustomPropertiesByObjectType(Contacts::getObjectTypeId()); ?>
+	  <?php $cps = CustomProperties::countHiddenCustomPropertiesByObjectType(Contacts::getObjectTypeId()); ?>
 	  	
-	  <div style="padding-top:5px"> 
+	  <div style="padding-top:5px">
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_user_advanced', this)"><?php echo lang('advanced') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_user_permissions', this)"><?php echo lang('permissions') ?></a>
 		<?php if ($cps > 0) { ?>

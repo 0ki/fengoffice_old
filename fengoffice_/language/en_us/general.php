@@ -321,4 +321,15 @@
         'and' => ' and ',
         'apply everywhere' => 'Apply everywhere',
         'apply for this' => 'Apply for this {0}',
-  );
+
+	'Super Administrator' => 'Super Administrator',
+	'Administrator' => 'Administrator',
+	'Manager' => 'Manager',
+	'Executive' => 'Executive',
+	'Collaborator Customer' => 'Collaborator Customer',
+	'Internal Collaborator' => 'Internal Collaborator',
+	'External Collaborator' => 'External Collaborator',
+	'Guest Customer' => 'Guest Customer',
+	'Guest' => 'Guest',
+	'Non-Exec Director' => 'Non executive Director',
+);

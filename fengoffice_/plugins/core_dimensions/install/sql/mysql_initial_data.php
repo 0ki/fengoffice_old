@@ -3,8 +3,8 @@ INSERT INTO `<?php echo $table_prefix ?>plugins` (`name`,`is_installed`, `is_act
  ('core_dimensions', 1, 1, 0, NOW(), 1)
  ON DUPLICATE KEY UPDATE id=id;
 
-INSERT INTO `<?php echo $table_prefix ?>dimensions` (`code`,`name`,`is_root`,`is_manageable`,`allows_multiple_selection`,`defines_permissions`, `is_system`, `options`) VALUES
- ('feng_persons', 'People', 1, 0, 0, 1, 1,'{"useLangs":true,"defaultAjax":{"controller":"contact", "action": "init"},"quickAdd":{"formAction":"?c=contact&a=quick_add"}}' )
+INSERT INTO `<?php echo $table_prefix ?>dimensions` (`code`,`name`,`is_root`,`is_manageable`,`allows_multiple_selection`,`defines_permissions`, `is_system`, `options`, `permission_query_method`) VALUES
+ ('feng_persons', 'People', 1, 0, 0, 1, 1,'{"useLangs":true,"defaultAjax":{"controller":"contact", "action": "init"},"quickAdd":{"formAction":"?c=contact&a=quick_add"}}', 'not_mandatory' )
  ON DUPLICATE KEY UPDATE id=id;
 
 INSERT INTO `<?php echo $table_prefix ?>object_types` (`name`,`handler_class`,`table_name`,`type`,`icon`,`plugin_id`) VALUES

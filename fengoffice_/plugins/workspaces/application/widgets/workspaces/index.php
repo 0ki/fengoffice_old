@@ -5,6 +5,7 @@ $genid = gen_id();
 $ws_dimension = Dimensions::findByCode('workspaces');
 $dim_controller = new DimensionController();
 
+$selected_ws = '0';
 $allowed_members = array();
 $add_ctx_members = true;
 $context = active_context();
@@ -14,6 +15,7 @@ if(isset($context)){
 			$add_ctx_members = false;
 		} else if ($selection instanceof Member && $selection->getObjectTypeId() == Workspaces::instance()->getObjectTypeId()) {
 			$allowed_members[] = $selection->getId();
+			$selected_ws = $selection->getId();
 		}
 	}	
 }

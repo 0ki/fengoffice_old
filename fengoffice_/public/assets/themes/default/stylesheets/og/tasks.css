@@ -288,3 +288,20 @@ div.new-task div.field.due td {
 div.new-task div.field.assigned select {
 	height: 21px;
 }
+
+#tasksPanelContainer div.inner-message {
+	padding: 10px 0;
+	margin-left: 25px;
+	margin-top: 25px;
+	color: gray;
+	font-size: 14px;
+	float: left;
+}
+button.no-tasks-add-task-btn {
+    height: 36px;
+    min-width: 100px;
+    vertical-align: middle;
+    margin: 25px;
+    font-size: 18px;
+	float: left;
+}

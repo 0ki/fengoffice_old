@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Pamplona upgrade script will upgrade FengOffice 2.1 to FengOffice 2.2
+ * Pamplona upgrade script will upgrade FengOffice 2.1 to FengOffice 2.2.1
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -40,7 +40,7 @@ class PamplonaUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('2.1');
-		$this->setVersionTo('2.2');
+		$this->setVersionTo('2.2.1-rc');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -173,6 +173,23 @@ class PamplonaUpgradeScript extends ScriptUpgraderScript {
 				//change tasks and notes to WYSIWYG text
 				$upgrade_script .="
 					UPDATE `".$t_prefix."config_options` SET `value` = '1' WHERE `".$t_prefix."config_options`.`name` = 'wysiwyg_messages' OR `".$t_prefix."config_options`.`name` = 'wysiwyg_tasks';
+				";
+			}
+			
+			if (version_compare($installed_version, '2.2.0.1') < 0) {
+				$upgrade_script .= "
+					ALTER TABLE `".$t_prefix."dimensions` ADD COLUMN `permission_query_method` ENUM('mandatory','not_mandatory') NOT NULL DEFAULT 'mandatory';
+				";
+			}
+			
+			if (version_compare($installed_version, '2.2.1-beta') < 0) {
+				$upgrade_script .= "
+					UPDATE ".$t_prefix."contact_config_options SET default_value='due_date' WHERE name='tasksGroupBy';
+					INSERT INTO `".$t_prefix."config_options` (`category_name`,`name`,`value`,`config_handler_class`,`is_system`) VALUES
+						('general', 'use_milestones', 0, 'BoolConfigHandler', 0),
+						('general', 'show_tab_icons', '1', 'BoolConfigHandler', '0')
+					ON DUPLICATE KEY UPDATE name=name;
+					ALTER TABLE `".$t_prefix."event_invitations` ADD INDEX `contact_id`(`contact_id`, `event_id`);
 				";
 			}
 		}

@@ -21,3 +21,9 @@
 		$tag_options = '{"defaultAjax":{"controller":"dashboard", "action": "init_overview"},"quickAdd":true,"showInPaths":true,"useLangs":true}';
 		DB::executeAll("UPDATE ".TABLE_PREFIX."dimensions SET options='$tag_options' WHERE code='tags'");
 	}
+	
+	function workspaces_update_3_4() {
+		DB::execute("
+			UPDATE ".TABLE_PREFIX."dimensions SET permission_query_method='not_mandatory' WHERE code='tags';
+		");
+	}

@@ -172,7 +172,7 @@
     'delete folder' => 'Delete folder',
     
     'edit file revisions' => 'Edit revision',
-    'version' => 'ver',
+    'version' => 'version',
     'last modification' => 'Last modification',
     
     'link object' => 'Link Object',

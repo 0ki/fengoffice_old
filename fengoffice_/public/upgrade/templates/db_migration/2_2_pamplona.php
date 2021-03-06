@@ -42,3 +42,13 @@ INSERT INTO `<?php echo $table_prefix ?>tab_panel_permissions` (`permission_grou
 	((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Collaborator Customer'), 'contacts-panel'),  
 	((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Non-Exec Director'), 'contacts-panel') 
 ON DUPLICATE KEY UPDATE tab_panel_id = tab_panel_id;
+
+ALTER TABLE `<?php echo $table_prefix ?>dimensions` ADD COLUMN `permission_query_method` ENUM('mandatory','not_mandatory') NOT NULL DEFAULT 'mandatory';
+
+UPDATE <?php echo $table_prefix ?>contact_config_options SET default_value='due_date' WHERE name='tasksGroupBy';
+INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`,`name`,`value`,`config_handler_class`,`is_system`) VALUES
+ ('general', 'use_milestones', 0, 'BoolConfigHandler', 0),
+ ('general', 'show_tab_icons', '1', 'BoolConfigHandler', '0')
+ON DUPLICATE KEY UPDATE name=name;
+
+ALTER TABLE `<?php echo $table_prefix ?>event_invitations` ADD INDEX `contact_id`(`contact_id`, `event_id`);

@@ -746,3 +746,10 @@
 	padding: 2px;
 	border-radius: 3px;
 }
+
+.wysiwyg-description em {
+	font-style: italic;
+}
+.wysiwyg-description blockquote {
+	margin: 1em 40px;
+}

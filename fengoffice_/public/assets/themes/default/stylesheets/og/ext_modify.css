@@ -17,11 +17,15 @@
 }
 
 /*--- tabs.css ---*/
-.x-tab-strip .x-tab-with-icon span.x-tab-strip-text {
+.x-tab-strip span.x-tab-strip-text {
 	height: 15px;
 	padding-top: 5px;
 	font-size: 11px;
 	font-weight: bold;
+}
+
+.x-tab-strip .x-tab-with-icon span.x-tab-strip-text {
+	padding-left: 20px;
 }
 
 .x-tab-strip-top .x-tab-right, .x-tab-strip-top .x-tab-left, .x-tab-strip-top .x-tab-strip-inner 
@@ -44,7 +48,7 @@ ul.x-tab-strip li
 {
 	background: #179136;
 	border-radius: 5px 5px 0px 0px;
-	padding: 0px 5px 0px 10px;
+	padding: 0px 5px 0px 5px;
 	border: solid 2px #179136;
 	border-bottom: none;	
 }
@@ -74,7 +78,6 @@ div#menu-panel div.x-panel
 	background: none;
 }
 
-.x-tab-strip .x-tab-with-icon span.x-tab-strip-text{background: none !important;}
 
 .x-tab-panel-header, .x-tab-panel-footer {
 	border: 0px;

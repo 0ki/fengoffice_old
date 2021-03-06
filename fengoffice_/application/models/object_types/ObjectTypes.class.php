@@ -39,7 +39,7 @@
 			$sql = "
 				SELECT DISTINCT(id) as id  
 				FROM ".TABLE_PREFIX."object_types 
-				WHERE type IN ('content_object', 'dimension_object') AND (
+				WHERE type IN ('content_object', 'dimension_object', 'comment') AND (
 					plugin_id IS NULL OR 
 					plugin_id = 0 OR 
 					plugin_id IN ( 

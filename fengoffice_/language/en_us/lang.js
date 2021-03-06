@@ -87,7 +87,7 @@ addLangs({
 	'more actions on first selected object': 'More actions on first selected object',
 	'displaying files of': 'Displaying files {0} to {1} of {2}',
 	'no files to display': 'No files to display',
-	'no tasks to display': 'No tasks to display',
+	'no tasks to display': 'There are no tasks in {0} yet.',
 	'refresh desc': 'Refresh the view',
 	'templates desc': 'Manage templates',
 	'templates': 'Templates',
@@ -848,6 +848,7 @@ addLangs({
   	'confirm disable user' : 'The User will be disabled. Continue?',
   	'confirm delete user' : 'Are you sure that you want to delete this user account?',
 	'add sub task' : 'Add subtask',
+	'add first task' : 'Add the first task',
         'do you want to mantain the current associations of this obj with members of': 'Do you want to mantain the current associations of this object with {0}?',
         
         'sync' : 'Sync',

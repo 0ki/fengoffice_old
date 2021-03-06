@@ -26,7 +26,7 @@ if (isset($message) && $message instanceof ProjectMessage) {
                 if($message->getTypeContent() == "text"){
                     $content = escape_html_whitespace(convert_to_links(clean($message->getText())));
                 }else{
-                    $content = purify_html(nl2br($message->getText()));
+                    $content = '<div class="wysiwyg-description">' . purify_html(nl2br($message->getText())) . '</div>';
                 }
 				
 		tpl_assign("content", $content);

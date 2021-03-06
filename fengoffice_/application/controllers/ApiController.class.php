@@ -78,6 +78,7 @@ class ApiController extends ApplicationController {
 //
 //    }
 
+    //provides all of the members from the dimension member in question
     private function list_members($request) {
         $service = $request ['srv'];
         
@@ -111,6 +112,41 @@ class ApiController extends ApplicationController {
             }
         }
 
+        return $this->response('json', $members);
+    }
+    
+    //provides the latest active members from the dimension member in question
+ 	private function list_latest_active_members($request) {
+        $service = $request ['srv'];        
+        $members = array();
+        $type = ObjectTypes::instance()->findByName($service);
+        $typeId = $type->getId();
+        if($service == "workspace"){
+            $dimension_id = Dimensions::findByCode('workspaces')->getId();            
+        }else{
+            $dimension_id = Dimensions::findByCode('customer_project')->getId();
+        }
+        $ids = array();
+        $dimensionController = new DimensionController();       
+        foreach ($dimensionController->latest_active_dimension_members($dimension_id, $typeId, null, user_config_option("mobile_logs_amount_to_search"),
+        														user_config_option("mobile_minimum_display_dimension_members"), user_config_option("mobile_maximum_display_dimension_members")) as $member) {
+            $ids [] = $member['object_id'];
+        }
+        if (count($ids)) {
+            $args['conditions'] = " `object_id` IN (" . implode(",", $ids) . ") AND object_type_id = $typeId";
+            $args['order'] = " name ASC";            
+            foreach (Members::instance()->findAll($args) as $member) {
+                /* @var $member Member */
+                $memberInfo = array(
+                    'id' => $member->getId(),
+                    'name' => $member->getName(),
+                    'type' => $service,
+                    'path' => $member->getPath()
+                );
+
+                $members[] = $memberInfo;
+            }
+        }
         return $this->response('json', $members);
     }
 

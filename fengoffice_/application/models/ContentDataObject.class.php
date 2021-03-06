@@ -1391,7 +1391,7 @@ abstract class ContentDataObject extends ApplicationDataObject {
 		//3. If there are dimensions that defines permissions containing any of the object members
 		if ( count($dids) ){
 			// 3.1 get permission groups with permissions over the object.
-			$sql_fields = "permission_group_id  AS group_id" ;
+			$sql_fields = "permission_group_id  AS group_id";
 			
 			$sql = "
 				SELECT 
@@ -1421,6 +1421,56 @@ abstract class ContentDataObject extends ApplicationDataObject {
 			
 			$gids = array_values($gids_tmp);
 			$gids_tmp = null;
+			
+			// check for mandatory dimensions
+			$mandatory_dim_ids = Dimensions::findAll(array('id' => true, 'conditions' => "`defines_permissions`=1 AND `permission_query_method`='".DIMENSION_PERMISSION_QUERY_METHOD_MANDATORY."'"));
+			if (count($gids) > 0 && count($mandatory_dim_ids) > 0) {
+				$sql = "SELECT om.member_id, m.dimension_id FROM ".$table_prefix."object_members om 
+				INNER JOIN ".$table_prefix."members m ON m.id=om.member_id INNER JOIN ".$table_prefix."dimensions d ON d.id=m.dimension_id 
+				WHERE om.object_id = $oid AND om.is_optimization = 0 AND d.id IN (".implode(",", $mandatory_dim_ids).")";
+				
+				// Object members in mandatory dimensions
+				$object_member_ids_res = DB::executeAll($sql);
+				$mandatory_dim_members = array();
+				if (!is_null($object_member_ids_res)) {
+					foreach ($object_member_ids_res as $row) {
+						if (!isset($mandatory_dim_members[$row['dimension_id']])) $mandatory_dim_members[$row['dimension_id']] = array();
+						$mandatory_dim_members[$row['dimension_id']][] = $row['member_id'];
+					}
+					
+					$mandatory_dim_allowed_pgs = array();
+					// Check foreach group that it has permissions over at least one member of each mandatory dimension
+					foreach ($mandatory_dim_members as $mdim_id => $mmember_ids) {
+						$sql = "SELECT pg.id FROM ".$table_prefix."permission_groups pg
+						INNER JOIN ".$table_prefix."contact_dimension_permissions cdp ON cdp.permission_group_id=pg.id
+						INNER JOIN ".$table_prefix."contact_member_permissions cmp ON cmp.permission_group_id=pg.id
+						WHERE cdp.dimension_id = '$mdim_id' AND (
+							cdp.permission_type='allow all' OR cdp.permission_type='check' AND cmp.permission_group_id IN (".implode(',', $gids).")
+							AND cmp.member_id IN (".implode(',', $mmember_ids).")
+						)";
+						
+						$permission_groups_res = DB::executeAll($sql);
+						$mandatory_dim_allowed_pgs[$mdim_id] = array();
+						if (!is_null($permission_groups_res)) {
+							foreach ($permission_groups_res as $row) {
+								$mandatory_dim_allowed_pgs[$mdim_id][] = $row['id'];
+							}
+						}
+					}
+
+					if (isset($mandatory_dim_allowed_pgs) && count($mandatory_dim_allowed_pgs) > 0) {
+						$allowed_gids = array_pop($mandatory_dim_allowed_pgs);
+						foreach ($mandatory_dim_allowed_pgs as $pg_array) {
+							$allowed_gids = array_intersect($allowed_gids, $pg_array);
+						}
+						
+						$gids = array_unique($allowed_gids, SORT_NUMERIC);
+					} else {
+						$gids = array();
+					}
+				}
+			}
+			
 		}else { 
 			if ( count($this->getMemberIds()) > 0 ) {
 				// 3.2 No memeber dimensions defines permissions. 

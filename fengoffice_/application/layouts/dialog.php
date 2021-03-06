@@ -47,5 +47,8 @@
     	</tr>
     </table>
     </div>
+    <div class="powered-by">
+    <?php echo lang('footer powered', 'http://www.fengoffice.com/', clean(product_name())) . ' - ' . lang('version') . ' ' . product_version();?>
+    </div>
   </body>
 </html>

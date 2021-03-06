@@ -78,12 +78,10 @@ class DateTimeValue {
 	 */
 	function advance($input, $mutate = true) {
 		$timestamp = (integer) $input;
-		if($timestamp <> 0) {
-			if($mutate) {
-				$this->setTimestamp($this->getTimestamp() + $timestamp);
-			} else {
-				return new DateTimeValue($this->getTimestamp() + $timestamp);
-			} // if
+		if($mutate) {
+			$this->setTimestamp($this->getTimestamp() + $timestamp);
+		} else {
+			return new DateTimeValue($this->getTimestamp() + $timestamp);
 		} // if
 	} // advance
 
@@ -95,7 +93,7 @@ class DateTimeValue {
 	 */
 	function isToday() {
 		$today = DateTimeValueLib::now();
-		if (logged_user() instanceof User) {
+		if (logged_user() instanceof Contact) {
 			$date = new DateTimeValue($this->getTimestamp() + logged_user()->getTimezone() * 3600);
 		} else {
 			$date = $this;
