@@ -8,7 +8,12 @@ foreach ($css as $c) {
 	echo stylesheet_tag($c);
 }
 ?>
-
+<!--[if IE 7]>
+<?php echo stylesheet_tag("og/ie7.css"); ?>
+<![endif]-->
+<!--[if IE 8]>
+<?php echo stylesheet_tag("og/ie8.css"); ?>
+<![endif]-->
 <div class="header-container">
 	<div class="header">
 	<?php if (Plugins::instance()->isActivePlugin('custom_login')) {
@@ -64,10 +69,8 @@ foreach ($css as $c) {
 	if($pass_metacharacters) echo '*'.lang('password invalid metacharacters', $pass_metacharacters).'<br/>';
   ?>
 
-</form>
-
-
 </div>
+</form>
 
 </div>
 <div class="login-footer">

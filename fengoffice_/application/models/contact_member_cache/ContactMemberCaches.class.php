@@ -26,6 +26,7 @@ class ContactMemberCaches extends BaseContactMemberCaches {
 		$parent_member_id = array_var($args,'parent_member_id',null);
 		$contact_id = array_var($args,'contact_id',null);
 		$member_name = array_var($args,'member_name',null);
+		$extra_condition = array_var($args,'extra_condition',null);
 		
 		// Prepare Condition SQL
 		$SQL_CONDITION = "";
@@ -39,6 +40,10 @@ class ContactMemberCaches extends BaseContactMemberCaches {
 		
 		if (!is_null($member_name)) {
 			$SQL_CONDITION .= " AND m.name LIKE '%".$member_name."%'";
+		}
+		
+		if (!is_null($extra_condition)) {
+			$SQL_CONDITION .= $extra_condition;
 		}
 		
 		// Prepare Limit SQL

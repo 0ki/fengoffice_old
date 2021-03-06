@@ -286,6 +286,9 @@ class TaskController extends ApplicationController {
 	private function do_quick_edit_task($task_data, &$task, $type_related = null) {
 		// set task dates
 		if (is_array($task_data)) {
+			foreach ($task_data as $k => &$v) {
+				$v = remove_scripts($v);
+			}
 			$send_edit = false;
 			if($task->getAssignedToContactId() == array_var($task_data, 'assigned_to_contact_id')){
 				$send_edit = true;
@@ -1181,6 +1184,9 @@ class TaskController extends ApplicationController {
 		}
 		
 		$task_data = array_var($_POST, 'task');
+		foreach ($task_data as $k => &$v) {
+			$v = remove_scripts($v);
+		}
 		if(!is_array($task_data)) {
 			$dd = getDateValue(array_var($_POST, 'task_due_date', ''));
 			if ($dd instanceof DateTimeValue) {
@@ -1698,6 +1704,9 @@ class TaskController extends ApplicationController {
 		tpl_assign('task_data', $task_data);
 
 		if(is_array(array_var($_POST, 'task'))) {
+			foreach ($task_data as $k => &$v) {
+				$v = remove_scripts($v);
+			}
 			$send_edit = false;
 			if($task->getAssignedToContactId() == array_var($task_data, 'assigned_to_contact_id')){
 				$send_edit = true;

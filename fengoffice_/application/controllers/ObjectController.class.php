@@ -302,6 +302,9 @@ class ObjectController extends ApplicationController {
 			return;
 		}
 		$obj_custom_properties = array_var($_POST, 'object_custom_properties');
+		foreach ($obj_custom_properties as $id => &$value) {
+			$value = remove_scripts($value);
+		}
 		
 		$customProps = CustomProperties::getAllCustomPropertiesByObjectType($object->getObjectTypeId());
 		//Sets all boolean custom properties to 0. If any boolean properties are returned, they are subsequently set to 1.

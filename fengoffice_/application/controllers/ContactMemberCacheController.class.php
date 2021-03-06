@@ -62,13 +62,19 @@ class  ContactMemberCacheController extends ApplicationController {
 			}
 		}
 		
-		if(count($permissionGroupIds)){	
+		if(count($permissionGroupIds) > 0){	
 			$usersIds = ContactPermissionGroups::getAllContactsIdsByPermissionGroupIds($permissionGroupIds);
 			foreach ($usersIds as $us_id) {
 				$user = Contacts::findById($us_id);
 				ContactMemberCaches::updateContactMemberCache($user, $member->getId());
 			}
 			
+		}else{
+			//update this member for all user in cache 
+			$contacts = Contacts::getAllUsers();
+			foreach ($contacts as $contact) {
+				ContactMemberCaches::updateContactMemberCache($contact, $member->getId());
+			}
 		}
 	}
 	

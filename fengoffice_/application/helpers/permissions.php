@@ -580,9 +580,16 @@
 			if ($dim->getDefinesPermissions()) {
 				$dimensions[] = $dim;
 				$root_members = DB::executeAll("SELECT * FROM ".TABLE_PREFIX."members WHERE dimension_id=".$dim->getId()." AND parent_member_id=0 ORDER BY name ASC");
+				$tmp_mem_ids = array();
 				foreach ($root_members as $mem) {
 					$members[$dim->getId()][] = $mem;
-					$members[$dim->getId()] = array_merge($members[$dim->getId()], get_all_children_sorted($mem));
+					$tmp_mem_ids[] = $mem['id'];
+					//$members[$dim->getId()] = array_merge($members[$dim->getId()], get_all_children_sorted($mem));
+				}
+				$all_children = array();
+				if (count($tmp_mem_ids) > 0) {
+					$all_children = DB::executeAll("SELECT * FROM ".TABLE_PREFIX."members WHERE dimension_id=".$dim->getId()." AND parent_member_id IN (".implode(',',$tmp_mem_ids).") ORDER BY parent_member_id, name");
+					$members[$dim->getId()] = array_merge($members[$dim->getId()], $all_children);
 				}
 				
 				$allowed_object_types[$dim->getId()] = array();
@@ -805,22 +812,12 @@
 		
 		if (isset($permissions) && !is_null($permissions) && is_array($permissions)) {
 			try {
+				$sql_insert_values = "";
 				$allowed_members_ids= array();
 				foreach ($permissions as $perm) {
 					if (!isset($all_perm_deleted[$perm->m])) $all_perm_deleted[$perm->m] = true;
 					$allowed_members_ids[$perm->m]=array();
 					$allowed_members_ids[$perm->m]['pg']=$pg_id;
-					if ($save_cmps) {
-						$cmp = ContactMemberPermissions::findById(array('permission_group_id' => $pg_id, 'member_id' => $perm->m, 'object_type_id' => $perm->o));
-						if (!$cmp instanceof ContactMemberPermission) {
-							$cmp = new ContactMemberPermission();
-							$cmp->setPermissionGroupId($pg_id);
-							$cmp->setMemberId($perm->m);
-							$cmp->setObjectTypeId($perm->o);
-						}
-						$cmp->setCanWrite($is_guest ? false : $perm->w);
-						$cmp->setCanDelete($is_guest ? false : $perm->d);
-					}
 					if ($perm->r) {
 						if(isset($allowed_members_ids[$perm->m]['w'])){
 							if($allowed_members_ids[$perm->m]['w']!=1){
@@ -836,16 +833,26 @@
 						}else{
 							$allowed_members_ids[$perm->m]['d'] = $is_guest ? false : $perm->d;
 						}
-						if ($save_cmps) $cmp->save();
+						if ($save_cmps) {
+							$sql_insert_values .= ($sql_insert_values == "" ? "" : ",") . "(".$pg_id.",".$perm->m.",".$perm->o.",".$perm->d.",".$perm->w.")";
+						}
+						
 						$all_perm_deleted[$perm->m] = false;
-					} else {
-						if ($save_cmps) $cmp->delete();
 					}
 					
 					$changed_members[] = $perm->m;
 				}
+				
+				if ($save_cmps) {
+					if (count($changed_members) > 0) {
+						DB::execute("DELETE FROM ".TABLE_PREFIX."contact_member_permissions WHERE member_id IN (".implode(',',$changed_members).") AND permission_group_id=$pg_id");
+					}
+					if ($sql_insert_values != "") {
+						DB::execute("INSERT INTO ".TABLE_PREFIX."contact_member_permissions (permission_group_id, member_id, object_type_id, can_delete, can_write) VALUES $sql_insert_values ON DUPLICATE KEY UPDATE member_id=member_id");
+					}
+				}
+				
 			} catch (Exception $e) {
-				DB::rollback();
 				Logger::log("Error saving member permissions for permission group $pg_id: ".$e->getMessage()."\n".$e->getTraceAsString());
 				throw $e;
 			}
@@ -949,6 +956,9 @@
 			DB::beginWork();
 			$dimensions = Dimensions::findAll(array("conditions" => array("`id` IN (SELECT DISTINCT `dimension_id` FROM ".Members::instance()->getTableName(true)." WHERE `id` IN (?))", $changed_members)));
 			foreach ($dimensions as $dimension) {
+				$dimension->setContactDimensionPermission($pg_id, 'check');
+			}
+				/*
 				$mem_ids = $dimension->getAllMembers(true);
 				if (count($mem_ids) == 0) $mem_ids[] = 0;
 				
@@ -986,7 +996,7 @@
 						}
 					}
 				}
-			}
+			}*/
 			DB::commit();
 		} catch (Exception $e) {
 			DB::rollback();
@@ -1049,7 +1059,6 @@
 			$permission_groups[] = $group->getId();
 		}
 		
-		//$disabled_ots = array_flat(DB::executeAll("SELECT object_type_id FROM ".TABLE_PREFIX."tab_panels WHERE object_type_id>0 AND enabled=0"));
 		$disabled_ots = array();
 		$disableds = DB::executeAll("SELECT object_type_id FROM ".TABLE_PREFIX."tab_panels WHERE object_type_id>0 AND enabled=0");
 		if (is_array($disableds)) {
@@ -1127,22 +1136,11 @@
 		$contactMemberCacheController = new ContactMemberCacheController();
 		$changed_pgs = array();
 		
-		
+		$sql_insert_values = "";
 		if (isset($permissions) && is_array($permissions)) {
 			
 			$allowed_pg_ids= array();
 			foreach ($permissions as &$perm) {
-				if ($save_cmps) {
-					$cmp = ContactMemberPermissions::findById(array('permission_group_id' => $perm->pg, 'member_id' => $member->getId(), 'object_type_id' => $perm->o));
-					if (!$cmp instanceof ContactMemberPermission) {
-						$cmp = new ContactMemberPermission();
-						$cmp->setPermissionGroupId($perm->pg);
-						$cmp->setMemberId($member->getId());
-						$cmp->setObjectTypeId($perm->o);
-					}
-					$cmp->setCanWrite($perm->w);
-					$cmp->setCanDelete($perm->d);
-				}
 				if ($perm->r) {
 					$allowed_pg_ids[$perm->pg]=array();
 					if(isset($allowed_pg_ids[$perm->pg]['w'])){
@@ -1161,15 +1159,20 @@
 					}
 
 					if ($save_cmps) {
-						$cmp->setUseOnDuplicateKeyWhenInsert(true);
-						$cmp->save();
+						$sql_insert_values .= ($sql_insert_values == "" ? "" : ",") . "(".$perm->pg.",".$member->getId().",".$perm->o.",".$perm->d.",".$perm->w.")";
 					}
-				} else {
-					if ($save_cmps) $cmp->delete();
 				}
 				
 				$perm->m = $member->getId();
 				$changed_pgs[$perm->pg] = $perm->pg;
+			}
+			if ($save_cmps) {
+				if (count($changed_pgs) > 0) {
+					DB::execute("DELETE FROM ".TABLE_PREFIX."contact_member_permissions WHERE permission_group_id IN (".implode(',',$changed_pgs).") AND member_id=".$member->getId());
+				}
+				if ($sql_insert_values != "") {
+					DB::execute("INSERT INTO ".TABLE_PREFIX."contact_member_permissions (permission_group_id, member_id, object_type_id, can_delete, can_write) VALUES $sql_insert_values ON DUPLICATE KEY UPDATE member_id=member_id");
+				}
 			}
 			
 			foreach ($permissions as $p) {
@@ -1202,6 +1205,10 @@
 		
 		// check the status of the dimension to set 'allow_all', 'deny_all' or 'check'
 		$dimension = $member->getDimension();
+		foreach ($changed_pgs as $pg_id) {
+			$dimension->setContactDimensionPermission($pg_id, 'check');
+		}
+		/*
 		$mem_ids = $dimension->getAllMembers(true);
 		if (count($mem_ids) == 0) $mem_ids[] = 0;
 		
@@ -1241,6 +1248,7 @@
 				}
 			}
 		}
+		*/
 		
 		if ($fire_hook) {
 			Hook::fire('after_save_member_permissions', $member, $member);

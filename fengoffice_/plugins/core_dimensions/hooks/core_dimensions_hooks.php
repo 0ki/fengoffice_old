@@ -180,9 +180,12 @@ function core_dimensions_after_save_contact_permissions($pg_id, &$ignored) {
 		if (!$user instanceof Contact || !$user->isUser()) return;
 		
 		$member_ids = array();
-		$cmps = ContactMemberPermissions::instance()->findAll(array("conditions" => "permission_group_id = ".$pg_id));
-		foreach ($cmps as $cmp) {
-			$member_ids[$cmp->getMemberId()] = $cmp->getMemberId();
+		$cmp_rows = DB::executeAll("SELECT member_id FROM ".TABLE_PREFIX."contact_member_permissions WHERE permission_group_id=$pg_id");
+		if (is_array($cmp_rows) && count($cmp_rows) > 0) {
+			$cmps = array_flat($cmp_rows);
+			foreach ($cmps as $mid) {
+				$member_ids[$mid] = $mid;
+			}
 		}
 		if (count($member_ids) == 0) return;
 		
@@ -202,7 +205,6 @@ function core_dimensions_after_save_contact_permissions($pg_id, &$ignored) {
 		// add user content object to associated members
 		$obj_controller = new ObjectController();
 		ObjectMembers::addObjectToMembers($user->getId(), $members);
-		$user->addToSharingTable();
 	}
 }
 
@@ -256,7 +258,6 @@ function core_dimensions_after_save_member_permissions($member, &$ignored) {
 		}
 		// add user content object to customer member
 		ObjectMembers::addObjectToMembers($contact_id, array($member));
-		$contact->addToSharingTable();
 		$contact_ids[] = $contact_id;
 	}
 	

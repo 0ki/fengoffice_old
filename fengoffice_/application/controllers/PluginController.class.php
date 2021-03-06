@@ -189,7 +189,7 @@ static function executeInstaller($name) {
 					$cols = "id, " . $cols;
 					$values = array_var ( $pluginInfo, 'id' ) . ", " . $values;
 				}
-				$sql = "INSERT INTO " . TABLE_PREFIX . "plugins ($cols) VALUES ($values) ON DUPLICATE KEY UPDATE name=name";
+				$sql = "INSERT INTO " . TABLE_PREFIX . "plugins ($cols) VALUES ($values) ON DUPLICATE KEY UPDATE version='".array_var ( $pluginInfo, 'version' )."'";
 				DB::executeOne($sql);
 				$id = DB::lastInsertId();
 				$pluginInfo ['id'] = $id;

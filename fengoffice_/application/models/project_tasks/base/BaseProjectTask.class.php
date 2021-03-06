@@ -74,6 +74,7 @@ abstract class BaseProjectTask extends ContentDataObject {
 	 * @return boolean
 	 */
 	function setText($value) {
+		$value = remove_scripts($value);
 		return $this->setColumnValue('text', $value);
 	} // setText()
 

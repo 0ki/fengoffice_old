@@ -75,6 +75,7 @@
     * @return boolean
     */
     function setName($value) {
+      $value = remove_scripts($value);
       return $this->setColumnValue('name', $value);
     } // setName() 
     

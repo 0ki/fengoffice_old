@@ -1,5 +1,5 @@
 
-	About Feng Office 2.7-beta
+	About Feng Office 2.7-rc
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -101,6 +101,15 @@
 	
 	Changelog
 	=========
+	
+	Since 2.7-beta
+	----------------
+	bugfix: performance when changing permissions.
+	bugfix: XSS prevention fixes.
+	bugfix: login screen broken in IE 7.
+	bugfix: Viewing email with images like <img src="data:image/png;base64......."/> does not show images
+	bugfix: Composing emails with images like <img src="data:image/png;base64......."/> are blank after sending them.
+	
 	
 	Since 2.6.3
 	----------------

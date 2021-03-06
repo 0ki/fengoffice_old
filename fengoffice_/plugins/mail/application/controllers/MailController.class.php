@@ -609,7 +609,9 @@ class MailController extends ApplicationController {
 				set_user_config_option('last_mail_format', array_var($mail_data, 'format', 'plain'), logged_user()->getId());
 				$body = utf8_safe($body);
 				if (array_var($mail_data,'format') == 'html') {
-					$body = convert_to_links(preg_replace("/<body*[^>]*>/i",'<body>', $body));
+					$body = preg_replace("/<body*[^>]*>/i",'<body>', $body);
+					// commented because sometimes brokes the html and leaves the body in blank
+					//$body = convert_to_links(preg_replace("/<body*[^>]*>/i",'<body>', $body));
 					$mail->setBodyHtml($body);
 					$mail->setBodyPlain(utf8_safe(html_to_text($body)));
 				} else {
@@ -867,6 +869,21 @@ class MailController extends ApplicationController {
 								$path = str_replace(ROOT_URL, ROOT, $url);
 								if (!is_array($images)) $images = array();
 								$images[$url] = $path;
+							}
+							
+							if (str_starts_with($url, "data:")) {
+								$mime_type = substr($url, 5, strpos($url, ';') - 5 );
+								$extension = substr($mime_type, strpos($mime_type, "/")+1);
+
+								if (!is_array($images)) $images = array();
+								$file_url = ROOT_URL."/tmp/".gen_id().".$extension";
+								$path = str_replace(ROOT_URL, ROOT, $file_url);
+								
+								$data = substr($url, strpos($url, "base64") + 6);
+								file_put_contents($path, base64_decode($data));
+								$images[$file_url] = $path;
+								
+								$body = str_replace($url, $file_url, $body);
 							}
 						}
 						

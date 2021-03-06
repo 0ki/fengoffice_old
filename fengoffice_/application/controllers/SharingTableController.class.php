@@ -67,7 +67,7 @@ class  SharingTableController extends ApplicationController {
 			if (!$memberId || !$objectTypeId) continue;
 			$delete_conditions[] = " ( object_type_id = '$objectTypeId' AND om.member_id = '$memberId' ) ";
 			$del_count++;
-			if ($del_count >= 500) {
+			if ($del_count >= 20) {
 				$all_del_conditions[] = $delete_conditions;
 				$delete_conditions = array();
 				$del_count = 0;
@@ -90,15 +90,17 @@ class  SharingTableController extends ApplicationController {
 		foreach ($all_del_conditions as $delete_conditions) {
 			
 			if (!is_array($delete_conditions) || count($delete_conditions) == 0) continue;
-			
+			/*
 			// check if the permission group still can view any of the affected objects (if they are classified in another dimension member)
-			$del_objs = DB::executeAll("SELECT object_id $from WHERE ".implode(' OR ' , $delete_conditions ));
-			$del_objs = array_flat($del_objs);
+			$del_objs = DB::executeAll("SELECT object_id, o.object_type_id $from WHERE ".implode(' OR ' , $delete_conditions ));
 			
 			$del_objs_can_read = array();
-			foreach ($del_objs as $do) {
-				$dobj = Objects::findObject($do);
-				if ($dobj instanceof ContentDataObject && can_access_pgids(array($group), $dobj->getMembers(), $dobj->getObjectTypeId(), ACCESS_LEVEL_READ)) {
+			foreach ($del_objs as $do_row) {
+				$do = $do_row['object_id'];
+				$ot_id = $do_row['object_type_id'];
+				
+				$mems = ObjectMembers::instance()->getMembersByObject($object_id);
+				if (can_access_pgids(array($group), $mems, $ot_id, ACCESS_LEVEL_READ)) {
 					$del_objs_can_read[] = $do;
 				}
 			}
@@ -107,10 +109,14 @@ class  SharingTableController extends ApplicationController {
 			$not_to_del_objs_cond = "";
 			if (count($del_objs_can_read) > 0) {
 				$not_to_del_objs_cond = " AND object_id NOT IN (".implode(',',$del_objs_can_read).")";
-			}
+			}*/
 			
 			// delete registers only for objects that cannot be read anymore for this permission group
-			$stManager->delete("object_id IN (SELECT object_id $from WHERE ".implode(' OR ' , $delete_conditions ).") AND group_id = '$group'");
+			$oids = DB::executeAll("SELECT object_id $from WHERE ".implode(' OR ' , $delete_conditions )."");
+			if (is_array($oids) && count($oids) > 0) {
+				$oids = array_flat($oids);
+				$stManager->delete("object_id IN (".implode(',',$oids).") AND group_id = '$group'");
+			}
 		}
 		// 2. POPULATE THE SHARING TABLE AGAIN WITH THE READ-PERMISSIONS (If there are)
 		foreach ($all_read_conditions as $read_conditions) {

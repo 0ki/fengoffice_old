@@ -3,6 +3,12 @@
 <html>
 <head>
 <?php echo meta_tag('content-type', 'text/html; charset=utf-8', true) ?>
+<?php 
+$favicon_name = 'favicon.ico';
+Hook::fire('change_favicon', null, $favicon_name);
+echo add_favicon_to_page($favicon_name);
+echo link_tag(with_slash(ROOT_URL).$favicon_name, "rel", "shortcut icon");
+?>
 </head>
 <body>
 <script>

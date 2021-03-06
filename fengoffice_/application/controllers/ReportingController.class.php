@@ -487,6 +487,9 @@ class ReportingController extends ApplicationController {
 		tpl_assign('url', get_url('reporting', 'add_custom_report'));
 		$report_data = array_var($_POST, 'report');
 		if(is_array($report_data)){
+			foreach ($report_data as $k => &$v) {
+				$v = remove_scripts($v);
+			}
 			tpl_assign('report_data', $report_data);
 			$conditions = array_var($_POST, 'conditions');
 			if(!is_array($conditions)) {
@@ -616,6 +619,9 @@ class ReportingController extends ApplicationController {
 			try{
 				ajx_current("empty");
 				$report_data = array_var($_POST, 'report');
+				foreach ($report_data as $k => &$v) {
+					$v = remove_scripts($v);
+				}
 				
 				$member_ids = json_decode(array_var($_POST, 'members'));
 				

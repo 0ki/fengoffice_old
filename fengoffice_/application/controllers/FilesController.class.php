@@ -404,6 +404,9 @@ class FilesController extends ApplicationController {
 			
 		
 		if (is_array(array_var($_POST, 'file'))) {
+			foreach ($file_data as $k => &$v) {
+				$v = remove_scripts($v);
+			}
 			$this->setLayout("html");
 			
 			$upload_option = array_var($file_data, 'upload_option');
@@ -1968,6 +1971,9 @@ class FilesController extends ApplicationController {
 
 			
 		if(is_array(array_var($_POST, 'file'))) {
+			foreach ($file_data as $k => &$v) {
+				$v = remove_scripts($v);
+			}
 			try {
 				DB::beginWork();
 				$handle_file      = array_var($file_data, 'update_file') == 'checked'; // change file?

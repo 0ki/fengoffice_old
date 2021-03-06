@@ -8,6 +8,12 @@ foreach ($css as $c) {
 	echo stylesheet_tag($c);
 }
 ?>
+<!--[if IE 7]>
+<?php echo stylesheet_tag("og/ie7.css"); ?>
+<![endif]-->
+<!--[if IE 8]>
+<?php echo stylesheet_tag("og/ie8.css"); ?>
+<![endif]-->
 <script>
 	showMoreOptions = function() {
 		var div = document.getElementById("optionsDiv");
@@ -85,11 +91,12 @@ foreach ($css as $c) {
 		</div>
 	</div>
   	
+</div>
 </form>
 
 </div>
 
-</div>
+
 <div class="login-footer">
 	<div class="powered-by">
 		<?php echo lang('footer powered', clean(PRODUCT_URL), clean(product_name())) . ' - ' . lang('version') . ' ' . product_version();?>

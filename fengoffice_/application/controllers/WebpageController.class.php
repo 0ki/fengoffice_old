@@ -54,6 +54,9 @@ class WebpageController extends ApplicationController {
 		$webpage_data = array_var($_POST, 'webpage');
 		
 		if(is_array(array_var($_POST, 'webpage'))) {
+			foreach ($webpage_data as $k => &$v) {
+				$v = remove_scripts($v);
+			}
 			try {
 				if(substr_utf($webpage_data['url'],0,7) != 'http://' && substr_utf($webpage_data['url'],0,7) != 'file://' && substr_utf($webpage_data['url'],0,8) != 'https://' && substr_utf($webpage_data['url'],0,6) != 'about:' && substr_utf($webpage_data['url'],0,6) != 'ftp://') {
 					$webpage_data['url'] = 'http://' . $webpage_data['url'];
@@ -131,7 +134,9 @@ class WebpageController extends ApplicationController {
 		}
 
 		if(is_array(array_var($_POST, 'webpage'))) {
-			
+			foreach ($webpage_data as $k => &$v) {
+				$v = remove_scripts($v);
+			}
 			try {
 				$webpage->setFromAttributes($webpage_data);
 				

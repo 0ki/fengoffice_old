@@ -947,6 +947,9 @@ class ContactController extends ApplicationController {
 		
 		// Submit
 		if(is_array(array_var($_POST, 'contact'))) {
+			foreach ($contact_data as $k => &$v) {
+				$v = remove_scripts($v);
+			}
 			ajx_current("empty");
 			try {
 				DB::beginWork();
@@ -1190,7 +1193,9 @@ class ContactController extends ApplicationController {
 		
 		//Contact Submit
 		if(is_array(array_var($_POST, 'contact'))) {
-			
+			foreach ($contact_data as $k => &$v) {
+				$v = remove_scripts($v);
+			}
 			try {
 				DB::beginWork();
 				$contact_data['email']= trim ($contact_data['email']);
@@ -2790,6 +2795,9 @@ class ContactController extends ApplicationController {
 		tpl_assign('company_data', $company_data);
 
 		if(is_array(array_var($_POST, 'company'))) {
+			foreach ($company_data as $k => &$v) {
+				$v = remove_scripts($v);
+			}
 			try {
 				Contacts::validate($company_data, $_REQUEST['id']);
 				DB::beginWork();
@@ -2896,7 +2904,9 @@ class ContactController extends ApplicationController {
 		$company_data['all_webpages'] = array();
 	
 		if (is_array(array_var($_POST, 'company'))) {
-                    
+			foreach ($company_data as $k => &$v) {
+				$v = remove_scripts($v);
+			}
 			$company->setFromAttributes($company_data);
 			$company->setObjectName();
 

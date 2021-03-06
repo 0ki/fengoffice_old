@@ -8,7 +8,12 @@ foreach ($css as $c) {
 	echo stylesheet_tag($c);
 }
 ?>
-
+<!--[if IE 7]>
+<?php echo stylesheet_tag("og/ie7.css"); ?>
+<![endif]-->
+<!--[if IE 8]>
+<?php echo stylesheet_tag("og/ie8.css"); ?>
+<![endif]-->
 <div class="header-container">
 	<div class="header">
 	<?php if (Plugins::instance()->isActivePlugin('custom_login')) {
@@ -37,9 +42,9 @@ foreach ($css as $c) {
 <div id="reset_password_submit">
 	<button type="submit"><?php echo lang('change password') ?></button>
 </div>
+</div>
 </form>
 
-</div>
 
 </div>
 <div class="login-footer">

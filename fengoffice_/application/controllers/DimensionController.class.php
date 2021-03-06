@@ -442,12 +442,6 @@ class DimensionController extends ApplicationController {
 	
 	//return all childs of a member
 	function get_member_childs() {
-		if(!can_manage_dimension_members(logged_user())) {
-			flash_error(lang('no access permissions'));
-			ajx_current("empty");
-			return;
-		}
-	
 		$mem_id = array_var($_GET, 'member');
 		$mem = Members::getMemberById($mem_id);
 		if($mem instanceof Member){
@@ -474,11 +468,6 @@ class DimensionController extends ApplicationController {
 	
 	//return all parents of a member
 	function get_member_parents() {
-		if(!can_manage_dimension_members(logged_user())) {
-			flash_error(lang('no access permissions'));
-			ajx_current("empty");
-			return;
-		}
 		$mem_id = array_var($_GET, 'member');
 		$mem = Members::getMemberById($mem_id);
 		if($mem instanceof Member){

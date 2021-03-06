@@ -385,6 +385,9 @@ class MessageController extends ApplicationController {
 		tpl_assign('message_data', $message_data);
 
 		if(is_array(array_var($_POST, 'message'))) {
+			foreach ($message_data as $k => &$v) {
+				$v = remove_scripts($v);
+			}
 			try {
 				if(config_option('untitled_notes'))
 				{
@@ -482,6 +485,9 @@ class MessageController extends ApplicationController {
 		tpl_assign('message_data', $message_data);
 
 		if(is_array(array_var($_POST, 'message'))) {
+			foreach ($message_data as $k => &$v) {
+				$v = remove_scripts($v);
+			}
 			try {
 				
 				//MANAGE CONCURRENCE WHILE EDITING

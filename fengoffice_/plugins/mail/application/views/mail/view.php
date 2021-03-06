@@ -206,10 +206,43 @@ if (isset($email)){
 		} else {
 			$conversation_block = '';
 		}
-  
+		
 		if($email->getBodyHtml() != ''){
+			$html_content = $email->getBodyHtml();
+			
+			// inline images
+			$end_while = false;
+			$offset = 0;
+			$matches = array();
+			while (!$end_while) {
+				$pos = strpos($html_content, "<img", $offset);
+				if ($pos === false) {
+					$end_while = true;
+				} else {
+					$pos = strpos($html_content, 'src="', $pos) + 5;
+					$end_pos = strpos($html_content, '"', $pos);
+					$matches[] = substr($html_content, $pos, $end_pos - $pos);
+					
+					$offset = $end_pos;
+				}
+			}
+			
+			foreach ($matches as $url) {
+				if (str_starts_with($url, "data:")) {
+					$mime_type = substr($url, 5, strpos($url, ';') - 5 );
+					$extension = substr($mime_type, strpos($mime_type, "/")+1);
+						
+					$file_url = ROOT_URL."/tmp/".gen_id().".$extension";
+					$path = str_replace(ROOT_URL, ROOT, $file_url);
+						
+					$data = substr($url, strpos($url, "base64") + 6);
+					file_put_contents($path, base64_decode($data));
+						
+					$html_content = str_replace($url, $file_url, $html_content);
+				}
+			}
+			
 			if (defined('SANDBOX_URL')) {
-				$html_content = $email->getBodyHtml();
 				// prevent some outlook malformed tags
 				if(substr_count($html_content, "<style") != substr_count($html_content, "</style>") && substr_count($html_content, "/* Font Definitions */") >= 1) {
 					$p1 = strpos($html_content, "/* Font Definitions */", 0);
@@ -220,8 +253,9 @@ if (isset($email)){
 					$html_content = str_replace_first("/* Font Definitions */","<style>",$html_content);
 				}
 			} else {
-				$html_content = purify_html($email->getBodyHtml());
+				$html_content = purify_html($html_content);
 			}
+			
 			if (strpos($html_content, "<html") === false) {
 				if (strpos($html_content, "<body") === false) {
 					$html_content = "<body>" . $html_content . "</body>";

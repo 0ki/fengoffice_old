@@ -114,13 +114,22 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 og.config.use_milestones = <?php echo config_option('use_milestones') ? 'true' : 'false' ?>;
 og.config.show_notify_checkbox_in_quick_add = <?php echo user_config_option('show_notify_checkbox_in_quick_add') ? 'true' : 'false' ?>;
 og.config.quick_add_task_combos = <?php 
-		$dimensions_from_config = explode(",",user_config_option("quick_add_task_view_dimensions_combos"));
-		$dimensions_from_config = is_array($dimensions_from_config)? array_filter($dimensions_from_config) : array();
-		$dimensions_user = get_user_dimensions_ids();	
 		$object = "";
-		foreach ($dimensions_from_config as $key=>$conf){
-			if(in_array($conf, $dimensions_user)){
-				$dim = Dimensions::instance()->getDimensionById($conf);
+		$dimensions_user = get_user_dimensions_ids();
+		$dimensions_to_show = explode(",",user_config_option("quick_add_task_view_dimensions_combos"));
+		$dimensions_to_skip = array_diff($dimensions_user, $dimensions_to_show);
+		
+		//sort combos
+		function cmp($a, $b)
+		{
+			return ($a < $b) ? -1 : 1;
+		}
+		usort($dimensions_to_show, "cmp");
+				
+		foreach ($dimensions_to_show as $key=>$dimension_id){
+			if (in_array($dimension_id, $dimensions_to_skip)) continue;
+			$dim = Dimensions::instance()->getDimensionById($dimension_id);
+			if($dim instanceof Dimension){
 				if($key!=0) $object .=",";
 				$object .= "'".$dim->getName()."'";
 			}

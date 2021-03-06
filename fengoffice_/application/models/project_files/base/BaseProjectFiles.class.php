@@ -97,7 +97,7 @@ abstract class BaseProjectFiles extends ContentDataObjects {
 	 */
 	function getSystemColumns() {
 		return array_merge(parent::getSystemColumns(), array(
-      		'checked_out_by_id', 'was_auto_checked_out', 'mail_id', 'type', 'attach_to_notification', 'default_subject')
+      		'checked_out_by_id', 'was_auto_checked_out', 'mail_id', 'type', 'attach_to_notification', 'default_subject', 'expiration_time')
 		);
 	} // getSystemColumns*/
 	
