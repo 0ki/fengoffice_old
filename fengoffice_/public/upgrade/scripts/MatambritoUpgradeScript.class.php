@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Matambrito upgrade script will upgrade OpenGoo 1.2.1 to OpenGoo 1.3-beta
+ * Matambrito upgrade script will upgrade OpenGoo 1.2.1 to OpenGoo 1.3-rc
  *
  * @package ScriptUpgrader.scripts
  * @version 1.3
@@ -41,7 +41,7 @@ class MatambritoUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('1.2.1');
-		$this->setVersionTo('1.3-beta');
+		$this->setVersionTo('1.3-rc');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -50,6 +50,10 @@ class MatambritoUpgradeScript extends ScriptUpgraderScript {
 
 	function getCheckExtensions() {
 		return $this->check_extensions;
+	}
+	
+	function worksFor($version) {
+		return version_compare($version, $this->getVersionFrom()) >= 0 && version_compare($version, $this->getVersionTo()) < 0;
 	}
 	
 	/**
@@ -123,7 +127,15 @@ class MatambritoUpgradeScript extends ScriptUpgraderScript {
 
 		$total_queries = 0;
 		$executed_queries = 0;
-		$upgrade_script = tpl_fetch(get_template_path('db_migration/matambrito'));
+		$installed_version = installed_version();
+		if (version_compare($installed_version, "1.2.1") <= 0) {
+			$upgrade_script = tpl_fetch(get_template_path('db_migration/1_3_matambrito'));
+		} else {
+			// change from es_uy to es_la
+			$upgrade_script = "UPDATE `".TABLE_PREFIX."user_ws_config_options` SET `default_value` = 'es_la' WHERE `name` = 'localization' AND `default_value` = 'es_uy';
+			UPDATE `".TABLE_PREFIX."user_ws_config_option_values` `v`, `".TABLE_PREFIX."user_ws_config_options` `o` SET `v`.`value` = 'es_la' WHERE `o`.`name` = 'localization' AND `o`.`id` = `v`.`option_id` AND `v`.`value` = 'es_uy';
+			";
+		}
 
 		if($this->executeMultipleQueries($upgrade_script, $total_queries, $executed_queries, $this->database_connection)) {
 			$this->printMessage("Database schema transformations executed (total queries: $total_queries)");
@@ -131,6 +143,36 @@ class MatambritoUpgradeScript extends ScriptUpgraderScript {
 			$this->printMessage('Failed to execute DB schema transformations. MySQL said: ' . mysql_error(), true);
 			return false;
 		} // if
+		@unlink('templates/db_migration/onion.php');
+		@unlink('templates/db_migration/dulceDeLeche.php');
+		@unlink('templates/db_migration/tortaFrita.php');
+		@unlink('templates/db_migration/churro.php');
+		@unlink('templates/db_migration/empanada.php');
+		@unlink('templates/db_migration/milanga.php');
+		@unlink('templates/db_migration/bondiola.php');
+		@unlink('templates/db_migration/chinchulin.php');
+		@unlink('templates/db_migration/matambrito.php');
+		@unlink(INSTALLATION_PATH . '/language/es_uy.php');
+		@unlink_dir(INSTALLATION_PATH . '/language/es_uy');
+		
+		// write cookie_path config option
+		if (substr(ROOT_URL, 0, 1) == "/") {
+			$cookiepath = ROOT_URL;
+		} else if (substr(ROOT_URL, 0, 4) == "http") {
+			$offset = strpos(ROOT_URL, "//") + 2;
+			$start = strpos(ROOT_URL, "/", $offset);
+			$cookiepath = substr(ROOT_URL, $start);
+		} else {
+			$cookiepath = "/";
+		}
+		$configfile = @file_get_contents(INSTALLATION_PATH . '/config/config.php');
+		if ($configfile) {
+			$configfile = str_replace("es_uy", "es_la", $configfile);
+			if (strpos($configfile, "COOKIE_PATH") <= 0) {
+				$configfile = str_replace("return true;", "define('COOKIE_PATH', '$cookiepath');\n  return true;", $configfile);
+			}
+			@file_put_contents(INSTALLATION_PATH . '/config/config.php', $configfile);
+		}
 
 		$this->printMessage('OpenGoo has been upgraded. You are now running OpenGoo '.$this->getVersionTo().' Enjoy!');
 	} // execute

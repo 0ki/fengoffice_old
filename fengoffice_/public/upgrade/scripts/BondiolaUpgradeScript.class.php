@@ -123,7 +123,7 @@ class BondiolaUpgradeScript extends ScriptUpgraderScript {
 
 		$total_queries = 0;
 		$executed_queries = 0;
-		$upgrade_script = tpl_fetch(get_template_path('db_migration/bondiola'));
+		$upgrade_script = tpl_fetch(get_template_path('db_migration/1_1_bondiola'));
 
 		if($this->executeMultipleQueries($upgrade_script, $total_queries, $executed_queries, $this->database_connection)) {
 			$this->printMessage("Database schema transformations executed (total queries: $total_queries)");

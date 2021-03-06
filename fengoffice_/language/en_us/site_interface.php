@@ -110,7 +110,7 @@
     // RSS
     'rss feeds' => 'RSS feeds',
     'recent activities feed' => 'Recent activities',
-    'recent project activities feed' => 'Recent activities on {0} workspace',
+    'recent project activities feed' => 'Recent activities on workspace \'{0}\'',
     
     // Update company permissions
     'update company permissions hint' => 'Check workspace to give access permissions for this company. Note that you\'ll also need to specify access permissions for company members that you want to be able to access and manage selected workspaces (you can do that through workspace People page or through user profiles).',
@@ -535,6 +535,9 @@
   'share notification company desc' => '{1} invited you to view/edit this company: {0}',
   'share notification emailunclassified desc' => '{1} invited you to view/edit this email: {0}',
   'share notification email desc' => '{1} invited you to view/edit this email: {0}',
+  'share notification file desc' => '{1} invited you to view/edit this file: {0}',
+  'share notification milestone desc' => '{1} invited you to view/edit this milestone: {0}',
+  'share notification weblink desc' => '{1} invited you to view/edit this web link: {0}',
   
   'new share notification message' => 'Note \'{0}\' has been shared',
   'new share notification event' => 'Event \'{0}\' has been shared',
@@ -544,6 +547,9 @@
   'new share notification company' => 'Company \'{0}\' has been shared',
   'new share notification emailunclassified' => 'Email \'{0}\' has been shared',
   'new share notification email' => 'Email \'{0}\' has been shared',
+  'new share notification file' => 'File \'{0}\' has been shared',
+  'new share notification milestone' => 'Milestone \'{0}\' has been shared',
+  'new share notification weblink' => 'Web link \'{0}\' has been shared',
   
   'billing' => 'Billing',
   'category' => 'Category',

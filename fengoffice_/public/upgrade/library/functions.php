@@ -114,4 +114,24 @@ function installed_version() {
 		return "unknown";
 	}
 } // installed_version
+
+/**
+ * Deletes a directory and all of its contents
+ * @return unknown_type
+ */
+function unlink_dir($dir) {
+	$dh = @opendir($dir);
+	if (!is_resource($dh)) return;
+    while (false !== ($obj = readdir($dh))) {
+		if($obj == '.' || $obj == '..') continue;
+		$path = "$dir/$obj";
+		if (is_dir($path)) {
+			unlink_dir($path);
+		} else {
+			@unlink($path);
+		}
+	}
+	@closedir($dh);
+	@rmdir($dir);
+}
 ?>

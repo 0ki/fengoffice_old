@@ -573,16 +573,22 @@ onmouseup="showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMo
 	if (Ext.isIE) document.getElementById('ie_scrollbar_adjust').style.width = '15px';
 	
 	// resize grid
-	function resizeGridContainer() {
+	function resizeGridContainer(e, id) {
 		maindiv = document.getElementById('cal_main_div');
-		if (maindiv != null) {
+		if (maindiv == null) {
+			og.removeDomEventHandler(window, 'resize', id);
+		} else {
 			var divHeight = maindiv.offsetHeight;
 			divHeight = divHeight - 30 - <?php echo (PX_HEIGHT + $alldaygridHeight); ?>;
 			document.getElementById('gridcontainer').style.height = divHeight + 'px';
 		}
 	}
 	resizeGridContainer();
-	window.onresize = resizeGridContainer;
+	if (Ext.isIE) {
+		og.addDomEventHandler(document.getElementById('cal_main_div'), 'resize', resizeGridContainer);
+	} else {
+		og.addDomEventHandler(window, 'resize', resizeGridContainer);
+	}
 	
 	// init tooltips
 	Ext.QuickTips.init();

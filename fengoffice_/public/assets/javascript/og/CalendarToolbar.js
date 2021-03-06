@@ -124,7 +124,7 @@ var topToolbarItems = {
 	}),
 	imp_exp: new Ext.Action({
 		text: lang('import/export'),
-           tooltip: lang('import - export'),
+           tooltip: lang('calendar import - export'),
 		menu: {items: [
 			{text: lang('import'), iconCls: 'ico-upload', handler: function() {
 				var url = og.getUrl('event', 'icalendar_import');

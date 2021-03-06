@@ -561,5 +561,9 @@ addLangs({
     'days': 'días',
     'before': 'antes',
     'remove object reminder': 'Quitar recordatorio',
-    'apply to subscribers': 'Aplicar a todos los suscriptores'
+    'apply to subscribers': 'Aplicar a todos los suscriptores',
+    
+    'contact import - export': 'Importar y exportar contactos',
+    'calendar import - export': 'Importar y exportar eventos',
+    'view weblink': 'Ver enlace web'
 });

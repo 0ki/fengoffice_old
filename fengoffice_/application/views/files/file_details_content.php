@@ -62,7 +62,7 @@
 				<a class="downloadLink coViewAction ico-download" href="<?php echo $revision->getDownloadUrl() ?>" title="<?php echo lang('download') . ' (' . format_filesize($revision->getFileSize()) .')'?>">&nbsp;</a>
 			<?php } ?>
 			<?php if ($file->canDelete(logged_user()) && !$file->isTrashed()) {?>
-				<a onclick="return confirm('<?php echo escape_single_quotes(lang('confirm move to trash'))?>')" href="<?php echo $revision->getDeleteUrl() ?>" class="internalLink coViewAction ico-trash" target="overview-panel" title="<?php echo lang('move to trash')?>"></a>
+				<a onclick="return confirm('<?php echo escape_single_quotes(lang('confirm move to trash'))?>')" href="<?php echo $revision->getDeleteUrl() ?>" class="internalLink coViewAction ico-trash" title="<?php echo lang('move to trash')?>"></a>
 			<?php } ?>
 		</td>
 	</tr>
@@ -90,7 +90,7 @@
 	function resizeImage(genid){
 		var image = document.getElementById(genid + 'Image');
 		if (image){
-			var width = (navigator.appName == "Microsoft Internet Explorer")? image.parentNode.parentNode.offsetWidth : image.parentNode.parentNode.clientWidth;
+			var width = (Ext.isIE)? image.parentNode.parentNode.offsetWidth : image.parentNode.parentNode.clientWidth;
 			
 			image.style.maxWidth = (width - 20) + "px";
 			image.style.maxHeight = (width - 20) + "px";
@@ -108,6 +108,6 @@
 		resizeSmallImage('<?php echo $genid ?>');
 		setTimeout('resizeImage("<?php echo $genid ?>")',50);
 	}
-	window.onresize = resizeImage<?php echo $genid ?>;
+	og.addDomEventHandler(window, 'resize', resizeImage<?php echo $genid ?>);
 	</script>
 <?php } ?>

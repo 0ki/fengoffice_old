@@ -41,7 +41,7 @@
     'config option name site_name' => 'Nombre del sitio',
     'config option desc site_name' => 'Este valor va a ser desplegado como el nombre del sitio en la página Dashboard',
     'config option name file_storage_adapter' => 'Almacenamiento de archivos',
-    'config option desc file_storage_adapter' => 'Elija donde guardar documentos subidos a la página. <strong>Cambiar el tipo de almacenamiento causará que los archivos ingresados previamente dejen de estar disponibles</strong>.',
+    'config option desc file_storage_adapter' => 'Elija donde guardar documentos subidos a la página. Cambiar el tipo de almacenamiento causará que los archivos ingresados previamente dejen de estar disponibles.',
     'config option name default_project_folders' => 'Carpetas creadas por defecto',
     'config option desc default_project_folders' => 'Carpetas que van a ser creadas cuando se cree el espacio. El nombre de cada carpeta debera aparecer en una línea. Las líneas duplicadas o vacías no van a ser tenidas en cuenta',
     'config option name theme' => 'Tema',

@@ -508,4 +508,11 @@
 	'check file name advice' => 'Après que le nom du fichier soit changé, appuyez sur TAB pour valider son nom, ainsi le bouton Enregistrer sera actif.',
 	'filename already exists' => 'Le nom du fichier est déjà utilisé par un autre fichier',
 	'failed to assign contact due to permissions' => 'Vous n\'avez pas le droit d\'écrire de contacts dans ces contextes : {0}',
+	'weblink dnx' => 'Le lien web demandé n\'existe pas.',
+	'billing category dnx' => 'La catégorie de facturation n\'existe pas dans la base de données',
+	'success add billing category' => 'La catégorie de facturation a bien été ajoutée',
+	'success delete billing category' => 'La catégorie de facturation a bien été supprimée',
+	'success edit billing category' => 'La catégorie de facturation a bien été modifiée',
+	'success assign user billing categories' => 'Les catégories de facturation ont bien été affectées aux utilisateurs',
+	'confirm delete billing category' => 'Êtes-vous sûr de vouloir supprimer la catégorie de facturation sélectionnée ?',
 ); ?>

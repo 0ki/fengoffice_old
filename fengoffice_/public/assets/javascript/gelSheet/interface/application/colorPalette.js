@@ -19,7 +19,7 @@ function fontColorPalette() {
 		window.colorPaletteActive = true;
 		container.style.visibility = 'visible' ;
 		container.style.top = '25px' ;
-		container.style.left = '361px' ;
+		container.style.left = '289px' ;
 		container.style.borderStyle = 'solid';
 		container.style.borderWidth = '1px' ;
 		cp.render('colorPalette');
@@ -45,7 +45,7 @@ function bgColorPalette() {
 		window.colorPaletteActive = true;
 		container.style.visibility = 'visible' ;
 		container.style.top = '25px' ; //
-		container.style.left = '385px' ;
+		container.style.left = '313px' ;
 		container.style.borderStyle = 'solid';
 		container.style.borderWidth = '1px' ;
 		cp.render('colorPalette');

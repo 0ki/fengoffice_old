@@ -43,7 +43,7 @@ og.TasksBottomToolbar = function(config) {
         		ogTasks.setAllExpandedValue(false);
 				ogTasks.draw();
         		var url = og.getUrl('account', 'update_user_preference', {name: 'tasksGroupBy', value:record.data.value});
-				og.openLink(url,{doNotShowLoading:true});
+				og.openLink(url,{hideLoading:true});
         	}
         }
     });
@@ -74,7 +74,7 @@ og.TasksBottomToolbar = function(config) {
 				ogTasks.draw();
 				ogTasks.redrawGroups = true;
         		var url = og.getUrl('account', 'update_user_preference', {name: 'tasksOrderBy', value:record.data.value});
-				og.openLink(url,{doNotShowLoading:true});
+				og.openLink(url,{hideLoading:true});
         	}
         }
     });
@@ -97,7 +97,7 @@ og.TasksBottomToolbar = function(config) {
 				ogTasks.draw();
 				ogTasks.redrawGroups = true;
         		var url = og.getUrl('account', 'update_user_preference', {name: 'tasksShowWorkspaces', value:(isPressed?1:0)});
-				og.openLink(url,{doNotShowLoading:true});
+				og.openLink(url,{hideLoading:true});
         	}
         }
     });
@@ -112,7 +112,7 @@ og.TasksBottomToolbar = function(config) {
 				ogTasks.draw();
 				ogTasks.redrawGroups = true;
         		var url = og.getUrl('account', 'update_user_preference', {name: 'tasksShowTime', value:(isPressed?1:0)});
-				og.openLink(url,{doNotShowLoading:true});
+				og.openLink(url,{hideLoading:true});
         	}
         }
     });
@@ -127,7 +127,7 @@ og.TasksBottomToolbar = function(config) {
 				ogTasks.draw();
 				ogTasks.redrawGroups = true;
         		var url = og.getUrl('account', 'update_user_preference', {name: 'tasksShowTags', value:(isPressed?1:0)});
-				og.openLink(url,{doNotShowLoading:true});
+				og.openLink(url,{hideLoading:true});
         	}
         }
     });
@@ -142,7 +142,7 @@ og.TasksBottomToolbar = function(config) {
 				ogTasks.draw();
 				ogTasks.redrawGroups = true;
         		var url = og.getUrl('account', 'update_user_preference', {name: 'tasksShowDates', value:(isPressed?1:0)});
-				og.openLink(url,{doNotShowLoading:true});
+				og.openLink(url,{hideLoading:true});
         	}
         }
     });

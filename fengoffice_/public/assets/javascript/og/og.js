@@ -13,7 +13,7 @@ og.maxFileSize = 1024 * 1024;
 og.showMailsTab = 0;
 
 // functions
-og.msg =  function(title, format, timeout, classname, sound) {
+og.msg =  function(title, text, timeout, classname, sound) {
 	if (typeof timeout == 'undefined') timeout = 4;
 	if (!classname) classname = "msg";
 
@@ -32,8 +32,7 @@ og.msg =  function(title, format, timeout, classname, sound) {
 	    this.msgCt = Ext.DomHelper.insertFirst(document.body, {id:'msg-div'}, true);
 	}
 	this.msgCt.alignTo(document, 't-t');
-	var s = String.format.apply(String, Array.prototype.slice.call(arguments, 1));
-	var m = Ext.DomHelper.append(this.msgCt, {html:String.format(box, title, s)}, true);
+	var m = Ext.DomHelper.append(this.msgCt, {html:String.format(box, title, text)}, true);
 	Ext.get(m).on('click', function() {
 		this.remove();
 	});
@@ -429,7 +428,7 @@ og.openLink = function(url, options) {
 			if (active) options.caller = active.id;
 		}
 	}
-	if (!options.doNotShowLoading)
+	if (!options.hideLoading)
 		og.loading();
 	var params = options.get || {};
 	if (typeof params == 'string' && params.indexOf('current=') < 0) {
@@ -619,7 +618,7 @@ og.processResponse = function(data, options, url) {
 		}
 	}
 	//Show messages if any
-	if (data.errorCode != 0) {
+	if (data.errorCode != 0 && !options.options.hideErrors) {
 		og.err(data.errorMessage);
 	} else if (data.errorMessage) {
 		og.msg(lang("success"), data.errorMessage);
@@ -642,6 +641,44 @@ og.newTab = function(content, id, data) {
 	}));
 	tp.add(t);
 	tp.setActiveTab(t);
+};
+
+/**
+ *  adds an event handler to an element, keeping the previous handlers for that event.
+ *  	elem: element to which to add the event handler (e.g. document)
+ *  	ev: event to handle (e.g. mousedown)
+ *  	fun: function that will handle the event. Arguments: (event, handler_id)
+ *  	scope: (optional) on which object to run the function
+ *      returns: id of the event handler
+ */
+og.addDomEventHandler = function(elem, ev, fun, scope) {
+	if (scope) fun = fun.createCallback(scope);
+	if (!elem[ev + "Handlers"]) {
+		elem[ev + "Handlers"] = {};
+		if (typeof elem["on" + ev] == 'function') {
+			elem[ev + "Handlers"]['original'] = elem["on" + ev];
+		}
+		elem["on" + ev] = function(event) {
+			for (var id in this[ev + "Handlers"]) {
+				this[ev + "Handlers"][id](event, id);
+			}
+		};
+	}
+	var id = Ext.id();
+	elem[ev + "Handlers"][id] = fun;
+};
+
+/**
+ *  Removes an event handler for the event that was added
+ *  with og.addDomEventHandler.
+ *  	elem: dom element
+ *  	ev: event
+ *  	id: id of the handler that was returned by og.addDomEventHandler.
+ * 
+ */
+og.removeDomEventHandler = function(elem, ev, id) {
+	if (!elem || !id || !ev || !elem[ev + "Handlers"]) return;
+	delete elem[ev + "Handlers"][id];
 };
 
 og.eventManager = {
@@ -926,7 +963,7 @@ og.dashExpand = function(genid,widget_name){
 		var expander = document.getElementById(genid + 'expander');
 		expander.className = (setExpanded) ? "dash-expander ico-dash-expanded":"dash-expander ico-dash-collapsed";
 		var url = og.getUrl('account', 'update_user_preference', {name: widget_name + '_widget_expanded', value:setExpanded?1:0});
-		og.openLink(url,{doNotShowLoading:true});
+		og.openLink(url,{hideLoading:true});
 	}
 };
 

@@ -17,6 +17,13 @@
 	max-width:1000px;
 }
 
+.og-task-expander {
+	padding: 0 2px;
+	width: 16px;
+	height: 18px;
+	cursor: pointer;
+}
+
 .ogTasksTaskTable {
 	width:100%;
 	height:22px;

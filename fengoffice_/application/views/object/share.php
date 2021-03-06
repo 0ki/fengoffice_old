@@ -39,7 +39,6 @@
 			if (email.indexOf(',') >= 0) email = email.substring(1, email.indexOf(','));
 			email = email.replace(/"/g, "'");
 			comp_name = comp_name.replace(/"/g, "'");
-			alert(comp_name);
 			
 			var inv_tab = Ext.get('<?php echo $genid ?>invitedPeople');
 			if (inv_tab != null) {

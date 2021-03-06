@@ -72,11 +72,6 @@
   define('DEFAULT_ACTION', 'index');
   define('DEFAULT_THEME', 'default');
   
-  // Default cookie settings...
-  define('COOKIE_PATH', '/');
-  define('COOKIE_DOMAIN', '');
-  define('COOKIE_SECURE', false);
-  
   define('SLIMEY_PATH', ROOT_URL . '/public/assets/javascript/slimey/');
   
   // ---------------------------------------------------

@@ -53,7 +53,7 @@ class ChinchulinUpgradeScript extends ScriptUpgraderScript {
 	}
 	
 	function worksFor($version) {
-		return version_compare($version, '1.1') >= 0 && version_compare($version, '1.2.1') < 0;
+		return version_compare($version, $this->getVersionFrom()) >= 0 && version_compare($version, $this->getVersionTo()) < 0;
 	}
 	
 	/**
@@ -129,12 +129,11 @@ class ChinchulinUpgradeScript extends ScriptUpgraderScript {
 		$executed_queries = 0;
 		$installed_version = installed_version();
 		if (version_compare($installed_version, "1.1") <= 0) {
-			$upgrade_script = tpl_fetch(get_template_path('db_migration/chinchulin'));
+			$upgrade_script = tpl_fetch(get_template_path('db_migration/1_2_chinchulin'));
 		} else {
 			$upgrade_script = "DELETE FROM `".TABLE_PREFIX."config_options` WHERE `name` = 'time_format_use_24';
 			UPDATE `".TABLE_PREFIX."config_options` SET `category_name` = 'modules' WHERE `name` = 'enable_email_module';
 			ALTER TABLE `".TABLE_PREFIX."mail_contents` ADD COLUMN `content_file_id` VARCHAR(40) NOT NULL default '';
-			UPDATE `".TABLE_PREFIX."user_ws_config_options` SET `default_value` = '2', `config_handler_class` = 'TNChkConfigHandler', `dev_comment` = 'Notification checkbox default value' WHERE `name` = 'can notify from quick add';
 			";
 		}
 		@unlink("../../language/de_de/._lang.js");

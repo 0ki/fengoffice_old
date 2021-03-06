@@ -82,4 +82,8 @@
 	'name must be unique' => 'Désolé, mais le nom sélectionné est déjà pris',
 	'success db backup' => 'La sauvegarde a bien été créée.',
 	'not implemented' => 'Non implémenté',
+	'send mail error' => 'Erreur d\'envoi de courriel. Probablement de mauvais paramètres SMTP.',
+	'email address already exists' => 'Cette adresse de courriel est déjà utilisée.',
+	'backup command failed' => 'La commande de backup a échoué. Vérifier la constante MYSQLDUMP_COMMAND.',
+	'return code' => 'Code retour : {0}',
 ); ?>

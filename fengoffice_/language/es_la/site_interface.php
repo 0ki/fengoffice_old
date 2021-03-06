@@ -567,6 +567,14 @@
   'total billing by user' => 'Facturación total por usuario',
   'assign billing categories to users' => 'Asignar categorías de facturación a los usuarios',
   
+  'new share notification file' => 'El archivo \'{0}\' ha sido compartido.',
+  'new share notification milestone' => 'El hito \'{0}\' ha sido compartido.',
+  'new share notification weblink' => 'El enlace web \'{0}\' ha sido compartido.',
+  'new version notification title' => 'Nueva versión',
+  'share notification file desc' => '{1} lo invitó a ver/editar este archivo: {0}',
+  'share notification milestone desc' => '{1} lo invitó a ver/editar este hito: {0}',
+  'share notification weblink desc' => '{1} lo invitó a ver/editar este enlace web: {0}',
+  
  ); // array
 
 ?>

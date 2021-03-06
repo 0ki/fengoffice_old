@@ -476,5 +476,23 @@ addLangs({
 	'import - export': 'Contacts des importations et exportations',
 	'extract files': 'Extraire les fichiers',
 	'not csv file continue': 'Le fichier sélectionné n\'est pas un fichier CVS.\nÊtes-vous sûr de vouloir continuer ?',
-	'confirm template with no objects': 'Êtes-vous sûr de vouloir créer un modèle sans objet dedans (vous pourrez en rajouter plus tard) ?'
+	'confirm template with no objects': 'Êtes-vous sûr de vouloir créer un modèle sans objet dedans (vous pourrez en rajouter plus tard) ?',
+	'everyone': 'Tout le monde',
+	'actions': 'Actions',
+	'show more': 'Voir plus',
+	'confirm delete tag': 'Êtes-vous sûr de vouloir supprimer cette étiquette \'\'?',
+	'delete tag': 'Supprimer l\'étiquette',
+	'reminder_popup': 'Message pop-up',
+	'reminder_email': 'Courriel',
+	'minutes': 'minutes',
+	'weeks': 'semaines',
+	'days': 'jours',
+	'before': 'avant',
+	'remove object reminder': 'supprimer le rappel',
+	'apply to subscribers': 'Appliquer à tous les abonnés',
+	'must choose company': 'Vous devez choisir une société',
+	
+	'contact import - export': 'Contacts des importations et exportations',
+    'calendar import - export': 'Importations et exportations',
+    'view weblink': 'Voir lien Web'
 });

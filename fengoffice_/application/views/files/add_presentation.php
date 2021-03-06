@@ -46,12 +46,13 @@
 	og.eventManager.addListener("presentation saved", function(obj) {
 		this.fileId = obj.id;
 	}, <?php echo $id ?>, {replace:true});
+	document.getElementById('<?php echo $id ?>').slimey = <?php echo $id ?>;
 
 </script>
 
 <?php
-add_page_action(lang("save"), "javascript:(function(){ $id.submitFile(true); })()", "save");
-add_page_action(lang("save as"), "javascript:(function(){ $id.submitFile(true, true); })()", "save_as");
+add_page_action(lang("save"), "javascript:(function(){ document.getElementById('$id').slimey.submitFile(true); })()", "save");
+add_page_action(lang("save as"), "javascript:(function(){ document.getElementById('$id').slimey.submitFile(true, true); })()", "save_as");
 ?>
 
 <?php tpl_display(get_template_path('form_errors')) ?>

@@ -17,7 +17,7 @@ og.WebpageManager = function() {
 	            id: 'id',
 	            fields: [
 	                'title', 'description', 'url', 'tags', 'wsIds', 'updatedBy', 'updatedById',
-	                {name: 'updatedOn', type: 'date', dateFormat: 'timestamp'},
+	                {name: 'updatedOn', type: 'date', dateFormat: 'timestamp'}
 	            ]
 	        }),
 	        remoteSort: true,
@@ -39,7 +39,7 @@ og.WebpageManager = function() {
 				}
 			}
 	    });
-	    og.WebpageManager.store.setDefaultSort('title', 'asc');
+	    og.WebpageManager.store.setDefaultSort('updated', 'desc');
     }
     this.store = og.WebpageManager.store;
     this.store.addListener({messageToShow: {fn: this.showMessage, scope: this}});

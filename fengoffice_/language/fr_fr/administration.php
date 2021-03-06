@@ -154,4 +154,7 @@
 	'automatic upgrade desc' => 'Cette mise-à-jour automatique sera téléchargée et la nouvelle version extraire automatiquement, et déroulera la procédure de mise-à-jour. Le serveur web doit avoir des droits d\'accès en écriture pour tous les dossiers.',
 	'manual upgrade desc' => 'Pour mettre à jour OpenGoo vous devez télécharger une nouvelle version, l\'extraire à la racine de votre répertoire d\'installation et aller à <a href="public/upgrade">\'public/upgrade\'</a> dans votre navigateur pour dérouler la procédure de mise-à-jour.',
 	'user ws config option desc rememberGUIState' => 'Cela permet d\'enregistrer l\'état de l\'interface graphique (taille des panneaux, état plié/déplié, etc...) pour la prochaine connexion. Attention : cette fonctionnalité est encore en version BETA.',
+	'config option name use_minified_resources' => 'Utiliser les ressources compressées',
+	'config option desc use_minified_resources' => 'Utilise des ressources Javascript et CSS compressées pour accroitre les performances. Vous devez recompresser JS et CSS si vous les modifiez en utilisant l\'outils minify.php dans public/tools.',
+	'user ws config option name can notify from quick add' => 'La notification des tâches est activée par défaut',
 ); ?>

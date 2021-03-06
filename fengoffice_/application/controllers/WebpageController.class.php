@@ -227,7 +227,7 @@ class WebpageController extends ApplicationController {
 			$limit = config_option('files_per_page');
 		}
 		$order = array_var($_GET, 'sort');
-		if ($order == "updatedOn") $order = "updated_on";
+		if ($order == "updatedOn" || $order == "updated") $order = "updated_on";
 		$orderdir = array_var($_GET, 'dir');
 		$tag = array_var($_GET,'tag');
 		$page = (integer) ($start / $limit) + 1;

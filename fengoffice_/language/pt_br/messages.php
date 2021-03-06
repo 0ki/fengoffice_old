@@ -508,4 +508,11 @@
 	'success purging trash' => '{0} objetos excluídos.',
 	'success sending reminders' => '{0} lembretes enviados.',
 	'failed to assign contact due to permissions' => 'Você não tem permissão para registrar contatos nesta área de trabalho: {0}',
+	'billing category dnx' => 'Categoria de faturamento solicitada não existe na base de dados',
+	'success add billing category' => 'Categoria de faturamento adicionada com sucesso',
+	'success delete billing category' => 'Categoria de faturamento apagada com sucesso',
+	'success edit billing category' => 'Categoria de faturamento atualizada com sucesso',
+	'success assign user billing categories' => 'Categorias de faturamento foram atribuídas aos usuários com sucesso',
+	'confirm delete billing category' => 'Confirma a exclusão da Categoria de Faturamento selecionada?',
+	'weblink dnx' => 'O link web solicitado não existe.',
 ); ?>

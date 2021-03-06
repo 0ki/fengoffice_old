@@ -64,7 +64,12 @@ og.OverviewManager = function() {
 		}
 		actions = '<span>' + actions + '</span>';
 	
-		var name = String.format('<a style="font-size:120%" href="#" onclick="og.openLink(\'{1}\')">{0}</a>', og.clean(value), viewUrl);
+		if (value.trim() == "") {
+			var cleanvalue = lang("n/a");
+		} else {
+			var cleanvalue = og.clean(value);
+		}
+		var name = String.format('<a style="font-size:120%" href="#" onclick="og.openLink(\'{1}\')">{0}</a>', cleanvalue, viewUrl);
 		
 		return projectsString + name + actions;
 	}

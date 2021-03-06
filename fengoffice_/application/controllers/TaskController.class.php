@@ -425,7 +425,7 @@ class TaskController extends ApplicationController {
 				$task_filter_condition = "";
 				break;
 			default:
-				throw new Exception('Task filter criteria "' . $filter . '" not recognised');
+				flash_error(lang('task filter criteria not recognised', $filter));
 		}
 		
 		if ($project instanceof Project) {

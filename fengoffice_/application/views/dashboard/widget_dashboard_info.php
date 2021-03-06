@@ -18,15 +18,15 @@
 					if ($c != 0)
 						echo ',&nbsp';
 					$c++;
-					?><a href="<?php echo $user->getCardUrl()?>" class="internalLink coViewAction ico-user"><?php echo $user->getDisplayName() ?></a><?php
+					?><a href="<?php echo $user->getCardUrl()?>" class="internalLink coViewAction ico-user"><?php echo clean($user->getDisplayName()) ?></a><?php
 				}
 			}
 			?></td></tr></table>
 			</div>
 <?php }} ?>	
 
-<table><tr><?php if ($project->getCreatedBy() instanceof User){ ?>
-		<td><?php echo lang('created by') ?>:</td>
+<table><?php if ($project->getCreatedBy() instanceof User){ ?>
+		<tr><td><?php echo lang('created by') ?>:</td>
 		<td style="padding-left:10px"><?php 
 				if (logged_user()->getId() == $project->getCreatedById())
 					$username = lang('you');
@@ -57,7 +57,8 @@
 					$datetime = format_datetime($project->getUpdatedOn(), lang('date format'), logged_user()->getTimezone());
 					echo lang('user date', $project->getUpdatedByCardUrl(), $username, $datetime, clean($project->getUpdatedByDisplayName()));
 				}
-			 ?></td>
-	<?php } ?></tr>
+			 ?></td></tr>
+	<?php } ?>
+	<tr><td colspan="2"><a target="_blank" class="link-ico ico-rss" href="<?php echo get_url('feed', 'project_activities', array('id' => logged_user()->getId(), 'token' => logged_user()->getTwistedToken(), 'project' => $project->getId())) ?>"><?php echo lang("recent project activities feed", clean($project->getName()))?></a></td></tr>
 </table>
 </div>

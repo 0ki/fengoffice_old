@@ -73,4 +73,7 @@
 	'private comment' => 'Commentaire privé',
 	'private file' => 'Fichier privé',
 	'file contents' => 'Contenus du fichier',
+	'emailunclassified' => 'Courriel',
+	'object reminders' => 'Rappels',
+	'add object reminder' => 'Ajouter un rappel',
 ); ?>

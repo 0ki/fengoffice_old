@@ -5,7 +5,7 @@ Slimey.prototype.submitFile = function(newRevision, rename) {
 		og.openLink(this.saveUrl, {
 			post: {
 				'file[name]': this.filename,
-				'file[id]': this.config.fileId,
+				'file[id]': this.fileId,
 				'slimContent': this.slimContent,
 				'new_revision_document': (newRevision?"checked":"")
 			},

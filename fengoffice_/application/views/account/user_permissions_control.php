@@ -7,13 +7,15 @@
   </td><td style="padding-left:20px">
   <div id="<?php echo $genid ?>project_permissions" style="display:none">
   <div id="<?php echo $genid ?>project_name" style="font-weight:bold;font-size:120%;padding-bottom:15px"></div>
-  <span class="projectPermission">
-     <?php echo checkbox_field($genid . 'pAll', false, array('id' => $genid . 'pAll', 'onclick' => 'ogPermAllChecked("' . $genid . '",this.checked)')) ?> <label style="font-weight:bold" for="<?php echo $genid ?>pAll" class="checkbox"><?php echo lang('all') ?></label>
-  </span>&nbsp;&nbsp;&nbsp;<a href="#" class="internalLink" onclick="ogPermApplyToSubworkspaces('<?php echo $genid ?>');return false;"><?php echo lang('apply to all subworkspaces') ?></a>
+  <a href="#" class="internalLink" onclick="ogPermApplyToSubworkspaces('<?php echo $genid ?>');return false;"><?php echo lang('apply to all subworkspaces') ?></a>
   <br/><br/>
   <table>
   	<col align=left/><col align=center/>
-  	<tr style="border-bottom:1px solid #888;margin-bottom:5px"><td></td>
+  	<tr style="border-bottom:1px solid #888;margin-bottom:5px"><td style="vertical-align:middle">
+  		<span class="projectPermission">
+			<?php echo checkbox_field($genid . 'pAll', false, array('id' => $genid . 'pAll', 'onclick' => 'ogPermAllChecked("' . $genid . '",this.checked)')) ?> <label style="font-weight:bold" for="<?php echo $genid ?>pAll" class="checkbox"><?php echo lang('all') ?></label>   
+  		</span>
+  	</td>
   	<td align=center style="padding-left:10px;padding-right:10px;width:60px;"><a href="#" class="internalLink" onclick="ogPermSetLevel('<?php echo $genid ?>', 2);return false;"><?php echo lang('read and write') ?></a></td>
   	<td align=center style="padding-left:10px;padding-right:10px;width:60px;"><a href="#" class="internalLink" onclick="ogPermSetLevel('<?php echo $genid ?>', 1);return false;"><?php echo lang('read only') ?></a></td>
   	<td align=center style="padding-left:10px;padding-right:10px;width:60px;"><a href="#" class="internalLink" onclick="ogPermSetLevel('<?php echo $genid ?>', 0);return false;"><?php echo lang('none no bars') ?></a></td></tr>

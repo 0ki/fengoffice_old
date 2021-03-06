@@ -146,6 +146,7 @@
     'name must be unique' => 'Sorry, but selected name is already taken',
   	'not implemented' => 'Not implemented',
   	'return code' => 'Return code: {0}',
+  	'task filter criteria not recognised' => 'Task filter criteria \'{0}\' not recognised',
    ); // array
 
 ?>

@@ -112,7 +112,7 @@ final class ScriptUpgrader {
 			
 			// check for writable files and folders
 			foreach ($write_checks as $relative_path) {
-				$path = ROOT . $relative_path;
+				$path = INSTALLATION_PATH . $relative_path;
 				if (is_file($path)) {
 					if (file_is_writable($path)) {
 						$this->printMessage("File '$relative_path' exists and is writable");
@@ -205,7 +205,7 @@ final class ScriptUpgrader {
 			} // foreach
 			if (isset($last_correct_version)) {
 				tpl_assign('version', $last_correct_version);
-				return file_put_contents(ROOT . '/config/installed_version.php', tpl_fetch(get_template_path('installed_version')));
+				return file_put_contents(INSTALLATION_PATH . '/config/installed_version.php', tpl_fetch(get_template_path('installed_version')));
 			}
 		} // if
 	} // upgrade

@@ -214,4 +214,5 @@
 	'copy of file' => 'Copie de (0)',
 	'add custom property' => 'Ajouter une propriété personnalisée',
 	'add subscribers desc' => 'Souscrire à cet objet par les personnes sélectionnées. Les souscripteurs recevront une notification des changements effectués à cet objet.',
+	'edit revision comment' => 'Réviser le commentaire',
 ); ?>

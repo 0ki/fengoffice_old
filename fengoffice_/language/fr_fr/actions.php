@@ -147,4 +147,5 @@
 	'extract' => 'Extraire',
 	'add files to zip' => 'Ajouter des fichiers au Zip',
 	'copy file' => 'Copier ce fichier',
+	'open weblink' => 'Ouvrir un lien web',
 ); ?>

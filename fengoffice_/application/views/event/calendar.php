@@ -69,15 +69,15 @@ function cancel (evt) {//cancel clic event bubbling. used to cancel opening a Ne
     return true;
 }
 </script>
-<div style="padding-right:1px">
-<div class="calendar" align="center" style="width:100%;height:100%;">
-<div align="left" id="calendarPanelTopToolbar" class="x-panel-tbar" style="width:100%;height:30px;display:block;background-color:#F0F0F0;"></div>
+<div id="cal_main_div" class="calendar" style="position:relative;width:100%;height:100%;overflow:hidden">
+<div id="calendarPanelTopToolbar" class="x-panel-tbar" style="width:100%;height:30px;display:block;background-color:#F0F0F0;"></div>
+
 <table style="width:100%;height:100%;">
 <tr>
 <td>
 	<table style="width:100%;height:100%;">
 		<tr>
-			<td class="coViewHeader" colspan=1 rowspan=1>
+			<td id="calendarMonthTitle" class="coViewHeader" colspan=1 rowspan=1>
 				<div class="coViewTitle" style="width:100%;">				
 					<?php echo cal_month_name($month)." ". $year .' - '. ($user_filter == -1 ? lang('all users') : lang('calendar of', clean($user->getDisplayName())));?>
 				</div>		
@@ -85,9 +85,8 @@ function cancel (evt) {//cancel clic event bubbling. used to cancel opening a Ne
 		</tr>
 		<tr>
 			<td class="coViewBody" style="padding:0px;width:100%;height:100%;" colspan=1>
-				<div style="padding-bottom:0px;width:100%;height:100%;">
+				<div id="gridcontainer" style="position:relative; overflow-x:hidden; overflow-y:scroll;padding-bottom:0px;width:100%;height:100%;">
 				<table id="calendar" border='0' cellspacing='0' cellpadding='0' width="100%" height="100%">
-					<colgroup span="7" width="1*">
 					<tr>
 					<?php 
 					if(!cal_option("start_monday")) {
@@ -107,6 +106,7 @@ function cancel (evt) {//cancel clic event bubbling. used to cancel opening a Ne
 					?>
 						<th width="15%"> <?php echo lang('sunday short') ?> </th>
 					<?php } ?>
+					<th id="ie_scrollbar_adjust" style="width:0px;padding:0px;margin:0px"></th>
 					</tr>
 					
 					
@@ -280,7 +280,10 @@ function cancel (evt) {//cancel clic event bubbling. used to cancel opening a Ne
 													</td></tr></table>
 											 	</div>
 										 		<script type="text/javascript">
-													addTip('m_ev_div_<?php echo $event->getId() ?>', '<i>' + lang('event') + '</i> - ' + <?php echo json_encode(clean($event->getSubject())) ?>, <?php echo json_encode($event->getTypeId() == 2 ? lang('CAL_FULL_DAY') : $event->getStart()->format($use_24_hours ? 'G:i' : 'g:i A') .' - '. $event->getDuration()->format($use_24_hours ? 'G:i' : 'g:i A') . ($tip_text != '' ? '<br><br>' . $tip_text : ''));?>);
+										 			<?php
+										 			$tipbody = ($event->getTypeId() == 2 ? lang('CAL_FULL_DAY') : $event->getStart()->format($use_24_hours ? 'G:i' : 'g:i A') .' - '. $event->getDuration()->format($use_24_hours ? 'G:i' : 'g:i A')) . ($tip_text != '' ? '<br><br>' . $tip_text : '');
+										 			?>
+													addTip('m_ev_div_<?php echo $event->getId() ?>', '<i>' + lang('event') + '</i> - ' + <?php echo json_encode(clean($event->getSubject())) ?>, <?php echo json_encode($tipbody);?>);
 												</script>
 											 	
 								<?php
@@ -385,7 +388,7 @@ function cancel (evt) {//cancel clic event bubbling. used to cancel opening a Ne
 	</td>
 </tr></table>
 </div>
-</div>
+
 <script type="text/javascript">
 	// Top Toolbar	
 	ogCalendarUserPreferences = Ext.util.JSON.decode(document.getElementById('hfUserPreferences').value);
@@ -422,5 +425,27 @@ function cancel (evt) {//cancel clic event bubbling. used to cancel opening a Ne
 								time_format: '<?php echo ($use_24_hours ? 'G:i' : 'g:i A') ?>',
 								hide_calendar_toolbar: 1
 								}, '');
+	}
+
+	if (Ext.isIE) document.getElementById('ie_scrollbar_adjust').style.width = '15px';
+	
+	function resizeGridContainer(e, id) {
+		maindiv = document.getElementById('cal_main_div');
+		if (maindiv == null) {
+			og.removeDomEventHandler(window, 'resize', id);
+		} else {
+			var cptt = document.getElementById('calendarPanelTopToolbar');
+			var cmt = document.getElementById('calendarMonthTitle');
+			var mainHeight = maindiv.offsetHeight;
+			
+			var divHeight = maindiv.offsetHeight - cptt.offsetHeight - cmt.offsetHeight;
+			document.getElementById('gridcontainer').style.height = divHeight + 'px';
+		}
+	}
+	resizeGridContainer();
+	if (Ext.isIE) {
+		og.addDomEventHandler(document.getElementById('cal_main_div'), 'resize', resizeGridContainer);
+	} else {
+		og.addDomEventHandler(window, 'resize', resizeGridContainer);
 	}
 </script>

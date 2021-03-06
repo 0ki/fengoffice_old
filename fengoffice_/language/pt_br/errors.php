@@ -83,4 +83,7 @@
 	'backup command failed' => 'Comando de BackUp falhou. Verificar a constante MYSQLDUMP_COMMAND.',
 	'success db backup' => 'BackUp criado com sucesso.',
 	'not implemented' => 'Não implementado',
+	'send mail error' => 'Erro ao enviar email. Possível problema nas configurações do servidor SMTP.',
+	'email address already exists' => 'O endereço de email já está em uso.',
+	'return code' => 'Código retornado: {0}',
 ); ?>

@@ -75,11 +75,19 @@
 		renderTo:'tasksPanelBottomToolbar'
 		});
 
-	function resizeTasksPanel(){
-		if (document.getElementById('tasksPanelContent'))
-			document.getElementById('tasksPanelContent').style.height = (document.getElementById('tasksPanel').clientHeight - 68) + 'px';
+	function resizeTasksPanel(e, id) {
+		var tpc = document.getElementById('tasksPanelContent');
+		if (tpc) {
+			tpc.style.height = (document.getElementById('tasksPanel').clientHeight - 68) + 'px';
+		} else {
+			og.removeDomEventHandler(window, 'resize', id);
+		}
 	}
-	window.onresize=resizeTasksPanel;
+	if (Ext.isIE) {
+		og.addDomEventHandler(document.getElementById('tasksPanelContent'), 'resize', resizeTasksPanel);
+	} else {
+		og.addDomEventHandler(window, 'resize', resizeTasksPanel);
+	}
 	resizeTasksPanel();
 	ogTasks.loadDataFromHF();
 <?php if(isset($tasks) || $userPreferences['groupBy'] == 'milestone') {?>

@@ -63,6 +63,7 @@
 	'user ws config option name my tasks is default view' => 'Visão padrão exibe apenas as tarefas a mim atribuídas',
 	'user ws config option desc my tasks is default view' => 'Se selecionar não, então exibe todas as tarefas',
 	'user ws config option name show tasks in progress widget' => 'Exibir o container \'Tarefas em progresso\' ',
+	'user ws config option name can notify from quick add' => 'Checkbox de notificação em adição rápida',
 	'user ws config option desc can notify from quick add' => 'Se o checkbox estiver marcado então o usuário atribuído pode ser notificado após adição rápida de tarefa',
 	'backup process desc' => 'A backup salva o estado corrente da Aplicação em uma pasta comprimida. Isto pode ser usado para facilmente executar uma cópia de segurança da instalação. <br> Gerar um backup do Banco de Dados pode gastar pouco mais de alguns segundos, Assim fazer um backup é um processo em três etapas: <br>1.- Lançar processo de backup, <br>2.- Download do backup gerado. <br> 3.- Opcionalmente, um backup pode ser apagado, neste caso, ele não estará disponível no futuro. <br> ',
 	'start backup' => 'Lançar processo de backup',
@@ -154,4 +155,6 @@
 	'cron event desc purge_trash' => 'Este evento programado irá apagar objetos mais antigos do que a quantidade de dias especificada na configuração "Dias na lixeira".',
 	'manual upgrade desc' => 'Para atualizar manualmente o OpenGoo você tem que fazer o download da nova versão do OpenGoo, extraí-lo para a raiz da sua instalação e depois ir para <a href="public/upgrade">\'public/upgrade\'</a> no seu navegador para iniciar o processo de atualização.',
 	'automatic upgrade desc' => 'A atualização automática irá fazer o download e extrair a nova versão, e será executado o processo de upgrade para você. O servidor www precisa ter acesso de escrita em todas as pastas.',
+	'config option name use_minified_resources' => 'Usar recurso de minimização JS.',
+	'config option desc use_minified_resources' => 'Usar Javascript e CSS comprimido para aumentar a performance. Se modificar este item, voçê deverá recomprimir JS e CSS usando a ferramenta em public/tools.',
 ); ?>

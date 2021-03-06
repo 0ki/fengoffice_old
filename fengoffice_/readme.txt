@@ -1,6 +1,6 @@
 
-    About OpenGoo 1.3-beta 
-    ======================
+    About OpenGoo 1.3-rc 
+    ====================
 
     OpenGoo is a free and open source WebOffice, project management and collaboration
     tool, licensed under the Affero GPL 3 license.
@@ -61,10 +61,11 @@
     ====================
     
     1. Backup you current installation (important!)
-    2. Download OpenGoo 1.3-beta - http://www.opengoo.org/
+    2. Download OpenGoo 1.3-rc - http://www.opengoo.org/
     3. Unpack into your OpenGoo installation, overwriting your previous files and folders,
-    	but keeping your config and upload folders.
-    5. Go to <your_opengoo>/public/upgrade in your browser and choose to upgrade from your current version to 1.2.0.1.
+    	but keeping your config, upload and public/files folders.
+    5. Go to <your_opengoo>/public/upgrade in your browser and choose to upgrade
+    	from your current version to 1.3-rc.
     6. Refresh your browser or clear its cache to load new javascript, css and images.   
 
     
@@ -86,6 +87,26 @@
 	Changelog
 	=========
 
+	Since 1.3-beta
+	--------------
+	- usability: Emails with no subject can't be opened in Overview->View as list	
+	- usability: Added link to RSS feed for a workspace's recent activity in the dashboard description widget 		
+	- usability: Monthly view scroll, didn't mantain the toolbar like the others views	
+	- usability: Tooltip in calendar monthly view doesn't show description	
+	- usability: Changed how an error in tasks filter is displayed.	
+	- usability: Errors when polling for reminders are no longer shown to the user
+	- usability: The 'All' checkbox when editing a user's permissions was moved to a more adequate place.
+
+	- langs: Missing langs [view weblink], [new share notification (file, weblink, milestone)]
+	- langs: Added first version of Traditional Chinese translation zh_tw.
+	- langs: Renamed es_uy to es_la (updated automatically when you perform upgrade procedure).
+
+	- bugfix: filtering by unclassified emails showed no emails	
+	- bugfix: Fixed an issue with cookies that didn't allow you to login to two OpenGoo installations on the same server, or an OpenGoo installation and a Joomla installation	
+	- bugfix: Fixed some resizing problems in IE in calendar and tasks.		
+	- bugfix: Share: An alert is shown when adding an email to the share list	
+	- bugfix: Slimey always saves as a new document	
+
 	Since 1.2.1
 	-----------
 	- feature: Billing Module. Allows defining hourly rates for users and workspaces. You can generate a report showing how much should be billed for some client. You also get charts on the dashboard comparing billing amounts by user.
@@ -97,9 +118,9 @@
 	- usability: Improved display of documents' contents. HTML documents are shown with its CSS. Long documents are shown with a scrollbar, so that it doesn't displace comments and revisions out of the view.
 	- usability: Weblinks view. This allows to comment on web links.
 	- usability: User is automatically subscribed to objects when using quick adds.
-	- usability: Correctes tabindex order in forms in Firefox.
-	- usability: Added button 'clasify' next to title at mail clasification view.	
-	- usability: Title in calendar daily was made localizable.
+	- usability: Corrected tabindex order in forms in Firefox.
+	- usability: Added button 'classify' next to title at mail classification view.	
+	- usability: Title in calendar daily view was made localizable.
 	- usability: Calendar filters are remembered.
 	- usability: Now you can see the state of attendance to an event in the monthly view.
 	- usability: User filters in calendar filter also tasks and milestones.

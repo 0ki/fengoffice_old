@@ -86,17 +86,22 @@ class ProjectFile extends BaseProjectFile {
 	 * @param void
 	 * @return array
 	 */
-	function getRevisions($exclude_last = false) {
+	function getRevisions($exclude_last = false, $asc = false) {
 		if($exclude_last) {
 			$last_revision = $this->getLastRevision();
 			if($last_revision instanceof ProjectFileRevision) $conditions = DB::prepareString('`id` <> ? AND `file_id` = ?', array($last_revision->getId(), $this->getId()));
 		} // if
-
+		if ($asc) {
+			$dir = 'ASC';
+		} else {
+			$dir = 'DESC';
+		}
+		
 		if(!isset($conditions)) $conditions = DB::prepareString('`file_id` = ?', array($this->getId()));
 
 		return ProjectFileRevisions::find(array(
         'conditions' => $conditions,
-        'order' => '`created_on` DESC'
+        'order' => '`created_on` ' . $dir
         )); // find
 	} // getRevisions
 

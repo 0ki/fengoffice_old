@@ -130,6 +130,16 @@ final class acInstallation {
 			}
 		} // if
 
+		if (substr($absolute_url, 0, 1) == "/") {
+			$cookiepath = $absolute_url;
+		} else if (substr($absolute_url, 0, 4) == "http") {
+			$offset = strpos($absolute_url, "//") + 2;
+			$start = strpos($absolute_url, "/", $offset);
+			$cookiepath = substr($absolute_url, $start);
+		} else {
+			$cookiepath = "/";
+		}
+		
 		$constants = array(
 	        'DB_ADAPTER'           => $database_type,
 	        'DB_HOST'              => $database_host,
@@ -141,6 +151,7 @@ final class acInstallation {
 			'DB_ENGINE' 	       => $database_engine,
 	        'ROOT_URL'             => $absolute_url,
 	        'DEFAULT_LOCALIZATION' => $default_localization,
+			'COOKIE_PATH'          => $cookiepath,
 	        'DEBUG'                => false,
 		); // array
 

@@ -16,7 +16,7 @@ og.MailManager = function() {
 	checkMail = function() {
 		showLoading = false;
 		og.showOtherMessage(lang('checking email accounts'));		
-		og.openLink(og.getUrl('mail', 'checkmail'), {callback:og.hideOtherMessage, doNotShowLoading:true});
+		og.openLink(og.getUrl('mail', 'checkmail'), {callback:og.hideOtherMessage, hideLoading:true});
 		og.MailManager.store.load();
 		showLoading = true;
 		setTimeout("checkMail()", 15*60*1000); //15 min

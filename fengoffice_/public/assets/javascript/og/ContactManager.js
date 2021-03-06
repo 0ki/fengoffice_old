@@ -451,7 +451,7 @@ og.ContactManager = function() {
 		}),
 		imp_exp: new Ext.Action({
 			text: lang('import/export'),
-            tooltip: lang('import - export'),
+            tooltip: lang('contact import - export'),
             menu: { items: [
             	new Ext.Action({
 		            text: lang('contacts'),

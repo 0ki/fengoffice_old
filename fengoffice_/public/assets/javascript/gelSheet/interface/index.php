@@ -5,7 +5,7 @@
 	    @import url("./style.css");
 	    @import url("./toolbar/toolbar.css");
 	    
-	    @import url("../library/extjs/resources/css/ext-all.css");
+	    @import url("../../../themes/default/extjs/css/ext-all.css");
 
     </style>
 

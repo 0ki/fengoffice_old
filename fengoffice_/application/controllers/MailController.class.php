@@ -980,7 +980,7 @@
 			
 		// Check for unclassified emails
 		if (isset($attributes["viewType"]) && $attributes["viewType"] == "unclassified")
-			$classified = " NOT EXISTS (SELECT `object_id` FROM `".TABLE_PREFIX."workspace_objects` WHERE `object_manager` = 'MailContents')";	
+			$classified = " NOT `id` IN (SELECT `object_id` FROM `".TABLE_PREFIX."workspace_objects` WHERE `object_manager` = 'MailContents')";	
 		else
 			$classified = "'1' = '1'";
 			

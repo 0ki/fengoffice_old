@@ -140,7 +140,9 @@ var quickAdd = new og.QuickAdd({renderTo:'quickAdd'});
 
 setInterval(function() {
 	og.openLink(og.getUrl('object', 'popup_reminders'), {
-		doNotShowLoading: true
+		hideLoading: true,
+		hideErrors: true,
+		preventPanelLoad: true
 	});
 }, 60000);
 

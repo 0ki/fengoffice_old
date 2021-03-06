@@ -260,7 +260,6 @@ addLangs({
 	/*  */
 	'write' : 'Write',
 	'write new mail' : 'Write E-Mail',
-	'email': 'Email',
 	'weblink': 'Web link',
 	'webpage': 'Web link',
 	'task': 'Task',
@@ -559,5 +558,8 @@ addLangs({
     'remove object reminder': 'Remove reminder',
     'apply to subscribers': 'Apply to all subscribers',
     
-    'must choose company': 'You must choose a company'
+    'must choose company': 'You must choose a company',
+    'contact import - export': 'Contacts import and export',
+    'calendar import - export': 'Calendar import and export',
+    'view weblink': 'View web link'
 });
