@@ -102,6 +102,11 @@
     'hint' => 'Hint',
     'order' => 'Order',
     'read' => 'Read',
+    'workspace' => 'Workspace',
+    'event' => 'Event',
+    'events' => 'Events',
+    'Event' => 'Event',
+    'Events' => 'Events',
     
     'project calendar' => '{0} calendar',
     'user calendar' => '{0}\'s calendar',

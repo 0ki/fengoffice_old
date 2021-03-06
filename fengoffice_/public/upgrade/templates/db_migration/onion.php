@@ -90,6 +90,7 @@ CREATE TABLE `<?php echo $table_prefix ?>project_folders` (
   UNIQUE KEY `project_id` (`project_id`,`name`)
 ) ENGINE=InnoDB <?php echo $default_charset ?>;
 
+
 ALTER TABLE `<?php echo $table_prefix ?>application_logs` CHANGE `object_id` `rel_object_id` int(10) NOT NULL DEFAULT '0';
 ALTER TABLE `<?php echo $table_prefix ?>application_logs` CHANGE `object_manager_class` `rel_object_manager` varchar(50) NOT NULL;
 ALTER TABLE `<?php echo $table_prefix ?>application_logs` MODIFY COLUMN `is_private` tinyint(1) unsigned NOT NULL DEFAULT '0';

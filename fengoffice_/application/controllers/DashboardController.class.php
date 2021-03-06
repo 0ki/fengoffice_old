@@ -79,7 +79,6 @@
       tpl_assign('active_projects', logged_user()->getActiveProjects());
       $this->setSidebar(get_template_path('my_tasks_sidebar', 'dashboard'));
     } // my_tasks
-  
   } // DashboardController
 
 ?>

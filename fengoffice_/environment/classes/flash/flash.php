@@ -42,7 +42,19 @@
   * @return mixed
   */
   function flash_get($name) {
-    return Flash::instance()->getVariable($name);
+    return Flash::instance()->removeVariable($name);
   } // flash_get
+
+  /**
+   * Returns and removes variable from flash.
+   *
+   * @param unknown_type $name
+   * @return unknown
+   */
+  function flash_pop($name) {
+  	$ret = Flash::instance()->getVariable($name);
+    Flash::instance()->removeVariable($name);
+    return $ret;
+  }
 
 ?>

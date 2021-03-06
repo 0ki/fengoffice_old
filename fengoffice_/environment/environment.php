@@ -47,6 +47,8 @@
   
   // Include autoloader...
   include ENVIRONMENT_PATH . '/classes/AutoLoader.class.php';
+  include ENVIRONMENT_PATH . '/classes/event/event.php';
+  include ENVIRONMENT_PATH . '/classes/ajax/ajax.php';
   include ENVIRONMENT_PATH . '/classes/template/template.php';
   include ENVIRONMENT_PATH . '/classes/flash/flash.php';
   include ENVIRONMENT_PATH . '/classes/localization/localization.php';

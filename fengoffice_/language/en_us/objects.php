@@ -41,6 +41,8 @@
     'folders' => 'Folders',
     'configuration category' => 'Configuration category',
     'configuration categories' => 'Configuration categories',
+    'handin' => 'Hand-In',
+    'handins' => 'Hand-Ins',
     
     // Variations
     'owner company' => 'Owner company',
@@ -60,8 +62,8 @@
     'active projects' => 'Active projects',
     'finished project' => 'Finished project',
     'finished projects' => 'Finished projects',
-    'attached file' => 'Attached file',
-    'attached files' => 'Attached files',
+    'linked object' => 'Linked Object',
+    'linked objects' => 'Linked Objects',
     
     'important message'  => 'Important message',
     'important messages' => 'Important messages',

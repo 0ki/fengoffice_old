@@ -1,3 +1,4 @@
+<div style="padding:7px">
 <?php
 
   set_page_title($message->getTitle());
@@ -29,7 +30,7 @@
 <?php } // if?>
   </div>
 
-<?php echo render_object_files($message, $message->canEdit(logged_user())) ?>
+<?php echo render_object_links($message, $message->canEdit(logged_user())) ?>
   <div class="messageCommentCount">
 <?php if($message->countComments()) { ?>
     <span><?php echo lang('comments') ?>:</span> <a class="internalLink" href="<?php echo $message->getViewUrl() ?>#objectComments"><?php echo $message->countComments() ?></a>
@@ -59,3 +60,4 @@
 
 <!-- Comments -->
 <div id="messageComments"><?php echo render_object_comments($message, $message->getViewUrl()) ?></div>
+</div>

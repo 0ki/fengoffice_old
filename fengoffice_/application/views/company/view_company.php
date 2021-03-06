@@ -31,3 +31,9 @@
   $this->assign('users', $company->getUsers());
   $this->includeTemplate(get_template_path('list_users', 'administration'));
 ?>
+
+<h2><?php echo lang('contacts') ?></h2>
+<?php
+  $this->assign('contacts', $company->getContacts());
+  $this->includeTemplate(get_template_path('list_contacts', 'contact'));
+?>

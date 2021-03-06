@@ -59,8 +59,8 @@
     'email notification' => 'Email notification',
     'email notification desc' => 'Notify selected people about this message via email',
     
-    'attach existing file' => 'Attach existing file (from Files section)',
-    'upload and attach' => 'Upload new file and attach it to message',
+    'link existing object' => 'Link existing object (from Files section)',
+    'upload and link' => 'Upload new file and attach it to object',
     'file permissions description' => 'Select users from Combo or write their name on the Text Box. Then press Add user to visualize them on the grid. <br>When you see them, select the approriate permissions in the grid.<br>Note: the Combo Box will only display users you are currently sharing files with.',
     
     'subscribers desc' => 'Subscribers will receive an email notification whenever someone (except themselves) posts a comment on this message',
@@ -74,6 +74,8 @@
     'can manage files' => 'Manage files',
     'can assign to owners' => 'Assign tasks to members of owner company',
     'can assign to other' => 'Assign tasks to members of other clients',
+    'can manage properties'  => 'Manage properties',
+    'can manage events'  => 'Manage events',
     
     'add by' => 'added by',
     'edit by' => 'updated by',
@@ -103,6 +105,8 @@
     'file revision info long' => 'Revision #{0} <span>(by <a class="internalLink" href="{1}">{2}</a> on {3})</span>',
     'file revision title short' => '<a class="internalLink" href="{0}">Revision #{1}</a> <span>(created on {2})</span>',
     'file revision title long' => '<a class="internalLink" href="{0}">Revision #{1}</a> <span>(by <a class="internalLink" href="{2}">{3}</a> on {4})</span>',
+    'file checkout info short' => '<span>Checked out on {0}</span>',
+    'file checkout info long' => '<span>Checked out by </span> <a class="internalLink" href="{0}">{1}</a> <span> on {2}</span>',
     'update file' => 'Update file',
     'version file change' => 'Remember this change (old file will be saved for the reference)',
     'last revision' => 'Last revision',
@@ -111,10 +115,12 @@
     'file details' => 'File details',
     'view file details' => 'View file details',
     
-    'add attach file control' => 'Add file',
-    'remove attach file control' => 'Remove',
-    'attach files to object desc' => 'Use this form to attach files to <strong><a class="internalLink" href="{0}">{1}</a></strong>. You can attach one or many files. You can select any existing file from files section or upload new ones. <strong>New files will also be available through files section when you upload them</strong>.',
-    'select file' => 'Select a file',
+
+    'add link object control' => 'Add object',
+    'remove link object control' => 'Remove',
+    'link objects to object desc' => 'Use this form to link objects to <strong><a href="%s">%s</a></strong>. You can link one or many objects. You can select any existing object or upload new ones. <strong>New objects will also be available through files section when you upload them</strong>.',
+    'select object' => 'Select an object',
+
     
     'admin notice comments disabled' => 'Comments are disabled for this object, but you as administrator still can comment. If you expect replies from other, non-admin users you should set value of Enable comments option to Yes.',
     
@@ -138,6 +144,7 @@
     
     // Private
     'private message desc' => 'Private messages are visible only to owner company members. Members of client companies will not be able to see them.',
+    'private webpage desc' => 'Private weblinks are visible only to owner company members. Members of client companies will not be able to see them.',
     'private milestone desc' => 'Private milestones are visible only to owner company members. Members of client companies will not be able to see them.',
     'private task list desc' => 'Private task lists are visible only to owner company members. Members of client companies will not be able to see them.',
     'private comment desc' => 'Private comments are visible only to owner company members. Members of client companies will not be able to see them.',
@@ -152,6 +159,8 @@
   	'upload permissions desc' => 'Choose the users that will have permission to access the file. Analog to the tags, type or choose a username and then press enter to keep adding other users.',
   	'upload description desc' => 'Type a description for the file',
   	'uploading file' => 'Uploading file...',
+  
+	'cannot delete personal project' => 'The personal project can\'t be deleted',  
   
   ); // array
 

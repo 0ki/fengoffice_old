@@ -6,7 +6,7 @@
     array(lang('tasks'), get_url('task')),
     array(lang('index'))
   ));
-  if(ProjectTaskList::canAdd(logged_user(), active_project())) {
+  if(!active_project() || ProjectTask::canAdd(logged_user(), active_project())) {
     add_page_action(lang('add task list'), get_url('task', 'add_list'));
   } // if
   //add_javascript_to_page('task_related.js');

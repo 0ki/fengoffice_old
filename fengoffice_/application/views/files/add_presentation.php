@@ -1,6 +1,3 @@
-<?php
-	define('SLIMEY_PATH', with_slash(ROOT_URL) . 'library/slimey/');
-?>
 
 <?php
 	set_page_title($file->isNew() ? lang('new presentation') : lang('edit presentation'). ' - ' . $file->getFilename());
@@ -32,7 +29,7 @@
 	} else {
 		$url = str_replace("&amp;", "&", get_url('files', 'save_presentation'));
 		$filename = '';
-		$slimContent = escapeSLIM('<div class="slide"><div style="font-size: 200%; font-weight: bold; font-family: sans-serif; position: absolute; left: 30%; top: 0%;">New Slideshow</div></div><div class="slide"><div style="font-size: 200%; font-weight: bold; font-family: sans-serif; position: absolute; left: 30%; top: 0%;">Second slide</div></div>');
+		$slimContent = escapeSLIM('<div class="slide"><div style="font-size: 200%; font-weight: bold; font-family: sans-serif; position: absolute; left: 30%; top: 0%;">New Slideshow</div></div>');
 	}
 	$id = time() % 1000000;
 ?>

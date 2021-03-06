@@ -29,7 +29,7 @@
         if($this->getAction() == self::ADD_COMMENT_ACTION) {
           $this->in_object = ProjectMessages::findById($this->getInObjectId());
         } elseif($this->getAction() == self::ADD_TASK_ACTION) {
-          $this->in_object = ProjectTaskLists::findById($this->getInObjectId());
+          $this->in_object = Projects::findById($this->getInObjectId());
         } // if
       } // if
       return $this->in_object;

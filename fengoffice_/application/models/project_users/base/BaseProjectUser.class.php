@@ -108,7 +108,7 @@
     */
     function getCanManageMessages() {
       return $this->getColumnValue('can_manage_messages');
-    } // getCanManageMessages()
+    } // getCanManageMessages()   
     
     /**
     * Set value of 'can_manage_messages' field
@@ -120,6 +120,29 @@
     function setCanManageMessages($value) {
       return $this->setColumnValue('can_manage_messages', $value);
     } // setCanManageMessages() 
+    
+     
+    /**
+    * Return value of 'can_manage_handins' field
+    *
+    * @access public
+    * @param void
+    * @return boolean 
+    */
+    function getCanManageHandins() {
+      return $this->getColumnValue('can_manage_handins');
+    } // getCanManageHandins()
+    
+    /**
+    * Set value of 'can_manage_handins' field
+    *
+    * @access public
+    * @param void
+    * @return boolean 
+    */
+    function setCanManageHandins($value) {
+      return $this->setColumnValue('can_manage_handins', $value);
+    } // getCanManageHandins()
     
     /**
     * Return value of 'can_manage_tasks' field
@@ -208,6 +231,29 @@
     function setCanManageFiles($value) {
       return $this->setColumnValue('can_manage_files', $value);
     } // setCanManageFiles() 
+    
+    
+    /**
+    * Return value of 'can_manage_events' field
+    *
+    * @access public
+    * @param void
+    * @return boolean 
+    */
+    function getCanManageEvents() {
+      return $this->getColumnValue('can_manage_events');
+    } // getCanManageEvents()
+    
+    /**
+    * Set value of 'can_manage_events' field
+    *
+    * @access public   
+    * @param boolean $value
+    * @return boolean
+    */
+    function setCanManageEvents($value) {
+      return $this->setColumnValue('can_manage_events', $value);
+    } // getCanManageEvents() 
     
     /**
     * Return value of 'can_assign_to_owners' field

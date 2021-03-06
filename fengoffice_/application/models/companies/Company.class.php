@@ -35,6 +35,18 @@
       )); // findAll
     } // getUsers
     
+    /* Return array of all company members
+    *
+    * @access public
+    * @param void
+    * @return array
+    */
+    function getContacts() {
+      return Contacts::findAll(array(
+        'conditions' => '`company_id` = ' . DB::escape($this->getId())
+      )); // findAll
+    } // getUsers
+    
     /**
     * Return number of company users
     *
@@ -285,7 +297,7 @@
     * @return boolean
     */
     function canEdit(User $user) {
-      return $user->isAccountOwner() || $user->isAdministrator();
+      return $user->isAccountOwner() || $user->isAdministrator() || $user->isMemberOf(owner_company());
     } // canEdit
     
     /**
@@ -307,8 +319,9 @@
     * @return boolean
     */
     function canAddClient(User $user) {
-      if(!$user->isMemberOf($this)) return false;
-      return $user->isAccountOwner() || $user->isAdministrator($this);
+      return ($user->isMemberOf($this));
+      	
+      //return $user->isAccountOwner() || $user->isAdministrator($this);
     } // canAddClient
     
     /**

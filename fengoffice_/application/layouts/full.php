@@ -29,12 +29,12 @@
 	add_javascript_to_page('modules/addFileForm.js');
 	add_javascript_to_page('modules/addProjectForm.js');
 	add_javascript_to_page('modules/addUserForm.js');
+	add_javascript_to_page('modules/addTaskForm.js');
 	add_javascript_to_page('modules/attachFiles.js');
 	add_javascript_to_page('modules/attachToObjectForm.js');
 	add_javascript_to_page('modules/massmailerForm.js');
 	add_javascript_to_page('modules/updatePermissionsForm.js');
 	add_javascript_to_page('modules/updateUserPermissions.js');
-	define('SLIMEY_PATH', with_slash(ROOT_URL) . 'library/slimey/');
 	add_stylesheet_to_page(get_theme_url('slimey/slimey.css'));
 	add_javascript_to_page(SLIMEY_PATH . 'slimey.js');
 	add_javascript_to_page(SLIMEY_PATH . 'functions.js');
@@ -51,13 +51,14 @@
 	add_javascript_to_page('og/uploadFile.js');
 	//add_javascript_to_page('og/uploadForm.js');
 	add_javascript_to_page('modules/spreadsheet_engine.js');
-	add_javascript_to_page('modules/spreadsheet_ui.js'); ?>
+	add_javascript_to_page('modules/overlib.js'); 
+	?>
 	
 	<?php echo render_page_links() ?>
 	<?php echo render_page_meta() ?>
 	<?php echo render_page_inline_css() ?>
 </head>
-<body id="body" <?php echo render_body_events() ?>>
+<body id="body" <?php echo render_body_events() ?> onbeforeunload="return '<?php echo lang('confirm leave page') ?>'">
 
 <div id="loading">
 	<img src="<?php echo get_image_url("layout/loading.gif") ?>" width="32" height="32" style="margin-right:8px;" align="absmiddle"/>Loading...

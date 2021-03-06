@@ -63,3 +63,14 @@ INSERT INTO `<?php echo $table_prefix ?>im_types` (`name`, `icon`) VALUES ('MSN'
 INSERT INTO `<?php echo $table_prefix ?>im_types` (`name`, `icon`) VALUES ('Yahoo!', 'yahoo.gif');
 INSERT INTO `<?php echo $table_prefix ?>im_types` (`name`, `icon`) VALUES ('Skype', 'skype.gif');
 INSERT INTO `<?php echo $table_prefix ?>im_types` (`name`, `icon`) VALUES ('Jabber', 'jabber.gif');
+
+
+-- 
+-- Dumping data for table `cal_eventtypes`
+-- 
+INSERT INTO `<?php echo $table_prefix ?>eventtypes` (`typename`, `typedesc`, `typecolor`) VALUES ('Birthday', 'Someone''s Birthday', 'F1EA74');
+INSERT INTO `<?php echo $table_prefix ?>eventtypes` (`typename`, `typedesc`, `typecolor`) VALUES ('Important', 'Something Important or Critical', 'FFAAAA');
+INSERT INTO `<?php echo $table_prefix ?>eventtypes` (`typename`, `typedesc`, `typecolor`) VALUES ('Boring', 'Boring Everyday Stuff', '999999');
+INSERT INTO `<?php echo $table_prefix ?>eventtypes` (`typename`, `typedesc`, `typecolor`) VALUES ('Holiday', 'A Holiday', 'A4CAE6');
+INSERT INTO `<?php echo $table_prefix ?>eventtypes` (`typename`, `typedesc`, `typecolor`) VALUES ('Milestone', 'Milestone', 'FF5555');
+

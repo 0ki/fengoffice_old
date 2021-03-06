@@ -1,3 +1,4 @@
+<div style="padding:10px">
 <?php
 
   set_page_title(lang('permissions'));
@@ -6,8 +7,7 @@
     array(lang('people'), get_url('project', 'people')),
     array(lang('permissions'))
   ));
-  add_stylesheet_to_page('project/permissions.css');
-
+	add_stylesheet_to_page('project/permissions.css');
 ?>
 <?php
   $quoted_permissions = array();
@@ -21,17 +21,21 @@
   App.modules.updatePermissionsForm.project_permissions = new Array(<?php echo implode(', ', $quoted_permissions) ?>);
 </script>
 
+<label><b><?php echo lang('edit permissions') ?></b></label>
+<label><k><?php echo lang('edit permissions explanation') ?></k></label>
 <?php if(isset($companies) && is_array($companies) && count($companies)) { ?>
 <form class="internalForm" action="<?php echo get_url('project', 'permissions') ?>" method="post">
 <div id="projectCompanies">
 <?php foreach($companies as $company) { ?>
 <?php if($company->countUsers() > 0) { ?>
-  <div class="projectCompany">
+<fieldset>
+<legend><?php echo clean($company->getName()) ?></legend>
+  <div class="projectCompany" style="border:0">
     <div class="projectCompanyLogo"><img src="<?php echo $company->getLogoUrl() ?>" alt="<?php echo clean($company->getName()) ?>" /></div>
     <div class="projectCompanyMeta">
       <div class="projectCompanyTitle">
 <?php if($company->isOwner()) { ?>
-        <label><?php echo clean($company->getName()) ?></label>
+<!--        <label><?php //echo clean($compangetName()) ?></label>-->
         <input type="hidden" name="project_company_<?php echo $company->getId() ?>" value="checked" />
 <?php } else { ?>
         <?php echo checkbox_field('project_company_' . $company->getId(), $company->isProjectCompany(active_project()), array('id' => 'project_company_' . $company->getId(), 'onclick' => "App.modules.updatePermissionsForm.companyCheckboxClick(" . $company->getId() . ")")) ?> <label for="<?php echo 'project_company_' . $company->getId() ?>" class="checkbox"><?php echo clean($company->getName()) ?></label>
@@ -90,6 +94,7 @@
     } // if
   </script>
 <?php } // if ?>
+</fieldset>
 <?php } // if ?>
 <?php } // foreach ?>
 
@@ -98,3 +103,4 @@
 </div>
 </form>
 <?php } // if ?>
+</div>

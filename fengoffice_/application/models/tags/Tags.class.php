@@ -31,8 +31,8 @@
     * @param string $manager_class
     * @return array
     */
-    function getTagNamesByObject(ProjectDataObject $object, $manager_class) {
-      $rows = DB::executeAll('SELECT `tag` FROM ' .  self::instance()->getTableName(true) . ' WHERE `rel_object_id` = ? AND `rel_object_manager` = ? ORDER BY `tag`', $object->getId(), $manager_class);
+    function getTagNamesByObject(ProjectDataObject $object) {
+      $rows = DB::executeAll('SELECT `tag` FROM ' .  self::instance()->getTableName(true) . ' WHERE `rel_object_id` = ? AND `rel_object_manager` = ? ORDER BY `tag`', $object->getId(), get_class($object->manager()));
       
       if(!is_array($rows)) return null;
       
@@ -146,6 +146,40 @@
          
       return true;
     } //  addFileTags
+
+    
+    /**
+    * Add tags for an object
+    *
+    * @access public
+    * @param string $tag_name tag to be added
+    * @param ProjectDataObject $obj
+    * @param Project $project
+    * @return null
+    */
+    function addObjectTag($tag_name, ProjectDataObject $obj, $project ) {
+      if (!(isset($obj) && $obj && ($obj instanceof ProjectDataObject) && $project ) )
+      	return true;
+      $prevTags=Tags::getTagNamesByObject($obj);
+      if($prevTags){
+	      foreach($prevTags as $tag_iter) {
+	      	if(strcmp($tag_name,$tag_iter)==0)
+	      		return true; //tag already added
+	      }  
+      }
+      if(strcmp(trim($tag_name) , '')) {
+        $tag = new Tag();
+        
+        if($project instanceof Project) $tag->setProjectId($project->getId());
+        $tag->setTag($tag_name);
+        $tag->setRelObjectId($obj->getId());
+        $tag->setRelObjectManager(get_class($obj->manager()));
+        $tag->setIsPrivate(false);            
+        $tag->save();
+      } // if
+         
+      return true;
+    } //  addObjectTag
     
     /**
     * Set tags for specific object

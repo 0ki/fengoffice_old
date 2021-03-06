@@ -1,0 +1,37 @@
+@import 'ObjectPicker.css';
+@import 'FileManager.css';
+@import 'Dashboard.css';
+@import 'HtmlPanel.css';
+@import 'ImageChooser.css';
+@import 'TagPanel.css';
+@import 'WorkspacePanel.css';
+
+/** autoCompleter **/
+.autoCompleter .selected {
+	background-color: #8888FF;
+	
+}
+.autoCompleter * {
+	padding: 0 20px;
+}
+.autoCompleter {
+	border: 1px solid #8888FF;
+	background-color: white;
+}
+/** /autoCompleter **/
+
+.ico-help {
+	background-image: url(../../images/16x16/help.png);
+}
+
+.ico-account {
+	background-image: url(../../images/16x16/account.png);
+}
+
+.ico-search {
+	background-image: url(../../images/16x16/search.png);
+}
+
+.ico-administration {
+	background-image: url(../../images/16x16/administration.png);
+}

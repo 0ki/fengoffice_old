@@ -5,7 +5,7 @@
   if(App.modules.addTaskForm) {
     App.modules.addTaskForm.task_lists[<?php echo $task_list->getId() ?>] = {
       id               : <?php echo $task_list->getId() ?>,
-      can_add_task     : <?php echo $task_list->canAddTask(logged_user()) ? 'true' : 'false' ?>,
+	      can_add_task     : <?php echo $task_list->canAddSubTask(logged_user()) ? 'true' : 'false' ?>,
       add_task_link_id : 'addTaskForm<?php echo $task_list->getId() ?>ShowLink',
       task_form_id     : 'addTaskForm<?php echo $task_list->getId() ?>',
       text_id          : 'addTaskText<?php echo $task_list->getId() ?>',
@@ -19,14 +19,14 @@
 <?php if($task_list->isPrivate()) { ?>
     <div class="private" title="<?php echo lang('private task list') ?>"><span><?php echo lang('private task list') ?></span></div>
 <?php } // if ?>
-  <div class="header"><a class="internalLink" href="<?php echo $task_list->getViewUrl() ?>"><?php echo clean($task_list->getName()) ?></a></div>
-<?php if($task_list->getDescription()) { ?>
-  <div class="desc"><?php echo clean($task_list->getDescription()) ?></div>
+  <div class="header"><a class="internalLink" href="<?php echo $task_list->getViewUrl() ?>"><?php echo clean($task_list->getTitle()) ?></a></div>
+<?php if($task_list->getText()) { ?>
+  <div class="desc"><?php echo clean($task_list->getText()) ?></div>
 <?php } // if ?>
   <div class="openTasks">
-<?php if(is_array($task_list->getOpenTasks())) { ?>
+<?php if(is_array($task_list->getOpenSubTasks())) { ?>
     <table class="blank">
-<?php foreach($task_list->getOpenTasks() as $task) { ?>
+<?php foreach($task_list->getOpenSubTasks() as $task) { ?>
       <tr>
       
 <!-- Checkbox -->
@@ -52,7 +52,7 @@
   </div>
   
   <div class="addTask">
-<?php if($task_list->canAddTask(logged_user())) { ?>
+<?php if($task_list->canAddSubTask(logged_user())) { ?>
     <div id="addTaskForm<?php echo $task_list->getId() ?>ShowLink"><a class="internalLink" href="<?php echo $task_list->getAddTaskUrl($on_list_page) ?>" onclick="App.modules.addTaskForm.showAddTaskForm(<?php echo $task_list->getId() ?>); return false"><?php echo lang('add task') ?></a></div>
   
     <div id="addTaskForm<?php echo $task_list->getId() ?>">
@@ -63,7 +63,7 @@
         </div>
         <div class="taskListAddTaskAssignedTo">
           <label for="addTaskAssignTo<?php echo $task_list->getId() ?>"><?php echo lang('assign to') ?>:</label>
-          <?php echo assign_to_select_box("task[assigned_to]", active_project(), null, array('id' => 'addTaskAssignTo' . $task_list->getId())) ?>
+          <?php echo assign_to_select_box("task[assigned_to]", $task_list->getProject(), null, array('id' => 'addTaskAssignTo' . $task_list->getId())) ?>
         </div>
         
         <?php echo submit_button(lang('add task'), 's', array('id' => 'addTaskSubmit' . $task_list->getId())) ?> <?php echo lang('or') ?> <a href="#" onclick="App.modules.addTaskForm.hideAddTaskForm(<?php echo $task_list->getId() ?>); return false;"><?php echo lang('cancel') ?></a>
@@ -79,11 +79,11 @@
 <?php } // if ?>
   </div>
   
-<?php if(is_array($task_list->getCompletedTasks())) { ?>
+<?php if(is_array($task_list->getCompletedSubTasks())) { ?>
   <div class="completedTasks">
     <table class="blank">
 <?php $counter = 0; ?>
-<?php foreach($task_list->getCompletedTasks() as $task) { ?>
+<?php foreach($task_list->getCompletedSubTasks() as $task) { ?>
 <?php $counter++; ?>
 <?php if($on_list_page || ($counter <= 5)) { ?>
       <tr>
@@ -93,7 +93,7 @@
         <td class="taskCheckbox"><img src="<?php echo icon_url('checked.jpg') ?>" alt="<?php echo lang('completed task') ?>" /></td>
 <?php } // if ?>
         <td class="taskText">
-          <?php echo clean($task->getText()) ?> <?php if($task->canEdit(logged_user())) { ?><a class="internalLink" href="<?php echo $task->getEditUrl() ?>" class="blank" title="<?php echo lang('edit task') ?>"><img src="<?php echo icon_url('edit.gif') ?>" alt="" /></a><?php } // if ?> <?php if($task->canDelete(logged_user())) { ?><a href="<?php echo $task->getDeleteUrl() ?>" class="blank internalLink" onclick="return confirm('<?php echo lang('confirm delete task') ?>')" title="<?php echo lang('delete task') ?>"><img src="<?php echo icon_url('cancel_gray.gif') ?>" alt="" /></a><?php } // if ?><br />
+          <?php echo clean($task->getText()) ?> <?php if($task->canEdit(logged_user())) { ?><a class="internalLink" href="<?php echo $task->getEditListUrl() ?>" class="blank" title="<?php echo lang('edit task') ?>"><img src="<?php echo icon_url('edit.gif') ?>" alt="" /></a><?php } // if ?> <?php if($task->canDelete(logged_user())) { ?><a href="<?php echo $task->getDeleteUrl() ?>" class="blank internalLink" onclick="return confirm('<?php echo lang('confirm delete task') ?>')" title="<?php echo lang('delete task') ?>"><img src="<?php echo icon_url('cancel_gray.gif') ?>" alt="" /></a><?php } // if ?><br />
           <span class="taskCompletedOnBy">(<?php echo lang('completed on by', format_date($task->getCompletedOn()), $task->getCompletedBy()->getCardUrl(), clean($task->getCompletedBy()->getDisplayName())) ?>)</span>
         </td>
         <td></td>
@@ -114,13 +114,13 @@
 <?php
   $options = array();
   if($task_list->canEdit(logged_user())) {
-    $options[] = '<a class="internalLink" href="' . $task_list->getEditUrl() . '\')">' . lang('edit') . '</a>';
+    $options[] = '<a class="internalLink" href="' . $task_list->getEditListUrl() . '">' . lang('edit') . '</a>';
   } // if
   if($task_list->canDelete(logged_user())) {
-    $options[] = '<a class="internalLink" href="' . $task_list->getDeleteUrl() . '\')" onclick="return confirm(\'' . lang('confirm delete task list') . '\')">' . lang('delete') . '</a>';
+    $options[] = '<a class="internalLink" href="' . $task_list->getDeleteListUrl() . ')" onclick="return confirm(\'' . lang('confirm delete task list') . '\')">' . lang('delete') . '</a>';
   } // if
   if($task_list->canReorderTasks(logged_user())) {
-    $options[] = '<a class="internalLink" href="' . $task_list->getReorderTasksUrl($on_list_page) . '\')">' . lang('reorder tasks') . '</a>';
+    $options[] = '<a class="internalLink" href="' . $task_list->getReorderTasksUrl($on_list_page) . '">' . lang('reorder tasks') . '</a>';
   } // if
 ?>
 <?php if(count($options)) { ?>

@@ -1,29 +1,31 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-	<?php if(active_project() instanceof Project) { ?>
-		<title><?php echo clean(active_project()->getName()) ?> - <?php echo get_page_title() ?> @ <?php echo clean(owner_company()->getName()) ?></title>
-	<?php } else { ?>
-		<title><?php echo get_page_title() ?> @ <?php echo clean(owner_company()->getName()) ?></title>
-	<?php } // if ?>
+	<!-- script src="http://www.savethedevelopers.org/say.no.to.ie.6.js"></script -->
+	<title><?php echo clean(CompanyWebsite::instance()->getCompany()->getName()) ?> - OpenGoo</title>
 
-	<?php echo stylesheet_tag('../extjs/css/ext-all.css') ?>
 	<?php echo stylesheet_tag('website.css') ?>
 	<?php echo add_favicon_to_page('favicon.ico') ?>
 	<?php echo meta_tag('content-type', 'text/html; charset=utf-8', true) ?>
-	
+
 	<?php echo add_javascript_to_page('extjs/adapter/ext/ext-base.js') ?>
 	<?php echo add_javascript_to_page('extjs/ext-all.js') ?>
-	<?php echo add_javascript_to_page('og/extfix.js') ?>
-	<?php echo add_javascript_to_page('yui/yahoo/yahoo-min.js') ?>
-	<?php echo add_javascript_to_page('yui/dom/dom-min.js') ?>
-	<?php echo add_javascript_to_page('yui/event/event-min.js') ?>
-	<?php echo add_javascript_to_page('yui/animation/animation-min.js') ?>
 	<?php echo add_javascript_to_page('app.js') ?>
 	<?php echo add_javascript_to_page('og/og.js') ?>
+	<?php echo add_javascript_to_page('og/WebpageManager.js') ?>
+	<?php echo add_javascript_to_page('og/ContactManager.js') ?>
+	<?php echo add_javascript_to_page('og/ObjectPicker.js') ?>
+	<?php echo add_javascript_to_page('og/HtmlPanel.js') ?>
+	<?php echo add_javascript_to_page('og/WorkspacePanel.js') ?>
+	<?php echo add_javascript_to_page('og/TagPanel.js') ?>
+	<?php echo add_javascript_to_page('og/TagMenu.js') ?>
+	<?php echo add_javascript_to_page('og/Dashboard.js') ?>
+	<?php echo add_javascript_to_page('og/TaskViewer.js') ?>
+	<?php echo add_javascript_to_page('og/ContentPanel.js') ?>
+	<?php echo add_javascript_to_page('og/HelpPanel.js') ?>
 	<?php echo add_javascript_to_page('og/layout.js') ?>
+	<?php echo add_javascript_to_page(with_slash(ROOT_URL) . 'help/help.js') ?>
 	<?php echo add_javascript_to_page(with_slash(ROOT_URL) . 'language/' . Localization::instance()->getLocale() . "/lang.js") ?>
-
 	<?php add_javascript_to_page('modules/addTaskForm.js');
 	add_javascript_to_page('modules/addMessageForm.js');
 	add_javascript_to_page('modules/addFileForm.js');
@@ -37,7 +39,6 @@
 	add_javascript_to_page('modules/updateUserPermissions.js');
 	add_javascript_to_page('modules/linkObjects.js');
 	add_javascript_to_page('modules/linkToObjectForm.js');
-	define('SLIMEY_PATH', with_slash(ROOT_URL) . 'library/slimey/');
 	add_stylesheet_to_page(get_theme_url('slimey/slimey.css'));
 	add_javascript_to_page(SLIMEY_PATH . 'slimey.js');
 	add_javascript_to_page(SLIMEY_PATH . 'functions.js');
@@ -51,10 +52,12 @@
 	add_javascript_to_page('og/imageChooser.js');
 	add_javascript_to_page('og/tabCloseMenu.js');
 	add_javascript_to_page('og/fileManager.js');
+	add_javascript_to_page('og/dashboard.js');
 	add_javascript_to_page('og/uploadFile.js');
 	//add_javascript_to_page('og/uploadForm.js');
 	add_javascript_to_page('modules/spreadsheet_engine.js');
-	add_javascript_to_page('modules/spreadsheet_ui.js'); ?>
+	add_javascript_to_page('modules/spreadsheet_ui.js'); 
+	add_javascript_to_page('modules/overlib.js');?>
 	
 	<?php echo render_page_links() ?>
 	<?php echo render_page_meta() ?>
@@ -73,63 +76,24 @@
 <div id="header">
 	<div id="headerContent">
 		<div id="userboxWrapper"><?php echo render_user_box(logged_user()) ?></div>
-		<?php echo render_system_notices(logged_user()) ?>
-	</div>
-	<div id="crumbsWrapper">
-		<div id="crumbsBlock">
-			<div id="crumbs">
-				<ul>
-					<li><?php echo lang('current project') ?>:
-					<select id="active_project" onchange="location.href = '?active_project=' + this.value;this.value = <?php echo active_project()->getId() ?>">
-						<?php
-						if (isset($active_projects) && is_array($active_projects) && count($active_projects)) {
-							foreach($active_projects as $project) {
-						?>
-						<option value="<?php echo $project->getId() ?>"<?php if (active_project()->getId() == $project->getId()) { echo ' selected="selected"'; } ?>><?php echo clean($project->getName()) ?></option>
-						<?php
-							}
-						}
-						?>
-					</select>
-					</li>
-				</ul>
-			</div>
-			<div id="searchBox">
-				<form class="internalForm" action="<?php echo active_project()->getSearchUrl() ?>" method="get">
-					<div>
-						<?php
-						$search_field_default_value = lang('search') . '...';
-						$search_field_attrs = array(
-							'onfocus' => 'if (value == \'' . $search_field_default_value . '\') value = \'\'',
-							'onblur' => 'if (value == \'\') value = \'' . $search_field_default_value . '\'');
-						?>
-						<?php echo input_field('search_for', array_var($_GET, 'search_for', $search_field_default_value), $search_field_attrs) ?><button type="submit"><?php echo lang('search button caption') ?></button>
-						<input type="hidden" name="c" value="project" />
-						<input type="hidden" name="a" value="search" />
-						<input type="hidden" name="active_project" value="<?php echo active_project()->getId() ?>" />
-					</div>
-				</form>
-			</div>
+		<div id="searchbox">
+			<form class="internalForm" action="<?php echo ROOT_URL . '/index.php' ?>" method="get">
+				<?php
+				$search_field_default_value = lang('search') . '...';
+				$search_field_attrs = array(
+					'onfocus' => 'if (value == \'' . $search_field_default_value . '\') value = \'\'',
+					'onblur' => 'if (value == \'\') value = \'' . $search_field_default_value . '\'');
+				?>
+				<?php echo input_field('search_for', $search_field_default_value, $search_field_attrs) ?>
+				<button type="submit"><?php echo lang('search button caption') ?></button>
+				<input type="hidden" name="c" value="project" />
+				<input type="hidden" name="a" value="search" />
+			</form>
 		</div>
+		<?php echo render_system_notices(logged_user()) ?>
 	</div>
 </div>
 <!-- /header -->
-
-<!-- menu -->
-<div id="menu">
-	<?php
-		$result = ProjectFiles::getProjectFiles(null, null, !logged_user()->isMemberOfOwnerCompany(), ProjectFiles::ORDER_BY_MODIFYTIME, 'DESC', 1, 3, false);
-		if (is_array($result)) {
-			list($recent_files, $pagination) = $result;
-		} else {
-			$recent_files = null;
-			$pagination = null;
-		}
-		$tags = Tags::getTagNames();
-		echo render_menu($tags, logged_user()->getActiveProjects(), $recent_files);
-	?>
-</div>
-<!-- /menu -->
 
 <!-- footer -->
 <div id="footer">
@@ -150,7 +114,8 @@
 og.pageSize = <?php echo config_option('files_per_page')?config_option('files_per_page'):10 ?>;
 og.hostName = '<?php echo ROOT_URL ?>';
 og.maxUploadSize = <?php echo get_max_upload_size() ?>;
-og.initialURL = '<?php echo ROOT_URL . "?" . $_SERVER['QUERY_STRING'] ?>';
+//og.initialURL = '<?php //echo ROOT_URL . "?" . $_SERVER['QUERY_STRING'] ?>';
+//og.initialURL = 'prueba.php';
 </script>
 
 </body>

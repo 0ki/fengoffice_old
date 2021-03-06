@@ -362,7 +362,50 @@
     function setUpdatedById($value) {
       return $this->setColumnValue('updated_by_id', $value);
     } // setUpdatedById() 
-    
+
+    /**
+     * Return value of 'checked_out_on' field
+     *
+     * @access public
+     * @param void
+     * @return DateTimeValue
+     */
+    function getCheckedOutOn() {
+    	return $this->getColumnValue('checked_out_on');
+    } // getCheckedOutOn()
+
+    /**
+     * Set value of 'checked_out_on' field
+     *
+     * @access public
+     * @param DateTimeValue $value
+     * @return boolean
+     */
+    function setCheckedOutOn($value) {
+    	return $this->setColumnValue('checked_out_on', $value);
+    } // setCheckedOutOn()
+
+    /**
+     * Return value of 'checked_out_by_id' field
+     *
+     * @access public
+     * @param void
+     * @return integer
+     */
+    function getCheckedOutById() {
+    	return $this->getColumnValue('checked_out_by_id');
+    } // getCheckedOutById()
+
+    /**
+     * Set value of 'checked_out_by_id' field
+     *
+     * @access public
+     * @param integer $value
+     * @return boolean
+     */
+    function setCheckedOutById($value) {
+    	return $this->setColumnValue('checked_out_by_id', $value);
+    } // setCheckedOutById()
     
     /**
     * Return manager instance

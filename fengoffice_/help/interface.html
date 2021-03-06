@@ -1,15 +1,19 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
+
 <title>OpenGoo Help - Using the interface</title>
-<script type="text/javascript" src="help.js"></script>
-<link rel="stylesheet" href="help.css"></link>
+
+<script type="text/javascript" src="help/help.js"></script>
+<link rel="stylesheet" href="help/help.css"></link>
 </head>
-<body onload="showPage(1)">
+<body>
 
-<div id="content">
+<div class="help-wrap">
 
-<a href="index.html">Index</a> &raquo; Using the interface
+<div id="help-content">
+
+<a class="internalLink" href="help/index.html">Index</a> &raquo; Using the interface
 
 <h1>Using the interface</h1>
 
@@ -57,7 +61,7 @@ Finally, only if you are an administrator, you can see the <b>Administration</b>
 
 <div id="page6" class="page">
 <h2>Content Panel</h2>
-<p>This panel is the heart of the application. This is where the different sections of OpenGoo are displayed. To learn more about teh contents of this panel check the other sections in <a href="index.html">Help</a> or go to OpenGoo's site at <a href="http://www.opengoo.org" target="_new">http://www.opengoo.org</a> and check the forum and wiki.</p>
+<p>This panel is the heart of the application. This is where the different sections of OpenGoo are displayed. To learn more about teh contents of this panel check the other sections in <a class="internalLink" href="index.html">Help</a> or go to OpenGoo's site at <a target="_blank" href="http://www.opengoo.org" target="_new">http://www.opengoo.org</a> and check the forum and wiki.</p>
 </div>
 
 <div id="page7" class="page">
@@ -67,10 +71,15 @@ Finally, only if you are an administrator, you can see the <b>Administration</b>
 
 </div>
 
-<div class="control">
+<div class="help-control">
 	<a id="prev" href="javascript:showPage(current - 1)">Previous</a>
 	<a id="next" href="javascript:showPage(current + 1)">Next</a>
 </div>
 
+<script type="text/javascript">
+showPage(1);
+</script>
+
+</div>
 </body>
 </html>

@@ -94,7 +94,7 @@
   * @param boolean $include_project_id
   * @return string
   */
-  function get_url($controller_name = null, $action_name = null, $params = null, $anchor = null, $include_project_id = true) {
+  function get_url($controller_name = null, $action_name = null, $params = null, $anchor = null, $include_project_id = false) {
     $controller = trim($controller_name) ? $controller_name : DEFAULT_CONTROLLER;
     $action = trim($action_name) ? $action_name : DEFAULT_ACTION;
     if(!is_array($params) && !is_null($params)) {
@@ -125,7 +125,7 @@
       $anchor = '#' . $anchor;
     } // if
     
-    return with_slash(ROOT_URL) . 'index.php?' . implode('&amp;', $url_params) . $anchor;
+    return with_slash(ROOT_URL) . 'index.php?' . implode('&', $url_params) . $anchor;
   } // get_url
   
   // ---------------------------------------------------
@@ -265,6 +265,40 @@
   */
   function active_project() {
     return CompanyWebsite::instance()->getProject();
+  } // active_project
+  
+  /**
+  * Return active project if we are on company website
+  *
+  * @access public
+  * @param void
+  * @return Project
+  */
+  function active_or_personal_project() {
+  	$act=active_project();
+  	return  $act ? $act : personal_project();
+  } // active_project
+  
+  /**
+  * Return active project if we are on company website
+  *
+  * @access public
+  * @param void
+  * @return Project
+  */
+  function active_projects() {
+    return logged_user()->getActiveProjects();
+  } // active_project
+  
+  /**
+  * Return personal project
+  *
+  * @access public
+  * @param void
+  * @return Project
+  */
+  function personal_project() {
+    return logged_user()->getPersonalProject();
   } // active_project
   
   // ---------------------------------------------------

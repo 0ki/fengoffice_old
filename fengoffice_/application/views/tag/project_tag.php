@@ -46,7 +46,7 @@
 <ul>
 <?php foreach($tagged_objects['task_lists'] as $task_list) { ?>
   <li>
-    <a class="internalLink" href="<?php echo $task_list->getViewUrl() ?>"><?php echo clean($task_list->getName()) ?></a>
+    <a class="internalLink" href="<?php echo $task_list->getViewUrl() ?>"><?php echo clean($task_list->getObjectName()) ?></a>
 <?php if($task_list->isCompleted()) { ?>
     <img src="<?php echo icon_url('ok.gif') ?>" alt="<?php echo lang('completed task list') ?>" title="<?php echo lang('completed task list') ?>" />
 <?php } ?>
@@ -60,6 +60,32 @@
 <ul>
 <?php foreach($tagged_objects['files'] as $file) { ?>
   <li><a class="internalLink" href="<?php echo $file->getDetailsUrl() ?>"><?php echo clean($file->getFilename()) ?></a> <span class="desc">(<?php echo format_filesize($file->getFilesize()) ?>)</span></li>
+<?php } // foreach?>
+</ul>
+<?php } // if ?>
+
+<?php if(isset($tagged_objects['contacts']) && is_array($tagged_objects['contacts']) && count($tagged_objects['contacts'])) { ?>
+<h2><?php echo lang('contacts') ?></h2>
+<ul>
+<?php foreach($tagged_objects['contacts'] as $role) { ?>
+  <li><a class="internalLink" href="<?php echo $role->getContact()->getCardUrl() ?>"><?php echo clean($role->getContact()->getDisplayName()) ?></a>
+	<?php if($role->getContact()->getCreatedBy() instanceof User) { ?>
+  <span class="desc">- <?php echo lang('created by'); ?> <a class="internalLink" href="<?php echo $role->getContact()->getCreatedByCardUrl() ?>"><?php echo clean($role->getContact()->getCreatedByDisplayName()) ?></a></span>
+<?php } // if ?>
+</li>
+<?php } // foreach?>
+</ul>
+<?php } // if ?>
+
+<?php if(isset($tagged_objects['webpages']) && is_array($tagged_objects['webpages']) && count($tagged_objects['webpages'])) { ?>
+<h2><?php echo lang('webpages') ?></h2>
+<ul>
+<?php foreach($tagged_objects['webpages'] as $webpage) { ?>
+  <li><a href="" onclick="window.open('<?php echo $webpage->getUrl() ?>');return false;"><?php echo clean($webpage->getTitle()) ?></a>
+	<?php if($webpage->getCreatedBy() instanceof User) { ?>
+  <span class="desc">- <?php echo lang('created by'); ?> <a class="internalLink" href="<?php echo $webpage->getCreatedByCardUrl() ?>"><?php echo clean($webpage->getCreatedByDisplayName()) ?></a></span>
+<?php } // if ?>
+</li>
 <?php } // foreach?>
 </ul>
 <?php } // if ?>

@@ -55,7 +55,7 @@
   
   define('PRODUCT_NAME', 'OpenGoo');
   if(!defined('PRODUCT_VERSION')) {
-    define('PRODUCT_VERSION', '0.5.1');
+    define('PRODUCT_VERSION', '0.6.0');
   } // if
   
   define('MAX_SEARCHABLE_FILE_SIZE', 1048576); // if file type is searchable script will load its content into search index. Using this constant you can set the max filesize of the file that will be imported. Noone wants 500MB in search index for single file
@@ -72,11 +72,15 @@
   define('COOKIE_DOMAIN', '');
   define('COOKIE_SECURE', false);
   
+  define('SLIMEY_PATH', ROOT_URL . '/public/assets/javascript/slimey/');
+  
   // ---------------------------------------------------
   //  Init...
   // ---------------------------------------------------
   
   include_once 'environment/environment.php';
+  
+  include_once 'library/cal/index.php';
   
   // Lets prepare everything for autoloader
   require APPLICATION_PATH . '/functions.php'; // __autoload() function is defined here...

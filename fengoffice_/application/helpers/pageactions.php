@@ -33,18 +33,19 @@
       
       foreach(array_var($args, 0) as $title => $url) {
         if(!empty($title) && !empty($url)) {
-          PageActions::instance()->addAction( new PageAction($title, $url) );
+          PageActions::instance()->addAction( new PageAction($title, $url, array_var($args, 1)) );
         } // if
       } // foreach
       
-    // Two string params, title and URL
+    // Three string params, title, URL and name
     } else {
       
       $title = array_var($args, 0);
       $url = array_var($args, 1);
+      $name = array_var($args, 2);
       
       if(!empty($title) && !empty($url)) {
-        PageActions::instance()->addAction( new PageAction($title, $url) );
+        PageActions::instance()->addAction( new PageAction($title, $url, $name) );
       } // if
       
     } // if
@@ -64,14 +65,21 @@
     *
     * @var string
     */
-    private $title;
+    public $title;
     
     /**
     * Action URL
     *
     * @var string
     */
-    private $url;
+    public $url;
+    
+    /**
+     * Name to identify the action
+     *
+     * @var string
+     */
+    public $name;
   
     /**
     * Construct the PageAction
@@ -80,9 +88,10 @@
     * @param void
     * @return PageAction
     */
-    function __construct($title, $url) {
+    function __construct($title, $url, $name) {
       $this->setTitle($title);
       $this->setURL($url);
+      $this->setName($name);
     } // __construct
     
     // ---------------------------------------------------
@@ -110,6 +119,24 @@
     function setTitle($value) {
       $this->title = $value;
     } // setTitle
+    
+    /**
+     * Get the name that identifies the action
+     *
+     * @return string
+     */
+    function getName() {
+    	return $this->name;
+    }
+    
+    /**
+     * Set the name that identifies the action
+     *
+     * @param string $name
+     */
+    function setName($name) {
+    	$this->name = $name;
+    }
     
     /**
     * Get url

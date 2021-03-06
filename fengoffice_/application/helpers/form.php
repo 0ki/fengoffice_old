@@ -330,6 +330,7 @@
   * @return null
   */
   function pick_date_widget($name, $value = null, $year_from = null, $year_to = null) {
+  	$oldValue = $value;
     if(!($value instanceof DateTimeValue)) $value = new DateTimeValue($value);
     
     $month_options = array();
@@ -348,8 +349,15 @@
     $year_to = (integer) $year_to < 1 || ((integer) $year_to < $year_from) ? $value->getYear() + 10 : (integer) $year_to;
     
     $year_options = array();
+    
+    if ($year_from <= 1900)
+    {
+    	$option_attributes = is_null($oldValue) ? array('selected' => 'selected') : null;
+    	$year_options[] = option_tag(lang('select'), 0, $option_attributes);
+    }
+    
     for($i = $year_from; $i <= $year_to; $i++) {
-      $option_attributes = $i == $value->getYear() ? array('selected' => 'selected') : null;
+      $option_attributes = $i == ($value->getYear() && !is_null($oldValue)) ? array('selected' => 'selected') : null;
       $year_options[] = option_tag($i, $i, $option_attributes);
     } // if
     

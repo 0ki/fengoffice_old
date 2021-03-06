@@ -50,7 +50,8 @@
     * @return mixed
     */
     function getVariable($var) {
-      return isset($this->previous[trim($var)]) ? $this->previous[trim($var)] : null;
+      return isset($this->previous[trim($var)]) ? $this->previous[trim($var)] :
+      		(isset($this->next[trim($var)])?$this->next[trim($var)]:null);
     } // end func getVariable
     
     /**

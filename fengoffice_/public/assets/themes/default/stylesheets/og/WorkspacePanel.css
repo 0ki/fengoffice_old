@@ -1,0 +1,51 @@
+.ext-el-mask {
+	background:#dadadb;
+}
+.ico-workspace, .ico-ws, .ico-project {
+	background-image: url(../../images/16x16/workspace.png) !important;
+}
+.ico-workspaces {
+	background-image: url(../../images/16x16/workspace.png) !important;
+}
+.ico-workspace-add {
+	background-image: url(../../images/16x16/add.png) !important;
+}
+.ico-workspace-del {
+	background-image: url(../../images/16x16/del.png) !important;
+}
+.ico-workspace-edit {
+	background-image: url(../../images/16x16/properties.png) !important;
+}
+.ico-workspace-refresh {
+	background-image: url(../../images/16x16/refresh.png) !important;
+}
+.x-tree {
+	background:#fff !important;
+}
+.x-tree-node div.workspace-all{
+	background:#eee url(images/cmp-bg.gif) repeat-x;
+	margin-top:1px;
+	border-top:1px solid #ddd;
+	border-bottom:1px solid #ccc;
+	padding-top:2px;
+	padding-bottom:1px;
+}
+.workspace-all .x-tree-node-icon {
+	display:none;
+}
+.workspace-item {
+	border:1px solid #fff;
+	margin:3px;
+}
+.workspace-item .x-tree-ec-icon {
+	display:none;
+}
+.x-tree-selected {
+	border:1px dotted #a3bae9;
+	background:#DFE8F6;
+}
+.x-tree-node .x-tree-selected a span{
+	background:transparent;
+	color:#15428b;
+	font-weight:bold;
+}

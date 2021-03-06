@@ -24,8 +24,14 @@
     <td class="logTypeIcon"><img src="<?php echo image_url('logtypes/' . strtolower($application_log_entry->getRelObjectManager()) . '.gif') ?>" alt="<?php echo $application_log_entry->getObjectTypeName() ?>" title="<?php echo $application_log_entry->getObjectTypeName() ?>" /></td>
     <td class="logDetails">
 <?php if($application_log_entry_url = $application_log_entry->getObjectUrl()) { ?>
+      <?php if (strtolower($application_log_entry->getRelObjectManager()) == 'projectwebpages') {
+      	$webpage = $application_log_entry->getObject();
+      	?>
+      
+      <a class="internalLink" href="" onclick="window.open('<?php echo $webpage->getUrl() ?>');return false;"><?php echo $application_log_entry->getText() ?></a>
+      <?php } else { ?>
       <a class="internalLink" href="<?php echo $application_log_entry_url ?>"><?php echo $application_log_entry->getText() ?></a>
-<?php } else { ?>
+<?php }} else { ?>
       <?php echo $application_log_entry->getText() ?>
 <?php } // if ?>
 

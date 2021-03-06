@@ -2,14 +2,16 @@
 <html>
 <head>
 <title>OpenGoo Help - Quick Start Guide</title>
-<script type="text/javascript" src="help.js"></script>
-<link rel="stylesheet" href="help.css"></link>
+<script type="text/javascript" src="help/help.js"></script>
+<link rel="stylesheet" href="help/help.css"></link>
 </head>
-<body onload="showPage(1)">
+<body>
 
-<div id="content">
+<div class="help-wrap">
 
-<a href="index.html">Index</a> &raquo; Quick Start Guide
+<div id="help-content">
+
+<a class="internalLink" href="help/index.html">Index</a> &raquo; Quick Start Guide
 
 <h1>Quick Start Guide</h1>
 
@@ -68,14 +70,20 @@
 
 <div id="page10" class="page">
 <h2>Step 10 - Explore advanced features like tags, private messages, and forms</h2>
-<p>If you got that far we are confident that you will find your way through OpenGoo on your own. Simply explore tagging, private messages, forms, and other things the software has to offer. And if you need some more background information, why don't you read about the <a href="concepts.html">basic concepts of OpenGoo</a>?</p>
+<p>If you got that far we are confident that you will find your way through OpenGoo on your own. Simply explore tagging, private messages, forms, and other things the software has to offer. And if you need some more background information, why don't you read about the <a class="internalLink" href="help/concepts.html">basic concepts of OpenGoo</a>?</p>
 </div>
 
 </div>
 
-<div class="control">
+<div class="help-control">
 	<a id="prev" href="javascript:showPage(current - 1)">Previous</a>
 	<a id="next" href="javascript:showPage(current + 1)">Next</a>
+</div>
+
+<script type="text/javascript">
+showPage(1);
+</script>
+
 </div>
 
 </body>

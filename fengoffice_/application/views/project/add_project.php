@@ -1,22 +1,23 @@
 <?php 
 
   if($project->isNew()) {
-    set_page_title(lang('add project'));
+    set_page_title(lang('add workspace'));
     administration_tabbed_navigation(ADMINISTRATION_TAB_PROJECTS);
     administration_crumbs(array(
-      array(lang('projects'), get_url('administration', 'projects')),
+      array(lang('workspaces'), get_url('administration', 'projects')),
       array(lang('add project'))
     ));
   } else {
-    set_page_title(lang('edit project'));
+    set_page_title(lang('edit workspace'));
     administration_tabbed_navigation(ADMINISTRATION_TAB_PROJECTS);
     administration_crumbs(array(
-      array(lang('projects'), get_url('administration', 'projects')),
+      array(lang('workspaces'), get_url('administration', 'projects')),
       array(lang('edit project'))
     ));
   } // if
   
 ?>
+<div style="padding:8px">
 <?php if($project->isNew()) { ?>
 <form class="internalForm" action="<?php echo get_url('project', 'add') ?>" method="post">
 <?php } else { ?>
@@ -40,5 +41,6 @@
     <?php echo yes_no_widget('project[show_description_in_overview]', 'projectFormShowDescriptionInOverview', array_var($project_data, 'show_description_in_overview'), lang('yes'), lang('no')) ?>
   </div>
   
-  <?php echo submit_button($project->isNew() ? lang('add project') : lang('edit project')) ?>
+  <?php echo submit_button($project->isNew() ? lang('add workspace') : lang('edit workspace')) ?>
 </form>
+</div>

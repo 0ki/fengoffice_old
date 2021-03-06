@@ -6,7 +6,7 @@
   if(ProjectMessage::canAdd(logged_user(), active_project())) {
     add_page_action(lang('add message'), get_url('message', 'add'));
   } // if
-  if(ProjectTaskList::canAdd(logged_user(), active_project())) {
+  if(ProjectTask::canAdd(logged_user(), active_project())) {
     add_page_action(lang('add task list'), get_url('task', 'add_list'));
   } // if
   if(ProjectMilestone::canAdd(logged_user(), active_project())) {

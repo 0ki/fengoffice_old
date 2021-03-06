@@ -36,7 +36,7 @@ select {
 }
 
 input:hover, textarea:hover, select:hover {
-  border: 1px solid green;
+  border: 1px solid deepskyblue;
 }
 
 input:focus, textarea:focus, select:focus {
@@ -51,7 +51,7 @@ fieldset {
 }
 
 fieldset legend {
-  font-size: 90%;
+  font-size: 120%;
   font-weight: bolder;
 }
 

@@ -142,18 +142,18 @@
     } // getProject
     
     /**
-    * Return all tasklists connected with this milestone
+    * Return all tasks connected with this milestone
     *
     * @access public
     * @param void
     * @return array
     */
-    function getTaskLists() {
-      return ProjectTaskLists::findAll(array(
+    function getTasks() {
+      return ProjectTasks::findAll(array(
         'conditions' => '`milestone_id` = ' . DB::escape($this->getId()),
         'order' => 'created_on'
       )); // findAll
-    } // getTaskLists
+    } // getTasks
     
     /**
     * Returns true if there are task lists in this milestone
@@ -162,9 +162,9 @@
     * @param void
     * @return boolean
     */
-    function hasTaskLists() {
-      return (boolean) ProjectTaskLists::count('`milestone_id` = ' . DB::escape($this->getId()));
-    } // hasTaskLists
+    function hasTasks() {
+      return (boolean) ProjectTasks::count('`milestone_id` = ' . DB::escape($this->getId()));
+    } // hasTasks
     
     /**
     * Return all messages related with this message
@@ -399,9 +399,9 @@
     * @param void
     * @return string
     */
-    function getAddTaskListUrl() {
+    function getAddTaskUrl() {
       return get_url('task', 'add_list', array('milestone_id' => $this->getId(), 'active_project' => $this->getProjectId()));
-    } // getAddTaskListUrl
+    } // getAddTaskUrl
     
     // ---------------------------------------------------
     //  System functions
@@ -430,7 +430,7 @@
       
       try {
         DB::execute("UPDATE " . ProjectMessages::instance()->getTableName(true) . " SET `milestone_id` = '0' WHERE `milestone_id` = " . DB::escape($this->getId()));
-        DB::execute("UPDATE " . ProjectTaskLists::instance()->getTableName(true) . " SET `milestone_id` = '0' WHERE `milestone_id` = " . DB::escape($this->getId()));
+        DB::execute("UPDATE " . ProjectTasks::instance()->getTableName(true) . " SET `milestone_id` = '0' WHERE `milestone_id` = " . DB::escape($this->getId()));
         return parent::delete();
       } catch(Exception $e) {
         throw $e;

@@ -58,6 +58,13 @@
     private $last_revision;
     
     /**
+    * Cached checkout user object reference
+    *
+    * @var User
+    */
+    private $checked_out_by = null;
+    
+    /**
     * Contruct the object
     *
     * @param void
@@ -179,6 +186,53 @@
       $last_revision = $this->getLastRevision();
       return $last_revision instanceof ProjectFileRevision ? $last_revision->getTypeIconUrl() : '';
     } // getTypeIconUrl
+    
+    // ---------------------------------------------------
+    //  Created by
+    // ---------------------------------------------------
+    
+    function isCheckedOut()
+    {
+    	return $this->getCheckedOutById() > 0;
+    }
+    
+    /**
+    * Return user who checked out this message
+    *
+    * @access public
+    * @param void
+    * @return User
+    */
+    function getCheckedOutBy() {
+      if(is_null($this->checked_out_by)) {
+        if($this->columnExists('checked_out_by_id')) $this->checked_out_by = Users::findById($this->getCheckedOutById());
+      } // 
+      return $this->checked_out_by;
+    } // getCreatedBy
+    
+    /**
+    * Return display name of checkout user
+    *
+    * @access public
+    * @param void
+    * @return string
+    */
+    function getCheckedOutByDisplayName() {
+      $checked_out_by = $this->getCheckedOutBy();
+      return $checked_out_by instanceof User ? $checked_out_by->getDisplayName() : lang('n/a');
+    } // getCreatedByDisplayName
+    
+    /**
+    * Return card URL of created by user
+    *
+    * @param void
+    * @return string
+    */
+    function getCheckedOutByCardUrl() {
+      $checked_out_by = $this->getCheckedOutBy();
+      return $checked_out_by instanceof User ? $checked_out_by->getCardUrl() : null;
+    } // getCreatedByCardUrl
+    
     
     // ---------------------------------------------------
     //  Revision interface
@@ -441,6 +495,32 @@
     } // getEditUrl
     
     /**
+    * Return checkout file URL
+    *
+    * @param void
+    * @return string
+    */
+    function getCheckoutUrl() {
+      return get_url('files', 'checkout_file', array(
+        'id' => $this->getId(), 
+        'active_project' => $this->getProjectId())
+      ); // get_url
+    } // getCheckoutUrl
+    
+    /**
+    * Return checkin file URL
+    *
+    * @param void
+    * @return string
+    */
+    function getCheckinUrl() {
+      return get_url('files', 'checkin_file', array(
+        'id' => $this->getId(), 
+        'active_project' => $this->getProjectId())
+      ); // get_url
+    } // getCheckinUrl
+    
+    /**
     * Return delete file URL
     *
     * @param void
@@ -527,7 +607,7 @@
     * @return boolean
     */
     function canEdit(User $user) {
-      if(!$user->isProjectUser($this->getProject())) {
+      if(!$this->getProject() || !$user->isProjectUser($this->getProject())) {
         return false;
       } // if
       
@@ -570,6 +650,15 @@
       } // if
       return false;
     } // canDelete
+    
+    function canCheckout(User $user){
+    	return !$this->isCheckedOut() && $this->canEdit($user);
+    }
+    
+  	function canCheckin(User $user){
+    	return $this->isCheckedOut()
+    		&& ($user->isAdministrator() || $user->getId() == $this->getCheckedOutById());
+    }
     
     // ---------------------------------------------------
     //  System
@@ -621,7 +710,7 @@
     * @return boolean
     */
     function clearObjectRelations() {
-      return AttachedFiles::clearRelationsByFile($this);
+      return LinkedObjects::clearRelationsByObject($this);
     } // clearObjectRelations
     
     /**

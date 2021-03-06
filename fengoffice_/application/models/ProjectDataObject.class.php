@@ -89,31 +89,38 @@
     protected $comments_count;
     
     // ---------------------------------------------------
-    //  Files
+    //  Linked Objects (Replacement for attached files)
     // ---------------------------------------------------
     
     /**
-    * Mark this object as file container (in this case files can be attached to 
+    * Mark this object as linkable to another object (in this case other project data objects can be linked to 
     * this object)
     *
     * @var boolean
     */
-    protected $is_file_container = false;
+    protected $is_linkable_object= true;
     
     /**
-    * Array of all attached files
+    * Array of all linked objects
     *
     * @var array
     */
-    protected $all_attached_files;
+    protected $all_linked_objects;
     
     /**
-    * Cached array of attached files (filtered by users access permissions)
+    * Cached array of linked objects (filtered by users access permissions)
     *
     * @var array
     */
-    protected $attached_files;
+    protected $linked_objects;    
     
+    /**
+     * Whether the object can have properties
+     *
+     * @var bool
+     */
+    protected $is_property_container = true;
+
     /**
     * Return owner project. If project_id field does not exists NULL is returned
     *
@@ -122,7 +129,10 @@
     */
     function getProject() {
       if($this->isNew() && function_exists('active_project')) {
-        return active_project();
+      	if(active_project())
+        	return active_project();
+        else 
+        	return personal_project();
       } // if
       
       if(is_null($this->project)) {
@@ -197,31 +207,31 @@
     } // canComment
     
     /**
-    * Returns true if user can attach file to this object
+    * Returns true if user can link an object to this object
     *
     * @param User $user
     * @param Project $project
     * @return boolean
     */
-    function canAttachFile(User $user, Project $project) {
-      if(!$this->isFileContainer()) return false;
+    function canLinkObject(User $user, Project $project) {
+      if(!$this->isLinkableObject()) return false;
       if($this->isNew()) {
         return $user->getProjectPermission($project, ProjectUsers::CAN_UPLOAD_FILES);
       } else {
         return $this->canEdit($user);
       } // if
-    } // canAttachFile
+    } // canLinkObject
     
     /**
-    * Check if $user can detach $file from this object
+    * Check if $user can un-link $object from this object
     *
     * @param User $user
-    * @param ProjectFile $file
+    * @param ProjectDataObject $object
     * @return booealn
     */
-    function canDetachFile(User $user, ProjectFile $file) {
+    function canUnlinkObject(User $user, ProjectDataObject $object) {
       return $this->canEdit($user);
-    } // canDetachFile
+    } // canUnlinkObject
     
     // ---------------------------------------------------
     //  Private
@@ -287,7 +297,7 @@
     */
     function deleteTag( $tag) {
       if(!$this->isTaggable()) throw new Error('Object not taggable');
-      return Tags::deleteFileTag($tag, $this->getId(), get_class($this->manager()));
+      return Tags::deleteObjectTag($tag, $this->getId(), get_class($this->manager()));
     } // deleteTag
     
     /**
@@ -570,123 +580,196 @@
     } // anonymousCommentsEnabled
     
     // ---------------------------------------------------
-    //  Files
+    //  Object Properties
+    // ---------------------------------------------------
+    /**
+     * Returns whether an object can have properties
+     *
+     * @return bool
+     */
+    function isPropertyContainer(){
+    	return $this->is_property_container;
+    }
+    
+    /**
+     * Given the object_data object (i.e. file_data) this function
+     * updates all ObjectProperties (deleting or creating them when necessary)
+     *
+     * @param  $object_data
+     */
+    function save_properties($object_data){
+		$properties = array();
+		for($i = 0; $i < 200; $i++) {
+			if(isset($object_data["property$i"]) && is_array($object_data["property$i"]) &&
+					(trim(array_var($object_data["property$i"], 'id')) <> '' || trim(array_var($object_data["property$i"], 'name')) <> '' ||
+					trim(array_var($object_data["property$i"], 'value')) <> '')) {
+            	$name = array_var($object_data["property$i"], 'name');
+              	$id = array_var($object_data["property$i"], 'id');
+              	$value = array_var($object_data["property$i"], 'value');
+				if($id && trim($name)=='' && trim($value)=='' ){
+					$property = ObjectProperties::findById($id);
+					$property->delete( 'id = $id');
+				}else{
+					if($id){
+						$property = ObjectProperties::findById($id);
+					}else{
+						$property = new ObjectProperty();
+						$property->setRelObjectId($this->getId());
+						$property->setRelObjectManager(get_class($this->manager()));
+					}
+					$property->setFromAttributes($object_data["property$i"]);
+					$property->save();
+				}				
+			} // if
+			else break;
+		} // for
+
+    }
+    
+    // ---------------------------------------------------
+    //  Linked Objects
     // ---------------------------------------------------
     
     /**
-    * This function will return true if this object can have files attached to it
+    * This function will return true if this object can have objects linked to it
     *
     * @param void
     * @return boolean
     */
-    function isFileContainer() {
-      return (boolean) $this->is_file_container;
-    } // isFileContainer
+    function isLinkableObject() {
+      return $this->is_linkable_object;
+    } // isLinkableObject
     
     /**
-    * Attach project file to this object
+    * Link object to this object
     *
-    * @param ProjectFile $file
-    * @return AttachedFiles
+    * @param ProjectDataObject $object
+    * @return LinkedObject
     */
-    function attachFile(ProjectFile $file) {
+    function linkObject(ProjectDataObject $object) {
       $manager_class = get_class($this->manager());
       $object_id = $this->getObjectId();
       
-      $attached_file = AttachedFiles::findById(array(
+      $linked_object = LinkedObjects::findById(array(
         'rel_object_manager' => $manager_class,
         'rel_object_id' => $object_id,
-        'file_id' => $file->getId(),
+        'object_id' => $object->getId(),
+        'object_manager' => get_class($object->manager()),
       )); // findById
       
-      if($attached_file instanceof AttachedFile) {
-        return $attached_file; // Already attached
+      if($linked_object instanceof LinkedObject) {
+        return $linked_object; // Already linked
+      }
+      else
+      {//check inverse link
+	      	$linked_object = LinkedObjects::findById(array(
+	        'rel_object_manager' => get_class($object->manager()),
+	        'rel_object_id' => $object->getId(),
+	        'object_id' => $object_id,
+	        'object_manager' => $manager_class,
+     		 )); // findById
+     	     if($linked_object instanceof LinkedObject) {
+        		return $linked_object; // Already linked
+      		}
       } // if
       
-      $attached_file = new AttachedFile();
-      $attached_file->setRelObjectManager($manager_class);
-      $attached_file->setRelObjectId($object_id);
-      $attached_file->setFileId($file->getId());
+      $linked_object = new LinkedObject();
+      $linked_object->setRelObjectManager($manager_class);
+      $linked_object->setRelObjectId($object_id);
+      $linked_object->setObjectId($object->getId());
+      $linked_object->setObjectManager(get_class($object->manager()));
       
-      $attached_file->save();
-      
-      if(!$file->getIsVisible()) {
-        $file->setIsVisible(true);
-        $file->setExpirationTime(EMPTY_DATETIME);
-        $file->save();
-      } // if
-      
-      return $attached_file;
-    } // attachFile
+      $linked_object->save();
+   	/*  if(!$object->getIsVisible()) {
+		$object->setIsVisible(true);
+		$object->setExpirationTime(EMPTY_DATETIME);
+		$object->save();
+	  } // if*/
+	  return $linked_object;
+    } // linkObject
     
     /**
-    * Return all attached files
+    * Return all linked objects 
     *
     * @param void
     * @return array
     */
-    function getAllAttachedFiles() {
-      if(is_null($this->all_attached_files)) {
-        $this->all_attached_files = AttachedFiles::getFilesByObject($this);
+    function getAllLinkedObjects() {
+      if(is_null($this->all_linked_objects)) {
+        $this->all_linked_objects = LinkedObjects::getLinkedObjectsByObject($this);
       } // if
-      return $this->all_attached_files;
-    } // getAllAttachedFiles
+      return $this->all_linked_objects;
+    } //  getAllLinkedObjects
     
     /**
-    * Return attached files but filter the private ones if user is not a member 
+    * Return linked objects but filter the private ones if user is not a member 
     * of the owner company
     *
     * @param void
     * @return array
     */
-    function getAttachedFiles() {
+    function getLinkedObjects() {
       if(logged_user()->isMemberOfOwnerCompany()) {
-        return $this->getAllAttachedFiles();
+        return $this->getAllLinkedObjects();
       } // if
-      if(is_null($this->attached_files)) {
-        $this->attached_files = AttachedFiles::getFilesByObject($this, true);
+      if(is_null($this->linked_objects)) {
+        $this->linked_objects = LinkedObjects::getLinkedObjectsByObject($this, true);
       } // if
-      return $this->attached_files;
-    } // getAttachedFiles
+      return $this->linked_objects;
+    } // getLinkedObjects
     
     /**
-    * Drop all relations with files for this object
+    * Drop all relations with linked objects for this object
     *
     * @param void
     * @return null
     */
-    function clearAttachedFiles() {
-      return AttachedFiles::clearRelationsByObject($this);
-    } // clearAttachedFiles
+    function clearLinkedObjects() {
+      return LinkedObjects::clearRelationsByObject($this);
+    } // clearLinkedObjects
     
     /**
-    * Return attach files url
+    * Return link objects url
     *
     * @param void
     * @return string
     */
-    function getAttachFilesUrl() {
-      return get_url('files', 'attach_to_object', array(
+    function getLinkObjectUrl() {
+      return get_url('object', 'link_to_object', array(
         'manager' => get_class($this->manager()),
         'object_id' => $this->getObjectId(),
         'active_project' => $this->getProject()->getId()
       )); // get_url
-    } // getAttachFilesUrl
+    } // getLinkedObjectsUrl
     
     /**
-    * Return detach file URL
+    * Return object properties url
     *
-    * @param ProjectFile $file
+    * @param void
     * @return string
     */
-    function getDetachFileUrl(ProjectFile $file) {
-      return get_url('files', 'detach_from_object', array(
+    function getObjectPropertiesUrl() {
+      return get_url('object', 'view_properties', array(
+        'manager' => get_class($this->manager()),
+        'object_id' => $this->getObjectId()
+      )); // get_url
+    } // getLinkedObjectsUrl
+    
+    /**
+    * Return unlink object URL
+    *
+    * @param ProjectDataObject $object
+    * @return string
+    */
+    function getUnlinkObjectUrl(ProjectDataObject $object) {
+      return get_url('object', 'unlink_from_object', array(
         'manager' => get_class($this->manager()),
         'object_id' => $this->getObjectId(),
-        'file_id' => $file->getId(),
+        'rel_object_id' => $object->getId(),
+        'rel_object_manager' => get_class($object->manager()),
         'active_project' => $this->getProject()->getId()
       )); // get_url
-    } // getDetachFileUrl
+    } //  getUnlinkedObjectUrl
     
     // ---------------------------------------------------
     //  System
@@ -728,6 +811,9 @@
       return $result;
     } // save
     
+    function clearObjectProperties(){
+    	ObjectProperties::deleteAllByObject($this);
+    }
     /**
     * Delete object and drop content from search table
     *
@@ -744,11 +830,47 @@
       if($this->isCommentable()) {
         $this->clearComments();
       } // if
-      if($this->isFileContainer()) {
-        $this->clearAttachedFiles();
+      if($this->isLinkableObject()) {
+        $this->clearLinkedObjects();
       } // if
+      if($this->isPropertyContainer()){
+      	$this->clearObjectProperties();
+      }
       return parent::delete();
     } // delete
+    
+    function getDashboardObject(){
+    	if($this->getUpdatedBy()){
+    		$updated_by_id = $this->getUpdatedBy()->getObjectId();
+    		$updated_by_name = $this->getUpdatedByDisplayName();
+    		$updated_on=($this->getObjectUpdateTime())?$this->getObjectUpdateTime()->getTimestamp(): lang('n/a');
+    	}else {
+    		if($this->getCreatedBy())
+    			$updated_by_id = $this->getCreatedBy()->getId();
+    		else
+    			$updated_by_id = lang('n/a');
+    		$updated_by_name = $this->getCreatedByDisplayName();
+    		$updated_on =($this->getObjectCreationTime())? $this->getObjectCreationTime()->getTimestamp(): lang('n/a');
+    	}
+    	
+    	return array(
+				"id" => $this->getObjectTypeName() . $this->getId(),
+				"object_id" => $this->getId(),
+				"name" => $this->getObjectName(),
+				"type" => $this->getObjectTypeName(),
+				"tags" => project_object_tags($this, $this->getProject(), true),
+				"createdBy" => $this->getCreatedByDisplayName(),// Users::findById($this->getCreatedBy())->getUsername(),
+				"createdById" => $this->getCreatedBy()->getId(),
+				"dateCreated" => ($this->getObjectCreationTime())?$this->getObjectCreationTime()->getTimestamp():lang('n/a'),
+				"updatedBy" => $updated_by_name,
+				"updatedById" => $updated_by_id,
+				"dateUpdated" => $updated_on,
+				"project" => $this->getProject()->getName(),
+				"projectId" => $this->getProjectId(),
+				"url" => $this->getObjectUrl(),
+				"manager" => get_class($this->manager())
+			);
+    }
     
   } // ProjectDataObject
 

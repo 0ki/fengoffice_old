@@ -16,12 +16,12 @@
   $options = array();
   //if($user->canEdit(logged_user())) $options[] = '<a class="internalLink" href="' . $user->getEditUrl() . '">' . lang('edit') . '</a>';
   if($user->canUpdateProfile(logged_user())) {
-    $options[] = '<a class="internalLink" href="' . $user->getEditProfileUrl($company->getViewUrl()) . '">' . lang('update profile') . '</a>';
-    $options[] = '<a class="internalLink" href="' . $user->getEditPasswordUrl($company->getViewUrl()) . '">' . lang('change password') . '</a>';
-    $options[] = '<a class="internalLink" href="' . $user->getUpdateAvatarUrl($company->getViewUrl()) . '">' . lang('update avatar') . '</a>';
+    $options[] = '<a class="internalLink" href="' . $user->getEditProfileUrl(/*$company->getViewUrl()*/) . '">' . lang('update profile') . '</a>';
+    $options[] = '<a class="internalLink" href="' . $user->getEditPasswordUrl(/*$company->getViewUrl()*/) . '">' . lang('change password') . '</a>';
+    $options[] = '<a class="internalLink" href="' . $user->getUpdateAvatarUrl(/*$company->getViewUrl()*/) . '">' . lang('update avatar') . '</a>';
   } // if
   if($user->canUpdatePermissions(logged_user())) {
-    $options[] = '<a class="internalLink" href="' . $user->getUpdatePermissionsUrl($company->getViewUrl()) . '">' . lang('permissions') . '</a>';
+    $options[] = '<a class="internalLink" href="' . $user->getUpdatePermissionsUrl(/*$company->getViewUrl()*/) . '">' . lang('permissions') . '</a>';
   } // if
   if($user->canDelete(logged_user())) {
     $options[] = '<a class="internalLink" href="' . $user->getDeleteUrl() . '" onclick="return confirm(\'' . lang('confirm delete user') . '\')">' . lang('delete') . '</a>';

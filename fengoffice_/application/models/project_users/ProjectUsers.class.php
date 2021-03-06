@@ -16,6 +16,7 @@
     const CAN_MANAGE_FILES      = 'can_manage_files';
     const CAN_ASSIGN_TO_OWNERS  = 'can_assign_to_owners';
     const CAN_ASSIGN_TO_OTHER   = 'can_assign_to_other';
+    const CAN_MANAGE_EVENTS   = 'can_manage_events';
   
     /**
     * Return all users that are involved in specific project
@@ -86,30 +87,6 @@
       
       return count($projects) ? $projects : null;
     } // getProjectsByUser
-	
-	/**
-    * Return the user's personal project
-    *
-    * @access public
-    * @param User $user
-    * @param 
-    * @return Project
-    */
-    function getPersonalProjectByUser(User $user) {
-      $projects_table = Projects::instance()->getTableName(true);
-      $project_users_table =  ProjectUsers::instance()->getTableName(true);
-      
-      $sql = "SELECT $projects_table.* FROM $projects_table WHERE `name` = " . DB::escape($user->getUsername() . "_personal");
-      
-      $rows = DB::executeAll($sql);
-      if(is_array($rows)) {
-        foreach($rows as $row) {
-          return Projects::instance()->loadFromRow($row);
-        } // foreach
-      } // if
-      
-      return null;
-    } // getPersonalProjectByUser
     
     /**
     * Return all users associated with specific project
@@ -149,6 +126,7 @@
         self::CAN_MANAGE_FILES,
         self::CAN_ASSIGN_TO_OWNERS,
         self::CAN_ASSIGN_TO_OTHER,
+        self::CAN_MANAGE_EVENTS  ,
       ); // array
     } // getPermissionColumns
     
@@ -167,6 +145,7 @@
         ProjectUsers::CAN_MANAGE_FILES      => lang('can manage files'),
         ProjectUsers::CAN_ASSIGN_TO_OWNERS  => lang('can assign to owners'),
         ProjectUsers::CAN_ASSIGN_TO_OTHER   => lang('can assign to other'),
+        ProjectUsers::CAN_MANAGE_EVENTS       => lang('can manage events'),
       ); // array
     } // getNameTextArray
     

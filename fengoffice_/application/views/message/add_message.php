@@ -1,3 +1,4 @@
+<div style="padding:20px">
 <?php
 
   set_page_title($message->isNew() ? lang('add message') : lang('edit message'));
@@ -11,7 +12,8 @@
   
 ?>
 
-<?php if($message->isNew()) { ?>
+<?php $project=active_project()?active_project():logged_user()->getPersonalProject();
+	if($message->isNew()) { ?>
 <form class="internalForm" action="<?php echo get_url('message', 'add') ?>" method="post" enctype="multipart/form-data">
 <?php } else { ?>
 <form class="internalForm" action="<?php echo $message->getEditUrl() ?>" method="post">
@@ -40,86 +42,130 @@
 <?php } // if ?>
   </div>
   
+	<fieldset>
+	<legend class="toggle_collapsed" onclick="og.toggle('add_message_project_div',this)"><?php echo lang('workspace') ?></legend>
+	<?php echo select_project('message[project_id]', active_projects(), active_or_personal_project()->getId(), array('id'=>'add_message_project_div', 'style' => 'display:none')) ?>
+	</fieldset>
   <fieldset>
-    <legend><?php echo lang('milestone') ?></legend>
-    <?php echo select_milestone('message[milestone_id]', active_project(), array_var($message_data, 'milestone_id'), array('id' => 'messageFormMilestone')) ?>
+    <legend class="toggle_collapsed" onclick="og.toggle('messageFormMilestone',this)"><?php echo lang('milestone') ?></legend>
+    <div>
+    <?php echo select_milestone('message[milestone_id]', $project, array_var($message_data, 'milestone_id'), array('id' => 'messageFormMilestone','style'=>'display:none')) ?>
+    </div>
   </fieldset>
   
 <?php if(logged_user()->isMemberOfOwnerCompany()) { ?>
   <fieldset>
-    <legend><?php echo lang('options') ?></legend>
-    
-    <div class="objectOption">
-      <div class="optionLabel"><label><?php echo lang('private message') ?>:</label></div>
-      <div class="optionControl"><?php echo yes_no_widget('message[is_private]', 'messageFormIsPrivate', array_var($message_data, 'is_private'), lang('yes'), lang('no')) ?></div>
-      <div class="optionDesc"><?php echo lang('private message desc') ?></div>
-    </div>
-    
-    <div class="objectOption">
-      <div class="optionLabel"><label><?php echo lang('important message')?>:</label></div>
-      <div class="optionControl"><?php echo yes_no_widget('message[is_important]', 'messageFormIsImportant', array_var($message_data, 'is_important'), lang('yes'), lang('no')) ?></div>
-      <div class="optionDesc"><?php echo lang('important message desc') ?></div>
-    </div>
-    
-    <div class="objectOption">
-    <div class="optionLabel"><label><?php echo lang('enable comments') ?>:</label></div>
-    <div class="optionControl"><?php echo yes_no_widget('message[comments_enabled]', 'fileFormEnableComments', array_var($message_data, 'comments_enabled', true), lang('yes'), lang('no')) ?></div>
-    <div class="optionDesc"><?php echo lang('enable comments desc') ?></div>
-  </div>
-  
-  <div class="objectOption">
-    <div class="optionLabel"><label><?php echo lang('enable anonymous comments') ?>:</label></div>
-    <div class="optionControl"><?php echo yes_no_widget('message[anonymous_comments_enabled]', 'fileFormEnableAnonymousComments', array_var($message_data, 'anonymous_comments_enabled', false), lang('yes'), lang('no')) ?></div>
-    <div class="optionDesc"><?php echo lang('enable anonymous comments desc') ?></div>
-  </div>
+    <legend class="toggle_collapsed" onclick="og.toggle('add_message_options_div',this)"><?php echo lang('options') ?></legend>
+    <div id="add_message_options_div" style="display:none">
+	    <div class="objectOption">
+	      <div class="optionLabel"><label><?php echo lang('private message') ?>:</label></div>
+	      <div class="optionControl"><?php echo yes_no_widget('message[is_private]', 'messageFormIsPrivate', array_var($message_data, 'is_private'), lang('yes'), lang('no')) ?></div>
+	      <div class="optionDesc"><?php echo lang('private message desc') ?></div>
+	    </div>
+	    
+	    <div class="objectOption">
+	      <div class="optionLabel"><label><?php echo lang('important message')?>:</label></div>
+	      <div class="optionControl"><?php echo yes_no_widget('message[is_important]', 'messageFormIsImportant', array_var($message_data, 'is_important'), lang('yes'), lang('no')) ?></div>
+	      <div class="optionDesc"><?php echo lang('important message desc') ?></div>
+	    </div>
+	    
+	    <div class="objectOption">
+	    <div class="optionLabel"><label><?php echo lang('enable comments') ?>:</label></div>
+	    <div class="optionControl"><?php echo yes_no_widget('message[comments_enabled]', 'fileFormEnableComments', array_var($message_data, 'comments_enabled', true), lang('yes'), lang('no')) ?></div>
+	    <div class="optionDesc"><?php echo lang('enable comments desc') ?></div>
+	  </div>
+	  
+	  <div class="objectOption">
+	    <div class="optionLabel"><label><?php echo lang('enable anonymous comments') ?>:</label></div>
+	    <div class="optionControl"><?php echo yes_no_widget('message[anonymous_comments_enabled]', 'fileFormEnableAnonymousComments', array_var($message_data, 'anonymous_comments_enabled', false), lang('yes'), lang('no')) ?></div>
+	    <div class="optionDesc"><?php echo lang('enable anonymous comments desc') ?></div>
+	  </div>
+  	</div>
   </fieldset>
 <?php } // if ?>
-  
-  <fieldset>
-    <legend><?php echo lang('tags') ?></legend>
-        <?php echo show_project_tags_option(active_project(), 'allTagsCombo', array('id' => 'allTagsCombo','style'=> 'width:100px'));
-    	 echo show_addtag_button('allTagsCombo','messageFormTags',array('style'=> 'width:20px')); ?>
-    <?php echo project_object_tags_widget('message[tags]', active_project(), array_var($message_data, 'tags'), array('id' => 'messageFormTags', 'class' => 'long')) ?>
-  </fieldset>
+    <fieldset>
+    <legend class="toggle_collapsed" onclick="og.toggle('add_message_tags_div',this)"><?php echo lang('tags') ?></legend>
+    <script type="text/javascript">
+    	var allTags = [<?php
+    		$coma = false;
+    		$tags = Tags::getTagNames();
+    		foreach ($tags as $tag) {
+    			if ($coma) {
+    				echo ",";
+    			} else {
+    				$coma = true;
+    			}
+    			echo "'" . $tag . "'";
+    		}
+    	?>];
+    </script>
+	<?php echo autocomplete_textfield("message[tags]", array_var($message_data, 'tags'), 'allTags', array('id'=>'add_message_tags_div', 'style'=>'display:none', 'class' => 'long')); ?>
+
+  </fieldset> 
+  <!--fieldset>
+    <legend class="toggle_collapsed" onclick="og.toggle('add_message_options_div',this)"><?php //echo lang('tags') ?></legend>
+        <?php //echo show_project_tags_option($project, 'allTagsCombo', array('id' => 'allTagsCombo','style'=> 'width:100px'));
+    	// echo show_addtag_button('allTagsCombo','messageFormTags',array('style'=> 'width:20px')); 
+    	 	//php echo autocomplete_textfield("file[tags]", array_var($file_data, 'tags'), 'allTags', array('id'=>'add_file_tags_div', 'style'=>'display:none', 'class' => 'long')); ?>
+    	 ?>
+    <?php //echo project_object_tags_widget('message[tags]', $project, array_var($message_data, 'tags'), array('id' => 'messageFormTags', 'class' => 'long')) ?>
+  </fieldset-->
   
 <?php if($message->isNew()) { ?>
   <fieldset id="emailNotification">
-    <legend><?php echo lang('email notification') ?></legend>
-    <p><?php echo lang('email notification desc') ?></p>
-<?php foreach(active_project()->getCompanies() as $company) { ?>
-    <script type="text/javascript">
-      App.modules.addMessageForm.notify_companies.company_<?php echo $company->getId() ?> = {
-        id          : <?php echo $company->getId() ?>,
-        checkbox_id : 'notifyCompany<?php echo $company->getId() ?>',
-        users       : []
-      };
-    </script>
-<?php if(is_array($users = $company->getUsersOnProject(active_project())) && count($users)) { ?>
-    <div class="companyDetails">
-      <div class="companyName"><?php echo checkbox_field('message[notify_company_' . $company->getId() . ']', array_var($message_data, 'notify_company_' . $company->getId()), array('id' => 'notifyCompany' . $company->getId(), 'onclick' => 'App.modules.addMessageForm.emailNotifyClickCompany(' . $company->getId() . ')')) ?> <label for="notifyCompany<?php echo $company->getId() ?>" class="checkbox"><?php echo clean($company->getName()) ?></label></div>
-      <div class="companyMembers">
-        <ul>
-<?php foreach($users as $user) { ?>
-          <li><?php echo checkbox_field('message[notify_user_' . $user->getId() . ']', array_var($message_data, 'notify_user_' . $user->getId()), array('id' => 'notifyUser' . $user->getId(), 'onclick' => 'App.modules.addMessageForm.emailNotifyClickUser(' . $company->getId() . ', ' . $user->getId() . ')')) ?> <label for="notifyUser<?php echo $user->getId() ?>" class="checkbox"><?php echo clean($user->getDisplayName()) ?></label></li>
-          <script type="text/javascript">
-            App.modules.addMessageForm.notify_companies.company_<?php echo $company->getId() ?>.users.push({
-              id          : <?php echo $user->getId() ?>,
-              checkbox_id : 'notifyUser<?php echo $user->getId() ?>'
-            });
-          </script>
-<?php } // foreach ?>
-        </ul>
-      </div>
-    </div>
-<?php } // if ?>
-<?php } // foreach ?>
+    <legend class="toggle_collapsed" onclick="og.toggle('add_message_mail_notif_div',this)"><?php echo lang('email notification') ?></legend>
+    <div id="add_message_mail_notif_div" style="display:none">
+  	  <p><?php echo lang('email notification desc') ?></p>
+		<?php foreach($project->getCompanies() as $company) { ?>
+		    <script type="text/javascript">
+		      App.modules.addMessageForm.notify_companies.company_<?php echo $company->getId() ?> = {
+		        id          : <?php echo $company->getId() ?>,
+		        checkbox_id : 'notifyCompany<?php echo $company->getId() ?>',
+		        users       : []
+		      };
+		    </script>
+		<?php if(is_array($users = $company->getUsersOnProject($project)) && count($users)) { ?>
+		    <div class="companyDetails">
+		      <div class="companyName"><?php echo checkbox_field('message[notify_company_' . $company->getId() . ']', array_var($message_data, 'notify_company_' . $company->getId()), array('id' => 'notifyCompany' . $company->getId(), 'onclick' => 'App.modules.addMessageForm.emailNotifyClickCompany(' . $company->getId() . ')')) ?> <label for="notifyCompany<?php echo $company->getId() ?>" class="checkbox"><?php echo clean($company->getName()) ?></label></div>
+		      <div class="companyMembers">
+		        <ul>
+		<?php foreach($users as $user) { ?>
+		          <li><?php echo checkbox_field('message[notify_user_' . $user->getId() . ']', array_var($message_data, 'notify_user_' . $user->getId()), array('id' => 'notifyUser' . $user->getId(), 'onclick' => 'App.modules.addMessageForm.emailNotifyClickUser(' . $company->getId() . ', ' . $user->getId() . ')')) ?> <label for="notifyUser<?php echo $user->getId() ?>" class="checkbox"><?php echo clean($user->getDisplayName()) ?></label></li>
+		          <script type="text/javascript">
+		            App.modules.addMessageForm.notify_companies.company_<?php echo $company->getId() ?>.users.push({
+		              id          : <?php echo $user->getId() ?>,
+		              checkbox_id : 'notifyUser<?php echo $user->getId() ?>'
+		            });
+		          </script>
+		<?php } // foreach ?>
+		        </ul>
+		      </div>
+		    </div>
+		<?php } // if ?>
+		<?php } // foreach ?>
+		</div>
   </fieldset>
-  
-<?php if($message->canAttachFile(logged_user(), active_project())) { ?>
-  <?php echo render_attach_files() ?>
-<?php } // if ?>
 
 <?php } // if ?>
-  
+  <fieldset>
+    <legend class="toggle_collapsed" onclick="og.toggle('add_message_properties_div',this)"><?php echo lang('properties') ?></legend>
+      <div id='add_message_properties_div' style="display:none">
+	  <? echo render_object_properties('message',$message); ?>
+  </div>
+  </fieldset>
+<?php if($message->canLinkObject(logged_user(), $project)) { ?>
+
+<?php if(!$message->isNew()) { ?>
+<fieldset>
+    <legend class="toggle_collapsed" onclick="og.toggle('add_message_linked_objects_div',this)"><?php echo lang('linked objects') ?></legend>
+    <div style="display:none" id="add_message_linked_objects_div">
+    <?php echo render_object_links($message, $message->canEdit(logged_user())) ?>
+</div>
+</fieldset>	
+<?php } ?>
+
+<?php } // if ?>
+
   <?php echo submit_button($message->isNew() ? lang('add message') : lang('edit message')) ?>
 </form>
+</div>

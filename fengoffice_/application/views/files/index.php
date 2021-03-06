@@ -4,10 +4,10 @@
 	$files_crumbs = array(
 		0 => array(lang('files'), get_url('files'))
 	); // array
-	if($current_folder instanceof ProjectFolder) {
+/*if($current_folder instanceof ProjectFolder) {
 		$files_crumbs[] = array($current_folder->getName(), $current_folder->getBrowseUrl($order));
 	} // if
-	$files_crumbs[] = array(lang('index'));
+*/	$files_crumbs[] = array(lang('index'));
 	
 	project_crumbs($files_crumbs);
 	

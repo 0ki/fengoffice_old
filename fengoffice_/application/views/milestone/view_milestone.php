@@ -48,8 +48,8 @@
 <?php } // if ?>
 
 <!-- Milestones -->
-<?php if(!$milestone->hasMessages() && !$milestone->hasTaskLists()) { ?>
-      <p><?php echo lang('empty milestone', $milestone->getAddMessageUrl(), $milestone->getAddTaskListUrl()) ?></p>
+<?php if(!$milestone->hasMessages() && !$milestone->hasTasks()) { ?>
+      <p><?php echo lang('empty milestone', $milestone->getAddMessageUrl(), $milestone->getAddTaskUrl()) ?></p>
 <?php } else { ?>
 <?php if($milestone->hasMessages()) { ?>
       <p><?php echo lang('messages') ?>:</p>
@@ -64,14 +64,14 @@
 <?php } // if?>
 
 <!-- Task lists -->
-<?php if($milestone->hasTaskLists()) { ?>
+<?php if($milestone->hasTasks()) { ?>
       <p><?php echo lang('task lists') ?>:</p>
       <ul>
-<?php foreach($milestone->getTaskLists() as $task_list) { ?>
+<?php foreach($milestone->getTasks() as $task_list) { ?>
 <?php if($task_list->isCompleted()) { ?>
-        <li><del datetime="<?php echo $task_list->getCompletedOn()->toISO8601() ?>"><a class="internalLink" href="<?php echo $task_list->getViewUrl() ?>" title="<?php echo lang('completed task list') ?>"><?php echo clean($task_list->getName()) ?></a></del></li>
+        <li><del datetime="<?php echo $task_list->getCompletedOn()->toISO8601() ?>"><a class="internalLink" href="<?php echo $task_list->getViewUrl() ?>" title="<?php echo lang('completed task list') ?>"><?php echo clean($task_list->getTitle()) ?></a></del></li>
 <?php } else { ?>
-        <li><a class="internalLink" href="<?php echo $task_list->getViewUrl() ?>"><?php echo clean($task_list->getName()) ?></a></li>
+        <li><a class="internalLink" href="<?php echo $task_list->getViewUrl() ?>"><?php echo clean($task_list->getTitle()) ?></a></li>
 <?php } // if ?>
 <?php } // foreach ?>
       </ul>

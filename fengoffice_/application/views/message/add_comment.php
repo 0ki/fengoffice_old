@@ -1,5 +1,4 @@
-<?php 
-
+<?php
   set_page_title($comment->isNew() ? lang('add comment') : lang('edit comment'));
   project_tabbed_navigation(PROJECT_TAB_MESSAGES);
   project_crumbs(array(
@@ -7,13 +6,9 @@
     array($message->getTitle(), $message->getViewUrl()),
     array($comment->isNew() ? lang('add comment') : lang('edit comment'))
   ));
-  
 ?>
-<?php if($comment->isNew()) { ?>
-<form class="internalForm" action="<?php echo $message->getAddCommentUrl() ?>" method="post">
-<?php } else { ?>
-<form class="internalForm" action="<?php echo $comment->getEditUrl() ?>" method="post">
-<?php } // if?>
+
+<form class="internalForm" action="<?php echo $comment->isNew() ? $message->getAddCommentUrl():$comment->getEditUrl()  ?>" method="post">
 
 <?php tpl_display(get_template_path('form_errors')) ?>
 

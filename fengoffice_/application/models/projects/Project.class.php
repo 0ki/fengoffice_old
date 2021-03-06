@@ -7,6 +7,19 @@
   * @author Ilija Studen <ilija.studen@gmail.com>
   */
   class Project extends BaseProject {
+    /**
+    * Cache of all project roles
+    *
+    * @var array
+    */
+    private $all_roles;
+    /**
+    * Cache of all project webpages
+    *
+    * @var array
+    */
+    private $all_webpages;
+    
     
     // ---------------------------------------------------
     //  Messages
@@ -18,6 +31,13 @@
     * @var array
     */
     private $all_messages;
+    
+    /**
+    * Cache of all mails
+    *
+    * @var array
+    */
+    private $all_mails;
     
     /**
     * Cached array of messages that user can access. If user is member of owner company
@@ -262,6 +282,19 @@
     } // getAllMessages
     
     /**
+    * This function will return all mails in project
+    *
+    * @param void
+    * @return array
+    */
+    function getAllMails() {
+      if(is_null($this->all_mails)) {
+        $this->all_mails = MailContents::getProjectMails($this);
+      } // if
+      return $this->all_mails;
+    } //  getAllMails
+    
+    /**
     * Return only the messages that current user can see (if not member of owner company private 
     * messages will be excluded)
     *
@@ -488,15 +521,15 @@
     * @param void
     * @return array
     */
-    function getAllTaskLists() {
+    function getAllTasks() {
       if(is_null($this->all_task_lists)) {
-        $this->all_task_lists = ProjectTaskLists::findAll(array(
+        $this->all_task_lists = ProjectTasks::findAll(array(
           'conditions' => array('`project_id` = ?', $this->getId()),
           'order' => '`order`'
         )); // findAll
       } // if
       return $this->all_task_lists;
-    } // getAllTaskLists
+    } // getAllTasks
     
     /**
     * Return all taks lists
@@ -505,16 +538,16 @@
     * @param void
     * @return array
     */
-    function getTaskLists() {
-      if(logged_user()->isMemberOfOwnerCompany()) return $this->getAllTaskLists();
+    function getTasks() {
+      if(logged_user()->isMemberOfOwnerCompany()) return $this->getAllTasks();
       if(is_null($this->task_lists)) {
-        $this->task_lists = ProjectTaskLists::findAll(array(
+        $this->task_lists = ProjectTasks::findAll(array(
           'conditions' => array('`project_id` = ? AND `is_private` = ?', $this->getId(), 0),
           'order' => '`order`'
         )); // findAll
       } // if
       return $this->task_lists;
-    } // getTaskLists
+    } // getTasks
     
     /**
     * Return all open task lists from this project
@@ -522,15 +555,15 @@
     * @param void
     * @return array
     */
-    function getAllOpenTaskLists() {
+    function getAllOpenTasks() {
       if(is_null($this->all_open_task_lists)) {
-        $this->all_open_task_lists = ProjectTaskLists::findAll(array(
-          'conditions' => array('`project_id` = ? AND `completed_on` = ?', $this->getId(), EMPTY_DATETIME),
+        $this->all_open_task_lists = ProjectTasks::findAll(array(
+          'conditions' => array('`project_id` = ? AND `completed_on` = ? AND (`parent_id` = 0 OR `parent_id` is NULL )', $this->getId(), EMPTY_DATETIME),
           'order' => '`order`'
         )); // findAll
       } // if
       return $this->all_open_task_lists;
-    } // getAllOpenTaskLists
+    } // getAllOpenTasks
     
     /**
     * Return open task lists
@@ -539,16 +572,18 @@
     * @param void
     * @return array
     */
-    function getOpenTaskLists() {
-      if(logged_user()->isMemberOfOwnerCompany()) return $this->getAllOpenTaskLists();
+    function getOpenTasks() {
+      if(logged_user()->isMemberOfOwnerCompany()) return $this->getAllOpenTasks();
       if(is_null($this->open_task_lists)) {
-        $this->open_task_lists = ProjectTaskLists::findAll(array(
-          'conditions' => array('`project_id` = ? AND `completed_on` = ? AND `is_private` = ?', $this->getId(), EMPTY_DATETIME, 0),
+        $this->open_task_lists = ProjectTasks::findAll(array(
+          'conditions' => array('`project_id` = ? AND `completed_on` = ? AND `is_private` = ? AND (`parent_id` = 0 OR `parent_id` is NULL )', $this->getId(), EMPTY_DATETIME, 0),
           'order' => '`order`'
         )); // findAll
       } // if
+      $this->open_task_lists = null;
       return $this->open_task_lists;
-    } // getOpenTaskLists
+    } // getOpenTasks
+
     
     /**
     * Return all completed task lists
@@ -556,15 +591,15 @@
     * @param void
     * @return array
     */
-    function getAllCompletedTaskLists() {
+    function getAllCompletedTasks() {
       if(is_null($this->all_completed_task_lists)) {
-        $this->all_completed_task_lists = ProjectTaskLists::findAll(array(
+        $this->all_completed_task_lists = ProjectTasks::findAll(array(
           'conditions' => array('`project_id` = ? AND `completed_on` > ?', $this->getId(), EMPTY_DATETIME),
           'order' => '`order`'
         )); // findAll
       } // if
       return $this->all_completed_task_lists;
-    } // getAllCompletedTaskLists
+    } // getAllCompletedTasks
     
     /**
     * Return completed task lists
@@ -573,16 +608,16 @@
     * @param void
     * @return array
     */
-    function getCompletedTaskLists() {
-      if(logged_user()->isMemberOfOwnerCompany()) return $this->getAllCompletedTaskLists();
+    function getCompletedTasks() {
+      if(logged_user()->isMemberOfOwnerCompany()) return $this->getAllCompletedTasks();
       if(is_null($this->completed_task_lists)) {
-        $this->completed_task_lists = ProjectTaskLists::findAll(array(
+        $this->completed_task_lists = ProjectTasks::findAll(array(
           'conditions' => array('`project_id` = ? AND `completed_on` > ? AND `is_private` = ?', $this->getId(), EMPTY_DATETIME, 0),
           'order' => '`order`'
         )); // findAll
       } // if
       return $this->completed_task_lists;
-    } // getCompletedTaskLists
+    } // getCompletedTasks
     
     // ---------------------------------------------------
     //  Tags
@@ -620,8 +655,10 @@
       return array(
         'messages'   => Tags::getProjectObjects($this, $tag, 'ProjectMessages', $exclude_private),
         'milestones' => Tags::getProjectObjects($this, $tag, 'ProjectMilestones', $exclude_private),
-        'task_lists' => Tags::getProjectObjects($this, $tag, 'ProjectTaskLists', $exclude_private),
+        'task_lists' => Tags::getProjectObjects($this, $tag, 'ProjectTasks', $exclude_private),
         'files'      => Tags::getProjectObjects($this, $tag, 'ProjectFiles', $exclude_private),
+        'contacts'   => Tags::getProjectObjects($this, $tag, 'ProjectContacts', $exclude_private),
+        'webpages'   => Tags::getProjectObjects($this, $tag, 'ProjectWebpages', $exclude_private),
       ); // array
     } // getObjectsByTag
     
@@ -857,7 +894,7 @@
     * @return array
     */
     function getUsersTasks(User $user) {
-      $task_lists = $this->getTaskLists();
+      $task_lists = $this->getTasks();
       if(!is_array($task_lists)) {
         return false;
       } // if
@@ -1243,6 +1280,41 @@
       return get_url('tag', 'delete_tag', array('tag_name' => $tag_name, 'project_id' => $this->getId(), 'object_id' => $object_id, 'manager_class' => $manager_class));
     } // getDeleteTagUrl
     
+
+    // ---------------------------------------------------
+    //  Roles 
+    // ---------------------------------------------------
+    
+    /**
+    * This function will return all roles in project
+    *
+    * @param void
+    * @return array
+    */
+    function getAllRoles() {
+      if(is_null($this->all_roles)) {
+        $this->all_roles = ProjectContacts::getRolesByProject($this);
+      } // if
+      return $this->all_roles;
+    } // getAllRoles
+
+    // ---------------------------------------------------
+    //  WEbpages 
+    // ---------------------------------------------------
+    
+    /**
+    * This function will return all webpages in a project
+    *
+    * @param void
+    * @return array
+    */
+    function getAllWebpages() {
+      if(is_null($this->all_webpages)) {
+        $this->all_webpages = ProjectWebpages::getWebpagesByProject($this);
+      } // if
+      return $this->all_webpages;
+    } //  getAllWebpages
+    
     // ---------------------------------------------------
     //  System functions
     // ---------------------------------------------------
@@ -1271,15 +1343,32 @@
     */
     function delete() {
       $this->clearMessages();
-      $this->clearTaskLists();
+      $this->clearTasks();
       $this->clearMilestones();
       $this->clearFiles();
       $this->clearFolders();
       $this->clearForms();
       $this->clearPermissions();
       $this->clearLogs();
+      $this->clearRoles();
+      $this->clearMails();
       return parent::delete();
     } // delete
+    
+    /**
+    * Clear all project webpages
+    *
+    * @param void
+    * @return null
+    */
+    private function clearWebpages() {
+      $webpages = $this->getAllWebpages();
+      if(is_array($webpages)) {
+        foreach($webpages  as $webpage) {
+          $webpage->delete();
+        } // foreach
+      } // if
+    } //  clearWebpages
     
     /**
     * Clear all project messages
@@ -1297,19 +1386,49 @@
     } // clearMessages
     
     /**
+    * Clear all project mails
+    *
+    * @param void
+    * @return null
+    */
+    private function clearMails() {
+      $mails = $this->getAllMails();
+      if(is_array($mails)) {
+        foreach($mails as $mail) {
+          $mail->setProjectId(0);
+        } // foreach
+      } // if
+    } //  clearMails
+    
+    /**
+    * Clear all project roles
+    *
+    * @param void
+    * @return null
+    */
+    private function clearRoles() {
+      $roles = $this->getAll();
+      if(is_array($roles)) {
+        foreach($roles as $rol) {
+          $rol->delete();
+        } // foreach
+      } // if
+    } // clearRoles
+    
+    /**
     * Clear all task lists
     *
     * @param void
     * @return null
     */
-    private function clearTaskLists() {
-      $task_lists = $this->getAllTaskLists();
+    private function clearTasks() {
+      $task_lists = $this->getAllTasks();
       if(is_array($task_lists)) {
         foreach($task_lists as $task_list) {
           $task_list->delete();
         } // foreach
       } // if
-    } // clearTaskLists
+    } // clearTasks
     
     /**
     * Clear all milestones

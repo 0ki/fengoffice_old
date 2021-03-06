@@ -18,7 +18,33 @@ og.msg =  function(title, format) {
 	this.msgCt.alignTo(document, 't-t');
 	var s = String.format.apply(String, Array.prototype.slice.call(arguments, 1));
 	var m = Ext.DomHelper.append(this.msgCt, {html:String.format(box, title, s)}, true);
-	m.slideIn('t').pause(1).ghost("t", {remove:true});
+	m.slideIn('t').pause(2).ghost("t", {remove:true});
+}
+
+og.loading = function() {
+	if (!this.loadingCt) {
+		this.loadingCt = document.createElement('div');
+		this.loadingCt.innerHTML = lang('loading');
+		this.loadingCt.className = 'loading-indicator';
+		this.loadingCt.style.position = 'absolute';
+		this.loadingCt.style.left = '45%';
+		this.loadingCt.style.cursor = 'pointer';
+		this.loadingCt.onclick = function() {
+			this.style.visibility = 'hidden';
+			this.instances = 0;
+		};
+		this.loadingCt.instances = 0;
+		document.body.appendChild(this.loadingCt);
+	}
+	this.loadingCt.instances++;
+	this.loadingCt.style.visibility = 'visible';
+}
+
+og.hideLoading = function() {
+	this.loadingCt.instances--;
+	if (this.loadingCt.instances <= 0) {
+		this.loadingCt.style.visibility = 'hidden';
+	}
 }
 
 og.toggle = function(id, btn) {
@@ -147,7 +173,187 @@ og.autoComplete = {
 	}
 }
 
-og.submit = function(form) {
+og.makeAjaxUrl = function(url, params) {
+	var q = url.indexOf('?');
+	var n = url.indexOf('#');
+	if (Ext.getCmp('workspace-panel')) {
+		var ap = "active_project=" + Ext.getCmp('workspace-panel').getActiveWorkspace().id;
+	} else {
+		var ap = "active_project=0";
+	}
+	var p = "";
+	if (params) {
+		if (typeof params == 'string') {
+			p = "&" + params;
+		} else {
+			for (var k in params) {
+				p += "&" + k + "=" + params[k];
+			}
+		}
+	}
+	if (q < 0) {
+		if (n < 0) {
+			return url + "?ajax=true&" + ap + p;
+		} else {
+			return url.substring(0, n) + "?ajax=true&" + ap + "&" + url.substring(n) + p;
+		}
+	} else {
+		return url.substring(0, q + 1) + "ajax=true&" + ap + "&" + url.substring(q + 1) + p;
+	}
+}
+
+og.createHTMLElement = function(config) {
+	var tag = config.tag || 'p';
+	var attrs = config.attrs || {};
+	var content = config.content || {};
+	var elem = document.createElement(tag);
+	for (var k in attrs) {
+		elem[k] = attrs[k];
+	}
+	if (typeof content == 'string') {
+		elem.innerHTML = content;
+	} else {
+		for (var i=0; i < content.length; i++) {
+			elem.appendChild(og.createHTMLElement(content[i]));
+		}
+	}
+	return elem;
+}
+
+og.debug = function(obj, level) {
+	if (!level) level = 0;
+	if (level > 5) return "";
+	var pad = "";
+	var str = "";
+	for (var i=0; i < level; i++) {
+		pad += "  ";
+	}
+	if (!obj) {
+		str = "NULL";
+	} else if (typeof obj == 'object') {
+		str = "";
+		for (var k in obj) {
+			str += ",\n" + pad + "  ";
+			str += k + ": ";
+			str += og.debug(obj[k], level + 1);
+		}
+		str = "{" + str.substring(1) + "\n" + pad + "}";
+	} else if (typeof obj == 'string') {
+		str = '"' + obj + '"';
+	} else {
+		str = obj;
+	}
+	return str;
+}
+
+og.captureLinks = function(id, caller) {
+	var links = Ext.select((id?"#" + id + " ":"") + "a.internalLink");
+	links.each(function() {
+		if (this.dom.href.indexOf('javascript:') == 0) {
+			return;
+		}
+		if (this.dom.target) {
+			this.dom.href = "javascript:og.openLink('" + this.dom.href + "', {caller:'" + this.dom.target + "'})";
+			this.dom.target = "";
+		} else if (caller) {
+			this.dom.href = "javascript:og.openLink('" + this.dom.href + "', {caller:'" + caller.id + "'})";
+		} else {
+			this.dom.href = "javascript:og.openLink('" + this.dom.href + "')";
+		}
+	});
+	links = Ext.select((id?"#" + id + " ":"") + "form.internalForm");
+	links.each(function() {
+		var onsubmit = this.dom.onsubmit;
+		this.dom.onsubmit = function() {
+			if (onsubmit && !onsubmit()) {
+				return false;
+			} else {
+				var params = Ext.Ajax.serializeForm(this);
+				var options = {};
+				options[this.method.toLowerCase()] = params;
+				og.openLink(this.getAttribute('action'), options);
+			}
+			return false;
+		}
+	});
+}
+
+
+og.openLink = function(url, options) {
+	if (!options) options = {};
+	if (typeof options.caller == "object") {
+		options.caller = options.caller.id;
+	}
+	if (!options.caller) {
+		options.caller = Ext.getCmp('tabs-panel').getActiveTab().id;
+	}
+	og.loading();
+	var params = options.get || {};
+	if (typeof params == 'string') {
+		params += "&current=" + options.caller;
+	} else {
+		params.current = options.caller;
+	}
+	url = og.makeAjaxUrl(url, params);
+	Ext.Ajax.request({
+		url: url,
+		method: 'POST',
+		params: options.post,
+		callback: function(options, success, response) {
+			if (success) {
+				try {
+					var data = Ext.util.JSON.decode(response.responseText);
+					og.processResponse(data, options.caller);
+					if (options.postProcess) options.postProcess(true, data);
+				} catch (e) {
+					var p = Ext.getCmp(options.caller);
+					if (p) {
+						p.load(response.responseText);
+					} else {
+						Ext.getCmp('tabs-panel').load(response.responseText);
+					}
+					if (options.postProcess) options.postProcess(true, options.responseText, e);
+				}
+			} else {
+				og.msg(lang("error"), lang("server could not be reached"));
+				if (options.postProcess) options.postProcess(false);
+			}
+			og.hideLoading();
+		},
+		caller: options.caller,
+		postProcess: options.callback
+	});
+}
+
+/**
+ *  This function allows to submit a form containing a file upload without
+ *  refreshing the whole page by using an iframe. It expects a JSON response
+ *  but with mime type 'text/html' so that IE can render it on the iframe.
+ *  Also, it may not contain html as IE will render it and thus break the JSON.
+ *  The response should return only error messages, events or possibly a forward URL.
+ *  A typical response could be like this (without the line breaks):
+ *  	{
+ *  		"errorCode": 0,
+ *  		"errorMessage": "Evrything OK",
+ *  		"current": {
+ *  			"type": "url",
+ *  			"data": "http://some.url.to/forward/to
+ *  		}
+ *  	}
+ *  Unlike the function og.openLink, this function doesn't send a ajax=true
+ *  parameter.
+ */
+og.submit = function(form, caller) {
+	if (typeof caller == "object") {
+		caller = caller.id;
+	}
+	if (!caller) {
+		caller = Ext.getCmp('tabs-panel').getActiveTab().id;
+	}
+	var params = {
+		current: caller
+	};
+	og.loading();
 	// create an iframe
 	var id = Ext.id();
 	var frame = document.createElement('iframe');
@@ -162,23 +368,31 @@ og.submit = function(form) {
 	   document.frames[id].name = id;
 	}
 	function endSubmit() {
-		this.loadingIndicator.style.visibility = 'hidden';
+		og.hideLoading();
 		var doc;
 		if (Ext.isIE) {
 			doc = this.contentWindow.document;
 		} else {
 			doc = (this.contentDocument || window.frames[id].document);
 		}
-		var json = doc.body.innerHTML.trim();
+		var elem = doc.body;
+		while (elem.nodeType == 1) {
+			elem = elem.firstChild;
+		}
+		var json = elem.nodeValue;
+		json = json.replace(/[\n\r]/g, "");
 		if (json) {
-			var o = Ext.util.JSON.decode(json);
-			if (o.success) {
-				og.msg(lang('success'), o.error);
-				if (o.forward) {
-					og.openLink(o.forward.replace(/&amp;/g, "&"));
+			try {
+				var data = Ext.util.JSON.decode(json);
+				og.processResponse(data, caller);
+			} catch (e) {
+				alert(e.message);
+				var p = Ext.getCmp(caller);
+				if (p) {
+					p.load(json);
+				} else {
+					Ext.getCmp('tabs-panel').getActiveTab().load(json);
 				}
-			} else {
-				og.msg(lang('error'), o.error);
 			}
 		} else {
 			og.msg(lang('error'), lang('unexpected server response'));
@@ -188,32 +402,137 @@ og.submit = function(form) {
 	Ext.EventManager.on(frame, 'load', endSubmit, frame);;
 	
 	form.target = frame.name;
-	var div;
-	if (!div) {
-		div = document.createElement('div');
-		div.innerHTML = lang('uploading file');
-		div.className = 'loading-indicator';
-		div.style.position = 'absolute';
-		div.style.top = '0';
-		div.style.left = '45%';
-		document.body.appendChild(div);
-	}
-	div.style.visibility = 'visible';
-	frame.loadingIndicator = div;
+	var url = og.makeAjaxUrl(form.getAttribute('action'), params).replace(/ajax\=true\&?/g, "");
+	form.setAttribute('action', url);
 	form.submit();
 	return false;
 }
 
-og.makeAjaxUrl = function(url) {
-	var q = url.indexOf('?');
-	var n = url.indexOf('#');
-	if (q < 0) {
-		if (n < 0) {
-			return url + "?ajax=true";
-		} else {
-			return url.substring(0, n) + "?ajax=true" + url.substring(n);
+og.processResponse = function(data, caller) {
+	if (!data) return;
+	if (data.events) {
+		for (var i=0; i < data.events.length; i++) {
+			og.eventManager.fireEvent(data.events[i].name, data.events[i].data);
 		}
-	} else {
-		return url.substring(0, q + 1) + "ajax=true&" + url.substring(q + 1);
 	}
+	/*for (var k in data.libs) {
+		og.loadScript("");
+	}*/
+	if (data.contents) {
+		for (var i=0; i < data.contents.length; i++) {
+			var p = Ext.getCmp(data.contents[i].panel);
+			if (p) {
+				p.load(data.contents[i]);
+			}
+		}
+	}
+	if (data.current) {
+		if (data.current.panel) {
+			var p = Ext.getCmp(data.current.panel);
+			if (p) {
+				var tp = p.ownerCt;
+				if (tp.setActiveTab) {
+					tp.setActiveTab(p);
+				}
+				p.load(data.current);
+			} else {
+				og.newTab(data.current, data.current.panel);
+			}
+		} else if (caller) {
+			Ext.getCmp(caller).load(data.current);
+		} else {
+			og.newTab(data.current);
+		}
+	}
+	if (data.errorCode != 0) {
+		og.msg(lang("error"), data.errorMessage);
+	} else if (data.errorMessage) {
+		og.msg(lang("success"), data.errorMessage);
+	}
+}
+
+og.newTab = function(content, id) {
+	var tp = Ext.getCmp('tabs-panel');
+	var t = new og.ContentPanel({
+		closable: true,
+		title: lang(id) || lang('new tab'),
+		id: id || Ext.id(),
+		iconCls: (id?'ico-' + id:'ico-tab'),
+		defaultContent: content
+	});
+	tp.add(t);
+	tp.setActiveTab(t);
+}
+
+og.eventManager = {
+	events: new Array(),
+	addListener: function(event, callback, scope, options) {
+		if (!this.events[event]) {
+			this.events[event] = new Array();
+		}
+		this.events[event].push({
+			callback: callback,
+			scope: scope,
+			options: options || {}
+		});
+	},
+	removeListener: function(event, callback, scope) {
+		var list = this.events[event];
+		if (!list) {
+			return;
+		}
+		for (var i=0; i < list.length; i++) {
+			if (list[i].callback == callback && list[i].scope == scope) {
+				list.remove(list[i]);
+				return;
+			}
+		}
+	},
+	fireEvent: function(event, arguments) {
+		var list = this.events[event];
+		if (!list) {
+			return;
+		}
+		for (var i=0; i < list.length; i++) {
+			try {
+				list[i].callback.call(list[i].scope, arguments);
+			} catch (e) {
+				og.msg(lang("error"), e.message);
+			}
+			if (list[i].options.single) {
+				list.remove(list[i]);
+			}
+		}
+	}
+}
+
+og.showHelp = function() {
+	Ext.getCmp('help-panel').toggleCollapse();
+}
+
+og.extractScripts = function(html) {
+	var id = Ext.id();
+	html += '<span id="' + id + '"></span>';
+	Ext.lib.Event.onAvailable(id, function() {
+		try {
+			var re = /(?:<script([^>]*)?>)((\n|\r|.)*?)(?:<\/script>)/ig;
+			var match;
+			while (match = re.exec(html)) {
+				if (match[2] && match[2].length > 0) {
+					if (window.execScript) {
+						window.execScript(match[2]);
+					} else {
+						window.eval(match[2]);
+					}
+				}
+			}
+		} catch (e) {
+			//og.msg(lang("error"), e.message);
+			throw e;
+		}
+		var el = document.getElementById(id);
+		if (el) { Ext.removeNode(el); }
+	});
+	
+	return html.replace(/(?:<script.*?>)((\n|\r|.)*?)(?:<\/script>)/ig, "");
 }

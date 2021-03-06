@@ -33,6 +33,13 @@
     'mark project as finished' => 'Mark project as finished',
     'mark project as active' => 'Mark project as active',
     
+    // Workspace
+    'add workspace' => 'Add Workspace',
+    'edit workspace' => 'Edit Workspace details',
+    'delete workspace' => 'Delete workspace',
+    'mark workspace as finished' => 'Mark Workspace as finished',
+    'mark workspace as active' => 'Mark Workspace as active',
+    
     // Messages
     'add message' => 'Add message',
     'edit message' => 'Edit message',
@@ -63,6 +70,18 @@
     'add milestone' => 'Add milestone',
     'edit milestone' => 'Edit milestone',
     'delete milestone' => 'Delete milestone',
+    
+    // Events
+    'add event' => 'Add event',
+    'edit event' => 'Edit event',
+    'delete event' => 'Delete event',
+    'previous month' => 'Previous month',
+    'next month' => 'Next month',
+    'previous day' => 'Previous day',
+    'next day' => 'Next day',
+    'back to calendar' => 'Back to calendar',
+    'back to day' => 'Back to day',
+    
     
     // People
     'update people' => 'Update',
@@ -110,7 +129,7 @@
     'collapse all' => 'Collapse All',
     'expand all' => 'Expand all',
 
-    'properties' => 'edit properties',
+    'properties' => 'Edit Properties',
     'edit file' => 'Edit file',
     'edit document' => 'Edit document',
     'edit spreadsheet' => 'Edit spreadsheet',
@@ -126,17 +145,21 @@
     'version' => 'ver',
     'last modification' => 'Last modification',
     
-    'attach file' => 'Attach file',
-    'attach files' => 'Attach files',
-    'attach more files' => 'Attach more files',
-    'detach file' => 'Detach file',
-    'detach files' => 'Detach files',
+    'link object' => 'Link Object',
+    'link objects' => 'Link Objects',
+    'link more objects' => 'Link more objects',
+    'unlink object' => 'Unlink Object',
+    'unlink objects' => 'Unlink Objects',
   	
     // Tags
     'delete tag'  => 'Delete tag',
     
     // Permissions
     'update permissions' => 'Update permissions',
+    'edit permissions' => 'Edit permissions',
+    'edit permissions explanation'  => 'Check the boxes to grant users access to the recently created project.',
+  
+  	'save as new revision' => 'Save as new revision',
     
   ); // array
 

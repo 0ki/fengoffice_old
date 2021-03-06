@@ -21,6 +21,7 @@
     'milestone dnx' => 'Requested milestone does not exist',
     'task list dnx' => 'Requested task list does not exist',
     'task dnx' => 'Requested task does not exist',
+    'event type dnx' => 'Requested event type does not exist',
     'no milestones in project' => 'There are no milestones in this project',
     'no active milestones in project' => 'There are no active milestones in this project',
     'empty milestone' => 'This milestone is empty. You can add a <a class="internalLink" href="{0}">message</a> or a <a class="internalLink" href="{1}">task list</a> to it at any time',
@@ -41,6 +42,8 @@
     'user dnx' => 'Requested user does not exist in database',
     'avatar dnx' => 'Avatar does not exist',
     'no current avatar' => 'Avatar is not uploaded',
+    'picture dnx' => 'Picture does not exist',
+    'no current picture' => 'Picture is not uploaded',
     'no current logo' => 'A logo is not uploaded',
     'user not on project' => 'Selected user is not involved in selected project',
     'company not on project' => 'Selected company is not involved in selected project',
@@ -63,14 +66,20 @@
     'cant delete only revision' => 'You can\'t delete this reivion. Every file need to have at least one revision posted',
     'config category dnx' => 'Configuration category you requested does not exists',
     'config category is empty' => 'Selected configuration category is empty',
-    'email address not in use' => '{0} is not in use',
-    'no attached files' => 'There are no files attached to this object',
-    'file not attached to object' => 'Selected file is not attached to selected object',
-    'no files to attach' => 'Please select files that need to be attached',
+    'email address not in use' => '%s is not in use',
+    'no linked objects' => 'There are no objects linked to this object',
+    'object not linked to object' => 'No link exists between the selected object',
+    'no objects to link' => 'Please select objects that need to be linked',
     'no administration tools' => 'There are no registered administration tools in the database',
     'administration tool dnx' => 'Administration tool "{0}" does not exists',
     
     // Success
+    'success add contact' => 'Contact \'{0}\' has been created successfully',
+    'success edit contact' => 'Contact \'{0}\' has been updated successfully',
+    'success delete contact' => 'Contact \'{0}\' has been deleted successfully',
+    'success edit picture' => 'Picture has been updated successfully',
+    'success delete picture' => 'Picture has been deleted successfully',
+    
     'success add project' => 'Project {0} has been added successfully',
     'success edit project' => 'Project {0} has been updated',
     'success delete project' => 'Project {0} has been deleted',
@@ -142,12 +151,17 @@
     'success delete file' => 'File \'{0}\' has been deleted',
     'success delete files' => '{0} file(s) have been deleted',
     'success tag files' => '{0} file(s) have been tagged',
+    'success tag contacts' => '{0} contact(s) have been tagged',
+    
+    'success add handis' => 'Handins have been updated',
+    
+    'success add properties' => 'Properties have been updated',
     
     'success edit file revision' => 'Revision has been updated',
     'success delete file revision' => 'File revision has been deleted',
     
-    'success attach files' => '{0} file(s) has been successfully attached',
-    'success detach file' => 'File(s) has been successfully detached',
+    'success link objects' => '%s file(s) has been successfully linked',
+    'success unlink object' => 'File(s) has been successfully unlinked',
     
     'success update config category' => '{0} configuration values have been updated',
     'success forgot password' => 'Your password has been emailed to you',
@@ -157,6 +171,27 @@
     
     'success update company permissions' => 'Company permissions updated successfully. {0} records updated',
     'success user permissions updated' => 'User permissions have been updated',
+  
+    'success add event' => 'Event has been added',
+    'success delete event' => 'Event has been deleted',
+    
+    'success add event type' => 'Event Type has been added',
+    'success delete event type' => 'Event Type has been deleted',
+    
+    'success add webpage' => 'Weblink has been added',
+    'success edit webpage' => 'Weblink has been updated',
+    'success deleted webpage' => 'Weblink has been deleted',
+  
+    'success delete contacts' => 'The selected contacts have been deleted successfully',
+  
+    'success classify email' => 'Email classified successfully',
+    'success delete email' => 'Email has been deleted',
+  
+    'success delete mail account' => 'Email account has been deleted successfully',
+    'success create mail account' => 'Email account has been created successfully',
+    'success edit mail account' => 'Email account has been updated successfully',
+  
+    'success link object' => 'Object has been linked successfully',
     
     // Failures
     'error form validation' => 'Failed to save object because some of its properties are not valid',
@@ -178,11 +213,15 @@
     'error remove company from project' => 'Failed to remove company from project',
     'error edit avatar' => 'Failed to edit avatar',
     'error delete avatar' => 'Failed to delete avatar',
+    'error edit picture' => 'Failed to edit picture',
+    'error delete picture' => 'Failed to delete picture',
+    'error edit contact' => 'Failed to edit contact',
+    'error delete contact' => 'Failed to delete contact',
     'error hide welcome info' => 'Faled to hide welcome info',
     'error complete milestone' => 'Failed to complete selected milestone',
     'error open milestone' => 'Failed to reopen selected milestone',
     'error file download' => 'Failed to download specified file',
-    'error attach file' => 'Failed to attach file',
+    'error link object' => 'Failed to link object',
     'error edit company logo' => 'Failed to update company logo',
     'error delete company logo' => 'Failed to delete company logo',
     'error subscribe to message' => 'Failed to subscribe to selected message',
@@ -193,17 +232,23 @@
     'error delete file' => 'Failed to delete selected file',
     'error delete files' => 'Failed to delete {0} files',
     'error tag files' => 'Failed to tag {0} files',
+    'error tag contacts' => 'Failed to tag {0} contacts',
     'error delete file revision' => 'Failed to delete file revision',
     'error delete task list' => 'Failed to delete selected task list',
     'error delete task' => 'Failed to delete selected task',
     'error check for upgrade' => 'Failed to check for a new version',
-    'error attach file' => 'Failed to attach file(s)',
-    'error detach file' => 'Failed to detach file(s)',
-    'error attach files max controls' => 'You can not add more file attachments. Limit is {0}',
+    'error link object' => 'Failed to link object(s)',
+    'error unlink object' => 'Failed to unlink object(s)',
+    'error link objects max controls' => 'You can not add more object links. Limit is %s',
     'error test mail settings' => 'Failed to send test message',
     'error massmail' => 'Failed to send email',
     'error owner company has all permissions' => 'Owner company has all permissions',
     'error while saving' => 'An error ocurred while saving the document',
+    'error delete event type' =>'Failed to delete event type',
+    'error delete mail' => 'An error ocurred while deleting this email',
+    'error delete mail account' => 'An error ocurred while deleting this email account',
+    'error delete contacts' => 'An error has ocurred while deleting these contacts',
+  
     
     // Access or data errors
     'no access permissions' => 'You don\'t have permissions to access requested page',
@@ -219,13 +264,14 @@
     'confirm complete project' => 'Are you sure that you want to mark this project as finished? All project actions will be locked',
     'confirm open project' => 'Are you sure that you want to mark this project as open? This will unlock all project actions',
     'confirm delete client' => 'Are you sure that you want to delete selected client company and all of its users?',
+    'confirm delete contact' => 'Are you sure that you want to delete selected contact?',
     'confirm delete user' => 'Are you sure that you want to delete this user account?',
     'confirm reset people form' => 'Are you sure that you want to reset this form? All modifications you made will be lost!',
     'confirm remove user from project' => 'Are you sure that you want to remove this user from project?',
     'confirm remove company from project' => 'Are you sure that you want to remove this company from project?',
     'confirm logout' => 'Are you sure that you want to log out?',
     'confirm delete current avatar' => 'Are you sure that you want to delete this avatar?',
-    'confirm detach file' => 'Are you sure that you want to detach this file?',
+    'confirm unlink object' => 'Are you sure that you want to unlink this object?',
     'confirm delete company logo' => 'Are you sure that you want to delete this logo?',
     'confirm subscribe' => 'Are you sure that you want to subscribe to this message? You will receive an email everytime someone (except you) posts a comment on this message?',
     'confirm unsubscribe' => 'Are you sure that you want to unsubscribe?',
@@ -234,6 +280,7 @@
     'confirm delete file' => 'Are you sure that you want to delete this file?',
     'confirm delete revision' => 'Are you sure that you want to delete this revision?',
     'confirm reset form' => 'Are you sure that you want to reset this form?',
+    'confirm delete contacts' => 'Are you sure that you want to delete these contacts?',
     
     // Errors...
     'system error message' => 'We are sorry, but a fatal error prevented OpenGoo from executing your request. An Error Report has been sent to the administrator.',
@@ -280,6 +327,16 @@
     
     'log edit projectfilerevisions' => '{0} updated',
     'log delete projectfilerevisions' => '{0} deleted',
+    
+    'log add projectwebpages' => '\'{0}\' uploaded',
+    'log edit projectwebpages' => '\'{0}\' updated',
+    'log delete projectwebpages' => '\'{0}\' deleted',
+    
+    'log add contacts' => '\'{0}\' assigned to project',
+    'log edit contacts' => '\'{0}\' changed role',
+    'log delete contacts' => '\'{0}\' removed from project',
+  
+  	'no contacts in company' => 'The company has no contacts.',
   
   ); // array
 

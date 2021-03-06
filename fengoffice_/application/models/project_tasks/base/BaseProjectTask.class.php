@@ -34,27 +34,49 @@
     } // setId() 
     
     /**
-    * Return value of 'task_list_id' field
+    * Return value of 'parent_id' field
     *
     * @access public
     * @param void
     * @return integer 
     */
-    function getTaskListId() {
-      return $this->getColumnValue('task_list_id');
-    } // getTaskListId()
+    function getParentId() {
+      return $this->getColumnValue('parent_id');
+    } //  getParentId()
     
     /**
-    * Set value of 'task_list_id' field
+    * Set value of 'parent_id' field
     *
     * @access public   
     * @param integer $value
     * @return boolean
     */
-    function setTaskListId($value) {
-      return $this->setColumnValue('task_list_id', $value);
-    } // setTaskListId() 
+    function setParentId($value) {
+      return $this->setColumnValue('parent_id', $value);
+    } // setparentId() 
     
+    /**
+    * Return value of 'is_private' field
+    *
+    * @access public
+    * @param void
+    * @return boolean 
+    */
+    function getIsPrivate() {
+      return $this->getColumnValue('is_private');
+    } // getIsPrivate()
+    
+    /**
+    * Set value of 'is_private' field
+    *
+    * @access public   
+    * @param boolean $value
+    * @return boolean
+    */
+    function setIsPrivate($value) {
+      return $this->setColumnValue('is_private', $value);
+    } // setIsPrivate() 
+        
     /**
     * Return value of 'text' field
     *
@@ -275,6 +297,49 @@
       return $this->setColumnValue('order', $value);
     } // setOrder() 
     
+    /**
+    * Return value of 'milestone_id' field
+    *
+    * @access public
+    * @param void
+    * @return integer 
+    */
+    function getMilestoneId() {
+      return $this->getColumnValue('milestone_id');
+    } // getMilestoneId()
+    
+    /**
+    * Set value of 'milestone_id' field
+    *
+    * @access public   
+    * @param integer $value
+    * @return boolean
+    */
+    function setMilestoneId($value) {
+      return $this->setColumnValue('milestone_id', $value);
+    } // setMilestoneId() 
+    
+    /**
+    * Return value of 'project_id' field
+    *
+    * @access public
+    * @param void
+    * @return integer 
+    */
+    function getProjectId() {
+      return $this->getColumnValue('project_id');
+    } // getProjectId()
+    
+    /**
+    * Set value of 'project_id' field
+    *
+    * @access public   
+    * @param integer $value
+    * @return boolean
+    */
+    function setProjectId($value) {
+      return $this->setColumnValue('project_id', $value);
+    } // setProjectId() 
     
     /**
     * Return manager instance
@@ -288,6 +353,119 @@
       return $this->manager;
     } // manager
   
+    
+    
+        
+    /**
+    * Return value of 'priority' field
+    *
+    * @access public
+    * @param void
+    * @return integer 
+    */
+    function getPriority() {
+      return $this->getColumnValue('priority');
+    } // getpriority()
+    
+    /**
+    * Set value of 'priority' field
+    *
+    * @access public   
+    * @param integer $value
+    * @return boolean
+    */
+    function setPriority($value) {
+      return $this->setColumnValue('priority', $value);
+    } // setpriority()     
+        
+    /**
+    * Return value of 'state' field
+    *
+    * @access public
+    * @param void
+    * @return integer 
+    */
+    function getState() {
+      return $this->getColumnValue('state');
+    } // getState()
+    
+    /**
+    * Set value of 'State' field
+    *
+    * @access public   
+    * @param integer $value
+    * @return boolean
+    */
+    function setState($value) {
+      return $this->setColumnValue('state', $value);
+    } // setState() 
+        
+    /**
+    * Return value of 'started_on' field
+    *
+    * @access public
+    * @param void
+    * @return DateTimeValue 
+    */
+    function getStartedOn() {
+      return $this->getColumnValue('started_on');
+    } // getStartedOn()
+    
+    /**
+    * Set value of 'started_on' field
+    *
+    * @access public   
+    * @param DateTimeValue $value
+    * @return boolean
+    */
+    function setStartedOn($value) {
+      return $this->setColumnValue('started_on', $value);
+    } // setStartedOn() 
+    
+    /**
+    * Return value of 'started_by_id' field
+    *
+    * @access public
+    * @param void
+    * @return integer 
+    */
+    function getStartedById() {
+      return $this->getColumnValue('started_by_id');
+    } // getStartedById()
+    
+    /**
+    * Set value of 'started_by_id' field
+    *
+    * @access public   
+    * @param integer $value
+    * @return boolean
+    */
+    function setStartedById($value) {
+      return $this->setColumnValue('started_by_id', $value);
+    } // setStartedById() 
+
+    /**
+    * Return value of 'title' field
+    *
+    * @access public
+    * @param void
+    * @return string 
+    */
+    function getTitle() {
+      return $this->getColumnValue('title');
+    } // getTitle()
+    
+    /**
+    * Set value of 'title' field
+    *
+    * @access public   
+    * @param string $value
+    * @return boolean
+    */
+    function setTitle($value) {
+      return $this->setColumnValue('title', $value);
+    } // setTitle()     
   } // BaseProjectTask 
 
+    
 ?>

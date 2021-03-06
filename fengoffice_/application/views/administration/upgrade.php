@@ -15,7 +15,7 @@
 <?php
   $download_links = array();
   foreach($version->getDownloadLinks() as $download_link) {
-    $download_links[] = '<a class="internalLink" href="' . $download_link->getUrl() . '">' . clean($download_link->getFormat()) .' (' . format_filesize($download_link->getSize()) . ')</a>';
+    $download_links[] = '<a target="_blank" href="' . $download_link->getUrl() . '">' . clean($download_link->getFormat()) .' (' . format_filesize($download_link->getSize()) . ')</a>';
   } // foreach
 ?>
     <div class="downloadLinks"><strong><?php echo lang('download') ?>:</strong> <?php echo implode(' | ', $download_links) ?></div>

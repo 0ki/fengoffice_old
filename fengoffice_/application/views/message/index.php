@@ -3,7 +3,7 @@
   set_page_title(lang('messages'));
   project_tabbed_navigation(PROJECT_TAB_MESSAGES);
   project_crumbs(lang('messages'));
-  if(ProjectMessage::canAdd(logged_user(), active_project())) {
+  if(!active_project() || ProjectMessage::canAdd(logged_user(), active_project())) {
     add_page_action(lang('add message'), get_url('message', 'add'));
   } // if
 

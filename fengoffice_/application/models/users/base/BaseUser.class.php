@@ -517,6 +517,23 @@
       return $this->setColumnValue('auto_assign', $value);
     } // setAutoAssign() 
     
+    /**
+     * Return the personal project's id
+     *
+     * @return integer
+     */
+    function getPersonalProjectId() {
+    	return $this->getColumnValue('personal_project_id');
+    }
+    
+    /**
+     * Set the personal project's id
+     *
+     * @param integer $value
+     */
+    function setPersonalProjectId($value) {
+    	$this->setColumnValue('personal_project_id', $value);
+    }
     
     /**
     * Return manager instance

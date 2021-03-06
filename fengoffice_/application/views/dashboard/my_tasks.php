@@ -69,7 +69,7 @@
             <span class="assignedTo"><?php echo lang('anyone') ?>:</span>
 <?php } // if ?>
             <?php echo clean($assigned_task->getText()) ?> 
-<?php if($assigned_task->getTaskList() instanceof ProjectTaskList) { ?>
+<?php if($assigned_task->getTaskList() instanceof ProjectTask) { ?>
             (<?php echo lang('in') ?> <a class="internalLink" href="<?php echo $assigned_task->getTaskList()->getViewUrl() ?>"><?php echo clean($assigned_task->getTaskList()->getName()) ?></a>)
 <?php } // if ?>
           </td>

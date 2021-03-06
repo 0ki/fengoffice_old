@@ -70,7 +70,8 @@
   function checkbox_link($link, $checked = false, $hint = null) {
     $title_attribute = is_null($hint) ? '' : 'title="' . clean($hint) . '"';
     $icon_url = $checked ? icon_url('checked.jpg') : icon_url('not-checked.jpg');
-    return "<a class=\"checkboxLink internalLink\" href=\"$link\" $title_attribute><img src=\"$icon_url\" alt=\"\" /></a>";
+    return "<a class=\"internalLink\" href=\"$link\" $title_attribute><img src=\"$icon_url\" alt=\"\" /></a>";
+    //return "<a class=\"checkboxLink\" href=\"$link\" $title_attribute onclick=\"og.openLink(this.href);\"><img src=\"$icon_url\" alt=\"\" /></a>";
   } // checkbox_link
 
 ?>

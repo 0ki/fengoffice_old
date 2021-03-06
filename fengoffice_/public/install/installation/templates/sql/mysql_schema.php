@@ -25,15 +25,6 @@ CREATE TABLE `<?php echo $table_prefix ?>application_logs` (
   KEY `project_id` (`project_id`)
 ) ENGINE=InnoDB <?php echo $default_charset ?>;
 
-CREATE TABLE `<?php echo $table_prefix ?>attached_files` (
-  `rel_object_manager` varchar(50) <?php echo $default_collation ?> NOT NULL default '',
-  `rel_object_id` int(10) unsigned NOT NULL default '0',
-  `file_id` int(10) unsigned NOT NULL default '0',
-  `created_on` datetime NOT NULL default '0000-00-00 00:00:00',
-  `created_by_id` int(10) unsigned default NULL,
-  PRIMARY KEY  (`rel_object_manager`,`rel_object_id`,`file_id`)
-) ENGINE=InnoDB <?php echo $default_charset ?>;
-
 CREATE TABLE `<?php echo $table_prefix ?>comments` (
   `id` int(10) unsigned NOT NULL auto_increment,
   `rel_object_id` int(10) unsigned NOT NULL default '0',
@@ -104,12 +95,25 @@ CREATE TABLE `<?php echo $table_prefix ?>config_options` (
   KEY `category_id` (`category_name`)
 ) ENGINE=InnoDB <?php echo $default_charset ?>;
 
-CREATE TABLE `<?php echo $table_prefix ?>file_permissions` (
-  `file_id` INTEGER UNSIGNED NOT NULL,
-  `user_id` INTEGER UNSIGNED NOT NULL,
-  `permission` INTEGER UNSIGNED NOT NULL,
-  PRIMARY KEY(`file_id`, `user_id`)
-) ENGINE = InnoDB <?php echo $default_charset ?>;
+CREATE TABLE `<?php echo $table_prefix ?>event_reminders` (
+  `id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
+  `notification_date` DATETIME NOT NULL,
+  `notify_by` VARCHAR(50) <?php echo $default_collation ?> NOT NULL,
+  `sent` BOOLEAN NOT NULL,
+  `created_by_id` INTEGER UNSIGNED NOT NULL,
+  `created_on` DATETIME NOT NULL,
+  `event_id` INTEGER UNSIGNED NOT NULL,
+  PRIMARY KEY(`id`)
+)
+ENGINE = InnoDB <?php echo $default_charset ?>;
+
+CREATE TABLE `<?php echo $table_prefix ?>eventtypes` (
+  `id` int(11) NOT NULL auto_increment,
+  `typename` varchar(100) <?php echo $default_collation ?> NOT NULL default '',
+  `typedesc` text <?php echo $default_collation ?>,
+  `typecolor` varchar(6) <?php echo $default_collation ?> NOT NULL default '',
+  PRIMARY KEY  (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=9 <?php echo $default_charset ?>;
 
 CREATE TABLE `<?php echo $table_prefix ?>file_repo` (
   `id` varchar(40) <?php echo $default_collation ?> NOT NULL default '',
@@ -136,6 +140,16 @@ CREATE TABLE `<?php echo $table_prefix ?>file_types` (
   UNIQUE KEY `extension` (`extension`)
 ) ENGINE=InnoDB <?php echo $default_charset ?>;
 
+CREATE TABLE `<?php echo $table_prefix ?>linked_objects` (
+  `rel_object_manager` varchar(50) <?php echo $default_collation ?> NOT NULL default '',
+  `rel_object_id` int(10) unsigned NOT NULL default '0',
+  `object_id` int(10) unsigned NOT NULL default '0',
+  `created_on` datetime NOT NULL default '0000-00-00 00:00:00',
+  `created_by_id` int(10) unsigned default NULL,
+  `object_manager` varchar(50) <?php echo $default_collation ?> NOT NULL default '',
+  PRIMARY KEY  (`rel_object_manager`,`rel_object_id`,`object_id`,`object_manager`)
+) ENGINE=InnoDB <?php echo $default_charset ?>;
+
 CREATE TABLE `<?php echo $table_prefix ?>im_types` (
   `id` tinyint(3) unsigned NOT NULL auto_increment,
   `name` varchar(30) <?php echo $default_collation ?> NOT NULL default '',
@@ -149,10 +163,66 @@ CREATE TABLE `<?php echo $table_prefix ?>message_subscriptions` (
   PRIMARY KEY  (`message_id`,`user_id`)
 ) ENGINE=InnoDB <?php echo $default_charset ?>;
 
+CREATE TABLE  `<?php echo $table_prefix ?>object_handins` (
+  `id` int(10) unsigned NOT NULL auto_increment,
+  `title` text,
+  `text` text,
+  `responsible_user_id` int(10) unsigned default NULL,
+  `rel_object_id` int(10) unsigned NOT NULL default '0',
+  `rel_object_manager` varchar(50) NOT NULL,
+  `order` int(10) unsigned default '0',
+  `completed_by_id` int(10) unsigned default NULL,
+  `completed_on` datetime default NULL,
+  `responsible_company_id` int(10) unsigned default NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE=InnoDB <?php echo $default_charset ?>;
+
+CREATE TABLE `<?php echo $table_prefix ?>object_user_permissions` (
+  `rel_object_id` INTEGER UNSIGNED NOT NULL,
+  `rel_object_manager` VARCHAR(50) NOT NULL,
+  `user_id` INTEGER UNSIGNED NOT NULL,
+  `permission` INTEGER UNSIGNED NOT NULL,
+  PRIMARY KEY(`rel_object_id`, `user_id`, `rel_object_manager`)
+) ENGINE = InnoDB <?php echo $default_charset ?>;
+
+CREATE TABLE  `<?php echo $table_prefix ?>object_properties` (
+  `id` int(10) unsigned NOT NULL auto_increment,
+  `rel_object_id` int(10) unsigned NOT NULL,
+  `rel_object_manager` varchar(50) NOT NULL,
+  `name` text NOT NULL,
+  `value` text NOT NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE=InnoDB <?php echo $default_charset ?>;
+
 CREATE TABLE `<?php echo $table_prefix ?>project_companies` (
   `project_id` int(10) unsigned NOT NULL default '0',
   `company_id` smallint(5) unsigned NOT NULL default '0',
   PRIMARY KEY  (`project_id`,`company_id`)
+) ENGINE=InnoDB <?php echo $default_charset ?>;
+
+CREATE TABLE  `<?php echo $table_prefix ?>project_events` (
+  `id` int(11) NOT NULL auto_increment,
+  `created_by_id` int(11) NOT NULL default '0',
+  `updated_by_id` int(11) default NULL,
+  `updated_on` datetime default NULL,
+  `created_on` datetime default NULL,
+  `start` datetime default NULL,
+  `duration` datetime default NULL,
+  `eventtype` int(4) default NULL,
+  `subject` varchar(255) <?php echo $default_collation ?> default NULL,
+  `description` text <?php echo $default_collation ?>,
+  `private` char(1) <?php echo $default_collation ?> NOT NULL default '0',
+  `repeat_end` date default NULL,
+  `repeat_num` mediumint(9) NOT NULL default '0',
+  `repeat_d` smallint(6) NOT NULL default '0',
+  `repeat_m` smallint(6) NOT NULL default '0',
+  `repeat_y` smallint(6) NOT NULL default '0',
+  `repeat_h` smallint(6) NOT NULL default '0',
+  `type_id` int(11) NOT NULL default '0',
+  `special_id` int(11) NOT NULL default '0',
+  `deleted` smallint(6) NOT NULL default '0',
+  `project_id` int(10) unsigned NOT NULL default '0',
+  PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB <?php echo $default_charset ?>;
 
 CREATE TABLE `<?php echo $table_prefix ?>project_file_revisions` (
@@ -192,9 +262,12 @@ CREATE TABLE `<?php echo $table_prefix ?>project_files` (
   `created_by_id` int(10) unsigned default '0',
   `updated_on` datetime NOT NULL default '0000-00-00 00:00:00',
   `updated_by_id` int(10) unsigned default '0',
+  `checked_out_on` datetime NOT NULL default '0000-00-00 00:00:00',
+  `checked_out_by_id` int(10) unsigned DEFAULT 0,
   PRIMARY KEY  (`id`),
   KEY `project_id` (`project_id`)
 ) ENGINE=InnoDB <?php echo $default_charset ?>;
+
 
 CREATE TABLE `<?php echo $table_prefix ?>project_folders` (
   `id` smallint(5) unsigned NOT NULL auto_increment,
@@ -288,7 +361,9 @@ CREATE TABLE `<?php echo $table_prefix ?>project_task_lists` (
 
 CREATE TABLE `<?php echo $table_prefix ?>project_tasks` (
   `id` int(10) unsigned NOT NULL auto_increment,
-  `task_list_id` int(10) unsigned default NULL,
+  `parent_id` int(10) unsigned default NULL,
+  `project_id` INTEGER UNSIGNED NOT NULL,
+  `title` TEXT <?php echo $default_collation ?>,
   `text` text <?php echo $default_collation ?>,
   `assigned_to_company_id` smallint(5) unsigned default NULL,
   `assigned_to_user_id` int(10) unsigned default NULL,
@@ -297,10 +372,16 @@ CREATE TABLE `<?php echo $table_prefix ?>project_tasks` (
   `created_on` datetime NOT NULL default '0000-00-00 00:00:00',
   `created_by_id` int(10) unsigned default NULL,
   `updated_on` datetime NOT NULL default '0000-00-00 00:00:00',
-  `updated_by_id` int(10) unsigned default NULL,
-  `order` int(10) unsigned NOT NULL default '0',
+  `updated_by_id` int(10) unsigned default NULL,   
+  `started_on` DATETIME DEFAULT NULL,
+  `started_by_id` INTEGER UNSIGNED NOT NULL,
+  `priority` INTEGER UNSIGNED,
+  `state` INTEGER UNSIGNED,
+  `order` int(10) unsigned  default '0',
+  `milestone_id` INTEGER UNSIGNED,
+  `is_private` BOOLEAN NOT NULL default '0',
   PRIMARY KEY  (`id`),
-  KEY `task_list_id` (`task_list_id`),
+  KEY `parent_id` (`parent_id`),
   KEY `completed_on` (`completed_on`),
   KEY `created_on` (`created_on`),
   KEY `order` (`order`)
@@ -316,6 +397,7 @@ CREATE TABLE `<?php echo $table_prefix ?>project_users` (
   `can_manage_milestones` tinyint(1) unsigned default '0',
   `can_upload_files` tinyint(1) unsigned default '0',
   `can_manage_files` tinyint(1) unsigned default '0',
+  `can_manage_events` tinyint(1) unsigned default '0',
   `can_assign_to_owners` tinyint(1) unsigned NOT NULL default '0',
   `can_assign_to_other` tinyint(1) unsigned NOT NULL default '0',
   PRIMARY KEY  (`project_id`,`user_id`)
@@ -375,6 +457,7 @@ CREATE TABLE `<?php echo $table_prefix ?>user_im_values` (
 CREATE TABLE `<?php echo $table_prefix ?>users` (
   `id` int(10) unsigned NOT NULL auto_increment,
   `company_id` smallint(5) unsigned NOT NULL default '0',
+  `personal_project_id` int(10) unsigned NOT NULL default '0',
   `username` varchar(50) <?php echo $default_collation ?> NOT NULL default '',
   `email` varchar(100) <?php echo $default_collation ?> default NULL,
   `token` varchar(40) <?php echo $default_collation ?> NOT NULL default '',
@@ -403,3 +486,131 @@ CREATE TABLE `<?php echo $table_prefix ?>users` (
   KEY `company_id` (`company_id`),
   KEY `last_login` (`last_login`)
 ) ENGINE=InnoDB <?php echo $default_charset ?>;
+
+CREATE TABLE `<?php echo $table_prefix ?>contacts`(
+	`id` int(10) unsigned NOT NULL auto_increment,
+	`firstname` varchar(40) <?php echo $default_collation ?> default NULL,
+	`lastname` varchar(40) <?php echo $default_collation ?> default NULL,
+	`middlename` varchar(40) <?php echo $default_collation ?> default NULL,
+	`department` varchar(40) <?php echo $default_collation ?> default NULL,
+	`job_title` varchar(40) <?php echo $default_collation ?> default NULL,
+	`company_id` int(10) <?php echo $default_collation ?> default NULL,
+	`email` varchar(100) <?php echo $default_collation ?> default NULL,
+	`email2` varchar(100) <?php echo $default_collation ?> default NULL,
+	`email3` varchar(100) <?php echo $default_collation ?> default NULL,
+	`w_web_page` text <?php echo $default_collation ?> default NULL,
+	`w_address` varchar(200) <?php echo $default_collation ?> default NULL,
+	`w_city` varchar(25) <?php echo $default_collation ?> default NULL,
+	`w_state` varchar(25) <?php echo $default_collation ?> default NULL,
+	`w_zipcode` varchar(25) <?php echo $default_collation ?> default NULL,
+	`w_country` varchar(25) <?php echo $default_collation ?> default NULL,
+    `w_phone_number` varchar(20) <?php echo $default_collation ?> default NULL,
+    `w_phone_number2` varchar(20) <?php echo $default_collation ?> default NULL,
+    `w_fax_number` varchar(20) <?php echo $default_collation ?> default NULL,
+    `w_assistant_number` varchar(20) <?php echo $default_collation ?> default NULL,
+    `w_callback_number` varchar(20) <?php echo $default_collation ?> default NULL,
+	`h_web_page` text <?php echo $default_collation ?> default NULL,
+	`h_address` varchar(200) <?php echo $default_collation ?> default NULL,
+	`h_city` varchar(25) <?php echo $default_collation ?> default NULL,
+	`h_state` varchar(25) <?php echo $default_collation ?> default NULL,
+	`h_zipcode` varchar(25) <?php echo $default_collation ?> default NULL,
+	`h_country` varchar(25) <?php echo $default_collation ?> default NULL,
+    `h_phone_number` varchar(20) <?php echo $default_collation ?> default NULL,
+    `h_phone_number2` varchar(20) <?php echo $default_collation ?> default NULL,
+    `h_fax_number` varchar(20) <?php echo $default_collation ?> default NULL,
+    `h_mobile_number` varchar(20) <?php echo $default_collation ?> default NULL,
+    `h_pager_number` varchar(20) <?php echo $default_collation ?> default NULL,
+	`o_web_page` text <?php echo $default_collation ?> default NULL,
+	`o_address` varchar(200) <?php echo $default_collation ?> default NULL,
+	`o_city` varchar(25) <?php echo $default_collation ?> default NULL,
+	`o_state` varchar(25) <?php echo $default_collation ?> default NULL,
+	`o_zipcode` varchar(25) <?php echo $default_collation ?> default NULL,
+	`o_country` varchar(25) <?php echo $default_collation ?> default NULL,
+    `o_phone_number` varchar(20) <?php echo $default_collation ?> default NULL,
+    `o_phone_number2` varchar(20) <?php echo $default_collation ?> default NULL,
+    `o_fax_number` varchar(20) <?php echo $default_collation ?> default NULL,
+    `o_birthday` datetime default NULL,
+    `picture_file` varchar(44) <?php echo $default_collation ?> default NULL,
+	`timezone` float(2,1) NOT NULL default '0.0',
+	`notes` text <?php echo $default_collation ?> default NULL,
+	`user_id` int(10),
+	`created_by_id` int(10),
+	`is_private` tinyint(1) unsigned NOT NULL default '0',
+	
+    `created_on`  datetime NOT NULL default '0000-00-00 00:00:00',
+    `updated_on`  datetime NOT NULL default '0000-00-00 00:00:00',
+
+  PRIMARY KEY  (`id`),
+  KEY user_id (`user_id`),
+  KEY created_by_id (`created_by_id`),
+  KEY company_id (`company_id`)
+) ENGINE=InnoDB <?php echo $default_charset ?>;
+
+CREATE TABLE  `<?php echo $table_prefix ?>contact_im_values` (
+  `contact_id` int(10) unsigned NOT NULL default '0',
+  `im_type_id` tinyint(3) unsigned NOT NULL default '0',
+  `value` varchar(50) <?php echo $default_collation ?> NOT NULL default '',
+  `is_default` tinyint(1) unsigned NOT NULL default '0',
+  PRIMARY KEY  (`contact_id`,`im_type_id`),
+  KEY `is_default` (`is_default`)
+) ENGINE=InnoDB <?php echo $default_charset ?>;
+
+CREATE TABLE  `<?php echo $table_prefix ?>project_contacts` (
+  `contact_id` int(10) unsigned NOT NULL default '0',
+  `project_id` int(10) unsigned NOT NULL default '0',
+  `role` varchar(255) <?php echo $default_collation ?> default '',
+  PRIMARY KEY  (`contact_id`,`project_id`)
+) ENGINE=InnoDB <?php echo $default_charset ?>;
+
+CREATE TABLE  `<?php echo $table_prefix ?>project_webpages` (
+  `id` int(10) unsigned NOT NULL auto_increment,
+  `project_id` int(10) unsigned NOT NULL default '0',
+  `url` varchar(500) <?php echo $default_collation ?> NOT NULL default '',
+  `title` varchar(100) <?php echo $default_collation ?> default '',
+  `description` varchar(255) <?php echo $default_collation ?> default '',
+  `created_on` datetime default NULL,
+  `created_by_id` int(10) unsigned NOT NULL default '0',	
+  `is_private` tinyint(1) unsigned NOT NULL default '0',
+  PRIMARY KEY  (`id`),
+  KEY `project_id` (`project_id`)
+) ENGINE=InnoDB <?php echo $default_charset ?>;
+
+CREATE TABLE  `<?php echo $table_prefix ?>mail_accounts` (
+  `id` int(10) unsigned NOT NULL auto_increment,
+  `user_id` int(10) unsigned NOT NULL default '0',
+  `name` varchar(40) <?php echo $default_collation ?> NOT NULL default '',
+  `email` varchar(100) <?php echo $default_collation ?> default '',
+  `password` varchar(40) <?php echo $default_collation ?> default '',
+  `server` varchar(100) <?php echo $default_collation ?> NOT NULL default '',
+  `is_imap` int(1) NOT NULL default '0',
+  `incoming_ssl` int(1) NOT NULL default '0',
+  `incoming_ssl_port` int default '995',
+  PRIMARY KEY  (`id`)
+) ENGINE=InnoDB <?php echo $default_charset ?>;
+
+CREATE TABLE  `<?php echo $table_prefix ?>mail_contents` (
+  `id` int(10) unsigned NOT NULL auto_increment,
+  `account_id` int(10) unsigned NOT NULL default '0',
+  `project_id` int(10) unsigned default '0',
+  `uid` varchar(100) <?php echo $default_collation ?> NOT NULL default '',
+  `from` varchar(100) <?php echo $default_collation ?> NOT NULL default '',
+  `to` text <?php echo $default_collation ?> NOT NULL,
+  `date` timestamp,
+  `sent_date` timestamp,
+  `subject` text <?php echo $default_collation ?>,
+  `content` longtext <?php echo $default_collation ?> NOT NULL,
+  `body_plain` longtext <?php echo $default_collation ?>,
+  `body_html` longtext <?php echo $default_collation ?>,
+  `has_attachments` int(1) NOT NULL default '0',
+  `size` int(10) NOT NULL default '0',
+  `is_deleted` int(1) NOT NULL default '0',
+  `is_shared` INT(1) NOT NULL default '0',
+  PRIMARY KEY  (`id`),
+  KEY `project_id` (`project_id`),
+  KEY `account_id` (`account_id`)
+) ENGINE=InnoDB <?php echo $default_charset ?>;
+
+
+
+
+

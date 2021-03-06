@@ -25,10 +25,11 @@
   </fieldset>
 <?php } // if ?>
 
-<?php if($comment_form_comment->canAttachFile(logged_user(), active_project())) { ?>
-  <?php echo render_attach_files() ?>
+<?php 
+	if($comment_form_comment->canLinkObject(logged_user(), $comment_form_object->getProject())) { ?>
+  <?php echo render_link_to_object($comment_form_comment ); ?>
 <?php } // if ?>
     
-  <?php echo submit_button(lang('add comment')) ?>
+<?php echo submit_button(lang('add comment')) ?>
 </form>
 </fieldset>

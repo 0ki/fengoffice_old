@@ -16,7 +16,7 @@
         <p><a class="internalLink" href="<?php echo $message->getViewUrl() ?>"><?php echo lang('read more') ?></a></p>
       </div>
     
-    <?php echo render_object_files($message, $message->canEdit(logged_user())) ?>
+    <?php echo render_object_links($message, $message->canEdit(logged_user())) ?>
       <div class="messageCommentCount">
 <?php if($message->countComments()) { ?>
         <span><?php echo lang('comments') ?>:</span> <a class="internalLink" href="<?php echo $message->getViewUrl() ?>#objectComments"><?php echo $message->countComments() ?></a>

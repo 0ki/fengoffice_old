@@ -9,7 +9,8 @@
   function project_crumbs() {
     
     add_bread_crumb(lang('dashboard'), get_url('dashboard'));
-    add_bread_crumb(active_project()->getName(), active_project()->getOverviewUrl());
+    if(active_project())
+    	add_bread_crumb(active_project()->getName(), active_project()->getOverviewUrl());
     
     $args = func_get_args();
     if(!count($args)) return;
@@ -20,12 +21,14 @@
   // Tab IDs
   define('PROJECT_TAB_OVERVIEW', 'overview');
   define('PROJECT_TAB_MESSAGES', 'messages');
+  define('PROJECT_TAB_CONTACTS', 'contacts');
   define('PROJECT_TAB_TASKS', 'tasks');
   define('PROJECT_TAB_MILESTONES', 'milestones');
   define('PROJECT_TAB_FILES', 'files');
   define('PROJECT_TAB_TAGS', 'tags');
   define('PROJECT_TAB_FORMS', 'forms');
   define('PROJECT_TAB_PEOPLE', 'people');
+  define('PROJECT_TAB_WEBPAGES', 'webpages');
 
   /**
   * Prepare dashboard tabbed navigation

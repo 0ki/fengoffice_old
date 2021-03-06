@@ -4,12 +4,30 @@
 	<ul class="menu_places">
 	<li><img class="menu_place_ico" src="<?php echo get_image_url('menu/dashboard.png')?>" /><a class="internalLink" href="<?php echo get_url('dashboard', 'index') ?>"><?php echo lang('dashboard'); ?></a></li>
 	<li><img class="menu_place_ico" src="<?php echo get_image_url('menu/account.png')?>" /><a class="internalLink" href="<?php echo get_url('account', 'index') ?>"><?php echo lang('account') ?></a></li>
+	<li><img class="menu_place_ico" src="<?php echo get_image_url('menu/kaddressbook.png')?>" /><a class="internalLink" href="<?php echo get_url('contact', 'index') ?>"><?php echo lang('contacts') ?></a></li>
+	<li><img class="menu_place_ico" src="<?php echo get_image_url('menu/mail_generic.png')?>" /><a class="internalLink" href="<?php echo get_url('mail', 'index') ?>"><?php echo lang('emails') ?></a></li>
+	<li><img class="menu_place_ico" src="<?php echo get_image_url('menu/clients.png')?>" /><a class="internalLink" href="<?php echo get_url('administration', 'clients') ?>"><?php echo lang('clients') ?></a></li>
 	<li><img class="menu_place_ico" src="<?php echo get_image_url('menu/help.png')?>" /><a href="javascript:og.showHelp()"><?php echo lang('help') ?></a></li>
 	<li><hr /> </li>
 	<li><img class="menu_place_ico" src="<?php echo get_image_url('menu/logout.png')?>" /><a href="<?php echo get_url('access', 'logout') ?>"><?php echo lang('logout') ?></a></li>
 	</ul>
 </div>
 <!-- </overview> -->
+
+<!-- <mail> -->
+<div id="menuMail" class="menuCont">
+	<ul class="menu_places">
+		<!-- li><img class="menu_place_ico" src="<?php echo get_image_url('menu/administration.png')?>" /><a class="internalLink" href="<?php echo get_url('administration', 'index') ?>"><?php echo lang('index') ?></a></li -->
+		<li><img class="menu_place_ico" src="<?php echo get_image_url('menu/company.png')?>" /><a class="internalLink" href="<?php echo get_url('administration', 'company') ?>"><?php echo lang('company') ?></a></li>
+		<li><img class="menu_place_ico" src="<?php echo get_image_url('menu/members.png')?>" /><a class="internalLink" href="<?php echo get_url('administration', 'members') ?>"><?php echo lang('members') ?></a></li>
+		<li><img class="menu_place_ico" src="<?php echo get_image_url('menu/clients.png')?>" /><a class="internalLink" href="<?php echo get_url('administration', 'clients') ?>"><?php echo lang('clients') ?></a></li>
+		<li><img class="menu_place_ico" src="<?php echo get_image_url('menu/projects.png')?>" /><a class="internalLink" href="<?php echo get_url('administration', 'projects') ?>"><?php echo lang('projects') ?></a></li>
+		<li><img class="menu_place_ico" src="<?php echo get_image_url('menu/configuration.png')?>" /><a class="internalLink" href="<?php echo get_url('administration', 'configuration') ?>"><?php echo lang('configuration') ?></a></li>
+		<li><img class="menu_place_ico" src="<?php echo get_image_url('menu/tools.png')?>" /><a class="internalLink" href="<?php echo get_url('administration', 'tools') ?>"><?php echo lang('administration tools') ?></a></li>
+		<!-- li><img class="menu_place_ico" src="<?php echo get_image_url('menu/upgrade.png')?>" /><a class="internalLink" href="<?php echo get_url('administration', 'upgrade') ?>"><?php echo lang('upgrade') ?></a></li -->
+	</ul>
+</div>
+<!-- </mail> -->
 
 <!-- <files> -->
 <div id="menuFiles" class="menuCont">
@@ -83,6 +101,36 @@
 </div>
 <!-- </files> -->
 
+<!-- <calendar> -->
+<div id="menuCalendar" class="menuCont">
+	<ul class="menu_places">
+		<!-- li><img class="menu_place_ico" src="<?php echo get_image_url('menu/administration.png')?>" /><a class="internalLink" href="<?php echo get_url('administration', 'index') ?>"><?php echo lang('index') ?></a></li -->
+		<li><img class="menu_place_ico" src="<?php echo get_image_url('menu/company.png')?>" /><a class="internalLink" href="<?php echo get_url('administration', 'company') ?>"><?php echo lang('company') ?></a></li>
+		<li><img class="menu_place_ico" src="<?php echo get_image_url('menu/members.png')?>" /><a class="internalLink" href="<?php echo get_url('administration', 'members') ?>"><?php echo lang('members') ?></a></li>
+		<li><img class="menu_place_ico" src="<?php echo get_image_url('menu/clients.png')?>" /><a class="internalLink" href="<?php echo get_url('administration', 'clients') ?>"><?php echo lang('clients') ?></a></li>
+		<li><img class="menu_place_ico" src="<?php echo get_image_url('menu/projects.png')?>" /><a class="internalLink" href="<?php echo get_url('administration', 'projects') ?>"><?php echo lang('projects') ?></a></li>
+		<li><img class="menu_place_ico" src="<?php echo get_image_url('menu/configuration.png')?>" /><a class="internalLink" href="<?php echo get_url('administration', 'configuration') ?>"><?php echo lang('configuration') ?></a></li>
+		<li><img class="menu_place_ico" src="<?php echo get_image_url('menu/tools.png')?>" /><a class="internalLink" href="<?php echo get_url('administration', 'tools') ?>"><?php echo lang('administration tools') ?></a></li>
+		<!-- li><img class="menu_place_ico" src="<?php echo get_image_url('menu/upgrade.png')?>" /><a class="internalLink" href="<?php echo get_url('administration', 'upgrade') ?>"><?php echo lang('upgrade') ?></a></li -->
+	</ul>
+</div>
+<!-- </calendar> -->
+
+<!-- <tasks> -->
+<div id="menuTasks" class="menuCont">
+	<ul class="menu_places">
+		<!-- li><img class="menu_place_ico" src="<?php echo get_image_url('menu/administration.png')?>" /><a class="internalLink" href="<?php echo get_url('administration', 'index') ?>"><?php echo lang('index') ?></a></li -->
+		<li><img class="menu_place_ico" src="<?php echo get_image_url('menu/company.png')?>" /><a class="internalLink" href="<?php echo get_url('administration', 'company') ?>"><?php echo lang('company') ?></a></li>
+		<li><img class="menu_place_ico" src="<?php echo get_image_url('menu/members.png')?>" /><a class="internalLink" href="<?php echo get_url('administration', 'members') ?>"><?php echo lang('members') ?></a></li>
+		<li><img class="menu_place_ico" src="<?php echo get_image_url('menu/clients.png')?>" /><a class="internalLink" href="<?php echo get_url('administration', 'clients') ?>"><?php echo lang('clients') ?></a></li>
+		<li><img class="menu_place_ico" src="<?php echo get_image_url('menu/projects.png')?>" /><a class="internalLink" href="<?php echo get_url('administration', 'projects') ?>"><?php echo lang('projects') ?></a></li>
+		<li><img class="menu_place_ico" src="<?php echo get_image_url('menu/configuration.png')?>" /><a class="internalLink" href="<?php echo get_url('administration', 'configuration') ?>"><?php echo lang('configuration') ?></a></li>
+		<li><img class="menu_place_ico" src="<?php echo get_image_url('menu/tools.png')?>" /><a class="internalLink" href="<?php echo get_url('administration', 'tools') ?>"><?php echo lang('administration tools') ?></a></li>
+		<!-- li><img class="menu_place_ico" src="<?php echo get_image_url('menu/upgrade.png')?>" /><a class="internalLink" href="<?php echo get_url('administration', 'upgrade') ?>"><?php echo lang('upgrade') ?></a></li -->
+	</ul>
+</div>
+<!-- </tasks> -->
+
 <!-- <project> -->
 <div id="menuProject" class="menuCont">
 	<ul class="menu_places">
@@ -99,6 +147,7 @@
 			?>
 		</select>
 	</li -->
+	<li><img class="menu_place_ico" src="<?php echo get_image_url('menu/mail_generic.png')?>" /><a class="internalLink" href="<?php echo get_url('mail', 'index_project') ?>"><?php echo lang('emails') ?></a></li>
 	<li><img class="menu_place_ico" src="<?php echo get_image_url('menu/overview.png')?>" /><a class="internalLink" href="<?php echo get_url('project', 'index') ?>"><?php echo lang('project').' '.lang('overview') ?></a></li>
 	<li><img class="menu_place_ico" src="<?php echo get_image_url('menu/messages.png')?>" /><a class="internalLink" href="<?php echo get_url('message', 'index') ?>"><?php echo lang('messages') ?></a></li>
 	<li><img class="menu_place_ico" src="<?php echo get_image_url('menu/tasks.png')?>" /><a class="internalLink" href="<?php echo get_url('task', 'index') ?>"><?php echo lang('tasks') ?></a></li>
@@ -106,7 +155,9 @@
 	<li><img class="menu_place_ico" src="<?php echo get_image_url('menu/documents.png')?>" /><a class="internalLink" href="<?php echo get_url('files', 'index', array('project' => active_project()->getId())) ?>"><?php echo lang('files') ?></a></li>
 	<li><img class="menu_place_ico" src="<?php echo get_image_url('menu/tags.png')?>" /><a class="internalLink" href="<?php echo get_url('project', 'tags') ?>"><?php echo lang('tags') ?></a></li>
 	<li><img class="menu_place_ico" src="<?php echo get_image_url('menu/forms.png')?>" /><a class="internalLink" href="<?php echo get_url('form', 'index') ?>"><?php echo lang('forms') ?></a></li>
+	<li><img class="menu_place_ico" src="<?php echo get_image_url('menu/kaddressbook.png')?>" /><a class="internalLink" href="<?php echo get_url('contact', 'index_project') ?>"><?php echo lang('contacts') ?></a></li>
 	<li><img class="menu_place_ico" src="<?php echo get_image_url('menu/people.png')?>" /><a class="internalLink" href="<?php echo get_url('project', 'people') ?>"><?php echo lang('people') ?></a></li>
+	<li><img class="menu_place_ico" src="<?php echo get_image_url('menu/webpages.png')?>" /><a class="internalLink" href="<?php echo get_url('webpage', 'index') ?>"><?php echo lang('webpages') ?></a></li>
 	</ul>
 	<br>
 	<ul class="menu_actions">
@@ -124,7 +175,6 @@ if (CompanyWebsite::instance()->getLoggedUser()->isAdministrator()) {
 		<!-- li><img class="menu_place_ico" src="<?php echo get_image_url('menu/administration.png')?>" /><a class="internalLink" href="<?php echo get_url('administration', 'index') ?>"><?php echo lang('index') ?></a></li -->
 		<li><img class="menu_place_ico" src="<?php echo get_image_url('menu/company.png')?>" /><a class="internalLink" href="<?php echo get_url('administration', 'company') ?>"><?php echo lang('company') ?></a></li>
 		<li><img class="menu_place_ico" src="<?php echo get_image_url('menu/members.png')?>" /><a class="internalLink" href="<?php echo get_url('administration', 'members') ?>"><?php echo lang('members') ?></a></li>
-		<li><img class="menu_place_ico" src="<?php echo get_image_url('menu/clients.png')?>" /><a class="internalLink" href="<?php echo get_url('administration', 'clients') ?>"><?php echo lang('clients') ?></a></li>
 		<li><img class="menu_place_ico" src="<?php echo get_image_url('menu/projects.png')?>" /><a class="internalLink" href="<?php echo get_url('administration', 'projects') ?>"><?php echo lang('projects') ?></a></li>
 		<li><img class="menu_place_ico" src="<?php echo get_image_url('menu/configuration.png')?>" /><a class="internalLink" href="<?php echo get_url('administration', 'configuration') ?>"><?php echo lang('configuration') ?></a></li>
 		<li><img class="menu_place_ico" src="<?php echo get_image_url('menu/tools.png')?>" /><a class="internalLink" href="<?php echo get_url('administration', 'tools') ?>"><?php echo lang('administration tools') ?></a></li>

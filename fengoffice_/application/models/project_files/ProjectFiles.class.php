@@ -160,7 +160,7 @@ class ProjectFiles extends BaseProjectFiles {
 	} // getOrphanedFilesByProject
 	
 	/**
-	* Reaturn all project files
+	* Return all project files
 	*
 	* @param Project $project
 	* @return array

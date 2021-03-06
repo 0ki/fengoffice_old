@@ -28,7 +28,8 @@
   * @return String All users I am sharing something with.
   */
   function render_sharing_users($name, $attributes = null) {
-  	$perms= FilePermissions::getAllPermissionsByUser(logged_user());  	
+  	//TODO:  This functions must be rebuilt
+  	$perms= ObjectUserPermissions::getAllPermissionsByUser(logged_user());  	
     $options = array(option_tag(lang('none'), 0));
   	$my_id = logged_user()->getId();
   	foreach ($perms as $perm)
@@ -36,7 +37,7 @@
   		$file_id=$perm->getFileId();
   		if(trim($file_id) !='')
   		{
-	  		$users = FilePermissions::getAllPermissionsByFileId($file_id);
+	  		$users = ObjectUserPermissions::getAllPermissionsByObjectIdAndManager($file_id, 'ProjectFiles');
 	  		foreach ($users as $user_perm)
 	  		{
 	  			$user_id=$user_perm->getUserId();
@@ -93,6 +94,25 @@
     } // if
     return select_box($name, $options, $attributes);
   } // select_company
+  
+  /**
+  * Render select project box
+  *
+  * @param integer $selected ID of selected project
+  * @param array $attributes Additional attributes
+  * @return string
+  */
+  function select_project($name, $projects, $selected = null, $attributes = null) {
+    $options = array(option_tag(lang('none'), 0));
+    if(is_array($projects)) {
+      foreach($projects as $project) {
+        $option_attributes = $project->getId() == $selected ? array('selected' => 'selected') : null;
+        $project_name = $project->getName();
+        $options[] = option_tag($project_name, $project->getId(), $option_attributes);
+      } // foreach
+    } // if
+    return select_box($name, $options, $attributes);
+  } // select_project
   
   /**
   * Render assign to SELECT
@@ -169,7 +189,7 @@
   */
   function select_milestone($name, $project = null, $selected = null, $attributes = null) {
     if(is_null($project)) $project = active_project();
-    if(!($project instanceof Project)) throw new InvalidInstanceError('$project', $project, 'Project');
+    if(/*$project &&*/ !($project instanceof Project)) throw new InvalidInstanceError('$project', $project, 'Project');
     
     if(is_array($attributes)) {
       if(!isset($attributes['class'])) $attributes['class'] = 'select_milestone';
@@ -178,7 +198,13 @@
     } // if
     
     $options = array(option_tag(lang('none'), 0));
-    $milestones = $project->getOpenMilestones();
+    //if($project)
+    	$milestones = $project->getOpenMilestones();
+    /*else{
+    	$projects=logged_user()->getActiveProjects();    	
+    	foreach ($projects as $p)
+    		$milestones[]=$p->getOpenMilestones();
+    }  */  	
     if(is_array($milestones)) {
       foreach($milestones as $milestone) {
         $option_attributes = $milestone->getId() == $selected ? array('selected' => 'selected') : null;
@@ -210,11 +236,11 @@
     } // if
     
     $options = array(option_tag(lang('none'), 0));
-    $task_lists = $open_only ? $project->getOpenTaskLists() : $project->getTaskLists();
+    $task_lists = $open_only ? $project->getOpenTasks() : $project->getTasks();
     if(is_array($task_lists)) {
       foreach($task_lists as $task_list) {
         $option_attributes = $task_list->getId() == $selected ? array('selected' => 'selected') : null;
-        $options[] = option_tag($task_list->getName(), $task_list->getId(), $option_attributes);
+        $options[] = option_tag($task_list->getTitle(), $task_list->getId(), $option_attributes);
       } // foreach
     } // if
     
@@ -287,6 +313,81 @@
     
     return select_box($name, $options, $attributes);
   } // select_project_folder
+  
+  /**
+  * Select a project data object
+  *
+  * @param string $name Control name
+  * @param Project $project
+  * @param integer $selected ID of selected object
+  * @param array $exclude_files Array of IDs of objects that need to be excluded (already linked to object etc)
+  * @param array $attributes
+  * @return string
+  */   
+  function select_project_object($name, $project = null, $selected = null, $exclude_files = null, $attributes = null) {
+  	// look for project
+  	if(is_null($project)) {
+      $project = active_project();
+    } // if
+    if(!($project instanceof Project)) {
+      throw new InvalidInstanceError('$project', $project, 'Project');
+    } // if
+    // look for selection
+    $sel_id = 0;
+    $sel_type = '';
+    if(is_array($selected))
+    {
+	    $sel_id = $selected['id'];
+	    $sel_type = $selected['type'];    	
+    }
+  	//default non-value
+  	$all_options = array(option_tag(lang('none'), 0)); // array of options
+  	//milestones
+    $milestones = $project->getOpenMilestones();
+    if(is_array($milestones)) {
+      $all_options[] = option_tag('', 0); // separator
+      foreach($milestones as $milestone) {
+        $option_attributes = $sel_type=='ProjectMilestone' && $milestone->getId() == $selected ? array('selected' => 'selected') : null;
+        $all_options[] = option_tag('Milestone:: ' . $milestone->getName(), $milestone->getId() . '::' . 
+        					get_class($milestone->manager()), $option_attributes);
+      } // foreach
+    } // if
+  	//tasklists
+  	$tasks = $project->getOpenTasks();
+    if(is_array($tasks)) {
+      $all_options[] = option_tag('', 0); // separator
+      foreach($tasks as $task) {
+        $option_attributes = $sel_type=='ProjectTask' && $task->getId() == $selected ? array('selected' => 'selected') : null;
+        $all_options[] = option_tag('Task:: ' . $task->getTitle(), $task->getId() . '::' . 
+        					get_class($task->manager()), $option_attributes);
+      } // foreach
+    } // if
+  	//messages
+  	$messages = $project->getMessages();
+    if(is_array($messages)) {
+      $all_options[] = option_tag('', 0); // separator
+      foreach($messages as $message) {
+        $option_attributes = $sel_type=='ProjectMessage' && $message->getId() == $sel_id ? array('selected' => 'selected') : null;
+        $all_options[] = option_tag('Message:: ' . $message->getTitle(), $message->getId() . '::' . 
+        					get_class($message->manager()), $option_attributes);
+      } // foreach
+    } // if
+  	
+  	//all files are orphans
+  	$orphaned_files = $project->getOrphanedFiles();
+    if(is_array($orphaned_files)) {
+      $all_options[] = option_tag('', 0); // separator
+      foreach($orphaned_files as $file) {
+        if(is_array($exclude_files) && in_array($file->getId(), $exclude_files)) continue;
+        
+        $option_attrbutes = $sel_type=='ProjectFile' && $file->getId() == $selected ? array('selected' => true) : null;
+        $all_options[] = option_tag('File:: ' . $file->getFilename(), $file->getId() . '::' . 
+        					get_class($file->manager()), $option_attrbutes);
+      } // foreach
+    } // if
+    
+  	return select_box($name, $all_options, $attributes);
+  }
   
   /**
   * Select a single project file
@@ -399,6 +500,7 @@
     return text_field($name, $value, $attributes) . '<br /><span class="desc">' . lang('tags widget description') . '</span>';
   } // project_object_tag_widget
   
+
   /**
   * Render comma separated tags of specific object that link on project tag page
   *
@@ -445,45 +547,63 @@
   } // render_post_comment_form
   
   /**
-  * This function will render the code for file attachment section of the form. Note that 
-  * this need to be part of the existing form
+  * This function will render the code for objects linking section of the form. Note that 
+  * this need to be part of the existing form. It allows uploading of a new file to directly link to the object.
   *
-  * @param string $prefix File input name prefix
+  * @param string $prefix name prefix
   * @param integer $max_controls Max number of controls
   * @return string
   */
-  function render_attach_files($prefix = 'attach_files', $max_controls = 5) {
+  function render_linked_objects($prefix = 'linked_objects', $max_controls = 5) {
     static $ids = array();
     static $js_included = false;
     
-    $attach_files_id = 0;
+    $linked_objects_id = 0;
     do {
-      $attach_files_id++;
-    } while(in_array($attach_files_id, $ids));
+      $linked_objects_id++;
+    } while(in_array($linked_objects_id, $ids));
     
     $old_js_included = $js_included;
     $js_included = true;
     
-    tpl_assign('attach_files_js_included', $old_js_included);
-    tpl_assign('attach_files_id', $attach_files_id);
-    tpl_assign('attach_files_prefix', $prefix);
-    tpl_assign('attach_files_max_controls', (integer) $max_controls);
-    return tpl_fetch(get_template_path('attach_files', 'files'));
-  } // render_attach_files
+    tpl_assign('linked_objects_js_included', $old_js_included);
+    tpl_assign('linked_objects_id', $linked_objects_id);
+    tpl_assign('linked_objects_prefix', $prefix);
+    tpl_assign('linked_objects_max_controls', (integer) $max_controls);
+    return tpl_fetch(get_template_path('linked_objects', 'object'));
+  } // render_linked_objects
   
   /**
   * List all fields attached to specific object
   *
   * @param ProjectDataObject $object
-  * @param boolean $can_remove Logged user can remove attached files
+  * @param boolean $can_remove Logged user can remove linked objects
   * @return string
   */
-  function render_object_files(ProjectDataObject $object, $can_remove = false) {
-    tpl_assign('attached_files_object', $object);
-    tpl_assign('attached_files', $object->getAttachedFiles());
-    return tpl_fetch(get_template_path('list_attached_files', 'files'));
-  } // render_object_files
+  function render_object_links(ProjectDataObject $object, $can_remove = false) {
+    tpl_assign('linked_objects_object', $object);
+    tpl_assign('linked_objects', $object->getLinkedObjects());
+    return tpl_fetch(get_template_path('list_linked_objects', 'object'));
+  } // render_object_links
   
+  /**
+   * Creates a button that shows an object picker to link the object given by $object with the one selected in 
+   * the it.
+   *
+   * @param ProjectDataObject $object
+   */
+  function render_link_to_object($object, $text=null){
+  		$id = $object->getId();
+  		$manager = get_class($object->manager());
+  		if($text==null)
+  		$text=lang('link object');
+  		echo '<a href="#">';
+		echo label_tag($text,null,false,
+			array('onclick' => "og.ObjectPicker.show(function (data){ if(data) og.openLink('" . get_url('object','link_object') . 
+			"&object_id=$id&manager=$manager&rel_object_id='+data[0].data.object_id + '&rel_manager=' + data[0].data.manager);})", 
+			'id'=>'object_linker' , 'type' => 'button' ));
+		echo '</a>';
+  }
   /**
   * Render application logs
   * 
@@ -560,5 +680,48 @@
 			$attrs .= ' ' . $k . '="' . $v . '"';
 		}
 		return '<textarea wrap="off" rows="1" ' . $attrs . '>' . $value . "</textarea>";
+	}
+	
+	/**
+	 * Auxiliar to render_object_properties
+	 *
+	 * @param string  $object_name
+	 * @param int  $i 
+	 */
+	function aux_print_blank_row($object_name, $i){
+		return "<tr style='background: " . (($i % 2) ? '#fff' : '#e8e8e8') . "'><td>" .
+			         text_field($object_name . "[property$i][name]", '' ) . " </td> <td>" .
+			         text_field($object_name . "[property$i][value]", '') . " </td> <td>" .
+			         text_field($object_name . "[property$i][id]", '',array('type' => 'hidden')) ." </td> </tr>";
+	}
+	/**
+	 * Renders the current object properties. If no properties
+	 *
+	 * @param ProjectDataObject $object
+	 * @param string $object_name is the name of the array that will hold the [propertyX] fields
+	 * @return unknown
+	 */
+	function render_object_properties( $object_name,ProjectDataObject $object=null){
+		$output = "<table class='blank'> <tr> <th>".  lang('name') . ":</th><th>" . lang('value') . ":</th> </tr>";
+		if($object)
+			$properties = ObjectProperties::getAllPropertiesByObject($object);
+		if($object && $properties){
+			$i=0;
+			foreach($properties as $property) {								
+			    $output .= "<tr style='background: " . (($i % 2) ? '#fff' : '#e8e8e8') . "'><td>" .
+			         text_field($object_name . "[property$i][name]", $property->getPropertyName()) . " </td> <td>" .
+			         text_field($object_name . "[property$i][value]", $property->getPropertyValue()) . " </td> <td>" .
+			         text_field($object_name . "[property$i][id]", $property->getId(),array('type' => 'hidden')) . " </td> </tr>";
+			    $i++;
+			} // for	
+			$output .= aux_print_blank_row($object_name, $i);
+		} // if
+		else { //no object, print empty table
+			for($i = 0; $i < 4; $i++) {	
+			    $output .= aux_print_blank_row($object_name, $i);
+			} // for			
+		}
+		$output.= "</table>  ";
+		return $output;
 	}
 ?>

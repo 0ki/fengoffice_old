@@ -1,5 +1,5 @@
 <?php
-include("library/fckeditor/fckeditor.php");
+include("public/assets/javascript/fckeditor/fckeditor.php");
 ?>
 
 <?php
@@ -18,6 +18,7 @@ include("library/fckeditor/fckeditor.php");
 <script type="text/javascript" src="<?php echo get_javascript_url('modules/addFileForm.js') ?>"></script>
 <script type="text/javascript">
 function checkFilename() {
+	Ext.getDom('fileContent').value = FCKeditorAPI.GetInstance('FCKInstance').GetHTML();
 	if (Ext.getDom('filename').value) {
 		return true;
 	} else {
@@ -34,45 +35,39 @@ function checkFilename() {
 }
 </script>
 
-<?php if($file->isNew()) { ?>
-<form id="fckform" action="<?php echo get_url('files', 'save_document') ?>" method="post" enctype="multipart/form-data" onsubmit="if (checkFilename()) { og.submit(this); }return false;">
-<?php } else { ?>
-<form id="fckform" action="<?php echo get_url('files', 'save_document',array(
-	        'id' => $file->getId(), 
-	        'active_project' =>  $file->getProjectId())) ?>" method="post" enctype="multipart/form-data"  onsubmit="og.submit(this)">
-<?php } // if ?>
+<form class="internalForm" id="fckform" action="<?php echo get_url('files', 'save_document') ?>" method="post" enctype="multipart/form-data" onsubmit="return checkFilename()">
 
 <?php tpl_display(get_template_path('form_errors')) ?>
 
 
 <?php
-$oFCKeditor = new FCKeditor('FCKeditor1');
-$oFCKeditor->BasePath = 'library/fckeditor/';
+$oFCKeditor = new FCKeditor('FCKInstance');
+$oFCKeditor->BasePath = 'public/assets/javascript/fckeditor/';
 $oFCKeditor->Width = '100%';
-$oFCKeditor->Height = '80%';
+$oFCKeditor->Height = '100%';
 $oFCKeditor->Config['SkinPath'] = get_theme_url('fckeditor/');
 if($file->isNew()) {
-	$oFCKeditor->Value = '<h1>Edit Me!</h1>';
+	$oFCKeditor->Value = '';
 } else {
 	$oFCKeditor->Value = $file->getFileContent();
 }
 $oFCKeditor->Create();
+add_page_action(lang("save"), "javascript:(function(){ var form = document.getElementById('fckform'); form.new_revision_document.value = ''; form.onsubmit(); })()", "save");
+add_page_action(lang("save as new revision"), "javascript:(function(){ var form = document.getElementById('fckform'); form.new_revision_document.value = 'checked'; form.onsubmit(); })()", "save_new_revision");
 ?>
 
 
 
   <div>
-    <?php if($file->isNew()){
-    	echo '<input type="hidden" id="filename" name="file[name]" value="" />';
-    } else {
-		echo '<input type="hidden" id="filename" name="file[name]" value="' . $file->getFilename() . '" />';
-    	echo '<input type="hidden" name="new_revision_document" value="checked" />';
-    } 
-    ?>
+    <input type="hidden" id="fileContent" name="fileContent" value="" />
+    <input type="hidden" id="fileid" name="file[id]" value="<?php if (!$file->isNew()) echo $file->getId(); ?>" />
+	<input type="hidden" id="filename" name="file[name]" value="<?php if (!$file->isNew()) echo $file->getFilename(); ?>" />
+    <input type="hidden" name="new_revision_document" value="" />
   </div>
-  <?php echo submit_button(lang('save document')) ?>
 </form>
 
-<script type="text/javascript">
-imagesUrl = "<?php echo str_replace("&amp;", "&", get_url('files', 'list_files', array('type' => 'image'))) ?>";
+<script>
+og.eventManager.addListener("file saved", function(obj) {
+	Ext.getDom('fileid').value = obj.id;
+}, null, {single:true});
 </script>

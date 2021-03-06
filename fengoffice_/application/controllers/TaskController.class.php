@@ -31,12 +31,98 @@
     * @param void
     * @return null
     */
-    function index() {
-      tpl_assign('open_task_lists', active_project()->getOpenTaskLists());
-      tpl_assign('completed_task_lists', active_project()->getCompletedTaskLists());
-      $this->setSidebar(get_template_path('index_sidebar', 'task'));
-    } // index
+   // function index() {   
+ //   } // index
     
+    function list_tasks(){ 
+		$this->setLayout('json');
+    	$this->setTemplate(get_template_path('json'));
+    	
+    	
+    	/* get query parameters */
+		$start = array_var($_GET,'start');
+		$limit = array_var($_GET,'limit');
+		if (! $start) {
+			$start = 0;
+		}
+		if (! $limit) {
+			$limit = config_option('tasks_per_page');
+		}
+		$order = array_var($_GET,'sort');
+		$orderdir = array_var($_GET,'dir');
+		$page = (integer) ($start / $limit) + 1;
+		$hide_private = !logged_user()->isMemberOfOwnerCompany();
+		$project = array_var($_GET,'active_project');
+		$tag = array_var($_GET,'tag');
+		$type = array_var($_GET,'type');
+		$user = array_var($_GET,'user');
+
+		/* if there's an action to execute, do so */
+		if (array_var($_GET, 'action') == 'delete') {
+			$ids = explode(',', array_var($_GET, 'objects'));
+			list($succ, $err) = ObjectController::do_delete_objects($ids,'ProjectTasks');
+			if ($err > 0) {
+				tpl_assign('errCode', -1);
+				tpl_assign('errMsg', lang('error delete objects', $err));
+			} else {
+				tpl_assign('errCode', 0);
+				tpl_assign('errMsg', lang('success delete objects', $succ));
+			}
+		} else if (array_var($_GET, 'action') == 'tag') {
+			$ids = explode(',', array_var($_GET, 'objects'));
+			$tagTag = array_var($_GET, 'tagTag');
+			list($succ, $err) = ObjectController::do_tag_object($tagTag, $ids,'ProjectTasks');
+			if ($err > 0) {
+				tpl_assign('errCode', -1);
+				tpl_assign('errMsg', lang('error tag objects', $err));
+			} else {
+				evt_add("tag added", array("name" => $tagTag));
+				tpl_assign('errCode', 0);
+				tpl_assign('errMsg', lang('success tag objects', $succ));
+			}
+		}
+
+		/* perform query */
+
+    	// set array of open and completed tasks
+    	if(active_project()){
+    		$open=active_project()->getOpenTasks();
+    		//$comp=active_project()->getCompletedTasks();
+    	}
+    	else{
+			$projects=active_projects();
+			$open = null;
+			//$comp = null;
+			if($projects){
+				foreach ($projects as $p){
+					$open_tmp = $p->getOpenTasks();
+					if($open_tmp)
+						$open=$open?array_merge($open_tmp,$open):$open_tmp;
+					/*$comp_tmp = $p->getCompletedTasks();
+					if($comp_tmp)
+						$comp=$comp?array_merge($comp_tmp,$comp):$comp_tmp;*/
+				}
+			}
+    	}
+		
+		/* prepare response object */
+		$object = array(
+			"totalCount" => count($open),
+			"events" => evt_list(),
+			"errorCode" => isset($errCode)?$errCode:0,
+			"errorMessage" => isset($errMsg)?$errMsg:"",
+			"tasks" => array()
+		);
+		if($open){
+			foreach ($open as $t){
+				$tag_names=$t->getTagNames();
+				if ( ($tag=='' || ( $tag_names && is_numeric(array_search($tag, $tag_names,true)))))
+					$object["tasks"][] = $t->getDashboardObject();
+			}
+    	}
+    	tpl_assign("object", $object);
+	    tpl_assign('open_task_lists', $open);
+    }
     /**
     * View task lists page
     *
@@ -45,8 +131,8 @@
     * @return null
     */
     function view_list() {
-      $task_list = ProjectTaskLists::findById(get_id());
-      if(!($task_list instanceof ProjectTaskList)) {
+      $task_list = ProjectTasks::findById(get_id());
+      if(!($task_list instanceof ProjectTask)) {
         flash_error(lang('task list dnx'));
         $this->redirectTo('task');
       } // if
@@ -58,9 +144,20 @@
       
       tpl_assign('task_list', $task_list);
       
+    	if(active_project()){
+    		$open=active_project()->getOpenTasks();
+    		$comp=active_project()->getCompletedTasks();
+    	}
+    	else{
+			$projects=active_projects();
+			foreach ($projects as $p){
+	    		$open[] = $p->getOpenTasks();
+	    		$comp[] = $p->getCompletedTasks();
+			}
+    	}
       // Sidebar
-      tpl_assign('open_task_lists', active_project()->getOpenTaskLists());
-      tpl_assign('completed_task_lists', active_project()->getCompletedTaskLists());
+      tpl_assign('open_task_lists', $open);
+      tpl_assign('completed_task_lists', $comp);
       $this->setSidebar(get_template_path('index_sidebar', 'task'));
     } // view_list
     
@@ -71,14 +168,14 @@
     * @param void
     * @return null
     */
-    function add_list() {
-      
-      if(!ProjectTaskList::canAdd(logged_user(), active_project())) {
+    function add_list() {      
+	  $project = active_or_personal_project();
+      if(!ProjectTask::canAdd(logged_user(), $project)) {
         flash_error(lang('no access permissions'));
         $this->redirectToReferer(get_url('task'));
       } // if
       
-      $task_list = new ProjectTaskList();
+      $task_list = new ProjectTask();
       $task_list_data = array_var($_POST, 'task_list');
       if(!is_array($task_list_data)) {
         $task_list_data = array(
@@ -92,9 +189,9 @@
       if(is_array(array_var($_POST, 'task_list'))) {
         
         $task_list->setFromAttributes($task_list_data);
-        $task_list->setProjectId(active_project()->getId());
+        $task_list->setProjectId($project->getId());
         if(!logged_user()->isMemberOfOwnerCompany()) $task_list->setIsPrivate(false);
-        
+        //Add tasks
         $tasks = array();
         for($i = 0; $i < 6; $i++) {
           if(isset($task_list_data["task$i"]) && is_array($task_list_data["task$i"]) && (trim(array_var($task_list_data["task$i"], 'text')) <> '')) {
@@ -103,6 +200,18 @@
               'text' => array_var($task_list_data["task$i"], 'text'),
               'assigned_to_company_id' => array_var($assigned_to, 0, 0),
               'assigned_to_user_id' => array_var($assigned_to, 1, 0)
+            ); // array
+          } // if
+        } // for
+        //Add handins
+		$handins = array();
+        for($i = 0; $i < 4; $i++) {
+          if(isset($task_list_data["handin$i"]) && is_array($task_list_data["handin$i"]) && (trim(array_var($task_list_data["handin$i"], 'title')) <> '')) {
+            $assigned_to = explode(':', array_var($task_list_data["handin$i"], 'assigned_to', ''));
+            $handins[] = array(
+              'title' => array_var($task_list_data["handin$i"], 'title'),
+              'responsible_company_id' => array_var($assigned_to, 0, 0),
+              'responsible_user_id' => array_var($assigned_to, 1, 0)
             ); // array
           } // if
         } // for
@@ -116,14 +225,24 @@
           foreach($tasks as $task_data) {
             $task = new ProjectTask();
             $task->setFromAttributes($task_data);
+            $task->setProjectId($project->getId());
             $task_list->attachTask($task);
             $task->save();
+          } // foreach   
+                 
+          foreach($handins as $handin_data) {
+            $handin = new ObjectHandin();
+            $handin->setFromAttributes($handin_data);            
+            $handin->setObjectId($task_list->getId());
+            $handin->setObjectManager(get_class($task_list->manager()));
+            $handin->save();
           } // foreach
           
-          ApplicationLogs::createLog($task_list, active_project(), ApplicationLogs::ACTION_ADD);
+		  $task_list->save_properties($task_list_data);
+          ApplicationLogs::createLog($task_list, $project, ApplicationLogs::ACTION_ADD);
           DB::commit();
           
-          flash_success(lang('success add task list', $task_list->getName()));
+          flash_success(lang('success add task list', $task_list->getTitle()));
           $this->redirectToUrl($task_list->getViewUrl());
           
         } catch(Exception $e) {
@@ -145,8 +264,8 @@
     function edit_list() {
       $this->setTemplate('add_list');
       
-      $task_list = ProjectTaskLists::findById(get_id());
-      if(!($task_list instanceof ProjectTaskList)) {
+      $task_list = ProjectTasks::findById(get_id());
+      if(!($task_list instanceof ProjectTask)) {
         flash_error(lang('task list dnx'));
         $this->redirectTo('task');
       } // if
@@ -160,31 +279,56 @@
       if(!is_array($task_list_data)) {
         $tag_names = $task_list->getTagNames();
         $task_list_data = array(
-          'name' => $task_list->getName(),
-          'description' => $task_list->getDescription(),
+          'title' => $task_list->getTitle(),
+          'text' => $task_list->getText(),
           'milestone_id' => $task_list->getMilestoneId(),
           'tags' => is_array($tag_names) && count($tag_names) ? implode(', ', $tag_names) : '',
           'is_private' => $task_list->isPrivate(),
         ); // array
+	      $handins = ObjectHandins::getAllHandinsByObject($task_list);
+	      $id = 0;
+	      if($handins){
+		      foreach($handins as $handin){
+		      	$task_list_data['handin'.$id] =array(
+		              'title' => $handin->getTitle(),
+		              'assigned_to' => $handin->getResponsibleCompanyId() . ':' . $handin->getResponsibleUserId()
+		            ); // array
+		      	$id=$id +1;
+		      	if($id>3) break;      	
+		      } // foreach
+	      } // if
       } // if
+      
       tpl_assign('task_list', $task_list);
       tpl_assign('task_list_data', $task_list_data);
-      
+
       if(is_array(array_var($_POST, 'task_list'))) {
         $old_is_private = $task_list->isPrivate();
         $task_list->setFromAttributes($task_list_data);
         if(!logged_user()->isMemberOfOwnerCompany()) $task_list->setIsPrivate($old_is_private);
-        
+        //Add handins
+		$handins = array();
+        for($i = 0; $i < 4; $i++) {
+          if(isset($task_list_data["handin$i"]) && is_array($task_list_data["handin$i"]) && (trim(array_var($task_list_data["handin$i"], 'title')) <> '')) {
+            $assigned_to = explode(':', array_var($task_list_data["handin$i"], 'assigned_to', ''));
+            $handins[] = array(
+              'title' => array_var($task_list_data["handin$i"], 'title'),
+              'responsible_company_id' => array_var($assigned_to, 0, 0),
+              'responsible_user_id' => array_var($assigned_to, 1, 0)
+            ); // array
+          } // if
+        } // for
         try {
           DB::beginWork();
           
           $task_list->save();
           $task_list->setTagsFromCSV(array_var($task_list_data, 'tags'));
-          ApplicationLogs::createLog($task_list, active_project(), ApplicationLogs::ACTION_EDIT);
-          
+		  $task_list->save_properties($task_list_data);
+          ApplicationLogs::createLog($task_list, $project, ApplicationLogs::ACTION_EDIT);
+         
           DB::commit();
           
-          flash_success(lang('success edit task list', $task_list->getName()));
+          flash_success(lang('success edit task list', $task_list->getTitle()));
           $this->redirectToUrl($task_list->getViewUrl());
           
         } catch(Exception $e) {
@@ -202,8 +346,9 @@
     * @return null
     */
     function delete_list() {
-      $task_list = ProjectTaskLists::findById(get_id());
-      if(!($task_list instanceof ProjectTaskList)) {
+    	$project=active_or_personal_project();
+      $task_list = ProjectTasks::findById(get_id());
+      if(!($task_list instanceof ProjectTask)) {
         flash_error(lang('task list dnx'));
         $this->redirectTo('task');
       } // if
@@ -216,10 +361,10 @@
       try {
         DB::beginWork();
         $task_list->delete();
-        ApplicationLogs::createLog($task_list, active_project(), ApplicationLogs::ACTION_DELETE);
+        ApplicationLogs::createLog($task_list, $project, ApplicationLogs::ACTION_DELETE);
         DB::commit();
         
-        flash_success(lang('success delete task list', $task_list->getName()));
+        flash_success(lang('success delete task list', $task_list->getTitle()));
       } catch(Exception $e) {
         DB::rollback();
         flash_error(lang('error delete task list'));
@@ -235,8 +380,8 @@
     * @return null
     */
     function reorder_tasks() {
-      $task_list = ProjectTaskLists::findById(get_id('task_list_id'));
-      if(!($task_list instanceof ProjectTaskList)) {
+      $task_list = ProjectTasks::findById(get_id('task_list_id'));
+      if(!($task_list instanceof ProjectTask)) {
         flash_error(lang('task list dnx'));
         $this->redirectTo('task');
       } // if
@@ -249,7 +394,7 @@
         $this->redirectToUrl($redirect_to);
       } // if
       
-      $tasks = $task_list->getOpenTasks();
+      $tasks = $task_list->getOpenSubTasks();
       if(!is_array($tasks) || (count($tasks) < 1)) {
         flash_error(lang('no open task in task list'));
         $this->redirectToUrl($redirect_to);
@@ -288,13 +433,13 @@
     * @return null
     */
     function add_task() {
-      $task_list = ProjectTaskLists::findById(get_id('task_list_id'));
-      if(!($task_list instanceof ProjectTaskList)) {
+      $task_list = ProjectTasks::findById(get_id());
+      if(!($task_list instanceof ProjectTask)) {
         flash_error(lang('task list dnx'));
         $this->redirectTo('task');
       } // if
       
-      if(!$task_list->canAddTask(logged_user())) {
+      if(!$task_list->canAddSubTask(logged_user())) {
         flash_error(lang('no access permissions'));
         $this->redirectTo('task');
       } // if
@@ -316,13 +461,17 @@
         $assigned_to = explode(':', array_var($task_data, 'assigned_to', ''));
         $task->setAssignedToCompanyId(array_var($assigned_to, 0, 0));
         $task->setAssignedToUserId(array_var($assigned_to, 1, 0));
-        
+        $task->setProjectId(active_or_personal_project()->getId());
+        $task->setIsPrivate($task_list->getIsPrivate());
         try {
           
           DB::beginWork();
           $task->save();
+          
+          $task->setTagsFromCSV(array_var($task_data, 'tags'));
           $task_list->attachTask($task);
-          ApplicationLogs::createLog($task, active_project(), ApplicationLogs::ACTION_ADD);
+		  $task->save_properties($task_data);
+          ApplicationLogs::createLog($task, active_or_personal_project(), ApplicationLogs::ACTION_ADD);
           DB::commit();
           
           flash_success(lang('success add task'));
@@ -356,10 +505,11 @@
         $this->redirectTo('task');
       } // if
       
-      $task_list = $task->getTaskList();
-      if(!($task_list instanceof ProjectTaskList)) {
-        flash_error('task list dnx');
-        $this->redirectTo('task');
+      $task_list = $task->getParent();
+      if(!($task_list instanceof ProjectTask)) {
+      	$task_list = $task;
+        //flash_error('task list dnx');
+        //$this->redirectTo('task');
       } // if
       
       if(!$task->canEdit(logged_user())) {
@@ -368,10 +518,12 @@
       } // if
       
       $task_data = array_var($_POST, 'task');
-      if(!is_array($task_data)) {
+      if(!is_array($task_data)) {      	
+		$tag_names = $task->getTagNames();
         $task_data = array(
           'text' => $task->getText(),
-          'task_list_id' => $task->getTaskListId(),
+          'task_list_id' => $task->getParentId(),          
+		  'tags' => is_array($tag_names) && count($tag_names) ? implode(', ', $tag_names) : '',
           'assigned_to' => $task->getAssignedToCompanyId() . ':' . $task->getAssignedToUserId()
         ); // array
       } // if
@@ -382,7 +534,7 @@
       
       if(is_array(array_var($_POST, 'task'))) {
         $task->setFromAttributes($task_data);
-        $task->setTaskListId($task_list->getId()); // keep old task list id
+        $task->setParentId($task_list->getId()); // keep old task list id
         
         $assigned_to = explode(':', array_var($task_data, 'assigned_to', ''));
         $task->setAssignedToCompanyId(array_var($assigned_to, 0, 0));
@@ -392,25 +544,27 @@
           DB::beginWork();
           $task->save();
           
+          $task->setTagsFromCSV(array_var($task_data, 'tags'));
           // Move?
           $new_task_list_id = (integer) array_var($task_data, 'task_list_id');
-          if($new_task_list_id && ($task->getTaskListId() <> $new_task_list_id)) {
+          if($new_task_list_id && ($task->getParentId() <> $new_task_list_id)) {
             
             // Move!
-            $new_task_list = ProjectTaskLists::findById($new_task_list_id);
-            if($new_task_list instanceof ProjectTaskList) {
+            $new_task_list = ProjectTasks::findById($new_task_list_id);
+            if($new_task_list instanceof ProjectTask) {
               $task_list->detachTask($task, $new_task_list); // detach from old and attach to new list
             } // if
             
           } // if
           
-          ApplicationLogs::createLog($task, active_project(), ApplicationLogs::ACTION_EDIT);
+		  $task->save_properties($task_data);
+          ApplicationLogs::createLog($task, $task->getProject(), ApplicationLogs::ACTION_EDIT);
           DB::commit();
           
           flash_success(lang('success edit task'));
           
           // Redirect to task list. Check if we have updated task list ID first
-          if(isset($new_task_list) && ($new_task_list instanceof ProjectTaskList)) {
+          if(isset($new_task_list) && ($new_task_list instanceof ProjectTask)) {
             $this->redirectToUrl($new_task_list->getViewUrl());
           } else {
             $this->redirectToUrl($task_list->getViewUrl());
@@ -439,8 +593,8 @@
         $this->redirectTo('task');
       } // if
       
-      $task_list = $task->getTaskList();
-      if(!($task_list instanceof ProjectTaskList)) {
+      $task_list = $task->getParent();
+      if(!($task_list instanceof ProjectTask)) {
         flash_error('task list dnx');
         $this->redirectTo('task');
       } // if
@@ -453,7 +607,7 @@
       try {
         DB::beginWork();
         $task->delete();
-        ApplicationLogs::createLog($task, active_project(), ApplicationLogs::ACTION_DELETE);
+        ApplicationLogs::createLog($task, $task->getProject() , ApplicationLogs::ACTION_DELETE);
         DB::commit();
         
         flash_success(lang('success delete task'));
@@ -479,8 +633,8 @@
         $this->redirectTo('task');
       } // if
       
-      $task_list = $task->getTaskList();
-      if(!($task_list instanceof ProjectTaskList)) {
+      $task_list = $task->getParent();
+      if(!($task_list instanceof ProjectTask)) {
         flash_error(lang('task list dnx'));
         $this->redirectTo('task');
       } // if
@@ -498,7 +652,7 @@
       try {
         DB::beginWork();
         $task->completeTask();
-        ApplicationLogs::createLog($task, active_project(), ApplicationLogs::ACTION_CLOSE);
+        ApplicationLogs::createLog($task, $task->getProject(), ApplicationLogs::ACTION_CLOSE);
         DB::commit();
         
         flash_success(lang('success complete task'));
@@ -524,8 +678,8 @@
         $this->redirectTo('task');
       } // if
       
-      $task_list = $task->getTaskList();
-      if(!($task_list instanceof ProjectTaskList)) {
+      $task_list = $task->getParent();
+      if(!($task_list instanceof ProjectTask)) {
         flash_error(lang('task list dnx'));
         $this->redirectTo('task');
       } // if
@@ -543,7 +697,7 @@
       try {
         DB::beginWork();
         $task->openTask();
-        ApplicationLogs::createLog($task, active_project(), ApplicationLogs::ACTION_OPEN);
+        ApplicationLogs::createLog($task, $task->getProject(), ApplicationLogs::ACTION_OPEN);
         DB::commit();
         
         flash_success(lang('success open task'));
