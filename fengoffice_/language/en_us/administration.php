@@ -175,6 +175,9 @@
 	
     'config option name notify_myself_too' => 'Include myself in automatic notifications',
   	'config option desc notify_myself_too' => 'When enabled, the automatic notifications will include yourself (only available for documents)',
+
+  	'user config option name breadcrumb_member_count' => 'Amount of breadcrumbs to show when listing objects',
+  		
   	'notify myself too' => 'Include myself in automatic notifications',
 	
   	'group users' => 'Group users',
@@ -290,6 +293,8 @@
   	'user config option name event_subscribe_invited' =>'Subscribe invited users',
     'user config option desc event_subscribe_invited' =>'Enable this option if you want to have the  "Subscribe Invited users" option enabled by default when you create an event',
   
+  	'user config option name breadcrumb_member_count' => 'Amount of breadcrumbs to show when listing objects',
+  	'user config option name attach_to_notification' => 'When working with a document, attach it to its notifications',
   
   	'show context help always' => 'Always',
     'show context help never' => 'Never',

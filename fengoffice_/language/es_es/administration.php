@@ -447,6 +447,8 @@
 	'user config option name show_object_direct_url' => 'Mostrar URL directa al objecto',
 	'user config option desc show_object_direct_url' => 'Si esta habilitada entonces se mostrara la URL directa al objecto en su vista',
 	'user config option name show_file_revisions_search' => 'Ver contenidos del documentos al realizar búsquedas',
+	'user config option name breadcrumb_member_count' => 'Cantidad de breadcrumbs a mostrar cuando se listan los objetos',
+	'user config option name attach_to_notification' => 'Cuando se trate de un documento, adjuntar el mismo a la notificación enviada',
 	'add member' => 'Agregar miembro',
 	'add member to this dimension' => 'Agregar miembro a esta dimensión',
 	'new member' => 'Nuevo miembro',

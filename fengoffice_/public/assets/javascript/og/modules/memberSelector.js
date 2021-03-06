@@ -22,15 +22,21 @@ member_selector.init = function(genid) {
 			og.openLink(og.getUrl('member', 'get_dimension_id', {member_id: mid}), {callback: function(success, data){
 				if (!data.dim_id) return;
 				var dim = data.dim_id;
+				var mid_call = data.member_id;
 				if (!member_selector[genid].sel_context[dim]) {
 					member_selector[genid].sel_context[dim] = [];
 				}
-				member_selector[genid].sel_context[dim].push(mid);
-				member_selector[genid].members_dimension[mid] = dim;
+				member_selector[genid].sel_context[dim].push(mid_call);
+				member_selector[genid].members_dimension[mid_call] = dim;
 				
 				if (selected_member_ids.length == i) {
 					var idshf = document.getElementById(genid+'subscribers_ids_hidden');
 					if (idshf) og.reload_subscribers(genid, member_selector[genid].otid, idshf.value);
+				}
+				
+				//render Invited people in event
+				if ($("#"+genid+"add_event_invitation_div").length > 0) {
+					og.redrawPeopleList(genid);
 				}
 			}});
 		}
@@ -139,10 +145,11 @@ member_selector.remove_relation = function(dimension_id, genid, member_id, dont_
 		if (member_ids[index] == member_id) member_ids.splice(index, 1);
 	}
 	member_ids_input.dom.value = Ext.util.JSON.encode(member_ids);
-
-	for (index in member_selector[genid].sel_context[dimension_id]) {
-		if (member_selector[genid].sel_context[dimension_id][index] == member_id) {
-			member_selector[genid].sel_context[dimension_id].splice(index, 1);
+	
+	
+	for (var i=0;i<member_selector[genid].sel_context[dimension_id].length;i++){
+		if (member_selector[genid].sel_context[dimension_id][i] == member_id) {
+			member_selector[genid].sel_context[dimension_id].splice(i, 1);
 		}
 	}
 
@@ -216,12 +223,18 @@ member_selector.reload_dependant_selectors = function(dimension_id, genid) {
 member_selector.remove_all_selections = function(genid) {
 	for (dim_id in member_selector[genid].properties) {
 		member_selector[genid].properties[dim_id];
-
-		for (index in member_selector[genid].sel_context[dim_id]) {
-			member_id = member_selector[genid].sel_context[dim_id][index];
-			member_selector.remove_relation(dim_id, genid, member_id, true);
+			
+		if (member_selector[genid].sel_context[dim_id]) {
+			var length = member_selector[genid].sel_context[dim_id].length;
+			for (var i=0;i<length;i++){
+				var member_id = member_selector[genid].sel_context[dim_id][0];
+				console.log(member_id);
+				member_selector.remove_relation(dim_id, genid, member_id, true);
+				console.log(member_selector[genid].sel_context[dim_id]);
+			}
+			member_selector.reload_dependant_selectors(dim_id, genid);
 		}
-		member_selector.reload_dependant_selectors(dim_id, genid);
+		
 	}
 }
 
@@ -242,6 +255,7 @@ member_selector.set_selected = function(genid, sel_member_ids) {
 		}
 	}
 	var member_ids_input = Ext.fly(Ext.get(genid + member_selector[genid].hiddenFieldName));
-	member_ids_input.dom.value = Ext.util.JSON.encode(sel_member_ids);
+	member_ids_input.value = Ext.util.JSON.encode(sel_member_ids);
+	
 	member_selector.init(genid);
 }

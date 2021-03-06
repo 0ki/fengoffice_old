@@ -673,7 +673,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 		}		
 	}
 	
-	//og.redrawUserLists(og.contextManager.plainContext());
+	og.redrawUserLists(og.contextManager.plainContext());
         
 
 	og.changeTaskRepeat = function() {

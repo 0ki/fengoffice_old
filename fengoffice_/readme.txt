@@ -1,5 +1,5 @@
 
-	About Feng Office 2.5
+	About Feng Office 2.5.0.1
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -101,6 +101,18 @@
 	
 	Changelog
 	=========
+	
+	Since 2.5
+	----------------
+	
+	bugfix: member selector displayed wrong data
+	bugfix: on task add/edit view, assignee combo displayed wrong data
+	bugfix: subscribers and invited people were not shown correctly
+	bugfix: encoding when receiving emails
+	bugfix: when editing a classified timeslot, its context was not shown
+	bugfix: in file upload, the name is not changed if a new name is entered
+	bugfix: missing langs and sql changes for email user config options
+	
 	
 	Since 2.5-rc
 	----------------

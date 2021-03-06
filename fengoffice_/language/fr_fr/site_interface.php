@@ -64,7 +64,7 @@
 	'update company permissions hint' => 'Vérifiez les droits d\'accès du Projet associé à cette société. Notez que vous devrez aussi définir les droits d\'accès pour chaque membre de la société qui auront à gérer les contextes sélectionnés (soit sur la page contexte des personnes soit dans le profil des utilisateurs).',
 	'footer copy with homepage' => '© {0} par <a class="internalLink" href="{1}">{2}</a>. Honest Public License.',
 	'footer copy without homepage' => '© {0} par {1}. Tous droits Réservés',
-	'footer powered' => 'Design et Réalisation Feng Office',
+	'footer powered' => 'Powered by <a target="_blank" href="{0}">{1}</a>',
 	'all documents' => 'Tous les Documents',
 	'created by me' => 'Créé par moi-même',
 	'by project' => 'Par Projet',

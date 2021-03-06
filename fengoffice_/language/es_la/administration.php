@@ -244,6 +244,8 @@
 	'user config option desc work_day_start_time' => 'Especifica la hora de comienzo de la jornada laboral',
 	'user config option name work_day_end_time' => 'Hora de fin de la jornada laboral',
 	'user config option desc work_day_end_time' => 'Especifica la hora de fin de la jornada laboral',
+	'user config option name attach_to_notification' => 'Cuando se trate de un documento, adjuntar el mismo a la notificación enviada',
+	'user config option name breadcrumb_member_count' => 'Cantidad de breadcrumbs a mostrar cuando se listan los objetos',
 	'cron events' => 'Eventos de Cron',
 	'about cron events' => 'Aprenda sobre eventos de Cron...',
 	'cron events info' => 'Los eventos de Cron le permiten ejecutar tareas periódicamente, sin necesidad de iniciar una sesión. Para habilitar eventos de Cron necesita previamente configurar un \'cron job\' que periódicamente ejecute el archivo "cron.php", ubicado en la raíz de su instalación de Feng Office. La periodicidad a la que ejecute el \'cron job\' determinará la granularidad a la que podrá ejecutar estos eventos de Cron. Por ejemplo, si el \'cron job\' ejecuta cada cinco minutos y usted configura un evento de Cron para ejecutar cada un minuto, sólo podrá ejecutar cada cinco minutos. Para aprender cómo configurar un \'cron job\' consulte con su administrador de sistema o su proveedor de hosting.',

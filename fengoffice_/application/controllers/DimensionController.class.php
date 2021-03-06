@@ -290,10 +290,17 @@ class DimensionController extends ApplicationController {
 		$name = trim(array_var($_REQUEST, 'query', ''));
 		$extra_cond = $name == "" ? "" : " AND name LIKE '%".$name."%'";
 		
+		//$hola workarround
+		$return_all_members = false;
+		if($name == "view_all_dim"){
+			$extra_cond = "";
+			$return_all_members = true;
+		}
+		
 		$selected_member_ids = json_decode(array_var($_REQUEST, 'selected_ids', "[0]"));
 		$selected_members = Members::findAll(array('conditions' => 'id IN ('.implode(',',$selected_member_ids).')'));
 		
-		$memberList = $this->initial_list_dimension_members($dimension_id, $objectTypeId, $allowedMemberTypes, false, $extra_cond, null, false, null, $only_names, $selected_members);
+		$memberList = $this->initial_list_dimension_members($dimension_id, $objectTypeId, $allowedMemberTypes, $return_all_members, $extra_cond, null, false, null, $only_names, $selected_members);
 		
 		$tree = buildTree($memberList, "parent", "children", "id", "name", $checkedField);
 		

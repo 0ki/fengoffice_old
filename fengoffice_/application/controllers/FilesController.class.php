@@ -561,6 +561,10 @@ class FilesController extends ApplicationController {
 					if(count($uploaded_file['name']) != 1){
 						$upload_option = -1;
 					}
+					
+					if($file_data['name'] != ""){
+						$file_data_mult['name'] = $file_data['name'];
+					}
 					$file_ids[] = $this->add_file_form_multi($file_data_mult, $uploaded_file_mult, $member_ids, $upload_option);
 				}
 				unset($_SESSION[$upload_id]);

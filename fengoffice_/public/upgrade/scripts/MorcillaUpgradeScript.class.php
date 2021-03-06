@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Morcilla upgrade script will upgrade FengOffice 2.3.2.1 to FengOffice 2.5
+ * Morcilla upgrade script will upgrade FengOffice 2.3.2.1 to FengOffice 2.5.0.1
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -40,7 +40,7 @@ class MorcillaUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('2.3.2.1');
-		$this->setVersionTo('2.5');
+		$this->setVersionTo('2.5.0.1');
 	} // __construct
 
 	function getCheckIsWritable() {

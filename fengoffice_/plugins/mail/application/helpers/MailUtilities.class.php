@@ -190,6 +190,7 @@ class MailUtilities {
 			if (strpos($content, '+OK ') > 0) $content = substr($content, strpos($content, '+OK '));
 			self::parseMail($content, $decoded, $parsedMail, $warnings);
 			$encoding = array_var($parsedMail,'Encoding', 'UTF-8');
+			
 			$enc_conv = EncodingConverter::instance();
 			$to_addresses = self::getAddresses(array_var($parsedMail, "To"));
 			$from = self::getAddresses(array_var($parsedMail, "From"));
@@ -301,8 +302,10 @@ class MailUtilities {
 			$subject_aux = $parsedMail['Subject'];
 			$subject_encoding = detect_encoding($subject_aux);
 			
-			if (strtoupper($encoding) =='KOI8-R' || strtoupper($encoding) =='CP866' || $subject_encoding != 'UTF-8' || !$enc_conv->isUtf8RegExp($subject_aux)){ //KOI8-R and CP866 are Russian encodings which PHP does not detect
-				$utf8_subject = $enc_conv->convert($encoding, 'UTF-8', $subject_aux);
+			$subject_multipart_encoding = array_var($parsedMail,'SubjectEncoding', strtoupper($encoding));
+			
+			if ($subject_multipart_encoding != 'UTF-8' && ($subject_multipart_encoding =='KOI8-R' || $subject_multipart_encoding =='CP866' || $subject_encoding != 'UTF-8' || !$enc_conv->isUtf8RegExp($subject_aux))){ //KOI8-R and CP866 are Russian encodings which PHP does not detect
+				$utf8_subject = $enc_conv->convert($subject_multipart_encoding, 'UTF-8', $subject_aux);
 				
 				if ($enc_conv->hasError()) {
 					$utf8_subject = utf8_encode($subject_aux);

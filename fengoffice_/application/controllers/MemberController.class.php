@@ -32,7 +32,8 @@ class MemberController extends ApplicationController {
 		$member = Members::instance()->findById(array_var($_REQUEST, 'member_id'));
 		if ($member instanceof Member) {
 			$data['dim_id'] = $member->getDimensionId();
-		}
+			$data['member_id'] = $member->getId();
+		}		
 		ajx_extra_data($data);
 	}
 	

@@ -63,6 +63,12 @@ ogTimeManager.loadDataFromHF = function(genid){
 	result['drawinputs'] = Ext.util.JSON.decode(document.getElementById(genid + 'hfDrawInputs').value);
 	this.genid = genid;
 	
+	//$hola workarround
+	for (dim_id in member_selector[genid].properties) {
+		var combo = Ext.getCmp(genid + 'add-member-input-dim' + dim_id);
+		combo.doQuery("view_all_dim",true);
+	}
+	
 	return this.loadData(result);
 }
 
@@ -284,7 +290,9 @@ ogTimeManager.EditTimeslot = function(timeslotId){
 		document.getElementById(this.genid + 'tsHours').focus();
 		
 		member_selector.remove_all_selections(this.genid);
-		member_selector.set_selected(this.genid, ts.memberIds);
+				
+		member_selector.set_selected(this.genid,ts.memberIds);
+		
 	}
 }
 
