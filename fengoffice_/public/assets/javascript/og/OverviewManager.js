@@ -20,7 +20,7 @@ og.OverviewManager = function() {
 				id: 'id',
 				fields: [
 					'name', 'object_id', 'type', 'createdBy', 'createdById', 'dateCreated', 
-					'updatedBy', 'updatedById', 'dateUpdated', 'icon', 'wsIds', 'manager', 'mimeType', 'url', 'ix', 'isRead'
+					'updatedBy', 'updatedById', 'dateUpdated', 'icon', 'wsIds', 'manager', 'mimeType', 'url', 'ix', 'isRead', 'memPath'
 				]
 			}),
 			remoteSort: true,
@@ -72,8 +72,6 @@ og.OverviewManager = function() {
 	}
 	
 	function renderName(value, p, r) {
-		var projectsString = String.format('<span class="project-replace">{0}</span>&nbsp;', r.data.wsIds);
-
 		var viewUrl = r.data.url;
 		
 		var classes = readClass + r.id;
@@ -93,9 +91,14 @@ og.OverviewManager = function() {
 		} else {
 			var cleanvalue = og.clean(value);
 		}
-		var name = String.format('<a style="font-size:120%" href="{1}" class="{2}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', cleanvalue, viewUrl, classes);
 		
-		return projectsString + name + actions;
+		mem_path = "";
+		var mpath = Ext.util.JSON.decode(r.data.memPath);
+		if (mpath) mem_path = og.getCrumbHtml(mpath);
+		
+		var name = mem_path + String.format('<a style="font-size:120%" href="{1}" class="{2}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', cleanvalue, viewUrl, classes);
+		
+		return name + actions;
 	}
 
 	function renderType(value, p, r){
@@ -121,7 +124,7 @@ og.OverviewManager = function() {
 			var classes = readClass + r.id;
 			if (!r.data.isRead && !notReadable[r.data.manager]) classes += " bold";
 			
-			return String.format('<a href="{1}" class="{2}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', og.clean(value), og.getUrl('contact', 'card_user', {id: r.data.updatedById}), classes);
+			return String.format('<a href="{1}" class="{2}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', og.clean(value), og.getUrl('contact', 'card', {id: r.data.updatedById}), classes);
 		} else if (value) {
 			return og.clean(value);
 		} else {
@@ -131,7 +134,7 @@ og.OverviewManager = function() {
 
 	function renderAuthor(value, p, r) {
 		if (r.data.createdById) {
-			return String.format('<a href="{1}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', og.clean(value), og.getUrl('contact', 'card_user', {id: r.data.createdById}));
+			return String.format('<a href="{1}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', og.clean(value), og.getUrl('contact', 'card', {id: r.data.createdById}));
 		} else if (value) {
 			return og.clean(value);
 		} else {

@@ -86,17 +86,17 @@
     'document checked out' => 'Document is already checked out by another user',
     
     // Success
-    'success add contact' => 'Contact \'{0}\' has been created successfully',
-    'success edit contact' => 'Contact \'{0}\' has been updated successfully',
-    'success delete contact' => 'Contact \'{0}\' has been deleted successfully',
+    'success add contact' => 'Person \'{0}\' has been created successfully',
+    'success edit contact' => 'Person \'{0}\' has been updated successfully',
+    'success delete contact' => 'Person \'{0}\' has been deleted successfully',
     'success edit picture' => 'Picture has been updated successfully',
     'success delete picture' => 'Picture has been deleted successfully',
     
-    'success add project' => 'Workspace {0} has been added successfully',
-    'success edit project' => 'Workspace {0} has been updated',
-    'success delete project' => 'Workspace {0} has been deleted',
-    'success complete project' => 'Workspace {0} has been completed',
-    'success open project' => 'Workspace {0} has been reopened',
+    'success add project' => 'Project {0} has been added successfully',
+    'success edit project' => 'Project {0} has been updated',
+    'success delete project' => 'Project {0} has been deleted',
+    'success complete project' => 'Project {0} has been completed',
+    'success open project' => 'Project {0} has been reopened',
     
     'success add milestone' => 'Milestone \'{0}\' has been created successfully',
     'success edit milestone' => 'Milestone \'{0}\' has been updated successfully',
@@ -170,7 +170,7 @@
     'success delete file' => 'File \'{0}\' has been deleted',
     'success delete files' => '{0} file(s) have been deleted',
     'success tag files' => '{0} file(s) have been tagged',
-    'success tag contacts' => '{0} contact(s) have been tagged',
+    'success tag contacts' => '{0} person(s) have been tagged',
     
     'success add handis' => 'Handins have been updated',
     
@@ -192,9 +192,9 @@
     'success update company permissions' => 'Company permissions updated successfully. {0} records updated',
     'success user permissions updated' => 'User permissions have been updated',
   
-    'success add event' => 'Event has been added',
-    'success edit event' => 'Event has been updated',
-    'success delete event' => 'Event has been deleted',
+    'success add event' => 'Event \'{0}\' has been added',
+    'success edit event' => 'Event \'{0}\' has been updated',
+    'success delete event' => 'Event \'{0}\' has been deleted',
     
     'success add event type' => 'Event Type has been added',
     'success delete event type' => 'Event Type has been deleted',
@@ -208,7 +208,7 @@
     'success delete chart' => 'Chart has been deleted',
     'success delete charts' => 'The selected charts have been deleted successfully',
   
-    'success delete contacts' => 'The selected contacts have been deleted successfully',
+    'success delete contacts' => 'The selected persons have been deleted successfully',
   
     'success classify email' => 'Email classified successfully',
     'success delete email' => 'Email has been deleted',
@@ -296,7 +296,7 @@
     'error delete file' => 'Failed to delete selected file',
     'error delete files' => 'Failed to delete {0} files',
     'error tag files' => 'Failed to tag {0} files',
-    'error tag contacts' => 'Failed to tag {0} contacts',
+    'error tag contacts' => 'Failed to tag {0} persons',
     'error delete file revision' => 'Failed to delete file revision',
     'error delete task list' => 'Failed to delete selected task',
     'error delete task' => 'Failed to delete selected task',
@@ -311,7 +311,7 @@
     'error delete event type' =>'Failed to delete event type',
     'error delete mail' => 'An error occurred while deleting this email',
     'error delete mail account' => 'An error occurred while deleting this email account',
-    'error delete contacts' => 'An error has occurred while deleting these contacts',
+    'error delete contacts' => 'An error has occurred while deleting these persons',
   	'error check mail' => 'Error checking account \'{0}\': {1}',
   	'error check out file' => 'Error while checking out file for exclusive use',
     'error checkin file' => 'Error while checking in file',
@@ -354,7 +354,7 @@
     'confirm delete file' => 'Are you sure that you want to delete this file?',
     'confirm delete revision' => 'Are you sure that you want to delete this revision?',
     'confirm reset form' => 'Are you sure that you want to reset this form?',
-    'confirm delete contacts' => 'Are you sure that you want to delete these contacts?',
+    'confirm delete contacts' => 'Are you sure that you want to delete these persons?',
 	'confirm delete group' => 'Are you sure that you want to delete this group?',
     
     // Errors...
@@ -582,7 +582,7 @@
     'log link contacts data' => '\'{0}\' linked to {1}',
     'log unlink contacts data' => '\'{0}\' unlinked from  {1}',
   
-  	'no contacts in company' => 'The company has no contacts.',
+  	'no contacts in company' => 'The company has no persons.',
   
   	'session expired error' => 'The session has expired. Please, refresh the page and login again.',
   	'admin cannot be removed from admin group' => 'First user cannot be deleted from Administrators group',
@@ -690,7 +690,7 @@
 
   	'success purging trash' => '{0} objects deleted.',
   	'success sending reminders' => '{0} reminders sent.',
-  	'failed to assign contact due to permissions' => 'You don\'t have permissions to write contacts on these workspaces: {0}',
+  	'failed to assign contact due to permissions' => 'You don\'t have permissions to write persons on these workspaces: {0}',
   
   	'weblink dnx' => 'Requested weblink doesn\'t exist.',
   
@@ -735,6 +735,9 @@
   	'objects moved to member success' => 'The objects has been added to {0} successfully',
 	'object moved to member success' => 'The object has been added to {0} successfully',
   	'vinculated to' => 'Vinculated to',
+  	'not vinculated' => 'Not vinculated',
+  	'contact email is required to create user' => 'In order to create a user, the contact must have an email address. Please edit the contact and re-try',
+  	'success delete member' => '{0} has been deleted',
   ); // array
 
 ?>

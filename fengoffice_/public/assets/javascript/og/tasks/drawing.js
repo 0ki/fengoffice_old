@@ -445,8 +445,8 @@ ogTasks.draw = function(){
 		// FIXME: quick add task
 		sb.append('<div class="inner-message" style="text-align: center; color: gray; font-size: 14px;">'+lang('no tasks to display')+ '</div>'+
 		'<div id="rx__no_tasks_info" style="text-align: center; "><a href="#" class="internalLink ogTasksGroupAction ico-add" '+
-		'onclick="og.openLink(og.getUrl(\'task\', \'add_task\'));"'+
-		''+//'onClick="document.getElementById(\'rx__no_tasks_info\').style.display=\'none\'; document.getElementById(\'rx__hidden_group\').style.display=\'block\'; ogTasks.drawAddNewTaskForm(\'' + this.Groups[0].group_id + '\')" '+
+		//'onclick="og.openLink(og.getUrl(\'task\', \'add_task\'));"'+
+		'onClick="document.getElementById(\'rx__no_tasks_info\').style.display=\'none\'; document.getElementById(\'rx__hidden_group\').style.display=\'block\'; ogTasks.drawAddNewTaskForm(\'' + this.Groups[0].group_id + '\')" '+
 		'title="' + lang('add task') + '">' + (lang('add task')) + '</a>'+
 		'</div>');
 		var rx__hidden_group = new String();
@@ -459,7 +459,6 @@ ogTasks.draw = function(){
 	var container = document.getElementById('tasksPanelContainer');
 	sb.append("<div style='height:20px'></div>")
 	container.innerHTML = sb.toString();
-//	og.showWsPaths('tasksPanelContainer');
 }
 
 ogTasks.toggleSubtasks = function(taskId, groupId){
@@ -540,12 +539,6 @@ ogTasks.drawGroup = function(displayCriteria, drawOptions, group){
 				else
 					sb.append("<a href='#' class='internalLink' onclick='og.openLink(\"" + og.getUrl('milestone', 'view', {id: group.group_id}) + "\")'>" + og.clean(group.group_name) + '</a></div></td>');
 				
-				if (drawOptions.show_workspaces){
-					var ids = String(milestone.workspaceIds).split(',');
-					var projectsString = "<td style='padding-left:10px'>";
-					projectsString += '<span class="project-replace">' + ids.join(',') + '</span>&nbsp;';
-					sb.append(projectsString + "</td>");
-				}
 			} else {
 				sb.append("<table><tr><td><div class='ogTasksGroupHeaderName'>" + og.clean(group.group_name) + '</div></td>');
 			}
@@ -600,11 +593,10 @@ ogTasks.drawGroup = function(displayCriteria, drawOptions, group){
 }
 
 ogTasks.drawGroupActions = function(group){
-	// FIXME: quick add task
 	return '<a id="ogTasksPanelGroupSoloOn' + group.group_id + '" style="margin-right:15px;display:' + (group.solo? "none" : "inline") + '" href="#" class="internalLink" onClick="ogTasks.hideShowGroups(\'' + group.group_id + '\')" title="' + lang('hide other groups') + '">' + (lang('hide others')) + '</a>' +
 	'<a id="ogTasksPanelGroupSoloOff' + group.group_id + '" style="display:' + (group.solo? "inline" : "none") + ';margin-right:15px;" href="#" class="internalLink" onClick="ogTasks.hideShowGroups(\'' + group.group_id + '\')" title="' + lang('show all groups') + '">' + (lang('show all')) + '</a>' +
 	'<a href="#" class="internalLink ogTasksGroupAction ico-print" style="margin-right:15px;" onClick="ogTasks.printGroup(\'' + group.group_id + '\')" title="' + lang('print this group') + '">' + (lang('print')) + '</a>' +
-	'';//'<a href="#" class="internalLink ogTasksGroupAction ico-add" onClick="ogTasks.drawAddNewTaskForm(\'' + group.group_id + '\')" title="' + lang('add a new task to this group') + '">' + (lang('add task')) + '</a>';
+	'<a href="#" class="internalLink ogTasksGroupAction ico-add" onClick="ogTasks.drawAddNewTaskForm(\'' + group.group_id + '\')" title="' + lang('add a new task to this group') + '">' + (lang('add task')) + '</a>';
 }
 
 
@@ -760,18 +752,11 @@ ogTasks.drawTaskRow = function(task, drawOptions, displayCriteria, group_id, lev
 	//Center td
 	sb.append('<td align=left>');
 	
-	//Draw Workspaces
-	if (drawOptions.show_workspaces){
-		var ids = String(task.workspaceIds).split(',');
-		var projectsString = "";
-		var ids_to_show = new Array();
-		for(var i = 0; i < ids.length; i++)
-			if (!(displayCriteria.group_by == 'workspace' && group_id == ids[i]))
-				ids_to_show.push(ids[i]);
-		if (ids_to_show.length >= 1)
-			projectsString += '<span class="project-replace">' + ids_to_show.join(',') + '</span>&nbsp;';
-		sb.append(projectsString);
-	}
+	//Member Path
+	mem_path = "";
+	var mpath = Ext.util.JSON.decode(task.memPath);
+	if (mpath) mem_path = og.getCrumbHtml(mpath);
+	sb.append(mem_path);
 	
 	var taskName = '';
 	//Draw the Assigned user
@@ -1015,7 +1000,6 @@ ogTasks.UpdateTask = function(task_id){
 				var div2 = document.getElementById('ogTasksPanelCompleteBar' + task.divInfo[i].group_id);
 				div2.innerHTML = this.drawMilestoneCompleteBar(this.getGroup(task.divInfo[i].group_id));
 			}
-			//og.showWsPaths(containerName);
 		}
 	}
 }
@@ -1034,9 +1018,9 @@ ogTasks.buildTaskPercentCompletedBar = function(task) {
 	else if (task.percentCompleted < 100) color_cls += '75';
 	else color_cls += '100';
 	
-	var html = "<span><nobr><table style='display:inline;'><tr><td style='padding-left:15px;padding-top:5px'>" +
+	var html = "<span><span class='nobr'><table style='display:inline;'><tr><td style='padding-left:15px;padding-top:5px'>" +
 			"<table style='height:7px;width:50px'><tr><td style='height:7px;width:" + task.percentCompleted + "%;' class='"+color_cls+"'></td><td style='width:" + (100 - task.percentCompleted) + "%;background-color:#DDD'></td></tr></table>" +
-			"</td><td style='padding-left:3px;line-height:12px'><span style='font-size:8px;color:#777'>" + task.percentCompleted + "%</span></td></tr></table></nobr></span>";
+			"</td><td style='padding-left:3px;line-height:12px'><span style='font-size:8px;color:#777'>" + task.percentCompleted + "%</span></td></tr></table></span></span>";
 	
 	return html;
 }
@@ -1044,22 +1028,24 @@ ogTasks.buildTaskPercentCompletedBar = function(task) {
 
 ogTasks.UpdateDependants = function(task, complete, prev_status) {
 	var deps = this.getDependencyCount(task.id);
-	var dependants = deps.dependants.split(',');
-	for (var i = 0; i < dependants.length; i++){
-		var dependant_id = dependants[i];
-		var dc = this.getDependencyCount(dependant_id);
-		if (dc) {
-			if (complete) {
-				dc.count -= 1;
-				this.UpdateTask(dependant_id);
-			} else {
-				// Reopen: add 1 and reopen parents
-				if (prev_status == 1) {
-					dc.count += 1;
-					var dep = this.getTask(dependant_id);
-					dep.status = 0;
+	if (deps) {
+		var dependants = deps.dependants.split(',');
+		for (var i = 0; i < dependants.length; i++){
+			var dependant_id = dependants[i];
+			var dc = this.getDependencyCount(dependant_id);
+			if (dc) {
+				if (complete) {
+					dc.count -= 1;
 					this.UpdateTask(dependant_id);
-					this.UpdateDependants(dep, false);
+				} else {
+					// Reopen: add 1 and reopen parents
+					if (prev_status == 1) {
+						dc.count += 1;
+						var dep = this.getTask(dependant_id);
+						dep.status = 0;
+						this.UpdateTask(dependant_id);
+						this.UpdateDependants(dep, false);
+					}
 				}
 			}
 		}

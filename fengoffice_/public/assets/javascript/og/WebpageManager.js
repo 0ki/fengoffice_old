@@ -16,23 +16,21 @@ og.WebpageManager = function() {
 	            totalProperty: 'totalCount',
 	            id: 'id',
 	            fields: [
-	                'title', 'description', 'url', 'wsIds', 'updatedBy', 'updatedById',
-	                'updatedOn', 'updatedOn_today', 'ix','isRead'
+	                'name', 'description', 'url', 'updatedBy', 'updatedById',
+	                'updatedOn', 'updatedOn_today', 'ix', 'isRead', 'memPath'
 	            ]
 	        }),
 	        remoteSort: true,
 			listeners: {
 				'load': function() {
 					var d = this.reader.jsonData;
-					var ws = null ;
 					if (d.totalCount == 0) {
-						this.fireEvent('messageToShow', lang("no objects message", lang("web pages"), ws));
+						this.fireEvent('messageToShow', lang("no objects message", lang("web pages")));
 					} else if (d.webpages.length == 0) {
 						this.fireEvent('messageToShow', lang("no more objects message", lang("web pages")));
 					} else {
 						this.fireEvent('messageToShow', "");
 					}
-					Ext.getCmp('webpage-manager').getView().focusRow(og.lastSelectedRow.webpages+1);
 				}
 			}
 	    });
@@ -58,25 +56,29 @@ og.WebpageManager = function() {
 			'<a style="font-size:120%;" class="{3}" title="{2}" href="{1}" onclick="og.openLink(\'{1}\');return false;">{0}</a>',
 			og.clean(value), og.getUrl('webpage', 'view', {id: r.id}), lang('view weblink'), classes);
 		
-		var actions = '';
-		var actionStyle= ' style="font-size:90%;color:#777777;padding-top:3px;padding-left:18px;background-repeat:no-repeat" '; 
-		actions += String.format('<a class="list-action ico-open-link" href="{0}" target="_blank" title="{1}" ' + actionStyle + '>&nbsp;</a>',
+		var actionStyle= ' style="font-size:90%;color:#777777;padding-top:3px;padding-left:18px;background-repeat:no-repeat" ';
+		
+		var actions = String.format('<a class="list-action ico-open-link" href="{0}" target="_blank" title="{1}" ' + actionStyle + '>&nbsp;</a>',
 			r.data.url.replace(/\"/g, escape("\"")).replace(/\'/g, escape("'")), lang('open link in new window', og.clean(value)));
 		actions = '<span>' + actions + '</span>';
 			
 		var text = '';
 		if (r.data.description != ''){
-			text = '&nbsp;-&nbsp;<span style="color:#888888;white-space:nowrap">';
-			text += og.clean(r.data.description) + "</span></i>";
+			text = '&nbsp;-&nbsp;<span class="desc nobr">';
+			text += og.clean(r.data.description) + "</span>";
 		}
 		
-		var projectsString = String.format('<span class="project-replace">{0}</span>&nbsp;', r.data.wsIds);
+		var mem_path = "";
+		var mpath = r.data.memPath ? Ext.util.JSON.decode(r.data.memPath) : "";
+		if (mpath) mem_path = og.getCrumbHtml(mpath);
 	    
-		return projectsString + name + actions + text;
+		return mem_path + name + actions + text;
 	}
+    
     function renderIcon(value, p, r) {
 		return '<div class="db-ico ico-webpage"></div>';
 	}
+    
     function renderIsRead(value, p, r){
     	var idr = Ext.id();
 		var idu = Ext.id();
@@ -88,11 +90,12 @@ og.WebpageManager = function() {
 			idu, lang('mark as unread'), value ? 'block' : 'none', jsu, idr, lang('mark as read'), value ? 'none' : 'block', jsr
 		);
 	}
+    
 	function renderDateUpdated(value, p, r) {
 		if (!value) {
 			return "";
 		}
-		var userString = String.format('<a href="{1}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', r.data.updatedBy, og.getUrl('user', 'card', {id: r.data.updatedById}));
+		var userString = String.format('<a href="{1}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', r.data.updatedBy, og.getUrl('contact', 'card', {id: r.data.updatedById}));
 
 		var now = new Date();
 		var dateString = '';
@@ -163,7 +166,7 @@ og.WebpageManager = function() {
 
     var cm = new Ext.grid.ColumnModel([
 		sm,{
-/*			id: 'draghandle',
+			id: 'draghandle',
 			header: '&nbsp;',
 			width: 18,
         	renderer: renderDragHandle,
@@ -171,7 +174,7 @@ og.WebpageManager = function() {
         	resizable: false,
         	hideable:false,
         	menuDisabled: true
-		},{*/
+		},{
 			id: 'icon',
 			header: '&nbsp;',
 			dataIndex: 'type',
@@ -192,9 +195,9 @@ og.WebpageManager = function() {
         	hideable:false,
         	menuDisabled: true
 		},{
-			id: 'title',
-			header: lang("title"),
-			dataIndex: 'title',
+			id: 'name',
+			header: lang("name"),
+			dataIndex: 'name',
 			width: 300,
 			sortable: true,
 			renderer: renderName
@@ -325,9 +328,9 @@ og.WebpageManager = function() {
         store: this.store,
 		layout: 'fit',
         cm: cm,
-      //enableDrag: true,
+        enableDrag: true,
+		ddGroup: 'MemberDD',
 		stateful: og.preferences['rememberGUIState'],
-		ddGroup: 'WorkspaceDD',
         closable: true,
 		stripeRows: true,
 		id: 'webpage-manager',
@@ -366,19 +369,21 @@ og.WebpageManager = function() {
 Ext.extend(og.WebpageManager, Ext.grid.GridPanel, {
 	load: function(params) {
 		if (!params) params = {};
+		var start;
 		if (typeof params.start == 'undefined') {
-			var start = (this.getBottomToolbar().getPageData().activePage - 1) * og.config['files_per_page'];
+			start = (this.getBottomToolbar().getPageData().activePage - 1) * og.config['files_per_page'];
 		} else {
-			var start = 0;
+			start = 0;
 		}
-		Ext.apply(this.store.baseParams, {
+		
+		this.store.baseParams = {
 			context: og.contextManager.plainContext()
-		});
+		};
+		
 		this.store.load({
 			params: Ext.apply(params, {
-				start: 0,
-				limit: og.config['files_per_page'],
-				//context: og.contextManager.plainContext()
+				start: start,
+				limit: og.config['files_per_page']				
 			})
 		});
 		this.needRefresh = false;

@@ -154,6 +154,16 @@ class ObjectController extends ApplicationController {
 			return;
 		}
 		
+		$required_dimension_ids = array();
+		$dimension_object_types = $object->getDimensionObjectTypes();
+		foreach($dimension_object_types as $dot){
+			if ($dot->getIsRequired()){
+				$required_dimension_ids[] = $dot->getDimensionId();
+			}
+		}
+		$required_dimensions = Dimensions::findAll(array("conditions" => "id IN (".implode(",",$required_dimension_ids).")"));
+		
+		// If not entered members
 		if (!count($member_ids) > 0){
 			$throw_error = true;
 			if (Plugins::instance()->isActivePlugin('core_dimensions')) {
@@ -164,9 +174,16 @@ class ObjectController extends ApplicationController {
 					$member_ids[] = logged_user()->getPersonalMemberId();
 				}
 			}
-			if ($throw_error) {
-				throw new Error(lang('must choose at least one member'));
-			}
+			/*if ($throw_error) {
+				$rdim_names = "";
+				foreach ($required_dimensions as $rdim) {
+					alert_r($rdim->getName());
+					$rdim_names .= ($rdim_names == "" ? "" : ", ") . $rdim->getName();
+				}
+				alert_r("#add_to_members:". count($required_dimension));
+				 
+				throw new Error(lang('must choose at least one member of', $rdim_names));
+			}*/
 		}
 		
 		$enteredMembers = array();
@@ -181,19 +198,16 @@ class ObjectController extends ApplicationController {
 		/* @var $object ContentDataObject */
 		$validMembers = $object->getAllowedMembersToAdd(logged_user(),$enteredMembers);
 
-		$dimension_object_types = $object->getDimensionObjectTypes();
-		foreach($dimension_object_types as $dot){
-			if ($dot->getIsRequired()){
-				$exists = false;
-				foreach ($validMembers as $m){
-					if ($m->getDimensionId() == $dot->getDimensionId())
-						$exists = true;
+		foreach($required_dimensions as $rdim){
+			$exists = false;
+			foreach ($validMembers as $m){
+				if ($m->getDimensionId() == $rdim->getId()) {
+					$exists = true;
+					break;
 				}
-				if (!$exists){
-					
-					$dim = Dimensions::findById($dot->getDimensionId());
-					throw new Exception(lang('must choose at least one member of',$dim->getName()));
-				}
+			}
+			if (!$exists){
+				throw new Exception(lang('must choose at least one member of',$rdim->getName()));
 			}
 		}
 		
@@ -733,23 +747,37 @@ class ObjectController extends ApplicationController {
 		ajx_current('empty');
 		$csvids = array_var($_GET, 'ids');
 		$ids = explode(",", $csvids);
-		$this->do_mark_as_read_unread_objects($ids, true, user_config_option('show_emails_as_conversations', true, logged_user()->getId()));
+		$this->do_mark_as_read_unread_objects($ids, true, user_config_option('show_emails_as_conversations'));
 	}
 	
 	function mark_as_unread() {
 		ajx_current('empty');
 		$csvids = array_var($_GET, 'ids');
 		$ids = explode(",", $csvids);
-		$this->do_mark_as_read_unread_objects($ids, false, user_config_option('show_emails_as_conversations', true, logged_user()->getId()));
+		$this->do_mark_as_read_unread_objects($ids, false, user_config_option('show_emails_as_conversations'));
+	}
+	
+	static function reloadPersonsDimension() {
+		if (Plugins::instance()->isActivePlugin('core_dimensions')) {
+			$person_dim = Dimensions::findByCode('feng_persons');
+			if ($person_dim instanceof Dimension) {
+				evt_add('reload dimension tree', $person_dim->getId());
+			}
+		}
 	}
 
 	function list_objects() {
+		//alert("debugging. remove this line");ajx_current('empty'); return array() ; //TODO remove this line
 		/* get query parameters */
 		$filesPerPage = config_option('files_per_page');
 		$start = array_var($_GET,'start') ? (integer)array_var($_GET,'start') : 0;
 		$limit = array_var($_GET,'limit') ? array_var($_GET,'limit') : $filesPerPage;
-
 		$order = array_var($_GET,'sort');
+		
+		if ($order == "dateUpdated") {
+			$order = "updated_on";
+		}
+		
 		$orderdir = array_var($_GET,'dir');
 		$page = (integer) ($start / $limit) + 1;
 		$hide_private = !logged_user()->isMemberOfOwnerCompany();
@@ -788,11 +816,14 @@ class ObjectController extends ApplicationController {
 			if ($err > 0) {
 				flash_error(lang('error delete objects', $err));
 			} else {
+				Hook::fire('after_object_delete_permanently', $ids, $ignored);
 				flash_success(lang('success delete objects', $succ));
 			}
 		} else if (array_var($_GET, 'action') == 'delete_permanently') {
 			$ids = explode(',', array_var($_GET, 'objects'));
 			$result = Objects::getObjectsFromContext(active_context(), null, null, true, false, array('object_ids' => implode(",",$ids)));
+
+			
 			$objects = $result->objects;
 			
 			list($succ, $err) = $this->do_delete_objects($objects, true);
@@ -801,6 +832,7 @@ class ObjectController extends ApplicationController {
 				flash_error(lang('error delete objects', $err));
 			}
 			if ($succ > 0) {
+				Hook::fire('after_object_delete_permanently', $ids, $ignored);
 				flash_success(lang('success delete objects', $succ));
 			}
 		}else if (array_var($_GET, 'action') == 'markasread') {
@@ -886,73 +918,8 @@ class ObjectController extends ApplicationController {
 				$errorString = is_null($errorMessage) ? lang("error untrash objects", $error) : $errorMessage;
 				flash_error($errorString);
 			}
-		} /*FIXME else if (array_var($_GET, 'action') == 'move') {
-			$wsid = array_var($_GET, "moveTo");
-			$destination = Projects::findById($wsid);
-			if (!$destination instanceof Project) {
-				$resultMessage = lang('project dnx');
-				$resultCode = 1;
-			} else if (!can_add(logged_user(), $destination, 'ProjectMessages')) {
-				$resultMessage = lang('no access permissions');
-				$resultCode = 1;
-			} else {
-				$ids = explode(',', array_var($_GET, 'objects'));
-				$count = 0;
-				DB::beginWork();
-				foreach ($ids as $id) {
-					$split = explode(":", $id);
-					$type = $split[0];
-					$obj = Objects::findObject($split[1]);
-					$mantainWs = array_var($_GET, "mantainWs");
-					if ($type != 'Projects' && $obj->canEdit(logged_user())) {
-						if ($type == 'MailContents') {
-							$email = MailContents::findById($split[1]);
-							$conversation = MailContents::getMailsFromConversation($email);
-							foreach ($conversation as $conv_email) {
-								$count += MailController::addEmailToWorkspace($conv_email->getId(), $destination, $mantainWs);
-								if (array_var($_GET, 'classify_atts') && $conv_email->getHasAttachments()) {
-									MailUtilities::parseMail($conv_email->getContent(), $decoded, $parsedEmail, $warnings);
-									$classification_data = array();
-									for ($j=0; $j < count(array_var($parsedEmail, "Attachments", array())); $j++) {
-										$classification_data["att_".$j] = true;		
-									}
-									$tags = implode(",", $conv_email->getTagNames());
-									MailController::classifyFile($classification_data, $conv_email, $parsedEmail, array($destination), $mantainWs, $tags);
-								}								
-							}
-							$count++;
-						} else {
-							if (!$mantainWs || $type == 'ProjectTasks' || $type == 'ProjectMilestones') {
-								$removed = "";
-								$ws = $obj->getWorkspaces();
-								foreach ($ws as $w) {
-									if (can_add(logged_user(), $w, $type)) {
-										$obj->removeFromWorkspace($w);
-										$removed .= $w->getId() . ",";
-									}
-								}
-								$removed = substr($removed, 0, -1);
-								$log_action = ApplicationLogs::ACTION_MOVE;
-								$log_data = ($removed == "" ? "" : "from:$removed;") . "to:$wsid";
-							} else {
-								$log_action = ApplicationLogs::ACTION_COPY;
-								$log_data = "to:$wsid";
-							}
-							$obj->addToWorkspace($destination);
-							ApplicationLogs::createLog($obj, $log_action, false, null, true, $log_data);
-							$count++;
-						}
-					}
-				}
-				if ($count > 0) {
-					$reload = true;
-					DB::commit();
-					flash_success(lang("success move objects", $count));
-				} else {
-					DB::rollback();
-				}
-			}
-		}*/
+		}
+		
 		$filterName = array_var($_GET,'name');
 		$result = null;
 		
@@ -961,7 +928,31 @@ class ObjectController extends ApplicationController {
 		$obj_type_types = array('content_object');
 		if (array_var($_GET, 'include_comments')) $obj_type_types[] = 'comment';
 		
-		$pagination = Objects::getObjects($context,$start,$limit,$order,$orderdir,$trashed,$archived, $filters,$start, $limit, $obj_type_types);
+		if ($types) {
+			$type_condition = " AND name IN ('".implode("','",$types) ."')";  
+		}
+		
+		
+		$res = DB::executeAll("SELECT id from ".TABLE_PREFIX."object_types WHERE type IN ('". implode("','",$obj_type_types)."') AND name <> 'file revision' $type_condition ");
+		$type_ids = array();
+		foreach ($res as $row){
+			$types_ids[] = $row['id'] ;
+		}	
+		$type_ids_csv = implode(',', $types_ids);
+		
+		//$pagination = Objects::getObjects($context,$start,$limit,$order,$orderdir,$trashed,$archived, $filters,$start, $limit, $obj_type_types);
+		$pagination = ContentDataObjects::listing(array(
+			"start" => $start,
+			"limit" => $limit,
+			"order" => $order,
+			"order_dir" => $orderdir,
+			"trashed" => $trashed,
+			"archived" => $archived,
+			"types" => $types,
+			"count_results" => false,
+			"extra_conditions" => "AND object_type_id in ($type_ids_csv)"
+		));
+		
 		$result = $pagination->objects; 
 		$total_items = $pagination->total ;
 		 
@@ -985,6 +976,7 @@ class ObjectController extends ApplicationController {
 			}
 			$info_elem['isRead'] = $instance->getIsRead(logged_user()->getId()) ;
 			$info_elem['manager'] = get_class($instance->manager()) ;
+			$info_elem['memPath'] = json_encode($instance->getMembersToDisplayPath());
 			
 			$info[] = $info_elem;
 			
@@ -1343,6 +1335,7 @@ class ObjectController extends ApplicationController {
 				ApplicationLogs::createLog($object, ApplicationLogs::ACTION_UNTRASH);
 				DB::commit();
 				flash_success(lang("success untrash object"));
+				if ($object instanceof Contact) self::reloadPersonsDimension();
 			} catch (Exception $e) {
 				$errorString = is_null($errorMessage) ? lang("error untrash objects", $error) : $errorMessage;
 				flash_error($errorString);
@@ -1369,6 +1362,7 @@ class ObjectController extends ApplicationController {
 				$object->delete($errorMessage);
 				ApplicationLogs::createLog($object, ApplicationLogs::ACTION_DELETE);
 				flash_success(lang("success delete object"));
+				Hook::fire('after_object_delete_permanently', array($object_id), $ignored);
 				DB::commit();
 			} catch (Exception $e) {
 				DB::rollback();
@@ -1395,6 +1389,7 @@ class ObjectController extends ApplicationController {
 			ajx_current("back");
 		}
 		$ids = explode(",", $csvids);
+		$count_persons = 0;
 		$count = 0;
 		$err = 0;
 		$errorMessage = null;
@@ -1402,9 +1397,11 @@ class ObjectController extends ApplicationController {
 			try {
 				$object = Objects::findObject($id);
 				if ($object instanceof ContentDataObject && $object->canDelete(logged_user())) {
-					$object->trash($errorMessage);
-					ApplicationLogs::createLog($object, ApplicationLogs::ACTION_TRASH);
+					$object->trash();
+					Hook::fire('after_object_trash', $object, $null );/*
+					ApplicationLogs::createLog($object, ApplicationLogs::ACTION_TRASH);*/
 					$count++;
+					if ($object instanceof Contact) $count_persons++;
 				} else {
 					$err++;
 				}
@@ -1417,9 +1414,8 @@ class ObjectController extends ApplicationController {
 			flash_error($errorString);
 		} else {
 			flash_success(lang("success trash objects", $count));
-			if (array_var($_GET, 'manager') == "MailContents" || array_var($_GET, 'current') == 'mails-panel') {
-				//ajx_add("mails-containerpanel", "reload");
-			}
+			if ($count_persons > 0) self::reloadPersonsDimension();
+			Hook::fire('after_object_controller_trash', array_var($_GET, 'ids', array_var($_GET, 'object_id')), $ignored);
 		}
 	}
 	
@@ -1455,6 +1451,7 @@ class ObjectController extends ApplicationController {
 			ajx_current("back");
 		}
 		$ids = explode(",", $csvids);
+		$count_persons = 0;
 		$count = 0;
 		$err = 0;
 		foreach ($ids as $id) {
@@ -1464,6 +1461,7 @@ class ObjectController extends ApplicationController {
 					$object->archive();
 					ApplicationLogs::createLog($object, ApplicationLogs::ACTION_ARCHIVE);
 					$count++;
+					if ($object instanceof Contact) $count_persons++;
 				} else {
 					$err++;
 				}
@@ -1475,6 +1473,7 @@ class ObjectController extends ApplicationController {
 			flash_error(lang("error archive objects", $err));
 		} else {
 			flash_success(lang("success archive objects", $count));
+			if ($count_persons > 0) self::reloadPersonsDimension();
 		}
 	}
 	
@@ -1494,6 +1493,7 @@ class ObjectController extends ApplicationController {
 				ApplicationLogs::createLog($object, ApplicationLogs::ACTION_UNARCHIVE);
 				DB::commit();
 				flash_success(lang("success unarchive objects", 1));
+				if ($object instanceof Contact) self::reloadPersonsDimension();
 			} catch (Exception $e) {
 				DB::rollback();
 				flash_error(lang("error unarchive objects", 1));

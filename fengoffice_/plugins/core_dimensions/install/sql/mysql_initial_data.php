@@ -4,8 +4,8 @@ INSERT INTO `<?php echo $table_prefix ?>plugins` (`name`,`is_installed`, `is_act
  ON DUPLICATE KEY UPDATE id=id;
 
 INSERT INTO `<?php echo $table_prefix ?>dimensions` (`code`,`name`,`is_root`,`is_manageable`,`allows_multiple_selection`,`defines_permissions`, `is_system`, `options`) VALUES
- ('feng_persons', 'People', 1, 0, 0, 1, 1,'{"defaultAjax":{"controller":"contact", "action": "init"}}' ),
- ('feng_users', 'Usuarios', 1, 0, 0, 1, 1,'{"defaultAjax":{"controller":"contact", "action": "init"}}')
+ ('feng_persons', 'People', 1, 0, 0, 1, 1,'{"useLangs":true,"defaultAjax":{"controller":"contact", "action": "init"},"quickAdd":{"formAction":"?c=contact&a=quick_add"}}' ),
+ ('feng_users', 'Users', 1, 0, 0, 1, 1,'{"hidden":true,"defaultAjax":{"controller":"contact", "action": "init"}}')
  ON DUPLICATE KEY UPDATE id=id;
 
 INSERT INTO `<?php echo $table_prefix ?>object_types` (`name`,`handler_class`,`table_name`,`type`,`icon`,`plugin_id`) VALUES
@@ -17,7 +17,7 @@ INSERT INTO `<?php echo $table_prefix ?>object_types` (`name`,`handler_class`,`t
 INSERT INTO `<?php echo $table_prefix ?>dimension_object_types` (`dimension_id`,`object_type_id`,`is_root`, `options`) VALUES
  ((SELECT `id` FROM `<?php echo $table_prefix ?>dimensions` WHERE `code`='feng_persons'), (SELECT `id` FROM `<?php echo $table_prefix ?>object_types` WHERE `name`='person'), 1,'{"defaultAjax":{"controller":"contact", "action": "card"}}'),
  ((SELECT `id` FROM `<?php echo $table_prefix ?>dimensions` WHERE `code`='feng_persons'), (SELECT `id` FROM `<?php echo $table_prefix ?>object_types` WHERE `name`='company'), 1,'{"defaultAjax":{"controller":"contact", "action": "company_card"}}'),
- ((SELECT `id` FROM `<?php echo $table_prefix ?>dimensions` WHERE `code`='feng_users'), (SELECT `id` FROM `<?php echo $table_prefix ?>object_types` WHERE `name`='user'), 1,'{"defaultAjax":{"controller":"contact", "action": "card_user"}}'),
+ ((SELECT `id` FROM `<?php echo $table_prefix ?>dimensions` WHERE `code`='feng_users'), (SELECT `id` FROM `<?php echo $table_prefix ?>object_types` WHERE `name`='user'), 1,'{"defaultAjax":{"controller":"contact", "action": "card"}}'),
  ((SELECT `id` FROM `<?php echo $table_prefix ?>dimensions` WHERE `code`='feng_users'), (SELECT `id` FROM `<?php echo $table_prefix ?>object_types` WHERE `name`='company'), 1,'{"defaultAjax":{"controller":"contact", "action": "company_card"}}'),
  ((SELECT `id` FROM `<?php echo $table_prefix ?>dimensions` WHERE `code`='feng_users'), (SELECT `id` FROM `<?php echo $table_prefix ?>object_types` WHERE `name`='workspace'), 1,'')
  ON DUPLICATE KEY UPDATE dimension_id=dimension_id;
@@ -39,7 +39,7 @@ INSERT INTO `<?php echo $table_prefix ?>dimension_object_type_contents` (`dimens
  	(SELECT `id` FROM `<?php echo $table_prefix ?>object_types` WHERE `name`='person'),
  	`id`, 0, 1
  FROM `<?php echo $table_prefix ?>object_types` 
- WHERE `type` IN ('content_object', 'comment', 'located')
+ WHERE `type` IN ('content_object', 'comment')
  ON DUPLICATE KEY UPDATE dimension_id=dimension_id;
 
 INSERT INTO `<?php echo $table_prefix ?>dimension_object_type_contents` (`dimension_id`,`dimension_object_type_id`,`content_object_type_id`, `is_required`, `is_multiple`)

@@ -337,7 +337,18 @@ class MailUtilities {
 				$utf8_body = utf8_safe($utf8_body);
 				$mail->setBodyPlain($utf8_body);
 				break;
-			default: break;
+			default: 
+				if (array_var($parsedMail, 'FileDisposition') == 'inline') {
+					$attachs = array_var($parsedMail, 'Attachments', array());
+					$attached_body = "";
+					foreach ($attachs as $k => $attach) {
+						if (array_var($attach, 'Type') == 'html') {
+							$attached_body .= $enc_conv->convert(array_var($attach, 'Encoding'), 'UTF-8', array_var($attach, 'Data'));
+						}
+					}
+					$mail->setBodyHtml($attached_body);
+				}
+				break;
 		}
 			
 		if (isset($parsedMail['Alternative'])) {
@@ -425,6 +436,8 @@ class MailUtilities {
 				//$workspace = Projects::findById($account->getColumnValue('workspace',0));
 				if ($member && $member instanceof Member ) {
 					$mail->addToMembers(array($member));
+					$ctrl = new ObjectController() ;
+					$ctrl->add_to_members($mail, array($member->getId()));
 			 	}
 			}
 		
@@ -581,7 +594,7 @@ class MailUtilities {
 
 		$user = Contacts::getByEmail($email);
 		if ($user instanceof Contact && $user->canSeeUser(logged_user())){
-			$name = $clean ? clean($user->getDisplayName()) : $user->getDisplayName();
+			$name = $clean ? clean($user->getObjectName()) : $user->getObjectName();
 			$url = $user->getCardUrl();
 		} else {
 			$contact = Contacts::getByEmail($email);

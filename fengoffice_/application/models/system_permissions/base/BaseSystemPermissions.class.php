@@ -16,23 +16,17 @@
     */
     static private $columns = array(
     	'permission_group_id' => DATA_TYPE_INTEGER,
-    	'can_edit_company_data' => DATA_TYPE_BOOLEAN, 
     	'can_manage_security' => DATA_TYPE_BOOLEAN, 
-    	'can_manage_members' => DATA_TYPE_BOOLEAN,
     	'can_manage_configuration' => DATA_TYPE_BOOLEAN,
     	'can_manage_templates' => DATA_TYPE_BOOLEAN,  
-    	'can_manage_reports' => DATA_TYPE_BOOLEAN, 
     	'can_manage_time' => DATA_TYPE_BOOLEAN,
     	'can_add_mail_accounts' => DATA_TYPE_BOOLEAN,
-    	'can_manage_workspaces' => DATA_TYPE_BOOLEAN,
-	    'can_manage_dimensions' => DATA_TYPE_BOOLEAN,
+    	'can_manage_dimensions' => DATA_TYPE_BOOLEAN,
 	    'can_manage_dimension_members' => DATA_TYPE_BOOLEAN,
 	    'can_manage_tasks' => DATA_TYPE_BOOLEAN,
 	    'can_task_assignee' => DATA_TYPE_BOOLEAN,
 	    'can_manage_billing' => DATA_TYPE_BOOLEAN,
 	    'can_view_billing' => DATA_TYPE_BOOLEAN,
-	    'can_view_time' => DATA_TYPE_BOOLEAN,
-	    'can_record_time' => DATA_TYPE_BOOLEAN,
     );
   
     /**

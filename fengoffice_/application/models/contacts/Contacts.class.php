@@ -91,7 +91,7 @@ class Contacts extends BaseContacts {
 	static function getGroupedByCompany() {
 		$companies = self::getCompaniesWithUsers();
 		if(!is_array($companies) || !count($companies)) {
-			return null;
+			//return null;
 		}
 
 		$result = array();
@@ -104,6 +104,9 @@ class Contacts extends BaseContacts {
 				);
 			}
 		}
+		
+		$no_company_users = Contacts::getAllUsers("AND `company_id` = 0", true);
+		$result[lang('without company')] = array('details' => null, 'users' => $no_company_users);
 
 		return count($result) ? $result : null;
 	} // getGroupedByCompany
@@ -210,7 +213,7 @@ class Contacts extends BaseContacts {
 	 * @return Company
 	 */
 	static function getOwnerCompany() {
-		return Contacts::findById(1);
+		return Contacts::findOne(array("conditions" => "is_company<>0 AND NOT EXISTS(SELECT x.object_id FROM ".TABLE_PREFIX."contacts x WHERE x.is_company<>0 AND x.object_id<object_id)"));
 	} // getOwnerCompany
 	
 	

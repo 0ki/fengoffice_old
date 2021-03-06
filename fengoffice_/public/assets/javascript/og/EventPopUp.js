@@ -4,9 +4,9 @@ og.EventPopUp = function(data,config) {
 	if (!config) config = {};
         
     og.EventPopUp.superclass.constructor.call(this, Ext.apply(config, {
-		y: 50,
+		y: 220,
 		width: 350,
-		height: 260,
+		height: 230,
 		id: 'add-event',
 		layout: 'border',
 		modal: true,
@@ -48,7 +48,12 @@ og.EventPopUp = function(data,config) {
 				                name: 'event[name]',
 				                id: 'name',
 				                allowBlank:false,
-				                blankText: lang('this field is required')
+				                enableKeyEvents: true,
+				        		style: {width: '200px'},
+				                blankText: lang('this field is required'),
+				                listeners: {specialkey: function(field, ev){
+				        			if (ev.getKey() == ev.ENTER) Ext.getCmp('add-event').accept();
+				        		}}
 				            },
 				            {
 				            	name: 'event[start_time]',
@@ -76,14 +81,6 @@ og.EventPopUp = function(data,config) {
 				                id: 'all_day_event',
 				                fieldLabel: lang('all day event'),
 				                value: (data.type_id == 2)
-				            },
-				            {
-				            	xtype: 'panel',
-				            	height: 30,
-				            	name: 'sel_members',
-				                id: data.genid + 'sel_members',
-				                border: false,
-				                html: og.popupMemberChooserHtml(data.genid, data.otype, 'ev_popup_members')
 				            },
 				            {
 				            	xtype: 'hidden',
@@ -177,9 +174,8 @@ Ext.extend(og.EventPopUp, Ext.Window, {
 		Ext.getCmp('durationhour').setValue(duration_split[0]);
 		Ext.getCmp('durationmin').setValue(duration_split[1]);
 		
-		var sel_members = document.getElementById('add-event').getElementsByClassName("ev_popup_members");
 		this.hide();
-		og.openLink(og.getUrl('event', 'add'),{post:'popup=true&event[start_day]='+Ext.getCmp('day').getValue()+'&event[start_month]='+Ext.getCmp('month').getValue()+'&event[start_year]='+Ext.getCmp('year').getValue()+'&event[hour]='+Ext.getCmp('hour').getValue()+'&event[minute]='+Ext.getCmp('min').getValue()+'&event[type_id]='+Ext.getCmp('type_id').getValue()+'&event[durationhour]='+Ext.getCmp('durationhour').getValue()+'&event[durationmin]='+Ext.getCmp('durationmin').getValue()+'&view='+Ext.getCmp('view').getValue()+'&event[start_value]='+Ext.getCmp('start_value').getValue()+'&event[start_time]='+Ext.getCmp('start_time').getValue()+'&event[name]='+Ext.getCmp('name').getValue()+'&members='+sel_members[0].value});
+		og.openLink(og.getUrl('event', 'add'),{post:'popup=true&event[start_day]='+Ext.getCmp('day').getValue()+'&event[start_month]='+Ext.getCmp('month').getValue()+'&event[start_year]='+Ext.getCmp('year').getValue()+'&event[hour]='+Ext.getCmp('hour').getValue()+'&event[minute]='+Ext.getCmp('min').getValue()+'&event[type_id]='+Ext.getCmp('type_id').getValue()+'&event[durationhour]='+Ext.getCmp('durationhour').getValue()+'&event[durationmin]='+Ext.getCmp('durationmin').getValue()+'&view='+Ext.getCmp('view').getValue()+'&event[start_value]='+Ext.getCmp('start_value').getValue()+'&event[start_time]='+Ext.getCmp('start_time').getValue()+'&event[name]='+Ext.getCmp('name').getValue()});
 	},
 	
 	cancel: function() {
@@ -226,7 +222,6 @@ og.EventPopUp.show = function(callback, data, scope) {
 	});
 	Ext.getCmp('all_day_event').setValue(data.type_id == 2 ? true : false);	
 	Ext.getCmp('name').focus();
-	document.getElementById(data.genid + 'sel_members').getElementsByClassName('x-panel-body x-panel-body-noheader x-panel-body-noborder')[0].innerHTML = og.popupMemberChooserHtml(data.genid, data.otype, 'ev_popup_members');
 }
 
 

@@ -39,6 +39,12 @@ class DimensionController extends ApplicationController {
 		$all_dimensions = Dimensions::findAll(array('order'=>'default_order ASC , id ASC'));
 		$dimensions_to_show = array();
 		
+		/*
+		if(logged_user()->isAdministrator()){
+			$dimensions_to_show['dimensions']=$all_dimensions;
+			return $dimensions_to_show;
+		}
+		*/
 		
 		foreach ($all_dimensions as $dim){
 			$did = $dim->getId();
@@ -77,8 +83,9 @@ class DimensionController extends ApplicationController {
 	 * Returns all the members to be displayed in the panel that corresponds to the dimension whose id is received by
 	 * parameter. It is called when the application is first loaded. 
 	*/
-	function initial_list_dimension_members($dimension_id, $object_type_id, $allowed_member_type_ids, $return_all_members = false){
-
+	function initial_list_dimension_members($dimension_id, $object_type_id, $allowed_member_type_ids = null, $return_all_members = false){
+		
+		if(logged_user()->isAdministrator())$return_all_members=true;
 		$contact_pg_ids = ContactPermissionGroups::getPermissionGroupIdsByContactCSV(logged_user()->getId(),false);
 		$dimension = Dimensions::findById($dimension_id);
 		
@@ -90,24 +97,31 @@ class DimensionController extends ApplicationController {
 				if (is_null($allowed_member_type_ids) || in_array($dot_id, $allowed_member_type_ids))
 					$allowed_object_type_ids[] = $dot_id;
 			}
+			
+			$object_type = ObjectTypes::findById($object_type_id);
+			if ($object_type instanceof ObjectType) {
+				eval('$ot_manager = '.$object_type->getHandlerClass().'::instance();');
+				if (isset($ot_manager)) {
+					eval('$item_object = new '.$ot_manager->getItemClass().'();');
+				}
+			}
 		}
 		
 		if ($dimension instanceof Dimension){
 			
 			$parent = 0;
 			if (!$dimension->getDefinesPermissions() || $dimension->hasAllowAllForContact($contact_pg_ids) || $return_all_members){
-				$all_members = $dimension->getAllMembers();
+				$all_members = $dimension->getAllMembers(false,"name",true);
 			}
 			else if ($dimension->hasCheckForContact($contact_pg_ids)){
-				$member_list = $dimension->getAllMembers();
+				$member_list = $dimension->getAllMembers(false,"name",true);
 				$allowed_members = array();
 				foreach ($member_list as $dim_member){
-					if ($dim_member->canBeReadByContact($contact_pg_ids))
+					if ($dim_member->canBeReadByContact($contact_pg_ids, logged_user()))
 						$allowed_members[] = $dim_member;
 				}
 				$all_members = $allowed_members;
 			}
-			
 			
 			if (!isset($all_members)) $all_members = array();
 			
@@ -120,6 +134,9 @@ class DimensionController extends ApplicationController {
 
 				if ($object_type_id!=null){
 					$selectable = in_array($m->getObjectTypeId(), $allowed_object_type_ids) ? true : false;
+					if ($selectable && isset($item_object)) {
+						if (! $item_object->canAdd(logged_user(), array($m)) ) continue;
+					}
 				}
 				
 				$tempParent = $m->getParentMemberId();
@@ -144,7 +161,7 @@ class DimensionController extends ApplicationController {
 				/* @var $m Member */
 				$member = array(
 					"id" => $m->getId(),
-					"name" => $m->getName(),
+					"name" => clean($m->getName()),
 					"parent" => $tempParent,
 					"realParent" => $m->getParentMemberId(),
 					"object_id" => $m->getObjectId(),
@@ -189,13 +206,13 @@ class DimensionController extends ApplicationController {
 			if ($dimension instanceof Dimension && $member instanceof Member){
 							
 				if (!$dimension->getDefinesPermissions() || $dimension->hasAllowAllForContact($contact_pg_ids)){
-					$dimension_members = $dimension->getAllMembers();
+					$dimension_members = $dimension->getAllMembers(false,"name",true);
 				}
 				else if ($dimension->hasCheckForContact($contact_pg_ids)){
-					$member_list = $dimension->getAllMembers();
+					$member_list = $dimension->getAllMembers(false,"name",true);
 					$allowed_members = array();
 					foreach ($member_list as $dim_member){
-						if ($dim_member->canBeReadByContact($contact_pg_ids))
+						if ($dim_member->canBeReadByContact($contact_pg_ids, logged_user()))
 							$allowed_members[] = $dim_member;
 					}
 					$dimension_members = $allowed_members;
@@ -281,7 +298,7 @@ class DimensionController extends ApplicationController {
 					/* @var $m Member */
 					$member = array(
 						"id" => $m->getId(),
-						"name" => $m->getName(),
+						"name" => clean($m->getName()),
 						"parent" => $tempParent,
 						"realParent" => $m->getParentMemberId(),
 						"object_id" => $m->getObjectId(),

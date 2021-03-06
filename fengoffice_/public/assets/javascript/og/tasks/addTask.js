@@ -444,23 +444,29 @@ ogTasks.SubmitNewTask = function(task_id){
 }
 
 
-ogTasks.buildAssignedToComboStore = function(companies) {
+ogTasks.buildAssignedToComboStore = function(companies, only_me) {
 	var usersStore = [];
 	var comp_array = [];
 	var cantU = 0;
 	var cantC = 1;
 	
-	comp_array[cantC++] = ['0', lang('dont assign')];
-	comp_array[cantC++] = ['0', '--'];
-	usersStore[cantU++] = ['0', '--'];
+	if (!only_me) {
+		comp_array[cantC++] = ['0', lang('dont assign')];
+		comp_array[cantC++] = ['0', '--'];
+		usersStore[cantU++] = ['0', '--'];
+	}
 	
 	if (companies) {
 		for (i=0; i<companies.length; i++) {
 			comp = companies[i];
-			comp_array[cantC++] = [comp.id, comp.name];
+			if (!only_me && comp.id > 0) {
+				comp_array[cantC++] = [comp.id, og.clean(comp.name)];
+			}
 			for (j=0; j<comp.users.length; j++) {
 				usr = comp.users[j];
-				usersStore[cantU++] = [usr.id, usr.name];
+				if (!only_me) {
+					usersStore[cantU++] = [usr.id, og.clean(usr.name)];
+				}
 				if (usr.isCurrent) comp_array[0] = [usr.id, lang('me')];
 			}
 		}
@@ -480,7 +486,8 @@ ogTasks.buildMilestonesComboStore = function(ms) {
 }
 
 ogTasks.drawAssignedToCombo = function(success, data) {
-	var usersStore = ogTasks.buildAssignedToComboStore(data.companies);
+	var only_me = data.only_me ? data.only_me : null;
+	var usersStore = ogTasks.buildAssignedToComboStore(data.companies, only_me);
 	var prev_combo = Ext.get('ogTasksPanelATUserCompanyCombo');
 	if (prev_combo) prev_combo.remove();
 		

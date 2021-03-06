@@ -10,29 +10,7 @@
     // -------------------------------------------------------
     //  Access methods
     // -------------------------------------------------------
-  
-    /**
-    * Return value of 'rel_object_manager' field
-    *
-    * @access public
-    * @param void
-    * @return string 
-    */
-    function getRelObjectManager() {
-      return $this->getColumnValue('rel_object_manager');
-    } // getRelObjectManager()
-    
-    /**
-    * Set value of 'rel_object_manager' field
-    *
-    * @access public   
-    * @param string $value
-    * @return boolean
-    */
-    function setRelObjectManager($value) {
-      return $this->setColumnValue('rel_object_manager', $value);
-    } // setRelObjectManager() 
-    
+
     /**
     * Return value of 'rel_object_id' field
     *
@@ -55,28 +33,6 @@
       return $this->setColumnValue('rel_object_id', $value);
     } // setRelObjectId() 
       
-    /**
-    * Return value of 'object_manager' field
-    *
-    * @access public
-    * @param void
-    * @return string 
-    */
-    function getObjectManager() {
-      return $this->getColumnValue('object_manager');
-    } // getObjectManager()
-    
-    /**
-    * Set value of 'object_manager' field
-    *
-    * @access public   
-    * @param string $value
-    * @return boolean
-    */
-    function setObjectManager($value) {
-      return $this->setColumnValue('object_manager', $value);
-    } // setObjectManager() 
-    
     /**
     * Return value of 'object_id' field
     *

@@ -23,7 +23,7 @@ og.ArchivedObjects = function() {
 					'createdBy', 'createdById', 'dateCreated',
 					'updatedBy', 'updatedById',	'dateUpdated',
 					'archivedBy', 'archivedById', 'dateArchived',
-					'icon', 'manager', 'mimeType', 'url', 'ix'
+					'icon', 'manager', 'mimeType', 'url', 'ix', 'memPath'
 				]
 			}),
 			remoteSort: true,
@@ -65,7 +65,11 @@ og.ArchivedObjects = function() {
 		}
 		actions = '<span>' + actions + '</span>';
 	
-		var name = String.format('<a href="{1}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', og.clean(value), viewUrl);
+		mem_path = "";
+		var mpath = Ext.util.JSON.decode(r.data.memPath);
+		if (mpath) mem_path = og.getCrumbHtml(mpath);
+		
+		var name = mem_path + String.format('<a href="{1}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', og.clean(value), viewUrl);
 		
 		return name + actions;
 	}

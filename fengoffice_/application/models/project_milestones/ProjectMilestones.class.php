@@ -42,6 +42,10 @@ class ProjectMilestones extends BaseProjectMilestones {
 		}
 		
 		$result = ProjectMilestones::getContentObjects($context, ObjectTypes::findById(ProjectMilestones::instance()->getObjectTypeId()), null, null, $extra_conditions);
+		//alert_r($extra_conditions);
+		/*$result = ProjectMilestones::instance()->listing(array(
+			"extra_conditions" => $extra_conditions
+		));*/
 		$milestones = $result->objects;
 		return $milestones;
 	} // getActiveMilestonesByUser

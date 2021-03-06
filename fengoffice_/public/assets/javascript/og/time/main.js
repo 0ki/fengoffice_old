@@ -54,6 +54,7 @@ ogTimeManager.loadDataFromHF = function(genid){
 	result['users'] = Ext.util.JSON.decode(document.getElementById(genid + 'hfUsers').value);
 	result['timeslots'] = Ext.util.JSON.decode(document.getElementById(genid + 'hfTimeslots').value);
 	result['companies'] = Ext.util.JSON.decode(document.getElementById(genid + 'hfCompanies').value);
+	result['drawinputs'] = Ext.util.JSON.decode(document.getElementById(genid + 'hfDrawInputs').value);
 	this.genid = genid;
 	
 	return this.loadData(result);
@@ -102,6 +103,8 @@ ogTimeManager.loadData = function(data){
 		if (cdata.id)
 			this.Companies[this.Companies.length] = new ogTasksCompany(cdata.id,cdata.name);
 	}
+	
+	this.DrawInputs = data['drawinputs'];
 }
 
 
@@ -120,7 +123,7 @@ ogTimeManager.GetNewTimeslotParameters = function(genid){
 	parameters["timeslot[description]"] = document.getElementById(genid + 'tsDesc').value;
 	var userSel = document.getElementById(genid + 'tsUser');
 	if (userSel){
-		parameters["timeslot[user_id]"] = userSel.value;
+		parameters["timeslot[contact_id]"] = userSel.value;
 	}
 	parameters["timeslot[id]"] = document.getElementById(genid + 'tsId').value;
 	

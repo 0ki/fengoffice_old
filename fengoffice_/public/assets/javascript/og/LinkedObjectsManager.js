@@ -33,7 +33,7 @@ og.LinkedObjectManager = function(config) {
 					'name', 'object_id', 'type', 'tags', 
 					'createdBy', 'createdById', 'dateCreated',
 					'updatedBy', 'updatedById',	'dateUpdated',
-					'icon', 'wsIds', 'manager', 'mimeType', 'url', 'ix'
+					'icon', 'wsIds', 'manager', 'mimeType', 'url', 'ix', 'memPath'
 				]
 			}),
 			remoteSort: true,
@@ -62,8 +62,6 @@ og.LinkedObjectManager = function(config) {
 	}
 
 	function renderName(value, p, r) {
-		var projectsString = String.format('<span class="project-replace">{0}</span>&nbsp;', r.data.wsIds);
-
 		var viewUrl = r.data.url;
 		
 		var actions = '';
@@ -80,9 +78,14 @@ og.LinkedObjectManager = function(config) {
 		} else {
 			var cleanvalue = og.clean(value);
 		}
-		var name = String.format('<a style="font-size:120%" href="{1}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', cleanvalue, viewUrl);
 		
-		return projectsString + name + actions;
+		mem_path = "";
+		var mpath = Ext.util.JSON.decode(r.data.memPath);
+		if (mpath) mem_path = og.getCrumbHtml(mpath);
+		
+		var name = mem_path + String.format('<a style="font-size:120%" href="{1}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', cleanvalue, viewUrl);
+		
+		return name + actions;
 	}
 
 	function renderType(value, p, r){

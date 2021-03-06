@@ -16,9 +16,9 @@ abstract class BaseMailAccountContacts extends DataManager {
 	 */
 	static private $columns = array(
 		'id' => DATA_TYPE_INTEGER,
+		'contact_id' => DATA_TYPE_INTEGER,
 		'account_id' => DATA_TYPE_INTEGER,
 		'can_edit' => DATA_TYPE_BOOLEAN,
-		'contact_id' => DATA_TYPE_INTEGER,
 		'signature' => DATA_TYPE_STRING,
 		'sender_name' => DATA_TYPE_STRING,
 		'is_default' => DATA_TYPE_BOOLEAN,

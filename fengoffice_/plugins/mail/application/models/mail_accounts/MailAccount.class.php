@@ -252,6 +252,7 @@ class MailAccount extends BaseMailAccount {
 	
 	
 	function getMember(){
+		
 		return Members::instance()->findById($this->getMemberId());
 	}
 
@@ -298,7 +299,7 @@ class MailAccount extends BaseMailAccount {
 		} else if ($this->getSenderName()) {
 			return $this->getSenderName();
 		} else {
-			return logged_user()->getDisplayName();
+			return logged_user()->getObjectName();
 		}
 	}
 	

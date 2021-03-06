@@ -36,7 +36,7 @@
   
   <tr>
     <td class="optionLabel"><label for="configFormDatabasePrefix">Table prefix:</label></td>
-    <td><input type="text" name="config_form[database_prefix]" id="configFormDatabasePrefix" value="<?php echo array_var($config_form_data, 'database_prefix', 'og_') ?>" /></td>
+    <td><input type="text" name="config_form[database_prefix]" id="configFormDatabasePrefix" value="<?php echo array_var($config_form_data, 'database_prefix', 'fo_') ?>" /></td>
   </tr>
   
   <tr>

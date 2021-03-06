@@ -8,9 +8,9 @@
 		echo lang('who').': '; ?><br><?php 
 		echo ('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
 		if ($invitation->getInvitationState() == 1)
-			echo lang('user will attend to event', $from_user->getDisplayName());
+			echo lang('user will attend to event', $from_user->getObjectName());
 		else if ($invitation->getInvitationState() == 2)
-			echo lang('user will not attend to event', $from_user->getDisplayName());
+			echo lang('user will not attend to event', $from_user->getObjectName());
 		?>
 		<br><br>
 		<?php

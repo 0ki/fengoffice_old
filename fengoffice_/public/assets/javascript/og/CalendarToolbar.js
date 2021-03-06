@@ -275,10 +275,11 @@ og.CalendarTopToolbar = function(config) {
 		this.addSeparator();
 	}
 	this.add(topToolbarItems.markAs);
+	/* deshabilitada temporalmente
 	if (!og.loggedUser.isGuest) {
 		this.addSeparator();
 		this.add(topToolbarItems.imp_exp);
-	}
+	}*/
 }
 
 Ext.extend(og.CalendarTopToolbar, Ext.Toolbar, {
@@ -336,13 +337,20 @@ og.CalendarSecondTopToolbar = function(config) {
 	for (i in usersArray){
 		var companyName = '';
 		var j;
-		for(j in companiesArray)
-			if (companiesArray[j] && companiesArray[j].id == usersArray[i].cid)
+		for(j in companiesArray){
+			if (companiesArray[j] && companiesArray[j].id == usersArray[i].cid) {
 				companyName = companiesArray[j].name;
-		if (usersArray[i] && usersArray[i].cid) 
+			}
+		}
+		if (usersArray[i] && usersArray[i].cid)  {
 			ucsOtherUsers[ucsOtherUsers.length] = [(usersArray[i].cid + ':' + usersArray[i].id), usersArray[i].name + ' : ' + companyName];
-		if (usersArray[i].isCurrent)
+		}else if (usersArray[i]) {
+			// Users that have not company
+			ucsOtherUsers[ucsOtherUsers.length] = [(usersArray[i].cid + ':' + usersArray[i].id), usersArray[i].name];
+		}	
+		if (usersArray[i].isCurrent){
 			currentUser = usersArray[i].cid + ':' + usersArray[i].id;
+		}
 	}
 	ucsData = ucsData.concat(og.calendarOrderUsers(ucsOtherUsers));
 

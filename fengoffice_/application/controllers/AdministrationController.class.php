@@ -74,12 +74,13 @@ class AdministrationController extends ApplicationController {
 	} // index
     
     
-    function scolors ()
-    {
-        $colors = array_var($_POST,'colors');
-        owner_company()->setBrandColors($colors);
-        owner_company()->save();
-        exit;
+	function scolors () {
+		if (can_manage_configuration(logged_user())) {
+			$colors = array_var($_POST,'colors');
+			owner_company()->setBrandColors($colors);
+			owner_company()->save();
+		}
+		exit;
     }
 
 	/**
@@ -147,7 +148,7 @@ class AdministrationController extends ApplicationController {
 	 * @return null
 	 */
 	function company() {
-		if(!logged_user()->isCompanyAdmin(owner_company())) {
+		if(!can_manage_configuration(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
@@ -165,7 +166,7 @@ class AdministrationController extends ApplicationController {
 	 * @return null
 	 */
 	function members() {
-		if(!logged_user()->isExecutiveGroup()){
+		if(!can_manage_security(logged_user())){
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
@@ -185,7 +186,7 @@ class AdministrationController extends ApplicationController {
 	 * @return null
 	 */
 	function clients() {
-		if(!logged_user()->isExecutiveGroup()){
+		if(!can_manage_security(logged_user())){
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
@@ -316,7 +317,7 @@ class AdministrationController extends ApplicationController {
 	 * @return null
 	 */
 	function configuration() {
-		if(!logged_user()->isCompanyAdmin(owner_company())) {
+		if(!can_manage_configuration(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
@@ -332,7 +333,7 @@ class AdministrationController extends ApplicationController {
 	 * @return null
 	 */
 	function tools() {
-		if(!logged_user()->isAdminGroup()) {
+		if(!can_manage_configuration(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
@@ -347,7 +348,7 @@ class AdministrationController extends ApplicationController {
 	 * @return null
 	 */
 	function task_templates() {
-		if(!logged_user()->isAdminGroup()) {
+		if(!can_manage_templates(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
@@ -364,7 +365,7 @@ class AdministrationController extends ApplicationController {
 	 * @return null
 	 */
 	function upgrade() {
-		if(!logged_user()->isCompanyAdmin(owner_company())) {
+		if(!can_manage_configuration(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
@@ -458,7 +459,7 @@ class AdministrationController extends ApplicationController {
 	 * @return null
 	 */
 	function tool_test_email() {
-		if(!logged_user()->isCompanyAdmin(owner_company())) {
+		if(!can_manage_configuration(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
@@ -497,7 +498,7 @@ class AdministrationController extends ApplicationController {
 					throw new FormSubmissionErrors($errors);
 				} // if
 				$to = array($recepient);
-				$success = Notifier::sendEmail($to, logged_user()->getEmailAddress('user'), lang('test mail message subject'), $message);
+				$success = Notifier::sendEmail($to, logged_user()->getEmailAddress(), lang('test mail message subject'), $message);
 				if($success) {
 					flash_success(lang('success test mail settings'));
 				} else {
@@ -518,6 +519,10 @@ class AdministrationController extends ApplicationController {
 	 * @return null
 	 */
 	function tool_mass_mailer() {
+		flash_error(lang('no access permissions'));
+		ajx_current("empty");
+		return;
+		/*
 		if(!logged_user()->isCompanyAdmin(owner_company())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
@@ -555,7 +560,7 @@ class AdministrationController extends ApplicationController {
 				if(is_array($users)) {
 					foreach($users as $user) {
 						if(array_var($massmailer_data, 'user_' . $user->getId()) == 'checked') {
-							$recepients[] = Notifier::prepareEmailAddress($user->getEmailAddress('user'), $user->getDisplayName());
+							$recepients[] = Notifier::prepareEmailAddress($user->getEmailAddress('user'), $user->getObjectName());
 						} // if
 					} // foreach
 				} // if
@@ -568,7 +573,7 @@ class AdministrationController extends ApplicationController {
 					throw new FormSubmissionErrors($errors);
 				} // if
 
-				if(Notifier::sendEmail($recepients, Notifier::prepareEmailAddress(logged_user()->getEmailAddress('user'), logged_user()->getDisplayName()), $subject, $message)) {
+				if(Notifier::sendEmail($recepients, Notifier::prepareEmailAddress(logged_user()->getEmailAddress('user'), logged_user()->getObjectName()), $subject, $message)) {
 					flash_success(lang('success massmail'));
 				} else {
 					flash_error(lang('error massmail'));
@@ -579,10 +584,11 @@ class AdministrationController extends ApplicationController {
 				ajx_current("empty");
 			} // try
 		} // if
+		*/
 	} // tool_mass_mailer
 
 	function cron_events() {
-		if(!logged_user()->isAdminGroup()) {
+		if(!can_manage_configuration(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
@@ -739,16 +745,14 @@ class AdministrationController extends ApplicationController {
 		$members = array();
 		
 		foreach($dimensions as $dim) {
-			$dim_controller= new DimensionController();
-			$allowed_members=$dim_controller->initial_list_dimension_members($dim->getId(), null, null, false);
-			$ids=array();
-			foreach ($allowed_members as $m){
-				$ids[]=$m['id'];
-			}
-			$root_members = Members::findAll(array('conditions' => array('`id` IN ('.implode(",", $ids).')', $dim->getId()), 'order' => '`name` ASC'));
-			foreach ($root_members as $mem) {
-				$members[$dim->getId()][] = $mem;
-				$members[$dim->getId()] = array_merge($members[$dim->getId()], $mem->getAllChildrenSorted());
+			$dimensions = Dimensions::findAll(array('conditions' => '`is_manageable` = 1'));
+			$members = array();
+			foreach($dimensions as $dim) {
+				$root_members = Members::findAll(array('conditions' => array('`dimension_id`=? AND `parent_member_id`=0', $dim->getId()), 'order' => '`name` ASC'));
+				foreach ($root_members as $mem) {
+					$members[$dim->getId()][] = $mem;
+					$members[$dim->getId()] = array_merge($members[$dim->getId()], $mem->getAllChildrenSorted());
+				}
 			}
 		}
 		
@@ -757,14 +761,13 @@ class AdministrationController extends ApplicationController {
 	}
 
 	function tabs() {
-		if(!can_manage_tabs(logged_user())) {
+		if(!can_manage_configuration(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
 		} 
 		tpl_assign('tabs', TabPanels::instance()->findAll(array(
-			"order"=>"ordering",
-			"conditions"=> "id <> 'webpages-panel' " //TODO disabled
+			"order"=>"ordering"
 		)));
 	}
 	
@@ -772,7 +775,7 @@ class AdministrationController extends ApplicationController {
 		ajx_current("empty");
 		evt_add("tabs changed");
 		//AjaxResponse::instance()->addInlineScript("<script>alert(1);<script>");
-		if(!can_manage_tabs(logged_user())) {
+		if(!can_manage_configuration(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;

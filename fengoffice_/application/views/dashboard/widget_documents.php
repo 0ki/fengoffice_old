@@ -15,7 +15,7 @@ if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user
 	</td>
 	<td style="padding-left:2px">
 	<?php if ($document->isCheckedOut()) {?>
-			<div class="db-ico ico-unknown ico-locked" style="padding-left:16px;display:inline" title="<?php echo lang('checked out by') . " " . $document->getCheckedOutBy()->getDisplayName()?>">&nbsp;</div>
+			<div class="db-ico ico-unknown ico-locked" style="padding-left:16px;display:inline" title="<?php echo lang('checked out by') . " " . $document->getCheckedOutBy()->getObjectName()?>">&nbsp;</div>
 	<?php } // if ?>
 	<?php 
 		$dws = $document->getWorkspaces(logged_user()->getWorkspacesQuery());

@@ -533,3 +533,23 @@
 							}, '');
 		og.clearPaintedCells();								
 	}
+	
+	og.callEventAdd = function(day, month, year, hour, minute) {
+		typeid = hour == -1 ? 2 : 1;
+		if (typeid == 1) {
+			og.selectEndDateTime(day, month, year, hour, minute);
+			hrs = 0;
+			mins = og.getDurationMinutes();
+			while (mins >= 60) {
+				mins -= 60;
+				hrs +=1;
+			}
+			if (hrs == 0) {
+				hrs = 1;
+				mins = 0;
+			}
+		} else {
+			hrs = mins = 0;
+		}
+		og.openLink(og.getUrl('event', 'add', {day:ev_start_day, month:ev_start_month, year:ev_start_year, hour:ev_start_hour, minute:ev_start_minute, durationhour:hrs, durationmin:mins, type_id:typeid}));
+	}

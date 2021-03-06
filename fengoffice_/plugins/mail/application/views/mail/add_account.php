@@ -376,7 +376,7 @@ if (!$mailAccount->isNew()){
 			<div class="account_permissions_user<?php if ($alt) echo " odd"; ?>">
 				<div class="user_picture cardIcon"><img src="<?php echo $user->getAvatarUrl();?>"></img></div>
 				<div class="user_name">
-					<?php echo clean($user->getDisplayName()) ?>
+					<?php echo clean($user->getObjectName()) ?>
 				</div> <?php
 				if (in_array($user->getId(), $account_user_ids)) {
 					if (array_var($mailAccountUsers[$user->getId()], 'can_edit')) {

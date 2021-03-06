@@ -206,7 +206,7 @@ class MailContent extends BaseMailContent {
 	 */
 	function getContent() {
 		if (FileRepository::isInRepository($this->getContentFileId())) {
-			return FileRepository::getFileContent($this->getContentFileId());
+			return FileRepository::getFileContent($this->getContentFileId(), config_option('file_storage_adapter'));
 		} else if ($this->getMailData()->columnExists('content')) {
 			return $this->getMailData()->getContent();
 		}
@@ -368,11 +368,11 @@ class MailContent extends BaseMailContent {
 	function getSenderName() {
 		$user = Contacts::getByEmail($this->getFrom());
 		if ($user instanceof Contact && $user->canSeeUser(logged_user())) {
-			return $user->getDisplayName();
+			return $user->getObjectName();
 		} else {
 			$contact = Contacts::getByEmail($this->getFrom());
 			if ($contact instanceof Contact && $contact->canView(logged_user())) {
-				return $contact->getDisplayName();
+				return $contact->getObjectName();
 			}
 		}
 		return $this->getFromName();
@@ -402,7 +402,7 @@ class MailContent extends BaseMailContent {
 	 * @return boolean
 	 */
 	function canView(Contact $user) {	
-		return can_read($user, $this->getMembers(), $this->getObjectTypeId());
+		return can_read($user, $this->getMembers(), $this->manager()->getObjectTypeId());
 	} // canView
 
 
@@ -413,7 +413,7 @@ class MailContent extends BaseMailContent {
 	 * @return boolean
 	 */
 	function canEdit(Contact $user) {	
-		return can_write($user, $this->getMembers(), $this->getObjectTypeId());
+		return can_write($user, $this->getMembers(), $this->manager()->getObjectTypeId());
 	} 
 
 	/**
@@ -425,7 +425,7 @@ class MailContent extends BaseMailContent {
 	 * @return booelean
 	 */
 	function canAdd(Contact $user, $context) {
-		return can_add($user, $context, $this->getObjectTypeId());
+		return can_add($user, $context, $this->manager()->getObjectTypeId());
 	} // canAdd
 
 	/**
@@ -435,7 +435,7 @@ class MailContent extends BaseMailContent {
 	 * @return boolean
 	 */
 	function canDelete(Contact $user) {
-		return can_delete($user,$this->getMembers(), $this->getObjectTypeId());
+		return can_delete($user,$this->getMembers(), $this->manager()->getObjectTypeId());
 	}
 
 	// ---------------------------------------------------
@@ -452,7 +452,7 @@ class MailContent extends BaseMailContent {
 		}
 	} // getSearchableColumnContent
 	
-    function addToSearchableObjects($wasNew){
+    function addToSearchableObjects($wasNew = false){
     	$columns_to_drop = array();
     	if ($wasNew)
     		$columns_to_drop = $this->getSearchableColumns();
@@ -568,7 +568,7 @@ class MailContent extends BaseMailContent {
 		if ($this->getTrashedById() > 0)
 			$deletedBy = Contacts::findById($this->getTrashedById());
     	if (isset($deletedBy) && $deletedBy instanceof Contact) {
-    		$deletedBy = $deletedBy->getDisplayName();
+    		$deletedBy = $deletedBy->getObjectName();
     	} else {
     		$deletedBy = lang("n/a");
     	}
@@ -578,7 +578,7 @@ class MailContent extends BaseMailContent {
     	}
     	if (isset($createdBy) && $createdBy instanceof Contact) {
     		$createdById = $createdBy->getId();
-    		$createdBy = $createdBy->getDisplayName();
+    		$createdBy = $createdBy->getObjectName();
     	} else {
     		$createdById = 0;
     		$createdBy = $this->getFromName();
@@ -588,7 +588,7 @@ class MailContent extends BaseMailContent {
   		if ($this->getArchivedById() > 0)
 			$archivedBy = Contacts::findById($this->getArchivedById());
     	if (isset($archivedBy) &&  $archivedBy instanceof Contact) {
-    		$archivedBy = $archivedBy->getDisplayName();
+    		$archivedBy = $archivedBy->getObjectName();
     	} else {
     		$archivedBy = lang("n/a");
     	}
@@ -690,7 +690,7 @@ class MailContent extends BaseMailContent {
 			$ret = array();
 			if (is_array($objects) && count($objects)) {
 				foreach ($objects as $o) {
-					if (!$o instanceof ProjectDataObject || !$o->isTrashed()) {
+					if (!$o instanceof ContentDataObject || !$o->isTrashed()) {
 						$ret[] = $o;
 					}
 				}

@@ -19,7 +19,7 @@ CREATE TABLE `<?php echo $table_prefix ?>administration_tools` (
 
 CREATE TABLE `<?php echo $table_prefix ?>dimensions` (
   `id` int(10) unsigned NOT NULL auto_increment,
-  `code` varchar(20) <?php echo $default_collation ?> NOT NULL default '',
+  `code` varchar(30) <?php echo $default_collation ?> NOT NULL default '',
   `name` varchar(50) <?php echo $default_collation ?> NOT NULL default '',
   `is_root` tinyint(1) unsigned NOT NULL default '0',
   `is_manageable` tinyint(1) unsigned NOT NULL default '0',
@@ -30,7 +30,9 @@ CREATE TABLE `<?php echo $table_prefix ?>dimensions` (
   `default_order` int(10) NOT NULL default '0',
   `options` TEXT NOT NULL default '',
   PRIMARY KEY  (`id`),
-  KEY `by_name` (`name`)
+  UNIQUE KEY `code` (`code`) USING BTREE,
+  KEY `by_name` (`name`),
+  KEY `defines_perm`(`defines_permissions`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 
 CREATE TABLE `<?php echo $table_prefix ?>members` (
@@ -112,6 +114,7 @@ CREATE TABLE `<?php echo $table_prefix ?>object_members` (
   `member_id` int(10) unsigned NOT NULL,
   `is_optimization` tinyint(1) unsigned NOT NULL default '0',
   PRIMARY KEY  (`object_id`,`member_id`),
+  KEY `member_id` (`member_id`),
   INDEX `is_optimization` (`is_optimization`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 
@@ -184,23 +187,17 @@ CREATE TABLE `<?php echo $table_prefix ?>permission_groups` (
 
 CREATE TABLE `<?php echo $table_prefix ?>system_permissions` (
   `permission_group_id` int(10) unsigned NOT NULL,
-  `can_edit_company_data` tinyint(1) unsigned NOT NULL default '0',
   `can_manage_security` tinyint(1) unsigned NOT NULL default '0',
-  `can_manage_members` tinyint(1) unsigned NOT NULL default '0',
   `can_manage_configuration` tinyint(1) unsigned NOT NULL default '0',
   `can_manage_templates` tinyint(1) unsigned NOT NULL default '0',
-  `can_manage_reports` tinyint(1) unsigned NOT NULL default '0',
   `can_manage_time` tinyint(1) unsigned NOT NULL default '0',
   `can_add_mail_accounts` tinyint(1) unsigned NOT NULL default '0',
-  `can_manage_workspaces` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `can_manage_dimensions` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `can_manage_dimension_members` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `can_manage_tasks` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `can_task_assignee` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `can_manage_billing` tinyint(1) unsigned NOT NULL DEFAULT '0',
-  `can_view_billing` tinyint(1) unsigned NOT NULL DEFAULT '0',
-  `can_view_time` tinyint(1) unsigned NOT NULL DEFAULT '0',
-  `can_record_time` tinyint(1) unsigned NOT NULL DEFAULT '0', 
+  `can_view_billing` tinyint(1) unsigned NOT NULL DEFAULT '0', 
   PRIMARY KEY  (`permission_group_id`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 
@@ -226,7 +223,9 @@ CREATE TABLE `<?php echo $table_prefix ?>contact_member_permissions` (
   `object_type_id` int(10) unsigned NOT NULL,
   `can_write` tinyint(1) unsigned NOT NULL default '0',
   `can_delete` tinyint(1) unsigned NOT NULL default '0',
-  PRIMARY KEY  (`permission_group_id`, `member_id`, `object_type_id`)
+  PRIMARY KEY  (`permission_group_id`, `member_id`, `object_type_id`),
+  KEY `member_id`(`member_id`),
+  KEY `obj_type`(`object_type_id`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 
 CREATE TABLE `<?php echo $table_prefix ?>contact_permission_groups` (
@@ -684,7 +683,11 @@ CREATE TABLE  `<?php echo $table_prefix ?>timeslots` (
   `is_fixed_billing` float NOT NULL default '0',
   `billing_id` int(10) unsigned NOT NULL default '0',
   PRIMARY KEY  (`object_id`),
-  INDEX `ObjectID` (`object_id`)
+  KEY `rel_obj_id` (`rel_object_id`) USING BTREE,
+  KEY `end_time` (`end_time`),
+  KEY `contact_end` (`contact_id`,`end_time`),
+  KEY `contact_start` (`contact_id`,`start_time`),
+  KEY `start_time` (`start_time`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 
 CREATE TABLE `<?php echo $table_prefix ?>read_objects` (

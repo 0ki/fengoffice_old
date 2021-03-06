@@ -35,7 +35,7 @@
 				<div id="div<?php echo $genid ?>inviteUser<?php echo $user->getId() ?>" class="container-div <?php echo $checked==true? 'checked-user':'user-name' ?>" onmouseout="og.rollOut(this,false <?php echo $checked==true? ',true':',false' ?>)" onmouseover="og.rollOver(this)" onclick="og.checkUser(this)">
 					<input <?php echo $checked? 'checked="checked"':'' ?> id="<?php echo $genid ?>inviteUser<?php echo $user->getId()?>" type="checkbox" style="display:none" name="<?php echo 'user['.$user->getId() .']' ?>" value="checked" />
 					<label for="<?php echo $genid ?>notifyUser<?php echo $user->getId() ?>" style=" width: 120px; overflow:hidden; background:url('<?php echo $user->getAvatarUrl() ?>') no-repeat;">
-						<span class="ico-user link-ico"><?php echo clean($user->getDisplayName()) ?></span>
+						<span class="ico-user link-ico"><?php echo clean($user->getObjectName()) ?></span>
 						<br>
 						<span style="color:#888888;font-size:90%;font-weight:normal;"> <?php echo $user->getEmail('user')->getEmailAddress()  ?> </span>
 					</label>

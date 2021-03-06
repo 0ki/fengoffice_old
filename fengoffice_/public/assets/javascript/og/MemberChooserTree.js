@@ -1,22 +1,15 @@
 og.MemberChooserTree = function(config) {
-	
 	if (!config.allowedMemberTypes) 
 		config.allowedMemberTypes = '';
-	
+
 	Ext.applyIf(config, {
-		
 		isMultiple: false,
-		
 		collapsible: true,
-		
-		collapsed: !config.required,
-		
+		//collapsed: !config.required,
+		collapsed: false,
 		titleCollapse: true,  
-		
 		allowedMemberTypes: '', //Array of dimension member types to be rendered as checkbox
-		
 		reloadDimensions: [],
-		
 		loader: new og.MemberChooserTreeLoader({
 			dataUrl: 'index.php?c=dimension&a=initial_list_dimension_members_tree&ajax=true&'+
 				'dimension_id='+config.dimensionId+
@@ -27,53 +20,49 @@ og.MemberChooserTree = function(config) {
 				'&avoid_session=1',
 			ownerTree: this 
 		}),
-
 		checkBoxes: true,
-		
 		autoScroll: true,
-		
 		animCollapse: false,
-		
 		animExpand: false,
-		
 		animate: false,
-		
 		rootVisible: true,
-		
 		lines: false,
-		
 		root: {
         	text: lang('All'),
         	expanded: false
     	},
+		cls: 'member-chooser',
+		tbar: [{
+			xtype: 'textfield',
+			id: 'textfilter',
+			cls: "dimension-panel-textfilter" ,
+			emptyText:lang('filter members'),
+			listeners:{
+				render: {
+					fn: function(f){
+						f.el.on('keyup', function(e) {
+							this.filterTree(e.target.value);
+						},
+						this, {buffer: 350});
+					},
+					scope: this
+				}
+			}
+		}]
     	
-		collapseFirst: false,
-		
-		cls: 'member-chooser'
-		
-		
 	});
 	
 	
 	
 	og.MemberChooserTree.superclass.constructor.call(this, config);
-
 	if ( Ext.isIE7 ) {
-		
 		this.width= 230;
-		
 		this.height= 280 ;
-			
 	}
-		
 	this.filterOnChange = true ;
-	
 	this.totalFilterTrees = 0 ;
-	
 	this.filteredTrees = 0 ;
-	
 	var self = this ; // To change scope inside callbacks	
-
 	
 	// ********** TREE EVENTS *********** //
 	
@@ -252,8 +241,64 @@ Ext.extend(og.MemberChooserTree, Ext.tree.TreePanel, {
 		}else{
 			return 0 ; // Return 'All' (root node)
 		}
+	},
+	
+	filterTree: function(text) {
+		if (this.getTopToolbar().items.length) {
+			var searchBox = this.getTopToolbar().items.get('textfilter') ;
+			if (searchBox) { 
+				if (text == searchBox.emptyText) {
+					text = "";
+				}
+				if (text.trim() == '') {
+					this.clearFilter();
+				} else {
+					var re = new RegExp(Ext.escapeRe(text.toLowerCase()), 'i');
+					this.filterNode(this.getRootNode(), re);
+					this.expandAll();
+			}
+			}
+		}
+	},
+	
+	filterNode: function(n, re) {
 		
+		var f = false;
+		var c = n.firstChild;
+		while (c) {
+			f = this.filterNode(c, re) || f;
+			c = c.nextSibling;
+		}
+		f = re.test(n.text.toLowerCase()) || f;
+		if (!n.previousState) {
+			// save the state before filtering
+			n.previousState = n.expanded ? "e" :"c";
+		}
+		if (f) {
+			n.getUI().show();
+		} else {
+			n.getUI().hide();
+		}
+		return f;
+	},
+	
+	clearFilter: function(n) {
+		if (!n) n = this.getRootNode();
+		if (!n.previousState) return;
+		var c = n.firstChild;
+		while (c) {
+			this.clearFilter(c);
+			c = c.nextSibling;
+		}
+		n.getUI().show();
+		if (n.previousState == "e") {
+			n.expand(false, false);
+		} else if (n.previousState == "c") {
+			n.collapse(false, false);
+		}
+		n.previousState = null;
 	}
+	
     
 });
 

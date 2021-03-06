@@ -45,10 +45,9 @@ foreach ($object_types as $type) {
 	$options[] = '<option value="'.$type[0].'" '.$selected.'>'.$type[1].'</option>';
 }
 
-$context_menu_style = $object->isNew() ? "font-weight:bold;" : "";
-$context_div_display = $object->isNew() ? "display:block;" : "display:none;";
-?>
-<?php $strDisabled = count($options) > 1 ? '' : 'disabled'; 
+$context_menu_style = "font-weight:bold";
+$context_div_display ="display:none;";
+$strDisabled = count($options) > 1 ? '' : 'disabled'; 
 echo select_box('objectTypeSel', $options,
 array('id' => 'objectTypeSel' ,'onchange' => 'og.reportObjectTypeChanged("'.$genid.'", "", 1, "")', 'style' => 'width:200px;', $strDisabled => '', 'tabindex' => '10')) ?>
 

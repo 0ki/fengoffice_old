@@ -1,7 +1,3 @@
-<?php
-	//$task = new ProjectTask();
-?>
-
 <style>
 body {
 	font-family: sans-serif;
@@ -40,7 +36,7 @@ table {
 
 <div class="printHeader">
 <table style="width:100%"><tr><td style="width:44px"><img src="public/assets/themes/default/images/32x32/tasks.png"/></td>
-<td><h1 style="<?php echo $task->isCompleted()? 'text-decoration:line-through' : '' ?>"><?php echo clean($task->getTitle()) ?></h1></td><td align=right style="color:#666;padding-left:10px">
+<td><h1 style="<?php echo $task->isCompleted()? 'text-decoration:line-through' : '' ?>"><?php echo clean($task->getObjectName()) ?></h1></td><td align=right style="color:#666;padding-left:10px">
 <?php if ($task->getStartDate() || $task->getDueDate() ) { ?>
 <table style="white-space:nowrap"><?php
 	if ($task->getStartDate())
@@ -52,15 +48,13 @@ table {
 </td></tr></table>
 </div>
 
-<p><b><?php echo lang('workspace') ?>:</b>&nbsp;<?php echo clean($task->getProject()->getPath()) ?></p>
-
-<?php if ($task->getAssignedTo() instanceof User) { ?>
+<?php if ($task->getAssignedTo() instanceof Contact) { ?>
 <p><b><?php echo lang('assigned to') ?>:</b>&nbsp;<?php echo clean($task->getAssignedToName()) ?></p>
 <?php } // if ?>
 
 
 <?php if ($task->getMilestone() instanceof ProjectMilestone) { ?>
-<p><b><?php echo lang('milestone') ?>:</b>&nbsp;<?php echo clean($task->getMilestone()->getTitle()) ?></p>
+<p><b><?php echo lang('milestone') ?>:</b>&nbsp;<?php echo clean($task->getMilestone()->getObjectName()) ?></p>
 <?php } // if ?>
 
 <?php if ($task->getText() != '') { ?>
@@ -78,13 +72,13 @@ if ($hasIncompleteSubtasks || $hasCompletedSubtasks) { ?>
 	if ($hasIncompleteSubtasks) {
 		$otArray = $task->getOpenSubTasks();
 		foreach ($otArray as $ot){
-			echo '<li>'. ($ot->getAssignedToContact() instanceof Contact ? '<b>' . $ot->getAssignedToName() . ':&nbsp;</b>' : ''). $ot->getTitle() . '</li>';
+			echo '<li>'. ($ot->getAssignedToContact() instanceof Contact ? '<b>' . $ot->getAssignedToName() . ':&nbsp;</b>' : ''). $ot->getObjectName() . '</li>';
 		} // foreach
 	} // if
 	if ($hasCompletedSubtasks) {
 		$otArray = $task->getCompletedSubTasks();
 		foreach ($otArray as $ot){
-			echo '<li style="text-decoration:line-through">'. ($ot->getAssignedToContact() instanceof Contact ? '<b>' . $ot->getAssignedToName() . ':&nbsp;</b>' : ''). $ot->getTitle() . '</li>';
+			echo '<li style="text-decoration:line-through">'. ($ot->getAssignedToContact() instanceof Contact ? '<b>' . $ot->getAssignedToName() . ':&nbsp;</b>' : ''). $ot->getObjectName() . '</li>';
 		} // foreach
 	} // if?>
 </ul>

@@ -23,7 +23,10 @@
 			<td style="text-align:center;padding:0 10px 10px 10px;"><b><?php echo lang('value') ?></b></td>
 		</tr>
 		
-		<?php foreach($conditions as $condition){
+		<?php
+		$ot = ObjectTypes::findById($model);
+		$model = $ot->getHandlerClass(); 
+		foreach($conditions as $condition){
 			if($condition->getCustomPropertyId() > 0){
 				$cp = CustomProperties::getCustomProperty($condition->getCustomPropertyId());
 				if (!$cp) continue;
@@ -31,18 +34,11 @@
 			$tiCount ++;
 			?>
 			<tr style='height:30px;'>
-			<?php if($condition->getCustomPropertyId() > 0){
-					$name = clean($cp->getName());
-				  }else{
-				  	if ($condition->getFieldName()!= 'workspace' && $condition->getFieldName()!= 'tag'){
-				  	    $name = lang('field ' . $model . ' ' . $condition->getFieldName());
-				  	}else{
-				  		$name = lang($condition->getFieldName());
-				  	}	
-				  } 
-				  $condId = $genid . 'rpcond' . $condition->getId();
-				if ($firstId == '')
-					$firstId = $condId;
+			<?php
+				$name = lang('field ' . $model . ' ' . $condition->getFieldName());
+				
+				$condId = $genid . 'rpcond' . $condition->getId();
+				if ($firstId == '') $firstId = $condId;
 			?>
 				<td style="padding:3px 0 0 10px;"><b><?php echo $name ?>&nbsp;</b></td>
 				<td style="text-align:center;padding:3px 0 0 0;"><?php echo ($condition->getCondition() != '%' ? $condition->getCondition() : lang('ends with') ) ?>&nbsp;</td>
@@ -68,41 +64,32 @@
 			<?php }else{ ?>
 				<td align='left'>
 				<?php 
-				if($condition->getFieldName() != 'workspace' && $condition->getFieldName() != 'tag'){
 					$model_instance = new $model();
 					$col_type = $model_instance->getColumnType($condition->getFieldName());
 					$externalCols = $model_instance->getExternalColumns();
-					if(in_array($condition->getFieldName(), $externalCols)){ ?>
-						<select id="<?php echo $condId; ?>" name="params[<?php echo $condition->getId() ?>]" />
-					<?php foreach($external_fields[$condition->getFieldName()] as $value){ ?>
-							<option value="<?php echo $value['id'] ?>"><?php echo $value['name'] ?></option>
-					<?php	}?>
-						</select>
-					<?php }else{
-						if ($col_type == DATA_TYPE_DATE || $col_type == DATA_TYPE_DATETIME) {
-							echo pick_date_widget2("params[".$condition->getId()."]");
-						} else {
+						if(in_array($condition->getFieldName(), $externalCols)){
 				?>
-					<input type="text" id="<?php echo $condId; ?>" name="params[<?php echo $condition->getId() ?>]" />
-				<?php 	}
-					} ?>
+						<select id="<?php echo $condId; ?>" name="params[<?php echo $condition->getId() ?>]">
+				<?php 		foreach($external_fields[$condition->getFieldName()] as $value){ ?>
+								<option value="<?php echo $value['id'] ?>"><?php echo $value['name'] ?></option>
+				<?php		} ?>
+						</select>
+				<?php 
+						} else {
+							if ($col_type == DATA_TYPE_DATE || $col_type == DATA_TYPE_DATETIME) {
+								echo pick_date_widget2("params[".$condition->getId()."]");
+							} else {
+				?>
+						<input type="text" id="<?php echo $condId; ?>" name="params[<?php echo $condition->getId() ?>]" />
+				<?php 		}
+						}
+				?>
 				</td>
-			<?php }//if
-			else{
-				//if is a tag selection or a workspace selection
-				$val=$condition->getValue();
-				if($condition->getFieldName() == 'workspace'){
-					echo select_project2('params[workspace]',isset($val)?$val:0, $genid , true);
-				}
-				if($condition->getFieldName() == 'tag'){					
-					echo autocomplete_tags_field("params[tag]", null, null, 40);
-				}
-			 } ?>
 			</tr>
 		<?php
-			}//else 
+			}
 			unset($cp);
-		}//foreach ?>
+		} //foreach ?>
 	</table>
 	
 <?php echo submit_button(lang('generate report'),'s',array('tabindex' => $tiCount + 1))?>	

@@ -36,9 +36,9 @@ class ContactController extends ApplicationController {
 	function list_companies() {
 		ajx_current("empty");
 		$context = active_context();
-		$contacts = Contacts::instance()->findAll();
 		
-		$contacts = Contacts::instance()->getContentObjects($context, ObjectTypes::instance()->findById(Contacts::instance()->getObjectTypeId()))->objects;
+		//$contacts = Contacts::instance()->getContentObjects($context, ObjectTypes::instance()->findById(Contacts::instance()->getObjectTypeId()))->objects;
+		$contacts = Contacts::instance()->listing();
 		$defaultCompany = Contacts::instance()->findById(1);
 		if ($defaultCompany instanceof Contact)  $contacts[] = $defaultCompany ;
 		$companies = array();
@@ -62,9 +62,10 @@ class ContactController extends ApplicationController {
 	
 	/**
 	 * Creates a system user, receiving a Contact id
-	 *
+	 * @deprecated by this->add_user
 	 */
 	function create_user(){
+		
 		$contact = Contacts::findById(get_id());
 		if(!($contact instanceof Contact)) {
 			flash_error(lang('contact dnx'));
@@ -78,7 +79,7 @@ class ContactController extends ApplicationController {
 			return;
 		} // if
 		
-		$this->redirectTo('contact','add_user',array('company_id' => $contact->getCompanyId(), 'contact_id' => $contact->getId()));
+		$this->redirectTo('contact','add',array('company_id' => $contact->getCompanyId(), 'contact_id' => $contact->getId()));
 		
 	}
 	
@@ -89,29 +90,11 @@ class ContactController extends ApplicationController {
 	 * @access public
 	 * @param void
 	 * @return null
+	 * @deprecated
 	 */
 	function card_user() {
-
-		$user = Contacts::findById(get_id());
-		if(!($user instanceof Contact)) {
-			flash_error(lang('user dnx'));
-			ajx_current("empty");
-			return;
-		} // if
-
-		if(!logged_user()->canSeeUser($user)) {
-			flash_error(lang('no access permissions'));
-			ajx_current("empty");
-			return;
-		} // if
-		
-		if (logged_user()->isExecutiveGroup() || logged_user()->getId() ==  get_id()){			
-			tpl_assign('user_id', get_id());
-		}
-		tpl_assign('user', $user);
-		ajx_set_no_toolbar(true);
-		ajx_extra_data(array("title" => $user->getDisplayName(), 'icon'=>'ico-user'));
-	} // card_user
+		$this->redirectTo('contact','card');
+	} 
 	
 	
     /**
@@ -122,12 +105,7 @@ class ContactController extends ApplicationController {
 	 * @return null
 	 */
 	function add_user() {
-		if (!logged_user()->isExecutiveGroup()) {
-			flash_error(lang('no access permissions'));
-			ajx_current("empty");
-			return;
-		}
-   		$max_users = config_option('max_users');
+		$max_users = config_option('max_users');
 		if ($max_users && (Contacts::count() >= $max_users)) {
 			flash_error(lang('maximum number of users reached error'));
 			ajx_current("empty");
@@ -136,9 +114,9 @@ class ContactController extends ApplicationController {
 		$company = Contacts::findById(get_id('company_id'));
 		if (!($company instanceof Contact)) {
 			$company = owner_company();
-		} // if
+		}
 
-		if (!can_manage_members(logged_user())) {
+		if (!can_manage_security(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
@@ -152,7 +130,15 @@ class ContactController extends ApplicationController {
 			//if it is a new user
 			$contact_id = get_id('contact_id');
 			$contact = Contacts::findById($contact_id);
+			
 			if ($contact instanceof Contact) {
+				
+				if (!is_valid_email($contact->getEmailAddress())){
+					ajx_current("empty");
+					flash_error(lang("contact email is required to create user"));
+					return false;
+				}	
+			
 				//if it will be created from a contact
 				$user_data = array(
 					'username' => $this->generateUserNameFromContact($contact),
@@ -163,7 +149,7 @@ class ContactController extends ApplicationController {
 					'type' => 'Executive',
 					'can_manage_time' => true,
 				); // array
-				
+				tpl_assign('ask_email', false);
 			} else {
 				// if it is new, and created from admin interface
 				$user_data = array(
@@ -175,6 +161,7 @@ class ContactController extends ApplicationController {
 				  'type' => 'Executive',
 				  'can_manage_time' => true,
 				); // array
+				tpl_assign('ask_email', true);
 			}
 			
 			// System permissions
@@ -209,6 +196,7 @@ class ContactController extends ApplicationController {
 		tpl_assign('user', $user);
 		tpl_assign('company', $company);
 		tpl_assign('user_data', $user_data);
+		
 		//Submit User
 		if (is_array(array_var($_POST, 'user'))) {
 			if (!array_var($user_data, 'createPersonalProject')) {
@@ -220,23 +208,8 @@ class ContactController extends ApplicationController {
 				DB::beginWork();
 				$user = $this->createUser($user_data, array_var($_POST,'permissions'));
 				
-				$object_controller = new ObjectController();
-				$object_controller->add_custom_properties($user);
-				
-				if(Dimensions::findByCode('projects')){
-					$dimension=Dimensions::findByCode('projects');
-					$cdp = ContactDimensionPermissions::findOne(array("conditions" => "`permission_group_id` = ".$user->getPermissionGroupId()." AND `dimension_id` = ".$dimension->getId()));
-						if (!$cdp instanceof ContactDimensionPermission) {
-							$cdp = new ContactDimensionPermission();
-							$cdp->setPermissionGroupId($user->getPermissionGroupId());
-							$cdp->setContactDimensionId($dimension->getId());
-						}
-						$cdp->setPermissionType('check');
-						$cdp->save();	
-				}
-				
 				DB::commit();	
-				flash_success(lang('success add user', $user->getDisplayName()));
+				flash_success(lang('success add user', $user->getObjectName()));
 				ajx_current("back");
 			} catch(Exception $e) {
 				DB::rollback();
@@ -287,12 +260,12 @@ class ContactController extends ApplicationController {
 		$category = ContactConfigCategories::findById(get_id());
 		if(!($category instanceof ContactConfigCategory)) {
 			flash_error(lang('config category dnx'));
-			$this->redirectToReferer(get_url('contact','card_user'));
+			$this->redirectToReferer(get_url('contact','card'));
 		} // if
 
 		if($category->isEmpty()) {
 			flash_error(lang('config category is empty'));
-			$this->redirectToReferer(get_url('contact','card_user'));
+			$this->redirectToReferer(get_url('contact','card'));
 		} // if
 
 		$options = $category->getContactOptions(false);
@@ -357,7 +330,7 @@ class ContactController extends ApplicationController {
 			foreach ($users as $usr) {
 				$usr_data[] = array(
 					"id" => $usr->getId(),
-					"name" => $usr->getDisplayName()
+					"name" => $usr->getObjectName()
 				);
 			}
 		}
@@ -432,8 +405,43 @@ class ContactController extends ApplicationController {
 		}
 
 		$context = active_context();
-		$content_objects = Contacts::getContentObjects($context, ObjectTypes::findById(Contacts::instance()->getObjectTypeId()), $order, $order_dir, $extra_conditions, null, false,false, $start, $limit);
-		
+		if (context_type() == 'mixed') {
+			// There are members selected
+			//$content_objects = Contacts::getContentObjects($context, ObjectTypes::findById(Contacts::instance()->getObjectTypeId()), $order, $order_dir, $extra_conditions, null, false,false, $start, $limit);
+			$content_objects = Contacts::instance()->listing(array(
+				"order" => $order,
+				"order_dir" => $order_dir,
+				"extra_conditions" => $extra_conditions,
+				"start" =>$start,
+				"limit" => $limit
+			));
+				
+			
+		}else{
+			// Estoy parado en 'All'. Filtro solo por permisos TODO: Fix this !
+			$conditions = "archived_on = '0000-00-00 00:00:00' AND trashed_on = '0000-00-00 00:00:00' $extra_conditions";
+			$content_objects = new stdClass();
+			$content_objects->objects = Contacts::instance()->findAll(array(
+				"conditions" => $conditions,
+				"order"=> "$order $order_dir",
+				"offset" => $start,
+				"limit" => $limit			
+			));
+			$content_objects->total =  Contacts::instance()->count(array("conditions" => $conditions));
+			
+			foreach ( $content_objects->objects as $k => $contact ) { /* @var $contact Contact */
+				if (Plugins::instance()->isActivePlugin("core_dimensions")) {
+					$mid = array_var(Members::instance()->findByObjectId($contact->getId(), Dimensions::findByCode("feng_persons")->getId()),0)->getId();
+					if (! ContactMemberPermissions::instance()->contactCanReadMember(logged_user()->getPermissionGroupId(),$mid, logged_user())) {
+						//alert("pogid:".logged_user()->getPermissionGroupId() . " mid:". $mid . "se va a sacar del array");
+						unset($content_objects->objects[$k]);
+						$content_objects->total--;
+					}
+				}
+			}
+			$content_objects->objects = array_values($content_objects->objects) ;
+			
+		}
 		// Prepare response object
 		$object = $this->newPrepareObject($content_objects->objects, $content_objects->total, $start, $attributes);
 		ajx_extra_data($object);
@@ -481,83 +489,9 @@ class ContactController extends ApplicationController {
 					$resultMessage = lang("error delete objects", $err) . "<br />" . ($succ > 0 ? lang("success delete objects", $succ) : "");
 				} else {
 					$resultMessage = lang("success delete objects", $succ);
+					if ($succ > 0) ObjectController::reloadPersonsDimension();
 				}
 				break;
-			/*FIXME to implement move & copy 
-			case "move":
-				$wsid = $attributes["moveTo"];
-				$destination = Projects::findById($wsid);
-				if (!$destination instanceof Project) {
-					$resultMessage = lang('project dnx');
-					$resultCode = 1;
-				} else {
-					$count = 0;
-					for($i = 0; $i < count($attributes["ids"]); $i++){
-						$id = $attributes["ids"][$i];
-						$type = $attributes["types"][$i];
-						switch ($type){
-							case "contact":
-								if (!can_add(logged_user(), $destination, 'Contacts')) continue;
-								$contact = Contacts::findById($id);
-								if ($contact instanceof Contact && $contact->canEdit(logged_user())){
-									if (!$attributes["mantainWs"]) {
-										$removed = "";
-										$ws = $contact->getWorkspaces(null, $destination);
-										foreach ($ws as $w) {
-											if (can_add(logged_user(), $w, 'Contacts')) {
-												$contact->removeFromWorkspace($w);
-												$removed .= $w->getId() . ",";
-											}
-										}
-										$removed = substr($removed, 0, -1);
-										$log_action = ApplicationLogs::ACTION_MOVE;
-										$log_data = ($removed == "" ? "" : "from:$removed;") . "to:$wsid";
-									} else {
-										$log_action = ApplicationLogs::ACTION_COPY;
-										$log_data = "to:$wsid";
-									}
-									$contact->addToWorkspace($destination);
-									ApplicationLogs::createLog($contact, $log_action, false, null, true, $log_data);
-									$count++;
-								};
-								break;
-								
-							case "company":
-								if (!can_add(logged_user(), $destination, 'Companies')) continue;
-								$company = Companies::findById($id);
-								if ($company instanceof Company && $company->canEdit(logged_user())){
-									if (!$attributes["mantainWs"]) {
-										$removed = "";
-										$ws = $company->getWorkspaces($destination);
-										foreach ($ws as $w) {
-											if (can_add(logged_user(), $w, 'Companies')) {
-												$company->removeFromWorkspace($w);
-												$removed .= $w->getId() . ",";
-											}
-										}
-										$removed = substr($removed, 0, -1);
-										$log_action = ApplicationLogs::ACTION_MOVE;
-										$log_data = ($removed == "" ? "" : "from:$removed;") . "to:$wsid";
-									} else {
-										$log_action = ApplicationLogs::ACTION_COPY;
-										$log_data = "to:$wsid";
-									}
-									$company->addToWorkspace($destination);
-									ApplicationLogs::createLog($company, $log_action, false, null, true, $log_data);
-									$count++;
-								};
-								break;
-	
-							default:
-								$resultMessage = lang("Unimplemented type: '" . $type . "'");// if
-								$resultCode = 2;
-								break;
-						}; // switch
-					}; // for
-					$resultMessage = lang("success move objects", $count);
-					$resultCode = 0;
-				}
-				break;*/
 			case "archive":
 				$succ = 0; $err = 0;
 				for($i = 0; $i < count($attributes["ids"]); $i++){
@@ -584,6 +518,7 @@ class ContactController extends ApplicationController {
 					$resultMessage = lang("error archive objects", $err) . "<br />" . ($succ > 0 ? lang("success archive objects", $succ) : "");
 				} else {
 					$resultMessage = lang("success archive objects", $succ);
+					if ($succ > 0) ObjectController::reloadPersonsDimension();
 				}
 				break;
 			default:
@@ -593,6 +528,9 @@ class ContactController extends ApplicationController {
 		} // switch
 		return array("errorMessage" => $resultMessage, "errorCode" => $resultCode);
 	}
+	
+	
+	
 	
 	
 	/**
@@ -633,7 +571,7 @@ class ContactController extends ApplicationController {
 						"email" => $c->getEmailAddress('personal',true),
 						"companyId" => $c->getCompanyId(),
 						"companyName" => $companyName,
-						"website" => $c->getWebpage('personal') ? cleanUrl($c->getWebpage('personal'), false) : '',
+						"website" => $c->getWebpage('personal') ? cleanUrl($c->getWebpageUrl('personal'), false) : '',
 						"jobTitle" => $c->getJobTitle(),
 				    	"department" => $c->getDepartment(),
 						"email2" => !is_null($personal_emails) && isset($personal_emails[0]) ? $personal_emails[0]->getEmailAddress() : '',
@@ -654,7 +592,8 @@ class ContactController extends ApplicationController {
 						"updatedOn" => $c->getUpdatedOn() instanceof DateTimeValue ? ($c->getUpdatedOn()->isToday() ? format_time($c->getUpdatedOn()) : format_datetime($c->getUpdatedOn())) : '',
 						"updatedOn_today" => $c->getUpdatedOn() instanceof DateTimeValue ? $c->getUpdatedOn()->isToday() : 0,
 						"updatedBy" => $c->getUpdatedByDisplayName(),
-						"updatedById" => $c->getUpdatedById()
+						"updatedById" => $c->getUpdatedById(),
+						"memPath" => json_encode($c->getMembersToDisplayPath()),
 					);
 				} else if ($c instanceof Contact){					
 					
@@ -689,7 +628,8 @@ class ContactController extends ApplicationController {
 						"updatedOn" => $c->getUpdatedOn() instanceof DateTimeValue ? ($c->getUpdatedOn()->isToday() ? format_time($c->getUpdatedOn()) : format_datetime($c->getUpdatedOn())) : '',
 						"updatedOn_today" => $c->getUpdatedOn() instanceof DateTimeValue ? $c->getUpdatedOn()->isToday() : 0,
 						"updatedBy" => $c->getUpdatedByDisplayName(),
-						"updatedById" => $c->getUpdatedById()
+						"updatedById" => $c->getUpdatedById(),
+						"memPath" => json_encode($c->getMembersToDisplayPath()),
 					);
 				}
     		}
@@ -704,6 +644,7 @@ class ContactController extends ApplicationController {
 	 * @access public
 	 * @param void
 	 * @return null
+	 * @deprecated
 	 */
 	function view() {
 		$contact = Contacts::findById(get_id());
@@ -722,7 +663,8 @@ class ContactController extends ApplicationController {
 	 * @return null
 	 */
 	function card() {
-		$contact = Contacts::findById(get_id());
+		$id = get_id();
+		$contact = Contacts::findById($id);
 		if(!$contact || !$contact->canView(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
@@ -732,9 +674,88 @@ class ContactController extends ApplicationController {
 		$this->setTemplate('card');
 		
 		tpl_assign('contact', $contact);
+        
+        $context = active_context();
+
+		$obj_type_types = array('content_object');
+		if (array_var($_GET, 'include_comments')) $obj_type_types[] = 'comment';
+		/*
+		$pagination = Objects::getObjects($context, null, 1, null, null, false, false, null, null, null, $obj_type_types);
+		$result = $pagination->objects; */ // Performance Killer
+		$total_items = $pagination->total ;
+		 
+		if(!$result) $result = array();
+
+		/* prepare response object */
+		$info = array();
+		
+		foreach ($result as $obj /* @var $obj Object */) {
+			$info_elem =  $obj->getArrayInfo();
+			
+			$instance = Objects::instance()->findObject($info_elem['object_id']);
+			$info_elem['url'] = $instance->getViewUrl();
+			
+			/* @var $instance Contact  */
+			if ($instance instanceof  Contact /* @var $instance Contact  */ ) {
+				if( $instance->isCompany() ) {
+					$info_elem['icon'] = 'ico-company';
+					$info_elem['type'] = 'company';
+				}
+			}
+			$info_elem['isRead'] = $instance->getIsRead(logged_user()->getId()) ;
+			$info_elem['manager'] = get_class($instance->manager()) ;
+			
+			$info[] = $info_elem;
+			
+		}
+        
+        tpl_assign('feeds', $info);
+        
 		ajx_extra_data(array("title" => $contact->getObjectName(), 'icon'=>'ico-contact'));
 		ajx_set_no_toolbar(true);
 		
+		if (!$contact->isTrashed()){
+			if($contact->canEdit(logged_user())) {
+				add_page_action(lang('edit contact'), $contact->getEditUrl(), 'ico-edit', null, null, true);
+			}
+		}
+		if ($contact->canDelete(logged_user())) {
+			if ($contact->isTrashed()) {
+				add_page_action(lang('restore from trash'), "javascript:if(confirm(lang('confirm restore objects'))) og.openLink('" . $contact->getUntrashUrl() ."');", 'ico-restore',null, null, true);
+				add_page_action(lang('delete permanently'), "javascript:if(confirm(lang('confirm delete permanently'))) og.openLink('" . $contact->getDeletePermanentlyUrl() ."');", 'ico-delete',null, null, true);
+			} else {
+				add_page_action(lang('move to trash'), "javascript:if(confirm(lang('confirm move to trash'))) og.openLink('" . $contact->getTrashUrl() ."');", 'ico-trash',null, null, true);
+			}
+		} // if
+		if (!$contact->isTrashed()) {
+			if (can_manage_security(logged_user())) {
+				if (!$contact->isUser()){
+					add_page_action(lang('create user from contact'), $contact->getCreateUserUrl() , 'ico-user');
+				}
+			}
+			if ($contact->canEdit(logged_user())) {
+				if (!$contact->isArchived()) {
+					add_page_action(lang('archive'), "javascript:if(confirm(lang('confirm archive object'))) og.openLink('" . $contact->getArchiveUrl() ."');", 'ico-archive-obj');
+				} else {
+					add_page_action(lang('unarchive'), "javascript:if(confirm(lang('confirm unarchive object'))) og.openLink('" . $contact->getUnarchiveUrl() ."');", 'ico-unarchive-obj');
+				}
+			}
+		}
+
+		
+		if ($contact->isUser()   ){
+			if ($contact->canChangePassword(logged_user())) {
+				add_page_action(lang('change password'), $contact->getEditPasswordUrl(), 'ico-password', null, null, true);
+			}
+			if($contact->getId() == logged_user()->getId()){
+				add_page_action(lang('edit preferences'), $contact->getEditPreferencesUrl(), 'ico-administration', null, null, true);
+			}
+			if($contact->canUpdatePermissions(logged_user())) {
+				add_page_action(lang('permissions'), $contact->getUpdatePermissionsUrl(), 'ico-permissions', null, null, true);
+			} 
+		}
+    
+   		tpl_assign('company', $contact->getCompany());
 		ApplicationReadLogs::createLog($contact, ApplicationReadLogs::ACTION_READ);
 	} // view
 	
@@ -880,6 +901,12 @@ class ContactController extends ApplicationController {
 				
 				ApplicationLogs::createLog($contact, ApplicationLogs::ACTION_ADD);
 				
+				//NEW ! User data in the same form 
+				$user = array_var(array_var($_POST, 'contact'),'user');
+				$user['username'] = str_replace(" ","",strtolower($contact_data['name'])) ;
+				$this->createUserFromContactForm($user, $contact->getId(), $contact_data['email']);
+				
+				
 				DB::commit();
 				
 				if (isset($contact_data['new_contact_from_mail_div_id'])) {
@@ -898,6 +925,24 @@ class ContactController extends ApplicationController {
 		} // if
 	} // add
 
+	
+	function check_existing_email() {
+		ajx_current("empty");
+		$email = array_var($_REQUEST, 'email');
+		$contact = Contacts::getByEmail($email);
+		if ($contact) {
+			ajx_extra_data(array("contact"=>array(
+				"name" => $contact->getName(),
+				"email" => $contact->getEmailAddress(),
+				"id" => $contact->getEmailAddress()
+			)));
+		}else{
+			ajx_extra_data(array(
+				"contact"=>false
+			));
+		}
+	}
+	
 	
 	/**
 	 * Edit specific contact
@@ -938,7 +983,7 @@ class ContactController extends ApplicationController {
           	'surname' => $contact->getSurname(), 
           	'department' => $contact->getDepartment(),
           	'job_title' => $contact->getJobTitle(),
-            'email' => $contact->getEmailAddress('personal'),
+            'email' => $contact->getEmailAddress(),
             'email2' => !is_null($personal_emails) && isset($personal_emails[0]) ? $personal_emails[0]->getEmailAddress() : '',
             'email3' => !is_null($personal_emails) && isset($personal_emails[1])? $personal_emails[1]->getEmailAddress() : '',
 			
@@ -1230,7 +1275,6 @@ class ContactController extends ApplicationController {
 						if($contact_data['o_web_page'] != "") $contact->addWebpage($contact_data['o_web_page'], 'other');
 				}				
 
-				
 				$contact->setObjectName();
 				$contact->save();
 				$contact->clearImValues();
@@ -1251,9 +1295,10 @@ class ContactController extends ApplicationController {
 				} // foreach
 
 				$member_ids = json_decode(array_var($_POST, 'members'));
-				
 				$object_controller = new ObjectController();
-				$object_controller->add_to_members($contact, $member_ids);
+				if (count($member_ids)){
+					$object_controller->add_to_members($contact, $member_ids);
+				}
 				if ($newCompany) $object_controller->add_to_members($company, $member_ids);
 			    $object_controller->link_to_new_object($contact);
 				$object_controller->add_subscribers($contact);
@@ -2682,5 +2727,131 @@ class ContactController extends ApplicationController {
 				"id" => 0
 			));
 		}
+	}
+	
+	
+	private function createUserFromContactForm ($user, $contactId, $email) {
+		$createUser = false ;
+		if ( array_var ($user, 'create-user')) {
+			$createUser = true ;
+			$password =  array_var($user, 'password') ;
+			$password_a =  array_var($user, 'password_a') ;
+			$type =  array_var($user, 'type') ;
+			$username =  array_var($user, 'username') ;
+		}
+		if ($createUser){
+			
+			
+			$userData = array(
+				'contact_id' => $contactId,
+				'username' => $username,
+				'email' => $email,
+				'password' => $password,
+				'password_a' => $password_a,
+				'type' => $type,
+				'password_generator' => 'specify',
+				'send_email_notification' => true
+			);
+			$valid =  Contacts::validateUser($contactId);
+			create_user($userData, '');
+		}
+		
+	}
+	
+	/**
+	 * @author Ignacio Vazquez <elpepe.uy at gmail dot com>
+	 * Handle quick add submit
+	 */
+	function quick_add() {
+		if (array_var($_GET, 'current') == 'overview-panel') {
+			ajx_current("reload");	
+		}else {
+			ajx_current("empty");
+		}
+		
+		//---------- REQUEST PARAMS -------------- 
+		//		$_POST = Array (
+		//			[member] => Array (
+		//				[name] => pepe 333
+		//				[dimension_id] => 1
+		//				[parent_member_id] => 0
+		//				[dimension_id] => 19
+		//			)
+		//			[contact] => Array (
+		//				[email] => slkdjflksjdflksdf@kldsjflkdf.com
+		//				[user] => Array (
+		//					[create-user]=>on
+		//					[type] => 25
+		//		)
+		//----------------------------------------
+		
+		//alert_r($_POST['contact']);
+		// Init variables
+
+		$max_users = config_option('max_users');
+		if ($max_users && (Contacts::count() >= $max_users)) {
+			flash_error(lang('maximum number of users reached error'));
+			ajx_current("empty");
+			return;
+		}
+
+		if (!can_manage_security(logged_user())) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
+		
+		$email  =  array_var(array_var($_POST, 'contact'),'email') ;
+		$member = array_var($_POST, 'member');
+		$name = array_var($member, 'name');
+		$parentMemberId = array_var($member, 'parent_member_id');
+		$objectType = ObjectTypes::findById(array_var($member, 'object_type_id'))->getName(); // 'person', 'company'
+		$dimensionId =  array_var($member, 'dimension_id'); 
+		
+		
+		// Create new instance of Contact and set the basic fields
+		$contact = new Contact();
+		$contact->setObjectName($name);
+		$contact->setFirstName($name);
+		$contact->setIsCompany($objectType == "company");
+
+		
+		if ($parentMemberId){
+			if ( $companyId = Members::findById($parentMemberId)->getObjectId()) {
+				$contact->setCompanyId($companyId);
+			}
+		}
+		
+		
+		// Save Contact
+		try {
+			DB::beginWork();
+			$contact->save();
+			if ($email) {
+				if (!Contacts::validateUniqueEmail($email)) {
+					DB::rollback();
+					flash_error(lang("email address must be unique"));
+					return false;
+				}else{
+					flash_success(lang("success add contact", $contact->getObjectName()));
+				}
+			}
+			
+			// User settings
+			$user = array_var(array_var($_POST, 'contact'),'user');
+			$user['username'] = str_replace(" ","",strtolower($name)) ;
+			$this->createUserFromContactForm($user, $contact->getId(), $email);
+			
+			DB::commit();
+			Hook::fire("after_contact_quick_add", $contact, $ret);
+			
+		}catch (Exception $e){
+			DB::rollback();
+			flash_error($e->getMessage());
+		}
+		
+		
+		// Reload 
+		evt_add("reload dimension tree", $dimensionId);
 	}
 } 

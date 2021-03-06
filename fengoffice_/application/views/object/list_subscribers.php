@@ -36,7 +36,7 @@ if (!$object->isNew()) {
 				<a class="internalLink" href="<?php echo $subscriber->getCardUserUrl() ?>">
 				<div class="db-ico unknown ico-user"></div>
 				</a></td><td><b><a class="internalLink" href="<?php echo $subscriber->getCardUserUrl() ?>">
-				<span><?php echo clean($subscriber->getDisplayName()) ?></span> </a></b> </td></tr>
+				<span><?php echo clean($subscriber->getObjectName()) ?></span> </a></b> </td></tr>
 	<?php 	} // foreach 
 		} ?>
 	</table>

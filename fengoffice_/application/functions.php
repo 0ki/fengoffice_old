@@ -253,7 +253,7 @@ function installed_version() {
  * @return string
  */
 function product_signature() {
-	if(function_exists('logged_user') && (logged_user() instanceof User) && logged_user()->isMemberOfOwnerCompany()) {
+	if(function_exists('logged_user') && (logged_user() instanceof Contact) && logged_user()->isMemberOfOwnerCompany()) {
 		$result = lang('footer powered', 'http://www.fengoffice.com/', clean(product_name()) . ' ' . product_version());
 		if(Env::isDebugging()) {
 			ob_start();
@@ -382,21 +382,37 @@ function active_context() {
 	return CompanyWebsite::instance()->getContext() ;
 }
 
+
+function context_type() {
+	foreach ( active_context() as $ctx ) {
+		if ( $ctx instanceof Member ) {
+			return "mixed";		
+		}	
+	}
+	return "all";
+}
+
+
 /**
  * @author Ignacio Vazquez - elpepe.uy@gmail.com
  */
-function active_context_members() {
+function active_context_members($full = true ) {
 	
 	$ctxMembers  = array ();
 	foreach (active_context() as $ctx) {
 		if ( $ctx instanceof Member ) {
 			/* @var Dimension $ctx */
 			$ctxMembers[$ctx->getId()] = $ctx->getId() ;
-			foreach ( Members::getSubmembers($ctx, 1) as $sub ) {
-				$ctxMembers[$sub->getId()] = $sub->getId() ;		
+			if($full){
+				foreach ( Members::getSubmembers($ctx, 1) as $sub ) {
+					$ctxMembers[$sub->getId()] = $sub->getId() ;		
+				}
 			}
-		}elseif  ( $ctx instanceof Dimension ) {
-			/* @var Dimension $ctx */
+			
+		}
+		
+		if  ( $full && $ctx instanceof Dimension ) {
+			/// @var Dimension $ctx 
 			foreach ($ctx->getAllMembers() as $member) {
 				$ctxMembers[$member->getId()] = $member->getId() ;
 				foreach ( Members::getSubmembers($member, 1) as $sub ) {
@@ -533,6 +549,15 @@ function alert($text) {
 }
 function alert_r($var) {
 	alert(print_r($var,1));
+}
+
+function get_back_trace($return_array = false) {
+	$back_trace = debug_backtrace();
+	$array = array();
+	foreach ($back_trace as $trace) 
+		$array[] = $trace['file']." - line: ".$trace['line']." - ".(isset($trace['class'])?$trace['class']."::":"").$trace['function'];
+	
+	return ($return_array ? $array : print_r($array, 1));
 }
 
 
@@ -697,29 +722,37 @@ function create_user_from_email($email, $name, $type = 'guest', $send_notificati
 
 
 function create_user($user_data, $permissionsString) {
-		
-	$contact = Contacts::getByEmail(array_var($user_data, 'email'), true);
+	// try to find contact by some properties 
+	$contact_id = array_var($user_data, "contact_id") ;
+	$contact =  Contacts::instance()->findById($contact_id) ; 
+	/*if (!$contact instanceof Contact) {
+		$contact = Contacts::getByEmail(array_var($user_data, 'email'), true);
+	}*/
+
 	if (!$contact instanceof Contact) {
-			$contact = new Contact();
-			$contact->setUsername(array_var($user_data, 'username'));
-			$contact->setDisplayName(array_var($user_data, 'display_name'));
-			$contact->setCompanyId(array_var($user_data, 'company_id'));
-			$contact->setUserType(array_var($user_data, 'type'));
-			$contact->setTimezone(array_var($user_data, 'timezone'));
-			$contact->setFirstname($contact->getDisplayName() != "" ? $contact->getDisplayName() : $contact->getUsername());
-			$contact->setObjectName();
-			$contact->save();
-			$contact->addEmail(array_var($user_data, 'email'),'user',true);
-			
+		// Create a new user
+		$contact = new Contact();
+		$contact->setUsername(array_var($user_data, 'username'));
+		$contact->setDisplayName(array_var($user_data, 'display_name'));
+		$contact->setCompanyId(array_var($user_data, 'company_id'));
+		$contact->setUserType(array_var($user_data, 'type'));
+		$contact->setTimezone(array_var($user_data, 'timezone'));
+		$contact->setFirstname($contact->getObjectName() != "" ? $contact->getObjectName() : $contact->getUsername());
+		$contact->setObjectName();
 	} else {
-			$contact->setUserType(array_var($user_data, 'type'));
-			$contact->setCompanyId(array_var($user_data, 'company_id'));	
-			$contact->setUsername(array_var($user_data, 'username'));
-			$contact->setTimezone(array_var($user_data, 'timezone'));
-			$contact->save();
-			$contact->addEmail(array_var($user_data, 'email'), 'user', true);
-			
+		// Create user from contact
+		$contact->setUserType(array_var($user_data, 'type'));
+		if (array_var($user_data, 'company_id')) {
+			$contact->setCompanyId(array_var($user_data, 'company_id'));
+		}	
+		$contact->setUsername(array_var($user_data, 'username'));
+		$contact->setTimezone(array_var($user_data, 'timezone'));
 	}
+	$contact->save();
+	if (is_valid_email(array_var($user_data, 'email'))) {
+		$contact->addEmail(array_var($user_data, 'email'), 'personal', true);
+	}
+	
 	
 	//permissions
 	$permission_group = new PermissionGroup();
@@ -734,7 +767,7 @@ function create_user($user_data, $permissionsString) {
 	$contact_pg->setPermissionGroupId($permission_group->getId());
 	$contact_pg->save();
 
-	if (!logged_user() instanceof Contact || can_manage_security(logged_user())) {
+	if ( can_manage_security(logged_user()) ) {
 		
 		$sp = new SystemPermission();
 		$rol_permissions=SystemPermissions::getRolePermissions(array_var($user_data, 'type'));
@@ -742,14 +775,18 @@ function create_user($user_data, $permissionsString) {
 			$sp->setPermission($pr);
 		}
 		$sp->setPermissionGroupId($permission_group->getId());
-		$sp->setCanEditCompanyData(array_var($user_data, 'can_edit_company_data'));
+
 		$sp->setCanManageSecurity(array_var($user_data, 'can_manage_security'));
-		$sp->setCanManageMembers(array_var($user_data, 'can_manage_members'));
 		$sp->setCanManageConfiguration(array_var($user_data, 'can_manage_configuration'));
 		$sp->setCanManageTemplates(array_var($user_data, 'can_manage_templates'));
-		$sp->setCanManageReports(array_var($user_data, 'can_manage_reports'));
 		$sp->setCanManageTime(array_var($user_data, 'can_manage_time'));
 		$sp->setCanAddMailAccounts(array_var($user_data, 'can_add_mail_accounts'));
+		$sp->setCanManageDimensions(array_var($user_data, 'can_manage_dimensions'));
+		$sp->setCanManageDimensionMembers(array_var($user_data, 'can_manage_dimension_members'));
+		$sp->setCanManageTasks(array_var($user_data, 'can_manage_tasks'));
+		$sp->setCanTasksAssignee(array_var($user_data, 'can_task_assignee'));
+		$sp->setCanManageBilling(array_var($user_data, 'can_manage_billing'));
+		$sp->setCanViewBilling(array_var($user_data, 'can_view_billing'));
 		
 		Hook::fire('add_user_permissions', $sp, $other_permissions);
 		if (!is_null($other_permissions) && is_array($other_permissions)) {
@@ -758,6 +795,43 @@ function create_user($user_data, $permissionsString) {
 			}
 		}
 		$sp->save();
+		
+		if ($contact->isAdminGroup()) {
+			// allow all un all dimensions if new user is admin
+			$dimensions = Dimensions::findAll();
+			foreach ($dimensions as $dimension) {
+				if ($dimension->getDefinesPermissions()) {
+					$cdp = ContactDimensionPermissions::findOne(array("conditions" => "`permission_group_id` = ".$contact->getPermissionGroupId()." AND `dimension_id` = ".$dimension->getId()));
+					if (!$cdp instanceof ContactDimensionPermission) {
+						$cdp = new ContactDimensionPermission();
+						$cdp->setPermissionGroupId($contact->getPermissionGroupId());
+						$cdp->setContactDimensionId($dimension->getId());
+					}
+					$cdp->setPermissionType('allow all');
+					$cdp->save();
+					
+					// contact member permisssion entries
+					$members = $dimension->getAllMembers();
+					foreach ($members as $member) {
+						$ots = DimensionObjectTypeContents::getContentObjectTypeIds($dimension->getId(), $member->getObjectTypeId());
+						$ots[]=$member->getObjectId();
+						foreach ($ots as $ot) {
+							$cmp = ContactMemberPermissions::findOne();
+							if (!$cmp instanceof ContactMemberPermission) {
+								$cmp = new ContactMemberPermission(array("conditions" => "`permission_group_id` = ".$contact->getPermissionGroupId()." AND `member_id` = ".$member->getId()." AND `object_type_id` = $ot"));
+								$cmp->setPermissionGroupId($contact->getPermissionGroupId());
+								$cmp->setMemberId($member->getId());
+								$cmp->setObjectTypeId($ot);
+							}
+							$cmp->setCanWrite(1);
+							$cmp->setCanDelete(1);
+							$cmp->save();
+						}
+					}
+				}
+			}
+		}
+		
 	}
 	if(!isset($_POST['sys_perm'])){
 		$rol_permissions=SystemPermissions::getRolePermissions(array_var($user_data, 'type'));
@@ -802,25 +876,18 @@ function create_user($user_data, $permissionsString) {
 		set_user_config_option('autodetect_time_zone', 1, $contact->getId());
 	}
 	
-//	if ($contact->getUserType() == 'admin') {
-//		if ($contact->getCompanyId() != owner_company()->getId() || logged_user() instanceof Contact && !can_manage_security(logged_user())) {
-//			// external users can't be admins or logged user has no rights to create admins => set as Normal 
-//			$contact->setUserType('normal');
-//		}
-//	}
-	
 	/* create contact for this user*/
 
 	ApplicationLogs::createLog($contact, ApplicationLogs::ACTION_ADD);
 
   	$pg_id = $contact->getPermissionGroupId();
-	save_permissions($pg_id);
+  	save_permissions($pg_id, $contact->isGuest());
 
 	Hook::fire('after_user_add', $contact, $null);
 	
-	// Send notification...
+	// Send notification
 	try {
-		if (array_var($user_data, 'send_email_notification')) {
+		if (array_var($user_data, 'send_email_notification') && $contact->getEmailAddress()) {
 			Notifier::newUserAccount($contact, $password);
 		} // if
 	} catch(Exception $e) {
@@ -931,7 +998,7 @@ function build_context_array($context_plain) {
 							if ($member instanceof Member ){
 								$context[] = $member ;
 							}
-						}elseif($member === 0){
+						}elseif($member === 0 && count($members)<=1){
 							// IS root. Retrieve the dimension 
 							$dimension = Dimensions::findById($dimensionId) ;								
 							if ($dimension instanceof Dimension ){					
@@ -1041,8 +1108,62 @@ function getAllRoleUsers($role){
 	$pgs=array();
 	if(!$contacts)return false;
 	foreach ($contacts as $contact){
-		alert(" ".$contact->getDisplayName());
+		alert(" ".$contact->getObjectName());
 		$pgs[]=$contact->getPermissionGroupId();
 	}
 	return $pgs;
+}
+
+function render_mailto($address) {
+	return "<a href='mailto:$address'>$address</a>";
+}
+
+/**
+ * Generic sort for many type of arrays
+ * @param array $array
+ * @param property, key or method $field 
+ * @autor PHPepe.com
+ */
+function feng_sort($array, $field = 'getName', $id = 'getId', $removeDuplicateId = false){
+	$ids = array();	
+	$index = array(); 
+	foreach ($array as $k => $row){
+		// Elem is associative array and exists the key
+		if (is_array($row) && array_key_exists($field, $row)){
+			$val = strtolower($row[$field]);
+			// Remove Duplicated ids
+			if ($id && isset($row[$id])){
+				if ($removeDuplicateId && isset($ids[$row[$id]])){
+					continue ;
+				}else{
+					$ids[$row[$id]] = true ;
+				}
+			}
+		}elseif (is_object($row) && ( isset($row->$field) || method_exists($row, $field))) {
+			// Elem is an object and has $field as a propery or method
+			if ( method_exists($row, $field)) {
+				$val =  strtolower($row->$field());
+			}elseif (property_exists($row, $field)){
+				$val =  strtolower($row->$field);
+			}
+
+			// Remove Duplicated ids
+			if ($id && method_exists($row, $field)){
+				// $field is a method method
+				if ($removeDuplicateId && isset($ids[$row->$id()])){
+					continue ;
+				}else{
+					$ids[$row->$id()] = true ;
+				}
+			}
+			
+		}
+		if (!empty($val) && !isset($index[$val]) ){
+			$index[$val] = $row ;
+		}else{
+			$index[] = $row ;
+		}
+	}
+	ksort($index);
+	return $index; 
 }

@@ -40,5 +40,6 @@
   if (!defined('DATE_RFC2822')) define('DATE_RFC2822', 'D, d M Y H:i:s O');
   if (!defined('DATE_RSS'))     define('DATE_RSS',     'D, d M Y H:i:s T');
   if (!defined('DATE_W3C'))     define('DATE_W3C',     'Y-m-d\TH:i:sO');
-
+  
+  define('SQL_NOT_DELETED', " archived_on = '".EMPTY_DATETIME. "' AND trashed_on = '".EMPTY_DATETIME."'" );
 ?>

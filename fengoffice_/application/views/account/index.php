@@ -1,7 +1,7 @@
 <?php
 
 // Set page title and set crumbs to index
-set_page_title(logged_user()->getDisplayName());
+set_page_title(logged_user()->getObjectName());
 
 
 if($user->canUpdateProfile(logged_user())) {

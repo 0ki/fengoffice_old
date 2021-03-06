@@ -84,43 +84,47 @@
     		$obj_type_types = array('content_object');
     	}
     	
-    	$sql_count = "SELECT count( DISTINCT `om`.`object_id` ) AS total FROM `".TABLE_PREFIX."object_members` `om` 
-	    		INNER JOIN `".TABLE_PREFIX."objects` `o` ON `o`.`id` = `om`.`object_id` 
-	    		INNER JOIN `".TABLE_PREFIX."object_types` `ot` ON `ot`.`id` = `o`.`object_type_id` 
-	    		LEFT JOIN `".TABLE_PREFIX."project_tasks` `t` ON `t`.`object_id` = `o`.`id`
-              	LEFT JOIN `".TABLE_PREFIX."project_milestones` `m` ON `m`.`object_id` = `o`.`id`
+    	// $exists_member_cond: checks if the logged user deleted or archived the object then he always can see it in the trash can or archived objs panel
+    	$trashed_by_id_cond = $trashed ? "OR `o`.`trashed_by_id` = ".logged_user()->getId() : "";
+    	$archived_by_id_cond = $archived ? "OR `o`.`archived_by_id` = ".logged_user()->getId() : "";
+    	$exists_member_cond = "(NOT `om`.`member_id` IS NULL $trashed_by_id_cond $archived_by_id_cond)";
+    	
+    	$sql_count = "SELECT count( DISTINCT `o`.`id` ) AS total FROM `".TABLE_PREFIX."objects` `o` 
+				INNER JOIN `".TABLE_PREFIX."object_types` `ot` ON `ot`.`id` = `o`.`object_type_id` 
+				LEFT JOIN `".TABLE_PREFIX."object_members` `om` ON `o`.`id` = `om`.`object_id` 
+				LEFT JOIN `".TABLE_PREFIX."project_tasks` `t` ON `t`.`object_id` = `o`.`id`
+				LEFT JOIN `".TABLE_PREFIX."project_milestones` `m` ON `m`.`object_id` = `o`.`id`
 	    		
-	    		WHERE $trashed_cond $archived_cond
-	    		AND ( `t`.`is_template` IS NULL OR `t`.`is_template` = 0 )
-	    		AND ( `m`.`is_template` IS NULL OR `m`.`is_template` = 0 )
-	    		AND `ot`.`type` IN ('". implode("','", $obj_type_types) ."')
-	    		AND $trashed_cond $archived_cond
-	    		AND ($member_conditions) $name_filter_condition $obj_ids_filter_condition $type_filter_condition $order_conditions";
+				WHERE $trashed_cond $archived_cond
+				AND $exists_member_cond
+				AND ( `t`.`is_template` IS NULL OR `t`.`is_template` = 0 )
+				AND ( `m`.`is_template` IS NULL OR `m`.`is_template` = 0 )
+				AND `ot`.`type` IN ('". implode("','", $obj_type_types) ."')
+				AND ($member_conditions) $name_filter_condition $obj_ids_filter_condition $type_filter_condition $order_conditions";
     		
     	$total = array_var(DB::executeOne($sql_count), "total");
     	
-    	$sql = "SELECT DISTINCT `om`.`object_id` FROM `".TABLE_PREFIX."object_members` `om` 
-	    		INNER JOIN `".TABLE_PREFIX."objects` `o` ON `o`.`id` = `om`.`object_id` 
-	    		INNER JOIN `".TABLE_PREFIX."object_types` `ot` ON `ot`.`id` = `o`.`object_type_id`
-              	LEFT JOIN `".TABLE_PREFIX."project_tasks` `t` ON `t`.`object_id` = `o`.`id`
-              	LEFT JOIN `".TABLE_PREFIX."project_milestones` `m` ON `m`.`object_id` = `o`.`id`
+    	$sql = "SELECT DISTINCT `o`.`id` FROM `".TABLE_PREFIX."objects` `o` 
+				INNER JOIN `".TABLE_PREFIX."object_types` `ot` ON `ot`.`id` = `o`.`object_type_id`
+				LEFT JOIN `".TABLE_PREFIX."object_members` `om` ON `o`.`id` = `om`.`object_id` 
+				LEFT JOIN `".TABLE_PREFIX."project_tasks` `t` ON `t`.`object_id` = `o`.`id`
+				LEFT JOIN `".TABLE_PREFIX."project_milestones` `m` ON `m`.`object_id` = `o`.`id`
 	    		
-	    		WHERE $trashed_cond $archived_cond
-	    		AND ( `t`.`is_template` IS NULL OR `t`.`is_template` = 0 )
-	    		AND ( `m`.`is_template` IS NULL OR `m`.`is_template` = 0 )
-	    		AND `ot`.`type` IN ('". implode("','", $obj_type_types) ."')
-	    		AND $trashed_cond $archived_cond	    		
-	    		AND ($member_conditions) $name_filter_condition $obj_ids_filter_condition $type_filter_condition $order_conditions
-	    		$limit_query ";
+				WHERE $trashed_cond $archived_cond
+				AND $exists_member_cond
+				AND ( `t`.`is_template` IS NULL OR `t`.`is_template` = 0 )
+				AND ( `m`.`is_template` IS NULL OR `m`.`is_template` = 0 )
+				AND `ot`.`type` IN ('". implode("','", $obj_type_types) ."')
+				AND ($member_conditions) $name_filter_condition $obj_ids_filter_condition $type_filter_condition $order_conditions
+				$limit_query ";
 	    		
-    	
     	$result = DB::execute($sql);
     	$rows = $result->fetchAll();
     	$objects = array();
     	if (!is_null($rows)) {
     		$ids = array();
 	    	foreach ($rows as $row) {
-	    		$ids[] = array_var($row, 'object_id');
+	    		$ids[] = array_var($row, 'id');
 	    	}
 	    	if (count($ids) > 0) {
 	    		$q_order = "";

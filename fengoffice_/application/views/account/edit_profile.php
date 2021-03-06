@@ -1,176 +1,130 @@
 <?php
 	$object = $user;
-    set_page_title(lang('update profile'));
-
+	set_page_title(lang('update profile'));
 	$genid = gen_id();
 ?>
 <form style="height:100%;background-color:white" class="internalForm" action="<?php echo $user->getEditProfileUrl($redirect_to) ?>" method="post">
-
-
+	
 <div class="adminEditProfile">
-  <div class="adminHeader">
-  	<div class="adminHeaderUpperRow">
-  		<div class="adminTitle"><table style="width:535px"><tr><td>
-  			<?php echo lang('update profile') ?>
-  		</td><td style="text-align:right">
-  			<?php echo submit_button(lang('save changes'), 's', array('style'=>'margin-top:0px;margin-left:10px', 'tabindex' => '1100')) ?>
-  		</td></tr></table></div>
-  	</div>
-  
-    <div>
-      <?php echo label_tag(lang('display name'), 'profileFormDisplayName') ?>
-      <?php echo text_field('user[display_name]', array_var($user_data, 'display_name'), 
-    	  array('id' => 'profileFormDisplayName', 'tabindex' => '1000', 'class' => 'title')) ?>
-    </div>
-  
-  	<?php $categories = array(); Hook::fire('object_edit_categories', $object, $categories); ?>
-  	<?php $cps = CustomProperties::countHiddenCustomPropertiesByObjectType(Contacts::getObjectTypeId()); ?>
-  
-  	<div style="padding-top:5px">
-		<?php if(logged_user()->isAdministrator()) { ?>
-			<a href="#" class="option" tabindex=1010 onclick="og.toggleAndBolden('<?php echo $genid ?>update_profile_administrator_options',this)"><?php echo lang('administrator options') ?></a> - 
-		<?php } // if ?>
+	<div class="adminHeader">
+		<div class="adminHeaderUpperRow">
+			<div class="adminTitle"><table style="width:535px"><tr><td>
+				<?php echo lang('update profile') ?>
+			</td><td style="text-align:right">
+				<?php echo submit_button(lang('save changes'), 's', array('style'=>'margin-top:0px;margin-left:10px', 'tabindex' => '1100')) ?>
+			</td></tr></table></div>
+		</div>
+	
+
+		<?php $categories = array(); Hook::fire('object_edit_categories', $object, $categories); ?>
+		<?php $cps = CustomProperties::countHiddenCustomPropertiesByObjectType(Contacts::getObjectTypeId()); ?>
+	
+		<div style="padding-top:5px">
 		<?php if (logged_user()->isAdministrator() && isset($billing_categories) && count($billing_categories) > 0) {?>
 			<a href="#" class="option" tabindex=1010 onclick="og.toggleAndBolden('<?php echo $genid ?>update_profile_billing',this)"><?php echo lang('billing') ?></a> - 
 		<?php } // if ?>
-		<a href="#" class="option" tabindex=1020 onclick="og.toggleAndBolden('<?php echo $genid ?>update_profile_timezone',this)"><?php echo lang('timezone') ?></a>
+			<a href="#" class="option" tabindex=1020 onclick="og.toggleAndBolden('<?php echo $genid ?>update_profile_timezone',this)"><?php echo lang('timezone') ?></a>
 		<?php foreach ($categories as $category) { ?>
 			- <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid . $category['name'] ?>', this)"><?php echo lang($category['name'])?></a>
 		<?php } ?>
 		<?php if ($cps > 0) { ?>
 			- <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_custom_properties_div',this)"><?php echo lang('custom properties') ?></a>
 		<?php } ?> 
+		</div>
 	</div>
-  
-  </div>
-  <div class="adminSeparator"></div>
-  <div class="adminMainBlock">
-
-<?php if(logged_user()->isAdministrator()) { ?>
-
-  <div id="<?php echo $genid ?>update_profile_administrator_options" style="display:none">
-  <fieldset>
-    <legend><?php echo lang('administrator update profile notice') ?></legend>
-    <div class="content">
-      <div class="formBlock">
-        <?php echo label_tag(lang('username'), $genid . 'profileFormUsername', true) ?>
-        <?php echo text_field('user[username]', array_var($user_data, 'username'), 
-        array('id' => $genid . 'profileFormUsername', 'tabindex' => '2000')) ?>
-      </div>
-      
-      <div class="formBlock">
-        <?php echo label_tag(lang('company'), $genid . 'userFormCompany', true) ?>
-        <?php $attributes = array(
-        	'id' => $genid . 'userFormCompany',
-        	'tabindex' => '2100',
-        	'onchange' => "var d = document.getElementById('" . $genid . "options'); var n = document.getElementById('" . $genid . "userFormIsAdminNo'); if (this.value == '1') { if (d) d.style.display = 'block'; if (n) n.checked = true; } else { if (d) d.style.display = 'none'; if(n) n.checked = false; }"
-		);
-		if ($user->getId() == 1) {
-			$attributes['disabled'] = 'disabled';
-		}
+	
+	
+	<div class="adminSeparator"></div>
+	<div class="adminMainBlock">
+	<?php if(logged_user()->isAdministrator()) : ?>
+	    <div class="formBlock">
+	      <?php echo label_tag(lang('username'), $genid . 'profileFormUsername', true) ?>
+	      <?php echo text_field('user[username]', array_var($user_data, 'username'), 
+	      array('id' => $genid . 'profileFormUsername', 'tabindex' => '2000')) ?>
+	    </div>
+		     
+		
+		<div class="formBlock">
+		<?php echo label_tag(lang('user type'), null, true);
+		    $permission_groups=array();
+		   foreach($groups as $group){
+		   		$permission_groups[]=array($group->getId(),$group->getName());
+		   }
+		 	echo simple_select_box('user[type]', $permission_groups,array_var($user_data, "type"));
 		?>
-        <?php echo select_company('user[company_id]', array_var($user_data, 'company_id'),  $attributes, false) ?>
-      </div>
-       
-
-	  <!-- user type -->
-	  <div class="formBlock">
-	    <?php echo label_tag(lang('user type'), null, true);
-	     $permission_groups=array();
-	    foreach($groups as $group){
-	    		$permission_groups[]=array($group->getId(),$group->getName());
-	    }
-	  	echo simple_select_box('user[type]', $permission_groups,array_var($user_data, "type"));
-	  	?>
-	  </div>
-
-	</div>
-    
-    </fieldset>
-  </div>
-<?php } else { ?>
-  <div>
-    <?php echo label_tag(lang('username')) ?>
-    <?php echo clean(array_var($user_data, 'username')) ?>
-    <input type="hidden" name="user[username]" value="<?php echo clean(array_var($user_data, 'username')) ?>" />
-  </div>
-<?php } // if ?>
-
-<?php if (logged_user()->isAdministrator() && isset($billing_categories) && count($billing_categories) > 0) {?>
-  <div id="<?php echo $genid ?>update_profile_billing" style="display:none">
-<fieldset>
-	<legend><?php echo lang('billing') ?></legend>
-<?php 
-	$options = array(option_tag(lang('select billing category'),0,($user->getDefaultBillingId() == 0?array('selected' => 'selected'):null)));
-	foreach ($billing_categories as $category){
-		$options[] = option_tag($category->getName(),$category->getId(),($category->getId()==$user->getDefaultBillingId())?array('selected' => 'selected'):null);	
-	}
-    echo label_tag(lang('billing category'), null, false);
-	echo select_box('user[default_billing_id]',$options,array('id' => 'userDefaultBilling'))
-?>
-</fieldset>
+		</div>
+	<?php else: ?>
+		<div>
+		  <?php echo label_tag(lang('username')) ?>
+		  <?php echo clean(array_var($user_data, 'username')) ?>
+		  <input type="hidden" name="user[username]" value="<?php echo clean(array_var($user_data, 'username')) ?>" />
+		  <input type="hidden" name="user[type]" value="<?php echo  $permission_groups,array_var($user_data, "type") ?>" />
+		</div>
+	<?php endif; ?>
+    <input type="hidden" name="user[company_id]" value="<?php echo array_var($user_data, 'company_id')?>" /> 
+	
+	<?php if (logged_user()->isAdministrator() && isset($billing_categories) && count($billing_categories) > 0) {?>
+	<div id="<?php echo $genid ?>update_profile_billing" style="display:none">
+	
+	<fieldset>
+		<legend><?php echo lang('billing') ?></legend>
+		<?php 
+			$options = array(option_tag(lang('select billing category'),0,($user->getDefaultBillingId() == 0?array('selected' => 'selected'):null)));
+			foreach ($billing_categories as $category){
+			$options[] = option_tag($category->getName(),$category->getId(),($category->getId()==$user->getDefaultBillingId())?array('selected' => 'selected'):null);	
+			}
+			  echo label_tag(lang('billing category'), null, false);
+			echo select_box('user[default_billing_id]',$options,array('id' => 'userDefaultBilling'))
+		?>
+	</fieldset>
+	
 </div>
 <?php } //if ?>
-
-   
-  <div id="<?php echo $genid ?>update_profile_timezone" style="display:none">
-  
-  <fieldset>
-    <legend><?php echo lang('timezone') ?></legend>
-    <span class="desc"><?php echo lang('auto detect user timezone') ?></span>
-    <div id ="<?php echo $genid?>detectTimeZone">
-    <?php echo yes_no_widget('user[autodetect_time_zone]', 'userFormAutoDetectTimezone', user_config_option('autodetect_time_zone', null, $user->getId()), lang('yes'), lang('no'), null, array('onclick' => "og.showSelectTimezone('$genid')")) ?>
-    </div>
-    <div id="<?php echo $genid?>selecttzdiv" <?php if (user_config_option('autodetect_time_zone', null, $user->getId())) echo 'style="display:none"'; ?>>
-    <?php echo select_timezone_widget('user[timezone]', array_var($user_data, 'timezone'), 
-    	array('id' => 'userFormTimezone', 'class' => 'long', 'tabindex' => '600' )) ?>
-    </div>
-  
-	  <script type="text/javascript">
-	  
-		og.showSelectTimezone = function(genid)	{
-			check = document.getElementById("userFormAutoDetectTimezoneYes");
-			div = document.getElementById(genid + "selecttzdiv");
-			if (check.checked){
-				div.style.display= "none";
-			}else{
-				div.style.display= "";
-			}
-			
-		  };
+	 
+<div class="formBlock">	   
+	<div id="<?php echo $genid ?>update_profile_timezone" >
+		   <span class="desc"><?php echo lang('auto detect user timezone') ?></span>
+		   <div id ="<?php echo $genid?>detectTimeZone">
+		   <?php echo yes_no_widget('user[autodetect_time_zone]', 'userFormAutoDetectTimezone', user_config_option('autodetect_time_zone', null, $user->getId()), lang('yes'), lang('no'), null, array('onclick' => "og.showSelectTimezone('$genid')")) ?>
+		   </div>
+		   <div id="<?php echo $genid?>selecttzdiv" <?php if (user_config_option('autodetect_time_zone', null, $user->getId())) echo 'style="display:none"'; ?>>
+		   <?php echo select_timezone_widget('user[timezone]', array_var($user_data, 'timezone'), 
+		   	array('id' => 'userFormTimezone', 'class' => 'long', 'tabindex' => '600' )) ?>
+		   </div>
+		 
+		<script type="text/javascript">
 		  
-	  </script>
-  </fieldset>
-  </div>
-  
-  <?php foreach ($categories as $category) { ?>
+			og.showSelectTimezone = function(genid)	{
+				check = document.getElementById("userFormAutoDetectTimezoneYes");
+				div = document.getElementById(genid + "selecttzdiv");
+				if (check.checked){
+					div.style.display= "none";
+				}else{
+					div.style.display= "";
+				}
+				
+			 };
+			  
+			</script>
+	</div>
+</div>
+	
+<?php foreach ($categories as $category) : ?>
 	<div style="display:none" id="<?php echo $genid . $category['name'] ?>">
 	<fieldset>
 		<legend><?php echo lang($category['name'])?></legend>
 		<?php echo $category['content'] ?>
-	</fieldset>
-	</div>
-	<?php } ?>
-
-  <div>
-    <?php echo label_tag(lang('email address'), 'profileFormEmail', true) ?>
-    <?php echo text_field('user[email]', array_var($user_data, 'email'), 
-    	array('id' => 'profileFormEmail', 'tabindex' => '2700', 'class' => 'long')) ?>
-  </div>
-  
-  
-  <div>
-    <?php echo label_tag(lang('user title'), 'profileFormTitle') ?>
-    <?php echo text_field('user[title]', array_var($user_data, 'title'), 
-    	array('id' => 'profileFormTitle', 'tabindex' => '2800')) ?>
-  </div>
-  
-  	<?php if ($cps > 0) { ?>
-  	<div id='<?php echo $genid ?>add_custom_properties_div' style="">
-		<fieldset>
-			<legend><?php echo lang('custom properties') ?></legend>
-			<?php echo render_object_custom_properties($user, 'Users', false) ?>
 		</fieldset>
+	</div>
+<?php endforeach; ?>
+	
+
+		<?php if ($cps > 0) { ?>
+		<div id='<?php echo $genid ?>add_custom_properties_div' style="">
+	<fieldset>
+		<legend><?php echo lang('custom properties') ?></legend>
+		<?php echo render_object_custom_properties($user, 'Users', false) ?>
+	</fieldset>
 	</div>
 	<?php } ?>
 	
@@ -184,15 +138,11 @@
 	<?php } ?>
 	
 	<div>
-		<?php echo render_object_custom_properties($user, 'Users', true) ?>
+	<?php echo render_object_custom_properties($user, 'Users', true) ?>
 	</div>
 	
-  <?php echo submit_button(lang('save changes'),'s',array('tabindex' => '3000')) ?>
-
-</div>
+	
+	<?php echo submit_button(lang('save changes'),'s',array('tabindex' => '3000')) ?>
+	</div>
 </div>
 </form>
-
-<script>
-	Ext.get('profileFormDisplayName').focus();
-</script>

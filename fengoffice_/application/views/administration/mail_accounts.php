@@ -33,7 +33,7 @@ $genid = gen_id();
 	<tr class="<?php echo $isAlt? 'altRow' : ''?>">
 		<td><?php echo clean($account->getName()) ?></td>
 		<td><?php echo $account->getEmailAddress() ?></td>
-		<td><?php echo $account->getOwner() instanceof User ? $account->getOwner()->getDisplayName() : lang("n/a") ?></td>
+		<td><?php echo $account->getOwner() instanceof Contact ? $account->getOwner()->getObjectName() : lang("n/a") ?></td>
 		<td><?php echo $account->getServer() ?></td>
 		<td><?php echo $account->getSmtpServer() ?></td>
 		<td><?php echo MailAccountUsers::countByAccount($account) ?></td>

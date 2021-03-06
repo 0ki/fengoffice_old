@@ -34,7 +34,7 @@
 	<?php $categories = array(); Hook::fire('object_edit_categories', $milestone, $categories); ?>
 	
 	<div style="padding-top:5px">
-		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_milestone_select_workspace_div',this)" style="font-weight:bold;"><?php echo lang('context') ?></a> -
+		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_milestone_select_context_div',this)" ><?php echo lang('context') ?></a> -
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_milestone_description_div', this)"><?php echo lang('description') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_milestone_options_div', this)"><?php echo lang('options') ?></a> -
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_reminders_div',this)"><?php echo lang('object reminders') ?></a>  - 
@@ -63,7 +63,7 @@
 		<input type="hidden" name="milestone[from_template_id]" value="<?php echo $base_milestone->getId() ?>" />
 	<?php } ?>
 	
-	<div id="<?php echo $genid ?>add_milestone_select_workspace_div">
+	<div id="<?php echo $genid ?>add_milestone_select_context_div" style="display:none">
 	<fieldset>
 	<?php 
 			$show_help_option = user_config_option('show_context_help'); 

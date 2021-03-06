@@ -175,3 +175,22 @@
 .plugin-manager tfoot {
 	display:none ;
 }
+
+a.help-sign {
+	background-color: #17734C;
+	border-radius: 10px 10px 10px 10px;
+	color: #FFFFFF;
+	font-weight: bold;
+	padding: 1px 4px;
+	vertical-align: text-bottom;
+}
+
+a.help-sign:hover {
+	opacity: 0.7;
+	filter: alpha(opacity=0.7);
+}
+
+input.disabled {
+	opacity: 0.6;
+	filter: alpha(opacity=0.6);
+}

@@ -20,15 +20,15 @@
 			$users = $company_row['users'];
 		?>
 <div style='padding-bottom:20px;max-width:700px'>
-<div style="padding:10px;background-color:#D7E5F5"><h1 style="font-size:140%;font-weight:bold"><a class="internalLink" href="<?php echo $company->getCardUrl() ?>"><?php echo clean($company->getName()) ?></a></h1></div>
+<div style="padding:10px;background-color:#D7E5F5"><h1 style="font-size:140%;font-weight:bold"><a class="internalLink" href="<?php echo ($company instanceof Contact ? $company->getCardUrl() : "#")?>"><?php echo ($company instanceof Contact ? clean($company->getName()) : lang('without company')) ?></a></h1></div>
 <div id="usersList" style="border:1px solid #DDD">
 <?php $counter = 0; 
   foreach($users as $user) {
 	$counter++; ?>
   <div class="listedUser <?php echo $counter % 2 ? 'even' : 'odd' ?>">
-    <div class="userAvatar"><img src="<?php echo $user->getAvatarUrl() ?>" alt="<?php echo clean($user->getDisplayName()) ?> <?php echo lang('avatar') ?>" /></div>
+    <div class="userAvatar"><img src="<?php echo $user->getAvatarUrl() ?>" alt="<?php echo clean($user->getObjectName()) ?> <?php echo lang('avatar') ?>" /></div>
     <div class="userDetails">
-      <div class="userName"><a class="internalLink" href="<?php echo $user->getCardUrl() ?>"><?php echo clean($user->getDisplayName()) ?></a></div>
+      <div class="userName"><a class="internalLink" href="<?php echo $user->getCardUrl() ?>"><?php echo clean($user->getObjectName()) ?></a></div>
       <div class="userIsAdmin">
 	<?php 
 		$options = array(option_tag(lang('select billing category'),0,($user->getDefaultBillingId() == 0?array('selected' => 'selected'):null)));

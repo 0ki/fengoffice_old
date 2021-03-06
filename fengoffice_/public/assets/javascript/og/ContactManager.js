@@ -19,7 +19,7 @@ og.ContactManager = function() {
 	            fields: [
 	                'object_id', 'type', 'name', 'companyId', 'companyName', 'email', 'website', 'jobTitle', 'createdBy', 'createdById', 'createdOn', 'createdOn_today', 'role', 'tags',
 	                'department', 'email2', 'email3', 'workWebsite', 'workAddress', 'workPhone1', 'workPhone2', 
-	                'homeWebsite', 'homeAddress', 'homePhone1', 'homePhone2', 'mobilePhone','wsIds','workspaceColors','updatedBy','updatedById', 'updatedOn', 'updatedOn_today', 'ix'
+	                'homeWebsite', 'homeAddress', 'homePhone1', 'homePhone2', 'mobilePhone','wsIds','workspaceColors','updatedBy','updatedById', 'updatedOn', 'updatedOn_today', 'ix', 'memPath'
 	            ]
 	        }),
 	        remoteSort: true,
@@ -27,7 +27,7 @@ og.ContactManager = function() {
 				'load': function(result) {
 					var d = this.reader.jsonData;
 					if (d.totalCount == 0) {
-						this.fireEvent('messageToShow', lang("no objects message", lang("contacts"), ws));
+						this.fireEvent('messageToShow', lang("no objects message", lang("contacts"), ''));
 					} else if (d.contacts.length == 0) {
 						this.fireEvent('messageToShow', lang("no more objects message", lang("contacts")));
 					} else {
@@ -68,11 +68,12 @@ og.ContactManager = function() {
 					og.clean(r.data.companyName), og.getUrl('contact', 'view_company', {id: r.data.companyId}), og.clean(r.data.companyName));
 			} //end else
 		}
-		return name;
-    }
-    
-    function renderWsCrumbs(value, p, r) {
-    	return String.format('<span class="project-replace">{0}</span>&nbsp;', value);
+		
+		mem_path = "";
+		var mpath = Ext.util.JSON.decode(r.data.memPath);
+		if (mpath) mem_path = og.getCrumbHtml(mpath);
+		
+		return mem_path + name;
     }
     
     function renderCompany(value, p, r) {
@@ -104,7 +105,7 @@ og.ContactManager = function() {
 		if (!value) {
 			return "";
 		}
-		var userString = String.format('<a href="{1}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', r.data.updatedBy, og.getUrl('contact', 'card_user', {id: r.data.updatedById}));
+		var userString = String.format('<a href="{1}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', r.data.updatedBy, og.getUrl('contact', 'card', {id: r.data.updatedById}));
 	
 		var now = new Date();
 		var dateString = '';
@@ -119,7 +120,7 @@ og.ContactManager = function() {
 		if (!value) {
 			return "";
 		}
-		var userString = String.format('<a href="{1}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', r.data.createdBy, og.getUrl('contact', 'card_user', {id: r.data.createdById}));
+		var userString = String.format('<a href="{1}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', r.data.createdBy, og.getUrl('contact', 'card', {id: r.data.createdById}));
 	
 		var now = new Date();
 		var dateString = '';

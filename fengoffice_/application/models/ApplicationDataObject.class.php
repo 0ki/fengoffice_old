@@ -79,16 +79,19 @@ abstract class ApplicationDataObject extends DataObject {
 		if ($wasNew)
 			$columns_to_drop = $this->getSearchableColumns();
 		else {
-			foreach ($this->getSearchableColumns() as $column_name){
-				if (isset($this->searchable_composite_columns[$column_name])){
-					foreach ($this->searchable_composite_columns[$column_name] as $colName){
-						if ($this->isColumnModified($colName)){
-							$columns_to_drop[] = $column_name;
-							break;
+			$searchable_columns = $this->getSearchableColumns();
+			if (is_array($searchable_columns)) {
+				foreach ($searchable_columns as $column_name){
+					if (isset($this->searchable_composite_columns[$column_name])){
+						foreach ($this->searchable_composite_columns[$column_name] as $colName){
+							if ($this->isColumnModified($colName)){
+								$columns_to_drop[] = $column_name;
+								break;
+							}
 						}
-					}
-				} else if ($this->isColumnModified($column_name))
-					$columns_to_drop[] = $column_name;
+					} else if ($this->isColumnModified($column_name))
+						$columns_to_drop[] = $column_name;
+				}
 			}
 		}
 		 
@@ -103,15 +106,20 @@ abstract class ApplicationDataObject extends DataObject {
 				}
 				if(trim($content) <> '') {
 					$searchable_object = new SearchableObject();
-					 
 					$searchable_object->setRelObjectId($this->getObjectId());
-					$searchable_object->setColumnName($column_name);
-					$searchable_object->setContent($content);
-
-					$searchable_object->save();
-				} // if
-			} // foreach
-		} // if
+					$searchable_object->setColumnName(DB::escape($column_name));
+					if (strlen($content) > 65535) {
+						$content = utf8_safe(substr($content, 0, 65535));
+					}
+					$content = DB::escape($content);
+					$sql = "
+						INSERT INTO ".TABLE_PREFIX."searchable_objects (rel_object_id, column_name, content)
+						VALUES (".$searchable_object->getRelObjectId().",".$searchable_object->getColumnName().",".$content.")
+						ON DUPLICATE KEY UPDATE content = $content";
+					DB::execute($sql);
+				} 
+			} 
+		} 
 		 
 	}
 
@@ -308,7 +316,7 @@ abstract class ApplicationDataObject extends DataObject {
 	 */
 	function getCreatedByDisplayName() {
 		$created_by = $this->getCreatedBy();
-		return $created_by instanceof Contact ? $created_by->getDisplayName() : lang('n/a');
+		return $created_by instanceof Contact ? $created_by->getObjectName() : lang('n/a');
 	} // getCreatedByDisplayName
 
 	/**
@@ -331,7 +339,7 @@ abstract class ApplicationDataObject extends DataObject {
 	 *
 	 * @access public
 	 * @param void
-	 * @return User
+	 * @return Contact
 	 */
 	function getUpdatedBy() {
 		if(is_null($this->updated_by)) {
@@ -349,7 +357,7 @@ abstract class ApplicationDataObject extends DataObject {
 	 */
 	function getUpdatedByDisplayName() {
 		$updated_by = $this->getUpdatedBy();
-		return $updated_by instanceof Contact ? $updated_by->getDisplayName() : lang('n/a');
+		return $updated_by instanceof Contact ? $updated_by->getObjectName() : lang('n/a');
 	} // getUpdatedByDisplayName
 
 	/**
@@ -372,7 +380,7 @@ abstract class ApplicationDataObject extends DataObject {
 	 *
 	 * @access public
 	 * @param void
-	 * @return User
+	 * @return Contact
 	 */
 	function getTrashedBy() {
 		if(is_null($this->trashed_by)) {
@@ -390,7 +398,7 @@ abstract class ApplicationDataObject extends DataObject {
 	 */
 	function getTrashedByDisplayName() {
 		$trashed_by = $this->getTrashedBy();
-		return $trashed_by instanceof Contact ? $trashed_by->getDisplayName() : lang('n/a');
+		return $trashed_by instanceof Contact ? $trashed_by->getObjectName() : lang('n/a');
 	} // getTrashedByDisplayName
 
 	/**
@@ -421,7 +429,7 @@ abstract class ApplicationDataObject extends DataObject {
 	/**
 	 * Link object to this object
 	 *
-	 * @param ProjectDataObject $object
+	 * @param ApplicationDataObject $object
 	 * @return LinkedObject
 	 */
 	function linkObject(ApplicationDataObject $object) {
@@ -482,7 +490,7 @@ abstract class ApplicationDataObject extends DataObject {
 			}
 			$objects = $this->linked_objects;
 		}
-		if ($this instanceof ProjectDataObject && $this->isTrashed()) {
+		if ($this instanceof ContentDataObject && $this->isTrashed()) {
 			$include_trashed = true;
 		} else {
 			$include_trashed = false;
@@ -493,7 +501,7 @@ abstract class ApplicationDataObject extends DataObject {
 			$ret = array();
 			if (is_array($objects) && count($objects)) {
 				foreach ($objects as $o) {
-					if (!$o instanceof ProjectDataObject || !$o->isTrashed()) {
+					if (!$o instanceof ContentDataObject || !$o->isTrashed()) {
 						$ret[] = $o;
 					}
 				}
@@ -548,7 +556,7 @@ abstract class ApplicationDataObject extends DataObject {
 	/**
 	 * Return unlink object URL
 	 *
-	 * @param ProjectDataObject $object
+	 * @param ApplicationDataObject $object
 	 * @return string
 	 */
 	function getUnlinkObjectUrl(ApplicationDataObject $object) {
@@ -573,8 +581,8 @@ abstract class ApplicationDataObject extends DataObject {
 	/**
 	 * Check if $user can un-link $object from this object
 	 *
-	 * @param User $user
-	 * @param ProjectDataObject $object
+	 * @param Contact $user
+	 * @param ApplicationDataObject $object
 	 * @return booealn
 	 */
 	function canUnlinkObject(Contact $user, ApplicationDataObject $object) {
@@ -710,7 +718,7 @@ abstract class ApplicationDataObject extends DataObject {
 	
 	/**
 	 * Copies custom properties from an object
-	 * @param ProjectDataObject $object
+	 * @param ApplicationDataObject $object
 	 */
 	function copyCustomPropertiesFrom($object) {
 		$properties = $object->getCustomProperties();

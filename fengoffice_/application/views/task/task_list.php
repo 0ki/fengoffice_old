@@ -168,7 +168,7 @@ if($showCompletedSubtasksDiv) { ?>
           <?php } // if ?>
           <br />
           <?php if ($task->getCompletedBy() instanceof User) {?>
-          	<span class="taskCompletedOnBy">(<?php echo lang('completed on by', format_date($task->getCompletedOn()), $task->getCompletedBy()->getCardUserUrl(), clean($task->getCompletedBy()->getDisplayName())) ?>)</span>
+          	<span class="taskCompletedOnBy">(<?php echo lang('completed on by', format_date($task->getCompletedOn()), $task->getCompletedBy()->getCardUserUrl(), clean($task->getCompletedBy()->getObjectName())) ?>)</span>
           <?php } else { ?>
           <span class="taskCompletedOnBy">(<?php echo lang('completed on by', format_date($task->getCompletedOn()), "#", lang("n/a")) ?>)</span>
           <?php } ?>

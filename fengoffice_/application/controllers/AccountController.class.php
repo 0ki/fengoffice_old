@@ -49,6 +49,7 @@ class AccountController extends ApplicationController {
 	 * @return null
 	 */
 	function edit_profile() {
+		ajx_set_panel("");
 		$user = Contacts::findById(get_id());
 		if(!($user instanceof Contact && $user->isUser()) || $user->getDisabled()) {
 			flash_error(lang('user dnx'));
@@ -58,11 +59,12 @@ class AccountController extends ApplicationController {
 
 		
 		$company = $user->getCompany();
-		if(!($company instanceof Contact)) {
+		/*if(!($company instanceof Contact)) {
 			flash_error(lang('company dnx'));
 			ajx_current("empty");
 			return;
 		} // if
+		*/
 
 		if(!$user->canUpdateProfile(logged_user())) {
 			flash_error(lang('no access permissions'));
@@ -81,8 +83,7 @@ class AccountController extends ApplicationController {
 			$user_data = array(
 	          'username'      => $user->getUsername(),
 	          'email'         => $user->getEmailAddress(),
-	          'display_name'  => $user->getDisplayName(),
-	          'title'         => $user->getJobTitle(),
+	          'display_name'  => $user->getObjectName(),
 	          'timezone'      => $user->getTimezone(),
 	          'company_id'    => $user->getCompanyId(),
 	          'is_admin'      => $user->isAdministrator(),
@@ -112,23 +113,9 @@ class AccountController extends ApplicationController {
 			}
 			try {
 				DB::beginWork();
-				if (!Contacts::validateUniqueEmail($user_data['email'], get_id())) {
-					throw new DAOValidationError($this, array(lang("email address must be unique"))) ; 
-				}
-				$user->setDisplayName(array_var($user_data,'display_name'));
-				$user->setFirstName($user->getDisplayName() != "" ? $user->getDisplayName() : $user->getUsername());
-				$user->setObjectName();
-				
-				$user_email = $user->getEmail('user');
-				$email_address = array_var($user_data,'email');
-				if (!is_null($user_email)){
-					$user_email->editEmailAddress($email_address);
-				}
-				else $user->addEmail($email_address, 'user', true);
-				
+
 				$user->setUserType(array_var($user_data,'type'));
 				$user->setTimezone(array_var($user_data,'timezone'));
-				$user->setJobTitle(array_var($user_data,'title'));
 				$user->setUpdatedOn(DateTimeValueLib::now());
 				
 				if (logged_user()->isAdministrator()){
@@ -179,7 +166,7 @@ class AccountController extends ApplicationController {
 				$ret = null;
 				Hook::fire('after_edit_profile', $user, $ret);
 				$pg_id = $user->getPermissionGroupId();
-				save_permissions($pg_id);
+				save_permissions($pg_id, $user->isGuest());
 				DB::commit();
 
 				flash_success(lang('success update profile'));
@@ -292,13 +279,6 @@ class AccountController extends ApplicationController {
 			return;
 		} // if
 
-		$company = Contacts::findById($user->getCompanyId());
-		if(!($company instanceof Contact && $company->getIsCompany())) {
-			flash_error(lang('company dnx'));
-			ajx_current("empty");
-			return;
-		} // if
-
 		$redirect_to = array_var($_GET, 'redirect_to');
 		if((trim($redirect_to)) == '' || !is_valid_url($redirect_to)) {
 			$redirect_to = $user->getCardUserUrl();
@@ -334,11 +314,20 @@ class AccountController extends ApplicationController {
 			$more_permissions = array();
 			Hook::fire('add_user_permissions', $pg_id, $more_permissions);
 			tpl_assign('more_permissions', $more_permissions);
+			
+			
+			// Permission Groups
+			$groups = PermissionGroups::getNonPersonalSameLevelPermissionsGroups('`parent_id`,`id` ASC');
+			tpl_assign('groups', $groups);
+			$roles= SystemPermissions::getAllRolesPermissions();
+			tpl_assign('roles', $roles);
+			$tabs= TabPanelPermissions::getAllRolesModules();
+			tpl_assign('tabs_allowed', $tabs);
+			tpl_assign('guest_groups', PermissionGroups::instance()->getGuestPermissionGroups());
 		}
 		
 		
 		tpl_assign('user', $user);
-		tpl_assign('company', $company);
 		tpl_assign('redirect_to', $redirect_to);
 
 		if(array_var($_POST, 'submitted') == 'submitted') {
@@ -347,7 +336,10 @@ class AccountController extends ApplicationController {
 			try{
 				DB::beginWork();
 				$pg_id = $user->getPermissionGroupId();
-				save_permissions($pg_id);
+				
+				$user->setUserType(array_var($user_data, 'type'));
+				$user->save();
+				save_permissions($pg_id, $user->isGuest());
 				
 				DB::commit();
 				flash_success(lang('success user permissions updated'));
@@ -517,6 +509,7 @@ class AccountController extends ApplicationController {
 		try {
 			DB::beginWork();
 			$user->disable();
+			ApplicationLogs::createLog($user, ApplicationLogs::ACTION_TRASH);
 			$ret = null ; 
 			Hook::fire("user_disabled", $user, $ret );
 			DB::commit();
@@ -547,7 +540,8 @@ class AccountController extends ApplicationController {
 		try {
 			DB::beginWork();
 			$user->setDisabled(false);
-			$user->save();
+			$user->unarchive();
+			ApplicationLogs::createLog($user, ApplicationLogs::ACTION_UNTRASH);
 			$ret = null ; 
 			Hook::fire("user_restored", $user, $ret );			
 			DB::commit();

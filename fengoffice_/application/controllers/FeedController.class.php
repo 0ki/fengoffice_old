@@ -115,7 +115,7 @@ class FeedController extends PageController {
 			die();
 		} // if
 
-		$this->renderCalendar($user, lang('user calendar', $user->getDisplayName()), $user->getActiveMilestones());
+		$this->renderCalendar($user, lang('user calendar', $user->getObjectName()), $user->getActiveMilestones());
 	} // user_ical
 
 	/**
@@ -166,7 +166,7 @@ class FeedController extends PageController {
 				$project = Projects::findById($cal);
 			}
 			$events = ProjectEvents::getAllEventsByProject($project, false, $inc_sub, $user);
-			$calendar_name = isset($_GET['n']) ? $_GET['n'] : $user->getDisplayName();
+			$calendar_name = isset($_GET['n']) ? $_GET['n'] : $user->getObjectName();
 			tpl_assign('content', CalFormatUtilities::generateICalInfo($events, $calendar_name, $user));
 		} else {
 			header('HTTP/1.0 404 Not Found');
@@ -231,7 +231,7 @@ class FeedController extends PageController {
 				$item = $feed->addItem(new Angie_Feed_Item($activity_log_entry->getText(), undo_htmlspecialchars($activity_log_entry->getObjectUrl()), '', $activity_log_entry->getCreatedOn()));
 				$taken_by = $activity_log_entry->getTakenBy();
 				if($taken_by instanceof Contact) {
-					$item->setAuthor(new Angie_Feed_Author($taken_by->getDisplayName(), $taken_by->getEmailAddress('user')));
+					$item->setAuthor(new Angie_Feed_Author($taken_by->getObjectName(), $taken_by->getEmailAddress('user')));
 				} // if
 			} // foreach
 		} // if

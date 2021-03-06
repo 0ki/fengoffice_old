@@ -141,15 +141,14 @@ og.contextManager  = new function() {
      * @param dimension - integer: dimension id 
      *  
      */
-    this.addActiveMember = function ( member , dimension ) {   	
-    	
+    this.addActiveMember = function ( member , dimension, node ) {   	
     	if (dimension) {
     		if (!this.dimensionMembers[dimension]) 
     			this.dimensionMembers[dimension] = [] ;
     		if ( this.dimensionMembers[dimension].indexOf(member) == -1)
     			this.dimensionMembers[dimension].push(member) ;
     	}
-
+    	og.eventManager.fireEvent("after add active member", node);
     }
     
     this.removeActiveMember = function ( member , dimensionId ) {
@@ -182,26 +181,37 @@ og.contextManager  = new function() {
     	}
     }
     
-    this.getMemberPath = function (dimId, memberId) {
+    this.getMemberPath = function (dimId, memberId, separator, direction) {
+    	separator = separator || "/";
+    	direction = direction || "ltr";
     	var path = "" ;
     	var node = this.getTreeNode(dimId, memberId) ;
     	if (node) {
 	    	var depth = node.getDepth();
 	    	if (depth >= 2 ) {
+	    		
 	    		while ( depth > 1 ){
 	    			node  = node.parentNode ;
 	    			if (node) {
 	    				if (!path) {
 	    					path = node.text  ;
 	    				}else{
-	    					path = node.text + " - " + path;
+	    					if (direction == "ltr") {
+	    						path = node.text + separator + path;
+	    					}else{
+	    						path =  path + separator + node.text  ;
+	    					}
 	    				}
 		    			depth-- ;
 	    			}
 	    		}
 	    	}
 	    	if (path) {
-	    		path = " - " + path ;
+	    		if (direction == "ltr") {
+	    			path = path + separator  ;
+	    		}else {
+	    			path = separator + path ;
+	    		}
 	    	}
     	}
     	return path ;

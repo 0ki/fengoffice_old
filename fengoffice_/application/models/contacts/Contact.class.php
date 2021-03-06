@@ -68,35 +68,23 @@ class Contact extends BaseContact {
 			$id = $this->getId();
 			$references = Objects::findAll(array("conditions" => "`created_by_id` = $id OR `updated_by_id` = $id OR `trashed_by_id` = $id OR `archived_by_id` = $id"));
 			$linked_obj_references = LinkedObjects::findAll(array("conditions" => "`created_by_id` = $id"));
+			$objects_in_person_member = array();
+			if (Plugins::instance()->isActivePlugin('core_dimensions')) {
+				$persons_dim = Dimensions::findByCode('feng_persons');
+				$members = Members::findByObjectId($this->getId(), $persons_dim->getId());
+				$member_ids = array();
+				foreach ($members as $member) $member_ids[] = $member->getId();
+				$objects_in_person_member = ObjectMembers::findAll(array('conditions' => "`member_id` IN (".implode(",", $member_ids).")"));
+			}
 			
-			if (($references && is_array($references) && count($references) > 0) || 
+			if (($references && is_array($references) && count($references) > 0) || count($objects_in_person_member) > 0 ||
 				($linked_obj_references && is_array($linked_obj_references) && count($linked_obj_references) > 0)) {
 				
 				$this->setDisabled(true);
-				$this->save();
+				$this->archive();
 				
 			} else {
-
-				ContactAddresses::instance()->delete("`contact_id` = $id");
-				ContactImValues::instance()->delete("`contact_id` = $id");
-				ContactEmails::instance()->delete("`contact_id` = $id");
-				ContactTelephones::instance()->delete("`contact_id` = $id");
-				ContactWebpages::instance()->delete("`contact_id` = $id");
-				ContactConfigOptionValues::instance()->delete("`contact_id` = $id");
-				ContactPasswords::instance()->delete("`contact_id` = $id");
-				
-				ObjectSubscriptions::instance()->delete("`contact_id` = $id");
-				ObjectReminders::instance()->delete("`contact_id` = $id");
-				
-				ContactPermissionGroups::instance()->delete("`contact_id` = $id");
-				ContactMemberPermissions::instance()->delete("`permission_group_id` = " . $this->getPermissionGroupId());
-				ContactDimensionPermissions::instance()->delete("`permission_group_id` = " . $this->getPermissionGroupId());
-				SystemPermissions::instance()->delete("`permission_group_id` = " . $this->getPermissionGroupId());
-				TabPanelPermissions::instance()->delete("`permission_group_id` = " . $this->getPermissionGroupId());
-				
-				$this->delete();
-				$ret = null;
-				Hook::fire("after_user_deleted", $this, $ret);
+				$this->do_delete();
 			}
 			
 			return true;
@@ -104,7 +92,30 @@ class Contact extends BaseContact {
 	}
 	
 	
-	
+	function do_delete() {
+		$id = $this->getId();
+		
+		ContactAddresses::instance()->delete("`contact_id` = $id");
+		ContactImValues::instance()->delete("`contact_id` = $id");
+		ContactEmails::instance()->delete("`contact_id` = $id");
+		ContactTelephones::instance()->delete("`contact_id` = $id");
+		ContactWebpages::instance()->delete("`contact_id` = $id");
+		ContactConfigOptionValues::instance()->delete("`contact_id` = $id");
+		ContactPasswords::instance()->delete("`contact_id` = $id");
+		
+		ObjectSubscriptions::instance()->delete("`contact_id` = $id");
+		ObjectReminders::instance()->delete("`contact_id` = $id");
+		
+		ContactPermissionGroups::instance()->delete("`contact_id` = $id");
+		ContactMemberPermissions::instance()->delete("`permission_group_id` = " . $this->getPermissionGroupId());
+		ContactDimensionPermissions::instance()->delete("`permission_group_id` = " . $this->getPermissionGroupId());
+		SystemPermissions::instance()->delete("`permission_group_id` = " . $this->getPermissionGroupId());
+		TabPanelPermissions::instance()->delete("`permission_group_id` = " . $this->getPermissionGroupId());
+		
+		$this->delete();
+		$ret = null;
+		Hook::fire("after_user_deleted", $this, $ret);
+	}
 	// ---------------------------------------------------
 	//  IMs
 	// ---------------------------------------------------
@@ -288,6 +299,7 @@ class Contact extends BaseContact {
 	 * @access public
 	 * @param void
 	 * @return string
+	 * @deprecated
 	 */
 	 function getEmail($type=null) {
 		if (is_null($type)){
@@ -311,10 +323,21 @@ class Contact extends BaseContact {
 	 * @return string
 	 */
 	 function getEmailAddress($type=null) {
-	 	$email = $this->getEmail($type);
-	 	$address = is_null($email) ? '' : $email->getEmailAddress();
-		return $address;
-	 } // getEmailAddress
+	 	$contact_id = $this->getId();
+	 	$type_condition =  ($type) ? "AND name = 'personal'" : "";
+	 	
+	 	$sql = "SELECT * FROM ".TABLE_PREFIX."contact_emails ce
+				LEFT JOIN ".TABLE_PREFIX."email_types t
+				ON ce.email_type_id = t.id
+				WHERE TRIM(email_address) <> ''
+				AND email_address IS NOT NULL
+				AND contact_id = $contact_id
+				$type_condition LIMIT 1";
+		if ($row = DB::executeOne($sql)) {
+			return $row['email_address'];	
+		}				
+		return null;
+	 } 
 	
 	 	 
 	 function getContactEmails($type){
@@ -336,6 +359,30 @@ class Contact extends BaseContact {
 		$address_type_id = AddressTypes::getAddressTypeId($type);
 		return ContactAddresses::findOne(array('conditions' => array("`contact_id` = ? AND `address_type_id` = ?", 
     		   $this->getId(), $address_type_id)));
+	} // getMainPhone
+    
+	/**
+	 * Return  
+	 *
+	 * @access public
+	 * @param $typeId
+	 * @param $main
+	 * @return string with formated address.
+	 */
+	function getStringAddress($type) {
+		$address_type_id = AddressTypes::getAddressTypeId($type);
+		$address = ContactAddresses::findOne(array('conditions' => array("`contact_id` = ? AND `address_type_id` = ?", 
+    		   $this->getId(), $address_type_id)));
+        //print_r($address);
+        $out = $address->getStreet();
+        if($address->getCity() != '')
+            $out .= ' - ' . $address->getCity();
+        if($address->getState() != '')
+            $out .= ' - ' . $address->getState();        
+        if($address->getCountry() != '')
+            $out .= ' - ' . $address->getCountryName();
+        return $out;
+        
 	} // getMainPhone
 	
 	
@@ -460,6 +507,17 @@ class Contact extends BaseContact {
 	function isValidPassword($check_password) {
 		return sha1 ( $this->getSalt () . $check_password ) == $this->getToken ();
 	} // isValidPassword
+    
+    
+    /**
+    *
+    *@param api hash code
+    @return boolean have access to api.
+    */
+    private function  getApiAccess()
+    {
+        return $this->getToken() == $api_token;
+    }
 	
 
 	/**
@@ -537,7 +595,7 @@ class Contact extends BaseContact {
 	 * @return string
 	 */
 	function getCreateUserUrl() {
-		return get_url ( 'contact', 'create_user', $this->getId () );
+		return get_url ( 'contact', 'add_user', array("contact_id" => $this->getId()) );
 	} //  getCreateUserUrl
 	
 
@@ -567,7 +625,7 @@ class Contact extends BaseContact {
 	 * @return null
 	 */
 	function getCardUserUrl() {
-		return get_url ( 'contact', 'card_user', $this->getId () );
+		return get_url ( 'contact', 'card', $this->getId () );
 	} // getCardUrl
 
 	/**
@@ -783,11 +841,8 @@ class Contact extends BaseContact {
 	 * @return booelean
 	 */
 	function canAddUser(Contact $user) {
-		if(can_manage_members($user)) {
-			return true;
-		} // if
 		return can_manage_security($user);
-	} // canAddUsers
+	}
 	
 	
 	/**
@@ -821,7 +876,7 @@ class Contact extends BaseContact {
 			// a contact that has a user assigned to it can be modified by anybody that can manage security (this is: users and permissions) or the user himself.
 			return can_manage_security ($user) || $this->getObjectId () == $user->getObjectId () || can_write ($user, $this->getMembers(), $this->getObjectTypeId());
 		} 
-		if ($this->isOwnerCompany()) return can_edit_company_data($user);
+		if ($this->isOwnerCompany()) return can_manage_configuration($user);
 		return can_write ($user, $this->getMembers(), $this->getObjectTypeId());
 	} // canEdit
 	
@@ -913,7 +968,7 @@ class Contact extends BaseContact {
 		if ($this->getTrashedById () > 0)
 			$deletedBy = Contacts::findById ( $this->getTrashedById () );
 		if (isset ( $deletedBy ) && $deletedBy instanceof Contact) {
-			$deletedBy = $deletedBy->getDisplayName ();
+			$deletedBy = $deletedBy->getObjectName ();
 		} else {
 			$deletedBy = lang ( "n/a" );
 		}
@@ -922,7 +977,7 @@ class Contact extends BaseContact {
 		if ($this->getArchivedById () > 0)
 			$archivedBy = Contacts::findById ( $this->getArchivedById () );
 		if (isset ( $archivedBy ) && $archivedBy instanceof Contact) {
-			$archivedBy = $archivedBy->getDisplayName ();
+			$archivedBy = $archivedBy->getObjectName ();
 		} else {
 			$archivedBy = lang ( "n/a" );
 		}
@@ -1037,8 +1092,8 @@ class Contact extends BaseContact {
      * 
      */
     function isAdministrator() {
-    	$type = $this->getUserType();
-    	$name=PermissionGroups::findById($type)->getName();
+    	$type = parent::getUserType();
+    	$name = PermissionGroups::findById($type)->getName();
 		return  $name == 'Super Administrator';
     }
     function isModerator() {
@@ -1201,7 +1256,7 @@ class Contact extends BaseContact {
 	 * @return string
 	 */
 	function getAddUserUrl() {
-		return get_url('contact', 'add_user', array('company_id' => $this->getId()));
+		return get_url('contact', 'add', array('company_id' => $this->getId()));
 	} // getAddUserUrl
 	
 	
@@ -1477,11 +1532,28 @@ class Contact extends BaseContact {
 		if($this->getId() == $user->getId()) {
 			return true;
 		} // if
-		if($user->isAdministrator()) {
+		if(can_manage_security(logged_user())) {
 			return true;
 		} // if
 		return false;
 	} // canUpdateProfile
+	
+	
+	/**
+	 * Check if specific user can change this user password
+	 *
+	 * @param Contact $user
+	 * @return boolean
+	 */
+	function canChangePassword(Contact $user) {
+		if($this->getId() == $user->getId()) {
+			return true;
+		}
+		if(can_manage_security(logged_user())) {
+			return logged_user()->isAdminGroup();
+		}
+		return false;
+	}
 	
 	
 	/**
@@ -1491,7 +1563,12 @@ class Contact extends BaseContact {
 	 * @return boolean
 	 */
 	function canUpdatePermissions(Contact $user) {
-		return can_manage_security(logged_user());
+		$actual_user_type = PermissionGroups::instance()->findOne(array("conditions" => "id = ".$user->getUserType()));
+		$this_user_type = PermissionGroups::instance()->findOne(array("conditions" => "id = ".$this->getUserType()));
+		
+		$can_change_type = $actual_user_type->getId() < $this_user_type->getId() || $user->isAdminGroup() && $this->getId() == $user->getId();
+		
+		return can_manage_security($user) && $can_change_type;
 	} // canUpdatePermissions
 
 	
@@ -1694,7 +1771,7 @@ class Contact extends BaseContact {
 	}
 	
 	function getAccountUrl() {
-		return get_url('contact', 'card_user', array('id'=>$this->getId()));
+		return get_url('contact', 'card', array('id'=>$this->getId()));
 	}
 	
 	

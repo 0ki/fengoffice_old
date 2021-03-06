@@ -27,10 +27,12 @@ class Object extends BaseObject {
 
 	
 	function getArrayInfo($include_trash_info = false, $include_archive_info = false) {
-		
-		$dateCreated = $this->getCreatedOn()->isToday() ? lang('today') ." ". format_time($this->getCreatedOn()) : format_datetime($this->getCreatedOn());
-		$dateUpdated = $this->getUpdatedOn()->isToday() ? lang('today') ." ". format_time($this->getUpdatedOn()) : format_datetime($this->getUpdatedOn());
-		
+		if ($this->getCreatedOn()){
+			$dateCreated = $this->getCreatedOn()->isToday() ? lang('today') ." ". format_time($this->getCreatedOn()) : format_datetime($this->getCreatedOn());
+		}
+		if ($this->getUpdatedOn()){
+			$dateUpdated = $this->getUpdatedOn()->isToday() ? lang('today') ." ". format_time($this->getUpdatedOn()) : format_datetime($this->getUpdatedOn());
+		}
 		$info = array(
 			'object_id' => $this->getId(),
 			'name' => $this->getName(),
@@ -54,7 +56,7 @@ class Object extends BaseObject {
 		if ($include_archive_info) {
 			$dateArchived = $this->getArchivedOn() instanceof DateTimeValue ? ($this->getArchivedOn()->isToday() ? format_time($this->getArchivedOn()) : format_datetime($this->getArchivedOn())) : lang('n/a');
 			$archived_by = Contacts::findById($this->getArchivedById());
-			$info['archivedBy'] = $archived_by instanceof Contact ? $archived_by->getDisplayName() : lang('n/a');
+			$info['archivedBy'] = $archived_by instanceof Contact ? $archived_by->getObjectName() : lang('n/a');
 			$info['archivedById'] = $this->getArchivedById();
 			$info['dateArchived'] = $dateArchived;
 		}

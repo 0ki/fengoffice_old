@@ -125,8 +125,15 @@ class ProjectEvents extends BaseProjectEvents {
 		
 			$start = null ;
 			$limit = null ;
-			$result_events = self::getContentObjects(active_context(), ObjectTypes::findById(self::instance()->getObjectTypeId()), '`start`', 'ASC', $conditions,null,false,false,$start, $limit)->objects;
-			
+			//$result_events = self::getContentObjects(active_context(), ObjectTypes::findById(self::instance()->getObjectTypeId()), '`start`', 'ASC', $conditions,null,false,false,$start, $limit)->objects;
+			$result_events = self::instance()->listing(array(
+				"order" => 	'start',
+				"order_dir"=> 'ASC',
+				"extra_conditions" => $conditions ,
+				"start" => $start,
+				"limit" => $limit		
+				
+			))->objects ;
 
 			// Find invitations for events and logged user
 			if (is_array($result_events) && count($result_events)) {
@@ -249,8 +256,16 @@ class ProjectEvents extends BaseProjectEvents {
 			$invited
 		)";
 
-		$result_events = self::getContentObjects(active_context(), ObjectTypes::findById(self::instance()->getObjectTypeId()), '`start`', 'ASC', $conditions, null, false, false, $start, $limit);
+		//$result_events = self::getContentObjects(active_context(), ObjectTypes::findById(self::instance()->getObjectTypeId()), '`start`', 'ASC', $conditions, null, false, false, $start, $limit);
 		
+		$result_events = self::instance()->listing(array(
+			"order" => 	'start',
+			"order_dir"=> 'ASC',
+			"extra_conditions" => $conditions ,
+			"start" => $start,
+			"limit" => $limit		
+			
+		))->objects ;
 		// Find invitations for events and logged user
 		ProjectEvents::addInvitations($result_events);
 

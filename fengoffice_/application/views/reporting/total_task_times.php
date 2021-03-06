@@ -1,311 +1,123 @@
 <?php
-	$isAlt = false;
 	
-	$showBillingCol = false;
-	
-	function format_value_to_print_task($value, $type, $textWrapper='', $dateformat='Y-m-d') {			
-		switch ($type) {
-			case DATA_TYPE_STRING:
-				if(preg_match(EMAIL_FORMAT, strip_tags($value))){
-					$formatted = $value;
-				}else{ 
-					$formatted = $textWrapper . clean($value) . $textWrapper;
-				}
-				break;
-			case DATA_TYPE_INTEGER: $formatted = clean($value);
-				break;
-			case DATA_TYPE_BOOLEAN: $formatted = ($value == 1 ? lang('yes') : lang('no'));
-				break;
-			case DATA_TYPE_DATE:
-				if ($value != 0) { 
-					if (str_ends_with($value, "00:00:00")) $dateformat .= " H:i:s";
-					$dtVal = DateTimeValueLib::dateFromFormatAndString($dateformat, $value);
-					$formatted = format_date($dtVal, null, 0);
-				} else $formatted = '';
-				break;
-			case DATA_TYPE_DATETIME:
-				if ($value != 0) {
-					$dtVal = DateTimeValueLib::dateFromFormatAndString("$dateformat H:i:s", $value);					
-					$formatted = format_date($dtVal, null, 0);
-				} else $formatted = '';
-				break;
-			default: $formatted = $value;
-		}
-		if($formatted == '') {
-			$formatted = '--';
-		}
+	function total_task_times_print_group($group_obj, $grouped_objects, $options, $skip_groups = array(), $level = 0, $prev = "", &$total = 0) {
 		
-		return $formatted;
-	}
-		
-	function has_value($array, $value) {
-		foreach ($array as $val) {
-			if ($val == $value) return true;
-		}
-		return false;
-	}
-
-	function has_difference($previousTSRow, $tsRow, $field) {
-		
-		if (is_array($previousTSRow))
-			$previousTS = $previousTSRow["ts"];
-		$ts = $tsRow["ts"];
-		
-		return !isset($previousTS) || $previousTS == null ||
-				($field == 'id' && $previousTS->getRelObject()->getId() != $ts->getRelObject()->getId()) ||
-				($field == 'contact_id' && $previousTS->getContactId() != $ts->getContactId()) ||
-				($field == 'state' && $previousTS->getRelObject()->getState() != $ts->getRelObject()->getState()) ||
-				($field == 'project_id_0' && $previousTSRow["wsId0"] != $tsRow["wsId0"]) ||
-				($field == 'project_id_1' && $previousTSRow["wsId1"] != $tsRow["wsId1"]) ||
-				($field == 'project_id_2' && $previousTSRow["wsId2"] != $tsRow["wsId2"]) ||
-				($field == 'priority' && $previousTS->getRelObject()->getPriority() != $ts->getRelObject()->getPriority()) ||
-				($field == 'milestone_id' && $previousTS->getRelObject()->getMilestoneId() != $ts->getRelObject()->getMilestoneId());
-	}
-
-	function getGroupTitle($field, $tsRow) {
-		$ts = $tsRow["ts"];
-		switch($field) {
-			case 'id': 
-				if ($ts->getRelObjectId() == 0)
-					return $ts->getRelObject()->getName();
-				else
-					return $ts->getRelObject()->getObjectName();
-			case 'contact_id': return $ts->getUser()->getObjectName();
-			case 'project_id_0': return $tsRow["wsId0"] != 0 ? Projects::findById($tsRow["wsId0"])->getName() : '';
-			case 'project_id_1': return $tsRow["wsId1"] != 0 ? Projects::findById($tsRow["wsId1"])->getName() : '';
-			case 'project_id_2': return $tsRow["wsId2"] != 0 ? Projects::findById($tsRow["wsId2"])->getName() : '';
-			case 'priority' : 
-				if ($ts->getRelObjectId() > 0 && $ts->getRelObject()->getObjectTypeName() == 'task') {
-					switch ($ts->getRelObject()->getPriority()) {
-						case 100: return lang('low priority');
-						case 200: return lang('normal priority');
-						case 300: return lang('high priority');
-						case 400: return lang('urgent priority');
-						default: return $ts->getRelObject()->getPriority();
-					}
-				} else {
-					return lang('not applicable');
-				}
-			case 'milestone_id': 
-				return $ts->getRelObjectId() > 0 && $ts->getRelObject()->getObjectTypeName() == 'task' ? ($ts->getRelObject()->getMilestoneId() != 0 ? $ts->getRelObject()->getMilestone()->getObjectName() : '') : '';
-			default: break;
-		}
-		return '';
-	}
-	
-	function get_cols($columns) { //get the columns selected by the user to be shown
-		if (!is_array($columns)) $columns = array();
-		$cols = array();		
-		foreach($columns as $k=>$i) {
-			if ($i != 0){
-				$cols[] = $k;
-			}
-		}
-		return $cols;
-	}
-	
-	function count_extra_cols($columns) { //counts the columns selected by the user to be shown
-		$cols = get_cols($columns);
-		if ($cols == null)
-			return 0;
-		else
-			return count($cols);
-	}
-	
-	$sectionDepth = 0;
-	$totCols = 6 + count_extra_cols($columns);
-	$date_format = user_config_option('date_format');
-	
-?>
-<?php if ($start_time) { ?>
-	<span style="font-weight:bold"><?php echo lang('from')?></span>:&nbsp;<?php echo format_datetime($start_time, $date_format) ?>
-<?php }
-	  if ($end_time) { ?>
-	<span style="font-weight:bold; padding-left:10px"><?php echo lang('to')?></span>:&nbsp;<?php echo format_datetime($end_time, $date_format) ?>
-<?php } ?>
-
-<?php if(!isset($task_title)) 
-	$task_title = null;
-if ($task_title) { ?><div style="font-size:120%"><span style="font-weight:bold"><?php echo lang('title')?></span>:&nbsp;<?php echo clean($task_title) ?></div> <?php } ?>
-
-<br/><br/>
-<?php if ($user instanceof Contact) { ?>
-	<span style="font-weight:bold"><?php echo lang('reporting user')?></span>:&nbsp;<?php echo clean($user->getObjectName()); ?>
-	<br/><br/>
-<?php }	?>
-<?php if ($workspace instanceof Project) { ?>
-	<span style="font-weight:bold"><?php echo lang('reporting workspace')?></span>:&nbsp;<?php echo clean($workspace->getName()); ?>
-	<br/><br/>
-<?php }	?>
-
-<table style="min-width:564px">
-<?php 
-	$sumTime = 0;
-	$sumBilling = 0;
-	if (!is_array($timeslotsArray) || count($timeslotsArray) == 0) { ?>
-<tr><td colspan = 4><div style="font-size:120%; padding:10px;"><?php echo lang('no data to display') ?></div></td></tr>
-<?php } else {
-	
-	//Initialize
-	$headerPrinted = false;
-	$gbvals = array('','','');
-	$sumTimes = array(0,0,0);
-	$sumBillings = array(0,0,0);
-	$hasGroupBy = is_array($group_by) && count($group_by) > 0;
-	$sectionDepth = $hasGroupBy ? count($group_by) : 0;
-	$c = 0;
-	for ($i = 0; $i < $sectionDepth; $i++)
-		if ($group_by[$i] == 'project_id'){
-			$group_by[$i] = 'project_id_' . $c;
-			$c++;
-		}
-	$showSelCol = false; //show selected columns
-	$showUserCol = !has_value($group_by, 'user_id');
-	$showTitleCol = !has_value($group_by, 'id');
-	$showBillingCol = array_var($post, 'show_billing', false);
-	if (!$showUserCol) $totCols--;
-	if (!$showTitleCol) $totCols--;
-	if (!$showBillingCol) $totCols--;
-	if (count_extra_cols($columns)>0) $showSelCol = true;
-	
-	$previousTSRow = null;
-	foreach ($timeslotsArray as $tsRow)	{
-		$ts = $tsRow["ts"];
-		$showHeaderRow = false;
-		//to skip showing workspaces in case there are conditions
-		if (isset($has_conditions) && $has_conditions && $ts->getObjectManager() == 'Projects') continue;
-		//Footers
-		for ($i = $sectionDepth - 1; $i >= 0; $i--) {
-			$has_difference = false;
-			for ($j = 0; $j <= $i; $j++)
-				$has_difference = $has_difference || has_difference($previousTSRow,$tsRow, $group_by[$j]);
-				
-			if ($has_difference){
-				if ($previousTSRow != null) {
-			?>		
-<tr style="padding-top:2px;font-weight:bold;">
-	<td style="padding:4px;border-top:2px solid #888;font-size:90%;color:#AAA;text-align:left;font-weight:normal"><?php echo truncate(clean(getGroupTitle($group_by[$i], $previousTSRow)),40,'&hellip;') ?></td>
-	<td colspan=<?php echo ($showBillingCol)? $totCols -2 : $totCols -1 ?> style="padding:4px;border-top:2px solid #888;text-align:right;"><?php echo lang('total') ?>:&nbsp;<?php echo DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($sumTimes[$i] * 60), "hm", 60) ?></td>
-	<?php if ($showBillingCol) { ?><td style="width:30px;padding:4px;border-top:2px solid #888;text-align:right;"><?php echo config_option('currency_code', '$') ?>&nbsp;<?php echo $sumBillings[$i] ?></td><?php } ?>
-</tr></table></div></td></tr><?php 	}
-				$sumTimes[$i] = 0;
-				$sumBillings[$i] = 0;
-				$isAlt = true;
-			}
-		}
-		
-		//Headers
-		$has_difference = false;
-		for ($i = 0; $i < $sectionDepth; $i++){
-			$colspan = 3 - $i;
-			$has_difference = $has_difference || has_difference($previousTSRow,$tsRow, $group_by[$i]);
-			$showHeaderRow = $has_difference || $showHeaderRow;
+		$margin_left = 15 * $level;
+		$cls_suffix = $level > 2 ? "all" : $level;
+		$next_level = $level + 1;
 			
-			if ($has_difference){?>
-<tr><td colspan=<?php echo $totCols ?>><div style="width=100%;<?php echo $i > 0 ? 'padding-left:20px;padding-right:10px;' : '' ?>padding-top:10px;padding-bottom:5px;">
-<table style="width:100%">
-
-	<tr><td colspan=<?php echo $totCols ?> style="border-bottom:2px solid #888;font-size:<?php echo (150 - (15 * $i)) ?>%;font-weight:bold;">
-		<?php echo clean(getGroupTitle($group_by[$i], $tsRow)) ?>
-	</td></tr>
-
-<?php 		}
-			$sumTimes[$i] += $ts->getMinutes();
-			$sumBillings[$i] += $ts->getFixedBilling();
+		$group_name = $group_obj['group']['name'];
+		echo '<div style="margin-left:' . $margin_left.'px;" class="report-group-heading-'.$cls_suffix.'">' . $group_name . '</div>';
+		
+		$mem_index = $prev . $group_obj['group']['id'];
+		
+		$group_total = 0;
+		
+		$table_total = 0;
+		// draw the table for the values
+		if (isset($grouped_objects[$mem_index]) && count($grouped_objects[$mem_index]) > 0) {
+			total_task_times_print_table($grouped_objects[$mem_index], $margin_left, $options, $group_name, $table_total);
+			$group_total += $table_total;
 		}
 		
-		$isAlt = !$isAlt;
-		$previousTSRow = $tsRow;
+		if (!is_array($group_obj['subgroups'])) return;
 		
-		if ($showHeaderRow || (!$hasGroupBy && !$headerPrinted)) {
-			$headerPrinted = true;
-	?><tr><th style="padding:4px;border-bottom:1px solid #666666;width:70px"><?php echo lang('date') ?></th>
-	<?php if ($showTitleCol) { ?><th style="padding:4px;border-bottom:1px solid #666666"><?php echo lang('title') ?></th><?php } ?>
-	<th style="padding:4px;border-bottom:1px solid #666666"><?php echo lang('description') ?></th>
-	<?php if ($showUserCol) { ?><th style="padding:4px;border-bottom:1px solid #666666"><?php echo lang('user') ?></th><?php } ?>
-	<th style="padding:4px;text-align:right;border-bottom:1px solid #666666"><?php echo lang('time') ?></th>
-	<?php if ($showBillingCol) { ?><th style="padding:4px;text-align:right;border-bottom:1px solid #666666"><?php echo lang('billing') ?></th><?php } ?>
-	<?php if ($showSelCol) {
-			$cols = get_cols($columns);
-			foreach ($cols as $k => $i){
-				if (!is_numeric($i)){
-					?><th style="padding:4px;border-bottom:1px solid #666666"><?php echo lang("field ProjectTasks ".$i) ?></th><?php 
-				}
-				else {
-					$cp = CustomProperties::getCustomProperty($i);
-					?><th style="padding:4px;border-bottom:1px solid #666666"><?php echo ($cp->getName()) ?></th><?php
-				}
-			}
-		  }
-	} ?>
-	</tr>
-	<tr>
-		<td style="padding:4px;<?php echo $isAlt? 'background-color:#F2F2F2':'' ?>"><?php echo format_datetime($ts->getStartTime(), $date_format)?></td>
-		<?php if ($showTitleCol) { ?><td style="padding:4px;max-width:250px;<?php echo $isAlt? 'background-color:#F2F2F2':'' ?>"><?php echo ($ts->getRelObjectId() == 0 ? clean($ts->getObjectName()) : clean($ts->getRelObject()->getObjectName())) ?></td><?php } ?>
-		<td style="padding:4px; width:250px;<?php echo $isAlt? 'background-color:#F2F2F2':'' ?>"><?php echo clean($ts->getDescription()) ?></td>
-		<?php if ($showUserCol) { ?><td style="padding:4px;<?php echo $isAlt? 'background-color:#F2F2F2':'' ?>"><?php echo clean($ts->getUser()->getObjectName()) ?></td><?php } ?>
-		<?php $lastStop = $ts->getEndTime() != null ? $ts->getEndTime() : ($ts->isPaused() ? $ts->getPausedOn() : DateTimeValueLib::now()); ?>
-		<td style="padding:4px;text-align:right;<?php echo $isAlt? 'background-color:#F2F2F2':'' ?>"><?php echo DateTimeValue::FormatTimeDiff($ts->getStartTime(), $lastStop, "hm", 60, $ts->getSubtract()) ?></td>
-		<?php if ($showBillingCol) { ?><td style="padding:4px;text-align:right;<?php echo $isAlt? 'background-color:#F2F2F2':'' ?>"><?php echo config_option('currency_code', '$') ?>&nbsp;<?php echo $ts->getFixedBilling() ?></td><?php } ?>
-		<?php if ($showSelCol) {
-				$cols = get_cols($columns);	
-				foreach ($cols as $k => $i){
-					if ($ts->getRelObjectId() > 0){
-						$obj = $ts->getRelObject();
-						$value = format_value_to_print_task($obj->getColumnValue($i), $obj->getColumnType($i));
-						?><td style="padding:4px;max-width:250px;<?php echo $isAlt? 'background-color:#F2F2F2':'' ?>"><?php echo ($value) ?></td><?php			
-					} else{				
-						?><td style="padding:4px;max-width:250px;<?php echo $isAlt? 'background-color:#F2F2F2':'' ?>"><?php echo ('') ?></td><?php
-					}
-			   } ?>
-	</tr>
-<?php }
-	} //foreach
-}
-
-		for ($i = $sectionDepth - 1; $i >= 0; $i--){?>
-<tr style="padding-top:2px;text-align:right;font-weight:bold;">
-	<td style="padding:4px;border-top:2px solid #888;font-size:90%;color:#AAA;text-align:left;font-weight:normal"><?php echo truncate(clean(getGroupTitle($group_by[$i], $previousTSRow)),40,'&hellip;') ?></td>
-	<td colspan=<?php echo ($showBillingCol)? $totCols -2 : $totCols -1 ?> style="padding:4px;border-top:2px solid #888;text-align:right;"><?php echo lang('total') ?>:&nbsp;<?php echo DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($sumTimes[$i] * 60), "hm", 60) ?></td>
-	<?php if ($showBillingCol) { ?><td style="width:30px;padding:4px;border-top:2px solid #888;text-align:right;"><?php echo config_option('currency_code', '$') ?>&nbsp;<?php echo $sumBillings[$i] ?></td><?php } ?>
-</tr></table></div></td></tr>
-		<?php }?>
-
-
-
-<?php
-// UNWORKED TASKS
-if (isset($unworkedTasks) && count($unworkedTasks) > 0) {
-?>
-<tr><td colspan=<?php echo $totCols ?>><div style="width=100%;padding-top:10px;padding-bottom:5px;">
-<table style="width:100%">
-	<tr><td style="border-bottom:2px solid #888;font-size:135%;font-weight:bold;"><?php echo lang("unworked pending tasks") ?></td></tr>	
-<?php
-	$isAlt = true;
-	foreach ($unworkedTasks as $t) {?>
-	<tr><td style="padding:4px;<?php echo $isAlt? 'background-color:#F2F2F2':'' ?>"><?php echo clean($t->getTitle()) ?></td></tr>
-<?php $isAlt = !$isAlt;
-	} ?>
-
-	<tr style="padding-top:2px;font-weight:bold;">
-		<td style="padding:4px;border-top:2px solid #888;font-size:90%;color:#AAA;text-align:left;font-weight:normal"><?php echo lang("unworked pending tasks") ?></td>
-	</tr>
-</table>
-</div></td></tr>
-<?php 
-}
-
-// TOTAL TIME
-if (is_array($timeslotsArray)) {
-	foreach ($timeslotsArray as $ts) {
-		$t = $ts['ts'];
-		if (isset($has_conditions) && $has_conditions && $t->getObjectManager() == 'Projects') continue;
-		$sumTime += $t->getMinutes();
-		$sumBilling += $t->getFixedBilling();
+		$subgroups = order_groups_by_name($group_obj['subgroups']);
+		
+		foreach ($subgroups as $subgroup) {
+			$sub_total = 0;
+			total_task_times_print_group($subgroup, $grouped_objects, $options, $skip_groups, $next_level, $prev . $group_obj['group']['id'] . "_", $sub_total);
+			$group_total += $sub_total;
+		}
+		
+		$total += $group_total;
+		
+		echo '<div style="margin-left:' . $margin_left . 'px;" class="report-group-footer">' . $group_name .
+			'<div style="float:right" class="bold">' . lang('total'). ': ' . DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($group_total * 60), "hm", 60) . '</div></div>';
 	}
-}?>
-<tr><td style="text-align: right; border-top: 1px solid #AAA; padding: 10px 0; font-weight: bold;" colspan=<?php echo ($showBillingCol)? $totCols -1 : $totCols ?>>
-<div ><?php echo strtoupper(lang("total")) . ": " . DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($sumTime * 60), "hm", 60) ?></div>
-</td><?php if ($showBillingCol) { ?><td style="width:30px;padding-left:8px;border-top: 1px solid #AAA;"><div style="text-align: right;padding: 10px 0; font-weight: bold;"><?php echo config_option('currency_code', '$') ?>&nbsp;<?php echo $sumBilling ?></div></td><?php } ?>
-</tr>
-</table>
+	
+	
+	function total_task_times_print_table($objects, $left, $options, $group_name, &$sub_total = 0) {
+		
+		echo '<div style="padding-left:'. $left .'px;">';
+		echo '<table class="report-table"><tr class="report-table-heading">';
+		echo '<th>' . lang('date') . '</th>';
+		echo '<th>' . lang('title') . '</th>';
+		echo '<th>' . lang('description') . '</th>';
+		echo '<th>' . lang('person') . '</th>';
+		echo '<th class="right">' . lang('time') . '</th>';
+		echo '</tr>';
+		
+		$sub_total = 0;
+		
+		$alt_cls = "";
+		foreach ($objects as $ts) {
+			echo "<tr $alt_cls>";
+			echo "<td class='date'>" . format_date($ts->getStartTime()) . "</td>";
+			echo "<td class='name'>" . ($ts->getRelObjectId() == 0 ? clean($ts->getObjectName()) : clean($ts->getRelObject()->getObjectName())) ."</td>";
+			echo "<td class='name'>" . clean($ts->getDescription()) ."</td>";
+			echo "<td class='person'>" . clean($ts->getUser()->getObjectName()) ."</td>";
+			$lastStop = $ts->getEndTime() != null ? $ts->getEndTime() : ($ts->isPaused() ? $ts->getPausedOn() : DateTimeValueLib::now());
+			echo "<td class='time nobr right'>" . DateTimeValue::FormatTimeDiff($ts->getStartTime(), $lastStop, "hm", 60, $ts->getSubtract()) ."</td>";
+			echo "</tr>";
+			
+			$sub_total += $ts->getMinutes();
+			$alt_cls = $alt_cls == "" ? 'class="alt-row"' : "";
+		}
+		
+		echo '</table></div>';
+	}
+		
+	foreach ($context as $selected_member) {
+		/* var Member $selected_member */
+		if ($selected_member instanceof Member) {
+			$ot = ObjectTypes::findById($selected_member->getObjectTypeId());
+			$dimension_filters[lang($ot->getName())] = $selected_member->getName();
+		}
+	}
+	
+	$dimension_filters = array();
+	$skip_groups = array();
+	$context = active_context();
+	foreach ($context as $selection) {
+		if ($selection instanceof Member) {
+			$sel_parents = $selection->getAllParentMembersInHierarchy();
+			foreach ($sel_parents as $sp) $skip_groups[] = $sp->getId();
+			
+			$ot = ObjectTypes::findById($selection->getObjectTypeId());
+			$dimension_filters[lang($ot->getName())] = $selection->getName();
+		}
+	}
+	
+	foreach ($dimension_filters as $type => $name) { ?>
+		<div><span class="bold"><?php echo $type ?>:</span><span style="margin-left:5px;"><?php echo $name ?></span></div>
+	<?php }
+
+	if ($start_time) { ?>
+		<span class="bold"><?php echo lang('from')?></span>:&nbsp;<?php echo format_date($start_time) ?>
+	<?php }
+	if ($end_time) { ?>
+		<span class="bold" style="padding-left:10px"><?php echo lang('to')?></span>:&nbsp;<?php echo format_date($end_time) ?>
+	<?php } ?>
+	
+	<?php if ($user instanceof Contact) { ?>
+		<br />
+		<span class="bold"><?php echo lang('reporting user')?></span>:&nbsp;<?php echo clean($user->getObjectName()); ?>
+	<?php }	?>
+		
+	
+	<div class="timeslot-report-container"><?php
+	
+	$groups = order_groups_by_name($grouped_timeslots['groups']);
+	$total = 0;
+	foreach ($groups as $gid => $group_obj) {
+		total_task_times_print_group($group_obj, $grouped_timeslots['grouped_objects'], array_var($_SESSION, 'total_task_times_parameters'), $skip_groups, 0, "", $total);
+	}
+
+	?>
+		<div class="report-group-footer" style="margin-top:10px;">
+			<div style="float:right" class="bold"><?php echo lang('total'). ': ' . DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($total * 60), "hm", 60) ?></div>
+		</div>
+	</div><?php
+	
+	

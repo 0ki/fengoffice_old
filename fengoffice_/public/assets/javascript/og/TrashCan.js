@@ -23,7 +23,7 @@ og.TrashCan = function() {
 					'createdBy', 'createdById', 'dateCreated',
 					'updatedBy', 'updatedById',	'dateUpdated',
 					'deletedBy', 'deletedById',	'dateDeleted',
-					'icon', 'manager', 'mimeType', 'url'
+					'icon', 'manager', 'mimeType', 'url', 'memPath'
 				]
 			}),
 			remoteSort: true,
@@ -57,7 +57,11 @@ og.TrashCan = function() {
 		}
 		actions = '<span>' + actions + '</span>';
 	
-		var name = String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', og.clean(value), viewUrl);
+		mem_path = "";
+		var mpath = Ext.util.JSON.decode(r.data.memPath);
+		if (mpath) mem_path = og.getCrumbHtml(mpath);
+		
+		var name = mem_path + String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', og.clean(value), viewUrl);
 		
 		return name + actions;
 	}

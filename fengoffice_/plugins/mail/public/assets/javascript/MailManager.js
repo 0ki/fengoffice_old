@@ -16,7 +16,7 @@ og.MailManager = function() {
 
 	var fields = [
 		'object_id', 'type', 'accountId', 'accountName', 'hasAttachment', 'subject', 'text', 'date',
-		'memberIds', 'projectName', 'userId', 'userName', 'workspaceColors','isRead','from',
+		'memberIds', 'projectName', 'userId', 'userName', 'workspaceColors','isRead', 'from', 'memPath',
 		'from_email','isDraft','isSent','folder','to', 'ix', 'conv_total', 'conv_unread', 'conv_hasatt'
 	];
 	this.Record = Ext.data.Record.create(fields);
@@ -76,8 +76,12 @@ og.MailManager = function() {
 		}
 		else { strDraft = ''; }
 		
-		var subject = value && og.clean(value.trim()) || '<i>' + lang("no subject") + '</i>';
+		var subject = value && og.clean(value.trim()) || '<span class="italic">' + lang("no subject") + '</span>';
 		var conv_str = r.data.conv_total > 1 ? " <span class='db-ico ico-comment' style='margin-left:3px;padding-left: 18px;'><span style='font-size:80%'>(" + (r.data.conv_unread > 0 ? '<b style="font-size:130%">' + r.data.conv_unread + '</b>/' : '') + r.data.conv_total + ")</span></span>" : "";
+		
+		mem_path = "";
+		var mpath = Ext.util.JSON.decode(r.data.memPath);
+		if (mpath) mem_path = og.getCrumbHtml(mpath);
 		
 		var js = 'var r = og.MailManager.store.getById(\'' + r.id + '\'); r.data.isRead = true;og.openLink(\'{1}\');r.commit();return false;';
 		name = String.format(
@@ -88,18 +92,15 @@ og.MailManager = function() {
 			name = String.format('<span class="db-ico ico-sent" style="padding-left:18px" title="{1}">{0}</span>',name,lang("mail sent"));
 		}
 		
-		//var projectstring = String.format('<span class="project-replace">{0}</span>&nbsp;', r.data.memberIds);
-		
 		var text = '';
 		if (r.data.text != ''){
 			text = '&nbsp;-&nbsp;<span style="color:#888888;white-space:nowrap">';
 			text += og.clean(r.data.text) + "</span></i>";
 		}
-		return name + text ;
-		
-		// TODO FENg 2 members
-		// Return projectstring + name + text;
+		return mem_path + name + text ;
 	}
+	
+	
 
 	function renderFrom(value, p, r){
 		var strAction = 'view';
@@ -111,7 +112,7 @@ og.MailManager = function() {
 		var draw_to = (r.data.isSent || r.data.isDraft) && Ext.getCmp('mails-manager').stateType != 'sent';
 		if (!r.data.to) r.data.to = "";
 		var to_cut = r.data.to.length > 70 ? og.clean(r.data.to.substring(0, 67) + "...") : og.clean(r.data.to);
-		var sender = (draw_to ? to_cut : og.clean(value.trim())) || '<i>' + lang("no sender") + '</i>';
+		var sender = (draw_to ? to_cut : og.clean(value.trim())) || '<span class="italic">' + lang("no sender") + '</span>';
 		var title = draw_to ? og.clean(r.data.to) : og.clean(r.data.from_email);
 		
 		var js = 'var r = og.MailManager.store.getById(\'' + r.id + '\'); r.data.isRead = true;og.openLink(\'{1}\');r.commit();return false;';
@@ -127,12 +128,11 @@ og.MailManager = function() {
 	}
 	
 	function renderIcon(value, p, r) {
-		// TODO Feng2 MEmbers
-	//	if (r.data.memberIds.length > 0)
-	//		return '<div class="db-ico ico-email"></div>';
-	//	else
-		return '<div class="db-ico ico-email"></div>';
-		//return String.format('<a href="#" onclick="og.openLink(\'{0}\')" title={1}><div class="db-ico ico-classify"></div></a>', og.getUrl('mail', 'classify', {id: r.data.object_id}), lang('classify'));
+		if (r.data.memberIds.length > 0) {
+			return '<div class="db-ico ico-email"></div>';
+		} else {
+			return String.format('<a href="#" onclick="og.openLink(\'{0}\')" title={1}><div class="db-ico ico-classify"></div></a>', og.getUrl('mail', 'classify', {id: r.data.object_id}), lang('classify'));
+		}
 	}
 
 	function renderAttachment(value, p, r){
@@ -161,7 +161,7 @@ og.MailManager = function() {
 		if (r.data.isDraft) strAction = 'edit_mail';
 		if (!r.data.isRead) classes += ' bold';
 		
-		var receiver = value && og.clean(value.trim()) || '<i>' + lang("no recipient") + '</i>';
+		var receiver = value && og.clean(value.trim()) || '<span class="italic">' + lang("no recipient") + '</span>';
 
 		name = String.format(
 				'<a style="font-size:120%;" class="{3}" href="#" onclick="og.openLink(\'{1}\');return false;" title="{2}">{0}</a>',
@@ -1165,7 +1165,7 @@ Ext.extend(og.MailManager, Ext.grid.GridPanel, {
 		this.innerMessage.innerHTML = text;
 	},
 	
-	moveObjectsToAllWs: function() {
+/*	moveObjectsToAllWs: function() {
 		this.load({
 			action: 'unclassify',
 			ids: this.getSelectedIds(),
@@ -1235,7 +1235,7 @@ Ext.extend(og.MailManager, Ext.grid.GridPanel, {
 		}
 		sm.clearSelections();
 	},
-	
+*/	
 	trashObjects: function() {
 		if (confirm(lang('confirm move to trash'))) {
 			this.load({

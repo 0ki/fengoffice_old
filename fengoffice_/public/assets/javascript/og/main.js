@@ -13,7 +13,7 @@ $(function(){
 	 */
 	$('body').click( function (e) {
 		var toClose = ['#quick-form' , '.user-box-actions'   ] ;
-		var ignoreClickIds = {
+		var ignoreClickIds = { 
 			'userboxWrapper' : 'userboxWrapper', 
 			'modcoder_colorpicker': 'modcoder_colorpicker', 
 			'modcoder_picker' :'modcoder_picker',
@@ -65,5 +65,33 @@ $(function(){
 	});
 	
 	
+	
+	
+	/******  Breadcrumbs ******/
+	
+	og.eventManager.addListener('tab activated',function(tab){
+		if ( tab.id != "overview-panel" ) {
+			$('.overviewEdit').hide();
+			$('div#breadcrumbs').show();
+		}else{
+			$('.overviewEdit').show();
+		}
+	}, this);   
+
+
+	og.eventManager.addListener('member tree node click',function(node){
+		setTimeout(function() {og.Breadcrumbs.refresh(node)},500) ;
+	}, this);
+	
+	og.eventManager.addListener('before tab panel construct',function(tabConfig){
+		if (tabConfig.id == "overview-panel" ){
+			if (og.queryString != "" && og.queryString != "c=access&a=index"  ){
+				tabConfig.initialContent = {
+					type:"url", 
+					data: og.initialURL 
+				};
+			}
+		}
+	});
 	
 });

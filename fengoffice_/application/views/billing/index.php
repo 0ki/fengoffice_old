@@ -46,7 +46,7 @@ foreach($billing_categories as $billing) {
     			if ($c != 0)
 					echo ',&nbsp';
 				$c++;?>
-    			<a href="<?php echo $b_user->getCardUrl()?>" class="internalLink coViewAction ico-user"><?php echo clean($b_user->getDisplayName()) ?></a>
+    			<a href="<?php echo $b_user->getCardUrl()?>" class="internalLink coViewAction ico-user"><?php echo clean($b_user->getObjectName()) ?></a>
     		<?php } ?>
     	<?php } else echo lang('none'); ?>
 	</td>

@@ -1,93 +1,184 @@
-<?php 
-	if (!$contact->isTrashed()){
-		if($contact->canEdit(logged_user())) {
-			add_page_action(lang('edit contact'), $contact->getEditUrl(), 'ico-edit', null, null, true);
-			add_page_action(lang('edit picture'), $contact->getUpdatePictureUrl(), 'ico-picture', null, null, true);
-		}
-	}
-	if ($contact->canDelete(logged_user())) {
-		if ($contact->isTrashed()) {
-			add_page_action(lang('restore from trash'), "javascript:if(confirm(lang('confirm restore objects'))) og.openLink('" . $contact->getUntrashUrl() ."');", 'ico-restore',null, null, true);
-			add_page_action(lang('delete permanently'), "javascript:if(confirm(lang('confirm delete permanently'))) og.openLink('" . $contact->getDeletePermanentlyUrl() ."');", 'ico-delete',null, null, true);
-		} else {
-			add_page_action(lang('move to trash'), "javascript:if(confirm(lang('confirm move to trash'))) og.openLink('" . $contact->getTrashUrl() ."');", 'ico-trash',null, null, true);
-		}
-	} // if
-	if (!$contact->isTrashed()) {
-		/*FIXME FENG 2if (can_manage_security(logged_user())) {
-			if (!$contact->isUser()){
-				add_page_action(lang('create user from contact'), $contact->getCreateUserUrl() , 'ico-user');
-			}
-		}*/
-		if ($contact->canEdit(logged_user())) {
-			if (!$contact->isArchived()) {
-				add_page_action(lang('archive'), "javascript:if(confirm(lang('confirm archive object'))) og.openLink('" . $contact->getArchiveUrl() ."');", 'ico-archive-obj');
-			} else {
-				add_page_action(lang('unarchive'), "javascript:if(confirm(lang('confirm unarchive object'))) og.openLink('" . $contact->getUnarchiveUrl() ."');", 'ico-unarchive-obj');
-			}
-		}
-	}
-?>
-   
-<div style="padding:7px">
-<div class="contact">
+<?php $genid = gen_id(); ?>
 
-<?php
-	if ($contact->hasPicture()){
-		$image = '<div class="cardIcon">';
-		
-		if ($contact->canEdit(logged_user()))
-			$image .= '<a class="internalLink" href="' .
-			$contact->getUpdatePictureUrl() .'" title="' . lang('edit picture') . '">';
-		
-		$image .= '<img src="' . $contact->getPictureUrl() .'" alt="'. clean($contact->getObjectName()) .' picture" />';
-		
-		if ($contact->canEdit(logged_user()))
-			$image .= '</a>';
-		
-		$image .= '</div>';
-		
-		tpl_assign("image",$image);
-	}
-	$description = "";
-	$company = $contact->getCompany();
-	if ($company instanceof Contact)
-		$description = '<a class="internalLink coViewAction ico-company" href="' . $company->getCardUrl() . '">' . clean($company->getObjectName()) . '</a>';
-	
-	if ($contact->getJobTitle() != ''){
-		if($description != '')
-			$description .= ' - ';
-		$description .= clean($contact->getJobTitle());
-	}
-	
-	if ($contact->getDepartment() != ''){
-		if($description != ''){
-			if ($contact->getJobTitle() != '')
-				$description .= ', ';
-			else
-				$description .= ' - ';
-		}
-		$description .= clean($contact->getDepartment());
-	}
-	
-	$userLink = '';
-	if ($contact->isUser()){
-		if($description != '')
-			$description .= '<br/>';
-		$description .= '<a class="internalLink coViewAction ico-user" href="' . $contact->getCardUserUrl() . '" title="' . lang('contact linked to user', clean($contact->getUsername())) . '">' . clean($contact->getUsername()) . '</a>';
-	}
-		
-    
-	tpl_assign("description", $description);
-	tpl_assign("content_template", array('card_content', 'contact'));
-	tpl_assign("object", $contact);
-	tpl_assign("title", lang('person') . ': ' . clean($contact->getObjectName()));
-	tpl_assign('iconclass', $contact->isTrashed()? 'ico-large-contact-trashed' :  ($contact->isArchived() ? 'ico-large-contact-archived' : 'ico-large-contact'));
-		
-  	$this->includeTemplate(get_template_path('view', 'co'));
-  	
-  	clear_page_actions();
-?>
+    <div class="layout-container contact" >
+        <div class="left-column-wrapper">
+            <div class="left-column view-container">
+                <div class="person-view">
+                    <div class="person-information">
+                        <div class="picture">
+                            <img src="<?php echo $contact->getPictureUrl() ?>" alt="<?php echo clean($contact->getObjectName()) ?>picture" />
+                            <?php if ($contact->canEdit(logged_user())):?>
+                            	<a class="change-picture" href="<?php echo $contact->getUpdatePictureUrl() ?>">[<?php echo lang("edit")?>]</a>
+                            <?php endif;?>
+                        </div>
+                        <div class="basic-info">
+                        
+                            <h2>
+                                <?php echo clean($contact->getObjectName()) ?>
+                            </h2>
+                            <h3><?php echo clean($contact->getJobTitle()); echo ($company) ? '<span> | </span>' . $company->getObjectName() : '' ?></h3>
+                            
+                            <h4 class="editable"><?php echo lang ('contact info') ?>
+                                <?php if ($contact->canEdit(logged_user())):?>
+                            		<a class="edit-link" href="<?php echo $contact->getEditUrl()?>">[<?php echo lang("edit")?>]</a>
+                            	<?php endif;?>                        
+                            </h4>
+                            
+                            <ul>
+                                <li>
+                                	
+                                    <span class="mail">
+                                    	<?php echo render_mailto($contact->getEmailAddress());?>
+                                    </span>
+                                    <?php echo ($contact->getPhoneNumber('work',true)) ? '- <strong>' . lang('work') . ' ' . lang('phone') . ':</strong> ' . $contact->getPhoneNumber('work',true) : ''; ?>
+                                    <?php echo ($contact->getPhoneNumber('home',true)) ? '- <strong>' . lang('home') . ' ' . lang('phone') . ':</strong> ' . $contact->getPhoneNumber('home',true) : ''; ?>                                    
+                                </li>
+                            </ul>
+                            
+                            <?php if ($contact->isUser()) :?>
+                            <h4 class="editable"><?php echo lang ('user info') ?>
+                            	<?php if ($contact->canEdit(logged_user())):?>
+                            		<a class="edit-link" href="<?php echo $contact->getEditProfileUrl()?>">[<?php echo lang("edit")?>]</a>
+                            	<?php endif;?>
+                            </h4>
+                            
+                            <ul>
+                                <li>
+                                    <strong><?php echo lang("username")?>: </strong><span class="username"><?php echo $contact->getUsername()?></span>
+                                    <strong><?php echo lang("user type")?>: </strong><span class="username"><?php echo $contact->getUserTypeName()?></span>
+                                </li>
+                            </ul>
+                            <?php endif ;?>
+                            
+                            <div class="all-info">                            
+                                <h4><?php echo ucfirst(lang ('work')) ?></h4>
+                                <ul> 
+                                	<?php if (($contact->getAddress('work'))):?>                                   
+                                    <li>
+                                        <?php echo '<strong>' . lang('address') . ':</strong> ' . $contact->getStringAddress('work') . ' [<a class="map-link" href="http://maps.google.com/?q=' . $contact->getStringAddress('work') . '" target="_blank">Map</a>]' ?>
+                                    </li>
+                                    <?php endif;?>
+                                    
+                                    <?php if (($contact->getPhoneNumber('work',true))  ):?>
+                                    <li>
+                                        <?php echo '<strong>' . lang('phone') . ':</strong> ' . $contact->getPhoneNumber('work',true)  ?>
+                                    </li>                                    
+                                    <?php endif; ?>
+                                    
+                                    <?php if ($contact->getWebpageUrl('work')):?>
+                                    <li>
+                                        <?php echo  '<strong>' . lang('webpage') . ':</strong> ' . $contact->getWebpageUrl('work') ?>
+                                    </li>   
+                                    <?php endif;?>                                 
+                                </ul>          
+                                                      
+                                <h4><?php echo ucfirst(lang ('home')) ?></h4>
+                                <ul>
+                                	<?php if(($contact->getAddress('home'))):?>
+                                    <li>
+                                        <?php echo  '<strong>' . lang('address') . ':</strong> ' . $contact->getStringAddress('home') . ' [<a href="http://maps.google.com/?q=' . $contact->getStringAddress('home') . '" target="_blank">Map</a>]'?>
+                                    </li>      
+                                    <?php endif;?>      
+                                    
+									<?php if(($contact->getPhoneNumber('home',true))):?>
+                                    <li>
+                                        <?php echo  '<strong>' . lang('phone') . ':</strong> ' .  $contact->getPhoneNumber('home',true) ; ?>                                    
+                                    </li>
+                                    <?php endif; ?>
+                                    
+                                    <?php if(($contact->getWebpageUrl('home'))):?>
+                                    <li>
+                                        <?php echo  '<strong>' . lang('webpage') . ':</strong> ' . $contact->getWebpageUrl('home');?>
+                                    </li>
+                                    <?php endif; ?>    
+                              
+                                </ul>                               
+                                
+                                <h4><?php echo ucfirst(lang ('other')) ?></h4>  
+                                <ul>
+                                	<?php if(($contact->getAddress('other'))):?>
+                                    <li>
+                                        <?php echo '<strong>' . lang('address') . ':</strong> ' . $contact->getStringAddress('other')  . ' [<a href="http://maps.google.com/?q=' . $contact->getStringAddress('other') . '" target="_blank">Map</a>]'?>
+                                    </li>
+                                    <?php endif; ?> 
+                                    
+                                    <?php if($contact->getPhoneNumber('other',true)) :?>                               
+                                    <li>
+                                        <?php echo '<strong>' . lang('phone') . ':</strong> ' .  $contact->getPhoneNumber('other',true); ?>                                    
+                                    </li>
+                                    <?php endif; ?>
+                                    
+                                    <?php if(($contact->getWebpageUrl('other'))):?>
+                                    <li>
+                                        <?php echo '<strong>' . lang('webpage') . ':</strong> ' . $contact->getWebpageUrl('other'); ?>
+                                    </li>
+                                    <?php endif; ?>                                   
+                                </ul>  
+                            </div>      
+                            <a class="more-info" href="javascript:void();" style="display: none" ><?php echo lang ('more info') ?></a>
+                                                  
 
+                        </div>
+                    </div>
+                    <div class="clear"></div>                    
+	                <?php Hook::fire('after_contact_view', $contact, $null); ?>
+                </div>
+                <div class="person-activity">
+                    <h2><?php echo lang('related to') ?></h2>
+                    <ul>
+                    <?php foreach($feeds as $feed): ?>
+	                    <?php if ( array_var($feed, 'object_id') != $contact->getId() ) :?>
+	                        <li class="<?php echo array_var($feed, 'icon') ?>">
+	                            <em class="feed-date"><?php echo ucfirst (array_var($feed, 'type')); ?> - <?php echo array_var($feed, 'dateUpdated');?></em>
+	                            - <a href="Javascript:;" onclick="og.openLink('<?php echo array_var($feed, 'url') ?>');"><?php echo array_var($feed, 'name') ?></a>
+	                            <?php if(array_var($feed, 'content') != '') ?>
+	                                <p><?php echo array_var($feed, 'content'); ?></p>
+	                        </li>
+	                    <?php endif ;?> 
+                    <?php endforeach ?>
+                    </ul>
+                </div>
+            </div>
+        </div>	
+        <div class="right-column">
+            <?php 
+                //Add action and properties components to right sidebar.
+                tpl_assign("object", $contact);
+                tpl_assign("genid", $genid);
+                $this->includeTemplate(get_template_path('actions', 'co'));
+                $this->includeTemplate(get_template_path('properties', 'co'));                 
+            ?>
+        </div>
 </div>
-</div>
+<div class="clear"></div>
+
+<script>
+	$(function(){
+		
+		$("a.more-info").click(function(){
+			var link = this ;
+			$('div.all-info').slideToggle('slow',function(){
+				if ($(this).is(':visible')) {
+					$(link).text(lang("less info"));
+				}else{
+					$(link).text(lang("more info"));
+				}
+					
+			});
+		});
+		
+		// Remove empty groups
+		$(".all-info ul").each(  function() {
+		    var elem = $(this);
+		    if (elem.children().length == 0) {
+			   	elem.prev("h4").remove();
+		      	elem.remove();
+		    }
+		});
+		if (!$(".all-info").children().length ){
+			$(".more-info").remove();
+		}
+
+		$("a.more-info").show();
+	});
+</script>

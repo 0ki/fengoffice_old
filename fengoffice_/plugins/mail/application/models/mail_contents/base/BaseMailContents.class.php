@@ -67,19 +67,15 @@ abstract class BaseMailContents extends ContentDataObjects {
 	} 
 	
 	/**
-	 * Return column type
-	 *
-	 * @access public
-	 * @param string $column_name
-	 * @return string
-	 */
+	* Return column type
+	*
+	* @access public
+	* @param string $column_name
+	* @return string
+	*/
 	function getColumnType($column_name) {
-		if(isset(self::$columns[$column_name])) {
-			return self::$columns[$column_name];
-		} else {
-			return DATA_TYPE_STRING;
-		} // if
-	} // getColumnType
+		return parent::getCOColumnType($column_name, self::$columns);
+	}
 
 
 

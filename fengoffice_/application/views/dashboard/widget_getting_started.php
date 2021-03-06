@@ -2,7 +2,7 @@
 
 <?php $step = 1; ?>
 
-<b><?php echo lang('welcome to new account', logged_user()->getDisplayName()) ?></b><br/>
+<b><?php echo lang('welcome to new account', logged_user()->getObjectName()) ?></b><br/>
 <?php echo lang('welcome to new account info', '<a target="_blank" href="'.ROOT_URL.'">'. ROOT_URL . '</a>') ?><br/><br/>
 
 <?php if(logged_user()->isAccountOwner()){

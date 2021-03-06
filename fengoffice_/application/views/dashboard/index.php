@@ -115,7 +115,7 @@ if (isset($tasks_in_progress) && $tasks_in_progress) {
 	switch($assign_type) {
 		case 0: $title = lang('tasks in progress'); break;
 		case 1: $title = lang('my tasks in progress'); break;
-		case 2: $title = lang('tasks in progress for', $assigned_to->getDisplayName()); break;
+		case 2: $title = lang('tasks in progress for', $assigned_to->getObjectName()); break;
 		case 3: $title = lang('tasks in progress for', $assigned_to->getName()); break;
 	}
 	tpl_assign("widgetClass", 'dashTasksInProgress');
@@ -127,7 +127,7 @@ if ($hasToday || $hasLate) {
 	switch($assign_type){
 		case 0: $title = lang('late milestones and tasks'); break;
 		case 1: $title = lang('my late milestones and tasks'); break;
-		case 2: $title = lang('late milestones and tasks for', $assigned_to->getDisplayName()); break;
+		case 2: $title = lang('late milestones and tasks for', $assigned_to->getObjectName()); break;
 		case 3: $title = lang('late milestones and tasks for', $assigned_to->getName()); break;
 	}
 	tpl_assign("hasToday", $hasToday);
@@ -141,7 +141,7 @@ if ($hasPendingTasks) {
 	switch($assign_type){
 		case 0: $title = lang('pending tasks'); break;
 		case 1: $title = lang('my pending tasks'); break;
-		case 2: $title = lang('pending tasks for', $assigned_to->getDisplayName()); break;
+		case 2: $title = lang('pending tasks for', $assigned_to->getObjectName()); break;
 		case 3: $title = lang('pending tasks for', $assigned_to->getName()); break;
 	}
 	tpl_assign("widgetClass", 'dashPendingTasks');

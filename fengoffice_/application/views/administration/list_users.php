@@ -17,10 +17,10 @@ if(isset($users) && is_array($users) && $cantUsers) { ?>
 		<div id="<?php echo $page . '-' . $user->getCompanyId()?>userspage" style="display: <?php echo $counter != 1? 'none':'block' ?>" >		
 	<?php }//newpage??>
   <div class="listedUser <?php echo $counter % 2 ? 'even' : 'odd' ?> <?php echo $user->getDisabled() ? 'user-disabled' : '' ?>">
-    <div class="userAvatar"><img src="<?php echo $user->getAvatarUrl() ?>" alt="<?php echo clean($user->getDisplayName()) ?> <?php echo lang('avatar') ?>" /></div>
+    <div class="userAvatar"><img src="<?php echo $user->getAvatarUrl() ?>" alt="<?php echo clean($user->getObjectName()) ?> <?php echo lang('avatar') ?>" /></div>
     <div class="userDetails">
       <div class="userName">
-      	<a class="internalLink" href="<?php echo $user->getCardUserUrl() ?>"><?php echo clean($user->getDisplayName()) ?></a>
+      	<a class="internalLink" href="<?php echo $user->getCardUrl() ?>"><?php echo clean($user->getObjectName()) ?></a>
       	<span><?php echo $user->getDisabled() ? "(".lang('disabled').")" : '' ?></span>
       </div> 
       
@@ -31,8 +31,10 @@ if(isset($users) && is_array($users) && $cantUsers) { ?>
   if (!$user->getDisabled()) {
 	  if($user->canUpdateProfile(logged_user())) {
 	    $options[] = '<a class="internalLink" href="' . $user->getEditProfileUrl() . '">' . lang('update profile') . '</a>';
-	    $options[] = '<a class="internalLink" href="' . $user->getEditPasswordUrl() . '">' . lang('change password') . '</a>';
 	    $options[] = '<a class="internalLink" href="' . $user->getUpdateAvatarUrl() . '">' . lang('update avatar') . '</a>';
+	  }
+	  if ($user->canChangePassword(logged_user())) {
+	  	$options[] = '<a class="internalLink" href="' . $user->getEditPasswordUrl() . '">' . lang('change password') . '</a>';
 	  }
 	  if($user->canUpdatePermissions(logged_user())) {
 	    $options[] = '<a class="internalLink" href="' . $user->getUpdatePermissionsUrl() . '">' . lang('permissions') . '</a>';
@@ -62,11 +64,10 @@ if(isset($users) && is_array($users) && $cantUsers) { ?>
 <?php } else { ?>
 <p><?php echo lang('no users in company') ; ?></p>
 <?php } 
- 	if(isset($company) && $company){
-		
-		echo  "<div style='padding:10px'><a href='" . $company->getAddUserUrl() . "' class='internalLink coViewAction ico-add'>" . lang('add user') . "</a></div>";
-		if ($cantPages > 0){
-			?>
+ 		$temp  = new Contact();
+ 		$companyUrl =  ($company) ? $company->getAddUserUrl() : $temp->getAddUserUrl() ;
+		echo  "<div style='padding:10px'><a href='$companyUrl' class='internalLink coViewAction ico-add'>" . lang('add user') . "</a></div>";
+		if ($cantPages > 0): ?>
 			<script type="text/javascript">
 					og.paginate = function (cantPages,compId){
 						var html ="";
@@ -89,9 +90,6 @@ if(isset($users) && is_array($users) && $cantUsers) { ?>
 							paginateDiv.innerHTML += html;
 						}
 					};
-					og.paginate(<?php echo $cantPages; ?>,<?php echo $company->getId();?>);
+					og.paginate(<?php echo $cantPages; ?>,<?php  echo ($company)?$company->getId():'0'?>);
 			 </script>			 
- 		<?php
- 		}
-		
- 	} ?>
+		<?php endif; ?>

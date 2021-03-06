@@ -19,9 +19,7 @@ class Reports extends BaseReports {
 	 * @return Report
 	 */
 	static function getReport($id) {
-		return self::findOne(array(
-			'conditions' => array("`id` = ?", $id)
-		));
+		return self::findById($id);
 	} //  getReport
 
 	/**
@@ -51,7 +49,15 @@ class Reports extends BaseReports {
 	 * @return array
 	 */
 	static function getAllReportsByObjectType($context = null) {
-		if (is_null($context)) $context = active_context();
+		if (is_null($context)) {
+			$tmp_context = active_context();
+			$context = array();
+			foreach($tmp_context as $selection) {
+				if ($selection instanceof Member) $context[] = $selection->getDimension();
+				else if ($selection instanceof Dimension) $context[] = $selection;
+			}
+		}
+		
 		$ot = ObjectTypes::findById(self::instance()->getObjectTypeId());
 		$reports_result = ContentDataObjects::getContentObjects($context, $ot);
 		$reports = $reports_result->objects;

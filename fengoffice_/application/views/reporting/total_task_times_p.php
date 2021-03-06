@@ -2,14 +2,14 @@
 	require_javascript("og/ReportingFunctions.js");
 	$genid = gen_id();
 	$report_data = array_var($_SESSION, 'total_task_times_report_data', array());
-	/*if ($type) {
-		$report_data['timeslot_type'] = $type;
-	}*/
+	if (!array_var($report_data, 'timeslot_type')) {
+		$report_data['timeslot_type'] = 2;
+	}
 	if (count($report_data) == 0) {
 		$report_data['show_billing'] = $has_billing;
 	}
 	if (!array_var($report_data, 'date_type')) {
-		$report_data['date_type'] = 1;
+		$report_data['date_type'] = 4;
 	}
 	if (!isset($conditions)) $conditions = array();
 ?>
@@ -82,7 +82,7 @@
 				$options = array();
 				$options[] = option_tag('-- ' . lang('anyone') . ' --', 0, array_var($report_data, "user") == null?array('selected' => 'selected'):null);
 				foreach($users as $user){
-					$options[] = option_tag($user->getDisplayName(),$user->getId(), array_var($report_data, "user") == $user->getId()?array('selected' => 'selected'):null);
+					$options[] = option_tag($user->getObjectName(),$user->getId(), array_var($report_data, "user") == $user->getId()?array('selected' => 'selected'):null);
 				}
 				echo select_box('report[user]', $options);
 			?></td>
@@ -109,12 +109,17 @@
 						?>
 					<select id="<?php echo $genid ?>group_by_<?php echo $i ?>" name="report[group_by_<?php echo $i ?>]" )">
 						<option value="0"<?php if ($gbVal == null) echo ' selected="selected"' ?>><?php echo lang('none') ?></option>
-						<option value="id"<?php if ($gbVal == "id") echo ' selected="selected"' ?>><?php echo lang('task')?></option>
-						<option value="contact_id"<?php if ($gbVal == "contact_id") echo ' selected="selected"' ?>><?php echo lang('user')?></option>
-<!-- 						<option value="member_id"<?php if ($gbVal == "member_id") echo ' selected="selected"' ?>><?php echo lang('member')?></option>
- -->
+						<option value="rel_object_id"<?php if ($gbVal == "rel_object_id") echo ' selected="selected"' ?>><?php echo lang('task')?></option>
+						<option value="contact_id"<?php if ($gbVal == "contact_id") echo ' selected="selected"' ?>><?php echo lang('person')?></option>
 						<option value="priority"<?php if ($gbVal == "priority") echo ' selected="selected"' ?>><?php echo lang('priority')?></option>
 						<option value="milestone_id"<?php if ($gbVal == "milestone_id") echo ' selected="selected"' ?>><?php echo lang('milestone')?></option>
+						<?php
+							$gbs = array();
+							Hook::fire('total_task_timeslots_group_by_criterias', null, $gbs);
+							foreach($gbs as $gb) { ?>
+								<option value="<?php echo $gb['val']?>"<?php if ($gbVal == $gb['val']) echo ' selected="selected"' ?>><?php echo $gb['name']?></option>
+						<?php } 
+						?>
 					</select>
 					<?php } // for ?>
 				</span>
@@ -125,8 +130,13 @@
 					<select id="<?php echo $genid ?>alt_group_by_<?php echo $i ?>" name="report[alt_group_by_<?php echo $i ?>]" )">
 						<option value="0"<?php if ($gbVal == null) echo ' selected="selected"' ?>><?php echo lang('none') ?></option>
 						<option value="contact_id"<?php if ($gbVal == "contact_id") echo ' selected="selected"' ?>><?php echo lang('user')?></option>
-<!--						<option value="member_id"<?php if ($gbVal == "member_id") echo ' selected="selected"' ?>><?php echo lang('member')?></option>
--->
+						<?php
+							$gbs = array();
+							Hook::fire('total_task_timeslots_group_by_criterias', null, $gbs);
+							foreach($gbs as $gb) { ?>
+								<option value="<?php echo $gb['val']?>"<?php if ($gbVal == $gb['val']) echo ' selected="selected"' ?>><?php echo $gb['name']?></option>
+						<?php } 
+						?>
 					</select>
 					<?php } // for ?>
 				</span>

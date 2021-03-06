@@ -25,7 +25,7 @@
     'add user' => 'Add user',
     'edit user' => 'Edit user',
     'delete user' => 'Delete user',
-    'create user from contact' => 'Create user from contact',
+    'create user from contact' => 'Create user from person',
     
     // Group
     'add group' => 'Add group',
@@ -105,7 +105,7 @@
     'can manage security' => 'Can manage security',
     'can manage workspaces' => 'Can manage workspaces',
     'can manage configuration' => 'Can manage configuration',
-    'can manage contacts' => 'Can manage all contacts',
+    'can manage contacts' => 'Can manage all people',
     'group users' => 'Group users',
     
     

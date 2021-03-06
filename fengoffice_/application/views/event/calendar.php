@@ -90,13 +90,13 @@ foreach($companies as $company)
 			<td id="calendarMonthTitle" class="coViewHeader" colspan=1 rowspan=1 style="padding: 0;">
 				<div class="coViewTitle" style="width:100%;padding: 8px 12px 8px;">
 					<table style="width:100%"><tr><td>				
-						<?php echo cal_month_name($month)." ". $year .' - '. ($user_filter == -1 ? lang('all users') : lang('calendar of', clean($user->getDisplayName())));?>
+						<?php echo cal_month_name($month)." ". $year .' - '. ($user_filter == -1 ? lang('all users') : lang('calendar of', clean($user->getObjectName())));?>
 					</td><td style="width:100px;padding:0 24px 0 0;">
 					<?php if (config_option("show_feed_links")) { ?>
 						<?php echo checkbox_field("include_subws", true, array("id" => "include_subws", "style" => "float:right;", "onclick" => "javascript:og.change_link_incws('ical_link', 'include_subws')", "title" => lang('check to include sub ws'))) ?>
 					 	<?php echo label_tag(lang('subws'), "include_subws", false, array("style" => "float:right;font-size:60%;margin:0px 3px;vertical-align:top;", "title" => lang('check to include sub ws')), "") ?>
 					 	<?php 
-					 		$export_name = active_project() != null ? clean(active_project()->getName()) : clean($user->getDisplayName());
+					 		$export_name = active_project() != null ? clean(active_project()->getName()) : clean($user->getObjectName());
 					 		$export_ws = active_project() != null ? active_project()->getId() : 0;
 					 	 ?>
 					 	<a class="iCalSubscribe" id="ical_link" style="float:right;" href="<?php echo ROOT_URL ."/index.php?c=feed&a=ical_export&n=$export_name&cal=$export_ws&t=".$user->getToken()."&isw=1" ?>" 
@@ -286,12 +286,8 @@ foreach($companies as $company)
 					?>	
 						 		<div id="m<?php echo $dtv->getMonth() ?>_d<?php echo $dtv->getDay() ?>" style='z-index:0; min-height:90px; height:100%; cursor:pointer;<?php echo $extra_style ?>'
 						 		<?php if (!logged_user()->isGuest()) { ?>
-						 		onclick="og.openLink(og.getUrl('event', 'add'));">
-						 		<!-- 
-						 		onclick="showMonthEventPopup('<?php echo $dtv->getDay() ?>','<?php echo $dtv->getMonth()?>','<?php echo $dtv->getYear()?>','<?php echo $start_value ?>', '<?php echo $genid ?>');"
-						 		-->
+							 		onclick="showMonthEventPopup('<?php echo $dtv->getDay() ?>','<?php echo $dtv->getMonth()?>','<?php echo $dtv->getYear()?>','<?php echo $start_value ?>', '<?php echo $genid ?>');">
 						 		<?php } ?>
-						 		<!-- > -->
 						 			<div class='<?php echo $daytitle?>' style='text-align:right;'>
 							 		<a class='internalLink' href="<?php echo $p ?>" onclick="og.disableEventPropagation(event);return true;"  style='color:#5B5B5B' ><?php echo $w?></a>				
 					<?php

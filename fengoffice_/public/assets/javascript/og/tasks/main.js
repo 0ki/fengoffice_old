@@ -51,6 +51,7 @@ ogTasksTask = function(){
 	this.percentCompleted = 0;
 	this.members;
 	this.depCount;
+	this.memPath;
 	
 	this.createdByName;
 	this.assignedToName;
@@ -104,6 +105,7 @@ ogTasksTask.prototype.setFromTdata = function(tdata){
 	//if (tdata.estimatedTime) this.estimatedTime =  Math.round( tdata.estimatedTime * 10  / 60 ) / 10; else this.estimatedTime = '' ;
 	if (tdata.estimatedTime) this.estimatedTime = tdata.estimatedTime ; else this.estimatedTime = '' ;
 	if (tdata.depCount) this.depCount = tdata.depCount; else this.depCount = null;
+	if (tdata.memPath) this.memPath = tdata.memPath; else this.memPath = [];
 }
 
 ogTasksMilestone = function(id, title, dueDate, totalTasks, completedTasks, isInternal, isUrgent){
@@ -357,6 +359,14 @@ ogTasks.getGroupData = function(displayCriteria, groups,tasks){
 					break;
 				case 'subtype' : name = this.getObjectSubtype(groupId) ? this.getObjectSubtype(groupId).name : lang('ungrouped') ; break;
 				default:
+					if (displayCriteria.group_by.indexOf('dimension_') == 0) {
+						// Group by dimension
+						var dim_id = displayCriteria.group_by.replace('dimension_', '');
+						if (og.dimensions[dim_id] && og.dimensions[dim_id][groupId]) {
+							name = og.dimensions[dim_id][groupId].name;
+							icon = og.dimensions[dim_id][groupId].ico;
+						}
+					}
 			}
 		}
 		var solo = false;
@@ -391,9 +401,11 @@ ogTasks.groupTasks = function(displayCriteria, tasksContainer){
 	var tasks = [];
 	groups[0] = 'unclassified';
 	tasks[0] = [];
-	if (!this.redrawGroups)
-		for (var i = 0; i < this.Groups.length - 1; i++)
+	if (!this.redrawGroups) {
+		for (var i = 0; i < this.Groups.length - 1; i++) {
 			groups[i+1] = this.Groups[i].group_id;
+		}
+	}
 	
 	for (var i = 0; i < tasksContainer.length; i++){
 		var task = tasksContainer[i];
@@ -430,6 +442,18 @@ ogTasks.groupTasks = function(displayCriteria, tasksContainer){
 				case 'completed_by' : group = (task.completedById?task.completedById:null); break;
 				case 'subtype' : group = task.otype; break;
 				default:
+					if (displayCriteria.group_by.indexOf('dimension_') == 0) {
+						// Group by dimension
+						var dim_id = displayCriteria.group_by.replace('dimension_', '');
+						for (k=0; k<task.members.length; k++) {
+							for (j=0; j<og.dimensions[dim_id].length; j++) {
+								if (og.dimensions[dim_id][task.members[k]]) {
+									group = task.members[k];
+									break;
+								}
+							}
+						}
+					}
 			}
 			
 			if (group || group == 0){

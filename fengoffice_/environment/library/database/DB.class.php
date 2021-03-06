@@ -186,7 +186,9 @@ final class DB {
 				TimeIt::add("DB", $end - $start, $start, $end);
 			}
 		} catch (Exception $e){
-			Logger::log("SQL ERROR: " . $e->getMessage() . " - " .  DB::prepareString($sql, $arguments));
+			if (!defined('DONT_LOG') || DONT_LOG == false) {
+				Logger::log("SQL ERROR: " . $e->getMessage() . " - " .  DB::prepareString($sql, $arguments));
+			}
 			throw $e;
 		}
 
@@ -218,7 +220,9 @@ final class DB {
 				TimeIt::add("DB", $end - $start, $start, $end);
 			}
 		} catch (Exception $e){
-			Logger::log("SQL ERROR: " . $e->getMessage() . " - " .  DB::prepareString($sql, $arguments));
+			if (!defined('DONT_LOG') || DONT_LOG == false) {
+				Logger::log("SQL ERROR: " . $e->getMessage() . " - " .  DB::prepareString($sql, $arguments));
+			}
 			throw $e;
 		}
 

@@ -13,6 +13,10 @@ class ProjectTask extends BaseProjectTask {
 	protected $searchable_columns = array('name', 'text');
 		
 	protected $allow_timeslots = true;
+	
+	public $timeslots_count = 0 ;
+	
+	public $timeslots = null ;
 
 	/**
 	 * Cached task array
@@ -144,7 +148,7 @@ class ProjectTask extends BaseProjectTask {
 	function getAssignedToName() {
 		$user = $this->getAssignedToContact();
 		if ($user instanceof Contact) {
-			return $user->getDisplayName();
+			return $user->getObjectName();
 		} else {
 			return lang("anyone");
 		} // if
@@ -286,7 +290,7 @@ class ProjectTask extends BaseProjectTask {
 	 * @return boolean
 	 */
 	function canEdit(Contact $user) {
-		if(can_write($user, $this->getMembers(), $this->getObjectTypeId())) {
+		if(can_add($user, $this->getMembers(), $this->getObjectTypeId())) {
 			return true;
 		} // if
 		$task_list = $this->getParent();
@@ -305,7 +309,7 @@ class ProjectTask extends BaseProjectTask {
 	 * @return boolean
 	 */
 	function canChangeStatus(Contact $user) {
-		return ($this->canEdit($user) || $this->isAsignedToUserOrCompany($user));
+		return (can_manage_tasks($user) || $this->isAsignedToUserOrCompany($user));
 	} // canChangeStatus
 
 	/**
@@ -354,6 +358,11 @@ class ProjectTask extends BaseProjectTask {
 	 * @return null
 	 */
 	function completeTask() {
+		if (!$this->canChangeStatus(logged_user())) {
+			flash_error('no access permissions');
+			ajx_current("empty");
+			return;
+		}
 		$this->setCompletedOn(DateTimeValueLib::now());
 		$this->setCompletedById(logged_user()->getId());
 		$this->setPercentCompleted(100);
@@ -410,6 +419,11 @@ class ProjectTask extends BaseProjectTask {
 	 * @return null
 	 */
 	function openTask() {
+		if (!$this->canChangeStatus(logged_user())) {
+			flash_error('no access permissions');
+			ajx_current("empty");
+			return;
+		}
 		$this->setCompletedOn(null);
 		$this->setCompletedById(0);
 		$this->save();
@@ -836,7 +850,7 @@ class ProjectTask extends BaseProjectTask {
 				$this->completed_by = Contacts::findById($this->getCompletedById());
 			} // if
 			if ($this->completed_by instanceof Contact) {
-				return $this->completed_by->getDisplayName();
+				return $this->completed_by->getObjectName();
 			} else {
 				return '';
 			}
@@ -1197,7 +1211,7 @@ class ProjectTask extends BaseProjectTask {
 		if ($this->getTrashedById() > 0)
 			$deletedBy = Contacts::findById($this->getTrashedById());
     	if (isset($deletedBy) && $deletedBy instanceof Contact) {
-    		$deletedBy = $deletedBy->getDisplayName();
+    		$deletedBy = $deletedBy->getObjectName();
     	} else {
     		$deletedBy = lang("n/a");
     	}
@@ -1206,7 +1220,7 @@ class ProjectTask extends BaseProjectTask {
 		if ($this->getArchivedById() > 0)
 			$archivedBy = Contacts::findById($this->getArchivedById());
     	if (isset($archivedBy) && $archivedBy instanceof Contact) {
-    		$archivedBy = $archivedBy->getDisplayName();
+    		$archivedBy = $archivedBy->getObjectName();
     	} else {
     		$archivedBy = lang("n/a");
     	}
@@ -1271,7 +1285,8 @@ class ProjectTask extends BaseProjectTask {
 			'c' => $this->getCreatedOn() instanceof DateTimeValue ? $this->getCreatedOn()->getTimestamp() : 0,
 			'cid' => $this->getCreatedById(),
 			'otype' => $this->getObjectSubtype(),
-			'percentCompleted' => $this->getPercentCompleted()
+			'percentCompleted' => $this->getPercentCompleted(),
+			'memPath' => json_encode($this->getMembersToDisplayPath()),
 		);
 		
 		if ($this->isCompleted())
@@ -1294,9 +1309,9 @@ class ProjectTask extends BaseProjectTask {
 			$result['con'] = $this->getCompletedOn()->getTimestamp();
 		}
 			
-		if ($this->getDueDate())
+		if ($this->getDueDate() instanceof DateTimeValue)
 			$result['dd'] = $this->getDueDate()->getTimestamp();
-		if ($this->getStartDate())
+		if ($this->getStartDate() instanceof DateTimeValue)
 			$result['sd'] = $this->getStartDate()->getTimestamp();
 		
 		$time_estimate = $this->getTimeEstimate() ;

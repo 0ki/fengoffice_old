@@ -95,8 +95,8 @@ if ($task_list->getAssignedTo()){
 	. clean($task_list->getAssignedToName()) . '</a>';
 	if ($task_list->getAssignedBy() instanceof Contact) {
 		$description .= ' <span style="font-weight:bold">' . lang("by") . ': </span> <a class=\'internalLink\' style="color:white" href=\''
-		. $task_list->getAssignedBy()->getCardUserUrl() . '\' title=\'' . escape_single_quotes(lang('user card of', clean($task_list->getAssignedBy()->getDisplayName()))). '\'>'
-		. clean($task_list->getAssignedBy()->getDisplayName()) . '</a>';
+		. $task_list->getAssignedBy()->getCardUserUrl() . '\' title=\'' . escape_single_quotes(lang('user card of', clean($task_list->getAssignedBy()->getObjectName()))). '\'>'
+		. clean($task_list->getAssignedBy()->getObjectName()) . '</a>';
 		if ($task_list->getAssignedOn() instanceof DateTimeValue) {
 			$description .= ' <span style="font-weight:bold">' . lang("on") . ': </span>'
 			. format_date($task_list->getAssignedOn());

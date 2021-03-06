@@ -18,7 +18,7 @@ og.MessageManager = function() {
 				id: 'id',
 				fields: [
 					'object_id', 'type', 'name', 'text', 'date', 'is_today',
-					'userId', 'userName', 'updaterId', 'updaterName', 'ix','isRead'
+					'userId', 'userName', 'updaterId', 'updaterName', 'ix', 'isRead', 'memPath'
 				]
 			}),
 			remoteSort: true,
@@ -52,7 +52,11 @@ og.MessageManager = function() {
 		var classes = readClass + r.id;
 		if (!r.data.isRead) classes += " bold";
 		
-		name = String.format(
+		mem_path = "";
+		var mpath = Ext.util.JSON.decode(r.data.memPath);
+		if (mpath) mem_path = og.getCrumbHtml(mpath);
+		
+		name = mem_path + String.format(
 				'<a style="font-size:120%;" class="{3}" href="{1}" onclick="og.openLink(\'{1}\');return false;" title="{2}">{0}</a>',
 				og.clean(value), og.getUrl('message', 'view', {id: r.data.object_id}), og.clean(r.data.text), classes);
 	
@@ -94,7 +98,7 @@ og.MessageManager = function() {
 		if (!value) {
 			return "";
 		}
-		var userString = String.format('<a href="{1}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', og.clean(r.data.updaterName), og.getUrl('contact', 'card_user', {id: r.data.updaterId}));
+		var userString = String.format('<a href="{1}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', og.clean(r.data.updaterName), og.getUrl('contact', 'card', {id: r.data.updaterId}));
 	
 		if (!r.data.is_today) {
 			return lang('last updated by on', userString, value);
@@ -205,14 +209,8 @@ og.MessageManager = function() {
         	hideable:false,
         	menuDisabled: true
 		},{
-			id: 'from',
-			header: lang("from"),
-			dataIndex: 'userName',
-			width: 120,
-			renderer: renderFrom
-        },{
 			id: 'title',
-			header: lang("title"),
+			header: lang("message"),
 			dataIndex: 'name',
 			width: 250,
 			renderer: renderName,
@@ -327,7 +325,6 @@ og.MessageManager = function() {
 			scope: this
 		})
     };
-	this.actionRep = actions;
     
 	var tbar = [];
 	if (!og.loggedUser.isGuest) {
@@ -393,11 +390,9 @@ Ext.extend(og.MessageManager, Ext.grid.GridPanel, {
 			start = 0;
 		}
 		
-		
 		this.store.baseParams = {
-		      context: og.contextManager.plainContext()
-		    };
-		
+			context: og.contextManager.plainContext()
+		};
 		
 		this.store.load({
 			params: Ext.apply(params, {

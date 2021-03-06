@@ -74,6 +74,16 @@ return array(
 	'field Contacts updated_by_id' => 'Updated by',
 	'field Contacts archived_on' => 'Archived on',
 	'field Contacts archived_by_id' => 'Archived by',
+	'field Contacts birthday' => 'Birthday',
+	'field Contacts disabled' => 'Is disabled',
+	'field Contacts display_name' => 'Display Name',
+	'field Contacts first_name' => 'First Name',
+	'field Contacts is_company' => 'Is Company',
+	'field Contacts last_activity' => 'Last activity',
+	'field Contacts last_login' => 'Last login',
+	'field Contacts last_visit' => 'Last visit',
+	'field Contacts surname' => 'Surname',
+	'field Contacts username' => 'Username',
 
 	// Email fields
     'field MailContents from' => 'From',
@@ -159,6 +169,8 @@ return array(
 	'field ProjectMilestones assigned_to_user_id' => 'Assigned to user',
 	'field ProjectMilestones archived_on' => 'Archived on',
 	'field ProjectMilestones archived_by_id' => 'Archived by',
+	'field ProjectMilestones assigned_to_contact_id' => 'Assigned to',
+	'field ProjectMilestones is_urgent' => 'Is urgent',
 
 	// Message fields
 	'field ProjectMessages title' => 'Title', 
@@ -204,6 +216,7 @@ return array(
     'field ProjectTasks repeat_m' => 'Repeat month',
     'field ProjectTasks repeat_y' => 'Repeat year',
     'field ProjectTasks object_subtype' => 'Object subtype',
+	'field ProjectTasks percent_completed' => 'Percent completed',
 
 	// User fields
     'field Users username' => 'Username', 
@@ -221,7 +234,7 @@ return array(
     'field Users can_manage_security' => 'Can manage security',
     'field Users can_manage_configuration' => 'Can manage configuration', 
     'field Users auto_assign' => 'Auto assign', 
-    'field Users can_manage_contacts' => 'Can manage all contacts',
+    'field Users can_manage_contacts' => 'Can manage all people',
     'field Users can_manage_templates' => 'Can manage templates',
 	'field Users can_manage_reports'=> 'Can manage reports',
 	'field Users can_manage_time'=> 'Can manage time',

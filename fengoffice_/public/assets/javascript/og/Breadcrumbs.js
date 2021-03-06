@@ -1,12 +1,13 @@
+
 og.Breadcrumbs = {
 	
-	cmp: null,
-		
-	status: 0 ,	
+	//cmp: null,
 	
 	items: 0, 
 	
-	mainDimension: null ,	
+	/*status: 0,*/
+	
+	/*mainDimension: null ,	
 	
 	collapse: function () {
 		this.cmp.collapse(false);
@@ -28,71 +29,63 @@ og.Breadcrumbs = {
 		}
 		cmp.doLayout();
 		
-	},
+	},*/
 	
+	init: function (text) {
+		//this.status = 1 ;
+	    $('#breadcrumbs').html('<div><div class="primary-breadcrumb" >'
+		    	+text
+		    	+'</div><ul class="secondary-breadcrumb"></ul></div>'
+		 );
+	},
 
 	refresh: function (node) {
+		/*if (!this.status) {
+			return ;
+		}*/
 		// Clean Previews state
-		$("#breadcrumbs ul").html("");
-		this.items = 0 ;
-		
-		// Update
+		var itemclass = '';
+	    var dimensionName = node.attributes.loader.ownerTree.initialConfig.dimensionCode ;
+	    var mainDimensionId = node.attributes.loader.ownerTree.initialConfig.dimensionId ;  
+	    var parent = node.parentNode ;
+	    
+	    mainText = node.text ;
+	    if(node.getDepth() == '0') {
+	    	mainText = lang('all '+ dimensionName );
+	    }if (parent && !parent.isRoot ){
+	    	mainText += " ("+parent.text+")";
+	    }
+	    
+	    
+	    $('#breadcrumbs').html('<div><div class="primary-breadcrumb" >'
+	    	+mainText
+	    	+'</div><ul class="secondary-breadcrumb"></ul></div>'
+	    );
+	    
+	    
 		for (i in og.contextManager.dimensionMembers) {
-			var member = og.contextManager.dimensionMembers[i];
 			var dimId = i ;
-			if (member.length ) {
-				member = member[0];
-				if ( dimId == this.mainDimension ) {
-					var mainTitle = lang("All") ;
-					var mainPath = "" ;
-					if (member > 0) {
-						this.items ++ ;
-						mainTitle = og.contextManager.getMemberName(dimId, member);
-						mainPath = og.contextManager.getMemberPath(dimId, member);
-						this.expand();
-					}
-					if(mainTitle) {
-						$("#breadcrumbs h1").html("<em>"+mainTitle+"</em>"+mainPath);
-					}
-				}else{
-					if (member > 0 ) {
-						//alert(member);
-						memberTitle = og.contextManager.getMemberName(dimId, member);
-						dimensionTitle = og.contextManager.getDimensionName(dimId);
-						
-						if (memberTitle) {
-							this.items++;
-							var itemClass = "" ;
-							if ($('#breadcrumbs ul').children().size() == 0 ){
-								itemClass = "first";
+			if (dimId != mainDimensionId ){
+				var members = og.contextManager.dimensionMembers[i];
+				if (members.length ) {
+					for(var j in members) {
+						var member = members[j];
+						if (member > 0 ) {
+							memberTitle = og.contextManager.getMemberName(dimId, member);
+							dimensionTitle = og.contextManager.getDimensionName(dimId);
+							var path = og.contextManager.getMemberPath(dimId, member, " / ");
+							if (memberTitle) {
+								if ($('#breadcrumbs ul.secondary-breadcrumb li').length == 0 ){
+									itemClass = "first";
+								}else{
+									itemClass = "";
+								}
+								$("#breadcrumbs ul.secondary-breadcrumb").append("<li class='"+itemClass+"'><strong>"+dimensionTitle+"</strong>: "+path+memberTitle+"</li>");
 							}
-							$("#breadcrumbs ul").append("<li class='"+itemClass+"'><strong>"+dimensionTitle+"</strong>: "+memberTitle+"</li>");
-							this.expand();
 						}
 					}
 				}
 			}
 		}
-		if (this.items == 0) {
-			this.collapse();
-		}
-		
-		// Show div if was hidden 
-		/*
-		if ($("#breadcrumbs").is(":hidden")) $("#breadcrumbs").slideDown('slow', function(){
-			
-			// Resize Ext Components - Ext do no fire automatically this ! ! 
-			//var bcHeight =$("#breadcrumbs").height() + 53   ; // 10 px padding ?
-			var bcHeight = 100 ;
-			var tp = Ext.getCmp("tabs-panel") ;
-			var tpSize = tp.getSize();
-			tpSize.height = tpSize.height - bcHeight ;
-			tp.setSize(tpSize);
-		});
-		*/
-		
-		
-		//
 	}
-
 }

@@ -59,21 +59,17 @@ abstract class BaseProjectEvents extends ContentDataObjects {
 		return array_keys(self::$columns);
 	} // getColumns
 
-	/**
-	 * Return column type
-	 *
-	 * @access public
-	 * @param string $column_name
-	 * @return string
-	 */
-	function getColumnType($column_name) {
-		if(isset(self::$columns[$column_name])) {
-			return self::$columns[$column_name];
-		} else {
-			return DATA_TYPE_STRING;
-		} // if
-	} // getColumnType
 
+	/**
+	* Return column type
+	*
+	* @access public
+	* @param string $column_name
+	* @return string
+	*/
+	function getColumnType($column_name) {
+		return parent::getCOColumnType($column_name, self::$columns);
+	}
 	/**
 	 * Return array of PK columns. If only one column is PK returns its name as string
 	 *

@@ -1,14 +1,7 @@
 <?php 
 set_page_title(lang('administration'));
 $icons = array();
-if (can_edit_company_data(logged_user())) {
-	$icons[] = array(
-		'ico' => 'ico-large-company',
-		'url' => get_url('administration', 'company'),
-		'name' => lang('organization data'),
-		'extra' => '',
-	);
-}
+
 /*FIXME FENG2 if (can_manage_security(logged_user())) {
 	$icons[] = array(
 		'ico' => 'ico-large-company',
@@ -17,7 +10,7 @@ if (can_edit_company_data(logged_user())) {
 		'extra' => '<a class="internalLink coViewAction ico-add" href="' . get_url('contact', 'add_company') . '">' . lang('add company') . '</a>'
 	);
 }*/
-if (logged_user()->isExecutiveGroup()) {
+if (can_manage_security(logged_user())) {
 	$icons[] = array(
 		'ico' => 'ico-large-user',
 		'url' => get_url('administration', 'members'),
@@ -25,14 +18,14 @@ if (logged_user()->isExecutiveGroup()) {
 		'extra' => '<a class="internalLink coViewAction ico-add" href="' . owner_company()->getAddUserUrl() . '">' . lang('add user') . '</a>',
 	);
 } 
-if (can_manage_security(logged_user())) {
+/*if (can_manage_security(logged_user())) {
 	$icons[] = array(
 		'ico' => 'ico-large-group',
 		'url' => get_url('administration', 'groups'),
 		'name' => lang('groups'),
 		'extra' => '<a class="internalLink coViewAction ico-add" href="' . owner_company()->getAddGroupUrl() . '">' . lang('add group') . '</a>',
 	);
-}
+}*/
 /*FIXME if (can_manage_security(logged_user()) && Plugins::instance()->isActivePlugin('mail')) {
 	$icons[] = array(
 		'ico' => 'ico-large-email',
@@ -62,6 +55,12 @@ if (can_manage_templates(logged_user())) {
 }*/
 
 if (can_manage_configuration(logged_user())) {
+	$icons[] = array(
+		'ico' => 'ico-large-company',
+		'url' => get_url('administration', 'company'),
+		'name' => lang('organization data'),
+		'extra' => '',
+	);
 	/*FIXME FENG 2$icons[] = array(
 		'ico' => 'ico-large-custom-properties',
 		'url' => get_url('administration', 'custom_properties'),
@@ -103,8 +102,15 @@ if (can_manage_configuration(logged_user())) {
 			'extra' => '',
 		);
 	}
+	
+	$icons[] = array(
+		'ico' => 'ico-large-tabs',
+		'url' => get_url('administration', 'tabs'),
+		'name' => lang('tabs'),
+		'extra' => '',
+	);
 }
-if (can_manage_dimensions(logged_user())) {
+if (can_manage_dimension_members(logged_user())) {
 	$icons[] = array(
 		'ico' => 'ico-large-workspace',
 		'url' => get_url('administration', 'edit_members'),
@@ -113,14 +119,6 @@ if (can_manage_dimensions(logged_user())) {
 	);
 }
 
-if (can_manage_tabs(logged_user())) {
-	$icons[] = array(
-		'ico' => 'ico-large-tabs',
-		'url' => get_url('administration', 'tabs'),
-		'name' => lang('tabs'),
-		'extra' => '',
-	);
-}
 /*if (can_manage_plugins(logged_user())) {
 	$icons[] = array(
 		'ico' => 'ico-large-plugins',
@@ -139,7 +137,6 @@ if (count($icons > 0)) {}
   <div class="adminSeparator"></div>
   <div class="adminMainBlock">
     <?php //FIXME FENG2 echo lang('welcome to administration info') ?>
-    <br/>
     <br/>
     <?php 
 		$show_help_option = user_config_option('show_context_help'); 

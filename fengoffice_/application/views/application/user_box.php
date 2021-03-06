@@ -2,7 +2,7 @@
 	<ul>
 		<li>
 			<img src="<?php echo $_userbox_user->getPictureUrl()?>" align="left" />
-			<h2><?php echo clean($_userbox_user->getDisplayName()) ?></h2>
+			<h2><?php echo clean($_userbox_user->getObjectName()) ?></h2>
 			<p></p>
 		</li>
 		<li class="u-clear"></li>
@@ -22,7 +22,7 @@
 		} 
 		?>
 		
-		<?php if (logged_user()->isAdministrator()) : ?>
+		<?php if (can_manage_configuration(logged_user())) : ?>
 		<li>
             <a href="Javascript:;" onclick="$('.theme-color-picker-wrapper').slideToggle();if($('input.color-picker').val()=='#undefined')$('input.color-picker').val('#')"><?php echo lang('brand colors')?></a>
         </li>    

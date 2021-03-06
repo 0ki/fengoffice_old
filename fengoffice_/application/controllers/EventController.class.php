@@ -9,7 +9,6 @@
  ***************************************************************************/
 
 require_once ROOT.'/environment/classes/event/CalFormatUtilities.php';
-
 /**
 * Controller that is responsible for handling project events related requests
 *
@@ -48,12 +47,6 @@ class EventController extends ApplicationController {
 	* @return null
 	*/
 	function index($view_type = null, $user_filter = null, $status_filter = null) {
-		//auth check in cal_query_get_eventlist		
-		if( (!(logged_user()->isAdministrator())) /*&& ((active_project() && !(logged_user()->isProjectUser(active_project()))))*/){	    	
-			flash_error(lang('no access permissions'));
-			$this->redirectTo('dashboard');
-			return ;
-	    }		
 		ajx_set_no_toolbar(true);
 		ajx_replace(true);
 				 
@@ -131,15 +124,15 @@ class EventController extends ApplicationController {
 			}
 			if ($from_post_get) {
 				// Notify creator (only when invitation is accepted or declined)
+				$event = ProjectEvents::findById(array('id' => $event_id));
 				if ($inv->getInvitationState() == 1 || $inv->getInvitationState() == 2) {
-					$event = ProjectEvents::findById(array('id' => $event_id));
 					$user = Contacts::findById(array('id' => $user_id));
 					session_commit();
 					Notifier::notifEventAssistance($event, $inv, $user, $invs);
 					if ($inv->getInvitationState() == 1) flash_success(lang('invitation accepted'));
 					else flash_success(lang('invitation rejected'));
 				} else {
-					flash_success(lang('success edit event', ''));
+					flash_success(lang('success edit event', $event instanceof ProjectEvent ? clean($event->getObjectName()) : ''));
 				}
 				if (array_var($_GET, 'at')) {
 					self::view_calendar();
@@ -161,9 +154,9 @@ class EventController extends ApplicationController {
 	       		$year = $dtv->getYear();
 				
 			} else {
-				$month = isset($_GET['month'])?$_GET['month']:date('n', DateTimeValueLib::now()->getTimestamp());
-				$day = isset($_GET['day'])?$_GET['day']:date('j', DateTimeValueLib::now()->getTimestamp());
-				$year = isset($_GET['year'])?$_GET['year']:date('Y', DateTimeValueLib::now()->getTimestamp());
+				$month = isset($event_data['month'])?$event_data['month']:date('n', DateTimeValueLib::now()->getTimestamp());
+				$day = isset($event_data['day'])?$event_data['day']:date('j', DateTimeValueLib::now()->getTimestamp());
+				$year = isset($event_data['year'])?$event_data['year']:date('Y', DateTimeValueLib::now()->getTimestamp());
 			}
        		
 			if (array_var($event_data, 'start_time') != '') {
@@ -385,7 +378,15 @@ class EventController extends ApplicationController {
             		Notifier::notifEvent($event, $users_to_inv, 'new', logged_user());
 		        }
 		        
-		        $member_ids = json_decode(array_var($_POST, 'members'));
+		        if (array_var($_POST, 'members')) {
+		        	$member_ids = json_decode(array_var($_POST, 'members'));
+		        } else {
+		        	$member_ids = array();
+		        	$context = active_context();
+		        	foreach ($context as $selection) {
+		        		if ($selection instanceof Member) $member_ids[] = $selection->getId();
+		        	}
+		        }
 		        
 			    $object_controller = new ObjectController();
 			    $object_controller->add_to_members($event, $member_ids);
@@ -885,22 +886,30 @@ class EventController extends ApplicationController {
 		$actual_user_id = isset($_GET['user']) ? $_GET['user'] : logged_user()->getId();
 		$evid = array_var($_GET, 'evid');
 		
-		$companies = Contacts::findAll(array("conditions" => "is_company = 1"));
+		$i = 0;
+		$companies_tmp = Contacts::findAll(array("conditions" => "is_company = 1"));
+		$companies = array("0" => array('id' => $i++, 'name' => lang('without company'), 'logo_url' => '#'));
+		foreach ($companies_tmp as $comptmp) {
+			$companies[$comptmp->getId()] = array(
+				'id' => $i++,
+				'name' => $comptmp->getObjectName(),
+				'logo_url' => $comptmp->getPictureUrl()
+			);
+		}
 		
 		$context_plain = array_var($_GET, 'context');
 		if (is_null($context_plain) || $context_plain == "") $context = active_context();
 		else $context = build_context_array($context_plain);
 		
-		$i = 0;
-		foreach ($companies as $comp) {
-			$users = allowed_users_in_context(ProjectEvents::instance()->getObjectTypeId(), $context, ACCESS_LEVEL_READ, "AND `company_id` = " . $comp->getId());
+		foreach ($companies as $id => $comp) {
+			$users = allowed_users_in_context(ProjectEvents::instance()->getObjectTypeId(), $context, ACCESS_LEVEL_READ, "AND `company_id` = " . $id);
 			if (is_array($users)) {
 				if (count($users) > 0) {
 					$comp_data = array(
-						'id' => $i++,
-						'object_id' => $comp->getId(),
-						'name' => $comp->getObjectName(),
-						'logo_url' => $comp->getPictureUrl(),
+						'id' => $comp['id'],
+						'object_id' => $id,
+						'name' => $comp['name'],
+						'logo_url' => $comp['logo_url'],
 						'users' => array() 
 					);
 					foreach ($users as $user) {
@@ -919,9 +928,8 @@ class EventController extends ApplicationController {
 		$object = array(
 			"totalCount" => count($comp_array),
 			"start" => 0,
-			"companies" => array()
+			"companies" => $comp_array
 		);
-		$object['companies'] = $comp_array;
 
 		ajx_extra_data($object);
 		ajx_current("empty");
@@ -1029,7 +1037,7 @@ class EventController extends ApplicationController {
 	function generate_ical_export_url() {
 		/*FIXME!! $ws = active_project();
 		if ($ws == null) {
-			$cal_name = logged_user()->getDisplayName();
+			$cal_name = logged_user()->getObjectName();
 			$ws_ids = 0;
 		} else {
 			$cal_name = Projects::findById($ws->getId())->getName();

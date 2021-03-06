@@ -25,7 +25,7 @@
 	<?php $categories = array(); Hook::fire('object_edit_categories', $object, $categories); ?>
 	
 	<div style="padding-top:5px">
-		<a href="#" class="option" style="font-weight:bold" onclick="og.toggleAndBolden('<?php echo $genid ?>add_message_select_context_div',this)"><?php echo lang('context') ?></a> - 
+		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_message_select_context_div',this)"><?php echo lang('context') ?></a> - 
 		<?php //FIXME FENG2 or REMOVE <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid add_custom_properties_div',this)"><?php echo lang('custom properties') </a> - ?>
 		 <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_subscribers_div',this)"><?php echo lang('object subscribers') ?></a>
 		<?php if($object->isNew() || $object->canLinkObject(logged_user())) { ?> - 
@@ -50,7 +50,7 @@
 			</div>
 		<?php }?>
 
-	<div id="<?php echo $genid ?>add_message_select_context_div" style="display:block"> 
+	<div id="<?php echo $genid ?>add_message_select_context_div" style="display:none"> 
 	<fieldset>
 		<?php 
 			$show_help_option = user_config_option('show_context_help'); 

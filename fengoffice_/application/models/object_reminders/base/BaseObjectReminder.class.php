@@ -64,7 +64,7 @@
     * @return integer 
     */
     function getUserId() {
-      return $this->getColumnValue('user_id');
+      return $this->getColumnValue('contact_id');
     } // getUserId()
     
     /**
@@ -75,7 +75,7 @@
     * @return boolean
     */
     function setUserId($value) {
-      return $this->setColumnValue('user_id', $value);
+      return $this->setColumnValue('contact_id', $value);
     } // setUserId() 
     
     /**

@@ -104,31 +104,39 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 			
 			// Simple search for .txt and .html documents
 			if ($file_type->getIsSearchable()){
-				$content = strip_tags($this->getFileContent()); // Remove unnecesary html tags
-				if(strlen($content) > MAX_SEARCHABLE_FILE_SIZE) {
-					$content = substr($content, 0, MAX_SEARCHABLE_FILE_SIZE);
+				try {
+					$content = strip_tags($this->getFileContent()); // Remove unnecesary html tags
+					if(strlen($content) > MAX_SEARCHABLE_FILE_SIZE) {
+						$content = substr($content, 0, MAX_SEARCHABLE_FILE_SIZE);
+					}
+					return $content; 
+				} catch (Exception $e) {
+					if (!defined('DONT_LOG') || DONT_LOG == false) {
+						Logger::log($e->getMessage());
+					}
+					return "";
 				}
-				return $content; 
-			} else 
+			} else {
 			
-			// Search for .doc and .ppt documents
-			if (($this->getFileType()->getExtension() == "doc" || $this->getFileType()->getExtension() == "ppt") 
-				&& FileRepository::getBackend() instanceof FileRepository_Backend_FileSystem){
-				
-				$backend = FileRepository::getBackend();
-				if ($backend->isInRepository($this->getRepositoryId())){
-					$filepath = $backend->getFilePath($this->getRepositoryId());
-					$fileContents = $this->cat_file($filepath,$this->getFileType()->getExtension());
+				// Search for .doc and .ppt documents
+				if (($this->getFileType()->getExtension() == "doc" || $this->getFileType()->getExtension() == "ppt") 
+					&& FileRepository::getBackend() instanceof FileRepository_Backend_FileSystem){
 					
-					if ($fileContents) {
-						if (strlen($fileContents) > MAX_SEARCHABLE_FILE_SIZE) {
-							$fileContents = substr($fileContents, 0, MAX_SEARCHABLE_FILE_SIZE);
+					$backend = FileRepository::getBackend();
+					if ($backend->isInRepository($this->getRepositoryId())){
+						$filepath = $backend->getFilePath($this->getRepositoryId());
+						$fileContents = $this->cat_file($filepath,$this->getFileType()->getExtension());
+						
+						if ($fileContents) {
+							if (strlen($fileContents) > MAX_SEARCHABLE_FILE_SIZE) {
+								$fileContents = substr($fileContents, 0, MAX_SEARCHABLE_FILE_SIZE);
+							}
+						    return $fileContents;
 						}
-					    return $fileContents;
 					}
 				}
+				return null;
 			}
-			return null;
 		} 
 		else
 			return parent::getSearchableColumnContent($column_name);

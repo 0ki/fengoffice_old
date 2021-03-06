@@ -53,37 +53,38 @@ class WebpageController extends ApplicationController {
 		
 		if(is_array(array_var($_POST, 'webpage'))) {
 			try {
-				if(substr_utf($webpage_data['url'],0,7) != 'http://' && substr_utf($webpage_data['url'],0,7) != 'file://' && substr_utf($webpage_data['url'],0,8) != 'https://' && substr_utf($webpage_data['url'],0,6) != 'about:' && substr_utf($webpage_data['url'],0,6) != 'ftp://')
+				if(substr_utf($webpage_data['url'],0,7) != 'http://' && substr_utf($webpage_data['url'],0,7) != 'file://' && substr_utf($webpage_data['url'],0,8) != 'https://' && substr_utf($webpage_data['url'],0,6) != 'about:' && substr_utf($webpage_data['url'],0,6) != 'ftp://') {
 					$webpage_data['url'] = 'http://' . $webpage_data['url'];
+				}
+				
 				$webpage->setFromAttributes($webpage_data);
 				
 				DB::beginWork();
 				$webpage->save();
 
+				$member_ids = json_decode(array_var($_POST, 'members'));
 				
 				//link it!
 			    $object_controller = new ObjectController();
 			    $object_controller->add_subscribers($webpage);
-			    $member_ids = json_decode(array_var($_POST, 'members'));
 			    $object_controller->add_to_members($webpage, $member_ids);
 			    $object_controller->link_to_new_object($webpage);
 				$object_controller->add_subscribers($webpage);
-				$object_controller->add_custom_properties($webpage);
 
 				ApplicationLogs::createLog($webpage, ApplicationLogs::ACTION_ADD);
 				DB::commit();
 
 
-				flash_success(lang('success add webpage', $webpage->getTitle()));
+				flash_success(lang('success add webpage', $webpage->getObjectName()));
 				ajx_current("back");
 				// Error...
 			} catch(Exception $e) {
 				DB::rollback();
 				flash_error($e->getMessage());
 				ajx_current("empty");
-			} // try
+			}
 
-		} // if
+		}
 
 		tpl_assign('webpage', $webpage);
 		tpl_assign('webpage_data', $webpage_data);
@@ -109,47 +110,24 @@ class WebpageController extends ApplicationController {
 			flash_error(lang('webpage dnx'));
 			ajx_current("empty");
 			return;
-		} // if
+		}
 
 		if(!$webpage->canEdit(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
-		} // if
+		}
 
 		$webpage_data = array_var($_POST, 'webpage');
 		if(!is_array($webpage_data)) {
 			$webpage_data = array(
-          'url' => $webpage->getUrl(),
-          'name' => $webpage->getObjectName(),
-          'description' => $webpage->getDescription(),
-			); // array
-		} // if
+	          'url' => $webpage->getUrl(),
+	          'name' => $webpage->getObjectName(),
+	          'description' => $webpage->getDescription(),
+			);
+		}
 
 		if(is_array(array_var($_POST, 'webpage'))) {
-			
-			//MANAGE CONCURRENCE WHILE EDITING
-			/* FIXME or REMOVEME
-			$upd = array_var($_POST, 'updatedon');
-			if ($upd && $webpage->getUpdatedOn()->getTimestamp() > $upd && !array_var($_POST,'merge-changes') == 'true')
-			{
-				ajx_current('empty');
-				evt_add("handle edit concurrence", array(
-					"updatedon" => $webpage->getUpdatedOn()->getTimestamp(),
-					"genid" => array_var($_POST,'genid')
-				));
-				return;
-			}
-			if (array_var($_POST,'merge-changes') == 'true'){					
-				$this->setTemplate('view');
-				$edited_wp = ProjectWebpages::findById($webpage->getId());
-				ajx_set_no_toolbar(true);
-				ajx_set_panel(lang ('tab name',array('name'=>$edited_wp->getTitle())));
-				tpl_assign('object', $edited_wp);
-				ajx_extra_data(array("title" => $edited_wp->getTitle(), 'icon'=>'ico-webpage'));				
-				return;
-			}
-			*/
 			
 			try {
 				$webpage->setFromAttributes($webpage_data);
@@ -158,13 +136,12 @@ class WebpageController extends ApplicationController {
 				
 				$webpage->save();
 
-				//link it!
-			    $object_controller = new ObjectController();
-			    $member_ids = json_decode(array_var($_POST, 'members'));
+				$member_ids = json_decode(array_var($_POST, 'members'));
+				
+				$object_controller = new ObjectController();
 			    $object_controller->add_to_members($webpage, $member_ids);
 			    $object_controller->link_to_new_object($webpage);
 				$object_controller->add_subscribers($webpage);
-				$object_controller->add_custom_properties($webpage);
 
 				ApplicationLogs::createLog($webpage, ApplicationLogs::ACTION_EDIT);
 
@@ -172,15 +149,15 @@ class WebpageController extends ApplicationController {
 				
 				DB::commit();
 				
-				flash_success(lang('success edit webpage', $webpage->getTitle()));
+				flash_success(lang('success edit webpage', $webpage->getObjectName()));
 				ajx_current("back");
 
 			} catch(Exception $e) {
 				DB::rollback();
 				flash_error($e->getMessage());
 				ajx_current("empty");
-			} // try
-		} // if
+			}
+		}
 
 		tpl_assign('webpage', $webpage);
 		tpl_assign('webpage_data', $webpage_data);
@@ -204,13 +181,13 @@ class WebpageController extends ApplicationController {
 			flash_error(lang('webpage dnx'));
 			ajx_current("empty");
 			return;
-		} // if
+		}
 
 		if(!$webpage->canDelete(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
-		} // if
+		}
 
 		try {
 
@@ -219,34 +196,27 @@ class WebpageController extends ApplicationController {
 			ApplicationLogs::createLog($webpage, ApplicationLogs::ACTION_TRASH);
 			DB::commit();
 
-			flash_success(lang('success deleted webpage', $webpage->getTitle()));
+			flash_success(lang('success deleted webpage', $webpage->getObjectName()));
 			ajx_current("back");
 		} catch(Exception $e) {
 			DB::rollback();
 			flash_error(lang('error delete webpage'));
 			ajx_current("empty");
-		} // try
+		}
 	} // delete
 
 	function list_all() {
 		ajx_current("empty");
 		
-		//$project = active_project();
 		$context = active_context() ;
-		//$isProjectView = ($project instanceof Project);
 			
-		$start = (integer)array_var($_GET,'start');
-		$limit = array_var($_GET,'limit');
-		if (! $start) {
-			$start = 0;
-		}
-		if (! $limit) {
-			$limit = config_option('files_per_page');
-		}
+		$start = array_var($_GET, 'start', 0);
+		$limit = array_var($_GET, 'limit', config_option('files_per_page'));
+		
 		$order = array_var($_GET, 'sort');
 		if ($order == "updatedOn" || $order == "updated" || $order == "date" || $order == "dateUpdated") $order = "updated_on";
-		else if ($order == "name") $order = "title";
-		$orderdir = array_var($_GET, 'dir');
+		
+		$order_dir = array_var($_GET, 'dir');
 		$page = (integer) ($start / $limit) + 1;
 		$hide_private = !logged_user()->isMemberOfOwnerCompany();
 
@@ -287,8 +257,8 @@ class WebpageController extends ApplicationController {
 						
 					} catch(Exception $e) {						
 						$err ++;
-					} // try
-				}//for
+					}
+				}
 			if ($succ <= 0) {
 				flash_error(lang("error markasread files", $err));
 			}
@@ -303,50 +273,10 @@ class WebpageController extends ApplicationController {
 						
 					} catch(Exception $e) {						
 						$err ++;
-					} // try
-				}//for
+					}
+				}
 			if ($succ <= 0) {
 				flash_error(lang("error markasunread files", $err));
-			}
-		} else if (array_var($_GET, 'action') == 'move') {
-			$wsid = array_var($_GET, "moveTo");
-			$destination = Projects::findById($wsid);
-			if (!$destination instanceof Project) {
-				$resultMessage = lang('project dnx');
-				$resultCode = 1;
-			} else if (!can_add(logged_user(), $destination, 'ProjectWebpages')) {
-				$resultMessage = lang('no access permissions');
-				$resultCode = 1;
-			} else {
-				$count = 0;
-				$ids = explode(',', array_var($_GET, 'ids', ''));
-				for($i = 0; $i < count($ids); $i++){
-					$id = $ids[$i];
-					$webpage = ProjectWebpages::findById($id);
-					if ($webpage instanceof ProjectWebpage && $webpage->canEdit(logged_user())){
-						if (!array_var($_GET, "mantainWs")) {
-							$removed = "";
-							$ws = $webpage->getWorkspaces();
-							foreach ($ws as $w) {
-								if (can_add(logged_user(), $w, 'ProjectWebpages')) {
-									$webpage->removeFromWorkspace($w);
-									$removed .= $w->getId() . ",";
-								}
-							}
-							$removed = substr($removed, 0, -1);
-							$log_action = ApplicationLogs::ACTION_MOVE;
-							$log_data = ($removed == "" ? "" : "from:$removed;") . "to:$wsid";
-						} else {
-							$log_action = ApplicationLogs::ACTION_COPY;
-							$log_data = "to:$wsid";
-						}
-						$webpage->addToWorkspace($destination);
-						ApplicationLogs::createLog($webpage, $log_action, false, null, true, $log_data);
-						$count++;
-					};
-				}; // for
-				$resultMessage = lang("success move objects", $count);
-				$resultCode = 0;
 			}
 		} else if (array_var($_GET,'action') == 'archive') {
 			$ids = explode(',', array_var($_GET, 'webpages'));
@@ -375,10 +305,14 @@ class WebpageController extends ApplicationController {
 				flash_error(lang("error archive objects", $err));
 			}
 		}
-		$webpages = ProjectWebpages::getContentObjects($context, ObjectTypes::findById(ProjectWebpages::instance()->getObjectTypeId()), $order, $order_dir)->objects;
-
-		if (isset($webpages))
-		{
+		//$webpages = ProjectWebpages::getContentObjects($context, ObjectTypes::findById(ProjectWebpages::instance()->getObjectTypeId()), $order, $order_dir)->objects;
+		
+		$webpages =  ProjectWebpages::instance()->listing(array(
+			"order" => $order , 
+			"order_dir" => $order_dir  
+		))->objects;
+		
+		if (isset($webpages)) {
 			$index = 0;
 			$ids = array();
 			foreach ($webpages as $w) {
@@ -387,13 +321,14 @@ class WebpageController extends ApplicationController {
 					"ix" => $index++,
 					"id" => $w->getId(),
 					"object_id" => $w->getObjectId(),
-					"title" => $w->getObjectName(),
+					"name" => $w->getObjectName(),
 					"description" => $w->getDescription(),
 					"url" => $w->getUrl(),
 					"updatedOn" => $w->getUpdatedOn() instanceof DateTimeValue ? ($w->getUpdatedOn()->isToday() ? format_time($w->getUpdatedOn()) : format_datetime($w->getUpdatedOn())) : '',
 					"updatedOn_today" => $w->getUpdatedOn() instanceof DateTimeValue ? $w->getUpdatedOn()->isToday() : 0,
 					"updatedBy" => $w->getUpdatedByDisplayName(),
 					"updatedById" => $w->getUpdatedById(),
+					"memPath" => json_encode($w->getMembersToDisplayPath()),
 				);
 			}
 			
@@ -408,25 +343,22 @@ class WebpageController extends ApplicationController {
 	function view() {
 		$this->addHelper("textile");
 		$weblink = ProjectWebpages::findById(get_id());
-		//var_dump(get_id()); exit;
 		if(!($weblink instanceof ProjectWebpage)) {
 			flash_error(lang('weblink dnx'));
 			ajx_current("empty");
 			return;
-		} // if
+		}
 
 		if(!$weblink->canView(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
-		} // if
+		}
 		
-		//read object for this user
-		//$weblink->setIsRead(logged_user()->getId(),true);
+		$weblink->setIsRead(logged_user()->getId(),true);
 
 		tpl_assign('object', $weblink);
-		//tpl_assign('subscribers', $weblink->getSubscribers());
-		ajx_extra_data(array("title" => $weblink->getTitle(), 'icon'=>'ico-weblink'));
+		ajx_extra_data(array("title" => $weblink->getObjectName(), 'icon'=>'ico-weblink'));
 		ajx_set_no_toolbar(true);
 		
 		ApplicationReadLogs::createLog($weblink, ApplicationReadLogs::ACTION_READ);

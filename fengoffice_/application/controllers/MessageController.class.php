@@ -80,7 +80,13 @@ class MessageController extends ApplicationController {
 		
 
 		$context = active_context();
-		$res =  ProjectMessages::instance()->getContentObjects($context, ObjectTypes::findById(ProjectMessages::instance()->getObjectTypeId()), $order, $order_dir,null,null,false, false, $start, $limit);
+		//$res =  ProjectMessages::instance()->getContentObjects($context, ObjectTypes::findById(ProjectMessages::instance()->getObjectTypeId()), $order, $order_dir,null,null,false, false, $start, $limit);
+		$res = ProjectMessages::instance()->listing(array(
+			"order" => $order,
+			"order_dir" => $order_dir,
+			"start" => $start,
+			"limit" => $limit,
+		));
 		$messages = $res->objects ; 
 		
 		// Prepare response object
@@ -163,56 +169,6 @@ class MessageController extends ApplicationController {
 					$resultMessage = lang("error markasunread objects", $err) . "<br />" . ($succ > 0 ? lang("success markasunread objects", $succ) : "");
 				}
 				break;
-			/* //FIXME case "move":
-				$wsid = $attributes["moveTo"];
-				$destination = Projects::findById($wsid);
-				if (!$destination instanceof Project) {
-					$resultMessage = lang('project dnx');
-					$resultCode = 1;
-				} else if (!can_add(logged_user(), $destination, 'ProjectMessages')) {
-					$resultMessage = lang('no access permissions');
-					$resultCode = 1;
-				} else {
-					$count = 0;
-					for($i = 0; $i < count($attributes["ids"]); $i++){
-						$id = $attributes["ids"][$i];
-						$type = $attributes["types"][$i];
-						switch ($type){
-							case "message":
-								$message = ProjectMessages::findById($id);
-								if ($message instanceof ProjectMessage && $message->canEdit(logged_user())){
-									if (!$attributes["mantainWs"]) {
-										$removed = "";
-										$ws = $message->getMemberIds();
-										foreach ($ws as $w) {
-											if (can_add(logged_user(), $w, 'ProjectMessages')) {
-												$message->removeFromWorkspace($w);
-												$removed .= $w->getId() . ",";
-											}
-										}
-										$removed = substr($removed, 0, -1);
-										$log_action = ApplicationLogs::ACTION_MOVE;
-										$log_data = ($removed == "" ? "" : "from:$removed;") . "to:$wsid";
-									} else {
-										$log_action = ApplicationLogs::ACTION_COPY;
-										$log_data = "to:$wsid";
-									}
-									$message->addToWorkspace($destination);
-									ApplicationLogs::createLog($message, $log_action, false, null, true, $log_data);
-									$count++;
-								};
-								break;
-	
-							default:
-								$resultMessage = lang("Unimplemented type: '" . $type . "'");// if
-								$resultCode = 2;
-								break;
-						}; // switch
-					}; // for
-					$resultMessage = lang("success move objects", $count);
-					$resultCode = 0;
-				}
-				break;*/
 			case "archive":
 				$succ = 0; $err = 0;
 				for($i = 0; $i < count($attributes["ids"]); $i++){
@@ -282,6 +238,7 @@ class MessageController extends ApplicationController {
 						"userName" => $msg->getCreatedByDisplayName(),
 						"updaterId" => $msg->getUpdatedById() ? $msg->getUpdatedById() : $msg->getCreatedById(),
 						"updaterName" => $msg->getUpdatedById() ? $msg->getUpdatedByDisplayName() : $msg->getCreatedByDisplayName(),
+						"memPath" => json_encode($msg->getMembersToDisplayPath()),
 					);
 					$ids[] = $msg->getId();
     			}

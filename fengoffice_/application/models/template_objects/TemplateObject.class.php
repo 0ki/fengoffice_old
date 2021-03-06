@@ -17,7 +17,7 @@ class TemplateObject extends BaseTemplateObject {
 	}
 	
 	function getObject() {
-		return get_object_by_manager_and_id($this->getObjectId(), $this->getObjectManager());
+		return Objects::findObject($this->getObjectId());
 	}
 	
 	function setTemplate($template) {

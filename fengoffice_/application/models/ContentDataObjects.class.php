@@ -41,13 +41,30 @@ abstract class ContentDataObjects extends DataManager {
 		return array();
 	}
 	
+	/**
+	 * Return column type
+	 *
+	 * @access public
+	 * @param string $column_name
+	 * @return string
+	 */
+	function getCOColumnType($column_name, $columns) {
+		if(isset($columns[$column_name])) {
+			return $columns[$column_name];
+		} else {
+			return Objects::instance()->getColumnType($column_name);
+		}
+	}
 	
 	/**
 	 * Retuns a new instance of a concrete object managed by this class
 	 * This method is required to be overriden by classes that manage 'dimension_objects'
 	 */
-	static function newDimensionObject() {
-		return null;
+	function newDimensionObject() {
+		$ot = ObjectTypes::findById($this->getObjectTypeId());
+		eval('$manager = '.$ot->getHandlerClass().'::instance();');
+		eval('$object = new '.$manager->getItemClass().'();');
+		return $object;
 	}
 	
 	
@@ -154,6 +171,8 @@ abstract class ContentDataObjects extends DataManager {
       $offset     = (integer) array_var($arguments, 'offset', 0);
       $limit      = (integer) array_var($arguments, 'limit', 0);
       $join		  = array_var($arguments, 'join');
+      
+      $table_prefix = defined('FORCED_TABLE_PREFIX') && FORCED_TABLE_PREFIX ? FORCED_TABLE_PREFIX : TABLE_PREFIX;
 
       // Prepare query parts
       $where_string = trim($conditions) == '' ? '' : "WHERE " . preg_replace("/\s+in\s*\(\s*\)/i", " = -1", $conditions);
@@ -179,7 +198,7 @@ abstract class ContentDataObjects extends DataManager {
       $sql = "
       	SELECT $distinct" . ($id ? '`id`' : 'e.*, o.* ') . " 
       	FROM " . $this->getTableName(true) . " e
-      	INNER JOIN ".TABLE_PREFIX."objects o ON o.id = e.object_id 
+      	INNER JOIN ".$table_prefix."objects o ON o.id = e.object_id 
         $join_string $where_string $order_by_string $limit_string";
 
       // Run!
@@ -252,10 +271,11 @@ abstract class ContentDataObjects extends DataManager {
     */
     function loadRow($id) {
         $columns =array_map('db_escape_field', array_merge (Objects::getColumns(), $this->getColumns() ) );
+    	$table_prefix = defined('FORCED_TABLE_PREFIX') && FORCED_TABLE_PREFIX ? FORCED_TABLE_PREFIX : TABLE_PREFIX;
     	
       	$sql = sprintf("
       		SELECT %s 
-      		FROM %s	INNER JOIN `".TABLE_PREFIX."objects` o
+      		FROM %s	INNER JOIN `".$table_prefix."objects` o
       		ON o.id = %s.object_id 
       		WHERE %s", 
       	
@@ -293,9 +313,164 @@ abstract class ContentDataObjects extends DataManager {
 		return $co;
 	}
 	
-	
-	static function getContentObjects($context, $object_type, $order=null, $order_dir=null, $extra_conditions=null, $join_params=null, $trashed=false, $archived=false, $start = 0 , $limit=null){
+	/**
+	 * @author Ignacio Vazquez elpepe.uy at gmail.com
+	 * Fermormance FIX: getContentObjects replacement
+	 * @param array $args 
+	 *		order = null
+	 * 		order_dir = null
+	 * 		extra_conditions = null
+	 * 		join_params = null
+	 * 		trashed = false 
+	 *	 	archived = false
+	 * 		start = 0 
+	 * 		limit = null	
+	 *  	 
+	 */
+	public function listing($args = array()) {
+		$result = new stdClass ;
+		$result->objects =array();
+		$result->total =array();
+		$type_id  = self::getObjectTypeId();
+		$SQL_BASE_JOIN = '';
+		$SQL_EXTRA_JOINS = '' ;
+		$SQL_TYPE_CONDITION = 'true' ;
+		$count_results = array_var($args, 'count_results', config_option('infinite_paging', true));
+		$start = array_var($args,'start');
+		$limit = array_var($args,'limit');
 		
+		if ($count_results) {
+			$SQL_FOUND_ROWS = "SQL_CALC_FOUND_ROWS";
+		}else{
+			$SQL_FOUND_ROWS = "";
+		}
+		
+		$handler_class = "Objects";
+		//$handler_class = '' ;
+		
+		
+		
+		if ($type_id){
+			// If isset type, is a concrete instance linsting. Otherwise is a generic listing of objects
+			$type = ObjectTypes::findById($type_id); /* @var $object_type ObjectType */
+			$handler_class = $type->getHandlerClass();
+			$table_name = self::getTableName();
+			
+	    	// Extra Join statements
+	    	$SQL_BASE_JOIN = " INNER JOIN  $table_name e ON e.object_id = o.id ";
+			$SQL_EXTRA_JOINS = self::prepareJoinConditions(array_var($args,'join_params'));
+			
+			$SQL_TYPE_CONDITION = "object_type_id = $type_id"; 
+			
+		}
+		
+		$members = active_context_members(false); // Context Members Ids
+		$uid = logged_user()->getId() ;
+
+		// Order statement
+    	$SQL_ORDER = self::prepareOrderConditions(array_var($args,'order'), array_var($args,'order_dir'));
+		
+		// Prepare Limit SQL 
+		if (array_var($args,'limit')>0){
+			$SQL_LIMIT = "LIMIT ".array_var($args,'start')." , ".array_var($args,'limit');
+		}else{
+			$SQL_LIMIT = '' ;
+		}
+		
+		///alert_r("START:". microtime(1));	
+		$SQL_CONTEXT_CONDITION = " true ";
+		if (count($members)) {
+		
+			$object_ids = array ();
+			$members_sql = "
+				SELECT object_id FROM " . TABLE_PREFIX . "object_members om WHERE member_id IN (" . implode ( ',', $members ) . ")  
+				GROUP BY object_id
+				HAVING count(member_id) = ".count($members);
+			$db_result = DB::execute ( $members_sql );
+			$rows = $db_result->fetchAll ();
+			foreach ( $rows as $row ) {
+				$object_ids [$row ['object_id']] = $row ['object_id'];
+			}
+			if (count( $object_ids )) {
+				$object_ids = implode ( ",", $object_ids );
+				$SQL_CONTEXT_CONDITION = "id IN ($object_ids)";
+			}else{
+				$SQL_CONTEXT_CONDITION = ' false ' ;
+			}
+		}
+		
+		// Trash && Archived CONDITIONS
+    	$trashed_archived_conditions = self::prepareTrashandArchivedConditions(array_var($args,'trashed'), array_var($args,'archived'));
+    	$SQL_TRASHED_CONDITION = $trashed_archived_conditions[0];
+    	$SQL_ARCHIVED_CONDITION = $trashed_archived_conditions[1];
+    	
+		// Extra CONDITIONS
+		if (array_var($args,'extra_conditions')) {
+			$SQL_EXTRA_CONDITIONS = array_var($args,'extra_conditions') ;	
+		}else{
+			$SQL_EXTRA_CONDITIONS = '';
+		}
+		
+		// Build Main SQL
+	    $sql = "
+	    	SELECT $SQL_FOUND_ROWS * FROM ".TABLE_PREFIX."objects o
+			$SQL_BASE_JOIN
+	    	$SQL_EXTRA_JOINS 
+	    	
+	    	WHERE 
+	    		id IN ( 
+	    			SELECT object_id FROM ".TABLE_PREFIX."sharing_table
+	    			WHERE group_id  IN (
+		     			SELECT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups WHERE contact_id = $uid
+					)
+				) 
+				AND	$SQL_CONTEXT_CONDITION
+				AND $SQL_TYPE_CONDITION
+				AND $SQL_TRASHED_CONDITION $SQL_ARCHIVED_CONDITION $SQL_EXTRA_CONDITIONS 
+			$SQL_ORDER 
+	    	$SQL_LIMIT";
+		
+		// Execute query and build the resultset
+	    $rows = DB::executeAll($sql);
+		foreach ($rows as $row) {
+			if ($handler_class) {
+	    		$phpCode = '$co = '.$handler_class.'::instance()->loadFromRow($row);';
+	    		eval($phpCode);
+			}
+    		if ( $co ) {
+  				$result->objects[] = $co ;
+    		}
+    		
+		}
+		
+		if ($count_results) {
+			$total = DB::executeOne("SELECT FOUND_ROWS() as total");
+			$result->total = $total['total'];	
+		}else{
+			if  ( count($result->objects) == $limit ) {
+				$result->total = 100000;
+			}else{
+				$result->total = $start + count($result->objects) ;
+			}
+		}
+	
+		return $result;
+	}
+	
+	/**
+	 * @deprecated by listing(args) 
+	 * @param unknown_type $context
+	 * @param unknown_type $object_type
+	 * @param unknown_type $order
+	 * @param unknown_type $order_dir
+	 * @param unknown_type $extra_conditions
+	 * @param unknown_type $join_params
+	 * @param unknown_type $trashed
+	 * @param unknown_type $archived
+	 * @param unknown_type $start
+	 * @param unknown_type $limit
+	 */
+	static function getContentObjects($context, $object_type, $order=null, $order_dir=null, $extra_conditions=null, $join_params=null, $trashed=false, $archived=false, $start = 0 , $limit=null){
 		$table_name = $object_type->getTableName();
 		$object_type_id = $object_type->getId();
 		
@@ -325,7 +500,7 @@ abstract class ContentDataObjects extends DataManager {
     	$sql_count = "SELECT COUNT( DISTINCT `om`.`object_id` ) AS total FROM `".TABLE_PREFIX."object_members` `om` 
     		INNER JOIN `".TABLE_PREFIX."objects` `o` ON `o`.`id` = `om`.`object_id`
     		INNER JOIN `".TABLE_PREFIX."$table_name` `e` ON `e`.`object_id` = `o`.`id`
-    		$join_conditions WHERE $trashed_cond $archived_cond AND ($member_conditions) $extra_conditions $order_conditions ";
+    		$join_conditions WHERE $trashed_cond $archived_cond AND ($member_conditions) $extra_conditions";
     	$total = array_var(DB::executeOne($sql_count), "total");	
     		
     	$sql = "SELECT DISTINCT `om`.`object_id` FROM `".TABLE_PREFIX."object_members` `om` 
@@ -334,7 +509,7 @@ abstract class ContentDataObjects extends DataManager {
     		$join_conditions WHERE $trashed_cond $archived_cond AND ($member_conditions) $extra_conditions $order_conditions
     		$limit_query
     		";
-	    
+		
 	    $result = DB::execute($sql);
     	$rows = $result->fetchAll();
     	$objects = array();
@@ -404,11 +579,19 @@ abstract class ContentDataObjects extends DataManager {
     
     static function prepareOrderConditions($order, $order_dir){
     	$order_conditions = "";
+    	if (is_null($order_dir)) $order_dir = "DESC";
     	if ($order && $order_dir){
     		if (!is_array($order)) $order_conditions = "ORDER BY $order $order_dir";
     		else {
     			$i = 0;
     			foreach($order as $o){
+    				switch ($o) {
+    					case 'dateDeleted': $o = 'trashed_on'; break;
+    					case 'dateUpdated': $o = 'updated_on'; break;
+    					case 'dateCreated': $o = 'created_on'; break;
+    					case 'dateArchived': $o = 'archived_on'; break;
+    					default: break;
+    				}
     				if ($i==0)$order_conditions.= "ORDER BY $o $order_dir";
     				else $order_conditions.= ", $o $order_dir";
     				$i++;
@@ -423,6 +606,7 @@ abstract class ContentDataObjects extends DataManager {
     	//get contact's permission groups ids
     	$pg_ids = ContactPermissionGroups::getPermissionGroupIdsByContactCSV(logged_user()->getId(), false);    	
 
+    	$all_dim_in_all_conditions = "";
     	$dm_conditions = "";
     	
     	$context_dimensions = array ();
@@ -437,8 +621,11 @@ abstract class ContentDataObjects extends DataManager {
     		}
     	}
     	
+    	$member_count = 0;
     	foreach ($context as $selection) {
     		if ($selection instanceof Member){
+    			// condiciones para filtrar por el miembro seleccionado
+    			$member_count++;
     			$dimension = $selection->getDimension();
     			$dimension_id = $dimension->getId();
     			$selected_dimensions[] = $dimension;
@@ -468,6 +655,7 @@ abstract class ContentDataObjects extends DataManager {
     			}
     		}
     		else{
+    			// condiciones para cuando se selecciona "all" en todas las dimensiones visibles
     			$all_members = $selection->getAllMembers();
     			foreach($all_members as $member) {
     				$context_dimensions[$selection->getId()]['allowed_members'][] = $member->getId();
@@ -476,10 +664,13 @@ abstract class ContentDataObjects extends DataManager {
     			if ($selection->canContainObjects()){
     				if (!isset($context_dimensions[$selection->getId()])) $context_dimensions[$selection->getId()] = array();
 	    			$allowed_members = array_var($context_dimensions[$selection->getId()], 'allowed_members', array());
-	    			$dm_conditions .= self::prepareQuery($dm_conditions, $selection, $allowed_members, $object_type_id, $pg_ids, 'OR', $selection_members, true);
-    			}		
+	    			$all_dim_in_all_conditions .= self::prepareQuery($all_dim_in_all_conditions, $selection, $allowed_members, $object_type_id, $pg_ids, 'OR', $selection_members, true);
+    			}
     		}
     	}
+    	
+    	// Si esta parado en 'all' de todas las dimensiones visibles aplico la condicion de que el objeto pertenezca a algun miembro de las dimensiones al cual yo tenga permisos
+    	if ($member_count == 0) $dm_conditions .= $all_dim_in_all_conditions;
     	
     	if(count($properties)>0){
     		foreach ($properties as $property=>$values){
@@ -494,7 +685,8 @@ abstract class ContentDataObjects extends DataManager {
     	
     	$dimensions = Dimensions::findAll();
     	foreach ($dimensions as $dimension){
-    		if ($dimension->canContainObjects() && !in_array($dimension, $context) && !in_array($dimension, $selected_dimensions)){
+    		if ($dimension->canContainObjects() && !in_array($dimension, $context) && !in_array($dimension, $selected_dimensions) &&
+    			!($dimension->getOptions(1) && isset($dimension->getOptions(1)->hidden) && $dimension->getOptions(1)->hidden)){
     			$member_ids = array();
     			$all_members = $dimension->getAllMembers();
     			foreach($all_members as $member) {
@@ -508,7 +700,18 @@ abstract class ContentDataObjects extends DataManager {
     	return $dm_conditions;
     }
     
-    
+    /**
+     * @deprecated
+     * Enter description here ...
+     * @param unknown_type $dm_conditions
+     * @param unknown_type $dimension
+     * @param unknown_type $member_ids
+     * @param unknown_type $object_type_id
+     * @param unknown_type $pg_ids
+     * @param unknown_type $operator
+     * @param unknown_type $selection_members
+     * @param unknown_type $all
+     */
     static function prepareQuery($dm_conditions, $dimension, $member_ids, $object_type_id, $pg_ids, $operator, $selection_members, $all = false){
     	$permission_conditions ="";
     	$member_ids_csv = count($member_ids) > 0 ? implode(",", $member_ids) : '0';
@@ -621,7 +824,10 @@ abstract class ContentDataObjects extends DataManager {
 				$objects_list[$i]->timeslots_count = 0;
 			}
 			if (count($ids > 0)){
-				$result = Timeslots::getContentObjects(active_context(), ObjectTypes::findById(Timeslots::instance()->getObjectTypeId()), null, null, ' AND `e`.`object_id` in (' . implode(',', $ids) . ')');
+				//$result = Timeslots::getContentObjects(active_context(), ObjectTypes::findById(Timeslots::instance()->getObjectTypeId()), null, null, ' AND `e`.`object_id` in (' . implode(',', $ids) . ')');
+				$result = Timeslots::instance()->listing(array(
+					"extra_conditions" => ' AND `e`.`object_id` in (' . implode(',', $ids) . ')'
+				));
 				$timeslots = $result->objects;
 				for ($i = 0; $i < count($timeslots); $i++){
 					$object = $objects[$timeslots[$i]->getRelObjectId()];

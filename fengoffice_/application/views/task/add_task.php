@@ -45,7 +45,7 @@
 	<?php $categories = array(); Hook::fire('object_edit_categories', $task, $categories); ?>
 	
 	<div style="padding-top:5px">
-		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_select_workspace_div',this)" <?php echo ($task->isNew() ? 'style="font-weight:bold"' : '')?>><?php echo lang('context') ?></a> -
+		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_select_context_div',this)" ><?php echo lang('context') ?></a> -
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_more_div', this)" style="font-weight:bold" ><?php echo lang('task data') ?></a> -  
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>task_repeat_options_div',this)"><?php echo lang('repeating task') ?></a>  -
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_reminders_div',this)"><?php echo lang('object reminders') ?></a>  -
@@ -73,7 +73,7 @@
 		<?php }?>
 		
 
-	<div id="<?php echo $genid ?>add_task_select_workspace_div" <?php echo $task->isNew() ? '' : 'style="display:none"'?>>
+	<div id="<?php echo $genid ?>add_task_select_context_div" style="display:none">
 	<fieldset>
 	 	<?php 
 			$show_help_option = user_config_option('show_context_help'); 
@@ -501,20 +501,8 @@
 	var assigned_user = '<?php echo array_var($task_data, 'assigned_to', 0) ?>';
 	var start = true;
 	
-	og.drawAssignedToSelectBox = function(companies) {
-		<?php 
-		if(!can_manage_tasks(logged_user())&&can_task_assignee(logged_user())){
-			?>
-			var usersStore = [];
-			usersStore[0]=['<?php echo logged_user()->getId() ?>', lang('me')];
-			assigned_user=<?php echo logged_user()->getId() ?>;
-			<?php 
-		}else{
-			?>
-			usersStore = ogTasks.buildAssignedToComboStore(companies);
-			<?php 
-		}
-		?>
+	og.drawAssignedToSelectBox = function(companies, only_me) {
+		usersStore = ogTasks.buildAssignedToComboStore(companies, only_me);
 		var assignCombo = new Ext.form.ComboBox({
 			renderTo:'<?php echo $genid ?>assignto_container_div',
 			name: 'taskFormAssignedToCombo',
@@ -577,14 +565,15 @@
 			parameters = context ? {context: context} : {};
 			og.openLink(og.getUrl('task', 'allowed_users_to_assign', parameters), {callback: function(success, data){
 				companies = data.companies;
+				only_me = data.only_me ? data.only_me : null;
 				if (combo) {
 					combo.reset();
 					combo.store.removeAll();
-					combo.store.loadData(ogTasks.buildAssignedToComboStore(companies));
+					combo.store.loadData(ogTasks.buildAssignedToComboStore(companies, only_me));
 					combo.setValue(prev_value);
 					combo.enable();
 				} else {
-					og.drawAssignedToSelectBox(companies);
+					og.drawAssignedToSelectBox(companies, only_me);
 				}
 				og.redrawingUserList = false ;
 			}});

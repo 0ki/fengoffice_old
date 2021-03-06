@@ -358,7 +358,7 @@ class FilesController extends ApplicationController {
 					$file->setFromAttributes($file_data);
 					
 					if(!logged_user()->isMemberOfOwnerCompany()) {
-						$file->setIsImportant(false);
+						//$file->setIsImportant(false);
 					} // if
 					$file->setIsVisible(true);
 				}
@@ -1074,7 +1074,7 @@ class FilesController extends ApplicationController {
 		} else {
 			//new document
 			if (!ProjectFile::canAdd(logged_user(), active_context())) {
-			flash_error(lang('no context permissions to add',lang("documents")));
+				flash_error(lang('no context permissions to add', lang("documents")));
 				ajx_current("empty");
 				return;
 			} // if
@@ -1265,47 +1265,6 @@ class FilesController extends ApplicationController {
 		}
 		 else if (array_var($_GET, 'action') == 'zip_add') {
 			$this->zip_add();
-		/*FIXME } else if (array_var($_GET, 'action') == 'move') {
-			$wsid = array_var($_GET, "moveTo");
-			$destination = Projects::findById($wsid);
-			if (!$destination instanceof Project) {
-				$resultMessage = lang('project dnx');
-				$resultCode = 1;
-			} else if (!can_add(logged_user(), $destination, 'ProjectFiles')) {
-				$resultMessage = lang('no access permissions');
-				$resultCode = 1;
-			} else {
-				$count = 0;
-				$ids = explode(',', array_var($_GET, 'ids', ''));
-				for($i = 0; $i < count($ids); $i++){
-					$id = $ids[$i];
-					$file = ProjectFiles::findById($id);
-					if ($file instanceof ProjectFile && $file->canEdit(logged_user())){
-						if (!array_var($_GET, "mantainWs")) {
-							$removed = "";
-							$ws = $file->getWorkspaces(null);
-							foreach ($ws as $w) {
-								if (can_add(logged_user(), $w, 'ProjectFiles')) {
-									$file->removeFromWorkspace($w);
-									$removed .= $w->getId() . ",";
-								}
-							}
-							$removed = substr($removed, 0, -1);
-							$log_action = ApplicationLogs::ACTION_MOVE;
-							$log_data = ($removed == "" ? "" : "from:$removed;") . "to:$wsid";
-						} else {
-							$log_action = ApplicationLogs::ACTION_COPY;
-							$log_data = "to:$wsid";
-						}
-						
-						$file->addToWorkspace($destination);
-						ApplicationLogs::createLog($file, $log_action, false, null, true, $log_data);
-						$count++;
-					};
-				}; // for
-				$resultMessage = lang("success move objects", $count);
-				$resultCode = 0;
-			}*/
 		} else if (array_var($_GET, 'action') == 'archive') {
 			$ids = explode(',', array_var($_GET, 'ids'));
 			$succ = 0; $err = 0;
@@ -1354,8 +1313,16 @@ class FilesController extends ApplicationController {
 		$extra_conditions = $hide_private ? 'AND `is_visible` = 1' : '';
 		
 		$context = active_context();
-		$objects = ProjectFiles::getContentObjects($context, ObjectTypes::findById(ProjectFiles::instance()->getObjectTypeId()), $order, $order_dir, $extra_conditions, $join_params,  false, false, $start, $limit);
-
+		//$objects = ProjectFiles::getContentObjects($context, ObjectTypes::findById(ProjectFiles::instance()->getObjectTypeId()), $order, $order_dir, $extra_conditions, $join_params,  false, false, $start, $limit);
+		$objects = ProjectFiles::instance()->listing(array(
+			"order"=>$order,
+			"order_dir" => $order_dir,
+			"extra_conditions"=> $extra_conditions,
+			"join_params"=> $join_params,
+			"start"=> $start,
+			"limit"=> $limit
+		));
+		
 		// prepare response object 
 		$listing = array(
 			"totalCount" => $objects->total,
@@ -1402,11 +1369,11 @@ class FilesController extends ApplicationController {
 					"name" => $o->getObjectName(),
 					"type" => $o->getTypeString(),
 					"mimeType" => $o->getTypeString(),
-					"createdBy" => $o->getCreatedByDisplayName(),
+					"createdBy" => clean($o->getCreatedByDisplayName()),
 					"createdById" => $o->getCreatedById(),
 					"dateCreated" => $o->getCreatedOn() instanceof DateTimeValue ? ($o->getCreatedOn()->isToday() ? format_time($o->getCreatedOn()) : format_datetime($o->getCreatedOn())) : '',
 					"dateCreated_today" => $o->getCreatedOn() instanceof DateTimeValue ? $o->getCreatedOn()->isToday() : 0,
-					"updatedBy" => $o->getUpdatedByDisplayName(),
+					"updatedBy" => clean($o->getUpdatedByDisplayName()),
 					"updatedById" => $o->getUpdatedById(),
 					"dateUpdated" => $o->getUpdatedOn() instanceof DateTimeValue ? ($o->getUpdatedOn()->isToday() ? format_time($o->getUpdatedOn()) : format_datetime($o->getUpdatedOn())) : '',
 					"dateUpdated_today" => $o->getUpdatedOn() instanceof DateTimeValue ? $o->getUpdatedOn()->isToday() : 0,
@@ -1421,6 +1388,7 @@ class FilesController extends ApplicationController {
 					"songInfo" => $songInfo,
 					"ftype" => $o->getType(),
 					"url" => $o->getUrl(),
+					"memPath" => json_encode($o->getMembersToDisplayPath()),
 				);
 				if ($o->isMP3()) {
 					$values['isMP3'] = true;
@@ -2054,11 +2022,11 @@ class FilesController extends ApplicationController {
 
 			DB::beginWork();
 			$file->save();
-			/*FIXME if (is_array($members)) {
-				foreach ($members as $m) {
-					$file->addToWorkspace($ws);
-				}
-			}*/
+			$ctrl = new ObjectController() ;
+			if (is_array($members)) {
+				$ctrl->add_to_members($file, $members);
+			}
+			
 			$revision = $file->handleUploadedFile($file_dt, true, '');
 
 			ApplicationLogs::createLog($file, ApplicationLogs::ACTION_ADD);

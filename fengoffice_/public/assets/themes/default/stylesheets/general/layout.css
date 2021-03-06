@@ -1,3 +1,6 @@
+.x-viewport body {
+	overflow-y: auto ;
+}
 
 #header {
 	/*border-bottom: 1px solid black;*/
@@ -78,7 +81,9 @@
 }
 
 
-
+.loading-indicator {
+	z-index: 9999999 ;
+}
 
 .adminAddProject .contactsTable {
 	width:100%;
@@ -218,24 +223,21 @@ div#breadcrumbs-panel .x-panel-body
 	width: 100%;
     background: none repeat scroll 0 0 transparent;
     height: 45px;
-    padding: 17px 5px;
+    padding: 10px 5px;
 	font-weight: bold;	
 	*padding-top: 10px ; /* ie7 hack */
 	font-family: Helvetica,Verdana,Arial,sans-serif;
 	/*display: none ;*/
 }
 
-#breadcrumbs h1 {
-	margin: 5px 0 6px 0;
+#breadcrumbs .primary-breadcrumb {
 	font-size: 22px; 
-	color: #1C2A47	
-	
+	color: #1C2A47;
+	padding-bottom: 5px;
 }
-
-#breadcrumbs em {
-	font-weight: bold;
-	font-size: 1.2em; 
+#breadcrumbs .secondary-breadcrumb {
 }
+	      
 
 #breadcrumbs ul {
 	font-size: 11px;
@@ -295,51 +297,13 @@ fieldset.collapsible.collapsed legend {
     text-align: right ;
 }
 
-/** QUICK FORMS **/
-#quick-form {
-	padding: 10px ;
-	border: 1px solid #CCC;
-	box-shadow: 0 0 16px 0 #CCC;
-	background: white ;
-	display:none;
-	position:absolute;
-	min-height: 15px ;
-	min-width: 30px;
-	color: #666 ;
-	z-index: 99999;
-	
-}
 
-#quick-form .close {
-    background: url("../../images/12x12/close-icon-1.png") 0 0 ;
-    cursor: pointer;
-    height: 12px;
-    position: absolute;
-    right: 5px;
-    top: 5px;
-    width: 12px;
-}
 
-#quick-form .close:hover {
-    background-position: 0 36px;
-}
 
-#quick-form a.more  {
-	margin: 10px 0 0 5px;
-	float: right;
-}
 
-#quick-form input  {
-	border-radius: 2px;
-	padding: 3px 5px ;
-	margin-bottom: 3px;
-	border: 1px solid #CCC;
-	clear: both ;
-}
 
-#quick-form select {
-	clear: both ;
-}
+
+
 
 .page h1 {
 	font-size: 22px ;
@@ -370,3 +334,168 @@ fieldset.collapsible.collapsed legend {
     color: #FF2222;
     padding: 4px 10px;
 }
+
+
+/* Contact Fluid Layout */
+
+div.layout-container {
+    overflow: hidden ;
+}
+
+div.left-column-wrapper {
+    width: 100% ;
+    float: left ;
+}
+
+div.right-column {
+    float:left ;
+    width: 240px ;
+    margin-left: -250px; /*Set left margin to -(RightColumnWidth) */
+    padding-left: 15px;
+    padding-right: 15px;
+    width: 210px;
+}
+
+
+div.left-column {
+    padding-right: 10px ;
+    margin-right: 240px;  /*Set right margin to RightColumnWidth*/
+    min-width: 200px;
+}
+
+/* View styles */
+div.person-view a.edit-link, .person-view a.map-link {
+	font-size: 9px;
+	font-weight: normal;
+}
+
+div.person-view a.edit-link {
+	float: right;	
+}
+
+div.person-view div.person-information
+{
+}
+
+div.person-view div.picture
+{
+    float: left;
+    padding: 3px;
+}
+div.person-view div.picture .change-picture
+{	
+	display: block;
+	font-size: 9px ;
+	text-align: center;
+}
+
+div.person-view div.basic-info
+{
+    float: left;
+    padding: 10px;
+	min-width: 330px ;
+} 
+
+div.person-view div.basic-info h3
+{
+    font-size: 16px;
+    color: #999999;
+    font-weight: normal;
+    text-decoration: none;
+}
+
+div.person-view div.basic-info h2
+{
+    font-size: 24px;
+    color: #666666;
+    padding-top: 0;
+    padding-bottom: 7px;
+    margin-bottom: 0;
+    border: none;
+}
+
+div.person-view div.basic-info h2 a
+{
+    font-size: 12px;
+    text-decoration: underline;
+    font-weight: normal;
+}    
+
+div.person-view div.basic-info h4
+{
+    font-size: 12px;
+    padding-top: 15px;
+    padding-bottom: 0;
+    margin: 0px 0px 10px 0px;
+    border-bottom: solid #eeeeee 1px;
+} 
+
+div.person-view div.basic-info h5
+{
+    font-size: 11px;
+    padding-top: 1px;
+    padding-bottom: 1px;
+    color: #999999;
+}
+
+div.basic-info ul li span.mail
+{
+    font-size: 11px;    
+    color: #666666;
+    font-weight: bold;
+}      
+
+div.person-view div.line
+{
+    border-top: solid #eeeeee 1px;
+    margin: 5px 0px 5px 0px;
+}
+
+div.person-activity
+{
+    padding: 10px;
+}
+
+div.person-activity ul li
+{
+    padding: 3px 0px 1px 20px;
+}
+
+div.layout-container td.coViewHeader
+{
+    border-bottom: none;
+    background: #eeeeee;
+}
+
+div.all-info
+{
+    display: none;
+}
+
+div.all-info h4
+{
+    color: #999999;
+}
+
+div.layout-container.contact {
+	margin-top: 10px ;
+}
+
+div.layout-container.contact .coViewHeader  {
+	background: #85AD37;
+	color: #FFFFFF;
+}
+
+div.layout-container.contact .right-column {
+	margin-top: 5px ;
+}
+.view-container {
+	background-color: #FFF ;
+	border: 1px solid #CCCCCC;
+    border-radius: 5px;
+    margin: 5px;
+    box-shadow: 0 0 3px 0 #CCCCCC inset;
+}
+
+
+/** End Contact Fluid layotu */

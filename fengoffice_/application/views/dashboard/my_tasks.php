@@ -35,7 +35,7 @@
 <?php if($assigned_to instanceof Company) { ?>
             <span class="assignedTo"><?php echo clean($assigned_to->getName()) ?>:</span> 
 <?php } elseif($assigned_to instanceof User) { ?>
-            <span class="assignedTo"><?php echo clean($assigned_to->getDisplayName()) ?>:</span> 
+            <span class="assignedTo"><?php echo clean($assigned_to->getObjectName()) ?>:</span> 
 <?php } else { ?>
             <span class="assignedTo"><?php echo lang('anyone') ?>:</span> 
 <?php } // if ?>
@@ -64,7 +64,7 @@
 <?php if($assigned_to instanceof Company) { ?>
             <span class="assignedTo"><?php echo clean($assigned_to->getName()) ?>:</span>
 <?php } elseif($assigned_to instanceof User) { ?>
-            <span class="assignedTo"><?php echo clean($assigned_to->getDisplayName()) ?>:</span>
+            <span class="assignedTo"><?php echo clean($assigned_to->getObjectName()) ?>:</span>
 <?php } else { ?>
             <span class="assignedTo"><?php echo lang('anyone') ?>:</span>
 <?php } // if ?>

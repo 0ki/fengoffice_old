@@ -20,6 +20,9 @@
        $permission_group_ids = ContactPermissionGroups::getPermissionGroupIdsByContactCSV(logged_user()->getId(),false);
        $out = '' ;
        foreach ($dimensions as $dim) { /* @var $dim Dimension */
+			if ( $dim->getOptions(1) && isset($dim->getOptions(1)->hidden) && $dim->getOptions(1)->hidden ) {
+				continue ;
+			}
        		if (!$dim->getDefinesPermissions() || !$dim->deniesAllForContact($permission_group_ids)) {
 	       		if  (array_search($dim->getId(), $value) !== false ){
 	       			$checked = 1 ; 	
@@ -48,7 +51,11 @@
     } // rawToPhp
     
 	function phpToRaw($value) {
-		return implode(',', array_keys($value));
+		if (is_array($value) && count($value)) {
+			return implode(',', array_keys($value));
+		}else{
+			return "";
+		}
 	}
 
   } 

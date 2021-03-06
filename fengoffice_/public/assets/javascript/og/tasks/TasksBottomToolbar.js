@@ -14,23 +14,38 @@ og.TasksBottomToolbar = function(config) {
 		
 	og.TasksBottomToolbar.superclass.constructor.call(this, config);
 	
+	var groupcombo_store_data = [
+		['nothing', '--' + lang('nothing (groups)') + '--']
+		,['milestone', lang('milestone')]
+		,['priority',lang('priority')]
+		,['assigned_to', lang('assigned to')]
+		,['due_date', lang('due date')]
+		,['start_date', lang('start date')]
+		,['created_on', lang('created on')]
+		,['created_by', lang('created by')]
+		,['completed_on', lang('completed on')]
+		,['completed_by', lang('completed by')]
+		,['status', lang('status')]
+	];
+	
+	if (ogTasks.additional_groupby_dimensions) {
+		for (i=0; i<ogTasks.additional_groupby_dimensions.length; i++) {
+			var gb = ogTasks.additional_groupby_dimensions[i];
+			var found = false;
+			for (k=0; k<groupcombo_store_data.length; k++) {
+				gsd = groupcombo_store_data[k];
+				found = gsd[0] == 'dimension_' + gb.id;
+				if (found) break;
+			}
+			if (!found) groupcombo_store_data.push(['dimension_' + gb.id, gb.name]);
+		}
+	}
+	
     this.groupcombo = new Ext.form.ComboBox({
         store: new Ext.data.SimpleStore({
-	        fields: ['value', 'text'],
-	        data : [['nothing', '--' + lang('nothing (groups)') + '--']
-	        	,['milestone', lang('milestone')]
-	        	,['priority',lang('priority')]
-	        	,['assigned_to', lang('assigned to')]
-	        	,['due_date', lang('due date')]
-	        	,['start_date', lang('start date')]
-	        	,['created_on', lang('created on')]
-	        	,['created_by', lang('created by')]
-	        	,['completed_on', lang('completed on')]
-	        	,['completed_by', lang('completed by')]
-	        	,['status', lang('status')]
-	 //       	,['subtype', lang('object type')]
-	        ]
-	    	}),
+        	fields: ['value', 'text'],
+        	data : groupcombo_store_data
+    	}),
         displayField:'text',
         typeAhead: true,
         mode: 'local',
@@ -169,20 +184,26 @@ og.TasksBottomToolbar = function(config) {
 		}
 	}
 	var ucsData = [[currentUser, lang('me')],['0',lang('everyone')],['-1', lang('unassigned')],['0','--']];
-	for (i in companiesArray)
-		if (companiesArray[i].id) ucsData[ucsData.length] = [companiesArray[i].id, companiesArray[i].name];
+	for (i in companiesArray) {
+		if (companiesArray[i].id) ucsData[ucsData.length] = [companiesArray[i].id, og.clean(companiesArray[i].name)];
+	}
 	ucsData[ucsData.length] = ['0','--'];
 	ucsOtherUsers = [];
 	for (i in usersArray){
 		var companyName = '';
 		var j;
-		for(j in companiesArray)
-			if (companiesArray[j] && companiesArray[j].id == usersArray[i].cid)
+		for(j in companiesArray) {
+			if (companiesArray[j] && companiesArray[j].id == usersArray[i].cid) {
 				companyName = companiesArray[j].name;
-		if (usersArray[i] && usersArray[i].cid) 
-			ucsOtherUsers[ucsOtherUsers.length] = [usersArray[i].id, usersArray[i].name + ' : ' + companyName];
-		if (usersArray[i].isCurrent)
+			}
+		}
+		if (usersArray[i]) {
+			var toshow = og.clean(usersArray[i].name) + (usersArray[i].cid ? ' : ' + og.clean(companyName) : "");
+			ucsOtherUsers[ucsOtherUsers.length] = [usersArray[i].id, toshow];
+		}
+		if (usersArray[i].isCurrent) {
 			currentUser = usersArray[i].id;
+		}
 	}
 	ucsData = ucsData.concat(ogTasksOrderUsers(ucsOtherUsers));
     
@@ -224,7 +245,7 @@ og.TasksBottomToolbar = function(config) {
 	uDOtherUsers = [];
 	for (i in usersArray){
 		if (usersArray[i] && !usersArray[i].isCurrent && usersArray[i].id)
-			uDOtherUsers[uDOtherUsers.length] = [usersArray[i].id, usersArray[i].name];
+			uDOtherUsers[uDOtherUsers.length] = [usersArray[i].id, og.clean(usersArray[i].name)];
 	}
 	uData = uData.concat(ogTasksOrderUsers(uDOtherUsers));
     this.filterNamesCombo = new Ext.form.ComboBox({
@@ -316,7 +337,7 @@ og.TasksBottomToolbar = function(config) {
     milestonesData = [[0,"--" + lang('none') + "--"]];
     for (i in milestones){
     	if (milestones[i].id)
-    		milestonesData[milestonesData.length] = [milestones[i].id, milestones[i].t];
+    		milestonesData[milestonesData.length] = [milestones[i].id, og.clean(milestones[i].t)];
     }
     this.filterMilestonesCombo = new Ext.form.ComboBox({
     	id: 'ogTasksFilterMilestonesCombo',

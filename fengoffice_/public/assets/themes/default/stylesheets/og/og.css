@@ -840,6 +840,7 @@ select.select_milestone, select.select_task_list, select.select_message {
 	padding-top:6px;
 	width:150px;
 	cursor: pointer;
+	font-size: 100%;
 }
 .user-name{
 	background:#fafafa none repeat scroll 0 0;
@@ -923,8 +924,19 @@ select.select_milestone, select.select_task_list, select.select_message {
 	vertical-align: middle;
 }
 
+
+.member-chooser .x-panel-body{
+	max-height: 250px ;
+	overflow-x: inherit !important;
+	/*padding-right: 15px; */
+}
+
+.member-chooser .x-toolbar table {
+	width: 96%;
+}
+
 .member-chooser-container .x-panel-body{
-	background-color: #FFF ;	
+	background-color: #FFF ;
 }
 
 .member-chooser-container .member-chooser {
@@ -1062,4 +1074,67 @@ select.select_milestone, select.select_task_list, select.select_message {
 .user-disabled {
 	opacity: 0.5;
 	filter: alpha(opacity = 50);
+}
+
+.ico-see-more {
+	padding-top: 0px !important;
+		
+}
+
+.ext-safari .ico-see-more {
+	padding-top: 1px !important;
+}
+
+
+#menu-panel .root-hidden .x-tree-root-ct{
+	margin-top: -16px;
+	margin-left: -16px;
+}
+
+#menu-panel .root-hidden .root{
+	visibility:hidden;
+}
+
+span.member-path {
+	font-size: 10px;
+	margin: 0 5px;
+	padding: 1px 2px;
+	white-space: nowrap;
+	border-radius: 3px;
+}
+
+span.member-path span {
+	margin: 0 2px;
+}
+
+span.member-path.blue {
+	background-color: #cde;
+}
+
+span.member-path.blue span a {
+	color: #003562;
+}
+
+span.member-path.green {
+	background-color: #ced;
+}
+
+span.member-path.green span a {
+	color: #006235;
+}
+
+span.member-path.yellow {
+	background-color: #EDEEC1;
+}
+
+span.member-path.yellow span a {
+	color: #2F3009;
+}
+
+span.member-path.red {
+	background-color: #EECCCC;
+}
+
+span.member-path.red span a {
+	color: #7E0808;
 }

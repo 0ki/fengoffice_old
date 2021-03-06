@@ -36,29 +36,6 @@
     } // setPermissionGroupId() 
     
     
-    /**
-    * Return value of 'can_edit_company_data' field
-    *
-    * @access public
-    * @param void
-    * @return string 
-    */
-    function getCanEditCompanyData() {
-      return $this->getColumnValue('can_edit_company_data');
-    } // getCanEditCompanyData()
-    
-    
-    /**
-    * Set value of 'can_edit_company_data' field
-    *
-    * @access public   
-    * @param string $value
-    * @return boolean
-    */
-    function setCanEditCompanyData($value) {
-      return $this->setColumnValue('can_edit_company_data', $value);
-    } // setCanEditCompanyData() 
- 
     
     /**
     * Return value of 'can_manage_configuration' field
@@ -106,31 +83,7 @@
     function setCanManageSecurity($value) {
       return $this->setColumnValue('can_manage_security', $value);
     } // setCanManageSecurity() 
-    
-    
-   	/**
-    * Return value of 'can_manage_members' field
-    *
-    * @access public
-    * @param void
-    * @return string 
-    */
-    function getCanManageMembers() {
-      return $this->getColumnValue('can_manage_members');
-    } // getCanManageMembers()
-    
-    
-    /**
-    * Set value of 'can_manage_members' field
-    *
-    * @access public   
-    * @param string $value
-    * @return boolean
-    */
-    function setCanManageMembers($value) {
-      return $this->setColumnValue('can_manage_members', $value);
-    } // setCanManageMembers() 
-    
+   
     
     /**
     * Return value of 'can_manage_templates' field
@@ -156,29 +109,6 @@
     } // setCanManageTemplates() 
     
     
-    /**
-    * Return value of 'can_manage_reports' field
-    *
-    * @access public
-    * @param void
-    * @return string 
-    */
-    function getCanManageReports() {
-      return $this->getColumnValue('can_manage_reports');
-    } // getCanManageReports()
-    
-    
-    /**
-    * Set value of 'can_manage_reports' field
-    *
-    * @access public   
-    * @param string $value
-    * @return boolean
-    */
-    function setCanManageReports($value) {
-      return $this->setColumnValue('can_manage_reports', $value);
-    } // setCanManageReports()   
-
     
     /**
     * Return value of 'can_manage_time' field
@@ -240,14 +170,6 @@
       return $this->manager;
     } // manager
     
-    function getCanManageWorkspaces(){
-    	 return $this->getColumnValue('can_manage_workspaces');
-    }
-    
-    function setCanManageWorkspaces($value){
-		return $this->setColumnValue('can_manage_workspaces', $value);
-    }
-    
     function getCanManageDimensions(){
     	return $this->getColumnValue('can_manage_dimensions');
     }
@@ -296,22 +218,6 @@
 		return $this->setColumnValue('can_view_billing', $value);
     }    
     
-    function getCanViewTime(){
-    	return $this->getColumnValue('can_view_time');
-    }
-    
-    function setCanViewTime($value){
-		return $this->setColumnValue('can_view_time', $value);
-    }
-       
-    function getCanRecordTime(){
-    	return $this->getColumnValue('can_record_time');
-    }
-    
-    function setCanRecordTime($value){
-		return $this->setColumnValue('can_record_time', $value);
-    }   
-         
   	function getSettedPermissions(){
 		$columns=$this->getColumns();
 		$permissions=array();

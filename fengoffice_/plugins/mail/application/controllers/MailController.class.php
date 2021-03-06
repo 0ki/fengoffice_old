@@ -20,11 +20,10 @@ class MailController extends ApplicationController {
 		parent::__construct();
 		prepare_company_website_controller($this, 'website');
 		Env::useHelper('MailUtilities.class', $this->plugin_name);
-		
-	} // __construct
+		require_javascript("AddMail.js",  $this->plugin_name);
+	}
 
 	function init() {
-		
 		require_javascript('MailAccountMenu.js',  $this->plugin_name);
 		require_javascript("MailManager.js",  $this->plugin_name);
 		ajx_current("panel", "mails-containerpanel", null, null, true);
@@ -225,7 +224,6 @@ class MailController extends ApplicationController {
 	 * @return null
 	 */
 	function add_mail() {
-		require_javascript("AddMail.js",  $this->plugin_name);
 		if (logged_user()->isGuest()) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
@@ -441,7 +439,6 @@ class MailController extends ApplicationController {
 		 						"data" => $object->getViewUrl(),
 		 						"name" => clean($object->getObjectName()),
 		 						"type" => lang($object->getObjectTypeName()),
-	 							"manager" => $object->getObjectManagerName(),
 	 							"id" => $object->getId(),
 		 					);
 	 					}
@@ -569,7 +566,7 @@ class MailController extends ApplicationController {
 					$mail->setBodyHtml('');
 				}
 				$mail->setFrom($account->getEmailAddress());
-				$mail->setFromName(logged_user()->getDisplayName());
+				$mail->setFromName(logged_user()->getObjectName());
 
 				$mail->save();
 				$mail->setIsRead(logged_user()->getId(), true);
@@ -596,8 +593,9 @@ class MailController extends ApplicationController {
 				}
 
 				if (!$classified && $account->getMember() instanceof Member) {
-					//$mail->addToWorkspace($account->getWorkspace());
-					$mail->addToMembers(array($account->getMember()));
+					//$mail->addToMembers(array($account->getMember()));
+					$ctrl = new ObjectController() ;
+					$ctrl->add_to_members($mail, array($account->getMember()->getId()));
 				}
 				/*
 				if (!$classified && active_project() instanceof Project) {
@@ -606,17 +604,18 @@ class MailController extends ApplicationController {
 
 				$object_controller = new ObjectController();
 				$object_controller->link_to_new_object($mail);
-
+				/*
 				if (array_var($mail_data, 'link_to_objects') != ''){
 					$lto = explode('|', array_var($mail_data, 'link_to_objects'));
 					foreach ($lto as $object_string){
 						$split_object = explode('-', $object_string);
 						$object = get_object_by_manager_and_id($split_object[1], $split_object[0]);
-						if ($object instanceof ProjectDataObject){
+						if ($object instanceof ContentDataObject){
 							$mail->linkObject($object);
 						}
 					}
-				}
+				}*/ 
+				
 				ApplicationLogs::createLog($mail,  ApplicationLogs::ACTION_ADD);
 				
 				if (user_config_option('create_contacts_from_email_recipients') && can_manage_contacts(logged_user())) {
@@ -1082,6 +1081,7 @@ class MailController extends ApplicationController {
 			MailUtilities::parseMail($email->getContent(), $decoded, $parsedEmail, $warnings);
 			if (isset($parsedEmail['Attachments'])) $attachments = $parsedEmail['Attachments'];
 			foreach($attachments as &$attach) {
+				if (array_var($parsedEmail, 'FileDisposition') == 'inline' && array_var($attach, 'Type') == 'html') $attach['hide'] = true;
 			 	$attach['size'] = format_filesize(strlen($attach["Data"]));
 			 	unset($attach['Data']);
 			}
@@ -1629,7 +1629,7 @@ class MailController extends ApplicationController {
 		// get mail account users
 		$mau = array(
 			logged_user()->getId() => array(
-				'name' => logged_user()->getDisplayName(),
+				'name' => logged_user()->getObjectName(),
 				'can_edit' => true,
 			)
 		);
@@ -1806,7 +1806,7 @@ class MailController extends ApplicationController {
 		$mau = array();
 		foreach ($mailAccountUsers as $au) {
 			$mau[$au->getContactId()] = array(
-				'name' => $au->getContact()->getDisplayName(),
+				'name' => $au->getContact()->getObjectName(),
 				'can_edit' => $au->getCanEdit(),
 			);
 		}
@@ -2329,7 +2329,7 @@ class MailController extends ApplicationController {
 		if (!is_numeric($start)) {
 			$start = 0;
 		}
-		$tag = array_var($_GET,'tag');
+		
 		$action = array_var($_GET,'action');
 		$attributes = array(
 			"ids" => explode(',', array_var($_GET,'ids')),
@@ -2385,10 +2385,12 @@ class MailController extends ApplicationController {
 		}
 
 		// Get all emails to display
-		//$project = active_project();
 		$context = active_context();
 		
-		$emails = $this->getEmails($tag, $attributes, $context, $start, $limit, $order, $dir, $total);
+		$result = $this->getEmails($attributes, $context, $start, $limit, $order, $dir);
+		
+		$total = $result->total;
+		$emails = $result->objects;
 		
 		// Prepare response object
 		$object = $this->prepareObject($emails, $start, $limit, $total);
@@ -2407,9 +2409,8 @@ class MailController extends ApplicationController {
 	 * @param Project $project
 	 * @return array
 	 */
-	private function getEmails($tag, $attributes, $context = null, $start = null, $limit = null, $order_by = 'sent_date', $dir = 'ASC', &$totalCount = 0) {
+	private function getEmails($attributes, $context = null, $start = null, $limit = null, $order_by = 'sent_date', $dir = 'ASC') {
 		// Return if no emails should be displayed
-		//pre_var_dump($context);
 		if (!isset($attributes["viewType"]) || ($attributes["viewType"] != "all" && $attributes["viewType"] != "emails")) return null;
 		$account = array_var($attributes, "accountId");
 		$classif_filter = array_var($attributes, 'classifType');
@@ -2422,10 +2423,7 @@ class MailController extends ApplicationController {
 		
 		$state = array_var($attributes, 'stateType');
 		
-		//list($objects, $pagination) = MailContents::getEmails($tag, $account, $state, $read_filter, $classif_filter, $context, $start, $limit, $order_by, $dir)->objects;
-		$objects = MailContents::getEmails($tag, $account, $state, $read_filter, $classif_filter, $context, $start, $limit, $order_by, $dir)->objects;
-		
-		$totalCount = count($objects);
+		$result = MailContents::getEmails($account, $state, $read_filter, $classif_filter, $context, $start, $limit, $order_by, $dir);
 		
 		//if standing in "All" check if all workspaces related to the email have been archived.. and if so, dont show them
 		// TODO pepe 
@@ -2452,7 +2450,7 @@ class MailController extends ApplicationController {
 			return $aux;		
 		}
 		*/
-		return $objects;
+		return $result;
 	}
 
 	function get_user_preferences() {
@@ -2474,20 +2472,18 @@ class MailController extends ApplicationController {
 	 * @param integer $limit
 	 * @return array
 	 */
-	private function prepareObject($totMsg, $start, $limit, $total, $attributes = null) {
+	private function prepareObject($emails, $start, $limit, $total, $attributes = null) {
 		$object = array(
 			"totalCount" => intval($total),
 			"start" => $start,//(integer)min(array(count($totMsg) - (count($totMsg) % $limit),$start)),
 			"messages" => array()
 		);
-		//MailContents::populateData($totMsg);
-		for ($i = 0; $i < $limit; $i++) {
-			if (isset($totMsg[$i])) {
-				$msg = $totMsg[$i];
-				if ($msg instanceof MailContent) {/* @var $msg MailContent */
-					$properties = $this->getMailProperties($msg, $i);
-					$object["messages"][] = $properties;
-				}
+		
+		$i=0;
+		foreach ($emails as $email) {
+			if ($email instanceof MailContent) {/* @var $email MailContent */
+				$properties = $this->getMailProperties($email, $i++);
+				$object["messages"][] = $properties;
 			}
 		}
 		return $object;
@@ -2522,7 +2518,7 @@ class MailController extends ApplicationController {
 				}
 			}
 		}*/
-
+/* @var $msg MailContent */
 		$properties = array(
 		    "id" => $msg->getId(),
 			"ix" => $i,
@@ -2535,17 +2531,18 @@ class MailController extends ApplicationController {
 			"text" => $text,
 			"date" => $msg->getReceivedDate() instanceof DateTimeValue ? ($msg->getReceivedDate()->isToday() ? format_time($msg->getReceivedDate()) : format_datetime($msg->getReceivedDate())) : lang('n/a'),
 			"userId" => ($msg->getAccount() instanceof MailAccount  && $msg->getAccount()->getOwner() instanceof Contact ? $msg->getAccount()->getOwner()->getId() : 0),
-			"userName" => ($msg->getAccount() instanceof MailAccount  && $msg->getAccount()->getOwner() instanceof Contact ? $msg->getAccount()->getOwner()->getDisplayName() : lang('n/a')),
+			"userName" => ($msg->getAccount() instanceof MailAccount  && $msg->getAccount()->getOwner() instanceof Contact ? $msg->getAccount()->getOwner()->getObjectName() : lang('n/a')),
 			"isRead" => $show_as_conv ? ($conv_unread == 0) : $msg->getIsRead(logged_user()->getId()),
-			"from" => $msg->getFromName()!=''?$msg->getFromName():$msg->getFrom(),
+			"from" => $msg->getFromName() != '' ? $msg->getFromName() : $msg->getFrom(),
 			"from_email" => $msg->getFrom(),
 			"isDraft" => $msg->getIsDraft(),
 			"isSent" => $msg->getIsSent(),
 			"folder" => $msg->getImapFolderName(),
 			"to" => $msg->getTo(),
+			"memPath" => json_encode($msg->getMembersToDisplayPath()),
 			"memberIds" => implode(",", $msg->getMemberIds()),
 		);
-		//TODO Mebers info ?  
+		
 		if ($show_as_conv) {
 			$properties["conv_total"] = $conv_total;
 			$properties["conv_unread"] = $conv_unread;

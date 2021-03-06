@@ -25,6 +25,8 @@ class MemberController extends ApplicationController {
 	 * Adds a member to a dimension
 	 */
 	function add() {
+
+		
 		if (!can_manage_dimension_members(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
@@ -82,9 +84,16 @@ class MemberController extends ApplicationController {
 		} else {
 			$ok = $this->saveMember($member_data, $member);
 			if ($ok) {
+				$ret = null;
+				Hook::fire('after_add_member', $member, $ret);
 				evt_add("reload dimension tree", $member->getDimensionId());
 				if (array_var($_POST, 'rest_genid')) evt_add('reload member restrictions', array_var($_POST, 'rest_genid'));
 				if (array_var($_POST, 'prop_genid')) evt_add('reload member properties', array_var($_POST, 'prop_genid'));
+				if (array_var($_GET, 'current') == 'overview-panel' && array_var($_GET, 'quick') ) {
+					ajx_current("reload");	
+				}
+				
+//				ApplicationLogs::createLog($member, ApplicationLogs::ACTION_ADD, false, true);
 			}
 		}
 
@@ -153,7 +162,12 @@ class MemberController extends ApplicationController {
 			
 		} else {
 			$ok = $this->saveMember($member_data, $member, false);
-			if ($ok) evt_add("reload dimension tree", $member->getDimensionId());
+			if ($ok) {
+				$ret = null;
+				Hook::fire('after_edit_member', $member, $ret);
+				evt_add("reload dimension tree", $member->getDimensionId());
+//				ApplicationLogs::createLog($member, ApplicationLogs::ACTION_EDIT, false, true);
+			}
 		}
 	}
 	
@@ -203,8 +217,7 @@ class MemberController extends ApplicationController {
 			if ($object_type->getType() == 'dimension_object') {
 				$handler_class = $object_type->getHandlerClass();
 				if ($is_new || $member->getObjectId() == 0) {
-					eval('$dimension_object = '.$handler_class.'::newDimensionObject();');
-				//alert("pasa dim object $handler_class $dimension_obect");
+					eval('$dimension_object = '.$handler_class.'::instance()->newDimensionObject();');
 				} else {
 					$dimension_object = Objects::findObject($member->getObjectId());
 				}
@@ -222,8 +235,10 @@ class MemberController extends ApplicationController {
 					$member->save();
 					$dimension_object->setFromAttributes($dimension_obj_data, $member);
 					$dimension_object->save();
+					$dimension_object->addToSharingTable();
 					$member->setObjectId($dimension_object->getId());
 					$member->save();
+					Hook::fire("after_add_dimension_object_member", $member, $null);
 				}
 			} else {
 				$member->save();
@@ -267,7 +282,7 @@ class MemberController extends ApplicationController {
 				
 
 				$new_properties = array();
-				$associated_members = array_var($_POST, 'associated_members');
+				$associated_members = array_var($_POST, 'associated_members', array());
 				
 				foreach($associated_members as $prop_member_id => $assoc_id) {
 					$active_association = null;
@@ -419,6 +434,7 @@ class MemberController extends ApplicationController {
 			
 			$ok = $member->delete();
 			if ($ok) evt_add("reload dimension tree", $dim_id);
+//			ApplicationLogs::createLog($member, ApplicationLogs::ACTION_DELETE, false, true);
 			
 			DB::commit();
 			flash_success(lang('success delete member', $member->getName()));
@@ -812,6 +828,9 @@ class MemberController extends ApplicationController {
 	function quick_add_form() {
 		$this->setLayout('empty');
 		if ($dimension_id = array_var($_GET, 'dimension_id')){
+			$dimension = Dimensions::instance()->findById($dimension_id);
+			$dimensionOptions = $dimension->getOptions(true);
+
 			$object_Types = array();
 			$parent_member_id = array_var($_GET, 'parent_member_id');
 			
@@ -848,7 +867,11 @@ class MemberController extends ApplicationController {
 			tpl_assign('editUrls', $editUrls);
 			tpl_assign('parent_member_id',$parent_member_id );
 			tpl_assign('dimension_id', $dimension_id );
-			tpl_assign('form_action', get_url('member', 'add', array('quick'=>'1')));
+			if (is_object($dimensionOptions) && is_object($dimensionOptions->quickAdd) && $dimensionOptions->quickAdd->formAction ) {
+				tpl_assign('form_action', ROOT_URL."/".$dimensionOptions->quickAdd->formAction );
+			}else{
+				tpl_assign('form_action', get_url('member', 'add', array('quick'=>'1')));
+			}
 		}else{
 			die("SORRY. Invalid dimension");
 		}

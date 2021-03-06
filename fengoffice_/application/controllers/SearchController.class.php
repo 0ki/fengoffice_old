@@ -241,7 +241,7 @@ class SearchController extends ApplicationController {
 	} 	
 		
 	private function prepareCreatedBy($name,$id){
-		return "<a href='".get_url('contact', 'card_user', array('id'=>$id))."'>".$name."</a>";
+		return "<a href='".get_url('contact', 'card', array('id'=>$id))."'>".$name."</a>";
 	}
 	
 	private function prepareContent($content) {

@@ -75,17 +75,14 @@ class ProjectFile extends BaseProjectFile {
 			$last_revision = $this->getLastRevision();
 			if($last_revision instanceof ProjectFileRevision) $conditions = DB::prepareString('`object_id` <> ? AND `file_id` = ?', array($last_revision->getId(), $this->getId()));
 		} // if
-		if ($asc) {
-			$dir = 'ASC';
-		} else {
-			$dir = 'DESC';
-		}
+		
+		$dir = $asc ? 'ASC' : 'DESC';
 		
 		if(!isset($conditions)) $conditions = DB::prepareString('`file_id` = ?', array($this->getId()));
-		$conditions.= " AND `trashed_by_id` = 0 AND `trashed_by_id` = 0 ";
+		
 		return ProjectFileRevisions::find(array(
-        'conditions' => $conditions,
-        'order' => '`created_on` ' . $dir
+	        'conditions' => $conditions,
+	        'order' => '`created_on` ' . $dir
         )); // find
 	} // getRevisions
 
@@ -235,7 +232,7 @@ class ProjectFile extends BaseProjectFile {
 	 */
 	function getCheckedOutByDisplayName() {
 		$checked_out_by = $this->getCheckedOutBy();
-		return $checked_out_by instanceof Contact ? $checked_out_by->getDisplayName() : lang('n/a');
+		return $checked_out_by instanceof Contact ? $checked_out_by->getObjectName() : lang('n/a');
 	} // getCreatedByDisplayName
 
 	
@@ -828,8 +825,11 @@ class ProjectFile extends BaseProjectFile {
 	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
 	 */
 	function addToSharingTable() {
-		foreach ($this->getRevisions() as $revision) {
-			$revision->addToSharingTable();
+		$revisions = $this->getRevisions();
+		if (is_array($revisions)) {
+			foreach ($revisions as $revision) {
+				$revision->addToSharingTable();
+			}
 		}
 		parent::addToSharingTable();
 	}

@@ -18,19 +18,20 @@ class TimeController extends ApplicationController {
 	function __construct() {
 		parent::__construct();
 		prepare_company_website_controller($this, 'website');
+		/* FIXME: ver si puede ver el panel de time
 		if (!can_manage_time(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
-		}
+		}*/
 	} // __construct
 	
 	function index() {
-
+/*
 		if (!can_manage_time(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
-		}
+		}*/
 		
 		$tasksUserId = array_var($_GET, 'tu');
 		if (is_null($tasksUserId)) {
@@ -75,20 +76,49 @@ class TimeController extends ApplicationController {
 				throw new Error('Unrecognised TM show time type: ' . $showTimeType);
 		}
 		
-		
 		//Get Users Info
-		if (logged_user()->isMemberOfOwnerCompany()) {
-			$users = Contacts::getAllUsers();
+		$users = array();
+		$context = active_context();
+		if (!can_manage_time(logged_user())) {
+			if (can_add(logged_user(), $context, Timeslots::instance()->getObjectTypeId())) $users = array(logged_user());
 		} else {
-			$users = Contacts::getAllUsers(" AND `company_id` = ". logged_user()->getCompany()->getId());
+			if (logged_user()->isMemberOfOwnerCompany()) {
+				$users = Contacts::getAllUsers();
+			} else {
+				$users = logged_user()->getCompanyId() > 0 ? Contacts::getAllUsers(" AND `company_id` = ". logged_user()->getCompanyId()) : array(logged_user());
+			}
+			$tmp_users = array();
+			foreach ($users as $user) {
+				if (can_add($user, $context, Timeslots::instance()->getObjectTypeId())) $tmp_users[] = $user;
+			}
+			$users = $tmp_users;
 		}
 		
 		//Get Companies Info
-		if (logged_user()->isMemberOfOwnerCompany())
+		if (logged_user()->isMemberOfOwnerCompany() || logged_user()->isAdminGroup()) {
 			$companies = Contacts::getCompaniesWithUsers();
-		else
-			$companies = array(logged_user()->getCompany());
-			
+		} else {
+			$companies = array();
+			if (logged_user()->getCompanyId() > 0) $companies[] = logged_user()->getCompany();
+		}
+		
+		$draw_inputs = false;
+		$ts_ots = DimensionObjectTypeContents::getDimensionObjectTypesforObject(Timeslots::instance()->getObjectTypeId());
+		$context = active_context();
+		foreach ($context as $sel) {
+			if ($sel instanceof Member) {
+				foreach ($ts_ots as $ts_ot) {
+					if ($sel->getDimensionId() == $ts_ot->getDimensionId() && $sel->getObjectTypeId() == $ts_ot->getDimensionObjectTypeId()) {
+						$draw_inputs = true;
+						break;
+					}
+				}
+				if ($draw_inputs) break;
+			}
+		}
+		
+		tpl_assign('draw_inputs', $draw_inputs);
+		tpl_assign('selected_user', logged_user()->getId());
 		tpl_assign('timeslots', $timeslots);
 		tpl_assign('tasks', $tasks);
 		tpl_assign('users', $users);
@@ -100,7 +130,7 @@ class TimeController extends ApplicationController {
 	}
 	
 	function add_timeslot(){
-		if (!can_manage_time(logged_user())) {
+		if (!can_add(logged_user(), active_context(), Timeslots::instance()->getObjectTypeId())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
@@ -177,7 +207,7 @@ class TimeController extends ApplicationController {
 	}
 	
 	function edit_timeslot(){
-		if (!can_manage_time(logged_user())) {
+		if (!can_add(logged_user(), active_context(), Timeslots::instance()->getObjectTypeId())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
@@ -257,7 +287,7 @@ class TimeController extends ApplicationController {
 	}
 	
 	function delete_timeslot(){
-		if (!can_manage_time(logged_user())) {
+		if (!can_delete(logged_user(), active_context(), Timeslots::instance()->getObjectTypeId())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;

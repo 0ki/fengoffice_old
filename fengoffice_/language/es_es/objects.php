@@ -27,7 +27,7 @@
 	'tags' => 'Etiquetas',
 	'attachment' => 'Adjunto',
 	'attachments' => 'Adjunto',
-	'object subscribers' => 'Suscriptores',
+	'object subscribers' => 'Subscriptores',
 	'form' => 'Formulario',
 	'forms' => 'Formularios',
 	'file' => 'Archivo',

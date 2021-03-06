@@ -33,16 +33,6 @@
 		}
 	} // validate
 	
-	/**
-	 * Check CAN_MANAGE_REPORTS permission
-	 *
-	 * @access public
-	 * @param Contact $user
-	 * @return boolean
-	 */
-	function canManage(Contact $user) {
-		return can_manage_reports($user);
-	} // canManage
 
 	/**
 	 * Returns true if $user can access this report

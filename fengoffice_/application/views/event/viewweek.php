@@ -190,13 +190,13 @@ require_javascript('og/EventPopUp.js');
 				echo lang("week number x", $weeknumber) . " - "; 
 			}?>
 			<?php echo date($date_format, mktime(0, 0, 0, $month, $startday, $year)) ." - ". date($date_format, mktime(0, 0, 0, $month, $endday-1, $year))
-		 	.' - '. ($user_filter == -1 ? lang('all users') : lang('calendar of', clean($user->getDisplayName())));?></span>
+		 	.' - '. ($user_filter == -1 ? lang('all users') : lang('calendar of', clean($user->getObjectName())));?></span>
 		 </td><td style="width:100px;height:15px;">
 		 	<?php if (config_option("show_feed_links")) { ?>
 			 	<?php echo checkbox_field("include_subws", true, array("id" => "include_subws", "style" => "float:right;", "onclick" => "javascript:og.change_link_incws('ical_link', 'include_subws')", "title" => lang('check to include sub ws'))) ?>
 			 	<?php echo label_tag(lang('subws'), "include_subws", false, array("style" => "float:right;font-size:60%;margin:0px 3px;vertical-align:top;", "title" => lang('check to include sub ws')), "") ?>
 			 	<?php 
-			 		$export_name = active_project() != null ? clean(active_project()->getName()) : clean($user->getDisplayName());
+			 		$export_name = active_project() != null ? clean(active_project()->getName()) : clean($user->getObjectName());
 			 		$export_ws = active_project() != null ? active_project()->getId() : 0;
 			 	 ?>
 			 	<a class="iCalSubscribe" id="ical_link" style="float:right;" href="<?php echo ROOT_URL ."/index.php?c=feed&a=ical_export&n=$export_name&cal=$export_ws&t=".$user->getToken()."&isw=1" ?>" 
@@ -282,13 +282,10 @@ require_javascript('og/EventPopUp.js');
 				<div id="allDay<?php echo $day_of_week ?>" class="allDayCell" style="left: <?php echo $width ?>%; height: 100%;border-left:3px double #DDDDDD !important; position:absolute;width:3px;z-index:110;background:#E8EEF7;top:0%;"></div>
 
 				<div id="alldayeventowner_<?php echo $day_of_week ?>" style="width: <?php echo $width_percent ?>%;position:absolute;left: <?php echo $width ?>%; top: 12px;height: <?php echo $alldaygridHeight ?>px;"
-				<?php if (!logged_user()->isGuest()) { 
-				// FIXME
-					?>
-				onclick="og.openLink(og.getUrl('event', 'add'));">
-<!--				onclick="og.showEventPopup(<?php echo $dtv_temp->getDay() ?>, <?php echo $dtv_temp->getMonth()?>, <?php echo $dtv_temp->getYear()?>, -1, -1, <?php echo ($use_24_hours ? 'true' : 'false'); ?>,'<?php echo $dtv_temp->format($date_format) ?>', '<?php echo $genid?>', '<?php echo ProjectEvents::instance()->getObjectTypeId()?>');"
--->				<?php } ?>
-<!-- 			> -->
+				<?php if (!logged_user()->isGuest()) { ?>
+					onclick="og.showEventPopup(<?php echo $dtv_temp->getDay() ?>, <?php echo $dtv_temp->getMonth()?>, <?php echo $dtv_temp->getYear()?>, -1, -1, <?php echo ($use_24_hours ? 'true' : 'false'); ?>,'<?php echo $dtv_temp->format($date_format) ?>', '<?php echo $genid?>', '<?php echo ProjectEvents::instance()->getObjectTypeId()?>');">
+				<?php } else echo ">"; ?>
+
 					<?php	
 						$top=5;
 						if(is_array(array_var($alldayevents,$day_of_week))){
@@ -344,7 +341,7 @@ require_javascript('og/EventPopUp.js');
 								}elseif ($event instanceof Contact ) {
 									$div_prefix = 'w_bd_div_';
 									$objType = 'contact';
-									$subject = clean($event->getDisplayName());
+									$subject = clean($event->getObjectName());
 									$img_url = image_url('/16x16/contacts.png');
 									$due_date = new DateTimeValue(mktime(0,0,0, $event->getOBirthday()->getMonth(), $event->getOBirthday()->getDay(), $dates[$day_of_week]->getYear()));
 									$divtype = '<i>' . lang('birthday') . '</i> - ';
@@ -364,7 +361,7 @@ require_javascript('og/EventPopUp.js');
 						<div class="noleft <?php echo  $ws_class?>" style="<?php echo  $ws_style?>;border-left:1px solid; border-right:1px solid; border-color:<?php echo $border_color ?>">							
 							<div class="" style="overflow: hidden; padding-bottom: 1px;">
 								<table style="width:100%"><tr><td>
-								<nobr style="display: block; text-decoration: none;"><a href='<?php echo $event->getViewUrl()."&amp;view=week"?>' class='internalLink'" onclick="og.disableEventPropagation(event);"><img src="<?php echo $img_url?>" align='absmiddle' border='0'> <span style="color:<?php echo $txt_color ?>!important"><?php echo $subject ?></span> </a></nobr>
+								<span class="nobr" style="display: block; text-decoration: none;"><a href='<?php echo $event->getViewUrl()."&amp;view=week"?>' class='internalLink'" onclick="og.disableEventPropagation(event);"><img src="<?php echo $img_url?>" style="vertical-align:middle" border='0'> <span style="color:<?php echo $txt_color ?>!important"><?php echo $subject ?></span> </a></span>
 								<?php if ($objType == 'event') { ?>
 								</td><td align="right">
 								<input type="checkbox" style="width:13px;height:13px;vertical-align:top;margin:2px 2px 0 0;border-color: <?php echo $border_color ?>;" id="sel_<?php echo $event->getId()?>" name="obj_selector" onclick="og.eventSelected(this.checked);og.disableEventPropagation(event);"></input>
@@ -457,12 +454,9 @@ require_javascript('og/EventPopUp.js');
 onmouseover="if (!og.selectingCells) og.overCell('<?php echo $div_id?>'); else og.paintSelectedCells('<?php echo $div_id?>');"
 onmouseout="if (!og.selectingCells) og.resetCell('<?php echo $div_id?>');"
 onmousedown="og.selectStartDateTime(<?php echo $date->getDay() ?>, <?php echo $date->getMonth()?>, <?php echo $date->getYear()?>, <?php echo date("G",mktime($hour/2))?>, <?php echo ($hour % 2 == 0) ? 0 : 30 ?>); og.resetCell('<?php echo $div_id?>'); og.paintingDay = <?php echo $day_of_week ?>; og.paintSelectedCells('<?php echo $div_id?>');"
-onmouseup="og.openLink(og.getUrl('event', 'add'));">
-<!-- 
-onmouseup="og.showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMonth()?>, <?php echo $date->getYear()?>, <?php echo date("G",mktime(($hour+1)/2))?>, <?php echo (($hour+1) % 2 == 0) ? 0 : 30 ?>, <?php echo ($use_24_hours ? 'true' : 'false'); ?>,'<?php echo $date->format($date_format) ?>', '<?php echo $genid?>', '<?php echo ProjectEvents::instance()->getObjectTypeId()?>');"
--->
-<?php } ?>
-<!-- > --></div>
+onmouseup="og.showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMonth()?>, <?php echo $date->getYear()?>, <?php echo date("G",mktime(($hour+1)/2))?>, <?php echo (($hour+1) % 2 == 0) ? 0 : 30 ?>, <?php echo ($use_24_hours ? 'true' : 'false'); ?>,'<?php echo $date->format($date_format) ?>', '<?php echo $genid?>', '<?php echo ProjectEvents::instance()->getObjectTypeId()?>');">
+<?php } else echo ">"; ?>
+</div>
 
 <script>
 	og.ev_cell_dates[<?php echo $day_of_week?>] = {day:<?php echo $date->getDay() ?>, month:<?php echo $date->getMonth()?>, year:<?php echo $date->getYear()?>}
@@ -668,11 +662,11 @@ onmouseup="og.showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->ge
 									else $to_show_len = 45;
 									$subject_toshow = mb_strlen($subject) < $to_show_len ? $subject : mb_substr($subject, 0, $to_show_len-3)."..."; 
 								?>
-								<div><?php echo ($height < 50 || $width < 13 ? "<nobr>" : "")?>
+								<div><?php echo ($height < 50 || $width < 13 ? "<span class='nobr'>" : "")?>
 									<a href='<?php echo get_url('event', 'view', array('view' => 'week', 'id' => $event->getId(), 'user_id' => $user_filter)); ?>'
 									onclick="og.disableEventPropagation(event);"
 									class='internalLink'><span style="color:<?php echo $txt_color?>!important;padding-left:5px;font-size:93%;font-weight: <?php echo $bold;?>"><?php echo $subject_toshow;?></span></a>
-								<?php echo ($height < 50 || $width < 13 ? "</nobr>" : "")?></div>
+								<?php echo ($height < 50 || $width < 13 ? "</span>" : "")?></div>
 							</td></tr>
 							<tr style="height:100%;">
 								<td style="width:100%;" colspan="2"><div style="height: <?php echo $height - PX_HEIGHT ?>px;"></div></td>

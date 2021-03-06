@@ -170,11 +170,14 @@ og.selectReportingMenuItem = function(link, divName, tab){
 	og.openLink(url,{hideLoading:true});
 }
 
-og.dateselectchange = function(select) {
+og.dateselectchange = function(select, cls_selector) {
+	if (!cls_selector) cls_selector = 'dateTr';
 	var list = select.offsetParent.offsetParent.getElementsByTagName('tr');
-	for(var i = 0; i < list.length; i++)
-		if (list[i].className == 'dateTr')
+	for(var i = 0; i < list.length; i++) {
+		if (list[i].className == cls_selector) {
 			list[i].style.display = select.value == '6'? 'table-row':'none';
+		}
+	}
 }
 
 og.timeslotTypeSelectChange = function(select, genid) {
@@ -199,11 +202,21 @@ og.customDashboard = function (controller,action,params, reload) {
 	if (!controller) return false; 
 	if (!action) action = 'init'  ;
 	var opanel = Ext.getCmp('overview-panel');
-	var new_data = og.getUrl(controller,action, params) ;
-	var content = {type: "url", data: new_data};
-	opanel.defaultContent = content ;
-	if (reload) {
-		opanel.load(content);
+	if (opanel){
+		var new_data = og.getUrl(controller,action, params) ;
+		var content = {type: "url", data: new_data};
+		opanel.defaultContent = content ;
+		if (reload) {
+			opanel.load(content);
+		}
+	}
+}
+
+og.resetDashboard = function () {
+	var opanel = Ext.getCmp('overview-panel');
+	if (opanel.defaultContent.data != "overview"){
+		opanel.defaultContent = {type: "url", data: og.getUrl('dashboard','init_overview')};
+		opanel.load(opanel.defaultContent);
 	}
 }
 
@@ -467,12 +480,13 @@ og.captureLinks = function(id, caller) {
 			if (typeof this.onvalidate != 'function') {
 				var p = true;
 			} else {
-				try {
-					var p = this.onvalidate(e);
-				} catch (e) {
-				}
+				var p = this.onvalidate(e);
+
 			}
 			if (p || typeof p == 'undefined' ) {
+				if (!this.href || this.href.indexOf("c=access&a=index") != -1) {
+					return false ;
+				} 
 				og.openLink(this.href, {caller: this.target}) ;
 			}
 			return false;
@@ -504,8 +518,8 @@ og.log = function(msg) {
 };
 
 og.openLink = function(url, options) {
-	if (url.indexOf("c=access&a=index") != -1) return ;
-	if (url.indexOf("c=dashborad&a=activity_feed") != -1) return ;
+	//if (url.indexOf("c=dashborad&a=activity_feed") != -1) return ;
+	
 	if (!options) options = {};
 	if (typeof options.caller == "object") {
 		options.caller = options.caller.id;
@@ -799,8 +813,8 @@ og.removeDomEventHandler = function(elem, ev, id) {
 };
 
 og.eventManager = {
-	events: new Array(),
-	eventsById: new Array(),
+	events: new Array() ,//new Array(),
+	eventsById: new Array(),// new Array(),
 	addListener: function(event, callback, scope, options) {
 		if (!options) options = {};
 		if (!this.events[event] || options.replace) {
@@ -817,11 +831,39 @@ og.eventManager = {
 		this.eventsById[id] = evobj;
 		return id;
 	},
-	removeListener: function(id) {
+	
+	removeListener: function(id) {	
 		var ev = this.eventsById[id];
-		if (!ev) return;
+		if (!ev) {
+			return;
+		}
 		this.eventsById[id] = null;
+		
+		for ( var i in this.events ) {
+			if ( (i) && this.events[i] ){
+				if (this.events[i].length) {
+					for ( var j in this.events[i] ) {
+						if( j=="remove" ) continue ;
+						//alert(j);
+						event = this.events[i][j];
+						if (event) {
+							if (event.id && event.id == id ) {
+								this.events[i][j] = null ;
+								this.events[i].splice(j,1);
+								if (this.events[i].length == 0) {
+									this.events[i] = null;
+									this.events.splice(i,1);
+								}
+
+							}
+						}
+					}
+				}
+			}
+		}	
+		
 	},
+	
 	fireEvent: function(event, arguments) {
 		var list = this.events[event];
 		if (!list) {
@@ -837,7 +879,7 @@ og.eventManager = {
 			} catch (e) {
 				og.err(e.message);
 			}
-			if (list[i].options.single || ret == 'remove') {
+			if (list[i] && list[i].options.single || ret == 'remove') {
 				list.splice(i, 1);;
 			}
 		}
@@ -2010,7 +2052,7 @@ og.quickForm = function (config) {
 			var tree = Ext.getCmp("dimension-panel-"+d);
 			if (tree) {
 				var selected = tree.getSelectionModel().getSelectedNode();
-				if ( selected.getDepth() == 0  ) {
+				if (!selected || selected.getDepth() == 0  ) {
 					var parent = 0 ; 
 				}else{
 					var parent = selected.id ;
@@ -2046,4 +2088,134 @@ og.flash2img = function() {
 		}
 	});
 
+}
+
+
+og.getCrumbHtml = function(dims) {
+	var html = '';
+	var colors = ['blue', 'green', 'red', 'yellow'];
+	var dim_index = 0;
+	for (x in dims) {
+		if (isNaN(x)) continue;
+		
+		var members = dims[x];
+		var inner_html = "";
+		var title = "";
+		
+		for (id in members) {
+			var m = members[id];
+			var texts = og.getMemberFromTrees(x, id, true);
+			
+			if (texts.length < 3) max_len = 13;
+			else if (texts.length < 5) max_len = 8;
+			else max_len = 6;
+			
+			for (i=texts.length-1; i>=0; i--) {
+				str = texts[i].text.length > max_len ? texts[i].text.substring(0, max_len-3) + "..." : texts[i].text;
+				title += (title == "" ? "" : " / ") + texts[i].text;
+				
+				var onclick = "return false;";
+				if (og.additional_on_dimension_object_click[texts[i].ot]) {
+					onclick = og.additional_on_dimension_object_click[texts[i].ot].replace('<parameters>', texts[i].id);
+				}
+				var link = '<a href="#" onclick="' + onclick + '">' + str + '</a>';
+				inner_html += '<span>' + link + '</span>';
+				if (i>0) inner_html += " / ";
+			}
+		}
+		if (inner_html != "") html += '<span class="member-path '+colors[dim_index % colors.length]+'" title="'+title+'">' + inner_html + '</span>';
+		dim_index++;
+	}
+	
+	return html;
+}
+
+og.getMemberFromTrees = function(dim_id, mem_id, include_parents) {
+	var texts = [];
+	var tree = Ext.getCmp("dimension-panel-" + dim_id);
+	if (tree) {
+		og.expandCollapseDimensionTree(tree);
+		
+		var selnode = tree.getSelectionModel().getSelectedNode();
+		selnode_id = selnode ? selnode.id : -1;
+		node = tree.getNodeById(mem_id);
+		if (node) {
+			if (node.id != selnode_id) {
+				texts.push({id:node.id, text:node.text, ot:node.object_type_id});
+				if (include_parents) {
+					while(node.parentNode && node.parentNode.id > 0 && node.parentNode.id != selnode_id) {
+						node = node.parentNode;
+						if (node) texts.push({id:node.id, text:node.text, ot:node.object_type_id});
+					}
+				}
+			}
+		}
+	}
+	return texts;
+}
+
+og.expandCollapseDimensionTree = function(tree, previous_exp, selection_id) {
+	if (tree && !tree.expanded_once) {
+		if (previous_exp) {
+			expanded = previous_exp;
+		} else {
+			expanded = [];
+			tree.root.cascade(function(){
+				if (this.isExpanded()) expanded.push(this.id);
+			});
+		}
+		if (selection_id) {
+			tree.root.expand(true, false, function(){tree.selectNodes([selection_id])});
+		}else{
+			tree.root.expand(true, false);
+		}
+		tree.root.collapse(true, false);
+		
+		for(i=0; i<expanded.length; i++) {
+			node = tree.getNodeById(expanded[i]);
+			if (node) node.expand(false);
+		}
+		
+		tree.expanded_once = true;
+	}
+}
+
+og.checkEmailAddress = function(element) {
+	$(element).blur(function(){
+		var field = $(this);
+		// Ajax to ?c=contact&a=check_existing_email&email=admin@admin.com&ajax=true
+		var url = og.makeAjaxUrl(og.getUrl("contact", "check_existing_email", {email: field.val()}));
+		og.loading();
+		$.getJSON(url, function(data) {						
+			$(".field-error-msg").remove();
+			var contact = data.contact;
+			if (contact) {
+				$(field).addClass("field-error");
+				$(field).after("<div class='field-error-msg'>"+lang("email already taken by",contact.name)+" </div>");
+				$(field).focus();
+			}else{
+				$(field).removeClass("field-error");
+			}		
+			og.hideLoading();
+		});
+
+		setTimeout(function(){og.hideLoading()}, 5000); //If ajax fails
+	});
+}
+
+og.selectDimensionTreeMember = function(data) {
+	var tree = Ext.getCmp("dimension-panel-" + data.dim_id);
+	if (tree) {
+		if (data.node == 'root') {
+			og.contextManager.cleanActiveMembers(data.dim_id);
+			if (!tree.hidden) og.contextManager.addActiveMember(0, data.dim_id, tree.root);
+			tree.selectRoot();
+		} else {
+			var treenode = tree.getNodeById(data.node);
+			if (treenode) {
+				treenode.select();
+				if (!tree.hidden) og.contextManager.addActiveMember(node, data.dim_id, treenode);
+			}
+		}
+	}
 }

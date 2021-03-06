@@ -17,6 +17,10 @@
     	return self::findById($group_id)->getParentId();
     }
     
+    function getGuestPermissionGroups() {
+    	return self::findAll(array("conditions" => "parent_id IN (SELECT p.id FROM ".TABLE_PREFIX."permission_groups p WHERE p.name='GuestGroup')"));
+    }
+    
   } // PermissionGroups 
 
 ?>

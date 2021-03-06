@@ -46,7 +46,7 @@
 				<div class="commentBody">
 				<table style="width:100%"><tr>
 		<?php 	if(($comment->getCreatedBy() instanceof Contact) && ($comment->getCreatedBy()->hasAvatar())) { ?>
-					<td style="vertical-align:top;width:60px"><div class="commentUserAvatar"><img src="<?php echo $comment->getCreatedBy()->getAvatarUrl() ?>" alt="<?php echo clean($comment->getCreatedBy()->getDisplayName()) ?>" /></div></td>
+					<td style="vertical-align:top;width:60px"><div class="commentUserAvatar"><img src="<?php echo $comment->getCreatedBy()->getAvatarUrl() ?>" alt="<?php echo clean($comment->getCreatedBy()->getObjectName()) ?>" /></div></td>
 		<?php 	} // if ?>
 					<td style="text-align:left">
 						<?php echo escape_html_whitespace(convert_to_links(clean($comment->getText()))) ?>

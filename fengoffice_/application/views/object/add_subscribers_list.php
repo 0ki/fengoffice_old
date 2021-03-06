@@ -17,7 +17,7 @@ require_javascript('og/modules/addMessageForm.js');
 		if (in_array($dimension->getCode(), array('feng_persons', 'feng_users'))) continue;
 		$replace_with = null;
 		foreach ($members as $member) {
-			if ($dimension_id == $member->getDimensionId()) {
+			if ($dimension->getId() == $member->getDimensionId()) {
 				$replace_with = $member;
 				break;
 			}
@@ -52,7 +52,7 @@ require_javascript('og/modules/addMessageForm.js');
 	<?php if(is_array($users) && count($users)) { ?>
 		<div onclick="og.subscribeCompany(this)" class="container-div company-name<?php echo $allChecked ? ' checked' : '' ?>" onmouseout="og.rollOut(this,true)" onmouseover="og.rollOver(this)">
 		<?php $theCompany = Contacts::findById($companyId) ?>
-			<label for="<?php echo $genid ?>notifyCompany<?php echo $theCompany->getId() ?>" style="background: url('<?php echo $theCompany->getPictureUrl() ?>') no-repeat;"><?php echo clean($theCompany->getFirstName()) ?></label><br/>
+			<label for="<?php echo $genid ?>notifyCompany<?php echo ($theCompany instanceof Contact ? $theCompany->getId() : "0") ?>" style="background: url('<?php echo ($theCompany instanceof Contact ? $theCompany->getPictureUrl() : "#") ?>') no-repeat;"><?php echo ($theCompany instanceof Contact ? clean($theCompany->getFirstName()) : lang('without company')) ?></label><br/>
 		</div>
 		<div style="padding-left:10px;">
 		<?php foreach($users as $user) { ?>
@@ -62,9 +62,9 @@ require_javascript('og/modules/addMessageForm.js');
 				<div id="div<?php echo $genid ?>inviteUser<?php echo $user->getId() ?>" class="container-div <?php echo $checked==true? 'checked-user':'user-name' ?>" onmouseout="og.rollOut(this,false <?php echo $checked==true? ',true':',false' ?>)" onmouseover="og.rollOver(this)" onclick="og.checkUser(this)">
 					<input <?php echo $checked? 'checked="checked"':'' ?> id="<?php echo $genid ?>inviteUser<?php echo $user->getId()?>" type="checkbox" style="display:none" name="<?php echo 'subscribers[user_'.$user->getId() .']' ?>" value="checked" />
 					<label for="<?php echo $genid ?>notifyUser<?php echo $user->getId() ?>" style=" width: 120px; overflow:hidden; background:url('<?php echo $user->getPictureUrl() ?>') no-repeat;">
-						<span class="ico-user link-ico"><?php echo clean($user->getDisplayName()) ?></span>
+						<span class="ico-user link-ico"><?php echo clean($user->getObjectName()) ?></span>
 						<br>
-						<span style="color:#888888;font-size:90%;font-weight:normal;"> <?php echo $user->getEmailAddress('user')  ?> </span>
+						<span style="color:#888888;font-size:90%;font-weight:normal;"> <?php echo $user->getEmailAddress()  ?> </span>
 					</label>
 					
 					<br/>

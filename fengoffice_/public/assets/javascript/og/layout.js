@@ -34,6 +34,10 @@ Ext.onReady(function(){
 			//alert("antes de viewport") ;
 			var panels = [] ; // Array of PANELS ( backguard compatibiliy )
 			for (var i = 0 ; i < panelData.length ; i++ ) {		
+				
+				og.eventManager.fireEvent("before tab panel construct", panelData[i]);
+
+				
 				var p = new og.ContentPanel(panelData[i]) ;		
 				og.panels[p.title] = p ;
 				panels.push(p);
@@ -56,7 +60,6 @@ Ext.onReady(function(){
 				}
 			};
 			
-			//alert(panels.toSource());
 			
 			var tab_panel = new Ext.TabPanel({
 				id: 'tabs-panel',
@@ -81,7 +84,7 @@ Ext.onReady(function(){
 					   html: '<div id="breadcrumbs"><h1></h1><ul></ul></div>',
 					   expanded: true,
 					   collapsed: false ,
-					   height: 40,
+					   height: 50,
 					   header: false,
 					   hideBorders: true ,
 					   hideCollapseTool: true,
@@ -136,8 +139,9 @@ Ext.onReady(function(){
 				        	items:  og.dimensionPanels  ,
 				        	bbar : [
 				        	    {	
-				        			iconCls: 'ico-workspace-edit',
-				        			tooltip: '<b>'+lang('filters')+'</b>',
+				        			iconCls: 'ico-workspace-edit ico-see-more',
+				        			tooltip: '<b>'+lang('see more')+'</b>',
+				        			text: lang('see more'),
 				        			menu: {
 				        				items: og.contextManager.getDimensionMenu(),
 				        				cls: "context-menu"
@@ -147,6 +151,7 @@ Ext.onReady(function(){
 				        	    {	
 				        			iconCls: 'ico-trash',
 				        			tooltip: lang('trash'),
+				        			text: lang('trash'),
 				        			handler: function() {
 					        	    	var cp = Ext.getCmp('trash-panel');
 										var tp = Ext.getCmp('tabs-panel');
@@ -171,6 +176,7 @@ Ext.onReady(function(){
 				        	    {	
 				        			iconCls: 'ico-archive-obj',
 				        			tooltip: lang('archived objects'),
+				        			text: lang('archived'),
 				        			handler: function() {
 					        	    	var cp = Ext.getCmp('archivedobjs-panel');
 										var tp = Ext.getCmp('tabs-panel');

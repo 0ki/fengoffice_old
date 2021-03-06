@@ -678,7 +678,9 @@
     * @return string
     */
     function getTableName($escape = false, $with_prefix = true) {
-      $table_name = $with_prefix ? TABLE_PREFIX . $this->table_name : $this->table_name;
+      $table_prefix = $with_prefix ? TABLE_PREFIX : "";
+      if (defined('FORCED_TABLE_PREFIX') && FORCED_TABLE_PREFIX) $table_prefix = FORCED_TABLE_PREFIX;
+      $table_name = $table_prefix . $this->table_name;
       return $escape ? DB::escapeField($table_name) : $table_name;
     } // end func getTableName
     

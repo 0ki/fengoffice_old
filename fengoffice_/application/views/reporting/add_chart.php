@@ -40,7 +40,7 @@ function setSave(){
 	</div>
 	
 	<div style="padding-top:5px">
-		<a href="#" class="option" onclick="og.toggleAndBolden('add_chart_select_workspace_div',this)"><?php echo lang('workspace') ?></a> - 
+		<a href="#" class="option" onclick="og.toggleAndBolden('add_chart_select_context_div',this)"><?php echo lang('context') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('add_chart_add_tags_div', this)"><?php echo lang('tags') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('add_chart_display_div', this)"><?php echo lang('display') ?></a>
 	</div>
@@ -48,7 +48,7 @@ function setSave(){
 <div class="coInputSeparator"></div>
 <div class="coInputMainBlock">
 
-	<div id="add_chart_select_workspace_div" style="display:none">
+	<div id="add_chart_select_context_div" style="display:none">
 	<fieldset><legend><?php echo lang('workspace')?></legend>
 		<?php echo select_project2('chart[project_id]', ($project instanceof Project)? $project->getId():0, $genid) ?>
 	</fieldset>

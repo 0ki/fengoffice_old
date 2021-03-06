@@ -85,7 +85,7 @@
 		</td>
 		<td class='line_header' style="background-color:<?php echo $bgColor ?>;">
 			<?php if($revision->getCreatedBy() instanceof User) { ?>
-			    <?php echo lang('file revision title long', $revision->getCreatedBy()->getCardUserUrl(), clean($revision->getCreatedBy()->getDisplayName()), format_datetime($revision->getCreatedOn())) ?>
+			    <?php echo lang('file revision title long', $revision->getCreatedBy()->getCardUserUrl(), clean($revision->getCreatedBy()->getObjectName()), format_datetime($revision->getCreatedOn())) ?>
 			<?php } else { ?>
 			    <?php echo lang('file revision title short', format_datetime($revision->getCreatedOn())) ?>
 			<?php } // if ?>

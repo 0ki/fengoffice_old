@@ -103,7 +103,7 @@ $comments_required = config_option('file_revision_comments_required');
 	<?php $categories = array(); Hook::fire('object_edit_categories', $object, $categories); ?>
 
 	<div style="padding-top: 5px">
-	<a href="#" class="option"  style="font-weight:bold" onclick="og.toggleAndBolden('<?php echo $genid ?>add_file_select_context_div',this)"><?php echo lang('context') ?></a> 
+	<a href="#" class="option"   onclick="og.toggleAndBolden('<?php echo $genid ?>add_file_select_context_div',this)"><?php echo lang('context') ?></a> 
 	- <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_file_description_div',this)"><?php echo lang('description') ?></a>
 	<?php
 	//FIXME FENG2 or REMOVE- <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid add_custom_properties_div',this)"><?php echo lang('custom properties') </a>?>
@@ -225,7 +225,7 @@ $comments_required = config_option('file_revision_comments_required');
 
 
 
-	<div id="<?php echo $genid ?>add_file_select_context_div" style="display:block">
+	<div id="<?php echo $genid ?>add_file_select_context_div" style="display:none">
 		<fieldset>
 			<legend><?php echo lang('context') ?></legend>
 			<?php if ($file->isNew()) {

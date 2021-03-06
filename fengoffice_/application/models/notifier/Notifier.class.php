@@ -35,6 +35,21 @@ class Notifier {
 		} else {
 			$subscribers = $object->getSubscribers();
 		}
+		if ($object instanceof ProjectEvent && $action == ApplicationLogs::ACTION_ADD) { //remove invited people from subscribers to avoid repeated notifications
+			$tmp_subs = array();
+			foreach ($subscribers as $person) {
+				$inv = EventInvitations::findById(array('event_id' => $object->getId(), 'contact_id' => $person->getId()));
+				if (!($inv instanceof EventInvitation)) $tmp_subs[] = $person;
+			}
+			$subscribers = $tmp_subs;
+		}
+		if ($object instanceof ProjectTask && $object->getAssignedToContactId() > 0) { //remove assigned_to from subscribers to avoid repeated notifications
+			$tmp_subs = array();
+			foreach ($subscribers as $person) {
+				if ($person->getId() != $object->getAssignedToContactId()) $tmp_subs[] = $person;
+			}
+			$subscribers = $tmp_subs;
+		}
 		
 		if (!is_array($subscribers) || count($subscribers) == 0) return;
 		if ($action == ApplicationLogs::ACTION_ADD) {
@@ -51,7 +66,6 @@ class Notifier {
 			self::objectNotification($object, $contacts, logged_user(), 'subscribed');
 		} else if ($action == ApplicationLogs::ACTION_COMMENT) {
 			self::newObjectComment($object, $subscribers);
-			// check ProjectDataObject::onAddComment()
 		}
 		
 	}
@@ -63,12 +77,12 @@ class Notifier {
 			
 		} 
 		if ($sender instanceof Contact) {
-			$sendername = $sender->getDisplayName();
-			$senderemail = $sender->getEmailAddress('user');
+			$sendername = $sender->getObjectName();
+			$senderemail = $sender->getEmailAddress();
 			$senderid = $sender->getId();
 		} else {
 			$sendername = owner_company()->getObjectName();
-			$senderemail = owner_company()->getEmailAddress('user');
+			$senderemail = owner_company()->getEmailAddress();
 			if (!is_valid_email($senderemail)) {
 				$senderemail = 'noreply@fengoffice.com';
 			}
@@ -120,8 +134,10 @@ class Notifier {
 				tpl_assign('properties', $properties);
 				tpl_assign('description', langA($description, $descArgs));
 				$from = self::prepareEmailAddress($senderemail, $sendername);
+				$toemail = $user->getEmailAddress();
+				if (!$toemail) continue;
 				$emails[] = array(
-					"to" => array(self::prepareEmailAddress($user->getEmailAddress('user'), $user->getDisplayName())),
+					"to" => array(self::prepareEmailAddress($toemail, $user->getObjectName())),
 					"from" => self::prepareEmailAddress($senderemail, $sendername),
 					"subject" => $subject = lang("$notification notification $type", $name, $uid, $typename),
 					"body" => tpl_fetch(get_template_path('general', 'notifier'))
@@ -168,9 +184,11 @@ class Notifier {
 		// send email in user's language
 		$locale = $user->getLocale();
 		Localization::instance()->loadSettings($locale, ROOT . '/language');
+		$toemail = $user->getEmailAddress();
+		if (!$toemail) continue;
 		self::queueEmail(
-			array(self::prepareEmailAddress($user->getEmailAddress('user'), $user->getDisplayName())),
-			self::prepareEmailAddress($administrator->getEmailAddress('user'), $administrator->getDisplayName()),
+			array(self::prepareEmailAddress($toemail, $user->getObjectName())),
+			self::prepareEmailAddress($administrator->getEmailAddress(), $administrator->getObjectName()),
 			lang('reset password'),
 			tpl_fetch(get_template_path('forgot_password', 'notifier'))
 		); // send
@@ -194,9 +212,10 @@ class Notifier {
 		
 		$locale = $user->getLocale();
 		Localization::instance()->loadSettings($locale, ROOT . '/language');
-		
+		$toemail = $user->getEmailAddress();
+		if (!$toemail) continue;
 		self::queueEmail(
-			array(self::prepareEmailAddress($user->getEmailAddress('user'), $user->getDisplayName())),
+			array(self::prepareEmailAddress($toemail, $user->getObjectName())),
 			self::prepareEmailAddress("noreply@fengoffice.com", "noreply@fengoffice.com"),
 			lang('password expiration reminder'),
 			tpl_fetch(get_template_path('password_expiration_reminder', 'notifier'))
@@ -223,10 +242,11 @@ class Notifier {
 		
 		$locale = $user->getLocale();
 		Localization::instance()->loadSettings($locale, ROOT . '/language');
-		
+		$toemail = $user->getEmailAddress();
+		if (!$toemail) continue;
 		self::queueEmail(
-			array(self::prepareEmailAddress($user->getEmailAddress('user'), $user->getDisplayName())),
-			self::prepareEmailAddress($sender->getEmailAddress('user'), $sender->getDisplayName()),
+			array(self::prepareEmailAddress($toemail, $user->getObjectName())),
+			self::prepareEmailAddress($sender->getEmailAddress(), $sender->getObjectName()),
 			lang('your account created'),
 			tpl_fetch(get_template_path('new_account', 'notifier'))
 		); // send
@@ -303,7 +323,7 @@ class Notifier {
 		$name = $object->getObjectName();
 		$type = $object->getObjectTypeName();
 		$typename = lang($object->getObjectTypeName());
-		$description = lang("$notification notification event desc", $object->getObjectName(), $sender->getDisplayName());
+		$description = lang("$notification notification event desc", $object->getObjectName(), $sender->getObjectName());
 		
 		$properties= array();
 		
@@ -329,8 +349,6 @@ class Notifier {
 				}
 		
 				$properties['accept or reject invitation help, click on one of the links below'] = '';
-			//	$properties['accept invitation'] = get_url('event', 'change_invitation_state', array('at' => 1, 'e' => $object->getId(), 'u' => $user->getId()));
-			//	$properties['reject invitation'] = get_url('event', 'change_invitation_state', array('at' => 2, 'e' => $object->getId(), 'u' => $user->getId()));
 				$links = array(
 					array('img' => get_image_url("/16x16/complete.png"), 'text' => lang('accept invitation'), 'url' => get_url('event', 'change_invitation_state', array('at' => 1, 'e' => $object->getId(), 'u' => $user->getId()))),
 					array('img' => get_image_url("/16x16/del.png"), 'text' => lang('reject invitation'), 'url' => get_url('event', 'change_invitation_state', array('at' => 2, 'e' => $object->getId(), 'u' => $user->getId()))),
@@ -339,11 +357,12 @@ class Notifier {
 				
 				tpl_assign('properties', $properties);
 				tpl_assign('second_properties', $second_properties);
-				
+				$toemail = $user->getEmailAddress();
+				if (!$toemail) continue;
 				$emails[] = array(
-					"to" => array(self::prepareEmailAddress($user->getEmailAddress('user'), $user->getDisplayName())),
-					"from" => self::prepareEmailAddress($sender->getEmailAddress('user'), $sender->getDisplayName()),
-					"subject" => $subject = lang("$notification notification $type", $name, $uid, $typename, $ws),
+					"to" => array(self::prepareEmailAddress($toemail, $user->getObjectName())),
+					"from" => self::prepareEmailAddress($sender->getEmailAddress(), $sender->getObjectName()),
+					"subject" => $subject = lang("$notification notification $type", $name, $uid, $typename),
 					"body" => tpl_fetch(get_template_path('general', 'notifier'))
 				);
 			}
@@ -378,7 +397,7 @@ class Notifier {
 			foreach ($invs as $inv){
 				if ($inv->getUserId() == ($from_user->getId())) continue;
 				$decision = $inv->getInvitationState();
-				$user_name = Contacts::findById($inv->getUserId())->getDisplayName();
+				$user_name = Contacts::findById($inv->getUserId())->getObjectName();
 				if ($decision == 1){
 					$assist[] = ($user_name);
 				}else if ($decision == 2){
@@ -402,9 +421,11 @@ class Notifier {
 			if ($event->getTypeId() != 2) $date .= " " . Localization::instance()->formatTime($event->getStart(), $user->getTimezone());
 
 			tpl_assign('date', $date);
+			$toemail = $user->getEmailAddress();
+			if (!$toemail) continue;
 			self::queueEmail(
-				array(self::prepareEmailAddress($user->getEmailAddress('user'), $user->getDisplayName())),
-				self::prepareEmailAddress($from_user->getEmailAddress('user'), $from_user->getDisplayName()),
+				array(self::prepareEmailAddress($toemail, $user->getObjectName())),
+				self::prepareEmailAddress($from_user->getEmailAddress(), $from_user->getObjectName()),
 				lang('event invitation response') . ': ' . $event->getSubject(),
 				tpl_fetch(get_template_path('event_inv_response_notif', 'notifier'))
 			); // send
@@ -445,8 +466,8 @@ class Notifier {
 		}
 		
 		return self::queueEmail(
-			array(self::prepareEmailAddress($milestone->getAssignedTo()->getEmailAddress('user'), $milestone->getAssignedTo()->getDisplayName())),
-			self::prepareEmailAddress($milestone->getCreatedBy()->getEmailAddress('user'), $milestone->getCreatedByDisplayName()),
+			array(self::prepareEmailAddress($milestone->getAssignedTo()->getEmailAddress(), $milestone->getAssignedTo()->getObjectName())),
+			self::prepareEmailAddress($milestone->getCreatedBy()->getEmailAddress(), $milestone->getCreatedByDisplayName()),
 			lang('milestone assigned to you', $milestone->getObjectName()),
 			tpl_fetch(get_template_path('milestone_assigned', 'notifier'))
 		); // send
@@ -469,7 +490,7 @@ class Notifier {
 		if(!($task->getAssignedTo() instanceof Contact)) {
 			return true; // not assigned to user
 		}
-		if (!is_valid_email($task->getAssignedTo()->getEmailAddress('user'))) {
+		if (!is_valid_email($task->getAssignedTo()->getEmailAddress())) {
 			return true;
 		}
 		
@@ -485,8 +506,8 @@ class Notifier {
 		}
 
 		self::queueEmail(
-			array(self::prepareEmailAddress($task->getAssignedTo()->getEmailAddress('user'), $task->getAssignedTo()->getDisplayName())),
-			self::prepareEmailAddress($task->getUpdatedBy()->getEmailAddress('user'), $task->getUpdatedByDisplayName()),
+			array(self::prepareEmailAddress($task->getAssignedTo()->getEmailAddress(), $task->getAssignedTo()->getObjectName())),
+			self::prepareEmailAddress($task->getUpdatedBy()->getEmailAddress(), $task->getUpdatedByDisplayName()),
 			lang('task assigned to you', $task->getObjectName(), ''),
 			tpl_fetch(get_template_path('task_assigned', 'notifier'))
 		); 
@@ -734,7 +755,7 @@ class Notifier {
 			} // switch
 			
 			$mail_transport = Swift_SmtpTransport::newInstance($smtp_server, $smtp_port, $transport);		
-			$smtp_authenticate = $smtp_username != null;
+			$smtp_authenticate = isset($smtp_username) && $smtp_username != null;
 			if($smtp_authenticate) {
 				$mail_transport->setUsername($smtp_username);
 				$mail_transport->setPassword($smtp_password);

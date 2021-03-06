@@ -7,6 +7,8 @@
 	} else {
 		$form_action = $company->getEditUrl();
 	}
+	$renderContext = has_context_to_render($company->manager()->getObjectTypeId());
+	
 ?>
 <form onsubmit="return og.handleMemberChooserSubmit('<?php echo $genid; ?>', <?php echo $company->manager()->getObjectTypeId() ?>);"style="height:100%;background-color:white" class="internalForm" action="<?php echo $form_action ?>" method="post">
 
@@ -30,10 +32,12 @@
   	<?php $categories = array(); Hook::fire('object_edit_categories', $object, $categories); ?>
   	
   	<div style="padding-top:5px">
-		<a href="#" class="option" style="font-weight:bold" onclick="og.toggleAndBolden('<?php echo $genid ?>add_company_select_context_div',this)"><?php echo lang('context') ?></a> -
-		<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('add_company_timezone',this)"><?php echo lang('timezone') ?></a> -
+	  	<?php if ( $renderContext ) :?>
+			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_company_select_context_div',this)"><?php echo lang('context') ?></a> -
+		<?php endif; ?>
+			<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('add_company_timezone',this)"><?php echo lang('timezone') ?></a> -
 		<?php //FIXME FENG2 or REMOVE <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid add_custom_properties_div',this)"><?php echo lang('custom properties') </a> -?>
-		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_subscribers_div',this)"><?php echo lang('object subscribers') ?></a>
+			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_subscribers_div',this)"><?php echo lang('object subscribers') ?></a>
 		<?php if($object->isNew() || $object->canLinkObject(logged_user())) { ?> - 
 			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_linked_objects_div',this)"><?php echo lang('linked objects') ?></a>
 		<?php } ?>
@@ -52,16 +56,19 @@
 			</div>
 		<?php }?>
 	
-	<div id="<?php echo $genid ?>add_company_select_context_div" style="display:block">
-	<fieldset><legend><?php echo lang('context')?></legend>
-		<?php 
-		if ($company->isNew()) {
-			render_dimension_trees($company->manager()->getObjectTypeId(), $genid, null, array('select_current_context' => true));
-		} else {
-			render_dimension_trees($company->manager()->getObjectTypeId(), $genid, $company->getMemberIds()); 
-		} ?>
-	</fieldset>
-	</div>
+	<?php if ( $renderContext ) :?>
+		<div id="<?php echo $genid ?>add_company_select_context_div" style="display:none">
+			<fieldset>
+				<legend><?php echo lang('context')?></legend>
+				<?php 
+				if ($company->isNew()) {
+					render_dimension_trees($company->manager()->getObjectTypeId(), $genid, null, array('select_current_context' => true));
+				} else {
+					render_dimension_trees($company->manager()->getObjectTypeId(), $genid, $company->getMemberIds()); 
+				} ?>
+			</fieldset>
+		</div>
+	<?php endif ;?>	
 	
 	<div id='<?php echo $genid ?>add_custom_properties_div' style="display:none">
 		<fieldset>
@@ -180,34 +187,35 @@
 </form>
 
 <script>
-
-	var memberChoosers = Ext.getCmp('<?php echo "$genid-member-chooser-panel-".$company->manager()->getObjectTypeId()?>').items;
-	if (memberChoosers) {
-		memberChoosers.each(function(item, index, length) {
-			item.on('all trees updated', function() {
-				var dimensionMembers = {};
-				memberChoosers.each(function(it, ix, l) {
-					dim_id = this.dimensionId;
-					dimensionMembers[dim_id] = [];
-					var checked = it.getChecked("id");
-					for (var j = 0 ; j < checked.length ; j++ ) {
-						dimensionMembers[dim_id].push(checked[j]);
-					}
-				});
-	
-				var uids = App.modules.addMessageForm.getCheckedUsers('<?php echo $genid ?>');
-				Ext.get('<?php echo $genid ?>add_subscribers_content').load({
-					url: og.getUrl('object', 'render_add_subscribers', {
-						context: Ext.util.JSON.encode(dimensionMembers),
-						users: uids,
-						genid: '<?php echo $genid ?>',
-						otype: '<?php echo $company->manager()->getObjectTypeId()?>'
-					}),
-					scripts: true
+	<?php if ($renderContext) :?>
+		var memberChoosers = Ext.getCmp('<?php echo "$genid-member-chooser-panel-".$company->manager()->getObjectTypeId()?>').items;
+		if (memberChoosers) {
+			memberChoosers.each(function(item, index, length) {
+				item.on('all trees updated', function() {
+					var dimensionMembers = {};
+					memberChoosers.each(function(it, ix, l) {
+						dim_id = this.dimensionId;
+						dimensionMembers[dim_id] = [];
+						var checked = it.getChecked("id");
+						for (var j = 0 ; j < checked.length ; j++ ) {
+							dimensionMembers[dim_id].push(checked[j]);
+						}
+					});
+		
+					var uids = App.modules.addMessageForm.getCheckedUsers('<?php echo $genid ?>');
+					Ext.get('<?php echo $genid ?>add_subscribers_content').load({
+						url: og.getUrl('object', 'render_add_subscribers', {
+							context: Ext.util.JSON.encode(dimensionMembers),
+							users: uids,
+							genid: '<?php echo $genid ?>',
+							otype: '<?php echo $company->manager()->getObjectTypeId()?>'
+						}),
+						scripts: true
+					});
 				});
 			});
-		});
-	}
+		}
+	<?php endif; ?>
 
 	Ext.get('<?php echo $genid ?>clientFormName').focus();
 </script>

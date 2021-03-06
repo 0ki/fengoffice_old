@@ -45,6 +45,7 @@
 				dotc.dimension_id AS dimension_id,
 				d.name as dimension_name,
 				d.code as dimension_code,
+				d.options as dimension_options,
 				BIT_OR(dotc.is_required) AS is_required,
 				BIT_OR(dotc.is_multiple) AS is_multiple,
 				d.is_manageable AS is_manageable
@@ -65,7 +66,9 @@
 		return $res->fetchAll();
 	}
 	
-	
+	/**
+	 * @return Dimension
+	 */
 	static function findByCode($code) {
 		return self::findOne(array('conditions' => array("`code` = ?", $code)));
 	}

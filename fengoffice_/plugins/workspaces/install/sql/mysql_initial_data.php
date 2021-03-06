@@ -1,6 +1,6 @@
 INSERT INTO `<?php echo $table_prefix ?>dimensions` (`code`, `name`, `is_root`, `is_manageable`, `allows_multiple_selection`, `defines_permissions`, `is_system`,`default_order`, `options` ) VALUES
- ('workspaces', 'Workspaces', 1, 1, 0, 1, 1,-10,'{"defaultAjax":{"controller":"dashboard", "action": "init_overview"}}'),
- ('tags', 'Tags', 1, 1, 0, 0, 1,-9,'{"defaultAjax":{"controller":"dashboard", "action": "init_overview"}}');
+ ('workspaces', 'Workspaces', 1, 1, 0, 1, 1,-10,'{"defaultAjax":{"controller":"dashboard", "action": "init_overview"}, "quickAdd":true,"showInPaths":true}'),
+ ('tags', 'Tags', 1, 1, 0, 0, 1,-9,'{"defaultAjax":{"controller":"dashboard", "action": "init_overview"},"quickAdd":true,"showInPaths":true}');
 
 INSERT INTO `<?php echo $table_prefix ?>dimension_object_types` (`dimension_id`, `object_type_id`, `is_root`) VALUES
  ((SELECT `id` FROM `<?php echo $table_prefix ?>dimensions` WHERE `code`='workspaces'), (SELECT `id` FROM `<?php echo $table_prefix ?>object_types` WHERE `name`='workspace'), 1),
@@ -13,7 +13,7 @@ INSERT INTO `<?php echo $table_prefix ?>dimension_object_type_contents` (`dimens
  SELECT 
  	(SELECT `id` FROM `<?php echo $table_prefix ?>dimensions` WHERE `code`='workspaces'),
  	(SELECT `id` FROM `<?php echo $table_prefix ?>object_types` WHERE `name`='workspace'),
- 	`id`, 1, 1
+ 	`id`, 0, 1
  FROM `<?php echo $table_prefix ?>object_types` 
  WHERE `type` IN ('content_object', 'comment', 'located')
  ON DUPLICATE KEY UPDATE dimension_id=dimension_id;

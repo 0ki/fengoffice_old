@@ -24,12 +24,15 @@
 	/**
 	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
 	 * Find all members that have $id at 'object_id_column'
+	 * Also accepts as optional parameter dimension_id
+	 * @return Member
 	 */
-	static function findByObjectId($id) {
-		return self::findAll(array("conditions" => array(
-			"`object_id` = ? ", $id 
-		)));
-		
+	static function findByObjectId($id, $dimension_id = null ) {
+		$conditions = 	"`object_id` = $id ";
+		if (!is_null($dimension_id)) {
+			$conditions .= " AND dimension_id = $dimension_id "; 
+		}		
+		return self::findAll(array("conditions" => array($conditions) ));
 	}	
 	
   } 

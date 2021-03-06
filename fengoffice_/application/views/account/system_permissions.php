@@ -4,18 +4,22 @@
 <fieldset class=""><legend class="toggle_expanded" onclick="og.toggle('<?php echo $genid ?>userSystemPermissions',this)"><?php echo lang("system permissions") ?></legend>
 	<div id="<?php echo $genid ?>userSystemPermissions" style="display:block">
 	
-		<?php 
+		<?php
 			$columns = SystemPermissions::instance()->getColumns();
+			$hidden_cols = array('permission_group_id', 'can_manage_billing', 'can_view_billing', 'can_task_assignee');
 			foreach ($columns as $column_name) :
-				if ($column_name == 'permission_group_id') continue;
+				if (in_array($column_name, $hidden_cols)) continue;
 		?>
 				<div id="<?php echo $genid ?>div_<?php echo $column_name ?>">
-				<?php // can_edit_company_data
+				<?php
 					$attributes = array('id' => $genid . 'sys_perm['.$column_name.']');
-					if (isset($disable_sysperm_inputs) && $disable_sysperm_inputs) $attributes['disabled'] = true; 
+					if (isset($disable_sysperm_inputs) && $disable_sysperm_inputs) {
+						$attributes['onclick'] = 'return false;';
+						$attributes['class'] = 'disabled';
+					}
 					echo checkbox_field('sys_perm['.$column_name.']', $system_permissions->getColumnValue($column_name), $attributes) ?> 
 			      <label for="<?php echo $genid . 'sys_perm['.$column_name.']' ?>" class="checkbox"><?php echo lang($column_name) ?></label>
-			      <a href="javascript:og.toggle('<?php echo $genid . $column_name ?>_help')">?</a>
+			      <a class="help-sign" href="javascript:og.toggle('<?php echo $genid . $column_name ?>_help')">?</a>
 			      <div id="<?php echo $genid . $column_name ?>_help" class="permissions-help" style="display:none"><?php echo lang($column_name . ' description') ?></div>
 			    </div>
 		<?php 
@@ -29,10 +33,13 @@
 				<div id="<?php echo $genid ?>div_<?php echo $perm ?>">
 			      <?php  
 			        $attributes = array('id' => $genid . "sys_perm[$perm]");
-					if (isset($disable_sysperm_inputs) && $disable_sysperm_inputs) $attributes['disabled'] = true;
+					if (isset($disable_sysperm_inputs) && $disable_sysperm_inputs) {
+						$attributes['onclick'] = 'return false;';
+						$attributes['class'] = 'disabled';
+					}
 					echo checkbox_field("sys_perm[$perm]", array_var($more_permissions, $perm), $attributes) ?> 
 			      <label for="<?php echo $genid . "sys_perm[$perm]" ?>" class="checkbox"><?php echo lang($perm) ?></label>
-			      <a href="javascript:og.toggle('<?php echo $genid ?><?php echo $perm ?>_help')">?</a>
+			      <a class="help-sign" href="javascript:og.toggle('<?php echo $genid ?><?php echo $perm ?>_help')">?</a>
 			      <div id="<?php echo $genid ?><?php echo $perm ?>_help" class="permissions-help" style="display:none"><?php echo lang($perm.' description') ?></div>
 				</div>
 			<?php }
@@ -54,7 +61,10 @@
 		<div id="<?php echo $genid . array_var($mod_info, 'id')?>">
 	      <?php  
 	        $attributes = array('id' => $genid . 'mod_perm['.array_var($mod_info, 'ot').']', 'onchange' => 'if(!this.checked) og.removeAllPermissionsForObjType(\''.$genid.'\','.array_var($mod_info, 'ot').')');
-			if (isset($disable_sysperm_inputs) && $disable_sysperm_inputs) $attributes['disabled'] = true; 
+			if (isset($disable_sysperm_inputs) && $disable_sysperm_inputs) {
+				$attributes['onclick'] = 'return false;';
+				$attributes['class'] = 'disabled';
+			}
 			echo checkbox_field('mod_perm['.array_var($mod_info, 'id').']', array_var($module_permissions_info, array_var($mod_info, 'id')), $attributes) ?> 
 	      <label for="<?php echo $genid . 'mod_perm['.array_var($mod_info, 'ot').']' ?>" class="checkbox"><?php echo array_var($mod_info, 'name') ?></label>
 		</div>

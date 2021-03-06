@@ -112,23 +112,25 @@ if (isset($email)){
 		<div id="mv_attachments" style="display:none">
 		<table>';
 		foreach($attachments as $att) {
-			$size = $att['size'];//format_filesize(strlen($att["Data"]));
-			$fName = str_starts_with($att["FileName"], "=?") ? iconv_mime_decode($att["FileName"], 0, "UTF-8") : utf8_safe($att["FileName"]);
-			if (trim($fName) == "" && strlen($att["FileName"]) > 0) $fName = utf8_encode($att["FileName"]);
-			$description .= '<tr><td style="padding-right: 10px">';
-			$ext = get_file_extension($fName);
-			$fileType = FileTypes::getByExtension($ext);
-			if (isset($fileType))
-				$icon = $fileType->getIcon();
-			else
-				$icon = "unknown.png";
-			$download_url = get_url('mail', 'download_attachment', array('email_id' => $email->getId(), 'attachment_id' => $c));
-			include_once ROOT . "/library/browser/Browser.php";
-			if (Browser::instance()->getBrowser() == Browser::BROWSER_IE) {
-				$download_url = "javascript:location.href = '$download_url';";
+			if (!array_var($att, 'hide')) {
+				$size = $att['size'];//format_filesize(strlen($att["Data"]));
+				$fName = str_starts_with($att["FileName"], "=?") ? iconv_mime_decode($att["FileName"], 0, "UTF-8") : utf8_safe($att["FileName"]);
+				if (trim($fName) == "" && strlen($att["FileName"]) > 0) $fName = utf8_encode($att["FileName"]);
+				$description .= '<tr><td style="padding-right: 10px">';
+				$ext = get_file_extension($fName);
+				$fileType = FileTypes::getByExtension($ext);
+				if (isset($fileType))
+					$icon = $fileType->getIcon();
+				else
+					$icon = "unknown.png";
+				$download_url = get_url('mail', 'download_attachment', array('email_id' => $email->getId(), 'attachment_id' => $c));
+				include_once ROOT . "/library/browser/Browser.php";
+				if (Browser::instance()->getBrowser() == Browser::BROWSER_IE) {
+					$download_url = "javascript:location.href = '$download_url';";
+				}
+	      		$description .=	'<img src="' . get_image_url("filetypes/" . $icon) .'"></td>
+				<td><a target="_self" href="' . $download_url . '">' . clean($fName) . " ($size)" . '</a></td></tr>';
 			}
-      		$description .=	'<img src="' . get_image_url("filetypes/" . $icon) .'"></td>
-			<td><a target="_self" href="' . $download_url . '">' . clean($fName) . " ($size)" . '</a></td></tr>';
       		$c++;
 		}
 		$description .= '</table></div></fieldset></td></tr>';

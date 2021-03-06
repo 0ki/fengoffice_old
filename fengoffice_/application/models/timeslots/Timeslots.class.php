@@ -85,7 +85,7 @@ class Timeslots extends BaseTimeslots {
 	 * @param array $order_by
 	 * @return array
 	 */
-	static function getTaskTimeslots($members = null, $user = null, $start_date = null, $end_date = null, $object_id = 0, $group_by = null, $order_by = null, $limit = 0, $offset = 0, $timeslot_type = 0){
+	static function getTaskTimeslots($context, $members = null, $user = null, $start_date = null, $end_date = null, $object_id = 0, $group_by = null, $order_by = null, $limit = 0, $offset = 0, $timeslot_type = 0){
 		
 		$commonConditions = "";
 		if ($start_date)
@@ -116,63 +116,10 @@ class Timeslots extends BaseTimeslots {
 		$conditions .= $commonConditions;		
 		$join_params = null;
 		
-		$order_by = array_merge($group_by, $order_by);
 		$order_by[] = 'start_time';
-		$result = self::getContentObjects(active_context(), ObjectTypes::findById(self::instance()->getObjectTypeId()), $order_by, null, $conditions, $join_params, null, null);
+		$result = self::getContentObjects($context, ObjectTypes::findById(self::instance()->getObjectTypeId()), $order_by, null, $conditions, $join_params, null, null);
 		
-		$ts_array = array();
-		foreach ($result->objects as $ts) {
-			$ts_array[] = array('ts' => $ts);
-		} 
-		
-		return $ts_array;
-		
-/*		$wsCount = 0;
-		$sql .= ' ORDER BY ';
-		if (is_array($group_by)){
-			foreach ($group_by as $gb){
-				switch($gb){
-					case 'member_id':
-						$sql.= "`wsName" . $wsCount . "` ASC, ";
-						$wsCount++;
-						break;
-					case 'id':
-					case 'priority':
-					case 'milestone_id':
-					case 'state':
-						if ($timeslot_type == 0)
-							$sql.= "`pt`.`$gb` ASC, "; 
-						break;
-					default:
-						if (is_string($gb) && trim($gb) != '')  $sql.= "`$gb` ASC, "; break;
-				}
-			}
-		}
-		
-		//Order by
-		if (is_array($order_by)){
-			foreach ($order_by as $ob){
-				if (is_string($ob) && trim($ob) != '')  $sql.= "`$ob` ASC, ";
-			}
-		}
-		
-		$sql .= " `start_time`";
-		if ($limit > 0 && $offset > 0)
-			$sql .= " LIMIT $offset, $limit";
-
-		$timeslots = array();
-		$rows = DB::executeAll($sql);
-		if(is_array($rows)) {
-			foreach($rows as $row) {
-				$tsRow = array("ts" => Timeslots::instance()->loadFromRow($row));
-				for ($i = 0; $i < $wslevels; $i++)
-					$tsRow["wsId".$i] = $row["wsId" . $i];
-				$timeslots[] = $tsRow;
-			}
-		}
-		
-    	return count($timeslots) ? $timeslots : null;
-*/
+		return $result->objects;
 	}
 	
 	/**
@@ -269,8 +216,14 @@ class Timeslots extends BaseTimeslots {
 			$user_sql = " AND contact_id = " . $user->getId();
 		}
 		
-		$result = Timeslots::getContentObjects($context, ObjectTypes::findById(Timeslots::instance()->getObjectTypeId()), array('start_time', 'rel_object_id'), 'DESC', " AND rel_object_id = 0" . $user_sql, null, null, null, $offset, $limit);
-		
+		//$result = Timeslots::getContentObjects($context, ObjectTypes::findById(Timeslots::instance()->getObjectTypeId()), array('start_time', 'rel_object_id'), 'DESC', " AND rel_object_id = 0" . $user_sql, null, null, null, $offset, $limit);
+		$result = Timeslots::instance()->listing(array(
+			"order" => array('start_time', 'rel_object_id'),
+			"order_dir" => "DESC",
+		 	" AND rel_object_id = 0" . $user_sql,
+			"start" => $offset,
+			"limit" => $limit			
+		));
 		return $result;
 	}
 	

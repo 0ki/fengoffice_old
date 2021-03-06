@@ -229,3 +229,87 @@ a.button {
 	color: #000 ;
 	font-weight: normal ;
 }
+
+
+/** QUICK FORMS **/
+#quick-form {
+	padding: 10px ;
+	border: 1px solid #CCC;
+	box-shadow: 0 0 16px 0 #CCC;
+	background: white ;
+	display:none;
+	position:absolute;
+	min-height: 15px ;
+	min-width: 30px;
+	color: #666 ;
+	z-index: 99999;
+	
+}
+
+#quick-form .close {
+    background: url("../../images/12x12/close-icon-1.png") 0 0 ;
+    cursor: pointer;
+    height: 12px;
+    position: absolute;
+    right: 5px;
+    top: 5px;
+    width: 12px;
+}
+
+#quick-form .close:hover {
+    background-position: 0 36px;
+}
+
+#quick-form a.more  {
+	margin: 10px 0 0 5px;
+	float: right;
+}
+
+#quick-form input  {
+	border-radius: 2px;
+	padding: 3px 5px ;
+	margin-bottom: 3px;
+	border: 1px solid #CCC;
+	clear: both ;
+}
+
+#quick-form select {
+	clear: both ;
+}
+
+#quick-form  .field {
+	margin-bottom: 0 ;
+}	
+
+#quick-form .access-data {	
+	padding: 0 ;
+}	
+
+.access-data {
+	padding: 10px ;
+	/* width: 220px ; */
+}
+.access-data label.checkbox, .access-data input.checkbox {
+	float: left ;	 
+	clear: none !important;
+}
+.access-data .password, .access-data .repeat {
+	float:left; 
+	margin-right: 10px ;
+}
+.access-data .password input, .access-data .repeat input {
+	width: 90px ;
+}
+.access-data label.checkbox {
+	margin-right: 5px;
+	margin-top: 0;  		
+}
+
+input.field-error{
+	box-shadow: 0px 0px 2px 1px #FF0000;
+}
+
+div.field-error-msg {
+	color: red; 
+	font-size: 10px ;
+}

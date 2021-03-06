@@ -8,12 +8,15 @@ ogTimeManager.drawTimespans = function(genid){
 
 	var table = document.getElementById(genid + 'TMTimespanTable');
 	
-	while (table.rows.length > 1)
+	while (table.rows.length > 1) {
 		table.deleteRow(1);
+	}
 	
-	for (i in this.Timeslots)
-		if (this.Timeslots[i] && this.Timeslots[i].id)
+	for (i in this.Timeslots) {
+		if (this.Timeslots[i] && this.Timeslots[i].id) {
 			this.insertRow(genid, this.Timeslots[i], table.rows.length);
+		}
+	}
 }
 
 ogTimeManager.drawTasks = function(genid){
@@ -29,13 +32,15 @@ ogTimeManager.drawTasks = function(genid){
 }
 
 ogTimeManager.orderTasks = function(){
-	for (var i = 0; i < this.Tasks.length - 1; i++)
-		for (var j = i+1; j < this.Tasks.length; j++)
+	for (var i = 0; i < this.Tasks.length - 1; i++) {
+		for (var j = i+1; j < this.Tasks.length; j++) {
 			if ((this.Tasks[i].pauseTime && !this.Tasks[j].pauseTime) || (this.Tasks[i].pauseTime && this.Tasks[j].pauseTime && this.Tasks[j].pauseTime > this.Tasks[i].pauseTime)){
 				var aux = this.Tasks[i];
 				this.Tasks[i] = this.Tasks[j];
 				this.Tasks[j] = aux;
 			}
+		}
+	}
 }
 
  
@@ -181,13 +186,15 @@ ogTimeManager.insertRow = function(genid, timeslot, position){
 	textNode = document.createTextNode(timeslot.description);
 	cell.appendChild(textNode);
 	
-	cell = row.insertCell(pos++);
-	cell.innerHTML = '<a class="internalLink coViewAction ico-edit" href="javascript:ogTimeManager.EditTimeslot(' + timeslot.id + ')" style="display: block;width:0;padding-bottom:0;padding-top:0;line-height:18px" title="' + lang('edit') + '">&nbsp;</a>';
-	cell.width = 18;
-	
-	cell = row.insertCell(pos++);
-	cell.innerHTML = '<a class="internalLink coViewAction ico-delete" href="javascript:if(confirm(lang(\'confirm delete timeslot\'))) ogTimeManager.DeleteTimeslot(' + timeslot.id + ')" style="display: block;width:0;padding-bottom:0;padding-top:0;line-height:18px" title="' + lang('delete') + '">&nbsp;</a>';
-	cell.width = 18;
+	if (ogTimeManager.DrawInputs) {
+		cell = row.insertCell(pos++);
+		cell.innerHTML = '<a class="internalLink coViewAction ico-edit" href="javascript:ogTimeManager.EditTimeslot(' + timeslot.id + ')" style="display: block;width:0;padding-bottom:0;padding-top:0;line-height:18px" title="' + lang('edit') + '">&nbsp;</a>';
+		cell.width = 18;
+		
+		cell = row.insertCell(pos++);
+		cell.innerHTML = '<a class="internalLink coViewAction ico-delete" href="javascript:if(confirm(lang(\'confirm delete timeslot\'))) ogTimeManager.DeleteTimeslot(' + timeslot.id + ')" style="display: block;width:0;padding-bottom:0;padding-top:0;line-height:18px" title="' + lang('delete') + '">&nbsp;</a>';
+		cell.width = 18;
+	}
 	
 	cell = row.insertCell(pos++);
 	var textNode = document.createTextNode(timeslot.id);

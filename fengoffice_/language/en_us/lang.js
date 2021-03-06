@@ -20,9 +20,6 @@ addLangs({
 	'help': 'Help',
 	'menu': 'Menu',
 	'back': 'Back',
-	'all': 'All',
-	'All': 'All',
-	'filter members' : 'Filters',
 	'server could not be reached': 'Server could not be reached',
 	'http error': 'Error {0}: {1}',
 	'refesh desc': 'Refresh the view',
@@ -149,7 +146,7 @@ addLangs({
 	/* dashboard */
 	'dashboard': 'Dashboard',
 	'upload file': 'Upload a file',
-	'contact': 'Contact',
+	'contact': 'Person',
 	'event': 'Event',
 	'task': 'Task',
 	'milestone': 'Milestone',
@@ -159,7 +156,8 @@ addLangs({
 	/* tabs */
 	'overview': 'Overview',
 	'messages': 'Notes',
-	'contacts': 'Contacts',
+	'contacts': 'Persons',
+	'persons': 'Persons',
 	'calendar': 'Calendar',
 	'tasks': 'Tasks',
 	'web pages': 'Web Links',
@@ -192,13 +190,13 @@ addLangs({
 	
 	/* contact manager*/
 	'company': 'Company',
-	'add new contact': 'Add a new contact',
-	'displaying contacts of': 'Displaying contacts {0} to {1} of {2}',
-	'no contacts to display': 'No contacts to display',
-	'delete selected contacts': 'Delete selected contacts',
-	'confirm delete contacts': 'Are you sure you want to delete the selected contacts?',
+	'add new contact': 'Add a new person',
+	'displaying contacts of': 'Displaying persons {0} to {1} of {2}',
+	'no contacts to display': 'No persons to display',
+	'delete selected contacts': 'Delete selected persons',
+	'confirm delete contacts': 'Are you sure you want to delete the selected persons?',
 	'role': 'Role',
-	'tag selected contacts': 'Tag selected contacts',
+	'tag selected contacts': 'Tag selected persons',
 	'department': 'Department',
 	'email2': 'Email 2',
 	'email3': 'Email 3',
@@ -218,7 +216,7 @@ addLangs({
 	'import': 'Import',
 	'export': 'Export',
 	'import/export': 'Import / Export',
-	'import - export': 'Contacts import and export',
+	'import - export': 'Persons import and export',
 	'not csv file continue': 'Selected file is not a csv file.\nAre you sure you want to continue?',
 	'from csv': 'From csv',
 	'from vcard': 'From VCard',
@@ -317,7 +315,7 @@ addLangs({
 	'milestone': 'Milestone',
 	'emailunclassified': 'Email',
 	'file': 'File',
-	'contact': 'Contact',
+	'contact': 'Person',
 	'event': 'Event',
 	
 	'debug': 'Debug',
@@ -418,7 +416,7 @@ addLangs({
 	'mark unread': 'Mark as unread',
 	'from': 'From',
 	'draft': 'Draft',
-	'create contact or client company':'Create contact or client company',
+	'create contact or client company':'Create person or client company',
 	'mail sent': 'Mail sent',
 	
 	'click to remove': 'Click to remove',
@@ -629,7 +627,7 @@ addLangs({
     'apply to subscribers': 'Apply to all subscribers',
     
     'must choose company': 'You must choose a company',
-    'contact import - export': 'Contacts import and export',
+    'contact import - export': 'Persons import and export',
     'calendar import - export': 'Calendar import and export',
     'view weblink': 'View web link',
     
@@ -739,7 +737,7 @@ addLangs({
 	'click here to download the csv file': 'Click here to download the csv file.',
 	
 	'junk': 'Junk',
-	'you must select the contacts from the grid': 'You must select the contacts you want to export.',
+	'you must select the contacts from the grid': 'You must select the persons you want to export.',
 	'reply mail': 'Reply',
 	'reply to all mail': 'Reply to all',
 	'forward mail': 'Forward',
@@ -788,7 +786,7 @@ addLangs({
   	'quick upload desc': 'Link a new file from your computer',
   	'switch format warn': 'Switching to text will discard all HTML formatting. Continue?',
   	
-  	'assign contact role on workspace': 'Assign contacts a role in a workspace',
+  	'assign contact role on workspace': 'Assign persons a role in a workspace',
   	'assign roles': 'Assign roles',
   	'expand': 'Expand',
   	'collapse': 'Collapse',
@@ -824,5 +822,19 @@ addLangs({
   	'estimated' : 'Estimated',
   	'this task has x pending tasks': 'This task has {0} pending open tasks',
   	'this task has no pending dependencies and can be completed': 'This task has no pending dependencies and can be completed',
-  	'you must select a member from the following dimensions': 'To perform this action you have to select a member of these dimensions: {0}'
+  	'you must select a member from the following dimensions': 'To perform this action you have to select a member of these dimensions: {0}',
+  	'archived' : 'Archived',
+  	'dimensions' : 'Dimensions',
+  	'all workspaces' : 'All workspaces',
+  	'all tags' : 'All tags',
+  	'see more' : 'See More',
+  	'new person' : 'New Person',
+  	'new company' : 'New Company',
+  	'in' : 'in',
+  	'fee' : 'Fee',
+  	'less info' : 'Less Information',
+  	'more info' : 'More Information',
+  	'email already taken by' : 'Email already taken by {0}',
+  	'passwords dont match' : 'Passwords don\'t match',
+  	'password value missing' : 'Password required'
 });

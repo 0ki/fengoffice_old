@@ -14,12 +14,14 @@ if (!isset($name)) $name = 'permissions';
 
 <input id="<?php echo $genid ?>hfPermsSend" name="<?php echo $name ?>" type="hidden" value=""/>
 
-<?php foreach ($dimensions as $dimension) {?>
+<?php foreach ($dimensions as $dimension) {
+		if ( $dimension->getOptions(1) && isset($dimension->getOptions(1)->hidden) && $dimension->getOptions(1)->hidden ) continue;
+?>
 <fieldset>
 	<legend><span class="og-task-expander toggle_expanded" style="padding-left:20px;" title="<?php echo lang('expand-collapse') ?>" id="<?php echo $genid?>expander<?php echo $dimension->getId()?>"
 				onclick="og.editMembers.expandCollapseDim('<?php echo $genid?>dimension<?php echo $dimension->getId()?>', false);"><?php echo $dimension->getName()?></span></legend>
 	<div id="<?php echo $genid?>dimension<?php echo $dimension->getId()?>">
-<table><tr><td>
+	<table><tr><td>
   <?php	
   		echo render_single_dimension_tree($dimension, $genid, null, array('all_members' => true));
   ?>
@@ -31,7 +33,7 @@ if (!isset($name)) $name = 'permissions';
   	<col align=left/><col align=center/>
   	<tr style="border-bottom:1px solid #888;margin-bottom:5px">
   	<td style="vertical-align:middle">
-  		<span>
+  		<span class="perm_all_checkbox_container">
 			<?php echo checkbox_field($genid . $dimension->getId() . 'pAll', false, array('id' => $genid . $dimension->getId() .'pAll', 'onclick' => 'og.ogPermAllChecked("' . $genid . '", '. $dimension->getId() .', this.checked)')) ?> <label style="font-weight:bold" for="<?php echo $genid .$dimension->getId() ?>pAll" class="checkbox"><?php echo lang('All') ?></label>   
   		</span>
   	</td>
@@ -50,10 +52,10 @@ if (!isset($name)) $name = 'permissions';
 ?>
   	<tr class="<?php echo $row_cls?>">
   		<td style="padding-right:20px"><span id="<?php echo $genid.'obj_type_label'.$id_suffix?>"><?php echo lang($ot->getName()) ?></span></td>
-  		<td align=center><?php echo radio_field($genid .'rg_'.$id_suffix, false, array('onchange' => 'og.ogPermValueChanged('. $change_parameters .')', 'value' => '3', 'style' => 'width:16px', 'id' => $genid . 'rg_3_'.$id_suffix)) ?></td>
-  		<td align=center><?php echo radio_field($genid .'rg_'.$id_suffix, false, array('onchange' => 'og.ogPermValueChanged('. $change_parameters .')', 'value' => '2', 'style' => 'width:16px', 'id' => $genid . 'rg_2_'.$id_suffix)) ?></td>
-  		<td align=center><?php echo radio_field($genid .'rg_'.$id_suffix, false, array('onchange' => 'og.ogPermValueChanged('. $change_parameters .')', 'value' => '1', 'style' => 'width:16px', 'id' => $genid . 'rg_1_'.$id_suffix)) ?></td>
-  		<td align=center><?php echo radio_field($genid .'rg_'.$id_suffix, false, array('onchange' => 'og.ogPermValueChanged('. $change_parameters .')', 'value' => '0', 'style' => 'width:16px', 'id' => $genid . 'rg_0_'.$id_suffix)) ?></td>
+  		<td align=center><?php echo radio_field($genid .'rg_'.$id_suffix, false, array('onchange' => 'og.ogPermValueChanged('. $change_parameters .')', 'value' => '3', 'style' => 'width:16px', 'id' => $genid . 'rg_3_'.$id_suffix, 'class' => "radio_3")) ?></td>
+  		<td align=center><?php echo radio_field($genid .'rg_'.$id_suffix, false, array('onchange' => 'og.ogPermValueChanged('. $change_parameters .')', 'value' => '2', 'style' => 'width:16px', 'id' => $genid . 'rg_2_'.$id_suffix, 'class' => "radio_2")) ?></td>
+  		<td align=center><?php echo radio_field($genid .'rg_'.$id_suffix, false, array('onchange' => 'og.ogPermValueChanged('. $change_parameters .')', 'value' => '1', 'style' => 'width:16px', 'id' => $genid . 'rg_1_'.$id_suffix, 'class' => "radio_1")) ?></td>
+  		<td align=center><?php echo radio_field($genid .'rg_'.$id_suffix, false, array('onchange' => 'og.ogPermValueChanged('. $change_parameters .')', 'value' => '0', 'style' => 'width:16px', 'id' => $genid . 'rg_0_'.$id_suffix, 'class' => "radio_0")) ?></td>
     </tr>
 <?php }?>
     
@@ -66,10 +68,6 @@ if (!isset($name)) $name = 'permissions';
 	    	<a href="#" class="internalLink" onclick="og.ogPermApplyToAllMembers('<?php echo $genid ?>', '<?php echo $dimension->getId() ?>');return false;" title="<?php echo lang('apply to all members desc') ?>"><?php echo lang('apply to all members') ?></a>
 	    </div>
     </div>
-<!-- 
-    <br/><?php echo checkbox_field($genid . 'chk_0', false, array('id' => $genid . 'chk_0', 'onclick' => 'og.ogPermValueChanged("' . $genid . '")')) ?> <label style="font-weight:normal" for="<?php echo $genid ?>chk_0" class="checkbox"><?php echo lang('can assign to owners') ?></label>
-    <br/><?php echo checkbox_field($genid . 'chk_1', false, array('id' => $genid . 'chk_1', 'onclick' => 'og.ogPermValueChanged("' . $genid . '")')) ?> <label style="font-weight:normal" for="<?php echo $genid ?>chk_1" class="checkbox"><?php echo lang('can assign to other') ?></label>
- -->
     </div>
    </td></tr></table>
    </div>
@@ -110,5 +108,5 @@ if (!isset($name)) $name = 'permissions';
 <?php }?>
 
 <script>
-og.ogLoadPermissions('<?php echo $genid ?>');
+	og.ogLoadPermissions('<?php echo $genid ?>');
 </script>

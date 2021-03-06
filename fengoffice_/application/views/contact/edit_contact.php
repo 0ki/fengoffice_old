@@ -2,6 +2,7 @@
 	require_javascript("og/modules/addContactForm.js");
 	$genid = gen_id();
 	$object = $contact;
+	$renderContext = has_context_to_render($contact->manager()->getObjectTypeId());
 ?>
 
 <form onsubmit="return og.handleMemberChooserSubmit('<?php echo $genid; ?>', <?php echo $contact->manager()->getObjectTypeId() ?>);" id="<?php echo $genid ?>submit-edit-form" style='height:100%;background-color:white' class="internalForm" action="<?php echo $contact->isNew() ? $contact->getAddUrl() : $contact->getEditUrl() ?>" method="post">
@@ -30,18 +31,24 @@
 			<?php echo text_field('contact[surname]', array_var($contact_data, 'surname'), 
 			array('id' => $genid . 'profileFormSurname',  'maxlength' => 50)) ?>
 		</div>
-	</td><td style="padding-left:20px">
+	</td>
+	<td style="padding-left:20px">
 		<div>
 			<?php echo label_tag(lang('email address'), $genid.'profileFormEmail') ?>
 			<?php echo text_field('contact[email]', array_var($contact_data, 'email'), 
-				array('id' => $genid.'profileFormEmail', 'maxlength' => 100)) ?>
+				array('id' => $genid.'profileFormEmail', 'maxlength' => 100, 'style' => 'width:260px;')) ?>
 		</div>
 	</td></tr></table>
 	
 	<?php $categories = array(); Hook::fire('object_edit_categories', $object, $categories); ?>
 	
-	<div style="padding-top:5px">		
-		<a href="#" class="option" style="font-weight:bold" onclick="og.toggleAndBolden('<?php echo $genid ?>add_contact_select_context_div',this)"><?php echo lang('context') ?></a> -
+	<div style="padding-top:5px">	
+		<?php foreach ($categories as $category) : ?>
+		<a href="#" class="option" <?php if ($category['visible']) echo 'style="font-weight: bold"'; ?> onclick="og.toggleAndBolden('<?php echo $genid . $category['name'] ?>', this)"><?php echo lang($category['name'])?></a>-
+		<?php endforeach; ?>	
+		<?php if ( $renderContext ) :?>
+		<a href="#" class="option"  onclick="og.toggleAndBolden('<?php echo $genid ?>add_contact_select_context_div',this)"><?php echo lang('context') ?></a> -
+		<?php endif;?>
 		<a href="#" class="option" style="font-weight:bold" onclick="og.toggleAndBolden('<?php echo $genid ?>add_contact_work', this)"><?php echo lang('work') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_contact_email_and_im', this)"><?php echo lang('email and instant messaging') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_contact_home', this)"><?php echo lang('home') ?></a> - 
@@ -51,16 +58,19 @@
 		<?php if($object->isNew() || $object->canLinkObject(logged_user())) { ?> - 
 			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_linked_objects_div',this)"><?php echo lang('linked objects') ?></a>
 		<?php } ?>
-		<?php foreach ($categories as $category) { ?>
-			- <a href="#" class="option" <?php if ($category['visible']) echo 'style="font-weight: bold"'; ?> onclick="og.toggleAndBolden('<?php echo $genid . $category['name'] ?>', this)"><?php echo lang($category['name'])?></a>
-		<?php } ?>
+
 	</div>
 </div>
 <div class="coInputSeparator"></div>
+
+	
 <div class="coInputMainBlock">
 	<input id="<?php echo $genid?>updated-on-hidden" type="hidden" name="updatedon" value="<?php echo !$contact->isNew() ?  $contact->getUpdatedOn()->getTimestamp() : '' ?>">
 	<input id="<?php echo $genid?>merge-changes-hidden" type="hidden" name="merge-changes" value="" >
 	<input id="<?php echo $genid?>genid" type="hidden" name="genid" value="<?php echo $genid ?>" >
+		<?php if ($contact->isNew()){
+			$this->includeTemplate(get_template_path("add_contact/access_data","contact")); 
+		}?>
 	
 		<?php 
 			$show_help_option = user_config_option('show_context_help'); 
@@ -71,19 +81,30 @@
 		<?php }?>
 		
 	
-	<div id="<?php echo $genid ?>add_contact_select_context_div" style="display:block">
+	<?php foreach ($categories as $category) : ?>
+	<div <?php if (!$category['visible']) echo 'style="display:none"' ?> id="<?php echo $genid . $category['name'] ?>">
 	<fieldset>
-		<legend><?php echo lang('context')?></legend>
-	<?php
-		if ($contact->isNew()) {
-			render_dimension_trees($contact->manager()->getObjectTypeId(), $genid, null, array('select_current_context' => true)); 
-			
-		} else {
-			render_dimension_trees($contact->manager()->getObjectTypeId(), $genid, $contact->getMemberIds()); 
-		} 
-	?>
+		<legend><?php echo lang($category['name'])?><?php if ($category['required']) echo ' <span class="label_required">*</span>'; ?></legend>
+		<?php echo $category['content'] ?>
 	</fieldset>
 	</div>
+	<?php endforeach; ?>
+	
+	
+	<?php if ($renderContext): ?>
+	<div id="<?php echo $genid ?>add_contact_select_context_div" style="display:none">
+	<fieldset>
+		<legend><?php echo lang('context')?></legend>
+			<?php 
+				if ($contact->isNew()) {
+					render_dimension_trees($contact->manager()->getObjectTypeId(), $genid, null, array('select_current_context' => true)); 
+				} else {
+					render_dimension_trees($contact->manager()->getObjectTypeId(), $genid, $contact->getMemberIds()); 
+				} 
+			?>
+	</fieldset>
+	</div>
+	<?php endif ;?>
 		
 	<div style="display:block" id="<?php echo $genid ?>add_contact_work">
 	<fieldset><legend><?php echo lang('work') ?></legend>
@@ -374,23 +395,16 @@
 	}, wsch);*/
 	</script>
 	
-	<?php if($object->isNew() || $object->canLinkObject(logged_user())) { ?>
+	<?php if($object->isNew() || $object->canLinkObject(logged_user())) : ?>
 		<div style="display:none" id="<?php echo $genid ?>add_linked_objects_div">
 		<fieldset>
 			<legend><?php echo lang('linked objects') ?></legend>
 			<?php echo render_object_link_form($object) ?>
 		</fieldset>	
 		</div>
-	<?php } ?>
+	<?php endif; ?>
 	
-	<?php foreach ($categories as $category) { ?>
-	<div <?php if (!$category['visible']) echo 'style="display:none"' ?> id="<?php echo $genid . $category['name'] ?>">
-	<fieldset>
-		<legend><?php echo lang($category['name'])?><?php if ($category['required']) echo ' <span class="label_required">*</span>'; ?></legend>
-		<?php echo $category['content'] ?>
-	</fieldset>
-	</div>
-	<?php } ?>
+
 	
 	<div>
 		<?php echo render_object_custom_properties($object, 'Contacts', true) ?>
@@ -398,43 +412,50 @@
 	
   	<?php echo submit_button($contact->isNew() ? lang('add contact') : lang('save changes'),'s',array('tabindex' => '20000', 'id' => $genid . 'submit2')) ?>
 
-<script>
-
-	var memberChoosers = Ext.getCmp('<?php echo "$genid-member-chooser-panel-".$contact->manager()->getObjectTypeId()?>').items;
-	if (memberChoosers) {
-		memberChoosers.each(function(item, index, length) {
-			item.on('all trees updated', function() {
-				var dimensionMembers = {};
-				memberChoosers.each(function(it, ix, l) {
-					dim_id = this.dimensionId;
-					dimensionMembers[dim_id] = [];
-					var checked = it.getChecked("id");
-					for (var j = 0 ; j < checked.length ; j++ ) {
-						dimensionMembers[dim_id].push(checked[j]);
-					}
+	<script>
+	<?php if ($renderContext) :?>
+		var memberChoosers = Ext.getCmp('<?php echo "$genid-member-chooser-panel-".$contact->manager()->getObjectTypeId()?>').items;
+		if (memberChoosers) {
+			memberChoosers.each(function(item, index, length) {
+				item.on('all trees updated', function() {
+					var dimensionMembers = {};
+					memberChoosers.each(function(it, ix, l) {
+						dim_id = this.dimensionId;
+						dimensionMembers[dim_id] = [];
+						var checked = it.getChecked("id");
+						for (var j = 0 ; j < checked.length ; j++ ) {
+							dimensionMembers[dim_id].push(checked[j]);
+						}
+					});
+					
+					// Subscribers
+					var uids = App.modules.addMessageForm.getCheckedUsers('<?php echo $genid ?>');
+					Ext.get('<?php echo $genid ?>add_subscribers_content').load({
+						url: og.getUrl('object', 'render_add_subscribers', {
+							context: Ext.util.JSON.encode(dimensionMembers),
+							users: uids,
+							genid: '<?php echo $genid ?>',
+							otype: '<?php echo $contact->manager()->getObjectTypeId()?>'
+						}),
+						scripts: true
+					});
+					
+					// Companies
+					// og.reloadCompanies(dimensionMembers, '<?php echo $genid ?>');
+					
 				});
-				
-				// Subscribers
-				var uids = App.modules.addMessageForm.getCheckedUsers('<?php echo $genid ?>');
-				Ext.get('<?php echo $genid ?>add_subscribers_content').load({
-					url: og.getUrl('object', 'render_add_subscribers', {
-						context: Ext.util.JSON.encode(dimensionMembers),
-						users: uids,
-						genid: '<?php echo $genid ?>',
-						otype: '<?php echo $contact->manager()->getObjectTypeId()?>'
-					}),
-					scripts: true
-				});
-				
-				// Companies
-				// og.reloadCompanies(dimensionMembers, '<?php echo $genid ?>');
-				
 			});
-		});
-	}
-
+		}
+	<?php endif;?>
 	Ext.get('<?php echo $genid ?>profileFormFirstName').focus();
-</script>
+
+	<?php if ($contact->isNew()):?>
+		$(function(){
+			og.checkEmailAddress("#<?php echo $genid ?>profileFormEmail");
+		});
+	<?php endif;?>
+	
+	</script>
 </div>
 </div>
 </form>

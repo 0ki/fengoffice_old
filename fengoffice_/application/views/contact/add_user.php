@@ -6,7 +6,7 @@
   set_page_title($user->isNew() ? lang('add user') : lang('edit user'));
 ?>
 
-<form style="height:100%;background-color:white" class="internalForm" action="<?php echo $company->getAddUserUrl() ?>" onsubmit="javascript:og.ogPermPrepareSendData('<?php echo $genid ?>');return true;" method="post">
+<form style="height:100%;background-color:white" class="internalForm" action="<?php echo get_url('contact', 'add_user', array('contact_id' => $user->getId())); ?>" onsubmit="javascript:og.ogPermPrepareSendData('<?php echo $genid ?>');return true;" method="post">
 <div class="adminAddUser">
   <div class="adminHeader">
   	<div class="adminHeaderUpperRow">
@@ -23,48 +23,15 @@
       <?php echo text_field('user[username]', array_var($user_data, 'username'), 
     	array('class' => 'medium', 'id' => $genid.'userFormName', 'tabindex' => '100')) ?>
     </div>
-  	
-  	<!-- email -->
+    
+    <!-- email -->
+    <?php if ($ask_email):  ?>
     <div>
       <?php echo label_tag(lang('email address'), 'userFormEmail', true) ?>
       <?php echo text_field('user[email]', array_var($user_data, 'email'), 
     	array('class' => 'title', 'id' => 'userFormEmail', 'tabindex' => '200')) ?>
     </div>
-  
-  	<!-- company -->
-    <?php if(logged_user()->isAdministrator()) { ?>
-    <div>
-  	  <script>
-  		//Hide the "is administrator" option if the selected company is no the ownerCompany
-  		//it also set the option isAdministrator to NO when it is hidden.
-  		og.validateOwnerCompany = function(selectedCompany,genid) {
-  			var ownerCompanyId = <?php echo owner_company()->getId()?>;
-  	  		companyId= selectedCompany.value;
-  	  		idDivAdmin = genid + "isAdministratorDiv";
-  	  		adminOption = document.getElementById(idDivAdmin);
-  	  		if (companyId == ownerCompanyId){
-				if (adminOption) {
-	  	  	  		adminOption.style.display = "block";
-	  	  	  	}
-  	  		} else {
-		  	  	if (adminOption) {
-	  	  			radioNo = document.getElementById("userFormIsAdminNo");		  	  			 
-	  	  			radioYes = document.getElementById("userFormIsAdminYes");
-	  	  			radioNo.checked = "checked";
-	  	  			radioYes.checked = "";
-	  	  	  		adminOption.style.display = "none";
-		  	  	 }
-  	  	  	}
-  		};
-  	  </script>
-      <?php echo label_tag(lang('company'), $genid.'userFormCompany', true) ?>
-      <?php echo select_company('user[company_id]', array_var($user_data, 'company_id'), 
-    	array('id' => $genid.'userFormCompany', 'tabindex' => '300','onchange' => "og.validateOwnerCompany(this,'$genid')"), false, true) ?>
-   	  <a href="<?php echo get_url("contact", "add_company") ?>" target="company" class="internalLink coViewAction ico-add" title="<?php echo lang('add a new company')?>"><?php echo lang('add company') . '...' ?></a>
-    </div>
-  <?php } else { ?>
-    <input type="hidden" name="user[company_id]" value="<?php echo $company->getId()?>" />
-  <?php } // if ?>
+    <?php endif; ?>
   
   <script>
   <?php 
@@ -106,7 +73,8 @@
     ?>
   	<?php echo simple_select_box('user[type]', $permission_groups,null,
 	    		array(
-	    			'onchange' => "og.addUserTypeChange('$genid', this.value)"
+	    			'onchange' => "og.addUserTypeChange('$genid', this.value)",
+	    			'tabindex' => "300"
 	    		)) ?>
   </div>
   
@@ -159,11 +127,7 @@
 			  </div>
 		</fieldset>
   </div>
-<fieldset>
-  	<legend><?php echo lang('display name') ?></legend>
-    <?php echo text_field('user[display_name]', array_var($user_data, 'display_name'), 
-    	array('class' => 'medium', 'id' => 'userFormDisplayName', 'tabindex' => '500')) ?>
-  </fieldset>
+
   
 <?php if($user->isNew() || logged_user()->isAdministrator()) { ?>
   <fieldset>

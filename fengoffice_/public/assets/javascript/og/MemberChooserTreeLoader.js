@@ -46,6 +46,7 @@ Ext.extend(og.MemberChooserTreeLoader , Ext.tree.TreeLoader, {
 		node.object_id = attr.object_id ;
 		node.options = attr.options ;
 		node.object_controller = attr.object_controller ;
+		node.object_type_id = attr.object_type_id ;
 		node.allow_childs = attr.allow_childs ;
         
         
@@ -77,6 +78,7 @@ Ext.extend(og.MemberChooserTreeLoader , Ext.tree.TreeLoader, {
 			if(typeof callback == "function"){
 				callback(this, node);
 			}
+			this.ownerTree.expanded_once = false;
 		}catch(e){
 			this.handleFailure(response);
 		}

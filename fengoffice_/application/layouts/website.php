@@ -103,12 +103,7 @@
 
 <?php echo render_page_javascript() ?>
 <?php echo render_page_inline_js() ?>
-<?php 
-	$use_owner_company_logo = false;
-	if (owner_company()->hasLogo()) {
-		$use_owner_company_logo = true; 
-	}
-?>
+<?php $use_owner_company_logo = owner_company()->hasLogo(); ?>
 <!-- header -->
 <div id="header">
 	<div id="headerContent">
@@ -117,9 +112,9 @@
                 <img src="<?php echo ($use_owner_company_logo) ? owner_company()->getLogoUrl() : 's.gif' ?>" />
                 <div>
                 <?php if(!$use_owner_company_logo){?>
-                    <a style="color: #fff; font-size: 10px;" href="index.php?c=contact&a=edit_logo&id=<?php echo owner_company()->getObjectId(); ?>">Change Logo</a>
+                    <a style="color: #fff; font-size: 10px;" href="index.php?c=contact&a=edit_logo&id=<?php echo owner_company()->getObjectId(); ?>"><?php echo lang('change logo')?></a>
                 <?php } ?>
-                    <h1><?php echo owner_company()->getObjectName() ?></h1>
+                    <h1><?php echo clean(owner_company()->getObjectName()) ?></h1>
                 </div>
             </div>
 		</td><td>
@@ -148,7 +143,7 @@
 			</div>			
 			<div id="userboxWrapper">
 				<h2>
-				<a href="#" onclick="showUserOptionsPanel()"><?php echo logged_user()->getDisplayName(); ?></a></h2>
+				<a href="#" onclick="showUserOptionsPanel()"><?php echo clean(logged_user()->getObjectName()); ?></a></h2>
 				<a href="#" class="account" onclick="showUserOptionsPanel()">&nbsp;</a>								
 			</div>
 			<div class="u-clear"></div>
@@ -200,9 +195,11 @@
                 var cssRules = '.x-accordion-hd, ul.x-tab-strip li {background: #' + front + '}';
                 cssRules += 'ul.x-tab-strip li {border-color: #' + front + '}';
                 cssRules += '#header, #userboxWrapper h2 a {background-color: #' + back + '}';
-                cssRules += '.x-accordion-hd, .x-tab-strip span.x-tab-strip-text {color: #' + fontFace + '}';                     
-                cssRules += '#logodiv h1, #userboxWrapper h2 a {color: #' + fontTitle + '}'; 
-                
+                cssRules += '.x-accordion-hd, .x-tab-strip span.x-tab-strip-text {color: #' + fontFace + '}';
+                cssRules += 'ul.x-tab-strip li.x-tab-strip-active {background-color: #' + fontFace + ' !important}';
+                cssRules += 'ul.x-tab-strip li.x-tab-strip-active span.x-tab-strip-text {color: #' + front + ' !important}';
+                cssRules += '#logodiv h1, #userboxWrapper h2 a, div.og-loading {color: #' + fontTitle + '}';
+
                 var styleElement = document.createElement("style");
                 styleElement.type = "text/css";
                 if (styleElement.styleSheet) 
@@ -276,7 +273,8 @@ if ($initialWS === "remember") {
 ?>
 og.initialWorkspace = '<?php echo $initialWS ?>';
 <?php $qs = (trim($_SERVER['QUERY_STRING'])) ? "&" . $_SERVER['QUERY_STRING'] : "";  ?>
-og.initialURL = '<?php echo ROOT_URL . "/?active_project=$initialWS" . $qs ?>';
+og.queryString = '<?php echo $_SERVER['QUERY_STRING'] ?>';
+og.initialURL = '<?php echo ROOT_URL ."/?".$_SERVER['QUERY_STRING'] ?>';
 <?php if (user_config_option("rememberGUIState")) { ?>
 og.initialGUIState = <?php echo json_encode(GUIController::getState()) ?>;
 <?php } ?>
@@ -289,7 +287,7 @@ og.CurrentPagingToolbar = <?php echo defined('INFINITE_PAGING') && INFINITE_PAGI
 og.loggedUser = {
 	id: <?php echo logged_user()->getId() ?>,
 	username: <?php echo json_encode(logged_user()->getUsername()) ?>,
-	displayName: <?php echo json_encode(logged_user()->getDisplayName()) ?>,
+	displayName: <?php echo json_encode(logged_user()->getObjectName()) ?>,
 	isAdmin: <?php echo logged_user()->isAdministrator() ? 'true' : 'false' ?>,
 	isGuest: <?php echo logged_user()->isGuest() ? 'true' : 'false' ?>,
 	tz: <?php echo logged_user()->getTimezone() ?>
@@ -373,6 +371,10 @@ og.dimensionPanels = [
 	$first = true ; 
 	$dimensions = $dimensionController->get_context() ;
 	foreach ( $dimensions['dimensions'] AS $dimension ):
+	 	if ( $dimension->getOptions(1) && isset($dimension->getOptions(1)->hidden) && $dimension->getOptions(1)->hidden ) {
+	 		continue ;
+	 	}
+	 		
 		/* @var $dimension Dimension */
 		$title = ( $dimension->getOptions() && isset ($dimension->getOptions(1)->useLangs) && ($dimension->getOptions(1)->useLangs) )   ? lang($dimension->getCode()) : $dimension->getName(); 
 		if (!$first): ?>,<?php endif; $first = false ;?>                      
@@ -390,6 +392,7 @@ og.dimensionPanels = [
 			requiredObjectTypes: <?php echo json_encode($dimension->getRequiredObjectTypes()) ?>,
 			hidden: <?php echo (int) ! $dimension->getIsRoot(); ?>,
 			isManageable: <?php echo (int) $dimension->getIsManageable() ?>,
+			quickAdd: <?php echo ( $dimension->getOptions(1) && $dimension->getOptions(1)->quickAdd ) ? 'true' : 'false'  ?>,
 					
 			minHeight: 10
 			//animate: false,
@@ -397,6 +400,8 @@ og.dimensionPanels = [
 		}	
 	<?php endforeach; ?>
 ];
+
+
 if (! og.dimensionPanels.length ){
 	alert("In order to continue, you need to create dimensions (directly from database).\nSorry about this,\n\n--- The Feng 2.0 Team ---");
 }
@@ -433,6 +438,21 @@ og.objPickerTypeFilters = [];
 ?>
 	var searchForm = document.getElementById("searchbox").getElementsByTagName("form")[0] ;
 	H5F.setup(searchForm);
+
+
+	og.additional_on_dimension_object_click = [];
+	og.dimension_object_types = [];
+<?php
+	$dimension_object_types = ObjectTypes::findAll(array('conditions' => "`type` IN ('dimension_object', 'dimension_group')"));
+	foreach ($dimension_object_types as $dot) { ?>
+		og.dimension_object_types[<?php echo $dot->getId()?>] = '<?php echo $dot->getName()?>';
+<?php
+	}
+	foreach (Plugins::instance()->getActive() as $p) {
+		$js_code = 'if (og.'.$p->getName().' && og.'.$p->getName().'.init) og.'.$p->getName().'.init();'."\n";
+		echo $js_code;
+	} 
+?>
 </script>
 <?php include_once(Env::getLayoutPath("listeners"));?>
 

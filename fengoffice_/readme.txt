@@ -87,8 +87,23 @@
     Changelog
     =========
  
-    Since 2.0 Beta 
-    -----------
+    Since 2.0 Beta 2
+    ----------------
+    bugfix: Fixed problem uncompressing files
+    bugfix: Loading indicator hidden
+ 	bugfix: Search in mail contents
+ 	bugfix: Mail reply js error
+ 	bugfix: Filter members associated with deleted objects
+ 	bugfix: Fixed permission error creating a contact
+    usability: Contact View Improvements
+    usability: Navigation Improvements
+    system: Permission system fixes
+    system: Performance issues solved. Using permission cache 'sharing table' for listing
+    system: Weblinks module migrated
+    
+ 	
+    Since 2.0 Beta 1
+    ----------------
  
     bugfix: Fixed problem with context trees when editing content objects
     bugfix: Fixed template listing
@@ -98,3 +113,18 @@
     bugfix: Z-Index fixed in object-picker and header
 	usability: Selected rows style in object picker
     system: General code cleanup
+    
+    
+    Since 1.7
+    -----------
+ 
+    system: Plugin Support
+    system: Search Engine performance improved
+    system: Multiple Dimensions - 'Workspaces' and 'Tags' generalization
+    system: Database and Models structure changes - Each Content object identified by unique id 
+    system: Email removed from core (Available as a plugin)
+    system: User Profile System
+    feature: PDF Quick View - View uploaded PDF's
+    usability: Default Theme improved
+    usability: Customizable User Interface
+    

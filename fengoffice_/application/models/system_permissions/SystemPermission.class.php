@@ -8,14 +8,11 @@
 class SystemPermission extends BaseSystemPermission {
 		
 	function setAllPermissions($value){
-		$this->setCanEditCompanyData($value);
-		$this->setCanManageConfiguration($value);
-		$this->setCanManageSecurity($value);
-		$this->setCanManageMembers($value);
-		$this->setCanManageTemplates($value);
-		$this->setCanManageTime($value);
-		$this->setCanManageReports($value);
-		$this->setCanAddMailAccounts($value);
+		$columns = $this->manager()->getColumns();
+		foreach ($columns as $col) {
+			if (in_array($col, array('permission_group_id'))) continue;
+			$this->setColumnValue($col, $value);
+		}
 	}
 	
 	function setPermission($value){

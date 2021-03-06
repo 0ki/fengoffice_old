@@ -192,7 +192,7 @@ if($event->isNew()) {
 	 	<?php $categories = array(); Hook::fire('object_edit_categories', $object, $categories); ?>
 	 	
 	 	<div style="padding-top:5px;text-align:left;">
-		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_event_select_workspace_div',this)" <?php echo ($event->isNew() ? 'style="font-weight:bold"' : '')?>><?php echo lang('context') ?></a> -
+		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_event_select_context_div',this)" <?php echo ($event->isNew() ? '' : '')?>><?php echo lang('context') ?></a> -
 		<a href='#' class='option' onclick="og.ToggleTrap('trap3', 'fs3');og.toggleAndBolden('<?php echo $genid ?>add_event_description_div', this)"><?php echo lang('description')?></a> - 
 		<a href='#' class='option' onclick="og.ToggleTrap('trap4', 'fs4');og.toggleAndBolden('<?php echo $genid ?>event_repeat_options_div', this)"><?php echo lang('CAL_REPEATING_EVENT')?></a> -
 		<a href='#' class='option' onclick="og.ToggleTrap('trap5', 'fs5');og.toggleAndBolden('<?php echo $genid ?>add_reminders_div', this)"><?php echo lang('object reminders')?></a> - 
@@ -219,7 +219,7 @@ if($event->isNew()) {
 			</div>
 		<?php }?>
 		
-		<div id="<?php echo $genid ?>add_event_select_workspace_div" <?php echo $event->isNew() ? '' : 'style="display:none"'?>>
+		<div id="<?php echo $genid ?>add_event_select_context_div" style="display:none" >
 		<fieldset>
 		<?php 
 			$show_help_option = user_config_option('show_context_help'); 
@@ -419,24 +419,6 @@ if($event->isNew()) {
 		</fieldset>
 	</div>
 	
-	<script>
-	/* FIXME
-	var wsch = Ext.getCmp('<?php echo $genid ?>ws_ids');
-	wsch.on("wschecked", function(arguments) {
-		if (!this.getValue().trim()) return;
-		var uids = App.modules.addMessageForm.getCheckedUsers('<?php echo $genid ?>');
-		Ext.get('<?php echo $genid ?>add_subscribers_content').load({
-			url: og.getUrl('object', 'render_add_subscribers', {
-				workspaces: this.getValue(),
-				users: uids,
-				genid: '<?php echo $genid ?>',
-				object_type: '<?php echo get_class($object->manager()) ?>'
-			}),
-			scripts: true
-		});
-	}, wsch);
-	*/
-	</script>
 	<div id="trap7"><fieldset id="fs7" style="height:0px;border:0px;padding:0px;display:none"><span style="color:#FFFFFF;"></span></fieldset></div>
 
 	<div style="display:none" id="<?php echo $genid ?>add_linked_objects_div">
@@ -505,7 +487,9 @@ if($event->isNew()) {
 	<tr style="padding-bottom:4px">
 		<td align="right" style="padding-right:10px;padding-bottom:6px;padding-top:2px"><?php echo lang('CAL_DATE') ?></td>
 		<td align='left'><?php
-				$dv_start = DateTimeValueLib::make(array_var($event_data, 'hour'), array_var($event_data, 'minute'), 0, $month, $day, $year);
+				$tmph = array_var($event_data, 'hour') == -1 ? 0 : array_var($event_data, 'hour');
+				$tmpm = array_var($event_data, 'minute') == -1 ? 0 : array_var($event_data, 'minute');
+				$dv_start = DateTimeValueLib::make($tmph, $tmpm, 0, $month, $day, $year);
 				$event->setStart($dv_start);
 				echo pick_date_widget2('event[start_value]', $event->getStart(), $genid, 120); ?>
 		</td>

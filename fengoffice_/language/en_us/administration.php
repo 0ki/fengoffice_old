@@ -73,7 +73,7 @@
   
   	'config option name enable_notes_module' => 'Enable Notes Module',
   	'config option name enable_email_module' => 'Enable Email Module',
-  	'config option name enable_contacts_module' => 'Enable Contacts Module',
+  	'config option name enable_contacts_module' => 'Enable People Module',
   	'config option name enable_calendar_module' => 'Enable Calendar Module',
   	'config option name enable_documents_module' => 'Enable Documents Module',
   	'config option name enable_tasks_module' => 'Enable Tasks Module',
@@ -135,13 +135,6 @@
 	'config option name block_login_after_x_tries' => 'Block login after 5 wrong tries',
 	'config option desc block_login_after_x_tries' => 'If a user tries to login 5 times without success in the last 10 minutes, then the account will be blocked for 10 minutes.',
   
- 	'can edit company data' => 'Can edit owner company data',
-  	'can manage security' => 'Can manage security',
-  	'can manage members' => 'Can manage members',
-  	'can manage workspaces' => 'Can manage workspaces',
-  	'can manage configuration' => 'Can manage configuration',
-  	'can manage contacts' => 'Can manage all contacts',
-  	'can manage reports' => 'Can manage reports',
   	'group users' => 'Group users',
   	'timeslot' => 'Time',
   	'module permissions' => 'Module Permissions',
@@ -309,8 +302,8 @@
   	'incoming server' => 'Incoming server',
   	'outgoing server' => 'Outgoing server',
   	'no email accounts' => 'No email accounts',
-  	'user ws config option name create_contacts_from_email_recipients' => 'Create contacts from email recipients',
-  	'user ws config option desc create_contacts_from_email_recipients' => 'When this option is set to "Yes" a contact will be automatically created for every email address you send an email to. You need the "Can manage all contacts" permission.',
+  	'user ws config option name create_contacts_from_email_recipients' => 'Create people from email recipients',
+  	'user ws config option desc create_contacts_from_email_recipients' => 'When this option is set to "Yes" a person will be automatically created for every email address you send an email to. You need the "Can manage all people" permission.',
   	'user ws config option name drag_drop_prompt' => 'Action to take on drag and drop to workspace',
   	'user ws config option desc drag_drop_prompt' => 'Choose which action should be taken when dragging an object to a workspace.',
   	'drag drop prompt option' => 'Prompt user for an action',
@@ -336,12 +329,13 @@
   	//General
   	
   	'user config option name amount_objects_to_show' => 'Number of Linked Objects to show',
-  	'user config option desc amount_objects_to_show' => 'Sets the number of Linked Object\'s to be displayed on objects views' ,
+  	'user config option desc amount_objects_to_show' => 'Sets the number of Linked Object\'s to be displayed on objects views.' ,
   	'user config option name autodetect_time_zone' => 'Autodetect time zone',
   	'user config option desc autodetect_time_zone' => 'When this option is enabled, the user\'s timezone will be autodetected from browser.',
   	'user config option name detect_mime_type_from_extension' => 'Detect mime type from extension',
-  	'user config option desc detect_mime_type_from_extension' => 'Enable this to detect file\'s mime type by its extension',
-  	'user config option name root_dimensions' => 'Name root dimensions',
+  	'user config option desc detect_mime_type_from_extension' => 'Enable this to detect file\'s mime type by its extension.',
+  	'user config option name root_dimensions' => 'Dimension widgets to display',
+  	'user config option desc root_dimensions' => 'Check each box to have the tree-widget for each dimension displayed when you access Feng Office.',
   	'user config option name show_context_help' => 'Show contextual help',
   	'user config option desc show_context_help' => 'Select if you want to always view help, never view it, or view it until each box is closed.',
   	'user config option name drag_drop_prompt' => 'Action to take on drag and drop to workspace',
@@ -351,7 +345,7 @@
   	'user config option name rememberGUIState' => 'Remember the user interface state',
   	'user config option desc rememberGUIState' => 'This allows you to save the state of the graphical interface (size of panels, expanded/collapsed state, etc) for the next time that you log in. Warning: This feature is in BETA status.',
   	'user config option name work_day_start_time' => 'Work day start time',
-  	'user config option desc work_day_start_time' => 'Specifies the time when work day starts',
+  	'user config option desc work_day_start_time' => 'Specifies the time when work day starts.',
   	'user config option name time_format_use_24' => 'Use 24 hours format for time descriptions',
   	'user config option desc time_format_use_24' => 'If enabled time descriptions will be shown as \'hh:mm\' from 00:00 to 23:59, if not hours will go from 1 to 12 using AM or PM.',
   	'user config option name date_format' => 'Date format',
@@ -415,8 +409,8 @@
   	'user config option desc draft_autosave_timeout' => 'Seconds between each autosave operation for draft mails (0 to disable autosave)',
   	'user config option name max_spam_level' => 'Maximum spam level allowed',
   	'user config option desc max_spam_level' => 'When fetching emails, messages with Spam evaluation greater than this value will be sent to "Junk" folder. Set to 0 for max filtering, 10 no filtering. This option works only if a spam filter tool is installed in your server.',
-  	'user config option name create_contacts_from_email_recipients' => 'Create contacts from email recipients',
-  	'user config option desc create_contacts_from_email_recipients' => 'When this option is set to "Yes" a contact will be automatically created for every email address you send an email to. You need the "Can manage all contacts" permission.',
+  	'user config option name create_contacts_from_email_recipients' => 'Create people from email recipients',
+  	'user config option desc create_contacts_from_email_recipients' => 'When this option is set to "Yes" a person will be automatically created for every email address you send an email to. You need the "Can manage all people" permission.',
   	'user config option name mail_drag_drop_prompt' => 'Classify email attachments on drag and drop?',
   	'user config option desc mail_drag_drop_prompt' => 'Choose what should be done with email attachments when dragging an email to a workspace.',
   	'user config option name hide_quoted_text_in_emails' => 'Hide quoted text when viewing emails',
@@ -460,6 +454,35 @@
   	'font color' => 'Font Color',
   	'title color' => 'Title Color',
   	'save colors' => 'Save Colors',
+  
+  	'edit member' => 'Edit Member',
+  	'associate' => 'Associate',
+  	'hide vinculations' => 'Hide vinculations',
+  
+  	// System permissions
+	'can manage security' => 'Can manage security configuration (users, groups and permissions)',
+	'can manage configuration' => 'Can manage configuration, owner company data, tabs, logos and colors',
+	'can manage templates' => 'Can manage task templates',
+	'can manage time' => 'Can manage timeslots',
+	'can add mail accounts' => 'Can add mail accounts',
+  	'can_manage_dimensions'=>'Can manage dimensions',
+	'can_manage_dimension_members'=>'Can manage dimension members',
+
+	'can_manage_security description' => 'If this permission is checked the user will be able to create, update and delete users and groups, and modify their permissions.',
+	'can_manage_configuration description' => 'If this permission is checked the user will be able to edit application configuration, information on the owner company , cron events, application upgrades, the logo shown in the upper left corner of the application and the brand colours.',
+	'can_manage_templates description' => 'If this permission is checked the user will be able to create, update and delete Templates. All users with permissions on the task module will be able to use these templates.',
+	'can_manage_time description' => 'If this permission is checked the user will have full permissions over timeslots, being able to edit them even when the have not been created by himself.',
+	'can_add_mail_accounts description' => 'If this permission is checked the user will be able to add email accounts for himself or for other users. ',
+  	'can_manage_dimensions description'=>'If this permission is checked the user will have full permissions over dimensions. He will be able to create new dimensions and change their configuration. This is an advanced administrative feature.',
+	'can_manage_dimension_members description' => 'If this permission is checked the user will have full permissions over dimension members. He will be able to create, edit and delete new members. In practice, a member could be a workspace, project, client, etc.',
+	'can_manage_tasks description' => 'If this permission is checked the user will have full permissions over tasks. He will be able to assign tasks to other users and complete them.',
+
+  //HIDDEN 
+	'can_task_assignee'=>'Can task asignee',
+	'can_manage_billing'=>'Can manage billing',
+	'can_view_billing'=>'Can view billing',
+  // END HIDDEN
+  
   ); // array
 
 ?>

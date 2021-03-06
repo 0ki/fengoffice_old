@@ -41,7 +41,7 @@
 			foreach ($users as $user){
 				if ($user instanceof User && $user->getId() != logged_user()->getId()){
 					$c++;
-					?><div class="dashSMDIU" style="white-space:nowrap;<?php echo ($c > 3 && count($users) > 5)? 'display:none':''?>"><a href="<?php echo $user->getCardUrl()?>" class="internalLink coViewAction ico-user"><?php echo clean($user->getDisplayName()) ?></a></div><?php
+					?><div class="dashSMDIU" style="white-space:nowrap;<?php echo ($c > 3 && count($users) > 5)? 'display:none':''?>"><a href="<?php echo $user->getCardUrl()?>" class="internalLink coViewAction ico-user"><?php echo clean($user->getObjectName()) ?></a></div><?php
 				}
 			}
 			if (count($users) > 5) {?>

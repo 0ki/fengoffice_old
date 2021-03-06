@@ -88,7 +88,7 @@ class ProjectMilestone extends BaseProjectMilestone {
 		if (!$this->isCompleted()) {
 			return '';
 		} else {
-			return $this->getCompletedBy()->getDisplayName();
+			return $this->getCompletedBy()->getObjectName();
 		}
 	}
 	

@@ -335,23 +335,23 @@
 /* -----  Company  ----- */
 
 .company .coViewHeader {
-  	background: #E3E3E3;
-  	border-color: #C7C7C7;
-  	color: #7F7F7F;
+  	background: #80AEF0;
+  	border-color: #3581D7;
+  	color: #003E89;
 }
 
 .company .coViewIcon {
-  	background: #EBEBEB;
-  	border-color: #E3E3E3;
+  	background: #ACCEF5;
+  	border-color: #80AEF0;
 }
 
 .company .coViewHeader .coViewTitle {
-  	border-color: #C7C7C7;
+  	border-color: #3581D7;
 }
 
 .company .coViewClose {
-  	background: #EBEBEB;
-  	color: #7F7F7F;
+  	background: #ACCEF5;
+  	color: #3581D7;
 }
 
 .ico-large-company {
@@ -663,7 +663,9 @@
 	background-image: url(../../images/48x48/weblink_trashed.png);
 }
 
-
+.weblink .coViewSubHeader .odd {
+    background: none repeat scroll 0 0 #FFF8CC;
+}
 
 
 
@@ -737,5 +739,4 @@
 
 .member-path-dim-block .mname {
 	color: #444;
-	font-style: italic;
 }

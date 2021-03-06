@@ -22,6 +22,7 @@ class ReportingController extends ApplicationController {
 	{
 		parent::__construct();
 		prepare_company_website_controller($this, 'website');
+		Env::useHelper('grouping');
 	} // __construct
 
 	function chart_details()
@@ -267,9 +268,7 @@ class ReportingController extends ApplicationController {
 			$this->redirectTo('reporting', 'total_task_times_p', array('type' => array_var($_GET, 'type', '')));
 		}
 
-		$comp = logged_user()->getCompany();
-		if (!$comp instanceof Contact || !$comp->getIsCompany()) $comp = owner_company();
-		$users = Contacts::getAllUsers(" AND `company_id` = ".$comp->getId());
+		$users = Contacts::getAllUsers();
 
 		tpl_assign('type', array_var($_GET, 'type'));
 		tpl_assign('users', $users);
@@ -281,6 +280,14 @@ class ReportingController extends ApplicationController {
 			$report_data = array_var($_POST, 'report');
 			// save selections into session
 			$_SESSION['total_task_times_report_data'] = $report_data;
+		}
+		
+		if (array_var($_GET, 'export') == 'csv') {
+			$context = build_context_array(array_var($_REQUEST, 'context'));
+			$report_data = json_decode(str_replace("'",'"', $_REQUEST['parameters']), true);
+			tpl_assign('context', $context);
+		} else {
+			$context = active_context();
 		}
 		
 		$columns = array_var($report_data, 'columns');
@@ -300,10 +307,6 @@ class ReportingController extends ApplicationController {
 			}
 		}
 	
-		tpl_assign('allow_export', false);
-		$this->setTemplate('report_wrapper');
-
-
 		$user = Contacts::findById(array_var($report_data, 'user'));
 		
 		$st = DateTimeValueLib::now();
@@ -354,37 +357,37 @@ class ReportingController extends ApplicationController {
 
 			if ($gb != '0') $group_by[] = $gb;
 		}
-
-		$object_subtype = array_var($report_data, 'object_subtype');
-
-		$timeslotsArray = Timeslots::getTaskTimeslots(null, $user, $st, $et, array_var($report_data, 'task_id', 0), $group_by, null, null, null, $timeslotType);
+		
+		$timeslots = Timeslots::getTaskTimeslots($context, null, $user, $st, $et, array_var($report_data, 'task_id', 0), null, null, null, null, $timeslotType);
+		
 		$unworkedTasks = null;
 		if (array_var($report_data, 'include_unworked') == 'checked') {
 			$unworkedTasks = ProjectTasks::getPendingTasks(logged_user(), $workspace);
 			tpl_assign('unworkedTasks', $unworkedTasks);
 		}
-
-		if(array_var($_POST, 'exportCSV')){
-			$skip_ws = ($all_conditions!=null)?true:false;
-			self::total_task_times_csv($report_data, $columns, $timeslotsArray, $skip_ws);
-		}else if(array_var($_POST, 'exportPDF')){
-			//self::total_task_times_pdf($report_data, $columns, $timeslotsArray);
-		}else{
-			tpl_assign('columns', $columns);
-			tpl_assign('conditions', $conditions);
-			tpl_assign('timeslot_type', $timeslotType);
-			tpl_assign('group_by', $group_by);
-			tpl_assign('timeslotsArray', $timeslotsArray);
-			tpl_assign('workspace', $workspace);
-			tpl_assign('start_time', $st);
-			tpl_assign('end_time', $et);
-			tpl_assign('user', $user);
-			$report_data['conditions'] = $conditions;
-			$report_data['columns'] = $columns;
-			tpl_assign('post', $report_data);
-			tpl_assign('template_name', 'total_task_times');
-			tpl_assign('title',lang('task time report'));
+		
+		
+		$gb_criterias = array();
+		foreach ($group_by as $text) {
+			if (in_array($text, array('contact_id', 'rel_object_id'))) $gb_criterias[] = array('type' => 'column', 'value' => $text);
+			else if (in_array($text, array('milestone_id', 'priority'))) $gb_criterias[] = array('type' => 'assoc_obj', 'fk' => 'rel_object_id', 'value' => $text);
+			else if (str_starts_with($text, 'dim_')) $gb_criterias[] = array('type' => 'dimension', 'value' => str_replace_first('dim_', '', $text));
 		}
+		$grouped_timeslots = groupObjects($gb_criterias, $timeslots);
+
+		tpl_assign('grouped_timeslots', $grouped_timeslots);
+		tpl_assign('start_time', $st);
+		tpl_assign('end_time', $et);
+		tpl_assign('user', $user);
+		tpl_assign('post', $report_data);
+		tpl_assign('template_name', 'total_task_times');
+		tpl_assign('title', lang('task time report'));
+		tpl_assign('allow_export', false);
+		if (array_var($_GET, 'export') == 'csv') {
+			$this->setTemplate('total_task_times_csv');
+			ajx_current("empty");
+		}
+		else $this->setTemplate('report_wrapper');
 	}
 
 	function total_task_times_by_task_print(){
@@ -395,7 +398,7 @@ class ReportingController extends ApplicationController {
 		$st = DateTimeValueLib::make(0,0,0,1,1,1900);
 		$et = DateTimeValueLib::make(23,59,59,12,31,2036);
 
-		$timeslotsArray = Timeslots::getTaskTimeslots(null,null,null,$st,$et, get_id());
+		$timeslotsArray = Timeslots::getTaskTimeslots(active_context(), null,null,null,$st,$et, get_id());
 
 		tpl_assign('estimate', $task->getTimeEstimate());
 		//tpl_assign('timeslots', $timeslots);
@@ -407,14 +410,6 @@ class ReportingController extends ApplicationController {
 		$this->setTemplate('report_printer');
 	}
 
-	function total_task_times_print(){
-		$this->setLayout("html");
-
-		$report_data = json_decode(str_replace("'",'"', array_var($_POST, 'post')),true);
-
-		$this->total_task_times($report_data);
-		$this->setTemplate('report_printer');
-	}
 
 	function total_task_times_vs_estimate_comparison_p(){
 		$users = owner_company()->getContacts();
@@ -463,76 +458,6 @@ class ReportingController extends ApplicationController {
 		tpl_assign('title',lang('task time report'));
 	}
 
-	
-	
-	function total_task_times_csv($report_data, $columns, $timeslotsArray, $skip_ws=false){
-		//$types = self::get_report_column_types($report->getId());
-		$filename = str_replace(' ', '_',lang('task time report')).date('_YmdHis');
-		header('Expires: 0');
-		header('Cache-control: private');
-		header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
-		header('Content-Description: File Transfer');
-		header('Content-Type: application/csv');
-		header('Content-disposition: attachment; filename='.$filename.'.csv');
-		
-		// titles
-		$titles = lang('date').";".lang('title').";".lang('description').";".lang('user').";".lang('time').";";
-		
-		if (array_var($report_data, 'show_billing', false)) $titles .= lang('billing').";";
-		foreach($columns as $id => $pos){
-			if ($pos == 0) continue;
-			if (!is_numeric($id)){
-				$col_name = lang("field ProjectTasks ".$id);
-			} else {
-				$cp = CustomProperties::getCustomProperty($id);					
-				$col_name = $cp->getName();
-			}
-			$titles .= $col_name.";";
-		}
-		$titles = iconv(mb_internal_encoding(),"ISO-8859-1",html_entity_decode($titles, ENT_COMPAT));
-		echo "$titles\n";
-
-		// data
-		foreach($timeslotsArray as $tsRow) {
-			$ts = $tsRow["ts"];
-			if ($skip_ws && $ts->getObjectManager() == 'Projects') continue;
-			$to_print = format_date($ts->getStartTime()) . ";";
-			if ($ts->getRelObject() instanceof ProjectTask) {
-				$to_print .= $ts->getRelObject()->getTitle() . ";";
-				$to_print .= $ts->getRelObject()->getText() . ";";
-			} else if ($ts->getRelObject() instanceof Project) {
-				$ws_name = lang('workspace') . ' ' . clean($ts->getRelObject()->getName());
-				$to_print .= "$ws_name;;";
-			} else $to_print .= ";;";
-			
-			$to_print .= clean(Contacts::getUserDisplayName($ts->getUserId())) . ";";
-			$lastStop = $ts->getEndTime() != null ? $ts->getEndTime() : ($ts->isPaused() ? $ts->getPausedOn() : DateTimeValueLib::now()) . ";";
-			$to_print .= DateTimeValue::FormatTimeDiff($ts->getStartTime(), $lastStop, "hm", 60, $ts->getSubtract()) . ";";
-			if (array_var($report_data, 'show_billing', false)) 
-				$to_print .= config_option('currency_code', '$') ." ". $ts->getFixedBilling();
-
-			// other columns
-			foreach($columns as $id => $pos){
-				if ($pos == 0) continue;
-				if ($ts->getRelObject() instanceof ProjectTask) {
-					if (!is_numeric($id)){
-						$col_value = format_value_to_print($id, $ts->getRelObject()->getColumnValue($id), $ts->getRelObject()->manager()->getColumnType($id), $ts->getRelObject()->getObjectManagerName()); 
-						
-					} else {
-						$cp = CustomProperties::getCustomProperty($id);
-						$cpv = CustomPropertyValues::getCustomPropertyValue($ts->getRelObject()->getId(), $cp->getId());
-						if ($cpv instanceof CustomPropertyValue) {
-							$col_value = format_value_to_print($cp->getName(), $cpv->getValue(), $cp->getOgType(), $ts->getRelObject()->getObjectManagerName());
-						} else $col_value = "";
-					}
-				} else $col_value = "";
-				$to_print .= $col_value.";";
-			}
-			$to_print = iconv(mb_internal_encoding(),"ISO-8859-1",html_entity_decode($to_print, ENT_COMPAT));
-			echo "$to_print\n";
-		}
-		die();
-	}
 	
 	
 	
@@ -1273,9 +1198,7 @@ class ReportingController extends ApplicationController {
 		if(isset($object_type)){
 			$customProperties = CustomProperties::getAllCustomPropertiesByObjectType($object_type);
 			$objectFields = array();
-			foreach($customProperties as $cp){
-				$fields[] = array('id' => $cp->getId(), 'name' => $cp->getName(), 'type' => $cp->getType(), 'values' => $cp->getValues(), 'multiple' => $cp->getIsMultipleValues());
-			}
+			
 			$ot = ObjectTypes::findById($object_type);
 			eval('$managerInstance = ' . $ot->getHandlerClass() . "::instance();");
 			$objectColumns = $managerInstance->getColumns();

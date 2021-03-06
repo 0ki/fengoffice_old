@@ -14,6 +14,10 @@ abstract class ContentDataObject extends ApplicationDataObject {
 	 */
 	var $object;
 	
+	var $memberIds = null ;
+	
+	var $members = null ;
+	
 	/**
 	 * 
 	 * @var string
@@ -56,6 +60,9 @@ abstract class ContentDataObject extends ApplicationDataObject {
 	
 	
 	protected $all_comments = null;
+	protected $comments = null;
+	
+	protected $timeslots = null;
 	
 	/**
 	 * 
@@ -151,8 +158,11 @@ abstract class ContentDataObject extends ApplicationDataObject {
 	function getObjectName() {
 		return $this->object->getName();
 	} // getName()
-	
-	
+
+	function getName() {
+		return $this->getObjectName();
+	} // getName()
+
 	function getTitle(){
 		return $this->getObjectName();
 	}
@@ -767,11 +777,6 @@ abstract class ContentDataObject extends ApplicationDataObject {
 			$searchable_object->setContent($comment->getText());
 			 
 			$searchable_object->save();
-			try {
-				Notifier::newObjectComment($comment, $this->getSubscribers());
-			} catch(Exception $e) {
-				// nothing here, just suppress error...
-			} // try
 		}
 		return true;
 	} // onAddComment
@@ -1228,7 +1233,13 @@ abstract class ContentDataObject extends ApplicationDataObject {
 	 *
 	 */
 	function getMemberIds() {
-		return ObjectMembers::getMemberIdsByObject($this->getId());
+		
+		if (is_null($this->memberIds)) {
+			 $this->memberIds = ObjectMembers::getMemberIdsByObject($this->getId());
+		}
+		return $this->memberIds ;
+		
+		//return ObjectMembers::getMemberIdsByObject($this->getId());
 	}
 	
 	
@@ -1237,7 +1248,10 @@ abstract class ContentDataObject extends ApplicationDataObject {
 	 *
 	 */
 	function getMembers() {
-		return ObjectMembers::getMembersByObject($this->getId());
+		if ( is_null($this->members) ) {
+			$this->members =  ObjectMembers::getMembersByObject($this->getId());
+		}
+		return $this->members ;
 	}
 	
 	
@@ -1257,18 +1271,20 @@ abstract class ContentDataObject extends ApplicationDataObject {
 		$oid = $this->getId();
 		$tid = $this->getObjectTypeId() ;
 		
+		$table_prefix = defined('FORCED_TABLE_PREFIX') && FORCED_TABLE_PREFIX ? FORCED_TABLE_PREFIX : TABLE_PREFIX;
+		
 		$sql_from = "
-			".TABLE_PREFIX."contact_member_permissions cmp
+			".$table_prefix."contact_member_permissions cmp
 			INNER JOIN
-				".TABLE_PREFIX."members m ON m.id = cmp.member_id
+				".$table_prefix."members m ON m.id = cmp.member_id
 			INNER JOIN
-				".TABLE_PREFIX."dimensions d ON d.id = m.dimension_id ";
+				".$table_prefix."dimensions d ON d.id = m.dimension_id ";
 		
 		$sql_where = "
-			member_id IN ( SELECT distinct (member_id) FROM ".TABLE_PREFIX."object_members WHERE object_id = $oid ) AND
+			member_id IN ( SELECT member_id FROM ".$table_prefix."object_members WHERE object_id = $oid ) AND
 			cmp.object_type_id = $tid";
 		
-		$sql_fields = "distinct(dimension_id) as did" ;
+		$sql_fields = "dimension_id as did" ;
 		
 		$sql = "
 			SELECT 
@@ -1277,21 +1293,20 @@ abstract class ContentDataObject extends ApplicationDataObject {
 				$sql_from
 			WHERE
 				$sql_where AND
-				d.defines_permissions = 1
-		
-		";
+				d.defines_permissions = 1 ";
 				
-		// Find dimension that defines permission		
+		//1. Find dimension that defines permission		
 		$res = DB::execute($sql);
 		$dids = array();
 		while ($row  = $res->fetchRow() ) {
-			$dids[] = $row['did'] ;
+			$dids[$row['did']] = $row['did'] ;
 		}
-
+		$dids = array_values($dids);
+		
+		//2.1 If there are dimensions that defines permissions containing any of the object members
 		if ( count($dids) ){
-			$sql_fields = "distinct(permission_group_id)  AS group_id" ;
+			$sql_fields = "permission_group_id  AS group_id" ;
 			
-			$did = array_pop($dids);
 			$sql = "
 				SELECT 
 				  $sql_fields	
@@ -1299,28 +1314,16 @@ abstract class ContentDataObject extends ApplicationDataObject {
 				  $sql_from
 				WHERE
 				  $sql_where AND
-				  d.id = $did
-			";
-			
-			foreach ( $dids as $did ) {
-				$sql .= "AND permission_group_id IN ( 
-					SELECT 
-					  $sql_fields
-					FROM
-					  $sql_from
-					WHERE
-					  $sql_where AND
-					  d.id = $did 
-				)";
-				
-			} 
-			
+				  d.id IN (". implode(',',$dids).")";
+				  
 			$res = DB::execute($sql);
 			$gids = array();
 			while ( $row = $res->fetchRow() ) {
-				$gids[] = $row['group_id'];
+				$gids[$row['group_id']] = $row['group_id'];
 			}
+			$gids = array_values($gids);
 		}else { 
+			// 2.2 No memeber dimensions defines permissions. 
 			// No esta en ninguna dimension que defina permisos, El objecto esta en algun lado
 			// => En todas las dimensiones en la que está no definen permisos => Busco todos los grupos
 			$groups  = PermissionGroups::instance()->findAll();
@@ -1330,7 +1333,8 @@ abstract class ContentDataObject extends ApplicationDataObject {
 			}
 		}
 		$stManager = SharingTables::instance();
-		$stManager->insertPermissions($gids, $oid); 
+		$stManager->populateGroups($gids, $oid); 
+		 
 	}
 	
 	
@@ -1341,9 +1345,6 @@ abstract class ContentDataObject extends ApplicationDataObject {
 	
 	
 	function getAllowedMembersToAdd(Contact $user, $enteredMembers){
-		if ($this->getObjectTypeName() == 'quota') { 
-			return $enteredMembers;
-		}
 		
 		$validMembers = array();
 		foreach ($enteredMembers as $m) {
@@ -1471,7 +1472,7 @@ abstract class ContentDataObject extends ApplicationDataObject {
 	 * @return boolean
 	 */
 	function getTimeslots() {
-		if(is_null($this->timeslots)) {
+		if(!isset($this->timeslots) || is_null($this->timeslots)) {
 			$this->timeslots = Timeslots::getTimeslotsByObject($this);
 		}
 		return $this->timeslots;
@@ -1617,6 +1618,23 @@ abstract class ContentDataObject extends ApplicationDataObject {
 				}
 			}
 		}
+	}
+	
+	
+	function getMembersToDisplayPath() {
+		$members_info = array();
+		$all_members = $this->getMembers();
+		foreach ($all_members as $mem) {/* @var $mem Member */
+			$options = $mem->getDimension()->getOptions(true);
+			if (isset($options->showInPaths) && $options->showInPaths) {
+				if (!isset($members_info[$mem->getDimensionId()])) $members_info[$mem->getDimensionId()] = array();
+				$members_info[$mem->getDimensionId()][$mem->getId()] = array(
+					'ot' => $mem->getObjectTypeId(),
+				);
+			}
+		}
+		
+		return $members_info;
 	}
 	
 }

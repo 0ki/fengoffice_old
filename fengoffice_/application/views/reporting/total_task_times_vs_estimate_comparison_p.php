@@ -31,7 +31,7 @@
 				$options = array();
 				$options[] = option_tag('-- ' . lang('anyone') . ' --', 0, array('selected' => 'selected'));
 				foreach($users as $user){
-					$options[] = option_tag($user->getDisplayName(),$user->getId());
+					$options[] = option_tag($user->getObjectName(),$user->getId());
 				}
 				echo select_box('report[user]', $options);
 			?></td>

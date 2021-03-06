@@ -32,26 +32,31 @@
 ul.x-tab-strip
 {
 	background: #fff;
-	padding-top: 15px;
+	/* padding-top: 15px; */
+	padding-top: 5px;
+}
+
+ul.x-tab-strip-top {
+	border-bottom: 0px none;
 }
 
 ul.x-tab-strip li
 {
-	background: #85AD37;
+	background: #179136;
 	border-radius: 5px 5px 0px 0px;
 	padding: 0px 5px 0px 10px;
-	border: solid 2px #85AD37;
+	border: solid 2px #179136;
 	border-bottom: none;	
 }
 
 ul.x-tab-strip li.x-tab-strip-active
 {
-	background: #F0F0F0 !important; 
+	background: #DEEFDE !important; 
 }
 
 ul.x-tab-strip li.x-tab-strip-active span.x-tab-strip-text
 {
-	color: #000 !important;	
+	color: #166029 !important;	
 }
 
 .x-tab-strip span.x-tab-strip-text{
@@ -167,7 +172,8 @@ input.x-tree-node-cb {
 .x-accordion-hd {
     color: #fff;
     font-weight: bold ;
-	background: #85AD37; 
+	background: #179136;
+	border-radius: 3px 3px 0 0;
 }
 
 .x-tree-node .x-tree-selected {

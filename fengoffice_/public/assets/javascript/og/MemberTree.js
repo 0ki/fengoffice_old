@@ -19,8 +19,7 @@ og.MemberTree = function(config) {
 			}
 		}
 	}];
-	
-	if (config.isManageable) {
+	if (config.quickAdd) {
 		tbar.push ({
 	    	xtype: 'box',
 	    	ctCls: 'member-quick-form-link', 
@@ -43,11 +42,13 @@ og.MemberTree = function(config) {
     		ownerTree: this  
     	}),
 		autoScroll: true,
-		rootVisible: true,
+		//rootVisible: false,
 		root: {
-        	text: lang('All'),
+        	text: lang('view all'),
         	id:0,
-        	iconCls : 'root'
+        	href: "#",
+        	iconCls : 'root',
+        	cls: 'root'
     	},
     	enableDrop: true,
     	ddGroup: 'MemberDD',
@@ -56,6 +57,7 @@ og.MemberTree = function(config) {
     	selModel: (config.multipleSelection)? new Ext.tree.MultiSelectionModel() : new Ext.tree.DefaultSelectionModel(),
     	dimensionId: config.dimensionId,
     	dimensionCode: config.dimensionCode, 
+    	cls: config.dimensionCode,
     	reloadHidden: true, //To force tree reload when is hidden 
     	height: 210,
     	animate: false,
@@ -78,7 +80,7 @@ og.MemberTree = function(config) {
     	expandMode: 'root', //all root,
     	tbar: tbar 
 	});
-	
+	config.initialLoader = config.loader;
 	if (!config.listeners) config.listeners = {};
 	Ext.apply(config.listeners, {
 		beforenodedrop: function(e) {
@@ -112,6 +114,7 @@ og.MemberTree = function(config) {
 			if  (node.getDepth() == 0 ){
 				
 				// Fire 'all' selection for other trees 
+				/*
 				var trees = this.ownerCt.items;
 				if ( trees){
 					trees.each( function (item, index, length){
@@ -124,7 +127,7 @@ og.MemberTree = function(config) {
 						}
 					});
 				}
-				
+				*/
 				// Manage dashborad
 				if ( treeConf.dimensionOptions.defaultAjax ){
 					var controller =  treeConf.dimensionOptions.defaultAjax.controller ;
@@ -136,10 +139,10 @@ og.MemberTree = function(config) {
 			}else{
 				// Member selection (not root)
 				if (node.object_id && node.options && node.options.defaultAjax && node.options.defaultAjax.controller && node.options.defaultAjax.action) {
-					// Set custom dashborad but fire 'reload' only if selection didnt change.
-					// (If selection changes its fired automatically)
 					var reload = ( this.getSelectionModel() && this.getSelectionModel().getSelectedNode() && this.getSelectionModel().getSelectedNode().id  ==  node.id );
 					og.customDashboard( node.options.defaultAjax.controller, node.options.defaultAjax.action, {id: node.object_id}, reload);
+				}else{
+					og.resetDashboard();
 				}
 			
 			}
@@ -166,7 +169,7 @@ og.MemberTree = function(config) {
 						var member = 0 ; 
 					}
 					if (!this.hidden) {
-						og.contextManager.addActiveMember(member, this.dimensionId );
+						og.contextManager.addActiveMember(member, this.dimensionId, node );
 					}
 					if ( this.filterOnChange ) {
 						var trees = this.ownerCt.items;
@@ -214,7 +217,7 @@ og.MemberTree = function(config) {
 						} else {
 							var member = 0;
 						}
-						og.contextManager.addActiveMember(member, this.dimensionId );
+						og.contextManager.addActiveMember(member, this.dimensionId, node );
 					}
 				}
 			}
@@ -319,7 +322,7 @@ Ext.extend(og.MemberTree, Ext.tree.TreePanel, {
 		selModel.suspendEvents();
 		var node = this.getRootNode() ;
 		selModel.select(node) ;
-		if (!this.hidden) og.contextManager.addActiveMember(0, this.dimensionId );
+		if (!this.hidden) og.contextManager.addActiveMember(0, this.dimensionId, node );
 		selModel.resumeEvents();
 
 	},
@@ -370,6 +373,14 @@ Ext.extend(og.MemberTree, Ext.tree.TreePanel, {
 		}
 		
 		
+	},
+	
+	hideRoot: function () {
+		this.addClass("root-hidden");
+	},
+	
+	showRoot: function () {
+		this.removeClass("root-hidden");
 	},
 	
 	filterByMember: function(memberId, callback) {

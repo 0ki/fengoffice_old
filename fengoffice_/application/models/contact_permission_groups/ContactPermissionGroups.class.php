@@ -19,8 +19,9 @@
  				$pg_ids [] = $pg_id;
  			}
  			else {
- 				if (!$pg->getPermissionGroup()->getIsContext())
+ 				if ($pg->getPermissionGroup() instanceof PermissionGroup && !$pg->getPermissionGroup()->getIsContext()) {
  					$pg_ids [] = $pg_id;
+ 				}
  			}
  		}
  		if ($pg_ids != null){
@@ -39,8 +40,8 @@
  		
  		foreach ($pgs as $pg){
  			$pg_id = $pg->getPermissionGroupId();
- 			if ($pg->getPermissionGroup()->getIsContext()){
- 					$pg_ids [] = $pg_id;
+ 			if ($pg->getPermissionGroup() instanceof PermissionGroup && $pg->getPermissionGroup()->getIsContext()){
+ 				$pg_ids [] = $pg_id;
  			}
  		}
  		$csv_pg_ids = $pg_ids != null ? implode(',',$pg_ids) : 0;

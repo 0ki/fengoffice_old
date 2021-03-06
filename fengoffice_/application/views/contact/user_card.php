@@ -21,7 +21,7 @@
 		</div>
 	<?php } ?>
 		
-  <div class="cardIcon"><img src="<?php echo $user->getAvatarUrl() ?>" alt="<?php echo clean($user->getDisplayName()) ?> avatar" /></div>
+  <div class="cardIcon"><img src="<?php echo $user->getAvatarUrl() ?>" alt="<?php echo clean($user->getObjectName()) ?> avatar" /></div>
   <div class="cardData">
     
     <div class="cardBlock">

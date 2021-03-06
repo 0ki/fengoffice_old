@@ -101,38 +101,26 @@ function select_users_or_groups($name = "", $selected = null, $id = null) {
 	if (!isset($id)) $id = gen_id();
 		
 	$selectedCSV = "";
-	
 	$json = array();
-	
-	$comp_array = array();
-	$companies = Contacts::findAll(array("conditions" => "is_company = 1", 'order' => 'name'));
-	$comp_ids = array();
-	foreach ($companies as $company) {
-		$comp_ids[] = $company->getId();
-		$comp_array[$company->getId()] = array('id' => $company->getId(), 'name' => $company->getObjectName(), 'users' => array() );
-	}
-	
-	if (logged_user()->isMemberOfOwnerCompany()) {
-		$companies = Contacts::findAll(array("conditions" => "is_company = 1", 'order' => 'name'));
-	} else {
-		$companies = array(owner_company(), logged_user()->getCompany());
-	}
 	
 	$company_users = Contacts::getGroupedByCompany();
 	foreach ($company_users as $company_row){
 		$company = $company_row['details'];
 		$users = $company_row['users'];
 		
+		$comp_id = $company instanceof Contact ? $company->getId() : "0";
+		$comp_name = $company instanceof Contact ? $company->getObjectName() : lang('without company');
+		
 		if (count($users) > 0) {
 			$json[] = array(
 				'p' => 'users',
 				't' => 'company',
-				'id' => 'c' . $company->getId(),
-				'n' => $company->getObjectName(),
+				'id' => 'c' . $comp_id,
+				'n' => $comp_name,
 			);
 			foreach ($users as $u) {
 				$json[] = array(
-					'p' => 'c' . $company->getId(),
+					'p' => 'c' . $comp_id,
 					't' => 'user',
 					'g' => $u->isGuest() ? 1 : 0,
 					'id' => $u->getPermissionGroupId(),
@@ -188,7 +176,7 @@ function allowed_users_to_assign($context = null) {
 	if ($context == null) {
 		$context = active_context();
 	}
-	$comp_array = array();
+	
 	// only companies with users
 	$companies = Contacts::findAll(array(
 		"conditions" => "e.is_company = 1",
@@ -200,15 +188,26 @@ function allowed_users_to_assign($context = null) {
 		"order" => "name"
 	));
 
-	$comp_ids = array();
+	$comp_ids = array("0");
+	$comp_array = array("0" => array('id' => "0", 'name' => lang('without company'), 'users' => array() ));
+	
 	foreach ($companies as $company) {
 		$comp_ids[] = $company->getId();
 		$comp_array[$company->getId()] = array('id' => $company->getId(), 'name' => $company->getObjectName(), 'users' => array() );
 	}
 	
-	$contacts = allowed_users_in_context(ProjectTasks::instance()->getObjectTypeId(), $context, ACCESS_LEVEL_READ, "AND `is_company`=0 AND `company_id` IN (".implode(",", $comp_ids).")");
-	foreach ($contacts as $contact) {
-		$comp_array[$contact->getCompanyId()]['users'][] = array('id' => $contact->getId(), 'name' => $contact->getObjectName(), 'isCurrent' => $contact->getId() == logged_user()->getId());
+	if(!can_manage_tasks(logged_user()) && can_task_assignee(logged_user())) {
+		$contacts = array(logged_user());
+	} else if (can_manage_tasks(logged_user())) {
+		$contacts = allowed_users_in_context(ProjectTasks::instance()->getObjectTypeId(), $context, ACCESS_LEVEL_READ, "AND `is_company`=0 AND `company_id` IN (".implode(",", $comp_ids).")");
+	} else {
+		$contacts = array();
+	}
+	
+	foreach ($contacts as $contact) { /* @var $contact Contact */
+		if ( TabPanelPermissions::instance()->count( array( "conditions" => "permission_group_id = ".$contact->getPermissionGroupId(). " AND tab_panel_id = 'tasks-panel' " ))){
+			$comp_array[$contact->getCompanyId()]['users'][] = array('id' => $contact->getId(), 'name' => $contact->getObjectName(), 'isCurrent' => $contact->getId() == logged_user()->getId());
+		}
 	}
 	return array_values($comp_array);
 }
@@ -276,7 +275,7 @@ function user_select_box($list_name, $selected = null, $attributes = null) {
 	if(is_array($users)) {
 		foreach($users as $user) {
 			$option_attributes = $user->getId() == $selected ? array('selected' => 'selected') : null;
-			$options[] = option_tag($user->getDisplayName(), $user->getId(), $option_attributes);
+			$options[] = option_tag($user->getObjectName(), $user->getId(), $option_attributes);
 		}
 	} 
 
@@ -973,7 +972,7 @@ function filter_assigned_to_select_box($list_name, $project = null, $selected = 
 			if(is_array($users)) {
 				foreach($users as $user) {
 					$option_attributes = $company_id . ':' . $user->getId() == $selected ? array('selected' => 'selected') : null;
-					$options[] = option_tag($user->getDisplayName() . ' : ' . $company->getObjectName() , $company_id . ':' . $user->getId(), $option_attributes);
+					$options[] = option_tag($user->getObjectName() . ' : ' . $company->getObjectName() , $company_id . ':' . $user->getId(), $option_attributes);
 				} // foreach
 			} // if
 
@@ -1011,97 +1010,21 @@ function render_context_help($view, $description_key, $option_name = null, $help
 }
 
 
-/**
- * 
- * @author Ignacio Vazquez - elpepe.uy@gmail.com
- * @param unknown_type $content_object_type_id
- * @param unknown_type $genid
- * @param unknown_type $selected_members
- * @param unknown_type $options
- * @param unknown_type $skipped_dimensions
- * @param unknown_type $simulate_required
- */
-function ___render_dimension_trees($content_object_type_id, $genid = null, $selected_members = null, $options = array(), $skipped_dimensions = null, $simulate_required = null) { 
-		if (is_numeric($content_object_type_id)) {
-			if (is_null($genid)) $genid = gen_id();
-			
-			$all_dimensions = Dimensions::getAllowedDimensions($content_object_type_id); // Diemsions for this content type
-			
-			
-			
-			$user_dimensions  = get_user_dimensions_ids(); // User allowed dimensions
-			$dimensions = array() ;
+function has_context_to_render($content_object_type_id) {
+	if (is_numeric($content_object_type_id)) {
+		$user_dimensions  = get_user_dimensions_ids(); // User allowed dimensions
+		$dimensions = array() ;
+		if ( $all_dimensions = Dimensions::getAllowedDimensions($content_object_type_id) ) { // Diemsions for this content type
 			foreach ($all_dimensions as $dimension){ // A kind of intersection...
-				if ( isset($user_dimensions[$dimension['dimension_id']] ) ){
-					$dimensions[] = $dimension ;
-				}
-			} 
-			if ($dimensions!= null) {
-				
-				if (is_null($selected_members) && array_var($options, 'select_current_context')) {
-					$context = active_context();
-					$selected_members = array();
-					foreach ($context as $selection) {
-						if ($selection instanceof Member) $selected_members[] = $selection->getId(); 
-					}
-				}
-				
-				$selected_members_json = json_encode($selected_members);
-				$component_id  = "$genid-member-chooser-panel-$content_object_type_id" ;
-				
-				if (isset($options['layout']) && in_array($options['layout'], array('horizontal', 'column'))) {
-					$layout = $options['layout'];
-				} else {
-					//$layout = count($dimensions) > 5 ? "horizontal" : "column";
-					$layout = "column";
-				}
- 
-				foreach ($dimensions as $dimension) {
-					$dimension_id = $dimension['dimension_id'];
-					if (is_array($skipped_dimensions) && in_array($dimension_id, $skipped_dimensions)) continue;
-					
-					if ( is_array(array_var($options, 'allowedDimensions')) && array_search($dimension_id, $options['allowedDimensions']) === false ){
-						continue;	 
-					}
-
-					if (!$dimension['is_manageable']) continue;
-					
-					$is_required = $dimension['is_required'];				
-					$dimension_name = $dimension['dimension_name'] ;				
-					$dimension_code = $dimension['dimension_code'] ;				
-					if ($is_required) $dimension_name.= " *" ;
-					
-					if (is_array($simulate_required) && in_array($dimension_id, $simulate_required))
-						$is_required = true;
-					
-					if (!isset($id)) $id = gen_id();
-					echo "<input type='hidden' name='members[$dimension_code]' id = 'members-$dimension_code' />" ;
-					echo label_tag($dimension_name);
-					echo "<a href='#' class='mc-button' >Select Members</a>";
-					//	renderTo: 'members-".$dimension_code.",'
-					echo "<script>";
-					echo "var mc = new og.MemberChooser({
-						baseUrl: og.makeAjaxUrl(og.getUrl('dimension','initial_list_dimension_members_tree' )) ,
-						dimensionId: '$dimension_id',
-						objectTypeId: '$content_object_type_id'
-					});	";
-					echo "$('.mc-button').click(function(){mc.toggle($(this))});";
-					//	echo "mc.render()";
-					echo "</script>";
-					
-				}
-					
- 
-				if (Plugins::instance()->isActivePlugin('core_dimensions')) {
-					$users_dim = Dimensions::findOne(array("conditions" => "`code` = 'feng_users'"));
-					$show_personal_member_warning = $users_dim instanceof Dimension && logged_user()->getPersonalMemberId() > 0;
-					if ($show_personal_member_warning) {
-						?><div class="contextualHelp"><?php echo lang('personal member warning')?></div><?php
-					}
+				if ( isset($user_dimensions[$dimension['dimension_id']] ) && $dimension['is_manageable'] ){
+					return true;					
 				}
 			}
-		}
+		} 
+	}
+	return false; 
 }
+
 /**
  * 
  * @author Ignacio Vazquez - elpepe.uy@gmail.com
@@ -1121,6 +1044,11 @@ function render_dimension_trees($content_object_type_id, $genid = null, $selecte
 			if ( $all_dimensions = Dimensions::getAllowedDimensions($content_object_type_id) ) { // Diemsions for this content type
 				foreach ($all_dimensions as $dimension){ // A kind of intersection...
 					if ( isset($user_dimensions[$dimension['dimension_id']] ) ){
+						if( $dimension_options = json_decode($dimension['dimension_options'])){
+							if (isset($dimension_options->useLangs) && $dimension_options->useLangs ) {
+								$dimension['dimension_name'] = lang($dimension['dimension_code']);
+							}
+						}
 						$dimensions[] = $dimension ;
 					}
 				}

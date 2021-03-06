@@ -13,6 +13,7 @@
     // General
     'invalid email address' => 'Email address format is not valid',
 	'error invalid recipients' => 'Invalid email addresses found in field "{0}": {1}',
+	'no context permissions to add' => 'You don\'t have permissions to add {0} in the selected context',
 
     // Company validation errors
     'company name required' => 'Company / organization name is required',
@@ -28,8 +29,8 @@
     'passwords dont match' => 'Passwords don\'t match',
     'old password required' => 'Old password value is required',
     'invalid old password' => 'Old password is not valid',
-    'users must belong to a company' => 'Contacts must belong to a company in order to generate a user',
-    'contact linked to user' => 'Contact is linked to user {0}',
+    'users must belong to a company' => 'Person must belong to a company in order to generate a user',
+    'contact linked to user' => 'Person is linked to user {0}',
   
   	// Password validation errors
   	'password invalid min length' => 'Password length must be at least {0} characters',
@@ -150,7 +151,7 @@
     'must choose at least one workspace error' => 'You must choose at least one workspace where to put the object.',
     
     
-    'user has contact' => 'There is a contact already assigned to this user',
+    'user has contact' => 'There is a person already assigned to this user',
     
     'maximum number of users reached error' => 'The maximum number of users has been reached',
 	'maximum number of users exceeded error' => 'The maximum number of users has been exceeded. The application will not work anymore until this issue is resolved.',
@@ -183,13 +184,13 @@
   	'this object must belong to a ws to modify its subscribers' => 'This object must belong to a workspace to modify its subscribers.',
 
   	'mailAccount dnx' => 'Email account does not exist',
-  	'error add contact from user' => 'Could not add contact from user.',
+  	'error add contact from user' => 'Could not add person from user.',
   	'zip not supported' => 'ZIP is not supported by the server',
   	'no tag specified' => 'No tag specified',
   
     'no mailAccount error' => 'Action unavailable. You do not have an email account added.',
 	'content too long not loaded' => 'Previous email content is too long and was not loaded, but will be sent with this email.',
-  
+  	'member name already exists in dimension' => 'Member \'{0}\' already exists in selected dimension.',  
 	'must choose at least one member of' => 'You must choose at least one member of {0}.',
   ); // array
 

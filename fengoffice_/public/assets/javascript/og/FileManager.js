@@ -16,7 +16,7 @@ og.FileManager = function() {
 		'dateUpdated', 'dateUpdated_today',
 		'icon', 'wsIds', 'manager', 'checkedOutById',
 		'checkedOutByName', 'mimeType', 'isModifiable',
-		'modifyUrl', 'songInfo', 'ftype', 'url', 'ix','isRead', 'isMP3'
+		'modifyUrl', 'songInfo', 'ftype', 'url', 'ix','isRead', 'isMP3', 'memPath'
 	];
 
 	og.eventManager.fireEvent('hook_document_classification', this.fields);	
@@ -67,11 +67,15 @@ og.FileManager = function() {
 		var classes = readClass + r.id;
 		if (!r.data.isRead) classes += " bold";
 		
-		var name = String.format(
+		mem_path = "";
+		var mpath = Ext.util.JSON.decode(r.data.memPath);
+		if (mpath) mem_path = og.getCrumbHtml(mpath);
+		
+		var name = mem_path + String.format(
 			'<a style="font-size:120%;" class="{3}" href="{2}" onclick="og.openLink(\'{2}\');return false;">{0}</a>',
 			og.clean(value), r.data.name, og.getUrl('files', 'file_details', {id: r.data.object_id}), classes);
 		
-		return String.format('<span class="project-replace">{0}</span>&nbsp;', r.data.wsIds) + name;
+		return name;
 	}
 	function renderIsRead(value, p, r){
 		var idr = Ext.id();
@@ -110,7 +114,7 @@ og.FileManager = function() {
 		if (!value) {
 			return "";
 		}
-		var userString = String.format('<a href="{1}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', r.data.updatedBy, og.getUrl('contact', 'card_user', {id: r.data.updatedById}));
+		var userString = String.format('<a href="{1}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', r.data.updatedBy, og.getUrl('contact', 'card', {id: r.data.updatedById}));
 	
 		var now = new Date();
 		var dateString = '';
@@ -125,7 +129,7 @@ og.FileManager = function() {
 		if (!value) {
 			return "";
 		}
-		var userString = String.format('<a href="{1}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', r.data.createdBy, og.getUrl('contact', 'card_user', {id: r.data.createdById}));
+		var userString = String.format('<a href="{1}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', r.data.createdBy, og.getUrl('contact', 'card', {id: r.data.createdById}));
 	
 		var now = new Date();
 		var dateString = '';
@@ -152,7 +156,7 @@ og.FileManager = function() {
 			else
 				return '<div class="ico-locked" style="display:block;height:16px;background-repeat:no-repeat;padding-left:18px">' +
 					lang('checked out by', String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', 
-					r.data.checkedOutByName, og.getUrl('contact', 'card_user', {id: r.data.checkedOutById}))) + '</div>';
+					r.data.checkedOutByName, og.getUrl('contact', 'card', {id: r.data.checkedOutById}))) + '</div>';
 		} else {
 			return "--";
 		}
@@ -561,7 +565,7 @@ og.FileManager = function() {
 		tbar.push(actions.newCO);
 		tbar.push('-');
 		tbar.push(actions.properties);
-		tbar.push(actions.zip_add);
+		//tbar.push(actions.zip_add);
 		tbar.push(actions.archive);
 		tbar.push(actions.del);		
 		tbar.push('-');

@@ -131,13 +131,29 @@ og.config.use_tasks_dependencies = '<?php echo config_option('use tasks dependen
 </div>
 
 <script type="text/javascript">
+	og.dimensions = [];
+	<?php
+		$dimensions = Dimensions::findAll(); 
+		foreach ($dimensions as $dim) :
+			$members = $dim->getAllMembers(); 
+	?>
+			var members = [];
+	<?php	foreach ($members as $member) : ?>
+				members[<?php echo $member->getId()?>] = {
+					id:<?php echo $member->getId()?>,
+					name:'<?php echo str_replace(array("'", "\\"), array("","\\\\" ), clean($member->getName())) ?>',
+					ot:<?php echo $member->getObjectTypeId()?>,
+					ico:'<?php echo $member->getIconClass()?>'
+				};
+	<?php 	endforeach; ?>
+			og.dimensions[<?php echo $dim->getId()?>] = members;
+			
+	<?php endforeach;?>
+	
 	if (!ogTasks.tasks_object_type_id) ogTasks.tasks_object_type_id = '<?php echo ProjectTasks::instance()->getObjectTypeId() ?>';
-	try {
-		if (rx__TasksDrag)
-			rx__TasksDrag.initialize();
-	} catch (e) {
-		// by doing this d&d doesn't work but at least tasks are listed in Safari 3.1
-	}
+	if (rx__TasksDrag)
+		rx__TasksDrag.initialize();
+
 	ogTasks.userPreferences = Ext.util.JSON.decode(document.getElementById('hfUserPreferences').value);
 
 	var mili = 0;

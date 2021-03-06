@@ -28,8 +28,8 @@
 		?>
 <div style='padding-bottom:20px;max-width:700px'>
 <div style="padding:10px;padding-bottom:13px;background-color:#D7E5F5">
-	<h1 style="font-size:140%;font-weight:bold"><a class="internalLink" href="<?php echo $company->getCardUrl() ?>"><?php echo clean($company->getObjectName()) ?></a></h1>
-	<div style="float:right;" id="companypagination<?php echo $company->getId(); ?>"></div>
+	<h1 style="font-size:140%;font-weight:bold"><a class="internalLink" href="<?php echo ($company instanceof Contact ? $company->getCardUrl() : "#") ?>"><?php echo ($company instanceof Contact ? clean($company->getObjectName()) : lang('without company')) ?></a></h1>
+	<div style="float:right;" id="companypagination<?php echo ($company instanceof Contact ? $company->getId() : "0"); ?>"></div>
 </div>
 <div id="usersList" style="border:1px solid #DDD">
 

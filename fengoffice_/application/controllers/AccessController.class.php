@@ -433,10 +433,10 @@ class AccessController extends ApplicationController {
 	 * @return null
 	 */
 	function forgot_password() {
-		$your_email = trim(array_var($_POST, 'your_email'));
+		$your_email = trim(array_var($_REQUEST, 'your_email'));
 		tpl_assign('your_email', $your_email);
 
-		if(array_var($_POST, 'submited') == 'submited') {
+		if(array_var($_REQUEST, 'submited') == 'submited') {
 			if(!is_valid_email($your_email)) {
 				tpl_assign('error', new InvalidEmailAddressError($your_email, lang('invalid email address')));
 				$this->render();
@@ -462,7 +462,7 @@ class AccessController extends ApplicationController {
 				flash_error(lang('error forgot password'));
 			} // try
 
-			$this->redirectTo('access', 'forgot_password');
+			$this->redirectTo('access', 'forgot_password', array('instructions_sent'=>1));
 		} // if
 	} // forgot_password
 
@@ -500,40 +500,51 @@ class AccessController extends ApplicationController {
 
 				// Create a company
 				$company = new Contact();
-				$company->setId(1);
 				$company->setFirstName(array_var($form_data, 'company_name'));
 				$company->setObjectName();
-				$company->setCreatedById(2);
-				$company->setUpdatedById(2);
 				$company->setIsCompany(true);
 				$company->save();
 
 				// Create the administrator user
 				$administrator = new Contact();
-				$administrator->setId(2);
-				$administrator->setUserType(2);
-				$administrator->setCompanyId(1);
+				$pergroup = PermissionGroups::findOne(array('conditions'=>"`name`='Super Administrator'"));
+				$administrator->setUserType($pergroup->getId());
+				$administrator->setCompanyId($company->getId());
 				$administrator->setUsername(array_var($form_data, 'admin_username'));
-				$administrator->addEmail(array_var($form_data, 'admin_email'), 'user', true);
-				$administrator->addEmail(array_var($form_data, 'admin_email'), 'personal', true);
+				
+				
 				$administrator->setPassword($admin_password);
-				$administrator->setFirstname($administrator->getDisplayName());
+				$administrator->setFirstname(array_var($form_data, 'admin_username'));
 				$administrator->setObjectName();
-
+				$administrator->save();
+				
+				$user_password = new ContactPassword();
+				$user_password->setContactId($administrator->getId());
+				$user_password->password_temp = $admin_password;
+				$user_password->setPasswordDate(DateTimeValueLib::now());
+				$user_password->setPassword(cp_encrypt($admin_password, $user_password->getPasswordDate()->getTimestamp()));
+				$user_password->save();
+				
+				//Add email after save because is needed. 
+				$administrator->addEmail(array_var($form_data, 'admin_email'), 'personal', true);
+				
 				//permissions
 				$permission_group = new PermissionGroup();
 				$permission_group->setName('Account Owner');
-				$permission_group->setContactId(2);
+				$permission_group->setContactId($administrator->getId());
 				$permission_group->setIsContext(false);
-				$permission_group->setId(1);
 				$permission_group->save();
 				
-				$administrator->setPermissionGroupId(1);
+				$administrator->setPermissionGroupId($permission_group->getId());
 				$administrator->save();
 				
+				$company->setCreatedById($administrator->getId());
+				$company->setUpdatedById($administrator->getId());
+				$company->save();
+				
 				$contact_pg = new ContactPermissionGroup();
-				$contact_pg->setContactId(2);
-				$contact_pg->setPermissionGroupId(1);
+				$contact_pg->setContactId($administrator->getId());
+				$contact_pg->setPermissionGroupId($permission_group->getId());
 				$contact_pg->save();
 				
 				// tab panel permissions
@@ -581,7 +592,7 @@ class AccessController extends ApplicationController {
 				
 				// system permissions
 				$sp = new SystemPermission();
-				$sp->setPermissionGroupId(1);
+				$sp->setPermissionGroupId($administrator->getPermissionGroupId());
 				$sp->setAllPermissions(true);
 				$sp->save();
 				

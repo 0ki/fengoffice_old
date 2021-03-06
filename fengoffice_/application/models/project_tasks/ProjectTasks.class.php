@@ -40,7 +40,13 @@ class ProjectTasks extends BaseProjectTasks {
 			$assigned_to_str = " AND `e`.`assigned_to_contact_id` = " . DB::escape ( $assigned_to_contact ) . " ";
 		}
 			
-		$result = self::getContentObjects($context, ObjectTypes::findById(self::instance()->getObjectTypeId()), 'due_date', 'ASC', ' AND `is_template` = false' . $archived_cond . $assigned_to_str . $open_timeslot);
+		//$result = self::getContentObjects($context, ObjectTypes::findById(self::instance()->getObjectTypeId()), 'due_date', 'ASC', ' AND `is_template` = false' . $archived_cond . $assigned_to_str . $open_timeslot);
+		$result = self::instance()->listing(array(
+			"order" => 'due_date',
+			"order_dir" => "ASC",
+			"extra_conditions" => ' AND `is_template` = false' . $archived_cond . $assigned_to_str . $open_timeslot
+		));
+
 		$objects = $result->objects;
 
 		return $objects;
@@ -117,7 +123,10 @@ class ProjectTasks extends BaseProjectTasks {
 		
 		$conditions = DB::prepareString(' AND `is_template` = false AND `completed_on` = ? AND ((`due_date` >= ? AND `due_date` < ?) OR (`start_date` >= ? AND `start_date` < ?) OR ' . $rep_condition . ') ' . $archived_cond . $assignedFilter, array(EMPTY_DATETIME, $from_date, $to_date, $from_date, $to_date));
 
-		$result = self::getContentObjects(active_context(), ObjectTypes::findById(ProjectTasks::instance()->getObjectTypeId()), null, null, $conditions);
+		//$result = self::getContentObjects(active_context(), ObjectTypes::findById(ProjectTasks::instance()->getObjectTypeId()), null, null, $conditions);
+		$result = self::instance()->listing(array(
+			"extra_conditions" => $extra_conditions
+		));
 		
 		return $result->objects;
 	} // getDayTasksByUser
@@ -178,24 +187,44 @@ class ProjectTasks extends BaseProjectTasks {
 
 
 	static function getOverdueAndUpcomingObjects($limit = null) {
+		
+		
 		$today = DateTimeValueLib::now();
 		$next_week = $today->beginningOfDay()->add('d', 7);
 
-		$conditions = " AND `e`.`completed_by_id` = 0 AND `e`.`due_date` > 0 AND `e`.`due_date` < " . DB::escape($next_week);
-		$tasks_result = ProjectTasks::instance()->getContentObjects(active_context(), ObjectTypes::findById(ProjectTasks::instance()->getObjectTypeId()), array('due_date', 'priority'), "ASC", $conditions, null, false, false, 0, $limit);
+		$conditions = " AND is_template = 0 AND `e`.`completed_by_id` = 0 AND `e`.`due_date` > 0 AND `e`.`due_date` < " . DB::escape($next_week);
+		//$tasks_result = ProjectTasks::instance()->getContentObjects(active_context(), ObjectTypes::findById(ProjectTasks::instance()->getObjectTypeId()), array('due_date', 'priority'), "ASC", $conditions, null, false, false, 0, $limit);
+		//$tasks_result = self::findByContext(array("limit"=>$limit, "conditions"=>$conditions));
+		$tasks_result = self::instance()->listing(array(
+			"limit"=>$limit, 
+			"extra_conditions"=>$conditions, 
+			"order"=>  array('due_date', 'priority') , 
+			"order_dir" => "ASC"
+		));
 		$tasks = $tasks_result->objects;
 		
-		$conditions = " AND `e`.`completed_by_id` = 0 AND `e`.`due_date` > 0 AND `e`.`due_date` < " . DB::escape($next_week);
-		$milestones_result = ProjectMilestones::instance()->getContentObjects(active_context(), ObjectTypes::findById(ProjectMilestones::instance()->getObjectTypeId()), array('due_date'), "ASC", $conditions, null, false, false, 0, $limit);
+		//$milestones_result = ProjectMilestones::instance()->getContentObjects(active_context(), ObjectTypes::findById(ProjectMilestones::instance()->getObjectTypeId()), array('due_date'), "ASC", $conditions, null, false, false, 0, $limit);
+		$milestones_result = self::instance()->listing(array(
+			"limit"=>$limit, 
+			"extra_conditions"=>$conditions, 
+			"order"=>  array('due_date' ) , 
+			"order_dir" => "ASC")
+		);
 		$milestones = $milestones_result->objects;
 		
 		$ordered = array();
-		foreach ($tasks as $task) {
-			if (!isset($ordered[$task->getDueDate()->getTimestamp()])) $ordered[$task->getDueDate()->getTimestamp()] = array();
-			$ordered[$task->getDueDate()->getTimestamp()][] = $task;
+		foreach ($tasks as $task) { /* @var $task ProjectTask */
+			if (!$task->isCompleted() && $task->getDueDate() instanceof  DateTimeValue ) {
+				if (!isset($ordered[$task->getDueDate()->getTimestamp()])){ 
+					$ordered[$task->getDueDate()->getTimestamp()] = array();
+				}
+				$ordered[$task->getDueDate()->getTimestamp()][] = $task;
+			}
 		}
 		foreach ($milestones as $milestone) {
-			if (!isset($ordered[$milestone->getDueDate()->getTimestamp()])) $ordered[$milestone->getDueDate()->getTimestamp()] = array();
+			if (!isset($ordered[$milestone->getDueDate()->getTimestamp()])) {
+				$ordered[$milestone->getDueDate()->getTimestamp()] = array();
+			}
 			$ordered[$milestone->getDueDate()->getTimestamp()][] = $milestone;
 		}
 		
@@ -210,14 +239,94 @@ class ProjectTasks extends BaseProjectTasks {
 	}
 	
 	
-	
+	/**
+	 * 
+	 * @deprecated by listing
+	 * @param unknown_type $context
+	 * @param unknown_type $object_type
+	 * @param unknown_type $order
+	 * @param unknown_type $order_dir
+	 * @param unknown_type $extra_conditions
+	 * @param unknown_type $join_params
+	 * @param unknown_type $trashed
+	 * @param unknown_type $archived
+	 * @param unknown_type $start
+	 * @param unknown_type $limit
+	 */
 	static function getContentObjects($context, $object_type, $order=null, $order_dir=null, $extra_conditions=null, $join_params=null, $trashed=false, $archived=false, $start = 0 , $limit=null){
 		
 		if (is_null($extra_conditions)) $extra_conditions = "";
-		
 		$extra_conditions .= " AND `e`.`is_template` = 0";
 		
+		
 		return parent::getContentObjects($context, $object_type, $order, $order_dir, $extra_conditions, $join_params, $trashed, $archived, $start, $limit);
+		
+	}
+	
+	
+	
+	/**
+	 * Same that getContentObjects but reading from sahring table 
+	 * @deprecated by parent::listing()
+	 **/
+	static function findByContext( $options = array () ) {
+		// Initialize method result
+		$result = new stdClass();
+		$result->total = 0 ;
+		$result->objects = array() ;
+		
+		// Read arguments and Init Vars
+		$limit = array_var($options,'limit');
+		$members = active_context_members(false); // 70
+		$type_id = self::instance()->getObjectTypeId();
+		if (!count($members)) return $res ; 
+		$uid = logged_user()->getId() ;
+		if ($limit>0){
+			$limit_sql = "LIMIT $limit";
+		}else{
+			$limit_sql = '' ;
+		}
+		
+		// Build Main SQL
+	    $sql = "
+	    	SELECT distinct(id) FROM ".TABLE_PREFIX."objects
+	    	WHERE 
+	    		id IN ( 
+	    			SELECT object_id FROM ".TABLE_PREFIX."sharing_table
+	    			WHERE group_id  IN (
+		     			SELECT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups WHERE contact_id = $uid
+					)
+				) AND 
+				id IN (
+	 				SELECT object_id FROM ".TABLE_PREFIX."object_members 
+	 				WHERE member_id IN (".implode(',', $members).")
+	 				GROUP BY object_id
+	 				HAVING count(member_id) = ".count($members)."
+				) AND 
+				object_type_id = $type_id AND ".SQL_NOT_DELETED."  
+			$limit_sql";
+			
+		// Execute query and build the resultset	
+	    $rows = DB::executeAll($sql);
+		foreach ($rows as $row) {
+    		$task =  ProjectTasks::findById($row['id']);
+    		if ( ( $task && $task instanceof ProjectTask ) && !$task->isTemplate() ) {
+    			if($task->getDueDate()){
+	    			$k  = "#".$task->getDueDate()->getTimestamp().$task->getId();
+					$result->objects[$k] = $task ;
+    			}else{
+    				$result->objects[] = $task ;
+    			}
+				$result->total++;
+    		}
+		}
+		
+		// Sort by key
+		ksort($result->objects);
+		
+		// Remove keys	
+		$result->objects = array_values($result->objects);
+		return $result;
 	}
 	
 } // ProjectTasks

@@ -52,14 +52,6 @@
 		return SystemPermissions::userHasSystemPermission($user, 'can_manage_templates');
   	}
   	
-  	function can_manage_reports(Contact $user) {
-		return SystemPermissions::userHasSystemPermission($user, 'can_manage_reports');
-  	}
-  	
-  	function can_manage_workspaces(Contact $user) {
-		return SystemPermissions::userHasSystemPermission($user, 'can_manage_workspaces');
-  	}
-  	
   	function can_manage_dimensions(Contact $user) {
 		return SystemPermissions::userHasSystemPermission($user, 'can_manage_dimensions');
   	}
@@ -78,12 +70,6 @@
   	function can_view_billing(Contact $user) {
 		return SystemPermissions::userHasSystemPermission($user, 'can_view_billing');
   	}
-  	function can_view_time(Contact $user) {
-		return SystemPermissions::userHasSystemPermission($user, 'can_view_time');
-  	}
-  	function can_record_time(Contact $user) {
-		return SystemPermissions::userHasSystemPermission($user, 'can_record_time');
-  	}
   	
   	
   	
@@ -96,11 +82,7 @@
   	function can_manage_configuration(Contact $user){
 		return SystemPermissions::userHasSystemPermission($user, 'can_manage_configuration');
   	}
-  	
 
-  	function can_manage_members(Contact $user){
-		return SystemPermissions::userHasSystemPermission($user, 'can_manage_members');
-  	}
   	
   	function can_manage_tabs(Contact $user){
 		return $user->isAdministrator();
@@ -110,16 +92,7 @@
 		return $user->isAdministrator();
   	}
   	
-  	
-  	/**
-  	 * Returns whether a user can edit company data.
-  	 *
-  	 * @param Contact $user
-  	 * @return boolean
-  	 */
-  	function can_edit_company_data(Contact $user){
-		return SystemPermissions::userHasSystemPermission($user, 'can_edit_company_data');
-  	}
+
   	
 	
 	/**
@@ -132,27 +105,14 @@
 	 * @return boolean
 	 */
 	function can_add_to_member(Contact $user, Member $member, $context_members, $object_type_id, $check_dimension = true){
-			
-		if ($user->isGuest()) return false;
-		if (!$member->canContainObject($object_type_id)) return false;
+		
+		if ( $user->isGuest() || !$member || !$member->canContainObject($object_type_id)) {
+			return false;	
+		}
 		try {
 			
 			$contact_pg_ids = ContactPermissionGroups::getPermissionGroupIdsByContactCSV($user->getId(),false);
-			
-			// if object_type is associated to a panel, check if the panel is enabled in the system and for the user
-			$tab_panel = TabPanels::findOne(array("conditions" => "`object_type_id` = $object_type_id"));
-			if ($tab_panel instanceof TabPanel) {
-				if (!$tab_panel->getEnabled()) 
-					return false;
-				if ($tab_panel->getObjectTypeId() > 0) {
-					if ($contact_pg_ids == '')
-						return false;
-					$tab_panel_permissions = TabPanelPermissions::findAll(array("conditions" => "`tab_panel_id` = '".$tab_panel->getId()."' AND `permission_group_id` IN ($contact_pg_ids)"));
-					if (is_null($tab_panel_permissions) || !is_array($tab_panel_permissions) || count($tab_panel_permissions) == 0)
-						return false;
-				}
-			}
-			
+
 			if ($check_dimension) $dimension = $member->getDimension();
 			
 			//dimension does not define permissions - user can freely add in all members
@@ -164,19 +124,21 @@
 			if ($check_dimension && $dimension->hasAllowAllForContact($contact_pg_ids)) return true;
 			
 			//check
-			if (ContactMemberPermissions::contactCanReadObjectTypeinMember($contact_pg_ids, $member->getId(), $object_type_id, true))
-					return true;
-						
+			if (ContactMemberPermissions::contactCanReadObjectTypeinMember($contact_pg_ids, $member->getId(), $object_type_id, true, false, $user)) {
+				return true;
+			}
 			//check for context permissions that allow user to add in this member
 			if ($context_members){
-				$allowed_members = ContactMemberPermissions::getActiveContextPermissions($user,$object_type_id, $context_members, $context_members, true);
+				$member_ids = array();
+				foreach ($context_members as $member_obj) $member_ids[] = $member_obj->getId();
+				$allowed_members = ContactMemberPermissions::getActiveContextPermissions($user,$object_type_id, $context_members, $member_ids, true);
 				if (in_array($member, $allowed_members)) return true;
 			}	
-				
+			
 		}
 		catch(Exception $e) {
-				tpl_assign('error', $e);
-				return false;
+			tpl_assign('error', $e);
+			return false;
 		}
 		return false;
 	}
@@ -191,10 +153,10 @@
 	 * @return boolean
 	 */
 	function can_add(Contact $user, $context, $object_type_id){
-		if ($user->isAdministrator()) return true;
+		
 		if ($user->isGuest()) return false;
 		$can_add = false;
-				
+		
 		$required_dimensions_ids = DimensionObjectTypeContents::getRequiredDimensions($object_type_id);
 		$dimensions_in_context = array();
 		
@@ -205,8 +167,12 @@
 		}
 		
 		$contact_pg_ids = ContactPermissionGroups::getPermissionGroupIdsByContactCSV($user->getId(),false);
-						
+		
 		foreach($context as $selection){
+			
+			$sel_dimension = $selection instanceof Dimension ? $selection : ($selection instanceof Member ? $selection->getDimension() : null);
+			if ($sel_dimension instanceof Dimension && $sel_dimension->getOptions(1) && isset($sel_dimension->getOptions(1)->hidden) && $sel_dimension->getOptions(1)->hidden ) continue;
+			
 			$can_add = false;
 			if ($selection instanceof Dimension){
 				$dimension_id = $selection->getId();
@@ -246,6 +212,7 @@
 					$dimensions_in_context[$dimension_id]=true;
 				}
 			}
+			
 			if ($can_add && !$no_required_dimensions){
 				foreach ($dimensions_in_context as $key=>$value){
 					$dim = Dimensions::findById($key);
@@ -254,6 +221,7 @@
 					}
 				}
 			}
+			
 			if ($can_add) return true;
 		}
 		return $can_add;
@@ -313,7 +281,9 @@
 	 * @return boolean
 	 */
 	function can_access(Contact $user, $members, $object_type_id, $access_level){
-		if(logged_user()->isAdministrator())return true;
+		if($user->isAdministrator()){
+			return true;
+		}
 		$write = false;
 		if ($access_level == ACCESS_LEVEL_WRITE) $write = true;
 		$delete = false;
@@ -325,26 +295,16 @@
 		try {
 			$contact_pg_ids = ContactPermissionGroups::getPermissionGroupIdsByContactCSV($user->getId(),false);
 				
-			// if object_type is associated to a panel, check if the panel is enabled in the system and for the user
-			/* //TODO VEr que no joda
-			$tab_panel = TabPanels::findOne(array("conditions" => "`object_type_id` = $object_type_id"));
-			if ($tab_panel instanceof TabPanel) {
-				if (!$tab_panel->getEnabled()) 
-					return false;
-				if ($tab_panel->getObjectTypeId() > 0) {
-					if ($contact_pg_ids == '')
-						return false;
-					$tab_panel_permissions = TabPanelPermissions::findAll(array("conditions" => "`tab_panel_id` = '".$tab_panel->getId()."' AND `permission_group_id` IN ($contact_pg_ids)"));
-					if (is_null($tab_panel_permissions) || !is_array($tab_panel_permissions) || count($tab_panel_permissions) == 0)
-						return false;
-				}
-			}
-			*/
-			
-			
 			$dimension_permissions = array();
-			foreach($members as $m){
+			foreach($members as $k => $m){
+				if (!$m instanceof Member) {
+					unset($members[$k]);
+					continue;
+				}
 				$dimension = $m->getDimension();
+				if(!$dimension->getDefinesPermissions()){
+					continue;
+				}
 				$dimension_id = $dimension->getId();
 				if (!isset($dimension_permissions[$dimension_id]))
 					$dimension_permissions[$dimension_id]=false;
@@ -353,25 +313,40 @@
 					if ($m->canContainObject($object_type_id)){
 						
 						//dimension does not define permissions
-						if (!$dimension->getDefinesPermissions()) $dimension_permissions[$dimension_id]=true;
+						if (!$dimension->getDefinesPermissions()) {
+							$dimension_permissions[$dimension_id]=true;
+						}
 						
 						//dimension defines permissions and user has maximum level of permissions
-						if ($dimension->hasAllowAllForContact($contact_pg_ids)) $dimension_permissions[$dimension_id]=true;
+						if ($dimension->hasAllowAllForContact($contact_pg_ids)) {
+							$dimension_permissions[$dimension_id]=true;
+						}
 						
 						//check
-						if (ContactMemberPermissions::contactCanReadObjectTypeinMember($contact_pg_ids, $m->getId(), $object_type_id, $write, $delete))
-								$dimension_permissions[$dimension_id]=true;
+						if (ContactMemberPermissions::contactCanReadObjectTypeinMember($contact_pg_ids, $m->getId(), $object_type_id, $write, $delete, $user)){
+							$dimension_permissions[$dimension_id]=true;
+						}
 					}
 				}
 			}
 			$allowed = true;
 			foreach($dimension_permissions as $perm){
-				if (!$perm) $allowed = false;
+				if (!$perm) {
+					$allowed = false;	
+				}elseif ( $access_level == ACCESS_LEVEL_READ ) {
+					return true ; // Pepe Patch. TODO: Reimplement this algorithm ASAP ! 	
+				}
 			}			
-			if ($allowed) return true;
-			//Check Context Permissions
-			$allowed_members = ContactMemberPermissions::getActiveContextPermissions($user,$object_type_id, $members, $members, $write, $delete);
+			if ($allowed && count($dimension_permissions)) {
+				return true;	
+			}
 			
+			// Si hasta aca tienen perm en todas las dim, return true. Si hay alguna que no tiene perm sigo
+			
+			//Check Context Permissions
+			$member_ids = array();
+			foreach ($members as $member_obj) $member_ids[] = $member_obj->getId();
+			$allowed_members = ContactMemberPermissions::getActiveContextPermissions($user, $object_type_id, $members, $member_ids, $write, $delete);
 			$count=0;
 			foreach($members as $m){
 				$count++;				
@@ -473,7 +448,7 @@
 	}
 	
 	
-	function save_permissions($pg_id) {
+	function save_permissions($pg_id, $is_guest = false) {
 		
 		$sys_permissions_data = array_var($_POST, 'sys_perm');
 		
@@ -503,6 +478,8 @@
 		foreach ($other_permissions as $k => $v) {
 			$system_permissions->setColumnValue($k, false);
 		}
+		
+		$sys_permissions_data['can_task_assignee'] = !$is_guest;
 		$system_permissions->setFromAttributes($sys_permissions_data);
 		$system_permissions->save();
 		
@@ -512,9 +489,10 @@
 			$permissions = json_decode($permissionsString);
 		}
 		
-		if (!is_null($permissions) && is_array($permissions)) {
+		if (isset($permissions) && !is_null($permissions) && is_array($permissions)) {
 			$allowed_members_ids= array();
 			foreach ($permissions as $perm) {
+				if (!isset($all_perm_deleted[$perm->m])) $all_perm_deleted[$perm->m] = true;
 				$allowed_members_ids[$perm->m]=array();
 				$allowed_members_ids[$perm->m]['pg']=$pg_id;
 				$cmp = ContactMemberPermissions::findById(array('permission_group_id' => $pg_id, 'member_id' => $perm->m, 'object_type_id' => $perm->o));
@@ -524,30 +502,32 @@
 					$cmp->setMemberId($perm->m);
 					$cmp->setObjectTypeId($perm->o);
 				}
-				$cmp->setCanWrite($perm->w);
-				$cmp->setCanDelete($perm->d);
+				$cmp->setCanWrite($is_guest ? false : $perm->w);
+				$cmp->setCanDelete($is_guest ? false : $perm->d);
 				if ($perm->r) {
 					if(isset($allowed_members_ids[$perm->m]['w'])){
 						if($allowed_members_ids[$perm->m]['w']!=1){
-							$allowed_members_ids[$perm->m]['w']=$perm->w;
+							$allowed_members_ids[$perm->m]['w'] = $is_guest ? false : $perm->w;
 						}
 					}else{
-						$allowed_members_ids[$perm->m]['w']=$perm->w;
+						$allowed_members_ids[$perm->m]['w'] = $is_guest ? false : $perm->w;
 					}
 					if(isset($allowed_members_ids[$perm->m]['d'])){
 						if($allowed_members_ids[$perm->m]['d']!=1){
-							$allowed_members_ids[$perm->m]['d']=$perm->d;
+							$allowed_members_ids[$perm->m]['d'] = $is_guest ? false : $perm->d;
 						}
 					}else{
-						$allowed_members_ids[$perm->m]['d']=$perm->d;
+						$allowed_members_ids[$perm->m]['d'] = $is_guest ? false : $perm->d;
 					}
 					$cmp->save();
+					$all_perm_deleted[$perm->m] = false;
 				} else {
 					$cmp->delete();
 				}
 				
 				$changed_members[] = $perm->m;
 			}
+			
 			$sharingTablecontroller = new SharingTableController() ;
 			$sharingTablecontroller->afterPermissionChanged($pg_id, $permissions);
 			foreach ($allowed_members_ids as $key=>$mids){
@@ -562,7 +542,29 @@
 				$root_cmp->setCanWrite($mids['w']);
 				$root_cmp->setCanDelete($mids['d']);
 				$root_cmp->save();
-				
+			}
+			
+			foreach ($all_perm_deleted as $mid => $pd) {
+				if ($pd) {
+					ContactMemberPermissions::instance()->delete("`permission_group_id` = $pg_id AND `member_id` = $mid");
+				}
+			}
+		}
+		
+		// set all permissiions to read_only
+		if ($is_guest) {
+			$all_saved_permissions = ContactMemberPermissions::findAll(array("conditions" => "`permission_group_id` = $pg_id"));
+			foreach ($all_saved_permissions as $sp) {/* @var $sp ContactMemberPermission */
+				if ($sp->getCanDelete() || $sp->getCanWrite()) {
+					$sp->setCanDelete(false);
+					$sp->setCanWrite(false);
+					$sp->save();
+				}
+			}
+			$cdps = ContactDimensionPermissions::findAll(array("conditions" => "`permission_type` = 'allow all'"));
+			foreach ($cdps as $cdp) {
+				$cdp->setPermissionType('check');
+				$cdp->save();
 			}
 		}
 		
@@ -616,7 +618,8 @@
 		if (logged_user()->isMemberOfOwnerCompany()) {
 			$companies = Contacts::findAll(array("conditions" => "is_company = 1", 'order' => 'name'));
 		} else {
-			$companies = array(owner_company(), logged_user()->getCompany());
+			$companies = array(owner_company());
+			if (logged_user()->getCompany() instanceof Contact) $companies[] = logged_user()->getCompany();
 		}
 		
 		$allowed_object_types = array();
@@ -781,11 +784,18 @@
 		}
 	}
 
+	/**
+	 * Returns the users with permissions for the object type $object_type for the context $context
+	 * 
+	 * @param $object_type_id Object Type
+	 * @param $context Context
+	 * @param $access_level (ACCESS_LEVEL_READ, ACCESS_LEVEL_WRITE, ACCESS_LEVEL_DELETE)
+	 * @param $extra_conditions Extra conditions to add to the users query
+	 * @param $to_assign true if this function is called to fill the "assigned to" combobox when editing a task
+	 */
 	function allowed_users_in_context($object_type_id, $context = null, $access_level = ACCESS_LEVEL_READ, $extra_conditions = "") {
 		$result = array();
-		if(!can_manage_tasks(logged_user())&&can_task_assignee(logged_user())&&ProjectTasks::instance()->getObjectTypeId()==$object_type_id) {
-			return array(logged_user());
-		}
+		
 		$users = Contacts::getAllUsers($extra_conditions);
 		$members = array();
 		if (isset($context) && is_array($context)) {

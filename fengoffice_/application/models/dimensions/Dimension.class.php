@@ -8,10 +8,19 @@
 class Dimension extends BaseDimension {
 	
 	
-	function getAllMembers($only_ids = false, $order = null) {
-		$parameters = array('conditions' => '`dimension_id` = ' . $this->getId(), 'id' => $only_ids);
+	function getAllMembers($only_ids = false, $order = null, $filter_deleted_objects = false ) {
+		
+		$parameters = array(
+			'conditions' => '`dimension_id` = ' . $this->getId(), 'id' => $only_ids
+		);
 		if (!is_null($order)) {
 			if (in_array($order, array('name', 'dimension_id'))) $parameters['order'] = $order;
+		}
+		
+		if ($filter_deleted_objects){
+			//$parameters['conditions'].= " AND object_id IN ( SELECT id FROM ".TABLE_PREFIX."objects WHERE archived_on = '0000-00-00 00:00:00' AND trashed_on = '0000-00-00 00:00:00' )" ; 			
+			//$parameters['conditions'].= " AND ( object_id = 0 OR object_id IN ( SELECT id FROM ".TABLE_PREFIX."objects WHERE archived_on = '0000-00-00 00:00:00' AND trashed_on = '0000-00-00 00:00:00' ))" ; 			
+			$parameters['conditions'].= " AND ( object_id = 0 OR EXISTS ( SELECT id FROM ".TABLE_PREFIX."objects WHERE id = object_id AND archived_on = '0000-00-00 00:00:00' AND trashed_on = '0000-00-00 00:00:00' ))" ; 			
 		}
 		$members = Members::findAll($parameters);
   		return $members;
@@ -134,12 +143,31 @@ class Dimension extends BaseDimension {
 		return $types;
 	}
 	
+	/**
+	 * @param bool True to get JSON decoded. false to get plain text
+	 */
 	function getOptions($decoded = false ) {
 		$js = $this->getColumnValue("options") ;
 		if ( $decoded ) { 
 			return json_decode ( $js );
 		}else{
 			return $js ;
+		}
+	}
+	
+	function useLangs() {
+		$options = $this->getOptions(true);
+		return (isset($options->useLangs) && $options->useLangs);
+	}
+	
+	/**
+	 * @see BaseDimension::getName()
+	 */
+	function getName() {
+		if ($this->useLangs()) {
+			return lang($this->getCode());
+		}else{
+			return parent::getName();
 		}
 	}
 

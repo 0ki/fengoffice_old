@@ -13,14 +13,59 @@ og.eventManager.addListener('reload member properties',
 );
 
 og.eventManager.addListener('reload dimension tree', 
- 	function (dim_id){ 
- 		var tree = Ext.getCmp("dimension-panel-" + dim_id);
- 		if (tree) {
-	 		tree.suspendEvents();
-	 		tree.loader.load(tree.getRootNode(), function() {tree.expandAll();});
-	 		tree.resumeEvents();
+ 	function (dim_id){
+ 		if (!og.reloadingDimensions){ 
+ 			og.reloadingDimensions = {} ;
+ 		}
+ 		if (!og.reloadingDimensions[dim_id]){
+	 		og.reloadingDimensions[dim_id] = true ;
+	 		
+	 		var tree = Ext.getCmp("dimension-panel-" + dim_id);
+	 		if (tree) {
+	 			var selection = tree.getSelectionModel().getSelectedNode();
+	 			
+		 		tree.suspendEvents();
+		 		var expanded = [];
+		 		tree.root.cascade(function(){
+	 				if (this.isExpanded()) expanded.push(this.id);
+	 			});
+		 		tree.loader.load(tree.getRootNode(), function() {
+			 		tree.expanded_once = false;
+		 			og.expandCollapseDimensionTree(tree, expanded, selection ? selection.id : null);
+			 		og.reloadingDimensions[dim_id] = false ;
+			 	});
+		 		tree.resumeEvents();
+	 		}
+ 		}
+ 		
+ 	}
+);
+
+og.eventManager.addListener('reset dimension tree', 
+ 	function (dim_id){
+ 		if (!og.reloadingDimensions){ 
+ 			og.reloadingDimensions = {} ;
+ 		}
+ 		if (!og.reloadingDimensions[dim_id]){
+	 		og.reloadingDimensions[dim_id] = true ;
+	 		var tree = Ext.getCmp("dimension-panel-" + dim_id);
+	 		if (tree) {
+		 		tree.suspendEvents();
+ 				tree.loader = tree.initialLoader;
+		 		tree.loader.load(tree.getRootNode(),function(){
+			 		tree.resumeEvents(); 
+			 		og.Breadcrumbs.refresh(tree.getRootNode());
+			 	});
+		 		tree.expandAll();
+	 		}
  		}
  	}
+);
+
+og.eventManager.addListener('select dimension member', 
+	function (data){
+		og.selectDimensionTreeMember(data);
+	}
 );
 
 og.eventManager.addListener('company added', 

@@ -12,18 +12,26 @@
 	$timeslots_array = array();
 	$users_array = array();
 	$companies_array = array();
-	if (isset($tasks))
-		foreach($tasks as $task)
+	if (isset($tasks)) {
+		foreach($tasks as $task) {
 			$tasks_array[] = $task->getArrayInfo();
-	if (isset($timeslots))
-		foreach($timeslots as $timeslot)
+		}
+	}
+	if (isset($timeslots)) {
+		foreach($timeslots as $timeslot) {
 			$timeslots_array[] = $timeslot->getArrayInfo($show_billing);
-	if (isset($users))
-		foreach($users as $user)
+		}
+	}
+	if (isset($users)) {
+		foreach($users as $user) {
 			$users_array[] = $user->getArrayInfo();
-	if (isset($companies))
-		foreach($companies as $company)
+		}
+	}	
+	if (isset($companies)) {
+		foreach($companies as $company) {
 			$companies_array[] = $company->getArrayInfo();
+		}
+	}
 
 ?>
 <div class="timePanelContextHelp"><?php	
@@ -39,6 +47,7 @@
 <input type="hidden" id="<?php echo $genid ?>hfTimeslots" value="<?php echo clean(json_encode($timeslots_array)) ?>"/>
 <input type="hidden" id="<?php echo $genid ?>hfUsers" value="<?php echo clean(json_encode($users_array)) ?>"/>
 <input type="hidden" id="<?php echo $genid ?>hfCompanies" value="<?php echo clean(json_encode($companies_array)) ?>"/>
+<input type="hidden" id="<?php echo $genid ?>hfDrawInputs" value="<?php echo $draw_inputs ? "1" : "0" ?>"/>
 
 <table style="width:100%;max-width:924px">
 	<col width=12/><col /><col width=12/><tr>
@@ -90,6 +99,7 @@
 		</tr></table>
 		</div>
 	</div>
+	
 	<script type="text/javascript">
 	//submit the form when the user press enter
 	og.checkEnterPress = function (e,genid)
@@ -108,7 +118,7 @@
 		}
 	}
 	</script>
-	<div id="<?php echo $genid ?>TMTimespanAddNew" class="TMTimespanAddNew">
+	<div id="<?php echo $genid ?>TMTimespanAddNew" class="TMTimespanAddNew" <?php echo ($draw_inputs ? "" : 'style="display:none;"') ?>>
 		<input type="hidden" id="<?php echo $genid ?>tsId" name="timeslot[id]" value=""/>
 		<div style="padding:7px;">
 		<table style="width:100%;"><tr>
@@ -116,10 +126,9 @@
 				<?php echo label_tag(lang('date')) ?>
 			</td>
 			
-			<?php if(logged_user()->isAdministrator()) {?><td style="padding-right: 10px; width:140px;vertical-align:bottom">
+			<td style="padding-right: 10px; width:140px;vertical-align:bottom">
 				<?php echo label_tag(lang('user')) ?>
-			</td><?php } else { ?><td style="padding-right: 10px;">				
-			</td><?php } ?>
+			</td>
 			<td style="padding-right: 10px; width:140px;vertical-align:bottom">
 				<?php echo label_tag(lang('time')) ?>
 			</td>
@@ -133,11 +142,15 @@
 				<?php echo pick_date_widget2('timeslot[date]', DateTimeValueLib::now(), $genid, 100, false) ?>
 			</td>
 
-			<?php if(logged_user()->isAdministrator()) {?><td style="padding-right: 10px; width:140px;">
-				<?php echo user_select_box("timeslot[user_id]", logged_user()->getId(), array('id' => $genid . 'tsUser', 'tabindex' => '150')) ?>
-			</td><?php } else { ?><td style="padding-right: 10px">	
-				<input type="hidden" id="<?php echo $genid ?>tsUser" name="timeslot[user_id]" value="<?php echo logged_user()->getId() ?>"/>
-			</td><?php } ?>
+			<td style="padding-right: 10px; width:140px;">
+				<?php
+					$options = array();
+					foreach ($users as $user) {
+						$options[] = option_tag($user->getObjectName(), $user->getId(), $selected_user == $user->getId() ? array("selected" => "selected") : null);
+					}
+					echo select_box("timeslot[contact_id]", $options, array('id' => $genid . 'tsUser', 'tabindex' => '150')); 
+				?>
+			</td>
 			<td style="padding-right: 10px; width:140px;">
 				<?php echo text_field('timeslot[hours]', 0, 
 		    		array('style' => 'width:28px', 'tabindex' => '200', 'id' => $genid . 'tsHours','onkeypress'=>'og.checkEnterPress(event,\''.$genid.'\')')) ?>
@@ -158,12 +171,11 @@
 		</tr></table>
 		</div>
 	</div>
+
 	</td>
 	<td class="coViewTopRight">&nbsp;&nbsp;</td>
 </tr>
-<tr>
-	<td class="coViewRight">&nbsp;&nbsp;</td>
-</tr>
+<tr><td colspan="2" class="coViewRight"></td></tr>
 <?php
 	$show_help_option = user_config_option('show_context_help'); 
 	if ($show_help_option == 'always' || ($show_help_option == 'until_close' && (user_config_option('show_general_timeslots_context_help', true, logged_user()->getId())))) {	

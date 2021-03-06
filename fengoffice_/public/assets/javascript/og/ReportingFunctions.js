@@ -114,8 +114,8 @@ og.addCondition = function(genid, id, cpId, fieldName, condition, value, is_para
 		callback: function(success, data) {
 			if (success) {
 				var disabled = ((cpId > 0 || fieldName != '') ? 'disabled' : '');
-				var fields = '<b>' + lang('field') +
-				'</b>:<br/><select class="reportConditionDD" onchange="og.fieldChanged(' + count + ', \'\', \'\')" id="conditions[' + count + '][custom_property_id]" name="conditions[' + count + '][custom_property_id]" ' + disabled + ' >';					
+				var fields = '<span class="bold">' + lang('field') +
+				'</span>:<br/><select class="reportConditionDD" onchange="og.fieldChanged(' + count + ', \'\', \'\')" id="conditions[' + count + '][custom_property_id]" name="conditions[' + count + '][custom_property_id]" ' + disabled + ' >';					
 				for(var i=0; i < data.fields.length; i++){
 					var field = data.fields[i];
 					if(id > 0 && (field.id != cpId && fieldName != field.id)) continue;

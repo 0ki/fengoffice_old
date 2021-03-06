@@ -2,7 +2,6 @@
 	$genid = gen_id();
 	$selectedPage = user_config_option('custom_report_tab');
 	$customReports = Reports::getAllReportsByObjectType();
-	$manageReports = can_manage_reports(logged_user());
 	$report = new Report(); 
 	$can_add_reports = $report->canAdd(logged_user(), active_context());
 	
@@ -11,6 +10,17 @@
 	foreach ($object_types as $ot) {
 		$reportPages[$ot->getId()] = array("name" => $ot->getName(), "display_name" => lang($ot->getName()));
 	}
+	
+	$ignored = null;
+	Hook::fire('modify_report_pages', $ignored, $reportPages); // To add, edit or remove report pages
+	
+	
+	$default_reports = array(
+		'task' => array('task time report' => array('url' => get_url('reporting','total_task_times_p'), 'name' => lang('task time report'), 'description' => lang('task time report description'))),
+	);
+	
+	Hook::fire('modify_default_reports', $ignored, $default_reports); // To add, edit or remove default reports
+
 	
 	require_javascript("og/ReportingFunctions.js");
 ?>
@@ -26,45 +36,30 @@
 
 <div style="padding:10px">
 <?php 
-	// MAIN PAGES
-	$show_help_option = user_config_option('show_context_help'); 
-	if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_reporting_panel_context_help', true, logged_user()->getId()))) {
-		$hd_key = 'chelp reporting panel';
-	  	if (can_manage_reports(logged_user())){
-	  		$hd_key .= ' manage';
-	  		if (logged_user()->isAdministrator() && can_manage_security(logged_user())){
-	  			$hd_key .= ' admin'; 
-	  		}
-	  	}
-
-		render_context_help($this, $hd_key, 'reporting_panel');
-		echo '<br/>';
-	} 
-
+	
 	foreach ($reportPages as $type_id => $pageInfo) {?>
 <div class="inner_report_menu_div" id="<?php echo $genid . $type_id?>" style="display:<?php echo $type_id == $selectedPage ? 'block' : 'none';?>">
 
 <?php 
-	// Show default (non-custom) reports
-	$hasNonCustomReports = true;
-	switch(array_var($pageInfo, 'name')){
-	case 'task':?>
-	<ul style="padding-top:4px;padding-bottom:15px">
-		<li><div><a style="font-weight:bold" class="internalLink" href="<?php echo get_url('reporting','total_task_times_p')?>"><?php echo lang('task time report') ?></a>
-		<div style="padding-left:15px"><?php echo lang('task time report description') ?></div>
-		</div>
-		</li>
-		<?php if (false) { ?><li><a class="internalLink" href="<?php echo get_url('reporting','total_task_times_vs_estimate_comparison_p')?>"><?php echo lang('estimate vs total task times report') ?></a></li><?php } ?>
-	</ul>
-	<?php break; // tasks
-	default: $hasNonCustomReports = false; break;
-	} // switch pagetitle
-	
+	$page_default_reports = array_var($default_reports, array_var($pageInfo, 'name'), array());
+	$hasNonCustomReports = count($page_default_reports) > 0;
+	if ($hasNonCustomReports) {
+		?><ul style="padding-top:4px;padding-bottom:15px"><?php 
+	}
+	foreach ($page_default_reports as $def_report) { ?>
+		<li><div><a style="font-weight:bold" class="internalLink" href="<?php echo array_var($def_report, 'url') ?>"><?php echo array_var($def_report, 'name') ?></a>
+			<div style="padding-left:15px"><?php echo array_var($def_report, 'description') ?></div>
+		</div></li>
+<?php
+	}
+	if ($hasNonCustomReports) {
+		?></ul><?php 
+	}
 	
 	// CUSTOM REPORTS
 	$reports = array_var($customReports, $type_id, array());
 	
-	if ($manageReports || count($reports) > 0){ ?>
+?>
 <div class="report_header"><?php echo lang('custom reports') ?></div>
 <?php 
 	if(count($reports) > 0){  ?>
@@ -89,12 +84,8 @@
 	// Add new custom report 
 	if ($can_add_reports) { ?>
 	<br/><a class="internalLink coViewAction ico-add" href="<?php echo get_url('reporting', 'add_custom_report', array('type' => $type_id)) ?>"><?php echo lang('add custom report')?></a>
-	<?php } // add new report link?>
-<?php } else {
-	if(!$hasNonCustomReports){
-		echo lang('no reports found', array_var($pageInfo, 'display_name'));
-	}
-} // CUSTOM REPORTS ?>
+<?php } ?>
+
 </div>
 <?php } // MAIN PAGES?>
 </div>

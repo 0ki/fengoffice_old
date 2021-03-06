@@ -115,8 +115,8 @@ class Member extends BaseMember {
 	}
 	
 	
-	function canBeReadByContact($permission_group_ids){
-		return ContactMemberPermissions::ContactCanReadMember($permission_group_ids, $this->getId());
+	function canBeReadByContact($permission_group_ids, $user){
+		return ContactMemberPermissions::ContactCanReadMember($permission_group_ids, $this->getId(), $user);
 	}
 	
 	/**
@@ -180,7 +180,7 @@ class Member extends BaseMember {
 		// delete object if member is a dimension_object
 		if ($this->getObjectId()) {
 			$object = Objects::findObject($this->getObjectId());
-			$object->delete();
+			if ($object instanceof ContentDataObject) $object->delete();
 		}
 		
 		return parent::delete();
@@ -221,7 +221,7 @@ class Member extends BaseMember {
 					}
 				}
 			}
-			return $can;
+			return true;
 		}
 	}
 	

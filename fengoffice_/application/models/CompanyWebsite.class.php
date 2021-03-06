@@ -90,7 +90,40 @@ final class CompanyWebsite {
 	 * @return boolean
 	 */
 	private function initLoggedUser() {
-		$user_id       = Cookie::getValue('id');
+        
+        //Hack for API Auth & Magic login!
+        if((isset($_REQUEST['auth']) && !empty($_REQUEST['auth'])) || array_var($_REQUEST, 'm') == "login")
+        {
+            if(array_var($_REQUEST, 'm') != "login"){
+                $contact = Contacts::findAll(array("conditions" => "`token` = '".$_REQUEST['auth']. "'"));
+                $contact = $contact[0];
+            }else{
+                $contact = Contacts::getByUsername($_REQUEST['username']);
+                if($contact)
+                {
+                    if(!$contact->isValidPassword($_REQUEST['password']))
+                        die('API Response: Invalid password.');
+                }else{
+                    die('API Response: Invalid username.');
+                }
+            }
+            
+            if($contact instanceof Contact)
+            {
+                $this->logUserIn($contact, false);
+                if(array_var($_REQUEST, 'm') == "login")
+                {
+                    $temp = array('token' => $contact->getToken(), 'username' => $contact->getUsername());
+                    echo json_encode($temp);
+                    exit;
+                }
+                    
+            }
+            else
+                die('API Response: Invalid authorization code.');
+        }		
+        
+        $user_id       = Cookie::getValue('id');
 		$twisted_token = Cookie::getValue('token');
 		$remember      = (boolean) Cookie::getValue('remember', false);
 
@@ -107,10 +140,10 @@ final class CompanyWebsite {
 		} // if
 
 		$last_act = $user->getLastActivity();
-		if ($last_act) {
+		if ($last_act instanceof DateTimeValue) {
 			$session_expires = $last_act->advance(SESSION_LIFETIME, false);
 		}
-		if(!$last_act || $session_expires!=null && DateTimeValueLib::now()->getTimestamp() < $session_expires->getTimestamp()) {
+		if(!$last_act instanceof DateTimeValue || $session_expires!=null && DateTimeValueLib::now()->getTimestamp() < $session_expires->getTimestamp()) {
 			$this->setLoggedUser($user, $remember, true);
 		} else {
 			$this->logUserIn($user, $remember);
