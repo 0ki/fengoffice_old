@@ -49,6 +49,8 @@ while IFS= read -r line; do
   mv -f versions/$version/$od/{.,}[^.]* versions/$version/
   rmdir versions/$version/$od
  fi
+ rm -rf $file/
+ mkdir -p $file
  cp -af versions/$version/{.,}[^.]* $file/
  git add $file/
  git commit -m "$version"
