@@ -2958,7 +2958,23 @@ og.submit_modal_form = function(form_id, callback_fn, options) {
 				params[all_inputs[i].name] = params[all_inputs[i].name] = all_inputs[i].value;
 			}
 		} else {
-			params[all_inputs[i].name] = all_inputs[i].value;
+			//check multiple values (if thers [] at the end of the input name) 
+			//EXAMPLE object_custom_properties[2][] object_custom_properties[2][] => object_custom_properties[2][0] object_custom_properties[2][1]
+			if(all_inputs[i].name.indexOf("[]") > -1 && all_inputs[i].name.slice(-2) == "[]"){
+				var in_name = all_inputs[i].name;
+				in_name = in_name.substring(0, in_name.length - 2);	
+				var arr_index = 0;
+				while (arr_index < all_inputs.length) {
+					var new_in_name = in_name + "[" + arr_index + "]";
+					if(!(new_in_name in params)){
+						params[new_in_name] = all_inputs[i].value;
+						break;
+					}
+					arr_index++;
+				}				
+			}else{
+				params[all_inputs[i].name] = all_inputs[i].value;
+			}
 		}	
 	}
 	var all_selects = $('#'+form_id+' select');

@@ -277,7 +277,7 @@ if (isset($email)){
 			//remove attributes from body
 			$html_content = preg_replace("/<body*[^>]*>/i",'<body>', $html_content);
 			
-			$html_content = str_replace("<head>", '<head><link rel="stylesheet" type="text/css" href="'.ROOT_URL.'/public/assets/javascript/ckeditor/contents.css" />', $html_content);
+			$html_content = str_replace("<head>", '<head><link rel="stylesheet" type="text/css" href="'.ROOT_URL.'/public/assets/javascript/ckeditor/contents.css" /><link rel="stylesheet" type="text/css" href="'.ROOT_URL.'/plugins/mail/public/assets/css/mail.css" />', $html_content);
 			$html_content = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">' . "\n" . $html_content;
 			
 			if (!is_dir(ROOT.'/tmp')) mkdir(ROOT.'/tmp');

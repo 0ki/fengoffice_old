@@ -157,6 +157,7 @@ button.x-btn-text.blue,
 button.submit.blue, 
 button.add-first-btn.blue {
 	background-color: #4d82cc;
+	border-color: #5d92dc;
 	color: #fff;
 }
 .coInputHeader .coInputButtons button.submit:hover,

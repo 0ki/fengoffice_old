@@ -1,7 +1,7 @@
 <?php
 return array(
 		'quick system configuration and settings' => 'Configuración rápida del sistema',
-		'quick help' => 'Ayuda rápida',
+		'quick help' => 'Ayuda y soporte',
 		'personal settings' => 'Configuración personal',
 		'back' => 'Volver',
 		'learn about and manage your Feng Office' => 'Información básica y gestión de su Feng Office',
@@ -52,7 +52,9 @@ return array(
 		'click here to add a new' => 'Haga clic aquí para agregar nuevo {0}',
 		'add your first' => 'Agregue su primer {0}',
 		'there are x users more' => 'Hay {0} usuarios más.',
-		
+		'faqs' => 'Preguntas frecuentes',
+		'subscribe' => 'Subscribirse',
+		'liquid office' => 'Liquid Office',
 
 		'system module overview-panel hint' => 'La Vista General muestra un resumen de la información de gestión.',
 		'system module tasks-panel hint' => 'Puede rastrear cada tarea, subtarea e hito que sea parte de un servicio, proyecto o actividad.',

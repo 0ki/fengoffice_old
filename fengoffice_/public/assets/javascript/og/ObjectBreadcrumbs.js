@@ -633,7 +633,9 @@ og.initBreadcrumbsBtns = function(btns){
 	   	for (var j = 0; j < member_paths.length; j++) {
 	   		
 	   		var ot = $(member_paths[j]).data("object-type");
-	   		   		
+	   		if(typeof ot == "undefined"){
+	   			continue;
+	   		}	   		
 	   		var ot_name = og.objectTypes[ot].name+"s";
 	   		
 	   		if(typeof tmp_ot[ot_name] == "undefined"){

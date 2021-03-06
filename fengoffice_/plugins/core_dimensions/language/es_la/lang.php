@@ -5,4 +5,5 @@
 	'all feng_users' => 'Todos los Usuarios',
 	'feng_persons' => 'Contactos',
 	'add a new member in feng_persons' => 'Agregar una nueva persona',
+	'contracted_services' => 'Servicios contratados',
 );

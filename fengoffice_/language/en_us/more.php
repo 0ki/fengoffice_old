@@ -1,7 +1,7 @@
 <?php
 return array(
 		'quick system configuration and settings' => 'Quick system configuration and settings',
-		'quick help' => 'Quick help',
+		'quick help' => 'Help and support',
 		'personal settings' => 'Personal settings',
 		'back' => 'Back',
 		'learn about and manage your Feng Office' => 'Learn about and manage your Feng Office',
@@ -52,7 +52,9 @@ return array(
 		'click here to add a new' => 'Click here to add a new {0}',
 		'add your first' => 'Add your first {0}',
 		'there are x users more' => 'There are {0} more users.',
-		
+		'faqs' => 'Frequently asqued questions',
+		'subscribe' => 'Subscribe',
+		'liquid office' => 'Liquid Office',
 
 		'system module overview-panel hint' => 'The Overview shows a summary of management information.',
 		'system module tasks-panel hint' => 'You can track every task, sub-task and milestone that is part of a service, project or activity.',

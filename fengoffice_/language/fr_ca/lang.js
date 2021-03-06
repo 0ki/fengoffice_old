@@ -189,7 +189,7 @@ addLangs({
 	'view by account': 'Vue par compte',
 	'view emails by account': 'Vue des messages par compte',
 	'edit account': 'Éditer le compte',
-	'edit email account': 'Éditer le compte de messagerie',
+	'edit email account': 'Éditer {0}',
 	'email actions': 'Actions',
 	'more email actions': 'Plus d\'actions de messagerie',
 	'view unclassified': 'Afficher les non classés',
@@ -496,7 +496,7 @@ addLangs({
 	'confirm delete tag': 'Êtes-vous certain de vouloir supprimer cette étiquette ?',
 	'delete tag': 'Supprimer l\'étiquette',
 	'reminder_popup': 'Message pop-up',
-	'reminder_email': 'Email',
+	'reminder_email': 'Courriel',
 	'minutes': 'minutes',
 	'weeks': 'semaines',
 	'days': 'jours',
@@ -816,5 +816,6 @@ addLangs({
 	'state': 'Province',
 	'zip_code': 'Code postale',
 	'edit_picture': 'Éditer la photo',
-	'birthdays': 'Anniversaire'
+	'birthdays': 'Anniversaire',
+	'email address': 'Adresse de courriel'
 });

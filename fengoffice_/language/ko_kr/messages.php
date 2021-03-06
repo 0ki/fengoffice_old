@@ -519,4 +519,5 @@
 	'system error message' => '죄송합니다, 당신에 요청 실행에서 치명적 오류를 오픈구가 막았습니다. 오류 보고서가 운영자에게 발송됐습니다. ',
 	'execute action error message' => '죄송합니다. 오픈구가 현재 당신에 요청을 실행하지 못합니다. 오류 보고서가 관리자에게 발송됐습니다.',
 	'copied from file' => '{0}({1}) 에서 복사된 파일',
+	'the task notification' => '프로젝트 그룹',
 ); ?>

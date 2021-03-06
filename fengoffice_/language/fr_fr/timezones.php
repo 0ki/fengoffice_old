@@ -6,7 +6,7 @@
 	'timezone gmt -8' => '(GMT-8:00) Pacific Time (US & Canada)',
 	'timezone gmt -7' => '(GMT-7:00) Mountain Time (US & Canada)',
 	'timezone gmt -6' => '(GMT-6:00) Central Time (US & Canada), Mexico City',
-	'timezone gmt -5' => '(GMT-5:00) Eastern Time (US & Canada), New York, Boston, Montréeal',
+	'timezone gmt -5' => '(GMT-5:00) Eastern Time (US & Canada), New York, Boston, Montreal',
 	'timezone gmt -4' => '(GMT-4:00) Atlantic Time (Canada), Caracas, La Paz',
 	'timezone gmt -3.5' => '(GMT-3:30) Terre-Neuve',
 	'timezone gmt -3' => '(GMT-3:00) Brasilia, Buenos Aires, Georgetown',

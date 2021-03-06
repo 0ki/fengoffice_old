@@ -547,7 +547,11 @@ og.FileManager = function() {
 			disabled: true,
 			handler: function(e) {
 				var o = sm.getSelected();
-				og.render_modal_form('', {c:'files', a:'edit_file', params: {id: o.data.object_id, manager: o.data.manager}});
+				if(o.data.ftype == 1){
+					og.render_modal_form('', {c:'files', a:'edit_weblink', params: {id: o.data.object_id, manager: o.data.manager}});
+				}else{
+					og.render_modal_form('', {c:'files', a:'edit_file', params: {id: o.data.object_id, manager: o.data.manager}});
+				}
 			}
 		}),
 		zip_add: new Ext.Action({

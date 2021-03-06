@@ -383,7 +383,7 @@ class ObjectController extends ApplicationController {
 						}
 					}
 					
-					foreach (array_var($_REQUEST, 'remove_custom_properties') as $cpropid => $remove) {
+					foreach (array_var($_REQUEST, 'remove_custom_properties',array()) as $cpropid => $remove) {
 						if ($remove) {
 							CustomPropertyValues::deleteCustomPropertyValues($object->getId(), $cpropid);
 						}

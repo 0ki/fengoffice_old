@@ -81,4 +81,6 @@
 	'reporting' => '보고서',
 	'create document' => '문서 생성',
 	'create presentation' => '프레젠테이션 생성',
+	'the task activity' => '프로젝트 그룹 {0}',
+	'the task' => '프로젝트 그룹',
 ); ?>

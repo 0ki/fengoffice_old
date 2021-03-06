@@ -1811,6 +1811,7 @@ class FilesController extends ApplicationController {
 		Hook::fire('classify_action', null, $ret);		
 		$join_params = null;
 		$select_columns = null;
+		$extra_conditions = "";
 		if (strpos($order, 'p_') == 1 ){
 			$cpId = substr($order, 3);
 			$order = 'customProp';
@@ -1839,7 +1840,7 @@ class FilesController extends ApplicationController {
 			$order = '`name`';
 		} // if
 		
-		$extra_conditions = $hide_private ? 'AND `is_visible` = 1' : '';
+		$extra_conditions .= $hide_private ? 'AND `is_visible` = 1' : '';
 		
 		// filter attachments of other people if not filtering
 		$tmp_mids = array();
@@ -2126,15 +2127,16 @@ class FilesController extends ApplicationController {
 				if (array_var($_REQUEST, 'modal')) {
 					evt_add("reload current panel");
 				}
-			} catch(Exception $e) {
-				
+			} catch(Exception $e) {				
 				DB::rollback();
-				ajx_current("empty");
 				if (array_var($_REQUEST, 'modal')) {
-					ajx_extra_data(array('error' => $e->getMessage()));
+					$this->setLayout("json");
+					$this->setTemplate(get_template_path("empty"));					
+					print_modal_json_response(array('errorCode' => 1, 'errorMessage' => $e->getMessage(), 'showMessage' => 1), true, true);
 				} else {
 					flash_error($e->getMessage());
 				}
+				ajx_current("empty");
 			} // try
 		} // if
 	} // edit_file

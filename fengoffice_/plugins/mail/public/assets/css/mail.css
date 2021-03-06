@@ -25,3 +25,7 @@
 #mails-panel .mail-classify-selector .x-column-inner{
 	width: 100%!important;
 }
+
+blockquote {
+	margin-left: 10px!important;
+}

@@ -270,8 +270,7 @@
 	'yesterday at' => 'Ieri alle {0}',
 	'use default subject' => 'Usa il soggetto di dafault',
 	'enter a custom subject' => 'Inserisci un soggetto...',
-	'Super Administrator' => 'Super Amministratore
-',
+	'Super Administrator' => 'Super Amministratore',
 	'Administrator' => 'Amministratore',
 	'Manager' => 'Manager',
 	'Executive' => 'Esecutivo',

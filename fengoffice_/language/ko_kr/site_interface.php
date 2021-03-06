@@ -477,4 +477,9 @@
 	'contact identifier required' => '연락처는 최소한 이름이나 성으로 식별되야 합니다.',
 	'created by on short' => '<a class="internalLink" href="{0}">{1}</a>, {2}',
 	'modified by on short' => '<a class="internalLink" href="{0}">{1}</a>, {2}',
+	'user type' => '회원 타입',
+	'guest user' => '손님',
+	'email tab' => '이메일(베타)',
+	'admin user' => '관리자',
+	'previous tasks' => '연계 작업',
 ); ?>

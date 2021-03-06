@@ -35,7 +35,7 @@ function feng__autoload($load_class_name) {
 		//TODO Pepe: No tengo la conexion ni las clases de DB en este momento.. me conecto derecho 
 		$temp_link  = mysql_connect(DB_HOST, DB_USER, DB_PASS) ;
 		mysql_select_db(DB_NAME) ;
-		$res = mysql_query("SELECT name FROM ".TABLE_PREFIX."plugins WHERE is_installed = 1 AND is_activated = 1;");
+		$res = mysql_query("SELECT name FROM ".TABLE_PREFIX."plugins WHERE is_installed = 1;");
 		while ($row = mysql_fetch_object($res)) {	
 			$plugin_name =  strtolower($row->name) ;
 			$dir  = ROOT . '/plugins/'.$plugin_name.'/application' ;

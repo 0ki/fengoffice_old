@@ -522,25 +522,27 @@ class DimensionController extends ApplicationController {
 	//return all childs of a member
 	function get_member_childs() {
 		$mem_id = array_var($_GET, 'member');
-		$mem = Members::getMemberById($mem_id);
-		if($mem instanceof Member){
-			//Do not use contact member cache for superadmins
-			if(!logged_user()->isAdministrator()){
-				//use the contact member cache
-				$dimension = $mem->getDimension();
-				$params = array(
-						"dimension" => $dimension,
-						"contact_id" => logged_user()->getId(),
-						"parent_member_id" => $mem->getId()
-				);
-				$childs = $member_cache_list = ContactMemberCaches::getAllMembersWithCachedParentId($params);	
-			}else{
-				$childs = Members::getSubmembers($mem, false, "");
+		if ((function_exists('logged_user') && logged_user() instanceof Contact && ContactMemberPermissions::contactCanAccessMemberAll(implode(',', logged_user()->getPermissionGroupIds()), $mem_id, logged_user(), ACCESS_LEVEL_READ))) {
+			$mem = Members::getMemberById($mem_id);
+			if($mem instanceof Member){
+				//Do not use contact member cache for superadmins
+				if(!logged_user()->isAdministrator()){
+					//use the contact member cache
+					$dimension = $mem->getDimension();
+					$params = array(
+							"dimension" => $dimension,
+							"contact_id" => logged_user()->getId(),
+							"parent_member_id" => $mem->getId()
+					);
+					$childs = $member_cache_list = ContactMemberCaches::getAllMembersWithCachedParentId($params);	
+				}else{
+					$childs = Members::getSubmembers($mem, false, "");
+				}
+							
+				$members = $this->buildMemberList($childs, $mem->getDimension(),  null, null, null, null);
+				
+				ajx_extra_data(array("members" => $members, "dimension" => $mem->getDimensionId(), "member_id" => $mem->getId()));			
 			}
-						
-			$members = $this->buildMemberList($childs, $mem->getDimension(),  null, null, null, null);
-			
-			ajx_extra_data(array("members" => $members, "dimension" => $mem->getDimensionId(), "member_id" => $mem->getId()));			
 		}
 		ajx_current("empty");
 	}
@@ -548,15 +550,17 @@ class DimensionController extends ApplicationController {
 	//return all parents of a member
 	function get_member_parents() {
 		$mem_id = array_var($_GET, 'member');
-		$mem = Members::getMemberById($mem_id);
-		if($mem instanceof Member){
-			$parents = $mem->getAllParentMembersInHierarchy(true);
-			
-			$members = $this->buildMemberList($parents, $mem->getDimension(),  null, null, null, null);
-			
-			ajx_extra_data(array("member_id" => $mem_id));
-			ajx_extra_data(array("members" => $members));
-			ajx_extra_data(array('dimension_id' => $mem->getDimensionId()));
+		if ((function_exists('logged_user') && logged_user() instanceof Contact && ContactMemberPermissions::contactCanAccessMemberAll(implode(',', logged_user()->getPermissionGroupIds()), $mem_id, logged_user(), ACCESS_LEVEL_READ))) {
+			$mem = Members::getMemberById($mem_id);
+			if($mem instanceof Member){
+				$parents = $mem->getAllParentMembersInHierarchy(true);
+				
+				$members = $this->buildMemberList($parents, $mem->getDimension(),  null, null, null, null);
+				
+				ajx_extra_data(array("member_id" => $mem_id));
+				ajx_extra_data(array("members" => $members));
+				ajx_extra_data(array('dimension_id' => $mem->getDimensionId()));
+			}
 		}
 		ajx_current("empty");
 	}
@@ -570,10 +574,12 @@ class DimensionController extends ApplicationController {
 			$all_members = array();
 			$all_members_ids = array();
 			foreach ($member_ids as $m) {
-				$mem = Members::getMemberById($m);
-				if($mem instanceof Member){
-					$parents = $mem->getAllParentMembersInHierarchy(true);
-					$all_members[] = $this->buildMemberList($parents, $mem->getDimension(),  null, null, null, null);									
+				if ((function_exists('logged_user') && logged_user() instanceof Contact && ContactMemberPermissions::contactCanAccessMemberAll(implode(',', logged_user()->getPermissionGroupIds()), $m, logged_user(), ACCESS_LEVEL_READ))) {
+					$mem = Members::getMemberById($m);
+					if($mem instanceof Member){
+						$parents = $mem->getAllParentMembersInHierarchy(true);
+						$all_members[] = $this->buildMemberList($parents, $mem->getDimension(),  null, null, null, null);									
+					}
 				}
 			}
 					

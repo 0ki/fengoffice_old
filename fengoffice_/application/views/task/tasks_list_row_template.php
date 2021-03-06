@@ -39,9 +39,9 @@
       <div class='task-name' {{#if task.repetitive}}style='width:85%;'{{/if}}  >
         
           {{#if task.status}}
-            <span style='text-decoration:line-through' title='{{tool_tip}}'>{{{task_name}}}</span>
+            <span style='text-decoration:line-through' title='{{tool_tip}}'>{{escape task_name}}</span>
           {{else}}
-             <span title='{{{task_name}}}'>{{{task_name}}}</span>            
+             <span title='{{escape task_name}}'>{{escape task_name}}</span>            
           {{/if}}
             
       </div>  

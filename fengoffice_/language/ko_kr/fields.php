@@ -187,4 +187,5 @@
 	'field Projects created_by_id' => '생성자',
 	'field Projects updated_by_id' => '갱신자',
 	'field Projects completed_by_id' => '완료자',
+	'field ProjectTasks percent_completed' => '프로젝트 진행율',
 ); ?>

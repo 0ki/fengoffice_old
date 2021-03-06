@@ -92,7 +92,7 @@ class MailController extends ApplicationController {
 				$re_body = $original_mail->getBodyPlain();
 			}
 			if ($type == 'html') {
-				$pre_quote = '<blockquote type="cite" style="padding-left:10px; border-left: 1px solid #987ADD;">';
+				$pre_quote = '<blockquote type="cite" style="margin-left: 10px; padding-left:10px; border-left: 1px solid #987ADD;">';
 				$post_quote = "</blockquote>";
 			} else {
 				$pre_quote = "";

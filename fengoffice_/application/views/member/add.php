@@ -98,7 +98,7 @@
 			<div id="<?php echo $genid ?>object_type_combo_container"></div>
 			<div class="clear"></div>
 		</div>
-		
+		<?php if($member instanceof Member && DimensionObjectTypeHierarchies::typeAllowChilds($current_dimension->getId(), $member->getObjectTypeId())){ ?>
 		<div id="<?php echo $genid?>memberParentContainer" style="width:267px;">
 			<?php  
 				$selected_members = array();
@@ -116,7 +116,7 @@
 				<input type="hidden" id="<?php echo $genid ?>memberParent" value="<?php echo $parent_sel; ?>" name="member[parent_member_id]"></input>
 				<div class="clear"></div>
 		</div>
-		
+		<?php } ?>
 		
 		<div id="<?php echo $genid?>member_color_input" class="dataBlock"></div>
 		<div class="x-clear"></div>

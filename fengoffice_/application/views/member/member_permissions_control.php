@@ -1,6 +1,3 @@
-<style>
-
-</style>
 <?php
 	require_javascript("og/Permissions.js");
 	if (!isset($genid)) $genid = gen_id();
@@ -36,11 +33,13 @@
 			$groups_with_perms[] = $pg;
 		} else {
 			$c = Contacts::findById($pg->getContactId());
-			if ($c instanceof Contact && !$c->getDisabled()) {
-				$users_with_perms[] = $c;
+			if ($c instanceof Contact && !$c->getDisabled() && ($c->getUserType() >= logged_user()->getUserType() || $c->getId() == logged_user()->getId())) {
+				// key is to order by role and name
+				$users_with_perms[str_pad($c->getUserType(), 2, '0', STR_PAD_LEFT) . "_" . $c->getObjectName()] = $c;
 			}
 		}
 	}
+	ksort($users_with_perms);
 ?>
 
 	<input id="<?php echo $genid ?>hfPerms" type="hidden" value="<?php echo str_replace('"',"'", json_encode($member_permissions));?>"/>

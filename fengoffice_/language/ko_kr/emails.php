@@ -140,7 +140,7 @@
 	'mail CC desc' => '복사본 첨부 수령자는 이메일에 동일한 복사본을 받게됩니다.',
 	'mail BCC desc' => '장님 복사본 첨부 수령자는 이메일에 동일한 복사본이 수신되지만 다른 수납자는 그것을 알지못하게 됩니다.',
 	'mail BCC' => '장님복사본',
-	'mail account smtp use auth description' => '당신이 SMTP 서버에 인증하게될 방법입니다.\n대부분은 \'다가오는기능 사용\'이 올바른 옵션 입니다',
+	'mail account smtp use auth description' => '당신이 SMTP 서버에 인증하게될 방법입니다.\\n대부분은 \'다가오는기능 사용\'이 올바른 옵션 입니다',
 	'outgoing transport type' => '보안접속',
 	'mail account outgoing transport type description' => '"ssl"이나"tls"를 보안접속에 사용함',
 	'smtp settings' => 'SMTP 설정',

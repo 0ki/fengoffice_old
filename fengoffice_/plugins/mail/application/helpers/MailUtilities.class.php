@@ -986,39 +986,55 @@ class MailUtilities {
 						}
 						
 						
-						
-						if($is_last_mail_on_mail_server){
-							$lastReceived = $max_summary[0]['MSG_NUM'];
-						}else{
-							if($max_uid < $server_min_uid){
-								$lastReceived = 1;
+						if($max_uid){
+							if($is_last_mail_on_mail_server){
+								$lastReceived = $max_summary[0]['MSG_NUM'];
 							}else{
-								// $max_uid is betwen $server_min_uid and $server_max_uid
-								if ($server_max_uid) {
-									
-									$diff_uids = $server_max_uid - $max_uid;
-									$lastReceived = $numMessages - $diff_uids;	
-									
-								} else {
-									// if mail with number of message = $numMessages does not exists in server, check from max_uid
-									$tmp_uid = $max_uid + 1;
-									$tmp_sum = $imap->getSummary($tmp_uid);
-									if (!PEAR::isError($tmp_sum)) {
-										$count = 0;
-										while (!$tmp_sum && $count < $numMessages) {
-											$tmp_uid++;
-											$count++;
-											$tmp_sum = $imap->getSummary($tmp_uid);
-										}
+								if($max_uid < $server_min_uid){
+									$lastReceived = 1;
+								}else{
+									// $max_uid is betwen $server_min_uid and $server_max_uid
+									if ($server_max_uid) {
+										
+										$diff_uids = $server_max_uid - $max_uid;
+										$lastReceived = $numMessages - $diff_uids;	
+										
 									} else {
-										$tmp_sum = null;
-									}
-									if ($tmp_sum) {
-										$lastReceived = $tmp_sum[0]['MSG_NUM'];
+										//get the complete server list of uids and msgids
+										$server_uids_list = $imap->getMessagesListUid();
+										//search the nearest uid from our $max_uid
+										for($e = (count($server_uids_list)-1); $e>=1; $e--){
+											$s_uidl = $server_uids_list[$e]["uidl"];
+											if($s_uidl < $max_uid){
+												$lastReceived = $server_uids_list[$e]["msg_id"];
+												break;
+											}
+										}
+										
+									/*	// if mail with number of message = $numMessages does not exists in server, check from max_uid
+										$tmp_uid = $max_uid + 1;
+										$tmp_sum = $imap->getSummary($tmp_uid);
+										if (!PEAR::isError($tmp_sum)) {
+											$count = 0;
+											while (!$tmp_sum && $count < $numMessages) {//$tmp_uid < $numMessages && $count < 1000
+												$tmp_uid++;
+												$count++;
+												file_put_contents('cache/debug_log.log', "WHILE: ".$tmp_uid." \n ", FILE_APPEND);
+												$tmp_sum = $imap->getSummary($tmp_uid);
+											}
+										} else {
+											$tmp_sum = null;
+										}
+										if ($tmp_sum) {
+											$lastReceived = $tmp_sum[0]['MSG_NUM'];
+										}*/
 									}
 								}
+								$lastReceived = $lastReceived - 1;
 							}
-							$lastReceived = $lastReceived - 1;
+						}else{
+							//we don't have any mails on the system yet
+							$lastReceived = 0;
 						}
 						
 						if($lastReceived < 0){

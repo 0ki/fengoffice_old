@@ -23,12 +23,11 @@
 			?>
 				<li id="<?php echo "email-".$email->getId()?>" class="email-row ico-email <?php echo $row_cls ?>" style="<?php echo $style;?>">
 					<a href="<?php echo $email->getViewUrl() ?>">
-						<span class="bold"><?php echo clean($email->getSubject());?>: </span>
-						<br />
-						<span class="breadcrumb"></span>
-						<br />
-						<span><?php echo clean($email->getFrom());?></span><span class="desc" style="float:right;"><?php echo friendly_date($email->getSentDate())?></span>
+						<div class="bold"><?php echo clean($email->getSubject());?>: </div>
+						<div class="breadcrumb"></div>
+						<div style="float:left;"><?php echo clean($email->getFrom());?></div><div class="desc" style="float:right;"><?php echo friendly_date($email->getSentDate())?></div>
 					</a>
+					<div class="clear"></div>
 					<script>
 						var crumbHtml = <?php echo $crumbJs?> ;
 						$("#email-<?php echo $email->getId()?> .breadcrumb").html(crumbHtml);

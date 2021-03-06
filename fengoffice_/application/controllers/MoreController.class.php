@@ -49,6 +49,14 @@ class MoreController extends ApplicationController {
 			$disabled_modules[] = $mail_info;
 		}
 		
+	/*	$lo_info = array(
+				'id' => 'liquid-office',
+				'name' => lang('liquid office'),
+				'link' => 'https://www.liquid-office.eu/',
+				'ico' => 'ico-large-liquid-office',
+		);
+		$disabled_modules[] = $lo_info;*/
+		
 		$tab_panels = TabPanels::findAll(array('conditions' => "id<>'more-panel' AND (plugin_id is NULL OR plugin_id = 0 OR plugin_id IN (SELECT id FROM ".TABLE_PREFIX."plugins WHERE is_installed > 0))", 'order' => 'ordering'));
 		foreach ($tab_panels as $panel) {
 			if ($panel->getId() == 'mails-panel' && $mail_info != null) continue;
@@ -419,6 +427,12 @@ class MoreController extends ApplicationController {
 			ajx_current("empty");
 			return;
 		}
+		ajx_set_no_toolbar();
+	}
+	
+	
+	
+	function contracted_services() {
 		ajx_set_no_toolbar();
 	}
 	

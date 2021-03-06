@@ -177,7 +177,6 @@
 	'country wf' => '월리스 와 푸투나 아일랜드',
 	'country eh' => '웨스턴 사하라',
 	'country ye' => '예맨',
-	
 	'country zm' => '잠비아',
 	'country zw' => '짐바브웨',
 ); ?>

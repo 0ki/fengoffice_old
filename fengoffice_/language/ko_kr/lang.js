@@ -1,4 +1,4 @@
-locale = 'kr_ko';
+locale = 'ko_kr';
 addLangs({
 	'error loading content': '내용 부르기 실패, 나중에 다시 해보세요.\n만약 문제가 계속되면 관리자에게 연락해요.',
 	'projects': '작업장',
@@ -63,10 +63,10 @@ addLangs({
 	'refresh desc': '보기 새로고침',
 	'templates desc': '양식 관리하기',
 	'templates': '양식',
-	'edit workspace': '선택된 작업장 수정',
+	'edit workspace': '선택된 프로젝트 그룹 수정',
 	'company': '회사',
 	'companies': '회사들',
-	'email': '이메일',
+	'email': '이메일보기',
 	'extract': '추출',
 	'extract files': '파일추출',
 	'compress': '압축',
@@ -170,7 +170,7 @@ addLangs({
 	'edit selected webpage': '수정',
 	'text': '텍스트',
 	'date': '날짜',
-	'add mail account': '이메일계정 추가',
+	'add mail account': '이메일 계정 추가',
 	'classify': '이메일 분류',
 	'add new message': '새 노트 추가',
 	'view by account': '계정별 보기',
@@ -557,5 +557,12 @@ addLangs({
 	'milestones': '이정표',
 	'no subject': '제목 없음',
 	'value is already in the list': '값이 목록에 이미 있습니다.',
-	'custom property invalid numeric value': '기조 찺은 사용자 속성에 숫자여야만 합니다 : {0}'
+	'custom property invalid numeric value': '기조 찺은 사용자 속성에 숫자여야만 합니다 : {0}',
+	'email address': '이메일주소',
+	'add new workspace': '새로운 프로젝트 그룹 생성',
+	'add sub task': '하위작업 추가',
+	'estimated time': '추정시간',
+	'estimated times': '추정시간',
+	'accounts': '계정',
+	'read': '읽음 표시'
 });

@@ -41,7 +41,12 @@
 og.genid = '<?php echo $genid?>';
 og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Plugins::instance()->isActivePlugin('crpm') ? '1' : '0' ?>';
 </script>
-
+<style>
+.coInputMainBlock .dimension-selector-container label {
+	margin-right: 10px;
+	min-width: 0px;
+}
+</style>
 <form id="<?php echo $genid ?>submit-edit-form" class="add-task" action="<?php echo $form_url ?>" method="post" onsubmit="<?php echo $on_submit?>">
 
 <div class="task">
@@ -199,7 +204,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 		?>
 		
   	</div>
-  	<div class="section-separator" style="float:left; width:1px; border-left:1px solid #ccc;"></div>
+  	
   	<div class="right-section">
   		<div id="<?php echo $genid ?>add_task_select_context_div" class="context-selector-container">
 		<?php
@@ -246,8 +251,8 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
     				$parentTask = TemplateTasks::findById($task_data['parent_id']);
     			}else{
     				$parentTask = ProjectTasks::findById($task_data['parent_id']);
-    			}
- 				$parentTask = ProjectTasks::findById(array_var($task_data, 'parent_id'));
+    			} 				
+ 				
  				if ($parentTask instanceof ProjectTask || $parentTask instanceof TemplateTask){?>
  				<span style="display: none;" id="no-task-selected<?php echo $genid?>"><?php echo lang('none')?></span>
     			<a style="display: none;margin-left: 10px" id="<?php echo $genid ?>parent_before" href="#" onclick="og.pickPreviousTemplateTask(this, '<?php echo $genid?>', '<?php echo $task->getId()?>', '<?php echo $template_id?>')"><?php echo lang('set parent task') ?></a> 
@@ -900,10 +905,6 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 
 		$("#<?php echo $genid?>tabs").tabs();
 
-		setTimeout(function(){
-			$(".section-separator").css('height', $("#<?php echo $genid?>add_task_more_div").height() + 'px');
-		}, 250);
-		
 		$("#ogTasksPanelATTitle").focus();
 	});
 	
