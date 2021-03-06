@@ -26,7 +26,7 @@ og.MemberTree = function(config) {
 		region: 'center',
 		id: config.id,
 		loader: new og.MemberChooserTreeLoader({
-    		dataUrl: 'index.php?c=dimension&a=initial_list_dimension_members_tree_root&ajax=true&dimension_id='+config.dimensionId+'&avoid_session=1',
+    		dataUrl: 'index.php?c=dimension&a=initial_list_dimension_members_tree_root&ajax=true&dimension_id='+config.dimensionId+'&avoid_session=1'+(og.config.member_selector_page_size ? '&limit='+og.config.member_selector_page_size : ''),
     		ownerTree: this  
     	}),
 		autoScroll: true,
@@ -188,11 +188,28 @@ og.MemberTree = function(config) {
 	// ********** TREE EVENTS *********** //
 	this.on({
 		expandnode: function(node){
+			if (node && isNaN(node.id) && node.id.indexOf('view_more_') >= 0) {
+				return;
+			}
 			//get childs from server
 	        if(node.childNodes.length < node.attributes.realTotalChilds && node.attributes.expandable && !node.attributes.gettingChildsFromServer){
 	        	node.ownerTree.innerCt.mask();
 	        	node.attributes.gettingChildsFromServer = true;
-	        	og.openLink(og.getUrl('dimension', 'get_member_childs', {member:node.id}), {
+	        	
+	        	if (!node.last_childs_offset) {
+	        		node.last_childs_offset = 0;
+	        	} else {
+	        		node.last_childs_offset = node.last_childs_offset + og.config.member_selector_page_size;
+	        	}
+				var limit = og.config.member_selector_page_size;
+				
+				var parameters = {
+					member: node.id,
+					limit: limit,
+					offset: node.last_childs_offset
+				};
+				
+	        	og.openLink(og.getUrl('dimension', 'get_member_childs', parameters), {
 	    			hideLoading:true, 
 	    			hideErrors:true,
 	    			callback: function(success, data){
@@ -200,6 +217,13 @@ og.MemberTree = function(config) {
 	    				var dimension_tree = Ext.getCmp('dimension-panel-'+data.dimension);
 	    				if (dimension_tree) {
 		    				dimension_tree.addMembersToTree(data.members, data.dimension);
+		    				
+		    				if (data.more_nodes_left) {
+		    					og.addViewMoreNode(node, node.ownerTree.id, og.ajaxMemberTreeViewMoreCallback);
+		    				} else {
+		    					var old_view_more_node = dimension_tree.getNodeById('view_more_' + node.id);
+		    					if (old_view_more_node) old_view_more_node.remove();
+		    				}
 		    				 				
 		    				dimension_tree.innerCt.unmask();
 		    				
@@ -212,6 +236,10 @@ og.MemberTree = function(config) {
 			
 		},
 		click: function(node, e){
+			if (node && isNaN(node.id) && node.id.indexOf('view_more_') >= 0) {
+				return;
+			}
+			
 			//clear search filter
 			this.clearFilter();
 			$("#" + this.id + '-textfilter').val("");
@@ -313,6 +341,9 @@ og.MemberTree = function(config) {
 	this.getSelectionModel().on({
 		
 		selectionchange : function(sm, selection) {
+			if (selection && isNaN(selection.id) && selection.id.indexOf('view_more_') >= 0) {
+				return;
+			}
 			if (selection && !this.pauseEvents) {
 				var selection_changed = og.contextManager.getDimensionMembers(this.dimensionId).indexOf(selection.id) == -1;
 				og.contextManager.cleanActiveMembers(this.dimensionId) ;
@@ -755,7 +786,7 @@ og.updateDimensionTreeNode = function(dimension_id, member, extra_params) {
 		node_parent = dimension_tree.root;
 	}
 		
-	member.leaf = true;
+	member.leaf = false;
 	member.text = member.name;
 	var new_node = dimension_tree.loader.createNode(member);
 		    												

@@ -135,14 +135,14 @@ class MemberController extends ApplicationController {
 				$pg = PermissionGroups::findById($pg_id);
 				if ($pg->getType() == 'permission_groups') {
 					$c = Contacts::findById($pg->getContactId());
-					$name = $name = str_replace("'", "\'", $c->getObjectName());
+					$name = $name = escape_character($c->getObjectName());
 					$picture_url = $c->getPictureUrl();
-					$company_name = ($c->getCompany() instanceof Contact ? str_replace("'", "\'", $c->getCompany()->getObjectName()) : "");
+					$company_name = ($c->getCompany() instanceof Contact ? escape_character($c->getCompany()->getObjectName()) : "");
 					$type = 'contact';
 					$is_guest = $c->isGuest() ? "1" : "0";
 					$role = $c->getUserTypeName();
 				} else {
-					$name = str_replace("'", "\'", $pg->getName());
+					$name = escape_character($pg->getName());
 					$picture_url = "";
 					$company_name = "";
 					$type = 'group';
@@ -533,7 +533,7 @@ class MemberController extends ApplicationController {
 							$dimension_obj_data[$field['col']] = getDateValue($dimension_obj_data[$field['col']]);
 						}
 					}
-					$member->save();
+					
 					$dimension_object->setFromAttributes($dimension_obj_data, $member);
 					$dimension_object->save();
 					$member->setObjectId($dimension_object->getId());
@@ -1424,26 +1424,8 @@ class MemberController extends ApplicationController {
 					
 					$obj->addToMembers(array($member));
 					$obj->addToSharingTable();
-					$objects[] = $obj;
-					
-					if ($obj->allowsTimeslots()) {
-						$timeslots = $obj->getTimeslots();
-						foreach ($timeslots as $timeslot) {
-							$ts_mids = ObjectMembers::getMemberIdsByObject($timeslot->getId());
-							// if classified then reclassify
-							if (count($ts_mids)) {
-								if (array_var($_POST, 'remove_prev')) {
-									ObjectMembers::delete('`object_id` = ' . $timeslot->getId() . ' AND `member_id` IN (SELECT `m`.`id` FROM `'.TABLE_PREFIX.'members` `m` WHERE `m`.`dimension_id` = '.$member->getDimensionId().')');
-								}
-								$timeslot->addToMembers(array($member));
-								//$timeslot->addToSharingTable();
-								// fill sharing table in background
-								add_object_to_sharing_table($timeslot, logged_user());
-								$objects[] = $timeslot;
-							}
-						}
-					}
-					
+					$objects[] = $obj;					
+									
 					if (Plugins::instance()->isActivePlugin('mail') && $obj instanceof MailContent) {
 						$conversation = MailContents::getMailsFromConversation($obj);
 						foreach ($conversation as $conv_email) {

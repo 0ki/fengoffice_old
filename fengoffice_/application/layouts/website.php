@@ -37,8 +37,8 @@
 		echo stylesheet_tag('website.css');
 	}
 	
-	// Include plguin specif stylesheets
-	foreach (Plugins::instance()->getActive() as $p) {
+	// Include plguin specif stylesheets - include all installed plugins, no matter if they they have not been activated
+	foreach (Plugins::instance()->getAll() as $p) {
 		/* @var $p Plugin */
 		$css_file =	PLUGIN_PATH ."/".$p->getSystemName()."/public/assets/css/".$p->getSystemName().".css" ;
 		if (is_file($css_file)) {
@@ -139,7 +139,7 @@ $show_owner_company_name_header = config_option("show_owner_company_name_header"
 		<div style="float: left;" class="header-content-left">
 			<div id="logodiv" onclick="og.Breadcrumbs.resetSelection();">
 				<div style="height: 55px;" id="logo_company_margin_top">
-					<img src="<?php echo ($use_owner_company_logo) ? owner_company()->getPictureUrl('medium') : get_product_logo_url() ?>" name="img_company_margin" id="img_company_margin" style="display: none;"/>
+					<img src="<?php echo ($use_owner_company_logo) ? owner_company()->getPictureUrl('large') : get_product_logo_url() ?>" name="img_company_margin" id="img_company_margin" style="display: none;"/>
 					<script>
 						$('#img_company_margin').load(function() {
 							var margin = (Ext.isIE) ? 25 : Math.round(parseInt(document.img_company_margin.height) / 2);
@@ -259,12 +259,12 @@ if (user_config_option("autodetect_time_zone", null)) {
 og.CurrentPagingToolbar = <?php echo defined('INFINITE_PAGING') && INFINITE_PAGING ? 'og.InfinitePagingToolbar' : 'og.PagingToolbar' ?>;
 og.ownerCompany = {
 	id: '<?php echo owner_company()->getId()?>',
-	name: '<?php echo str_replace("'", "\'", clean(owner_company()->getObjectName()))?>',
+	name: '<?php echo escape_character(clean(owner_company()->getObjectName()))?>',
 	logo_url: '<?php echo (owner_company()->getPictureFile() != '' ? owner_company()->getPictureUrl() : '')?>',
-	email: '<?php echo str_replace("'", "\'", clean(owner_company()->getEmailAddress('work'))) ?>',
-	phone: '<?php echo str_replace("'", "\'", clean(owner_company()->getPhoneNumber('work'))) ?>',
-	address: '<?php echo str_replace("\n", " ", str_replace("'", "\'", clean(owner_company()->getStringAddress('work')))) ?>',
-	homepage: '<?php echo str_replace("'", "\'", clean(owner_company()->getWebpageUrl('work'))) ?>'
+	email: '<?php echo escape_character(clean(owner_company()->getEmailAddress('work'))) ?>',
+	phone: '<?php echo escape_character(clean(owner_company()->getPhoneNumber('work'))) ?>',
+	address: '<?php echo str_replace("\n", " ", escape_character(clean(owner_company()->getStringAddress('work')))) ?>',
+	homepage: '<?php echo escape_character(clean(owner_company()->getWebpageUrl('work'))) ?>'
 };
 og.loggedUser = {
 	id: <?php echo logged_user()->getId() ?>,
@@ -302,6 +302,7 @@ og.config = {
 	'enable_weblinks_module': <?php echo json_encode(module_enabled('weblinks')) ?>,
 	'enable_time_module': <?php echo json_encode(module_enabled("time") && can_manage_time(logged_user())) ?>,
 	'enable_reporting_module': <?php echo json_encode(module_enabled("reporting")) ?>,
+	'use_tasks_dependencies': <?php echo json_encode(module_enabled("tasks")) ?>,
 	'enabled_dimensions': Ext.util.JSON.decode('<?php echo json_encode(config_option('enabled_dimensions')) ?>'),
 	'brand_colors': {
 		brand_colors_head_back: '<?php echo config_option('brand_colors_head_back')?>',
@@ -309,7 +310,8 @@ og.config = {
 		brand_colors_tabs_back: '<?php echo config_option('brand_colors_tabs_back')?>',
 		brand_colors_tabs_font: '<?php echo config_option('brand_colors_tabs_font')?>'
 	},
-	'with_perm_user_types': Ext.util.JSON.decode('<?php echo json_encode(config_option('give_member_permissions_to_new_users'))?>')
+	'with_perm_user_types': Ext.util.JSON.decode('<?php echo json_encode(config_option('give_member_permissions_to_new_users'))?>'),
+	'member_selector_page_size': 100
 };
 og.preferences = {
 	'viewContactsChecked': <?php echo json_encode(user_config_option('viewContactsChecked')) ?>,
@@ -339,16 +341,16 @@ og.userRoles = {};
 	foreach ($all_roles as $role) {?>
 		og.userRoles[<?php echo $role->getId()?>] = {
 			code:'<?php echo $role->getName() ?>', 
-			name:'<?php echo str_replace("'", "\'", lang($role->getName()))?>', 
+			name:'<?php echo escape_character(lang($role->getName()))?>', 
 			parent:'<?php echo $role->getParentId()?>',
-			hint:'<?php echo str_replace("'", "\'", lang($role->getName().' user role description') . '&nbsp;<a href="http://www.fengoffice.com/web/user_types.php" target="_blank">'.lang('more information about user roles').'</a>') ?>'
+			hint:'<?php echo escape_character(lang($role->getName().' user role description') . '&nbsp;<a href="http://www.fengoffice.com/web/user_types.php" target="_blank">'.lang('more information about user roles').'</a>') ?>'
 		};
 <?php } ?>
 
 og.userTypes = {};
 <?php $all_user_types = PermissionGroups::instance()->getUserTypeGroups();
 	foreach ($all_user_types as $type) {?>
-		og.userTypes[<?php echo $type->getId()?>] = {code:'<?php echo $type->getName() ?>', name:'<?php echo str_replace("'", "\'", lang($type->getName()))?>'};
+		og.userTypes[<?php echo $type->getId()?>] = {code:'<?php echo $type->getName() ?>', name:'<?php echo escape_character(lang($type->getName()))?>'};
 <?php } ?>
 og.defaultRoleByType = {};
 <?php $default_roles_by_type = PermissionGroups::instance()->getDefaultRolesByType();
@@ -388,7 +390,7 @@ foreach($allUsers as $usr) {
     $allUsers_array[$usr->getId()] = $usr_info;
 }
 ?>
-og.allUsers =  <?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($allUsers_array)))) ?>;
+og.allUsers =  <?php echo clean(str_replace('"',"'", escape_character(json_encode($allUsers_array)))) ?>;
 
 <?php 
 $object_types = ObjectTypes::getAllObjectTypes();
@@ -401,7 +403,7 @@ foreach ($object_types as $ot) {
 							);
 }
 ?>
-og.objectTypes =  <?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($types)))) ?>;
+og.objectTypes =  <?php echo clean(str_replace('"',"'", escape_character(json_encode($types)))) ?>;
 
 <?php
 	$listing_preferences = ContactConfigOptions::getOptionsByCategoryName('listing preferences');

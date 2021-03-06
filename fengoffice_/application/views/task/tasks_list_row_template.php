@@ -115,6 +115,20 @@
     	</div>   
     </div>
 	{{/each}} 
+
+{{#if dependencies}}
+  {{#if draw_options.show_previous_pending_tasks}}
+    <div class='task-row-obj-container task-date-container'>
+          <div class='task-row-obj'>
+      <div class='center'>
+        {{#if previous_pending_tasks}}
+            <span class="ctmBadge previous-pending">{{previous_pending_tasks}}</span>
+        {{/if}} 
+      </div>   
+        </div>   
+      </div>
+  {{/if}}
+{{/if}}
 	
     {{#if show_quick_actions_container}}
     <div class='task-row-obj-container'>
@@ -325,6 +339,18 @@
       </div>
     </div>	
     {{/each }}
+
+{{#if dependencies}}
+  {{#if draw_options.show_previous_pending_tasks}}
+    <div class='task-row-obj-container task-date-container col-right-sp col-name'>
+        <div class='task-row-obj'>
+    <div class='task-row-obj-content'>
+        {{lang 'previous tasks'}}
+    </div>   
+      </div>   
+    </div>
+  {{/if}}
+{{/if}}
 
     {{#if draw_options.show_time}}
     <div class='task-row-obj-container col-name' >

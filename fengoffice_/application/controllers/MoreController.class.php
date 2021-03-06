@@ -70,7 +70,7 @@ class MoreController extends ApplicationController {
 					'name' => lang($panel->getTitle()),
 					'enabled' => $enabled,
 					'ico' => str_replace('ico-', 'ico-large-', $panel->getIconCls()),
-					'hint' => str_replace("'", "\'", lang('system module '.$panel->getId().' hint')),
+					'hint' => escape_character(lang('system module '.$panel->getId().' hint')),
 			);
 		}
 		
@@ -84,7 +84,7 @@ class MoreController extends ApplicationController {
 					'name' => lang('gantt chart'),
 					'enabled' => $gantt_plugin->isActive(),
 					'ico' => 'ico-large-gantt-module',
-					'hint' => str_replace("'", "\'", lang('system module gantt hint')),
+					'hint' => escape_character(lang('system module gantt hint')),
 			);
 			$other_modules[] = $gantt_info;
 		}

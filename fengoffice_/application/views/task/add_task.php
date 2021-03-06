@@ -76,7 +76,10 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
   <div>
 	<div class="coInputName">
 	<?php
-		echo text_field('task[name]', array_var($task_data, 'name', $task->getName()), array('class' => 'title', 'id' => 'ogTasksPanelATTitle', "size"=>"255", "maxlength"=>"255", 'placeholder' => lang('task')));
+		$task_name = array_var($task_data, 'name', $task->getName());
+		Hook::fire("render_object_name_prefix", array('object' => $task), $task_name);
+		
+		echo text_field('task[name]', $task_name, array('class' => 'title', 'id' => 'ogTasksPanelATTitle', "size"=>"255", "maxlength"=>"255", 'placeholder' => lang('task')));
 	?>
 	</div>
 		
@@ -594,12 +597,17 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
   
 	    <div id="<?php echo $genid ?>add_subscribers_div" class="form-tab">
 	    
-		    <div id="<?php echo $genid ?>taskFormSendNotificationDiv" style="display:none" class="dataBlock">
+		    <div id="<?php echo $genid ?>taskFormSendNotificationDiv" style="display:<?php echo (array_var($task_data, 'display_notification_checkbox')) ? 'block' : 'none' ?>" class="dataBlock">
 				<?php echo checkbox_field('task[send_notification]', array_var($task_data, 'send_notification'), array('id' => $genid . 'taskFormSendNotification', 'style' => 'margin-left:5px;margin-top:3px;')) ?>
 				<label for="<?php echo $genid ?>taskFormSendNotification" class="checkbox"><?php echo lang('send task assigned to notification') ?></label>
 				<div class="clear"></div>
 			</div>
-		
+			<div id="<?php echo $genid ?>taskFormSendNotificationSubscribersDiv" style="display:<?php echo (array_var($task_data, 'display_notification_checkbox')) ? 'block' : 'none' ?>" class="dataBlock">
+				<?php echo checkbox_field('task[send_notification_subscribers]', array_var($task_data, 'send_notification_subscribers'), array('id' => $genid . 'taskFormSendNotificationSubscribers', 'style' => 'margin-left:5px;margin-top:3px;')) ?>
+				<label for="<?php echo $genid ?>taskFormSendNotificationSubscribers" class="checkbox"><?php echo lang('send task subscribers notification') ?></label>
+				<div class="clear"></div>
+			</div>
+			
 			<?php $subscriber_ids = array();
 				if (!$task->isNew()) {
 					$subscriber_ids = $task->getSubscriberIds();
@@ -669,10 +677,10 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 		assignCombo.on('select', og.onAssignToComboSelect);
 
 		assignedto = document.getElementById('<?php echo $genid ?>taskFormAssignedTo');
-		if (assignedto){
+		/* if (assignedto){
 			assignedto.value = assigned_user;
 			og.addTaskUserChanged('<?php echo $genid ?>', '<?php echo logged_user()->getId() ?>');
-		}
+		}*/
 	}
 	
 	og.onAssignToComboSelect = function() {
@@ -681,24 +689,10 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 		if (assignedto) assignedto.value = combo.getValue();
 		assigned_user = combo.getValue();
 		
-		og.addTaskUserChanged('<?php echo $genid ?>', '<?php echo logged_user()->getId() ?>');
+		//og.addTaskUserChanged('<?php echo $genid ?>', '<?php echo logged_user()->getId() ?>');
 
 		ogTasks.applyAssignedToSubtasksInTaskForm('<?php echo $genid?>');
 	}
-
-	og.addTaskUserChanged = function(genid, logged_user_id){
-		var ddUser = document.getElementById(genid + 'taskFormAssignedTo');
-		var chk = document.getElementById(genid + 'taskFormSendNotification');
-		if (ddUser && chk){
-			var user = ddUser.value;
-			var nV = <?php echo $defaultNotifyValue?>;
-			chk.checked = (user > 0 && nV != 0 && user != logged_user_id);
-			var comp_obj = ogTasks.getCompany(user); // check if selected user is a user or a company
-			var not_div = document.getElementById(genid + 'taskFormSendNotificationDiv');
-			if (not_div) not_div.style.display = (user > 0 && !comp_obj) ? 'block':'none';
-		}
-	}
-	
 
 	og.redrawUserLists = function(context){
 		if (!og.redrawingUserList) {
@@ -932,7 +926,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 			if (!$task->isNew()) {
 				$subtasks = ProjectTasks::findAll(array('conditions' => "parent_id=".$task->getId()." AND trashed_by_id=0"));
 				foreach ($subtasks as $st) {
-					$st_name = clean(str_replace("'", "\'", $st->getObjectName()));
+					$st_name = clean(escape_character($st->getObjectName()));
 					?>
 					ogTasks.drawAddSubTaskInputs('<?php echo $genid ?>', {id:'<?php echo $st->getId()?>', name:'<?php echo $st_name?>', assigned_to:'<?php echo $st->getAssignedToContactId()?>'});
 			<?php

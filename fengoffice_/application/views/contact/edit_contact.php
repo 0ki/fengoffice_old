@@ -464,21 +464,21 @@
 			if (!is_new_contact) {
 			<?php foreach (array_var($contact_data, 'all_addresses') as $address) { ?>
 				og.addNewAddressInput('<?php echo $genid?>_addresses_container', 'contact', '<?php echo $address->getAddressTypeId()?>', {
-					street: '<?php echo str_replace("'", "\'", str_replace("\n", " ", $address->getStreet()))?>',
-					city: '<?php echo str_replace("'", "\'", $address->getCity())?>',
-					state: '<?php echo str_replace("'", "\'", $address->getState())?>',
-					zip_code: '<?php echo str_replace("'", "\'", $address->getZipCode())?>',
+					street: '<?php echo escape_character(str_replace("\n", " ", $address->getStreet()))?>',
+					city: '<?php echo escape_character($address->getCity())?>',
+					state: '<?php echo escape_character($address->getState())?>',
+					zip_code: '<?php echo escape_character($address->getZipCode())?>',
 					country: '<?php echo $address->getCountry()?>',
 					id: '<?php echo $address->getId()?>'
 				});
 			<?php } ?>
 			
 			<?php foreach (array_var($contact_data, 'all_webpages') as $webpage) { ?>
-				og.addNewWebpageInput('<?php echo $genid?>_webpages_container', 'contact', '<?php echo $webpage->getWebTypeId()?>', '<?php echo str_replace("'", "\'", $webpage->getUrl())?>', '<?php echo $webpage->getId()?>');
+				og.addNewWebpageInput('<?php echo $genid?>_webpages_container', 'contact', '<?php echo $webpage->getWebTypeId()?>', '<?php echo escape_character($webpage->getUrl())?>', '<?php echo $webpage->getId()?>');
 			<?php } ?>
 
 			<?php foreach (array_var($contact_data, 'all_emails') as $email) { ?>
-				og.addNewEmailInput('<?php echo $genid?>_emails_container', 'contact', '<?php echo $email->getEmailTypeId()?>', '<?php echo str_replace("'", "\'", $email->getEmailAddress())?>', '<?php echo $email->getId()?>');
+				og.addNewEmailInput('<?php echo $genid?>_emails_container', 'contact', '<?php echo $email->getEmailTypeId()?>', '<?php echo escape_character($email->getEmailAddress())?>', '<?php echo $email->getId()?>');
 			<?php } ?>
 			}
 
@@ -569,7 +569,7 @@
 	    		$("#user_role_div").remove();
 
 		    	<?php if (count($all_user_groups) > 0) { ?>
-		    		var groups_store_tmp = Ext.util.JSON.decode('<?php echo str_replace("'", "\'", json_encode($all_user_groups));?>');
+		    		var groups_store_tmp = Ext.util.JSON.decode('<?php echo escape_character(json_encode($all_user_groups));?>');
 		    		var groups_store = [];
 		    		for (x in groups_store_tmp) {
 		    			groups_store.push([groups_store_tmp[x].id, groups_store_tmp[x].name]);

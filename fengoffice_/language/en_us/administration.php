@@ -523,8 +523,10 @@
   	
   	//task options
   	
-  	'user config option name can notify from quick add' => 'Notify the assignee and subscribers',
-    'user config option desc can notify from quick add' => 'This option enables notifying assigned users, and subscribed ones, after a task has been added or updated',  
+  	'user config option name can notify from quick add' => 'Notify the assignee',
+    'user config option desc can notify from quick add' => 'This option enables notifying assigned users, after a task has been added or updated',  
+  	'user config option name can notify subscribers' => 'Notify subscribers',
+  	'user config option desc can notify subscribers' => 'This option enables notifying subscribed users, after a task has been added or updated',
     'user config option name close timeslot open' => 'Close the timeslots that are still running when completing a task',  
   	'user config option name noOfTasks' => 'Number Of Tasks',
   	'user config option name task_display_limit' => 'Maximum number of tasks to display',

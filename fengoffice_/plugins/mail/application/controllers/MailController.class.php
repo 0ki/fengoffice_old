@@ -1708,7 +1708,7 @@ class MailController extends ApplicationController {
 				} else {
 					ajx_current("back");
 					if (!$after_receiving) {
-						evt_add("reload mails panel", array());
+						evt_add("reload current panel", array());
 					}
 				}
 			} else {

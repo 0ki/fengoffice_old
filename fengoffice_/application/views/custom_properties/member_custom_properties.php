@@ -8,7 +8,7 @@ if ($ot->getName()=='project_folder' || $ot->getName()=='customer_folder') {
 
 $cps = MemberCustomProperties::getAllMemberCustomPropertiesByObjectType($ot->getId(), $visibility);
 if ($visibility == 'others' && count($cps) == 0) {
-	echo lang('there are no custom properties defined message', strtolower(lang($ot->getName())), str_replace("'", "\'", $member->getName()));
+	echo lang('there are no custom properties defined message', strtolower(lang($ot->getName())), escape_character($member->getName()));
 	echo '<br />'. lang('there are no custom properties defined link');
 }
 
@@ -215,7 +215,7 @@ if(count($cps) > 0){
 							$exploded = explode("|", $values);
 							foreach ($exploded as &$v) {
 								$v = str_replace("%%_PIPE_%%", "|", $v);
-								$v = str_replace("'", "\'", $v);
+								$v = escape_character($v);
 							}
 							if (count($exploded) > 0) {
 								$address_type = array_var($exploded, 0, '');

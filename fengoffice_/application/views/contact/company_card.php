@@ -1,6 +1,6 @@
 <?php if(isset($company) && ($company instanceof Contact)) { ?>
 <div class="card">
-  <div class="cardIcon"><img src="<?php echo $company->getPictureUrl() ?>" alt="<?php echo clean($company->getObjectName()) ?> logo" /></div>
+  <div class="cardIcon"><img src="<?php echo $company->getPictureUrl('large') ?>" alt="<?php echo clean($company->getObjectName()) ?> logo" /></div>
   <div class="cardData">
   
     <h2><?php echo clean($company->getObjectName()) ?></h2>

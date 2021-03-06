@@ -588,8 +588,12 @@ class TaskController extends ApplicationController {
 		$application_logs = array();
 		try{
 			DB::beginWork();
+			$all_tasks = array();
 			foreach($ids as $id){
 				$task = Objects::findObject($id);
+				$task->setDontMakeCalculations(true); // all the calculations should be after all tasks are saved
+				$all_tasks[] = $task;
+				
 				switch ($action){
 					case 'complete':
 						if ($task->canEdit(logged_user())){
@@ -741,6 +745,10 @@ class TaskController extends ApplicationController {
 						return;
 				} // end switch
 			} // end foreach
+			
+			$ignored = null;
+			Hook::fire('after_multi_object_action', array('objects' => $all_tasks, 'action' => $action, 'options' => $options), $ignored);
+			
 			DB::commit();
 						
 			foreach ($application_logs as $log){				
@@ -996,15 +1004,16 @@ class TaskController extends ApplicationController {
 		$join_params['e_field'] = "object_id";
 		$join_params['on_extra'] = $join_on_extra;
 		
-		$total_timeslot = "SUM(TIMESTAMPDIFF(MINUTE,start_time,end_time))";
+		$total_timeslot = "SUM(GREATEST(TIMESTAMPDIFF(MINUTE,start_time,end_time),0))";
 		$total_paused =  "SUM(subtract/60)";
 		$total_estimated = "SUM(time_estimate) AS group_time_estimate ";
+		$group_time_worked = "GREATEST(COALESCE($total_timeslot - $total_paused,0),0)";
 		
 		//querys returning total worked time, total estimated time and total pending time
 		//time worked is the addition of all timeslots minus the addition of all pauses
 		//time estimated is the addition of the substractions of estimated and worked, grouping by task to substract
 		$group_totals = ProjectTasks::instance()->listing(array(
-				"select_columns" => array("time_estimate",$total_timeslot ." - ". $total_paused." AS group_time_worked", "GREATEST(time_estimate -  COALESCE($total_timeslot - $total_paused,0),0) AS pending"),
+				"select_columns" => array("time_estimate"," $group_time_worked AS group_time_worked", "GREATEST(time_estimate - $group_time_worked,0) AS pending"),
 				"join_params"=> $join_params,
 				"extra_conditions" => $conditions,
 				"group_by" =>  "e.`object_id`",
@@ -1103,7 +1112,7 @@ class TaskController extends ApplicationController {
 		
 		//Relative dates ends
 		$relative_ends = array();
-		foreach($relative as $key => $value)
+		foreach($relative as $key => &$value)
 		{
 			$new_value = clone $value;					
 			$relative_ends[$key] = $new_value->endOfDay();
@@ -2086,6 +2095,7 @@ class TaskController extends ApplicationController {
 				'showQuickAddSubTasks' => user_config_option('tasksShowQuickAddSubTasks',1),
 				'groupBy' => user_config_option('tasksGroupBy'),
 				'orderBy' => user_config_option('tasksOrderBy'),
+				'previousPendingTasks' => user_config_option('tasksPreviousPendingTasks',1),
 				'defaultNotifyValue' => user_config_option('can notify from quick add'),
 			);
 			hook::fire('tasks_user_preferences', null, $userPref);
@@ -2279,7 +2289,9 @@ class TaskController extends ApplicationController {
 				'is_template' => array_var($_POST, "is_template", array_var($_GET, "is_template", false)),
 				'percent_completed' => array_var($_POST, "percent_completed", ''),
 				'object_subtype' => array_var($_POST, "object_subtype", config_option('default task co type')),
-				'send_notification' => array_var($_POST, 'notify') && array_var($_POST, 'notify') == 'true'
+				'send_notification' => user_config_option("show_notify_checkbox_in_quick_add")&& user_config_option("can notify from quick add"),
+				'send_notification_subscribers' => user_config_option("show_notify_checkbox_in_quick_add")&& user_config_option("can notify subscribers"),
+				'display_notification_checkbox' =>  user_config_option("show_notify_checkbox_in_quick_add")
 			); // array
 			
 			if (Plugins::instance()->isActivePlugin('mail')) {
@@ -2523,28 +2535,35 @@ class TaskController extends ApplicationController {
 						evt_add("template object added", $template_task_data);
 					}
 				}
-				$isSailent = true;
+
 				// notify asignee
-				if($task instanceof ProjectTask && $task->getAssignedToContactId() != $task->getAssignedById()) {
-					$isSailent = false;
-					try {
-						Notifier::taskAssigned($task);						
-					} catch(Exception $e) {
-						evt_add("debug", $e->getMessage());
-					} // try
-				}
-				// notify asignee for subtasks
-				foreach ($sub_tasks_to_log['assigned'] as $st_to_log) {
-					if($st_to_log instanceof ProjectTask && $st_to_log->getAssignedToContactId() != $st_to_log->getAssignedById()) {
+				if((array_var($task_data, 'send_notification'))) {
+					if(($task instanceof ProjectTask) && ($task->getAssignedToContactId() != $task->getAssignedById())) {
 						try {
-							Notifier::taskAssigned($st_to_log);
+							Notifier::taskAssigned($task);
 						} catch(Exception $e) {
 							evt_add("debug", $e->getMessage());
 						} // try
 					}
+				
+					// notify asignee for subtasks
+					foreach ($sub_tasks_to_log['assigned'] as $st_to_log) {
+						if($st_to_log instanceof ProjectTask && $st_to_log->getAssignedToContactId() != $st_to_log->getAssignedById()) {
+							try {
+								Notifier::taskAssigned($st_to_log);
+							} catch(Exception $e) {
+								evt_add("debug", $e->getMessage());
+							} // try
+						}
+					}
 				}
 				
-				ApplicationLogs::createLog($task, ApplicationLogs::ACTION_ADD, null, $isSailent);
+				//notify subscribers
+				$isSilent = true;
+				if((array_var($task_data, 'send_notification_subscribers'))) {
+					$isSilent = false;
+				}
+				ApplicationLogs::createLog($task, ApplicationLogs::ACTION_ADD, null, $isSilent);
 				
 				if (array_var($_REQUEST, 'modal')) {
 					
@@ -2853,7 +2872,6 @@ class TaskController extends ApplicationController {
 				'assigned_to_contact_id' => array_var($_POST, 'assigned_to_contact_id', $task->getAssignedToContactId()),
 				'selected_members_ids' => json_decode(array_var($_POST, 'members', null)),
 				'priority' => array_var($_POST, 'priority', $task->getPriority()),
-				'send_notification' => array_var($_POST, 'notify') == 'true',
 				'time_estimate' => $estimatedTime,
 				'percent_completed' => $task->getPercentCompleted(),
 				'forever' => $task->getRepeatForever(),
@@ -2867,7 +2885,11 @@ class TaskController extends ApplicationController {
 				'repeat_by' => $task->getRepeatBy(),
 				'object_subtype' => array_var($_POST, "object_subtype", ($task->getObjectSubtype() != 0 ? $task->getObjectSubtype() : config_option('default task co type'))),
 				'type_content' => $task->getTypeContent(),
-				'multi_assignment' => $task->getColumnValue('multi_assignment',0)
+				'multi_assignment' => $task->getColumnValue('multi_assignment',0),
+				'send_notification' => user_config_option("show_notify_checkbox_in_quick_add")&& user_config_option("can notify from quick add"),
+				'send_notification_subscribers' => user_config_option("show_notify_checkbox_in_quick_add")&& user_config_option("can notify subscribers"),
+				'display_notification_checkbox' =>  user_config_option("show_notify_checkbox_in_quick_add")
+					
 			); // array
 
 			//control dates of parent and subtasks
@@ -3236,8 +3258,8 @@ class TaskController extends ApplicationController {
 				}
 				
 				try {
-					if(array_var($task_data, 'send_notification') && $send_edit == false) {
-					
+					// notify asignee
+					if(array_var($task_data, 'send_notification') && ($task->getAssignedToContactId() != $task->getAssignedById())) {
 						$new_owner = $task->getAssignedTo();
 						if($new_owner instanceof Contact) {
 							Notifier::taskAssigned($task);
@@ -3253,6 +3275,11 @@ class TaskController extends ApplicationController {
 
 				} // try
 				
+				//notify subscribers
+				$isSilent = true;
+				if((array_var($task_data, 'send_notification_subscribers'))) {
+					$isSilent = false;
+				}
 				ApplicationLogs::createLog($task, ApplicationLogs::ACTION_EDIT, false, false, true, $log_info);
 				
 				//flash_success(lang('success edit task list', $task->getObjectName()));

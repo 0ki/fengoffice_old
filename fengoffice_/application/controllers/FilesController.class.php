@@ -520,9 +520,9 @@ class FilesController extends ApplicationController {
 				$object_controller->add_custom_properties($file);
 				
 				DB::commit();
-				
+
+				set_user_config_option('notify_myself_too', array_var($file_data, 'notify_myself_too'));
 				if (array_var($file_data, 'notify_myself_too')) {
-					set_user_config_option('notify_myself_too', 1);
 					logged_user()->notify_myself = true;
 				}
 				
@@ -630,8 +630,8 @@ class FilesController extends ApplicationController {
 			}
 			DB::commit();
 			
+			set_user_config_option('notify_myself_too', array_var($file_data, 'notify_myself_too'));
 			if (array_var($file_data, 'notify_myself_too')) {
-				set_user_config_option('notify_myself_too', 1);
 				logged_user()->notify_myself = true;
 			}
 			
@@ -810,6 +810,9 @@ class FilesController extends ApplicationController {
 					// set updated on
 					$file->setUpdatedById(logged_user()->getId());
 					$file->setUpdatedOn(DateTimeValueLib::now());
+					if ($file->isCheckedOut()){
+						$file->checkIn();
+					}
 					$file->save();
 				}
 				$file->subscribeUser(logged_user());
@@ -1970,6 +1973,7 @@ class FilesController extends ApplicationController {
 					"ftype" => $o->getType(),
 					"url" => $o->getUrl(),
 					"memPath" => json_encode($o->getMembersIdsToDisplayPath()),
+					"genid" => gen_id(),
 				);
 				if ($o->isMP3()) {
 					$values['isMP3'] = true;
@@ -2125,9 +2129,8 @@ class FilesController extends ApplicationController {
 				$file->resetIsRead();
 				
 				DB::commit();
-				
+				set_user_config_option('notify_myself_too', array_var($file_data, 'notify_myself_too'));
 				if (array_var($file_data, 'notify_myself_too')) {
-					set_user_config_option('notify_myself_too', 1);
 					logged_user()->notify_myself = true;
 				}
 				

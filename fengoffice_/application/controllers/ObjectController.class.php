@@ -286,22 +286,6 @@ class ObjectController extends ApplicationController {
 				
 		$object->addToSharingTable();
 		
-		// add timeslots to members
-		if ($object->allowsTimeslots()) {
-			$timeslots = $object->getTimeslots();
-			foreach ($timeslots as $timeslot) {
-				$ts_mids = ObjectMembers::getMemberIdsByObject($timeslot->getId());
-				// if classified then reclassify
-				if (count($ts_mids) > 0) {
-					ObjectMembers::delete('`object_id` = ' . $timeslot->getId());
-					if (count($validMembers) > 0) {
-						$timeslot->addToMembers($validMembers);
-						$timeslot->addToSharingTable();
-					}
-				}
-			}
-		}
-		
 		//add to the object instance the members only if members value of the object is not null 
 		//because in that case when we ask for the members of the object we load them from db
 		if ( !is_null($object->members) ) {
@@ -1013,6 +997,7 @@ class ObjectController extends ApplicationController {
 						continue;
 					}
 					if ($obj->canEdit(logged_user())) {
+						$obj->setDontMakeCalculations(true);
 						if ($action == 'archive') {
 							$obj->archive();
 							$succ++;
@@ -1631,6 +1616,7 @@ class ObjectController extends ApplicationController {
 			));
 		
 			$objects = $result->objects;
+			foreach ($objects as $object) $object->setDontMakeCalculations(true);
 		
 			$real_deleted_ids = array();
 			list($succ, $err) = $this->do_delete_objects($objects, false, $real_deleted_ids);
@@ -1645,7 +1631,7 @@ class ObjectController extends ApplicationController {
 			$ids = explode(',', array_var($_GET, 'objects'));
 		
 			$objects = Objects::instance()->findAll(array("conditions" => "id IN (".implode(",",$ids).")"));
-		
+			
 			$real_deleted_ids = array();
 			list($succ, $err) = $this->do_delete_objects($objects, true, $real_deleted_ids);
 		
@@ -1672,6 +1658,7 @@ class ObjectController extends ApplicationController {
 					"trashed" => true,
 			));
 			$objects = $result->objects;
+			foreach ($objects as $object) $object->setDontMakeCalculations(true);
 		
 			if (count($objects) > 0) {
 				$obj_ids_str = implode(',', array_flat($objects));
@@ -1725,6 +1712,7 @@ class ObjectController extends ApplicationController {
 			$success = 0; $error = 0;
 			foreach ($ids as $id) {
 				$obj = Objects::findObject($id);
+				$obj->setDontMakeCalculations(true);
 				if ($obj->canDelete(logged_user())) {
 					try {
 						$obj->untrash($errorMessage);
@@ -1752,6 +1740,11 @@ class ObjectController extends ApplicationController {
 				$errorString = is_null($errorMessage) ? lang("error untrash objects", $error) : $errorMessage;
 				flash_error($errorString);
 			}
+		}
+		
+		if (!array_var($_GET, 'only_result')) {
+			$ignored = null;
+			Hook::fire('after_multi_object_action', array('object_ids' => explode(',', array_var($_GET, 'objects')), 'action' => array_var($_GET, 'action')), $ignored);
 		}
 		
 	}

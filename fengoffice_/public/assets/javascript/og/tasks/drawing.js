@@ -1201,6 +1201,13 @@ ogTasks.drawTaskRow = function(task, drawOptions, displayCriteria, group_id, lev
 	}
 	
 	var show_actions_popover_button = collapsed_actions > 0;
+	
+	//Tasks depencies
+	prev = task.previous_tasks_total;
+	
+	//updating waiting tasks
+	waiting_tasks = task.dependants;
+	
 		
 	var row_total_cols = [];
 	for (var key in ogTasks.TotalCols){
@@ -1261,7 +1268,9 @@ ogTasks.drawTaskRow = function(task, drawOptions, displayCriteria, group_id, lev
 			user_start_time : userStartTime,
 			working_on_users : workingOnUsers,
 			show_working_on_users : showWorkingOnUsers,
-			row_total_cols : row_total_cols
+			row_total_cols : row_total_cols,
+			dependencies : og.config.use_tasks_dependencies,
+			previous_pending_tasks : prev
 	}
 	
 	//instantiate the template
@@ -1376,6 +1385,14 @@ ogTasks.ToggleCompleteStatusOk = function(task_id, status, opt){
 			} else {
 				//Set task data
 				var task = ogTasksCache.addTasks(data.task);
+				
+				//update dependants
+				if (task.status){
+					ogTasks.updateDependantTasks(task.id,false);
+				}else{
+					ogTasks.updateDependantTasks(task.id,true);
+				}
+				
 				ogTasks.UpdateTask(task.id,false);
 				
 				ogTasks.refreshGroupsTotals();
@@ -1583,6 +1600,7 @@ ogTasks.newTaskFormTopList = function() {
 	var data = {
 			draw_options : drawOptions,
 			title_total_cols: title_total_cols,
+			dependencies : og.config.use_tasks_dependencies,
 			draw_quick_actions : draw_quick_actions
 	}
 	

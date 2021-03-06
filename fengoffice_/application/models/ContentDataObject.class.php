@@ -76,6 +76,11 @@ abstract class ContentDataObject extends ApplicationDataObject {
 	protected $timeslots = null;
 	
 	/**
+	 * When this attribute is set to true, no calculations in other tables should be triggered
+	 */
+	protected $dont_make_calculations = false;
+	
+	/**
 	 * 
 	 * Enter description here ...
 	 */
@@ -431,6 +436,15 @@ abstract class ContentDataObject extends ApplicationDataObject {
 	function setTrashedById($value){
 		return $this->object->setTrashedById($value);
 	} // setTrashedById()   
+
+	
+	
+	function getDontMakeCalculations() {
+		return $this->dont_make_calculations;
+	}
+	function setDontMakeCalculations($value) {
+		$this->dont_make_calculations = $value;
+	}
 
 	
 	/**
@@ -1579,14 +1593,8 @@ abstract class ContentDataObject extends ApplicationDataObject {
 	 */
 	//
 	function getTotalMinutes(){
-		$timeslots = $this->getTimeslots();
-		$totalMinutes = 0;
-		if (is_array($timeslots)){
-			foreach ($timeslots as $ts){
-				if (!$ts->isOpen())
-				$totalMinutes += $ts->getMinutes();
-			}
-		}
+		$totalSeconds = Timeslots::getTotalSecondsWorkedOnObject($this->getId());
+		$totalMinutes = $totalSeconds / 60;
 		return $totalMinutes;
 	}
 
@@ -1597,15 +1605,8 @@ abstract class ContentDataObject extends ApplicationDataObject {
 	 */
 
 	function getTotalSeconds(){
-		$timeslots = $this->getTimeslots();
-		$totalMinutes = 0;
-		if (is_array($timeslots)){
-			foreach ($timeslots as $ts){
-				if (!$ts->isOpen())
-				$totalMinutes += $ts->getSeconds();
-			}
-		}
-		return $totalMinutes;
+		$totalSeconds = Timeslots::getTotalSecondsWorkedOnObject($this->getId());
+		return $totalSeconds;
 	}
 	
 

@@ -5,7 +5,7 @@
 		if ($company->canEdit(logged_user())) {
 			$image .= '<a class="internalLink" href="' . $company->getUpdatePictureUrl() .'" title="' . lang('edit picture') . '">';
 		}
-		$image .= '<img src="' . $company->getPictureUrl() .'" alt="'. clean($company->getObjectName()) .' picture" />';
+		$image .= '<img src="' . $company->getPictureUrl('large') .'" alt="'. clean($company->getObjectName()) .' picture" />';
 	
 		if ($company->canEdit(logged_user())) {
 			$image .= '</a>';

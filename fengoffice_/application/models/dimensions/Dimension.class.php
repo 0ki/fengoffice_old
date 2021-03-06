@@ -20,8 +20,17 @@ class Dimension extends BaseDimension {
 		if (!is_null($order)) { 
 			$parameters['order'] = $order;
 		}
-		if (!is_null($limit)) { 
-			$parameters['limit'] = $limit;
+		if (!is_null($limit)) {
+			if (is_array($limit)) {
+				if (isset($limit['offset'])) {
+					$parameters['offset'] = $limit['offset'];
+				}
+				if (isset($limit['limit'])) {
+					$parameters['limit'] = $limit['limit'];
+				}
+			} else if (is_numeric($limit)) {
+				$parameters['limit'] = $limit;
+			}
 		}
 		
 		if ($filter_deleted_objects){

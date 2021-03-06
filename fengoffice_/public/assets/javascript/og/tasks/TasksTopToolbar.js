@@ -435,6 +435,19 @@ og.TasksTopToolbar = function(config) {
 					og.openLink(url,{hideLoading:true});
 				}
 			},
+			previous_pending_tasks: {
+		        text: lang('previous pending tasks'),
+				checked: (ogTasks.userPreferences.previousPendingTasks == 1),
+				checkHandler: function() {
+					ogTasks.userPreferences.previousPendingTasks = 1 - ogTasks.userPreferences.previousPendingTasks;
+					var url = og.getUrl('account', 'update_user_preference', {name: 'tasksPreviousPendingTasks', value:(this.checked?1:0)});
+					og.openLink(url,{hideLoading:true});
+					ogTasks.redrawGroups = false;
+					ogTasks.draw();
+					ogTasks.redrawGroups = true;					
+				},
+				hidden: (!og.config.use_tasks_dependencies)
+			},
 			show_subtasks_structure: {
 		        text: lang('subtasks structure'),
 				checked: (ogTasks.userPreferences.showSubtasksStructure == 1),
@@ -465,6 +478,7 @@ og.TasksTopToolbar = function(config) {
                 this.displayOptions.show_quick_complete,             
                 this.displayOptions.show_quick_add_sub_tasks,
                 this.displayOptions.show_classification,
+                this.displayOptions.previous_pending_tasks,
                 this.displayOptions.show_subtasks_structure
 			]}
 		});
@@ -529,7 +543,8 @@ Ext.extend(og.TasksTopToolbar, Ext.Toolbar, {
             show_quick_complete : this.show_menu.items[0].menu.items.items[10].checked,
             show_quick_add_sub_tasks : this.show_menu.items[0].menu.items.items[11].checked,
             show_classification : this.show_menu.items[0].menu.items.items[12].checked,
-            show_subtasks_structure : this.show_menu.items[0].menu.items.items[13].checked
+            show_previous_pending_tasks : this.show_menu.items[0].menu.items.items[13].checked,
+            show_subtasks_structure : this.show_menu.items[0].menu.items.items[14].checked
 		}
 	},
 	updateCheckedStatus : function(){

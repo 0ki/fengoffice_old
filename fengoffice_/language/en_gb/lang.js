@@ -104,7 +104,7 @@ addLangs({
 	'edit workspace': 'Edit the selected workspace',
 	'company': 'Company',
 	'companies': 'Companies',
-	'checkin': 'Check in',
+	'checkin': 'Upload new version',
 	'checkout': 'Check out',
 	'checked out by': 'Checked out by {0}',
 	'add file checked out by': '{0} was checked out by {1}',
@@ -310,7 +310,7 @@ addLangs({
 	
 	'checkout description': 'Lock this file for editing',
 	'undo checkout description': 'Make this file available',
-	'checkin description': 'Check in new version of this file',
+	'checkin description': 'Upload a new version of this file',
 	
 	'created by on': 'Created by {0} on {1}',
 	

@@ -2313,3 +2313,12 @@ function get_time_info($timestamp) {
 	
 	return array('days' => $days, 'hours' => $hours, 'mins' => $mins, 'sign' => $sign);
 }
+
+//escapes a character from a string, escapes ' by default, or all characters according to $all
+function escape_character($string, $char="'", $all = false) {
+	if ($all){
+		return addslashes($string);
+	}else{
+		return str_replace($char, "\\".$char, $string);
+	}
+}

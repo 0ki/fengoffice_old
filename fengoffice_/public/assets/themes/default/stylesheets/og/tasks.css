@@ -626,6 +626,9 @@ button.add-first-btn.no-tasks-add-task-btn {
 .task-list-row-template .task-row-obj-content{
     margin-left : 5px;       
 }
+.center{
+	text-align:center;
+}
 
 .task-action-icon{
 	opacity: 0.5;

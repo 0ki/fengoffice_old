@@ -16,7 +16,7 @@ og.FileManager = function() {
 		'dateUpdated', 'dateUpdated_today',
 		'icon', 'wsIds', 'manager', 'checkedOutById',
 		'checkedOutByName', 'mimeType', 'isModifiable',
-		'modifyUrl', 'songInfo', 'ftype', 'url', 'ix','isRead', 'isMP3', 'memPath'
+		'modifyUrl', 'songInfo', 'ftype', 'url', 'ix','isRead', 'isMP3', 'memPath', 'genid'
 	];
 	var cps = og.custom_properties_by_type['file'] ? og.custom_properties_by_type['file'] : [];
 	var cp_names = [];
@@ -172,8 +172,7 @@ og.FileManager = function() {
 					lang('unlock'), og.getUrl('files', 'undo_checkout', {id: r.id}));
 				
 				if (r.data.checkedOutById == og.loggedUser.id) {
-					html += String.format(', <a href="#" onclick="og.openLink(\'{1}\')" title="{2}">{0}</a>', lang('checkin'), 
-						og.getUrl('files', 'checkin_file', {id: r.id}), lang('checkin description'));
+					html += String.format(', <a href="#" onclick=og.uploadNewRevision('+ r.id +',"'+ r.data.genid +'")>{0}</a>', lang('checkin'));
 				} else {
 					html += ', ' + lang('checked out by', String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', 
 						r.data.checkedOutByName, og.getUrl('contact', 'card', {id: r.data.checkedOutById})));

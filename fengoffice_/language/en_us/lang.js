@@ -104,7 +104,7 @@ addLangs({
 	'edit workspace': 'Edit the selected workspace',
 	'company': 'Company',
 	'companies': 'Companies',
-	'checkin': 'Check in',
+	'checkin': 'Upload new version',
 	'checkout': 'Check out',
 	'checked out by': 'Checked out by {0}',
 	'add file checked out by': '{0} was checked out by {1}',
@@ -310,7 +310,8 @@ addLangs({
 	
 	'checkout description': 'Lock this file for editing',
 	'undo checkout description': 'Make this file available',
-	'checkin description': 'Check in new version of this file',
+	'checkin description': 'Upload a new version of this file',
+	'upload new revision': 'Upload a new version',
 	
 	'created by on': 'Created by {0} on {1}',
 	
@@ -527,6 +528,7 @@ addLangs({
 	'due' : 'due',
 	'start m' : 'Start',
 	'due m' : 'Due',
+	'previous tasks': 'Previous',
 	'add subtask': 'Add a new subtask',
 	'completed by name on' : 'Completed by {0} on {1}',
 	'completed by' : 'Completed by',
@@ -923,7 +925,8 @@ addLangs({
 	'quick edit': 'Quick edit',
 	'quick complete': 'Quick complete',
 	'quick add sub tasks': 'Quick add sub tasks',
-	'subtasks structure': 'Subtasks structure',	
+	'subtasks structure': 'Subtasks structure',
+	'previous pending tasks': 'Number of previous pending tasks',	
 	
 	'new member added popup title' : '{0} {1} successfully added',
 	'new member added popup msg' : 'You have succesfully added the new {0} named {1}.',

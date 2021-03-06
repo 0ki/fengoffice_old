@@ -72,7 +72,21 @@ og.MemberTreeAjax = function(config) {
 	        	node.ownerTree.innerCt.mask();
 	        	var tree_id = node.ownerTree.id;
 	        	node.attributes.gettingChildsFromServer = true;
-	        	og.openLink(og.getUrl('dimension', 'get_member_childs', {member:node.id}), {
+	        	
+	        	if (!node.last_childs_offset) {
+	        		node.last_childs_offset = 0;
+	        	} else {
+	        		node.last_childs_offset = node.last_childs_offset + og.config.member_selector_page_size;
+	        	}
+				var limit = og.config.member_selector_page_size;
+				
+				var parameters = {
+					member: node.id,
+					limit: limit,
+					offset: node.last_childs_offset
+				};
+				
+	        	og.openLink(og.getUrl('dimension', 'get_member_childs', parameters), {
 	    			hideLoading:true, 
 	    			hideErrors:true,
 	    			callback: function(success, data){
@@ -85,10 +99,17 @@ og.MemberTreeAjax = function(config) {
 	    					node.childNodes[i].getUI().show();					
 	    				}
 	    				
+	    				if (data.more_nodes_left) {
+	    					og.addViewMoreNode(node, tree_id, og.ajaxMemberTreeViewMoreCallback);
+	    				} else {
+	    					var old_view_more_node = dimension_tree.getNodeById('view_more_' + node.id);
+	    					if (old_view_more_node) old_view_more_node.remove();
+	    				}
+	    				
 	    				dimension_tree.innerCt.unmask();
 	    				
 	    				var current_node = dimension_tree.getNodeById(data.member_id);
-	    				current_node.attributes.gettingChildsFromServer = false;
+	    				if (current_node) current_node.attributes.gettingChildsFromServer = false;
 	    					    				
 	    			}
 	    		});
@@ -387,7 +408,9 @@ Ext.extend(og.MemberTreeAjax, Ext.tree.TreePanel, {
 			}
 			
 			this.initialized = true;
-		}else{	
+		}else{
+			og.initialMemberTreeAjaxLoad(this);
+			/*
 			var tree_id = this.id;
 			og.openLink(og.getUrl('dimension', 'initial_list_dimension_members_tree_root', {dimension_id:this.dimensionId}), {
     			hideLoading:true, 
@@ -407,13 +430,21 @@ Ext.extend(og.MemberTreeAjax, Ext.tree.TreePanel, {
     				dimension_tree.resumeEvents();
     				dimension_tree.render();
     				
-    				if(typeof(data.dimensions_root_members) != "undefined"){
+    				if(typeof(data.dimensions_root_members) != "undefined" && !data.more_nodes_left){
     					ogMemberCache.addDimToDimRootMembers(data.dimension_id);
+    				}
+    				
+    				if (data.more_nodes_left) {
+    					og.addViewMoreNode(dimension_tree.getRootNode(), tree_id, true);
+    				} else {
+    					var old_view_more_node = dimension_tree.getNodeById('view_more_' + dimension_tree.getRootNode().id);
+    					if (old_view_more_node) old_view_more_node.remove();
     				}
     				
     				dimension_tree.initialized = true;
     			}
-    		});	
+    		});
+    		*/
 		}
 	} ,
 
@@ -510,7 +541,7 @@ Ext.extend(og.MemberTreeAjax, Ext.tree.TreePanel, {
 			}else{				
 				if (node_parent){
 					node_parent.removeChild(node_exist);
-					node_parent.appendChild(new_node);								
+					node_parent.appendChild(new_node);
 				}							
 			}
 			

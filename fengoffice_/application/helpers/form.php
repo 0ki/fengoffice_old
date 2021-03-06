@@ -513,6 +513,7 @@
 			"value: '" . $dateValue . "'});
 	</script>
 	";
+  	
 	return $html;
   } // pick_date_widget
   

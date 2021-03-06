@@ -1,5 +1,5 @@
 
-	About Feng Office 3.2.2.1
+	About Feng Office 3.2.3-beta
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -107,7 +107,34 @@
 	
 	Since 3.2.2
 	----------------
-	bugfix: Superadmin cannot edit other superadmins.
+	bugfix: object prefix is not deleted after deleting object.
+	bugfix: removed trailing commas from javascript objects.
+	bugfix: classify contact after change client parent.
+	bugfix: mail view doesn't reload after classifying mail.
+	bugfix: remember notify my self checkbox in add and edit file. 
+	bugfix: notify myself checkbox view in add and edit file.
+	bugfix: notifications to asignee when creating and editing tasks.
+	bugfix: update parent after adding child node on members trees.
+	bugfix: mail rules history view.
+	bugfix: not possible to upload picture when creating contact or user.
+	bugfix: not showing which tab is selected in the mail panel.
+	bugfix: phone number name with special characters. 
+	bugfix: language and css of installed plugins that are not activated are not included.
+	bugfix: template milestone add is not modal.
+	bugfix: when modifying/trashing several tasks don't make all client/project calculations foreach task, do it once after all modifications
+	bugfix: calculate percent completed on tasks.
+	bugfix: group totals on tasks list.
+	
+	feature: generate template from mail - edit email fields - link mail to generated tasks.
+	feature: calendar new event view when clicking on the calendar.
+	feature: when creating subsecuent tasks (tasks workflow) also creates a task dependency between the completed task and the new ones
+	
+	performance: member trees paginated (left panel and selectors).
+	performance: remove object timeslots permissions.
+	performance: close timeslots when completing tasks.
+	
+	config option: number of previous pending tasks showing next to each task.
+	config option: notification to subscribers when creating and editing tasks.
 	
 	Since 3.2.2-rc
 	----------------
@@ -122,7 +149,18 @@
 	bugfix: showing which tab is selected in mail panel.
 	bugfix: prevent "duplicate key" message in permission groups table when creating an user.
 	bugfix: some checkboxes are not submitted correctly.
-		
+	
+	Since 3.2.2-beta
+	----------------
+	bugfix: breadcrumbs on mail list.
+	bugfix: calculate percent completed on tasks.
+	bugfix: group totals aligned on tasks list.
+	bugfix: error when instantiating template milestones.
+	bugfix: showing which tab is selected in mail panel.
+	bugfix: prevent "duplicate key" message in permission groups table when creating an user.
+	bugfix: some checkboxes are not submitted correctly.
+	
+	
 	Since 3.2.2-alpha
 	----------------
 	fetaure: When editing a task and start or due date is changed, ask the user to advance/rewind the subtasks dates.
