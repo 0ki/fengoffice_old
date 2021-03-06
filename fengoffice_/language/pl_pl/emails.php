@@ -157,4 +157,9 @@
 	'mail attachments' => 'Załączniki',
 	'select attachment' => 'Wybierz i wyślij załącznik',
 	'attach from workspace' => 'Wybierz załącznik z projektu',
+	'mail format options' => 'Format',
+	'modified notification email' => 'Wiadomość e-mail \'{0}\' została zmodyfikowana',
+	'modified notification email desc' => 'Wiadomość e-mail \'{0}\' została zmodyfikowana przez {1}',
+	'deleted notification email' => 'Wiadomość e-mail \'{0}\' została wysłana do kosza',
+	'deleted notification email desc' => 'Wiadomość e-mail \'{0}\' została wysłana do kosza przez {1}',
 ); ?>

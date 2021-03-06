@@ -6,7 +6,7 @@
 		$iconclass = "ico-large-" . $object->getObjectTypeName();
 		
 	$genid = gen_id();
-	$date_format = user_config_option('date_format', 'd/m/Y');
+	$date_format = user_config_option('date_format');
 	if ($object instanceof ProjectDataObject && $object->canView(logged_user()) || $object instanceof User) {
 		add_page_action(lang('view history'),$object->getViewHistoryUrl(),'ico-history',null,null,false);
 		/*if (!$object->isTrashed())
@@ -69,7 +69,7 @@
 			if ($object instanceof ApplicationDataObject)
 				echo render_custom_properties($object);
 			
-			if ($object instanceof ProjectDataObject && $object->allowsTimeslots())
+			if ($object instanceof ProjectDataObject && $object->allowsTimeslots() && can_manage_time(logged_user()))
 				echo render_object_timeslots($object, $object->getViewUrl());
 			
 			if ($object instanceof ProjectDataObject && $object->isCommentable())

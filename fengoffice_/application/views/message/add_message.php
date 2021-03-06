@@ -47,7 +47,7 @@
 <div class="coInputMainBlock">
 
 		<?php 
-			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			$show_help_option = user_config_option('show_context_help'); 
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_note_context_help', true, logged_user()->getId())) {?>
 			<div id="addNotesPanelContextHelp" class="contextHelpStyle">
 			
@@ -59,7 +59,7 @@
 	<div id="<?php echo $genid ?>add_message_select_workspace_div" style="display:none">
 	<fieldset>
 		<?php 
-			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			$show_help_option = user_config_option('show_context_help'); 
 						if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_note_workspace_context_help', true, logged_user()->getId())) {?>
 			<div id="addContactPanelContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp add note workspace','add_note_workspace'); ?>
@@ -78,7 +78,7 @@
 	<div id="<?php echo $genid ?>add_message_add_tags_div" style="display:none">
 	<fieldset>
 	<?php 
-			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			$show_help_option = user_config_option('show_context_help'); 
 						if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_note_tags_context_help', true, logged_user()->getId())) {?>
 			<div id="addNotesPanelContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp add note tags','add_note_tags'); ?>
@@ -123,7 +123,7 @@
 	<div id='<?php echo $genid ?>add_custom_properties_div' style="display:none">
 	<fieldset>
 		<?php 
-			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			$show_help_option = user_config_option('show_context_help'); 
 						if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_note_custom_properties_context_help', true, logged_user()->getId())) {?>
 			<div id="addNotesPanelContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp add note custom properties','add_note_custom_properties'); ?>
@@ -138,7 +138,7 @@
 	<div id="<?php echo $genid ?>add_subscribers_div" style="display:none">
 		<fieldset>
 			<?php 
-				$show_help_option = user_config_option('show_context_help', 'until_close'); 
+				$show_help_option = user_config_option('show_context_help'); 
 							if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_note_subscribers_context_help', true, logged_user()->getId())) {?>
 				<div id="addNotesPanelContextHelp" class="contextHelpStyle">
 			<?php render_context_help($this, 'chelp add note subscribers','add_note_subscribers'); ?>
@@ -171,7 +171,7 @@
 	<div style="display:none" id="<?php echo $genid ?>add_linked_objects_div">
 	<fieldset>
 		<?php 
-			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			$show_help_option = user_config_option('show_context_help'); 
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_note_linked_object_context_help', true, logged_user()->getId())) {?>
 			<div id="addNotesPanelContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp add note linked objects','add_note_linked_object'); ?>

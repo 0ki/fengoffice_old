@@ -140,4 +140,9 @@
 	'check to include sub ws' => 'Zaznacz by w URL uwzględniono projekty podrzędne',
 	'week short' => 'Tydzień',
 	'week number x' => 'Tydzień {0}',
+	'accept or reject invitation help, click on one of the links below' => 'Aby zaakceptować lub odrzucić zaproszenie, kliknij na odpowiedni odnośnik poniżej.',
+	'accept invitation' => 'Zaakceptuj zaproszenie',
+	'reject invitation' => 'Odrzuć zaproszenie',
+	'invitation accepted' => 'Zaproszenie zaakceptowane',
+	'invitation rejected' => 'Zaproszenie odrzucone',
 ); ?>

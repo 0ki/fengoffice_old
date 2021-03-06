@@ -20,4 +20,5 @@
 	'select unselect all' => 'Zaznacz/Odznacz wszystko',
 	'ascending' => 'Rosnąco',
 	'descending' => 'Malejąco',
+	'parametrizable' => 'Parametr?',
 ); ?>

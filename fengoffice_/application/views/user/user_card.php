@@ -4,7 +4,7 @@
 ?>
 <div class="card" style="padding:0px;">
 	<?php
-	$show_help_option = user_config_option('show_context_help', 'until_close'); 
+	$show_help_option = user_config_option('show_context_help'); 
 	if ($isUserAccount && ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_account_context_help', true, logged_user()->getId())))) {?>
 		<div style="padding-bottom:10px;">
 		<?php 

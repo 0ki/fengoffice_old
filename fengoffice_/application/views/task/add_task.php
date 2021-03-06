@@ -66,7 +66,7 @@
 <div class="coInputMainBlock">
 
 		<?php 
-			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			$show_help_option = user_config_option('show_context_help'); 
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_task_context_help', true, logged_user()->getId()))) {?>
 			<div id="tasksPanelContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp add new task','add_task'); ?>
@@ -77,7 +77,7 @@
 	<div id="<?php echo $genid ?>add_task_select_workspace_div" style="display:none">
 	<fieldset>
 	 	<?php 
-			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			$show_help_option = user_config_option('show_context_help'); 
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_task_workspace_context_help', true, logged_user()->getId()))) {?>
 			<div id="tasksPanelContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp add new task workspace','add_task_workspace'); ?>
@@ -96,7 +96,7 @@
 	<div id="<?php echo $genid ?>add_task_tags_div" style="display:none">
 	<fieldset>
 		<?php 
-			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			$show_help_option = user_config_option('show_context_help'); 
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_task_tags_context_help', true, logged_user()->getId()))) {?>
 			<div id="tasksPanelContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp add new task tag','add_task_tags'); ?>
@@ -267,7 +267,7 @@
 	<div id="<?php echo $genid ?>task_repeat_options_div" style="display:none">
 		<fieldset>
 		<?php 
-			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			$show_help_option = user_config_option('show_context_help'); 
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_event_repeat_options_context_help', true, logged_user()->getId())) {?>
 			<div id="addEventPanelContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp add event repeat options','add_event_repeat_options'); ?>
@@ -354,7 +354,7 @@
 	<div id="<?php echo $genid ?>add_reminders_div" style="display:none">
 		<fieldset>
 		<?php 
-			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			$show_help_option = user_config_option('show_context_help'); 
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_task_reminders_context_help', true, logged_user()->getId()))) {?>
 			<div id="tasksPanelContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp add new task reminders','add_task_reminders'); ?>
@@ -376,7 +376,7 @@
 	<div id='<?php echo $genid ?>add_custom_properties_div' style="display:none">
 	<fieldset>
 	<?php 
-			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			$show_help_option = user_config_option('show_context_help'); 
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_task_custom_properties_context_help', true, logged_user()->getId()))) {?>
 			<div id="tasksPanelContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp add new task custom properties','add_task_custom_properties'); ?>
@@ -391,7 +391,7 @@
     <div id="<?php echo $genid ?>add_subscribers_div" style="display:none">
 		<fieldset>
 		<?php 
-			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			$show_help_option = user_config_option('show_context_help'); 
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_task_subscribers_context_help', true, logged_user()->getId()))) {?>
 			<div id="tasksPanelContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp add new task subscribers','add_task_subscribers'); ?>
@@ -436,7 +436,7 @@
 	<div style="display:none" id="<?php echo $genid ?>add_linked_objects_div">
 	<fieldset>
 		<?php 
-			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			$show_help_option = user_config_option('show_context_help'); 
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_task_linked_objects_context_help', true, logged_user()->getId()))) {?>
 			<div id="tasksPanelContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp add new task linked object','add_task_linked_objects'); ?>

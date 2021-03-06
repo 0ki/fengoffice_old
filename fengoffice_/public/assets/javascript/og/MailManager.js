@@ -23,13 +23,13 @@ og.MailManager = function() {
 				totalProperty: 'totalCount',
 				id: 'id',
 				fields: [
-					'object_id', 'type', 'accountId', 'accountName', 'hasAttachment', 'subject', 'text', {name: 'date', type: 'date', dateFormat: 'timestamp'},
+					'object_id', 'type', 'accountId', 'accountName', 'hasAttachment', 'subject', 'text', 'date',
 					'projectId', 'projectName', 'userId', 'userName', 'tags', 'workspaceColors','isRead','from','from_email','isDraft','isSent','folder','to', 'ix'
 				]
 			}),
 			remoteSort: true,
 			listeners: {
-				'load': function() {
+				'load': function(store, rs) {
 					var d = this.reader.jsonData;
 					var ws = og.clean(Ext.getCmp('workspace-panel').getActiveWorkspace().name);
 					var tag = og.clean(Ext.getCmp('tag-panel').getSelectedTag().name);
@@ -43,6 +43,35 @@ og.MailManager = function() {
 						this.fireEvent('messageToShow', "");
 					}
 					og.showWsPaths();
+					var unread = 0;
+					for (var i=0; i < rs.length; i++) {
+						if (!rs[i].data.isRead) {
+							unread++;
+						}
+					}
+					if (og.showUnreadEmailsOnTitle) {
+						var title = document.title;
+						if (title.charAt(0) == '(' && title.indexOf(')') > 0) {
+							title = title.substring(title.indexOf(')') + 2);
+						}
+						if (unread > 0) {
+							document.title = "(" + unread  + ") " + title;
+						} else {
+							document.title = title;
+						}
+						var panel = Ext.getCmp('mails-panel');
+						if (panel) {
+							var title = panel.title;
+							if (title.indexOf('(') > 0) {
+								title = title.substring(0, title.indexOf('(') - 1);
+							}
+							if (unread > 0) {
+								panel.setTitle(title + " (" + unread  + ")");
+							} else {
+								panel.setTitle(title);
+							}
+						}
+					}
 				}
 			}
 		});
@@ -137,13 +166,7 @@ og.MailManager = function() {
 		if (!value) {
 			return "";
 		}
-
-		var now = new Date();
-		if (now.dateFormat('Y-m-d') > value.dateFormat('Y-m-d')) {
-			return value.dateFormat(og.date_format + ' h:i a');
-		} else {
-			return value.dateFormat('h:i a');
-		}
+		return value;
 	}
 
 	function getSelectedIds() {
@@ -728,6 +751,7 @@ og.MailManager = function() {
 		cm: cm,
 		enableDrag: true,
 		ddGroup: 'WorkspaceDD',
+		stateful: og.rememberGUIState,
 		border: false,
 		bodyBorder: false,
 		stripeRows: true,
@@ -774,12 +798,21 @@ og.MailManager = function() {
 			og.eventManager.removeListener(tagevid);
 			return;
 		}
-		if (this.ownerCt.active) {
+		if (this.ownerCt.ownerCt.active) {// ownerCt is MailManagerPanel, must ask his ownerCt to see if tab is active
 			this.load({start:0});
 		} else {
     		this.needRefresh = true;
     	}
 	}, this);
+	
+	if (og.pollForEmail) {
+		var me = this;
+		this.interval = setInterval(function() {
+			//if (Ext.getCmp('tabs-panel').getActiveTab().id == 'mails-panel') {
+				me.load();
+			//}
+		}, og.pollForEmail);
+	}
 };
 
 

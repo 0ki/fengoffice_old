@@ -121,15 +121,19 @@ og.pageSize = <?php echo config_option('files_per_page', 10)?>;
 og.timeFormat24 = <?php echo config_option('time_format_use_24', 0) ? 1 : 0 ?>;
 og.hostName = '<?php echo ROOT_URL ?>';
 og.maxUploadSize = <?php echo get_max_upload_size() ?>;
-og.rememberGUIState = <?php echo user_config_option("rememberGUIState", 0) ? 1 : 0 ?>;
-<?php if (user_config_option("rememberGUIState", 0)) { ?>
+og.rememberGUIState = <?php echo user_config_option("rememberGUIState") ? 1 : 0 ?>;
+<?php if (user_config_option("rememberGUIState")) { ?>
 og.initialGUIState = <?php echo json_encode(GUIController::getState()) ?>;
 <?php } ?>
-<?php $initialWS = user_config_option('initialWorkspace', 0);
+<?php $initialWS = user_config_option('initialWorkspace');
 if ($initialWS === "remember") {
 	$initialWS = user_config_option('lastAccessedWorkspace', 0);
 }
 ?>
+<?php if (user_config_option('show_unread_on_title')) { ?>
+og.showUnreadEmailsOnTitle = true;
+<?php } ?>
+og.pollForEmail = <?php echo user_config_option('email_polling', '0') ?>;
 og.initialWorkspace = '<?php echo $initialWS ?>';
 og.initialURL = '<?php echo ROOT_URL . "/?active_project=$initialWS&" . $_SERVER['QUERY_STRING'] ?>';
 og.loggedUser = {
@@ -172,9 +176,9 @@ setInterval(function() {
 }, 60000);
 <?php } ?>
 
-og.date_format = '<?php echo user_config_option('date_format', 'd/m/Y') ?>';
+og.date_format = '<?php echo user_config_option('date_format') ?>';
 og.calendar_start_day = <?php echo user_config_option('start_monday') ? '1' : '0' ?>;
-og.draftAutosaveTimeout = <?php echo user_config_option('draft_autosave_timeout', '60') ?> * 1000;
+og.draftAutosaveTimeout = <?php echo user_config_option('draft_autosave_timeout') ?> * 1000;
 
 og.loadEmailAccounts('view');
 og.loadEmailAccounts('edit');

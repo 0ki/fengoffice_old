@@ -1,6 +1,6 @@
 
-    About OpenGoo 1.5 RC
-    ====================
+    About OpenGoo 1.5
+    =================
 
     OpenGoo is a free and open source WebOffice, project management and collaboration
     tool, licensed under the Affero GPL 3 license.
@@ -61,11 +61,11 @@
     ====================
     
     1. Backup you current installation (important!)
-    2. Download OpenGoo 1.5 RC - http://www.opengoo.org/
+    2. Download OpenGoo 1.5 - http://www.opengoo.org/
     3. Unpack into your OpenGoo installation, overwriting your previous files and folders,
     	but keeping your config, upload and public/files folders.
     5. Go to <your_opengoo>/public/upgrade in your browser and choose to upgrade
-    	from your current version to 1.5 RC
+    	from your current version to 1.5
     6. Refresh your browser or clear its cache to load new javascript, css and images.   
 
     
@@ -86,6 +86,36 @@
 
 	Changelog
 	=========
+	
+	Since 1.5 RC
+	------------
+	- usability: Email autocomplete didn't show company emails.
+	- usability: When selecting a task's milestone, milestones from the parent workspaces are also shown.
+	- usability: Ctrl + S to save documents.
+	
+	- bugfix: Calendar's current-time bar went too fast.
+	- bugfix: Deleting a user didn't delete it from the group.
+	- bugfix: Email autocomplete did not filter by email.
+	- bugfix: Dashboard didn't show unread classified emails when filtering by workspace.
+	- bugfix: Error importing contacts with an apostrophe in the name.
+	- bugfix: Some emails lost the last three characters.
+	- bugfix: Filtering by tag was not working on the Email module.
+	- bugfix: POP3 email checking missed some emails.
+	- bugfix: Default value for date format and some other user configurations was being ignored.
+	- bugfix: Could not download email attachments.
+	- bugfix: Added SMTP "from" address config option for system email.
+	- bugfix: Fixed filtering by email account when "show deleted emails" was enabled.
+	- bugfix: Could not subscribe user to contact unless it had the "Can manage all contacts" permission.
+	- bugfix: Slimey didn't show bullets in bullet lists (not fixed for IE6)
+	- bugfix: Could not add images to a presentation
+	- bugfix: Now you need "Can manage time" permission to view a task's timeslots.
+	- bugfix: Fixed issues with GooPlayer: could not load playlist and could not queue tracks.
+	- bugfix: Fixed problem while fetching IMAP folders without SSL.
+	- bugfix: Now the language name is shown instead of the language code when choosing localization.
+	- bugfix: All default value for user preferences are now respected (e.g. date format).
+	
+	- system: Backup is no longer included by default with OpenGoo. It is available as a separate plugin.
+
 
 	Since 1.5-beta3
 	---------------

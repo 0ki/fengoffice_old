@@ -11,22 +11,23 @@ require_javascript('og/modules/addMessageForm.js');
 ?>
 <?php
 	// get users with permissions
-	if ($type == 'Contacts') {
-		$users = Users::getContactManagers();
-	} else {
-		$users = array();
-		foreach ($workspaces as $ws) {
-			$someUsers = $ws->getUsers(false);
-			foreach ($someUsers as $u) {
+	$users = array();
+	foreach ($workspaces as $ws) {
+		$someUsers = $ws->getUsers(false);
+		foreach ($someUsers as $u) {
+			if ($type == 'Contacts' && $u->getCanManageContacts()) {
+				$canRead = true;
+			} else {
 				// see if user can read type of object in the workspace
 				$canRead = can_manage_type($type, ProjectUsers::getByUserAndProject($ws, $u), ACCESS_LEVEL_READ);
-				if ($canRead) {
-					$users["u".$u->getId()] = $u;
-				}
+			}
+			if ($canRead) {
+				$users["u".$u->getId()] = $u;
 			}
 		}
-		$users = array_values($users);
 	}
+	$users = array_values($users);
+
 	$grouped = array();
 	foreach($users as $user) {
 		if(!isset($grouped[$user->getCompanyId()]) || !is_array($grouped[$user->getCompanyId()])) {

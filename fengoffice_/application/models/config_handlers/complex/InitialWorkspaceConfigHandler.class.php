@@ -18,6 +18,6 @@
       return render_initial_workspace_chooser($control_name, $this->getValue());
     } // render
     
-  } // DateTimeConfigHandler
+  } // InitialWorkspaceConfigHandler
 
 ?>

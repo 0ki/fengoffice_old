@@ -2,7 +2,7 @@
 <div class="card">
 
 <?php
-	$show_help_option = user_config_option('show_context_help', 'until_close'); 
+	$show_help_option = user_config_option('show_context_help'); 
 	if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_company_context_help', true, logged_user()->getId()))) {?>
 		<div style="padding-bottom:10px;">
 		<?php 

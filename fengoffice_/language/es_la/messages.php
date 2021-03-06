@@ -619,5 +619,7 @@
     'weblink dnx' => 'El enlace web requerido no existe en la base de datos',
   	'success trash file revision' => 'La revisión del archivo fue enviada a la papelera',
   
+  	'recipient must be specified' => 'Debe especificar el destinatario del correo',
+  
   ); // array
 ?>

@@ -147,4 +147,7 @@
 	'delete permanently' => 'Usuń bezpowrotnie',
 	'copy file' => 'Skopiuj ten plik',
 	'open weblink' => 'Otwórz odnośnik',
+	'apply milestone to subtasks' => 'Przydziel zadania podrzędne do etapu',
+	'apply workspace to subtasks' => 'Przydziel zadania podrzędne do etapu',
+	'show all linked objects' => 'Pokaż wszystkie dowiązane obiekty({0})',
 ); ?>

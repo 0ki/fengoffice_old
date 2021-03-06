@@ -13,35 +13,37 @@ require_javascript('og/EventPopUp.js');
 </script>
 
 <?php
-define('PX_HEIGHT',42);
-$year = isset($_GET['year']) ? $_GET['year'] : (isset($_SESSION['year']) ? $_SESSION['year'] : date('Y'));
-$month = isset($_GET['month']) ? $_GET['month'] : (isset($_SESSION['month']) ? $_SESSION['month'] : date('n'));
-$day = isset($_GET['day']) ? $_GET['day'] : (isset($_SESSION['day']) ? $_SESSION['day'] : date('j'));
+	define('PX_HEIGHT',42);
+	$year = isset($_GET['year']) ? $_GET['year'] : (isset($_SESSION['year']) ? $_SESSION['year'] : date('Y'));
+	$month = isset($_GET['month']) ? $_GET['month'] : (isset($_SESSION['month']) ? $_SESSION['month'] : date('n'));
+	$day = isset($_GET['day']) ? $_GET['day'] : (isset($_SESSION['day']) ? $_SESSION['day'] : date('j'));
+	
+	$_SESSION['year'] = $year;
+	$_SESSION['month'] = $month;
+	$_SESSION['day'] = $day;
+	
+	$tags = active_tag();	
+	
+	$user_filter = $userPreferences['user_filter'];
+	$status_filter = $userPreferences['status_filter'];
+	
+	$user = Users::findById(array('id' => $user_filter));
+	
+	if ($user == null) $user = logged_user();
+	
+	$use_24_hours = user_config_option('time_format_use_24');
+	$date_format = user_config_option('date_format');
+	if($use_24_hours) $timeformat = 'G:i';
+	else $timeformat = 'g:i A';
 
-$_SESSION['year'] = $year;
-$_SESSION['month'] = $month;
-$_SESSION['day'] = $day;
+	echo stylesheet_tag('event/day.css');
 
-$tags = active_tag();	
-
-$user_filter = $userPreferences['user_filter'];
-$status_filter = $userPreferences['status_filter'];
-
-$user = Users::findById(array('id' => $user_filter));
-
-if ($user == null) $user = logged_user();
-
-$use_24_hours = user_config_option('time_format_use_24');
-$date_format = user_config_option('date_format', 'd/m/Y');
-?>
-<?php echo stylesheet_tag('event/day.css') ?>
-
-<?php
 	$today = DateTimeValueLib::now();
 	$today->add('h', logged_user()->getTimezone());
 	$currentday = $today->format("j");
 	$currentmonth = $today->format("n");
 	$currentyear = $today->format("Y");
+	$drawHourLine = ($day == $currentday && $month == $currentmonth && $year == $currentyear);
 
 	$dtv = DateTimeValueLib::make(0,0,0,$month,$day,$year);
 	 
@@ -507,7 +509,7 @@ $date_format = user_config_option('date_format', 'd/m/Y');
 </div>
 
 <?php
-	$wdst = user_config_option('work_day_start_time', '09:00');
+	$wdst = user_config_option('work_day_start_time');
 	$h_m = explode(':', $wdst);
 	if (str_ends_with($wdst, 'PM')) {
 		$h_m[0] = ($h_m[0] + 12) % 24;
@@ -558,9 +560,11 @@ $date_format = user_config_option('date_format', 'd/m/Y');
 		og.addDomEventHandler(window, 'resize', resizeGridContainer);
 	}
 
-	og.currentTime = new Date('<?php echo $today->format('m/d/Y H:i:s') ?>');	
+<?php if ($drawHourLine) { ?>
+	og.startLocaleTime = new Date('<?php echo $today->format('m/d/Y H:i:s') ?>');
+	og.startLineTime = null;	
 	og.drawCurrentHourLine(0, 'd_');
-	
+<?php } ?>
 	// init tooltips
 	Ext.QuickTips.init();
 		

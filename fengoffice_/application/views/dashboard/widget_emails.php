@@ -1,5 +1,5 @@
 <?php 
-$show_help_option = user_config_option('show_context_help', 'until_close'); 
+$show_help_option = user_config_option('show_context_help'); 
 if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_emails_widget_context_help', true, logged_user()->getId()))) {
 		render_context_help($this, 'chelp emails widget', 'emails_widget');
 	}?>
@@ -8,7 +8,10 @@ if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user
 <table id="dashTableEmails" style="width:100%">
 <?php $c = 0;
 	
-	$emails = $unread_emails?$unread_emails:$ws_emails;
+	$emails = array();
+	if (is_array($unread_emails)) {
+		$emails = $unread_emails;
+	}
 	foreach ($emails as $email){ 
 		if (!$email->getIsDeleted()) {
 			$c++;?>

@@ -1,9 +1,9 @@
 <?php
-	$show_help_option = user_config_option('show_context_help', 'until_close'); 
+	$show_help_option = user_config_option('show_context_help'); 
 	if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_dashboard_info_widget_context_help', true, logged_user()->getId()))) {
 		render_context_help($this, 'chelp dashboard info widget', 'dashboard_info_widget');
 	}
-	$date_format = user_config_option('date_format', 'd/m/Y');
+	$date_format = user_config_option('date_format');
 ?>
 
 <div style="padding:10px">

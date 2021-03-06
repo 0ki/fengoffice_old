@@ -43,7 +43,7 @@
 		$companies_array[] = $company->getArrayInfo();
 ?>
 <script>
-og.noOfTasks = <?php echo user_config_option('noOfTasks', 8) ?>;
+og.noOfTasks = <?php echo user_config_option('noOfTasks') ?>;
 </script>
 <div id="taskPanelHiddenFields">
 	<input type="hidden" id="hfProjectTemplates" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($project_templates_array)))) ?>"/>
@@ -62,7 +62,7 @@ og.noOfTasks = <?php echo user_config_option('noOfTasks', 8) ?>;
 	<div id="tasksPanelBottomToolbar" class="x-panel-tbar" style="width:100%;height:30px;display:block;background-color:#F0F0F0;border-bottom:1px solid #CCC;"></div>
 	<div id="tasksPanelContent" style="background-color:white;padding:7px;padding-top:0px;overflow-y:scroll;position:relative;">
 		<?php
-			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			$show_help_option = user_config_option('show_context_help'); 
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_tasks_context_help', true, logged_user()->getId()))) {?>
 			<div class="tasksPanelContextHelp">
 				<?php render_context_help($this, 'chelp tasks list', 'tasks', 'tasks'); ?>

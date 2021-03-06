@@ -489,16 +489,14 @@ class Notifier {
 			throw new NotifierConnectionError();
 		} // if
 
-		if (config_option("mail_transport", self::MAIL_TRANSPORT_MAIL) == self::MAIL_TRANSPORT_SMTP &&
-				config_option("smtp_authenticate", false)) {
+		$smtp_address = config_option("smtp_address");
+		if (config_option("mail_transport") == self::MAIL_TRANSPORT_SMTP && $smtp_address) {
 			$pos = strrpos($from, "<");
-			if ($pos !== false) $from = trim(substr($from, 0, $pos));
-			$uname = config_option("smtp_username", $from);
-			if (strpos($uname, '@') < 0) {
-				$domain = config_option("smtp_server");
-				if ($domain) $uname = "$uname@$domain";
+			if ($pos !== false) {
+				//$sender_address = trim(substr($from, $pos + 1), "> ");
+				$sender_name = trim(substr($from, 0, $pos));
 			}
-			$from = self::prepareEmailAddress($uname, $from);
+			$from = self::prepareEmailAddress($smtp_address, $sender_name);
 		}
 		$result = $mailer->send($to, $from, $subject, $body, $type, $encoding);
 		$mailer->close();
@@ -510,6 +508,9 @@ class Notifier {
 		$cron = CronEvents::getByName('send_notifications_through_cron');
 		if ($cron instanceof CronEvent && $cron->getEnabled()) {
 			$qm = new QueuedEmail();
+			if (!is_array($to)) {
+				$to = array($to);
+			}
 			$qm->setTo(implode(";", $to));
 			$qm->setFrom($from);
 			$qm->setSubject($subject);

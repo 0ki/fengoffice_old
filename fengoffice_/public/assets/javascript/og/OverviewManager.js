@@ -339,6 +339,7 @@ og.OverviewManager = function() {
 		layout: 'fit',
 		autoExpandColumn: 'name',
 		cm: cm,
+		stateful: og.rememberGUIState,
 		stripeRows: true,
 		closable: true,
 		id: 'overview-manager',

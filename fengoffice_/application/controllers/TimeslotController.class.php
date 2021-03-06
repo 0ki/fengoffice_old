@@ -27,6 +27,11 @@ class TimeslotController extends ApplicationController {
 	 * @return null
 	 */
 	function open() {
+		if (!can_manage_time(logged_user(),true)) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$this->setTemplate('add_timeslot');
 
 		$object_id = get_id('object_id');
@@ -68,6 +73,11 @@ class TimeslotController extends ApplicationController {
 	} 
 	
 	function add_timespan() {
+		if (!can_manage_time(logged_user(),true)) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$object_id = get_id('object_id');
 		$object_manager = array_var($_GET, 'object_manager');
 
@@ -132,6 +142,11 @@ class TimeslotController extends ApplicationController {
 	 * @return null
 	 */
 	function close() {
+		if (!can_manage_time(logged_user(),true)) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$this->setTemplate('add_timeslot');
 
 		$timeslot = Timeslots::findById(get_id());
@@ -191,6 +206,11 @@ class TimeslotController extends ApplicationController {
 	} 
 	
 	function pause() {
+		if (!can_manage_time(logged_user(),true)) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		ajx_current("empty");
 
 		$timeslot = Timeslots::findById(get_id());
@@ -225,6 +245,11 @@ class TimeslotController extends ApplicationController {
 	} 
 	
 	function resume() {
+		if (!can_manage_time(logged_user(),true)) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		ajx_current("empty");
 
 		$timeslot = Timeslots::findById(get_id());
@@ -265,6 +290,11 @@ class TimeslotController extends ApplicationController {
 	 * @return null
 	 */
 	function edit() {
+		if (!can_manage_time(logged_user(),true)) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$this->setTemplate('add_timeslot');
 		
 		$timeslot = Timeslots::findById(get_id());
@@ -383,7 +413,11 @@ class TimeslotController extends ApplicationController {
 	 * @return null
 	 */
 	function delete() {
-
+		if (!can_manage_time(logged_user(),true)) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$timeslot = Timeslots::findById(get_id());
 		if(!($timeslot instanceof Timeslot)) {
 			flash_error(lang('timeslot dnx'));

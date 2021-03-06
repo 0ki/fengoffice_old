@@ -187,4 +187,6 @@
 	'field Projects created_by_id' => 'Utworzony przez',
 	'field Projects updated_by_id' => 'Zmodyfikowany przez',
 	'field Projects completed_by_id' => 'Zakończony przez',
+	'field MailContents cc' => 'Kopia dla:',
+	'field MailContents bcc' => 'Ukryta kopia dla:',
 ); ?>

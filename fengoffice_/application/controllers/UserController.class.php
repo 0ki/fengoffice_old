@@ -294,14 +294,16 @@ class UserController extends ApplicationController {
 		} else $permissions = null;
 	  	if(is_array($permissions)) {
 	  		foreach($permissions as $perm){			  			
-	  			if(ProjectUser::hasAnyPermissions($perm->pr,$perm->pc)){	
-					$relation = new ProjectUser();
-			  		$relation->setProjectId($perm->wsid);
-			  		$relation->setUserId($user->getId());
-					
-			  		$relation->setCheckboxPermissions($perm->pc);
-			  		$relation->setRadioPermissions($perm->pr);
-			  		$relation->save();
+	  			if(ProjectUser::hasAnyPermissions($perm->pr,$perm->pc)){
+	  				if (!$personalProjectId || $personalProjectId != $perm->wsid){
+						$relation = new ProjectUser();
+				  		$relation->setProjectId($perm->wsid);
+				  		$relation->setUserId($user->getId());
+						
+				  		$relation->setCheckboxPermissions($perm->pc);
+				  		$relation->setRadioPermissions($perm->pr);
+				  		$relation->save();
+	  				}
 	  			}
 	  		}
 		} // if

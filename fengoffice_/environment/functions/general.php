@@ -86,7 +86,7 @@ function clean($str) {
 function getDateValue($value = '', $default = EMPTY_DATETIME){
 	if ($value instanceof DateTimeValue) return $value;
 	if ($value != '') {
-		$date_format = user_config_option('date_format', 'd/m/Y');
+		$date_format = user_config_option('date_format');
 		return DateTimeValueLib::dateFromFormatAndString($date_format, $value);
 	}	
 	return $default;

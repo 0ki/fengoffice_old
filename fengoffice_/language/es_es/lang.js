@@ -83,7 +83,7 @@ addLangs({
 	'company': 'Compañía',
 	'companies': 'Compañías',
 	'email': 'Correo electrónico',
-	'email tab': 'Correo (BETA)',
+	'email tab': 'Correo',
 	'checkin': 'Liberar',
 	'checkout': 'Bloquear',
 	'checked out by': 'Bloqueado por {0}',

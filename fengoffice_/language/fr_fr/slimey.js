@@ -43,5 +43,7 @@ addLangs({
 	'move the selected slide down one place': 'Déplacer la diapositive vers le bas',
 	'move the selected slide up one place': 'Déplacer la diapositive vers le haut',
 	'new slideshow': 'Nouveau diaporama',
-	'second slide': 'Seconde diapositive'
+	'second slide': 'Seconde diapositive',
+	'size': 'Taille',
+	'undo': 'Annuler'
 });

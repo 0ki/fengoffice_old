@@ -205,7 +205,7 @@ class Localization {
 	 * @return string
 	 */
 	function formatDate(DateTimeValue $date, $timezone = 0) {
-		if ($this->date_format == '') $this->date_format = user_config_option('date_format', 'd/m/Y');
+		if ($this->date_format == '') $this->date_format = user_config_option('date_format');
 		return $this->dateByLocalization($this->date_format, $date->getTimestamp(), $timezone);
 	} // formatDate
 
@@ -220,7 +220,7 @@ class Localization {
 	 * @return string
 	 */
 	function formatDescriptiveDate(DateTimeValue $date, $timezone = 0) {
-		if ($this->descriptive_date_format == '') $this->descriptive_date_format = user_config_option('descriptive_date_format', 'l, j F');
+		if ($this->descriptive_date_format == '') $this->descriptive_date_format = user_config_option('descriptive_date_format');
 		return $this->dateByLocalization($this->descriptive_date_format, $date->getTimestamp(), $timezone);
 	} // formatDescriptiveDate
 
@@ -233,7 +233,7 @@ class Localization {
 	 * @return string
 	 */
 	function formatDateTime(DateTimeValue $date, $timezone = 0) {
-		if ($this->datetime_format == '') $this->datetime_format = user_config_option('date_format', 'd/m/Y') . " " . $this->time_format;
+		if ($this->datetime_format == '') $this->datetime_format = user_config_option('date_format') . " " . $this->time_format;
 		return $this->dateByLocalization($this->datetime_format, $date->getTimestamp(), $timezone);
 	} // formatDateTime
 

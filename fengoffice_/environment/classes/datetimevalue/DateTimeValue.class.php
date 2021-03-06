@@ -274,6 +274,7 @@ class DateTimeValue {
 	 * @return null
 	 */
 	private function setTimestamp($value) {
+		if (!is_numeric($value)) $value = 0;
 		$this->timestamp = $value;
 		$this->parse();
 	} // setTimestamp

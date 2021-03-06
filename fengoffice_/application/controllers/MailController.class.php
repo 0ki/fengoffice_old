@@ -169,6 +169,12 @@ class MailController extends ApplicationController {
 			if (str_ends_with($bcc, ",")) $bcc = substr($bcc, 0, strlen($bcc) - 1);
 			$mail_data['bcc'] = $bcc;
 			
+			if (!$isDraft && trim($to.$cc.$bcc) == '') {
+				flash_error(lang('recipient must be specified'));
+				ajx_current("empty");
+				return;
+			}
+			
 			$mail->setFromAttributes($mail_data);
 				
 			$utils = new MailUtilities();
@@ -255,6 +261,11 @@ class MailController extends ApplicationController {
 				if ((!$isDraft && $sentOK) || $isDraft) {
 					$content = $utils->getContent($account->getSmtpServer(), $account->getSmtpPort(), $account->getOutgoingTrasnportType(), $account->smtpUsername(), $account->smtpPassword(), $body, $attachments);
 					$repository_id = $utils->saveContent($content);
+					if (!$isNew) {
+						if (FileRepository::isInRepository($mail->getContentFileId())) {
+							FileRepository::deleteFile($mail->getContentFileId());
+						}
+					}
 					$mail->setContentFileId($repository_id);
 					$mail->setHasAttachments((is_array($attachments) && count($attachments) > 0) ? 1 : 0);
 					$mail->setSize(strlen($content));
@@ -289,7 +300,7 @@ class MailController extends ApplicationController {
 					if (!$autosave) {
 						if ($isDraft) {
 							flash_success(lang('success save mail'));
-							ajx_current("back");
+							ajx_current("empty");
 						} else {
 							flash_success(lang('success add mail'));
 							ajx_current("back");
@@ -701,7 +712,27 @@ class MailController extends ApplicationController {
 		 
 		echo $email->getContent(); die();
 	}
-
+	
+	function show_html_mail() {
+		$acc_id = $_GET['acc'];
+		$filename = ROOT_URL."/tmp/".$acc_id."temp_mail_content.html";
+		
+		if (!file_exists(ROOT."/tmp/".$acc_id."temp_mail_content.html")) {
+			ajx_current("empty");
+			return;
+		}
+		
+		$content = file_get_contents($filename);		
+		$encoding = detect_encoding($content, array('UTF-8', 'ISO-8859-1', 'WINDOWS-1252'));
+		
+		header("Expires: " . gmdate("D, d M Y H:i:s", mktime(date("H") + 2, date("i"), date("s"), date("m"), date("d"), date("Y"))) . " GMT");
+		header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
+		header("Content-Type: text/html;charset=".$encoding);
+		header("Content-Length: " . (string) strlen($content));
+		
+		print($content);
+		die();		
+	}
 
 	function checkFileWritability($classification_data, $parsedEmail){
 		$c = 0;
@@ -726,7 +757,6 @@ class MailController extends ApplicationController {
 
 
 	function checkmail() {
-		 
 		set_time_limit(0);
 		$accounts = MailAccounts::getMailAccountsByUser(logged_user());
 
@@ -1306,15 +1336,15 @@ class MailController extends ApplicationController {
 						"type" => 'email',
 						"hasAttachment" => $msg->getHasAttachments(),
 						"accountId" => $msg->getAccountId(),
-						"accountName" => ($msg->getAccount() != null ? $msg->getAccount()->getName() : lang('n/a')),
+						"accountName" => ($msg->getAccount() instanceof MailAccount ? $msg->getAccount()->getName() : lang('n/a')),
 						"projectId" => $msg->getWorkspacesIdsCSV(logged_user()->getWorkspacesQuery()),
 						"projectName" => $msg->getWorkspacesNamesCSV(logged_user()->getWorkspacesQuery()),
 						"workspaceColors" => $msg->getWorkspaceColorsCSV(logged_user()->getWorkspacesQuery()),
 						"subject" => $msg->getSubject(),
 						"text" => $text,
-						"date" => ($msg->getSentDate() != null ? $msg->getSentDate()->getTimestamp() : ($msg->getCreatedOn() instanceof DateTimeValue ? $msg->getCreatedOn()->getTimestamp() : 0)),
-						"userId" => ($msg->getAccount() != null ? $msg->getAccount()->getOwner()->getId() : 0),
-						"userName" => ($msg->getAccount() != null ? $msg->getAccount()->getOwner()->getDisplayName() : lang('n/a')),
+						"date" => $msg->getSentDate() instanceof DateTimeValue ? ($msg->getSentDate()->isToday() ? format_time($msg->getSentDate()) : format_datetime($msg->getSentDate())) : lang('n/a'),
+						"userId" => ($msg->getAccount() instanceof MailAccount  && $msg->getAccount()->getOwner() instanceof User ? $msg->getAccount()->getOwner()->getId() : 0),
+						"userName" => ($msg->getAccount() instanceof MailAccount  && $msg->getAccount()->getOwner() instanceof User ? $msg->getAccount()->getOwner()->getDisplayName() : lang('n/a')),
 						"tags" => project_object_tags($msg),
 						"isRead" => $msg->getIsRead(logged_user()->getId()),
 						"from" => $msg->getFromName()!=''?$msg->getFromName():$msg->getFrom(),
@@ -1540,17 +1570,21 @@ class MailController extends ApplicationController {
 		$account->setPassword(MailUtilities::ENCRYPT_DECRYPT($pass));
 		$account->setServer($server);
 
-		$real_folders = MailUtilities::getImapFolders($account);
-		$imap_folders = array();
-		foreach ($real_folders as $folder_name) {
-			$acc_folder = new MailAccountImapFolder();
-			$acc_folder->setAccountId(0);
-			$acc_folder->setFolderName($folder_name);
-			$acc_folder->setCheckFolder($folder_name == 'INBOX');// By default only INBOX is checked
-			$imap_folders[] = $acc_folder;
+		try {
+			$real_folders = MailUtilities::getImapFolders($account);
+			$imap_folders = array();
+			foreach ($real_folders as $folder_name) {
+				$acc_folder = new MailAccountImapFolder();
+				$acc_folder->setAccountId(0);
+				$acc_folder->setFolderName($folder_name);
+				$acc_folder->setCheckFolder($folder_name == 'INBOX');// By default only INBOX is checked
+				$imap_folders[] = $acc_folder;
+			}
+			tpl_assign('imap_folders', $imap_folders);
+			tpl_assign('genid', $genid);
+		} catch (Exception $e) {
+			Logger::log($e->getTraceAsString());
 		}
-		tpl_assign('imap_folders', $imap_folders);
-		tpl_assign('genid', $genid);
 	}
 
 } // MailController

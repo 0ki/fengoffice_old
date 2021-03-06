@@ -30,13 +30,18 @@ if (isset($file) && $file instanceof ProjectFile) {
 		}
 		
 		if ($file && strcmp($file->getTypeString(), 'audio/mpeg')==0) {
-			$songname = $file->getProperty("songname");
-			$artist = $file->getProperty("songartist");
-			$album = $file->getProperty("songalbum");
-			$track = $file->getProperty("songtrack");
-			$year = $file->getProperty("songyear");
-			$duration = $file->getProperty("songduration");
-			$songdata = "['" . str_replace("'", "\\'", $songname) . "','" . str_replace("'", "\\'", $artist) . "','" . str_replace("'", "\\'", $album) . "','" . str_replace("'", "\\'", $track) . "','" . str_replace("'", "\\'", $year) . "','" . str_replace("'", "\\'", $duration) . "','" . $file->getDownloadUrl() ."','" . str_replace("'", "\\'", $file->getFilename()) . "'," . $file->getId() . "]";
+			$songinfo = array(
+				$file->getProperty("songname"),
+				$file->getProperty("songartist"),
+				$file->getProperty("songalbum"),
+				$file->getProperty("songtrack"),
+				$file->getProperty("songyear"),
+				$file->getProperty("songduration"),
+				$file->getDownloadUrl(),
+				$file->getFilename(),
+				$file->getId(),
+			);
+			$songdata = str_replace('"', "'", json_encode($songinfo));
 			add_page_action(lang('play'), "javascript:og.playMP3(" . $songdata . ")", 'ico-play');
 			add_page_action(lang('queue'), "javascript:og.queueMP3(" . $songdata . ")", 'ico-queue');
 		} else if ($file && strcmp($file->getTypeString(), 'application/xspf+xml')==0) {

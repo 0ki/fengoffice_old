@@ -422,6 +422,13 @@ og.promptAddParameter = function(before, edit, pos) {
 			if(!edit){
 				og.addParameterToTemplate(before, name, type);
 			}else{
+				var oldname = paramName.value;
+				for (var i=0; i < og.templateParameters.length; i++) {
+					if (og.templateParameters[i].name == oldname) {
+						og.templateParameters[i].name = name;
+						break;
+					}
+				}
 				paramName.value = name;
 				var paramNameSpan = document.getElementById('paramName[' + pos + ']');
 				paramNameSpan.innerHTML = '<b>' + name + '</b>&nbsp;(' + lang(type) + ') ';

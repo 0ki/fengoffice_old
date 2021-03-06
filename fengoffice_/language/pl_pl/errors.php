@@ -108,4 +108,13 @@
 	'error assign task permissions user' => 'Nie masz uprawnień by przypisać zadanie do tego użytkownika',
 	'error assign task company dnx' => 'Próba przypisania do nieistniejącej firmy',
 	'error assign task permissions company' => 'Nie masz uprawnień by przypisać zadanie do tej firmy',
+	'repeat x times must be a valid number between 1 and 1000' => 'Powtórz X razy musi mieć wartość z przedziału 1 - 1000',
+	'repeat period must be a valid number between 1 and 1000' => 'Okres powtórzenia musi zawierać się w przedziale 1 - 1000',
+	'to repeat by start date you must specify task start date' => 'Aby powtarzać wg daty rozpoczęcia, musisz podać datę rozpoczęcia zadania',
+	'to repeat by due date you must specify task due date' => 'Aby powtarzać wg terminu realizacji, musisz podać termin realizacji zadania',
+	'task cannot be instantiated more times' => 'Zadanie nie może zostać utworzone więcej razy, to jest ostatnie powtórzenie.',
+	'account already being checked' => 'Konto jest już sprawdzane.',
+	'no files to compress' => 'Brak plików do kompresji',
+	'cant modify subscribers' => 'Nie można zmodyfikować subskrybentów',
+	'this object must belong to a ws to modify its subscribers' => 'Ten obiekt musi być przypisany do projektu aby można było zmodyfikować jego subskrybentów.',
 ); ?>

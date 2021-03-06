@@ -243,7 +243,7 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 	function getTypeIconUrl($showImage = true) {
 		// return image depending on type string
 		$image = "file.png";
-		$mimeType = str_replace("/", "-", $this->getTypeString());
+		$mimeType = str_replace(array("/", "+"), "-", $this->getTypeString());
 		$theme = config_option("theme", DEFAULT_THEME);
 		$base = ROOT . "/" . PUBLIC_FOLDER . "/assets/themes/$theme/images/48x48/types/";
 		$extension = get_file_extension($this->getFile()->getFilename());

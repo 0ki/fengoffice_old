@@ -56,7 +56,7 @@ class LocalizationConfigHandler extends ConfigHandler {
 		}
 		foreach($this->available_locales as $locale) {
 			$option_attributes = $this->getValue() == $locale && !$default ? array('selected' => true) : null;
-			$options[] = option_tag($locale, $locale, $option_attributes);
+			$options[] = option_tag(get_language_name($locale), $locale, $option_attributes);
 		} // foreach
 
 		return select_box($control_name, $options);

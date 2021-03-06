@@ -28,10 +28,10 @@
 
 <script>
 	var genid = '<?php echo $genid ?>';
-	og.showMailImages = function(filename) {
+	og.showMailImages = function(pre, rand) {
 		var iframe = document.getElementById(genid + 'ifr');
-		iframe.src = filename;
-		
+		iframe.src = og.getUrl('mail', 'show_html_mail', {acc: pre, r: rand});
+
 		document.getElementById(genid + 'showImagesLink').style.display = 'none';
 		
 		iframe.style.display = 'none';
@@ -69,7 +69,7 @@
 			else
 				$icon = "unknown.png";
       		$description .=	'<img src="' . get_image_url("filetypes/" . $icon) .'"></td>
-			<td><a href="' . get_url('mail', 'download_attachment', 
+			<td><a target="_self" href="' . get_url('mail', 'download_attachment', 
       			array('email_id' => $email->getId(), 'attachment_id' => $c)) . '">' . clean($fName) . " ($size)" . '</a></td></tr>';
       		$c++;
 		}
@@ -78,7 +78,7 @@
   $description .= '</table></div>';
   
 		if($email->getBodyHtml() != ''){
-			$html_content = purify_html($email->getBodyHtml());
+			$html_content = remove_css_and_scripts($email->getBodyHtml());
 			
 			// links must open in a new tab or window
 			$html_content = str_replace('href', 'target="_blank" href', $html_content);
@@ -87,17 +87,17 @@
 			$tmphtml = $email->getAccountId().'temp_mail_content.html';
 			
 			$content = '';
-			if (user_config_option('block_email_images', true) && html_has_images($html_content)) {
+			if (user_config_option('block_email_images') && html_has_images($html_content)) {
 				// save content with images
 				$filename_with_images = ROOT.'/tmp/wi_'.$tmphtml;
 				if (file_exists($filename_with_images)) unlink($filename_with_images);
 				$handle = fopen($filename_with_images, 'wb');
-				fwrite($handle, $html_content, strlen_utf($html_content));		
+				fwrite($handle, $html_content);		
 				fclose($handle);
 				
 				$html_content = remove_images_from_html($html_content);
 				$content = '<div id="'.$genid.'showImagesLink" style="background-color:#FFFFCC">'.lang('images are blocked').' 
-					<a href="#" onclick="og.showMailImages(\''.ROOT_URL.'/tmp/wi_'.$tmphtml.'\');" style="text-decoration: underline;">'.lang('show images').'</a>
+					<a href="#" onclick="og.showMailImages(\'wi_'.$email->getAccountId().'\', '.rand().');" style="text-decoration: underline;">'.lang('show images').'</a>
 				</div>';
 			}
 			
@@ -105,8 +105,8 @@
 			$handle = fopen(ROOT.'/tmp/'.$tmphtml, 'wb');
 			fwrite($handle, $html_content);
 			fclose($handle);
-			
-			$content .= '<iframe id="'.$genid.'ifr" style="width:100%;overflow-y:hidden;" frameborder="0" src="'.ROOT_URL.'/tmp/'.$tmphtml.'" 
+			$url = get_url('mail', 'show_html_mail', array('acc' => $email->getAccountId(), 'r' => rand()));
+			$content .= '<iframe id="'.$genid.'ifr" style="width:100%;overflow-y:hidden;" frameborder="0" src="'.$url.'" 
 							onload="javascipt:iframe=document.getElementById(\''.$genid.'ifr\'); iframe.height = iframe.contentWindow.document.body.scrollHeight + 30;">
 						</iframe>';
 			'<script>if (Ext.isIE) document.getElementById(\''.$genid.'ifr\').contentWindow.location.reload();</script>';

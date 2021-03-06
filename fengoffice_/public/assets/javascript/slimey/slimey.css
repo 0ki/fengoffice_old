@@ -130,4 +130,10 @@
 .slidePreview ol, .slidePreview ul, .slidePreview dir, .slidePreviewSel ol, .slidePreview ul, .slidePreview dir, .slidePreviewH ol, .slidePreview ul {
     margin-left: 5px;
 }
+.slimeyEditor ul li {
+	list-style: disc;
+}
+.slimeyEditor ol li {
+	list-style: decimal;
+}
 /* </content style> */

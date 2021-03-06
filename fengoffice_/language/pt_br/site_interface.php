@@ -510,4 +510,5 @@
 	'personal workspace name' => '{0} Pessoal',
 	'personal workspace description' => 'Espaço Pessoal',
 	'wiki help link' => 'http://wiki.opengoo.org/doku.php/pt:home',
+	'last language' => 'Último',
 ); ?>

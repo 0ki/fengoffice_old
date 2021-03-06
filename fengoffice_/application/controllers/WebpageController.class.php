@@ -218,7 +218,7 @@ class WebpageController extends ApplicationController {
 			$limit = config_option('files_per_page');
 		}
 		$order = array_var($_GET, 'sort');
-		if ($order == "updatedOn" || $order == "updated" || $order == "date") $order = "updated_on";
+		if ($order == "updatedOn" || $order == "updated" || $order == "date" || $order == "dateUpdated") $order = "updated_on";
 		else if ($order == "name") $order = "title";
 		$orderdir = array_var($_GET, 'dir');
 		$tag = array_var($_GET,'tag');

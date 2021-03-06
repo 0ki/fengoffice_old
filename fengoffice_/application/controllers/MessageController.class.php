@@ -101,7 +101,7 @@ class MessageController extends ApplicationController {
 								try{
 									DB::beginWork();
 									$message->trash();
-									ApplicationLogs::createLog($message, $ws, ApplicationLogs::ACTION_TRASH);
+									ApplicationLogs::createLog($message, $message->getWorkspaces(), ApplicationLogs::ACTION_TRASH);
 									DB::commit();
 									$succ++;
 								} catch(Exception $e){

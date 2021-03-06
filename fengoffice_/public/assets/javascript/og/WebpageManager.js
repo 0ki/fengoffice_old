@@ -226,6 +226,7 @@ og.WebpageManager = function() {
 		layout: 'fit',
         cm: cm,
 		enableDrag: true,
+		stateful: og.rememberGUIState,
 		ddGroup: 'WorkspaceDD',
         closable: true,
 		stripeRows: true,

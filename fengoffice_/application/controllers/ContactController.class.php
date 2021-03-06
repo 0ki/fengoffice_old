@@ -1271,8 +1271,8 @@ class ContactController extends ApplicationController {
 						if ($type == 'contact') {
 							$contact_data = $this->buildContactData(array_var($_POST, 'select_contact'), array_var($_POST, 'check_contact'), $registers[$i]);
 							$contact_data['import_status'] = '('.lang('updated').')';
-							$fname = str_replace("'", "", array_var($contact_data, "firstname"));
-							$lname = str_replace("'", "", array_var($contact_data, "lastname"));
+							$fname = mysql_real_escape_string(array_var($contact_data, "firstname"));
+							$lname = mysql_real_escape_string(array_var($contact_data, "lastname"));
 							$contact = Contacts::findOne(array("conditions" => "firstname = '".$fname."' AND lastname = '".$lname."' OR email = '".array_var($contact_data, "email")."'"));
 							if (!$contact) {
 								$contact = new Contact();
@@ -1296,10 +1296,10 @@ class ContactController extends ApplicationController {
 							$import_result['import_ok'][] = $contact_data;
 							
 						} else if ($type == 'company') {
-							//foreach($registers[$i] as $k=>$v) Logger::log("$k->$v");
 							$contact_data = $this->buildCompanyData(array_var($_POST, 'select_company'), array_var($_POST, 'check_company'), $registers[$i]);
 							$contact_data['import_status'] = '('.lang('updated').')';
-							$company = Companies::findOne(array("conditions" => "name = '".array_var($contact_data, "name")."'"));
+							$comp_name = mysql_real_escape_string(array_var($contact_data, "name"));
+							$company = Companies::findOne(array("conditions" => "name = '$comp_name'"));
 							if (!$company) {
 								$company = new Company();
 								$contact_data['import_status'] = '('.lang('new').')';
@@ -1446,9 +1446,6 @@ class ContactController extends ApplicationController {
 		          
 		$contact_data['is_private'] = false;
 		$contact_data['timezone'] = logged_user()->getTimezone();
-		
-		$contact_data["firstname"] = str_replace("'", "", array_var($contact_data, "firstname"));
-		$contact_data["lastname"] = str_replace("'", "", array_var($contact_data, "lastname"));		
 
 		return $contact_data;
 	} // buildContactData

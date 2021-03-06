@@ -15,8 +15,7 @@
     * @return string
     */
     function render($control_name) {
-      $year = date('Y');
-      return pick_date_widget($control_name, $this->getValue(), $year - 10, $year + 10);
+      return pick_date_widget2($control_name, $this->getValue());
     } // render
     
     /**

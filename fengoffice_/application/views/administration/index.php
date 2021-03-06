@@ -11,7 +11,7 @@
     <br/>
     <br/>
     <?php 
-		$show_help_option = user_config_option('show_context_help', 'until_close'); 
+		$show_help_option = user_config_option('show_context_help'); 
 		if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_administration_context_help', true, logged_user()->getId()))) {?>
 		<div id="administrationPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
 			<?php render_context_help($this, 'chelp administrator panel','administration'); ?>
@@ -152,17 +152,7 @@
     </td></tr></table>
     </div>
 </td>
-
-<?php if(logged_user()->isAccountOwner()){ ?>
-<td align="center">
-    <div style="width:150px;display:block; margin-right:10px;margin-bottom:40px">
-    <table width="100%" align="center"><tr><td align="center">
-    	<a class="internalLink" href="<?php echo get_url('backup') ?>"><div class="coViewIconImage ico-large-backup"></div></a>
-    </td></tr><tr><td align="center"><b><a class="internalLink" href="<?php echo get_url('backup') ?>"><?php echo lang('backup') ?></a></b>
-    </td></tr></table>
-    </div>
-</td>
-<?php } } ?>
+<?php } ?>
 </tr></table>
 
 <?php $icons = array();

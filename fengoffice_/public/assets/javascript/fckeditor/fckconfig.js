@@ -147,7 +147,7 @@ FCKConfig.Keystrokes = [
 	[ CTRL + 65 /*A*/, true ],
 	[ CTRL + 67 /*C*/, true ],
 	[ CTRL + 70 /*F*/, true ],
-	[ CTRL + 83 /*S*/, true ],
+	[ CTRL + 83 /*S*/, 'Save' ],
 	[ CTRL + 84 /*T*/, true ],
 	[ CTRL + 88 /*X*/, true ],
 	[ CTRL + 86 /*V*/, 'Paste' ],

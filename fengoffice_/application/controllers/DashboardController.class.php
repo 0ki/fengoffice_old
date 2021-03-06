@@ -82,12 +82,16 @@ class DashboardController extends ApplicationController {
 		}
 		
 		if (user_config_option('show emails widget') && config_option('enable_email_module')) {
-			list($unread_emails, $pagination) = MailContents::getEmails($tag, null, 'received', 'unread', '', null, 0, 10);
-			tpl_assign('unread_emails', $unread_emails);
-			if (active_project() instanceof Project) {
-				$ws_emails = MailContents::getProjectMails(active_project(), 0, 10);
-				tpl_assign('ws_emails', $ws_emails);
+			$activeWs = active_project() instanceof Project ? active_project() : null;
+			list($unread_emails, $pagination) = MailContents::getEmails($tag, null, 'received', 'unread', '', $activeWs, 0, 10);
+
+			if ($activeWs && user_config_option('always show unread mail in dashboard')) {
+				// add unread unclassified emails
+				list($all_unread, $pagination) = MailContents::getEmails($tag, null, 'received', 'unread', 'unclassified', null, 0, 10);
+				$unread_emails = array_merge($unread_emails, $all_unread);
 			}
+			
+			tpl_assign('unread_emails', $unread_emails);
 		}
 		
 		//Tasks widgets

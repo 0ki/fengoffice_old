@@ -58,17 +58,6 @@ function send_notifications_through_cron() {
 	_log("$count notifications sent.");
 }
 
-function backup() {
-	try {
-		_log("Creating backup...");
-		include_once "application/controllers/BackupController.class.php";
-		do_backup();
-		_log("Backup created.");
-	} catch (Exception $e) {
-		_log("Error creating backup: " . $e->getMessage());
-	}
-}
-
 function delete_mails_from_server() {
 	try {
 		_log("Checking mail accounts to delete mails from server...");

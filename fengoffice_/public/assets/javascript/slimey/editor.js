@@ -341,10 +341,10 @@ SlimeyEditor.prototype.dblclick = function(obj, e) {
 	this.contentEditor.style.fontStyle = obj.style.fontStyle;
 	this.contentEditor.style.textDecoration = obj.style.textDecoration;
 	this.contentEditor.style.textAlign = obj.style.textAlign;
-	this.contentEditor.style.left = obj.style.left;
-	this.contentEditor.style.top = obj.style.top;
-	this.contentEditor.style.width = obj.style.width;
-	this.contentEditor.style.height = obj.style.height;
+	this.contentEditor.style.left = obj.offsetLeft + 'px';
+	this.contentEditor.style.top = obj.offsetTop + 'px';
+	this.contentEditor.style.width = obj.offsetWidth + 'px';
+	this.contentEditor.style.height = obj.offsetHeight + 'px';
 	var val = obj.innerHTML;
 	if (obj.tagName == 'UL' || obj.tagName == 'OL') {
 		val = val.replace(/<\/li><li>/gi, '\n');

@@ -12,17 +12,15 @@ og.ImageChooser = function(config) {
 	    url: this.config.url,
 	    root: 'files',
 	    fields: [
+	        'id',
 	        'name',
-			{name: 'url', mapping: 'icon'},
-			{name: 'fileUrl', mapping: 'url'},
 	        {name:'size', type: 'float'},
-	        {name:'lastmod', mapping: 'dateUpdated', type:'date', dateFormat:'timestamp'}
+	        'dateUpdated'
 	    ],
 	    listeners: {
 	    	'load': {fn:function() { this.view.select(0); }, scope:this, single:true}
 	    }
 	});
-	this.store.load();
 	
 	var formatSize = function(data) {
         if (data.size < 1024) {
@@ -35,7 +33,7 @@ og.ImageChooser = function(config) {
 	var formatData = function(data) {
     	data.shortName = og.clean(data.name.ellipse(15));
     	data.sizeString = og.clean(formatSize(data));
-    	data.dateString = new Date(data.lastmod).format(og.date_format + (og.timeFormat24 ? " G:i" : " g:i a"));
+    	data.dateString = data.dateUpdated;
     	this.lookup[data.name] = data;
     	return data;
     };
@@ -102,7 +100,7 @@ og.ImageChooser = function(config) {
 				value: 'name',
 				store: new Ext.data.SimpleStore({
 					fields: ['name', 'desc'],
-					data : [['name', lang('name')],['size', lang('file size')],['lastmod', lang('last modified')]]
+					data : [['name', lang('name')],['size', lang('file size')],['dateUpdated', lang('last modified')]]
 				}),
 				listeners: {
 					'select': {fn:this.sortImages, scope:this}
@@ -144,8 +142,9 @@ og.ImageChooser.show = function(imagesUrl, func, scope, button) {
 			height:350
 		});
 	}
+	this.chooser.load();
 	this.chooser.callback = function(data) {
-		func.call(scope, data.fileUrl);
+		func.call(scope, og.getUrl('files', 'download_file', {id: data.id}));
 	};
 	this.chooser.animateTarget = Ext.get(button);
    	this.chooser.show();
@@ -158,7 +157,7 @@ Ext.extend(og.ImageChooser, Ext.Window, {
 		this.thumbTemplate = new Ext.XTemplate(
 			'<tpl for=".">',
 				'<div class="thumb-wrap" id="{name}">',
-				'<div class="thumb"><img src="{url}" title="{name}"></div>',
+				'<div class="thumb"><img src="' + og.getUrl('files', 'download_file', {id: '__FILE_ID__'}).replace("__FILE_ID__", "{id}") + '" title="{name}"></div>',
 				'<span>{shortName}</span></div>',
 			'</tpl>'
 		);
@@ -167,7 +166,7 @@ Ext.extend(og.ImageChooser, Ext.Window, {
 		this.detailsTemplate = new Ext.XTemplate(
 			'<div class="details">',
 				'<tpl for=".">',
-					'<img src="{url}"><div class="details-info">',
+					'<img src="' + og.getUrl('files', 'download_file', {id: '__FILE_ID__'}).replace("__FILE_ID__", "{id}") + '"><div class="details-info">',
 					'<b>' + lang('image name') + ':</b>',
 					'<span>{name}</span>',
 					'<b>' + lang('size') + ':</b>',
@@ -227,6 +226,10 @@ Ext.extend(og.ImageChooser, Ext.Window, {
 				callback(data);
 			}
 		});
+    },
+    
+    load: function() {
+    	this.store.load();
     },
 	
 	onLoadException : function(v,o){

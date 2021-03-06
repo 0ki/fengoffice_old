@@ -98,8 +98,8 @@ class MailContents extends BaseMailContents {
 		}
 
 		// Show deleted accounts' mails
-		if (user_config_option('view deleted accounts emails', true)) {
-			$accountConditions = "($accountConditions OR (SELECT count(*) FROM `" . TABLE_PREFIX . "mail_accounts` WHERE `id` = `account_id`) > 0)";
+		if (user_config_option('view deleted accounts emails')) {
+			$accountConditions = "($accountConditions OR (SELECT count(*) FROM `" . TABLE_PREFIX . "mail_accounts` WHERE `id` = `account_id`) = 0)";
 		}
 					
 		// Check for unclassified emails

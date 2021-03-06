@@ -225,9 +225,17 @@ Ext.extend(og.TagTree, Ext.tree.TreePanel, {
 	},
 	
 	addTags: function(tags) {
-		for (var i=0; i < tags.length; i++) {
-			this.addTag(tags[i]);
-		}
+		var index = 0;
+        var me = this;
+        var do_add_tags = function() {
+                for (var i=0; i < 50 && index < tags.length; i++) {
+                        me.addTag(tags[index++]);
+                }
+                if (index < tags.length) {
+                        setTimeout(do_add_tags, 1000);
+                }
+        };
+        do_add_tags();
 	},
 	
 	getSelectedTag: function() {

@@ -18,6 +18,6 @@
       return filter_assigned_to_select_box($control_name, null, $this->getValue());
     } // render
     
-  } // DateTimeConfigHandler
+  } // UserCompanyConfigHandler
 
 ?>

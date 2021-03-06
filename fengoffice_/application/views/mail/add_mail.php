@@ -173,7 +173,7 @@ var actualSignature = '';
 <form style="height:100%;background-color:white;" id="<?php echo $instanceName ?>" name="frmMail"  class="internalForm" action="<?php echo $mail->getSendMailUrl()?>" method="post"  onsubmit="return og.mailSetBody('<?php echo $instanceName ?>')">
 <input type="hidden" name="instanceName" value="<?php echo $instanceName ?>" />
 <input type="hidden" name="mail[body]" value="" />
-<input type="hidden" name="mail[isDraft]" id="<?php echo $genid ?>isDraft" value="false" />
+<input type="hidden" name="mail[isDraft]" id="<?php echo $genid ?>isDraft" value="true" />
 <input type="hidden" name="mail[id]" id="<?php echo $genid ?>id" value="<?php echo  array_var($mail_data, 'id') ?>" />
 <input type="hidden" name="mail[hf_id]" id="<?php echo $genid ?>hf_id" value="<?php echo $genid ?>id" />
 <input type="hidden" name="mail[isUpload]" id="<?php echo $genid ?>isUpload" value="false" />
@@ -189,6 +189,14 @@ var actualSignature = '';
     		$allEmails[] = $tmp;
     	}
     }
+    $companies = Companies::getVisibleCompanies(logged_user());
+    foreach ($companies as $company) {
+    	if (trim($company->getEmail()) != "") {
+    		$tmp = trim(str_replace(",", " ", $company->getName() . ' <' . $company->getEmail() . '>'));
+    		$allEmails[] = $tmp;
+    	}
+    }
+    
     $acc_id = array_var($mail_data, 'account_id', (isset($default_account) ? $default_account : $mail_accounts[0]->getId()));
     foreach ($mail_accounts as $m_acc) {
     	$sig = $m_acc->getSignature();
@@ -312,7 +320,7 @@ var actualSignature = '';
  	<fieldset>
  	    <legend><?php echo lang('mail attachments')?></legend>
  	    <?php
- 	    $checked = user_config_option('attach_docs_content', false) ? "checked=\\'checked\\'" : '';
+ 	    $checked = user_config_option('attach_docs_content') ? "checked=\\'checked\\'" : '';
  	    $renderName = "function(obj, count) {
  	    	if (obj.manager != 'ProjectFiles') return obj.name;
  	    	var id = Ext.id();

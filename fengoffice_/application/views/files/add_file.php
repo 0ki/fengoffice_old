@@ -50,7 +50,7 @@ $comments_required = config_option('file_revision_comments_required');
 	if ($file->isNew()) {?>
 		<div id="<?php echo $genid ?>selectFileControlDiv">
 			<?php 
-				$show_help_option = user_config_option('show_context_help', 'until_close'); 
+				$show_help_option = user_config_option('show_context_help'); 
 				if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_file_context_help', true, logged_user()->getId()))) {?>
 				<div id="weblinkFileContextHelp" class="contextHelpStyle">
 					<?php render_context_help($this, 'chelp addfile', 'add_file'); ?>
@@ -67,6 +67,7 @@ $comments_required = config_option('file_revision_comments_required');
 						"id" => $genid . "fileFormFile",
 						"class" => "title",
 						"size" => "88",
+						"style" => 'width:530px',
 						"tabindex" => "10",
 						"onchange" => "javascript:og.updateFileName('" . $genid .  "', this.value);"
 					)
@@ -118,7 +119,7 @@ $comments_required = config_option('file_revision_comments_required');
 
 <div class="coInputMainBlock">
 		<?php 
-			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			$show_help_option = user_config_option('show_context_help'); 
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_upload_file_context_help', true, logged_user()->getId())) {?>
 			<div id="uploadFileContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp upload file','upload_file'); ?>
@@ -185,6 +186,8 @@ $comments_required = config_option('file_revision_comments_required');
 							"attributes" => array(
 								"id" => $genid . "fileFormFile",
 								"tabindex" => "65",
+								"size" => 88,
+								"style" => 'width:530px',
 							)
 						), $ret);
 					?>
@@ -245,7 +248,7 @@ $comments_required = config_option('file_revision_comments_required');
 	<div id="<?php echo $genid ?>add_file_tags_div" style="display: none">
 		<fieldset>
 			<?php 
-			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			$show_help_option = user_config_option('show_context_help'); 
 					if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_upload_file_tags_context_help', true, logged_user()->getId())) {?>
 			<div id="uploadFileContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp upload file tags','upload_file_tags'); ?>
@@ -259,7 +262,7 @@ $comments_required = config_option('file_revision_comments_required');
 	<div id="<?php echo $genid ?>add_file_description_div" style="display: none">
 		<fieldset>
 			<?php 
-			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			$show_help_option = user_config_option('show_context_help'); 
 						if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_upload_file_description_context_help', true, logged_user()->getId())) {?>
 			<div id="uploadFileContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp upload file description','upload_file_description'); ?>
@@ -304,7 +307,7 @@ $comments_required = config_option('file_revision_comments_required');
 	<div id="<?php echo $genid ?>add_custom_properties_div" style="display: none">
 		<fieldset>
 		<?php 
-			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			$show_help_option = user_config_option('show_context_help'); 
 						if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_upload_file_custom_properties_context_help', true, logged_user()->getId())) {?>
 			<div id="uploadFileContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp upload file custom properties','upload_file_custom_properties'); ?>
@@ -319,7 +322,7 @@ $comments_required = config_option('file_revision_comments_required');
 	<div id="<?php echo $genid ?>add_subscribers_div" style="display: none">
 		<fieldset>
 		<?php 
-			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			$show_help_option = user_config_option('show_context_help'); 
 					if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_upload_file_subscribers_context_help', true, logged_user()->getId())) {?>
 			<div id="uploadFileContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp upload file subscribers','upload_file_subscribers'); ?>
@@ -352,7 +355,7 @@ $comments_required = config_option('file_revision_comments_required');
 		<div style="display: none" id="<?php echo $genid ?>add_linked_objects_div">
 		<fieldset>
 			<?php 
-			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			$show_help_option = user_config_option('show_context_help'); 
 						if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_upload_file_linked_objects_context_help', true, logged_user()->getId())) {?>
 			<div id="uploadFileContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp upload file linked objects','upload_file_linked_objects'); ?>

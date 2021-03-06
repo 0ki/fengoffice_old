@@ -559,4 +559,26 @@ function get_ext_language_file($loc) {
 	return '';	
 }
 
+function get_language_name($loc) {
+	static $names = array(
+		'cs_cz' => 'Čeština',
+		'de_de' => 'Deutsch',
+		'en_us' => 'English (U.S.)',
+		'es_es' => 'Español (España)',
+		'es_la' => 'Español (Latinoamérica)',
+		'fr_fr' => 'Français',
+		'hu_hu' => 'Magyar',
+		'it_it' => 'Italiano',
+		'ja_jp' => '日本語',
+		'ko_kr' => '한국어',
+		'nl_nl' => 'Nederlands',
+		'pl_pl' => 'Polski',
+		'pt_br' => 'Português',
+		'ru_ru' => 'Pусский',
+		'zh_cn' => '中文 (中国)',
+		'zh_tw' => '中文 (臺灣)',
+	);
+	return $names[$loc];
+}
+
 ?>

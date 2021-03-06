@@ -24,7 +24,7 @@
 <div class="coInputSeparator"></div>
 <div class="coInputMainBlock">
 	<?php 
-			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			$show_help_option = user_config_option('show_context_help'); 
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_print_report_context_help', true, logged_user()->getId()))) {?>
 			<div id="printReportPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
 				<?php render_context_help($this, 'chelp time panel print report','print_report'); ?>
@@ -50,8 +50,8 @@
 			if (array_var($report_data, "date_type") == 6) {
 				//echo var_dump($_SESSION); die();
 				$style = "";
-		       	$st = DateTimeValueLib::dateFromFormatAndString(user_config_option('date_format', 'd/m/Y'), array_var($report_data, 'start_value'));
-		       	$et = DateTimeValueLib::dateFromFormatAndString(user_config_option('date_format', 'd/m/Y'), array_var($report_data, 'end_value'));
+		       	$st = DateTimeValueLib::dateFromFormatAndString(user_config_option('date_format'), array_var($report_data, 'start_value'));
+		       	$et = DateTimeValueLib::dateFromFormatAndString(user_config_option('date_format'), array_var($report_data, 'end_value'));
 			} else {
 				$style = 'display:none;';
 				$st = DateTimeValueLib::now();

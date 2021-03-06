@@ -259,26 +259,6 @@ og.showAddDocumentDialog = function(genid){
 	var form = Ext.getDom("fck" + genid);
 	var commentsRequired = Ext.getDom(genid + "commentsRequired").value == 1;
 	var config = {};
-	config.genid = genid;
-	config.title = lang('save');
-	config.height = 180;
-
-	config.dialogItems = [];
-	if (form.rename || !form['file[id]'].value){
-		config.dialogItems.push({xtype: 'textfield', name: 'title', value: form['file[name]'].value, id: genid + 'title', fieldLabel: lang('choose a filename'), allowBlank:false, blankText: lang('this field is required')});
-		config.height += 40;
-	}
-	config.dialogItems.push({xtype: 'textarea', height:80, width:250, name: 'comment', id: genid + 'comment', fieldLabel: lang('comment'), allowBlank: (commentsRequired?'false':'true'), blankText: lang('this field is required')});
-	if (form['file[id]'].value && form.rename){
-		config.height += 40;
-		config.dialogItems.push({
-			xtype: 'checkbox',
-			checked: false,
-			name: 'new_file', 
-			id: genid + 'new_file', 
-			fieldLabel: lang('save as a new document')
-		});
-	}
 	
 	config.ok_fn = function(){
 		var form = Ext.getDom("fck" + genid);
@@ -308,6 +288,33 @@ og.showAddDocumentDialog = function(genid){
 	   		});
 		}
 	};
+	
+	if (!commentsRequired && !form.rename && form['file[id]'].value) {
+		// if comments are not required and not renaming doc and not a new doc, just save
+		config.ok_fn();
+		return;
+	}
+	
+	config.genid = genid;
+	config.title = lang('save');
+	config.height = 180;
+
+	config.dialogItems = [];
+	if (form.rename || !form['file[id]'].value){
+		config.dialogItems.push({xtype: 'textfield', name: 'title', value: form['file[name]'].value, id: genid + 'title', fieldLabel: lang('choose a filename'), allowBlank:false, blankText: lang('this field is required')});
+		config.height += 40;
+	}
+	config.dialogItems.push({xtype: 'textarea', height:80, width:250, name: 'comment', id: genid + 'comment', fieldLabel: lang('comment'), allowBlank: (commentsRequired?'false':'true'), blankText: lang('this field is required')});
+	if (form['file[id]'].value && form.rename){
+		config.height += 40;
+		config.dialogItems.push({
+			xtype: 'checkbox',
+			checked: false,
+			name: 'new_file', 
+			id: genid + 'new_file', 
+			fieldLabel: lang('save as a new document')
+		});
+	}
 
 	og.ExtendedDialog.show(config);
 	setTimeout(function() {

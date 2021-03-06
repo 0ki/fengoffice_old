@@ -409,7 +409,7 @@
   function pick_date_widget2($name, $value = null, $genid = null, $tabindex = null, $display_date_info = true) {
   	require_javascript('og/DateField.js');
   	
-  	$date_format = user_config_option('date_format', 'd/m/Y');
+  	$date_format = user_config_option('date_format');
   	if ($genid == null) $genid = gen_id();
   	$dateValue = '';
   	if ($value instanceOf DateTimeValue){

@@ -151,12 +151,12 @@ class ObjectController extends ApplicationController {
 						if(is_array($value)){
 							$newValues = array();
 							foreach ($value as $val) {
-								$dtv = DateTimeValueLib::dateFromFormatAndString(user_config_option('date_format', 'd/m/Y'), $val);
+								$dtv = DateTimeValueLib::dateFromFormatAndString(user_config_option('date_format'), $val);
 								$newValues[] = $dtv->format("Y-m-d H:i:s");
 							}
 							$value = $newValues;
 						} else {
-							$dtv = DateTimeValueLib::dateFromFormatAndString(user_config_option('date_format', 'd/m/Y'), $value);
+							$dtv = DateTimeValueLib::dateFromFormatAndString(user_config_option('date_format'), $value);
 							$value = $dtv->format("Y-m-d H:i:s");
 						}
 					}

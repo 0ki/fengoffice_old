@@ -12,6 +12,8 @@ INSERT INTO `<?php echo $table_prefix ?>user_ws_config_options` (`category_name`
  ('mails panel', 'view deleted accounts emails', '1', 'BoolConfigHandler', '0', '0', NULL),
  ('mails panel', 'draft_autosave_timeout', '60', 'IntegerConfigHandler', '0', '0', NULL),
  ('mails panel', 'attach_docs_content', '0', 'BoolConfigHandler', '0', '0', NULL),
+ ('mails panel', 'email_polling', '0', 'IntegerConfigHandler', '1', '0', NULL),
+ ('mails panel', 'show_unread_on_title', '0', 'BoolConfigHandler', '1', '0', NULL),
  ('general', 'amount_objects_to_show', '5', 'IntegerConfigHandler', '0', '0', NULL),
  ('general', 'last_mail_format', 'plain', 'StringConfigHandler', '1', '0', NULL),
  ('dashboard', 'show_two_weeks_calendar', '1', 'BoolConfigHandler', '0', '0', NULL)
@@ -38,7 +40,7 @@ CREATE TABLE `<?php echo $table_prefix ?>template_parameters` (
 CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>template_object_properties` (
 `template_id` INT( 10 ) NOT NULL ,
 `object_id` INT( 10 ) NOT NULL ,
-`object_manager` varchar(255) NOT NULL,
+`object_manager` varchar(50) NOT NULL,
 `property` VARCHAR( 255 ) NOT NULL ,
 `value` TEXT NOT NULL ,
 PRIMARY KEY ( `template_id` , `object_id` ,`object_manager`, `property` )
@@ -78,7 +80,8 @@ CREATE TABLE `<?php echo $table_prefix ?>gs_layoutstyles` (
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 
 INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
- ('general', 'ask_administration_autentification', 0, 'BoolConfigHandler', 0, 0, NULL)
+ ('general', 'ask_administration_autentification', 0, 'BoolConfigHandler', 0, 0, NULL),
+ ('mailing', 'smtp_address', '', 'StringConfigHandler', 0, 0, '')
 ON DUPLICATE KEY UPDATE id=id;
 
 ALTER TABLE `<?php echo $table_prefix ?>mail_accounts`
@@ -201,3 +204,5 @@ UPDATE `<?php echo $table_prefix ?>users` SET `can_manage_time` = '1';
 INSERT INTO `<?php echo $table_prefix ?>cron_events` (`name`, `recursive`, `delay`, `is_system`, `enabled`, `date`) VALUES
 	('delete_mails_from_server', '1', '1440', '1', '1', '0000-00-00 00:00:00')
 ON DUPLICATE KEY UPDATE id=id;
+
+DELETE FROM `<?php echo $table_prefix ?>cron_events` WHERE `name` = 'backup';

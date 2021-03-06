@@ -23,7 +23,7 @@ og.EmailCombo = Ext.extend(og.CSVCombo, {
 					if (forceAll) {
 						this.store.clearFilter();
 					} else {
-						rexp = new RegExp("^" + Ext.escapeRe(q) + "|\\s" + Ext.escapeRe(q) + "|\\s&lt;" + Ext.escapeRe(q), 'i');
+						rexp = new RegExp("^" + Ext.escapeRe(q) + "|\\s" + Ext.escapeRe(q) + "|\\s<" + Ext.escapeRe(q), 'i');
 						this.store.filter(this.displayField, rexp);
 					}
 					this.onLoad();

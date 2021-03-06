@@ -281,7 +281,7 @@ addLangs({
 	'write' : 'Write',
 	'write new mail' : 'Write E-Mail',
 	'email': 'Email',
-	'email tab': 'Email (BETA)',
+	'email tab': 'Email',
 	'weblink': 'Web link',
 	'webpage': 'Web link',
 	'task': 'Task',

@@ -515,7 +515,7 @@ class ReportingController extends ApplicationController {
 									$newCondition->setValue(array_key_exists('value', $condition));
 								}else if($condition['field_type'] == 'date'){
 									if ($condValue != '') {
-										$dtFromWidget = DateTimeValueLib::dateFromFormatAndString(user_config_option('date_format', 'd/m/Y'), $condValue);
+										$dtFromWidget = DateTimeValueLib::dateFromFormatAndString(user_config_option('date_format'), $condValue);
 										$newCondition->setValue(date("m/d/Y", $dtFromWidget->getTimestamp()));
 									}
 								}else{
@@ -684,7 +684,7 @@ class ReportingController extends ApplicationController {
 					}else if($condition['field_type'] == 'date'){
 						if ($condition['value'] == '') $newCondition->setValue('');
 						else {
-							$dtFromWidget = DateTimeValueLib::dateFromFormatAndString(user_config_option('date_format', 'd/m/Y'), $condition['value']);
+							$dtFromWidget = DateTimeValueLib::dateFromFormatAndString(user_config_option('date_format'), $condition['value']);
 							$newCondition->setValue(date("m/d/Y", $dtFromWidget->getTimestamp()));
 						}
 					}else{

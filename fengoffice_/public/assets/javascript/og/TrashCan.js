@@ -289,9 +289,11 @@ og.TrashCan = function() {
 	og.TrashCan.superclass.constructor.call(this, {
 		/*enableDrag: true,
 		ddGroup : 'WorkspaceDD',*/
+		id: 'trash-can',
 		store: this.store,
 		layout: 'fit',
 		autoExpandColumn: 'name',
+		stateful: og.rememberGUIState,
 		cm: cm,
 		stripeRows: true,
 		closable: true,

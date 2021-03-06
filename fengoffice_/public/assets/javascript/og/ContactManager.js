@@ -516,6 +516,7 @@ og.ContactManager = function() {
         cm: cm,
         enableDrag: true,
 		ddGroup: 'WorkspaceDD',
+		stateful: og.rememberGUIState,
         closable: true,
 		stripeRows: true,
 		id: 'contact-manager',

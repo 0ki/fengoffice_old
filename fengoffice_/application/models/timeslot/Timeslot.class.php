@@ -433,7 +433,7 @@ class Timeslot extends BaseTimeslot {
 		$lastUpdated = '';
 		$lastUpdatedBy = '';
 		if ($this->getUpdatedOn()->getTimestamp() != $this->getCreatedOn()->getTimestamp()) {
-			$lastUpdated = $this->getUpdatedOn()->format(user_config_option('date format', 'd/m/Y'));
+			$lastUpdated = $this->getUpdatedOn()->format(user_config_option('date format'));
 			$lastUpdatedBy = $this->getUpdatedByDisplayName();
 		}
 		

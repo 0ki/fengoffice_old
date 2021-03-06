@@ -6,7 +6,7 @@ TODO:
 
 /**
  * Author: Ignacio de Soto <ignacio.desoto@opengoo.org>
- * (c) 2008
+ * (c) 2008, 2009
  */
 
 og.GooPlayer = function(config) {
@@ -551,32 +551,35 @@ Ext.extend(og.GooPlayer, Ext.Panel, {
 		og.openLink(og.getUrl('files', 'download_file', {id: id}), {
 			preventPanelLoad: true,
 			scope: this,
-			onSuccess: function(data) {
-				this.clearPlaylist();
-				var track = og.xmlFetchTag(data, 'track');
-				var count = 0;
-				while (track.found) {
-					var location = og.xmlFetchTag(track.value, 'location').value;
-					var artist = og.xmlFetchTag(track.value, 'creator').value;
-					var album = og.xmlFetchTag(track.value, 'album').value;
-					var song = og.xmlFetchTag(track.value, 'title').value;
-					var duration = og.xmlFetchTag(track.value, 'duration').value;
-					var num = og.xmlFetchTag(track.value, 'trackNum').value;
-					this.queueTrack([song, artist, album, num, '', duration, location]);
-					track = og.xmlFetchTag(track.rest, 'track');
-					count++;
-				}
-				if (count == 0) {
-					og.msg(lang("error"), lang("file has no valid songs"));
-				} else if (autostart) {
-					this.start();
+			callback: function(success, data) {
+				try {
+					this.clearPlaylist();
+					var track = og.xmlFetchTag(data, 'track');
+					var count = 0;
+					while (track.found) {
+						var location = og.xmlFetchTag(track.value, 'location').value;
+						var artist = og.xmlFetchTag(track.value, 'creator').value;
+						var album = og.xmlFetchTag(track.value, 'album').value;
+						var song = og.xmlFetchTag(track.value, 'title').value;
+						var duration = og.xmlFetchTag(track.value, 'duration').value;
+						var num = og.xmlFetchTag(track.value, 'trackNum').value;
+						this.queueTrack([song, artist, album, num, '', duration, location]);
+						track = og.xmlFetchTag(track.rest, 'track');
+						count++;
+					}
+					if (count == 0) {
+						og.msg(lang("error"), lang("file has no valid songs"));
+					} else if (autostart) {
+						this.start();
+					}
+				} catch (e) {
+					og.err(lang("file has no valid songs"));
 				}
 			}
 		});
 	},
 	
 	openPlaylistFromFile: function() {
-		// TODO
 		og.ObjectPicker.show(function(objs) {
 				if (objs.length < 1) return;
 				if (objs[0].data.manager != 'ProjectFiles') {

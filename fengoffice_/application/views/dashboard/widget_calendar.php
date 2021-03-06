@@ -1,5 +1,5 @@
 <?php
-	$show_help_option = user_config_option('show_context_help', 'until_close'); 
+	$show_help_option = user_config_option('show_context_help'); 
 	if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_calendar_widget_context_help', true, logged_user()->getId()))) {
 		render_context_help($this, 'chelp calendar widget', 'calendar_widget');
 	}
@@ -23,10 +23,15 @@
 	$currentmonth = $today->getMonth();
 	$currentyear = $today->getYear();
 	
+	$user_comp_filter = user_config_option('pending tasks widget assigned to filter');
+	$exploded = explode(":", $user_comp_filter);
+	$user_filter_id = array_var($exploded, 1);
+	$user_filter = $user_filter_id > 0 ? Users::findById($user_filter_id) : null;
+	
 	$date_start = new DateTimeValue(mktime(0, 0, 0, $currentmonth, $startday, $currentyear)); 
 	$date_end = new DateTimeValue(mktime(0, 0, 0, $currentmonth, $endday, $currentyear)); 
-	$milestones = ProjectMilestones::getRangeMilestonesByUser($date_start, $date_end, logged_user(), $tags, active_project());
-	$tmp_tasks = ProjectTasks::getRangeTasksByUser($date_start,$date_end,logged_user(), $tags, active_project());
+	$milestones = ProjectMilestones::getRangeMilestonesByUser($date_start, $date_end, $user_filter, $tags, active_project());
+	$tmp_tasks = ProjectTasks::getRangeTasksByUser($date_start, $date_end, $user_filter, $tags, active_project());
 	$tasks = array();
 	if($tmp_tasks) {
 		foreach ($tmp_tasks as $task) {
@@ -149,7 +154,7 @@
 			}
 			$loc = Localization::instance();
 			
-			$start_value = $dtv->format(user_config_option('date_format', 'd/m/Y'));
+			$start_value = $dtv->format(user_config_option('date_format'));
 			$popupTitle = lang('add event');
 			$output .= "><div style='z-index:0; min-height:100px; height:100%;cursor:pointer' onclick=\"og.EventPopUp.show(null, {caller:'overview-panel', day:'".$dtv->getDay()."', month:'".$dtv->getMonth()."', year:'".$dtv->getYear()."', type_id:1, hour:'9', minute:'0', durationhour:1, durationmin:0, start_value: '$start_value', start_time:'9:00', title:'".format_datetime($dtv, 'l, j F', logged_user()->getTimezone()) ."', view: 'week', title: '$popupTitle', time_format: '$timeformat', hide_calendar_toolbar: 0},'');\") >
 			<div class='$daytitle' style='text-align:right'>";

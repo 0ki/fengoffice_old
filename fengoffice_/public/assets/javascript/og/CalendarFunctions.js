@@ -8,10 +8,16 @@
 	var cant_tips = 0;
 	var tips_array = [];
 	
+	og.currentHourLineTOut = null;
 	og.drawCurrentHourLine = function(d, pre) {
 		if (cal_actual_view == 'viewweek' && pre == 'w_' || cal_actual_view == 'viewdate' && pre == 'd_') {
-			var h = og.currentTime.format('H');
-			var m = og.currentTime.format('i');
+			if (!og.startLineTime) og.startLineTime = new Date();
+			var now = new Date();
+			var diff = now.getTime() - og.startLineTime.getTime();
+			var date = new Date();
+			date.setTime(og.startLocaleTime.getTime() + diff);
+			var h = date.format('H');
+			var m = date.format('i');
 			var cell = h*2 + (m > 30 ? 1 : 0);
 			cell_id = 'h' + d + '_' + cell;
 			
@@ -23,17 +29,17 @@
 			old_line = Ext.get(pre+"currentHourLine");
 			if (old_line) old_line.remove();
 			
-			var title = og.currentTime.format(og.timeFormat24 ? 'G:i' : 'g:i A');
+			var title = date.format(og.timeFormat24 ? 'G:i' : 'g:i A');
 			var new_top = cell.getTop(true) + cell.getHeight() * top / 100;
 			var cant_d = pre == 'w_' ? 7 : 1;
 			var html = '<div id="'+pre+'currentHourLine" title="'+title+'" style="height:2px; z-index:200; position:absolute; top:'+ new_top +'px; left:'+ (d*100/cant_d) +'%; border-top:2px solid #B95000; width:'+(100/cant_d)+'%; opacity:0.7; filter:alpha(opacity=70);"></div>';
 			Ext.get("eventowner").insertHtml('afterBegin', html);
 			
 			var tout = 60*1000;
-			setTimeout('og.drawCurrentHourLine('+d+', "'+pre+'")', tout);
-			
-			var millis = og.currentTime.getTime();
-			og.currentTime.setTime(millis + tout);
+			if (og.currentHourLineTOut) clearTimeout(og.currentHourLineTOut);
+			og.currentHourLineTOut = setTimeout('og.drawCurrentHourLine('+d+', "'+pre+'")', tout);
+		} else {
+			og.currentHourLineTOut = null;
 		}
 	}
 	
@@ -155,7 +161,6 @@
 							this.config.dragData.hour = Math.floor(str_temp[1] / 2);
 							this.config.dragData.min = (str_temp[1] % 2 == 0 ? 0 : 30);
 						}
-						
 						this.config.fn.apply(this.config.scope || window, [this, this.config.dragData]);
 					} else {
 						og.err('Invalid grid cell');

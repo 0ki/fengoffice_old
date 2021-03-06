@@ -20,7 +20,7 @@
 			$companies_array[] = $company->getArrayInfo();
 ?>
 <div class="timePanelContextHelp"><?php	
-	$show_help_option = user_config_option('show_context_help', 'until_close'); 
+	$show_help_option = user_config_option('show_context_help'); 
 	if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_time_context_help', true, logged_user()->getId()))) {
 		render_context_help($this, 'chelp time panel', 'time');
 	}
@@ -40,7 +40,7 @@
 </td><td class="coViewTopRight">&nbsp;&nbsp;</td></tr>
 
 <?php
-	$show_help_option = user_config_option('show_context_help', 'until_close'); 
+	$show_help_option = user_config_option('show_context_help'); 
 	if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_active_tasks_context_help', true, logged_user()->getId()))) {	
 		echo"<tr><td colspan=2 class=\"coViewBody\" style=\"background-color:white;padding:0px;\">"; 
 		render_context_help($this, 'chelp active tasks panel', 'active_tasks');
@@ -130,7 +130,7 @@
 	<td class="coViewRight">&nbsp;&nbsp;</td>
 </tr>
 <?php
-	$show_help_option = user_config_option('show_context_help', 'until_close'); 
+	$show_help_option = user_config_option('show_context_help'); 
 	if ($show_help_option == 'always' || ($show_help_option == 'until_close' && (user_config_option('show_general_timeslots_context_help', true, logged_user()->getId())))) {	
 		echo"<tr><td colspan=2>"; 
 		render_context_help($this, 'chelp general timeslots panel', 'general_timeslots');

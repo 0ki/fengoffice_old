@@ -60,7 +60,7 @@
 <div class="coInputMainBlock">
 	
 		<?php 
-			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			$show_help_option = user_config_option('show_context_help'); 
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_milestone_context_help', true, logged_user()->getId()))) {?>
 			<div id="milestonePanelContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp add milestone','add_milestone'); ?>
@@ -74,7 +74,7 @@
 	<div id="<?php echo $genid ?>add_milestone_select_workspace_div" style="display:none">
 	<fieldset>
 	<?php 
-			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			$show_help_option = user_config_option('show_context_help'); 
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_milestone_workspace_context_help', true, logged_user()->getId()))) {?>
 			<div id="milestonePanelContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp add milestone workspace','add_milestone_workspace'); ?>
@@ -88,7 +88,7 @@
 	<div id="<?php echo $genid ?>add_milestone_tags_div" style="display:none">
 	<fieldset>
 	<?php 
-			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			$show_help_option = user_config_option('show_context_help'); 
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_milestone_tags_context_help', true, logged_user()->getId()))) {?>
 			<div id="milestonePanelContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp add milestone tags', 'add_milestone_tags'); ?>
@@ -103,7 +103,7 @@
 	<div id="<?php echo $genid ?>add_milestone_description_div" style="display:none">
 	<fieldset>
 		<?php 
-			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			$show_help_option = user_config_option('show_context_help'); 
 						if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_milestone_description_context_help', true, logged_user()->getId()))) {?>
 			<div id="milestonePanelContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp add milestone description','add_milestone_description'); ?>
@@ -135,7 +135,7 @@
 	<div id="<?php echo $genid ?>add_reminders_div" style="display:none">
 		<fieldset>
 		<?php 
-			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			$show_help_option = user_config_option('show_context_help'); 
 						if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_milestone_reminders_context_help', true, logged_user()->getId()))) {?>
 			<div id="milestonePanelContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp add milestone reminders','add_milestone_reminders'); ?>
@@ -156,7 +156,7 @@
 	<div id='<?php echo $genid ?>add_custom_properties_div' style="display:none">
 	<fieldset>
 	<?php 
-			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			$show_help_option = user_config_option('show_context_help'); 
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_milestone_custom_properties_context_help', true, logged_user()->getId()))) {?>
 			<div id="milestonePanelContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp add milestone custom properties','add_milestone_custom_properties'); ?>
@@ -171,7 +171,7 @@
 	<div id="<?php echo $genid ?>add_subscribers_div" style="display:none">
 		<fieldset>
 		<?php 
-			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			$show_help_option = user_config_option('show_context_help'); 
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_milestone_subscribers_context_help', true, logged_user()->getId()))) {?>
 			<div id="milestonePanelContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp add milestone subscribers','add_milestone_subscribers'); ?>
@@ -209,7 +209,7 @@
 	<div style="display:none" id="<?php echo $genid ?>add_linked_objects_div">
 	<fieldset>
 		<?php 
-			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			$show_help_option = user_config_option('show_context_help'); 
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_milestone_linked_object_context_help', true, logged_user()->getId()))) {?>
 			<div id="milestonePanelContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp add milestone linked object','add_milestone_linked_object'); ?>

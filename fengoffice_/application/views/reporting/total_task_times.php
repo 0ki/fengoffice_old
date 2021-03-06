@@ -60,7 +60,7 @@
 	
 	$sectionDepth = 0;
 	$totCols = 6;
-	$date_format = user_config_option('date_format', 'd/m/Y');
+	$date_format = user_config_option('date_format');
 	
 ?>
 <?php if ($start_time) { ?><span style="font-weight:bold"><?php echo lang('from')?></span>:&nbsp;<?php echo format_datetime($start_time, $date_format) ?><?php } // if ?>

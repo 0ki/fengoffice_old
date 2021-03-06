@@ -300,6 +300,7 @@ class MilestoneController extends ApplicationController {
 			if (array_var($milestone_data, 'due_date_value') != ''){
 				$milestone_data['due_date'] = getDateValue(array_var($milestone_data, 'due_date_value'));
 			} else {
+				$now = DateTimeValueLib::now();
 				$milestone_data['due_date'] = DateTimeValueLib::make(0, 0, 0, $now->getMonth(), $now->getDay(), $now->getYear());
 			}
 			
@@ -610,7 +611,7 @@ class MilestoneController extends ApplicationController {
 		$ws_id = array_var($_GET, 'ws_id');
 		$workspace = Projects::findById($ws_id);
 		if ($workspace instanceof Project) {
-			$milestones = ProjectMilestones::getProjectMilestones($workspace, null, 'ASC', null, null, null, null, true);
+			$milestones = ProjectMilestones::getMilestonesRelevantToWorkspace($workspace);
 			$ms = array();
 			foreach ($milestones as $milestone) {
 				$ms[] = array(

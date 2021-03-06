@@ -18,7 +18,7 @@ class TemplateController extends ApplicationController {
 	}
 
 	function add() {
-		if (!logged_user()->getCanManageTemplates()) {
+		if (!can_manage_templates(logged_user())) {
 			flash_error(lang("no access permissions"));
 			ajx_current("empty");
 			return;
@@ -121,6 +121,11 @@ class TemplateController extends ApplicationController {
 	}
 
 	function edit() {
+		if (!can_manage_templates(logged_user())) {
+			flash_error(lang("no access permissions"));
+			ajx_current("empty");
+			return;
+		}
 		$this->setTemplate('add');
 
 		$cotemplate = COTemplates::findById(get_id());
@@ -228,6 +233,11 @@ class TemplateController extends ApplicationController {
 	}
 
 	function view() {
+		if (!can_manage_templates(logged_user())) {
+			flash_error(lang("no access permissions"));
+			ajx_current("empty");
+			return;
+		}
 		$cotemplate = COTemplates::findById(get_id());
 		if(!($cotemplate instanceof COTemplate)) {
 			flash_error(lang('template dnx'));
@@ -246,6 +256,11 @@ class TemplateController extends ApplicationController {
 	}
 
 	function delete() {
+		if (!can_manage_templates(logged_user())) {
+			flash_error(lang("no access permissions"));
+			ajx_current("empty");
+			return;
+		}
 		ajx_current("empty");
 		$cotemplate = COTemplates::findById(get_id());
 		if(!($cotemplate instanceof COTemplate)) {
@@ -276,6 +291,11 @@ class TemplateController extends ApplicationController {
 	}
 
 	function add_to() {
+		if (!can_manage_templates(logged_user())) {
+			flash_error(lang("no access permissions"));
+			ajx_current("empty");
+			return;
+		}
 		$manager = array_var($_GET, 'manager');
 		$id = get_id();
 		$object = get_object_by_manager_and_id($id, $manager);
@@ -371,7 +391,7 @@ class TemplateController extends ApplicationController {
 						$dateNum = (int) substr($value, strpos($value,$operator), strlen($value) - 2);
 						
 						$date = $parameterValues[$dateParam];
-						$date = DateTimeValueLib::dateFromFormatAndString(user_config_option('date_format', 'd/m/Y'), $date);
+						$date = DateTimeValueLib::dateFromFormatAndString(user_config_option('date_format'), $date);
 						$value = $date->add($dateUnit, $dateNum);
 					}
 				}
@@ -402,6 +422,11 @@ class TemplateController extends ApplicationController {
 	}
 
 	function assign_to_ws() {
+		if (!can_manage_templates(logged_user())) {
+			flash_error(lang("no access permissions"));
+			ajx_current("empty");
+			return;
+		}
 		$template_id = get_id();
 		$cotemplate = COTemplates::findById($template_id);
 		if (!$cotemplate instanceof COTemplate) {

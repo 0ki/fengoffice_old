@@ -164,4 +164,6 @@
 	'deleted notification email' => 'Le message \'{0}\' a été placé dans la corbeille',
 	'deleted notification email desc' => 'Le message \'{0}\' a été placé dans la corbeille par {1}.',
 	'mail format options' => 'Format',
+	'modified notification email' => 'Message \'{0}\' modifié',
+	'modified notification email desc' => 'Message \'{0}\' modifié par {1}.',
 ); ?>

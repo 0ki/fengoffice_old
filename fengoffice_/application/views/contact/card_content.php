@@ -15,7 +15,7 @@
       <div><span style="font-weight:bold"><?php echo lang('birthday') ?>:</span> 
       <?php if ($contact->getOBirthday() instanceof DateTimeValue) {
       		$bday = new DateTimeValue($contact->getOBirthday()->getTimestamp() - logged_user()->getTimezone() * 3600);
-      		echo clean(format_datetime($bday, user_config_option('date_format', 'd/m/Y')));
+      		echo clean(format_datetime($bday, user_config_option('date_format')));
       } ?>
       </div>
       <?php } ?>

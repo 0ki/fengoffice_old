@@ -9,7 +9,7 @@
  * @author    Damian Alejandro Fernandez Sosa <damlists@cnba.uba.ar>
  * @copyright 1997-2003 The PHP Group
  * @license   PHP license
- * @version   CVS: $Id: IMAPProtocol.php,v 1.2 2009/03/30 22:56:18 idesoto Exp $
+ * @version   CVS: $Id: IMAPProtocol.php,v 1.2.4.1 2009/07/24 19:46:31 alvarotm01 Exp $
  * @link      http://pear.php.net/package/Net_IMAP
  */
 
@@ -2572,9 +2572,8 @@ class Net_IMAPProtocol
         }
         switch ($str[0]) {
         case '{':
-            if ($posClosingBraces = $this->_getClosingBracesPos($str, 
-                                                                '{', 
-                                                                '}') == false) {
+        	$posClosingBraces = $this->_getClosingBracesPos($str, '{', '}');
+            if ($posClosingBraces == false) {
                 $this->_protError('_getClosingBracesPos() error!!!', 
                                   __LINE__, 
                                   __FILE__);

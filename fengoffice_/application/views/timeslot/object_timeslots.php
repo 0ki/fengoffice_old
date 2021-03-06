@@ -34,7 +34,11 @@
 ?>
 			<tr class="timeslot <?php echo $counter % 2 ? 'even' : 'odd'; echo $timeslot->isOpen() ? ' openTimeslot' : '' ?>" id="timeslot<?php echo $timeslot->getId() ?>">
 			<td style="padding-right:10px"><b><?php echo $counter ?>.</b></td>
-			<td style="padding-right:10px"><b><a class="internalLink" href="<?php echo $timeslot->getUser()->getCardUrl()?>" title=" <?php echo lang('user card of', clean($timeslot->getUser()->getDisplayName())) ?>"><?php echo clean($timeslot->getUser()->getDisplayName()) ?></a></b></td>
+			<?php if ($timeslot->getUser() instanceof User) { ?>
+				<td style="padding-right:10px"><b><a class="internalLink" href="<?php echo $timeslot->getUser()->getCardUrl()?>" title=" <?php echo lang('user card of', clean($timeslot->getUser()->getDisplayName())) ?>"><?php echo clean($timeslot->getUser()->getDisplayName()) ?></a></b></td>
+			<?php } else {?>
+				<td style="padding-right:10px"><b><?php echo lang("n/a") ?></b></td>
+			<?php } ?>
 			<td style="padding-right:10px"><?php echo format_datetime($timeslot->getStartTime(), 'M d, H:i')?>
 				&nbsp;-&nbsp;<?php echo $timeslot->isOpen() ? ('<b>' . lang('work in progress') . '</b>') : 
 				( (format_date($timeslot->getEndTime()) != format_date($timeslot->getStartTime()))?  format_datetime($timeslot->getEndTime(), 'M d, H:i'): format_time($timeslot->getEndTime())) ?></td>

@@ -247,6 +247,26 @@ class ProjectMilestones extends BaseProjectMilestones {
 		return $result;
 	} // getRangeMilestonesByUser
 
+	static function getMilestonesRelevantToWorkspace($workspace) {
+		if ($workspace instanceof Project) {
+			$pids = $workspace->getAllSubWorkspacesQuery(true, logged_user());
+			$additional_ws_cond = " OR " . self::getWorkspaceString($workspace->getParentIds());
+		} else {
+			$pids = logged_user()->getWorkspacesQuery();
+			$additional_ws_cond = "";
+		}
+		$projectstr = " AND (" . self::getWorkspaceString($pids) . $additional_ws_cond . ")";
+		$pendingstr = " AND `completed_on` = " . DB::escape(EMPTY_DATETIME) . " ";
+		$permissionstr = ' AND ( ' . permissions_sql_for_listings(ProjectMilestones::instance(), ACCESS_LEVEL_READ, logged_user()) . ') ';
+		
+		$conditions = array(' `is_template` = ' . DB::escape(false) . "$projectstr $pendingstr $permissionstr");
+		$milestones = ProjectMilestones::find(array(
+				'conditions' => $conditions,
+		));
+		if (!is_array($milestones)) $milestones = array();
+		return $milestones;
+	}
+	
 	static function getProjectMilestones($project = null, $order = null, $orderdir = 'DESC', $tag = null, $assigned_to_company = null, $assigned_to_user = null, $assigned_by_user = null, $pending = false, $is_template = false) {
 		// default
 		$order_by = '`due_date` ASC';

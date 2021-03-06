@@ -105,7 +105,7 @@ addLangs({
 	'queue this file': 'Mettre ce morceau en attente',
 	'must choose a file': 'Choisir un fichier',
 	'file has no valid songs': 'Le fichier choisi n\'est pas un fichier audio supporté',
-	'error': 'Erreur',
+	'error': 'Erreur ',
 	'success': 'Opération effectuée ',
 	'unexpected server response': 'Réponse du serveur inattendue',
 	'new tab': 'Nouvel onglet',
@@ -602,5 +602,6 @@ addLangs({
 	'tag selected events': 'Étiqueter les évènements sélectionnés',
 	'edit selected event': 'Editer l\'évènement sélectionné',
 	'apply milestone to subtasks': 'Appliquer le jalon aux sous-tâches',
-	'apply workspace to subtasks': 'Appliquer le contexte aux sous-tâches'
+	'apply workspace to subtasks': 'Appliquer le contexte aux sous-tâches',
+	'click here to download the csv file': 'Cliquez ici pour télécharger le fichier CSV.'
 });

@@ -79,6 +79,11 @@
   		else
   			self::delete(array('`group_id` = ?', $group_id));
   	}
+  	
+  	static function clearByUser(User $user) {
+		return self::delete(array('`user_id` = ?', $user->getId()));
+	} // clearByUser
+
 //    /**
 //    * Return all relation objects ( GroupUsers) for specific object
 //    *

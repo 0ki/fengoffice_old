@@ -75,7 +75,7 @@ addLangs({
 	'edit workspace': 'Editar el espacio seleccionado',
 	'company': 'Compañía',
 	'companies': 'Compañías',
-	'email tab': 'Correo (BETA)',
+	'email tab': 'Correo',
 	'email': 'Correo',
 	'checkin': 'Actualizar',
 	'checkout': 'Bloquear',

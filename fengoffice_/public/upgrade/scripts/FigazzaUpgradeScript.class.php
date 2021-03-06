@@ -1,7 +1,19 @@
 <?php
 
+class Env {
+	function isDebugging() {
+		return false;
+	}
+	function isDebuggingDB() {
+		return false;
+	}
+	function isDebuggingTime() {
+		return false;
+	}
+}
+
 /**
- * Figazza upgrade script will upgrade OpenGoo 1.4.2 to OpenGoo 1.5-RC
+ * Figazza upgrade script will upgrade OpenGoo 1.4.2 to OpenGoo 1.5
  *
  * @package ScriptUpgrader.scripts
  * @version 1.1
@@ -40,7 +52,7 @@ class FigazzaUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('1.4.2');
-		$this->setVersionTo('1.5-rc');
+		$this->setVersionTo('1.5');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -136,6 +148,20 @@ class FigazzaUpgradeScript extends ScriptUpgraderScript {
 				  ALTER TABLE `".TABLE_PREFIX."groups` ADD COLUMN `can_manage_time` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0;
 				";
 			}
+			if (version_compare($installed_version, "1.5-rc") < 0) {
+				$upgrade_script .= "
+					INSERT INTO `".TABLE_PREFIX."config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
+						('mailing', 'smtp_address', '', 'StringConfigHandler', 0, 0, '')
+					ON DUPLICATE KEY UPDATE id=id;
+				";
+			}
+			$upgrade_script .= "
+				DELETE FROM `".TABLE_PREFIX."cron_events` WHERE `name` = 'backup';
+				INSERT INTO `".TABLE_PREFIX."user_ws_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES 
+					('mails panel', 'email_polling', '0', 'IntegerConfigHandler', '1', '0', NULL),
+					('mails panel', 'show_unread_on_title', '0', 'BoolConfigHandler', '1', '0', NULL)
+				ON DUPLICATE KEY UPDATE id=id;
+			";
 		}
 		
 		$upgrade_script .= "
@@ -190,11 +216,25 @@ class FigazzaUpgradeScript extends ScriptUpgraderScript {
 		// UPGRADE PUBLIC FILES
 		if (version_compare($installed_version, $this->getVersionFrom()) <= 0) {
 			// load FileRepository classes
+			include_once ROOT . "/environment/library/database/adapters/AbstractDBAdapter.class.php";
+			include_once ROOT . "/environment/library/database/DB.class.php";
+			include_once ROOT . "/environment/library/database/DBResult.class.php";
+			include_once ROOT . "/environment/classes/Inflector.class.php";
 			include_once ROOT . "/library/filerepository/FileRepository.class.php";
 			include_once ROOT . "/library/filerepository/errors/FileNotInRepositoryError.class.php";
 			include_once ROOT . "/library/filerepository/errors/FileRepositoryAddError.class.php";
 			include_once ROOT . "/library/filerepository/errors/FileRepositoryDeleteError.class.php";
 			include_once ROOT . "/library/filerepository/backend/FileRepository_Backend.class.php";
+			DB::connect(DB_ADAPTER, array(
+				'host'    => DB_HOST,
+				'user'    => DB_USER,
+				'pass'    => DB_PASS,
+				'name'    => DB_NAME,
+				'persist' => DB_PERSIST
+			)); // connect
+			if(defined('DB_CHARSET') && trim(DB_CHARSET)) {
+				DB::execute("SET NAMES ?", DB_CHARSET);
+			} // if
 			$res = mysql_query("SELECT `value` FROM `".TABLE_PREFIX."config_options` WHERE `name` = 'file_storage_adapter'");
 			$row = mysql_fetch_assoc($res);
 			$adapter = $row['value'];

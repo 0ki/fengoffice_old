@@ -115,6 +115,6 @@
 	'task cannot be instantiated more times' => 'La tâche ne peut être répétée de nouveau , c\'est la dernière répétition.',
 	'account already being checked' => 'Le compte a déjà été vérifié.',
 	'no files to compress' => 'Aucun fichier à compresser',
-	'cant modify subscribers' => 'Modification des souscripteurs impossible',
-	'this object must belong to a ws to modify its subscribers' => 'Cet objet doit appartenir à un contexte pour modifier les souscripteurs.',
+	'cant modify subscribers' => 'Modification des abonnés impossible',
+	'this object must belong to a ws to modify its subscribers' => 'Cet objet doit appartenir à un contexte pour modifier les abonnés.',
 ); ?>

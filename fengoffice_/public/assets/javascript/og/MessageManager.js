@@ -255,6 +255,7 @@ og.MessageManager = function() {
 		layout: 'fit',
 		cm: cm,
 		enableDrag: true,
+		stateful: og.rememberGUIState,
 		ddGroup: 'WorkspaceDD',
 		id: 'message-manager',
 		stripeRows: true,

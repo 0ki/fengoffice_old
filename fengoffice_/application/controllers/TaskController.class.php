@@ -1004,6 +1004,7 @@ class TaskController extends ApplicationController {
 				}
 				
 				$task->setFromAttributes($task_data);
+				
 				// Set assigned to
 				$assigned_to = explode(':', array_var($task_data, 'assigned_to', ''));
 				$company_id = array_var($assigned_to, 0, 0);

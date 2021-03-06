@@ -9,7 +9,7 @@
  * @author    Damian Alejandro Fernandez Sosa <damlists@cnba.uba.ar>
  * @copyright 1997-2003 The PHP Group
  * @license   PHP license
- * @version   CVS: $Id: IMAP.php,v 1.1.6.1 2009/07/16 14:57:20 alvarotm01 Exp $
+ * @version   CVS: $Id: IMAP.php,v 1.1.6.2 2009/07/24 18:36:41 idesoto Exp $
  * @link      http://pear.php.net/package/Net_IMAP
  */
 
@@ -450,12 +450,12 @@ class Net_IMAP extends Net_IMAPProtocol
 
         if (isset($ret['PARSED'])) {
             for ($i=0; $i<count($ret['PARSED']); $i++) {
-                $a                 = $ret['PARSED'][$i]['EXT']['ENVELOPE'];
-                $a['MSG_NUM']      = $ret["PARSED"][$i]['NRO'];
-                $a['UID']          = $ret["PARSED"][$i]['EXT']['UID'];
-                $a['FLAGS']        = $ret["PARSED"][$i]['EXT']['FLAGS'];
-                $a['INTERNALDATE'] = $ret["PARSED"][$i]['EXT']['INTERNALDATE'];
-                $a['SIZE']         = $ret["PARSED"][$i]['EXT']['RFC822.SIZE'];
+                $a                 = isset($ret['PARSED'][$i]['EXT']['ENVELOPE']) ? $ret['PARSED'][$i]['EXT']['ENVELOPE'] : null;
+                $a['MSG_NUM']      = isset($ret["PARSED"][$i]['NRO']) ? $ret["PARSED"][$i]['NRO'] : null;
+                $a['UID']          = isset($ret["PARSED"][$i]['EXT']['UID']) ? $ret["PARSED"][$i]['EXT']['UID'] : null;
+                $a['FLAGS']        = isset($ret["PARSED"][$i]['EXT']['FLAGS']) ? $ret["PARSED"][$i]['EXT']['FLAGS'] : null;
+                $a['INTERNALDATE'] = isset($ret["PARSED"][$i]['EXT']['INTERNALDATE']) ? $ret["PARSED"][$i]['EXT']['INTERNALDATE'] : null;
+                $a['SIZE']         = isset($ret["PARSED"][$i]['EXT']['RFC822.SIZE']) ? $ret["PARSED"][$i]['EXT']['RFC822.SIZE'] : null;
                 if (isset($ret['PARSED'][$i]['EXT']['BODY[HEADER.FIELDS (CONTENT-TYPE)]']['CONTENT'])) {
                     if (preg_match('/^content-type: (.*);/iU', $ret['PARSED'][$i]['EXT']['BODY[HEADER.FIELDS (CONTENT-TYPE)]']['CONTENT'], $matches)) {
                         $a['MIMETYPE'] = strtolower($matches[1]);

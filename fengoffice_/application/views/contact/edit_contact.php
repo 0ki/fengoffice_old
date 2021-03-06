@@ -58,7 +58,7 @@
 <div class="coInputSeparator"></div>
 <div class="coInputMainBlock">
 		<?php 
-			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			$show_help_option = user_config_option('show_context_help'); 
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_contact_context_help', true, logged_user()->getId())) {?>
 			<div id="contactPanelContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp add contact','add_contact'); ?>

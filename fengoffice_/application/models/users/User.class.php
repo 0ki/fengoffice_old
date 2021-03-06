@@ -1287,6 +1287,7 @@ class User extends BaseUser {
 
 		$this->deleteAvatar();
 		//$this->deletePersonalProject();
+		GroupUsers::clearByUser($this);
 		Contacts::updateUserIdOnUserDelete($this->getId());
 		ProjectUsers::clearByUser($this);
 		ObjectSubscriptions::clearByUser($this);
@@ -1344,7 +1345,8 @@ class User extends BaseUser {
 	}
 	
 	function getLocale() {
-		return user_config_option("localization", DEFAULT_LOCALIZATION, $this->getId());
+		$locale = user_config_option("localization", null, $this->getId());
+		return $locale ? $locale : DEFAULT_LOCALIZATION;
 	}
 	/**
 	 * Returns true if $user is logged user or if user is an administrator

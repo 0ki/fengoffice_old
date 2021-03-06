@@ -32,7 +32,7 @@ $task_list = $object;
 	<?php } // if ?>
 <?php } // if ?>
 		<?php 
-				$show_help_option = user_config_option('show_context_help', 'until_close');
+				$show_help_option = user_config_option('show_context_help');
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_list_task_context_help', true, logged_user()->getId()))) {?>
 					<div id="tasksCardContextHelp" class="contextHelpStyle">
 						<?php render_context_help($this, 'chelp task card','list_task'); ?>
@@ -176,7 +176,7 @@ $task_list = $object;
 		<?php echo DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($time_estimate * 60), 'hm', 60) ?></td></tr>
 <?php } ?>
 
-<?php if ($total_minutes > 0) {?>
+<?php if ($total_minutes > 0 && can_manage_time(logged_user())) {?>
 	<tr><td><div style="font-weight:bold"><?php echo lang('total time'). ':&nbsp;' ?></div></td><td>
 		<span style="font-size:120%;font-weight:bold;<?php echo ($time_estimate > 0 && $total_minutes > $time_estimate) ? 'color:#FF0000':'' ?>">
 			<?php echo DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($total_minutes * 60), 'hm', 60) ?>

@@ -13,28 +13,30 @@ require_javascript('og/EventPopUp.js');
 </script>
 
 <?php
-define('PX_HEIGHT',42);
-$year = isset($_GET['year']) ? $_GET['year'] : (isset($_SESSION['year']) ? $_SESSION['year'] : date('Y'));
-$month = isset($_GET['month']) ? $_GET['month'] : (isset($_SESSION['month']) ? $_SESSION['month'] : date('n'));
-$day = isset($_GET['day']) ? $_GET['day'] : (isset($_SESSION['day']) ? $_SESSION['day'] : date('j'));
+	define('PX_HEIGHT',42);
+	$year = isset($_GET['year']) ? $_GET['year'] : (isset($_SESSION['year']) ? $_SESSION['year'] : date('Y'));
+	$month = isset($_GET['month']) ? $_GET['month'] : (isset($_SESSION['month']) ? $_SESSION['month'] : date('n'));
+	$day = isset($_GET['day']) ? $_GET['day'] : (isset($_SESSION['day']) ? $_SESSION['day'] : date('j'));
+	
+	$_SESSION['year'] = $year;
+	$_SESSION['month'] = $month;
+	$_SESSION['day'] = $day;
+	
+	$user_filter = $userPreferences['user_filter'];
+	$status_filter = $userPreferences['status_filter'];
+	
+	$user = Users::findById(array('id' => $user_filter));
+	if ($user == null) $user = logged_user();
+	
+	$use_24_hours = user_config_option('time_format_use_24');
+	$date_format = user_config_option('date_format');
+	if($use_24_hours) $timeformat = 'G:i';
+	else $timeformat = 'g:i A';
+											
+	$tags = active_tag();
 
-$_SESSION['year'] = $year;
-$_SESSION['month'] = $month;
-$_SESSION['day'] = $day;
+	echo stylesheet_tag('event/week.css');
 
-$user_filter = $userPreferences['user_filter'];
-$status_filter = $userPreferences['status_filter'];
-
-$user = Users::findById(array('id' => $user_filter));
-if ($user == null) $user = logged_user();
-
-$use_24_hours = user_config_option('time_format_use_24');
-$date_format = user_config_option('date_format', 'd/m/Y');
-
-$tags = active_tag();	
-?>
-<?php echo stylesheet_tag('event/week.css') ?>
-<?php
 	if (user_config_option("start_monday")) {
 		$startday = $day - date("N", mktime(0, 0, 0, $month, $day, $year)) + 1; // beginning of the week, monday
 	} else {
@@ -48,6 +50,7 @@ $tags = active_tag();
 	$currentday = $today->format("j");
 	$currentmonth = $today->format("n");
 	$currentyear = $today->format("Y");
+	$drawHourLine = false;
 	
 	$lastday = date("t", mktime(0, 0, 0, $month, 1, $year)); // # of days in the month
 	
@@ -93,6 +96,7 @@ $tags = active_tag();
 
 		$today_style[$day_of_week] = '';
 		if($currentyear == $dates[$day_of_week]->getYear() && $currentmonth == $dates[$day_of_week]->getMonth() && $currentday == $dates[$day_of_week]->getday()) { // Today
+			$drawHourLine = true;
 			$today_style[$day_of_week] = 'background-color:#FFFF88;opacity:0.4;filter: alpha(opacity = 40);z-index=0;';
 		} else if($year == $year_aux && $month == $month_aux && $day == $day_of_month) { // Selected day
 			$today_style[$day_of_week] = 'background-color:#E4EEEE;opacity:0.4;filter: alpha(opacity = 40);z-index=0;';
@@ -680,7 +684,7 @@ onmouseup="og.showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->ge
 </div>
 
 <?php
-	$wdst = user_config_option('work_day_start_time', '09:00');
+	$wdst = user_config_option('work_day_start_time');
 	$h_m = explode(':', $wdst);
 	if (str_ends_with($wdst, 'PM')) {
 		$h_m[0] = ($h_m[0] + 12) % 24;
@@ -731,15 +735,17 @@ onmouseup="og.showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->ge
 		og.addDomEventHandler(window, 'resize', resizeGridContainer);
 	}
 	
+<?php if ($drawHourLine) { ?>
 	og.calendar_start_day = <?php echo user_config_option('start_monday') ? '1' : '0' ?>;
-	og.currentTime = new Date('<?php echo $today->format('m/d/Y H:i:s') ?>');
+	og.startLocaleTime = new Date('<?php echo $today->format('m/d/Y H:i:s') ?>');
+	og.startLineTime = null;
 	if (og.calendar_start_day == 1) {
-		var today_d = og.currentTime.format('N') - 1;
+		var today_d = og.startLocaleTime.format('N') - 1;
 	} else {
-		var today_d = og.currentTime.format('w');
+		var today_d = og.startLocaleTime.format('w');
 	}
 	og.drawCurrentHourLine(today_d, 'w_');
-	
+<?php } ?>
 	// init tooltips
 	Ext.QuickTips.init();
 </script>

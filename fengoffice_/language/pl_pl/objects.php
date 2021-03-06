@@ -81,4 +81,6 @@
 	'reporting' => 'Raporty',
 	'create document' => 'Utwórz dokumenty',
 	'create presentation' => 'Utwórz prezentacje',
+	'modify object subscribers' => 'Modyfikuj subskrybentów',
+	'subscription modified successfully' => 'Subskrybenci zmodyfikowani',
 ); ?>

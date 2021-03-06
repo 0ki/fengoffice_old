@@ -20,7 +20,7 @@
 					// dates are in standard format "Y-m-d H:i:s", must be formatted
 					if ($customProp->getType() == 'date') {
 						$dtv = DateTimeValueLib::dateFromFormatAndString("Y-m-d H:i:s", $cpv->getValue());
-						$value = $dtv->format(user_config_option('date_format', 'd/m/Y'));
+						$value = $dtv->format(user_config_option('date_format'));
 					} else {
 						$value = $cpv->getValue();
 					}

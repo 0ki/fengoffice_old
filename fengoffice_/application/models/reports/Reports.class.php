@@ -189,7 +189,7 @@ class Reports extends BaseReports {
 						if(isset($params[$condField->getId()])){
 							$value = $params[$condField->getId()];
 							if ($col_type == DATA_TYPE_DATE || $col_type == DATA_TYPE_DATETIME)
-							$dateFormat = user_config_option('date_format', 'd/m/Y');
+							$dateFormat = user_config_option('date_format');
 						}else{
 							$value = $condField->getValue();
 						}
@@ -225,7 +225,7 @@ class Reports extends BaseReports {
 					if(isset($params[$cp->getName()])){
 						$value = $params[$cp->getName()];
 						if ($cp->getType() == 'date')
-						$dateFormat = user_config_option('date_format', 'd/m/Y');
+						$dateFormat = user_config_option('date_format');
 					}else{
 						$value = $condCp->getValue();
 					}

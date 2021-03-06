@@ -163,4 +163,6 @@
 	'deleted notification email' => 'Email \'{0}\' enviado para lixeira',
 	'deleted notification email desc' => 'Email \'{0}\' enviado para lixeira por {1}.',
 	'mail format options' => 'Formato',
+	'modified notification email' => 'Email \'{0}\' foi modificado',
+	'modified notification email desc' => 'Email \'{0}\' foi modificado por {1}.',
 ); ?>

@@ -206,6 +206,7 @@ og.ReportingManager = function() {
         cm: cm,
         closable: true,
 		stripeRows: true,
+		stateful: og.rememberGUIState,
         style: "padding:7px",
         bbar: new og.PagingToolbar({
             pageSize: og.pageSize,

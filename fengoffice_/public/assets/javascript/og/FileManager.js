@@ -78,7 +78,7 @@ og.FileManager = function() {
 			classes += ' ico-webfile';
 		}
 		if (r.data.mimeType) {
-			var path = r.data.mimeType.replace(/\//g, "-").split("-");
+			var path = r.data.mimeType.replace(/[\/\+]/g, "-").split("-");
 			var acc = "";
 			for (var i=0; i < path.length; i++) {
 				acc += path[i];
@@ -147,13 +147,8 @@ og.FileManager = function() {
 		
 		if(r.data.ftype == 0){
 			if(og.showCheckoutNotification == 0){
-				if (Ext.isIE) {
-					actions += String.format('<a class="list-action ico-download" href="#" onclick="window.open(\'{0}\');" title="{1}" ' + actionStyle + '>&nbsp;</a>',
-						og.getUrl('files', 'download_file', {id: r.id}),lang('download'));
-				} else {
-					actions += String.format('<a class="list-action ico-download" href="#" onclick="location.href = \'{0}\'" title="{1}" ' + actionStyle + '>&nbsp;</a>',
-						og.getUrl('files', 'download_file', {id: r.id}),lang('download'));
-				}
+				actions += String.format('<a class="list-action ico-download" href="{0}" target="_self" title="{1}" ' + actionStyle + '>&nbsp;</a>',
+					og.getUrl('files', 'download_file', {id: r.id}),lang('download'));
 			}else{
 				actions += String.format('<a class="list-action ico-download" href="#" onclick="og.checkDownload(\'{0}\', \'{1}\', \'{2}\');" title="{3}" ' + actionStyle + '>&nbsp;</a>',
 				og.getUrl('files', 'download_file', {id: r.id}), r.data.checkedOutById, r.data.checkedOutByName, lang('download'));
@@ -429,6 +424,7 @@ og.FileManager = function() {
 		layout: 'fit',
 		cm: cm,
 		enableDrag: true,
+		stateful: og.rememberGUIState,
 		ddGroup: 'WorkspaceDD',
 		stripeRows: true,
 		closable: true,

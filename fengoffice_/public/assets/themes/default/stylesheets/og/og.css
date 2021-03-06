@@ -1,3 +1,7 @@
+#img-chooser-dlg {
+	z-index: 1100000000 !important;
+}
+
 /** loading indicator **/
 .og-loading {
 	position: absolute;
@@ -174,9 +178,6 @@
 }
 .ico-hide_messages {
 	background-image: url(../../images/16x16/hide_messages.png) !important;
-}
-.ico-large-backup {
-	background-image: url(../../images/48x48/backup.png);
 }
 .ico-large-billing {
 	background-image: url(../../images/48x48/billing.png);

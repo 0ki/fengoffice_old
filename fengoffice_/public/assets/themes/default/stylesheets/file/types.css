@@ -50,6 +50,9 @@
 .ico-application-vnd_ms-word, .ico-application-msword, .txt {
 	background-image: url(../../images/16x16/types/application-vnd.ms-word.png);
 }
+.ico-application-xspf-xml {
+	background-image: url(../../images/16x16/types/application-xspf-xml.png);
+}
 .ico-application-vnd_oasis_opendocument_chart {
 	background-image: url(../../images/16x16/types/application-vnd.oasis.opendocument.chart.png);
 }
@@ -99,6 +102,9 @@
 	background-image: url(../../images/16x16/types/application-zip.png);
 }
 .ico-audio {
+	background-image: url(../../images/16x16/types/audio.png);
+}
+.ico-audio-mpeg {
 	background-image: url(../../images/16x16/types/audio.png);
 }
 .ico-image {
@@ -190,6 +196,9 @@
 }
 .ico-large-application-vnd_ms-word, .ico-large-application-msword, .txt {
 	background-image: url(../../images/48x48/types/application-vnd.ms-word.png);
+}
+.ico-large-application-xspf+xml {
+	background-image: url(../../images/48x48/types/application-xspf+xml.png);
 }
 .ico-large-application-vnd_oasis_opendocument_chart {
 	background-image: url(../../images/48x48/types/application-vnd.oasis.opendocument.chart.png);

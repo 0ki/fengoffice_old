@@ -177,11 +177,6 @@ class MailUtilities {
 			}
 		}
 
-		// Remove everything beyond the end of the html
-		if (($end_pos = strpos($mail->getBodyHtml(), "</html>")) > 0) {
-			$mail->setBodyHtml(substr($mail->getBodyHtml(), 0, $end_pos + strlen("</html>")));
-		}
-
 		$repository_id = self::SaveContentToFilesystem($mail->getUid(), $content);
 		$mail->setContentFileId($repository_id);
 
@@ -238,24 +233,25 @@ class MailUtilities {
 		if (PEAR::isError($ret=$pop3->login($account->getEmail(), self::ENCRYPT_DECRYPT($account->getPassword()), 'USER'))) {
 			throw new Exception($ret->getMessage());
 		}
-		$numMessages = $pop3->numMsg();
 		
 		$mailsToGet = array();
 		$summary = $pop3->getListing();
 		foreach ($summary as $k => $info) {
 			if (!MailContents::mailRecordExists($account->getId(), $info['uidl'])) {
 				$mailsToGet[] = $k;
-			}			
+			}
 		}
 		
 		if ($max == 0) $toGet = count($mailsToGet);
 		else $toGet = min(count($mailsToGet), $max);
-		
+
 		// fetch newer mails first
-		for ($i = count($mailsToGet)-1; $received < $toGet && $i >= 0; $i--) {
-			$content = $pop3->getMsg($mailsToGet[$i]);
+		$mailsToGet = array_reverse($mailsToGet, true);
+		foreach ($mailsToGet as $idx) {
+			if ($toGet < $received) break;
+			$content = $pop3->getMsg($idx+1); // message index is 1..N
 			if ($content != '') {
-				$uid = $summary[$mailsToGet[$i]]['uidl'];
+				$uid = $summary[$idx]['uidl'];
 				self::SaveMail($content, $account, $uid);
 				unset($content);
 				$received++;

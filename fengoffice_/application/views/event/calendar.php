@@ -266,7 +266,7 @@ foreach($companies as $company)
 								$w = $day_of_month - $lastday;
 								$dtv = DateTimeValueLib::make(0, 0, 0, $month_aux, $w, $year_aux);
 							}
-							$start_value = $dtv->format(user_config_option('date_format', 'd/m/Y'));
+							$start_value = $dtv->format(user_config_option('date_format'));
 														
 					?>	
 						 		<div id="m<?php echo $dtv->getMonth() ?>_d<?php echo $dtv->getDay() ?>" style='z-index:0; min-height:90px; height:100%; cursor:pointer;<?php echo $extra_style ?>' onclick="showMonthEventPopup('<?php echo $dtv->getDay() ?>','<?php echo $dtv->getMonth()?>','<?php echo $dtv->getYear()?>','<?php echo $start_value ?>');" >

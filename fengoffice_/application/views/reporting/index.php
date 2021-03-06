@@ -35,7 +35,7 @@
 <div style="padding:10px">
 <?php 
 	// MAIN PAGES
-	$show_help_option = user_config_option('show_context_help', 'until_close'); 
+	$show_help_option = user_config_option('show_context_help'); 
 	if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_reporting_panel_context_help', true, logged_user()->getId()))) {
 		$hd_key = 'chelp reporting panel';
 	  	if (can_manage_reports(logged_user())){

@@ -606,6 +606,7 @@
   	'error delete object' => 'Failed to delete object',
   	
 
+  	'recipient must be specified' => 'Email recipient must be specified',
   	'copied from file' => 'Copied from file {0} ({1})',
 
 	'check file name advice' => 'After file name is changed press TAB to perform the file name check, and save button will be enabled.',

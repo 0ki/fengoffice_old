@@ -939,26 +939,39 @@ og.getGooPlayerPanel = function(callback) {
 };
 
 og.playMP3 = function(track) {
-	var gppanel = og.getGooPlayerPanel(function() {
-		Ext.getCmp('tabs-panel').setActiveTab(gppanel);
-		var gooplayer = Ext.getCmp('gooplayer');
-		gooplayer.loadPlaylist([track]);
-		gooplayer.start();
-	});
+	if (og.isFlashSupported()) {
+		var gppanel = og.getGooPlayerPanel(function() {
+			Ext.getCmp('tabs-panel').setActiveTab(gppanel);
+			var gooplayer = Ext.getCmp('gooplayer');
+			gooplayer.loadPlaylist([track]);
+			gooplayer.start();
+		});
+	} else if (track[6]) {
+		window.open(track[6]);
+	}
 };
 
 og.queueMP3 = function(track) {
-	var gppanel = og.getGooPlayerPanel();
-	//Ext.getCmp('tabs-panel').setActiveTab(gppanel);
-	var gooplayer = Ext.getCmp('gooplayer');
-	gooplayer.queueTrack(track);
+	if (og.isFlashSupported()) {
+		var gppanel = og.getGooPlayerPanel(function() {
+			var gooplayer = Ext.getCmp('gooplayer');
+			gooplayer.queueTrack(track);
+		});
+	} else if (track[6]) {
+		window.open(track[6]);
+	}
 };
 
 og.playXSPF = function(id) {
-	var gppanel = og.getGooPlayerPanel();
-	Ext.getCmp('tabs-panel').setActiveTab(gppanel);
-	var gooplayer = Ext.getCmp('gooplayer');
-	gooplayer.loadPlaylistFromFile(id, true);
+	if (og.isFlashSupported()) {
+		var gppanel = og.getGooPlayerPanel(function() {
+			Ext.getCmp('tabs-panel').setActiveTab(gppanel);
+			var gooplayer = Ext.getCmp('gooplayer');
+			gooplayer.loadPlaylistFromFile(id, true);
+		});
+	} else {
+		window.open(og.getUrl('files', 'download_file', {id: id}));
+	}
 };
 
  
@@ -1030,13 +1043,11 @@ og.billingEditValue = function(id){
 og.checkDownload = function(url, checkedOutById, checkedOutBy) {
 	var checkOut = function() {
 		og.ExtendedDialog.dialog.destroy();
-		if (Ext.isIE) window.open(url + "&checkout=1");
-		else location.href = url + "&checkout=1";
+		location.href = url + "&checkout=1";
 	};
 	var readOnly = function() {
 		og.ExtendedDialog.dialog.destroy();
-		if (Ext.isIE) window.open(url + "&checkout=0");
-		else location.href = url + "&checkout=0";
+		location.href = url + "&checkout=0";
 	}
 	var checkedOutByName = checkedOutBy;
 	if (checkedOutByName == 'self') {
@@ -1338,4 +1349,8 @@ og.replaceAllOccurrences = function(str, search, replace) {
 		str = str.replace(search, replace);
 	}
 	return str;
+};
+
+og.isFlashSupported = function() {
+	return navigator.mimeTypes["application/x-shockwave-flash"] ? true : false;
 };

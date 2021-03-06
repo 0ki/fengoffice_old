@@ -8,7 +8,7 @@
 			var server = document.getElementById(genid + 'server').value;
 			var email = document.getElementById(genid + 'email').value;
 			var password = document.getElementById(genid + 'password').value;
-			var ssl = document.getElementById(genid + 'ssl').value;
+			var ssl = document.getElementById(genid + 'ssl').checked ? 'checked' : '';
 			var sslport = document.getElementById(genid + 'sslport').value;
 			og.openLink(og.getUrl('mail', 'fetch_imap_folders', {
 					server: server,

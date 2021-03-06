@@ -184,11 +184,6 @@ class NutriaUpgradeScript extends ScriptUpgraderScript {
 				ALTER TABLE `".TABLE_PREFIX."companies` MODIFY COLUMN `fax_number` varchar(50) $default_collation default NULL;
 				";
 			}
-			if (version_compare($installed_version, '1.4-beta2') <= 0) {
-				$upgrade_script .= "
-				ALTER TABLE `".TABLE_PREFIX."reports` ADD COLUMN `is_order_by_asc` TINYINT(1) $default_collation NOT NULL DEFAULT 1;
-				";
-			}
 			if (version_compare($installed_version, '1.4-rc') <= 0) {
 				$upgrade_script .= "
 				INSERT INTO `".TABLE_PREFIX."user_ws_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
@@ -310,12 +305,11 @@ class NutriaUpgradeScript extends ScriptUpgraderScript {
 				DELETE FROM `".TABLE_PREFIX."config_options` where name='upgrade_check_enabled';
 				";
 			}
-		}
-		
-		if (!$this->checkColumnExists(TABLE_PREFIX.'reports', 'is_order_by_asc', $this->database_connection)) {
-			$upgrade_script .= "
-				ALTER TABLE `".TABLE_PREFIX."reports` ADD COLUMN `is_order_by_asc` TINYINT(1) $default_collation NOT NULL DEFAULT 1;
-			";
+			if (!$this->checkColumnExists(TABLE_PREFIX.'reports', 'is_order_by_asc', $this->database_connection)) {
+				$upgrade_script .= "
+					ALTER TABLE `".TABLE_PREFIX."reports` ADD COLUMN `is_order_by_asc` TINYINT(1) $default_collation NOT NULL DEFAULT 1;
+				";
+			}
 		}
 
 		$upgrade_script .= "

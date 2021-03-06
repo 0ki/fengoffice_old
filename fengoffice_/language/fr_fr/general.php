@@ -68,7 +68,7 @@
 	'fax number' => 'N° de Fax ',
 	'mobile phone number' => 'N° de Portable ',
 	'home phone number' => 'Maison',
-	'homepage' => 'Page perso ',
+	'homepage' => 'Site web ',
 	'address' => 'Adresse 1 ',
 	'address2' => 'Adresse 2 ',
 	'city' => 'Ville ',

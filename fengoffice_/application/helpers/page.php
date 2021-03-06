@@ -907,8 +907,15 @@
         $theme = DEFAULT_THEME;
       } // if
     } // if
+    
+  	if (defined('VERSIONED_CSS') && VERSIONED_CSS) {
+  		$prefix = include 'version.php';
+  		$prefix .= "/";
+  	} else {
+  		$prefix = "";
+  	}
 	
-	return get_public_url("assets/themes/$theme/$file_name");
+	return get_public_url("assets/{$prefix}themes/$theme/$file_name");
   }
   
   /**
@@ -929,7 +936,14 @@
       } // if
     } // if
     
-    return get_public_url("assets/themes/$theme/images/$file_name");
+  	if (defined('VERSIONED_CSS') && VERSIONED_CSS) {
+  		$prefix = include 'version.php';
+  		$prefix .= "/";
+  	} else {
+  		$prefix = "";
+  	}
+    
+    return get_public_url("assets/{$prefix}themes/$theme/images/$file_name");
   } // get_image_url
   
   /**

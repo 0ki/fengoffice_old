@@ -63,7 +63,7 @@
   <div class="adminMainBlock">
 
 		<?php 
-			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			$show_help_option = user_config_option('show_context_help'); 
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_workspace_context_help', true, logged_user()->getId()))) {?>
 			<div id="projectPanelContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp add workspace','add_workspace'); ?>
@@ -73,7 +73,7 @@
 	<div id="<?php echo $genid ?>workspace_description" style="display:none">
 	<fieldset>
 	<?php 
-			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			$show_help_option = user_config_option('show_context_help'); 
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_workspace_context_help', true, logged_user()->getId()))) {?>
 			<div id="tasksPanelContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp add workspace description','add_workspace'); ?>
@@ -92,7 +92,7 @@
 		<div id="<?php echo $genid ?>workspace_permissions" style="display:none">
 		<fieldset>
 		<?php 
-			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			$show_help_option = user_config_option('show_context_help'); 
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_workspace_context_help', true, logged_user()->getId()))) {?>
 			<div id="tasksPanelContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp add workspace permissions','add_workspace'); ?>
