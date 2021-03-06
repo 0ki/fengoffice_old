@@ -82,4 +82,5 @@
 		}
 	}
 	$("#searchButton").prop("disabled",false);
+	$("#search_for").prop("disabled",false);
 </script>

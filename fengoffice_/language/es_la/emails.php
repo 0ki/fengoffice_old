@@ -226,4 +226,6 @@
 	'invalid sync settings' => 'Ajustes de sincronización inválidos. No se puede establecer una conexión con el servidor',
 	'cant find user' => 'No se puede encontrar al usuario requerido',
 	'cant find account' => 'No se puede encontrar la cuenta de correo electrónico requerida',
+	'mails_in_outbox reminder' => 'Mails sin enviar',
+	'mails_in_outbox reminder desc' => 'Hay {0} correos que no se han podido enviar aún. Por favor revise su bandeja de Salida por mayor información',
 ); ?>

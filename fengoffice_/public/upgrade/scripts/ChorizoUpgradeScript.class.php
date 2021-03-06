@@ -122,7 +122,7 @@ class ChorizoUpgradeScript extends ScriptUpgraderScript {
 						('general', 'access_member_after_add_remember', '0', 'BoolConfigHandler', '0', '1301', NULL),
 						('general', 'sendEmailNotification', '1', 'BoolConfigHandler', '1', '0', 'Send email notification to new user'),
  						('general', 'viewContactsChecked', '1', 'BoolConfigHandler', '1', '0', 'in people panel is view contacts checked'),
- 						('general', 'viewUsersChecked', '0', 'BoolConfigHandler', '0', '0', 'in people panel is view users checked'),
+ 						('general', 'viewUsersChecked', '1', 'BoolConfigHandler', '0', '0', 'in people panel is view users checked'),
  						('general', 'viewCompaniesChecked', '1', 'BoolConfigHandler', '1', '0', 'in people panel is view companies checked'),
 						('general', 'contacts_per_page', '50', 'IntegerConfigHandler', '0', '1200', NULL)
 					ON DUPLICATE KEY UPDATE name=name;

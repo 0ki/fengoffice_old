@@ -1,5 +1,5 @@
 
-	About Feng Office 2.4-beta
+	About Feng Office 2.4-rc
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -102,6 +102,27 @@
 	Changelog
 	=========
 	
+	Since 2.4-beta
+	----------------
+	
+	feature: alert users if they have mails in the outbox
+	feature: contact custom reports - added columns for address, phones, webpages and im.
+	feature: display time estimation in time reports when grouping by tasks
+	feature: config option to add default permissions to users when creating a member.
+	
+	system: upgrade Swift Mailer from version 4.0.6 to 5.0.1, this improves and solves some issues when sending emails with exchange servers
+	
+	bugfix: on user login when save timezone don't change the update_on value
+	bugfix: solved an issue when editing a repetitive task and changing its previous repetition value
+	bugfix: solved when editing a template task can't remove a dimension member
+	bugfix: solved using repeating tasks when applying a template
+	bugfix: on tasks and timeslots reports, if grouped by task it diplay milestones
+	bugfix: allow the creation of templates in the root (View all)
+	bugfix: Users are now shown by default in the People tab.
+	bugfix: when printing the task list view, tasks now display their progress and estimation
+	bugfix: on general search prevent multiple form submit.
+	
+	
 	Since 2.3.2.1
 	----------------
 	
@@ -112,7 +133,7 @@
 	feature: update plugins after running upgrade from console.
 	feature: add root permission when creating executive or superior users.
 	feature: contact edit form has been improved
-
+	
 	bugfix: when uploading avatars, if it is .png and its size is smaller than 128x128 the image is not resized
 	bugfix: when sending an mail, the sender is now subscribed to it
 	bugfix: when adding a file from an email attachment, its now set to be created by the account owner
@@ -138,11 +159,11 @@
 	bugfix: contact csv export fixed: when no contact is selected => export all contact csv export fixed
 	bugfix: some undefined variables have been defined
 	bugfix: some translations that were missing were added
-
+	
 	security: remove xss from request parameters
-
+	
 	performance: search engine has been greatly improved
-
+	
 	other: the search button is disabled until returns the search result
 	other: when upgrading to 2.4 the completed tasks from feng 1 will change to 100% in completed percentage
 	

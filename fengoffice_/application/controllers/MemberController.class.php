@@ -135,24 +135,26 @@ class MemberController extends ApplicationController {
 			$permission_parameters['member_permissions'][logged_user()->getPermissionGroupId()] = $logged_user_pg;
 			
 			// Add default permissions for executives, managers and administrators
-			if ($parent == 0) {
-				$users = Contacts::findAll(array('conditions' => "user_type IN (SELECT id FROM ".TABLE_PREFIX."permission_groups WHERE type='roles' AND name IN ('Executive','Manager','Administrator','Super Administrator'))"));
-			} else {
-				$users = array();
-			}
-			foreach ($users as $user) {
-				if (!isset($permission_parameters['member_permissions'][$user->getPermissionGroupId()]) || count($permission_parameters['member_permissions'][$user->getPermissionGroupId()]) == 0) {
-					$user_pg = array();
-					foreach ($permission_parameters['allowed_object_types'] as $ot){
-						$role_perm = RoleObjectTypePermissions::findOne(array('conditions' => array("role_id=? AND object_type_id=?", $user->getUserType(), $ot->getId())));
-						$user_pg[] = array(
-							'o' => $ot->getId(),
-							'w' => $role_perm instanceof RoleObjectTypePermission ? ($role_perm->getCanWrite()?1:0) : 0,
-							'd' => $role_perm instanceof RoleObjectTypePermission ? ($role_perm->getCanDelete()?1:0) : 0,
-							'r' => $role_perm instanceof RoleObjectTypePermission ? 1 : 0,
-						);
+			if (config_option('add_default_permissions_for_users')) {
+				if ($parent == 0) {
+					$users = Contacts::findAll(array('conditions' => "user_type IN (SELECT id FROM ".TABLE_PREFIX."permission_groups WHERE type='roles' AND name IN ('Executive','Manager','Administrator','Super Administrator'))"));
+				} else {
+					$users = array();
+				}
+				foreach ($users as $user) {
+					if (!isset($permission_parameters['member_permissions'][$user->getPermissionGroupId()]) || count($permission_parameters['member_permissions'][$user->getPermissionGroupId()]) == 0) {
+						$user_pg = array();
+						foreach ($permission_parameters['allowed_object_types'] as $ot){
+							$role_perm = RoleObjectTypePermissions::findOne(array('conditions' => array("role_id=? AND object_type_id=?", $user->getUserType(), $ot->getId())));
+							$user_pg[] = array(
+								'o' => $ot->getId(),
+								'w' => $role_perm instanceof RoleObjectTypePermission ? ($role_perm->getCanWrite()?1:0) : 0,
+								'd' => $role_perm instanceof RoleObjectTypePermission ? ($role_perm->getCanDelete()?1:0) : 0,
+								'r' => $role_perm instanceof RoleObjectTypePermission ? 1 : 0,
+							);
+						}
+						$permission_parameters['member_permissions'][$user->getPermissionGroupId()] = $user_pg;
 					}
-					$permission_parameters['member_permissions'][$user->getPermissionGroupId()] = $user_pg;
 				}
 			}
 			tpl_assign('permission_parameters', $permission_parameters);
@@ -211,7 +213,7 @@ class MemberController extends ApplicationController {
 			$ok = $this->saveMember($member_data, $member);
 			
 			// if added from quick-add add default permissions for executives, managers and administrators
-			if (array_var($_GET, 'quick') && $member->getParentMemberId() == 0) {
+			if (config_option('add_default_permissions_for_users') && array_var($_GET, 'quick') && $member->getParentMemberId() == 0) {
 				$users = Contacts::findAll(array('conditions' => "user_type IN (SELECT id FROM ".TABLE_PREFIX."permission_groups WHERE type='roles' AND name IN ('Executive','Manager','Administrator','Super Administrator'))"));
 				if (!array_var($_REQUEST, 'permissions')) $_REQUEST['permissions'] = "[]";
 				$permissions_decoded = json_decode(array_var($_REQUEST, 'permissions'));

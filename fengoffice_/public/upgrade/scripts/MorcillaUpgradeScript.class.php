@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Morcilla upgrade script will upgrade FengOffice 2.3.2.1 to FengOffice 2.4-beta
+ * Morcilla upgrade script will upgrade FengOffice 2.3.2.1 to FengOffice 2.4-rc
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -40,7 +40,7 @@ class MorcillaUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('2.3.2.1');
-		$this->setVersionTo('2.4-beta');
+		$this->setVersionTo('2.4-rc');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -242,7 +242,7 @@ class MorcillaUpgradeScript extends ScriptUpgraderScript {
 					INNER JOIN `".$t_prefix."project_tasks` 
 					ON ".$t_prefix."template_objects.object_id = ".$t_prefix."project_tasks.object_id
 					AND ".$t_prefix."project_tasks.is_template =1
-					ON DUPLICATE KEY UPDATE session_id = 0;		
+					ON DUPLICATE KEY UPDATE session_id = 0;
 				";
 				// Copy subtasks for tasks that are in template tasks.
 				$upgrade_loop_script = "
@@ -268,7 +268,7 @@ class MorcillaUpgradeScript extends ScriptUpgraderScript {
 						WHERE pt3.object_id = pt.object_id);
 					";
 					
-				$upgrade_after_loop_script = "
+				$upgrade_after_loop_script .= "
 					/* insert into template objects subtasks */
 					INSERT INTO `".$t_prefix."template_objects`(`template_id`, `object_id`)
 					SELECT tt.template_id, tt.object_id
@@ -314,19 +314,31 @@ class MorcillaUpgradeScript extends ScriptUpgraderScript {
 					}
 				}
 					
-				// Finish with subtasks changes
-				if(!$this->executeMultipleQueries($upgrade_after_loop_script, $total_queries, $executed_queries, $this->database_connection)) {
-					$this->printMessage('Failed to execute DB schema transformations. MySQL said: ' . mysql_error(), true);
-					return false;
-				} 
-					
+				
+				
+			}
+			
+			if (version_compare($installed_version, '2.4-rc') < 0){
+				$upgrade_after_loop_script .= "
+					DELETE FROM `".$t_prefix."object_members` where object_id IN (SELECT object_id FROM  `".TABLE_PREFIX."template_tasks`);
+					DELETE FROM `".$t_prefix."sharing_table` where object_id IN (SELECT object_id FROM  `".TABLE_PREFIX."template_tasks`);
+					INSERT INTO `".$t_prefix."config_options` (`category_name`,`name`,`value`,`config_handler_class`,`is_system`) VALUES
+						('general', 'add_default_permissions_for_users', '0', 'BoolConfigHandler', '0')
+					ON DUPLICATE KEY UPDATE name=name;
+				";
+			}
+			
+			// after loop
+			if(!$this->executeMultipleQueries($upgrade_after_loop_script, $total_queries, $executed_queries, $this->database_connection)) {
+				$this->printMessage('Failed to execute DB schema transformations. MySQL said: ' . mysql_error(), true);
+				return false;
 			}
 			$this->printMessage("Database schema transformations executed (total queries: $total_queries)");
 		} else {
 			$this->printMessage('Failed to execute DB schema transformations. MySQL said: ' . mysql_error(), true);
 			return false;
 		}				
-				
+		
 		$this->printMessage('Feng Office has been upgraded. You are now running Feng Office '.$this->getVersionTo().' Enjoy!');
 
 		tpl_assign('additional_steps', $additional_upgrade_steps);

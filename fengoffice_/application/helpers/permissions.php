@@ -119,7 +119,12 @@
 	 * @return boolean
 	 */
 	function can_add_to_member(Contact $user, $member, $context_members, $object_type_id, $check_dimension = true){
-		
+		if(TemplateTasks::instance()->getObjectTypeId() == $object_type_id){
+			$object_type_id = ProjectTasks::instance()->getObjectTypeId();
+		}
+		if(TemplateMilestones::instance()->getObjectTypeId() == $object_type_id){
+			$object_type_id = ProjectMilestones::instance()->getObjectTypeId();
+		}
 		if (!$member instanceof Member && is_array($member) && isset($member['id'])) {
 			$member = Members::findById($member['id']);
 		}

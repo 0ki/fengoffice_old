@@ -168,7 +168,9 @@ $use_owner_company_logo = owner_company()->hasLogo();
 			<div class="clear"></div>
 			<?php echo render_user_box(logged_user())?>
 		</div>
-		<?php Hook::fire('render_page_header', null, $ret) ?>
+		<?php Hook::fire('render_page_header', null, $ret); 
+			  Hook::fire('on_page_load', 'mail', $ret);
+		?>
         <script>
             
             /*** User Settings Panel ***/ 
@@ -272,15 +274,18 @@ $use_owner_company_logo = owner_company()->hasLogo();
                     
                     $("#searchButton").click(function () {
 						if($("#search_for").val() != ""){
-                        	$("#searchButton").prop("disabled",true);
-                            $("#searchButtonReal").click();                            
+                        	$("#searchButtonReal").click();                            
                         }                  
                     });
                     
                     $("#advancedSearch").click(function() {
                         $("#searchButtonReal").click();
                     });
-                    
+
+                    $("#form_search").submit(function (e){
+                    	$("#searchButton").prop("disabled",true);
+                    	$("#search_for").prop("disabled",true);
+                    });
                 }
             );
         </script>

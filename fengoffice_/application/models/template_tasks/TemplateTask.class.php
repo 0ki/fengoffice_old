@@ -499,7 +499,7 @@ class TemplateTask extends BaseTemplateTask {
 		$new_st_date='';
 		$new_due_date='';
 		$copy_status = false;
-		$copy_repeat_options = false;
+		$copy_repeat_options = true;
 		
 		$new_task = new ProjectTask();
 		

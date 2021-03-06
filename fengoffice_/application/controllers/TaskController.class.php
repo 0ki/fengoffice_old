@@ -1069,6 +1069,12 @@ class TaskController extends ApplicationController {
 	 * @return null
 	 */
 	function add_task() {
+		//is template task?
+		$isTemplateTask = false;
+		if(array_var($_REQUEST, 'template_task') == true){
+			$isTemplateTask = true;
+		}
+		
 		if (logged_user()->isGuest()) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
@@ -1076,7 +1082,7 @@ class TaskController extends ApplicationController {
 		}
 
 		$notAllowedMember = '' ;
-		if(!ProjectTask::canAdd(logged_user(), active_context(), $notAllowedMember)) {
+		if(!ProjectTask::canAdd(logged_user(), active_context(), $notAllowedMember) && !$isTemplateTask) {
 			if (str_starts_with($notAllowedMember, '-- req dim --')) flash_error(lang('must choose at least one member of', str_replace_first('-- req dim --', '', $notAllowedMember, $in)));
 			else flash_error(lang('no context permissions to add',lang("tasks"), $notAllowedMember));
 			ajx_current("empty");
@@ -1297,7 +1303,7 @@ class TaskController extends ApplicationController {
 				
 				if($task instanceof TemplateTask ){
 					if(!empty($member_ids)){
-						$object_controller->add_to_members($task, $member_ids);
+						$object_controller->add_to_members($task, $member_ids, null, false);
 					}
 				}else{
 					$object_controller->add_to_members($task, $member_ids);
@@ -1446,6 +1452,10 @@ class TaskController extends ApplicationController {
 	 * @return null
 	 */
 	function edit_task() {
+		$isTemplateTask = false;
+		if(array_var($_REQUEST, 'template_task') == true){
+			$isTemplateTask = true;
+		}
 		if (logged_user()->isGuest()) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
@@ -1731,7 +1741,11 @@ class TaskController extends ApplicationController {
 				}
 
 				$object_controller = new ObjectController();
-				$object_controller->add_to_members($task, $member_ids);
+				if($isTemplateTask){
+					$object_controller->add_to_members($task, $member_ids, null, false);
+				}else{
+					$object_controller->add_to_members($task, $member_ids);
+				}				
 				$object_controller->add_subscribers($task);
 				$object_controller->link_to_new_object($task);
 				$object_controller->add_custom_properties($task);
@@ -2403,21 +2417,29 @@ class TaskController extends ApplicationController {
 				break;
 			case "2":
 				$task_data['repeat_d'] = $jump;
+				$task_data['repeat_m'] = 0;
+				$task_data['repeat_y'] = 0;
 				if(isset($forever) && $forever == 1) $oend = null;
 				else $oend = $rend;
 				break;
 			case "3":
 				$task_data['repeat_d'] = 7 * $jump;
+				$task_data['repeat_m'] = 0;
+				$task_data['repeat_y'] = 0;
 				if(isset($forever) && $forever == 1) $oend = null;
 				else $oend = $rend;
 				break;
 			case "4":
 				$task_data['repeat_m'] = $jump;
+				$task_data['repeat_d'] = 0;
+				$task_data['repeat_y'] = 0;
 				if(isset($forever) && $forever == 1) $oend = null;
 				else $oend = $rend;
 				break;
 			case "5":
 				$task_data['repeat_y'] = $jump;
+				$task_data['repeat_d'] = 0;
+				$task_data['repeat_m'] = 0;
 				if(isset($forever) && $forever == 1) $oend = null;
 				else $oend = $rend;
 				break;

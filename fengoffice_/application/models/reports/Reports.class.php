@@ -78,6 +78,105 @@ class Reports extends BaseReports {
 		}
 		return $result;
 	}
+	
+	static function get_extra_contact_column_condition($field, $operator, $value) {
+		// build operator
+		if (in_array($operator, array('=','<>'))) {
+			$cond = " $operator '$value'";
+		} else if (in_array($operator, array('like','not like'))) {
+			$cond = " $operator '%$value%'";
+		} else {
+			$cond = " like '$value%'";
+		}
+		
+		// build condition
+		switch ($field) {
+			case 'is_user':
+				return '`user_type` '.($value=='1'?'>':'=').' 0';
+			case 'email_address':
+				return 'o.id IN (select ce.contact_id from '.TABLE_PREFIX.'contact_emails ce where ce.contact_id=o.id and ce.email_address '.$cond.')';
+			case 'mobile_phone':
+			case 'work_phone':
+			case 'home_phone':
+				$type_name = ($filed == 'mobile_phone' ? 'mobile' : ($filed == 'work_phone' ? 'work' : 'home'));
+				$type_cond = " AND ce.telephone_type_id in (select t.id from ".TABLE_PREFIX."telephone_types t where t.name='$type_name')";
+				return 'o.id IN (select ce.contact_id from '.TABLE_PREFIX.'contact_telephones ce where ce.contact_id=o.id and ce.number '.$cond.' AND '.$type_cond.')';
+			case 'personal_webpage':
+			case 'work_webpage':
+			case 'other_webpage':
+				$type_name = ($filed == 'personal_webpage' ? 'personal' : ($filed == 'work_webpage' ? 'work' : 'other'));
+				$type_cond = " AND ce.web_type_id in (select t.id from ".TABLE_PREFIX."webpage_types t where t.name='$type_name')";
+				return 'o.id IN (select ce.contact_id from '.TABLE_PREFIX.'contact_web_pages ce where ce.contact_id=o.id and ce.url '.$cond.' AND '.$type_cond.')';
+			case 'im_values':
+				return 'o.id IN (select ce.contact_id from '.TABLE_PREFIX.'contact_im_values ce where ce.contact_id=o.id and ce.value '.$cond.')';
+			case 'home_address':
+			case 'work_address':
+			case 'other_address':
+				$type_name = ($filed == 'home_address' ? 'home' : ($filed == 'work_address' ? 'work' : 'other'));
+				$type_cond = " AND ce.address_type_id in (select t.id from ".TABLE_PREFIX."address_types t where t.name='$type_name')";
+				return "o.id IN (select ce.contact_id from ".TABLE_PREFIX."contact_addresses ce where ce.contact_id=o.id ".$type_cond." and (
+					ce.street ".$cond." or ce.city ".$cond." or ce.state ".$cond." or ce.country ".$cond." or ce.zip_code ".$cond."))";
+			default:
+				return 'true';
+			break;
+		}
+	}
+	
+	static function get_extra_contact_column_order_by($field, &$order, &$select_columns) {
+		$join_params = array(
+			'join_type' => "LEFT ",
+			'jt_field' => "contact_id",
+			'e_field' => "object_id",
+		);
+		switch ($field) {
+			case 'is_user':
+				$order = 'user_type';
+				$join_params = null;
+				break;
+			case 'email_address':
+				$order = 'IF(ISNULL(jt.email_address),1,0),jt.email_address';
+				$join_params['table'] = "fo_contact_emails";
+				$select_columns = array("DISTINCT o.*", "e.*");
+				break;
+			case 'mobile_phone':
+			case 'work_phone':
+			case 'home_phone':
+				$order = 'IF(ISNULL(jt.number),1,0),jt.number';
+				$join_params['table'] = "fo_contact_telephones";
+				$select_columns = array("DISTINCT o.*", "e.*");
+				break;
+			case 'personal_webpage':
+			case 'work_webpage':
+			case 'other_webpage':
+				$order = 'IF(ISNULL(jt.url),1,0),jt.url';
+				$join_params['table'] = "fo_contact_web_pages";
+				$select_columns = array("DISTINCT o.*", "e.*");
+				break;
+			case 'im_values':
+				$order = 'IF(ISNULL(jt.value),1,0),jt.value';
+				$join_params['table'] = "fo_contact_im_values";
+				$select_columns = array("DISTINCT o.*", "e.*");
+				break;
+			case 'home_address':
+			case 'work_address':
+			case 'other_address':
+				$order = 'IF(ISNULL(jt.street) and ISNULL(jt.city) and ISNULL(jt.state) and ISNULL(jt.country) and ISNULL(jt.zip_code),1,0), jt.street, jt.city, jt.state, jt.country, jt.zip_code';
+				$join_params['table'] = "fo_contact_addresses";
+				$select_columns = array("DISTINCT o.*", "e.*");
+				break;
+			default:
+				$order = 'first_name';
+				$join_params = null;
+			break;
+		}
+		
+		return $join_params;
+	}
+	
+	static function get_extra_contact_columns() {
+		return array("email_address", "is_user", "mobile_phone", "work_phone", "home_phone", "im_values", 
+			"personal_webpage", "work_webpage", "other_webpage", "home_address", "work_address", "other_address");
+	}
 
 	/**
 	 * Execute a report and return results
@@ -112,6 +211,8 @@ class Reports extends BaseReports {
 
 			$allConditions = "";
 			
+			$contact_extra_columns = self::get_extra_contact_columns();
+			
 			if(count($conditionsFields) > 0){
 				foreach($conditionsFields as $condField){
 					
@@ -130,8 +231,9 @@ class Reports extends BaseReports {
 					} else {
 						$value = $condField->getValue();
 					}
-					if ($condField->getFieldName() == 'is_user') {
-						$allConditions .= '`user_type` '.($value=='1'?'>':'=').' 0';
+					
+					if ($ot->getHandlerClass() == 'Contacts' && in_array($condField->getFieldName(), $contact_extra_columns)) {
+						$allConditions .= self::get_extra_contact_column_condition($condField->getFieldName(), $condField->getCondition(), $value);
 					} else {
 						if ($value == '' && $condField->getIsParametrizable()) $skip_condition = true;
 						if (!$skip_condition) {
@@ -230,14 +332,11 @@ class Reports extends BaseReports {
 			if ($order_by_col == '') {
 				$order_by_col = $report->getOrderBy();
 			}
-			if($order_by_col == 'email_address'){
-				$order = 'IF(ISNULL(jt.value),1,0),jt.value';
-				$join_params['join_type'] = "LEFT ";
-				$join_params['table'] = "fo_contact_emails";
-				$join_params['jt_field'] = "contact_id";
-				$join_params['e_field'] = "object_id";
-				$select_columns = array("DISTINCT o.*", "e.*");
+			
+			if ($ot->getHandlerClass() == 'Contacts' && in_array($order_by_col, $contact_extra_columns)) {
+				$join_params = self::get_extra_contact_column_order_by($order_by_col, $order_by_col, $select_columns);
 			}
+			
 			if (in_array($order_by_col, self::$external_columns)) {
 				$original_order_by_col = $order_by_col;
 				$order_by_col = 'name_order';
@@ -305,15 +404,12 @@ class Reports extends BaseReports {
 							$results['columns'][$field] = $column_name;
 							$results['db_columns'][$column_name] = $field;
 						}else{
-								if($ot->getHandlerClass() == 'Contacts'){
-									if($managerInstance instanceof Contacts){
-										if ($field == "email_address" || $field == "is_user"){
-											$results['columns'][$field] = lang($field);	
-											$results['db_columns'][lang($field)] = $field;
-										}
-									}
+							if($ot->getHandlerClass() == 'Contacts'){
+								if (in_array($field, $contact_extra_columns)){
+									$results['columns'][$field] = lang($field);	
+									$results['db_columns'][lang($field)] = $field;
 								}
-							
+							}
 						}
 					}
 					
@@ -366,7 +462,7 @@ class Reports extends BaseReports {
 								$field_type = $managerInstance->columnExists($field) ? $managerInstance->getColumnType($field) : Objects::instance()->getColumnType($field);
 								$value = format_value_to_print($field, $value->toMySQL(), $field_type, $report->getReportObjectTypeId());
 							}
-								
+							
 							if(in_array($field, $managerInstance->getExternalColumns())){
 								$value = self::instance()->getExternalColumnValue($field, $value, $managerInstance);
 							} else if ($field != 'link'){
@@ -378,21 +474,43 @@ class Reports extends BaseReports {
 								}else{
 									$value = '<a class="internalLink" target="_self" href="mailto:'.clean($value).'">'.clean($value).'</a></div>';
 								}
-							}	
+							}
 							$row_values[$field] = $value;
 							
 							if($ot->getHandlerClass() == 'Contacts'){
 								if($managerInstance instanceof Contacts){
-									$conta = Contacts::findOne(array("conditions" => "object_id = ".$object->getId()));
-									if ($field == "email_address"){									
-										$row_values[$field] = $conta->getEmailAddress();
+									$contact = Contacts::findOne(array("conditions" => "object_id = ".$object->getId()));
+									if ($field == "email_address"){
+										$row_values[$field] = $contact->getEmailAddress();
 									}
-									if ($field == "is_user"){									
-										$row_values[$field] = $conta->getUserType() > 0 && !$conta->getIsCompany();
+									if ($field == "is_user"){
+										$row_values[$field] = $contact->getUserType() > 0 && !$contact->getIsCompany();
+									}
+									if ($field == "im_values"){
+										$str = "";
+										foreach ($contact->getAllImValues() as $type => $value) {
+											$str .= ($str == "" ? "" : " | ") . "$type: $value";
+										}
+										$row_values[$field] = $str;
+									}
+									if (in_array($field, array("mobile_phone", "work_phone", "home_phone"))) {
+										if ($field == "mobile_phone") $row_values[$field] = $contact->getPhoneNumber('mobile', null, false);
+										else if ($field == "work_phone") $row_values[$field] = $contact->getPhoneNumber('work', null, false);
+										else if ($field == "home_phone") $row_values[$field] = $contact->getPhoneNumber('home', null, false);
+									}
+									if (in_array($field, array("personal_webpage", "work_webpage", "other_webpage"))) {
+										if ($field == "personal_webpage") $row_values[$field] = $contact->getWebpageUrl('personal');
+										else if ($field == "work_webpage") $row_values[$field] = $contact->getWebpageUrl('work');
+										else if ($field == "other_webpage") $row_values[$field] = $contact->getWebpageUrl('other');
+									}
+									if (in_array($field, array("home_address", "work_address", "other_address"))) {
+										if ($field == "home_address") $row_values[$field] = $contact->getStringAddress('home');
+										else if ($field == "work_address") $row_values[$field] = $contact->getStringAddress('work');
+										else if ($field == "other_address") $row_values[$field] = $contact->getStringAddress('other');
 									}
 								}
 							}
-						}						
+						}
 					} else {
 						
 						$colCp = $column->getCustomPropertyId();

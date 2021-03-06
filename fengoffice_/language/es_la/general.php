@@ -28,6 +28,7 @@
 	'untitled note' => 'Nota sín titulo',
 	'of' => 'de',
 	'search results for' => 'Resultados de la búsqueda de',
+	'search speed' => 'Velocidad de búsqueda',
 	'delete' => 'Eliminar',
 	'empty trash can' => 'Vaciar la papelera',
 	'save' => 'Guardar',

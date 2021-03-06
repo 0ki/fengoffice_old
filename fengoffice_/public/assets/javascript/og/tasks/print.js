@@ -95,7 +95,7 @@ ogTasks.printGroupTasks = function(group, printWindow){
 		sb.append("</td>");		
 		sb.append("<td width='1px' align=right><table><tr>");		
 		//Draw dates
-		if (drawOptions.show_dates && (task.startDate || task.dueDate)){
+		if (drawOptions.show_dates){
 			sb.append('<td style="color:#888;font-size:10px;padding-left:6px;padding-right:6px;white-space:nowrap">');
 			if (task.status == 1)
 				sb.append('<span style="text-decoration:line-through;">');

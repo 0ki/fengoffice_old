@@ -292,7 +292,7 @@ CREATE TABLE `<?php echo $table_prefix ?>contact_addresses` (
   `id` int(10) unsigned NOT NULL auto_increment,
   `contact_id` int(10) unsigned NOT NULL, 
   `address_type_id` int(10) unsigned NOT NULL,
-  `street` varchar(50) <?php echo $default_collation ?> NOT NULL default '',
+  `street` text <?php echo $default_collation ?>,
   `city` varchar(50) <?php echo $default_collation ?> NOT NULL default '',
   `state` varchar(50) <?php echo $default_collation ?> NOT NULL default '',
   `country` varchar(50) <?php echo $default_collation ?> NOT NULL default '',

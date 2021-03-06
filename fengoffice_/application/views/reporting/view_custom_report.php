@@ -53,8 +53,9 @@
 		<option value="14">14</option>
 		<option value="15">15</option>
 		<option value="16">16</option>
-	</select><br/>
-	<input type="submit" name="exportPDF" value="<?php echo lang('export') ?>" onclick="document.getElementById('form<?php echo $genid ?>').target = '_download';" style="width:120px; margin-top:10px;"/>
+	</select>
+	<input type="submit" name="exportPDF" value="<?php echo lang('export') ?>" onclick="document.getElementById('form<?php echo $genid ?>').target = '_download';" style="width: 120px; background-color: #ddd; margin-top: 2px; border-color: #aaa; border-radius: 5px;"/>
+	<hr/>
 </div>
 
 <?php if ($conditionHtml != '') : ?>

@@ -55,7 +55,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 	<div style="padding-top:5px">
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_select_context_div',this)" ><?php echo lang('context') ?></a> -
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_more_div', this)" style="font-weight:bold" ><?php echo lang('task data') ?></a> -  
-		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>task_repeat_options_div',this)"><?php echo lang('repeating task') ?></a>  -
+		<a id="<?php echo $genid?>task_repeat_options" href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>task_repeat_options_div',this)"><?php echo lang('repeating task') ?></a>  -
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_reminders_div',this)"><?php echo lang('object reminders') ?></a>  -
 		<a href="#" class="option <?php echo $visible_cps>0 ? 'bold' : ''?>" onclick="og.toggleAndBolden('<?php echo $genid ?>add_custom_properties_div', this)"><?php echo lang('custom properties') ?></a> -
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_subscribers_div',this)"><?php echo lang('object subscribers') ?></a>
@@ -730,7 +730,12 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 				og.openLink(url, {method: 'POST', scope: this});
 			}
 			this.close();
-		}
+		},
+		listeners:{
+            beforeclose:function(){
+            	showRepeatOpt();
+            }
+        }    
 	});
 
 	$(document).ready(function() {
@@ -750,6 +755,15 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 
 	function selectRelated(val){
 		$("#<?php echo $genid?>type_related").val(val);
+	}
+
+	function showRepeatOpt(){
+		var val = $("#<?php echo $genid?>type_related").val();
+		if(val == "only"){
+			$("#<?php echo $genid?>task_repeat_options").hide();
+		}else{
+			$("#<?php echo $genid?>task_repeat_options").show();
+		}
 	}
 
 	<?php if ($task->isNew()){ ?>

@@ -32,6 +32,7 @@ return array(
         'edit' => 'Edit',
   	'of' => 'Of',
   	'search results for' => 'Search Result for',
+  	'search speed' => 'Search speed',
         'delete' => 'Delete',
   	'empty trash can' => 'Empty trash can',
         'save' => 'Save',

@@ -96,6 +96,8 @@
 	'config option desc use_object_properties' => 'Habilitando esta opción se podrán definir propiedades del estilo (clave - valor) para cada objeto del sistema.',
 	'config option name automatic_crpm_status_calculation' => 'Estado automático para Clientes & Proyectos',
   	'config option desc automatic_crpm_status_calculation' => 'Habilite esta opción para poder definir las fórmulas para calcular automáticamente los diferentes estados de los Clientes y Proyectos',
+	'config option name add_default_permissions_for_users' => 'Dar permisos por defecto a usuarios Ejecutivos, Gerentes y Administradores',
+	'config option desc add_default_permissions_for_users' => 'Al crear un espacio de trabajo, cliente o proyecto se le dan los permisos por defecto a usuarios Ejecutivos, Gerentes y Administradores.',
 	'user ws config category name dashboard' => 'Opciones del panel de resumen',
 	'user ws config category name task panel' => 'Opciones del panel de tareas',
 	'user ws config category name calendar panel' => 'Opciones del Calendario',

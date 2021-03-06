@@ -19,4 +19,8 @@
 		<?php echo lang("no search result for", $search_string);?>
 	</div>
 </div>
-<script>$("#searchButton").prop("disabled",false);</script>
+<script>
+	$("#searchButton").prop("disabled",false);
+	$("#search_for").prop("disabled",false);	
+
+</script>

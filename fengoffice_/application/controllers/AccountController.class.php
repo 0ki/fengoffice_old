@@ -573,8 +573,9 @@ class AccountController extends ApplicationController {
 	function set_timezone() {
 		$tz = array_var($_REQUEST, 'tz');
 		if ($tz != logged_user()->getTimezone()) {
-			logged_user()->setTimezone($tz);
-			logged_user()->save();
+			$sql = "UPDATE ".TABLE_PREFIX."contacts SET timezone = '".$tz."'
+			WHERE object_id = ".logged_user()->getId();
+			DB::execute($sql);
 		}
 		ajx_current("empty");
 	}

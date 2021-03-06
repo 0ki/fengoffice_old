@@ -282,6 +282,27 @@ return array(
 	'is_user' => 'Is user',
 	'field Objects is_user' => 'Is user',
 	'field Contacts is_user' => 'Is user',
+
+	'home_phone' => 'Home phone',
+	'work_phone' => 'Work phone',
+	'mobile_phone' => 'Mobile phone',
+	'im_values' => 'Instant messaging',
+	'personal_webpage' => 'Personal webpage',
+	'work_webpage' => 'Work webpage',
+	'other_webpage' => 'Other webpage',
+	'home_address' => 'Home address',
+	'work_address' => 'Work address',
+	'other_address' => 'Other address',
+
+	'field Contacts home_phone' => 'Home phone',
+	'field Contacts work_phone' => 'Work phone',
+	'field Contacts mobile_phone' => 'Mobile phone',
+	'field Contacts im_values' => 'Instant messaging',
+	'field Contacts personal_webpage' => 'Personal webpage',
+	'field Contacts work_webpage' => 'Work webpage',
+	'field Contacts other_webpage' => 'Other webpage',
+	'field Contacts home_address' => 'Home address',
+	'field Contacts work_address' => 'Work address',
+	'field Contacts other_address' => 'Other address',
 );
 
-?>

@@ -743,7 +743,8 @@ class MailUtilities {
 	
 			if ($in_reply_to) {
 				if (str_starts_with($in_reply_to, "<")) $in_reply_to = substr($in_reply_to, 1, -1);
-				$validator = new SwiftHeaderValidator();
+				$grammar = new Swift_Mime_Grammar();
+				$validator = new SwiftHeaderValidator($grammar);
 				if ($validator->validate_id_header_value($in_reply_to)) {
 					$message->getHeaders()->addIdHeader("In-Reply-To", $in_reply_to);
 				}
@@ -1214,14 +1215,15 @@ class MailUtilities {
 			if ($pos !== FALSE && strpos($addr, ">", $pos) !== FALSE) {
 				$name = trim(substr($addr, 0, $pos));
 				$val = trim(substr($addr, $pos + 1, -1));
-				if (!preg_match(EMAIL_FORMAT, $val)) {
+				if ((!preg_match(EMAIL_FORMAT, $val)) || (str_starts_with($val, '.'))) {
 					if (is_null($invalid_addresses)) $invalid_addresses = array();
 					$invalid_addresses[] = $val;
 				}
 			} else {
-				if (!preg_match(EMAIL_FORMAT, $addr)) {
+				if ((!preg_match(EMAIL_FORMAT, $addr)) || (str_starts_with($addr, '.'))) {
 					if (is_null($invalid_addresses)) $invalid_addresses = array();
 					$invalid_addresses[] = $addr;
+					
 				}
 			}
 		}

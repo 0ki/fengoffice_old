@@ -1,6 +1,6 @@
 <?php
 	
-	function total_task_times_print_group($group_obj, $grouped_objects, $options, $skip_groups = array(), $level = 0, $prev = "", &$total = 0, &$billing_total = 0) {
+	function total_task_times_print_group($group_obj, $grouped_objects, $options, $skip_groups = array(), $level = 0, $prev = "", &$total = 0, &$billing_total = 0, &$estimated_total = 0) {
 		
 		$margin_left = 15 * $level;
 		$cls_suffix = $level > 2 ? "all" : $level;
@@ -13,14 +13,17 @@
 		
 		$group_total = 0;
 		$group_billing_total = 0;
+		$group_estimated_total = 0;
 		
 		$table_total = 0;
 		$table_billing_total = 0;
+		$table_estimated_total = 0;
 		// draw the table for the values
 		if (isset($grouped_objects[$mem_index]) && count($grouped_objects[$mem_index]) > 0) {
-			total_task_times_print_table($grouped_objects[$mem_index], $margin_left, $options, $group_name, $table_total, $table_billing_total);
+			total_task_times_print_table($grouped_objects[$mem_index], $margin_left, $options, $group_name, $table_total, $table_billing_total, $table_estimated_total);
 			$group_total += $table_total;
 			$group_billing_total += $table_billing_total;
+			$group_estimated_total += $table_estimated_total;
 		}
 		
 		if (!is_array($group_obj['subgroups'])) return;
@@ -30,16 +33,22 @@
 		foreach ($subgroups as $subgroup) {
 			$sub_total = 0;
 			$sub_total_billing = 0;
-			total_task_times_print_group($subgroup, $grouped_objects, $options, array(), $next_level, $prev . $group_obj['group']['id'] . "_", $sub_total, $sub_total_billing);
+			$sub_total_estimated = 0;
+			total_task_times_print_group($subgroup, $grouped_objects, $options, array(), $next_level, $prev . $group_obj['group']['id'] . "_", $sub_total, $sub_total_billing, $sub_total_estimated);
 			$group_total += $sub_total;
 			$group_billing_total += $sub_total_billing;
+			$group_estimated_total += $sub_total_estimated;
 		}
 		
 		$total += $group_total;
 		$billing_total += $group_billing_total;
+		$estimated_total += $group_estimated_total;
 		
 		
 		echo '<div style="margin-left:' . $margin_left . 'px;" class="report-group-footer">' . $group_name;
+		if(array_var($options, 'timeslot_type') == 0 || array_var($options, 'timeslot_type') == 2){
+			echo '<div style="float:right;width:140px;" class="bold right">' . DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($estimated_total * 60), "hm", 60) . '</div>';
+		}
 		echo '<div style="float:right;width:140px;" class="bold right">' . DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($group_total * 60), "hm", 60) . '</div>';
 		if (array_var($options, 'show_billing') == 'checked') {
 			echo '<div style="float:right;" class="bold">' . config_option('currency_code', '$') . " " . number_format($billing_total, 2) . '</div>';
@@ -49,8 +58,7 @@
 	}
 	
 	
-	function total_task_times_print_table($objects, $left, $options, $group_name, &$sub_total = 0, &$sub_total_billing = 0) {
-		
+	function total_task_times_print_table($objects, $left, $options, $group_name, &$sub_total = 0, &$sub_total_billing = 0, &$sub_total_estimated = 0) {
 		echo '<div style="padding-left:'. $left .'px;">';
 		echo '<table class="reporting-table"><tr class="reporting-table-heading">';
 		echo '<th>' . lang('date') . '</th>';
@@ -61,9 +69,13 @@
 			echo '<th class="right">' . lang('billing') . '</th>';
 		}
 		echo '<th class="right">' . lang('time') . '</th>';
+		if(array_var($options, 'timeslot_type') == 0 || array_var($options, 'timeslot_type') == 2){
+			echo '<th class="right">' . lang('estimated') . '</th>';
+		}
 		echo '</tr>';
 		
 		$sub_total = 0;
+		$tasks = array();
 		
 		$alt_cls = "";
 		foreach ($objects as $ts) { /* @var $ts Timeslot */
@@ -84,6 +96,16 @@
 			}
 			$lastStop = $ts->getEndTime() != null ? $ts->getEndTime() : ($ts->isPaused() ? $ts->getPausedOn() : DateTimeValueLib::now());
 			echo "<td class='time nobr right'>" . DateTimeValue::FormatTimeDiff($ts->getStartTime(), $lastStop, "hm", 60, $ts->getSubtract()) ."</td>";
+			if((array_var($options, 'timeslot_type') == 0 || array_var($options, 'timeslot_type') == 2) && $ts->getRelObject() instanceof ProjectTask){
+				echo "<td class='time nobr right'>" . DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($ts->getRelObject()->getTimeEstimate() * 60), 'hm', 60) ."</td>";
+				$task = $ts->getRelObject();
+				
+				//check if I have the estimated time of this task
+				if(!in_array($task->getId(), $tasks)){
+					$sub_total_estimated += $task->getTimeEstimate();
+				}
+				$tasks[] = $task->getId();
+			}
 			echo "</tr>";
 			
 			$sub_total += $ts->getMinutes();
@@ -174,23 +196,29 @@
         if(count($grouped_timeslots) > 0){
             $total = 0;
             $billing_total = 0;
-
+            $estimated_total = 0;
+            
             $groups = order_groups_by_name($grouped_timeslots['groups']);
             foreach ($groups as $gid => $group_obj) {
                     $tmp_total = 0;
                     $tmp_billing_total = 0;
-                    total_task_times_print_group($group_obj, $grouped_timeslots['grouped_objects'], array_var($_SESSION, 'total_task_times_report_data'), array(), 0, "", $tmp_total, $tmp_billing_total);
+                    $tmp_estimated_total = 0;
+                    total_task_times_print_group($group_obj, $grouped_timeslots['grouped_objects'], array_var($_SESSION, 'total_task_times_report_data'), array(), 0, "", $tmp_total, $tmp_billing_total, $tmp_estimated_total);
                     $total += $tmp_total;
                     $billing_total += $tmp_billing_total;
+                    $estimated_total += $tmp_estimated_total;
             }
             if(count($groups) >0){
             ?>
                     <div class="report-group-footer" style="margin-top:20px;">
                             <span class="bold" style="font-size:150%;"><?php echo lang('total').": "; ?></span>
+                    <?php if (array_var(array_var($_SESSION, 'total_task_times_report_data'), 'timeslot_type') == 0 || array_var(array_var($_SESSION, 'total_task_times_report_data'), 'timeslot_type') == 2) { ?>
+                            <div style="float:right;width:150px;" class="bold right"><?php echo DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($estimated_total * 60), "hm", 60) ?></div>
+                    <?php } ?>
                             <div style="float:right;width:150px;" class="bold right"><?php echo DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($total * 60), "hm", 60) ?></div>
                     <?php if (array_var(array_var($_SESSION, 'total_task_times_report_data'), 'show_billing') == 'checked') { ?>
                             <div style="float:right;" class="bold"><?php echo config_option('currency_code', '$') . " " . number_format($billing_total, 2) ?></div>
-                    <?php }?>
+                    <?php }?>                    
                     </div>
             </div>
             <?php }?>

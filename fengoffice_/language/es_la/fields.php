@@ -277,4 +277,26 @@
 	'is_user' => 'Es usuario',
 	'field Objects is_user' => 'Es usuario',
 	'field Contacts is_user' => 'Es usuario',
-); ?>
+
+	'home_phone' => 'Teléfono personal',
+	'work_phone' => 'Teléfono del trabajo',
+	'mobile_phone' => 'Teléfono móvil',
+	'im_values' => 'Mensajería instantánea',
+	'personal_webpage' => 'Sitio web personal',
+	'work_webpage' => 'Sitio web del trabajo',
+	'other_webpage' => 'Otro sitio web',
+	'home_address' => 'Dirección personal',
+	'work_address' => 'Dirección del trabajo',
+	'other_address' => 'Otra dirección',
+
+	'field Contacts home_phone' => 'Teléfono personal',
+	'field Contacts work_phone' => 'Teléfono del trabajo',
+	'field Contacts mobile_phone' => 'Teléfono móvil',
+	'field Contacts im_values' => 'Mensajería instantánea',
+	'field Contacts personal_webpage' => 'Sitio web personal',
+	'field Contacts work_webpage' => 'Sitio web del trabajo',
+	'field Contacts other_webpage' => 'Otro sitio web',
+	'field Contacts home_address' => 'Dirección personal',
+	'field Contacts work_address' => 'Dirección del trabajo',
+	'field Contacts other_address' => 'Otra dirección',
+);

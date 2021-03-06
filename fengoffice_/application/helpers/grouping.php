@@ -208,7 +208,7 @@
 			$gb_val = $obj->getColumnValue($column);
 			$group = null;
 			foreach ($groups as $g) {
-				if (array_var($g, 'id') == $gb_val) $group = $g;
+				if (array_var($g, 'id') === $gb_val) $group = $g;
 			}
 			if (is_null($group)) {
 				/* @var $obj ContentDataObject */

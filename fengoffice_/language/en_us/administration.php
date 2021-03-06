@@ -112,6 +112,8 @@
     'config option name wysiwyg_projects' => 'Description of projects with WYSIWYG',
     'config option desc wysiwyg_projects' => 'Enable this option so that you can write your Projects description using rich text format.',
 
+  	'config option name let_users_create_objects_in_root' => 'Let users create objects without classifying them',
+
     // Mailing
     'config option name exchange_compatible' => 'Microsoft Exchange compatibility mode',
     'config option desc exchange_compatible' => 'If you are using Microsoft Exchange Server set this option to yes to avoid some known mailing problems.',
@@ -167,6 +169,10 @@
 	'config option desc use_object_properties' => 'Enabling this option will allow you to define custom (key - value) properties for every object.',
 	'config option name automatic_crpm_status_calculation' => 'Clients & Project automatic status',
   	'config option desc automatic_crpm_status_calculation' => 'When enabled, you will be able to set up the formulas for the Clients & Project different status so that they are calculated automatically',
+
+	'config option name add_default_permissions_for_users' => 'Set default permissions for Executive, Manager and Administrator users',
+	'config option desc add_default_permissions_for_users' => 'If enabled then these users will be granted with the default permissions when creating a Workspace, Client or Project',
+	
     'group users' => 'Group users',
     'timeslot' => 'Time',
     'module permissions' => 'Module Permissions',

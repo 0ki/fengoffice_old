@@ -126,7 +126,7 @@
 			<table style="width:100%">
 			<tr>
 				<td class="td-pr"><?php echo label_tag(lang('address'), $genid.'profileFormWAddress') ?></td>
-				<td><?php echo text_field('company[address]', array_var($company_data, 'address'), array('id' => $genid.'clientFormAddress', 'tabindex' => '10', 'maxlength' => 100)) ?></td>
+				<td><?php echo textarea_field('company[address]', array_var($company_data, 'address'), array('id' => $genid.'clientFormAddress', 'tabindex' => '10', 'class' => 'short textarea')) ?></td>
 			</tr><tr>
 				<td class="td-pr"><?php echo label_tag(lang('city'), $genid.'clientFormCity') ?></td>
 				<td><?php echo text_field('company[city]', array_var($company_data, 'city'), array('id' => $genid.'clientFormCity', 'tabindex' => '30', 'maxlength' => 50)) ?></td>

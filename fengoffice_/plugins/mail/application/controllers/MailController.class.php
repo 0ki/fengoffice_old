@@ -942,6 +942,7 @@ class MailController extends ApplicationController {
 		}
 		ini_set('memory_limit', $old_memory_limit);
 		ajx_current("empty");
+		
 	}
 	
 	//to send old sent emails to the email server (synchronization)

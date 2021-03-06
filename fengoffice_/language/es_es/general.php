@@ -278,6 +278,7 @@
 	'group users' => 'Usuarios del grupo',
 	'of' => 'de',
 	'search results for' => 'Resultados de la búsqueda de',
+	'search speed' => 'Velocidad de búsqueda',
 	'completed pl' => 'Completadas',
 	'calendar' => 'Calendario',
 	'context' => 'Relacionado a',

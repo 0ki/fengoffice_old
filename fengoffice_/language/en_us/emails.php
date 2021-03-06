@@ -131,6 +131,9 @@ return array(
 	'view timeslots' => 'View timeslots',
     'view user' => 'View user',	
 
+	'mails_in_outbox reminder' => 'Mails without sending',
+	'mails_in_outbox reminder desc' => 'There are {0} emails that have not been sent yet. Please have a look at your Outbox folder for further information',
+		
     'original message' => 'Original message',
     'mail sent' => 'Sent',
 

@@ -196,6 +196,7 @@ class ReportingController extends ApplicationController {
 		$report_data['show_billing'] = user_config_option('timeReportShowBilling');
 		
 		$users = Contacts::getAllUsers();
+		$_SESSION['total_task_times_report_data'] = $report_data;
 		tpl_assign('report_data', $report_data);
 		tpl_assign('users', $users);
 		tpl_assign('has_billing', BillingCategories::count() > 0);
@@ -237,6 +238,7 @@ class ReportingController extends ApplicationController {
 			set_user_config_option('timeReportGroupBy', $group , logged_user()->getId());
 			set_user_config_option('timeReportAltGroupBy', $altGroup , logged_user()->getId());
 			
+			$_SESSION['total_task_times_report_data'] = $report_data;			
 		}
 		
 		
@@ -1227,16 +1229,20 @@ class ReportingController extends ApplicationController {
 				$fields[] = array('id' => $extField, 'name' => $field_name, 'type' => 'external', 'multiple' => 0);
 			}
 			//if Object type is person
-			$objType = ObjectTypes::findByName('contact');
-			if ($objType instanceof ObjectType){
-				if($object_type == $objType->getId()){
-					$fields[] = array('id' => 'is_user', 'name' => lang('is_user'), 'type' => 'boolean');
-					$fields[] = array('id' => 'email_address', 'name' => lang('email address'), 'type' => 'text');
-					//$fields[] = array('id' => 'phone_number', 'name' => lang('phone number'), 'type' => 'text');
-					//$fields[] = array('id' => 'web_url', 'name' => lang('web pages'), 'type' => 'text');
-					//$fields[] = array('id' => 'im_value', 'name' => lang('instant messengers'), 'type' => 'text');
-					//$fields[] = array('id' => 'address', 'name' => lang('address'), 'type' => 'text');
-				}
+			$contact_ot = ObjectTypes::findByName('contact');
+			if ($contact_ot instanceof ObjectType && $object_type == $contact_ot->getId()) {
+				$fields[] = array('id' => 'is_user', 'name' => lang('is_user'), 'type' => 'boolean');
+				$fields[] = array('id' => 'email_address', 'name' => lang('email address'), 'type' => 'text');
+				$fields[] = array('id' => 'mobile_phone', 'name' => lang('mobile phone'), 'type' => 'text');
+				$fields[] = array('id' => 'work_phone', 'name' => lang('work phone'), 'type' => 'text');
+				$fields[] = array('id' => 'home_phone', 'name' => lang('home phone'), 'type' => 'text');
+				$fields[] = array('id' => 'im_values', 'name' => lang('instant messaging'), 'type' => 'text');
+				$fields[] = array('id' => 'personal_webpage', 'name' => lang('personal_webpage'), 'type' => 'text');
+				$fields[] = array('id' => 'work_webpage', 'name' => lang('work_webpage'), 'type' => 'text');
+				$fields[] = array('id' => 'other_webpage', 'name' => lang('other_webpage'), 'type' => 'text');
+				$fields[] = array('id' => 'home_address', 'name' => lang('home_address'), 'type' => 'text');
+				$fields[] = array('id' => 'work_address', 'name' => lang('work_address'), 'type' => 'text');
+				$fields[] = array('id' => 'other_address', 'name' => lang('other_address'), 'type' => 'text');
 			}
 			if (!array_var($_REQUEST, 'noaddcol')) {
 				Hook::fire('custom_reports_additional_columns', null, $fields);

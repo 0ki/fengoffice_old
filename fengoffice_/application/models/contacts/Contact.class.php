@@ -484,12 +484,11 @@ class Contact extends BaseContact {
 	 */
 	function getAddress($type) {
 		$address_type_id = AddressTypes::getAddressTypeId($type);
-		return ContactAddresses::findOne(array('conditions' => array("`contact_id` = ? AND `address_type_id` = ?", 
-    		   $this->getId(), $address_type_id)));
+		return ContactAddresses::findOne(array('conditions' => array("`contact_id` = ? AND `address_type_id` = ?", $this->getId(), $address_type_id)));
 	} // getMainPhone
-    
+
 	/**
-	 * Return  
+	 * Return
 	 *
 	 * @access public
 	 * @param $typeId
@@ -498,18 +497,21 @@ class Contact extends BaseContact {
 	 */
 	function getStringAddress($type) {
 		$address_type_id = AddressTypes::getAddressTypeId($type);
-		$address = ContactAddresses::findOne(array('conditions' => array("`contact_id` = ? AND `address_type_id` = ?", 
-    		   $this->getId(), $address_type_id)));
-        //print_r($address);
-        $out = $address->getStreet();
-        if($address->getCity() != '')
-            $out .= ' - ' . $address->getCity();
-        if($address->getState() != '')
-            $out .= ' - ' . $address->getState();        
-        if($address->getCountry() != '')
-            $out .= ' - ' . $address->getCountryName();
-        return $out;
-        
+		$address = ContactAddresses::findOne(array('conditions' => array("`contact_id` = ? AND `address_type_id` = ?", $this->getId(), $address_type_id)));
+
+		if (!$address instanceof ContactAddress) return "";
+
+		$out = $address->getStreet();
+		if($address->getCity() != '') {
+			$out .= ' - ' . $address->getCity();
+		}
+		if($address->getState() != '') {
+			$out .= ' - ' . $address->getState();
+		}
+		if($address->getCountry() != '') {
+			$out .= ' - ' . $address->getCountryName();
+		}
+		return $out;
 	} // getMainPhone
 	
 	
@@ -521,10 +523,14 @@ class Contact extends BaseContact {
 	 * @return ContactTelephone
      * @author Seba
 	 */
-	function getPhone($type, $is_main = false) {
-		$is_main ? $is_main = 1 : $is_main = 0;
+	function getPhone($type, $is_main = false, $check_is_main = true) {
+		if ($check_is_main) {
+			$is_main_cond = "`is_main` = ".($is_main ? 1 : 0);
+		} else {
+			$is_main_cond = "true";
+		}
 		$telephone_type_id = TelephoneTypes::getTelephoneTypeId($type);
-		return ContactTelephones::findOne(array('conditions' => array("`is_main` = $is_main AND `contact_id` = ? AND 
+		return ContactTelephones::findOne(array('conditions' => array("$is_main_cond AND `contact_id` = ? AND 
 		`telephone_type_id` = ?", $this->getId(), $telephone_type_id)));
 	} // getFaxPhone	
 	
@@ -553,12 +559,20 @@ class Contact extends BaseContact {
 	 * @return string
      * @author Seba
 	 */
-	function getPhoneNumber($type, $is_main = false) {
-		$telephone = $this->getPhone($type, $is_main);
+	function getPhoneNumber($type, $is_main = false, $check_is_main = true) {
+		$telephone = $this->getPhone($type, $is_main, $check_is_main);
 		$number = is_null($telephone)? '' : $telephone->getNumber();
 		return $number;
 	} // getPhoneNumber
 
+	function getAllImValues() {
+		$rows = DB::executeAll("SELECT i.value, t.name FROM fo_contact_im_values i INNER JOIN fo_im_types t ON i.im_type_id=t.id WHERE i.contact_id=".$this->getId());
+		$res = array();
+		foreach ($rows as $row) {
+			$res[$row['name']] = $row['value'];
+		}
+		return $res;
+	}
 	
 	/**
 	 * Return first webpage for this contact.

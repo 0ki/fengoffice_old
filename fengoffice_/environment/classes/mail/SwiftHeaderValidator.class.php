@@ -4,10 +4,13 @@
 class SwiftHeaderValidator extends Swift_Mime_Headers_AbstractHeader {
 	
 	function validate_id_header_value($id) {
-		if (!isset($this->_grammar) || !is_array($this->_grammar) || count($this->_grammar) == 0) $this->initializeGrammar();
+		if (!isset($this->_grammar) || !is_array($this->_grammar) || count($this->_grammar) == 0) {
+			$this->_grammar = $this->getGrammar()->getGrammarDefinitions();
+			//$this->initializeGrammar();
+		}
 		return preg_match(
-			'/^' . $this->getGrammar('id-left') . '@' .
-			$this->getGrammar('id-right') . '$/D',
+			'/^' . $this->_grammar['id-left'] . '@' .
+			$this->_grammar['id-right'] . '$/D',
 			$id
 		);
 	}

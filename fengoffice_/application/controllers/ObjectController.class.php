@@ -196,7 +196,7 @@ class ObjectController extends ApplicationController {
 			if ($ent_mem->getDimension()->getIsManageable() && $ent_mem->getDimension()->getDefinesPermissions()) $manageable_members[] = $ent_mem;
 		}
 		
-		if (!can_add($user, $check_allowed_members ? $object->getAllowedMembersToAdd($user, $manageable_members):$manageable_members, $object->getObjectTypeId())) {
+		if ((!can_add($user, $check_allowed_members ? $object->getAllowedMembersToAdd($user, $manageable_members):$manageable_members, $object->getObjectTypeId())) && !$object instanceof TemplateTask) {
 			$dinfos = DB::executeAll("SELECT name, code, options FROM ".TABLE_PREFIX."dimensions WHERE is_manageable = 1");
 			$dimension_names = array();
 			foreach ($dinfos as $dinfo) {
@@ -1641,8 +1641,21 @@ class ObjectController extends ApplicationController {
 		$reminders = ObjectReminders::getDueReminders("reminder_popup");
 		$popups = array();
 		foreach ($reminders as $reminder) {
-			$object = $reminder->getObject();
 			$context = $reminder->getContext();
+			
+			if(str_starts_with($context, "mails_in_outbox")){
+				preg_match('!\d+!', $context, $matches);
+				evt_add("popup", array(
+				'title' => lang("mails_in_outbox reminder"),
+				'message' => lang("mails_in_outbox reminder desc", $matches[0]),
+				'type' => 'reminder',
+				'sound' => 'info'
+							));
+				$reminder->delete();
+				continue;
+			}
+			
+			$object = $reminder->getObject();			
 			$type = $object->getObjectTypeName();
 			$date = $object->getColumnValue($reminder->getContext());
 			if (!$date instanceof DateTimeValue) continue;
@@ -1672,6 +1685,7 @@ class ObjectController extends ApplicationController {
 					continue;
 				}
 			}
+			
 			$url = $object->getViewUrl();
 			$link = '<a href="#" onclick="og.openLink(\''.$url.'\');return false;">'.clean($object->getObjectName()).'</a>';
 			evt_add("popup", array(
