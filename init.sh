@@ -1,17 +1,14 @@
 #!/bin/bash
 
 listurl=https://sourceforge.net/projects/opengoo/files/fengoffice/
-baseurl=https://downloads.sourceforge.net/project/opengoo/fengoffice/
-mirror=deac-riga
 file=fengoffice_
 ext=.zip
-openapp=unzip
 
 [ ! -d ".git" ] && git init
 
 mkdir -p $file
 
-baselist1="$(curl https://sourceforge.net/projects/opengoo/rss?path=/opengoo | grep "download</link>"|striptags | grep -Ei "/(opengoo|fengoffice)_[^/]+/download$" | grep -vi upgrade | grep -vi patch | sed -E 's/^\s+//g;s/\s+$//g' |tac)"
+baselist1="$(curl https://sourceforge.net/projects/opengoo/rss?path=/opengoo | grep "download</link>"|striptags | grep -Ei "/(opengoo|fengoffice)[^/]+/download$" | grep -vi upgrade | grep -vi patch | sed -E 's/^\s+//g;s/\s+$//g' |tac)"
 versionlist1="$(echo "$baselist1" | rev | cut -d / -f 2 |rev | sed 's/'"$(echo $ext | sed 's/\./\\./g')"'$//i')"
 
 
@@ -21,7 +18,7 @@ versionlist="$versionlist1"
 preversionlist2=$(curl "$listurl" | grep "<span class=\"name\">" | striptags | sed -E 's/^\s+//g;s/\s+$//g' | tac)
 
 for v in $preversionlist2; do 
- baselist_t="$(curl -s "https://sourceforge.net/projects/opengoo/rss?path=/fengoffice/$v" | grep "download</link>"|striptags | grep -Ei "/(opengoo|fengoffice)_[^/]+/download$" | grep -vi upgrade | grep -vi patch | sed -E 's/^\s+//g;s/\s+$//g' |tac)"
+ baselist_t="$(curl -s "https://sourceforge.net/projects/opengoo/rss?path=/fengoffice/$v" | grep "download</link>"|striptags | grep -Ei "/(opengoo|fengoffice)[^/]+/download$" | grep -vi upgrade | grep -vi patch | sed -E 's/^\s+//g;s/\s+$//g' |tac)"
  versionlist_t="$(echo "$baselist_t" | rev | cut -d / -f 2 |rev | sed 's/'"$(echo $ext | sed 's/\./\\./g')"'$//i')"
  baselist="$baselist $baselist_t"
  versionlist="$versionlist $versionlist_t"
