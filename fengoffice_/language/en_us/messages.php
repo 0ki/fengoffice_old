@@ -193,6 +193,7 @@
     'success user permissions updated' => 'User permissions have been updated',
   
     'success add event' => 'Event \'{0}\' has been added',
+    'success add events' => 'Events have been added',
     'success edit event' => 'Event \'{0}\' has been updated',
     'success delete event' => 'Event \'{0}\' has been deleted',
     

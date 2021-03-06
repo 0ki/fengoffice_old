@@ -1,4 +1,4 @@
-<div class=" dashboard-container">
+<div class=" dashboard-container view-container">
 	<div class="section-top">
 		<?php DashboardTools::renderSection('top'); ?>	
 	</div> 
@@ -16,9 +16,11 @@
 	</div>
 	<div class="x-clear" ></div>
 </div>
-
 <script>
-	$(function(){
+$(function(){
+	var div = document.getElementById('breadcrumbs');
+	if (div && div.innerHTML == '') {
 		og.Breadcrumbs.init('<?php echo lang("viewing all information") ?>');
-	})
+	}
+})
 </script>

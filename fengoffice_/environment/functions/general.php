@@ -565,6 +565,9 @@ function remove_css($html) {
 	return preg_replace('/<style[^>]*>.*<\/style[^>]*>/i', '', $html);
 }
 
+/**
+ * @deprecated Use HTMLPurifier
+ */
 function remove_scripts($html) {
 	return preg_replace('/<script[^>]*>.*(<\/script[^>]*>|$)/i', '', $html);
 }

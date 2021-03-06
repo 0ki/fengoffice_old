@@ -16,11 +16,10 @@
 
 
 <?php
+$calendar_panel = TabPanels::instance()->findById('calendar-panel');
+if ($calendar_panel instanceof TabPanel && $calendar_panel->getEnabled()) {
+
 	$genid = gen_id();
-	$show_help_option = user_config_option('show_context_help'); 
-	if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_calendar_widget_context_help', true, logged_user()->getId()))) {
-		render_context_help($this, 'chelp calendar widget', 'calendar_widget');
-	}
 	
 	require_javascript('og/EventPopUp.js');
 	
@@ -74,24 +73,24 @@
 	// Loop to render the calendar
 	
 	$can_add_event = !active_project() || ProjectEvent::canAdd(logged_user(),active_project());	
-					$output .= "<tr>";
-					
-					if(!user_config_option("start_monday")) {
-						$output .= "    <th width='12.5%' align='center'>" .  lang('sunday short') . '</th>' . "\n";
-					}
-					$output .= '
-					<th width="15%">' . lang('monday short') . '</th>
-					<th width="15%">' . lang('tuesday short') . '</th>
-					<th width="15%">' . lang('wednesday short') . '</th>
-					<th width="15%">' . lang('thursday short') . '</th>
-					<th width="15%">' . lang('friday short') . '</th>
-					<th width="12.5%">' . lang('saturday short') . '</th>';
-					
-					if(user_config_option("start_monday")) {
-						$output .= '<th width="12.5%">' . lang('sunday short') . '</th>';
-					}
-					$output .= '</tr>';
-	//for ($week_index = 0;$week_index<1; $week_index++) {
+	$output .= "<tr>";
+	
+	if(!user_config_option("start_monday")) {
+		$output .= "    <th width='12.5%' align='center'>" .  lang('sunday short') . '</th>' . "\n";
+	}
+	$output .= '
+	<th width="15%">' . lang('monday short') . '</th>
+	<th width="15%">' . lang('tuesday short') . '</th>
+	<th width="15%">' . lang('wednesday short') . '</th>
+	<th width="15%">' . lang('thursday short') . '</th>
+	<th width="15%">' . lang('friday short') . '</th>
+	<th width="12.5%">' . lang('saturday short') . '</th>';
+	
+	if(user_config_option("start_monday")) {
+		$output .= '<th width="12.5%">' . lang('sunday short') . '</th>';
+	}
+	$output .= '</tr>';
+
     for ($week_index = 0;$week_index<$my_weeks; $week_index++) {
 		$output .= '  <tr>' . "\n";
 		for ($day_of_week = 0; $day_of_week < 7; $day_of_week++) {
@@ -214,9 +213,13 @@
 					$count=0;
 					$to_show_len = 25;
 					foreach($result as $event){
+						
+						$ws_color = $event->getObjectColor($event instanceof ProjectEvent ? 1 : 12);
+						cal_get_ws_color($ws_color, $ws_style, $ws_class, $txt_color, $border_color);
+						
 						if($event instanceof ProjectEvent ){
 							$count++;
-							$subject =   clean($event->getSubject());
+							$subject = clean($event->getSubject());
 							$typeofevent = $event->getTypeId(); 
 	 
 							$eventid = $event->getId();
@@ -226,7 +229,7 @@
 							
 							// make the event subjects links or not according to the variable $whole_day in gatekeeper.php
 							if($count <= 3){
-								$output .= "<div class='event_block'   style='z-index:1000;'>";
+								$output .= "<div class='og-wsname-color-$ws_color' style='border-radius:4px;height:17px;margin:1px;padding:1px;z-index:1000;border: 1px solid;border-color:$border_color'>";
 								if($subject=="") $subject = "[".lang('CAL_NO_SUBJECT')."]";
 								$subject_toshow = mb_strlen($subject) < $to_show_len ? $subject : mb_substr($subject, 0, $to_show_len-3)."...";
 								$output .= "<span id='o_ev_div_" . $event->getId() . "'>";			
@@ -252,7 +255,7 @@
 								if ($count<=3){
 									$cal_text = clean($milestone->getName());
 									$cal_text = mb_strlen($cal_text) < $to_show_len ? $cal_text : mb_substr($cal_text, 0, $to_show_len-3)."...";
-									$output .= '<div class="event_block">';
+									$output .= "<div class='og-wsname-color-$ws_color' style='border-radius:4px;height:17px;margin:1px;padding:1px;z-index:1000;border: 1px solid;border-color:$border_color'>";
 									$output .= "<span id='o_ms_div_" . $milestone->getId() . "'>";
 									$output .= "<a class=\"internalLink link-ico ico-milestone\" style='vertical-align:bottom;' href='".$milestone->getViewUrl()."' onclick=\"og.disableEventPropagation(event);\" >";
 									$output .= $cal_text."</a>";
@@ -301,7 +304,7 @@
 								if ($count<=3){
 									$cal_text = clean($task->getTitle());
 									$cal_text = mb_strlen($cal_text) < $to_show_len ? $cal_text : mb_substr($cal_text, 0, $to_show_len-3)."...";
-									$output .= '<div class="event_block">';
+									$output .= "<div class='og-wsname-color-$ws_color' style='border-radius:4px;height:17px;margin:1px;padding:1px;z-index:1000;border: 1px solid;border-color:$border_color'>";
 									$output .= "<span id='o_ta_div_$tip_pre" . $task->getId() . "'>";
 									$output .= "<a class=\"internalLink link-ico $ico\" style='vertical-align:bottom;' href='".$task->getViewUrl()."' onclick=\"og.disableEventPropagation(event);\" >";
 									$output .= $cal_text."</a>";
@@ -364,6 +367,8 @@
 			break;
 		}
 	} // end main loop
-$output .= '</table>';
+	$output .= '</table>';
+	
+	include_once 'template.php';
 
-include_once 'template.php';
+}

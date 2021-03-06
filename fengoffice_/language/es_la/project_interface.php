@@ -139,6 +139,7 @@
 	'uploading file' => 'Cargando documento...',
 	'cannot delete personal project' => 'El espacio personal no puede ser eliminado',
 	'workspace color' => 'Color del espacio',
+	'field workspace color' => 'Color del espacio',
 	'workspace template' => 'Template del espacio',
 	'color1' => 'Rojo',
 	'color2' => 'Verde',

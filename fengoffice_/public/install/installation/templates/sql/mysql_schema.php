@@ -170,6 +170,7 @@ CREATE TABLE `<?php echo $table_prefix ?>plugins` (
   `priority` smallint unsigned NOT NULL default '0',
   `activated_on` datetime NOT NULL default '0000-00-00 00:00:00',
   `activated_by_id` int(10) unsigned default NULL,
+  `version` int(10) unsigned default '1',
   PRIMARY KEY  (`id`), 
   UNIQUE KEY `name` (`name`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
@@ -514,7 +515,8 @@ CREATE TABLE  `<?php echo $table_prefix ?>project_events` (
   `repeat_wnum` int(10) unsigned NOT NULL default '0',
   `repeat_mjump` int(10) unsigned NOT NULL default '0',
   `type_id` int(11) NOT NULL default '0',
-  `special_id` int(11) NOT NULL default '0',
+  `special_id` VARCHAR(100) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
+  `ext_cal_id` INT(10) UNSIGNED NOT NULL,
   PRIMARY KEY  (`object_id`),
   KEY `start` (`start`),
   KEY `repeat_h` (`repeat_h`),
@@ -996,3 +998,23 @@ CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>mail_spam_filters` (
   `spam_state` enum('no spam','spam') COLLATE utf8_unicode_ci NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE = <?php echo $engine ?> <?php echo $default_charset ?> ;
+
+CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>external_calendar_users` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `contact_id` int(10) unsigned NOT NULL,
+  `auth_user` varchar(100) COLLATE utf8_unicode_ci NOT NULL,
+  `auth_pass` varchar(100) COLLATE utf8_unicode_ci NOT NULL,
+  `type` text COLLATE utf8_unicode_ci NOT NULL,
+  `sync` TINYINT( 1 ) NULL DEFAULT '0',
+  PRIMARY KEY (`id`)
+) ENGINE = <?php echo $engine ?> <?php echo $default_charset ?>;
+
+CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>external_calendars` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ext_cal_user_id` int(10) unsigned NOT NULL,
+  `calendar_user` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `calendar_visibility` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `calendar_name` text COLLATE utf8_unicode_ci NOT NULL,
+  `calendar_feng` TINYINT( 1 ) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`)
+) ENGINE = <?php echo $engine ?> <?php echo $default_charset ?>;

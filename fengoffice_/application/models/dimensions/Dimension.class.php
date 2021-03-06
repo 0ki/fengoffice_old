@@ -26,7 +26,7 @@ class Dimension extends BaseDimension {
 			if (!empty($contactsTypeId)) {	
 				$parameters['conditions'].= " AND ( object_type_id <> $contactsTypeId OR EXISTS ( SELECT object_id FROM  ".TABLE_PREFIX."contacts c WHERE c.object_id = `".TABLE_PREFIX."members`.object_id AND c.disabled = 0 ))" ;
 			}
-			$parameters['order'] = 'parent_member_id';
+		//	$parameters['order'] = 'parent_member_id';
  			
 		}
 		$members = Members::findAll($parameters);

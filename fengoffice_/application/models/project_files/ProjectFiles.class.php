@@ -81,6 +81,7 @@ class ProjectFiles extends BaseProjectFiles {
 	 * @param unknown_type $member_ids
 	 */
 	static function getAllByFilename($filename, $member_ids = null) {
+                $member_sql = "";
 		if ( is_array($member_ids)  && count($member_ids) ) {
 			$member_sql = " AND object_id IN ( 
 				SELECT distinct(object_id) 

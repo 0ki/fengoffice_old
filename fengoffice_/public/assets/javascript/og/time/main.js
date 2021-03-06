@@ -57,6 +57,7 @@ ogTimeManager.loadDataFromHF = function(genid){
 	var result = [];
 	result['tasks'] = Ext.util.JSON.decode(document.getElementById(genid + 'hfTasks').value);
 	result['users'] = Ext.util.JSON.decode(document.getElementById(genid + 'hfUsers').value);
+	result['all_users'] = Ext.util.JSON.decode(document.getElementById(genid + 'hfAllUsers').value);
 	result['timeslots'] = Ext.util.JSON.decode(document.getElementById(genid + 'hfTimeslots').value);
 	result['companies'] = Ext.util.JSON.decode(document.getElementById(genid + 'hfCompanies').value);
 	result['drawinputs'] = Ext.util.JSON.decode(document.getElementById(genid + 'hfDrawInputs').value);
@@ -87,6 +88,16 @@ ogTimeManager.loadData = function(data){
 		if (udata.id){
 			var user =  new ogTasksUser(udata.id,udata.name,udata.cid);
 			this.Users[this.Users.length] = user;
+			if (udata.isCurrent)
+				this.currentUser = user;
+		}
+	}
+	this.AllUsers = [];
+	for (i in data['all_users']){
+		var udata = data['all_users'][i];
+		if (udata.id){
+			var user = new ogTasksUser(udata.id,udata.name,udata.cid);
+			this.AllUsers[this.AllUsers.length] = user;
 			if (udata.isCurrent)
 				this.currentUser = user;
 		}
@@ -125,6 +136,7 @@ ogTimeManager.GetNewTimeslotParameters = function(genid){
 	parameters["timeslot[date]"] = Ext.getCmp(genid + "timeslot[date]Cmp").getValue().format(og.preferences['date_format']);
 
 	parameters["timeslot[hours]"] = document.getElementById(genid + 'tsHours').value;
+        parameters["timeslot[minutes]"] = document.getElementById(genid + 'tsMinutes').value;
 	parameters["timeslot[description]"] = document.getElementById(genid + 'tsDesc').value;
 	var userSel = document.getElementById(genid + 'tsUser');
 	if (userSel){
@@ -173,6 +185,7 @@ ogTimeManager.SubmitNewTimeslot = function(genid){
 				}
 				document.getElementById(genid + 'tsDesc').value = '';
 				document.getElementById(genid + 'tsHours').value = 0;
+                                document.getElementById(genid + 'tsMinutes').value = 0;
 				this.insertTimeslot(timeslot, genid);
 			} else {
 				if (!data.errorMessage || data.errorMessage == '')
@@ -216,9 +229,39 @@ ogTimeManager.EditTimeslot = function(timeslotId){
 	if (ts){
 		document.getElementById(this.genid + 'TMTimespanSubmitEdit').style.display = 'block';
 		document.getElementById(this.genid + 'TMTimespanSubmitAdd').style.display = 'none';
-		document.getElementById(this.genid + 'TMTimespanAddNew').className = 'TMTimespanEdit';
-		
-		document.getElementById(this.genid + 'tsHours').value = (ts.time / 3600);
+		document.getElementById(this.genid + 'TMTimespanAddNew').className = 'TMTimespanEdit';   
+                
+		var time_edit = parseFloat(ts.time / 3600);
+                var new_time = (time_edit + "").split(".");
+                
+		document.getElementById(this.genid + 'tsHours').value = new_time[0];
+                new_time[1] = parseFloat("0."+new_time[1]);
+                if( new_time[1] == 0 ){
+                    document.getElementById(this.genid + 'tsMinutes').value = 0;
+                }else if( new_time[1] <= 0.0833333333333335 ){
+                    document.getElementById(this.genid + 'tsMinutes').value = 5;
+                }else if( new_time[1] <= 0.1666666666666665 ){
+                    document.getElementById(this.genid + 'tsMinutes').value = 10;
+                }else if( new_time[1] <= 0.25 ){
+                    document.getElementById(this.genid + 'tsMinutes').value = 15;
+                }else if( new_time[1] <= 0.333333333333333 ){
+                    document.getElementById(this.genid + 'tsMinutes').value = 20;
+                }else if( new_time[1] <= 0.416666666666667 ){
+                    document.getElementById(this.genid + 'tsMinutes').value = 25;
+                }else if( new_time[1] <= 0.5 ){
+                    document.getElementById(this.genid + 'tsMinutes').value = 30;
+                }else if( new_time[1] <= 0.583333333333334 ){
+                    document.getElementById(this.genid + 'tsMinutes').value = 35;
+                }else if( new_time[1] <= 0.666666666666666 ){
+                    document.getElementById(this.genid + 'tsMinutes').value = 40;
+                }else if( new_time[1] <= 0.75 ){
+                    document.getElementById(this.genid + 'tsMinutes').value = 45;
+                }else if( new_time[1] <= 0.833333333333334 ){
+                    document.getElementById(this.genid + 'tsMinutes').value = 50;
+                }else if( new_time[1] >= 0.916666666666666 ){
+                    document.getElementById(this.genid + 'tsMinutes').value = 55;
+                }
+                
 		document.getElementById(this.genid + 'tsDesc').value = ts.description;
 		document.getElementById(this.genid + 'tsId').value = timeslotId;
 		
@@ -250,31 +293,38 @@ ogTimeManager.EditTimeslot = function(timeslotId){
 
 
 ogTimeManager.deleteTimeslot = function(id){
-	for (var i = 0; i < this.Timeslots.length; i++)
+	for (var i = 0; i < this.Timeslots.length; i++) {
 		if (this.Timeslots[i].id == id){
 			this.Timeslots.splice(i,1);
 			return;
 		}
+	}
 }
 
 ogTimeManager.getTimeslot = function(id){
-	for (var i = 0; i < this.Timeslots.length; i++)
-		if (this.Timeslots[i].id == id)
+	for (var i = 0; i < this.Timeslots.length; i++) {
+		if (this.Timeslots[i].id == id) {
 			return this.Timeslots[i];
+		}
+	}
 	return null;
 }
 
 ogTimeManager.getTask = function(id){
-	for (var i = 0; i < this.Tasks.length; i++)
-		if (this.Tasks[i].id == id)
+	for (var i = 0; i < this.Tasks.length; i++) {
+		if (this.Tasks[i].id == id) {
 			return this.Tasks[i];
+		}
+	}
 	return null;
 }
 
 ogTimeManager.getUser = function(id){
-	for (var i = 0; i < this.Users.length; i++)
-		if (this.Users[i].id == id)
+	for (var i = 0; i < this.Users.length; i++) {
+		if (this.Users[i].id == id) {
 			return this.Users[i];
+		}
+	}
 	return null;
 }
 
@@ -356,20 +406,21 @@ ogTimeManager.executeAction = function(actionName, ids, options){
 
 
 ogTimeManager.removeTask = function(id){
-	for (var i = 0; i < this.Tasks.length; i++)
+	for (var i = 0; i < this.Tasks.length; i++) {
 		if (this.Tasks[i].id == id){
 			this.Tasks.splice(i,1);
 			return true;
 		}
+	}
 	return false;
 }
 
 
 ogTimeManager.closeTimeslot = function(tgId){
 	var panel = document.getElementById('ogTimePanelCWD' + tgId);
-	if (panel.style.display == 'block')
+	if (panel.style.display == 'block') {
 		panel.style.display = 'none';
-	else {
+	} else {
 		panel.style.display = 'block';
 		document.getElementById('ogTimePanelCWDescription' + tgId).focus();
 	}
@@ -399,8 +450,10 @@ ogTimeManager.ToggleCompleteStatus = function(task_id, status){
 
 
 ogTimeManager.getCompany = function(id){
-	for (var i = 0; i < this.Companies.length; i++)
-		if (this.Companies[i].id == id)
+	for (var i = 0; i < this.Companies.length; i++) {
+		if (this.Companies[i].id == id) {
 			return this.Companies[i];
+		}
+	}
 	return null;
 }

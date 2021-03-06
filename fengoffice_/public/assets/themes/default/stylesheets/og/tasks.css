@@ -81,8 +81,9 @@
 
 .ogTasksCheckbox {
 	line-height:18px;
-	padding-top:2px;
+	padding-top:4px;
 	padding-left:4px;
+	width:17px;
 }
 
 .ogTasksTimeTd{
@@ -195,6 +196,10 @@
 
 .task-percent-completed-100 {
 	background-color: #49940C;
+}
+
+.task-percent-completed-more-estimate {
+	background-color: #F5001D;
 }
 
 .complete-task-bck {

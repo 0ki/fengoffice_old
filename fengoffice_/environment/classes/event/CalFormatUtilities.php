@@ -6,11 +6,12 @@ class CalFormatUtilities {
 	function decode_ical_file($filename) {
 		$parsed_data = parse_ical($filename);
 		
-		if (isset($parsed_data[0]['tzoffsetfrom']))
-			$tz_diff = logged_user()->getTimezone() - ($parsed_data[0]['tzoffsetfrom'] / 100);
-		else
+		if (isset($parsed_data[0]['tzoffsetfrom'])){
+			$tz_diff = ($parsed_data[0]['tzoffsetfrom'] / 100);
+                }else
 			$tz_diff = logged_user()->getTimezone();
 		unset($parsed_data[0]);
+                
 		$events_data = CalFormatUtilities::build_events_data($parsed_data, $tz_diff);
 		return $events_data;
 	}
@@ -20,18 +21,18 @@ class CalFormatUtilities {
 		
 		foreach($ical_events_data as $ical_ev) {
 			$data = array();
-			$data['subject'] = substr_utf(array_var($ical_ev, 'summary', 'No Subject'), 0, 100);
+			$data['name'] = substr_utf(array_var($ical_ev, 'summary', lang("untitle event")), 0, 100);
 			$data['description'] = array_var($ical_ev, 'description', '');
-			$data['subject'] = html_entity_decode($data['subject']);
-			$data['subject'] = str_replace('<br />', "\n", $data['subject']);
+			$data['name'] = html_entity_decode($data['name']);
+			$data['name'] = str_replace('<br />', "\n", $data['name']);
 			$data['description'] = html_entity_decode($data['description']);
 			$data['description'] = str_replace('<br />', "\n", $data['description']);
 			$data['type_id'] = array_var($ical_ev, 'all_day', 0) == 0 ? 1 : 2;
 			
 			$data['start'] = date('Y-m-d H:i:s', array_var($ical_ev, 'start_unix') - $tz_diff * 3600);
 			$data['duration'] = date('Y-m-d H:i:s', array_var($ical_ev, 'end_unix') - $tz_diff * 3600);
-			
-			$data['repeat_num'] = 0;
+
+                        $data['repeat_num'] = 0;
 			$data['repeat_h'] = 0;
 			$data['repeat_d'] = 0;
 			$data['repeat_m'] = 0;

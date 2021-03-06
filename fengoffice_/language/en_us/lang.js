@@ -282,7 +282,7 @@ addLangs({
 	'send outbox' : 'Send outbox',
 	'send outbox title' : 'Send mails in outbox folder',
 	'sending outbox mails' : 'Sending mails from outbox folder...', 
-	
+        
 	'filter workspaces': 'Filter workspaces...',
 	'filter tags': 'Filter tags...',
 	'alphabetical': 'Alphabetical',
@@ -323,7 +323,10 @@ addLangs({
 	'complete': 'Complete',
 	'do complete': 'Complete',
 	'late': 'Late',
-	'status': 'Status',
+        'status': 'Status',
+	'event status': 'Event status',
+        'task status': 'Task status',
+        'hide all tasks': 'Hide all tasks',
 	
 	'open link in new window' : 'Open \'{0}\' in new window',
 	
@@ -457,6 +460,7 @@ addLangs({
 	'order by': 'Order by',
 	'workspace':'Workspace',
 	'start date': 'Start date',
+        'progress' : 'Progress',
 	'task name': 'Task name',
 	'show': 'Show',
 	'time': 'Time',
@@ -841,6 +845,10 @@ addLangs({
   	'confirm disable user' : 'The User will be disabled. Continue?',
   	'confirm delete user' : 'Are you sure that you want to delete this user account?',
 	'add sub task' : 'Add subtask',
-    'do you want to mantain the current associations of this obj with members of': 'Do you want to mantain the current associations of this object with {0}?'
+        'do you want to mantain the current associations of this obj with members of': 'Do you want to mantain the current associations of this object with {0}?',
+        
+        'sync' : 'Sync',
+        'delete calendar' : 'Delete calendar?',
+        'delete calendar events' : 'It erased the events related to the calendar, also wants erased from Google Calendar?'
 
 });

@@ -54,7 +54,7 @@
 		if (is_array($value) && count($value)) {
 			return implode(',', array_keys($value));
 		}else{
-			return "";
+			return $value;
 		}
 	}
 

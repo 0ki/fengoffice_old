@@ -21,7 +21,6 @@ INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`
 	('system', 'min_chars_for_match', '3', 'IntegerConfigHandler', 1, 0, 'If search criteria len is less than this, then use always LIKE'),
 	('general', 'upgrade_last_check_datetime', '2006-09-02 13:46:47', 'DateTimeConfigHandler', 1, 0, 'Date and time of the last upgrade check'),
 	('general', 'upgrade_last_check_new_version', '0', 'BoolConfigHandler', 1, 0, 'True if system checked for the new version and found it. This value is used to hightligh upgrade tab in the administration'),
-	('general', 'use_time_in_task_dates', '1', 'BoolConfigHandler', 0, 0, ''),
 	('general', 'file_storage_adapter', 'fs', 'FileStorageConfigHandler', 0, 0, 'What storage adapter should be used? fs or mysql'),
 	('general', 'theme', 'default', 'ThemeConfigHandler', 0, 0, NULL),
 	('general', 'days_on_trash', '30', 'IntegerConfigHandler', 0, 0, 'Days before a file is deleted from trash. 0 = Not deleted'),
@@ -34,9 +33,9 @@ INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`
 	('mailing', 'smtp_username', '', 'StringConfigHandler', 0, 0, NULL),
 	('mailing', 'smtp_password', '', 'PasswordConfigHandler', 0, 0, NULL),
 	('mailing', 'smtp_secure_connection', 'no', 'SecureSmtpConnectionConfigHandler', 0, 0, 'Values: no, ssl, tls'),
-    ('mailing', 'show images in document notifications', '0', 'BoolConfigHandler', 0, 0, NULL),
-    ('passwords', 'min_password_length', '0', 'IntegerConfigHandler', 0, '1', NULL),
-    ('passwords', 'password_numbers', '0', 'IntegerConfigHandler', 0, '2', NULL),
+	('mailing', 'show images in document notifications', '0', 'BoolConfigHandler', 0, 0, NULL),
+	('passwords', 'min_password_length', '0', 'IntegerConfigHandler', 0, '1', NULL),
+	('passwords', 'password_numbers', '0', 'IntegerConfigHandler', 0, '2', NULL),
 	('passwords', 'password_uppercase_characters', '0', 'IntegerConfigHandler', 0, '3', NULL),
 	('passwords', 'password_metacharacters', '0', 'IntegerConfigHandler', 0, '4', NULL),
 	('passwords', 'password_expiration', '0', 'IntegerConfigHandler', 0, '5', NULL),
@@ -53,7 +52,8 @@ INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`
 	('general', 'use_owner_company_logo_at_header', '0', 'BoolConfigHandler', '0', '0', NULL),
 	('general', 'ask_administration_autentification', 0, 'BoolConfigHandler', 0, 0, NULL),
 	('general', 'use tasks dependencies', 0, 'BoolConfigHandler', 0, 0, NULL),
-        ('general', 'untitled_notes', '0', 'BoolConfigHandler', '0', '0', NULL);
+    ('general', 'untitled_notes', '0', 'BoolConfigHandler', '0', '0', NULL),
+    ('general', 'repeating_task', '0', 'BoolConfigHandler', '0', '0', NULL);
 	
 INSERT INTO `<?php echo $table_prefix ?>file_types` (`extension`, `icon`, `is_searchable`, `is_image`) VALUES
 	('zip', 'archive.png', 0, 0),
@@ -67,14 +67,14 @@ INSERT INTO `<?php echo $table_prefix ?>file_types` (`extension`, `icon`, `is_se
 	('ogg', 'audio.png', 0, 0),
 	('doc', 'doc.png', 0, 0),
 	('xls', 'xls.png', 0, 0),
-	('docx', 'doc.png', 0, 0),
+	('docx', 'doc.png', 1, 0),
 	('xlsx', 'xls.png', 0, 0),
 	('gif', 'image.png', 0, 1),
 	('jpg', 'image.png', 0, 1),
 	('jpeg', 'image.png', 0, 1),
 	('png', 'image.png', 0, 1),
 	('mov', 'mov.png', 0, 0),
-	('pdf', 'pdf.png', 0, 0),
+	('pdf', 'pdf.png', 1, 0),
 	('psd', 'psd.png', 0, 0),
 	('rm', 'rm.png', 0, 0),
 	('svg', 'svg.png', 0, 0),
@@ -107,7 +107,9 @@ INSERT INTO `<?php echo $table_prefix ?>cron_events` (`name`, `recursive`, `dela
 	('delete_mails_from_server', '1', '1440', '1', '1', '0000-00-00 00:00:00'),
 	('clear_tmp_folder', '1', '1440', '1', '1', '0000-00-00 00:00:00'),
 	('check_mail', '1', '10', '0', '1', '0000-00-00 00:00:00'),
-	('check_upgrade', '1', '1440', '0', '1', '0000-00-00 00:00:00');
+	('check_upgrade', '1', '1440', '0', '1', '0000-00-00 00:00:00'),
+        ('import_google_calendar', '1', '10', '0', '0', '0000-00-00 00:00:00'),
+        ('export_google_calendar', '1', '10', '0', '0', '0000-00-00 00:00:00');
 	
 INSERT INTO `<?php echo $table_prefix ?>object_reminder_types` (`name`) VALUES
   ('reminder_email'),
@@ -149,6 +151,8 @@ INSERT INTO `<?php echo $table_prefix ?>contact_config_options` (`category_name`
  ('general', 'autodetect_time_zone', '1', 'BoolConfigHandler', '0', '0', NULL),
  ('general', 'detect_mime_type_from_extension', '0', 'BoolConfigHandler', '0', '0', NULL),
  ('general', 'root_dimensions', '', 'RootDimensionsConfigHandler', '0', '0', NULL), 
+ ('general', 'show_object_direct_url',0,'BoolConfigHandler',0,0,NULL ),
+ ('general', 'drag_drop_prompt','prompt','DragDropPromptConfigHandler',0,0,NULL ),
  ('calendar panel', 'calendar view type', 'viewweek', 'StringConfigHandler', 1, 0, ''),
  ('calendar panel', 'calendar user filter', '0', 'IntegerConfigHandler', 1, 0, ''),
  ('calendar panel', 'calendar status filter', '', 'StringConfigHandler', 1, 0, ''),
@@ -229,7 +233,10 @@ INSERT INTO `<?php echo $table_prefix ?>contact_config_options` (`category_name`
  ('general', 'show_context_help', 'until_close', 'ShowContextHelpConfigHandler', '0', '0', NULL),
  ('dashboard', 'show charts widget', '1', 'BoolConfigHandler', 0, 600, ''),
  ('dashboard', 'show dashboard info widget', '1', 'BoolConfigHandler', 0, 900, ''),
- ('general', 'rememberGUIState', '1', 'RememberGUIConfigHandler', 0, 300, '');
+ ('general', 'rememberGUIState', '1', 'RememberGUIConfigHandler', 0, 300, ''),
+ ('calendar panel', 'calendar task filter', 'pending', 'StringConfigHandler', 1, 0, ''),
+ ('task panel', 'close timeslot open', '1', 'BoolConfigHandler', 0, 0, ''),
+ ('calendar panel', 'reminders_events', 'reminder_email,1,60', 'StringConfigHandler', '0', '0', NULL);
  
 
 INSERT INTO `<?php echo $table_prefix ?>object_types` (`id`,`name`,`handler_class`,`table_name`,`type`,`icon`,`plugin_id`) VALUES
@@ -279,14 +286,14 @@ INSERT INTO `<?php echo $table_prefix ?>webpage_types` (`name`,`is_system`) VALU
 
 
 INSERT INTO `<?php echo $table_prefix ?>tab_panels` (`id`,`title`,`icon_cls`,`refresh_on_context_change`,`default_controller`,`default_action`,`initial_controller`,`initial_action`,`enabled`,`type`,`ordering`,`plugin_id`,`object_type_id`) VALUES 
- ('calendar-panel','calendar','ico-calendar',1,'event','view_calendar','','',1,'system',8,0,11),
+ ('calendar-panel','calendar','ico-calendar',1,'event','view_calendar','','',0,'system',8,0,11),
  ('contacts-panel','contacts','ico-contacts',1,'contact','init','','',0,'system',7,0,16),
  ('documents-panel','documents','ico-documents',1,'files','init','','',1,'system',6,0,6),
  ('messages-panel','messages','ico-messages',1,'message','init','','',1,'system',5,0,3),
  ('overview-panel','overview','ico-overview',1,'dashboard','main_dashboard','dashboard','main_dashboard',1,'system',-100,0,0),
- ('reporting-panel','reporting','ico-reporting',1,'reporting','index','','',1,'system',9,0,12),
+ ('reporting-panel','reporting','ico-reporting',1,'reporting','index','','',0,'system',9,0,12),
  ('tasks-panel','tasks','ico-tasks',1,'task','new_list_tasks','','',1,'system',3,0,5),
- ('time-panel','time','ico-time-layout',1,'time','index','','',1,'system',8,0,0),
+ ('time-panel','time','ico-time-layout',1,'time','index','','',0,'system',8,0,0),
  ('webpages-panel','web pages','ico-webpages',1,'webpage','init','','',0,'system',7,0,4);
  
 

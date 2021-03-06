@@ -102,9 +102,35 @@ abstract class ApplicationDataObject extends DataObject {
 
 			foreach($columns_to_drop as $column_name) {
 				$content = $this->getSearchableColumnContent($column_name);
-				if (get_class($this->manager()) == 'ProjectFiles') {
-					$content = utf8_encode($content);
-				}
+				if (get_class($this->manager()) == 'ProjectFiles') {                                    
+                                    $content = utf8_encode($content);                                    
+				}elseif(get_class($this->manager()) == 'ProjectFileRevisions'){
+                                    if($column_name == "filecontent"){
+                                        $file = ProjectFileRevisions::findById($this->getObjectId());
+                                    
+                                        if($file->getFileTypeId() == 12){         
+
+                                            $file_path = "tmp/doc_filecontent_".$this->getObjectId().".docx";                                        
+                                            $file_tmp = fopen($file_path, 'w');
+                                            fwrite($file_tmp, $file->getFileContent());
+                                            fclose($file_tmp);
+                                            $content = docx2text($file_path);
+                                            unlink($file_path);
+                                            
+                                        }elseif($file->getFileTypeId() == 19){         
+
+                                            $file_path = "tmp/pdf_filecontent_".$this->getObjectId().".pdf";                                        
+                                            $file_tmp = fopen($file_path, 'w');
+                                            fwrite($file_tmp, $file->getFileContent());
+                                            fclose($file_tmp);
+                                            $content = pdf2text($file_path);
+                                            unlink($file_path);
+                                            
+                                        }                                        
+                                    }else{
+                                        $content = utf8_encode($content);
+                                    }
+                                }
 				if(trim($content) <> '') {
 					$searchable_object = new SearchableObject();
 					$searchable_object->setRelObjectId($this->getObjectId());

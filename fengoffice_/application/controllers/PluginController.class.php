@@ -2,6 +2,13 @@
 
 class PluginController extends ApplicationController {
 	
+	/**
+	 * Remove invalid characters froim version  
+	 */
+	private function cleanVersion($version){
+		 return str_replace(array('.',' ','_','-'), '' , $replace, strtolower($version));
+	}
+	
 	function scanPlugins() {
 		$plugins = array();
 		$dir =	ROOT."/plugins";
@@ -26,24 +33,46 @@ class PluginController extends ApplicationController {
 				$plugin->setName($plg["name"]);
 				$plugin->setIsActivated(0);
 				$plugin->setIsInstalled(0);
+				$plugin->setVersion(array_var($plg,'version'));
 				$plugin->save();					
 			}
 		}
 	} 
 	
-	function uninstall() {
+	function update($id = null) {
 		ajx_current("empty");
-		$id=array_var($_POST,'id');
+		if (!$id) {
+			$id = array_var($_REQUEST,'id');
+		}
+		if ( $plg  = Plugins::instance()->findById($id)) {
+			if ($plg->updateAvailable()){
+				$plg->update();
+			}
+		}
+	}
+	
+	function uninstall($id = null) {
+		ajx_current("empty");
+		if (!$id) {
+			$id=get_id();
+		}
 		if ( $plg  = Plugins::instance()->findById($id)) {
 			if (!$plg->isInstalled()) return ;
 			$plg->setIsInstalled(0);
 			$plg->save();
+			$name= $plg->getSystemName();
+			$path = ROOT . "/plugins/$name/uninstall.php";
+			if (file_exists($path)){
+				include_once $path;
+			}
 		}
 	}
 	
-	function install(){
+	function install($id = null ){
 		ajx_current("empty");
-		$id=array_var($_POST,'id');
+		if (empty($id)){
+			$id=array_var($_POST,'id');
+		}
 		if ( $plg  = Plugins::instance()->findById($id)) {
 			//if ($plg->isInstalled()) return ;
 			$name = $plg->getName();
@@ -72,16 +101,18 @@ class PluginController extends ApplicationController {
 			$plg->deactivate();
 		}
 	}
+
+
 	
 	function __construct() {
-		parent::__construct();
-		
-		if(!can_manage_plugins(logged_user())) {
-			flash_error(lang('no access permissions'));
-			ajx_current("empty");
-			return;
+		if (!defined('PLUGIN_MANAGER') && !defined('PLUGIN_MANAGER_CONSOLE')) {
+			die(lang('no access permissions'));
 		}
+		parent::__construct();
 		prepare_company_website_controller($this, 'website'); 
+		if(!can_manage_plugins(logged_user())) {
+			die(lang('no access permissions'));
+		}
 	}
 	
 	function index() {
@@ -92,6 +123,7 @@ class PluginController extends ApplicationController {
 		));
 				
 		tpl_assign('plugins', $plugins);
+		return $plugins ;
 	}
 	
 	/**
@@ -128,8 +160,8 @@ class PluginController extends ApplicationController {
 			$plg_obj = mysql_fetch_object ( $res );
 			if (! $plg_obj) {
 				//1. Insert into PLUGIN TABLE
-				$cols = "name, is_installed, is_activated";
-				$values = "'$name', 1, 1 ";
+				$cols = "name, is_installed, is_activated, version";
+				$values = "'$name', 1, 1 ,'".array_var ( $pluginInfo, 'version' )."'";
 				if (is_numeric ( array_var ( $pluginInfo, 'id' ) )) {
 					$cols = "id, " . $cols;
 					$values = array_var ( $pluginInfo, 'id' ) . ", " . $values;

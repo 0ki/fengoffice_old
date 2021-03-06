@@ -233,4 +233,13 @@ class Workspace extends BaseWorkspace {
     	);
     }
     
+    function getIconClass() {
+    	$colorCode = $this->getColumnValue("color");
+    	if ( $colorCode ) {
+    		return "ico-color".$colorCode;
+    	}else{
+    		return "ico-color13";	
+    	}
+    }
+    
 } 

@@ -96,7 +96,7 @@
 				onclick="App.modules.addMemberForm.deleteDimensionRestrictions('<?php echo $genid?>');"
 				class="db-ico ico-delete bold" style="padding:3px 0 0 20px; cursor:pointer; display:none;"><?php echo lang('hide restrictions')?></span>
 		</div>
-		<?php if ($current_dimension->getDefinesPermissions()):?>
+		<?php if ($current_dimension->getDefinesPermissions() && can_manage_security(logged_user())):?>
 			<label><?php  echo lang("permissions")?></label>			
 			<?php
 				// Permissions (new!)

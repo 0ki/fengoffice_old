@@ -96,6 +96,7 @@ function core_dimensions_after_update($object, &$ignored) {
 				$member->setDepth(1);
 				$member->setParentMemberId(0);
 			}
+			$object->modifyMemberValidations($member);
 			$member->save();
 			evt_add("reload dimension tree", $member->getDimensionId());
 			$objectsProcessed[$object->getId()] = true ;

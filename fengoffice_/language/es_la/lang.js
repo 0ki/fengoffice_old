@@ -266,6 +266,9 @@ addLangs({
 	'do complete': 'Completar',
 	'late': 'Tarde',
 	'status': 'Situación',
+        'event status': 'Estado de eventos',
+        'task status': 'Estado de tareas',
+        'hide all tasks': 'Ocultar todas las tareas',
 	'open link in new window': 'Abrir \'{0}\' en una nueva ventana',
 	'wschooser desc from': 'Espacios disponibles',
 	'wschooser desc to': 'Objetos del espacio',
@@ -377,6 +380,7 @@ addLangs({
 	'order by': 'Ordenar por',
 	'workspace': 'Espacio',
 	'start date': 'Fecha de inicio',
+        'progress' : 'Progreso',
 	'task name': 'Nombre de la tarea',
 	'show': 'Mostrar',
 	'time': 'Horas',
@@ -737,7 +741,9 @@ addLangs({
   	'confirm disable user' : '¿Realmente quiere desactivar esta cuenta?',
   	'confirm delete user' : '¿Realmente quiere eliminar esta cuenta?',
 	'add sub task' : 'Nueva subtarea',
-	'do you want to mantain the current associations of this obj with members of': '¿Desea mantener las actuales asociaciones de este objeto con {0}?'
+	'do you want to mantain the current associations of this obj with members of': '¿Desea mantener las actuales asociaciones de este objeto con {0}?',
   	
-  	
+  	'sync' : 'Sincronizar',
+        'delete calendar' : 'Borrar calendario?',
+        'delete calendar events' : 'Se borraran los eventos relacionados con el calendario, desea que tambien se borren de Google Calendar?'
 });

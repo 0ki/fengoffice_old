@@ -178,6 +178,19 @@
 					case 'BOOLEAN':
 						html += '<input name="dim_obj[' + f.col + ']" id="'+ genid + 'dim_obj_' + f.col +'" type="checkbox" class="checkbox" '+(f.val ? ' checked' : '')+' />';
 						break;
+					case 'WSCOLOR':
+						html += '<input name="dim_obj[' + f.col + ']" id="'+ genid + 'dim_obj_' + f.col +'" class="color-code" type="hidden" value="'+f.val+'" />';
+						html += "<div class='ws-color-chooser'>";
+						for (var i=1; i<=24; i++) {
+							var cls = (f.val == i)?'selected':'';
+							html += "<div  class='ico-color"+i+ " "+ cls + " color-cell'  onClick='$(\"input.color-code\").val(\""+i+"\");$(\".color-cell\").removeClass(\"selected\");$(this).addClass(\"selected\");'></div>";
+							if (i==12) {
+								html+=	'<div class="x-clear"></div>';
+							}
+						}
+						html+=	'<div class="x-clear"></div>';
+						html+=	'</div>';
+						break;
 					default: break;
 				}
 				html += '</div>'

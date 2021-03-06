@@ -4,13 +4,13 @@
 	require_javascript('og/time/drawing.js');
 
 	// FIXME: para cuando se haga el billing habilitar $show_billing
-	//$show_billing = can_manage_security(logged_user()) && logged_user()->isAdministrator();
-	$show_billing = false;
+	$show_billing = false;//can_manage_billing(logged_user());
 	
 	$genid = gen_id();
 	$tasks_array = array();
 	$timeslots_array = array();
 	$users_array = array();
+	$all_users_array = array();
 	$companies_array = array();
 	if (isset($tasks)) {
 		foreach($tasks as $task) {
@@ -25,9 +25,18 @@
 	}
 	if (isset($users)) {
 		foreach($users as $user) {
-			$users_array[] = $user->getArrayInfo();
+			$info = $user->getArrayInfo();
+			if ($user->getId() == logged_user()->getId()) $info['isCurrent'] = true;
+			$users_array[] = $info;
 		}
-	}	
+	}
+	if (isset($all_users)) {
+		foreach($all_users as $user) {
+			$info = $user->getArrayInfo();
+			if ($user->getId() == logged_user()->getId()) $info['isCurrent'] = true;
+			$users_array[] = $info;
+		}
+	}
 	if (isset($companies)) {
 		foreach($companies as $company) {
 			$companies_array[] = $company->getArrayInfo();
@@ -45,10 +54,11 @@
 <input type="hidden" id="<?php echo $genid ?>hfTasks" value="<?php echo clean(json_encode($tasks_array)) ?>"/>
 <input type="hidden" id="<?php echo $genid ?>hfTimeslots" value="<?php echo clean(json_encode($timeslots_array)) ?>"/>
 <input type="hidden" id="<?php echo $genid ?>hfUsers" value="<?php echo clean(json_encode($users_array)) ?>"/>
+<input type="hidden" id="<?php echo $genid ?>hfAllUsers" value="<?php echo clean(json_encode($all_users_array)) ?>"/>
 <input type="hidden" id="<?php echo $genid ?>hfCompanies" value="<?php echo clean(json_encode($companies_array)) ?>"/>
 <input type="hidden" id="<?php echo $genid ?>hfDrawInputs" value="<?php echo $draw_inputs ? "1" : "0" ?>"/>
 
-<table style="width:100%;">
+<table style="width:100%; display:none;" id="<?php echo $genid ?>active_tasks_table">
 	<tr>
 		<td colspan=2 class="TMActiveTasksHeader">
 			<?php echo lang('all active tasks') ?>
@@ -127,6 +137,9 @@
 					<td style="padding-right: 10px; width:140px;vertical-align:bottom">
 						<?php echo label_tag(lang('time')) ?>
 					</td>
+                                        <td style="padding-right: 10px; width:140px;vertical-align:bottom">
+						<?php echo label_tag(lang('minutes')) ?>
+					</td>
 					<td style="padding-right: 10px; width:95%; margin-top: 0px;vertical-align:bottom">
 						<?php echo label_tag(lang('description')) ?>
 					</td>
@@ -151,6 +164,17 @@
 						<?php echo text_field('timeslot[hours]', 0, 
 				    		array('style' => 'width:28px', 'tabindex' => '200', 'id' => $genid . 'tsHours','onkeypress'=>'og.checkEnterPress(event,\''.$genid.'\')')) ?>
 				    		<br/><span class="desc" style="font-style:normal;font-size:80%">(<?php echo lang('hours') ?>)</span>
+					</td>
+                                        <td style="padding-right: 10px; width:140px;">
+                                                <select name="timeslot[minutes]" size="1" tabindex="85" id="<?php echo $genid . 'tsMinutes'?>">
+                                                <?php
+                                                        $minuteOptions = array(0,5,10,15,20,25,30,35,40,45,50,55);
+                                                        for($i = 0; $i < 12; $i++) {
+                                                                echo "<option value=\"" . $minuteOptions[$i] . "\"";					
+                                                                echo ">" . $minuteOptions[$i] . "</option>\n";
+                                                        }
+                                                ?>
+                                                </select>
 					</td>
 					<td style="padding-right: 10px; width:95%; margin-top: 0px;">
 						<?php echo textarea_field('timeslot[description]', '', array('class' => 'short', 'style' => 'height:30px;width:100%;min-width:200px', 'tabindex' => '250', 'id' => $genid . 'tsDesc')) ?>

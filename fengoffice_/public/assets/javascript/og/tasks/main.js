@@ -601,6 +601,9 @@ ogTasks.orderTasks = function(displayCriteria, tasks){
 					if (!swap)
 						resolveByName = (tasks[i].startDate && tasks[j].startDate && tasks[i].startDate == tasks[j].startDate) || (!tasks[j].startDate && !tasks[i].startDate) ;
 					break;
+                                case 'percent_completed' : 
+					swap = tasks[j].percentCompleted > tasks[i].percentCompleted;
+					break;
 				default:
 			}
 			if (!swap && resolveByName){

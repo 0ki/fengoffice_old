@@ -92,19 +92,24 @@ ogTasks.printGroupTasks = function(group, printWindow){
 		if(task.assignedToId && (displayCriteria.group_by != 'assigned_to' || task.assignedToId != group.group_id))
 			sb.append("<b>" + og.clean(this.getUserCompanyName(task.assignedToId)) + '</b>:&nbsp;');
 		sb.append(og.clean(task.title));
-		sb.append("</td><td width='1px' align=right>");
-		
-		
-		sb.append("<table><tr>");
-		
+		sb.append("</td>");		
+		sb.append("<td width='1px' align=right><table><tr>");		
 		//Draw dates
 		if (drawOptions.show_dates && (task.startDate || task.dueDate)){
 			sb.append('<td style="color:#888;font-size:10px;padding-left:6px;padding-right:6px;white-space:nowrap">');
 			if (task.status == 1)
 				sb.append('<span style="text-decoration:line-through;">');
 			else
-				sb.append('<span>');
-			
+				sb.append('<span>');			
+                        
+                        if (task.estimatedTime){ 	
+                            sb.append(lang('estimated') + ': '+task.estimatedTime + '<br/>'); 
+                            var task_percent = task.percentCompleted;
+                            if(task.percentCompleted > 100){
+                                task_percent = 100;
+                            }
+                            sb.append(lang('progress') + ": " + task_percent + '%<br/>');
+                        }
 			if (task.startDate){
 				var date = new Date(task.startDate * 1000);
 				sb.append(lang('start') + ':&nbsp;' + date.dateFormat('M j'));

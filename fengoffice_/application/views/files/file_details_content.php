@@ -11,9 +11,17 @@
 <?php if ($file->isDisplayable()) {?>
 <div>
 	<div style="position: relative; left:0; top: 0; width: 100%; height: 200px; background-color: white">
-	<iframe style="width:100%;height:100%;border:1px solid #ddd;" src="<?php echo get_sandbox_url("feed", "display_content", array("id" => $file->getId(), "user_id" => logged_user()->getId(), "token" => logged_user()->getTwistedToken())) ?>"></iframe>
-	<a class="ico-expand" style="display: block; width: 16px; height: 16px; cursor: pointer; position: absolute; right: 20px; top: 2px" title="<?php echo lang('expand') ?>" onclick="og.expandDocumentView.call(this)"></a>
+		<iframe class="document-preview" style="width:100%;height:100%;border:1px solid #ddd;" src="<?php echo get_sandbox_url("feed", "display_content", array("id" => $file->getId(), "user_id" => logged_user()->getId(), "token" => logged_user()->getTwistedToken())) ?>"></iframe>
+		<a class="ico-expand" style="display: block; width: 16px; height: 16px; cursor: pointer; position: absolute; right: 20px; top: 2px" title="<?php echo lang('expand') ?>" onclick="og.expandDocumentView.call(this)"></a>
 	</div>
+	<script>
+		$(function(){
+			$("iframe.document-preview").load(function(){				
+				$("iframe.document-preview").contents().find("a").attr("target", "_blank");
+			});
+		});
+	</script>
+	
 </div>
 <?php } // if ?> 
 

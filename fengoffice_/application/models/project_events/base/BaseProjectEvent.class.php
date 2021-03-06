@@ -266,8 +266,8 @@
     * Set value of 'special_id' field
     *
     * @access public   
-    * @param boolean $value
-    * @return boolean
+    * @param string $value
+    * @return string
     */
     function setSpecialID($value) {
       return $this->setColumnValue('special_id', $value);
@@ -278,7 +278,7 @@
     *
     * @access public
     * @param void
-    * @return DateTimeValue 
+    * @return string 
     */
     function getSpecialID() {
       return $this->getColumnValue('special_id');
@@ -373,6 +373,28 @@
     function setRepeatMjump($value) {
       return $this->setColumnValue('repeat_mjump', $value);
     } // setRepeatMjump()
+    
+    /**
+    * Return value of 'ext_cal_id' field
+    *
+    * @access public
+    * @param void
+    * @return integer 
+    */
+    function getExtCalId() {
+      return $this->getColumnValue('ext_cal_id');
+    } // getExtCalId()
+    
+    /**
+    * Set value of 'ext_cal_id' field
+    *
+    * @access public   
+    * @param integer $value
+    * @return boolean
+    */
+    function setExtCalId($value) {
+      return $this->setColumnValue('ext_cal_id', $value);
+    } // setExtCalId() 
     
     
     /**

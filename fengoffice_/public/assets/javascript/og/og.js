@@ -952,6 +952,10 @@ og.closeView = function(obj){
 	currentPanel.back();
 };
 
+og.activeTabHasBack = function(){
+	return Ext.getCmp('tabs-panel').getActiveTab().hasBack();
+}
+
 og.slideshow = function(id) {
 	var url = og.getUrl('files', 'slideshow', {fileId: id});
 	var top = screen.height * 0.1;
@@ -1775,6 +1779,32 @@ og.promptDeleteAccount = function(account_id, reload) {
 	og.ExtendedDialog.show(config);
 };
 
+og.promptDeleteCalendar = function(calendar_id) {
+	var check_id = Ext.id();
+	var config = {
+		genid: Ext.id(),
+		title: lang('delete calendar'),
+		height: 200,
+		width: 250,
+		labelWidth: 150,
+		ok_fn: function() {
+			var checked = Ext.getCmp(check_id).getValue();
+			og.openLink(og.getUrl('event', 'delete_calendar', {
+				cal_id: calendar_id,
+				deleteCalendar: checked ? 1 : 0
+			}));
+			og.ExtendedDialog.hide();
+		},
+		dialogItems: {
+			xtype: 'checkbox',
+			fieldLabel: lang('delete calendar events'),
+			id: check_id,
+			value: false
+		}
+	};
+	og.ExtendedDialog.show(config);
+};
+
 og.htmlToText = function(html) {
 	// remove line breaks
 	html = html.replace(/[\n\r]\s*/g, "");
@@ -2100,7 +2130,6 @@ og.flash2img = function() {
 
 og.getCrumbHtml = function(dims) {
 	var html = '';
-	var colors = ['blue', 'green', 'red', 'yellow'];
 	var dim_index = 0;
 	for (x in dims) {
 		if (isNaN(x)) continue;
@@ -2108,18 +2137,28 @@ og.getCrumbHtml = function(dims) {
 		var members = dims[x];
 		var inner_html = "";
 		var title = "";
+		var total_texts = 0;
+		var all_texts = [];
 		
 		for (id in members) {
 			var m = members[id];
 			var texts = og.getMemberFromTrees(x, id, true);
+			total_texts += texts.length;
 			
-			if (texts.length < 3) max_len = 13;
-			else if (texts.length < 5) max_len = 8;
-			else max_len = 6;
-			
+			all_texts[id] = texts;
+		}
+		
+		if (total_texts == 1) max_len = 13
+		else if (total_texts < 3) max_len = 9;
+		else if (total_texts < 5) max_len = 5;
+		else max_len = 4;
+		
+		for (id in members) {
+			texts = all_texts[id];
+			if (title != "") title += '- ';
 			for (i=texts.length-1; i>=0; i--) {
 				str = texts[i].text.length > max_len ? texts[i].text.substring(0, max_len-3) + "..." : texts[i].text;
-				title += (title == "" ? "" : " / ") + texts[i].text;
+				title += texts[i].text + (i>0 ? "/" : " ");
 				
 				var onclick = "return false;";
 				if (og.additional_on_dimension_object_click[texts[i].ot]) {
@@ -2127,10 +2166,10 @@ og.getCrumbHtml = function(dims) {
 				}
 				var link = '<a href="#" onclick="' + onclick + '">' + str + '</a>';
 				inner_html += '<span>' + link + '</span>';
-				if (i>0) inner_html += " / ";
+				if (i>0) inner_html += "/";
 			}
 		}
-		if (inner_html != "") html += '<span class="member-path '+colors[dim_index % colors.length]+'" title="'+title+'">' + inner_html + '</span>';
+		if (inner_html != "") html += '<span class="member-path og-wsname-color-'+ m['c'] +'" title="'+title+'">' + inner_html + '</span>';
 		dim_index++;
 	}
 	
@@ -2187,8 +2226,7 @@ og.expandCollapseDimensionTree = function(tree, previous_exp, selection_id) {
 	}
 }
 
-og.checkEmailAddress = function(element,id_contact) {
-    
+og.checkEmailAddress = function(element,id_contact) {    
 	$(element).blur(function(){
 		var field = $(this);
 		// Ajax to ?c=contact&a=check_existing_email&email=admin@admin.com&ajax=true
@@ -2197,18 +2235,22 @@ og.checkEmailAddress = function(element,id_contact) {
 		$.getJSON(url, function(data) {						
 			$(".field-error-msg").remove();
 			var contact = data.contact;
-			if (contact) {
+			if (contact.status) {
 				$(field).addClass("field-error");
 				$(field).after("<div class='field-error-msg'>"+lang("email already taken by",contact.name)+" </div>");
 				$(field).focus();
 			}else{
 				$(field).removeClass("field-error");
+                                if(contact.id){
+                                    og.openLink(og.getUrl('contact', 'edit',{id:contact.id,isEdit:1}));
+                                    $("#quick-form").hide();
+                                }                                
 			}		
 			og.hideLoading();
 		});
 
 		setTimeout(function(){og.hideLoading()}, 5000); //If ajax fails
-	});
+	});      
 }
 
 og.selectDimensionTreeMember = function(data) {
@@ -2253,4 +2295,46 @@ og.quickAddTask = function (data, callback) {
 	};
 	var url = og.makeAjaxUrl(og.getUrl('task', 'quick_add_task', ajaxOptions));
 	og.openLink(url, ajaxOptions);
+}
+
+
+
+og.onPersonClose = function() {
+	var actual_sel = og.core_dimensions.prev_selection.pop();
+	var prev_sel = null;
+	if (og.core_dimensions.prev_selection.length > 0) {
+		prev_sel = og.core_dimensions.prev_selection[og.core_dimensions.prev_selection.length-1];
+	}
+
+	var dimensions_panel = Ext.getCmp('menu-panel');
+	dimensions_panel.items.each(function(item, index, length) {
+		if (item.dimensionCode == 'feng_persons') {
+			if (prev_sel) {
+				og.expandCollapseDimensionTree(item);
+				var n = item.getNodeById(prev_sel);
+				if (n) {
+					if (n.parentNode) item.expandPath(n.parentNode.getPath(), false);
+					item.fireEvent('click', n);
+					og.contextManager.addActiveMember(n.id, item.dimensionId);
+				} else {
+					item.selectRoot();
+					n = item.getRootNode();
+					item.fireEvent('click', n);
+					og.contextManager.cleanActiveMembers(item.dimensionId);
+				}
+			} else {
+				item.selectRoot();
+				n = item.getRootNode();
+				item.fireEvent('click', n);
+				og.contextManager.cleanActiveMembers(item.dimensionId);
+			}
+			
+			setTimeout(function() {
+				og.Breadcrumbs.refresh(n);
+				if (n.id == item.getRootNode().id) {
+					item.getSelectionModel().fireEvent('selectionchange', item.getSelectionModel(), n);
+				}
+			}, 200);
+		}
+	});
 }

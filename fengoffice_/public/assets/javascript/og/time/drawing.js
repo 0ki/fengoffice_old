@@ -20,6 +20,10 @@ ogTimeManager.drawTimespans = function(genid){
 }
 
 ogTimeManager.drawTasks = function(genid){
+	if (this.Tasks.length > 0) {
+		var table = document.getElementById(genid + 'active_tasks_table');
+		if (table) table.style.display = '';
+	}
 	sb = new StringBuffer();
 	this.orderTasks();
 	for (var i = 0; i < this.Tasks.length; i++){
@@ -80,12 +84,13 @@ ogTimeManager.orderTasks = function(){
 	if (task.workingOnIds){
 		var ids = (task.workingOnIds + ' ').split(',');
 		var userIsWorking = false;
-		for (var i = 0; i < ids.length; i++)
-			if (ids[i] == this.currentUser.id){
+		for (var i = 0; i < ids.length; i++) {
+			if (this.currentUser && ids[i] == this.currentUser.id){
 				userIsWorking = true;
 				var pauses = (task.workingOnPauses + ' ').split(',');
 				var userPaused = pauses[i] == 1;
 			}
+		}
 		sb.append("<td class='" + (userIsWorking?(userPaused?"ogTasksPausedTimeTd": "ogTasksActiveTimeTd") : "ogTasksTimeTd") + "'><table><tr>");
 		if (userIsWorking){
 			if (userPaused)

@@ -269,6 +269,9 @@ addLangs({
 	'do complete': 'Completar',
 	'late': 'Tarde',
 	'status': 'Estado',
+        'event status': 'Estado de eventos',
+        'task status': 'Estado de tareas',
+        'hide all tasks': 'Ocultar todas las tareas',
 	'open link in new window': 'Abrir \'{0}\' en una nueva ventana',
 	'wschooser desc from': 'Áreas de trabajo disponibles',
 	'wschooser desc to': 'Objetos del área de trabajo',
@@ -380,6 +383,7 @@ addLangs({
 	'order by': 'Ordenar por',
 	'workspace': 'Área de trabajo',
 	'start date': 'Fecha de inicio',
+        'progress' : 'Progreso',
 	'task name': 'Nombre de la tarea',
 	'show': 'Mostrar',
 	'time': 'Horas',
@@ -707,5 +711,10 @@ addLangs({
     'select members': 'Seleccione miembros',
     'filters': 'Filtros',
     'new member': 'Nuevo miembro',
-    'view more': 'Ver más'
+    'view more': 'Ver más',
+    
+    'sync' : 'Sincronizar',
+    'delete calendar' : 'Borrar calendario?',
+    'delete calendar events' : 'Se borraran los eventos relacionados con el calendario, desea que tambien se borren de Google Calendar?'
+
 });

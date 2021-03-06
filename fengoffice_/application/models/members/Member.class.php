@@ -22,7 +22,7 @@ class Member extends BaseMember {
 	function getAllChildrenSorted() {
 		$all_children = array();
 		
-		$children = $this->getAllChildren();
+		$children = $this->getAllChildren(false, 'name');
 		foreach ($children as $child) {
 			$all_children[] = $child;
 			$all_children = array_merge($all_children, $child->getAllChildrenSorted());
@@ -31,13 +31,15 @@ class Member extends BaseMember {
 		return $all_children;
 	}
 	
-	function getAllChildren($recursive = false) {
+	function getAllChildren($recursive = false, $order = null) {
 		$child_members = array();
-		$members = Members::findAll(array('conditions' => '`parent_member_id` = ' . $this->getId()));
+		$find_options = array('conditions' => '`parent_member_id` = ' . $this->getId());
+		if ($order != null) $find_options['order'] = $order;
+		$members = Members::findAll($find_options);
 		foreach ($members as $mem){
 			$child_members[] = $mem;
 			if ($recursive) {
-				$children = $mem->getAllChildren($recursive);
+				$children = $mem->getAllChildren($recursive, 'name');
 				$child_members = array_merge($child_members, $children);
 			}
 		}
@@ -247,16 +249,14 @@ class Member extends BaseMember {
 		}
 	}
 	/**
-	 * @deprecated
+	 * 
 	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
 	 */
-	function getColor() {
-		$ot = ObjectTypes::findById($this->getObjectTypeId());
-		$color = null;
-		if ($ot instanceof ObjectType) {
-			$color = $ot->getColor();
-		}
-		if ($color == null) $color = 11;
+	function getMemberColor($default = null) {
+		$color = is_null($default) || !is_numeric($default) ? 0 : $default;
+		
+		Hook::fire('override_member_color', $this, $color);
+		
 		return $color;
 	}
 	
@@ -265,9 +265,17 @@ class Member extends BaseMember {
 	 */
 	function getIconClass() {
 		if (!$this->icon_class) {
-			$type = ObjectTypes::instance()->findById($this->getObjectTypeId());
-			$this->icon_class = $type->getIconClass();
+			if ($oid = $this->getObjectId()) {
+				$o = Objects::findObject($oid);
+				if ($o instanceof DimensionObject && $icon_cls = $o->getIconClass()) {
+					return $icon_cls;
+				}
+				
+			}
 		}
+		
+		$type = ObjectTypes::instance()->findById($this->getObjectTypeId());
+		$this->icon_class = $type->getIconClass();
 		return $this->icon_class;
 	}
 	

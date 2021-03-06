@@ -70,7 +70,7 @@
 	<input id="<?php echo $genid?>updated-on-hidden" type="hidden" name="updatedon" value="<?php echo !$contact->isNew() ?  $contact->getUpdatedOn()->getTimestamp() : '' ?>">
 	<input id="<?php echo $genid?>merge-changes-hidden" type="hidden" name="merge-changes" value="" >
 	<input id="<?php echo $genid?>genid" type="hidden" name="genid" value="<?php echo $genid ?>" >
-		<?php if ($contact->isNew()){
+		<?php if ($contact->isNew() || $isEdit){
 			$this->includeTemplate(get_template_path("add_contact/access_data_edit","contact")); 
 		}?>
 	
@@ -430,7 +430,7 @@
 
 	<?php //if ($contact->isNew()):?>
 		$(function(){
-			og.checkEmailAddress("#<?php echo $genid ?>profileFormEmail",'<?php echo $contact->getId();?>');
+			og.checkEmailAddress("#<?php echo $genid ?>profileFormEmail",'<?php echo $contact->getId();?>','<?php echo $genid ?>');
 		});
 	<?php //endif;?>
 	

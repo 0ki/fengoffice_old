@@ -71,8 +71,12 @@ og.MemberTree = function(config) {
     	   {
     		   id: 'close',
     		   handler: function(e,t,p){
-    			   p.removeFromContext();
-    		   }
+	    	   		p.removeFromContext();
+	    	   		og.contextManager.setDimensionVisibility('dimension-panel-' + config.dimensionId, false);
+	    	   		
+	    	   		var dim_ids = og.contextManager.getVisibleDimensions();
+					og.openLink(og.getUrl('account', 'update_user_preference', {name:'root_dimensions', value:dim_ids.join(',')}), {hideLoading:true});
+	       		}
     	    }
 
     	],  	
@@ -94,7 +98,14 @@ og.MemberTree = function(config) {
 				if (og.dimension_object_type_contents[config.dimensionId][e.target.object_type_id][e.data.selections[0].data.ot_id] &&
 						og.dimension_object_type_contents[config.dimensionId][e.target.object_type_id][e.data.selections[0].data.ot_id].multiple) {
 					
-					var rm_prev = confirm(lang('do you want to mantain the current associations of this obj with members of', config.title)) ? "0" : "1";
+					if (og.preferences['drag_drop_prompt'] == 'prompt') {
+						var rm_prev = confirm(lang('do you want to mantain the current associations of this obj with members of', config.title)) ? "0" : "1";
+					}else if (og.preferences['drag_drop_prompt'] == 'move') {
+						var rm_prev = true ;
+					}else if (og.preferences['drag_drop_prompt'] == 'keep') {
+						var rm_prev = false ;
+					}
+					
 					og.openLink(og.getUrl('member', 'add_objects_to_member'),{
 						method: 'POST',
 						post: {objects: Ext.util.JSON.encode(ids), member: e.target.id, reload:1, remove_prev:rm_prev}

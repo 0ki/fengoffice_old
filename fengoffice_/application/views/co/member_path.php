@@ -25,7 +25,7 @@
 		}
 		$parents = array_reverse($member->getAllParentMembersInHierarchy(true));
 		foreach ($parents as $p) {
-			$dimensions_info[$dimension->getName()]['members'][] = $p->getName();
+			$dimensions_info[$dimension->getName()]['members'][$p->getId()] = array('p' => $p->getParentMemberId(), 'name' => $p->getName());
 		}
 	}
 	
@@ -53,8 +53,8 @@
 				echo '<span class="desc">' . lang('not related') . '</span>';
 			} else {
 				$first = true;
-				foreach ($dinfo['members'] as $mid => $mname) { ?>
-					<span class="mname"><?php echo ($first ? "" : " - ") . $mname?></span><?php
+				foreach ($dinfo['members'] as $mid => $minfo) {
+					echo '<span class="mname">'.($first ? "" : ($minfo['p'] == 0 ? " - " : "/")) . $minfo['name'] . '</span>';
 					$first = false;
 				}
 			}

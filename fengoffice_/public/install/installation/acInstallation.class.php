@@ -562,8 +562,8 @@ final class acInstallation {
 					//1. Insert into PLUGIN TABLE
 					$pluginInfo = include_once $path;
 
-					$cols = "name, is_installed, is_activated";
-					$values = "'$name', 1, 1 " ;
+					$cols = "name, is_installed, is_activated, version";
+					$values = "'$name', 1, 1, ".array_var($pluginInfo,'version')  ;
 					if (is_numeric(array_var($pluginInfo,'id')) ){
 						$cols = "id, ". $cols ;
 						$values = array_var($pluginInfo,'id').", ".$values ;

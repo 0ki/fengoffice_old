@@ -31,7 +31,7 @@
 						
 						</tr></table>
 					</div>
-					<div title="<?php echo lang('close') ?>" onclick="og.closeView()" class="coViewClose"><?php echo lang('close') ?>&nbsp;&nbsp;X</div>
+					<div title="<?php echo lang('close') ?>" onclick="<?php echo $object instanceof Contact ? "og.onPersonClose()" : "og.closeView()"?>" class="coViewClose"><?php echo lang('close') ?>&nbsp;&nbsp;X</div>
 				</div>
 				<div class="coViewDesc">
 					<?php if (!isset($description)) $description = "";

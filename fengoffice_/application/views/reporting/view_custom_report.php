@@ -33,7 +33,7 @@
 	?>
 	
 <div id="pdfOptions" style="display:none;">
-	<b><?php echo lang('report pdf options') ?></b><hr/>
+	<span class="bold"><?php echo lang('report pdf options') ?></span><hr/>
 	<?php echo lang('report pdf page layout') ?>:
 	<select name="pdfPageLayout">
 		<option value="P" selected><?php echo lang('report pdf vertical') ?></option>
@@ -53,17 +53,33 @@
 	</select><br/>
 	<input type="submit" name="exportPDF" value="<?php echo lang('export') ?>" onclick="document.getElementById('form<?php echo $genid ?>').target = '_download';" style="width:120px; margin-top:10px;"/>
 </div>
-<br/>
 
-<?php
-	if ($conditionHtml != '') {?>
-<br/>
-<b><?php echo lang('conditions')?>:</b><br/>
-<p style="padding-left:10px">
-	<?php echo $conditionHtml; ?>
-</p>
-<?php } // if ?>
-<br/>
+<?php if ($conditionHtml != '') : ?>
+<div style="float:left;">
+	<div class="bold"><?php echo lang('conditions')?>:</div>
+	<p style="padding-left:10px"><?php echo $conditionHtml; ?></p>
+</div>
+<?php endif; ?>
+
+<?php if (count(active_context_members(false)) > 0) : ?>
+<div style="margin-bottom: 10px; padding-bottom: 5px; float:left;<?php echo ($conditionHtml != '' ? "margin-left:35px;padding-left:35px;border-left:1px dotted #aaa;" : "")?>">
+	<h5><?php echo lang('showing indformation for')?></h5>
+	<ul>
+	<?php
+		$context = active_context();
+		foreach ($context as $selection) :
+			if ($selection instanceof Member) : ?>
+				<li><span class="coViewAction <?php echo $selection->getIconClass()?>"><?php echo $selection->getName()?></span></li>	
+	<?php 	endif;
+		endforeach;
+	?>
+	</ul>
+</div>
+<?php endif; ?>
+
+<div class="clear"></div>
+
+
 <?php if (!isset($id)) $id= ''; ?>
 <input type="hidden" name="id" value="<?php echo $id ?>" />
 <input type="hidden" name="order_by" value="<?php echo $order_by ?>" />
@@ -77,16 +93,15 @@
 		$sorted = true;
 		$asc = $order_by_asc;
 	}	?>
-	<td style="padding-right:10px;border-bottom:1px solid #666"><b>
-	<?php if($to_print){ 	
-			echo clean($col);
-		  }else if($col != ''){ ?>
-		<a href="<?php echo get_url('reporting', 'view_custom_report', array('id' => $id, 'replace' => true, 'order_by' => array_var($db_columns,$col), 'order_by_asc' => $asc ? 0 : 1)).$parameterURL; ?>"><?php echo clean($col) ?></a>
-	<?php } ?>
-	</b>
-	<?php if(!$to_print && $sorted){ ?>
+	<td style="padding-right:10px;border-bottom:1px solid #666" class="bold">
+<?php if($to_print){
+		echo clean($col);
+	  }else if($col != ''){ ?>
+		<a href="<?php echo is_numeric(array_var($db_columns, $col)) ? "#" : get_url('reporting', 'view_custom_report', array('id' => $id, 'replace' => true, 'order_by' => array_var($db_columns,$col), 'order_by_asc' => $asc ? 0 : 1)).$parameterURL; ?>" <?php echo (is_numeric(array_var($db_columns, $col)) ? 'style="cursor:default;"' : "") ?>><?php echo clean($col) ?></a>
+<?php }
+	  if(!$to_print && $sorted){ ?>
 		<span class="db-ico ico-<?php echo $asc ? 'asc' : 'desc' ?>" style="padding:2px 0 0 18px;">&nbsp;</span>
-	<?php } ?>
+<?php } ?>
 	</td>
 <?php }?>
 </tr>
@@ -98,14 +113,17 @@
 ?>
 	<tr<?php echo ($isAlt ? ' style="background-color:#F4F8F9"' : "") ?>>
 		<?php foreach($row as $k => $value) {
+				if ($k == 'object_type_id') continue;
 				$db_col = isset($db_columns[$columns[$i]]) ? $db_columns[$columns[$i]] : '';
 			?>
-			<td style="padding-right:10px;"><?php echo format_value_to_print($db_col, $value, ($k == 'link'?'':array_var($types, $k)), $model, '', user_config_option('date_format')) ?></td>
+			<td style="padding-right:10px;"><?php echo format_value_to_print($db_col, $value, ($k == 'link'?'':array_var($types, $k)), array_var($row, 'object_type_id'), '', is_numeric(array_var($db_columns, $k)) ? "Y-m-d" : user_config_option('date_format')) ?></td>
 		<?php
-			$i++; 
+				$i++; 
 			} ?>
 	</tr>
 <?php } ?>
 </table>
 
-<br/><?php if (isset($pagination)) echo $pagination ?>
+<div style="margin-top: 10px;">
+<?php if (isset($pagination)) echo $pagination ?>
+</div>

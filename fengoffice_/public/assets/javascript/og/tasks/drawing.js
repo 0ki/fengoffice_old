@@ -706,7 +706,7 @@ ogTasks.drawTaskRow = function(task, drawOptions, displayCriteria, group_id, lev
 		case 400: priorityColor = "#FF0000"; break;
 		default: break;
 	}
-	sb.append('<td width=19 class="ogTasksCheckbox" style="background-color:' + priorityColor + '">');
+	sb.append('<td class="ogTasksCheckbox" style="background-color:' + priorityColor + '">');
 	sb.append('<input style="width:14px;height:14px" type="checkbox" id="ogTasksPanelChk' + tgId + '" ' + (task.isChecked?'checked':'') + ' onclick="ogTasks.TaskSelected(this,' + task.id + ', \'' + group_id + '\')"/></td>'); 
 	
 	//Draw subtasks expander
@@ -996,11 +996,17 @@ ogTasks.buildTaskPercentCompletedBar = function(task) {
 	else if (task.percentCompleted < 50) color_cls += '25';
 	else if (task.percentCompleted < 75) color_cls += '50';
 	else if (task.percentCompleted < 100) color_cls += '75';
-	else color_cls += '100';
+        else if (task.percentCompleted == 100) color_cls += '100';
+	else color_cls += 'more-estimate';
+        
+        var percent_complete = 100;
+        if(task.percentCompleted <= 100){
+            percent_complete = task.percentCompleted;
+        }
 	
 	var html = "<span><span class='nobr'><table style='display:inline;'><tr><td style='padding-left:15px;padding-top:5px'>" +
-			"<table style='height:7px;width:50px'><tr><td style='height:7px;width:" + task.percentCompleted + "%;' class='"+color_cls+"'></td><td style='width:" + (100 - task.percentCompleted) + "%;background-color:#DDD'></td></tr></table>" +
-			"</td><td style='padding-left:3px;line-height:12px'><span style='font-size:8px;color:#777'>" + task.percentCompleted + "%</span></td></tr></table></span></span>";
+			"<table style='height:7px;width:50px'><tr><td style='height:7px;width:" + percent_complete + "%;' class='"+color_cls+"'></td><td style='width:" + (100 - percent_complete) + "%;background-color:#DDD'></td></tr></table>" +
+			"</td><td style='padding-left:3px;line-height:12px'><span style='font-size:8px;color:#777'>" + percent_complete + "%</span></td></tr></table></span></span>";
 	
 	return html;
 }

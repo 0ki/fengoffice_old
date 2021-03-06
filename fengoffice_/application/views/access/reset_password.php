@@ -20,7 +20,7 @@
 <div id="reset_password_submit">
 	<button type="submit">
         <?php 
-                echo lang('button reset password')
+                echo lang('change password')
         ?>        
         </button>
 </div>

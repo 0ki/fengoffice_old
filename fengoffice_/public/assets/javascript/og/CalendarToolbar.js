@@ -3,7 +3,7 @@
 var tbar_datemenu = new Ext.menu.DateMenu({
     handler : function(dp, date){
     	dp.setValue(date);
-    	changeView(cal_actual_view, date.format('d'), date.format('n'), date.format('Y'), actual_user_filter, actual_status_filter);
+    	changeView(cal_actual_view, date.format('d'), date.format('n'), date.format('Y'), actual_user_filter, actual_status_filter, actual_task_filter);
     },
     format: og.preferences['date_format'],
     startDay: og.preferences['start_monday'],
@@ -27,11 +27,13 @@ Ext.apply(og.calToolbarDateMenu.picker, {
 var cal_actual_view = 'viewweek';
 // Actual user filter
 var actual_user_filter = '0'; // 0=logged user, -1=all users
+// Actual task filter
+var actual_task_filter = 'no filter'; // 0=no filter
 // Actual state filter
 var actual_status_filter = ' 0 1 3'; // -1=all states
 
 
-function changeView(action, day, month, year, u_filter, s_filter) {
+function changeView(action, day, month, year, u_filter, s_filter, t_filter) {
 	var url = og.getUrl('event', action, {
 		context: og.contextManager.plainContext(),
 		day: day,
@@ -39,6 +41,7 @@ function changeView(action, day, month, year, u_filter, s_filter) {
 		year: year,
 		user_filter: u_filter,
 		status_filter: s_filter,
+                task_filter: t_filter,
 		view_type: action
 	});
 	og.openLink(url, null);
@@ -110,7 +113,7 @@ var topToolbarItems = {
         iconCls: 'ico-new',
         handler: function() {
         	var date = og.calToolbarDateMenu.picker.getValue();
-			changeView('add', date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_status_filter);
+			changeView('add', date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_status_filter, actual_task_filter);
 		}
 	}),
 	view_month: new Ext.Action({
@@ -120,7 +123,7 @@ var topToolbarItems = {
         handler: function() {
         	cal_actual_view = 'index';
 			var date = og.calToolbarDateMenu.picker.getValue();
-			changeView(cal_actual_view, date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_status_filter);
+			changeView(cal_actual_view, date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_status_filter, actual_task_filter);
 		}
 	}),
 	view_week: new Ext.Action({
@@ -130,7 +133,7 @@ var topToolbarItems = {
         handler: function() {
 			cal_actual_view = 'viewweek';
 			var date = og.calToolbarDateMenu.picker.getValue();
-			changeView(cal_actual_view, date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_status_filter);
+			changeView(cal_actual_view, date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_status_filter, actual_task_filter);
 		}
 	}),
 	view_week5days: new Ext.Action({
@@ -140,7 +143,7 @@ var topToolbarItems = {
         handler: function() {
 			cal_actual_view = 'viewweek5days';
 			var date = og.calToolbarDateMenu.picker.getValue();
-			changeView(cal_actual_view, date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_status_filter);
+			changeView(cal_actual_view, date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_status_filter, actual_task_filter);
 		}
 	}),
 	view_date: new Ext.Action({
@@ -150,7 +153,7 @@ var topToolbarItems = {
         handler: function() {
 			cal_actual_view = 'viewdate';
 			var date = og.calToolbarDateMenu.picker.getValue();
-			changeView(cal_actual_view, date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_status_filter);
+			changeView(cal_actual_view, date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_status_filter, actual_task_filter);
 		}
 	}),
 	prev: new Ext.Action({
@@ -164,7 +167,7 @@ var topToolbarItems = {
         	if (cal_actual_view == 'viewdate') date = date.add(Date.DAY, -1);
         	og.calToolbarDateMenu.picker.setValue(date);
 			
-			changeView(cal_actual_view, date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_status_filter);
+			changeView(cal_actual_view, date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_status_filter, actual_task_filter);
 		}
 	}),
 	next: new Ext.Action({
@@ -178,17 +181,17 @@ var topToolbarItems = {
         	if (cal_actual_view == 'viewdate') date = date.add(Date.DAY, 1);
         	og.calToolbarDateMenu.picker.setValue(date);
 			
-			changeView(cal_actual_view, date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_status_filter);
+			changeView(cal_actual_view, date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_status_filter, actual_task_filter);
 		}
 	}),
 	goto: new Ext.Action({
 		text: lang('pick a date'),
-        tooltip: lang('pick a date'),
-        menu: og.calToolbarDateMenu
+                tooltip: lang('pick a date'),
+                menu: og.calToolbarDateMenu
 	}),
 	imp_exp: new Ext.Action({
 		text: lang('import/export'),
-        tooltip: lang('calendar import - export'),
+                tooltip: lang('calendar import - export'),
 		menu: {items: [
 			{text: lang('import'), iconCls: 'ico-upload', handler: function() {
 				var url = og.getUrl('event', 'icalendar_import', {from_menu:1});
@@ -286,11 +289,29 @@ og.CalendarTopToolbar = function(config) {
                                 },
                                 scope: this
                             }));
-	/* deshabilitada temporalmente
 	if (!og.loggedUser.isGuest) {
 		this.addSeparator();
 		this.add(topToolbarItems.imp_exp);
-	}*/
+	}
+        this.add(new Ext.Action({
+                                text: lang('sync'),
+                                tooltip: lang('sync'),
+                                handler: function() {
+                                        var url = og.getUrl('event', 'calendar_sinchronization');
+                                        og.openLink(url);
+                                },
+                                scope: this
+                            }));
+//        this.add(new Ext.Action({
+//                                text: lang('import'),
+//                                tooltip: lang('import'),
+//                                iconCls: 'ico-download',
+//                                handler: function() {
+//                                        var url = og.getUrl('event', 'import_google_calendar');
+//                                        og.openLink(url);
+//                                },
+//                                scope: this
+//                            }));
 }
 
 Ext.extend(og.CalendarTopToolbar, Ext.Toolbar, {
@@ -387,7 +408,7 @@ og.CalendarSecondTopToolbar = function(config) {
         		actual_user_filter = splited[1] == 0 ? -1 : splited[1];
         		actual_comp_filter = splited[0];
         		var date = og.calToolbarDateMenu.picker.getValue();
-				changeView(cal_actual_view, date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_status_filter);
+				changeView(cal_actual_view, date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_status_filter, actual_task_filter);
         	}
         }
     });
@@ -398,6 +419,33 @@ og.CalendarSecondTopToolbar = function(config) {
     cal_actual_view = ogCalendarUserPreferences.view_type || 'viewweek';
     actual_status_filter = ogCalendarUserPreferences.status_filter;
     if (actual_status_filter == null) actual_status_filter = ' 0 1 3';
+	
+    filterTaskCombo = new Ext.form.ComboBox({
+        id: 'ogCalendarfilterTaskCombo',
+        store: new Ext.data.SimpleStore({
+        	fields: ['value', 'text'],
+        	data :  [["no filter", '--' + lang('no filter') + '--'],["pending", lang('pending')],["complete", lang('complete')], ["hide", lang('none')]]
+
+    	}),
+        displayField:'text',
+        typeAhead: true,
+        mode: 'local',
+        triggerAction: 'all',
+        selectOnFocus:true,
+        width:160,
+        valueField: 'value',
+        listeners: {
+        	'select' : function(combo, record) {
+        		actual_task_filter = record.data.value;
+        		var date = og.calToolbarDateMenu.picker.getValue();
+				changeView(cal_actual_view, date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_status_filter, actual_task_filter);
+        	}
+        }
+    });
+    
+    actual_task_filter = ogCalendarUserPreferences.task_filter;
+    t_filter = ogCalendarUserPreferences.task_filter; 
+    filterTaskCombo.setValue(t_filter);
     
     // Filter by Invitation State
 	var viewActionsState = {
@@ -406,7 +454,7 @@ og.CalendarSecondTopToolbar = function(config) {
 			handler: function() {
 				actual_status_filter = -1;
 				var date = og.calToolbarDateMenu.picker.getValue();
-				changeView(cal_actual_view, date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_status_filter);
+				changeView(cal_actual_view, date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_status_filter, actual_task_filter);
 			}
 		}),
 		pending: {
@@ -417,7 +465,7 @@ og.CalendarSecondTopToolbar = function(config) {
 				if (this.checked) addStateFilter('0');
 				else removeStateFilter('0');
 				var date = og.calToolbarDateMenu.picker.getValue();
-				changeView(cal_actual_view, date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_status_filter);
+				changeView(cal_actual_view, date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_status_filter, actual_task_filter);
 			}
 		},
 		yes: {
@@ -428,7 +476,7 @@ og.CalendarSecondTopToolbar = function(config) {
 				if (this.checked) addStateFilter('1');
 				else removeStateFilter('1');
 				var date = og.calToolbarDateMenu.picker.getValue();
-				changeView(cal_actual_view, date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_status_filter);
+				changeView(cal_actual_view, date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_status_filter, actual_task_filter);
 			}
 		},
 		no: {
@@ -439,7 +487,7 @@ og.CalendarSecondTopToolbar = function(config) {
 				if (this.checked) addStateFilter('2');
 				else removeStateFilter('2');
 				var date = og.calToolbarDateMenu.picker.getValue();
-				changeView(cal_actual_view, date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_status_filter);
+				changeView(cal_actual_view, date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_status_filter, actual_task_filter);
 			}
 		},
 		maybe: {
@@ -450,14 +498,14 @@ og.CalendarSecondTopToolbar = function(config) {
 				if (this.checked) addStateFilter('3');
 				else removeStateFilter('3');
 				var date = og.calToolbarDateMenu.picker.getValue();
-				changeView(cal_actual_view, date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_status_filter);
+				changeView(cal_actual_view, date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_status_filter, actual_task_filter);
 			}
 		}
 	};
 
 	var status_menu = new Ext.Action({
        	iconCls: 'op-ico-details',
-		text: lang('status'),
+		text: lang('event status'),
 		menu: {items: [
 			viewActionsState.pending,
 			viewActionsState.yes,
@@ -481,6 +529,11 @@ og.CalendarSecondTopToolbar = function(config) {
 	this.add(filterNamesCompaniesCombo);
 	this.add(' ');
 	this.add(status_menu);	
+        this.add(' ');
+        this.add(lang('task status'));
+        this.add(' ');
+        this.add(filterTaskCombo);
+	this.add(' ');
 }
 
 Ext.extend(og.CalendarSecondTopToolbar, Ext.Toolbar, {});

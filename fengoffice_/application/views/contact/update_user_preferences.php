@@ -25,7 +25,13 @@
 					<?php } // if ?>
 					</div>
 					<div class="configOptionControl">
-						<?php echo $option->render('options[' . $option->getName() . ']') ?>
+                                            <?php 
+                                                if($option->getName() == "reminders_events"){
+                                                    echo render_add_reminders_config();
+                                                }else{
+                                                    echo $option->render('options[' . $option->getName() . ']');
+                                                }
+                                            ?>
 					</div>
 					<div class="clear"></div>
 				</div>

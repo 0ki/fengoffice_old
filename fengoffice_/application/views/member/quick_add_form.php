@@ -8,9 +8,9 @@
 	<label for="member-name" ><?php echo lang("name")?>:</label>
 	<input type="text" required="required" autofocus id="member-name" name="member[name]" /> 
 	<input type="hidden" id="dim_id" name="member[dimension_id]" value = "<?php echo $dimension_id ?>" />
-	<input type="hidden" id="dim_id" name="member[parent_member_id]" value = "<?php echo $parent_member_id ?>" />
+	<input type="hidden" id="parent_id" name="member[parent_member_id]" value = "<?php echo $parent_member_id ?>" />
 <?php if (!empty($object_type)):?>
-	<input type="hidden" id="dim_id" name="member[object_type_id]" value = "<?php echo $object_type->getObjectTypeId() ?>" />
+	<input type="hidden" id="object_type_id" name="member[object_type_id]" value = "<?php echo $object_type->getObjectTypeId() ?>" />
 <?php else: ?>
 	<div class="field" >
 		<label><?php echo lang('type') ?>:</label>
@@ -30,7 +30,7 @@
 	<div class="action">
 		<input type="submit" class="submit" value="<?php echo lang("save")?>" />
 		<?php foreach ($editUrls as $k => $url) : ?>
-			<a class="object-type-<?php echo $k ?> more" href="<?php echo $url  ?>"><?php echo lang ('more') ?>>> </a>
+			<a onclick="return false;" class="object-type-<?php echo $k ?> more" href="<?php echo $url  ?>"><?php echo lang ('more') ?>>> </a>
 		<?php endforeach;?>
 	</div>
 </form>
@@ -61,12 +61,13 @@
 		$("#quick-form .more").click(function(){
 			$("#quick-form").slideUp();
 			var title = $("#member-name").val();
-			
-			setTimeout(function() {
-				if (title){
-					$(".title").val(title);
-				}
-			}, 500);
+			var parent = $("#parent_id").val();
+		
+			var url = og.makeAjaxUrl($(this).attr('href')+"&name="+title);
+			if (parent) {
+				url += "&parent="+parent;
+			}		
+			og.openLink(url);		
 		});
 		
 

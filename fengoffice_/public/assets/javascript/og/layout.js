@@ -81,7 +81,7 @@ Ext.onReady(function(){
 				   	   id: 'breadcrumbs-panel',	
 					   region: 'north', 
 					   cls : 'breadcrumbs-container',
-					   html: '<div id="breadcrumbs"><h1></h1><ul></ul></div>',
+					   html: '<div id="breadcrumbs"></div>',
 					   expanded: true,
 					   collapsed: false ,
 					   height: 50,

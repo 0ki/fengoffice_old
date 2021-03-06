@@ -741,7 +741,13 @@
 	else if ( $task->getPercentCompleted() < 50) $color_cls .= '25';
 	else if ( $task->getPercentCompleted() < 75) $color_cls .= '50';
 	else if ( $task->getPercentCompleted() < 100) $color_cls .= '75';
-	else $color_cls .= '100';
+        else if ( $task->getPercentCompleted() == 100) $color_cls .= '100';
+	else $color_cls .= 'more-estimate';
+        
+        $percent_complete = 100;
+        if($task->getPercentCompleted() <= 100){
+            $percent_complete = $task->getPercentCompleted();
+        }
 	
 	$bar_width = array_var($options, 'bar_width', '100px');
   	$bar_height = array_var($options, 'bar_height', '13px');
@@ -749,8 +755,8 @@
   	$padding_top = array_var($options, 'padding_top', '1px');
   	
   	$html = "<table style='display:inline;'><tr><td style='padding-left:15px;padding-top:$padding_top'>" .
-			"<table style='height:$bar_height;width:$bar_width'><tr><td style='height:$bar_height;width:" . $task->getPercentCompleted() . "%;' class='$color_cls'></td><td style='width:" . (100 - $task->getPercentCompleted()) . "%;background-color:#DDD'></td></tr></table>" .
-			"</td><td style='padding-left:3px;line-height:12px'><span style='font-size:$font_size;color:#333'>" . $task->getPercentCompleted() . "%</span></td></tr></table>";
+			"<table style='height:$bar_height;width:$bar_width'><tr><td style='height:$bar_height;width:" . $percent_complete . "%;' class='$color_cls'></td><td style='width:" . (100 - $task->getPercentCompleted()) . "%;background-color:#DDD'></td></tr></table>" .
+			"</td><td style='padding-left:3px;line-height:12px'><span style='font-size:$font_size;color:#333'>" . $percent_complete . "%</span></td></tr></table>";
   	
   	return $html;
   }

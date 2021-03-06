@@ -28,10 +28,11 @@ abstract class BaseProjectEvents extends ContentDataObjects {
     	'repeat_y' => DATA_TYPE_INTEGER,
     	'repeat_h' => DATA_TYPE_INTEGER,
     	'type_id' => DATA_TYPE_INTEGER,
-    	'special_id' => DATA_TYPE_INTEGER,
+    	'special_id' => DATA_TYPE_STRING,
      	'repeat_dow' => DATA_TYPE_INTEGER,
     	'repeat_wnum' => DATA_TYPE_INTEGER,
-    	'repeat_mjump' => DATA_TYPE_INTEGER
+    	'repeat_mjump' => DATA_TYPE_INTEGER,
+        'ext_cal_id' => DATA_TYPE_INTEGER
 	);
 
 	/**

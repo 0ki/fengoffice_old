@@ -47,8 +47,8 @@ og.contextManager  = new function() {
 	    				id: d.id,
 	    				dimensionId: d.dimensionId,
 	    				title: d.title,
-	    				checked: (d.isRoot) ? true : false 
-	    				
+	    				checked: (d.isRoot) ? true : false,
+   						visible: (d.isRoot) ? true : false
 	    		} ;    		
     		}
     		
@@ -74,19 +74,36 @@ og.contextManager  = new function() {
     					var panel = Ext.getCmp(this.dimensionId) ;
     					if (!status) {
     						panel.removeFromContext();
+    						
     					}else{
     						panel.show();
     						panel.expand();
     					}
     					
-    					//panel.ownerCt.doLayout();
+    					og.contextManager.setDimensionVisibility(item.dimensionId, status);
     					
+    					var dim_ids = og.contextManager.getVisibleDimensions();
+    					og.openLink(og.getUrl('account', 'update_user_preference', {name:'root_dimensions', value:dim_ids.join(',')}), {hideLoading:true});
     				}
     				
     			});
     		}
     	}
     	return menu ;    	
+    }
+    
+    this.getVisibleDimensions = function() {
+    	var dim_ids = [];
+		for ( var idx in og.contextManager.contextDimensions ) {
+			if ( idx != "remove" && og.contextManager.contextDimensions[idx].visible) {
+    			dim_ids.push(og.contextManager.contextDimensions[idx].dimensionId);
+    		}
+		}
+		return dim_ids;
+    }
+    
+    this.setDimensionVisibility = function(dimension_id, visibility) {
+    	this.contextDimensions[dimension_id].visible = visibility ? true : false;
     }
     
     // Public Methods 

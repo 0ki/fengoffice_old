@@ -145,7 +145,7 @@
     * @access public
     * @param mixed $id
     * @param boolean $force_reload If true cache will be skipped and data will be loaded from database
-    * @return ConfigOption 
+    * @return ContactConfigOptionValue 
     */
     function findById($id, $force_reload = false) {
       if(isset($this) && instance_of($this, 'ContactConfigOptionValues')) {

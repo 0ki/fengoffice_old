@@ -133,6 +133,29 @@ class Contact extends BaseContact {
 		$ret = null;
 		Hook::fire("after_user_deleted", $this, $ret);
 	}
+	
+	
+	
+	
+	function modifyMemberValidations($member) {
+		if ($member instanceof Member) {
+			$member->add_skip_validation('uniqueness of parent - name');
+		} else {
+			if ($this->getId() > 0 && Plugins::instance()->isActivePlugin('core_dimensions')) {
+				$dim = Dimensions::findByCode('feng_persons');
+				if ($dim instanceof Dimension) {
+					$m = Members::findByObjectId($this->getId(), $dim->getId());
+					if ($m instanceof Member) {
+						$m->add_skip_validation('uniqueness of parent - name');
+					}
+				}
+			}
+		}
+	}
+	
+	
+	
+	
 	// ---------------------------------------------------
 	//  IMs
 	// ---------------------------------------------------
@@ -1176,7 +1199,7 @@ class Contact extends BaseContact {
     
 
     function isMemberOfOwnerCompany(){
-    	return parent::getCompanyId()== 1; 
+    	return $this->getCompanyId() == owner_company()->getId(); 
     }
     
     

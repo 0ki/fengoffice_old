@@ -18,12 +18,12 @@
 			?>
 				<li id="<?php echo "message-".$message->getId()?>" class="message-row ico-message <?php echo $row_cls ?>">
 					<span class="breadcrumb"></span>
-					<a href="<?php echo $message->getViewUrl() ?>"><span class="message-title"><?php echo $message->getName();?></span></a>
+					<a href="<?php echo $message->getViewUrl() ?>"><span class="message-title"><?php echo clean($message->getName());?></span></a>
+					<script>
+						var crumbHtml = <?php echo $crumbJs?> ;
+						$("#message-<?php echo $message->getId()?> .breadcrumb").html(crumbHtml);
+					</script>
 				</li>
-				<script>
-					var crumbHtml = <?php echo $crumbJs?> ;
-					$("#message-<?php echo $message->getId()?> .breadcrumb").html(crumbHtml);
-				</script>
 			<?php endforeach; ?>
 		</ul>	
 		<?php if (count($messages)<$total) :?>

@@ -21,14 +21,32 @@
 		<div class="coInputTitle"><?php echo lang('task time report') ?>
 		<?php echo submit_button(lang('generate report'),'s',array('style'=>'margin-top:0px;margin-left:10px')) ?></div>
 	</div>
+	<div style="padding:5px 0"><?php echo lang('task time report description') ?></div>
 </div>
 <div class="coInputSeparator"></div>
 <div class="coInputMainBlock">
-	<div style="width:600px;padding-bottom:20px"><?php echo lang('task time report description') ?></div>
+	
+	<?php if (count(active_context_members(false)) > 0) : ?>
+	<div style="margin-bottom: 15px; padding-bottom: 5px; border-bottom:1px dotted #aaa;">
+		<h5><?php echo lang('showing indformation for')?></h5>
+		<ul>
+		<?php
+			$context = active_context();
+			foreach ($context as $selection) :
+				if ($selection instanceof Member) : ?>
+					<li><span class="coViewAction <?php echo $selection->getIconClass()?>"><?php echo $selection->getName()?></span></li>	
+		<?php 	endif;
+			endforeach;
+		?>
+		</ul>
+	</div>
+	<?php else: ?>
+	<div style="padding:5px;"></div>
+	<?php endif; ?>
 
 	<table>
 		<tr style='height:30px;'>
-			<td><b><?php echo lang("date") ?>:&nbsp;</b></td>
+			<td><span class="bold"><?php echo lang("date") ?>:&nbsp;</span></td>
 			<td align='left'><?php 
 				echo select_box('report[date_type]', array(
 					option_tag(lang('today'), 1, array_var($report_data, "date_type") == 1 ? array('selected' => 'selected'):null),
@@ -52,15 +70,15 @@
 			} 
 		?>
 		<tr class="dateTr"  style="<?php echo $style ?>">
-			<td><b><?php echo lang("start date") ?>:&nbsp;</b></td>
+			<td><span class="bold"><?php echo lang("start date") ?>:&nbsp;</span></td>
 			<td align='left'><?php echo pick_date_widget2('report[start_value]', $st, $genid);?></td>
 		</tr>
 		<tr class="dateTr"  style="<?php echo $style ?>">
-			<td style="padding-bottom:18px"><b><?php echo lang("end date") ?>:&nbsp;</b></td>
+			<td style="padding-bottom:18px"><span class="bold"><?php echo lang("end date") ?>:&nbsp;</span></td>
 			<td align='left'><?php echo pick_date_widget2('report[end_value]', $et, $genid);?></td>
 		</tr>
 		<tr style='height:30px;'>
-			<td><b><?php echo lang("timeslots") ?>:&nbsp;</b></td>
+			<td><span class="bold"><?php echo lang("timeslots") ?>:&nbsp;</span></td>
 			<td align='left'><?php 
 				echo select_box('report[timeslot_type]', array(
 					option_tag(lang('task timeslots'), 0, array_var($report_data, "timeslot_type") == '0' ? array('selected' => 'selected') : null),
@@ -73,7 +91,7 @@
 			</td>
 		</tr>
 		<tr style='height:30px;'>
-			<td><b><?php echo lang("user") ?>:&nbsp;</b></td>
+			<td><span class="bold"><?php echo lang("person") ?>:&nbsp;</span></td>
 			<td align='left'><?php 
 				$options = array();
 				$options[] = option_tag('-- ' . lang('anyone') . ' --', 0, array_var($report_data, "user") == null?array('selected' => 'selected'):null);
@@ -86,7 +104,7 @@
 		
 		<?php if (false) { //FIXME ?>
 		<tr style='height:30px;'>
-			<td><b><?php echo lang("workspace") ?>:&nbsp;</b></td>
+			<td><span class="bold"><?php echo lang("workspace") ?>:&nbsp;</span></td>
 			<td align='left'><table><tr><td>
 				<?php //echo select_project2('report[project_id]', $project_id, $genid, true);?></td><td style="padding-left:25px">
 				<?php //echo checkbox_field('report[include_subworkspaces]', array_var($report_data, "include_subworkspaces", true), array('id' => 'report[include_subworkspaces]' )) ?>
@@ -97,7 +115,7 @@
 		<?php } ?>
 		
 		<tr style='height:30px;' id="<?php echo $genid ?>repGroupBy">
-			<td><b><?php echo lang("group by") ?>:&nbsp;</b></td>
+			<td><span class="bold"><?php echo lang("group by") ?>:&nbsp;</span></td>
 			<td align='left'>
 				<span id="<?php echo $genid ?>gbspan" style="<?php echo array_var($report_data, "timeslot_type") == 0 ? 'display:inline':'display:none' ?>">
 					<?php for ($i = 1; $i <= 3; $i++){ 

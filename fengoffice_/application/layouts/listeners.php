@@ -114,17 +114,15 @@ og.eventManager.addListener('popup',
 
 og.eventManager.addListener('user preference changed',
 	function(option) {
-		// experimental (not developed): dynamically change localization
-		if (option.name == 'localization') {
-			og.loadScripts([og.getUrl('access', 'get_javascript_translation')], {
-				callback: function() {
-					var spans = document.getElementsByName('og-lang');
-					for (var i=0; i < spans.length; i++) {
-						var key = spans[i].id.substring(8);
-						spans[i].innerHTML = lang(key);
-					}
-				}
-			});
+		switch (option.name) {
+			case 'drag_drop_prompt' :
+				og.preferences.drag_drop_prompt = option.value;
+				break;	
+			case 'localization':
+				window.location.reload();
+				break;
+			default: 
+				break;		
 		}
 	}
 );

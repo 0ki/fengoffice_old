@@ -769,7 +769,11 @@
   	      if($value instanceof DateTimeValue) {
   	        return $value;
   	      } else {
-  	        if($value == EMPTY_DATETIME) return null;
+  	        if ($type == DATA_TYPE_DATETIME && ($value == EMPTY_DATETIME || $value == EMPTY_DATE)
+  	        	|| $type == DATA_TYPE_DATE && $value == EMPTY_DATE
+  	        	|| $type == DATA_TYPE_TIME && $value == EMPTY_TIME) {
+  	        		return null;
+  	        	}
   	        return DateTimeValueLib::makeFromString($value);
   	      } // if
   	      

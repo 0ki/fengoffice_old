@@ -15,3 +15,35 @@ function workspaces_include_tasks_template($ignored, &$more_content_templates) {
 		'plugin' => 'workspaces'
 	);
 }
+
+function workspaces_override_object_color($object, &$color) {
+	
+	$ws_ot = ObjectTypes::findByName('workspace');
+	if (!$ws_ot instanceof ObjectType) return;
+	
+	$members = $object->getMembers();
+	foreach ($members as $member) {
+		/* @var $member Member */
+		if ($member->getObjectTypeId() == $ws_ot->getId()) {
+			$ws = Workspaces::findById($member->getObjectId());
+			if ($ws instanceof Workspace) {
+				$color = $ws->getColumnValue('color');
+				return;
+			}
+		}
+	}
+}
+
+
+function workspaces_override_member_color($member, &$color) {
+	
+	$ws_ot = ObjectTypes::findByName('workspace');
+	if (!$ws_ot instanceof ObjectType) return;
+	
+	if ($member->getObjectTypeId() == $ws_ot->getId()) {
+		$ws = Workspaces::findById($member->getObjectId());
+		if ($ws instanceof Workspace) {
+			$color = $ws->getColumnValue('color');
+		}
+	}
+}

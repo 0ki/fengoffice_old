@@ -314,9 +314,9 @@ class AccessController extends ApplicationController {
 				$this->render();
 			}
 			
-			$user_password = new ContactPasswords();
+			$user_password = new ContactPassword();
 			$user_password->setPasswordDate(DateTimeValueLib::now());
-			$user_password->setUserId($user->getId());
+			$user_password->setContactId($user->getId());
 			$user_password->setPassword(cp_encrypt($new_password, $user_password->getPasswordDate()->getTimestamp()));
 			$user_password->password_temp = $new_password;
 			$user_password->save();
@@ -355,7 +355,8 @@ class AccessController extends ApplicationController {
 			if($ref_controller && $ref_action) {
 				$this->redirectTo($ref_controller, $ref_action, $ref_params);
 			} else {
-				$this->redirectTo('dashboard');
+				//$this->redirectTo('dashboard');
+				header("Location: ".ROOT_URL);exit;
 			} // if			
 		}		
 		
@@ -706,20 +707,24 @@ class AccessController extends ApplicationController {
 				flash_error(lang('passwords dont match'));
 				return;
 			}
-			$user_password = new ContactPassword();
-			$user_password->setContactId($user->getId());
-			$user_password->password_temp = $new_password;
-			$user_password->setPasswordDate(DateTimeValueLib::now());
-			$user_password->setPassword(cp_encrypt($new_password, $user_password->getPasswordDate()->getTimestamp()));
-			$user_password->save();
+			try{
+				$user_password = new ContactPassword();
+				$user_password->setContactId($user->getId());
+				$user_password->password_temp = $new_password;
+				$user_password->setPasswordDate(DateTimeValueLib::now());
+				$user_password->setPassword(cp_encrypt($new_password, $user_password->getPasswordDate()->getTimestamp()));
+				$user_password->save();
+		
+				$user->setPassword($new_password);
+				$user->setUpdatedOn(DateTimeValueLib::now());
+				$user->save();
+				set_user_config_option('reset_password', '', $user->getId());
+				flash_success(lang('success reset password'));
+				$this->redirectTo('access', 'login');
+			}catch(Exception $e){
+				flash_error($e->getMessage());
+			}
 
-			$user->setPassword($new_password);
-			$user->setUpdatedOn(DateTimeValueLib::now());
-			$user->save();
-
-			set_user_config_option('reset_password', '', $user->getId());
-			flash_success(lang('success reset password'));
-			$this->redirectTo('access', 'login');
 		}
 	}
 	

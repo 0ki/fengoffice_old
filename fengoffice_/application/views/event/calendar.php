@@ -34,6 +34,7 @@ $_SESSION['day'] = $day;
 
 $user_filter = $userPreferences['user_filter'];
 $status_filter = $userPreferences['status_filter'];
+$task_filter = $userPreferences['task_filter'];
 
 $max_events_to_show = user_config_option('displayed events amount');
 if (!$max_events_to_show) $max_events_to_show = 3;
@@ -163,7 +164,9 @@ foreach($companies as $company)
 					$date_start = new DateTimeValue(mktime(0,0,0,$month-1,$firstday,$year)); 
 					$date_end = new DateTimeValue(mktime(0,0,0,$month+1,$lastday,$year)); 
 					$milestones = ProjectMilestones::getRangeMilestones($date_start, $date_end);
-					$tasks = ProjectTasks::getRangeTasksByUser($date_start, $date_end, ($user_filter != -1 ? $user : null));
+                                        if($task_filter != "hide"){
+                                            $tasks = ProjectTasks::getRangeTasksByUser($date_start, $date_end, ($user_filter != -1 ? $user : null),$task_filter);
+                                        }
 					// FIXME
 					$birthdays = array(); //Contacts::instance()->getRangeContactsByBirthday($date_start, $date_end);
 					
@@ -318,6 +321,10 @@ foreach($companies as $company)
 								} else {
 									$count = 0;
 									foreach($result_evs as $event){
+										
+										$ws_color = $event->getObjectColor($event instanceof ProjectEvent ? 1 : 12);
+										cal_get_ws_color($ws_color, $ws_style, $ws_class, $txt_color, $border_color);
+										
 										if($event instanceof ProjectEvent ){
 											$count++;
 											$subject =  clean($event->getObjectName());
@@ -331,11 +338,6 @@ foreach($companies as $company)
 											
 											$pre_tf = $real_start->getDay() == $real_duration->getDay() ? '' : 'D j, ';
 											if (!$event->isRepetitive() && $real_start->getDay() != $event_start->getDay()) $subject = "... $subject";
-											
-											
-											$ws_color = 1;
-											
-											cal_get_ws_color($ws_color, $ws_style, $ws_class, $txt_color, $border_color);
 											
 											$id_suffix = "_$w";
 										
@@ -352,8 +354,8 @@ foreach($companies as $company)
 
 								?>
 
-												<div id="m_ev_div_<?php echo $event->getId() . $id_suffix?>" class="<?php echo "og-wsname-color-$ws_color" ?>" style="margin: 1px;padding-left:1px;padding-bottom:0px;<?php echo $extra_style ?>">
-												<div style="border: 1px solid;border-color:<?php echo $border_color ?>;">
+												<div id="m_ev_div_<?php echo $event->getId() . $id_suffix?>" class="<?php echo "og-wsname-color-$ws_color" ?>" style="border-radius:4px;margin: 1px;padding-left:1px;padding-bottom:0px;<?php echo $extra_style ?>">
+												<div style="border-radius:4px;border: 1px solid;border-color:<?php echo $border_color ?>;">
 													<table style="width:100%;" class="<?php echo "og-wsname-color-$ws_color" ?>"><tr><td>
 													<a href='<?php echo get_url('event', 'view', array('id' => $event->getId(), 'user_id' => $user_filter)); ?>' class='internalLink' onclick="og.disableEventPropagation(event); return true;" <?php echo "style='color:$txt_color;'" ?>>
 														<img src="<?php echo image_url('/16x16/calendar.png')?>" style="vertical-align: middle;border-width: 0px;">
@@ -403,6 +405,10 @@ foreach($companies as $company)
 										}
 									}
 									foreach($result as $event){
+										
+										$ws_color = $event->getObjectColor($event instanceof ProjectEvent ? 1 : 12);
+										cal_get_ws_color($ws_color, $ws_style, $ws_class, $txt_color, $border_color);
+										
 										if($event instanceof ProjectMilestone ){
 											$milestone=$event;
 											$due_date=$milestone->getDueDate();
@@ -419,7 +425,8 @@ foreach($companies as $company)
 													if (strlen_utf($tip_text) > 200) $tip_text = substr_utf($tip_text, 0, strpos($tip_text, ' ', 200)) . ' ...';
 													
 								?>
-													<div id="m_ms_div_<?php echo $milestone->getId()?>" class="event_block" style="border-left-color: #<?php echo $color?>;">
+													
+													<div id="m_ms_div_<?php echo $milestone->getId()?>" class="<?php echo "og-wsname-color-$ws_color" ?>" style="height:20px;margin: 1px;padding-left:1px;padding-bottom:0px;border-radius:4px;border: 1px solid;border-color:<?php echo $border_color ?>;<?php echo $extra_style ?>">
 														<a href='<?php echo $milestone->getViewUrl()?>' class="internalLink" onclick="og.disableEventPropagation(event);return true;" >
 															<img src="<?php echo image_url('/16x16/milestone.png')?>" style="vertical-align: middle;border-width: 0px;">
 															<span><?php echo $cal_text ?></span>
@@ -474,8 +481,7 @@ foreach($companies as $company)
 													$tip_text = str_replace("\n", '<br>', $tip_text);													
 													if (strlen_utf($tip_text) > 200) $tip_text = substr_utf($tip_text, 0, strpos($tip_text, ' ', 200)) . ' ...';
 								?>
-								
-													<div id="m_ta_div_<?php echo $tip_pre.$task->getId()?>" class="event_block" style="border: 1px solid #<?php echo $color?>; background-color:#D8EAD1">
+													<div id="m_ta_div_<?php echo $tip_pre.$task->getId()?>" class="<?php echo "og-wsname-color-$ws_color" ?>" style="height:20px;margin: 1px;padding-left:1px;padding-bottom:0px;border-radius:4px;border: 1px solid;border-color:<?php echo $border_color ?>;<?php echo $extra_style ?>">
 														<a href='<?php echo $task->getViewUrl()?>' class='internalLink' onclick="og.disableEventPropagation(event);return true;"  style="border-width:0px">
 															<img src="<?php echo $img_url ?>" style="vertical-align: middle;">
 														 	<span><?php echo $cal_text ?></span>

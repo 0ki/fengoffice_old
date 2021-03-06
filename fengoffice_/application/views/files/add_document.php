@@ -16,7 +16,9 @@
 	if($file->isNew()) {
 		$ckEditorContent = '';
 	} else {
-		$ckEditorContent = $file->getFileContentWithRealUrls();
+		$content = $file->getFileContentWithRealUrls() ;		
+		require_once LIBRARY_PATH . "/htmlpurifier/HTMLPurifier.standalone.php";
+		$ckEditorContent = HTMLPurifier::instance()->purify($content);
 	}
 	if (config_option('checkout_for_editing_online')) {
 		ajx_on_leave("og.openLink('" . get_url('files', 'release_file', array('id' => $file->getId())) . "')");

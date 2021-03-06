@@ -121,6 +121,7 @@ class TimeController extends ApplicationController {
 		tpl_assign('selected_user', logged_user()->getId());
 		tpl_assign('timeslots', $timeslots);
 		tpl_assign('tasks', $tasks);
+		if (count($tasks) > 0) tpl_assign('all_users', Contacts::getAllUsers());
 		tpl_assign('users', $users);
 		tpl_assign('start', $start);
 		tpl_assign('limit', $limit);
@@ -140,6 +141,8 @@ class TimeController extends ApplicationController {
 		
 		try {
 			$hoursToAdd = array_var($timeslot_data, 'hours',0);
+                        $minutes = array_var($timeslot_data, 'minutes',0);
+                        
 			if (strpos($hoursToAdd,',') && !strpos($hoursToAdd,'.'))
 				$hoursToAdd = str_replace(',','.',$hoursToAdd);
 			if (strpos($hoursToAdd,':') && !strpos($hoursToAdd,'.')) {
@@ -153,6 +156,10 @@ class TimeController extends ApplicationController {
 				$hours = substr($hoursToAdd, 0, $pos-1);
 				$hoursToAdd = $hours + $mins;
 			}
+                        if($minutes){
+                            $min = str_replace('.','',($minutes/6));
+                            $hoursToAdd = $hoursToAdd + ("0.".$min);                    
+                        }
 				
 			if ($hoursToAdd <= 0){
 				flash_error(lang('time has to be greater than 0'));
@@ -223,6 +230,8 @@ class TimeController extends ApplicationController {
 		
 		try {
 			$hoursToAdd = array_var($timeslot_data, 'hours',0);
+                        $minutes = array_var($timeslot_data, 'minutes',0);
+                        
 			if (strpos($hoursToAdd,',') && !strpos($hoursToAdd,'.'))
 				$hoursToAdd = str_replace(',','.',$hoursToAdd);
 			if (strpos($hoursToAdd,':') && !strpos($hoursToAdd,'.')) {
@@ -236,7 +245,11 @@ class TimeController extends ApplicationController {
 				$hours = substr($hoursToAdd, 0, $pos-1);
 				$hoursToAdd = $hours + $mins;
 			}
-
+                        
+                        if($minutes){
+                            $min = str_replace('.','',($minutes/6));
+                            $hoursToAdd = $hoursToAdd + ("0.".$min);                    
+                        }
 				
 			if ($hoursToAdd <= 0){
 				flash_error(lang('time has to be greater than 0'));

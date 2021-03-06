@@ -37,10 +37,32 @@ class MemberController extends ApplicationController {
 		$member = new Member();
 		
 		if (!is_array($member_data)) {
+			
+			$member_data = array();
+			if ($name = array_var($_GET,'name') ) {
+				$member_data['name'] = $name;
+			}
+			if ($parent = array_var($_GET,'parent')) {
+				tpl_assign('parent_sel', $parent); 
+			}
+			tpl_assign('member_data', $member_data);
+			
 			// New ! Permissions
 			$permission_parameters = permission_member_form_parameters();
+			
+			$logged_user_pg = array();
+			foreach ($permission_parameters['allowed_object_types'] as $ot){
+				$logged_user_pg[] = array(
+					'o' => $ot->getId(),
+					'w' => 1,
+					'd' => can_manage_dimension_members(logged_user()) ? 1 : 0,
+					'r' => 1
+				);
+			}
+			$permission_parameters['member_permissions'][logged_user()->getPermissionGroupId()] = $logged_user_pg;
 			tpl_assign('permission_parameters', $permission_parameters);
 			//--
+			
 			tpl_assign("member", $member);
 			
 			$sel_dim = get_id("dim_id");

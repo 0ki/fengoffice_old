@@ -120,4 +120,16 @@ function _log($message) {
 	echo date("Y-m-d H:i:s") . " - $message\n";
 }
 
+function import_google_calendar() {
+    _log("import with google calendar...");
+    ProjectEvents::import_google_calendar();
+    _log("end import with google calendar...");
+}
+
+function export_google_calendar() {
+    _log("export with google calendar...");
+    ProjectEvents::export_google_calendar();
+    _log("end export with google calendar...");
+}
+
 ?>

@@ -72,6 +72,14 @@
       return ObjectSubscriptions::delete('`contact_id` = ' . DB::escape($user->getId()));
     } // clearByUser
     
+    function findBySubscriptions($event) {
+            return ObjectSubscriptions::findOne(array('conditions' => array('`contact_id` = ? AND object_id = ?', logged_user()->getId(),$event)));
+    }
+    
+    function findByEvent($event_id) {
+            return ObjectSubscriptions::findAll(array('conditions' => array('`object_id` = ?', $event_id)));
+    }
+    
   } // ObjectSubscriptions 
 
 ?>

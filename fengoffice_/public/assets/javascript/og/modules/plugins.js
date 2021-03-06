@@ -124,5 +124,32 @@ og.pluginManager.init = function () {
 			}
 		});
 	});
+	
+	$(".update-button").click(function(){
+		var button = this ;
+		$(button).parents("tr").addClass("loading-indicator");
+		var url = og.getUrl('plugin', 'update', {ajax:'true'});
+		var id = $(this).closest("tr").attr('plg-id');
+
+		data = {"id": id, "ajax": 'true'};
+		
+		//og.openLink();
+		
+		Ext.Ajax.request({
+            method: 'POST',
+            params :data,
+			url: url,
+			callback: function(options, success, response) {
+				$(button).parents("tr").removeClass("loading-indicator");
+				try {
+					var jsonData = Ext.util.JSON.decode(response.responseText);
+				} catch (e){
+					$(".error").html(response.responseText).fadeIn();
+					return ;
+				}
+				$(button).closest('tr').fadeOut("slow") ;
+			}
+		});
+	});
 
 }

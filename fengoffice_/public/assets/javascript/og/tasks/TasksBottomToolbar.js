@@ -74,7 +74,8 @@ og.TasksBottomToolbar = function(config) {
 	        	,['created_on', lang('created on')]
 	        	,['completed_on', lang('completed on')]
 	        	,['assigned_to', lang('assigned to')]
-	        	,['start_date', lang('start date')]]
+	        	,['start_date', lang('start date')]
+                        ,['percent_completed', lang('progress')]]
 	    	}),
         displayField:'text',
         typeAhead: true,
@@ -88,7 +89,7 @@ og.TasksBottomToolbar = function(config) {
 				ogTasks.redrawGroups = false;
 				ogTasks.draw();
 				ogTasks.redrawGroups = true;
-        		var url = og.getUrl('account', 'update_user_preference', {name: 'tasksOrderBy', value:record.data.value});
+                                var url = og.getUrl('account', 'update_user_preference', {name: 'tasksOrderBy', value:record.data.value});
 				og.openLink(url,{hideLoading:true});
         	}
         }
@@ -371,7 +372,7 @@ og.TasksBottomToolbar = function(config) {
     	id: 'ogTasksStatusCombo',
         store: new Ext.data.SimpleStore({
 	        fields: ['value', 'text'],
-	        data : [[2, '--' + lang('no filter') + '--'],[0, lang('pending')],[1, lang('complete')], [10, lang('active')], [11, lang('overdue')], [12, lang('today')], [13, lang('overdue')+"+"+lang('today')], [20, lang('my active')], [21, lang('my subscribed')] ]
+	        data : [[2, '--' + lang('no filter') + '--'],[0, lang('pending')],[1, lang('complete')], [10, lang('active')], [11, lang('overdue')], [12, lang('today')], [13, lang('overdue')+"+"+lang('today')], [20, lang('my active')], [21, lang('my subscribed')]]
 	    }),
         displayField:'text',
         typeAhead: true,

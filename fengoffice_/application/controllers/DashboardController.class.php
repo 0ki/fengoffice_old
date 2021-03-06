@@ -456,7 +456,7 @@ class DashboardTools {
 	static $widgets = array(); 
 
 	static function renderSection($name) {
-		
+
 		$widgetsToRender = array();
 		
 		self::$widgets = Widgets::instance()->findAll(array(
@@ -476,18 +476,27 @@ class DashboardTools {
 				if ( $cw->getSection() == $name ) {
 					$w->setOptions($cw->getOptions()); 
 					$w->setDefaultOrder($cw->getOrder());
-					$widgetsToRender[(int)$w->getDefaultOrder()] = $w ;
+					$widgetsToRender[] = $w ;
 				}
 			}elseif($w->getDefaultSection() == $name){
-				$widgetsToRender[(int)$w->getDefaultOrder()] = $w ;
+				$widgetsToRender[] = $w ;
 			}
 		}
 		
-		ksort($widgetsToRender);
-		
+		usort($widgetsToRender, "widget_sort") ;
 		foreach ($widgetsToRender as $k=> $w) {
 			$w->execute();
 		}
 		
 	}
 }
+
+		
+function widget_sort(Widget $a, Widget $b) {
+    if ($a->getDefaultOrder() == $b->getDefaultOrder()) {
+        return 0;
+    }
+    return ($a->getDefaultOrder() < $b->getDefaultOrder()) ? -1 : 1;
+}
+	
+			

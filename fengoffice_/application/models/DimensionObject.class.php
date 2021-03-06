@@ -22,7 +22,9 @@ abstract class DimensionObject extends ContentDataObject {
 		}	
 	}
 	
-	
+	function getIconClass(){
+		return '';
+	}
 	
 	
 }

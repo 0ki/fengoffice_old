@@ -7,6 +7,20 @@ og.core_dimensions = {
 				og.before_object_view[x] = 'og.core_dimensions.onContactClick(<parameters>);';
 			}
 		}
+		
+		og.eventManager.addListener('member changed', 
+		 	function (node){
+				var tree = node.getOwnerTree();
+				if (tree.dimensionCode == 'feng_persons') {
+					var selection = tree.getSelectionModel().getSelectedNode();
+					if (selection && selection.id) {
+						if (og.core_dimensions.prev_selection[og.core_dimensions.prev_selection.length-1] != selection.id) {
+							og.core_dimensions.prev_selection.push(selection.id);
+						}
+					}
+				}
+			}
+		);
 	},
 	
 	onContactClick: function(member_id) {
@@ -43,5 +57,7 @@ og.core_dimensions = {
 			}
 		});
 		return "";
-	}
+	},
+	
+	prev_selection: []
 };

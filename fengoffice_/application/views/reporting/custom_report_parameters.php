@@ -18,9 +18,9 @@
 
 	<table>
 		<tr>
-			<td style="padding:0 10px 10px 10px;"><b><?php echo lang('field') ?></b></td>
-			<td style="text-align:center;padding:0 10px 10px 10px;"><b><?php echo lang('condition') ?></b></td>
-			<td style="text-align:center;padding:0 10px 10px 10px;"><b><?php echo lang('value') ?></b></td>
+			<td style="padding:0 10px 10px 10px;"><span class="bold"><?php echo lang('field') ?></span></td>
+			<td style="text-align:center;padding:0 10px 10px 10px;"><span class="bold"><?php echo lang('condition') ?></span></td>
+			<td style="text-align:center;padding:0 10px 10px 10px;"><span class="bold"><?php echo lang('value') ?></span></td>
 		</tr>
 		
 		<?php
@@ -29,18 +29,19 @@
 		foreach($conditions as $condition){
 			if($condition->getCustomPropertyId() > 0){
 				$cp = CustomProperties::getCustomProperty($condition->getCustomPropertyId());
+				$name = $cp->getName();
 				if (!$cp) continue;
+			} else {
+				$name = lang('field ' . $model . ' ' . $condition->getFieldName());
 			}
 			$tiCount ++;
 			?>
 			<tr style='height:30px;'>
 			<?php
-				$name = lang('field ' . $model . ' ' . $condition->getFieldName());
-				
 				$condId = $genid . 'rpcond' . $condition->getId();
 				if ($firstId == '') $firstId = $condId;
 			?>
-				<td style="padding:3px 0 0 10px;"><b><?php echo $name ?>&nbsp;</b></td>
+				<td style="padding:3px 0 0 10px;"><span class="bold"><?php echo $name ?>&nbsp;</span></td>
 				<td style="text-align:center;padding:3px 0 0 0;"><?php echo ($condition->getCondition() != '%' ? $condition->getCondition() : lang('ends with') ) ?>&nbsp;</td>
 			<?php if(isset($cp)){ ?>
 				<td align='left'>

@@ -566,8 +566,8 @@ class TaskController extends ApplicationController {
 			default:
 				throw new Exception('Task status "' . $status . '" not recognised');
 		}
-
-		$conditions = "AND $template_condition $task_filter_condition $task_status_condition";
+                
+		$conditions = "AND $template_condition $task_filter_condition $task_status_condition";                
 		//Now get the tasks
 		//$tasks = ProjectTasks::getContentObjects(active_context(), ObjectTypes::findById(ProjectTasks::instance()->getObjectTypeId()), null, null, $conditions,null)->objects;
 		
@@ -738,7 +738,7 @@ class TaskController extends ApplicationController {
 	 * @param void
 	 * @return null
 	 */
-	function add_task() {
+	function add_task() {            
 		if (logged_user()->isGuest()) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
@@ -930,7 +930,11 @@ class TaskController extends ApplicationController {
 				}*/
 				
 				ApplicationLogs::createLog($task, ApplicationLogs::ACTION_ADD);
-
+                                
+                                if(config_option('repeating_task') == 1){
+                                    $this->repetitive_task($task);
+                                }                                
+                                
 				DB::commit();
 
 				// notify asignee
@@ -1202,6 +1206,10 @@ class TaskController extends ApplicationController {
 				$task->resetIsRead();
 				
 				ApplicationLogs::createLog($task, ApplicationLogs::ACTION_EDIT);
+                                
+                                if(config_option('repeating_task') == 1){
+                                    $this->repetitive_task($task);
+                                }                                
 
 				DB::commit();
 
@@ -1420,7 +1428,7 @@ class TaskController extends ApplicationController {
 				}
 				if (!$complete_last_task) {
 					// generate completed task
-					$new_task = $task->cloneTask(true);
+					$new_task = $task->cloneTask($new_st_date,$new_due_date,true);
 					$new_task->completeTask();
 						
 					// set next values for repetetive task
@@ -1672,7 +1680,7 @@ class TaskController extends ApplicationController {
 		if($task->getRepeatForever()) $rsel1 = true; //forever
 		else if(isset($rnum) AND $rnum > 0) $rsel2 = true; //repeat n-times
 		else if(isset($rend) AND $rend instanceof DateTimeValue) $rsel3 = true; //repeat until
-		else $rsel1 = true; // default
+		//else $rsel1 = true; // default
 	}
 
 	private function setRepeatOptions(&$task_data) {
@@ -1748,6 +1756,50 @@ class TaskController extends ApplicationController {
 		}
 		return null;
 	}
+        
+        function repetitive_task($task){
+            if($task->isRepetitive()){
+                if ($task->getRepeatNum() > 0) {
+                    $task->setRepeatNum($task->getRepeatNum() - 1);
+                    while($task->getRepeatNum() > 0){
+                        $this->getNextRepetitionDates($task, $new_st_date, $new_due_date);
+                        $task->setRepeatNum($task->getRepeatNum() - 1);
+                        // generate completed task
+                        $task->cloneTask($new_st_date,$new_due_date,true);
+                        // set next values for repetetive task
+                        if ($task->getStartDate() instanceof DateTimeValue ) $task->setStartDate($new_st_date);
+                        if ($task->getDueDate() instanceof DateTimeValue ) $task->setDueDate($new_due_date);
+                        foreach ($task->getAllSubTasks() as $subt) {
+                                $subt->setCompletedById(0);
+                                $subt->setCompletedOn(EMPTY_DATETIME);
+                                $subt->save();
+                        }
+                        $task->save();
+                    }
+                    $event->save();
+                }else{
+                    $task_end = $task->getRepeatEnd();
+                    $new_st_date = "";
+                    $new_due_date = "";
+                    while($task->getRepeatBy() == 'start_date' && $new_st_date <= $task_end ||
+                          $task->getRepeatBy() == 'due_date' && $new_due_date <= $task_end){
+                        $this->getNextRepetitionDates($task, $new_st_date, $new_due_date);
+                        // generate completed task
+                        $task->cloneTask($new_st_date,$new_due_date,true);
+                        // set next values for repetetive task
+                        if ($task->getStartDate() instanceof DateTimeValue ) $task->setStartDate($new_st_date);
+                        if ($task->getDueDate() instanceof DateTimeValue ) $task->setDueDate($new_due_date);
+                        foreach ($task->getAllSubTasks() as $subt) {
+                                $subt->setCompletedById(0);
+                                $subt->setCompletedOn(EMPTY_DATETIME);
+                                $subt->save();
+                        }                        
+                    }
+                    $task->setRepeatEnd(EMPTY_DATETIME);
+                    $task->save();
+                }
+            }
+        }
 
 
 } // TaskController

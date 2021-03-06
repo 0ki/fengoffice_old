@@ -111,10 +111,10 @@ class DimensionController extends ApplicationController {
 			
 			$parent = 0;
 			if (!$dimension->getDefinesPermissions() || $dimension->hasAllowAllForContact($contact_pg_ids) || $return_all_members){
-				$all_members = $dimension->getAllMembers(false,"name",true);
+				$all_members = $dimension->getAllMembers(false,"parent, name",true);
 			}
 			else if ($dimension->hasCheckForContact($contact_pg_ids)){
-				$member_list = $dimension->getAllMembers(false,"name",true);
+				$member_list = $dimension->getAllMembers(false,"parent, name",true);
 				$allowed_members = array();
 				foreach ($member_list as $dim_member){
 					if ($dim_member->canBeReadByContact($contact_pg_ids, logged_user()))
@@ -199,7 +199,6 @@ class DimensionController extends ApplicationController {
 			  			'iconCls' =>  'ico-edit'
 					));	
 				}
-				
 				$members[] = $member;
 			}
 			return $members ;
@@ -232,10 +231,10 @@ class DimensionController extends ApplicationController {
 			if ($dimension instanceof Dimension && $member instanceof Member){
 							
 				if (!$dimension->getDefinesPermissions() || $dimension->hasAllowAllForContact($contact_pg_ids)){
-					$dimension_members = $dimension->getAllMembers(false,"name",true);
+					$dimension_members = $dimension->getAllMembers(false,"parent, name",true);
 				}
 				else if ($dimension->hasCheckForContact($contact_pg_ids)){
-					$member_list = $dimension->getAllMembers(false,"name",true);
+					$member_list = $dimension->getAllMembers(false,"parent,name",true);
 					$allowed_members = array();
 					foreach ($member_list as $dim_member){
 						if ($dim_member->canBeReadByContact($contact_pg_ids, logged_user()))

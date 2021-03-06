@@ -261,7 +261,72 @@ class ProjectEvent extends BaseProjectEvent {
 			$this->event_invitations[$inv->getContactId()] = $inv;
 		}
 	}
-	
+        
+        function cloneEvent($new_st_date,$new_due_date) {
+		$new_event = new ProjectEvent();
+				
+		$new_event->setObjectName($this->getObjectName());
+		$new_event->setDescription($this->getDescription());
+		$new_event->setTypeId($this->getTypeId());		
+		if ($this->getDuration() instanceof DateTimeValue )
+			$new_event->setDuration(new DateTimeValue($this->getDuration()->getTimestamp()));
+		if ($this->getStart() instanceof DateTimeValue )
+			$new_event->setStart(new DateTimeValue($this->getStart()->getTimestamp()));
+		
+		$new_event->save();
+                
+                // set next values for repetetive task
+                if ($new_event->getStart() instanceof DateTimeValue ) $new_event->setStart($new_st_date);
+                if ($new_event->getDuration() instanceof DateTimeValue ) $new_event->setDuration($new_due_date);
+                
+                $invitations = EventInvitations::findByEvent($this->getId());
+                if ($invitations) { 
+                    foreach($invitations as $invitation){
+                        $invit = new EventInvitation();
+                        $invit->setEventId($new_event->getId());
+                        $invit->setContactId($invitation->getContactId());
+                        $invit->setInvitationState(1);
+                        $invit->save();
+                    }
+                    
+                }
+                $subscriptions = ObjectSubscriptions::findByEvent($this->getId());
+                if ($subscriptions) { 
+                    foreach($subscriptions as $subscription){
+                        $subscrip = new ObjectSubscription();
+                        $subscrip->setObjectId($new_event->getId());
+                        $subscrip->setContactId($subscription->getContactId());
+                        $subscrip->save();
+                    }                    
+                }
+                $reminders = ObjectReminders::findByEvent($this->getId());
+                if ($reminders) { 
+                    foreach($reminders as $reminder){
+                        $remind = new ObjectReminder();
+                        $remind->setObjectId($new_event->getId());
+                        $remind->setMinutesBefore($reminder->getMinutesBefore());                        
+                        $remind->setType($reminder->getType());
+                        $remind->setContext($reminder->getContext());
+                        $remind->setUserId(0);
+                        $date = $new_event->getStart();
+                        if ($date instanceof DateTimeValue) {
+                                $rdate = new DateTimeValue($date->getTimestamp() - $reminder->getMinutesBefore() * 60);
+                                $remind->setDate($rdate);
+                        }
+                        $remind->save();
+                    }                    
+                }
+
+                $member_ids = array();
+                $context = active_context();
+                foreach ($context as $selection) {
+                        if ($selection instanceof Member) $member_ids[] = $selection->getId();
+                }		        
+                $object_controller = new ObjectController();
+                $object_controller->add_to_members($new_event, $member_ids); 
+                                            
+		return $new_event;
+	}      
 
 } // projectEvent
 

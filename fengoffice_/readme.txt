@@ -86,6 +86,28 @@
  
     Changelog
     =========
+
+ 	Since 2.0 Beta 4
+ 	----------------
+ 	bugfix: Extracted files categorization
+ 	bugfix: When adding workspaces
+ 	bugfix: Breadcrumbs were not working fine all the time 
+ 	bugfix: Being able to zip/unzip files
+ 	security: JS Injection Slimey Fix
+ 	system: .pdf and .docx files contents search
+ 	system: Improvement when creating a new user
+ 	system: Plugin update engine
+ 	system: Plugin manager console mode 
+ 	system: Search in file revisions
+ 	system: Import/Export contacts available again
+ 	system: Import/Export events available again
+ 	system: Google Calendar Sync 	
+ 	system: Improvement on repeating events and tasks
+ 	system: Cache compatibility (i.e.: with APC)
+ 	usability: Completing a task closes its timeslots
+ 	usability: Task progress bar working along the timeslots
+ 	usability: Being able to change permissions in workspaces when editing
+ 	 	
  	
  	Since 2.0 Beta 3
  	----------------

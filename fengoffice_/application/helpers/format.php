@@ -227,7 +227,7 @@ function date_format_tip($format) {
 }
 
 
-	function format_value_to_print($col, $value, $type, $obj_type_name, $textWrapper='', $dateformat='Y-m-d') {
+	function format_value_to_print($col, $value, $type, $obj_type_id, $textWrapper='', $dateformat='Y-m-d') {
 		switch ($type) {
 			case DATA_TYPE_STRING: 
 				if(preg_match(EMAIL_FORMAT, strip_tags($value))){
@@ -270,7 +270,7 @@ function date_format_tip($format) {
 			case DATA_TYPE_DATETIME:
 				if ($value != 0) {
 					$dtVal = DateTimeValueLib::dateFromFormatAndString("$dateformat H:i:s", $value);
-					if ($obj_type_name == 'event' && $col == 'start') $formatted = format_datetime($dtVal);
+					if ($obj_type_id == ProjectEvents::instance()->getObjectTypeId() && $col == 'start') $formatted = format_datetime($dtVal);
 					else $formatted = format_date($dtVal, null, 0);
 				} else $formatted = '';
 				break;

@@ -59,6 +59,11 @@ class ConfigController extends ApplicationController {
 		$submited_values = array_var($_POST, 'options');
 		if(is_array($submited_values)) {
 			foreach($options as $option) {
+				//update global cache if available
+				if (GlobalCache::isAvailable() && GlobalCache::key_exists('config_option_'.$option->getName())) {					
+					GlobalCache::delete('config_option_'.$option->getName());					
+				}
+				
 				$new_value = array_var($submited_values, $option->getName());
 				if(is_null($new_value) || ($new_value == $option->getValue())) continue;
 
@@ -108,11 +113,17 @@ class ConfigController extends ApplicationController {
 			try {
 				DB::beginWork();
 				foreach ($options as $option) {
+				// update global cache if available					
+					if (GlobalCache::isAvailable()) {							
+						GlobalCache::delete('user_config_option_def_'.$option->getName(), $new_value);
+					}
+					
 					$new_value = array_var($submited_values, $option->getName());
 					if (is_null($new_value) || ($new_value == $option->getValue())) continue;
 
 					$option->setValue($new_value);
 					$option->save();
+					
 					if (!user_has_config_option($option->getName())) {
 						evt_add('user preference changed', array('name' => $option->getName(), 'value' => $new_value));
 					}

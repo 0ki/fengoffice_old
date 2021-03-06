@@ -20,7 +20,7 @@ class Contacts extends BaseContacts {
 	 */
 	function getAllowedContacts($extra_conds = null) {
 		$result = array() ;
-		foreach ( $contacts  = Contacts::instance()->findAll() as $c ){
+		foreach ( $contacts  = Contacts::instance()->findAll(array('conditions' => array($extra_conds))) as $c ){
 			/* @var $c Contact */
 			if ($c->canView(logged_user())) {
 				$result[] = $c ;
@@ -46,6 +46,25 @@ class Contacts extends BaseContacts {
 		$contact_email = ContactEmails::findOne(array('conditions' => array("`email_address` = ? AND `contact_id` <> ?", $email, $id_contact)));
 		if (!is_null($contact_email))
 			return self::findById($contact_email->getContactId());
+		return null;
+	} // getByEmail
+        
+        /**
+	 * Return Contact object by email
+	 *
+	 * @param string $email
+	 * @return Contact
+	 */
+	static function getByEmailCheck($email, $id_contact = 0) {
+		$contact_email = Contacts::findOne(array(
+                    'conditions' => array("`email_address` = ? AND `contact_id` <> ?", $email, $id_contact),
+                    'join' => array(
+                            'table' => ContactEmails::instance()->getTableName(),
+                            'jt_field' => 'contact_id',
+                            'e_field' => 'object_id',
+                    )));
+		if (!is_null($contact_email))
+			return self::findById($contact_email->getObjectId());
 		return null;
 	} // getByEmail
 	
@@ -145,7 +164,7 @@ class Contacts extends BaseContacts {
 	}
 
 	static function getContactFieldNames() {
-		return array('contact[firstname]' => lang('first name'),
+		return array('contact[first_name]' => lang('first name'),
 			'contact[surname]' => lang('surname'), 
 			'contact[email]' => lang('email address'),
 			'contact[company_id]' => lang('company'),
@@ -262,10 +281,12 @@ class Contacts extends BaseContacts {
 		$sql = "
 			SELECT DISTINCT(contact_id) FROM ".TABLE_PREFIX."contact_emails ce 
 			INNER JOIN ".TABLE_PREFIX."objects o ON  ce.contact_id = o.id
+                        INNER JOIN ".TABLE_PREFIX."contacts c ON  c.object_id = o.id
 			WHERE 
 				o.archived_by_id = 0 AND 
 				o.trashed_by_id = 0 AND 
-				ce.email_address = '$email'
+				ce.email_address = '$email' AND
+                                c.user_type <> 0
 				$id_cond
 				LIMIT 1 ";
 		

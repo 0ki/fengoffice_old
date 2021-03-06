@@ -1,0 +1,115 @@
+<?php
+set_page_title(lang('calendar sinchronization'));
+$genid = gen_id();
+?>
+
+<div id="<?php echo $genid ?>sincrhonization" class="adminMailAccounts" style="height: 100%; background-color: white">
+    <div class="adminHeader">
+        <div class="adminTitle"><?php echo lang('calendar sinchronization') ?></div>
+        <div class="adminSeparator"></div>
+        <div style="float: left; width: 300px;">
+            <form class="internalForm" action="<?php echo get_url('event', 'add_calendar_user', array('cal_user_id' => array_var($user, 'id'))); ?>" method="post">
+                <?php 
+
+                    echo label_tag(lang('account gmail'), $genid . 'auth_user', true);
+                    echo text_field('auth_user', array_var($user, 'auth_user'),array('id' => $genid . 'auth_user', 'tabindex' => '1'));
+
+                    echo label_tag(lang('password gmail'), $genid . 'auth_pass', true);
+                    echo password_field('auth_pass', array_var($user, 'auth_pass'),array('id' => $genid . 'auth_pass', 'tabindex' => '2'));
+
+                    echo label_tag(lang('sync event feng'), $genid . 'sync');
+                    echo checkbox_field('sync', array_var($user, 'sync'), array('id' => $genid.'sync', 'tabindex'=>'3'));
+                ?>
+                <div style="clear:both"></div>     
+                <?php
+                  echo submit_button(array_var($user, 'id') ? lang('save changes') : lang('add account'), 's', array('tabindex' => '4')); 
+                ?>
+            </form>
+        </div>
+        <?php if(count($external_calendars) > 0){?>
+        <form class="internalForm" action="<?php echo get_url('event', 'import_calendars'); ?>" method="post">
+            <div style="float: left; width: 300px;">
+                <fieldset>
+                        <legend><?php echo lang('list calendar')?></legend>
+                        <?php foreach ($external_calendars as $e_calendar){?>
+                        <div class="mail-account-item">
+                                <?php 
+                                    echo checkbox_field('e_calendars['.$e_calendar['title'].']', $e_calendar['sel'], array('tabindex' => '1', 'value' => $e_calendar['user']))." ".$e_calendar['title'];
+                                ?>
+                        </div>
+                        <?php }?>
+                        <?php
+                          echo submit_button(lang('import calendars'), 's', array('tabindex' => '2')); 
+                        ?>
+                </fieldset>
+            </div>
+        </form>
+        <?php }?>
+        <div style="clear: both;"></div>
+    </div>
+    <?php if(isset($user) && is_array($user) && count($user)) { ?>
+    <div class="adminMainBlock">
+        
+<!--        <form class="internalForm" action="<?php echo get_url('event', 'add_calendar', array('cal_id' => array_var($cal_data, 'id'))); ?>" method="post">
+            <fieldset>
+                    <legend><?php echo array_var($cal_data, 'id') ? lang('edit calendar') : lang('new calendar') ?></legend>
+
+                    <div class="mail-account-item">
+                            <?php 
+                                echo label_tag(lang('name calendar'), $genid . 'calendar_name', true);
+                                echo text_field('calendar_name', array_var($cal_data, 'calendar_name'),array('id' => $genid . 'calendar_name','class' => 'title', 'tabindex' => '5'));
+                            ?>
+                    </div>
+
+                    <div class="mail-account-item">
+                            <?php 
+                                echo label_tag(lang('users link'), $genid . 'calendar_link', true);
+                                echo text_field('calendar_link', array_var($cal_data, 'calendar_link'),array('id' => $genid . 'calendar_user','class' => 'title', 'tabindex' => '6'));
+                            ?>
+                    </div>
+                    <?php
+                        echo text_field('ext_cal_user_id', array_var($user, 'id'),array('id' => $genid . 'ext_cal_user_id', 'type' => 'hidden'));
+                        echo submit_button(array_var($cal_data, 'id') ? lang('save changes') : lang('add calendar'), 's', array('tabindex' => '8')); 
+                    ?>
+            </fieldset>
+        </form>-->
+        <?php if(isset($calendars) && is_array($calendars) && count($calendars)) { ?>
+        <table class="adminListing" style="min-width: 400px; margin-top: 10px;">
+                <tr>
+                        <th width="90%"><?php echo lang('name calendar') ?></th>
+                        <th><?php echo lang('options') ?></th>
+                </tr>
+                <?php
+                $isAlt = true;
+                foreach($calendars as $calendar) {
+                        $isAlt = !$isAlt;
+                ?>
+                <tr class="<?php echo $isAlt? 'altRow' : ''?>" id="<?php echo $genid ?>tr_<?php echo $calendar->getId();?>">
+                        <td><?php echo $calendar->getCalendarName() ?></td>
+                        <?php
+                        $options = array();
+                        $options[] = '<a class="internalLink" href="'.get_url('event', 'calendar_sinchronization', array('cal_id' => $calendar->getId())).'">' . lang('edit') . '</a>';
+                        $options[] = '<a class="internalLink" href="javascript:og.promptDeleteCalendar(' . $calendar->getId() . ')">' . lang('delete') . '</a>';
+                        ?>
+                        <td style="font-size: 80%;"><?php echo implode(' | ', $options) ?></td>
+                </tr>
+                <?php } // foreach ?>
+        </table>
+        <?php } else { ?> <?php echo lang('no calendars') ?> <?php } // if ?>
+    </div>
+    <?php }?>
+</div>
+
+<script>
+	var div = document.getElementById('<?php echo $genid ?>sincrhonization');
+	div.parentNode.style.backgroundColor = '#FFFFFF'; 
+        
+        og.DeleteCalendar = function(cal_id) {        
+                                if (confirm(lang('delete calendar'))) {
+                                        og.openLink(og.getUrl('event', 'delete_calendar', {
+                                                cal_id : cal_id
+                                        }));
+                                        $('#<?php echo $genid ?>tr_'+cal_id).remove();
+                                }
+        };
+</script>

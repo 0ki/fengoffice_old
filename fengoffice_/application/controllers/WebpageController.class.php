@@ -307,17 +307,21 @@ class WebpageController extends ApplicationController {
 				flash_error(lang("error archive objects", $err));
 			}
 		}
-		//$webpages = ProjectWebpages::getContentObjects($context, ObjectTypes::findById(ProjectWebpages::instance()->getObjectTypeId()), $order, $order_dir)->objects;
 		
-		$webpages =  ProjectWebpages::instance()->listing(array(
+		$res =  ProjectWebpages::instance()->listing(array(
 			"order" => $order , 
 			"order_dir" => $order_dir  
-		))->objects;
+		));
 		
-		if (isset($webpages)) {
+		$object = array(
+			"totalCount" => $res->total,
+			"start" => $start,
+			"webpages" => array()
+		);
+		if (isset($res->objects)) {
 			$index = 0;
 			$ids = array();
-			foreach ($webpages as $w) {
+			foreach ($res->objects as $w) {
 				$ids[] = $w->getId();
 				$object["webpages"][] = array(
 					"ix" => $index++,

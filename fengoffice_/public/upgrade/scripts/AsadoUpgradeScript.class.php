@@ -40,7 +40,7 @@ class AsadoUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('1.7.4');
-		$this->setVersionTo('2.0.0.7');
+		$this->setVersionTo('2.0.0.8');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -188,6 +188,13 @@ class AsadoUpgradeScript extends ScriptUpgraderScript {
 				}
 				$this->printMessage("Finished generating Object Members");
 				
+				$members = Members::findAll(array("conditions" => "`depth` > 1", "order" => "depth ASC"));
+				foreach ($members as $m) {
+					if ($m->getParentMember() instanceof Member && $m->getDimensionId() != $m->getParentMember()->getDimensionId()) {
+						$m->setDimensionId($m->getParentMember()->getDimensionId());
+						$m->save();
+					}
+				}
 /*				
 				$sql = "";
 				$first_row = true;
@@ -327,9 +334,7 @@ class AsadoUpgradeScript extends ScriptUpgraderScript {
 						 t.start_date = ADDTIME(t.start_date, CONCAT(SUBSTRING_INDEX((SELECT c.timezone FROM ".$t_prefix."contacts c WHERE c.object_id=(SELECT o.updated_by_id FROM ".$t_prefix."objects o WHERE o.id=t.object_id)), '.', 1), ':', SUBSTRING_INDEX(abs((SELECT c.timezone FROM ".$t_prefix."contacts c WHERE c.object_id=(SELECT o.updated_by_id FROM ".$t_prefix."objects o WHERE o.id=t.object_id)) % 1)*60, '.', 1)))
 						 WHERE t.start_date > 0;
 						INSERT INTO `".$t_prefix."contact_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
-						 ('general', 'work_day_end_time', '18:00', 'TimeConfigHandler', 0, 410, 'Work day end time');
-						INSERT INTO `".$t_prefix."config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
-						 ('general', 'use_time_in_task_dates', '1', 'BoolConfigHandler', 0, 0, '');						
+						 ('general', 'work_day_end_time', '18:00', 'TimeConfigHandler', 0, 410, 'Work day end time');						
 					";
 				}
 				
@@ -345,8 +350,8 @@ class AsadoUpgradeScript extends ScriptUpgraderScript {
 			if (version_compare($installed_version, '2.0.0.6') <= 0) {
 				//WS Widgets
 				$upgrade_script = "
-					UPDATE `".$t_prefix."contact_config_options` SET `default_value` = '15' WHERE `fo_contact_config_options`.`name` = 'noOfTasks' LIMIT 1 ;
-					UPDATE ".$t_prefix."widgets SET default_section = 'none' WHERE name = 'people' AND NOT EXISTS (SELECT id from fo_plugins WHERE name = 'crpm');
+					UPDATE `".$t_prefix."contact_config_options` SET `default_value` = '15' WHERE `".$t_prefix."contact_config_options`.`name` = 'noOfTasks' LIMIT 1 ;
+					UPDATE ".$t_prefix."widgets SET default_section = 'none' WHERE name = 'people' AND NOT EXISTS (SELECT id from ".$t_prefix."plugins WHERE name = 'crpm');
 					UPDATE ".$t_prefix."dimensions SET options = '{\"defaultAjax\":{\"controller\":\"dashboard\", \"action\": \"main_dashboard\"}, \"quickAdd\":true,\"showInPaths\":true}' 
 						WHERE  code='workspaces';
 					UPDATE `".$t_prefix."tab_panels` SET default_action = 'main_dashboard', initial_action = 'main_dashboard'
@@ -402,22 +407,22 @@ class AsadoUpgradeScript extends ScriptUpgraderScript {
 			}
                         
 			if (version_compare($installed_version, '2.0.0.7') <= 0) {
-				
+				$upgrade_script = "";
 				if (!$this->checkTableExists($t_prefix.'mail_spam_filters', $this->database_connection)) {
 					$upgrade_script .= "
-                        CREATE TABLE IF NOT EXISTS `".$t_prefix."mail_spam_filters` (
-                         `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-                         `account_id` int(10) unsigned NOT NULL,
-                         `text_type` enum('email_address','subject') COLLATE utf8_unicode_ci NOT NULL,
-                         `text` text COLLATE utf8_unicode_ci NOT NULL,
-                         `spam_state` enum('no spam','spam') COLLATE utf8_unicode_ci NOT NULL,
-                         PRIMARY KEY (`id`)
-                        ) ENGINE=InnoDB;
-					";
+                                                    CREATE TABLE IF NOT EXISTS `".$t_prefix."mail_spam_filters` (
+                                                     `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+                                                     `account_id` int(10) unsigned NOT NULL,
+                                                     `text_type` enum('email_address','subject') COLLATE utf8_unicode_ci NOT NULL,
+                                                     `text` text COLLATE utf8_unicode_ci NOT NULL,
+                                                     `spam_state` enum('no spam','spam') COLLATE utf8_unicode_ci NOT NULL,
+                                                     PRIMARY KEY (`id`)
+                                                    ) ENGINE=InnoDB;
+                                        ";
 				}
-                                
-                $upgrade_script .= "INSERT INTO `".$t_prefix."config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) 
-                					 VALUES ('general', 'untitled_notes', '0', 'BoolConfigHandler', '0', '0', NULL)";
+
+				$upgrade_script .= "INSERT INTO `".$t_prefix."config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) 
+					VALUES ('general', 'untitled_notes', '0', 'BoolConfigHandler', '0', '0', NULL);";
 				
 				if($this->executeMultipleQueries($upgrade_script, $total_queries, $executed_queries, $this->database_connection)) {
 					$this->printMessage("Database schema transformations executed (total queries: $total_queries)");
@@ -427,6 +432,95 @@ class AsadoUpgradeScript extends ScriptUpgraderScript {
 				}
 			}
                         
+			if (version_compare($installed_version, '2.0.0.8') <= 0) {
+				$upgrade_script = "";
+				if (!$this->checkTableExists($t_prefix.'external_calendar_users', $this->database_connection)) {
+					$upgrade_script .= "
+                                                    CREATE TABLE IF NOT EXISTS `".$t_prefix."external_calendar_users` (
+                                                      `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+                                                      `contact_id` int(10) unsigned NOT NULL,
+                                                      `auth_user` varchar(100) COLLATE utf8_unicode_ci NOT NULL,
+                                                      `auth_pass` varchar(100) COLLATE utf8_unicode_ci NOT NULL,
+                                                      `type` text COLLATE utf8_unicode_ci NOT NULL,
+                                                      `sync` TINYINT( 1 ) NULL DEFAULT '0',
+                                                      PRIMARY KEY (`id`)
+                                                    ) ENGINE = InnoDB;
+					";
+				}
+                                
+				if (!$this->checkTableExists($t_prefix.'external_calendars', $this->database_connection)) {
+					$upgrade_script .= "
+                                                    CREATE TABLE IF NOT EXISTS `".$t_prefix."external_calendars` (
+                                                      `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+                                                      `ext_cal_user_id` int(10) unsigned NOT NULL,
+                                                      `calendar_user` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+                                                      `calendar_visibility` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+                                                      `calendar_name` text COLLATE utf8_unicode_ci NOT NULL,
+                                                      `calendar_feng` TINYINT( 1 ) NOT NULL DEFAULT '0',
+                                                      PRIMARY KEY (`id`)
+                                                    ) ENGINE = InnoDB;
+					";
+				}
+                                
+				$upgrade_script .= "ALTER TABLE `".$t_prefix."project_events` CHANGE `special_id` `special_id` VARCHAR(100) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL;
+                                                    ALTER TABLE `".$t_prefix."project_events`  ADD `ext_cal_id` INT(10) UNSIGNED NOT NULL;
+                                                    UPDATE `".$t_prefix."file_types` SET `is_searchable` = '1' WHERE `extension` = 'docx';
+                                                    UPDATE `".$t_prefix."file_types` SET `is_searchable` = '1' WHERE `extension` = 'pdf';
+                                                    INSERT INTO `".$t_prefix."config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) 
+                                                    VALUES ('general', 'repeating_task', '0', 'BoolConfigHandler', '0', '0', '');
+                                                    INSERT INTO `".$t_prefix."contact_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`)
+                                                    VALUES ('calendar panel', 'calendar task filter', 'pending', 'StringConfigHandler', '1', '0', NULL),
+                                                           ('task panel', 'close timeslot open', '1', 'BoolConfigHandler', '0', '0', NULL),
+                                                           ('calendar panel', 'reminders_events', 'reminder_email,1,60', 'StringConfigHandler', '0', '0', NULL);
+                                                    INSERT INTO `".$t_prefix."cron_events` (`name`, `recursive`, `delay`, `is_system`, `enabled`, `date`) 
+                                                    VALUES ('import_google_calendar', '1', '10', '0', '0', '0000-00-00 00:00:00'),
+                                                           ('export_google_calendar', '1', '10', '0', '0', '0000-00-00 00:00:00');
+					";
+				
+				$upgrade_script .= "DELETE FROM `".$t_prefix."config_options` WHERE `name`='use_time_in_task_dates' AND NOT EXISTS (SELECT id FROM `".$t_prefix."plugins` WHERE `name`='crpm' AND is_activated=1);";
+				
+				if($this->executeMultipleQueries($upgrade_script, $total_queries, $executed_queries, $this->database_connection)) {
+					$this->printMessage("Database schema transformations executed (total queries: $total_queries)");
+				} else {
+					$this->printMessage('Failed to execute DB schema transformations. MySQL said: ' . mysql_error(), true);
+					return false;
+				}
+				
+				
+				// Config options
+				$upgrade_script = '' ;
+				
+				$upgrade_script .= 
+					"INSERT INTO ".$t_prefix."contact_config_options (category_name, name, default_value, config_handler_class, is_system, option_order)
+					VALUES('general','show_object_direct_url',0,'BoolConfigHandler',0,0) ON DUPLICATE KEY UPDATE name = name;
+					";
+
+				$upgrade_script .= 
+					"INSERT INTO ".$t_prefix."contact_config_options (category_name, name, default_value, config_handler_class, is_system, option_order)
+					VALUES('general','drag_drop_prompt','prompt','DragDropPromptConfigHandler',0,0) ON DUPLICATE KEY UPDATE name = name;
+					";
+				
+
+				
+				if($this->executeMultipleQueries($upgrade_script, $total_queries, $executed_queries, $this->database_connection)) {
+					$this->printMessage("Database schema transformations executed (total queries: $total_queries)");
+				} else {
+					$this->printMessage('Failed to execute DB schema transformations. MySQL said: ' . mysql_error(), true);
+					return false;
+				}
+			}
+			
+			// Plugin Version Support 
+			$upgrade_script = '';
+			if(!$this->checkColumnExists($t_prefix."plugins", 'version', $this->database_connection)) { 
+				$upgrade_script = 'ALTER TABLE '.$t_prefix.'plugins ADD COLUMN `version` INTEGER  NOT NULL  DEFAULT 1 AFTER `name` ';
+				if($this->executeMultipleQueries($upgrade_script, $total_queries, $executed_queries, $this->database_connection)) {
+					$this->printMessage("Database schema transformations executed (total queries: $total_queries)");
+				} else {
+					$this->printMessage('Failed to execute DB schema transformations. MySQL said: ' . mysql_error(), true);
+					return false;
+				}
+			}
 		}
 		
 		$this->printMessage('Feng Office has been upgraded. You are now running Feng Office '.$this->getVersionTo().' Enjoy!');

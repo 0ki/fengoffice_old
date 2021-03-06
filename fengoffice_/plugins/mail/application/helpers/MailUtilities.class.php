@@ -472,15 +472,15 @@ class MailUtilities {
 					$ctrl->add_to_members($mail, array($member->getId()));
 			 	}
 			}
-			
-			// to apply email rules
-			Hook::fire('after_mail_download', $mail, $ret);
 		
 			$user = Contacts::findById($account->getContactId());
 			if ($user instanceof Contact) {
 				$mail->subscribeUser($user);
 			}
 			$mail->addToSharingTable();
+                        
+                        // to apply email rules
+			Hook::fire('after_mail_download', $mail);
 			
 		} catch(Exception $e) {
 			FileRepository::deleteFile($repository_id);

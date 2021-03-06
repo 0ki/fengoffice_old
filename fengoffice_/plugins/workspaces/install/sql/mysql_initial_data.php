@@ -96,7 +96,7 @@ UPDATE `<?php echo $table_prefix ?>tab_panels` SET default_action = 'main_dashbo
 UPDATE <?php echo $table_prefix ?>widgets SET default_section = 'none' WHERE name = 'people' AND NOT EXISTS (SELECT id from <?php echo $table_prefix ?>plugins WHERE name = 'crpm');
 
 INSERT INTO <?php echo $table_prefix ?>widgets(name, title, plugin_id, default_section,default_order) 
-VALUES ('ws_description', 'workspace description',(SELECT id from fo_plugins WHERE name = 'workspaces'), 'left',-100)
+VALUES ('ws_description', 'workspace description', (SELECT id from fo_plugins WHERE name = 'workspaces'), 'top', -100)
 ON DUPLICATE KEY update name = name ;
 
 

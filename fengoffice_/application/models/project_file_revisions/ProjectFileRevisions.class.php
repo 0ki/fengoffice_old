@@ -12,6 +12,10 @@
 		parent::__construct();
 		$this->object_type_name = 'file revision';
 	}
+        
+        function findByFile($file_id) {
+                return ProjectFileRevisions::findOne(array('conditions' => array('`file_id` = ?', $file_id)));
+        }
   		
   } // ProjectFileRevisions 
 

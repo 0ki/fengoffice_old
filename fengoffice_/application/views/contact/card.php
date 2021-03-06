@@ -4,6 +4,10 @@
         <div class="left-column-wrapper">
             <div class="left-column view-container">
                 <div class="person-view">
+                	<div class="close-wrapper" onclick="og.onPersonClose();">
+                		<?php echo lang("close");?>
+	            		<div class="close" ></div>
+	            	</div>
                     <div class="person-information">
                         <div class="picture">
                             <img src="<?php echo $contact->getPictureUrl() ?>" alt="<?php echo clean($contact->getObjectName()) ?>picture" />
@@ -161,7 +165,7 @@
 
 <script>
 	$(function(){
-		
+	
 		$("a.more-info").click(function(){
 			var link = this ;
 			$('div.all-info').slideToggle('slow',function(){

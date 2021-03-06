@@ -350,7 +350,7 @@ $visible_cps = CustomProperties::countVisibleCustomPropertiesByObjectType($objec
 		<div id="<?php echo $genid ?>add_reminders_warning" class="desc" style="display:none;">
 			<?php echo lang('reminders will not apply to repeating events') ?>
 		</div>
-		<?php echo render_add_reminders($object, "start");?>
+		<?php echo render_add_reminders($object, "start", null, null, "event");?>
 	</fieldset>
 	</div>
 	<div id="trap5"><fieldset id="fs5" style="height:0px;border:0px;padding:0px;display:none"><span style="color:#FFFFFF;"></span></fieldset></div>

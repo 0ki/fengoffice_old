@@ -1670,11 +1670,21 @@ abstract class ContentDataObject extends ApplicationDataObject {
 				if (!isset($members_info[$mem->getDimensionId()])) $members_info[$mem->getDimensionId()] = array();
 				$members_info[$mem->getDimensionId()][$mem->getId()] = array(
 					'ot' => $mem->getObjectTypeId(),
+					'c' => $mem->getMemberColor(13),
 				);
 			}
 		}
 		
 		return $members_info;
+	}
+	
+	
+	function getObjectColor($default = null) {
+		$color = is_null($default) || !is_numeric($default) ? 1 : $default;
+		
+		Hook::fire('override_object_color', $this, $color);
+		
+		return $color;
 	}
 	
 }

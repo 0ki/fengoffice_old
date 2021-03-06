@@ -409,7 +409,8 @@ class ProjectFile extends BaseProjectFile {
 	
 	
 	function isDisplayable() {
-		return substr($this->getTypeString(), 0, 4) == "text";
+		return ( substr($this->getTypeString(), 0, 4) == "text" && $this->getTypeString() != "text/x-log" );
+		// TODO Dewtect browser mimetypes
 	}
 	
 	

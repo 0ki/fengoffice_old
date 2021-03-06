@@ -373,7 +373,32 @@ div.left-column {
     margin-right: 240px;  /*Set right margin to RightColumnWidth*/
 }
 
+
+
 /* View styles */
+div.person-view div.close-wrapper:hover {
+	background-color: #EAEAEA;
+}
+
+div.person-view div.close-wrapper {
+	float: right;
+	font-size: 10px;
+	font-weight : bold ;
+	color: #A3B3CC;
+	cursor: pointer;
+	padding: 2px 4px;
+	border-radius: 3px;
+	
+}
+
+div.person-view div.close {
+    background: url("../../images/12x12/close-icon-1.png") no-repeat scroll right 0 transparent;
+    height: 12px;
+    padding-right: 12px;
+	margin-top: 4px;
+	float: right ;
+}
+
 div.person-view a.edit-link, .person-view a.map-link {
 	font-size: 9px;
 	font-weight: normal;
@@ -524,6 +549,7 @@ div.layout-container.contact .right-column {
 
 .late-objects-widget .date-col {
 	width: 100px;
+	white-space: nowrap;
 }
 
 .late-objects-widget td {

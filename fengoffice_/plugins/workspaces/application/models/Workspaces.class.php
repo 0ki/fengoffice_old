@@ -17,6 +17,10 @@ class Workspaces extends BaseWorkspaces {
             array(
             	'col' => 'show_description_in_overview',
             	'type' => DATA_TYPE_BOOLEAN, 
+            ),
+            array(
+            	'col' => 'color',
+            	'type' => 'WSCOLOR', 
             )
         );
        

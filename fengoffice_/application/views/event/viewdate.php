@@ -27,7 +27,8 @@ $genid = gen_id();
 	
 	$user_filter = $userPreferences['user_filter'];
 	$status_filter = $userPreferences['status_filter'];
-	
+        $task_filter = $userPreferences['task_filter'];
+        
 	$user = Contacts::findById(array('id' => $user_filter));
 	
 	if ($user == null) $user = logged_user();
@@ -52,9 +53,11 @@ $genid = gen_id();
 	if(!$result) $result = array();	
 	
 	$alldayevents = array();
-	$milestones = ProjectMilestones::getRangeMilestones($dtv, $dtv);	
-	$tasks = ProjectTasks::getRangeTasksByUser($dtv, $dtv, ($user_filter != -1 ? $user : null));
-	// FIXME
+	$milestones = ProjectMilestones::getRangeMilestones($dtv, $dtv);
+        if($task_filter != "hide"){
+            $tasks = ProjectTasks::getRangeTasksByUser($dtv, $dtv, ($user_filter != -1 ? $user : null), $task_filter);
+        }
+        // FIXME
 	$birthdays = array(); //Contacts::instance()->getRangeContactsByBirthday($dtv, $dtv);
 	
 	foreach ($result as $key => $event){
@@ -225,7 +228,7 @@ $genid = gen_id();
 								$tipBody = str_replace("\n", '<br>', $tipBody);
 								if (strlen_utf($tipBody) > 200) $tipBody = substr_utf($tipBody, 0, strpos($tipBody, ' ', 200)) . ' ...';
 								
-								$ws_color = $event instanceof ProjectEvent ? 1 : 12;
+								$ws_color = $event->getObjectColor($event instanceof ProjectEvent ? 1 : 12);
 
 								cal_get_ws_color($ws_color, $ws_style, $ws_class, $txt_color, $border_color);	
 						?>
@@ -345,7 +348,7 @@ $genid = gen_id();
 												$event_id = $event->getId();
 												$subject = clean($event->getObjectName());
 
-												$ws_color = $event instanceof ProjectEvent ? 1 : 12;
+												$ws_color = $event->getObjectColor($event instanceof ProjectEvent ? 1 : 12);
 											
 												cal_get_ws_color($ws_color, $ws_style, $ws_class, $txt_color, $border_color);
 												

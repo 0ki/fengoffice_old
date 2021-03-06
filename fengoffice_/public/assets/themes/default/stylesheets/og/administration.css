@@ -147,21 +147,37 @@
 	
 }
 
-.plugin-manager th, .plugin-manager td {
-    padding: 3px 5px;
+
+.plugin-manager th, .plugin-manager  td {
+    padding: 5px;
     vertical-align: middle;
+}
+
+.plugin-manager th, .plugin-manager .plugin-row  td {
+    padding: 10px 5px;
 }
 
 .plugin-manager .check-column {
 	width: 25px ;
 }
 
-
+.plugin-manager .plugin-row {
+	border-top: 1px solid #eee;
+}
 .plugin-manager tr.active.installed {
 
 }
 .plugin-manager tr.inactive{
 	color: #666;
+}
+.plugin-manager .update-container {
+	background-color: #FFFBE4;
+	border: 1px solid #DDD;
+	border-radius: 4px;
+	padding: 5px 10px;
+	font-weight: bold ;
+	margin-bottom: 5px;
+    margin-top: -5px;
 }
 
 .plugin-manager .title {

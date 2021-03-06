@@ -369,8 +369,18 @@ class ProjectTask extends BaseProjectTask {
 			return;
 		}
 		$this->setCompletedOn(DateTimeValueLib::now());
-		$this->setCompletedById(logged_user()->getId());
-		$this->setPercentCompleted(100);
+		$this->setCompletedById(logged_user()->getId());		
+                
+                if(user_config_option('close timeslot open')){
+                    $timeslots = $this->getTimeslots();
+                    if ($timeslots){
+                            foreach ($timeslots as $timeslot){
+                                    if ($timeslot->isOpen())
+                                            $timeslot->close();
+                                            $timeslot->save();
+                            }
+                    }
+                }
 		
 		// check if all previuos tasks are completed
 		if (config_option('use tasks dependencies')) {
@@ -384,7 +394,7 @@ class ProjectTask extends BaseProjectTask {
 				}
 			}
 		}
-		
+		$this->setPercentCompleted(100);
 		$this->save();
 
 		//TODO: Agregar funciones de timeslots a ContentDataObject
@@ -432,6 +442,18 @@ class ProjectTask extends BaseProjectTask {
 		$this->setCompletedOn(null);
 		$this->setCompletedById(0);
 		$this->save();
+                
+                $timeslots = $this->getTimeslots();
+                if ($timeslots){
+                        $this->setPercentCompleted(0);
+                        foreach ($timeslots as $timeslot){
+                                $timeslot_time = ($timeslot->getEndTime()->getTimestamp() - $timeslot->getStartTime()->getTimestamp()) / 3600;
+                                $timeslot_percent = round(($timeslot_time * 100) / ($this->getTimeEstimate() / 60));
+                                $total_percentComplete = $timeslot_percent + $total_percentComplete;                                
+                        }
+                        $this->setPercentCompleted($total_percentComplete);
+                        $this->save();
+                }
 
 		if (config_option('use tasks dependencies')) {
 			$saved_stasks = ProjectTaskDependencies::findAll(array('conditions' => 'previous_task_id = '. $this->getId()));
@@ -465,7 +487,7 @@ class ProjectTask extends BaseProjectTask {
 		}
 	}
 	
-	function cloneTask($copy_status = false) {
+	function cloneTask($new_st_date='',$new_due_date='',$copy_status = false) {
 		//FIXME
 		$new_task = new ProjectTask();
 				
@@ -484,6 +506,8 @@ class ProjectTask extends BaseProjectTask {
 		$new_task->setMilestoneId($this->getMilestoneId());
 		$new_task->setIsTemplate($this->getIsTemplate());
 		$new_task->setFromTemplateId($this->getFromTemplateId());
+		$new_task->setUseStartTime($this->getUseStartTime());
+		$new_task->setUseDueTime($this->getUseDueTime());
 		if ($this->getDueDate() instanceof DateTimeValue )
 			$new_task->setDueDate(new DateTimeValue($this->getDueDate()->getTimestamp()));
 		if ($this->getStartDate() instanceof DateTimeValue )
@@ -494,7 +518,11 @@ class ProjectTask extends BaseProjectTask {
 		}
 		
 		$new_task->save();
-		
+                
+                if($new_st_date != "" && $new_due_date != ""){
+                    if ($new_task->getStart() instanceof DateTimeValue ) $new_task->setStart($new_st_date);
+                    if ($new_task->getDuration() instanceof DateTimeValue ) $new_task->setDuration($new_due_date);
+                }
 		if (is_array($this->getAllLinkedObjects())) {
 			foreach ($this->getAllLinkedObjects() as $lo) {
 				$new_task->linkObject($lo);
@@ -504,7 +532,7 @@ class ProjectTask extends BaseProjectTask {
 		$sub_tasks = $this->getAllSubTasks();
 		foreach ($sub_tasks as $st) {
 			if ($st->getParentId() == $this->getId()) {
-				$new_st = $st->cloneTask($copy_status);
+				$new_st = $st->cloneTask($new_st_date,$new_due_date,$copy_status);
 				if ($copy_status) {
 					$new_st->setCompletedById($st->getCompletedById());
 					$new_st->setCompletedOn($st->getCompletedOn());
@@ -577,6 +605,40 @@ class ProjectTask extends BaseProjectTask {
 		}
 		
 		return $new_task;
+	}
+        
+        function getNextRepetitionDates($task, &$new_st_date, &$new_due_date) {
+		$new_due_date = null;
+		$new_st_date = null;
+
+		if ($task->getStartDate() instanceof DateTimeValue ) {
+			$new_st_date = new DateTimeValue($task->getStartDate()->getTimestamp());
+		}
+		if ($task->getDueDate() instanceof DateTimeValue ) {
+			$new_due_date = new DateTimeValue($task->getDueDate()->getTimestamp());
+		}
+		if ($task->getRepeatD() > 0) {
+			if ($new_st_date instanceof DateTimeValue) {
+				$new_st_date = $new_st_date->add('d', $task->getRepeatD());
+			}
+			if ($new_due_date instanceof DateTimeValue) {
+				$new_due_date = $new_due_date->add('d', $task->getRepeatD());
+			}
+		} else if ($task->getRepeatM() > 0) {
+			if ($new_st_date instanceof DateTimeValue) {
+				$new_st_date = $new_st_date->add('M', $task->getRepeatM());
+			}
+			if ($new_due_date instanceof DateTimeValue) {
+				$new_due_date = $new_due_date->add('M', $task->getRepeatM());
+			}
+		} else if ($task->getRepeatY() > 0) {
+			if ($new_st_date instanceof DateTimeValue) {
+				$new_st_date = $new_st_date->add('y', $task->getRepeatY());
+			}
+			if ($new_due_date instanceof DateTimeValue) {
+				$new_due_date = $new_due_date->add('y', $task->getRepeatY());
+			}
+		}
 	}
 	
 	// ---------------------------------------------------
@@ -1027,7 +1089,7 @@ class ProjectTask extends BaseProjectTask {
 	function validate(&$errors) {
 		if(!$this->getObject()->validatePresenceOf('name')) $errors[] = lang('task title required');
 		if(!$this->validateMinValueOf('percent_completed', 0)) $errors[] = lang('task percent completed must be greater than 0');
-		if(!$this->validateMaxValueOf('percent_completed', 100)) $errors[] = lang('task percent completed must be lower than 100');
+		//if(!$this->validateMaxValueOf('percent_completed', 100)) $errors[] = lang('task percent completed must be lower than 100');
 	} // validate
 
 	 

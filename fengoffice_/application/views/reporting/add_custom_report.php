@@ -61,29 +61,30 @@ array('id' => 'objectTypeSel' ,'onchange' => 'og.reportObjectTypeChanged("'.$gen
 
 <div id="<?php echo $genid ?>MainDiv" class="coInputMainBlock" style="display:none;">
 
-<div id="<?php echo $genid ?>add_report_select_context_div" style="<?php echo $context_div_display ?>"> 
-	<fieldset><legend><?php echo lang('context')?></legend>
-	<?php
-		if ($object->isNew()) {
-			render_dimension_trees($object->manager()->getObjectTypeId(), $genid, null, array('select_current_context' => true));
-		} else {
-			render_dimension_trees($object->manager()->getObjectTypeId(), $genid, $object->getMemberIds());
-		}
-	?>
+	<div id="<?php echo $genid ?>add_report_select_context_div" style="<?php echo $context_div_display ?>"> 
+		<fieldset><legend><?php echo lang('context')?></legend>
+		<?php
+			if ($object->isNew()) {
+				render_dimension_trees($object->manager()->getObjectTypeId(), $genid, null, array('select_current_context' => true));
+			} else {
+				render_dimension_trees($object->manager()->getObjectTypeId(), $genid, $object->getMemberIds());
+			}
+		?>
+		</fieldset>
+	</div>
+
+	<fieldset><legend><?php echo lang('conditions') ?></legend>
+		<div id="<?php echo $genid ?>"></div>
+		<div style="margin-top:10px;">
+			<a href="#" class="link-ico ico-add" onclick="og.addCondition('<?php echo $genid ?>', 0, 0, '', '', '', false)"><?php echo lang('add condition')?></a>
+		</div>
 	</fieldset>
-</div>
 
-<fieldset><legend><?php echo lang('conditions') ?></legend>
-<div id="<?php echo $genid ?>"></div>
-<br />
-<a href="#" class="link-ico ico-add"
-	onclick="og.addCondition('<?php echo $genid ?>', 0, 0, '', '', '', false)"><?php echo lang('add condition')?></a>
-</fieldset>
-
-<fieldset><legend><?php echo lang('columns and order') ?></legend>
-	<div id="columnListContainer"></div>
-</fieldset>
-<?php echo submit_button((isset($id) ? lang('save changes') : lang('add report')), 's', array('tabindex' => '20000'))?>
+	<fieldset><legend><?php echo lang('columns and order') ?></legend>
+		<div id="columnListContainer"></div>
+	</fieldset>
+	
+	<?php echo submit_button((isset($id) ? lang('save changes') : lang('add report')), 's', array('tabindex' => '20000'))?>
 
 </div>
 

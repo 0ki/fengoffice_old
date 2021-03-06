@@ -456,7 +456,7 @@ abstract class ContentDataObjects extends DataManager {
 				AND $SQL_TRASHED_CONDITION $SQL_ARCHIVED_CONDITION $SQL_EXTRA_CONDITIONS 
 			$SQL_ORDER 
 	    	$SQL_LIMIT";
-		
+
 
 		// Execute query and build the resultset
 	    $rows = DB::executeAll($sql);

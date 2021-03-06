@@ -27,6 +27,8 @@
   
   define('DATE_MYSQL', 'Y-m-d H:i:s');
   define('EMPTY_DATETIME', '0000-00-00 00:00:00');
+  define('EMPTY_DATE', '0000-00-00');
+  define('EMPTY_TIME', '00:00:00');
   
   // Compatibility constants (available since PHP 5.1.1). This constants are taken from
   // PHP_Compat PEAR package

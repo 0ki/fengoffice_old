@@ -130,6 +130,10 @@ class ObjectReminders extends BaseObjectReminders {
 	static function clearByUser(Contact $user) {
 		return ObjectReminders::delete('`contact_id` = ' . DB::escape($user->getId()));
 	} // clearByUser
+        
+        function findByEvent($event_id) {
+                return ObjectReminders::findAll(array('conditions' => array('`object_id` = ?', $event_id)));
+        }
 
 } // ObjectReminders
 

@@ -505,7 +505,7 @@ return array(
   'last month' => 'Last month',
   'select dates...' => 'Select dates...',
 
-  'task time report description' => 'This report displays the total executed time for a list of tasks, specified by date, user (optional) and workspace (optional).',
+  'task time report description' => 'This report displays the total executed time for a list of tasks, specified by a time period, timeslot type and person (optional).',
   'no data to display' => 'No data to display',
 
   'new company name' => 'New company name',
@@ -684,7 +684,8 @@ return array(
   'invalid parameters' => 'Invalid parameters',
     
   'reset password' => 'Feng Office new password',
-  'reset password form desc' => '<b>{0}</b>, please enter your new password twice:',
+  'button reset password' => 'Reset Password',
+  'reset password form desc' => '<b>{0}</b>, please enter your new password:',
   'success reset password' => 'Your new password has been saved',  
 
   'auto detect user timezone' => 'Auto-detect user timezone from browser',

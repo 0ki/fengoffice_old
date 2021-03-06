@@ -22,7 +22,7 @@
 		<tbody id="plugin-list">
 		<?php foreach ($plugins as $plugin): $metadata = $plugin->getMetadata(); /* @var $plugin Plugin */ ?>
 			<tr 
-				class="<?php echo ($plugin->isActive())?"active":"inactive"?> <?php echo ($plugin->isInstalled())?"installed":"uninstalled"?>" 
+				class="plugin-row <?php echo ($plugin->isActive())?"active":"inactive"?> <?php echo ($plugin->isInstalled())?"installed":"uninstalled"?>" 
 				id="<?php echo $plugin->getId()?>"
 			>
 
@@ -30,17 +30,23 @@
 					<strong><?php echo $plugin->getName() ?></strong>
 					<div class="row-actions-visible">
 						<span class="deactivate" style="<?php if (!$plugin->isActive() || !$plugin->isInstalled()) echo "display:none";  ?>">
-							<a class="deactivate-button" title="Deactivate this plugin" href="#">Deactivate</a> | </span><span class="edit">
-						</span>
+							<a class="deactivate-button" title="Deactivate this plugin" href="#">Deactivate</a> | 
+						</span><span class="edit"></span>
+						
 						<span class="activate"  style="<?php if ($plugin->isActive() || !$plugin->isInstalled()) echo "display:none";  ?>" >
-							<a class="activate-button" title="Activate this plugin" href="#">Activate</a> | </span><span class="edit">
-						</span>
+							<a class="activate-button" title="Activate this plugin" href="#">Activate</a> | 
+						</span><span class="edit"></span>
+						
 						<span class="uninstall" style="<?php if (!$plugin->isInstalled() || $plugin->isActive() ) echo "display:none";  ?>">
-							<a class="uninstall-button"  title="Uninstall this plugin" href="#">Uninstall</a> | </span><span class="edit">
-						</span>
+							<a class="uninstall-button"  title="Uninstall this plugin" href="#">Uninstall</a> | 
+						</span><span class="edit"></span>
+						
 						<span class="install" style="<?php if ($plugin->isInstalled()) echo "display:none";  ?>">
-							<a class="install-button" title="Install this plugin" href="#">Install</a> | </span><span class="edit">
-						</span>
+							<a class="install-button" title="Install this plugin" href="#">Install</a> | 
+						</span><span class="edit"></span>
+						
+
+						
 					</div>
 				</td>			
 				<td class="column-description">
@@ -48,11 +54,18 @@
 						<p><?php echo $metadata['description'] ?></p>
 					</div>
 					<div class="active second plugin-version-author-uri">
-						Version <?php echo $metadata['version']?> | By <a title="Visit author homepage" href="<?php echo $metadata['author']['name']?>"> <?php echo $metadata['author']['name']?> </a> | <a title="Visit plugin site" href="#">Visit plugin site</a>
+						<?php 
+							if ( $plugin->isInstalled() && $plugin->getVersion() ) {
+								echo "Version: ". $plugin->getVersion();
+							} else{
+								if (!empty($metadata['version']))	: echo "Version: ".$metadata['version']." |" ; endif;
+							}
+						?>
+						<?php if (!empty($metadata['author']))	:?>By <a title="Visit author homepage" target='_blank' href="<?php echo $metadata['website'] ?>"> <?php echo $metadata['author']?> </a> | <?php endif;?>
 					</div>
 				</td>
 				<td class="column-dependences">
-					<?php if ( is_array($metadata['dependences'] ) ) 	echo implode(" | " , $metadata['dependences'] );?>
+					<?php if (!empty($metadata['dependences']) && is_array($metadata['dependences'] ) ) echo implode(" | " , $metadata['dependences'] );?>
 				</td>
 				<td class="column-status">
 					<div class="plugin-status"> 
@@ -67,7 +80,17 @@
 						?>
 					</div>
 				</td>
+				
 			</tr>
+			<?php if($plugin->isInstalled() && $plugin->isActive() && $plugin->updateAvailable()):?>
+			<tr plg-id="<?php echo $plugin->getId()?>">
+				<td colspan=4>
+					<div class="update-container">
+						There is a new version of <?php echo $plugin->getName()?>. <a class="update-button"  title="Update now plugin" href="#">Update now from Version <?php echo $plugin->getVersion() ?> to Version <?php  echo array_var($metadata,'version')?></a> 
+					</div>
+				</td>
+			<tr/>
+			<?php endif;?>
 		<?php endforeach ;?>
 		</tbody>		
 	</table>
@@ -84,7 +107,6 @@
 
 <script>
 	$(function(){
-		
 		og.pluginManager.init();
 	});
 </script>

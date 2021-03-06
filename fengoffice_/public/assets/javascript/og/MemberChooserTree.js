@@ -37,7 +37,8 @@ og.MemberChooserTree = function(config) {
 		cls: 'member-chooser',
 		tbar: [{
 			xtype: 'textfield',
-			id: 'textfilter',
+			
+			id: 'textfilter-'+config.dimensionId,
 			cls: "dimension-panel-textfilter" ,
 			emptyText:lang('filter members'),
 			listeners:{
@@ -248,7 +249,7 @@ Ext.extend(og.MemberChooserTree, Ext.tree.TreePanel, {
 	
 	filterTree: function(text) {
 		if (this.getTopToolbar().items.length) {
-			var searchBox = this.getTopToolbar().items.get('textfilter') ;
+			var searchBox = this.getTopToolbar().items.get('textfilter-'+this.dimensionId) ;
 			if (searchBox) { 
 				if (text == searchBox.emptyText) {
 					text = "";

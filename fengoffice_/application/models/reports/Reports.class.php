@@ -172,7 +172,7 @@ class Reports extends BaseReports {
 					if ($value == '' && $condCp->getIsParametrizable()) $skip_condition = true;
 					if (!$skip_condition) {
 						$allConditions .= ' AND ';
-						$allConditions .= 't.object_id IN ( SELECT object_id as id FROM '.TABLE_PREFIX.'custom_property_values cpv WHERE ';
+						$allConditions .= 'o.id IN ( SELECT object_id as id FROM '.TABLE_PREFIX.'custom_property_values cpv WHERE ';
 						$allConditions .= ' cpv.custom_property_id = '.$condCp->getCustomPropertyId();
 						$fieldType = $object->getColumnType($condCp->getFieldName());
 
@@ -196,7 +196,7 @@ class Reports extends BaseReports {
 					}
 				}
 			}
-		
+
 			if ($managerInstance) {
 				$result = $managerInstance->listing(array(
 					"order" => $order_by_col,
@@ -229,34 +229,51 @@ class Reports extends BaseReports {
 				$obj_name = $object->getObjectName();
 				$icon_class = $object->getIconClass();
 				
-				$row_values = array();
+				$row_values = array('object_type_id' => $object->getObjectTypeId());
 				
 				if (!$to_print) {
 					$row_values['link'] = '<a class="link-ico '.$icon_class.'" title="' . $obj_name . '" target="new" href="' . $object->getViewUrl() . '">&nbsp;</a>';
 				}
 				
 				foreach($report_columns as $column){
-					$field = $column->getFieldName();
-					$value = $object->getColumnValue($field);
-					
-					if ($value instanceof DateTimeValue) {
-						$field_type = $managerInstance->columnExists($field) ? $managerInstance->getColumnType($field) : Objects::instance()->getColumnType($field);
-						$value = format_value_to_print($field, $value->toMySQL(), $field_type, $report->getReportObjectTypeId());
-					}
-					
-					if(in_array($field, $managerInstance->getExternalColumns())){
-						$value = self::instance()->getExternalColumnValue($field, $value, $managerInstance);
-					} else if ($field != 'link'){
-						$value = html_to_text($value);
-					}
-					if(self::isReportColumnEmail($value)) {
-						if(logged_user()->hasMailAccounts()){
-							$value = '<a class="internalLink" href="'.get_url('mail', 'add_mail', array('to' => clean($value))).'">'.clean($value).'</a></div>'; 		
-						}else{
-							$value = '<a class="internalLink" target="_self" href="mailto:'.clean($value).'">'.clean($value).'</a></div>'; 
+					if ($column->getCustomPropertyId() == 0) {
+						
+						$field = $column->getFieldName();
+						$value = $object->getColumnValue($field);
+							
+						if ($value instanceof DateTimeValue) {
+							$field_type = $managerInstance->columnExists($field) ? $managerInstance->getColumnType($field) : Objects::instance()->getColumnType($field);
+							$value = format_value_to_print($field, $value->toMySQL(), $field_type, $report->getReportObjectTypeId());
+						}
+							
+						if(in_array($field, $managerInstance->getExternalColumns())){
+							$value = self::instance()->getExternalColumnValue($field, $value, $managerInstance);
+						} else if ($field != 'link'){
+							$value = html_to_text($value);
+						}
+						if(self::isReportColumnEmail($value)) {
+							if(logged_user()->hasMailAccounts()){
+								$value = '<a class="internalLink" href="'.get_url('mail', 'add_mail', array('to' => clean($value))).'">'.clean($value).'</a></div>';
+							}else{
+								$value = '<a class="internalLink" target="_self" href="mailto:'.clean($value).'">'.clean($value).'</a></div>';
+							}
+						}	
+						$row_values[$field] = $value;
+						
+					} else {
+						
+						$colCp = $column->getCustomPropertyId();
+						$cp = CustomProperties::getCustomProperty($colCp);
+						if ($cp instanceof CustomProperty) { /* @var $cp CustomProperty */
+							
+							$cp_val = CustomPropertyValues::getCustomPropertyValue($object->getId(), $colCp);
+							$row_values[$cp->getName()] = $cp_val instanceof CustomPropertyValue ? $cp_val->getValue() : "";
+							
+							$results['columns'][$colCp] = $cp->getName();
+							$results['db_columns'][$cp->getName()] = $colCp;
+							
 						}
 					}
-					$row_values[$field] = $value;
 				}
 				
 

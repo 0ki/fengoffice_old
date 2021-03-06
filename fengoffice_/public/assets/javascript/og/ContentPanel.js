@@ -371,7 +371,10 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 	},
 	
 	
-	
+	hasBack: function() {
+		if ( this.history.pop() ) return true;
+		return false;
+	},
 	
 	back: function() {
 		var prev = this.history.pop();

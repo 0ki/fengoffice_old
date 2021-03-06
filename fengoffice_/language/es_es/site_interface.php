@@ -534,7 +534,7 @@
 	'invalid parameters' => 'ParÃ¡metros invÃ¡lidos',
     
 	'reset password' => 'Nueva contraseña de Feng Office',
-	'reset password form desc' => '<b>{0}</b>, Por favor ingrese su nueva contraseÃ±a dos veces:',
+	'reset password form desc' => '<b>{0}</b>, Por favor ingrese su nueva contraseÃ±a:',
 	'success reset password' => 'Su nueva contraseÃ±a ha sido almacenada',        
     
 	'new account step1' => 'Paso 1: Cree el perfil de su empresa',

@@ -877,8 +877,16 @@ class ObjectController extends ApplicationController {
 			foreach ($ids as $id) {
 				$obj = Objects::findObject($id);
 				if ($obj->canDelete(logged_user())) {
-					try {
+					try {                                           
 						$obj->untrash($errorMessage);
+                                                
+                                                if($obj->getObjectTypeId() == 11){
+                                                    $event = ProjectEvents::findById($obj->getId());
+                                                    if($event->getExtCalId() != ""){
+                                                        $this->created_event_google_calendar($obj,$event);
+                                                    }                                                    
+                                                }
+                                                
 						ApplicationLogs::createLog($obj, ApplicationLogs::ACTION_UNTRASH);
 						$success++;
 					} catch (Exception $e) {
@@ -1649,5 +1657,48 @@ class ObjectController extends ApplicationController {
 		ajx_current("empty");
 		ajx_extra_data(array("html" => $html, 'scripts' => implode("", $scripts)));
 	}
+        
+        function created_event_google_calendar($object,$event){
+            require_once 'Zend/Loader.php';
+
+            Zend_Loader::loadClass('Zend_Gdata');
+            Zend_Loader::loadClass('Zend_Gdata_AuthSub');
+            Zend_Loader::loadClass('Zend_Gdata_ClientLogin');
+            Zend_Loader::loadClass('Zend_Gdata_Calendar');
+            
+            $users = ExternalCalendarUsers::findByContactId();
+            $calendar = ExternalCalendars::findById($event->getExtCalId());
+
+            $user = $users->getAuthUser();
+            $pass = $users->getAuthPass();
+            $service = Zend_Gdata_Calendar::AUTH_SERVICE_NAME;
+
+            $client = Zend_Gdata_ClientLogin::getHttpClient($user,$pass,$service);
+
+            $calendarUrl = 'http://www.google.com/calendar/feeds/'.$calendar->getCalendarUser().'/private/full';
+
+            $gdataCal = new Zend_Gdata_Calendar($client);
+            $newEvent = $gdataCal->newEventEntry();
+
+            $newEvent->title = $gdataCal->newTitle($event->getObjectName());
+            $newEvent->content = $gdataCal->newContent($event->getDescription());
+
+            $star_time = explode(" ",$event->getStart()->format("Y-m-d H:m:s"));
+            $end_time = explode(" ",$event->getDuration()->format("Y-m-d H:m:s"));
+
+            $when = $gdataCal->newWhen();
+            $when->startTime = $star_time[0]."T".$star_time[1].".000-00:28";
+            $when->endTime = $end_time[0]."T".$end_time[1].".000-00:28";
+            $newEvent->when = array($when);
+
+            // insert event
+            $createdEvent = $gdataCal->insertEvent($newEvent, $calendarUrl);
+            
+            $event_id = explode("/",$createdEvent->id->text);
+            $special_id = end($event_id); 
+            $event->setSpecialID($special_id);
+            $event->setExtCalId($calendar->getId());
+            $event->save();
+        }
 }
 ?>

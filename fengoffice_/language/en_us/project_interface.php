@@ -176,6 +176,7 @@ return array(
 	'cannot delete personal project' => 'The personal workspace can\'t be deleted',
 
 	'workspace color' => 'Workspace color',
+	'field workspace color' => 'Workspace color',
 	'workspace template' => 'Workspace template',
 	'color1' => 'Red',
 	'color2' => 'Green',

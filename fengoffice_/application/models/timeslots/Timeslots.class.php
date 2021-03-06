@@ -131,48 +131,53 @@ class Timeslots extends BaseTimeslots {
 	 * 
 	 * @return unknown_type
 	 */
-	static function updateBillingValues(){
-		$timeslots = Timeslots::findAll(array('conditions' => '`end_time` > 0 AND billing_id = 0 AND is_fixed_billing = 0 AND (object_manager = \'ProjectTasks\' OR object_manager = \'Projects\')', 'limit' => 500));
+	static function updateBillingValues() {
+		$timeslots = Timeslots::findAll(array(
+			'conditions' => '`end_time` > 0 AND billing_id = 0 AND is_fixed_billing = 0',
+			'limit' => 500,
+			'join' => array(
+				'table' => Objects::instance()->getTableName(true),
+				'jt_field' => 'id',
+				'e_field' => 'rel_object_id'
+			)
+		));
 		
-		$users = Users::findAll();
+		$users = Contacts::getAllUsers();
 		$usArray = array();
 		foreach ($users as $u){
 			$usArray[$u->getId()] = $u;
 		}
 		$pbidCache = array();
 		$count = 0;
+		
+		$categories_cache = array();
+		
 		foreach ($timeslots as $ts){
-		    $user = $usArray[$ts->getUserId()];
-		    if (isset($user) && $user){
+			/* @var $ts Timeslot */
+		    $user = $usArray[$ts->getContactId()];
+		    if ($user instanceof Contact){
 				$billing_category_id = $user->getDefaultBillingId();
 				if ($billing_category_id > 0){
-					$object = $ts->getRelObject();
-					//Set billing info
-					if (($object instanceof ContentDataObject && $object->getProject() instanceof Project) || ($object instanceof Project)){
-						$hours = $ts->getMinutes() / 60;
-						if ($object instanceof Project)
-							$project = $object;
-						else
-							$project = $object->getProject();
-						
+					
+					$hours = $ts->getMinutes() / 60;
+					
+					$billing_category = array_var($categories_cache, $billing_category_id);
+					if (!$billing_category instanceof BillingCategory) {
+						$billing_category = BillingCategories::findById($billing_category_id);
+						$categories_cache[$billing_category_id] = $billing_category;
+					}
+					
+					if ($billing_category instanceof BillingCategory){
+						$hourly_billing = $billing_category->getDefaultValue();
 						$ts->setBillingId($billing_category_id);
-						if (!isset($pbidCache[$project->getId()]))
-							$pbidCache[$project->getId()] = array();
-							
-						if (isset($pbidCache[$project->getId()][$billing_category_id]))
-							$hourly_billing = $pbidCache[$project->getId()][$billing_category_id];
-						else{
-							$hourly_billing = $project->getBillingAmount($billing_category_id);
-							$pbidCache[$project->getId()][$billing_category_id] = $hourly_billing;
-						}
-						
 						$ts->setHourlyBilling($hourly_billing);
-						$ts->setFixedBilling(round($hourly_billing * $hours,2));
+						$ts->setFixedBilling(round($hourly_billing * $hours, 2));
 						$ts->setIsFixedBilling(false);
 						
 						$ts->save();
 						$count ++;
 					}
+					
 				}
 			} else {
 				$ts->setIsFixedBilling(true);

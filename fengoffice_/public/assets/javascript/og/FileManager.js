@@ -566,7 +566,7 @@ og.FileManager = function() {
 		tbar.push(actions.newCO);
 		tbar.push('-');
 		tbar.push(actions.properties);
-		//tbar.push(actions.zip_add);
+		tbar.push(actions.zip_add);
 		tbar.push(actions.archive);
 		tbar.push(actions.del);		
 		tbar.push('-');

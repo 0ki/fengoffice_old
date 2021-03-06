@@ -992,6 +992,7 @@ og.MailManager = function() {
 		top1.push(actions.checkMails);
 		top1.push(actions.accounts);
 		top1.push(actions.sendOutbox);
+                top1.push('-');
 	}
 	if (og.additional_mails_top_toolbar_1_items) {
 		for ( i=0; i<og.additional_mails_top_toolbar_1_items.length; i++) {

@@ -27,6 +27,7 @@
 	'title' => 'Título',
 	'description' => 'Descripción',
 	'text' => 'Texto',
+	'untitled note' => 'Nota sín titulo',
 	'additional text' => 'Texto adicional',
 	'due date' => 'Fecha límite',
 	'use due date' => 'Usar fecha límite',
@@ -227,6 +228,7 @@
 	'direct url' => 'URL Directa',
 	'the' => 'el',
 	'percent completed' => 'Porcentaje completado',
+        'percent completed detail' => 'El porcentaje de avance se calcula en base a la cantidad de horas trabajadas sobre la cantidad de horas estimadas',
 	'task percent completed must be greater than 0' => 'El porcentaje completado debe ser mayor que 0.',
 	'task percent completed must be lower than 100' => 'El porcentaje completado debe ser menor o igual a 100.',
 ); ?>

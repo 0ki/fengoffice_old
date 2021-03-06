@@ -566,6 +566,28 @@ class Notifier {
 		Localization::instance()->loadSettings($locale, ROOT . '/language');
 	} 
 
+        
+        function workEstimate(ProjectTask $task) {
+		tpl_assign('task_assigned', $task);
+
+		$locale = $task->getCreatedBy()->getLocale();
+		Localization::instance()->loadSettings($locale, ROOT . '/language');
+		
+		if ($task->getDueDate() instanceof DateTimeValue) {
+			$date = Localization::instance()->formatDescriptiveDate($task->getDueDate(), $task->getAssignedTo()->getTimezone());
+			tpl_assign('date', $date);
+		}
+
+		self::queueEmail(
+			array(self::prepareEmailAddress($task->getCreatedBy()->getEmailAddress(), $task->getCreatedBy()->getObjectName())),
+			self::prepareEmailAddress($task->getUpdatedBy()->getEmailAddress(), $task->getUpdatedByDisplayName()),
+			lang('work estimate title', $task->getObjectName(), ''),
+			tpl_fetch(get_template_path('work_estimate', 'notifier'))
+		); 
+		
+		$locale = logged_user() instanceof Contact ? logged_user()->getLocale() : DEFAULT_LOCALIZATION;
+		Localization::instance()->loadSettings($locale, ROOT . '/language');
+	}
 
 
 	// ---------------------------------------------------

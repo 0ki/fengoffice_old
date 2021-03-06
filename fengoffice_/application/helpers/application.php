@@ -569,7 +569,7 @@ function render_add_subscribers(ContentDataObject $object, $genid = null, $subsc
 		if ($object->isNew()) {
 			$context = active_context();
 		} else {
-			$context = $object->getMemberIds();
+			$context = $object->getMembers();
 		}
 	}
 	tpl_assign('type', get_class($object->manager()));
@@ -793,18 +793,30 @@ function autocomplete_textarea_field($name, $value, $options, $max_options, $att
 }
 
 
-function render_add_reminders($object, $context, $defaults = null, $genid = null) {
+function render_add_reminders($object, $context, $defaults = null, $genid = null, $type_object = '') {
 	require_javascript('og/Reminders.js');
 	if(!is_array($defaults)) $defaults = array();
-	$default_defaults = array(
+        if($type_object == "event"){
+            $def = explode(",",user_config_option("reminders_events"));
+            $default_defaults = array(
+		'type' => $def[0],
+		'duration' => $def[1],
+		'duration_type' => $def[2],
+		'for_subscribers' => true,
+            );
+        }else{
+            $default_defaults = array(
 		'type' => 'reminder_popup',
 		'duration' => '15',
 		'duration_type' => '1',
 		'for_subscribers' => true,
-	); 
+            );
+        }
+	 
 	foreach ($default_defaults as $k => $v) {
 		if (!isset($defaults[$k])) $defaults[$k] = $v;
 	}
+        
 	if (is_null($genid)) {
 		$genid = gen_id();
 	}
@@ -849,6 +861,58 @@ function render_add_reminders($object, $context, $defaults = null, $genid = null
 			$output .= '<script>og.addReminder(document.getElementById("'.$genid.'"), "'.$context.'", "'.$type.'", "'.$duration.'", "'.$duration_type.'", '.$forSubscribers.', document.getElementById(\''.$genid.'-link\'));</script>';
 		} // for
 	}
+	return $output;
+}
+
+function render_add_reminders_config() {
+        $defaults = array();
+        $def = explode(",",user_config_option("reminders_events"));
+        $default_defaults = array(
+                'type' => $def[0],
+                'duration' => $def[1],
+                'duration_type' => $def[2]
+        );
+        
+	foreach ($default_defaults as $k => $v) {
+		if (!isset($defaults[$k])) $defaults[$k] = $v;
+	}
+	$types = ObjectReminderTypes::findAll();
+	$typecsv = array();
+	foreach ($types as $type) {
+		$typecsv []= $type->getName();
+	}
+        $durations = array(0,1,2,5,10,15,30);
+        $duration_types = array("1" => "minutes","60" => "hours","1440" => "days","10080" => "weeks");
+
+        $output .= '<select name="options[reminders_events][reminder_type]">';        
+	foreach ($typecsv as $type) {
+                $output .= '<option value="' . $type . '"';
+		if ($type == $defaults['type']) {
+			$output .= ' selected="selected"';
+		}
+		$output .= '>' . lang($type) . '</option>';
+	}
+        $output .= '</select>';
+        
+        $output .= '<select name="options[reminders_events][reminder_duration]">';        
+	foreach ($durations as $duration) {
+                $output .= '<option value="' . $duration . '"';
+		if ($duration == $defaults['duration']) {
+			$output .= ' selected="selected"';
+		}
+		$output .= '>' . $duration . '</option>';
+	}
+        $output .= '</select>';
+        
+        $output .= '<select name="options[reminders_events][reminder_duration_type]">';        
+	foreach ($duration_types as $key => $value) {
+                $output .= '<option value="' . $key . '"';
+		if ($key == $defaults['duration_type']) {
+			$output .= ' selected="selected"';
+		}
+		$output .= '>' . lang($value) . '</option>';
+	}
+        $output .= '</select>';
 	return $output;
 }
 

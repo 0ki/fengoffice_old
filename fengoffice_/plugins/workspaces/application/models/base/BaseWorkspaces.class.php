@@ -18,7 +18,7 @@ abstract class BaseWorkspaces extends ContentDataObjects {
     	'object_id' => DATA_TYPE_INTEGER,
     	'description' => DATA_TYPE_STRING,
 		'show_description_in_overview' => DATA_TYPE_BOOLEAN,
-		'color' => DATA_TYPE_STRING
+		'color' => DATA_TYPE_INTEGER
 	);
 
 	/**

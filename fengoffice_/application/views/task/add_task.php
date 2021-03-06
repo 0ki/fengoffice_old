@@ -180,8 +180,9 @@
 		
 		<div id='<?php echo $genid ?>add_task_time_div' style="padding-top:6px">
 		<?php echo label_tag(lang('time estimate')) ?>
-      	<?php $totalTime = array_var($task_data, 'time_estimate', 0); 
-      		$minutes = $totalTime % 60;
+                <?php 
+                        $totalTime = array_var($task_data, 'time_estimate', 0); 
+                        $minutes = $totalTime % 60;
 			$hours = ($totalTime - $minutes) / 60;
       		?>
       		<table>
@@ -192,8 +193,8 @@
 			<td align='left'><select name="task[time_estimate_minutes]" size="1" tabindex="85">
 			<?php
 				$minutes = ($totalTime % 60);
-				$minuteOptions = array(0,5,10,15,20,30,45);
-				for($i = 0; $i < 7; $i++) {
+				$minuteOptions = array(0,5,10,15,20,25,30,35,40,45,50,55);
+				for($i = 0; $i < 12; $i++) {
 					echo "<option value=\"" . $minuteOptions[$i] . "\"";
 					if($minutes == $minuteOptions[$i]) echo ' selected="selected"';
 					echo ">" . $minuteOptions[$i] . "</option>\n";
@@ -208,11 +209,13 @@
 		<?php echo select_task_priority('task[priority]', array_var($task_data, 'priority', ProjectTasks::PRIORITY_NORMAL), array('tabindex' => '90')) ?>
 		</div>
 		
+                <?php if(array_var($task_data, 'time_estimate') == 0){?>
 		<div style="padding-top:4px">
 		<?php echo label_tag(lang('percent completed')) ?>
 		<?php echo input_field('task[percent_completed]', array_var($task_data, 'percent_completed', 0), array('tabindex' => '100', 'class' => 'short')) ?>
 		</div>
-		
+		<?php }?>
+                
 		<?php if (config_option('use tasks dependencies')) { ?>
 		<div style="padding-top:4px">
 		<?php echo label_tag(lang('previous tasks')) ?>

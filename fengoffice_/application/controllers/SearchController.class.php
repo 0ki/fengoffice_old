@@ -1,6 +1,14 @@
 <?php
 class SearchController extends ApplicationController {
 	
+	static $MYSQL_MIN_WORD_LENGHT = 4 ;
+	
+	/**
+	 * Debug mode (Dev only)
+	 * @var unknown_type
+	 */
+	var $debug = 0 ;
+	
 	/**
 	 * @var boolean
 	 */
@@ -26,6 +34,17 @@ class SearchController extends ApplicationController {
 	var $start = 0 ;
 	
 	/**
+	 * If $ignoreMinWordLength = false: 
+	 * =>	Makes a standart fulltext always. 
+	 * 		Depending on mysql configuration ft_min_word_len if the word wil be searched
+	 * Else : 
+	 * => 	If searchString has words with legth ft_min_word_len
+	 * 		Makes a like query (Performance Killer)
+	 * @var integer
+	 */
+	var $ignoreMinWordLength = true;
+	
+	/**
 	 * Real limit  SQL satatement.
 	 * We dont make a 'count' on SQL. 
 	 * This will help to guess to total results, o at least, if render the 'next' button  
@@ -44,7 +63,7 @@ class SearchController extends ApplicationController {
 	 * If true search for prefixes, giving more results.
 	 * @var boolean
 	 */
-	var $wildcardSeach = true ;
+	var $wildCardSearch = true ;
 	
 	/**
 	 * Max title size to show on results view
@@ -70,13 +89,14 @@ class SearchController extends ApplicationController {
 	 */
 	var $pagination = null  ;
 	
+	
 	function __construct() {
 		$this->pagination = new StdClass();
 		parent::__construct();
 		prepare_company_website_controller($this, 'website');
 		ajx_set_panel("search");
-		
-	} // __construct
+		self::$MYSQL_MIN_WORD_LENGHT = (int)array_var(DB::executeOne("SHOW variables LIKE 'ft_min_word_len' "),"Value");
+	}
 	
 	
 	/**
@@ -89,16 +109,24 @@ class SearchController extends ApplicationController {
 	function search() {
 		// Init vars
 		$search_for = array_var($_GET, 'search_for');
+		$minWordLength = $this->minWordLength($search_for);
+		$useLike = ( $minWordLength && ($this->ignoreMinWordLength) && ($minWordLength < self::$MYSQL_MIN_WORD_LENGHT) );
 		$search_pieces= explode(" ", $search_for);
 		$search_string = "";
-		foreach ($search_pieces as $word ) {
-			$search_string.= mysql_escape_string($word);
-			if ($this->wildcardSeach) {
-				$search_string.="*";
+		if (!$useLike){
+			// Prepare MATCH AGAINST string
+			foreach ($search_pieces as $word ) {
+				$search_string.= mysql_escape_string($word);
+				if ($this->wildCardSearch) {
+					$search_string.="*";
+				}
+				$search_string.=" ";
 			}
-			$search_string.=" ";
+			$search_string = substr($search_string, 0 , -1);
+		}else{
+			// USE Like Query
+			$search_string = mysql_escape_string($search_for);
 		}
-		$search_string = substr($search_string, 0 , -1);
 		
 		$this->search_for = $search_for ;
 		$limit = $this->limit;
@@ -109,25 +137,38 @@ class SearchController extends ApplicationController {
 		$uid = logged_user()->getId();
 		
 		
-		// Build main SQL
+		$revisionObjectTypeId = ObjectTypes::findByName("file revision")->getId();
+		
 		$sql = "	
 			SELECT  distinct(so.rel_object_id) AS id
 			FROM ".TABLE_PREFIX."searchable_objects so
 			INNER JOIN  ".TABLE_PREFIX."objects o ON o.id = so.rel_object_id 
-			WHERE
-				so.rel_object_id IN (
-			    SELECT object_id FROM ".TABLE_PREFIX."sharing_table WHERE group_id  IN (
-			      SELECT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups WHERE contact_id = $uid
-			    )
-			 )
-			AND MATCH (so.content) AGAINST ('$search_string' IN BOOLEAN MODE)
+			WHERE (
+				(	
+					o.object_type_id = $revisionObjectTypeId AND  
+					EXISTS ( 
+						SELECT id FROM fo_sharing_table WHERE object_id  = ( SELECT file_id FROM fo_project_file_revisions WHERE object_id = o.id ) 
+						AND group_id IN (SELECT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups WHERE contact_id = $uid )
+					)
+					
+				) 
+				OR (
+					so.rel_object_id IN (
+			    		SELECT object_id FROM ".TABLE_PREFIX."sharing_table WHERE group_id  IN (
+			      			SELECT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups WHERE contact_id = $uid
+			    		)
+			 		)
+			 	)
+			)".(($useLike)?"AND so.content LIKE '%$search_string%' " : "AND MATCH (so.content) AGAINST ('$search_string' IN BOOLEAN MODE) ")." 
 			ORDER by o.updated_on DESC
 			LIMIT $start, $limitTest ";
-		//
+		
+		
 		$db_search_results = array();
 		$timeBegin = time();
 		$res = DB::execute($sql);
 		$timeEnd = time();
+		if ($this->debug) alert_r("<br>SQL:<br>".$sql. "<hr>TIME:".($timeEnd-$timeBegin) );
 		while ($row = $res->fetchRow() ) {
 			$search_results_ids[] = $row['id'] ;
 		}
@@ -167,6 +208,18 @@ class SearchController extends ApplicationController {
 		}
 		ajx_set_no_toolbar(true);
 		
+	}
+	
+	private function minWordLength($str) {
+		$min = null ;		
+		foreach ( explode(" ", $str) as $word ){
+			if ( $len = strlen_utf(trim($word)) ){
+				if (is_null($min) || $len < $min) {
+					$min = $len ;
+				}
+			}
+		}
+		return $min ;
 	}
 	
 	/**
@@ -213,22 +266,6 @@ class SearchController extends ApplicationController {
 			$obj = Objects::findObject($search_result_id);
 			/* @var $obj ContentDataObject */
 			
-			/*$search_result = DB::executeOne("		
-				SELECT  o.id AS id, 
-						o.name,  
-						o.created_on as created_on,
-						c.object_id as created_by_id, 
-						c.username AS created_by_name, 
-						t.name as type, 
-						t.handler_class as handler
-	
-				FROM ".TABLE_PREFIX."objects o  
-				LEFT JOIN ".TABLE_PREFIX."object_types t on o.object_type_id = t.id
-				LEFT JOIN ".TABLE_PREFIX."contacts c ON c.object_id = o.created_by_id
-				
-				WHERE
-					o.id =  $search_result_id");*/
-			
 			$search_result['title'] = $this->prepareTitle($obj->getObjectName());
 			$search_result['url'] = $obj->getViewUrl();
 			$search_result['created_by'] = $this->prepareCreatedBy($obj->getCreatedByDisplayName(), $obj->getCreatedById()) ;
@@ -240,11 +277,6 @@ class SearchController extends ApplicationController {
 				"size" => $this->contentSize,
 				"near" => $this->search_for  
 			)));
-
-			//$search_result['url'] = $this->prepareUrl($search_result['id'], $search_result['handler']);
-			
-
-			
 			$return[] = $search_result;
 			$limit--;
 		}
@@ -269,8 +301,6 @@ class SearchController extends ApplicationController {
 		}else{
 			return "#";
 		} 
-
-		
 	}
 	
 	private function prepareTitle($title){
@@ -322,7 +352,6 @@ class SearchController extends ApplicationController {
 	 * @param unknown_type $size
 	 */
 	private function cutResult($content, $size = 200  ) {
-
 		$position = strpos($content,$this->search_for);
 		$spacesBefore = min(10, $position); 
 		if (strlen($content) > $size ){
@@ -332,6 +361,4 @@ class SearchController extends ApplicationController {
 			return $content ;
 		}
 	}
-	
-
 }

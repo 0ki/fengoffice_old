@@ -1201,6 +1201,12 @@ class ReportingController extends ApplicationController {
 			$customProperties = CustomProperties::getAllCustomPropertiesByObjectType($object_type);
 			$objectFields = array();
 			
+			foreach($customProperties as $cp){
+				if ($cp->getType() == 'table') continue;
+				
+				$fields[] = array('id' => $cp->getId(), 'name' => $cp->getName(), 'type' => $cp->getType(), 'values' => $cp->getValues(), 'multiple' => $cp->getIsMultipleValues());
+			}
+			
 			$ot = ObjectTypes::findById($object_type);
 			eval('$managerInstance = ' . $ot->getHandlerClass() . "::instance();");
 			$objectColumns = $managerInstance->getColumns();

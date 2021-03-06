@@ -13,6 +13,10 @@
   			$user->getId()
   		));
   	}
+        
+        function findByEvent($event_id) {
+                return EventInvitations::findAll(array('conditions' => array('`event_id` = ?', $event_id)));
+        }
   } // EventInvitations 
 
 ?>

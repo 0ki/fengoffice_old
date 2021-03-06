@@ -28,6 +28,7 @@ $genid = gen_id();
 	
 	$user_filter = $userPreferences['user_filter'];
 	$status_filter = $userPreferences['status_filter'];
+        $task_filter = $userPreferences['task_filter'];
 	
 	$user = Contacts::findById(array('id' => $user_filter));
 	if ($user == null) $user = logged_user();
@@ -62,8 +63,9 @@ $genid = gen_id();
 	$date_end->add('h', logged_user()->getTimezone());
 	
 	$milestones = ProjectMilestones::getRangeMilestones($date_start, $date_end);
-	$tasks = ProjectTasks::getRangeTasksByUser($date_start, $date_end, ($user_filter != -1 ? $user : null));
-	
+        if($task_filter != "hide"){
+            $tasks = ProjectTasks::getRangeTasksByUser($date_start, $date_end, ($user_filter != -1 ? $user : null), $task_filter);
+        }
 	// FIXME
 	$birthdays = array(); //Contacts::instance()->getRangeContactsByBirthday($date_start, $date_end);
 	
@@ -386,7 +388,7 @@ $genid = gen_id();
 								if ($event instanceof ProjectEvent || ($due_date instanceof DateTimeValue && $dates[$day_of_week]->getTimestamp() == mktime(0,0,0, $due_date->getMonth(), $due_date->getDay(), $due_date->getYear()))
 																   || ($start_date instanceof DateTimeValue && $dates[$day_of_week]->getTimestamp() == mktime(0,0,0, $start_date->getMonth(), $start_date->getDay(), $start_date->getYear()))) {	
 									
-									$ws_color = $event instanceof ProjectEvent ? 1 : 12;
+									$ws_color = $event->getObjectColor($event instanceof ProjectEvent ? 1 : 12);
 
 									cal_get_ws_color($ws_color, $ws_style, $ws_class, $txt_color, $border_color);
 					?>
@@ -534,7 +536,7 @@ onmouseup="og.showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->ge
 											$event_id = $event->getId();
 											$subject = clean($event->getObjectName());
 											
-											$ws_color = $event instanceof ProjectEvent ? 1 : 12;
+											$ws_color = $event->getObjectColor($event instanceof ProjectEvent ? 1 : 12);
 											
 											cal_get_ws_color($ws_color, $ws_style, $ws_class, $txt_color, $border_color);	
 											

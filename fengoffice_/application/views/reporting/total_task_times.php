@@ -40,7 +40,7 @@
 		
 		
 		echo '<div style="margin-left:' . $margin_left . 'px;" class="report-group-footer">' . $group_name;
-		echo '<div style="float:right;width:127px;" class="bold right">' . DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($group_total * 60), "hm", 60) . '</div>';
+		echo '<div style="float:right;width:140px;" class="bold right">' . DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($group_total * 60), "hm", 60) . '</div>';
 		if (array_var($options, 'show_billing') == 'checked') {
 			echo '<div style="float:right;" class="bold">' . config_option('currency_code', '$') . " " . number_format($billing_total, 2) . '</div>';
 		}
@@ -92,7 +92,7 @@
 		/* var Member $selected_member */
 		if ($selected_member instanceof Member) {
 			$ot = ObjectTypes::findById($selected_member->getObjectTypeId());
-			$dimension_filters[lang($ot->getName())] = $selected_member->getName();
+			$dimension_filters[lang($ot->getName())] = array('name' => $selected_member->getName(), 'icon' => $selected_member->getIconClass());
 		}
 	}
 	
@@ -104,12 +104,12 @@
 			foreach ($sel_parents as $sp) $skip_groups[] = $sp->getId();
 			
 			$ot = ObjectTypes::findById($selection->getObjectTypeId());
-			$dimension_filters[lang($ot->getName())] = $selection->getName();
+			$dimension_filters[lang($ot->getName())] = array('name' => $selection->getName(), 'icon' => $selection->getIconClass());
 		}
 	}
 	
-	foreach ($dimension_filters as $type => $name) { ?>
-		<div><span class="bold"><?php echo $type ?>:</span><span style="margin-left:5px;"><?php echo $name ?></span></div>
+	foreach ($dimension_filters as $type => $filter) { ?>
+		<div><span class="bold"><?php echo $type ?>:</span><span style="margin-left:10px;" class="coViewAction <?php echo $filter['icon']?>"><?php echo $filter['name'] ?></span></div>
 	<?php }
 
 	if ($start_time) { ?>

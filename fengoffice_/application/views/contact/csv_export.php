@@ -1,13 +1,15 @@
 <?php
-	$submit_url = get_url('contact', 'export_to_csv_file');
+	$submit_url = get_url('contact', 'export_to_csv_file',array('ids'=>array_var($_GET, 'ids')));
 	$genid = gen_id();
 ?>
 <script>
 og.download_exported_file = function() {
-	if (!Ext.isIE) {
-		location.href = og.getUrl('contact', 'download_exported_file');
-		og.openLink(og.getUrl('contact', 'init'));
-	}
+	setTimeout(function() {
+		if (!Ext.isIE) {
+			location.href = og.getUrl('contact', 'download_exported_file');
+			og.openLink(og.getUrl('contact', 'init'));
+		}	
+	}, 1500);
 }
 </script>
 
@@ -19,7 +21,13 @@ og.download_exported_file = function() {
 <div class="coInputTitle">
 	<table style="width:535px"><tr><td><?php echo ($import_type == 'contact' ? lang('export contacts to csv') : lang('export companies to csv')) ?></td>
 	<?php if (!isset($result_msg)) { ?>
-	<td style="text-align:right"><?php echo submit_button(lang('export'), 'e', array('style'=>'margin-top:0px;margin-left:10px', 'tabindex' => '10','id' => $genid.'csv_export_submit1', 'onclick'=>"javascript:og.openLink(og.getUrl('contact', 'export_to_csv_file'), {callback:og.download_exported_file});")) ?></td>
+	<td style="text-align:right">
+		<?php 
+			echo submit_button(lang('export'), 'e', array('style'=>'margin-top:0px;margin-left:10px', 'tabindex' => '10','id' => $genid.'csv_export_submit1', 
+			'onclick'=>'og.download_exported_file()')) 
+		?>
+		
+		</td>
 	<?php } //if ?>
 	<td><div id="<?php echo $genid."downloadlink"?>" style="padding-left:20px; font-size: 9pt; vertical-align: middle;"></div></td>
 	</tr></table>
@@ -32,9 +40,7 @@ og.download_exported_file = function() {
 	
 	<?php
 		if ($import_type == 'contact') 
-			$contact_fields = Contacts::getContactFieldNames();
-		else $contact_fields = Contacts::getCompanyFieldNames();
-		
+			$contact_fields = Contacts::getContactFieldNames();		
 		$isAlt = false;
 		$i = 0; $label_w = $label_h = $label_o = false;
 		foreach ($contact_fields as $c_field => $c_label) {

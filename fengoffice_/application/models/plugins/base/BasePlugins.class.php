@@ -21,7 +21,9 @@
     	'is_activated' => DATA_TYPE_BOOLEAN,
     	'priority' => DATA_TYPE_INTEGER,  
     	'activated_on' => DATA_TYPE_DATETIME, 
-    	'activated_by_id' => DATA_TYPE_INTEGER
+    	'activated_by_id' => DATA_TYPE_INTEGER,
+    	'version' => DATA_TYPE_STRING
+    	//'version' => DATA_TYPE_STRING
     );
   
     /**

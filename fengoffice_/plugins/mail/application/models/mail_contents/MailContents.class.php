@@ -393,5 +393,21 @@ class MailContents extends BaseMailContents {
 		
 		return $result;
 	}
+        
+        /**
+         * search according to the conditions of mail rules
+         * @param string $condition
+         * @return object 
+         */
+        function getConditionsRules($condition){
+		return MailContents::findAll(array(
+			'conditions' => $condition,
+			'join' => array(
+				'table' => MailDatas::instance()->getTableName(),
+				'jt_field' => 'id',
+				'e_field' => 'object_id',
+			)
+		));
+	}
 
 }

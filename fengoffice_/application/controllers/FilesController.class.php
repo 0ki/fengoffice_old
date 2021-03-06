@@ -2006,7 +2006,7 @@ class FilesController extends ApplicationController {
 					$e_name = join('?', $clean_pieces[0]);
 										
 					if (!is_dir($tmp_path)) {
-						$this->upload_file(null, $e_name, $tmp_path, $workspaces);
+						$this->upload_file(null, $e_name, $tmp_path, $members);
 						$file_count++;
 					}
 				}			
@@ -2057,7 +2057,6 @@ class FilesController extends ApplicationController {
 		return false;
 	} // upload_extracted_file
 
-	
 	function zip_add() {
 		if (logged_user()->isGuest()) {
 			flash_error(lang('no access permissions'));
@@ -2075,7 +2074,7 @@ class FilesController extends ApplicationController {
 			flash_error(lang('no files to compress'));
 			return;
 		}
-		
+                
 		$isnew = false;
 		$file = null;
 		if (array_var($_GET, 'filename')) {
@@ -2100,6 +2099,7 @@ class FilesController extends ApplicationController {
 		
 		$tmp_dir = ROOT.'/tmp/'.rand().'/';
 		mkdir($tmp_dir);
+                $members = array();
 		foreach ($files as $file_to_add) {
 			if (FileRepository::getBackend() instanceof FileRepository_Backend_FileSystem) {
 				$file_to_add_path = FileRepository::getBackend()->getFilePath($file_to_add->getLastRevision()->getRepositoryId());
@@ -2109,17 +2109,81 @@ class FilesController extends ApplicationController {
 				fwrite($handle, $file_to_add->getLastRevision()->getFileContent(), $file_to_add->getLastRevision()->getFilesize());
 				fclose($handle);
 			}
-			$zip->addFile($file_to_add_path, $file_to_add->getFilename());
-			
+			$zip->addFile($file_to_add_path, utf8_safe($file_to_add->getFilename()));
+                        $members []= $file_to_add->getMemberIds();
+
 		}
 		$zip->close();
 		delete_dir($tmp_dir);
-
+                
+		$this->upload_file($file, $filename, $tmp_zip_path,$members);
 		unlink($tmp_zip_path);
 		
 		flash_success(lang('success compressing files', count($files)));
 		ajx_current("reload");
 	}
+//	function zip_add() {
+//		if (logged_user()->isGuest()) {
+//			flash_error(lang('no access permissions'));
+//			ajx_current("empty");
+//			return;
+//		}
+//		ajx_current("empty");
+//		if (!zip_supported()) {
+//			flash_error(lang('zip not supported'));
+//			return;
+//		}
+//
+//		$files = ProjectFiles::findByCSVIds(array_var($_GET, 'objects'), '`type` = 0');
+//		if (count($files) == 0) {
+//			flash_error(lang('no files to compress'));
+//			return;
+//		}
+//		
+//		$isnew = false;
+//		$file = null;
+//		if (array_var($_GET, 'filename')) {
+//			$filename = array_var($_GET, 'filename');
+//			$isnew = true;
+//		} else if (array_var($_GET, 'id')) {
+//			$file = ProjectFiles::findById(array_var($_GET, 'id'));
+//			$filename = $file->getFilename();
+//		}
+//		
+//		$tmp_zip_path = ROOT.'/tmp/'.rand().'.zip';
+//		$handle = fopen($tmp_zip_path, 'wb');
+//		if (!$isnew) {
+//			$content = $file->getLastRevision()->getFileContent();
+//			fwrite($handle, $content, $file->getLastRevision()->getFilesize());
+//		}
+//		fclose($handle);
+//		
+//		$zip = new ZipArchive();
+//		if (!$isnew) $zip->open($tmp_zip_path);
+//		else $zip->open($tmp_zip_path, ZipArchive::OVERWRITE);
+//		
+//		$tmp_dir = ROOT.'/tmp/'.rand().'/';
+//		mkdir($tmp_dir);
+//		foreach ($files as $file_to_add) {
+//			if (FileRepository::getBackend() instanceof FileRepository_Backend_FileSystem) {
+//				$file_to_add_path = FileRepository::getBackend()->getFilePath($file_to_add->getLastRevision()->getRepositoryId());
+//			} else {
+//				$file_to_add_path = $tmp_dir . $file_to_add->getFilename();
+//				$handle = fopen($file_to_add_path, 'wb');
+//				fwrite($handle, $file_to_add->getLastRevision()->getFileContent(), $file_to_add->getLastRevision()->getFilesize());
+//				fclose($handle);
+//			}
+//			$zip->addFile($file_to_add_path, $file_to_add->getFilename());
+//			
+//		}
+//		$zip->close();
+//		delete_dir($tmp_dir);
+//
+//		unlink($tmp_zip_path);
+//		
+//		flash_success(lang('success compressing files', count($files)));
+//		ajx_current("reload");
+//	}
 	
 	
 	function display_content() {

@@ -150,6 +150,7 @@
 	'success update company permissions' => 'Permisos de la empresa modificados satisfactoriamente. {0} registros modificados',
 	'success user permissions updated' => 'Permisos de usuarios modificados',
 	'success add event' => 'Evento \'{0}\' añadido',
+        'success add events' => 'Los eventos se han agregado',
 	'success edit event' => 'Evento \'{0}\' editado',
 	'success delete event' => 'Evento \'{0}\' eliminado',
 	'success add event type' => 'Nuevo tipo de evento añadido',

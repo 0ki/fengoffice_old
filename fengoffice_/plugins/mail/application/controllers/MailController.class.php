@@ -246,8 +246,7 @@ class MailController extends ApplicationController {
                                                 $spam_filter->setText($email->getFrom());
                                                 $spam_filter->setSpamState($spam_state);
                                                 $spam_filter->save();
-                                            }
-                                             
+                                            }                                             
                                     }
                                     catch(Exception $e) {
                                             DB::rollback();
@@ -259,7 +258,7 @@ class MailController extends ApplicationController {
 				$email->setState($folder);
 				$email->save();
 				DB::commit();
-				ajx_current("back");
+                                redirect_to('index.php?c=mail&a=init');
 				return;
 			} catch(Exception $e) {
 				DB::rollback();
