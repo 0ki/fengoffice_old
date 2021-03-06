@@ -80,6 +80,28 @@
     } // setName() 
     
     /**
+    * Return value of 'notes' field
+    *
+    * @access public
+    * @param void
+    * @return string 
+    */
+    function getNotes() {
+      return $this->getColumnValue('notes');
+    } // getNotes()
+    
+    /**
+    * Set value of 'notes' field
+    *
+    * @access public   
+    * @param string $value
+    * @return boolean
+    */
+    function setNotes($value) {
+      return $this->setColumnValue('notes', $value);
+    } // setNotes()
+    
+    /**
     * Return value of 'email' field
     *
     * @access public
@@ -98,7 +120,7 @@
     * @return boolean
     */
     function setEmail($value) {
-      return $this->setColumnValue('email', $value);
+      return $this->setColumnValue('email', trim($value));
     } // setEmail() 
     
     /**

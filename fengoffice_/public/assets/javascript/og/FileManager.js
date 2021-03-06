@@ -7,7 +7,19 @@ og.FileManager = function() {
 
 	this.doNotRemove = true;
 	this.needRefresh = false;
+	
+	this.fields = [
+		'name', 'object_id', 'type', 'tags', 'createdBy', 'createdById',
+		{name: 'dateCreated', type: 'date', dateFormat: 'timestamp'},
+		'updatedBy', 'updatedById',
+		{name: 'dateUpdated', type: 'date', dateFormat: 'timestamp'},
+		'icon', 'wsIds', 'manager', 'checkedOutById',
+		'checkedOutByName', 'mimeType', 'isModifiable',
+		'modifyUrl', 'songInfo', 'ftype', 'url'
+	];
 
+	og.eventManager.fireEvent('hook_document_classification', this.fields);	
+	
 	if (!og.FileManager.store) {
 		og.FileManager.store = new Ext.data.Store({
 			proxy: new og.GooProxy({
@@ -17,15 +29,7 @@ og.FileManager = function() {
 				root: 'files',
 				totalProperty: 'totalCount',
 				id: 'id',
-				fields: [
-					'name', 'object_id', 'type', 'tags', 'createdBy', 'createdById',
-					{name: 'dateCreated', type: 'date', dateFormat: 'timestamp'},
-					'updatedBy', 'updatedById',
-					{name: 'dateUpdated', type: 'date', dateFormat: 'timestamp'},
-					'icon', 'wsIds', 'manager', 'checkedOutById',
-					'checkedOutByName', 'mimeType', 'isModifiable',
-					'modifyUrl', 'songInfo'
-				]
+				fields:this.fields 
 			}),
 			remoteSort: true,
 			listeners: {
@@ -55,13 +59,16 @@ og.FileManager = function() {
 		var result = '';
 		var name = String.format(
 			'<a style="font-size:120%" href="#" onclick="og.openLink(\'{2}\')">{0}</a>',
-			htmlentities(value), r.data.name, og.getUrl('files', 'file_details', {id: r.data.object_id}));
+			og.clean(value), r.data.name, og.getUrl('files', 'file_details', {id: r.data.object_id}));
 		
 		return String.format('<span class="project-replace">{0}</span>&nbsp;', r.data.wsIds) + name;
 	}
 
 	function renderIcon(value, p, r) {
 		var classes = "db-ico ico-unknown ico-" + r.data.type;
+		if (r.data.ftype == 1){
+			classes += ' ico-webfile';
+		}
 		if (r.data.mimeType) {
 			var path = r.data.mimeType.replace(/\//g, "-").split("-");
 			var acc = "";
@@ -83,7 +90,7 @@ og.FileManager = function() {
 		var now = new Date();
 		var dateString = '';
 		if (now.dateFormat('Y-m-d') > value.dateFormat('Y-m-d')) {
-			return lang('last updated by on', userString, value.dateFormat(lang('date format')));
+			return lang('last updated by on', userString, value.dateFormat(og.date_format));
 		} else {
 			return lang('last updated by at', userString, value.dateFormat('h:i a'));
 		}
@@ -98,36 +105,49 @@ og.FileManager = function() {
 		var now = new Date();
 		var dateString = '';
 		if (now.dateFormat('Y-m-d') > value.dateFormat('Y-m-d')) {
-			return lang('last updated by on', userString, value.dateFormat(lang('date format')));
+			return lang('last updated by on', userString, value.dateFormat(og.date_format));
 		} else {
 			return lang('last updated by at', userString, value.dateFormat('h:i a'));
 		}
 	}
 
 	function renderCheckout(value, p, r) {
-		if (value =='')
-			return String.format('<div class="ico-unlocked" style="display:block;height:16px;background-repeat:no-repeat;padding-left:18px">'
-			+ '<a href="#" onclick="og.openLink(\'{1}\')" title="{2}">{0}</a>', lang('lock'), og.getUrl('files', 'checkout_file', {id: r.id}), lang('checkout description'));
-		else if (value == 'self' && r.data.checkedOutById == "0"){
-			return String.format('<div class="ico-locked" style="display:block;height:16px;background-repeat:no-repeat;padding-left:18px">' +
-				'<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', 
-				lang('unlock'), og.getUrl('files', 'undo_checkout', {id: r.id})) + ', ' +
-				String.format('<a href="#" onclick="og.openLink(\'{1}\')" title="{2}">{0}</a>', 
-				lang('checkin'), og.getUrl('files', 'checkin_file', {id: r.id}), lang('checkin description'))
-				 + '</div>';
-			}
-		else
-			return '<div class="ico-locked" style="display:block;height:16px;background-repeat:no-repeat;padding-left:18px">' +
-				lang('checked out by', String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', 
-				r.data.checkedOutByName, og.getUrl('user', 'card', {id: r.data.checkedOutById}))) + '</div>';
+		if(r.data.ftype == 0){
+			if (value =='')
+				return String.format('<div class="ico-unlocked" style="display:block;height:16px;background-repeat:no-repeat;padding-left:18px">'
+				+ '<a href="#" onclick="og.openLink(\'{1}\')" title="{2}">{0}</a>', lang('lock'), og.getUrl('files', 'checkout_file', {id: r.id}), lang('checkout description'));
+			else if (r.data.checkedOutById == og.loggedUser.id){
+				return String.format('<div class="ico-locked" style="display:block;height:16px;background-repeat:no-repeat;padding-left:18px">' +
+					'<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', 
+					lang('unlock'), og.getUrl('files', 'undo_checkout', {id: r.id})) + ', ' +
+					String.format('<a href="#" onclick="og.openLink(\'{1}\')" title="{2}">{0}</a>', 
+					lang('checkin'), og.getUrl('files', 'checkin_file', {id: r.id}), lang('checkin description'))
+					 + '</div>';
+				}
+			else
+				return '<div class="ico-locked" style="display:block;height:16px;background-repeat:no-repeat;padding-left:18px">' +
+					lang('checked out by', String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', 
+					r.data.checkedOutByName, og.getUrl('user', 'card', {id: r.data.checkedOutById}))) + '</div>';
+		} else {
+			return "--";
+		}
 	}
 	
 	function renderActions(value, p, r) {
 		var actions = '';
 		var actionStyle= ' style="font-size:105%;color:#FFFFFF;padding-top:2px;padding-bottom:3px;padding-left:18px;background-repeat:no-repeat;" '; 
 		
-		actions += String.format('<a class="list-action ico-download" href="#" onclick="window.open(\'{0}\')" title="{1}" ' + actionStyle + '>.</a>',
-			og.getUrl('files', 'download_file', {id: r.id}),lang('download'));
+		if(r.data.ftype == 0){
+			if(og.showCheckoutNotification == 0){
+				actions += String.format('<a class="list-action ico-download" href="#" onclick="window.open(\'{0}\');" title="{1}" ' + actionStyle + '>.</a>',
+						og.getUrl('files', 'download_file', {id: r.id}),lang('download'));
+			}else{
+				actions += String.format('<a class="list-action ico-download" href="#" onclick="og.checkDownload(\'{0}\', \'{1}\', \'{2}\');" title="{3}" ' + actionStyle + '>.</a>',
+				og.getUrl('files', 'download_file', {id: r.id}), r.data.checkedOutById, r.data.checkedOutByName, lang('download'));
+			}			
+		}else{
+			actions += String.format("<a href='{0}' class='list-action ico-open-link' target='_blank'" + actionStyle + "></a>&nbsp;", r.data.url, 'public/assets/themes/default/images/16x16/openlink.png');
+		}
 		
 		if (r.data.isModifiable) {
 			actions += String.format(
@@ -212,7 +232,13 @@ og.FileManager = function() {
 				actions.zip_add.setDisabled(false);
 				actions.del.setDisabled(false);
 			}
-		});
+			
+			args = {};
+			args.sm = sm;
+			args.actions = actions;
+			og.eventManager.fireEvent('hook_classification_enable', args);		
+			
+	});
 	var cm = new Ext.grid.ColumnModel([
 		sm,{
         	id: 'icon',
@@ -272,6 +298,8 @@ og.FileManager = function() {
 			sortable: false
 		}]);
 	cm.defaultSortable = false;
+
+	og.eventManager.fireEvent('hook_filemanager_columns', cm.config);
 	
 	actions = {
 		newCO: new Ext.Action({
@@ -290,11 +318,11 @@ og.FileManager = function() {
 				{text: lang('presentation'), iconCls: 'ico-prsn', handler: function() {
 					var url = og.getUrl('files', 'add_presentation');
 					og.openLink(url);
-				}}/*,
+				}},
 				{text: lang('spreadsheet') + ' (ALPHA)', iconCls: 'ico-sprd', handler: function() {
 					var url = og.getUrl('files', 'add_spreadsheet');
 					og.openLink(url);
-				}}*/
+				}}
 			]}
 		}),
 		tag: new Ext.Action({
@@ -417,6 +445,12 @@ og.FileManager = function() {
 			}
 		}
 	});
+	
+	args = {};
+	args.actions = actions;
+	args.fm = this;
+	args.sm = sm;
+	og.eventManager.fireEvent('hook_filemanager_actions', args);	
 
 	var tagevid = og.eventManager.addListener("tag changed", function(tag) {
 		if (!this.ownerCt) {

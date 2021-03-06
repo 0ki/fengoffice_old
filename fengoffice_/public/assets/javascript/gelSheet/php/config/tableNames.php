@@ -17,6 +17,7 @@ $cnf['tableName'] = array (
 	'cells' 		=> $cnf['db']['prefix'].'cells',
 	'columns'		=> $cnf['db']['prefix'].'columns' ,
 	'fontStyles'	=> $cnf['db']['prefix'].'fontStyles' ,
+	'layoutStyles'	=> $cnf['db']['prefix'].'layoutStyles' ,
 	'fonts' 		=> $cnf['db']['prefix'].'fonts' ,
 	'mergedCells' 	=> $cnf['db']['prefix'].'mergedCells' ,
 	'rows' 			=> $cnf['db']['prefix'].'rows' ,

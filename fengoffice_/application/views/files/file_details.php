@@ -1,3 +1,8 @@
+<?php
+require_javascript("og/ObjectPicker.js");
+require_javascript("modules/addFileForm.js");
+?>
+
 <script type="text/javascript">
 	og.pickObjectToZip = function(zip_id) {
 		og.ObjectPicker.show(function(objs) {
@@ -39,25 +44,36 @@ if (isset($file) && $file instanceof ProjectFile) {
 		}
 	}
 	
-	if($file->canDownload(logged_user())) { 
-		add_page_action(lang('download') . ' (' . format_filesize($file->getFilesize()) . ')', $file->getDownloadUrl(), 'ico-download', '', array("download" => true));
+	if($file->canDownload(logged_user()) && $file->getType() != ProjectFiles::TYPE_WEBLINK) { 
+		$url = $file->getDownloadUrl(); 
+		$checkedOutById = $file->getCheckedOutById();
+		if($checkedOutById != 0){
+			$checkedOutByName = ($checkedOutById == logged_user()->getId() ?  "self" : Users::findById($checkedOutById)->getUsername());
+		}else{
+			$checkedOutByName = '';
+		}
+		add_page_action(lang('download') . ' (' . format_filesize($file->getFilesize()) . ')', "javascript:og.checkDownload('$url',$checkedOutById,'$checkedOutByName');", 'ico-download', '', array("download" => true));
+	}
+	
+	if($file->getType() == ProjectFiles::TYPE_WEBLINK){
+		add_page_action('Open weblink', clean($file->getUrl()), 'ico-open-link', '_blank');
 	}
 	
 	if (!$file->isTrashed()){
 		if ($file->isCheckedOut()){
-			if ($file->canCheckin(logged_user())){
+			if ($file->canCheckin(logged_user()) && $file->getType() == ProjectFiles::TYPE_DOCUMENT){
 				add_page_action(lang('checkin file'), $file->getCheckinUrl(), 'ico-checkin'); 
 				add_page_action(lang('undo checkout'), $file->getUndoCheckoutUrl() . "&show=redirect", 'ico-undo'); 
 			}
 			
 		} else {
-			if ($file->canCheckout(logged_user())) { 
+			if ($file->canCheckout(logged_user()) && $file->getType() == ProjectFiles::TYPE_DOCUMENT) { 
 				add_page_action(lang('checkout file'), $file->getCheckoutUrl(). "&show=redirect", 'ico-checkout');
 			}
 		}
 		
 		if($file->canEdit(logged_user())) {
-			if ($file->isModifiable()) { 
+			if ($file->isModifiable() && $file->getType() != ProjectFiles::TYPE_WEBLINK) { 
 				add_page_action(lang('edit this file'), $file->getModifyUrl(), 'ico-edit');
 			}
 			if ($file->getTypeString() == 'application/zip') {
@@ -78,7 +94,7 @@ if (isset($file) && $file instanceof ProjectFile) {
     	}
 	}
 	
-	if (can_add(logged_user(), active_or_personal_project(), 'ProjectFiles')) {
+	if (can_add(logged_user(), active_or_personal_project(), 'ProjectFiles') && $file->getType() != ProjectFiles::TYPE_WEBLINK) {
 		add_page_action(lang('copy file'), $file->getCopyUrl(), 'ico-copy');
 	}
 
@@ -97,10 +113,27 @@ if (isset($file) && $file instanceof ProjectFile) {
 		} else {
 			$description .= lang('file revision info short', $last_revision->getRevisionNumber(), format_descriptive_date($last_revision->getCreatedOn()));
 		}
+		$description .= "</div>";
 	} // if
-	if (!$file->isTrashed())
+	
+	if($file->isCheckedOut()) {
+		$description .= '<div id="fileCheckedOutBy" class="coViewAction ico-locked">';
+		if($file->getCheckedOutBy() instanceof User) {
+			$description .= lang('file checkout info long', $file->getCheckedOutBy()->getCardUrl(), clean($file->getCheckedOutBy()->getDisplayName()), format_descriptive_date($file->getCheckedOutOn()). ", " . format_time($file->getCheckedOutOn()));
+		} else {
+			$description .= lang('file checkout info short', format_descriptive_date($file->getCheckedOutOn()). ", " . format_time($file->getCheckedOutOn()));
+		} // if
+		$description .= "</div>";
+	} // if
+	
+	if ($file->getType() == ProjectFiles::TYPE_WEBLINK){
+		$description .= '<div id="urlDiv"><b>' . lang('url') . '</b>: <a href="' . clean($file->getUrl()) . '" class="internalLink" target="_blank">' . clean($file->getUrl()) . '</a>';
+		
+	}
+
+	if (!$file->isTrashed() && $file->getType() != ProjectFiles::TYPE_WEBLINK)
 		tpl_assign('image', '<div><img src="' . $file->getTypeIconUrl(false) .'" alt="' . clean($file->getFilename()) . '" /></div>');
-	tpl_assign('iconclass', $file->isTrashed()? 'ico-large-files-trashed' :  'ico-large-files');
+	tpl_assign('iconclass', $file->isTrashed()? 'ico-large-files-trashed' : ($file->getType() != ProjectFiles::TYPE_WEBLINK? 'ico-large-files':'ico-large-webfile'));
 	tpl_assign('description', $description);
 	tpl_assign('title', clean($file->getFilename()));
 	tpl_assign("content_template", array('file_details_content', 'files'));

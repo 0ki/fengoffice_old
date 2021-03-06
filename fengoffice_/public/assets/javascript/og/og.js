@@ -7,7 +7,7 @@ og.otherData = [];
 
 // default config (to be overridden by server)
 og.pageSize = 10;
-og.hostname = '';
+og.hostName = '';
 og.maxFileSize = 1024 * 1024;
 
 og.showMailsTab = 0;
@@ -32,7 +32,7 @@ og.msg =  function(title, text, timeout, classname, sound) {
 	    this.msgCt = Ext.DomHelper.insertFirst(document.body, {id:'msg-div'}, true);
 	}
 	this.msgCt.alignTo(document, 't-t');
-	var m = Ext.DomHelper.append(this.msgCt, {html:String.format(box, title, text)}, true);
+	var m = Ext.DomHelper.append(this.msgCt, {html:String.format(box, title, text.replace(/([^>]?)\n/g, '$1<br/>\n'))}, true);
 	Ext.get(m).on('click', function() {
 		this.remove();
 	});
@@ -99,7 +99,7 @@ og.hideAndShowByClass = function(itemToHide, classToDisplay, containerItemName){
 		container = document.getElementById(containerItemName);
 	} else container = document;
 	
-	list = container.getElementsByTagName('tr');
+	list = container.getElementsByTagName("*");
 	
 	for(var i = 0; i < list.length; i++){
 		var obj = list[i];
@@ -109,7 +109,7 @@ og.hideAndShowByClass = function(itemToHide, classToDisplay, containerItemName){
 };
 
 
-og.selectReportingMenuItem = function(link, divName){
+og.selectReportingMenuItem = function(link, divName, tab){
 	var table = document.getElementById('reportingMenu');
 	
 	var list = table.getElementsByTagName('td');
@@ -126,6 +126,9 @@ og.selectReportingMenuItem = function(link, divName){
 			list[i].style.display = 'none';
 			
 	document.getElementById(divName).style.display='block';
+	
+	var url = og.getUrl('account', 'update_user_preference', {name: 'custom_report_tab', value: tab});
+	og.openLink(url,{hideLoading:true});
 }
 
 og.dateselectchange = function(select) {
@@ -261,7 +264,7 @@ og.toggleAndHide = function(id, btn) {
 
 
 og.getUrl = function(controller, action, args) {
-	var url = og.hostname;
+	var url = og.hostName + "/";
 	url += "?c=" + controller;
 	url += "&a=" + action;
 	for (var key in args) {
@@ -428,8 +431,9 @@ og.openLink = function(url, options) {
 			if (active) options.caller = active.id;
 		}
 	}
-	if (!options.hideLoading)
+	if (!options.hideLoading) {
 		og.loading();
+	}
 	var params = options.get || {};
 	if (typeof params == 'string' && params.indexOf('current=') < 0) {
 		params += "&current=" + options.caller;
@@ -450,7 +454,9 @@ og.openLink = function(url, options) {
 		url: url,
 		params: options.post,
 		callback: function(options, success, response) {
-			og.hideLoading();
+			if (!options.options.hideLoading) {
+				og.hideLoading();
+			}
 			if (success) {
 				UnTip(); //fixes ws tooltip is displayed some times when changing page
 				if (og)
@@ -564,67 +570,73 @@ og.submit = function(form, options) {
 
 og.processResponse = function(data, options, url) {
 	if (!data) return;
-	if (options) var caller = options.caller;
 	
-	if (data.errorCode == 2009) {
-		if (options) {
-			og.LoginDialog.show(options.url, options.options);
-		} else {
-			og.LoginDialog.show();
-		}
-		return;
-	}
-	
-	//Fire events
-	if (data.events) {
-		for (var i=0; i < data.events.length; i++) {
-			og.eventManager.fireEvent(data.events[i].name, data.events[i].data);
-		}
-	}
-	
-	//Load data
-	if (!options || !options.preventPanelLoad){
-		//Load data into more than one panel
-		if (data.contents) {
-			for (var k in data.contents) {
-				var p = Ext.getCmp(k);
-				if (p) {
-					p.load(data.contents[k]);
-				}
-			}
-		}
-		
-		//Loads data into a single panel
-		if (data.current) {
-			if (data.current.panel || caller) { //Loads data into a specific panel
-				var panelName = data.current.panel ? data.current.panel : caller; //sets data into current.panel, otherwise into caller
-				var p = Ext.getCmp(panelName);
-				if (p) {
-					var tp = p.ownerCt;
-					if (tp.setActiveTab) {
-						if(!(p.initialConfig.refreshOnWorkspaceChange) && !(p.initialConfig.refreshOnTagChange))
-							tp.setActiveTab(p);
-					}
-					p.load(data.current);
+	// first load scripts
+	og.loadScripts(data.scripts, {
+		callback: function() {
+			if (options) var caller = options.caller;
+			
+			if (data.errorCode == 2009) {
+				if (options) {
+					og.LoginDialog.show(options.url, options.options);
 				} else {
-					og.newTab(data.current, panelName, data); //Creates the panel if it doesn't exist
+					og.LoginDialog.show();
 				}
-			} else { //Loads the data into a new tab
-				og.newTab(data.current);
+				return;
+			}
+			
+			//Fire events
+			if (data.events) {
+				for (var i=0; i < data.events.length; i++) {
+					og.eventManager.fireEvent(data.events[i].name, data.events[i].data);
+				}
+			}
+			
+			//Load data
+			if (!options || !options.preventPanelLoad){
+				//Load data into more than one panel
+				if (data.contents) {
+					for (var k in data.contents) {
+						var p = Ext.getCmp(k);
+						if (p) {
+							p.load(data.contents[k]);
+						}
+					}
+				}
+				
+				//Loads data into a single panel
+				if (data.current) {
+					if (data.current.panel || caller) { //Loads data into a specific panel
+						var panelName = data.current.panel ? data.current.panel : caller; //sets data into current.panel, otherwise into caller
+						var p = Ext.getCmp(panelName);
+						if (p) {
+							var tp = p.ownerCt;
+							if (tp.setActiveTab) {
+								if(!(p.initialConfig.refreshOnWorkspaceChange) && !(p.initialConfig.refreshOnTagChange))
+									tp.setActiveTab(p);
+							}
+							p.load(data.current);
+						} else {
+							og.newTab(data.current, panelName, data); //Creates the panel if it doesn't exist
+						}
+					} else { //Loads the data into a new tab
+						og.newTab(data.current);
+					}
+				}
+				
+				//Show help in content panel if help is available
+				if (data.help_content){
+					Ext.getCmp('help-panel').load(data.help_content);
+				}
+			}
+			//Show messages if any
+			if (data.errorCode != 0 && !options.options.hideErrors) {
+				og.err(data.errorMessage);
+			} else if (data.errorMessage) {
+				og.msg(lang("success"), data.errorMessage);
 			}
 		}
-		
-		//Show help in content panel if help is available
-		if (data.help_content){
-			Ext.getCmp('help-panel').load(data.help_content);
-		}
-	}
-	//Show messages if any
-	if (data.errorCode != 0 && !options.options.hideErrors) {
-		og.err(data.errorMessage);
-	} else if (data.errorMessage) {
-		og.msg(lang("success"), data.errorMessage);
-	}
+	});
 };
 
 og.newTab = function(content, id, data) {
@@ -878,33 +890,44 @@ Ext.extend (og.PagingToolbar, Ext.PagingToolbar, {
 	}
 });
 
-og.getGooPlayerPanel = function() {
+og.getGooPlayerPanel = function(callback) {
 	var gppanel = Ext.getCmp('gooplayer-panel');
-	if (!gppanel) {
-		og.newTab({
-				type: "panel",
-				data: "gooplayer",
-				config: {
-					id: 'gooplayer',
-					sound: og.GooPlayer.sound
-				}
-			},
-			'gooplayer-panel', {
-				title: 'GooPlayer',
-				icon: 'ico-gooplayer'
+	if (gppanel) {
+		callback();
+	} else {
+		og.loadScripts([
+				og.getScriptUrl('og/ObjectPicker.js'),
+				og.getScriptUrl('og/GooPlayer.js')
+			], {
+			callback: function() {
+				og.newTab({
+						type: "panel",
+						data: "gooplayer",
+						config: {
+							id: 'gooplayer',
+							sound: og.musicSound
+						}
+					},
+					'gooplayer-panel', {
+						title: 'GooPlayer',
+						icon: 'ico-gooplayer'
+					}
+				);
+				gppanel = Ext.getCmp('gooplayer-panel');
+				callback();
 			}
-		);
-		gppanel = Ext.getCmp('gooplayer-panel');
+		});
 	}
 	return gppanel;
 };
 
 og.playMP3 = function(track) {
-	var gppanel = og.getGooPlayerPanel();
-	Ext.getCmp('tabs-panel').setActiveTab(gppanel);
-	var gooplayer = Ext.getCmp('gooplayer');
-	gooplayer.loadPlaylist([track]);
-	gooplayer.start();
+	var gppanel = og.getGooPlayerPanel(function() {
+		Ext.getCmp('tabs-panel').setActiveTab(gppanel);
+		var gooplayer = Ext.getCmp('gooplayer');
+		gooplayer.loadPlaylist([track]);
+		gooplayer.start();
+	});
 };
 
 og.queueMP3 = function(track) {
@@ -969,6 +992,17 @@ og.dashExpand = function(genid,widget_name){
 	}
 };
 
+og.closeContextHelp = function(genid,option_name){
+	var help = document.getElementById(genid + 'help');
+	if (help){
+		help.style.display = 'none';
+		if(option_name != ''){
+			var url = og.getUrl('account', 'update_user_preference', {name: 'show_' + option_name + '_context_help', value:0});
+			og.openLink(url,{hideLoading:true});
+		}
+	}
+};
+
 og.billingEditValue = function(id){
 	document.getElementById(id + 'bv').style.display = 'none';
 	document.getElementById(id + 'bvedit').style.display = 'inline';
@@ -976,16 +1010,146 @@ og.billingEditValue = function(id){
 	document.getElementById(id + 'text').focus();
 };
 
-og.loadScript = function(url, callback, scope) {
-	Ext.Ajax.request({
-		url: url,
-		callback: function(options, success, response) {
-			if (success) {
-				eval(response.responseText);
-				if (typeof callback == 'function') {
-					callback.call(scope);
+og.checkDownload = function(url, checkedOutById, checkedOutBy) {
+	var options = {};
+	options.preventPanelLoad = true;
+	var checkOut = function() {
+		og.ExtendedDialog.dialog.destroy();
+		og.openLink(url + "&checkout=1&validate=1", options);
+	};
+	var readOnly = function() {
+		og.ExtendedDialog.dialog.destroy();
+		og.openLink(url + "&checkout=0&validate=1", options);
+	}
+	var checkedOutByName = checkedOutBy;
+	if (checkedOutByName == 'self') {
+		checkedOutByName = lang('you');
+	}
+	if (checkedOutById > 0) {
+		var config = {
+			title :lang('checkout notification'),
+			y :50,
+			id :'checkDownloadDialog',
+			layout :'border',
+			modal :true,
+			height :150,
+			width :300,
+			resizable :false,
+			closeAction :'hide',
+			iconCls :'op-ico',
+			border :false,
+			buttons : [ {
+				text :lang('download'),
+				handler :readOnly,
+				id :'download_button',
+				scope :this
+			} ],
+			html :lang('document checked out by', checkedOutByName),
+			dialogItems : [ {
+				xtype :'label',
+				name :'checked_label',
+				id :'checkedout',
+				hideLabel :true,
+				value :false
+			} ]
+		};
+	} else {
+		var config = {
+			title :lang('checkout confirmation'),
+			y :50,
+			id :'checkDownloadDialog',
+			layout :'border',
+			modal :true,
+			height :150,
+			width :300,
+			resizable :false,
+			closeAction :'hide',
+			iconCls :'op-ico',
+			border :false,
+			buttons : [ {
+				text :lang('checkout and download'),
+				handler :checkOut,
+				id :'checkOut_button',
+				scope :this
+			}, {
+				text :lang('download only'),
+				handler :readOnly,
+				id :'readOnly_button',
+				scope :this
+			} ],
+			html :lang('checkout recommendation'),
+			dialogItems : {
+				xtype :'label',
+				name :'checked_label',
+				id :'checkedout',
+				hideLabel :true,
+				value :false
+			}
+		};
+	}
+	og.ExtendedDialog.show(config);
+};
+
+og.getScriptUrl = function(script) {
+	return og.hostName + "/public/assets/javascript/" + script;
+};
+
+og.loadScripts = function(urls, config) {
+	if (!config) config = {};
+	if (typeof urls == "string") urls = [urls];
+	
+	// first load scripts
+	var scriptsLeft = urls.length;
+	var scripts = [];
+	for (var i=0; i < urls.length; i++) {
+		if (og.loadedScripts[urls[i]]) {
+			scriptsLeft--;
+		} else {
+			og.loadedScripts[urls[i]] = true;
+			if (!config.hideLoading) og.loading();
+			Ext.Ajax.request({
+				url: urls[i],
+				callback: function(options, success, response) {
+					scriptsLeft--;
+					if (!config.hideLoading) og.hideLoading();
+					if (success) {
+						scripts[options.index] = response.responseText;
+					}
+				},
+				index: i
+			});
+		}
+	}
+	var success = {};
+	var count = 0;
+	var postScript = function() {
+		// wait for scripts to load
+		if (scriptsLeft > 0) {
+			setTimeout(postScript, 100);
+			return;
+		}
+		
+		// run scripts
+		for (var i=0; i < scripts.length; i++) {
+			if (scripts[i]) {
+				try {
+					if (window.execScript) {
+						window.execScript(scripts[i]);
+					} else {
+						window.eval(scripts[i]);
+					}
+					success[urls[i]] = true;
+					count++;
+				} catch (e) {
+					og.err(e.message);
 				}
 			}
 		}
-	});
+		if (typeof config.callback == 'function') {
+			config.callback.call(config.scope, count, success);
+		}
+	};
+	postScript();
 };
+
+og.loadedScripts = {};

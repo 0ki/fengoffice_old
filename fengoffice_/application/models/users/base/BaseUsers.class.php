@@ -40,6 +40,7 @@ abstract class BaseUsers extends DataManager {
     	'personal_project_id' => DATA_TYPE_INTEGER,
     	'can_manage_contacts'=>DATA_TYPE_BOOLEAN,
     	'can_manage_templates'=>DATA_TYPE_BOOLEAN,
+    	'can_manage_reports'=>DATA_TYPE_BOOLEAN,
     	'default_billing_id' => DATA_TYPE_INTEGER, 
 	);
 
@@ -105,6 +106,19 @@ abstract class BaseUsers extends DataManager {
 		return 'id';
 	} // getAutoIncrementColumn
 
+	/**
+    * Return system columns
+    *
+    * @access public
+    * @param void
+    * @return array
+    */
+    function getSystemColumns() {
+      return array_merge(parent::getSystemColumns(), array(
+      	'company_id', 'token', 'salt', 'twister', 'avatar_file', 'timezone', 'personal_project_id', 'default_billing_id')
+      );
+    } // getSystemColumns
+    
 	// -------------------------------------------------------
 	//  Finders
 	// -------------------------------------------------------

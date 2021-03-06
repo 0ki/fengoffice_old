@@ -15,7 +15,7 @@
 			$users = $company_row['users'];
 		?>
 <div style='padding-bottom:20px;max-width:700px'>
-<div style="padding:10px;background-color:#D7E5F5"><h1 style="font-size:140%;font-weight:bold"><?php echo clean($company->getName()) ?></h1></div>
+<div style="padding:10px;background-color:#D7E5F5"><h1 style="font-size:140%;font-weight:bold"><a class="internalLink" href="<?php echo $company->getCardUrl() ?>"><?php echo clean($company->getName()) ?></a></h1></div>
 <div id="usersList" style="border:1px solid #DDD">
 <?php $counter = 0; 
   foreach($users as $user) {

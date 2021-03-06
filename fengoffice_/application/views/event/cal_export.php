@@ -54,5 +54,6 @@ og.download_exported_cal = function() {
 </div>
 </form>
 <script type="text/javascript">
-	Ext.get('<?php echo $genid ?>cal_export_submit1').focus();
+	btn = Ext.get('<?php echo $genid ?>cal_export_submit1');
+	if (btn != null) btn.focus()
 </script>

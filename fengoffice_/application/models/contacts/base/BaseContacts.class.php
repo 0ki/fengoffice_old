@@ -133,6 +133,19 @@
       return 'id';
     } // getAutoIncrementColumn
     
+    /**
+    * Return system columns
+    *
+    * @access public
+    * @param void
+    * @return array
+    */
+    function getSystemColumns() {
+      return array_merge(parent::getSystemColumns(), array(
+      	'company_id', 'picture_file', 'timezone', 'user_id')
+      );
+    } // getSystemColumns
+    
     // -------------------------------------------------------
     //  Finders
     // -------------------------------------------------------

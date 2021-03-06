@@ -255,6 +255,17 @@ class MailContent extends BaseMailContent {
 	} // getClassifyUrl
 
 	/**
+	 * Return unclassify mail URL of this mail
+	 *
+	 * @access public
+	 * @param void
+	 * @return string
+	 */
+	function getUnclassifyUrl() {
+		return get_url('mail', 'unclassify', array( 'id' => $this->getId(), 'type' => 'email'));
+	} // getClassifyUrl
+	
+	/**
 	 * Return send mail URL
 	 *
 	 * @access public

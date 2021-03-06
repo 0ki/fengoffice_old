@@ -61,7 +61,7 @@ class ConfigController extends ApplicationController {
 			foreach($options as $option) {
 				$new_value = array_var($submited_values, $option->getName());
 				if(is_null($new_value) || ($new_value == $option->getValue())) continue;
-				
+
 				$option->setValue($new_value);
 				$option->save();
 				evt_add("config ".$option->getName()." changed", $option->getValue());
@@ -76,7 +76,7 @@ class ConfigController extends ApplicationController {
 	 * List user preferences
 	 *
 	 */
-	function list_user_categories(){		
+	function list_user_categories(){
 		tpl_assign('config_categories', UserWsConfigCategories::getAll());
 	} //list_preferences
 
@@ -110,7 +110,7 @@ class ConfigController extends ApplicationController {
 				foreach($options as $option) {
 					$new_value = array_var($submited_values, $option->getName());
 					if(is_null($new_value) || ($new_value == $option->getUserValue(logged_user()->getId()))) continue;
-	
+
 					$option->setUserValue($new_value, logged_user()->getId());
 					$option->save();
 				} // foreach
@@ -124,6 +124,23 @@ class ConfigController extends ApplicationController {
 			}
 		} // if
 	} //list_preferences
+
+	/**
+	 * Remove Getting Started widget from dashboard
+	 *
+	 */
+	function remove_getting_started_widget(){
+		try{
+			DB::beginWork();
+			$option = UserWsConfigOptions::getByName('show getting started widget');
+			$option->setUserValue(0, logged_user()->getId());
+			$option->save();
+			DB::commit();
+			ajx_current('reload');
+		}catch (Exception $ex){
+			DB::rollback();
+		}
+	}
 } // ConfigController
 
 ?>

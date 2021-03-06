@@ -1,4 +1,5 @@
-<?php 
+<?php
+  require_javascript('modules/addMessageForm.js'); 
   $genid = gen_id();
   $object = $milestone;
   if ($milestone->isNew()) {
@@ -119,6 +120,7 @@
 	<div id='<?php echo $genid ?>add_custom_properties_div' style="display:none">
 	<fieldset>
 	<legend><?php echo lang('custom properties') ?></legend>
+		<?php echo render_object_custom_properties($object, 'ProjectMilestones', false) ?><br/><br/>
 		<?php echo render_add_custom_properties($object); ?>
 	</fieldset>
 	</div>
@@ -177,6 +179,10 @@
 	</fieldset>
 	</div>
 	<?php } ?>
+	
+	<div>
+		<?php echo render_object_custom_properties($object, 'ProjectMilestones', true) ?>
+	</div><br/>
 
 	<?php echo submit_button($milestone->isNew() ? (array_var($milestone_data, 'is_template', false) ? lang('save template') : lang('add milestone')) : lang('save changes'), 's', array('tabindex' => '100')) ?>
 </div>

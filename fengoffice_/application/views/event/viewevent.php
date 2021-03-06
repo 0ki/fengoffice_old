@@ -65,7 +65,7 @@ if (isset($event) && $event instanceof ProjectEvent) {
 
 	if(user_config_option('time_format_use_24')) $timeformat = 'G:i';
 	else $timeformat = 'g:i A';
-	$time = date($timeformat, $start_time->getTimestamp());
+	$time = format_time($start_time, $timeformat);
 	
 	// organize duration of event
 	$duration = '';
@@ -92,7 +92,7 @@ if (isset($event) && $event instanceof ProjectEvent) {
 
 <?php
 	
-	$title = Localization::instance()->formatDescriptiveDate($event->getStart()) . ' - ' . clean($event->getSubject());
+	$title = format_descriptive_date($event->getStart()) . ' - ' . clean($event->getSubject());
 	$description = $event->getTypeId() == 2 ? lang('CAL_FULL_DAY') : lang('CAL_TIME').": $time" ;
   	tpl_assign('description', $description);
 

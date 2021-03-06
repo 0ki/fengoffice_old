@@ -6,6 +6,7 @@
     'password' => 'Contraseña',
     'password again' => 'Repita su contraseña',
     'old password' => 'Contraseña anterior',
+  	'new password' => 'Nueva contraseña',
     'remember me' => 'Recordarme durante 14 días',
     'email address' => 'Dirección de correo electrónico',
     'display name' => 'Desplegar nombre',
@@ -22,6 +23,7 @@
     'update' => 'Actualizar',
     'submit' => 'Enviar',
     'reset' => 'Reiniciar',
+  	'change' => 'Cambiar',
     'name' => 'Nombre',
     'title' => 'Título',
     'description' => 'Descripción',
@@ -177,7 +179,8 @@
   	'date format description' => '(día/mes/año)',
     'confirm move to trash' => 'Está seguro que desea mover el objeto seleccionado a la papelera?',
   	'add' => 'Agregar',
-  	'shared with' => 'Compartido con'
+  	'shared with' => 'Compartido con',
+  	'remove' => 'Quitar',
 
   ); // array
 

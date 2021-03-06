@@ -429,7 +429,73 @@
     function setTrashedById($value) {
       return $this->setColumnValue('trashed_by_id', $value);
     } // setTrashedById()
+
+    /**
+    * Return value of 'type' field, contains an id of an email if the file is an attachment
+    *
+    * @access public
+    * @param void
+    * @return integer 
+    */
+    function getType() {
+      return $this->getColumnValue('type');
+    } // getType()
     
+    /**
+    * Set value of 'type' field
+    *
+    * @access public   
+    * @param integer $value
+    * @return boolean
+    */
+    function setType($value) {
+      return $this->setColumnValue('type', $value);
+    } // setType() 
+    
+    /**
+    * Return value of 'url' field
+    *
+    * @access public
+    * @param void
+    * @return string 
+    */
+    function getUrl() {
+      return $this->getColumnValue('url');
+    } // getUrl()
+    
+    /**
+    * Set value of 'url' field
+    *
+    * @access public   
+    * @param string $value
+    * @return boolean
+    */
+    function setUrl($value) {
+      return $this->setColumnValue('url', $value);
+    } // setUrl() 
+    
+    /**
+    * Return value of 'mail_id' field, contains an id of an email if the file is an attachment
+    *
+    * @access public
+    * @param void
+    * @return integer 
+    */
+    function getMailId() {
+      return $this->getColumnValue('mail_id');
+    } // getMailId()
+    
+    /**
+    * Set value of 'mail_id' field (id of an email if the file is an attachment)
+    *
+    * @access public   
+    * @param integer $value
+    * @return boolean
+    */
+    function setMailId($value) {
+      return $this->setColumnValue('mail_id', $value);
+    } // setMailId()
+
     /**
     * Return manager instance
     *
@@ -441,7 +507,9 @@
       if(!($this->manager instanceof ProjectFiles)) $this->manager = ProjectFiles::instance();
       return $this->manager;
     } // manager
+    
   
   } // BaseProjectFile 
-
+   
+    
 ?>

@@ -143,6 +143,7 @@ final class acInstallation {
 	        'DEFAULT_LOCALIZATION' => $default_localization,
 			'COOKIE_PATH'          => "/",
 	        'DEBUG'                => false,
+			'SEED'				   => md5($database_user.$database_pass.rand(0,10000000000))
 		); // array
 
 		tpl_assign('table_prefix', $database_prefix);
@@ -180,6 +181,21 @@ final class acInstallation {
 		} else {
 			return $this->breakExecution('Failed to import initial data. MySQL said: ' . mysql_error($this->database_connection));
 		} // if
+		
+		//Execute plugin sql files
+		$handle = opendir(get_template_path('sql/plugins'));
+		while ($file = readdir($handle)) {
+			if ($file != 'dummy.txt' && is_file(get_template_path("sql/plugins/$file"))) {
+				$total_queries = 0;
+				$executed_queries = 0;
+				if($this->executeMultipleQueries(tpl_fetch(get_template_path("sql/plugins/$file")), $total_queries, $executed_queries)) {
+					$this->printMessage("Plugin executed: $file. (Executed queries: $executed_queries)");
+				} else {
+					return $this->breakExecution('Failed to execute plugin: '. $file . '. MySQL said: ' . mysql_error($this->database_connection));
+				} // if
+			}
+		}
+		closedir($handle);
 
 		@mysql_query('COMMIT', $this->database_connection);
 

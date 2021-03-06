@@ -11,11 +11,6 @@
  *
  */
 
-include_once("config/settings.php");
-
-include_once($cnf['site']['path']."/Connection.php");
-
-
 
 class Cell {
 	/**

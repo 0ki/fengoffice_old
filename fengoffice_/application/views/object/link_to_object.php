@@ -1,5 +1,5 @@
 <?php
-
+  require_javascript('modules/linkToObjectForm.js');
   set_page_title(lang('link objects'));
   project_tabbed_navigation(PROJECT_TAB_FILES);
   project_crumbs(array(
@@ -9,7 +9,6 @@
   //add_stylesheet_to_page('project/link_objects.css');
 
 ?>
-<script type="text/javascript" src="<?php echo get_javascript_url('modules/linkToObjectForm.js') ?>"></script>
 <form class="internalForm" action="<?php echo $link_to_object->getLinkObjectUrl() ?>" method="post" enctype="multipart/form-data">
 <?php tpl_display(get_template_path('form_errors')) ?>
   <div class="hint"><?php echo lang('link objects to object desc', $link_to_object->getObjectUrl(), clean($link_to_object->getObjectName())) ?></div>

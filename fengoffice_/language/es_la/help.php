@@ -1,0 +1,17 @@
+<?php return array(
+	'chelp pending tasks widget' => 'Este widget muestra sus tareas incompletas. Solo puedes ver las tareas incompletas que tienes asignadas, o puedes modificar la configuración en las opciones del panel principal.',
+	'chelp documents widget' => 'Este widget muestra los documentos más recientes en el área de trabajo seleccionada.',
+	'chelp active tasks widget' => 'Este widget muestra sus tareas activas y en pausa.',
+	'chelp late tasks widget' => 'Este widget muestra sus tareas e hitos atrasados, así como los que finalizan hoy, ordenados por fecha de finalización.',
+	'chelp calendar widget' => 'Este widget muestra los eventos de la semana corriente, tareas vencidas e hitos. Puedes crear un nuevo evento haciendo clic en un día.',
+	'chelp comments widget' => 'Este widget muestra los últimos comentarios para objetos del área de trabajo actual ',
+	'chelp dashboard info widget' => 'Este widget muestra información para el área de trabajo actual, incluyendo usuarios con accesos, contactos asignados, etc...',
+	'chelp emails widget' => 'Este widget muestra los correos clasificados en el área de trabajo actual.',
+	'chelp messages widget' => 'Este widget muestra las últimas notas para el área de trabajo seleccionada.',
+	'chelp active tasks panel' => 'Todas sus tareas activas se muestran a continuación, sin importar el área de trabajo actual. Puedes pausar, continuar o detenerlas o marcarlas como completadas.',
+	'chelp general timeslots panel' => 'Este panel muestra los tiempos de trabajo directamente asignados al área de trabajo. Esta es una forma rápida para asignar y contar el tiempo para los usuarios. También puedes imprimir reporetes de tiempo haciendo click en el vínculo \'Imprimir reporte\'.',
+	'chelp personal account' => 'Esta es su cuenta personal.<br/>En esta vista puedes actualizar tu perfil e imagen ,cambiar tu contraseña y editar tus preferencias personales.',
+	'chelp user account' => 'Esta es una cuenta de usuario.',
+	'chelp user account admin' => 'Siendo administrador, puedes actualizar el perfil e imagen del usuario, cambiar su contraseña y editar sus preferencias a través de esta vista.',
+	'remove context help' => 'Quitar este mensaje de ayuda',
+); ?>

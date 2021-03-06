@@ -74,9 +74,11 @@ og.MailManager = function() {
 		}
 		else { strDraft = ''; }
 		
+		var subject = og.clean(value.trim()) || '<i>' + lang("no subject") + '</i>';
+		
 		name = String.format(
 				'{4}<a style="font-size:120%;{3}" href="#" onclick="og.openLink(\'{1}\')" title="{2}">{0}</a>',
-				og.clean(value), og.getUrl('mail', strAction, {id: r.data.object_id}), og.clean(r.data.text),bold,strDraft);
+				subject, og.getUrl('mail', strAction, {id: r.data.object_id}), og.clean(r.data.text),bold,strDraft);
 				
 		if (r.data.isSent) {
 			name = String.format('<span class="db-ico ico-sent" style="padding-left:18px" title="{1}">{0}</span>',name,lang("mail sent"));
@@ -101,9 +103,11 @@ og.MailManager = function() {
 		if (r.data.isDraft) strAction = 'edit_mail';
 		if (!r.data.isRead) bold = 'font-weight:600;';
 		
+		var sender = og.clean(value.trim()) || '<i>' + lang("no sender") + '</i>';
+		
 		name = String.format(
 				'<a style="font-size:120%;{3}" href="#" onclick="og.openLink(\'{1}\')" title="{2}">{0}</a>',
-				og.clean(value), og.getUrl('mail', strAction, {id: r.data.object_id}), og.clean(r.data.from_email),bold);
+				sender, og.getUrl('mail', strAction, {id: r.data.object_id}), og.clean(r.data.from_email),bold);
 		return name;
 	}
 	
@@ -140,7 +144,7 @@ og.MailManager = function() {
 
 		var now = new Date();
 		if (now.dateFormat('Y-m-d') > value.dateFormat('Y-m-d')) {
-			return value.dateFormat(lang('date format') + ' h:i a');
+			return value.dateFormat(og.date_format + ' h:i a');
 		} else {
 			return value.dateFormat('h:i a');
 		}

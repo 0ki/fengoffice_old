@@ -586,16 +586,8 @@ Ext.extend(og.GooPlayer, Ext.Panel, {
 				this.loadPlaylistFromFile(objs[0].data.object_id);
 				
 			}, this, {
-				types: [{
-					id: 'documents',
-					name: lang('playlists'),
-					type: 'Documents',
-					filter: 'type',
-					config: {iconCls: 'ico-audio'}
-				}],
-				extraParams: {
-					typestring: 'application/xspf+xml',
-					type: 'Documents'
+				types: {
+					'Documents': true
 				}
 			}
 		);

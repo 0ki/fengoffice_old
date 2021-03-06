@@ -1,4 +1,13 @@
 <?php
+
+/***************************************************************************
+ *	Authors:
+ *   - Reece Pegues
+ *   - Opengoo Development Team
+ * 	 - Sadysta (forums.opengoo.org) - iCal Server
+ *   - Ras2000 (forums.opengoo.org) - Calendar starting on Mon or Sun 	 
+ ***************************************************************************/
+
 require_once ROOT.'/environment/classes/event/CalFormatUtilities.php';
 
 /**
@@ -93,6 +102,13 @@ class EventController extends ApplicationController {
 				$inv->save();
 			}
 			if ($from_post) {
+				// Notify creator (only when invitation is accepted or declined)
+				if ($inv->getInvitationState() == 1 || $inv->getInvitationState() == 2) {
+					$event = ProjectEvents::findById(array('id' => $event_id));
+					$user = Users::findById(array('id' => $user_id));
+					session_commit();
+					Notifier::notifEventAssistance($event, $inv, $user);
+				}
 				flash_success(lang('success edit event', ''));
 				ajx_current("back");
 			}
@@ -110,9 +126,9 @@ class EventController extends ApplicationController {
 	       		$year = $dtv->getYear();
 				
 			} else {
-				$month = isset($_GET['month'])?$_GET['month']:date('n', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600);
-				$day = isset($_GET['day'])?$_GET['day']:date('j', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600);
-				$year = isset($_GET['year'])?$_GET['year']:date('Y', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600);
+				$month = isset($_GET['month'])?$_GET['month']:date('n', DateTimeValueLib::now()->getTimestamp());
+				$day = isset($_GET['day'])?$_GET['day']:date('j', DateTimeValueLib::now()->getTimestamp());
+				$year = isset($_GET['year'])?$_GET['year']:date('Y', DateTimeValueLib::now()->getTimestamp());
 			}
        		
 			if (array_var($event_data, 'start_time') != '') {
@@ -123,12 +139,9 @@ class EventController extends ApplicationController {
 				if(array_var($event_data, 'pm') == 1) $hour += 12;
 			}
 			if (array_var($event_data, 'type_id') == 2 && $hour == 24) $hour = 23;
-			// make sure the date is actually valid
-			$redotime = mktime(0, 0, 1, $month, $day, $year);
-			$day = date("d", $redotime);
-			$month = date("m", $redotime);
-			$year = date("Y", $redotime);
 			
+			$gmt_time = mktime($hour, $minute, 0, $month, $day, $year);
+			$dt_start = new DateTimeValue($gmt_time - logged_user()->getTimezone() * 3600);
 			
 			// repeat defaults
 			$repeat_d = 0;
@@ -160,6 +173,13 @@ class EventController extends ApplicationController {
 			// 1=repeat once, 2=repeat daily, 3=weekly, 4=monthy, 5=yearly, 6=holiday repeating
 			$oend = null;
 			switch(array_var($event_data,'occurance')){
+				case "1":
+					$forever = 0;
+					$repeat_d = 0;
+					$repeat_m = 0;
+					$repeat_y = 0;
+					$repeat_h = 0;
+					break;
 				case "2":
 					$repeat_d = $jump;
 					if(isset($forever) && $forever == 1) $oend = null;
@@ -187,7 +207,6 @@ class EventController extends ApplicationController {
 			}
 			$repeat_number = $rnum;
 			
-			
 		 	// get duration
 			$durationhour = array_var($event_data,'durationhour');
 			$durationmin = array_var($event_data,'durationmin');
@@ -202,12 +221,13 @@ class EventController extends ApplicationController {
 									
 			// calculate timestamp and durationstamp
 			// By putting through mktime(), we don't have to check for sql injection here and ensure the date is valid at the same time.
-			$timestamp = date('Y-m-d H:i:s', mktime($hour+null, $minute+null, 0, $month,$day,$year));
+			$timestamp = $dt_start->format('Y-m-d H:i:s');
 			if ($hour + $durationhour > 24)
-				$durationstamp = date('Y-m-d H:i:s', mktime(0, 0, 0, $month, $day+1, $year));
+				$dt_duration = DateTimeValueLib::make(0, 0, 0, $dt_start->getMonth(), $dt_start->getDay(), $dt_start->getYear());
 			else
-				$durationstamp = date('Y-m-d H:i:s', mktime($hour + $durationhour, $minute + $durationmin, 0, $month, $day, $year)); 
-
+				$dt_duration = DateTimeValueLib::make($dt_start->getHour() + $durationhour, $dt_start->getMinute() + $durationmin, 0, $dt_start->getMonth(), $dt_start->getDay(), $dt_start->getYear());
+			$durationstamp = $dt_duration->format('Y-m-d H:i:s');
+			
 			// organize the data expected by the query function
 			$data = array();
 			$data['repeat_num'] = $rnum;
@@ -327,7 +347,7 @@ class EventController extends ApplicationController {
             				$users_to_inv[] = Users::findById(array('id' => $us));
             			}
             		}
-            		Notifier::notifEvent($event, $users_to_inv, true);
+            		Notifier::notifEvent($event, $users_to_inv, 'new');
 		        }
 		        
 			    $object_controller = new ObjectController();
@@ -381,7 +401,7 @@ class EventController extends ApplicationController {
 				if ($invs->getUserId() != logged_user()->getId()) 
 					$notifications[] = Users::findById(array('id' => $invs->getUserId()));
 			}
-			Notifier::notifEventDeletion($event->getSubject(), $event->getProject()->getName(), $event->getStart(), $notifications);
+			Notifier::notifEvent($event, $notifications, 'deleted');
 			
 			DB::beginWork();
 			// delete event
@@ -573,8 +593,8 @@ class EventController extends ApplicationController {
 			
 			//if(isset($rend) AND $rend=="9999-00-00") $rend = "";
 			// organize the time and date data for the html select drop downs.
-			$thetime = $event->getStart()->getTimestamp();
-			$durtime = $event->getDuration()->getTimestamp() - $thetime;
+			$thetime = $event->getStart()->getTimestamp() + logged_user()->getTimezone()*3600;
+			$durtime = $event->getDuration()->getTimestamp() + logged_user()->getTimezone()*3600 - $thetime;
 			$hour = date('G', $thetime);
 			// format time to 24-hour or 12-hour clock.
 			if(!user_config_option('time_format_use_24')){
@@ -647,7 +667,7 @@ class EventController extends ApplicationController {
             				$users_to_inv[] = Users::findById(array('id' => $us));
             			}
             		}
-            		Notifier::notifEvent($event, $users_to_inv, false);
+            		Notifier::notifEvent($event, $users_to_inv, 'modified');
 	            }
 				    
 			    if(!logged_user()->isMemberOfOwnerCompany()) $event->setIsPrivate(false);  				
@@ -750,6 +770,7 @@ class EventController extends ApplicationController {
 	}
 	
 	function icalendar_import() {
+		if (isset($_GET['from_menu']) && $_GET['from_menu'] == 1) unset($_SESSION['history_back']);
 		if (isset($_SESSION['history_back'])) {
 			if ($_SESSION['history_back'] > 0) $_SESSION['history_back'] = $_SESSION['history_back'] - 1;
 			if ($_SESSION['history_back'] == 0) unset($_SESSION['history_back']);
@@ -789,51 +810,45 @@ class EventController extends ApplicationController {
 					}
 					DB::commit();
 					
+					$ok = true;
 					flash_success(lang('success import events', count($events_data)));
 					$_SESSION['history_back'] = 1;
-					$ok = true;
+					
 				} else {
 					flash_error(lang('no events to import'));
 				}
 				unset($filename);
-				if (!$ok) ajx_current("empty");
+				if (!$ok) ajx_current("empty");				
 			}
 			else if (array_var($_POST, 'atimportform', 0)) ajx_current("empty");
 		}
 	}
 	
 	function icalendar_export() {
-		if (isset($_SESSION['history_back'])) {
-			if ($_SESSION['history_back'] > 0) $_SESSION['history_back'] = $_SESSION['history_back'] - 1;
-			if ($_SESSION['history_back'] == 0) unset($_SESSION['history_back']);
-			ajx_current("back");
+		$this->setTemplate('cal_export');
+		$calendar_name = array_var($_POST, 'calendar_name');			
+		if ($calendar_name != '') {
+			$from = getDateValue(array_var($_POST, 'from_date'));
+			$to = getDateValue(array_var($_POST, 'to_date'));
+			$tags = '';
+			
+			$events = ProjectEvents::getRangeProjectEvents($from, $to, $tags, active_project());
+			
+			$buffer = CalFormatUtilities::generateICalInfo($events, $calendar_name);
+			
+			$filename = rand().'.tmp';
+			$handle = fopen(ROOT.'/tmp/'.$filename, 'wb');
+			fwrite($handle, $buffer);
+			fclose($handle);
+			
+			$_SESSION['calendar_export_filename'] = $filename;
+			$_SESSION['calendar_name'] = $calendar_name;
+			flash_success(lang('success export calendar', count($events)));
+			ajx_current("back", 2);
 		} else {
-			$this->setTemplate('cal_export');
-			$calendar_name = array_var($_POST, 'calendar_name');			
-			if ($calendar_name != '') {
-				$from = getDateValue(array_var($_POST, 'from_date'));
-				$to = getDateValue(array_var($_POST, 'to_date'));
-				$tags = '';
-				
-				$events = ProjectEvents::getRangeProjectEvents($from, $to, $tags, active_project());
-				
-				$buffer = CalFormatUtilities::generateICalInfo($events, $calendar_name);
-				
-				$filename = rand().'.tmp';
-				$handle = fopen(ROOT.'/tmp/'.$filename, 'wb');
-				fwrite($handle, $buffer);
-				fclose($handle);
-				
-				$_SESSION['calendar_export_filename'] = $filename;
-				$_SESSION['calendar_name'] = $calendar_name;
-				$_SESSION['history_back'] = 2;
-				tpl_assign('result_msg', lang('success export calendar', count($events)));
-			} else {
-				unset($_SESSION['history_back']);
-				unset($_SESSION['calendar_export_filename']);
-				unset($_SESSION['calendar_name']);
-				return;
-			}
+			unset($_SESSION['calendar_export_filename']);
+			unset($_SESSION['calendar_name']);
+			return;
 		}
 	}
 	
@@ -851,6 +866,28 @@ class EventController extends ApplicationController {
 		} else $this->setTemplate('cal_export');
 	}
 	
+	function generate_ical_export_url() {
+		$ws = active_project();
+		if ($ws == null) {
+			$cal_name = logged_user()->getDisplayName();
+			$ws_ids = 0;
+		} else {
+			$cal_name = Projects::findById($ws->getId())->getName();
+			if (isset($_GET['inc_subws']) && $_GET['inc_subws'] == 'true') {
+				$ws_ids = $ws->getAllSubWorkspacesCSV(true, logged_user());
+				$ws_ids = str_replace(" ", "", $ws_ids);
+			} else {
+				$ws_ids = $ws->getId();
+			}			
+		}
+		$token = logged_user()->getToken();
+		$url = ROOT_URL . "/" . PUBLIC_FOLDER . "/tools/ical_export.php?cal=$ws_ids&n=$cal_name&t=$token";
+		
+		$obj = array("url" => $url);
+		ajx_extra_data($obj);
+		ajx_current("empty");		
+	}
+	
 } // EventController
 
 /***************************************************************************
@@ -860,7 +897,7 @@ class EventController extends ApplicationController {
  *   copyright            : (C) 2001 The phpBB Group
  *   email                : support@phpbb.com
  *
- *   $Id: EventController.class.php,v 1.76.2.2 2009/03/17 18:42:05 idesoto Exp $
+ *   $Id: EventController.class.php,v 1.84 2009/04/21 22:18:50 alvarotm01 Exp $
  *
  ***************************************************************************/
 

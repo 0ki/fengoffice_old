@@ -29,6 +29,16 @@
     'invalid old password' => 'Old password is not valid',
     'users must belong to a company' => 'Contacts must belong to a company in order to generate a user',
     'contact linked to user' => 'Contact is linked to user {0}',
+  
+  	// Password validation errors
+  	'password invalid min length' => 'Password length must be at least {0} characters',
+  	'password invalid numbers' => 'Password must have at least {0} numerical characters',
+  	'password invalid uppercase' => 'Password must have at least {0} uppercase characters',
+  	'password invalid metacharacters' => 'Password must have at least {0} metacharacters',
+  	'password exists history' => 'Password was used on one of last ten passwords',
+  	'password invalid difference' => 'Password must differ in at least 3 characters with last 10 passwords',
+  	'password expired' => 'Your password has expired',
+  	'password invalid' => 'Your password is no longer valid',
     
     // Avatar
     'invalid upload type' => 'Invalid file type. Allowed types are {0}',
@@ -95,11 +105,13 @@
     // Validate add / edit file form
     'folder id required' => 'Please select folder',
     'filename required' => 'Filename is required',
+  	'weblink required' => 'Weblink url is required',
     
     // File revisions (internal)
     'file revision file_id required' => 'Revision needs to be connected with a file',
     'file revision filename required' => 'Filename required',
     'file revision type_string required' => 'Unknown file type',
+    'file revision comment required' => 'Revision comment required',
     
     // Test mail settings
     'test mail recipient required' => 'Recipient address is required',
@@ -148,6 +160,19 @@
   	'return code' => 'Return code: {0}',
   	'task filter criteria not recognised' => 'Task filter criteria \'{0}\' not recognised',
   	'mail account dnx' => 'Mail account doesn\'t exist',
+    'error document checked out by another user' => 'The document was checked out by another user.',
+  	//Custom properties
+  	'custom property value required' => '{0} is required',
+  	'value must be numeric' => 'Value(s) must be numeric for {0}',
+  
+  	//Reports
+  	'report name required' => 'Report name is required',
+  	'report object type required' => 'Report object type is required',
+
+  	'error assign task user dnx' => 'Trying to assign to an inexistent user',
+	'error assign task permissions user' => 'You don\'t have permissions to assign a task to that user',
+	'error assign task company dnx' => 'Trying to assign to an inexistent company',
+	'error assign task permissions company' => 'You don\'t have permissions to assign a task to that company',
    ); // array
 
 ?>

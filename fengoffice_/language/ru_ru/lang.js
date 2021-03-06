@@ -495,6 +495,5 @@ addLangs({
 	'calendar import - export': 'Импорт и экспорт календаря',
 	'view weblink': 'Просмотр web-ссылки',
 	'print all groups': 'Печать',
-	'print this group': 'Печать',
-	'new version notification title': 'New version'
+	'print this group': 'Печать'
 });

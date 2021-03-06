@@ -1,4 +1,5 @@
-<?php 
+<?php
+	require_javascript('modules/addMessageForm.js'); 
 	$project = active_or_personal_project();
 	$projects =  active_projects();
 	$genid = gen_id();
@@ -92,6 +93,7 @@
 	<div id='<?php echo $genid ?>add_custom_properties_div' style="display:none">
 	<fieldset>
 		<legend><?php echo lang('custom properties') ?></legend>
+		<?php echo render_object_custom_properties($message, 'ProjectMessages', false) ?><br/><br/>
 		<?php echo render_add_custom_properties($object); ?>
 	</fieldset>
 	</div>
@@ -158,6 +160,10 @@
 		document.getElementById('<?php echo $genid ?>messageFormAdditionalText').style.display = 'none';</script>
 	<?php } */ // if ?>
 	</div>
+	
+	<div>
+		<?php echo render_object_custom_properties($message, 'ProjectMessages', true) ?>
+	</div><br/>
 	
 	<?php echo submit_button($message->isNew() ? lang('add message') : lang('save changes'),'s',
 		array('style'=>'margin-top:0px', 'tabindex' => '30')) ?>

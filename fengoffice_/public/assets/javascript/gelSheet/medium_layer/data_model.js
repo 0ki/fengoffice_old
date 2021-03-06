@@ -15,7 +15,7 @@ function GridModel(grid){
 	self.constructor = function(){
 		this.viewport = {start:{row:0,col:0},end:{row:grid.getRowCount(),col:grid.getColumnCount()}};
 		this.gridPosition = {x:grid.getVisibleWidth(),y:grid.getVisibleHeight()};
-		this.scrollPageOffset = {x:200,y:500};
+		this.scrollPageOffset = {x:800,y:1500};
 		this.selection = new DataSelectionHandler();
 		addModelStyleOperations(this);
 		//alert(this.gridPosition.x + " " + this.gridPosition.y);
@@ -53,28 +53,50 @@ function GridModel(grid){
 			for(var j = 0; j< (this.viewport.end.col - this.viewport.start.col);j++){
 				var cell = this.model.getCell(this.viewport.start.row + i, this.viewport.start.col+ j);
 				//var value = this.model.getValue(this.viewport.start.row + i, this.viewport.start.col+ j);
-				if(cell)
-					grid.setCell(i,j,cell.getValue(),cell.getFontStyleId());
-				else
+				
+				if(cell){
+					var value = cell.getValue();
+					if (value ==undefined) value = "";
+					grid.setCell(i,j,value,cell.getFontStyleId());
+//					grid.setCell(i,j,cell.getFontStyleId(),cell.getFontStyleId());
+				}else
 					grid.setCell(i,j,"",0);
 			}
 		}
 		grid.adjustViewPort();
-		grid.activeCell.focus();
+		grid.focusActiveCell();
 	}
 
 
 	//Capture and Overwrite Grid Events
 	grid.onCellValueChange = function(i,j,value){
-		if(value){
+		if( value != undefined ){
 			self.model.setFormula(self.viewport.start.row + i, self.viewport.start.col+ j,value);
 			grid.setValue(i,j,self.model.getValue(self.viewport.start.row + i, self.viewport.start.col + j));
+		}else{
+			if(self.model.getCellFontStyleId(i,j)!=0)
+				self.model.deleteCell(i,j);
+		}
+			
+	}
+	
+	//Capture and Overwrite Grid Events
+	grid.onCellFontStyleChange = function(i,j,fsId){
+		if(fsId!=undefined){
+			if(fsId!=self.model.getCellFontStyleId(self.viewport.start.row + i, self.viewport.start.col+ j)){
+				self.model.setCellFontStyleId(self.viewport.start.row + i, self.viewport.start.col+ j,fsId);
+				grid.setFontStyle(i,j,fsId);
+			}
 		}
 	}
 
 	grid.onActiveCellChange = function(activeCell){
-		activeCell.setValue(self.model.getFormula(self.viewport.start.row + activeCell.getRow(), self.viewport.start.col+ activeCell.getColumn()));
-		self.selection.setSelection(new Address(self.viewport.start.row + activeCell.getRow(), self.viewport.start.col+ activeCell.getColumn()));
+		var row = self.viewport.start.row + activeCell.getRow();
+		var col = self.viewport.start.col+ activeCell.getColumn();
+		activeCell.setValue(self.model.getFormula(row, col));
+		WrapFontStyle(activeCell,self.model.getCellFontStyleId(row,col));
+		self.selection.setSelection(new Address(row, col));
+		document.getElementById("FormulaBar").value=activeCell.getValue(); //TODO:Desacoplar!!!!
 	}
 
 	grid.onMove = function(offsetX, offsetY){
@@ -105,8 +127,8 @@ function GridModel(grid){
 		}
 
 		self.refresh();
-
 	}
+	
 	grid.onSpecialMove = function(moveType){
 		var offsetX = self.viewport.end.col - self.viewport.start.col;
 		var offsetY = self.viewport.end.row - self.viewport.start.row;
@@ -119,8 +141,8 @@ function GridModel(grid){
 		}
 
 		self.refresh();
-
 	}
+	
 	grid.onColumnSizeChange = function (column){
 		self.model.setColumnSize(column.getIndex()+self.viewport.start.col, column.getSize());
 	}
@@ -149,6 +171,21 @@ function GridModel(grid){
 		var offset = self.viewport.end.row- self.viewport.start.row;
 		self.viewport.start.row = parseInt(top/18);
 		self.viewport.end.row = parseInt(top/18) + offset;
+
+		if(self.viewport.end.row*18 + self.scrollPageOffset.y > grid.getHeight()){
+			grid.setHeight(grid.getHeight() + self.scrollPageOffset.y);
+		}
+
+		self.refresh();
+	}
+	
+	grid.scrollDown = function (offset){
+		var delta = self.viewport.start.row - offset;
+		if(delta<0)
+			offset = offset+delta;
+		
+		self.viewport.start.row = self.viewport.start.row + offset;
+		self.viewport.end.row =  self.viewport.end.row + offset;
 
 		if(self.viewport.end.row*18 + self.scrollPageOffset.y > grid.getHeight()){
 			grid.setHeight(grid.getHeight() + self.scrollPageOffset.y);

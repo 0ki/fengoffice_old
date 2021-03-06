@@ -28,13 +28,31 @@
   	 * @param $user_id
   	 * @return unknown
   	 */
-  	static function getGroupsByUser($user_id){
-  		 $cond = self::getGroupsCSVsByUser($user_id);
-  		 if($cond=='')  		 
-  			 return array();
-  		 else
-  			 return Groups::findAll(array('conditions' => array('`id` in ' . $cond) ));
+  	static function getGroupsByUser($user_id) {
+  		return Groups::findAll(array(
+  			'conditions' => array(
+  				'`id` IN (SELECT `group_id` FROM `' . TABLE_PREFIX . 'group_users` WHERE `user_id` = ?)',
+  				$user_id
+  			)
+  		));
   	}
+  	
+  	/**
+  	 * Returns all group ids (separated by commas) which a user belongs to
+  	 *
+  	 * @param $user_id
+  	 * @return unknown
+  	 */
+  	static function getGroupsCSVsByUser($user_id){
+  		$groups = self::getGroupsByUser($user_id);
+  		$csv = "";
+  		foreach ($groups as $group) {
+  			if ($csv != "") $csv .= ",";
+  			$csv .= $group->getId();
+  		}
+  		return $csv;
+  	}
+  	
   	/**
 	 * Returns true is a user belongs to a group
   	 *
@@ -49,22 +67,6 @@
 			return false;
 		}
   	}// isUserInGroup
-  	
-  	/**
-  	 * Returns all group ids (separated by commas) which a user belongs to
-  	 *
-  	 * @param $user_id
-  	 * @return unknown
-  	 */
-  	static function getGroupsCSVsByUser($user_id){
-  		 $all = self::findAll(array('conditions' => array('`user_id` = ?', $user_id) ));
-  		 $res= '';
-  		 if(!$all)
-  		 	return ''; //empty result, avoid query
-  		 foreach ($all as $gr)  		 	
-  		 	$res .= ($res=='')? $gr->getGroupId() : ',' . $gr->getGroupId(); 
-		return $res;
-  	}
   	
   	/**
   	 * Removes all users of a given grouop

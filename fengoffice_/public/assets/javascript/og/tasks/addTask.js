@@ -224,7 +224,7 @@ ogTasks.drawTaskForm = function(container_id, data){
 	
 	if (data.startDate){
 		var date = new Date(data.startDate * 1000);
-		var sd = date.dateFormat(lang('date format'));
+		var sd = date.dateFormat(og.date_format);
 	} else sd = '';
 	var DtStart = new og.DateField({
 		renderTo:'ogTasksPanelATStartDate',
@@ -245,7 +245,7 @@ ogTasks.drawTaskForm = function(container_id, data){
 	});
 	if (data.dueDate){
 		var date = new Date(data.dueDate * 1000);
-		var dd = date.dateFormat(lang('date format'));
+		var dd = date.dateFormat(og.date_format);
 	} else dd = '';
 	var DtDue = new og.DateField({
 		renderTo:'ogTasksPanelATDueDate',
@@ -334,11 +334,11 @@ ogTasks.GetNewTaskParameters = function(wrapWithTask){
 	
 	var startPanel = Ext.getCmp('ogTasksPanelATStartDateCmp');
 	if (startPanel && startPanel.getValue() != '')
-		parameters["task_start_date"] = startPanel.getValue().format(lang('date format'));
+		parameters["task_start_date"] = startPanel.getValue().format(og.date_format);
 	
 	var duePanel = Ext.getCmp('ogTasksPanelATDueDateCmp');
 	if (duePanel && duePanel.getValue() != '')
-		parameters["task_due_date"] = duePanel.getValue().format(lang('date format'));
+		parameters["task_due_date"] = duePanel.getValue().format(og.date_format);
 		
 	var notify = document.getElementById('ogTasksPanelATNotify');
 	if (notify && notify.style.display != 'none' && notify.checked)

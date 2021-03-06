@@ -22,6 +22,11 @@ function Grid(width,height){
 	self.cfgs["scrollbarWidth"] 		= 17;
 	self.cfgs["scrollbarHeight"]		= 16;
 
+	self.focusActiveCell = function(){
+		this.cellEditor.fitToCell(this.activeCell);
+		this.selectorBox.fitToRange(this.activeCell);
+	}
+	
 	self.setActiveCell = function(cell){
 		//Deactivate all selected objects
 		/*var selection = self.selectionManager.getSelection();
@@ -30,6 +35,7 @@ function Grid(width,height){
 		}*/
 
 		if(this.onCellValueChange) this.onCellValueChange(this.activeCell.getRow(),this.activeCell.getColumn(),this.cellEditor.getValue());
+		if(this.onCellFontStyleChange) this.onCellFontStyleChange(this.activeCell.getRow(),this.activeCell.getColumn(),this.cellEditor.getFontStyleId());
 		this.rows[this.activeCell.getRow()].deactivate();
 		this.cols[this.activeCell.getColumn()].deactivate();
 
@@ -39,14 +45,20 @@ function Grid(width,height){
 		this.cols[cell.column].activate();
 		this.activeCell = cell;
 		//alert(self.cellEditor.fitToCell.toSource());
-		this.cellEditor.fitToCell(cell);
-		this.selectorBox.fitToRange(cell);
+		this.focusActiveCell();
+//		this.cellEditor.fitToCell(cell);
+//		this.selectorBox.fitToRange(cell);
 		if(this.onActiveCellChange) this.onActiveCellChange(this.cellEditor);
 	}
-
+	
+	self.editActiveCell = function(newValue){
+		this.cellEditor.updateValue(newValue);
+	}
+	
 	self.onmousedown = function(e){
-		e ? e : e =window.event; //get event for IE
-		//this.selecting = true;
+//		e ? e : e =window.event; //get event for IE
+//		//this.selecting = true;
+//		if(this.onActiveCellChange) this.onActiveCellChange(this.cellEditor);
 		return false; 			//Disables Text Selection
 	}
 
@@ -151,7 +163,6 @@ function Grid(width,height){
 				}catch(e){}
 		}
 	}
-
 	self.adjustViewPort = function(){
 		self.adjustViewPortX();
 		self.adjustViewPortY();

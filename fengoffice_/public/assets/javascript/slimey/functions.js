@@ -127,6 +127,18 @@ function addEventHandler(elem, ev, fun, scope) {
 	}
 }
 
+/**
+ *  returns document.getElementById(id);
+ *  	id: id of the element
+ *		container: (optional) where to search (default: document.body)
+ *  	frame: (optional) frame where the element is (default: window)
+ */
+function $(id, container, frame) {
+	if (!frame) frame = window;
+	if (!container) container = document.body;
+	
+	return frame.document.getElementById(id);
+}
 
 /**
  *  escapes the &, <, >, " and ' characters from a SLIM string
@@ -147,7 +159,7 @@ function unescapeSLIM(encodedSLIM) {
  *  	func: function to call when the image is selected (func is passed the image's URL as the first argument)
  */
 function chooseImage(func, scope, button) {
-	var url = prompt("Enter the url of the image:", "images/sample.png");
+	var url = prompt(lang("enter the url of the image") + ":", "images/sample.png");
 	func.call(scope, url);
 }
 
@@ -156,7 +168,7 @@ function chooseImage(func, scope, button) {
  *  	func: function to call when the color is selected (func is passed the color's code as the first argument)
  */
 function chooseColor(func, scope, button) {
-	var color = prompt("Enter a color:", "blue");
+	var color = prompt(lang("enter a color") + ":", "blue");
 	func.call(scope, color);
 }
 
@@ -169,3 +181,18 @@ function getInput(msg, func, scope, button) {
 		func.call(scope, text);
 	}
 }
+/**
+ *  gets text translated to the current locale
+ */
+/*function lang(text) {
+	if (typeof slang != 'object') {
+		var value = text;
+	} else {
+		var value = slang[text] || text;
+	}
+	for (var i=1; i < arguments.length; i++) {
+		value = value.replace("{" + (i-1) + "}", arguments[i]);
+	}
+	return value;
+}*/
+ 

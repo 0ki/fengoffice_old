@@ -147,6 +147,41 @@
       $this->renderCalendar($user, lang('project calendar', $project->getName()), ProjectMilestones::getActiveMilestonesByUserAndProject($user, $project));
     } // project_ical
     
+    function ical_export() {
+    	$this->setLayout('ical');
+    	require_once ROOT.'/environment/classes/event/CalFormatUtilities.php';
+    	
+    	if (!isset($_GET['t']) || !isset($_GET['cal'])) {
+    		header('HTTP/1.0 404 Not Found');
+        	die();
+    	}
+		$token = $_GET['t'];
+		$cal = $_GET['cal'];
+		$inc_sub = isset($_GET['isw']) && $_GET['isw'] == 1;
+		if (Users::tokenExists($token)) {
+			$user = Users::getByToken($token);
+			if ($cal == 0) $pids = $user->getActiveProjectIdsCSV();
+			else {
+				if ($inc_sub) {
+					$project = Projects::findById($cal);
+					$url_ids = explode(",", str_replace(", ",",",$project->getAllSubWorkspacesCSV(true, $user)));
+				} else {
+					$url_ids = array($cal);
+				}
+				$ids = explode(",", $user->getActiveProjectIdsCSV());
+				$pids = implode(",", array_intersect($url_ids, $ids));
+			}
+			
+			$events = ProjectEvents::findAll(array('conditions' => array("`project_id` IN ($pids)")));
+			
+			$calendar_name = isset($_GET['n']) ? $_GET['n'] : $user->getDisplayName();
+			tpl_assign('content', CalFormatUtilities::generateICalInfo($events, $calendar_name, $user));
+		} else {
+			header('HTTP/1.0 404 Not Found');
+        	die();
+		}
+    }
+    
     /**
     * Render icalendar from milestones
     *

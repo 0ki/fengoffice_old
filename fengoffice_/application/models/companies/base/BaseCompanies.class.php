@@ -19,6 +19,7 @@
     	'client_of_id' => DATA_TYPE_INTEGER,
     	'name' => DATA_TYPE_STRING,
     	'email' => DATA_TYPE_STRING,
+    	'notes' => DATA_TYPE_STRING,
     	'homepage' => DATA_TYPE_STRING,
     	'address' => DATA_TYPE_STRING,
     	'address2' => DATA_TYPE_STRING,
@@ -100,6 +101,19 @@
     function getAutoIncrementColumn() {
       return 'id';
     } // getAutoIncrementColumn
+    
+    /**
+    * Return system columns
+    *
+    * @access public
+    * @param void
+    * @return array
+    */
+    function getSystemColumns() {
+      return array_merge(parent::getSystemColumns(), array(
+      	'client_of_id', 'logo_file', 'timezone', 'hide_welcome_info')
+      );
+    } // getSystemColumns
     
     // -------------------------------------------------------
     //  Finders

@@ -4,22 +4,37 @@
 	$genid = gen_id();
 	
 	if(($file->getDescription())) { ?>
-      <div id="fileDescription"><?php echo convert_to_links(nl2br(clean($file->getDescription()))) ?></div>
+      <div id="fileDescription"><b><?php echo lang('description')?>:&nbsp;</b><?php echo convert_to_links(nl2br(clean($file->getDescription()))) ?></div>
 <?php } // if ?>
-
-<?php if($file->isCheckedOut()) { ?>
-	<div id="fileCheckedOutBy">
-	<?php if($file->getCheckedOutBy() instanceof User) { ?>
-      <?php echo lang('file checkout info long', $file->getCheckedOutBy()->getCardUrl(), clean($file->getCheckedOutBy()->getDisplayName()), format_descriptive_date($file->getCheckedOutOn()). ", " . format_time($file->getCheckedOutOn())); ?>
-<?php } else { ?>
-      <?php echo lang('file checkout info short', format_descriptive_date($file->getCheckedOutOn()). ", " . format_time($file->getCheckedOutOn())) ?>
-<?php } // if ?>
-	</div>
-<?php } ?>
-
 
 <?php if ($file->isDisplayable()) {?>
-<iframe style="width:100%;height:200px;border:1px solid #ddd;" src="<?php echo get_url("files", "display_content", array("id" => $file->getId())) ?>"></iframe>
+<div>
+	<div style="position: relative; left:0; top: 0; width: 100%; height: 200px; background-color: white">
+	<iframe style="width:100%;height:100%;border:1px solid #ddd;" src="<?php echo get_url("files", "display_content", array("id" => $file->getId())) ?>"></iframe>
+	<script>
+	og.expandDocumentView = function() {
+		if (this.oldParent) {
+			this.parentNode.parentNode.removeChild(this.parentNode);
+			this.oldParent.appendChild(this.parentNode);
+			this.parentNode.style.position = 'relative';
+			this.parentNode.style.height = '200px';
+			this.parentNode.style.zIndex = '0';
+			this.innerHTML = "<?php echo lang('expand') ?>";
+			this.oldParent = false;
+		} else {
+			this.oldParent = this.parentNode.parentNode;
+			this.oldParent.removeChild(this.parentNode);
+			document.body.appendChild(this.parentNode);
+			this.parentNode.style.position = 'absolute';
+			this.parentNode.style.height = '100%';
+			this.parentNode.style.zIndex = '1000';
+			this.innerHTML = "<?php echo lang('collapse') ?>";
+		}
+	};
+	</script>
+	<button onclick="og.expandDocumentView.call(this)" style="position: absolute; right: 0px; top: 0px"><?php echo lang('expand') ?></button>
+	</div>
+</div>
 <?php } // if ?> 
 
 <?php if(($ftype = $file->getFileType()) instanceof FileType && $ftype->getIsImage()){?>
@@ -30,6 +45,22 @@
 	</div>
 <?php }?>
 
+<?php if (substr($file->getFilename(), -3) == '.mm') {
+	require_javascript('flashobject.js');
+	$flashurl = get_flash_url('visorFreemind.swf') ?>
+	<div id="<?php echo $genid ?>mm">
+	<script type="text/javascript">
+		var fo = new FlashObject("<?php echo $flashurl ?>", "visorFreeMind", "100%", "350px", 6, "#9999ff");
+		fo.addParam("quality", "high");
+		fo.addParam("bgcolor", "#ffffff");
+		fo.addVariable("initLoadFile", "<?php echo $file->getDownloadUrl() ?>");
+		fo.addVariable("openUrl", "_blank");
+		fo.write("<?php echo $genid ?>mm");
+	</script>
+<?php } ?>
+
+
+<?php if ($file->getType() == ProjectFiles::TYPE_DOCUMENT){?>
 <fieldset>
   <legend class="toggle_collapsed" onclick="og.toggle('revisions',this)"><?php echo lang('revisions'); ?> (<?php echo count($revisions);?>)</legend>
 <div id="revisions" style="display:none">
@@ -84,6 +115,7 @@
 </table>
 </div>
 </fieldset>
+<?php } // if ?>
 
 <?php if(($ftype = $file->getFileType()) instanceof FileType && $ftype->getIsImage()){?>
 	<script type="text/javascript">

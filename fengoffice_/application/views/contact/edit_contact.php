@@ -1,4 +1,5 @@
 <?php
+	require_javascript("modules/addContactForm.js");
 	$genid = gen_id();
 	$object = $contact;
 if (!$contact->isNew())
@@ -51,7 +52,7 @@ if (!$contact->isNew())
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_contact_notes', this)"><?php echo lang('notes') ?></a> -
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_custom_properties_div',this)"><?php echo lang('custom properties') ?></a> -
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_subscribers_div',this)"><?php echo lang('object subscribers') ?></a>
-		<?php if($object->isNew() || $object->canLinkObject(logged_user(), $project)) { ?> - 
+		<?php if(active_project() instanceof Project && $object->isNew() || $object->canLinkObject(logged_user(), active_project())) { ?> - 
 			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_linked_objects_div',this)"><?php echo lang('linked objects') ?></a>
 		<?php } ?>
 		<?php foreach ($categories as $category) { ?>
@@ -343,6 +344,7 @@ if (!$contact->isNew())
 	<div id='<?php echo $genid ?>add_custom_properties_div' style="display:none">
 		<fieldset>
 			<legend><?php echo lang('custom properties') ?></legend>
+			<?php echo render_object_custom_properties($object, 'Contacts', false) ?><br/><br/>
 			<?php echo render_add_custom_properties($object); ?>
 		</fieldset>
 	</div>
@@ -356,7 +358,7 @@ if (!$contact->isNew())
 		</fieldset>
 	</div>
 	
-	<?php if($object->isNew() || $object->canLinkObject(logged_user(), $project)) { ?>
+	<?php if(active_project() instanceof Project && $object->isNew() || $object->canLinkObject(logged_user(), active_project())) { ?>
 	<div style="display:none" id="<?php echo $genid ?>add_linked_objects_div">
 	<fieldset>
 		<legend><?php echo lang('linked objects') ?></legend>
@@ -398,6 +400,10 @@ if (!$contact->isNew())
 			array('id' => $genid.'profileFormEmail', 'tabindex' => '3')) ?>
 	</div>
 
+	<div>
+		<?php echo render_object_custom_properties($object, 'Contacts', true) ?>
+	</div><br/>
+	
   	<?php echo submit_button($contact->isNew() ? lang('add contact') : lang('save changes'),'s',array('tabindex' => '400', 'id' => $genid . 'submit2')) ?>
 
 <script type="text/javascript">

@@ -14,11 +14,45 @@ function NameHandler(){
 	self.constructor = function(){
 		this.names = new Array();
 		this.columnSequence = new Array("A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z");
+		this.columnIndexes = new Object();
+		for(var i=0;i<this.columnSequence.length;i++){
+			this.columnIndexes[this.columnSequence[i]] = i;
+		}
 		//this.columnSequence = new Array("1","2","3");//,"4","5","6","7","8","9");
 		//this.columnSequence = new Array("A","B","C");
 	}
-
-
+	
+	self.getRangeCells = function(row,col){
+		row = (row=="")? undefined:row-1;
+		col = (col=="")? undefined:this.getColumnIndex(col);
+		
+		return {row:row,col:col};
+	}
+	
+	self.getSimpleRangeAddress = function (address){
+		var regArray = /^([A-Z]*)(\d*)$/.exec(address);
+//		alert(regArray.toSource());
+		if(regArray)
+			return this.getRangeCells(regArray[2],regArray[1]);
+	}
+	
+	self.getRangeAddress = function(address){
+		address = address.toUpperCase();
+		var ranges = address.split(":");
+		var range = {};
+		if(ranges.length >2)
+			return undefined;
+		
+		if(ranges.length){
+			range.start = this.getSimpleRangeAddress(ranges[0]);
+			if(ranges.length>1)
+				range.end = this.getSimpleRangeAddress(ranges[1]);	
+		}else{
+			range.start = this.getSimpleRangeAddress(address);
+		}
+		return range;
+	}
+	
 	self.getColumnName = function(index){
 		var base = this.columnSequence.length;
 		var name = "";
@@ -29,6 +63,19 @@ function NameHandler(){
 		}
 
 		return name;
+	}
+	
+	self.getColumnIndex = function(name){
+		var base = this.columnSequence.length;
+		var index = 0;
+		len = 0;
+		
+		while(len<name.length){
+			index = index*base +1+parseInt(this.columnIndexes[name[len]]);
+			len++;
+		}
+
+		return index -1;
 	}
 
 	self.constructor();

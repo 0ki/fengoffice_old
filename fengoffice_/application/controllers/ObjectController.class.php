@@ -75,6 +75,49 @@ class ObjectController extends ApplicationController {
 				}
 			}
 		}
+		$obj_custom_properties = array_var($_POST, 'object_custom_properties');
+		if (is_array($obj_custom_properties)){
+			$pids = CustomProperties::getCustomPropertyIdsByObjectType(get_class($object->manager()));
+			foreach($obj_custom_properties as $id => $value){
+				$is_valid = false;
+				foreach ($pids as $pid)
+					$is_valid = $is_valid || ($pid == $id);
+				if ($is_valid){
+					$custom_property_value = new CustomPropertyValue();
+					$cpv = CustomPropertyValues::getCustomPropertyValue($object->getId(), $id);
+					if($cpv instanceof CustomPropertyValue){
+						$custom_property_value = $cpv;
+					}
+					$custom_property_value->setObjectId($object->getId());
+					$custom_property_value->setCustomPropertyId($id);
+					$custom_property = CustomProperties::findById($id);
+					// save dates in standard format "Y-m-d H:i:s", because the column type is string
+					if ($custom_property->getType() == 'date') {
+						if(is_array($value)){
+							$newValues = array();
+							foreach ($value as $val) {
+								$dtv = DateTimeValueLib::dateFromFormatAndString(user_config_option('date_format', 'd/m/Y'), $val);
+								$newValues[] = $dtv->format("Y-m-d H:i:s");
+							}
+							$value = $newValues;
+						} else {
+							$dtv = DateTimeValueLib::dateFromFormatAndString(user_config_option('date_format', 'd/m/Y'), $value);
+							$value = $dtv->format("Y-m-d H:i:s");
+						}
+					}
+					if(is_array($value)){
+						$custom_property_value->setValue(implode(',', $value));
+					}else{
+						if($custom_property->getType() == 'boolean'){
+							$custom_property_value->setValue(isset($value));
+						}else{
+							$custom_property_value->setValue($value);
+						}
+					}
+					$custom_property_value->save();
+				}
+			}
+		}
 	}
 	
 	function add_reminders($object) {
@@ -740,15 +783,13 @@ class ObjectController extends ApplicationController {
 		
     	// Conacts and Companies
     	if (config_option("enable_contacts_module")) {
+    		// companies
 			$permissions = ' AND ( ' . permissions_sql_for_listings(Companies::instance(), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`co`') .')';
 			$res['Companies'] = "SELECT  'Companies' AS `object_manager_value`, `id` as `oid`, $order_crit_companies AS `order_value` FROM `" . 
 						TABLE_PREFIX . "companies` `co` WHERE " . $trashed_cond ." AND ".$proj_cond_companies . str_replace('= `object_manager_value`', "= 'Companies'", $tag_str) . $permissions;
-						
-			if (!can_manage_contacts(logged_user())){
-				$pcTableName = "`" . TABLE_PREFIX . 'project_contacts`';
-				$permissions = " AND `co`.`id` IN ( SELECT `contact_id` FROM $pcTableName `pc` WHERE `pc`.`contact_id` = `co`.`id` AND (" . permissions_sql_for_listings(ProjectContacts::instance(), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`pc`') .'))';
-			} else $permissions = '';
-			
+
+			// contacts
+			$permissions = ' AND ( ' . permissions_sql_for_listings(Contacts::instance(), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`co`') . ')';
 			if (isset($project)) {
 				$res['Contacts'] = "SELECT 'Contacts' AS `object_manager_value`, `id` AS `oid`, $order_crit_contacts AS `order_value` FROM `" . 
 						TABLE_PREFIX . "contacts` `co` WHERE $trashed_cond AND EXISTS (SELECT * FROM `" . 
@@ -777,7 +818,7 @@ class ObjectController extends ApplicationController {
      * @param string $order 
      * @param string $order_dir can be asc or desc
      */
-    function getDashboardObjects($page, $objects_per_page, $tag=null, $order=null, $order_dir=null, $type = null, $project = null, $trashed = false){
+    function getDashboardObjects($page, $objects_per_page, $tag=null, $order=null, $order_dir=null, $types = null, $project = null, $trashed = false){
     	///TODO: this method is horrible on performance and should not be here!!!!
     	$queries = $this->getDashboardObjectQueries($project, $tag, false, $trashed, $order);
     	if (!$order_dir){
@@ -786,8 +827,14 @@ class ObjectController extends ApplicationController {
 				default: $order_dir = 'DESC';
 			}
 		}
-		if(isset($type) && $type){
-			$query = $queries[$type];
+		if(isset($types) && $types){
+			$query = '';
+			foreach ($types as $type) {
+				if ($query == '')
+					$query = $queries[$type];
+				else 
+					$query .= " \n UNION \n" . $queries[$type];
+			}
 		} //if $type
 		else {
 			$query = '';
@@ -842,11 +889,17 @@ class ObjectController extends ApplicationController {
      *
      * @return unknown
      */
-	function countDashboardObjects($tag = null, $type = null, $project = null, $trashed = false, $order = null){
+	function countDashboardObjects($tag = null, $types = null, $project = null, $trashed = false, $order = null){
 		  ///TODO: this method is also horrible in performance and should not be here!!!!
     	$queries = $this->getDashboardObjectQueries($project, $tag, true, $trashed,$order);
-		if(isset($type) && $type){
-			$query = $queries[$type];
+		if (isset($types) && $types) {
+			$query = '';
+			foreach ($types as $type) {
+				if ($query == '')
+					$query = $queries[$type];
+				else 
+					$query .= " \n UNION \n" . $queries[$type];
+			}
 		} //if $type
 		else {
 			$query = '';
@@ -883,7 +936,10 @@ class ObjectController extends ApplicationController {
 		$page = (integer) ($start / $limit) + 1;
 		$hide_private = !logged_user()->isMemberOfOwnerCompany();
 		$tag = array_var($_GET,'tag');
-		$type = array_var($_GET,'type');
+		$typeCSV = array_var($_GET, 'type');
+		if ($typeCSV) {
+			$types = explode(",", $typeCSV);
+		}
 		$user = array_var($_GET,'user');
 		$trashed = array_var($_GET, 'trashed', false);
 
@@ -945,12 +1001,12 @@ class ObjectController extends ApplicationController {
 		//$result = $this->getDashboardObjects($page, config_option('files_per_page'), $tag, $order, $orderdir, $type);
 		$project_id = array_var($_GET, 'active_project', 0);
 		$project = Projects::findById($project_id);
-		$total_items=$this->countDashboardObjects($tag, $type, $project, $trashed);
+		$total_items=$this->countDashboardObjects($tag, $types, $project, $trashed);
 		if ($total_items < ($page - 1) * $limit){
 			$page = 1;
 			$start = 0;
 		}
-		$result = $this->getDashboardObjects($page, $filesPerPage, $tag, $order, $orderdir, $type, $project, $trashed);
+		$result = $this->getDashboardObjects($page, $filesPerPage, $tag, $order, $orderdir, $types, $project, $trashed);
 		if(!$result)
 			$result = array();
 				

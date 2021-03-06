@@ -17,7 +17,7 @@ class TimeIt {
 		$timeslot['end'] = microtime(true);
 		$timeslot['time'] = $timeslot['end'] - $timeslot['start'];
 		self::$timeslots[] = $timeslot;
-		unset(self::$timeslots[self::$index--]);
+		unset(self::$stack[self::$index--]);
 		return $timeslot['time'];
 	}
 	

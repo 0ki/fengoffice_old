@@ -1,5 +1,12 @@
+<?php if (user_config_option('show_comments_widget_context_help', true, logged_user()->getId())) { 
+	tpl_assign('helpDescription', lang('chelp comments widget'));
+	tpl_assign('option_name' , 'comments_widget');
+	$this->includeTemplate(get_template_path('context_help', 'help'));
+} ?>
+
 <div style="padding:10px">
 <table id="dashTableComments" style="width:100%">
+
 <?php $c = 0;
 	foreach ($comments as $comment){ $c++;?>
 	<tr class="<?php echo $c % 2 == 1? '':'dashAltRow'; echo ' ' . ($c > 5? 'dashSMCoC':''); ?>" style="<?php echo $c > 5? 'display:none':'' ?>">

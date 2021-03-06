@@ -32,7 +32,7 @@ Hook::register("opengoo");
  *  	- $ignored,
  *  	- &$js : array of javascript urls to load. Add to this array.
  *  
- * - autoload_stylesheets: Tells which CSSs should be load when the application starts.
+ * - autoload_stylesheets: Tells which CSSs should be loaded when the application starts.
  *  	- $ignored,
  *  	- &$css : array of CSS urls to load
  *  
@@ -50,7 +50,7 @@ Hook::register("opengoo");
  *  
  * - object_definition: Allows to define extra columns for a system object.
  *  	- $type : string
- *  		Manager's name of object (e.g. ProjectFiles),
+ *  		Type of object (e.g. ProjectFile),
  *  	- &$columns : assoc of database columns to add to the object (column_name => column_type). Add to this array.
  *  
  * - render_object_description: Called when rendering the description that goes below the title in an object's view.
@@ -126,6 +126,15 @@ function opengoo_reminder_email($reminder, &$ret) {
 	Notifier::objectReminder($reminder);
 	$reminder->delete();
 	$ret++;
+}
+
+if (!defined('UPLOAD_HOOK')) define('UPLOAD_HOOK', 'opengoo');
+
+function opengoo_render_upload_control($args, &$ret) {
+	if (UPLOAD_HOOK == 'opengoo') {
+		$attributes = $args['attributes'];
+		echo file_field('file_file', null, $attributes);
+	}
 }
 
 ?>

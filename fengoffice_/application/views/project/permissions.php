@@ -1,6 +1,6 @@
 <div style="padding:10px">
 <?php
-
+  require_javascript('modules/updatePermissionsForm.js');
   set_page_title(lang('permissions'));
   project_tabbed_navigation(PROJECT_TAB_PEOPLE);
   project_crumbs(array(
@@ -15,7 +15,6 @@
     $quoted_permissions[] = "'$permission_id'";
   } // foreach
 ?>
-<script type="text/javascript" src="<?php echo get_javascript_url('modules/updatePermissionsForm.js') ?>"></script>
 <script type="text/javascript">
   App.modules.updatePermissionsForm.owner_company_id = <?php echo owner_company()->getId() ?>;
   App.modules.updatePermissionsForm.project_permissions = new Array(<?php echo implode(', ', $quoted_permissions) ?>);

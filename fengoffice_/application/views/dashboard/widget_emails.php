@@ -1,6 +1,13 @@
+<?php if (user_config_option('show_emails_widget_context_help', true, logged_user()->getId())) {
+		tpl_assign('helpDescription', lang('chelp emails widget'));
+		tpl_assign('option_name' , 'emails_widget');
+		$this->includeTemplate(get_template_path('context_help', 'help'));
+	}?>
+	
 <div style="padding:10px">
 <table id="dashTableEmails" style="width:100%">
 <?php $c = 0;
+	
 	$emails = $unread_emails?$unread_emails:$ws_emails;
 	foreach ($emails as $email){ 
 		if (!$email->getIsDeleted()) {
@@ -18,7 +25,7 @@
 			<a class="internalLink" style="font-weight:bold" href="<?php echo get_url('mail','view', array('id' => $email->getId()))?>"
 				title="">
 			<?php echo clean($email->getSubject()) ?>
-			</a><br/><table width="100%" style="color:#888"><tr><td><?php echo clean($email->getFrom())?></td><td align=right><?php echo $email->getSentDate()->isToday() ? format_time($email->getSentDate()) : format_date($email->getSentDate())?></td></tr></table></td></tr>
+			</a><br/><table width="100%" style="color:#888"><tr><td><?php echo clean($email->getFrom())?></td><td align=right><?php echo $email->getSentDate() instanceof DateTimeValue ? ($email->getSentDate()->isToday() ? format_time($email->getSentDate()) : format_date($email->getSentDate()) ) : lang("n/a")?></td></tr></table></td></tr>
 	<?php } // if?>
 <?php } // foreach?>
 	<?php if ($c >= 10) {?>

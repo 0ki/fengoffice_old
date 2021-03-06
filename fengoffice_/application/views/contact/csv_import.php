@@ -148,5 +148,6 @@ og.submitCsv = function(genid) {
 </form>
 
 <script type="text/javascript">
-	Ext.get('<?php echo $genid ?>filenamefield').focus();
+	btn = Ext.get('<?php echo $genid ?>filenamefield');
+	if (btn != null) btn.focus();
 </script>

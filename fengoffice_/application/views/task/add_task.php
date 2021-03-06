@@ -1,4 +1,5 @@
 <?php
+	require_javascript('modules/addMessageForm.js');
 	$genid = gen_id();
 	$object = $task;
 	if ($task->isNew()) {
@@ -44,7 +45,7 @@
 	<div style="padding-top:5px">
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_select_workspace_div', this)"><?php echo lang('workspace') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_tags_div', this)"><?php echo lang('tags') ?></a> - 
-		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_more_div', this)"><?php echo lang('task data') ?></a> -  
+		<a href="#" class="option" style="font-weight:bold" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_more_div', this)"><?php echo lang('task data') ?></a> -  
 		<?php /*<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_handins_div', this)"><?php echo lang('handins') ?></a> - */ ?>
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_reminders_div',this)"><?php echo lang('object reminders') ?></a>  -
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_custom_properties_div', this)"><?php echo lang('custom properties') ?></a> -
@@ -75,7 +76,7 @@
 	</div>
 
 	
-	<div id="<?php echo $genid ?>add_task_more_div" style="display:none">
+	<div id="<?php echo $genid ?>add_task_more_div" style="display:block">
   	<fieldset>
     <legend><?php echo lang('task data') ?></legend>
     
@@ -182,6 +183,7 @@
 	<div id='<?php echo $genid ?>add_custom_properties_div' style="display:none">
 	<fieldset>
     <legend><?php echo lang('custom properties') ?></legend>
+      <?php echo render_object_custom_properties($object, 'ProjectTasks', false) ?><br/><br/>
       <?php echo render_add_custom_properties($object); ?>
   	</fieldset>
  	</div>
@@ -254,6 +256,10 @@
 		</td></tr></table>
 		
 	</div>
+	
+	<div>
+		<?php echo render_object_custom_properties($object, 'ProjectTasks', true) ?>
+	</div><br/>
 	<?php echo input_field("task[is_template]", array_var($task_data, 'is_template', false), array("type" => "hidden", 'tabindex' => '160')); ?>
   <?php echo submit_button($task->isNew() ? (array_var($task_data, 'is_template', false) ? lang('save template') : lang('add task list')) : lang('save changes'), 's', array('tabindex' => '170')) ?>
 </div>

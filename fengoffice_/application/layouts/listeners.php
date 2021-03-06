@@ -51,15 +51,25 @@ og.eventManager.addListener('popup',
 
 og.eventManager.addListener('user config localization changed',
 	function(val) {
-		og.loadScript(og.getUrl('access', 'get_javascript_translation'),
-			function() {
+		og.loadScripts([og.getUrl('access', 'get_javascript_translation')], {
+			callback: function() {
 				var spans = document.getElementsByName('og-lang');
 				for (var i=0; i < spans.length; i++) {
 					var key = spans[i].id.substring(8);
 					spans[i].innerHTML = lang(key);
 				}
 			}
-		);
+		});
+	}
+);
+
+og.eventManager.addListener('download document',
+	function(args) {
+		if(args.reloadDocs){
+			//og.openLink(og.getUrl('files', 'list_files'));
+			og.panels.documents.reload();
+		}	
+		window.open(og.getUrl('files', 'download_file', {id: args.id, validate:0}));
 	}
 );
 </script>

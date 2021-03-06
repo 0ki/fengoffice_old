@@ -119,6 +119,7 @@ class GroupController extends ApplicationController {
 	          'can_manage_configuration' => $group->getCanManageConfiguration(),
 	          'can_manage_contacts' => $group->getCanManageContacts(),
 			  'can_manage_templates' => $group->getCanManageTemplates(),
+			  'can_manage_reports' => $group->getCanManageReports(),
 			); // array			
 		} // if
 		$users = GroupUsers::getUsersByGroup($group->getId());
@@ -136,6 +137,7 @@ class GroupController extends ApplicationController {
 			if(array_var($group_data, "can_manage_workspaces") != 'checked') $group->setCanManageWorkspaces(false);
 			if(array_var($group_data, "can_manage_contacts") != 'checked') $group->setCanManageContacts(false);
 			if(array_var($group_data, "can_manage_templates") != 'checked') $group->setCanManageTemplates(false);
+			if(array_var($group_data, "can_manage_reports") != 'checked') $group->setCanManageReports(false);
 			try {
 				DB::beginWork();
 				$group->save();

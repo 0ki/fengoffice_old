@@ -16,13 +16,13 @@ function createImageButton(name, title, slimeyTool) {
 	img.style.verticalAlign = 'middle';
 	img.style.cursor = 'pointer';
 	img.onmouseover = function() {
-		if (this.slimeyTool.enabled && !this.slimeyTool.toggled) {
+		if (this.slimeyTool.enabled && this.slimeyTool.toggled != this) {
 			this.src = Slimey.imagesDir + name + 'h.png';
 		}
 	};
 	img.onmouseout = function() {
 		if (this.slimeyTool.enabled) {
-			if (this.slimeyTool.toggled) {
+			if (this.slimeyTool.toggled == this) {
 				this.src = Slimey.imagesDir + name + 'd.png';
 			} else {
 				this.src = Slimey.imagesDir + name + '.png';
@@ -77,7 +77,7 @@ SlimeyTool.prototype.getElement = function() {
  *  executes its corresponding action
  */
 SlimeyTool.prototype.execute = function() {
-	alert('Generic Tool');
+	alert(lang("generic tool"));
 }
 
 /**
@@ -93,7 +93,7 @@ SlimeyTool.prototype.notifySelectionChange = function() {
  */
 var SlimeyInsertTool = function(slimey) {
 	/* create the DOM element that represents the tool (a clickable image) */
-	var img = createImageButton('insert', 'Insert an element', this);
+	var img = createImageButton('insert', lang("insert an element"), this);
 
 	SlimeyTool.call(this, 'insert', img, slimey);
 }
@@ -107,7 +107,7 @@ SlimeyInsertTool.prototype = new SlimeyTool();
  *  inserts a new element into the editor
  */
 SlimeyInsertTool.prototype.execute = function() {
-	var tag = prompt('What element do you wish to insert?');
+	var tag = prompt(lang("what element do you wish to insert?"));
 	if (tag) {
 		var action = new SlimeyInsertAction(this.slimey, tag);
 		this.slimey.editor.performAction(action);
@@ -121,7 +121,7 @@ SlimeyInsertTool.prototype.execute = function() {
  */
 var SlimeyInsertTextTool = function(slimey) {
 	/* create the DOM element that represents the tool (a clickable image) */
-	var img = createImageButton('insertText', 'Insert text', this);
+	var img = createImageButton('insertText', lang("insert text"), this);
 
 	SlimeyTool.call(this, 'insertText', img, slimey);
 }
@@ -146,7 +146,7 @@ SlimeyInsertTextTool.prototype.execute = function() {
  */
 var SlimeyInsertImageTool = function(slimey) {
 	/* create the DOM element that represents the tool (a clickable image) */
-	var img = createImageButton('insertImage', 'Insert image', this);
+	var img = createImageButton('insertImage', lang("insert image"), this);
 
 	SlimeyTool.call(this, 'insertImage', img, slimey);
 }
@@ -178,7 +178,7 @@ SlimeyInsertImageTool.prototype.imageChosen = function(url) {
  */
 var SlimeyInsertOrderedListTool = function(slimey) {
 	/* create the DOM element that represents the tool (a clickable image) */
-	var img = createImageButton('insertOList', 'Insert ordered list', this);
+	var img = createImageButton('insertOList', lang("insert ordered list"), this);
 
 	SlimeyTool.call(this, 'insertOList', img, slimey);
 }
@@ -203,7 +203,7 @@ SlimeyInsertOrderedListTool.prototype.execute = function() {
  */
 var SlimeyInsertUnorderedListTool = function(slimey) {
 	/* create the DOM element that represents the tool (a clickable image) */
-	var img = createImageButton('insertUList', 'Insert unordered list', this);
+	var img = createImageButton('insertUList', lang("insert unordered list"), this);
 
 	SlimeyTool.call(this, 'insertUList', img, slimey);
 }
@@ -233,7 +233,7 @@ var SlimeyEditContentTool = function(slimey) {
 	textarea.style.width = '100%';
 	textarea.style.backgroundColor = 'lightYellow';
 	textarea.style.marginBottom = '4px';
-	textarea.title = 'Edit the element\'s content';
+	textarea.title = lang("edit the element\'s content");
 	textarea.onkeyup = function() {
 		this.slimeyTool.execute();
 	};
@@ -300,7 +300,7 @@ SlimeyEditContentTool.prototype.notifySelectionChange = function() {
  */
 var SlimeyFontColorTool = function(slimey) {
 	/* create the DOM element that represents the tool (a clickable image) */
-	var img = createImageButton('color', 'Change font color', this);
+	var img = createImageButton('color', lang("change font color"), this);
 
 	SlimeyTool.call(this, 'color', img, slimey);
 
@@ -451,15 +451,15 @@ var SlimeyFontFamilyTool = function(slimey) {
 	select.style.height = '20px';
 	select.style.width = '140px';
 	select.style.marginLeft = '4px';
-	select.title = 'Change font size';
+	select.title = lang("change font size");
 
 	var option = document.createElement('option');
 	option.value = option.style.fontFamily = '';
-	option.appendChild(document.createTextNode('-- Font Family --'));
+	option.appendChild(document.createTextNode('-- ' + lang("font family") + ' --'));
 	select.appendChild(option);
 	
 	var optgroup = document.createElement('optgroup');
-	optgroup.setAttribute('label', 'Generic Fonts');
+	optgroup.setAttribute('label', lang("generic fonts"));
 	select.appendChild(optgroup);
 
 	option = document.createElement('option');
@@ -488,7 +488,7 @@ var SlimeyFontFamilyTool = function(slimey) {
 	select.appendChild(option);
 
 	optgroup = document.createElement('optgroup');
-	optgroup.setAttribute('label', 'Specific Fonts');
+	optgroup.setAttribute('label', lang("specific fonts"));
 	select.appendChild(optgroup);
 
 	option = document.createElement('option');
@@ -574,7 +574,7 @@ SlimeyFontFamilyTool.prototype.notifyActionPerformed = SlimeyFontFamilyTool.prot
  */
 var SlimeyDeleteTool = function(slimey) {
 	/* create the DOM element that represents the tool (a clickable image) */
-	var img = createImageButton('delete', 'Delete element', this);
+	var img = createImageButton('delete', lang("delete element"), this);
 
 	SlimeyTool.call(this, 'delete', img, slimey);
 
@@ -663,7 +663,7 @@ SlimeyUndoTool.prototype.notifyActionPerformed = function() {
  */
 var SlimeyRedoTool = function(slimey) {
 	/* create the DOM element that represents the tool (a clickable image) */
-	var img = createImageButton('redo', 'Redo', this);
+	var img = createImageButton('redo', lang("redo"), this);
 
 	SlimeyTool.call(this, 'redo', img, slimey);
 
@@ -704,7 +704,7 @@ SlimeyRedoTool.prototype.notifyActionPerformed = function() {
  *  class SlimeyStyleToggleTool - this tool toggles one of the selected element's style properties
  *  	name: Tool's name
  *  	title: Tool's description (tooltip)
- *  	property: Propety to toggle (e.g.: fontWeight)
+ *  	property: Property to toggle (e.g.: fontWeight)
  *  	value1: Value when button is down (e.g.: bold)
  *  	value2: Value when button is up (e.g.: normal)
  */
@@ -744,7 +744,7 @@ SlimeyStyleToggleTool.prototype.execute = function() {
 			this.element.src = Slimey.imagesDir + this.name + '.png';
 		} else {
 			action = new SlimeyEditStyleAction(this.slimey, this.property, this.value1);
-			this.toggled = true;
+			this.toggled = this.element;
 			this.element.src = Slimey.imagesDir + this.name + 'd.png';
 		}
 		this.slimey.editor.performAction(action);
@@ -756,7 +756,7 @@ SlimeyStyleToggleTool.prototype.notifySelectionChange = function() {
 	if (selected && selected.editable) {
 		this.enabled = true;
 		if (selected.style[this.property] == this.value1) {
-			this.toggled = true;
+			this.toggled = this.element;
 			this.element.src = Slimey.imagesDir + this.name + 'd.png';
 		} else {
 			this.toggled = false;
@@ -775,11 +775,102 @@ SlimeyStyleToggleTool.prototype.notifyActionPerformed = SlimeyStyleToggleTool.pr
 /*---------------------------------------------------------------------------*/
 
 /**
+ *  class SlimeyStyleGroupToggleTool - this tool allows defining a property by toggling one of several buttons
+ *  	name: Tool's name
+ *  	property: Property to toggle (e.g.: textAlign)
+ *  	options: Array of objects {name, title, value}
+ */
+var SlimeyStyleGroupToggleTool = function(slimey, name, property, options) {
+	/* create the DOM element that represents the tool (a clickable image) */
+	window.options = options;
+	var span = document.createElement('span');
+	for (var i=0; i < options.length; i++) {
+		options[i].img = createImageButton(options[i].name, options[i].title, this);
+		options[i].img.option = options[i];
+		options[i].img.onclick = function() {
+			if (this.slimeyTool.enabled) {
+				this.slimeyTool.toggled = this;
+				this.slimeyTool.execute();
+			}
+		};
+		span.appendChild(options[i].img);
+	}
+	this.options = options;
+	this.property = property;
+
+	SlimeyTool.call(this, name, span, slimey);
+
+	this.slimey.editor.addEventListener('selectionChange', this.notifySelectionChange, this);
+	this.slimey.editor.addEventListener('actionPerformed', this.notifyActionPerformed, this);
+
+	this.enable(false);
+}
+
+/**
+ *  SlimeyStyleGroupToggleTool extends SlimeyTool
+ */
+SlimeyStyleGroupToggleTool.prototype = new SlimeyTool();
+
+/**
+ *  enables or disables tool
+ */
+SlimeyStyleGroupToggleTool.prototype.enable = function(enabled) {
+	this.enabled = enabled;
+	for (var i=0; i < this.options.length; i++) {
+		if (enabled) {
+			this.options[i].img.src = Slimey.imagesDir + this.options[i].name + '.png';
+			this.options[i].img.style.cursor = 'pointer';
+		} else {
+			this.options[i].img.src = Slimey.imagesDir + this.options[i].name + 'x.png';
+			this.options[i].img.style.cursor = 'default';
+		}
+	}
+	if (enabled && this.toggled) {
+		this.toggled.src = Slimey.imagesDir + this.toggled.option.name + 'd.png';
+		this.toggled.style.cursor = 'pointer';
+	}
+};
+
+/**
+ *  toggles the selected element's style property
+ */
+SlimeyStyleGroupToggleTool.prototype.execute = function() {
+	var selected = this.slimey.editor.getSelected();
+	if (selected && this.toggled) {
+		var toggled = this.toggled;
+		if (selected.style[this.property] != toggled.option.value) {
+			var action = new SlimeyEditStyleAction(this.slimey, this.property, toggled.option.value);
+			// update buttons
+			this.enable(true);
+			this.slimey.editor.performAction(action);
+			this.toggled = toggled;
+		}
+	}
+}
+
+SlimeyStyleGroupToggleTool.prototype.notifySelectionChange = function() {
+	var selected = this.slimey.editor.getSelected();
+	if (selected) {
+		var value = selected.style[this.property];
+		for (var i=0; i < this.options.length; i++) {
+			if (this.options[i].value == value) {
+				this.toggled = this.options[i].img;
+			}
+		}
+	}
+	this.enable(selected && selected.editable);
+}
+
+SlimeyStyleGroupToggleTool.prototype.notifyActionPerformed = SlimeyStyleToggleTool.prototype.notifySelectionChange;
+
+/*---------------------------------------------------------------------------*/
+
+/**
  *  class SlimeySendToBackTool - this tool sends the selected element to the back of the editor
  */
 var SlimeySendToBackTool = function(slimey) {
 	/* create the DOM element that represents the tool (a clickable image) */
-	var img = createImageButton('sendToBack', 'Send element to the back', this);
+	var img = createImageButton('sendToBack', lang("send element to the back"), this);
 
 	SlimeyTool.call(this, 'sendToBack', img, slimey);
 
@@ -826,7 +917,7 @@ SlimeySendToBackTool.prototype.notifySelectionChange = function() {
  */
 var SlimeyBringToFrontTool = function(slimey) {
 	/* create the DOM element that represents the tool (a clickable image) */
-	var img = createImageButton('bringToFront', 'Bring element to the front', this);
+	var img = createImageButton('bringToFront', lang("bring element to the front"), this);
 
 	SlimeyTool.call(this, 'bringToFront', img, slimey);
 
@@ -873,7 +964,7 @@ SlimeyBringToFrontTool.prototype.notifySelectionChange = function() {
  */
 var SlimeyViewSourceTool = function(slimey) {
 	/* create the DOM element that represents the tool (a clickable image) */
-	var img = createImageButton('viewSource', 'View source code', this);
+	var img = createImageButton('viewSource', lang("view source code"), this);
 
 	SlimeyTool.call(this, 'viewSource', img, slimey);
 
@@ -920,7 +1011,7 @@ SlimeyViewSourceTool.prototype.execute = function() {
 		this.ta.style.height = obj.offsetHeight + 'px';
 		this.ta.value = html;
 		this.ta.style.visibility = 'visible';
-		this.toggled = true;
+		this.toggled = this.element;
 		this.element.src = Slimey.imagesDir + this.name + 'd.png';
 		this.ta.focus();
 	} else {
@@ -938,7 +1029,7 @@ SlimeyViewSourceTool.prototype.execute = function() {
  */
 var SlimeySaveTool = function(slimey) {
 	/* create the DOM element that represents the tool (a clickable image) */
-	var img = createImageButton('save', 'Save slideshow', this);
+	var img = createImageButton('save', lang("save slideshow"), this);
 
 	SlimeyTool.call(this, 'save', img, slimey);
 	this.slimey.editor.addEventListener('actionPerformed', this.notifyActionPerformed, this);
@@ -991,7 +1082,7 @@ SlimeySaveTool.prototype.notifyActionPerformed = function() {
  */
 var SlimeyPreviewTool = function(slimey) {
 	/* create the DOM element that represents the tool (a clickable image) */
-	var img = createImageButton('preview', 'Preview slideshow', this);
+	var img = createImageButton('preview', lang("preview slideshow"), this);
 
 	SlimeyTool.call(this, 'preview', img, slimey);
 }
@@ -1021,7 +1112,7 @@ SlimeyPreviewTool.prototype.execute = function() {
  */
 var SlimeyAddSlideTool = function(slimey) {
 	/* create the DOM element that represents the tool (a clickable image) */
-	var img = createImageButton('addslide', 'Add a new slide after the selected one', this);
+	var img = createImageButton('addslide', lang("add a new slide after the selected one"), this);
 
 	SlimeyTool.call(this, 'addslide', img, slimey);
 }
@@ -1044,7 +1135,7 @@ SlimeyAddSlideTool.prototype.execute = function() {
  */
 var SlimeyDeleteSlideTool = function(slimey) {
 	/* create the DOM element that represents the tool (a clickable image) */
-	var img = createImageButton('delslide', 'Delete the selected slide', this);
+	var img = createImageButton('delslide', lang("delete the selected slide"), this);
 
 	SlimeyTool.call(this, 'delslide', img, slimey);
 }
@@ -1067,7 +1158,7 @@ SlimeyDeleteSlideTool.prototype.execute = function() {
  */
 var SlimeyMoveSlideDownTool = function(slimey) {
 	/* create the DOM element that represents the tool (a clickable image) */
-	var img = createImageButton('slidedown', 'Move the selected slide down one place', this);
+	var img = createImageButton('slidedown', lang("move the selected slide down one place"), this);
 
 	SlimeyTool.call(this, 'slidedown', img, slimey);
 }
@@ -1090,7 +1181,7 @@ SlimeyMoveSlideDownTool.prototype.execute = function() {
  */
 var SlimeyMoveSlideUpTool = function(slimey) {
 	/* create the DOM element that represents the tool (a clickable image) */
-	var img = createImageButton('slideup', 'Move the selected slide up one place', this);
+	var img = createImageButton('slideup', lang("move the selected slide up one place"), this);
 
 	SlimeyTool.call(this, 'slideup', img, slimey);
 }

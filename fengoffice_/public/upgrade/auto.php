@@ -1,4 +1,5 @@
 <?php
+set_time_limit(0);
 chdir("../..");
 $version = $_GET['version'];
 $zipurl = $_GET['url'];

@@ -10,7 +10,7 @@
 .ico-emailunclassified {
 	background-image: url(../../images/16x16/types/classify.png);
 }
-.ico-weblink, .ico-webpage {
+.ico-weblink, .ico-webpage, .ico-weblinks, .ico-webpages {
 	background-image: url(../../images/16x16/types/webpage.png);
 }
 .ico-task {
@@ -31,7 +31,7 @@
 .ico-file {
 	background-image: url(../../images/16x16/types/file.png);
 }
-.ico-user {
+.ico-user, .ico-users {
 	background-image: url(../../images/16x16/types/user.png) !important;
 }
 
@@ -124,6 +124,9 @@
 }
 .ico-video {
 	background-image: url(../../images/16x16/types/video.png);
+}
+.ico-webfile {
+	background-image: url(../../images/16x16/types/webfile.png);
 }
 
 
@@ -253,4 +256,7 @@
 }
 .ico-large-video {
 	background-image: url(../../images/48x48/types/video.png);
+}
+.ico-large-webfile {
+	background-image: url(../../images/48x48/types/webfile.png);
 }

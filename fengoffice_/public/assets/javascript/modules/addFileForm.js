@@ -1,50 +1,101 @@
 App.modules.addFileForm = {
-  
-  /**
-  * Change state on the upload file click
-  *
-  * @param void
-  * @return null
-  */
-  updateFileClick: function(genid) {
-    if(Ext.getDom(genid+'fileFormUpdateFile').checked) {
-      Ext.getDom(genid+'updateFileDescription').style.display = 'none';
-      Ext.getDom(genid+'updateFileForm').style.display = 'block';
-    } else {
-      Ext.getDom(genid+'updateFileDescription').style.display = 'block';
-      Ext.getDom(genid+'updateFileForm').style.display = 'none';
-    } // if
-  }, 
-  
-  /**
-  * Change state on file change checkbox click
-  *
-  * @param void
-  * @return null
-  */
-  versionFileChangeClick: function(genid) {
-    if(Ext.getDom(genid+'fileFormVersionChange').checked) {
-      var display_value = 'block';
-    } else {
-      var display_value = 'none';
-    } // if
-  	  Ext.getDom(genid+'fileFormRevisionCommentBlock').style.display = display_value;
-  }
+
+	/**
+	 * Change state on the upload file click
+	 * 
+	 * @param void
+	 * @return null
+	 */
+	updateFileClick: function(genid) {
+		if (Ext.getDom(genid + 'fileFormUpdateFile').checked) {
+			Ext.getDom(genid + 'updateFileDescription').style.display = 'none';
+			Ext.getDom(genid + 'updateFileForm').style.display = 'block';
+		} else {
+			Ext.getDom(genid + 'updateFileDescription').style.display = 'block';
+			Ext.getDom(genid + 'updateFileForm').style.display = 'none';
+		} // if
+	},
+
+	/**
+	 * Change state on file change checkbox click
+	 * 
+	 * @param void
+	 * @return null
+	 */
+	versionFileChangeClick: function(genid) {
+		if (Ext.getDom(genid + 'fileFormVersionChange').checked) {
+			var display_value = 'block';
+		} else {
+			var display_value = 'none';
+		} // if
+		Ext.getDom(genid + 'fileFormRevisionCommentBlock').style.display = display_value;
+	}
 };
 
 og.fileValidateAttempt = false;
 og.checkFileNameResult = 0;
 
 og.fileCheckSubmit = function(genid) {
-	if (og.fileValidateAttempt){
+	if (og.fileValidateAttempt) {
 		og.fileCheckInterval = setInterval(function() {
-            if (og.checkFileNameResult != 0) {
-                clearInterval(og.fileCheckInterval);
-                if (og.checkFileNameResult == 2) og.fileSubmitMe(genid);
-            }
-        }, 100);
-	} else og.fileSubmitMe(genid);
+			if (og.checkFileNameResult != 0) {
+				clearInterval(og.fileCheckInterval);
+				if (og.checkFileNameResult == 2) {
+					og.fileSubmitMe(genid);
+				}
+			}
+		}, 100);
+	} else {
+		og.fileSubmitMe(genid);
+	}
 }
+
+og.fileSubmitMe = function(genid) {
+	var newRevision = (!Ext.get(genid + "fileFormUpdateFile") || Ext.getDom(genid + "fileFormUpdateFile").checked);
+	if (newRevision){
+		var comment = document.getElementById(genid + 'fileFormRevisionComment').value;
+		comment = comment.replace(/^\s*/, "").replace(/\s*$/, ""); //Trims the input string
+		var commentRequired = document.getElementById(genid + 'RevisionCommentsRequired').value;
+		if (comment == '' && commentRequired == "1") {
+			og.err(lang('file revision comments required'));
+			return false;
+		}
+	}
+	og.doFileUpload(genid, {
+		callback: function() {
+			form = document.getElementById(genid + 'addfile');
+			form.onsubmit();
+		}
+	});
+}
+
+og.doFileUpload = function(genid, config) {
+	var fileInput = document.getElementById(genid + 'fileFormFile');
+	var fileParent = fileInput.parentNode;
+	fileParent.removeChild(fileInput);
+	var form = document.createElement('form');
+	form.method = 'post';
+	form.enctype = 'multipart/form-data';
+	form.encoding = 'multipart/form-data';
+	form.action = og.getUrl('files', 'temp_file_upload', {'id': genid});
+	form.style.display = 'none';
+	form.appendChild(fileInput);
+	document.body.appendChild(form);
+	og.submit(form, {
+		callback: function() {
+			form.removeChild(fileInput);
+			fileParent.appendChild(fileInput);
+			document.body.removeChild(form);
+			if (typeof config.callback == 'function') {
+				config.callback.call(config.scope);
+			}
+		}
+	});
+}
+
+//*************************************************
+//   Filename Checking
+//*************************************************
 
 og.checkFileName = function(genid) {
 	og.fileValidateAttempt = true;
@@ -62,31 +113,20 @@ og.checkFileName = function(genid) {
 	  	}
 	  	var ws = Ext.getCmp(genid + "ws_ids").getValue();
 	 	
-	    og.openLink(og.getUrl('files','check_filename', {wsid: ws, id: eid}), {
-	    	post: {
-	    		filename: name
-	    	},
-	    	caller:this,
-	    	callback: function(success, data) {
-	    		og.checkFileNameCallback(success,data,genid);
-	    	}
-	    });
-    },100);
+	    og.openLink(og.getUrl('files', 'check_filename', {
+			wsid: ws,
+			id: eid
+		}), {
+			post: {
+				filename: name
+			},
+			caller: this,
+			callback: function(success, data) {
+				og.checkFileNameCallback(success, data, genid);
+			}
+		});
+	}, 100);
 }
-
-og.fileSubmitMe = function(genid) {
-	form = document.getElementById(genid + 'addfile');
-	Ext.get(genid + "addFileUploadingFile").setDisplayed(true);
-	og.submit(form, {
-		callback: og.getUrl('files', 'check_upload', {upload_id: genid})
-	});
-}
-
-
-//*************************************************
-//   Filename Checking
-//*************************************************
-
 
 og.checkFileNameCallback = function(success, data, genid){
 	if (success) {
@@ -124,10 +164,9 @@ og.addFileOption = function(table, file, genid){
 
 	if (file.can_edit && (!file.is_checked_out || file.can_check_in)){
 	
-		if (Ext.isIE)
+		if (Ext.isIE) {
 			var el = document.createElement('<input type="radio" name="file[upload_option]">');
-		else
-		{
+		} else {
 			var el = document.createElement('input');
 			el.type = "radio";
 			el.name = 'file[upload_option]';
@@ -200,9 +239,96 @@ og.addFileOption = function(table, file, genid){
 }
 
 
-og.updateFileName = function(genid) {
-	var name = document.getElementById(genid + 'fileFormFile').value;
+og.updateFileName = function(genid, name) {
 	var start = Math.max(0, Math.max(name.lastIndexOf('/'), name.lastIndexOf('\\') + 1));
 	name = name.substring(start);
 	document.getElementById(genid + 'fileFormFilename').value = name;
+	if (document.getElementById(genid + 'fileRadio').checked)
+		og.checkFileName(genid);
+	else
+		document.getElementById(genid + 'fileFormFilename').display = 'inline';
+		
+}
+
+
+//*************************************************
+// Add document Filename Checking
+//*************************************************
+
+og.showAddDocumentDialog = function(genid){
+	var form = Ext.getDom("fck" + genid);
+	var commentsRequired = Ext.getDom(genid + "commentsRequired").value == 1;
+	var config = {};
+	config.genid = genid;
+	config.title = lang('save');
+	config.height = 180;
+
+	config.dialogItems = [];
+	if (form.rename || !form['file[id]'].value){
+		config.dialogItems.push({xtype: 'textfield', name: 'title', value: form['file[name]'].value, id: genid + 'title', fieldLabel: lang('choose a filename'), allowBlank:false});
+		config.height += 40;
+	}
+	config.dialogItems.push({xtype: 'textarea', height:80, width:250, name: 'comment', id: genid + 'comment', fieldLabel: lang('comment'), allowBlank: (commentsRequired?'false':'true')});
+	if (form['file[id]'].value && form.rename){
+		config.height += 40;
+		config.dialogItems.push({
+			xtype: 'checkbox',
+			checked: false,
+			name: 'new_file', 
+			id: genid + 'new_file', 
+			fieldLabel: lang('save as a new document')
+		});
+	}
+	
+	config.ok_fn = function(){
+		var form = Ext.getDom("fck" + genid);
+		form['fileContent'].value = FCKeditorAPI.GetInstance("fck" + genid).GetHTML();
+		if (Ext.getCmp(genid + 'title')){
+			var filename = Ext.getCmp(genid + 'title').getValue();
+			if (filename.length < 5 || filename.substring(filename.length - 5) != '.html')
+				filename += '.html';
+			form['file[name]'].value = filename;
+		}
+		if (Ext.getCmp(genid + 'comment'))
+			form['file[comment]'].value = Ext.getCmp(genid + 'comment').getValue();
+		if (Ext.getCmp(genid + 'new_file')){
+			if (Ext.getCmp(genid + 'new_file').getValue())
+				form['file[id]'].value = '';
+		}
+		if (form['file[name]'].value != '' && (!commentsRequired || form['file[comment]'].value != '')){
+			og.ExtendedDialog.hide();
+			form.ready = true;
+			form.onsubmit();
+		}
+	};
+
+	og.ExtendedDialog.show(config);
+	setTimeout(function() {
+		btn = Ext.getCmp(genid + 'title');
+		if (btn != null) btn.focus();
+	}, 100);
+}
+
+og.addDocumentSubmit = function(genid){
+	var form = Ext.getDom("fck" + genid);
+	if (form.ready){
+		form.ready = false;
+		return true;
+	}
+	
+	og.showAddDocumentDialog(genid);
+	return false;
+}
+
+
+og.addDocumentTypeChanged = function(type, genid){
+	if(type == 0){
+		document.getElementById(genid + 'hfType').value = 0;
+		document.getElementById(genid + 'fileUploadDiv').style.display = '';
+		document.getElementById(genid + 'weblinkDiv').style.display = 'none';
+	}else{
+		document.getElementById(genid + 'hfType').value = 1;
+		document.getElementById(genid + 'fileUploadDiv').style.display = 'none';
+		document.getElementById(genid + 'weblinkDiv').style.display = '';
+	}
 }

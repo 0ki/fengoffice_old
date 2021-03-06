@@ -16,12 +16,11 @@ function addGridNavigation(grid){
 			grid.setActiveCell(grid.cells[grid.activeCell.getRow()-1][grid.activeCell.getColumn()]);
 		else
 			if(grid.onMove){
-				 grid.adjustViewPortY();
 				 grid.onMove(0,-1);
+//				 grid.adjustViewPortY();
 				 //TODO: the same as refresh
-				 grid.setActiveCell(grid.cells[grid.activeCell.getRow()][grid.activeCell.getColumn()]);
+//				 grid.setActiveCell(grid.cells[grid.activeCell.getRow()][grid.activeCell.getColumn()]);
 			}
-
 	}
 
 	grid.moveDown = function(){
@@ -29,10 +28,10 @@ function addGridNavigation(grid){
 			grid.setActiveCell(grid.cells[grid.activeCell.getRow()+1][grid.activeCell.getColumn()]);
 		else
 			if(grid.onMove){
-    			grid.adjustViewPortY();
+//    			grid.adjustViewPortY();
 				grid.onMove(0,1);
 				//TODO: the same as refresh
-				grid.setActiveCell(grid.cells[grid.viewport.row -1][grid.activeCell.getColumn()]);
+//				grid.setActiveCell(grid.cells[grid.viewport.row -1][grid.activeCell.getColumn()]);
 			}
 
 	}
@@ -42,12 +41,11 @@ function addGridNavigation(grid){
 			grid.setActiveCell(grid.cells[grid.activeCell.getRow()][grid.activeCell.getColumn()-1]);
 		else
 			if(grid.onMove){
-				 grid.adjustViewPortX();
+//				 grid.adjustViewPortX();
 				 grid.onMove(-1,0);
 				 //TODO: the same as refresh
-				 grid.setActiveCell(grid.cells[grid.activeCell.getRow()][grid.activeCell.getColumn()]);
+//				 grid.setActiveCell(grid.cells[grid.activeCell.getRow()][grid.activeCell.getColumn()]);
 			}
-
 	}
 
 	grid.moveRight = function(){
@@ -56,10 +54,10 @@ function addGridNavigation(grid){
 			grid.setActiveCell(grid.cells[grid.activeCell.getRow()][grid.activeCell.getColumn()+1]);
 		else
 			if(grid.onMove){
-				 grid.adjustViewPortX();
+//				 grid.adjustViewPortX();
 				 grid.onMove(1,0);
 				 //TODO: the same as refresh
-				 grid.setActiveCell(grid.cells[grid.activeCell.getRow()][grid.viewport.col-1]);
+//				 grid.setActiveCell(grid.cells[grid.activeCell.getRow()][grid.viewport.col-1]);
 			}
 
 	}

@@ -44,7 +44,7 @@ if (!function_exists('iconv')) {
 	}
 }
 
-function strpos_utf($haystack, $needle, $offset) {
+function strpos_utf($haystack, $needle, $offset = 0) {
 	if (function_exists('mb_strpos')) {
 		return mb_strpos($haystack, $needle, $offset, 'UTF-8');
 	} else {

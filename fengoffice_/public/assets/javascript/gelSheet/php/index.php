@@ -10,11 +10,20 @@
  *  For details see: http://www.gnu.org/copyleft/gpl.html
  *
  */
+	define ("GS_ROOT", dirname(__FILE__) );
 	/**** Scripts that must be included: autoloader is only for objects ****/  
 	include_once './config/settings.php'	;
 	include_once './util/db_functions.php'	;
 	include_once './util/lang/languages.php';
 	/***********************************************************************/
+	
+	
+	function validateCall($controller, $method, $parameters ) {
+		if (trim($controller) ==  'SpreadsheetController') return TRUE ;
+		if (trim($controller) ==  'UserController') return TRUE ;
+		if (trim($controller) ==  'LanguageController') return TRUE ;
+		return FALSE ;
+	}
 	
 	/**
 	 * Enter description here...
@@ -81,7 +90,12 @@
 	$controller = $_REQUEST['c']."Controller";
 	$method = $_REQUEST['m'];
 	$params = splitParameters("param");
-
+	
+	
+	if (! validateCall($controller, $method, $params) ){
+		die ("invalid class/method/params") ;
+	}
+	
 	if (class_exists($controller)) {
 		if (method_exists($controller, $method)) {
 			$cont = new $controller();

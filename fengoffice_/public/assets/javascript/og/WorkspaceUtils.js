@@ -50,6 +50,13 @@ og.showWsPaths = function(containerItemName, showPath, showCurrent){
 		if (list[i].className == 'project-replace'){
 			list[i].className = '';
 			var ids = list[i].innerHTML.split(',');
+			var tree = Ext.getCmp('workspaces-tree');
+			var activews = tree.tree.getActiveWorkspace();
+			for (var j = 0; j < ids.length; j++)
+				if (ids[j] == activews.id && !showCurrent){
+					ids.splice(j,1);
+					j--;
+				}
 			var html = '';
 			if (ids.length > 2){
 				html = '<span class="og-wsname og-wsname-color-0 ico-workspaces-expand" id="spshow' + rand_no + '-' + i + '" onclick="document.getElementById(\'sphide' + rand_no + '-' + i + '\').style.display =\'inline\';document.getElementById(\'spcont' + rand_no + '-' + i + '\').style.display =\'inline\';this.style.display=\'none\'">' + ids.length + '&nbsp;'+ lang('workspaces') + '</span>';

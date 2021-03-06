@@ -1,5 +1,5 @@
-
 <?php
+
 $duration = $variables["duration"];
 $desc = $variables["desc"];
 $attendance = isset($variables["attendance"]) ? $variables["attendance"] : null;

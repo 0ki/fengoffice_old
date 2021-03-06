@@ -12,6 +12,9 @@
 function cmdSetBoldStyle(){
 	application.model.changeBoldToSelection();
 }
+function cmdSetFontStyleId(fsId){
+	application.model.setSelectionFontStyleId(fsId);
+}
 
 function cmdSetItalicStyle(){
 	application.model.changeItalicToSelection();
@@ -37,7 +40,6 @@ function cmdSetBgColor(color){
 function cmdSetFontSizeStyle(size){
 	application.model.changeFontSizeToSelection(size);
 }
-
 
 
 function cmdSetLeftAlign(){

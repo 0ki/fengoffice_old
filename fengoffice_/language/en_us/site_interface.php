@@ -93,15 +93,21 @@
     // Dashboard
     'welcome to new account' => 'Welcome to your newly created account',
     'welcome to new account info' => '{0}, welcome to your new account. From now on it will always be available on {1} (you can bookmark this link). You can get started in a minute following these easy steps:',
-    'new account step1' => 'Step 1: Update your company info',
-    'new account step1 info' => '<a class="internalLink" href="{0}">Set your company details</a> such as phone and fax number, address, email, homepage etc',
-    'new account step2' => 'Step 2: Add team members',
-    'new account step2 info' => 'You can <a class="internalLink" href="{0}">create user accounts</a> for all members of your team (unlimited number). Every member will get their username and password which they can use to access the system',
-    'new account step3' => 'Step 3: Add client companies and their members',
-    'new account step3 info' => 'Now its time to <a class="internalLink" href="{0}">define client companies</a> (unlimited). When you\'re done you can add their members or leave that for their team leaders. Client members are similar to your company members except that they have limited access to content and functions (you can set what they can do per workspace and per member)',
-    'new account step4' => 'Step 4: Start a workspace',
-    'new account step4 info' => 'Defining a <a class="internalLink" href="{0}">new workspace</a> is really easy: set a name and description (optional) and click submit. After that you can set permissions for your team members and clients.',
-    
+    'new account step1 owner' => 'Step 1: Update your company info',
+    'new account step1 owner info' => '<a class="internalLink" href="{0}">Set your company details</a> such as phone and fax number, address, email, homepage etc',
+   	'new account step add members' => 'Step {0}: Add team members',
+    'new account step add members info' => 'You can <a class="internalLink" href="{0}">create user accounts</a> for all members of your team. Every member will get their username and password which they can use to access the system',
+    'new account step start workspace' => 'Step {0}: Start a workspace',
+    'new account step start workspace info' => 'Defining a <a class="internalLink" href="{0}">new workspace</a> is really easy: set a name and description (optional) and click submit. After that you can set permissions for your team members and clients.',
+  	'new account step configuration' => 'Step {0}: Configuration',
+  	'new account step configuration info' => '<a class="internalLink" href="{0}">Manage</a> opengoo general settings, mailing configuration, enable/disable modules, among other options',
+	'new account step profile' => 'Step {0}: Update profile',
+  	'new account step profile info' => 'Update your <a class="internalLink" href="{0}">user profile</a>',
+  	'new account step preferences' => 'Step {0}: Update user preferences',
+  	'new account step preferences info' => 'Update your <a class="internalLink" href="{0}">user preferences</a> such as general preferences, dashboard options and task options',
+  	'new account step actions' => 'Step {0}: Actions',
+  	'getting started' => 'Getting Started',
+  	
     // Application log
     'application log details column name' => 'Details',
     'application log project column name' => 'Workspace',
@@ -253,6 +259,7 @@
   'classify' => 'Classify',
   'classify email' => 'Classify email',
   'classify email subject' => 'Classify email: \'{0}\'',
+  'unclassify' => 'Unclassify',
   'add attachments to project' => 'Add attachments to workspace',
   'project emails' => '{0} emails',
   'edit email account' => 'Edit {0}',
@@ -272,6 +279,7 @@
   'checkin file' => 'Checkin file',
   
   'new filename' => 'New filename',
+  'new weblink' => 'New weblink',
   'add as revision' => 'Add as revision',
   'duplicate filename' => 'Duplicate filename',
   'filename exists' => 'Files with the specified filename already exists. You can select a different filename or choose among the following options',
@@ -328,6 +336,7 @@
   'created by' => 'Created by',
   'modified by' => 'Modified by',
   'deleted by' => 'Deleted by',
+  'checked out by' => 'Checked out by',
   'user date' => '<a class="internalLink" href="{0}" title="View {3}\'s profile">{1}</a>, on {2}',
   'user date today at' => '<a class="internalLink" href="{0}" title="View {3}\'s profile">{1}</a>, today at {2}',
   'today at' => 'Today, at {0}',
@@ -576,6 +585,20 @@
   'total billing by user' => 'Total billing by user',
   'assign billing categories to users' => 'Assign billing categories to users',
   'new version notification title' => 'New version',
+  
+  'workspace contacts' => 'Contacts',
+  'search contact' => 'Search contact',
+  'add new contact' => 'Add new contact',
+  'no contacts to display' => 'No contacts to display',
+  'workspace info' => 'Workspace information',
+  'workspace description' => 'Workspace description for \'{0}\'',
+  'show all amount' => 'Show all ({0})',
+  'searching' => 'Searching',
+  
+  'weblink' => 'Weblink',
+  
+  'add value' => 'Add value',
+  'remove value' => 'Remove value'
   ); // array
 
 ?>

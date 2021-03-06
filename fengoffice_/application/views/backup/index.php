@@ -11,7 +11,8 @@
   
 <div id="administrationTools">
 	<div class="administrationToolDesc">
-		<?php echo lang ('backup process desc');?>
+		<?php echo lang('backup process desc');?>
+		<?php echo lang('backup config warning');?>
 	</div><br>
     <div class="administrationToolName">
     	<?php 

@@ -109,6 +109,9 @@
 	'calendar of' => 'Calendario de {0}',
 	'all users' => 'Todos los Usuarios',
 	'error delete event' => 'Error al eliminar evento',
+  	'event invitation response' => 'Respuesta a invitación para evento',
+  	'user will attend to event' => '{0} va a participar del evento.',
+  	'user will not attend to event' => '{0} no va a participar del evento',  
 	'days' => 'días',
 	'weeks' => 'semanas',
 	'months' => 'meses',
@@ -133,4 +136,10 @@
 	'calendar name desc' => 'Nombre para el calendario a exportar',
 	'calendar will be exported in icalendar format' => 'El calendario se exportará en formato iCalendar.',
 	'view date title' => 'l, d/m/Y',
+
+	'copy this url in your calendar client software' => 'Copie esta url en su aplicación de calendario, para importar los eventos de este calendario',
+	'import events from third party software' => 'Importe eventos desde otras aplicaciones',
+	'subws' => 'Sub Esp.',
+	'check to include sub ws' => 'Active esta casilla para incluír los sub espacios de trabajo en el link',
+	
 ); ?>

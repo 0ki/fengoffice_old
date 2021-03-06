@@ -67,6 +67,9 @@
 .ico-classify {
 	background-image: url(../../images/16x16/classify.png) !important;
 }
+.ico-unclassify {
+	background-image: url(../../images/16x16/unclassify.png) !important;
+}
 .ico-complete {
 	background-image: url(../../images/16x16/complete.png) !important;
 }
@@ -97,7 +100,7 @@
 .ico-edit {
 	background-image: url(../../images/16x16/new.png) !important;
 }
-.ico-email {
+.ico-email, .ico-emails {
 	background-image: url(../../images/16x16/email.png) !important;
 }
 .ico-check_mails {
@@ -122,7 +125,7 @@
 .ico-empty {
 	background-image: url(../../images/s.gif) !important;
 }
-.ico-event {
+.ico-event, .ico-events {
 	background-image: url(../../images/16x16/calendar.png) !important;
 }
 .ico-calendar-month {
@@ -149,6 +152,9 @@
 .ico-large-configuration {
 	background-image: url(../../images/48x48/configuration.png);
 }
+.ico-large-custom-properties {
+	background-image: url(../../images/48x48/custom_properties.png);
+}
 .ico-large-group {
 	background-image: url(../../images/48x48/groups.png);
 }
@@ -173,7 +179,7 @@
 .ico-comment {
 	background-image: url(../../images/16x16/comment.png) !important;
 }
-.ico-milestone {
+.ico-milestone, .ico-milestones {
 	background-image: url(../../images/16x16/milestone.png) !important;
 }
 .ico-more {
@@ -333,14 +339,14 @@
 .ico-share {
 	background-image: url(../../images/16x16/share.png) !important;
 }
-.ico-rss {
-	background-image: url(../../images/16x16/rss.png) !important;
-}
 .ico-up {
 	background-image: url(../../images/16x16/up.png);
 }
 .ico-down {
 	background-image: url(../../images/16x16/down.png);
+}
+.ico-rss {
+	background-image: url(../../images/16x16/rss.png) !important;
 }
 .ico-open-link {
 	background-image: url(../../images/16x16/openlink.png) !important;
@@ -350,6 +356,8 @@
 	height: 16px;
 	background-repeat: no-repeat;
 	padding-left:20px;
+	padding-top:1px;
+	padding-bottom:1px;
 }
 
 .clico {

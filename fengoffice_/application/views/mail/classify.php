@@ -17,7 +17,7 @@ function showProjectTagsDiv()
   <div class="coInputHeader">
   <div class="coInputHeaderUpperRow">
   	<div class="coInputTitle"><table style="width:535px"><tr><td><?php echo lang('classify email subject', clean($email->getSubject())) ?>
-  	</td><td style="text-align:right"><?php echo submit_button(lang('classify email'), 's', array('style'=>'margin-top:0px;margin-left:10px;width:auto', 'tabindex' => '40')) ?></td></tr></table></div>
+  	</td><td style="text-align:right"><?php echo submit_button(lang('classify'), 's', array('style'=>'margin-top:0px;margin-left:10px;width:auto', 'tabindex' => '40')) ?></td></tr></table></div>
   </div>
   </div>
   
@@ -46,7 +46,7 @@ function showProjectTagsDiv()
    </fieldset>
 <?php } ?>
 
-<?php echo submit_button(lang('classify email'), 's', array('tabindex' => '40')) ?>
+<?php echo submit_button(lang('classify'), 's', array('tabindex' => '40')) ?>
   </div>
 </div>
 </form>

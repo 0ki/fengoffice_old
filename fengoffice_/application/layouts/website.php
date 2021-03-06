@@ -35,7 +35,6 @@
 			echo add_javascript_to_page($onejs);
 		}
 	}
-
 	?>
 	<link rel="alternate" type="application/rss+xml" title="<?php echo clean(owner_company()->getName()) ?> RSS Feed" href="<?php echo logged_user()->getRecentActivitiesFeedUrl() ?>" />
 </head>
@@ -98,8 +97,8 @@
 <!-- /footer -->
 
 <script>
-
 // OG config options
+og.noOfTasks = <?php echo defined('NO_OF_TASKS') ? NO_OF_TASKS : 8 ?>;
 og.pageSize = <?php echo config_option('files_per_page', 10)?>;
 og.timeFormat24 = <?php echo config_option('time_format_use_24', 0) ? 1 : 0 ?>;
 og.hostName = '<?php echo ROOT_URL ?>';
@@ -126,7 +125,7 @@ og.hasNewVersions = <?php
 		echo json_encode(lang('new OpenGoo version available', "#", "og.openLink(og.getUrl('administration', 'upgrade'))"));
 	} else {
 		echo "false";
-	}	
+	}
 ?>;
 og.enableNotesModule = <?php echo config_option("enable_notes_module", 1) ? 1 : 0 ?>;
 og.enableEmailModule = <?php echo config_option("enable_email_module", defined('SHOW_MAILS_TAB') && SHOW_MAILS_TAB) ? 1 : 0 ?>;
@@ -138,8 +137,9 @@ og.enableWeblinksModule = <?php echo config_option("enable_weblinks_module", 1) 
 og.enableTimeModule = <?php echo config_option("enable_time_module", 1) ? 1 : 0 ?>;
 og.enableReportingModule = <?php echo config_option("enable_reporting_module", 1) ? 1 : 0 ?>;
 og.daysOnTrash = <?php echo config_option("days_on_trash", 0) ?>;
+og.showCheckoutNotification  = <?php echo config_option('checkout_notification_dialog', 0) ? 1 : 0 ?>;
 Ext.Ajax.timeout = <?php echo get_max_execution_time()*1100 // give a 10% margin to PHP's timeout ?>;
-og.GooPlayer.sound = new Sound();
+og.musicSound = new Sound();
 og.systemSound = new Sound();
 
 var quickAdd = new og.QuickAdd({renderTo:'quickAdd'});
@@ -151,6 +151,8 @@ setInterval(function() {
 		preventPanelLoad: true
 	});
 }, 60000);
+
+og.date_format = '<?php echo user_config_option('date_format', 'd/m/Y') ?>';
 
 </script>
 <?php include_once(Env::getLayoutPath("listeners"));?>

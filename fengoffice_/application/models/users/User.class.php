@@ -81,6 +81,13 @@ class User extends BaseUser {
 	private $active_projects;
 
 	/**
+	 * Cached value of owned projects
+	 *
+	 * @var array
+	 */
+	private $own_projects;
+
+	/**
 	 * Cached value of active project ids
 	 *
 	 * @var string
@@ -192,6 +199,30 @@ class User extends BaseUser {
 		$this->addProtectedAttribute('password', 'salt', 'session_lifetime', 'token', 'twister', 'last_login', 'last_visit', 'last_activity');
 	} // __construct
 
+	
+    /**
+    * Returns true if user info is updated by the user since user is created.
+    *
+    * @access public
+    * @param void
+    * @return boolean
+    */
+    function isInfoUpdated() {
+      return $this->getCreatedOn()->getTimestamp() < $this->getUpdatedOn()->getTimestamp();
+    } // isInfoUpdated
+
+	
+    /**
+    * Returns true if user info is updated by the user since user is created.
+    *
+    * @access public
+    * @param void
+    * @return boolean
+    */
+    function hasPreferencesUpdated() {
+      return UserWsConfigOptionValues::hasOptionValues($this);
+    } // isInfoUpdated
+	
 	/**
 	 * Check if this user is member of specific company
 	 *
@@ -333,7 +364,7 @@ class User extends BaseUser {
 	 *
 	 */
 	function getContact(){		
-		$cont = Contacts::findOne(array('conditions'=>array('user_id = ' . $this->getId())));
+		$cont = Contacts::findOne(array('include_trashed' => true, 'conditions'=>array('user_id = ' . $this->getId())));
 		if($cont instanceof Contact )
 			return $cont;
 		else 
@@ -390,6 +421,20 @@ class User extends BaseUser {
 		} // if
 		return $this->active_projects;
 	} // getActiveProjects
+	
+	/**
+	 * Return array of active projects that this user created
+	 *
+	 * @access public
+	 * @param void
+	 * @return array
+	 */
+	function getOwnProjects() {
+		if(is_null($this->own_projects)) {
+			$this->own_projects = Projects::find('`created_by` = ' . $this->getId());
+		} // if
+		return $this->own_projects;
+	} // getOwnProjects
 
 	/**
 	 * Returns csv list of email account Ids
@@ -427,7 +472,7 @@ class User extends BaseUser {
 				$this->active_projects_ids = implode(',', $list);
 			}
 			else 
-				$this->active_projects_ids = "";
+				$this->active_projects_ids = "0";
 		}
 		return $this->active_projects_ids;
 	} // getActiveProjects
@@ -1271,6 +1316,10 @@ class User extends BaseUser {
 			$result['isCurrent'] = true;
 		
 		return $result;
+	}
+	
+	function getLocale() {
+		return user_config_option("localization", DEFAULT_LOCALIZATION, $this->getId());
 	}
 } // User
 

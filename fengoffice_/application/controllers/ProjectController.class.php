@@ -326,6 +326,23 @@ class ProjectController extends ApplicationController {
 						}
 					}
 				}
+				
+				/* Project contacts */
+				if (can_manage_contacts(logged_user())){
+					$contacts = array_var($project_data,'contacts', null);
+					if ($contacts){
+						foreach ($contacts as $contact_data){
+							$contact = Contacts::findById($contact_data['contact_id']);
+							if ($contact instanceof Contact){
+								$pc = new ProjectContact();
+								$pc->setProjectId($project->getId());
+								$pc->setContactId($contact_data['contact_id']);
+								$pc->setRole($contact_data['role']);
+								$pc->save();
+							}
+						}
+					}
+				}
 
 				$permission_columns = ProjectUsers::getPermissionColumns();
 				$auto_assign_users = owner_company()->getAutoAssignUsers();
@@ -412,6 +429,9 @@ class ProjectController extends ApplicationController {
 				} // foreach
 				/* </permissions> */
 				
+				$object_controller = new ObjectController();
+				$object_controller->add_custom_properties($project);
+				
 				ApplicationLogs::createLog($project, null, ApplicationLogs::ACTION_ADD, false, true);
 				DB::commit();
 				
@@ -473,6 +493,7 @@ class ProjectController extends ApplicationController {
 		tpl_assign('projects', $projects);
 		tpl_assign('project_data', $project_data);
 		tpl_assign('billing_amounts', $project->getBillingAmounts());
+		tpl_assign('subject_matter_experts', ProjectContacts::getContactsByProject($project));
 		
 		/* <permissions> */
 		if ($project->canChangePermissions(logged_user())) {
@@ -543,6 +564,25 @@ class ProjectController extends ApplicationController {
 					}
 				}
 				
+				/* Project contacts */
+				if (can_manage_contacts(logged_user())){
+					ProjectContacts::clearByProject($project);
+					$contacts = array_var($project_data,'contacts', null);
+					if ($contacts){
+						foreach ($contacts as $contact_data){
+							$contact = Contacts::findById($contact_data['contact_id']);
+							if ($contact instanceof Contact){
+								$pc = new ProjectContact();
+								$pc->setProjectId($project->getId());
+								$pc->setContactId($contact_data['contact_id']);
+								$pc->setRole($contact_data['role']);
+								$pc->save();
+							}
+						}
+					}
+				}
+				
+				
 				/* <permissions> */
 				if ($project->canChangePermissions(logged_user())) {
 					$project->clearCompanies();
@@ -598,7 +638,10 @@ class ProjectController extends ApplicationController {
 						} // if
 					} // foreach
 				}
-				/* </permissions> */
+				/* </permissions> */				
+				
+				$object_controller = new ObjectController();
+				$object_controller->add_custom_properties($project);
 				
 				ApplicationLogs::createLog($project, null, ApplicationLogs::ACTION_EDIT, false, true);
 				DB::commit();

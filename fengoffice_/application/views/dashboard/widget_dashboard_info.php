@@ -1,28 +1,56 @@
+<?php 
+	if (user_config_option('show_dashboard_info_widget_context_help', true, logged_user()->getId())) {
+		tpl_assign('helpDescription', lang('chelp dashboard info widget'));
+		tpl_assign('option_name' , 'dashboard_info_widget');
+		$this->includeTemplate(get_template_path('context_help', 'help'));
+	}
+	$date_format = user_config_option('date_format', 'd/m/Y');
+?>
+
 <div style="padding:10px">
-<?php $project = active_project();
-	$description = active_project()->getDescription();
-	if (active_project()->getShowDescriptionInOverview() && $description != ''){?>
-	<div class='endSeparatorDiv'>
-		<?php echo nl2br(clean($description));?>
-	</div>
-<?php }	
+<?php 
+
+
+	$project = active_project();
+	if (can_manage_contacts(logged_user())){
+		$contacts = ProjectContacts::getContactsByProject($project);
+		if (count($contacts) > 0){
+			?><div class='endSeparatorDiv'>
+			<b><?php echo lang('workspace contacts') ?>:</b>
+				<div style='padding-left:15px'><?php
+			$c = 0;
+			//echo var_dump($users);
+			foreach ($contacts as $contact){
+				if ($c != 0)
+					echo '<br/>';
+				$c++;
+				?><span><a href="<?php echo $contact->getCardUrl()?>" class="internalLink coViewAction ico-contact"><?php echo $contact->getDisplayName() ?></a> - <span class="desc"><?php echo $contact->getRole(active_project())->getRole() ?></span></span><?php
+			}
+			?></div>
+			</div>
+<?php }}
+
 	if (logged_user()->isMemberOfOwnerCompany()){
 		$users = $project->getUsers(false); 
 		if (count($users) > 1){
-			?><div class='endSeparatorDiv'>
-				<table><tr><td style='padding-right:10px'><b><?php echo lang('shared with') ?>:</b></td><td><?php
+			?><div class='endSeparatorDiv' id='workspaceUsersDiv'>
+			<b><?php echo lang('shared with') ?>:</b>
+			<div style='padding-left:15px'><?php
 			$c = 0;
 			//echo var_dump($users);
 			foreach ($users as $user){
 				if ($user instanceof User && $user->getId() != logged_user()->getId()){
-					if ($c != 0)
-						echo ',&nbsp';
 					$c++;
-					?><a href="<?php echo $user->getCardUrl()?>" class="internalLink coViewAction ico-user"><?php echo clean($user->getDisplayName()) ?></a><?php
+					?><div class="dashSMDIU" style="white-space:nowrap;<?php echo ($c > 3 && count($users) > 5)? 'display:none':''?>"><a href="<?php echo $user->getCardUrl()?>" class="internalLink coViewAction ico-user"><?php echo clean($user->getDisplayName()) ?></a></div><?php
 				}
 			}
-			?></td></tr></table>
+			if (count($users) > 5) {?>
+			<div id="dashSMDIUT" style="width:100%;text-align:left">
+				<a href="#" onclick="og.hideAndShowByClass('dashSMDIUT', 'dashSMDIU', 'workspaceUsersDiv'); return false;"><?php echo lang("show all amount", count($users) -4) ?>...</a>
 			</div>
+			<?php } ?>
+			</div>
+		</div>
 <?php }} ?>	
 
 <table><?php if ($project->getCreatedBy() instanceof User){ ?>
@@ -37,7 +65,7 @@
 					$datetime = format_time($project->getCreatedOn());
 					echo lang('user date today at', $project->getCreatedByCardUrl(), $username, $datetime, clean($project->getCreatedByDisplayName()));
 				} else {
-					$datetime = format_datetime($project->getCreatedOn(), lang('date format'), logged_user()->getTimezone());
+					$datetime = format_datetime($project->getCreatedOn(), $date_format, logged_user()->getTimezone());
 					echo lang('user date', $project->getCreatedByCardUrl(), $username, $datetime, clean($project->getCreatedByDisplayName()));
 				}
 			 ?></td></tr>
@@ -54,11 +82,14 @@
 					$datetime = format_time($project->getUpdatedOn());
 					echo lang('user date today at', $project->getUpdatedByCardUrl(), $username, $datetime, clean($project->getUpdatedByDisplayName()));
 				} else {
-					$datetime = format_datetime($project->getUpdatedOn(), lang('date format'), logged_user()->getTimezone());
+					$datetime = format_datetime($project->getUpdatedOn(), $date_format, logged_user()->getTimezone());
 					echo lang('user date', $project->getUpdatedByCardUrl(), $username, $datetime, clean($project->getUpdatedByDisplayName()));
 				}
 			 ?></td></tr>
 	<?php } ?>
+	<tr><td colspan="2">
+		<?php echo render_custom_properties($project); ?><br/>
+	</td></tr>
 	<tr><td colspan="2"><a target="_blank" class="link-ico ico-rss" href="<?php echo get_url('feed', 'project_activities', array('id' => logged_user()->getId(), 'token' => logged_user()->getTwistedToken(), 'project' => $project->getId())) ?>"><?php echo lang("recent project activities feed", clean($project->getName()))?></a></td></tr>
 </table>
 </div>

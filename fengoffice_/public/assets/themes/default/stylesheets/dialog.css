@@ -233,3 +233,18 @@ span.required {
   position: relative;
   top: -4px;
 }
+
+/** Change password dialog **/
+
+#changePasswordDiv, #repeatPasswordDiv {
+  padding-top: 1px;
+}
+
+#changePasswordDiv {
+  float: left;
+  margin-left: 1px;
+}
+
+#repeatPasswordDiv {
+  margin-left: 170px;
+}

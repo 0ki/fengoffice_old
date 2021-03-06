@@ -1,20 +1,14 @@
-Slimey.prototype.submitFile = function(newRevision, rename) {
+Slimey.prototype.submitFile = function(newRevision, rename, checkin) {
 	function doSubmit(filename) {
 		if (filename.substring(filename.length - 5) != ".slim") filename += ".slim";
 		this.filename = filename;
 		og.openLink(this.saveUrl, {
 			post: {
 				'file[name]': this.filename,
-				'file[id]': this.fileId,
+				'file[id]': this.config.fileId,
 				'slimContent': this.slimContent,
-				'new_revision_document': (newRevision?"checked":"")
-			},
-			callback: function(success) {
-				if (success) {
-					this.isDirty = false;
-					var p = og.getParentContentPanel(Ext.get(this.container));
-					Ext.getCmp(p.id).setPreventClose(false);
-				}
+				'new_revision_document': (newRevision?"checked":""),
+				'checkin': checkin?"1":""
 			},
 			scope: this
 		});
@@ -33,8 +27,9 @@ Slimey.prototype.onInit = function() {
 }
 
 Slimey.prototype.onDirty = function() {
-	var p = og.getParentContentPanel(Ext.get(this.container));
-	Ext.getCmp(p.id).setPreventClose(this.isDirty);
+	var p = og.getParentContentPanel(this.container);
+	if (p) var panel = Ext.getCmp(p.id);
+	if (panel) panel.setPreventClose(this.isDirty);
 }
 
 /**

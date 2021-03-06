@@ -16,7 +16,7 @@
     * @param string $additional_conditions
     * @return array
     */
-    function getContactsByProject(Project $project, $additional_conditions = null) {
+    static function getContactsByProject(Project $project, $additional_conditions = null) {
       $contacts_table = Contacts::instance()->getTableName(true);
       $project_contacts_table=  ProjectContacts::instance()->getTableName(true);
       

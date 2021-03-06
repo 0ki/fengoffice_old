@@ -482,6 +482,5 @@ addLangs({
 	'sort tags by count': 'Nummerisch',
 	'confirm template with no objects': 'Sicher, eine Vorlage ohne Objekte zu erstellen? (Hinzufügen von Objekten später möglich)',
 	'show more': 'Zeige mehr',
-	'actions': 'Aktionen',
-	'new version notification title': 'New version'
+	'actions': 'Aktionen'
 });

@@ -1,3 +1,10 @@
+<?php
+require_javascript('og/tasks/TasksTopToolbar.js');
+require_javascript('og/CalendarToolbar.js');
+require_javascript('og/CalendarFunctions.js');
+require_javascript('og/EventPopUp.js'); 
+?>
+
 <script type="text/javascript">
 	scroll_to = -1;
 </script>
@@ -25,7 +32,7 @@ $user = Users::findById(array('id' => $user_filter));
 if ($user == null) $user = logged_user();
 
 $use_24_hours = user_config_option('time_format_use_24');
-
+$date_format = user_config_option('date_format', 'd/m/Y');
 ?>
 <?php echo stylesheet_tag('event/day.css') ?>
 
@@ -86,20 +93,35 @@ $use_24_hours = user_config_option('time_format_use_24');
 		<tr>
 			<td class="coViewHeader" id='cal_coViewHeader' colspan=2  rowspan=1>
 				<div class="coViewTitle">				
-					<span id="chead0"><?php echo $view_title .' - '. ($user_filter == -1 ? lang('all users') : lang('calendar of', clean($user->getDisplayName()))); ?></span>	
+					<table style="width:100%"><tr><td>
+						<span id="chead0"><?php echo $view_title .' - '. ($user_filter == -1 ? lang('all users') : lang('calendar of', clean($user->getDisplayName()))); ?></span>
+					</td><td style="width:100px;">
+					<?php echo checkbox_field("include_subws", true, array("id" => "include_subws", "style" => "float:right;", "onclick" => "javascript:og.change_link_incws('ical_link', 'include_subws')", "title" => lang('check to include sub ws'))) ?>
+				 	<?php echo label_tag(lang('subws'), "include_subws", false, array("style" => "float:right;font-size:60%;margin:0px 3px;vertical-align:top;", "title" => lang('check to include sub ws')), "") ?>
+				 	<?php 
+				 		$export_name = active_project() != null ? clean(active_project()->getName()) : clean($user->getDisplayName());
+				 		$export_ws = active_project() != null ? active_project()->getId() : 0;
+				 	 ?>
+				 	<a class="iCalSubscribe" id="ical_link" style="float:right;" href="<?php echo ROOT_URL ."/index.php?c=feed&a=ical_export&n=$export_name&cal=$export_ws&t=".$user->getToken()."&isw=1" ?>" 
+				 		title="<?php echo lang('copy this url in your calendar client software')?>"
+				 		onclick="javascript:Ext.Msg.show({
+											   	title: '<?php echo escape_single_quotes(lang('import events from third party software')) ?>',
+											   	msg: '<?php echo escape_single_quotes(lang('copy this url in your calendar client software')) ."<br><br><br>"?>'+document.getElementById('ical_link').href,
+									   			icon: Ext.MessageBox.INFO });"></a>
+					 </td></tr></table>	
 				</div>
 			</td>
 		</tr>
 		
 		<tr>
 			<td class="coViewBody" style="padding:0px;height:100%;" colspan=2>
-			<div id="chrome_main2" class="printborder" style="border-color: rgb(195, 217, 255); background: rgb(195, 217, 255) none repeat scroll 0% 50%; width:100%; height:100%;">
+			<div id="chrome_main2" style="width:100%; height:100%;">
 					
 				<div id="allDayGrid" class="inset grid"  style="height: <?php echo $alldaygridHeight ?>px; margin-bottom: 5px;background:#E8EEF7;margin-right:0px;margin-left:40px;" 
-					onclick="showEventPopup(<?php echo $dtv->getDay() ?>, <?php echo $dtv->getMonth()?>, <?php echo $dtv->getYear()?>, -1, -1, <?php echo ($use_24_hours ? 'true' : 'false'); ?>);" >
+					onclick="showEventPopup(<?php echo $dtv->getDay() ?>, <?php echo $dtv->getMonth()?>, <?php echo $dtv->getYear()?>, -1, -1, <?php echo ($use_24_hours ? 'true' : 'false'); ?>,'<?php echo $dtv->format($date_format) ?>');" >
 					
 					<div id="allDay0" class="allDayCell" style="left: 0px; height: <?php echo $alldaygridHeight ?>px;border-left:3px double #DDDDDD !important; position:absolute;width:3px;"></div>
-					<div id="alldayeventowner" onclick="stopPropagation(event) ">
+					<div id="alldayeventowner" onclick="event.stopPropagation() ">
 						<?php	
 							$top=0;
 							foreach ($alldayevents as $event){	
@@ -142,7 +164,7 @@ $use_24_hours = user_config_option('time_format_use_24');
 							<div class="noleft <?php echo  $ws_class?>" style="<?php echo  $ws_style?>; border-left:1px solid; border-right:1px solid; border-color:<?php echo $border_color ?>">							
 								<div class="" style="overflow: hidden; padding-bottom: 1px;">
 								
-									<nobr style="display: block; text-decoration: none;"><a href='<?php echo $event->getViewUrl()?>' class='internalLink' onclick="stopPropagation(event);"><img src="<?php echo $img_url?>" align='absmiddle' border='0'> <span style="color:<?php echo $txt_color ?>!important"><?php echo $subject ?></span> </a></nobr>
+									<nobr style="display: block; text-decoration: none;"><a href='<?php echo $event->getViewUrl()?>' class='internalLink' onclick="event.stopPropagation();"><img src="<?php echo $img_url?>" align='absmiddle' border='0'> <span style="color:<?php echo $txt_color ?>!important"><?php echo $subject ?></span> </a></nobr>
 								
 								</div>
 							</div>
@@ -206,12 +228,12 @@ $use_24_hours = user_config_option('time_format_use_24');
 														onmouseover="if (!selectingCells) overCell('<?php echo $div_id?>'); else paintSelectedCells('<?php echo $div_id?>');"
 														onmouseout="if (!selectingCells) resetCell('<?php echo $div_id?>')";
 														onmousedown="selectStartDateTime(<?php echo $dtv->getDay() ?>, <?php echo $dtv->getMonth()?>, <?php echo $dtv->getYear()?>, <?php echo date("G",mktime($hour/2))?>, <?php echo ($hour % 2 ==0)?0:30 ?>); resetCell('<?php echo $div_id?>'); paintingDay=0; paintSelectedCells('<?php echo $div_id?>');"
-														onmouseup="showEventPopup(<?php echo $dtv->getDay() ?>, <?php echo $dtv->getMonth()?>, <?php echo $dtv->getYear()?>, <?php echo date("G",mktime(($hour+1)/2))?>, <?php echo (($hour+1) % 2 ==0)?0:30 ?>, <?php echo ($use_24_hours ? 'true' : 'false'); ?>);"></div>
+														onmouseup="showEventPopup(<?php echo $dtv->getDay() ?>, <?php echo $dtv->getMonth()?>, <?php echo $dtv->getYear()?>, <?php echo date("G",mktime(($hour+1)/2))?>, <?php echo (($hour+1) % 2 ==0)?0:30 ?>, <?php echo ($use_24_hours ? 'true' : 'false'); ?>,'<?php echo $dtv->format($date_format) ?>');"></div>
 											<?php
 												}
 											?>
 											
-											<div id="eventowner" style="z-index: 102;" onclick="stopPropagation(event) ">
+											<div id="eventowner" style="z-index: 102;" onclick="event.stopPropagation() ">
 										<?php	
 											$cells = array();
 											for ($i = 0; $i < 24; $i++) {
@@ -219,24 +241,31 @@ $use_24_hours = user_config_option('time_format_use_24');
 												$cells[$i][1] = 0;
 											}
 											foreach ($result as $event){
-												$event->getDuration()->add('s', -1);
-												if ($event->getStart()->getMinute() < 30) {
-													$cells[$event->getStart()->getHour()][0]++;
-													$cells[$event->getStart()->getHour()][1]++;
-												} else $cells[$event->getStart()->getHour()][1]++;
-												for($i = $event->getStart()->getHour()+1; $i < $event->getDuration()->getHour(); $i++){
+												$event_start = new DateTimeValue($event->getStart()->getTimestamp() + 3600 * logged_user()->getTimezone());
+												$event_duration = new DateTimeValue($event->getDuration()->getTimestamp() + 3600 * logged_user()->getTimezone());
+											
+												$event_duration->add('s', -1);
+												if ($event_start->getMinute() < 30) {
+													$cells[$event_start->getHour()][0]++;
+													$cells[$event_start->getHour()][1]++;
+												} else $cells[$event_start->getHour()][1]++;
+												for($i = $event_start->getHour()+1; $i < $event_duration->getHour(); $i++){
 													$cells[$i][0]++;
 													$cells[$i][1]++;
 												}
-												if ($event->getDuration()->getMinute() > 0) {
-													if ($event->getDuration()->getHour() != $event->getStart()->getHour()) {
-														$cells[$event->getDuration()->getHour()][0]++;
-														if ($event->getDuration()->getMinute() > 30) $cells[$event->getDuration()->getHour()][1]++;
+												if ($event_duration->getMinute() > 0) {
+													if ($event_duration->getHour() != $event_start->getHour()) {
+														$cells[$event_duration->getHour()][0]++;
+														if ($event_duration->getMinute() > 30) $cells[$event_duration->getHour()][1]++;
 													}
 												}
 											}
 											$occup = array(); //keys: hora - pos
 											foreach ($result as $event){
+												
+												$event_start = new DateTimeValue($event->getStart()->getTimestamp() + 3600 * logged_user()->getTimezone());
+												$event_duration = new DateTimeValue($event->getDuration()->getTimestamp() + 3600 * logged_user()->getTimezone());
+											
 												$event_id = $event->getId();
 												$subject = clean($event->getSubject());
 												$dws = $event->getWorkspaces();
@@ -250,15 +279,15 @@ $use_24_hours = user_config_option('time_format_use_24');
 												
 												if($use_24_hours) $timeformat = 'G:i';
 												else $timeformat = 'g:i A';
-												$start_time = date($timeformat, $event->getStart()->getTimestamp());
-												$end_time = date($timeformat, $event->getDuration()->getTimestamp());
+												$start_time = date($timeformat, $event_start->getTimestamp());
+												$end_time = date($timeformat, $event_duration->getTimestamp());
 												
-												$hr_start = $event->getStart()->getHour();
-												$min_start = $event->getStart()->getMinute();
-												$hr_end = $event->getDuration()->getHour();
-												$min_end = $event->getDuration()->getMinute();
+												$hr_start = $event_start->getHour();
+												$min_start = $event_start->getMinute();
+												$hr_end = $event_duration->getHour();
+												$min_end = $event_duration->getMinute();
 												
-												if ($event->getStart() == $event->getDuration()){
+												if ($event_start == $event_duration){
 													$hr_end++;
 												}
 												$top = PX_HEIGHT * $hr_start + (PX_HEIGHT*(($min_start*100)/(60*100)));
@@ -267,20 +296,20 @@ $use_24_hours = user_config_option('time_format_use_24');
 												if ($height < PX_HEIGHT/2 - 5) $height = PX_HEIGHT/2 - 4;
 												
 												$evs_same_time = 0;
-												$i = $event->getStart()->getHour();
-												if ($event->getStart()->getMinute() < 30) {
+												$i = $event_start->getHour();
+												if ($event_start->getMinute() < 30) {
 													if ($cells[$i][0] > $evs_same_time) $evs_same_time = $cells[$i][0];
 													if ($cells[$i][1] > $evs_same_time) $evs_same_time = $cells[$i][1];
 												} else if ($cells[$i][1] > $evs_same_time) $evs_same_time = $cells[$i][1];
 												
-												for($i = $event->getStart()->getHour()+1; $i < $event->getDuration()->getHour(); $i++){
+												for($i = $event_start->getHour()+1; $i < $event_duration->getHour(); $i++){
 													if ($cells[$i][0] > $evs_same_time) $evs_same_time = $cells[$i][0];
 													if ($cells[$i][1] > $evs_same_time) $evs_same_time = $cells[$i][1];
 												}
-												$i = $event->getDuration()->getHour();
-												if ($event->getDuration()->getMinute() > 0) {
+												$i = $event_duration->getHour();
+												if ($event_duration->getMinute() > 0) {
 													if ($cells[$i][0] > $evs_same_time) $evs_same_time = $cells[$i][0];
-													if ($event->getDuration()->getMinute() > 30) {
+													if ($event_duration->getMinute() > 30) {
 														if ($cells[$i][1] > $evs_same_time) $evs_same_time = $cells[$i][1];
 													}
 												}
@@ -289,23 +318,23 @@ $use_24_hours = user_config_option('time_format_use_24');
 												$canPaint = false;
 												while (!$canPaint) {
 													$canPaint = true;
-													if ($event->getStart()->getMinute() < 30) {
-														$canPaint = !(isset($occup[$event->getStart()->getHour()][0][$posHoriz]) && $occup[$event->getStart()->getHour()][0][$posHoriz]
-																 || isset($occup[$event->getStart()->getHour()][1][$posHoriz]) && $occup[$event->getStart()->getHour()][1][$posHoriz]);
+													if ($event_start->getMinute() < 30) {
+														$canPaint = !(isset($occup[$event_start->getHour()][0][$posHoriz]) && $occup[$event_start->getHour()][0][$posHoriz]
+																 || isset($occup[$event_start->getHour()][1][$posHoriz]) && $occup[$event_start->getHour()][1][$posHoriz]);
 													} else {
-														$canPaint = !(isset($occup[$event->getStart()->getHour()][1][$posHoriz]) && $occup[$event->getStart()->getHour()][1][$posHoriz]);
+														$canPaint = !(isset($occup[$event_start->getHour()][1][$posHoriz]) && $occup[$event_start->getHour()][1][$posHoriz]);
 													}
-													for($i = $event->getStart()->getHour()+1; $canPaint && $i < $event->getDuration()->getHour(); $i++) {
+													for($i = $event_start->getHour()+1; $canPaint && $i < $event_duration->getHour(); $i++) {
 														if (isset($occup[$i][0][$posHoriz]) && $occup[$i][0][$posHoriz] || isset($occup[$i][1][$posHoriz]) && $occup[$i][1][$posHoriz]) {
 															$canPaint = false;
 														}
 													}
 													if ($canPaint) {
-														if ($event->getDuration()->getMinute() > 30) {
-															$canPaint = !(isset($occup[$event->getDuration()->getHour()][0][$posHoriz]) && $occup[$event->getDuration()->getHour()][0][$posHoriz]
-															|| isset($occup[$event->getDuration()->getHour()][1][$posHoriz]) && $occup[$event->getDuration()->getHour()][1][$posHoriz]);
+														if ($event_duration->getMinute() > 30) {
+															$canPaint = !(isset($occup[$event_duration->getHour()][0][$posHoriz]) && $occup[$event_duration->getHour()][0][$posHoriz]
+															|| isset($occup[$event_duration->getHour()][1][$posHoriz]) && $occup[$event_duration->getHour()][1][$posHoriz]);
 														} else {
-															$canPaint = !(isset($occup[$event->getDuration()->getHour()][1][$posHoriz]) && $occup[$event->getDuration()->getHour()][1][$posHoriz]);
+															$canPaint = !(isset($occup[$event_duration->getHour()][1][$posHoriz]) && $occup[$event_duration->getHour()][1][$posHoriz]);
 														}
 													}
 													if (!$canPaint) $posHoriz++;
@@ -315,31 +344,31 @@ $use_24_hours = user_config_option('time_format_use_24');
 												$left = $width * $posHoriz + 0.25;
 												$width -= 0.2;
 												
-												if ($event->getStart()->getMinute() < 30) {
-													$occup[$event->getStart()->getHour()][0][$posHoriz] = true;
-													$occup[$event->getStart()->getHour()][1][$posHoriz] = true;
+												if ($event_start->getMinute() < 30) {
+													$occup[$event_start->getHour()][0][$posHoriz] = true;
+													$occup[$event_start->getHour()][1][$posHoriz] = true;
 												} else {
-													$occup[$event->getStart()->getHour()][1][$posHoriz] = true;
+													$occup[$event_start->getHour()][1][$posHoriz] = true;
 												}
-												for($i = $event->getStart()->getHour()+1; $i < $event->getDuration()->getHour(); $i++) {
+												for($i = $event_start->getHour()+1; $i < $event_duration->getHour(); $i++) {
 													$occup[$i][0][$posHoriz] = true;
 													$occup[$i][1][$posHoriz] = true;
 												}
-												if ($event->getDuration()->getMinute() > 0) {
-													$occup[$event->getDuration()->getHour()][0][$posHoriz] = true;
-													if ($event->getDuration()->getMinute() > 30) {
-														$occup[$event->getDuration()->getHour()][1][$posHoriz] = true;
+												if ($event_duration->getMinute() > 0) {
+													$occup[$event_duration->getHour()][0][$posHoriz] = true;
+													if ($event_duration->getMinute() > 30) {
+														$occup[$event_duration->getHour()][1][$posHoriz] = true;
 													}
 												}
 												
 												if ($posHoriz+1 == $evs_same_time) $width = $width - 0.75;
 												$procesados[$hr_start]++;
 												
-												$event->getDuration()->add('s', 1);
-												$end_time = date($timeformat, $event->getDuration()->getTimestamp());
-												$ev_duration = DateTimeValueLib::get_time_difference($event->getStart()->getTimestamp(), $event->getDuration()->getTimestamp()); 
+												$event_duration->add('s', 1);
+												$end_time = date($timeformat, $event_duration->getTimestamp());
+												$ev_duration = DateTimeValueLib::get_time_difference($event_start->getTimestamp(), $event_duration->getTimestamp()); 
 
-												$tipBody = $event->getStart()->format($use_24_hours ? 'G:i' : 'g:i A') .' - '. $event->getDuration()->format($use_24_hours ? 'G:i' : 'g:i A') . (trim(clean($event->getDescription())) != '' ? '<br><br>' . clean($event->getDescription()) : '');
+												$tipBody = $event_start->format($use_24_hours ? 'G:i' : 'g:i A') .' - '. $event_duration->format($use_24_hours ? 'G:i' : 'g:i A') . (trim(clean($event->getDescription())) != '' ? '<br><br>' . clean($event->getDescription()) : '');
 												$tipBody = str_replace(array("\r", "\n"), array(' ', '<br>'), $tipBody);
 												if (strlen_utf($tipBody) > 200) $tipBody = substr_utf($tipBody, 0, strpos($tipBody, ' ', 200)) . ' ...';
 										?>
@@ -350,14 +379,14 @@ $use_24_hours = user_config_option('time_format_use_24');
 													addTip('d_ev_div_' + <?php echo $event->getId() ?>, <?php echo json_encode(clean($event->getSubject())) ?>, <?php echo json_encode($tipBody); ?>);
 												</script>
 												
-												<div id="d_ev_div_<?php echo $event->getId()?>" class="chip" style="position: absolute; top: <?php echo $top?>px; left: <?php echo $left?>%; width: <?php echo $width?>%;z-index:120;"  onclick="stopPropagation(event)">
+												<div id="d_ev_div_<?php echo $event->getId()?>" class="chip" style="position: absolute; top: <?php echo $top?>px; left: <?php echo $left?>%; width: <?php echo $width?>%;z-index:120;"  onclick="event.stopPropagation()">
 													<div class="t1 <?php echo $ws_class ?>" style="<?php echo $ws_style ?>;margin:0px 2px 0px 2px;height:0px; border-bottom:1px solid;border-color:<?php echo $border_color ?>"></div>
 													<div class="t2 <?php echo $ws_class ?>" style="<?php echo $ws_style ?>;margin:0px 1px 0px 1px;height:1px; border-left:1px solid;border-right:1px solid;border-color:<?php echo $border_color ?>"></div>
 													<div class="chipbody edit og-wsname-color-<?php echo  $ws_color?>">
 														<dl class="<?php echo  $ws_class?>" style="height: <?php echo $height ?>px;<?php echo  $ws_style?>;border-left:1px solid;border-right:1px solid;border-color:<?php echo $border_color ?>"  onclick="og.openLink(og.getUrl('event', 'viewevent', {view:'day', id:<?php echo $event->getId()?>, user_id:<?php echo $user_filter?>}, null));">
 															<dt class="<?php echo  $ws_class?>" style="<?php echo  $ws_style?>;">
 																<table width="100%"><tr><td>
-																	<a href='<?php echo $event->getViewUrl()."&amp;view=day&amp;user_id=".$user_filter ?>' class='internalLink' onclick="stopPropagation(event);" >
+																	<a href='<?php echo $event->getViewUrl()."&amp;view=day&amp;user_id=".$user_filter ?>' class='internalLink' onclick="event.stopPropagation();" >
 																	<span class="eventheadlabel" style="color:<?php echo $txt_color?>!important;padding-left:5px;"><?php echo "$start_time - $end_time"; ?></span>
 																	</a>
 																	<?php
@@ -388,7 +417,7 @@ $use_24_hours = user_config_option('time_format_use_24');
 															if ($ev_duration['hours'] > 0) { ?>
 															<dd>
 																<div>
-																	<a href='<?php echo $event->getViewUrl()."&amp;view=day&amp;user_id=".$user_filter ?>' onclick="stopPropagation(event);" class='internalLink' ><span style="color:<?php echo $txt_color?>!important;padding-left:5px;"><?php echo $subject?></span></a>
+																	<a href='<?php echo $event->getViewUrl()."&amp;view=day&amp;user_id=".$user_filter ?>' onclick="event.stopPropagation();" class='internalLink' ><span style="color:<?php echo $txt_color?>!important;padding-left:5px;"><?php echo $subject?></span></a>
 																</div>
 															</dd>
 															<?php } //if ?>

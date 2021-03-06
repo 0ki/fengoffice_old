@@ -132,7 +132,7 @@
 		array('class' => 'title', 'id' => $genid.'shareCompanies', 'style' => 'width:150px;', 'tabindex'=>'380', 'onblur' => 'og.onBlurSetComp();'), true); ?>
 
 </td><td style="padding:5px;vertical-align:bottom;">
-	<?php echo button(lang('share'), 's', array('style'=>'margin-top:0px;margin-left:10px', 'id' => $genid.'addPeople', 'tabindex'=>'400',
+	<?php echo button(lang('add'), 'A', array('style'=>'margin-top:0px;margin-left:10px', 'id' => $genid.'addPeople', 'tabindex'=>'400',
 				'onclick' => 'if(og.validateCompany()) og.onAddPeopleToShare();'))?>
 	
 </td></tr></table>

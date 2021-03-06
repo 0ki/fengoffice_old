@@ -1,5 +1,5 @@
 <?php
-
+  require_javascript("modules/addProjectForm.js");
   set_page_title($project_form->isNew() ? lang('add form') : lang('edit form'));
   project_tabbed_navigation(PROJECT_TAB_FORMS);
   project_crumbs(array(

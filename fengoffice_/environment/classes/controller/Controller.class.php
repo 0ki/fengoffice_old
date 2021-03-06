@@ -72,7 +72,9 @@
         	'action' => $action
         ), $ret);
         if ($ret) {
+        	TimeIt::start("Action");
         	$this->$action();
+        	TimeIt::stop();
         }
         return true;
       } else {

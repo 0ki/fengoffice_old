@@ -12,12 +12,7 @@
  */
 	include_once("config/settings.php");
 
-/*	include_once($cnf['site']['path']."/Connection.php");
 
-	include_once($cnf['site']['path']."/model/FontStyle.class.php");
-	include_once($cnf['site']['path']."/model/Column.class.php");
-	include_once($cnf['site']['path']."/model/Row.class.php");
-*/
 	class Sheet {
 		public $sheetId;
 		public $bookId;

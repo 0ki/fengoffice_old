@@ -142,6 +142,10 @@ abstract class ApplicationDataObject extends DataObject {
 		return parent::delete();
 	}
 
+	function getTitle(){
+		return lang('no title');
+	}
+
 	// ---------------------------------------------------
 	//  Linked Objects (Replacement for attached files)
 	// ---------------------------------------------------
@@ -191,6 +195,14 @@ abstract class ApplicationDataObject extends DataObject {
 	 */
 	private $updated_by = null;
 
+	/**
+	 * Cached reference to user who created last update on object
+	 *
+	 * @var User
+	 */
+	private $trashed_by = null;
+	
+
 
 	/*
 	 * Object type identifier
@@ -208,6 +220,7 @@ abstract class ApplicationDataObject extends DataObject {
 	 * me - ProjectMessage
 	 * mc - Mail Content
 	 * mi - ProjectMilestone
+	 * re - Report
 	 * ro - ProjectContact (Role)
 	 * ta - ProjectTask
 	 * tg - Tag
@@ -379,6 +392,47 @@ abstract class ApplicationDataObject extends DataObject {
 		$updated_by = $this->getUpdatedBy();
 		return $updated_by instanceof User ? $updated_by->getCardUrl() : null;
 	} // getUpdatedByCardUrl
+	
+	// ---------------------------------------------------
+	//  Trashed by
+	// ---------------------------------------------------
+
+	/**
+	 * Return user who trashed this object
+	 *
+	 * @access public
+	 * @param void
+	 * @return User
+	 */
+	function getTrashedBy() {
+		if(is_null($this->trashed_by)) {
+			if($this->columnExists('trashed_by_id')) $this->trashed_by = Users::findById($this->getTrashedById());
+		} //
+		return $this->trashed_by;
+	} // getTrashedBy
+
+	/**
+	 * Return display name of trasher
+	 *
+	 * @access public
+	 * @param void
+	 * @return string
+	 */
+	function getTrashedByDisplayName() {
+		$trashed_by = $this->getTrashedBy();
+		return $trashed_by instanceof User ? $trashed_by->getDisplayName() : lang('n/a');
+	} // getTrashedByDisplayName
+
+	/**
+	 * Return card URL of trashed by user
+	 *
+	 * @param void
+	 * @return string
+	 */
+	function getTrashedByCardUrl() {
+		$trashed_by = $this->getTrashedBy();
+		return $trashed_by instanceof User ? $trashed_by->getCardUrl() : null;
+	} // getTrashedByCardUrl
 
 	// ---------------------------------------------------
 	//  Linked Objects
@@ -600,6 +654,152 @@ abstract class ApplicationDataObject extends DataObject {
 		return false;
 	}
 	
+// ---------------------------------------------------
+	//  Object Properties
+	// ---------------------------------------------------
+	/**
+	 * Returns whether an object can have properties
+	 *
+	 * @return bool
+	 */
+	function isPropertyContainer(){
+		return $this->is_property_container;
+	}
+
+	/**
+	 * Given the object_data object (i.e. file_data) this function
+	 * updates all ObjectProperties (deleting or creating them when necessary)
+	 *
+	 * @param  $object_data
+	 */
+	function save_properties($object_data){
+		$properties = array();
+		for($i = 0; $i < 200; $i++) {
+			if(isset($object_data["property$i"]) && is_array($object_data["property$i"]) &&
+			(trim(array_var($object_data["property$i"], 'id')) <> '' || trim(array_var($object_data["property$i"], 'name')) <> '' ||
+			trim(array_var($object_data["property$i"], 'value')) <> '')) {
+				$name = array_var($object_data["property$i"], 'name');
+				$id = array_var($object_data["property$i"], 'id');
+				$value = array_var($object_data["property$i"], 'value');
+				if($id && trim($name)=='' && trim($value)=='' ){
+					$property = ObjectProperties::findById($id);
+					$property->delete( 'id = $id');
+				}else{
+					if($id){
+						{
+							SearchableObjects::dropContentByObjectColumn($this, 'property' . $id);
+							$property = ObjectProperties::findById($id);
+						}
+					}else{
+						$property = new ObjectProperty();
+						$property->setRelObjectId($this->getId());
+						$property->setRelObjectManager(get_class($this->manager()));
+					}
+					$property->setFromAttributes($object_data["property$i"]);
+					$property->save();
+						
+					if ($this->isSearchable())
+					$this->addPropertyToSearchableObject($property);
+				}
+			} // if
+			else break;
+		} // for
+
+	}
+
+	/**
+	 * Get one value of a property. Returns an empty string if there's no value.
+	 *
+	 * @param string $name
+	 * @return string
+	 */
+	function getProperty($name) {
+		$op = ObjectProperties::getPropertyByName($this, $name);
+		if ($op instanceof ObjectProperty) {
+			return $op->getPropertyValue();
+		} else {
+			return "";
+		}
+	}
+
+	/**
+	 * Return all values of a property
+	 *
+	 * @param string $name
+	 * @return array
+	 */
+	function getProperties($name) {
+		$ops = ObjectProperties::getAllProperties($this, $name);
+		$ret = array();
+		foreach ($ops as $op) {
+			$ret[] = $op->getPropertyValue();
+		}
+		return $ret;
+	}
+	
+	/**
+	 * Returns all ObjectProperties of the object.
+	 *
+	 * @return array
+	 */
+	function getCustomProperties() {
+		return ObjectProperties::getAllPropertiesByObject($this);
+	}
+	
+	/**
+	 * Copies custom properties from an object
+	 * @param ProjectDataObject $object
+	 */
+	function copyCustomPropertiesFrom($object) {
+		$properties = $object->getCustomProperties();
+		foreach ($properties as $property) {
+			$copy = new ObjectProperty();
+			$copy->setPropertyName($property->getPropertyName());
+			$copy->setPropertyValue($property->getPropertyValue());
+			$copy->setObject($this);
+			$copy->save();
+		}
+	}
+
+	/**
+	 * Sets the value of a property, removing all its previous values.
+	 *
+	 * @param string $name
+	 * @param string $value
+	 */
+	function setProperty($name, $value) {
+		$this->deleteProperty($name);
+		$this->addProperty($name, $value);
+	}
+
+	/**
+	 * Adds a value to property $name
+	 *
+	 * @param string $name
+	 * @param string $value
+	 */
+	function addProperty($name, $value) {
+		$op = new ObjectProperty();
+		$op->setRelObjectId($this->getId());
+		$op->setRelObjectManager(get_class($this->manager()));
+		$op->setPropertyName($name);
+		$op->setPropertyValue($value);
+		$op->save();
+	}
+
+	/**
+	 * Deletes all values of property $name.
+	 *
+	 * @param string $name
+	 */
+	function deleteProperty($name) {
+		ObjectProperties::deleteByObjectAndName($this, $name);
+	}
+	
+
+	function clearObjectProperties(){
+		ObjectProperties::deleteAllByObject($this);
+	}
 
 	// ---------------------------------------------------
 	//  Utilities

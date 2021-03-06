@@ -65,6 +65,21 @@
   		return false;
   	}
   	
+  	function can_manage_reports(User $user, $include_groups = true) {
+  		if ($user->getCanManageReports()) {
+  			return true;
+  		}
+  		if ($include_groups) {
+  			$user_ids = $user->getId();
+			$group_ids = GroupUsers::getGroupsCSVsByUser($user_ids);
+			if($group_ids!=''){
+	  			$gr = Groups::findOne(array('conditions' => array('id in ('.$group_ids.') AND can_manage_reports = true ')));
+	  			return $gr instanceof Group ;
+			}
+  		}
+  		return false;
+  	}
+  	
   	/**
   	 * Returns whether a user can manage configuration.
   	 * If groups are checked, one true permission makes the function return true.
@@ -207,7 +222,7 @@
 						return 'can_read_mails';
 					else return false;
 					break;
-				case 'Companies' :  
+				case 'Companies' : 
 				case 'ProjectContacts' :  
 					if ($access_level == ACCESS_LEVEL_WRITE)
 						return 'can_write_contacts';
@@ -252,9 +267,31 @@
 		$object_id = $object_table_name . '.' . $object_id_field;
 		$object_manager = get_class($manager);
 		$access_level_text = access_level_field_name($access_level);
-		$can_manage_object = manager_class_field_name($object_manager, $access_level);
 		$item_class = $manager->getItemClass();
 		$is_project_data_object = (new $item_class) instanceof ProjectDataObject  ;
+		
+		// permissions for contacts (TODO: make it like companies)
+		if ($manager instanceof Contacts) {
+			if (!can_manage_contacts($user)){
+				$pcTableName = "`" . TABLE_PREFIX . 'project_contacts`';
+				return "$table_alias.`id` IN ( SELECT `contact_id` FROM $pcTableName `pc` WHERE `pc`.`contact_id` = `$table_alias`.`id` AND (" . permissions_sql_for_listings(ProjectContacts::instance(), $access_level, $user, '`project_id`', '`pc`') .'))';
+			} else {
+				return 'true';
+			}
+		}
+		// permissions for projects
+		if ($manager instanceof Projects) {
+			$pcTableName = "`" . TABLE_PREFIX . 'project_users`';
+			return "$table_alias.`id` IN (SELECT `project_id` FROM $pcTableName `pc` WHERE `user_id` = $user_id)";
+		}
+		// permissions for users
+		if ($manager instanceof Users) {
+			if (logged_user()->isMemberOfOwnerCompany()) return "true";
+			else return "$table_alias.`company_id` = ".owner_company()->getId() ." OR $table_alias.`company_id` = ". logged_user()->getCompanyId();
+		}
+		
+		$can_manage_object = manager_class_field_name($object_manager, $access_level);
+		
 		// user is creator
 		$str = " ( `created_by_id` = $user_id) ";
 		// element belongs to personal project
@@ -567,6 +604,77 @@
 			}
 		}
 		return false;
+	}
+	
+	/**
+	 * Tells whether a user can assign a task to another user or company in a workspace.
+	 * 
+	 * @param $user User to which to check permissions
+	 * @param $workspace
+	 * @param $assignee
+	 * @return boolean
+	 */
+	function can_assign_task(User $user, Project $workspace, $assignee) {
+		if (!$assignee instanceof User && !$assignee instanceof Company) return true;
+		if ($assignee instanceof Company) {
+			$company = $assignee;
+		} else {
+			if ($assignee->getId() == $user->getId()) return true; // alow user to assign to himself
+			$company = $assignee->getCompany();
+		}
+		$is_owner = $company->getId() == Companies::getOwnerCompany()->getId();
+		$permissions = ProjectUsers::getByUserAndProject($workspace, $user);
+		if ($permissions instanceof ProjectUser) {
+			if ($is_owner) {
+				if ($permissions->getCanAssignToOwners()) return true;
+			} else {
+				if ($permissions->getCanAssignToOther()) return true;
+			}
+		}
+		$groups = GroupUsers::getGroupsByUser($user->getId());		
+		if (is_array($groups) && count($groups) > 0) { //user belongs to at least one group
+			foreach ($groups as $group) {
+				$permissions = ProjectUsers::getByUserAndProject($workspace, $group);
+				if ($permissions instanceof ProjectUser) {
+					if ($is_owner) {
+							if ($permissions->getCanAssignToOwners()) return true;
+						} else {
+							if ($permissions->getCanAssignToOther()) return true;
+						}
+					}
+				}
+		}
+		return false;
+	}
+	
+	/**
+	 * Returns true if user can assign the task or an error string if not.
+	 * @param $user
+	 * @param $task
+	 * @param $company_id
+	 * @param $user_id
+	 * @return mixed
+	 */
+	function can_assign_task_to_company_user(User $user, ProjectTask $task, $company_id, $user_id) {
+		if ($company_id != 0) {
+			$workspace = $task->getProject();
+			if ($user_id != 0) {
+				$assignee = Users::findById($user_id);
+				if (!$assignee instanceof User) {
+					return lang('error assign task user dnx');
+				} else if (!can_assign_task($user, $workspace, $assignee)) {
+					return lang('error assign task permissions user');
+				}
+			} else {
+				$company = Companies::findById($company_id);
+				if (!$company instanceof Company) {
+					return lang('error assign task company dnx');
+				} else if (!can_assign_task($user, $workspace, $company)) {
+					return lang('error assign task permissions company');
+				}
+			}
+		}
+		return true;
 	}
 	
 ?>

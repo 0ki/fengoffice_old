@@ -1697,6 +1697,11 @@ class Swift
 		}
 		return $data;
 	}
+	
+	public function getFullContent($string)
+ 	{
+ 		return $this->getMimeBody($string, '', '');
+ 	}
 }
 
 ?>

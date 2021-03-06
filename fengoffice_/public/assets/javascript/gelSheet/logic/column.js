@@ -13,7 +13,6 @@ function Column(index){
 	var self = this;
 
 	self.constructor = function(index){
-		//this.cells = new Array();
 		this.index = index;
 		this.size = 80;
 		this.fontStyleId = 0;
@@ -21,10 +20,7 @@ function Column(index){
 
 	self.setFontStyleId = function(fontStyleId){
 		this.fontStyleId = fontStyleId;
-		//for(var i=0;i<this.cells.length;i++)
-		//	this.cells[i].setFontStyleId(fontStyleId);
 	}
-
 
 	self.getFontStyleId = function(){
 		return this.fontStyleId;
@@ -47,6 +43,5 @@ function Column(index){
 	}
 
 	self.constructor(index);
-
 	return self;
 }

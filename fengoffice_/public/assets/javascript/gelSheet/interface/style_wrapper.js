@@ -24,6 +24,7 @@ function WrapFontStyle(object,fontStyleId){
 	//alert(fontStyle.toSource());
 	object.style.fontFamily = Styler.getFontName(fontStyle.font);
 	object.style.fontSize = pt(fontStyle.size);
+	window.borrarFont = fontStyle;
 	object.style.color = fontStyle.color;
 	if(fontStyle.bold)
 		object.style.fontWeight = "bold";

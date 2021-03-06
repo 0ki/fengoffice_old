@@ -1,6 +1,6 @@
 
-    About OpenGoo 1.3.1
-    ===================
+    About OpenGoo 1.4 beta
+    ======================
 
     OpenGoo is a free and open source WebOffice, project management and collaboration
     tool, licensed under the Affero GPL 3 license.
@@ -61,11 +61,11 @@
     ====================
     
     1. Backup you current installation (important!)
-    2. Download OpenGoo 1.3.1 - http://www.opengoo.org/
+    2. Download OpenGoo 1.4 beta - http://www.opengoo.org/
     3. Unpack into your OpenGoo installation, overwriting your previous files and folders,
     	but keeping your config, upload and public/files folders.
     5. Go to <your_opengoo>/public/upgrade in your browser and choose to upgrade
-    	from your current version to 1.3.1.
+    	from your current version to 1.4 beta
     6. Refresh your browser or clear its cache to load new javascript, css and images.   
 
     
@@ -87,87 +87,53 @@
 	Changelog
 	=========
 
-	Since 1.3
-	---------
-
-	- bugfix: Fixed an issue with reminders that showed the same reminder several times.
-	- bugfix: Email notifications were not being sent when a task was completed.
-	- bugfix: Email retrieving through IMAP wasn't working correctly.
-	- bugfix: Closing a timeslot throwed an error.
-	- bugfix: Event invitations were not working correctly.
-	- bugfix: Email accounts could not be deleted.
-	- bugfix: URLs with hyphens in object descriptions were not converted correctly to links.
-	- usability: Translate and Minify tools are now always enabled and only available to administrators. 
-	- usability: Improved how IMAP accounts are setup.
-	- usability: Expand / collapse dashboard widgets by clicking anywhere in the titlebar.
-
-	Since 1.3-rc2
-	-------------
-	- usability: Weblinks view now shows URL.
-	- bugfix: Fixed error about billing id when closing timeslot.
-	- bugfix: Large images would cause a memory exhausted error in the documents listing.
-	- bugfix: Some tags were not being displayed in the TagPanel in Chinese and other languages.
-	- bugfix: Linking objects to comments wasn't working.
-	- bugfix: Http errors are no longer displayed when polling.
-	- bugfix: Fixed occasional error about attributes.php.
-	- bugfix: Corrected a problem when displaying revisions on the trash.
-	- bugfix: General timeslots' billing information is now also included in reports.
-	- bugfix: Fixed error when viewing an event with an deleted invited user.
-	- system: Share action was removed.
-	- system: New hooks added.
-
-	Since 1.3-rc
-	------------
-	- bugfix: Rollbacked change in cookie handling because it caused too many problems.
-	- langs: Updated translations: it_it, ru_ru, pt_br, zh_cn, zh_tw.
-
-	Since 1.3-beta
-	--------------
-	- usability: Emails with no subject can't be opened in Overview->View as list	
-	- usability: Added link to RSS feed for a workspace's recent activity in the dashboard description widget 		
-	- usability: Monthly view scroll, didn't mantain the toolbar like the others views	
-	- usability: Tooltip in calendar monthly view doesn't show description	
-	- usability: Changed how an error in tasks filter is displayed.	
-	- usability: Errors when polling for reminders are no longer shown to the user
-	- usability: The 'All' checkbox when editing a user's permissions was moved to a more adequate place.
-
-	- langs: Missing langs [view weblink], [new share notification (file, weblink, milestone)]
-	- langs: Added first version of Traditional Chinese translation zh_tw.
-	- langs: Renamed es_uy to es_la (updated automatically when you perform upgrade procedure).
-
-	- bugfix: filtering by unclassified emails showed no emails	
-	- bugfix: Fixed an issue with cookies that didn't allow you to login to two OpenGoo installations on the same server, or an OpenGoo installation and a Joomla installation	
-	- bugfix: Fixed some resizing problems in IE in calendar and tasks.		
-	- bugfix: Share: An alert is shown when adding an email to the share list	
-	- bugfix: Slimey always saves as a new document	
-
-	Since 1.2.1
+	Since 1.3.1
 	-----------
-	- feature: Billing Module. Allows defining hourly rates for users and workspaces. You can generate a report showing how much should be billed for some client. You also get charts on the dashboard comparing billing amounts by user.
-	- feature: Reminders. Define email reminders or popup reminders for events, tasks and milestones. Needs a properly configured cron job.
-	- feature: Share with an external user easily.
-	- feature: New dashboard widget with workspace info.
 	
-	- usability: Sort weblinks by date as well as name.
-	- usability: Improved display of documents' contents. HTML documents are shown with its CSS. Long documents are shown with a scrollbar, so that it doesn't displace comments and revisions out of the view.
-	- usability: Weblinks view. This allows to comment on web links.
-	- usability: User is automatically subscribed to objects when using quick adds.
-	- usability: Corrected tabindex order in forms in Firefox.
-	- usability: Added button 'classify' next to title at mail classification view.	
-	- usability: Title in calendar daily view was made localizable.
-	- usability: Calendar filters are remembered.
-	- usability: Now you can see the state of attendance to an event in the monthly view.
-	- usability: User filters in calendar filter also tasks and milestones.
-	- usability: When adding objects to a template the custom properties are now also copied.
+	- feature: Custom properties per object type, used for extending the number of fields for each object type.
+	- feature: Custom reports based on object types. Custom properties are also displayed and can be used in filtering and ordering criteria.
+	- feature: References to external documents via urls can be added as documents in the upload file view.
+	- feature: New "Getting started" widget displays information that helps new users in using the system
+	- feature: Contextual help messages added in places throughout the system. 
+	- feature: Workspace information widget improved, shows users and contacts assigned to the current workspace.
+	- feature: Configurable date format.
+	- feature: Allow to unclassify email.
+	- feature: Notify an event creator when someone confirms assistance to an event.
+	- feature: Calendar option - Start Week on Monday.
+	- feature: Config option to automatically check out documents when editing online.
+	- feature: Companies now have a field for adding notes on it.
 	
-	- system: Email content is now stored as a file, which allows receiving larger emails when using filesystem storage.
-	- system: Removed table eventtypes.
-	- system: Separate calendar filter menu, user combo (unificated with tasks) and status combo.
-	- system: Substituted imap functions for PEAR's Net_IMAP functions, which allows for greater compatibilty for using IMAP accounts.
-	- system: External company users are no longer shown other external company users.
-	 
-	- bugfix: Email comments weren't listed.
-	- bugfix: SSL for outgoing connections was not correctly supported in email accounts.
-	- bugfix: Reduced the number of CSS files in OpenGoo to bypass a limitation in IE that won't let you include more than 32 CSS files in one page.
-	- bugfix: search in a workspace returned no results but search in all workspaces returned results from that workspace.
-	- bugfix: Total task execution time report included task pause time as well as task time.
+	- administration: User password security and complexity options are now configurable
+	- administration: Document revision comments can be set as required via a configuration option
+	- administration: Billing currency symbol is now configurable
+	- administration: New "Can manage reports" permission added to users and groups, allowing the creation, edition and deletion of custom reports.
+	
+	- usability: Three to four contacts / users are displayed in one column in the workspace info, which can be expanded to include all contacts / users
+	- usability: Contacts can now be assigned to workspaces through the edit workspace view.
+	- usability: "Checked out" icon displayed with documents in the documents widget
+	- usability: "Checked out" information now displayed in the document view header and under the properties panel.
+	- usability: Editable documents can be expanded to fill the whole page for easier viewing.
+	- usability: Improved the reporting panel view. This panel will be displayed by default on new installations
+	- usability: Added support for html help files in the right sidebar.
+	- usability: Calendar, monthly view: Paint all events with workspace color
+	- usability: Improved content of email notifications (more info and in user's language).
+
+	- system: Initial loading time reduced by loading javascript files as they are needed.
+	- system: Added new lang folder for plugin langs, which is loaded in filename order and after default OpenGoo lang files.
+	- system: Added new lang folder for hel langs, displayed in the right sidebar of OpenGoo.
+	- system: New hooks added.
+	- system: Mail notifications can be sent through cron, so that user doesn't have to wait for it to send.
+	- system: Slimey updated to 0.2. It is now translatable.
+	
+	- bugfix: Handle timezones correctly.
+	- bugfix: Various issues with importing/exporting events.
+	- bugfix: Bug when fetching imap folders with non-ascii characters.
+	- bugfix: Calendar doesn't show milestones assigned to user, without tasks assigned to user.
+	- bugfix: Calendar titles too high.
+	- bugfix: Contact/User deletion.
+	- bugfix: Company csv export puts values in different order than titles.
+	- bugfix: Contact import crashes with chinese characters.
+	- bugfix: Mail doesn't show images that are attachments.
+	- bugfix: Minor CSS issue (email actions inherit CSS style from HTML emails).
+	- bugfix: When editing an IMAP account, changing the IMAP data makes no effect.
+	- bugfix: Assigning a role when editing a contact which already had a role would duplicate roles. 

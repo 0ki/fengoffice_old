@@ -152,6 +152,8 @@ function select_project2($name, $projectId, $genid, $allowNone = false, $extraWS
  * 		HTML for the control
  */
 function select_workspaces($name = "", $workspaces = null, $selected = null, $id = null) {
+	require_javascript('og/WorkspaceChooser.js');
+	
 	if (!isset($id)) $id = gen_id();
 		
 	$selectedCSV = "";
@@ -741,6 +743,19 @@ function render_object_comments_for_print(ProjectDataObject $object) {
 } // render_object_comments
 
 /**
+ * Show object custom properties block
+ *
+ * @param ProjectDataObject $object Show custom properties of this object
+ * @return null
+ */
+function render_object_custom_properties($object, $type, $required) {
+	tpl_assign('_custom_properties_object', $object);
+	tpl_assign('required', $required);
+	tpl_assign('type', $type);
+	return tpl_fetch(get_template_path('object_custom_properties', 'custom_properties'));
+} // render_object_custom_properties
+
+/**
  * Show object timeslots block
  *
  * @param ProjectDataObject $object Show timeslots of this object
@@ -835,6 +850,7 @@ function render_object_links(ApplicationDataObject $object, $can_remove = false,
 } // render_object_links
 
 function render_object_link_form(ApplicationDataObject $object) {
+	require_javascript("og/ObjectPicker.js");
 	tpl_assign('objects', $object->getLinkedObjects());
 	return tpl_fetch(get_template_path('linked_objects', 'object'));
 } // render_object_link_form
@@ -883,6 +899,8 @@ function render_add_subscribers(ProjectDataObject $object, $genid = null, $subsc
  * @param ProjectDataObject $object
  */
 function render_link_to_object($object, $text=null){
+	require_javascript("og/ObjectPicker.js");
+	
 	$id = $object->getId();
 	$manager = get_class($object->manager());
 	if ($text == null) $text = lang('link object');
@@ -904,6 +922,8 @@ function render_link_to_object($object, $text=null){
 }
 
 function render_link_to_object_2($object, $text=null){
+	require_javascript("og/ObjectPicker.js");
+	
 	$id = $object->getId();
 	$manager = get_class($object->manager());
 	if($text==null)
@@ -921,6 +941,7 @@ function render_link_to_object_2($object, $text=null){
  *
  */
 function render_link_to_new_object( $text=null){
+	require_javascript("og/ObjectPicker.js");
 	//$id = $object->getId();
 	//$manager = get_class($object->manager());
 	if($text==null)
@@ -985,6 +1006,7 @@ function render_action_taken_on_by(ApplicationLog $application_log_entry) {
  * @return string
  */
 function autocomplete_textfield($name, $value, $options, $emptyText, $attributes, $forceSelection = true) {
+	require_javascript("og/CSVCombo.js");
 	$jsArray = "";
 	foreach ($options as $o) {
 		if ($jsArray != "") $jsArray .= ",";
@@ -1032,6 +1054,8 @@ function autocomplete_textfield($name, $value, $options, $emptyText, $attributes
  * @return string
  */
 function autocomplete_emailfield($name, $value, $options, $emptyText, $attributes, $forceSelection = true) {
+	require_javascript("og/CSVCombo.js");
+	require_javascript("og/EmailCombo.js");
 	$jsArray = "";
 	foreach ($options as $o) {
 		if ($jsArray != "") $jsArray .= ",";
@@ -1069,6 +1093,7 @@ function autocomplete_emailfield($name, $value, $options, $emptyText, $attribute
 
 
 function autocomplete_tags_field($name, $value, $id = null, $tabindex = null) {
+	require_javascript("og/CSVCombo.js");
 	if (!isset($id)) $id = gen_id();
 	$attributes = array("class" => "long", "id" => $id);
 	if (isset($tabindex)) $attributes['tabindex'] = $tabindex;
@@ -1303,20 +1328,10 @@ function render_add_custom_properties(ProjectDataObject $object) {
  * Renders an object's custom properties
  * @return string
  */
-function render_custom_properties(ProjectDataObject $object) {
-	$properties = $object->getCustomProperties();
-	if (!is_array($properties) || count($properties) == 0) return "";
-	$output = '<span style="color:333333;font-weight:bolder;">' . 
-			lang('custom properties') . ':&nbsp;</span>
-		<table class="og-custom-properties"><tbody>';
-	foreach ($properties as $prop) {
-		$output .= '<tr><td class="name" title="' . $prop->getPropertyName() . '">- ' .
-				truncate($prop->getPropertyName(), 12) . ':&nbsp;</td>';
-		$output .= '<td title="' . $prop->getPropertyValue() . '">' .
-				truncate($prop->getPropertyValue(), 12) . '</td></tr>';
-	}
-	$output .= '</tbody></table>';
-	return $output;
+function render_custom_properties(ApplicationDataObject $object) {
+	//if(!$object->isCommentable()) return '';
+	tpl_assign('__properties_object', $object);
+	return tpl_fetch(get_template_path('view', 'custom_properties'));
 }
 
 /**

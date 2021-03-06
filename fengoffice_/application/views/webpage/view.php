@@ -1,6 +1,6 @@
 <?php
 if (isset($object) && $object instanceof ProjectWebpage) {
-	add_page_action(lang('open weblink'), $object->getUrl(), "ico-open-link", "_blank");
+	add_page_action(lang('open weblink'), clean($object->getUrl()), "ico-open-link", "_blank");
 	if (!$object->isTrashed()){
 		if($object->canEdit(logged_user())) {
 			add_page_action(lang('edit'), $object->getEditUrl(), 'ico-edit');
@@ -20,7 +20,7 @@ if (isset($object) && $object instanceof ProjectWebpage) {
 <div class="weblink">
 	<?php
 		$description = convert_to_links(nl2br(clean($object->getDescription())));
-		$url = $object->getUrl();
+		$url = clean($object->getUrl());
 		tpl_assign("description", "<b>".lang("url").": </b><a target=\"_blank\" href=\"$url\">$url</a>");
 		tpl_assign("desc", $description);
 		tpl_assign("content_template", array('view_content', 'webpage'));

@@ -11,6 +11,8 @@ class ProjectFiles extends BaseProjectFiles {
 	const ORDER_BY_NAME = 'name';
 	const ORDER_BY_POSTTIME = 'dateCreated';
 	const ORDER_BY_MODIFYTIME = 'dateUpdated';
+	const TYPE_DOCUMENT = 0;
+	const TYPE_WEBLINK = 1;
 	
 	public function __construct() {
 		parent::__construct();
@@ -113,11 +115,15 @@ class ProjectFiles extends BaseProjectFiles {
 	 *
 	 * @param unknown_type $condition
 	 */
-	function getUserFiles($user = null, $workspace = null, $tag = null, $type_string = null, $order = null, $orderdir = 'ASC') {
+	function getUserFiles($user = null, $workspace = null, $tag = null, $type_string = null, $order = null, $orderdir = 'ASC', $offset = 0, $limit = 0, $include_sub_workspaces = true) {
 		if (!$user instanceof User) $user = logged_user();
 
 		if ($workspace instanceof Project){
-			$wsids = $workspace->getAllSubWorkspacesCSV(true, $user);
+			if ($include_sub_workspaces) {
+				$wsids = $workspace->getAllSubWorkspacesCSV(true, $user);
+			} else {
+				$wsids = "".$workspace->getId();
+			}
 		} else {
 			$wsids = $user->getActiveProjectIdsCSV();
 		}
@@ -153,7 +159,9 @@ class ProjectFiles extends BaseProjectFiles {
 		
 		return self::findAll(array(
 			'conditions' => $conditions,
-			'order' => $order_by
+			'order' => $order_by,
+			'offset' => $offset,
+			'limit' => $limit
 		));
 	}
 	
@@ -197,7 +205,7 @@ class ProjectFiles extends BaseProjectFiles {
 	* @param User $user 
 	* @return array
 	*/
-	static function closeAutoCheckedoutFilesByUser(User $user = null) {
+	static function closeAutoCheckedoutFilesByUser($user = null) {
 		if(!$user)
 			$user = logged_user();
 		try{

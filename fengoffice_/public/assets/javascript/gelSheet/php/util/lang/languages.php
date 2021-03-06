@@ -12,8 +12,7 @@
  */
 //include_once 'config/settings.php';
 
-$lang['application_welcome']['en'] = 'Welcome to Gel  Spreadsheet' ;
-$lang['application_welcome']['es'] = 'Bienvenido a Hojas Dispersas en Gel' ;
+include_once "lang_list.php" ;
 
 
 
@@ -24,13 +23,11 @@ function lang($text) {
 	$current_lang = $cnf['application']['language'];
 	$default_lang = 'en' ;
 	
-	if (isset($lang[$text][$current_lang]))
-		return $lang[$text][$current_lang] ; 
+	if (isset($lang[$current_lang][$text]))
+		return $lang[$current_lang][$text] ; 
 
-	elseif (isset($lang[$text][$default_lang]))
-		return $lang[$text][$default_lang];
-	
-		
+	elseif (isset($lang[$default_lang][$text]))
+		return $lang[$default_lang][$text];
 	else
 		return $text ;
 	

@@ -63,7 +63,7 @@ function __production_error_handler($code, $message, $file, $line) {
 	if($code == 2048) {
 		return;
 	} // if
-	 
+
 	Logger::log("Error: $message in '$file' on line $line (error code: $code)", Logger::ERROR);
 } // __production_error_handler
 
@@ -324,7 +324,7 @@ function active_projects() {
  * @return Project
  */
 function personal_project() {
-	$usr = logged_user();	
+	$usr = logged_user();
 	return $usr?$usr->getPersonalProject():null;
 } // active_project
 
@@ -422,4 +422,65 @@ function get_object_by_manager_and_id($object_id, $manager_class) {
 function alert($text) {
 	evt_add("popup", array('title' => "Debug", 'message' => $text));
 }
+
+// ---------------------------------------------------
+//  Encryption/Decryption
+// ---------------------------------------------------
+
+function cp_encrypt($password, $time){
+	//appending padding characters
+	$newPass = rand(0,9) . rand(0,9);
+	$c = 1;
+	while ($c < 15 && (int)substr($newPass,$c-1,1) + 1 != (int)substr($newPass,$c,1)){
+		$newPass .= rand(0,9);
+		$c++;
+	}
+	$newPass .= $password;
+	
+	//applying XOR
+	$newSeed = md5(SEED . $time);
+	$passLength = strlen($newPass);
+	while (strlen($newSeed) < $passLength) $newSeed.= $newSeed;
+	$result = (substr($newPass,0,$passLength) ^ substr($newSeed,0,$passLength));
+	
+	return base64_encode($result);
+}
+
+function cp_decrypt($password, $time){
+	$b64decoded = base64_decode($password);
+	
+	//applying XOR
+	$newSeed = md5(SEED . $time);
+	$passLength = strlen($b64decoded);
+	while (strlen($newSeed) < $passLength) $newSeed.= $newSeed;
+	$original_password = (substr($b64decoded,0,$passLength) ^ substr($newSeed,0,$passLength));
+	
+	//removing padding
+	$c = 1;
+	while($c < 15 && (int)substr($original_password,$c-1,1) + 1 != (int)substr($original_password,$c,1)){
+		$c++;
+	}
+	return substr($original_password,$c+1);
+}
+
+// ---------------------------------------------------
+//  Filesystem
+// ---------------------------------------------------
+
+function remove_dir($dir) {
+	$dh = @opendir($dir);
+	if (!is_resource($dh)) return;
+    while (false !== ($obj = readdir($dh))) {
+		if($obj == '.' || $obj == '..') continue;
+		$path = "$dir/$obj";
+		if (is_dir($path)) {
+			unlink_dir($path);
+		} else {
+			@unlink($path);
+		}
+	}
+	@closedir($dh);
+	@rmdir($dir);
+}
+
 ?>

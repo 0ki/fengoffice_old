@@ -11,7 +11,8 @@
  */
 function FormulaBar(){
 	var self = document.createElement("TEXTAREA");
-
+	//var self = document.getElementById("FormulaBar");
+	
 	self.constructor = function(){
 		this.id = "FormulaBar";
 		this.style.position = "absolute";

@@ -68,7 +68,7 @@
   define('REMEMBER_LOGIN_LIFETIME', 1209600); // two weeks
   
   // Defaults
-  define('DEFAULT_CONTROLLER', 'dashboard');
+  define('DEFAULT_CONTROLLER', 'access');
   define('DEFAULT_ACTION', 'index');
   define('DEFAULT_THEME', 'default');
   
@@ -81,7 +81,7 @@
   include_once 'environment/environment.php';
   
   if (Env::isDebuggingTime()) {
-    TimeIt::start("total");
+    TimeIt::start("Total");
   }
   
   include_once 'library/cal/index.php';
@@ -159,5 +159,10 @@
     TimeIt::stop();
     $report = TimeIt::getTimeReportByType();
     Logger::log($_SERVER['QUERY_STRING']."\n$report");
+    $report = "\n";
+    foreach (TimeIt::$timeslots as $t) {
+    	$report .= $t["type"] . ": (" . $t["start"] . ", " . $t["end"] . ")\n"; 
+    }
+    Logger::log($report);
   }
 ?>

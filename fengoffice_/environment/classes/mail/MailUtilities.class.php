@@ -126,6 +126,11 @@ class MailUtilities {
 			}
 		}
 		
+		// Remove everything beyond the end of the html
+		if (($end_pos = strpos($mail->getBodyHtml(), "</html>")) > 0) {
+			$mail->setBodyHtml(substr($mail->getBodyHtml(), 0, $end_pos + strlen("</html>")));
+		}
+		
 		$repository_id = self::SaveContentToFilesystem($mail->getUid(), iconv($encoding, 'UTF-8//IGNORE', $content));
 		$mail->setContentFileId($repository_id);
 		
@@ -267,7 +272,9 @@ class MailUtilities {
 		}
 	}
 
-	function sendMail($smtp_server,$to,$from,$subject,$body,$cc,$bcc,$smtp_port=25,$smtp_username = null, $smtp_password ='',$type='text/plain',$transport=0) {
+	
+	//function sendMail($smtp_server,$to,$from,$subject,$body,$cc,$bcc,$smtp_port=25,$smtp_username = null, $smtp_password ='',$type='text/plain',$transport=0) {
+	function sendMail($smtp_server,$to,$from,$subject,$body,$cc,$bcc,$attachments=null,$smtp_port=25,$smtp_username = null, $smtp_password ='',$type='text/plain',$transport=0) {
 		//Load in the files we'll need
 		Env::useLibrary('swift');
 		// Load SMTP config
@@ -295,7 +302,16 @@ class MailUtilities {
 		// Send Swift mail
 		$mailer->addCc(explode(",",$cc));
 		$mailer->addBcc(explode(",",$bcc));
-		return $mailer->send($to, $from, $subject,$body,$type);
+		// add attachments
+ 		if (is_array($attachments)) {
+ 			$mailer->addPart($body, $type); // real body
+         		foreach ($attachments as $att)
+ 				$mailer->addAttachment($att["data"], $att["name"], $att["type"]);
+ 			$body = false; // multipart
+ 		}
+		$ok = $mailer->send($to, $from, $subject,$body,$type);
+		$mailer->close();
+		return $ok;
 	}
 
 	function parse_to($to) {
@@ -325,24 +341,20 @@ class MailUtilities {
 			foreach ($mailboxes as $box) {
 				if ($box->getCheckFolder()) {
 					
-					if ($imap->selectMailbox($box->getFolderName())) {
+					if ($imap->selectMailbox(utf8_decode($box->getFolderName()))) {
 						$oldUids = $account->getUids($box->getFolderName());
-						$numMessages = $imap->getNumberOfMessages($box->getFolderName());
+						$numMessages = $imap->getNumberOfMessages(utf8_decode($box->getFolderName()));
 						
 						$mails_info = array();
-						if (!is_array($oldUids) || count($oldUids) == 0) $lastReceived = 0;
-						else {
+						if (!is_array($oldUids) || count($oldUids) == 0) {
+							$lastReceived = 0;
+						} else {
 							$lastReceived = $numMessages;
 							$mails_info[$lastReceived] = $imap->getSummary($lastReceived);
 							while (is_array($mails_info[$lastReceived]) && $lastReceived > 0 && !in_array($mails_info[$lastReceived][0]['UID'], $oldUids)) {
 								$lastReceived--;
 								$mails_info[$lastReceived] = $imap->getSummary($lastReceived);
 							}
-						}
-						
-						for($i=0;$i<10;$i++) {
-							//$summary = $imap->getSummary($numMessages - $i);
-							//Logger::log($summary[0]['MSG_NUM']." ".$summary[0]['SUBJECT']);
 						}
 						
 						if ($max == 0) $toGet = $numMessages;
@@ -357,6 +369,10 @@ class MailUtilities {
 							else $state = '0';
 							
 							$messages = $imap->getMessages($index);
+							if (PEAR::isError($messages)) {
+								alert($messages->getMessage());
+								return $received;
+							}
 							self::SaveMail($messages[$index], $account, $summary[0]['UID'], $state, $box->getFolderName());
 							$received++;
 						}
@@ -391,7 +407,7 @@ class MailUtilities {
 						}
 					}
 					$name = array_var($mbox, 'MAILBOX');
-					if ($select && isset($name)) $result[] = $name;
+					if ($select && isset($name)) $result[] = utf8_encode($name);
 				}
 			}
 		}		
@@ -417,7 +433,7 @@ class MailUtilities {
 					if (is_array($mailboxes)) {
 						foreach ($mailboxes as $box) {
 							if ($box->getCheckFolder()) {
-								$numMessages = $imap->getNumberOfMessages($box->getFolderName());
+								$numMessages = $imap->getNumberOfMessages(utf8_decode($box->getFolderName()));
 								for ($i = 1; $i < $numMessages; $i++) {
 									$summary = $imap->getSummary($i);
 									if (is_array($summary)) {
@@ -454,5 +470,48 @@ class MailUtilities {
 			}
 		}
 	}
+	
+	function getContent($smtp_server, $smtp_port, $transport, $smtp_username, $smtp_password, $body, $attachments)
+ 	{
+ 		//Load in the files we'll need
+		Env::useLibrary('swift');
+ 		
+		switch ($transport) {
+			case 'ssl': $transport = SWIFT_SSL; break;
+			case 'tls': $transport = SWIFT_TLS; break;
+			default: $transport = 0; break;
+		}
+ 		
+		//Start Swift
+ 		$mailer = new Swift(new Swift_Connection_SMTP($smtp_server, $smtp_port, $transport));
+ 		
+ 		if(!$mailer->isConnected()) {
+ 			return false;
+ 		} // if
+ 		$mailer->setCharset('UTF-8');
+ 
+ 		if($smtp_username != null) {
+			if(!($mailer->authenticate($smtp_username, self::ENCRYPT_DECRYPT($smtp_password)))) {
+				return false;
+			}
+		}
+		if(! $mailer->isConnected() )  return false;
+		
+ 		// add attachments
+ 		$mailer->addPart($body); // real body
+ 		if (is_array($attachments) && count($attachments) > 0) {
+	 		foreach ($attachments as $att)
+	 			$mailer->addAttachment($att["data"], $att["name"], $att["type"]);
+ 		}
+ 		
+ 		$content = $mailer->getFullContent(false);
+ 		$mailer->close();
+ 		return $content;
+ 	}
+ 
+ 	public function saveContent($content)
+ 	{
+ 		return $this->saveContentToFilesystem("UID".rand(), $content);
+ 	}
 }
 ?>

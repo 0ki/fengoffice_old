@@ -33,7 +33,7 @@
   		}
   		
   		function PrintInfo(){
-  			return "<b>" . lang('total') . "</b> $" . $this->total;
+  			return "<b>" . lang('total') . "</b> ". config_option('currency_code', '$') . $this->total;
   		}
   		
   		function Draw($g, $returnGraphObject){

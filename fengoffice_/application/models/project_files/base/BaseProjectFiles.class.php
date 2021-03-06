@@ -34,6 +34,9 @@ abstract class BaseProjectFiles extends ProjectDataObjects {
 	    'was_auto_checked_out' => DATA_TYPE_BOOLEAN,
     	'trashed_on' => DATA_TYPE_DATETIME,
      	'trashed_by_id' => DATA_TYPE_INTEGER,
+		'type' => DATA_TYPE_INTEGER,
+		'url' => DATA_TYPE_STRING,
+		'mail_id' => DATA_TYPE_INTEGER,
 	);
 
 	/**
@@ -97,6 +100,19 @@ abstract class BaseProjectFiles extends ProjectDataObjects {
 	function getAutoIncrementColumn() {
 		return 'id';
 	} // getAutoIncrementColumn
+
+	/**
+	 * Return system columns
+	 *
+	 * @access public
+	 * @param void
+	 * @return array
+	 */
+	function getSystemColumns() {
+		return array_merge(parent::getSystemColumns(), array(
+      		'project_id', 'checked_out_by_id', 'was_auto_checked_out', 'mail_id', 'type')
+		);
+	} // getSystemColumns
 
 	// -------------------------------------------------------
 	//  Finders

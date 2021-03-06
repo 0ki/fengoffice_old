@@ -1,3 +1,10 @@
+<?php 
+require_javascript('og/tasks/TasksTopToolbar.js');
+require_javascript('og/CalendarToolbar.js');
+require_javascript('og/CalendarFunctions.js');
+require_javascript('og/EventPopUp.js');
+?>
+
 <script type="text/javascript">
 	scroll_to = -1;
 </script>
@@ -19,13 +26,19 @@ $user = Users::findById(array('id' => $user_filter));
 if ($user == null) $user = logged_user();
 
 $use_24_hours = user_config_option('time_format_use_24');
+$date_format = user_config_option('date_format', 'd/m/Y');
 
 $tags = active_tag();	
 ?>
 <?php echo stylesheet_tag('event/week.css') ?>
 <?php
-	$startday = date("d", mktime(0, 0, 0, $month, $day, $year)) - (date("N", mktime(0, 0, 0, $month, $day, $year)) % 7);//inicio de la semana
-	$endday = $startday + 7;//fin de la semana
+	if (user_config_option("start_monday")) {
+		$startday = $day - date("N", mktime(0, 0, 0, $month, $day, $year)) + 1; // beginning of the week, monday
+	} else {
+		$startday = $day - date("N", mktime(0, 0, 0, $month, $day, $year)); // beginning of the week, sunday
+	}
+
+	$endday = $startday + 7; // end of week
 	
 	$today = DateTimeValueLib::now();
 	$today->add('h', logged_user()->getTimezone());
@@ -37,6 +50,8 @@ $tags = active_tag();
 	
 	$date_start = new DateTimeValue(mktime(0, 0, 0, $month, $startday, $year)); 
 	$date_end = new DateTimeValue(mktime(0, 0, 0, $month, $endday, $year)); 
+	$date_start->add('h', logged_user()->getTimezone());
+	$date_end->add('h', logged_user()->getTimezone());
 	
 	$milestones = ProjectMilestones::getRangeMilestonesByUser($date_start, $date_end, ($user_filter != -1 ? $user : null), $tags, active_project());
 	$tasks = ProjectTasks::getRangeTasksByUser($date_start, $date_end, ($user_filter != -1 ? $user : null), $tags, active_project());
@@ -59,7 +74,7 @@ $tags = active_tag();
 			$w = $day_of_month;
 		} else {
 			if($day_of_month > $lastday) {
-				$month_aux++;
+				if ($month_aux == $month) $month_aux++;
 				if($month_aux == 13){
 					$month_aux = 1;
 					$year_aux++;
@@ -133,14 +148,29 @@ $tags = active_tag();
 	<tr>
 	<td class="coViewHeader" colspan=2 rowspan=1>
 	<div class="coViewTitle">
-		<span id="chead0"><?php echo  date(lang('date format'), mktime(0, 0, 0, $month, $startday, $year)) ." - ". date(lang('date format'), mktime(0, 0, 0, $month, $endday-1, $year))
-		 .' - '. ($user_filter == -1 ? lang('all users') : lang('calendar of', clean($user->getDisplayName())));?></span>	
+		<table style="width:100%"><tr><td>
+			<span id="chead0"><?php echo  date($date_format, mktime(0, 0, 0, $month, $startday, $year)) ." - ". date($date_format, mktime(0, 0, 0, $month, $endday-1, $year))
+		 	.' - '. ($user_filter == -1 ? lang('all users') : lang('calendar of', clean($user->getDisplayName())));?></span>
+		 </td><td style="width:100px;">
+		 	<?php echo checkbox_field("include_subws", true, array("id" => "include_subws", "style" => "float:right;", "onclick" => "javascript:og.change_link_incws('ical_link', 'include_subws')", "title" => lang('check to include sub ws'))) ?>
+		 	<?php echo label_tag(lang('subws'), "include_subws", false, array("style" => "float:right;font-size:60%;margin:0px 3px;vertical-align:top;", "title" => lang('check to include sub ws')), "") ?>
+		 	<?php 
+		 		$export_name = active_project() != null ? clean(active_project()->getName()) : clean($user->getDisplayName());
+		 		$export_ws = active_project() != null ? active_project()->getId() : 0;
+		 	 ?>
+		 	<a class="iCalSubscribe" id="ical_link" style="float:right;" href="<?php echo ROOT_URL ."/index.php?c=feed&a=ical_export&n=$export_name&cal=$export_ws&t=".$user->getToken()."&isw=1" ?>" 
+		 		title="<?php echo lang('copy this url in your calendar client software')?>"
+		 		onclick="javascript:Ext.Msg.show({
+									   	title: '<?php echo escape_single_quotes(lang('import events from third party software')) ?>',
+									   	msg: '<?php echo escape_single_quotes(lang('copy this url in your calendar client software')) ."<br><br><br>"?>'+document.getElementById('ical_link').href,
+							   			icon: Ext.MessageBox.INFO });"></a>
+		 </td></tr></table>	
 	</div>		
 	</td>
 	</tr>
 	<tr>
 		<td class="coViewBody" style="padding:0px;height:100%;" colspan=2>					
-		<div id="chrome_main2" class="printborder" style="border-color: rgb(195, 217, 255); background: rgb(195, 217, 255) none repeat scroll 0% 50%; width:100%; height:100%">
+		<div id="chrome_main2" style="width:100%; height:100%">
 		<div id="allDayGrid" class="inset grid"  style="height: <?php echo $alldaygridHeight ?>px; margin-bottom: 5px;background:#E8EEF7;margin-right:15px;margin-left:40px;position:relative;">
 		<?php					
 									
@@ -167,9 +197,9 @@ $tags = active_tag();
 						$daytype = "weekday_future";
 					}
 				}else{
-					if( !cal_option("start_monday") AND ($day_of_week==0 OR $day_of_week==6) AND $day_of_month <= $lastday AND $day_of_month >= 1){
+					if( !user_config_option("start_monday") AND ($day_of_week==0 OR $day_of_week==6) AND $day_of_month <= $lastday AND $day_of_month >= 1){
 						$daytype = "weekend";
-					}elseif( cal_option("start_monday") AND ($day_of_week==5 OR $day_of_week==6) AND $day_of_month <= $lastday AND $day_of_month >= 1){
+					}elseif( user_config_option("start_monday") AND ($day_of_week==5 OR $day_of_week==6) AND $day_of_month <= $lastday AND $day_of_month >= 1){
 						$daytype = "weekend";
 					}elseif($day_of_month <= $lastday AND $day_of_month >= 1){
 						$daytype = "weekday";
@@ -191,17 +221,26 @@ $tags = active_tag();
 				$p = cal_getlink("index.php?action=viewdate&day=".$dtv_temp->getDay()."&month={$dtv_temp->getMonth()}&year={$dtv_temp->getYear()}");
 				$t = cal_getlink("index.php?action=add&day=".$dtv_temp->getDay()."&month={$dtv_temp->getMonth()}&year={$dtv_temp->getYear()}");							
 
-				$format_d_m = str_replace('d', 'j', lang('date format'));
-				$format_d_m = str_replace('/Y', '', $format_d_m);
+				$format_d_m = str_replace('d', 'j', $date_format);
+				$format_d_m = str_replace(array('Y','y','o'), '', $format_d_m);
+				$format_d_m = str_replace('n', 'm', $format_d_m);
+				if (strpos($format_d_m, 'm') === FALSE) $format_d_m = str_replace('F', 'M', $format_d_m);
+				else $format_d_m = str_replace(array('F','M'), '', $format_d_m);
+				$format_d_m = trim($format_d_m);
+				while (!(str_starts_with($format_d_m, 'j') || str_starts_with($format_d_m, 'm'))) 
+					$format_d_m = substr($format_d_m, 1);
+				while (!(str_ends_with($format_d_m, 'j') || str_ends_with($format_d_m, 'm'))) 
+					$format_d_m = substr($format_d_m, 0, strlen($format_d_m) - 1);
+
 		?>
 				<div class="chead cheadNotToday" style="width: <?php echo $width_percent ?>%; left: <?php echo $width ?>%;text-align:center;position:absolute;top:0%;">
 					<span id="chead<?php echo $day_of_week ?>">
-						<a class="internalLink" href="<?php echo $p; ?>"  onclick="stopPropagation(event) "><?php $dtime = mktime(0, 0, 0, $dtv_temp->getMonth(), $dtv_temp->getDay(), $dtv_temp->getYear()); echo lang(strtolower(date("l", $dtime)) . ' short') . date(' '. $format_d_m, $dtime); ?></a>
+						<a class="internalLink" href="<?php echo $p; ?>"  onclick="event.stopPropagation() "><?php $dtime = mktime(0, 0, 0, $dtv_temp->getMonth(), $dtv_temp->getDay(), $dtv_temp->getYear()); echo lang(strtolower(date("l", $dtime)) . ' short') . date(' '. $format_d_m, $dtime); ?></a>
 					</span>
 				</div>
 				<div id="allDay<?php echo $day_of_week ?>" class="allDayCell" style="left: <?php echo $width ?>%; height: <?php echo $alldaygridHeight ?>px;border-left:3px double #DDDDDD !important; position:absolute;width:3px;z-index:110;background:#E8EEF7;top:0%;"></div>
 
-				<div id="alldayeventowner" style="width: <?php echo $width_percent ?>%;position:absolute;left: <?php echo $width ?>%; top: 12px;height: <?php echo $alldaygridHeight ?>px;" onclick="showEventPopup(<?php echo $dtv_temp->getDay() ?>, <?php echo $dtv_temp->getMonth()?>, <?php echo $dtv_temp->getYear()?>, -1, -1, <?php echo ($use_24_hours ? 'true' : 'false'); ?>);">
+				<div id="alldayeventowner" style="width: <?php echo $width_percent ?>%;position:absolute;left: <?php echo $width ?>%; top: 12px;height: <?php echo $alldaygridHeight ?>px;" onclick="showEventPopup(<?php echo $dtv_temp->getDay() ?>, <?php echo $dtv_temp->getMonth()?>, <?php echo $dtv_temp->getYear()?>, -1, -1, <?php echo ($use_24_hours ? 'true' : 'false'); ?>,'<?php echo $dtv_temp->format($date_format) ?>');">
 					<?php	
 						$top=5;
 						if(is_array(array_var($alldayevents,$day_of_week))){
@@ -245,11 +284,11 @@ $tags = active_tag();
 					<div id="<?php echo $div_prefix . $event->getId() ?>" class="adc" style="left: 4%; top: <?php echo $top ?>px; z-index: 5;width: 92%;margin:1px;position:absolute;">
 						<div class="t3 <?php echo  $ws_class?>" style="<?php echo  $ws_style?>;margin:0px 1px 0px 1px;height:0px; border-bottom:1px solid; border-color:<?php echo $border_color ?>"></div>
 						<div class="noleft <?php echo  $ws_class?>" style="<?php echo  $ws_style?>;border-left:1px solid; border-right:1px solid; border-color:<?php echo $border_color ?>">							
-							<div class="" style="overflow: hidden; padding-bottom: 1px;">										
-								<nobr style="display: block; text-decoration: none;"><a href='<?php echo $event->getViewUrl()."&amp;view=week"?>' class='internalLink'" onclick="stopPropagation(event);"><img src="<?php echo $img_url?>" align='absmiddle' border='0'> <span style="color:<?php echo $txt_color ?>!important"><?php echo $subject ?></span> </a></nobr>										
+							<div class="" style="overflow: hidden; padding-bottom: 1px;">
+								<nobr style="display: block; text-decoration: none;"><a href='<?php echo $event->getViewUrl()."&amp;view=week"?>' class='internalLink'" onclick="event.stopPropagation();"><img src="<?php echo $img_url?>" align='absmiddle' border='0'> <span style="color:<?php echo $txt_color ?>!important"><?php echo $subject ?></span> </a></nobr>										
 							</div>
 						</div>
-						<div class="t3 <?php echo  $ws_class?>" style="<?php echo  $ws_style?>;margin:0px 1px 0px 1px;height:0px; border-top:1px solid; border-color:<?php echo $border_color ?>"></div>
+						<div class="t3 <?php echo  $ws_class;?>" style="<?php echo  $ws_style?>;margin:0px 1px 0px 1px;height:0px; border-top:1px solid; border-color:<?php echo $border_color ?>"></div>
 					</div>
 					<script type="text/javascript">
 						addTip('<?php echo $div_prefix . $event->getId() ?>', <?php echo json_encode($divtype . $subject) ?>, <?php echo json_encode($tipBody) ?>);
@@ -286,7 +325,7 @@ $tags = active_tag();
 
 							</div>
 						</td>
-						<td id="gridcontainercell" style="width: auto; position:relative" >	
+						<td id="gridcontainercell" style="width:100%;position:relative" >	
 							<div id="grid" style="height: 100%;background-color:#fff;position:relative;" class="grid">										
 								<div id="decowner">
 									
@@ -324,13 +363,13 @@ $tags = active_tag();
 onmouseover="if (!selectingCells) overCell('<?php echo $div_id?>'); else paintSelectedCells('<?php echo $div_id?>');"
 onmouseout="if (!selectingCells) resetCell('<?php echo $div_id?>');"
 onmousedown="selectStartDateTime(<?php echo $date->getDay() ?>, <?php echo $date->getMonth()?>, <?php echo $date->getYear()?>, <?php echo date("G",mktime($hour/2))?>, <?php echo ($hour % 2 == 0) ? 0 : 30 ?>); resetCell('<?php echo $div_id?>'); paintingDay = <?php echo $day_of_week ?>; paintSelectedCells('<?php echo $div_id?>');"
-onmouseup="showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMonth()?>, <?php echo $date->getYear()?>, <?php echo date("G",mktime(($hour+1)/2))?>, <?php echo (($hour+1) % 2 == 0) ? 0 : 30 ?>, <?php echo ($use_24_hours ? 'true' : 'false'); ?>);"
+onmouseup="showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMonth()?>, <?php echo $date->getYear()?>, <?php echo date("G",mktime(($hour+1)/2))?>, <?php echo (($hour+1) % 2 == 0) ? 0 : 30 ?>, <?php echo ($use_24_hours ? 'true' : 'false'); ?>,'<?php echo $date->format($date_format) ?>');"
 ></div>
 
 <?php								} ?>
 									
 									<div id="vd<?php echo $day_of_week ?>" style="left: <?php echo $left ?>%; height: <?php echo (PX_HEIGHT)*24 ?>px;border-left:3px double #DDDDDD !important; position:absolute;width:3px;z-index:110;"></div>
-									<div id="eventowner" style="z-index: 120;" onclick="stopPropagation(event) ">
+									<div id="eventowner" style="z-index: 120;" onclick="event.stopPropagation() ">
 <?php
 										$cells = array();
 										for ($i = 0; $i < 24; $i++) {
@@ -338,24 +377,32 @@ onmouseup="showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMo
 											$cells[$i][1] = 0;
 										}
 										foreach ($results[$day_of_week] as $event){
-											$event->getDuration()->add('s', -1);
-											if ($event->getStart()->getMinute() < 30) {
-												$cells[$event->getStart()->getHour()][0]++;
-												$cells[$event->getStart()->getHour()][1]++;
-											} else $cells[$event->getStart()->getHour()][1]++;
-											for($i = $event->getStart()->getHour()+1; $i < $event->getDuration()->getHour(); $i++){
+											
+											$event_start = new DateTimeValue($event->getStart()->getTimestamp() + 3600 * logged_user()->getTimezone());
+											$event_duration = new DateTimeValue($event->getDuration()->getTimestamp() + 3600 * logged_user()->getTimezone());
+											
+											$event_duration->add('s', -1);
+											if ($event_start->getMinute() < 30) {
+												$cells[$event_start->getHour()][0]++;
+												$cells[$event_start->getHour()][1]++;
+											} else $cells[$event_start->getHour()][1]++;
+											for($i = $event_start->getHour()+1; $i < $event_duration->getHour(); $i++){
 												$cells[$i][0]++;
 												$cells[$i][1]++;
 											}
-											if ($event->getDuration()->getMinute() > 0) {
-												if ($event->getDuration()->getHour() != $event->getStart()->getHour()) {
-													$cells[$event->getDuration()->getHour()][0]++;
-													if ($event->getDuration()->getMinute() > 30) $cells[$event->getDuration()->getHour()][1]++;
+											if ($event_duration->getMinute() > 0) {
+												if ($event_duration->getHour() != $event_start->getHour()) {
+													$cells[$event_duration->getHour()][0]++;
+													if ($event_duration->getMinute() > 30) $cells[$event_duration->getHour()][1]++;
 												}
 											}
 										}
 										$occup = array(); //keys: hora - pos
 										foreach ($results[$day_of_week] as $event){
+											
+											$event_start = new DateTimeValue($event->getStart()->getTimestamp() + 3600 * logged_user()->getTimezone());
+											$event_duration = new DateTimeValue($event->getDuration()->getTimestamp() + 3600 * logged_user()->getTimezone());
+											
 											$event_id = $event->getId();
 											$subject = clean($event->getSubject());
 											$dws = $event->getWorkspaces();
@@ -368,15 +415,15 @@ onmouseup="showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMo
 											
 											if($use_24_hours) $timeformat = 'G:i';
 											else $timeformat = 'g:i A';
-											$start_time = date($timeformat, $event->getStart()->getTimestamp());
-											$end_time = date($timeformat, $event->getDuration()->getTimestamp());
+											$start_time = date($timeformat, $event_start->getTimestamp());
+											$end_time = date($timeformat, $event_duration->getTimestamp());
 											
-											$hr_start = $event->getStart()->getHour();
-											$min_start = $event->getStart()->getMinute();
-											$hr_end = $event->getDuration()->getHour();
-											$min_end = $event->getDuration()->getMinute();
+											$hr_start = $event_start->getHour();
+											$min_start = $event_start->getMinute();
+											$hr_end = $event_duration->getHour();
+											$min_end = $event_duration->getMinute();
 											
-											if ($event->getStart() == $event->getDuration()){
+											if ($event_start == $event_duration){
 												$hr_end++;
 											}
 											$top = PX_HEIGHT * $hr_start + (PX_HEIGHT*(($min_start*100)/(60*100)));
@@ -385,20 +432,20 @@ onmouseup="showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMo
 											if ($height < PX_HEIGHT/2 - 5) $height = PX_HEIGHT/2 - 5;
 											
 											$evs_same_time = 0;
-											$i = $event->getStart()->getHour();
-											if ($event->getStart()->getMinute() < 30) {
+											$i = $event_start->getHour();
+											if ($event_start->getMinute() < 30) {
 												if ($cells[$i][0] > $evs_same_time) $evs_same_time = $cells[$i][0];
 												if ($cells[$i][1] > $evs_same_time) $evs_same_time = $cells[$i][1];
 											} else if ($cells[$i][1] > $evs_same_time) $evs_same_time = $cells[$i][1];
 											
-											for($i = $event->getStart()->getHour()+1; $i < $event->getDuration()->getHour(); $i++){
+											for($i = $event_start->getHour()+1; $i < $event_duration->getHour(); $i++){
 												if ($cells[$i][0] > $evs_same_time) $evs_same_time = $cells[$i][0];
 												if ($cells[$i][1] > $evs_same_time) $evs_same_time = $cells[$i][1];
 											}
-											$i = $event->getDuration()->getHour();
-											if ($event->getDuration()->getMinute() > 0) {
+											$i = $event_duration->getHour();
+											if ($event_duration->getMinute() > 0) {
 												if ($cells[$i][0] > $evs_same_time) $evs_same_time = $cells[$i][0];
-												if ($event->getDuration()->getMinute() > 30) {
+												if ($event_duration->getMinute() > 30) {
 													if ($cells[$i][1] > $evs_same_time) $evs_same_time = $cells[$i][1];
 												}
 											}
@@ -407,23 +454,23 @@ onmouseup="showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMo
 											$canPaint = false;
 											while (!$canPaint) {
 												$canPaint = true;
-												if ($event->getStart()->getMinute() < 30) {
-													$canPaint = !(isset($occup[$event->getStart()->getHour()][0][$posHoriz]) && $occup[$event->getStart()->getHour()][0][$posHoriz]
-															 || isset($occup[$event->getStart()->getHour()][1][$posHoriz]) && $occup[$event->getStart()->getHour()][1][$posHoriz]);
+												if ($event_start->getMinute() < 30) {
+													$canPaint = !(isset($occup[$event_start->getHour()][0][$posHoriz]) && $occup[$event_start->getHour()][0][$posHoriz]
+															 || isset($occup[$event_start->getHour()][1][$posHoriz]) && $occup[$event_start->getHour()][1][$posHoriz]);
 												} else {
-													$canPaint = !(isset($occup[$event->getStart()->getHour()][1][$posHoriz]) && $occup[$event->getStart()->getHour()][1][$posHoriz]);
+													$canPaint = !(isset($occup[$event_start->getHour()][1][$posHoriz]) && $occup[$event_start->getHour()][1][$posHoriz]);
 												}
-												for($i = $event->getStart()->getHour()+1; $canPaint && $i < $event->getDuration()->getHour(); $i++) {
+												for($i = $event_start->getHour()+1; $canPaint && $i < $event_duration->getHour(); $i++) {
 													if (isset($occup[$i][0][$posHoriz]) && $occup[$i][0][$posHoriz] || isset($occup[$i][1][$posHoriz]) && $occup[$i][1][$posHoriz]) {
 														$canPaint = false;
 													}																
 												}
 												if ($canPaint) {
-													if ($event->getDuration()->getMinute() > 30) {
-														$canPaint = !(isset($occup[$event->getDuration()->getHour()][0][$posHoriz]) && $occup[$event->getDuration()->getHour()][0][$posHoriz]
-														|| isset($occup[$event->getDuration()->getHour()][1][$posHoriz]) && $occup[$event->getDuration()->getHour()][1][$posHoriz]);
+													if ($event_duration->getMinute() > 30) {
+														$canPaint = !(isset($occup[$event_duration->getHour()][0][$posHoriz]) && $occup[$event_duration->getHour()][0][$posHoriz]
+														|| isset($occup[$event_duration->getHour()][1][$posHoriz]) && $occup[$event_duration->getHour()][1][$posHoriz]);
 													} else {
-														$canPaint = !(isset($occup[$event->getDuration()->getHour()][1][$posHoriz]) && $occup[$event->getDuration()->getHour()][1][$posHoriz]);
+														$canPaint = !(isset($occup[$event_duration->getHour()][1][$posHoriz]) && $occup[$event_duration->getHour()][1][$posHoriz]);
 													}
 												}
 												
@@ -434,33 +481,33 @@ onmouseup="showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMo
 											$left = $width * $posHoriz + ((100/7) * $day_of_week) + 0.25;
 											$width -= 0.2;
 											
-											if ($event->getStart()->getMinute() < 30) {
-												$occup[$event->getStart()->getHour()][0][$posHoriz] = true;
-												$occup[$event->getStart()->getHour()][1][$posHoriz] = true;
+											if ($event_start->getMinute() < 30) {
+												$occup[$event_start->getHour()][0][$posHoriz] = true;
+												$occup[$event_start->getHour()][1][$posHoriz] = true;
 											} else {
-												$occup[$event->getStart()->getHour()][1][$posHoriz] = true;
+												$occup[$event_start->getHour()][1][$posHoriz] = true;
 											}
-											for($i = $event->getStart()->getHour()+1; $i < $event->getDuration()->getHour(); $i++) {
+											for($i = $event_start->getHour()+1; $i < $event_duration->getHour(); $i++) {
 												$occup[$i][0][$posHoriz] = true;
 												$occup[$i][1][$posHoriz] = true;
 											}
-											if ($event->getDuration()->getMinute() > 0) {
-												$occup[$event->getDuration()->getHour()][0][$posHoriz] = true;
-												if ($event->getDuration()->getMinute() > 30) {
-													$occup[$event->getDuration()->getHour()][1][$posHoriz] = true;
+											if ($event_duration->getMinute() > 0) {
+												$occup[$event_duration->getHour()][0][$posHoriz] = true;
+												if ($event_duration->getMinute() > 30) {
+													$occup[$event_duration->getHour()][1][$posHoriz] = true;
 												}
 											}
 											
-											$event->getDuration()->add('s', 1);
-											$end_time = date($timeformat, $event->getDuration()->getTimestamp());
+											$event_duration->add('s', 1);
+											$end_time = date($timeformat, $event_duration->getTimestamp());
 											if ($posHoriz + 1 == $evs_same_time) $width = $width - 0.5;
 											
-											$tipBody = $event->getStart()->format($use_24_hours ? 'G:i' : 'g:i A') .' - '. $event->getDuration()->format($use_24_hours ? 'G:i' : 'g:i A') . (trim(clean($event->getDescription())) != '' ? '<br><br>' . clean($event->getDescription()) : '');
+											$tipBody = $event_start->format($use_24_hours ? 'G:i' : 'g:i A') .' - '. $event_duration->format($use_24_hours ? 'G:i' : 'g:i A') . (trim(clean($event->getDescription())) != '' ? '<br><br>' . clean($event->getDescription()) : '');
 											$tipBody = str_replace("\r", '', $tipBody);
 											$tipBody = str_replace("\n", '<br>', $tipBody);
 											if (strlen_utf($tipBody) > 200) $tipBody = substr_utf($tipBody, 0, strpos($tipBody, ' ', 200)) . ' ...';
 											
-											$ev_duration = DateTimeValueLib::get_time_difference($event->getStart()->getTimestamp(), $event->getDuration()->getTimestamp()); 
+											$ev_duration = DateTimeValueLib::get_time_difference($event_start->getTimestamp(), $event_duration->getTimestamp()); 
 ?>
 											<script type="text/javascript">
 												if (<?php echo $top; ?> < scroll_to || scroll_to == -1) {
@@ -469,7 +516,7 @@ onmouseup="showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMo
 												addTip('w_ev_div_' + <?php echo $event->getId() ?>, <?php echo json_encode(clean($event->getSubject())) ?>, <?php echo json_encode($tipBody);?>);
 											</script>
 											
-						<div id="w_ev_div_<?php echo $event->getId()?>" class="chip" style="position: absolute; top: <?php echo $top?>px; left: <?php echo $left?>%; width: <?php echo $width?>%;z-index:120;"  onclick="stopPropagation(event)" onmouseup="clearPaintedCells()">
+						<div id="w_ev_div_<?php echo $event->getId()?>" class="chip" style="position: absolute; top: <?php echo $top?>px; left: <?php echo $left?>%; width: <?php echo $width?>%;z-index:120;"  onclick="event.stopPropagation()" onmouseup="clearPaintedCells()">
 						<div class="t1 <?php echo $ws_class ?>" style="<?php echo $ws_style ?>;margin:0px 2px 0px 2px;height:0px; border-bottom:1px solid;border-color:<?php echo $border_color ?>"></div>
 						<div class="t2 <?php echo $ws_class ?>" style="<?php echo $ws_style ?>;margin:0px 1px 0px 1px;height:1px; border-left:1px solid;border-right:1px solid;border-color:<?php echo $border_color ?>"></div>
 						<div class="chipbody edit og-wsname-color-<?php echo $ws_color?>">
@@ -478,7 +525,7 @@ onmouseup="showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMo
 							<table width="100%"><tr><td>
 								<a 
 								href='<?php echo cal_getlink("index.php?action=viewevent&amp;view=week&amp;id=".$event->getId())."&amp;user_id=".$user_filter;?>'
-								onclick="stopPropagation(event);"
+								onclick="event.stopPropagation();"
 								class='internalLink'><div style="color:<?php echo $txt_color?>!important;padding-left:5px;font-size:93%;"><?php echo "$start_time"?></div></a>
 							</td><td align="right">
 								<dd><div align="right" style="padding-right:4px;<?php echo ($ev_duration['hours'] == 0 ? 'height:'.$height.'px;' : '') ?>">
@@ -509,7 +556,7 @@ onmouseup="showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMo
 							<dd>
 							<div><a
 								href='<?php echo cal_getlink("index.php?action=viewevent&amp;view=week&amp;id=".$event->getId())."&amp;user_id=".$user_filter;?>'
-								onclick="stopPropagation(event);"
+								onclick="event.stopPropagation();"
 								class='internalLink'><div style="color:<?php echo $txt_color?>!important;padding-left:5px;font-size:93%;"><?php echo $subject;?></div></a>
 							</div>
 							</dd>

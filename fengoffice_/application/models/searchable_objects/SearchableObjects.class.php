@@ -113,9 +113,15 @@
     	}
     	
     	if($include_private) {
-    		return DB::prepareString('MATCH (`content`) AGAINST (\'' . $search_for . '\' IN BOOLEAN MODE)'  . $wsSearch . $trashed . $otSearch . $columnsSearch );
+    		if (substr(Localization::instance()->getLocale(),0,2) == 'zh')
+    			return DB::prepareString('`content` LIKE \'%' . $search_for . '%\'' . $wsSearch . $trashed . $otSearch . $columnsSearch );
+    		else
+    			return DB::prepareString('MATCH (`content`) AGAINST (\'' . $search_for . '\' IN BOOLEAN MODE)'  . $wsSearch . $trashed . $otSearch . $columnsSearch );
     	} else {
-    		return DB::prepareString('MATCH (`content`) AGAINST (\'' . $search_for . '\' IN BOOLEAN MODE) AND `is_private` = 0' .$wsSearch . $trashed . $otSearch . $columnsSearch);
+    		if (substr(Localization::instance()->getLocale(),0,2) == 'zh')
+    			return DB::prepareString('`content` LIKE \'%' . $search_for . '%\' AND `is_private` = 0' . $wsSearch . $trashed . $otSearch . $columnsSearch );
+    		else
+    			return DB::prepareString('MATCH (`content`) AGAINST (\'' . $search_for . '\' IN BOOLEAN MODE) AND `is_private` = 0' .$wsSearch . $trashed . $otSearch . $columnsSearch);
     	} // if
     } // getSearchConditions
     

@@ -6,7 +6,8 @@ INSERT INTO `<?php echo $table_prefix ?>config_categories` (`name`, `is_system`,
 	('system', 1, 0),
 	('general', 0, 1),
 	('mailing', 0, 2),
-	('modules', 0, 3);
+	('modules', 0, 3),
+	('passwords', 0, 4);
 
 INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
 	('system', 'project_logs_per_page', '10', 'IntegerConfigHandler', 1, 0, NULL),
@@ -38,7 +39,21 @@ INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`
 	('modules', 'enable_tasks_module', '1', 'BoolConfigHandler', 0, 0, 'Enable or disable tasks tab.'),
 	('modules', 'enable_weblinks_module', '1', 'BoolConfigHandler', 0, 0, 'Enable or disable weblinks tab.'),
 	('modules', 'enable_time_module', '1', 'BoolConfigHandler', 0, 0, 'Enable or disable time tab.'),
-	('modules', 'enable_reporting_module', '0', 'BoolConfigHandler', 0, 0, 'Enable or disable reporting tab.');
+	('modules', 'enable_reporting_module', '1', 'BoolConfigHandler', 0, 0, 'Enable or disable reporting tab.'),
+    ('passwords', 'min_password_length', '0', 'IntegerConfigHandler', 0, '1', NULL),
+    ('passwords', 'password_numbers', '0', 'IntegerConfigHandler', 0, '2', NULL),
+	('passwords', 'password_uppercase_characters', '0', 'IntegerConfigHandler', 0, '3', NULL),
+	('passwords', 'password_metacharacters', '0', 'IntegerConfigHandler', 0, '4', NULL),
+	('passwords', 'password_expiration', '0', 'IntegerConfigHandler', 0, '5', NULL),
+	('passwords', 'password_expiration_notification', '0', 'IntegerConfigHandler', 0, '6', NULL),
+	('passwords', 'account_block', '0', 'BoolConfigHandler', 0, '7', NULL),
+	('passwords', 'new_password_char_difference', '0', 'BoolConfigHandler', '0', '8', NULL),
+	('passwords', 'validate_password_history', '0', 'BoolConfigHandler', '0', '9', NULL),
+	('general', 'checkout_notification_dialog', '0', 'BoolConfigHandler', '0', '0', NULL),
+	('general', 'file_revision_comments_required', '0', 'BoolConfigHandler', '0', '0', NULL),
+	('general', 'currency_code', '$', 'StringConfigHandler', '0', '0', NULL),
+	('general', 'checkout_for_editing_online', '0', 'BoolConfigHandler', '0', '0', NULL);
+	
 
 INSERT INTO `<?php echo $table_prefix ?>file_types` (`extension`, `icon`, `is_searchable`, `is_image`) VALUES
 	('zip', 'archive.png', 0, 0),
@@ -83,7 +98,8 @@ INSERT INTO `<?php echo $table_prefix ?>user_ws_config_categories` (`name`, `is_
 	('dashboard', 0, 0, 1),
 	('task panel', 0, 0, 2),
 	('time panel', 1, 0, 3),
-	('calendar panel', 1, 0, 4);
+	('calendar panel', 1, 0, 4),
+	('context help', 1, 0, 5);
 
 INSERT INTO `<?php echo $table_prefix ?>user_ws_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES 
  ('dashboard', 'show calendar widget', '1', 'BoolConfigHandler', 0, 80, ''),
@@ -128,16 +144,36 @@ INSERT INTO `<?php echo $table_prefix ?>user_ws_config_options` (`category_name`
  ('general', 'rememberGUIState', '0', 'BoolConfigHandler', 0, 300, ''),
  ('general', 'work_day_start_time', '9:00', 'TimeConfigHandler', 0, 400, 'Work day start time'),
  ('general', 'time_format_use_24', '0', 'BoolConfigHandler', 0, 500, 'Use 24 hours time format'),
+ ('general', 'date_format', 'd/m/Y', 'StringConfigHandler', 0, 600, 'Date objects will be displayed using this format.'),
+ ('general', 'descriptive_date_format', 'l, j F', 'StringConfigHandler', 0, 700, 'Descriptive dates will be displayed using this format.'),
  ('calendar panel', 'calendar view type', 'viewweek', 'StringConfigHandler', 1, 0, ''),
  ('calendar panel', 'calendar user filter', '0', 'IntegerConfigHandler', 1, 0, ''),
- ('calendar panel', 'calendar status filter', '', 'StringConfigHandler', 1, 0, '');
-
+ ('calendar panel', 'calendar status filter', '', 'StringConfigHandler', 1, 0, ''),
+ ('dashboard', 'show getting started widget', '1', 'BoolConfigHandler', '0', '1000', NULL),
+ ('dashboard', 'getting_started_widget_expanded', '1', 'BoolConfigHandler', '1', '0', NULL),
+ ('task panel', 'show_tasks_context_help', '1', 'BoolConfigHandler', '0', '2', NULL),
+ ('context help', 'show_account_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+ ('context help', 'show_active_tasks_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+ ('context help', 'show_general_timeslots_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+ ('context help', 'show_late_tasks_widget_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+ ('context help', 'show_pending_tasks_widget_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+ ('context help', 'show_documents_widget_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+ ('context help', 'show_active_tasks_widget_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+ ('context help', 'show_calendar_widget_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+ ('context help', 'show_messages_widget_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+ ('context help', 'show_dashboard_info_widget_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+ ('context help', 'show_comments_widget_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+ ('context help', 'show_emails_widget_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+ ('general', 'custom_report_tab', 'tasks', 'StringConfigHandler', '1', '0', NULL);
 
 INSERT INTO `<?php echo $table_prefix ?>cron_events` (`name`, `recursive`, `delay`, `is_system`, `enabled`, `date`) VALUES
 	('check_mail', '1', '10', '0', '1', '0000-00-00 00:00:00'),
 	('purge_trash', '1', '1440', '1', '1', '0000-00-00 00:00:00'),
 	('check_upgrade', '1', '1440', '0', '1', '0000-00-00 00:00:00'), 
-	('send_reminders', '1', '10', '0', '1', '0000-00-00 00:00:00');
+	('send_reminders', '1', '10', '0', '1', '0000-00-00 00:00:00'),
+	('send_password_expiration_reminders', '1', '1440', '1', '1', '0000-00-00 00:00:00'),
+	('send_notifications_through_cron', '1', '1', '0', '0', '0000-00-00 00:00:00'),
+	('backup', '1', '10080', '0', '0', '0000-00-00 00:00:00');
 
 -- GelSheet
 INSERT INTO `<?php echo $table_prefix ?>gs_fonts` VALUES
@@ -153,3 +189,4 @@ INSERT INTO `<?php echo $table_prefix ?>gs_users` VALUES  (1, 'Open', 'Goo', 'op
 INSERT INTO `<?php echo $table_prefix ?>object_reminder_types` (`name`) VALUES
   ('reminder_email'),
   ('reminder_popup');
+  

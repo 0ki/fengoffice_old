@@ -45,9 +45,9 @@
   		
   		function PrintInfo(){
   			$balance = $this->acum - $this->acumExec;
-  			return "<b>Budgeted (accum.):</b> $" . $this->acum
-  				. "<br/><b>Executed (accum.):</b> $" . $this->acumExec
-  				. "<br/><b>Balance:</b> " . ($balance < 0 ? '<font color="red">':'') . "$" . $balance . ($balance < 0 ? '</font>':'');
+  			return "<b>Budgeted (accum.):</b> ". config_option('currency_code', '$') . $this->acum
+  				. "<br/><b>Executed (accum.):</b> ". config_option('currency_code', '$') . $this->acumExec
+  				. "<br/><b>Balance:</b> " . ($balance < 0 ? '<font color="red">':'') . config_option('currency_code', '$') . $balance . ($balance < 0 ? '</font>':'');
   		}
   		
   		function Draw($g, $returnGraphObject){

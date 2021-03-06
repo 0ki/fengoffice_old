@@ -563,6 +563,5 @@ addLangs({
     'calendar import - export': '日历导入导出',
     'view weblink': '显示网站链接',
     'print all groups' : '打印',
-    'print this group' : '打印',
-    'new version notification title': 'New version'
+    'print this group' : '打印'
 });

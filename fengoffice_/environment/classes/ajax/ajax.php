@@ -18,6 +18,9 @@ function ajx_current($type, $data = null, $actions = null, $panel = null) {
 	AjaxResponse::instance()->setCurrentContent($type, $data, $actions, $panel);
 }
 
+/**
+ * Remove the set content for the current panel
+ */
 function ajx_unset_current() {
 	AjaxResponse::instance()->unsetCurrentContent();
 }
@@ -98,15 +101,58 @@ function ajx_extra_data($data) {
 	AjaxResponse::instance()->addExtraData($data);
 }
 
+/**
+ * Hides the toolbar for HTML contents
+ * @param $nt: true to hide it or false to show it
+ */
 function ajx_set_no_toolbar($nt = true){
 	AjaxResponse::instance()->notbar = $nt;
 }
 
+/**
+ * Hides the back button from the toolbar
+ * @param $nb
+ */
+function ajx_set_no_back($nb = true) {
+	AjaxResponse::instance()->noback = $nb;
+}
+
+/**
+ * Executes some javascript before leaving a content
+ * @param $js: javascript code to execute
+ */
+function ajx_on_leave($js) {
+	AjaxResponse::instance()->onleave = $js;
+}
+
+
+/**
+ * If called, this function will ask for confirmation before
+ * leaving the loaded content.
+ * @param $preventClose
+ */
 function ajx_prevent_close($preventClose = true){
 	AjaxResponse::instance()->preventClose = $preventClose;
 }
 
+/**
+ * If called, the current content will replace the previous content,
+ * without adding it to the history stack
+ * @param $replace
+ */
 function ajx_replace($replace = true) {
 	AjaxResponse::instance()->replace = $replace;
+}
+
+/**
+ * The passed script will be loaded automatically before displaying content
+ * @param $url
+ */
+function require_javascript($url) {
+	if (is_ajax_request()) {
+		AjaxResponse::instance()->addScript($url);
+	} else {
+		add_javascript_to_page($url);
+	}
 }
 ?>

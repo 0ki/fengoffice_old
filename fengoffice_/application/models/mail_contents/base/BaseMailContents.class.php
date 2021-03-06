@@ -104,6 +104,19 @@ abstract class BaseMailContents extends ProjectDataObjects {
 		return 'id';
 	} // getAutoIncrementColumn
 
+	/**
+	 * Return system columns
+	 *
+	 * @access public
+	 * @param void
+	 * @return array
+	 */
+	function getSystemColumns() {
+		return array_merge(parent::getSystemColumns(), array(
+      	'account_id', 'uid', 'content_file_id')
+		);
+	} // getSystemColumns
+
 	// -------------------------------------------------------
 	//  Finders
 	// -------------------------------------------------------
@@ -161,15 +174,15 @@ abstract class BaseMailContents extends ProjectDataObjects {
 			$limit      = (integer) array_var($arguments, 'limit', 0);
 
 			// Prepare query parts
-			
-			$join_conditions = " (SELECT count(*) FROM " . TABLE_PREFIX . "read_objects WHERE rel_object_manager = 'MailContents'  and " . 
-				TABLE_PREFIX . "read_objects.rel_object_id = " . $this->getTableName(true) . ".id) = 0";
-			
+				
+			$join_conditions = " (SELECT count(*) FROM " . TABLE_PREFIX . "read_objects WHERE rel_object_manager = 'MailContents'  and " .
+			TABLE_PREFIX . "read_objects.rel_object_id = " . $this->getTableName(true) . ".id) = 0";
+				
 			if ($conditions != '') {
 				$conditions .= " AND ";
 			}
 			$conditions .= "`trashed_by_id` = 0";
-			
+				
 			$where_string = trim($conditions) == '' ? '' : "WHERE $join_conditions AND $conditions";
 			$order_by_string = trim($order_by) == '' ? '' : "ORDER BY $order_by";
 			$limit_string = $limit > 0 ? "LIMIT $offset, $limit" : '';

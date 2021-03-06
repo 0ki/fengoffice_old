@@ -1,3 +1,6 @@
+<?php
+require_javascript('modules/addMessageForm.js'); 
+?>
 <script type="text/javascript">
 
 	og.ToggleTrap = function(fsid) {
@@ -297,6 +300,7 @@ $use_24_hours = user_config_option('time_format_use_24');
 	<div id="<?php echo $genid ?>add_custom_properties_div" style="display:none">
 	<fieldset>
 	<legend><?php echo lang('custom properties')?></legend>
+		<?php echo render_object_custom_properties($object, 'ProjectEvents', false) ?><br/><br/>
 		<?php echo render_add_custom_properties($object);?>
 	</fieldset>
 	</div>
@@ -465,6 +469,11 @@ $use_24_hours = user_config_option('time_format_use_24');
 	<input type="hidden" name="cal_origday" value="<?php echo $day?>">
 	<input type="hidden" name="cal_origmonth" value="<?php echo $month?>">
 	<input type="hidden" name="cal_origyear" value="<?php echo $year?>">
+	
+	<div>
+		<?php echo render_object_custom_properties($object, 'ProjectEvents', true) ?>
+	</div><br/>
+	
 	<?php 
 	// THIS IS HERE SO THAT THE DURATION CAN BE SET CORRECTLY ACCORDING TO THE EVENT'S ACTUAL START DATE.
 	// otherwise, if you modify a repeating event, it can save the duration as a totally different date!

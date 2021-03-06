@@ -37,12 +37,11 @@
       $this->setErrors($errors);
       
       if(is_null($message)) {
-        $message = lang('error form validation');
+        $message = lang('error form validation') . ":";
       } // if
       
-      foreach ($errors as $error)
-      	$message .= "\r\n" . $error ;
-      	
+      $message .= "\r\n- " . implode("\r\n- ", $errors);      
+           	
       parent::__construct($message);
       
     } // __construct

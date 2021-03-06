@@ -8,5 +8,5 @@
 ?><?php echo "\r\n"
 ?><?php echo "\r\n"
 ?>--<?php echo "\r\n"
-?><?php echo ROOT_URL ?><?php echo "\r\n"
+?><?php echo ROOT_URL ?><?php echo "\r\n\r\n\r\n"
 ?> 

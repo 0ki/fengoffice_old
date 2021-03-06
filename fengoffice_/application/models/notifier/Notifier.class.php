@@ -37,150 +37,112 @@ class Notifier {
 			} else if ($object instanceof Comment) {
 				self::newObjectComment($object);
 			} else {
-				self::newObject($object, $subscribers);
+				self::objectNotification($object, $subscribers, $object->getCreatedBy(), 'new');
 			}
 		} else if ($action == ApplicationLogs::ACTION_EDIT) {
-			self::objectEdited($object, $subscribers);
+			self::objectNotification($object, $subscribers, $object->getUpdatedBy(), 'modified');
 		} else if ($action == ApplicationLogs::ACTION_TRASH) {
-			self::objectDeleted($object, $subscribers);
+			self::objectNotification($object, $subscribers, Users::findById($object->getTrashedById()), 'deleted');
 		} else if ($action == ApplicationLogs::ACTION_CLOSE) {
-			self::objectClosed($object, $subscribers);
+			self::objectNotification($object, $subscribers, $object->getClosedBy(), 'closed');
 		}
 	}
-	
-	function newObject(ProjectDataObject $object, $people) {
-		if(!is_array($people) || !count($people)) {
-			return; // nothing here...
-		} // if
-
-		tpl_assign('object', $object);
-
-		$recepients = array();
-		foreach($people as $user) {
-			if ($user->getId() != $object->getCreatedById()) {
-				$recepients[] = self::prepareEmailAddress($user->getEmail(), $user->getDisplayName());
-			}
-		} // foreach
-		
-		if (count($recepients) == 0) return;
-		if (! $object->getCreatedBy() instanceof User) return;
-		
-		return self::sendEmail(
-			$recepients,
-			self::prepareEmailAddress($object->getCreatedBy()->getEmail(), $object->getCreatedByDisplayName()),
-			lang('new notification ' . $object->getObjectTypeName(), $object->getObjectName()),
-			tpl_fetch(get_template_path('new_object', 'notifier'))
-		); // send
-	}
-	
 	function shareObject(ProjectDataObject $object, $people) {
-		if(!is_array($people) || !count($people)) {
-			return; // nothing here...
-		} // if
-
-		tpl_assign('object', $object);
-
-		$recepients = array();
-		foreach($people as $user) {
-			if ($user->getId() != $object->getCreatedById()) {
-				$recepients[] = self::prepareEmailAddress($user->getEmail(), $user->getDisplayName());
-			}
-		} // foreach
-		
-		if (count($recepients) == 0) return;
-		if (! $object->getCreatedBy() instanceof User) return;
-		
-		return self::sendEmail(
-			$recepients,
-			self::prepareEmailAddress(logged_user()->getEmail(), logged_user()->getDisplayName()),
-			lang('new share notification ' . $object->getObjectTypeName(), $object->getObjectName()),
-			tpl_fetch(get_template_path('share_object', 'notifier'))
-		); // send
+		self::objectNotification($object, $people, logged_user(), 'share');
 	}
 	
-	function objectEdited(ProjectDataObject $object, $people) {
-		if(!is_array($people) || !count($people)) {
+	static function objectNotification($object, $people, $sender, $notification, $description = null, $properties = array()) {
+		if(!is_array($people) || !count($people) || !$sender instanceof User) {
 			return; // nothing here...
 		} // if
-
-		tpl_assign('object', $object);
-
-		$recepients = array();
-		foreach($people as $user) {
-			if ($user->getId() != $object->getUpdatedById()) {
-				$recepients[] = self::prepareEmailAddress($user->getEmail(), $user->getDisplayName());
-			}
-		} // foreach
 		
-		if (count($recepients) == 0) return;
-		if (! $object->getUpdatedBy() instanceof User) return;
-		
-		return self::sendEmail(
-			$recepients,
-			self::prepareEmailAddress($object->getUpdatedBy()->getEmail(), $object->getUpdatedByDisplayName()),
-			lang('modified notification ' . $object->getObjectTypeName(), $object->getObjectName()),
-			tpl_fetch(get_template_path('object_edited', 'notifier'))
-		); // send
-	}
-	
-	function objectClosed(ProjectDataObject $object, $people) {
-		if (!($object instanceof ProjectTask || $object instanceof ProjectMilestone)) {
-			return;
+		$type = $object->getObjectTypeName();
+		$typename = lang($object->getObjectTypeName());
+		$uid = $object->getUniqueObjectId();
+		$name = $object->getObjectName();
+		if (!isset($description)) {
+			$description = lang("$notification notification $type desc", $object->getObjectName(), $sender->getDisplayName());
 		}
-		if(!is_array($people) || !count($people)) {
-			return; // nothing here...
-		} // if
-		$closedBy = $object->getCompletedBy();
-		if (!$closedBy instanceof User) return;
+		
+		$properties['unique id'] = $uid;
+		$properties['view '.$type] = str_replace('&amp;', '&', $object->getViewUrl());
+				
 		tpl_assign('object', $object);
-		tpl_assign('closedBy', $closedBy);
-
-		$recepients = array();
+		tpl_assign('description', $description);
+		tpl_assign('properties', $properties);
+		
+		$emails = array();
 		foreach($people as $user) {
-			if ($user->getId() != $closedBy->getId()) {
-				$recepients[] = self::prepareEmailAddress($user->getEmail(), $user->getDisplayName());
+			if ($user->getId() != $sender->getId()) {
+				// send notification on user's locale and with user info
+				$locale = $user->getLocale();
+				Localization::instance()->loadSettings($locale, ROOT . '/language');
+				$workspaces = implode(", ", $object->getUserWorkspaceNames($user));
+				$properties['workspace'] = $workspaces;
+				tpl_assign('properties', $properties);
+				$from = self::prepareEmailAddress($sender->getEmail(), $sender->getDisplayName());
+				$emails[] = array(
+					"to" => array(self::prepareEmailAddress($user->getEmail(), $user->getDisplayName())),
+					"from" => self::prepareEmailAddress($sender->getEmail(), $sender->getDisplayName()),
+					"subject" => $subject = lang("$notification notification $type", $name, $uid, $typename, $workspaces),
+					"body" => tpl_fetch(get_template_path('general', 'notifier'))
+				);
 			}
 		} // foreach
-		if (count($recepients) == 0) return;
-		return self::sendEmail(
-			$recepients,
-			self::prepareEmailAddress($closedBy->getEmail(), $closedBy->getDisplayName()),
-			lang('closed notification ' . $object->getObjectTypeName(), $object->getObjectName()),
-			tpl_fetch(get_template_path('object_closed', 'notifier'))
-		); // send
+		$locale = logged_user() instanceof User ? logged_user()->getLocale() : DEFAULT_LOCALIZATION;
+		Localization::instance()->loadSettings($locale, ROOT . '/language');
+		self::queueEmails($emails);
 	}
 	
-	function objectDeleted(ProjectDataObject $object, $people) {
-		if(!is_array($people) || !count($people)) {
-			return; // nothing here...
-		} // if
-
-		tpl_assign('object', $object);
-
-		$recepients = array();
-		foreach($people as $user) {
-			if ($user->getId() != $object->getTrashedById()) {
-				$recepients[] = self::prepareEmailAddress($user->getEmail(), $user->getDisplayName());
-			}
+	/**
+	 * Send new message notification to the list of users ($people)
+	 *
+	 * @param ProjectMessage $message New message
+	 * @param array $people
+	 * @return boolean
+	 * @throws NotifierConnectionError
+	 */
+	static function newMessage(ProjectMessage $message, $people) {
+		$description = lang('new message posted', $message->getTitle());
+		$text = "\r\n" . $message->getText();
+		$text = str_replace("\r\n", "\n", $text);
+		$text = str_replace("\r", "\n", $text);
+		$text = str_replace("\n", "\r\n>", $text);
+		$properties = array(
+			'text' => $text
+		);
+		self::objectNotification($message, $people, $message->getCreatedBy(), 'new', $description, $properties);
+	} // newMessage
+	
+	/**
+	 * Send new comment notification to message subscribers
+	 *
+	 * @param Comment $comment
+	 * @return boolean
+	 * @throws NotifierConnectionError
+	 */
+	static function newObjectComment(Comment $comment, $all_subscribers) {
+		$object = $comment->getObject();
+		$description = lang('new comment posted', $object->getObjectName());
+		$text = "\r\n" . $comment->getText();
+		$text = str_replace("\r\n", "\n", $text);
+		$text = str_replace("\r", "\n", $text);
+		$text = str_replace("\n", "\r\n>", $text);
+		$properties = array(
+			'text' => $text
+		);
+		$subscribers = array();
+		foreach($all_subscribers as $subscriber) {
+			if ($comment->isPrivate()) {
+				if ($subscriber->isMemberOfOwnerCompany()) {
+					$subscribers[] = $subscriber;
+				} // if
+			} else {
+				$subscribers[] = $subscriber;
+			} // of
 		} // foreach
-
-		$trashedBy = Users::findById($object->getTrashedById());
-		if ($trashedBy instanceof User) {
-			$displayName = $trashedBy->getDisplayName();
-			$email = $trashedBy->getEmail();
-		} else {
-			$displayName = lang("n/a");
-			$email = lang("n/a");
-		}
-		if (count($recepients) == 0) return;
-		
-		return self::sendEmail(
-			$recepients,
-			self::prepareEmailAddress($email, $displayName),
-			lang('deleted notification ' . $object->getObjectTypeName(), $object->getObjectName()),
-			tpl_fetch(get_template_path('object_deleted', 'notifier'))
-		); // send
-	}
+		self::objectNotification($message, $people, $comment->getCreatedBy(), 'new', $description, $properties);
+	} // newObjectComment
 	
 	/**
 	 * Reset password and send forgot password email to the user
@@ -198,13 +160,47 @@ class Notifier {
 		
 		if (! $administrator instanceof User) return;
 
-		return self::sendEmail(
-		self::prepareEmailAddress($user->getEmail(), $user->getDisplayName()),
-		self::prepareEmailAddress($administrator->getEmail(), $administrator->getDisplayName()),
-		lang('your password'),
-		tpl_fetch(get_template_path('forgot_password', 'notifier'))
+		// send email in user's language
+		$locale = $user->getLocale();
+		Localization::instance()->loadSettings($locale, ROOT . '/language');
+		
+		self::queueEmail(
+			self::prepareEmailAddress($user->getEmail(), $user->getDisplayName()),
+			self::prepareEmailAddress($administrator->getEmail(), $administrator->getDisplayName()),
+			lang('your password'),
+			tpl_fetch(get_template_path('forgot_password', 'notifier'))
 		); // send
+		$locale = logged_user() instanceof User ? logged_user()->getLocale() : DEFAULT_LOCALIZATION;
+		Localization::instance()->loadSettings($locale, ROOT . '/language');
 	} // forgotPassword
+	
+	/**
+	 * Send password expiration notification email to user 
+	 *
+	 * @param User $user
+	 * @param string $expiration_days
+	 * @return boolean
+	 * @throws NotifierConnectionError
+	 */
+	static function passwordExpiration(User $user, $expiration_days) {
+		tpl_assign('user', $user);
+		tpl_assign('exp_days', $expiration_days);
+
+		if (! $user instanceof User) return;
+		
+		$locale = $user->getLocale();
+		Localization::instance()->loadSettings($locale, ROOT . '/language');
+		
+		self::queueEmail(
+			self::prepareEmailAddress($user->getEmail(), $user->getDisplayName()),
+			self::prepareEmailAddress("noreply@opengoo.org", "noreply@opengoo.org"),
+			lang('password expiration reminder'),
+			tpl_fetch(get_template_path('password_expiration_reminder', 'notifier'))
+		); // send
+		
+		$locale = logged_user() instanceof User ? logged_user()->getLocale() : DEFAULT_LOCALIZATION;
+		Localization::instance()->loadSettings($locale, ROOT . '/language');
+	} // passwordExpiration
 
 	/**
 	 * Send new account notification email to the user whose accout has been created
@@ -221,109 +217,21 @@ class Notifier {
 
 		if (! $user->getCreatedBy() instanceof User) return;
 		
-		return self::sendEmail(
-		self::prepareEmailAddress($user->getEmail(), $user->getDisplayName()),
-		self::prepareEmailAddress($user->getCreatedBy()->getEmail(), $user->getCreatedByDisplayName()),
-		lang('your account created'),
-		tpl_fetch(get_template_path('new_account', 'notifier'))
+		$locale = $user->getLocale();
+		Localization::instance()->loadSettings($locale, ROOT . '/language');
+		
+		self::queueEmail(
+			self::prepareEmailAddress($user->getEmail(), $user->getDisplayName()),
+			self::prepareEmailAddress($user->getCreatedBy()->getEmail(), $user->getCreatedByDisplayName()),
+			lang('your account created'),
+			tpl_fetch(get_template_path('new_account', 'notifier'))
 		); // send
+		
+		$locale = logged_user() instanceof User ? logged_user()->getLocale() : DEFAULT_LOCALIZATION;
+		Localization::instance()->loadSettings($locale, ROOT . '/language');
 	} // newUserAccount
 
-	/**
-	 * Send new message notification to the list of users ($people)
-	 *
-	 * @param ProjectMessage $message New message
-	 * @param array $people
-	 * @return boolean
-	 * @throws NotifierConnectionError
-	 */
-	static function newMessage(ProjectMessage $message, $people) {
-		if(!is_array($people) || !count($people)) {
-			return; // nothing here...
-		} // if
 
-		tpl_assign('new_message', $message);
-
-		$recepients = array();
-		foreach($people as $user) {
-			if ($user->getId() != $message->getCreatedById()) {
-				$recepients[] = self::prepareEmailAddress($user->getEmail(), $user->getDisplayName());
-			}
-		} // foreach
-
-		if (count($recepients) == 0) return;
-		if (! $message->getCreatedBy() instanceof User) return;
-		
-		return self::sendEmail(
-		$recepients,
-		self::prepareEmailAddress($message->getCreatedBy()->getEmail(), $message->getCreatedByDisplayName()),
-		/*$message->getProject()->getName() .*/ ' - ' . lang('new message'),
-		tpl_fetch(get_template_path('new_message', 'notifier'))
-		); // send
-	} // newMessage
-
-	/**
-	 * Send new task notification to the list of users ($people)
-	 *
-	 * @param ProjectTask $task New task
-	 * @param array $people
-	 * @return boolean
-	 * @throws NotifierConnectionError
-	 */
-	static function newTask(ProjectTask $task, $people) {
-		if(!is_array($people) || !count($people)) {
-			return; // nothing here...
-		} // if
-
-		tpl_assign('new_task', $task);
-		tpl_assign('is_new', true);
-
-		$recepients = array();
-		foreach($people as $user) {
-			$recepients[] = self::prepareEmailAddress($user->getEmail(), $user->getDisplayName());
-		} // foreach
-
-		if (! $task->getCreatedBy() instanceof User) return;
-		
-		return self::sendEmail(
-		$recepients,
-		self::prepareEmailAddress($task->getCreatedBy()->getEmail(), $task->getCreatedByDisplayName()),
-		$task->getProject()->getName() . ' - ' . lang('new task'),
-		tpl_fetch(get_template_path('new_task', 'notifier'))
-		); // send
-	} // newTask
-	
-	/**
-	 * Send task changed notification to the list of users ($people)
-	 *
-	 * @param ProjectTask $task task
-	 * @param array $people
-	 * @return boolean
-	 * @throws NotifierConnectionError
-	 */
-	static function taskChanged(ProjectTask $task, $people) {
-		if(!is_array($people) || !count($people)) {
-			return; // nothing here...
-		} // if
-
-		tpl_assign('new_task', $task);
-		tpl_assign('is_new', false);
-
-		$recepients = array();
-		foreach($people as $user) {
-			$recepients[] = self::prepareEmailAddress($user->getEmail(), $user->getDisplayName());
-		} // foreach
-
-		if (! $task->getCreatedBy() instanceof User) return;
-		
-		return self::sendEmail(
-		$recepients,
-		self::prepareEmailAddress($task->getCreatedBy()->getEmail(), $task->getCreatedByDisplayName()),
-		$task->getProject()->getName() . ' - ' . lang('task modified'),
-		tpl_fetch(get_template_path('new_task', 'notifier'))
-		); // send
-	} // taskChanged
-	
 	/**
 	 * Send task due notification to the list of users ($people)
 	 *
@@ -343,52 +251,10 @@ class Notifier {
 			$people = array($reminder->getUser());
 		}
 		Env::useHelper("format");
-		if(!is_array($people) || !count($people)) {
-			return; // nothing here...
-		} // if
+		$description = lang("$context $type reminder desc", $object->getObjectName(), $date->format("Y/m/d H:i:s"));
 
-		tpl_assign('object', $object);
-		tpl_assign('type', $type);
-		tpl_assign('context', $context);
-		tpl_assign('date', $date);
-
-		$recepients = array();
-		foreach($people as $user) {
-			$recepients[] = self::prepareEmailAddress($user->getEmail(), $user->getDisplayName());
-		} // foreach
-
-		if (!$object->getCreatedBy() instanceof User) return;
-		
-		return self::sendEmail(
-			$recepients,
-			self::prepareEmailAddress($object->getCreatedBy()->getEmail(), $object->getCreatedByDisplayName()),
-			lang("$context $type reminder"),
-			tpl_fetch(get_template_path('object_reminder', 'notifier'))
-		); // send
+		self::objectNotification($object, $people, $object->getCreatedBy(), "$context reminder", $description);
 	} // taskDue
-
-	static function eventReminder(ProjectEvent $event, $people) {
-		Env::useHelper("format");
-		if(!is_array($people) || !count($people)) {
-			return; // nothing here...
-		} // if
-
-		tpl_assign('event', $event);
-
-		$recepients = array();
-		foreach($people as $user) {
-			$recepients[] = self::prepareEmailAddress($user->getEmail(), $user->getDisplayName());
-		} // foreach
-
-		if (! $event->getCreatedBy() instanceof User) return;
-		
-		return self::sendEmail(
-			$recepients,
-			self::prepareEmailAddress($event->getCreatedBy()->getEmail(), $event->getCreatedByDisplayName()),
-			$event->getProject()->getName() . ' - ' . lang('event reminder'),
-			tpl_fetch(get_template_path('event_reminder', 'notifier'))
-		); // send
-	}
 	
 	/**
 	 * Send event notification to the list of users ($people)
@@ -398,28 +264,44 @@ class Notifier {
 	 * @return boolean
 	 * @throws NotifierConnectionError
 	 */
-	static function notifEvent(ProjectEvent $event, $people, $is_new = false) {
-		if(!is_array($people) || !count($people)) {
+	static function notifEvent(ProjectEvent $object, $people, $type) {
+		if(!is_array($people) || !count($people) || !$sender instanceof User) {
 			return; // nothing here...
 		} // if
 
-		tpl_assign('event', $event);
-		tpl_assign('is_new', $is_new);
-
-		$recepients = array();
-		foreach($people as $user) {
-			$recepients[] = self::prepareEmailAddress($user->getEmail(), $user->getDisplayName());
-		} // foreach
+		$uid = $object->getUniqueObjectId();
+		$name = $object->getObjectName();
+		$description = lang("$notification notification event desc", $object->getObjectName(), $sender->getDisplayName());
 		
-		if (! $event->getCreatedBy() instanceof User) return;
-
-		return self::sendEmail(
-			$recepients,
-			self::prepareEmailAddress(($is_new ? $event->getCreatedBy()->getEmail() : $event->getUpdatedBy()->getEmail()),
-			($is_new ? $event->getCreatedByDisplayName() : $event->getUpdatedByDisplayName())),
-			$event->getProject()->getName() . ' - ' . ($is_new ? lang('new event notification') : lang('change event notification')) . ': ' . $event->getSubject(),
-			tpl_fetch(get_template_path('event_notif', 'notifier'))
-		); // send
+		$properties['unique id'] = $uid;
+		$properties['view event'] = str_replace('&amp;', '&', $object->getViewUrl());
+				
+		tpl_assign('object', $object);
+		tpl_assign('description', $description);
+		tpl_assign('properties', $properties);
+		
+		$emails = array();
+		foreach($people as $user) {
+			if ($user->getId() != $sender->getId()) {
+				// send notification on user's locale and with user info
+				$locale = $user->getLocale();
+				Localization::instance()->loadSettings($locale, ROOT . '/language');
+				$workspaces = implode(", ", $object->getUserWorkspaceNames($user));
+				$properties['workspace'] = $workspaces;
+				$properties['date'] = Localization::instance()->formatDescriptiveDate($object->getStart(), $user->getTimezone());
+				tpl_assign('properties', $properties);
+				$from = self::prepareEmailAddress($sender->getEmail(), $sender->getDisplayName());
+				$emails[] = array(
+					"to" => array(self::prepareEmailAddress($user->getEmail(), $user->getDisplayName())),
+					"from" => self::prepareEmailAddress($sender->getEmail(), $sender->getDisplayName()),
+					"subject" => $subject = lang("$notification notification $type", $name, $uid, $typename, $workspaces),
+					"body" => tpl_fetch(get_template_path('general', 'notifier'))
+				);
+			}
+		} // foreach
+		$locale = logged_user() instanceof User ? logged_user()->getLocale() : DEFAULT_LOCALIZATION;
+		Localization::instance()->loadSettings($locale, ROOT . '/language');
+		self::queueEmails($emails);
 	} // notifEvent
 	
 	 /** Send event notification to the list of users ($people)
@@ -429,71 +311,34 @@ class Notifier {
 	 * @return boolean
 	 * @throws NotifierConnectionError
 	 */
-	static function notifEventDeletion($subject, $proj_name, $start_date, $people) {
-		if(!is_array($people) || !count($people)) {
-			return; // nothing here...
-		} // if
-
-		tpl_assign('is_deleted', true);
-		tpl_assign('eventSubject', $subject);
-		tpl_assign('projectName', $proj_name);
-		tpl_assign('eventStart', $start_date);
+	static function notifEventAssistance(ProjectEvent $event, EventInvitation $invitation, $from_user) {
+		if ((!$event instanceof ProjectEvent) || (!$invitation instanceof EventInvitation) 
+			|| (!$event->getCreatedBy() instanceof User) || (!$from_user instanceof User)) {
+			return;
+		}
 		
+		tpl_assign('event', $event);
+		tpl_assign('invitation', $invitation);
+		tpl_assign('from_user', $from_user);
+		
+		$people = array($event->getCreatedBy());
 		$recepients = array();
 		foreach($people as $user) {
-			$recepients[] = self::prepareEmailAddress($user->getEmail(), $user->getDisplayName());
+			$locale = $user->getLocale();
+			Localization::instance()->loadSettings($locale, ROOT . '/language');
+			$date = Localization::instance()->formatDescriptiveDate($event->getStart(), $user->getTimezone());
+			tpl_assign('date', $date);
+			self::queueEmail(
+				array(self::prepareEmailAddress($user->getEmail(), $user->getDisplayName())),
+				self::prepareEmailAddress($from_user->getEmail(), $from_user->getDisplayName()),
+				$event->getProject()->getName() . ' - ' . lang('event invitation response') . ': ' . $event->getSubject(),
+				tpl_fetch(get_template_path('event_inv_response_notif', 'notifier'))
+			); // send
 		} // foreach
-
-		return self::sendEmail(
-			$recepients,
-			self::prepareEmailAddress(logged_user()->getEmail(), logged_user()->getDisplayName()),
-			$proj_name . ' - ' . lang('deleted event notification') . ': ' . $subject,
-			tpl_fetch(get_template_path('event_notif', 'notifier'))
-		); // send
-	} // notifEvent
-	
-	/**
-	 * Send new comment notification to message subscribers
-	 *
-	 * @param Comment $comment
-	 * @return boolean
-	 * @throws NotifierConnectionError
-	 */
-	static function newObjectComment(Comment $comment, $all_subscribers) {
-		$object = $comment->getObject();
-		if(!($object instanceof ApplicationDataObject)) {
-			throw new Error('Invalid comment object');
-		} // if
-
-		$recepients = array();
-		foreach($all_subscribers as $subscriber) {
-			if($subscriber->getId() == $comment->getCreatedById()) {
-				continue; // skip comment author
-			} // if
-
-			if($comment->isPrivate()) {
-				if($subscriber->isMemberOfOwnerCompany()) {
-					$recepients[] = self::prepareEmailAddress($subscriber->getEmail(), $subscriber->getDisplayName());
-				} // if
-			} else {
-				$recepients[] = self::prepareEmailAddress($subscriber->getEmail(), $subscriber->getDisplayName());
-			} // of
-		} // foreach
-
-		if(!count($recepients)) {
-			return true; // no recepients
-		} // if
-
-		tpl_assign('new_comment', $comment);
 		
-		if (! $comment->getCreatedBy() instanceof User) return;
-
-		return self::sendEmail($recepients,
-				self::prepareEmailAddress($comment->getCreatedBy()->getEmail(), $comment->getCreatedByDisplayName()),
-				lang('new comment') . ' - ' . $comment->getObject()->getObjectName(),
-				tpl_fetch(get_template_path('new_comment', 'notifier'))
-		); // send
-	} // newObjectComment
+		$locale = logged_user() instanceof User ? logged_user()->getLocale() : DEFAULT_LOCALIZATION;
+		Localization::instance()->loadSettings($locale, ROOT . '/language');
+	} // notifEvent
 
 	// ---------------------------------------------------
 	//  Milestone
@@ -518,12 +363,22 @@ class Notifier {
 
 		if (! $milestone->getCreatedBy() instanceof User) return;
 		
-		return self::sendEmail(
-		self::prepareEmailAddress($milestone->getAssignedTo()->getEmail(), $milestone->getAssignedTo()->getDisplayName()),
-		self::prepareEmailAddress($milestone->getCreatedBy()->getEmail(), $milestone->getCreatedByDisplayName()),
-		lang('milestone assigned to you'),
-		tpl_fetch(get_template_path('milestone_assigned', 'notifier'))
+		$locale = $milestone->getAssignedTo()->getLocale();
+		Localization::instance()->loadSettings($locale, ROOT . '/language');
+		if ($milestone->getDueDate() instanceof DateTimeValue) {
+			$date = Localization::instance()->formatDescriptiveDate($milestone->getDueDate(), $milestone->getAssignedTo()->getTimezone());
+			tpl_assign('date', $date);
+		}
+		
+		return self::queueEmail(
+			self::prepareEmailAddress($milestone->getAssignedTo()->getEmail(), $milestone->getAssignedTo()->getDisplayName()),
+			self::prepareEmailAddress($milestone->getCreatedBy()->getEmail(), $milestone->getCreatedByDisplayName()),
+			lang('milestone assigned to you'),
+			tpl_fetch(get_template_path('milestone_assigned', 'notifier'))
 		); // send
+		
+		$locale = logged_user() instanceof User ? logged_user()->getLocale() : DEFAULT_LOCALIZATION;
+		Localization::instance()->loadSettings($locale, ROOT . '/language');
 	} // milestoneAssigned
 
 	/**
@@ -543,12 +398,23 @@ class Notifier {
 
 		tpl_assign('task_assigned', $task);
 
-		return self::sendEmail(
-		self::prepareEmailAddress($task->getAssignedTo()->getEmail(), $task->getAssignedTo()->getDisplayName()),
-		self::prepareEmailAddress($task->getUpdatedBy()->getEmail(), $task->getUpdatedByDisplayName()),
-		lang('task assigned to you'),
-		tpl_fetch(get_template_path('task_assigned', 'notifier'))
+		$locale = $task->getAssignedTo()->getLocale();
+		Localization::instance()->loadSettings($locale, ROOT . '/language');
+		
+		if ($task->getDueDate() instanceof DateTimeValue) {
+			$date = Localization::instance()->formatDescriptiveDate($task->getDueDate(), $task->getAssignedTo()->getTimezone());
+			tpl_assign('date', $date);
+		}
+				
+		self::queueEmail(
+			array(self::prepareEmailAddress($task->getAssignedTo()->getEmail(), $task->getAssignedTo()->getDisplayName())),
+			self::prepareEmailAddress($task->getUpdatedBy()->getEmail(), $task->getUpdatedByDisplayName()),
+			lang('task assigned to you'),
+			tpl_fetch(get_template_path('task_assigned', 'notifier'))
 		); // send
+		
+		$locale = logged_user() instanceof User ? logged_user()->getLocale() : DEFAULT_LOCALIZATION;
+		Localization::instance()->loadSettings($locale, ROOT . '/language');
 	} // taskAssigned
 
 
@@ -615,6 +481,65 @@ class Notifier {
 
 		return $result;
 	} // sendEmail
+	
+	static function queueEmail($to, $from, $subject, $body = false, $type = 'text/plain', $encoding = '8bit') {
+		$cron = CronEvents::getByName('send_notifications_through_cron');
+		if ($cron instanceof CronEvent && $cron->getEnabled()) {
+			$qm = new QueuedEmail();
+			$qm->setTo(implode(";", $to));
+			$qm->setFrom($from);
+			$qm->setSubject($subject);
+			$qm->setBody($body);
+			$qm->save();
+		} else {
+			self::sendEmail($to, $from, $subject, $body, $type, $encoding);
+		}
+	}
+	
+	static function queueEmails($emails) {
+		foreach ($emails as $email) {
+			self::queueEmail(
+				array_var($email, 'to'),
+				array_var($email, 'from'),
+				array_var($email, 'subject'),
+				array_var($email, 'body'),
+				array_var($email, 'type', 'text/plain'),
+				array_var($email, 'to', '8bit')
+			);
+		}
+	}
+	
+	static function sendQueuedEmails() {
+		$now = DateTimeValueLib::now();
+		$date = DateTimeValueLib::now();
+		$date->add("d", -2);
+		$emails = QueuedEmails::getQueuedEmails($date);
+		if (count($emails) <= 0) return;
+		
+		Env::useLibrary('swift');
+		$mailer = self::getMailer();
+		if(!($mailer instanceof Swift)) {
+			throw new NotifierConnectionError();
+		} // if
+		$fromSMTP = config_option("mail_transport", self::MAIL_TRANSPORT_MAIL) == self::MAIL_TRANSPORT_SMTP && config_option("smtp_authenticate", false);
+		$count = 0;
+		foreach ($emails as $email) {
+			try {
+				$result = $mailer->send(
+					explode(";", $email->getTo()),
+					$fromSMTP ? self::prepareEmailAddress(config_option("smtp_username"), $email->getFrom()) : $email->getFrom(),
+					$email->getSubject(),
+					$email->getBody(),
+					'text/plain',
+					'8bit'
+				);
+				$count++;
+			} catch (Exception $e) {
+			}
+		}
+		$mailer->close();
+		return $count;
+	}
 
 	/**
 	 * This function will return SMTP connection. It will try to load options from

@@ -14,15 +14,12 @@ function Row(index){
 	var self = this;
 
 	self.constructor = function(index){
-		this.cells = new Array();
 		this.index = index;
 		this.size = 18;
 	}
 
 	self.setFontStyleId = function(fontStyleId){
 		this.fontStyleId = fontStyleId;
-		for(var i=0;i<this.cells.length;i++)
-			this.cells[i].setFontStyleId(fontStyleId);
 	}
 
 

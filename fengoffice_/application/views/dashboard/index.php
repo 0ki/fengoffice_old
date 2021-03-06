@@ -60,6 +60,7 @@ else
 	$hasComments = isset($comments) && is_array($comments) && count($comments) > 0;
 	
 	$showWorkspaceInfo = active_project() instanceof Project && user_config_option('show dashboard info widget');
+	$showWorkspaceDescription = active_project() instanceof Project && active_project()->getDescription() && active_project()->getDescription() != '';
 ?>
 </span><span class="description">
 </span>
@@ -70,54 +71,30 @@ else
 	<div class="viewAsList"><?php echo lang('view as list') ?></div></a>
 </div>
 
-
-
-
-<?php //--------------------------------------------- Remove FALSE
- if(!(active_project() instanceof Project) && false && logged_user()->isMemberOfOwnerCompany() && !owner_company()->getHideWelcomeInfo()) { ?>
-<div class="hint">
-
-  <div class="header"><?php echo lang('welcome to new account') ?></div>
-  <div class="content"><?php echo lang('welcome to new account info', logged_user()->getDisplayName(), ROOT_URL) ?></div>
-  
-<?php if(owner_company()->isInfoUpdated()) { ?>
-  <div class="header"><del><?php echo lang('new account step1') ?></del></div>
-  <div class="content"><del><?php echo lang('new account step1 info', get_url('company', 'edit')) ?></del></div>
-<?php } else { ?>
-  <div class="header"><?php echo lang('new account step1') ?></div>
-  <div class="content"><?php echo lang('new account step1 info', get_url('company', 'edit')) ?></div>
-<?php } // if ?>
-  
-<?php if(owner_company()->countUsers() > 1) { ?>
-  <div class="header"><del><?php echo lang('new account step2') ?></del></div>
-  <div class="content"><del><?php echo lang('new account step2 info', owner_company()->getAddUserUrl()) ?></del></div>
-<?php } else { ?>
-  <div class="header"><?php echo lang('new account step2') ?></div>
-  <div class="content"><?php echo lang('new account step2 info', owner_company()->getAddUserUrl()) ?></div>
-<?php } // if?>
-  
-<?php if(owner_company()->countClientCompanies() > 0) { ?>
-  <div class="header"><del><?php echo lang('new account step3') ?></del></div>
-  <div class="content"><del><?php echo lang('new account step3 info', get_url('company', 'add_client')) ?></del></div>
-<?php } else { ?>
-  <div class="header"><?php echo lang('new account step3') ?></div>
-  <div class="content"><?php echo lang('new account step3 info', get_url('company', 'add_client')) ?></div>
-<?php } // if ?>
-  
-<?php if(owner_company()->countProjects() > 0) { ?>
-  <div class="header"><del><?php echo lang('new account step4') ?></del></div>
-  <div class="content"><del><?php echo lang('new account step4 info', get_url('project', 'add')) ?></del></div>
-<?php } else { ?>
-  <div class="header"><?php echo lang('new account step4') ?></div>
-  <div class="content"><?php echo lang('new account step4 info', get_url('project', 'add')) ?></div>
-<?php } // if?>
-  
-  <p><a class="internalLink" href="<?php echo get_url('company', 'hide_welcome_info') ?>"><?php echo lang('hide welcome info') ?></a></p>
-  
-</div>
-<?php } // if ?>
-
 <table style="width:100%">
+
+<?php if (user_config_option('show getting started widget')){ ?>
+<tr><td colspan=2>
+<?php 
+	tpl_assign("widgetClass", 'dashGettingStarted');
+	tpl_assign("widgetTitle", lang('getting started'));
+	tpl_assign("widgetTemplate", 'getting_started');
+	$this->includeTemplate(get_template_path('widget', 'dashboard'));
+?>
+</td></tr>
+<?php } ?>
+
+<?php if ($showWorkspaceDescription) {?>
+<tr><td colspan=2>
+<?php 
+	tpl_assign("widgetClass", 'dashCalendar');
+	tpl_assign("widgetTitle",lang('workspace description', active_project()->getName()));
+	tpl_assign("widgetTemplate", 'workspace_description');
+	$this->includeTemplate(get_template_path('widget', 'dashboard'));
+?>
+</td></tr>
+<?php } ?>
+
 <tr><td colspan=2>
 <?php if (user_config_option('show calendar widget') && config_option('enable_calendar_module')) {
 	
@@ -126,12 +103,10 @@ else
 	tpl_assign("widgetTemplate", 'calendar');
 	$this->includeTemplate(get_template_path('widget', 'dashboard'));
 } ?>
- </td></tr>
+</td></tr>
+
 <tr><td>
-
 <?php 
-
-
 if (isset($tasks_in_progress) && $tasks_in_progress) {
 	switch($assign_type){
 		case 0: $title = lang('tasks in progress'); break;
@@ -184,15 +159,8 @@ if ($hasDocuments) {
 </td>
 
 <?php if ($hasMessages  || $hasCharts || $hasEmails || $hasComments || $showWorkspaceInfo){ ?>
-<td style="width:<?php echo ($hasPendingTasks || $hasLate || $hasToday || $hasDocuments)? '330px' : '100%' ?>">
+<td style="<?php echo ($hasPendingTasks || $hasLate || $hasToday || $hasDocuments)? 'width:38%;min-width:330px' : 'width:100%' ?>">
 <?php 
-
-if ($showWorkspaceInfo){
-	tpl_assign("widgetClass", 'dashInfo');
-	tpl_assign("widgetTitle", lang('description'));
-	tpl_assign("widgetTemplate", 'dashboard_info');
-	$this->includeTemplate(get_template_path('widget', 'dashboard'));
-}
 
 if ($hasEmails && (config_option('enable_email_module', defined('SHOW_MAILS_TAB') ? SHOW_MAILS_TAB : 0))) {
 	tpl_assign("widgetClass", 'dashUnreadEmails');
@@ -212,6 +180,13 @@ if ($hasComments) {
 	tpl_assign("widgetClass", 'dashComments');
 	tpl_assign("widgetTitle", lang('latest comments'));
 	tpl_assign("widgetTemplate", 'comments');
+	$this->includeTemplate(get_template_path('widget', 'dashboard'));
+}
+
+if ($showWorkspaceInfo){
+	tpl_assign("widgetClass", 'dashInfo');
+	tpl_assign("widgetTitle", lang('workspace info'));
+	tpl_assign("widgetTemplate", 'dashboard_info');
 	$this->includeTemplate(get_template_path('widget', 'dashboard'));
 }
 

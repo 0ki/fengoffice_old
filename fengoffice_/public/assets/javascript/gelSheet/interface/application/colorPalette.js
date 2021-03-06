@@ -28,6 +28,7 @@ function fontColorPalette() {
 			window.colorPaletteActive = false ;
 			cp.hide();
 		    container.style.visibility = 'hidden';
+		    alert("colorPalette "+ selColor);
 		    cmdSetFontColor("#"+selColor);
 		});
 	}else {

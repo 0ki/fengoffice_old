@@ -23,17 +23,17 @@ og.ExtendedDialog = function(config) {
 		items: [
 			{
 				region: 'center',
-				layout: 'fit',				
+				layout: 'fit',
 				items: [
 					this.form = new Ext.FormPanel({
 				        frame:false,
 				        url: '',
 				        labelWidth: config.labelWidth,
 				        bodyStyle:'padding:20px 20px 0',
-				        defaultType: 'textfield',
 						border:false,
-						bodyBorder: false,									
-				        items: config.dialogItems
+						bodyBorder: false,
+				        items: config.dialogItems,
+				        html: config.html
 				    })
 				]
 			}

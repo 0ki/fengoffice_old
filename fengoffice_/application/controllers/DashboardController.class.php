@@ -25,6 +25,7 @@ class DashboardController extends ApplicationController {
 	 * @return null
 	 */
 	function index() {
+		$this->setHelp('dashboard');
 		$tag = array_var($_GET,'active_tag');
 		
 		$logged_user = logged_user();

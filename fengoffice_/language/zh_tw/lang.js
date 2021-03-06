@@ -495,6 +495,5 @@ addLangs({
  "calendar import - export": "行事曆匯入與匯出",
  "view weblink": "檢視網頁連結",
  "print all groups": "列印",
- "print this group": "列印",
- 'new version notification title': 'New version'
+ "print this group": "列印"
 });

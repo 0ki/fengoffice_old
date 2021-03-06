@@ -26,7 +26,7 @@
           if($user instanceof User) $users[] = $user;
         } // foreach
       } // if
-      return count($users) ? $users : null;
+      return $users;
     } // getUsersByMessage
     
     /**

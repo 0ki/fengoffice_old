@@ -5,7 +5,7 @@ var calToolbarDateMenu = new Ext.menu.DateMenu({
     	dp.setValue(date);
     	changeView(cal_actual_view, date.format('d'), date.format('n'), date.format('Y'), actual_user_filter, actual_status_filter);
     },
-    format: lang('date format'),
+    format: og.date_format,
 	altFormats: lang('date format alternatives')
 });
 
@@ -126,10 +126,10 @@ var topToolbarItems = {
 	}),
 	imp_exp: new Ext.Action({
 		text: lang('import/export'),
-           tooltip: lang('calendar import - export'),
+        tooltip: lang('calendar import - export'),
 		menu: {items: [
 			{text: lang('import'), iconCls: 'ico-upload', handler: function() {
-				var url = og.getUrl('event', 'icalendar_import');
+				var url = og.getUrl('event', 'icalendar_import', {from_menu:1});
 				og.openLink(url);
 			}},
 			{text: lang('export'), iconCls: 'ico-download', handler: function() {
@@ -205,10 +205,10 @@ og.CalendarTopToolbar = function(config) {
         }
     });
     actual_user_filter = ogCalendarUserPreferences.user_filter;
-    u_filter = ogCalendarUserPreferences.user_filter_comp + ':' + ogCalendarUserPreferences.user_filter; 
+    u_filter = ogCalendarUserPreferences.user_filter_comp + ':' + (ogCalendarUserPreferences.user_filter == -1 ? 0 : ogCalendarUserPreferences.user_filter); 
     filterNamesCompaniesCombo.setValue(u_filter);
     
-    cal_actual_view = ogCalendarUserPreferences.view_type;
+    cal_actual_view = ogCalendarUserPreferences.view_type || 'viewweek';
     actual_status_filter = ogCalendarUserPreferences.status_filter;
     if (actual_status_filter == null) actual_status_filter = ' 0 1 3';
     
@@ -297,7 +297,7 @@ og.CalendarTopToolbar = function(config) {
 	this.addSeparator();
 	this.add(status_menu);
 	this.addSeparator();
-	this.add(topToolbarItems.imp_exp);	
+	this.add(topToolbarItems.imp_exp);
 }
 
 Ext.extend(og.CalendarTopToolbar, Ext.Toolbar, {});

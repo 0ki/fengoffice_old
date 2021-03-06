@@ -70,6 +70,7 @@
 	'no objects to link' => 'Por favor, seleccione los objetos que deben vincularse',
 	'no administration tools' => 'No se han registrado herramientas de administración en la base de datos',
 	'administration tool dnx' => 'La herramienta de administración "{0}" no existe',
+	'document checked out' => 'El documento está bloqueado por otro usuario',
 	'success add contact' => 'El contacto \'{0}\' ha sido creado satisfactoriamente',
 	'success edit contact' => 'El contacto \'{0}\' ha sido editado satisfactoriamente',
 	'success delete contact' => 'El contacto \'{0}\' ha sido eliminado satisfactoriamente',
@@ -162,6 +163,8 @@
 	'success delete contacts' => 'Contactos eliminados',
 	'success classify email' => 'Correo clasificado',
 	'success delete email' => 'Correo eliminado',
+	'success unclassify email' => 'Correo desclasificado satisfactoriamente',
+	'error unclassify email' => 'No fue posible desclasificar el correo',
 	'success delete mail account' => 'Cuenta de correo electrónico eliminada satisfactoriamente',
 	'success add mail account' => 'Cuenta de correo electrónico creada satisfactoriamente',
 	'success edit mail account' => 'Cuenta de correo electrónico modificada y guardada satisfactoriamente',
@@ -516,4 +519,5 @@
 	'success assign user billing categories' => 'Las categorías de facturación fueron asignadas a los usuarios correctamente',
 	'confirm delete billing category' => 'Está seguro que desea eliminar la categoría de facturación seleccionada?',
 	'weblink dnx' => 'El enlace web requerido no existe en la base de datos',
+	'success trash file revision' => 'La revisión del archivo fue enviada a la papelera',
 ); ?>

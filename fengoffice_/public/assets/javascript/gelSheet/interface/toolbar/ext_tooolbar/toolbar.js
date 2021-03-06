@@ -12,19 +12,19 @@ function createToolbars(){
 		//----------- SAVE ------------//
 
 	    tb.add('-', {
-	        icon: iconspath+'save-16x16.png', // icons can also be specified inline
+	        icon: iconspath+'pencil-16x16.png', // icons can also be specified inline
 	        cls: 'x-btn-icon',
-	        tooltip: '<b>Save</b><br/>Save the current book',
-	        handler: editBook
+	        tooltip: '<b>'+lang('Save')+'</b><br/>'+lang('Save the current book'),
+	        handler: window.editBook
 	    });
 	    
 		
-		//----------- SAVE AS ------------//
+		//--------- SAVE AS -----------//
 		
 			tb.add( {
 	        icon: iconspath+'saveas-16x16.png', // icons can also be specified inline
 	        cls: 'x-btn-icon',
-	        tooltip: '<b>Save as..</b><br/>Save the spreadsheet with a new filename.',
+	        tooltip: '<b>'+lang('Save as')+'..</b><br/>'+lang('Save the spreadsheet with a new filename'),
 	        handler: saveBookConfirm 
 	    },'-');
 			
@@ -36,25 +36,25 @@ function createToolbars(){
 	            {
 	                text: 'PDF',
 				    icon: iconspath+'PDF-16x16.png',
-	        		tooltip: '<b>Export to PDF</b><br/>Export to PDF. <br/>',
+	        		tooltip: '<b>'+lang('Export to')+' PDF</b><br/>'+lang('Export to')+' PDF. <br/>',
 	        		handler: exportPDF 
 	            },
 	        	{
 	                text: 'XLS',
 				    icon: iconspath+'XLS-16x16.png',
-	        		tooltip: '<b>Export to XLS</b><br/>Export to XLS. <br/>',
-	        		handler: exportPDF 
+	        		tooltip: '<b>'+lang('Export to')+' XLS</b><br/>'+lang('Export to')+' XLS. <br/>',
+	        		handler: exportXLS 
 	            },            
 	        	{
 	                text: 'XLSX',
 				    icon: iconspath+'XLSX-16x16.png',
-	        		tooltip: '<b>Export to XLSX</b><br/>Export to XLSX. <br/>',
+	        		tooltip: '<b>'+lang('Export to')+' XLSX</b><br/>'+lang('Export to')+' XLSX. <br/>',
 	        		handler: exportXLSX 
 	        	},
 	           	{
 	                text: 'ODS',
 				    icon: iconspath+'ODS-16x16.png',
-	        		tooltip: '<b>Export to ODS</b><br/>Export to ODS. <br/>',
+	        		tooltip: '<b>'+lang('Export to')+' ODS</b><br/>'+lang('Export to')+' ODS. <br/>',
 	        		handler: exportODS 
 	            }
 			]
@@ -62,9 +62,9 @@ function createToolbars(){
 	
 	   tb.add( {
 	        icon: iconspath+'export.png', // icons can also be specified inline
-	        text: 'export',
+	        text: lang('export'),
 	        iconCls: 'bmenu', 
-	        tooltip: '<b>Export</b><br/>Export to many formats. <br/>',
+	        tooltip: '<b>'+lang('Export')+'</b><br/>'+lang('Export to many formats')+'. <br/>',
 	        menu: exportMenu,  
 	    },'-');
 	
@@ -74,7 +74,7 @@ function createToolbars(){
 	    tb.add({
 	        icon: iconspath+'bold-16x16.png', // icons can also be specified inline
 	        cls: 'x-btn-icon',
-	        tooltip: '<b>Bold</b>',
+	        tooltip: '<b>'+lang('bold')+'</b>',
 	        handler: bold
 	    });
 
@@ -84,7 +84,7 @@ function createToolbars(){
 	    tb.add({
 	        icon: iconspath+'italic-16x16.png', 
 	        cls: 'x-btn-icon',
-	        tooltip: '<i>Italic</i>',
+	        tooltip: '<i>'+lang('italic')+'</i>',
 	        handler: italic
 	    });
 
@@ -93,39 +93,44 @@ function createToolbars(){
 	     tb.add({
 	        icon: iconspath+'underline-16x16.png', 
 	        cls: 'x-btn-icon',
-	        tooltip: '<u>Underline</u>',
+	        tooltip: '<u>'+lang('underline')+'</u>',
 	        handler: underline
 	    },'-');   
-	
+		
+		tb.add({
+	        icon: iconspath+'unformat-16x16.gif', 
+	        cls: 'x-btn-icon',
+	        tooltip: '<u>'+lang('Clear format')+'</u>',
+	        handler: unformat
+	    },'-');   
 	
 		//----------- FONT COLOR ------------//
 	
-		var fontColorMenu = new Ext.menu.ColorMenu({
-		    handler : 	function(cm, color){
-		    				cmdSetFontColor('#'+color);	
-		    			}
-		 });
+		var fontColorMenu = new Ext.menu.ColorMenu({});
 
-	
+		fontColorMenu.on('select',function(cm, color){
+		    				cmdSetFontColor('#'+color);	
+		    			});
 	     tb.add({
 	        icon: iconspath+'font-color-16x16.png',
 	        cls: 'x-btn-icon',
-	        tooltip: 'Font color',
+	        tooltip: lang('Font color'),
 	        menu: fontColorMenu
 	       
 	    });
 
 		//----------- BACKGROUND COLOR ------------//
 
-		var bgColorMenu = new Ext.menu.ColorMenu({
-		    handler : 	function(cm, color){
-		    				cmdSetBgColor('#'+color);	
-		    			}
-		 });
+		var bgColorMenu = new Ext.menu.ColorMenu({});
+		
+		bgColorMenu.on('select',function(cm, color){
+					cmdSetBgColor('#'+color);	
+				});
+		
 	     tb.add({
 	        icon: iconspath+'bgcolor-16x16.png', // icons can also be specified inline
 	        cls: 'x-btn-icon',
-	        tooltip: 'Background color',
+	        tooltip: lang('Background color'),
 	        menu: bgColorMenu 
 	       
 	    },'-');  
@@ -137,22 +142,36 @@ function createToolbars(){
 	        id: 'fontMenu',
 	        items: [
 	            {
-	                text: 'Arial',				 
+	                text: '<span style="font-family: Arial">Arial</span>',				 
+	        		handler: function(){cmdSetFontStyle('0');}
+	            },
+	           	{
+	                text: '<span style="font-family: Times New Roman">Times New Roman</span>',				 
 	        		handler: function(){cmdSetFontStyle('1');}
 	            },
 	           	{
-	                text: 'Times New Roman',				 
+	                text: '<span style="font-family: Verdana">Verdana</span>',				 
 	        		handler: function(){cmdSetFontStyle('2');}
+	            },
+	           	{
+	                text: '<span style="font-family: Courier">Courier</span>',				 
+	        		handler: function(){cmdSetFontStyle('3');}
+	            },
+	            {
+	                text: '<span style="font-family: Lucida Sans Console">Lucida Sans Console</span>',				 
+	        		handler: function(){cmdSetFontStyle('4');}
+	            },
+	           	{
+	                text: '<span style="font-family: Tahoma">Tahoma</span>',				 
+	        		handler: function(){cmdSetFontStyle('5');}
 	            }
-	            
-	            
 			]
 	        
-	    });	    
+	    });	        
 	    tb.add({
 	        icon: iconspath+'font-16x16.png', // icons can also be specified inline
 	        cls: 'x-btn-icon',
-	        tooltip: 'Select font',
+	        tooltip: lang('Select font'),
 	        menu: fontMenu 
 	    });  
 	
@@ -181,7 +200,9 @@ function createToolbars(){
 	        triggerAction: 'all',
 	        emptyText:'10',
 	        width: 60 ,
-	        selectOnFocus:true
+	        selectOnFocus:true,
+	        tooltip: lang('Font size')
+	        
 	        
 	    });
 	    
@@ -192,10 +213,108 @@ function createToolbars(){
 
 		tb.addField(fontSize) ;
 		tb.add('-');
+		
+	    var borderMenu = new Ext.menu.Menu({
+	        id: 'borderMenu',
+	       
+	        items: [
+	            {
+	            	hideLabel: true ,
+	            	disabled: true ,
+	            	icon: iconspath+'border_none.png' ,
+	            	text: '(Unimplemented)',
+	        		handler: function (){setBorderNone() ;} 
+	            },
+	           	{
+	           		disabled: true ,
+	           		icon: iconspath+'border_left.png' ,
+	           		text: lang('Border left'),
+	        		handler: function (){setBorderLeft() ;} 
+	            }
+				,
+	           	{
+	           		disabled: true ,
+	           		icon: iconspath+'border_bottom.png' ,
+	           		text: lang('Border bottom'),
+	        		handler: function (){setBorderBottom() ;} 
+	            }
+				,
+	           	{
+	           		disabled: true ,
+	           		icon: iconspath+'border_right.png' ,
+	           		text: lang('Border right'),
+	        		handler: function(){setBorderRight();}
+	            },	       
+				
+	           	{
+	           		disabled: true ,
+	           		icon: iconspath+'border_top.png' ,
+	           		text: lang('Border top'),
+	        		handler: function(){setBorderTop();}
+	            }	                 	            
+			]
+	        
+	    });	        
+	    tb.add({
+	        icon: iconspath+'border_bottom.png', // icons can also be specified inline
+	        cls: 'x-btn-icon',
+	        tooltip: lang('Border'),
+	        menu: borderMenu 
+	    });  
+		
+		tb.add("-");
+		
+		tb.add({
+			disabled: true ,
+	        icon: iconspath+'align_left-16x16.gif', 
+	        cls: 'x-btn-icon',
+	        tooltip: '<i>'+lang('Align left')+'</i>',
+	        handler: function(){}
+	    });
 
-			
-		
-		
+		tb.add({
+			disabled: true ,
+	        icon: iconspath+'align_center-16x16.gif', 
+	        cls: 'x-btn-icon',
+	        tooltip: '<i>'+lang('Align center')+'</i>',
+	        handler: function(){}
+	    });		
+
+		tb.add({
+			disabled: true ,
+	        icon: iconspath+'align_right-16x16.gif', 
+	        cls: 'x-btn-icon',
+	        tooltip: '<i>'+lang('Align right')+'</i>',
+	        handler: function(){}
+	    });
+	
+		tb.add("-");
+
+		tb.add({
+			disabled: true ,
+	        icon: iconspath+'valign_button-16x16.gif', 
+	        cls: 'x-btn-icon',
+	        tooltip: '<i>'+lang('Vertical align bottom')+'</i>',
+	        handler: function(){}
+	    });
+
+		tb.add({
+			disabled: true ,
+	        icon: iconspath+'valign_center-16x16.gif', 
+	        cls: 'x-btn-icon',
+	        tooltip: '<i>'+lang('Vertical align center')+'</i>',
+	        handler: function(){}
+	    });		
+
+		tb.add({
+			disabled: true ,
+	        icon: iconspath+'valign_top-16x16.gif', 
+	        cls: 'x-btn-icon',
+	        tooltip: '<i>'+lang('Vertical align top')+'</i>',
+	        handler: function(){}
+	    });
+
+		tb.add("-") ;		
 		/***************** SECOND TOOLBAR *****************/ 
 	
 	    var tb2 = new Ext.Toolbar();
@@ -210,22 +329,28 @@ function createToolbars(){
 	        fields: ['function_id', 'function_name'],
 	        data : Ext.data.functions // from functions.js
 	    });
-	    
-		var combo = new Ext.form.ComboBox({
-	        store: functions,
-	        displayField:'function_name',
-	        typeAhead: true,
-	        mode: 'local',
-	        triggerAction: 'all',
-	        emptyText:'Select function... [ Unimplemented ]',
-	        selectOnFocus:true,
-	        width:330
-	    });
-	
-	    tb2.addField(combo);
+
+		
+		var text = new Ext.form.TextField({
+			fieldLabel: 'f(x)',
+			width:558,
+			id: 'FormulaBar' ,
+			enableKeyEvents: true 
+			 
+		});
+		
+		/*text.on('keydown', function(object,e) {
+				e.stopPropagation();
+				alert(e.browserEvent.toSource());
+		});*/
+		
+		text.on('keyup', function(object,e) {
+				application.grid.editActiveCell(text.getValue()); //TODO: Desacoplar que acceda a grid
+			} 
+		);
+		
+		tb2.addField(text) ;
 		tb2.add('-');
-		
-		
 		
 	    // They can also be referenced by id in or components
 	

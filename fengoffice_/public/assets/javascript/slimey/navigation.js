@@ -92,7 +92,7 @@ SlimeyNavigation.prototype.saveCurrentSlide = function() {
 
 SlimeyNavigation.prototype.insertNewSlide = function(num, html, dom) {
 	if (!html) {
-		html = '<div style="font-size: 200%; font-weight: bold; font-family: sans-serif; position: absolute; left: 33%; top: 0%;">Edit Me!</div>';
+		html = '<div style="font-size: 200%; font-weight: bold; font-family: sans-serif; position: absolute; left: 5%; top: 0%; width: 90%; height: 10%; text-align: center;">' + lang("new slide text") + '</div>';
 	}
 
     var thisSpacer = this.divSpacers[num];
@@ -100,7 +100,7 @@ SlimeyNavigation.prototype.insertNewSlide = function(num, html, dom) {
     // shift all slides
     for (i=this.divSlides.length - 1; i >= num; i--) {
         this.divSlides[i + 1] = this.divSlides[i];
-        this.divSlides[i + 1].title = 'Slide ' + (i + 1);
+        this.divSlides[i + 1].title = lang("slide {0}", i + 1);
         this.divSlides[i + 1].slideNumber = i + 1;
     }
 
@@ -134,7 +134,7 @@ SlimeyNavigation.prototype.insertNewSlide = function(num, html, dom) {
 
 SlimeyNavigation.prototype.deleteSlide = function(num) {
     if (num < 1 || num > this.slides.length) {
-        alert("No slide to delete!");
+        alert(lang("no slide to delete"));
         return;
     }
     var thisSpacer = this.divSpacers[num];
@@ -149,7 +149,7 @@ SlimeyNavigation.prototype.deleteSlide = function(num) {
     for (i=num; i < this.divSlides.length - 1; i++) {
         this.divSlides[i] = this.divSlides[i + 1];
         this.divSlides[i].slideNumber = i;
-        this.divSlides[i].title = 'Slide' + i;
+        this.divSlides[i].title = lang("slide {0}", i);
     }
     this.divSlides.length--;
     // shift all spacers
@@ -173,13 +173,13 @@ SlimeyNavigation.prototype.deleteSlide = function(num) {
     } else if (this.slides.length > 1) {
         this.getSlide(this.slides.length - 1);
     } else {
-		this.slimey.editor.setHTML('<h1 align="center" style="color: #999999"><i>Click "Add New" to add a slide.</i><h1>');
+		this.slimey.editor.setHTML('<h1 align="center" style="color: #999999"><i>' + lang("click top left button to add a slide", lang("add new")) + '</i><h1>');
 	}
 }
 
 SlimeyNavigation.prototype.moveSlide = function(num, to) {
     if (num < 1 || num > this.slides.length || num == to) {
-        alert("No slide to move!");
+        alert(lang("no slide to move"));
         return;
     }
 
@@ -203,11 +203,11 @@ SlimeyNavigation.prototype.moveSlide = function(num, to) {
     for (i=num; i != to; i+=diff) {
         this.divSlides[i] = this.divSlides[i + diff];
         this.divSlides[i].slideNumber = i;
-        this.divSlides[i].title = 'Slide' + i;
+        this.divSlides[i].title = lang("slide {0}", i);
     }
 	this.divSlides[to] = aux;
 	aux.slideNumber = to;
-	aux.title = 'Slide' + to;
+	aux.title = lang("slide {0}", to);
 	// shift all spacers
 	var aux = this.divSpacers[num];
     for (i=num; i != to; i+=diff) {
@@ -248,7 +248,7 @@ SlimeyNavigation.prototype.createSlideDiv = function(num) {
     slide.slideNumber = num;
     slide.slimey = this.slimey;
     slide.className = 'slidePreview';
-    slide.title = "Slide " + num;
+    slide.title = lang("slide {0}", num);
 	slide.style.position = 'relative';
     slide.innerHTML = this.slides[num];
     setEventHandler(slide, "click", function() {
@@ -279,7 +279,7 @@ SlimeyNavigation.prototype.createSpacerDiv = function(num) {
     spacer.spacerNumber = num;
     spacer.slimey = this.slimey;
     spacer.className = 'previewSpacer';
-    spacer.title = "Click to insert a new slide";
+    spacer.title = lang("click to insert a new slide");
     setEventHandler(spacer, "click", function() {
 		var action = new SlimeyInsertSlideAction(this.slimey, this.spacerNumber);
 		this.slimey.editor.performAction(action);

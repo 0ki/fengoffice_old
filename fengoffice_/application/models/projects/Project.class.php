@@ -173,7 +173,7 @@ class Project extends BaseProject {
 		}
 	}
 	
-	function setParentWorkspace(Project $workspace = null) {
+	function setParentWorkspace($workspace = null) {
 		$oldlevel = $this->getDepth();
 		$subs = $this->getSubWorkspaces();
 		

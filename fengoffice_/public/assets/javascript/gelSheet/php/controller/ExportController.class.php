@@ -39,7 +39,7 @@
 
 			if ($filename == null){
 
-				$filename= "default";
+				$filename= "default-".rand(1,9999);
 
 			}
 
@@ -68,7 +68,7 @@
 			//TODO
 			/*CHECK FOR RELATIVES PATHS*/
 			global $cnf;
-			$currentDir= $cnf['path']['Temp'];  // Get the Storage Folder
+			$currentDir= $cnf['path']['Temp']."/";  // Get the Storage Folder
 			//echo $currentDir;
 
 			switch($format){
@@ -98,7 +98,8 @@
 
 			}
 
-			$this->_send("$filename.$format");
+			if ($format != "ods")
+				$this->_send("$filename.$format");
 
 		}
 
@@ -359,6 +360,7 @@
 		 */
 		function _send($filename){
 
+			
 			header("Pragma: public");
 			header("Expires: 0");
 			header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
@@ -371,6 +373,7 @@
 			global $cnf;
 
 			readfile($cnf['path']['Temp'].$filename);
+			unlink($cnf['path']['Temp'].$filename ) ;
 
 		}
 

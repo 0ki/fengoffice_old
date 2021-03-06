@@ -37,7 +37,7 @@
   		}
   		
   		function PrintInfo(){
-  			return "<b>Total budget:</b> $" . ($this->exec + $this->notExec);
+  			return "<b>Total budget:</b> ". config_option('currency_code', '$') . ($this->exec + $this->notExec);
   		}
   		
   		function Draw($g, $returnGraphObject){

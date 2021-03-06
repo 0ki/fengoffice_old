@@ -1,3 +1,10 @@
+
+<?php if (user_config_option('show_active_tasks_widget_context_help', true, logged_user()->getId())) { 
+	tpl_assign('helpDescription', lang('chelp active tasks widget'));
+	tpl_assign('option_name' , 'active_tasks_widget');
+	$this->includeTemplate(get_template_path('context_help', 'help'));
+} ?>
+
 <div style="padding:10px">
 <table id="dashTableTIP" style="width:100%;">
 <?php

@@ -496,6 +496,5 @@ addLangs({
     'calendar import - export': 'Importations et exportations',
     'view weblink': 'Voir lien Web',
     'print all groups': 'Imprimer',
-    'print this group': 'Imprimer',
-    'new version notification title': 'New version'
+    'print this group': 'Imprimer'
 });

@@ -1,3 +1,9 @@
+<?php if (user_config_option('show_late_tasks_widget_context_help', true, logged_user()->getId())) { 
+		tpl_assign('helpDescription', lang('chelp late tasks widget'));
+		tpl_assign('option_name' , 'late_tasks_widget');
+		$this->includeTemplate(get_template_path('context_help', 'help'));
+	} // if ?>
+
 <div style="padding:10px">
 		
 <?php if($hasLate) { 

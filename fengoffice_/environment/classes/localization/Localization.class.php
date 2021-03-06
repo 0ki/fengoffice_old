@@ -25,14 +25,14 @@ class Localization {
 	 *
 	 * @var string
 	 */
-	private $datetime_format = 'M d. Y H:i';
+	private $datetime_format = '';
 
 	/**
 	 * strftime() function format used for presenting date
 	 *
 	 * @var string
 	 */
-	private $date_format = 'M d. Y';
+	private $date_format = '';
 
 	/**
 	 * Descriptive date format is string used in date() function that will autput date
@@ -42,7 +42,7 @@ class Localization {
 	 *
 	 * @var string
 	 */
-	private $descriptive_date_format = 'l, j F';
+	private $descriptive_date_format = '';
 
 	/**
 	 * strftime() function format used for presenting time
@@ -92,7 +92,7 @@ class Localization {
 	 * @return string
 	 */
 	function lang($name, $default = null) {
-		if(is_null($default)) $default = "<span style=\"font-weight: bolder; color: red;\">Missing lang: $name</span>";
+		if(is_null($default)) $default = "Missing lang: $name";
 		return $this->langs->get($name, $default);
 	} // lang
 
@@ -136,7 +136,7 @@ class Localization {
 		// Get settings file path and include it
 		$settings_file = $this->getLanguageDirPath() . '/' . $this->getLocale() . '.php';
 		if(is_file($settings_file)) {
-			include_once $settings_file;
+			include $settings_file;
 		} else {
 			throw new FileDnxError($settings_file, "Failed to find language settings file. Expected location: '$settings_file'.");
 		} // if
@@ -151,12 +151,27 @@ class Localization {
 
 			// Loop through files and add langs
 			if(is_array($files)) {
+				sort($files);
 				foreach($files as $file) {
-					$langs = include_once $file;
+					$langs = include $file;
 					if(is_array($langs)) $this->langs->append($langs);
 				} // foreach
 			} // if
-
+			
+			//Load plugin langs after opengoo default langs
+			$plugins_dir = $langs_dir . '/plugins';
+			if(is_dir($plugins_dir)) {
+				sort($files);
+				$files = get_files($plugins_dir, 'php');
+	
+				// Loop through files and add langs
+				if(is_array($files)) {
+					foreach($files as $file) {
+						$langs = include $file;
+						if(is_array($langs)) $this->langs->append($langs);
+					} // foreach
+				} // if
+			} // if
 		} else {
 			throw new DirDnxError($langs_dir);
 		} // if
@@ -175,7 +190,7 @@ class Localization {
 	 * @return string
 	 */
 	function formatDate(DateTimeValue $date, $timezone = 0) {
-		//return date($this->date_format, $date->getTimestamp() + ($timezone * 3600));
+		if ($this->date_format == '') $this->date_format = user_config_option('date_format', 'd/m/Y');
 		return $this->dateByLocalization($this->date_format, $date->getTimestamp(), $timezone);
 	} // formatDate
 
@@ -190,6 +205,7 @@ class Localization {
 	 * @return string
 	 */
 	function formatDescriptiveDate(DateTimeValue $date, $timezone = 0) {
+		if ($this->descriptive_date_format == '') $this->descriptive_date_format = user_config_option('descriptive_date_format', 'l, j F');
 		return $this->dateByLocalization($this->descriptive_date_format, $date->getTimestamp(), $timezone);
 	} // formatDescriptiveDate
 
@@ -202,7 +218,7 @@ class Localization {
 	 * @return string
 	 */
 	function formatDateTime(DateTimeValue $date, $timezone = 0) {
-		//return date($this->datetime_format, $date->getTimestamp() + ($timezone * 3600));
+		if ($this->datetime_format == '') $this->datetime_format = user_config_option('date_format', 'd/m/Y') . " " . $this->time_format;
 		return $this->dateByLocalization($this->datetime_format, $date->getTimestamp(), $timezone);
 	} // formatDateTime
 
@@ -215,7 +231,6 @@ class Localization {
 	 * @return string
 	 */
 	function formatTime(DateTimeValue $date, $timezone = 0) {
-		//return date($this->time_format, $date->getTimestamp() + ($timezone * 3600));
 		return $this->dateByLocalization($this->time_format, $date->getTimestamp(), $timezone);
 	} // formatTime
 

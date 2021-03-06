@@ -18,12 +18,13 @@
 
 		public function __destruct(){}
 
-		public function saveBook($book, $inputFormat = 'jsonss', $outputFormat = 'dbs'){
+		public function saveBook($book, $inputFormat = 'jsons', $outputFormat = 'dbs'){
 			$book = stripslashes($book);
 			$newBook = new Book();
 		
 			switch ($inputFormat) {
 				case 'json':
+				default :
 					$json_obj = json_decode($book);
 					if(!isset($json_obj)){
 						$error =  new Error(401,"Ups!!! Sorry, Book has not received properly to server. Be aware you are running an alpha version.");
@@ -34,59 +35,37 @@
 					}
 					$newBook->fromJson($json_obj);
 					break ;
-
-				case 'xml':
-
-					break ;
-
-				case 'yml';
-					break ;
-
-				default :
-					$error =  new Error(401,"Unsupported Format");
-					if($error->isDebugging()){
-						$error->addContentElement("Format",$inputFormat);
-					}
-					throw $error; 
-					break ;
 			}
-
-			$controller= new ExportController();
-
-			switch($outputFormat) {
-				case 'db':
-					$newBook->save();
-					break;
-
-				case 'xls':
-					$controller->generateBook($newBook, $outputFormat);
-					break;
-
-				case 'xlsx':
-					$controller->generateBook($newBook, $outputFormat);
-					break;
-
-				case 'pdf':
-					$controller->generateBook($newBook, $outputFormat);
-					break;
-
-				case 'ods':
-					$controller->generateBook($newBook, $outputFormat);
-					break;
-
+			
+			if ($outputFormat == 'db') {
+				$newBook->save();
+			}else {
+				$controller= new ExportController();
+				switch($outputFormat) {
+					case 'xls':
+						$controller->generateBook($newBook, $outputFormat);
+						break;
+					case 'xlsx':
+						$controller->generateBook($newBook, $outputFormat);
+						break;
+					case 'pdf':
+						$controller->generateBook($newBook, $outputFormat);
+						break;
+					case 'ods':
+						$controller->generateBook($newBook, $outputFormat);
+						break;
 					default:
-					
-					$errors =  $newBook->save();
-					if(!$errors)
-						echo "{'Error':0,'Message':'Book saved succesfully','Data':{'BookId':".$newBook->getId()."}}";
-					else
-						echo "{'Error':1,'Message':'Ups!!! Sorry, Book could not be saved. Be aware you are running an alpha version.','Data':0}";
-					break;
+						$errors =  $newBook->save();
+						if(!$errors)
+							echo "{'Error':0,'Message':'Book saved succesfully','Data':{'BookId':".$newBook->getId()."}}";
+						else
+							echo "{'Error':1,'Message':'Ups!!! Sorry, Book could not be saved. Be aware you are running an alpha version.','Data':0}";
+						break;
+				}
 			}
 		}
 
 
-		/*returns the book. id cant be null*/
 		public function find ($id= null){
 			if ($id!= null){
 				$book= new Book();
@@ -101,9 +80,7 @@
 		public function getBooks(){
 			$sql = "select * from ".table('books');
 			$result= mysql_query($sql);
-
 			while($row = mysql_fetch_object($result)){
-
 				$books[] = array(
 					'bookId'	=>	$row->bookId	,
 					'bookName'	=> 	$row->bookName
@@ -111,65 +88,7 @@
 			}
 			return $books;
 		}
-		
-		
-		/**
-		 * Edit the book info
-		 * 
-		 * @param Book $book
-		 * @param unknown_type $inputFormat
-		 */
-		public function editBook($book, $inputFormat = 'json'){
-			/* @var $conn Connection  */
-			
 
-			$book = stripslashes($book);
-			$newBook = new Book();
-			switch ($inputFormat) {
-				case 'json':
-					print $book.'<hr>' ;
-					echo strlen($book);
-					$json_obj = json_decode($book);
-					//var_dump($json_obj);EXIT ;
-					$newBook->fromJson($json_obj);
-				break ;
-
-				case 'xml':
-				break ;
-
-				case 'yml';
-				break ;
-
-				default :
-					$json_obj = json_decode($book);
-					$newBook->fromJson($json_obj);
-				break ;
-			}
-			$bookId = $newBook->bookId;
-			
-			$toDelete = new Book();
-			$toDelete->load($bookId);
-			echo $bookId."<hr>";
-			var_dump($toDelete) ;
-			exit;
-			mysql_query ( "START TRANSACTION ");
-			$toDelete->delete(true);
-			$error = new OutputMessage('asdfjh');
-			if($error->isdebugging)
-				$error->addMessage("mysqlerror",mysql_error());
-			throw $error;
-			echo "<hr>xxxxx" ;
-			
-			$ok = $newBook->save();
-			mysql_query ( "COMMIT ") ;
-			//$ok = true ; exit ;
-			//TODO What return this ????
-			if ($ok) {
-				echo "entra commit";
-				mysql_query ( "COMMIT ") ;
-			}	
-			
-		}
 		
 		function deleteBook($bookId) {
 			if (@mysql_query("START TRANSACTION") &&

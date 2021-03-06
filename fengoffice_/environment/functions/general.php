@@ -86,12 +86,9 @@ function clean($str) {
 function getDateValue($value = '', $default = EMPTY_DATETIME){
 	if ($value instanceof DateTimeValue) return $value;
 	if ($value != '') {
-		$date = explode('/', $value);
-		if (lang('date format') == 'm/d/Y')
-			return DateTimeValueLib::make(0, 0, 0, $date[0], $date[1], $date[2]);
-		else
-			return DateTimeValueLib::make(0, 0, 0, $date[1], $date[0], $date[2]);
-	}
+		$date_format = user_config_option('date_format', 'd/m/Y');
+		return DateTimeValueLib::dateFromFormatAndString($date_format, $value);
+	}	
 	return $default;
 }
 
@@ -565,4 +562,11 @@ function gen_id() {
 	$ids[$id] = true;
 	return $id;
 }
+
+function purify_html($html) {
+	require_once LIBRARY_PATH . "/htmlpurifier/HTMLPurifier.standalone.php";
+	$p = new HTMLPurifier();
+	return $p->purify($html);
+}
+
 ?>

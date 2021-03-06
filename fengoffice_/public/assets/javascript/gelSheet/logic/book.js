@@ -12,8 +12,8 @@
 function Book(name){
 	var self = this;
 	self.constructor = function(name){
-		this.name = name;
 		this.id = undefined;
+		this.name = name;
 		this.sheets = new Array();
 	}
 

@@ -50,6 +50,6 @@ require_once INSTALLER_PATH . '/library/classes/Output_Html.class.php';
 require_once INSTALLER_PATH . '/library/classes/Output_Console.class.php';
 require_once INSTALLER_PATH . '/installation/acInstallation.class.php';
 
-require_once INSTALLATION_PATH . '/environment/classes/template/Template.class.php';
+require_once INSTALLER_PATH . '/library/classes/Template.class.php';
 
 ?>

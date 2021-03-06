@@ -102,7 +102,7 @@ og.ContactManager = function() {
 		var now = new Date();
 		var dateString = '';
 		if (now.dateFormat('Y-m-d') > value.dateFormat('Y-m-d')) {
-			return lang('last updated by on', userString, value.dateFormat(lang('date format')));
+			return lang('last updated by on', userString, value.dateFormat(og.date_format));
 		} else {
 			return lang('last updated by at', userString, value.dateFormat('h:i a'));
 		}
@@ -117,7 +117,7 @@ og.ContactManager = function() {
 		var now = new Date();
 		var dateString = '';
 		if (now.dateFormat('Y-m-d') > value.dateFormat('Y-m-d')) {
-			return lang('last updated by on', userString, value.dateFormat(lang('date format')));
+			return lang('last updated by on', userString, value.dateFormat(og.date_format));
 		} else {
 			return lang('last updated by at', userString, value.dateFormat('h:i a'));
 		}
@@ -458,7 +458,7 @@ og.ContactManager = function() {
 		            iconCls: 'ico-contact',
 		            menu: { items: [
 						{ text: lang('import'), iconCls: 'ico-upload', handler: function() {
-							var url = og.getUrl('contact', 'import_from_csv_file', {type:'contact'});
+							var url = og.getUrl('contact', 'import_from_csv_file', {type:'contact', from_menu:1});
 							og.openLink(url);
 						}},
 						{ text: lang('export'), iconCls: 'ico-download', handler: function() {
@@ -472,7 +472,7 @@ og.ContactManager = function() {
 					iconCls: 'ico-company',
 		            menu: { items: [
 						{ text: lang('import'), iconCls: 'ico-upload', handler: function() {
-							var url = og.getUrl('contact', 'import_from_csv_file', {type:'company'});
+							var url = og.getUrl('contact', 'import_from_csv_file', {type:'company', from_menu:1});
 							og.openLink(url);
 						}},
 						{ text: lang('export'), iconCls: 'ico-download', handler: function() {

@@ -11,6 +11,7 @@
 		$iconclass = "ico-large-" . $object->getObjectTypeName();
 		
 	$genid = gen_id();
+	$date_format = user_config_option('date_format', 'd/m/Y');
 ?>
 
 <table style="width:100%" id="<?php echo $genid ?>-co"><tr>
@@ -63,7 +64,11 @@
 			<?php if (isset($internalDivs)){
 				foreach ($internalDivs as $idiv)
 					echo $idiv;
-			}
+			}		
+			
+			if ($object instanceof ApplicationDataObject)
+				echo render_custom_properties($object);
+			
 			if ($object instanceof ProjectDataObject && $object->allowsTimeslots())
 				echo render_object_timeslots($object, $object->getViewUrl());
 			
@@ -183,7 +188,7 @@
 					$datetime = format_time($object->getCreatedOn());
 					echo lang('user date today at', $object->getCreatedBy()->getCardUrl(), $username, $datetime, clean($object->getCreatedBy()->getDisplayName()));
 				} else {
-					$datetime = format_datetime($object->getCreatedOn(), lang('date format'), logged_user()->getTimezone());
+					$datetime = format_datetime($object->getCreatedOn(), $date_format, logged_user()->getTimezone());
 					echo lang('user date', $object->getCreatedBy()->getCardUrl(), $username, $datetime, clean($object->getCreatedBy()->getDisplayName()));
 				}
 			} ?></div>
@@ -205,7 +210,7 @@
 					$datetime = format_time($object->getUpdatedOn());
 					echo lang('user date today at', $object->getUpdatedBy()->getCardUrl(), $username, $datetime, clean($object->getUpdatedBy()->getDisplayName()));
 				} else {
-					$datetime = format_datetime($object->getUpdatedOn(), lang('date format'), logged_user()->getTimezone());
+					$datetime = format_datetime($object->getUpdatedOn(), $date_format, logged_user()->getTimezone());
 					echo lang('user date', $object->getUpdatedBy()->getCardUrl(), $username, $datetime, clean($object->getUpdatedBy()->getDisplayName()));
 				}
 			}?></div>
@@ -228,22 +233,39 @@
 					$datetime = format_time($object->getTrashedOn());
 					echo lang('user date today at', $trash_user->getCardUrl(), $username, $datetime, clean($trash_user->getDisplayName()));
 				} else {
-					$datetime = format_datetime($object->getTrashedOn(), lang('date format'), logged_user()->getTimezone());
+					$datetime = format_datetime($object->getTrashedOn(), $date_format, logged_user()->getTimezone());
 					echo lang('user date', $trash_user->getCardUrl(), $username, $datetime, clean($trash_user->getDisplayName()));
+				}
+			}
+			 ?></div>
+		<?php } // if ?>
+		
+		<?php
+		if ($object instanceof ProjectFile && $object->isCheckedOut()) { ?>
+    		<span style="color:#333333;font-weight:bolder;">
+    			<?php echo lang('checked out by') ?>:
+			</span><br/><div style="padding-left:10px">
+			<?php
+			$checkout_user = Users::findById($object->getCheckedOutById());
+			if ($checkout_user instanceof User){
+				if (logged_user()->getId() == $checkout_user->getId())
+					$username = lang('you');
+				else
+					$username = clean($checkout_user->getDisplayName());
+
+				if ($object->getCheckedOutOn()->isToday()){
+					$datetime = format_time($object->getCheckedOutOn());
+					echo lang('user date today at', $checkout_user->getCardUrl(), $username, $datetime, clean($checkout_user->getDisplayName()));
+				} else {
+					$datetime = format_datetime($object->getCheckedOutOn(), $date_format, logged_user()->getTimezone());
+					echo lang('user date', $checkout_user->getCardUrl(), $username, $datetime, clean($checkout_user->getDisplayName()));
 				}
 			}
 			 ?></div>
 		<?php } // if ?>
 	</div>
 	
-	<?php if ($object instanceof ProjectDataObject) { ?>
-	<div class="prop-col-div" style="width:200;">
-		<?php echo render_custom_properties($object) ?>
-	</div>
-	<?php } ?>
-	<?php 
-	Hook::fire("render_object_properties", $object, $ret = 0);
-	?>
+	<?php Hook::fire("render_object_properties", $object, $ret = 0);?>
 		</td>
 	</tr>
 	

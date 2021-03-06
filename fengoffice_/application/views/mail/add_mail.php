@@ -1,9 +1,14 @@
 <?php
+	require_javascript('modules/linkToObjectForm.js'); 
+	require_javascript('og/ObjectPicker.js'); 
+	
 include("public/assets/javascript/fckeditor/fckeditor.php");
  
   set_page_title( lang('write mail'));
+  
+  $genid = gen_id();
  
-  $instanceName = "fck" . gen_id();
+  $instanceName = "fck" . $genid;
   $type = array_var($mail_data, 'type','plain');
   $object = $mail;
 ?>
@@ -76,6 +81,11 @@ function setDraft(val){
 	isDraft.value = val;
 }
 
+function setUpload(val){
+	var isUpload = Ext.getDom('isUpload');
+ 	isUpload.value = val;
+ }
+ 
 function setDiscard(val){
 	var the_id = Ext.getDom('id').value;
 	document.frmMail.action = og.getUrl('mail', 'delete', {id:the_id, ajax:'true'});
@@ -88,7 +98,9 @@ function setDiscard(val){
 <input type="hidden" name="mail[body]" value="" />
 <input type="hidden" name="mail[isDraft]" id="isDraft" value="false" />
 <input type="hidden" name="mail[id]" id="id" value="<?php echo  array_var($mail_data, 'id') ?>" />
+<input type="hidden" name="mail[isUpload]" id="isUpload" value="false" />
 <?php 
+
 	tpl_display(get_template_path('form_errors'));
 	$contacts = Contacts::getAll();
     $allEmails = array();
@@ -148,6 +160,10 @@ function setDiscard(val){
     	<?php echo text_field('mail[subject]', array_var($mail_data, 'subject'), 
     		array('class' => 'title', 'tabindex'=>'40', 'id' => 'mailSubject')) ?>
 	</div>
+		
+	<div>
+		<?php echo render_object_custom_properties($object, 'MailContents', true) ?>
+	</div>
 	
 	<?php $categories = array(); Hook::fire('object_edit_categories', $object, $categories); ?>
 	
@@ -155,7 +171,9 @@ function setDiscard(val){
 		<a href="#" class="option" onclick="og.toggleAndBolden('add_mail_account', this);resizeMailDiv();"><?php echo lang('mail account') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('add_mail_CC', this);resizeMailDiv();"><?php echo lang('mail CC') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('add_mail_BCC', this);resizeMailDiv();"><?php echo lang('mail BCC') ?></a> - 
-		<a href="#" class="option" onclick="og.toggleAndBolden('add_mail_options', this);resizeMailDiv();"><?php echo lang('mail options') ?></a>
+		<a href="#" class="option" onclick="og.toggleAndBolden('add_mail_options', this);resizeMailDiv();"><?php echo lang('mail options') ?></a> -
+ 		<?php if (defined('EMAIL_ATTACHMENTS') && EMAIL_ATTACHMENTS) {?><a href="#" class="option" onclick="og.toggleAndBolden('add_mail_attachments', this);resizeMailDiv();"><?php echo lang('mail attachments') ?></a> -<?php } // Disabled?>
+		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_custom_properties_div',this);resizeMailDiv();"><?php echo lang('custom properties') ?></a>
 		<?php foreach ($categories as $category) { ?>
 			- <a href="#" class="option" <?php if ($category['visible']) echo 'style="font-weight: bold"'; ?> onclick="og.toggleAndBolden('<?php echo $genid . $category['name'] ?>', this)"><?php echo lang($category['name'])?></a>
 		<?php } ?>	
@@ -174,6 +192,15 @@ function setDiscard(val){
 	    <label><?php echo radio_field('mail[format]',$type=='plain', array('id' => 'format_plain','value' => 'plain', 'tabindex'=>'46', 'onchange'=>"alertFormat('$instanceName','plain')"))." ".lang('format plain')  ?></label>
 	</div>
 	
+	<?php if (defined('EMAIL_ATTACHMENTS') && EMAIL_ATTACHMENTS){?>
+	<div id="add_mail_attachments" style="display:none;">
+ 	<fieldset>
+ 	    <legend><?php echo lang('mail attachments')?></legend>
+ 	<a id="<?php echo $genid ?>before" href="#" onclick="App.modules.linkToObjectForm.pickObject(this, {types:{Documents:true}})"><?php echo lang('attach from workspace') ?></a>
+ 	</fieldset>
+ 	</div>
+ 	<?php } // Disabled ?>
+
 	<?php foreach ($categories as $category) { ?>
 	<div <?php if (!$category['visible']) echo 'style="display:none"' ?> id="<?php echo $genid . $category['name'] ?>">
 	<fieldset>
@@ -182,6 +209,13 @@ function setDiscard(val){
 	</fieldset>
 	</div>
 	<?php } ?>
+	
+	<div id='<?php echo $genid ?>add_custom_properties_div' style="display:none">
+		<fieldset>
+			<legend><?php echo lang('custom properties') ?></legend>
+			<?php echo render_object_custom_properties($object, 'MailContents', false) ?>
+		</fieldset>
+	</div>	
   
 </div>
 <div class="coInputSeparator"></div>

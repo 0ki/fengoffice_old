@@ -26,7 +26,7 @@ function convert_to_links($text){
 	$text = preg_replace('@(>|\s|^)(www.([-\w\.]+)+(:\d+)?(/([\w/_\-\.]*(\?\S+)?)?)?)@', '<a href="http://$2" target="_blank">$2</a>', $text);
 		
 	//Convert every email address into an <a href="mailto:... hyperlink
-	//$text = preg_replace('/[^\:a-zA-Z0-9>"]([a-zA-Z0-9]+[a-zA-Z0-9\._\-\+]*@[a-zA-Z0-9_\-]+([a-zA-Z0-9\._\-]+)+)/', '<a href="mailto:$1" target="_blank">$1</a>', $text);
+	$text = preg_replace('/[^\:a-zA-Z0-9>"]([a-zA-Z0-9]+[a-zA-Z0-9\._\-\+]*@[a-zA-Z0-9_\-]+([a-zA-Z0-9\._\-]+)+)/', '<a href="mailto:$1" target="_blank">$1</a>', $text);
 	return $text;
 }
 

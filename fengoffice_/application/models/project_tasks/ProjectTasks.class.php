@@ -50,7 +50,7 @@ class ProjectTasks extends BaseProjectTasks {
 	 * @param Project $project
 	 * @return array
 	 */
-	static function getOpenTimeslotTasks(User $user, User $logged_user, Project $project = null, $tag = null, $assigned_to_company = null, $assigned_to_user = null) {
+	static function getOpenTimeslotTasks(User $user, User $logged_user, $project = null, $tag = null, $assigned_to_company = null, $assigned_to_user = null) {
 		if ($project)
 			$project_ids = $project->getAllSubWorkspacesCSV(false, $logged_user);
 		else{
@@ -401,10 +401,10 @@ class ProjectTasks extends BaseProjectTasks {
 	 */
 	function getRangeTasksByUser(DateTimeValue $date_start, DateTimeValue $date_end, $assignedUser, $tags = '', $project = null){
 
-		$from_date =   (new DateTimeValue($date_start->getTimestamp()));
-		$from_date = $date_start->beginningOfDay();
-		$to_date =  (new DateTimeValue($date_end->getTimestamp()));
-		$to_date = $date_end->endOfDay();
+		$from_date = new DateTimeValue($date_start->getTimestamp());
+		$from_date = $from_date->beginningOfDay();
+		$to_date = new DateTimeValue($date_end->getTimestamp());
+		$to_date = $to_date->endOfDay();
 			
 		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectTasks::instance(),ACCESS_LEVEL_READ, logged_user(), 'project_id') .')';
 

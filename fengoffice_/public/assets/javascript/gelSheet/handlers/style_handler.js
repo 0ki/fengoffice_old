@@ -14,12 +14,12 @@ function StyleHandler(){
 
 	self.loadDefaultFont = function(){
 		var defaultFont = new FontStyle(1,10,"#000000",false,false,false);
-		this.fonts[defaultFont.id] = defaultFont;
+		this.fontStyles[defaultFont.id] = defaultFont;
 		this.fontsIds[0] = defaultFont;
 	}
 
 	self.constructor  = function(){
-		this.fonts = new Array();
+		this.fontStyles = new Array();
 		this.fontsIds = new Array();
 		this.layers = new Array();
 		this.loadDefaultFont();
@@ -30,8 +30,8 @@ function StyleHandler(){
 	}
 
 	self.getFontStyle = function(styleId){
-		var style = this.fonts[styleId];
-		if(style == undefined) style = this.fonts[0];
+		var style = this.fontStyles[styleId];
+		if(style == undefined) style = this.fontStyles[0];
 		return style;
 	}
 
@@ -40,14 +40,28 @@ function StyleHandler(){
 		if(style == undefined) style = this.fontsIds[0];
 		return style;
 	}
+	
+	self.getFontStyleIdByStyle = function(fontStyle){
+		return this.getFontStyleId(fontStyle.font, fontStyle.size, fontStyle.color, fontStyle.bold, fontStyle.italic, fontStyle.underline);
+	}
+	
+	self.changeFontStyleProp = function(fontStyleId,prop,value){
+		var fs = this.getFontStyleById(fontStyleId);
+		var oldValue = fs[prop];
+		fs[prop] = value;
+		var newId = this.getFontStyleId(fs.font, fs.size, fs.color, fs.bold, fs.italic, fs.underline);
+		fs[prop] = oldValue;
+		return newId;
+	}
+
 
 	self.getFontStyleId = function(font, size, color, bold, italic, underline){
 		var id = font+"|"+size+"|"+color+"|"+bold+"|"+italic+"|"+underline;
-		if(this.fonts[id]){
-			return this.fontsIds.indexOf(this.fonts[id]);
+		if(this.fontStyles[id]){
+			return this.fontsIds.indexOf(this.fontStyles[id]);
 		}else{
 			var fstyle = new FontStyle(font, size, color, bold, italic,underline);
-			this.fonts[id] = fstyle;
+			this.fontStyles[id] = fstyle;
 			var newId = this.fontsIds.length;
 			this.fontsIds[newId] = fstyle;
 			return newId;
@@ -71,23 +85,29 @@ function FontStyle(font, size, color, bold, italic, underline){
 		this.bold = bold;		//Is Bold?
 		this.italic = italic;	//Is Italic?
 		this.underline = underline;	//Is Underlined?
-		this.leftInnerHTML = "";
-		this.rightInnerHTML = "";
-	}
-
-	self.getInnerHTML = function(value){
-		return this.innerHTML;
 	}
 
 	self.constructor(font, size, color, bold, italic, underline);
 	return self;
 }
 
-function LayerStyle(){
+
+function LayoutStyle(bgcolor,border){
 	self.contructor = function(){
 
 	}
 
+	return self;
+}
+
+function BlockStyle(wrap,valign,halign){
+	self.contructor = function(){
+		this.id = halign+"|"+valign+"|"+wrap;
+		this.wrap = wrap	//Font Name (Familly) Id
+		this.valign = valign;		//Font Size
+		this.halign = halign;		//Font Color
+	}
+	
 	return self;
 }
 

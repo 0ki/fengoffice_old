@@ -1,5 +1,5 @@
 App.modules.linkToObjectForm = {
-	pickObject: function(before) {
+	pickObject: function(before, config) {
 		og.ObjectPicker.show(function (objs) {
 			if (objs) {
 				for (var i=0; i < objs.length; i++) {
@@ -7,7 +7,7 @@ App.modules.linkToObjectForm = {
 					App.modules.linkToObjectForm.addObject(this, obj);
 				}
 			}
-		}, before);
+		}, before, config);
 	},
 
 	addObject: function(before, obj) {

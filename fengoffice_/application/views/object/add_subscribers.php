@@ -1,3 +1,6 @@
+<?php
+require_javascript('modules/addMessageForm.js'); 
+?>
 <div class="og-add-subscribers">
 <p><?php echo lang('add subscribers desc') ?></p>
 <?php

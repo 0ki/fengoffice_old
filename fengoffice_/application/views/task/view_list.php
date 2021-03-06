@@ -1,4 +1,6 @@
 <?php
+require_javascript("modules/addTaskForm.js");
+
 if (isset($task_list) && $task_list instanceof ProjectTask) {
 	if (!$task_list->isTrashed()){
 		if(!$task_list->isCompleted() && $task_list->canEdit(logged_user())) {

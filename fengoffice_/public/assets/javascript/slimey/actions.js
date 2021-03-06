@@ -57,28 +57,31 @@ var SlimeyInsertAction = function(slimey, tagname) {
 	elem.style.margin = '0px';
 	elem.style.padding = '0px';
 	elem.style.border = '0px';
-	elem.style.zIndex = 1000;
+	elem.style.zIndex = 10000;
 	if (elem.tagName == 'DIV') {
-		//elem.style.width = '20%';
-		//elem.style.height = '20%';
-		elem.innerHTML = 'Some Text';
-		//elem.resizable = true;
+		elem.style.left = '5%';
+		elem.style.top = '15%';
+		elem.style.width = '90%';
+		elem.style.height = '10%';
+		elem.innerHTML = lang("some text");
+		elem.style.textAlign = 'center';
+		elem.resizable = true;
 		elem.editable = true;
 	} else if (elem.tagName == 'IMG') {
 		elem.style.width = '20%';
 		elem.style.height = '20%';
 		elem.resizable = true;
-		elem.title = 'Drag the bottom right corner to resize';
+		elem.title = lang("drag the bottom right corner to resize");
 	} else {
 		if (elem.tagName == 'UL') {
-			elem.innerHTML = '<li>Some Text</li>';
+			elem.innerHTML = '<li>' + lang("some text") + '</li>';
 		} else if (elem.tagName == 'OL') {
-			elem.innerHTML = '<li>Some Text</li>';
+			elem.innerHTML = '<li>' + lang("some text") + '</li>';
 		} else {
-			elem.innerHTML = 'Some Text';
+			elem.innerHTML = lang("some text");
 		}
 		elem.editable = true;
-		elem.title = 'Double click to edit content';
+		elem.title = lang("double click to edit content");
 	}
 	
 	/* event handlers */
@@ -346,7 +349,7 @@ SlimeySendToBackAction.prototype = new SlimeyAction();
  *  sends the selected element to the back
  */
 SlimeySendToBackAction.prototype.perform = function() {
-	var minZ = 1000000;
+	var minZ = 100000000;
 	for (var elem = this.slimey.editor.getContainer().firstChild; elem; elem = elem.nextSibling) {
 		if (elem.nodeType == 1) {
 			thisZ = parseInt(elem.style.zIndex);

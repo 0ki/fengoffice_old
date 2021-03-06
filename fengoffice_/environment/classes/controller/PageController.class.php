@@ -94,7 +94,9 @@ abstract class PageController extends Controller {
 		$content = tpl_fetch($template_path);
 
 		// Assign content and render layout
+		TimeIt::start("Transfer");
 		$this->renderLayout($layout_path, $content);
+		TimeIt::stop();
 
 		// Die!
 		if($die) die();

@@ -99,6 +99,19 @@
       return 'id';
     } // getAutoIncrementColumn
     
+    /**
+    * Return system columns
+    *
+    * @access public
+    * @param void
+    * @return array
+    */
+    function getSystemColumns() {
+      return array_merge(parent::getSystemColumns(), array(
+      	'project_id', 'completed_by_id', 'color', 'p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8', 'p9', 'p10')
+      );
+    } // getSystemColumns
+    
     // -------------------------------------------------------
     //  Finders
     // -------------------------------------------------------

@@ -520,6 +520,28 @@ abstract class BaseUser extends ApplicationDataObject {
 	} // setCanManageConfiguration()
 
 	/**
+	 * Return value of 'can_manage_reports' field
+	 *
+	 * @access public
+	 * @param void
+	 * @return boolean
+	 */
+	function getCanManageReports() {
+		return $this->getColumnValue('can_manage_reports');
+	} // getCanManageConfiguration()
+
+	/**
+	 * Set value of 'can_manage_reports' field
+	 *
+	 * @access public
+	 * @param boolean $value
+	 * @return boolean
+	 */
+	function setCanManageReports($value) {
+		return $this->setColumnValue('can_manage_reports', $value);
+	} // setCanManageConfiguration()
+
+	/**
 	 * Return value of 'auto_assign' field
 	 *
 	 * @access public

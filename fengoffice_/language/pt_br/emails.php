@@ -146,10 +146,10 @@
 	'outgoing transport type' => 'Conexão segura',
 	'mail account outgoing transport type description' => 'Defina como "ssl" or "tls" para Conexão segura',
 	'smtp settings' => 'Configurações SMTP',
-	'due_date task reminder' => 'Lembrete de Tarefa',
+	'due_date reminder notification task' => 'Lembrete de Tarefa',
 	'due_date task reminder desc' => 'Tarefa "{0}" está ativa em "{1}" e ainda pendente',
-	'due_date milestone reminder' => 'Lembrete de Marco',
+	'due_date reminder notification milestone' => 'Lembrete de Marco',
 	'due_date milestone reminder desc' => 'Marco "{0}" está ativo em "{1}" e ainda pendente',
-	'start event reminder' => 'Lembrete de Evento',
+	'start reminder notification event' => 'Lembrete de Evento',
 	'start event reminder desc' => 'Evento "{0}" inicia em "{1}"',
 ); ?>

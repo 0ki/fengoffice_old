@@ -43,7 +43,9 @@
     function fetch($template) {
       ob_start();
       try {
+      	TimeIt::start("Template");
         $this->includeTemplate($template);
+        TimeIt::stop();
       } catch(Exception $e) {
         ob_end_clean();
         throw $e;

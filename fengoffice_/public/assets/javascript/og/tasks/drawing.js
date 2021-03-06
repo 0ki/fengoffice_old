@@ -33,6 +33,20 @@ ogTasks.draw = function(){
 			sb.append(this.drawGroup(displayCriteria, drawOptions, this.Groups[i]));
 	}
 	
+	// *** <RX ***
+	if(this.Groups.length==1 && this.Groups[0].group_tasks.length==0) { // there are no tasks to display
+		sb.append('<div class="inner-message" style="text-align: center; color: gray; font-size: 14px;">'+lang('no tasks to display')+ '</div>'+
+		'<div id="rx__no_tasks_info" style="text-align: center; padding-top:10px"><a href="#" class="internalLink ogTasksGroupAction ico-add" '+
+		'onClick="document.getElementById(\'rx__no_tasks_info\').style.display=\'none\'; document.getElementById(\'rx__hidden_group\').style.display=\'block\'; ogTasks.drawAddNewTaskForm(\'' + this.Groups[0].group_id + '\')" '+
+		'title="' + lang('add task') + '">' + (lang('add task')) + '</a>'+
+		'</div>');
+		var rx__hidden_group = new String();
+		rx__hidden_group = this.drawGroup(displayCriteria, drawOptions, this.Groups[0]);
+		rx__hidden_group = '<div id="rx__hidden_group" style="display: none;">'+rx__hidden_group+'</div>';
+		sb.append(rx__hidden_group);
+	}
+	// *** /RX ***
+	
 	var container = document.getElementById('tasksPanelContainer');
 	sb.append("<div style='height:20px'></div>")
 	container.innerHTML = sb.toString();
@@ -150,13 +164,13 @@ ogTasks.drawGroup = function(displayCriteria, drawOptions, group){
 	
 	//draw the group's tasks
 	for (var i = 0; i < group.group_tasks.length; i++){
-		if (i == 8){			//Draw expander if group has more than 8 tasks
+		if (i == og.noOfTasks){			//Draw expander if group has more than og.noOfTasks tasks
 			sb.append("<div class='ogTasksTaskRow' style='display:" + (group.isExpanded? "none" : "inline") + "' id='ogTasksGroupExpandTasksTitle" + group.group_id + "'>");
 			sb.append("<a href='#' class='internalLink' onclick='ogTasks.expandGroup(\"" + group.group_id + "\")'>" + lang('show more tasks number', (group.group_tasks.length - i)) + "</a>");
 			sb.append("</div>");
 			sb.append("<div id='ogTasksGroupExpandTasks" + group.group_id + "'>");
 			if (group.isExpanded)
-				for (var j = 8; j < group.group_tasks.length; j++)
+				for (var j = og.noOfTasks; j < group.group_tasks.length; j++)
 					sb.append(this.drawTask(group.group_tasks[j], drawOptions, displayCriteria, group.group_id, 1));
 			sb.append("</div>");
 			break;
@@ -212,7 +226,7 @@ ogTasks.expandGroup = function(group_id){
 		var bottomToolbar = Ext.getCmp('tasksPanelBottomToolbarObject');
 		var displayCriteria = bottomToolbar.getDisplayCriteria();
 		var drawOptions = bottomToolbar.getDrawOptions();
-		for (var i = 8; i < group.group_tasks.length; i++)
+		for (var i = og.noOfTasks; i < group.group_tasks.length; i++)
 			html += this.drawTask(group.group_tasks[i], drawOptions, displayCriteria, group.group_id, 1);
 		div.innerHTML = html;
 		divLink.style.display = 'none';
@@ -268,13 +282,13 @@ ogTasks.drawTaskRow = function(task, drawOptions, displayCriteria, group_id, lev
 	sb.append('<table id="ogTasksPanelTaskTable' + tgId + '" class="ogTasksTaskTable' + (task.isChecked?'Selected':'') + '" onmouseover="ogTasks.mouseMovement(' + task.id + ',\'' + group_id + '\',true)" onmouseout="ogTasks.mouseMovement(' + task.id + ',\'' + group_id + '\',false)"><tr>');
 	
 	//Draw checkbox
-	var priorityColor = "white";
+	var priority = "low";
 	switch(task.priority){
-		case 200: priorityColor = "#DAE3F0"; break;
-		case 300: priorityColor = "#FF9088"; break;
+		case 200: priority = "mid"; break;
+		case 300: priority = "high"; break;
 		default: break;
 	}
-	sb.append('<td width=19 class="ogTasksCheckbox" style="background-color:' + priorityColor + '">');
+	sb.append('<td width=19 class="ogTasksCheckbox task-prio-' + priority + '" >');
 	sb.append('<input style="width:14px;height:14px" type="checkbox" id="ogTasksPanelChk' + tgId + '" ' + (task.isChecked?'checked':'') + ' onchange="ogTasks.TaskSelected(this,' + task.id + ', \'' + group_id + '\')"/></td>'); 
 	
 	//Draw subtasks expander

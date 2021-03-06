@@ -33,12 +33,15 @@ function CellEditor(){
 
 	self.fitToCell = function(vcell){
 		this.cell = vcell;
+		self.style.visibility = "hidden";
 		self.value = vcell.innerHTML;
 		vcell.innerHTML = "";
+		this.fontStyleId = vcell.getFontStyleId();
 		//if(vcell.getFontStyleId() != this.fontStyleId){
 			WrapFontStyle(self,vcell.getFontStyleId());
 		//}
 		vcell.appendChild(self);
+		self.style.visibility = "visible";
 		self.focus();
 	}
 
@@ -58,8 +61,17 @@ function CellEditor(){
 			this.value = value;
 	}
 
-	self.getValue = function(value){
+	self.getValue = function(){
 		return this.value;
+	}
+	
+	self.setFontStyleId = function(fsId){
+		if(fsId)
+			this.fontStyleId = fontStyleId;
+	}
+	
+	self.getFontStyleId = function(){
+		return this.fontStyleId;
 	}
 
 	self.getColumn = function(){
@@ -69,6 +81,12 @@ function CellEditor(){
 	self.getRow = function(){
 		return this.cell.getRow();
 	}
+	
+	self.onkeyup = function(){
+			var formulaBar = document.getElementById("FormulaBar");
+			formulaBar.value = this.value;
+	}
+	
 	/*self.onchange = function(){
 		//alert("entra");
 		/*var vcell = this.activeCell;

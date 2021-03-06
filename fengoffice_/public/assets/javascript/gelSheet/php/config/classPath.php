@@ -18,7 +18,9 @@
 	$cnf['path']['Cell']		= "model/Cell.class.php";
 	$cnf['path']['Connection'] 	= "Connection.php";
 	$cnf['path']['FontStyle'] 	= "model/FontStyle.class.php";
-
+	$cnf['path']['LayoutStyle'] = "model/LayoutStyle.class.php";
+	$cnf['path']['BorderStyle'] = "model/BorderStyle.class.php";
+	$cnf['path']['Model'] 		= "model/Model.class.php";
 
 	/*************** CONTROLLER PATHS *********************/
 	$cnf['path']['OpenGooController']		= "controller/OpenGooController.class.php" ;
@@ -27,7 +29,8 @@
 	$cnf['path']['SpreadsheetController']	= "controller/SpreadsheetController.class.php";
 	$cnf['path']['BookController']			= "controller/BookController.class.php";
 	$cnf['path']['ExportController']		= "controller/ExportController.class.php";
-
+	$cnf['path']['LanguageController']		= "controller/LanguageController.class.php";
+	$cnf['path']['Controller']		= "controller/Controller.class.php";
 	/*************** COMUNICATION PATHS *****************/
 	$cnf['path']['MessageHandler']	= "comm/MessageHandler.php";
 	$cnf['path']['Message']	= "comm/Message.php";
@@ -40,7 +43,9 @@
 	/*************** EXPORT LIBRARY PATHS *****************/
 	$cnf['path']['PHPOds']	= "export/PHPOds/PHPOds.php";
 	$cnf['path']['PHPExcel']= "export/PHPExcel/Classes/PHPExcel.php";
-	$cnf['path']['Temp']	= $cnf['site']['path']. "/export/temp/";
+	//$cnf['path']['Temp']	= $cnf['site']['path']. "/export/temp/";
+	$cnf['path']['Temp'] 		= '../../../../../tmp/';  
+	
 
 
 

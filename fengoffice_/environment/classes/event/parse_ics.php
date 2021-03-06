@@ -165,6 +165,14 @@ while (!feof($fp))
 				$cal[0]['timezone'] = $data;
 				break;
 				
+				case 'TZOFFSETFROM':
+				$cal[0]['tzoffsetfrom'] = $data;
+				break;
+				
+				case 'TZOFFSETTO':
+				$cal[0]['tzoffsetto'] = $data;
+				break;
+				
 				// Calendar ID
 				case 'X-WR-RELCALID':
 				$cal[0]['relcalid'] = $data;
@@ -537,7 +545,7 @@ fclose($fp);
 
 // Puts events in order using UNIX timestamp as
 // a comparison point.
-usort($cal, 'compare'); 
+//usort($cal, 'compare'); 
 
 // Unset "padding" varible
 unset($cal[0]['start_unix']);

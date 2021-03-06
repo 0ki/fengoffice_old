@@ -216,6 +216,12 @@ final class CompanyWebsite {
 	function setLoggedUser(User $user, $remember = false, $set_last_activity_time = true) {
 		if($set_last_activity_time) {
 			$user->setLastActivity(DateTimeValueLib::now());
+			
+			// Disable updating user info
+			$old_updated_on = $user->getUpdatedOn();
+			$user->setUpdatedOn(DateTimeValueLib::now()); 
+			$user->setUpdatedOn($old_updated_on);
+			
 			$user->save();
 		} // if
 

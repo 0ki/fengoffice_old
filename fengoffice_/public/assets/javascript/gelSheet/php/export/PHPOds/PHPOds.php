@@ -296,10 +296,14 @@ function saveOds($obj,$file) {
 	global $cnf;
 
 	$current= $cnf['path']['Temp'];
-	$tmp= "/tmp";
+	$tmp= "";
 
-//	echo $current . $tmp;
-	shell_exec('cd '.$current.'/'.$tmp.';rm -rf *');
+			
+	
+	//shell_exec('cd '.$current.'/'.$tmp.';rm -rf *');
+		
+	
+	//echo $current . $tmp;
 	file_put_contents($current.$tmp.'/content.xml',$obj->array2ods());
 	file_put_contents($current.$tmp.'/mimetype','application/vnd.oasis.opendocument.spreadsheet');
 	file_put_contents($current.$tmp.'/meta.xml',$obj->getMeta('es-ES'));
@@ -307,7 +311,7 @@ function saveOds($obj,$file) {
 	file_put_contents($current.$tmp.'/settings.xml',$obj->getSettings());
 	mkdir($current.$tmp.'/META-INF/');
 	mkdir($current.$tmp.'/Configurations2/');
-	mkdir($current.$tmp.'/Configurations2/acceleator/');
+	mkdir($current.$tmp.'/Configurations2/accelerator/');
 	mkdir($current.$tmp.'/Configurations2/images/');
 	mkdir($current.$tmp.'/Configurations2/popupmenu/');
 	mkdir($current.$tmp.'/Configurations2/statusbar/');
@@ -316,18 +320,87 @@ function saveOds($obj,$file) {
 	mkdir($current.$tmp.'/Configurations2/progressbar/');
 	mkdir($current.$tmp.'/Configurations2/toolbar/');
 	file_put_contents($current.$tmp.'/META-INF/manifest.xml',$obj->getManifest());
+	file_put_contents($current.$tmp.'/Configurations2/accelerator/current.xml', "");
 	//shell_exec('cd '.$tmp.'/'.$uid.';zip -r '.escapeshellarg($file).' ./');
 
+/*
+	if (stripos($_SERVER['HTTP_USER_AGENT'], 'win') !== FALSE) {
+	// client is using a windows browser
+	
+		
+	} else {
+	// he is using Un*x based system
+	
+		shell_exec('cd '.$current.$tmp.';zip -r '.escapeshellarg($file).' ./');			
+		
+	}	
+	
+		*/
+	$zip = new ZipArchive();
 
-	shell_exec('cd '.$current.$tmp.';zip -r '.escapeshellarg($file).' ./');
+	
+	$name= tempnam($current.$tmp, "default");
+	
+	$res= $zip->open($name.".zip", ZIPARCHIVE::CREATE); 
+	
+	if ($res === TRUE) {		
+		
+		try{
+		
+		$zip->addFile(dirname($name).'/Configurations2/accelerator/current.xml', 'Configurations2/accelerator/current.xml');
+		$zip->addFile(dirname($name).'/META-INF/manifest.xml', 'META-INF/manifest.xml');
+
+		$zip->addFile(dirname($name).'/content.xml', 'content.xml');
+		$zip->addFile(dirname($name).'/styles.xml', 'styles.xml');
+		$zip->addFile(dirname($name).'/settings.xml', 'settings.xml');
+		$zip->addFile(dirname($name).'/meta.xml', 'meta.xml');
+		$zip->addFile(dirname($name).'/mimetype', 'mimetype');
+		}
+		catch (Exception $e){
+			
+			echo $e->getTrace();
+			
+		}
+		
+		$zip->close();
+		
+	}
+
+	unlink_dir($current.$tmp.'/Configurations2/');
+	unlink_dir($current.$tmp.'/META-INF/');
+	unlink($current.$tmp.'/content.xml');
+	unlink($current.$tmp.'/styles.xml');
+	unlink($current.$tmp.'/settings.xml');
+	unlink($current.$tmp.'/meta.xml');
+	unlink($current.$tmp.'/mimetype');		
+	
+	
 	//echo 'cp '.$current.'/'.$tmp.'/'.$file.' ' .$current.'/'.$file;
 	//shell_exec('cp -f'.$current.'/'.$tmp.'/'.$file.' ' .$current.'/'.$file);
 
-	copy($current.$tmp.'/'.$file, $current.$file);
-	shell_exec('cd '.$current.'/'.$tmp.';rm -rf *');
+	//copy($current.$file, $current.$file);
+	//shell_exec('cd '.$current.'/'.$tmp.';rm -rf *');
 	//shell_exec('cd '.$current.'/'.$tmp.';rm -rf *');
 
 	//ini_set('default_charset',$charset);
+	
+	$filename= basename($name);
+	
+	header("Pragma: public");
+	header("Expires: 0");
+	header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+	header("Content-Type: application/force-download");
+	header("Content-Type: application/octet-stream");
+	header("Content-Type: application/download");
+	header("Content-Disposition: attachment;filename= $filename.ods");
+	header("Content-Transfer-Encoding: binary ");
+
+
+	readfile($cnf['path']['Temp'].$filename.".zip");
+	unlink($cnf['path']['Temp'].$filename) ;
+	unlink($cnf['path']['Temp'].$filename.".zip") ;	
+	
+	
 }
 
 function newOds() {
@@ -341,6 +414,8 @@ function newOds() {
 }
 
 function get_tmp_dir() {
+	
+	/*
 	$path = '';
 	if(!function_exists('sys_get_temp_dir')){
 		$path = try_get_temp_dir();
@@ -353,9 +428,19 @@ function get_tmp_dir() {
 		}
 	}
 	return $path;
+*/
+		global $cnf;
+	
+		return $cnf['path']['Temp'];
 }
 
 function try_get_temp_dir() {
+	
+	global $cnf;
+	
+	return $cnf['path']['Temp'];
+	
+	/*
     // Try to get from environment variable
 	if(!empty($_ENV['TMP'])){
 		$path = realpath($_ENV['TMP']);
@@ -374,10 +459,12 @@ function try_get_temp_dir() {
 			unlink($temp_file);
 			$path = $temp_dir;
 		}else{
-			return "/tmp";
+			//return "/tmp";
+			echo "no file avaliable";
 		}
 	}
 	return $path;
+*/
 }
 
 
@@ -408,8 +495,32 @@ function addFolderToZip($dir, $zipArchive){
             }
         }
     }
+    
+    
+    
 }
 
-
+/**
+ * *
+ * deletes a directory 
+ * @param string $dir
+ */
+function unlink_dir($dir)
+{
+	$dh = @opendir($dir);
+	if (!is_resource($dh)) return;
+    while (false !== ($obj = readdir($dh))) {
+		if($obj == '.' || $obj == '..') continue;
+		$path = "$dir/$obj";
+		if (is_dir($path)) {
+			unlink_dir($path);
+		} else {
+			@unlink($path);
+		}
+	}
+	@closedir($dh);
+	@rmdir($dir);
+	
+} 
 
 ?>

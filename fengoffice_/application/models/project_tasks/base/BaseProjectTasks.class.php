@@ -108,6 +108,19 @@ abstract class BaseProjectTasks extends ProjectDataObjects {
 		return 'id';
 	} // getAutoIncrementColumn
 
+	/**
+	 * Return system columns
+	 *
+	 * @access public
+	 * @param void
+	 * @return array
+	 */
+	function getSystemColumns() {
+		return array_merge(parent::getSystemColumns(), array(
+      		'parent_id', 'assigned_to_user_id', 'assigned_to_company_id', 'completed_by_id', 'milestone_id', 'state', 'project_id', 'started_by_id', 'assigned_by_id', 'from_template_id')
+		);
+	} // getSystemColumns
+
 	// -------------------------------------------------------
 	//  Finders
 	// -------------------------------------------------------

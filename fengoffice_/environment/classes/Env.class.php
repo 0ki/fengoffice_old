@@ -153,7 +153,9 @@ class Env {
 			tpl_assign("object", $response);
 			$content = tpl_fetch(Env::getTemplatePath("json"));
 			tpl_assign("content_for_layout", $content);
+			TimeIt::start("Transfer");
 			tpl_display(Env::getLayoutPath("json"));
+			TimeIt::stop();
 		} else if (is_upload_request()) {
 			// upload requests end up in an iframe and its content is ignored,
 			// so we should avoid flash vars from being processed and we can avoid
@@ -164,7 +166,9 @@ class Env {
 			$controller->execute($action);
 
 			tpl_assign("content_for_layout", "this is ignored");
+			TimeIt::start("Transfer");
 			tpl_display(Env::getLayoutPath("html"));
+			TimeIt::stop();
 		} else {
 			return $controller->execute($action);
 		}

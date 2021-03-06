@@ -23,7 +23,7 @@ class TagsServices extends WebServicesBase {
 			if (is_array($tags)) {
 				foreach ($tags as $tag) {
 					$this->instance->startElement('tag');
-					$this->instance->text($tag);
+					$this->instance->text($tag['name']);
 					$this->instance->endElement();
 				}
 			}

@@ -54,10 +54,11 @@
       return Comments::delete(array('`rel_object_manager` = ? AND `rel_object_id` = ?', get_class($object->manager()), $object->getObjectId()));
     } // dropCommentsByObject
     
-    static function getSubscriberComments(Project $workspace = null, $tag = null, $orderBy = 'created_on', $orderDir = "DESC", $start = 0, $limit = 20) {    	
+    static function getSubscriberComments($workspace = null, $tag = null, $orderBy = 'created_on', $orderDir = "DESC", $start = 0, $limit = 20) {    	
     	$oc = new ObjectController();
     	$queries = $oc->getDashboardObjectQueries($workspace, $tag, false, false, $orderBy);
 		$query = '';
+		if (!is_array($queries)) return array();
 		foreach ($queries as $name => $q){
 			if (str_ends_with($name, "Comments")) {
 				if($query == '') {
@@ -77,7 +78,7 @@
     	$comments = array();
     	if (!$res) return $comments;
     	$rows = $res->fetchAll();
-    	if (!$rows) return $comments;
+    	if (!is_array($rows)) return $comments;
     	foreach ($rows as $row){
     		$manager = $row['object_manager_value'];
     		$id = $row['oid'];

@@ -1,3 +1,9 @@
+<?php if (user_config_option('show_messages_widget_context_help', true, logged_user()->getId())) {
+  	tpl_assign('helpDescription', lang('chelp messages widget'));
+	tpl_assign('option_name' , 'messages_widget');
+	$this->includeTemplate(get_template_path('context_help', 'help'));
+} ?>
+  
 <div style="padding:10px">
 <table id="dashTableMessages" style="width:100%">
 <?php $c = 0;

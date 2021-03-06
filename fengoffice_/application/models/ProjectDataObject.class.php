@@ -108,10 +108,6 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 	//  General Methods
 	// ---------------------------------------------------
 
-	function getTitle(){
-		return 'No title!!!';
-	}
-
 	/**
 	 * Whether the object can have properties
 	 *
@@ -170,7 +166,7 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 				return $this->workspaces;
 		} else {
 			$project = $this->getProject();
-			if ($project)
+			if (is_null($wsIds) || (!is_null($wsIds) && $project instanceof Project && $this->isInCsv($project->getId(), $wsIds)))
 				return array($project);
 			else
 				return array();
@@ -182,7 +178,7 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 	 *
 	 * @return unknown
 	 */
-	function getWorkspacesNamesCSV($wsIds = null) {
+	function getWorkspacesNamesCSV($wsIds = null, $user = null) {
 		if ($this->isNew()) {
 			return active_or_personal_project()->getName();
 		} else {
@@ -225,6 +221,24 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 			}
 			return join(", ", $ids);
 		}
+	}
+	
+	function getUserWorkspaces($user = null) {
+		if (!$user instanceof User) {
+			$user = logged_user();
+			if (!$user instanceof User) return;
+		}
+		$wsIds = $user->getActiveProjectIdsCSV();
+		return $this->getWorkspaces($wsIds);
+	}
+	
+	function getUserWorkspaceNames($user = null) {
+		$workspaces = $this->getUserWorkspaces($user);
+		$names = array();
+		foreach ($workspaces as $w) {
+			$names[] = $w->getName();
+		}
+		return $names;
 	}
 
 	/**
@@ -963,149 +977,6 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 	}
 
 	// ---------------------------------------------------
-	//  Object Properties
-	// ---------------------------------------------------
-	/**
-	 * Returns whether an object can have properties
-	 *
-	 * @return bool
-	 */
-	function isPropertyContainer(){
-		return $this->is_property_container;
-	}
-
-	/**
-	 * Given the object_data object (i.e. file_data) this function
-	 * updates all ObjectProperties (deleting or creating them when necessary)
-	 *
-	 * @param  $object_data
-	 */
-	function save_properties($object_data){
-		$properties = array();
-		for($i = 0; $i < 200; $i++) {
-			if(isset($object_data["property$i"]) && is_array($object_data["property$i"]) &&
-			(trim(array_var($object_data["property$i"], 'id')) <> '' || trim(array_var($object_data["property$i"], 'name')) <> '' ||
-			trim(array_var($object_data["property$i"], 'value')) <> '')) {
-				$name = array_var($object_data["property$i"], 'name');
-				$id = array_var($object_data["property$i"], 'id');
-				$value = array_var($object_data["property$i"], 'value');
-				if($id && trim($name)=='' && trim($value)=='' ){
-					$property = ObjectProperties::findById($id);
-					$property->delete( 'id = $id');
-				}else{
-					if($id){
-						{
-							SearchableObjects::dropContentByObjectColumn($this, 'property' . $id);
-							$property = ObjectProperties::findById($id);
-						}
-					}else{
-						$property = new ObjectProperty();
-						$property->setRelObjectId($this->getId());
-						$property->setRelObjectManager(get_class($this->manager()));
-					}
-					$property->setFromAttributes($object_data["property$i"]);
-					$property->save();
-						
-					if ($this->isSearchable())
-					$this->addPropertyToSearchableObject($property);
-				}
-			} // if
-			else break;
-		} // for
-
-	}
-
-	/**
-	 * Get one value of a property. Returns an empty string if there's no value.
-	 *
-	 * @param string $name
-	 * @return string
-	 */
-	function getProperty($name) {
-		$op = ObjectProperties::getPropertyByName($this, $name);
-		if ($op instanceof ObjectProperty) {
-			return $op->getPropertyValue();
-		} else {
-			return "";
-		}
-	}
-
-	/**
-	 * Return all values of a property
-	 *
-	 * @param string $name
-	 * @return array
-	 */
-	function getProperties($name) {
-		$ops = ObjectProperties::getAllProperties($this, $name);
-		$ret = array();
-		foreach ($ops as $op) {
-			$ret[] = $op->getPropertyValue();
-		}
-		return $ret;
-	}
-	
-	/**
-	 * Returns all ObjectProperties of the object.
-	 *
-	 * @return array
-	 */
-	function getCustomProperties() {
-		return ObjectProperties::getAllPropertiesByObject($this);
-	}
-	
-	/**
-	 * Copies custom properties from an object
-	 * @param ProjectDataObject $object
-	 */
-	function copyCustomPropertiesFrom($object) {
-		$properties = $object->getCustomProperties();
-		foreach ($properties as $property) {
-			$copy = new ObjectProperty();
-			$copy->setPropertyName($property->getPropertyName());
-			$copy->setPropertyValue($property->getPropertyValue());
-			$copy->setObject($this);
-			$copy->save();
-		}
-	}
-
-	/**
-	 * Sets the value of a property, removing all its previous values.
-	 *
-	 * @param string $name
-	 * @param string $value
-	 */
-	function setProperty($name, $value) {
-		$this->deleteProperty($name);
-		$this->addProperty($name, $value);
-	}
-
-	/**
-	 * Adds a value to property $name
-	 *
-	 * @param string $name
-	 * @param string $value
-	 */
-	function addProperty($name, $value) {
-		$op = new ObjectProperty();
-		$op->setRelObjectId($this->getId());
-		$op->setRelObjectManager(get_class($this->manager()));
-		$op->setPropertyName($name);
-		$op->setPropertyValue($value);
-		$op->save();
-	}
-
-	/**
-	 * Deletes all values of property $name.
-	 *
-	 * @param string $name
-	 */
-	function deleteProperty($name) {
-		ObjectProperties::deleteByObjectAndName($this, $name);
-	}
-
-
-	// ---------------------------------------------------
 	//  System
 	// ---------------------------------------------------
 
@@ -1225,9 +1096,6 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 		}
 	}
 
-	function clearObjectProperties(){
-		ObjectProperties::deleteAllByObject($this);
-	}
 	/**
 	 * Delete object and drop content from search table
 	 *

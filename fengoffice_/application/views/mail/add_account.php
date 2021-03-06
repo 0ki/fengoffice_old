@@ -159,7 +159,7 @@
 	  </div>
 	  <div id="<?php echo $genid ?>imap_folders">
 	    <?php
-	    tpl_assign('imap_folders', $imap_folders);
+	    tpl_assign('imap_folders', isset($imap_folders) ? $imap_folders : array());
 	    tpl_assign('genid', $genid);
 	    tpl_display(get_template_path("fetch_imap_folders", "mail"))
 	    ?>
@@ -176,11 +176,6 @@
 	Ext.get('mailAccountFormName').focus();
 	
 	account_id = 0;
-	
-	og.deleteAllMails = function(acc_id) {
-		checked = og.ConfirmDialog.getConfirmCheckValue();
-		og.ConfirmDialog.hide();
-	}
 	
 	og.promptDeleteAccount = function(account_id) {
 		var check_id = Ext.id();

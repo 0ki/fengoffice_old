@@ -58,6 +58,7 @@
   include ENVIRONMENT_PATH . '/classes/ajax/ajax.php';
   include ENVIRONMENT_PATH . '/classes/template/template.php';
   include ENVIRONMENT_PATH . '/classes/flash/flash.php';
+  include ENVIRONMENT_PATH . '/classes/help/help.php';
   include ENVIRONMENT_PATH . '/classes/localization/localization.php';
   
   include ENVIRONMENT_PATH . '/classes/logger/Logger_Entry.class.php';

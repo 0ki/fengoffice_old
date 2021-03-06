@@ -67,5 +67,6 @@ og.download_exported_file = function() {
 </form>
 
 <script type="text/javascript">
-	Ext.get('<?php echo $genid ?>csv_export_submit1').focus();
+	btn = Ext.get('<?php echo $genid ?>csv_export_submit1');
+	if (btn != null) btn.focus();
 </script>

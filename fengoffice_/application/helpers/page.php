@@ -852,6 +852,10 @@
     return get_public_url('assets/javascript/' . $file_name);
   } // get_javascript_url
   
+  function get_flash_url($file_name) {
+    return get_public_url('assets/flash/' . $file_name);
+  } // get_javascript_url
+  
   /**
   * Return URL of specific stylesheet
   *

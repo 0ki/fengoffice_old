@@ -1,4 +1,13 @@
 <?php
+	require_javascript("og/CSVCombo.js");
+	require_javascript("og/DateField.js");
+	require_javascript('og/tasks/main.js');
+	require_javascript('og/tasks/addTask.js');
+	require_javascript('og/tasks/drawing.js');
+	require_javascript('og/tasks/TasksTopToolbar.js');
+	require_javascript('og/tasks/TasksBottomToolbar.js');
+	require_javascript('og/tasks/print.js');
+	
 	$genid = gen_id();
 	
 	$all_templates_array = array();
@@ -45,6 +54,15 @@
 	<div id="tasksPanelTopToolbar" class="x-panel-tbar" style="width:100%;height:30px;display:block;background-color:#F0F0F0;"></div>
 	<div id="tasksPanelBottomToolbar" class="x-panel-tbar" style="width:100%;height:30px;display:block;background-color:#F0F0F0;border-bottom:1px solid #CCC;"></div>
 	<div id="tasksPanelContent" style="background-color:white;padding:7px;padding-top:0px;overflow-y:scroll;">
+		<?php if (user_config_option('show_tasks_context_help', true, logged_user()->getId())) {?>
+			<div id="tasksPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+				<?php 
+					tpl_assign('helpTemplate', 'tasks');
+					tpl_assign('option_name' , 'tasks');
+					$this->includeTemplate(get_template_path('context_help', 'help'));
+				?>
+			</div>
+		<?php }?>
 	<?php if (isset($displayTooManyTasks) && $displayTooManyTasks){ ?>
 	<div class="tasksPanelWarning ico-warning32" style="font-size:10px;color:#666;background-repeat:no-repeat;padding-left:40px;max-width:920px; margin:20px;border:1px solid #E3AD00;background-color:#FFF690;background-position:4px 4px;">
 		<div style="font-weight:bold;width:99%;text-align:center;padding:4px;color:#AF8300;"><?php echo lang('too many tasks to display') ?></div>

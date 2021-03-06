@@ -34,6 +34,9 @@
     'config category desc mailing' => 'Use these settings to set up how OpenGoo should handle email sending. You can use configuration options provided in your php.ini or set it so it uses any other SMTP server.',
   	'config category name modules' => 'Modules',
     'config category desc modules' => 'Use these settings to enable or disable OpenGoo modules. Disabling a module only hides it from the graphical interface. It doesn\'t remove permissions from users to create or edit content objects.',
+	'config category name passwords' => 'Passwords',
+    'config category desc passwords' => 'Use these settings to manage password options.',
+	
     
     // ---------------------------------------------------
     //  Options
@@ -50,6 +53,12 @@
     'config option desc theme' => 'Using themes you can change the default look and feel of OpenGoo. Need to refresh for it to take effect.',
   	'config option name days_on_trash' => 'Days on trash',
     'config option desc days_on_trash' => 'How many days a content object is kept in the trash before being automatically deleted. If 0, objects won\'t be deleted from trash.',
+	'config option name checkout_notification_dialog' => 'Checkout notification dialog for documents',
+    'config option desc checkout_notification_dialog' => 'If enabled, the user will be prompted when downloading a file to select between editing or read only',
+  	'config option name time_format_use_24' => 'Use 24 hour format',
+  	'config option desc time_format_use_24' => 'If set, the 24 hour format will be used instead of the 12 hour format',
+  	'config option name file_revision_comments_required' => 'File revision comments required',
+    'config option desc file_revision_comments_required' => 'If set, adding new file revisions requires users to provide a new comment for each revision.',
 
   	'config option name enable_notes_module' => 'Enable Notes Module',
   	'config option name enable_email_module' => 'Enable Email Module',
@@ -69,6 +78,9 @@
   	'config option name use_minified_resources' => 'Use minified resources',
   	'config option desc use_minified_resources' => 'Uses compressed Javascript and CSS to improve performance. You need to recompress JS and CSS if you modify them, by using the public/tools.',
     
+  	'config option name currency_code' => 'Currency',
+  	'config option desc currency_code' => 'Currency symbol',
+    
     // Mailing
     'config option name exchange_compatible' => 'Microsoft Exchange compatibility mode',
     'config option desc exchange_compatible' => 'If you are using Microsoft Exchange Server set this option to yes to avoid some known mailing problems.',
@@ -81,17 +93,41 @@
     'config option name smtp_password' => 'SMTP password',
     'config option name smtp_secure_connection' => 'Use secure SMTP connection',
   
+  	// Passwords
+  	'config option name min_password_length' => 'Minimum password length',
+  	'config option desc min_password_length' => 'Minimum number of characters required for the password',
+  	'config option name password_numbers' => 'Password numbers',
+  	'config option desc password_numbers' => 'Amount of numerical characters required for the password',
+  	'config option name password_uppercase_characters' => 'Password uppercase characters',
+  	'config option desc password_uppercase_characters' => 'Amount of uppercase characters required for the password',
+  	'config option name password_metacharacters' => 'Password metacharacters',
+  	'config option desc password_metacharacters' => 'Amount of metacharacters required for the password (e.g.: ., $, *)',
+  	'config option name password_expiration' => 'Password expiration (days)',
+  	'config option desc password_expiration' => 'Number of days in which a new password is valid (0 to disable this option)',
+  	'config option name password_expiration_notification' => 'Password expiration notification (days before)',
+  	'config option desc password_expiration_notification' => 'Number of days to notifify user before password expiration (0 to disable this option)',
+  	'config option name account_block' => 'Block account on password expiration',
+  	'config option desc account_block' => 'Block user account when password expires (requires admin to enable user account again)',
+	'config option name new_password_char_difference' => 'Validate new password character difference against history',
+  	'config option desc new_password_char_difference' => 'Validate that a new password differs in at least 3 characters against the last 10 passwords used by the user',
+    'config option name validate_password_history' => 'Validate password history',
+  	'config option desc validate_password_history' => 'Validate that a new password doesn\'t match any of the last 10 passwords used by the user',
+  	'config option name checkout_for_editing_online' => 'Automatically checkout when editing online',
+  	'config option desc checkout_for_editing_online' => 'When a user edits a document online it will be checkout so that no one else can edit it at the same time',
+  
  	'can edit company data' => 'Can edit company data',
   	'can manage security' => 'Can manage security',
   	'can manage workspaces' => 'Can manage workspaces',
   	'can manage configuration' => 'Can manage configuration',
   	'can manage contacts' => 'Can manage contacts',
+  	'can manage reports' => 'Can manage reports',
   	'group users' => 'Group users',
     
   	
   	'user ws config category name dashboard' => 'Dashboard options',
   	'user ws config category name task panel' => 'Task options',
   	'user ws config category name general' => 'General',
+	'user ws config category name calendar panel' => 'Calendar options',
   	'user ws config option name show pending tasks widget' => 'Show pending tasks widget',
   	'user ws config option name pending tasks widget assigned to filter' => 'Show tasks assigned to',
   	'user ws config option name show late tasks and milestones widget' => 'Show late tasks and milestones widget',
@@ -101,6 +137,8 @@
   	'user ws config option name show calendar widget' => 'Show mini calendar widget',
   	'user ws config option name show charts widget' => 'Show charts widget',
   	'user ws config option name show emails widget' => 'Show emails widget',
+  	'user ws config option name show dashboard info widget' => 'Show dashboard info widget',
+  	'user ws config option name show getting started widget' => 'Show getting started widget',
   	'user ws config option name localization' => 'Localization',
   	'user ws config option desc localization' => 'Labels and dates will be displayed according to this locale. Need to refresh for it to take effect.',
   	'user ws config option name initialWorkspace' => 'Initial workspace',
@@ -118,8 +156,18 @@
   	'user ws config option name show tasks in progress widget' => 'Show \'Tasks in progress\' widget',
   	'user ws config option name can notify from quick add' => 'Task notification is checked by default',
   	'user ws config option desc can notify from quick add' => 'The notification checkbox enables the option to notify assigned users after a task is added or updated',
- 	
-  	'backup process desc' => 'A backup saves the current state of the whole application into a compressed folder. It can de used to easily backup an OpenGoo installation. <br> Generating a backup of the database and filesystem can last more than a couple of seconds, so making a backup is a process consisting on three steps: <br>1.- Launch a backup process, <br>2.- Download the backup. <br> 3.- Optionally, a backup can be manually deleted so that it is not available in the future. <br> ',
+	'user ws config option name show_tasks_context_help' => 'Show context help for tasks',
+  	'user ws config option desc show_tasks_context_help' => 'If enabled, a context help box will be displayed on the tasks panel',
+ 	'user ws config option name start_monday' => 'Start week on monday',
+	'user ws config option desc start_monday' => 'Will show the calendar starting weeks on monday',
+  
+  	'user ws config option name date_format' => 'Date format',
+  	'user ws config option desc date_format' => 'Template format to be applied to date values.',
+  	'user ws config option name descriptive_date_format' => 'Descriptive date format',
+  	'user ws config option desc descriptive_date_format' => 'Template format to be applied to descriptive date values.',
+     
+  	'backup process desc' => 'A backup saves the current state of the whole application into a compressed folder. It can be used to easily backup an OpenGoo installation. <br> Generating a backup of the database and filesystem can last more than a couple of seconds, so making a backup is a process consisting on three steps: <br>1.- Launch a backup process, <br>2.- Download the backup. <br> 3.- Optionally, a backup can be manually deleted so that it is not available in the future. <br> ',
+    'backup config warning' => 'Warning: Your config and tmp folders won\'t be backed up.',
   	'start backup' => 'Launch backup process',
     'start backup desc' => 'Launching a backup process implies deleting previous backups, and generating a new one.',
   	'download backup' => 'Download backup',
@@ -181,6 +229,10 @@
   	'cron event desc check_upgrade' => 'This cron event will check for new versions of OpenGoo.',
   	'cron event name create_backup' => 'Create backup',
   	'cron event desc create_backup' => 'Creates a backup that you can download from the Backup section of Administration.',
+  	'cron event name send_notifications_through_cron' => 'Send notifications through cron',
+  	'cron event desc send_notifications_through_cron' => 'If this event is enabled email notifications will be sent through cron and not when generated by OpenGoo.',
+  	'cron event name backup' => 'Backup OpenGoo',
+  	'cron event desc backup' => 'If this event is enabled OpenGoo will be backed up periodically. The installation owner will be able to download backups through the Administration panel. OpenGoo backups are kept as a zip file in the \'tmp/backup\' directory',
   	'next execution' => 'Next execution',
   	'delay between executions' => 'Delay between executions',
   	'enabled' => 'Enabled',
@@ -189,9 +241,14 @@
   
   	'manual upgrade' => 'Manual upgrade',
   	'manual upgrade desc' => 'To manually upgrade OpenGoo you have to download the new version of OpenGoo, extract it to the root of your installation and then go to <a href="public/upgrade">\'public/upgrade\'</a> in your browser to run the upgrade process.',
-  	'automatic upgrade' => 'Autoamtic upgrade',
+  	'automatic upgrade' => 'Automatic upgrade',
   	'automatic upgrade desc' => 'The automatic upgrade will automatically download and extract the new version, and will run the upgrade process for you. The webserver needs write access to all folders.',
   	'start automatic upgrade' => 'Start automatic upgrade',
+  
+  	'select object type' => 'Select object type',
+  	'select one' => 'Select one',
+  	'email type' => 'Email',
+  	'custom properties updated' => 'Custom properties updated'
   ); // array
 
 ?>

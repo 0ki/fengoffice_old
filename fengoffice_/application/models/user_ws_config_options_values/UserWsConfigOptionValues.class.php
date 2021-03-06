@@ -6,6 +6,27 @@
   * @author Marcos Saiz <marcos.saiz@opengoo.org>
   */
   class UserWsConfigOptionValues extends BaseUserWsConfigOptionValues {
+  	
+  	/**
+    * Returns true if any option values are found for the user
+    *
+    * @param ConfigCategory $category
+    * @param boolean $include_system_options Include system options in the result array
+    * @return array
+    */
+    static function hasOptionValues(User $user, $category_name = null) {
+    	$sql = "SELECT count(*) as c from " . TABLE_PREFIX . "user_ws_config_option_values val, " . TABLE_PREFIX . "user_ws_config_options opt WHERE val.option_id = opt.id and opt.is_system = 0 and val.user_id = " . $user->getId();
+    	if ($category_name)
+    		$sql .= " AND opt.category_name = '" . $category_name . "'";
+    	
+    	$result = DB::execute($sql);
+    	
+    	$ret = 0;
+		$res = DB::execute($sql);
+    	$rows=$res->fetchAll();
+		Logger::log($rows[0]["c"]);
+		return $rows[0]["c"] > 0;
+    } // getOptionsByCategory
     
 //    /**
 //    * Return all options in specific category

@@ -97,6 +97,17 @@
     abstract function getAutoIncrementColumn();
     
     /**
+    * Return system columns
+    *
+    * @access public
+    * @param void
+    * @return array
+    */
+    function getSystemColumns() {
+      return array('id', 'is_private', 'created_by_id', 'updated_by_id', 'trashed_on', 'trashed_by_id');
+    } // getSystemColumns
+    
+    /**
     * Return array of lazy load columns
     *
     * @access public

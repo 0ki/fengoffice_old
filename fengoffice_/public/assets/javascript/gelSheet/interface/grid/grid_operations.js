@@ -17,7 +17,7 @@ function addGridOperations(grid){
 		grid.columnUsed.resize(offset);
 		grid.selectorBox.fitToRange(grid.activeCell);
 
-		var diff = grid.cols[grid.cols.length-1].offsetLeft + grid.cols[grid.cols.length-1].offsetWidth - grid.offsetWidth;
+		var diff = grid.offsetWidth- (grid.cols[grid.cols.length-1].offsetLeft + grid.cols[grid.cols.length-1].offsetWidth);
 		if(diff>0){
 			for(var i=0;i<diff/grid.cfgs["defaultColWidth"];i++)
 				grid.addColumn();

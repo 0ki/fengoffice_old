@@ -406,9 +406,11 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 		if(!$this->validatePresenceOf('repository_id')) {
 			$errors[] = lang('file revision filename required');
 		} // if
-		//if(!$this->validatePresenceOf('type_string')) {
-		//  $errors[] = lang('file revision type_string required');
-		//} // if
+		if (config_option('file_revision_comments_required') && $this->isNew()){
+			if(!$this->validatePresenceOf('comment')) {
+				$errors[] = lang('file revision comment required');
+			} // if
+		}
 	} // validate
 
 	/**

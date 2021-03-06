@@ -113,3 +113,15 @@
 .ogTasksPanelActionTable {
 	line-height:18px;
 }
+
+.task-prio-low {
+	background-color:white;
+}
+
+.task-prio-mid {
+	background-color:#DAE3F0;
+}
+
+.task-prio-high {
+	background-color:#FF9088;
+}

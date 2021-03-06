@@ -139,16 +139,21 @@
       $arguments = func_get_args();
       array_shift($arguments);
       $arguments = count($arguments) ? array_flat($arguments) : null;
-      
-      $start = microtime(true);
-      
-      $result = self::connection()->execute($sql, $arguments);
-      
-      $end = microtime(true);
-      if (Env::isDebuggingDB()) {
-      	Logger::log(number_format(($end - $start),4) . " - " .  DB::prepareString($sql, $arguments));
-      } else if (Env::isDebuggingTime()) {
-      	TimeIt::add("DB", $end - $start, $start, $end);
+      try{
+	      $start = microtime(true);
+	      
+	      $result = self::connection()->execute($sql, $arguments);
+	      
+	      $end = microtime(true);
+	      if (Env::isDebuggingDB()) {
+	      	Logger::log(number_format(($end - $start),4) . " - " .  DB::prepareString($sql, $arguments));
+	      } else if (Env::isDebuggingTime()) {
+	      	TimeIt::add("DB", $end - $start, $start, $end);
+	      }
+      } catch (Exception $e){
+      	if (Env::isDebugging())
+	      	Logger::log("SQL ERROR: " . $e->getMessage() . " - " .  DB::prepareString($sql, $arguments));
+	    throw $e;
       }
       
       return $result;
@@ -166,16 +171,21 @@
       $arguments = func_get_args();
       array_shift($arguments);
       $arguments = count($arguments) ? array_flat($arguments) : null;
-      
-      $start = microtime(true);
-      
-      $result = self::connection()->executeOne($sql, $arguments);
-      
-      $end = microtime(true);
-      if (Env::isDebuggingDB()) {
-      	Logger::log(number_format(($end - $start),4) . " - " .  DB::prepareString($sql, $arguments));
-      } else if (Env::isDebuggingTime()) {
-      	TimeIt::add("DB", $end - $start, $start, $end);
+      try{
+	      $start = microtime(true);
+	      
+	      $result = self::connection()->executeOne($sql, $arguments);
+	      
+	      $end = microtime(true);
+	      if (Env::isDebuggingDB()) {
+	      	Logger::log(number_format(($end - $start),4) . " - " .  DB::prepareString($sql, $arguments));
+	      } else if (Env::isDebuggingTime()) {
+	      	TimeIt::add("DB", $end - $start, $start, $end);
+	      }
+      } catch (Exception $e){
+      	if (Env::isDebugging())
+	      	Logger::log("SQL ERROR: " . $e->getMessage() . " - " .  DB::prepareString($sql, $arguments));
+	    throw $e;
       }
       
       return $result;
@@ -193,16 +203,21 @@
       $arguments = func_get_args();
       array_shift($arguments);
       $arguments = count($arguments) ? array_flat($arguments) : null;
-      
-      $start = microtime(true);
-      
-      $result = self::connection()->executeAll($sql, $arguments);
-    
-      $end = microtime(true);
-      if (Env::isDebuggingDB()) {
-      	Logger::log(number_format(($end - $start),4) . " - " .  DB::prepareString($sql, $arguments));
-      } else if (Env::isDebuggingTime()) {
-      	TimeIt::add("DB", $end - $start, $start, $end);
+      try{
+	      $start = microtime(true);
+	      
+	      $result = self::connection()->executeAll($sql, $arguments);
+	    
+	      $end = microtime(true);
+	      if (Env::isDebuggingDB()) {
+	      	Logger::log(number_format(($end - $start),4) . " - " .  DB::prepareString($sql, $arguments));
+	      } else if (Env::isDebuggingTime()) {
+	      	TimeIt::add("DB", $end - $start, $start, $end);
+	      }
+      } catch (Exception $e){
+      	if (Env::isDebugging())
+	      	Logger::log("SQL ERROR: " . $e->getMessage() . " - " .  DB::prepareString($sql, $arguments));
+	    throw $e;
       }
       
       return $result;

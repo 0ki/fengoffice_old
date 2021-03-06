@@ -480,6 +480,5 @@ addLangs({
   "show more": "もっと読む",
   "actions": "アクション",
   "print all groups": "印刷",
-  "print this group": "印刷",
-  'new version notification title': 'New version'
+  "print this group": "印刷"
 });

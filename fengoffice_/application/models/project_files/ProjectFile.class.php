@@ -7,7 +7,6 @@
  * @author Ilija Studen <ilija.studen@gmail.com>
  */
 class ProjectFile extends BaseProjectFile {
-
 	/**
 	 * This project object is taggable
 	 *
@@ -177,16 +176,41 @@ class ProjectFile extends BaseProjectFile {
 	 *
 	 * @param bool $autoCheckOut Is true when the file was automatically checked out on edit
 	 * @param User $user If null, loged user is used
+	 * @return boolean
 	 */
-	function checkOut($autoCheckOut = false, User $user = null){
+	function checkOut($autoCheckOut = false, $user = null){
 		if(!$user)
 			$user = logged_user();
+		if($this->getCheckedOutById() != 0 && !$user->isAdministrator())
+			return false;
 		$this->setWasAutoCheckedAuto($autoCheckOut);	
 		$this->setCheckedOutById($user->getId());
 		$this->setCheckedOutOn(DateTimeValueLib::now());
 		$this->setMarkTimestamps(false);
 		$this->save();
+		return true;
 	}// checkOutByLoggedUser
+	
+	function checkIn() {
+		if (!$this->canCheckin(logged_user())) {
+			return false;
+		}
+		$this->setCheckedOutById(0);
+		$this->setCheckedOutOn(EMPTY_DATETIME);
+		$this->save();
+		return true;
+	}
+	
+	function cancelCheckOut() {
+		if (!$this->canCheckin(logged_user())) {
+			return false;
+		}
+		$this->setCheckedOutById(0);
+		$this->setCheckedOutOn(EMPTY_DATETIME);
+		$this->setMarkTimestamps(false);
+		$this->save();
+		return true;
+	}
 	
 	function isCheckedOut()
 	{
@@ -326,6 +350,12 @@ class ProjectFile extends BaseProjectFile {
 		$extension = get_file_extension(basename($uploaded_file['name']));
 		if(($uploaded_file['type'] == 'application/octet-stream') && ($extension == 'eyedoc')) $uploaded_file['type'] = 'text/html';
 		//eyedoc MOD
+		
+		// calculate md5
+		if ($revision->columnExists('md5')) {
+			$md5 = md5_file($uploaded_file['tmp_name']);
+			$revision->setColumnValue('md5', $md5);
+		}
 		
 		$repository_id = FileRepository::addFile($uploaded_file['tmp_name'], array('name' => $uploaded_file['name'], 'type' => $uploaded_file['type'], 'size' => $uploaded_file['size']));
 
@@ -676,7 +706,11 @@ class ProjectFile extends BaseProjectFile {
 	 */
 	function validate(&$errors) {
 		if(!$this->validatePresenceOf('filename')) {
-			$errors[] = lang('filename required');
+			if($this->getType() == ProjectFiles::TYPE_DOCUMENT){
+				$errors[] = lang('filename required');
+			}else{
+				$errors[] = lang('weblink required');
+			}
 		} // if
 	} // validate
 

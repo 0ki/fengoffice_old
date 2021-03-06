@@ -2,7 +2,7 @@ og.DateField = function(config) {
 	if (!config) config = {};
 	
 	Ext.apply(this, config, {
-		format: lang('date format'),
+		format: og.date_format,
 		altFormats: lang('date format alternatives'),
 		width: 120
 	});

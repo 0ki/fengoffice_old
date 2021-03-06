@@ -58,6 +58,7 @@ CREATE TABLE `<?php echo $table_prefix ?>companies` (
   `client_of_id` smallint(5) unsigned default NULL,
   `name` varchar(100) <?php echo $default_collation ?> default NULL,
   `email` varchar(100) <?php echo $default_collation ?> default NULL,
+  `notes` text <?php echo $default_collation ?> ,
   `homepage` varchar(100) <?php echo $default_collation ?> default NULL,
   `address` varchar(100) <?php echo $default_collation ?> default NULL,
   `address2` varchar(100) <?php echo $default_collation ?> default NULL,
@@ -144,6 +145,7 @@ CREATE TABLE `<?php echo $table_prefix ?>groups` (
 	`can_manage_configuration` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
 	`can_manage_contacts` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
 	`can_manage_templates` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
+	`can_manage_reports` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`)
 ) ENGINE = <?php echo $engine ?> AUTO_INCREMENT = 10000000 <?php echo $default_charset ?>;
 
@@ -271,7 +273,7 @@ CREATE TABLE `<?php echo $table_prefix ?>project_file_revisions` (
   `thumb_filename` varchar(44) <?php echo $default_collation ?> default NULL,
   `revision_number` int(10) unsigned NOT NULL default '0',
   `comment` text <?php echo $default_collation ?>,
-  `type_string` varchar(50) <?php echo $default_collation ?> NOT NULL default '',
+  `type_string` varchar(255) <?php echo $default_collation ?> NOT NULL default '',
   `filesize` int(10) unsigned NOT NULL default '0',
   `created_on` datetime NOT NULL default '0000-00-00 00:00:00',
   `created_by_id` int(10) unsigned default NULL,
@@ -305,6 +307,9 @@ CREATE TABLE `<?php echo $table_prefix ?>project_files` (
   `checked_out_on` datetime NOT NULL default '0000-00-00 00:00:00',
   `checked_out_by_id` int(10) unsigned DEFAULT 0,
   `was_auto_checked_out` tinyint(1) unsigned NOT NULL default '0',
+  `type` int(1) NOT NULL DEFAULT 0,
+  `url` varchar(255) NULL,
+  `mail_id` int(10) unsigned NOT NULL default '0',
   PRIMARY KEY  (`id`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 
@@ -367,7 +372,7 @@ CREATE TABLE `<?php echo $table_prefix ?>project_milestones` (
   `trashed_on` datetime NOT NULL default '0000-00-00 00:00:00',
   `trashed_by_id` int(10) unsigned default NULL,
   `is_template` BOOLEAN NOT NULL default '0',
-  `from_template_id` BOOLEAN NOT NULL default '0',
+  `from_template_id` int(10) NOT NULL default '0',
   PRIMARY KEY  (`id`),
   KEY `project_id` (`project_id`),
   KEY `due_date` (`due_date`),
@@ -404,7 +409,7 @@ CREATE TABLE `<?php echo $table_prefix ?>project_tasks` (
   `milestone_id` INTEGER UNSIGNED,
   `is_private` BOOLEAN NOT NULL default '0',
   `is_template` BOOLEAN NOT NULL default '0',
-  `from_template_id` BOOLEAN NOT NULL default '0',
+  `from_template_id` int(10) NOT NULL default '0',
   PRIMARY KEY  (`id`),
   KEY `parent_id` (`parent_id`),
   KEY `completed_on` (`completed_on`),
@@ -520,6 +525,7 @@ CREATE TABLE `<?php echo $table_prefix ?>users` (
 	`can_manage_configuration` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
 	`can_manage_contacts` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
 	`can_manage_templates` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0, 
+	`can_manage_reports` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0, 
   `auto_assign` tinyint(1) unsigned NOT NULL default '0',
   `default_billing_id` int(10) unsigned default 0,
   PRIMARY KEY  (`id`),
@@ -532,46 +538,46 @@ CREATE TABLE `<?php echo $table_prefix ?>users` (
 
 CREATE TABLE `<?php echo $table_prefix ?>contacts`(
 	`id` int(10) unsigned NOT NULL auto_increment,
-	`firstname` varchar(40) <?php echo $default_collation ?> default NULL,
-	`lastname` varchar(40) <?php echo $default_collation ?> default NULL,
-	`middlename` varchar(40) <?php echo $default_collation ?> default NULL,
-	`department` varchar(40) <?php echo $default_collation ?> default NULL,
-	`job_title` varchar(40) <?php echo $default_collation ?> default NULL,
+	`firstname` varchar(50) <?php echo $default_collation ?> default NULL,
+	`lastname` varchar(50) <?php echo $default_collation ?> default NULL,
+	`middlename` varchar(50) <?php echo $default_collation ?> default NULL,
+	`department` varchar(50) <?php echo $default_collation ?> default NULL,
+	`job_title` varchar(50) <?php echo $default_collation ?> default NULL,
 	`company_id` int(10) <?php echo $default_collation ?> default NULL,
 	`email` varchar(100) <?php echo $default_collation ?> default NULL,
 	`email2` varchar(100) <?php echo $default_collation ?> default NULL,
 	`email3` varchar(100) <?php echo $default_collation ?> default NULL,
 	`w_web_page` text <?php echo $default_collation ?> ,
 	`w_address` varchar(200) <?php echo $default_collation ?> default NULL,
-	`w_city` varchar(25) <?php echo $default_collation ?> default NULL,
-	`w_state` varchar(25) <?php echo $default_collation ?> default NULL,
-	`w_zipcode` varchar(25) <?php echo $default_collation ?> default NULL,
-	`w_country` varchar(25) <?php echo $default_collation ?> default NULL,
-    `w_phone_number` varchar(20) <?php echo $default_collation ?> default NULL,
-    `w_phone_number2` varchar(20) <?php echo $default_collation ?> default NULL,
-    `w_fax_number` varchar(20) <?php echo $default_collation ?> default NULL,
-    `w_assistant_number` varchar(20) <?php echo $default_collation ?> default NULL,
-    `w_callback_number` varchar(20) <?php echo $default_collation ?> default NULL,
+	`w_city` varchar(50) <?php echo $default_collation ?> default NULL,
+	`w_state` varchar(50) <?php echo $default_collation ?> default NULL,
+	`w_zipcode` varchar(50) <?php echo $default_collation ?> default NULL,
+	`w_country` varchar(50) <?php echo $default_collation ?> default NULL,
+    `w_phone_number` varchar(50) <?php echo $default_collation ?> default NULL,
+    `w_phone_number2` varchar(50) <?php echo $default_collation ?> default NULL,
+    `w_fax_number` varchar(50) <?php echo $default_collation ?> default NULL,
+    `w_assistant_number` varchar(50) <?php echo $default_collation ?> default NULL,
+    `w_callback_number` varchar(50) <?php echo $default_collation ?> default NULL,
 	`h_web_page` text <?php echo $default_collation ?> ,
 	`h_address` varchar(200) <?php echo $default_collation ?> default NULL,
-	`h_city` varchar(25) <?php echo $default_collation ?> default NULL,
-	`h_state` varchar(25) <?php echo $default_collation ?> default NULL,
-	`h_zipcode` varchar(25) <?php echo $default_collation ?> default NULL,
-	`h_country` varchar(25) <?php echo $default_collation ?> default NULL,
-    `h_phone_number` varchar(20) <?php echo $default_collation ?> default NULL,
-    `h_phone_number2` varchar(20) <?php echo $default_collation ?> default NULL,
-    `h_fax_number` varchar(20) <?php echo $default_collation ?> default NULL,
-    `h_mobile_number` varchar(20) <?php echo $default_collation ?> default NULL,
-    `h_pager_number` varchar(20) <?php echo $default_collation ?> default NULL,
+	`h_city` varchar(50) <?php echo $default_collation ?> default NULL,
+	`h_state` varchar(50) <?php echo $default_collation ?> default NULL,
+	`h_zipcode` varchar(50) <?php echo $default_collation ?> default NULL,
+	`h_country` varchar(50) <?php echo $default_collation ?> default NULL,
+    `h_phone_number` varchar(50) <?php echo $default_collation ?> default NULL,
+    `h_phone_number2` varchar(50) <?php echo $default_collation ?> default NULL,
+    `h_fax_number` varchar(50) <?php echo $default_collation ?> default NULL,
+    `h_mobile_number` varchar(50) <?php echo $default_collation ?> default NULL,
+    `h_pager_number` varchar(50) <?php echo $default_collation ?> default NULL,
 	`o_web_page` text <?php echo $default_collation ?> ,
 	`o_address` varchar(200) <?php echo $default_collation ?> default NULL,
-	`o_city` varchar(25) <?php echo $default_collation ?> default NULL,
-	`o_state` varchar(25) <?php echo $default_collation ?> default NULL,
-	`o_zipcode` varchar(25) <?php echo $default_collation ?> default NULL,
-	`o_country` varchar(25) <?php echo $default_collation ?> default NULL,
-    `o_phone_number` varchar(20) <?php echo $default_collation ?> default NULL,
-    `o_phone_number2` varchar(20) <?php echo $default_collation ?> default NULL,
-    `o_fax_number` varchar(20) <?php echo $default_collation ?> default NULL,
+	`o_city` varchar(50) <?php echo $default_collation ?> default NULL,
+	`o_state` varchar(50) <?php echo $default_collation ?> default NULL,
+	`o_zipcode` varchar(50) <?php echo $default_collation ?> default NULL,
+	`o_country` varchar(50) <?php echo $default_collation ?> default NULL,
+    `o_phone_number` varchar(50) <?php echo $default_collation ?> default NULL,
+    `o_phone_number2` varchar(50) <?php echo $default_collation ?> default NULL,
+    `o_fax_number` varchar(50) <?php echo $default_collation ?> default NULL,
     `o_birthday` datetime default NULL,
     `picture_file` varchar(44) <?php echo $default_collation ?> default NULL,
 	`timezone` float(3,1) NOT NULL default '0.0',
@@ -967,4 +973,73 @@ CREATE TABLE  `<?php echo $table_prefix ?>shared_objects` (
   `created_on` DATETIME NOT NULL,
   `created_by_id` INTEGER UNSIGNED NOT NULL,
   PRIMARY KEY (`object_id`, `object_manager`, `user_id`)
+) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
+
+CREATE TABLE `<?php echo $table_prefix ?>user_passwords` (
+  `id` int(10) NOT NULL AUTO_INCREMENT,
+  `user_id` int(10) NOT NULL,
+  `password` varchar(40) NOT NULL,
+  `password_date` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `id` (`id`)
+) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
+
+CREATE TABLE `<?php echo $table_prefix ?>custom_properties` (
+  `id` int(10) NOT NULL AUTO_INCREMENT,
+  `object_type` varchar(255) <?php echo $default_collation ?> NOT NULL,
+  `name` varchar(255) <?php echo $default_collation ?> NOT NULL,
+  `type` varchar(255) <?php echo $default_collation ?> NOT NULL,
+  `description` text <?php echo $default_collation ?> NOT NULL,
+  `values` text <?php echo $default_collation ?> NOT NULL,
+  `default_value` varchar(255) <?php echo $default_collation ?> NOT NULL,
+  `is_required` tinyint(1) NOT NULL,
+  `is_multiple_values` tinyint(1) NOT NULL,
+  `property_order` int(10) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
+
+CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>custom_property_values` (
+  `object_id` int(10) NOT NULL AUTO_INCREMENT,
+  `custom_property_id` int(10) NOT NULL,
+  `value` varchar(255) NOT NULL,
+  PRIMARY KEY (`object_id`,`custom_property_id`)
+) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
+
+CREATE TABLE `<?php echo $table_prefix ?>queued_emails` (
+  `id` int(10) NOT NULL AUTO_INCREMENT,
+  `to` text <?php echo $default_collation ?>,
+  `from` text <?php echo $default_collation ?>,
+  `subject` text <?php echo $default_collation ?>,
+  `body` text <?php echo $default_collation ?>,
+  `timestamp` datetime NOT NULL default '0000-00-00 00:00:00',
+  PRIMARY KEY (`id`)
+) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
+
+
+CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>reports` (
+  `id` int(10) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) <?php echo $default_collation ?> NOT NULL,
+  `description` varchar(255) <?php echo $default_collation ?> NOT NULL,
+  `object_type` varchar(255) <?php echo $default_collation ?> NOT NULL,
+  `order_by` varchar(255) <?php echo $default_collation ?> NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
+
+CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>report_columns` (
+  `id` int(10) NOT NULL AUTO_INCREMENT,
+  `report_id` int(10) NOT NULL,
+  `custom_property_id` int(10) NOT NULL,
+  `field_name` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
+
+CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>report_conditions` (
+  `id` int(10) NOT NULL AUTO_INCREMENT,
+  `report_id` int(10) NOT NULL,
+  `custom_property_id` int(10) NOT NULL,
+  `field_name` varchar(255) <?php echo $default_collation ?> NOT NULL,
+  `condition` varchar(255) <?php echo $default_collation ?> NOT NULL,
+  `value` varchar(255) <?php echo $default_collation ?> NOT NULL,
+  `is_parametrizable` tinyint(1) NOT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;

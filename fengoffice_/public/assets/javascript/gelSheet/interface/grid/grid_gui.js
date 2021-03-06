@@ -36,7 +36,7 @@ function createGridGui(self,width,height){
         self.style.width = px(width);
         self.style.position = "absolute";
         self.style.overflow = "hidden";
-        self.style.border = "2px solid #000000";
+        self.style.border = "2px solid #9CBAEF";
 
 		//Grid Table Container
 		self.gridContainer = document.createElement("DIV");

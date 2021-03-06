@@ -67,6 +67,12 @@ class TaskController extends ApplicationController {
 			if ($company_id < 0) $company_id = 0;
 			if ($user_id < 0) $user_id = 0;
 			
+			$can_assign = can_assign_task_to_company_user(logged_user(), $task, $company_id, $user_id);
+			if ($can_assign !== true) {
+				flash_error($can_assign);
+				return;
+			} 
+			
 			$task->setAssignedToCompanyId($company_id);
 			$task->setAssignedToUserId($user_id);
 			
@@ -116,8 +122,15 @@ class TaskController extends ApplicationController {
 			//$task->setOrder(ProjectTasks::maxOrder(array_var($task_data, "parent_id", 0), array_var($task_data, "milestone_id", 0)));
 			// Set assigned to
 			$assigned_to = explode(':', array_var($task_data, 'assigned_to', ''));
-			$task->setAssignedToCompanyId(array_var($assigned_to, 0, 0));
-			$task->setAssignedToUserId(array_var($assigned_to, 1, 0));			
+			$company_id = array_var($assigned_to, 0, 0);
+			$user_id = array_var($assigned_to, 1, 0);
+			$can_assign = can_assign_task_to_company_user(logged_user(), $task, $company_id, $user_id);
+			if ($can_assign !== true) {
+				flash_error($can_assign);
+				return;
+			}
+			$task->setAssignedToCompanyId($company_id);
+			$task->setAssignedToUserId($user_id);
 			$task->setIsPrivate(false); // Not used, but defined as not null.
 			
 			if (array_var($task_data,'is_completed',false) == 'true'){
@@ -202,8 +215,16 @@ class TaskController extends ApplicationController {
 			//$task->setOrder(ProjectTasks::maxOrder(array_var($task_data, "parent_id", 0), array_var($task_data, "milestone_id", 0)));
 			// Set assigned to
 			$assigned_to = explode(':', array_var($task_data, 'assigned_to', ''));
-			$task->setAssignedToCompanyId(array_var($assigned_to, 0, 0));
-			$task->setAssignedToUserId(array_var($assigned_to, 1, 0));			
+			
+			$company_id = array_var($assigned_to, 0, 0);
+			$user_id = array_var($assigned_to, 1, 0);
+			$can_assign = can_assign_task_to_company_user(logged_user(), $task, $company_id, $user_id);
+			if ($can_assign !== true) {
+				flash_error($can_assign);
+				return;
+			}
+			$task->setAssignedToCompanyId($company_id);
+			$task->setAssignedToUserId($user_id);			
 			//$task->setIsPrivate(false); // Not used, but defined as not null.
 			
 			/*if (array_var($task_data,'is_completed',false) == 'true'){
@@ -672,8 +693,16 @@ class TaskController extends ApplicationController {
 			$task->setProjectId($project->getId());
 			// Set assigned to
 			$assigned_to = explode(':', array_var($task_data, 'assigned_to', ''));
-			$task->setAssignedToCompanyId(array_var($assigned_to, 0, 0));
-			$task->setAssignedToUserId(array_var($assigned_to, 1, 0));
+			$company_id = array_var($assigned_to, 0, 0);
+			$user_id = array_var($assigned_to, 1, 0);
+			$can_assign = can_assign_task_to_company_user(logged_user(), $task, $company_id, $user_id);
+			if ($can_assign !== true) {
+				flash_error($can_assign);
+				ajx_current("empty");
+				return;
+			}
+			$task->setAssignedToCompanyId($company_id);
+			$task->setAssignedToUserId($user_id);
 			
 			$id = array_var($_GET, 'id', 0);
 			$parent = ProjectTasks::findById($id);
@@ -735,42 +764,7 @@ class TaskController extends ApplicationController {
 				ApplicationLogs::createLog($task, $task->getWorkspaces(), ApplicationLogs::ACTION_ADD);
 				
 				DB::commit();
-				
-				// notify email recipients
-				if (!$task->getIsTemplate()) {
-					try {
-						$notify_people = array();
-						$project_companies = array();
-						$processedCompanies = array();
-						$processedUsers = array();
-						$validWS = array($task->getProject());
-						if (is_array($validWS)) {
-							foreach ($validWS as $w) {
-								$workspace_companies = $w->getCompanies();
-								foreach ($workspace_companies as $c) {
-									if (!isset($processedCompanies[$c->getId()])) {
-										$processedCompanies[$c->getId()] = true;
-										$company_users = $c->getUsersOnProject($w);
-										if (is_array($company_users)) {
-											foreach ($company_users as $company_user) {
-												if (!isset($processedUsers[$company_user->getId()])) {
-													$processedUsers[$company_user->getId()] = true;
-													if ((array_var($task_data, 'notify_company_' . $w->getId()) == 'checked') || (array_var($task_data, 'notify_user_' . $company_user->getId()))) {
-														//$task->subscribeUser($company_user); // subscribe
-														$notify_people[] = $company_user;
-													} // if
-												}
-											} // if
-										}
-									}
-								}
-							}
-						}
-					Notifier::newTask($task, $notify_people); // send notification email...
-					} catch(Exception $e) {
-					} // try
-				}
-				
+								
 				// notify asignee
 				if(array_var($task_data, 'send_notification') == 'checked') {
 					try {
@@ -930,8 +924,15 @@ class TaskController extends ApplicationController {
 			$task->setFromAttributes($task_data);
 			// Set assigned to
 			$assigned_to = explode(':', array_var($task_data, 'assigned_to', ''));
-			$task->setAssignedToCompanyId(array_var($assigned_to, 0, 0));
-			$task->setAssignedToUserId(array_var($assigned_to, 1, 0));
+			$company_id = array_var($assigned_to, 0, 0);
+			$user_id = array_var($assigned_to, 1, 0);
+			$can_assign = can_assign_task_to_company_user(logged_user(), $task, $company_id, $user_id);
+			if ($can_assign !== true) {
+				flash_error($can_assign);
+				return;
+			}
+			$task->setAssignedToCompanyId($company_id);
+			$task->setAssignedToUserId($user_id);
 			if(!logged_user()->isMemberOfOwnerCompany()) $task->setIsPrivate($old_is_private);
 			
 			$totalMinutes = (array_var($task_data, 'time_estimate_hours') * 60) +
@@ -972,8 +973,8 @@ class TaskController extends ApplicationController {
 					$subtasks = $task->getSubTasks();
 					foreach ($subtasks as $sub) {
 						if (!$sub->getAssignedTo() instanceof ApplicationDataObject) {
-							$sub->setAssignedToCompanyId(array_var($assigned_to, 0, 0));
-							$sub->setAssignedToUserId(array_var($assigned_to, 1, 0));
+							$sub->setAssignedToCompanyId($company_id);
+							$sub->setAssignedToUserId($user_id);
 						}
 					}
 				} catch (Exception $e) {
@@ -988,41 +989,6 @@ class TaskController extends ApplicationController {
 				ApplicationLogs::createLog($task, $task->getWorkspaces(), ApplicationLogs::ACTION_EDIT);
 				
 				DB::commit();
-				
-			// notify email recipients
-				if (!$task->getIsTemplate()) {
-					try {
-						$notify_people = array();
-						$project_companies = array();
-						$processedCompanies = array();
-						$processedUsers = array();
-						$validWS = array($task->getProject());
-						if (is_array($validWS)) {
-							foreach ($validWS as $w) {
-								$workspace_companies = $w->getCompanies();
-								foreach ($workspace_companies as $c) {
-									if (!isset($processedCompanies[$c->getId()])) {
-										$processedCompanies[$c->getId()] = true;
-										$company_users = $c->getUsersOnProject($w);
-										if (is_array($company_users)) {
-											foreach ($company_users as $company_user) {
-												if (!isset($processedUsers[$company_user->getId()])) {
-													$processedUsers[$company_user->getId()] = true;
-													if ((array_var($task_data, 'notify_company_' . $w->getId()) == 'checked') || (array_var($task_data, 'notify_user_' . $company_user->getId()))) {
-														//$task->subscribeUser($company_user); // subscribe
-														$notify_people[] = $company_user;
-													} // if
-												}
-											} // if
-										}
-									}
-								}
-							}
-						}
-					Notifier::taskChanged($task, $notify_people); // send notification email...
-					} catch(Exception $e) {
-					} // try
-				}
 				
 				try {
 					if(array_var($task_data, 'send_notification') == 'checked') {
@@ -1340,8 +1306,7 @@ class TaskController extends ApplicationController {
 		$wspace_id = isset($_GET['ws_id']) ? $_GET['ws_id'] : 0;
 		$ws = Projects::findById($wspace_id);
 		
-		if ($ws != null) $companies = $ws->getCompanies();
-		else $companies = Companies::findAll();
+		$companies = Companies::findAll();
 		
 		if ($companies != null) {
 			foreach ($companies as $comp) {
@@ -1350,7 +1315,7 @@ class TaskController extends ApplicationController {
 				if (is_array($users)) {
 				foreach ($users as $k => $user) {
 					$proj_us = ProjectUsers::findById(array('project_id' => $wspace_id, 'user_id' => $user->getId()));
-						if ($proj_us == null || !$proj_us->getCanReadTasks()) {
+						if ($proj_us == null || !$proj_us->getCanReadTasks() || !can_assign_task(logged_user(), $ws, $user)) {
 							unset($users[$k]);
 						}
 					}
@@ -1363,7 +1328,10 @@ class TaskController extends ApplicationController {
 						foreach ($users as $user) {
 							$comp_data['users'][] = $user->getArrayInfo();			
 						}
-						$comp_array[] = $comp_data;
+						//if ($ws == null || can_assign_task(logged_user(), $ws, $comp)) {
+						if (count($users) > 0) {
+							$comp_array[] = $comp_data;
+						}
 					}
 				}
 			}

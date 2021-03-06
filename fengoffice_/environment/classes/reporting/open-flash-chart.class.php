@@ -1,4 +1,5 @@
 <?php
+require_javascript('og/swfobject.js');
 
 /**
  * This class manages all functions of the open flash chart api.

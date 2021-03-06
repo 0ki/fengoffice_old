@@ -9,11 +9,6 @@ function export (format){
 /************* callback functions ***************/
 
 
-//SAVE 
-function editBook() {
-alert('edit');
-	window.saveBook() ;
-}
 
 //SAVE AS
 function saveBookConfirm() {
@@ -62,7 +57,6 @@ function bold() {
 }
 
 function italic() {
-
 	cmdSetItalicStyle() ;
 }
 
@@ -70,9 +64,31 @@ function underline() {
 	cmdSetUnderlineStyle() ;
 }
 
+function unformat() {
+	cmdSetFontStyleId(0) ;
+}
 
 function setFont(p1,p2) {
-alert('setFont'); 
-alert(p1.toSource()); 
-alert(p2.toSource()); 
+	alert('setFont'); 
+	alert(p1.toSource()); 
+	alert(p2.toSource()); 
+}
+
+function setBorderLeft() {
+	var cell = application.grid.activeCell ;
+	cell.style.borderLeft = "5px solid #000000" ; 
+	
+	alert(cell.style.borderLeft);
+ 	//alert('bprderLeft');
+}
+
+function setBorderRight() {
+ 	alert('bprderRight');
+}
+
+function setBorderTop() {
+ 	alert('bprderTop');
+}
+function setBorderNone() {
+ 	alert('bprderNone');
 }

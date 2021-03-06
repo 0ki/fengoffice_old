@@ -1,5 +1,6 @@
 <?php
-	
+	require_javascript("modules/addProjectForm.js");
+	require_javascript('modules/updatePermissionsForm.js');
   	if(!$project->isNew() && $project->canDelete(logged_user())) {
   		add_page_action(lang('delete'),  $project->getDeleteUrl() , 'ico-delete');
   	} // if
@@ -15,7 +16,6 @@
     $quoted_permissions[] = "'$permission_id'";
   } // foreach
 ?>
-    <script type="text/javascript" src="<?php echo get_javascript_url('modules/updateUserPermissions.js') ?>"></script>
     <script type="text/javascript">
         App.modules.updatePermissionsForm.project_permissions = new Array(<?php echo implode(', ', $quoted_permissions) ?>);
 
@@ -46,9 +46,13 @@
 		<?php  if ($billing_amounts && count($billing_amounts) > 0) {  ?>
 			 - <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>workspace_billing',this)"><?php echo lang('billing') ?></a>
 		<?php } ?>
+		<?php  if (can_manage_contacts(logged_user())) {  ?>
+			 - <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>project_contacts',this)"><?php echo lang('workspace contacts') ?></a>
+		<?php } ?>
 		<?php foreach ($categories as $category) { ?>
 			- <a href="#" class="option" <?php if ($category['visible']) echo 'style="font-weight: bold"'; ?> onclick="og.toggleAndBolden('<?php echo $genid . $category['name'] ?>', this)"><?php echo lang($category['name'])?></a>
 		<?php } ?>
+		- <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_custom_properties_div',this)"><?php echo lang('custom properties') ?></a> 
 	</div>
   
   </div>
@@ -205,7 +209,56 @@
 			<?php } else echo select_project2('project[parent_id]', ($project->isNew())? (active_project()?active_project()->getId():0):$project->getParentId(), $genid, true) ?>
 	</fieldset>
 	<?php } ?>
-    
+	
+	
+	<?php if (can_manage_contacts(logged_user())) { ?>
+	<div id="<?php echo $genid ?>project_contacts" style="display:none">
+	<fieldset>
+	<legend><?php echo lang('workspace contacts') ?></legend>
+		<div id="<?php echo $genid?>contacts">
+			<table id="<?php echo $genid?>contactsTable" class="contactsTable">
+			<?php 
+			$has_sme = isset($subject_matter_experts) && is_array($subject_matter_experts) && count($subject_matter_experts) > 0;
+			if ($has_sme){?>
+				<?php $class = null;
+				$c = -1;
+				foreach ($subject_matter_experts as $sme) {
+					if($c++ % 2 == 0)
+						$class = 'altrow';?>
+				<tr id="<?php echo $genid . 'contacts' . $sme->getId() ?>" class="<?php echo $class ?>">
+					<td id="<?php echo $genid . 'contacts_name_cell' . $sme->getId()  ?>" class="contact_name"><?php echo clean($sme->getDisplayName())?></td>
+					<td class="contact_data"><?php echo clean($sme->getJobTitle() . ($sme->getJobTitle() != ''? ', ' : '') . ($sme->getCompany() instanceof Company?$sme->getCompany()->getName() : ''));?></td>
+					<td class="contact_role">
+						<input type="hidden" name="project[contacts][<?php echo $sme->getId()  ?>][role]" value="<?php echo clean($sme->getRole($project)->getRole()) ?>"/>
+						<?php echo clean($sme->getRole($project)->getRole());?></td>
+					<td class="actions">
+						<input type="hidden" name="project[contacts][<?php echo $sme->getId()  ?>][contact_id]" value="<?php echo $sme->getId() ?>"/>
+						<a href="#" class="coViewAction ico-delete" onclick="og.sme.removeFromsme('<?php echo $genid?>', '<?php echo $sme->getId() ?>');return false;" title="<?php echo lang('remove')?>"><?php echo lang('remove')?></a>
+					</td>
+				</tr>
+				<?php } // foreach?>
+			<?php } //if?>
+			</table>
+			<div id="<?php echo $genid?>noContacts" style="<?php echo $has_sme? 'display:none':''?>">
+				<?php echo lang('no contacts to display')?>
+			</div>
+		</div>
+		<div id="<?php echo $genid?>addsmeControl" class="asc">
+			<div id="<?php echo $genid?>header" class="header">
+				<div id="<?php echo $genid?>title" class="title"><?php echo lang('add new contact')?></div>
+				<div id="<?php echo $genid?>search" class="search">
+					<?php echo lang('search contact')?>:&nbsp;
+					<input type='text' style="color:#888" value="<?php echo lang('search')?>..." onfocus="if (value == '<?php echo escape_single_quotes(lang('search'))?>...') {style.color='#333'; value = ''}"  onblur="if (value == '') {style.color='#888';value = '<?php echo escape_single_quotes(lang('search'))?>...'}" onkeypress="return og.sme.searchTO(event,'<?php echo $genid?>', 'contact', 'search');" id="<?php echo $genid?>searchField"/>
+				</div>
+			</div>
+			<div id="<?php echo $genid?>body" class="body"></div>
+			<div id="<?php echo $genid?>searching" class="searching loading-indicator" style="display:none;color:#666"><?php echo lang('searching')?></div>
+		</div>
+	</fieldset>
+	</div>
+	<?php } ?>
+	
+	
     <?php echo label_tag(lang('workspace color')) ?>
 		<input type="hidden" id="workspace_color" name="project[color]" value="<?php echo $project->isNew()?0:$project->getColor() ?>" />
 		<div>
@@ -245,6 +298,17 @@
 	</fieldset>
 	</div>
 	<?php } ?>
+	
+	<div id='<?php echo $genid ?>add_custom_properties_div' style="display:none">
+		<fieldset>
+			<legend><?php echo lang('custom properties') ?></legend>
+			<?php echo render_object_custom_properties($object, 'Projects', false) ?>
+		</fieldset>
+	</div>
+	
+	<div>
+		<?php echo render_object_custom_properties($object, 'Projects', true) ?>
+	</div><br/>
 	
 	<?php echo submit_button($project->isNew() ? lang('add workspace') : lang('save changes'), 's', array('tabindex' => '250')) ?>
 </div>

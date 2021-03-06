@@ -12,17 +12,9 @@
  */
 class SpreadsheetController {
 	
-	public function test($param = null){
-		echo $param ;
-		global $cnf ;
-		echo "<pre>".print_r($cnf,1)."</pre>";
-		echo "<hr><pre>".print_r($_SERVER,1)."</pre>";
-		
-	}
-	
-	
-	public function loadBook($bookId){
 
+		
+	public function loadBook($bookId){
 		$bookController = new BookController();
 		$book = $bookController->find($bookId);
 		
@@ -30,8 +22,6 @@ class SpreadsheetController {
 			$message = new Success(null,$book->toJson());
 		else 
 			throw new Error(301,"Book is not found.");
-//			echo $book->toJson();
-			//echo '<pre>'.print_r($book,1).'</pre>';
 	}
 	
 	
@@ -44,36 +34,6 @@ class SpreadsheetController {
 		$bookController = new BookController();
 		return  $bookController->deleteBook($bookId);
 	}
-	
-	
-	/**
-	 * 
-	 */
-	function __construct() {
-	
-	}
-	
-	/**
-	 * 
-	 */
-	function __destruct() {
-	
-	}
-	
-	/**
-	 * Enter description here...
-	 *
-	 * @param String $book
-	 * @param String $format
-	 * @return Bool
-	 */
-	public function editBook($book, $format='json') {
-		$bookController = new BookController();
-		return $bookController->editBook($book, $format);
-	}	
-	
-	
-
 	
 }
 

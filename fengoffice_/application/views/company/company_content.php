@@ -35,9 +35,17 @@
 <?php } // if ?>
     </div>
   
+  <?php if ($company->getNotes()) {?>
+  <fieldset>
+  <legend><?php echo lang('notes'); ?></legend>
+  <div><?php echo nl2br(clean($company->getNotes())) ?></div>
+  </fieldset>
+  <?php } ?>
+  
   </div>
 </div>
-<?php } // if ?>
+<?php } // if ?> 
+    
 
 <fieldset><legend class="toggle_collapsed" onclick="og.toggle('companyUsers',this)"><?php echo lang('users') ?></legend>
 <div id='companyUsers' style="display:none">

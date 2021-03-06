@@ -60,7 +60,7 @@ class AdministrationController extends ApplicationController {
 	 */
 	function members() {
 		tpl_assign('company', owner_company());
-		tpl_assign('users', Users::findAll(array('order'=>'display_name')));
+		tpl_assign('users_by_company', Users::getGroupedByCompany());
 	} // members
 
 	/**
@@ -87,6 +87,66 @@ class AdministrationController extends ApplicationController {
 	function clients() {
 		tpl_assign('clients', owner_company()->getClientCompanies());
 	} // clients
+	
+	/**
+	 * List custom properties
+	 *
+	 * @access public
+	 * @param void
+	 * @return null
+	 */
+	function custom_properties() {
+		tpl_assign('object_types', array('<option value="" selected>'.lang('select one').'</option>',
+			'<option value="Companies">'.lang('company').'</option>',
+			'<option value="Contacts">'.lang('contact').'</option>',
+			'<option value="MailContents">'.lang('email type').'</option>',
+			'<option value="ProjectEvents">'.lang('events').'</option>', 
+			'<option value="ProjectFiles">'.lang('file').'</option>',
+			'<option value="ProjectMilestones">'.lang('milestone').'</option>',
+			'<option value="ProjectMessages">'.lang('message').'</option>',
+			'<option value="ProjectTasks">'.lang('task').'</option>',
+			'<option value="Users">'.lang('user').'</option>',
+			'<option value="ProjectWebPages">'.lang('webpage').'</option>',
+			'<option value="Projects">'.lang('workspace').'</option>', 
+		));
+		$custom_properties = array_var($_POST, 'custom_properties');
+		$obj_type = array_var($_POST, 'objectType');
+		if (is_array($custom_properties)) {
+			try {
+				DB::beginWork();
+				foreach ($custom_properties as $id => $data) {
+					$new_cp = new CustomProperty();
+					if($data['id'] != ''){
+						$new_cp = CustomProperties::getCustomProperty($data['id']);					
+					}	
+					if($data['deleted'] == "1"){
+						$new_cp->delete();
+						continue;
+					}
+					$new_cp->setObjectType($obj_type);
+					$new_cp->setName($data['name']);
+					$new_cp->setType($data['type']);
+					$new_cp->setDescription($data['description']);
+					$new_cp->setValues($data['values']);
+					if($data['type'] == 'boolean'){
+						$new_cp->setDefaultValue(isset($data['default_value_boolean']));
+					}else{
+						$new_cp->setDefaultValue($data['default_value']);
+					}		
+					$new_cp->setIsRequired(isset($data['required']));
+					$new_cp->setIsMultipleValues(isset($data['multiple_values']));
+					$new_cp->setOrder($id);
+					$new_cp->save();
+				}
+				DB::commit();
+				flash_success(lang('custom properties updated'));
+				ajx_current('back');
+			} catch (Exception $ex) {
+				DB::rollback();
+				flash_error($ex->getMessage());
+			}
+		}
+	} // custom_properties
 
 	/**
 	 * List groups

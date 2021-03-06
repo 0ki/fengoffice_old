@@ -17,7 +17,10 @@ return array(
 	'user password reseted username' => 'Username: {0}',
 	'user password reseted password' => 'Password: {0}',
 
-    'dont reply wraning' => 'THIS IS SYSTEM NOTIFICATION. DO NOT REPLY TO THIS EMAIL!',
+	'password expiration reminder' => 'Password expiration reminder',
+	'password expires days' => 'Your password will expire in {0} days',
+
+    'dont reply wraning' => 'THIS IS A SYSTEM NOTIFICATION. DO NOT REPLY TO THIS EMAIL!',
     'new message posted' => 'New message "{0}" has been posted',
     'new task' => 'New task',
     'new task created' => 'New task "{0}" has been created in "{1}" workspace',
@@ -80,11 +83,11 @@ return array(
 
 	'unread emails' => 'Unread emails',
 	//'view due task' => 'View due task',
-	'due_date task reminder' => 'Due task reminder',
+	'due_date reminder notification task' => 'Due task reminder',
 	'due_date task reminder desc' => 'Task "{0}" is due on "{1}" and is still pending',
-	'due_date milestone reminder' => 'Due milestone reminder',
+	'due_date reminder notification milestone' => 'Due milestone reminder',
 	'due_date milestone reminder desc' => 'Milestone "{0}" is due on "{1}" and is still pending',
-	'start event reminder' => 'Event reminder',
+	'start reminder notification event' => 'Event reminder',
 	'start event reminder desc' => 'Event "{0}" starts on "{1}"',
 	'task has been modified' => 'Task "{0}" in workspace "{1}" has been modified',
 	'task modified' => 'Task modified',
@@ -168,6 +171,10 @@ return array(
 	'closed notification task desc' => 'Task \'{0}\' has been completed by {1}.',
 	'closed notification milestone' => 'Milestone \'{0}\' has been completed',
 	'closed notification milestone desc' => 'Milestone \'{0}\' has been completed by {1}.',
-    ); // array
+	'mail attachments' => 'Attachments',
+	'select attachment' => 'Select and upload attachment',
+	'attach from workspace' => 'Select attachment from workspace',
+    
+	); // array
 
     ?>

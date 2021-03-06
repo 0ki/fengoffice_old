@@ -9,7 +9,7 @@ class FilesServices extends WebServicesBase {
 	function FilesServices() {
 		
 		$this->__dispatch_map['listFiles'] = array(
-            "in"  => array("username" => "string", "password" => "string", "tags" => "string", "workspaces" => "string", "name" => "string"),
+            "in"  => array("username" => "string", "password" => "string", "tags" => "string", "workspaces" => "string", "name" => "string", "offset" => "int", "limit" => "int"),
             "out" => array("list" => "string")
 		);
 		
@@ -41,7 +41,7 @@ class FilesServices extends WebServicesBase {
 		$this->WebServicesBase();
 	}
 	
-	function listFiles($username, $password, $tags, $workspaces, $name) {
+	function listFiles($username, $password, $tags, $workspaces, $name, $offset, $limit) {
 		$result = '';
 		if ($this->loginUser($username, $password)) {
 			$wspaces = Projects::findByCSVIds($workspaces);
@@ -51,10 +51,10 @@ class FilesServices extends WebServicesBase {
 			if (trim($tags) == '') $tags = null;
 			
 			if ($ws == null) {
-				$files = ProjectFiles::getUserFiles(logged_user(), null, $tags, null, ProjectFiles::ORDER_BY_NAME, 'ASC');
+				$files = ProjectFiles::getUserFiles(logged_user(), null, $tags, null, ProjectFiles::ORDER_BY_NAME, 'ASC', $offset, $limit);
 			} else {
 				$listfiles = ProjectFiles::getProjectFiles($ws, null,
-					false, ProjectFiles::ORDER_BY_NAME, 'ASC', null, 1000, false, $tags);
+					false, ProjectFiles::ORDER_BY_NAME, 'ASC', ($offset/$limit), $limit, false, $tags);
 				if (is_array($listfiles) && count($listfiles))
 					$files = $listfiles[0];
 				else $files = array();

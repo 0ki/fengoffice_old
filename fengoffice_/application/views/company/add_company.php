@@ -1,4 +1,5 @@
 <?php 
+	require_javascript('modules/addMessageForm.js');
 	$project = active_or_personal_project();
 	$projects =  active_projects();
 	$genid = gen_id();
@@ -32,7 +33,8 @@
 		<?php if (isset ($projects) && count($projects) > 0) { ?>
 			<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('<?php echo $genid ?>add_company_select_workspace_div',this)"><?php echo lang('workspace') ?></a> - 
 		<?php } ?>
-		<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('<?php echo $genid ?>add_company_add_tags_div', this)"><?php echo lang('tags') ?></a> - 
+		<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('<?php echo $genid ?>add_company_add_tags_div', this)"><?php echo lang('tags') ?></a> -
+		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_company_notes', this)"><?php echo lang('notes') ?></a> - 
 		<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('add_company_timezone',this)"><?php echo lang('timezone') ?></a> -
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_custom_properties_div',this)"><?php echo lang('custom properties') ?></a> -
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_subscribers_div',this)"><?php echo lang('object subscribers') ?></a>
@@ -42,6 +44,7 @@
 		<?php foreach ($categories as $category) { ?>
 			- <a href="#" class="option" <?php if ($category['visible']) echo 'style="font-weight: bold"'; ?> onclick="og.toggleAndBolden('<?php echo $genid . $category['name'] ?>', this)"><?php echo lang($category['name'])?></a>
 		<?php } ?>
+		- <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_custom_properties_div',this)"><?php echo lang('custom properties') ?></a>
 	</div>
   </div>
   <div class="adminSeparator"></div>
@@ -106,6 +109,7 @@
 	<div id='<?php echo $genid ?>add_custom_properties_div' style="display:none">
 		<fieldset>
 			<legend><?php echo lang('custom properties') ?></legend>
+			<?php echo render_object_custom_properties($object, 'Companies', false) ?><br/><br/>
 			<?php echo render_add_custom_properties($object); ?>
 		</fieldset>
 	</div>
@@ -151,7 +155,14 @@
 	</div>
 	
   
-  
+  	<div style="display:none" id="<?php echo $genid ?>add_company_notes">
+	<fieldset><legend><?php echo lang('notes') ?></legend>
+	    <div>
+	      <?php echo label_tag(lang('notes'), $genid.'profileFormNotes') ?>
+	      <?php echo textarea_field('company[notes]', array_var($contact_data, 'notes'), array('id' => $genid.'profileFormNotes', 'tabindex' => '185')) ?>
+	    </div>
+	</fieldset>
+	</div>
 
   <div id="add_company_timezone" style="display:none">
   <fieldset>
@@ -169,6 +180,10 @@
 	</fieldset>
 	</div>
 	<?php } ?>
+	
+	<div>
+		<?php echo render_object_custom_properties($object, 'Companies', true) ?>
+	</div><br/>	
   
 <?php if(!$company->isNew() && $company->isOwner()) { ?>
   <?php echo submit_button(lang('save changes'), 's', array('tabindex' => '200')) ?>

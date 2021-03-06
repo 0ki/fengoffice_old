@@ -10,9 +10,9 @@
       <?php if ($contact->getEmail3()) { ?><div style="padding-left:10px"><a href="mailto:<?php echo clean($contact->getEmail3());?>"><?php echo clean($contact->getEmail3());?></a></div><?php } ?>
       <?php } ?>
       <?php if ($contact->getOBirthday()) { ?><?php echo $hasEmailAddrs? '<br/>':'' ?>
-      <div><span style="font-weight:bold"><?php echo lang('birthday') ?>:</span> <?php if ($contact->getOBirthday() instanceof DateTimeValue) echo clean(format_datetime($contact->getOBirthday(),/*"D M j, Y"*/lang("date format")));?></div><?php } ?>
+      <div><span style="font-weight:bold"><?php echo lang('birthday') ?>:</span> <?php if ($contact->getOBirthday() instanceof DateTimeValue) echo clean(format_datetime($contact->getOBirthday(),user_config_option('date_format', 'd/m/Y')));?></div><?php } ?>
       </td><td>
-      <?php if(is_array($im_values = $contact->getImValues()) && count($contact)) { ?>
+      <?php if(is_array($im_values = $contact->getImValues()) && count($im_values)) { ?>
 	  <span style="font-weight:bold"><?php echo lang('instant messaging') ?>:</span>
       <table class="imAddresses">
 <?php foreach($im_values as $im_value) { ?>
@@ -124,10 +124,10 @@
     </div></td></tr><tr><td colspan=2>
 		<table>
 		<?php foreach($roles as $role){
-			if($role->getProject()){
+			if($role->getProject() instanceof Project && logged_user()->isProjectUser($role->getProject())){
 			?>
 			<tr><td style="text-align:right">
-			<div><?php echo '<span class="project-replace">' . $role->getProject()->getId() . '</span>'?></div>
+			<?php echo '<span class="project-replace">' . $role->getProject()->getId() . '</span>'?>
       </td><td style="padding-left:10px"><div><?php echo $role->getRole()? clean($role->getRole()) : lang('n/a') ?></div></td></tr>
 		<?php 	} //if
 			} //foreach ?>

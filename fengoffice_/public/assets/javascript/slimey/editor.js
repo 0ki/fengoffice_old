@@ -38,7 +38,7 @@ var SlimeyEditor = function(slimey) {
 	this.resizeHandle = document.createElement('div');
 	this.resizeHandle.slimey = this.slimey;
 	this.resizeHandle.className = 'resizeHandle';
-	this.resizeHandle.style.zIndex = 10000;
+	this.resizeHandle.style.zIndex = 100000000;
 	this.resizeHandle.style.position = 'absolute';
 	this.resizeHandle.style.visibility = 'hidden';
 	this.resizeHandle.systemElement = true;
@@ -76,6 +76,7 @@ var SlimeyEditor = function(slimey) {
 			this.slimey.editor.performAction(action);
 			this.style.visibility = 'hidden';
 			this.style.top = -1000;
+			this.editElement = null;
 		});
 	setEventHandler(this.contentEditor, "keyup", function(e) {
 			if (!e) var e = window.event;
@@ -85,6 +86,9 @@ var SlimeyEditor = function(slimey) {
 		});
 	setEventHandler(this.contentEditor, "click", function(e) {
 			if (!e) e = window.event;
+			if (this.editElement) {
+				this.slimey.editor.click(this.editElement);
+			}
 			stopPropagation(e);
 			return false;
 		});
@@ -150,14 +154,15 @@ SlimeyEditor.prototype.setHTML = function(html) {
 			setEventHandler(elem, "dblclick", slimeyEdit);
 			if (elem.tagName == 'IMG') {
 				elem.resizable = true;
-				elem.title = 'Drag the bottom right corner to resize';
+				elem.title = lang("drag the bottom right corner to resize");
 			} else {
 				elem.editable = true;
-				elem.title = 'Double click to edit content';
+				elem.resizable = true;
+				elem.title = lang("double click to edit content");
 			}
 			elem.className = 'slimeyElement';
 			if (!elem.style.zIndex) {
-				elem.style.zIndex = 1000;
+				elem.style.zIndex = 10000;
 			}
 			elem.style.cursor = 'move';
 		}
@@ -335,10 +340,11 @@ SlimeyEditor.prototype.dblclick = function(obj, e) {
 	this.contentEditor.style.fontWeight = obj.style.fontWeight;
 	this.contentEditor.style.fontStyle = obj.style.fontStyle;
 	this.contentEditor.style.textDecoration = obj.style.textDecoration;
+	this.contentEditor.style.textAlign = obj.style.textAlign;
 	this.contentEditor.style.left = obj.style.left;
 	this.contentEditor.style.top = obj.style.top;
-	this.contentEditor.style.width = obj.offsetWidth + 50 + 'px';
-	this.contentEditor.style.height = obj.offsetHeight + 20 + 'px';
+	this.contentEditor.style.width = obj.style.width;
+	this.contentEditor.style.height = obj.style.height;
 	var val = obj.innerHTML;
 	if (obj.tagName == 'UL' || obj.tagName == 'OL') {
 		val = val.replace(/<\/li><li>/gi, '\n');
@@ -418,6 +424,10 @@ SlimeyEditor.prototype.drop = function() {
 			if (neww != oldw || newh != oldh) {
 				var action = new SlimeyResizeAction(this.slimey, neww, newh, oldw, oldh);
 				this.performAction(action);
+				if (this.contentEditor.editElement) {
+					this.contentEditor.style.width = neww;
+					this.contentEditor.style.height = newh;
+				}
 			}
 		}
 	}

@@ -270,6 +270,8 @@ return array(
     'add subscribers desc' => 'Las personas seleccionadas serán suscriptas a este objeto. Usuarios suscritos recibirán correos electrónicos acerca de modificaciones a este objeto.',
     'add custom property' => 'Agregar propiedad personalizada',
 	'fetch imap folders' => 'Obtener carpetas IMAP',
+	'no reports found' => 'No se hallaron reportes para {0}',
+
 
 ); // array
 

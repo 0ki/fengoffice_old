@@ -1,3 +1,6 @@
+<?php 
+require_javascript("og/Permissions.js");
+?>
 <input id="<?php echo $genid ?>hfPerms" type="hidden" value="<?php echo $user->isNew()? '' : str_replace('"',"'", json_encode($user->getAllPermissions())) ?>"/>
 <input id="<?php echo $genid ?>hfPermsSend" name="permissions" type="hidden" value=""/>
 

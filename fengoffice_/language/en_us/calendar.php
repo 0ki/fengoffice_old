@@ -127,7 +127,10 @@
  	'event deleted' => 'Event deleted',
 	'calendar of' => 'Calendar for {0}',
 	'all users' => 'All Users',
-  	'error delete event' => 'Error deleting event',  
+  	'error delete event' => 'Error deleting event',
+  	'event invitation response' => 'Event invitation response',
+  	'user will attend to event' => '{0} will attend to this event.',
+  	'user will not attend to event' => '{0} will not attend to this event',  
   
 	"days" => "days",
 	"weeks" => "weeks",
@@ -153,6 +156,11 @@
 	'success export calendar' => '{0} Events were exported.',
 	'calendar name desc' => 'Name for the calendar to export',
 	'calendar will be exported in icalendar format' => 'Calendar will be exported in iCalendar format.',
-	'view date title' => 'l, m/d/Y',  
+	'view date title' => 'l, m/d/Y',
+
+  	'copy this url in your calendar client software' => 'Copy this url in your calendar client software, in order to import events from this calendar',
+	'import events from third party software' => 'Import events from third party software',
+	'subws' => 'Sub Ws.',
+	'check to include sub ws' => 'Check this to include sub workspaces in the url',
   ); // array
 ?>

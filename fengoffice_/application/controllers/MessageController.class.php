@@ -142,7 +142,32 @@ class MessageController extends ApplicationController {
 					}; // switch
 				}; // for
 				break;
-			
+				
+			case "move":
+				$wsid = $attributes["moveTo"];
+				$count = 0;
+				for($i = 0; $i < count($attributes["ids"]); $i++){
+					$id = $attributes["ids"][$i];
+					$type = $attributes["types"][$i];
+					switch ($type){
+						case "message":
+							$message = ProjectMessages::findById($id);
+							if (isset($message) && $message->canEdit(logged_user())){
+								// TODO
+								//ApplicationLogs::createLog($message, $message->getWorkspaces(), ApplicationLogs::ACTION_EDIT,false,null,true,$tag);
+								$count++;
+							};
+							break;
+
+						default:
+							$resultMessage = lang("Unimplemented type: '" . $type . "'");// if
+							$resultCode = 2;
+							break;
+					}; // switch
+				}; // for
+				$resultMessage = lang("success move objects", $count);
+				break;
+				
 			default:
 				$resultMessage = lang("Unimplemented action: '" . $action . "'");// if 
 				$resultCode = 2;	

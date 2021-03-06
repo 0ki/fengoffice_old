@@ -56,7 +56,7 @@ og.WebpageManager = function() {
 		var actions = '';
 		var actionStyle= ' style="font-size:90%;color:#777777;padding-top:3px;padding-left:18px;background-repeat:no-repeat" '; 
 		actions += String.format('<a class="list-action ico-open-link" href="#" onclick="window.open(\'{0}\')" title="{1}" ' + actionStyle + '> </a>',
-			r.data.url, lang('open link in new window', value));
+			r.data.url.replace(/\"/g, escape("\"")).replace(/\'/g, escape("'")), lang('open link in new window', og.clean(value)));
 		actions = '<span>' + actions + '</span>';
 		
 		var projectsString = String.format('<span class="project-replace">{0}</span>&nbsp;', r.data.wsIds);
@@ -73,7 +73,7 @@ og.WebpageManager = function() {
 		var now = new Date();
 		var dateString = '';
 		if (now.dateFormat('Y-m-d') > value.dateFormat('Y-m-d')) {
-			return lang('last updated by on', userString, value.dateFormat(lang('date format')));
+			return lang('last updated by on', userString, value.dateFormat(og.date_format));
 		} else {
 			return lang('last updated by at', userString, value.dateFormat('h:i a'));
 		}

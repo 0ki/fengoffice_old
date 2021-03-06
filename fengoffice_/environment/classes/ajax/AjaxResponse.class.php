@@ -3,6 +3,8 @@
 class AjaxResponse {
 
 	public $events = array();
+	
+	public $scripts = array();
 
 	public $contents = null;
 
@@ -11,13 +13,7 @@ class AjaxResponse {
 	public $errorCode = 0;
 
 	public $errorMessage = "";
-	
-	public $notbar = false;
-	
-	public $preventClose = false;
-	
-	public $replace = false;
-	
+		
 	function __construct() {
 		$this->contents = new stdClass();
 	}
@@ -26,7 +22,11 @@ class AjaxResponse {
 		$this->events = $events;
 	}
 	
-	function addContent($panel, $type = null, $data = null, $actions = null, $notbar = null, $preventClose = null) {
+	function addScript($url) {
+		$this->scripts[] = is_valid_url($url) ? $url : get_javascript_url($url);
+	}
+	
+	function addContent($panel, $type = null, $data = null, $actions = null, $notbar = null, $preventClose = null, $noback = null) {
 		$this->contents->$panel = array(
 			"type" => $type,
 			"data" => $data
@@ -36,6 +36,9 @@ class AjaxResponse {
 		}
 		if (isset($notbar)) {
 			$this->contents->$panel["notbar"] = $notbar;
+		}
+		if (isset($noback)) {
+			$this->contents->$panel["noback"] = $noback;
 		}
 		if (isset($preventClose)) {
 			$this->contents->$panel["preventClose"] = $preventClose;
@@ -59,10 +62,28 @@ class AjaxResponse {
 			"data" => $data,
 			"actions" => $actions,
 			"panel" => $dpanel,
-			"notbar" => $this->notbar,
-			"preventClose" => $this->preventClose,
-			"replace" => $this->replace,
 		);
+		// extra current content config
+		if (isset($this->notbar)) {
+			$this->current["notbar"] = $this->notbar;
+			unset($this->notbar);
+		}
+		if (isset($this->preventClose)) {
+			$this->current["preventClose"] = $this->preventClose;
+			unset($this->preventClose);
+		}
+		if (isset($this->replace)) {
+			$this->current["replace"] = $this->replace;
+			unset($this->replace);
+		}
+		if (isset($this->noback)) {
+			$this->current["noback"] = $this->noback;
+			unset($this->noback);
+		}
+		if (isset($this->onleave)) {
+			$this->current["onleave"] = $this->onleave;
+			unset($this->onleave);
+		}
 		if ($type == 'html') {
 			$this->current["url"] = "index.php?" . $_SERVER['QUERY_STRING'];
 		}

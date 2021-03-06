@@ -324,7 +324,7 @@ a.selected {
 
 a.iCalSubscribe {
   background: url(../../images/icons/icalendar.png) no-repeat;
-  padding: 4px 0 0 20px;
+  padding: 14px 0 0 16px;
 }
 .textile-rewrite li{
 	list-style-type:circle;

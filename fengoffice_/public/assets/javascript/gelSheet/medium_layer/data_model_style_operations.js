@@ -10,13 +10,19 @@
  *
  */
 function addModelStyleOperations(model){
+	
 	model.getActiveFontStyleId = function(){
 		return (model.selection.getSelection())[0].getFontStyleId();
 	}
 
-	model.setSelectionFontStyleId = function(){
-		return (model.selection.getSelection())[0].getFontStyleId();
+	model.setSelectionFontStyleId = function(fsId){
+		var selection = model.selection.getSelection();
+		for(var i=0;i<selection.length;i++){
+			this.setRangeFontStyleId(selection[i].row, selection[i].col, fsId);
+		}
+		model.refresh(); //TODO: Remove, this should refresh only changed cells
 	}
+	
 	//Should be private
 	model.getRangeFontStyleId = function(rowIndex, colIndex){
 		var fontStyleId = 0; //default
@@ -31,20 +37,6 @@ function addModelStyleOperations(model){
 		return fontStyleId;
 	}
 
-	/** pepe **/
-	model.setRangeBgColor = function (rowIndex, colIndex, color) {
-
-		if(rowIndex!=undefined)
-			if(colIndex!=undefined)//Its a Cell
-				application.grid.cells[rowIndex][colIndex].style.background = color ;
-			else//Its a Row
-				this.model.setRowBgColor(rowIndex,color);
-		else //Its a Column
-			this.model.setColumnBgColor(colIndex,color);
-	}
-		
-		
-
 	//Should be private
 	model.setRangeFontStyleId = function(rowIndex, colIndex,fontStyleId){
 		if(rowIndex!=undefined)
@@ -52,78 +44,13 @@ function addModelStyleOperations(model){
 				this.model.setCellFontStyleId(rowIndex, colIndex, fontStyleId);
 			else//Its a Row
 				this.model.setRowFontStyleId(rowIndex,fontStyleId);
-		else //Its a Column
+		else{ //Its a Column
 			this.model.setColumnFontStyleId(colIndex,fontStyleId);
-	}
-
-	model.changeBoldToSelection = function(){
-		var selection = model.selection.getSelection();
-		var range = undefined;
-		var bold = false;
-
-		if(selection.length){
-			var fstyle = Styler.getFontStyleById(this.getRangeFontStyleId(selection[0].row,selection[0].col));
-			bold = !fstyle.bold;
-			var newStyleId = Styler.getFontStyleId(fstyle.font,fstyle.size,fstyle.color,bold,fstyle.italic,fstyle.underline);
-			this.setRangeFontStyleId(selection[0].row, selection[0].col, newStyleId);
 		}
-
-		for(var i=1;i<selection.length;i++){
-			var fstyle = Styler.getFontStyleById(this.getRangeFontStyleId(selection[i].row, selection[i].col));
-			var newStyleId = Styler.getFontStyleId(fstyle.font,fstyle.size,fstyle.color,bold,fstyle.italic,fstyle.underline);
-			this.setRangeFontStyleId(selection[i].row, selection[i].col, newStyleId);
-		}
-
-		model.refresh(); //TODO: Remove, this should refresh only changed cells
-
-	}
-	model.changeUnderlineToSelection = function(){
-		var selection = model.selection.getSelection();
-		var range = undefined;
-		var underline = false;
-
-		if(selection.length){
-			var fstyle = Styler.getFontStyleById(this.getRangeFontStyleId(selection[0].row,selection[0].col));
-			underline = !fstyle.underline;
-			var newStyleId = Styler.getFontStyleId(fstyle.font,fstyle.size,fstyle.color,fstyle.bold,fstyle.italic,underline);
-			this.setRangeFontStyleId(selection[0].row, selection[0].col, newStyleId);
-		}
-
-		for(var i=1;i<selection.length;i++){
-			var fstyle = Styler.getFontStyleById(this.getRangeFontStyleId(selection[i].row, selection[i].col));
-			var newStyleId = Styler.getFontStyleId(fstyle.font,fstyle.size,fstyle.color,fstyle.bold,ifstyle.talic,underline);
-			this.setRangeFontStyleId(selection[i].row, selection[i].col, newStyleId);
-		}
-
-		model.refresh(); //TODO: Remove, this should refresh only changed cells
-
-	}
-	model.changeItalicToSelection = function(){
-		var selection = model.selection.getSelection();
-		var range = undefined;
-		var italic = false;
-
-		if(selection.length){
-			var fstyle = Styler.getFontStyleById(this.getRangeFontStyleId(selection[0].row,selection[0].col));
-			italic = !fstyle.italic;
-			var newStyleId = Styler.getFontStyleId(fstyle.font,fstyle.size,fstyle.color,fstyle.bold,italic,fstyle.underline);
-			this.setRangeFontStyleId(selection[0].row, selection[0].col, newStyleId);
-		}
-
-		for(var i=1;i<selection.length;i++){
-			var fstyle = Styler.getFontStyleById(this.getRangeFontStyleId(selection[i].row, selection[i].col));
-			var newStyleId = Styler.getFontStyleId(fstyle.font,fstyle.size,fstyle.color,fstyle.bold,italic,fstyle.underline);
-			this.setRangeFontStyleId(selection[i].row, selection[i].col, newStyleId);
-		}
-
-		model.refresh(); //TODO: Remove, this should refresh only changed cells
-
 	}
 	
 	/** pepe **/
 	model.changeBgColorToSelection = function(color) {
-		//Ext.MessageBox.alert('Not implemented Yet.', 'Perico, fijate si encaras programar esta:\n\nFUNCTION: model.changeBgColorToSelection.');
-
 		var selection = model.selection.getSelection();
 		var range = undefined;
 		if(selection.length)
@@ -138,85 +65,75 @@ function addModelStyleOperations(model){
 		}
 
 		model.refresh(); //TODO: Remove, this should refresh only changed cells
-
 	} 
 	
+	
+	/** pepe **/
+	model.setRangeBgColor = function (rowIndex, colIndex, color) {
+		this.model.changeColumnFontStyleProp(colIndex,"bold",true);
+		if(rowIndex!=undefined)
+			if(colIndex!=undefined)//Its a Cell
+				application.grid.cells[rowIndex][colIndex].style.background = color ;
+			else//Its a Row
+				this.model.setRowBgColor(rowIndex,color);
+		else //Its a Column
+			this.model.setColumnBgColor(colIndex,color);
+	}
+		
+	
+	//Should be private
+	model.setRangeFontStyleProperty = function(rowIndex, colIndex,property,value){
+		if(rowIndex!=undefined)
+			if(colIndex!=undefined)//Its a Cell
+				this.model.changeCellFontStyleProp(rowIndex, colIndex, property,value);
+			else//Its a Row
+				this.model.setRowFontStyleId(rowIndex,fontStyleId);
+		else{ //Its a Column
+			this.model.changeColumnFontStyleProp(colIndex,property,value);
+		}
+	}
+	
+	model.changeFontStylePropertyToSelection = function(property,value){
+		var selection = model.selection.getSelection();
+		var range = undefined;
+		
+		if(value==undefined)
+			if(selection.length){
+				var fstyle = Styler.getFontStyleById(this.getRangeFontStyleId(selection[0].row,selection[0].col));
+				value =	!fstyle[property];
+			}
+
+		for(var i=0;i<selection.length;i++){
+			var fstyle = Styler.getFontStyleById(this.getRangeFontStyleId(selection[i].row, selection[i].col));
+			if(value!=fstyle[property])
+				this.setRangeFontStyleProperty(selection[i].row, selection[i].col, property,value);
+		}
+		model.refresh(); //TODO: Remove, this should refresh only changed cells
+	}
+	
+	/*############## Font Style Operations####################*/
+	
+	model.changeBoldToSelection = function(){
+		this.changeFontStylePropertyToSelection("bold")
+	}
+	
+	model.changeUnderlineToSelection = function(){
+		this.changeFontStylePropertyToSelection("underline");
+	}
+	
+	model.changeItalicToSelection = function(){
+		this.changeFontStylePropertyToSelection("italic");
+	}
+	
+	model.changeFontSizeToSelection = function(size){
+		this.changeFontStylePropertyToSelection("size",size);
+	}
+		
+	model.changeFontToSelection = function(font){
+		this.changeFontStylePropertyToSelection("font",font)
+	}
 	
 	model.changeFontColorToSelection = function(color) {
-		var selection = model.selection.getSelection();
-		var range = undefined;
-
-		if(selection.length){
-			var fstyle = Styler.getFontStyleById(this.getRangeFontStyleId(selection[0].row,selection[0].col));
-			if(color!=fstyle.color){
-				var newStyleId = Styler.getFontStyleId(fstyle.font,fstyle.size,color,fstyle.bold,fstyle.italic,fstyle.underline);
-				this.setRangeFontStyleId(selection[0].row, selection[0].col, newStyleId);
-			}
-		}
-
-		for(var i=1;i<selection.length;i++){
-			alert(i) ;
-			var fstyle = Styler.getFontStyleById(this.getRangeFontStyleId(selection[i].row, selection[i].col));
-			if(font!=fstyle.font){
-				var newStyleId = Styler.getFontStyleId(fstyle.font,fstyle.size,color,fstyle.bold,fstyle.italic,fstyle.underline);
-				this.setRangeFontStyleId(selection[i].row, selection[i].col, newStyleId);
-			}
-		}
-
-		model.refresh(); //TODO: Remove, this should refresh only changed cells
-
+		this.changeFontStylePropertyToSelection("color",color);
 	} 
-	/*****Pepe *****/
-	
-	
-	
-	
-	model.changeFontToSelection = function(font){
-		var selection = model.selection.getSelection();
-		var range = undefined;
-
-		if(selection.length){
-			var fstyle = Styler.getFontStyleById(this.getRangeFontStyleId(selection[0].row,selection[0].col));
-			if(font!=fstyle.font){
-				var newStyleId = Styler.getFontStyleId(font,fstyle.size,fstyle.color,fstyle.bold,fstyle.italic,fstyle.underline);
-				this.setRangeFontStyleId(selection[0].row, selection[0].col, newStyleId);
-			}
-		}
-
-		for(var i=1;i<selection.length;i++){
-			var fstyle = Styler.getFontStyleById(this.getRangeFontStyleId(selection[i].row, selection[i].col));
-			if(font!=fstyle.font){
-				var newStyleId = Styler.getFontStyleId(font,fstyle.size,fstyle.color,fstyle.bold,fstyle.italic,fstyle.underline);
-				this.setRangeFontStyleId(selection[i].row, selection[i].col, newStyleId);
-			}
-		}
-
-		model.refresh(); //TODO: Remove, this should refresh only changed cells
-
-	}
-
-	model.changeFontSizeToSelection = function(size){
-		var selection = model.selection.getSelection();
-		var range = undefined;
-
-		if(selection.length){
-			var fstyle = Styler.getFontStyleById(this.getRangeFontStyleId(selection[0].row,selection[0].col));
-			if(size!=fstyle.size){
-				var newStyleId = Styler.getFontStyleId(fstyle.font,size,fstyle.color,fstyle.bold,fstyle.italic,fstyle.underline);
-				this.setRangeFontStyleId(selection[0].row, selection[0].col, newStyleId);
-			}
-		}
-
-		for(var i=1;i<selection.length;i++){
-			var fstyle = Styler.getFontStyleById(this.getRangeFontStyleId(selection[i].row, selection[i].col));
-			if(size!=fstyle.size){
-				var newStyleId = Styler.getFontStyleId(fstyle.font,size,fstyle.color,fstyle.bold,fstyle.italic,fstyle.underline);
-				this.setRangeFontStyleId(selection[i].row, selection[i].col, newStyleId);
-			}
-		}
-
-		model.refresh(); //TODO: Remove, this should refresh only changed cells
-
-	}
-
 }

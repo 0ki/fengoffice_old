@@ -278,6 +278,28 @@
     } // setCanManageTemplates()
     
     /**
+    * Return value of 'can_manage_reports' field
+    *
+    * @access public
+    * @param void
+    * @return boolean 
+    */
+    function getCanManageReports() {
+      return $this->getColumnValue('can_manage_reports');
+    } // getCanManageReports()
+    
+    /**
+    * Set value of 'can_manage_reports' field
+    *
+    * @access public
+    * @param void
+    * @return boolean 
+    */
+    function setCanManageReports($value) {
+      return $this->setColumnValue('can_manage_reports', $value);
+    } // setCanManageReports()
+    
+    /**
     * Return manager instance
     *
     * @access protected

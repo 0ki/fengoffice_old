@@ -29,6 +29,7 @@ class AccountController extends ApplicationController {
 	 * @return null
 	 */
 	function index() {
+		$this->setHelp("account");
 		$this->setTemplate("card");
 		$this->setControllerName("user");
 		tpl_assign('user', logged_user());
@@ -185,6 +186,13 @@ class AccountController extends ApplicationController {
 				if($new_password <> $new_password_again) {
 					throw new Error(lang('passwords dont match'));
 				} // if
+				
+				$user_password = new UserPassword();
+				$user_password->setUserId(get_id());
+				$user_password->password_temp = $new_password;
+				$user_password->setPasswordDate(DateTimeValueLib::now());
+				$user_password->setPassword(cp_encrypt($new_password, $user_password->getPasswordDate()->getTimestamp()));
+				$user_password->save();
 
 				$user->setPassword($new_password);
 				$user->save();
@@ -251,6 +259,7 @@ class AccountController extends ApplicationController {
 	          'can_manage_configuration' => $user->getCanManageConfiguration(),
 	          'can_manage_contacts' => $user->getCanManageContacts(),
 			  'can_manage_templates' => $user->getCanManageTemplates(),
+			  'can_manage_reports' => $user->getCanManageReports(),
 			); // array			
 		} // if
 
@@ -301,6 +310,7 @@ class AccountController extends ApplicationController {
 				$user->setCanManageWorkspaces(false);
 				$user->setCanManageContacts(false);
 				$user->setCanManageTemplates(false);
+				$user->setCanManageReports(false);
 				$user->setFromAttributes($user_data);
 				$user->save();
 				DB::commit();

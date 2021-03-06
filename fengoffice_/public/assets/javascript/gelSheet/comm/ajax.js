@@ -84,6 +84,7 @@ function bookSaveServerResponse(data){
 }
 
 function sendBook(data, format){
+
 	if( (format == 'pdf')  ||
 		(format == 'xls') ||
 		(format == 'xlsx') ||
@@ -101,7 +102,7 @@ function sendBook(data, format){
 		//link.click();
 	}
 	var callback;
-	if(!format) {
+	if(format == undefined ) {
 		callback = bookSaveServerResponse;
 		sendServerData("","c=Spreadsheet&m=saveBook&param1="+escape(data)+"&param2=json"+"&param3="+format,callback);
 	}

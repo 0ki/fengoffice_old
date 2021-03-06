@@ -26,7 +26,7 @@ foreach($billing_categories as $billing) {
 	$isAlt = !$isAlt; ?>
   <tr class="<?php echo $isAlt? 'altRow' : ''?>">
     <td style="padding:5px;padding-left:10px;padding-right:10px;font-weight:bold"><a class="internalLink" href="<?php echo $billing->getEditUrl() ?>" title="<?php echo lang('edit') ?>"><?php echo clean($billing->getName()) ?></a></td>
-    <td style="text-align: center;padding:5px;padding-left:10px;padding-right:10px;">$&nbsp;<?php echo clean($billing->getDefaultValue()) ?></td>
+    <td style="text-align: center;padding:5px;padding-left:10px;padding-right:10px;"><?php echo config_option('currency_code', '$') ?>&nbsp;<?php echo clean($billing->getDefaultValue()) ?></td>
     <td style="padding:5px;padding-left:10px;padding-right:10px;"><?php echo clean($billing->getDescription()) ?></td>
 <?php 
   $options = array(); 

@@ -269,6 +269,7 @@ return array(
 	'add subscribers desc' => 'Subscribe selected people to this object. Subscribed users will receive notifications about changes made to this object.',
 	'add custom property' => 'Add a custom property',
 	'fetch imap folders' => 'Fetch IMAP folders',
+	'no reports found' => 'No reports found for {0}',
 ); // array
 
 ?>

@@ -22,6 +22,13 @@ class HelpController extends ApplicationController {
 	function view_message(){
 		
 	}
+	
+	function get_help_content(){
+		if(!array_var($_GET, 'template')) return;
+		$template = array_var($_GET, 'template');
+		ajx_current("empty");
+		ajx_extra_data(array("content" => load_help($template), "is_help_data" => 1));
+	}
 } // HelpController
 
 ?>

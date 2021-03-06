@@ -1,4 +1,5 @@
 <?php
+	require_javascript("og/Permissions.js");
 	$genid = gen_id();
   set_page_title(lang('update permissions'));
   
@@ -44,6 +45,10 @@
 	    <div>
 	      <?php echo checkbox_field('user[can_manage_templates]', array_var($user_data,'can_manage_templates'), array('id' => 'user[can_manage_templates]' )) ?> 
 	      <label for="<?php echo 'user[can_manage_templates]' ?>" class="checkbox"><?php echo lang('can manage templates') ?></label>
+	    </div>
+	    <div>
+	      <?php echo checkbox_field('user[can_manage_reports]', array_var($user_data,'can_manage_reports'), array('id' => 'user[can_manage_reports]' )) ?> 
+	      <label for="<?php echo 'user[can_manage_reports]' ?>" class="checkbox"><?php echo lang('can manage reports') ?></label>
 	    </div>
 	</div>
 </fieldset>

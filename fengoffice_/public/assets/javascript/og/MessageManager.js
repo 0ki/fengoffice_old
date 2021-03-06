@@ -87,7 +87,7 @@ og.MessageManager = function() {
 	
 		var now = new Date();
 		if (now.dateFormat('Y-m-d') > value.dateFormat('Y-m-d')) {
-			return lang('last updated by on', userString, value.dateFormat(lang('date format')));
+			return lang('last updated by on', userString, value.dateFormat(og.date_format));
 		} else {
 			return lang('last updated by at', userString, value.dateFormat('h:i a'));
 		}

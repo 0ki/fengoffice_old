@@ -42,6 +42,7 @@ function DataSelectionHandler(){
 		}
 
 		self.setSelection = function(range){
+//			alert(range.toSource());
 			this.unsetSelection();
 			this.selection.push(range);
 			//range.select();

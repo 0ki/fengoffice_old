@@ -1,4 +1,5 @@
-<?php 
+<?php
+  require_javascript('modules/addMessageForm.js'); 
   set_page_title($webpage->isNew() ? lang('add webpage') : lang('edit webpage'));
   if ($webpage->isNew()) {
   	$project = active_or_personal_project();
@@ -77,6 +78,7 @@
 	<div id='add_custom_properties_div' style="display:none">
 	<fieldset>
 	<legend><?php echo lang('custom properties') ?></legend>
+		<?php echo render_object_custom_properties($object, 'ProjectWebPages', false) ?><br/><br/>
 		<?php echo render_add_custom_properties($object); ?>
 	</fieldset>
 	</div>
@@ -134,6 +136,10 @@
 	</fieldset>
 	</div>
 	<?php } ?>
+	
+	<div>
+		<?php echo render_object_custom_properties($object, 'ProjectWebPages', true) ?>
+	</div><br/>
   
   <?php echo submit_button($webpage->isNew() ? lang('add webpage') : lang('save changes'), 's', 
   	array('tabindex' => '200')) ?>

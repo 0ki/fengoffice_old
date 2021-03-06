@@ -1,4 +1,7 @@
-<?php $task_list = $object; ?>
+<?php
+require_javascript("modules/addTaskForm.js");
+$task_list = $object;
+?>
 <script type="text/javascript">
   if(App.modules.addTaskForm) {
     App.modules.addTaskForm.task_lists[<?php echo $task_list->getId() ?>] = {

@@ -35,7 +35,7 @@ og.ImageChooser = function(config) {
 	var formatData = function(data) {
     	data.shortName = og.clean(data.name.ellipse(15));
     	data.sizeString = og.clean(formatSize(data));
-    	data.dateString = new Date(data.lastmod).format(lang('date format') + (og.timeFormat24 ? " G:i" : " g:i a"));
+    	data.dateString = new Date(data.lastmod).format(og.date_format + (og.timeFormat24 ? " G:i" : " g:i a"));
     	this.lookup[data.name] = data;
     	return data;
     };

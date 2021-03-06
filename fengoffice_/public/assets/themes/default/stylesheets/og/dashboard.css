@@ -141,12 +141,21 @@
 		Calendar
 ----------------------------------------*/
 
-.dashCalendar .dashHeader{
+.dashCalendar .dashHeader {
 	color: white;
 	background: #717FA1;
 	border-color: #596480;
 }
 
+/*----------------------------------------
+		Getting Started
+----------------------------------------*/
+
+.dashGettingStarted .dashHeader {
+	color: white;
+	background: #717FA1;
+	border-color: #596480;
+}
 
 /*----------------------------------------
 		Documents

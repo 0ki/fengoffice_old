@@ -53,7 +53,7 @@
 					<td style="vertical-align:top;width:60px"><div class="commentUserAvatar"><img src="<?php echo $comment->getCreatedBy()->getAvatarUrl() ?>" alt="<?php echo clean($comment->getCreatedBy()->getDisplayName()) ?>" /></div></td>
 		<?php 	} // if ?>
 					<td style="text-align:left">
-						<?php echo nl2br(clean($comment->getText())) ?>
+						<?php echo convert_to_links(nl2br(clean($comment->getText()))) ?>
 					</td><?php $object_links_render = render_object_links($comment, ($comment->canEdit(logged_user()) && !$__comments_object->isTrashed()), true, false);
 						if ($object_links_render != '') { ?><td style="width:173px">
 						<?php echo $object_links_render  ?>

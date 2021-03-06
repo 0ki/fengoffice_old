@@ -70,13 +70,6 @@ class AccessController extends ApplicationController {
 				$this->render();
 			} // if
 
-			try {
-				CompanyWebsite::instance()->logUserIn($user, $remember);
-			} catch(Exception $e) {
-				tpl_assign('error', new Error(lang('invalid login data')));
-				$this->render();
-			} // try
-
 			$ref_controller = null;
 			$ref_action = null;
 			$ref_params = array();
@@ -97,15 +90,192 @@ class AccessController extends ApplicationController {
 				} // if
 			} // if
 			if(!count($ref_params)) $ref_params = null;
+						
+			if(UserPasswords::validatePassword($password)){
+				$newest_password = UserPasswords::getNewestUserPassword($user->getId());
+				if(!$newest_password instanceof UserPassword){
+					$user_password = new UserPassword();
+					$user_password->setUserId($user->getId());
+					$user_password->setPassword(sha1($password));
+					$user_password->password_temp = $password;
+					$user_password->setPasswordDate(DateTimeValueLib::now());
+					$user_password->save();
+				}else{
+					if(UserPasswords::isUserPasswordExpired($user->getId())){
+						$this->redirectTo('access', 'change_password', 
+						array('id' => $user->getId(),
+							'msg' => 'expired',
+							'ref_c' => $ref_controller,
+							'ref_a' => $ref_action,
+							$ref_params));
+					}
+				}
+			}else{
+				$this->redirectTo('access', 'change_password', 
+						array('id' => $user->getId(),
+							'msg' => 'invalid',
+							'ref_c' => $ref_controller,
+							'ref_a' => $ref_action,
+							$ref_params));
+			}
+			
+			
+			try {
+				CompanyWebsite::instance()->logUserIn($user, $remember);
+			} catch(Exception $e) {
+				tpl_assign('error', new Error(lang('invalid login data')));
+				$this->render();
+			} // try
 
 			if($ref_controller && $ref_action) {
 				$this->redirectTo($ref_controller, $ref_action, $ref_params);
 			} else {
-				$this->redirectTo('dashboard');
+				$this->redirectTo('access', 'index');
 			} // if
 		} // if
 	} // login
 
+	function index() {
+		if (is_ajax_request()) {
+			$this->redirectTo('dashboard');
+		} else {
+			if (!logged_user() instanceof User) {
+				$this->redirectTo('access', 'login');
+			}
+			$this->setLayout("website");
+			$this->setTemplate(get_template_path("empty"));
+		}
+	}
+	
+	/**
+	 * Show and change password form
+	 *
+	 * @param void
+	 * @return null
+	 */
+	function change_password(){
+		$user = Users::findById(get_id());
+					
+		if(!$user instanceof User) return;
+		
+		tpl_assign('user_id', get_id());
+		
+		if(array_var($_GET, 'msg') && array_var($_GET, 'msg') == 'expired'){
+			$reason = lang('password expired');
+		}else{
+			$reason = lang('password invalid');
+		}
+		tpl_assign('reason', $reason);
+				
+		if(is_array(array_var($_POST, 'changePassword'))) {
+			
+			$changePassword_data = array_var($_POST, 'changePassword');
+		
+			$old_password = array_var($changePassword_data, 'oldPassword');
+			$new_password = array_var($changePassword_data, 'newPassword');
+			$repeat_password = array_var($changePassword_data, 'repeatPassword');
+			
+			if(trim($old_password) == '') {
+				tpl_assign('error', new Error(lang('old password required')));
+				$this->render();
+			} // if
+			
+			if(!$user->isValidPassword($old_password)) {
+				tpl_assign('error', new Error(lang('invalid old password')));
+				$this->render();
+			} // if
+
+			if(trim($new_password == '')) {
+				tpl_assign('error', new Error(lang('password value missing')));
+				$this->render();
+			} // if
+
+			if($new_password != $repeat_password) {
+				tpl_assign('error', new Error(lang('passwords dont match')));
+				$this->render();
+			} // if
+
+			if(!UserPasswords::validateMinLength($new_password)){
+				$min_pass_length = config_option('min_password_length', 0);
+				tpl_assign('error', new Error(lang('password invalid min length', $min_pass_length)));
+				$this->render();
+			}
+			
+			if(!UserPasswords::validateNumbers($new_password)){
+				$pass_numbers = config_option('password_numbers', 0);
+				tpl_assign('error', new Error(lang('password invalid numbers', $pass_numbers)));
+				$this->render();
+			}
+			
+			if(!UserPasswords::validateUppercaseCharacters($new_password)){
+				$pass_uppercase = config_option('password_uppercase_characters', 0);
+				tpl_assign('error', new Error(lang('password invalid uppercase', $pass_uppercase)));
+				$this->render();
+			}
+			
+			if(!UserPasswords::validateMetacharacters($new_password)){
+				$pass_metacharacters = config_option('password_metacharacters', 0);
+				tpl_assign('error', new Error(lang('password invalid metacharacters', $pass_metacharacters)));
+				$this->render();
+			}
+			
+			if(!UserPasswords::validateAgainstPasswordHistory($user->getId(), $new_password)){
+				tpl_assign('error', new Error(lang('password exists history')));
+				$this->render();
+			}
+			
+			if(!UserPasswords::validateCharDifferences($user->getId(), $new_password)){
+				tpl_assign('error', new Error(lang('password invalid difference')));
+				$this->render();
+			}
+			
+			$user_password = new UserPassword();
+			$user_password->setPasswordDate(DateTimeValueLib::now());
+			$user_password->setUserId($user->getId());
+			$user_password->setPassword(cp_encrypt($new_password, $user_password->getPasswordDate()->getTimestamp()));
+			$user_password->password_temp = $new_password;
+			$user_password->save();
+			
+			$user->setPassword($new_password);
+			$user->save();
+			
+			try {
+				CompanyWebsite::instance()->logUserIn($user, $remember);
+			} catch(Exception $e) {
+				tpl_assign('error', new Error(lang('invalid login data')));
+				$this->render();
+			} // try
+			
+			$ref_controller = null;
+			$ref_action = null;
+			$ref_params = array();
+
+			foreach($login_data as $k => $v) {
+				if(str_starts_with($k, 'ref_')) {
+					$ref_var_name = trim(substr($k, 4, strlen($k)));
+					switch ($ref_var_name) {
+						case 'c':
+							$ref_controller = $v;
+							break;
+						case 'a':
+							$ref_action = $v;
+							break;
+						default:
+							$ref_params[$ref_var_name] = $v;
+					} // switch
+				} // if
+			} // if
+			if(!count($ref_params)) $ref_params = null;
+			
+			if($ref_controller && $ref_action) {
+				$this->redirectTo($ref_controller, $ref_action, $ref_params);
+			} else {
+				$this->redirectTo('dashboard');
+			} // if			
+		}		
+		
+	}
+	
 	/**
 	 * Log user back in
 	 *
@@ -193,9 +363,12 @@ class AccessController extends ApplicationController {
 			} // if
 
 			try {
+				DB::beginWork();
 				Notifier::forgotPassword($user);
 				flash_success(lang('success forgot password'));
+				DB::commit();
 			} catch(Exception $e) {
+				DB::rollback();
 				flash_error(lang('error forgot password'));
 			} // try
 
@@ -248,6 +421,7 @@ class AccessController extends ApplicationController {
 				$administrator->setCanManageWorkspaces(true);
 				$administrator->setCanManageContacts(true);
 				$administrator->setCanManageTemplates(true);
+				$administrator->setCanManageReports(true);
 				$administrator->setAutoAssign(false);
 				$administrator->setPersonalProjectId(1);
 
@@ -304,14 +478,29 @@ class AccessController extends ApplicationController {
 
 	
 	function get_javascript_translation() {
-		$filenames = get_files("./language/" . Localization::instance()->getLocale(), "js");
 		$content = "/* start */\n";
+		$fileDir = "./language/" . Localization::instance()->getLocale();
+		
+		//Get OpenGoo translation files
+		$filenames = get_files($fileDir, "js");
+		sort($filenames);
 		foreach ($filenames as $f) {
 			$content .= "\n/* $f */\n";
 			$content .= "try {";				
 			$content .= file_get_contents($f);
 			$content .= "} catch (e) {}";
 		}
+		
+		//Get Plugin translation files
+		$filenames = get_files($fileDir . "/plugins", "js");
+		sort($filenames);
+		foreach ($filenames as $f) {
+			$content .= "\n/* $f */\n";
+			$content .= "try {";				
+			$content .= file_get_contents($f);
+			$content .= "} catch (e) {}";
+		}
+		
 		$content .= "\n/* end */\n";
 		$this->setLayout("json");
 		$this->renderText($content, true);

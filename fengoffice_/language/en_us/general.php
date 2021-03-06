@@ -6,6 +6,7 @@
     'password' => 'Password',
     'password again' => 'Repeat password',
     'old password' => 'Old password',
+  	'new password' => 'New password',
     'remember me' => 'Remember me for 14 days',
     'email address' => 'Email address',
     'display name' => 'Display name',
@@ -23,6 +24,7 @@
     'update' => 'Update',
     'submit' => 'Submit',
     'reset' => 'Reset',
+  	'change' => 'Change',
     'name' => 'Name',
     'title' => 'Title',
     'description' => 'Description',
@@ -175,7 +177,9 @@
   
   	'date format' => 'm/d/Y',
   	'date format description' => '(mm/dd/yyyy)',
-  	'confirm move to trash' => 'Are you sure you want to move the selected object to the trash?'
+  	'confirm move to trash' => 'Are you sure you want to move the selected object to the trash?',
+  
+  	'remove' => 'Remove'
 
   ); // array
 

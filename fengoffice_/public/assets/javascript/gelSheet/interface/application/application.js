@@ -92,8 +92,8 @@ function Application(container){
 		        el:'center',
 		        xtype: 'tabpanel',
 		        items: {
-		            title: 'Default Tab',
-		            html: 'The first tab\'s content. Others may be added dynamically'
+		            title: 'sheet1'
+//		            html: 'The first tab\'s content. Others may be added dynamically'
 		        }
 		    }, {
 		        region: 'south',
@@ -138,7 +138,6 @@ function Application(container){
 		*/
 
 		this.eventManager = new EventHandler();
-
 		//Create Key Manager
 		this.keyManager = new KeyHandler();
 		/*this.keyManager.addAction(navBar.pageUp,false, CH_PAGE_UP);
@@ -190,12 +189,10 @@ function Application(container){
 		window.colorPaletteActive = false ;
 
 		container.appendChild(this.colorPalette) ;
-		
-			
     }
 
-
     self.loadSheet = function(response){
+    	this.activeBook.setId(response.data.id);
     	scLoadSheet(this.activeSheet, response.data);
     	//this.model.setDataModel(this.activeSheet);
     	this.model.refresh();
@@ -203,25 +200,46 @@ function Application(container){
     }
     
     self.bookLoaded = function(data){
+    	alert(data.toSource());
     	scLoadSheet(this.activeSheet, data);
     	//this.model.setDataModel(this.activeSheet);
     	this.model.refresh();
     }
-
 
 	self.setBookName = function(bookName){
 		this.activeBook.setName(bookName);
 		document.title = "Opengoo Gel Sheet - " + bookName;
 	};
     
-    
-    
+
+    /**
+     * Edit Book
+     */
+	self.editBook = function() {
+		//var bookId = "null";
+		var bookId = self.activeBook.getId();
+		if ( bookId == undefined ) {
+			saveBookConfirm() ;
+			return ;
+		} 
+		
+		var json = '{"bookId":'+ bookId + ',"bookName":"'+ self.activeBook.getName()+'"';
+	    json +=	',"sheets":['; //Start of Sheets Array
+    	json += scSheetToJSON(self.activeSheet);
+	 	json += "]"; //End of Sheets Array
+	 	json += ","+fscFontsStyleToJSON();
+	    json += "}"; //End of Book
+		sendBook(json);
+	}
+
+
     
     /**
      * Save As..
      */
 	self.saveBook = function(bookName, format) {
 		var bookId = "null";
+		//var bookId = this.activeBook.getId(); 
 		if(typeof format == 'undefined' && typeof bookName == 'undefined') { //if not save as...
 			if(window.ogID) {
 				bookName = this.activeBook.getName();
@@ -265,7 +283,6 @@ function Application(container){
 
 	}
 
-
 /*
     self.saveBook = function(){
     	var json = '{"bookId":null,"bookName":"'+ activeBook.getName()+'"';
@@ -297,4 +314,58 @@ function Application(container){
     window.application = self;
     return self;
 }
+
+/** This is high-level function.
+ * It must react to delta being more/less than zero.
+ * http://adomas.org/javascript-mouse-wheel/
+ */
+function handle(delta) {
+        if (delta < 0)
+		alert("menor");
+        else
+		alert("maher");
+}
+
+/** Event handler for mouse wheel event.
+ */
+function wheel(event){
+        var delta = 0;
+        if (!event) /* For IE. */
+                event = window.event;
+        if (event.wheelDelta) { /* IE/Opera. */
+                delta = event.wheelDelta/120;
+                /** In Opera 9, delta differs in sign as compared to IE.
+                 */
+                if (window.opera)
+                        delta = -delta;
+        } else if (event.detail) { /** Mozilla case. */
+                /** In Mozilla, sign of delta is different than in IE.
+                 * Also, delta is multiple of 3.
+                 */
+                delta = -event.detail/3;
+        }
+        /** If delta is nonzero, handle it.
+         * Basically, delta is now positive if wheel was scrolled up,
+         * and negative, if wheel was scrolled down.
+         */
+        if (delta)
+                handle(delta);
+        /** Prevent default actions caused by mouse wheel.
+         * That might be ugly, but we handle scrolls somehow
+         * anyway, so don't bother here..
+         */
+        if (event.preventDefault)
+                event.preventDefault();
+	event.returnValue = false;
+}
+
+/** Initialization code. 
+ * If you use your own event management code, change it as required.
+ */
+//if (window.addEventListener)
+//        /** DOMMouseScroll is for mozilla. */
+//        window.addEventListener('DOMMouseScroll', wheel, false);
+///** IE/Opera. */
+//window.onmousewheel = document.onmousewheel = wheel;
+
 

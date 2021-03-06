@@ -11,7 +11,9 @@
 
     <title>OpenGoo Gel SpreadSheet</title>
     
-
+	<script type="text/javascript" src="../php/?c=Language&m=getLanguages"></script>
+	
+	
     <!--******************* External Libraries *********************-->
     <script type="text/javascript" src="../../extjs/adapter/ext/ext-base.js"></script>
     <script type="text/javascript" src="../../extjs/ext-all.js"></script>
@@ -50,7 +52,7 @@
    	
     <script type="text/javascript" src="./application/application.js"></script>
     <script type="text/javascript" src="./application/application_events.js"></script>
-    <script type="text/javascript" src="./application/application_toolbars.js"></script>
+
     <script type="text/javascript" src="./application/application_dialogs.js"></script>
     <script type="text/javascript" src="./application/formulabar.js"></script>
 
@@ -79,6 +81,7 @@
 	<script type="text/javascript" src="../logic/book.js"></script>
     <script type="text/javascript" src="../logic/sheet.js"></script>
     <script type="text/javascript" src="../logic/sheet_style_operations.js"></script>
+    <script type="text/javascript" src="../logic/formula_parser.js"></script>
     <script type="text/javascript" src="../logic/cell.js"></script>
     <script type="text/javascript" src="../logic/row.js"></script>
     <script type="text/javascript" src="../logic/column.js"></script>
@@ -92,14 +95,18 @@
     	
         function load(){			
         	var application = new Application(document.body);
-<?php if (isset($_GET['book'])) {  ?>
-        	loadData(<?php echo $_GET['book'] ?>);
-<?php } ?>
-<?php if (isset($_GET['id'])) { ?>
-			window.ogID = <?php echo $_GET['id'] ?>;
-<?php } ?>
+			<?php if (isset($_GET['book'])) {  ?>
+			        	loadData(<?php echo $_GET['book'] ?>);
+			<?php } ?>
+			<?php if (isset($_GET['id'])) { ?>
+						window.ogID = <?php echo $_GET['id'] ?>;
+			<?php } ?>
 //   			application.model.refresh();
-
+			
+			var logo_div = document.getElementById('logo');
+			if ( logo_div ) {
+				logo_div.style.display = "block"; 
+			}
         	
         	/*
         	var openfiledialog = new OpenFileDialog(100,100,300,300);
@@ -133,7 +140,7 @@
     </script>
 </head>
 <body id="body" onload="load();" >
-  <div id="logo" style="z-index: 1001" ></div>
+  <div id="logo" style="z-index: 1001; display: none" ></div>
   <div id="west"></div>
   <div id="north">
   </div>

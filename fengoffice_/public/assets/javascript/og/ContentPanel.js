@@ -29,6 +29,7 @@ og.ContentPanel = function(config) {
 	og.ContentPanel.superclass.constructor.call(this, config);
 	
 	this.history = [];
+	this.help = '';
 	this.contentLoaded = false;
 	
 	this.onClose = config.onClose;
@@ -79,6 +80,9 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 				this.load(this.defaultContent);
 			}
 		}
+		if(this.help.data){
+			Ext.getCmp('help-panel').load(this.help);
+		}
 	},
 	
 	deactivate: function() {
@@ -86,6 +90,17 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 		if (this.getComponent(0).deactivate) {
 			this.getComponent(0).deactivate();
 		}
+	},
+	
+	setHelp: function(help){
+		this.help = help; 
+	},
+	
+	hasHelp: function(){
+		if(this.help != ''){
+			return true;
+		}
+		return false;
 	},
 	
 	setPreventClose: function(prevent) {
@@ -124,6 +139,9 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 			}
 			return false;
 		}
+		if (this.content && this.content.onleave) {
+			eval(this.content.onleave);
+		}
 		if (content.type == 'start') {
 			if (this.closable) {
 				this.ownerCt.remove(this);
@@ -132,7 +150,13 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 			}
 			return false;
 		} else if (content.type == 'back') {
-			this.back();
+			if (typeof content.data == 'number') {
+				for (var i=0; i < content.data; i++) {
+					this.back();
+				}
+			} else {
+				this.back();
+			}
 			return false;
 		} else if (content.type == 'reload') {
 			this.reload();
@@ -148,6 +172,7 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 				data: content
 			}
 		}
+
 		this.content = content;
 		if (this.content.type != 'url') {
 			var i=0;
@@ -165,7 +190,7 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 		
 		
 		if (content.type == 'html') {
-			if (this.history.length > 0) {
+			if (this.history.length > 0 && !content.noback) {
 				var tbar = [{
 					text: lang('back'),
 					handler: function() {
@@ -188,25 +213,29 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 			}
 			if (content.actions) {
 				for (var i=0; i < content.actions.length; i++) {
-					tbar.push({
-						text: content.actions[i].title,
-						handler: function() {
-							if (this.url.indexOf('javascript:') == 0) {
-								var js = this.url.substring(11);
-								eval(js);
-							} else {
-								if (this.target == '_blank') {
-									window.open(this.url);
-								} else if (this.target) {
-									og.openLink(this.url, {caller: this.target});
+					if (content.actions[i].title == '-') {
+						tbar.push('-');
+					} else {
+						tbar.push({
+							text: content.actions[i].title,
+							handler: function() {
+								if (this.url.indexOf('javascript:') == 0) {
+									var js = this.url.substring(11);
+									eval(js);
 								} else {
-									og.openLink(this.url);
+									if (this.target == '_blank') {
+										window.open(this.url);
+									} else if (this.target) {
+										og.openLink(this.url, {caller: this.target});
+									} else {
+										og.openLink(this.url);
+									}
 								}
-							}
-						},
-						scope: content.actions[i],
-						iconCls: content.actions[i].name
-					});
+							},
+							scope: content.actions[i],
+							iconCls: content.actions[i].name
+						});
+					}
 				}
 			}
 			if (content.notbar){

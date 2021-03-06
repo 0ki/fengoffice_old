@@ -9,7 +9,6 @@
     <div class="userAvatar"><img src="<?php echo $user->getAvatarUrl() ?>" alt="<?php echo clean($user->getDisplayName()) ?> <?php echo lang('avatar') ?>" /></div>
     <div class="userDetails">
       <div class="userName"><a class="internalLink" href="<?php echo $user->getCardUrl() ?>"><?php echo clean($user->getDisplayName()) ?></a></div> 
-      <div><a class="internalLink" href="<?php echo $user->getCompany()->getCardUrl() ?>"><?php echo clean($user->getCompany()->getName()) ?></a></div> 
       
 <?php if(isset($company) && $company && $company->isOwner()) { ?>
 	<?php if ($user->isAdministrator()) { ?>
@@ -43,6 +42,5 @@
 <p><?php echo lang('no users in company') ; ?></p>
 <?php } // if 
  	if(isset($company) && $company){
-		echo  "<a href='" . $company->getAddUserUrl() . "' class='internalLink'>" . lang('add user') . "</a>";
-    }
-	?>
+		echo  "<div style='padding:10px'><a href='" . $company->getAddUserUrl() . "' class='internalLink coViewAction ico-add'>" . lang('add user') . "</a></div>";
+ 	} ?>

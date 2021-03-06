@@ -495,6 +495,5 @@ addLangs({
 	'calendar import - export': 'Importa/esporta agenda',
 	'view weblink': 'Vedi collegamento web',
 	'print all groups': 'Stampa',
-	'print this group': 'Stampa',
-	'new version notification title': 'New version'
+	'print this group': 'Stampa'
 });

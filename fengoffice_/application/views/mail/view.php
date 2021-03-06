@@ -14,6 +14,9 @@
 	}
 	if ($email->canEdit(logged_user()) && !$email->isTrashed() && $email->getCreatedById() == logged_user()->getId()){
 		add_page_action(lang('classify'), $email->getClassifyUrl(), 'ico-classify');
+		// if is classified, allow unclassify
+		if ($email->getWorkspacesIdsCSV(logged_user()->getActiveProjectIdsCSV()))
+			add_page_action(lang('unclassify'), "javascript:if(confirm(lang('confirm unclassify email'))) og.openLink('" . $email->getUnclassifyUrl() ."');", 'ico-unclassify');
 	}
   
 	$c = 0;
@@ -56,10 +59,22 @@
   $description .= '</table></div>';
   
 		if($email->getBodyHtml() != ''){
-			$content = remove_css_and_scripts(convert_to_links($email->getBodyHtml()));
+			$content = remove_css_and_scripts($email->getBodyHtml());
 			
-			$ispan = strpos(strtoupper($content),"<STYLE>");
-			$body = strpos(strtoupper($content),"<BODY>");
+			// put content into an iframe, in order to avoid css to affect the rest of the interface
+			$tmphtml = $email->getAccountId().'temp_mail_content.html';
+			if (file_exists(ROOT.'/tmp/'.$tmphtml)) unlink(ROOT.'/tmp/'.$tmphtml);
+			$handle = fopen(ROOT.'/tmp/'.$tmphtml, 'wb');
+			fwrite($handle, $content, strlen_utf($content));		
+			fclose($handle);
+			
+			$content = '<iframe id="'.$genid.'ifr" style="width:100%;overflow-y:hidden;" frameborder="0" src="'.ROOT_URL.'/tmp/'.$tmphtml.'" 
+							onload="javascipt:iframe=document.getElementById(\''.$genid.'ifr\'); iframe.height = iframe.contentWindow.document.body.scrollHeight + 30;">
+						</iframe>
+						<script type="text/javascript">
+							if (Ext.isIE) document.getElementById(\''.$genid.'ifr\').contentWindow.location.reload();							
+						</script>
+						';				
 		} else {
 			if ($email->getBodyPlain() != ''){
 				$content =  '<div>' . nl2br(convert_to_links(clean($email->getBodyPlain()))) . '</div>';

@@ -1,4 +1,8 @@
 <?php
+require_javascript('og/tasks/TasksTopToolbar.js');
+require_javascript('og/CalendarToolbar.js');
+require_javascript('og/CalendarFunctions.js');
+require_javascript('og/EventPopUp.js');
 
 /*
 	
@@ -40,7 +44,7 @@ $currentday = $today->format("j");
 $currentmonth = $today->format("n");
 $currentyear = $today->format("Y");
 
-if(cal_option("start_monday")) $firstday = (date("w", mktime(0, 0, 0, $month, 1, $year)) - 1) % 7;
+if(user_config_option("start_monday")) $firstday = (date("w", mktime(0, 0, 0, $month, 1, $year)) - 1) % 7;
 else $firstday = (date("w", mktime(0, 0, 0, $month, 1, $year))) % 7;
 $lastday = date("t", mktime(0, 0, 0, $month, 1, $year));
 
@@ -77,40 +81,68 @@ function cancel (evt) {//cancel clic event bubbling. used to cancel opening a Ne
 <td>
 	<table style="width:100%;height:100%;">
 		<tr>
-			<td id="calendarMonthTitle" class="coViewHeader" colspan=1 rowspan=1>
-				<div class="coViewTitle" style="width:100%;">				
-					<?php echo cal_month_name($month)." ". $year .' - '. ($user_filter == -1 ? lang('all users') : lang('calendar of', clean($user->getDisplayName())));?>
-				</div>		
+			<td id="calendarMonthTitle" class="coViewHeader" colspan=1 rowspan=1 style="padding: 0;">
+				<div class="coViewTitle" style="width:100%;padding: 8px 12px 8px;">
+					<table style="width:100%"><tr><td>				
+						<?php echo cal_month_name($month)." ". $year .' - '. ($user_filter == -1 ? lang('all users') : lang('calendar of', clean($user->getDisplayName())));?>
+					</td><td style="width:100px;padding:0 24px 0 0;">
+					<?php echo checkbox_field("include_subws", true, array("id" => "include_subws", "style" => "float:right;", "onclick" => "javascript:og.change_link_incws('ical_link', 'include_subws')", "title" => lang('check to include sub ws'))) ?>
+				 	<?php echo label_tag(lang('subws'), "include_subws", false, array("style" => "float:right;font-size:60%;margin:0px 3px;vertical-align:top;", "title" => lang('check to include sub ws')), "") ?>
+				 	<?php 
+				 		$export_name = active_project() != null ? clean(active_project()->getName()) : clean($user->getDisplayName());
+				 		$export_ws = active_project() != null ? active_project()->getId() : 0;
+				 	 ?>
+				 	<a class="iCalSubscribe" id="ical_link" style="float:right;" href="<?php echo ROOT_URL ."/index.php?c=feed&a=ical_export&n=$export_name&cal=$export_ws&t=".$user->getToken()."&isw=1" ?>" 
+				 		title="<?php echo lang('copy this url in your calendar client software')?>"
+				 		onclick="javascript:Ext.Msg.show({
+											   	title: '<?php echo escape_single_quotes(lang('import events from third party software')) ?>',
+											   	msg: '<?php echo escape_single_quotes(lang('copy this url in your calendar client software')) ."<br><br><br>"?>'+document.getElementById('ical_link').href,
+									   			icon: Ext.MessageBox.INFO });"></a>
+					 </td></tr></table>
+				</div>
+				<div>
+					<table id="calendar" border='0' cellspacing='0' cellpadding='0' width="100%" height="20px">
+						<tr>
+						<?php 
+						if(!user_config_option("start_monday")) {
+							echo "    <th width='15%'>" .  lang('sunday short') . '</th>' . "\n";
+						}
+						?>
+						<th width="14%"><?php echo  lang('monday short') ?></th>
+						<th width="14%"><?php echo  lang('tuesday short') ?></th>
+						<th width="14%"><?php echo  lang('wednesday short') ?></th>
+						<th width="14%"><?php echo  lang('thursday short') ?></th>
+						<th width="14%"><?php echo  lang('friday short') ?></th>
+						<th width="15%"><?php echo  lang('saturday short') ?></th>
+						
+						<?php 
+						$output = '';
+						if(user_config_option("start_monday")) {
+						?>
+							<th width="15%"> <?php echo lang('sunday short') ?> </th>
+						<?php } ?>
+						<th id="ie_scrollbar_adjust_th" style="display:none;width:15px;padding:0px;margin:0px"></th>
+						</tr>
+					</table>
+				</div>
 			</td>
 		</tr>
 		<tr>
 			<td class="coViewBody" style="padding:0px;width:100%;height:100%;" colspan=1>
 				<div id="gridcontainer" style="position:relative; overflow-x:hidden; overflow-y:scroll;padding-bottom:0px;width:100%;height:100%;">
+				
 				<table id="calendar" border='0' cellspacing='0' cellpadding='0' width="100%" height="100%">
-					<tr>
-					<?php 
-					if(!cal_option("start_monday")) {
-						echo "    <th width='15%'>" .  lang('sunday short') . '</th>' . "\n";
-					}
-					?>
-					<th width="14%"><?php echo  lang('monday short') ?></th>
-					<th width="14%"><?php echo  lang('tuesday short') ?></th>
-					<th width="14%"><?php echo  lang('wednesday short') ?></th>
-					<th width="14%"><?php echo  lang('thursday short') ?></th>
-					<th width="14%"><?php echo  lang('friday short') ?></th>
-					<th width="15%"><?php echo  lang('saturday short') ?></th>
-					
-					<?php 
-					$output = '';
-					if(cal_option("start_monday")) {
-					?>
-						<th width="15%"> <?php echo lang('sunday short') ?> </th>
-					<?php } ?>
-					<th id="ie_scrollbar_adjust" style="width:0px;padding:0px;margin:0px"></th>
-					</tr>
-					
-					
-					
+				
+				<tr id="guide_row" style="display:none">
+					<th width="15%"></th>
+					<th width="14%"></th>
+					<th width="14%"></th>
+					<th width="14%"></th>
+					<th width="14%"></th>
+					<th width="14%"></th>
+					<th width="15%"></th>
+					<th id="ie_scrollbar_adjust" style="display:none;width:15px;padding:0px;margin:0px;"></th>
+				</tr>
 					<?php
 					$date_start = new DateTimeValue(mktime(0,0,0,$month-1,$firstday,$year)); 
 					$date_end = new DateTimeValue(mktime(0,0,0,$month+1,$lastday,$year)); 
@@ -139,9 +171,9 @@ function cancel (evt) {//cancel clic event bubbling. used to cancel opening a Ne
 									$daytype = "weekday_future";
 								}
 							}else{
-								if( !cal_option("start_monday") AND ($day_of_week == 0 OR $day_of_week == 6) ){
+								if( !user_config_option("start_monday") AND ($day_of_week == 0 OR $day_of_week == 6) ){
 									$daytype = "weekend";
-								}elseif( cal_option("start_monday") AND ($day_of_week == 5 OR $day_of_week == 6) AND $day_of_month <= $lastday AND $day_of_month >= 1){
+								}elseif( user_config_option("start_monday") AND ($day_of_week == 5 OR $day_of_week == 6) AND $day_of_month <= $lastday AND $day_of_month >= 1){
 									$daytype = "weekend";
 								}elseif($day_of_month <= $lastday AND $day_of_month >= 1){
 									$daytype = "weekday";
@@ -167,7 +199,7 @@ function cancel (evt) {//cancel clic event bubbling. used to cancel opening a Ne
 							// writes the cell info (color changes) and day of the month in the cell.
 							
 					?>
-							<td valign="top" class="<?php echo $daytype?>">
+							<td valign="top" class="<?php echo $daytype?>" >
 					<?php
 						
 							if($day_of_month <= $lastday AND $day_of_month >= 1){ 
@@ -195,10 +227,11 @@ function cancel (evt) {//cancel clic event bubbling. used to cancel opening a Ne
 								$w = $day_of_month - $lastday;
 								$dtv = DateTimeValueLib::make(0, 0, 0, $month_aux, $w, $year_aux);
 							}
+							$start_value = $dtv->format(user_config_option('date_format', 'd/m/Y'));
 														
 					?>	
-								<div style='z-index:0; min-height:90px; height:100%; cursor:pointer;' onclick="showMonthEventPopup('<?php echo $dtv->getDay() ?>','<?php echo $dtv->getMonth()?>','<?php echo $dtv->getYear()?>');" >
-									<div class='<?php echo $daytitle?>' style='text-align:right'>
+						 		<div style='z-index:0; min-height:90px; height:100%; cursor:pointer;' onclick="showMonthEventPopup('<?php echo $dtv->getDay() ?>','<?php echo $dtv->getMonth()?>','<?php echo $dtv->getYear()?>','<?php echo $start_value ?>');" >
+						 			<div class='<?php echo $daytitle?>' style='text-align:right'>
 							
 							 		<a class='internalLink' href="<?php echo $p ?>" onclick="cancel(event);return true;"  style='color:#5B5B5B' ><?php echo $w?></a>				
 					<?php
@@ -212,7 +245,7 @@ function cancel (evt) {//cancel clic event bubbling. used to cancel opening a Ne
 							}
 					?>			
 							
-								</div>
+									</div>
 					<?php
 							
 							// This loop writes the events for the day in the cell
@@ -239,6 +272,9 @@ function cancel (evt) {//cancel clic event bubbling. used to cancel opening a Ne
 											$private = $event->getIsPrivate(); 
 											$eventid = $event->getId();
 											
+											$event_start = new DateTimeValue($event->getStart()->getTimestamp() + 3600 * logged_user()->getTimezone());
+											$event_duration = new DateTimeValue($event->getDuration()->getTimestamp() + 3600 * logged_user()->getTimezone());
+											
 											$dws = $event->getWorkspaces();
 											$ws_color = 0;											
 											if (count($dws) >= 1) $ws_color = $dws[0]->getColor();											
@@ -250,10 +286,10 @@ function cancel (evt) {//cancel clic event bubbling. used to cancel opening a Ne
 												$tip_text = str_replace("\n", '<br>', $tip_text);													
 												if (strlen_utf($tip_text) > 200) $tip_text = substr_utf($tip_text, 0, strpos($tip_text, ' ', 200)) . ' ...';
 								?>
-												<div id="m_ev_div_<?php echo $event->getId()?>" class="<?php echo ($typeofevent == 2 ? "og-wsname-color-$ws_color ": 'event_block') ?>" style="margin: 1px;padding-left:1px;padding-bottom:0px;">
+												<div id="m_ev_div_<?php echo $event->getId()?>" class="<?php echo "og-wsname-color-$ws_color" ?>" style="margin: 1px;padding-left:1px;padding-bottom:0px;">
 													<table style="width:100%;"><tr><td>
-													<nobr><a href='<?php echo cal_getlink("index.php?action=viewevent&amp;id=".$event->getId()."&amp;user_id=".$user_filter)?>' class='internalLink' onclick="cancel(event); return true;" <?php echo ($typeofevent == 2 ? "style='color:$txt_color;'" : '') ?>>
-															<img src="<?php echo image_url('/16x16/calendar.png')?>" align='absmiddle' border='0'>
+													<nobr><a href='<?php echo cal_getlink("index.php?action=viewevent&amp;id=".$event->getId()."&amp;user_id=".$user_filter)?>' class='internalLink' onclick="cancel(event); return true;" <?php echo "style='color:$txt_color;'" ?>>
+															<img src="<?php echo image_url('/16x16/calendar.png')?>" style="vertical-align: middle;border-width: 0px;">
 														<?php echo (strlen_utf($subject) < 15 ? $subject : substr_utf($subject, 0, 14).'...')?>
 													</a></nobr>
 													</td><td align="right">
@@ -281,7 +317,7 @@ function cancel (evt) {//cancel clic event bubbling. used to cancel opening a Ne
 											 	</div>
 										 		<script type="text/javascript">
 										 			<?php
-										 			$tipbody = ($event->getTypeId() == 2 ? lang('CAL_FULL_DAY') : $event->getStart()->format($use_24_hours ? 'G:i' : 'g:i A') .' - '. $event->getDuration()->format($use_24_hours ? 'G:i' : 'g:i A')) . ($tip_text != '' ? '<br><br>' . $tip_text : '');
+										 			$tipbody = ($event->getTypeId() == 2 ? lang('CAL_FULL_DAY') : $event_start->format($use_24_hours ? 'G:i' : 'g:i A') .' - '. $event_duration->format($use_24_hours ? 'G:i' : 'g:i A')) . ($tip_text != '' ? '<br><br>' . $tip_text : '');
 										 			?>
 													addTip('m_ev_div_<?php echo $event->getId() ?>', '<i>' + lang('event') + '</i> - ' + <?php echo json_encode(clean($event->getSubject())) ?>, <?php echo json_encode($tipbody);?>);
 												</script>
@@ -309,7 +345,7 @@ function cancel (evt) {//cancel clic event bubbling. used to cancel opening a Ne
 								?>
 													<div id="m_ms_div_<?php echo $milestone->getId()?>" class="event_block" style="border-left-color: #<?php echo $color?>;">
 														<nobr><a href='<?php echo $milestone->getViewUrl()?>' class="internalLink" onclick="cancel(event);return true;" >
-																<img src="<?php echo image_url('/16x16/milestone.png')?>" align="absmiddle" border="0">
+																<img src="<?php echo image_url('/16x16/milestone.png')?>" style="vertical-align: middle;border-width: 0px;">
 															<?php echo $cal_text ?>
 														</a></nobr>
 													</div>
@@ -342,8 +378,8 @@ function cancel (evt) {//cancel clic event bubbling. used to cancel opening a Ne
 								?>
 								
 													<div id="m_ta_div_<?php echo $task->getId()?>" class="event_block" style="border-left-color: #<?php echo $color?>;">
-														<nobr><a href='<?php echo $task->getViewUrl()?>' class='internalLink' onclick="cancel(event);return true;"  border='0'>
-																	<img src="<?php echo image_url('/16x16/tasks.png')?>" align='absmiddle'>
+														<nobr><a href='<?php echo $task->getViewUrl()?>' class='internalLink' onclick="cancel(event);return true;"  style="border-width:0px">
+																	<img src="<?php echo image_url('/16x16/tasks.png')?>" style="vertical-align: middle;">
 														 		<?php echo $cal_text ?>
 														</a></nobr>
 													</div>
@@ -365,12 +401,14 @@ function cancel (evt) {//cancel clic event bubbling. used to cancel opening a Ne
 								<?php
 									}
 								}
-								?>									
+								?>	
+								</div>								
 								</td>
 								<?php
 							} //if is_numeric($w) 
 						} // end weekly loop
 						?>
+						<td id="ie_scrollbar_adjust" style="display:none;width:15px;padding:0px;margin:0px"></td>
 						</tr>
 						<?php
 						// If it's the last day, we're done
@@ -404,12 +442,8 @@ function cancel (evt) {//cancel clic event bubbling. used to cancel opening a Ne
 
 	Ext.QuickTips.init();
 
-	function showMonthEventPopup(day, month, year) {
-		if (lang('date format') == 'm/d/Y') 
-			st_val = month + '/' + day + '/' + year;
-		else
-			st_val = day + '/' + month + '/' + year;
-
+	function showMonthEventPopup(day, month, year, st_val) {
+		
 		og.EventPopUp.show(null, {day: day,
 								month: month,
 								year: year,
@@ -427,7 +461,7 @@ function cancel (evt) {//cancel clic event bubbling. used to cancel opening a Ne
 								}, '');
 	}
 
-	if (Ext.isIE) document.getElementById('ie_scrollbar_adjust').style.width = '15px';
+	if (Ext.isIE) document.getElementById('ie_scrollbar_adjust').style.display = 'block';
 	
 	function resizeGridContainer(e, id) {
 		maindiv = document.getElementById('cal_main_div');
@@ -440,6 +474,16 @@ function cancel (evt) {//cancel clic event bubbling. used to cancel opening a Ne
 			
 			var divHeight = maindiv.offsetHeight - cptt.offsetHeight - cmt.offsetHeight;
 			document.getElementById('gridcontainer').style.height = divHeight + 'px';
+
+			if (Ext.isGecko) {			
+				childnodes = document.getElementById('gridcontainer').childNodes;
+				for (i=0; i<childnodes.length; i++) {
+					if (childnodes[i].id == 'calendar') {
+						h = childnodes[i].offsetHeight;
+						childnodes[i].style.height = (h-2)+'px';
+					}
+				}
+			}
 		}
 	}
 	resizeGridContainer();

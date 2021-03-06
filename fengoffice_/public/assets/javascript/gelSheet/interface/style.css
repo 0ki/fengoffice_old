@@ -150,13 +150,14 @@
 }
 
 #logo{	
-	background-image: url(./img/gelsheet_logo-113x54-transparent.png);  
+	/* background-image: url(./img/gelsheet_logo-113x54-transparent.png); */
+	background-image: url(./img/gelsheet_logo-132x51-Tab-transparent.png);   
 	background-repeat: no-repeat ;
-	width: 107px;
-	height: 30px;
+	width: 132px;
+	height: 51px;
 	
-	top: 8px;
-	right:5px;
+	top: 0px;
+	right:0px;
 	position: absolute ;
 	float: right ;		
 }

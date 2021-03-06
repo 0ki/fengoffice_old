@@ -8,8 +8,16 @@
 	var cant_tips = 0;
 	var tips_array = [];
 
+	og.change_link_incws = function(hrefid, checkid) {
+		var link = document.getElementById(hrefid).href
+		if (document.getElementById(checkid).checked) { 
+			document.getElementById(hrefid).href = link.replace('isw=0', 'isw=1');
+		} else {
+			document.getElementById(hrefid).href = link.replace('isw=1', 'isw=0');
+		}
+	}
 	
-	function addTip(div_id, title, bdy) {
+	addTip = function(div_id, title, bdy) {
 		tips_array[cant_tips++] = new Ext.ToolTip({
 			target: div_id,
 	        html: bdy,
@@ -145,7 +153,7 @@
 		return ((millis / 1000) / 60); 		
 	}
 	
-	function showEventPopup(day, month, year, hour, minute, use_24hr) {
+	function showEventPopup(day, month, year, hour, minute, use_24hr, st_val) {
 		var typeid = 1, hrs = 1, mins = 0;
 		if (hour == -1 || minute == -1) {
 			hour = 0;
@@ -169,11 +177,6 @@
 			}
 		}
 		
-		if (lang('date format') == 'm/d/Y') 
-			st_val = ev_start_month + '/' + ev_start_day + '/' + ev_start_year;
-		else
-			st_val = ev_start_day + '/' + ev_start_month + '/' + ev_start_year;
-
 		if (use_24hr) {
 			st_hour = ev_start_hour;
 			ampm = '';

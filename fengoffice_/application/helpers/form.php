@@ -356,6 +356,7 @@
   * @return null
   */
   function pick_date_widget($name, $value = null, $year_from = null, $year_to = null, $attributes = null, $id = null) {
+  	require_javascript("og/DateField.js");
   	$oldValue = $value;
     if(!($value instanceof DateTimeValue)) $value = new DateTimeValue($value);
     
@@ -406,13 +407,12 @@
   } // pick_date_widget
   
   function pick_date_widget2($name, $value = null, $genid = null, $tabindex = null, $display_date_info = true) {
+  	require_javascript('og/DateField.js');
+  	
   	if ($genid == null) $genid = gen_id();
   	$dateValue = '';
   	if ($value instanceOf DateTimeValue){
-  		if (lang('date format') == 'm/d/Y')
-  			$dateValue =  $value->getMonth() . '/' . $value->getDay() . '/' . $value->getYear();
-  		else
-  			$dateValue =  $value->getDay() . '/' . $value->getMonth() . '/' . $value->getYear();
+  		$dateValue = $value->format(user_config_option('date_format', 'd/m/Y'));
   	}
   	$daterow = '';
   	if ($display_date_info)

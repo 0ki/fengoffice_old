@@ -94,11 +94,13 @@
     // Validate add / edit file form
     'folder id required' => 'Debe elegir una carpeta',
     'filename required' => 'Nombre de archivo requerido, intente nuevamente',
+  	'weblink required' => 'Debe ingresar la url del enlace web',
     
     // File revisions (internal)
     'file revision file_id required' => 'La revisión debe estar conectada con un archivo',
     'file revision filename required' => 'Nombre de archivo requerido, inténtelo nuevamente',
     'file revision type_string required' => 'Tipo de archivo desconocido',
+    'file revision comment required' => 'Se requiere el comentario de la revisión',
     
     // Test mail settings
     'test mail recipient required' => 'Debe ingresar un destinatario',
@@ -148,6 +150,25 @@
 	'task filter criteria not recognised' => 'El criterio de filtro de tareas \'{0}\' no es válido',
   	'mail account dnx' => 'La cuenta de correo no existe',
   
+  	'password invalid min length' => 'La contraseña debe tener al menos {0} caracteres',
+	'password invalid numbers' => 'La contraseña debe tener al menos {0} caracteres numéricos',
+	'password invalid uppercase' => 'La contraseña debe tener al menos {0} caracteres en mayúsculas',
+	'password invalid metacharacters' => 'La contraseña debe tener al menos {0} metacaracteres',
+	'password exists history' => 'La contraseña fue utilizada en una de las últimas 10 contraseñas',
+	'password invalid difference' => 'La contraseña debe tener al menos 3 caracteres diferentes con respecto a las últimas 10 contraseñas',
+	'password expired' => 'Su contraseña ha expirado',
+	'password invalid' => 'Su contraseña no es válida',
+  
+  	'error document checked out by another user' => 'Este documento está bloqueado por otro usuario.',
+	'custom property value required' => '{0} es requerido',
+	'value must be numeric' => 'El valor de {0} debe ser numérico',
+	'report name required' => 'El nombre del reporte es requerido',
+	'report object type required' => 'El tipo de objeto es requerido',
+
+	'error assign task user dnx' => 'Asignando una tarea a un usuario inexistente',
+    'error assign task permissions user' => 'No tiene permisos para asignar la tarea al usuario',
+    'error assign task company dnx' => 'Asignando una tarea a una compañía inexistente',
+    'error assign task permissions company' => 'No tiene permisos para asignar la tarea a la compañía',
  ); // array
 
 ?>

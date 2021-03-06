@@ -107,7 +107,10 @@ class UserController extends ApplicationController {
 
 			try {
 			  $user = $this->createUser($user, $user_data, $is_admin, array_var($_POST,'permissions'));
-	
+			
+			  $object_controller = new ObjectController();
+			  $object_controller->add_custom_properties($user);
+					
 			  flash_success(lang('success add user', $user->getDisplayName()));
 			  ajx_current("back");
 
@@ -137,7 +140,7 @@ class UserController extends ApplicationController {
 		}
 		// Generate random password
 		if(array_var($user_data, 'password_generator') == 'random') {
-			$password = substr(sha1(uniqid(rand(), true)), rand(0, 25), 13);
+			$password = UserPasswords::generateRandomPassword();
 
 			// Validate user input
 		} else {
@@ -149,25 +152,50 @@ class UserController extends ApplicationController {
 				throw new Error(lang('passwords dont match'));
 			} // if
 		} // if
+				
 		$user->setPassword($password);
 
 		DB::beginWork();
+		
+		$user_password = new UserPassword();
+		$user_password->setUserId($user->getId());
+		$user_password->setPasswordDate(DateTimeValueLib::now());
+		$user_password->setPassword(cp_encrypt($password), $user_password->getPasswordDate()->getTimestamp());
+		$user_password->password_temp = $password;
+		$user_password->save();
+		
 		$user->save();
+		$user_password->setUserId($user->getId());
+		$user_password->save();
+		
 		if ($is_admin) {
 			$user->setAsAdministrator();
 		}
-		
+
 		/* create contact for this user*/
 		if (array_var($user_data, 'create_contact')) {
-			$contact = new Contact();
+			// if contact with same email exists take it, else create new
+			$contact = Contacts::getByEmail($user->getEmail(), true);
+			if (!$contact instanceof Contact) {
+				$contact = new Contact();
+				$contact->setEmail($user->getEmail());
+			} else if ($contact->isTrashed()) {
+				$contact->untrash();
+			}
 			$contact->setFirstname($user->getDisplayName());
 			$contact->setUserId($user->getId());
-			$contact->setEmail($user->getEmail());
 			$contact->setTimezone($user->getTimezone());
 			$contact->setCompanyId($user->getCompanyId());
 			$contact->save();
+		} else {
+			// if contact with same email exists use it as user's contact, without changing it
+			$contact = Contacts::getByEmail($user->getEmail(), true);
+			if ($contact instanceof Contact) {
+				$contact->setUserId($user->getId());
+				if ($contact->isTrashed()) $contact->untrash();
+			}
 		}
-		
+
 		/* create personal project */
 		$project = new Project();
 		$project->setName($user->getUsername().'_personal');
@@ -268,15 +296,15 @@ class UserController extends ApplicationController {
 			$user->delete();
 			if ($project instanceof Project) {
 				$pid = $project->getId();
-				$project->delete();
+				if ($project->delete()){
+					evt_add("workspace deleted", array(
+						"id" => $pid
+		  			));
+				}
 			}
 			ApplicationLogs::createLog($user, null, ApplicationLogs::ACTION_DELETE);
 			DB::commit();
 			
-			evt_add("workspace deleted", array(
-				"id" => $pid
-		  	));
-
 			flash_success(lang('success delete user', $user->getDisplayName()));
 
 			ajx_current("reload");
@@ -292,23 +320,20 @@ class UserController extends ApplicationController {
 	 *
 	 */
 	function create_contact_from_user(){
-
+		ajx_current("empty");
 		$user = Users::findById(get_id());
 		if(!($user instanceof User)) {
 			flash_error(lang('user dnx'));
-			ajx_current("empty");
 			return;
 		} // if
 
 		if(!logged_user()->canSeeUser($user)) {
 			flash_error(lang('no access permissions'));
-			ajx_current("empty");
 			return;
 		} // if
 		
 		if($user->getContact()){
 			flash_error(lang('user has contact'));
-			ajx_current("empty");
 			return;			
 		}
 		

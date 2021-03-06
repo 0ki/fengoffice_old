@@ -105,7 +105,7 @@ ogTimeManager.loadData = function(data){
 
 ogTimeManager.GetNewTimeslotParameters = function(genid){
 	var parameters = [];
-	parameters["timeslot[date]"] = Ext.getCmp(genid + "timeslot[date]Cmp").getValue().format(lang('date format'));
+	parameters["timeslot[date]"] = Ext.getCmp(genid + "timeslot[date]Cmp").getValue().format(og.date_format);
 	parameters["timeslot[project_id]"] = document.getElementById(genid + 'wsSelValue').value;
 	parameters["timeslot[hours]"] = document.getElementById(genid + 'tsHours').value;
 	parameters["timeslot[description]"] = document.getElementById(genid + 'tsDesc').value;

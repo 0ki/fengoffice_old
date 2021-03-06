@@ -219,58 +219,103 @@ og.ObjectPicker = function(config) {
 			this.filters.appendChild(node);
 			return node;
 		},
-		loadFilters: function() {
+		loadFilters: function(types) {
 			this.removeAll();
+			if (types) {
+				var csv = "";
+				for (var k in types) {
+					if (types[k]) {
+						if (csv != "") csv += ",";
+						csv += k;
+					}
+				}
+				this.filters.filter.type = csv;
+			} else {
+				types = {
+					'Messages':true,
+					'Emails':true,
+					'Calendar':true,
+					'Contacts':true,
+					'Companies':true,
+					'Documents':true,
+					'Tasks':true,
+					'Milestones':true,
+					'WebPages':true
+				}
+			}
 			// load types
-			this.addFilter({
-				id: 'messages',
-				name: lang('messages'),
-				type: 'Messages',
-				filter: 'type'
-			}, {iconCls: 'ico-message'});
-			this.addFilter({
-				id: 'email',
-				name: lang('email'),
-				type: 'Emails',
-				filter: 'type'
-			}, {iconCls: 'ico-email'});
-			this.addFilter({
-				id: 'calendar',
-				name: lang('calendar'),
-				type: 'Calendar',
-				filter: 'type'
-			}, {iconCls: 'ico-calendar'});
-			this.addFilter({
-				id: 'contacts',
-				name: lang('contacts'),
-				type: 'Contacts',
-				filter: 'type'
-			}, {iconCls: 'ico-contacts'});
-			this.addFilter({
-				id: 'companies',
-				name: lang('companies'),
-				type: 'Companies',
-				filter: 'type'
-			}, {iconCls: 'ico-companies'});
-			this.addFilter({
-				id: 'documents',
-				name: lang('documents'),
-				type: 'Documents',
-				filter: 'type'
-			}, {iconCls: 'ico-documents'});
-			this.addFilter({
-				id: 'tasks',
-				name: lang('tasks'),
-				type: 'Tasks',
-				filter: 'type'
-			}, {iconCls: 'ico-tasks'});
-			this.addFilter({
-				id: 'webpages',
-				name: lang('web pages'),
-				type: 'Web Pages',
-				filter: 'type'
-			}, {iconCls: 'ico-webpages'});
-			
+			if (types['Messages']) {
+				this.addFilter({
+					id: 'messages',
+					name: lang('messages'),
+					type: 'Messages',
+					filter: 'type'
+				}, {iconCls: 'ico-message'});
+			}
+			if (types['Emails']) {
+				this.addFilter({
+					id: 'email',
+					name: lang('email'),
+					type: 'Emails',
+					filter: 'type'
+				}, {iconCls: 'ico-email'});
+			}
+			if (types['Calendar']) {
+				this.addFilter({
+					id: 'calendar',
+					name: lang('calendar'),
+					type: 'Calendar',
+					filter: 'type'
+				}, {iconCls: 'ico-calendar'});
+			}
+			if (types['Contacts']) {
+				this.addFilter({
+					id: 'contacts',
+					name: lang('contacts'),
+					type: 'Contacts',
+					filter: 'type'
+				}, {iconCls: 'ico-contacts'});
+			}
+			if (types['Companies']) {
+				this.addFilter({
+					id: 'companies',
+					name: lang('companies'),
+					type: 'Companies',
+					filter: 'type'
+				}, {iconCls: 'ico-companies'});
+			}
+			if (types['Documents']) {
+				this.addFilter({
+					id: 'documents',
+					name: lang('documents'),
+					type: 'Documents',
+					filter: 'type'
+				}, {iconCls: 'ico-documents'});
+			}
+			if (types['Tasks']) {
+				this.addFilter({
+					id: 'tasks',
+					name: lang('tasks'),
+					type: 'Tasks',
+					filter: 'type'
+				}, {iconCls: 'ico-tasks'});
+			}
+			if (types['Milestones']) {
+				this.addFilter({
+					id: 'milestones',
+					name: lang('milestones'),
+					type: 'Milestones',
+					filter: 'type'
+				}, {iconCls: 'ico-milestone'});
+			}
+			if (types['WebPages']) {
+				this.addFilter({
+					id: 'webpages',
+					name: lang('web pages'),
+					type: 'Web Pages',
+					filter: 'type'
+				}, {iconCls: 'ico-webpages'});
+			}
 			this.filters.expand();
 			
 			this.pauseEvents = true;
@@ -331,8 +376,8 @@ og.ObjectPicker = function(config) {
 			            tooltip: lang('refresh desc'),
 			            iconCls: 'op-ico-refresh',
 						handler: function() {
-							this.grid.store.reload();
 							this.loadFilters();
+							this.grid.store.reload();
 						},
 						scope: this
 					}
@@ -419,14 +464,18 @@ Ext.extend(og.ObjectPicker, Ext.Window, {
 		this.hide();
 	},
 	
-	loadFilters: function() {
-		this.findById('wsFilter').loadWorkspaces();
-		this.findById('tagFilter').loadTags();
-		this.findById('typeFilter').loadFilters();
+	loadFilters: function(config) {
+		var typef = this.findById('typeFilter');
+		var tagf = this.findById('tagFilter');
+		var wsf = this.findById('wsFilter');
+		wsf.loadWorkspaces();
+		tagf.loadTags();
+		typef.loadFilters(config.types);
+		this.grid.store.baseParams.type = typef.filters.filter.type;
 	},
 	
-	load: function(params) {
-		this.grid.load(params);
+	load: function() {
+		this.grid.load();
 	}
 });
 
@@ -436,8 +485,8 @@ og.ObjectPicker.show = function(callback, scope, config) {
 	}
 	
 	if (!config) config = {};
-	this.dialog.loadFilters();
-	this.dialog.load(config.extraParams);
+	this.dialog.loadFilters(config);
+	this.dialog.load();
 	this.dialog.purgeListeners();
 	this.dialog.on('objectselected', callback, scope, {single:true});
 	this.dialog.show();

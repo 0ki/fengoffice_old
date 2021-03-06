@@ -1,4 +1,8 @@
 <?php
+	require_javascript('og/tasks/main.js');
+	require_javascript('og/time/main.js');
+	require_javascript('og/time/drawing.js');
+
 	$genid = gen_id();
 	$tasks_array = array();
 	$timeslots_array = array();
@@ -28,6 +32,16 @@
 	<td colspan=2 class="TMActiveTasksHeader">
 <?php echo lang('all active tasks') ?>
 </td><td class="coViewTopRight">&nbsp;&nbsp;</td></tr>
+
+<?php
+	if (user_config_option('show_active_tasks_context_help', true, logged_user()->getId())) {	
+		tpl_assign('helpDescription', lang('chelp active tasks panel'));
+		tpl_assign('option_name', 'active_tasks');	
+		echo"<tr><td colspan=2 class=\"coViewBody\" style=\"background-color:white;padding:0px;\">"; 
+		$this->includeTemplate(get_template_path('context_help', 'help'));
+		echo "</td><td class=\"coViewRight\"></td></tr>";
+	}	
+?>
 <tr>
 	<td colspan=2 class="coViewBody" style="background-color:white;">
 <div id="<?php echo $genid ?>TMActiveTasksContents" class="TMActiveTasksContents">
@@ -108,6 +122,15 @@
 <tr>
 	<td class="coViewRight">&nbsp;&nbsp;</td>
 </tr>
+<?php
+	if (user_config_option('show_general_timeslots_context_help', true, logged_user()->getId())) {	
+		tpl_assign('helpDescription', lang('chelp general timeslots panel'));
+		tpl_assign('option_name', 'general_timeslots');	
+		echo"<tr><td colspan=2>"; 
+		$this->includeTemplate(get_template_path('context_help', 'help'));
+		echo "</td><td class=\"coViewRight\"></td></tr> ";
+	}	
+?>
 <tr>
 	<td colspan=2 class="coViewBody">
 		<div id="<?php echo $genid ?>TMTimespanContents" style="width:100%" class="TMTimespanContents">

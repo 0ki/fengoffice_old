@@ -28,6 +28,20 @@ class CronEvents extends BaseCronEvents {
 		));
 	}
 	
+	/**
+	 * 
+	 * @param $name string
+	 * @return CronEvent
+	 */
+	function getByName($name) {
+		return self::findOne(array(
+			'conditions' => array(
+				'`name` = ?',
+				$name
+			)
+		));
+	}
+	
 } // CronEvents
 
 ?>

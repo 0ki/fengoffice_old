@@ -649,7 +649,7 @@ class Company extends BaseCompany {
       } // if
       
       if($this->validatePresenceOf('email')) {
-        if(!is_valid_email($this->getEmail())) {
+        if(!is_valid_email(trim($this->getEmail()))) {
           $errors[] = lang('invalid email address');
         } // if
       } // if

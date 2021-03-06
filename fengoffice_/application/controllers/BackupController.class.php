@@ -128,36 +128,7 @@ class  BackupController extends ApplicationController {
 			return ;
 		} // if
 		try {
-			set_time_limit(BACKUP_TIME_LIMIT);
-			$filename = BACKUP_FOLDER .'/'. BACKUP_FILENAME;
-			$folder = BACKUP_FOLDER;
-			if(!dir($folder)){
-				$ret = mkdir($folder);
-				if(!$ret){
-					throw new Exception(lang('error create backup folder'));
-				}		
-			}
-			//start backup
-			$db_host = DB_HOST;
-			$db_user = DB_USER;
-			$db_pass = DB_PASS;
-			$db_name = DB_NAME;
-			$db_backup = BACKUP_FOLDER .'/'. DB_BACKUP_FILENAME;
-			$mysqldump_cmd = MYSQLDUMP_COMMAND;
-			exec("$mysqldump_cmd --host=$db_host --user=$db_user --password=$db_pass $db_name > $db_backup",$ret);
-			if ($code != 0) {
-				throw new Exception(lang("return code", $code) . ". " . implode("\n",  $ret));
-			}
-			if (is_file($db_backup)) {
-				if(file_exists($filename)){
-					unlink($filename);
-				}
-				$ret = $this->create_zip();
-				unlink($db_backup);
-			} else {
-				unlink($db_backup);
-				throw new Exception(lang('backup command failed'));
-			}
+			do_backup();
 			flash_success(lang('success db backup'));
 		} catch (Exception $ex) {
 			flash_error(lang('error db backup', $ex->getMessage()));
@@ -165,53 +136,88 @@ class  BackupController extends ApplicationController {
 		}
 		ajx_current("reload");
 	}
-	
-	private function create_zip(){		
-		$filename = BACKUP_FOLDER .'/'. BACKUP_FILENAME;
-		$files = array();
-		$this->parse_dir(".", $files);
-		if (is_file($filename)) unlink($filename);
-		if (class_exists('ZipArchive')) {
-			$backup = new ZipArchive();
-			$backup->open($filename, ZIPARCHIVE::OVERWRITE);
-			$count = 0;
-			foreach ($files as $file) {
-				if (str_starts_with($file, "./tmp")) continue; // don't backup tmp folder
-				$backup->addFile($file, substr($file, 2));
-				$count++;
-				if ($count == 200) {
-					// the ZipArchive class allows upto 200 file descriptors,
-					// so we close the zip to write files and reopen it to continue
-					$backup->close();
-					$backup = new ZipArchive();
-					$backup->open($filename);
-					$count = 0;
-				}
-			}
-			$backup->addFile(BACKUP_FOLDER .'/'. DB_BACKUP_FILENAME, "db.sql");
-			$backup->close();
-		} else {
-			$backup = new zip_file($filename);
-			$backup->set_options(array('inmemory' => 0, 'recurse' => 1, 'storepaths' => 1));
-			$backup->add_files(array("*")); 
-			$backup->create_archive();
-		}
-	}
-	
-	private function parse_dir($dirname, &$files) {
-		$dir = @opendir($dirname);
-		while ($file = @readdir($dir)) {
-			$fullname = "$dirname/$file";
-			if ($file == "." || $file == "..") {
-				continue;
-			} else if (@is_dir($fullname)) {
-				$this->parse_dir($fullname, $files);
-			} else if (@is_file($fullname)) {
-				$files[] = $fullname;
-			}
-		}
-		@closedir($dir);
-	}
 } // BackupController
+
+function do_backup() {
+	set_time_limit(BACKUP_TIME_LIMIT);
+	$filename = BACKUP_FOLDER .'/'. BACKUP_FILENAME;
+	$folder = BACKUP_FOLDER;
+	if(!dir($folder)){
+		$ret = mkdir($folder);
+		if(!$ret){
+			throw new Exception(lang('error create backup folder'));
+		}		
+	}
+	//start backup
+	$db_host = DB_HOST;
+	$db_user = DB_USER;
+	$db_pass = DB_PASS;
+	$db_name = DB_NAME;
+	$db_backup = BACKUP_FOLDER .'/'. DB_BACKUP_FILENAME;
+	$mysqldump_cmd = MYSQLDUMP_COMMAND;
+	exec("$mysqldump_cmd --host=$db_host --user=$db_user --password=$db_pass $db_name > $db_backup",$ret);
+	if ($code != 0) {
+		throw new Exception(lang("return code", $code) . ". " . implode("\n",  $ret));
+	}
+	if (is_file($db_backup)) {
+		if(file_exists($filename)){
+			unlink($filename);
+		}
+		do_backup_zip();
+		unlink($db_backup);
+	} else {
+		unlink($db_backup);
+		throw new Exception(lang('backup command failed'));
+	}
+}
+
+function do_backup_zip() {
+	$filename = BACKUP_FOLDER .'/'. BACKUP_FILENAME;
+	$files = array();
+	do_backup_parse_dir(".", $files);
+	if (is_file($filename)) unlink($filename);
+	if (in_array('ZipArchive', get_declared_classes())) {
+		$backup = new ZipArchive();
+		$backup->open($filename, ZIPARCHIVE::OVERWRITE);
+		$count = 0;
+		foreach ($files as $file) {
+			if (str_starts_with($file, "./tmp")) continue; // don't backup tmp folder
+			if (str_starts_with($file, "./config")) continue; // don't backup config folder
+			$backup->addFile($file, substr($file, 2));
+			$count++;
+			if ($count == 200) {
+				// the ZipArchive class allows upto 200 file descriptors,
+				// so we close the zip to write files and reopen it to continue
+				$backup->close();
+				$backup = new ZipArchive();
+				$backup->open($filename);
+				$count = 0;
+			}
+		}
+		$backup->addFile(BACKUP_FOLDER .'/'. DB_BACKUP_FILENAME, "db.sql");
+		$backup->close();
+	} else {
+		$backup = new zip_file($filename);
+		$backup->set_options(array('inmemory' => 0, 'recurse' => 1, 'storepaths' => 1));
+		$backup->add_files(array("*")); 
+		$backup->create_archive();
+	}
+}
+
+function do_backup_parse_dir($dirname, &$files) {
+	$dir = @opendir($dirname);
+	while ($file = @readdir($dir)) {
+		$fullname = "$dirname/$file";
+		if ($file == "." || $file == "..") {
+			continue;
+		} else if (@is_dir($fullname)) {
+			do_backup_parse_dir($fullname, $files);
+		} else if (@is_file($fullname)) {
+			$files[] = $fullname;
+		}
+	}
+	@closedir($dir);
+}
+
 
 ?>

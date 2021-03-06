@@ -408,5 +408,355 @@ class ReportingController extends ApplicationController {
 		tpl_assign('template_name', 'total_task_times');
 		tpl_assign('title',lang('task time report'));
 	}
+
+	// ---------------------------------------------------
+	//  Custom Reports
+	// ---------------------------------------------------
+
+	function add_custom_report(){
+		tpl_assign('url', get_url('reporting', 'add_custom_report'));
+		$report_data = array_var($_POST, 'report');
+		if(is_array($report_data)){
+			tpl_assign('report_data', $report_data);
+			$conditions = array_var($_POST, 'conditions');
+			if(!is_array($conditions)) 
+				$conditions = array();
+			tpl_assign('conditions', $conditions);
+			$columns = array_var($_POST, 'columns');
+			if(is_array($columns) && count($columns) > 0){
+				tpl_assign('columns', $columns);
+				$newReport = new Report();
+				
+				if(!$newReport->canAdd(logged_user())) {
+					flash_error(lang('no access permissions'));
+					ajx_current("empty");
+					return;
+				} // if
+	
+				$newReport->setName($report_data['name']);
+				$newReport->setDescription($report_data['description']);
+				$newReport->setObjectType($report_data['object_type']);
+				$newReport->setOrderBy($report_data['order_by']);
+				try{
+					DB::beginWork();
+					$newReport->save();
+					foreach($conditions as $condition){
+						$newCondition = new ReportCondition();
+						$newCondition->setReportId($newReport->getId());
+						$newCondition->setCustomPropertyId($condition['custom_property_id']);
+						$newCondition->setFieldName($condition['field_name']);
+						$newCondition->setCondition($condition['condition']);
+						if($condition['field_type'] == 'boolean'){
+							$newCondition->setValue(isset($condition['value']));
+						}else if($condition['field_type'] == 'date'){
+							if ($condition['value'] == '') $newCondition->setValue('');
+							else {
+								$dtFromWidget = DateTimeValueLib::dateFromFormatAndString(user_config_option('date_format', 'd/m/Y'), $condition['value']);
+								$newCondition->setValue(date("m/d/Y", $dtFromWidget->getTimestamp()));
+							}
+						}else{
+							$newCondition->setValue($condition['value']);
+						}
+						$newCondition->setIsParametrizable(isset($condition['is_parametrizable']));
+						$newCondition->save();
+					}
+					foreach($columns as $column){
+						$newColumn = new ReportColumn();
+						$newColumn->setReportId($newReport->getId());
+						if(is_numeric($column)){
+							$newColumn->setCustomPropertyId($column);
+						}else{
+							$newColumn->setFieldName($column);
+						}
+						$newColumn->save();
+					}
+					DB::commit();
+					flash_success(lang('custom report created'));
+					ajx_current('back');
+				}catch(Exception $e){
+					DB::rollback();
+					flash_error($e->getMessage());
+					ajx_current("empty");
+				}
+			}
+		}
+		$selected_type = array_var($_GET, 'type', '');
+		$types = array(
+			array("", lang("select one")),
+			array("Companies", lang("companies")),
+			array("Contacts", lang("contacts")),
+			array("MailContents", lang("email type")),
+			array("ProjectEvents", lang("events")),
+			array("ProjectFiles", lang("file")),
+			array("ProjectMilestones", lang("milestone")),
+			array("ProjectMessages", lang("message")),
+			array("ProjectTasks", lang("task")),
+			array("Users", lang("user")),
+			array("ProjectWebpages", lang("webpage")),
+			array("Projects", lang("workspace")),
+		);
+		tpl_assign('object_types', $types);
+		tpl_assign('selected_type', $selected_type);
+	}
+
+	function edit_custom_report(){
+		$report_id = array_var($_GET, 'id');
+		$report = Reports::getReport($report_id);
+		
+		if(!$report->canEdit(logged_user())) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		} // if
+		
+		if(is_array(array_var($_POST, 'report'))) {
+			try{
+				$report_data = array_var($_POST, 'report');
+				DB::beginWork();
+				$report->setName($report_data['name']);
+				$report->setDescription($report_data['description']);
+				$report->setObjectType($report_data['object_type']);
+				$report->setOrderBy($report_data['order_by']);
+				$report->save();
+				$conditions = array_var($_POST, 'conditions');
+				if (!is_array($conditions)) 
+					$conditions = array();
+				foreach($conditions as $condition){
+					$newCondition = new ReportCondition();
+					if($condition['id'] > 0){
+						$newCondition = ReportConditions::getCondition($condition['id']);
+					}
+					if($condition['deleted'] == "1"){
+						$newCondition->delete();
+						continue;
+					}
+					$newCondition->setReportId($report_id);
+					$custom_prop_id = isset($condition['custom_property_id']) ? $condition['custom_property_id'] : 0;
+					$newCondition->setCustomPropertyId($custom_prop_id);
+					$newCondition->setFieldName($condition['field_name']);
+					$newCondition->setCondition($condition['condition']);
+					if($condition['field_type'] == 'boolean'){
+						$newCondition->setValue(isset($condition['value']) && $condition['value']);
+					}else if($condition['field_type'] == 'date'){
+						if ($condition['value'] == '') $newCondition->setValue('');
+						else {
+							$dtFromWidget = DateTimeValueLib::dateFromFormatAndString(user_config_option('date_format', 'd/m/Y'), $condition['value']);
+							$newCondition->setValue(date("m/d/Y", $dtFromWidget->getTimestamp()));
+						}
+					}else{
+						$newCondition->setValue(isset($condition['value']) ? $condition['value'] : '');
+					}
+					$newCondition->setIsParametrizable(isset($condition['is_parametrizable']));
+					$newCondition->save();
+				}
+				ReportColumns::delete('report_id = ' . $report_id);
+				$columns = array_var($_POST, 'columns');
+				foreach($columns as $column){
+					$newColumn = new ReportColumn();
+					$newColumn->setReportId($report_id);
+					if(is_numeric($column)){
+						$newColumn->setCustomPropertyId($column);
+					}else{
+						$newColumn->setFieldName($column);
+					}
+					$newColumn->save();
+				}
+				DB::commit();
+				flash_success(lang('custom report updated'));
+				ajx_current('back');
+			} catch(Exception $e) {
+				DB::rollback();
+				flash_error($e->getMessage());
+				ajx_current("empty");
+			} // try
+		}else{
+			$this->setTemplate('add_custom_report');
+			tpl_assign('url', get_url('reporting', 'edit_custom_report', array('id' => $report_id)));
+			if($report instanceof Report){
+				tpl_assign('id', $report_id);
+				$report_data = array(
+					'name' => $report->getName(),
+					'description' => $report->getDescription(),
+					'object_type' => $report->getObjectType(),
+					'order_by' => $report->getOrderBy()
+				);
+				tpl_assign('report_data', $report_data);
+				$conditions = ReportConditions::getAllReportConditions($report_id);
+				tpl_assign('conditions', $conditions);
+				$columns = ReportColumns::getAllReportColumns($report_id);
+				$colIds = array();
+				foreach($columns as $col){
+					if($col->getCustomPropertyId() > 0){
+						$colIds[] = $col->getCustomPropertyId();
+					}else{
+						$colIds[] = $col->getFieldName();
+					}
+				}
+				tpl_assign('columns', $colIds);
+			}
+			
+			$selected_type = $report->getObjectType();
+			$types = array(
+				array("", lang("select one")),
+				array("Companies", lang("companies")),
+				array("Contacts", lang("contacts")),
+				array("MailContents", lang("email type")),
+				array("ProjectEvents", lang("events")),
+				array("ProjectFiles", lang("file")),
+				array("ProjectMilestones", lang("milestone")),
+				array("ProjectMessages", lang("message")),
+				array("ProjectTasks", lang("task")),
+				array("Users", lang("user")),
+				array("ProjectWebpages", lang("webpage")),
+				array("Projects", lang("workspace")),
+			);
+			tpl_assign('object_types', $types);
+			tpl_assign('selected_type', $selected_type);
+		}
+	}
+
+	function view_custom_report(){
+		$report_id = array_var($_GET, 'id');
+		tpl_assign('id', $report_id);
+		if(isset($report_id)){	
+			$report = Reports::getReport($report_id);
+			$conditions = ReportConditions::getAllReportConditions($report_id);
+			$paramConditions = array();
+			foreach($conditions as $condition){
+				if($condition->getIsParametrizable()){
+					$paramConditions[] = $condition;
+				}
+			}
+			$params = array_var($_GET, 'params');
+			if(count($paramConditions) > 0 && !isset($params)){
+				$this->setTemplate('custom_report_parameters');
+				tpl_assign('model', $report->getObjectType());
+				tpl_assign('title', $report->getName());
+				tpl_assign('description', $report->getDescription());
+				tpl_assign('conditions', $paramConditions);
+			}else{
+				$this->setTemplate('report_wrapper');
+				tpl_assign('template_name', 'view_custom_report');
+				tpl_assign('title', $report->getName());
+				$results = Reports::executeReport($report_id, $params);
+				if(isset($results['columns'])) tpl_assign('columns', $results['columns']);
+				if(isset($results['rows'])) tpl_assign('rows', $results['rows']);
+				tpl_assign('types', self::get_report_column_types($report_id));
+				tpl_assign('post', $params);
+			}
+		}
+	}
+
+	function view_custom_report_print(){
+		$this->setLayout("html");
+
+		$params = json_decode(str_replace("'",'"', array_var($_POST, 'post')),true);
+
+		$report_id = array_var($_POST, 'id');
+		$report = Reports::getReport($report_id);
+		$results = Reports::executeReport($report_id, $params);
+		if(isset($results['columns'])) tpl_assign('columns', $results['columns']);
+		if(isset($results['rows'])) tpl_assign('rows', $results['rows']);
+
+		tpl_assign('types', self::get_report_column_types($report_id));
+		tpl_assign('template_name', 'view_custom_report');
+		$this->setTemplate('report_printer');
+	}
+
+	function delete_custom_report(){
+		$report_id = array_var($_GET, 'id');
+		$report = Reports::getReport($report_id);
+		
+		if(!$report->canDelete(logged_user())) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		} // if
+		
+		try{
+			DB::beginWork();
+			$report->delete();
+			DB::commit();
+			ajx_current("reload");
+		}catch(Exception $e) {
+			DB::rollback();
+			flash_error($e->getMessage());
+			ajx_current("empty");
+		} // try
+	}
+
+	function get_object_fields(){
+		$object_type = array_var($_GET, 'object_type');
+		$fields = array();
+		if(isset($object_type)){
+			$customProperties = CustomProperties::getAllCustomPropertiesByObjectType($object_type);
+			$objectFields = array();
+			foreach($customProperties as $cp){
+				$fields[] = array('id' => $cp->getId(), 'name' => $cp->getName(), 'type' => $cp->getType(), 'values' => $cp->getValues());
+			}
+			eval('$managerInstance = ' . $object_type . "::instance();");
+			$objectColumns = $managerInstance->getColumns();
+			$objectFields = array();
+			$objectColumns = array_diff($objectColumns, $managerInstance->getSystemColumns());
+			foreach($objectColumns as $column){
+				$objectFields[$column] = $managerInstance->getColumnType($column);
+			}
+			
+			foreach($objectFields as $name => $type){
+				if($type == DATA_TYPE_FLOAT || $type == DATA_TYPE_INTEGER){
+					$type = 'numeric';
+				}else if($type == DATA_TYPE_STRING){
+					$type = 'text';
+				}else if($type == DATA_TYPE_BOOLEAN){
+					$type = 'boolean';
+				}else if($type == DATA_TYPE_DATE || $type == DATA_TYPE_DATETIME){
+					$type = 'date';
+				}
+				$fields[] = array('id' => $name, 'name' => lang('field ' . $object_type . ' ' .$name), 'type' => $type);
+			}
+		}
+		usort($fields, array(&$this, 'compare_FieldName'));
+		ajx_current("empty");
+		ajx_extra_data(array('fields' => $fields));
+	}
+	
+	function compare_FieldName($field1, $field2){
+		return strnatcmp($field1['name'], $field2['name']);
+	}
+
+	private function get_report_column_types($report_id) {
+		$col_types = array();
+		$report = Reports::getReport($report_id);
+		$model = $report->getObjectType();
+		$manager = new $model();
+		
+		$columns = ReportColumns::getAllReportColumns($report_id);
+		
+		foreach ($columns as $col) {
+			$cp_id = $col->getCustomPropertyId();
+			if ($cp_id == 0)
+				$col_types[$col->getFieldName()] = $manager->getColumnType($col->getFieldName());
+			else {
+				$cp = CustomProperties::getCustomProperty($cp_id);
+				
+				switch ($cp->getType()) {
+					case 'list':
+					case 'text': $type = DATA_TYPE_STRING;
+						break;
+					case 'numeric': $type = DATA_TYPE_INTEGER;
+						break;
+					case 'date': $type = DATA_TYPE_DATE;
+						break;
+					case 'boolean': $type = DATA_TYPE_BOOLEAN;
+						break;
+					default: $type = DATA_TYPE_STRING;
+						break;
+				}
+				$col_types[$cp->getName()] = $type;
+			}
+		}
+		
+		return $col_types;
+	}
 }
 ?>

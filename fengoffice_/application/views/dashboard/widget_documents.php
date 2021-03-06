@@ -1,17 +1,30 @@
+
+<?php if (user_config_option('show_documents_widget_context_help', true, logged_user()->getId())) {
+	tpl_assign('helpDescription', lang('chelp documents widget'));
+	tpl_assign('option_name' , 'documents_widget');
+	$this->includeTemplate(get_template_path('context_help', 'help'));
+} ?>
+  
 <div style="padding:10px">
 <table id="dashTableDocuments" style="width:100%">
 <?php $c = 0;
 	foreach ($documents as $document){ $c++;?>
 	<tr class="<?php echo $c % 2 == 1? '':'dashAltRow'; echo ' ' . ($c > 5? 'dashSMDC':''); ?>" style="<?php echo $c > 5? 'display:none':'' ?>">
-	<td class="db-ico ico-unknown ico-<?php echo str_replace(".", "_", str_replace("/", "-", $document->getTypeString()))?>"></td>
-	<td style="padding-left:5px">
+	<td width=18>
+		<div class="db-ico ico-unknown ico-<?php echo str_replace(".", "_", str_replace("/", "-", $document->getTypeString()))?>"></div>
+		
+	</td>
+	<td style="padding-left:2px">
+	<?php if ($document->isCheckedOut()) {?>
+			<div class="db-ico ico-unknown ico-locked" style="padding-left:16px;display:inline" title="<?php echo lang('checked out by') . " " . $document->getCheckedOutBy()->getDisplayName()?>">&nbsp;</div>
+	<?php } // if ?>
 	<?php 
 		$dws = $document->getWorkspaces(logged_user()->getActiveProjectIdsCSV());
 		$projectLinks = array();
 		foreach ($dws as $ws) {
 			$projectLinks[] = $ws->getId();
 		}
-		echo '<div style="padding-right:10px;display:inline">' . '<span class="project-replace">' . implode(',',$projectLinks) . '</span></div>';?>
+		echo '<div style="padding-right:0px;display:inline">' . '<span class="project-replace">' . implode(',',$projectLinks) . '</span></div>';?>
 	<a class="internalLink" href="<?php echo get_url('files','file_details', array('id' => $document->getId()))?>"
 		title="<?php echo lang('message posted on by linktitle', format_datetime($document->getCreatedOn()), clean($document->getCreatedByDisplayName())) ?>">
 	<?php echo clean($document->getFilename())?>

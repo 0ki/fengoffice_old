@@ -1,4 +1,6 @@
 <?php
+	require_javascript("og/ObjectPicker.js");
+	
 	$workspaces = active_projects();
 	$genid = gen_id();
 	$object = $cotemplate;
@@ -96,7 +98,12 @@ og.pickObjectForTemplate = function(before) {
 				}
 			}
 		}
-	}, before);
+	}, before, {
+		types: {
+			'Tasks': true,
+			'Milestones': true
+		}
+	});
 };
 
 og.addObjectToTemplate = function(before, obj) {

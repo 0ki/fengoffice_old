@@ -1,8 +1,9 @@
 <?php
+	require_javascript("modules/addUserForm.js");
+	require_javascript("og/Permissions.js");
 	$genid=gen_id();
   set_page_title($user->isNew() ? lang('add user') : lang('edit user'));
 ?>
-<script type="text/javascript" src="<?php echo get_javascript_url('modules/addUserForm.js') ?>"></script>
 <form style="height:100%;background-color:white" class="internalForm" action="<?php echo $company->getAddUserUrl() ?>" onsubmit="javascript:ogPermPrepareSendData('<?php echo $genid ?>');return true;" method="post">
 
 <div class="adminAddUser">
@@ -35,6 +36,7 @@
     	
    	<a href="<?php echo get_url("company", "add_client") ?>" target="company" class="internalLink coViewAction ico-add" title="<?php echo lang('add a new company')?>"><?php echo lang('add company') . '...' ?></a></div>
 
+	<br/><a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_custom_properties_div',this)"><?php echo lang('custom properties') ?></a><br/>
   </div>
 <?php } else { ?>
   <input type="hidden" name="user[company_id]" value="<?php echo $company->getId()?>" />
@@ -141,6 +143,16 @@
 
 <?php } // if ?>
 
+	<div id='<?php echo $genid ?>add_custom_properties_div' style="display:none">
+		<fieldset>
+			<legend><?php echo lang('custom properties') ?></legend>
+			<?php echo render_object_custom_properties($user, 'Users', false) ?>
+		</fieldset>
+	</div>
+	
+	<div>
+		<?php echo render_object_custom_properties($user, 'Users', true) ?>
+	</div><br/>	
 
   <?php 
   echo input_field('user[contact_id]',array_var($user_data, 'contact_id',''), array('type' => 'hidden'));

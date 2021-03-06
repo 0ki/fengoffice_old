@@ -142,10 +142,10 @@
  "outgoing transport type" => "安全連線",
  "mail account outgoing transport type description" => "設定 SSL 或 TLS 安全連線",
  "smtp settings" => "SMTP 設定",
- "due_date task reminder" => "到期任務提醒",
+ "due_date reminder notification task" => "到期任務提醒",
  "due_date task reminder desc" => "任務 \"{0}\" 於 \"{1}\" 到期，但仍暫停中 ",
- "due_date milestone reminder" => "到期階段線任務提醒",
+ "due_date reminder notification milestone" => "到期階段線任務提醒",
  "due_date milestone reminder desc" => "階段性任務 \"{0}\" 於 \"{1}\" 到期，但仍暫",
- "start event reminder" => "事件提醒",
+ "start reminder notification event" => "事件提醒",
  "start event reminder desc" => "事件 \"{0}\" 開始於 \"{1}\"",
 ); ?>

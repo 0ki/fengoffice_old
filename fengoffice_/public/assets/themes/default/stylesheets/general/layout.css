@@ -92,3 +92,74 @@
 	padding-left: 20px;
 	cursor: pointer;
 }
+
+#chrome_main2 /*Calendar*/ {
+	border-color: rgb(195, 217, 255); 
+	background: rgb(195, 217, 255) none repeat scroll 0% 50%;
+}
+
+
+
+
+.adminAddProject .contactsTable {
+	width:100%;
+	max-width:500px;
+}
+
+.adminAddProject .contactsTable .actions {
+	text-align:right;
+}
+
+.adminAddProject .contactsTable .contact_name {
+	font-weight:bold;
+	padding-left:18px;
+	background: url(../images/16x16/contacts.png) no-repeat 0 0;
+	padding-top:1px;
+	padding-bottom:1px;
+}
+
+
+.asc {
+	max-width:500px;
+	border:2px solid #AAA;
+	padding:10px;
+	margin-top:15px;
+	margin-bottom:15px;
+}
+
+.asc .header{
+}
+
+.asc .header .title{
+	font-weight:bold;
+}
+
+.asc .body .results{
+	width:100%;
+	margin-top:5px;
+}
+
+.asc .body .results .actions{
+	text-align:right;
+}
+
+.asc .body .results .contact_name{
+	font-weight:bold;
+}
+
+
+.contextualHelp {
+	padding:4px 10px;
+	background:#FFF2BF none repeat scroll 0 0;
+	color: #5F4D06;
+	border: 1px dashed #EFCB3B;
+}
+
+.contextualHelp .internalLink {
+	font-weight: bold;
+	color: #DFB200;
+}
+
+.contextualHelp .internalLink:hover {
+	color:#FF5A00;
+}

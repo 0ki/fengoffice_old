@@ -82,6 +82,7 @@
     'no objects to link' => 'Please select objects that need to be linked',
     'no administration tools' => 'There are no registered administration tools in the database',
     'administration tool dnx' => 'Administration tool "{0}" does not exists',
+    'document checked out' => 'Document is already checked out by another user',
     
     // Success
     'success add contact' => 'Contact \'{0}\' has been created successfully',
@@ -174,6 +175,7 @@
     
     'success edit file revision' => 'Revision has been updated',
     'success delete file revision' => 'File revision has been deleted',
+    'success trash file revision' => 'File revision has been trashed',
     
     'success link objects' => '{0} object(s) has been successfully linked',
     'success unlink object' => 'Object has been successfully unlinked',
@@ -207,6 +209,8 @@
   
     'success classify email' => 'Email classified successfully',
     'success delete email' => 'Email has been deleted',
+  	'success unclassify email' => 'Email unclassified successfully',
+  	'error unclassify email' => 'Failed to unclassify email',
   
     'success delete mail account' => 'Email account has been deleted successfully',
     'success add mail account' => 'Email account has been created successfully',

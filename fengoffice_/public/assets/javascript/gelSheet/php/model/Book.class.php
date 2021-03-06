@@ -28,6 +28,7 @@
 		public $userId;
 		public $sheets=array();
 		public $fontStyles= array();
+		public $layoutStyles = array() ;
 
 		/**
 		* Constructor.
@@ -90,6 +91,21 @@
 				return $this->fontStyles;
 		}
 
+		public function getLayoutStyles() {
+			if ( $this->layoutStyles == null ) {
+				// The object is not loaded, so have to access the db . . .
+				if ( isset($this->bookId) ) {
+					$this->loadLayoutStyles($this->bookId);
+
+				}else {
+					return null ;
+					//BookId is not setted, set it first ...
+				}
+			}else
+				return $this->layoutStyles;
+		}		
+		
+		
 		public function getFontStyle($fontId) {
 			if ($this->fontStyles == null)
 				$this->loadFontStyles($this->bookId);
@@ -101,12 +117,9 @@
 					return $font;
 
 				}
-
-
 			}
-
-
 		}
+
 		public function getSheets() {
 			if ($this->sheets==null){
 			// The object is not loaded, so have to access the db . . .
@@ -120,7 +133,8 @@
 			}else
 				return $this->sheets;
 		}
-
+		
+			
 
 		/*** Others  ***/
 		public function addSheet($sheet){
@@ -134,19 +148,39 @@
 				$this->fontStyles = array();
 			$this->fontStyles[]=$fontStyle;
 		}
+		
+		public function addLayoutStyle($layoutStyle){
+			if ($this->layoutStyles==null)
+				$this->layoutStyles = array();
+			$this->layoutStyles[]=$layoutStyle;
+		}
+		
 
 		public function delete($recursive = false){
-			if ($recursive) {
-				foreach ($this->sheets as $sheet){
-					$sheet->delete(true);
+			$bookId = $this->bookId ;
+			//PEPE
+			if (
+				@mysql_query("DELETE FROM `" . table('cells') . "` WHERE `SheetId` IN (SELECT `SheetId` FROM `" . table('sheets') . "` WHERE `BookId` = $bookId)") &&
+				@mysql_query("DELETE FROM `" . table('mergedCells') . "` WHERE `SheetId` IN (SELECT `SheetId` FROM `" . table('sheets') . "` WHERE `BookId` = $bookId)") &&
+				@mysql_query("DELETE FROM `" . table('rows') . "` WHERE `SheetId` IN (SELECT `SheetId` FROM `" . table('sheets') . "` WHERE `BookId` = $bookId)") &&
+				@mysql_query("DELETE FROM `" . table('columns') . "` WHERE `SheetId` IN (SELECT `SheetId` FROM `" . table('sheets') . "` WHERE `BookId` = $bookId)") &&
+				@mysql_query("DELETE FROM `" . table('sheets') . "` WHERE `BookId` = $bookId") &&
+				@mysql_query("DELETE FROM `" . table('fontStyles') . "` WHERE `BookId` = $bookId") &&
+				@mysql_query("DELETE FROM `" . table('books') . "` WHERE `BookId` = $bookId" ))
+			{
+				//throw new Success('Book deleted succesfully!',"{'BookId':$bookId}");
+			} else {
+				$error = new Error(302,"Error deleting book.");
+				if($error->isDebugging()){
+					$err = str_replace("'", '"', mysql_error());
+					$error->addContentElement("BookId",$bookId);
+					$error->addContentElement("MySql Error",$err);
 				}
-				foreach ($this->fontStyles as $fontStyle){
-					$fontStyle->delete(true);
-				}
+				throw $error;					
 			}
-			$sql="delete from ".table('books'). " where BookId =".$this->bookId;
 			mysql_query($sql);
 		}
+		
 
 		public function load($BookId) {
 			//$sql = "select * from books where BookId=$BookId ";
@@ -183,7 +217,20 @@
 			}
 		}
 
-
+		function loadLayoutStyles($BookId = null) {
+			$sql = "select * from". table("layoutStyles") ."where BookId = ".$BookId ;
+			$result = mysql_query($sql) ;
+			while ($row = mysql_fetch_object($result)){
+				$layoutStyle = new LayoutStyle();
+				$layoutStyle->bookId = $BookId;
+				$layoutStyle->backgroundColor = $row->BackgroundColor ;
+				$layoutStyle->borderBottomStyleId = $row->BorderBottomStyleId ;
+				$layoutStyle->borderLeftStyleId = $row->BorderLeftStyleId ;
+				$layoutStyle->borderTopStyleId = $row->BorderTopStyleId ;
+				$layoutStyle->borderRightStyleId = $row->BorderRightStyleId ;
+				$this->addLayoutStyle($layoutStyle) ;
+			}
+		}	
 
 
 
@@ -204,13 +251,15 @@
 		 *
 		 **/
 		public function save(){
+			
+			
 			$update = false ; 
 			$hasErrors = false;
 
 			if(!isset($this->userId))
 				$this->userId = 1;    //TODO: Remove only for debugging user must be always setted (logged user)
 
-			//print print_r($this);
+			//die('<pre>'. print_r($this,1).'</pre>' );
 			$sql = "INSERT INTO ".table('books'). " (BookId, BookName, UserId) VALUES ($this->bookId,'$this->bookName',$this->userId)";
 
 			//$this->delete(false);
@@ -279,6 +328,15 @@
 					$hasErrors = $fontStyle->save();
 				}
 			}
+			
+			if(!$hasErrors){
+				foreach ($this->layoutStyles as $layoutStyle) {
+					$layoutStyle->bookId = $this->bookId;
+					$hasErrors = $layoutStyle->save();
+				}
+			}
+			
+			
 			if ($update) {
 				//if update means that a transaction was started.. 
 				//so check for errors and commit if ok
@@ -290,6 +348,10 @@
 			}	
 			return $hasErrors;
 		}
+		
+		
+		
+		
 
 		public function toJson(){
 			//return json_encode($this);

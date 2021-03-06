@@ -72,7 +72,7 @@
     	return $this->colours[$c % count($this->colours)];
     }
     
-    function DashboardDraw(ProjectChart $g = null){
+    function DashboardDraw($g = null){
 		if (is_null($g))
   			$g = $this->getGraph();
     	$g2 = $this->Draw($g, true);

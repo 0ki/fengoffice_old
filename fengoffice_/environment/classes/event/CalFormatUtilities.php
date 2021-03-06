@@ -6,11 +6,16 @@ class CalFormatUtilities {
 	function decode_ical_file($filename) {
 		$parsed_data = parse_ical($filename);
 		
-		$events_data = CalFormatUtilities::build_events_data($parsed_data);
+		if (isset($parsed_data[0]['tzoffsetfrom']))
+			$tz_diff = logged_user()->getTimezone() - ($parsed_data[0]['tzoffsetfrom'] / 100);
+		else
+			$tz_diff = logged_user()->getTimezone();
+		unset($parsed_data[0]);
+		$events_data = CalFormatUtilities::build_events_data($parsed_data, $tz_diff);
 		return $events_data;
 	}
 	
-	function build_events_data($ical_events_data) {
+	function build_events_data($ical_events_data, $tz_diff) {
 		$result = array();
 		
 		foreach($ical_events_data as $ical_ev) {
@@ -19,8 +24,8 @@ class CalFormatUtilities {
 			$data['description'] =  array_var($ical_ev, 'description', '');
 			$data['type_id'] = array_var($ical_ev, 'all_day', 0) == 0 ? 1 : 2;
 			
-			$data['start'] = date('Y-m-d H:i:s', array_var($ical_ev, 'start_unix'));
-			$data['duration'] = date('Y-m-d H:i:s', array_var($ical_ev, 'end_unix'));
+			$data['start'] = date('Y-m-d H:i:s', array_var($ical_ev, 'start_unix') - $tz_diff * 3600);
+			$data['duration'] = date('Y-m-d H:i:s', array_var($ical_ev, 'end_unix') - $tz_diff * 3600);
 			
 			$data['repeat_num'] = 0;
 			$data['repeat_h'] = 0;
@@ -62,7 +67,8 @@ class CalFormatUtilities {
 		return $result;
 	}
 	
-	function generateICalInfo($events, $calendar_name) {
+	function generateICalInfo($events, $calendar_name, $user = null) {
+		if ($user == null) $user = logged_user();
 		$ical_info = '';
 		$ical_info .= "BEGIN:VCALENDAR\r\n";
 		$ical_info .= "VERSION:2.0\r\n";
@@ -70,15 +76,29 @@ class CalFormatUtilities {
 		$ical_info .= "METHOD:REQUEST\r\n";
 		$ical_info .= "X-WR-CALNAME:$calendar_name\r\n";
 		
+		// timezone info
+		$tz = ($user->getTimezone() < 0 ? "-":"").str_pad(abs($user->getTimezone())*100, 4, '0', STR_PAD_LEFT);
+		$tz_desc = $user->getTimezone() > 0 ? lang("timezone gmt +".$user->getTimezone()) : lang("timezone gmt ".$user->getTimezone());
+		$ical_info .= "BEGIN:VTIMEZONE\r\n";
+		$ical_info .= "TZID:$tz_desc\r\n";
+		$ical_info .= "BEGIN:STANDARD\r\n";
+		$ical_info .= "TZOFFSETFROM:$tz\r\n";
+		$ical_info .= "TZOFFSETTO:$tz\r\n";
+		$ical_info .= "END:STANDARD\r\n";
+		$ical_info .= "END:VTIMEZONE\r\n";
+		
 		foreach ($events as $event) {
 			$ical_info .= "BEGIN:VEVENT\r\n";
 			
-			$startNext = new DateTimeValue($event->getStart()->getTimestamp());
+			$event_start = new DateTimeValue($event->getStart()->getTimestamp());
+			$event_duration = new DateTimeValue($event->getDuration()->getTimestamp());
+			
+			$startNext = new DateTimeValue($event_start->getTimestamp());
 			$startNext->add('d', 1);
-			if ($event->getTypeId() == 2) $ical_info .= "DTSTART;VALUE=DATE:" . $event->getStart()->format('Ymd') ."\r\n";
-			else $ical_info .= "DTSTART:" . $event->getStart()->format('Ymd') ."T". $event->getStart()->format('His') ."\r\n";
+			if ($event->getTypeId() == 2) $ical_info .= "DTSTART;VALUE=DATE:" . $event_start->format('Ymd') ."\r\n";
+			else $ical_info .= "DTSTART:" . $event_start->format('Ymd') ."T". $event_start->format('His') ."\r\n";
 			if ($event->getTypeId() == 2) $ical_info .= "DTEND;VALUE=DATE:" . $startNext->format('Ymd') ."\r\n";
-			else $ical_info .= "DTEND:" . $event->getDuration()->format('Ymd') ."T". $event->getDuration()->format('His') ."\r\n";
+			else $ical_info .= "DTEND:" . $event_duration->format('Ymd') ."T". $event_duration->format('His') ."\r\n";
 
 			$description = str_replace(chr(13).chr(10),"  ", $event->getDescription());
 			$ical_info .= "DESCRIPTION:$description\r\n";
@@ -97,6 +117,7 @@ class CalFormatUtilities {
 			}
 			$rrule = '';
 			if ($event->getRepeatD() > 0 || $event->getRepeatM() > 0 || $event->getRepeatY() > 0 || $event->getRepeatForever() > 0) {
+				$rrule_ok = true;
 				if ($event->getRepeatD() > 0) {
 					if ($event->getRepeatD() % 7 == 0) {
 						$freq = "FREQ=WEEKLY;";
@@ -111,13 +132,15 @@ class CalFormatUtilities {
 				} else if ($event->getRepeatY() > 0) {
 					$freq = "FREQ=YEARLY;";
 					$interval = "INTERVAL=".$event->getRepeatY().";";
+				} else {
+					$rrule_ok = false;
 				}
 				$until = '';
 				$count = '';
 				if (!$event->getRepeatForever() && $event->getRepeatNum() > 0) $count = "COUNT=".$event->getRepeatNum().";";
 				else if (!$event->getRepeatForever() && $event->getRepeatEnd()) $until = "UNTIL=".$event->getRepeatEnd()->format('Ymd').'T'.$event->getRepeatEnd()->format('His').";";
 				
-				$rrule = "RRULE:$freq$interval$count$until\r\n"; 
+				if ($rrule_ok) $rrule = "RRULE:$freq$interval$count$until\r\n"; 
 			}
 		    $ical_info .= $rrule;
 		    
