@@ -353,6 +353,7 @@ class WebpageController extends ApplicationController {
 		);
 		if (isset($webpages))
 		{
+			$index = 0;
 			foreach ($webpages as $w) {
 				if ($w->getProject() instanceof Project) {
 					$tags = project_object_tags($w);
@@ -360,6 +361,7 @@ class WebpageController extends ApplicationController {
 					$tags = "";
 				}
 				$object["webpages"][] = array(
+					"ix" => $index++,
 					"id" => $w->getId(),
 					"title" => $w->getTitle(),
 					"description" => $w->getDescription(),

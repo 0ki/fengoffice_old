@@ -22,12 +22,12 @@ class AdministrationController extends ApplicationController {
 		prepare_company_website_controller($this, 'website');
 		ajx_set_panel("administration");
 
-		// Access permissios
+		// Access permissions
 		if(!logged_user()->isCompanyAdmin(owner_company())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 		} // if
-		
+
 		//Autentify password
 		$pasword_required = ConfigOptions::getByName('ask_administration_autentification');
 		if ($pasword_required instanceof ConfigOption){
@@ -51,12 +51,12 @@ class AdministrationController extends ApplicationController {
 							default:
 								$ref_params[$ref_var_name] = $v;
 						}// switch
-						}
+					}
 					$url = get_url($ref_controller, $ref_action, $ref_params);
 					$this->redirectTo('administration', 'password_autentify', array('url' => $url));
 				}//foreach
 			}//if
-	   }//if
+		}//if
 	} // __construct
 
 	/**
@@ -67,49 +67,57 @@ class AdministrationController extends ApplicationController {
 	 * @return null
 	 */
 	function index() {
-		 
-		
+		if(!logged_user()->isCompanyAdmin(owner_company())) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		} // if
 	} // index
 
 	/**
 	 * Validate user information in order to give acces to the administration panel
 	 * */
 	function password_autentify() {
+		if(!logged_user()->isCompanyAdmin(owner_company())) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		} // if
 		if (isset($_POST['enetedPassword'])) {
 			$userName = array_var($_POST,'userName');
 
 			$pass = array_var($_POST,'enetedPassword');
-		
+
 			if(trim($userName) == '') {
 				flash_error(lang('username value missing'));
-				ajx_current("empty");	
-				return;		
+				ajx_current("empty");
+				return;
 			} // if
 			if(trim($pass) == '') {
 				flash_error(lang('password value missing'));
-				ajx_current("empty");	
+				ajx_current("empty");
 				return;
 			} // if
-			
+				
 			$user = Users::getByUsername($userName);
 			if(!($user instanceof User)) {
-					flash_error(lang('invalid login data'));
-					ajx_current("empty");
-					return;							
+				flash_error(lang('invalid login data'));
+				ajx_current("empty");
+				return;
 			} // if
-			
+				
 			if(!$user->isValidPassword($pass)) {
-					flash_error(lang('invalid login data'));
-					ajx_current("empty");
-					return;
+				flash_error(lang('invalid login data'));
+				ajx_current("empty");
+				return;
 			} // if
-	
+
 			if ($userName != logged_user()->getUsername()){
 				flash_error(lang('invalid login data'));
 				ajx_current("empty");
 				return;
 			}
-					
+				
 			$_SESSION['admin_login'] = time();
 			$this->redirectToUrl($_POST['url']);
 		} else {
@@ -122,7 +130,7 @@ class AdministrationController extends ApplicationController {
 		tpl_assign('url', array_var($_GET, 'url', get_url('administration', 'index')));
 
 	}
-	
+
 	/**
 	 * Show company page
 	 *
@@ -131,6 +139,11 @@ class AdministrationController extends ApplicationController {
 	 * @return null
 	 */
 	function company() {
+		if(!logged_user()->isCompanyAdmin(owner_company())) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		} // if
 		tpl_assign('company', owner_company());
 		ajx_set_no_toolbar(true);
 		$this->setTemplate(get_template_path('view_company', 'company'));
@@ -144,11 +157,16 @@ class AdministrationController extends ApplicationController {
 	 * @return null
 	 */
 	function members() {
+		if(!logged_user()->isCompanyAdmin(owner_company())) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		} // if
 		tpl_assign('company', owner_company());
 		tpl_assign('users_by_company', Users::getGroupedByCompany());
 	} // members
 
-	
+
 
 	/**
 	 * List all company projects
@@ -158,6 +176,11 @@ class AdministrationController extends ApplicationController {
 	 * @return null
 	 */
 	function projects() {
+		if(!logged_user()->isCompanyAdmin(owner_company())) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		} // if
 		$projects=null;
 		if (can_manage_workspaces(logged_user())) {
 			$padres = Projects::getAll('name','p2 = 0');//traigo todos los nivel 1
@@ -180,9 +203,14 @@ class AdministrationController extends ApplicationController {
 	 * @return null
 	 */
 	function clients() {
+		if(!logged_user()->isCompanyAdmin(owner_company())) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		} // if
 		tpl_assign('clients', owner_company()->getClientCompanies());
 	} // clients
-	
+
 	/**
 	 * List custom properties
 	 *
@@ -191,6 +219,11 @@ class AdministrationController extends ApplicationController {
 	 * @return null
 	 */
 	function custom_properties() {
+		if(!logged_user()->isCompanyAdmin(owner_company())) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		} // if
 		tpl_assign('object_types', array('<option value="" selected>'.lang('select one').'</option>',
 			'<option value="Companies">'.lang('company').'</option>',
 			'<option value="Contacts">'.lang('contact').'</option>',
@@ -212,8 +245,8 @@ class AdministrationController extends ApplicationController {
 				foreach ($custom_properties as $id => $data) {
 					$new_cp = new CustomProperty();
 					if($data['id'] != ''){
-						$new_cp = CustomProperties::getCustomProperty($data['id']);					
-					}	
+						$new_cp = CustomProperties::getCustomProperty($data['id']);
+					}
 					if($data['deleted'] == "1"){
 						$new_cp->delete();
 						continue;
@@ -227,7 +260,7 @@ class AdministrationController extends ApplicationController {
 						$new_cp->setDefaultValue(isset($data['default_value_boolean']));
 					}else{
 						$new_cp->setDefaultValue($data['default_value']);
-					}		
+					}
 					$new_cp->setIsRequired(isset($data['required']));
 					$new_cp->setIsMultipleValues(isset($data['multiple_values']));
 					$new_cp->setOrder($id);
@@ -252,6 +285,11 @@ class AdministrationController extends ApplicationController {
 	 * @return null
 	 */
 	function groups() {
+		if(!logged_user()->isCompanyAdmin(owner_company())) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		} // if
 		tpl_assign('groups', Groups::getAll());
 	} // clients
 
@@ -262,6 +300,11 @@ class AdministrationController extends ApplicationController {
 	 * @return null
 	 */
 	function configuration() {
+		if(!logged_user()->isCompanyAdmin(owner_company())) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		} // if
 		$this->addHelper('textile');
 		tpl_assign('config_categories', ConfigCategories::getAll());
 	} // configuration
@@ -273,6 +316,11 @@ class AdministrationController extends ApplicationController {
 	 * @return null
 	 */
 	function tools() {
+		if(!logged_user()->isCompanyAdmin(owner_company())) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		} // if
 		tpl_assign('tools', AdministrationTools::getAll());
 	} // tools
 
@@ -283,11 +331,16 @@ class AdministrationController extends ApplicationController {
 	 * @return null
 	 */
 	function task_templates() {
+		if(!logged_user()->isCompanyAdmin(owner_company())) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		} // if
 		tpl_assign('task_templates', ProjectTasks::getAllTaskTemplates());
 	} // tools
 
-	
-	
+
+
 	/**
 	 * Show upgrade page
 	 *
@@ -295,6 +348,11 @@ class AdministrationController extends ApplicationController {
 	 * @return null
 	 */
 	function upgrade() {
+		if(!logged_user()->isCompanyAdmin(owner_company())) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		} // if
 		$this->addHelper('textile');
 
 		$version_feed = VersionChecker::check(true);
@@ -304,7 +362,7 @@ class AdministrationController extends ApplicationController {
 		} // if
 
 		tpl_assign('versions_feed', $version_feed);
-	} // upgrade	
+	} // upgrade
 
 	// ---------------------------------------------------
 	//  Tool implementations
@@ -317,6 +375,11 @@ class AdministrationController extends ApplicationController {
 	 * @return null
 	 */
 	function tool_test_email() {
+		if(!logged_user()->isCompanyAdmin(owner_company())) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		} // if
 		$tool = AdministrationTools::getByName('test_mail_settings');
 		if(!($tool instanceof AdministrationTool)) {
 			flash_error(lang('administration tool dnx', 'test_mail_settings'));
@@ -372,6 +435,11 @@ class AdministrationController extends ApplicationController {
 	 * @return null
 	 */
 	function tool_mass_mailer() {
+		if(!logged_user()->isCompanyAdmin(owner_company())) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		} // if
 		$tool = AdministrationTools::getByName('mass_mailer');
 		if(!($tool instanceof AdministrationTool)) {
 			flash_error(lang('administration tool dnx', 'test_mail_settings'));
@@ -429,8 +497,13 @@ class AdministrationController extends ApplicationController {
 			} // try
 		} // if
 	} // tool_mass_mailer
-		
+
 	function cron_events() {
+		if(!logged_user()->isCompanyAdmin(owner_company())) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		} // if
 		$events = CronEvents::getUserEvents();
 		tpl_assign("events", $events);
 		$cron_events = array_var($_POST, 'cron_events');
@@ -463,7 +536,7 @@ class AdministrationController extends ApplicationController {
 			}
 		}
 	}
-	
+
 	/**
 	 * Returns hour and minute in 24 hour format
 	 *
@@ -471,7 +544,7 @@ class AdministrationController extends ApplicationController {
 	 * @param int $hour
 	 * @param int $minute
 	 */
-	function parseTime($time_str, &$hour, &$minute) {
+	private function parseTime($time_str, &$hour, &$minute) {
 		$exp = explode(':', $time_str);
 		$hour = $exp[0];
 		$minute = $exp[1];
@@ -487,7 +560,7 @@ class AdministrationController extends ApplicationController {
 		}
 	}
 
-	
+
 } // AdministrationController
 
 ?>

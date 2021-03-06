@@ -45,6 +45,10 @@
 	      <?php echo checkbox_field('user[can_manage_reports]', array_var($user_data,'can_manage_reports'), array('id' => 'user[can_manage_reports]' )) ?> 
 	      <label for="<?php echo 'user[can_manage_reports]' ?>" class="checkbox"><?php echo lang('can manage reports') ?></label>
 	    </div>
+	    <div>
+	      <?php echo checkbox_field('user[can_manage_time]', array_var($user_data,'can_manage_time'), array('id' => 'user[can_manage_time]' )) ?> 
+	      <label for="<?php echo 'user[can_manage_time]' ?>" class="checkbox"><?php echo lang('can manage time') ?></label>
+	    </div>
 	</div>
 </fieldset>
 <?php } ?>

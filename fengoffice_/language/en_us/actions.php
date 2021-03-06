@@ -76,7 +76,9 @@
     'delete task' => 'Delete task',
     'mark task as completed' => 'Mark task as completed',
     'mark task as open' => 'Mark task as open',
-    
+    'apply milestone to subtasks' => 'Apply Milestone to Subtasks',
+  	'apply workspace to subtasks' => 'Apply Workspace to Subtasks',
+  
     // Milestone
     'add milestone' => 'Add milestone',
     'edit milestone' => 'Edit milestone',

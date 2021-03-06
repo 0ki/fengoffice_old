@@ -76,7 +76,7 @@
 	'field MailContents is_deleted' => 'est effacé',
 	'field MailContents is_shared' => 'est partagé',
 	'field MailContents imap_folder_name' => 'Nom du dossier IMAP',
-	'field MailContents account_email' => 'Compte de courriel',
+	'field MailContents account_email' => 'Compte de messagerie',
 	'field MailContents created_on' => 'Créé le',
 	'field MailContents created_by_id' => 'Créé par',
 	'field MailContents updated_by_id' => 'Mis-à-jour par',

@@ -138,6 +138,26 @@
     	array('id' => 'profileFormTitle', 'tabindex' => '2800')) ?>
   </div>
   
+  	<div id='<?php echo $genid ?>add_custom_properties_div' style="display:none">
+		<fieldset>
+			<legend><?php echo lang('custom properties') ?></legend>
+			<?php echo render_object_custom_properties($user, 'Users', false) ?>
+		</fieldset>
+	</div>
+	
+	<?php foreach ($categories as $category) { ?>
+	<div style="display:none" id="<?php echo $genid . $category['name'] ?>">
+	<fieldset>
+		<legend><?php echo lang($category['name'])?></legend>
+		<?php echo $category['content'] ?>
+	</fieldset>
+	</div>
+	<?php } ?>
+	
+	<div>
+		<?php echo render_object_custom_properties($user, 'Users', true) ?>
+	</div><br/>
+	
   <?php echo submit_button(lang('save changes'),'s',array('tabindex' => '3000')) ?>
 
 </div>

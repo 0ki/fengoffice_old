@@ -7,6 +7,17 @@
  */
 class  CustomProperties extends  BaseCustomProperties {
 
+	/**
+	 * Return custom properties that are not visilbe by default.
+	 * @param $object_type
+	 * @return unknown_type
+	 */
+	static function getHiddenCustomPropertiesByObjectType($object_type) {
+		return self::findAll(array(
+			'conditions' => array("`object_type` = ? AND `is_required` <> ? AND `visible_by_default` <> ?", $object_type, false, false),
+			'order' => 'property_order asc'
+		)); // findAll
+	}
 
 	/**
 	 * Return all custom properties that an object type has

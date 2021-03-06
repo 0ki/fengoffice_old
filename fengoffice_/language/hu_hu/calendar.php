@@ -26,7 +26,7 @@
 	"CAL_NO_ACCOUNTS" => "Ez a naptár nem engedi a belépést; csak a root léphet be.",
 	"CAL_NO_MODIFY" => "Nem változtatható",
 	"CAL_NO_ANYTHING" => " Nincs jogosultságod változtatni ezen a lapon",
-	"CAL_NO_WRITE", " Nincs jogosultságod új esemény létrehozására",
+	"CAL_NO_WRITE" => " Nincs jogosultságod új esemény létrehozására",
 	// ############ DAYS ############
 	"CAL_MONDAY" => "Hétfõ",
 	"CAL_TUESDAY" => "Kedd",

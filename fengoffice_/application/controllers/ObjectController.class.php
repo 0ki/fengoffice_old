@@ -103,17 +103,6 @@ class ObjectController extends ApplicationController {
 		$this->setTemplate("add_subscribers");
 	}
 	
-	function render_add_milestone() {
-		$ws_ids = array_var($_GET, 'workspaces', '');
-		$genid = array_var($_GET, 'genid', '');				
-		$workspaces = Projects::findByCSVIds($ws_ids);
-		tpl_assign('workspaces', $workspaces);
-		tpl_assign('genid', $genid);
-		$this->setLayout("html");
-		$this->setTemplate("add_select_milestone");
-		
-	}
-	
 	function add_to_workspaces($object) {
 		$object->removeFromWorkspaces(logged_user()->getWorkspacesQuery());
 		$ids = array_var($_POST, "ws_ids", "");
@@ -779,7 +768,7 @@ class ObjectController extends ApplicationController {
 		}			
 		$proj_cond_companies = Companies::getWorkspaceString($proj_ids);
 		$proj_cond_messages = ProjectMessages::getWorkspaceString($proj_ids);
-		$proj_cond_documents = ProjectWebpages::getWorkspaceString($proj_ids);
+		$proj_cond_documents = ProjectFiles::getWorkspaceString($proj_ids);
 		$proj_cond_emails = MailContents::getWorkspaceString($proj_ids);
 		$proj_cond_events = ProjectEvents::getWorkspaceString($proj_ids);
 		$proj_cond_tasks = ProjectTasks::getWorkspaceString($proj_ids);
@@ -914,8 +903,7 @@ class ObjectController extends ApplicationController {
 			$permissions = ' AND ( ' . permissions_sql_for_listings(Contacts::instance(), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`co`') . ')';
 			if (isset($project)) {
 				$res['Contacts'] = "SELECT 'Contacts' AS `object_manager_value`, `id` AS `oid`, $order_crit_contacts AS `order_value` FROM `" .
-				TABLE_PREFIX . "contacts` `co` WHERE $trashed_cond AND EXISTS (SELECT * FROM `" .
-				TABLE_PREFIX . "project_contacts` `pc` WHERE `pc`.`contact_id` = `co`.`id` AND ".$proj_cond_contacts. ")" .
+				TABLE_PREFIX . "contacts` `co` WHERE $trashed_cond AND $proj_cond_contacts " .
 				str_replace('= `object_manager_value`', "= 'Contacts'", $tag_str) . $permissions;
 			} else{
 				$res['Contacts'] = "SELECT 'Contacts' AS `object_manager_value`, `id` AS `oid`, $order_crit_contacts AS `order_value` FROM `" .
@@ -987,7 +975,7 @@ class ObjectController extends ApplicationController {
 		if(!$res)  return $objects;
 		$rows=$res->fetchAll();
 		if(!$rows)  return $objects;
-		$i=1;
+		$index=0;
 		foreach ($rows as $row){
 			$manager= $row['object_manager_value'];
 			$id = $row['oid'];
@@ -995,7 +983,7 @@ class ObjectController extends ApplicationController {
 				$obj=get_object_by_manager_and_id($id,$manager);
 				if($obj->canView(logged_user())){
 					$dash_object=$obj->getDashboardObject();
-					//	$dash_object['id'] = $i++;
+					$dash_object['ix'] = $index++;
 					$objects[] = $dash_object;					
 				}
 				//if($manager=='ProjectWebPages')
@@ -1171,7 +1159,7 @@ class ObjectController extends ApplicationController {
 						} else if ($type == 'MailContents') {
 							$count += MailController::addEmailToWorkspace($split[1], $destination, $ws_ids, $mantainWs);
 						} else {
-							if (!$mantainWs) {
+							if (!$mantainWs || $type == 'ProjectTasks' || $type == 'ProjectEvents') {
 								$ws = $obj->getWorkspaces($ws_ids);
 								foreach ($ws as $w) {
 									if (can_add(logged_user(), $w, $type)) {

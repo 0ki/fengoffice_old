@@ -234,6 +234,28 @@
     } // setCanManageConfiguration() 
     
     /**
+    * Return value of 'can_manage_time' field
+    *
+    * @access public
+    * @param void
+    * @return boolean 
+    */
+    function getCanManageTime() {
+      return $this->getColumnValue('can_manage_time');
+    } // getCanManageTime()
+    
+    /**
+    * Set value of 'can_manage_time' field
+    *
+    * @access public   
+    * @param boolean $value
+    * @return boolean
+    */
+    function setCanManageTime($value) {
+      return $this->setColumnValue('can_manage_time', $value);
+    } // setCanManageTime() 
+    
+    /**
     * Return value of 'can_manage_contacts' field
     *
     * @access public

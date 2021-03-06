@@ -11,5 +11,5 @@
 		<a class="internalLink" target="administration" href="<?php echo get_url('administration', 'index') ?>"><?php echo lang('administration') ?></a> |
 	<?php } ?>
 	<a class="internalLink" target="account" href="<?php echo logged_user()->getAccountUrl() ?>"><?php echo lang('account') ?></a> |
-	<a target="_blank" href="http://wiki.opengoo.org"><?php echo lang('help') ?></a>
+	<a target="_blank" href="<?php echo help_link() ?>"><?php echo lang('help') ?></a>
 </div>

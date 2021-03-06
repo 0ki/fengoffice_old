@@ -20,7 +20,6 @@ class FileRepository_Backend_FileSystem implements FileRepository_Backend {
 	 */
 	private $repository_dir;
 
-	private $db_link;
 	private $table_prefix;
 	 
 	/**
@@ -29,11 +28,9 @@ class FileRepository_Backend_FileSystem implements FileRepository_Backend {
 	 * @param string $repository_dir Path to the file system repository
 	 * @return FileRepository_Backend_FileSystem
 	 */
-	function __construct($repository_dir,$db_link, $table_prefix) {
-		$this->setDbLink($db_link);
+	function __construct($repository_dir, $table_prefix) {
 		$this->setTablePrefix($table_prefix);
 		$this->setRepositoryDir($repository_dir);
-
 	} // __construct
 
 	// ---------------------------------------------------
@@ -48,9 +45,9 @@ class FileRepository_Backend_FileSystem implements FileRepository_Backend {
 	 */
 	function listFiles() {
 		$files_table = $this->getFilesTableName();
-		if($result = mysql_query("SELECT `id` FROM $files_table ORDER BY `order`", $this->db_link)) {
+		if ($result = DB::execute("SELECT `id` FROM $files_table ORDER BY `order`")) {
 			$ids = array();
-			while($row = mysql_fetch_assoc($result)) {
+			while ($row= $result->fetchRow()) {
 				$ids[] = $row['id'];
 			} // while
 			return $ids;
@@ -66,10 +63,10 @@ class FileRepository_Backend_FileSystem implements FileRepository_Backend {
 	 */
 	function countFiles() {
 		$files_table = $this->getFilesTableName();
-		if($result = mysql_query("SELECT COUNT(`id`) AS 'row_count' FROM $files_table", $this->db_link)) {
-			if($row = mysql_fetch_assoc($result)) {
-				return (integer) $row['row_count'];
-			} // if
+		if ($result = DB::execute("SELECT COUNT(`id`) AS 'row_count' FROM $files_table")) {
+			if ($row = $result->fetchRow()) {
+				return $row['row_count'];
+			}
 		} // if
 		return 0;
 	} // countFiles
@@ -107,10 +104,10 @@ class FileRepository_Backend_FileSystem implements FileRepository_Backend {
 		} // if
 
 		$attributes_table = $this->getAttributesTableName();
-		$escaped_id = mysql_real_escape_string($file_id);
-		if($result = mysql_query("SELECT `attribute`, `value` FROM $attributes_table WHERE `id` = '$escaped_id'", $this->db_link)) {
+		$escaped_id = DB::escape($file_id);
+		if ($result = DB::execute("SELECT `attribute`, `value` FROM $attributes_table WHERE `id` = $escaped_id")) {
 			$attributes = array();
-			while($row = mysql_fetch_assoc($result)) {
+			while ($row = $result->fetchRow()) {
 				$attributes[$row['attribute']] = eval($row['value']);
 			} // while
 			return $attributes;
@@ -146,10 +143,10 @@ class FileRepository_Backend_FileSystem implements FileRepository_Backend {
 		} // if
 
 		$attributes_table = $this->getAttributesTableName();
-		$escaped_id = mysql_real_escape_string($file_id);
-		$escaped_attribute = mysql_real_escape_string($attribute_name);
-		if($result = mysql_query("SELECT `value` FROM $attributes_table WHERE `id` = '$escaped_id' AND `attribute` = '$escaped_attribute'", $this->db_link)) {
-			if($row = mysql_fetch_assoc($result)) {
+		$escaped_id = DB::escape($file_id);
+		$escaped_attribute = DB::escape($attribute_name);
+		if ($result = DB::execute("SELECT `value` FROM $attributes_table WHERE `id` = $escaped_id AND `attribute` = $escaped_attribute")) {
+			if ($row = $result->fetchRow()) {
 				return eval($row['value']);
 			} // if
 		} // if
@@ -168,25 +165,25 @@ class FileRepository_Backend_FileSystem implements FileRepository_Backend {
 	 * @throws InvalidParamError If we have an object or a resource as attribute value
 	 */
 	function setFileAttribute($file_id, $attribute_name, $attribute_value) {
+		
 		if(!$this->isInRepository($file_id)) {
 			throw new FileNotInRepositoryError($file_id);
 		} // if
-
 
 		if(is_object($attribute_value) || is_resource($attribute_value)) {
 			throw new InvalidParamError('$attribute_value', $attribute_value, 'Objects and resources are not supported as attribute values');
 		} // if
 
 		$attributes_table = $this->getAttributesTableName();
-		$escaped_id = mysql_real_escape_string($file_id);
-		$escaped_attribute = mysql_real_escape_string($attribute_name);
-		$escaped_value = mysql_real_escape_string('return ' . var_export($attribute_value, true) . ';');
+		$escaped_id = DB::escape($file_id);
+		$escaped_attribute = DB::escape($attribute_name);
+		$escaped_value = DB::escape('return ' . var_export($attribute_value, true) . ';');
 
-		if($result = mysql_query("SELECT `value` FROM $attributes_table WHERE `id` = '$escaped_id' AND `attribute` = '$escaped_attribute'", $this->db_link)) {
-			if(mysql_num_rows($result) == 0) {
-				mysql_query("INSERT INTO $attributes_table (`id`, `attribute`, `value`) VALUES ('$escaped_id', '$escaped_attribute', '$escaped_value')", $this->db_link);
+		if ($result = DB::execute("SELECT `value` FROM $attributes_table WHERE `id` = $escaped_id AND `attribute` = $escaped_attribute")) {
+			if (!$result->fetchRow()) {
+				DB::execute("INSERT INTO $attributes_table (`id`, `attribute`, `value`) VALUES ($escaped_id, $escaped_attribute, $escaped_value)");
 			} else {
-				mysql_query("UPDATE $attributes_table SET `value` = '$escaped_value' WHERE `id` = '$escaped_id' AND `attribute` = '$escaped_attribute''", $this->db_link);
+				DB::execute("UPDATE $attributes_table SET `value` = $escaped_value WHERE `id` = $escaped_id AND `attribute` = $escaped_attribute");
 			} // if
 		} // if
 	} // setFileAttribute
@@ -202,6 +199,7 @@ class FileRepository_Backend_FileSystem implements FileRepository_Backend {
 	 * @throws FileRepositoryAddError if we fail to move file to the repository
 	 */
 	function addFile($source, $attributes = null) {
+
 		if(!is_readable($source)) {
 			throw new FileDnxError($source);
 		} // if
@@ -459,29 +457,6 @@ class FileRepository_Backend_FileSystem implements FileRepository_Backend {
 		$this->repository_dir = $value;
 	} // setRepositoryDir
 	
-	/**
-	 * Get db_link
-	 *
-	 * @param null
-	 * @return resource
-	 */
-	function getDbLink() {
-		return $this->db_link;
-	} // getDbLink
-
-	/**
-	 * Set db_link value
-	 *
-	 * @param resource $value
-	 * @return null
-	 */
-	function setDbLink($value) {
-		if(!is_resource($value) || (strpos(get_resource_type($value), 'mysql') === false)) {
-			throw new InvalidParamError('value', $value, 'DB link need to be MySQL connection resouce');
-		} // if
-		$this->db_link = $value;
-	} // setDbLink
-
 	/**
 	 * Get table_prefix
 	 *

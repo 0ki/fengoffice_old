@@ -13,15 +13,15 @@ og.ObjectPicker = function(config) {
             	id: 'id',
             	fields: [
 	                'name', 'object_id', 'type', 'tags', 'createdBy', 'createdById',
-	                {name: 'dateCreated', type: 'date', dateFormat: 'timestamp'},
+	                'dateCreated',
 					'updatedBy', 'updatedById',
-					{name: 'dateUpdated', type: 'date', dateFormat: 'timestamp'},
+					'dateUpdated',
 					'icon', 'project', 'projectId', 'manager', 'object_id', 'mimeType'
             	]
         	}),
         	remoteSort: true
     	});
-    	this.store.setDefaultSort('name', 'asc');
+    	this.store.setDefaultSort('dateUpdated', 'desc');
 
 		function renderIcon(value, p, r) {
 			var classes = "db-ico ico-unknown ico-" + r.data.type;
@@ -41,12 +41,7 @@ og.ObjectPicker = function(config) {
 			if (!value) {
 				return "";
 			}
-			var now = new Date();
-			if (now.dateFormat('Y-m-d') > value.dateFormat('Y-m-d')) {
-				return value.dateFormat('M j');
-			} else {
-				return value.dateFormat('h:i a');
-			}
+			return value;
 		}
 
 		var sm = new Ext.grid.RowSelectionModel();

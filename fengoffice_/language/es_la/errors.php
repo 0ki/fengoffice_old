@@ -177,6 +177,10 @@
     'error assign task permissions company' => 'No tiene permisos para asignar la tarea a la compañía',
   	'account already being checked' => 'La cuenta ya se está verificando.',
     'no files to compress' => 'No hay archivos para comprimir.',
+  
+  	'cant modify subscribers' => 'No es posible modificar los subscriptores',
+  	'this object must belong to a ws to modify its subscribers' => 'El objeto debe pertenecer a un espacio de trabajo para poder modificar sus subscriptores.',
+  
  ); // array
 
 ?>

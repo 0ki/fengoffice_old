@@ -241,7 +241,8 @@ INSERT INTO `<?php echo $table_prefix ?>cron_events` (`name`, `recursive`, `dela
 	('send_reminders', '1', '10', '0', '1', '0000-00-00 00:00:00'),
 	('send_password_expiration_reminders', '1', '1440', '1', '1', '0000-00-00 00:00:00'),
 	('send_notifications_through_cron', '1', '1', '0', '0', '0000-00-00 00:00:00'),
-	('backup', '1', '10080', '0', '0', '0000-00-00 00:00:00');
+	('backup', '1', '10080', '0', '0', '0000-00-00 00:00:00'),
+	('delete_mails_from_server', '1', '1440', '1', '1', '0000-00-00 00:00:00');
 
 -- GelSheet
 INSERT INTO `<?php echo $table_prefix ?>gs_fonts` VALUES

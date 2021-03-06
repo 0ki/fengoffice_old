@@ -449,6 +449,7 @@ class AccessController extends ApplicationController {
 				$administrator->setCanManageContacts(true);
 				$administrator->setCanManageTemplates(true);
 				$administrator->setCanManageReports(true);
+				$administrator->setCanManageTime(true);
 				$administrator->setAutoAssign(false);
 				$administrator->setPersonalProjectId(1);
 

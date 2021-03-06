@@ -138,11 +138,11 @@
 .RX__tasks_og-drag 	{
 	cursor: move;
 	position: absolute;
-	margin-left: -9px;
-	width: 9px;
+	margin-left: -10px;
+	width: 10px;
 	min-height: 24px;
 	height: 100%;
-	background: url(../../images/rx/drag_handle.png) repeat center center;
+	background: url(../../images/rx/grid_drag.png) repeat center top;
 	visibility: hidden;
 }
 
@@ -153,7 +153,7 @@
 	cursor: move !important;
 	width:auto;
 	height:auto;
-	background: rgb(218, 227, 240) url(../../images/rx/drag_handle.png) repeat-y left top;
+	background: rgb(218, 227, 240) url(../../images/rx/grid_drag.png) repeat-y left top;
 }
 
 .RX__tasks_dd-over {

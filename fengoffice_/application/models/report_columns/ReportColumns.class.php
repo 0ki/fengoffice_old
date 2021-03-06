@@ -29,8 +29,8 @@ class ReportColumns extends BaseReportColumns {
 	static function getAllReportColumnNamesForFields($report_id) {
 		$colNames = array();
 		$columns = self::findAll(array(
-			'conditions' => array("`report_id` = ? AND field_name != '' AND custom_property_id = 0", $report_id),
-			'order' => 'field_name asc'
+			'conditions' => array("`report_id` = ? AND `field_name` != '' AND `custom_property_id` = 0", $report_id),
+			'order' => '`field_name` asc'
 		)); // findAll
 		foreach($columns as $col){
 			$colNames[] = $col->getFieldName();
@@ -47,7 +47,7 @@ class ReportColumns extends BaseReportColumns {
 	static function getAllReportColumnsForCustomProperties($report_id) {
 		$colCp = array();
 		$columns = self::findAll(array(
-			'conditions' => array("`report_id` = ? AND custom_property_id > 0", $report_id)
+			'conditions' => array("`report_id` = ? AND `custom_property_id` > 0", $report_id)
 		)); // findAll
 		foreach($columns as $col){
 			$colCp[] = $col->getCustomPropertyId();

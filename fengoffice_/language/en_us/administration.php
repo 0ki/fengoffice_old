@@ -178,9 +178,9 @@
 	'user ws config option desc show_week_numbers' => 'Shows the week numbers on the monthly and weekly views.',
   
   	'user ws config option name date_format' => 'Date format',
-  	'user ws config option desc date_format' => 'Template format to be applied to date values. Code explanations: d = Day number (2 digits with leading zeros), D = Day name (three letters), j = Day number, l = Complete day name, m = Month number (with leading zeros), M = Month name (three letters), n = Month number, F = Complete month name, Y = Year (4 digits), y = Year (2 digits).',
+  	'user ws config option desc date_format' => 'Template format to be applied to date values. Code explanations: d = Day number (2 digits with leading zeros), D = Day name (three letters), j = Day number, l = Complete day name, m = Month number (with leading zeros), M = Month name (three letters), n = Month number, F = Complete month name, Y = Year (4 digits), y = Year (2 digits). Remember that you refresh is required to apply the changes.',
   	'user ws config option name descriptive_date_format' => 'Descriptive date format',
-  	'user ws config option desc descriptive_date_format' => 'Template format to be applied to descriptive date values. Code explanations: same as \'Date Format\'',
+  	'user ws config option desc descriptive_date_format' => 'Template format to be applied to descriptive date values. Code explanations: same as \'Date Format\'. Refresh required.',
 
   	'user ws config option name show_context_help' => 'Show contextual help',
   	'user ws config option desc show_context_help' => 'Select if you want to always view help, never view it, or view it until each box is closed.',
@@ -227,6 +227,7 @@
 	'no templates' => 'There are no templates',
 	'template name required' => 'The template\'s name is required',
 	'can manage templates' => 'Can manage templates',
+    'can manage time' => 'Can manage time',
 	'new template' => 'New template',
 	'edit template' => 'Edit template',
 	'template dnx' => 'The template does not exist',

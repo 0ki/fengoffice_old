@@ -1147,11 +1147,13 @@ function autocomplete_tags_field($name, $value, $id = null, $tabindex = null) {
 }
 
 function render_add_reminders($object, $context, $defaults = null, $genid = null) {
+	require_javascript('og/Reminders.js');
 	if(!is_array($defaults)) {
 		$defaults = array(
 			'type' => 'reminder_popup',
 			'duration' => '15',
-			'duration_type' => '1'
+			'duration_type' => '1',
+			'for_subscribers' => true,
 		); 
 	}
 	if (is_null($genid)) {
@@ -1167,89 +1169,15 @@ function render_add_reminders($object, $context, $defaults = null, $genid = null
 	}
 	$output = '
 		<div id="'.$genid.'" class="og-add-reminders">
-			<a id="'.$genid.'-link" href="#" onclick="og.addReminder(this.parentNode, \''.$context.'\');return false;">' . lang("add object reminder") . '</a>
+			<a id="'.$genid.'-link" href="#" onclick="og.addReminder(this.parentNode, \''.$context.'\', \''.$defaults['type'].'\', \''.$defaults['duration'].'\', \''.$defaults['duration_type'].'\', \''.$defaults['for_subscribers'].'\', this);return false;">' . lang("add object reminder") . '</a>
 		</div>
-		
 		<script>
 		og.reminderTypes = ['.$typecsv.'];
-		og.reminderDurations = [0, 1, 2, 5, 10, 15, 30];
-		og.reminderDurationTypes = {
-			"1":"minutes",
-			"60":"hours",
-			"1440":"days",
-			"10080":"weeks"
-		};
-		og.addReminder = function(parent, context, type, duration, duration_type, for_subscribers) {
-			if (typeof type == "undefined") type = "'.$defaults["type"].'";
-			if (typeof duration == "undefined") duration = "'.$defaults["duration"].'";
-			if (typeof duration_type == "undefined") duration_type = "'.$defaults["duration_type"].'"; 
-			var count = parent.getElementsByTagName("div").length;
-			var div = document.createElement("div");
-			var html = \'<select name="reminder_type[\' + context + \'][\' + count + \']">\';
-			for (var i=0; i < og.reminderTypes.length; i++) {
-				html += \'<option value="\' + og.reminderTypes[i] + \'"\';
-				if (og.reminderTypes[i] == type) {
-					html += \' selected="selected"\';
-				}
-				html += \'>\' + lang(og.reminderTypes[i]) + \'</option>\';
-			}
-			html += \'</select>\';
-			html += \'<select name="reminder_duration[\' + context + \'][\' + count + \']">\';
-			for (var i=0; i < og.reminderDurations.length; i++) {
-				html += \'<option value="\' + og.reminderDurations[i] + \'"\';
-				if (og.reminderDurations[i] == duration) {
-					html += \' selected="selected"\';
-				}
-				html += \'>\' + og.reminderDurations[i] + \'</option>\';
-			}
-			html += \'</select>\';
-			html += \'<select name="reminder_duration_type[\' + context + \'][\' + count + \']">\';
-			for (var i in og.reminderDurationTypes) {
-				html += \'<option value="\' + i + \'"\';
-				if (i == duration_type) {
-					html += \' selected="selected"\';
-				}
-				html += \'>\' + lang(og.reminderDurationTypes[i]) + \'</option>\';
-			}
-			html += \'</select>\';
-			html += \' '. lang('before') .'. \';
-			var id = Ext.id();
-			html += \'<img title="\' + lang("remove object reminder") + \'" class="ico ico-delete" src="s.gif" style="vertical-align:middle;width:16px;height:16px;margin: 0 5px;position:relative;top:-2px;cursor:pointer" onclick="og.removeReminder(this.parentNode, \\\'\' + context + \'\\\');return false;" />\';
-			html += \'<span style="margin-left:2px;position:relative;top:2px"><input class="checkbox" type="checkbox" name="reminder_subscribers[\' + context + \'][\' + count + \']" \' + (for_subscribers ? \'checked="checked"\' : "") + \' id="\' + id + \'" /><label class="checkbox" for="\' + id + \'">\' + lang("apply to subscribers") + \'</label></span>\';
-			div.innerHTML = html;
-			parent.insertBefore(div, document.getElementById("'.$genid.'-link"));			
-		}
-		og.removeReminder = function(div, context) {
-			var parent = div.parentNode;
-			parent.removeChild(div);
-			// reorder property names
-			var row = parent.firstChild;
-			var num = 0;
-			while (row != null) {
-				if (row.tagName == "DIV") {
-					var inputs = row.getElementsByTagName("select");
-					for (var i=0; i < inputs.length; i++) {
-						var input = inputs[i];
-						if (input.name.substring(0, 13) == "reminder_type") {
-							input.name = "reminder_type[" + context + "][" + num + "]";
-						} else if (input.name.substring(0, 20) == "reminder_subscribers") {
-							input.name = "reminder_subscribers[" + context + "][" + num + "]";
-						} else if (input.name.substring(0, 22) == "reminder_duration_type") {
-							input.name = "reminder_duration_type[" + context + "][" + num + "]";
-						} else {
-							input.name = "reminder_duration[" + context + "][" + num + "]";
-						}
-					}
-					num++;
-				}
-				row = row.nextSibling;
-			}
-		}
 		</script>
 	';
 	
 	if ($object->isNew()) {
-		$output .= '<script>og.addReminder(document.getElementById("'.$genid.'"), "'.$context.'");</script>';
+		$output .= '<script>og.addReminder(document.getElementById("'.$genid.'"), \''.$context.'\', \''.$defaults['type'].'\', \''.$defaults['duration'].'\', \''.$defaults['duration_type'].'\', \''.$defaults['for_subscribers'].'\', document.getElementById("'.$genid.'-link"));</script>';
 	} else {
 		$reminders = ObjectReminders::getAllRemindersByObjectAndUser($object, logged_user(), $context, true);
 		foreach($reminders as $reminder) {
@@ -1269,7 +1197,7 @@ function render_add_reminders($object, $context, $defaults = null, $genid = null
 			}
 			$type = $reminder->getType();
 			$forSubscribers = $reminder->getUserId() == 0 ? "true" : "false";
-			$output .= '<script>og.addReminder(document.getElementById("'.$genid.'"), "'.$context.'", "'.$type.'", "'.$duration.'", "'.$duration_type.'", '.$forSubscribers.');</script>';
+			$output .= '<script>og.addReminder(document.getElementById("'.$genid.'"), "'.$context.'", "'.$type.'", "'.$duration.'", "'.$duration_type.'", '.$forSubscribers.', document.getElementById(\''.$genid.'-link\'));</script>';
 		} // for
 	}
 	return $output;

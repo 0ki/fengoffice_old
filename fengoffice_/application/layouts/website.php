@@ -13,11 +13,14 @@
 
 	$version = include "version.php";
 	if (defined('COMPRESSED_CSS') && COMPRESSED_CSS) {
-		echo stylesheet_tag("ogmin$version.css");
+		echo stylesheet_tag("ogmin.css");
 	} else {
 		echo stylesheet_tag('website.css');
 	}
-	echo stylesheet_tag('custom.css');
+	$theme = config_option('theme', DEFAULT_THEME);
+	if (is_file(PUBLIC_FOLDER . "/assets/themes/$theme/stylesheets/custom.css")) {
+		echo stylesheet_tag('custom.css');
+	}
 	$css = array();
 	Hook::fire('autoload_stylesheets', null, $css);
 	foreach ($css as $c) {
@@ -36,6 +39,10 @@
 		foreach ($jss as $onejs) {
 			echo add_javascript_to_page($onejs);
 		}
+	}
+	$ext_lang_file = get_ext_language_file(get_locale());
+	if ($ext_lang_file)	{
+		echo add_javascript_to_page("extjs/locale/$ext_lang_file");
 	}
 	?>
 	<?php if (config_option("show_feed_links")) { ?>
@@ -145,7 +152,7 @@ og.enableCalendarModule = <?php echo config_option("enable_calendar_module", 1) 
 og.enableDocumentsModule = <?php echo config_option("enable_documents_module", 1) ? 1 : 0 ?>;
 og.enableTasksModule = <?php echo config_option("enable_tasks_module", 1) ? 1 : 0 ?>;
 og.enableWeblinksModule = <?php echo config_option("enable_weblinks_module", 1) ? 1 : 0 ?>;
-og.enableTimeModule = <?php echo config_option("enable_time_module", 1) ? 1 : 0 ?>;
+og.enableTimeModule = <?php echo config_option("enable_time_module", 1) && can_manage_time(logged_user(), true) ? 1 : 0 ?>;
 og.enableReportingModule = <?php echo config_option("enable_reporting_module", 1) ? 1 : 0 ?>;
 og.daysOnTrash = <?php echo config_option("days_on_trash", 0) ?>;
 og.showCheckoutNotification  = <?php echo config_option('checkout_notification_dialog', 0) ? 1 : 0 ?>;

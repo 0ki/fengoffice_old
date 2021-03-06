@@ -191,6 +191,7 @@
   	'default' => 'Default',
   	'language' => 'Language',
   	'before' => 'before',
+  	'pages' => 'pages',
   
 	'repeat by' => 'Repeat by',
 	'repeating task' => 'Repeating task',

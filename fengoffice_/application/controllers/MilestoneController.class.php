@@ -595,6 +595,35 @@ class MilestoneController extends ApplicationController {
 	    ajx_current("empty");
 	}
 	
+	function render_add_milestone() {
+		$ws_ids = array_var($_GET, 'workspaces', '');
+		$genid = array_var($_GET, 'genid', '');				
+		$workspaces = Projects::findByCSVIds($ws_ids);
+		tpl_assign('workspaces', $workspaces);
+		tpl_assign('genid', $genid);
+		$this->setLayout("html");
+		$this->setTemplate("add_select_milestone");	
+	}
+	
+	function get_workspace_milestones() {
+		ajx_current("empty");
+		$ws_id = array_var($_GET, 'ws_id');
+		$workspace = Projects::findById($ws_id);
+		if ($workspace instanceof Project) {
+			$milestones = $workspace->getOpenMilestones();
+			$ms = array();
+			foreach ($milestones as $milestone) {
+				$ms[] = array(
+					'id' => $milestone->getId(),
+					'name' => $milestone->getName(),
+				);
+			}
+			ajx_extra_data(array('milestones' => $ms));
+		} else {
+			ajx_extra_data(array('milestones' => array()));
+		}
+	}
+	
 } // MilestoneController
 
 ?>

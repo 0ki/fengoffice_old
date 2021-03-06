@@ -8,6 +8,29 @@
 	var cant_tips = 0;
 	var tips_array = [];
 	
+	og.drawCurrentHourLine = function(d, pre) {
+		if (cal_actual_view == 'viewweek' && pre == 'w_' || cal_actual_view == 'viewdate' && pre == 'd_') {
+			var now = new Date();
+			var h = now.format('H');
+			var m = now.format('i');
+			var cell = h*2 + (m > 30 ? 1 : 0);
+			cell_id = 'h' + d + '_' + cell;
+			
+			cell = Ext.get(cell_id);
+			
+			if(m > 30) m -= 30;
+			var top = m * 100 / 30;
+			
+			old_line = Ext.get(pre+"currentHourLine");
+			if (old_line) old_line.remove();
+			
+			var title = now.format(og.timeFormat24 ? 'G:i' : 'g:i A');
+			var html = '<div id="'+pre+'currentHourLine" title="'+title+'" style="height:2px; z-index:1; position:absolute; top:'+top+'%; left:0px; border-top:2px solid red; width:100%;"></div>'; 
+			cell.insertHtml('afterBegin', html);
+			setTimeout('og.drawCurrentHourLine('+d+', "'+pre+'")', 60*1000);
+		}
+	}
+	
 	og.eventSelected = function(checked) {
 		if (checked) og.events_selected += 1;
 		else if (og.events_selected > 0) og.events_selected -= 1;

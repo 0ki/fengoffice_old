@@ -4,6 +4,10 @@
 	$genid = gen_id();
 ?>
 
+<?php if ($file->getType() == ProjectFiles::TYPE_WEBLINK) { ?>
+	<b><?php echo lang('url') ?></b>: <a href="<?php echo clean($file->getUrl()) ?>" target="_blank"><?php echo clean($file->getUrl()) ?></a>
+<?php } ?>
+
 <?php if ($file->isDisplayable()) {?>
 <div>
 	<div style="position: relative; left:0; top: 0; width: 100%; height: 200px; background-color: white">
@@ -82,7 +86,7 @@
 	<tr>
 		<td rowspan=2 class='number' style="background-color:<?php echo $bgColor ?>">
 			<?php if ($file->canDownload(logged_user())){?>
-				<a class="downloadLink" href="<?php echo $revision->getDownloadUrl() ?>" title="<?php echo lang('download') . ' (' . format_filesize($revision->getFileSize()) .')'?>">
+				<a target="_self" class="downloadLink" href="<?php echo $revision->getDownloadUrl() ?>" title="<?php echo lang('download') . ' (' . format_filesize($revision->getFileSize()) .')'?>">
 					<span style="font-size:12px">#</span><?php echo $revision->getRevisionNumber() ?>
 				</a>
 			<?php } else {?>
@@ -98,7 +102,7 @@
 		</td>
 		<td class='line_header_icons' style="background-color:<?php echo $bgColor ?>;">
 			<?php if ($file->canDownload(logged_user())){?>
-				<a class="downloadLink coViewAction ico-download" href="<?php echo $revision->getDownloadUrl() ?>" title="<?php echo lang('download') . ' (' . format_filesize($revision->getFileSize()) .')'?>">&nbsp;</a>
+				<a target="_self" class="downloadLink coViewAction ico-download" href="<?php echo $revision->getDownloadUrl() ?>" title="<?php echo lang('download') . ' (' . format_filesize($revision->getFileSize()) .')'?>">&nbsp;</a>
 			<?php } ?>
 			<?php if ($file->canDelete(logged_user()) && !$file->isTrashed()) {?>
 				<a onclick="return confirm('<?php echo escape_single_quotes(lang('confirm move to trash'))?>')" href="<?php echo $revision->getDeleteUrl() ?>" class="internalLink coViewAction ico-trash" title="<?php echo lang('move to trash')?>"></a>

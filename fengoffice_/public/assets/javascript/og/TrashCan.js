@@ -287,8 +287,8 @@ og.TrashCan = function() {
     };
     
 	og.TrashCan.superclass.constructor.call(this, {
-		enableDrag: true,
-		ddGroup : 'WorkspaceDD',
+		/*enableDrag: true,
+		ddGroup : 'WorkspaceDD',*/
 		store: this.store,
 		layout: 'fit',
 		autoExpandColumn: 'name',

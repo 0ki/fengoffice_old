@@ -222,8 +222,8 @@
 	'other settings' => 'Autres réglages',
 	'incoming settings' => 'Réglages de réception',
 	'default account' => 'Compte par défaut',
-	'default account description' => 'Le compte par défaut est celui qui sera utilisé quand vous composerez un message.',
+	'default account description' => 'Le compte par défaut est celui qui sera utilisé lors de la composition des messages.',
 	'signature' => 'Signature',
-	'signature description' => 'Cette signature sera ajoutée à tous les messages envoyés depuis c compte',
+	'signature description' => 'Cette signature sera ajoutée à tous les messages envoyés depuis ce compte',
 	'attach contents' => 'Ajouter le contenu',
 ); ?>

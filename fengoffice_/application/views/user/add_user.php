@@ -66,7 +66,7 @@
    	<a href="<?php echo get_url("company", "add_client") ?>" target="company" class="internalLink coViewAction ico-add" title="<?php echo lang('add a new company')?>"><?php echo lang('add company') . '...' ?></a></div>
 
   	<?php $categories = array(); Hook::fire('object_add_categories', $object, $categories); ?>
-  	<?php $cps = CustomProperties::getAllCustomPropertiesByObjectType('Users'); ?>
+  	<?php $cps = CustomProperties::getHiddenCustomPropertiesByObjectType('Users'); ?>
   	<br/>
   	<?php if (count($cps) > 0) { ?>
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_custom_properties_div',this)"><?php echo lang('custom properties') ?></a>

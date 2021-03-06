@@ -66,7 +66,7 @@ class Reports extends BaseReports {
 	 *
 	 * @return array
 	 */
-	static function executeReport($id, $params, $offset=0, $limit=50) {
+	static function executeReport($id, $params, $offset=0, $limit=50, $to_print = false) {
 		$results = array();
 		$report = self::getReport($id);
 		if($report instanceof Report){
@@ -137,7 +137,7 @@ class Reports extends BaseReports {
 
 			$sql = 'SELECT id FROM '.TABLE_PREFIX.$table.' t WHERE ';
 			$manager = $report->getObjectType();
-			$sql .= permissions_sql_for_listings(new $manager(), ACCESS_LEVEL_READ, logged_user(), 'project_id', 't');
+			$allConditions = permissions_sql_for_listings(new $manager(), ACCESS_LEVEL_READ, logged_user(), 'project_id', 't');
 			if(count($conditionsFields) > 0){
 				foreach($conditionsFields as $condField){
 					if ($condField->getFieldName() == 'workspace' || $condField->getFieldName() == 'tag' ){	//if has a tag or workspace condition
@@ -184,7 +184,7 @@ class Reports extends BaseReports {
 						$model_instance = new $model();
 						$col_type = $model_instance->getColumnType($condField->getFieldName());
 	
-						$sql .= ' AND ';
+						$allConditions .= ' AND ';
 						$dateFormat = 'm/d/Y';
 						if(isset($params[$condField->getId()])){
 							$value = $params[$condField->getId()];
@@ -204,14 +204,14 @@ class Reports extends BaseReports {
 							}
 							if($condField->getCondition() != '%'){
 								if ($col_type == DATA_TYPE_INTEGER || $col_type == DATA_TYPE_FLOAT) {
-									$sql .= '`'.$condField->getFieldName().'` '.$condField->getCondition().' '.mysql_real_escape_string($value);
+									$allConditions .= '`'.$condField->getFieldName().'` '.$condField->getCondition().' '.mysql_real_escape_string($value);
 								}else{
-									$sql .= '`'.$condField->getFieldName().'` '.$condField->getCondition().' \''.mysql_real_escape_string($value).'\'';
+									$allConditions .= '`'.$condField->getFieldName().'` '.$condField->getCondition().' \''.mysql_real_escape_string($value).'\'';
 								}
 							}else{
-								$sql .= '`'.$condField->getFieldName().'` like "%'.mysql_real_escape_string($value).'"';
+								$allConditions .= '`'.$condField->getFieldName().'` like "%'.mysql_real_escape_string($value).'"';
 							}
-						} else $sql .= ' true';
+						} else $allConditions .= ' true';
 					}//else
 				}//foreach
 			}
@@ -231,9 +231,9 @@ class Reports extends BaseReports {
 					}
 					if ($value == '' && $condCp->getIsParametrizable()) $skip_condition = true;
 					if (!$skip_condition) {
-						$sql .= ' AND ';
-						$sql .= 't.id IN ( SELECT object_id as id FROM '.TABLE_PREFIX.'custom_property_values cpv WHERE ';
-						$sql .= ' cpv.custom_property_id = '.$condCp->getCustomPropertyId();
+						$allConditions .= ' AND ';
+						$allConditions .= 't.id IN ( SELECT object_id as id FROM '.TABLE_PREFIX.'custom_property_values cpv WHERE ';
+						$allConditions .= ' cpv.custom_property_id = '.$condCp->getCustomPropertyId();
 						$fieldType = $object->getColumnType($condCp->getFieldName());
 
 						if($condCp->getCondition() == 'like' || $condCp->getCondition() == 'not like'){
@@ -245,14 +245,14 @@ class Reports extends BaseReports {
 						}
 						if($condCp->getCondition() != '%'){
 							if ($cp->getType() == 'numeric') {
-								$sql .= ' AND cpv.value '.$condCp->getCondition().' '.mysql_real_escape_string($value);
+								$allConditions .= ' AND cpv.value '.$condCp->getCondition().' '.mysql_real_escape_string($value);
 							}else{
-								$sql .= ' AND cpv.value '.$condCp->getCondition().' "'.mysql_real_escape_string($value).'"';
+								$allConditions .= ' AND cpv.value '.$condCp->getCondition().' "'.mysql_real_escape_string($value).'"';
 							}
 						}else{
-							$sql .= ' AND cpv.value like "%'.mysql_real_escape_string($value).'"';
+							$allConditions .= ' AND cpv.value like "%'.mysql_real_escape_string($value).'"';
 						}
-						$sql .= ')';
+						$allConditions .= ')';
 					}
 				}
 			}
@@ -260,30 +260,22 @@ class Reports extends BaseReports {
 			if(isset($fiterUsingWorkspace)&& $fiterUsingWorkspace && $ws_value != 0)
 			{
 				if ($manager == 'Contacts'){
-					$sql .= ' AND t.id IN (SELECT contact_id FROM ' . TABLE_PREFIX . 'project_contacts WHERE project_id = '. $ws_value .')';
+					$allConditions .= ' AND t.id IN (SELECT contact_id FROM ' . TABLE_PREFIX . 'project_contacts WHERE project_id = '. $ws_value .')';
 				} else {
-					$sql .= ' AND t.id IN (SELECT object_id FROM ' . TABLE_PREFIX . 'workspace_objects WHERE object_manager = \''. $manager .'\' AND workspace_id = '. $ws_value .')';
+					$allConditions .= ' AND t.id IN (SELECT object_id FROM ' . TABLE_PREFIX . 'workspace_objects WHERE object_manager = \''. $manager .'\' AND workspace_id = '. $ws_value .')';
 				}
 			}
 			if(isset($fiterUsingTag)&& $fiterUsingTag && $tag_value != '')
 			{
-				$sql .= ' AND t.id IN (SELECT rel_object_id FROM ' . TABLE_PREFIX . 'tags WHERE rel_object_manager = \''. $manager .'\' AND tag = \''. $tag_value .'\')';
+				$allConditions .= ' AND t.id IN (SELECT rel_object_id FROM ' . TABLE_PREFIX . 'tags WHERE rel_object_manager = \''. $manager .'\' AND tag = \''. $tag_value .'\')';
 			}
+
+			$sql .= $allConditions;
 					
 			$rows = DB::executeAll($sql);
 			if (is_null($rows)) $rows = array();
 
 			$totalResults = count($rows);
-				
-			$sql .= ' LIMIT '.$offset.','.$limit;
-			$rows = DB::executeAll($sql);
-			if (is_null($rows)) $rows = array();
-			$ids = array();
-			foreach($rows as $row){
-				$ids[] = $row['id'];
-			}
-			if(count($ids) == 0) return;
-				
 			$results['pagination'] = Reports::getReportPagination($id, $params, $offset, $limit, $totalResults);
 
 			$selectCols = 'distinct(t.id) as "id"';
@@ -291,6 +283,7 @@ class Reports extends BaseReports {
 			foreach($titleCols as $num => $title){
 				$selectCols .= ', t.'.$title.' as "titleCol'.$num.'"';
 			}
+
 			$columnsFields = ReportColumns::getAllReportColumnNamesForFields($id);
 			if(count($columnsFields) > 0){
 				$first = true;
@@ -301,9 +294,8 @@ class Reports extends BaseReports {
 				}
 			}
 			$selectFROM = TABLE_PREFIX.$table.' t ';
-			if (is_array($ids) && count($ids) > 0)
-			$selectWHERE = ' WHERE t.id IN('.implode(',', $ids).')';
-			else $selectWHERE = ' WHERE false'; // no objects to display
+			$selectWHERE = "WHERE $allConditions";
+
 			$columnsCp = ReportColumns::getAllReportColumnsForCustomProperties($id);
 			$first = true;
 			$openPar = '';
@@ -336,7 +328,10 @@ class Reports extends BaseReports {
 					}
 				}
 			}
-			$sql = 'SELECT '.$selectCols.' FROM ('.$openPar.$selectFROM.') '.$selectWHERE.' GROUP BY id '.$order_by;
+			if ($to_print) $limit_str = '';
+			else $limit_str = ' LIMIT ' . $offset . ',' . $limit;
+			
+			$sql = 'SELECT '.$selectCols.' FROM ('.$openPar.$selectFROM.') '.$selectWHERE.' GROUP BY id '.$order_by . $limit_str;
 			$rows = DB::executeAll($sql);
 			if (is_null($rows)) $rows = array();
 			$rows = Reports::removeDuplicateRows($rows);
@@ -387,7 +382,12 @@ class Reports extends BaseReports {
 
 	static function getReportPagination($report_id, $params, $offset, $limit, $total){
 		if($total == 0) return '';
-		$a_nav = array('[&lt;&lt;]', '[&lt;]', '[&gt;]', '[&gt;&gt;]');
+		$a_nav = array(
+			'<span class="x-tbar-page-first" style="padding-left:16px"/>', 
+			'<span class="x-tbar-page-prev" style="padding-left:16px"/>', 
+			'<span class="x-tbar-page-next" style="padding-left:16px"/>', 
+			'<span class="x-tbar-page-last" style="padding-left:16px"/>'
+		);
 		$page = intval($offset / $limit);
 		$totalPages = ceil($total / $limit);
 		if($totalPages == 1) return '';
@@ -408,7 +408,7 @@ class Reports extends BaseReports {
 		for($i = 1; $i < $totalPages + 1; $i++){
 			$off = $limit * ($i - 1);
 			if(($i != $page + 1) && abs($i - 1 - $page) <= 2 ) $nav .= '<a class="internalLink" href="'.get_url('reporting', 'view_custom_report', array('id' => $report_id, 'offset' => $off, 'limit' => $limit)).$parameters.'">'.$i.'</a>&nbsp;&nbsp;';
-			else if($i == $page + 1) $nav .= $i.'&nbsp;&nbsp;';
+			else if($i == $page + 1) $nav .= '<b>'.$i.'</b>&nbsp;&nbsp;';
 		}
 		if($page < $totalPages - 1){
 			$off = $offset + $limit;
@@ -416,7 +416,7 @@ class Reports extends BaseReports {
 			$off = $limit * ($totalPages - 1);
 			$nav .= '<a class="internalLink" href="'.get_url('reporting', 'view_custom_report', array('id' => $report_id, 'offset' => $off, 'limit' => $limit)).$parameters.'">'.$a_nav[3].'</a>';
 		}
-		return $nav;
+		return $nav . "<br/><span class='desc'>&nbsp;".lang('total').": $totalPages ".lang('pages').'</span>';
 	}
 
 	static function getExternalColumnValue($field, $id){

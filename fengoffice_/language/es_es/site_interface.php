@@ -533,4 +533,5 @@
 	'hide options' => 'Ocultar opciones',
     'personal workspace name' => '{0} Personal',
     'personal workspace description' => 'Espacio personal',
+	'wiki help link' => 'http://wiki.opengoo.org/doku.php/es:home',
 ); ?>

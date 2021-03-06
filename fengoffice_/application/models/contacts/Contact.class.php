@@ -580,7 +580,7 @@ class Contact extends BaseContact {
     * @return boolean
     */
     function delete() {
-      if($this->getUserId() && !can_manage_security(logged_user())) {
+      if($this->getUserId() && logged_user() instanceof User && !can_manage_security(logged_user())) {
         return false;
       } // if
       
@@ -931,8 +931,8 @@ class Contact extends BaseContact {
      *
      * @return unknown
      */
-    function getProjectIdsCSV($wsIds = null) {
-    	$workspaces = ProjectContacts::getProjectsByContact($this);
+    function getProjectIdsCSV($wsIds = null, $extra_cond = null) {
+    	$workspaces = ProjectContacts::getProjectsByContact($this, $extra_cond);
     	$result = array();
     	if($workspaces){
 	    	if (!is_null($wsIds)){
@@ -952,5 +952,10 @@ class Contact extends BaseContact {
       return Tags::getTagNamesByObject($this, get_class($this->manager()));
     } // getTagNames
     
+    function getUserWorkspacesIdsCSV($user) {
+    	if (!$user instanceof User) $user = logged_user();
+    	$extra_cond = Projects::instance()->getTableName(true) . ".`id` IN (" . $user->getWorkspacesQuery() . ")";
+    	return $this->getProjectIdsCSV(null, $extra_cond);
+    }
 }
 ?>

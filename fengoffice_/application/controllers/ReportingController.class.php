@@ -809,6 +809,7 @@ class ReportingController extends ApplicationController {
 				tpl_assign('description', $report->getDescription());
 				tpl_assign('conditions', $conditions);
 				tpl_assign('parameters', $params);
+				tpl_assign('id', $report_id);
 			}
 		}
 	}
@@ -820,7 +821,7 @@ class ReportingController extends ApplicationController {
 
 		$report_id = array_var($_POST, 'id');
 		$report = Reports::getReport($report_id);
-		$results = Reports::executeReport($report_id, $params);
+		$results = Reports::executeReport($report_id, $params, 0, 50, true);
 		if(isset($results['columns'])) tpl_assign('columns', $results['columns']);
 		if(isset($results['rows'])) tpl_assign('rows', $results['rows']);
 

@@ -635,6 +635,8 @@
   'personal workspace name' => '{0} Personal',
   'personal workspace description' => 'Personal workspace',
   
+  'wiki help link' => 'http://wiki.opengoo.org',
+  
   ); // array
 
 ?>

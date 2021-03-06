@@ -120,7 +120,10 @@ class AccountController extends ApplicationController {
 				}
 
 				$user->save();
-
+				
+				$object_controller = new ObjectController();
+			  	$object_controller->add_custom_properties($user);
+			  
 				if ($user->getId() != 1) //System admin cannot change its own admin status
 					$user->setAsAdministrator(array_var($user_data, 'is_admin'));
 				
@@ -266,6 +269,7 @@ class AccountController extends ApplicationController {
 	          'can_manage_contacts' => $user->getCanManageContacts(),
 			  'can_manage_templates' => $user->getCanManageTemplates(),
 			  'can_manage_reports' => $user->getCanManageReports(),
+			  'can_manage_time' => $user->getCanManageTime(),
 			); // array			
 		} // if
 
@@ -318,6 +322,7 @@ class AccountController extends ApplicationController {
 				$user->setCanManageContacts(false);
 				$user->setCanManageTemplates(false);
 				$user->setCanManageReports(false);
+				$user->setCanManageTime(false);
 				$user->setFromAttributes($user_data);
 				$user->setUpdatedOn(DateTimeValueLib::now());
 				$user->save();

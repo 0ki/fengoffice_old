@@ -24,7 +24,7 @@ og.MailManager = function() {
 				id: 'id',
 				fields: [
 					'object_id', 'type', 'accountId', 'accountName', 'hasAttachment', 'subject', 'text', {name: 'date', type: 'date', dateFormat: 'timestamp'},
-					'projectId', 'projectName', 'userId', 'userName', 'tags', 'workspaceColors','isRead','from','from_email','isDraft','isSent','folder','to'
+					'projectId', 'projectName', 'userId', 'userName', 'tags', 'workspaceColors','isRead','from','from_email','isDraft','isSent','folder','to', 'ix'
 				]
 			}),
 			remoteSort: true,
@@ -100,6 +100,9 @@ og.MailManager = function() {
 		return name;
 	}
 	
+	function renderDragHandle(value, p, r) {
+		return '<div class="img-grid-drag" onmousedown="Ext.getCmp(\'mails-manager\').getSelectionModel().selectRow('+r.id+', true);"></div>';
+	}
 	
 	function renderIcon(value, p, r) {
 		if (r.data.projectId.length > 0)
@@ -225,6 +228,15 @@ og.MailManager = function() {
 	
 	var cm = new Ext.grid.ColumnModel([
 		sm,{
+			id: 'draghandle',
+			header: '&nbsp;',
+			width: 18,
+        	renderer: renderDragHandle,
+        	fixed:true,
+        	resizable: false,
+        	hideable:false,
+        	menuDisabled: true
+		},{
 			id: 'icon',
 			header: '&nbsp;',
 			dataIndex: 'type',

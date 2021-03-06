@@ -252,7 +252,7 @@ class MailController extends ApplicationController {
 					
 					$sentOK = $utils->sendMail($account->getSmtpServer(), $to, $from, $subject, $body, $cc, $bcc, $attachments, $account->getSmtpPort(), $account->smtpUsername(), $account->smtpPassword(), $type, $account->getOutgoingTrasnportType());
 				}
-				if ((!$isDraft && $sentOK)|| $isDraft) {
+				if ((!$isDraft && $sentOK) || $isDraft) {
 					$content = $utils->getContent($account->getSmtpServer(), $account->getSmtpPort(), $account->getOutgoingTrasnportType(), $account->smtpUsername(), $account->smtpPassword(), $body, $attachments);
 					$repository_id = $utils->saveContent($content);
 					$mail->setContentFileId($repository_id);
@@ -280,6 +280,7 @@ class MailController extends ApplicationController {
 
 					$object_controller = new ObjectController();
 					$object_controller->add_custom_properties($mail);
+					$object_controller->link_to_new_object($mail);
 
 					ApplicationLogs::createLog($mail, $mail->getWorkspaces(), ApplicationLogs::ACTION_ADD);
 					
@@ -745,16 +746,7 @@ class MailController extends ApplicationController {
 			$err = 1;
 			$errMessage = lang('no mail accounts set for check');
 		}
-		try {
-			foreach ($accounts as $acc) {
-				if ($acc->getDelFromServer() > 0) {
-					MailUtilities::deleteMailsFromServer($acc);
-				}
-			}
-		} catch (Exception $e) {
-			Logger::log($e->getTraceAsString());
-			flash_error($e->getMessage());
-		}
+
 		ajx_add("overview-panel", "reload");
 		ajx_current("empty");
 		 
@@ -797,7 +789,7 @@ class MailController extends ApplicationController {
 
 			try {
 				$mailAccount_data['user_id'] = logged_user()->getId();
-				if (!array_var($mailAccount_data, 'del_mails_from_server', false))
+				if (!array_var($mailAccount_data, 'del_mails_from_server', false)) $mailAccount_data['del_from_server'] = 0;
 				if (!array_var($mailAccount_data, 'is_default', false)) $mailAccount_data['is_default'] = 0;
 				$mailAccount->setFromAttributes($mailAccount_data);
 				$mailAccount->setPassword(MailUtilities::ENCRYPT_DECRYPT($mailAccount->getPassword()));
@@ -959,7 +951,7 @@ class MailController extends ApplicationController {
 
 		if(is_array(array_var($_POST, 'mailAccount'))) {
 			try {
-				if (!array_var($mailAccount_data, 'del_mails_from_server', false))
+				if (!array_var($mailAccount_data, 'del_mails_from_server', false)) $mailAccount_data['del_from_server'] = 0;
 				$mailAccount->setFromAttributes($mailAccount_data);
 				$mailAccount->setPassword(MailUtilities::ENCRYPT_DECRYPT($mailAccount->getPassword()));
 				$mailAccount->setSmtpPassword(MailUtilities::ENCRYPT_DECRYPT($mailAccount->getSmtpPassword()));
@@ -1309,6 +1301,7 @@ class MailController extends ApplicationController {
 					}
 					$object["messages"][] = array(
 					    "id" => $i,
+						"ix" => $i,
 						"object_id" => $msg->getId(),
 						"type" => 'email',
 						"hasAttachment" => $msg->getHasAttachments(),

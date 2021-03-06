@@ -26,8 +26,13 @@
 	$date_start = new DateTimeValue(mktime(0, 0, 0, $currentmonth, $startday, $currentyear)); 
 	$date_end = new DateTimeValue(mktime(0, 0, 0, $currentmonth, $endday, $currentyear)); 
 	$milestones = ProjectMilestones::getRangeMilestonesByUser($date_start, $date_end, logged_user(), $tags, active_project());
-	$tasks = ProjectTasks::getRangeTasksByUser($date_start, $date_end, logged_user(), $tags, active_project());
-	
+	$tmp_tasks = ProjectTasks::getRangeTasksByUser($date_start,$date_end,logged_user(), $tags, active_project());
+	$tasks = array();
+	if($tmp_tasks) {
+		foreach ($tmp_tasks as $task) {
+			$tasks = array_merge($tasks, replicateRepetitiveTaskForCalendar($task, $date_end));
+		}
+	}	
 	$use_24_hours = user_config_option('time_format_use_24');
 	if($use_24_hours) $timeformat = 'G:i';
 	else $timeformat = 'g:i A';

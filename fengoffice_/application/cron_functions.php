@@ -69,6 +69,16 @@ function backup() {
 	}
 }
 
+function delete_mails_from_server() {
+	try {
+		_log("Checking mail accounts to delete mails from server...");
+		MailUtilities::deleteMailsFromServerAllAccounts();
+		_log("Finished deletion of mails from server...");
+	} catch (Exception $e) {
+		_log("Error deleting mails from server: " . $e->getMessage());
+	}
+}
+
 function _log($message) {
 	echo date("Y-m-d H:i:s") . " - $message\n";
 }

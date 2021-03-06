@@ -18,9 +18,18 @@ class TimeController extends ApplicationController {
 	function __construct() {
 		parent::__construct();
 		prepare_company_website_controller($this, 'website');
+		if (!can_manage_time(logged_user(),true)) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+		}
 	} // __construct
 	
-	function index(){
+	function index() {
+		if (!can_manage_time(logged_user(),true)) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$tasksUserId = array_var($_GET,'tu');
 		if (is_null($tasksUserId)) {
 			$tasksUserId = user_config_option('TM tasks user filter',logged_user()->getId());
@@ -96,6 +105,11 @@ class TimeController extends ApplicationController {
 	}
 	
 	function add_project_timeslot(){
+		if (!can_manage_time(logged_user(),true)) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		ajx_current("empty");
 		$timeslot_data = array_var($_POST, 'timeslot');
 		
@@ -159,6 +173,11 @@ class TimeController extends ApplicationController {
 	}
 	
 	function edit_project_timeslot(){
+		if (!can_manage_time(logged_user(),true)) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		ajx_current("empty");
 		$timeslot_data = array_var($_POST, 'timeslot');
 		$timeslot = Timeslots::findById(array_var($timeslot_data,'id',0));
@@ -227,6 +246,11 @@ class TimeController extends ApplicationController {
 	}
 	
 	function delete_project_timeslot(){
+		if (!can_manage_time(logged_user(),true)) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		ajx_current("empty");
 		$timeslot = Timeslots::findById(get_id());
 		

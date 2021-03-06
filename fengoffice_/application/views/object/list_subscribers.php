@@ -7,12 +7,14 @@ if (!$object->isNew()) {
 	<table style="width:100%;margin-left:2px;margin-right:3px">
 	<?php $counter = 0;
 	if (!$object->isSubscriber(logged_user()) && !$object->isTrashed()) {
-		echo "<tr><td colspan=\"2\">";
-		echo lang("user not subscribed to object");
-		echo " (";
-		echo '<a class="internalLink" href="'.$object->getSubscribeUrl().'" onclick="return confirm(\''.escape_single_quotes(lang("confirm subscribe")).'\')">'.lang("subscribe to object").'</a>';
-		echo ")";
-		echo "</td></tr>";
+		if ($object->canEdit(logged_user())) {
+			echo "<tr><td colspan=\"2\">";
+			echo lang("user not subscribed to object");
+			echo " (";
+			echo '<a class="internalLink" href="'.$object->getSubscribeUrl().'" onclick="return confirm(\''.escape_single_quotes(lang("confirm subscribe")).'\')">'.lang("subscribe to object").'</a>';
+			echo ")";
+			echo "</td></tr>";
+		}
 	} else {
 	?>
 		<tr class="subscriber<?php echo $counter % 2 ? 'even' : 'odd' ?>">

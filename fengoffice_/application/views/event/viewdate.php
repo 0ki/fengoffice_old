@@ -345,6 +345,7 @@ $date_format = user_config_option('date_format', 'd/m/Y');
 												if ($event_start == $event_duration){
 													$hr_end++;
 												}
+												if ($hr_end == 0) $hr_end = 24;
 												$top = PX_HEIGHT * $hr_start + (PX_HEIGHT*(($min_start*100)/(60*100)));
 												$bottom = PX_HEIGHT * $hr_end + (PX_HEIGHT*(($min_end*100)/(60*100)));
 												$height = $bottom-$top;
@@ -556,6 +557,8 @@ $date_format = user_config_option('date_format', 'd/m/Y');
 	} else {
 		og.addDomEventHandler(window, 'resize', resizeGridContainer);
 	}
+	
+	og.drawCurrentHourLine(0, 'd_');
 	
 	// init tooltips
 	Ext.QuickTips.init();

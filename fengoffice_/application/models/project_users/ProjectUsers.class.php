@@ -58,10 +58,13 @@ class ProjectUsers extends BaseProjectUsers {
 		}
 		$users_table = Users::instance()->getTableName(true);
 		$project_users_table =  ProjectUsers::instance()->getTableName(true);
+		$group_users_table = GroupUsers::instance()->getTableName(true);
 
 		$users = array();
 
-		$sql = "SELECT * FROM $users_table WHERE `id` IN (SELECT `user_id` FROM $project_users_table WHERE `project_id` IN (" . $ws_ids . '))';
+		$usercond = "`id` IN (SELECT `user_id` FROM $project_users_table WHERE $project_users_table.`project_id` IN (" . $ws_ids . "))";
+		$groupcond = "`id` IN (SELECT `user_id` FROM $group_users_table WHERE $group_users_table.`group_id` IN (SELECT `user_id` FROM $project_users_table WHERE $project_users_table.`project_id` IN (" . $ws_ids . ")))";
+		$sql = "SELECT * FROM $users_table WHERE ($usercond OR $groupcond)";
 		if(trim($additional_conditions) <> '')
 		$sql .= " AND ($additional_conditions) ";
 		$sql .= " ORDER BY $users_table.`display_name`";
@@ -103,11 +106,15 @@ class ProjectUsers extends BaseProjectUsers {
 	 */
 	function getProjectsByUser(User $user, $additional_conditions = null, $order_by = null) {
 		$projects_table = Projects::instance()->getTableName(true);
-		$project_users_table=  ProjectUsers::instance()->getTableName(true);
+		$project_users_table =  ProjectUsers::instance()->getTableName(true);
+		$group_users_table = GroupUsers::instance()->getTableName(true);
 
 		$projects = array();
 
-		$sql = "SELECT $projects_table.* FROM $projects_table, $project_users_table WHERE ($projects_table.`id` = $project_users_table.`project_id` AND $project_users_table.`user_id` = " . DB::escape($user->getId()) . ')';
+		$usercond = "($project_users_table.`user_id` = " . DB::escape($user->getId()) . ")";
+		$groupcond = "($project_users_table.`user_id` IN (SELECT `group_id` FROM $group_users_table WHERE $group_users_table.`user_id` = " . DB::escape($user->getId()) . "))";
+		$commoncond = "$projects_table.`id` = $project_users_table.`project_id`";
+		$sql = "SELECT $projects_table.* FROM $projects_table, $project_users_table WHERE $commoncond AND ($usercond OR $groupcond) ";
 		if(trim($additional_conditions) <> '') {
 			$sql .= " AND ($additional_conditions)";
 		} // if

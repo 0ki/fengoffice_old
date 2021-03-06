@@ -134,7 +134,7 @@ if (isset($file) && $file instanceof ProjectFile) {
 	} // if
 
 	if ($file->getType() == ProjectFiles::TYPE_WEBLINK){
-		$description .= '<div id="urlDiv"><b>' . lang('url') . '</b>: <a href="' . clean($file->getUrl()) . '" target="_blank">' . clean($file->getUrl()) . '</a>';
+		//$description .= '<div id="urlDiv"><b>' . lang('url') . '</b>: <a href="' . clean($file->getUrl()) . '" target="_blank">' . clean($file->getUrl()) . '</a>';
 	}
 
 	if (!$file->isTrashed() && $file->getType() != ProjectFiles::TYPE_WEBLINK) {
@@ -142,7 +142,11 @@ if (isset($file) && $file instanceof ProjectFile) {
 	}
 	tpl_assign('iconclass', $file->isTrashed()? 'ico-large-files-trashed' : ($file->getType() != ProjectFiles::TYPE_WEBLINK? 'ico-large-files':'ico-large-webfile'));
 	tpl_assign('description', $description);
-	tpl_assign('title', clean($file->getFilename()));
+	if ($file->getType() == ProjectFiles::TYPE_WEBLINK){
+		tpl_assign('title', '<a class="link-ico ico-open-link" href="' . $file->getUrl() . '">' . clean($file->getFilename()) . '</a>');
+	} else {
+		tpl_assign('title', clean($file->getFilename()));
+	}
 	tpl_assign("content_template", array('file_details_content', 'files'));
 	tpl_assign('object', $file);
 

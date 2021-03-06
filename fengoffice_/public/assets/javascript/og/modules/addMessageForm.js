@@ -26,18 +26,20 @@ App.modules.addMessageForm = {
    * @param integer company_id Company ID
    */
   emailNotifyClickCompany: function(company_id, genid, div_id, type) {
-  	if (type == 'notification')
+	if (type == 'notification'){
   		var cos = Ext.getDom(genid + div_id).notify_companies;
-  	else if (type == 'invitation')
-  		var cos = Ext.getDom(genid + div_id).invite_companies;
-  	else return;
-    var company_details = cos['company_' + company_id]; // get company details from hash
-    if(!company_details) return;
-    
+  	}else if (type == 'invitation'){  		
+  		var cos = Ext.getDom(genid + div_id).invite_companies;  		
+  	}else{  		
+  		return;
+  	}  	
+  	var company_details = cos['company_' + company_id]; // get company details from hash
+    if(!company_details)return;
     var company_checkbox = Ext.getDom(genid + company_details.checkbox_id);
-    
     for(var i = 0; i < company_details.users.length; i++) {
-      Ext.getDom(genid + company_details.users[i].checkbox_id).checked = company_checkbox.checked;
+      //Ext.getDom(genid + company_details.users[i].checkbox_id).checked = company_checkbox.checked;
+      userDiv = Ext.getDom('div'+genid + company_details.users[i].checkbox_id);
+      og.checkUser(userDiv);
     } // if
   }, // emailNotifyClickCompany
   

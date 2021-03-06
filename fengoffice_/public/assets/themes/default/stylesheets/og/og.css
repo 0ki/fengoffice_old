@@ -23,6 +23,13 @@
 }
 /** /autoCompleter **/
 
+.img-grid-drag {
+	background: transparent url(../../images/rx/grid_drag.png) repeat-y !important;
+	width:10px;
+	height:14px;
+	cursor: move;
+}
+
 .ico-reporting {
 	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -258px !important;
 }
@@ -113,7 +120,7 @@
 	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -378px !important;
 }
 .ico-email, .ico-emails {
-	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -437px !important;
+	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -438px !important;
 }
 .ico-check_mails {
 	background-image: url(../../images/16x16/mail_receive.png) !important;

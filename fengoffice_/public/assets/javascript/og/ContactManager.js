@@ -19,7 +19,7 @@ og.ContactManager = function() {
 	            fields: [
 	                'object_id', 'type', 'name', 'companyId', 'companyName', 'email', 'website', 'jobTitle', 'createdBy', 'createdById', 'createdOn', 'createdOn_today', 'role', 'tags',
 	                'department', 'email2', 'email3', 'workWebsite', 'workAddress', 'workPhone1', 'workPhone2', 
-	                'homeWebsite', 'homeAddress', 'homePhone1', 'homePhone2', 'mobilePhone','wsIds','workspaceColors','updatedBy','updatedById', 'updatedOn', 'updatedOn_today'
+	                'homeWebsite', 'homeAddress', 'homePhone1', 'homePhone2', 'mobilePhone','wsIds','workspaceColors','updatedBy','updatedById', 'updatedOn', 'updatedOn_today', 'ix'
 	            ]
 	        }),
 	        remoteSort: true,
@@ -51,6 +51,10 @@ og.ContactManager = function() {
     // Renderers
     //--------------------------------------------
 
+	function renderDragHandle(value, p, r) {
+		return '<div class="img-grid-drag" onmousedown="Ext.getCmp(\'contact-manager\').getSelectionModel().selectRow('+r.data.ix+', true);"></div>';
+	}
+	
     function renderContactName(value, p, r) {
 		if (r.data.type == 'company'){
 			name = String.format(
@@ -187,6 +191,15 @@ og.ContactManager = function() {
     var cm = new Ext.grid.ColumnModel([
 		sm,
 		{
+			id: 'draghandle',
+			header: '&nbsp;',
+			width: 18,
+        	renderer: renderDragHandle,
+        	fixed:true,
+        	resizable: false,
+        	hideable:false,
+        	menuDisabled: true
+		},{
         	id: 'icon',
         	header: '&nbsp;',
         	dataIndex: 'icon',

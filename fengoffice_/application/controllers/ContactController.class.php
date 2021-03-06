@@ -474,6 +474,7 @@ class ContactController extends ApplicationController {
 					$companyName= $company->getName();
 					$object["contacts"][] = array(
 						"id" => $i,
+						"ix" => $i,
 						"object_id" => $c->getId(),
 						"type" => 'contact',
 						"wsIds" => $c->getUserWorkspacesIdsCSV(logged_user()),
@@ -523,6 +524,7 @@ class ContactController extends ApplicationController {
 					$companyName= $c->getName();
 					$object["contacts"][] = array(
 						"id" => $i,
+						"ix" => $i,
 						"object_id" => $c->getId(),
 						"type" => 'company',
 						"wsIds" => $c->getUserWorkspacesIdsCSV(logged_user()),
@@ -1486,12 +1488,12 @@ class ContactController extends ApplicationController {
 			fwrite($handle, $titles);
 			
 			if (array_var($_SESSION, 'import_type', 'contact') == 'contact') {
-				$contacts = Contacts::getAll();
+				$contacts = Contacts::instance()->getAllowedContacts();
 				foreach ($contacts as $contact) {
 					fwrite($handle, $this->build_csv_from_contact($contact, $checked_fields) . "\n");
 				}
 			} else {
-				$companies = Companies::getAll();
+				$companies = Companies::getVisibleCompanies(logged_user());
 				foreach ($companies as $company) {
 					fwrite($handle, $this->build_csv_from_company($company, $checked_fields) . "\n");
 				}

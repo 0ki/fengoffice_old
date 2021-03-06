@@ -102,8 +102,13 @@ if(count($cps) > 0){
 						$options[] = '<option value=""></option>';
 					}
 					$totalOptions = 0;
+					$multValues = CustomPropertyValues::getCustomPropertyValues($_custom_properties_object->getId(), $customProp->getId());
+					$toSelect = array();
+					foreach ($multValues as $m){
+						$toSelect[] = $m->getValue();
+					}
 					foreach(explode(',', $customProp->getValues()) as $value){
-						$selected = ($value == $default_value) || ($customProp->getIsMultipleValues() && in_array($value, explode(',', $default_value)));
+						$selected = ($value == $default_value) || ($customProp->getIsMultipleValues() && (in_array($value, explode(',', $default_value)))||in_array($value,$toSelect));
 						if($selected){
 							$options[] = '<option value="'. clean($value) .'" selected>'. clean($value) .'</option>';
 						}else{

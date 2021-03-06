@@ -315,8 +315,8 @@ class Project extends BaseProject {
 		$condition = "(`p1` = $id OR `p2` = $id OR `p3` = $id OR `p4` = $id OR `p5` = $id OR `p6` = $id OR `p7` = $id OR `p8` = $id OR `p9` = $id OR `p10` = $id)";
 		if ($user instanceof User) {
 			$pu_tbl = ProjectUsers::instance()->getTableName(true);
-			$uid = $user->getId();
-			$condition .= " AND `id` IN (SELECT `project_id` FROM $pu_tbl WHERE `user_id` = $uid)";
+			$uquery = $user->getWorkspacesQuery();
+			$condition .= " AND `id` IN ($uquery)";
 		}
 		if ($active) {
 			$condition .= " AND `completed_on` = " . DB::escape(EMPTY_DATETIME);

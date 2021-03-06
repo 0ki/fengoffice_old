@@ -8,7 +8,7 @@
 	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -437px !important;
 }
 .ico-emailunclassified {
-	background-image: url(../../images/16x16/types/classify.png);
+	background-image: url(../../images/16x16/types/classify.png) !important;
 }
 .ico-weblink, .ico-webpage, .ico-weblinks, .ico-webpages {
 	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -78px !important;

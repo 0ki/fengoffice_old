@@ -132,10 +132,17 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 		if(is_null($this->project)) {
 			if($this->columnExists('project_id')) {
 				$this->project = Projects::findById($this->getProjectId());
+			} else if ($this instanceof Contact) {
+				$pc = ProjectContacts::findOne(array('conditions' => "`contact_id` = ".$this->getId()));
+				if ($pc instanceof ProjectContact) {
+					$this->project = $pc->getProject();
+				}
 			} else {
 				//Logger::log("WARNING: Calling getProject() on an object with multiple workspaces.");
 				$wo = WorkspaceObjects::findOne(array('conditions' => "`object_manager` = '".get_class($this->manager())."' AND `object_id` = ".$this->getId()));
-				$this->project = $wo->getWorkspace();
+				if ($wo instanceof WorkspaceObject) {
+					$this->project = $wo->getWorkspace();
+				}
 			}
 		} // if
 		return $this->project;

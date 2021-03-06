@@ -37,7 +37,7 @@
     </div>
   
   	<?php $categories = array(); Hook::fire('object_edit_categories', $object, $categories); ?>
-  	<?php $cps = CustomProperties::getAllCustomPropertiesByObjectType('Projects'); ?>
+  	<?php $cps = CustomProperties::getHiddenCustomPropertiesByObjectType('Projects'); ?>
   
   	<div style="padding-top:5px">
 		<a href="#" class="option" onclick="og.ToggleTrap('trap1', 'fs1');og.toggleAndBolden('<?php echo $genid ?>workspace_description',this)"><?php echo lang('description') ?></a>

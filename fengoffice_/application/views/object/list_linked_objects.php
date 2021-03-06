@@ -63,7 +63,7 @@ if ($linked_objects_object->isNew()){
 			'show_all_linked_objects',
 				{linked_object:'<?php echo $linked_objects_object->getId()?>',
 				linked_manager:'<?php  echo get_class($linked_objects_object->manager()) ?>',
-				linked_object_name:'<?php echo $linked_objects_object->getObjectName() ?>',
+				linked_object_name:'<?php echo escape_single_quotes(clean($linked_objects_object->getObjectName())) ?>',
 				linked_object_ico:'<?php echo 'ico-' . $linked_objects_object->getObjectTypeName()?>'}),
 			{caller:'linkedobjects'})" >
 		<?php echo lang('show all linked objects',count($linked_objects))?>

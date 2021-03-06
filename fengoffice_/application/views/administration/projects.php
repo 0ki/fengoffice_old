@@ -37,15 +37,10 @@ foreach($projects as $project) {
 <?php } // if ?>
     </td>
     <?php } // if ?>
-    <td class="long middle"><!-- a class="internalLink" href="<?php echo $project->getOverviewUrl() ?>"-->
-    
-    <?php 
-    	$depth = $project->getDepth();
-    	for ($i=0;$i<=$depth;$i++){ ?>
-	    	&nbsp;&nbsp;&nbsp;
-    		<?php }echo '<img src="'. image_url('16x16/wscolors/color').$project->getColor().'.png" />'?>
-       		<?php echo clean($project->getName()) ?>
-    <!-- /a --></td>
+    <td class="long middle">
+	    <img src="<?php echo image_url('16x16/wscolors/color') . $project->getColor() . '.png' ?>" style="margin-left: <?php echo $project->getDepth()*16 ?>px" />
+	    <?php echo clean($project->getName()) ?>
+    </td>
 <?php
   $options = array();
   if($project->canEdit(logged_user())) $options[] = '<a class="internalLink" href="' . $project->getEditUrl() .'">' . lang('edit') . '</a>';

@@ -3,8 +3,6 @@
 -- <?php echo $default_collation ?> collate utf8_unicode_ci
 -- <?php echo $engine ?> InnoDB
 
-ALTER TABLE `<?php echo $table_prefix ?>users` ADD COLUMN `updated_by_id` int(10) unsigned default NULL;
-
 INSERT INTO `<?php echo $table_prefix ?>user_ws_config_categories` (`name`, `is_system`, `type`, `category_order`) VALUES
  ('mails panel', 0, 0, 5)
 ON DUPLICATE KEY UPDATE name=name;
@@ -144,14 +142,7 @@ SELECT
 	`created_on`
 FROM `<?php echo $table_prefix ?>project_tasks` where `project_id` <> 0;
 
-ALTER TABLE `<?php echo $table_prefix ?>project_tasks` DROP COLUMN `project_id`,
- ADD COLUMN `repeat_end` DATETIME NOT NULL default '0000-00-00 00:00:00',
- ADD COLUMN `repeat_forever` tinyint(1) NOT NULL,
- ADD COLUMN `repeat_num` int(10) unsigned NOT NULL default '0',
- ADD COLUMN `repeat_d` int(10) unsigned NOT NULL,
- ADD COLUMN `repeat_m` int(10) unsigned NOT NULL,
- ADD COLUMN `repeat_y` int(10) unsigned NOT NULL,
- ADD COLUMN `repeat_by` varchar(15) <?php echo $default_collation ?> NOT NULL default '';
+ALTER TABLE `<?php echo $table_prefix ?>project_tasks` DROP COLUMN `project_id`;
 
 -- migrate milestones to multiple workspaces
 INSERT INTO `<?php echo $table_prefix ?>workspace_objects`
@@ -197,7 +188,16 @@ CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>queued_emails` (
 	PRIMARY KEY (`id`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 
-UPDATE <?php echo $table_prefix ?>contacts AS o SET o.w_country = 'cd' WHERE o.w_country = 'zr';
-UPDATE <?php echo $table_prefix ?>contacts AS o SET o.w_country = 'tl' WHERE o.w_country = 'tp';
-UPDATE <?php echo $table_prefix ?>companies AS o SET o.country = 'cd' WHERE o.country = 'zr';
-UPDATE <?php echo $table_prefix ?>companies AS o SET o.country = 'tl' WHERE o.country = 'tp';
+UPDATE `<?php echo $table_prefix ?>contacts` SET `w_country` = 'cd' WHERE `w_country` = 'zr';
+UPDATE `<?php echo $table_prefix ?>contacts` SET `w_country` = 'tl' WHERE `w_country` = 'tp';
+UPDATE `<?php echo $table_prefix ?>companies` SET `country` = 'cd' WHERE `country` = 'zr';
+UPDATE `<?php echo $table_prefix ?>companies` SET `country` = 'tl' WHERE `country` = 'tp';
+
+ALTER TABLE `<?php echo $table_prefix ?>users` ADD COLUMN `can_manage_time` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0;
+ALTER TABLE `<?php echo $table_prefix ?>groups` ADD COLUMN `can_manage_time` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0;
+UPDATE `<?php echo $table_prefix ?>groups` SET `can_manage_time` = '1' WHERE `id` = 10000000;
+UPDATE `<?php echo $table_prefix ?>users` SET `can_manage_time` = '1';
+
+INSERT INTO `<?php echo $table_prefix ?>cron_events` (`name`, `recursive`, `delay`, `is_system`, `enabled`, `date`) VALUES
+	('delete_mails_from_server', '1', '1440', '1', '1', '0000-00-00 00:00:00')
+ON DUPLICATE KEY UPDATE id=id;

@@ -311,6 +311,12 @@ class NutriaUpgradeScript extends ScriptUpgraderScript {
 				";
 			}
 		}
+		
+		if (!$this->checkColumnExists(TABLE_PREFIX.'reports', 'is_order_by_asc', $this->database_connection)) {
+			$upgrade_script .= "
+				ALTER TABLE `".TABLE_PREFIX."reports` ADD COLUMN `is_order_by_asc` TINYINT(1) $default_collation NOT NULL DEFAULT 1;
+			";
+		}
 
 		$upgrade_script .= "
 			UPDATE `".TABLE_PREFIX."user_ws_config_categories` SET `is_system` = 0 WHERE `name` = 'calendar_panel';

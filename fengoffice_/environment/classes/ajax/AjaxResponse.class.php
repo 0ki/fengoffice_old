@@ -60,6 +60,10 @@ class AjaxResponse {
 			"config" => $config,
 			"makeDefault" => $default,
 		);
+		if (isset($this->currentPanel)) {
+			$this->current['panel'] = $this->currentPanel;
+			unset($this->currentPanel);
+		}
 		// extra current content config
 		if (isset($this->notbar)) {
 			$this->current["notbar"] = $this->notbar;

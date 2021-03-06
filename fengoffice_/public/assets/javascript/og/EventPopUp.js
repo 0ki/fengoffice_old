@@ -44,7 +44,8 @@ og.EventPopUp = function(data,config) {
 								                fieldLabel: lang('subject'),
 								                name: 'event[subject]',
 								                id: 'subject',
-								                allowBlank:false
+								                allowBlank:false,
+								                blankText: lang('this field is required')
 								            },
 								            {
 								            	name: 'event[start_time]',

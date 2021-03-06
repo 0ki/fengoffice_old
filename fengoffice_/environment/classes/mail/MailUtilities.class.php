@@ -92,6 +92,20 @@ class MailUtilities {
 
 		return $repository_id;
 	}
+	
+	private function getFromAddressFromContent($content) {
+		$address = array(array('name' => '', 'address' => ''));
+		if (strpos($content, 'From') !== false) {
+			$ini = strpos($content, 'From');
+			if ($ini !== false) {
+				$str = substr($content, $ini, strpos($content, ">", $ini) - $ini);
+				$ini = strpos($str, ":") + 1;
+				$address[0]['name'] = trim(substr($str, $ini, strpos($str, "<") - $ini));
+				$address[0]['address'] = trim(substr($str, strpos($str, "<") + 1));
+			}
+		}
+		return $address;
+	}
 
 	private function SaveMail(&$content, MailAccount $account, $uidl, $state = 0, $imap_folder_name = '') {
 		if (strpos($content, '+OK ') > 0) $content = substr($content, strpos($content, '+OK '));
@@ -99,6 +113,12 @@ class MailUtilities {
 		$encoding = array_var($parsedMail,'Encoding', 'UTF-8');
 		$enc_conv = EncodingConverter::instance();
 		$from = self::getAddresses(array_var($parsedMail, "From"));
+		
+		if (!$from) {
+			$parsedMail["From"] = self::getFromAddressFromContent($content);
+			$from = array_var($parsedMail["From"][0], 'address', '');
+		}
+		
 		if ($state == 0) {
 			if ($from == $account->getEmailAddress()) {
 				$state = 1;
@@ -394,6 +414,7 @@ class MailUtilities {
 							$maxUID = $account->getMaxUID($box->getFolderName());
 							for ($i = $numMessages - 1; $i >= 0; $i--) {
 								$summary = $imap->getSummary($i);
+								if (PEAR::isError($summary)) continue;
 								$uid = $summary[0]['UID'];
 								if ($maxUID == $uid) break;
 								$lastReceived--;
@@ -412,17 +433,19 @@ class MailUtilities {
 							if (PEAR::isError($summary)) {
 								Logger::log($summary->getMessage());
 							} else {
-								if ($imap->isDraft($index)) $state = 2;
-								else $state = 0;
-								
-								$messages = $imap->getMessages($index);
-								if (PEAR::isError($messages)) {
-									continue;
-								}
-								$content = array_var($messages, $index, '');
-								if ($content != '') {
-									self::SaveMail($messages[$index], $account, $summary[0]['UID'], $state, $box->getFolderName());
-									$received++;
+								if (!MailContents::mailRecordExists($account->getId(), $summary[0]['UID'], $box->getFolderName())) {
+									if ($imap->isDraft($index)) $state = 2;
+									else $state = 0;
+									
+									$messages = $imap->getMessages($index);
+									if (PEAR::isError($messages)) {
+										continue;
+									}
+									$content = array_var($messages, $index, '');
+									if ($content != '') {
+										self::SaveMail($messages[$index], $account, $summary[0]['UID'], $state, $box->getFolderName());
+										$received++;
+									} // if content
 								}
 							}
 						}
@@ -468,6 +491,13 @@ class MailUtilities {
 		return $result;
 	}
 
+	function deleteMailsFromServerAllAccounts() {
+		$accounts = MailAccounts::findAll();
+		foreach ($accounts as $account) {
+			self::deleteMailsFromServer($account);
+		}
+	}
+	
 	function deleteMailsFromServer(MailAccount $account) {
 		if ($account->getDelFromServer() > 0) {
 			$max_date = DateTimeValueLib::now();
@@ -492,7 +522,9 @@ class MailUtilities {
 									if (is_array($summary)) {
 										$m_date = DateTimeValueLib::makeFromString($summary[0]['INTERNALDATE']);
 										if ($max_date->getTimestamp() > $m_date->getTimestamp()) {
-											$imap->deleteMessages($i);
+											if (MailContents::find(array('conditions' => "`uid` = '" . $summary[0]['UID'] . "' AND `imap_folder_name` = '" . $box->getFolderName() . "'")) ) {
+												$imap->deleteMessages($i);
+											}
 										} else {
 											break;
 										}
@@ -514,10 +546,12 @@ class MailUtilities {
 				}
 				$emails = $pop3->getListing();
 				foreach ($emails as $email) {
-					$headers = $pop3->getParsedHeaders($email['msg_id']);
-					$date = DateTimeValueLib::makeFromString($headers['Date']);
-					if ($max_date->getTimestamp() > $date->getTimestamp()) {
-						$pop3->deleteMsg($email['msg_id']);
+					if (MailContents::find(array('conditions' => "`uid` = '" . $email['uidl']. "'")) ) {
+						$headers = $pop3->getParsedHeaders($email['msg_id']);
+						$date = DateTimeValueLib::makeFromString($headers['Date']);
+						if ($max_date->getTimestamp() > $date->getTimestamp()) {
+							$pop3->deleteMsg($email['msg_id']);
+						}
 					}
 				}
 				$pop3->disconnect();

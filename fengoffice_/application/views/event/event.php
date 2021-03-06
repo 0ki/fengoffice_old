@@ -569,43 +569,44 @@ og.eventInvitationsPrevWsVal = -1;
 
 og.drawInnerHtml = function(companies) {
 	var htmlStr = '';
+	var script = "";
 	htmlStr += '<div id="<?php echo $genid ?>invite_companies"></div>';
-	htmlStr += '<script type="text/javascript">';
-	htmlStr += 'var div = Ext.getDom(\'<?php echo $genid ?>invite_companies\');';
-	htmlStr += 'div.invite_companies = {};';
-	htmlStr += 'var cos = div.invite_companies;';
-	htmlStr += '<\/script>';
+	htmlStr += '&nbsp;';
+	script += 'var div = Ext.getDom(\'<?php echo $genid ?>invite_companies\');';
+	script += 'div.invite_companies = {};';
+	script += 'var cos = div.invite_companies;';
+	htmlStr += '<div class="company-users">';
 	if (companies != null) {
 		for (i = 0; i < companies.length; i++) {
 			comp_id = companies[i].object_id;
 			comp_name = companies[i].name;
-			htmlStr += '<script type="text/javascript">';
-			htmlStr += 'cos.company_' + comp_id + ' = {id:\'<?php echo $genid ?>inviteCompany' + comp_id + '\', checkbox_id : \'inviteCompany' + comp_id + '\',users : []};';
-			htmlStr += '\<\/script>';
-				
-			htmlStr += '<div class="companyDetails">';
-			htmlStr += '<div class="companyName">';
-			
-			htmlStr += '<input type="checkbox" class="checkbox" name="event[invite_company_'+comp_id+']" id="<?php echo $genid ?>inviteCompany'+comp_id+'" onclick="App.modules.addMessageForm.emailNotifyClickCompany('+comp_id+',\'<?php echo $genid ?>\',\'invite_companies\', \'invitation\')"></input>'; 
-			htmlStr += '<label for="<?php echo $genid ?>inviteCompany'+comp_id+'" class="checkbox">'+og.clean(comp_name)+'</label>';
-			
+			comp_img = companies[i].logo_url;			
+			script += 'cos.company_' + comp_id + ' = {id:\'<?php echo $genid ?>inviteCompany' + comp_id + '\', checkbox_id : \'inviteCompany' + comp_id + '\',users : []};';
+			htmlStr += '<div onclick="App.modules.addMessageForm.emailNotifyClickCompany('+comp_id+',\'<?php echo $genid ?>\',\'invite_companies\', \'invitation\')" class="companyName container-div" onmouseover="og.rollOver(this)" onmouseout="og.rollOut(this,true ,true)" >';
+					htmlStr += '<input type="checkbox" style="display:none;" name="event[invite_company_'+comp_id+']" id="<?php echo $genid ?>inviteCompany'+comp_id+'" ></input>';
+					htmlStr += '<label style="background: transparent url('+comp_img+') no-repeat; scroll 0% -5px;" ><span class="link-ico ico-company">'+og.clean(comp_name)+'</span></label>';
 			htmlStr += '</div>';
-			htmlStr += '<div class="companyMembers">';
-			htmlStr += '<table><tr>';
 			
-			for (j = 0; j < companies[i].users.length; j++) {
-				usr = companies[i].users[j];
-				htmlStr += '<td><div class="checkBoxListItem"><table><tr><td><input type="checkbox" class="checkbox" name="event[invite_user_'+usr.id+']" id="<?php echo $genid ?>inviteUser'+usr.id+'" onclick="App.modules.addMessageForm.emailNotifyClickUser('+comp_id+','+usr.id+',\'<?php echo $genid ?>\',\'invite_companies\', \'invitation\')"></input></td>'; 
-				htmlStr += '<td><label for="<?php echo $genid ?>inviteUser'+usr.id+'" class="checkbox">'+og.clean(usr.name)+'</label>';
-				htmlStr += '<script type="text/javascript">';
-				htmlStr += 'cos.company_' + comp_id + '.users.push({ id:'+usr.id+', checkbox_id : \'inviteUser' + usr.id + '\'});';
-				htmlStr += '\<\/script></td></tr></table></div></td>';
-			}
-			htmlStr += '</tr></table>';
-			htmlStr += '</div>';
-			htmlStr += '</div>';
+			htmlStr += '<div class="company-users" style="padding-left:10px;">';
+						
+					for (j = 0; j < companies[i].users.length; j++) {
+
+						usr = companies[i].users[j];
+						htmlStr += '<div id="div<?php echo $genid ?>inviteUser'+usr.id+'" class="container-div user-name" style="margin-left:5px;" onmouseover="og.rollOver(this)" onmouseout="og.rollOut(this,false ,true)" onclick="og.checkUser(this)">'
+						htmlStr += '<input style="display:none;" type="checkbox" class="checkbox" name="event[invite_user_'+usr.id+']" id="<?php echo $genid ?>inviteUser'+usr.id+'" onclick="App.modules.addMessageForm.emailNotifyClickUser('+comp_id+','+usr.id+',\'<?php echo $genid ?>\',\'invite_companies\', \'invitation\')"></input>';
+						htmlStr += '<label style="overflow:hidden; background: transparent url('+usr.avatar_url+') no-repeat;" ><span class="link-ico ico-user" >'+og.clean(usr.name)+'</span> <br> <span style="color:#888888;font-size:90%;font-weight:normal;">'+ usr.mail+ ' </span></label>';
+						script += 'cos.company_' + comp_id + '.users.push({ id:'+usr.id+', checkbox_id : \'inviteUser' + usr.id + '\'});';
+						htmlStr += '</div>';
+	
+					}
+				htmlStr += '</div>';
+			
 		}
+		htmlStr += '</div>';
 	}
+	Ext.lib.Event.onAvailable('<?php echo $genid ?>invite_companies', function() {
+		eval(script);
+	});
 	return htmlStr;
 };
 
@@ -618,7 +619,7 @@ og.drawUserList = function(success, data) {
 	
 	if (inv_div != null) {
 		inv_div.insertHtml('beforeEnd', '<div id="<?php echo $genid ?>inv_companies_div">' + og.drawInnerHtml(companies) + '</div>');	
-		inv_div.repaint();
+		if (Ext.isIE) inv_div.update(Ext.getDom("emailNotification").innerHTML, true);
 	}
 };
 

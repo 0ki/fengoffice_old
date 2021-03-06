@@ -512,4 +512,51 @@ function new_personal_project_name($username = null) {
 	return $wname;	
 }
 
+function help_link() {
+	$link = Localization::instance()->lang('wiki help link');
+	if (is_null($link)) {
+		$link = DEFAULT_HELP_LINK;
+	}
+	return $link;
+}
+
+// ---------------------------------------------------
+//  Localization
+// ---------------------------------------------------
+
+/**
+ * This returns the localization of the logged user, if not defined returns the one defined in config.php
+ *
+ * @return string
+ */
+function get_locale() {
+	$locale = user_config_option("localization");
+	if (!$locale) $locale = DEFAULT_LOCALIZATION;
+	
+	return $locale;
+}
+
+function get_ext_language_file($loc) {
+	switch ($loc) {
+		case 'cs_cz': return 'ext-lang-cs-min.js';
+		case 'de_de': return 'ext-lang-de-min.js';
+		case 'en_us': return 'ext-lang-en-min.js';
+		case 'es_es': return 'ext-lang-es-min.js';
+		case 'es_la': return 'ext-lang-es-min.js';
+		case 'fr_fr': return 'ext-lang-fr_FR.js';
+		case 'hu_hu': return 'ext-lang-en-min.js';
+		case 'it_it': return 'ext-lang-it-min.js';
+		case 'ja_jp': return 'ext-lang-ja-min.js';
+		case 'ko_kr': return 'ext-lang-ko-min.js';
+		case 'nl_nl': return 'ext-lang-nl-min.js';
+		case 'pl_pl': return 'ext-lang-pl-min.js';
+		case 'pt_br': return 'ext-lang-pt-min.js';
+		case 'ru_ru': return 'ext-lang-ru.js';
+		case 'zh_cn': return 'ext-lang-zh_CN-min.js';
+		case 'zh_tw': return 'ext-lang-zh_CN-min.js';
+		default: return '';
+	}
+	return '';	
+}
+
 ?>

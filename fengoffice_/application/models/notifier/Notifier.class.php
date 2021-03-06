@@ -50,9 +50,18 @@ class Notifier {
 	}
 	
 	static function objectNotification($object, $people, $sender, $notification, $description = null, $descArgs = null, $properties = array()) {
-		if(!is_array($people) || !count($people) || !$sender instanceof User) {
+		if (!is_array($people) || !count($people)) {
 			return; // nothing here...
 		} // if
+		if ($sender instanceof User) {
+			$sendername = $sender->getDisplayName();
+			$senderemail = $sender->getEmail();
+			$senderid = $sender->getId();
+		} else {
+			$sendername = owner_company()->getName();
+			$senderemail = owner_company()->getEmail();
+			$senderid = 0;
+		}
 		
 		$type = $object->getObjectTypeName();
 		$typename = lang($object->getObjectTypeName());
@@ -60,7 +69,7 @@ class Notifier {
 		$name = $object instanceof Comment ? $object->getObject()->getObjectName() : $object->getObjectName();
 		if (!isset($description)) {
 			$description = "$notification notification $type desc";
-			$descArgs = array($object->getObjectName(), $sender->getDisplayName());
+			$descArgs = array($object->getObjectName(), $sendername);
 		}
 		if (!isset($descArgs)) {
 			$descArgs = array();
@@ -87,7 +96,7 @@ class Notifier {
 		
 		$emails = array();
 		foreach($people as $user) {
-			if ($user->getId() != $sender->getId()) {
+			if ($user->getId() != $senderid) {
 				// send notification on user's locale and with user info
 				$locale = $user->getLocale();
 				Localization::instance()->loadSettings($locale, ROOT . '/language');
@@ -95,10 +104,10 @@ class Notifier {
 				$properties['workspace'] = $workspaces;
 				tpl_assign('properties', $properties);
 				tpl_assign('description', langA($description, $descArgs));
-				$from = self::prepareEmailAddress($sender->getEmail(), $sender->getDisplayName());
+				$from = self::prepareEmailAddress($senderemail, $sendername);
 				$emails[] = array(
 					"to" => array(self::prepareEmailAddress($user->getEmail(), $user->getDisplayName())),
-					"from" => self::prepareEmailAddress($sender->getEmail(), $sender->getDisplayName()),
+					"from" => self::prepareEmailAddress($senderemail, $sendername),
 					"subject" => $subject = lang("$notification notification $type", $name, $uid, $typename, $workspaces),
 					"body" => tpl_fetch(get_template_path('general', 'notifier'))
 				);
@@ -106,6 +115,7 @@ class Notifier {
 		} // foreach
 		$locale = logged_user() instanceof User ? logged_user()->getLocale() : DEFAULT_LOCALIZATION;
 		Localization::instance()->loadSettings($locale, ROOT . '/language');
+
 		self::queueEmails($emails);
 	}
 		
@@ -239,7 +249,7 @@ class Notifier {
 		}
 		Env::useHelper("format");
 
-		self::objectNotification($object, $people, $object->getCreatedBy(), "$context reminder", "$context $type reminder desc", array($object->getObjectName(), $date->format("Y/m/d H:i:s")));
+		self::objectNotification($object, $people, null, "$context reminder", "$context $type reminder desc", array($object->getObjectName(), $date->format("Y/m/d H:i:s")));
 	} // taskDue
 	
 	/**
@@ -481,6 +491,8 @@ class Notifier {
 
 		if (config_option("mail_transport", self::MAIL_TRANSPORT_MAIL) == self::MAIL_TRANSPORT_SMTP &&
 				config_option("smtp_authenticate", false)) {
+			$pos = strrpos($from, "<");
+			if ($pos !== false) $from = trim(substr($from, 0, $pos));
 			$from = self::prepareEmailAddress(config_option("smtp_username", $from), $from);
 		}
 		$result = $mailer->send($to, $from, $subject, $body, $type, $encoding);

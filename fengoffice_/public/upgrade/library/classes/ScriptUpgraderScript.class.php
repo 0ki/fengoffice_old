@@ -146,7 +146,24 @@ abstract class ScriptUpgraderScript {
 
 		return true;
 	} // executeMultipleQueries
-
+	
+	/**
+	 * Checks if a column exists in a table
+	 *
+	 *  This function returns true if the column exists
+	 *
+	 * @param string $table_name Name of the table
+	 * @param string $col_name Name of the column
+	 * @return boolean
+	 */
+	function checkColumnExists($table_name, $col_name, $connection) {
+		$res = mysql_query("DESCRIBE `$table_name`", $connection);
+		while($row = mysql_fetch_array($res)) {
+			if ($row['Field'] == $col_name) return true;
+		}
+		return false;
+	} // checkColumnExists
+	
 	// ---------------------------------------------------
 	//  Getters and setters
 	// ---------------------------------------------------

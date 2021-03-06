@@ -23,23 +23,28 @@ class Trash {
 			);
 			foreach ($managers as $manager_class) {
 				$manager = new $manager_class();
-				$objects = $manager->findAll(array(
-						"include_trashed" => true,
-						"conditions" => array("`trashed_by_id` <> 0 AND `trashed_on` < ?", $date))
-				);
-				if (is_array($objects)) {
-					// delete one by one because each one knows what else to delete
-					foreach ($objects as $o) {
-						try {
-							DB::beginWork();
-							$ws = $o->getWorkspaces();
-							$o->delete();
-							ApplicationLogs::createLog($o, $ws, ApplicationLogs::ACTION_DELETE);
-							DB::commit();
-							$count++;
-						} catch (Exception $e) {
-							DB::rollback();
-							Logger::log("Error delting object in purge_trash: " . $e->getMessage(), Logger::ERROR);
+				$prevcount = -1;
+				while ($prevcount != $count) {
+					$prevcount = $count;
+					$objects = $manager->findAll(array(
+							"include_trashed" => true,
+							"conditions" => array("`trashed_by_id` <> 0 AND `trashed_on` < ?", $date),
+							"limit" => 100,
+					));
+					if (is_array($objects)) {
+						// delete one by one because each one knows what else to delete
+						foreach ($objects as $o) {
+							try {
+								DB::beginWork();
+								$ws = $o->getWorkspaces();
+								$o->delete();
+								ApplicationLogs::createLog($o, $ws, ApplicationLogs::ACTION_DELETE);
+								DB::commit();
+								$count++;
+							} catch (Exception $e) {
+								DB::rollback();
+								Logger::log("Error delting object in purge_trash: " . $e->getMessage(), Logger::ERROR);
+							}
 						}
 					}
 				}

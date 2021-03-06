@@ -76,7 +76,7 @@ $comments_required = config_option('file_revision_comments_required');
 			</div>
 	    	<div id="<?php echo $genid ?>weblinkDiv" style="display:none;">
 	        <?php echo label_tag(lang('weblink'), 'file[url]', true, array('id' => $genid.'weblinkLbl', 'type' => 'text')) ?>
-	    	<?php echo text_field('file[url]', '', array('id' => 'url', 'style' => 'width:500px;', "onblur" => "javascript:og.updateFileName('" . $genid .  "', this.value);")) ?>
+	    	<?php echo text_field('file[url]', '', array('id' => $genid.'url', 'style' => 'width:500px;', "onchange" => "javascript:og.updateFileName('" . $genid .  "', this.value);")) ?>
 	    	</div>
 		</div>
 	<?php } ?>

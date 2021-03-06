@@ -88,9 +88,11 @@ class MailContent extends BaseMailContent {
 	} // validate
 
 	function delete(){
-		if (FileRepository::getBackend() instanceof FileRepository_Backend_FileSystem) {
-			if ($this->getContentFileId() != '') {
+		if ($this->getContentFileId() != '') {
+			try {
 				FileRepository::deleteFile($this->getContentFileId());
+			} catch (Exception $e) {
+				Logger::log($e->getMessage());
 			}
 		}
 		DB::beginWork();
@@ -428,7 +430,9 @@ class MailContent extends BaseMailContent {
 	 * @return string
 	 */
 	function getObjectTypeName() {
-		if (isset($this->workspaces) && is_array($this->workspaces) && count($this->workspaces))
+		if (!$this->workspaces)
+			$this->workspaces = $this->getUserWorkspaces();
+		if (is_array($this->workspaces) && count($this->workspaces))
 			return 'email';
 		else
 			return 'emailunclassified';
@@ -461,7 +465,11 @@ class MailContent extends BaseMailContent {
   function getDashboardObject(){
     	$projectId = "0";
     	$project = "";
-    	$type = "emailunclassified";
+    	if (count($this->getWorkspaces()) > 0) {
+    		$type = "email";
+    	} else {
+    		$type = "emailunclassified";
+    	}
     	$tags = project_object_tags($this);
     	
   		$deletedOn = $this->getTrashedOn() instanceof DateTimeValue ? ($this->getTrashedOn()->isToday() ? format_time($this->getTrashedOn()) : format_datetime($this->getTrashedOn(), 'M j')) : lang('n/a');
@@ -471,7 +479,8 @@ class MailContent extends BaseMailContent {
     	} else {
     		$deletedBy = lang("n/a");
     	}
-		$createdBy = Users::findById($this->getAccount()->getOwner());
+    	$owner_id = $this->getAccount() instanceof MailAccount ? $this->getAccount()->getUserId() : 0;
+		$createdBy = Users::findById($owner_id);
     	if ($createdBy instanceof User) {
     		$createdById = $createdBy->getId();
     		$createdBy = $createdBy->getDisplayName();
@@ -483,7 +492,7 @@ class MailContent extends BaseMailContent {
     	return array(
 				"id" => $this->getObjectTypeName() . $this->getId(),
 				"object_id" => $this->getId(),
-				"name" => $this->getObjectName(),
+				"name" => $this->getObjectName() != "" ? $this->getObjectName():lang('no subject'),
 				"type" => $type,
 				"tags" => $tags,
 				"createdBy" => $createdBy,

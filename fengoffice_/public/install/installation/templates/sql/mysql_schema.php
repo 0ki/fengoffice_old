@@ -146,6 +146,7 @@ CREATE TABLE `<?php echo $table_prefix ?>groups` (
 	`can_manage_contacts` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
 	`can_manage_templates` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
 	`can_manage_reports` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
+	`can_manage_time` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`)
 ) ENGINE = <?php echo $engine ?> AUTO_INCREMENT = 10000000 <?php echo $default_charset ?>;
 
@@ -529,7 +530,8 @@ CREATE TABLE `<?php echo $table_prefix ?>users` (
 	`can_manage_configuration` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
 	`can_manage_contacts` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
 	`can_manage_templates` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0, 
-	`can_manage_reports` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0, 
+	`can_manage_reports` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
+	`can_manage_time` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0, 
   `auto_assign` tinyint(1) unsigned NOT NULL default '0',
   `default_billing_id` int(10) unsigned default 0,
   PRIMARY KEY  (`id`),
@@ -681,7 +683,7 @@ CREATE TABLE  `<?php echo $table_prefix ?>mail_accounts` (
   `smtp_username` VARCHAR(100) <?php echo $default_collation ?>,
   `smtp_password` VARCHAR(100) <?php echo $default_collation ?>,
   `smtp_port` INTEGER UNSIGNED NOT NULL default 25,
-  `del_from_server` INTEGER UNSIGNED NOT NULL default 0,
+  `del_from_server` INTEGER NOT NULL default 0,
   `outgoing_transport_type` VARCHAR(5) <?php echo $default_collation ?> NOT NULL default '',
   `last_checked` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `is_default` BOOLEAN NOT NULL default '0',

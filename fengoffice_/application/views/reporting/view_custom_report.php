@@ -90,4 +90,4 @@
 </tbody>
 </table>
 
-<br/><?php echo $pagination ?>
+<br/><?php if (isset($pagination)) echo $pagination ?>

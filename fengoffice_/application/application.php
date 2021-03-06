@@ -31,9 +31,9 @@ try {
 	Localization::instance()->loadSettings($locale, ROOT . '/language');
 
 	if(config_option('file_storage_adapter', 'mysql') == FILE_STORAGE_FILE_SYSTEM) {
-		FileRepository::setBackend(new FileRepository_Backend_FileSystem(FILES_DIR, DB::connection()->getLink(), TABLE_PREFIX));
+		FileRepository::setBackend(new FileRepository_Backend_FileSystem(FILES_DIR, TABLE_PREFIX));
 	} else {
-		FileRepository::setBackend(new FileRepository_Backend_MySQL(DB::connection()->getLink(), TABLE_PREFIX));
+		FileRepository::setBackend(new FileRepository_Backend_DB(TABLE_PREFIX));
 	} // if
 
 	PublicFiles::setRepositoryPath(ROOT . '/public/files');

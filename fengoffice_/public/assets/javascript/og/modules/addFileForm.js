@@ -246,7 +246,7 @@ og.updateFileName = function(genid, name) {
 	if (document.getElementById(genid + 'fileRadio').checked)
 		og.checkFileName(genid);
 	else
-		document.getElementById(genid + 'fileFormFilename').display = 'inline';
+		document.getElementById(genid + 'addFileFilename').style.display = 'inline';
 		
 }
 
@@ -265,10 +265,10 @@ og.showAddDocumentDialog = function(genid){
 
 	config.dialogItems = [];
 	if (form.rename || !form['file[id]'].value){
-		config.dialogItems.push({xtype: 'textfield', name: 'title', value: form['file[name]'].value, id: genid + 'title', fieldLabel: lang('choose a filename'), allowBlank:false});
+		config.dialogItems.push({xtype: 'textfield', name: 'title', value: form['file[name]'].value, id: genid + 'title', fieldLabel: lang('choose a filename'), allowBlank:false, blankText: lang('this field is required')});
 		config.height += 40;
 	}
-	config.dialogItems.push({xtype: 'textarea', height:80, width:250, name: 'comment', id: genid + 'comment', fieldLabel: lang('comment'), allowBlank: (commentsRequired?'false':'true')});
+	config.dialogItems.push({xtype: 'textarea', height:80, width:250, name: 'comment', id: genid + 'comment', fieldLabel: lang('comment'), allowBlank: (commentsRequired?'false':'true'), blankText: lang('this field is required')});
 	if (form['file[id]'].value && form.rename){
 		config.height += 40;
 		config.dialogItems.push({

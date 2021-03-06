@@ -20,7 +20,7 @@ og.OverviewManager = function() {
 				id: 'id',
 				fields: [
 					'name', 'object_id', 'type', 'tags', 'createdBy', 'createdById', 'dateCreated', 
-					'updatedBy', 'updatedById', 'dateUpdated', 'icon', 'wsIds', 'manager', 'mimeType', 'url'
+					'updatedBy', 'updatedById', 'dateUpdated', 'icon', 'wsIds', 'manager', 'mimeType', 'url', 'ix'
 				]
 			}),
 			remoteSort: true,
@@ -47,6 +47,10 @@ og.OverviewManager = function() {
 	this.store = og.OverviewManager.store;
 	this.store.addListener({messageToShow: {fn: this.showMessage, scope: this}});
 
+	function renderDragHandle(value, p, r) {
+		return '<div class="img-grid-drag" onmousedown="Ext.getCmp(\'overview-manager\').getSelectionModel().selectRow('+r.data.ix+', true);"></div>';
+	}
+	
 	function renderName(value, p, r) {
 		var projectsString = String.format('<span class="project-replace">{0}</span>&nbsp;', r.data.wsIds);
 
@@ -159,6 +163,15 @@ og.OverviewManager = function() {
 		});
 	var cm = new Ext.grid.ColumnModel([
 		sm,{
+			id: 'draghandle',
+			header: '&nbsp;',
+			width: 18,
+        	renderer: renderDragHandle,
+        	fixed:true,
+        	resizable: false,
+        	hideable:false,
+        	menuDisabled: true
+		},{
         	id: 'icon',
         	header: '&nbsp;',
         	dataIndex: 'icon',
@@ -414,13 +427,26 @@ Ext.extend(og.OverviewManager, Ext.grid.GridPanel, {
 	},
 	
 	moveObjects: function(ws) {
-		og.moveToWsOrMantainWs(this.id, ws);
+		var selections = this.getSelectionModel().getSelections();
+		var allItemsAreTasksOrEvents = true;
+		for (i=0; i<selections.length; i++) {
+			if (selections[i].data.manager != 'ProjectTasks' && selections[i].data.manager != 'ProjectEvents') {
+				allItemsAreTasksOrEvents = false;
+				break;
+			}
+		}
+		// Tasks and events does not keep ws, only move
+		if (allItemsAreTasksOrEvents) {
+			this.moveObjectsToWsOrMantainWs(false, ws);
+		} else {
+			og.moveToWsOrMantainWs(this.id, ws);
+		}
 	},
 	
 	moveObjectsToWsOrMantainWs: function(mantain, ws) {
 		this.load({
 			action: 'move',
-			ids: this.getSelectedIds(),
+			objects: this.getSelectedIds(),
 			moveTo: ws,
 			mantainWs: mantain
 		});

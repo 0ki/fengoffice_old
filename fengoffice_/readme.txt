@@ -1,5 +1,5 @@
 
-    About OpenGoo 1.5 beta 2
+    About OpenGoo 1.5 beta 3
     ========================
 
     OpenGoo is a free and open source WebOffice, project management and collaboration
@@ -61,11 +61,11 @@
     ====================
     
     1. Backup you current installation (important!)
-    2. Download OpenGoo 1.5 beta 2 - http://www.opengoo.org/
+    2. Download OpenGoo 1.5 beta 3 - http://www.opengoo.org/
     3. Unpack into your OpenGoo installation, overwriting your previous files and folders,
     	but keeping your config, upload and public/files folders.
     5. Go to <your_opengoo>/public/upgrade in your browser and choose to upgrade
-    	from your current version to 1.5 beta 2
+    	from your current version to 1.5 beta 3
     6. Refresh your browser or clear its cache to load new javascript, css and images.   
 
     
@@ -86,6 +86,44 @@
 
 	Changelog
 	=========
+
+	Since 1.5-beta2
+	---------------
+	
+	- feature: Show current hour line at week and daily view
+	- feature: Permission to access Time module (can_manage_time).
+	- feature: Link objects to an email when attaching object links
+	- feature: Added a checkbox, to tasks workspace and milestone selection, to apply it to all subtasks
+	
+	- usability: Added a drag and drop icon for listings
+	- usability: To drag a row from a grid to a ws, you had to select it first.
+	- usability: ObjectPicker now sorts by lastUpdate by default
+	- usability: Tasks and events added through quickadd should have the default reminder and the default reminder should apply to all subscribers
+	
+	- bugfix: Fixed delete from server after X days (only delete fetched emails older than x days)
+	- bugfix: Fixed error when downloading revisions
+	- bugfix: Contact's workspaces were not being shown
+	- bugfix: Custom properties on users were not being shown when updating a user's profile.
+	- bugfix: Dashboard - view as list drag and drop allowed events and tasks to have more than one workspace
+	- bugfix: Dashboard - view as list was not listing documents
+	- bugfix: Dashboard _ view as list wasn't showing email user
+	- bugfix: Sometimes 'Modify subscribers' showed no users to subscribe.
+	- bugfix: Email sender was sometimes not being displayed
+	- bugfix: Errors when using PDO Backend
+	- bugfix: Event email reminders are not being sent
+	- bugfix: Events that end at or after midnight are not drew correctly (week and day view)
+	- bugfix: Javascript error when viewing all linked objecs of an object whose name has quotes
+	- bugfix: "Modify subscribers" link shouldn't be shown when user has no write permission over the object
+	- bugfix: Filtering Object Picker and Dashboard list view by workspace showed incorrect contacts
+	- bugfix: Problems with group permissions (workspaces didn't load and object listings didn't list files in group workspaces)
+	- bugfix: Reports weren't being sorted correctly
+	- bugfix: Reports only printed first page
+	- bugfix: Search wasn't opening on a new panel
+	- bugfix: When editing an object with a list-type custom property with multiple values selected, not all were being shown as selected.
+	- bugfix: When viewing all linked objects of an email, the email icon at toolbar was not being shown.
+	
+	- lang: Added ext language files
+	- lang: Link to OpenGoo wiki can be localized in translation files (to point to another language if available)
 
 	Since 1.5-beta
 	--------------

@@ -190,6 +190,7 @@
   	'default' => 'Predeterminado',
   	'language' => 'Idioma',
   	'before' => 'antes',
+  	'pages' => 'páginas',
   
 	'repeat by' => 'Repetir según',
 	'repeating task' => 'Tarea Repetitiva',

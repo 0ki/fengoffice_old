@@ -57,15 +57,52 @@ class GroupController extends ApplicationController {
 			return ;
 		} // if
 
+		if (logged_user()->isAdministrator()) {
+			$projects = Projects::getAll();
+		} else {
+			$projects = null;
+		}
+		
 		$group = new Group();
 		$group_data = array_var($_POST, 'group');
 		tpl_assign('group', $group);
 		tpl_assign('group_data', $group_data);
+		tpl_assign('projects', $projects);
 
 		if(is_array($group_data)) {
 			$group->setFromAttributes($group_data);
 			try {
 				DB::beginWork();
+				$group->save();
+				//set permissions
+				$permissionsString = array_var($_POST,'permissions');
+				if ($permissionsString && $permissionsString != ''){
+					$permissions = json_decode($permissionsString);
+				}
+			  	if(is_array($permissions) && count($permissions) > 0) {
+			  		//Clear old modified permissions
+			  		$ids = array();
+			  		foreach($permissions as $perm)
+			  			$ids[] = $perm->wsid;
+			  			
+			  		ProjectUsers::clearByUser($group,implode(',',$ids));
+			  		
+			  		//Add new permissions
+			  		//TODO - Make batch update of these permissions
+			  		foreach($permissions as $perm){
+			  			if(ProjectUser::hasAnyPermissions($perm->pr,$perm->pc)){			  				
+				  			$relation = new ProjectUser();
+					  		$relation->setProjectId($perm->wsid);
+					  		$relation->setUserId($group->getId());
+				  			
+					  		$relation->setCheckboxPermissions($perm->pc);
+					  		$relation->setRadioPermissions($perm->pr);
+					  		$relation->save();
+			  			} //endif
+			  			//else if the user has no permissions at all, he is not a project_user. ProjectUser is not created
+			  		} //end foreach
+				} // if
+				
 				$group->save();
 				if(array_var($_POST, 'user') != '')
 					foreach (array_var($_POST, 'user') as $user_id => $val){
@@ -109,6 +146,12 @@ class GroupController extends ApplicationController {
 			$this->redirectTo('administration', 'groups');
 		} // if
 		
+		if (logged_user()->isAdministrator()) {
+			$projects = Projects::getAll();
+		} else {
+			$projects = null;
+		}
+		
 		$permissions = ProjectUsers::getNameTextArray();
 
 		$group_data = array_var($_POST, 'group');
@@ -122,6 +165,7 @@ class GroupController extends ApplicationController {
 	          'can_manage_contacts' => $group->getCanManageContacts(),
 			  'can_manage_templates' => $group->getCanManageTemplates(),
 			  'can_manage_reports' => $group->getCanManageReports(),
+			  'can_manage_time' => $group->getCanManageTime(),
 			); // array			
 		} // if
 		$users = GroupUsers::getUsersByGroup($group->getId());
@@ -131,6 +175,7 @@ class GroupController extends ApplicationController {
 		tpl_assign('group', $group);
 		tpl_assign('group_data', $group_data);
 		tpl_assign('permissions', $permissions);
+		tpl_assign('projects', $projects);
 		
 		if(is_array(array_var($_POST, 'group'))) {
 			$group->setFromAttributes($group_data);
@@ -141,6 +186,7 @@ class GroupController extends ApplicationController {
 			if(array_var($group_data, "can_manage_contacts") != 'checked') $group->setCanManageContacts(false);
 			if(array_var($group_data, "can_manage_templates") != 'checked') $group->setCanManageTemplates(false);
 			if(array_var($group_data, "can_manage_reports") != 'checked') $group->setCanManageReports(false);
+			if(array_var($group_data, "can_manage_time") != 'checked') $group->setCanManageTime(false);
 			try {
 				DB::beginWork();
 				//set permissions

@@ -19,7 +19,7 @@ og.MessageManager = function() {
 				id: 'id',
 				fields: [
 					'object_id', 'type', 'title', 'text', 'date', 'is_today',
-					'wsIds', 'userId', 'userName', 'tags', 'workspaceColors'
+					'wsIds', 'userId', 'userName', 'tags', 'workspaceColors', 'ix'
 				]
 			}),
 			remoteSort: true,
@@ -46,6 +46,10 @@ og.MessageManager = function() {
 	this.store = og.MessageManager.store;
 	this.store.addListener({messageToShow: {fn: this.showMessage, scope: this}});
 
+	function renderDragHandle(value, p, r) {
+		return '<div class="img-grid-drag" onmousedown="Ext.getCmp(\'message-manager\').getSelectionModel().selectRow('+r.data.ix+', true);"></div>';
+	}
+	
 	function renderName(value, p, r) {
 		var name = '';
 		name = String.format(
@@ -140,6 +144,15 @@ og.MessageManager = function() {
 	
 	var cm = new Ext.grid.ColumnModel([
 		sm,{
+			id: 'draghandle',
+			header: '&nbsp;',
+			width: 18,
+        	renderer: renderDragHandle,
+        	fixed:true,
+        	resizable: false,
+        	hideable:false,
+        	menuDisabled: true
+		},{
 			id: 'icon',
 			header: '&nbsp;',
 			dataIndex: 'type',

@@ -113,11 +113,11 @@ class MailContents extends BaseMailContents {
 
 		// Check for drafts emails
 		if ($state == "draft") {
-			$stateConditions = "AND state = '2'";
+			$stateConditions = "AND `state` = '2'";
 		} else if ($state == "sent") {
-			$stateConditions = "AND state = '1'";
+			$stateConditions = "AND (`state` = '1' OR `state` = '3')";
 		} else if ($state == "received") {
-			$stateConditions = "AND state = '0'";
+			$stateConditions = "AND `state` = '0'";
 		} else {
 			$stateConditions = "";
 		}

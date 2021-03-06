@@ -84,7 +84,12 @@
 			</div>
 		<?php }?>
 	<legend><?php echo lang('workspace') ?></legend>
-		<?php echo select_project2('task[project_id]', $project->getId(), $genid) ?>
+		<?php echo '<div style="float:left;">' .select_project2('task[project_id]', $project->getId(), $genid) .'</div>'?>
+
+		<?php if (!$task->isNew()) { ?>
+			<div style="float:left; padding:5px;"><?php echo checkbox_field('task[apply_ws_subtasks]', array_var($task_data, 'apply_ws_subtasks', false), array("id" => "$genid-checkapplyws")) ?><label class="checkbox" for="<?php echo "$genid-checkapplyws" ?>"><?php echo lang('apply workspace to subtasks') ?></label></div>
+		<?php } ?>
+		<div style="clear:both"></div>
 	</fieldset>
 	</div>
 
@@ -108,9 +113,14 @@
     <legend><?php echo lang('task data') ?></legend>
     
 	    <label><?php echo lang('milestone') ?>: <span class="desc">(<?php echo lang('assign milestone task list desc') ?>)</span></label>
-	    <div id="<?php $genid ?>add_task_more_div_milestone_combo" >
-    		<?php echo select_milestone('task[milestone_id]', $project, array_var($task_data, 'milestone_id'), array('id' => $genid . 'taskListFormMilestone', 'tabindex' => '40')) ?>
+	    
+	    <div style="float:left;" id="<?php $genid ?>add_task_more_div_milestone_combo" >
+    		<?php echo select_milestone('task[milestone_id]', $project, array_var($task_data, 'milestone_id'), array('id' => $genid . 'taskListFormMilestone', 'tabindex' => '40')) ?>    		
     	</div>
+    	<?php if (!$task->isNew()) { ?>
+			<div style="float:left; padding:5px;"><?php echo checkbox_field('task[apply_milestone_subtasks]', array_var($task_data, 'apply_milestone_subtasks', false), array("id" => "$genid-checkapplymi")) ?><label class="checkbox" for="<?php echo "$genid-checkapplymi" ?>"><?php echo lang('apply milestone to subtasks') ?></label></div>
+		<?php } ?>
+    	<div style="clear:both"></div>
     	<div style="padding-top:4px">
     		<script>
     		og.pickParentTask = function(before) {
@@ -358,7 +368,8 @@
 			<?php echo render_add_reminders($object, 'due_date', array(
 				'type' => 'reminder_email',
 				'duration' => 1,
-				'duration_type' => 1440
+				'duration_type' => 1440,
+				'for_subscribers' => true,
 			)); ?>
 		</div>
 		</fieldset>
@@ -413,7 +424,7 @@
 				scripts: true
 			});
 			Ext.get('<?php $genid ?>add_task_more_div_milestone_combo').load({
-				url: og.getUrl('object', 'render_add_milestone', {
+				url: og.getUrl('milestone', 'render_add_milestone', {
 					workspaces: wsid,
 					genid: '<?php echo $genid ?>'
 				}),
@@ -485,19 +496,16 @@
 	
 	og.drawNotificationsInnerHtml = function(companies) {
 		var htmlStr = '';
+		var script = "";
 		htmlStr += '<div id="<?php echo $genid ?>notify_companies"></div>';
-		htmlStr += '<script type="text/javascript">';
-		htmlStr += 'var div = Ext.getDom(\'<?php echo $genid ?>notify_companies\');';
-		htmlStr += 'div.notify_companies = {};';
-		htmlStr += 'var cos = div.notify_companies;';
-		htmlStr += '<\/script>';
+		script += 'var div = Ext.getDom(\'<?php echo $genid ?>notify_companies\');';
+		script += 'div.notify_companies = {};';
+		script += 'var cos = div.notify_companies;';
 		if (companies != null) {
 			for (i = 0; i < companies.length; i++) {
 				comp_id = companies[i].id;
 				comp_name = companies[i].name;
-				htmlStr += '<script type="text/javascript">';
-				htmlStr += 'cos.company_' + comp_id + ' = {id:\'<?php echo $genid ?>notifyCompany' + comp_id + '\', checkbox_id : \'notifyCompany' + comp_id + '\',users : []};';
-				htmlStr += '\<\/script>';
+				script += 'cos.company_' + comp_id + ' = {id:\'<?php echo $genid ?>notifyCompany' + comp_id + '\', checkbox_id : \'notifyCompany' + comp_id + '\',users : []};';
 					
 				htmlStr += '<div class="companyDetails">';
 				htmlStr += '<div class="companyName">';
@@ -513,15 +521,16 @@
 					usr = companies[i].users[j];
 					htmlStr += '<li><input type="checkbox" class="checkbox" name="task[notify_user_'+usr.id+']" id="<?php echo $genid ?>notifyUser'+usr.id+'" onclick="App.modules.addMessageForm.emailNotifyClickUser('+comp_id+','+usr.id+',\'<?php echo $genid ?>\',\'notify_companies\', \'notification\')"></input>'; 
 					htmlStr += '<label for="<?php echo $genid ?>notifyUser'+usr.id+'" class="checkbox">'+og.clean(usr.name)+'</label>';
-					htmlStr += '<script type="text/javascript">';
-					htmlStr += 'cos.company_' + comp_id + '.users.push({ id:'+usr.id+', checkbox_id : \'notifyUser' + usr.id + '\'});';
-					htmlStr += '\<\/script></li>';
+					script += 'cos.company_' + comp_id + '.users.push({ id:'+usr.id+', checkbox_id : \'notifyUser' + usr.id + '\'});';
 				}
 				htmlStr += '</ul>';
 				htmlStr += '</div>';
 				htmlStr += '</div>';
 			}
 		}
+		Ext.lib.Event.onAvailable('<?php echo $genid ?>notify_companies', function() {
+			eval(script);
+		});
 		return htmlStr;
 	}
 	

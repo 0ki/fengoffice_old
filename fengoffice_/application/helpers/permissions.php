@@ -50,6 +50,30 @@
   		return false;
   	}
   	
+  	
+	/**
+  	 * Returns whether a user can manage time.
+  	 * If groups are checked, one true permission makes the function return true.
+  	 *
+  	 * @param User $user
+  	 * @param boolean $include_groups states whether groups should be checked for permissions
+  	 * @return boolean
+  	 */
+  	function can_manage_time(User $user, $include_groups = true){
+  		if ($user->getCanManageTime()){
+  			return true;
+  		}
+  		if ($include_groups){
+  			$user_ids = $user->getId();  			
+			$group_ids = GroupUsers::getGroupsCSVsByUser($user_ids);
+			if($group_ids!=''){
+	  			$gr = Groups::findOne(array('conditions' => array('id in ('.$group_ids.') AND can_manage_time = true ')));
+	  			return $gr instanceof Group ;
+			}
+  		}
+  		return false;
+  	}
+  	
   	function can_manage_templates(User $user, $include_groups = true) {
   		if ($user->getCanManageTemplates()) {
   			return true;
@@ -376,6 +400,40 @@
 		}
 		return false;
 	}
+	
+	/**
+	 * Return true is $user can add read $object_type objects in the project. False otherwise.
+	 *
+	 * @param User $user
+	 * @param Project $project
+	 * @param string $object_type
+	 * @return boolean
+	 */
+	function can_read_type(User $user, Project $project, $object_manager){
+		try {
+			if (!$project instanceof Project) return false;
+			$user_id = $user->getId();
+			$proj_perm = ProjectUsers::findOne(array('conditions' => array('user_id = ? AND project_id = ? ',  $user_id , $project->getId())));
+			if ($proj_perm && can_manage_type($object_manager,$proj_perm, ACCESS_LEVEL_WRITE)){
+				return true; // if user has permissions over type of object in the project
+			}
+			$group_ids = GroupUsers::getGroupsCSVsByUser($user_id);
+			if($group_ids && $group_ids!= ''){ //user belongs to at least one group
+				$proj_perms = ProjectUsers::findAll(array('conditions' => array('project_id = '.$project->getId().' AND user_id in ('. $group_ids .')')));
+				if($proj_perms){
+					foreach ($proj_perms as $perm){
+						if( can_manage_type($object_manager, $perm, ACCESS_LEVEL_READ)) return true; // if any group has permissions over type of object in the project
+					}	
+				}
+			}
+		}
+		catch(Exception $e) {
+				tpl_assign('error', $e);
+				return false;
+		}
+		return false;
+	}
+	
 	/**
 	 * Return true is $user can read an $object. False otherwise.
 	 *

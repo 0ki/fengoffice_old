@@ -55,6 +55,10 @@
       <?php echo checkbox_field('group[can_manage_reports]', array_var($group_data,'can_manage_reports'), array('id' => 'group[can_manage_reports]' )) ?> 
       <label for="<?php echo 'group[can_manage_reports]' ?>" class="checkbox"><?php echo lang('can manage reports') ?></label>
     </div>     
+    <div>
+      <?php echo checkbox_field('group[can_manage_time]', array_var($group_data,'can_manage_time'), array('id' => 'group[can_manage_time]' )) ?> 
+      <label for="<?php echo 'group[can_manage_time]' ?>" class="checkbox"><?php echo lang('can manage time') ?></label>
+    </div>
   </fieldset>
   
   <fieldset>

@@ -880,7 +880,14 @@
       } // if
     } // if
     
-    return get_public_url("assets/themes/$theme/stylesheets/$file_name");
+    if (defined('VERSIONED_CSS') && VERSIONED_CSS) {
+  		$prefix = include 'version.php';
+  		$prefix .= "/";
+  	} else {
+  		$prefix = "";
+  	}
+    
+    return get_public_url("assets/themes/$theme/stylesheets/$prefix$file_name");
   } // get_stylesheet_url
   
   /**

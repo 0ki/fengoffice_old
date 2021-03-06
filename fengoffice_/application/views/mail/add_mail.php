@@ -275,7 +275,7 @@ var actualSignature = '';
 	</div>
 	
 	<?php $categories = array(); Hook::fire('object_edit_categories', $object, $categories); ?>
-	<?php $cps = CustomProperties::getAllCustomPropertiesByObjectType('MailContents'); ?>
+	<?php $cps = CustomProperties::getHiddenCustomPropertiesByObjectType('MailContents'); ?>
 	
 	<div style="padding-top:5px">
 		<?php if (count($mail_accounts) > 1) { ?>
@@ -316,7 +316,7 @@ var actualSignature = '';
  	    $renderName = "function(obj, count) {
  	    	if (obj.manager != 'ProjectFiles') return obj.name;
  	    	var id = Ext.id();
- 	    	return obj.name + '<input id=\'' + id +'\' type=\'checkbox\' $checked  name=\'attach_contents[' + count + ']\' style=\'margin-left: 30px;position:relative;top:3px;\'>' +
+ 	    	return obj.name + '<input id=\'' + id +'\' type=\'checkbox\' $checked  name=\'attach_contents[' + count + ']\' style=\'margin-left: 30px;position:relative;top:3px;width:16px;\'>' +
  	    			'<label style=\'display:inline;margin-left:5px;\' for=\'' + id + '\'>" . lang('attach contents') . "</label>';
  	    }";
  	    $renderName = htmlentities($renderName); ?>

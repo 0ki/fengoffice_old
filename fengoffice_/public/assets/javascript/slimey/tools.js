@@ -353,11 +353,11 @@ var SlimeyFontSizeTool = function(slimey) {
 	select.style.height = '20px';
 	select.style.width = '80px';
 	select.style.marginLeft = '4px';
-	select.title = 'Change font family';
+	select.title = lang('change font size');
 
 	var option = document.createElement('option');
 	option.value = option.style.fontSize = '';
-	option.appendChild(document.createTextNode('-- Size --'));
+	option.appendChild(document.createTextNode('-- ' + lang('size') + ' --'));
 	select.appendChild(option);
 
 	option = document.createElement('option');
@@ -451,7 +451,7 @@ var SlimeyFontFamilyTool = function(slimey) {
 	select.style.height = '20px';
 	select.style.width = '140px';
 	select.style.marginLeft = '4px';
-	select.title = lang("change font size");
+	select.title = lang("font family");
 
 	var option = document.createElement('option');
 	option.value = option.style.fontFamily = '';

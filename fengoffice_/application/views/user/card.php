@@ -27,7 +27,7 @@ if($user->canUpdatePermissions(logged_user())) {
 $description = "";
 if ($contact){
 	if($description != '') $description .= '<br/>';
-	$description .= '<a class="internalLink coViewAction ico-contact" href="' . $contact->getCardUrl() . '" title="' . lang('contact linked to user', clean($contact->getDisplayName())) . '">' . clean($contact->getDisplayName()) . '</a>';
+	$description .= '<div style="margin-top:3px;"><a class="internalLink coViewAction ico-contact" href="' . $contact->getCardUrl() . '" title="' . lang('contact linked to user', clean($contact->getDisplayName())) . '">' . clean($contact->getDisplayName()) . '</a></div>';
 }
 tpl_assign('description', $description);
 tpl_assign('title', clean($user->getDisplayName()));

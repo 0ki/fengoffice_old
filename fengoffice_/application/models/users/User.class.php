@@ -486,7 +486,12 @@ class User extends BaseUser {
 	 */
 	function getWorkspacesQuery() {
 		$project_users_table =  ProjectUsers::instance()->getTableName(true);
-		return "SELECT $project_users_table.`project_id` FROM $project_users_table WHERE $project_users_table.`user_id` = " . DB::escape($this->getId());
+		$group_users_table = GroupUsers::instance()->getTableName(true);
+		
+		$usercond = "($project_users_table.`user_id` = " . DB::escape($this->getId()) . ")";
+		$groupcond = "($project_users_table.`user_id` IN (SELECT `group_id` FROM $group_users_table WHERE $group_users_table.`user_id` = " . DB::escape($this->getId()) . "))";
+
+		return "SELECT $project_users_table.`project_id` FROM $project_users_table WHERE ($usercond OR $groupcond)";
 	}
 	
 	/**

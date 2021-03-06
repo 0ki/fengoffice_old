@@ -53,6 +53,7 @@
     	$this->setCanManageContacts($value);
     	$this->setCanManageTemplates($value);
     	$this->setCanManageReports($value);
+    	$this->setCanManageTime($value);
     }
     
   function getAllPermissions($user_permissions = null) {

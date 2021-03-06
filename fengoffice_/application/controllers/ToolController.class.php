@@ -86,8 +86,7 @@ class ToolController extends ApplicationController {
 		}
 		
 		echo "Writing to file 'ogmin.css' ... ";
-		$version = include "version.php";
-		file_put_contents("public/assets/themes/default/stylesheets/ogmin$version.css", $cssmin);
+		file_put_contents("public/assets/themes/default/stylesheets/ogmin.css", $cssmin);
 		echo "Done!<br>";
 
 	}

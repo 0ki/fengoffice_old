@@ -17,7 +17,7 @@ og.WebpageManager = function() {
 	            id: 'id',
 	            fields: [
 	                'title', 'description', 'url', 'tags', 'wsIds', 'updatedBy', 'updatedById',
-	                'updatedOn', 'updatedOn_today'
+	                'updatedOn', 'updatedOn_today', 'ix'
 	            ]
 	        }),
 	        remoteSort: true,
@@ -47,6 +47,9 @@ og.WebpageManager = function() {
     // Renderers
     //--------------------------------------------
 
+	function renderDragHandle(value, p, r) {
+		return '<div class="img-grid-drag" onmousedown="Ext.getCmp(\'webpage-manager\').getSelectionModel().selectRow('+r.data.ix+', true);"></div>';
+	}
     
     function renderName(value, p, r) {
 		var name = String.format(
@@ -121,6 +124,15 @@ og.WebpageManager = function() {
 		});
     var cm = new Ext.grid.ColumnModel([
 		sm,{
+			id: 'draghandle',
+			header: '&nbsp;',
+			width: 18,
+        	renderer: renderDragHandle,
+        	fixed:true,
+        	resizable: false,
+        	hideable:false,
+        	menuDisabled: true
+		},{
 			id: 'title',
 			header: lang("title"),
 			dataIndex: 'title',

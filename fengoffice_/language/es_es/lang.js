@@ -286,6 +286,7 @@ addLangs({
 	'my calendar': 'Mi Calendario',
 	'edit event details': 'Editar detalles del evento',
 	'duration': 'Duración',
+	'this field is required': 'Este campo es obligatorio',
 	'reporting': 'Reportes',
 	'add new chart': 'Añadir nueva gráfica',
 	'delete selected charts': 'Eliminar gráficas seleccionadas',
@@ -604,5 +605,9 @@ addLangs({
     'no parameters in template': 'No hay parámetros de fecha definidos para esta plantilla',
     'open property editor': 'Abrir editor de propiedades',
     'template parameters': 'Parámetros',
-    'template property already selected': 'La propiedad seleccionada ya está siendo usada'
+    'template property already selected': 'La propiedad seleccionada ya está siendo usada',
+    'tag selected events': 'Etiquetar eventos seleccionados',
+    'edit selected events': 'Editar evento seleccionado',
+    'apply milestone to subtasks': 'Aplicar hito a las subtareas',
+    'apply workspace to subtasks': 'Applicar espacio a las subtareas'
 });

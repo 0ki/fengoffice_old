@@ -126,12 +126,14 @@ function opengoo_reminder_email($reminder, &$ret) {
 		}
 	}
 	if (!$date instanceof DateTimeValue) return;
+	file_put_contents("emailreminders.txt", "REM: " . ($date->getTimestamp() + 24*60*60) . " NOW: " . DateTimeValueLib::now()->getTimestamp(), FILE_APPEND);
 	if ($date->getTimestamp() + 24*60*60 < DateTimeValueLib::now()->getTimestamp()) {
 		// don't send reminders older than a day
 		$reminder->delete();
 		throw new Exception("Reminder too old");
 	}
 	Notifier::objectReminder($reminder);
+	file_put_contents("emailreminders.txt", "SENT", FILE_APPEND);
 	$reminder->delete();
 	$ret++;
 }

@@ -58,27 +58,6 @@ $tags = active_tag();
 	
 	$milestones = ProjectMilestones::getRangeMilestonesByUser($date_start, $date_end, ($user_filter != -1 ? $user : null), $tags, active_project());
 	$tasks = ProjectTasks::getRangeTasksByUser($date_start, $date_end, ($user_filter != -1 ? $user : null), $tags, active_project());
-	
-/*		$tasks = $temp_tasks;
-		foreach ($tasks as $task){
-			$start_date = $task->getStartDate();
-			$due_date = $task->getDueDate();
-			$added = false;
-			if ($due_date instanceof DateTimeValue) {
-				if ($dates[$day_of_week]->getTimestamp() == mktime(0,0,0, $due_date->getMonth(), $due_date->getDay(), $due_date->getYear())) {
-					$alldayevents[$day_of_week][] = $task;
-					$added = true;
-				}
-			}
-			if (!$added && $start_date instanceof DateTimeValue) {
-				if ($dates[$day_of_week]->getTimestamp() == mktime(0,0,0, $start_date->getMonth(), $start_date->getDay(), $start_date->getYear())) {
-					$alldayevents[$day_of_week][] = $task;
-					$added = true;
-				}
-			}
-		}
-	}*/
-		
 	$birthdays = Contacts::instance()->getRangeContactsByBirthday($date_start, $date_end);
 	
 	$dates = array(); //datetimevalue for each day of week
@@ -528,9 +507,10 @@ onmouseup="og.showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->ge
 											if ($event_start == $event_duration){
 												$hr_end++;
 											}
+											if ($hr_end == 0) $hr_end = 24;
 											$top = PX_HEIGHT * $hr_start + (PX_HEIGHT*(($min_start*100)/(60*100)));
 											$bottom = PX_HEIGHT * $hr_end + (PX_HEIGHT*(($min_end*100)/(60*100)));
-											$height = $bottom - $top; 
+											$height = $bottom - $top;
 											
 											$evs_same_time = 0;
 											$i = $event_start->getHour();
@@ -750,6 +730,15 @@ onmouseup="og.showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->ge
 	} else {
 		og.addDomEventHandler(window, 'resize', resizeGridContainer);
 	}
+	
+	
+	var now = new Date();
+	if (og.calendar_start_day == 1) {
+		var today_d = now.format('N') - 1;
+	} else {
+		var today_d = now.format('w');
+	}
+	og.drawCurrentHourLine(today_d, 'w_');
 	
 	// init tooltips
 	Ext.QuickTips.init();

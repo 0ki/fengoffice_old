@@ -16,6 +16,7 @@ class DashboardController extends ApplicationController {
 	function __construct() {
 		parent::__construct();
 		prepare_company_website_controller($this, 'website');
+		$this->addHelper('calendar');
 	} // __construct
 
 	function init_overview() {

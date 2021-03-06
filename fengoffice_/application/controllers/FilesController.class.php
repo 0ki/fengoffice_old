@@ -1136,6 +1136,7 @@ class FilesController extends ApplicationController {
 			"files" => array()
 		);
 		if ($objects) {
+			$index = 0;
 			foreach ($objects as $o) {
 				$coName = "";
 				$coId = $o->getCheckedOutById();
@@ -1160,6 +1161,7 @@ class FilesController extends ApplicationController {
 				
 				$values = array(
 					"id" => $o->getId(),
+					"ix" => $index++,
 					"object_id" => $o->getId(),
 					"name" => $o->getFilename(),
 					"type" => $o->getTypeString(),
@@ -1765,6 +1767,7 @@ class FilesController extends ApplicationController {
 			flash_error(lang('file dnx'));
 			ajx_current("empty");
 		} else {
+			$old_memory_limit = ini_get('memory_limit');
 			if (php_config_value_to_bytes($old_memory_limit) < 96*1024*1024) {
 				ini_set('memory_limit', '96M');
 			}

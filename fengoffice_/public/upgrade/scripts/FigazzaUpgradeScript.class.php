@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Figazza upgrade script will upgrade OpenGoo 1.4.2 to OpenGoo 1.5-beta2
+ * Figazza upgrade script will upgrade OpenGoo 1.4.2 to OpenGoo 1.5-beta3
  *
  * @package ScriptUpgrader.scripts
  * @version 1.1
@@ -41,7 +41,7 @@ class FigazzaUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('1.4.2');
-		$this->setVersionTo('1.5-beta2');
+		$this->setVersionTo('1.5-beta3');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -131,6 +131,35 @@ class FigazzaUpgradeScript extends ScriptUpgraderScript {
 		} else {
 			// upgrading from a pre-release of this version (beta, rc, etc)
 			$upgrade_script = "";
+			if (version_compare($installed_version, "1.5-beta3") < 0) {
+				$upgrade_script .= "
+				  ALTER TABLE `".TABLE_PREFIX."users` ADD COLUMN `can_manage_time` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0;
+				  ALTER TABLE `".TABLE_PREFIX."groups` ADD COLUMN `can_manage_time` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0;
+				";
+			}
+		}
+		
+		$upgrade_script .= "
+			ALTER TABLE `".TABLE_PREFIX."mail_accounts` MODIFY COLUMN `del_from_server` INTEGER NOT NULL default 0;
+		";
+
+		if (version_compare($installed_version, '1.4.4') < 0) {
+			$upgrade_script .= "
+				ALTER TABLE `".TABLE_PREFIX."project_tasks`
+				 ADD COLUMN `repeat_end` DATETIME NOT NULL default '0000-00-00 00:00:00',
+				 ADD COLUMN `repeat_forever` tinyint(1) NOT NULL,
+				 ADD COLUMN `repeat_num` int(10) unsigned NOT NULL default '0',
+				 ADD COLUMN `repeat_d` int(10) unsigned NOT NULL,
+				 ADD COLUMN `repeat_m` int(10) unsigned NOT NULL,
+				 ADD COLUMN `repeat_y` int(10) unsigned NOT NULL,
+				 ADD COLUMN `repeat_by` varchar(15) collate utf8_unicode_ci NOT NULL default '';
+			";
+		}
+		
+		if (!$this->checkColumnExists(TABLE_PREFIX.'users', 'updated_by_id', $this->database_connection)) {
+			$upgrade_script .= "
+				ALTER TABLE `".TABLE_PREFIX."users` ADD COLUMN `updated_by_id` int(10) unsigned default NULL;
+			";
 		}
 
 		if($this->executeMultipleQueries($upgrade_script, $total_queries, $executed_queries, $this->database_connection)) {
@@ -171,11 +200,11 @@ class FigazzaUpgradeScript extends ScriptUpgraderScript {
 			$row = mysql_fetch_assoc($res);
 			$adapter = $row['value'];
 			if ($adapter == 'mysql') {
-				include_once ROOT . "/library/filerepository/backend/FileRepository_Backend_MySQL.class.php";
-				FileRepository::setBackend(new FileRepository_Backend_MySQL($this->database_connection, TABLE_PREFIX));
+				include_once ROOT . "/library/filerepository/backend/FileRepository_Backend_DB.class.php";
+				FileRepository::setBackend(new FileRepository_Backend_DB(TABLE_PREFIX));
 			} else {
 				include_once ROOT . "/library/filerepository/backend/FileRepository_Backend_FileSystem.class.php";
-				FileRepository::setBackend(new FileRepository_Backend_FileSystem(ROOT . "/upload", $this->database_connection, TABLE_PREFIX));
+				FileRepository::setBackend(new FileRepository_Backend_FileSystem(ROOT . "/upload", TABLE_PREFIX));
 			}
 			$res = mysql_query("SELECT `id`, `avatar_file` FROM `".TABLE_PREFIX."users` WHERE `avatar_file` <> ''", $this->database_connection);
 			$count = 0;

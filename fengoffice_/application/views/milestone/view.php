@@ -130,7 +130,7 @@ $on_list_page = false;
 						escape_single_quotes(lang('confirm delete task')) . '\')" title="' . lang('delete task') . '"><img src="' . icon_url('cancel_gray.gif') .
 						'" alt="" /></a> ';
 				} // if <br />
-	          $content .= '<span class="taskCompletedOnBy">(' .lang('completed on by', format_date($task->getCompletedOn()), $task->getCompletedBy()->getCardUrl(), clean($task->getCompletedBy()->getDisplayName())) . ')</span>
+	          $content .= '<span class="taskCompletedOnBy">(' .lang('completed on by', format_date($task->getCompletedOn()), $task->getCompletedBy() instanceof User ? $task->getCompletedBy()->getCardUrl() : '#', $task->getCompletedBy() instanceof User ? clean($task->getCompletedBy()->getDisplayName()) : lang('n/a')) . ')</span>
 				        </td> <td></td>  </tr>';
 			 } // if 
 		 } // foreach 

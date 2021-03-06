@@ -364,6 +364,22 @@ class EventController extends ApplicationController {
 				$object_controller->add_custom_properties($event);
 				$object_controller->add_reminders($event);
 				
+				if (array_var($_POST, 'popup', false)) {
+					// create default reminder
+		        	$reminder = new ObjectReminder();
+					$reminder->setMinutesBefore(15);
+					$reminder->setType("reminder_popup");
+					$reminder->setContext("start");
+					$reminder->setObject($event);
+					$reminder->setUserId(0);
+					$date = $event->getStart();
+					if ($date instanceof DateTimeValue) {
+						$rdate = new DateTimeValue($date->getTimestamp() - $minutes * 60);
+						$reminder->setDate($rdate);
+					}
+					$reminder->save();
+				}
+				
 				ApplicationLogs::createLog($event, $event->getWorkspaces(), ApplicationLogs::ACTION_ADD);
 				
 				if (array_var($_POST, 'popup', false)) {
@@ -780,10 +796,16 @@ class EventController extends ApplicationController {
 						'id' => $i++,
 						'object_id' => $comp->getId(),
 						'name' => $comp->getName(),
+						'logo_url' => $comp->getLogoUrl(),
 						'users' => array() 
 					);
 					foreach ($users as $user) {
-						$comp_data['users'][] = array('id' => $user->getId(), 'name' => $user->getDisplayName());			
+						$comp_data['users'][] = array(
+							'id' => $user->getId(),
+							'name' => $user->getDisplayName(),
+							'avatar_url'=>$user->getAvatarUrl(),
+							'mail' => $user->getEmail()
+						);			
 					}
 					$comp_array[] = $comp_data;
 				}
@@ -1007,7 +1029,7 @@ class EventController extends ApplicationController {
  *   copyright            : (C) 2001 The phpBB Group
  *   email                : support@phpbb.com
  *
- *   $Id: EventController.class.php,v 1.94 2009/06/29 14:12:41 idesoto Exp $
+ *   $Id: EventController.class.php,v 1.94.2.3 2009/07/10 20:58:01 idesoto Exp $
  *
  ***************************************************************************/
 

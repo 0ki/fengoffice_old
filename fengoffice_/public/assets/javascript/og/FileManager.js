@@ -15,7 +15,7 @@ og.FileManager = function() {
 		'dateUpdated', 'dateUpdated_today',
 		'icon', 'wsIds', 'manager', 'checkedOutById',
 		'checkedOutByName', 'mimeType', 'isModifiable',
-		'modifyUrl', 'songInfo', 'ftype', 'url'
+		'modifyUrl', 'songInfo', 'ftype', 'url', 'ix'
 	];
 
 	og.eventManager.fireEvent('hook_document_classification', this.fields);	
@@ -54,6 +54,10 @@ og.FileManager = function() {
 	}
 	this.store = og.FileManager.store;
 	this.store.addListener({messageToShow: {fn: this.showMessage, scope: this}});
+	
+	function renderDragHandle(value, p, r) {
+		return '<div class="img-grid-drag" onmousedown="Ext.getCmp(\'file-manager\').getSelectionModel().selectRow('+r.data.ix+', true);"></div>';
+	}
 	
 	function renderName(value, p, r) {
 		var result = '';
@@ -155,7 +159,7 @@ og.FileManager = function() {
 				og.getUrl('files', 'download_file', {id: r.id}), r.data.checkedOutById, r.data.checkedOutByName, lang('download'));
 			}			
 		}else{
-			actions += String.format("<a href='{0}' class='list-action ico-open-link' target='_blank'" + actionStyle + "></a>&nbsp;", r.data.url, 'public/assets/themes/default/images/16x16/openlink.png');
+			actions += String.format("<a href='{0}' class='list-action ico-open-link' target='_blank'" + actionStyle + ">.</a>&nbsp;", r.data.url, 'public/assets/themes/default/images/16x16/openlink.png');
 		}
 		
 		if (r.data.isModifiable) {
@@ -251,6 +255,15 @@ og.FileManager = function() {
 	});
 	var cm = new Ext.grid.ColumnModel([
 		sm,{
+			id: 'draghandle',
+			header: '&nbsp;',
+			width: 18,
+        	renderer: renderDragHandle,
+        	fixed:true,
+        	resizable: false,
+        	hideable:false,
+        	menuDisabled: true
+		},{
         	id: 'icon',
         	header: '&nbsp;',
         	dataIndex: 'icon',

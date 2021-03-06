@@ -4,9 +4,9 @@
 
 <?php 
 if($option_name){
-	echo "<a class='internalLink' style='padding-left:6px;float:right;' href='javascript:void(0);' onclick=\"og.closeContextHelp('".$helpGenid."','".$option_name."');\" title='" . lang('remove context help') . "'>X</a>";
+	echo "<a class='internalLink' style='padding-left:6px;float:right;' href='javascript:void(0);' onclick=\"og.closeContextHelp('".$helpGenid."','".$option_name."');\" title='" . htmlspecialchars(lang('remove context help'), ENT_QUOTES) . "'>X</a>";
 }else{
-	echo "<a class='internalLink' style='padding-left:6px;float:right;' href='javascript:void(0);' onclick=\"og.closeContextHelp('".$helpGenid."');\" title='" . lang('remove context help') . "'>X</a>";
+	echo "<a class='internalLink' style='padding-left:6px;float:right;' href='javascript:void(0);' onclick=\"og.closeContextHelp('".$helpGenid."');\" title='" . htmlspecialchars(lang('remove context help'), ENT_QUOTES) . "'>X</a>";
 }
 
 if(isset($helpDescription)){

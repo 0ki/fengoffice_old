@@ -1254,6 +1254,17 @@ og.checkUser = function (div){
 			
 		}
 		
+	}else{
+		hiddy = document.getElementById(div.id.substring(3));
+		if (hiddy){
+			hiddy.click();			
+			if (hiddy.checked){
+				div.className = "container-div checked-user";
+			}
+			else{
+				div.className = "container-div user-name";								
+			}
+		}
 	} 
 };
 og.subscribeCompany = function (div){

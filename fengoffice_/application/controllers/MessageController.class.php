@@ -228,6 +228,7 @@ class MessageController extends ApplicationController {
 					if (strlen($text) > 100) $text = substr_utf($text,0,100) . "...";
 					$object["messages"][] = array(
 					    "id" => $i,
+						"ix" => $i,
 						"object_id" => $msg->getId(),
 						"type" => 'message',
 						"title" => $msg->getTitle(),

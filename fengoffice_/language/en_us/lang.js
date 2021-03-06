@@ -331,6 +331,7 @@ addLangs({
 	'my calendar': 'My Calendar',
 	'edit event details': 'Edit event details',
 	'duration': 'Duration',
+	'this field is required': 'This field is required',
 	
 	/* Charts */
 	'reporting' : 'Reporting',
@@ -680,5 +681,10 @@ addLangs({
     'move to workspace': 'Move to workspace',
     'keep old workspaces': 'Keep workspaces',
     'move to workspace or keep old ones': 'Move to or keep old ones and add',
-    'do you want to move objects to this ws or keep old ones and add this ws': 'Do you wanto to move the selected object(s) to this workspace or keep old ones and add this workspace?'
+    'do you want to move objects to this ws or keep old ones and add this ws': 'Do you wanto to move the selected object(s) to this workspace or keep old ones and add this workspace?',
+    
+    'tag selected events': 'Tag selected events',
+    'edit selected events': 'Edit selected event',
+    'apply milestone to subtasks': 'Apply Milestone to Subtasks',
+  	'apply workspace to subtasks': 'Apply Workspace to Subtasks'
 });

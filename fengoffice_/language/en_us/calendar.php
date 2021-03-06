@@ -26,7 +26,7 @@
 	"CAL_NO_ACCOUNTS" => "This calendar does not allow accounts; only root can log on.",
 	"CAL_NO_MODIFY" => "can't modify",
 	"CAL_NO_ANYTHING" => "You don't have permission to do anything on this page",
-	"CAL_NO_WRITE", "You do not have permission to create new events",
+	"CAL_NO_WRITE" => "You do not have permission to create new events",
 	// ############ DAYS ############
 	"CAL_MONDAY" => "Monday",
 	"CAL_TUESDAY" => "Tuesday",
@@ -111,7 +111,7 @@
 	
 	"CAL_SELECT_TIME" => "Select Starting Time",
 	
-	'event invitations' => 'Event Invitations',
+	'event invitations' => 'Invited people',
 	'event invitations desc' => 'Invite selected people to this event',
 	'send new event notification' => 'Send email notifications',
 	'new event notification' => 'New event has been added',

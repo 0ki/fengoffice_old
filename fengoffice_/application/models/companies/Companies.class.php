@@ -54,7 +54,7 @@ class Companies extends BaseCompanies {
 		}
 		$wsCond = self::getWorkspaceString($projects_csv);
 		 
-		$conditions = "$ownerCond AND $wsCond";
+		$conditions = $ownerCond != '' ? "$ownerCond AND $wsCond" : $wsCond;
 		if (trim($additional_conditions) <> '') $conditions .= " AND ($additional_conditions)";
 
 		return self::findAll(array(

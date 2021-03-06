@@ -655,9 +655,10 @@ class ProjectTask extends BaseProjectTask {
 	 * @param User $by Completed by
 	 * @return null
 	 */
-	function complete(DateTimeValue $on, User $by) {
+	function complete(DateTimeValue $on, $by) {
+		$by_id = $by instanceof User ? $by->getId() : 0;
 		$this->setCompletedOn($on);
-		$this->setCompletedById($by->getId());
+		$this->setCompletedById($by_id);
 		$this->save();
 		ApplicationLogs::createLog($this, $this->getWorkspaces(), ApplicationLogs::ACTION_CLOSE);
 	} // complete
@@ -1416,6 +1417,7 @@ class ProjectTask extends BaseProjectTask {
 	function setProject($project) {
 		$this->removeFromAllWorkspaces();
 		$this->addToWorkspace($project);
+		$this->project = null;
 	}
 	
 	/**

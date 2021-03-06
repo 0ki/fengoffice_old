@@ -26,7 +26,7 @@
 	"CAL_NO_ACCOUNTS" => "No se permiten usuarios, solo administrador.",
 	"CAL_NO_MODIFY" => "no se puede modificar",
 	"CAL_NO_ANYTHING" => "No tiene permisos en esta página",
-	"CAL_NO_WRITE", "No tiene permisos para crear nuevos eventos",
+	"CAL_NO_WRITE" => "No tiene permisos para crear nuevos eventos",
 	// ############ DAYS ############
 	"CAL_MONDAY" => "Lunes",
 	"CAL_TUESDAY" => "Martes",
@@ -109,7 +109,7 @@
 	"CAL_ANONYMOUS" => "Anónimo", // (view event, view date, submit event)
 	"CAL_SELECT_TIME" => "Selecctione tiempo de inicio",
   
-  	'event invitations' => 'Invitaciones al Evento',
+  	'event invitations' => 'Personas invitadas',
 	'event invitations desc' => 'Invita al evento a las siguientes personas',
 	'send new event notification' => 'Enviar notificación vía correo electrónico',
 	'new event notification' => 'Nuevo Evento',

@@ -26,7 +26,7 @@
 	"CAL_NO_ACCOUNTS" => "日历没有许可的帐户，只有管理员可以登录。",
 	"CAL_NO_MODIFY" => "不能编辑",
 	"CAL_NO_ANYTHING" => "你没有权限在本页面作任何事。",
-	"CAL_NO_WRITE", "你没有权限创建新事件。",
+	"CAL_NO_WRITE" => "你没有权限创建新事件。",
 	// ############ DAYS ############
 	"CAL_MONDAY" => "周一",
 	"CAL_TUESDAY" => "周二",

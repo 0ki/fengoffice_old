@@ -38,6 +38,7 @@ addLangs({
 	"edit the elements content": "Editar el contenido del elemento",
 	"change font color": "Cambiar el color de fuente",
 	"change font size": "Cambiar el tamaño de la fuente",
+	"size": "Size",
 	"font family": "Tipo de fuente",
 	"generic fonts": "Fuentes genéricas",
 	"specific fonts": "Fuentes específicas",

@@ -203,11 +203,10 @@
 	
 		<div class="prop-col-div" style="width:200;"><?php echo render_object_links($object, $object->canEdit(logged_user()))?></div>
 	<?php } ?>
-    	<?php if ($object instanceof ProjectDataObject) { ?>
+    <?php if ($object instanceof ProjectDataObject) { ?>
+    	<?php if ($object->canEdit(logged_user())) { ?>
     	<script>
-  
-
-    		og.show_hide_subscribers_list2 = function(manager, id, genid) {
+			og.show_hide_subscribers_list2 = function(manager, id, genid) {
         		og.openLink(og.getUrl('object', 'add_subscribers_list', {obj_id: id, manager: manager, genid: genid}), {
         			preventPanelLoad:true,
 					onSuccess: function(data) {
@@ -230,13 +229,22 @@
         			}
         		});
     		};
-    		
+    	<?php } ?>
     	</script>
-			<div class="prop-col-div" style="width:200;"><?php echo render_object_subscribers($object)?>
-				
-				
-				<a id="<?php echo $genid.'add_subscribers_link' ?>" onclick="og.show_hide_subscribers_list2('<?php echo get_class($object->manager()) ?>', '<?php echo $object->getId() ?>', '<?php echo $genid ?>'); return false;" href="#" class="ico-add internalLink" style="background-repeat: no-repeat; padding-left: 18px; padding-bottom: 3px;"><?php echo lang('modify object subscribers')?></a>
-					</div>
+	<div class="prop-col-div" style="width:200;">
+		<?php echo render_object_subscribers($object)?>
+		<?php if ($object->canEdit(logged_user())) {
+			if (count($object->getUserWorkspaces()) > 0)
+				$onclick_fn = "og.show_hide_subscribers_list2('". get_class($object->manager()) ."', '". $object->getId() ."', '". $genid ."');";
+			else
+				$onclick_fn = "Ext.Msg.show({
+							   	title: '".lang('cant modify subscribers') . "',
+							   	msg: '".lang('this object must belong to a ws to modify its subscribers') . "',
+					   			icon: Ext.MessageBox.INFO });";
+		?>
+			<a id="<?php echo $genid.'add_subscribers_link' ?>" onclick="<?php echo $onclick_fn ?> return false;" href="#" class="ico-add internalLink" style="background-repeat: no-repeat; padding-left: 18px; padding-bottom: 3px;"><?php echo lang('modify object subscribers')?></a>
+		<?php } ?>
+	</div>
 		
 	<?php } ?>
 	<div class="prop-col-div" style="border:0px;width:200;">

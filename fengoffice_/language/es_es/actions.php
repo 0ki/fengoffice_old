@@ -42,6 +42,8 @@
 	'delete task list' => 'Eliminar tarea',
 	'reorder tasks' => 'Reordenar tareas',
 	'reorder sub tasks' => 'Reordenar sub-tareas',
+  	'apply milestone to subtasks' => 'Aplicar Hito a Subtareas',
+  	'apply workspace to subtasks' => 'Aplicar Espacio de Trabajo a Subtareas',
 	'copy task' => 'Copiar tarea',
 	'copy milestone' => 'Copiar hito',
 	'add task' => 'Añadir tarea',

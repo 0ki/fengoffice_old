@@ -26,7 +26,7 @@
 	"CAL_NO_ACCOUNTS" => "Tento kalendář neumožňuje účty; pouze root se může přihlásit.",
 	"CAL_NO_MODIFY" => "nelze upravovat",
 	"CAL_NO_ANYTHING" => "Nemáte oprávnění dělat cokoliv na této stránce",
-	"CAL_NO_WRITE", "Nemáte oprávnění pro vytvoření nové události",
+	"CAL_NO_WRITE" => "Nemáte oprávnění pro vytvoření nové události",
 	// ############ DAYS ############
 	"CAL_MONDAY" => "Pondělí",
 	"CAL_TUESDAY" => "Úterý",

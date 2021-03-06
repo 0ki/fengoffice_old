@@ -74,7 +74,7 @@ addLangs({
 	'company': 'Компания',
 	'companies': 'Компании',
 	'email': 'Почта',
-	'email': 'Почта (BETA)',
+	'email tab': 'Почта (BETA)',
 	'checkin': 'Синхронизация НА сервер',
 	'checkout': 'Синхронизация С сервера',
 	'checked out by': 'Синхронизировал с сервера {0}',
