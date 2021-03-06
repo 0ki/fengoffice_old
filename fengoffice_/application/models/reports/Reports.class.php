@@ -532,9 +532,12 @@ class Reports extends BaseReports {
 									if(($field == 'due_date' && !$object->getUseDueTime()) || ($field == 'start_date' && !$object->getUseStartTime())){
 										$dateFormat = user_config_option('date_format');
 										$tz = 0;
-									}								
+									}
 								}
-								$value = format_date($value, $dateFormat, $tz * 3600);
+								
+								$value->add('h', $tz);
+								$value = $value->format($dateFormat);
+								
 							}
 							
 							if(in_array($field, $managerInstance->getExternalColumns())){

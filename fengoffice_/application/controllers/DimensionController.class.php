@@ -596,7 +596,7 @@ class DimensionController extends ApplicationController {
 					);
 					$childs = $member_cache_list = ContactMemberCaches::getAllMembersWithCachedParentId($params);
 				}else{
-					$childs = Members::getSubmembers($mem, false, "", null, null, $offset, $new_limit);
+					$childs = Members::getSubmembers($mem, false, " AND archived_by_id=0 ", null, null, $offset, $new_limit);
 				}
 				
 				$more_nodes_left = false;

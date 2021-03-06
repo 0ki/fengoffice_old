@@ -81,7 +81,7 @@ function clear_tmp_folder($dir = null) {
 		$left = 0;
 		$deleted = 0;
 		while (false !== ($f = readdir($handle))) {
-			if ($f != "." && $f != "..") {
+			if ($f != "." && $f != ".." && $f != ".htaccess") {
 				if ($f == "CVS") {
 					$left++;
 					continue;

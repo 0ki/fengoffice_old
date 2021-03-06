@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Anis upgrade script will upgrade FengOffice 3.2.3 to FengOffice 3.3-rc
+ * Anis upgrade script will upgrade FengOffice 3.2.3 to FengOffice 3.3
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -39,7 +39,7 @@ class AnisUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('3.2.3');
-		$this->setVersionTo('3.3-rc');
+		$this->setVersionTo('3.3');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -207,8 +207,17 @@ class AnisUpgradeScript extends ScriptUpgraderScript {
 				('rebuild_contact_member_cache', '1', '1440', '1', '1', '0000-00-00 00:00:00')
 				ON DUPLICATE KEY UPDATE name=name;
 			";
+			
+			$upgrade_script .= "
+				UPDATE ".$t_prefix."contact_config_options SET default_value=0 WHERE `name`='attach_to_notification';
+			";
 		}
 		
+		if (version_compare($installed_version, '3.3') < 0) {
+			$upgrade_script .= "
+				DELETE FROM `".$t_prefix."guistate` WHERE `name` = 'contact-manager';
+			";			
+		}
 		
 		// Execute all queries
 		if(!$this->executeMultipleQueries($upgrade_script, $total_queries, $executed_queries, $this->database_connection)) {

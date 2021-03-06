@@ -1,5 +1,5 @@
 
-	About Feng Office 3.3-rc
+	About Feng Office 3.3
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -104,6 +104,24 @@
 	
 	Changelog
 	=========
+	
+	Since 3.3-rc
+	----------------
+	bugfix: contact list image width.
+	bugfix: settings icons misalignments when language is es_es or es_la
+	bugfix: search results not always shows where is the match (e.g.: if match is in a comment)
+	bugfix: template tasks parent id is not set in some cases.
+	bugfix: dont delete .htaccess when cleaning tmp folder using cron events
+	bugfix: set "attach document to notification" default value to "false"
+	bugfix: filters bug in linked objects picker.
+	bugfix: custom report dates are not correct.
+	bugfix: search results not always shows where is the match (e.g.when matched word is in a comment)
+	bugfix: report is shown in permissions screen when reports tab is disabled
+	bugfix: sharing table not updated for user when permissions changed.
+	bugfix: birthday query not correct for leap-years
+	bugfix: dont set user images to expire today.
+	bugfix: incorrect error message when user cannot upload document
+	
 	
 	Since 3.3-beta
 	----------------

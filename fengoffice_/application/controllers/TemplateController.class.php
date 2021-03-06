@@ -576,17 +576,6 @@ class TemplateController extends ApplicationController {
 				}
 											
 				$copy = $object->copyToProjectTask($instantiation_id);
-				//if is subtask
-				if($copy->getParentId() > 0){	
-					foreach ($copies as $c) {
-						if($c instanceof ProjectTask){
-							if($c->getFromTemplateObjectId() == $object->getParentId()){
-								$copy->setParentId($c->getId());								
-							}
-						}
-						
-					}					
-				}
 			}else if ($object instanceof TemplateMilestone) {
 				$copy = $object->copyToProjectMilestone();
 							
@@ -673,6 +662,20 @@ class TemplateController extends ApplicationController {
 							break;
 						}
 					}
+				}
+
+				//if is subtask we search for the project task id of the parent
+				if($c->getParentId() > 0){	
+					foreach ($copies as $cp) {
+						if($cp instanceof ProjectTask){
+							if($cp->getFromTemplateObjectId() == $c->getParentId()){
+								$c->setParentId($cp->getId());	
+								$c->save();	
+								break;						
+							}
+						}
+						
+					}					
 				}
 			}			
 		}

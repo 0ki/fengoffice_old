@@ -763,7 +763,8 @@ button.add-first-btn.no-tasks-add-task-btn {
 	cursor: pointer;
 	font-size: 13px;
 	height: 26px;
-	width:84px;
+	width:72px;
+	padding: 0px;
 	margin-left:5px;
 	margin-right: 5px;
 	background-image: none;   
