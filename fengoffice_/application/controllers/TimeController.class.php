@@ -279,12 +279,35 @@ class TimeController extends ApplicationController {
 			flash_error(lang('timeslot dnx'));
 			return;
 		}
-		
-		if(!$timeslot->canAdd(logged_user(), active_context())) {
-			flash_error(lang('no access permissions'));
-			return;
+				
+		//context permissions or members
+		$member_ids = json_decode(array_var($_POST, 'members',array()));
+		// clean member_ids
+		$tmp_mids = array();
+		foreach ($member_ids as $mid) {
+			if (!is_null($mid) && trim($mid) != "") $tmp_mids[] = $mid;
 		}
-		
+		$member_ids = $tmp_mids;
+				
+		if(empty($member_ids)){
+			if (!can_add(logged_user(), active_context(), Timeslots::instance()->getObjectTypeId())) {
+				flash_error(lang('no access permissions'));
+				ajx_current("empty");
+				return;
+			}
+		}else{
+			if (count($member_ids) > 0) {
+				$enteredMembers = Members::findAll(array('conditions' => 'id IN ('.implode(",", $member_ids).')'));
+			} else {
+				$enteredMembers = array();
+			}
+			if (!can_add(logged_user(), $enteredMembers, Timeslots::instance()->getObjectTypeId())) {
+				flash_error(lang('no access permissions'));
+				ajx_current("empty");
+				return;
+			}
+		}
+					
 		try {
 			$hoursToAdd = array_var($timeslot_data, 'hours',0);
 			$minutes = array_var($timeslot_data, 'minutes',0);

@@ -227,7 +227,15 @@
     	return $this->setColumnValue('can_update_other_users_invitations', $value);
     }
     
-  	function getSettedPermissions(){
+    function getCanLinkObjects(){
+    	return $this->getColumnValue('can_link_objects');
+    }
+    
+    function setCanLinkObjects($value){
+    	return $this->setColumnValue('can_link_objects', $value);
+    }
+    
+    function getSettedPermissions(){
 		$columns=$this->getColumns();
 		$permissions=array();
 		foreach ($columns as $column){

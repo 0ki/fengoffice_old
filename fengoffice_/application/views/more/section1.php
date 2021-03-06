@@ -180,7 +180,7 @@ if (config_option('getting_started_step') < 99 && !$more_settings_expanded) {
 	
 	if (can_manage_security(logged_user()) && Plugins::instance()->isActivePlugin('income')) {
 		$links[] = array(
-				'ico' => 'ico-large-files',
+				'ico' => 'ico-large-income',
 				'url' => get_url('income', 'administration'),
 				'name' => lang('income'),
 				'extra' => '',

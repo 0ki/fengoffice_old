@@ -33,7 +33,7 @@
 		foreach ($users as $user) {
 			$rel_object = $timeslot->getRelObject();
 			$is_assigned = ($rel_object instanceof ProjectTask && $rel_object->getAssignedToContactId() == $user->getId());
-			if ($is_assigned || can_add($user, active_context(), Timeslots::instance()->getObjectTypeId())) {
+			if ($is_assigned || can_add($user, $rel_object->getMembers(), Timeslots::instance()->getObjectTypeId())) {
 				$tmp_users[] = $user;
 			}
 		}

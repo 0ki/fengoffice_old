@@ -443,18 +443,15 @@ class ObjectController extends ApplicationController {
 						($custom_property->getType() == 'text' || $custom_property->getType() == 'list' || $custom_property->getType() == 'numeric')){
 						
 						$name = str_replace_first("'", "\'", $custom_property->getName());
-						$searchable_object = SearchableObjects::findOne(array("conditions" => "`rel_object_id` = ".$object->getId()." AND `column_name` = '$name'"));
-						if (!$searchable_object)
-							$searchable_object = new SearchableObject();
-						
-						if (is_array($value))
+						if (is_array($value)) {
 							$value = implode(', ', $value);
-							
-						$searchable_object->setRelObjectId($object->getId());
-						$searchable_object->setColumnName($name);
-						$searchable_object->setContent($value);
+						}
 						
-						$searchable_object->save();
+						$sql = "INSERT INTO ".TABLE_PREFIX."searchable_objects (rel_object_id, column_name, content)
+						VALUES ('".$object->getId()."', '".$name."', '".$value."')
+						ON DUPLICATE KEY UPDATE content='".$value."'";
+							
+						DB::execute($sql);
 					}
 				}
 			}

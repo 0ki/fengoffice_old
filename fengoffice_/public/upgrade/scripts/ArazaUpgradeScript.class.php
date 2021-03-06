@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Araza upgrade script will upgrade FengOffice 3.1 to FengOffice 3.1.3
+ * Araza upgrade script will upgrade FengOffice 3.1 to FengOffice 3.1.4.1
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -39,7 +39,7 @@ class ArazaUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('3.1');
-		$this->setVersionTo('3.1.3');
+		$this->setVersionTo('3.1.4.1');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -159,6 +159,34 @@ class ArazaUpgradeScript extends ScriptUpgraderScript {
 				UPDATE ".$t_prefix."max_system_permissions SET can_see_assigned_to_other_tasks=1 
 				WHERE permission_group_id IN (
 						SELECT id FROM ".$t_prefix."permission_groups WHERE `type`='roles' AND name IN ('Collaborator Customer')
+				);
+			";
+		}
+		
+		if (version_compare($installed_version, '3.1.4') < 0) {
+			$upgrade_script .= "
+				ALTER TABLE `".$t_prefix."system_permissions`
+				ADD COLUMN `can_link_objects` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0;
+				
+				
+				UPDATE `".$t_prefix."system_permissions` SET `can_link_objects`=1 WHERE `permission_group_id` IN (
+					SELECT id FROM `".$t_prefix."permission_groups` WHERE `type`='roles' AND `name` IN ('Super Administrator','Administrator','Manager','Executive','Internal Collaborator','Collaborator Customer','External Collaborator')
+				);
+				
+				
+				UPDATE `".$t_prefix."system_permissions` SET `can_link_objects`=1 WHERE `permission_group_id` IN (
+					SELECT permission_group_id FROM `".$t_prefix."contacts` WHERE `user_type` IN (
+						SELECT id FROM `".$t_prefix."permission_groups` WHERE `type`='roles' AND `name` IN ('Super Administrator','Administrator','Manager','Executive','Internal Collaborator','Collaborator Customer','External Collaborator')
+					)
+				);
+				
+				
+				ALTER TABLE `".$t_prefix."max_system_permissions`
+				 ADD COLUMN `can_link_objects` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0;
+				
+				
+				UPDATE `".$t_prefix."max_system_permissions` SET `can_link_objects`=1 WHERE `permission_group_id` IN (
+					SELECT id FROM `".$t_prefix."permission_groups` WHERE `type`='roles' AND `name` IN ('Super Administrator','Administrator','Manager','Executive','Internal Collaborator','Collaborator Customer','External Collaborator')
 				);
 			";
 		}

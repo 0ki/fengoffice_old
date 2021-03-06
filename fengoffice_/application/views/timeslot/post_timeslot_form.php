@@ -22,7 +22,7 @@
 		$tmp_users = array();
 		foreach ($users as $user) {
 			$is_assigned = ($timeslot_form_object instanceof ProjectTask && $timeslot_form_object->getAssignedToContactId() == $user->getId());
-			if ($is_assigned || can_add($user, active_context(), Timeslots::instance()->getObjectTypeId())) {
+			if ($is_assigned || can_add($user, $timeslot_form_object->getMembers(), Timeslots::instance()->getObjectTypeId())) {
 				$tmp_users[] = $user;
 			}
 		}

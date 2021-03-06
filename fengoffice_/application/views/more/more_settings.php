@@ -65,7 +65,7 @@ Hook::fire('render_administration_icons', null, $icons);
 
 if (can_manage_security(logged_user()) && Plugins::instance()->isActivePlugin('income')) {
 	$icons[] = array(
-		'ico' => 'ico-large-files',
+		'ico' => 'ico-large-income',
 		'url' => get_url('income', 'administration'),
 		'name' => lang('income'),
 		'extra' => '',

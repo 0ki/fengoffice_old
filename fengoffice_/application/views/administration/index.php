@@ -122,7 +122,7 @@ if (can_manage_dimension_members(logged_user())) {
 
 if (can_manage_security(logged_user()) && Plugins::instance()->isActivePlugin('income')) {
 	$icons[] = array(
-		'ico' => 'ico-large-files',
+		'ico' => 'ico-large-invoice',
 		'url' => get_url('income', 'administration'),
 		'name' => lang('income'),
 		'extra' => '',

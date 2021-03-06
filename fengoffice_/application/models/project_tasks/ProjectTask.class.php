@@ -127,7 +127,9 @@ class ProjectTask extends BaseProjectTask {
 	 * @return boolean
 	 */
 	function setAssignedBy($user) {
-		$this->setAssignedById($user->getId());
+		if ($user instanceof Contact) {
+			$this->setAssignedById($user->getId());
+		}
 	}
 
 	/**
@@ -275,9 +277,22 @@ class ProjectTask extends BaseProjectTask {
 	 * @return boolean
 	 */
 	function canView(Contact $user) {
-		$other_perm_conditions = SystemPermissions::userHasSystemPermission(logged_user(), 'can_see_assigned_to_other_tasks') || $this->getAssignedById() == logged_user()->getId();
+		$other_perm_conditions = SystemPermissions::userHasSystemPermission($user, 'can_see_assigned_to_other_tasks') || $this->getAssignedById() == $user->getId();
 		return can_read_sharing_table($user, $this->getId()) && $other_perm_conditions;
 	} // canView
+	
+	/**
+	 * Return true if $user can link this task
+	 *
+	 * @param Contact $user
+	 * @return boolean
+	 */
+	function canLinkObject(Contact $user) {		
+		if(can_read_sharing_table($user, $this->getId())){
+			return can_link_objects($user);
+		}
+		return parent::canLinkObject();		
+	}
 	
 	/**
 	 * Private function to check whether a task is asigned to user or company user
@@ -1272,22 +1287,17 @@ class ProjectTask extends BaseProjectTask {
 			DB::execute($sql);
 		}
 		
-		$tasks = $this->getSubTasks();
-		if(is_array($tasks)) {
-			$task_ids = array();
-			foreach($tasks as $task) {
-				$task_ids[] = $task->getId();
+		$old_parent_id = $old_me->getParentId();
+		if ($this->isNew() || $old_parent_id != $new_parent_id) {
+			//update Depth And Parents Path for subtasks
+			$subtasks = $this->getSubTasks();
+			if(is_array($subtasks)) {
+				foreach($subtasks as $subtask) {
+					$subtask->updateDepthAndParentsPath($this->getId());
+					$subtask->save();
+				} // if
 			} // if
-		} // if
-		
-		//update Depth And Parents Path for subtasks
-		$subtasks = $this->getSubTasks();
-		if(is_array($subtasks)) {
-			foreach($subtasks as $subtask) {
-				$subtask->updateDepthAndParentsPath($this->getId());
-				$subtask->save();
-			} // if
-		} // if
+		}
 
 		return true;
 
@@ -1306,6 +1316,9 @@ class ProjectTask extends BaseProjectTask {
 				$parents_ids[] = $parent->getId();
 				if($parent->getParentId() > 0){
 					$parent = $parent->getParent();
+					if (!$parent instanceof ProjectTask) {
+						$stop = true;
+					}
 				}else{
 					$stop = true;
 				}
@@ -1528,12 +1541,14 @@ class ProjectTask extends BaseProjectTask {
 	
 	
 	
-	function apply_members_to_subtasks($member_ids, $recursive = false) {
-		$object_controller = new ObjectController();
+	function apply_members_to_subtasks($members, $recursive = false) {
+		if (!is_array($members) || count($members)==0) return;
+		
 		foreach ($this->getSubTasks() as $subtask) {
-			$object_controller->add_to_members($subtask, $member_ids);
+			$subtask->addToMembers($members);
+			Hook::fire ('after_add_to_members', $subtask, $members);
 			if ($recursive) {
-				$subtask->apply_members_to_subtasks($member_ids, $recursive);
+				$subtask->apply_members_to_subtasks($members, $recursive);
 			}
 		}
 	}

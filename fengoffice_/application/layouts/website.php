@@ -526,7 +526,7 @@ og.contextManager.construct();
 og.objPickerTypeFilters = [];
 <?php
 	$obj_picker_type_filters = ObjectTypes::findAll(array("conditions" => "`type` = 'content_object'
-		AND (plugin_id IS NULL OR plugin_id IN (SELECT distinct(id) FROM ".TABLE_PREFIX."plugins WHERE is_installed = 1 AND is_activated = 1 ))
+		AND (plugin_id IS NULL OR plugin_id = 0 OR plugin_id IN (SELECT distinct(id) FROM ".TABLE_PREFIX."plugins WHERE is_installed = 1 AND is_activated = 1 ))
 		AND `name` <> 'file revision' AND name <> 'template_task' AND name <> 'template_milestone' AND `id` NOT IN (
 			SELECT `object_type_id` FROM ".TabPanels::instance()->getTableName(true)." WHERE `enabled` = 0
 		)  OR `type` = 'comment' OR `name` = 'milestone'"));

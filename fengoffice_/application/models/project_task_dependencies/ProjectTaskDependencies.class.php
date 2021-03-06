@@ -11,6 +11,28 @@ class  ProjectTaskDependencies extends BaseProjectTaskDependencies {
 		return self::findAll(array('conditions' => '`task_id` = ' . $task_id . " AND 0 = (SELECT `trashed_by_id` FROM `".TABLE_PREFIX."objects` WHERE `id`=`previous_task_id`)"));
 	}
 	
+	static function getDependenciesForTaskOnlyPendingIds($task_id) {
+		$ids = array();
+		// Build Main SQL
+		$sql = "
+			SELECT `previous_task_id` FROM `".TABLE_PREFIX."project_task_dependencies` AS ptd
+			LEFT JOIN `".TABLE_PREFIX."project_tasks` AS e ON ptd.`task_id` = e.`object_id`
+			WHERE `task_id` = ".$task_id." AND `e`.`completed_on` = ".DB::escape(EMPTY_DATETIME)."  
+					AND 0 = (SELECT `trashed_by_id` FROM `".TABLE_PREFIX."objects` WHERE `id`=`previous_task_id`)							
+	    	
+		";
+			
+		// Execute query and build the resultset
+		$rows = DB::executeAll($sql);
+		
+		if(count($rows)){
+			foreach ($rows as $row){
+				$ids[] = $row['previous_task_id'];
+			}
+		}	
+		return $ids;
+	}
+	
 	//this function not return temporal dependencies from temporal template tasks
 	static function getDependenciesForTemplateTask($task_id) {
 		return self::findAll(array('conditions' => '`task_id` = ' . $task_id . " AND 0 = (SELECT `trashed_by_id` FROM `".TABLE_PREFIX."objects` WHERE `id`=`previous_task_id`) AND EXISTS(SELECT `template_id` FROM `".TABLE_PREFIX."template_objects` tem WHERE tem.`object_id`=`previous_task_id`)"));

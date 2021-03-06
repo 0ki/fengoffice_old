@@ -2072,10 +2072,38 @@ function instantiate_template_task_parameters(TemplateTask $object, ProjectTask 
 				// Is parametric
 				$dateParam = substr($value, 1, strpos($value, '}') - 1);
 				if ($dateParam == 'task_creation') {
-					$date = DateTimeValueLib::now();
-					$date = $date->add('s', logged_user()->getTimezone()*3600);
+					$date = DateTimeValueLib::now();					
 				} else {
-					$date = DateTimeValueLib::dateFromFormatAndString(user_config_option('date_format'), $parameterValues[$dateParam]);
+					$date = getDateValue($parameterValues[$dateParam]);
+					if (!$date instanceof DateTimeValue) {				
+						$date = DateTimeValueLib::now();						
+					}
+						
+					if (config_option('use_time_in_task_dates') && $propName == "due_date"){
+						$copy->setUseDueTime(1);
+						
+						$hour_min = getTimeValue(user_config_option('work_day_end_time'));
+						$hour_min['hours'];
+						$hour_min['mins'];
+						
+						$date->setHour($hour_min['hours']);
+						$date->setMinute($hour_min['mins']);
+						
+						$date = $date->add('s', -logged_user()->getTimezone()*3600);										
+					}
+					if (config_option('use_time_in_task_dates') && $propName == "start_date"){
+						$copy->setUseStartTime(1);
+						
+						$hour_min = getTimeValue(user_config_option('work_day_start_time'));
+						$hour_min['hours'];
+						$hour_min['mins'];
+						
+						$date->setHour($hour_min['hours']);
+						$date->setMinute($hour_min['mins']);
+						
+						$date = $date->add('s', -logged_user()->getTimezone()*3600);						
+					}
+					
 				}
 	
 				$dateUnit = substr($value, strlen($value) - 1); // d, w or m (for days, weeks or months)
@@ -2084,7 +2112,6 @@ function instantiate_template_task_parameters(TemplateTask $object, ProjectTask 
 				}
 				$dateNum = (int) substr($value, strpos($value,$operator), strlen($value) - 2);
 	
-				$date = new DateTimeValue($date->getTimestamp() - logged_user()->getTimezone()*3600);// set date to GMT 0
 				$value = $date->add($dateUnit, $dateNum);
 			}else{
 				$value = DateTimeValueLib::dateFromFormatAndString(user_config_option('date_format'), $value);

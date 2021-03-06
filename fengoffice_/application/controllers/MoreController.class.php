@@ -336,7 +336,22 @@ class MoreController extends ApplicationController {
 		}
 		
 		$dims = json_decode(array_var($_REQUEST, 'dims'), true);
-		
+				
+		//check active dims 
+		$at_least_one_dim_enabled = false;
+		foreach ($dims as $dim_id => $enabled) {
+			if($enabled == true){
+				$at_least_one_dim_enabled = true;
+				break;
+			}
+		}
+
+		if (!$at_least_one_dim_enabled) {
+		 	flash_error(lang('at least one dimension must be selected'));
+			ajx_current("empty");
+			return;
+		}
+				
 		$root_dids = explode (",", user_config_option('root_dimensions', null, logged_user()->getId()));
 		$update_root_dimensions = false;
 		

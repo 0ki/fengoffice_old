@@ -181,17 +181,18 @@ class TimeslotController extends ApplicationController {
 		$timeslot->close();
 		$timeslot->setFromAttributes($timeslot_data);
 		
-		/* Billing */
-/*		$billing_category_id = logged_user()->getDefaultBillingId();
-		$project = $object->getProject();
-		if ($billing_category_id) {
+		//Billing
+		$user = Contacts::findById(array_var($timeslot_data, 'contact_id', logged_user()->getId()));
+		$billing_category_id = $user->getDefaultBillingId();
+		$bc = BillingCategories::findById($billing_category_id);
+		if ($bc instanceof BillingCategory) {
 			$timeslot->setBillingId($billing_category_id);
-			$hourly_billing = $project->getBillingAmount($billing_category_id);
+			$hourly_billing = $bc->getDefaultValue();
 			$timeslot->setHourlyBilling($hourly_billing);
-			$timeslot->setFixedBilling($hourly_billing * $timeslot->getMinutes() / 60);
+			$timeslot->setFixedBilling(number_format($hourly_billing * $hours, 2));
 			$timeslot->setIsFixedBilling(false);
 		}
-*/
+		
 		try{
 			DB::beginWork();
 			if (array_var($_GET, 'cancel') && array_var($_GET, 'cancel') == 'true')

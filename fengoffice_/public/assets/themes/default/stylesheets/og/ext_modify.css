@@ -561,3 +561,14 @@ div#menu-panel .x-panel-tbar-noheader .x-toolbar, div#menu-panel .x-panel-mc .x-
 .x-panel-tl .x-panel-icon, .x-window-tl .x-panel-icon.ico-calendar{
 	padding-left: 25px!important;
 }
+
+.x-grid-group-hd {
+    background-color: #eeeeee;
+    border-bottom: 1px solid #cccccc;
+    border-top: 1px solid #cccccc;
+    cursor: pointer;
+    padding: 5px 2px;
+}
+.x-grid-group-hd div {
+    font: bold 13px "Open Sans",Arial,sans-serif;
+}

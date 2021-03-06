@@ -617,6 +617,9 @@ og.showHidePermissionsRadioButtonsByRole = function(genid, dim_id, role_id) {
 		
 		if (max_perms[ot] && max_perms[ot].can_write) $("#" + genid + "rg_2_" + dim_id + '_' + ot).show();
 		else $("#" + genid + "rg_2_" + dim_id + '_' + ot).hide();
+		
+		if (max_perms[ot]) $("#" + genid + "rg_1_" + dim_id + '_' + ot).show();
+		else $("#" + genid + "rg_1_" + dim_id + '_' + ot).hide();
 	}
 }
 
@@ -1103,6 +1106,9 @@ og.userPermissions.showHidePermissionsRadioButtonsByRole = function(genid, role_
 		
 		if (max_perms[ot] && max_perms[ot].can_write) $("#" + genid + "rg_2_" + ot).show();
 		else $("#" + genid + "rg_2_" + ot).hide();
+		
+		if (max_perms[ot]) $("#" + genid + "rg_1_" + dim_id + '_' + ot).show();
+		else $("#" + genid + "rg_1_" + dim_id + '_' + ot).hide();
 	}
 }
 

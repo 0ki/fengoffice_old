@@ -136,7 +136,14 @@ class ProjectTasks extends BaseProjectTasks {
 			"raw_data" => $raw_data,
 		));
 		
-		return $result->objects;
+		$tasks = array();
+		foreach ($result->objects as $task) {
+			if ($task instanceof ProjectTask && $task->canView(logged_user())) {
+				$tasks[] = $task;
+			}
+		}
+		
+		return $tasks;
 	} // getDayTasksByUser
 	
 
@@ -544,6 +551,15 @@ class ProjectTasks extends BaseProjectTasks {
 			$tmp_members = Members::findAll(array("conditions" => "id IN (".implode(',', $member_ids).")"));
 		}
 		$result['can_add_timeslots'] = can_add_timeslots(logged_user(), $tmp_members);
+		
+		//tasks dependencies
+		if (config_option('use tasks dependencies')) {
+			//get all dependant tasks ids, not completed yet
+			$pending_tasks_ids = ProjectTaskDependencies::getDependenciesForTaskOnlyPendingIds($tmp_task->getId());
+			
+			//get the total of previous tasks 
+			$result['dependants'] = $pending_tasks_ids;		
+		}
 		
 		return $result;
 	}

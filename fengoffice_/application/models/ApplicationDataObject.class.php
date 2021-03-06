@@ -654,7 +654,12 @@ abstract class ApplicationDataObject extends DataObject {
 	 */
 	function canLinkObject(Contact $user) {
 		if(!$this->isLinkableObject()) return false;
-		return $this->canEdit($user);
+				
+		if(can_link_objects($user)){
+			return $this->canEdit($user);
+		}else{
+			return false;
+		}
 	} // canLinkObject
 
 	/**

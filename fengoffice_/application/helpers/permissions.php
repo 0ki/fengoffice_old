@@ -24,6 +24,7 @@
   	 * @return boolean
   	 */
   	function can_manage_contacts(Contact $user, $include_groups = true){
+  		if($user->isAdministrator()) return true;
   		$can_manage_contacts = false;
 		$pg_ids = $user->getPermissionGroupIds();
 		if (count($pg_ids) > 0) {
@@ -106,8 +107,15 @@
 		return $user->isAdminGroup();
   	}
   	
-
-  	
+  	/**
+  	 * Returns whether a user can link objects.
+  	 *
+  	 * @param Contact $user
+  	 * @return boolean
+  	 */
+  	function can_link_objects(Contact $user){
+  		return SystemPermissions::userHasSystemPermission($user, 'can_link_objects');
+  	}  	
 	
 	/**
 	 * Return true if $user can add an object of type $object_type_id in $member. False otherwise.
@@ -186,6 +194,8 @@
 			$dimensions_in_context[$id]= false;
 		}
 		
+		$enabled_dimensions = config_option('enabled_dimensions');
+		
 		$contact_pg_ids = ContactPermissionGroups::getPermissionGroupIdsByContactCSV($user->getId(),false);
 		if (is_array($context)) {
 			foreach($context as $selection){
@@ -193,6 +203,12 @@
 				if ($sel_dimension instanceof Dimension && $sel_dimension->getOptions(1) && isset($sel_dimension->getOptions(1)->hidden) && $sel_dimension->getOptions(1)->hidden ) continue;
 				//$can_add = false;
 				if ($selection instanceof Member){
+					
+					$dimension = $selection->getDimension();
+					if(!$dimension->getDefinesPermissions() || !in_array($dimension->getId(), $enabled_dimensions)){
+						continue;
+					}
+					
 					$membersInContext++;
 					if (can_add_to_member($user, $selection, $context, $object_type_id)){
 						//if ($no_required_dimensions) return true;

@@ -12,7 +12,7 @@
   		private static $permission_group_ids_cache = array();
   	
   		static function userHasSystemPermission(Contact $user, $system_permission){
-  			if($user->isAdministrator()) return true;
+  			if($user instanceof Contact && $user->isAdministrator()) return true;
   			
   			if (array_var(self::$permission_cache, $user->getId())) {
   				if (array_key_exists($system_permission, self::$permission_cache[$user->getId()])) {

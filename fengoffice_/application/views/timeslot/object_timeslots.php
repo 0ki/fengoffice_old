@@ -15,7 +15,7 @@
     		<?php } ?>
     	</tr></table> 
     </div>
-		<table style="width:100%;max-width:700px;margin-bottom:10px;" class="objectTimeslots" id="<?php echo $random ?>objectTimeslots" style="<?php echo $countTimeslots > 0? '':'display:none'?>">
+		<table style="width:100%;max-width:800px;margin-bottom:10px;" class="objectTimeslots" id="<?php echo $random ?>objectTimeslots" style="<?php echo $countTimeslots > 0? '':'display:none'?>">
 
 <?php $counter = 0;
 		foreach($timeslots as $timeslot) {
@@ -51,7 +51,7 @@
 					}
 				?>
 			</td>
-			<td align="right">
+			<td align="right" <?php if(count($options)) echo 'style="min-width:120px;"' ?>>
 			<?php if(count($options)) { ?>
 					<?php echo implode(' | ', $options) ?>
 			<?php } // if ?>

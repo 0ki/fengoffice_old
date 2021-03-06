@@ -135,19 +135,18 @@ class Timeslot extends BaseTimeslot {
 			$task->calculatePercentComplete();
 		}
     	
-    	//FIXME: Set billing info
-/*		if ($this->getRelObject() instanceof ContentDataObject && $this->getRelObject()->getProject() instanceof Project){
-			$hours = $this->getMinutes() / 60;
-	    	$user = $this->getUser();
-			$billing_category_id = $user->getDefaultBillingId();
-			$project = $this->getRelObject()->getProject();
+    	//Billing
+		$user = Contacts::findById(array_var($timeslot_data, 'contact_id', logged_user()->getId()));
+		$billing_category_id = $user->getDefaultBillingId();
+		$bc = BillingCategories::findById($billing_category_id);
+		if ($bc instanceof BillingCategory) {
 			$this->setBillingId($billing_category_id);
-			$hourly_billing = $project->getBillingAmount($billing_category_id);
+			$hourly_billing = $bc->getDefaultValue();
 			$this->setHourlyBilling($hourly_billing);
-			$this->setFixedBilling(round($hourly_billing * $hours, 2));
+			$this->setFixedBilling(number_format($hourly_billing * $hours, 2));
 			$this->setIsFixedBilling(false);
 		}
-*/
+		
 		if ($description)
 			$this->setDescription($description);
     }

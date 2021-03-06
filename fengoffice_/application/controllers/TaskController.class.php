@@ -2020,25 +2020,7 @@ class TaskController extends ApplicationController {
 		));
         tpl_assign('tasks', $tasks);
         
-        if (config_option('use tasks dependencies')) {
-        	$dependency_count = array();
-        	if (is_array($tasks)) {
-		        foreach ($tasks as $task) {
-					$previous = 0;
-					$ptasks = ProjectTaskDependencies::getDependenciesForTask($task['id']);
-					foreach ($ptasks as $pdep) {
-						$ptask = ProjectTasks::findById($pdep->getPreviousTaskId());
-						if ($ptask instanceof ProjectTask && !$ptask->isCompleted()) $previous++;
-					}
-					$dependants = ProjectTaskDependencies::getDependantsForTask($task['id']);
-					$dep_csv = "";
-					foreach ($dependants as $dep) $dep_csv .= ($dep_csv==""?"":",") . $dep->getTaskId();
-					$dependency_count[] = array('id' => $task['id'], 'count' => $previous, 'dependants' => $dep_csv);
-				}
-        	}
-			tpl_assign('dependency_count', $dependency_count);
-        }
-        
+       
 		if (!$isJson){
 			
 			$all_templates = COTemplates::findAll(array('conditions' => '`trashed_by_id` = 0 AND `archived_by_id` = 0'));
@@ -2598,8 +2580,9 @@ class TaskController extends ApplicationController {
 					$st = ProjectTasks::instance()->findById($stdata['id']);
 					// subtask has been deleted, delete object and continue with next subtask
 					if ($stdata['deleted'] == 1 && $st instanceof ProjectTask) {
-						$st->trash(false);
-						$st->save();
+						/*$st->trash(false);
+						$st->save();*/
+						DB::execute("UPDATE ".TABLE_PREFIX."objects SET trashed_by_id=".logged_user()->getId().", trashed_on=NOW() WHERE id=".$st->getId());
 						$to_log['trash'][] = $st;
 						continue;
 					}
@@ -3079,7 +3062,9 @@ class TaskController extends ApplicationController {
 				}
 				
 
-				$task->apply_members_to_subtasks($member_ids, true);
+				if (!is_array($member_ids) || count($member_ids) == 0) $member_ids = array(0);
+				$members = Members::findAll(array('conditions' => "id IN (".implode(',', $member_ids).")"));
+				$task->apply_members_to_subtasks($members, true);
 
 				// apply values to subtasks
 				$assigned_to = $task->getAssignedToContactId();
@@ -3173,10 +3158,7 @@ class TaskController extends ApplicationController {
 				//for calculate member status we save de task again after the object have the members
 				$task->save();
 
-				DB::commit();
-				
 				// save subtasks added in 'subtasks' tab
-				DB::beginWork();
 				$sub_tasks_to_log = $this->saveSubtasks($task, array_var($task_data, 'subtasks'), $member_ids);
 				DB::commit();
 				

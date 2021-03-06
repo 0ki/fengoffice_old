@@ -41,7 +41,8 @@ og.eventManager.addListener('reload current panel',
 og.eventManager.addListener('reload tab panel', 
  	function (name){
  		if (name) {
-			Ext.getCmp(name).reset();
+			var el = Ext.getCmp(name);
+			if (el) el.reset();
   		}
  	}
 );

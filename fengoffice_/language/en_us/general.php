@@ -105,7 +105,7 @@ return array(
         'state' => 'State',
         'zipcode' => 'Zipcode',
         'country' => 'Country',
-        'contact' => 'Person',
+        'contact' => 'Contact',
         'pagination page' => 'Page:',
         'pagination first' => 'First page',
         'pagination previous' => 'Previous page',

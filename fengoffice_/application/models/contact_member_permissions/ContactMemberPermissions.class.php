@@ -31,7 +31,9 @@ class ContactMemberPermissions extends BaseContactMemberPermissions {
 		}
 		
 		$ws_ot = ObjectTypes::findByName('workspace')->getId();
+		$comment_ot = ObjectTypes::findByName('comment')->getId();
 		$disabled_ots[] = $ws_ot;
+		$disabled_ots[] = $comment_ot;
 		$disabled_ot_cond = "";
 		if (count($disabled_ots) > 0) {
 			$disabled_ot_cond = "AND object_type_id NOT IN (".implode(",",$disabled_ots).")";

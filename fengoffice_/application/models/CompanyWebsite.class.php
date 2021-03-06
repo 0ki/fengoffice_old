@@ -111,7 +111,7 @@ final class CompanyWebsite {
                 $contact = $contact[0];
             }else{
                 $username = urldecode($_REQUEST['username']);
-                $password = urldecode($_REQUEST['password']);
+                $password = $_REQUEST['password'];
                 if (preg_match(EMAIL_FORMAT, $username)) {
                         $contact = Contacts::getByEmail($username);
                 } else {

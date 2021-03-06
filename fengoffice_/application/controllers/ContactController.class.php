@@ -3628,6 +3628,15 @@ class ContactController extends ApplicationController {
 			foreach ($filters as $col => $val) {
 				if (Contacts::instance()->columnExists($col)) {
 					$extra_conditions .= " AND ".DB::escapeField($col)." = ".DB::escape($val);
+				} else {
+					if ($col == 'is_user') {
+						$extra_conditions .= " AND `user_type`". ($val==1 ? " > 0" : " = 0");
+					} else if ($col == 'has_permissions') {
+						$extra_conditions .= " AND `user_type`>0 AND EXISTS(
+							SELECT * FROM ".TABLE_PREFIX."contact_member_permissions cmp 
+							WHERE cmp.permission_group_id IN (SELECT x.permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups x WHERE x.contact_id=o.id and member_id='$val') 
+						)";
+					}
 				}
 			}
 		}

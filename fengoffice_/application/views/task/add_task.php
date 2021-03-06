@@ -932,7 +932,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 			if (!$task->isNew()) {
 				$subtasks = ProjectTasks::findAll(array('conditions' => "parent_id=".$task->getId()." AND trashed_by_id=0"));
 				foreach ($subtasks as $st) {
-					$st_name = clean(str_replace_first("'", "\'", $st->getObjectName()));
+					$st_name = clean(str_replace("'", "\'", $st->getObjectName()));
 					?>
 					ogTasks.drawAddSubTaskInputs('<?php echo $genid ?>', {id:'<?php echo $st->getId()?>', name:'<?php echo $st_name?>', assigned_to:'<?php echo $st->getAssignedToContactId()?>'});
 			<?php

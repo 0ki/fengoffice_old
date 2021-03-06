@@ -154,7 +154,7 @@ addLangs({
 	/* dashboard */
 	'dashboard': 'Dashboard',
 	'upload file': 'Upload a file',
-	'contact': 'Person',
+	'contact': 'Contact',
 	'event': 'Event',
 	'task': 'Task',
 	'milestone': 'Milestone',
@@ -325,7 +325,6 @@ addLangs({
 	'milestone': 'Milestone',
 	'emailunclassified': 'Email',
 	'file': 'File',
-	'contact': 'Person',
 	'event': 'Event',
 	
 	'debug': 'Debug',

@@ -543,6 +543,8 @@
 	'can_manage_billing' => 'Puede manejar facturación',
 	'can_manage_billing description'=>'Si este permiso está marcado el usuario podrá modificar las configuraciones de facturación.',
 	'can_view_billing' => 'Puede ver facturación',
+	'can_link_objects' => 'Puede vincular objetos',
+	'can_link_objects description' => 'Si este permiso está marcado el usuario será capaz de vincular y desvincular objetos',
 	'user config option name contacts_per_page' => 'Contacts por página',
 	'user config option name view_mail_attachs_expanded' => 'Mostrar los documentos adjuntos expandidos al acceder a un correo',
 	'user config option desc view_mail_attachs_expanded' => '',

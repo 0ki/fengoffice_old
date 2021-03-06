@@ -1,5 +1,5 @@
 
-	About Feng Office 3.1.3
+	About Feng Office 3.1.4.1
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -104,6 +104,58 @@
 	
 	Changelog
 	=========
+	
+	Since 3.1.4
+	----------------
+	bugfix: performance when saving tasks, if it has subtasks can produce timeout.
+	bugfix: if role cannot read object type the permission radio button is not hidden.	
+	
+	Since 3.1.3.8
+	----------------
+	feature: System permission to let some users link objects.
+	
+	Since 3.1.3.7
+	----------------	
+	bugfix: notify myself when uploading files.
+	
+	Since 3.1.3.6
+	----------------
+	bugfix: only context permissions are checked when adding a timeslot.
+	bugfix: can_add function is checking for disabled dimensions.
+	
+	Since 3.1.3.5
+	----------------		
+	bugfix: missing linked objects types on the selctor.
+	bugfix: add billing on timeslots when select stop clock on a task. 
+	bugfix: repeat event by fixed day is showing wrong dates for some events.
+	bugfix: only context permissions are checked when editing a timeslot.
+	bugfix: multiple file upload transaction broken by notifications.
+	
+	Since 3.1.3.4
+	----------------	
+	bugfix: at least one dimension must be selected on system modules.
+	
+	Since 3.1.3.3
+	----------------	
+	bugfix: add timeslot on tasks for user with permissions on the task context.
+	
+	Since 3.1.3.2
+	----------------
+	bugfix: when instantiating templates if subtask is instantiated before parent task the instantiation fails because parent instance is not found
+	
+	Since 3.1.3.1
+	----------------
+	bugfix: show tasks dependencies on gantt.
+	bugfix: in edit task form, not all ' are escaped when drawing subtasks form.
+	bugfix: task reminders are not sent for non administrators, task canView function was asking for logged user instead of using the user parameter.
+	
+	Since 3.1.3
+	----------------
+	bugfix: Mobile login fixed.
+	bugfix: dates variables on tasks templates timezone error.
+	bugfix: can_manage_contacts is checking permissions for super admins
+	bugfix: logo_empresa.png limit size
+	bugfix: cannot save "can_edit_completed_payments" system permission	
 	
 	Since 3.1.2.8
 	----------------
@@ -366,7 +418,7 @@
 	Since 2.7.1.9
 	----------------
 	feature: Several improvements in user interface, experience and looks.
-	feature: New “Getting Started Wizard”.
+	feature: New ���Getting Started Wizard���.
 	feature: New workspaces selector.
 	feature: Improved user creation and management.
 	feature: Improved Task  Management.
@@ -1210,14 +1262,14 @@
 	Since 2.3
 	----------------
 	feature: In the contact panel you can choose contacts in order to send a group mail
-	feature: New user config option, updating an objectâ€™s date when it is linked to another object
+	feature: New user config option, updating an object��������s date when it is linked to another object
 	feature: Gantt sub tasks can be out of range of parent task dates.
 	feature: Gantt chart and Task List can be filtered by period.
 	feature: Comments are now displayed on Activity Widget.
 	feature: Gantt Chart now displays tasks with only start or due date
 	feature: archive/unarchive dimension members from administration->dimensions.
 	feature: when uploading a file with the same name as another that has been uploaded by other user and you don't have permissions over it, don't show as if exists.
-	feature: New Projects by default will start with â€œgoodâ€? status
+	feature: New Projects by default will start with �������good�����? status
 	feature: Listing function does not use limit if start parameter is not specified
 	feature: When adding a client/project the initial focus is on name
 	 
@@ -1251,7 +1303,7 @@
 	bugfix: Trash fails when mail plugin is not installed
 	bugfix: Member selector fixed for IE
 	bugfix: Some permissions were not set when adding new member
-	bugfix: Creating reports of â€œgrouping by userâ€? and â€œmembersâ€? at the same time issue fix
+	bugfix: Creating reports of �������grouping by user�����? and �������members�����? at the same time issue fix
 	bugfix: Report not showing correct Date in condition legend
 	bugfix: SQL issue in Report fixed
 	bugfix: Description not set for all tasks when listing.
@@ -1392,7 +1444,7 @@
 	bugfix: New client/project from overview fixed.
 	bugfix: Breadcrumbs only show 2 members x dimension.
 	bugfix: Total tasks time reports csv export does not work.
-	bugfix: Fix en cï¿½lculo de porcentaje de avance de tareas.
+	bugfix: Fix en c������lculo de porcentaje de avance de tareas.
 	bugfix: Forwarding or replying mails in German only prints "null".
 	bugfix: Function getCustomPropertyByName fixed.
 	bugfix: Activity widget popup wider to put all buttons in one line.

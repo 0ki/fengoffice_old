@@ -481,7 +481,7 @@ class ProjectEvent extends BaseProjectEvent {
 						$new_st_date_string = date("c", $new_st_date->getTimestamp());
 						
 						//go to the fixed day
-						$new_st_date_fixed = new DateTime(date("c", strtotime($ordinal . $day_name . $new_st_date_string)));
+						$new_st_date_fixed = new DateTime(date("c", strtotime($ordinal . $day_name ." of ". $new_st_date_string)));
 						
 						$new_st_date = new DateTimeValue($new_st_date_fixed->getTimestamp());						
 					}
@@ -493,7 +493,7 @@ class ProjectEvent extends BaseProjectEvent {
 						$new_due_date_string = date("c", $new_due_date->getTimestamp());
 						
 						//go to the fixed day
-						$new_due_date_fixed = new DateTime(date("c", strtotime($ordinal . $day_name . $new_due_date_string)));
+						$new_due_date_fixed = new DateTime(date("c", strtotime($ordinal . $day_name ." of ". $new_due_date_string)));
 						
 						$new_due_date = new DateTimeValue($new_due_date_fixed->getTimestamp());
 					}

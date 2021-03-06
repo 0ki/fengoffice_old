@@ -2925,18 +2925,18 @@ og.resize_modal_form = function() {
 		var headerh = $(".simplemodal-data .coInputHeader").height();
 		var cont_offset = $(".simplemodal-container").offset();
 		
-		$(".simplemodal-data .form-tab").css({'max-height':(winh - (cont_offset && cont_offset.top ? cont_offset.top : 0) - 175)+'px', overflow:'auto'});
+		$(".simplemodal-data .form-tab").css({'max-height':(winh - (cont_offset && cont_offset.top ? cont_offset.top : 0) - 175)+'px', 'overflow-y':'auto', 'overflow-x':'hidden'});
 		
 		if (modalh > winh) {
 			// resize and reposition
 			$(".simplemodal-container").css({top:'10px', height:(winh - 10)+'px'});
-			$(".simplemodal-data .form-tab").css({'max-height':(winh - headerh - 125)+'px', overflow:'auto'});
+			$(".simplemodal-data .form-tab").css({'max-height':(winh - headerh - 125)+'px', 'overflow-y':'auto', 'overflow-x':'hidden'});
 		} else if (offset && modalh + offset.top > winh) {
 			// only reposition
 			var otop = (winh - modalh) / 2;
 			if (otop < 0) otop = 0;
 			$(".simplemodal-container").css({top:(otop)+'px'});
-			$(".simplemodal-data .form-tab").css({'max-height':(winh - headerh - 175)+'px', overflow:'auto'});
+			$(".simplemodal-data .form-tab").css({'max-height':(winh - headerh - 175)+'px', 'overflow-y':'auto', 'overflow-x':'hidden'});
 		}
 	}, 500);
 }

@@ -30,6 +30,7 @@ ogTasksTask = function(){
 	this.id;
 	this.title;
 	this.description;
+	this.dependants;
 	this.createdOn;
 	this.createdBy;
 	this.status = 0;
@@ -95,6 +96,7 @@ ogTasksTask.prototype.setFromTdata = function(tdata){
 		
 	var dummyDate = new Date();
 
+	if (tdata.dependants) this.dependants = tdata.dependants; else this.dependants = [];
 	if (tdata.status) this.status = tdata.status; else this.status = 0;
 	if (tdata.parentId) this.parentId = tdata.parentId; else this.parentId = 0;
 	if (tdata.priority) this.priority = tdata.priority; else this.priority = 200;

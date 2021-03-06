@@ -599,6 +599,8 @@ class FilesController extends ApplicationController {
 				$file->setDefaultSubject('');
 			}
 		
+			DB::beginWork();
+			
 			$file->save();
 		
 			if($file->getType() == ProjectFiles::TYPE_DOCUMENT){
@@ -625,16 +627,26 @@ class FilesController extends ApplicationController {
 					$object_controller->add_custom_properties($file);
 				}
 			}
+			DB::commit();
+			
+			if (array_var($file_data, 'notify_myself_too')) {
+				logged_user()->notify_myself = true;
+			}
 			
 			ApplicationLogs::createLog($file,ApplicationLogs::ACTION_ADD);
+			
+			if (array_var($file_data, 'notify_myself_too')) {
+				logged_user()->notify_myself = false;
+			}			
+			
 			return $file->getId();
 		}catch(Exception $e) {
+			DB::rollback();
 			Logger::log("Error when uploading file: ".$e->getMessage()."\n".$e->getTraceAsString());
 				// If we uploaded the file remove it from repository
 			if(isset($revision) && ($revision instanceof ProjectFileRevision) && FileRepository::isInRepository($revision->getRepositoryId())) {
 				FileRepository::deleteFile($revision->getRepositoryId());
-			} // if
-			throw $e;
+			} // if			
 		} // try
 		
 	} // add_file
@@ -674,7 +686,7 @@ class FilesController extends ApplicationController {
 			$upload_option = array_var($file_data, 'upload_option',-1);
 			$skipSettings = false;
 			try {
-				DB::beginWork();
+				
 				$upload_id = array_var($file_data, 'upload_id');
 				$uploaded_file = array_var($_SESSION, $upload_id, array());
 				$member_ids = json_decode(array_var($_POST, 'members'));
@@ -701,8 +713,7 @@ class FilesController extends ApplicationController {
 					$file_ids[] = $this->add_file_from_multi($file_data_mult, $uploaded_file_mult, $member_ids, $upload_option);
 				}
 				unset($_SESSION[$upload_id]);
-				DB::commit();
-	
+					
 				$ajx_file =  array();
 				$file_titles = "";
 				//data to return
@@ -727,8 +738,7 @@ class FilesController extends ApplicationController {
 					evt_add("reload current panel");
 				}
 	
-			} catch(Exception $e) {
-				DB::rollback();
+			} catch(Exception $e) {				
 				flash_error($e->getMessage());
 				
 				if ($e instanceof InvalidUploadError) {
@@ -902,8 +912,7 @@ class FilesController extends ApplicationController {
 			//$this->setLayout("html");
 			$upload_option = array_var($file_data, 'upload_option',-1);
 			try {
-				DB::beginWork();
-				
+								
 				//members
 				$member_ids = array();
 				$object_controller = new ObjectController();
@@ -952,7 +961,7 @@ class FilesController extends ApplicationController {
 				}
 				unset($_SESSION[$upload_id]);
 	
-				DB::commit();
+				
 				
 				//data to return
 				$files_data_to_return = array();
@@ -970,8 +979,7 @@ class FilesController extends ApplicationController {
 					
 				ajx_current("empty");
 	
-			} catch(Exception $e) {
-				DB::rollback();
+			} catch(Exception $e) {				
 				flash_error($e->getMessage());
 				ajx_current("empty");
 			} // try

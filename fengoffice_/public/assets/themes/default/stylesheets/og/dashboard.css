@@ -22,10 +22,17 @@
 .dashWorkspace .description{
 }
 
+.dashActions .dashAction {
+	margin: 0px 5px;
+}
 
 .dashActions .viewAsList {
     text-align: right;
         
+}
+
+.ico-grid {
+	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -100px !important;
 }
 
 .dashActions .viewAsList img {
@@ -560,4 +567,8 @@
 
 .widget-body .widget-table td {
 	padding-top: 7px;
+}
+
+#overview-panel .x-panel .x-panel-tbar {
+	display: none;
 }

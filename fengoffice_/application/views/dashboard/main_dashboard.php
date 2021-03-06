@@ -2,9 +2,14 @@
         
 	<div class="section-top">
 		<div class="dashActions" style="float: right;">
-			<a class="internalLink" href="#" onclick="og.switchToOverview(); return false;">
-				<div class="viewAsList"><img style="border: 0px; padding: 0px\9;"/><?php echo lang('view as list') ?></div>
-			</a>
+			<?php $actions = array(); 
+				Hook::fire('additional_dashboard_actions', null, $actions);
+				foreach ($actions as $action) {
+					echo '<a href="#" onclick="'. $action['onclick'] .'" class="dashAction '. $action['class'] .'">'. $action['name'] .'</a>';
+				}
+			?>
+			<a class="internalLink dashAction link-ico ico-grid" href="#" onclick="og.switchToOverview(); return false;"><?php echo lang('view as list') ?></a>
+			
 		</div>
 		<?php DashboardTools::renderSection('top'); ?>	
 	</div> 

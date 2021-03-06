@@ -129,7 +129,9 @@ class TemplateTask extends BaseTemplateTask {
 	 * @return boolean
 	 */
 	function setAssignedBy($user) {
-		$this->setAssignedById($user->getId());
+		if ($user instanceof Contact) {
+			$this->setAssignedById($user->getId());
+		}
 	}
 
 	/**
@@ -1846,12 +1848,14 @@ class TemplateTask extends BaseTemplateTask {
 	
 	
 	
-	function apply_members_to_subtasks($member_ids, $recursive = false) {
-		$object_controller = new ObjectController();
+	function apply_members_to_subtasks($members, $recursive = false) {
+		if (!is_array($members) || count($members)==0) return;
+	
 		foreach ($this->getSubTasks() as $subtask) {
-			$object_controller->add_to_members($subtask, $member_ids);
+			$subtask->addToMembers($members);
+			Hook::fire ('after_add_to_members', $subtask, $members);
 			if ($recursive) {
-				$subtask->apply_members_to_subtasks($member_ids, $recursive);
+				$subtask->apply_members_to_subtasks($members, $recursive);
 			}
 		}
 	}
