@@ -190,7 +190,7 @@ addLangs({
 	'homePhone2': 'Teléfono particular 2',
 	'mobilePhone': 'Teléfono móvil',
 	'edit selected contact': 'Editar contacto',
-	'edit selected object': 'Editar object',
+	'edit selected object': 'Editar objeto',
 	'assign to project': 'Asignar a área de trabajo',
 	'assign contact to project': 'Asignar contacto a área de trabajo',
 	'import': 'Importar',

@@ -167,9 +167,11 @@ ogTimeManager.SubmitNewTimeslot = function(genid,obj_type){
 		action = 'edit_timeslot';		
 	}
 	og.handleMemberChooserSubmit(genid, obj_type); //TODO Hardcoded object type. Create a general object type map on somewhere
-	var members = $("#"+genid + member_selector[genid].hiddenFieldName).val();
-	parameters.members=members;
 	
+	if(member_selector[genid] !== undefined){
+		var members = $("#"+genid + member_selector[genid].hiddenFieldName).val();
+		parameters.members=members;
+	}
 	
 	og.openLink(og.getUrl('time', action), {
 		method: 'POST',
@@ -451,6 +453,47 @@ ogTimeManager.getCompany = function(id){
 		if (this.Companies[i].id == id) {
 			return this.Companies[i];
 		}
+	}
+	return null;
+}
+
+ogTimeManager.renderUserCombo = function(genid){
+	//get selected members
+	var member_ids_input = Ext.fly(Ext.get(genid + member_selector[genid].hiddenFieldName));
+	var selected_members = member_ids_input.getValue();
+	
+	//render allowed users to assign in timeslot
+	var time_user = $("#"+genid+"tsUser");
+	var userSel = time_user.val();
+	if (time_user && time_user.is(":visible")) {
+		var get_params = {};	
+		get_params['member_ids'] = JSON.parse(selected_members).toString(); 
+		og.openLink(og.getUrl('task', 'allowed_users_to_assign', get_params), 
+				{callback:function(success, data) {  
+							time_user.empty();
+							
+							var companies = data.companies;
+							var html = "";
+							if (companies.length > 0){
+								for (var i=0; i<companies.length; i++) {
+									if (!companies[i]) continue;
+									var users = companies[i].users;
+									for(j=0; j<users.length; j++){
+										var usu = users[j];
+										if (usu.id == 'undefined') continue;
+										var selected = false;
+										if(usu.id == userSel){
+											selected = true;											
+										}
+										html += '<option value="'+ usu.id+'" '+ (selected ? ' selected="selected"' : '' ) +'>'+ usu.name + '</option>';
+									}
+								}
+							}else{
+								html += '<option value="0">'+ lang ('no users to display') + '</option>';
+							}
+							time_user.append(html);	
+				}
+		});
 	}
 	return null;
 }

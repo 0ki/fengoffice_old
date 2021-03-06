@@ -114,16 +114,18 @@
 				if (restrictions_container) restrictions_container.dom.innerHTML = "";
 			}
 			
-			if (og.dimProperties.ot_with_properties && og.dimProperties.ot_with_properties[ot.id]) {
-				var del_prop_link = document.getElementById(genid + 'delPropertiesLink');
-				if (del_prop_link.style.display != 'none') {
-					this.drawDimensionProperties(genid, document.getElementById(genid + 'dimension_id').value);
+			if (!og.ot_hide_vinculations_link || !og.ot_hide_vinculations_link[ot.id]) {
+				if (og.dimProperties.ot_with_properties && og.dimProperties.ot_with_properties[ot.id]) {
+					var del_prop_link = document.getElementById(genid + 'delPropertiesLink');
+					if (del_prop_link.style.display != 'none') {
+						this.drawDimensionProperties(genid, document.getElementById(genid + 'dimension_id').value);
+					}
+					Ext.get(genid + 'property_links').setDisplayed(true);
+				} else {
+					Ext.get(genid + 'property_links').setDisplayed(false);
+					var properties_container = Ext.get(genid + 'dimension_properties');
+					if (properties_container) properties_container.dom.innerHTML = "";
 				}
-				Ext.get(genid + 'property_links').setDisplayed(true);
-			} else {
-				Ext.get(genid + 'property_links').setDisplayed(false);
-				var properties_container = Ext.get(genid + 'dimension_properties');
-				if (properties_container) properties_container.dom.innerHTML = "";
 			}
 		},
 

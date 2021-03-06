@@ -15,7 +15,7 @@
 		if($cpv instanceof CustomPropertyValue && ($customProp->getIsRequired() || $cpv->getValue() != '')){
 			$alt = !$alt; ?>
 			<tr class="<?php echo $alt ? 'altRow' : ''?>">
-				<td class="name" title="<?php echo clean($customProp->getName()) ?>"><?php echo clean(truncate($customProp->getName(), 20)) ?>:&nbsp;</td>
+				<td class="name" title="<?php echo clean($customProp->getName()) ?>"><?php echo clean($customProp->getName()) ?>:&nbsp;</td>
 				<?php
 					// dates are in standard format "Y-m-d H:i:s", must be formatted
 					if ($customProp->getType() == 'date') {
@@ -48,7 +48,7 @@
 								foreach ($exploded as $col_val) {
 									$col_val = str_replace('"%%_PIPE_%%"', '|', $col_val);
 									$title =  (strlen($col_val) > 20) ? clean($col_val) : '';
-									$showValue = clean(truncate($col_val, 20));
+									$showValue = clean($col_val);
 									$htmlValue .= '<td style="padding:0px 5px;border-right:1px solid #DDD;" title="' . $title . '">' . $showValue . '</td>';
 								}
 								$htmlValue .= '</tr>';
@@ -61,7 +61,7 @@
 								$value = str_replace('|', ',', $value);
 								$value = str_replace('"%%_PIPE_%%"', '|', $value);
 								$title =  (strlen($value) > 100 && $customProp->getType() != 'memo') ? clean(str_replace('|', ',', $value)) : '';
-								$showValue = $customProp->getType() == 'memo' ? escape_html_whitespace(convert_to_links(clean($value))) : clean(truncate($value,100));
+								$showValue = $customProp->getType() == 'memo' ? escape_html_whitespace(convert_to_links(clean($value))) : clean($value);
 								$htmlValue .= '<tr class="' . ($newAlt ? 'altRow' : 'row') . '"><td style="padding:0px 5px" title="' . $title . '">' . $showValue . '</td></tr>';
 								$newAlt = !$newAlt; 
 							}
@@ -70,7 +70,7 @@
 						$style = 'style="padding:1px 0px"';
 					} else {
 						$title =  (strlen($value) > 100 && $customProp->getType() != 'memo') ? clean($value) : '';
-						$htmlValue = $customProp->getType() == 'memo' ? escape_html_whitespace(convert_to_links(clean($value))) : truncate($value,100);
+						$htmlValue = $customProp->getType() == 'memo' ? escape_html_whitespace(convert_to_links(clean($value))) : $value;
 					}
 				?>
 				<td class="value" <?php echo $style ?> title="<?php echo $title?>"><?php echo $htmlValue ?></td>

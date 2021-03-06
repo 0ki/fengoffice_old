@@ -70,7 +70,8 @@ class TimeController extends ApplicationController {
 			case 0: //Show only timeslots added through the time panel
 				$result = Timeslots::getGeneralTimeslots(active_context(), $timeslotsUser, $start, $limit);
 				$timeslots = $result->objects;
-				$total = $result->total;
+				$get_total = Timeslots::getGeneralTimeslots(active_context(), $timeslotsUser, $start, $limit, true);
+				$total = $get_total->total;
 				break;
 			default:
 				throw new Error('Unrecognised TM show time type: ' . $showTimeType);
@@ -175,6 +176,7 @@ class TimeController extends ApplicationController {
 			$endTime = $endTime->add('h', 8 - logged_user()->getTimezone() + $hoursToAdd);
 			$timeslot_data['start_time'] = $startTime;
 			$timeslot_data['end_time'] = $endTime;
+			$timeslot_data['description'] = html_to_text($timeslot_data['description']);
 			$timeslot_data['name'] = $timeslot_data['description'];
 			$timeslot_data['object_id'] = 0;//array_var($timeslot_data,'project_id');
 			$timeslot = new Timeslot();

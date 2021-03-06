@@ -1,5 +1,5 @@
 
-	About Feng Office 2.6-rc
+	About Feng Office 2.6
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -101,6 +101,26 @@
 	
 	Changelog
 	=========
+	
+	Since 2.6-rc
+	----------------
+	
+	bugfix: show custom property text fully.
+	bugfix: filesystem permissions fix in some scenarios when uploading files.
+	bugfix: when importing companies or contacts from csv.
+	bugfix: time zone error on calendar view.
+	bugfix: calendar date javascript variable had a null value.
+	bugfix: can't delete mails without an account, even if you are a Super Administrator
+	bugfix: pagination error on time panel.
+	bugfix: report date parameters are not formatted correctly the first time if they are not saved in contact config options.
+	bugfix: In Overview, view as list pagination problems.
+	bugfix: refresh Assigned to combo after selecting a member in quick add/edit task and in timeslots view.
+	bugfix: main breadcrumb sometimes shows html chars.
+	bugfix: hide "vinculations" link for workspaces and folders
+	bugfix: select members combo missing members.
+	bugfix: html in tiemeslots description.
+	bugfix: can't add timeslots if members combos are not present.
+	
 	
 	Since 2.6-beta
 	----------------

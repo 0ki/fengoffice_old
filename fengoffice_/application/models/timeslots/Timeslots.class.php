@@ -224,7 +224,7 @@ class Timeslots extends BaseTimeslots {
 	
 	}
 
-	static function getGeneralTimeslots($context, $user = null, $offset = 0, $limit = 20) {
+	static function getGeneralTimeslots($context, $user = null, $offset = 0, $limit = 20, $only_count_result = false) {
 			
 		$user_sql = "";
 		if ($user instanceof Contact) {
@@ -235,6 +235,7 @@ class Timeslots extends BaseTimeslots {
 			"order" => array('start_time', 'updated_on'),
 			"order_dir" => "DESC",
 		 	"extra_conditions" => " AND rel_object_id = 0" . $user_sql,
+			'only_count_results' => $only_count_result,
 			"start" => $offset,
 			"limit" => $limit			
 		));

@@ -544,7 +544,7 @@
 	'auto detect user timezone' => 'Auto-detecção de fuso horário a partir do browser do usuário',
 	'confirm discard email' => 'Tem certeza de que deseja eliminar este e-mail?',
 	'download email' => 'Download do e-mail',
-	'instantiate' => 'Instanciar',
+	'instantiate' => 'Criar tarefas',
 	'template parameters' => 'Parâmetros do modelo',
 	'add image' => 'Adicionar imagem',
 	'update image' => 'Atualizar imagem',

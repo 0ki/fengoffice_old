@@ -230,6 +230,18 @@ function delete_dir($dir) {
  */
 function force_mkdir($path, $chmod = null) {
 	if (mkdir($path, $chmod, true)) {
+		$parts = explode('/', $path);
+		
+		//exec chmod over all folder from upload to the last of the path
+		$repository_path = implode("/",array_slice($parts, 0, (count($parts)-3)));
+		$partial_path = $repository_path;
+				
+		$partial_path .= "/".$parts[count($parts)-3];
+		chmod($partial_path, $chmod);
+				
+		$partial_path .= "/".$parts[count($parts)-2];
+		chmod($partial_path, $chmod);
+		
 		chmod($path, $chmod);
 		return true;
 	}

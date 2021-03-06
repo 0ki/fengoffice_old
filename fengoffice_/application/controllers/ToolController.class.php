@@ -121,7 +121,7 @@ class ToolController extends ApplicationController {
 		if (!is_array($files)) $files = array();
 		$handle_plugin = opendir($dir_plugin);
 		while (false !== ($f_p = readdir($handle_plugin))) {
-			if ($f_p != "." && $f_p != ".." && $f_p != "CVS" && $f_p != ".svn" && is_dir("$dir_plugin/$f_p/$dir")) {
+			if ($f_p != "." && $f_p != ".." && $f_p != "CVS" && $f_p != ".svn" && is_dir("$dir_plugin/$f_p/$dir") && $f_p != 'custom_langs') {
 				$handle = opendir($dir_plugin . "/" . $f_p . "/" . $dir);
 				while (false !== ($f = readdir($handle))) {
 					if ($f == '.' || $f == '..' || $f == 'CVS' || $f == '.svn') continue;

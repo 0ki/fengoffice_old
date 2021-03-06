@@ -169,14 +169,14 @@ class ReportingController extends ApplicationController {
 		if (strtotime(user_config_option('timeReportDateStart'))){//this return null if date is 0000-00-00 00:00:00
 			$report_data['start_value'] = user_config_option('timeReportDateStart');
 		}else{
-			$dateStart = $now_date->format(user_config_option('date_format'));//today
+			$dateStart = format_date($now_date, DATE_MYSQL, 0);//today
 			$report_data['start_value'] = $dateStart;
 		}
 		
 		if (strtotime(user_config_option('timeReportDateEnd'))){//this return null if date is 0000-00-00 00:00:00
 			$report_data['end_value'] = user_config_option('timeReportDateEnd');
 		}else{
-			$dateEnd = $now_date->format(user_config_option('date_format'));//today
+			$dateEnd = format_date($now_date, DATE_MYSQL, 0);//today
 			$report_data['end_value'] = $dateEnd;
 		}
 					

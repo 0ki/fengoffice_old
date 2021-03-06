@@ -66,7 +66,7 @@ og.Breadcrumbs = {
 			    	+lang("viewing all information")
 			    	+'</div><ul class="secondary-breadcrumb"></ul></div>'
 			    );
-		}else{		
+		}else{
 			$('#breadcrumbs').html('<div><div class="primary-breadcrumb" >'
 			    	+mainText
 			    	+'</div><ul class="secondary-breadcrumb"></ul></div>'
@@ -94,9 +94,8 @@ og.Breadcrumbs = {
 									}
 									$("#breadcrumbs ul.secondary-breadcrumb").append("<li class='"+itemClass+"'><strong>"+dimensionTitle+"</strong>: "+path+memberTitle+"</li>");
 								}else{
-									$("#breadcrumbs div.primary-breadcrumb").text(memberTitle);
+									$("#breadcrumbs div.primary-breadcrumb").html(memberTitle);
 									defineMainTitle = false;
-									
 								}
 							}
 							allInfo = false;

@@ -558,7 +558,7 @@
 	'confirm discard email' => '¿Confirma que desea descartar el correo?',
 	'auto detect user timezone' => 'Autodetectar zona horaria del usuario desde el navegador',
 	'download email' => 'Descargar correo',
-	'instantiate' => 'Instanciar',
+	'instantiate' => 'Crear tareas',
 	'template parameters' => 'Parámetros de plantilla',
 	'add image' => 'Agregar imagen',
 	'update image' => 'Actualizar imagen',

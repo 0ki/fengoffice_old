@@ -1048,6 +1048,9 @@
 				$changed_pgs[$perm->pg] = $perm->pg;
 			}
 			
+			foreach ($permissions as $p) {
+				if (!$p->m) $p->m = $member->getId();
+			}
 			foreach ($changed_pgs as $pg_id) {
 				$sharingTablecontroller->afterPermissionChanged($pg_id, $permissions);
 			}

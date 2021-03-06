@@ -542,7 +542,7 @@ class FilesController extends ApplicationController {
 	} // add_file
 	
 	/**
-	 * add_file_form_multi
+	 * add_file_from_multi
 	 *
 	 * @access public
 	 * @param $file_data
@@ -550,7 +550,7 @@ class FilesController extends ApplicationController {
 	 * @param $member_ids
 	 * @return file id
 	 */
-	function add_file_form_multi($file_data, $uploaded_file, $member_ids, $upload_option) {
+	function add_file_from_multi($file_data, $uploaded_file, $member_ids, $upload_option) {
 		try {
 			if($upload_option != -1){
 				$file = ProjectFiles::findById($upload_option);
@@ -651,7 +651,7 @@ class FilesController extends ApplicationController {
 					if($file_data['name'] != ""){
 						$file_data_mult['name'] = $file_data['name'];
 					}
-					$file_ids[] = $this->add_file_form_multi($file_data_mult, $uploaded_file_mult, $member_ids, $upload_option);
+					$file_ids[] = $this->add_file_from_multi($file_data_mult, $uploaded_file_mult, $member_ids, $upload_option);
 				}
 				unset($_SESSION[$upload_id]);
 				DB::commit();
@@ -840,7 +840,10 @@ class FilesController extends ApplicationController {
 			try {
 				DB::beginWork();
 	
-				//members
+				//returns the array 'members_ids' with all the members in which the file has to be classified.
+				//@todo: This code is probably duplicate (many times). It should be a separate function.
+				//@todo: Review if it makes sense to ask for the 'member of the object' (the code) inside the elseif).
+				//@todo: Does it make sense to waste DB transaction time doing this?
 				$member_ids = array();
 				$object_controller = new ObjectController();
 				if(count(active_context_members(false)) > 0 ){
@@ -875,7 +878,7 @@ class FilesController extends ApplicationController {
 						$upload_option = -1;
 					}
 					
-					$file_ids[] = $this->add_file_form_multi($file_data_mult, $uploaded_file_mult, $member_ids, $upload_option);
+					$file_ids[] = $this->add_file_from_multi($file_data_mult, $uploaded_file_mult, $member_ids, $upload_option);
 				}
 				unset($_SESSION[$upload_id]);
 	

@@ -45,9 +45,11 @@
 		</div>
 	</div>
 <script> 
+$(function() {
 	<?php 
 		//add bredcrumb foreach selected member
 		foreach ($sel_mem_ids as $selected_member_id){
-    			?> $("#<?php echo $genid?>selected-member<?php echo $selected_member_id?> .completePath").append(og.getCrumbHtmlWithoutLinks(<?php echo $selected_member_id?>, <?php echo $dimension_id?>, <?php echo "'$genid'"?>));	
-    <?php }?>
+    			?> $("#<?php echo $genid?>selected-member<?php echo $selected_member_id?> .completePath").append(og.getCrumbHtmlWithoutLinks(<?php echo $selected_member_id?>, <?php echo $dimension_id?>, <?php echo "'$genid'"?>));
+    	<?php }?>
+});
 </script>	

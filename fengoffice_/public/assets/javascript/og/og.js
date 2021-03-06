@@ -2423,7 +2423,7 @@ og.getCrumbHtmlWithoutLinks = function (member_id, dimension_id, genid) {
 	var member_path = {};
 	member_path[dimension_id] = member_info;
 	
-	mem_path = og.getCrumbHtmlWithoutLinksMemPath(member_path, false, og.breadcrumbs_skipped_dimensions,false,null,bredcrumb_total_length);
+	mem_path = og.getCrumbHtmlWithoutLinksMemPath(member_path, false, null,false,null,bredcrumb_total_length);
 	
 	return mem_path;
 }

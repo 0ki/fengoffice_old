@@ -436,9 +436,19 @@ ogTasks.drawTaskForm = function(container_id, data){
 				$("#ogTasksPanelATDesc").css({
 				    height:height_sel +20
 				});
+				
+				//add selection change listener to members selectors combos
+				if(og.genid in member_selector){
+					for (var dim in og.dimensions) {
+						if(dim in member_selector[og.genid].properties){
+							member_selector[og.genid].properties[dim].listeners["on_selection_change"] = 'ogTasks.renderAssignedToCombo()';
+						}
+					}
+				}
+								
 				var editor = og.getCkEditorInstance(og.genid + 'ckeditor' + data.objectId);
 				// The height value now applies to the editing area.
-				editor.resize( '100%', height_sel);			
+				editor.resize( '100%', height_sel);					
 			},
 			scope: this
 		});
@@ -827,6 +837,7 @@ ogTasks.buildAssignedToComboStore = function(companies, only_me, groups) {
 	var comp_array = [];
 	var cantU = 0;
 	var cantC = 0;
+	var preserveSelectedUser = false;
 	
 	if (!only_me) {
 		usersStore[cantU++] = ['0', lang('dont assign')];
@@ -855,6 +866,9 @@ ogTasks.buildAssignedToComboStore = function(companies, only_me, groups) {
 				} else if (!only_me) {
 					usersStore[cantU++] = [usr.id, og.clean(usr.name)];
 				}
+				if(usr.id == ogTasks.assignedTo){
+					preserveSelectedUser = true;
+				}
 			}
 		}
 		// sort user list
@@ -876,6 +890,10 @@ ogTasks.buildAssignedToComboStore = function(companies, only_me, groups) {
 	}
 	if (og.config['can_assign_tasks_to_companies'] && comp_array.length > 0) {
 		usersStore = usersStore.concat(comp_array);
+	}
+	
+	if(!preserveSelectedUser){
+		ogTasks.assignedTo = 0;
 	}
 	
 	return usersStore;
@@ -935,6 +953,23 @@ ogTasks.drawAssignedToCombo = function(success, data) {
 			}
 		}
 	});
+}
+
+//for quick add/edit tasks
+ogTasks.renderAssignedToCombo = function() {
+	//get selected members
+	var member_ids_input = Ext.fly(Ext.get(og.genid + member_selector[og.genid].hiddenFieldName));
+	var selected_members = member_ids_input.getValue();
+		
+	var slected_user = Ext.getCmp('ogTasksPanelATUserCompanyCombo').getValue();
+	//render allowed users to assign in task quick add/edit
+	var task_user = $("#ogTasksPanelATUserCompanyCombo");
+	if (task_user && task_user.is(":visible")) {
+		var get_params = {};	
+		get_params['member_ids'] = JSON.parse(selected_members).toString(); 
+		ogTasks.assignedTo = slected_user; 
+		og.openLink(og.getUrl('task', 'allowed_users_to_assign', get_params), {callback:ogTasks.drawAssignedToCombo});
+	}
 }
 
 ogTasks.drawMilestonesCombo = function(success, data) {
