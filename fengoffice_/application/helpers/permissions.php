@@ -728,281 +728,229 @@
 			
 		}
 		
-		$changed_members = array();
-				
-		// save module permissions
 		try {
 			DB::beginWork();
-			TabPanelPermissions::clearByPermissionGroup($pg_id);
-			if (!is_null($mod_permissions_data) && is_array($mod_permissions_data)) {
-				foreach($mod_permissions_data as $tab_id => $val) {
-					$tpp = new TabPanelPermission();
-					$tpp->setPermissionGroupId($pg_id);
-					$tpp->setTabPanelId($tab_id);
-					$tpp->save();
-				}
-			}
-			DB::commit();
-		} catch (Exception $e) {
-			DB::rollback();
-			Logger::log("Error saving module permissions for permission group $pg_id: ".$e->getMessage()."\n".$e->getTraceAsString());
-			throw $e;
-		}
-		
-		$root_permissions_sharing_table_delete = array();
-		$root_permissions_sharing_table_add = array();
-		if (logged_user() instanceof Contact && can_manage_security(logged_user()) && logged_user()->isAdminGroup()) {
+			
+			$changed_members = array();
+					
+			// save module permissions
 			try {
-				DB::beginWork();
-				
-				// save system permissions
-				$system_permissions = SystemPermissions::findById($pg_id);
-				if (!$system_permissions instanceof SystemPermission) {
-					$system_permissions = new SystemPermission();
-					$system_permissions->setPermissionGroupId($pg_id);
-				}
-				$system_permissions->setAllPermissions(false);
-				$other_permissions = array();
-				Hook::fire('add_user_permissions', $pg_id, $other_permissions);
-				foreach ($other_permissions as $k => $v) {
-					$system_permissions->setColumnValue($k, false);
-				}
-				
-				$sys_permissions_data['can_task_assignee'] = !$is_guest;
-				$system_permissions->setFromAttributes($sys_permissions_data);
-				$system_permissions->setUseOnDuplicateKeyWhenInsert(true);
-				$system_permissions->save();
-				
-				//object type root permissions
-				if ($rp_genid) {
-					ContactMemberPermissions::delete("permission_group_id = $pg_id AND member_id = 0");
-					foreach ($rp_permissions_data as $name => $value) {
-						if (str_starts_with($name, $rp_genid . 'rg_root_')) {
-							$rp_ot = substr($name, strrpos($name, '_')+1);
-							
-							if (is_numeric($rp_ot) && $rp_ot > 0 && $value == 0) {
-								$root_permissions_sharing_table_delete[] = $rp_ot;
-							}
-							if (!is_numeric($rp_ot) || $rp_ot <= 0 || $value < 1) continue;
-							
-							$root_permissions_sharing_table_add[] = $rp_ot;
-							
-							// save with member_id = 0
-							$root_perm_cmp = new ContactMemberPermission();
-							$root_perm_cmp->setPermissionGroupId($pg_id);
-							$root_perm_cmp->setMemberId('0');
-							$root_perm_cmp->setObjectTypeId($rp_ot);
-							$root_perm_cmp->setCanWrite($value >= 2);
-							$root_perm_cmp->setCanDelete($value >= 3);
-							$root_perm_cmp->save();
-						}
+				TabPanelPermissions::clearByPermissionGroup($pg_id);
+				if (!is_null($mod_permissions_data) && is_array($mod_permissions_data)) {
+					foreach($mod_permissions_data as $tab_id => $val) {
+						$tpp = new TabPanelPermission();
+						$tpp->setPermissionGroupId($pg_id);
+						$tpp->setTabPanelId($tab_id);
+						$tpp->save();
 					}
 				}
-				DB::commit();
 			} catch (Exception $e) {
-				DB::rollback();
-				Logger::log("Error saving system permissions for permission group $pg_id: ".$e->getMessage()."\n".$e->getTraceAsString());
+				Logger::log("Error saving module permissions for permission group $pg_id: ".$e->getMessage()."\n".$e->getTraceAsString());
 				throw $e;
 			}
-		}
-		//member permissions
-		if ($permissionsString && $permissionsString != ''){
-			$permissions = json_decode($permissionsString);
-		}
-		
-		if (isset($permissions) && !is_null($permissions) && is_array($permissions)) {
+			
+			$root_permissions_sharing_table_delete = array();
+			$root_permissions_sharing_table_add = array();
+			if (logged_user() instanceof Contact && can_manage_security(logged_user()) && logged_user()->isAdminGroup()) {
+				try {
+					
+					// save system permissions
+					$system_permissions = SystemPermissions::findById($pg_id);
+					if (!$system_permissions instanceof SystemPermission) {
+						$system_permissions = new SystemPermission();
+						$system_permissions->setPermissionGroupId($pg_id);
+					}
+					$system_permissions->setAllPermissions(false);
+					$other_permissions = array();
+					Hook::fire('add_user_permissions', $pg_id, $other_permissions);
+					foreach ($other_permissions as $k => $v) {
+						$system_permissions->setColumnValue($k, false);
+					}
+					
+					$sys_permissions_data['can_task_assignee'] = !$is_guest;
+					$system_permissions->setFromAttributes($sys_permissions_data);
+					$system_permissions->setUseOnDuplicateKeyWhenInsert(true);
+					$system_permissions->save();
+					
+					//object type root permissions
+					if ($rp_genid) {
+						ContactMemberPermissions::delete("permission_group_id = $pg_id AND member_id = 0");
+						foreach ($rp_permissions_data as $name => $value) {
+							if (str_starts_with($name, $rp_genid . 'rg_root_')) {
+								$rp_ot = substr($name, strrpos($name, '_')+1);
+								
+								if (is_numeric($rp_ot) && $rp_ot > 0 && $value == 0) {
+									$root_permissions_sharing_table_delete[] = $rp_ot;
+								}
+								if (!is_numeric($rp_ot) || $rp_ot <= 0 || $value < 1) continue;
+								
+								$root_permissions_sharing_table_add[] = $rp_ot;
+								
+								// save with member_id = 0
+								$root_perm_cmp = new ContactMemberPermission();
+								$root_perm_cmp->setPermissionGroupId($pg_id);
+								$root_perm_cmp->setMemberId('0');
+								$root_perm_cmp->setObjectTypeId($rp_ot);
+								$root_perm_cmp->setCanWrite($value >= 2);
+								$root_perm_cmp->setCanDelete($value >= 3);
+								$root_perm_cmp->save();
+							}
+						}
+					}
+					
+				} catch (Exception $e) {
+					
+					Logger::log("Error saving system permissions for permission group $pg_id: ".$e->getMessage()."\n".$e->getTraceAsString());
+					throw $e;
+				}
+			}
+			
+			// set all permissions to read_only if user is guest
+			if ($is_guest) {
+				try {
+					$all_saved_permissions = ContactMemberPermissions::findAll(array("conditions" => "`permission_group_id` = $pg_id"));
+					foreach ($all_saved_permissions as $sp) {/* @var $sp ContactMemberPermission */
+						if ($sp->getCanDelete() || $sp->getCanWrite()) {
+							$sp->setCanDelete(false);
+							$sp->setCanWrite(false);
+							$sp->save();
+						}
+					}
+					$cdps = ContactDimensionPermissions::findAll(array("conditions" => "`permission_type` = 'allow all'"));
+					foreach ($cdps as $cdp) {
+						$cdp->setPermissionType('check');
+						$cdp->save();
+					}
+				} catch (Exception $e) {
+					Logger::log("Error setting guest user permissions to read_only for permission group $pg_id: ".$e->getMessage()."\n".$e->getTraceAsString());
+					throw $e;
+				}
+			}
+				
+			// check the status of the changed dimensions to set 'allow_all', 'deny_all' or 'check'
 			try {
-				$sql_insert_values = "";
-				$allowed_members_ids= array();
-				foreach ($permissions as $perm) {
-					if (!isset($all_perm_deleted[$perm->m])) $all_perm_deleted[$perm->m] = true;
-					$allowed_members_ids[$perm->m]=array();
-					$allowed_members_ids[$perm->m]['pg']=$pg_id;
-					if ($perm->r) {
-						if(isset($allowed_members_ids[$perm->m]['w'])){
-							if($allowed_members_ids[$perm->m]['w']!=1){
+					
+				$dimensions = Dimensions::findAll(array("conditions" => array("`id` IN (SELECT DISTINCT `dimension_id` FROM ".Members::instance()->getTableName(true)." WHERE `id` IN (?))", $changed_members)));
+				foreach ($dimensions as $dimension) {
+					$dimension->setContactDimensionPermission($pg_id, 'check');
+				}
+					
+			} catch (Exception $e) {
+				Logger::log("Error setting dimension permissions for permission group $pg_id: ".$e->getMessage()."\n".$e->getTraceAsString());
+				throw $e;
+			}
+			
+			
+			//member permissions
+			if ($permissionsString && $permissionsString != ''){
+				$permissions = json_decode($permissionsString);
+			}
+			
+			if (isset($permissions) && !is_null($permissions) && is_array($permissions)) {
+				try {
+					$sql_insert_values = "";
+					$allowed_members_ids= array();
+					foreach ($permissions as $perm) {
+						if (!isset($all_perm_deleted[$perm->m])) $all_perm_deleted[$perm->m] = true;
+						$allowed_members_ids[$perm->m]=array();
+						$allowed_members_ids[$perm->m]['pg']=$pg_id;
+						if ($perm->r) {
+							if(isset($allowed_members_ids[$perm->m]['w'])){
+								if($allowed_members_ids[$perm->m]['w']!=1){
+									$allowed_members_ids[$perm->m]['w'] = $is_guest ? false : $perm->w;
+								}
+							}else{
 								$allowed_members_ids[$perm->m]['w'] = $is_guest ? false : $perm->w;
 							}
-						}else{
-							$allowed_members_ids[$perm->m]['w'] = $is_guest ? false : $perm->w;
-						}
-						if(isset($allowed_members_ids[$perm->m]['d'])){
-							if($allowed_members_ids[$perm->m]['d']!=1){
+							if(isset($allowed_members_ids[$perm->m]['d'])){
+								if($allowed_members_ids[$perm->m]['d']!=1){
+									$allowed_members_ids[$perm->m]['d'] = $is_guest ? false : $perm->d;
+								}
+							}else{
 								$allowed_members_ids[$perm->m]['d'] = $is_guest ? false : $perm->d;
 							}
-						}else{
-							$allowed_members_ids[$perm->m]['d'] = $is_guest ? false : $perm->d;
-						}
-						if ($save_cmps) {
-							$sql_insert_values .= ($sql_insert_values == "" ? "" : ",") . "('".$pg_id."','".$perm->m."','".$perm->o."','".$perm->d."','".$perm->w."')";
+							if ($save_cmps) {
+								$sql_insert_values .= ($sql_insert_values == "" ? "" : ",") . "('".$pg_id."','".$perm->m."','".$perm->o."','".$perm->d."','".$perm->w."')";
+							}
+							
+							$all_perm_deleted[$perm->m] = false;
 						}
 						
-						$all_perm_deleted[$perm->m] = false;
+						$changed_members[] = $perm->m;
 					}
 					
-					$changed_members[] = $perm->m;
-				}
-				
-				if ($save_cmps) {
-					if (count($changed_members) > 0) {
-						DB::execute("DELETE FROM ".TABLE_PREFIX."contact_member_permissions WHERE member_id IN (".implode(',',$changed_members).") AND permission_group_id=$pg_id");
+					if ($save_cmps) {
+						if (count($changed_members) > 0) {
+							DB::execute("DELETE FROM ".TABLE_PREFIX."contact_member_permissions WHERE member_id IN (".implode(',',$changed_members).") AND permission_group_id=$pg_id");
+						}
+						if ($sql_insert_values != "") {
+							DB::execute("INSERT INTO ".TABLE_PREFIX."contact_member_permissions (permission_group_id, member_id, object_type_id, can_delete, can_write) VALUES $sql_insert_values ON DUPLICATE KEY UPDATE member_id=member_id");
+						}
 					}
-					if ($sql_insert_values != "") {
-						DB::execute("INSERT INTO ".TABLE_PREFIX."contact_member_permissions (permission_group_id, member_id, object_type_id, can_delete, can_write) VALUES $sql_insert_values ON DUPLICATE KEY UPDATE member_id=member_id");
-					}
-				}
-				
-			} catch (Exception $e) {
-				Logger::log("Error saving member permissions for permission group $pg_id: ".$e->getMessage()."\n".$e->getTraceAsString());
-				throw $e;
-			}
-			
-			
-			if ($update_sharing_table) {
-				try {
-					$sharingTablecontroller = new SharingTableController();
-					$rp_info = array('root_permissions_sharing_table_delete' => $root_permissions_sharing_table_delete, 'root_permissions_sharing_table_add' => $root_permissions_sharing_table_add);
-					$sharingTablecontroller->afterPermissionChanged($pg_id, $permissions, $rp_info);
+					
 				} catch (Exception $e) {
-					Logger::log("Error saving permissions to sharing table for permission group $pg_id: ".$e->getMessage()."\n".$e->getTraceAsString());
+					Logger::log("Error saving member permissions for permission group $pg_id: ".$e->getMessage()."\n".$e->getTraceAsString());
 					throw $e;
 				}
 			}
 			
-			if ($update_contact_member_cache) {
-				try {
-					$contactMemberCacheController = new ContactMemberCacheController();
-					$group = PermissionGroups::findById($pg_id);
-					
-					$real_group = null;
-					if($group->getType() == 'user_groups'){
-						$real_group = $group;
-					}
-					$users = $group->getUsers();
-					$users_ids_checked = array();
-					
-					foreach ($users as $us) {
-						$users_ids_checked[] = $us->getId();
-						$contactMemberCacheController->afterUserPermissionChanged($us, $permissions, $real_group);
-					}
-					
-					//check all users related to the group
-					foreach ($users_ids_to_check as $us_id) {
-						if(!in_array($us_id, $users_ids_checked)){
-							$users_ids_checked[] = $us_id;
-							$us = Contacts::findById($us_id);
-							if($us instanceof Contact){
-								$contactMemberCacheController->afterUserPermissionChanged($us, $permissions, $real_group);
-							}
-						}
-					}
-				} catch (Exception $e) {
-					Logger::log("Error saving permissions to contact member cache for permission group $pg_id: ".$e->getMessage()."\n".$e->getTraceAsString());
-					throw $e;
-				}
-			}
-			
-			/* cuando saco permisos sobre un tipo de objeto que no saque sobre todos los tipos
-			foreach ($allowed_members_ids as $key=>$mids){
-				$mbm=Members::findById($key);
-				$root_cmp = ContactMemberPermissions::findById(array('permission_group_id' => $mids['pg'], 'member_id' => $key, 'object_type_id' => $mbm->getObjectTypeId()));
-				if (!$root_cmp instanceof ContactMemberPermission) {
-					$root_cmp = new ContactMemberPermission();
-					$root_cmp->setPermissionGroupId($mids['pg']);
-					$root_cmp->setMemberId($key);
-					$root_cmp->setObjectTypeId($mbm->getObjectTypeId());
-				}
-				$root_cmp->setCanWrite(array_var($mids,'w'));
-				$root_cmp->setCanDelete(array_var($mids,'d'));
-				$root_cmp->save();
-			}
-			
-			if (isset($all_perm_deleted)) {
-				foreach ($all_perm_deleted as $mid => $pd) {
-					if ($pd) {
-						ContactMemberPermissions::instance()->delete("`permission_group_id` = $pg_id AND `member_id` = $mid");
-					}
-				}
-			}*/
-		}
-		
-		// set all permissions to read_only if user is guest
-		if ($is_guest) {
-			try {
-				DB::beginWork();
-				$all_saved_permissions = ContactMemberPermissions::findAll(array("conditions" => "`permission_group_id` = $pg_id"));
-				foreach ($all_saved_permissions as $sp) {/* @var $sp ContactMemberPermission */
-					if ($sp->getCanDelete() || $sp->getCanWrite()) {
-						$sp->setCanDelete(false);
-						$sp->setCanWrite(false);
-						$sp->save();
-					}
-				}
-				$cdps = ContactDimensionPermissions::findAll(array("conditions" => "`permission_type` = 'allow all'"));
-				foreach ($cdps as $cdp) {
-					$cdp->setPermissionType('check');
-					$cdp->save();
-				}
-				DB::commit();
-			} catch (Exception $e) {
-				DB::rollback();
-				Logger::log("Error setting guest user permissions to read_only for permission group $pg_id: ".$e->getMessage()."\n".$e->getTraceAsString());
-				throw $e;
-			}
-		}
-		
-		// check the status of the changed dimensions to set 'allow_all', 'deny_all' or 'check'
-		try {
-			DB::beginWork();
-			$dimensions = Dimensions::findAll(array("conditions" => array("`id` IN (SELECT DISTINCT `dimension_id` FROM ".Members::instance()->getTableName(true)." WHERE `id` IN (?))", $changed_members)));
-			foreach ($dimensions as $dimension) {
-				$dimension->setContactDimensionPermission($pg_id, 'check');
-			}
-				/*
-				$mem_ids = $dimension->getAllMembers(true);
-				if (count($mem_ids) == 0) $mem_ids[] = 0;
-				
-				$count = ContactMemberPermissions::count(array('conditions' => "`permission_group_id`=$pg_id AND `member_id` IN (".implode(",",$mem_ids).") AND `can_delete` = 0" ));
-				if ($count > 0) {
-					$dimension->setContactDimensionPermission($pg_id, 'check');
-				} else {
-					$count = ContactMemberPermissions::count(array('conditions' => "`permission_group_id`=$pg_id AND `member_id` IN (".implode(",",$mem_ids).")"));
-					if ($count == 0) {
-						$dimension->setContactDimensionPermission($pg_id, 'deny all');
-					} else {
-						$allow_all = true;
-						$dim_obj_types = $dimension->getAllowedObjectTypeContents();
-						$members = Members::findAll("`id` IN (".implode(",",$mem_ids).")");
-						foreach ($dim_obj_types as $dim_obj_type) {
-							
-							$mem_ids_for_ot = array();
-							foreach($members as $member) {
-								if ($dim_obj_type->getDimensionObjectTypeId() == $member->getObjectTypeId()) $mem_ids_for_ot[] = $member->getId();
-							}
-							if (count($mem_ids_for_ot) == 0) $mem_ids_for_ot[] = 0;
-							
-							$count = ContactMemberPermissions::count(array('conditions' => "`permission_group_id`=$pg_id AND 
-							`object_type_id` = ".$dim_obj_type->getContentObjectTypeId()." AND `can_delete` = 1 AND `member_id` IN (".implode(",",$mem_ids_for_ot).")"));
-							
-							if ($count != count($mem_ids_for_ot)) {
-								$allow_all = false;
-								break;
-							}
-						}
-						if ($allow_all) {
-							$dimension->setContactDimensionPermission($pg_id, 'allow all');
-						} else {
-							$dimension->setContactDimensionPermission($pg_id, 'check');
-						}
-					}
-				}
-			}*/
 			DB::commit();
 		} catch (Exception $e) {
+			Logger::log("Error saving permissions for permission group $pg_id: ".$e->getMessage()."\n".$e->getTraceAsString());
 			DB::rollback();
-			Logger::log("Error setting dimension permissions for permission group $pg_id: ".$e->getMessage()."\n".$e->getTraceAsString());
-			throw $e;
 		}
+		
+		try {
+			if (isset($permissions) && !is_null($permissions) && is_array($permissions)) {
+				if ($update_sharing_table) {
+					try {
+						$sharingTablecontroller = new SharingTableController();
+						$rp_info = array('root_permissions_sharing_table_delete' => $root_permissions_sharing_table_delete, 'root_permissions_sharing_table_add' => $root_permissions_sharing_table_add);
+						$sharingTablecontroller->afterPermissionChanged($pg_id, $permissions, $rp_info);
+					} catch (Exception $e) {
+						Logger::log("Error saving permissions to sharing table for permission group $pg_id: ".$e->getMessage()."\n".$e->getTraceAsString());
+						throw $e;
+					}
+				}
+				
+				if ($update_contact_member_cache) {
+					try {
+						$contactMemberCacheController = new ContactMemberCacheController();
+						$group = PermissionGroups::findById($pg_id);
+						
+						$real_group = null;
+						if($group->getType() == 'user_groups'){
+							$real_group = $group;
+						}
+						$users = $group->getUsers();
+						$users_ids_checked = array();
+						
+						foreach ($users as $us) {
+							$users_ids_checked[] = $us->getId();
+							$contactMemberCacheController->afterUserPermissionChanged($us, $permissions, $real_group);
+						}
+						
+						//check all users related to the group
+						foreach ($users_ids_to_check as $us_id) {
+							if(!in_array($us_id, $users_ids_checked)){
+								$users_ids_checked[] = $us_id;
+								$us = Contacts::findById($us_id);
+								if($us instanceof Contact){
+									$contactMemberCacheController->afterUserPermissionChanged($us, $permissions, $real_group);
+								}
+							}
+						}
+					} catch (Exception $e) {
+						Logger::log("Error saving permissions to contact member cache for permission group $pg_id: ".$e->getMessage()."\n".$e->getTraceAsString());
+						throw $e;
+					}
+				}
+	
+			}
+		} catch (Exception $e) {
+			Logger::log("Error saving module permissions for permission group $pg_id: ".$e->getMessage()."\n".$e->getTraceAsString());
+		}
+		
 		
 		if ($fire_hook) {
 			Hook::fire('after_save_contact_permissions', $pg_id, $pg_id);
@@ -1208,47 +1156,6 @@
 		foreach ($changed_pgs as $pg_id) {
 			$dimension->setContactDimensionPermission($pg_id, 'check');
 		}
-		/*
-		$mem_ids = $dimension->getAllMembers(true);
-		if (count($mem_ids) == 0) $mem_ids[] = 0;
-		
-		foreach ($changed_pgs as $pg_id) {
-			$count = ContactMemberPermissions::count(array('conditions' => "`permission_group_id`=$pg_id AND `member_id` IN (".implode(",",$mem_ids).") AND `can_delete` = 0" ));
-			if ($count > 0) {
-				$dimension->setContactDimensionPermission($pg_id, 'check');
-			} else {
-				$count = ContactMemberPermissions::count(array('conditions' => "`permission_group_id`=$pg_id AND `member_id` IN (".implode(",",$mem_ids).")"));
-				if ($count == 0) {
-					$dimension->setContactDimensionPermission($pg_id, 'deny all');
-				} else {
-					$allow_all = true;
-					$dim_obj_types = $dimension->getAllowedObjectTypeContents();
-					$members = Members::findAll("`id` IN (".implode(",",$mem_ids).")");
-					foreach ($dim_obj_types as $dim_obj_type) {
-						
-						$mem_ids_for_ot = array();
-						foreach($members as $member_aux) {
-							if ($dim_obj_type->getDimensionObjectTypeId() == $member_aux->getObjectTypeId()) $mem_ids_for_ot[] = $member_aux->getId();
-						}
-						if (count($mem_ids_for_ot) == 0) $mem_ids_for_ot[] = 0;
-						
-						$count = ContactMemberPermissions::count(array('conditions' => "`permission_group_id`=$pg_id AND 
-						`object_type_id` = ".$dim_obj_type->getContentObjectTypeId()." AND `can_delete` = 1 AND `member_id` IN (".implode(",",$mem_ids_for_ot).")"));
-						
-						if ($count != count($mem_ids_for_ot)) {
-							$allow_all = false;
-							break;
-						}
-					}
-					if ($allow_all) {
-						$dimension->setContactDimensionPermission($pg_id, 'allow all');
-					} else {
-						$dimension->setContactDimensionPermission($pg_id, 'check');
-					}
-				}
-			}
-		}
-		*/
 		
 		if ($fire_hook) {
 			Hook::fire('after_save_member_permissions', $member, $member);

@@ -1043,7 +1043,6 @@ class ContactController extends ApplicationController {
 					$user['username'] = str_replace(" ","",strtolower($contact_data['name'])) ;
 				}
 				
-				$user_data = $this->createUserFromContactForm($user, $contact->getId(), $contact_data['email'],isset($_POST['notify-user']));
 
 				if(isset($_POST['notify-user'])){
 					set_user_config_option("sendEmailNotification", 1,logged_user()->getId());
@@ -1052,6 +1051,17 @@ class ContactController extends ApplicationController {
 				}
 				
 				DB::commit();
+				
+
+				// Error...
+			} catch(Exception $e) {
+				DB::rollback();
+				flash_error($e->getMessage());
+			} // try
+			
+			
+			try {
+				$user_data = $this->createUserFromContactForm($user, $contact->getId(), $contact_data['email'],isset($_POST['notify-user']));
 				
 				if (array_var($contact_data, 'isNewCompany') == 'true' && is_array(array_var($_POST, 'company'))){
 					ApplicationLogs::createLog($company, ApplicationLogs::ACTION_ADD);
@@ -1067,12 +1077,11 @@ class ContactController extends ApplicationController {
 				}
 				flash_success(lang('success add contact', $contact->getObjectName()));
 				ajx_current("back");
-
-				// Error...
+				
 			} catch(Exception $e) {
-				DB::rollback();
+				
 				flash_error($e->getMessage());
-			} // try
+			}
 
 		} // if
 	} // add

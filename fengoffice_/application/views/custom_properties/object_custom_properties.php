@@ -154,10 +154,13 @@ if(count($cps) > 0){
 					}
 					echo '</script>';
 					
+					echo '<input type="hidden" id="'.$genid.'_remove_cp_'.$cp_id.'" name="remove_custom_properties['.$cp_id.']" value="0"/>';
+					
 					echo '</div>';
 					
 					$script = "<script>
 						og.cp_list_remove = function(remove_link, genid, cp_id) {
+							document.getElementById(genid+'_remove_cp_'+cp_id).value = 1;
 						
 							var inputs = remove_link.parentNode.getElementsByTagName('input');
 							var input = inputs[0];
@@ -182,6 +185,7 @@ if(count($cps) > 0){
 						}
 						
 						og.cp_list_selected = function(combo, genid, name, cp_id, is_multiple) {
+							document.getElementById(genid+'_remove_cp_'+cp_id).value = 0;
 							var i = og.cp_list_selected_index[cp_id][genid];
 							var div = document.getElementById(genid + 'cp_list_selected');
 							

@@ -1,5 +1,5 @@
 
-	About Feng Office 2.7
+	About Feng Office 2.7.0.1
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -101,6 +101,13 @@
 	
 	Changelog
 	=========
+	
+	Since 2.7
+	----------------
+	bugfix: UTF-8 issue in tasks descriptions in the tasks widget.
+	bugfix: Transactions reorganized when saving permissions.
+	bugfix: Required custom properties control fixed.
+	
 	
 	Since 2.7-rc
 	----------------

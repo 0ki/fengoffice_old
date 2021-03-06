@@ -48,11 +48,8 @@
 	
 	// save permissions
 	try {
-		DB::beginWork();
 		$result = save_permissions($pg_id, $is_guest, $perms, true, false, false, false);
-		DB::commit();
 	} catch (Exception $e) {
-		DB::rollback();
 		Logger::log("Error saving permissions (1): ".$e->getMessage()."\n".$e->getTraceAsString());
 	}
 	

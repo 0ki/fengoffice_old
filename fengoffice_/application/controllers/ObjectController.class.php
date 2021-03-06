@@ -302,10 +302,11 @@ class ObjectController extends ApplicationController {
 			return;
 		}
 		$obj_custom_properties = array_var($_POST, 'object_custom_properties');
-		foreach ($obj_custom_properties as $id => &$value) {
-			$value = remove_scripts($value);
+		foreach ($obj_custom_properties as $id => &$val) {
+			$val = remove_scripts($val);
 		}
 		
+		$required_custom_props = array();
 		$customProps = CustomProperties::getAllCustomPropertiesByObjectType($object->getObjectTypeId());
 		//Sets all boolean custom properties to 0. If any boolean properties are returned, they are subsequently set to 1.
 		foreach($customProps as $cp){
@@ -319,9 +320,19 @@ class ObjectController extends ApplicationController {
 				$custom_property_value->setValue(0);
 				$custom_property_value->save();
 			}
+			if ($cp->getIsRequired()) {
+				$required_custom_props[] = $cp;
+			}
 		}
+		
+		foreach ($required_custom_props as $req_cp) {
+			if (!isset($obj_custom_properties[$req_cp->getId()])) {
+				throw new Exception(lang('custom property value required', $req_cp->getName()));
+			}
+		}
+		
 		if (is_array($obj_custom_properties)){
-			
+			// check required custom properties
 			foreach($obj_custom_properties as $id => $value){
 				//Get the custom property
 				$custom_property = null;
@@ -345,6 +356,12 @@ class ObjectController extends ApplicationController {
 						} else {
 							$dtv = DateTimeValueLib::dateFromFormatAndString(user_config_option('date_format'), $value);
 							$value = $dtv->format("Y-m-d H:i:s");
+						}
+					}
+					
+					foreach (array_var($_REQUEST, 'remove_custom_properties') as $cpropid => $remove) {
+						if ($remove) {
+							CustomPropertyValues::deleteCustomPropertyValues($object->getId(), $cpropid);
 						}
 					}
 					
@@ -376,10 +393,11 @@ class ObjectController extends ApplicationController {
 						$cpv = CustomPropertyValues::getCustomPropertyValue($object->getId(), $id);
 						if($cpv instanceof CustomPropertyValue){
 							$custom_property_value = $cpv;
-						} else 
+						} else {
 							$custom_property_value = new CustomPropertyValue();
-						$custom_property_value->setObjectId($object->getId());
-						$custom_property_value->setCustomPropertyId($id);
+							$custom_property_value->setObjectId($object->getId());
+							$custom_property_value->setCustomPropertyId($id);
+						}
 						$custom_property_value->setValue($value);
 						$custom_property_value->save();
 					}

@@ -70,8 +70,9 @@
 						</script>
 						<?php if ($object instanceof ProjectTask) :
 								$text = strlen_utf($object->getText()) > 100 ? substr_utf(html_to_text($object->getText()), 0, 100) . "..." : strip_tags($object->getText());
+								$text = remove_scripts($text);
 								if (strlen_utf($text) > 0) : 
-								?>&nbsp;-&nbsp;<span class="desc nobr"><?php echo clean($text) ?></span>
+								?>&nbsp;-&nbsp;<span class="desc nobr"><?php echo $text ?></span>
 							<?php endif;?>
 						<?php endif;?>
 					</div>

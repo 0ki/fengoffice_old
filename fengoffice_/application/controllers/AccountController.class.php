@@ -307,18 +307,19 @@ class AccountController extends ApplicationController {
 			if (!is_array($user_data)) $user_data = array();
 			try{
 				DB::beginWork();
+				$do_rollback = true;
 				$pg_id = $user->getPermissionGroupId();
-				
 				$user->setUserType(array_var($user_data, 'type'));
 				$user->save();
-				//save_permissions($pg_id, $user->isGuest());
-				save_user_permissions_background(logged_user(), $pg_id, $user->isGuest());
 				
 				DB::commit();
+				$do_rollback = false;
+				save_user_permissions_background(logged_user(), $pg_id, $user->isGuest());
+				
 				flash_success(lang('success user permissions updated'));
 				ajx_current("back");
 			} catch(Exception $e) {
-				DB::rollback();
+				if ($do_rollback) DB::rollback();
 				flash_error($e->getMessage());
 				ajx_current("empty");
 			}

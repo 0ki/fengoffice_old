@@ -95,8 +95,6 @@ class GroupController extends ApplicationController {
 				
 				// set permissions
 				$pg_id = $group->getId();
-				//save_permissions($pg_id);
-				save_user_permissions_background(logged_user(), $pg_id);
 				
 				// save users
 				if ($users = array_var($_POST, 'user')) {
@@ -118,7 +116,14 @@ class GroupController extends ApplicationController {
 			} catch(Exception $e) {
 				DB::rollback();
 				tpl_assign('error', $e);
+				return;
 			} // try
+			
+			try {
+				save_user_permissions_background(logged_user(), $pg_id);
+			} catch(Exception $e) {
+				tpl_assign('error', $e);
+			}
 		} // if
 	} // add_group
 
@@ -202,8 +207,6 @@ class GroupController extends ApplicationController {
 					}
 				}
 				
-				save_user_permissions_background(logged_user(), $pg_id, false, $gr_users_ids);
-				
 				// save users
 				ContactPermissionGroups::delete("`permission_group_id` = $pg_id");
 				if ($users = array_var($_POST, 'user')) {
@@ -224,6 +227,13 @@ class GroupController extends ApplicationController {
 
 			} catch(Exception $e) {
 				DB::rollback();
+				tpl_assign('error', $e);
+				return;
+			}
+			
+			try {
+				save_user_permissions_background(logged_user(), $pg_id, false, $gr_users_ids);
+			} catch(Exception $e) {
 				tpl_assign('error', $e);
 			}
 	
