@@ -7,10 +7,14 @@
 	require_javascript('og/tasks/TasksTopToolbar.js');
 	require_javascript('og/tasks/TasksBottomToolbar.js');
 	require_javascript('og/tasks/print.js');
+        require_javascript('og/tasks/TaskPopUp.js');
 
 	if (config_option('use tasks dependencies')) {
 		require_javascript('og/tasks/task_dependencies.js');
 	}
+        
+        $loc = user_config_option('localization');
+	if (strlen($loc) > 2) $loc = substr($loc, 0, 2);
 
 	$genid = gen_id();
 	
@@ -88,8 +92,13 @@
 
 <script>
 og.noOfTasks = '<?php echo user_config_option('noOfTasks') ?>';
+og.genid = '<?php echo $genid?>';
+og.config.wysiwyg_tasks = '<?php echo config_option('wysiwyg_tasks') ? true : false ?>';
 og.config.use_tasks_dependencies = '<?php echo config_option('use tasks dependencies') ? "1" : "0" ?>';
 og.config.time_format_use_24 = '<?php echo user_config_option('time_format_use_24') ? ' - G:i' : ' - g:i A' ?>';
+og.config.time_format_use_24_duetime = '<?php echo user_config_option('time_format_use_24') ? 'G:i' : 'g:i A' ?>';
+og.config.work_day_start_time = '<?php echo strtotime(user_config_option('work_day_start_time')) ?>';
+og.config.work_day_end_time = '<?php echo strtotime(user_config_option('work_day_end_time')) ?>';
 </script>
 
 <div id="taskPanelHiddenFields">
@@ -104,6 +113,7 @@ og.config.time_format_use_24 = '<?php echo user_config_option('time_format_use_2
 	<input type="hidden" id="hfUserPreferences" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($userPreferences)))) ?>"/>
 	<input type="hidden" id="hfObjectSubtypes" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($object_subtypes_array)))) ?>"/>
 	<input type="hidden" id="hfDependencyCount" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($dependency_count)))) ?>"/>
+        <input id="<?php echo $genid?>type_related" type="hidden" name="type_related" value="only" />
 </div>
 
 <div id="tasksPanel" class="ogContentPanel" style="background-color:white;background-color:#F0F0F0;height:100%;width:100%;">
@@ -175,9 +185,50 @@ og.config.time_format_use_24 = '<?php echo user_config_option('time_format_use_2
 	<?php } ?>
 
 	}, mili);
-
+        
+        Ext.extend(og.TaskPopUp, Ext.Window, {
+                accept: function() {
+                        var action = $("#action_related").val();
+                        var opt = $("#<?php echo $genid?>type_related").val();
+                        ogTasks.executeAction(action,'',opt);
+                        this.close();
+                }
+        });
+        
+        function selectRelated(val){
+            $("#<?php echo $genid?>type_related").val(val);
+        }
+        
+        function loadCKeditor(id){
+            var instance = CKEDITOR.instances['<?php echo $genid ?>ckeditor' + id];
+            if(instance)
+            {
+                CKEDITOR.remove(instance);
+            }
+            var editor = CKEDITOR.replace('<?php echo $genid ?>ckeditor' + id, {
+                uiColor: '#BBCCEA',
+                height: '70px',
+                enterMode: CKEDITOR.ENTER_P,
+                shiftEnterMode: CKEDITOR.ENTER_BR,
+                disableNativeSpellChecker: false,
+                language: '<?php echo $loc ?>',
+                customConfig: '',
+                toolbar: [
+                                ['FontSize','-','Bold','Italic','Underline','-', 'SpellChecker', 'Scayt','-',
+                                //'NumberedList','BulletedList','-',
+                                'TextColor','BGColor','-',
+                                'JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock']
+                        ],
+                on: {
+                        instanceReady: function(ev) {
+                                og.adjustCkEditorArea('<?php echo $genid ?>',id);
+                                editor.resetDirty();
+                        }
+                    },
+                entities_additional : '#39,#336,#337,#368,#369'
+            });
+        }
 </script>
-
 
 <?php 
 	// to include additional templates in the tasks list

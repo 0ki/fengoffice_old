@@ -1,5 +1,5 @@
 
-    About Feng Office 2.0.0.8 - Stable
+    About Feng Office 2.1 - Beta
     ================================
  
     Feng Office is a Collaboration Platform and Project Management System.
@@ -68,6 +68,7 @@
 	Notes
 	-----
     
+    - Set at config/config.php the constant TABLE_PREFIX to 'fo_' before running the upgrade.
    	- After upgrading make sure to run public/upgrade/complete_migration.php to set up object permissions.
     - Custom reports are not yet migrated due to potential incompatibilites between versions. 
    
@@ -96,6 +97,67 @@
  
     Changelog
     =========
+    
+    Since 2.0.0.8
+    ----------------
+    bugfix: Google Calendar issues solved
+	bugfix: 'Executive' users not being able to assign tasks to themseleves at some places
+	bugfix: Admins and Superadmins may now unblock bloqued documents
+	bugfix: Subscriptions and permissions issues solved
+	bugfix: Solved some issues when editing objects
+	bugfix: Solved issue when classifying emails and then accesing them
+	bugfix: Solved issue when adding timeslots
+	bugfix: Assigned to alphabetically ordered
+	bugfix: Solved issue when editing email accounts
+	bugfix: Custom properties were not appearing in weblinks
+	bugfix: Solved issue when sending an email
+	bugfix: Solved issue where Milestones were showing wrong data
+	bugfix: File revisions were not being deleted
+	bugfix: Timeslots were not able to be printed
+	bugfix: Issues when retrieving passwords solved
+	bugfix: Solved issue when deleting timeslots
+	bugfix: Solved some permissions issues
+	bugfix: Solved issue when adding pictures to documents
+	bugfix: Solved issues with paginations
+	bugfix: Solved some compatibility issues with IE
+	bugfix: People profiles can be closed
+	bugfix: Trashed emails not being sent
+	bugfix: Repetitive tasks issues solved
+	bugfix: Solved workspace quick add issue
+	bugfix: Dimension members are now searchable
+	 
+	usability: Sent mails synchronization reintroduced
+	usability: Selecting if repetitive events should be repeated on weekends or workdays
+	usability: Templates now take into account custom properties
+	usability: Dimension members filtering improvements
+	usability: New & improved notifications
+	usability: Adavanced search feature
+	usability: Added quick task edition, and improved quick task addition
+	usability: Improvements when linking objects
+	usability: Improvements in task dependencies
+	usability: Warning when uploading different file
+	usability: Google Docs compatibility through weblinks
+	usability: Improved the templates usability
+	usability: Workspace widget introduced
+	usability: Improvement with estimated time in reports
+	usability: Added estimated time information in tasks list
+	usability: Deletion from dimension member edition
+	usability: Archiving dimension members funciton introduced
+	usability: File extension prevention upload
+	usability: WYSIWYG text feature for tasks descriptions and notes
+	usability: View as list/panel feature reintroduced
+	usability: .odt and .fodt files indexing
+	 
+	system: Improved upgrade procedure
+	system: Improved the sharing table
+	system: Improved performance when checking emails through IMAP
+	system: Improved performance within tasks list
+	system: Improved performance when accessing 'Users'
+	system: Improved performance with ws colours
+	system: Improved performance when loading permissions and dimensions
+	system: Improvements within the Plugin system
+	system: Major performance improvements at the framework level
+	    
 
  	Since 2.0 RC 1
  	----------------

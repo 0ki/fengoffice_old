@@ -26,14 +26,14 @@ if (can_manage_security(logged_user())) {
 		'extra' => '<a class="internalLink coViewAction ico-add" href="' . owner_company()->getAddGroupUrl() . '">' . lang('add group') . '</a>',
 	);
 }
-/*FIXME if (can_manage_security(logged_user()) && Plugins::instance()->isActivePlugin('mail')) {
+if (can_manage_security(logged_user()) && Plugins::instance()->isActivePlugin('mail')) {
 	$icons[] = array(
 		'ico' => 'ico-large-email',
 		'url' => get_url('administration', 'mail_accounts'),
 		'name' => lang('mail accounts'),
 		'extra' => '<a class="internalLink coViewAction ico-add" href="' . get_url('mail', 'add_account') . '">' . lang('add mail account') . '</a>',
 	);
-}*/
+}
 
 if (can_manage_templates(logged_user())) {
 	$icons[] = array(

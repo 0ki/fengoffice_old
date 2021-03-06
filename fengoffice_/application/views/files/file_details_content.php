@@ -5,8 +5,21 @@
 ?>
 
 <?php if ($file->getType() == ProjectFiles::TYPE_WEBLINK) { ?>
+	<b><?php 
+	if (strpos($file->getUrl(), 'docs.google.com/') != false){
+		$content = '<div style="position: relative; left:0; top: 0; width: 100%; height: 600px; background-color: white">';
+		$content .= '<iframe id="'.$genid.'ifr" name="'.$genid.'ifr" style="width:100%;height:100%" frameborder="0" src="'.$file->getUrl().'" 
+								onload="javascipt:iframe=document.getElementById(\''.$genid.'ifr\'); iframe.parentNode.style.height = Math.min(600, iframe.contentWindow.document.body.scrollHeight + 30) + \'px\' ;">
+							</iframe>';
+				'<script>if (Ext.isIE) document.getElementById(\''.$genid.'ifr\').contentWindow.location.reload();</script>';
+		$content .= '<a class="ico-expand" style="display: block; width: 16px; height: 16px; cursor: pointer; position: absolute; right: 20px; top: 2px" title="' . lang('expand') . '" onclick="og.expandDocumentView.call(this)"></a>
+					</div>';	
+	    echo lang("blank_google_doc");
+	    echo $content;
+	} else {?>
 	<b><?php echo lang('url') ?></b>: <a href="<?php echo clean($file->getUrl()) ?>" target="_blank"><?php echo clean($file->getUrl()) ?></a>
-<?php } ?>
+<?php }
+} ?>
 
 <?php if ($file->isDisplayable()) {?>
 <div>
@@ -14,9 +27,10 @@
 		<iframe class="document-preview" style="width:100%;height:100%;border:1px solid #ddd;" src="<?php echo get_sandbox_url("feed", "display_content", array("id" => $file->getId(), "user_id" => logged_user()->getId(), "token" => logged_user()->getTwistedToken())) ?>"></iframe>
 		<a class="ico-expand" style="display: block; width: 16px; height: 16px; cursor: pointer; position: absolute; right: 20px; top: 2px" title="<?php echo lang('expand') ?>" onclick="og.expandDocumentView.call(this)"></a>
 	</div>
+	
 	<script>
 		$(function(){
-			$("iframe.document-preview").load(function(){				
+			$("iframe.document-preview").load(function(){
 				$("iframe.document-preview").contents().find("a").attr("target", "_blank");
 			});
 		});
@@ -92,7 +106,7 @@
 			<?php } // if ?>
 		</td>
 		<td class='line_header' style="background-color:<?php echo $bgColor ?>;">
-			<?php if($revision->getCreatedBy() instanceof User) { ?>
+			<?php if($revision->getCreatedBy() instanceof Contact) { ?>
 			    <?php echo lang('file revision title long', $revision->getCreatedBy()->getCardUserUrl(), clean($revision->getCreatedBy()->getObjectName()), format_datetime($revision->getCreatedOn())) ?>
 			<?php } else { ?>
 			    <?php echo lang('file revision title short', format_datetime($revision->getCreatedOn())) ?>

@@ -117,15 +117,16 @@ class Contacts extends BaseContacts {
 			);
 		}
 		
-		$company_users = Contacts::findAll(array('conditions' => 'user_type<>0 AND company_id IN ('.implode(',', $comp_ids).')' . ($include_disabled ? "" : " AND disabled=0")));
+		$company_users = Contacts::findAll(array('order' => 'company_id, first_name, surname', 'conditions' => 'user_type<>0 AND company_id IN ('.implode(',', $comp_ids).')' . ($include_disabled ? "" : " AND disabled=0")));
 		foreach ($company_users as $user) {
 			$result[$user->getCompanyId()]['users'][] = $user;
 		}
 
 		$res = array();
 		foreach ($result as $comp_info) {
-			if ($comp_info['details'] instanceof Contact)
+			if (array_var($comp_info, 'details') instanceof Contact) {
 				$res[$comp_info['details']->getObjectName()] = $comp_info;
+			}
 		}
 		$result = $res;
 
@@ -394,7 +395,18 @@ class Contacts extends BaseContacts {
 		if(is_array($errors) && count($errors)) {
 			throw new DAOValidationError($this, $errors);
 		} 
-	}	
+	}
+        
+        function getUserDisplayName($user_id) {
+		$user = Contacts::findById($user_id);
+		if ($user) {
+			return $user->getDisplayName();
+		} else {
+			$log = ApplicationLogs::findOne(array('conditions' => "`rel_object_id` = '$user_id' AND `action` = 'add'"));
+			if ($log) return $log->getObjectName();
+			else return lang('n/a');
+		}
+	}
 	
 } // Contacts
 

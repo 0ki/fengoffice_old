@@ -23,7 +23,11 @@ if (isset($message) && $message instanceof ProjectMessage) {
 <div style="padding:7px">
 <div class="message">
 	<?php 
-		$content = escape_html_whitespace(convert_to_links(clean($message->getText())));
+                if($message->getTypeContent() == "text"){
+                    $content = escape_html_whitespace(convert_to_links(clean($message->getText())));
+                }else{
+                    $content = purify_html(nl2br($message->getText()));
+                }
 				
 		tpl_assign("content", $content);
 		tpl_assign("object", $message);

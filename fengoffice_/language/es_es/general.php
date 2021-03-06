@@ -192,6 +192,9 @@
 	'repeat by' => 'Repetir según',
 	'repeating task' => 'Tarea Repetitiva',
 	'this task repeats' => 'Esta tarea se repite',
+        'repeat on saturdays' => 'Repetir los sábados',
+        'repeat on sundays' => 'Repetir los domingos',
+        'repeat working days' => 'Repitir los días laborables',
 	'forever' => 'para siempre',
 	'n times' => '{0} veces',
 	'until x' => 'hasra {0}',
@@ -211,6 +214,8 @@
 	'move up' => 'Subir',
 	'move down' => 'Bajar',
 	'this file is included in document' => 'Este documento está incluido en: {0}',
+	'blank_google_doc' => 'En caso de que vea una página blanca, se debe a que debe <u><a href="http://www.gmail.com" target="_blank">acceder a su cuenta de Google</a></u> o que ya no tiene acceso al documento',
+
 	'minutes ago' => 'Hace {0} minutos',
 	'about hours ago' => 'Aprox. hace {0} horas',
 	'yesterday at' => 'Ayer a las {0}',
@@ -231,4 +236,9 @@
         'percent completed detail' => 'El porcentaje de avance se calcula en base a la cantidad de horas trabajadas sobre la cantidad de horas estimadas',
 	'task percent completed must be greater than 0' => 'El porcentaje completado debe ser mayor que 0.',
 	'task percent completed must be lower than 100' => 'El porcentaje completado debe ser menor o igual a 100.',
+        'advanced search' => 'Búsqueda avanzada',
+	'empty title' => 'Título vacío',
+        'will this person use feng office?' => 'Esta persona va a usar Feng Office?',
+        'specify username?' => 'Especificar Usuario?',
+
 ); ?>

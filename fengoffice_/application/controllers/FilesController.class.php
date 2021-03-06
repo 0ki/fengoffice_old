@@ -424,7 +424,12 @@ class FilesController extends ApplicationController {
 			} catch(Exception $e) {
 				DB::rollback();
 				flash_error($e->getMessage());
-				Logger::log("Error when uploading file:".$e->getTraceAsString());
+				if ($e instanceof InvalidUploadError) {
+					Logger::log("InvalidUploadError\n".$e->getTraceAsString());
+					Logger::log(print_r($e->getAdditionalParams(), 1));
+				} else {
+					Logger::log("Error when uploading file: ".$e->getMessage()."\n".$e->getTraceAsString());
+				}
 				ajx_current("empty");
 
 				// If we uploaded the file remove it from repository
@@ -449,11 +454,11 @@ class FilesController extends ApplicationController {
 		tpl_assign('file', $file);
 		tpl_assign('file_data', $file_data);
 		tpl_assign('genid', array_var($_GET, 'genid'));
+                tpl_assign('object_id', array_var($_GET, 'object_id'));
 			
 		if (is_array(array_var($_POST, 'file'))) {
 			//$this->setLayout("html");
 			$upload_option = array_var($file_data, 'upload_option');
-			$skipSettings = false;
 			try {
 				DB::beginWork();
 				
@@ -491,14 +496,32 @@ class FilesController extends ApplicationController {
 					$revision->setComment($revision_comment);
 					$revision->save();
 				}
-				
+                                
+                                $member_ids = array();
 				$object_controller = new ObjectController();
+                                if(count(active_context_members(false)) > 0 ){
+                                    $object_controller->add_to_members($file, active_context_members(false));
+                                }elseif(array_var($file_data, 'object_id')){
+                                    $object = Objects::findObject(array_var($file_data, 'object_id'));
+                                    $member_ids = $object->getMemberIds();
+                                    $object_controller->add_to_members($file, $member_ids);
+                                }
+//                                else{
+//                                    $m = Members::findById(logged_user()->getPersonalMemberId());
+//                                    if (!$m instanceof Member) {
+//                                            $person_dim = Dimensions::findByCode('feng_persons');
+//                                            if ($person_dim instanceof Dimension) {
+//                                                    $member_ids = Members::findAll(array(
+//                                                            'id' => true, 
+//                                                            'conditions' => array("object_id = ? AND dimension_id = ?", logged_user()->getId(), $person_dim->getId())
+//                                                    ));
+//                                            }
+//                                    } else {
+//                                            $member_ids[] = $m->getId();
+//                                    }
+//                                    $object_controller->add_to_members($file, $member_ids);
+//                                }
 
-				//Add properties
-				if (!$skipSettings){
-					$object_controller->add_to_members($file, active_context_members(false));
-				}
-				
 				DB::commit();
 				
 				ajx_extra_data(array("file_id" => $file->getId()));
@@ -603,6 +626,7 @@ class FilesController extends ApplicationController {
 				$revision_comment = array_var($postFile, 'comment');
 
 				$file_content = array_var($_POST, 'fileContent');
+				$image_file_ids = array();
 				preg_match_all("/<img[^>]*src=[\"']([^\"']*)[\"']/", $file_content, $matches);
 				$urls = array_var($matches, 1);
 				if (is_array($urls)) {
@@ -611,6 +635,7 @@ class FilesController extends ApplicationController {
 						if (strpos(html_entity_decode($url), get_url('files', 'download_image')) === false ) {
 							$img_file_id = self::upload_document_image($url, $file->getFilename(), $img_num);
 							$file_content = str_replace($url, get_url('files', 'download_image', array('id' => $img_file_id, 'inline' => 1)) , $file_content);
+							$image_file_ids[] = $img_file_id;
 						}
 						$img_num++;
 					}
@@ -634,6 +659,14 @@ class FilesController extends ApplicationController {
 					ajx_current("back");
 				}
 				
+				$object_controller = new ObjectController();
+				$file_member_ids = $file->getMemberIds();
+				if (count($image_file_ids) > 0) {
+					$image_files = ProjectFiles::findAll(array('conditions' => 'id IN ('.implode(',',$image_file_ids).')'));
+					foreach ($image_files as $img_file) {
+						$object_controller->add_to_members($img_file, $file_member_ids);
+					}
+				}
 				
 				ApplicationLogs::createLog($file, ApplicationLogs::ACTION_EDIT);
 				DB::commit();
@@ -671,6 +704,7 @@ class FilesController extends ApplicationController {
 			
 			//seteo esto para despues setear atributos
 			$file_content = array_var($_POST, 'fileContent');
+			$image_file_ids = array();
 			preg_match_all("/<img[^>]*src=[\"']([^\"']*)[\"']/", $file_content, $matches);
 			$urls = array_var($matches, 1);
 			if (is_array($urls)) {
@@ -679,6 +713,7 @@ class FilesController extends ApplicationController {
 					if (strpos($url, get_url('files', 'download_image')) === false ) {
 						$img_file_id = self::upload_document_image($url, $file->getFilename(), $img_num);
 						$file_content = str_replace($url, get_url('files', 'download_image', array('id' => $img_file_id, 'inline' => 1)) , $file_content);
+						$image_file_ids[] = $img_file_id;
 					}
 					$img_num++;
 				}
@@ -715,6 +750,13 @@ class FilesController extends ApplicationController {
 					if ($member instanceof Member) $member_ids[] = $member->getId();
 				}
 				$object_controller->add_to_members($file, $member_ids);
+				
+				if (count($image_file_ids) > 0) {
+					$image_files = ProjectFiles::findAll(array('conditions' => 'id IN ('.implode(',',$image_file_ids).')'));
+					foreach ($image_files as $img_file) {
+						$object_controller->add_to_members($img_file, $member_ids);
+					}
+				}
 				
 				ApplicationLogs::createLog($file, ApplicationLogs::ACTION_ADD);
 
@@ -1042,8 +1084,6 @@ class FilesController extends ApplicationController {
 			try {
 				DB::beginWork();
 				
-				$this->setTemplate('add_document');
-	
 				$file = ProjectFiles::findById(get_id());
 				if (!($file instanceof ProjectFile)) {
 					throw new Exception(lang('file dnx'));

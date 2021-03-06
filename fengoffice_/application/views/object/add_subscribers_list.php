@@ -18,11 +18,13 @@ require_javascript('og/modules/addMessageForm.js');
 		$replace_with = null;
 		foreach ($members as $member) {
 			if ($dimension->getId() == $member->getDimensionId()) {
-				$replace_with = $member;
-				break;
+				if (is_null($replace_with)) $replace_with = array();
+				$replace_with[] = $member;
 			}
 		}
-		if (!is_null($replace_with)) $context[] = $replace_with;
+		if (!is_null($replace_with)) {
+			foreach ($replace_with as $rw) $context[] = $rw;
+		}
 		else $context[] = $dimension;
 	}
 	

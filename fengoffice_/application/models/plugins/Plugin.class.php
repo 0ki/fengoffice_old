@@ -30,7 +30,9 @@ class Plugin extends BasePlugin {
 	
 	function update() {
 		foreach ( $this->getUpdateFunctions () as $updateFunction ) {
-			call_user_func ( $updateFunction );
+			if (function_exists($updateFunction)) {
+				call_user_func($updateFunction);
+			}
 		}
 		$meta = $this->getMetadata ();
 		$this->setVersion(array_var($meta,'version'));

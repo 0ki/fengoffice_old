@@ -228,9 +228,9 @@
 	'attach contents' => 'Adjuntar contenido',
 	'set parent task' => 'Elegir tarea padre',
 	'create task from email' => 'Crear tarea de este correo',
-	'create task from email description' => 'De:       {1}
-Asunto:   {0}
-
+	'create task from email description' => 'De:       {1}<br/>
+Asunto:   {0}<br/>
+<br/>
 {2}',
 	'suggested workspaces' => 'Áreas de trabajo sugeridas',
 	'mail account sender name' => 'Nombre de remitente',

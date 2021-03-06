@@ -1,5 +1,6 @@
 <?php
 require_javascript('og/modules/addMessageForm.js'); 
+require_javascript('og/EventRelatedPopUp.js');
 $genid = gen_id(); 
 ?>
 <script>
@@ -170,6 +171,8 @@ $visible_cps = CustomProperties::countVisibleCustomPropertiesByObjectType($objec
 ?>
 	<form id="<?php echo $genid ?>submit-edit-form" class="add-event" style="height:100%;background-color:white" class="internalForm" action="<?php echo $form_view_url; ?>" method="post" onsubmit="<?php echo $form_on_submit ?>">
 	<input type="hidden" id="event[pm]" name="event[pm]" value="<?php echo $pm?>">
+        <input id="<?php echo $genid?>view_related" type="hidden" name="view_related" value="<?php echo $event_related ?>" />
+        <input id="<?php echo $genid?>type_related" type="hidden" name="type_related" value="only" />
 	<div class="event">	
 	<div class="coInputHeader">
 		<div class="coInputHeaderUpperRow">
@@ -293,15 +296,35 @@ $visible_cps = CustomProperties::countVisibleCustomPropertiesByObjectType($objec
 								<span id="word"></span>
 							</div>
 							<table>
+                                                                <script type="text/javascript">
+                                                                        og.selectRepeatMode = function(mode) {
+                                                                                var id = '';
+                                                                                if (mode == 1) id = 'repeat_opt_forever';
+                                                                                else if (mode == 2) id = 'repeat_opt_times';
+                                                                                else if (mode == 3) id = 'repeat_opt_until';
+                                                                                if (id != '') {
+                                                                                        el = document.getElementById('<?php echo $genid ?>'+id);
+                                                                                        if (el) el.checked = true;
+                                                                                } 
+                                                                        }
+                                                                        og.viewDays = function(view) {
+                                                                            var btn = Ext.get('<?php echo $genid ?>repeat_days');
+                                                                            if(view){
+                                                                                btn.dom.style.display = 'block';
+                                                                            }else{
+                                                                                btn.dom.style.display = 'none';
+                                                                            }
+                                                                        }
+                                                                </script>
 								<tr><td colspan="2" style="vertical-align:middle; height: 22px;">
-									<?php echo radio_field('event[repeat_option]',$rsel1,array('id' => 'cal_repeat_option','value' => '1', 'tabindex' => '60')) ."&nbsp;". lang('CAL_REPEAT_FOREVER')?>
+									<?php echo radio_field('event[repeat_option]',$rsel1,array('id' => $genid.'repeat_opt_forever','value' => '1', 'tabindex' => '60', 'onclick' => 'og.viewDays(false)')) ."&nbsp;". lang('CAL_REPEAT_FOREVER')?>
 								</td></tr>
 								<tr><td colspan="2" style="vertical-align:middle">
-									<?php echo radio_field('event[repeat_option]',$rsel2,array('id' => 'cal_repeat','value' => '2', 'tabindex' => '70')) ."&nbsp;". lang('CAL_REPEAT');
-									echo "&nbsp;" . text_field('event[repeat_num]', $rnum, array('size' => '3', 'id' => 'repeat_num', 'maxlength' => '3', 'style'=>'width:25px', 'tabindex' => '80')) ."&nbsp;" . lang('CAL_TIMES') ?>
+									<?php echo radio_field('event[repeat_option]',$rsel2,array('id' => $genid.'repeat_opt_times','value' => '2', 'tabindex' => '70', 'onclick' => 'og.viewDays(true)')) ."&nbsp;". lang('CAL_REPEAT');
+									echo "&nbsp;" . text_field('event[repeat_num]', $rnum, array('size' => '3', 'id' => 'repeat_num', 'maxlength' => '3', 'style'=>'width:25px', 'tabindex' => '80', 'onchange' => 'og.selectRepeatMode(2);')) ."&nbsp;" . lang('CAL_TIMES') ?>
 								</td></tr>
 								<tr><td style="vertical-align:middle">
-									<?php echo radio_field('event[repeat_option]',$rsel3,array('id' => 'cal_repeat_until','value' => '3', 'tabindex' => '90')) ."&nbsp;". lang('CAL_REPEAT_UNTIL');?>
+									<?php echo radio_field('event[repeat_option]',$rsel3,array('id' => $genid.'repeat_opt_until','value' => '3', 'tabindex' => '90', 'onclick' => 'og.viewDays(false)')) ."&nbsp;". lang('CAL_REPEAT_UNTIL');?>
 								</td><td style="padding-left:8px;">
 									<?php echo pick_date_widget2('event[repeat_end]', $rend, $genid, 95);?>
 								</td></tr>
@@ -339,6 +362,30 @@ $visible_cps = CustomProperties::countVisibleCustomPropertiesByObjectType($objec
 						</div>
 					</td>
 				</tr>
+                                <tr id="<?php echo $genid ?>repeat_days" style="display: none;">
+                                    <td>
+                                        <table>
+                                            <tr>
+                                                <td>
+                                                    <input class="checkbox" type="checkbox" value="1" name="event[repeat_saturdays]"/>
+                                                    <?php echo lang('repeat on saturdays')?>                                                
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <input class="checkbox" type="checkbox" value="1" name="event[repeat_sundays]"/>
+                                                    <?php echo lang('repeat on sundays')?>                                                
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <input class="checkbox" type="checkbox" value="1" name="event[working_days]"/>
+                                                    <?php echo lang('repeat working days')?>                                                
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
 			</table>
 		</fieldset>
 	</div>
@@ -585,15 +632,10 @@ Ext.getCmp(genid + 'event[start_value]Cmp').on({
 });
 
 var memberChoosers = Ext.getCmp('<?php echo "$genid-member-chooser-panel-".$event->manager()->getObjectTypeId()?>').items;
-var treeClicked = false;
 
 if (memberChoosers) {
 	memberChoosers.each(function(item, index, length) {
 		item.on('all trees updated', function() {
-			// First User click
-			$(".member-chooser input.x-tree-node-cb").click(function(){
-				treeClicked = true;
-			});
 			var dimensionMembers = {};
 			memberChoosers.each(function(it, ix, l) {
 				dim_id = this.dimensionId;
@@ -605,17 +647,15 @@ if (memberChoosers) {
 			});
 
 			var uids = App.modules.addMessageForm.getCheckedUsers('<?php echo $genid ?>');
-			if(treeClicked) {
-				Ext.get('<?php echo $genid ?>add_subscribers_content').load({
-					url: og.getUrl('object', 'render_add_subscribers', {
-						context: Ext.util.JSON.encode(dimensionMembers),
-						users: uids,
-						genid: '<?php echo $genid ?>',
-						otype: '<?php echo $event->manager()->getObjectTypeId()?>'
-					}),
-					scripts: true
-				});
-			}
+			Ext.get('<?php echo $genid ?>add_subscribers_content').load({
+				url: og.getUrl('object', 'render_add_subscribers', {
+					context: Ext.util.JSON.encode(dimensionMembers),
+					users: uids,
+					genid: '<?php echo $genid ?>',
+					otype: '<?php echo $event->manager()->getObjectTypeId()?>'
+				}),
+				scripts: true
+			});
 			og.redrawUserList(Ext.util.JSON.encode(dimensionMembers));
 		});
 	});
@@ -624,4 +664,21 @@ if (memberChoosers) {
 Ext.get('eventSubject').focus();
 <?php if (array_var($event_data, 'typeofevent') == 2) echo 'og.toggleDiv(\''.$genid.'event[start_time]\'); og.toggleDiv(\''.$genid.'ev_duration_div\');'; ?>
 
+Ext.extend(og.EventRelatedPopUp, Ext.Window, {
+        accept: function() {
+                this.close();
+        }
+});
+
+$(document).ready(function() {
+    if($("#<?php echo $genid?>view_related").val()){
+        this.dialog = new og.EventRelatedPopUp();
+        this.dialog.setTitle(lang('events related'));
+        this.dialog.show();      
+    }
+});
+
+function selectEventRelated(val){
+    $("#<?php echo $genid?>type_related").val(val);
+}
 </script>

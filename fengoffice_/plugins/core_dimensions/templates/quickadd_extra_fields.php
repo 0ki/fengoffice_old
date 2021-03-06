@@ -3,7 +3,7 @@
 	<input class="quick-form-mail" type="email" name="contact[email]" />
 </div>
 <?php 
-	tpl_display(get_template_path("add_contact/access_data","contact"));
+	tpl_display(get_template_path("add_contact/access_data_company","contact"));
 ?>
 
 <script>

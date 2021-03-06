@@ -7,6 +7,11 @@
   */
   class Objects extends BaseObjects {
 
+  	/**
+  	 * Returns the content object from its id
+  	 * @return ContentDataObject
+  	 * @param $object_id id of the content object to get
+  	 */
     static function findObject($object_id){
     	
     	$object = self::findById($object_id);
@@ -389,7 +394,7 @@
 
     	$association_conditions = "";
     	foreach ($redefined_context as $key=>$value){
-	    		$dimension = Dimensions::findById($value);
+	    		$dimension = Dimensions::getDimensionById($value);
 	    		$object_types = $dimensions[$value]['object_types'];
 	    		if (!isset($is_property[$value])) $member_ids = $dimensions[$value]['allowed_members'];
 	    		else $member_ids = $member_intersection;

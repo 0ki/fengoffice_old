@@ -697,5 +697,85 @@ function plugin_sort($a, $b) {
 	} elseif (isset ( $b ['order'] )) {
 		return 1;
 	} else
-		return strcasecmp ( $a ['name'], $b ['name'] );
+	return strcasecmp ( $a ['name'], $b ['name'] );
+}
+
+/**
+ * 
+ * Make a request
+ * @param string $url
+ * @param string $method ('GET','POST')
+ * @param array $data
+ * @param string $additional_headers
+ * @param bool $followRedirects
+ */
+function HttpRequest( $url, $method = 'GET', $data = NULL, $additional_headers = NULL, $followRedirects = true )
+{
+	$original_data = $data;
+	$header = '';
+	$body = '';
+	# in compliance with the RFC 2616 post data will not redirected
+	$method = strtoupper($method);
+	$url_parsed = @parse_url($url);
+	if (!@$url_parsed['scheme']) $url_parsed = @parse_url('http://'.$url);
+	extract($url_parsed);
+	if(!is_array($data)) {
+		$data = NULL;
+	}
+	else {
+		$ampersand = '';
+		$temp = NULL;
+		foreach($data as $k => $v)
+		{
+			$temp .= $ampersand.urlencode($k).'='.urlencode($v);
+			$ampersand = '&';
+		}
+		$data = $temp;
+	}
+	if(!isset($port)) $port = 80;
+	if(!isset($path)) $path = '/';
+	if(($method == 'GET') and ($data)) $query = (@$query)?'&'.$data:'?'.$data;
+	if(@isset($query)) $path .= '?'.$query;
+	$out = "$method $path HTTP/1.0\r\n";
+	$out .= "Host: $host\r\n";
+	if($method == 'POST') {
+		$out .= "Content-type: application/x-www-form-urlencoded\r\n";
+		$out .= "Content-length: " . @strlen($data) . "\r\n";
+	}
+	$out .= (@$additional_headers)?$additional_headers:'';
+	$out .= "Connection: Close\r\n\r\n";
+	if($method == 'POST') $out .= $data."\r\n";
+	if(!$fp = @fsockopen($host, $port, $es, $en, 5)){
+		$err =  error_get_last();
+		fs_log('Error on fsockopen: ' . $err["message"] . $err["file"] . $err["line"]);
+		return false;
+	}
+	fwrite($fp, $out);
+	
+	$result = ''; 
+	while(!feof($fp)) {
+		// receive the results of the request
+		$result .= fgets($fp, 128);
+	}
+    fclose($fp);
+    
+    // split the result header from the content
+    $result = explode("\r\n\r\n", $result, 2);
+ 
+    $header = isset($result[0]) ? $result[0] : '';
+    $body = isset($result[1]) ? $result[1] : '';
+    
+    $headers = explode("\r\n", $header);
+    $status = $headers[0];
+	
+	if ($followRedirects) {
+		foreach ($headers as $hline) {
+			if (str_starts_with($hline, "Location:")) {
+				$url = trim(str_replace("Location:", "", $hline));
+				return HttpRequest($url, $method, $original_data, $additional_headers, $followRedirects);
+			}
+		}
+	}
+	
+    return array('head' => trim($header), 'body' => trim($body), 'status' => $status);
 }

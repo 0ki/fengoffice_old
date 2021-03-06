@@ -1,15 +1,15 @@
 <?php
 $description = array_var($variables, "description", "");
 $objects = array_var($variables, "objects", "");
+if ($description != "") {
 ?>
-<b><?php echo lang("description") ?>:</b><br><?php echo clean($description) ?><br><br>
-<b><?php echo lang("objects in template") ?>:</b><br>
+<span class="bold"><?php echo lang("description") ?>:</span><br><?php echo clean($description) ?><br><br>
+<?php } ?>
+<span class="bold"><?php echo lang("objects in template") ?>:</span><br>
 <?php
 if (is_array($objects) && count($objects)) {
 	$isAlt = false;
 	foreach ($objects as $o) {
-		//alert_r($o);
-		//if (!$o instanceof ContentDataObject) { ;continue; } 
 ?>
 	<div class="og-add-template-object ico-<?php echo $o->getObjectTypeName() ?><?php if ($isAlt) echo " odd" ?>">
 		<a class=" internalLink name" href="<?php echo $o->getViewUrl() ?>">

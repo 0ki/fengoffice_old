@@ -427,17 +427,17 @@ og.OverviewManager = function() {
 				this.load();
 			},
 			scope: this
-		})/*,
+		}),
 		showAsDashboard: new Ext.Action({
 			id: "view-as-dashboard",
 			text: lang('view as dashboard'),
-            tooltip: lang('view as dashboard'),
-            iconCls: 'ico-view-as-dashboard',
+                        tooltip: lang('view as dashboard'),
+                        iconCls: 'ico-view-as-dashboard',
 			handler: function() {
 				og.switchToDashboard();
 			},
 			scope: this
-		})*/
+		})
     };
     
 	og.OverviewManager.superclass.constructor.call(this, {
@@ -470,8 +470,8 @@ og.OverviewManager = function() {
 			'-',
 			actions.more,
 			actions.markAs,
-			'->' /* ,
-			actions.showAsDashboard*/
+			'->' ,
+			actions.showAsDashboard
 		],
 		listeners: {
 			'render': {

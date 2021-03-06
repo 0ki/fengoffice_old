@@ -2,7 +2,7 @@
 
   // Reporting
   return array(
-	'showing indformation for' => 'Showing information for:',
+	'showing information for' => 'Showing information for',
   	'custom' => 'Custom',
     'custom reports' => 'Custom reports',
   	'no custom reports' => 'There are no custom reports for \'{0}\' with the selected relations',

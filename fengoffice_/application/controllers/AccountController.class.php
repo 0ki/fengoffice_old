@@ -212,7 +212,7 @@ class AccountController extends ApplicationController {
 			$new_password_again = array_var($password_data, 'new_password_again');
 
 			try {
-				if(!logged_user()->isAdministrator()) {
+				if(!logged_user()->isAdminGroup()) {
 					if(trim($old_password) == '') {
 						throw new Error(lang('old password required'));
 					} // if

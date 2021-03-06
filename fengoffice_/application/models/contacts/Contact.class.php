@@ -57,11 +57,6 @@ class Contact extends BaseContact {
 	
 	function hasReferences() {
 		$id = $this->getId();
-		// Check direct references
-		$references = Objects::findAll(array("id"=>true, "conditions" => "`created_by_id` = $id OR `updated_by_id` = $id OR `trashed_by_id` = $id OR `archived_by_id` = $id"));
-		if (count($references)){
-			return true ;
-		}
 		
 		//Check for objects in Person Member
 		$objects_in_person_member_count = 0;
@@ -82,9 +77,13 @@ class Contact extends BaseContact {
 			return true;
 		}
 			
-		return false ;
+		// Check direct references
+		$references = DB::executeAll("SELECT id FROM ".TABLE_PREFIX."objects WHERE `created_by_id` = $id OR `updated_by_id` = $id OR `trashed_by_id` = $id OR `archived_by_id` = $id limit 1");
+		if (count($references) > 0){
+			return true ;
+		}
 		
-		
+		return false;
 	}
 	
 	
@@ -1658,7 +1657,7 @@ class Contact extends BaseContact {
 		if (!$this_user_type)
 			$this_user_type = PermissionGroups::instance()->findOne(array("conditions" => "id = ".$this->getUserType()));
 		
-		$can_change_type = $actual_user_type->getId() < $this_user_type->getId() || $user->isAdminGroup() && $this->getId() == $user->getId();
+		$can_change_type = $actual_user_type->getId() < $this_user_type->getId() || $user->isAdminGroup() && $this->getId() == $user->getId() || $user->isAdministrator();
 		
 		return can_manage_security($user) && $can_change_type;
 	} // canUpdatePermissions

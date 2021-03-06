@@ -217,6 +217,21 @@ function product_version() {
 } // product_version
 
 /**
+ * Return revision, to add as parameters when including static files, to control the browser's cache.
+ *
+ * @return string
+ */
+function product_version_revision() {
+	try{
+		$revision = @include ROOT . '/revision.php';
+		return $revision;
+	}
+	catch(Exception $e){}
+	
+	return "";
+}
+
+/**
  * Return installed version, wrapper function.
  *
  * @param void
@@ -396,6 +411,15 @@ function current_member(){
 	return null ;   
 }
 
+function current_member_search(){
+        $members = array();
+        foreach (active_context() as $item){
+                if ($item instanceof Member) {
+                        $members[] = $item;
+                }
+        }
+	return $members;   
+}
 
 function context_type() {
 	foreach ( active_context() as $ctx ) {
@@ -1099,7 +1123,7 @@ function build_context_array($context_plain) {
 							}
 						}elseif($member === 0 && count($members)<=1){
 							// IS root. Retrieve the dimension 
-							$dimension = Dimensions::findById($dimensionId) ;								
+							$dimension = Dimensions::getDimensionById($dimensionId) ;								
 							if ($dimension instanceof Dimension ){					
 								$context[] = $dimension ;
 							}
@@ -1562,6 +1586,28 @@ function docx2text($filename) {
     return readZippedXML($filename, "word/document.xml");
 }
 
+function odt2text($filename) {
+    return readZippedXML($filename, "content.xml");
+}
+
+function fodt2text($filename,$id) {    
+    Env::useLibrary('ezcomponents');
+    
+    $odt = new ezcDocumentOdt();
+    $odt->loadFile( $filename );
+
+    $docbook = $odt->getAsDocbook();
+
+    $converter = new ezcDocumentDocbookToRstConverter();
+    $rst = $converter->convert( $docbook );
+    
+    $file_path_txt = 'tmp/fodt2text_' . $id . '.txt';
+    file_put_contents( $file_path_txt, $rst );
+    $content = file_get_contents($file_path_txt); //Guardamos archivo.txt en $archivo
+    unlink($file_path_txt);
+    return $content;
+}
+
 function readZippedXML($archiveFile, $dataFile) {
     // Create new ZIP archive
     $zip = new ZipArchive;
@@ -1586,3 +1632,59 @@ function readZippedXML($archiveFile, $dataFile) {
     // In case of failure return empty string
     return "";
 } 
+
+function make_post_async($url, $params)	{
+	foreach ($params as $key => &$val) {
+		if (is_array($val)) $val = implode(',', $val);
+		$post_params[] = $key.'='.urlencode($val);
+	}
+	$post_string = implode('&', $post_params);
+
+	$parts = parse_url($url);
+
+	$fp = fsockopen($parts['host'], isset($parts['port']) ? $parts['port'] : 80, $errno, $errstr, 30);
+
+	$out = "POST ".$parts['path']." HTTP/1.1\r\n";
+	$out.= "Host: ".$parts['host']."\r\n";
+	$out.= "Content-Type: application/x-www-form-urlencoded\r\n";
+	$out.= "Content-Length: ".strlen($post_string)."\r\n";
+	$out.= "Connection: Close\r\n\r\n";
+	if (isset($post_string)) $out.= $post_string;
+
+	fwrite($fp, $out);
+	sleep(1);
+	fclose($fp);
+}
+
+/**
+ * Checks if a column exists in a table
+ *
+ *  This function returns true if the column exists
+ *
+ * @param string $table_name Name of the table
+ * @param string $col_name Name of the column
+ * @return boolean
+ */
+function check_column_exists($table_name, $col_name) {
+	$res = mysql_query("DESCRIBE `$table_name`", DB::connection()->getLink());
+	while($row = mysql_fetch_array($res)) {
+		if ($row['Field'] == $col_name) return true;
+	}
+	return false;
+} // checkColumnExists
+
+/**
+ * Checks if a table exists
+ *
+ *  This function returns true if the table exists
+ *
+ * @param string $table_name Name of the table
+ * @return boolean
+ */
+function checkTableExists($table_name) {
+	$res = mysql_query("SHOW TABLES", DB::connection()->getLink());
+	while ($row = mysql_fetch_array($res)) {
+		if ($row[0] == $table_name) return true;
+	}
+	return false;
+}

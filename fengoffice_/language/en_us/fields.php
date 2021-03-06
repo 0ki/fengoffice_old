@@ -217,6 +217,7 @@ return array(
     'field ProjectTasks repeat_y' => 'Repeat year',
     'field ProjectTasks object_subtype' => 'Object subtype',
 	'field ProjectTasks percent_completed' => 'Percent completed',
+	'field ProjectTasks original_task_id' => 'Original task id',
 
 	// User fields
     'field Users username' => 'Username', 

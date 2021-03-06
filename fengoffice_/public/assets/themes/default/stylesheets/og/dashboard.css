@@ -23,13 +23,18 @@
 }
 
 
-
 .dashActions .viewAsList {
-	backgroud-position: 0pt 2px;
+    text-align: right;
+        
+}
+
+.dashActions .viewAsList img {
 	height: 16px;
 	padding-left:20px;
+        padding-top: 5px;
 	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -100px !important;
-	cursor: pointer;		
+	cursor: pointer;
+        vertical-align: middle;
 }
 
 .dashHeader {
@@ -267,13 +272,6 @@
 	padding: 0 ;
 	border: none ;
 }
-
-.dashActions {
-    position: absolute;
-    right: 30px;
-    top: 0;
-}
-
 
 .widget {
 	margin:5px 5px 15px 5px;

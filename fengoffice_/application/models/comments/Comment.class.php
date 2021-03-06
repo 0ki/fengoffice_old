@@ -230,7 +230,8 @@ class Comment extends BaseComment {
 	 */
 	function getObjectName() {
 		$object = $this->getRelObject();
-		return $object instanceof ContentDataObject ? lang('comment on object', substr_utf($this->getText(), 0, 50) . '...', $object->getObjectName()) : $this->getObjectTypeName();
+		//return $object instanceof ContentDataObject ? lang('comment on object', substr_utf($this->getText(), 0, 50) . '...', $object->getObjectName()) : $this->getObjectTypeName();
+                return $object->getObjectName();
 	} // getObjectName
 
 	/**

@@ -7,18 +7,91 @@
  * @author Alvaro Torterola <alvarotm01@gmail.com>
  */
 class MemberController extends ApplicationController {
-
+        
+        var $dimension = 3 ;
+        
 	/**
 	 * Prepare this controller
 	 *
 	 * @param void
-	 * @return ProjectController
+	 * @return MemberController
 	 */
 	function __construct() {
 		parent::__construct();
 		prepare_company_website_controller($this, 'website');
 	} 
 	
+        
+        function init() {
+		require_javascript("og/MemberManager.js");
+		ajx_current("panel", "members", null, null, true);
+		ajx_replace(true);
+	}
+        
+        function list_all() {
+		
+		ajx_current("empty");
+		// Get all variables from request
+		$start = array_var($_GET,'start', 0);
+		$limit = array_var($_GET,'limit', config_option('files_per_page'));
+		$order = 'name';
+		$order_dir = array_var($_GET,'dir');
+		$action = array_var($_GET,'action');
+		$attributes = array("ids" => explode(',', array_var($_GET,'ids')));
+		
+		if (!$order_dir){
+			switch ($order){
+				case 'name': $order_dir = 'ASC'; break;
+				default: $order_dir = 'DESC';
+			}
+		}		
+
+		$dim_controller = new DimensionController();
+		$members = $dim_controller->initial_list_dimension_members(Dimensions::findByCode('workspaces')->getId(), ObjectTypes::findByName('workspace')->getId(), $context, true);
+		$ids = array();
+		foreach ($members as $m){
+			$ids[]=$m['object_id'];
+		}		
+                $members = active_context_members(false); // Context Members Ids
+                $members_sql = "";
+                if(count($members) > 0){
+                    $members_sql .= " AND parent_member_id IN (" . implode ( ',', $members ) . ")";
+                }else{
+                    $members_sql .= " AND parent_member_id = 0";
+                }
+		$res = Members::findAll(array("conditions" => "object_id IN (".implode(',', $ids).") ". $members_sql,'offset' => $start, 'limit' => $limit, 'order' => "$order $order_dir"));
+		
+		$object = $this->prepareObject($res, $start, $limit, count($res));
+                
+		ajx_extra_data($object);
+		tpl_assign("listing", $object);
+	}
+	
+	private function prepareObject($totMsg, $start, $limit, $total) {
+		$object = array(
+			"totalCount" => $total,
+			"start" => $start,
+			"dimension_id" => $this->dimension,
+			"members" => array()
+		);
+		for ($i = 0; $i < $limit; $i++){
+			if (isset($totMsg[$i])){
+				$member = $totMsg[$i];
+				if ($member instanceof Member){
+					$object["members"][] = array(
+                                                            'object_id' => $member->getObjectId(),
+                                                            'name' => $member->getName(),
+                                                            'depth' => $member->getDepth(),
+                                                            'parent_member_id' => $member->getParentMemberId(),
+                                                            'dimension_id' => $member->getDimensionId(),
+                                                            'id' => $member->getId(),
+                                                            'ico_color' => $member->getMemberColor());
+                                }
+			}
+		}
+		
+		return $object;
+	}
 
 	
 	/**
@@ -66,7 +139,7 @@ class MemberController extends ApplicationController {
 			tpl_assign("member", $member);
 			
 			$sel_dim = get_id("dim_id");
-			$current_dimension = Dimensions::findById($sel_dim);
+			$current_dimension = Dimensions::getDimensionById($sel_dim);
 			if (!$current_dimension instanceof Dimension) {
 				flash_error("dimension dnx");
 				ajx_current("empty");
@@ -218,7 +291,9 @@ class MemberController extends ApplicationController {
 		try {
 			DB::beginWork();
 			
-			//if ($is_new) $old_parent = lalala FIXME!! hacer cosas en la tabla object_members
+			if (!$is_new) {
+				$old_parent = $member->getParentMemberId();
+			}
 						
 			$member->setFromAttributes($member_data);
 			
@@ -278,7 +353,6 @@ class MemberController extends ApplicationController {
 					$member->save();
 					$dimension_object->setFromAttributes($dimension_obj_data, $member);
 					$dimension_object->save();
-					$dimension_object->addToSharingTable();
 					$member->setObjectId($dimension_object->getId());
 					$member->save();
 					Hook::fire("after_add_dimension_object_member", $member, $null);
@@ -374,7 +448,7 @@ class MemberController extends ApplicationController {
 				foreach ($missing_req_association_ids as $assoc => $missing) {
 					$assoc_instance = DimensionMemberAssociations::findById($assoc);
 					if ($assoc_instance instanceof DimensionMemberAssociation) {
-						$assoc_dim = Dimensions::findById($assoc_instance->getAssociatedDimensionMemberAssociationId());
+						$assoc_dim = Dimensions::getDimensionById($assoc_instance->getAssociatedDimensionMemberAssociationId());
 						if ($assoc_dim instanceof Dimension) {
 							if (!in_array($assoc_dim->getName(), $missing_names)) $missing_names[] = $assoc_dim->getName();
 						}
@@ -457,6 +531,35 @@ class MemberController extends ApplicationController {
 						}
 					}
 				}
+				
+				// Fill sharing table if is a dimension object (after permission creation);
+				if ($dimension_object) {
+					$dimension_object->addToSharingTable();
+				}
+				
+			} else {
+				// if parent changed rebuild object_members for every object in this member
+				if ($old_parent != $member->getParentMemberId()) {
+					$sql = "SELECT om.object_id FROM ".TABLE_PREFIX."object_members om WHERE om.member_id=".$member->getId();
+					$object_ids = DB::executeAll($sql);
+					if (!is_array($object_ids)) $object_ids = array();
+					foreach ($object_ids as $row) {
+						$content_object = Objects::findObject($row['object_id']);
+						if (!$content_object instanceof ContentDataObject) continue;
+						
+						$parent_ids = array();
+						if ($old_parent > 0) {
+							$all_parents = Members::findById($old_parent)->getAllParentMembersInHierarchy(true);
+							foreach ($all_parents as $p) $parent_ids[] = $p->getId();
+							if (count($parent_ids) > 0) {
+								DB::execute("DELETE FROM ".TABLE_PREFIX."object_members WHERE object_id=".$content_object->getId()." AND member_id IN (".implode(",",$parent_ids).")");
+							}
+						}
+						
+						$content_object->addToMembers(array($member));
+						$content_object->addToSharingTable();
+					}
+				}
 			}
 			
 			DB::commit();
@@ -481,15 +584,13 @@ class MemberController extends ApplicationController {
 			ajx_current("empty");
 			return;
 		}
-		
 		$member = Members::findById(get_id());
-		
 		try {
 			
 			DB::beginWork();
 			
 			if (!$member->canBeDeleted($error_message)) {
-				throw new Exception(lang($error_message));
+				throw new Exception($error_message);
 			}
 			$dim_id = $member->getDimensionId();
 			
@@ -513,7 +614,7 @@ class MemberController extends ApplicationController {
 				}
 			}
 			
-			$args=array($member);
+			$args = $member;
 			Hook::fire('delete_member', $args, $ret);
 
 //			ApplicationLogs::createLog($member, ApplicationLogs::ACTION_DELETE, false, true);
@@ -522,18 +623,22 @@ class MemberController extends ApplicationController {
 			
 			DB::commit();
 			flash_success(lang('success delete member', $member->getName()));
-			if (get_id('dont_reload')) {
-				ajx_current("empty");
-			} else {
-				ajx_current("reload");
-			}
+                        if (get_id('start')) {
+                            ajx_current("start");
+                        } else {
+                            if (get_id('dont_reload')) {
+                                ajx_current("empty");
+                            } else {
+                                ajx_current("reload");
+                            }
+                        }			
 		} catch (Exception $e) {
 			DB::rollback();
 			flash_error($e->getMessage());
 			ajx_current("empty");
 		}
 	}
-	
+        
 	function get_dimension_object_fields() {
 		ajx_current("empty");
 		if (!can_manage_dimension_members(logged_user())) {
@@ -553,8 +658,10 @@ class MemberController extends ApplicationController {
 		if (get_id('mem_id') > 0) {
 			$date_format = user_config_option('date_format');
 			$member = Members::findById(get_id('mem_id'));
-			$dim_obj = Objects::findObject($member->getObjectId());
-			if (!is_null($dim_obj)) {
+			if ($member instanceof Member) {
+				$dim_obj = Objects::findObject($member->getObjectId());
+			}
+			if (isset($dim_obj) && !is_null($dim_obj)) {
 				foreach($fields as &$field) {
 					$value = $dim_obj->getColumnValue($field['col']);
 					if ($field['type'] == DATA_TYPE_DATETIME && $value instanceOf DateTimeValue) {
@@ -688,7 +795,7 @@ class MemberController extends ApplicationController {
 			
 			if (!isset($associations_info_tmp[$assoc->getAssociatedDimensionMemberAssociationId()])) {
 				$associations_info_tmp[$assoc->getAssociatedDimensionMemberAssociationId()] = array();
-				$dimensions[] = Dimensions::findById($assoc->getAssociatedDimensionMemberAssociationId());
+				$dimensions[] = Dimensions::getDimensionById($assoc->getAssociatedDimensionMemberAssociationId());
 			}
 			$associations_info_tmp[$assoc->getAssociatedDimensionMemberAssociationId()][] = $assoc_info;
 		}
@@ -826,7 +933,7 @@ class MemberController extends ApplicationController {
 		tpl_assign('associations', $associations_info);
 		tpl_assign('actual_associations', $actual_associations_info);
 		tpl_assign('req_dimensions', $req_dimensions);
-		tpl_assign('restricted_dimensions', $restricted_dimensions);
+		tpl_assign('restricted_dimensions', isset($restricted_dimensions) ? $restricted_dimensions : array());
 		
 		ajx_extra_data(array('parents' => $member_parents, 'genid' => array_var($_GET, 'genid')));
 		
@@ -1029,5 +1136,84 @@ class MemberController extends ApplicationController {
 		}
 	}
 	
+
 	
+	function archive() {
+		if (!can_manage_dimension_members(logged_user())) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
+		$member = Members::findById(get_id());
+		if (!$member instanceof Member) {
+			flash_error(lang('member dnx'));
+			ajx_current("empty");
+			return;
+		}
+		if (get_id('user')) $user = Contacts::findById($get_id('user'));
+		else $user = logged_user();
+		
+		if (!$user instanceof Contact) {
+			ajx_current("empty");
+			return;
+		}
+		
+		try {
+			DB::beginWork();
+			set_time_limit(0);
+			
+			$count = $member->archive($user);
+			
+			evt_add("reload dimension tree", $member->getDimensionId());
+			
+			ajx_current("back");
+			flash_success(lang('success archive member', $member->getName(), $count));
+			
+			DB::commit();
+		} catch (Exception $e) {
+			DB::rollback();
+			flash_error($e->getMessage());
+			ajx_current("empty");
+		}
+	}
+	
+	
+	function unarchive() {
+		if (!can_manage_dimension_members(logged_user())) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
+		$member = Members::findById(get_id());
+		if (!$member instanceof Member) {
+			flash_error(lang('member dnx'));
+			ajx_current("empty");
+			return;
+		}
+		if (get_id('user')) $user = Contacts::findById($get_id('user'));
+		else $user = logged_user();
+		
+		if (!$user instanceof Contact) {
+			ajx_current("empty");
+			return;
+		}
+		
+		try {
+			DB::beginWork();
+			set_time_limit(0);
+			
+			$count = $member->unarchive($user);
+			
+			evt_add("reload dimension tree", $member->getDimensionId());
+			
+			ajx_current("back");
+			flash_success(lang('success unarchive member', $member->getName(), $count));
+			
+			DB::commit();
+		} catch (Exception $e) {
+			DB::rollback();
+			flash_error($e->getMessage());
+			ajx_current("empty");
+		}
+	}
 }

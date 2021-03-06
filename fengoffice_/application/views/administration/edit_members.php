@@ -26,12 +26,13 @@
 					$indent = 16 * $mem->getDepth();
 ?>
 						<div style="margin-left:<?php echo $indent?>px;width:<?php echo 800 - $indent?>px;" id="abm-members-item-container-<?php echo $mem->getId() ?>"
+							class="<?php echo ($mem->getArchivedById() > 0 ? "member-item-archived" : "")?>"
 							onmouseover="og.editMembers.showHideOptions('<?php echo $genid?>actions<?php echo $mem->getId()?>', <?php echo $mem->getId()?>, true);" 
 							onmouseout="og.editMembers.showHideOptions('<?php echo $genid?>actions<?php echo $mem->getId()?>', <?php echo $mem->getId()?>, false);">
 
 							<table style="width:100%;"><tr><td style="width:500px;">
 								<span class="coViewAction <?php echo $mem->getIconClass()?>">&nbsp;</span>
-								<span class="abm-members-name"><?php echo $mem->getName();?></span>
+								<span class="abm-members-name"><?php echo $mem->getName() . ($mem->getArchivedById() > 0 ? " (".lang('archived').")" : "");?></span>
 							</td><td>
 								<span style="float:right;visibility:hidden;font-weight:normal;" id="<?php echo $genid?>actions<?php echo $mem->getId()?>">
 									<a href="<?php echo get_url('member', 'edit', array('id' => $mem->getId()))?>" class="db-ico ico-edit" style="padding:4px 10px 0 16px;"><?php echo lang('edit')?></a>

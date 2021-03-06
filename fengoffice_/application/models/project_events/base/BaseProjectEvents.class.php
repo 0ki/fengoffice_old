@@ -8,13 +8,13 @@
  */
 abstract class BaseProjectEvents extends ContentDataObjects {
 
-	/**
-	 * Column name => Column type map
-	 *
-	 * @var array
-	 * @static
-	 */
-	static private $columns = array(
+    /**
+     * Column name => Column type map
+     *
+     * @var array
+     * @static
+     */
+    static private $columns = array(
     	'object_id' => DATA_TYPE_INTEGER,
     	'duration' => DATA_TYPE_DATETIME,
     	'start' => DATA_TYPE_DATETIME,
@@ -32,81 +32,82 @@ abstract class BaseProjectEvents extends ContentDataObjects {
      	'repeat_dow' => DATA_TYPE_INTEGER,
     	'repeat_wnum' => DATA_TYPE_INTEGER,
     	'repeat_mjump' => DATA_TYPE_INTEGER,
-        'ext_cal_id' => DATA_TYPE_INTEGER
-	);
+        'ext_cal_id' => DATA_TYPE_INTEGER,
+        'original_event_id' => DATA_TYPE_INTEGER,
+    );
 
-	/**
-	 * Construct
-	 *
-	 * @return BaseProjectEvents
-	 */
-	function __construct() {
-		Hook::fire('object_definition', 'ProjectEvent', self::$columns);
-		parent::__construct('ProjectEvent', 'project_events', true);
-	} // __construct
+    /**
+     * Construct
+     *
+     * @return BaseProjectEvents
+     */
+    function __construct() {
+            Hook::fire('object_definition', 'ProjectEvent', self::$columns);
+            parent::__construct('ProjectEvent', 'project_events', true);
+    } // __construct
 
-	// -------------------------------------------------------
-	//  Description methods
-	// -------------------------------------------------------
+    // -------------------------------------------------------
+    //  Description methods
+    // -------------------------------------------------------
 
-	/**
-	 * Return array of object columns
-	 *
-	 * @access public
-	 * @param void
-	 * @return array
-	 */
-	function getColumns() {
-		return array_keys(self::$columns);
-	} // getColumns
+    /**
+     * Return array of object columns
+     *
+     * @access public
+     * @param void
+     * @return array
+     */
+    function getColumns() {
+            return array_keys(self::$columns);
+    } // getColumns
 
 
-	/**
-	* Return column type
-	*
-	* @access public
-	* @param string $column_name
-	* @return string
-	*/
-	function getColumnType($column_name) {
-		return parent::getCOColumnType($column_name, self::$columns);
-	}
-	/**
-	 * Return array of PK columns. If only one column is PK returns its name as string
-	 *
-	 * @access public
-	 * @param void
-	 * @return array or string
-	 */
-	function getPkColumns() {
-		return 'object_id';
-	} // getPkColumns
+    /**
+    * Return column type
+    *
+    * @access public
+    * @param string $column_name
+    * @return string
+    */
+    function getColumnType($column_name) {
+            return parent::getCOColumnType($column_name, self::$columns);
+    }
+    /**
+     * Return array of PK columns. If only one column is PK returns its name as string
+     *
+     * @access public
+     * @param void
+     * @return array or string
+     */
+    function getPkColumns() {
+            return 'object_id';
+    } // getPkColumns
 
-	/**
-	 * Return name of first auto_incremenent column if it exists
-	 *
-	 * @access public
-	 * @param void
-	 * @return string
-	 */
-	function getAutoIncrementColumn() {
-		return null;
-	} // getAutoIncrementColumn
+    /**
+     * Return name of first auto_incremenent column if it exists
+     *
+     * @access public
+     * @param void
+     * @return string
+     */
+    function getAutoIncrementColumn() {
+            return null;
+    } // getAutoIncrementColumn
 
-	/**
-	 * Return system columns
-	 *
-	 * @access public
-	 * @param void
-	 * @return array
-	 */
-	function getSystemColumns() {
-		return array_merge(parent::getSystemColumns(), array(
-      		'type_id', 'special_id')
-		);
-	} // getSystemColumns
-	
-	/**
+    /**
+     * Return system columns
+     *
+     * @access public
+     * @param void
+     * @return array
+     */
+    function getSystemColumns() {
+            return array_merge(parent::getSystemColumns(), array(
+            'type_id', 'special_id', 'ext_cal_id', 'original_event_id')
+            );
+    } // getSystemColumns
+
+    /**
     * Return external columns
     *
     * @access public

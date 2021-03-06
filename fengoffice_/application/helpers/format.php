@@ -253,6 +253,12 @@ function date_format_tip($format) {
 						break;
 					default: $formatted = clean($value);
 					}					
+				}elseif ($col == 'time_estimate'){
+                                    if($value > 0)
+					$formatted = DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($value * 60), 'hm', 60);
+                                    else{
+                                        $formatted = clean($value);
+                                    }
 				}
 				else{				
 					$formatted = clean($value);

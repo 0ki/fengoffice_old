@@ -11,13 +11,16 @@ if (isset($linked_objects) && is_array($linked_objects) && count($linked_objects
 	$maxcount = 0;
 	$maxkey = '';
 	foreach ($linked_objects as $linked_object){
-		if (!isset($sorted_objects[$linked_object->getObjectTypeName()]))
-			$sorted_objects[$linked_object->getObjectTypeName()] = array($linked_object);
-		else
-			$sorted_objects[$linked_object->getObjectTypeName()][] = $linked_object;
-		if (count($sorted_objects[$linked_object->getObjectTypeName()]) > $maxcount){
-			$maxcount = count($sorted_objects[$linked_object->getObjectTypeName()]);
-			$maxkey = $linked_object->getObjectTypeName();
+
+		if (ObjectTypes::isListableObjectType($linked_object->getObjectTypeId())) {
+			if (!isset($sorted_objects[$linked_object->getObjectTypeName()]))
+				$sorted_objects[$linked_object->getObjectTypeName()] = array($linked_object);
+			else
+				$sorted_objects[$linked_object->getObjectTypeName()][] = $linked_object;
+			if (count($sorted_objects[$linked_object->getObjectTypeName()]) > $maxcount){
+				$maxcount = count($sorted_objects[$linked_object->getObjectTypeName()]);
+				$maxkey = $linked_object->getObjectTypeName();
+			}
 		}
 	}	
 	foreach ($sorted_objects as $key => $object_group){ ?>

@@ -6,10 +6,16 @@ include "init.php";
 
 Env::useHelper('format');
 
-@set_time_limit(0);
-
 define('SCRIPT_MEMORY_LIMIT', 1024 * 1024 * 1024); // 1 GB
-define('COMPLETE_MIGRATION_OUT', isset($_REQUEST['out']) ? $_REQUEST['out'] : 'console');
+
+
+if(php_sapi_name() == 'cli' && empty($_SERVER['REMOTE_ADDR'])) {
+	define('COMPLETE_MIGRATION_OUT', 'console');
+} else {
+	define('COMPLETE_MIGRATION_OUT', 'file');
+}
+
+@set_time_limit(0);
 
 ini_set('memory_limit', ((SCRIPT_MEMORY_LIMIT / (1024*1024))+50).'M');
 
@@ -57,7 +63,6 @@ foreach ($objects as $obj) {
 		
 		// add mails to sharing table for account owners
 		if ($cobj instanceof MailContent) {
-			//$macs = MailAccountContacts::findAll(array('conditions' => array('`account_id` = ?', $cobj->getAccountId())));
 			$db_result = DB::execute("SELECT contact_id FROM ".TABLE_PREFIX."mail_accounts WHERE id = ".$cobj->getAccountId());
 			$macs = $db_result->fetchAll();
 			if ($macs && is_array($macs) && count($macs) > 0) {
@@ -67,8 +72,6 @@ foreach ($objects as $obj) {
 					$db_result = DB::execute("SELECT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups WHERE contact_id = ".$contact_id);
 					$mac_pgs = $db_result->fetchAll();
 					foreach ($mac_pgs as $mac_pg) $pgs[$mac_pg['permission_group_id']] = $mac_pg['permission_group_id'];
-					//$mac_pgs = ContactPermissionGroups::findAll(array("conditions" => "contact_id = ".$mac->getContactId()));
-					//foreach ($mac_pgs as $mac_pg) $pgs[$mac_pg->getPermissionGroupId()] = $mac_pg->getPermissionGroupId();
 				}
 				if ($sql == "" && count($pgs) > 0) $sql = "INSERT INTO ".TABLE_PREFIX."sharing_table (group_id, object_id) VALUES ";
 				foreach ($pgs as $pgid) {
@@ -94,13 +97,19 @@ foreach ($objects as $obj) {
 			$processed_objects_ids = "(" . implode("),(", $processed_objects) . ")";
 			DB::execute("INSERT INTO ".TABLE_PREFIX."processed_objects (object_id) VALUES $processed_objects_ids ON DUPLICATE KEY UPDATE object_id=object_id");
 			
-			complete_migration_print("\n".date("H:i:s")." - Memory limit exceeded (".format_filesize(memory_get_usage(true)).") script terminated. Objects: ".count($processed_objects));
+			$rest = Objects::count("id NOT IN(SELECT object_id FROM ".TABLE_PREFIX."processed_objects)");
+			$row = DB::executeOne("SELECT COUNT(object_id) AS 'row_count' FROM ".TABLE_PREFIX."processed_objects");
+			$proc_count = $row['row_count'];
+			
+			$status_message = "Memory limit exceeded (".format_filesize(memory_get_usage(true))."). Script terminated. Processed Objects: $proc_count. Total: ".($proc_count+$rest).". Please execute 'Fill searchable objects and sharing table' again.";
+			$_SESSION['hide_back_button'] = 1;
+			
+			complete_migration_print("\n".date("H:i:s")." - Memory limit exceeded (".format_filesize(memory_get_usage(true)).") script terminated. Processed Objects: ".count($processed_objects). ". Total: $proc_count.");
 			$processed_objects = array();
 			break;
 		}
 		$cant++;
 		
-		//complete_migration_print("\n".date("H:i:s")." - ".format_filesize(memory_get_usage(true)));
 	}
 	$cobj = null;
 }
@@ -114,13 +123,41 @@ if ($sql != "") {
 if (count($processed_objects) > 0) {
 	$processed_objects_ids = "(" . implode("),(", $processed_objects) . ")";
 	DB::execute("INSERT INTO ".TABLE_PREFIX."processed_objects (object_id) VALUES $processed_objects_ids ON DUPLICATE KEY UPDATE object_id=object_id");
-	
-//	complete_migration_print("\n".date("H:i:s")." - Finished with all objects (".count($processed_objects).")");
 }
 
-//complete_migration_print("\nSearchable Objects & Sharing Table generated for ".$cant);
-
-
 if (COMPLETE_MIGRATION_OUT != 'console') {
-	redirect_to(ROOT_URL . "/" . PUBLIC_FOLDER ."/upgrade");
+	
+	$all = Objects::count();
+	$row = DB::executeOne("SELECT COUNT(object_id) AS 'row_count' FROM ".TABLE_PREFIX."processed_objects");
+	$proc_count = $row['row_count'];
+	
+	if ($all <= $proc_count) {
+		
+		unset($_SESSION['hide_back_button']);
+		$status_message = "Execution of 'Fill searchable objects and sharing table' completed.";
+		foreach ($_SESSION['additional_steps'] as $k => $step) {
+			if ($step['url'] == 'complete_migration.php') unset($_SESSION['additional_steps'][$k]);
+		}
+		
+	} else {
+	
+		if (!isset($_SESSION['additional_steps'])) $_SESSION['additional_steps'] = array();
+		$add_step = true;
+		foreach ($_SESSION['additional_steps'] as $step) {
+			if ($step['url'] == 'complete_migration.php') $add_step = false;
+		}
+		if ($add_step) {
+			$_SESSION['additional_steps'][] = array(
+				'url' => 'complete_migration.php',
+				'name' => 'Fill searchable objects and sharing table',
+				'filename' => ROOT."/".PUBLIC_FOLDER."/upgrade/complete_migration.php"
+			);
+		}
+		
+	}
+	
+	if (!isset($_SESSION['status_messages'])) $_SESSION['status_messages'] = array();
+	if (isset($status_message)) $_SESSION['status_messages']['complete_migration'] = $status_message;
+
+	redirect_to(ROOT_URL . "/" . PUBLIC_FOLDER ."/upgrade/", false);
 }

@@ -307,9 +307,9 @@ return array(
 	'field o_address' => 'Other address',
 
 	'create task from email' => 'Create a task from this email',
-	'create task from email description' => 'From:      {1}
-Subject:   {0}
-
+	'create task from email description' => 'From:      {1}<br/>
+Subject:   {0}<br/>
+<br/>
 {2}',
 	'suggested workspaces' => 'Suggested workspaces',
 

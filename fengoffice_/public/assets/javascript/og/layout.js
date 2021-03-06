@@ -46,7 +46,7 @@ Ext.onReady(function(){
 				// Add Plugins to QuickAdd
 				var singleId = (p.title.substr(-1) == "s" ) ? p.title.slice(0, -1) : p.title ;
 					
-				if ( p.type == "plugin" ) {
+				if ( p.type == "plugin" && quickAdd && quickAdd.menu) {
 					quickAdd.menu.add({
 						text: p.quickAddTitle,
 						iconCls: p.iconCls,

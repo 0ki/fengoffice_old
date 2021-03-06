@@ -17,6 +17,7 @@ abstract class BaseProjectMessages extends ContentDataObjects {
 	static private $columns = array(
     	'object_id' => DATA_TYPE_INTEGER,
     	'text' => DATA_TYPE_STRING,
+        'type_content' => DATA_TYPE_STRING,
 	);
 
 	/**

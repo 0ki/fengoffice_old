@@ -17,7 +17,6 @@
 <table style="min-width:400px;margin-top:10px;">
   <tr>
     <th><?php echo lang('template') ?></th>
-    <th><?php echo lang('workspaces') ?></th>
     <th><?php echo lang('options') ?></th>
   </tr>
 <?php 
@@ -26,7 +25,6 @@ foreach($task_templates as $task_template) {
 	$isAlt = !$isAlt; ?>
   <tr class="<?php echo $isAlt? 'altRow' : ''?>">
     <td><a class="internalLink" href="<?php echo $task_template->getViewUrl() ?>"><?php echo clean($task_template->getTitle()) ?></a></td>
-    <td style="text-align: center"><?php echo 'XXX' ?></td>
 <?php 
   $options = array(); 
   if($task_template->canDelete(logged_user())) {

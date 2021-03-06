@@ -209,9 +209,24 @@ var topToolbarItems = {
         iconCls: 'ico-trash',
 		disabled: true,
 		handler: function() {
-			if (confirm(lang('confirm move to trash'))) {
-				og.openLink(og.getUrl('event', 'delete', {ids: og.getSelectedEventsCsv()}));
-			}
+                        var ids = og.getSelectedEventsCsv()+'';
+                        var arr_ids = ids.split(',')
+                        for(var i = 0; i < arr_ids.length; i++){
+                            var related = og.checkRelated("event",arr_ids[i]);
+                            if(related){
+                                break;    
+                            }                                
+                        }
+
+                        if(related){
+                            this.dialog = new og.EventRelatedPopUp("delete");
+                            this.dialog.setTitle(lang('events related'));	                                
+                            this.dialog.show();
+                        }else{
+                            if (confirm(lang('confirm move to trash'))) {
+                                    og.openLink(og.getUrl('event', 'delete', {ids: og.getSelectedEventsCsv()}));
+                            } 
+                        }
 		},
 		scope: this
 	}),
@@ -248,9 +263,12 @@ var topToolbarItems = {
            iconCls: 'ico-archive-obj',
 		disabled: true,
 		handler: function() {
-			if (confirm(lang('confirm archive selected objects'))) {
-				og.openLink(og.getUrl('event', 'archive', {ids: og.getSelectedEventsCsv()}));
-			}
+                        this.dialog = new og.EventRelatedPopUp("archive");
+                        this.dialog.setTitle(lang('events related'));	                                
+                        this.dialog.show();
+//			if (confirm(lang('confirm archive selected objects'))) {
+//				og.openLink(og.getUrl('event', 'archive', {ids: og.getSelectedEventsCsv()}));
+//			}
 		},
 		scope: this
 	})

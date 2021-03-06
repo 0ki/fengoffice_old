@@ -22,7 +22,7 @@ class AjaxResponse {
 	
 	function addScript($url, $plugin) {
 		if (!isset($this->scripts)) $this->scripts = array();
-		$this->scripts[] = is_valid_url($url) ? $url : get_javascript_url($url, $plugin);
+		$this->scripts[] = is_valid_url($url) ? $url : get_javascript_url($url, $plugin, true);
 	}
 	
 	function addInlineScript($script) {

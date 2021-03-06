@@ -57,7 +57,7 @@ class ObjectController extends ApplicationController {
 			Hook::fire ('after_add_subscribers', array('object' => $object, 'user_ids' => $user_ids), $null);
 			
 			if ($log_info != "") {
-				ApplicationLogs::createLog($object, ApplicationLogs::ACTION_SUBSCRIBE, false, false, true, $log_info);
+				ApplicationLogs::createLog($object, ApplicationLogs::ACTION_SUBSCRIBE, false, true, true, $log_info);
 			}
 		}
 	}
@@ -156,6 +156,8 @@ class ObjectController extends ApplicationController {
 			return;
 		}
 		
+		if (isset($_POST['trees_not_loaded']) && $_POST['trees_not_loaded'] > 0) return;
+		
 		$required_dimension_ids = array();
 		$dimension_object_types = $object->getDimensionObjectTypes();
 		foreach($dimension_object_types as $dot){
@@ -169,19 +171,17 @@ class ObjectController extends ApplicationController {
 		if (!count($member_ids) > 0){
 			$throw_error = true;
 			if (Plugins::instance()->isActivePlugin('core_dimensions')) {
-				$personal_member = Members::findById(logged_user()->getPersonalMemberId());
+				$personal_member = Members::findById($user->getPersonalMemberId());
 				if ($personal_member instanceof Member) {
-					$member_ids[] = logged_user()->getPersonalMemberId();
+					$member_ids[] = $user->getPersonalMemberId();
 				}
 			}
 		}
 		
-		$enteredMembers = array();
-		foreach ($member_ids as $member_id){
-			$member = Members::findById($member_id);
-			if (!is_null($member)){
-				$enteredMembers[] = $member;
-			}
+		if (count($member_ids) > 0) {
+			$enteredMembers = Members::findAll(array('conditions' => 'id IN ('.implode(",", $member_ids).')'));
+		} else {
+			$enteredMembers = array();
 		}
 		
 		$object->removeFromMembers($user, $enteredMembers);
@@ -687,7 +687,6 @@ class ObjectController extends ApplicationController {
 					$property = new ObjectProperty();
 					$property->setFromAttributes($prop);
 					$property->setRelObjectId($object_id);
-					$property->setRelObjectManager($manager_class);
 					$property->save();
 				}
 				foreach ($update_properties as $prop) {
@@ -927,11 +926,14 @@ class ObjectController extends ApplicationController {
 		
 		$res = DB::executeAll("SELECT id from ".TABLE_PREFIX."object_types WHERE type IN ('". implode("','",$obj_type_types)."') AND name <> 'file revision' $type_condition ");
 		$type_ids = array();
+
 		foreach ($res as $row){
-			$types_ids[] = $row['id'] ;
+			if (ObjectTypes::isListableObjectType($row['id']) ){
+				$types_ids[] = $row['id'] ;
+			}
 		}
 
-		Hook::fire('list_objects_type_ids', null, $types_ids);
+		//Hook::fire('list_objects_type_ids', null, $types_ids);
 		$type_ids_csv = implode(',', $types_ids);
 		$extra_conditions = array() ;
 		$extra_conditions[] = "object_type_id in ($type_ids_csv)";
@@ -1081,25 +1083,21 @@ class ObjectController extends ApplicationController {
 	function do_mark_as_read_unread_objects($ids, $read, $mark_conversation = false) {
 		$err = 0; // count errors
 		$succ = 0; // count updated objects
-		foreach ($ids as $str_id) {
+		foreach ($ids as $id) {
 			try {
-				if (trim($str_id) != ''){
-					$exploded = explode(":", $str_id);
-					$id = array_var($exploded, 1);
-					$obj = Objects::findObject($id);
-					if ($obj) {
-						$obj->setIsRead(logged_user()->getId(), $read);
-						if (Plugins::instance()->isActivePlugin('mail')) {
-							if ($obj instanceof MailContent && $mark_conversation) {
-								$emails_in_conversation = MailContents::getMailsFromConversation($obj);
-								foreach ($emails_in_conversation as $email) {
-									$email->setIsRead(logged_user()->getId(), $read);
-								}
+				$obj = Objects::findObject($id);
+				if ($obj instanceof ContentDataObject && logged_user() instanceof Contact) {
+					$obj->setIsRead(logged_user()->getId(), $read);
+					if (Plugins::instance()->isActivePlugin('mail')) {
+						if ($obj instanceof MailContent && $mark_conversation) {
+							$emails_in_conversation = MailContents::getMailsFromConversation($obj);
+							foreach ($emails_in_conversation as $email) {
+								$email->setIsRead(logged_user()->getId(), $read);
 							}
 						}
 					}
-					$succ++;
 				}
+				$succ++;
 			} catch(Exception $e) {
 				$err ++;
 			} // try
@@ -1329,7 +1327,6 @@ class ObjectController extends ApplicationController {
 			ajx_current("empty");
 			return;
 		}
-		$manager_class = array_var($_GET, 'manager');
 		$object_id = get_id('object_id');
 		$object = Objects::findObject($object_id);
 		if ($object instanceof ApplicationDataObject && $object->canDelete(logged_user())) {
@@ -1488,7 +1485,6 @@ class ObjectController extends ApplicationController {
 			ajx_current("empty");
 			return;
 		}
-		$manager_class = array_var($_GET, 'manager');
 		$object_id = get_id('object_id');
 		$object = Objects::findObject($object_id);
 		if ($object instanceof ApplicationDataObject && $object->canEdit(logged_user())) {
@@ -1619,7 +1615,7 @@ class ObjectController extends ApplicationController {
 	function get_co_types() {
 		$object_type = array_var($_GET, 'object_type', '');
 		if($object_type != ''){
-			$types = ProjectCoTypes::findAll(array("conditions" => "`object_manager` = '".mysql_real_escape_string($object_type)."'"));
+			$types = ProjectCoTypes::findAll(array("conditions" => "`object_manager` = ".DB::escape($object_type)));
 			$co_types = array();
 			foreach($types as $type){
 				$t = array();

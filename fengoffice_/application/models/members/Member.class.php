@@ -15,8 +15,7 @@ class Member extends BaseMember {
 	private $icon_class = null;
 	
 	function getAllChildrenObjectTypeIds(){
-		return DimensionObjectTypeHierarchies::getAllChildrenObjectTypeIds(
-    		   $this->getDimensionId(), $this->getObjectTypeId());
+		return DimensionObjectTypeHierarchies::getAllChildrenObjectTypeIds($this->getDimensionId(), $this->getObjectTypeId());
 	}
 	
 	function getAllChildrenSorted() {
@@ -118,7 +117,7 @@ class Member extends BaseMember {
 	
 	
 	function canBeReadByContact($permission_group_ids, $user){
-		return ContactMemberPermissions::ContactCanReadMember($permission_group_ids, $this->getId(), $user);
+		return ContactMemberPermissions::contactCanReadMember($permission_group_ids, $this->getId(), $user);
 	}
 	
 	/**
@@ -126,7 +125,7 @@ class Member extends BaseMember {
 	 * Returns the dimension associated to this member
 	 */
 	function getDimension() {
-		return Dimensions::findById($this->getDimensionId());
+		return Dimensions::getDimensionById($this->getDimensionId());
 	}
 	
 	
@@ -190,17 +189,16 @@ class Member extends BaseMember {
 
 	
 	function canContainObject($object_type_id){
-		$dotc = DimensionObjectTypeContents::findOne(array('conditions' => '`dimension_id` = '.$this->getDimensionId().' AND 
-				`dimension_object_type_id` = '.$this->getObjectTypeId().' AND `content_object_type_id` = '.$object_type_id));
-		if (!is_null($dotc)) return true;
-		return false;
+		$res = DB::execute("SELECT dimension_id FROM ".TABLE_PREFIX."dimension_object_type_contents WHERE `dimension_id` = ".$this->getDimensionId()." AND 
+				`dimension_object_type_id` = ".$this->getObjectTypeId()." AND `content_object_type_id` = ".$object_type_id);
+		return $res->numRows() > 0;
 	}
 	
 	
 	function canBeDeleted(&$error_message) {
 		$childs = $this->getAllChildren();
 		if (MemberPropertyMembers::isMemberAssociated($this->getId())){
-			$error_message = "cannot delete member is associated";
+			$error_message = lang("cannot delete member is associated");
 			return false;
 		}
 		
@@ -216,12 +214,12 @@ class Member extends BaseMember {
 				if ($this->getParentMemberId() == 0) {
 					$dim_ot = DimensionObjectTypes::findOne(array("conditions" => array("`dimension_id` = ? AND `object_type_id` = ?", $this->getDimensionId(), $child->getObjectTypeId())));
 					if (!$dim_ot->getIsRoot()){
-						$error_message = "cannot delete member cannot be root";
+						$error_message = lang("cannot delete member cannot be root");
 						return false;
 					}
 				} else {
 					if (!in_array($child->getObjectTypeId(), $child_ots)){
-						$error_message = "cannot delete member childs cannot be moved to parent";
+						$error_message = lang("cannot delete member childs cannot be moved to parent");
 						return false;
 					}
 				}
@@ -232,6 +230,10 @@ class Member extends BaseMember {
 		if (!$continue_check){
 			return false;
 		} else {
+			$child_ids = $this->getAllChildrenIds();
+			$child_ids[] = $this->getId();
+			$child_ids_str = implode(",", $child_ids);
+			
 			$objects_in_member = ObjectMembers::instance()->findAll(array('conditions' => 'member_id = '.$this->getId()));
 			if (!$objects_in_member || count($objects_in_member) == 0) {
 				return true;
@@ -241,10 +243,12 @@ class Member extends BaseMember {
 					$person_dim = Dimensions::findByCode('feng_persons')->getId();
 					$more_conditions = " AND member_id NOT IN (SELECT id FROM ".TABLE_PREFIX."members WHERE dimension_id=$person_dim)";
 				}
+				$object_id_condition = $this->getObjectId() > 0 ? " AND o.id <> ".$this->getObjectId() : "";
 				foreach ($objects_in_member as $om) {
-					$obj_members = ObjectMembers::findAll(array("conditions" => array("`object_id` = ? AND `is_optimization` = 0".$more_conditions, $om->getObjectId())));
-					if (count($obj_members) <= 1) {
-						$error_message = "cannot delete member has objects";
+					$obj_members = ObjectMembers::findAll(array("conditions" => array("`object_id` = ? AND `is_optimization` = 0 AND member_id IN ($child_ids_str) AND EXISTS (SELECT o.id FROM ".TABLE_PREFIX."objects o WHERE o.id = ? AND o.trashed_by_id=0 $object_id_condition)".$more_conditions, $om->getObjectId(), $om->getObjectId())));
+					if (count($obj_members) >= 1) {
+						$error_message = lang("cannot delete member has objects");
+						foreach ($obj_members as $om) alert_r($om->getObjectId());
 						return false;
 					}
 					$db_res = DB::execute("SELECT object_type_id FROM ".TABLE_PREFIX."objects WHERE id=".$om->getObjectId());
@@ -252,7 +256,7 @@ class Member extends BaseMember {
 					if ($row && array_var($row, 'object_type_id')) {
 						$req_dim_ids = DimensionObjectTypeContents::getRequiredDimensions(array_var($row, 'object_type_id'));
 						if (in_array($this->getDimensionId(), $req_dim_ids)) {
-							$error_message = "cannot delete member is required for objects";
+							$error_message = lang("cannot delete member is required for objects");
 							return false;
 						}
 					}
@@ -378,18 +382,10 @@ class Member extends BaseMember {
 	
 	/**
 	 * Returnrs true if members accepts child nodes, false otherwise
-	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
+	 * @author Alvaro Torterola - alvaro.torterola@fengoffice.com
 	 */
 	function allowChilds() {
-  		$d = $this->getDimensionId() ;
-  		$parent_object_type_id = $this->getObjectTypeId() ;
-  		$sql = "
-  			SELECT count(*) as total  FROM ".TABLE_PREFIX."dimension_object_type_hierarchies 
-  			WHERE 
-  		 		dimension_id = $d AND 
-  		 		parent_object_type_id = $parent_object_type_id ";
-  		$res =  DB::executeOne($sql) ;
-  		return (bool) array_var($res,'total');
+  		return DimensionObjectTypeHierarchies::typeAllowChilds($this->getDimensionId(), $this->getObjectTypeId());
 	}
 
 	
@@ -402,5 +398,92 @@ class Member extends BaseMember {
 			$path=substr($path, 0, -1);
 		}
 		return $path;
+	}
+	
+	
+	
+	/**
+	 * @abstract Archives the member and its submembers (including content objects)
+	 * @param user Contact
+	 * @return Returns the total number of archived objects 
+	 * @author Alvaro Torterola - alvaro.torterola@fengoffice.com
+	 */
+	function archive($user) {
+		if (!$user instanceof Contact) return 0;
+		
+		$person_dim = Dimensions::findByCode('feng_persons');
+		$person_dim_cond = $person_dim instanceof Dimension ? " AND m2.dimension_id<>".$person_dim->getId() : "";
+		
+		// archive objects that dont belong to other unarchived members
+		$sql = "SELECT om.object_id FROM ".TABLE_PREFIX."object_members om INNER JOIN ".TABLE_PREFIX."objects o ON o.id=om.object_id  
+				WHERE om.member_id=".$this->getId()." AND o.archived_by_id=0 AND NOT EXISTS (
+				  SELECT member_id FROM ".TABLE_PREFIX."object_members om2 INNER JOIN ".TABLE_PREFIX."members m2 ON m2.id=om2.member_id
+				  WHERE m2.archived_by_id=0 AND om2.object_id=om.object_id AND om2.member_id<>om.member_id".$person_dim_cond."
+				);";
+		$object_ids = DB::executeAll($sql);
+		$count = 0;
+		foreach ($object_ids as $row) {
+			$content_object = Objects::findObject($row['object_id']);
+			if ($content_object instanceof ContentDataObject) {
+				$content_object->archive();
+				$count++;
+			}
+		}
+		// Log archived objects
+		DB::execute("INSERT INTO ".TABLE_PREFIX."application_logs (taken_by_id, rel_object_id, object_name, created_on, created_by_id, action, is_private, is_silent, log_data)
+			VALUES (".$user->getId().",".$this->getId().",".DB::escape($this->getName()).",NOW(),".$user->getId().",'archive',0,1,'".implode(',',array_flat($object_ids))."')");
+		
+		$this->setArchivedById($user->getId());
+		$this->setArchivedOn(DateTimeValueLib::now());
+		$this->save();
+		
+		$sub_members = $this->getAllChildren();
+		foreach ($sub_members as $sub_member) {
+			if ($sub_member->getArchivedById() == 0) {
+				$count += $sub_member->archive($user);
+			}
+		}
+		
+		return $count;
+	}
+	
+	
+	/**
+	 * @abstract Unarchives the member and its submembers (including content objects)
+	 * @param user Contact
+	 * @return Returns the total number of unarchived objects 
+	 * @author Alvaro Torterola - alvaro.torterola@fengoffice.com
+	 */
+	function unarchive($user) {
+		if (!$user instanceof Contact) return 0;
+		
+		// unarchive this member's objects
+		$sql = "SELECT om.object_id FROM ".TABLE_PREFIX."object_members om INNER JOIN ".TABLE_PREFIX."objects o ON o.id=om.object_id  
+				WHERE om.member_id=".$this->getId()." AND o.archived_by_id>0";
+		$object_ids = DB::executeAll($sql);
+		$count = 0;
+		foreach ($object_ids as $row) {
+			$content_object = Objects::findObject($row['object_id']);
+			if ($content_object instanceof ContentDataObject) {
+				$content_object->unarchive();
+				$count++;
+			}
+		}
+		// Log unarchived objects
+		DB::execute("INSERT INTO ".TABLE_PREFIX."application_logs (taken_by_id, rel_object_id, object_name, created_on, created_by_id, action, is_private, is_silent, log_data)
+			VALUES (".$user->getId().",".$this->getId().",".DB::escape($this->getName()).",NOW(),".$user->getId().",'unarchive',0,1,'".implode(',',array_flat($object_ids))."')");
+		
+		$this->setArchivedById(0);
+		$this->setArchivedOn(EMPTY_DATETIME);
+		$this->save();
+		
+		$sub_members = $this->getAllChildren();
+		foreach ($sub_members as $sub_member) {
+			if ($sub_member->getArchivedById() > 0) {
+				$count += $sub_member->unarchive($user);
+			}
+		}
+		
+		return $count;
 	}
 }

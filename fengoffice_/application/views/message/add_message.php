@@ -3,8 +3,11 @@
 	$genid = gen_id();
 	$object = $message;
 	$visible_cps = CustomProperties::countVisibleCustomPropertiesByObjectType($message->getObjectTypeId());
+        
+        $loc = user_config_option('localization');
+	if (strlen($loc) > 2) $loc = substr($loc, 0, 2);
 ?>
-<form onsubmit="return og.handleMemberChooserSubmit('<?php echo $genid; ?>', <?php echo $message->manager()->getObjectTypeId() ?>);" class="add-message" id="<?php echo $genid ?>submit-edit-form" style='height:100%;background-color:white' action="<?php echo $message->isNew() ? get_url('message', 'add') : $message->getEditUrl() ?>" method="post" enctype="multipart/form-data" >
+<form onsubmit="return og.handleMemberChooserSubmit('<?php echo $genid; ?>', <?php echo $message->manager()->getObjectTypeId() ?>) && og.setDescription();" class="add-message" id="<?php echo $genid ?>submit-edit-form" style='height:100%;background-color:white' action="<?php echo $message->isNew() ? get_url('message', 'add') : $message->getEditUrl() ?>" method="post" enctype="multipart/form-data" >
 <div class="message">
 <div class="coInputHeader">
 <div class="coInputHeaderUpperRow">
@@ -90,14 +93,84 @@
 	</fieldset>	
 	</div>
 	<?php } // if ?>
-	
-	
-	<div>
-	<?php echo label_tag(lang('text'), 'messageFormText', false) ?>
-	<?php echo editor_widget('message[text]', array_var($message_data, 'text'), 
-		array('id' => $genid . 'messageFormText', 'tabindex' => '50')) ?>
+        
+        <?php 
+            if(config_option("wysiwyg_messages")){
+                if($message->isNew()) {
+                        $ckEditorContent = '';
+                } else {
+                    if(array_var($message_data, 'type_content') == "text"){
+                        $ckEditorContent = nl2br(htmlspecialchars(array_var($message_data, 'text')));
+                    }else{
+                        $ckEditorContent = purify_html(nl2br(array_var($message_data, 'text')));
+                    }
+                }
+        ?>
+        <div>
+            <?php echo label_tag(lang('text'), $genid . 'messageFormText', false) ?>
+            <div id="<?php echo $genid ?>ckcontainer" style="height: 350px">
+                <textarea cols="80" id="<?php echo $genid ?>ckeditor" name="message[text]" rows="10"><?php echo clean($ckEditorContent) ?></textarea>
+            </div>
+        </div>
+        
+        <script>
+            var h = document.getElementById("<?php echo $genid ?>ckcontainer").offsetHeight;
+            var editor = CKEDITOR.replace('<?php echo $genid ?>ckeditor', {
+                uiColor: '#BBCCEA',
+                height: (h-60) + 'px',
+                enterMode: CKEDITOR.ENTER_P,
+                shiftEnterMode: CKEDITOR.ENTER_BR,
+                disableNativeSpellChecker: false,
+                language: '<?php echo $loc ?>',
+                customConfig: '',
+                toolbar: [
+                                ['FontSize','-','Bold','Italic','Underline','-', 'SpellChecker', 'Scayt','-',
+                                //'NumberedList','BulletedList','-',
+                                'TextColor','BGColor','-',
+                                'JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock']
+                        ],
+                on: {
+                        instanceReady: function(ev) {
+                                og.adjustCkEditorArea('<?php echo $genid ?>');
+                                editor.resetDirty();
+                        }
+                    },
+                entities_additional : '#39,#336,#337,#368,#369'
+            });
+
+            og.setDescription = function() {
+                    var form = Ext.getDom('<?php echo $genid ?>submit-edit-form');
+                    if (form.preventDoubleSubmit) return false;
+
+                    setTimeout(function() {
+                            form.preventDoubleSubmit = false;
+                    }, 2000);
+
+                    var editor = og.getCkEditorInstance('<?php echo $genid ?>ckeditor');
+                    form['message[text]'].value = editor.getData();
+
+                    return true;
+            };    
+        </script>
+        <?php }else{?>
+        <div>
+            <?php 
+                if(array_var($message_data, 'type_content') == "text"){
+                    $content_text = array_var($message_data, 'text');
+                }else{
+                    $content_text = html_to_text(html_entity_decode(nl2br(array_var($message_data, 'text')), null, "UTF-8"));
+                }   
+            ?>
+            <?php echo label_tag(lang('text'), 'messageFormText', false) ?>
+            <?php echo editor_widget('message[text]', $content_text, array('id' => $genid . 'messageFormText', 'tabindex' => '50')) ?>
 	</div>
-	
+        <script>
+                og.setDescription = function() {
+                        return true;
+                };    
+        </script>
+	<?php }?>
+        
 	<?php foreach ($categories as $category) { ?>
 	<div <?php if (!$category['visible']) echo 'style="display:none"' ?> id="<?php echo $genid . $category['name'] ?>">
 	<fieldset>
@@ -116,15 +189,10 @@
 
 <script>
 	var memberChoosers = Ext.getCmp('<?php echo "$genid-member-chooser-panel-".$message->manager()->getObjectTypeId()?>').items;
-	var treeClicked = false;
 	if (memberChoosers) {
 		memberChoosers.each(function(item, index, length) {
 			
 			item.on('all trees updated', function() {
-				// First User click
-				$(".member-chooser input.x-tree-node-cb").click(function(){
-					treeClicked = true;
- 				});
 				var dimensionMembers = {};
 				memberChoosers.each(function(it, ix, l) {
 					dim_id = this.dimensionId;
@@ -135,20 +203,18 @@
 					}
 				});
 				var uids = App.modules.addMessageForm.getCheckedUsers('<?php echo $genid ?>');
-				if(treeClicked) {
-					Ext.get('<?php echo $genid ?>add_subscribers_content').load({
-						url: og.getUrl('object', 'render_add_subscribers', {
-							context: Ext.util.JSON.encode(dimensionMembers),
-							users: uids,
-							genid: '<?php echo $genid ?>',
-							otype: '<?php echo $message->manager()->getObjectTypeId()?>'
-						}),
-						scripts: true
-					});
-				}
+				Ext.get('<?php echo $genid ?>add_subscribers_content').load({
+					url: og.getUrl('object', 'render_add_subscribers', {
+						context: Ext.util.JSON.encode(dimensionMembers),
+						users: uids,
+						genid: '<?php echo $genid ?>',
+						otype: '<?php echo $message->manager()->getObjectTypeId()?>'
+					}),
+					scripts: true
+				});
 			});
 		});
 	}
 	
-	Ext.get('<?php echo $genid ?>messageFormTitle').focus();	
+	Ext.get('<?php echo $genid ?>messageFormTitle').focus();        
 </script>

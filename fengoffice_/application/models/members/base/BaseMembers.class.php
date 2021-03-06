@@ -20,6 +20,8 @@
     	'depth' => DATA_TYPE_INTEGER, 
     	'name' => DATA_TYPE_STRING, 
     	'object_id' => DATA_TYPE_INTEGER,
+    	'archived_on' => DATA_TYPE_DATETIME,
+    	'archived_by_id' => DATA_TYPE_INTEGER
     );
   
     /**

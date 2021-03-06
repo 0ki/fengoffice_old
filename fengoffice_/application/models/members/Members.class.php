@@ -47,6 +47,6 @@
 			return $allMembers[0];	
 		}
 		return null;
-	}	
-	
+	}
+
   } 

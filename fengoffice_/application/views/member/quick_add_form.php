@@ -63,7 +63,7 @@
 			var title = $("#member-name").val();
 			var parent = $("#parent_id").val();
 		
-			var url = og.makeAjaxUrl($(this).attr('href')+"&name="+title);
+			var url = og.makeAjaxUrl($(this).attr('href')+"&name="+escape(title));
 			if (parent) {
 				url += "&parent="+parent;
 			}		
@@ -96,6 +96,8 @@
 			}
 			
 		});
+
+		og.eventManager.fireEvent("after quickadd render");
 	    
 				
 	});

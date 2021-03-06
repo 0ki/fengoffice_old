@@ -63,7 +63,7 @@
 
 <?php if (count(active_context_members(false)) > 0) : ?>
 <div style="margin-bottom: 10px; padding-bottom: 5px; float:left;<?php echo ($conditionHtml != '' ? "margin-left:35px;padding-left:35px;border-left:1px dotted #aaa;" : "")?>">
-	<h5><?php echo lang('showing indformation for')?></h5>
+	<h5><?php echo lang('showing information for')?></h5>
 	<ul>
 	<?php
 		$context = active_context();

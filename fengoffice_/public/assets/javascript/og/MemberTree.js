@@ -127,6 +127,11 @@ og.MemberTree = function(config) {
 						}
 					});
 				}
+                                
+                                if(Ext.getCmp('mails-manager') !== undefined){
+                                    var sm = Ext.getCmp('mails-manager').getSelectionModel();
+                                    sm.clearSelections();
+                                }
 
 			}
 			return false;
@@ -158,11 +163,22 @@ og.MemberTree = function(config) {
 				if ( node.options && node.options.defaultAjax && node.options.defaultAjax.controller && node.options.defaultAjax.action) {
 					var reload = ( this.getSelectionModel() && this.getSelectionModel().getSelectedNode() && this.getSelectionModel().getSelectedNode().id  ==  node.id );
 					og.customDashboard( node.options.defaultAjax.controller, node.options.defaultAjax.action, {id: node.object_id}, reload);
-				}else{
+                                        this.clearFilter();
+                                        if(this.dimensionCode == 'feng_persons'){//people
+                                            og.core_dimensions.onContactClick(node.id);
+                                        }else if(this.dimensionCode == 'workspaces'){//workspaces
+                                            og.workspaces.onWorkspaceClick(node.id);
+                                        }else if(this.dimensionCode == 'customer_project'){//crpm     
+                                            og.projects.onProjectClick(node.id);
+                                        }
+                                        node.expand();
+                                        $("#" + this.id + '-textfilter').val("");
+                                }else{
 					og.resetDashboard();
 				}
 			
 			}
+                        
 		}
 	});
 	

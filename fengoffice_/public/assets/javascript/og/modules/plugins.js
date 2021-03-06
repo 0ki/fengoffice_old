@@ -29,8 +29,7 @@ og.pluginManager.init = function () {
 				ct.removeClass("active").addClass("inactive");
 				ct.find(".activate , .uninstall").show();
 				ct.find(".deactivate").hide();
-				
-				
+				$(".contextualHelp.reload").fadeIn();
 				$(".error").html("").hide();
 			}
 		});

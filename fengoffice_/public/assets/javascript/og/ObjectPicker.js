@@ -1,4 +1,4 @@
-og.ObjectPicker = function(config) {	
+og.ObjectPicker = function(config,object_id) {	
 	if (!config) config = {};
 	
 	var Grid = function(config) {
@@ -233,7 +233,7 @@ og.ObjectPicker = function(config) {
 		id: 'object-picker',
 		layout: 'border',
 		modal: true,
-		closeAction: 'hide',
+		closeAction: 'close',
 		iconCls: 'op-ico',
 		title: lang('select an object'),
 		buttons: [{
@@ -269,7 +269,7 @@ og.ObjectPicker = function(config) {
 			            handler: function() {
 							var quickId = Ext.id();
 							var picker = this;
-							og.openLink(og.getUrl('files', 'quick_add_files', {genid: quickId}), {
+							og.openLink(og.getUrl('files', 'quick_add_files', {genid: quickId, object_id: object_id}), {
 			        			preventPanelLoad: true,
 								onSuccess: function(data) {
 				        			og.ExtendedDialog.show({
@@ -369,11 +369,11 @@ og.ObjectPicker = function(config) {
 Ext.extend(og.ObjectPicker, Ext.Window, {
 	accept: function() {
 		this.fireEvent('objectselected', this.grid.getSelected());
-		this.hide();
+		this.close();
 	},
 	
 	cancel: function() {
-		this.hide();
+		this.close();
 	},
 	
 	loadFilters: function(config) {
@@ -392,10 +392,9 @@ Ext.extend(og.ObjectPicker, Ext.Window, {
 	}
 });
 
-og.ObjectPicker.show = function(callback, scope, config) {
-	if (!this.dialog) {
-		this.dialog = new og.ObjectPicker();
-	}
+og.ObjectPicker.show = function(callback, scope, config, object_id) {
+    
+	this.dialog = new og.ObjectPicker(config,object_id);
 	
 	if (!config) config = {};
 	if (config.context) {

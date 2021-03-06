@@ -132,7 +132,7 @@ class html2text
      *  @var integer $width
      *  @access public
      */
-    var $width = 70;
+    var $width = 0;
 
     /**
      *  List of preg* regular expression patterns to search for,
@@ -161,16 +161,14 @@ class html2text
         '/(<ol[^>]*>|<\/ol>)/i',                 // <ol> and </ol>
         '/<li[^>]*>(.*?)<\/li>/i',               // <li> and </li>
         '/<li[^>]*>/i',                          // <li>
-        '/<a [^>]*href="([^"]+)"[^>]*>(.*?)<\/a>/ie',
-                                                 // <a href="">
+        '/<a [^>]*href="([^"]+)"[^>]*>(.*?)<\/a>/ie',// <a href="">
         '/<hr[^>]*>/i',                          // <hr>
         '/(<table[^>]*>|<\/table>)/i',           // <table> and </table>
         '/(<tr[^>]*>|<\/tr>)/i',                 // <tr> and </tr>
         '/<td[^>]*>(.*?)<\/td>/i',               // <td> and </td>
         '/<th[^>]*>(.*?)<\/th>/ie',              // <th> and </th>
         '/&(nbsp|#160);/i',                      // Non-breaking space
-        '/&(quot|rdquo|ldquo|#8220|#8221|#147|#148);/i',
-		                                         // Double quotes
+        '/&(quot|rdquo|ldquo|#8220|#8221|#147|#148);/i',// Double quotes
         '/&(apos|rsquo|lsquo|#8216|#8217);/i',   // Single quotes
         '/&gt;/i',                               // Greater-than
         '/&lt;/i',                               // Less-than
@@ -195,34 +193,33 @@ class html2text
      *  @see $search
      */
     var $replace = array(
-        '',                                     // Non-legal carriage return
-        ' ',                                    // Newlines and tabs
-        ' ',                                    // Runs of spaces, pre-handling
-        '',                                     // <script>s -- which strip_tags supposedly has problems with
-        '',                                     // <style>s -- which strip_tags supposedly has problems with
-        //'',                                     // Comments -- which strip_tags might have problem a with
-        "strtoupper('\n\n\\1\n\n')",          // H1 - H3
-        "ucwords('\n\n\\1\n\n')",             // H4 - H6
-        "\n\n\t",                               // <P>
-        "\n",                                   // <br>
-        'strtoupper(\'\\1\')',                    // <b>
-        'strtoupper(\'\\1\')',                    // <strong>
-        '_\\1_',                                // <i>
-        '_\\1_',                                // <em>
-        "\n\n",                                 // <ul> and </ul>
-        "\n\n",                                 // <ol> and </ol>
-        "\t* \\1\n",                            // <li> and </li>
-        "\n\t* ",                               // <li>
-        '$this->_build_link_list(\'\\1\', \'\\2\')',
-                                                // <a href="">
-        "\n-------------------------\n",        // <hr>
-        "\n\n",                                 // <table> and </table>
-        "\n",                                   // <tr> and </tr>
-        "\t\t\\1\n",                            // <td> and </td>
-        "strtoupper('\t\t\\1\n')",            // <th> and </th>
-        ' ',                                    // Non-breaking space
-        '"',                                    // Double quotes
-        "'",                                    // Single quotes
+        '',                                      // Non-legal carriage return
+        '',                                      // Newlines and tabs
+        '',                                      // Runs of spaces, pre-handling
+        '',                                      // <script>s -- which strip_tags supposedly has problems with
+        '',                                      // <style>s -- which strip_tags supposedly has problems with
+        //'',                                    // Comments -- which strip_tags might have problem a with
+        "strtoupper(\"\n\n\\1\n\n\")",           // H1 - H3
+        "ucwords(\"\n\n\\1\n\n\")",              // H4 - H6
+        "\n",                                    // <P>
+        "\n",                                    // <br>
+        'strtoupper("\\1")',                     // <b>
+        'strtoupper("\\1")',                     // <strong>
+        '_\\1_',                                 // <i>
+        '_\\1_',                                 // <em>
+        "\n\n",                                  // <ul> and </ul>
+        "\n\n",                                  // <ol> and </ol>
+        "\t* \\1\n",                             // <li> and </li>
+        "\n\t* ",                                // <li>
+        '$this->_build_link_list("\\1", "\\2")', // <a href="">
+        "\n-------------------------\n",         // <hr>
+        "\n\n",                                  // <table> and </table>
+        "\n",                                    // <tr> and </tr>
+        "\t\t\\1\n",                             // <td> and </td>
+        "strtoupper(\"\t\t\\1\n\")",             // <th> and </th>
+        ' ',                                     // Non-breaking space
+        '"',                                     // Double quotes
+        "'",                                     // Single quotes
         '>',
         '<',
         '&',
@@ -232,10 +229,10 @@ class html2text
         '--',
         '-',
         '*',
-        'GBP',
-        'EUR',                                  // Euro sign. € ?
-        '',                                     // Unknown/unhandled entities
-        ' '                                     // Runs of spaces, post-handling
+        '£',
+        'EUR',                                   // Euro sign. € ?
+        '',                                      // Unknown/unhandled entities
+        ' '                                      // Runs of spaces, post-handling
     );
 
     /**
@@ -419,6 +416,7 @@ class html2text
         $this->_link_list = '';
 
         $text = trim(stripslashes($this->html));
+        $text = str_replace('"',"'",$text);
 
         // Run our defined search-and-replace
         $text = preg_replace($this->search, $this->replace, $text);

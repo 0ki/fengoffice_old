@@ -12,7 +12,7 @@
   		$first_tab = 1; 
   ?>
   
-<?php if(!logged_user()->isAdministrator()) { ?>
+<?php if(!logged_user()->isAdminGroup()) { ?>
   <div>
     <?php echo label_tag(lang('old password'), 'passwordFormOldPassword', true) ?>
     <?php echo password_field('password[old_password]', null, array('tabindex' => $first_tab)) ?>

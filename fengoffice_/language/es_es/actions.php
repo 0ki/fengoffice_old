@@ -162,4 +162,9 @@
 	'show' => 'Mostrar',
 	'activate' => 'Activar',
 	'disabled' => 'Desactivado',
+    
+        'config activity' => 'Filtros de actividad',
+        'entry to see the dimension' => 'Entrada a la dimensión',
+        'recent activities to show' => 'Actividades para mostrar',
+        'views and downloads' => 'ver vistas y descargas',
 ); ?>

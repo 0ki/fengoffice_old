@@ -254,8 +254,8 @@ class Localization {
 	 * @param float $timezone Timezone offset in hours
 	 * @return string
 	 */
-	function formatTime(DateTimeValue $date, $timezone = 0) {
-		return $this->dateByLocalization($this->time_format, $date->getTimestamp(), $timezone);
+	function formatTime(DateTimeValue $date, $timezone = 0, $view_timezone = false) {
+		return $this->dateByLocalization($this->time_format, $date->getTimestamp(), $timezone, $view_timezone);
 	} // formatTime
 
 	/**
@@ -266,7 +266,7 @@ class Localization {
 	 * @param int $timestamp
 	 * @return string
 	 */
-	function dateByLocalization($format, $timestamp, $timezone = 0) {
+	function dateByLocalization($format, $timestamp, $timezone = 0, $view_timezone = false) {
 		if ($timestamp == 0) { 
 			$timestamp = time();
 		}
@@ -300,6 +300,9 @@ class Localization {
 			$i = $a + 1;
 		}
 		$str_date .= date(substr($format, $i), $timestamp);
+                if($view_timezone){
+                    $str_date .= " (GMT " . $timezone . ")";
+                }
 		return $str_date;
 	}
 

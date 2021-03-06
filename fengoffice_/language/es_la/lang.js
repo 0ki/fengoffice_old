@@ -144,7 +144,7 @@ addLangs({
 	'search': 'Búsqueda',
 	'webpage': 'Enlace web',
 	'message': 'Nota',
-	'workspaces': 'Espacios',
+	'workspaces': 'Espacios de trabajo',
 	'all': 'Todos',
 	'all customers': 'Todos los Clientes',    
 	'All': 'Todos',
@@ -384,6 +384,8 @@ addLangs({
 	'task name': 'Nombre de la tarea',
 	'show': 'Mostrar',
 	'time': 'Horas',
+        'time estimates': 'Tiempos estimados',
+        'time estimate' : 'Estimativo de tiempo',
 	'dates': 'Fechas',
 	'empty milestones': 'Hitos vacíos',
 	'select user or group': 'Seleccionar usuario o organización',
@@ -744,6 +746,22 @@ addLangs({
 	'do you want to mantain the current associations of this obj with members of': '¿Desea mantener las actuales asociaciones de este objeto con {0}?',
   	
   	'sync' : 'Sincronizar',
-        'delete calendar' : 'Borrar calendario?',
-        'delete calendar events' : 'Se borraran los eventos relacionados con el calendario, desea que tambien se borren de Google Calendar?'
+        'delete calendar' : '¿Borrar calendario?',
+        'delete calendar events' : 'Se borrarán los eventos relacionados con el calendario en Feng Office. Habilite el checkbox a la derecha si desea que también se borren de Google Calendar',
+        
+        'tasks related' : 'Tareas relacionadas',
+        'apply changes to' : 'Aplicar los cambios a:',
+        'only this task' : 'Sólo esta tarea',
+        'this task alone and all to come forward' : 'Esta tarea y todas las siguientes',
+        'all tasks related' : 'Todas las tareas relacionadas',
+        'accept' : 'Aceptar',
+        'events related' : 'Eventos relacionados',
+        'only this event' : 'Sólo este evento',
+        'this event alone and all to come forward' : 'Este evento y todos los siguientes',
+        'all events related' : 'Todos los eventos relacionados',
+        
+        'add new workspace': 'Agregar nuevo workspace',
+        'edit selected workspace': 'Editar workspace',
+        'delete selected workspace_': 'Elimiar workspace seleccionados',
+        'delete workspace warning': '¿Está seguro que desea enviar los workspace seleccionados a la papelera?'
 });

@@ -396,6 +396,28 @@
       return $this->setColumnValue('ext_cal_id', $value);
     } // setExtCalId() 
     
+    /**
+     * Return value of 'original_event_id' field
+     *
+     * @access public
+     * @param void
+     * @return integer
+     */
+    function getOriginalEventId() {
+            return $this->getColumnValue('original_event_id');
+    } // getOriginalEventId()
+
+    /**
+     * Set value of 'original_event_id' field
+     *
+     * @access public
+     * @param integer $value
+     * @return boolean
+     */
+    function setOriginalEventId($value) {
+            return $this->setColumnValue('original_event_id', $value);
+    } // setOriginalEventId()
+    
     
     /**
     * Return manager instance

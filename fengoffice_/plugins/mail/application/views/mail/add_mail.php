@@ -224,6 +224,15 @@ sig.actualHtmlSignature = '';
  	</script>
  	</fieldset>
  	</div>
+                    
+        <div id="<?php echo $genid ?>add_subscribers_div" style="display:none">
+            <fieldset>
+                <legend><?php echo lang('object subscribers') ?></legend>
+                <div id="<?php echo $genid ?>add_subscribers_content">
+                    <?php echo render_add_subscribers($object, $genid); ?>
+                </div>
+            </fieldset>
+        </div>
  	
  	<div id="<?php echo $genid ?>add_mail_add_contacts" style="display:none;">
  	<fieldset id="<?php echo $genid ?>fieldset_add_contacts">
@@ -280,9 +289,10 @@ sig.actualHtmlSignature = '';
 	</div>
 </div>
 </div>
+
+</div>
 </form>
 </div>
-
 <?php
 	$loc = user_config_option('localization');
 	if (strlen($loc) > 2) $loc = substr($loc, 0, 2);

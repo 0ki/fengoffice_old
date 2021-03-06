@@ -7,6 +7,16 @@
   */
   class Dimensions extends BaseDimensions {
     
+  	private static $dimensions_by_id = array();
+  	
+  	static function getDimensionById($id) {
+  		$dim = array_var(self::$dimensions_by_id, $id);
+  		if (!$dim instanceof Dimension) {
+  			$dim = Dimensions::findById($id);
+  			if ($dim instanceof Dimension) self::$dimensions_by_id[$id] = $dim;
+  		}
+  		return $dim;
+  	}
     
   	static function getAssociatedDimensions($associated_dimension_id, $associated_object_type, $get_properties = true) {
   		
@@ -26,7 +36,7 @@
   		
   		$dimensions = array();
   		foreach ($associations as $assoc) {
-  			$dimensions[] = Dimensions::findById($assoc->getColumnValue($res_dim_field));
+  			$dimensions[] = Dimensions::getDimensionById($assoc->getColumnValue($res_dim_field));
   		}
   		return $dimensions;
   	}

@@ -47,7 +47,13 @@ h2 {
 </div>
 
 <div class="body">
-<?php echo nl2br(clean($message->getText())); ?>
+<?php 
+    if($message->getTypeContent() == "text"){
+        echo escape_html_whitespace(convert_to_links(clean($message->getText())));
+    }else{
+        echo purify_html(nl2br($message->getText()));
+    }
+?>
 </div>
 
 <?php
@@ -65,7 +71,7 @@ if (count($comments) > 0) {
 			<b>#<?php echo $i ?>:</b><?php echo lang('comment posted on by', format_datetime($comment->getUpdatedOn()), $comment->getCreatedByCardUrl(), clean($comment->getCreatedByDisplayName())) ?>
 		</div>
 		<div class="comment-body">
-		<?php echo nl2br(clean($comment->getText())) ?>
+		<?php echo $comment->getText() ?>
 		</div>
 	</div>
 <?php } ?>

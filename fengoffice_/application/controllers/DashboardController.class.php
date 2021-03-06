@@ -25,10 +25,6 @@ class DashboardController extends ApplicationController {
 		ajx_replace(true);
 	}
 	
-	
-	
-	
-	
 	/**
 	 * 
 	 * 
@@ -460,7 +456,7 @@ class DashboardTools {
 		$widgetsToRender = array();
 		
 		self::$widgets = Widgets::instance()->findAll(array(
-			//"conditions" => "default_section = '$name' ",
+			"conditions" => " plugin_id = 0 OR plugin_id IS NULL OR plugin_id IN ( SELECT id FROM ".TABLE_PREFIX."plugins WHERE is_activated > 0 AND is_installed > 0 )",
 			"order" => "default_order",
 			"order_dir" => "DESC",
 		

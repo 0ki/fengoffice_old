@@ -338,5 +338,13 @@ class ProjectTasks extends BaseProjectTasks {
 		$result->objects = array_values($result->objects);
 		return $result;
 	}
+        
+        function findByRelated($task_id) {
+                return ProjectTasks::findAll(array('conditions' => array('`original_task_id` = ?', $task_id)));
+        }
+        
+        function findByTaskAndRelated($task_id,$original_task_id) {
+                return ProjectTasks::findAll(array('conditions' => array('(`original_task_id` = ? OR `object_id` = ?) AND `object_id` <> ?', $original_task_id,$original_task_id,$task_id)));
+        }
 	
 } // ProjectTasks

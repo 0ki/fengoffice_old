@@ -97,9 +97,15 @@ abstract class ApplicationDataObject extends DataObject {
 		}
 		 
 		if (count($columns_to_drop) > 0){
-			if (!$wasNew)
+			if (!$wasNew) {
 				SearchableObjects::dropContentByObjectColumns($this,$columns_to_drop);
-
+			}
+			
+			$docx_id = FileTypes::getByExtension('docx')->getId();
+			$pdf_id = FileTypes::getByExtension('pdf')->getId();
+			$odt_id = FileTypes::getByExtension('odt')->getId();
+			$fodt_id = FileTypes::getByExtension('fodt')->getId();
+							
 			foreach($columns_to_drop as $column_name) {
 				$content = $this->getSearchableColumnContent($column_name);
 				if (get_class($this->manager()) == 'ProjectFiles') {
@@ -109,18 +115,21 @@ abstract class ApplicationDataObject extends DataObject {
 						$file = ProjectFileRevisions::findById($this->getObjectId());
 
 						try {
-							if($file->getFileTypeId() == 12){
-								$file_path = "tmp/doc_filecontent_".$this->getObjectId().".docx";
-								$file_tmp = @fopen($file_path, 'w');
-								if ($file_tmp) {
-									fwrite($file_tmp, $file->getFileContent());
-									fclose($file_tmp);
-									$content = docx2text($file_path);
-									unlink($file_path);
+							
+							if($file->getFileTypeId() == $docx_id){
+								if (class_exists('DOMDocument')) {
+									$file_path = "tmp/doc_filecontent_".$this->getObjectId().".docx";
+									$file_tmp = @fopen($file_path, 'w');
+									if ($file_tmp) {
+										fwrite($file_tmp, $file->getFileContent());
+										fclose($file_tmp);
+										$content = docx2text($file_path);
+										unlink($file_path);
+									}
 								}
-	
-							}elseif($file->getFileTypeId() == 19){
-	
+
+							}elseif($file->getFileTypeId() == $pdf_id){
+
 								$file_path = "tmp/pdf_filecontent_".$this->getObjectId().".pdf";
 								$file_tmp = @fopen($file_path, 'w');
 								if ($file_tmp) {
@@ -129,7 +138,28 @@ abstract class ApplicationDataObject extends DataObject {
 									$content = pdf2text($file_path);
 									unlink($file_path);
 								}
-	
+								
+							}elseif($file->getFileTypeId() == $odt_id){
+								if (class_exists('DOMDocument')) {
+									$file_path = "tmp/odt_filecontent_".$this->getObjectId().".odt";
+									$file_tmp = @fopen($file_path, 'w');
+									if ($file_tmp) {
+										fwrite($file_tmp, $file->getFileContent());
+										fclose($file_tmp);
+										$content = odt2text($file_path);
+										unlink($file_path);
+									}
+								}
+								
+							}elseif($file->getFileTypeId() == $fodt_id){
+								$file_path = "tmp/fodt_filecontent_".$this->getObjectId().".fodt";
+								$file_tmp = @fopen($file_path, 'w');
+								if ($file_tmp) {
+									fwrite($file_tmp, $file->getFileContent());
+									fclose($file_tmp);
+									$content = fodt2text($file_path,$this->getObjectId());
+									unlink($file_path);
+								}
 							}
 						} catch (FileNotInRepositoryError $e) {
 							$content = "";

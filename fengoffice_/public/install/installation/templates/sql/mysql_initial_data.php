@@ -52,8 +52,13 @@ INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`
 	('general', 'use_owner_company_logo_at_header', '1', 'BoolConfigHandler', '0', '0', NULL),
 	('general', 'ask_administration_autentification', 0, 'BoolConfigHandler', 0, 0, NULL),
 	('general', 'use tasks dependencies', 0, 'BoolConfigHandler', 0, 0, NULL),
-    ('general', 'untitled_notes', '0', 'BoolConfigHandler', '0', '0', NULL),
-    ('general', 'repeating_task', '0', 'BoolConfigHandler', '0', '0', NULL);
+        ('general', 'untitled_notes', '0', 'BoolConfigHandler', '0', '0', NULL),
+        ('general', 'repeating_task', '0', 'BoolConfigHandler', '0', '0', NULL),
+        ('general', 'working_days', '1,2,3,4,5', 'StringConfigHandler', '0', '0', NULL),
+        ('general', 'wysiwyg_tasks', '0', 'BoolConfigHandler', '0', '0', NULL), 
+        ('general', 'wysiwyg_messages', '0', 'BoolConfigHandler', '0', '0', NULL),
+        ('general', 'wysiwyg_projects', '0', 'BoolConfigHandler', '0', '0', NULL),
+        ('task panel', 'tasksShowTimeEstimates', '1', 'BoolConfigHandler', '1', '0', NULL);
 	
 INSERT INTO `<?php echo $table_prefix ?>file_types` (`extension`, `icon`, `is_searchable`, `is_image`) VALUES
 	('zip', 'archive.png', 0, 0),
@@ -88,7 +93,9 @@ INSERT INTO `<?php echo $table_prefix ?>file_types` (`extension`, `icon`, `is_se
 	('html', 'html.png', 1, 0),
 	('slim', 'ppt.png', 1, 0),
 	('ppt', 'ppt.png', 0, 0),
-	('webfile', 'webfile.png', 0, 0);
+	('webfile', 'webfile.png', 0, 0),
+        ('odt', 'doc.png', '0', '0'),
+        ('fodt', 'doc.png', '0', '0');
 
 INSERT INTO `<?php echo $table_prefix ?>im_types` (`name`, `icon`) VALUES
 	('ICQ', 'icq.gif'),
@@ -106,7 +113,6 @@ INSERT INTO `<?php echo $table_prefix ?>cron_events` (`name`, `recursive`, `dela
 	('send_notifications_through_cron', '1', '1', '0', '0', '0000-00-00 00:00:00'),
 	('delete_mails_from_server', '1', '1440', '1', '1', '0000-00-00 00:00:00'),
 	('clear_tmp_folder', '1', '1440', '1', '1', '0000-00-00 00:00:00'),
-	('check_mail', '1', '10', '0', '1', '0000-00-00 00:00:00'),
 	('check_upgrade', '1', '1440', '0', '1', '0000-00-00 00:00:00'),
         ('import_google_calendar', '1', '10', '0', '0', '0000-00-00 00:00:00'),
         ('export_google_calendar', '1', '10', '0', '0', '0000-00-00 00:00:00');
@@ -236,7 +242,8 @@ INSERT INTO `<?php echo $table_prefix ?>contact_config_options` (`category_name`
  ('general', 'rememberGUIState', '1', 'RememberGUIConfigHandler', 0, 300, ''),
  ('calendar panel', 'calendar task filter', 'pending', 'StringConfigHandler', 1, 0, ''),
  ('task panel', 'close timeslot open', '1', 'BoolConfigHandler', 0, 0, ''),
- ('calendar panel', 'reminders_events', 'reminder_email,1,60', 'StringConfigHandler', '0', '0', NULL);
+ ('calendar panel', 'reminders_events', 'reminder_email,1,60', 'StringConfigHandler', '0', '0', NULL),
+ ('dashboard', 'filters_dashboard', '0,0,10,0', 'StringConfigHandler', '0', '0', 'first position: entry to see the dimension, second position: view timeslot, third position: recent activities to show, fourth position: view views and downloads');
  
 
 INSERT INTO `<?php echo $table_prefix ?>object_types` (`id`,`name`,`handler_class`,`table_name`,`type`,`icon`,`plugin_id`) VALUES
@@ -430,7 +437,7 @@ INSERT INTO `<?php echo $table_prefix ?>widgets` (`name`,`title`,`plugin_id`,`pa
  ('people','people',0,'','','right',-1),
  ('messages','notes',0,'','','right',1000),
  ('documents','documents',0,'','','right',1100),
- ('calendar','upcoming events milestones and tasks',0,'','','top',0) ;
+ ('calendar','upcoming events milestones and tasks',0,'','','top',0);
 
 INSERT INTO <?php echo $table_prefix ?>role_object_type_permissions (role_id, object_type_id, can_delete, can_write)
  SELECT p.id, o.id, 1, 1

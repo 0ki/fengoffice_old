@@ -149,10 +149,13 @@ function ajx_replace($replace = true) {
  * @param $url
  */
 function require_javascript($url, $plugin = null) {
+	$revision = product_version_revision(); 
+    if($revision != "") {
+    	$revision = "?rev=".$revision;
+    }
+    
 	if (is_ajax_request()) {
-
-		AjaxResponse::instance()->addScript($url, $plugin);
-		
+		AjaxResponse::instance()->addScript($url.$revision, $plugin);
 	}
 }
 

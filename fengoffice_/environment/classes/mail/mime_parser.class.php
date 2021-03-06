@@ -2006,8 +2006,12 @@ class mime_parser_class
 
 					case 'related':
 						$results = $parts[0];
-						for($p = 1; $p < $lp; ++$p)
+						for($p = 1; $p < $lp; ++$p) {
 							$results['Related'][] = $parts[$p];
+							if (isset($parts[$p]['FileName'])) {
+								$results['Attachments'][] = $parts[$p];
+							}
+						}
 						break;
 
 					case 'mixed':

@@ -80,8 +80,8 @@ og.FileManager = function() {
 	function renderIsRead(value, p, r){
 		var idr = Ext.id();
 		var idu = Ext.id();
-		var jsr = 'og.FileManager.store.getById(\'' + r.id + '\').data.isRead = true; Ext.select(\'.' + readClass + r.id + '\').removeClass(\'bold\'); Ext.get(\'' + idu + '\').setDisplayed(true); Ext.get(\'' + idr + '\').setDisplayed(false); og.openLink(og.getUrl(\'object\', \'mark_as_read\', {ids:\'ProjectFiles:' + r.data.object_id + '\'}));'; 
-		var jsu = 'og.FileManager.store.getById(\'' + r.id + '\').data.isRead = false; Ext.select(\'.' + readClass + r.id + '\').addClass(\'bold\'); Ext.get(\'' + idr + '\').setDisplayed(true); Ext.get(\'' + idu + '\').setDisplayed(false); og.openLink(og.getUrl(\'object\', \'mark_as_unread\', {ids:\'ProjectFiles:' + r.data.object_id + '\'}));';
+		var jsr = 'og.FileManager.store.getById(\'' + r.id + '\').data.isRead = true; Ext.select(\'.' + readClass + r.id + '\').removeClass(\'bold\'); Ext.get(\'' + idu + '\').setDisplayed(true); Ext.get(\'' + idr + '\').setDisplayed(false); og.openLink(og.getUrl(\'object\', \'mark_as_read\', {ids:' + r.data.object_id + '}));'; 
+		var jsu = 'og.FileManager.store.getById(\'' + r.id + '\').data.isRead = false; Ext.select(\'.' + readClass + r.id + '\').addClass(\'bold\'); Ext.get(\'' + idr + '\').setDisplayed(true); Ext.get(\'' + idu + '\').setDisplayed(false); og.openLink(og.getUrl(\'object\', \'mark_as_unread\', {ids:' + r.data.object_id + '}));';
 		return String.format(
 			'<div id="{0}" title="{1}" class="db-ico ico-read" style="display:{2}" onclick="{3}"></div>' + 
 			'<div id="{4}" title="{5}" class="db-ico ico-unread" style="display:{6}" onclick="{7}"></div>',
@@ -145,7 +145,8 @@ og.FileManager = function() {
 			if (value =='')
 				return String.format('<div class="ico-unlocked" style="display:block;height:16px;background-repeat:no-repeat;padding-left:18px">'
 				+ '<a href="#" onclick="og.openLink(\'{1}\')" title="{2}">{0}</a>', lang('lock'), og.getUrl('files', 'checkout_file', {id: r.id}), lang('checkout description'));
-			else if (r.data.checkedOutById == og.loggedUser.id){
+			else if (r.data.checkedOutById == og.loggedUser.id || og.loggedUser.type == 1 || og.loggedUser.type == 2){
+                                //og.loggedUser.type 1 = Super Administrator, 2 = Administrator
 				return String.format('<div class="ico-locked" style="display:block;height:16px;background-repeat:no-repeat;padding-left:18px">' +
 					'<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', 
 					lang('unlock'), og.getUrl('files', 'undo_checkout', {id: r.id})) + ', ' +
@@ -655,19 +656,6 @@ Ext.extend(og.FileManager, Ext.grid.GridPanel, {
 		if (this.innerMessage) {
 			this.innerMessage.innerHTML = text;
 		}
-	},
-	
-	moveObjects: function(ws) {
-		og.moveToWsOrMantainMembers(this.id, ws);
-	},
-	
-	moveObjectsToWsOrMantainMembers: function(mantain, ws) {
-		this.load({
-			action: 'move',
-			ids: this.getSelectedIds(),
-			moveTo: ws,
-			mantainWs: mantain
-		});
 	},
 	
 	archiveObjects: function() {

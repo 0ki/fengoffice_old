@@ -523,7 +523,6 @@ class MailContent extends BaseMailContent {
         	SearchableObjects::dropContentByObjectColumns($this,array('uid'));
         	$searchable_object = new SearchableObject();
             
-            //$searchable_object->setRelObjectManager(get_class($this->manager()));
             $searchable_object->setRelObjectId($this->getObjectId());
             $searchable_object->setColumnName('uid');
             $searchable_object->setContent($this->getUniqueObjectId());

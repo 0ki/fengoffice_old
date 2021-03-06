@@ -52,3 +52,13 @@
 		text-transform: uppercase;
 		font-size: 10px;	
 	}
+        
+        .searchDescription {
+            color: #888888;
+            font-weight: bold;
+            padding-top: 10px;
+            margin-left: 10px;
+            text-align: center;
+/*            width: 100%;*/
+            font-size: 14px;
+        }

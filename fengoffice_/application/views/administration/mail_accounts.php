@@ -36,10 +36,10 @@ $genid = gen_id();
 		<td><?php echo $account->getOwner() instanceof Contact ? $account->getOwner()->getObjectName() : lang("n/a") ?></td>
 		<td><?php echo $account->getServer() ?></td>
 		<td><?php echo $account->getSmtpServer() ?></td>
-		<td><?php echo MailAccountUsers::countByAccount($account) ?></td>
+		<td><?php echo MailAccountContacts::countByAccount($account) ?></td>
 		<?php
 		$options = array();
-		if (($account->canDelete(logged_user()) && $account->getUserId() == logged_user()->getId()) || $account->canEdit(logged_user())) {
+		if (($account->canDelete(logged_user()) && $account->getContactId() == logged_user()->getId()) || $account->canEdit(logged_user())) {
 			$options[] = '<a class="internalLink" href="'.get_url('mail', 'edit_account', array('id' => $account->getId())).'">' . lang('edit') . '</a>';
 		}
 		if ($account->canDelete(logged_user())) {

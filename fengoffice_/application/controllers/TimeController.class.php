@@ -237,13 +237,13 @@ class TimeController extends ApplicationController {
 			flash_error(lang('timeslot dnx'));
 			return;
 		}
-		
+
 		try {
 			$hoursToAdd = array_var($timeslot_data, 'hours',0);
-                        $minutes = array_var($timeslot_data, 'minutes',0);
-                        
+			$minutes = array_var($timeslot_data, 'minutes',0);
+
 			if (strpos($hoursToAdd,',') && !strpos($hoursToAdd,'.'))
-				$hoursToAdd = str_replace(',','.',$hoursToAdd);
+			$hoursToAdd = str_replace(',','.',$hoursToAdd);
 			if (strpos($hoursToAdd,':') && !strpos($hoursToAdd,'.')) {
 				$pos = strpos($hoursToAdd,':') + 1;
 				$len = strlen($hoursToAdd) - $pos;
@@ -255,10 +255,10 @@ class TimeController extends ApplicationController {
 				$hours = substr($hoursToAdd, 0, $pos-1);
 				$hoursToAdd = $hours + $mins;
 			}
-                        
-                        if($minutes){
-                            $min = str_replace('.','',($minutes/6));
-                            $hoursToAdd = $hoursToAdd + ("0.".$min);                    
+
+			if($minutes){
+				$min = str_replace('.','',($minutes/6));
+				$hoursToAdd = $hoursToAdd + ("0.".$min);
                         }
 				
 			if ($hoursToAdd <= 0){
@@ -275,8 +275,9 @@ class TimeController extends ApplicationController {
 			$timeslot_data['name'] = $timeslot_data['description'];
 			
 			//Only admins can change timeslot user
-			if (array_var($timeslot_data, 'contact_id', false) && !logged_user()->isAdministrator())
-				$timeslot_data['contact_id'] = $timeslot->getUserId();
+			if (array_var($timeslot_data, 'contact_id', false) && !logged_user()->isAdministrator()) {
+				$timeslot_data['contact_id'] = $timeslot->getContactId();
+			}
 				
 			$timeslot->setFromAttributes($timeslot_data);
 			

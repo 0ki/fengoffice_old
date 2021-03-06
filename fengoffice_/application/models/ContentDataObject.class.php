@@ -551,8 +551,28 @@ abstract class ContentDataObject extends ApplicationDataObject {
 		/* @var $copy ContentDataObject */
 		$copy  = parent::copy() ;
 		$copy->setObject($this->object->copy());
-
+		
+		$copy->save();
+		
+		$members = $this->getMembers();
+		$copy->addToMembers($members);
+		
+		$copy->copy_custom_properties($this);
+		
 		return $copy ;
+	}
+	
+	function copy_custom_properties($object_from) {
+		if (!$object_from instanceof ContentDataObject) return;
+		
+		$cp_values = CustomPropertyValues::findAll(array('conditions' => 'object_id = '.$object_from->getId()));
+		foreach ($cp_values as $cp_value) {
+			$new_cp_value = new CustomPropertyValue();
+			$new_cp_value->setObjectId($this->getId());
+			$new_cp_value->setCustomPropertyId($cp_value->getCustomPropertyId());
+			$new_cp_value->setValue($cp_value->getValue());
+			$new_cp_value->save();
+		}
 	}
 	
 	/**
@@ -694,9 +714,9 @@ abstract class ContentDataObject extends ApplicationDataObject {
 	 * @param void
 	 * @return boolean
 	 */
-	function getAllComments() {
+	function getAllComments($include_trashed = false) {
 		if(is_null($this->all_comments)) {
-			$this->all_comments = Comments::getCommentsByObject($this);
+			$this->all_comments = Comments::getCommentsByObject($this, $include_trashed);
 		} // if
 		return $this->all_comments;
 	} // getAllComments
@@ -708,12 +728,12 @@ abstract class ContentDataObject extends ApplicationDataObject {
 	 * @param void
 	 * @return array
 	 */
-	function getComments() {
+	function getComments($include_trashed = false) {
 		if(logged_user() && logged_user()->isMemberOfOwnerCompany()) {
-			return $this->getAllComments();
+			return $this->getAllComments($include_trashed);
 		} // if
 		if(is_null($this->comments)) {
-			$this->comments = Comments::getCommentsByObject($this, true);
+			$this->comments = Comments::getCommentsByObject($this, $include_trashed);
 		} // if
 		return $this->comments;
 	} // getComments
@@ -1105,6 +1125,15 @@ abstract class ContentDataObject extends ApplicationDataObject {
 	 * @return boolean
 	 */
 	function delete() {
+		if ($this->isCommentable()) {
+			$comments = $this->getComments(true);
+			if ($comments && count($comments) > 0) {
+				foreach ($comments as $comment) {
+					$comment->clearEverything();
+					$comment->delete();
+				}
+			}
+		}
 		return $this->getObject()->delete() && parent::delete();
 	} // delete
 	
@@ -1201,6 +1230,13 @@ abstract class ContentDataObject extends ApplicationDataObject {
 		$this->getObject()->setMarkTimestamps(false); // Don't modify updated on
 		$this->save();
 		$this->getObject()->setMarkTimestamps(true);
+		
+		if ($this->isCommentable()) {
+			$comments = $this->getComments();
+			if ($comments && count($comments) > 0) {
+				foreach ($comments as $comment) $comment->trash();
+			}
+		}
 	}
 	
 	
@@ -1214,6 +1250,15 @@ abstract class ContentDataObject extends ApplicationDataObject {
 		$this->getObject()->setMarkTimestamps(false); // Don't modify updated on
 		$this->save();
 		$this->getObject()->setMarkTimestamps(true);
+		
+		if ($this->isCommentable()) {
+			$comments = $this->getComments(true);
+			if ($comments && count($comments) > 0) {
+				foreach ($comments as $comment) {
+					if ($comment->getTrashedById() > 0) $comment->untrash();
+				}
+			}
+		}
 	}
 	
 	
@@ -1300,46 +1345,35 @@ abstract class ContentDataObject extends ApplicationDataObject {
 	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
 	 */
 	function addToSharingTable() {
-		
 		$oid = $this->getId();
 		$tid = $this->getObjectTypeId() ;
 		$gids = array();
 		
 		$table_prefix = defined('FORCED_TABLE_PREFIX') && FORCED_TABLE_PREFIX ? FORCED_TABLE_PREFIX : TABLE_PREFIX;
 		
-		$sql_from = "
-			".$table_prefix."contact_member_permissions cmp
-			INNER JOIN
-				".$table_prefix."members m ON m.id = cmp.member_id
-			INNER JOIN
-				".$table_prefix."dimensions d ON d.id = m.dimension_id ";
+		//1 clear sharing table for this object
+		SharingTables::delete("object_id=$oid");
 		
-		$sql_where = "
-			member_id IN ( SELECT member_id FROM ".$table_prefix."object_members WHERE object_id = $oid AND is_optimization = 0) AND
-			cmp.object_type_id = $tid";
-		
-		$sql_fields = "dimension_id as did" ;
-		
-		$sql = "
-			SELECT 
-				$sql_fields
-			FROM
-				$sql_from
-			WHERE
-				$sql_where AND
-				d.defines_permissions = 1 ";
-				
-		//1. Find dimension that defines permission		
-		$res = DB::execute($sql);
+		//2 get dimensions of this object's members that defines permissions
+		$res = DB::execute("SELECT d.id as did FROM ".$table_prefix."dimensions d INNER JOIN ".$table_prefix."members m on m.dimension_id=d.id
+			WHERE m.id IN ( SELECT member_id FROM ".$table_prefix."object_members WHERE object_id = $oid AND is_optimization = 0 ) AND d.defines_permissions = 1");
 		$dids_tmp = array();
 		while ($row = $res->fetchRow() ) {
 			$dids_tmp[$row['did']] = $row['did'] ;
 		}
+		$res->free();
 		$dids = array_values($dids_tmp);
 		$dids_tmp = null;
 		
-		//2.1 If there are dimensions that defines permissions containing any of the object members
+		$sql_from = "".$table_prefix."contact_member_permissions cmp
+			INNER JOIN ".$table_prefix."members m ON m.id = cmp.member_id
+			INNER JOIN ".$table_prefix."dimensions d ON d.id = m.dimension_id";
+		
+		$sql_where = "member_id IN ( SELECT member_id FROM ".$table_prefix."object_members WHERE object_id = $oid AND is_optimization = 0) AND cmp.object_type_id = $tid";
+
+		//3 If there are dimensions that defines permissions containing any of the object members
 		if ( count($dids) ){
+			// 3.1 get permission groups with permissions over the object.
 			$sql_fields = "permission_group_id  AS group_id" ;
 			
 			$sql = "
@@ -1348,23 +1382,34 @@ abstract class ContentDataObject extends ApplicationDataObject {
 				FROM
 				  $sql_from
 				WHERE
-				  $sql_where AND
-				  d.id IN (". implode(',',$dids).")";
-				  
+				  $sql_where AND d.id IN (". implode(',',$dids).")";
+				 
 			$res = DB::execute($sql);
 			$gids_tmp = array();
 			while ( $row = $res->fetchRow() ) {
 				$gids_tmp[$row['group_id']] = $row['group_id'];
 			}
+			$res->free();
+			
+			// allow all permission groups
+			$allow_all_rows = DB::executeAll("SELECT DISTINCT permission_group_id FROM ".$table_prefix."contact_dimension_permissions cdp 
+				INNER JOIN ".$table_prefix."members m on m.dimension_id=cdp.dimension_id
+				WHERE cdp.permission_type='allow all' AND cdp.dimension_id IN (". implode(',',$dids).");");
+			
+			if (is_array($allow_all_rows)) {
+				foreach ($allow_all_rows as $row) {
+					$gids_tmp[$row['permission_group_id']] = $row['permission_group_id'];
+				}
+			}
+			
 			$gids = array_values($gids_tmp);
 			$gids_tmp = null;
 		}else { 
 			if ( count($this->getMemberIds()) > 0 ) {
-				// 2.2 No memeber dimensions defines permissions. 
+				// 3.2 No memeber dimensions defines permissions. 
 				// No esta en ninguna dimension que defina permisos, El objecto esta en algun lado
 				// => En todas las dimensiones en la que está no definen permisos => Busco todos los grupos
 				$gids = PermissionGroups::instance()->findAll(array('id' => true));
-				
 			}
 		}
 		
@@ -1663,17 +1708,27 @@ abstract class ContentDataObject extends ApplicationDataObject {
 	
 	function getMembersToDisplayPath() {
 		$members_info = array();
-		$all_members = $this->getMembers();
-		foreach ($all_members as $mem) {/* @var $mem Member */
-			$options = $mem->getDimension()->getOptions(true);
-			if (isset($options->showInPaths) && $options->showInPaths) {
-				if (!isset($members_info[$mem->getDimensionId()])) $members_info[$mem->getDimensionId()] = array();
-				$members_info[$mem->getDimensionId()][$mem->getId()] = array(
-					'ot' => $mem->getObjectTypeId(),
-					'c' => $mem->getMemberColor(),
-				);
-			}
-		}
+		
+		$member_ids = ObjectMembers::getMemberIdsByObject($this->getId());
+		if (count($member_ids) == 0) $member_ids[]=0;
+		$db_res = DB::execute("SELECT id, name, dimension_id, object_type_id FROM ".TABLE_PREFIX."members WHERE id IN (".implode(",",$member_ids).")");
+		$members = $db_res->fetchAll();
+		
+		$dimension_options = array();
+		
+                if(count($members) > 0){
+                    foreach ($members as $mem) {
+                            $options = Dimensions::getDimensionById($mem['dimension_id'])->getOptions(true);
+                            if (isset($options->showInPaths) && $options->showInPaths) {
+                                    if (!isset($members_info[$mem['dimension_id']])) $members_info[$mem['dimension_id']] = array();
+                                    $members_info[$mem['dimension_id']][$mem['id']] = array(
+                                            'ot' => $mem['object_type_id'],
+                                            'c' => Members::findById($mem['id'])->getMemberColor(),//$mem->getMemberColor(),
+                                            'name' => $mem['name'],
+                                    );
+                            }
+                    }
+                }
 		
 		return $members_info;
 	}

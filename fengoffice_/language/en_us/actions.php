@@ -212,6 +212,13 @@
   	'confirm archive selected objects' => 'Are you sure you want to archive the selected objects?',
 	'confirm archive object' => 'Are you sure you want to archive this object?',
 	'confirm unarchive object' => 'Are you sure you want to unarchive this object?',
+  	'archived' => 'archived',
+	'confirm archive member' => 'Are you sure you want to archive this {0}? It will archive all objects below this {0}.',
+	'confirm unarchive member' => 'Are you sure you want to unarchive this {0}? It will unarchive all objects below this {0}.',
+	'success archive member' => '{0} was successfully archived. {1} objects of {0} were archived.',
+	'success unarchive member' => '{0} was successfully unarchived. {1} objects of {0} were unarchived.',
+  	
+	'confirm delete permanently' => 'Are you sure you want to delete {0}?',
 
   	'report as spam' => 'Report as Spam',
 	'not spam' => 'Not Spam',
@@ -221,6 +228,11 @@
   	'disabled' => 'Disabled',
   	
   	'template context' => 'Choose the template\'s location',
+      
+        'config activity' => 'Filter activity',
+        'entry to see the dimension' => 'Entry to see the dimension',
+        'recent activities to show' => 'Recent activities to show',
+        'views and downloads' => 'View views and downloads',
   ); // array
 
 ?>

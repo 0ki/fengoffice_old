@@ -75,8 +75,14 @@
 	'config option desc use_time_in_task_dates' => 'Permite ingresar hora de fin y hora de inicio de tareas.',
 	'config option name untitled_notes' => 'Notas sin título',
 	'config option desc untitled_notes' => 'Permite agregar notas sin título',
-    'config option name repeating_task' => 'Tareas repetitivas',
+        'config option name repeating_task' => 'Tareas repetitivas',
 	'config option desc repeating_task' => 'Las tareas repetitivas serán mostradas individualmente, y no como una sola',
+        'config option name wysiwyg_messages' => 'Descripción de las notas con WYSIWYG',
+        'config option desc wysiwyg_messages' => '',
+        'config option name wysiwyg_tasks' => 'Descripción de las tareas con WYSIWYG',
+        'config option desc wysiwyg_tasks' => '',
+        'config option name wysiwyg_projects' => 'Descripción de los proyectos con WYSIWYG',
+        'config option desc wysiwyg_projects' => '',
     
 	'user ws config category name dashboard' => 'Opciones del panel de resumen',
 	'user ws config category name task panel' => 'Opciones del panel de tareas',
@@ -369,5 +375,16 @@
 	'can_view_billing'=>'Puede ver facturación',
 
 	//END Hidden
+    
+        'config option name working_days' => 'Días laborales',
+        'config option desc working_days' => '',
+	'user ws config option name attach_to_notification' => 'Adjuntar documento a las notificaciones',
+	'user ws config option desc attach_to_notification' => 'Cuando la opción está activa por defecto queda habilitada la opción de enviar el documento en cada una de sus notificaciones',
+    
+        'file extension prevention uploading' => 'Prevención de subida de archivos por extensión',
+        'file extension' => 'Extensión de archivo',
+        'allow' => 'Permitir',
+        'success file extension' => 'Prevención de subida de archivos modificada exitosamente.',
+        'file extension no allow' => 'Su Administrador no permite esta extensión de archivos. Por favor utilice otro formato.',
 
 ); ?>

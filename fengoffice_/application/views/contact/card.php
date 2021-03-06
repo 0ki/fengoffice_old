@@ -10,7 +10,7 @@
 	            	</div>
                     <div class="person-information">
                         <div class="picture">
-                            <img src="<?php echo $contact->getPictureUrl() ?>" alt="<?php echo clean($contact->getObjectName()) ?>picture" />
+                            <img src="<?php echo $contact->getPictureUrl() ?>" alt="<?php echo clean($contact->getObjectName()) ?> picture" />
                             <?php if ($contact->canEdit(logged_user())):?>
                             	<a class="change-picture" href="<?php echo $contact->getUpdatePictureUrl() ?>">[<?php echo lang("edit picture")?>]</a>
                             <?php endif;?>

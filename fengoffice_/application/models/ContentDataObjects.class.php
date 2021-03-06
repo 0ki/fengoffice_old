@@ -172,6 +172,12 @@ abstract class ContentDataObjects extends DataManager {
       $limit      = (integer) array_var($arguments, 'limit', 0);
       $join		  = array_var($arguments, 'join');
       
+	  // limit = 1 when findOne is invoked
+      if ($one) {
+      	$limit = 1;
+      }
+      
+      
       $table_prefix = defined('FORCED_TABLE_PREFIX') && FORCED_TABLE_PREFIX ? FORCED_TABLE_PREFIX : TABLE_PREFIX;
 
       // Prepare query parts
@@ -487,7 +493,7 @@ abstract class ContentDataObjects extends DataManager {
 		}
 		
 		if ( defined('DEBUG_TIME') && DEBUG_TIME ) {
-			alert("Query time: ". (microtime(1) - $start_time) ) ;
+			Logger::log("Query time: ". (microtime(1) - $start_time) ) ;
 		}
 		return $result;
 	}
@@ -818,7 +824,7 @@ abstract class ContentDataObjects extends DataManager {
 
     	$association_conditions = "";
     	foreach ($redefined_context as $key=>$value){
-	    		$dimension = Dimensions::findById($value);
+	    		$dimension = Dimensions::getDimensionById($value);
 	    		if (!isset($is_property[$value])) $member_ids = $dimensions[$value]['allowed_members'];
 	    		else $member_ids = $member_intersection;
 	    		$association_conditions.= self::prepareQuery($association_conditions, $dimension, $member_ids,$object_type_id, $pg_ids, 'AND', $selection_members);

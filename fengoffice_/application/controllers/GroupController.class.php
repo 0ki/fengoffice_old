@@ -186,8 +186,8 @@ class GroupController extends ApplicationController {
 				save_permissions($pg_id);
 				
 				// save users
+				ContactPermissionGroups::delete("`permission_group_id` = $pg_id");
 				if ($users = array_var($_POST, 'user')) {
-					ContactPermissionGroups::delete("`permission_group_id` = $pg_id");
 					foreach ($users as $user_id => $val){
 						if ($val=='checked' && is_numeric($user_id) && (Contacts::findById($user_id) instanceof Contact)) {
 							$cpg = new ContactPermissionGroup();

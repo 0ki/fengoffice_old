@@ -110,10 +110,16 @@ final class CompanyWebsite {
                 $contact = Contacts::findAll(array("conditions" => "`token` = '".$_REQUEST['auth']. "'"));
                 $contact = $contact[0];
             }else{
-                $contact = Contacts::getByUsername($_REQUEST['username']);
+                $username = $_REQUEST['username'];
+                $password = $_REQUEST['password'];
+                if (preg_match(EMAIL_FORMAT, $username)) {
+                        $contact = Contacts::getByEmail($username);
+                } else {
+                        $contact = Contacts::getByUsername($username);
+                }
                 if($contact)
                 {
-                    if(!$contact->isValidPassword($_REQUEST['password']))
+                    if(!$contact->isValidPassword($password))
                         die('API Response: Invalid password.');
                 }else{
                     die('API Response: Invalid username.');

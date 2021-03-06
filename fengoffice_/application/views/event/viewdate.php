@@ -3,7 +3,8 @@ require_javascript('og/tasks/TasksTopToolbar.js');
 require_javascript('og/CalendarToolbar.js');
 require_javascript('og/CalendarFunctions.js');
 require_javascript('og/EventPopUp.js');
-require_javascript('og/CalendarPrint.js'); 
+require_javascript('og/CalendarPrint.js');
+require_javascript('og/EventRelatedPopUp.js'); 
 $genid = gen_id();
 ?>
 
@@ -70,7 +71,7 @@ $genid = gen_id();
 	if($milestones)
 		$alldayevents = array_merge($alldayevents,$milestones);
 
-	if($tasks) {
+	if(isset($tasks)) {
 		$tmp_tasks = array();
 		$dtv_end = new DateTimeValue($dtv->getTimestamp() + 60*60*24);
 		foreach ($tasks as $task) {
@@ -119,6 +120,7 @@ $genid = gen_id();
 	<input type="hidden" id="hfCalUsers" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($users_array)))) ?>"/>
 	<input type="hidden" id="hfCalCompanies" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($companies_array)))) ?>"/>
 	<input type="hidden" id="hfCalUserPreferences" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($userPreferences)))) ?>"/>
+        <input id="<?php echo $genid?>type_related" type="hidden" name="type_related" value="only" />
 </div>
 
 <div class="calendar" style="padding:0px;height:100%;overflow:hidden;" id="cal_main_div" onmouseup="og.clearPaintedCells();">
@@ -626,4 +628,16 @@ $genid = gen_id();
 	// init tooltips
 	Ext.QuickTips.init();
 		
+        Ext.extend(og.EventRelatedPopUp, Ext.Window, {
+                accept: function() {
+                        var action = $("#action_related").val();
+                        var opt = $("#<?php echo $genid?>type_related").val();
+                        og.openLink(og.getUrl('event', action, {ids: og.getSelectedEventsCsv(), options:opt}));
+                        this.close();
+                }
+        });
+        
+        function selectEventRelated(val){
+            $("#<?php echo $genid?>type_related").val(val);
+        }
 </script>

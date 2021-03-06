@@ -435,10 +435,10 @@ class MailController extends ApplicationController {
 			 						flash_error(lang('file dnx'));
 			 						$err++;
 			 					} // if
-			 					if(!$file->canDownload(logged_user())) {
-			 						flash_error(lang('no access permissions'));
-			 						$err++;
-			 					} // if
+//			 					if(!$file->canDownload(logged_user())) {
+//			 						flash_error(lang('no access permissions'));
+//			 						$err++;
+//			 					} // if
 			 
 			 					$attachments[] = array(
 			 						"data" => $file->getFileContent(),
@@ -617,6 +617,7 @@ class MailController extends ApplicationController {
 					$object_controller->add_to_members($mail, $member_ids);
 				}
 				$object_controller->link_to_new_object($mail);
+                                $object_controller->add_subscribers($mail);
 				
 				/*
 				if (array_var($mail_data, 'link_to_objects') != ''){
@@ -642,7 +643,7 @@ class MailController extends ApplicationController {
 						if (!$contact instanceof Contact) {
 							try {
 								$contact = new Contact();
-								$contact->setEmail($recipient_address);
+								$contact->addEmail($recipient_address, 'personal');
 								if ($recipient_name && $recipient_name != $recipient_address) {
 									$contact->setFirstName($recipient_name);
 								} else {
@@ -652,7 +653,7 @@ class MailController extends ApplicationController {
 								}
 								$contact->save();
 							} catch (Exception $e) {
-								// TODO: show error message?
+								Logger::log($e->getMessage());
 							}
 						}
 					}
@@ -774,6 +775,8 @@ class MailController extends ApplicationController {
 				));
 				$count = 0;
 				foreach ($mails as $mail) {
+					/* @var $mail MailContent */
+					if ($mail->getTrashedById() > 0) continue;
 					
 					// Only send mails with pair status
 					if ($mail->getState() % 2 == 1) continue;
@@ -986,7 +989,7 @@ class MailController extends ApplicationController {
 		$email = MailContents::findById(array_var($_GET, 'id', 0));
 		if ($email instanceof MailContent) {
 			$email->setIsRead(logged_user()->getId(), false);
-			ajx_current("back");
+			redirect_to('index.php?c=mail&a=init');
 		} else {
 			flash_error(lang("email dnx"));
 		}
@@ -999,14 +1002,11 @@ class MailController extends ApplicationController {
 		$succ = 0;
 		$err = 0;
 		foreach ($ids as $id) {
-			list($manager, $objid) = explode(":", $id);
-			$mail = Objects::findObject($objid);
+			$mail = Objects::findObject($id);
 			if ($mail instanceof MailContent) {
 				$mail->setState(4);
 				$mail->save();
-                                
-                                $this->mark_spam_no_spam("4",$mail);
-                                
+				$this->mark_spam_no_spam("4",$mail);
 				$succ++;
 			} else {
 				$err++;
@@ -1026,14 +1026,11 @@ class MailController extends ApplicationController {
 		$succ = 0;
 		$err = 0;
 		foreach ($ids as $id) {
-			list($manager, $objid) = explode(":", $id);
-			$mail = Objects::findObject($objid);
+			$mail = Objects::findObject($id);
 			if ($mail instanceof MailContent) {
 				$mail->setState(0);
 				$mail->save();
-                                
-                                $this->mark_spam_no_spam("0",$mail);
-                                
+				$this->mark_spam_no_spam("0",$mail);
 				$succ++;
 			} else {
 				$err++;
@@ -1666,14 +1663,16 @@ class MailController extends ApplicationController {
 
 			try {
 				$selected_user = array_var($_POST, 'users_select_box');					
-				if (!$is_admin){										
+				if (!$is_admin){
 					$mail_account_user = logged_user(); 
 				}
-				else{		
+				else{
 					$mail_account_user = Contacts::findById($selected_user);
 				}
 				
+				$mailAccount_data['sync_ssl'] = array_var($mailAccount_data, 'sync_ssl') == "checked";
 				$mailAccount_data['contact_id'] = $mail_account_user->getId();
+
 				if (!array_var($mailAccount_data, 'del_mails_from_server', false)) $mailAccount_data['del_from_server'] = 0;
 				$mailAccount->setFromAttributes($mailAccount_data);
 				$mailAccount->setPassword(MailUtilities::ENCRYPT_DECRYPT($mailAccount->getPassword()));
@@ -1687,11 +1686,8 @@ class MailController extends ApplicationController {
 				if ( count($member_ids) > 0  ){
 					$member = $member_ids[0];
 				}else{
-					if ($dim = Dimensions::instance()->findOne(array("conditions"=>
-						"code = 'feng_users' "
-					))){
-						$member = logged_user()->getPersonalMemberId();
-					}
+					if ($mail_account_user instanceof Contact) $member = $mail_account_user->getPersonalMemberId();
+					else $member = 0;
 				}
 				$mailAccount->setMemberId($member);
 				DB::beginWork();
@@ -1834,9 +1830,7 @@ class MailController extends ApplicationController {
 		}
 		tpl_assign('mailAccountUsers', $mau);
 		
-		$is_admin = false;
-		if (logged_user()->isAdministrator())
-			$is_admin = true;
+		$is_admin = logged_user()->isAdministrator();
 		tpl_assign('is_admin', $is_admin);
 		
 		$mailAccount_data = array_var($_POST, 'mailAccount');
@@ -1869,6 +1863,8 @@ class MailController extends ApplicationController {
 				$mailAccount_data = array_merge ($mailAccount_data, $sync_details);
 			}
 		} else {
+			if (!isset($mailAccount_data['sync_ssl']))
+				$mailAccount_data['sync_ssl'] = false;
 			if (!isset($mailAccount_data['incoming_ssl']))
 				$mailAccount_data['incoming_ssl'] = false;
 			if (!isset($mailAccount_data['is_default']))
@@ -1916,6 +1912,7 @@ class MailController extends ApplicationController {
 						$user_changed = true;
 				}
 				$mailAccount_data['user_id'] = $mail_account_user->getId();
+				$mailAccount_data['sync_ssl'] = array_var($mailAccount_data, 'sync_ssl') == "checked";
 				
 				DB::beginWork();
 				$logged_user_settings = MailAccountContacts::getByAccountAndContact($mailAccount, logged_user());
@@ -1964,11 +1961,8 @@ class MailController extends ApplicationController {
 					if ( count($member_ids) > 0  ){
 						$member = $member_ids[0];
 					}else{
-						if ($dim = Dimensions::instance()->findOne(array("conditions"=>
-							"code = 'feng_users' "
-						))){
-							$member = logged_user()->getPersonalMemberId();
-						}
+						if ($mail_account_user instanceof Contact) $member = $mail_account_user->getPersonalMemberId();
+						else $member = 0;
 					}
 					$mailAccount->setMemberId($member);
 					

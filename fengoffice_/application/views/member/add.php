@@ -8,6 +8,24 @@
 	if (!$member->isNew()) {
 		$memberId = $member->getId();
 	}
+	
+	$object_type_selected = $obj_type_sel > 0 ? ObjectTypes::findById($obj_type_sel) : null;
+	if (!$member->isNew()) {
+		$object_type_name = lang(ObjectTypes::findById($member->getObjectTypeId())->getName());
+	} else {
+		$object_type_name = $object_type_selected instanceof ObjectType ? lang($object_type_selected->getName()) : null;
+	}
+	if(!$member->isNew()) {
+		$ot = ObjectTypes::findById($member->getObjectTypeId());
+		$ot_name = lang($ot->getName());
+		if ($member->getArchivedById() == 0) {
+			add_page_action(lang('archive'), "javascript:if(confirm('".lang('confirm archive member',$ot_name)."')) og.openLink('".get_url('member', 'archive', array('id' => $member->getId()))."');", 'ico-archive-obj');
+		} else {
+			add_page_action(lang('unarchive'), "javascript:if(confirm('".lang('confirm unarchive member',$ot_name)."')) og.openLink('".get_url('member', 'unarchive', array('id' => $member->getId()))."');", 'ico-unarchive-obj');
+		}
+		add_page_action(lang('delete'), "javascript:if(confirm('".lang('confirm delete permanently', $member->getName())."')) og.openLink('".get_url('member', 'delete', array('id' => $member->getId(),'start' => true))."');", 'ico-delete');
+	}
+	$form_title = $object_type_name ? ($member->isNew() ? lang('new') : lang('edit')) . " $object_type_name" : lang('new member');
 ?>
 
 <form 
@@ -23,7 +41,7 @@
 	<div class="coInputHeaderUpperRow">
 		<div class="coInputTitle">
 			<table style="width:535px"><tr><td>
-				<?php echo $member->isNew() ? lang('new member') : lang('edit') . " " . lang(ObjectTypes::findById($member->getObjectTypeId())->getName()) ?>
+				<?php echo $form_title ?>
 			</td><td style="text-align:right">
 				<?php echo submit_button($member->isNew() ? lang('add member') : lang('save changes'),'s',array('style'=>'margin-top:0px;margin-left:10px', 'tabindex' => '5')) ?>
 			</td></tr></table>
@@ -141,4 +159,10 @@
 	<?php if (count($selected_members) > 0) { ?>
 	App.modules.addMemberForm.drawDimensionProperties('<?php echo $genid;?>', <?php echo $current_dimension->getId();?>);
 	<?php } ?>
+	
+	og.eventManager.fireEvent("after member add render",{
+		genid: genid,
+		dimensionCode: '<?php echo $current_dimension->getCode()?>'
+	});
+	
 </script>

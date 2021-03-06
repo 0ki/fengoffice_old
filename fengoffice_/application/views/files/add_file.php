@@ -170,8 +170,11 @@ $visible_cps = CustomProperties::countVisibleCustomPropertiesByObjectType($objec
 			<div id="<?php echo $genid ?>updateFileForm"  style="<?php echo isset($checkin) ? '': 'display:none' ?>">
 				<p>
 					<strong><?php echo lang('existing file') ?>:</strong>
-					<a target="_blank" href="<?php echo $file->getDownloadUrl() ?>"><?php echo clean($file->getFilename()) ?></a>
+                                        <a target="_blank" href="<?php echo $file->getDownloadUrl() ?>" id="extension_old"><?php echo clean($file->getFilename()) ?></a>
 					| <?php echo format_filesize($file->getFilesize()) ?>
+				</p>
+                                <p id="warning_extension_file">
+                                    
 				</p>
 				<div id="<?php echo $genid ?>selectFileControlDiv">
 					<?php echo label_tag(lang('new file'), $genid.'fileFormFile', true) ?>
@@ -311,14 +314,9 @@ $visible_cps = CustomProperties::countVisibleCustomPropertiesByObjectType($objec
 
 <script>
 	var memberChoosers = Ext.getCmp('<?php echo "$genid-member-chooser-panel-".$file->manager()->getObjectTypeId()?>').items;
-	var treeClicked = false;
 	if (memberChoosers) {
 		memberChoosers.each(function(item, index, length) {
 			item.on('all trees updated', function() {
-				// First User click
-				$(".member-chooser input.x-tree-node-cb").click(function(){
-					treeClicked = true;
- 				});
 				var dimensionMembers = {};
 				memberChoosers.each(function(it, ix, l) {
 					dim_id = this.dimensionId;
@@ -330,21 +328,32 @@ $visible_cps = CustomProperties::countVisibleCustomPropertiesByObjectType($objec
 				});
 	
 				var uids = App.modules.addMessageForm.getCheckedUsers('<?php echo $genid ?>');
-				if(treeClicked) {
-					Ext.get('<?php echo $genid ?>add_subscribers_content').load({
-						url: og.getUrl('object', 'render_add_subscribers', {
-							context: Ext.util.JSON.encode(dimensionMembers),
-							users: uids,
-							genid: '<?php echo $genid ?>',
-							otype: '<?php echo $file->manager()->getObjectTypeId()?>'
-						}),
-						scripts: true
-					});
-				}
+				Ext.get('<?php echo $genid ?>add_subscribers_content').load({
+					url: og.getUrl('object', 'render_add_subscribers', {
+						context: Ext.util.JSON.encode(dimensionMembers),
+						users: uids,
+						genid: '<?php echo $genid ?>',
+						otype: '<?php echo $file->manager()->getObjectTypeId()?>'
+					}),
+					scripts: true
+				});
 			});
 		});
 	}
 
 	var ctl = Ext.get('<?php echo $genid ?>fileFormFile');
 	if (ctl) ctl.focus();
+        
+        $(document).ready(function() {
+            $('#<?php echo $genid ?>fileFormFile').change(function () {
+                var extension = this.value.split('.');
+                var extension_old = $('#extension_old').html().split('.');                
+                if(extension_old[1] != extension[1]){
+                    var html = "<strong style='color:#FF0000'><?php echo lang('warning file extension type') ?></strong>";                
+                    $('#warning_extension_file').html(html);
+                }else{
+                    $('#warning_extension_file').html("");
+                }
+            })
+        });
 </script>

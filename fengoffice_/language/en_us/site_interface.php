@@ -454,9 +454,11 @@ return array(
   'upcoming events milestones and tasks' => 'Upcoming events, milestones and tasks',
 
   'undo checkout' => 'Undo file checkout',
-
-  'search for in project' => 'Search results for \'<i>{0}</i>\' in workspace \'{1}\'',
-  'search for' => 'Search results for \'{0}\' in all workspaces',
+    
+  //'search for in project' => 'Search results for \'<i>{0}</i>\' in \'{1}\'',
+  'search for in project' => 'Search results in \'{1}\'',
+  //'search for' => 'Search results for \'{0}\' in all dimensions',
+  'search for' => 'Search results in all dimensions',
 
   'workspace permamanent delete' =>  'When a Workspace is deleted the following <b>content is lost permanently</b>',
 	'workspace permamanent delete messages'  => ' All notes in the workspace',
@@ -481,6 +483,8 @@ return array(
   'time estimate' => 'Time estimate',
   'work in progress' => 'Work in progress',
   'total time' => 'Total time',
+  'total time worked' => 'Total time worked',
+    
 
   'upload anyway' => 'Upload anyway',
 
@@ -563,7 +567,7 @@ return array(
   'do complete' => 'Complete',
 
   'task data' => 'Task data',
-  'search in all workspaces' => 'Search in all workspaces',
+  'search in all workspaces' => 'Search in all dimensions',
 
   'paused time' => 'Paused time',
   'total pause time' => 'Total pause time',

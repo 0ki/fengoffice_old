@@ -468,6 +468,7 @@ class AdministrationController extends ApplicationController {
 	 * @return null
 	 */
 	function tool_test_email() {
+		set_time_limit(0);
 		if(!can_manage_configuration(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
@@ -667,10 +668,10 @@ class AdministrationController extends ApplicationController {
 			return;
 		}
 		if (Plugins::instance()->isActivePlugin('mail')) {
-			$my_accounts = MailAccounts::getMailAccountsByUser(logged_user());
+			//$my_accounts = MailAccounts::getMailAccountsByUser(logged_user());
 			$all_accounts = MailAccounts::findAll();
 		}
-		tpl_assign('my_accounts', $my_accounts);
+		//tpl_assign('my_accounts', $my_accounts);
 		tpl_assign('all_accounts', $all_accounts);
 	}
 
@@ -776,7 +777,8 @@ class AdministrationController extends ApplicationController {
 			return;
 		} 
 		tpl_assign('tabs', TabPanels::instance()->findAll(array(
-			"order"=>"ordering"
+			"order"=>"ordering",
+			"conditions" => "plugin_id is NULL OR plugin_id = 0 OR plugin_id IN (SELECT id FROM ".TABLE_PREFIX."plugins WHERE is_activated > 0 AND is_installed > 0)"
 		)));
 	}
 	
@@ -803,6 +805,41 @@ class AdministrationController extends ApplicationController {
 			
 		}
 		
+	}
+        
+        function documents() {
+		if(!can_manage_security(logged_user())) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
+	}
+        
+        function documents_allow() {
+		if(!can_manage_security(logged_user())) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		} 
+		tpl_assign('file_types', FileTypes::instance()->findAll());
+	}
+        
+        function documents_allow_submit() {
+		ajx_current("empty");
+		if(!can_manage_security(logged_user())) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		} 
+		foreach ($_POST['file_types'] as $id => $extension) {
+			$allow = ($extension['allow'] == "on") ? 1 : 0;
+			
+			if ($ft = FileTypes::instance()->findById($id)){
+				$ft->setIsAllow($allow);
+				$ft->save();
+			}
+		}
+		flash_success(lang('success file extension'));
 	}
 
 } 

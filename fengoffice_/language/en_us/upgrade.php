@@ -4,7 +4,7 @@
 		'upgrade from' => 'Upgrade from',
 		'upgrade to' => 'Upgrade to',
 		'upgrade from to' => 'Upgrade from {0} to {1}',
-		'already upgraded' => 'You already have upgraded to the latest possible version.',
+		'already upgraded' => 'You already have upgraded to the latest possible version: {0}',
 		'back to fengoffice' => 'Back to Feng Office',
 		'all rights reserved' => 'All rights reserved',
 		'upgrade process log' => 'Upgrade process log',

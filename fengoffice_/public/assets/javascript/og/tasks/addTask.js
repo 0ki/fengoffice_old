@@ -62,12 +62,16 @@ ogTasks.drawAddNewTaskForm = function(group_id, parent_id, level){
 		title: '',
 		description: '',
 		priority: priority,
-		startDate: '',
 		dueDate: '',
+                startDate: '',
 		assignedTo: assignedToValue,
 		taskId: 0,
-		isEdit: false
+                time_estimated: 0,
+		isEdit: false                
 	});
+        if(og.config.wysiwyg_tasks){
+            loadCKeditor(0);
+        }
 }
 
 ogTasks.drawEditTaskForm = function(task_id, group_id){
@@ -75,19 +79,20 @@ ogTasks.drawEditTaskForm = function(task_id, group_id){
 	var containerName = 'ogTasksPanelTask' + task.id + 'G' + group_id;
 	if (task){
 		this.drawTaskForm(containerName, {
-			milestoneId: task.milestoneId?task.milestoneId:0,
 			title: task.title,
 			description: task.description,
 			priority: task.priority,
 			members: task.members,
-			startDate: task.startDate,
 			dueDate: task.dueDate,
+                        startDate: task.startDate,
 			assignedTo: task.assignedToId,
-			taskId: task.id,
-			isEdit: true,
-			otype: task.otype,
-			subtasksCount: task.subtasks.length
+			taskId: task_id,
+                        time_estimated: task.TimeEstimate,
+			isEdit: true
 		});
+                if(og.config.wysiwyg_tasks){
+                    loadCKeditor(task_id);
+                }
 	}
 }
 
@@ -110,7 +115,7 @@ ogTasks.checkEnterPress = function (e,id)
 
 ogTasks.drawTaskForm = function(container_id, data){
 	this.hideAddNewTaskForm();
-
+        
 	var bottomToolbar = Ext.getCmp('tasksPanelBottomToolbarObject');
 	var topToolbar = Ext.getCmp('tasksPanelTopToolbarObject');
 	var drawOptions = topToolbar.getDrawOptions();
@@ -128,63 +133,72 @@ ogTasks.drawTaskForm = function(container_id, data){
 	}
 	html += "<b>" + lang('title') + ":</b><br/>";
 	html += "<input id='ogTasksPanelATTitle' type='text' class='title' name='task[name]' tabIndex=1000 value='' onkeypress='return ogTasks.checkEnterPress(event,"+ data.taskId +");' maxlength='255' size='255'   />";
-	
-	
+		
 	//First column
 	html += "<table style='width:100%; margin-top:7px'><tr><td>";
-	if (!data.isEdit){
-		html += "<div id='ogTasksPanelATDesc'><b>" + lang('description') + ":</b><br/>";
-		html += "<textarea id='ogTasksPanelATDescCtl' cols='40' rows='10' name='task[text]' class='short' tabIndex=1100 style='height:50px'></textarea></div>";
-	}
+        if(og.config.wysiwyg_tasks){
+            html += "<div id='ogTasksPanelATDesc'><b>" + lang('description') + ":</b><br/>";
+            html += "<textarea id='" + og.genid + "ckeditor" + data.taskId + "' cols='40' rows='10' name='task[text]' class='short ckeditor' tabIndex=1100 style='height:50px'>" + data.description + "</textarea></div>";
+        }else{
+            html += "<div id='ogTasksPanelATDesc'><b>" + lang('description') + ":</b><br/>";
+            html += "<textarea id='ogTasksPanelATDescCtl' cols='40' rows='10' name='task[text]' class='short' tabIndex=1100 style='height:50px'>" + data.description + "</textarea></div>";
+        }
 	
 	var chkIsVisible = data.assignedTo && data.assignedTo != '0';
 	var chkIsChecked = chkIsVisible && ogTasks.userPreferences.defaultNotifyValue && data.assignedTo != this.currentUser.id;
 	
-	/* Assign to moved to right  
-	  
-	html += "<table><tr><td><div id='ogTasksPanelATAssigned' style='padding-top:5px;'><table><tr><td style='width:120px;'><b>" + lang('assigned to') + ":&nbsp;</b></td><td><span id='ogTasksPanelATAssignedCont'></span></td></tr></table></div></td>";
-	html += '<td style="' + (!data.isEdit?'padding-top:7px;':'') + 'padding-left:15px">';
-	html += '<div style="display:' + (chkIsVisible?'inline':'none') + '" id="ogTasksPanelATNotifyDiv"><label for="ogTasksPanelATNotify"><input style="width:14px;" type="checkbox" name="task[notify]" id="ogTasksPanelATNotify" ' + (chkIsChecked? 'checked':'') + '/>&nbsp;' + lang('send notification') + '</label></div>';
-	if (data.isEdit && data.subtasksCount>0) html += '<label for="ogTasksPanelApplyAssignee"><input style="width:14px;" type="checkbox" name="task[apply_assignee_subtasks]" id="ogTasksPanelApplyAssignee" />&nbsp;' + lang('apply assignee to subtasks') + '</label>';
-	html += '</td>';
-	html += '</tr></table>'; 
 	
-	*/
-	
-	html += "<div id='ogTasksPanelATContext' style='padding-top:5px;padding-bottom: 10px;" + (data.isEdit? '': 'display:none') + "'><table><tr><td style='width:120px;'><b>" + lang('context') + ":&nbsp;</b></td><td><input type=\"hidden\" id=\"ogTasksPanelMembers\" name=\"members\" value=\"\"/><div id='ogTasksPanelContextSelector'>";
+	html += "<div id='ogTasksPanelATContext' style='padding-top:5px;padding-bottom: 10px; display:none'><table><tr><td style='width:120px;'><b>" + lang('context') + ":&nbsp;</b></td><td><input type=\"hidden\" id=\"ogTasksPanelMembers\" name=\"members\" value=\"\"/><div id='ogTasksPanelContextSelector'>";
+
 	html += og.popupMemberChooserHtml('', ogTasks.tasks_object_type_id, "ogTasksPanelMembers", data.members, true);
 	html += "</div></td>";
-	if (data.isEdit && data.subtasksCount>0) html += "<td style=\"padding-left:15px\"><label for=\"ogTasksPanelApplyWS\"><input style=\"width:14px;\" type=\"checkbox\" name=\"task[apply_ws_subtasks]\" id=\"ogTasksPanelApplyWS\" />&nbsp;" + lang('apply workspace to subtasks') + "</label></td>";
+	//if (data.isEdit && data.subtasksCount>0) html += "<td style=\"padding-left:15px\"><label for=\"ogTasksPanelApplyWS\"><input style=\"width:14px;\" type=\"checkbox\" name=\"task[apply_ws_subtasks]\" id=\"ogTasksPanelApplyWS\" />&nbsp;" + lang('apply workspace to subtasks') + "</label></td>";
 	html += "</tr></table></div>";
-	html += "<div id='ogTasksPanelATMilestone' style='padding-top:5px;" + (data.isEdit? '': 'display:none') + "'><table><tr><td style='width:120px;'><b>" + lang('milestone') + ":&nbsp;</b></td><td><div id='ogTasksPanelMilestoneSelector'></div></td>";
-	if (data.isEdit && data.subtasksCount>0) html += "<td style=\"padding-left:15px\"><label for=\"ogTasksPanelApplyMI\"><input style=\"width:14px;\" type=\"checkbox\" name=\"task[apply_milestone_subtasks]\" id=\"ogTasksPanelApplyMI\" />&nbsp;" + lang('apply milestone to subtasks') + "</label></td>";
-	html += "</tr></table></div>";	
+	html += "<div id='ogTasksPanelATMilestone' style='padding-top:5px; display:none'><table><tr><td style='width:120px;'><b>" + lang('milestone') + ":&nbsp;</b></td><td><div id='ogTasksPanelMilestoneSelector'></div></td>";
+	//html += "<div id='ogTasksPanelATMilestone' style='padding-top:5px;" + (data.isEdit? '': 'display:none') + "'><table><tr><td style='width:120px;'><b>" + lang('milestone') + ":&nbsp;</b></td><td><div id='ogTasksPanelMilestoneSelector'></div></td>";
+	//if (data.isEdit && data.subtasksCount>0) html += "<td style=\"padding-left:15px\"><label for=\"ogTasksPanelApplyMI\"><input style=\"width:14px;\" type=\"checkbox\" name=\"task[apply_milestone_subtasks]\" id=\"ogTasksPanelApplyMI\" />&nbsp;" + lang('apply milestone to subtasks') + "</label></td>";
+	html += "</tr></table></div>";
+	if (data.milestoneId) {
+		html += "<input type='hidden' name='task_milestone_id' value='"+data.milestoneId+"'/>";
+	}
 	html += "<div id='ogTasksPanelATObjectType' style='padding-top:5px;'><table><tr><td style='width:120px;'><b>" + lang('object type') + ":&nbsp;</b></td><td><input id='ogTasksPanelObjectTypeSelector' style='min-width:120px;max-width:300px' type='text' value='" + (data.otype ? data.otype : og.defaultTaskType) + "' name='task[object_subtype]'/></td></tr></table></div>";
 
 	//Second column
 	html += "</td><td style='padding-left:10px; margin-right:10px;width:375px;'>";
-	
-	
 	  
 	// <ASSIGN_TO COMBO>
 	html += "<table><tr><td><div id='ogTasksPanelATAssigned' style='padding-top:5px;'><table><tr><td style='width:130px; vertical-align:middle;'><b>" + lang('assigned to') + ":&nbsp;</b></td><td><span id='ogTasksPanelATAssignedCont'></span></td></tr></table>";
 	html += '<div  id="ogTasksPanelATNotifyDiv"><label for="ogTasksPanelATNotify"><input style="width:14px;" type="checkbox" name="task[notify]" id="ogTasksPanelATNotify" ' + (chkIsChecked? 'checked':'') + '/>&nbsp;' + lang('send notification') + '</label></div>';
-	if (data.isEdit && data.subtasksCount>0) html += '<label for="ogTasksPanelApplyAssignee"><input style="width:14px;" type="checkbox" name="task[apply_assignee_subtasks]" id="ogTasksPanelApplyAssignee" />&nbsp;' + lang('apply assignee to subtasks') + '</label>';
+	//if (data.isEdit && data.subtasksCount>0) html += '<label for="ogTasksPanelApplyAssignee"><input style="width:14px;" type="checkbox" name="task[apply_assignee_subtasks]" id="ogTasksPanelApplyAssignee" />&nbsp;' + lang('apply assignee to subtasks') + '</label>';
 	html += '</div><td></tr></table>'; 
 	// </ASSIGN_TO COMBO>
 	
-	if (drawOptions.show_time){
-		html += "<div id='ogTasksPanelATTime' style='padding-top:5px;display:none;'><table><tr><td style='width:130px; vertical-align:middle;'><b>" + lang('time worked') + ":</b></td><td>";
-		html += "<input type='text' id='ogTasksPanelATHours' style='width:25px' tabIndex=1250 />&nbsp;" + lang('hours') + "</td></tr></table></div>";
-	}
+	
 	
 	html += "<table id='ogTasksPanelATDates' style='padding-top:5px;'>";
-	html += "<tr style='display:none' ><td style='width:130px; vertical-align:middle;'><b>" + lang('start date') + ":</b>&nbsp;</td>";
-	html += "<td><span id='ogTasksPanelATStartDate'></span></td></tr>";
+	html += "<tr><td style='width:130px; vertical-align:middle;'><b>" + lang('start date') + ":</b>&nbsp;</td>";
+        var time_picker_html_start = og.config.use_time_in_task_dates ? "<div style='float:left;margin-left:10px;' id='ogTasksPanelATStartTime'></div>" : "";
+	html += "<td><div style='float:left;' id='ogTasksPanelATStartDate'></div>"+time_picker_html_start+"</td></tr>";
 	html += "<tr><td colspan='2' style='height:5px;'></td></tr>";
 	html += "<tr><td style='width:130px; vertical-align:middle;'><b>" + lang('due date') + ":</b>&nbsp;</td>";
-	var time_picker_html = og.config.use_time_in_task_dates ? "<div style='float:left;margin-left:10px;' id='ogTasksPanelATDueTime'></div>" : "";
-	html += "<td><div style='float:left;' id='ogTasksPanelATDueDate'></div>"+time_picker_html+"</td></tr></table>";
+	var time_picker_html_duetime = og.config.use_time_in_task_dates ? "<div style='float:left;margin-left:10px;' id='ogTasksPanelATDueTime'></div>" : "";
+	html += "<td><div style='float:left;' id='ogTasksPanelATDueDate'></div>"+time_picker_html_duetime+"</td></tr></table>";
+        
+        if (drawOptions.show_time_estimates){
+                var totalTime = data.time_estimated; 
+                var minutes = totalTime % 60;
+                var hours = (totalTime - minutes) / 60;
+		html += "<div id='ogTasksPanelATTime' style='padding-top:5px;'><table><tr><td style='width:130px; vertical-align:middle;'><b>" + lang('time estimate') + ":</b></td><td>";
+		html += "<input type='text' id='ogTasksPanelATHours' style='width:25px' tabIndex=1250  name='task[time_estimate_hours]' value='" + hours + "'/>&nbsp;" + lang('hours') + "</td>";
+                html += "<td>&nbsp;<select name='task[time_estimate_minutes]' id='ogTasksPanelATMinutes' size='1' tabindex='1250'>";
+                var minuteOptions = new Array(0,5,10,15,20,25,30,35,40,45,50,55);
+                for(var i = 0; i < 12; i++) {
+                        html += "<option value=\"" + minuteOptions[i] + "\"";
+                        if(minutes == minuteOptions[i]) html +=' selected="selected"';
+                        html += ">" + minuteOptions[i] + "</option>\n";
+                }
+                html += "</select>&nbsp;" + lang('minutes') + "</td></tr></table></div>";
+	}
 	
 	html += "<div id='ogTasksPanelATPriority' style='padding-top:5px;'><table><tr><td style='width:130px; vertical-align:middle;'><b>" + lang('priority') + ":&nbsp;</b></td>";
 	html += "<td><span id='ogTasksPanelATPriorityCont'></span></td></tr></table></div>";
@@ -264,6 +278,7 @@ ogTasks.drawTaskForm = function(container_id, data){
 		var date = new Date(data.startDate * 1000);
 		date = new Date(Date.parse(date.toUTCString().slice(0, -4)));
 		var sd = date.dateFormat(og.preferences['date_format']);
+                var starttime = date.dateFormat(og.preferences['time_format_use_24'] == 1 ? 'G:i' : 'g:i A');
 	} else sd = '';
 	var DtStart = new og.DateField({
 		renderTo:'ogTasksPanelATStartDate',
@@ -304,11 +319,32 @@ ogTasks.drawTaskForm = function(container_id, data){
 	},
 	DtDue);
 
-	if (og.config.use_time_in_task_dates) {
+        if (og.config.use_time_in_task_dates) {
+                if(starttime == undefined){
+                    var start_time = new Date(og.config.work_day_start_time * 1000);
+                    start_time = new Date(Date.parse(start_time.toUTCString().slice(0, -4)));
+                    starttime = start_time.dateFormat(og.preferences['time_format_use_24'] == 1 ? 'G:i' : 'g:i A');
+                }
+		var startTime = new Ext.form.TimeField({
+			renderTo:'ogTasksPanelATStartTime',
+			id: 'ogTasksPanelATStartTimeCmp',
+			width: 80,
+                        format: og.config.time_format_use_24_duetime,
+			tabIndex: 1420,
+			emptyText: 'hh:mm',
+			value: starttime
+		});
+                
+                if(duetime == undefined){
+                    var date_time = new Date(og.config.work_day_end_time * 1000);
+                    date_time = new Date(Date.parse(date_time.toUTCString().slice(0, -4)));
+                    duetime = date_time.dateFormat(og.preferences['time_format_use_24'] == 1 ? 'G:i' : 'g:i A');
+                }
 		var dueTime = new Ext.form.TimeField({
 			renderTo:'ogTasksPanelATDueTime',
 			id: 'ogTasksPanelATDueTimeCmp',
 			width: 80,
+                        format: og.config.time_format_use_24_duetime,
 			tabIndex: 1420,
 			emptyText: 'hh:mm',
 			value: duetime
@@ -351,7 +387,7 @@ ogTasks.addNewTaskShowMore = function(){
 }
 
 ogTasks.TaskFormShowAll = function(task_id){
-	var params = this.GetNewTaskParameters(false);
+	var params = this.GetNewTaskParameters(false,task_id);
 	if (task_id)
 		og.openLink(og.getUrl('task', 'edit_task', {id:task_id}), {'post' : params});
 	else
@@ -364,7 +400,7 @@ ogTasks.hideAddNewTaskForm = function(){
 		oldForm.parentNode.removeChild(oldForm);
 }
 
-ogTasks.GetNewTaskParameters = function(wrapWith){
+ogTasks.GetNewTaskParameters = function(wrapWith,task_id){
 	var parameters = [];
 
 	//Conditional fields
@@ -375,10 +411,19 @@ ogTasks.GetNewTaskParameters = function(wrapWith){
 	var hoursPanel = document.getElementById('ogTasksPanelATHours');
 	if (hoursPanel)
 		parameters["hours"] = hoursPanel.value;
+            
+        var minutePanel = document.getElementById('ogTasksPanelATMinutes');
+	if (minutePanel)
+		parameters["minutes"] = minutePanel.value;
 	
 	var startPanel = Ext.getCmp('ogTasksPanelATStartDateCmp');
-	if (startPanel && startPanel.getValue() != '')
+	if (startPanel && startPanel.getValue() != ''){
 		parameters["task_start_date"] = startPanel.getValue().format(og.preferences['date_format']);
+                var startTimePanel = Ext.getCmp('ogTasksPanelATStartTimeCmp');
+		if (startTimePanel && startTimePanel.getValue() != '') {
+			parameters["task_start_time"] = startTimePanel.getValue();
+		}
+        }
 	
 	var duePanel = Ext.getCmp('ogTasksPanelATDueDateCmp');
 	if (duePanel && duePanel.getValue() != '') {
@@ -394,10 +439,15 @@ ogTasks.GetNewTaskParameters = function(wrapWith){
 		parameters["notify"] = true;
 	else
 		parameters["notify"] = false;
-		
-	var description = document.getElementById('ogTasksPanelATDescCtl');
-	if (description)
+            
+        if(og.config.wysiwyg_tasks){
+            var editor = og.getCkEditorInstance(og.genid + 'ckeditor' + task_id);
+            parameters["text"] = editor.getData();
+        }else{
+            var description = document.getElementById('ogTasksPanelATDescCtl');
+            if (description)
 		parameters["text"] = description.value;
+        }
 	
 	var applyMI = document.getElementById('ogTasksPanelApplyMI');
 	parameters["apply_milestone_subtasks"] = applyMI && applyMI.checked ? "checked" : "";
@@ -408,9 +458,12 @@ ogTasks.GetNewTaskParameters = function(wrapWith){
 	var applyAT = document.getElementById('ogTasksPanelApplyAssignee');
 	parameters["apply_assignee_subtasks"] = applyAT && applyAT.checked ? "checked" : "";
 	
+	var milestones_combo = Ext.getCmp('ogTasksPanelATMilestoneCombo');
+	var milestone_id = milestones_combo ? milestones_combo.getValue() : (milestone_hf = document.getElementById('task_milestone_id') ? milestone_hf.value : null);
+	if (milestone_id) parameters["milestone_id"] = milestone_id;
+	
 	//Always visible
 	parameters["assigned_to_contact_id"] = Ext.getCmp('ogTasksPanelATUserCompanyCombo').getValue();
-	parameters["milestone_id"] = Ext.getCmp('ogTasksPanelATMilestoneCombo').getValue();
 	parameters["priority"] = Ext.getCmp('ogTasksPanelATPriorityCombo').getValue();
 	parameters["name"] = document.getElementById('ogTasksPanelATTitle').value;
 	parameters["object_subtype"] = Ext.getCmp('ogTasksPanelObjectTypeSelector').getValue();
@@ -434,7 +487,7 @@ ogTasks.GetNewTaskParameters = function(wrapWith){
 }
 
 ogTasks.SubmitNewTask = function(task_id){
-	var parameters = this.GetNewTaskParameters('task');
+	var parameters = this.GetNewTaskParameters('task',task_id);
 	if (task_id > 0) {
 		var url = og.getUrl('task', 'quick_edit_task', {id:task_id});
 	} else {
@@ -490,11 +543,10 @@ ogTasks.buildAssignedToComboStore = function(companies, only_me) {
 	var usersStore = [];
 	var comp_array = [];
 	var cantU = 0;
-	var cantC = 1;
+	var cantC = 0;
 	
 	if (!only_me) {
-		comp_array[cantC++] = ['0', lang('dont assign')];
-		comp_array[cantC++] = ['0', '--'];
+		usersStore[cantU++] = ['0', lang('dont assign')];
 		usersStore[cantU++] = ['0', '--'];
 	}
 	
@@ -509,11 +561,11 @@ ogTasks.buildAssignedToComboStore = function(companies, only_me) {
 				if (!only_me) {
 					usersStore[cantU++] = [usr.id, og.clean(usr.name)];
 				}
-				if (usr.isCurrent) comp_array[0] = [usr.id, lang('me')];
+				if (usr.isCurrent) usersStore.unshift([usr.id, lang('me')]);
 			}
 		}
-	}
-	usersStore = comp_array.concat(usersStore);
+	}        
+	usersStore = usersStore.concat(comp_array);
 		
 	return usersStore;
 }

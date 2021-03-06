@@ -1,5 +1,5 @@
-<?php if($pagination->hasPreviews) :?>
-	<a href="<?php echo $pagination->previewsUrl ?>">&lt; <?php echo lang("previews")?></a>
+<?php if($pagination->hasPrevious) :?>
+	<a href="<?php echo $pagination->previousUrl ?>">&lt; <?php echo lang("previous")?></a>
 <?php endif?> 
 
 <?php 

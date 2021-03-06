@@ -114,6 +114,7 @@ class SearchController extends ApplicationController {
 	function search() {
 		// Init vars
 		$search_for = array_var($_GET, 'search_for');
+                $advanced = array_var($_GET, 'advanced');
 		$minWordLength = $this->minWordLength($search_for);
 		$useLike = ( $minWordLength && ($this->ignoreMinWordLength) && ($minWordLength < self::$MYSQL_MIN_WORD_LENGHT) );
 		$search_pieces= explode(" ", $search_for);
@@ -148,10 +149,76 @@ class SearchController extends ApplicationController {
 		$filteredResults = 0 ;
 		$uid = logged_user()->getId();
 		
-		
+		$members = active_context_members(false);
+                $members_sql = "";
+                $search_all_projects = array_var($_GET, 'search_all_projects');
+                if(count($members) > 0 && !$search_all_projects){
+                    $members_sql = "AND rel_object_id IN (SELECT object_id FROM " . TABLE_PREFIX . "object_members om WHERE member_id IN (" . implode ( ',', $members ) . ")  
+                                    GROUP BY object_id
+                                    HAVING count(member_id) = ".count($members).")";
+                }
+            
 		$revisionObjectTypeId = ObjectTypes::findByName("file revision")->getId();
-		
-		$sql = "	
+		$listableObjectTypeIds = implode(",",ObjectTypes::getListableObjectTypeIds());
+                if($_POST){
+                    $conditions = array_var($_POST, 'conditions');                    
+                    $search = array_var($_POST, 'search');
+                    $type_object = array_var($search, 'search_object_type_id');
+                    
+                    tpl_assign('type_object', $type_object);
+
+                    if(!is_array($conditions)) $conditions = array();
+                    $where_condiition = '';
+                    $conditions_view = array();
+                    $cont = 0;
+                    foreach($conditions as $condition){
+                        $condValue = array_key_exists('value', $condition) ? $condition['value'] : '';
+                        if($condition['field_type'] == 'boolean'){
+                                $value = array_key_exists('value', $condition);
+                        }else if($condition['field_type'] == 'date'){
+                                if ($condValue != '') {
+                                        $dtFromWidget = DateTimeValueLib::dateFromFormatAndString(user_config_option('date_format'), $condValue);
+                                        $value = date("m/d/Y", $dtFromWidget->getTimestamp());
+                                }
+                        }else{
+                                $value = $condValue;
+                        }              
+                        if($condition['condition'] == "like"){
+                            $where_condiition .= " AND " . $condition['field_name'] . " " . $condition['condition'] . " '" . $value . "%'";
+                        }else{
+                            $where_condiition .= " AND " . $condition['field_name'] . " " . $condition['condition'] . " '" . $value . "'";
+                        }
+                        $conditions_view[$cont]['id'] = $condition['id'];
+                        $conditions_view[$cont]['custom_property_id'] = $condition['custom_property_id'];
+                        $conditions_view[$cont]['field_name'] = $condition['field_name'];
+                        $conditions_view[$cont]['condition'] = $condition['condition'];
+                        $conditions_view[$cont]['value'] = $value;
+                        $cont++;
+                    }
+                    tpl_assign('conditions', $conditions_view);
+                    
+                    if($type_object){
+                        $object_table = ObjectTypes::findById($type_object);
+                        $table = $object_table->getTableName();
+                    }
+                    
+                    $sql = "	
+			SELECT  distinct(so.rel_object_id) AS id
+			FROM ".TABLE_PREFIX."searchable_objects so
+                        INNER JOIN  ".TABLE_PREFIX.$table." nto ON nto.object_id = so.rel_object_id 
+			INNER JOIN  ".TABLE_PREFIX."objects o ON o.id = so.rel_object_id 
+			WHERE (
+				(
+					so.rel_object_id IN (
+			    		SELECT object_id FROM ".TABLE_PREFIX."sharing_table WHERE group_id  IN (
+			      			SELECT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups WHERE contact_id = $uid
+			    		)
+			 		)
+			 	)
+			) " . $where_condiition . $members_sql . " ORDER by o.updated_on DESC
+			LIMIT $start, $limitTest ";
+                }else{
+                    $sql = "	
 			SELECT  distinct(so.rel_object_id) AS id
 			FROM ".TABLE_PREFIX."searchable_objects so
 			INNER JOIN  ".TABLE_PREFIX."objects o ON o.id = so.rel_object_id 
@@ -171,11 +238,13 @@ class SearchController extends ApplicationController {
 			    		)
 			 		)
 			 	)
-			)".(($useLike)?"AND so.content LIKE '%$search_string%' " : "AND MATCH (so.content) AGAINST ('$search_string' IN BOOLEAN MODE) ")." 
+			)" . (($useLike) ? "AND	so.content LIKE '%$search_string%' " : "AND MATCH (so.content) AGAINST ('$search_string' IN BOOLEAN MODE) ") . " 
+			AND o.object_type_id IN ($listableObjectTypeIds) 
+                        " . $members_sql . "
 			ORDER by o.updated_on DESC
 			LIMIT $start, $limitTest ";
-		
-		
+                }
+                
 		$db_search_results = array();
 		$timeBegin = time();
 		$res = DB::execute($sql);
@@ -212,11 +281,27 @@ class SearchController extends ApplicationController {
 		tpl_assign('pagination', $this->pagination);
 		tpl_assign('search_string', $search_for);
 		tpl_assign('search_results', $search_results);
-		tpl_assign('extra', $extra );
+                tpl_assign('advanced', $advanced);                
+		tpl_assign('extra', $extra );      
+                
+                $types = array(array("", lang("select one")));
+		$object_types = ObjectTypes::getAvailableObjectTypes();
+		
+		foreach ($object_types as $ot) {
+			$types[] = array($ot->getId(), lang($ot->getName()));
+		}
+		if ($selected_type != '')
+			tpl_assign('allowed_columns', $this->get_allowed_columns($selected_type));
+		
+		tpl_assign('object_types', $types);
 
-		//Ajax 
-		if (!$total){
-			$this->setTemplate('no_results');
+//		//Ajax 
+		if (!$total && !$advanced){
+                        if($_POST && count($search_results < 0)){
+                            tpl_assign('msg_advanced', true);                    
+                        }else{
+                            $this->setTemplate('no_results');
+                        }			
 		}
 		ajx_set_no_toolbar(true);
 		
@@ -249,9 +334,9 @@ class SearchController extends ApplicationController {
 		$this->pagination->currentStart = $start+1 ;
 		$this->pagination->currentEnd = $start + count($search_results) ;
 		$this->pagination->hasNext = ( count($search_results) == $limit ) ;
-		$this->pagination->hasPreviews = ($start-$limit >= 0); 
+		$this->pagination->hasPrevious = ($start-$limit >= 0); 
 		$this->pagination->nextUrl = get_url("search", "search" , array("start" => $start+$limit , "search_for"=>$search_for));
-		$this->pagination->previewsUrl = get_url("search", "search" , array("start" => $start-$limit , "search_for"=>$search_for));
+		$this->pagination->previousUrl = get_url("search", "search" , array("start" => $start-$limit , "search_for"=>$search_for));
 		$this->pagination->total = $total ;
 		$this->pagination->nextPages = array();
 		$this->pagination->links = $this->buildPaginationLinks();			
@@ -278,6 +363,8 @@ class SearchController extends ApplicationController {
 			$obj = Objects::findObject($search_result_id);
 			/* @var $obj ContentDataObject */
 			
+			$search_result['id'] = $obj->getId();
+			$search_result['otid'] = $obj->getObjectTypeId();
 			$search_result['title'] = $this->prepareTitle($obj->getObjectName());
 			$search_result['url'] = $obj->getViewUrl();
 			$search_result['created_by'] = $this->prepareCreatedBy($obj->getCreatedByDisplayName(), $obj->getCreatedById()) ;
@@ -289,6 +376,7 @@ class SearchController extends ApplicationController {
 				"size" => $this->contentSize,
 				"near" => $this->search_for  
 			)));
+			hook::fire("search_result", $search_result, $search_result);
 			$return[] = $search_result;
 			$limit--;
 		}
@@ -372,5 +460,150 @@ class SearchController extends ApplicationController {
 		}else{
 			return $content ;
 		}
+	}
+        
+        function get_object_fields(){
+		$fields = $this->get_allowed_columns(array_var($_GET, 'object_type'));
+
+		ajx_current("empty");
+		ajx_extra_data(array('fields' => $fields));
+	}
+        
+        function get_external_field_values(){
+		$field = array_var($_GET, 'external_field');
+		$report_type = array_var($_GET, 'report_type');
+		$values = $this->get_ext_values($field, $report_type);
+		ajx_current("empty");
+		ajx_extra_data(array('values' => $values));
+	}
+        
+        function get_object_column_list_task(){
+		$allowed_columns = $this->get_allowed_columns_custom_properties(array_var($_GET, 'object_type'));
+		$for_task = true;
+		
+		tpl_assign('allowed_columns', $allowed_columns);
+		tpl_assign('columns', explode(',', array_var($_GET, 'columns', array())));	
+		tpl_assign('genid', array_var($_GET, 'genid'));
+		tpl_assign('for_task', $for_task);
+		
+		$this->setLayout("html");
+		$this->setTemplate("column_list");
+	}
+        
+        private function get_allowed_columns_custom_properties($object_type) {
+		return array(); //FIXME: no usar todo lo de custom properties por el momento
+		$fields = array();
+		if(isset($object_type)){
+			$customProperties = CustomProperties::getAllCustomPropertiesByObjectType($object_type);
+			$objectFields = array();
+			foreach($customProperties as $cp){				
+				if ($cp->getType() != 'table')
+					$fields[] = array('id' => $cp->getId(), 'name' => $cp->getName(), 'type' => $cp->getType(), 'values' => $cp->getValues(), 'multiple' => $cp->getIsMultipleValues());
+			}
+			$ot = ObjectTypes::findById($report->getObjectTypeId());
+			eval('$managerInstance = ' . $ot->getHandlerClass() . "::instance();");	
+	
+			$common_columns = Objects::instance()->getColumns(false);
+			$common_columns = array_diff_key($common_columns, array_flip($managerInstance->getSystemColumns()));
+			$objectFields = array_merge($objectFields, $common_columns);
+			
+			foreach($objectFields as $name => $type){
+				if($type == DATA_TYPE_FLOAT || $type == DATA_TYPE_INTEGER){
+					$type = 'numeric';
+				}else if($type == DATA_TYPE_STRING){
+					$type = 'text';
+				}else if($type == DATA_TYPE_BOOLEAN){
+					$type = 'boolean';
+				}else if($type == DATA_TYPE_DATE || $type == DATA_TYPE_DATETIME){
+					$type = 'date';
+				}
+				
+				$field_name = Localization::instance()->lang('field '.$ot->getHandlerClass().' '.$name);
+				if (is_null($field_name)) $field_name = lang('field Objects '.$name);
+				
+				$fields[] = array('id' => $name, 'name' => $field_name, 'type' => $type);
+			}
+	
+		}
+		usort($fields, array(&$this, 'compare_FieldName'));
+		return $fields;
+	}
+        
+        private function get_ext_values($field, $manager = null){
+		$values = array(array('id' => '', 'name' => '-- ' . lang('select') . ' --'));
+		if($field == 'contact_id' || $field == 'created_by_id' || $field == 'updated_by_id' || $field == 'assigned_to_contact_id' || $field == 'completed_by_id'
+			|| $field == 'approved_by_id'){
+			$users = Contacts::getAllUsers();
+			foreach($users as $user){
+				$values[] = array('id' => $user->getId(), 'name' => $user->getObjectName());
+			}
+		}else if($field == 'milestone_id'){
+			$milestones = ProjectMilestones::getActiveMilestonesByUser(logged_user());
+			foreach($milestones as $milestone){
+				$values[] = array('id' => $milestone->getId(), 'name' => $milestone->getObjectName());
+			}
+		/*} else if($field == 'object_subtype'){
+			$object_types = ProjectCoTypes::findAll(array('conditions' => (!is_null($manager) ? "`object_manager`='$manager'" : "")));
+			foreach($object_types as $object_type){
+				$values[] = array('id' => $object_type->getId(), 'name' => $object_type->getName());
+			}*/
+		}
+		return $values;
+	}
+        
+        private function get_allowed_columns($object_type) {
+		$fields = array();
+		if(isset($object_type)){
+			$customProperties = CustomProperties::getAllCustomPropertiesByObjectType($object_type);
+			$objectFields = array();
+			
+			foreach($customProperties as $cp){
+				if ($cp->getType() == 'table') continue;
+				
+				$fields[] = array('id' => $cp->getId(), 'name' => $cp->getName(), 'type' => $cp->getType(), 'values' => $cp->getValues(), 'multiple' => $cp->getIsMultipleValues());
+			}
+			
+			$ot = ObjectTypes::findById($object_type);
+			eval('$managerInstance = ' . $ot->getHandlerClass() . "::instance();");
+			$objectColumns = $managerInstance->getColumns();
+			
+			$objectFields = array();
+			
+			$objectColumns = array_diff($objectColumns, $managerInstance->getSystemColumns());
+			foreach($objectColumns as $column){
+				$objectFields[$column] = $managerInstance->getColumnType($column);
+			}
+			
+			$common_columns = Objects::instance()->getColumns(false);
+			$common_columns = array_diff_key($common_columns, array_flip($managerInstance->getSystemColumns()));
+			$objectFields = array_merge($objectFields, $common_columns);
+
+			foreach($objectFields as $name => $type){
+				if($type == DATA_TYPE_FLOAT || $type == DATA_TYPE_INTEGER){
+					$type = 'numeric';
+				}else if($type == DATA_TYPE_STRING){
+					$type = 'text';
+				}else if($type == DATA_TYPE_BOOLEAN){
+					$type = 'boolean';
+				}else if($type == DATA_TYPE_DATE || $type == DATA_TYPE_DATETIME){
+					$type = 'date';
+				}
+				
+				$field_name = Localization::instance()->lang('field '.$ot->getHandlerClass().' '.$name);
+				if (is_null($field_name)) $field_name = lang('field Objects '.$name);
+
+				$fields[] = array('id' => $name, 'name' => $field_name, 'type' => $type);
+			}
+	
+			$externalFields = $managerInstance->getExternalColumns();
+			foreach($externalFields as $extField){
+				$field_name = Localization::instance()->lang('field '.$ot->getHandlerClass().' '.$extField);
+				if (is_null($field_name)) $field_name = lang('field Objects '.$extField);
+				
+				$fields[] = array('id' => $extField, 'name' => $field_name, 'type' => 'external', 'multiple' => 0);
+			}
+		}
+		usort($fields, array(&$this, 'compare_FieldName'));
+		return $fields;
 	}
 }

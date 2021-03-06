@@ -16,6 +16,7 @@
   		foreach ($users_by_company as $company_row){
   			$company = $company_row['details'];
 			$users = $company_row['users'];
+			if (count($users) == 0) continue;
 			tpl_assign('users', $users);
 			tpl_assign('company', $company);
 	?>
@@ -31,25 +32,24 @@
   <?php } // foreach ?>
   
   </div>
- </div>
- <script type="text/javascript">
- og.userListPagination=function(page,compid,cantpages,element)
- 	{ 
-	 divs = element.parentNode.childNodes;	 
-	 		for (i=1;i<=cantpages;i++){
-		 		d = divs[i-1];
-			 	d.className="pagination-user";
-				elem = document.getElementById(i + '-' + compid + 'userspage');
-				if(elem){
-					elem.style.display = "none";					
-				}
-			 }
-	 	element.className = "pagination-user-active";
-		page = document.getElementById(page + '-' + compid + 'userspage');
-		if (page){
-		 	page.style.display = "";
-		}
+</div>
 
-	};
- </script>
+<script type="text/javascript">
+og.userListPagination=function(page,compid,cantpages,element) {
+	divs = element.parentNode.childNodes;
+	for (i=1;i<=cantpages;i++){
+		d = divs[i-1];
+		d.className="pagination-user";
+		elem = document.getElementById(i + '-' + compid + 'userspage');
+		if(elem){
+			elem.style.display = "none";
+		}
+	}
+	element.className = "pagination-user-active";
+	page = document.getElementById(page + '-' + compid + 'userspage');
+	if (page){
+		page.style.display = "";
+	}
+};
+</script>
  

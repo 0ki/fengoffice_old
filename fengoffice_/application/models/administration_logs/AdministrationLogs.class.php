@@ -36,9 +36,9 @@ class AdministrationLogs extends BaseAdministrationLogs {
 	} // createLog
 
 	static function getLastLogs($category = '', $title = '', $log_data = '', $limit = 10, $additional_conds = '') {
-		$cat_cond = $category == '' ? "" : " AND `category` = '".mysql_real_escape_string($category)."'";
-		$title_cond = $title == '' ? "" : " AND `title` = '".mysql_real_escape_string($title)."'";
-		$data_cond = $log_data == '' ? "" : " AND `log_data` = '".mysql_real_escape_string($log_data)."'";
+		$cat_cond = $category == '' ? "" : " AND `category` = ".DB::escape($category);
+		$title_cond = $title == '' ? "" : " AND `title` = ".DB::escape($title);
+		$data_cond = $log_data == '' ? "" : " AND `log_data` = ".DB::escape($log_data);
 		$conditions = "1=1 $cat_cond $title_cond $data_cond";
 		if ($additional_conds != '') $conditions .= " AND $additional_conds";
 		

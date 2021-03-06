@@ -675,6 +675,50 @@ abstract class BaseProjectTask extends ContentDataObject {
 	function setUseStartTime($value) {
 		return $this->setColumnValue('use_start_time', $value);
 	} // setUseStartTime()
+        
+        /**
+	 * Return value of 'original_task_id' field
+	 *
+	 * @access public
+	 * @param void
+	 * @return integer
+	 */
+	function getOriginalTaskId() {
+		return $this->getColumnValue('original_task_id');
+	} // getOriginalTaskId()
+
+	/**
+	 * Set value of 'original_task_id' field
+	 *
+	 * @access public
+	 * @param integer $value
+	 * @return boolean
+	 */
+	function setOriginalTaskId($value) {
+		return $this->setColumnValue('original_task_id', $value);
+	} // setOriginalTaskId()
+        
+        /**
+	 * Return value of 'type_content' field
+	 *
+	 * @access public
+	 * @param void
+	 * @return string
+	 */
+	function getTypeContent() {
+		return $this->getColumnValue('type_content');
+	} // getTypeContent()
+
+	/**
+	 * Set value of 'type_content' field
+	 *
+	 * @access public
+	 * @param string $value
+	 * @return boolean
+	 */
+	function setTypeContent($value) {
+		return $this->setColumnValue('type_content', $value);
+	} // setTypeContent()
 	
     /**
 	 * Return manager instance

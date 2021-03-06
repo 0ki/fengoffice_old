@@ -3,7 +3,7 @@
 	'upgrade from' => 'Actualizar de',
 	'upgrade to' => 'Actualizar a',
 	'upgrade from to' => 'Actualizar de {0} a {1}',
-	'already upgraded' => 'Ya ha actualizado a la última versión posible.',
+	'already upgraded' => 'Ya ha actualizado a la última versión posible: {0}.',
 	'back to fengoffice' => 'Volver a Feng Office',
 	'all rights reserved' => 'Todos los derechos reservados',
 	'upgrade process log' => 'Registro del proceso de actualización',

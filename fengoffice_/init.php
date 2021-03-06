@@ -12,6 +12,7 @@ define('THEMES_DIR',       ROOT . '/public/assets/themes');
 
 set_include_path(ROOT . PATH_SEPARATOR . APPLICATION_PATH . PATH_SEPARATOR . get_include_path());
 set_include_path(LIBRARY_PATH . "/zend" . PATH_SEPARATOR . get_include_path());
+set_include_path(LIBRARY_PATH . "/ezcomponents" . PATH_SEPARATOR . get_include_path());
 set_include_path(LIBRARY_PATH . "/PEAR" . PATH_SEPARATOR . get_include_path());
 set_include_path(LIBRARY_PATH . "/pdf" . PATH_SEPARATOR . get_include_path());
 
@@ -75,7 +76,7 @@ define('DEFAULT_ACTION', 'index');
 define('DEFAULT_THEME', 'default');
 
 define('SLIMEY_PATH', ROOT_URL . '/public/assets/javascript/slimey/');
-define('PLUGINS_URL',	   ROOT_URL . '/plugins' ) ;
+define('PLUGINS_URL', ROOT_URL . '/plugins' ) ;
 
 
 // ---------------------------------------------------
@@ -175,12 +176,15 @@ try {
 
 if (Env::isDebuggingTime()) {
 	TimeIt::stop();
-	$report = TimeIt::getTimeReportByType();
-	Logger::log(array_var($_SERVER, 'QUERY_STRING', 'No query string')."\n$report");
-	$report = "\n";
-	/*foreach (TimeIt::$timeslots as $t) {
-		$report .= $t["type"] . ": (" . $t["start"] . ", " . $t["end"] . ")\n";
-	}*/
-	Logger::log($report);
+	if (array_var($_REQUEST, 'a') != 'popup_reminders') {
+		$report = TimeIt::getTimeReportByType();
+		Logger::log(array_var($_SERVER, 'QUERY_STRING', 'No query string')."\n$report");
+		$report = "\n";
+		/*foreach (TimeIt::$timeslots as $t) {
+			$report .= $t["type"] . ": (" . $t["start"] . ", " . $t["end"] . ")\n";
+		}*/
+		Logger::log($report);
+	}
 }
+
 ?>

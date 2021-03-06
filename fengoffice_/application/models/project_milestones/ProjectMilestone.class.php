@@ -444,8 +444,10 @@ class ProjectMilestone extends BaseProjectMilestone {
 	}
 	
 	function getArrayInfo(){
-		$tnum = ProjectTasks::count('milestone_id = ' . $this->getId() . " AND `trashed_on` = 0");
-		$tc = ProjectTasks::count('milestone_id = ' . $this->getId() . ' and completed_on > '.DB::escape(EMPTY_DATETIME).' AND `trashed_on` = 0');
+		
+		$info = ProjectMilestones::getMilestonesInfo($this->getId());
+		$tnum = array_var($info, 'tnum', 0);
+		$tc = array_var($info, 'tc', 0);
 		
 		$result = array(
 			'id' => $this->getId(),

@@ -78,7 +78,7 @@ class ProjectFile extends BaseProjectFile {
 		
 		$dir = $asc ? 'ASC' : 'DESC';
 		
-		if(!isset($conditions)) $conditions = DB::prepareString('`file_id` = ?', array($this->getId()));
+		if(!isset($conditions)) $conditions = DB::prepareString("`file_id` = ? AND `trashed_on` = '0000-00-00 00:00:00'", array($this->getId()));
 		
 		return ProjectFileRevisions::find(array(
 	        'conditions' => $conditions,
@@ -372,7 +372,13 @@ class ProjectFile extends BaseProjectFile {
 		if(trim($extension)) {
 			$file_type = FileTypes::getByExtension($extension);
 			if($file_type instanceof Filetype) {
-				$revision->setFileTypeId($file_type->getId());
+                                if(!$file_type->getIsAllow()){
+                                    DB::rollback();
+                                    flash_error(lang('file extension no allow'));
+                                }else{
+                                    $revision->setFileTypeId($file_type->getId());
+                                }
+				
 			} // if
 		} // if
 
@@ -702,7 +708,7 @@ class ProjectFile extends BaseProjectFile {
 	
 	function canCheckin(Contact $user){
 		return $this->isCheckedOut() && can_write($user, $this->getMembers(), $this->getObjectTypeId())
-		&& ($user->isAdministrator() || $user->getId() == $this->getCheckedOutById());
+		&& ($user->isAdministrator() || $user->isModerator() || $user->getId() == $this->getCheckedOutById());
 	}
 
 	

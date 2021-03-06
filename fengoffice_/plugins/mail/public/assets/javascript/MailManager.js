@@ -56,6 +56,8 @@ og.MailManager = function() {
 						var el = view.getRow(i);
 						if (el) el.innerHTML = el.innerHTML.replace('x-grid3-td-draghandle "', 'x-grid3-td-draghandle " onmousedown="var sm = Ext.getCmp(\'mails-manager\').getSelectionModel();if (!sm.isSelected('+i+')) {sm.clearSelections();} sm.selectRow('+i+', true);"');
 					}
+                                        var sm = Ext.getCmp('mails-manager').getSelectionModel();
+                                        sm.clearSelections();
 				}
 			}
 		});
@@ -124,7 +126,7 @@ og.MailManager = function() {
 	
 	function renderDragHandle(value, p, r) {
 		Ext.getCmp('mails-manager').maxrowidx = r.data.ix;
-		return '<div class="img-grid-drag" title="' + lang('click to drag') + '" onmousedown="var sm = Ext.getCmp(\'mails-manager\').getSelectionModel();if (!sm.isSelected('+r.data.ix+')) sm.clearSelections();sm.selectRow('+r.data.ix+', true);"></div>';
+		return '<div class="img-grid-drag" title="' + lang('click to drag') + '""></div>';
 	}
 	
 	function renderIcon(value, p, r) {
@@ -143,7 +145,7 @@ og.MailManager = function() {
 	}
 	
 	function renderIsRead(value, p, r){
-		var js = 'var r = og.MailManager.store.getById(\'' + r.id + '\'); r.data.isRead = !r.data.isRead;og.openLink(og.getUrl(\'object\', \'' + (value ? 'mark_as_unread' : 'mark_as_read') + '\', {ids:\'MailContents:' + r.data.object_id + '\'}));r.commit();';
+		var js = 'var r = og.MailManager.store.getById(\'' + r.id + '\'); r.data.isRead = !r.data.isRead;og.openLink(og.getUrl(\'object\', \'' + (value ? 'mark_as_unread' : 'mark_as_read') + '\', {ids:\'' + r.data.object_id + '\'}));r.commit();';
 		return String.format(
 				'<div title="{0}" class="db-ico {2}" onclick="{1}"></div>',
 				value ? lang('mark as unread') : lang('mark as read'), js, value ? 'ico-read' : 'ico-unread'
@@ -254,19 +256,6 @@ og.MailManager = function() {
 		}
 	}
 	
-	function getSelectedTypes() {
-		var selections = sm.getSelections();
-		if (selections.length <= 0) {
-			return '';
-		} else {
-			var ret = '';
-			for (var i=0; i < selections.length; i++) {
-				ret += "," + selections[i].data.type;
-			}	
-			return ret.substring(1);
-		}
-	}
-	this.getSelectedTypes = getSelectedTypes;
 	
 	function getFirstSelectedId() {
 		if (sm.hasSelection()) {
@@ -291,22 +280,14 @@ og.MailManager = function() {
 				actions.del.setDisabled(false);
 				actions.archive.setDisabled(false);
 				
-				var selTypes = getSelectedTypes();
-				if (/message/.test(selTypes)){
-					markactions.markAsRead.setDisabled(true);
-					markactions.markAsUnread.setDisabled(true);
-					markactions.markAsSpam.setDisabled(true);				
-					markactions.markAsHam.setDisabled(true);
-				}else {								
-					markactions.markAsRead.setDisabled(false);
-					markactions.markAsUnread.setDisabled(false);
-					markactions.markAsSpam.setDisabled(false);				
-					markactions.markAsHam.setDisabled(false);
-					var selReadTypes = getSelectedReadTypes();
-					
-					if (selReadTypes == 'read') markactions.markAsRead.setDisabled(true);
-					else if (selReadTypes == 'unread') markactions.markAsUnread.setDisabled(true);	
-				}
+				markactions.markAsRead.setDisabled(false);
+				markactions.markAsUnread.setDisabled(false);
+				markactions.markAsSpam.setDisabled(false);				
+				markactions.markAsHam.setDisabled(false);
+				var selReadTypes = getSelectedReadTypes();
+				
+				if (selReadTypes == 'read') markactions.markAsRead.setDisabled(true);
+				else if (selReadTypes == 'unread') markactions.markAsUnread.setDisabled(true);	
 				
 			}
 		});
@@ -470,7 +451,7 @@ og.MailManager = function() {
 				var ids = "";
 				for (var i=0; i < sel.length; i++) {
 					if (ids) ids += ",";
-					ids += "MailContents:" + sel[i].id;
+					ids += sel[i].id;
 					sel[i].set('isRead', true);
 					sel[i].commit();
 				}
@@ -490,7 +471,7 @@ og.MailManager = function() {
 				var ids = "";
 				for (var i=0; i < sel.length; i++) {
 					if (ids) ids += ",";
-					ids += "MailContents:" + sel[i].id;
+					ids += sel[i].id;
 					sel[i].set('isRead', false);
 					sel[i].commit();
 				}
@@ -510,7 +491,7 @@ og.MailManager = function() {
 				var ids = "";
 				for (var i=0; i < sel.length; i++) {
 					if (ids) ids += ",";
-					ids += "MailContents:" + sel[i].id;
+					ids += sel[i].id;
 					this.store.remove(sel[i]);
 				}
 				if (ids) og.openLink(og.getUrl('mail', 'mark_as_spam', {ids:ids}));
@@ -530,7 +511,7 @@ og.MailManager = function() {
 				var ids = "";
 				for (var i=0; i < sel.length; i++) {
 					if (ids) ids += ",";
-					ids += "MailContents:" + sel[i].id;
+					ids += sel[i].id;
 					this.store.remove(sel[i]);
 				}
 				if (ids) og.openLink(og.getUrl('mail', 'mark_as_ham', {ids:ids}));
@@ -662,7 +643,6 @@ og.MailManager = function() {
 					var ids = "";
 					for (var i=0; i < sel.length; i++) {
 						if (ids) ids += ",";
-						//ids += "MailContents:" + sel[i].id;
 						ids += sel[i].id;
 						this.store.remove(sel[i]);
 					}
@@ -683,7 +663,7 @@ og.MailManager = function() {
 					var ids = "";
 					for (var i=0; i < sel.length; i++) {
 						if (ids) ids += ",";
-						ids += "MailContents:" + sel[i].id;
+						ids += sel[i].id;
 						this.store.remove(sel[i]);
 					}
 					if (ids) og.openLink(og.getUrl('object', 'archive', {ids:ids}));
@@ -1164,84 +1144,12 @@ Ext.extend(og.MailManager, Ext.grid.GridPanel, {
 	showMessage: function(text) {
 		this.innerMessage.innerHTML = text;
 	},
-	
-/*	moveObjectsToAllWs: function() {
-		this.load({
-			action: 'unclassify',
-			ids: this.getSelectedIds(),
-			types: this.getSelectedTypes()
-		});
-	},
-	
-	moveObjects: function(ws) {
-		var selections = this.getSelectionModel().getSelections();
-		var unclassified = true;
-		for (var i=0; i < selections.length; i++) {
-			if (selections[i].data.memberIds.length > 0) {
-				unclassified = false;
-				break;
-			}
-		}
-		if (unclassified) {
-			// if all emails are unclassified don't prompt for keeping workspaces
-			this.moveObjectsToWsOrMantainWs(1, ws);
-		} else {
-			// prompt
-			og.moveToWsOrMantainWs(this.id, ws);
-		}
-	},
-	
-	moveObjectsToWsOrMantainWs: function(mantain, ws) {
-		if (mantain && !ws) return; // dragging to "All" and keeping workspaces
-		if (this.selectionHasAttachments() && ws) {
-			og.askToClassifyUnclassifiedAttachs('mails-manager', mantain, ws);
-		} else {
-			this.moveObjectsClassifyingEmails(mantain, ws, 0);
-		}
-	},
-	
-	moveObjectsClassifyingEmails: function(mantain, ws, classifyatts) {
-		var sm = this.getSelectionModel();
-		var sel = sm.getSelections();
-		var ids = "";
-		for (var i=0; i < sel.length; i++) {
-			if (ids) ids += ",";
-			ids += "MailContents:" + sel[i].id;
-			if (mantain) {
-				var pids = (', ' + sel[i].get('memberIds') + ', ');
-				pids = pids.replace(', ' + ws + ', ', ', ').substring(2, pids.length - 2);
-				if (pids) pids += ', ';
-			} else {
-				var pids = "";
-			}
-			if (ws) pids += ws;
-			var wp = Ext.getCmp('workspace-panel');
-			var active = wp.getActiveWorkspace().id;
-			if (!mantain && active != ws && !wp.isSubWorkspace(ws, active)) {
-				// if the email was moved and the new workspace is not a subworkspace of the selected workspace => remove the email
-				this.store.remove(sel[i]);
-			} else {
-				sel[i].set('memberIds', pids);
-				//sel[i].commit();
-			}
-		}
-		if (ids) {
-			if (!ws) {
-				// unclassify
-				og.openLink(og.getUrl('mail', 'unclassify_many', {ids:ids}));
-			} else {
-				og.openLink(og.getUrl('object', 'move', {ids:ids, keep: (mantain ? '1' : '0'), atts:(classifyatts ? '1' : '0')}));
-			}
-		}
-		sm.clearSelections();
-	},
-*/	
+
 	trashObjects: function() {
 		if (confirm(lang('confirm move to trash'))) {
 			this.load({
 				action: 'delete',
-				ids: this.getSelectedIds(),
-				types: this.getSelectedTypes()
+				ids: this.getSelectedIds()
 			});
 			this.getSelectionModel().clearSelections();
 		}
@@ -1251,8 +1159,7 @@ Ext.extend(og.MailManager, Ext.grid.GridPanel, {
 		if (confirm(lang('confirm archive selected objects'))) {
 			this.load({
 				action: 'archive',
-				ids: this.getSelectedIds(),
-				types: this.getSelectedTypes()
+				ids: this.getSelectedIds()
 			});
 			this.getSelectionModel().clearSelections();
 		}

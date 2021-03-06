@@ -262,7 +262,7 @@ class ProjectEvent extends BaseProjectEvent {
 		}
 	}
         
-        function cloneEvent($new_st_date,$new_due_date) {
+	function cloneEvent($new_st_date,$new_due_date) {
 		$new_event = new ProjectEvent();
 				
 		$new_event->setObjectName($this->getObjectName());
@@ -270,9 +270,9 @@ class ProjectEvent extends BaseProjectEvent {
 		$new_event->setTypeId($this->getTypeId());		
 		if ($this->getDuration() instanceof DateTimeValue )
 			$new_event->setDuration(new DateTimeValue($this->getDuration()->getTimestamp()));
-		if ($this->getStart() instanceof DateTimeValue )
+			if ($this->getStart() instanceof DateTimeValue )
 			$new_event->setStart(new DateTimeValue($this->getStart()->getTimestamp()));
-		
+		$new_event->setOriginalEventId($this->getObjectId());
 		$new_event->save();
                 
                 // set next values for repetetive task
@@ -285,7 +285,7 @@ class ProjectEvent extends BaseProjectEvent {
                         $invit = new EventInvitation();
                         $invit->setEventId($new_event->getId());
                         $invit->setContactId($invitation->getContactId());
-                        $invit->setInvitationState(1);
+                        $invit->setInvitationState(logged_user() instanceof Contact && logged_user()->getId() == $invitation->getContactId() ? 1 : 0);
                         $invit->save();
                     }
                     
@@ -321,12 +321,12 @@ class ProjectEvent extends BaseProjectEvent {
                 $context = active_context();
                 foreach ($context as $selection) {
                         if ($selection instanceof Member) $member_ids[] = $selection->getId();
-                }		        
+                }
                 $object_controller = new ObjectController();
                 $object_controller->add_to_members($new_event, $member_ids); 
-                                            
+
 		return $new_event;
-	}      
+	}
 
 } // projectEvent
 

@@ -259,6 +259,11 @@
       $limit      = (integer) array_var($arguments, 'limit', 0);
       $columns    = array_var($arguments, 'columns', null);
       
+      // limit = 1 when findOne is invoked
+      if ($one) {
+      	$limit = 1;
+      }
+      
       // Prepare query parts
       $where_string = trim($conditions) == '' ? '' : "WHERE " . preg_replace("/\s+in\s*\(\s*\)/i", " = -1", $conditions);
       $order_by_string = trim($order_by) == '' ? '' : "ORDER BY $order_by";

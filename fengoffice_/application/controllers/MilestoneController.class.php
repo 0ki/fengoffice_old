@@ -122,6 +122,9 @@ class MilestoneController extends ApplicationController {
 				$object_controller = new ObjectController();
 			    $object_controller->add_to_members($milestone, $member_ids);
 			    $object_controller->add_subscribers($milestone);
+			    $object_controller->link_to_new_object($milestone);
+				$object_controller->add_custom_properties($milestone);
+				$object_controller->add_reminders($milestone);
 
 				if (array_var($_GET, 'copyId', 0) > 0) {
 					// copy remaining stuff from the milestone with id copyId
@@ -221,6 +224,9 @@ class MilestoneController extends ApplicationController {
 				$object_controller = new ObjectController();
 				$object_controller->add_to_members($milestone, $member_ids);
 			    $object_controller->add_subscribers($milestone);
+			    $object_controller->link_to_new_object($milestone);
+				$object_controller->add_custom_properties($milestone);
+				$object_controller->add_reminders($milestone);
 			    
 				ApplicationLogs::createLog($milestone, ApplicationLogs::ACTION_EDIT);
 				DB::commit();

@@ -7,37 +7,75 @@
  */
 class ContactMemberPermissions extends BaseContactMemberPermissions {
 	
+	private static $readable_members = array();
+	
+	/**
+	 * Same as contactCanReadMember but uses a permission cache to avoid similar queries for the same user
+	 */
+	function contactCanReadMemberAll($permission_group_ids, $member_id, $user) {
+		if ($user instanceof Contact && $user->isAdministrator ()) {
+			return true;
+		}
+		
+		if (!isset(self::$readable_members["$permission_group_ids"])) {
+			$res = DB::execute("SELECT DISTINCT member_id FROM ".TABLE_PREFIX."contact_member_permissions WHERE permission_group_id IN (" . $permission_group_ids . ")" );
+			$rows = $res->fetchAll();
+			if (is_array($rows)) {
+				self::$readable_members["$permission_group_ids"] = array();
+				foreach ($rows as $row) {
+					self::$readable_members["$permission_group_ids"][] = $row['member_id'];
+				}
+			}
+		}
+		
+		return in_array($member_id, self::$readable_members["$permission_group_ids"]);
+	}
+	
 	function contactCanReadMember($permission_group_ids, $member_id, $user) {
 		if ($user instanceof Contact && $user->isAdministrator ()) {
 			return true;
 		}
-		$member_permissions = ContactMemberPermissions::findOne ( array ('conditions' => '`member_id` = ' . $member_id . ' AND `permission_group_id` IN (' . $permission_group_ids . ')' ) );
 		
-		if ($member_permissions != null)
-			return true;
-		else
-			return false;
+		$res = DB::execute("SELECT permission_group_id FROM ".TABLE_PREFIX."contact_member_permissions WHERE `member_id` = $member_id AND `permission_group_id` IN (" . $permission_group_ids . ") limit 1" );
+		return ($res->numRows() > 0);
 	}
 	
 	function contactCanReadObjectTypeinMember($permission_group_ids, $member_id, $object_type_id, $can_write = false, $can_delete = false, $user = null) {
 		if ($user instanceof Contact && $user->isAdministrator ()) {
 			return true;
 		}
-		$can_write_cond = false;
-		if ($can_write)
-			$can_write_cond = " AND `can_write` = 1";
-		$can_delete_cond = false;
-		if ($can_delete)
-			$can_delete_cond = " AND `can_delete` = 1";
+		$can_write_cond = $can_write ? " AND `can_write` = 1" : "";
+		$can_delete_cond = $can_delete ? " AND `can_delete` = 1" : "";
 		
-		//			if ($permission_group_ids = "") $permission_group_ids = 0;
-		
+		$res = DB::execute("SELECT permission_group_id FROM ".TABLE_PREFIX."contact_member_permissions WHERE `member_id` = $member_id AND `object_type_id` = $object_type_id AND 
+	  							`permission_group_id` IN ( $permission_group_ids ) $can_write_cond $can_delete_cond limit 1");
 
-		$member_permissions = ContactMemberPermissions::findOne ( array ('conditions' => '`member_id` = ' . $member_id . ' AND `object_type_id` = ' . $object_type_id . ' AND 
-	  							`permission_group_id` IN (' . $permission_group_ids . ')' . $can_write_cond . $can_delete_cond ) );
-		
-		return ! is_null ( $member_permissions );
+		return $res->numRows() > 0;
 	}
+	
+	
+	function canAccessObjectTypeinMembersPermissionGroups($permission_group_ids, $member_ids, $object_type_id, $can_write = false, $can_delete = false) {
+		if (is_array($permission_group_ids)) {
+			$permission_group_ids = implode(",", $permission_group_ids);
+		}
+		if (is_array($member_ids)) {
+			$member_ids = implode(",", $member_ids);
+		}
+		
+		$can_write_cond = $can_write ? " AND `can_write` = 1" : "";
+		$can_delete_cond = $can_delete ? " AND `can_delete` = 1" : "";
+		
+		$sql = "SELECT permission_group_id FROM ".TABLE_PREFIX."contact_member_permissions WHERE `member_id` IN (".$member_ids.") AND `object_type_id` = $object_type_id AND `permission_group_id` IN ( $permission_group_ids ) $can_write_cond $can_delete_cond";
+		$rows = DB::executeAll($sql);
+
+		$res = array();
+		if ($rows && is_array($rows)) {
+			foreach ($rows as $row) $res[] = $row['permission_group_id'];
+		}
+		return $res;
+	}
+	
+	
 	
 	function getActiveContextPermissions(Contact $contact, $object_type_id, $context, $dimension_members, $can_write = false, $can_delete = false) {
 		if ($contact instanceof Contact && $contact->isAdministrator ()) {

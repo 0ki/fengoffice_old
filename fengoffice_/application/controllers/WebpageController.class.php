@@ -67,11 +67,12 @@ class WebpageController extends ApplicationController {
 				$member_ids = json_decode(array_var($_POST, 'members'));
 				
 				//link it!
-			    $object_controller = new ObjectController();
-			    $object_controller->add_subscribers($webpage);
-			    $object_controller->add_to_members($webpage, $member_ids);
-			    $object_controller->link_to_new_object($webpage);
+                                $object_controller = new ObjectController();
+                                $object_controller->add_subscribers($webpage);
+                                $object_controller->add_to_members($webpage, $member_ids);
+                                $object_controller->link_to_new_object($webpage);
 				$object_controller->add_subscribers($webpage);
+                                $object_controller->add_custom_properties($webpage);
 
 				ApplicationLogs::createLog($webpage, ApplicationLogs::ACTION_ADD);
 				DB::commit();
@@ -141,9 +142,10 @@ class WebpageController extends ApplicationController {
 				$member_ids = json_decode(array_var($_POST, 'members'));
 				
 				$object_controller = new ObjectController();
-			    $object_controller->add_to_members($webpage, $member_ids);
-			    $object_controller->link_to_new_object($webpage);
+                                $object_controller->add_to_members($webpage, $member_ids);
+                                $object_controller->link_to_new_object($webpage);
 				$object_controller->add_subscribers($webpage);
+                                $object_controller->add_custom_properties($webpage);
 
 				ApplicationLogs::createLog($webpage, ApplicationLogs::ACTION_EDIT);
 

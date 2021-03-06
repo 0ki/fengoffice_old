@@ -8,7 +8,7 @@
 
 
 ogTasks.printAllGroups = function(){
-	var printWindow = this.createPrintWindow();
+        var printWindow = this.createPrintWindow();
  	for (var i = 0; i < this.Groups.length; i++){
  		if (this.Groups[i].group_tasks.length > 0){
  			this.printGroupHeader(this.Groups[i], printWindow);

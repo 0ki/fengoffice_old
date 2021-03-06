@@ -59,7 +59,15 @@ table {
 
 <?php if ($task->getText() != '') { ?>
 <p><b><?php echo lang('description') ?>:</b></p>
-<div style="margin-left:14px;padding:6px;border:1px solid #AAA"><?php echo nl2br(clean($task->getText())); ?></div>
+<div style="margin-left:14px;padding:6px;border:1px solid #AAA">
+<?php 
+    if($task->getTypeContent() == "text"){
+        echo escape_html_whitespace(convert_to_links(clean($task->getText())));
+    }else{
+        echo purify_html(nl2br($task->getText()));
+    }
+?>
+</div>
 <?php } // if ?>
 
 <?php 

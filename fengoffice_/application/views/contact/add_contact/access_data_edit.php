@@ -66,12 +66,11 @@
 
 </script>
 
-
 <div id = "<?php echo $genid ?>" class="access-data"> 
-    <label class="checkbox" ><?php echo lang("will this person use feng office?") ?></label><input class="checkbox" type="checkbox" name="contact[user][create-user]" checked id="create-user"></input>
+    <label class="checkbox" ><?php echo lang("will this person use feng office?") ?></label><input class="checkbox" type="checkbox" name="contact[user][create-user]" <?php if(!$contact_mail){echo "checked";}?> id="create-user"></input>
     <div class="clear"></div>
 
-    <div class="user-data">
+    <div class="user-data" <?php if($contact_mail){echo "style='display:none'";}?>>
             <label class="checkbox" ><?php echo lang("specify password?") ?></label><input class="checkbox" type="checkbox" name="contact[user][create-password]" id="create-password" ></input>
             <div class="clear"></div>
             <div class="user-data-password" style="display: none;">

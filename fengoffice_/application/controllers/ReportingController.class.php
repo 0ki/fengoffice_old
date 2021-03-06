@@ -304,8 +304,7 @@ class ReportingController extends ApplicationController {
 					$newColumn->setCustomPropertyId($column);
 				}else{
 					$newColumn->setFieldName($column);
-				}
-				
+				}				
 			}
 		}
 	
@@ -400,12 +399,11 @@ class ReportingController extends ApplicationController {
 		$st = DateTimeValueLib::make(0,0,0,1,1,1900);
 		$et = DateTimeValueLib::make(23,59,59,12,31,2036);
 
-		$timeslotsArray = Timeslots::getTaskTimeslots(active_context(), null,null,null,$st,$et, get_id());
+		$timeslotsArray = Timeslots::getTaskTimeslots(active_context(), null,null,$st,$et, get_id());
 
 		tpl_assign('estimate', $task->getTimeEstimate());
 		//tpl_assign('timeslots', $timeslots);
 		tpl_assign('timeslotsArray', $timeslotsArray);
-		tpl_assign('workspace', $task->getProject());
 		tpl_assign('template_name', 'total_task_times');
 		tpl_assign('title',lang('task time report'));
 		tpl_assign('task_title', $task->getTitle());
@@ -837,6 +835,7 @@ class ReportingController extends ApplicationController {
 	}
 	
 	function generateCSVReport($report, $results){
+                $results['columns'][] = lang("status");
 		$types = self::get_report_column_types($report->getId());
 		$filename = str_replace(' ', '_',$report->getObjectName()).date('_YmdHis');
 		header('Expires: 0');
@@ -855,9 +854,10 @@ class ReportingController extends ApplicationController {
 				if ($k == 'object_type_id') continue;
 				$db_col = isset($results['db_columns'][$results['columns'][$i]]) ? $results['db_columns'][$results['columns'][$i]] : '';
                                 
-                                $cell = format_value_to_print($db_col, $value, ($k == 'link'?'':array_var($types, $k)), array_var($row, 'object_type_id'), '', is_numeric(array_var($results['db_columns'], $k)) ? "Y-m-d" : user_config_option('date_format'));
+                                $cell = format_value_to_print($db_col, html_to_text($value), ($k == 'link'?'':array_var($types, $k)), array_var($row, 'object_type_id'), '', is_numeric(array_var($results['db_columns'], $k)) ? "Y-m-d" : user_config_option('date_format'));
 				$cell = iconv(mb_internal_encoding(),"ISO-8859-1",html_entity_decode($cell ,ENT_COMPAT));
 				echo $cell.';';
+                                $i++;
 			}
 			echo "\n";
 		}
@@ -865,6 +865,7 @@ class ReportingController extends ApplicationController {
 	}
 	
 	function generatePDFReport(Report $report, $results){
+                $results['columns'][] = lang("status");
 		$types = self::get_report_column_types($report->getId());
 		$ot = ObjectTypes::findById($report->getReportObjectTypeId());
 		eval('$managerInstance = ' . $ot->getHandlerClass() . "::instance();");
@@ -934,7 +935,7 @@ class ReportingController extends ApplicationController {
                                 if ($k == 'object_type_id') continue;
 				$db_col = isset($results['db_columns'][$results['columns'][$i]]) ? $results['db_columns'][$results['columns'][$i]] : '';
                                 
-                                $cell = format_value_to_print($db_col, $value, ($k == 'link'?'':array_var($types, $k)), array_var($row, 'object_type_id'), '', is_numeric(array_var($results['db_columns'], $k)) ? "Y-m-d" : user_config_option('date_format'));
+                                $cell = format_value_to_print($db_col, html_to_text($value), ($k == 'link'?'':array_var($types, $k)), array_var($row, 'object_type_id'), '', is_numeric(array_var($results['db_columns'], $k)) ? "Y-m-d" : user_config_option('date_format'));
 							
 				$cell = iconv(mb_internal_encoding(), "ISO-8859-1", html_entity_decode($cell, ENT_COMPAT));
 				

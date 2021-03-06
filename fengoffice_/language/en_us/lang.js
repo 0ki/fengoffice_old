@@ -460,10 +460,12 @@ addLangs({
 	'order by': 'Order by',
 	'workspace':'Workspace',
 	'start date': 'Start date',
-        'progress' : 'Progress',
+    'progress' : 'Progress',
 	'task name': 'Task name',
 	'show': 'Show',
 	'time': 'Time',
+    'time estimates': 'Estimated time',
+    'time estimate': 'Estimated time',
 	'dates': 'Dates',
 	'empty milestones': 'Empty milestones',
 	'select user or group': 'Select user or group',
@@ -848,7 +850,22 @@ addLangs({
         'do you want to mantain the current associations of this obj with members of': 'Do you want to mantain the current associations of this object with {0}?',
         
         'sync' : 'Sync',
-        'delete calendar' : 'Delete calendar?',
-        'delete calendar events' : 'It erased the events related to the calendar, also wants erased from Google Calendar?'
-
+        'delete calendar' : 'Delete calendar?',      
+        'delete calendar events' : 'Events within Feng Office related to the calendar will be deleted. Enable the checkbox on your right if you also want to delete them from Google Caelndar.',
+        
+        'tasks related' : 'Related tasks',
+        'apply changes to' : 'Apply changes to:',
+        'only this task' : 'Only this task',
+        'this task alone and all to come forward' : 'This task and all to come forward',
+        'all tasks related' : 'All tasks related',
+        'accept' : 'Accept',
+        'events related' : 'Related events',
+        'only this event' : 'Only this events',
+        'this event alone and all to come forward' : 'This events alone and all to come forward',
+        'all events related' : 'All events related',
+        
+        'add new workspace': 'Add new workspace',
+        'edit selected workspace': 'Edit selected workspace',
+        'delete selected workspace_': 'Delete selected workspace',
+        'delete workspace warning': 'Are you sure you want to move the selected workspace to the trash can?'
 });

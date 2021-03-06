@@ -160,28 +160,27 @@
 							echo select_box("timeslot[contact_id]", $options, array('id' => $genid . 'tsUser', 'tabindex' => '150')); 
 						?>
 					</td>
-					<td style="padding-right: 10px; width:140px;">
-						<?php echo text_field('timeslot[hours]', 0, 
-				    		array('style' => 'width:28px', 'tabindex' => '200', 'id' => $genid . 'tsHours','onkeypress'=>'og.checkEnterPress(event,\''.$genid.'\')')) ?>
-					</td>
-                                        <td style="padding-right: 10px; width:140px;">
-                                                <select name="timeslot[minutes]" size="1" tabindex="85" id="<?php echo $genid . 'tsMinutes'?>">
-                                                <?php
-                                                        $minuteOptions = array(0,5,10,15,20,25,30,35,40,45,50,55);
-                                                        for($i = 0; $i < 12; $i++) {
-                                                                echo "<option value=\"" . $minuteOptions[$i] . "\"";					
-                                                                echo ">" . $minuteOptions[$i] . "</option>\n";
-                                                        }
-                                                ?>
-                                                </select>
-					</td>
-					<td style="padding-right: 10px; width:95%; margin-top: 0px;">
+				<td style="padding-right: 10px; width: 140px;"><?php echo text_field('timeslot[hours]', 0, 
+				array('style' => 'width:28px', 'tabindex' => '200', 'id' => $genid . 'tsHours','onkeypress'=>'og.checkEnterPress(event,\''.$genid.'\')')) ?>
+				</td>
+				<td style="padding-right: 10px; width: 140px;">
+					<select name="timeslot[minutes]" size="1" tabindex="220" id="<?php echo $genid . 'tsMinutes'?>">
+					<?php
+						$minuteOptions = array(0,5,10,15,20,25,30,35,40,45,50,55);
+						for($i = 0; $i < 12; $i++) {
+							echo "<option value=\"" . $minuteOptions[$i] . "\"";
+							echo ">" . $minuteOptions[$i] . "</option>\n";
+						}
+					?>
+					</select>
+				</td>
+				<td style="padding-right: 10px; width:95%; margin-top: 0px;">
 						<?php echo textarea_field('timeslot[description]', '', array('class' => 'short', 'style' => 'height:30px;width:100%;min-width:200px', 'tabindex' => '250', 'id' => $genid . 'tsDesc')) ?>
 					</td>
 					<td style="padding-left: 10px;text-align:right; vertical-align: top">
 						<div id="<?php echo $genid ?>TMTimespanSubmitAdd"><?php echo submit_button(lang('add'),'s',array('style'=>'margin-top:0px;margin-left:0px', 'tabindex' => '300', 'onclick' => 'ogTimeManager.SubmitNewTimeslot(\'' .$genid . '\');return false;')) ?></div>
 						<div id="<?php echo $genid ?>TMTimespanSubmitEdit" style="display:none">
-							<?php echo submit_button(lang('update'),'s',array('style'=>'margin-top:0px;margin-left:0px', 
+							<?php echo submit_button(lang('save'),'s',array('style'=>'margin-top:0px;margin-left:0px', 
 								'tabindex' => '310', 'onclick' => 'ogTimeManager.SubmitNewTimeslot(\'' .$genid . '\');return false;')) ?><br/>
 							<?php echo submit_button(lang('cancel'),'c',array('style'=>'margin-top:0px;margin-left:0px', 
 								'tabindex' => '320', 'onclick' => 'ogTimeManager.CancelEdit();return false;')) ?>

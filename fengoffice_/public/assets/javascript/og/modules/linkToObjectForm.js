@@ -16,10 +16,13 @@ App.modules.linkToObjectForm = {
 		var count = parent.getElementsByTagName('span').length;
 		var div = document.createElement('div');
 		div.className = "og-add-template-object ico-" + obj.type + (count % 2 ? " odd" : "");
-		var name = og.clean(obj.name);;
+		var name = og.clean(obj.name);
 		if (typeof config.renderName == 'function') {
 			name = config.renderName(obj, count);
 		}
+                if(name.length > 75){
+                    name = name.substring(0,75)+'...';
+                }
 		div.innerHTML =
 			'<input type="hidden" name="linked_objects[' + count + ']" value="' + obj.object_id + '" />' +
 			'<span class="name">' + name + '</span>' +

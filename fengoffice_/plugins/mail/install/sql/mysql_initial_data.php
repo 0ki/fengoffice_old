@@ -3,7 +3,7 @@ INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`
  ('mailing', 'user_email_fetch_count', '10', 'IntegerConfigHandler', 0, 0, 'How many emails to fetch when checking for email'),
  ('mailing', 'sent_mails_sync', '0', 'BoolConfigHandler', 0, 0, 'imap email accounts synchronization possibility'),
  ('mailing', 'check_spam_in_subject', '0', 'BoolConfigHandler', 0, 0, '')
-ON DUPLICATE KEY UPDATE name=name;
+ ON DUPLICATE KEY UPDATE name=name;
 
 INSERT INTO <?php echo $table_prefix ?>contact_config_options (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
  ('mails panel', 'view deleted accounts emails', '1', 'BoolConfigHandler', '0', '0', NULL),

@@ -70,7 +70,10 @@ class Timeslots extends BaseTimeslots {
 	 * @return boolean
 	 */
 	static function dropTimeslotsByObject(ContentDataObject $object) {
-		return self::delete(array('`rel_object_id` = ?', $object->getObjectId()));
+		$timeslots = self::findAll(array('conditions' => array('`rel_object_id` = ?', $object->getObjectId())));
+		foreach ($timeslots as $timeslot) {
+			$timeslot->delete();
+		}
 	} // dropTimeslotsByObject
 
 	/**
@@ -134,7 +137,6 @@ class Timeslots extends BaseTimeslots {
 	static function updateBillingValues() {
 		$timeslots = Timeslots::findAll(array(
 			'conditions' => '`end_time` > 0 AND billing_id = 0 AND is_fixed_billing = 0',
-			'limit' => 500,
 			'join' => array(
 				'table' => Objects::instance()->getTableName(true),
 				'jt_field' => 'id',

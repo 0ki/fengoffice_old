@@ -72,8 +72,8 @@ og.MessageManager = function() {
 	function renderIsRead(value, p, r){
 		var idr = Ext.id();
 		var idu = Ext.id();
-		var jsr = 'og.MessageManager.store.getById(\'' + r.id + '\').data.isRead = true; Ext.select(\'.' + readClass + r.id + '\').removeClass(\'bold\'); Ext.get(\'' + idu + '\').setDisplayed(true); Ext.get(\'' + idr + '\').setDisplayed(false); og.openLink(og.getUrl(\'object\', \'mark_as_read\', {ids:\'ProjectMessages:' + r.data.object_id + '\'}));'; 
-		var jsu = 'og.MessageManager.store.getById(\'' + r.id + '\').data.isRead = false; Ext.select(\'.' + readClass + r.id + '\').addClass(\'bold\'); Ext.get(\'' + idr + '\').setDisplayed(true); Ext.get(\'' + idu + '\').setDisplayed(false); og.openLink(og.getUrl(\'object\', \'mark_as_unread\', {ids:\'ProjectMessages:' + r.data.object_id + '\'}));';
+		var jsr = 'og.MessageManager.store.getById(\'' + r.id + '\').data.isRead = true; Ext.select(\'.' + readClass + r.id + '\').removeClass(\'bold\'); Ext.get(\'' + idu + '\').setDisplayed(true); Ext.get(\'' + idr + '\').setDisplayed(false); og.openLink(og.getUrl(\'object\', \'mark_as_read\', {ids:' + r.data.object_id + '}));'; 
+		var jsu = 'og.MessageManager.store.getById(\'' + r.id + '\').data.isRead = false; Ext.select(\'.' + readClass + r.id + '\').addClass(\'bold\'); Ext.get(\'' + idr + '\').setDisplayed(true); Ext.get(\'' + idu + '\').setDisplayed(false); og.openLink(og.getUrl(\'object\', \'mark_as_unread\', {ids:' + r.data.object_id + '}));';
 		return String.format(
 			'<div id="{0}" title="{1}" class="db-ico ico-read" style="display:{2}" onclick="{3}"></div>' + 
 			'<div id="{4}" title="{5}" class="db-ico ico-unread" style="display:{6}" onclick="{7}"></div>',
@@ -121,20 +121,6 @@ og.MessageManager = function() {
 		}
 	}
 	this.getSelectedIds = getSelectedIds;
-	
-	function getSelectedTypes() {
-		var selections = sm.getSelections();
-		if (selections.length <= 0) {
-			return '';
-		} else {
-			var ret = '';
-			for (var i=0; i < selections.length; i++) {
-				ret += "," + selections[i].data.type;
-			}	
-			return ret.substring(1);
-		}
-	}
-	this.getSelectedTypes = getSelectedTypes;
 	
 	function getFirstSelectedId() {
 		if (sm.hasSelection()) {
@@ -236,8 +222,7 @@ og.MessageManager = function() {
 			handler: function() {
 				this.load({
 					action: 'markasread',
-					ids: getSelectedIds(),
-					types: getSelectedTypes()
+					ids: getSelectedIds()
 				});
 				this.getSelectionModel().clearSelections();
 			},
@@ -252,8 +237,7 @@ og.MessageManager = function() {
 			handler: function() {
 				this.load({
 					action: 'markasunread',
-					ids: getSelectedIds(),
-					types: getSelectedTypes()
+					ids: getSelectedIds()
 				});
 				this.getSelectionModel().clearSelections();
 			},
@@ -280,8 +264,7 @@ og.MessageManager = function() {
 				if (confirm(lang('confirm move to trash'))) {
 					this.load({
 						action: 'delete',
-						ids: getSelectedIds(),
-						types: getSelectedTypes()
+						ids: getSelectedIds()
 					});
 					this.getSelectionModel().clearSelections();
 				}
@@ -316,8 +299,7 @@ og.MessageManager = function() {
 				if (confirm(lang('confirm archive selected objects'))) {
 					this.load({
 						action: 'archive',
-						ids: getSelectedIds(),
-						types: getSelectedTypes()
+						ids: getSelectedIds()
 					});
 					this.getSelectionModel().clearSelections();
 				}
@@ -422,8 +404,7 @@ Ext.extend(og.MessageManager, Ext.grid.GridPanel, {
 		if (confirm(lang('confirm move to trash'))) {
 			this.load({
 				action: 'delete',
-				ids: this.getSelectedIds(),
-				types: this.getSelectedTypes()
+				ids: this.getSelectedIds()
 			});
 			this.getSelectionModel().clearSelections();
 		}
@@ -433,8 +414,7 @@ Ext.extend(og.MessageManager, Ext.grid.GridPanel, {
 		if (confirm(lang('confirm archive selected objects'))) {
 			this.load({
 				action: 'archive',
-				ids: this.getSelectedIds(),
-				types: this.getSelectedTypes()
+				ids: this.getSelectedIds()
 			});
 			this.getSelectionModel().clearSelections();
 		}

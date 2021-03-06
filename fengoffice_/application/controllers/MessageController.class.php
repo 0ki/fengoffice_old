@@ -232,7 +232,7 @@ class MessageController extends ApplicationController {
 						"ot_id" => $msg->getObjectTypeId(),
 						"type" => $msg->getObjectTypeName(),
 						"name" => $msg->getObjectName(),
-						"text" => $text,
+						"text" => html_to_text($text),
 						"date" => $msg->getUpdatedOn() instanceof DateTimeValue ? ($msg->getUpdatedOn()->isToday() ? format_time($msg->getUpdatedOn()) : format_datetime($msg->getUpdatedOn())) : '',
 						"is_today" => $msg->getUpdatedOn() instanceof DateTimeValue ? $msg->getUpdatedOn()->isToday() : 0,
 						"userId" => $msg->getCreatedById(),
@@ -357,11 +357,16 @@ class MessageController extends ApplicationController {
 				{
 					if(!array_var($message_data, "name"))
 					{
-						$message_data["name"] = lang("nota sin titulo");
+						$message_data["name"] = lang("untitled note");
 					}
 				}
-				// Aliases 
-				
+				// Aliases
+                                if(config_option("wysiwyg_messages")){
+                                    $message_data['type_content'] = "html";
+                                    $message_data['text'] = preg_replace("/[\n|\r|\n\r]/", '', array_var($message_data, 'text'));  
+                                }else{
+                                    $message_data['type_content'] = "text";
+                                }
 				$message->setFromAttributes($message_data);
 				
 				DB::beginWork();
@@ -437,6 +442,7 @@ class MessageController extends ApplicationController {
 			$message_data = array(
 				'name' => $message->getObjectName(),
 				'text' => $message->getText(),
+                                'type_content' => $message->getTypeContent(),
 			); // array
 		} // if
 		
@@ -470,7 +476,12 @@ class MessageController extends ApplicationController {
 					return;
 				}
 				*/
-
+                                if(config_option("wysiwyg_messages")){
+                                    $message_data['type_content'] = "html";
+                                    $message_data['text'] = preg_replace("/[\n|\r|\n\r]/", '', array_var($message_data, 'text'));  
+                                }else{
+                                    $message_data['type_content'] = "text";
+                                }
 				$message->setFromAttributes($message_data);
 
 				DB::beginWork();

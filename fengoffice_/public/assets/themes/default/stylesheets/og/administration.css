@@ -139,14 +139,24 @@
 	display: inline;
 }
 
+.member-item-archived {
+	background-color: #eee;
+	color: #555;
+	font-style: italic;
+}
+
 /*********** Plg Manager *************/
 .plugin-manager table.plugin-list {
 	width: 100% ;
 	margin-top: 15px;
 	margin-bottom: 15px;
-	
+	border: 1px solid #E8E8E8;
 }
 
+.plugin-manager th {
+	font-size: 125%;
+	font-weight: bold;
+}
 
 .plugin-manager th, .plugin-manager  td {
     padding: 5px;

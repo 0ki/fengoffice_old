@@ -39,12 +39,8 @@ class DimensionController extends ApplicationController {
 		$all_dimensions = Dimensions::findAll(array('order'=>'default_order ASC , id ASC'));
 		$dimensions_to_show = array();
 		
-		/*
-		if(logged_user()->isAdministrator()){
-			$dimensions_to_show['dimensions']=$all_dimensions;
-			return $dimensions_to_show;
-		}
-		*/
+		
+		$contact_pg_ids = ContactPermissionGroups::getPermissionGroupIdsByContactCSV(logged_user()->getId(),false);
 		
 		foreach ($all_dimensions as $dim){
 			$did = $dim->getId();
@@ -63,8 +59,6 @@ class DimensionController extends ApplicationController {
 				$added = true;
 			}
 			else{
-				$contact_pg_ids = ContactPermissionGroups::getPermissionGroupIdsByContactCSV(logged_user()->getId(),false);
-		
 				/*if dimension does not deny everything for each contact's PG, show it*/
 				if (!$dim->deniesAllForContact($contact_pg_ids)){
 					$dimensions_to_show ['dimensions'][] = $dim;
@@ -88,7 +82,7 @@ class DimensionController extends ApplicationController {
 		$item_object = null ;
 		if(logged_user()->isAdministrator())$return_all_members=true;
 		$contact_pg_ids = ContactPermissionGroups::getPermissionGroupIdsByContactCSV(logged_user()->getId(),false);
-		$dimension = Dimensions::findById($dimension_id);
+		$dimension = Dimensions::getDimensionById($dimension_id);
 		
 		if ($object_type_id != null){
 			$dimension_object_type_contents = $dimension->getObjectTypeContent($object_type_id);
@@ -109,14 +103,15 @@ class DimensionController extends ApplicationController {
 		if ($dimension instanceof Dimension){
 			$parent = 0;
 			if (!$dimension->getDefinesPermissions() || $dimension->hasAllowAllForContact($contact_pg_ids) || $return_all_members){
-				$all_members = $dimension->getAllMembers(false,"parent, name",true);
+				$all_members = $dimension->getAllMembers(false,"parent_member_id, name",true);
 			}
 			else if ($dimension->hasCheckForContact($contact_pg_ids)){
-				$member_list = $dimension->getAllMembers(false,"parent, name",true);
+				$member_list = $dimension->getAllMembers(false,"parent_member_id, name",true);
 				$allowed_members = array();
 				foreach ($member_list as $dim_member){
-					if ($dim_member->canBeReadByContact($contact_pg_ids, logged_user()))
+					if (ContactMemberPermissions::instance()->contactCanReadMemberAll($contact_pg_ids, $dim_member->getId(), logged_user())) {
 						$allowed_members[] = $dim_member;
+					}
 				}
 				$all_members = $allowed_members;
 			}
@@ -138,7 +133,7 @@ class DimensionController extends ApplicationController {
 
 			$contact_pg_ids = ContactPermissionGroups::getPermissionGroupIdsByContactCSV(logged_user()->getId(),false);
 			$member = members::findById($member_id);
-			$dimension = Dimensions::findById($context_dimension_id);
+			$dimension = Dimensions::getDimensionById($context_dimension_id);
 			
 			if ($object_type_id != null){
 				$dimension_object_type_contents = $dimension->getObjectTypeContent($object_type_id);
@@ -152,14 +147,15 @@ class DimensionController extends ApplicationController {
 			if ($dimension instanceof Dimension && $member instanceof Member){
 							
 				if (!$dimension->getDefinesPermissions() || $dimension->hasAllowAllForContact($contact_pg_ids)){
-					$dimension_members = $dimension->getAllMembers(false,"parent, name",true);
+					$dimension_members = $dimension->getAllMembers(false,"parent_member_id, name",true);
 				}
 				else if ($dimension->hasCheckForContact($contact_pg_ids)){
-					$member_list = $dimension->getAllMembers(false,"parent,name",true);
+					$member_list = $dimension->getAllMembers(false,"parent_member_id, name",true);
 					$allowed_members = array();
 					foreach ($member_list as $dim_member){
-						if ($dim_member->canBeReadByContact($contact_pg_ids, logged_user()))
+						if (ContactMemberPermissions::instance()->contactCanReadMemberAll($contact_pg_ids, $dim_member->getId(), logged_user())) {
 							$allowed_members[] = $dim_member;
+						}
 					}
 					$dimension_members = $allowed_members;
 				}
@@ -218,6 +214,7 @@ class DimensionController extends ApplicationController {
 				$members = array();
 				// Todo adapt this code to call "buildMemberList" - (performance and code improvement)
 				foreach ($members_to_retrieve as $m) {
+					if ($m->getArchivedById() > 0) continue;
 					
 					if ($object_type_id!=null){
 						$selectable = in_array($m->getObjectTypeId(), $allowed_object_type_ids) ? true : false;
@@ -365,6 +362,7 @@ class DimensionController extends ApplicationController {
 		$members = array();
 		foreach ($all_members as $m) {
 			/* @var  $m Member */
+			if ($m->getArchivedById() > 0) continue;
 			if ($object_type_id != null){
 				$selectable = in_array($m->getObjectTypeId(), $allowed_object_type_ids) ? true : false;
 				if ($selectable && isset($item_object)) {

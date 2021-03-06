@@ -132,10 +132,12 @@ class Timeslot extends BaseTimeslot {
         
         $timeslot_time = ($this->getEndTime()->getTimestamp() - ($this->getStartTime()->getTimestamp() + $this->getSubtract())) / 3600;
         $task = ProjectTasks::findById($this->getRelObjectId());
-        $timeslot_percent = ($timeslot_time * 100) / ($task->getTimeEstimate() / 60);
-        $total_percentComplete = $timeslot_percent + $task->getPercentCompleted();
-        $task->setPercentCompleted($total_percentComplete);
-        $task->save();
+        if ($task->getTimeEstimate() > 0) {
+	        $timeslot_percent = ($timeslot_time * 100) / ($task->getTimeEstimate() / 60);
+	        $total_percentComplete = $timeslot_percent + $task->getPercentCompleted();
+	        $task->setPercentCompleted($total_percentComplete);
+	        $task->save();
+        }
     	
     	//FIXME: Set billing info
 /*		if ($this->getRelObject() instanceof ContentDataObject && $this->getRelObject()->getProject() instanceof Project){

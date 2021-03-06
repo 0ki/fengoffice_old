@@ -24,7 +24,15 @@
 							<div class="configOptionDescription desc"><?php echo clean($option_description) ?></div>
 						<?php } // if ?>
 						</div>
-						<div class="configOptionControl"><?php echo $option->render('options[' . $option->getName() . ']') ?></div>
+						<div class="configOptionControl">
+                                                    <?php 
+                                                            if($option->getName() == "working_days"){
+                                                                echo render_add_working_days();
+                                                            }else{ 
+                                                                echo $option->render('options[' . $option->getName() . ']');                                                                
+                                                            } 
+                                                    ?>
+                                                </div>
 						<div class="clear"></div>
 					</div>
 				<?php } // foreach ?>

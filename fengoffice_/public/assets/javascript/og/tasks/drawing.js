@@ -85,31 +85,6 @@ endDrag: function() {
 }
 });
 
-function dump(arr,level) {
-	var dumped_text = "";
-	if(!level) level = 0;
-	
-	//The padding given at the beginning of the line.
-	var level_padding = "";
-	for(var j=0;j<level+1;j++) level_padding += "    ";
-	
-	if(typeof(arr) == 'object') { //Array/Hashes/Objects
-		 for(var item in arr) {
-			  var value = arr[item];
-			 
-			  if(typeof(value) == 'object') { //If it is an array,
-				   dumped_text += level_padding + "'" + item + "' ...\n";
-				   dumped_text += dump(value,level+1);
-			  } else {
-	 			   dumped_text += level_padding + "'" + item + "' => \"" + value + "\"\n";
-			  }
-		 }
-	} else { //Stings/Chars/Numbers etc.
-	 dumped_text = "===>"+arr+"<===("+typeof(arr)+")";
-	}
-	return dumped_text;
-} 
-
 var rx__TasksDrag = {
 	t: false,
 	g: false,
@@ -460,15 +435,15 @@ ogTasks.drawMilestoneCompleteBar = function(group){
 	var milestone = this.getMilestone(group.group_id);
 	if (!milestone) return html;
 	var complete = 0;
-	var completedTasks = milestone.completedTasks;
-	var totalTasks =  milestone.totalTasks;
+	var completedTasks = parseInt(milestone.completedTasks);
+	var totalTasks =  parseInt(milestone.totalTasks);
 	var tasks = this.flattenTasks(group.group_tasks);
 	for (var i = 0; i < tasks.length; i++){
 		var t = tasks[i];
 		if (t.milestoneId == group.group_id){
-			completedTasks += (t.status == 1 && (t.statusOnCreate == 0))? 1:0;
-			completedTasks -= (t.status == 0 && (t.statusOnCreate == 1))? 1:0;
-			totalTasks += (t.isCreatedClientSide)? 1:0;
+			completedTasks += (t.status == 1 && (t.statusOnCreate == 0))? parseInt(1) : parseInt(0);
+			completedTasks -= (t.status == 0 && (t.statusOnCreate == 1))? parseInt(1) : parseInt(0);
+			totalTasks = (t.isCreatedClientSide)? totalTasks + parseInt(1) : totalTasks + parseInt(0);
 		}
 	}
 	if (totalTasks > 0)
@@ -551,20 +526,45 @@ ogTasks.drawGroup = function(displayCriteria, drawOptions, group){
 	
 	sb.append("<div id='ogTasksPanelTaskRowsContainer" + group.group_id + "'>");
 	//draw the group's tasks
+        var time_estimated = 0;
 	for (var i = 0; i < group.group_tasks.length; i++){
-		if (i == og.noOfTasks){			//Draw expander if group has more than og.noOfTasks tasks
+		if (i == og.noOfTasks){//Draw expander if group has more than og.noOfTasks tasks
 			sb.append("<div class='ogTasksTaskRow' style='display:" + (group.isExpanded? "none" : "inline") + "' id='ogTasksGroupExpandTasksTitle" + group.group_id + "'>");
 			sb.append("<a href='#' class='internalLink' onclick='ogTasks.expandGroup(\"" + group.group_id + "\")'>" + lang('show more tasks number', (group.group_tasks.length - i)) + "</a>");
 			sb.append("</div>");
 			sb.append("<div id='ogTasksGroupExpandTasks" + group.group_id + "'>");
-			if (group.isExpanded)
-				for (var j = og.noOfTasks; j < group.group_tasks.length; j++)
-					sb.append(this.drawTask(group.group_tasks[j], drawOptions, displayCriteria, group.group_id, 1));
+			if (group.isExpanded){
+                            for (var j = og.noOfTasks; j < group.group_tasks.length; j++){
+                                sb.append(this.drawTask(group.group_tasks[j], drawOptions, displayCriteria, group.group_id, 1));
+                            } 
+                        }                                                           
 			sb.append("</div>");
 			break;
 		}
 		sb.append(this.drawTask(group.group_tasks[i], drawOptions, displayCriteria, group.group_id, 1));
 	}
+        
+        for (var c = 0; c < group.group_tasks.length; c++){
+            time_estimated += group.group_tasks[c].TimeEstimate;
+	}
+        
+        if(drawOptions.show_time_estimates){
+            var total_estimate_split = Math.round(time_estimated * 100 / 60)/100 ;
+            var total_estimate = (total_estimate_split + '').split(".");
+            var hours_estimate = total_estimate[0] + " " + lang('hours');
+            var minutes_estimate = "";
+            if(total_estimate[1]){
+                if(total_estimate[1].length == 1)
+                    minutes_estimate = ", " + Math.round(((total_estimate[1] * 60) / 10)) + " " + lang('minutes');
+                else
+                    minutes_estimate = ", " + Math.round(((total_estimate[1] * 60) / 100)) + " " + lang('minutes');
+            }
+                
+            
+            var format_total_estimate = hours_estimate + minutes_estimate
+            sb.append("<div style='float:right;'><span style='font-weight:bold;color:#888'>" +  lang('time estimates') + ':&nbsp;' + format_total_estimate + "</span>");
+        }
+        
 	sb.append("</div></div>");
 	return sb.toString();
 }
@@ -726,7 +726,7 @@ ogTasks.drawTaskRow = function(task, drawOptions, displayCriteria, group_id, lev
 	}
 	
 	//Center td
-	sb.append('<td style="text-align:left;width:'+(drawOptions.show_dates ? '47' : '63')+'%;">');
+	sb.append('<td style="text-align:left;width:'+(drawOptions.show_dates ? '47' : (drawOptions.show_time_estimates ? '47' : '63'))+'%;">');
 	
 	//Member Path
 	mem_path = "";
@@ -771,9 +771,10 @@ ogTasks.drawTaskRow = function(task, drawOptions, displayCriteria, group_id, lev
 	// Add Subtask
 	sb.append("<td class='add-subtask-link-container'><div id='ogTasksPanelExpander" + tgId + "' style='visibility:hidden' class='add-subtask-link ico-add coViewAction' onClick='ogTasks.drawAddNewTaskForm(\"" + group_id + "\", " + task.id + "," + level +")' title='" + lang('add subtask') + "'>"+lang('add sub task')+"</div></td>");
 	
-	// FIXME: enable quick edit
-	//sb.append("<td style='padding-left:8px;'><a href='#' onclick='ogTasks.drawEditTaskForm(" + task.id + ", \"" + group_id + "\")'>");
-	sb.append("<td style='padding-left:8px;'><a href='#' onclick='ogTasks.goToCompleteEditForm(" + task.id + ")'>");
+
+	sb.append("<td style='padding-left:8px;'><a href='#' onclick='ogTasks.drawEditTaskForm(" + task.id + ", \"" + group_id + "\")'>");
+	// FIXME: remove this function when wuick add is enabled
+        //sb.append("<td style='padding-left:8px;'><a href='#' onclick='ogTasks.goToCompleteEditForm(" + task.id + ")'>");
 	sb.append("<div class='ico-edit coViewAction' title='" + lang('edit') + "' style='cursor:pointer;height:16px;padding-top:0px'>" + lang('edit') + "</div></a></td>");
 	sb.append("<td style='padding-left:8px;'><a href='#' onclick='ogTasks.ToggleCompleteStatus(" + task.id + ", " + task.status + ")'>");
 	if (task.status > 0){
@@ -783,41 +784,46 @@ ogTasks.drawTaskRow = function(task, drawOptions, displayCriteria, group_id, lev
 	}
 	sb.append("</tr></table></div></td>");
 	
-	//Draw dates
-	if (drawOptions.show_dates && (task.startDate || task.dueDate)){
-		sb.append('<td style="color:#888;font-size:9px;padding-left:6px;padding-right:3px;width:150px;text-align:right;">');
-		if (task.estimatedTime){ 		
-			sb.append('<span class="estimated-time nobr">'+ lang('estimated')+': '+task.estimatedTime +'</span> '); 	
-		}
-		
-		sb.append('<span class="nobr"' + (task.status == 1 ? ' style="text-decoration:line-through;"' : '') + '>');
-		
-		if (task.startDate){
-			var date = new Date(task.startDate * 1000);
-			date = new Date(Date.parse(date.toUTCString().slice(0, -4)));
-			var hm_format = task.useStartTime ? (og.preferences['time_format_use_24'] == 1 ? ' - G:i' : ' - g:i A') : '';
-			var now = new Date();
-			var dateFormatted = date.getYear() != now.getYear() ? date.dateFormat('M j, Y' + hm_format): date.dateFormat('M j' + hm_format);
-			sb.append(lang('start') + ':&nbsp;' + dateFormatted);
-		}
-		if (task.startDate && task.dueDate) {
-			sb.append('&nbsp;|&nbsp;');
-		}
-		
-		if (task.dueDate){
-			var date = new Date((task.dueDate) * 1000);
-			date = new Date(Date.parse(date.toUTCString().slice(0, -4)));
-			var hm_format = task.useDueTime ? (og.preferences['time_format_use_24'] == 1 ? ' - G:i' : ' - g:i A') : '';
-			var now = new Date();
-			var dateFormatted = date.getYear() != now.getYear() ? date.dateFormat('M j, Y' + hm_format): date.dateFormat('M j' + hm_format);
-			var dueString = lang('due') + ':&nbsp;' + dateFormatted;
-			if (task.status == 0 && date < now) {
-				dueString = '<span style="font-weight:bold;color:#F00">' + dueString + '</span>';
-			}
-			sb.append(dueString);
-		}
-		sb.append('</span></td>');
-	}
+        if (drawOptions.show_dates || drawOptions.show_time_estimates){
+            sb.append('<td style="color:#888;font-size:9px;padding-left:6px;padding-right:3px;width:150px;text-align:right;">');
+            
+            //Draw time stimate
+            if (drawOptions.show_time_estimates && task.estimatedTime){
+                    sb.append('<span class="estimated-time nobr">'+ lang('estimated')+': '+task.estimatedTime +'</span> ');
+            }
+
+            //Draw dates
+            if (drawOptions.show_dates && (task.startDate || task.dueDate)){
+                    sb.append('<span class="nobr"' + (task.status == 1 ? ' style="text-decoration:line-through;"' : '') + '>');
+
+                    if (task.startDate){
+                            var date = new Date(task.startDate * 1000);
+                            date = new Date(Date.parse(date.toUTCString().slice(0, -4)));
+                            var hm_format = task.useStartTime ? (og.preferences['time_format_use_24'] == 1 ? ' - G:i' : ' - g:i A') : '';
+                            var now = new Date();
+                            var dateFormatted = date.getYear() != now.getYear() ? date.dateFormat('M j, Y' + hm_format): date.dateFormat('M j' + hm_format);
+                            sb.append(lang('start') + ':&nbsp;' + dateFormatted);
+                    }
+                    if (task.startDate && task.dueDate) {
+                            sb.append('&nbsp;|&nbsp;');
+                    }
+
+                    if (task.dueDate){
+                            var date = new Date((task.dueDate) * 1000);
+                            date = new Date(Date.parse(date.toUTCString().slice(0, -4)));
+                            var hm_format = task.useDueTime ? (og.preferences['time_format_use_24'] == 1 ? ' - G:i' : ' - g:i A') : '';
+                            var now = new Date();
+                            var dateFormatted = date.getYear() != now.getYear() ? date.dateFormat('M j, Y' + hm_format): date.dateFormat('M j' + hm_format);
+                            var dueString = lang('due') + ':&nbsp;' + dateFormatted;
+                            if (task.status == 0 && date < now) {
+                                    dueString = '<span style="font-weight:bold;color:#F00">' + dueString + '</span>';
+                            }
+                            sb.append(dueString);
+                    }
+                    sb.append('</span>');
+            }
+            sb.append('</td>');
+        }
 	
 	//Draw time tracking
 	if (drawOptions.show_time){
@@ -985,9 +991,9 @@ ogTasks.UpdateTask = function(task_id){
 }
 
 // FIXME: remove this function when wuick add is enabled
-ogTasks.goToCompleteEditForm = function (task_id) {
-	og.openLink(og.getUrl('task', 'edit_task', {id:task_id}));
-}
+//ogTasks.goToCompleteEditForm = function (task_id) {
+//	og.openLink(og.getUrl('task', 'edit_task', {id:task_id}));
+//}
 
 ogTasks.buildTaskPercentCompletedBar = function(task) {
 	var color_cls = 'task-percent-completed-';

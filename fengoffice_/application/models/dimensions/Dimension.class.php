@@ -17,8 +17,8 @@ class Dimension extends BaseDimension {
 		$parameters = array(
 			'conditions' => '`dimension_id` = ' . $this->getId(), 'id' => $only_ids
 		);
-		if (!is_null($order)) {
-			if (in_array($order, array('name', 'dimension_id'))) $parameters['order'] = $order;
+		if (!is_null($order)) { 
+			$parameters['order'] = $order;
 		}
 		
 		if ($filter_deleted_objects){
@@ -26,8 +26,6 @@ class Dimension extends BaseDimension {
 			if (!empty($contactsTypeId)) {	
 				$parameters['conditions'].= " AND ( object_type_id <> $contactsTypeId OR EXISTS ( SELECT object_id FROM  ".TABLE_PREFIX."contacts c WHERE c.object_id = `".TABLE_PREFIX."members`.object_id AND c.disabled = 0 ))" ;
 			}
-		//	$parameters['order'] = 'parent_member_id';
- 			
 		}
 		$members = Members::findAll($parameters);
   		return $members;
@@ -44,38 +42,33 @@ class Dimension extends BaseDimension {
   	}
   	
   	function deniesAllForContact($permission_group_ids){
-  		 		
-  		$dim_permissions = ContactDimensionPermissions::findOne(array('conditions' => 
-  		'`dimension_id` = ' . $this->getId(). ' AND `permission_type` <> '. DB::escape('deny all') .' 
-  		AND `permission_group_id` in ('.$permission_group_ids.')'));
-  	
-  		if ($dim_permissions != null)
-  			return false;
-  		else return true;
+  		$res = DB::execute("SELECT permission_group_id FROM ".TABLE_PREFIX."contact_dimension_permissions WHERE `dimension_id` = " . $this->getId(). " AND `permission_type` <> ". DB::escape('deny all') ." AND `permission_group_id` in ($permission_group_ids) limit 1");
+		return $res->numRows() == 0;
   	}
   	
-  	
+
 	function hasAllowAllForContact($permission_group_ids){
-  		  		
-  		$dim_permissions = ContactDimensionPermissions::findOne(array('conditions' => 
-  		'`dimension_id` = ' . $this->getId(). ' AND `permission_type` = '. DB::escape('allow all') .' 
-  		AND `permission_group_id` in ('.$permission_group_ids.')'));
-  	
-  		if ($dim_permissions != null)
-  			return true;
-  		else return false;
+		$res = DB::execute("SELECT permission_group_id FROM ".TABLE_PREFIX."contact_dimension_permissions WHERE `dimension_id` = " . $this->getId(). " AND `permission_type` = ". DB::escape('allow all') ." AND `permission_group_id` in ($permission_group_ids) limit 1");
+		return $res->numRows() > 0;
   	}
   	
   	
 	function hasCheckForContact($permission_group_ids){
-  		  		
-  		$dim_permissions = ContactDimensionPermissions::findOne(array('conditions' => 
-  		'`dimension_id` = ' . $this->getId(). ' AND `permission_type` = '. DB::escape('check') .' 
-  		AND `permission_group_id` in ('.$permission_group_ids.')'));
+		$res = DB::execute("SELECT permission_group_id FROM ".TABLE_PREFIX."contact_dimension_permissions WHERE `dimension_id` = " . $this->getId(). " AND `permission_type` = ". DB::escape('check') ." AND `permission_group_id` in ($permission_group_ids) limit 1");
+		return $res->numRows() > 0;
+  	}
   	
-  		if ($dim_permissions != null)
-  			return true;
-  		else return false;
+  	
+	function getPermissionGroupsAllowAll($permission_group_ids){
+		if (is_array($permission_group_ids)) {
+			$permission_group_ids = implode(",", $permission_group_ids);
+		}
+		$rows = DB::executeAll("SELECT permission_group_id FROM ".TABLE_PREFIX."contact_dimension_permissions WHERE `dimension_id` = " . $this->getId(). " AND `permission_type` = ". DB::escape('allow all') ." AND `permission_group_id` in ($permission_group_ids)");
+		$res = array();
+		if ($rows && is_array($rows)) {
+			foreach ($rows as $row) $res[] = $row['permission_group_id'];
+		}
+		return $res;
   	}
   	
   	
@@ -104,7 +97,10 @@ class Dimension extends BaseDimension {
 			AND (`content_object_type_id` IN (SELECT `id` FROM ".ObjectTypes::instance()->getTableName(true)." WHERE `type` = 'located')
 			OR ( 
 				`content_object_type_id` NOT IN (SELECT `object_type_id` FROM ".TabPanels::instance()->getTableName(true)." WHERE `enabled` = 0) 
-	  			AND `content_object_type_id` IN (SELECT `id` FROM ".ObjectTypes::instance()->getTableName(true)." WHERE `type` = 'content_object' AND `name` <> 'file revision') 
+	  			AND `content_object_type_id` IN (
+	  				SELECT `id` FROM ".ObjectTypes::instance()->getTableName(true)." WHERE `type` = 'content_object' AND `name` <> 'file revision'
+	  					AND IF(plugin_id is NULL OR plugin_id = 0, TRUE, plugin_id IN (SELECT id FROM ".TABLE_PREFIX."plugins WHERE is_activated > 0 AND is_installed > 0))
+	  			)
   			))", $this->getId()), 
   		'distinct' => true));
   	}
@@ -117,34 +113,29 @@ class Dimension extends BaseDimension {
   	
   	
   	function canContainObjects(){
-  		$result = DimensionObjectTypeContents::findOne(array('conditions' => '`dimension_id` = ' . $this->getId()));
-  		if (!is_null($result)) return true;
-  		return false;
+  		$res = DB::execute("SELECT is_required FROM ".TABLE_PREFIX."dimension_object_type_contents WHERE `dimension_id` = ".$this->getId()." limit 1");
+		return $res->numRows() > 0;
   	}
   	
   	
 	function canContainObject($object_type_id){
-		$result = DimensionObjectTypeContents::findOne(array('conditions' => '`dimension_id` = '.$this->getId().' 
-					AND `content_object_type_id` = '.$object_type_id));
-		if (!is_null($result)) return true;
-		return false;
+		$res = DB::execute("SELECT is_required FROM ".TABLE_PREFIX."dimension_object_type_contents WHERE `dimension_id` = ".$this->getId()." AND `content_object_type_id` = $object_type_id limit 1");
+		return $res->numRows() > 0;
 	}
 	
 	
 	function isRequired($object_type_id){
-		$result = DimensionObjectTypeContents::findOne(array('conditions' => '`dimension_id` = '.$this->getId().' 
-					AND `content_object_type_id` = '.$object_type_id.' AND `is_required` = 1'));
-		if (!is_null($result)) return true;
-		return false;
+		$res = DB::execute("SELECT is_required FROM ".TABLE_PREFIX."dimension_object_type_contents WHERE `dimension_id` = ".$this->getId()." AND `content_object_type_id` = $object_type_id AND `is_required` = 1 limit 1");
+		return $res->numRows() > 0;
 	}
 	
 	function getRequiredObjectTypes() {
-		$result = DimensionObjectTypeContents::findAll(array('conditions' => '`dimension_id` = '.$this->getId().' AND `is_required` = 1'));
-		
 		$types = array();
-		if ($result && is_array($result)) {
-			foreach ($result as $res) {
-				$types[] = $res->getContentObjectTypeId();
+		$res = DB::execute("SELECT content_object_type_id FROM ".TABLE_PREFIX."dimension_object_type_contents WHERE `dimension_id` = ".$this->getId()." AND `is_required` = 1");
+		$rows = $res->fetchAll();
+		if (is_array($rows) && count($rows) > 0) {
+			foreach ($rows as $row) {
+				$types[] = $row['content_object_type_id'];
 			}
 		}
 		return $types;

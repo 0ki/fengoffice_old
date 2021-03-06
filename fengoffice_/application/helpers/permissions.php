@@ -186,7 +186,7 @@
 			// Revoke explicty permission
 			if ($can_add && !$no_required_dimensions){
 				foreach ($dimensions_in_context as $key=>$value){
-					$dim = Dimensions::findById($key);
+					$dim = Dimensions::getDimensionById($key);
 					if(!$value && $dim->getDefinesPermissions() && $dim->deniesAllForContact($contact_pg_ids)){
 						$can_add = false;
 					}
@@ -271,11 +271,8 @@
 		if($user->isAdministrator()){
 			return true;
 		}
-		$write = false;
-		if ($access_level == ACCESS_LEVEL_WRITE) $write = true;
-		$delete = false;
-		if ($access_level == ACCESS_LEVEL_DELETE) $delete = true;
-		
+		$write = $access_level == ACCESS_LEVEL_WRITE;
+		$delete = $access_level == ACCESS_LEVEL_DELETE;
 		
 		if (($user->isGuest() && $access_level!= ACCESS_LEVEL_READ) || !count($members)>0) return false;
 		
@@ -293,16 +290,14 @@
 					continue;
 				}
 				$dimension_id = $dimension->getId();
-				if (!isset($dimension_permissions[$dimension_id]))
+				if (!isset($dimension_permissions[$dimension_id])) {
 					$dimension_permissions[$dimension_id]=false;
+				} else {
+					continue;
+				}
 										
 				if (!$dimension_permissions[$dimension_id]){
 					if ($m->canContainObject($object_type_id)){
-						
-						//dimension does not define permissions
-						if (!$dimension->getDefinesPermissions()) {
-							$dimension_permissions[$dimension_id]=true;
-						}
 						
 						//dimension defines permissions and user has maximum level of permissions
 						if ($dimension->hasAllowAllForContact($contact_pg_ids)) {
@@ -313,10 +308,12 @@
 						if (ContactMemberPermissions::contactCanReadObjectTypeinMember($contact_pg_ids, $m->getId(), $object_type_id, $write, $delete, $user)){
 							$dimension_permissions[$dimension_id]=true;
 						}
+					} else {
+						unset($dimension_permissions[$dimension_id]);
 					}
 				}
 			}
-			
+
 			$allowed = true;
 			foreach($dimension_permissions as $perm){
 				if (!$perm) {
@@ -341,6 +338,7 @@
 				if (!in_array($m->getId(), $allowed_members)) return false;
 				else if ($count==count($members)) return true;
 			}
+			
 		}
 		catch(Exception $e) {
 				tpl_assign('error', $e);
@@ -348,6 +346,65 @@
 		}
 		return false;
 	}
+	
+	
+		
+	
+	/**
+	 * Return true is $user can access an $object. False otherwise.
+	 *
+	 * @param Contact $user
+	 * @param array $members
+	 * @param $object_type_id
+	 * @return boolean
+	 */
+	function can_access_pgids($permission_group_ids, $members, $object_type_id, $access_level){
+		$write = $access_level == ACCESS_LEVEL_WRITE;
+		$delete = $access_level == ACCESS_LEVEL_DELETE;
+		
+		try {
+			$dimension_permissions = array();
+			
+			$dimension_info = array();
+			foreach($members as $k => $m) {
+				if (!$m instanceof Member) {
+					unset($members[$k]);
+					continue;
+				}
+				if (!isset($dimension_info[$m->getDimensionId()])) {
+					$dimension_info[$m->getDimensionId()] = array('dim' => $m->getDimension(), 'members' => array($m->getId() => $m));
+				} else {
+					$dimension_info[$m->getDimensionId()]['members'][$m->getId()] = $m;
+				}
+			}
+			
+			foreach ($dimension_info as $did => $info) {
+				$dimension = $info['dim'];
+				if(!$dimension->getDefinesPermissions()){
+					continue;
+				}
+				$dimension_id = $dimension->getId();
+				$dimension_permissions[$dimension_id] = array();
+				
+				//dimension defines permissions and user has maximum level of permissions
+				$dimension_permissions[$dimension_id] = array_merge($dimension_permissions[$dimension_id], $dimension->getPermissionGroupsAllowAll($permission_group_ids));
+				
+				//check
+				$dimension_permissions[$dimension_id] = array_merge($dimension_permissions[$dimension_id], 
+					ContactMemberPermissions::instance()->canAccessObjectTypeinMembersPermissionGroups($permission_group_ids, array_keys($info['members']), $object_type_id, $write, $delete));
+			}
+			
+			$all_permission_groups = array_unique(array_flat($dimension_permissions), SORT_NUMERIC);
+			
+			return $all_permission_groups;
+		}
+		catch(Exception $e) {
+			tpl_assign('error', $e);
+			return array();
+		}
+		return array();
+	}
+	
 
 
 	function permission_form_parameters($pg_id) {
@@ -609,7 +666,7 @@
 		if ( $member ) {
 			$dim = $member->getDimension();
 		}elseif (array_var( $_REQUEST,'dim_id')) {
-			$dim = Dimensions::findById(array_var( $_REQUEST,'dim_id'));
+			$dim = Dimensions::getDimensionById(array_var( $_REQUEST,'dim_id'));
 		}
 		
 		if (logged_user()->isMemberOfOwnerCompany()) {
@@ -702,7 +759,7 @@
 		$sharingTablecontroller = new SharingTableController();
 		$changed_pgs = array();
 		
-		if (!is_null($permissions) && is_array($permissions)) {
+		if (isset($permissions) && is_array($permissions)) {
 			$allowed_pg_ids= array();
 			foreach ($permissions as &$perm) {
 				$cmp = ContactMemberPermissions::findById(array('permission_group_id' => $perm->pg, 'member_id' => $member->getId(), 'object_type_id' => $perm->o));
@@ -816,7 +873,6 @@
 	function allowed_users_in_context($object_type_id, $context = null, $access_level = ACCESS_LEVEL_READ, $extra_conditions = "") {
 		$result = array();
 		
-		$users = Contacts::getAllUsers($extra_conditions);
 		$members = array();
 		if (isset($context) && is_array($context)) {
 			foreach ($context as $selection) {
@@ -824,12 +880,27 @@
 			}
 		}
 		
-		if (count($members) == 0) return $users;
-		
-		foreach ($users as $user) {
-			if (can_access($user, $members, $object_type_id, $access_level)) {
-				$result[] = $user;
+		if (count($members) == 0) {
+			$dimensions = Dimensions::getAllowedDimensions($object_type_id);
+			foreach ($dimensions as $d) {
+				$dim = Dimensions::getDimensionById(array_var($d, 'dimension_id'));
+				if ($dim instanceof Dimension && $dim->getDefinesPermissions() && $dim->getCode() != 'feng_persons' && $dim->getCode() != 'feng_users') {
+					$members = array_merge($members, $dim->getAllMembers(false, null, true));
+				}
 			}
+		}
+		
+		$all_permission_groups = array();
+		$rows = DB::executeAll("SELECT DISTINCT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups");
+		foreach ($rows as $row) {
+			$all_permission_groups[] = $row['permission_group_id'];
+		}
+		
+		$allowed_permission_groups = can_access_pgids($all_permission_groups, $members, $object_type_id, $access_level);
+		
+		if (count($allowed_permission_groups) > 0) {
+			$result = Contacts::instance()->findAll(array('conditions' => "id IN (SELECT DISTINCT contact_id FROM ".TABLE_PREFIX."contact_permission_groups 
+				WHERE permission_group_id IN (".implode(",",$allowed_permission_groups)."))","order" => "username"));
 		}
 		
 		return $result;

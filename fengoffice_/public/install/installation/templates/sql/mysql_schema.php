@@ -43,10 +43,13 @@ CREATE TABLE `<?php echo $table_prefix ?>members` (
   `depth` int(2) unsigned NOT NULL,
   `name` varchar(160) <?php echo $default_collation ?> NOT NULL default '',
   `object_id` int(10) unsigned,
+  `archived_on` datetime NOT NULL default '0000-00-00 00:00:00',
+  `archived_by_id` int(10) unsigned default NULL,
   PRIMARY KEY  (`id`),
   KEY `by_parent` USING HASH (`parent_member_id`),
   KEY `by_dimension` (`dimension_id`,`parent_member_id`,`name`),
-  KEY `by_object_id` (`object_id`)
+  KEY `by_object_id` (`object_id`),
+  KEY `archived_on` (`archived_on`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 
 CREATE TABLE `<?php echo $table_prefix ?>member_restrictions` (
@@ -443,6 +446,7 @@ CREATE TABLE `<?php echo $table_prefix ?>file_types` (
   `icon` varchar(30) <?php echo $default_collation ?> NOT NULL default '',
   `is_searchable` tinyint(1) unsigned NOT NULL default '0',
   `is_image` tinyint(1) unsigned NOT NULL default '0',
+  `is_allow` TINYINT( 1 ) NOT NULL DEFAULT '1',
   PRIMARY KEY  (`id`),
   UNIQUE KEY `extension` (`extension`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
@@ -517,6 +521,7 @@ CREATE TABLE  `<?php echo $table_prefix ?>project_events` (
   `type_id` int(11) NOT NULL default '0',
   `special_id` VARCHAR(100) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
   `ext_cal_id` INT(10) UNSIGNED NOT NULL,
+  `original_event_id` INT( 10 ) UNSIGNED NULL DEFAULT '0',
   PRIMARY KEY  (`object_id`),
   KEY `start` (`start`),
   KEY `repeat_h` (`repeat_h`),
@@ -567,6 +572,7 @@ CREATE TABLE `<?php echo $table_prefix ?>project_forms` (
 CREATE TABLE `<?php echo $table_prefix ?>project_messages` (
   `object_id` int(10) unsigned NOT NULL,
   `text` text <?php echo $default_collation ?>,
+  `type_content` ENUM( 'text', 'html' ) NOT NULL DEFAULT 'text',
   PRIMARY KEY  (`object_id`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 
@@ -615,6 +621,8 @@ CREATE TABLE `<?php echo $table_prefix ?>project_tasks` (
   `percent_completed` int(10) unsigned NOT NULL default '0',
   `use_due_time` BOOLEAN default '0',
   `use_start_time` BOOLEAN default '0',
+  `original_task_id` INT( 10 ) UNSIGNED NULL DEFAULT '0',
+  `type_content` ENUM( 'text', 'html' ) NOT NULL DEFAULT 'text',
   PRIMARY KEY  (`object_id`),
   KEY `parent_id` (`parent_id`),
   KEY `completed_on` (`completed_on`),

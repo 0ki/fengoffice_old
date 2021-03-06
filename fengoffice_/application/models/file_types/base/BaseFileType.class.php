@@ -121,6 +121,28 @@
       return $this->setColumnValue('is_image', $value);
     } // setIsImage() 
     
+    /**
+    * Return value of 'is_allow' field
+    *
+    * @access public
+    * @param void
+    * @return boolean 
+    */
+    function getIsAllow() {
+      return $this->getColumnValue('is_allow');
+    } // getIsAllow()
+    
+    /**
+    * Set value of 'is_allow' field
+    *
+    * @access public   
+    * @param boolean $value
+    * @return boolean
+    */
+    function setIsAllow($value) {
+      return $this->setColumnValue('is_allow', $value);
+    } // setIsAllow() 
+    
     
     /**
     * Return manager instance

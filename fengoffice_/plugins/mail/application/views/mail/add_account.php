@@ -262,7 +262,7 @@ if (!$mailAccount->isNew()){
 									<?php echo lang('mail account id')?><span class="label_required">*</span>
 									<span class="desc"><?php echo lang('mail account id description') ?></span>
 								</label>
-								<?php echo text_field('mailAccount[sync_addr]', array_var($mailAccount_data, 'sync_addr'), array('id' => $genid.'sync_addr', 'tabindex'=>'30')) ?>
+								<?php echo text_field('mailAccount[sync_addr]', array_var($mailAccount_data, 'sync_addr'), array('id' => $genid.'sync_addr', 'tabindex'=>'230')) ?>
 							</div>
 					
 							<div class="mail-account-item">
@@ -270,7 +270,7 @@ if (!$mailAccount->isNew()){
 									<?php echo lang('password')?><span class="label_required">*</span>
 									<span class="desc"><?php echo lang('mail account password description') ?></span>
 								</label>
-								<?php echo password_field('mailAccount[sync_pass]', array_var($mailAccount_data, 'sync_pass'), array('id' => $genid.'sync_pass', 'tabindex'=>'40')) ?>
+								<?php echo password_field('mailAccount[sync_pass]', array_var($mailAccount_data, 'sync_pass'), array('id' => $genid.'sync_pass', 'tabindex'=>'240')) ?>
 							</div>
 					
 							<div class="mail-account-item">
@@ -278,7 +278,7 @@ if (!$mailAccount->isNew()){
 									<?php echo lang('server address')?><span class="label_required">*</span>
 									<span class="desc"><?php echo lang('mail account server description') ?></span>
 								</label>
-								<?php echo text_field('mailAccount[sync_server]', array_var($mailAccount_data, 'sync_server'), array('id' => $genid.'sync_server', 'tabindex'=>'50')) ?>
+								<?php echo text_field('mailAccount[sync_server]', array_var($mailAccount_data, 'sync_server'), array('id' => $genid.'sync_server', 'tabindex'=>'250')) ?>
 							</div>
 					
 							<div class="mail-account-item">
@@ -286,14 +286,14 @@ if (!$mailAccount->isNew()){
 								<input id="<?php echo $genid.'is_imap'?>sync_is_imap" type="hidden" name="sync_imap" value="1" ><?php 
 																
 									$onchange = "var div = document.getElementById('$genid' + 'sync_sslportdiv');if(this.checked) div.style.display='block';else div.style.display='none';";
-									echo checkbox_field('mailAccount[sync_ssl]', array_var($mailAccount_data, 'sync_ssl'), array('id' => $genid.'sync_ssl', 'tabindex'=>'70', 'onclick' => $onchange)) ?>											
+									echo checkbox_field('mailAccount[sync_ssl]', array_var($mailAccount_data, 'sync_ssl'), array('id' => $genid.'sync_ssl', 'tabindex'=>'270', 'onclick' => $onchange)) ?>											
 							
 								<label for="<?php echo $genid ?>sync_ssl" class="yes_no"><?php echo lang('incoming ssl') ?></label>
 							</div>
 					
 							<div class="mail-account-item" id="<?php echo $genid ?>sync_sslportdiv" <?php if (!array_var($mailAccount_data, 'sync_ssl')) echo 'style="display:none"'; ?>>
 								<?php echo label_tag(lang('incoming ssl port'), 'mailAccountFormIncomingSslPort') ?>
-								<?php echo text_field('mailAccount[sync_ssl_port]', array_var($mailAccount_data, 'sync_ssl_port', 993), array('id' => $genid.'sync_sslport', 'tabindex'=>'120')) ?>
+								<?php echo text_field('mailAccount[sync_ssl_port]', array_var($mailAccount_data, 'sync_ssl_port', 993), array('id' => $genid.'sync_sslport', 'tabindex'=>'320')) ?>
 							</div>
 					
 							<div class="mail-account-item" id="<?php echo $genid ?>sync_folders" style="padding:5px;<?php  ?>">

@@ -62,7 +62,7 @@ class RoleObjectTypePermissions extends BaseRoleObjectTypePermissions {
 		$role_id = $user->getUserType();
 		$permission_group_id = $user->getPermissionGroupId();
 		
-		$dimension = Dimensions::findById($dimension_id);
+		$dimension = Dimensions::getDimensionById($dimension_id);
 		if (!$dimension instanceof Dimension || !$dimension->getDefinesPermissions()) return;
 		
 		try {

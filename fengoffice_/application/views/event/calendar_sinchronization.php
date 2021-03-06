@@ -28,11 +28,14 @@ $genid = gen_id();
         </div>
         <?php if(count($external_calendars) > 0){?>
         <form class="internalForm" action="<?php echo get_url('event', 'import_calendars'); ?>" method="post">
-            <div style="float: left; width: 300px;">
+            <div style="float: left; width: 600px;">
                 <fieldset>
                         <legend><?php echo lang('list calendar')?></legend>
-                        <?php foreach ($external_calendars as $e_calendar){?>
                         <div class="mail-account-item">
+                            <?php echo lang('list calendar desc')?>
+                        </div>
+                        <?php foreach ($external_calendars as $e_calendar){?>                        
+                        <div class="mail-account-item" style="clear: both;">
                                 <?php 
                                     echo checkbox_field('e_calendars['.$e_calendar['title'].']', $e_calendar['sel'], array('tabindex' => '1', 'value' => $e_calendar['user']))." ".$e_calendar['title'];
                                 ?>
@@ -88,7 +91,7 @@ $genid = gen_id();
                         <td><?php echo $calendar->getCalendarName() ?></td>
                         <?php
                         $options = array();
-                        $options[] = '<a class="internalLink" href="'.get_url('event', 'calendar_sinchronization', array('cal_id' => $calendar->getId())).'">' . lang('edit') . '</a>';
+                        //$options[] = '<a class="internalLink" href="'.get_url('event', 'calendar_sinchronization', array('cal_id' => $calendar->getId())).'">' . lang('edit') . '</a>';
                         $options[] = '<a class="internalLink" href="javascript:og.promptDeleteCalendar(' . $calendar->getId() . ')">' . lang('delete') . '</a>';
                         ?>
                         <td style="font-size: 80%;"><?php echo implode(' | ', $options) ?></td>

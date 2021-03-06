@@ -3,6 +3,7 @@
 	require_javascript('og/tasks/main.js');
 	require_javascript('og/tasks/addTask.js');
 	require_javascript("og/ObjectPicker.js");
+        require_javascript('og/tasks/TaskPopUp.js');
 	$genid = gen_id();
 	$co_type = array_var($task_data, 'object_subtype');
 	
@@ -11,9 +12,12 @@
 	}
 	
 	$visible_cps = CustomProperties::countVisibleCustomPropertiesByObjectType($task->getObjectTypeId());
+        
+        $loc = user_config_option('localization');
+	if (strlen($loc) > 2) $loc = substr($loc, 0, 2);
 ?>
 
-<form id="<?php echo $genid ?>submit-edit-form" style='height:100%;background-color:white' class="add-task" action="<?php echo $task->isNew() ? get_url('task', 'add_task', array("copyId" => array_var($task_data, 'copyId'))) : $task->getEditListUrl() ?>" method="post" onsubmit="return App.modules.addTaskForm.checkSubmitAddTask('<?php echo $genid; ?>','<?php echo $task->manager()->getObjectTypeId()?>') && og.handleMemberChooserSubmit('<?php echo $genid; ?>', <?php echo $task->manager()->getObjectTypeId() ?>);">
+<form id="<?php echo $genid ?>submit-edit-form" style='height:100%;background-color:white' class="add-task" action="<?php echo $task->isNew() ? get_url('task', 'add_task', array("copyId" => array_var($task_data, 'copyId'))) : $task->getEditListUrl() ?>" method="post" onsubmit="return App.modules.addTaskForm.checkSubmitAddTask('<?php echo $genid; ?>','<?php echo $task->manager()->getObjectTypeId()?>') && og.handleMemberChooserSubmit('<?php echo $genid; ?>', <?php echo $task->manager()->getObjectTypeId() ?>) && og.setDescription();">
 
 <div class="task">
 <div class="coInputHeader">
@@ -40,7 +44,7 @@
 	</div>
 	<div>
 		<?php echo label_tag(lang('name'), $genid . 'taskListFormName', true ) ?>
-    	<?php echo text_field('task[name]', array_var($task_data, 'name'), 
+                <?php echo text_field('task[name]', array_var($task_data, 'name'), 
     		array('class' => 'title', 'id' => $genid . 'taskListFormName', 'tabindex' => '1',"size"=>"255", "maxlength"=>"255")) ?>
     </div>
 	
@@ -66,6 +70,8 @@
 	<input id="<?php echo $genid?>updated-on-hidden" type="hidden" name="updatedon" value="<?php echo $task->isNew() ? '': $task->getUpdatedOn()->getTimestamp() ?>">
 	<input id="<?php echo $genid?>merge-changes-hidden" type="hidden" name="merge-changes" value="" >
 	<input id="<?php echo $genid?>genid" type="hidden" name="genid" value="<?php echo $genid ?>" >
+        <input id="<?php echo $genid?>view_related" type="hidden" name="view_related" value="<?php echo (isset($task_related) ? $task_related : "")?>" />
+        <input id="<?php echo $genid?>type_related" type="hidden" name="type_related" value="only" />
 	
 	<div id="<?php echo $genid ?>add_task_select_context_div" style="display:none">
 	<fieldset>
@@ -165,14 +171,14 @@
     	</td><td>
 			<div style="float:left;"><?php echo pick_date_widget2('task_start_date', array_var($task_data, 'start_date'), $genid, 60, true, $genid.'start_date') ?></div>
 			<?php if (config_option('use_time_in_task_dates')) { ?>
-			<div style="float:left;margin-left:10px;"><?php echo pick_time_widget2('task_start_time', $task->getUseStartTime() ? array_var($task_data, 'start_date') : null, $genid, 65) ?></div>
+			<div style="float:left;margin-left:10px;"><?php echo pick_time_widget2('task_start_time', $task->getUseStartTime() ? array_var($task_data, 'start_date') : user_config_option('work_day_start_time'), $genid, 65) ?></div>
 			<?php } ?>
 		</td></tr><tr><td style="padding-right: 10px">
 		<?php echo label_tag(lang('due date')) ?>
     	</td><td>
     		<div style="float:left;"><?php echo pick_date_widget2('task_due_date', array_var($task_data, 'due_date'), $genid, 70, true, $genid.'due_date'); ?></div>
     		<?php if (config_option('use_time_in_task_dates')) { ?>
-    		<div style="float:left;margin-left:10px;"><?php echo pick_time_widget2('task_due_time', $task->getUseDueTime() ? array_var($task_data, 'due_date') : null, $genid, 75); ?></div>
+    		<div style="float:left;margin-left:10px;"><?php echo pick_time_widget2('task_due_time', $task->getUseDueTime() ? array_var($task_data, 'due_date') : user_config_option('work_day_end_time'), $genid, 75); ?></div>
     		<?php } ?>
     		<div class="clear"></div>
 		</td></tr></tbody></table>
@@ -300,7 +306,8 @@
 						</select>
 					</td></tr></table>
 				</td>
-			</tr><tr>
+			</tr>
+                        <tr>
 				<td>
 					<div id="<?php echo $genid ?>repeat_options" style="width: 400px; align: center; text-align: left; <?php echo $hide ?>">
 						<div>
@@ -318,16 +325,25 @@
 									if (el) el.checked = true;
 								} 
 							}
+                                                        
+                                                        og.viewDays = function(view) {
+                                                            var btn = Ext.get('<?php echo $genid ?>repeat_days');
+                                                            if(view){
+                                                                btn.dom.style.display = 'block';
+                                                            }else{
+                                                                btn.dom.style.display = 'none';
+                                                            }
+                                                        }
 						</script>
 						<table>
 							<tr><td colspan="2" style="vertical-align:middle; height: 22px;">
-								<?php echo radio_field('task[repeat_option]', $rsel1, array('id' => $genid.'repeat_opt_forever','value' => '1', 'style' => 'vertical-align:middle', 'tabindex' => '95')) ."&nbsp;". lang('CAL_REPEAT_FOREVER')?>
+								<?php echo radio_field('task[repeat_option]', $rsel1, array('id' => $genid.'repeat_opt_forever','value' => '1', 'style' => 'vertical-align:middle', 'tabindex' => '95', 'onclick' => 'og.viewDays(false)')) ."&nbsp;". lang('CAL_REPEAT_FOREVER')?>
 							</td></tr>
 							<tr><td colspan="2" style="vertical-align:middle">
-								<?php echo radio_field('task[repeat_option]', $rsel2, array('id' => $genid.'repeat_opt_times','value' => '2', 'style' => 'vertical-align:middle', 'tabindex' => '96')) ."&nbsp;". lang('CAL_REPEAT');
+								<?php echo radio_field('task[repeat_option]', $rsel2, array('id' => $genid.'repeat_opt_times','value' => '2', 'style' => 'vertical-align:middle', 'tabindex' => '96', 'onclick' => 'og.viewDays(true)')) ."&nbsp;". lang('CAL_REPEAT');
 								echo "&nbsp;" . text_field('task[repeat_num]', $rnum, array('size' => '3', 'id' => $genid.'repeat_num', 'maxlength' => '3', 'style'=>'width:25px', 'tabindex' => '97', 'onchange' => 'og.selectRepeatMode(2);')) ."&nbsp;". lang('CAL_TIMES') ?>
 							</td></tr>
-							<tr><td style="vertical-align:middle"><?php echo radio_field('task[repeat_option]', $rsel3,array('id' => $genid.'repeat_opt_until','value' => '3', 'style' => 'vertical-align:middle', 'tabindex' => '98')) ."&nbsp;". lang('CAL_REPEAT_UNTIL');?></td>
+							<tr><td style="vertical-align:middle"><?php echo radio_field('task[repeat_option]', $rsel3,array('id' => $genid.'repeat_opt_until','value' => '3', 'style' => 'vertical-align:middle', 'tabindex' => '98', 'onclick' => 'og.viewDays(false)')) ."&nbsp;". lang('CAL_REPEAT_UNTIL');?></td>
 								<td style="padding-left:8px;"><?php echo pick_date_widget2('task[repeat_end]', $rend, $genid, 99);?>
 							</td></tr>
 						</table>
@@ -348,6 +364,31 @@
 						</div>
 					</div>
 				</td>
+			</tr>
+                        
+                        <tr id="<?php echo $genid ?>repeat_days" style="display: none;">
+                            <td>
+                                <table>
+                                    <tr>
+                                        <td>
+                                            <input class="checkbox" type="checkbox" value="1" name="task[repeat_saturdays]"/>
+                                            <?php echo lang('repeat on saturdays')?>                                                
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <input class="checkbox" type="checkbox" value="1" name="task[repeat_sundays]"/>
+                                            <?php echo lang('repeat on sundays')?>                                                
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <input class="checkbox" type="checkbox" value="1" name="task[working_days]"/>
+                                            <?php echo lang('repeat working days')?>                                                
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
 			</tr>
 		</table>
 		</fieldset>
@@ -413,8 +454,75 @@
 		
    	
 	<div>
+                <?php 
+                    if(config_option("wysiwyg_tasks")){
+                        if(array_var($task_data, 'type_content') == "text"){
+                            $ckEditorContent = nl2br(htmlspecialchars(array_var($task_data, 'text')));
+                        }else{
+                            $ckEditorContent = purify_html(nl2br(array_var($task_data, 'text')));
+                        }                        
+                ?>
 		<?php echo label_tag(lang('description'), $genid . 'taskListFormDescription') ?>
-		<?php echo textarea_field('task[text]', array_var($task_data, 'text'), array('class' => 'huge', 'id' => $genid . 'taskListFormDescription', 'tabindex' => '140')) ?>
+                <div id="<?php echo $genid ?>ckcontainer" style="height: 100%">
+                    <textarea cols="80" id="<?php echo $genid ?>ckeditor" name="task[text]" rows="10"><?php echo clean($ckEditorContent) ?></textarea>
+                </div>
+                <script>
+                    var h = document.getElementById("<?php echo $genid ?>ckcontainer").offsetHeight;
+                    var editor = CKEDITOR.replace('<?php echo $genid ?>ckeditor', {
+                        uiColor: '#BBCCEA',
+                        height: (h-60) + 'px',
+                        enterMode: CKEDITOR.ENTER_P,
+                        shiftEnterMode: CKEDITOR.ENTER_BR,
+                        disableNativeSpellChecker: false,
+                        language: '<?php echo $loc ?>',
+                        customConfig: '',
+                        toolbar: [
+                                        ['FontSize','-','Bold','Italic','Underline','-', 'SpellChecker', 'Scayt','-',
+                                        //'NumberedList','BulletedList','-',
+                                        'TextColor','BGColor','-',
+                                        'JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock']
+                                ],
+                        on: {
+                                instanceReady: function(ev) {
+                                        og.adjustCkEditorArea('<?php echo $genid ?>');
+                                        editor.resetDirty();
+                                }
+                            },
+                        entities_additional : '#39,#336,#337,#368,#369'
+                    });
+
+                    og.setDescription = function() {
+                            var form = Ext.getDom('<?php echo $genid ?>submit-edit-form');
+                            if (form.preventDoubleSubmit) return false;
+
+                            setTimeout(function() {
+                                    form.preventDoubleSubmit = false;
+                            }, 2000);
+
+                            var editor = og.getCkEditorInstance('<?php echo $genid ?>ckeditor');
+                            form['task[text]'].value = editor.getData();
+
+                            return true;
+                    };
+                </script>
+                <?php }else{?>
+                <div>
+                        <?php 
+                            if(array_var($task_data, 'type_content') == "text"){
+                                $content_text = array_var($task_data, 'text');
+                            }else{
+                                $content_text = html_to_text(html_entity_decode(nl2br(array_var($task_data, 'text')), null, "UTF-8"));
+                            }   
+                        ?>
+                        <?php echo label_tag(lang('description'), $genid . 'taskListFormDescription') ?>
+                        <?php echo textarea_field('task[text]', $content_text, array('class' => 'huge', 'id' => $genid . 'taskListFormDescription', 'tabindex' => '140')) ?>
+                </div>
+                <script>
+                    og.setDescription = function() {
+                            return true;
+                    };
+                </script>
+                <?php }?>
 	</div>
 
 	<?php foreach ($categories as $category) { ?>
@@ -563,16 +671,11 @@
 
 
 	var memberChoosers = Ext.getCmp('<?php echo "$genid-member-chooser-panel-".$task->manager()->getObjectTypeId()?>').items;
-	var treeClicked = false;
 	
 	if (memberChoosers) {
 		
 		memberChoosers.each(function(item, index, length) {
 			item.on('all trees updated', function() {
-				// First User click
-				$(".member-chooser input.x-tree-node-cb").click(function(){
-					treeClicked = true;
- 				});
 				var dimensionMembers = {};
 				memberChoosers.each(function(it, ix, l) {
 					dim_id = this.dimensionId;
@@ -583,28 +686,28 @@
 					}
 				});
 
+				var milestone_el = document.getElementById('<?php echo $genid ?>taskListFormMilestone');
+				var actual_value = milestone_el ? milestone_el.value : 0;
 				Ext.get('<?php $genid ?>add_task_more_div_milestone_combo').load({
 					url: og.getUrl('milestone', 'render_add_milestone', {
 						context: Ext.util.JSON.encode(dimensionMembers),
 						genid: '<?php echo $genid ?>',
-						selected: document.getElementById('<?php echo $genid ?>taskListFormMilestone').value
+						selected: actual_value
 					}),
 					scripts: true
 				});
 
 				var uids = App.modules.addMessageForm.getCheckedUsers('<?php echo $genid ?>');
 
-				if(treeClicked) {
-					Ext.get('<?php echo $genid ?>add_subscribers_content').load({
-						url: og.getUrl('object', 'render_add_subscribers', {
-							context: Ext.util.JSON.encode(dimensionMembers),
-							users: uids,
-							genid: '<?php echo $genid ?>',
-							otype: '<?php echo $task->manager()->getObjectTypeId()?>'
-						}),
-						scripts: true
-					});
-				}
+				Ext.get('<?php echo $genid ?>add_subscribers_content').load({
+					url: og.getUrl('object', 'render_add_subscribers', {
+						context: Ext.util.JSON.encode(dimensionMembers),
+						users: uids,
+						genid: '<?php echo $genid ?>',
+						otype: '<?php echo $task->manager()->getObjectTypeId()?>'
+					}),
+					scripts: true
+				});
 				og.redrawUserLists(Ext.util.JSON.encode(dimensionMembers));
 
 			});
@@ -612,5 +715,22 @@
 	}
 
 	Ext.get('<?php echo $genid ?>taskListFormName').focus();
-
+        
+        Ext.extend(og.TaskPopUp, Ext.Window, {
+                accept: function() {
+                        this.close();
+                }
+        });
+                
+        $(document).ready(function() {
+            if($("#<?php echo $genid?>view_related").val()){
+                this.dialog = new og.TaskPopUp();
+                this.dialog.setTitle(lang('tasks related'));
+                this.dialog.show();      
+            }
+        });
+        
+        function selectRelated(val){
+            $("#<?php echo $genid?>type_related").val(val);
+        }
 </script>

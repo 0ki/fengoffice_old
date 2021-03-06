@@ -176,7 +176,7 @@
   	'week number x' => 'Week {0}',
       
         'could not connect to calendar' => 'Could not connect to calendar.',
-        'calendar sinchronization' => 'Google Calendar Sinchronization',
+        'calendar sinchronization' => 'Google Calendar Synchronization',
         'no calendars' => 'No calendars',
         'name calendar' => 'Name',
         'users link' => 'Calendar link',       
@@ -202,7 +202,13 @@
         'import calendars' => 'Import',
         'account has already' => 'Account has already been entered',
         'sync event feng' => 'Synchronize all events from Feng Office',
-        'list calendar' => 'List of Google Calendars',
+        'list calendar' => 'Do you want to import events from one of your Google Calendars?',
+        'list calendar desc' => 'Please select the calendars from which you want to import your events',      
         'check your account' => 'Check your account',
+        'success import calendar' => 'The events were successfully imported',
+      
+        'all day event' => 'All day',
+        'date' => 'Date',
+        'time' => 'Time',
   ); // array
 ?>

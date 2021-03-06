@@ -1,8 +1,18 @@
 <div class=" dashboard-container view-container">
+        
 	<div class="section-top">
+                <div class="dashActions" style="float: right;">
+                        <a class="internalLink" href="#" onclick="og.switchToOverview(); return false;">
+                            <div class="viewAsList">
+                                <img/>
+                                <?php echo lang('view as list') ?>
+                            </div>
+                        </a>
+                </div>
+                
 		<?php DashboardTools::renderSection('top'); ?>	
 	</div> 
-	<div class="layout-container" >
+        <div class="layout-container" style="clear: both">
 		
 		<div class="left-column-wrapper">
 			<div class="left-column section-left">

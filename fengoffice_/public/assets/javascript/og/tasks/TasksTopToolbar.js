@@ -111,8 +111,8 @@ og.TasksTopToolbar = function(config) {
 	var markactions = {
 		markAsRead: new Ext.Action({
 			text: lang('mark as read'),
-            tooltip: lang('mark as read desc'),
-            iconCls: 'ico-mark-as-read',
+                        tooltip: lang('mark as read desc'),
+                        iconCls: 'ico-mark-as-read',
 			disabled: true,
 			handler: function() {
 				ogTasks.executeAction('markasread');
@@ -121,8 +121,8 @@ og.TasksTopToolbar = function(config) {
 		}),
 		markAsUnread: new Ext.Action({
 			text: lang('mark as unread'),
-            tooltip: lang('mark as unread desc'),
-            iconCls: 'ico-mark-as-read',
+                        tooltip: lang('mark as unread desc'),
+                        iconCls: 'ico-mark-as-read',
 			disabled: true,
 			handler: function() {
 				ogTasks.executeAction('markasunread');
@@ -135,20 +135,36 @@ og.TasksTopToolbar = function(config) {
 	var actions = {
 		del: new Ext.Action({
 			text: lang('move to trash'),
-            tooltip: lang('move selected objects to trash'),
-            iconCls: 'ico-trash',
+                        tooltip: lang('move selected objects to trash'),
+                        iconCls: 'ico-trash',
 			disabled: true,
 			handler: function() {
-				if (confirm(lang('confirm move to trash'))) {
-					ogTasks.executeAction('delete');
-				}
+                            var ids = ogTasks.getSelectedIds()+'';
+                            var arr_ids = ids.split(',')
+                            for(var i = 0; i < arr_ids.length; i++){
+                                var related = og.checkRelated("task",arr_ids[i]);
+                                if(related){
+                                    break;    
+                                }                                
+                            }
+                            
+                            if(related){
+                                this.dialog = new og.TaskPopUp("delete");
+                                this.dialog.setTitle(lang('tasks related'));	                                
+                                this.dialog.show();
+                            }else{
+                                if (confirm(lang('confirm move to trash'))) {
+                                        ogTasks.executeAction('delete');
+                                }  
+                            }
+                            
 			},
 			scope: this
 		}),
 		complete: new Ext.Action({
 			text: lang('do complete'),
-            tooltip: lang('complete selected tasks'),
-            iconCls: 'ico-complete',
+                        tooltip: lang('complete selected tasks'),
+                        iconCls: 'ico-complete',
 			disabled: true,
 			handler: function() {
 				ogTasks.executeAction('complete');
@@ -165,13 +181,16 @@ og.TasksTopToolbar = function(config) {
 		}),
 		archive: new Ext.Action({
 			text: lang('archive'),
-            tooltip: lang('archive selected object'),
-            iconCls: 'ico-archive-obj',
+                        tooltip: lang('archive selected object'),
+                        iconCls: 'ico-archive-obj',
 			disabled: true,
 			handler: function() {
-				if (confirm(lang('confirm archive selected objects'))) {
-					ogTasks.executeAction('archive');
-				}
+                                this.dialog = new og.TaskPopUp("archive");
+                                this.dialog.setTitle(lang('tasks related'));	                                
+                                this.dialog.show();
+//				if (confirm(lang('confirm archive selected objects'))) {
+//					ogTasks.executeAction('archive');
+//				}
 			},
 			scope: this
 		})
@@ -186,7 +205,7 @@ og.TasksTopToolbar = function(config) {
 	if (!og.loggedUser.isGuest) {
 		this.add(butt);
 		this.addSeparator();
-		this.add(actions.complete)
+		this.add(actions.complete);
 		this.add(actions.archive);
 		this.add(actions.del);		
 		this.addSeparator();
@@ -228,6 +247,17 @@ og.TasksTopToolbar = function(config) {
 					var url = og.getUrl('account', 'update_user_preference', {name: 'tasksShowEmptyMilestones', value:(this.checked?1:0)});
 					og.openLink(url,{hideLoading:true});
 				}
+			},
+                        time_estimates: {
+		        text: lang('time estimates'),
+				checked: (ogTasks.userPreferences.showTimeEstimates == 1),
+				checkHandler: function() {
+					ogTasks.redrawGroups = false;
+					ogTasks.draw();
+					ogTasks.redrawGroups = true;
+					var url = og.getUrl('account', 'update_user_preference', {name: 'tasksShowTimeEstimates', value:(this.checked?1:0)});
+					og.openLink(url,{hideLoading:true});
+				}
 			}
 		};
 
@@ -237,21 +267,32 @@ og.TasksTopToolbar = function(config) {
 			menu: {items: [
 				this.displayOptions.time,
 				this.displayOptions.dates,
-				this.displayOptions.empty_milestones
+				this.displayOptions.empty_milestones,
+                                this.displayOptions.time_estimates
 			]}
 		});
 	this.add(this.show_menu);
 	
     this.add('-');
+    
     this.add(new Ext.Action({
-			text: lang('print'),
-            tooltip: lang('print all groups'),
-            iconCls: 'ico-print',
-			handler: function() {
-				ogTasks.printAllGroups();
-			},
-			scope: this
-		}));
+      id: 'button-print',
+      text: lang('print'),
+      tooltip: lang('print all groups'),
+      iconCls: 'ico-print',
+      handler: function() {
+	ogTasks.printAllGroups();
+      },
+      scope: this
+    }));
+    
+    
+    Ext.get('button-print').set({
+    	id: "tasks_print_btn"
+    });
+
+
+    
     
     if (ogTasks.extraTopToolbarItems) {
     	for (i=0; i<ogTasks.extraTopToolbarItems.length; i++) {
@@ -280,7 +321,8 @@ Ext.extend(og.TasksTopToolbar, Ext.Toolbar, {
 		return {
 			show_time : this.show_menu.items[0].menu.items.items[0].checked,
 			show_dates : this.show_menu.items[0].menu.items.items[1].checked,
-			show_ms : this.show_menu.items[0].menu.items.items[2].checked
+			show_ms : this.show_menu.items[0].menu.items.items[2].checked,
+                        show_time_estimates : this.show_menu.items[0].menu.items.items[3].checked
 		}
 	},
 	updateCheckedStatus : function(){

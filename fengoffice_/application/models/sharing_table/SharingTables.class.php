@@ -16,7 +16,7 @@ class SharingTables extends BaseSharingTables {
 		self::delete("object_id = $objectId");
 
 		// Insert new rows
-		$table = SharingTables::getTableName();
+		$table = self::getTableName();
 		$cols = array("group_id", "object_id") ;
 		$rows = array() ;
 		foreach ($groupIds as $gid) {

@@ -279,7 +279,7 @@
       } // if
       
       if(is_object($unescaped) && ($unescaped instanceof DateTimeValue)) {
-        return "'" . mysql_real_escape_string($unescaped->toMySQL()) . "'";
+        return "'" . mysql_real_escape_string($unescaped->toMySQL(), $this->link) . "'";
       } // if
       
       return "'" . mysql_real_escape_string($unescaped, $this->link) . "'";

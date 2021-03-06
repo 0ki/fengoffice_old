@@ -242,7 +242,7 @@ og.objectPropertyChanged = function(obj_id, count, value){
 				'<a href="#" onclick="og.editStringTemplateObjectProperty(' + obj_id + ',\'' + prop.value + '\')">[' + lang('open property editor') + ']</a>';
 		}else if(prop.className == 'DATETIME'){
 			propValueTD.innerHTML = '<select id="datePropType[' + obj_id + '][' + count + ']" onchange="og.datePropertyTypeSel(' + count + ',\'' + obj_id + '\')">'
-				+ '<option value="-1">Select type</option><option value="0">' + lang('fixed date') + '</option><option value="1">' + lang('parametric date') + '</option></select>';
+				+ '<option value="-1">' + lang('select') + '</option><option value="0">' + lang('fixed date') + '</option><option value="1">' + lang('parametric date') + '</option></select>';
 			var newTD = document.createElement('td');
 			newTD.id = 'datePropTD[' + obj_id + '][' + count + ']';
 			newTD.style.paddingLeft = '10px';
@@ -297,7 +297,7 @@ og.objectPropertyChanged = function(obj_id, count, value){
 			}
 		}else if(prop.className == 'USER'){
 			propValueTD.innerHTML = '<select id="integerPropType[' + obj_id + '][' + count + ']" onchange="og.integerPropertyTypeSel(' + count + ',\'' + obj_id + '\')">'
-				+ '<option value="-1">Select type</option><option value="0">' + lang('fixed user') + '</option><option value="1">' + lang('parametric user') + '</option></select>';
+				+ '<option value="-1">' + lang('select') + '</option><option value="0">' + lang('fixed user') + '</option><option value="1">' + lang('parametric user') + '</option></select>';
 			var newTD = document.createElement('td');
 			newTD.id = 'integerPropTD[' + obj_id + '][' + count + ']';
 			newTD.style.paddingLeft = '10px';

@@ -168,6 +168,12 @@ function stylesheet_tag($href, $attributes = null) {
 	if(!is_valid_url($href)) {
 		$href = get_stylesheet_url($href);
 	} // if
+	
+	$revision = product_version_revision();
+	if($revision != "") {
+		$parsed_url = parse_url($href);
+		$href .= (isset($parsed_url['query']) ? "&" : "?") . "rev=".$revision;
+	}
 
 	$all_attributes = array(
       'type' => 'text/css'
@@ -583,6 +589,12 @@ function add_stylesheet_to_page($href, $title = null, $media = null) {
  * @return null
  */
 function add_javascript_to_page($src) {
+	$revision = product_version_revision();
+	if($revision != "") {
+		$parsed_url = parse_url($src);
+		$src .= (isset($parsed_url['query']) ? "&" : "?") . "rev=".$revision;
+	}
+	
 	$page = PageDescription::instance();
 	$page->addJavascript($src);
 } // add_javascript_to_page
@@ -827,8 +839,13 @@ function render_page_head() {
  * @param string $rel
  * @return string
  */
-function get_public_url($rel, $plugin = null) {
-	$base = trim(PUBLIC_FOLDER) == '' ? with_slash(ROOT_URL) : with_slash(with_slash(ROOT_URL) . ($plugin ? "plugins/$plugin/" : "") . PUBLIC_FOLDER);
+function get_public_url($rel, $plugin = null, $is_ajax = false) {
+	if (!$is_ajax && defined('STATIC_CONTENT_ROOT_URL') && STATIC_CONTENT_ROOT_URL) {
+		$version = include 'version.php';
+		$base = trim(PUBLIC_FOLDER) == '' ? with_slash(STATIC_CONTENT_ROOT_URL) : with_slash(with_slash(STATIC_CONTENT_ROOT_URL) . with_slash($version) . ($plugin ? "plugins/$plugin/" : "") . PUBLIC_FOLDER);
+	} else {
+		$base = trim(PUBLIC_FOLDER) == '' ? with_slash(ROOT_URL) : with_slash(with_slash(ROOT_URL) . ($plugin ? "plugins/$plugin/" : "") . PUBLIC_FOLDER);
+	}
 	return $base . $rel;
 } // get_public_url
 
@@ -862,12 +879,12 @@ function get_assets_prefix() {
  * @param string $file_name
  * @return string
  */
-function get_javascript_url($file_name, $plugin = null ) {
+function get_javascript_url($file_name, $plugin = null, $is_ajax = false) {
 	$prefix = get_assets_prefix();
 	if ($plugin){
 		return 'plugins/'.$plugin.'/public/assets/javascript/'.$file_name ;
 	}else{
-		return get_public_url("assets/{$prefix}javascript/$file_name");
+		return get_public_url("assets/{$prefix}javascript/$file_name", $plugin, $is_ajax);
 	}
 } // get_javascript_url
 

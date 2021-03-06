@@ -8,6 +8,7 @@
  */
 class Workspace extends BaseWorkspace {
 
+	protected $searchable_columns = array('name');
 	
 	/**
 	 * @var string
@@ -139,8 +140,13 @@ class Workspace extends BaseWorkspace {
 	 * @return string
 	 */
 	function getViewUrl() {
-		return get_url('workspace', 'view', array('id' => $this->getId()));
-	} // getViewUrl
+		if ($member = $this->getSelfMember()) {
+			return "
+				javascript:og.workspaces.onWorkspaceClick(".$member->getId().");og.openTab('overview-panel')
+			" ;
+		}
+		return null ;
+	}
 
 	/**
 	 * Return edit message URL
@@ -235,12 +241,10 @@ class Workspace extends BaseWorkspace {
     		$colorCode = $this->getColumnValue("color");
     	}else{
     		if ($id = $this->getId()) {
-    			if ( $row = DB::executeOne("SELECT color FROM ".TABLE_PREFIX. "workspaces WHERE object_id =$id") ){
-    				$colorCode =  array_var ($row, 'color');
-    			}
+    			$colorCode = Workspaces::getWorkspaceColor($id);
     		}
     	}
-    	if ( $colorCode ) {
+    	if ( isset($colorCode) ) {
     		return "ico-color".$colorCode;
     	}else{
     		return "ico-color0";	

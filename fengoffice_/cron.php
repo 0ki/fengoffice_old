@@ -22,8 +22,8 @@ $events = CronEvents::getDueEvents();
 foreach ($events as $event) {
 	if ($event->getEnabled()) {
 		$function = $event->getName();
-		if ( $type=="fast" && $fast_functions[$function] || 
-			 $type=="slow" && !$fast_functions[$function] ||
+		if ( $type=="fast" && array_var($fast_functions, $function) || 
+			 $type=="slow" && !array_var($fast_functions, $function) ||
 			 !$type ) {
 		
 			$errordate = DateTimeValueLib::now()->add("m", 30);

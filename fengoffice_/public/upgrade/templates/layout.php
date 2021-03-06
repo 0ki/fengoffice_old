@@ -68,9 +68,19 @@ if (count($scripts) > 0) {
       </div>
     </form>
 <?php } else { ?>
-	<div style="padding: 20px"><?php echo lang('already upgraded')?></div>
+	<div style="padding: 20px"><?php echo lang('already upgraded', $installed_version)?></div>
 <?php } ?>
       <div id="content">
+<?php
+	if (isset($_SESSION['status_messages'])) {
+		if (isset($status_messages)) $status_messages = array_merge($status_messages, $_SESSION['status_messages']);
+		else $status_messages = $_SESSION['status_messages'];
+		unset($_SESSION['status_messages']);
+	} else {
+		if (!isset($status_messages)) $status_messages = array();
+		$status_messages[] = "<strong>Please check for plugin updates.</strong><br>Open a console and execute the script 'public/install/plugin-console.php'<br>with argument 'list' to view the plugins' status or argument 'update_all' to update them all.";
+	}
+?>
 <?php if(isset($status_messages) && count($status_messages)) { ?>
         <ul>
 <?php foreach($status_messages as $status_message) { ?>
@@ -80,21 +90,24 @@ if (count($scripts) > 0) {
 <?php } // if ?>
       </div>
 
+<?php if (!isset($_SESSION['hide_back_button']) || !$_SESSION['hide_back_button']) { ?>
 	<div class="back"><a href="../../"><?php echo lang('back to fengoffice')?></a></div>
-	
-<?php if (false && (version_compare($installed_version, '2.0.0.4') >= 0 || isset($install_inv_dw) && $install_inv_dw) && is_file(dirname(__FILE__)."/../install_inv_dw.php")) { ?>
-	<br />
-	<div><a href="install_inv_dw.php">Install Inventory Management and Document Workflow modules</a></div>	
 <?php } ?>
 
 <?php
+	if (isset($_SESSION['additional_steps'])) {
+		if (isset($additional_steps)) $additional_steps = array_merge($additional_steps, $_SESSION['additional_steps']);
+		else $additional_steps = $_SESSION['additional_steps'];
+		unset($_SESSION['additional_steps']);
+	}
+	
 	if (isset($additional_steps) && is_array($additional_steps)) {
-	  foreach ($additional_steps as $step) {
-		if (!is_file($step['filename'])) continue; 
+		foreach ($additional_steps as $step) {
+			if (!is_file($step['filename'])) continue; 
 ?>
 	<div><a href="<?php echo $step['url']?>"><?php echo $step['name']?></a></div>
-<?php }
-	} 
+<?php 	}
+	}
 ?>
 	
     <div id="footer">&copy; <?php echo date('Y') ?> <a href="<?php echo PRODUCT_URL?>"><?php echo PRODUCT_NAME?></a>. <?php echo lang('all rights reserved')?>.</div>

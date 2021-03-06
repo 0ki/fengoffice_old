@@ -20,9 +20,13 @@ set_page_title(lang('configuration'));
 			<?php } // if ?>
 		<?php } // foreach ?>
 	<?php } // if ?>
+        <div class="configCategory" id="category_default_user_preferences">
+                    <h2><a class="internalLink" href="<?php echo get_url('administration', 'documents') ?>"><?php echo lang('files') ?></a></h2>
+                    <div class="configCategoryDescription"></div>
+        </div>
+
 	<div class="configCategory" id="category_default_user_preferences">
-			<h2><a class="internalLink" href="<?php echo get_url('config', 'default_user_preferences') ?>"><?php echo lang('default user preferences') ?></a></h2>
-			<div class="configCategoryDescription"><?php echo lang('default user preferences desc') ?></div>
-		</div>
-	</div>
+                    <h2><a class="internalLink" href="<?php echo get_url('config', 'default_user_preferences') ?>"><?php echo lang('default user preferences') ?></a></h2>
+                    <div class="configCategoryDescription"><?php echo lang('default user preferences desc') ?></div>
+        </div>
 </div>

@@ -189,15 +189,15 @@ og.timeslotTypeSelectChange = function(select, genid) {
 }
 
 og.switchToOverview = function(){
-	/*var opanel = Ext.getCmp('overview-panel');
+	var opanel = Ext.getCmp('overview-panel');
 	opanel.defaultContent = {type: 'url', data: og.getUrl('dashboard', 'init_overview')};
-	opanel.load(opanel.defaultContent);*/
+	opanel.load(opanel.defaultContent);
 };
 
 og.switchToDashboard = function(){
-	/*var opanel = Ext.getCmp('overview-panel');
-	opanel.defaultContent = {type: "url", data: og.getUrl('dashboard','index')};
-	opanel.load(opanel.defaultContent);*/
+	var opanel = Ext.getCmp('overview-panel');
+	opanel.defaultContent = {type: "url", data: og.getUrl('dashboard','main_dashboard')};
+	opanel.load(opanel.defaultContent);
 };
 
 og.customDashboard = function (controller,action,params, reload) {
@@ -217,7 +217,7 @@ og.customDashboard = function (controller,action,params, reload) {
 
 og.resetDashboard = function () {
 	var opanel = Ext.getCmp('overview-panel');
-	if (opanel.defaultContent.data != "overview"){
+	if (opanel && opanel.defaultContent.data != "overview"){
 		opanel.defaultContent = {type: "url", data: og.getUrl('dashboard','init_overview')};
 		opanel.load(opanel.defaultContent);
 	}
@@ -950,6 +950,11 @@ og.clone = function(o) {
 og.closeView = function(obj){
 	var currentPanel = Ext.getCmp('tabs-panel').getActiveTab();
 	currentPanel.back();
+        
+        if(Ext.getCmp('mails-manager') !== undefined){
+            var sm = Ext.getCmp('mails-manager').getSelectionModel();
+            sm.clearSelections();
+        }   
 };
 
 og.activeTabHasBack = function(){
@@ -1729,11 +1734,19 @@ og.getCkEditorInstance = function(name) {
 	return editor;
 };
 
-og.adjustCkEditorArea = function(genid) {
-	document.getElementById('cke_' + genid + 'ckeditor').style.padding = '0px';
-	document.getElementById('cke_contents_' + genid + 'ckeditor').style.padding = '0px';
-	document.getElementById('cke_contents_' + genid + 'ckeditor').style.border = '0px none';
-	document.getElementById('cke_bottom_' + genid + 'ckeditor').style.display = 'none';
+og.adjustCkEditorArea = function(genid,id) {
+    
+        if(id != undefined){
+            document.getElementById('cke_' + genid + 'ckeditor' + id).style.padding = '0px';
+            document.getElementById('cke_contents_' + genid + 'ckeditor' + id).style.padding = '0px';
+            document.getElementById('cke_contents_' + genid + 'ckeditor' + id).style.border = '0px none';
+            document.getElementById('cke_bottom_' + genid + 'ckeditor' + id).style.display = 'none';
+        }else{
+            document.getElementById('cke_' + genid + 'ckeditor').style.padding = '0px';
+            document.getElementById('cke_contents_' + genid + 'ckeditor').style.padding = '0px';
+            document.getElementById('cke_contents_' + genid + 'ckeditor').style.border = '0px none';
+            document.getElementById('cke_bottom_' + genid + 'ckeditor').style.display = 'none';
+        }	
 };
 
 og.hideFlashObjects = function() {
@@ -1929,6 +1942,8 @@ og.handleMemberChooserSubmit = function(genid, objectType, preHfId) {
 			if (og.can_submit_members){
 				document.getElementById(genid + preHfId + "members").value = Ext.util.JSON.encode(members);
 			}
+			var el = document.getElementById(genid + preHfId + "trees_not_loaded");
+			if (el) el.value = og.can_submit_members ? 0 : 1;
 		}
 	}
 	return true;
@@ -2107,6 +2122,14 @@ og.quickForm = function (config) {
 					return false;
 				}
 			}
+			break;
+                case "configFilter":				
+				var e = $("#" + config.genid + "configFilters") ;    
+                                $("#quick-form .form-container").html('').load(og.getUrl('contact', 'quick_config_filter_activity',{members: config.members}),function(){
+                                        $(this).parent().css(e.offset()).slideDown();
+                                        return true ;
+                                });
+                                return false;
 			break;
 		default: 
 			break
@@ -2323,13 +2346,38 @@ og.quickAddTask = function (data, callback) {
 	og.openLink(url, ajaxOptions);
 }
 
+og.quickAddWs = function (data, callback) {
+	var name = data.name ;
+	var parent = data.parent | 0;
+	
+	var ajaxOptions = {
+		post : {
+			'member[name]': name,
+			'member[dimension_id]': data.dim_id,
+			'member[parent_member_id]': parent,
+			'member[object_type_id]': data.ot_id
+		},
+		callback : callback 
+	};
+	var url = og.makeAjaxUrl(og.getUrl('member', 'add', ajaxOptions));
+	og.openLink(url, ajaxOptions);
+}
+
 
 
 og.onPersonClose = function() {
+	var currentPanel = Ext.getCmp('tabs-panel').getActiveTab();
+	if (currentPanel.id == 'administration') {
+		og.closeView();
+		return;
+	}
+	
 	var actual_sel = og.core_dimensions.prev_selection.pop();
 	var prev_sel = null;
 	if (og.core_dimensions.prev_selection.length > 0) {
 		prev_sel = og.core_dimensions.prev_selection[og.core_dimensions.prev_selection.length-1];
+	} else {
+		if (currentPanel.closable) og.closeView();
 	}
 
 	var dimensions_panel = Ext.getCmp('menu-panel');
@@ -2364,3 +2412,67 @@ og.onPersonClose = function() {
 		}
 	});
 }
+
+og.checkRelated = function(type,related_id) {
+    var return_data = false;
+    var url;
+    switch (type) {
+        case "task":            
+            url = og.makeAjaxUrl(og.getUrl("task", "check_related_task"));
+            $.ajax({
+                url: url,
+                dataType: 'json',
+                async: false,
+                data: {related_id: related_id},
+                success: function(data) {
+                    return_data = data.status;
+                }
+            });
+            return return_data;
+            break;
+        case "event":
+            url = og.makeAjaxUrl(og.getUrl("event", "check_related_event"));
+            $.ajax({
+                url: url,
+                dataType: 'json',
+                async: false,
+                data: {related_id: related_id},
+                success: function(data) {
+                    return_data = data.status;
+                }
+            });
+            return return_data;
+        default: 
+            return return_data;
+            break
+    }
+}
+
+og.openTab = function (id) {
+	Ext.getCmp('tabs-panel').activate(id);
+}
+
+function dump(arr,level) {
+	var dumped_text = "";
+	if(!level) level = 0;
+	
+	//The padding given at the beginning of the line.
+	var level_padding = "";
+	for(var j=0;j<level+1;j++) level_padding += "    ";
+	
+	if(typeof(arr) == 'object') { //Array/Hashes/Objects
+		 for(var item in arr) {
+			  var value = arr[item];
+			 
+			  if(typeof(value) == 'object') { //If it is an array,
+				   dumped_text += level_padding + "'" + item + "' ...\n";
+				   dumped_text += dump(value,level+1);
+			  } else {
+	 			   dumped_text += level_padding + "'" + item + "' => \"" + value + "\"\n";
+			  }
+		 }
+	} else { //Stings/Chars/Numbers etc.
+	 dumped_text = "===>"+arr+"<===("+typeof(arr)+")";
+	}
+	return dumped_text;
+} 

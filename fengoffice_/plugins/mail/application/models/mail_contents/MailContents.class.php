@@ -66,7 +66,7 @@ class MailContents extends BaseMailContents {
 			LIMIT 0,1";
 		$rows = DB::executeAll($sql);
 		if (is_array($rows) && count($rows) > 0) {
-			return $rows[0]['id'];
+			return $rows[0]['object_id'];
 		} else {
 			return 0;
 		}
@@ -79,7 +79,7 @@ class MailContents extends BaseMailContents {
 		if (!$include_trashed) $deleted .= ' AND `trashed_by_id` = 0';
 		$sql = "
 			SELECT count(distinct(object_id)) AS total  FROM `". 
-			TABLE_PREFIX ."mail_contents` INNER JOIN `".TABLE_PREFIX ."objects`  
+			TABLE_PREFIX ."mail_contents` m INNER JOIN `".TABLE_PREFIX ."objects` o on m.object_id=o.id
 			WHERE `conversation_id` = '$conversation_id' $deleted AND `account_id` = " . $mail->getAccountId() . " AND `state` <> 2";
 
 		$rows = DB::executeOne($sql);
@@ -140,8 +140,9 @@ class MailContents extends BaseMailContents {
 		$folder_cond = is_null($folder) ? '' : " AND `imap_folder_name` = " . DB::escape($folder);
 		$del_cond = is_null($is_deleted) ? "" : " AND `is_deleted` = " . DB::escape($is_deleted ? true : false);
 		$conditions = "`account_id` = " . DB::escape($account_id) . " AND `uid` = " . DB::escape($uid) . $folder_cond . $del_cond;
-		$mail = self::findOne(array('conditions' => $conditions, 'include_trashed' => true));
-		return $mail instanceof MailContent;
+		
+		$rows = DB::executeAll("SELECT object_id FROM `".TABLE_PREFIX."mail_contents` WHERE $conditions limit 1");
+		return count($rows) > 0;
 	}
 	
 	static function getUidsFromAccount($account_id, $folder = null) {

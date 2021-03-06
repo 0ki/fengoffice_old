@@ -3,7 +3,6 @@ Hook::register('core_dimensions');
 
 function core_dimensions_after_edit_profile($user, &$ignored) {
 	$person_member = Members::findOne(array("conditions" => "`object_id` = (".$user->getId().") AND `dimension_id` = (SELECT `id` FROM `".TABLE_PREFIX."dimensions` WHERE `code` = 'feng_persons')"));
-	$user_member = Members::findOne(array("conditions" => "`object_id` = (".$user->getId().") AND `dimension_id` = (SELECT `id` FROM `".TABLE_PREFIX."dimensions` WHERE `code` = 'feng_users')"));
 	
 	if ($person_member instanceof Member) {
 		$person_member->setName($user->getObjectName());
@@ -11,11 +10,6 @@ function core_dimensions_after_edit_profile($user, &$ignored) {
 		evt_add("reload dimension tree", $person_member->getDimensionId());
 	}
 	
-	if ($user_member instanceof Member) {
-		$user_member->setName($user->getObjectName());
-		$user_member->save();
-		evt_add("reload dimension tree", $user_member->getDimensionId());
-	}
 }
 
 function core_dimensions_after_add_to_members($object, &$ignored) {
@@ -44,11 +38,14 @@ function core_dimensions_after_add_to_members($object, &$ignored) {
 	}
 	
 	$context = active_context();
-	foreach ($context as $selection) {
-		if ($selection instanceof Member && $selection->getDimension()->getCode() == 'feng_persons') {
-			$object->addToMembers(array($selection));
-		}
-	}
+        if(count($context) > 0){
+            foreach ($context as $selection) {
+                    if ($selection instanceof Member && $selection->getDimension()->getCode() == 'feng_persons') {
+                            $object->addToMembers(array($selection));
+                    }
+            }
+        }
+	
 	
 	core_dim_add_to_person_user_dimensions ($object, $user_ids);
 }
@@ -100,7 +97,10 @@ function core_dimensions_after_update($object, &$ignored) {
 			}
 			$object->modifyMemberValidations($member);
 			$member->save();
-			evt_add("reload dimension tree", $member->getDimensionId());
+			// reload only if not disabling or enabling user
+			if (!(array_var($_REQUEST, 'c') == 'account' && (array_var($_REQUEST, 'a') == 'disable' || array_var($_REQUEST, 'a') == 'restore_user'))) {
+				evt_add("reload dimension tree", $member->getDimensionId());
+			}
 			$objectsProcessed[$object->getId()] = true ;
 		}
 	}
@@ -317,7 +317,7 @@ function core_dim_add_new_contact_to_person_dimension($object) {
 function core_dim_add_to_person_user_dimensions ($object, $user_ids) {
 	if (logged_user() instanceof Contact) {
 		
-		$members = Members::findAll(array("conditions" => "`object_id` IN (".implode(",", $user_ids).") AND `dimension_id` IN (SELECT `id` FROM `".TABLE_PREFIX."dimensions` WHERE `code` IN ('feng_persons', 'feng_users'))"));
+		$members = Members::findAll(array("conditions" => "`object_id` IN (".implode(",", $user_ids).") AND `dimension_id` IN (SELECT `id` FROM `".TABLE_PREFIX."dimensions` WHERE `code` IN ('feng_persons'))"));
 		if (is_array($members) && count($members) > 0) {
 			$object->addToMembers($members);
 		}

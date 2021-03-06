@@ -42,6 +42,7 @@ og.TasksBottomToolbar = function(config) {
 	}
 	
     this.groupcombo = new Ext.form.ComboBox({
+    	id: 'ogTasksGroupByCombo',
         store: new Ext.data.SimpleStore({
         	fields: ['value', 'text'],
         	data : groupcombo_store_data
@@ -66,6 +67,7 @@ og.TasksBottomToolbar = function(config) {
     this.groupcombo.setValue(ogTasks.userPreferences.groupBy);
 	
     this.ordercombo = new Ext.form.ComboBox({
+    	id: 'ogTasksOrderByCombo',
         store: new Ext.data.SimpleStore({
 	        fields: ['value', 'text'],
 	        data : [['priority',lang('priority')]
@@ -97,6 +99,7 @@ og.TasksBottomToolbar = function(config) {
     this.ordercombo.setValue(ogTasks.userPreferences.orderBy);
     
     this.filtercombo = new Ext.form.ComboBox({
+    	id: 'ogTasksFilterCombo',
         store: new Ext.data.SimpleStore({
 	        fields: ['value', 'text'],
 	        data : [['no_filter','--' + lang('no filter') + '--']
@@ -185,10 +188,7 @@ og.TasksBottomToolbar = function(config) {
 		}
 	}
 	var ucsData = [[currentUser, lang('me')],['0',lang('everyone')],['-1', lang('unassigned')],['0','--']];
-	for (i in companiesArray) {
-		if (companiesArray[i].id) ucsData[ucsData.length] = [companiesArray[i].id, og.clean(companiesArray[i].name)];
-	}
-	ucsData[ucsData.length] = ['0','--'];
+	
 	ucsOtherUsers = [];
 	for (i in usersArray){
 		var companyName = '';
@@ -198,7 +198,7 @@ og.TasksBottomToolbar = function(config) {
 				companyName = companiesArray[j].name;
 			}
 		}
-		if (usersArray[i]) {
+		if (usersArray[i] && typeof(usersArray[i]) != 'function') {
 			var toshow = og.clean(usersArray[i].name) + (usersArray[i].cid ? ' : ' + og.clean(companyName) : "");
 			ucsOtherUsers[ucsOtherUsers.length] = [usersArray[i].id, toshow];
 		}
@@ -206,7 +206,13 @@ og.TasksBottomToolbar = function(config) {
 			currentUser = usersArray[i].id;
 		}
 	}
-	ucsData = ucsData.concat(ogTasksOrderUsers(ucsOtherUsers));
+	
+	var compData = [['0','--']];
+	for (i in companiesArray) {
+		if (companiesArray[i].id) compData[compData.length] = [companiesArray[i].id, og.clean(companiesArray[i].name)];
+	}
+	
+	ucsData = ucsData.concat(ogTasksOrderUsers(ucsOtherUsers)).concat(compData);
     
     this.filterNamesCompaniesCombo = new Ext.form.ComboBox({
     	id: 'ogTasksFilterNamesCompaniesCombo',

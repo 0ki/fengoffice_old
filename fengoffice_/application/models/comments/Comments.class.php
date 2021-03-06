@@ -20,18 +20,12 @@
     * @param boolean $exclude_private Exclude private comments
     * @return array
     */
-    static function getCommentsByObject(ContentDataObject $object, $exclude_private = false) {
-      if($exclude_private) {
-        return self::findAll(array(
-          'conditions' => array('`rel_object_id` = ? AND `o`.`trashed_on`=0', $object->getObjectId()),
-          'order' => '`created_on`'
-        )); // array
-      } else {
-        return self::findAll(array(
-          'conditions' => array('`rel_object_id` = ?  AND `o`.`trashed_on`=0', $object->getObjectId()),
-          'order' => '`created_on`'
-        )); // array
-      } // if
+	static function getCommentsByObject(ContentDataObject $object, $include_trashed = false) {
+		$trashed_condition = $include_trashed ? "" : " AND `trashed_on`=0";
+		return self::findAll(array(
+			'conditions' => array('`rel_object_id` = ?'. $trashed_condition, $object->getObjectId()),
+			'order' => '`created_on`'
+		));
     } // getCommentsByObject
     
     /**

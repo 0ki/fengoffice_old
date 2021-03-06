@@ -165,6 +165,51 @@
     function setObjectId($value) {
       return $this->setColumnValue('object_id', $value);
     } // setObjectId() 
+
+    /**
+    * Return value of 'archived_on' field
+    *
+    * @access public
+    * @param void
+    * @return string 
+    */
+    function getArchivedOn() {
+      return $this->getColumnValue('archived_on');
+    } // getArchivedOn()
+    
+    /**
+    * Set value of 'archived_on' field
+    *
+    * @access public   
+    * @param string $value
+    * @return boolean
+    */
+    function setArchivedOn($value) {
+      return $this->setColumnValue('archived_on', $value);
+    } // setArchivedOn() 
+      
+    /**
+    * Return value of 'archived_by_id' field
+    *
+    * @access public
+    * @param void
+    * @return string 
+    */
+    function getArchivedById() {
+      return $this->getColumnValue('archived_by_id');
+    } // getArchivedById()
+    
+    /**
+    * Set value of 'archived_by_id' field
+    *
+    * @access public   
+    * @param string $value
+    * @return boolean
+    */
+    function setArchivedById($value) {
+      return $this->setColumnValue('archived_by_id', $value);
+    } // setArchivedById()
+    
     
     /**
     * Return manager instance

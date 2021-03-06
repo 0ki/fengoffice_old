@@ -147,20 +147,6 @@ og.ContactManager = function() {
 	}
 	this.getSelectedIds = getSelectedIds;
 	
-	function getSelectedTypes() {
-		var selections = sm.getSelections();
-		if (selections.length <= 0) {
-			return '';
-		} else {
-			var ret = '';
-			for (var i=0; i < selections.length; i++) {
-				ret += "," + selections[i].data.type;
-			}	
-			return ret.substring(1);
-		}
-	}
-	this.getSelectedTypes = getSelectedTypes;
-	
 	function getFirstSelectedType() {
 		if (sm.hasSelection()) {
 			return sm.getSelected().data.type;
@@ -380,8 +366,7 @@ og.ContactManager = function() {
 				if (confirm(lang('confirm move to trash'))) {
 					this.load({
 						action: 'delete',
-						ids: getSelectedIds(),
-						types: getSelectedTypes()
+						ids: getSelectedIds()
 					});
 					this.getSelectionModel().clearSelections();
 				}
@@ -412,8 +397,7 @@ og.ContactManager = function() {
 				if (confirm(lang('confirm archive selected objects'))) {
 					this.load({
 						action: 'archive',
-						ids: getSelectedIds(),
-						types: getSelectedTypes()
+						ids: getSelectedIds()
 					});
 					this.getSelectionModel().clearSelections();
 				}
@@ -471,7 +455,7 @@ og.ContactManager = function() {
 		            			{ text: lang('to csv'), iconCls: 'ico-text', handler: function() {
                                                                 var ids = getSelectedIds();
                                                                 if (ids != '') {
-                                                                    var url = og.getUrl('contact', 'export_to_csv_file', {ids:getSelectedIds(), types:getSelectedTypes()});
+                                                                    var url = og.getUrl('contact', 'export_to_csv_file', {ids:getSelectedIds()});
                                                                     og.openLink(url);
                                                                 } else og.err(lang("you must select the contacts from the grid"));
                                                         }
@@ -479,7 +463,7 @@ og.ContactManager = function() {
                                                 { text: lang('to vcard'), iconCls: 'ico-account', handler: function() {
                                                                 var ids = getSelectedIds();
                                                                 if (ids != '') {
-                                                                        var url = og.getUrl('contact', 'export_to_vcard', {ids:getSelectedIds(), types:getSelectedTypes()});
+                                                                        var url = og.getUrl('contact', 'export_to_vcard', {ids:getSelectedIds()});
                                                                         location.href = url;
                                                                 } else og.err(lang("you must select the contacts from the grid"));
                                                         }
@@ -607,8 +591,7 @@ Ext.extend(og.ContactManager, Ext.grid.GridPanel, {
 		if (confirm(lang('confirm move to trash'))) {
 			this.load({
 				action: 'delete',
-				ids: this.getSelectedIds(),
-				types: this.getSelectedTypes()
+				ids: this.getSelectedIds()
 			});
 			this.getSelectionModel().clearSelections();
 		}
@@ -618,8 +601,7 @@ Ext.extend(og.ContactManager, Ext.grid.GridPanel, {
 		if (confirm(lang('confirm archive selected objects'))) {
 			this.load({
 				action: 'archive',
-				ids: this.getSelectedIds(),
-				types: this.getSelectedTypes()
+				ids: this.getSelectedIds()
 			});
 			this.getSelectionModel().clearSelections();
 		}

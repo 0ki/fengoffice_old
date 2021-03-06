@@ -9,7 +9,7 @@
  * @author    Damian Alejandro Fernandez Sosa <damlists@cnba.uba.ar>
  * @copyright 1997-2003 The PHP Group
  * @license   PHP license
- * @version   CVS: $Id: IMAPProtocol.php 38 2010-03-09 14:23:27Z alvaro $
+ * @version   CVS: $Id: IMAPProtocol.php,v 1.2 2010/03/09 14:23:27 alvaro Exp $
  * @link      http://pear.php.net/package/Net_IMAP
  */
 
@@ -2024,7 +2024,7 @@ class Net_IMAPProtocol
             $this->cmdCapability();
         }
         if ($this->_serverSupportedCapabilities != null) {
-            if (in_array($capability, $this->_serverSupportedCapabilities)) {
+            if (in_array($capability, $this->_serverSupportedCapabilities)) {
                 return true;
             }
         }
@@ -2322,7 +2322,7 @@ class Net_IMAPProtocol
     }
 
 
-
+
     /**
      * Parses the ARRDLIST as defined in RFC
      *
@@ -3374,6 +3374,9 @@ class Net_IMAPProtocol
             $this->_parseString($str, ' ', __LINE__, __FILE__);
 
             $this->_getNextToken($str, $token);
+            while ($token == ' ') { //Added by Peter Chaplin
+                $this->_getNextToken($str, $token);
+            }
             if ($token == '+') {
                 $this->_getToEOL($str);
                 $this->_getNextToken($str, $token);
@@ -3420,6 +3423,9 @@ class Net_IMAPProtocol
 
 
             $this->_getNextToken($str, $token);
+            while ($token == ' ') { //Added by Peter Chaplin
+                $this->_getNextToken($str, $token);
+            }
 
             $token = strtoupper($token);
             if ($token != "\r\n" && $token != '') {

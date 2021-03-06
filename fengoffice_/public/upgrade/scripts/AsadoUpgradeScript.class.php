@@ -40,7 +40,7 @@ class AsadoUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('1.7.4');
-		$this->setVersionTo('2.0.0.8');
+		$this->setVersionTo('2.0.1');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -279,7 +279,7 @@ class AsadoUpgradeScript extends ScriptUpgraderScript {
 			
 			//tpl_assign('install_inv_dw', true);
 			$additional_upgrade_steps[] = array(
-				'url' => 'complete_migration.php',
+				'url' => 'complete_migration.php?out=file',
 				'name' => 'Fill searchable objects and sharing table',
 				'filename' => dirname(__FILE__)."/../complete_migration.php"
 			);
@@ -467,7 +467,7 @@ class AsadoUpgradeScript extends ScriptUpgraderScript {
 				}
 			}
                         
-			if (version_compare($installed_version, '2.0.0.8') <= 0) {
+			if (version_compare($installed_version, '2.0.0.8') < 0) {
 				$upgrade_script = "";
 				if (!$this->checkTableExists($t_prefix.'external_calendar_users', $this->database_connection)) {
 					$upgrade_script .= "
@@ -532,6 +532,47 @@ class AsadoUpgradeScript extends ScriptUpgraderScript {
 					return false;
 				}
 			}
+                        
+           	if (version_compare($installed_version, '2.0.1') < 0) {
+				$upgrade_script = "";
+                                
+				$upgrade_script .= "INSERT INTO `".$t_prefix."config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`)
+                                                    VALUES ('general', 'working_days', '1,2,3,4,5', 'StringConfigHandler', '0', '0', NULL);
+                                                    ALTER TABLE `".$t_prefix."project_tasks` ADD `original_task_id` INT( 10 ) UNSIGNED NULL DEFAULT '0';
+                                                    ALTER TABLE `".$t_prefix."project_tasks` ADD `type_content` ENUM( 'text', 'html' ) NOT NULL DEFAULT 'text';
+                                                    ALTER TABLE `".$t_prefix."project_events` ADD `original_event_id` INT( 10 ) UNSIGNED NULL DEFAULT '0';
+                                                    ALTER TABLE `".$t_prefix."project_messages` ADD `type_content` ENUM( 'text', 'html' ) NOT NULL DEFAULT 'text';
+                                    ";
+
+				$upgrade_script .= "INSERT INTO `".$t_prefix."config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`)
+                                                    VALUES ('general', 'wysiwyg_tasks', '0', 'BoolConfigHandler', '0', '0', NULL), 
+                                                    ('general', 'wysiwyg_messages', '0', 'BoolConfigHandler', '0', '0', NULL),
+                                                    ('task panel', 'tasksShowTimeEstimates', '1', 'BoolConfigHandler', '1', '0', NULL);
+                                    ";
+				
+				$upgrade_script .= "UPDATE `".$t_prefix."widgets` SET plugin_id = (SELECT id FROM `".$t_prefix."plugins` WHERE name='workspaces') WHERE name='workspaces';
+				";
+				
+				// clean old users dimension
+				$upgrade_script .= "DELETE FROM `".$t_prefix."object_members` WHERE member_id IN (SELECT `id` FROM `".$t_prefix."members` WHERE `dimension_id` IN (SELECT `id` FROM `".$t_prefix."dimensions` WHERE `code`='feng_users'));
+					DELETE FROM `".$t_prefix."contact_dimension_permissions` WHERE dimension_id IN (SELECT `id` FROM `".$t_prefix."dimensions` WHERE `code`='feng_users');
+					DELETE FROM `".$t_prefix."members` WHERE dimension_id IN (SELECT `id` FROM `".$t_prefix."dimensions` WHERE `code`='feng_users');
+					DELETE FROM `".$t_prefix."dimension_object_type_contents` WHERE dimension_id IN (SELECT `id` FROM `".$t_prefix."dimensions` WHERE `code`='feng_users');
+					DELETE FROM `".$t_prefix."dimension_object_type_hierarchies` WHERE dimension_id IN (SELECT `id` FROM `".$t_prefix."dimensions` WHERE `code`='feng_users');
+					DELETE FROM `".$t_prefix."dimension_object_types` WHERE dimension_id IN (SELECT `id` FROM `".$t_prefix."dimensions` WHERE `code`='feng_users');
+					DELETE FROM `".$t_prefix."dimensions` WHERE code='feng_users';
+					DELETE FROM `".$t_prefix."object_types` WHERE name='user';
+					UPDATE ".$t_prefix."contacts c SET c.personal_member_id = 0 WHERE c.user_type>0 AND NOT (SELECT count(m2.id) FROM ".$t_prefix."members m2 WHERE m2.object_id=c.personal_member_id)=0;
+				";
+
+				if($this->executeMultipleQueries($upgrade_script, $total_queries, $executed_queries, $this->database_connection)) {
+					$this->printMessage("Database schema transformations executed (total queries: $total_queries)");
+				} else {
+					$this->printMessage('Failed to execute DB schema transformations. MySQL said: ' . mysql_error(), true);
+					return false;
+				}
+			}
+			
 			
 			// Plugin Version Support 
 			$upgrade_script = '';

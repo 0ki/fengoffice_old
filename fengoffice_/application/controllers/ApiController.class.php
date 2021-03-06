@@ -12,8 +12,9 @@ class ApiController extends ApplicationController {
     */  	
     public function __construct() {
         parent::__construct();
+        prepare_company_website_controller($this, 'website');
         $this->setLayout('empty');        
-	}
+    }
     
     /**
     * Default action
@@ -61,27 +62,63 @@ class ApiController extends ApplicationController {
         }
     }
 	
-	private function list_members($request) {
-		$service = $request ['srv'];
-		
-		$members = array();
-		$type = ObjectTypes::instance()->findByName($service);
-		$typeName = $type->getName();
-		$typeId = $type->getId();
-		foreach (Members::instance()->findAll(array("conditions"=>"object_type_id = $typeId")) as $member){
-			/* @var $member Member */
-			$memberInfo = array(
-				'id'=>$member->getId(),
-				'name'=>$member->getName(),
-				'type'=>'project',
-				'path' => $member->getPath()
-			);
+//    private function list_members($request) {
+//            $service = $request ['srv'];
+//
+//            $members = array();
+//            $type = ObjectTypes::instance()->findByName($service);
+//            $typeName = $type->getName();
+//            $typeId = $type->getId();
+//            foreach (Members::instance()->findAll(array("conditions"=>"object_type_id = $typeId")) as $member){
+//                    /* @var $member Member */
+//                    $memberInfo = array(
+//                            'id'=>$member->getId(),
+//                            'name'=>$member->getName(),
+//                            'type'=>'project',
+//                            'path' => $member->getPath()
+//                    );
+//
+//                    $members[] = $memberInfo;
+//            }
+//            return $this->response ( 'json', $members );
+//
+//    }
+    
+    private function list_members($request) {
+            $service = $request ['srv'];
+            
+            $members = array();
+            $type = ObjectTypes::instance()->findByName($service);
+            $typeId = $type->getId();
+            
+            $ids = array();
+            $dimensionController = new DimensionController();
+            foreach ( $dimensionController->initial_list_dimension_members(Dimensions::findByCode('customer_project')->getId(), $typeId) as $member ){
+                    $ids [] = $member['object_id'];
+            }
+            
+            if (count($ids)){
+                $args['conditions'] = " `object_id` IN (".implode(",",$ids).") AND object_type_id = $typeId";
+                foreach (Members::instance()->findAll($args) as $member){
+                        /* @var $member Member */
+                        $memberInfo = array(
+                                'id'=>$member->getId(),
+                                'name'=>$member->getName(),
+                                'type'=>$service,
+                                'path' => $member->getPath()
+                        );
 
-			$members[] = $memberInfo;
-		}
-		return $this->response ( 'json', $members );
-	
-	}
+                        $members[] = $memberInfo;
+                }
+            }
+            
+            return $this->response ( 'json', $members );
+    }
+
+    private function list_contacts_assigned_to($request) {
+            $contacts = allowed_users_to_assign_all();
+            return $this->response ( 'json', $contacts );	
+    }
     
     /**
     * Retrive list of objects
@@ -96,15 +133,17 @@ class ApiController extends ApplicationController {
 			$order= (!empty($request['args']['order']))?$request['args']['order']:null ;
 			$order_dir= (!empty($request['args']['order_dir']))?$request['args']['order_dir']:null ;
 			$members = (!empty($request['args']['members'])&&count(empty($request['args']['members'])))?$request['args']['members']:null ;
-			$start = 0 ;
-			$limit = null ;
+			$start = (!empty($request['args']['start'])) ? $request['args']['start'] : 0 ;
+			$limit = (!empty($request['args']['limit'])) ? $request['args']['limit'] : null ;
 
 			$query_options = array(
             	//'ignore_context' => true,
             	'order' => $order,
                	'order_dir' =>  $order_dir,
 				'member_ids' => $members ,
-				'extra_conditions' => ''
+				'extra_conditions' => '',
+				'start' => $start,
+				'limit' => $limit 
            	);
 
            	// COMMON FILTERS: For all content Types
@@ -174,7 +213,11 @@ class ApiController extends ApplicationController {
 			$result = $service::instance()->listing($query_options);
 			$temp_objects = array();
             foreach ($result->objects as $object) {
-                array_push($temp_objects, $object->getArrayInfo());
+            	if ($service == "ProjectTasks") {
+                	array_push($temp_objects, $object->getArrayInfo(1));
+            	}else{
+            		array_push($temp_objects, $object->getArrayInfo());
+            	}
             }
                 
             return $this->response('json', $temp_objects);

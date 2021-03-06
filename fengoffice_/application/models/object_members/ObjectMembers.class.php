@@ -79,13 +79,21 @@
   		
   		
   		static function getMemberIdsByObject($object_id){
-  			$object_members = self::findAll(array("conditions" => array("`object_id` = ? AND `is_optimization` = 0", $object_id)));
+  			if ($object_id) {
+	  			$db_res = DB::execute("SELECT member_id FROM ".TABLE_PREFIX."object_members WHERE object_id = $object_id AND is_optimization = 0");
+	  			$rows = $db_res->fetchAll();
+  			} else {
+  				return array();
+  			}
   			
   			$member_ids = array();
-  			foreach ($object_members as $om){
-  				$member_ids[] = $om->getMemberId();
-  			}
-  			return $member_ids;				  
+                        if(count($rows) > 0){
+                            foreach ($rows as $row){
+                                    $member_ids[] = $row['member_id'];
+                            }
+                        }
+  			
+  			return $member_ids;
   		}
   		
   		

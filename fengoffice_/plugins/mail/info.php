@@ -1,7 +1,7 @@
 <?php return  array(
 	
 	"name" => "mail",
-	"version" => "1",
+	"version" => "2",
 	"author" => "Feng Office",
 	"website" => "http://fengoffice.com",
 	"description" => "Email web client",
@@ -29,7 +29,7 @@
 			"default_action" => "init" ,
 			"initial_controller" => "" ,
 			"initial_action" => "" ,
-			"type" => "system" ,
+			"type" => "plugin" ,
 			"object_type_id" => 22 
 		)
 	)

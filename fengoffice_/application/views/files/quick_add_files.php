@@ -18,9 +18,10 @@ $object = $file;
 	<input id="<?php echo $genid ?>hfAddFileAddType" name='file[add_type]' type="hidden" value="regular" />
 	<input id="<?php echo $genid ?>hfType" name='file[type]' type="hidden" value="" />
 	<input id="genidhidden" name="file[upload_id]" type="hidden" value="<?php echo $genid ?>" />
-	
+	<input id="<?php echo $genid ?>object_id" name="file[object_id]" value="<?php echo $object_id ?>" type="hidden" />
+        
 	<input id="<?php echo $genid ?>no_msg" name="no_msg" value="" type="hidden" />
-	<input id="<?php echo $genid ?>temp_id" name="temp_id" value="" type="hidden" />
+	<input id="<?php echo $genid ?>temp_id" name="temp_id" value="" type="hidden" />        
 	
 	<h1><?php echo lang('upload file')?></h1>
 

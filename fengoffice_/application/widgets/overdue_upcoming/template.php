@@ -69,7 +69,7 @@
 							<?php echo clean($object->getObjectName()) ?>
 						</a>
 						<?php if ($object instanceof ProjectTask) :
-							$text = strlen_utf($object->getText()) > 100 ? substr_utf($object->getText(), 0, 100) . "..." : $object->getText();
+							$text = strlen_utf($object->getText()) > 100 ? substr_utf(html_to_text($object->getText()), 0, 100) . "..." : strip_tags($object->getText());
 								if (strlen_utf($text) > 0) :
 						?>
 								&nbsp;-&nbsp;<span class="desc nobr"><?php echo clean($text) ?></span>

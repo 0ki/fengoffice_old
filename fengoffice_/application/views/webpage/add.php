@@ -31,6 +31,7 @@
 	<div style="padding-top: 5px">
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_webpage_select_context_div',this)"><?php echo lang('context') ?></a>  
 		- <a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('<?php echo $genid?>add_webpage_description_div', this)"><?php echo lang('description') ?></a>
+                - <a href="#" class="option <?php echo $visible_cps > 0 ? 'bold' : '' ?>" onclick="og.toggleAndBolden('<?php echo $genid ?>add_custom_properties_div',this)"><?php echo lang('custom properties') ?></a>
 		- <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_subscribers_div',this)"><?php echo lang('object subscribers') ?></a>
 		<?php if($webpage->isNew() || $webpage->canLinkObject(logged_user())) { ?>
 			- <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_linked_objects_div',this)"><?php echo lang('linked objects') ?></a>
@@ -66,7 +67,14 @@
 			<?php echo textarea_field('webpage[description]', array_var($webpage_data, 'description'), array('class' => 'long', 'id' => 'webpageFormDesc', 'tabindex' => '40')) ?>
 		</fieldset>
 	</div>
-	
+        
+	<div id="<?php echo $genid ?>add_custom_properties_div" style="<?php echo ($visible_cps > 0 ? "" : "display:none") ?>">
+            <fieldset>	
+                <legend><?php echo lang('custom properties') ?></legend>
+                <?php echo render_object_custom_properties($webpage, false) ?>
+            </fieldset>
+        </div>
+        
 	<div id="<?php echo $genid ?>add_subscribers_div" style="display: none">
 		<fieldset><legend><?php echo lang('object subscribers') ?></legend>
 			<div id="<?php echo $genid ?>add_subscribers_content">
@@ -105,15 +113,10 @@
 
 <script>
 	var memberChoosers = Ext.getCmp('<?php echo "$genid-member-chooser-panel-".$webpage->manager()->getObjectTypeId()?>').items;
-	var treeClicked = false;
 		
 	if (memberChoosers) {
 		memberChoosers.each(function(item, index, length) {
 			item.on('all trees updated', function() {
-				// First User click
-				$(".member-chooser input.x-tree-node-cb").click(function(){
-					treeClicked = true;
- 				});
 				var dimensionMembers = {};
 				memberChoosers.each(function(it, ix, l) {
 					dim_id = this.dimensionId;
@@ -125,17 +128,15 @@
 				});
 	
 				var uids = App.modules.addMessageForm.getCheckedUsers('<?php echo $genid ?>');
-				if(treeClicked) {
-					Ext.get('<?php echo $genid ?>add_subscribers_content').load({
-						url: og.getUrl('object', 'render_add_subscribers', {
-							context: Ext.util.JSON.encode(dimensionMembers),
-							users: uids,
-							genid: '<?php echo $genid ?>',
-							otype: '<?php echo $webpage->manager()->getObjectTypeId()?>'
-						}),
-						scripts: true
-					});
-				}
+				Ext.get('<?php echo $genid ?>add_subscribers_content').load({
+					url: og.getUrl('object', 'render_add_subscribers', {
+						context: Ext.util.JSON.encode(dimensionMembers),
+						users: uids,
+						genid: '<?php echo $genid ?>',
+						otype: '<?php echo $webpage->manager()->getObjectTypeId()?>'
+					}),
+					scripts: true
+				});
 			});
 		});
 	}

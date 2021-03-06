@@ -4,6 +4,7 @@ require_javascript('og/CalendarToolbar.js');
 require_javascript('og/CalendarFunctions.js');
 require_javascript('og/EventPopUp.js');
 require_javascript('og/CalendarPrint.js'); 
+require_javascript('og/EventRelatedPopUp.js');
 
 /*
 	
@@ -71,6 +72,7 @@ foreach($companies as $company)
 	<input type="hidden" id="hfCalUsers" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($users_array)))) ?>"/>
 	<input type="hidden" id="hfCalCompanies" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($companies_array)))) ?>"/>
 	<input type="hidden" id="hfCalUserPreferences" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($userPreferences)))) ?>"/>
+        <input id="<?php echo $genid?>type_related" type="hidden" name="type_related" value="only" />
 </div>
 
 <script>
@@ -174,7 +176,7 @@ foreach($companies as $company)
 					if($milestones) {
 						$result = array_merge($result, $milestones );
 					}
-					if($tasks) {
+					if(isset($tasks)) {
 						foreach ($tasks as $task) {
 							$result = array_merge($result, replicateRepetitiveTaskForCalendar($task, $date_start, $date_end));
 						}
@@ -636,4 +638,17 @@ foreach($companies as $company)
 	} else {
 		og.addDomEventHandler(window, 'resize', resizeGridContainer);
 	}
+        
+        Ext.extend(og.EventRelatedPopUp, Ext.Window, {
+                accept: function() {
+                        var action = $("#action_related").val();
+                        var opt = $("#<?php echo $genid?>type_related").val();
+                        og.openLink(og.getUrl('event', action, {ids: og.getSelectedEventsCsv(), options:opt}));
+                        this.close();
+                }
+        });
+        
+        function selectEventRelated(val){
+            $("#<?php echo $genid?>type_related").val(val);
+        }
 </script>

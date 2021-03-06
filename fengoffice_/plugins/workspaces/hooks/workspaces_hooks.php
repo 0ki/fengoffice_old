@@ -42,7 +42,7 @@ function workspaces_override_object_color($object, &$color) {
 	foreach ($members as $member) {
 		/* @var $member Member */
 		if ($member->getObjectTypeId() == $ws_ot->getId()) {
-			$ws = Workspaces::findById($member->getObjectId());
+			$ws = Workspaces::getWorkspaceById($member->getObjectId());
 			if ($ws instanceof Workspace) {
 				$color = $ws->getColumnValue('color');
 				return;
@@ -58,7 +58,7 @@ function workspaces_override_member_color($member, &$color) {
 	if (!$ws_ot instanceof ObjectType) return;
 	
 	if ($member->getObjectTypeId() == $ws_ot->getId()) {
-		$ws = Workspaces::findById($member->getObjectId());
+		$ws = Workspaces::getWorkspaceById($member->getObjectId());
 		if ($ws instanceof Workspace) {
 			$color = $ws->getColumnValue('color');
 		}

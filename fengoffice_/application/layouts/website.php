@@ -69,8 +69,7 @@
 		/* @var $p Plugin */
 		$js_file =	PLUGIN_PATH ."/".$p->getSystemName()."/public/assets/javascript/".$p->getSystemName().".js" ;
 		if (is_file($js_file)) {
-			add_javascript_to_page(ROOT_URL."/plugins/".$p->getSystemName()."/public/assets/javascript/".$p->getSystemName().".js");
-			//echo javascript_tag(ROOT_URL."/plugins/".$p->getSystemName()."/public/assets/javascript/".$p->getSystemName().".js" );
+			add_javascript_to_page(get_public_url("assets/javascript/".$p->getSystemName().".js", $p->getSystemName()));
 			echo "\n";
 		}
 	}
@@ -120,24 +119,35 @@
 		</td></tr></table>
 		<div style="float: right; z-index: 10000; padding-top:15px;">
 			<div id="searchbox">
-				<form name='search_form' class="internalForm" action="<?php echo ROOT_URL . '/index.php' ?>" method="get">
-					<table><tr><td>
-					<input name="search_for" placeholder="<?php echo lang('search') . "..."?>" />
-					
-					</td>
-					<td id="searchboxSearch">
-						<div id="searchboxButton"></div>
-						<input style="display:none" id="searchButtonReal" type="submit" />
-						<input type="hidden" name="c" value="search" />
-						<input type="hidden" name="a" value="search" />
-						<input type="hidden" name="current" value="search" />
-						<input type="hidden" id="hfVars" name="vars" value="dashboard" />
-					</td>
-					<td style="padding-left:10px">
-						<div id="quickAdd" style="display: none"></div>
-					</td>
-					</tr></table>
-				</form>		
+				
+					<table>
+                                            <tr>
+                                                <form name='search_form' class="internalForm" action="<?php echo ROOT_URL . '/index.php' ?>" method="get" id="form_search">
+                                                    <td>
+                                                        <input name="search_for" placeholder="<?php echo lang('search') . "..."?>" id="search_for"/>
+                                                        <input type="hidden" name="c" value="search" />
+                                                        <input type="hidden" name="a" value="search" />
+                                                        <input type="hidden" name="current" value="search" />
+                                                        <input type="hidden" id="hfVars" name="vars" value="dashboard" />
+                                                        <input style="display:none" id="searchButtonReal" type="submit" />
+                                                    </td>
+                                                    <td>
+                                                        <div class="btn-group">
+                                                            <a class="btn" href="#" style="height: 11px;" id="searchButton"><span style="margin-top: -3px; display: block;"><?php echo lang('search')?></span></a>
+                                                            <a class="btn dropdown-toggle" style="height: 11px;" data-toggle="dropdown" href="#"><span class="caret"></span></a>
+                                                            <ul class="dropdown-menu">
+                                                                <li>
+                                                                    <a href="<?php echo get_url('search', 'search', array('advanced' => true))?>"><?php echo lang('advanced search')?></a>
+                                                                </li>
+                                                            </ul>
+                                                        </div>
+                                                    </td>
+                                                </form>                                                
+                                                <td style="padding-left:10px">
+                                                        <div id="quickAdd" style="display: none"></div>
+                                                </td>
+                                            </tr>
+                                        </table>
 			</div>			
 			<div id="userboxWrapper">
 				<h2>
@@ -234,6 +244,17 @@
                             createBrandColorsSheet();
                        }
                     });
+                    
+                    $("#searchButton").click(function() {
+                        if($("#search_for").val() != ""){
+                            $("#searchButtonReal").click();
+                        }                        
+                    });
+                    
+                    $("#advancedSearch").click(function() {
+                        $("#searchButtonReal").click();
+                    });
+                    
                 }
             );
         </script>
@@ -292,7 +313,8 @@ og.loggedUser = {
 	displayName: <?php echo json_encode(logged_user()->getObjectName()) ?>,
 	isAdmin: <?php echo logged_user()->isAdministrator() ? 'true' : 'false' ?>,
 	isGuest: <?php echo logged_user()->isGuest() ? 'true' : 'false' ?>,
-	tz: <?php echo logged_user()->getTimezone() ?>
+	tz: <?php echo logged_user()->getTimezone() ?>,
+        type: <?php echo logged_user()->getUserType() ?>
 };
 og.zipSupported = <?php echo zip_supported() ? 1 : 0 ?>;
 og.hasNewVersions = <?php
@@ -336,24 +358,6 @@ og.musicSound = new Sound();
 og.systemSound = new Sound();
 
 var quickAdd = new og.QuickAdd({renderTo:'quickAdd'});
-//og.quickAdd = quickAdd ;
-
-og.searching = false ; 
-var searchbutton = new Ext.Button({renderTo:'searchboxButton', text: lang('search'), type:'submit', handler:function(){document.getElementById('searchButtonReal').click()} });
-searchbutton.on('click', function(){
-	og.searching = true ; 
-	this.disable();
-	setTimeout( 'if (og.searching) searchbutton.enable()',10000); // If not response enable it again
-});
-
-og.eventManager.addListener('ajax response', function(options){
-	if (og.searching) {
-		if (options && options.url && options.url.indexOf("c=search&a=search") != -1) {
-			og.searching = false ;
-			searchbutton.enable();
-		}
-	}
-});
 
 <?php if (!defined('DISABLE_JS_POLLING') || !DISABLE_JS_POLLING) { ?>
 setInterval(function() {

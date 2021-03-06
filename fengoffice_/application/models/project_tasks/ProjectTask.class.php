@@ -383,6 +383,7 @@ class ProjectTask extends BaseProjectTask {
                 }
 		
 		// check if all previuos tasks are completed
+                $log_info = "";
 		if (config_option('use tasks dependencies')) {
 			$saved_ptasks = ProjectTaskDependencies::findAll(array('conditions' => 'task_id = '. get_id()));
 			foreach ($saved_ptasks as $pdep) {
@@ -391,6 +392,23 @@ class ProjectTask extends BaseProjectTask {
 					flash_error(lang('previous tasks must be completed before completion of this task'));
 					ajx_current("empty");
 					return;
+				}
+			}
+                        //Seeking the subscribers of the completed task not to repeat in the notifications
+                        $contact_notification = array();
+                        $task = ProjectTasks::findById(get_id());
+                        foreach ($task->getSubscribers() as $task_sub){
+                            $contact_notification[] = $task_sub->getId();
+                        }
+                        //Send notification to subscribers of the task_dependency on the task completed
+                        $next_dependency = ProjectTaskDependencies::findAll(array('conditions' => 'previous_task_id = '. get_id()));
+			foreach ($next_dependency as $ndep) {
+				$ntask = ProjectTasks::findById($ndep->getTaskId());
+				if ($ntask instanceof ProjectTask) {
+                                        foreach ($ntask->getSubscribers() as $task_dep){
+                                            if(!in_array($task_dep->getId(), $contact_notification))
+                                                $log_info .= $task_dep->getId().",";
+                                        }
 				}
 			}
 		}
@@ -423,7 +441,7 @@ class ProjectTask extends BaseProjectTask {
 			$open_tasks = $task_list->getOpenSubTasks();
 			if(empty($open_tasks)) $task_list->complete(DateTimeValueLib::now(), logged_user());
 		} // if*/
-		ApplicationLogs::createLog($this, ApplicationLogs::ACTION_CLOSE);
+		ApplicationLogs::createLog($this, ApplicationLogs::ACTION_CLOSE, false, false, true, substr($log_info,0,-1));
 	} // completeTask
 
 	/**
@@ -442,27 +460,39 @@ class ProjectTask extends BaseProjectTask {
 		$this->setCompletedOn(null);
 		$this->setCompletedById(0);
 		$this->save();
+                
+                $timeslots = $this->getTimeslots();
+                if ($timeslots){
+                        $this->setPercentCompleted(0);
+                        foreach ($timeslots as $timeslot){
+                                $timeslot_time = ($timeslot->getEndTime()->getTimestamp() - $timeslot->getStartTime()->getTimestamp()) / 3600;
+                                $timeslot_percent = round(($timeslot_time * 100) / ($this->getTimeEstimate() / 60));
+                                $total_percentComplete = $timeslot_percent + $total_percentComplete;                                
+                        }
+                        $this->setPercentCompleted($total_percentComplete);
+                        $this->save();
+                }else{
+                    $this->setPercentCompleted(0);
+                    $this->save();
+                }
 
-		$timeslots = $this->getTimeslots();
-		if ($timeslots){
-			$this->setPercentCompleted(0);
-			foreach ($timeslots as $timeslot){
-				if (!$timeslot->getEndTime() instanceof DateTimeValue || !$timeslot->getStartTime() instanceof DateTimeValue) continue;
-				$timeslot_time = ($timeslot->getEndTime()->getTimestamp() - $timeslot->getStartTime()->getTimestamp()) / 3600;
-				$timeslot_percent = round(($timeslot_time * 100) / ($this->getTimeEstimate() / 60));
-				$total_percentComplete = $timeslot_percent + $total_percentComplete;
-			}
-			$this->setPercentCompleted($total_percentComplete);
-			$this->save();
-		}
-
-		if (config_option('use tasks dependencies')) {
+		$log_info = "";
+		if (config_option('use tasks dependencies')) {                    
+                        //Seeking the subscribers of the open task not to repeat in the notifications
+                        $contact_notification = array();
+                        foreach ($this->getSubscribers() as $task_sub){
+                            $contact_notification[] = $task_sub->getId();
+                        }                        
 			$saved_stasks = ProjectTaskDependencies::findAll(array('conditions' => 'previous_task_id = '. $this->getId()));
 			foreach ($saved_stasks as $sdep) {
 				$stask = ProjectTasks::findById($sdep->getTaskId());
 				if ($stask instanceof ProjectTask && $stask->isCompleted()) {
 					$stask->openTask();
 				}
+                                foreach ($stask->getSubscribers() as $task_dep){
+                                    if(!in_array($task_dep->getId(), $contact_notification))
+                                        $log_info .= $task_dep->getId().",";
+                                }
 			}
 		}
 		
@@ -473,7 +503,7 @@ class ProjectTask extends BaseProjectTask {
 			$open_tasks = $task_list->getOpenSubTasks();
 			if(!empty($open_tasks)) $task_list->open();
 		} // if*/
-		ApplicationLogs::createLog($this, ApplicationLogs::ACTION_OPEN);
+		ApplicationLogs::createLog($this, ApplicationLogs::ACTION_OPEN, false, false, true, substr($log_info,0,-1));
 	} // openTask
 
 	function getRemainingDays(){
@@ -509,6 +539,7 @@ class ProjectTask extends BaseProjectTask {
 		$new_task->setFromTemplateId($this->getFromTemplateId());
 		$new_task->setUseStartTime($this->getUseStartTime());
 		$new_task->setUseDueTime($this->getUseDueTime());
+                $new_task->setOriginalTaskId($this->getObjectId());
 		if ($this->getDueDate() instanceof DateTimeValue )
 			$new_task->setDueDate(new DateTimeValue($this->getDueDate()->getTimestamp()));
 		if ($this->getStartDate() instanceof DateTimeValue )
@@ -565,7 +596,6 @@ class ProjectTask extends BaseProjectTask {
 			$new_com->setUpdatedOn($com->getUpdatedOn());
 			$new_com->setText($com->getText());
 			$new_com->setRelObjectId($new_task->getId());
-			$new_com->setRelObjectManager("ProjectTasks");
 			
 			$new_com->save();
 		}
@@ -580,7 +610,6 @@ class ProjectTask extends BaseProjectTask {
 		foreach($this->getCustomProperties() as $prop) {
 			$new_prop = new ObjectProperty();
 			$new_prop->setRelObjectId($new_task->getId());
-			$new_prop->setRelObjectManager($prop->getRelObjectManager());
 			$new_prop->setPropertyName($prop->getPropertyName());
 			$new_prop->setPropertyValue($prop->getPropertyValue());
 			$new_prop->save();
@@ -1366,18 +1395,38 @@ class ProjectTask extends BaseProjectTask {
 	 * End task templates
 	 */
 	
-	function getArrayInfo(){
+	function getArrayInfo($full = false){
+                if(config_option("wysiwyg_tasks")){
+                    if($this->getTypeContent() == "text"){
+                        $desc = nl2br(htmlspecialchars($this->getDescription()));
+                    }else{
+                        $desc = purify_html(nl2br($this->getDescription()));
+                    }
+                }else{
+                    if($this->getTypeContent() == "text"){
+                        $desc = htmlspecialchars($this->getDescription());
+                    }else{
+                        $desc = html_to_text(html_entity_decode(nl2br($this->getDescription()), null, "UTF-8"));
+                    }   
+                }
+                
 		$result = array(
 			'id' => $this->getId(),
 			't' => $this->getObjectName(),
+                        'desc' => $desc,
 			'members' => $this->getMemberIds(),
 			'c' => $this->getCreatedOn() instanceof DateTimeValue ? $this->getCreatedOn()->getTimestamp() : 0,
 			'cid' => $this->getCreatedById(),
 			'otype' => $this->getObjectSubtype(),
 			'percentCompleted' => $this->getPercentCompleted(),
-			'memPath' => json_encode($this->getMembersToDisplayPath()),
-			'description' => $this->getText()
+			'memPath' => str_replace('"',"'", str_replace("'", "\'", json_encode($this->getMembersToDisplayPath()))),
+			//'description' => $this->getText()
 		);
+		
+		if ($full) {
+			$result['description'] = $this->getText();
+		}
+		
 		
 		if ($this->isCompleted())
 			$result['s'] = 1;
@@ -1410,7 +1459,7 @@ class ProjectTask extends BaseProjectTask {
 		}
 		
 		$time_estimate = $this->getTimeEstimate() ;
-		//$result['estimatedTime'] = $this->getTimeEstimate() ; 
+		$result['TimeEstimate'] = $this->getTimeEstimate(); 
 		if ($time_estimate > 0) $result['estimatedTime'] = DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($time_estimate * 60), 'hm', 60) ;
 		
 		
@@ -1436,7 +1485,19 @@ class ProjectTask extends BaseProjectTask {
 		
 		if ($this->isRepetitive())
 			$result['rep'] = 1;
-
+                else{
+                    //I find all those related to the task to find out if the original
+                    $task_related = ProjectTasks::findByRelated($this->getObjectId());
+                    if(!$task_related){
+                        //is not the original as the original look plus other related
+                        if($this->getOriginalTaskId() != "0"){
+                            $task_related = ProjectTasks::findByTaskAndRelated($this->getObjectId(),$this->getOriginalTaskId());
+                        }
+                    }    
+                    if ($task_related)
+                            $result['rep'] = 1;
+                }
+                
 		return $result;
 	}
 	

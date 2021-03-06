@@ -152,15 +152,10 @@
 
 <script>
 	var memberChoosers = Ext.getCmp('<?php echo "$genid-member-chooser-panel-".$milestone->manager()->getObjectTypeId()?>').items;
-	var treeClicked = false;
 	
 	if (memberChoosers) {
 		memberChoosers.each(function(item, index, length) {
 			item.on('all trees updated', function() {
-				// First User click
-				$(".member-chooser input.x-tree-node-cb").click(function(){
-					treeClicked = true;
- 				});
 				var dimensionMembers = {};
 				memberChoosers.each(function(it, ix, l) {
 					dim_id = this.dimensionId;
@@ -172,19 +167,16 @@
 				});
 	
 				var uids = App.modules.addMessageForm.getCheckedUsers('<?php echo $genid ?>');
-				if(treeClicked) {
-						
-					Ext.get('<?php echo $genid ?>add_subscribers_content').load({
-						url: og.getUrl('object', 'render_add_subscribers', {
-							context: Ext.util.JSON.encode(dimensionMembers),
-							users: uids,
-							genid: '<?php echo $genid ?>',
-							otype: '<?php echo $milestone->manager()->getObjectTypeId()?>'
-						}),
-						scripts: true
-					});
-				}
-
+				Ext.get('<?php echo $genid ?>add_subscribers_content').load({
+					url: og.getUrl('object', 'render_add_subscribers', {
+						context: Ext.util.JSON.encode(dimensionMembers),
+						users: uids,
+						genid: '<?php echo $genid ?>',
+						otype: '<?php echo $milestone->manager()->getObjectTypeId()?>'
+					}),
+					scripts: true
+				});
+			
 				var combo = Ext.getCmp('<?php echo $genid ?>taskFormAssignedToCombo');
 				if (combo) {
 					combo.collapse();

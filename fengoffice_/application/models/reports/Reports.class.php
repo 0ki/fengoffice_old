@@ -131,25 +131,25 @@ class Reports extends BaseReports {
 						}
 						if($condField->getCondition() != '%'){
 							if ($col_type == DATA_TYPE_INTEGER || $col_type == DATA_TYPE_FLOAT) {
-								$allConditions .= '`'.$condField->getFieldName().'` '.$condField->getCondition().' '.mysql_real_escape_string($value);
+								$allConditions .= '`'.$condField->getFieldName().'` '.$condField->getCondition().' '.DB::escape($value);
 							} else {
 								if ($condField->getCondition()=='=' || $condField->getCondition()=='<=' || $condField->getCondition()=='>='){
-									$equal = 'datediff(\''.mysql_real_escape_string($value).'\', `'.$condField->getFieldName().'`)=0';										
+									$equal = 'datediff('.DB::escape($value).', `'.$condField->getFieldName().'`)=0';										
 									switch($condField->getCondition()){
 										case '=':
 											$allConditions .= $equal;
 											break;
 										case '<=':
 										case '>=':
-											$allConditions .= '`'.$condField->getFieldName().'` '.$condField->getCondition().' \''.mysql_real_escape_string($value).'\''.' OR '.$equal.' ';
+											$allConditions .= '`'.$condField->getFieldName().'` '.$condField->getCondition().' '.DB::escape($value).' OR '.$equal.' ';
 											break;																
 									}										
 								} else {
-									$allConditions .= '`'.$condField->getFieldName().'` '.$condField->getCondition().' \''.mysql_real_escape_string($value).'\'';
+									$allConditions .= '`'.$condField->getFieldName().'` '.$condField->getCondition().' '.DB::escape($value);
 								}									
 							}
 						} else {
-							$allConditions .= '`'.$condField->getFieldName().'` like "%'.mysql_real_escape_string($value).'"';
+							$allConditions .= '`'.$condField->getFieldName().'` like '.DB::escape("%$value");
 						}
 					} else $allConditions .= ' true';
 					
@@ -185,12 +185,12 @@ class Reports extends BaseReports {
 						}
 						if($condCp->getCondition() != '%'){
 							if ($cp->getType() == 'numeric') {
-								$allConditions .= ' AND cpv.value '.$condCp->getCondition().' '.mysql_real_escape_string($value);
+								$allConditions .= ' AND cpv.value '.$condCp->getCondition().' '.DB::escape($value);
 							}else{
-								$allConditions .= ' AND cpv.value '.$condCp->getCondition().' "'.mysql_real_escape_string($value).'"';
+								$allConditions .= ' AND cpv.value '.$condCp->getCondition().' "'.DB::escape($value).'"';
 							}
 						}else{
-							$allConditions .= ' AND cpv.value like "%'.mysql_real_escape_string($value).'"';
+							$allConditions .= ' AND cpv.value like '.DB::escape("%$value");
 						}
 						$allConditions .= ')';
 					}
@@ -222,18 +222,18 @@ class Reports extends BaseReports {
 					$field = $column->getFieldName();
 					if (str_starts_with($field, 'dim_')) {
 						$dim_id = str_replace("dim_", "", $field);
-						$dimension = Dimensions::findById($dim_id);
+						$dimension = Dimensions::getDimensionById($dim_id);
 						$dimensions_cache[$dim_id] = $dimension;
 						$doptions = $dimension->getOptions(true);
 						$column_name = $doptions && isset($doptions->useLangs) && $doptions->useLangs ? lang($dimension->getCode()) : $dimension->getName();
 						
-						$results['columns'][] = $column_name;
+						$results['columns'][$field] = $column_name;
 						$results['db_columns'][$column_name] = $field;
 					} else {
 						if ($managerInstance->columnExists($field) || Objects::instance()->columnExists($field)) {
 							$column_name = Localization::instance()->lang('field '.$ot->getHandlerClass().' '.$field);
 							if (is_null($column_name)) $column_name = lang('field Objects '.$field);
-							$results['columns'][] = $column_name;
+							$results['columns'][$field] = $column_name;
 							$results['db_columns'][$column_name] = $field;
 						}
 					}
@@ -259,7 +259,7 @@ class Reports extends BaseReports {
 						if (str_starts_with($field, 'dim_')) {
 							$dim_id = str_replace("dim_", "", $field);
 							if (!array_var($dimensions_cache, $dim_id) instanceof Dimension) {
-								$dimension = Dimensions::findById($dim_id);
+								$dimension = Dimensions::getDimensionById($dim_id);
 								$dimensions_cache[$dim_id] = $dimension;
 							} else {
 								$dimension = array_var($dimensions_cache, $dim_id);
@@ -327,7 +327,6 @@ class Reports extends BaseReports {
 					$results['columns'] = array('');
 				}
 				Hook::fire("report_header", $ot, $results['columns']);
-				
 			}
 			$results['rows'] = $report_rows;
 		}

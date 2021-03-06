@@ -27,7 +27,7 @@ class ProjectEvents extends BaseProjectEvents {
         
         function findNoSync($contact_id) {
                 return ProjectEvents::findAll(array(
-                    'conditions' => array('`special_id` = "" AND trashed_by_id = 0 AND contact_id = '.$contact_id),
+                    'conditions' => array('`special_id` = "" AND trashed_by_id = 0 AND trashed_on =\''.EMPTY_DATETIME.'\' AND contact_id = '.$contact_id),
                     'join' => array(
                             'table' => EventInvitations::instance()->getTableName(),
                             'jt_field' => 'event_id',
@@ -92,40 +92,40 @@ class ProjectEvents extends BaseProjectEvents {
 							(
 								DATE_ADD(`start`, INTERVAL (`repeat_num`-1)*`repeat_d` DAY) >= '$start_date_str'
 								OR
-								repeat_forever = 1
+                                                        repeat_forever = 1
 								OR
 								repeat_end >= '$year-$month-$day'
-							)
+						)
 						)
 						OR
 						(
 							MOD( PERIOD_DIFF(DATE_FORMAT(`start`,'%Y%m'),DATE_FORMAT('$start_date_str','%Y%m')) ,repeat_m) = 0
 							AND 
 							`start` <= '$start_date_str' AND DAY(`start`) = $day 
-							AND
+							AND	
 							(
 								DATE_ADD(`start`, INTERVAL (`repeat_num`-1)*`repeat_m` MONTH) >= '$start_date_str'
 								OR
-								repeat_forever = 1
+                                                        repeat_forever = 1
 								OR
 								repeat_end >= '$year-$month-$day'
-							)
+						)
 						)
 						OR
 						(
 							MOD( (YEAR(DATE(`start`))-YEAR('$start_date_str')) ,repeat_y) = 0
 							AND 
 							`start` <= '$start_date_str' AND DAY(`start`) = $day AND MONTH(`start`) = $month 
-							AND
+							AND 
 							(
 								DATE_ADD(`start`, INTERVAL (`repeat_num`-1)*`repeat_y` YEAR) >= '$start_date_str'
 								OR
-								repeat_forever = 1
+                                                        repeat_forever = 1
 								OR
 								repeat_end >= '$year-$month-$day'
-							)
 						)
 					)		
+				)
 				)
 				OR
 				(
@@ -236,12 +236,12 @@ class ProjectEvents extends BaseProjectEvents {
 						(
 							DATE_ADD(`start`, INTERVAL (`repeat_num`-1)*`repeat_d` DAY) >= '$start_date_str' 
 							OR
-							repeat_forever = 1
+                                        repeat_forever = 1
 							OR
 							repeat_end >= '$start_year-$start_month-$start_day'
-						)
-						OR
-						(
+				)
+				OR
+				(
 							DATE_ADD(`start`, INTERVAL (`repeat_num`-1)*`repeat_m` MONTH) >= '$start_date_str' 
 							OR
 							repeat_forever = 1
@@ -303,7 +303,6 @@ class ProjectEvents extends BaseProjectEvents {
 	}
         
         function import_google_calendar() {
-                ajx_current("empty");
                 $users_cal = ExternalCalendarUsers::findAll(); 
                 if(count($users_cal) > 0){
                     foreach ($users_cal as $users){
@@ -330,21 +329,21 @@ class ProjectEvents extends BaseProjectEvents {
                                 foreach ($calendars as $calendar){
 
                                     //check the deleted calendars
-                                    $delete_calendar = false;
+                                    $delete_calendar = true;
                                     $calFeed = $gdataCal->getCalendarListFeed();        
                                     foreach ($calFeed as $calF){
                                         $cal_src = explode("/",$calF->content->src);
                                         array_pop($cal_src);
                                         $calendar_visibility = end($cal_src);
                                         array_pop($cal_src);
-                                        $calendar_user = end($cal_src); 
+                                        $calendar_user = end($cal_src);
 
                                         if($calendar_user == $calendar->getCalendarUser()){
-                                            $delete_calendar = true;
+                                            $delete_calendar = false;
                                         }
                                     }
 
-                                    if($delete_calendar){
+                                    if(!$delete_calendar){
                                         $calendar_user = $calendar->getCalendarUser();
                                         $calendar_visibility = $calendar->getCalendarVisibility();
 
@@ -430,12 +429,12 @@ class ProjectEvents extends BaseProjectEvents {
                                                     $invitation = new EventInvitation();
                                                     $invitation->setEventId($new_event->getId());
                                                     $invitation->setContactId($contact->getId());
-                                                    $invitation->setInvitationState(1);
+                                                    $invitation->setInvitationState($contact instanceof Contact && $contact->getId() == $contact->getId() ? 1 : 0);
                                                     $invitation->save();
                                                 }
 
                                                 //insert only if not exists 
-                                                if (ObjectSubscriptions::findBySubscriptions($new_event->getId(),$contact->getId()) == null) { 
+                                                if (ObjectSubscriptions::findBySubscriptions($new_event->getId(),$contact) == null) { 
                                                     $subscription = new ObjectSubscription();
                                                     $subscription->setObjectId($new_event->getId());
                                                     $subscription->setContactId($contact->getId());
@@ -444,9 +443,25 @@ class ProjectEvents extends BaseProjectEvents {
 
                                                 $member_ids = array();
                                                 $context = active_context();
-                                                foreach ($context as $selection) {
-                                                        if ($selection instanceof Member) $member_ids[] = $selection->getId();
-                                                }		        
+                                                if(count($context) > 0){
+                                                    foreach ($context as $selection) {
+                                                            if ($selection instanceof Member) $member_ids[] = $selection->getId();
+                                                    }
+                                                }                                                
+                                                if (count($member_ids) == 0 && $contact instanceof Contact) {
+                                                	$m = Members::findById($contact->getPersonalMemberId());
+                                                	if (!$m instanceof Member) {
+                                                		$person_dim = Dimensions::findByCode('feng_persons');
+                                                		if ($person_dim instanceof Dimension) {
+                                                			$member_ids = Members::findAll(array(
+                                                				'id' => true, 
+                                                				'conditions' => array("object_id = ? AND dimension_id = ?", $contact->getId(), $person_dim->getId())
+                                                			));
+                                                		}
+                                                	} else {
+                                                		$member_ids[] = $m->getId();
+                                                	}
+                                                }
                                                 $object_controller = new ObjectController();
                                                 $object_controller->add_to_members($new_event, $member_ids, $contact); 
                                             }           
@@ -469,7 +484,7 @@ class ProjectEvents extends BaseProjectEvents {
                                         $events = ProjectEvents::findByExtCalId($calendar->getId());
                                         if($calendar->delete()){
                                             if($events){
-                                                foreach($events as $event){                            
+                                                foreach($events as $event){
                                                     $event->trash();
 
                                                     $event->setSpecialID("");
@@ -483,15 +498,13 @@ class ProjectEvents extends BaseProjectEvents {
                         }
                         catch(Exception $e)
                         {
-                                flash_error(lang('could not connect to calendar'));
-                                ajx_current("empty");
+                                //Logger::log($e->getMessage());
                         }
                     }
                 }
 	}
         
-        function export_google_calendar() {
-                ajx_current("empty");           
+        function export_google_calendar() { 
                 $users_cal = ExternalCalendarUsers::findAll();  
                 if(count($users_cal) > 0){
                     foreach ($users_cal as $users){
@@ -586,7 +599,7 @@ class ProjectEvents extends BaseProjectEvents {
                                         $calendar->setCalendarFeng(1);
                                         $calendar->save();
 
-                                        foreach ($events as $event){                               
+                                        foreach ($events as $event){
                                             $calendarUrl = 'http://www.google.com/calendar/feeds/'.$calendar->getCalendarUser().'/private/full';
 
                                             $newEvent = $gdataCal->newEventEntry();
@@ -619,15 +632,10 @@ class ProjectEvents extends BaseProjectEvents {
                                             $event->save();
                                         } 
                                     }
-                                    flash_success(lang('success add sync'));
-                                    ajx_current("reload");
                             }
                             catch(Exception $e)
                             {
-                                    // prevent Google username and password from being displayed
-                                    // if a problem occurs
-                                    flash_error(lang('could not connect to calendar'));
-                                    ajx_current("empty");
+                                    //Logger::log($e->getMessage());
                             }
                         }
                     }

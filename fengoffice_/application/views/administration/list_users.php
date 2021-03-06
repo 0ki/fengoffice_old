@@ -12,20 +12,20 @@ if(isset($users) && is_array($users) && $cantUsers) { ?>
   foreach($users as $user) { /* @var $user Contact */
   	
 	$counter++; ?>
-	<?php if ($newPage && $isUsersList ) {
+<?php if ($newPage && $isUsersList ) {
 		$newPage = false;
 		?>
-		<div id="<?php echo $page . '-' . $user->getCompanyId()?>userspage" style="display: <?php echo $counter != 1? 'none':'block' ?>" >		
+<div id="<?php echo $page . '-' . $user->getCompanyId()?>userspage" style="display: <?php echo $counter != 1? 'none':'block' ?>" >		
 	<?php }//newpage??>
   <div class="listedUser <?php echo $counter % 2 ? 'even' : 'odd' ?> <?php echo $user->getDisabled() ? 'user-disabled' : '' ?>">
-    <div class="userAvatar"><img src="<?php echo $user->getAvatarUrl() ?>" alt="<?php echo clean($user->getObjectName()) ?> <?php echo lang('avatar') ?>" /></div>
-    <div class="userDetails">
-      <div class="userName">
-      	<a class="internalLink" href="<?php echo $user->getCardUrl() ?>"><?php echo clean($user->getObjectName()) ?></a>
-      	<span><?php echo $user->getDisabled() ? "(".lang('disabled').")" : '' ?></span>
-      </div> 
+	<div class="userAvatar"><img src="<?php echo $user->getAvatarUrl() ?>" alt="<?php echo clean($user->getObjectName()) ?> <?php echo lang('avatar') ?>" /></div>
+	<div class="userDetails">
+		<div class="userName">
+			<a class="internalLink" href="<?php echo $user->getCardUrl() ?>"><?php echo clean($user->getObjectName()) ?></a>
+			<span><?php echo $user->getDisabled() ? "(".lang('disabled').")" : '' ?></span>
+		</div> 
       
-     <div class="userIsAdmin"><span><?php echo $user->getUserTypeName() ?></span></div>
+		<div class="userIsAdmin"><span><?php echo $user->getUserTypeName() ?></span></div>
 <?php 
 
   $options = array();
@@ -53,12 +53,12 @@ if(isset($users) && is_array($users) && $cantUsers) { ?>
 	  }
   }
 ?>
-      <div class="userOptions"><?php echo implode(' | ', $options) ?></div>
-      <div class="clear"></div>
-    </div>
+		<div class="userOptions"><?php echo implode(' | ', $options) ?></div>
+		<div class="clear"></div>
+	</div>
   </div>
-<?php if (($counter % 5 == 0 || ($cantPages > 0 && $counter == $cantUsers)) && $isUsersList ){?> 
-  	</div>
+<?php if (($counter % 5 == 0 || ($cantPages > 0 && $counter == $cantUsers)) && $isUsersList ){ ?> 
+</div>
 <?php 
 	  	$newPage = true;
 	  	$page ++;
@@ -69,32 +69,29 @@ if(isset($users) && is_array($users) && $cantUsers) { ?>
 <?php } else { ?>
 <p><?php echo lang('no users in company') ; ?></p>
 <?php } 
- 		$temp  = new Contact();
+ 		$temp = new Contact();
  		$companyUrl =  ($company) ? $company->getAddUserUrl() : $temp->getAddUserUrl() ;
 		echo  "<div style='padding:10px'><a href='$companyUrl' class='internalLink coViewAction ico-add'>" . lang('add user') . "</a></div>";
 		if ($cantPages > 0): ?>
-			<script type="text/javascript">
-					og.paginate = function (cantPages,compId){
-						var html ="";
-						var op = "";
-						html += '<div style="height:15px;">';
-						for (i=1;i<=cantPages + 1 ;i++){
-								if (i==1){
-										op = "-active";
-									}else{
-										op = "";
-									}
-								html += '<div class="pagination-user'+ op + '">';
-								html += "<a id='userpaginationnumberlink" + compId + i + "' style='font-size:10px;' class='internalLink' href='#' onclick='og.userListPagination(" + i + "," + compId + "," + (cantPages + 1) + ",this.parentNode)' >" +
-								 i + "</a>";
-								html += '</div>';								
-							}
-						html += '</div>';
-						paginateDiv = document.getElementById("companypagination"+compId);
-						if (paginateDiv){
-							paginateDiv.innerHTML += html;
-						}
-					};
-					og.paginate(<?php echo $cantPages; ?>,<?php  echo ($company)?$company->getId():'0'?>);
-			 </script>			 
+
+<script type="text/javascript">
+		og.paginate = function (cantPages,compId){
+			var html ="";
+			var op = "";
+			html += '<div style="height:15px;">';
+			for (i=1;i<=cantPages + 1 ;i++){
+				op = (i == 1 ? "-active" : "");
+				html += '<div class="pagination-user'+ op + '">';
+				html += "<a id='userpaginationnumberlink" + compId + i + "' style='font-size:10px;' class='internalLink' href='#' onclick='og.userListPagination(" + i + "," + compId + "," + (cantPages + 1) + ",this.parentNode)' >" + i + "</a>";
+				html += '</div>';
+			}
+			html += '</div>';
+			paginateDiv = document.getElementById("companypagination"+compId);
+			if (paginateDiv){
+				paginateDiv.innerHTML += html;
+			}
+		};
+		og.paginate(<?php echo $cantPages; ?>,<?php  echo ($company)?$company->getId():'0'?>);
+ </script>
+ 
 		<?php endif; ?>

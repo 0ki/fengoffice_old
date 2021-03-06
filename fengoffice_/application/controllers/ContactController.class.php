@@ -804,13 +804,21 @@ class ContactController extends ApplicationController {
 		$this->setTemplate('edit_contact');
 		//$this->setTemplate('add_contact');
 		
-		$notAllowedMember = '';
-		if(!Contact::canAdd(logged_user(), active_context(), $notAllowedMember)) {
-			if (str_starts_with($notAllowedMember, '-- req dim --')) flash_error(lang('must choose at least one member of', str_replace_first('-- req dim --', '', $notAllowedMember, $in)));
-			else flash_error(lang('no context permissions to add',lang("contacts")),$notAllowedMember);
-			ajx_current("empty");
-			return;
-		} // if
+		if (array_var($_GET, 'is_user') || array_var(array_var($_POST, 'contact'),'user')) {
+			if (!can_manage_configuration(logged_user())) {
+				flash_error(lang('no access permissions'));
+				ajx_current("empty");
+				return;
+			} 
+		} else {
+			$notAllowedMember = '';
+			if(!Contact::canAdd(logged_user(), active_context(), $notAllowedMember)) {
+				if (str_starts_with($notAllowedMember, '-- req dim --')) flash_error(lang('must choose at least one member of', str_replace_first('-- req dim --', '', $notAllowedMember, $in)));
+				else flash_error(lang('no context permissions to add',lang("contacts"), $notAllowedMember));
+				ajx_current("empty");
+				return;
+			}
+		}
 		
 		
 		$contact = new Contact();		
@@ -829,7 +837,11 @@ class ContactController extends ApplicationController {
 			$contact_data['new_contact_from_mail_div_id'] = array_var($_GET, 'div_id');
 			$contact_data['hf_contacts'] = array_var($_GET, 'hf_contacts');
 		}
-		
+                if($contact_email){
+                    tpl_assign('contact_mail', true);
+                }else{
+                    tpl_assign('contact_mail', false);
+                }
 		tpl_assign('contact', $contact);
 		tpl_assign('contact_data', $contact_data);
 		tpl_assign('im_types', $im_types);
@@ -864,7 +876,15 @@ class ContactController extends ApplicationController {
 				}
 				
 				$contact_data['birthday'] = getDateValue($contact_data["birthday"]);
-				$contact_data['name'] = $contact_data['first_name']." ".$contact_data['surname'];
+                                if(isset($contact_data['specify_username'])){
+                                    if($contact_data['user']['username'] != ""){
+                                        $contact_data['name'] = $contact_data['user']['username'];
+                                    }else{
+                                        $contact_data['name'] = $contact_data['first_name']." ".$contact_data['surname'];
+                                    }
+                                }else{
+                                    $contact_data['name'] = $contact_data['first_name']." ".$contact_data['surname'];
+                                }
 				$contact->setFromAttributes($contact_data);
 
 				if($newCompany)
@@ -905,13 +925,13 @@ class ContactController extends ApplicationController {
 				if($contact_data['email3'] != "") $contact->addEmail($contact_data['email3'], 'personal');
 				
 				//link it!
-			    $object_controller = new ObjectController();
-			    $member_ids = json_decode(array_var($_POST, 'members'));
-			    
-			    if($newCompany)
-			    	$object_controller->add_to_members($company, $member_ids);
-                                $object_controller->add_to_members($contact, $member_ids);
-                                $object_controller->link_to_new_object($contact);
+				$object_controller = new ObjectController();
+				$member_ids = json_decode(array_var($_POST, 'members'));
+				
+				if($newCompany)
+					$object_controller->add_to_members($company, $member_ids);
+				$object_controller->add_to_members($contact, $member_ids);
+				$object_controller->link_to_new_object($contact);
 				$object_controller->add_subscribers($contact);
 				$object_controller->add_custom_properties($contact);
 				
@@ -1027,6 +1047,7 @@ class ContactController extends ApplicationController {
 			$contact_data = array(
           	'first_name' => $contact->getFirstName(),
           	'surname' => $contact->getSurname(), 
+                'username' => $contact->getUsername(),
           	'department' => $contact->getDepartment(),
           	'job_title' => $contact->getJobTitle(),
                 'email' => $contact->getEmailAddress(),
@@ -1154,7 +1175,16 @@ class ContactController extends ApplicationController {
 				}
 				
 				$contact_data['birthday'] = getDateValue($contact_data["birthday"]);
-				$contact_data['name'] = $contact_data['first_name']." ".$contact_data['surname'];
+                                if(isset($contact_data['specify_username'])){
+                                    if($contact_data['user']['username'] != ""){
+                                        $contact_data['name'] = $contact_data['user']['username'];
+                                    }else{
+                                        $contact_data['name'] = $contact_data['first_name']." ".$contact_data['surname'];
+                                    }
+                                }else{
+                                    $contact_data['name'] = $contact_data['first_name']." ".$contact_data['surname'];
+                                }
+				
 				$contact->setFromAttributes($contact_data);
 				
 				if($newCompany) {
@@ -1627,16 +1657,16 @@ class ContactController extends ApplicationController {
 						if ($type == 'contact') {
 							$contact_data = $this->buildContactData(array_var($_POST, 'select_contact'), array_var($_POST, 'check_contact'), $registers[$i]);
 							$contact_data['import_status'] = '('.lang('updated').')';
-							$fname = mysql_real_escape_string(array_var($contact_data, "first_name"));
-							$lname = mysql_real_escape_string(array_var($contact_data, "surname"));
+							$fname = DB::escape(array_var($contact_data, "first_name"));
+							$lname = DB::escape(array_var($contact_data, "surname"));
 							$email_cond = array_var($contact_data, "email") != '' ? " OR email_address = '".array_var($contact_data, "email")."'" : "";
 							$contact = Contacts::findOne(array(
-                                                            "conditions" => "first_name = '".$fname."' AND surname = '".$lname."' $email_cond",
-                                                            'join' => array(
-                                                                    'table' => ContactEmails::instance()->getTableName(),
-                                                                    'jt_field' => 'contact_id',
-                                                                    'e_field' => 'object_id',
-                                                            )));                                                        
+								"conditions" => "first_name = ".$fname." AND surname = ".$lname." $email_cond",
+								'join' => array(
+                                    'table' => ContactEmails::instance()->getTableName(),
+                                    'jt_field' => 'contact_id',
+                                    'e_field' => 'object_id',
+							)));
 							$log_action = ApplicationLogs::ACTION_EDIT;
 							if (!$contact) {
 								$contact = new Contact();
@@ -1648,9 +1678,9 @@ class ContactController extends ApplicationController {
 								$can_import = $contact->canEdit(logged_user());
 							}
 							if ($can_import) {
-								$comp_name = mysql_real_escape_string(array_var($contact_data, "company_id"));
+								$comp_name = DB::escape(array_var($contact_data, "company_id"));
 								if ($comp_name != '') {
-									$company = Contacts::findOne(array("conditions" => "first_name = '$comp_name' AND is_company = 1"));
+									$company = Contacts::findOne(array("conditions" => "first_name = $comp_name AND is_company = 1"));
 									if ($company) {
 										$contact_data['company_id'] = $company->getId();
 									} 
@@ -1658,12 +1688,12 @@ class ContactController extends ApplicationController {
 								} else {
 									$contact_data['company_id'] = 0;
 								}
-                                                                $contact_data['name'] = $contact_data['first_name']." ".$contact_data['surname'];
+								$contact_data['name'] = $contact_data['first_name']." ".$contact_data['surname'];
 								$contact->setFromAttributes($contact_data);
 								$contact->save();
-                                                                
-                                                                $contact->addEmail(array_var($contact_data, "email"),'personal');
-                                                                
+
+								$contact->addEmail(array_var($contact_data, "email"),'personal');
+
 								ApplicationLogs::createLog($contact, null, $log_action);
 								$import_result['import_ok'][] = $contact_data;
 							} else {
@@ -1673,8 +1703,8 @@ class ContactController extends ApplicationController {
 						}else if ($type == 'company') {
 							$contact_data = $this->buildCompanyData(array_var($_POST, 'select_company'), array_var($_POST, 'check_company'), $registers[$i]);
 							$contact_data['import_status'] = '('.lang('updated').')';
-							$comp_name = mysql_real_escape_string(array_var($contact_data, "first_name"));
-							$company = Contacts::findOne(array("conditions" => "first_name = '$comp_name' AND is_company = 1"));
+							$comp_name = DB::escape(array_var($contact_data, "first_name"));
+							$company = Contacts::findOne(array("conditions" => "first_name = $comp_name AND is_company = 1"));
 							$log_action = ApplicationLogs::ACTION_EDIT;
 							if (!$company) {
 								$company = new Contact();
@@ -1686,8 +1716,8 @@ class ContactController extends ApplicationController {
 								$can_import = $company->canEdit(logged_user());
 							}
 							if ($can_import) {
-                                                                $contact_data['name'] = $contact_data['first_name'];
-                                                                $contact_data['is_company'] = 1;
+								$contact_data['name'] = $contact_data['first_name'];
+								$contact_data['is_company'] = 1;
 								$company->setFromAttributes($contact_data);
 								$company->save();
 								ApplicationLogs::createLog($company, null, $log_action);
@@ -1985,11 +2015,11 @@ class ContactController extends ApplicationController {
                                             }
 
                                             $contact_data['import_status'] = '('.lang('updated').')';
-                                            $fname = mysql_real_escape_string(array_var($contact_data, "first_name"));
-                                            $lname = mysql_real_escape_string(array_var($contact_data, "surname"));
+                                            $fname = DB::escape(array_var($contact_data, "first_name"));
+                                            $lname = DB::escape(array_var($contact_data, "surname"));
                                             $email_cond = array_var($contact_data, "email") != '' ? " OR email_address = '".array_var($contact_data, "email")."'" : "";
                                             $contact = Contacts::findOne(array(
-                                                "conditions" => "first_name = '".$fname."' AND surname = '".$lname."' $email_cond",
+                                                "conditions" => "first_name = ".$fname." AND surname = ".$lname." $email_cond",
                                                 'join' => array(
                                                         'table' => ContactEmails::instance()->getTableName(),
                                                         'jt_field' => 'contact_id',
@@ -2006,9 +2036,9 @@ class ContactController extends ApplicationController {
                                             }
 
                                             if ($can_import) {
-                                                    $comp_name = mysql_real_escape_string(array_var($contact_data, "company_id"));
+                                                    $comp_name = DB::escape(array_var($contact_data, "company_id"));
                                                     if ($comp_name != '') {
-                                                            $company = Contacts::findOne(array("conditions" => "first_name = '$comp_name' AND is_company = 1"));
+                                                            $company = Contacts::findOne(array("conditions" => "first_name = $comp_name AND is_company = 1"));
                                                             if ($company) {
                                                                     $contact_data['company_id'] = $company->getId();
                                                             } 
@@ -2595,7 +2625,7 @@ class ContactController extends ApplicationController {
 		$notAllowedMember = '';				
 		if(!Contact::canAdd(logged_user(),active_context(),$notAllowedMember)) {
 			if (str_starts_with($notAllowedMember, '-- req dim --')) flash_error(lang('must choose at least one member of', str_replace_first('-- req dim --', '', $notAllowedMember, $in)));
-			else flash_error(lang('no context permissions to add',lang("contacts")),$notAllowedMember);
+			else flash_error(lang('no context permissions to add',lang("contacts"), $notAllowedMember));
 			ajx_current("empty");
 			return;
 		} // if
@@ -2860,6 +2890,8 @@ class ContactController extends ApplicationController {
 		//				[user] => Array (
 		//					[create-user]=>on
 		//					[type] => 25
+		//					[first_name] =>  
+		// 					[surname] => 						
 		//		)
 		//----------------------------------------
 		
@@ -2882,18 +2914,27 @@ class ContactController extends ApplicationController {
 		$email = trim(array_var(array_var($_POST, 'contact'),'email')) ;
 		$member = array_var($_POST, 'member');
 		$name = array_var($member, 'name');
+		$firstName = trim(array_var(array_var($_POST, 'contact'),'first_name'));
+		$surname = trim(array_var(array_var($_POST, 'contact'),'surname'));
 		$parentMemberId = array_var($member, 'parent_member_id');
 		$objectType = ObjectTypes::findById(array_var($member, 'object_type_id'))->getName(); // 'person', 'company'
-		$dimensionId =  array_var($member, 'dimension_id'); 
-		
-		
+		$dimensionId =  array_var($member, 'dimension_id'); 		
+		$company = array_var(array_var(array_var($_POST, 'contact'),'user'),'company_id');
+                
 		// Create new instance of Contact and set the basic fields
 		$contact = new Contact();
 		$contact->setObjectName($name);
-		$contact->setFirstName($name);
-		$contact->setIsCompany($objectType == "company");
-
+		if ($firstName) {
+			$contact->setFirstName($firstName);
+		}else{
+			$contact->setFirstName($name);	
+		}
 		
+		if ($surname) {
+			$contact->setSurname($surname);
+		}
+                $contact->setCompanyId($company);
+		$contact->setIsCompany($objectType == "company");
 		if ($parentMemberId){
 			if ( $companyId = Members::findById($parentMemberId)->getObjectId()) {
 				$contact->setCompanyId($companyId);
@@ -2937,4 +2978,66 @@ class ContactController extends ApplicationController {
 		// Reload 
 		evt_add("reload dimension tree", $dimensionId);
 	}
+        
+        function quick_config_filter_activity(){     
+            $this->setLayout('empty');
+            $submited_values = array_var($_POST, 'filter');
+            $members = array_var($_GET, 'members');
+            tpl_assign('members', array_var($_GET, 'members'));
+            
+            $filters_default = ContactConfigOptions::getFilterActivity();
+            
+            $filters = ContactConfigOptionValues::getFilterActivityMember($filters_default->getId(),$members);
+            if(!$filters){
+                $filters = ContactConfigOptions::getFilterActivity();
+                $filter_value = $filters->getDefaultValue();
+                tpl_assign('id', $filters->getId());
+            }else{
+                $filter_value = $filters->getValue();
+            }
+            $filters_def = explode(",",$filter_value);            
+            if($filters_def[0] == 1){
+                tpl_assign('checked_dimension_yes', 'checked="checked"');
+            }else{
+                tpl_assign('checked_dimension_no', 'checked="checked"');
+            }
+            if($filters_def[1] == 1){
+                tpl_assign('checked_timeslot_yes', 'checked="checked"');
+            }else{
+                tpl_assign('checked_timeslot_no', 'checked="checked"');
+            }
+            tpl_assign('show', $filters_def[2]);            
+            if($filters_def[3] == 1){
+                tpl_assign('checked_view_downloads_yes', 'checked="checked"');
+            }else{
+                tpl_assign('checked_view_downloads_no', 'checked="checked"');
+            }            
+            if(is_array($submited_values)) {
+                    $members = array_var($submited_values,"members");
+                    $filters_default = ContactConfigOptions::getFilterActivity();
+                    $filters = ContactConfigOptionValues::getFilterActivityMember($filters_default->getId(),$members);  
+                    // update cache if available
+                    if (GlobalCache::isAvailable()) {
+                            GlobalCache::delete('user_config_option_'.logged_user()->getId().'_'.$filters_default->getName()."_".$members);
+                    }                 
+                    
+                    $new_value = array_var($submited_values,"dimension") . "," . array_var($submited_values,"timeslot") . "," . array_var($submited_values,"show"). "," . array_var($submited_values,"view_downloads");
+                    
+                    if(!$filters){
+                        $filter_opt = new ContactConfigOptionValue();
+                        $filter_opt->setOptionId($filters_default->getId());
+                        $filter_opt->setContactId(logged_user()->getId());
+                        $filter_opt->setValue($new_value);
+                        $filter_opt->setMemberId($members);
+                        $filter_opt->save();
+                    }else{
+                        $filters->setValue($new_value);
+                        $filters->save();
+                    }
+                    
+                    evt_add("user preference changed", array('name' => $filters_default->getName()."_".$members, 'value' => $new_value));
+                    redirect_to("index.php?c=dashboard&a=main_dashboard");
+            }
+            
+        }
 } 

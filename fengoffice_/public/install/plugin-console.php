@@ -1,9 +1,10 @@
 <?php
 $argv or die("Are you using console ? \n");
-$usage = "USAGE: plugin-console.php COMMAND [list, install, activate, deactivate, update] PLUGIN_NAME \n" ;
+$usage = "USAGE: plugin-console.php COMMAND [list, install, activate, deactivate, update, update_all] PLUGIN_NAME \n" ;
 chdir(dirname(__FILE__) . '/../..');
 define("CONSOLE_MODE", true);
 define("PLUGIN_MANAGER_CONSOLE", true );
+if(!defined('PUBLIC_FOLDER')) define('PUBLIC_FOLDER', 'public');
 require_once 'init.php';
 
 if(!isset($argv) || !is_array($argv)) {
@@ -19,7 +20,7 @@ CompanyWebsite::instance()->logUserIn($usr);
 $ctrl = new PluginController();
 trim($command) or die("Command is required \n".$usage);
 
-if ($command == 'list' ) {
+if ($command == 'list') {
 	foreach ($ctrl->index() as $plg){
 		/* @var $plg Plugin */
 		echo "---------------------------------------------\n";
@@ -31,7 +32,9 @@ if ($command == 'list' ) {
 			echo "*** There is a new version of this plugin *** \n";
 		}
 	}
-}else{
+} else if ($command == 'update_all') {
+	$ctrl->updateAll();
+} else {
 	$arg1 or die("Plugin is required \n$usage");
 	$plg = Plugins::instance()->findOne(array("conditions"=>" name = '$arg1'"));
 	$plg or die("ERROR: plugin $arg1 not found\n");

@@ -44,10 +44,17 @@ class PluginController extends ApplicationController {
 		if (!$id) {
 			$id = array_var($_REQUEST,'id');
 		}
-		if ( $plg  = Plugins::instance()->findById($id)) {
-			if ($plg->updateAvailable()){
+		if ( $plg = Plugins::instance()->findById($id)) {
+			if ($plg->isInstalled() && $plg->updateAvailable()){
 				$plg->update();
 			}
+		}
+	}
+	
+	function updateAll() {
+		$plugins = Plugins::instance()->findAll(array('conditions' => 'is_installed=1'));
+		foreach ($plugins as $plg) {
+			$plg->update();
 		}
 	}
 	

@@ -57,7 +57,13 @@ $genid = gen_id();
 
 <?php if($task_list->getText()) { ?>
   <fieldset><legend><?php echo lang('description') ?></legend>
-  	<?php echo escape_html_whitespace(convert_to_links(clean($task_list->getText())))?>
+  	<?php 
+            if($task_list->getTypeContent() == "text"){
+                echo escape_html_whitespace(convert_to_links(clean($task_list->getText())));
+            }else{
+                echo purify_html(nl2br($task_list->getText()));
+            }
+        ?>
   </fieldset>
 <?php } // if 
 
@@ -268,7 +274,7 @@ if($showCompletedSubtasksDiv) { ?>
 
 
 $time_estimate = $task_list->getTimeEstimate();
-$total_minutes = 0;//$total_minutes = $task_list->getTotalMinutes();
+$total_minutes = $task_list->getTotalMinutes();
 
 if ($time_estimate > 0 || $total_minutes > 0){?>
 <br/>
@@ -284,15 +290,15 @@ if ($time_estimate > 0 || $total_minutes > 0){?>
 		<?php echo DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($time_estimate * 60), 'hm', 60) ?></td></tr>
 <?php } ?>
 
-<?php if (0 && $total_minutes > 0 && can_manage_time(logged_user())) {?>
-	<tr><td><div style="font-weight:bold"><?php echo lang('total time'). ':&nbsp;' ?></div></td><td>
+<?php if ($total_minutes > 0 && can_manage_time(logged_user())) {?>
+	<tr><td><div style="font-weight:bold"><?php echo lang('total time worked'). ':&nbsp;' ?></div></td><td>
 		<span style="font-size:120%;font-weight:bold;<?php echo ($time_estimate > 0 && $total_minutes > $time_estimate) ? 'color:#FF0000':'' ?>">
 			<?php echo DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($total_minutes * 60), 'hm', 60) ?>
 		</span></td></tr>
 <?php } ?>
 </table>
 
-<div><?php echo lang('percent completed detail', $counter) ?></div>
+<div><?php echo lang('percent completed detail', isset($counter) ? $counter : '0') ?></div>
 
 <?php } ?>
 

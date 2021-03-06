@@ -53,19 +53,23 @@ class MailAccount extends BaseMailAccount {
 	 */
 	function getMailContents() {
 		return MailContents::findAll(array(
-        'conditions' => '`account_id` = ' . DB::escape($this->getId()),
-      'order' => '`date` DESC'
-      )); // findAll
+			'conditions' => '`account_id` = ' . DB::escape($this->getId()),
+			'order' => '`date` DESC'
+		)); // findAll
 	} // getMailContents
 
-	function getUids($folder = null) {
-		$sql = "SELECT `uid` FROM `" . MailContents::instance()->getTableName() .
-				"` WHERE `account_id` = ". $this->getId();
-		if (!is_null($folder)) 
+	function getUids($folder = null, $limit = null) {
+		$sql = "SELECT `uid` FROM `" . MailContents::instance()->getTableName() . "` WHERE `account_id` = ". $this->getId();
+		if (!is_null($folder)) {
 			$sql .= " AND `imap_folder_name` = '$folder'";
-		$rows = DB::executeAll($sql);
+		}
+		if (!is_null($limit) && is_numeric($limit)) {
+			$sql .= " LIMIT $limit";
+		}
+		$res = DB::execute($sql);
+		$rows = $res->fetchAll();
 		$uids = array();
-		if (isset($rows) && is_array($rows)) {
+		if (is_array($rows)) {
 			foreach ($rows as $r) {
 				$uids[] = $r['uid'];
 			}
@@ -74,16 +78,16 @@ class MailAccount extends BaseMailAccount {
 	}
 	
 	function getMaxUID($folder = null){
-		$maxUID = 0;
-		$sql = "SELECT `uid` FROM `" . MailContents::instance()->getTableName() .
-				"` WHERE `account_id` = ". $this->getId();
+		$maxUID = "";
+		$box_cond = "";
+		$sql = "SELECT `uid` FROM `" . MailContents::instance()->getTableName() . "` WHERE `account_id` = ". $this->getId();
 		if (!is_null($folder)) {
-			$sql .= " AND `imap_folder_name` = '$folder'";
+			$box_cond = " AND `imap_folder_name` = '$folder'";
 		}
-		$sql .= " AND object_id = (SELECT max(object_id) FROM `". MailContents::instance()->getTableName() .
-				"` WHERE `account_id` = ". $this->getId(). " AND `state` < 2)";
-		$rows = DB::executeAll($sql);
-		if (isset($rows)){
+		$sql .= "$box_cond AND object_id = (SELECT max(object_id) FROM `". MailContents::instance()->getTableName() . "` WHERE `account_id` = ". $this->getId(). " AND `state` < 2 $box_cond) LIMIT 1";
+		$res = DB::execute($sql);
+		$rows = $res->fetchAll();
+		if (is_array($rows) && count($rows) > 0){
 			$maxUID = $rows[0]['uid'];
 		}
 		return $maxUID;

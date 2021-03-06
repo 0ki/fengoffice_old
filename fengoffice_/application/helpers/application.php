@@ -312,7 +312,7 @@ function user_select_box($list_name, $selected = null, $attributes = null) {
 	$logged_user = logged_user();
 	
 	//FIXME Feng 2
-	$users = Contacts::instance()->findAll();
+	$users = Contacts::instance()->findAll(array("conditions" => "is_company = 0 AND user_type > 0 AND disabled = 0"));
 	
 	if(is_array($users)) {
 		foreach($users as $user) {
@@ -607,7 +607,7 @@ function render_link_to_object($object, $text=null, $reload=false){
 						'&object_id=' . $id . $reload_param . '&objects=\' + objects' . 
 						($reload ? ',{callback: function(){og.redrawLinkedObjects('. $object->getId() .')}}' : '') . ');' .
 			'}' .
-		'})" id="object_linker">';
+		'},\'\',\'\','. $object->getId() .')" id="object_linker">';
 	$result .= $text;
 	$result .= '</a>';
 	return $result;
@@ -1156,7 +1156,10 @@ function render_dimension_trees($content_object_type_id, $genid = null, $selecte
 						$dimensions[] = $dimension ;
 					}
 				}
-			} 
+			}
+			
+			$object_is_new = is_null($selected_members);
+			
 			if ($dimensions!= null && count($dimensions)) {
 				if (is_null($selected_members) && array_var($options, 'select_current_context')) {
 					$context = active_context();
@@ -1176,8 +1179,12 @@ function render_dimension_trees($content_object_type_id, $genid = null, $selecte
 					$layout = "column";
 				}
 				?>
-				 
-				<input id='<?php echo $genid; ?>members' name='members' type='hidden' value="<?php echo $selected_members_json; ?>"></input>
+				
+				<?php if (!$object_is_new) : ?> 
+				<input id='<?php echo $genid; ?>trees_not_loaded' name='trees_not_loaded' type='hidden' value="1"></input>
+				<?php endif;?>
+				
+				<input id='<?php echo $genid; ?>members' name='members' type='hidden' value="<?php echo str_replace('"', "'", $selected_members_json); ?>"></input>
 				<div id='<?php echo $component_id ?>-container' class="member-chooser-container" ></div>
 				
 				<script>
@@ -1280,13 +1287,6 @@ function render_dimension_trees($content_object_type_id, $genid = null, $selecte
 				</script>
 
 <?php 
-				if (Plugins::instance()->isActivePlugin('core_dimensions')) {
-					$users_dim = Dimensions::findOne(array("conditions" => "`code` = 'feng_users'"));
-					$show_personal_member_warning = $users_dim instanceof Dimension && logged_user()->getPersonalMemberId() > 0;
-					if ($show_personal_member_warning) {
-						?><div class="contextualHelp"><?php echo lang('personal member warning')?></div><?php
-					}
-				}
 			}
 		}
 }
@@ -1424,4 +1424,25 @@ function wrap_text($str, $length = 20, $end='...'){
 function render_co_view_member_path(ContentDataObject $object) {
 	tpl_assign('object', $object);
 	return tpl_fetch(get_template_path('member_path', 'co'));
+}
+
+function render_add_working_days() {
+        $options = explode(",",config_option("working_days"));
+        
+        $days = array("0" => lang('sunday'),"1" => lang('monday') , "2" => lang('tuesday'),
+                                "3" => lang('wednesday'),"4" => lang('thursday'),"5" => lang('friday'),
+                                "6" => lang('saturday'));
+        $output = '';  
+        foreach ($days as $key => $value){
+            $sel = '';
+            $output .= '<div style="float: left;width: 80px;"><label>' . $value . ':</label>'; 
+            foreach ($options as $option) {
+                if ($option == $key) {
+                        $sel = 'checked="checked"';
+                }                
+            }
+            $output .= '<input class="checkbox" type="checkbox" value="' . $key . '" name="options[working_days][]" ' . $sel . '/></div>';
+        }
+        
+	return $output;
 }

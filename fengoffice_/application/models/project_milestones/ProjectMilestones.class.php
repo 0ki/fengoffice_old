@@ -35,8 +35,8 @@ class ProjectMilestones extends BaseProjectMilestones {
 			}
 		}
 		
-		
-		/*$extra_conditions = "";
+		$extra_conditions = "";
+		/*
 		if (count($parents) > 0) {
 			$extra_conditions = "OR EXISTS (SELECT `aux`.`object_id` FROM ".ObjectMembers::instance()->getTableName(true)." `aux` WHERE `aux`.`is_optimization` = 0 
 				AND `aux`.`object_id`=`om`.`object_id` AND `aux`.`member_id` IN (".implode(",",$parents)."))";
@@ -149,6 +149,42 @@ class ProjectMilestones extends BaseProjectMilestones {
 		));
 		
 		return $result->objects;
+	}
+	
+	
+	
+	private static $info_cache = null;
+	
+	static function getMilestonesInfo($mid) {
+		if (self::$info_cache == null) {
+			self::$info_cache = array();
+			// completed
+			$rows = DB::executeAll("select count(object_id) as row_count, milestone_id from ".TABLE_PREFIX."project_tasks use index (completed_on) where completed_on > '0000-00-00' group by milestone_id;");
+			if (is_array($rows)) {
+				foreach ($rows as $row) {
+					if (array_var($row, 'milestone_id') > 0) {
+						if (!isset(self::$info_cache[$row['milestone_id']])) {
+							self::$info_cache[$row['milestone_id']] = array();
+						}
+						self::$info_cache[$row['milestone_id']]['tc'] = array_var($row, 'row_count');
+					}
+				}
+			}
+			// all milestone tasks
+			$rows = DB::executeAll("select count(object_id) as row_count, milestone_id from ".TABLE_PREFIX."project_tasks use index (milestone_id) group by milestone_id;");
+			if (is_array($rows)) {
+				foreach ($rows as $row) {
+					if (array_var($row, 'milestone_id') > 0) {
+						if (!isset(self::$info_cache[$row['milestone_id']])) {
+							self::$info_cache[$row['milestone_id']] = array();
+						}
+						self::$info_cache[$row['milestone_id']]['tnum'] = array_var($row, 'row_count');
+					}
+				}
+			}
+		}
+		
+		return array_var(self::$info_cache, $mid);
 	}
 
 } // ProjectMilestones

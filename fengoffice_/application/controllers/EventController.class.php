@@ -66,16 +66,16 @@ class EventController extends ApplicationController {
 		foreach ($invitations as $id => $assist) {
 			$conditions = array('event_id' => $event->getId(), 'contact_id' => $id);
 			//insert only if not exists 
-			if (EventInvitations::findById($conditions) == null) { 
-                            $invitation = new EventInvitation();
-                            $invitation->setEventId($event->getId());
-                            $invitation->setContactId($id);
-                            $invitation->setInvitationState(1);
-                            $invitation->save();
-                            if (array_var($data, 'subscribe_invited', false) && is_array(array_var($_POST, 'subscribers'))) {
-                                $_POST['subscribers']['user_' . $id] = 'checked';
-                            }
-                        }
+			if (EventInvitations::findById($conditions) == null) {
+				$invitation = new EventInvitation();
+				$invitation->setEventId($event->getId());
+				$invitation->setContactId($id);
+				$invitation->setInvitationState(logged_user() instanceof Contact && logged_user()->getId() == $id ? 1 : 0);
+				$invitation->save();
+				if (array_var($data, 'subscribe_invited', false) && is_array(array_var($_POST, 'subscribers'))) {
+					$_POST['subscribers']['user_' . $id] = 'checked';
+				}
+			}
 		}
 		// Delete non checked invitations
 		$previuos_invitations = EventInvitations::findAll(array('conditions' => '`event_id` = ' . $event->getId()));
@@ -370,6 +370,7 @@ class EventController extends ApplicationController {
 					$this->change_invitation_state($data['confirmAttendance'], $event->getId(), $user_filter);
 				}
 				
+				$is_silent = false;
 				if (isset($data['send_notification']) && $data['send_notification']) {
 					$users_to_inv = array();
 					foreach ($data['users_to_invite'] as $us => $v) {
@@ -378,6 +379,7 @@ class EventController extends ApplicationController {
 						}
 					}
 					Notifier::notifEvent($event, $users_to_inv, 'new', logged_user());
+					$is_silent = true;
 				}
 
 				if (array_var($_POST, 'members')) {
@@ -389,35 +391,44 @@ class EventController extends ApplicationController {
 						if ($selection instanceof Member) $member_ids[] = $selection->getId();
 					}
 				}
-
-				$object_controller = new ObjectController();
+                                
+                                ApplicationLogs::createLog($event, ApplicationLogs::ACTION_ADD, false, $is_silent);
+                                
+                                $object_controller = new ObjectController();
 				$object_controller->add_to_members($event, $member_ids);
 				$object_controller->add_subscribers($event);
 				$object_controller->link_to_new_object($event);
 				$object_controller->add_custom_properties($event);
 				$object_controller->add_reminders($event);
 
-				if (array_var($_POST, 'popup', false)) {
-					// create default reminder
-					$minutes = 15;
-					$reminder = new ObjectReminder();
-					$reminder->setMinutesBefore($minutes);
-					$reminder->setType("reminder_popup");
-					$reminder->setContext("start");
-					$reminder->setObject($event);
-					$reminder->setUserId(0);
-					$date = $event->getStart();
-					if ($date instanceof DateTimeValue) {
-						$rdate = new DateTimeValue($date->getTimestamp() - $minutes * 60);
-						$reminder->setDate($rdate);
-					}
-					$reminder->save();
-				}
-
-				ApplicationLogs::createLog($event, ApplicationLogs::ACTION_ADD);
-
-				$this->repetitive_event($event);
-
+                                if (array_var($_POST, 'popup', false)) {
+                                        // create default reminder
+                                        $def = explode(",",user_config_option("reminders_events"));
+                                        $minutes = $def[1];
+                                        $reminder = new ObjectReminder();
+                                        $reminder->setMinutesBefore($minutes);
+                                        $reminder->setType($def[0]);
+                                        $reminder->setContext("start");
+                                        $reminder->setObject($event);
+                                        $reminder->setUserId(0);
+                                        $date = $event->getStart();
+                                        if ($date instanceof DateTimeValue) {
+                                                $rdate = new DateTimeValue($date->getTimestamp() - $minutes * 60);
+                                                $reminder->setDate($rdate);
+                                        }
+                                        $reminder->save();
+                                }
+                                
+                                $opt_rep_day = array();
+                                if(array_var($event_data, 'repeat_saturdays',false)){
+                                    $opt_rep_day['saturday'] = true;
+                                }
+                                if(array_var($event_data, 'repeat_sundays',false)){
+                                    $opt_rep_day['sunday'] = true;
+                                }
+                                
+                                $this->repetitive_event($event, $opt_rep_day);
+                                
 				if (array_var($_POST, 'popup', false)) {
 					$event->subscribeUser(logged_user());
 					ajx_current("reload");
@@ -438,6 +449,7 @@ class EventController extends ApplicationController {
 	}
 	
 	function delete() {
+                $options = array_var($_GET, 'options');
 		if (logged_user()->isGuest()) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
@@ -467,7 +479,7 @@ class EventController extends ApplicationController {
 			}
 		}
 	    
-	    $this->getUserPreferences($view_type, $user_filter, $status_filter, $task_filter);
+                $this->getUserPreferences($view_type, $user_filter, $status_filter, $task_filter);
 		$this->setTemplate($view_type);
 		
 		try {
@@ -483,7 +495,7 @@ class EventController extends ApplicationController {
 					if ($invs->getContactId() != logged_user()->getId()) 
 						$notifications[] = Contacts::findById(array('id' => $invs->getContactId()));
 				}
-				Notifier::notifEvent($event, $notifications, 'deleted', logged_user());
+				//Notifier::notifEvent($event, $notifications, 'deleted', logged_user());
 				
 				DB::beginWork();
 				// delete event
@@ -493,7 +505,11 @@ class EventController extends ApplicationController {
                                     $this->delete_event_calendar_extern($event);
                                     $event->setSpecialID("");
                                     $event->save();
-                                }                                
+                                }       
+                                
+                                if($options == "news" || $options == "all"){
+                                    $this->repetitive_event_related($event,"delete",$options);
+                                }
                                 
 				ApplicationLogs::createLog($event, ApplicationLogs::ACTION_TRASH);
 				DB::commit();
@@ -510,6 +526,7 @@ class EventController extends ApplicationController {
 	}
 	
 	function archive() {
+                $options = array_var($_GET, 'options');
 		if (logged_user()->isGuest()) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
@@ -538,7 +555,7 @@ class EventController extends ApplicationController {
 			}
 		}
 	    
-	    $this->getUserPreferences($view_type, $user_filter, $status_filter, $task_filter);
+                $this->getUserPreferences($view_type, $user_filter, $status_filter, $task_filter);
 		$this->setTemplate($view_type);
 		
 		try {
@@ -546,6 +563,9 @@ class EventController extends ApplicationController {
 			foreach ($events as $event) {
 				DB::beginWork();
 				$event->archive();
+                                if($options == "news" || $options == "all"){
+                                    $this->repetitive_event_related($event,"archive",$options);
+                                }
 				ApplicationLogs::createLog($event, ApplicationLogs::ACTION_ARCHIVE);
 				DB::commit();
 				$succ++;
@@ -608,26 +628,32 @@ class EventController extends ApplicationController {
 	}
 	
 	function setViewVariables($view_type, $user_filter, $status_filter, $task_filter) {
-		//FIXME
-		//if (logged_user()->isMemberOfOwnerCompany())
-			$users = Contacts::getAllUsers();
-		//else $users = logged_user()->getCompany()->getContacts();
+		$context = active_context();
+		$member_selected = false;
+		foreach ($context as $selection) {
+			if ($selection instanceof Member) {
+				$member_selected = true;
+				break;
+			}
+		}
 		
-		//Get Companies Info
-		//if (logged_user()->isMemberOfOwnerCompany())
-			$companies = Contacts::findAll(array("conditions" => "is_company = 1"));
-		//else $companies = array(logged_user()->getCompany());
+		$users = allowed_users_in_context(ProjectEvents::instance()->getObjectTypeId(), $context, ACCESS_LEVEL_READ);
+		$company_ids = array(-1);
+		foreach ($users as $user) {
+			if ($user->getCompanyId()) $company_ids[] = $user->getCompanyId();
+		}
+		$companies = Contacts::findAll(array("conditions" => "is_company = 1 AND object_id IN (".implode(",", $company_ids).")"));
 		
 		$usr = Contacts::findById($user_filter);
 		$user_filter_comp = $usr != null ? $usr->getCompanyId() : 0;
-		
+
 		tpl_assign('users', $users);
 		tpl_assign('companies', $companies);
 		tpl_assign('userPreferences', array(
 				'view_type' => $view_type,
 				'user_filter' => $user_filter,
 				'status_filter' => $status_filter,
-                                'task_filter' => $task_filter,
+				'task_filter' => $task_filter,
 				'user_filter_comp' => $user_filter_comp
 		));
 	}
@@ -726,7 +752,7 @@ class EventController extends ApplicationController {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return ;
-	    }
+                }
 	    
 		$event_data = array_var($_POST, 'event');
 		if(!is_array($event_data)) {
@@ -793,7 +819,21 @@ class EventController extends ApplicationController {
 			  'repeat_mjump' => $event->getRepeatMjump(),
 			); // array
 		} // if
-	
+                
+                //I find all those related to the task to find out if the original
+                $event_related = ProjectEvents::findByRelated($event->getObjectId());
+                if(!$event_related){
+                    //is not the original as the original look plus other related
+                    if($event->getOriginalEventId() != "0"){
+                        $event_related = ProjectEvents::findByEventAndRelated($event->getObjectId(),$event->getOriginalEventId());
+                    }
+                }
+                if($event_related){
+                    tpl_assign('event_related', true);
+                }else{
+                    tpl_assign('event_related', false);
+                }    
+                
 		tpl_assign('event_data', $event_data);
 		tpl_assign('event', $event);
 
@@ -833,7 +873,8 @@ class EventController extends ApplicationController {
 				if (isset($data['confirmAttendance'])) {
                                     $this->change_invitation_state($data['confirmAttendance'], $event->getId(), $user_filter);
                                 }
-
+                                
+                                $is_silent = false;
                                 if (isset($data['send_notification']) && $data['send_notification']) {
                                                     $users_to_inv = array();
                                     foreach ($data['users_to_invite'] as $us => $v) {
@@ -842,6 +883,7 @@ class EventController extends ApplicationController {
                                             }
                                     }
                                     Notifier::notifEvent($event, $users_to_inv, 'modified', logged_user());
+                                    $is_silent = true;
                                 }
 				    
                                 DB::beginWork();
@@ -863,9 +905,22 @@ class EventController extends ApplicationController {
 
                                 $event->resetIsRead();
 
-                                ApplicationLogs::createLog($event, ApplicationLogs::ACTION_EDIT);
-
-                                $this->repetitive_event($event);
+                                ApplicationLogs::createLog($event, ApplicationLogs::ACTION_EDIT, false, $is_silent);
+                                
+                                $opt_rep_day = array();
+                                if(array_var($event_data, 'repeat_saturdays',false)){
+                                    $opt_rep_day['saturday'] = true;
+                                }
+                                if(array_var($event_data, 'repeat_sundays',false)){
+                                    $opt_rep_day['sunday'] = true;
+                                }
+                                
+                                $this->repetitive_event($event, $opt_rep_day);
+                                
+                                if($_POST['type_related'] == "all" || $_POST['type_related'] == "news"){
+                                    $data['members'] = json_decode(array_var($_POST, 'members'));
+                                    $this->repetitive_event_related($event,"edit",$_POST['type_related'],$data);
+                                }   
 
                                 DB::commit();
                                 flash_success(lang('success edit event', clean($event->getObjectName())));
@@ -983,38 +1038,38 @@ class EventController extends ApplicationController {
 					try {
 						DB::beginWork();
 						foreach ($events_data as $ev_data) {
-                                                    $event = new ProjectEvent();
-				
-						    $event->setFromAttributes($ev_data);						    
-						    $event->save();
-                                                    
-                                                    ApplicationLogs::createLog($event, ApplicationLogs::ACTION_ADD);
-                                                    
-                                                    $conditions = array('event_id' => $event->getId(), 'contact_id' => logged_user()->getId());
-                                                    //insert only if not exists 
-                                                    if (EventInvitations::findById($conditions) == null) { 
-                                                        $invitation = new EventInvitation();
-                                                        $invitation->setEventId($event->getId());
-                                                        $invitation->setContactId(logged_user()->getId());
-                                                        $invitation->setInvitationState(1);
-                                                        $invitation->save();
-                                                    }
+							$event = new ProjectEvent();
 
-                                                    //insert only if not exists 
-                                                    if (ObjectSubscriptions::findBySubscriptions($event->getId()) == null) { 
-                                                        $subscription = new ObjectSubscription();
-                                                        $subscription->setObjectId($event->getId());
-                                                        $subscription->setContactId(logged_user()->getId());
-                                                        $subscription->save();
-                                                    }
+							$event->setFromAttributes($ev_data);
+							$event->save();
 
-                                                    $member_ids = array();
-                                                    $context = active_context();
-                                                    foreach ($context as $selection) {
-                                                            if ($selection instanceof Member) $member_ids[] = $selection->getId();
-                                                    }		        
-                                                    $object_controller = new ObjectController();
-                                                    $object_controller->add_to_members($event, $member_ids); 
+							ApplicationLogs::createLog($event, ApplicationLogs::ACTION_ADD);
+
+							$conditions = array('event_id' => $event->getId(), 'contact_id' => logged_user()->getId());
+							//insert only if not exists
+							if (EventInvitations::findById($conditions) == null) {
+								$invitation = new EventInvitation();
+								$invitation->setEventId($event->getId());
+								$invitation->setContactId(logged_user()->getId());
+								$invitation->setInvitationState(1);
+								$invitation->save();
+							}
+
+							//insert only if not exists
+							if (ObjectSubscriptions::findBySubscriptions($event->getId()) == null) {
+								$subscription = new ObjectSubscription();
+								$subscription->setObjectId($event->getId());
+								$subscription->setContactId(logged_user()->getId());
+								$subscription->save();
+							}
+
+							$member_ids = array();
+							$context = active_context();
+							foreach ($context as $selection) {
+								if ($selection instanceof Member) $member_ids[] = $selection->getId();
+							}
+							$object_controller = new ObjectController();
+							$object_controller->add_to_members($event, $member_ids);
 						}
 						DB::commit();
 						$ok = true;
@@ -1299,15 +1354,28 @@ class EventController extends ApplicationController {
                             $sel = 1;
                         }
                         $external_calendars[] = array('user' => $calendar_user, 'title' => $calF->title->text , 'sel' => $sel);                        
+                                            
+                        $calendar_google[] = $calendar_user;
                     }
                     
-                    $calendars = ExternalCalendars::findByExtCalUserId($user->getId());                    
-                    tpl_assign('calendars', $calendars); 
+                    $view_calendars = array();
+                    $calendars = ExternalCalendars::findByExtCalUserId($user->getId());       
+                    foreach ($calendars as $ext_calendar){
+                        if(in_array($ext_calendar->getCalendarUser(), $calendar_google)){
+                            $view_calendars[] = $ext_calendar;
+                        }else{
+                            $ext_calendar->delete();
+                        }
+                    }
+                    tpl_assign('calendars', $view_calendars);
                     
                     $user_data['id'] = $user->getId();
                     $user_data['auth_user'] = $user->getAuthUser();
                     $user_data['auth_pass'] = $user->getAuthPass();   
                     $user_data['sync'] = $user->getSync(); 
+                    
+                    tpl_assign('user', $user_data);
+                    tpl_assign('external_calendars', $external_calendars);
                 }              
                 
                 $cal_data = array();
@@ -1318,11 +1386,8 @@ class EventController extends ApplicationController {
                     
                     $cal_data['calendar_link'] = "https://www.google.com/calendar/feeds/".$edit_calendar->getCalendarUser()."/".$edit_calendar->getCalendarVisibility()."/basic";
                     $cal_data['calendar_name'] = $edit_calendar->getCalendarName();
+                    tpl_assign('cal_data', $cal_data);
                 }
-                
-                tpl_assign('user', $user_data);
-                tpl_assign('cal_data', $cal_data);
-                tpl_assign('external_calendars', $external_calendars);
 	}
         
         function add_calendar_user() {
@@ -1561,7 +1626,7 @@ class EventController extends ApplicationController {
                     $sql = "SELECT ec.* FROM `".TABLE_PREFIX."external_calendars` ec,`".TABLE_PREFIX."external_calendar_users` ecu 
                             WHERE ec.calendar_user = '".$cal_user."' AND ecu.contact_id = ".logged_user()->getId()."";
                     $calendar_feng = DB::executeOne($sql);  
-
+                    
                     if(!$calendar_feng){
                         $calendar = new ExternalCalendar();
                         $calendar->setCalendarUser($cal_user);
@@ -1576,63 +1641,382 @@ class EventController extends ApplicationController {
                         $sync = true;
                     }
                 }
-                if($sync){
-                    $this->import_google_calendar();
-                }
+//                if($sync){
+//                    $this->import_google_calendar();
+//                }
+                $this->import_google_calendar();
+                flash_success(lang('success import calendar'));
+                ajx_current("reload");
             }
         }
         
-        function import_google_calendar() {
-		ajx_current("empty");  
-                
-                ProjectEvents::import_google_calendar();
-                
-                flash_success(lang('success add sync'));
-                ajx_current("reload");
+        function import_google_calendar() {      
+                ajx_current("empty");
+                $users = ExternalCalendarUsers::findByContactId();  
+                if($users){
+                    $calendars = ExternalCalendars::findByExtCalUserId($users->getId());
+
+                    require_once 'Zend/Loader.php';
+
+                    Zend_Loader::loadClass('Zend_Gdata');
+                    Zend_Loader::loadClass('Zend_Gdata_AuthSub');
+                    Zend_Loader::loadClass('Zend_Gdata_ClientLogin');
+                    Zend_Loader::loadClass('Zend_Gdata_Calendar');
+
+                    $user = $users->getAuthUser();
+                    $pass = $users->getAuthPass();
+                    $service = Zend_Gdata_Calendar::AUTH_SERVICE_NAME;
+
+                    try
+                    {
+                            $client = Zend_Gdata_ClientLogin::getHttpClient($user,$pass,$service);                                                       
+                            $gdataCal = new Zend_Gdata_Calendar($client);
+
+                            //update or insert events for calendars                        
+                            foreach ($calendars as $calendar){
+
+                                //check the deleted calendars
+                                $delete_calendar = false;
+                                $calFeed = $gdataCal->getCalendarListFeed();        
+                                foreach ($calFeed as $calF){
+                                    $cal_src = explode("/",$calF->content->src);
+                                    array_pop($cal_src);
+                                    $calendar_visibility = end($cal_src);
+                                    array_pop($cal_src);
+                                    $calendar_user = end($cal_src); 
+
+                                    if($calendar_user == $calendar->getCalendarUser()){
+                                        $delete_calendar = true;
+                                    }
+                                }
+
+                                if($delete_calendar){
+                                    $calendar_user = $calendar->getCalendarUser();
+                                    $calendar_visibility = $calendar->getCalendarVisibility();
+
+                                    $query = $gdataCal->newEventQuery();
+                                    $query->setUser($calendar_user);
+                                    $query->setVisibility($calendar_visibility);
+                                    $query->setSingleEvents(true);
+                                    $query->setProjection('full');
+                                    // execute and get results
+                                    $event_list = $gdataCal->getCalendarEventFeed($query);
+
+                                    $array_events_google = array();
+                                    foreach ($event_list as $event){
+                                        $event_id = explode("/",$event->id->text);
+                                        $special_id = end($event_id); 
+                                        $event_name = lang("untitle event");
+                                        if($event->title->text != ""){
+                                            $event_name = $event->title->text;
+                                        }
+                                        $array_events_google[] = $special_id;
+                                        $new_event = ProjectEvents::findBySpecialId($special_id);
+                                        if($new_event){
+                                            $start = strtotime(ProjectEvents::date_google_to_sql($event->when[0]->startTime));
+                                            $fin = strtotime(ProjectEvents::date_google_to_sql($event->when[0]->endTime));
+                                            if(($fin - $start) == 86400){
+                                                $new_event->setStart(date("Y-m-d H:i:s",$start));
+                                                $new_event->setDuration(date("Y-m-d H:i:s",$start));
+                                                $new_event->setTypeId(2);
+                                            }elseif(($fin - $start) > 86400){                                                
+                                                $t_s = explode(' ', date("Y-m-d H:i:s",$start));
+                                                $t_f = explode(' ', date("Y-m-d H:i:s",$fin));
+                                                
+                                                $date_s = new DateTimeValue(strtotime($t_s[0]."00:00:00") - logged_user()->getTimezone() * 3600);
+                                                $date_f = new DateTimeValue(strtotime($t_f[0]."23:59:59 -1 day") - logged_user()->getTimezone() * 3600);
+                                                
+                                                $new_event->setStart(date("Y-m-d H:i:s",$date_s->getTimestamp()));
+                                                $new_event->setDuration(date("Y-m-d H:i:s",$date_f->getTimestamp()));
+                                                $new_event->setTypeId(2);
+                                            }else{
+                                                $new_event->setStart(ProjectEvents::date_google_to_sql($event->when[0]->startTime));
+                                                $new_event->setDuration(ProjectEvents::date_google_to_sql($event->when[0]->endTime));
+                                            }
+                                            
+                                            $new_event->setObjectName($event_name);
+                                            $new_event->setDescription($event->content->text);
+                                            $new_event->setExtCalId($calendar->getId());
+                                            $new_event->save(); 
+                                            
+                                        }else{
+                                            $new_event = new ProjectEvent();
+                                            
+                                            $start = strtotime(ProjectEvents::date_google_to_sql($event->when[0]->startTime));
+                                            $fin = strtotime(ProjectEvents::date_google_to_sql($event->when[0]->endTime));
+                                            if(($fin - $start) == 86400){
+                                                $new_event->setStart(date("Y-m-d H:i:s",$start));
+                                                $new_event->setDuration(date("Y-m-d H:i:s",$start));
+                                                $new_event->setTypeId(2);
+                                            }elseif(($fin - $start) > 86400){
+                                                $t_s = explode(' ', date("Y-m-d H:i:s",$start));
+                                                $t_f = explode(' ', date("Y-m-d H:i:s",$fin));
+                                                
+                                                $date_s = new DateTimeValue(strtotime($t_s[0]."00:00:00") - logged_user()->getTimezone() * 3600);
+                                                $date_f = new DateTimeValue(strtotime($t_f[0]."23:59:59 -1 day") - logged_user()->getTimezone() * 3600);
+                                                
+                                                $new_event->setStart(date("Y-m-d H:i:s",$date_s->getTimestamp()));
+                                                $new_event->setDuration(date("Y-m-d H:i:s",$date_f->getTimestamp()));
+                                                $new_event->setTypeId(2);
+                                            }else{
+                                                $new_event->setStart(ProjectEvents::date_google_to_sql($event->when[0]->startTime));
+                                                $new_event->setDuration(ProjectEvents::date_google_to_sql($event->when[0]->endTime));
+                                                $new_event->setTypeId(1);
+                                            }
+                                            
+                                            $new_event->setObjectName($event_name);
+                                            $new_event->setDescription($event->content->text);
+                                            $new_event->setSpecialID($special_id);
+                                            $new_event->setExtCalId($calendar->getId());                                            
+                                            $new_event->save(); 
+                                            
+                                            $conditions = array('event_id' => $new_event->getId(), 'contact_id' => logged_user()->getId());
+                                            //insert only if not exists 
+                                            if (EventInvitations::findById($conditions) == null) { 
+                                                $invitation = new EventInvitation();
+                                                $invitation->setEventId($new_event->getId());
+                                                $invitation->setContactId(logged_user()->getId());
+                                                $invitation->setInvitationState(1);
+                                                $invitation->save();
+                                            }
+                                            
+                                            //insert only if not exists 
+                                            if (ObjectSubscriptions::findBySubscriptions($new_event->getId()) == null) { 
+                                                $subscription = new ObjectSubscription();
+                                                $subscription->setObjectId($new_event->getId());
+                                                $subscription->setContactId(logged_user()->getId());
+                                                $subscription->save();
+                                            }
+
+                                            $member_ids = array();
+                                            $context = active_context();
+                                            foreach ($context as $selection) {
+                                                    if ($selection instanceof Member) $member_ids[] = $selection->getId();
+                                            }		        
+                                            $object_controller = new ObjectController();
+                                            $object_controller->add_to_members($new_event, $member_ids); 
+                                        }           
+                                    }// foreach event list 
+
+                                    //check the deleted events
+                                    $events_delete = ProjectEvents::findByExtCalId($calendar->getId());
+                                    if($events_delete){
+                                        foreach($events_delete as $event_delete){  
+                                            if(!in_array($event_delete->getSpecialID(), $array_events_google)){
+                                                $event_delete->trash();
+
+                                                $event_delete->setSpecialID("");
+                                                $event_delete->setExtCalId(0);
+                                                $event_delete->save();    
+                                            }                                        
+                                        }  
+                                    }
+                                }else{                
+                                    $events = ProjectEvents::findByExtCalId($calendar->getId());
+                                    if($calendar->delete()){
+                                        if($events){
+                                            foreach($events as $event){                            
+                                                $event->trash();
+
+                                                $event->setSpecialID("");
+                                                $event->setExtCalId(0);
+                                                $event->save();
+                                            }  
+                                        }
+                                    }
+                                }
+                            }//foreach calendars
+                    }
+                    catch(Exception $e)
+                    {
+                            flash_error(lang('could not connect to calendar'));
+                            ajx_current("empty");
+                    }
+                }
 	}
         
         function export_google_calendar() {
 		ajx_current("empty");
                 
-                ProjectEvents::export_google_calendar();
+                require_once 'Zend/Loader.php';
+
+                Zend_Loader::loadClass('Zend_Gdata');
+                Zend_Loader::loadClass('Zend_Gdata_AuthSub');
+                Zend_Loader::loadClass('Zend_Gdata_ClientLogin');
+                Zend_Loader::loadClass('Zend_Gdata_Calendar');
                 
-                flash_success(lang('success add sync'));
-                ajx_current("reload");                
-	}
+                $users = ExternalCalendarUsers::findByContactId();
+                if($users){
+                    if($users->getSync() == 1){
+                        $sql = "SELECT ec.* FROM `".TABLE_PREFIX."external_calendars` ec,`".TABLE_PREFIX."external_calendar_users` ecu 
+                                WHERE ec.calendar_feng = 1 AND ecu.contact_id = ".logged_user()->getId();
+                        $calendar_feng = DB::executeOne($sql);
+                        $events = ProjectEvents::findNoSync();
 
-	function repetitive_event($event){
-		if($event->isRepetitive()){
-			if ($event->getRepeatNum() > 0) {
-				$event->setRepeatNum($event->getRepeatNum() - 1);
-				while($event->getRepeatNum() > 0){
-					$this->getNextRepetitionDates($event, $new_st_date, $new_due_date);
-					$event->setRepeatNum($event->getRepeatNum() - 1);
-					// generate completed task
-					$event->cloneEvent($new_st_date,$new_due_date);
-					// set next values for repetetive task
-					if ($event->getStart() instanceof DateTimeValue ) $event->setStart($new_st_date);
-					if ($event->getDuration() instanceof DateTimeValue ) $event->setDuration($new_due_date);
-				}
-				$event->save();
-			}else{
-				$event_end = $event->getRepeatEnd();
-				$new_st_date = "";
-				$new_due_date = "";
-				while($new_st_date <= $event_end || $new_due_date <= $event_end){
-					$this->getNextRepetitionDates($event, $new_st_date, $new_due_date);
-					// generate completed task
-					$event->cloneEvent($new_st_date,$new_due_date);
-					// set next values for repetetive task
-					if ($event->getStart() instanceof DateTimeValue ) $event->setStart($new_st_date);
-					if ($event->getDuration() instanceof DateTimeValue ) $event->setDuration($new_due_date);
-				}
-				$event->setRepeatEnd(EMPTY_DATETIME);
-				$event->save();
-			}
-		}
-	}
+                        $user = $users->getAuthUser();
+                        $pass = $users->getAuthPass();
+                        $service = Zend_Gdata_Calendar::AUTH_SERVICE_NAME;
 
-	private function getNextRepetitionDates($event, &$new_st_date, &$new_due_date) {
+                        try
+                        {
+                                $client = Zend_Gdata_ClientLogin::getHttpClient($user,$pass,$service);  
+                                $gdataCal = new Zend_Gdata_Calendar($client);
+
+                                if ($calendar_feng){
+                                    foreach ($events as $event){
+                                        $calendarUrl = 'http://www.google.com/calendar/feeds/'.$calendar_feng['calendar_user'].'/private/full';
+
+                                        $newEvent = $gdataCal->newEventEntry();
+                                        $newEvent->title = $gdataCal->newTitle($event->getObjectName());
+                                        $newEvent->content = $gdataCal->newContent($event->getDescription());
+
+                                        $star_time = explode(" ",$event->getStart()->format("Y-m-d H:i:s"));
+                                        $end_time = explode(" ",$event->getDuration()->format("Y-m-d H:i:s"));
+
+                                        if($event->getTypeId() == 2){
+                                            $when = $gdataCal->newWhen();
+                                            $when->startTime = $star_time[0];
+                                            $when->endTime = $end_time[0];
+                                            $newEvent->when = array($when);
+                                        }else{                                    
+                                            $when = $gdataCal->newWhen();
+                                            $when->startTime = $star_time[0]."T".$star_time[1].".000-00:00";
+                                            $when->endTime = $end_time[0]."T".$end_time[1].".000-00:00";
+                                            $newEvent->when = array($when);
+                                        }
+
+                                        // insert event
+                                        $createdEvent = $gdataCal->insertEvent($newEvent, $calendarUrl);
+
+                                        $event_id = explode("/",$createdEvent->id->text);
+                                        $special_id = end($event_id); 
+                                        $event->setSpecialID($special_id);
+                                        $event->setExtCalId($calendar_feng['id']);
+                                        $event->save();
+                                    }                             
+                                }else{
+                                    $appCalUrl = '';
+                                    $calFeed = $gdataCal->getCalendarListFeed();        
+                                    foreach ($calFeed as $calF){
+                                        if($calF->title->text == lang('feng calendar')){
+                                            $appCalUrl = $calF->content->src;
+                                            $t_calendario = $calF->title->text;
+                                        }
+                                    }    
+
+                                    if($appCalUrl != ""){
+                                        $title_cal = $t_calendario;
+                                    }else{
+                                        $appCal = $gdataCal -> newListEntry();
+                                        $appCal -> title = $gdataCal-> newTitle(lang('feng calendar'));                         
+                                        $own_cal = "http://www.google.com/calendar/feeds/default/owncalendars/full";                        
+                                        $new_cal = $gdataCal->insertEvent($appCal, $own_cal);
+
+                                        $title_cal = $new_cal->title->text;
+                                        $appCalUrl = $new_cal->content->src;                                
+                                    }               
+
+                                    $cal_src = explode("/",$appCalUrl);
+                                    array_pop($cal_src);
+                                    $calendar_visibility = end($cal_src);
+                                    array_pop($cal_src);
+                                    $calendar_user = end($cal_src);                            
+
+                                    $calendar = new ExternalCalendar();
+                                    $calendar->setCalendarUser($calendar_user);
+                                    $calendar->setCalendarVisibility($calendar_visibility);
+                                    $calendar->setCalendarName($title_cal);
+                                    $calendar->setExtCalUserId($users->getId());
+                                    $calendar->setCalendarFeng(1);
+                                    $calendar->save();
+
+                                    foreach ($events as $event){                               
+                                        $calendarUrl = 'http://www.google.com/calendar/feeds/'.$calendar->getCalendarUser().'/private/full';
+
+                                        $newEvent = $gdataCal->newEventEntry();
+
+                                        $newEvent->title = $gdataCal->newTitle($event->getObjectName());
+                                        $newEvent->content = $gdataCal->newContent($event->getDescription());
+
+                                        $star_time = explode(" ",$event->getStart()->format("Y-m-d H:i:s"));
+                                        $end_time = explode(" ",$event->getDuration()->format("Y-m-d H:i:s"));
+
+                                        if($event->getTypeId() == 2){
+                                            $when = $gdataCal->newWhen();
+                                            $when->startTime = $star_time[0];
+                                            $when->endTime = $end_time[0];
+                                            $newEvent->when = array($when);
+                                        }else{                                    
+                                            $when = $gdataCal->newWhen();
+                                            $when->startTime = $star_time[0]."T".$star_time[1].".000-00:00";
+                                            $when->endTime = $end_time[0]."T".$end_time[1].".000-00:00";
+                                            $newEvent->when = array($when);
+                                        }
+
+                                        // insert event
+                                        $createdEvent = $gdataCal->insertEvent($newEvent, $calendarUrl);
+
+                                        $event_id = explode("/",$createdEvent->id->text);
+                                        $special_id = end($event_id); 
+                                        $event->setSpecialID($special_id);
+                                        $event->setExtCalId($calendar->getId());
+                                        $event->save();
+                                    } 
+                                }
+                                flash_success(lang('success add sync'));
+                                ajx_current("reload");
+                        }
+                        catch(Exception $e)
+                        {
+                                // prevent Google username and password from being displayed
+                                // if a problem occurs
+                                flash_error(lang('could not connect to calendar'));
+                                ajx_current("empty");
+                        }
+                    }
+                }
+	}
+        
+        function repetitive_event($event,$opt_rep_day){
+            if($event->isRepetitive()){
+                if ($event->getRepeatNum() > 0) {
+                    $event->setRepeatNum($event->getRepeatNum() - 1);
+                    while($event->getRepeatNum() > 0){
+                        $this->getNextRepetitionDates($event, $opt_rep_day, $new_st_date, $new_due_date);
+                        $event->setRepeatNum($event->getRepeatNum() - 1);
+                        // generate completed task
+                        $event->cloneEvent($new_st_date,$new_due_date);
+                        // set next values for repetetive task
+                        if ($event->getStart() instanceof DateTimeValue ) $event->setStart($new_st_date);
+                        if ($event->getDuration() instanceof DateTimeValue ) $event->setDuration($new_due_date);
+                    }
+                }elseif ($event->getRepeatForever() == 0){
+                    $event_end = $event->getRepeatEnd();
+                    $new_st_date = "";
+                    $new_due_date = "";
+                    while($new_st_date <= $event_end || $new_due_date <= $event_end){
+                        $this->getNextRepetitionDates($event, $opt_rep_day, $new_st_date, $new_due_date);
+                        // generate completed task
+                        $event->cloneEvent($new_st_date,$new_due_date);
+                        // set next values for repetetive task
+                        if ($event->getStart() instanceof DateTimeValue ) $event->setStart($new_st_date);
+                        if ($event->getDuration() instanceof DateTimeValue ) $event->setDuration($new_due_date);
+                    }                    
+                }
+                $event->setRepeatEnd(EMPTY_DATETIME);
+                $event->setRepeatNum(0);
+                $event->setRepeatD(0);
+                $event->setRepeatM(0);
+                $event->setRepeatY(0);
+                $event->setRepeatH(0);
+                $event->setRepeatDow(0);
+                $event->setRepeatWnum(0);
+                $event->setRepeatMjump(0);
+                $event->save();
+            }
+        }
+        
+        private function getNextRepetitionDates($event, $opt_rep_day, &$new_st_date, &$new_due_date) {
 		$new_due_date = null;
 		$new_st_date = null;
 
@@ -1664,7 +2048,127 @@ class EventController extends ApplicationController {
 				$new_due_date = $new_due_date->add('y', $event->getRepeatY());
 			}
 		}
+                
+                $this->correct_days_event_repetitive($new_st_date,$opt_rep_day['saturday'],$opt_rep_day['sunday']);
+                $this->correct_days_event_repetitive($new_due_datev, $opt_rep_day['saturday'], $opt_rep_day['sunday']);
 	}
+        
+        function repetitive_event_related($event,$action,$type_related = "",$event_data = array()){
+            //I find all those related to the event to find out if the original
+            $event_related = ProjectEvents::findByRelated($event->getObjectId());
+            if(!$event_related){
+                //is not the original as the original look plus other related
+                if($event->getOriginalEventId() != "0"){
+                    $event_related = ProjectEvents::findByEventAndRelated($event->getObjectId(),$event->getOriginalEventId());
+                }
+            }            
+            if($event_related){
+                switch($action){
+                        case "edit":
+                                foreach ($event_related as $e_rel){
+                                    if($type_related == "news"){
+                                        if($event->getStart() <= $e_rel->getStart()){
+                                            $this->repetitive_event_related_edit($e_rel,$event_data);
+                                        }
+                                    }else{
+                                        $this->repetitive_event_related_edit($e_rel,$event_data);
+                                    }                                    
+                                }
+                        break;
+                        case "delete":
+                                $delete_event = array();
+                                foreach ($event_related as $e_rel){
+                                    $event_rel = Objects::findObject($e_rel->getId());   
+                                    if($type_related == "news"){
+                                        if($event->getStart() <= $e_rel->getStart()){
+                                            $delete_event[] = $e_rel->getId();                                                                             
+                                            $event_rel->trash(); 
+                                        }
+                                    }else{
+                                        $delete_event[] = $e_rel->getId();                                                                             
+                                        $event_rel->trash(); 
+                                    }                                                                        
+                                }
+                                return $delete_event;
+                        break;
+                        case "archive":
+                                $archive_event = array();
+                                foreach ($event_related as $e_rel){
+                                    $event_rel = Objects::findObject($e_rel->getId());                                    
+                                    if($type_related == "news"){
+                                        if($event->getStart() <= $e_rel->getStart()){
+                                            $archive_event[] = $e_rel->getId();                                                                            
+                                            $e_rel->archive();  
+                                        }
+                                    }else{
+                                        $archive_event[] = $e_rel->getId();                                                                            
+                                        $e_rel->archive();
+                                    }
+                                }
+                                return $archive_event;
+                        break;
+                }
+            }
+            
+        }
+        
+        function repetitive_event_related_edit($event,$data){
+            // run the query to set the event data
+            $event->setFromAttributes($data);
+
+            $this->registerInvitations($data, $event, false);
+            if (isset($data['confirmAttendance'])) {
+                $this->change_invitation_state($data['confirmAttendance'], $event->getId(), $user_filter);
+            }
+            DB::beginWork();
+            $event->save();  
+
+            if($event->getSpecialID() != ""){
+                $this->sync_calendar_extern($event);
+            }
+
+            $object_controller = new ObjectController();
+            $object_controller->add_to_members($event, array_var($task_data, 'members'));
+            $object_controller->add_subscribers($event);
+
+            $object_controller->link_to_new_object($event);
+            $object_controller->add_custom_properties($event);
+            $object_controller->add_reminders($event);
+
+            $event->resetIsRead();
+
+            ApplicationLogs::createLog($event, ApplicationLogs::ACTION_EDIT);
+        }
+        
+        function correct_days_event_repetitive($date, $repeat_saturday = false, $repeat_sunday = false){
+            if($date != ""){
+                $working_days = explode(",",config_option("working_days"));
+                if($repeat_saturday) $working_days[] = 6;
+                if($repeat_sunday) $working_days[] = 0;
+                if(!in_array(date("w",  $date->getTimestamp()), $working_days)){
+                    $date = $date->add('d', 1);
+                    $this->correct_days_event_repetitive($date);
+                }
+            }
+            return $date;
+        }
+        
+        function check_related_event(){
+            ajx_current("empty");
+            //I find all those related to the task to find out if the original
+            $event_related = ProjectEvents::findByRelated(array_var($_REQUEST, 'related_id'));
+            if(!$event_related){
+                $event_related = ProjectEvents::findById(array_var($_REQUEST, 'related_id'));
+                //is not the original as the original look plus other related
+                if($event_related->getOriginalEventId() != "0"){
+                    ajx_extra_data(array("status" => true));
+                }else{
+                    ajx_extra_data(array("status" => false));
+                }                
+            }else{
+                ajx_extra_data(array("status" => true));
+            }
+        }
 	
 } // EventController
 

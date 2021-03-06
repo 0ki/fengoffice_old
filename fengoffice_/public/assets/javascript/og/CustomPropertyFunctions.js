@@ -7,18 +7,18 @@ og.loadCustomPropertyFlags = function(){
 };
   	
 og.enterCP = function(id) {
-  	var deleted = document.getElementById('custom_properties[' + id + '][deleted]');
+/*  	var deleted = document.getElementById('custom_properties[' + id + '][deleted]');
   	if(deleted && deleted.value == "0"){
 		Ext.get('down' + id).setVisible(true);
 		Ext.get('up' + id).setVisible(true);
 		Ext.get('delete' + id).setVisible(true);
- 	}
+ 	}*/
 };
 
 og.leaveCP = function(id) {
-	Ext.get('down' + id).setVisible(false);
+/*	Ext.get('down' + id).setVisible(false);
 	Ext.get('up' + id).setVisible(false);
-	Ext.get('delete' + id).setVisible(false);
+	Ext.get('delete' + id).setVisible(false);*/
 };
 
 og.objectTypeChanged = function(genid){
@@ -113,9 +113,10 @@ og.addCustomProperty = function(genid, property){
 		'<td ' + style + ' id="tdVisibleByDefault' + count + '"><b>' + lang('visible by default') + 
   		'</b>:<br/><input class="checkbox" onchange="javascript:og.fieldValueChanged()" type="checkbox" id="custom_properties[' + count + '][visible_by_default]" name="custom_properties[' + count + '][visible_by_default]" {7}/></td>' +
   			
-		'<td style="width:250px;"></td><td><div style="display:none;" id="up' + count + '" class="clico ico-up" onclick="og.moveCustomPropertyUp(' + count + ',\'' + genid + '\')"></div></td>' +
-		'<td><div style="display:none;" id="down' + count + '" class="clico ico-down" onclick="og.moveCustomPropertyDown(' + count + ',\'' + genid + '\')"></div></td>' +
-		'<td><div style="display:none;" id="delete' + count + '" class="clico ico-delete" onclick="og.deleteCustomProperty(' + count + ',\'' + genid + '\')"></div></td>' +
+		'<td style="width:250px;"></td>' +
+  		'<td><div id="up' + count + '" class="clico ico-up" onclick="og.moveCustomPropertyUp(' + count + ',\'' + genid + '\')"></div></td>' +
+		'<td><div id="down' + count + '" class="clico ico-down" onclick="og.moveCustomPropertyDown(' + count + ',\'' + genid + '\')"></div></td>' +
+		'<td><div id="delete' + count + '" class="clico ico-delete" onclick="og.deleteCustomProperty(' + count + ',\'' + genid + '\')"></div></td>' +
 		'<tr id="trDelete' + count + '" style="display:none;"><td colspan="6"><b>' + lang('custom property deleted') +
 		'</b><a class="internalLink" href="javascript:og.undoDeleteCustomProperty(' + count + ',\'' + genid + '\')">&nbsp;(' + lang('undo') + ')</a></td></tr>' +
   		'</tr></table>';
@@ -382,9 +383,11 @@ og.swapCPs = function(first, second, genid){
 	
 	var applyto_names1 = document.getElementById('custom_properties[' + first + '][applyto_names]');
 	var applyto_names2 = document.getElementById('custom_properties[' + second + '][applyto_names]');
-	var tmp = applyto_names1.innerHTML;
-	applyto_names1.innerHTML = applyto_names2.innerHTML;
-	applyto_names2.innerHTML = tmp;
+	if (applyto_names1 && applyto_names2) {
+		var tmp = applyto_names1.innerHTML;
+		applyto_names1.innerHTML = applyto_names2.innerHTML;
+		applyto_names2.innerHTML = tmp;
+	}
 	if (og.coTypes) {
 		for (k=0; k<og.coTypes.length; k++) {
 			var applyto1 = document.getElementById('custom_properties[' + first + '][applyto]['+ og.coTypes[k].id +']');

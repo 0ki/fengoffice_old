@@ -141,9 +141,47 @@ class Zend_Loader
 
         /**
          * Try finding for the plain filename in the include_path.
-         */
+         */        
+        $not_include[] = 'Zend\Gdata\Calendar\Extension\EventQuery.php';
+        $not_include[] = 'Zend\Gdata\Calendar\Extension\Title.php';
+        $not_include[] = 'Zend\Gdata\Calendar\Title.php';
+        $not_include[] = 'Zend\Gdata\Kind\Title.php';
+        $not_include[] = 'Zend\Gdata\Title.php';
+        $not_include[] = 'Zend\Gdata\Calendar\Extension\Content.php';
+        $not_include[] = 'Zend\Gdata\Calendar\Content.php';
+        $not_include[] = 'Zend\Gdata\Kind\Content.php';
+        $not_include[] = 'Zend\Gdata\Extension\Content.php';
+        $not_include[] = 'Zend\Gdata\Content.php';
+        $not_include[] = 'Zend\Gdata\Calendar\Extension\When.php';
+        $not_include[] = 'Zend\Gdata\Calendar\When.php';
+        $not_include[] = 'Zend\Gdata\Kind\When.php';
+        $not_include[] = 'Zend\Gdata\Calendar\Extension\EventEntry.php';
+        $not_include[] = 'Zend\Gdata\Calendar\Extension\EventEntry.php';
+        $not_include[] = 'Zend\Gdata\Extension\Title.php'; 
+        $not_include[] = 'Zend\Gdata\Calendar\Extension\ListEntry.php';         
+        
+        $not_include[] = 'Zend/Gdata/Calendar/Extension/EventQuery.php';
+        $not_include[] = 'Zend/Gdata/Calendar/Extension/Title.php';
+        $not_include[] = 'Zend/Gdata/Calendar/Title.php';
+        $not_include[] = 'Zend/Gdata/Kind/Title.php';
+        $not_include[] = 'Zend/Gdata/Title.php';
+        $not_include[] = 'Zend/Gdata/Calendar/Extension/Content.php';
+        $not_include[] = 'Zend/Gdata/Calendar/Content.php';
+        $not_include[] = 'Zend/Gdata/Kind/Content.php';
+        $not_include[] = 'Zend/Gdata/Extension/Content.php';
+        $not_include[] = 'Zend/Gdata/Content.php';
+        $not_include[] = 'Zend/Gdata/Calendar/Extension/When.php';
+        $not_include[] = 'Zend/Gdata/Calendar/When.php';
+        $not_include[] = 'Zend/Gdata/Kind/When.php';
+        $not_include[] = 'Zend/Gdata/Calendar/Extension/EventEntry.php';
+        $not_include[] = 'Zend/Gdata/Calendar/Extension/EventEntry.php';
+        $not_include[] = 'Zend/Gdata/Extension/Title.php';
+        $not_include[] = 'Zend/Gdata/Calendar/Extension/ListEntry.php';     
+        
+        
         if ($once) {
-            include_once $filename;
+            if(!in_array($filename, $not_include))
+                include_once $filename;
         } else {
             include $filename;
         }

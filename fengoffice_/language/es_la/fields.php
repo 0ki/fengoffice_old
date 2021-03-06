@@ -163,6 +163,7 @@
 	'field ProjectTasks time_estimate' => 'Tiempo estimado',
 	'field ProjectTasks is_template' => 'Es plantilla',
 	'field ProjectTasks object_subtype' => 'Tipo de objeto',
+	'field ProjectTasks original_task_id' => 'Id de tarea original',
 	'field Users username' => 'Nombre de usuario',
 	'field Users email' => 'Correo electrónico',
 	'field Users display_name' => 'Nombre desplegado',

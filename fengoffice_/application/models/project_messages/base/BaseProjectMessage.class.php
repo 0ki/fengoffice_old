@@ -55,6 +55,28 @@
       return $this->setColumnValue('text', $value);
     } // setText() 
     
+    /**
+     * Return value of 'type_content' field
+     *
+     * @access public
+     * @param void
+     * @return string
+     */
+    function getTypeContent() {
+            return $this->getColumnValue('type_content');
+    } // getTypeContent()
+
+    /**
+     * Set value of 'type_content' field
+     *
+     * @access public
+     * @param string $value
+     * @return boolean
+     */
+    function setTypeContent($value) {
+            return $this->setColumnValue('type_content', $value);
+    } // setTypeContent()
+    
     
     /**
     * Return manager instance

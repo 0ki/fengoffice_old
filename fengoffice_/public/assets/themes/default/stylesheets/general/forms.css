@@ -285,6 +285,60 @@ a.button {
 	padding: 0 ;
 }	
 
+/** QUICK FORMS CONFIG**/
+#quick-form-config {
+	padding: 10px ;
+	border: 1px solid #CCC;
+	box-shadow: 0 0 16px 0 #CCC;
+	background: white ;
+	display:none;
+	position:absolute;
+	min-height: 15px ;
+	min-width: 30px;
+	color: #666 ;
+	z-index: 99999;
+	
+}
+
+#quick-form-config .close {
+    background: url("../../images/12x12/close-icon-1.png") 0 0 ;
+    cursor: pointer;
+    height: 12px;
+    position: absolute;
+    right: 5px;
+    top: 5px;
+    width: 12px;
+}
+
+#quick-form-config .close:hover {
+    background-position: 0 36px;
+}
+
+#quick-form-config a.more  {
+	margin: 10px 0 0 5px;
+	float: right;
+}
+
+#quick-form-config input  {
+	border-radius: 2px;
+	padding: 3px 5px ;
+	margin-bottom: 3px;
+	border: 1px solid #CCC;
+	clear: both ;
+}
+
+#quick-form-config select {
+	clear: both ;
+}
+
+#quick-form-config  .field {
+	margin-bottom: 0 ;
+}	
+
+#quick-form-config .access-data {	
+	padding: 0 ;
+}	
+
 .access-data {
 	padding: 10px ;
 	/* width: 220px ; */

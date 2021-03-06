@@ -839,46 +839,28 @@ class MailUtilities {
 				if ($max > 0 && $received >= $max) break;
 				if ($box->getCheckFolder()) {
 					if ($imap->selectMailbox(utf8_decode($box->getFolderName()))) {
-						$oldUids = $account->getUids($box->getFolderName());
+						$oldUids = $account->getUids($box->getFolderName(), 1);
 						$numMessages = $imap->getNumberOfMessages(utf8_decode($box->getFolderName()));
 						if (!is_array($oldUids) || count($oldUids) == 0 || PEAR::isError($numMessages) || $numMessages == 0) {
-							$lastReceived = 0;
 							if (PEAR::isError($numMessages)) {
 								continue;
-							}
-						} else {
-							$lastReceived = 0;
-							$maxUID = $account->getMaxUID($box->getFolderName());
-							$imin = 1;
-							$imax = $numMessages;
-							$i = floor(($imax + $imin) / 2);
-							while (true) {
-								$summary = $imap->getSummary($i);
-								if (PEAR::isError($summary)) {
-									$i--;
-									if ($i == 0) break;
-									continue;
-								}
-								$iprev = $i;
-								$uid = $summary[0]['UID'];
-								if ($maxUID > $uid) {
-									$imin = $i;
-									$lastReceived = $imin;
-								} else if ($maxUID < $uid) {
-									$imax = $i;
-								} else {
-									$lastReceived = $i;
-									break;
-								}
-								$i = floor(($imax + $imin) / 2);
-								if ($i == $iprev) {
-									break;
-								} 
 							}
 						}
 						
 						$uids = MailContents::getUidsFromAccount($account->getId(), $box->getFolderName());
-
+						
+						$max_uid = $account->getMaxUID($box->getFolderName());
+						if ($max_uid == "") {
+							$lastReceived = 0;
+						} else {
+							$max_summary = $imap->getSummary($max_uid, true);
+							if (PEAR::isError($max_summary)) {
+								Logger::log($max_summary->getMessage());
+								throw new Exception($max_summary->getMessage());
+							}
+							$lastReceived = $max_summary[0]['MSG_NUM'];
+						}
+						
 						// get mails since last received (last received is not included)
 						for ($i = $lastReceived; ($max == 0 || $received < $max) && $i < $numMessages; $i++) {
 							$index = $i+1;

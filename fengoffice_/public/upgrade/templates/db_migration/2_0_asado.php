@@ -79,43 +79,43 @@ INSERT INTO fo_dimension_object_type_contents (dimension_id, dimension_object_ty
 
 -- WORKSPACES
 
-INSERT INTO `fo_members` (`dimension_id`, `object_type_id`, `parent_member_id`, `depth`, `name`, `object_id`, `ws_id`)
- SELECT 1, 1, 0, 1, `name`, 0, `id` FROM `og_projects` WHERE `p1` = `id`;
+INSERT INTO `fo_members` (`dimension_id`, `object_type_id`, `parent_member_id`, `depth`, `name`, `object_id`, `ws_id`, `archived_on`, `archived_by_id`)
+ SELECT 1, 1, 0, 1, `name`, 0, `id`, `completed_on`, `completed_by_id` FROM `og_projects` WHERE `p1` = `id`;
 
-INSERT INTO `fo_members` (`dimension_id`, `object_type_id`, `parent_member_id`, `depth`, `name`, `object_id`, `ws_id`)
- SELECT 1, 1, (SELECT `id` FROM `fo_members` WHERE `ws_id` = `p1`), 2, `name`, 0, `id`
+INSERT INTO `fo_members` (`dimension_id`, `object_type_id`, `parent_member_id`, `depth`, `name`, `object_id`, `ws_id`, `archived_on`, `archived_by_id`)
+ SELECT 1, 1, (SELECT `id` FROM `fo_members` WHERE `ws_id` = `p1`), 2, `name`, 0, `id`, `completed_on`, `completed_by_id`
  FROM `og_projects` WHERE `p2` = `id` AND `p1` IN (SELECT `ws_id` FROM `fo_members` WHERE `dimension_id`= 1 AND `depth` = 1);
 
-INSERT INTO `fo_members` (`dimension_id`, `object_type_id`, `parent_member_id`, `depth`, `name`, `object_id`, `ws_id`)
- SELECT 1, 1, (SELECT `id` FROM `fo_members` WHERE `ws_id` = `p2`), 3, `name`, 0, `id`
+INSERT INTO `fo_members` (`dimension_id`, `object_type_id`, `parent_member_id`, `depth`, `name`, `object_id`, `ws_id`, `archived_on`, `archived_by_id`)
+ SELECT 1, 1, (SELECT `id` FROM `fo_members` WHERE `ws_id` = `p2`), 3, `name`, 0, `id`, `completed_on`, `completed_by_id`
  FROM `og_projects` WHERE `p3` = `id` AND `p2` IN (SELECT `ws_id` FROM `fo_members` WHERE `dimension_id`= 1 AND `depth` = 2);
 
-INSERT INTO `fo_members` (`dimension_id`, `object_type_id`, `parent_member_id`, `depth`, `name`, `object_id`, `ws_id`)
- SELECT 1, 1, (SELECT `id` FROM `fo_members` WHERE `ws_id` = `p3`), 4, `name`, 0, `id`
+INSERT INTO `fo_members` (`dimension_id`, `object_type_id`, `parent_member_id`, `depth`, `name`, `object_id`, `ws_id`, `archived_on`, `archived_by_id`)
+ SELECT 1, 1, (SELECT `id` FROM `fo_members` WHERE `ws_id` = `p3`), 4, `name`, 0, `id`, `completed_on`, `completed_by_id`
  FROM `og_projects` WHERE `p4` = `id` AND `p3` IN (SELECT `ws_id` FROM `fo_members` WHERE `dimension_id`= 1 AND `depth` = 3);
 
-INSERT INTO `fo_members` (`dimension_id`, `object_type_id`, `parent_member_id`, `depth`, `name`, `object_id`, `ws_id`)
- SELECT 1, 1, (SELECT `id` FROM `fo_members` WHERE `ws_id` = `p4`), 5, `name`, 0, `id`
+INSERT INTO `fo_members` (`dimension_id`, `object_type_id`, `parent_member_id`, `depth`, `name`, `object_id`, `ws_id`, `archived_on`, `archived_by_id`)
+ SELECT 1, 1, (SELECT `id` FROM `fo_members` WHERE `ws_id` = `p4`), 5, `name`, 0, `id`, `completed_on`, `completed_by_id`
  FROM `og_projects` WHERE `p5` = `id` AND `p4` IN (SELECT `ws_id` FROM `fo_members` WHERE `dimension_id`= 1 AND `depth` = 4);
 
-INSERT INTO `fo_members` (`dimension_id`, `object_type_id`, `parent_member_id`, `depth`, `name`, `object_id`, `ws_id`)
- SELECT 1, 1, (SELECT `id` FROM `fo_members` WHERE `ws_id` = `p5`), 6, `name`, 0, `id`
+INSERT INTO `fo_members` (`dimension_id`, `object_type_id`, `parent_member_id`, `depth`, `name`, `object_id`, `ws_id`, `archived_on`, `archived_by_id`)
+ SELECT 1, 1, (SELECT `id` FROM `fo_members` WHERE `ws_id` = `p5`), 6, `name`, 0, `id`, `completed_on`, `completed_by_id`
  FROM `og_projects` WHERE `p6` = `id` AND `p5` IN (SELECT `ws_id` FROM `fo_members` WHERE `dimension_id`= 1 AND `depth` = 5);
 
-INSERT INTO `fo_members` (`dimension_id`, `object_type_id`, `parent_member_id`, `depth`, `name`, `object_id`, `ws_id`)
- SELECT 1, 1, (SELECT `id` FROM `fo_members` WHERE `ws_id` = `p6`), 7, `name`, 0, `id`
+INSERT INTO `fo_members` (`dimension_id`, `object_type_id`, `parent_member_id`, `depth`, `name`, `object_id`, `ws_id`, `archived_on`, `archived_by_id`)
+ SELECT 1, 1, (SELECT `id` FROM `fo_members` WHERE `ws_id` = `p6`), 7, `name`, 0, `id`, `completed_on`, `completed_by_id`
  FROM `og_projects` WHERE `p7` = `id` AND `p6` IN (SELECT `ws_id` FROM `fo_members` WHERE `dimension_id`= 1 AND `depth` = 6);
 
-INSERT INTO `fo_members` (`dimension_id`, `object_type_id`, `parent_member_id`, `depth`, `name`, `object_id`, `ws_id`)
- SELECT 1, 1, (SELECT `id` FROM `fo_members` WHERE `ws_id` = `p7`), 8, `name`, 0, `id`
+INSERT INTO `fo_members` (`dimension_id`, `object_type_id`, `parent_member_id`, `depth`, `name`, `object_id`, `ws_id`, `archived_on`, `archived_by_id`)
+ SELECT 1, 1, (SELECT `id` FROM `fo_members` WHERE `ws_id` = `p7`), 8, `name`, 0, `id`, `completed_on`, `completed_by_id`
  FROM `og_projects` WHERE `p8` = `id` AND `p7` IN (SELECT `ws_id` FROM `fo_members` WHERE `dimension_id`= 1 AND `depth` = 7);
 
-INSERT INTO `fo_members` (`dimension_id`, `object_type_id`, `parent_member_id`, `depth`, `name`, `object_id`, `ws_id`)
- SELECT 1, 1, (SELECT `id` FROM `fo_members` WHERE `ws_id` = `p8`), 9, `name`, 0, `id`
+INSERT INTO `fo_members` (`dimension_id`, `object_type_id`, `parent_member_id`, `depth`, `name`, `object_id`, `ws_id`, `archived_on`, `archived_by_id`)
+ SELECT 1, 1, (SELECT `id` FROM `fo_members` WHERE `ws_id` = `p8`), 9, `name`, 0, `id`, `completed_on`, `completed_by_id`
  FROM `og_projects` WHERE `p9` = `id` AND `p8` IN (SELECT `ws_id` FROM `fo_members` WHERE `dimension_id`= 1 AND `depth` = 8);
 
-INSERT INTO `fo_members` (`dimension_id`, `object_type_id`, `parent_member_id`, `depth`, `name`, `object_id`, `ws_id`)
- SELECT 1, 1, (SELECT `id` FROM `fo_members` WHERE `ws_id` = `p9`), 10, `name`, 0, `id`
+INSERT INTO `fo_members` (`dimension_id`, `object_type_id`, `parent_member_id`, `depth`, `name`, `object_id`, `ws_id`, `archived_on`, `archived_by_id`)
+ SELECT 1, 1, (SELECT `id` FROM `fo_members` WHERE `ws_id` = `p9`), 10, `name`, 0, `id`, `completed_on`, `completed_by_id`
  FROM `og_projects` WHERE `p10` = `id` AND `p9` IN (SELECT `ws_id` FROM `fo_members` WHERE `dimension_id`= 1 AND `depth` = 9);
 
 

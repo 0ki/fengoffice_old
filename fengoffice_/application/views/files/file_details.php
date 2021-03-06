@@ -134,7 +134,7 @@ if (isset($file) && $file instanceof ProjectFile) {
 	$description = '';
 	if ($last_revision instanceof ProjectFileRevision) { 
 		$description .= '<div id="fileLastRevision"><span class="propertyName">' . lang('last revision') . ':</span>'; 
-		if ($last_revision->getCreatedBy() instanceof User) {
+		if ($last_revision->getCreatedBy() instanceof Contact) {
 			$description .= lang('file revision info long', $last_revision->getRevisionNumber(), $last_revision->getCreatedBy()->getCardUserUrl(), clean($last_revision->getCreatedBy()->getObjectName()), format_descriptive_date($last_revision->getCreatedOn()));
 		} else {
 			$description .= lang('file revision info short', $last_revision->getRevisionNumber(), format_descriptive_date($last_revision->getCreatedOn()));
@@ -144,7 +144,7 @@ if (isset($file) && $file instanceof ProjectFile) {
 	
 	if ($file->isCheckedOut()) {
 		$description .= '<div id="fileCheckedOutBy" class="coViewAction ico-locked">';
-		if($file->getCheckedOutBy() instanceof User) {
+		if($file->getCheckedOutBy() instanceof Contact) {
 			$description .= lang('file checkout info long', $file->getCheckedOutBy()->getCardUserUrl(), clean($file->getCheckedOutBy()->getObjectName()), format_descriptive_date($file->getCheckedOutOn()). ", " . format_time($file->getCheckedOutOn()));
 		} else {
 			$description .= lang('file checkout info short', format_descriptive_date($file->getCheckedOutOn()). ", " . format_time($file->getCheckedOutOn()));
