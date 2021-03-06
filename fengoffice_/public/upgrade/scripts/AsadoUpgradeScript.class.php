@@ -150,7 +150,7 @@ class AsadoUpgradeScript extends ScriptUpgraderScript {
 			}
 			
 			try {
-				$db_result = DB::execute("SELECT value FROM fo_config_options WHERE name = 'file_storage_adapter'");
+				$db_result = DB::execute("SELECT value FROM ".$t_prefix."config_options WHERE name = 'file_storage_adapter'");
 				$db_result_row = $db_result->fetchRow();
 				if($db_result_row['value'] == FILE_STORAGE_FILE_SYSTEM) {
 					if (!defined('FILES_DIR')) define('FILES_DIR', ROOT . '/upload');
@@ -174,7 +174,7 @@ class AsadoUpgradeScript extends ScriptUpgraderScript {
 					$member_parents[$member->getId()] = $member->getAllParentMembersInHierarchy(false, false);
 				}
 
-				$object_members = ObjectMembers::findAll(array('conditions' => 'is_optimization=0 and not exists (SELECT x.object_id FROM fo_object_members x where x.object_id=fo_object_members.object_id and x.is_optimization=1)'));
+				$object_members = ObjectMembers::findAll(array('conditions' => 'is_optimization=0 and not exists (SELECT x.object_id FROM '.$t_prefix.'object_members x where x.object_id=fo_object_members.object_id and x.is_optimization=1)'));
 				foreach ($object_members as $om) {
 					$parents = isset($member_parents[$om->getMemberId()]) ? $member_parents[$om->getMemberId()] : array();
 					if (count($parents) > 0) {
@@ -182,7 +182,7 @@ class AsadoUpgradeScript extends ScriptUpgraderScript {
 						foreach ($parents as $p) {
 							$sql_values .= ($sql_values == "" ? "" : ",") . "(".$om->getObjectId().",".$p->getId().",1)";
 						}
-						$sql = "INSERT INTO fo_object_members (object_id, member_id, is_optimization) VALUES $sql_values ON DUPLICATE KEY UPDATE is_optimization=1;";
+						$sql = "INSERT INTO ".$t_prefix."object_members (object_id, member_id, is_optimization) VALUES $sql_values ON DUPLICATE KEY UPDATE is_optimization=1;";
                 		DB::execute($sql);
         			}
 				}

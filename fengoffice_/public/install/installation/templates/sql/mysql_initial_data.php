@@ -69,10 +69,10 @@ INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`
     ('general', 'show_owner_company_name_header', '1', 'BoolConfigHandler', 1, 100, ''),
 	('task panel', 'tasksShowTimeEstimates', '1', 'BoolConfigHandler', '1', '0', NULL),
 	('general', 'notify_myself_too', '0', 'BoolConfigHandler', '0', '100', ''),
-	('brand_colors', 'brand_colors_head_back', '', 'StringConfigHandler', '1', '0', NULL),
-	('brand_colors', 'brand_colors_head_font', '', 'StringConfigHandler', '1', '0', NULL),
-	('brand_colors', 'brand_colors_tabs_back', '', 'StringConfigHandler', '1', '0', NULL),
-	('brand_colors', 'brand_colors_tabs_font', '', 'StringConfigHandler', '1', '0', NULL);
+	('brand_colors', 'brand_colors_head_back', '4c8036', 'StringConfigHandler', '1', '0', NULL),
+	('brand_colors', 'brand_colors_head_font', 'ffffff', 'StringConfigHandler', '1', '0', NULL),
+	('brand_colors', 'brand_colors_tabs_back', '4c8036', 'StringConfigHandler', '1', '0', NULL),
+	('brand_colors', 'brand_colors_tabs_font', 'ffffff', 'StringConfigHandler', '1', '0', NULL);
 		
 INSERT INTO `<?php echo $table_prefix ?>file_types` (`extension`, `icon`, `is_searchable`, `is_image`) VALUES
 	('zip', 'archive.png', 0, 0),

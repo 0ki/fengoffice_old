@@ -1,5 +1,5 @@
 
-	About Feng Office 2.7.1
+	About Feng Office 2.7.1.1
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -102,6 +102,11 @@
 	Changelog
 	=========
 			
+	Since 2.7.1
+	----------------
+	bugfix: removed "fo_" prefix from queries.
+	
+	
 	Since 2.7.1-beta
 	----------------
 	bugfix: quick edit task timezone errors.
