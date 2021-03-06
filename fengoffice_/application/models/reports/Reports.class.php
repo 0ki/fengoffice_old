@@ -507,8 +507,16 @@ class Reports extends BaseReports {
 							}
 								
 							if ($value instanceof DateTimeValue) {
-								$field_type = $managerInstance->columnExists($field) ? $managerInstance->getColumnType($field) : Objects::instance()->getColumnType($field);
-								$value = format_value_to_print($field, $value->toMySQL(), $field_type, $report->getReportObjectTypeId());
+								$dateFormat = user_config_option('date_format');
+								Hook::fire("custom_property_date_format", null, $dateFormat);
+								
+								if ($object instanceof ProjectTask) {
+									if(($field == 'due_date' && !$object->getUseDueTime()) || ($field == 'start_date' && !$object->getUseStartTime())){
+										$dateFormat = user_config_option('date_format');
+									}								
+								}
+								
+								$value = format_date($value,$dateFormat);															
 							}
 							
 							if(in_array($field, $managerInstance->getExternalColumns())){

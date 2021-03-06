@@ -1018,7 +1018,7 @@ class ContactController extends ApplicationController {
 				$object_controller = new ObjectController();
 				
 				$member_ids = json_decode(array_var($_POST, 'members'));
-				if (count($member_ids) && !array_var(array_var($contact_data, 'user'), 'create_user')) {
+				if (!is_null($member_ids) && !array_var(array_var($contact_data, 'user'), 'create_user')) {
 					$object_controller->add_to_members($contact, $member_ids);
 				}
 				$no_perm_members_ids = json_decode(array_var($_POST, 'no_perm_members'));

@@ -1498,8 +1498,17 @@
 			$perm_filename = ROOT ."/tmp/perm_".gen_id();
 			file_put_contents($perm_filename, $permissions);
 			
-			$command = "nice -n19 php ". ROOT . "/application/helpers/save_member_permissions.php ".ROOT." ".$user->getId()." ".$user->getTwistedToken()." ".$member->getId()." $perm_filename $old_parent_id";
-			exec("$command > /dev/null &");
+			$command = "nice -n19 ".PHP_PATH." ". ROOT . "/application/helpers/save_member_permissions.php ".ROOT." ".$user->getId()." ".$user->getTwistedToken()." ".$member->getId()." $perm_filename $old_parent_id";
+			exec("$command > /dev/null &");			
+				
+			//Test php command
+			exec(PHP_PATH." -r 'echo function_exists(\"foo\") ? \"yes\" : \"no\";' 2>&1", $output, $return_var);
+			if($return_var != 0){
+				Logger::log(print_r("Error executing php command",true));
+				Logger::log(print_r($output,true));//$hola
+				Logger::log(print_r("Error code: ".$return_var,true));
+			}
+			//END Test php command
 		}
 	}
 	
@@ -1541,7 +1550,8 @@
 				$set_root_permissions = true;
 			}
 		}
-		if ($rp_genid = array_var($_POST, 'root_perm_genid') && $set_root_permissions) {
+		$rp_genid = array_var($_POST, 'root_perm_genid');
+		if ($rp_genid && $set_root_permissions) {
 			foreach ($_POST as $name => $value) {
 				if (str_starts_with($name, $rp_genid . 'rg_root_')) {
 					$rp_permissions_data[$name] = $value;
@@ -1558,29 +1568,6 @@
 			save_permissions($pg_id, $is_guest, null, true, true, true, true, $users_ids_to_check, $only_member_permissions);
 		} else {
 
-			// populate permission groups
-		/*	$permissions_decoded = json_decode($permissionsString);
-			$to_insert = array();
-			$to_delete = array();
-			if (is_array($permissions_decoded)) {
-				foreach ($permissions_decoded as $perm) {
-					if ($perm->r) {
-						$to_insert[] = "('".$pg_id."','".$perm->m."','".$perm->o."','".$perm->d."','".$perm->w."')";
-					} else {
-						$to_delete[] = "(permission_group_id='".$pg_id."' AND member_id='".$perm->m."' AND object_type_id='".$perm->o."')";
-					}
-				}
-			}
-			if (count($to_insert) > 0) {
-				$values = implode(',', $to_insert);
-				DB::execute("INSERT INTO ".TABLE_PREFIX."contact_member_permissions (permission_group_id,member_id,object_type_id,can_delete,can_write)
-				 VALUES $values ON DUPLICATE KEY UPDATE member_id=member_id");
-			}
-			if (count($to_delete) > 0) {
-				$where = implode(' OR ', $to_delete);
-				DB::execute("DELETE FROM ".TABLE_PREFIX."contact_member_permissions WHERE $where;");
-			}*/
-			
 			// save permissions in background
 			$perm_filename = ROOT ."/tmp/uperm_".gen_id();
 			file_put_contents($perm_filename, $permissionsString);
@@ -1599,8 +1586,17 @@
 			
 			$only_mem_perm_str = $only_member_permissions ? "1" : "0";
 			$is_guest_str = $is_guest ? "1" : "0";
-			$command = "nice -n19 php ". ROOT . "/application/helpers/save_user_permissions.php ".ROOT." ".$user->getId()." ".$user->getTwistedToken()." $pg_id $is_guest_str $perm_filename $sys_filename $mod_filename $rp_filename $usrcheck_filename $rp_genid $only_mem_perm_str";
+			$command = "nice -n19 ".PHP_PATH." ". ROOT . "/application/helpers/save_user_permissions.php ".ROOT." ".$user->getId()." ".$user->getTwistedToken()." $pg_id $is_guest_str $perm_filename $sys_filename $mod_filename $rp_filename $usrcheck_filename $rp_genid $only_mem_perm_str";
 			exec("$command > /dev/null &");
+			
+			//Test php command
+			exec(PHP_PATH." -r 'echo function_exists(\"foo\") ? \"yes\" : \"no\";' 2>&1", $output, $return_var);
+			if($return_var != 0){
+				Logger::log(print_r("Error executing php command",true));
+				Logger::log(print_r($output,true));//$hola
+				Logger::log(print_r("Error code: ".$return_var,true));
+			}
+			//END Test php command
 		}
 	}
 	
@@ -1612,8 +1608,17 @@
 		if (substr(php_uname(), 0, 7) == "Windows" || !can_save_permissions_in_background()){
 			$object->addToSharingTable();
 		} else {
-			$command = "nice -n19 php ". ROOT . "/application/helpers/add_object_to_sharing_table.php ".ROOT." ".$user->getId()." ".$user->getTwistedToken()." ".$object->getId();
+			$command = "nice -n19 ".PHP_PATH." ". ROOT . "/application/helpers/add_object_to_sharing_table.php ".ROOT." ".$user->getId()." ".$user->getTwistedToken()." ".$object->getId();
 			exec("$command > /dev/null &");
+			
+			//Test php command
+			exec(PHP_PATH." -r 'echo function_exists(\"foo\") ? \"yes\" : \"no\";' 2>&1", $output, $return_var);
+			if($return_var != 0){
+				Logger::log(print_r("Error executing php command",true));
+				Logger::log(print_r($output,true));//$hola
+				Logger::log(print_r("Error code: ".$return_var,true));
+			}
+			//END Test php command
 		}
 	}
 	
@@ -1628,8 +1633,17 @@
 				}
 			}
 		} else {
-			$command = "nice -n19 php ". ROOT . "/application/helpers/add_object_to_sharing_table.php ".ROOT." ".$user->getId()." ".$user->getTwistedToken()." ".$ids_str;
+			$command = "nice -n19 ".PHP_PATH." ". ROOT . "/application/helpers/add_object_to_sharing_table.php ".ROOT." ".$user->getId()." ".$user->getTwistedToken()." ".$ids_str;
 			exec("$command > /dev/null &");
+			
+			//Test php command
+			exec(PHP_PATH." -r 'echo function_exists(\"foo\") ? \"yes\" : \"no\";' 2>&1", $output, $return_var);
+			if($return_var != 0){
+				Logger::log(print_r("Error executing php command",true));
+				Logger::log(print_r($output,true));//$hola
+				Logger::log(print_r("Error code: ".$return_var,true));
+			}
+			//END Test php command
 		}
 	}
 	
@@ -1643,8 +1657,17 @@
 			do_member_parent_changed_refresh_object_permisssions($member->getId(), $old_parent_id);
 			
 		} else {
-			$command = "nice -n19 php ". ROOT . "/application/helpers/member_parent_changed_refresh_object_permisssions.php ".ROOT." ".$user->getId()." ".$user->getTwistedToken()." ".$member->getId()." ".$old_parent_id;
+			$command = "nice -n19 ".PHP_PATH." ". ROOT . "/application/helpers/member_parent_changed_refresh_object_permisssions.php ".ROOT." ".$user->getId()." ".$user->getTwistedToken()." ".$member->getId()." ".$old_parent_id;
 			exec("$command > /dev/null &");
+			
+			//Test php command
+			exec(PHP_PATH." -r 'echo function_exists(\"foo\") ? \"yes\" : \"no\";' 2>&1", $output, $return_var);
+			if($return_var != 0){
+				Logger::log(print_r("Error executing php command",true));
+				Logger::log(print_r($output,true));//$hola
+				Logger::log(print_r("Error code: ".$return_var,true));
+			}
+			//END Test php command
 		}
 	}
 	

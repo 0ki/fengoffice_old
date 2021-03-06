@@ -1,5 +1,5 @@
 
-	About Feng Office 3.2-beta
+	About Feng Office 3.2-beta2
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -104,6 +104,15 @@
 	
 	Changelog
 	=========
+	
+	Since 3.2-beta
+	----------------
+	feature: php path config.
+	
+	bugfix: can't subscribe users.
+	bugfix: upgrade from versions lower than 3.1.5.3
+	bugfix: after add a contact in root.
+	bugfix: after updating permissions for a user on a member, all objects on sub-members are deleted from sharing_table for that user.
 	
 	Since 3.1.5.3
 	----------------

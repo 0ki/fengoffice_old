@@ -61,7 +61,7 @@
 	
 	  <div>
 		<div class="coInputName">
-			<?php echo text_field('member[name]', array_var($member_data, 'name'), array('id' => $genid . 'memberFormTitle', 'class' => 'title', 'placeholder' => lang('type name here'))) ?>
+			<?php echo text_field('member[name]', array_var($member_data, 'name'), array('id' => $genid . '-name', 'class' => 'title', 'placeholder' => lang('type name here'))) ?>
 		</div>
 			
 		<div class="coInputButtons">
@@ -211,7 +211,7 @@
 	$(function() {
 		$("#<?php echo $genid?>tabs").tabs();
 
-		Ext.get('<?php echo $genid ?>memberFormTitle').focus();
+		Ext.get('<?php echo $genid ?>-name').focus();
 		
 		og.eventManager.fireEvent("after member add render",{
 			genid: genid,

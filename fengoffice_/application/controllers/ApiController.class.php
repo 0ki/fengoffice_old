@@ -46,7 +46,7 @@ class ApiController extends ApplicationController {
             $tasks = Objects::findObject($request['oid']);
             /* @var $tasks ProjectTask */
             if ($tasks->canView(logged_user())) {
-                return $this->response('json', $tasks->getArrayInfo());
+                return $this->response('json', $tasks->getArrayInfo(true));
             } else {
                 $this->response('json', false);
             }
@@ -272,7 +272,7 @@ class ApiController extends ApplicationController {
             $temp_objects = array();
             foreach ($result->objects as $object) {
                 if ($service == "ProjectTasks") {
-                    array_push($temp_objects, $object->getArrayInfo(1));
+                    array_push($temp_objects, $object->getArrayInfo(1,true));
                 } else {
                     array_push($temp_objects, $object->getArrayInfo());
                 }
@@ -345,7 +345,10 @@ class ApiController extends ApplicationController {
                             $object->setText($request ['args'] ['description']);
                         }
                         if (!empty($request ['args'] ['due_date'])) {
-                            $object->setDueDate(getDateValue($request ['args'] ['due_date']));
+                        	if ($request ['args'] ['due_date'] != '' && $request ['args'] ['due_date'] != date_format_tip('dd/mm/yyyy')) {
+                        		$date_format = 'dd/mm/yyyy';
+                        		$object->setDueDate(DateTimeValueLib::dateFromFormatAndString($date_format, $value));
+                        	}                           
                         }
                         if (!empty($request ['args'] ['completed'])) {
                             $object->setPercentCompleted($request ['args'] ['completed']);

@@ -82,6 +82,9 @@ define('DEFAULT_THEME', 'default');
 define('SLIMEY_PATH', ROOT_URL . '/public/assets/javascript/slimey/');
 define('PLUGINS_URL', ROOT_URL . '/plugins' ) ;
 
+if (!defined('PHP_PATH')) {
+	define('PHP_PATH', 'php');
+}
 
 // ---------------------------------------------------
 //  Init...

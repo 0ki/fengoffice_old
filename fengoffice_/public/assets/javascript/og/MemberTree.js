@@ -220,7 +220,10 @@ og.MemberTree = function(config) {
 			og.eventManager.fireEvent("member tree node click", node);
 			var treeConf = node.attributes.loader.ownerTree.initialConfig ;
 			if  (node.getDepth() == 0 ){
-				// Fire 'all' selection for other trees 
+				
+				// clean context for this dimension
+				og.contextManager.cleanActiveMembers(this.dimensionId);
+				
 				// Manage dashboard
 				if ( treeConf.dimensionOptions.defaultAjax ){
 					var controller =  treeConf.dimensionOptions.defaultAjax.controller ;
@@ -229,11 +232,28 @@ og.MemberTree = function(config) {
 						og.customDashboard(controller, action, {}, true);
 					}
 				}
+				
+				// Fire 'all' selection for related trees
+				var trees = this.ownerCt.items;
+				if (trees){
+					trees.each(function (item, index, length){
+						if ( self.id != item.id  && (!item.hidden ||item.reloadHidden) && self.reloadDimensions.indexOf(item.dimensionId) != -1  ) {
+							
+							item.getRootNode().suspendEvents();
+							item.getRootNode().select();
+							item.getRootNode().resumeEvents();
+							
+						}
+					});
+				}
 			}else{
 				// Member selection (not root)
 				if ( node.options && node.options.defaultAjax && node.options.defaultAjax.controller && node.options.defaultAjax.action) {
 					var reload = ( this.getSelectionModel() && this.getSelectionModel().getSelectedNode() && this.getSelectionModel().getSelectedNode().id  ==  node.id );
-					og.customDashboard( node.options.defaultAjax.controller, node.options.defaultAjax.action, {id: node.object_id}, reload);
+
+					if (og.contextManager.getDimensionMembers(this.dimensionId).indexOf(node.id) == -1) {
+						og.customDashboard( node.options.defaultAjax.controller, node.options.defaultAjax.action, {id: node.object_id}, reload);
+					}
 				  
 				} else {
 					og.resetDashboard();
@@ -309,6 +329,7 @@ og.MemberTree = function(config) {
 						$('#'+this.id + " .member-quick-form-link").show();
 						var member = 0 ; 
 					}
+					var selection_changed = og.contextManager.getDimensionMembers(this.dimensionId).indexOf(node.id) == -1;
 					if (!this.hidden) {
 						og.contextManager.addActiveMember(member, this.dimensionId, node );
 					}
@@ -334,7 +355,7 @@ og.MemberTree = function(config) {
 										item.disableReloadOtherDimensions = false;
 									} else {
 									
-										item.filterByMember(selected_members ,function(){
+										item.filterByMember(selected_members, node, function(){
 											self.filteredTrees ++ ;
 											if (self.filteredTrees == self.totalFilterTrees) {
 												self.resumeEvents() ;
@@ -359,7 +380,9 @@ og.MemberTree = function(config) {
 					og.contextManager.lastSelectedDimension = this.dimensionId ;
 					og.contextManager.lastSelectedMemberType = type; 
 					
-					og.eventManager.fireEvent('member changed', node);
+					if (selection_changed) {
+						og.eventManager.fireEvent('member changed', node);
+					}
 					
 				}else { 
 					// Multiple Selection: (UNDER DEVELOPENT) 
@@ -598,7 +621,7 @@ Ext.extend(og.MemberTree, Ext.tree.TreePanel, {
 		this.removeClass("root-hidden");
 	},
 	
-	filterByMember: function(memberIds, callback) {
+	filterByMember: function(memberIds, nodeClicked, callback) {
 		var tree = this ; //scope
 		var expandedNodes = tree.expandedNodes() ;
 		var selectedMembers = og.contextManager.getDimensionMembers(this.dimensionId) ;
@@ -616,10 +639,9 @@ Ext.extend(og.MemberTree, Ext.tree.TreePanel, {
 				function() {
 					
 					// expand filtered nodes
-					og.expandAllChildNodes(tree.getRootNode());
-					/*setTimeout(function(){
-						$("."+tree.dimensionCode+".x-tree .x-tree-ec-icon.x-tree-elbow-end-plus").click();
-					},500);*/
+					if (nodeClicked.getDepth() > 0) {
+						og.expandAllChildNodes(tree.getRootNode());
+					}
 					
 					if (tree.expandMode != "all"){
 						// If not all nodes are exapnded, expand only needed

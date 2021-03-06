@@ -1710,6 +1710,7 @@ class MemberController extends ApplicationController {
 		try {
 			DB::beginWork();
 			
+			$_POST['root_perm_genid'] = 'dummy_root_perm_genid';
 			save_user_permissions_background(logged_user(), $pg_id, false, array(), true);
 			
 			$null = null;

@@ -99,7 +99,7 @@ class ObjectController extends ApplicationController {
 			// remove subscribers without permissions
 			$subscribed_users = $object->getSubscribers();
 			foreach ($subscribed_users as $user) {
-				if ($object->canView($user)) {
+				if (!$object->canView($user)) {
 					$object->unsubscribeUser($user);
 				}
 			}

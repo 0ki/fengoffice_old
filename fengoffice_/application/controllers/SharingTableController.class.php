@@ -65,7 +65,7 @@ class  SharingTableController extends ApplicationController {
 			$memberId = $permission->m;
 			$objectTypeId = $permission->o;
 			if (!$memberId || !$objectTypeId) continue;
-			$delete_conditions[] = " ( object_type_id = '$objectTypeId' AND om.member_id = '$memberId' ) ";
+			$delete_conditions[] = " ( object_type_id = '$objectTypeId' AND om.member_id = '$memberId' AND om.is_optimization = 0 ) ";
 			$del_count++;
 			if ($del_count >= 20) {
 				$all_del_conditions[] = $delete_conditions;

@@ -118,7 +118,7 @@ class Comment extends BaseComment {
 	 * @return boolean
 	 */
 	function canView(Contact $user) {
-		return can_read($user, $this->getMembers(), $this->getObjectTypeId());
+		return can_read($user, $this->getRelObject()->getMembers(), $this->getRelObject()->getObjectTypeId());
 	} // canView
 
 	/**
