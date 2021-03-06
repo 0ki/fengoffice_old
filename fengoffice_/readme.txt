@@ -106,6 +106,10 @@
 	Changelog
 	=========
 	
+	Since 3.4.3-rc
+	----------------
+	bugfix: if user does not manage permissions then don't let to create members without parent, otherwise no one will see it as user cant assign its permissions.
+	
 	Since 3.4.3-beta
 	----------------
 	bugfix: cut user permissions when changing role must be done only if downgraded and executed in background when possible.
@@ -121,6 +125,7 @@
 	feature: member custom reports group by
 	feature: add relation between samples and countries
 	feature: tasks workflow - new action to change project status
+	feature: expenses plugin: show previous status amounts in listing and view, show payment history in expense view.
 	
 	bugfix: export to excel: sheet title length must have less than 31 characters
 	bugfix: report totals row data alignment fixes
@@ -133,6 +138,9 @@
 	Since 3.4.2.20
     ----------------
     bugfix: When completing a repetitive task, sometimes not all original subscribers were added to the next task.
+    bugfix: mail plugin installer does not add default permissions in members where users already have permissions.
+	bugfix: new addToSharingTable function does not adds to the table the mail account owners when adding an email.
+	bugfix: when viewing e-mail company addresses are not recognized when the company is in the system.
 
 	Since 3.4.2.18
     ----------------

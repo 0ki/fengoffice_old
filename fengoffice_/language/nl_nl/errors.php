@@ -128,7 +128,7 @@
 	'content too long not loaded' => 'Previous email content is too long and was not loaded, but will be sent with this email.',
 	'member name already exists in dimension' => 'Member \'{0}\' already exists in selected dimension.',
 	'must choose at least one member of' => 'You must choose at least one member of {0}.',
-	'you must select where to keep' => 'Selecteren waar te bewaren {0} .',
+	'you must select where to keep' => 'U moet aangeven waar u {0} wilt bewaren.',
 	'there are no changes' => 'Geen wijzigingen aangebracht . Het document is niet overschreven .',
 	'timeslot dnx' => 'Tijdslot bestaat niet',
 	'you dont have permissions to classify object in member' => 'U heeft geen rechten te classificeren \'{0} \'  \' {1}\'',

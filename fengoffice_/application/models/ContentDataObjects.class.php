@@ -1350,6 +1350,9 @@ abstract class ContentDataObjects extends DataManager {
 			$stManager->populateGroups($gids, $oid);
 			$gids = null;
 		}
+		
+		$null = null;
+		Hook::fire('after_add_obj_to_sharing_table', array('id' => $oid, 'type_id' => $tid), $null);
 	
 	}
 }

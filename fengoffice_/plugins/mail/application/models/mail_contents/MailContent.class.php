@@ -787,7 +787,7 @@ class MailContent extends BaseMailContent {
 	 * 
 	 * @see ContentDataObject::addToSharingTable()
 	 */
-	function addToSharingTable() {	
+	/*function addToSharingTable() {	
 		parent::addToSharingTable();
 		$id = $this->getId();
 		
@@ -808,7 +808,7 @@ class MailContent extends BaseMailContent {
 			}
 			
 		}
-	}
+	}*/
 	
 	/**
 	 * Use this function to order conversation

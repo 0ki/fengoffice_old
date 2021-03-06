@@ -604,4 +604,8 @@
 	'default value must be date' => '{0} için varsayılan değer bir tarih olmalıdır.',
 	'config option name show company logo in notifications' => 'Bildirimlerde kurum logosu görüntülensin',
 	'config option desc show company logo in notifications' => 'Bu seçenek etkinleştirildiğinde, kurum logosu bildirim içeriğine eklenir.',
+	'can_instantiate_templates' => 'Görev kalıplarını kullanabilir',
+	'can_instantiate_templates description' => 'Bu seçenek etkinleştirildiğinde, kullanıcı kalıpları örnek gösterebilir.',
+	'user config option name tasksUseDateFilters' => 'Görev tarihi süzgeçlerini kullanabilir',
+	'user config option desc tasksUseDateFilters' => 'Bu seçenek etkinleştirildiğinde, görevler tarih aralığına göre süzülebilir.',
 ); ?>

@@ -113,3 +113,9 @@ INSERT INTO <?php echo $table_prefix ?>max_role_object_type_permissions (role_id
  WHERE o.`name` IN ('mail')
  AND p.`name` IN ('Collaborator Customer','Internal Collaborator','External Collaborator','Guest Customer')
 ON DUPLICATE KEY UPDATE role_id=role_id;
+
+INSERT INTO <?php echo $table_prefix ?>contact_member_permissions (permission_group_id, member_id, object_type_id, can_delete, can_write)
+ SELECT cmp.permission_group_id, cmp.member_id, (SELECT `id` FROM `<?php echo $table_prefix ?>object_types` WHERE `name`='mail'), cmp.can_delete, cmp.can_write 
+ FROM <?php echo $table_prefix ?>contact_member_permissions cmp
+ WHERE cmp.object_type_id = (SELECT `id` FROM `<?php echo $table_prefix ?>object_types` WHERE `name`='task')
+ON DUPLICATE KEY UPDATE <?php echo $table_prefix ?>contact_member_permissions.member_id=<?php echo $table_prefix ?>contact_member_permissions.member_id;

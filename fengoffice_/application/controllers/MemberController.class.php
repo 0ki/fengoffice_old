@@ -836,6 +836,12 @@ class MemberController extends ApplicationController {
 	}
 	
 	function saveMember($member_data, Member $member, $is_new = true) {
+		if (!array_var($member_data, 'parent_member_id') && !SystemPermissions::userHasSystemPermission(logged_user(), 'can_manage_security')) {
+			$ot = ObjectTypes::findById(array_var($member_data, 'object_type_id'));
+			$ot_name = $ot instanceof ObjectType ? lang('the '.$ot->getName()) : ' ';
+			throw new Exception(lang('you cant add member without security permissions', $ot_name));
+		}
+		
 		try {
 			DB::beginWork();
 			

@@ -550,7 +550,7 @@ class MailUtilities {
 				$mail->subscribeUser($user);
 			}
 			
-			$mail->addToSharingTable();
+			ContentDataObjects::addObjToSharingTable($mail->getId(), $mail->getObjectTypeId(), null);
 			$mail->orderConversation();
 			
 			//if email is from an imap account copy the state (read/unread) from the server
@@ -824,7 +824,11 @@ class MailUtilities {
 		if (trim($email) == "") return "";
 		if (!is_valid_email($email)) return $email;
 		
-		$contact = Contacts::getByEmail($email);
+		$contact = null;
+		$ce = ContactEmails::instance()->findOne(array('conditions' => array("email_address=?", $email)));
+		if ($ce instanceof ContactEmail) {
+			$contact = Contacts::findById($ce->getContactId());
+		}
 		if ($contact instanceof Contact && $contact->canView(logged_user())){
 			$name = $clean ? clean($contact->getObjectName()) : $contact->getObjectName();
 			$url = $contact->getCardUrl();

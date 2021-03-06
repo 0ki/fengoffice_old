@@ -177,3 +177,33 @@ function mail_after_object_controller_archive($ids, &$ignored) {
 	evt_add("remove from email list", array('ids' => $ids));
 }
 
+
+/**
+ * Ensure that mail account owners are added to the sharing table when adding the mail to it
+ */
+function mail_after_add_obj_to_sharing_table($params, &$ignored) {
+	
+	$oid = array_var($params, 'id');
+	$tid = array_var($params, 'type_id');
+	
+	$mail_ot = ObjectTypes::instance()->findByName('mail');
+	if ($mail_ot instanceof ObjectType && $tid == $mail_ot->getId()) {
+		
+		$mail = MailContents::findById($oid);
+		if(!$mail instanceof MailContent || !$mail->getAccount() instanceof MailAccount) return;
+		
+		$macs = MailAccountContacts::instance()->getByAccount($mail->getAccount());
+		foreach ($macs as $mac) {
+			
+			$contact = Contacts::instance()->findById($mac->getContactId());
+			if (!$contact instanceof Contact) continue;
+			
+			$group_id = $contact->getPermissionGroupId();
+			if ($group_id) {
+				$sql = "INSERT INTO ".TABLE_PREFIX."sharing_table ( object_id, group_id ) VALUES ('$oid','$group_id') ON DUPLICATE KEY UPDATE group_id=group_id";
+				DB::execute($sql);
+			}
+			
+		}
+	}
+}

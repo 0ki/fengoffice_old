@@ -682,7 +682,7 @@ addLangs({
 	'All': 'Allemaal',
 	'filter members': 'Filter',
 	'person': 'Persoon\n',
-	'close': 'Dichtbij',
+	'close': 'Sluiten',
 	'information': 'Informatie',
 	'filters': 'Filters',
 	'persons': 'Personen',

@@ -617,7 +617,7 @@
 	'log logout users data' => 'Utilisateur \'{0}\' déconnecté.',
 	'outbox mail not sent' => 'Il reste encore {0} courriel dans la boîte d\'envoi qui n\'a pas encore été envoyé.',
 	'outbox mails not sent' => 'Il reste encore {0} courriels dans la boîte d\'envoi qui n\'ont pas encore été envoyés.',
-	'object is deleted' => ' (l\'objet à été supprimé)',
+	'object is deleted' => '(l\'objet à été supprimé)',
 	'the Users' => 'l\'utilisateur',
 	'the Comments' => 'le commentaire',
 	'the Companies' => 'la société',

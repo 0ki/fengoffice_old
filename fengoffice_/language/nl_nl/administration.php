@@ -436,30 +436,20 @@
 	'user config option desc add_task_default_reminder' => 'Creer een herinnering standaard als er een nieuwe taak wordt gemaakt',
 	'user config option name add_task_autoreminder' => 'Creer automatisch een herinnering voor andere deelnemers als deze taak gewijzigd wordt',
 	'user config option desc add_task_autoreminder' => 'Activeer deze optie om automatisch en autoreminders te maken wanneer een taak is toegewezen aan iemand anders die niet langer een herinnering link aanpast ',
-	'user config option name add_self_task_autoreminder' => 'Maak automatische herinneringen van mijn bewerkte taken
-',
+	'user config option name add_self_task_autoreminder' => 'Maak automatische herinneringen van mijn bewerkte taken',
 	'user config option desc add_self_task_autoreminder' => 'Schakel deze optie in als u automatisch autoreminders wilt maken bij het bewerken van taken die geen herinnering meer hebben',
 	'user config option name add_event_autoreminder' => 'Maak automatische herinneringen bij het bewerken van een evenement',
-	'user config option desc add_event_autoreminder' => 'Schakel deze optie in als u wilt autotmatically autoreminders maken als u een evenement dat niet langer een herinnering links bewerken
-',
-	'user config option name autoassign_events' => 'Automatisch toekennen
-',
+	'user config option desc add_event_autoreminder' => 'Schakel deze optie in als u wilt autotmatically autoreminders maken als u een evenement dat niet langer een herinnering links bewerken',
+	'user config option name autoassign_events' => 'Automatisch toekennen',
 	'user config option desc autoassign_events' => 'Schakel deze optie in als u ook wilt worden uitgenodigd om gebeurtenissen die u maakt , zelfs als je het filteren van de kalender door',
-	'user config option name event_send_invitations' => 'Stuur uitnodigingen
-',
-	'user config option desc event_send_invitations' => 'Schakel deze optie in als u de optie \' zend Uitnodiging " standaard ingeschakeld wanneer u een evenement te creëren
-',
-	'user config option name event_subscribe_invited' => 'Abonneren uitgenodigde gebruikers
-',
-	'user config option desc event_subscribe_invited' => '
-
-in staat stellen deze optie als u wilt dat de " Abonneren uitgenodigde gebruikers " optie standaard ingeschakeld wanneer u een afspraak maken',
-	'user config option name attach_to_notification' => 'voeg documenten aan meldingen toe
-',
+	'user config option name event_send_invitations' => 'Stuur uitnodigingen',
+	'user config option desc event_send_invitations' => 'Schakel deze optie in als u de optie \' zend Uitnodiging " standaard ingeschakeld wanneer u een evenement te creëren',
+	'user config option name event_subscribe_invited' => 'Abonneren uitgenodigde gebruikers',
+	'user config option desc event_subscribe_invited' => 'in staat stellen deze optie als u wilt dat de " Abonneren uitgenodigde gebruikers " optie standaard ingeschakeld wanneer u een afspraak maken',
+	'user config option name attach_to_notification' => 'voeg documenten aan meldingen toe',
 	'user config option name show_notify_checkbox_in_quick_add' => 'Laat de optie " Melding verzenden "',
 	'user config option desc show_notify_checkbox_in_quick_add' => 'Wanneer het ingeschakeld is,kun je snel met het toevoegen of bewerken van een taak. zult u in staat zijn om te selecteren of een melding moet niet worden verzonden.',
-	'user config option name view_mail_attachs_expanded' => 'Toon uitgebreide bijlagen bij het openen van een e-mail
-',
+	'user config option name view_mail_attachs_expanded' => 'Toon uitgebreide bijlagen bij het openen van een e-mail',
 	'user config option name tasksShowDescriptionOnTimeForms' => 'geef beschrijving van het veld, als het toevoegen van een tijd of binnenkomst is van een taak in de takenlijst',
 	'user config option name auto_classify_attachments' => 'Automatisch classificeren e-mailbijlagen bij het ontvangen van e-mails',
 	'user config option desc auto_classify_attachments' => 'Als het kan de bijlagen worden classificerend  met de e-mail op de plaats bepaald in de rekening',
