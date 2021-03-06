@@ -1,9 +1,9 @@
 <?php
 
 	/*
-	* Elsõ magyar fordítás 1.4.2 verzióig: Lukács Péter <programozo@lukacspeter.hu>
+	* Elsï¿½ magyar fordï¿½tï¿½s 1.4.2 verziï¿½ig: Lukï¿½cs Pï¿½ter <programozo@lukacspeter.hu>
 	*/
 return array(
-	'open in new window' => 'Megnyitás új ablakban'
+	'open in new window' => 'MegnyitÃ¡s Ãºj ablakban'
 );
 ?>

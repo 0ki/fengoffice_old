@@ -23,6 +23,7 @@ class ApplicationLogs extends BaseApplicationLogs {
 	const ACTION_LOGIN       = 'login';
 
 	public static function getWorkspaceString($ids = '?') {
+		if (is_array($ids)) $ids = implode(",", $ids);
 		return " `id` IN (SELECT `object_id` FROM `" . TABLE_PREFIX . "workspace_objects` WHERE `object_manager` = 'ApplicationLogs' AND `workspace_id` IN ($ids))";
 	}
 	

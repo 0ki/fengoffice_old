@@ -224,6 +224,78 @@ class ProjectController extends ApplicationController {
 			} // try
 		} // if
 	} // permissions
+	
+	function get_ws_permissions() {
+		$id = array_var($_GET, "ws_id");
+		if (!$id) {
+			ajx_current("empty");
+			return;
+		}
+		$project = Projects::findById($id);
+		if (!$project instanceof Project) {
+			ajx_current("empty");
+			return;
+		}
+
+		$permissions = ProjectUsers::getNameTextArray();
+		$permissions_array = array();
+		foreach ($permissions as $permission_id => $permission_text) {
+			$permissions_array[] = array(
+				'id' => $permission_id,
+				'text' => $permission_text
+			);
+		}
+		
+		$companies = array(owner_company());
+		$clients = owner_company()->getClientCompanies();
+		if (is_array($clients)) {
+			$companies = array_merge($companies, $clients);
+		} // if
+		
+		$comp_array = array();
+		foreach ($companies as $comp) {
+			$has_checked_users = false;
+			$user_array = array();
+			foreach ($comp->getUsers() as $user) {
+				if (!$has_checked_users && $user->isProjectUser($project)) {
+					$has_checked_users = true;
+				}
+				$user_perm = array();
+				foreach ($permissions as $permission_id => $permission_text) {
+					$user_perm[] = array(
+						'id' => $permission_id,
+						'hasPerm' => $user->hasProjectPermission($project, $permission_id)
+					);
+				}
+				$user_data = array(
+					'id' => $user->getId(),
+					'name' => clean($user->getDisplayName()),
+					'isAdmin' => $user->isAdministrator(),
+					'isProjUser' => $user->isProjectUser($project),
+					'hasAllPerm' => $user->hasAllProjectPermissions($project),
+					'perms' => $user_perm,
+				);
+				$user_array[] = $user_data;
+			}
+
+			$comp_data = array(
+				'id' => $comp->getId(),
+				'name' => clean($comp->getName()),
+				'logoUrl' => $comp->getLogoUrl(),
+				'hasCheckedUsers' => $has_checked_users,
+				'users' => $user_array
+			);
+			$comp_array[] = $comp_data;
+		}
+		
+		$object = array(
+			"companies" => $comp_array,
+			"permissions" => $permissions_array,
+		);
+
+		ajx_extra_data($object);
+		ajx_current("empty");
+	}
 
 	/**
 	 * Add project
@@ -398,10 +470,9 @@ class ProjectController extends ApplicationController {
 										$project_user->setUserId($user_id);
 	
 										foreach($permissions as $permission => $permission_text) {
-	
-											// Owner company members have all permissions
-											$permission_value = $company->isOwner() ? true : array_var($_POST, 'project_user_' . $user_id . '_' . $permission) == 'checked';
-	
+											// Account owner member has all permissions
+											$permission_value = $user->isAccountOwner() ? true : array_var($_POST, 'project_user_' . $user_id . '_' . $permission) == "checked";
+											
 											$setter = 'set' . Inflector::camelize($permission);
 											$project_user->$setter($permission_value);
 	
@@ -601,14 +672,17 @@ class ProjectController extends ApplicationController {
 									$counter++;
 									if(array_var($_POST, "project_user_$user_id") == 'checked') {
 	
-										$project_user = new ProjectUser();
-										$project_user->setProjectId($project->getId());
-										$project_user->setUserId($user_id);
+										$project_user = ProjectUsers::find(array("conditions" => "`project_id` = ".$project->getId()." and `user_id` = ".$user_id));
+										if (!$project_user) {
+											$project_user = new ProjectUser();
+											$project_user->setProjectId($project->getId());
+											$project_user->setUserId($user_id);
+										}
 	
 										foreach($permissions as $permission => $permission_text) {
 	
-											// Owner company members have all permissions
-											$permission_value = $company->isOwner() ? true : array_var($_POST, 'project_user_' . $user_id . '_' . $permission) == 'checked';
+											// Account owner member has all permissions
+											$permission_value = $user->isAccountOwner() ? true : array_var($_POST, 'project_user_' . $user_id . '_' . $permission) == "checked";
 	
 											$setter = 'set' . Inflector::camelize($permission);
 											$project_user->$setter($permission_value);

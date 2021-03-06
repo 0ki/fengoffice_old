@@ -189,4 +189,6 @@
 	'field Projects completed_by_id' => 'voltooid door',
 	'field Projects created_by_id' => 'gecreëerd door',
 	'field Projects updated_by_id' => 'bijgewerkt door',
+	'field MailContents cc' => 'CC',
+	'field MailContents bcc' => 'BCC',
 ); ?>

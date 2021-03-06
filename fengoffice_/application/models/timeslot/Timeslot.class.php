@@ -166,6 +166,20 @@ class Timeslot extends BaseTimeslot {
     	  	$dt = DateTimeValueLib::now();
 			$this->setEndTime($dt);
     	}
+    	
+    	//Set billing info
+		if ($this->getObject() instanceof ProjectDataObject && $this->getObject()->getProject() instanceof Project){
+			$hours = $this->getMinutes() / 60;
+	    	$user = $this->getUser();
+			$billing_category_id = $user->getDefaultBillingId();
+			$project = $this->getObject()->getProject();
+			$this->setBillingId($billing_category_id);
+			$hourly_billing = $project->getBillingAmount($billing_category_id);
+			$this->setHourlyBilling($hourly_billing);
+			$this->setFixedBilling($hourly_billing * $hours);
+			$this->setIsFixedBilling(false);
+		}
+		
 		if ($description)
 			$this->setDescription($description);
     }

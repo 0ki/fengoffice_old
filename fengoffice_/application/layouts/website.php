@@ -34,7 +34,7 @@
 	}
 	Hook::fire('autoload_javascripts', null, $jss);
 	if (defined('USE_JS_CACHE') && USE_JS_CACHE) {
-		echo add_javascript_to_page(with_slash(ROOT_URL).'public/tools/combine.php?type=javascript&files='.implode(',', $jss));
+		echo add_javascript_to_page(with_slash(ROOT_URL)."public/tools/combine.php?version=$version&type=javascript&files=".implode(',', $jss));
 	} else {
 		foreach ($jss as $onejs) {
 			echo add_javascript_to_page($onejs);

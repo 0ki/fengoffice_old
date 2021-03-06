@@ -1354,3 +1354,11 @@ og.replaceAllOccurrences = function(str, search, replace) {
 og.isFlashSupported = function() {
 	return navigator.mimeTypes["application/x-shockwave-flash"] ? true : false;
 };
+
+og.showHide = function(itemId) {
+	var el = document.getElementById(itemId);
+	if (el) {
+		if (el.style.display == 'none') el.style.display = 'block';
+		else el.style.display = 'none';
+	}
+};

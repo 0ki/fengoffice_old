@@ -22,6 +22,7 @@ addLangs({
 	'last updated by': 'Última actualización realizada por',
 	'close this tag': 'Cerrar etiqueta',
 	'by': 'Por',
+	'confirm inherit permissions': '¿Desea que el nuevo espacio herede los permisos de su espacio padre?',
 	'name': 'Nombre',
 	'project': 'Espacio',
 	'user': 'Usuario',

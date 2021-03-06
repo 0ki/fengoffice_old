@@ -63,6 +63,11 @@ require_javascript('og/EventPopUp.js');
 	$tasks = ProjectTasks::getRangeTasksByUser($date_start, $date_end, ($user_filter != -1 ? $user : null), $tags, active_project());
 	$birthdays = Contacts::instance()->getRangeContactsByBirthday($date_start, $date_end);
 	
+	$tmp_tasks = array();
+	foreach ($tasks as $task) {
+		$tmp_tasks = array_merge($tmp_tasks, replicateRepetitiveTaskForCalendar($task, $date_start, $date_end));
+	}
+	
 	$dates = array(); //datetimevalue for each day of week
 	$results = array();
 	$allday_events_count = array();
@@ -120,11 +125,7 @@ require_javascript('og/EventPopUp.js');
 		}
 		
 		if(is_array($tasks)){
-			$tmp_tasks = array();
-			foreach ($tasks as $task) {
-				$tmp_tasks = array_merge($tmp_tasks, replicateRepetitiveTaskForCalendar($task, $date_end));
-			}
-	
+
 			foreach ($tmp_tasks as $task) {
 				$added = false;
 				if ($task->getDueDate() instanceof DateTimeValue &&

@@ -555,6 +555,7 @@ class TaskController extends ApplicationController {
 			TABLE_PREFIX . "project_milestones.id = " . TABLE_PREFIX . "tags.rel_object_id and " .
 			TABLE_PREFIX . "tags.tag = ".DB::escape($tag)." and " . TABLE_PREFIX . "tags.rel_object_manager ='ProjectMilestones' ) > 0 ";
 		}
+		$projectstr = " AND " . ProjectMilestones::getWorkspaceString($pids);
 		$milestone_conditions = " `is_template` = false " . $projectstr . $pendingstr . $tagstr . $milestone_ids_condition;
 		$externalMilestonesTemp = ProjectMilestones::findAll(array('conditions' => $milestone_conditions));
 		$externalMilestones = array();

@@ -52,7 +52,7 @@ class FigazzaUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('1.4.2');
-		$this->setVersionTo('1.5');
+		$this->setVersionTo('1.5.1');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -184,6 +184,12 @@ class FigazzaUpgradeScript extends ScriptUpgraderScript {
 		if (!$this->checkColumnExists(TABLE_PREFIX.'users', 'updated_by_id', $this->database_connection)) {
 			$upgrade_script .= "
 				ALTER TABLE `".TABLE_PREFIX."users` ADD COLUMN `updated_by_id` int(10) unsigned default NULL;
+			";
+		}
+		if (!$this->checkColumnExists(TABLE_PREFIX.'reports', 'is_order_by_asc', $this->database_connection)) {
+			$upgrade_script = "
+				ALTER TABLE `".TABLE_PREFIX."reports` ADD COLUMN `is_order_by_asc` TINYINT(1) $default_collation NOT NULL DEFAULT 1;
+				$upgrade_script
 			";
 		}
 

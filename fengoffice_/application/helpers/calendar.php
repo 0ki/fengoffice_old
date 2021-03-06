@@ -73,19 +73,49 @@ function cal_month_short($month) {
 	}
 }
 
-function replicateRepetitiveTaskForCalendar(ProjectTask $task, $to_date) {
+function forwardRepDate(ProjectTask $task, $min_date) {
+	if ($task->isRepetitive()) {
+		$date = new DateTimeValue($task->getRepeatBy() == 'start_date' ? $task->getStartDate()->getTimestamp() : $task->getDueDate()->getTimestamp());
+		$count = 0;
+		if($date->getTimestamp() >= $min_date->getTimestamp()) {
+			return array('date' => $date, 'count' => $count);
+		}
+		
+		while ($date->getTimestamp() < $min_date->getTimestamp()) {
+			if ($task->getRepeatD() > 0) { 
+				$date = $date->add('d', $task->getRepeatD());
+			} else if ($task->getRepeatM() > 0) { 
+				$date = $date->add('M', $task->getRepeatM());
+			} else if ($task->getRepeatY() > 0) { 
+				$date = $date->add('y', $task->getRepeatY());
+			}
+			$count++;
+		}
+		return array('date' => $date, 'count' => $count);
+	} else return array('date' => $min_date, 'count' => 0);
+}
+
+function replicateRepetitiveTaskForCalendar(ProjectTask $task, $from_date, $to_date) {
 	$new_task_array = array($task);
 	
 	if ($task->isRepetitive()) {
-		$top_repeat_num = $task->getRepeatNum();
+		$res = forwardRepDate($task, $from_date);
+		$ref_date = $res['date'];
+		$top_repeat_num = $task->getRepeatNum() - $res['count'];
+
 		$last_repeat = $task->getRepeatEnd() instanceof DateTimeValue ? new DateTimeValue($task->getRepeatEnd()->getTimestamp()) : null;
-		$ref_date = new DateTimeValue(mktime(0,0,0,1,1,1970));
+		if (($task->getRepeatNum() > 0 && $top_repeat_num <= 0) || ($last_repeat instanceof DateTimeValue && $last_repeat->getTimestamp() < $ref_date->getTimestamp())) {
+			return array();
+		}
+		
 		$num_repetitions = 0;
 		while ($ref_date->getTimestamp() < $to_date->getTimestamp()) {
 			if ($task->getRepeatBy() == 'start_date' && !($task->getStartDate() instanceof DateTimeValue)) return $new_task_array;
 			if ($task->getRepeatBy() == 'due_date' && !($task->getDueDate() instanceof DateTimeValue)) return $new_task_array;
 			
-			$ref_date = new DateTimeValue( $task->getRepeatBy() == 'start_date' ? $task->getStartDate()->getTimestamp() : $task->getDueDate()->getTimestamp() );
+			//$ref_date = new DateTimeValue( $task->getRepeatBy() == 'start_date' ? $task->getStartDate()->getTimestamp() : $task->getDueDate()->getTimestamp() );
+			if ($task->getRepeatBy() == 'start_date') $task->setStartDate(new DateTimeValue($ref_date->getTimestamp()));
+			else if ($task->getRepeatBy() == 'due_date') $task->setDueDate(new DateTimeValue($ref_date->getTimestamp()));
 			
 			$info = array(
 				'title' => $task->getTitle(),

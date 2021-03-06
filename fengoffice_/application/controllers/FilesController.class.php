@@ -1147,7 +1147,7 @@ class FilesController extends ApplicationController {
 						$coName = Users::findById($coId)->getUsername();
 				}
 
-				if ($o->getTypeString() == 'audio/mpeg') {
+				if ($o->isMP3()) {
 					$songname = $o->getProperty("songname");
 					$artist = $o->getProperty("songartist");
 					$album = $o->getProperty("songalbum");
@@ -1188,6 +1188,9 @@ class FilesController extends ApplicationController {
 					"ftype" => $o->getType(),
 					"url" => $o->getUrl()
 				);
+				if ($o->isMP3()) {
+					$values['isMP3'] = true;
+				}
 				Hook::fire('add_classification_value', $o, $values);
 				$listing["files"][] = $values;
 			}

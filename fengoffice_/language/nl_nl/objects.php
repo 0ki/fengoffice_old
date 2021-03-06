@@ -81,4 +81,6 @@
 	'reporting' => 'rapporten',
 	'create document' => 'creëer een document',
 	'create presentation' => 'creëer een presentatie',
+	'modify object subscribers' => 'pas abonnementen aan',
+	'subscription modified successfully' => 'abonnementen zijn aangepast',
 ); ?>

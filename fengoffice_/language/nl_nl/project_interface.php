@@ -219,4 +219,12 @@
 	'no reports found' => 'geen raporten gevonden voor {0} ',
 	'remove this widget' => 'verwijder deze widget',
 	'add a new' => 'nieuwe toevoegen',
+	'other settings' => 'Overige instellingen',
+	'incoming settings' => 'instellingen inkomende mail',
+	'default account' => 'standaard account',
+	'default account description' => 'Het standaard account is het account dat wordt geselecteerd zodra u een e-mail opsteld.',
+	'signature' => 'handtekening',
+	'signature description' => 'De handtekening komt onder iedere e-mail te staan die u verstuurd van dit account.',
+	'attach contents' => 'bijlagen toevoegen',
+	'set parent task' => 'Stel een hoofd-taak in',
 ); ?>

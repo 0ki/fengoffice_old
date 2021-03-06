@@ -161,7 +161,7 @@ foreach($companies as $company)
 					}
 					if($tasks) {
 						foreach ($tasks as $task) {
-							$result = array_merge($result, replicateRepetitiveTaskForCalendar($task, $date_end));
+							$result = array_merge($result, replicateRepetitiveTaskForCalendar($task, $date_start, $date_end));
 						}
 					}
 					if($birthdays) {

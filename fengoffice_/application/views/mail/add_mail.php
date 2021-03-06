@@ -367,7 +367,17 @@ var actualSignature = '';
     $display_fck = ($type == 'html') ? 'block' : 'none';
     
     $plain_body = $draft_edit ? array_var($mail_data, 'body') : "\n\n--\n$orig_signature" . array_var($mail_data, 'body');
-    $html_body = $draft_edit ? array_var($mail_data, 'body') : "<br />--<br />$orig_signature" . array_var($mail_data, 'body');
+
+    if (!$draft_edit) {
+    	$body = array_var($mail_data, 'body');
+    	$idx = stripos($body, '<body');
+    	if ($idx !== FALSE) {
+    		$end_tag = strpos($body, '>', $idx) + 1;
+    		$html_body = substr($body, 0, $end_tag) . "<br />--<br />$orig_signature<br />" . substr($body, $end_tag); 
+    	} else {
+    		$html_body = "<br />--<br />$orig_signature" . $body;
+    	}
+    } else $html_body = array_var($mail_data, 'body');
     
     echo textarea_field('plain_body', $plain_body, array('id' => 'mailBody', 'tabindex' => '50', 
     	'style' => "display:$display;width:97%;height:94%;margin-left:1%;margin-right:1%;margin-top:1%; min-height:250px;", 
@@ -439,7 +449,9 @@ og.getMailBodyFromUI = function() {
 		return Ext.getDom('mailBody').value;
 	}
 }
-if (!Ext.getDom('format_html').checked) og.oldMailBody = og.getMailBodyFromUI();
+if (Ext.getDom('format_html') && !Ext.getDom('format_html').checked) { 
+	og.oldMailBody = og.getMailBodyFromUI();
+}
 
 og.checkMailBodyChanges = function() {
 	var new_body = og.getMailBodyFromUI();	

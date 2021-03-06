@@ -469,7 +469,7 @@
   	'log delete users' => 'usuario {0} eliminado',
   	'log add users' => 'usuario {0} agregado',
   
-    'success trash object' => 'Objeto movidao a la papelera correctamente',
+    'success trash object' => 'Objeto movido a la papelera correctamente',
     'error trash object' => 'Error al mover objeto a la papelera',
     'success untrash object' => 'Objeto restaurado correctamente desde la papelera',
     'error untrash object' => 'Error al restaurar objeto desde la papelera',
@@ -620,6 +620,7 @@
   	'success trash file revision' => 'La revisión del archivo fue enviada a la papelera',
   
   	'recipient must be specified' => 'Debe especificar el destinatario del correo',
+  	'ie browser outdated' => 'Su navegador no está soportado. Para una mejor experiencia por favor actualícelo',
   
   ); // array
 ?>

@@ -1148,13 +1148,15 @@ function autocomplete_tags_field($name, $value, $id = null, $tabindex = null) {
 
 function render_add_reminders($object, $context, $defaults = null, $genid = null) {
 	require_javascript('og/Reminders.js');
-	if(!is_array($defaults)) {
-		$defaults = array(
-			'type' => 'reminder_popup',
-			'duration' => '15',
-			'duration_type' => '1',
-			'for_subscribers' => true,
-		); 
+	if(!is_array($defaults)) $defaults = array();
+	$default_defaults = array(
+		'type' => 'reminder_popup',
+		'duration' => '15',
+		'duration_type' => '1',
+		'for_subscribers' => true,
+	); 
+	foreach ($default_defaults as $k => $v) {
+		if (!isset($defaults[$k])) $defaults[$k] = $v;
 	}
 	if (is_null($genid)) {
 		$genid = gen_id();

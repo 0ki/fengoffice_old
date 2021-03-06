@@ -109,7 +109,7 @@ SELECT
 	`id` as `object_id`,
 	`created_by_id`,
 	`created_on`
-FROM `<?php echo $table_prefix ?>project_webpages` where `project_id` <> 0;
+FROM `<?php echo $table_prefix ?>project_webpages` where `project_id` > 0;
 
 ALTER TABLE `<?php echo $table_prefix ?>project_webpages` DROP COLUMN `project_id`;
 
@@ -126,7 +126,7 @@ SELECT
 	`id` as `object_id`,
 	`created_by_id`,
 	`created_on`
-FROM `<?php echo $table_prefix ?>project_events` where `project_id` <> 0;
+FROM `<?php echo $table_prefix ?>project_events` where `project_id` > 0;
 
 ALTER TABLE `<?php echo $table_prefix ?>project_events` DROP COLUMN `project_id`;
 
@@ -143,7 +143,7 @@ SELECT
 	`id` as `object_id`,
 	`created_by_id`,
 	`created_on`
-FROM `<?php echo $table_prefix ?>project_tasks` where `project_id` <> 0;
+FROM `<?php echo $table_prefix ?>project_tasks` where `project_id` > 0;
 
 ALTER TABLE `<?php echo $table_prefix ?>project_tasks` DROP COLUMN `project_id`;
 
@@ -160,7 +160,7 @@ SELECT
 	`id` as `object_id`,
 	`created_by_id`,
 	`created_on`
-FROM `<?php echo $table_prefix ?>project_milestones` where `project_id` <> 0;
+FROM `<?php echo $table_prefix ?>project_milestones` where `project_id` > 0;
 
 ALTER TABLE `<?php echo $table_prefix ?>project_milestones` DROP COLUMN `project_id`;
 
@@ -177,7 +177,7 @@ SELECT
 	`id` as `object_id`,
 	`created_by_id`,
 	`created_on`
-FROM `<?php echo $table_prefix ?>project_charts` where `project_id` <> 0;
+FROM `<?php echo $table_prefix ?>project_charts` where `project_id` > 0;
 
 ALTER TABLE `<?php echo $table_prefix ?>project_charts` DROP COLUMN `project_id`;
 

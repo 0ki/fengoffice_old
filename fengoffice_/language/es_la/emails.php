@@ -165,7 +165,7 @@ return array(
     'closed notification milestone' => 'El hito \'{0}\' ha sido completado',
     'closed notification milestone desc' => 'El hito \'{0}\' ha sido completado por {1}.',
 
-	'user password reseted desc' => 'Su contraseña ha sido reseteada. Usted ahora puede loguearse a {0} en {1} usando las siguientes credenciales:',
+	'user password reseted desc' => 'Su contraseña ha sido reseteada. Usted ahora puede iniciar sesión a {0} en {1} usando las siguientes credenciales:',
     'user password reseted username' => 'Usuario: {0}',
     'user password reseted password' => 'Contraseña: {0}',
     'due_date reminder notification task' => 'Recordatorio de tarea con vencimiento',

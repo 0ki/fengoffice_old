@@ -525,4 +525,5 @@
 	'log edit users' => 'Benutzer {0} editiert',
 	'log delete users' => 'Benutzer {0} gelöscht',
 	'log add users' => 'Benutzer {0} hinzugefügt',
+	'recipient must be specified' => 'Email-Empfänger muß angegeben werden',
 ); ?>

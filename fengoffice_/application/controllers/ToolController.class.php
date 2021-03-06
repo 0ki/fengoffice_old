@@ -91,15 +91,123 @@ class ToolController extends ApplicationController {
 
 	}
 	
+	private function load_languages($dir, $from) {
+		$handle = opendir($dir);
+		$languages = array();
+		while (false !== ($f = readdir($handle))) {
+			if ($f != "." && $f != ".." && $f != "CVS" && $f != $from && is_dir("$dir/$f")) {
+				$languages[] = $f;
+			}
+		}
+		closedir($handle);
+		return $languages;
+	}
+	
+	private function load_language_files(&$files, $dir, $base = '') {
+		if (!is_array($files)) $files = array();
+		$handle = opendir($dir);
+		while (false !== ($f = readdir($handle))) {
+			if ($f == '.' || $f == '..' || $f == 'CVS') continue;
+			if (is_dir("$dir/$f")) {
+				$this->load_language_files($files, "$dir/$f", $base . $f . "/");
+			} else if (substr($f, -4) == '.php' || substr($f, -3) == '.js') {
+				$files[] = $base . $f;
+			}
+		}
+		closedir($handle);
+	}
+	
+	private function load_file_translations($locale, $file) {
+		$fullpath = LANG_DIR . "/" . $locale . "/" . $file;
+		if (!is_file($fullpath)) return array();
+		if (substr($file, -4) == ".php") {
+			return include $fullpath;
+		} else if (substr($file, -3) == ".js") {
+			$contents = file_get_contents($fullpath);
+			$contents = preg_replace("/.*addLangs\s*\(\s*\{\s*/s", "", $contents);
+			$contents = preg_replace("/\s*\}\s*\)\s*;\s*$/", "", $contents);
+			$matches = array();
+			preg_match_all("/\s*['\"](.*)['\"]\s*:\s*['\"](.*[^\\\\])['\"]\s*,?/", $contents, $matches, PREG_SET_ORDER);
+			$lang = array();
+			foreach ($matches as $match) {
+				$lang[$match[1]] = $this->unescape_lang_js($match[2]);
+			}
+			return $lang;
+		} else {
+			return array();
+		}
+	}
+	
+	private function download_zip_lang($locale) {		
+		$filename = "tmp/$locale.zip";
+		if (is_file($filename)) unlink($filename);
+		$zip = new ZipArchive();
+		$zip->open($filename, ZIPARCHIVE::CREATE | ZIPARCHIVE::OVERWRITE);
+		$zip->addFile(LANG_DIR . "/$locale.php", "$locale.php");
+		$zip->addEmptyDir($locale);
+		$dir = opendir(LANG_DIR . "/" . $locale);
+		while (false !== ($file = readdir($dir))) {
+			if ($file != "." && $file != ".." && $file != "CVS") {
+				$zip->addFile(LANG_DIR . "/$locale/$file", "$locale/$file");
+			}
+		}
+		closedir($dir);
+		$zip->close();
+		header("Cache-Control: public");
+		header("Expires: -1");
+		header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
+		header("Content-Type: application/zip");
+		header("Content-Length: " . (string) filesize($filename));
+		header("Content-Disposition: 'attachment'; filename=\"$locale.zip\"");
+		header("Content-Transfer-Encoding: binary");
+		readfile($filename);
+		die();
+	}
+	
+	private function escape_lang($string) {
+		return str_replace(array("\\", "'", "\r\n", "\r"), array("\\\\", "\\'", "\n", "\n"), $string);
+	}
+	
+	private function escape_lang_js($string) {
+		return str_replace(array("\\", "'", "\r\n", "\r", "\n"), array("\\\\", "\\'", "\n", "\n", "\\n"), $string);
+	}
+	
+	private function unescape_lang_js($string) {
+		$count = strlen($string);
+		$escaped = "";
+		$bs = false;
+		for ($i=0; $i < $count; $i++) {
+			if ($bs) {
+				if ($string[$i] == 'n') {
+					$escaped .= "\n";
+				} else if ($string[$i] == "'") {
+					$escaped .= "'";
+				} else if ($string[$i] == "\\") {
+					$escaped .= "\\";
+				} else {
+					$escaped .= "\\" . $string[$i];
+				}
+				$bs = false;
+			} else if ($string[$i] == "\\") {
+				$bs = true;
+			} else {
+				$escaped .= $string[$i];
+			}
+		}
+		return $escaped;
+	}
+	
 	function translate() {
 		if (!logged_user()->isAdministrator()) {
 			die("You must be an administrator to run this tool.");
 		}
 		
+		if (!defined('LANG_DIR')) define('LANG_DIR', 'language');
+		
 		$download = $_GET['download'];
 		if (isset($download)) {
 			// download zip file and die
-			download_zip_lang($download);
+			$this->download_zip_lang($download);
 			die();
 		}
 		
@@ -127,7 +235,7 @@ class ToolController extends ApplicationController {
 				$f = fopen($filename, "w");
 				fclose($f);
 			}
-			$all = loadFileTranslations($locale, $file);
+			$all = $this->load_file_translations($locale, $file);
 			if (!is_array($all)) $all = array();
 			foreach ($lang as $k => $v) {
 				if (trim($v) != "") {
@@ -142,7 +250,7 @@ class ToolController extends ApplicationController {
 			if (substr($file, -4) == ".php") {
 				fwrite($f, "<?php return array(\n");
 				foreach ($all as $k => $v) {
-					fwrite($f, "\t'$k' => '" . escape_lang("$v"). "',\n");
+					fwrite($f, "\t'$k' => '" . $this->escape_lang("$v"). "',\n");
 				}
 				fwrite($f, "); ?>\n");
 			} else if (substr($file, -3) == ".js") {
@@ -152,7 +260,7 @@ class ToolController extends ApplicationController {
 				$count = 0;
 				foreach ($all as $k => $v) {
 					$count++;
-					fwrite($f, "\t'$k': '" . escape_lang_js($v). "'");
+					fwrite($f, "\t'$k': '" . $this->escape_lang_js($v). "'");
 					if ($count == $total) {
 						fwrite($f, "\n");
 					} else {
@@ -164,118 +272,76 @@ class ToolController extends ApplicationController {
 			fclose($f);
 		}
 		
+		// parameters
 		$from = array_var($_GET, 'from', 'en_us');
 		$to = array_var($_GET, 'to', '');
+		$file = array_var($_GET, "file", "");
+		$filter = array_var($_GET, "filter", "all");
+		$start = array_var($_GET, 'start', 0);
+		$pagesize = array_var($_POST, 'pagesize', array_var($_GET, 'pagesize', 5));
 		
 		// load languages
-		$languages = array();
-		$handle = opendir(LANG_DIR);
-		while (false !== ($f = readdir($handle))) {
-			if ($f != "." && $f != ".." && $f != "CVS" && $f != $from && is_dir(LANG_DIR . "/" . $f)) {
-				$languages[] = $f;
-			}
-		}
+		$languages = $this->load_languages(LANG_DIR, $from);
 		sort($languages);
 		
 		if ($to != "") {
 			// load from files
 			$from_files = array();
-			$handle = opendir(LANG_DIR . "/" . $from);
-			while (false !== ($file = readdir($handle))) {
-				if (is_file(LANG_DIR . "/" . $from . "/" . $file)) {
-					$from_files[] = $file;
-				}
-			}
+			$this->load_language_files($from_files, LANG_DIR . "/$from");
 			sort($from_files);
 			tpl_assign('from_files', $from_files);
+			
+			if ($file != "") {
+				tpl_assign('from_file_translations', $this->load_file_translations($from, $file));
+				tpl_assign('to_file_translations', $this->load_file_translations($to, $file));
+			}
 		}
 		
 		tpl_assign('added', $added);
 		tpl_assign('from', $from);
 		tpl_assign('to', $to);
+		tpl_assign('file', $file);
+		tpl_assign('filter', $filter);
+		tpl_assign('start', $start);
+		tpl_assign('pagesize', $pagesize);
 		tpl_assign('languages', $languages);
+	}
+	
+	function checklang() {
+		if (!defined('LANG_DIR')) define('LANG_DIR', 'language');
+		
+		$from = array_var($_GET, 'from', 'en_us');
+		$to = array_var($_GET, "to");
+		$languages = $this->load_languages(LANG_DIR, $from);
+		
+		tpl_assign('from', $from);
+		tpl_assign('to', $to);
+		tpl_assign('languages', $languages);
+		
+		if ($to) {
+			$missing = array();
+			$files = array();
+			$this->load_language_files($files, LANG_DIR . "/$from");
+			foreach ($files as $file) {
+				echo "[$file]";
+				if (is_file(LANG_DIR . "/$to/$file")) {
+					$missing[$file] = array();
+					$ft = $this->load_file_translations($from, $file);
+					$tt = $this->load_file_translations($to, $file);
+					foreach ($ft as $k => $v) {
+						if (!isset($tt[$k])) {
+							$missing[$file][$k] = $v;
+						}
+					}
+				} else {
+					$missing[$file] = "missing file";
+				}
+			}
+			tpl_assign('missing', $missing);
+		}
 	}
 	
 } // TimeController
 
-define('LANG_DIR', 'language');
-
-function escape_lang($string) {
-	return str_replace(array("\\", "'", "\r\n", "\r"), array("\\\\", "\\'", "\n", "\n"), $string);
-}
-
-function escape_lang_js($string) {
-	return str_replace(array("\\", "'", "\r\n", "\r", "\n"), array("\\\\", "\\'", "\n", "\n", "\\n"), $string);
-}
-
-function unescape_lang_js($string) {
-	$count = strlen($string);
-	$escaped = "";
-	$bs = false;
-	for ($i=0; $i < $count; $i++) {
-		if ($bs) {
-			if ($string[$i] == 'n') {
-				$escaped .= "\n";
-			} else if ($string[$i] == "'") {
-				$escaped .= "'";
-			} else if ($string[$i] == "\\") {
-				$escaped .= "\\";
-			} else {
-				$escaped .= "\\" . $string[$i];
-			}
-			$bs = false;
-		} else if ($string[$i] == "\\") {
-			$bs = true;
-		} else {
-			$escaped .= $string[$i];
-		}
-	}
-	return $escaped;
-}
-
-function loadFileTranslations($locale, $file) {
-	if (substr($file, -4) == ".php") {
-		return include LANG_DIR . "/" . $locale . "/" . $file;
-	} else if (substr($file, -3) == ".js") {
-		$contents = file_get_contents(LANG_DIR . "/" . $locale . "/" . $file);
-		$contents = preg_replace("/.*addLangs\s*\(\s*\{\s*/s", "", $contents);
-		$contents = preg_replace("/\s*\}\s*\)\s*;\s*$/", "", $contents);
-		$matches = array();
-		preg_match_all("/\s*['\"](.*)['\"]\s*:\s*['\"](.*[^\\\\])['\"]\s*,?/", $contents, $matches, PREG_SET_ORDER);
-		$lang = array();
-		foreach ($matches as $match) {
-			$lang[$match[1]] = unescape_lang_js($match[2]);
-		}
-		return $lang;
-	} else {
-		return array();
-	}
-}
-
-function download_zip_lang($locale) {		
-	$filename = "tmp/$locale.zip";
-	if (is_file($filename)) unlink($filename);
-	$zip = new ZipArchive();
-	$zip->open($filename, ZIPARCHIVE::CREATE | ZIPARCHIVE::OVERWRITE);
-	$zip->addFile(LANG_DIR . "/$locale.php", "$locale.php");
-	$zip->addEmptyDir($locale);
-	$dir = opendir(LANG_DIR . "/" . $locale);
-	while (false !== ($file = readdir($dir))) {
-		if ($file != "." && $file != ".." && $file != "CVS") {
-			$zip->addFile(LANG_DIR . "/$locale/$file", "$locale/$file");
-		}
-	}
-	closedir($dir);
-	$zip->close();
-	header("Cache-Control: public");
-	header("Expires: -1");
-	header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
-	header("Content-Type: application/zip");
-	header("Content-Length: " . (string) filesize($filename));
-	header("Content-Disposition: 'attachment'; filename=\"$locale.zip\"");
-	header("Content-Transfer-Encoding: binary");
-	readfile($filename);
-	die();
-}
 
 ?>

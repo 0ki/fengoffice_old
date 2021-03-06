@@ -242,4 +242,6 @@
 	'default user preferences desc' => 'Choisissez les valeurs par défaut des préférences utilisateur.
 Ces valeurs ne s\'appliquent qu\'aux utilisateurs n\'ayant pas encore modifié leurs options. ',
 	'can manage time' => 'Peut gérer le temps',
+	'config option name smtp_address' => 'Adresse du serveur SMTP',
+	'config option desc smtp_address' => 'Optionnel. Pour envoyer des messages, certains prestataires requièrent une adresse de messagerie provenant de leur serveurs. Laissez vide pour utiliser l\'adresse de messagerie de l\'utilisateur.',
 ); ?>

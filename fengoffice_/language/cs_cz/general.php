@@ -179,7 +179,7 @@
   	'date format description' => '(mm/dd/yyyy)',
   	'confirm move to trash' => 'Chcete opravdu přesunout vybraný objekt do koše?',
   
-  	'remove' => 'Smazat'
+  	'remove' => 'Smazat',
 
   ); // array
 

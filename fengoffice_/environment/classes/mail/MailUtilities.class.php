@@ -112,6 +112,7 @@ class MailUtilities {
 		self::parseMail($content, $decoded, $parsedMail, $warnings);
 		$encoding = array_var($parsedMail,'Encoding', 'UTF-8');
 		$enc_conv = EncodingConverter::instance();
+		$to_addresses = self::getAddresses(array_var($parsedMail, "To"));
 		$from = self::getAddresses(array_var($parsedMail, "From"));
 		
 		if (!$from) {
@@ -121,7 +122,8 @@ class MailUtilities {
 		
 		if ($state == 0) {
 			if ($from == $account->getEmailAddress()) {
-				$state = 1;
+				if (strpos($to_addresses, $from) !== FALSE) $state = 5; //Show in inbox and sent folders
+				else $state = 1; //Show only in sent folder
 			}
 		}
 
@@ -142,7 +144,7 @@ class MailUtilities {
 			$mail->setFromName($from_name);
 			$mail->setSubject($parsedMail['Subject']);
 		}
-		$mail->setTo(self::getAddresses(array_var($parsedMail, "To")));
+		$mail->setTo($to_addresses);
 		if (array_key_exists("Date", $parsedMail)) {
 			$mail->setSentDate(new DateTimeValue(strtotime($parsedMail["Date"])));
 		}else{
@@ -186,6 +188,9 @@ class MailUtilities {
 			$user = Users::findById($account->getUserId());
 			if ($user instanceof User) {
 				$mail->subscribeUser($user);
+			}
+			if ($state == 1 || $state == 5) {
+				$mail->setIsRead(1, logged_user()->getId());
 			}
 			DB::commit();
 		} catch(Exception $e) {
@@ -356,9 +361,15 @@ class MailUtilities {
 			} // if
 		}
 		if(! $mailer->isConnected() )  return false;
+		
 		// Send Swift mail
-		$mailer->addCc(explode(",",$cc));
-		$mailer->addBcc(explode(",",$bcc));
+		foreach ($to as $k => $v) {
+			if (trim($v) == '') unset($to[$k]);
+		}
+		$cc = trim($cc, " ,");
+		$bcc = trim($bcc, " ,");
+		if ($cc != '') $mailer->addCc(explode(",", $cc));
+		if ($bcc != '') $mailer->addBcc(explode(",", $bcc));
 		
 		// add attachments
  		if (is_array($attachments)) {
@@ -459,7 +470,7 @@ class MailUtilities {
 									}
 									$content = array_var($messages, $index, '');
 									if ($content != '') {
-										self::SaveMail($messages[$index], $account, $summary[0]['UID'], $state, $box->getFolderName());
+										self::SaveMail($content, $account, $summary[0]['UID'], $state, $box->getFolderName());
 										$received++;
 									} // if content
 								}

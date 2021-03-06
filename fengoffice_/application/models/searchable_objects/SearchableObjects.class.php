@@ -73,12 +73,12 @@
     	else
     		$wsSearch .= " AND (";
     		
-    	if ($object_type=="ProjectMessages" || $object_type == "ProjectFiles" || $object_type == "MailContents")
-    		$wsSearch .= "`rel_object_id` IN (SELECT `object_id` FROM `".TABLE_PREFIX."workspace_objects` WHERE `object_manager` = '$object_type' && `workspace_id` IN ($project_csvs))";
-    	else if ($object_type=="ProjectFileRevisions")
+    	if ($object_type=="ProjectFileRevisions")
     		$wsSearch .=  "`rel_object_id` IN (SELECT o.id FROM " . TABLE_PREFIX ."project_file_revisions o where o.file_id IN (SELECT p.`object_id` FROM `".TABLE_PREFIX."workspace_objects` p WHERE p.`object_manager` = 'ProjectFiles' && p.`workspace_id` IN ($project_csvs)))";
     	else if ($object_type=="Contacts")
     		$wsSearch .=  " (`rel_object_id` IN (SELECT o.contact_id FROM " . TABLE_PREFIX ."project_contacts o where o.`project_id` IN ($project_csvs)) OR (SELECT COUNT(*) from " . TABLE_PREFIX ."project_contacts o where o.`project_id` IN ($project_csvs) AND o.`contact_id` = `rel_object_id`) = 0)";
+    	else if ($object_type=="Companies")
+    		$wsSearch .= "1=1";
     	else
     		$wsSearch .= "`rel_object_id` IN (SELECT `object_id` FROM `".TABLE_PREFIX."workspace_objects` WHERE `object_manager` = '$object_type' && `workspace_id` IN ($project_csvs))";
     	$wsSearch .=  ')';

@@ -1,5 +1,5 @@
 <?php return array(
-	'register' => 'registrieren',
+	'register' => 'Registrieren',
 	'login' => 'Anmelden',
 	'logout' => 'Abmelden',
 	'hide welcome info' => '» Diesen Hinweis nicht mehr anzeigen',
@@ -148,4 +148,6 @@
 	'copy file' => 'Datei kopieren',
 	'open weblink' => 'Öffne Weblink',
 	'show all linked objects' => 'Zeige alle verknüpften Objekte({0})',
+	'apply milestone to subtasks' => 'Meilenstein zur Unteraufgabe zuordnen',
+	'apply workspace to subtasks' => 'Arbeitsbereich zur Unteraufgabe zuordnen',
 ); ?>

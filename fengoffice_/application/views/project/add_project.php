@@ -18,7 +18,7 @@
 ?>
     <script>
         App.modules.updatePermissionsForm.project_permissions = new Array(<?php echo implode(', ', $quoted_permissions) ?>);
-
+		var genid = '<?php echo $genid ?>';
     </script>
     
 <div class="adminAddProject">
@@ -102,7 +102,7 @@
 		
 		<label><?php echo lang('edit permissions explanation') ?></label>
 		<?php if (isset($companies) && is_array($companies) && count($companies)) { ?>
-			<div id="projectCompanies">
+			<div id="projectCompaniesContainer"><div id="projectCompanies">
 			<?php foreach ($companies as $company) { ?>
 				<?php if ($company->countUsers() > 0) { ?>
 				<fieldset>
@@ -122,7 +122,7 @@
 								break;
 							}
 						}
-						echo checkbox_field('project_company_' . $company->getId(), $has_checked_users, array('id' => $genid . 'project_company_' . $company->getId(), 'tabindex' => $field_tab++, 'onclick' => "App.modules.updatePermissionsForm.companyCheckboxClick(" . $company->getId() . ",'".$genid."')")) ?> <label for="<?php echo 'project_company_' . $company->getId() ?>" class="checkbox"><?php echo clean($company->getName()) ?></label>
+						echo checkbox_field('project_company_' . $company->getId(), $has_checked_users, array('id' => $genid . 'project_company_' . $company->getId(), 'tabindex' => $field_tab++, 'onclick' => "App.modules.updatePermissionsForm.companyCheckboxClick(" . $company->getId() . ",'".$genid."')")) ?> <label for="<?php echo 'project_company_' . $company->getId() ?>" class="checkbox" onclick="og.showHide('<?php echo $genid ?>project_company_users_<?php echo $company->getId() ?>')"><?php echo clean($company->getName()) ?></label>
 					<?php //} // if ?>
 						</div>
 						<div class="projectCompanyUsers" id="<?php echo $genid ?>project_company_users_<?php echo $company->getId() ?>">
@@ -131,7 +131,7 @@
 <?php						 foreach ($users as $user) { ?>
 								<tr class="user">
 									<td>
-								<?php echo checkbox_field('project_user_' . $user->getId(), $user->isProjectUser(active_or_personal_project()), array('id' => $genid . 'project_user_' . $user->getId(), 'tabindex' => $field_tab++, 'onclick' => "App.modules.updatePermissionsForm.userCheckboxClick(" . $user->getId() . ", " . $company->getId() . ",'".$genid."')")) ?> <label class="checkbox" for="<?php echo 'project_user_' . $user->getId() ?>"><?php echo clean($user->getDisplayName()) ?></label>
+								<?php echo checkbox_field('project_user_' . $user->getId(), $user->isProjectUser(active_or_personal_project()), array('id' => $genid . 'project_user_' . $user->getId(), 'tabindex' => $field_tab++, 'onclick' => "App.modules.updatePermissionsForm.userCheckboxClick(" . $user->getId() . ", " . $company->getId() . ",'".$genid."')")) ?> <label class="checkbox" for="<?php echo 'project_user_' . $user->getId() ?>" onclick="og.showHide('<?php echo $genid ."user_".$user->getId() ?>_permissions')"><?php echo clean($user->getDisplayName()) ?></label>
 <?php //							 } // if ?>
 <?php							 if($user->isAdministrator()) {?> 
 										<span class="desc">(<?php echo lang('administrator') ?>)</span>
@@ -174,7 +174,7 @@
 				</fieldset>
 				<?php } // if ?>
 			<?php } // foreach ?>
-			</div>
+			</div></div>
 		<?php } // if ?>
 		</fieldset>
 		</div>
@@ -351,5 +351,97 @@
 </form>
 
 <script>
+	og.userHasPermission = function(user, pid, permissions) {
+		for (i=0; i<permissions.length; i++) {
+			if (permissions[i].id == pid) return permissions[i].hasPerm;
+		}
+		return false;
+	}
+
+	og.buildAddWsPermissionsHtml = function(data) {
+		var html = '';
+		var companies = data.companies;
+		var permissions = data.permissions;
+		var tabi = 30;
+		for (i=0; i<companies.length; i++) {
+			var company = companies[i];
+			html += '<fieldset><legend>' + company.name + '</legend>';
+			html += '<div class="projectCompany" style="border:0">';
+			html += '<div class="projectCompanyLogo"><img src="' + company.logoUrl + '" alt="'+ company.name + '" /></div>';
+			html += '<div class="projectCompanyMeta">';
+			html += '	<div class="projectCompanyTitle">';
+			html += '	<input type="checkbox" class="checkbox" name="project_company_'+ company.id +'" '+ (company.hasCheckedUsers ? 'checked="checked"':'') +' value="checked" id="'+genid+'project_company_'+ company.id +'" tabindex=' + (tabi++) +' onclick="App.modules.updatePermissionsForm.companyCheckboxClick('+ company.id +',\''+genid+'\')" />';
+			html += '	<label for="project_company_'+ company.id +'" class="checkbox" onclick="og.showHide(\''+genid +'project_company_users_'+company.id+'\')">'+company.name+'</label>';
+			
+			html += '	</div>';
+			html += '	<div class="projectCompanyUsers" id="'+genid +'project_company_users_'+company.id+'"' + (company.hasCheckedUsers ? '':'style="display:none;"') + '>';
+			html += '		<table class="blank">';
+		
+			var users = company.users;
+			for (j=0; j<users.length; j++) {
+				var user = users[j];	
+				html += '	<tr class="user"><td>';
+				html += '		<input type="checkbox" class="checkbox" name="project_user_'+ user.id +'" '+ (user.isProjUser ? 'checked="checked"':'') +' value="checked" id="'+genid+'project_user_'+ user.id +'" tabindex=' + (tabi++) +' onclick="App.modules.updatePermissionsForm.userCheckboxClick('+ user.id +','+ company.id +',\''+genid+'\')" />';
+				html += '		<label class="checkbox" for="project_user_'+ user.id +'" onclick="og.showHide(\''+genid +'user_' + user.id +'_permissions\')">'+user.name+'</label>';
+				if(user.isAdmin) {
+					html += '	<span class="desc">(<?php echo lang('administrator') ?>)</span>';
+				}
+				html += '	</td><td>';
+				html += '		<div class="projectUserPermissions" id="'+ genid + 'user_' + user.id +'_permissions" ' + (user.isProjUser ? '':'style="display:none;"') + '>';
+				html += '		<div><input class="checkbox" type="checkbox" name="project_user_'+ user.id +'_all" '+ (user.hasAllPerm ? 'checked="checked"':'') +' value="checked" id="'+genid+'project_user_'+ user.id +'_all" tabindex=' + (tabi++) +' onclick="App.modules.updatePermissionsForm.userPermissionAllCheckboxClick('+ user.id +',\''+genid+'\')" />';
+				html += '		<label class="checkbox" for="project_user_'+ user.id +'_all" style="font-weight: bolder"><?php echo lang('all permissions') ?></label></div>';
+				
+				for (k=0; k<permissions.length; k++) {
+					var perm = permissions[k];
+					html += '		<div><input type="checkbox" class="checkbox" name="project_user_'+ user.id +'_' +perm.id+'" '+ (og.userHasPermission(user, perm.id, user.perms) ? 'checked="checked"':'') + ' value="checked" id="'+genid+'project_user_'+ user.id + '_' + perm.id + '" tabindex=' + (tabi++) +' onclick="App.modules.updatePermissionsForm.userPermissionCheckboxClick('+ user.id +',\''+genid+'\')" />';
+					html += '		<label class="checkbox normal" for="project_user_'+ user.id +'_' + perm.id +'">'+perm.text+ '</label></div>';
+				}
+				
+				html += '		</div>';
+				html += '	</td></tr>';
+			}
+			html += '		</table>';
+			html += '		</div>';
+			html += '		<div class="clear"></div>';
+			html += '		</div>';
+			html += '		</div>';
+			html += '</fieldset>';
+		}
+		return html;
+	}
+
+
+	og.drawAddWsPermissions = function(success, data) {
+		if(success) {
+			var html = og.buildAddWsPermissionsHtml(data);
+			
+			var perm_div = Ext.get('projectCompanies');
+			if (perm_div != null) perm_div.remove();
+			perm_div = Ext.get('projectCompaniesContainer');
+			
+			if (perm_div != null) {
+				perm_div.insertHtml('beforeEnd', '<div id="projectCompanies">' + html + '</div>');	
+				if (Ext.isIE) perm_div.update(Ext.getDom("projectCompaniesContainer").innerHTML, true);
+			}
+		}
+	}
+	
+	og.addWsWsSelectorClicked = function() {
+		var wsVal = document.getElementById(genid + 'wsSelValue').value;
+		if (wsVal != og.addWsPrevWsValue) {
+			if (wsVal != 0 && og.addWsPrevWsValue != -1) {
+				var overwrite = confirm(lang('confirm inherit permissions'));
+				if (overwrite) 
+					og.openLink(og.getUrl('project', 'get_ws_permissions', {ws_id:wsVal}), {callback:og.drawAddWsPermissions});
+			}
+			og.addWsPrevWsValue = wsVal;
+		}
+	}
+
+	var ws_sel = Ext.get(genid + 'wsSel');
+	og.addWsPrevWsValue = -1;
+	ws_sel.addListener('click', og.addWsWsSelectorClicked);
+	og.addWsWsSelectorClicked();
+	
 	Ext.get('projectFormName').focus();
 </script>

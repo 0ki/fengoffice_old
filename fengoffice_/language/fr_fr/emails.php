@@ -58,7 +58,7 @@
 	'draft' => 'le brouillon',
 	'success save mail' => 'Brouillon enregistré',
 	'discard' => 'Supprimer',
-	'mail address' => 'Adresse de messagerie',
+	'mail address' => 'Adresse de messagerie ',
 	'mail address description' => 'L\'adresse de messagerie est celle que vos correspondant utilisent pour vous joindre',
 	'unread emails' => 'Messages non lus',
 	'view due task' => 'Afficher la tâche à faire',

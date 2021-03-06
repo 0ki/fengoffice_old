@@ -91,7 +91,7 @@
 	'country gn' => 'Guinea',
 	'country gw' => 'Guinea-Bissau',
 	'country gy' => 'Guyana',
-	'country ht' => 'Haïti\n',
+	'country ht' => 'Haïti\\n',
 	'country hm' => 'Heard en McDonald Eilanden',
 	'country hn' => 'Honduras',
 	'country hk' => 'Hong Kong',
@@ -238,4 +238,6 @@
 	'country zr' => 'Zaïre',
 	'country zm' => 'Zambia',
 	'country zw' => 'Zimbabwe',
+	'country tl' => 'Oost Timor',
+	'country cd' => 'Democratische republiek Congo',
 ); ?>

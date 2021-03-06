@@ -147,4 +147,7 @@
 	'delete permanently' => 'Verwijder definitief',
 	'copy file' => 'Kopieer dit bestand',
 	'open weblink' => 'Open weblink',
+	'apply milestone to subtasks' => 'pas mijlpaal toe op sub taken',
+	'apply workspace to subtasks' => 'pas werkomgeving toe op sub taken',
+	'show all linked objects' => 'toon alle gekoppelde objecten({0})',
 ); ?>

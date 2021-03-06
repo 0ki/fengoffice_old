@@ -778,7 +778,7 @@ class ObjectController extends ApplicationController {
 		$proj_cond_contacts = Contacts::getWorkspaceString($proj_ids);
 		
 		if ($trashed) {
-			$trashed_cond = '`trashed_by_id` <> 0';
+			$trashed_cond = '`trashed_by_id` > 0';
 		} else {
 			$trashed_cond = '`trashed_by_id` = 0';
 		}

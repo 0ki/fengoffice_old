@@ -21,8 +21,14 @@ og.ContentPanel = function(config) {
 			html: ""
 		}],
 		listeners: Ext.apply(config.listeners, {
-			activate: this.activate,
-			deactivate: this.deactivate
+			activate: {
+				fn: this.activate,
+				scope: this
+			},
+			deactivate: {
+				fn: this.deactivate,
+				scope: this
+			}
 		})
 	});
 	
@@ -296,11 +302,11 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 				} else if (content.config && typeof content.panel.newConfig == 'function') {
 					content.panel.newConfig(content.config);
 				}
+				//content.panel.load();
 			}
-			content.panel.load();
 			if (isReset) {
 				content.panel.reset();
-			} else if (isReload) {
+			} else {//if (isReload) {
 				content.panel.load();
 			}
 

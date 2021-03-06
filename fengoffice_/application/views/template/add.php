@@ -106,7 +106,7 @@ og.addObjectToTemplate(document.getElementById('<?php echo $genid ?>before'), {
 	'name': <?php echo json_encode($o->getObjectName()) ?>
 });
 <?php
-		if(is_array($object_properties)){
+		if(isset($object_properties) && is_array($object_properties)){
 			$oid = $o->getObjectId();
 			if(isset($object_properties[$oid])){
 				foreach($object_properties[$oid] as $objProp){  ?>

@@ -67,8 +67,9 @@ require_javascript('og/EventPopUp.js');
 
 	if($tasks) {
 		$tmp_tasks = array();
+		$dtv_end = new DateTimeValue($dtv->getTimestamp() + 60*60*24);
 		foreach ($tasks as $task) {
-			$tmp_tasks = array_merge($tmp_tasks, replicateRepetitiveTaskForCalendar($task, $dtv));
+			$tmp_tasks = array_merge($tmp_tasks, replicateRepetitiveTaskForCalendar($task, $dtv, $dtv_end));
 		}
 		foreach ($tmp_tasks as $k => $task) {
 			if ($task->getDueDate() instanceof DateTimeValue &&

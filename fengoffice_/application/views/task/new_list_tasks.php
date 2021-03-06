@@ -41,6 +41,7 @@
 		$users_array[] = $user->getArrayInfo();
 	foreach($companies as $company)
 		$companies_array[] = $company->getArrayInfo();
+	
 ?>
 <script>
 og.noOfTasks = <?php echo user_config_option('noOfTasks') ?>;

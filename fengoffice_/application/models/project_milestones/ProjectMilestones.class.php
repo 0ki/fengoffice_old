@@ -360,7 +360,7 @@ class ProjectMilestones extends BaseProjectMilestones {
 				$new->setFromTemplateId($sub->getId());
 			}
 			$new->save();
-			$new->setProject($milestone->getProject());
+			$new->setProject($milestoneFrom->getProject());
 			$new->copyCustomPropertiesFrom($sub);
 			$new->setTagsFromCSV(implode(",", $sub->getTagNames()));
 			ProjectTasks::copySubTasks($sub, $new, $as_template);

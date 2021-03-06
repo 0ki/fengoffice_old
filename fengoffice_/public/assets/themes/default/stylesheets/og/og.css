@@ -761,6 +761,7 @@ select.select_milestone, select.select_task_list, select.select_message {
 	background:#F9F9FC none repeat scroll 0 0;
 	border:1px solid #DDDDDD;
 	cursor: pointer;
+	clear: both;
 }
 .container-div label
 {
@@ -798,6 +799,7 @@ select.select_milestone, select.select_task_list, select.select_message {
 	width: 200px;
 	float: left;
 	cursor: pointer;
+	overflow: hidden;
 }
 .company-users .checked-user
 {
@@ -805,6 +807,7 @@ select.select_milestone, select.select_task_list, select.select_message {
 	width: 200px;
 	float: left;
 	cursor: pointer;
+	overflow: hidden;
 	
 }
 .contextHelpStyle .contextualHelp{

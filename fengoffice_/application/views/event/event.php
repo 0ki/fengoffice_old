@@ -582,7 +582,7 @@ og.drawInnerHtml = function(companies) {
 			comp_name = companies[i].name;
 			comp_img = companies[i].logo_url;			
 			script += 'cos.company_' + comp_id + ' = {id:\'<?php echo $genid ?>inviteCompany' + comp_id + '\', checkbox_id : \'inviteCompany' + comp_id + '\',users : []};';
-			htmlStr += '<div onclick="App.modules.addMessageForm.emailNotifyClickCompany('+comp_id+',\'<?php echo $genid ?>\',\'invite_companies\', \'invitation\')" class="companyName container-div" onmouseover="og.rollOver(this)" onmouseout="og.rollOut(this,true ,true)" >';
+			htmlStr += '<div onclick="App.modules.addMessageForm.emailNotifyClickCompany('+comp_id+',\'<?php echo $genid ?>\',\'invite_companies\', \'invitation\')" class="company-name container-div" onmouseover="og.rollOver(this)" onmouseout="og.rollOut(this,true ,true)" >';
 					htmlStr += '<input type="checkbox" style="display:none;" name="event[invite_company_'+comp_id+']" id="<?php echo $genid ?>inviteCompany'+comp_id+'" ></input>';
 					htmlStr += '<label style="background: transparent url('+comp_img+') no-repeat; scroll 0% -5px;" ><span class="link-ico ico-company">'+og.clean(comp_name)+'</span></label>';
 			htmlStr += '</div>';

@@ -288,9 +288,11 @@ class Reports extends BaseReports {
 			if(count($columnsFields) > 0){
 				$first = true;
 				foreach($columnsFields as $field){
-					$selectCols .= ', t.'.$field;
-					$results['columns'][] = lang('field '.$report->getObjectType().' '.$field);
-					$first = false;
+					if ($managerInstance->columnExists($field)) {
+						$selectCols .= ', t.'.$field;
+						$results['columns'][] = lang('field '.$report->getObjectType().' '.$field);
+						$first = false;
+					}
 				}
 			}
 			$selectFROM = TABLE_PREFIX.$table.' t ';
@@ -301,16 +303,18 @@ class Reports extends BaseReports {
 			$openPar = '';
 			foreach($columnsCp as $id => $colCp){
 				$cp = CustomProperties::getCustomProperty($colCp);
-				$selectCols .= ', cpv'.$id.'.value as "'.$cp->getName().'"';
-				$results['columns'][] = $cp->getName();
-				$openPar .= '(';
-				$selectFROM .= ' LEFT OUTER JOIN '.TABLE_PREFIX.'custom_property_values cpv'.$id.' ON (t.id = cpv'.$id.'.object_id AND cpv'.$id.'.custom_property_id = '.$colCp .'))';
-				$first = false;
-				if($report->getOrderBy() == $colCp){
-					if($cp->getType() == 'date'){
-						$order_by = 'ORDER BY STR_TO_DATE(cpv'.$id.'.value, "%Y-%m-%d %H:%i:%s") '.($report->getIsOrderByAsc() ? 'asc' : 'desc');
-					}else{
-						$order_by = 'ORDER BY cpv'.$id.'.value '.($report->getIsOrderByAsc() ? 'asc' : 'desc');
+				if ($cp instanceof CustomProperty) {
+					$selectCols .= ', cpv'.$id.'.value as "'.$cp->getName().'"';
+					$results['columns'][] = $cp->getName();
+					$openPar .= '(';
+					$selectFROM .= ' LEFT OUTER JOIN '.TABLE_PREFIX.'custom_property_values cpv'.$id.' ON (t.id = cpv'.$id.'.object_id AND cpv'.$id.'.custom_property_id = '.$colCp .'))';
+					$first = false;
+					if($report->getOrderBy() == $colCp){
+						if($cp->getType() == 'date'){
+							$order_by = 'ORDER BY STR_TO_DATE(cpv'.$id.'.value, "%Y-%m-%d %H:%i:%s") '.($report->getIsOrderByAsc() ? 'asc' : 'desc');
+						}else{
+							$order_by = 'ORDER BY cpv'.$id.'.value '.($report->getIsOrderByAsc() ? 'asc' : 'desc');
+						}
 					}
 				}
 			}

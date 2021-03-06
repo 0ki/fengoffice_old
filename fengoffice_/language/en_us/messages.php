@@ -616,7 +616,8 @@
   	'success sending reminders' => '{0} reminders sent.',
   	'failed to assign contact due to permissions' => 'You don\'t have permissions to write contacts on these workspaces: {0}',
   
-  	'weblink dnx' => 'Requested weblink doesn\'t exist.'
+  	'weblink dnx' => 'Requested weblink doesn\'t exist.',
+  	'ie browser outdated' => 'Your browser is not officially supported. For a better experience please upgrade your browser.',
   ); // array
 
 ?>

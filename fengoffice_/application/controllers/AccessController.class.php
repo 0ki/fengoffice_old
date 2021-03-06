@@ -28,6 +28,11 @@ class AccessController extends ApplicationController {
 	 * @return null
 	 */
 	function login() {
+		include ROOT . "/library/browser/Browser.php";
+		$browser = new Browser();
+		if ($browser->getBrowser() == Browser::BROWSER_IE && $browser->getVersion() < 7) {
+			flash_error(lang("ie browser outdated"));
+		}
 		$this->addHelper('form');
 
 		if (function_exists('logged_user') && (logged_user() instanceof User)) {
@@ -161,6 +166,11 @@ class AccessController extends ApplicationController {
 	} // login
 
 	function index() {
+		include ROOT . "/library/browser/Browser.php";
+		$browser = new Browser();
+		if ($browser->getBrowser() == Browser::BROWSER_IE && $browser->getVersion() < 7) {
+			flash_error(lang("ie browser outdated"));
+		}
 		if (is_ajax_request()) {
 			$active_proj = array_var($_GET,'active_project', 0);
 			$this->redirectTo('dashboard', 'index', array('active_project' => $active_proj));

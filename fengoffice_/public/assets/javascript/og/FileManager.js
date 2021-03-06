@@ -15,7 +15,7 @@ og.FileManager = function() {
 		'dateUpdated', 'dateUpdated_today',
 		'icon', 'wsIds', 'manager', 'checkedOutById',
 		'checkedOutByName', 'mimeType', 'isModifiable',
-		'modifyUrl', 'songInfo', 'ftype', 'url', 'ix'
+		'modifyUrl', 'songInfo', 'ftype', 'url', 'ix', 'isMP3'
 	];
 
 	og.eventManager.fireEvent('hook_document_classification', this.fields);	
@@ -163,7 +163,7 @@ og.FileManager = function() {
 			r.data.modifyUrl,lang('edit this document'));
 		}
 		
-		if (r.data.mimeType == "audio/mpeg") {
+		if (r.data.isMP3) {
 			actions += String.format(
 			'<a class="list-action ico-play" href="#" onclick="og.playMP3({0})" title="{1}" ' + actionStyle + '>&nbsp;</a>',
 					r.data.songInfo.replace(/'/g, "\\'").replace(/"/g, "'"), lang('play this file'));
@@ -535,6 +535,14 @@ Ext.extend(og.FileManager, Ext.grid.GridPanel, {
 			mantainWs: mantain
 		});
 	},
+	
+	tagObjects: function(tag) {
+		this.load({
+			action: 'tag',
+			objects: this.getSelectedIds(),
+			tagTag: tag
+		});
+	},	
 	
 	trashObjects: function() {
 		if (confirm(lang('confirm move to trash'))) {

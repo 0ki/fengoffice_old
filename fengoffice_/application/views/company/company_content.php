@@ -15,7 +15,7 @@
   <div class="cardData">
     
     <div class="cardBlock">
-      <div class="link-ico ico-email" style="padding-bottom:3px;"><span><?php echo lang('email address') ?>:</span> <a href="mailto:<?php echo $company->getEmail() ?>"><?php echo clean($company->getEmail()) ?></a></div>
+      <div class="link-ico ico-email" style="padding-bottom:3px;"><span><?php echo lang('email address') ?>:</span> <a target="_self" href="mailto:<?php echo $company->getEmail() ?>"><?php echo clean($company->getEmail()) ?></a></div>
       <div class="link-ico ico-phone" style="padding-bottom:3px;"><span><?php echo lang('phone number') ?>:</span> <?php echo $company->getPhoneNumber() ? clean($company->getPhoneNumber()) : lang('n/a') ?></div>
       <div class="link-ico ico-fax" style="padding-bottom:3px;"><span><?php echo lang('fax number') ?>:</span> <?php echo $company->getFaxNumber() ? clean($company->getFaxNumber()) : lang('n/a') ?></div>
 <?php if($company->hasHomepage()) { ?>

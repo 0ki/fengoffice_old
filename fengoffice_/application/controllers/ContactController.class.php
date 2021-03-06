@@ -1278,22 +1278,24 @@ class ContactController extends ApplicationController {
 								$contact = new Contact();
 								$contact_data['import_status'] = '('.lang('new').')';
 							}
-							$contact->setFromAttributes($contact_data);
-							$contact->save();
-							ApplicationLogs::createLog($contact, null, ApplicationLogs::ACTION_ADD);
-							$contact->setTagsFromCSV(array_var($_POST, 'tags'));
+							if ($contact->canEdit(logged_user())) {
+								$contact->setFromAttributes($contact_data);
+								$contact->save();
+								ApplicationLogs::createLog($contact, null, ApplicationLogs::ACTION_ADD);
+								$contact->setTagsFromCSV(array_var($_POST, 'tags'));
 							
-							if(active_project() instanceof Project) {
-								$pc = ProjectContacts::findOne(array("conditions" => "contact_id = ".$contact->getId()." AND project_id = ".active_project()->getId()));
-								if (!$pc) {
-									$pc = new ProjectContact();
-									$pc->setContactId($contact->getId());
-									$pc->setProjectId(active_project()->getId());
-									$pc->setRole(array_var($contact_data,'role'));
-									$pc->save();
+								if(active_project() instanceof Project) {
+									$pc = ProjectContacts::findOne(array("conditions" => "contact_id = ".$contact->getId()." AND project_id = ".active_project()->getId()));
+									if (!$pc) {
+										$pc = new ProjectContact();
+										$pc->setContactId($contact->getId());
+										$pc->setProjectId(active_project()->getId());
+										$pc->setRole(array_var($contact_data,'role'));
+										$pc->save();
+									}
 								}
+								$import_result['import_ok'][] = $contact_data;
 							}
-							$import_result['import_ok'][] = $contact_data;
 							
 						} else if ($type == 'company') {
 							$contact_data = $this->buildCompanyData(array_var($_POST, 'select_company'), array_var($_POST, 'check_company'), $registers[$i]);
@@ -1304,14 +1306,19 @@ class ContactController extends ApplicationController {
 								$company = new Company();
 								$contact_data['import_status'] = '('.lang('new').')';
 							}
-							$company->setFromAttributes($contact_data);
-							$company->setClientOfId(owner_company()->getId());
-							$company->save();
-							ApplicationLogs::createLog($company, null, ApplicationLogs::ACTION_ADD);
-							$company->setTagsFromCSV(array_var($_POST, 'tags'));
-							$company->addToWorkspace(active_or_personal_project());
-							
-							$import_result['import_ok'][] = $contact_data;
+							if ($company->canEdit(logged_user())) {
+								$company->setFromAttributes($contact_data);
+								if ($company->isOwner()) 
+									$company->setClientOfId(0);
+								else 
+									$company->setClientOfId(owner_company()->getId());
+								$company->save();
+								ApplicationLogs::createLog($company, null, ApplicationLogs::ACTION_ADD);
+								$company->setTagsFromCSV(array_var($_POST, 'tags'));
+								$company->addToWorkspace(active_or_personal_project());
+								
+								$import_result['import_ok'][] = $contact_data;
+							}
 						}
 
 						DB::commit();						

@@ -463,6 +463,14 @@ Ext.extend(og.OverviewManager, Ext.grid.GridPanel, {
 		}
 	},
 	
+	tagObjects: function(tag) {
+		this.load({
+			action: 'tag',
+			objects: this.getSelectedIds(),
+			tagTag: tag
+		});
+	},
+	
 	showMessage: function(text) {
 		if (this.innerMessage) {
 			this.innerMessage.innerHTML = text;

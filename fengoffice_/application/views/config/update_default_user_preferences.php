@@ -16,6 +16,7 @@
 			<div id="configCategoryOptions">
 				<?php $counter = 0; ?>
 				<?php foreach($options as $option) { ?>
+					<?php $option->useDefaultValue(); ?>
 					<?php $counter++; ?>
 					<div class="configCategoryOtpion " style="<?php echo $counter % 2 ? 'background-color:#F4F8F9' : '' ?>" id="configCategoryOption_<?php echo $option->getName() ?>">
 						<div class="configOptionInfo">

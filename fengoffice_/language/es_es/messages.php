@@ -530,4 +530,5 @@
 	'success trash file revision' => 'La revisión del archivo fue enviada a la papelera',
 
 	'recipient must be specified' => 'Debe especificar el destinatario del correo',
+	'ie browser outdated' => 'Su navegador no está soportado. Para una mejor experiencia por favor actualícelo',
 ); ?>

@@ -121,7 +121,7 @@ class EventController extends ApplicationController {
 				if (array_var($_GET, 'at')) {
 					self::view_calendar();
 				} else {
-					ajx_current("back");
+					ajx_current("reload");
 				}
 			}
 		}
@@ -1030,7 +1030,7 @@ class EventController extends ApplicationController {
  *   copyright            : (C) 2001 The phpBB Group
  *   email                : support@phpbb.com
  *
- *   $Id: EventController.class.php,v 1.94.2.4 2009/07/13 22:05:40 alvarotm01 Exp $
+ *   $Id: EventController.class.php,v 1.94.2.5 2009/07/29 17:33:33 alvarotm01 Exp $
  *
  ***************************************************************************/
 

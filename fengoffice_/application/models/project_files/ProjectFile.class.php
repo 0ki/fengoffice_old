@@ -405,6 +405,10 @@ class ProjectFile extends BaseProjectFile {
 		return substr($this->getTypeString(), 0, 4) == "text";
 	}
 	
+	function isMP3() {
+		return $this->getTypeString() == 'audio/mpeg' || $this->getTypeString() == 'audio/mp3';	
+	}
+	
 	// ---------------------------------------------------
 	//  URLs
 	// ---------------------------------------------------

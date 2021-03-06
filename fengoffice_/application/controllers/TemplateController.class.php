@@ -5,7 +5,6 @@ class TemplateController extends ApplicationController {
 	function __construct() {
 		parent::__construct();
 		prepare_company_website_controller($this, 'website');
-		ajx_set_panel("administration");
 	}
 
 	function index() {
@@ -415,7 +414,6 @@ class TemplateController extends ApplicationController {
 			foreach($parameters as $parameter){
 				$params[] = array('name' => $parameter->getName(), 'type' => $parameter->getType());
 			}
-			ajx_set_panel("tasks-panel");
 			tpl_assign('id', $id);
 			tpl_assign('parameters', $params);
 		}

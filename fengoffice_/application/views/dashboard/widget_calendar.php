@@ -35,7 +35,7 @@
 	$tasks = array();
 	if($tmp_tasks) {
 		foreach ($tmp_tasks as $task) {
-			$tasks = array_merge($tasks, replicateRepetitiveTaskForCalendar($task, $date_end));
+			$tasks = array_merge($tasks, replicateRepetitiveTaskForCalendar($task, $date_start, $date_end));
 		}
 	}	
 	$use_24_hours = user_config_option('time_format_use_24');

@@ -28,7 +28,8 @@ addLangs({
   	'checkout and download' : 'Checkout & Download',
   	'download only' : 'Download only',
   	'checkout recommendation' : 'Are you planning on editing this document? If so, it is recommended that you checkout the document when downloading',
-
+	'confirm inherit permissions': 'Do you want to inherit all permissions from parent workspace?',
+	
 	/* file manager */
 	'by': 'by',
 	'name': 'Name',
@@ -557,7 +558,7 @@ addLangs({
     'confirm delete permanently': 'Are you sure you want to delete this object?',
     'no items selected' : 'No items selected',
     'error adding timeslot' : 'An error occurred while adding the timeslot',
-    'confirm unclassify email' : 'Are you sure you want to unclassify this email?\nThe email will be removed from the workspaces ant its attachments will not appear in Documents tab.',
+    'confirm unclassify email' : 'Are you sure you want to unclassify this email?\nThe email will be removed from the workspaces and its attachments will not appear in Documents tab.',
     
     'no due date': 'No due date',
     'no start date': 'No start date',

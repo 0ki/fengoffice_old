@@ -1,7 +1,7 @@
 <?php return array(
 	'custom' => 'aangepast ',
 	'custom reports' => 'aangepaste rapportage ',
-	'no custom reports' => 'Er zijn een aangepaste rapportages',
+	'no custom reports' => 'er zijn geen aangepaste rapportages',
 	'add custom report' => 'een aangepaste rapportage toevoegen ',
 	'edit custom report' => 'bewerk een aangepaste rapportage ',
 	'new custom report' => 'nieuwe aangepaste rapportage ',
@@ -20,4 +20,5 @@
 	'select unselect all' => 'selecteer/de selecteer alle',
 	'ascending' => 'oplopend',
 	'descending' => 'aflopend',
+	'parametrizable' => 'parameter',
 ); ?>

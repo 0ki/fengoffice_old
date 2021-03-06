@@ -396,6 +396,39 @@ class MailContent extends BaseMailContent {
 	        } // foreach
     	} // if
     	
+		// Add custom properties
+		$pids = CustomProperties::getCustomPropertyIdsByObjectType(get_class($this->manager()));
+		foreach($pids as $id) {
+			$custom_property = CustomProperties::findById($id);
+			$name = $custom_property->getName();
+			$values = CustomPropertyValues::getCustomPropertyValues($this->getObjectId(), $id);
+			if ($custom_property->getIsRequired() && (!is_array($values) || count($values) == 0)) {
+				$v = new CustomPropertyValue();
+				$v->setValue($custom_property->getDefaultValue());
+				$values = array($v);
+			}
+			$cpval_index = 0;
+			foreach ($values as $cpval) {
+				$value = $cpval->getValue();
+				if(trim($value) <> '') {
+					$searchable_object = SearchableObjects::findOne(array("conditions" => "`rel_object_manager` = '".get_class($this->manager())."' AND `rel_object_id` = ".$this->getId()." AND `column_name` = '$name'"));
+					if (!$searchable_object)
+						$searchable_object = new SearchableObject();
+					 
+					$searchable_object->setRelObjectManager(get_class($this->manager()));
+					$searchable_object->setRelObjectId($this->getId());
+					$searchable_object->setColumnName($name.($cpval_index > 0 ? $cpval_index : ''));
+					$searchable_object->setContent($value);
+					$searchable_object->setProjectId(0);
+					$searchable_object->setIsPrivate(false);
+					$searchable_object->setUserId($this->getAccount()->getUserId());
+					
+					$searchable_object->save();
+					$cpval_index++;
+				}
+			}
+		}
+		
     	if ($wasNew){
         	SearchableObjects::dropContentByObjectColumns($this,array('uid'));
         	$searchable_object = new SearchableObject();

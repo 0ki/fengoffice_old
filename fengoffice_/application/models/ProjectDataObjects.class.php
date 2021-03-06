@@ -36,6 +36,18 @@ abstract class ProjectDataObjects extends DataManager {
 		return parent::paginate($arguments, $items_per_page, $current_page);
 	}
 	
+	function getUserTags() {
+		$oc = new ObjectController();
+		$queries = $oc->getDashboardObjectQueries();
+		$objects = "";
+		foreach ($queries as $type => $query) {
+			if (!str_ends_with($type, "Comments")) {
+				if ($objects != "") $objects .= " \n UNION \n ";
+				$objects .= $query;
+			}
+		}
+		$sql = "SELECT DISTINCT `t`.`tag` AS `name`, count(`t`.`tag`) AS `count` FROM `" . TABLE_PREFIX . "tags` `t`, ($objects) `o` WHERE `t`.`rel_object_manager` = `o`.`object_manager_value` AND `t`.`rel_object_id` = `o`.`oid` GROUP BY `t`.`tag` ORDER BY `count` DESC, `t`.`tag`";
+	}
 }
 
 ?>

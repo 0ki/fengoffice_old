@@ -108,4 +108,13 @@
 	'error assign task company dnx' => 'U probeert toe te wijzen aan een niet bestaand bedrijf. ',
 	'error assign task permissions company' => 'U heeft niet genoeg rechten om een taak aan dat bedrijf toe te wijzen. ',
 	'password invalid difference' => 'Uw wachtwoord moet op z\'n minst 3 karakters verschillen van de laatste 10 gebruikte wachtworden.',
+	'repeat x times must be a valid number between 1 and 1000' => 'Herhaal X-maal moet een heel getal zijn tussen de 1 en 1000.',
+	'repeat period must be a valid number between 1 and 1000' => 'Herhaal periode moet een heel getal zijn tussen de 1 en 1000.',
+	'to repeat by start date you must specify task start date' => 'Om te herhalen vanaf de startdatum moet u de startdatum van de taak instellen.',
+	'to repeat by due date you must specify task due date' => 'Om te herhalen vanaf de eiddatum moet u de einddatum van de taak instellen.',
+	'task cannot be instantiated more times' => 'De taak kan niet vaker worden herhaald, dit is de laatste keer.',
+	'account already being checked' => 'Account is reeds gechecked.',
+	'no files to compress' => 'Er zijn geen bestanden om te coprimeren',
+	'cant modify subscribers' => 'Kan de abonnees niet aanpassen',
+	'this object must belong to a ws to modify its subscribers' => 'Dit object moet behoren aan een werkomgeving om haar abonnees te kunnen aanpassen.',
 ); ?>

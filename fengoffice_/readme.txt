@@ -1,6 +1,6 @@
 
-    About OpenGoo 1.5
-    =================
+    About OpenGoo 1.5.1
+    ===================
 
     OpenGoo is a free and open source WebOffice, project management and collaboration
     tool, licensed under the Affero GPL 3 license.
@@ -61,11 +61,11 @@
     ====================
     
     1. Backup you current installation (important!)
-    2. Download OpenGoo 1.5 - http://www.opengoo.org/
+    2. Download OpenGoo 1.5.1 - http://www.opengoo.org/
     3. Unpack into your OpenGoo installation, overwriting your previous files and folders,
-    	but keeping your config, upload and public/files folders.
+    	but keeping your config and upload folders.
     5. Go to <your_opengoo>/public/upgrade in your browser and choose to upgrade
-    	from your current version to 1.5
+    	from your current version to 1.5.1
     6. Refresh your browser or clear its cache to load new javascript, css and images.   
 
     
@@ -86,6 +86,24 @@
 
 	Changelog
 	=========
+	
+	Since 1.5
+	---------
+	- bugfix: Tags permissions. Now a user can only see tags applied to objects he/she can view.
+	- bugfix: Milestones in wrong workspaces.
+	- bugfix: Custom properties are now searchable.
+	- bugfix: Fixed the permissions control when editing a workspace's permissions.
+	- bugfix: Fixed a small rendering problem with invited users in event edition.
+	- bugfix: Fixed error when sending emails to empty recipients.
+	- bugfix: Fixed default user preferences' rendered value.
+	- bugfix: Fixed a rendering problem in comments and descriptions that would eat a character before an email addres or link.
+	- bugfix: Tags query was using a hardcoded 'og_' table prefix.
+	- bugfix: Memory exhausted error when rendering repetitive tasks in the calendar.
+	- bugfix: Fatal error when copying a milestone.
+	- bugfix: Fatal error "undefined function saveFileAttributes" when uploading a file.
+	- bugfix: Translate OpenGoo tool now includes subfolders of language folders. Checklang also improved.
+	- bugfix: Files of type audio/mp3 now are correctly identified as MP3.
+	- langs: Updated langs.
 	
 	Since 1.5 RC
 	------------

@@ -31,10 +31,9 @@ og.LinkedObjectManager = function(config) {
 				totalProperty: 'totalCount',
 				id: 'id',
 				fields: [
-					'name', 'object_id', 'type', 'tags', 'createdBy', 'createdById',
-					{name: 'dateCreated', type: 'date', dateFormat: 'timestamp'},
-					'updatedBy', 'updatedById',
-					{name: 'dateUpdated', type: 'date', dateFormat: 'timestamp'},
+					'name', 'object_id', 'type', 'tags', 
+					'createdBy', 'createdById', 'dateCreated',
+					'updatedBy', 'updatedById',	'dateUpdated',
 					'icon', 'wsIds', 'manager', 'mimeType', 'url'
 				]
 			}),
@@ -115,12 +114,7 @@ og.LinkedObjectManager = function(config) {
 		if (!value) {
 			return "";
 		}
-		var now = new Date();
-		if (now.dateFormat('Y-m-d') > value.dateFormat('Y-m-d')) {
-			return value.dateFormat('M j');
-		} else {
-			return value.dateFormat('h:i a');
-		}
+		return value;
 	}
 
 	function getSelectedIds() {
@@ -428,8 +422,15 @@ Ext.extend(og.LinkedObjectManager, Ext.grid.GridPanel, {
 		this.load({
 			action: 'move',
 			objects: this.getSelectedIds(),
-			//types: this.getSelectedTypes(),
 			moveTo: ws
+		});
+	},
+	
+	tagObjects: function(tag) {
+		this.load({
+			action: 'tag',
+			objects: this.getSelectedIds(),
+			tagTag: tag
 		});
 	},
 	

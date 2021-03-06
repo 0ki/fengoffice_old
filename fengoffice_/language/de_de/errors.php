@@ -1,7 +1,7 @@
 <?php return array(
 	'invalid email address' => 'Email-Adresse besitzt kein gültiges Format',
 	'company name required' => 'Firma-/ Organisationsname ist erforderlich',
-	'company homepage invalid' => 'Homepage besitzt kein gültiges URL Format',
+	'company homepage invalid' => 'Homepage besitzt kein gültiges URL-Format',
 	'username value required' => 'Benutzername ist erforderlich',
 	'username must be unique' => 'Sorry, der Benutzername ist bereits vergeben',
 	'email value is required' => 'Email-Adresse ist erforderlich',
@@ -115,4 +115,6 @@
 	'task cannot be instantiated more times' => 'Die Aufgabe kann keine weiteren Zeiten erfassen, dies ist die letzte Wiederholung.',
 	'account already being checked' => 'Der Account wird bereits überprüft.',
 	'no files to compress' => 'Keine Dateien zum komprimieren',
+	'cant modify subscribers' => 'Kann Abonnenten nicht ändern',
+	'this object must belong to a ws to modify its subscribers' => 'Dieses Objekt muß zu einem Arbeitsbereich gehören, um seine Abonnenten zu ändern.',
 ); ?>

@@ -448,7 +448,7 @@ class ProjectTasks extends BaseProjectTasks {
 		if ($assignedUser instanceof User) 
 			$assignedFilter = ' AND (`assigned_to_user_id` = ' . $assignedUser->getId() . ' OR (`assigned_to_user_id` = 0 AND `assigned_to_company_id` = '. $assignedUser->getCompanyId() .')) ';
 		
-		$rep_condition = " (`repeat_forever` = 1 OR `repeat_num` > 0 OR (`repeat_end` > 0 AND `repeat_end` > '".$to_date->toMySQL()."')) ";
+		$rep_condition = " (`repeat_forever` = 1 OR `repeat_num` > 0 OR (`repeat_end` > 0 AND `repeat_end` >= '".$from_date->toMySQL()."')) ";
 			
 		$result = self::findAll(array(
         'conditions' => array('`is_template` = false AND `completed_on` = ? AND ((`due_date` >= ? AND `due_date` < ?) OR (`start_date` >= ? AND `start_date` < ?) OR '.$rep_condition.') ' . $assignedFilter . $permissions.$limitation.$tag_str, EMPTY_DATETIME, $from_date, $to_date, $from_date, $to_date)

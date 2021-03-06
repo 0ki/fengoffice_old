@@ -41,7 +41,7 @@
 	'upgrade is not available' => 'Aucune nouvelle version d\'OpenGoo n\'est disponible au téléchargement.',
 	'check for upgrade now' => 'Vérifier maintenant',
 	'forgot password' => 'Mot-de-passe oublié ',
-	'email me my password' => 'Envoyer le mot-de-passe par email',
+	'email me my password' => 'Envoyer le mot-de-passe par courriel',
 	'complete installation' => 'Finir l\'installation',
 	'complete installation desc' => 'Ceci est l\'étape finale du processus d\'installation qui vous permettra de créer un compte administrateur et de saisir quelques informations sur votre société',
 	'welcome to administration' => 'Bienvenue',

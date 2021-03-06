@@ -202,6 +202,17 @@
       
     } // getLoadColumns
     
+    /**
+  	* Check if specific column exists in this object
+  	*
+  	* @access public
+  	* @param string $column_name
+  	* @return boolean
+  	*/
+  	function columnExists($column_name) {
+  	  return in_array($column_name, $this->getColumns());
+  	} // columnExists
+    
     // ---------------------------------------------------
     //  Finders
     // ---------------------------------------------------

@@ -331,6 +331,14 @@ Ext.extend(og.WebpageManager, Ext.grid.GridPanel, {
 		});
 	},
 	
+	tagObjects: function(tag) {
+		this.load({
+			action: 'tag',
+			webpages: this.getSelectedIds(),
+			tagTag: tag
+		});
+	},
+	
 	trashObjects: function() {
 		if (confirm(lang('confirm move to trash'))) {
 			this.load({

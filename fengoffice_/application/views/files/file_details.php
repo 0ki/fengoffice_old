@@ -29,7 +29,7 @@ if (isset($file) && $file instanceof ProjectFile) {
 			add_page_action(lang('slideshow'), "javascript:og.slideshow(".$file->getId().")", 'ico-slideshow');
 		}
 		
-		if ($file && strcmp($file->getTypeString(), 'audio/mpeg')==0) {
+		if ($file && $file->isMP3()) {
 			$songinfo = array(
 				$file->getProperty("songname"),
 				$file->getProperty("songartist"),

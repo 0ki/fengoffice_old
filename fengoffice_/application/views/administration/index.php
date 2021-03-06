@@ -1,5 +1,103 @@
 <?php 
-  set_page_title(lang('administration'));
+set_page_title(lang('administration'));
+$icons = array();
+if (can_edit_company_data(logged_user())) {
+	$icons[] = array(
+		'ico' => 'ico-large-company',
+		'url' => get_url('administration', 'company'),
+		'name' => lang('owner company'),
+		'extra' => '',
+	);
+}
+if (can_manage_security(logged_user())) {
+	$icons[] = array(
+		'ico' => 'ico-large-company',
+		'url' => get_url('administration', 'clients'),
+		'name' => lang('client companies'),
+		'extra' => '<a class="internalLink coViewAction ico-add" href="' . get_url('company', 'add_client') . '">' . lang('add client') . '</a>'
+	);
+}
+if (can_edit_company_data(logged_user())) {
+	$icons[] = array(
+		'ico' => 'ico-large-user',
+		'url' => get_url('administration', 'members'),
+		'name' => lang('users'),
+		'extra' => '<a class="internalLink coViewAction ico-add" href="' . owner_company()->getAddUserUrl() . '">' . lang('add user') . '</a>',
+	);
+}
+if (can_manage_security(logged_user())) {
+	$icons[] = array(
+		'ico' => 'ico-large-group',
+		'url' => get_url('administration', 'groups'),
+		'name' => lang('groups'),
+		'extra' => '<a class="internalLink coViewAction ico-add" href="' . owner_company()->getAddGroupUrl() . '">' . lang('add group') . '</a>',
+	);
+}
+if (can_manage_workspaces(logged_user())) {
+	$icons[] = array(
+		'ico' => 'ico-large-workspace',
+		'url' => get_url('administration', 'projects'),
+		'name' => lang('projects'),
+		'extra' => '<a class="internalLink coViewAction ico-add" href="' . get_url('project', 'add') . '">' . lang('add project') . '</a>',
+	);
+}
+if (can_manage_templates(logged_user())) {
+	$icons[] = array(
+		'ico' => 'ico-large-template',
+		'url' => get_url('template', 'index'),
+		'name' => lang('templates'),
+		'extra' => '<a class="internalLink coViewAction ico-add" href="' . get_url('template','add') . '">' . lang('add template') . '</a>',
+	);
+}
+
+if (can_manage_security(logged_user())) {
+	$icons[] = array(
+		'ico' => 'ico-large-billing',
+		'url' => get_url('billing', 'index'),
+		'name' => lang('billing'),
+		'extra' => '<a class="internalLink coViewAction ico-add" href="' . get_url('billing', 'add') . '">' . lang('add billing category') . '</a>',
+	);	
+}
+if (can_manage_configuration(logged_user())) {
+	$icons[] = array(
+		'ico' => 'ico-large-custom-properties',
+		'url' => get_url('administration', 'custom_properties'),
+		'name' => lang('custom properties'),
+		'extra' => '',
+	);
+}
+if (can_manage_configuration(logged_user())) {
+	$icons[] = array(
+		'ico' => 'ico-large-configuration',
+		'url' => get_url('administration', 'configuration'),
+		'name' => lang('configuration'),
+		'extra' => '',
+	);
+	$icons[] = array(
+		'ico' => 'ico-large-tools',
+		'url' => get_url('administration', 'tools'),
+		'name' => lang('administration tools'),
+		'extra' => '',
+	);
+	if (!defined('ALLOW_UPGRADING') || ALLOW_UPGRADING) {
+		$icons[] = array(
+			'ico' => 'ico-large-upgrade',
+			'url' => get_url('administration', 'upgrade'),
+			'name' => lang('upgrade'),
+			'extra' => '',
+		);
+	}
+	if (!defined('ALLOW_CONFIGURING_CRON') || ALLOW_CONFIGURING_CRON) {
+		$icons[] = array(
+			'ico' => 'ico-large-cron',
+			'url' => get_url('administration', 'cron_events'),
+			'name' => lang('cron events'),
+			'extra' => '',
+		);
+	}
+}
+Hook::fire('render_administration_icons', null, $icons);
+if (count($icons > 0)) {}
 ?>
 <div class="adminIndex" style="height:100%;background-color:white">
   <div class="adminHeader">
@@ -17,154 +115,18 @@
 			<?php render_context_help($this, 'chelp administrator panel','administration'); ?>
 		</div>
 	<?php }?>
-<div style="width:100%;max-width:700px; text-align:center">
-    <table><tr>
-<?php if(can_edit_company_data(logged_user())){ ?>
-<td align="center">
-    <div style="width:150px;display:block; margin-right:10px;margin-bottom:40px">
-    <table width="100%" align="center"><tr><td align="center">
-    	<a class="internalLink" href="<?php echo get_url('administration', 'company') ?>"><div class="coViewIconImage ico-large-company"></div></a>
-    </td></tr><tr><td align="center"><b><a class="internalLink" href="<?php echo get_url('administration', 'company') ?>"><?php echo lang('owner company') ?></a></b>
-    </td></tr></table>
-    </div>
-</td>
-<?php } ?>
+<div style="width:100%;max-width:700px; text-align:center;position:relative">
 
-<?php if(can_manage_security(logged_user())){ ?>
-<td align="center">
-    <div style="width:150px;display:block; margin-right:10px;margin-bottom:40px">
-    <table width="100%" align="center"><tr><td align="center">
-    	<a class="internalLink" href="<?php echo get_url('administration', 'clients') ?>"><div class="coViewIconImage ico-large-company"></div></a>
-    </td></tr><tr><td align="center"><b><a class="internalLink" href="<?php echo get_url('administration', 'clients') ?>"><?php echo lang('client companies') ?></a></b>
-    	<br/><a class="internalLink coViewAction ico-add" href="<?php echo get_url('company', 'add_client') ?>"><?php echo lang('add client') ?></a>
-    	</td></tr></table>
-    </div>
-</td>
-<?php } ?>
-
-<?php if(can_edit_company_data(logged_user())){ ?>
-<td align="center">
-    <div style="width:150px;display:block; margin-right:10px;margin-bottom:40px">
-    <table width="100%" align="center"><tr><td align="center">
-    	<a class="internalLink" href="<?php echo get_url('administration', 'members') ?>"><div class="coViewIconImage ico-large-user"></div></a>
-    </td></tr><tr><td align="center"><b><a class="internalLink" href="<?php echo get_url('administration', 'members') ?>"><?php echo lang('users') ?></a></b>
-    	<br/><a class="internalLink coViewAction ico-add" href="<?php echo owner_company()->getAddUserUrl() ?>"><?php echo lang('add user') ?></a>
-    </td></tr></table>
-    </div>
-</td>
-<?php } ?>
-
-<?php if(can_manage_security(logged_user())){ ?>
-<td align="center">
-    <div style="width:150px;display:block; margin-right:10px;margin-bottom:40px">
-    <table width="100%" align="center"><tr><td align="center">
-    	<a class="internalLink" href="<?php echo get_url('administration', 'groups') ?>"><div class="coViewIconImage ico-large-group"></div></a>
-    </td></tr><tr><td align="center"><b><a class="internalLink" href="<?php echo get_url('administration', 'groups') ?>"><?php echo lang('groups') ?></a></b>
-    	<br/><a class="internalLink coViewAction ico-add" href="<?php echo owner_company()->getAddGroupUrl() ?>"><?php echo lang('add group') ?></a>
-    </td></tr></table>
-    </div>
-</td>
-<?php } ?>
-
-</tr></table>
-
-
-<table>
-<tr>
-<?php if(can_manage_workspaces(logged_user())){ ?>
-<td align="center">
-    <div style="width:150px;display:block; margin-right:10px;margin-bottom:40px">
-    <table width="100%" align="center"><tr><td align="center">
-    	<a class="internalLink" href="<?php echo get_url('administration', 'projects') ?>"><div class="coViewIconImage ico-large-workspace"></div></a>
-    </td></tr><tr><td align="center"><b><a class="internalLink" href="<?php echo get_url('administration', 'projects') ?>"><?php echo lang('projects') ?></a></b>
-    	<br/><a class="internalLink coViewAction ico-add" href="<?php echo get_url('project', 'add') ?>"><?php echo lang('add project') ?></a>
-    </td></tr></table>
-    </div>
-</td>
-<td align="center">
-    <div style="width:150px;display:block; margin-right:10px;margin-bottom:40px">
-    <table width="100%" align="center"><tr><td align="center">
-    	<a class="internalLink" href="<?php echo get_url('template', 'index') ?>"><div class="coViewIconImage ico-large-template"></div></a>
-    </td></tr><tr><td align="center"><b><a class="internalLink" href="<?php echo get_url('template', 'index') ?>"><?php echo lang('templates') ?></a></b>
-    	<br/><a class="internalLink coViewAction ico-add" href="<?php echo get_url('template','add') ?>"><?php echo lang('add template') ?></a>
-    </td></tr></table>
-    </div>
-</td>
-<?php } ?>
-<?php if(can_manage_security(logged_user())){ ?>
-<td align="center">
-    <div style="width:150px;display:block; margin-right:10px;margin-bottom:40px">
-    <table width="100%" align="center"><tr><td align="center">
-    	<a class="internalLink" href="<?php echo get_url('billing', 'index') ?>"><div class="coViewIconImage ico-large-billing"></div></a>
-    </td></tr><tr><td align="center"><b><a class="internalLink" href="<?php echo get_url('billing', 'index') ?>"><?php echo lang('billing') ?></a></b>
-    	<br/><a class="internalLink coViewAction ico-add" href="<?php echo get_url('billing', 'add') ?>"><?php echo lang('add billing category') ?></a>
-    </td></tr></table>
-    </div>
-</td>
-<?php } ?>
-
-<?php if(can_manage_configuration(logged_user())){ ?>
-<td align="center">
-    <div style="width:150px;display:block; margin-right:10px;margin-bottom:40px">
-    <table width="100%" align="center"><tr><td align="center">
-    	<a class="internalLink" href="<?php echo get_url('administration', 'custom_properties') ?>"><div class="coViewIconImage ico-large-custom-properties"></div></a>
-    </td></tr><tr><td align="center"><b><a class="internalLink" href="<?php echo get_url('administration', 'custom_properties') ?>"><?php echo lang('custom properties') ?></a></b>
-    	
-    </td></tr></table>
-    </div>
-</td>
-<?php } ?>
-
-</tr></table>
-
-<table>
-<tr>
-<?php if(can_manage_configuration(logged_user())){ ?>
-<td align="center">
-    <div style="width:150px;display:block; margin-right:10px;margin-bottom:40px">
-    <table width="100%" align="center"><tr><td align="center">
-    	<a class="internalLink" href="<?php echo get_url('administration', 'configuration') ?>"><div class="coViewIconImage ico-large-configuration"></div></a>
-    </td></tr><tr><td align="center"><b><a class="internalLink" href="<?php echo get_url('administration', 'configuration') ?>"><?php echo lang('configuration') ?></a></b>
-    </td></tr></table>
-    </div>
-</td>
-<td align="center">
-    <div style="width:150px;display:block; margin-right:10px;margin-bottom:40px">
-    <table width="100%" align="center"><tr><td align="center">
-    	<a class="internalLink" href="<?php echo get_url('administration', 'tools') ?>"><div class="coViewIconImage ico-large-tools"></div></a>
-    </td></tr><tr><td align="center"><b><a class="internalLink" href="<?php echo get_url('administration', 'tools') ?>"><?php echo lang('administration tools') ?></a></b>
-    </td></tr></table>
-    </div>
-</td>
-<td align="center">
-    <div style="width:150px;display:block; margin-right:10px;margin-bottom:40px">
-    <table width="100%" align="center"><tr><td align="center">
-    	<a class="internalLink" href="<?php echo get_url('administration', 'upgrade') ?>"><div class="coViewIconImage ico-large-upgrade"></div></a>
-    </td></tr><tr><td align="center"><b><a class="internalLink" href="<?php echo get_url('administration', 'upgrade') ?>"><?php echo lang('upgrade') ?></a></b>
-    </td></tr></table>
-    </div>
-</td>
-<td align="center">
-    <div style="width:150px;display:block; margin-right:10px;margin-bottom:40px">
-    <table width="100%" align="center"><tr><td align="center">
-    	<a class="internalLink" href="<?php echo get_url('administration', 'cron_events') ?>"><div class="coViewIconImage ico-large-cron"></div></a>
-    </td></tr><tr><td align="center"><b><a class="internalLink" href="<?php echo get_url('administration', 'cron_events') ?>"><?php echo lang('cron events') ?></a></b>
-    </td></tr></table>
-    </div>
-</td>
-<?php } ?>
-</tr></table>
-
-<?php $icons = array();
-Hook::fire('render_administration_icons', null, $icons);
+<?php
+// print administration icons
 if (count($icons > 0)) {?>
 <table><tr>
 <?php $count = 0;
-foreach ($icons as $icon) { 
-	$count++;
-	if ($count % 5 == 0) { ?>
+foreach ($icons as $icon) {
+	if ($count % 4 == 0) { ?>
 		</tr><tr>
-	<?php } ?>
+	<?php }
+	$count++;?>
 <td align="center">
     <div style="width:150px;display:block; margin-right:10px;margin-bottom:40px">
     <table width="100%" align="center"><tr><td align="center">
@@ -179,6 +141,19 @@ foreach ($icons as $icon) {
 <?php } ?>
 </tr></table>
 <?php } ?>
+
+<?php /* // alternative print icons (no tables, floating divs, not perfect in IE6)
+foreach ($icons as $icon) { ?>
+<div style="float:left;width:160px;height:120px;text-align:center;">
+	<a class="internalLink" href="<?php echo $icon['url'] ?>">
+		<div style="width:48px;height:48px;margin:auto;" class="<?php echo $icon['ico']?>">.</div>
+		<span style="font-weight:bold"><?php echo $icon['name'] ?></span>
+	</a>
+	<?php if (isset($icon['extra'])) { ?>
+		<div><?php echo $icon['extra']; ?></div>
+	<?php } ?>
+</div>
+<?php } */ ?>
 
 </div>
     

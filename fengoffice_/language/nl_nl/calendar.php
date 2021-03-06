@@ -141,4 +141,10 @@
 	'check to include sub ws' => 'Activeer deze optie om sub werkomgevingen in de url te intergreren. ',
 	'week short' => 'week',
 	'week number x' => 'week {0}',
+	'CAL_NO_WRITE' => 'U heeft geen toestemming om een nieuwe gebeurtenis toe te voegen.',
+	'accept or reject invitation help, click on one of the links below' => 'Om de uitnodiging aan te nemen of te weigeren klikt u op een van onderstaande links. ',
+	'accept invitation' => 'uitnodiging aannemen',
+	'reject invitation' => 'uitnodiging weigeren',
+	'invitation accepted' => 'uitnodiging aangenomen',
+	'invitation rejected' => 'uitnodiging geweigerd',
 ); ?>

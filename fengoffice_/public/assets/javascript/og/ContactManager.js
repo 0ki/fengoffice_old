@@ -81,7 +81,7 @@ og.ContactManager = function() {
     	return String.format('<a href="#" onclick="og.openLink(\'{1}\', null)">{0}</a>', og.clean(value), og.getUrl('company', 'card', {id: r.data.companyId}));
     }
     function renderEmail(value, p, r) {
-    	return String.format('<a href="mailto:{0}">{0}</a>', og.clean(value));
+    	return String.format('<a target="_self" href="mailto:{0}">{0}</a>', og.clean(value));
     }
     function renderWebsite(value, p, r) {
     	return String.format('<a href="" onclick="window.open(\'{0}\'); return false">{0}</a>', og.clean(value));

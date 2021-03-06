@@ -219,8 +219,6 @@ class FileRepository_Backend_FileSystem implements FileRepository_Backend {
 			throw new FileRepositoryAddError($source, $file_id);
 		} // if
 
-		$this->attributes[$file_id] = true; // register file
-
 		if(is_array($attributes)) {
 			foreach($attributes as $attribute_name => $attribute_value) {
 				$this->setFileAttribute($file_id, $attribute_name, $attribute_value);
@@ -277,12 +275,15 @@ class FileRepository_Backend_FileSystem implements FileRepository_Backend {
 			throw new FileRepositoryDeleteError($file_id);
 		} // if
 
-		if(isset($this->attributes[$file_id])) {
-			unset($this->attributes[$file_id]);
-			$this->saveFileAttributes();
-		} // if
-
 		$this->cleanUpDir($file_id);
+		
+		// delete attributes
+		$attributes_table = $this->getAttributesTableName();
+		$escaped_id = DB::escape($file_id);
+
+		try {
+			DB::execute("DELETE FROM $attributes_table WHERE `id` = $escaped_id");
+		} catch (Exception $e) {}
 
 		return true;
 	} // deleteFile
@@ -306,6 +307,8 @@ class FileRepository_Backend_FileSystem implements FileRepository_Backend {
 				} // if
 			} // while
 		} // if
+		$attributes_table = $this->getAttributesTableName();
+		DB::execute("DELETE FROM $attributes_table");
 	} // cleanUp
 
 	/**

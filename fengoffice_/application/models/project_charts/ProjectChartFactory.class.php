@@ -24,7 +24,8 @@
     		$res->setTitle($chart->getTitle());
     		$res->setNew(false);
     		$res->setId($chart->getId());
-    		$res->setProjectId($chart->getProjectId());
+    		
+    		$res->setProject($chart->getProject());
     		$res->setCreatedById($chart->getCreatedById());
     		$res->setCreatedOn($chart->getCreatedOn());
     		$res->setDeleted($chart->isDeleted());

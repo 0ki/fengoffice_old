@@ -146,7 +146,11 @@ $task_list = $object;
           	<img src="<?php echo icon_url('cancel_gray.gif') ?>" alt="" /></a>
           <?php } // if ?>
           <br />
-          <span class="taskCompletedOnBy">(<?php echo lang('completed on by', format_date($task->getCompletedOn()), $task->getCompletedBy()->getCardUrl(), clean($task->getCompletedBy()->getDisplayName())) ?>)</span>
+          <?php if ($task->getCompletedBy() instanceof User) {?>
+          	<span class="taskCompletedOnBy">(<?php echo lang('completed on by', format_date($task->getCompletedOn()), $task->getCompletedBy()->getCardUrl(), clean($task->getCompletedBy()->getDisplayName())) ?>)</span>
+          <?php } else { ?>
+          <span class="taskCompletedOnBy">(<?php echo lang('completed on by', format_date($task->getCompletedOn()), "#", lang("n/a")) ?>)</span>
+          <?php } ?>
         </td>
         <td></td>
       </tr>

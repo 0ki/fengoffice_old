@@ -73,7 +73,7 @@ addLangs({
 	'edit workspace': 'Éditer le contexte sélectionné',
 	'company': 'Société',
 	'companies': 'Sociétés',
-	'email': 'Adresse de messagerie',
+	'email': 'Adresse de messagerie ',
 	'email tab': 'Messagerie (BETA)',
 	'checkin': 'Nouvelle révision',
 	'checkout': 'Enregistrer',

@@ -28,7 +28,7 @@ class Trash {
 					$prevcount = $count;
 					$objects = $manager->findAll(array(
 							"include_trashed" => true,
-							"conditions" => array("`trashed_by_id` <> 0 AND `trashed_on` < ?", $date),
+							"conditions" => array("`trashed_by_id` > 0 AND `trashed_on` < ?", $date),
 							"limit" => 100,
 					));
 					if (is_array($objects)) {

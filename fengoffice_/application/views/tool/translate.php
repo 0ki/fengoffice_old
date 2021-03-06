@@ -1,3 +1,6 @@
+<?php
+$page_title = "Translate OpenGoo" . ($to != "" ? " to $to" : "");
+set_page_title($page_title) ?>
 <style>
 body {
 	padding: 5px 30px;
@@ -86,7 +89,7 @@ var locales = {};
 if (!isset($from) || $from == "") $from = "en_us";
 if (!isset($to)) $to = ""; ?>
 	
-<h1>Translate OpenGoo<?php if ($to != "") echo " to $to"; ?></h1>
+<!-- h1><?php echo $page_title ?></h1-->
 
 <p>This tool allows you to translate OpenGoo to a locale other than en_us. Your webserver needs permissions to write on the 'language' folder.</p> <?php
 
@@ -98,6 +101,7 @@ if (!isset($to)) $to = ""; ?>
 		<input type="hidden" name="c" value="tool">
 		<input type="hidden" name="a" value="translate">
 		<input type="hidden" name="from" value="<?php echo $from ?>" />
+		<input type="hidden" name="pagesize" value="<?php echo $pagesize ?>" />
 		<script>
 			function localeChosen() {
 				var select = this.getElementsByTagName("select")[0];
@@ -145,15 +149,11 @@ if ($to != "") {
 		locales['<?php echo $to ?>'] = {};
 		base = '<?php echo $from ?>';
 	</script> <?php
-	foreach ($from_files as $file) {
-		$locales[$from][$file] = array();
+	foreach ($from_files as $fromFile) {
+		$locales[$from][$fromFile] = array();
 	}
 	// finished loading translation files
-
-	$file = $_GET["file"];
-	if (!isset($file)) $file = "";
-	$filter = $_GET["filter"];
-	if (!isset($filter)) $filter = "all"; ?>
+	 ?>
 	<td>
 	<label>Choose a file:</label>
 	<form action="index.php" method="get">
@@ -162,6 +162,7 @@ if ($to != "") {
 		<input type="hidden" name="from" value="<?php echo $from ?>" />
 		<input type="hidden" name="to" value="<?php echo $to ?>" />
 		<input type="hidden" name="filter" value="<?php echo $filter ?>" />
+		<input type="hidden" name="pagesize" value="<?php echo $pagesize ?>" />
 		<script>
 			function fileChosen() {
 				if (this.value != "") {
@@ -181,11 +182,7 @@ if ($to != "") {
 	</form>
 	</td> <?php
 	if ($file != "") { 
-		$start = $_GET['start'];
-		if (!isset($start)) $start = 0;
-		if ($start >= $added && $filter == "missing") $start -= $added;
-		$pagesize = $_POST['pagesize'];
-		if (!isset($pagesize)) $pagesize = 5; ?>
+		if ($start >= $added && $filter == "missing") $start -= $added; ?>
 		<td>
 		<label>View:</label>
 		<form action="index.php" method="get">
@@ -194,6 +191,7 @@ if ($to != "") {
 			<input type="hidden" name="from" value="<?php echo $from ?>" />
 			<input type="hidden" name="to" value="<?php echo $to ?>" />
 			<input type="hidden" name="file" value="<?php echo $file ?>" />
+			<input type="hidden" name="pagesize" value="<?php echo $pagesize ?>" />
 			<script>
 				function filterChosen() {
 					this.parentNode.submit();
@@ -238,7 +236,9 @@ if ($to != "") {
 		
 		function pagesizeChange() {
 			formSubmit();
-			document.getElementById('langs').submit(); 
+			var form = document.getElementById('langs');
+			form.action += '&pagesize=' + form.pagesize.value;
+			form.submit(); 
 		}
 		
 		function formSubmit() {
@@ -258,7 +258,7 @@ if ($to != "") {
 						<option value="100"<?php if ($pagesize == 100) echo ' selected="selected"'; ?>>100</option>
 					</select>
 				</td><td>
-					<a target="blank" href="index.php?c=tool&a=translate&download=<?php echo $to ?>">Download zipped translation files for <?php echo $to ?></a>
+					<a href="index.php?c=tool&a=translate&download=<?php echo $to ?>">Download zipped translation files for <?php echo $to ?></a>
 				</td></tr></tbody></table>
 			</div>
 			<input type="hidden" name="locale" value="<?php echo $to ?>" />
@@ -271,11 +271,8 @@ if ($to != "") {
 					<?php echo $to ?>
 				</th>
 			</tr><?php
-			$locales[$from][$file] = loadFileTranslations($from, $file);
-			$locales[$to][$file] = array();
-			if (is_file(LANG_DIR . "/" . $to . "/" . $file)) {
-				$locales[$to][$file] = loadFileTranslations($to, $file);
-			}
+			$locales[$from][$file] = $from_file_translations;
+			$locales[$to][$file] = $to_file_translations;
 			$count = 0;
 			foreach ($locales[$from][$file] as $key => $value) {
 				if ($filter == "all" || $filter == "missing" && !isset($locales[$to][$file][$key])) {

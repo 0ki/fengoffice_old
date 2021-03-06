@@ -34,6 +34,10 @@
       return Localization::instance()->lang('user ws config option desc ' . $this->getName(), '');
     } // getDisplayDescription
     
+    function useDefaultValue() {
+    	$this->getConfigHandler()->setRawValue($this->getDefaultValue());
+    }
+    
     /**
     * Return config handler instance
     *

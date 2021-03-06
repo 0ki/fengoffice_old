@@ -103,7 +103,7 @@ class Timeslots extends BaseTimeslots {
 			$preFrom .= "(";
 		$postFrom = "";
 		for ($i = 0; $i < $wslevels; $i++)
-			$postFrom .= ") LEFT OUTER JOIN `pr` AS `ws" . $i . "` ON `pr`.`p" . ($wsDepth + $i + 1) . "` = `ws" . $i . "`.`id`";
+			$postFrom .= ") LEFT OUTER JOIN `".TABLE_PREFIX."projects` AS `ws" . $i . "` ON `pr`.`p" . ($wsDepth + $i + 1) . "` = `ws" . $i . "`.`id`";
 		
 		$commonConditions = "";
 		if ($start_date)

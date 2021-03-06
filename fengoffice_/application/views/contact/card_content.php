@@ -7,9 +7,9 @@
     <tr><td>
 	  <?php if ($contact->getEmail() || $contact->getEmail2() || $contact->getEmail3()){ $hasEmailAddrs = true?>
 	  <span style="font-weight:bold"><?php echo lang('email addresses') ?>:</span>
-      <?php if ($contact->getEmail()) { ?><div style="padding-left:10px"><a href="mailto:<?php echo clean($contact->getEmail());?>"><?php echo clean($contact->getEmail());?></a></div><?php } ?>
-      <?php if ($contact->getEmail2()) { ?><div style="padding-left:10px"><a href="mailto:<?php echo clean($contact->getEmail2());?>"><?php echo clean($contact->getEmail2());?></a></div><?php } ?>
-      <?php if ($contact->getEmail3()) { ?><div style="padding-left:10px"><a href="mailto:<?php echo clean($contact->getEmail3());?>"><?php echo clean($contact->getEmail3());?></a></div><?php } ?>
+      <?php if ($contact->getEmail()) { ?><div style="padding-left:10px"><a target="_self" href="mailto:<?php echo clean($contact->getEmail());?>"><?php echo clean($contact->getEmail());?></a></div><?php } ?>
+      <?php if ($contact->getEmail2()) { ?><div style="padding-left:10px"><a target="_self" href="mailto:<?php echo clean($contact->getEmail2());?>"><?php echo clean($contact->getEmail2());?></a></div><?php } ?>
+      <?php if ($contact->getEmail3()) { ?><div style="padding-left:10px"><a target="_self" href="mailto:<?php echo clean($contact->getEmail3());?>"><?php echo clean($contact->getEmail3());?></a></div><?php } ?>
       <?php } ?>
       <?php if ($contact->getOBirthday()) { ?><?php echo $hasEmailAddrs? '<br/>':'' ?>
       <div><span style="font-weight:bold"><?php echo lang('birthday') ?>:</span> 

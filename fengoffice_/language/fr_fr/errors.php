@@ -22,7 +22,7 @@
 	'failed to load project' => 'Le chargement du contexte actif à échoué',
 	'username value missing' => 'Saisissez votre nom d\'utilisateur',
 	'password value missing' => 'Saisissez votre mot-de-passe',
-	'invalid login data' => 'La connexion à échoué. Vérifiez vos données de connexion et réessayez.',
+	'invalid login data' => 'La connexion à échoué. Vérifiez vos paramètres de connexion et réessayez.',
 	'project name required' => 'Le nom du contexte est nécessaire',
 	'project name unique' => 'Le nom du contexte doit être unique',
 	'message title required' => 'Le titre est nécessaire',

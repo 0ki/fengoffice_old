@@ -78,7 +78,7 @@
   $description .= '</table></div>';
   
 		if($email->getBodyHtml() != ''){
-			$html_content = remove_css_and_scripts($email->getBodyHtml());
+			$html_content = purify_html($email->getBodyHtml());
 			
 			// links must open in a new tab or window
 			$html_content = str_replace('href', 'target="_blank" href', $html_content);

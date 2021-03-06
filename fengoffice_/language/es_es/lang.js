@@ -28,6 +28,7 @@ addLangs({
 	'checkout and download': 'Bloquear & Descargar',
 	'download only': 'Descargar',
 	'checkout recommendation': '¿Está planificando editar este documento? Si es así, es recomendable que realice el bloqueo del documento al descargarlo',
+	'confirm inherit permissions': '¿Desea que el nuevo espacio herede los permisos de su espacio padre?',
 	'by': 'Por',
 	'name': 'Nombre',
 	'project': 'Área de trabajo',
