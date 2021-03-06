@@ -359,12 +359,13 @@ class ProjectFile extends BaseProjectFile {
 		$revision->setRepositoryId($repository_id);
 		$revision->deleteThumb(false);
 		$revision->setFilesize($uploaded_file['size']);
-		if (config_option('detect_mime_type_from_extension')) {
+		if ($uploaded_file['type'] == 'application/x-unknown-application') {
 			$type = Mime_Types::instance()->get_type($extension);
-			if ($type) 
+			if ($type) {
 				$revision->setTypeString($type);
-			else 
+			} else {
 				$revision->setTypeString($uploaded_file['type']);
+			}
 		} else { 
 			$revision->setTypeString($uploaded_file['type']);
 		}

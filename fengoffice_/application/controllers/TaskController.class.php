@@ -101,10 +101,9 @@ class TaskController extends ApplicationController {
 			try {
 				DB::beginWork();
 				$task->save();
-                                
-                                $totalMinutes = (array_var($task_data, 'hours') * 60) + (array_var($task_data, 'minutes'));
+				$totalMinutes = (array_var($task_data, 'hours') * 60) + (array_var($task_data, 'minutes'));
 				$task->setTimeEstimate($totalMinutes);
-                                $task->save();
+				$task->save();
 				
 				$gb_member_id = array_var($task_data, 'member_id');				
 				$member_ids = array();
@@ -176,15 +175,15 @@ class TaskController extends ApplicationController {
 				
 				$subs = array();
 				if(config_option('multi_assignment') && Plugins::instance()->isActivePlugin('crpm')){
-					$json_subtasks = json_decode(array_var($_POST, 'multi_assignment'));
+					$json_subtasks = json_decode(array_var($_POST, 'multi_assignment'), true);
 					$subtasks = array();
 					$line = 0;
 					if (is_array($json_subtasks)) {
 						foreach ($json_subtasks as $json_subtask){
-							$subtasks[$line]['assigned_to_contact_id'] = $json_subtask->assigned_to_contact_id;
-							$subtasks[$line]['name'] = $json_subtask->name;
-							$subtasks[$line]['time_estimate_hours'] = $json_subtask->time_estimate_hours;
-							$subtasks[$line]['time_estimate_minutes'] = $json_subtask->time_estimate_minutes;
+							$subtasks[$line]['assigned_to_contact_id'] = $json_subtask['assigned_to_contact_id'];
+							$subtasks[$line]['name'] = $json_subtask['name'];
+							$subtasks[$line]['time_estimate_hours'] = $json_subtask['time_estimate_hours'];
+							$subtasks[$line]['time_estimate_minutes'] = $json_subtask['time_estimate_minutes'];
 							$line++;
 						}
 					}
@@ -208,6 +207,8 @@ class TaskController extends ApplicationController {
 					try {
 						Notifier::taskAssigned($task);
 					} catch(Exception $e) {
+						Logger::log($e->getMessage());
+						Logger::log($e->getTraceAsString());
 					} // try
 				}
 				ajx_extra_data(array("task" => $task->getArrayInfo(), 'subtasks' => $subs));

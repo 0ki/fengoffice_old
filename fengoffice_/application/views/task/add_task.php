@@ -141,18 +141,18 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
     				'<a href="#" onclick="og.removeParentTask(this.parentNode)" class="removeDiv" style="display: block;">'+lang('remove')+'</div>';
     			bef = document.getElementById('<?php echo $genid?>parent_before');
     			label = document.getElementById('no-task-selected<?php echo $genid?>');
-    			label.style.display = 'none';
-        		bef.style.display = 'none';
-    			parent.insertBefore(div, before);
+    			if (label) label.style.display = 'none';
+        		if (bef) bef.style.display = 'none';
+        		if (parent) parent.insertBefore(div, before);
     		};
 
     		og.removeParentTask = function(div) {
     			var parent = div.parentNode;
-    			parent.removeChild(div);
+    			if (parent) parent.removeChild(div);
     			bef = document.getElementById('<?php echo $genid?>parent_before');
     			label = document.getElementById('no-task-selected<?php echo $genid?>');
-    			bef.style.display = 'inline';
-    			label.style.display = 'inline';
+    			if (bef) bef.style.display = 'inline';
+    			if (label) label.style.display = 'inline';
     			
     		};
     		</script>
@@ -197,14 +197,12 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 		</div>
 		
 		<div id='<?php echo $genid ?>add_task_time_div' style="padding-top:6px">
-		<?php echo label_tag(lang('estimated time')) ?>
-                <?php 
-                        $totalTime = array_var($task_data, 'time_estimate', 0); 
-                        $minutes = $totalTime % 60;
+		<?php
+			echo label_tag(lang('estimated time'));
+			$totalTime = array_var($task_data, 'time_estimate', 0);
+			$minutes = $totalTime % 60;
 			$hours = ($totalTime - $minutes) / 60;
-      		?>
-      		<table>
-		<tr>
+      	?><table><tr>
 			<td align="right"><?php echo lang("hours") ?>:&nbsp;</td>
 			<td align='left'><?php echo text_field("task[time_estimate_hours]", $hours, array('id' => 'ogTasksPanelATHours', 'style' => 'width:30px', 'tabindex' => '80')) ?></td>
 			<td align="right" style="padding-left:10px"><?php echo lang("minutes") ?>:&nbsp;</td>
@@ -220,7 +218,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 			?></select>
 			</td>
 		</tr></table>
- 	</div>
+		</div>
 		
 		<div style="padding-top:4px">
 		<?php echo label_tag(lang('task priority')) ?>
@@ -342,9 +340,9 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 							og.viewDays = function(view) {
 								var btn = Ext.get('<?php echo $genid ?>repeat_days');
 								if(view){
-									btn.dom.style.display = 'block';
+									if (btn) btn.dom.style.display = 'block';
 								}else{
-									btn.dom.style.display = 'none';
+									if (btn) btn.dom.style.display = 'none';
 								}
 							}
 						</script>
@@ -630,9 +628,9 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 			var nV = <?php echo $defaultNotifyValue?>;
 			chk.checked = (user > 0 && nV != 0 && user != logged_user_id);
 			var comp_obj = ogTasks.getCompany(user); // check if selected user is a user or a company
-			document.getElementById(genid + 'taskFormSendNotificationDiv').style.display = (user > 0 && !comp_obj) ? 'block':'none';
+			var not_div = document.getElementById(genid + 'taskFormSendNotificationDiv');
+			if (not_div) not_div.style.display = (user > 0 && !comp_obj) ? 'block':'none';
 		}
-		console.log(ogTasks);
 	}
 	
 
@@ -671,7 +669,8 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
         
 
 	og.changeTaskRepeat = function() {
-		document.getElementById("<?php echo $genid ?>repeat_options").style.display = 'none';
+		var ro = document.getElementById("<?php echo $genid ?>repeat_options");
+		if (ro) ro.style.display = 'none';
 		var word = '';
 		var opt_display = '';
 		if(document.getElementById("<?php echo $genid ?>daily").selected){
@@ -685,7 +684,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 		} else opt_display = 'none';
 		
 		document.getElementById("<?php echo $genid ?>word").innerHTML = word;
-		document.getElementById("<?php echo $genid ?>repeat_options").style.display = opt_display;		
+		if (ro) ro.style.display = opt_display;		
 	}
 
 

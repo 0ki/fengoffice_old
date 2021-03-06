@@ -1036,7 +1036,6 @@ class ObjectController extends ApplicationController {
 				"trashed" => $trashed,
 				"archived" => $archived,
 				"types" => $types,
-				"count_results" => false,
 				"extra_conditions" => " AND ".implode(" AND ", $extra_conditions),
 				"ignore_context" => $ignore_context,
 				"extra_member_ids" => $extra_member_ids

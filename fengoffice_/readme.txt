@@ -1,5 +1,5 @@
 
-	About Feng Office 2.3-beta
+	About Feng Office 2.3-rc
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -101,6 +101,53 @@
 	
 	Changelog
 	=========
+	
+	Since 2.3-beta
+	----------------
+	
+	feature: Action prompt after workspace creation.
+	feature: Advanced search improved.
+	feature: Improved export to csv in total tasks time report.
+	feature: People panel, move to trash button (only for companies without contacts and for contacts that are not users).
+	feature: People panel, improved filter by type (users, companies and contacts as checkboxes).
+	feature: Task and event reminders improved.
+	feature: Double clicking a workspace takes you to the workspace edition form.
+	feature: Custom reports can be ordered by external columns (e.g. milestones, assigned to, etc).
+	feature: add/edit template - can specify milestone for each task.
+	feature: Height adjustment document preview.
+	feature: New buttons to add workspaces and other objects in dashboard widgets.	
+	
+	bugfix: When uploading files: detect file type from extension when browser sends 'application/x-unknown-application' as file type.
+	bugfix: Add to searchable objects doesn't add special characters correctly.
+	bugfix: read_objects insert query reimplementation.
+	bugfix: Parent workspace not passed when adding workspace from widget button.
+	bugfix: Duplicated config option in upgrade script.
+	bugfix: Advanced search: sql security issues fixed.
+	bugfix: Render "table custom properties" fixed when object has no values for the property.
+	bugfix: Error in activity widget for some comments.
+	bugfix: Plugin installer returns 'duplicate key' when executing it twice for the same plugin.
+	bugfix: Login layout broken for some languages.
+	bugfix: Add milestones for tasks in templates: when editing template milestones combos are unselected.
+	bugfix: Prevent user deletion from object listings (dashboard).
+	bugfix: Workspaces plugin update 4 -> 5 fixed.
+	bugfix: Event reminders don't show event name in popup.
+	bugfix: Emails addToSharingTable() fixed.
+	bugfix: Custom reports malformed conditions when using boolean fields (e.g. is_company).
+	bugfix: Search pagination fixed for advanced search results.
+	bugfix: Changing assinged to in tasks edition sometimes does not show the notification checkbox.
+	bugfix: Member selector fix when not is_multiple.
+	bugfix: sql injection in advanced search.
+	bugfix: Cannot upload files if no workspace or tag is selected.
+	bugfix: Template instantiation does not puts the objects in original members if instantiation is made with no member selected.
+	bugfix: Don't save email if cannot save the email file in the filesystem.
+	bugfix: csv export fix when & and enters are present in task names or descriptions.
+	bugfix: Tasks status filters fixced.
+	bugfix: When the whole mail is an attachment, it is not shown.
+	bugfix: Show users and people lists expanded in company view.
+	bugfix: Object picker pagination shows wrong total.
+	
+	language: Several language updates.
+	
 	
 	Since 2.2.4.1
 	----------------
@@ -436,115 +483,114 @@
 	system: Major performance improvements at the framework level
 	    
 
- 	Since 2.0 RC 1
- 	----------------
- 	bugfix: Uploading files fom CKEditor.
- 	bugfix: Some data was not save creating a company.
- 	bugfix: Error produced from documents tab - New Presentation.
- 	bugfix: Problems with task dates in some views.
- 	bugfix: Fatal error when you post a comment on a task page.
- 	bugfix: Generation of task repetitions in new tasks.
- 	bugfix: Do not let assign tasks (via drag & drop) to users that doesn't have permissions.
- 	usability: Interface localization improvements.
- 	system: Performance improvements.
+	Since 2.0 RC 1
+	----------------
+	bugfix: Uploading files fom CKEditor.
+	bugfix: Some data was not save creating a company.
+	bugfix: Error produced from documents tab - New Presentation.
+	bugfix: Problems with task dates in some views.
+	bugfix: Fatal error when you post a comment on a task page.
+	bugfix: Generation of task repetitions in new tasks.
+	bugfix: Do not let assign tasks (via drag & drop) to users that doesn't have permissions.
+	usability: Interface localization improvements.
+	system: Performance improvements.
 
 
- 	Since 2.0 Beta 4
- 	----------------
- 	bugfix: Extracted files categorization
- 	bugfix: When adding workspaces
- 	bugfix: Breadcrumbs were not working fine all the time 
- 	bugfix: Being able to zip/unzip files
- 	security: JS Injection Slimey Fix
- 	system: .pdf and .docx files contents search
- 	system: Improvement when creating a new user
- 	system: Plugin update engine
- 	system: Plugin manager console mode 
- 	system: Search in file revisions
- 	system: Import/Export contacts available again
- 	system: Import/Export events available again
- 	system: Google Calendar Sync 	
- 	system: Improvement on repeating events and tasks
- 	system: Cache compatibility (i.e.: with APC)
- 	usability: Completing a task closes its timeslots
- 	usability: Task progress bar working along the timeslots
- 	usability: Being able to change permissions in workspaces when editing
- 	 	
- 	
- 	Since 2.0 Beta 3
- 	----------------
- 	
- 	bugfix: Several changes in the permissions system
- 	bugfix: Invalid sql queries fixed
- 	bugfix: Issues with archived and trashed objects solved
- 	bugfix: Issues with sharing table solved
- 	bugfix: Improved IE7 and IE9 compatibility
- 	bugfix: Several timeslots issues solved
- 	bugfix: IMAP issue solved at Emails module
- 	bugfix: Solved issue with templates
- 	bugfix: Added missing tooltips at calendar 
- 	bugfix: Issue when completing repetitive task solved
- 	bugfix: Solved some issues with the Search engine
- 	bugfix: Solved issue with timezone autodetection
- 	buffix: Solved 'dimension dnx' error creating a workspace
- 	usability: Permission control in member forms
- 	usability: Disabling a user feature
- 	usability: Resfresh overview panel after quick add
- 	usability: Langs update/improvement
- 	usability: Drag & Drop feature added 	
- 	usability: Quick add task added, and improved
- 	usability: Slight improvement with notifications
- 	usability: Avoid double click at Search button (which caused performance issues)
- 	usability: Permissions by group feature added
- 	usability: Simple billing feature added
- 	system: Security Fixes
- 	system: Mail compatibility improved for different email clients 	 
- 	system: Feng 2 API updated
- 	system: General code cleanup
- 	system: Widget Engine
- 	system: Performance improvements in custom reports
- 	system: Print calendar
- 	system: Custom Properties
+	Since 2.0 Beta 4
+	----------------
+	bugfix: Extracted files categorization
+	bugfix: When adding workspaces
+	bugfix: Breadcrumbs were not working fine all the time 
+	bugfix: Being able to zip/unzip files
+	security: JS Injection Slimey Fix
+	system: .pdf and .docx files contents search
+	system: Improvement when creating a new user
+	system: Plugin update engine
+	system: Plugin manager console mode 
+	system: Search in file revisions
+	system: Import/Export contacts available again
+	system: Import/Export events available again
+	system: Google Calendar Sync 	
+	system: Improvement on repeating events and tasks
+	system: Cache compatibility (i.e.: with APC)
+	usability: Completing a task closes its timeslots
+	usability: Task progress bar working along the timeslots
+	usability: Being able to change permissions in workspaces when editing
+	
+	
+	Since 2.0 Beta 3
+	----------------
+	
+	bugfix: Several changes in the permissions system
+	bugfix: Invalid sql queries fixed
+	bugfix: Issues with archived and trashed objects solved
+	bugfix: Issues with sharing table solved
+	bugfix: Improved IE7 and IE9 compatibility
+	bugfix: Several timeslots issues solved
+	bugfix: IMAP issue solved at Emails module
+	bugfix: Solved issue with templates
+	bugfix: Added missing tooltips at calendar 
+	bugfix: Issue when completing repetitive task solved
+	bugfix: Solved some issues with the Search engine
+	bugfix: Solved issue with timezone autodetection
+	buffix: Solved 'dimension dnx' error creating a workspace
+	usability: Permission control in member forms
+	usability: Disabling a user feature
+	usability: Resfresh overview panel after quick add
+	usability: Langs update/improvement
+	usability: Drag & Drop feature added 	
+	usability: Quick add task added, and improved
+	usability: Slight improvement with notifications
+	usability: Avoid double click at Search button (which caused performance issues)
+	usability: Permissions by group feature added
+	usability: Simple billing feature added
+	system: Security Fixes
+	system: Mail compatibility improved for different email clients 	 
+	system: Feng 2 API updated
+	system: General code cleanup
+	system: Widget Engine
+	system: Performance improvements in custom reports
+	system: Print calendar
+	system: Custom Properties
 
+	Since 2.0 Beta 2
+	----------------
+	bugfix: Fixed problem uncompressing files
+	bugfix: Loading indicator hidden
+	bugfix: Search in mail contents
+	bugfix: Mail reply js error
+	bugfix: Filter members associated with deleted objects
+	bugfix: Fixed permission error creating a contact
+	usability: Contact View Improvements
+	usability: Navigation Improvements
+	system: Permission system fixes
+	system: Performance issues solved. Using permission cache 'sharing table' for listing
+	system: Weblinks module migrated
+	
+	
+	Since 2.0 Beta 1
+	----------------
 
-    Since 2.0 Beta 2
-    ----------------
-    bugfix: Fixed problem uncompressing files
-    bugfix: Loading indicator hidden
- 	bugfix: Search in mail contents
- 	bugfix: Mail reply js error
- 	bugfix: Filter members associated with deleted objects
- 	bugfix: Fixed permission error creating a contact
-    usability: Contact View Improvements
-    usability: Navigation Improvements
-    system: Permission system fixes
-    system: Performance issues solved. Using permission cache 'sharing table' for listing
-    system: Weblinks module migrated
-    
- 	
-    Since 2.0 Beta 1
-    ----------------
- 
-    bugfix: Fixed problem with context trees when editing content objects
-    bugfix: Fixed template listing
-    bugfix: Fixed issues when instantiating templates with milestones
-    bugfix: Fixed issue deleting users from 'people' and 'users' dimension.
-    bugfix: Fixed 'core_dimensions' installer
-    bugfix: Z-Index fixed in object-picker and header
+	bugfix: Fixed problem with context trees when editing content objects
+	bugfix: Fixed template listing
+	bugfix: Fixed issues when instantiating templates with milestones
+	bugfix: Fixed issue deleting users from 'people' and 'users' dimension.
+	bugfix: Fixed 'core_dimensions' installer
+	bugfix: Z-Index fixed in object-picker and header
 	usability: Selected rows style in object picker
-    system: General code cleanup
-    
-    
-    Since 1.7
-    -----------
- 
-    system: Plugin Support
-    system: Search Engine performance improved
-    system: Multiple Dimensions - 'Workspaces' and 'Tags' generalization
-    system: Database and Models structure changes - Each Content object identified by unique id 
-    system: Email removed from core (Available as a plugin)
-    system: User Profile System
-    feature: PDF Quick View - View uploaded PDF's
-    usability: Default Theme improved
-    usability: Customizable User Interface
-    
+	system: General code cleanup
+	
+	
+	Since 1.7
+	-----------
+	
+	system: Plugin Support
+	system: Search Engine performance improved
+	system: Multiple Dimensions - 'Workspaces' and 'Tags' generalization
+	system: Database and Models structure changes - Each Content object identified by unique id 
+	system: Email removed from core (Available as a plugin)
+	system: User Profile System
+	feature: PDF Quick View - View uploaded PDF's
+	usability: Default Theme improved
+	usability: Customizable User Interface
+	

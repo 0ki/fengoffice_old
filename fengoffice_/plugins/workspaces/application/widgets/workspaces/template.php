@@ -1,5 +1,4 @@
 <?php 
-$members = implode (',', active_context_members(false));
 $ws_dim = Dimensions::findByCode('workspaces');
 $row_cls = "";
 $add_button_text = count($data_ws) > 0 ? lang('add new workspace') : lang('add your first workspace');
@@ -57,29 +56,15 @@ $no_objects_text = count($data_ws) > 0 ? '' : lang('you have no workspaces yet')
 
 <script>
 	$(function(){
-
+		var parent_id = '<?php echo $parent instanceof Member ? $parent->getId() : 0?>';
 		$(".ws-more-details").click(function(){
 			og.openLink(og.getUrl('member','add'),{
 				get: {
 					'name': '',
-					'dim_id': '<?php echo $ws_dim->getId()?>'
-				}
-			});
-		});
-
-
-		$(".aaaaaws-widget a.aaaaaws-more-details").click(function(){
-			var container = $(this).closest(".widget-body");
-			var name = $(container).find("input.ws-name").val();
-			
-			og.openLink(og.getUrl('member','add'),{
-				get: {
-					'name': name,
 					'dim_id': '<?php echo $ws_dim->getId()?>',
-					'parent': '<?php echo $members?>'
+					'parent': parent_id
 				}
 			});
 		});
-
 	});
 </script>

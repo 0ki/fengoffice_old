@@ -991,7 +991,7 @@ class MailController extends ApplicationController {
 		$email = MailContents::findById(array_var($_GET, 'id', 0));
 		if ($email instanceof MailContent) {
 			$email->setIsRead(logged_user()->getId(), false);
-			redirect_to('index.php?c=mail&a=init');
+			redirect_to(get_url('mail', 'init'));
 		} else {
 			flash_error(lang("email dnx"));
 		}

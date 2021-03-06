@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Chorizo upgrade script will upgrade FengOffice 2.2.4.1 to FengOffice 2.3-beta
+ * Chorizo upgrade script will upgrade FengOffice 2.2.4.1 to FengOffice 2.3-rc
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -40,7 +40,7 @@ class ChorizoUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('2.2.4.1');
-		$this->setVersionTo('2.3-beta');
+		$this->setVersionTo('2.3-rc');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -118,7 +118,6 @@ class ChorizoUpgradeScript extends ScriptUpgraderScript {
 						('calendar panel', 'event_send_invitations', '1', 'BoolConfigHandler', '0', '0', NULL),
 						('calendar panel', 'event_subscribe_invited', '1', 'BoolConfigHandler', '0', '0', NULL),
 						('mails panel', 'mails_per_page', '50', 'IntegerConfigHandler', '0', '0', NULL),
-						('general', 'contacts_per_page', '50', 'IntegerConfigHandler', '0', '1200', NULL),
 						('general', 'access_member_after_add', '1', 'BoolConfigHandler', '0', '1300', NULL),
 						('general', 'access_member_after_add_remember', '0', 'BoolConfigHandler', '0', '1301', NULL),
 						('general', 'sendEmailNotification', '1', 'BoolConfigHandler', '1', '0', 'Send email notification to new user'),
