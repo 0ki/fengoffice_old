@@ -15,8 +15,9 @@ class ProjectTasks extends BaseProjectTasks {
 	const PRIORITY_NORMAL = 200;
 	const PRIORITY_LOW = 100;
 
-	public static function getWorkspaceString($ids = '?') {
-		return " `id` IN (SELECT `object_id` FROM `" . TABLE_PREFIX . "workspace_objects` WHERE `object_manager` = 'ProjectTasks' AND `workspace_id` IN ($ids)) ";
+	public static function getWorkspaceString($ids = '?', $table_alias = '') {
+		if ($table_alias) $table_alias .= ".";
+		return " $table_alias`id` IN (SELECT `object_id` FROM `" . TABLE_PREFIX . "workspace_objects` WHERE `object_manager` = 'ProjectTasks' AND `workspace_id` IN ($ids)) ";
 	}
 	
 	/**

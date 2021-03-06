@@ -94,56 +94,56 @@ class Timeslots extends BaseTimeslots {
 		$wslevels = min(array($wslevels, 10 - $wsDepth));
 		if ($wslevels < 0) $wslevels = 0;
 		
-		$select = "SELECT `" . TABLE_PREFIX . "timeslots`.*";
+		$select = "SELECT `ts`.*";
 		for ($i = 0; $i < $wslevels; $i++)
-			$select .= ", ws" . $i . ".name as wsName" . $i . ", ws" . $i . ".id as wsId" . $i;
+			$select .= ", `ws" . $i . "`.`name` AS `wsName" . $i . "`, `ws" . $i . "`.`id` AS `wsId" . $i . "`";
 			
 		$preFrom = " FROM ";
 		for ($i = 0; $i < $wslevels; $i++)
 			$preFrom .= "(";
 		$postFrom = "";
 		for ($i = 0; $i < $wslevels; $i++)
-			$postFrom .= ") LEFT OUTER JOIN `" . TABLE_PREFIX . "projects` as ws" . $i . " on `" . TABLE_PREFIX . "projects`.p" . ($wsDepth + $i + 1) . " = ws" . $i . ".id";
+			$postFrom .= ") LEFT OUTER JOIN `pr` AS `ws" . $i . "` ON `pr`.`p" . ($wsDepth + $i + 1) . "` = `ws" . $i . "`.`id`";
 		
 		$commonConditions = "";
 		if ($start_date)
-			$commonConditions .= DB::prepareString(' and `start_time` >= ? ', array($start_date));
+			$commonConditions .= DB::prepareString(' AND `ts`.`start_time` >= ? ', array($start_date));
 		if ($end_date)
-			$commonConditions .= DB::prepareString(' and (`paused_on` <> 0 or `end_time` <> 0 and `end_time` < ?) ', array($end_date));
+			$commonConditions .= DB::prepareString(' AND (`ts`.`paused_on` <> 0 OR `ts`.`end_time` <> 0 AND `ts`.`end_time` < ?) ', array($end_date));
 			
 		//User condition
-		$commonConditions .= $user? ' and `user_id` = '. $user->getId() : '';
+		$commonConditions .= $user? ' AND `ts`.`user_id` = '. $user->getId() : '';
 		
 		//Object condition
-		$commonConditions .= $object_id > 0 ? ' and `object_manager` = "ProjectTasks" and object_id = ' . $object_id : ''; //Only applies to tasks
+		$commonConditions .= $object_id > 0 ? ' AND `ts`.`object_manager` = "ProjectTasks" AND `ts`.`object_id = ' . $object_id : ''; //Only applies to tasks
 		
 		$sql = '';
 		switch($timeslot_type){
 			case 0: //Task timeslots
-				$from = "`" . TABLE_PREFIX . "timeslots`, `" . TABLE_PREFIX . "project_tasks`, `" . TABLE_PREFIX ."projects`";
-				$conditions = " WHERE `object_manager` = 'ProjectTasks'  and " . TABLE_PREFIX . "project_tasks.id = object_id and " . TABLE_PREFIX . "project_tasks.trashed_by_id = 0 and " . TABLE_PREFIX . "project_tasks.project_id = `" . TABLE_PREFIX . "projects`.id";
+				$from = "`" . TABLE_PREFIX . "timeslots` AS `ts`, `" . TABLE_PREFIX . "project_tasks` AS `pt`, `" . TABLE_PREFIX ."projects` AS `pr`";
+				$conditions = " WHERE `ts`.`object_manager` = 'ProjectTasks'  AND `pt`.`id` = `ts`.`object_id` AND `pt`.`trashed_by_id` = 0 AND `wo`.`object_manager` = 'ProjectTasks' AND `wo`.`object_id` = `ts`.`object_id` AND `wo`.`workspace_id` = `pr`.`id`";
 				//Project condition
-				$conditions .= $workspacesCSV? ' and ' . TABLE_PREFIX . 'project_tasks.project_id in (' . $workspacesCSV . ')' : '';
+				$conditions .= $workspacesCSV ? ' AND `pr`.`id` IN (' . $workspacesCSV . ')' : '';
 				
 				$sql = $select . $preFrom . $from . $postFrom . $conditions . $commonConditions;
 				break;
 			case 1: //Time timeslots
-				$from = "`" . TABLE_PREFIX . "timeslots`, `" . TABLE_PREFIX ."projects`";
-				$conditions = " WHERE `object_manager` = 'Projects'";
-				$conditions .= $workspacesCSV? ' AND object_id in (' . $workspacesCSV . ") AND object_id = `" . TABLE_PREFIX . "projects`.id" : " AND object_id = `" . TABLE_PREFIX . "projects`.id";
+				$from = "`" . TABLE_PREFIX . "timeslots` AS `ts`, `" . TABLE_PREFIX ."projects` AS `pr`";
+				$conditions = " WHERE `ts`.`object_manager` = 'Projects'";
+				$conditions .= $workspacesCSV ? ' AND `ts`.`object_id` IN (' . $workspacesCSV . ") AND `ts`.`object_id` = `pr`.`id`" : " AND `ts`.`object_id` = `pr`.`id`";
 				
 				$sql = $select . $preFrom . $from . $postFrom . $conditions . $commonConditions;
 				break;
 			case 2: //All timeslots
-				$from1 = "`" . TABLE_PREFIX . "timeslots`, `" . TABLE_PREFIX . "project_tasks`, `" . TABLE_PREFIX ."projects`";
-				$from2 = "`" . TABLE_PREFIX . "timeslots`, `" . TABLE_PREFIX ."projects`";
+				$from1 = "`" . TABLE_PREFIX . "timeslots` AS `ts`, `" . TABLE_PREFIX . "project_tasks` AS `pt`, `" . TABLE_PREFIX ."projects` AS `pr`";
+				$from2 = "`" . TABLE_PREFIX . "timeslots` AS `ts`, `" . TABLE_PREFIX ."projects` AS `pr`";
 				
-				$conditions1 = " WHERE `object_manager` = 'ProjectTasks'  and " . TABLE_PREFIX . "project_tasks.trashed_by_id = 0 and " . TABLE_PREFIX . "project_tasks.id = object_id and " . TABLE_PREFIX . "project_tasks.project_id = `" . TABLE_PREFIX . "projects`.id";
+				$conditions1 = " WHERE `ts`.`object_manager` = 'ProjectTasks'  AND `pt`.`id` = `ts`.`object_id` AND `pt`.`trashed_by_id` = 0 AND `wo`.`object_manager` = 'ProjectTasks' AND `wo`.`object_id` = `ts`.`object_id` AND `wo`.`workspace_id` = `pr`.`id`";
 				//Project condition
-				$conditions1 .= $workspacesCSV? ' and ' . TABLE_PREFIX . 'project_tasks.project_id in (' . $workspacesCSV . ')' : '';
+				$conditions1 .= $workspacesCSV ? ' AND `pr`.`id` IN (' . $workspacesCSV . ')' : '';
 				
 				$conditions2 = " WHERE `object_manager` = 'Projects'";
-				$conditions2 .= $workspacesCSV? ' AND object_id in (' . $workspacesCSV . ") AND object_id = `" . TABLE_PREFIX . "projects`.id" : " AND object_id = `" . TABLE_PREFIX . "projects`.id";
+				$conditions2 .= $workspacesCSV ? ' AND `ts`.`object_id` IN (' . $workspacesCSV . ") AND `ts`.`object_id` = `pr`.`id`" : " AND `ts`.`object_id` = `pr`.`id`";
 				
 				
 				$sql = $select . $preFrom . $from1 . $postFrom . $conditions1 . $commonConditions . ' UNION ' . $select . $preFrom . $from2 . $postFrom . $conditions2 . $commonConditions;
@@ -154,12 +154,12 @@ class Timeslots extends BaseTimeslots {
 		
 		//Group by
 		$wsCount = 0;
-		$sql .= ' order by ';
+		$sql .= ' ORDER BY ';
 		if (is_array($group_by)){
 			foreach ($group_by as $gb){
 				switch($gb){
 					case 'project_id':
-						$sql.= "wsName" . $wsCount . " ASC, ";
+						$sql.= "`wsName" . $wsCount . "` ASC, ";
 						$wsCount++;
 						break;
 					case 'id':
@@ -167,7 +167,7 @@ class Timeslots extends BaseTimeslots {
 					case 'milestone_id':
 					case 'state':
 						if ($timeslot_type == 0)
-							$sql.= "`" . TABLE_PREFIX . "project_tasks`.`$gb` ASC, "; 
+							$sql.= "`pt`.`$gb` ASC, "; 
 						break;
 					default:
 						$sql.= "`$gb` ASC, "; break;
@@ -203,16 +203,16 @@ class Timeslots extends BaseTimeslots {
 	static function getTimeslotsByUserWorkspacesAndDate(DateTimeValue $start_date, DateTimeValue $end_date, $object_manager, $user = null, $workspacesCSV = null, $object_id = 0){
 		$userCondition = '';
 		if ($user)
-			$userCondition = ' and `user_id` = '. $user->getId();
+			$userCondition = ' AND `user_id` = '. $user->getId();
 		
 		$projectCondition = '';
 		if ($workspacesCSV && $object_manager == 'ProjectTasks')
-			$projectCondition = ' and (Select count(*) from '. TABLE_PREFIX . 'project_tasks where '. TABLE_PREFIX . 'project_tasks.id = object_id and ' . TABLE_PREFIX . 'project_tasks.trashed_by_id = 0 and '
-			. TABLE_PREFIX . 'project_tasks.project_id in (' . $workspacesCSV . ')) > 0';
+			$projectCondition = ' AND (SELECT count(*) FROM `'. TABLE_PREFIX . 'project_tasks` as `pt`, `' . TABLE_PREFIX . 'workspace_objects` AS `wo` WHERE `pt`.`id` = `object_id` AND `pt`.`trashed_by_id` = 0 AND ' .
+			"`wo`.`object_manager` = 'ProjectTasks' AND `wo`.`object_id` = `object_id` AND `wo`.`workspace_id` IN (" . $workspacesCSV . ')) > 0';
 			
 		$objectCondition = '';
 		if ($object_id > 0)
-			$objectCondition = ' and object_id = ' . $object_id;
+			$objectCondition = ' AND `object_id` = ' . $object_id;
 		
 		return self::findAll(array(
           'conditions' => array('`object_manager` = ? and `start_time` > ? and `end_time` < ?' . $userCondition . $projectCondition . $objectCondition, $object_manager, $start_date, $end_date),

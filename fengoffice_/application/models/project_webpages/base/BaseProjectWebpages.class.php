@@ -98,7 +98,7 @@ abstract class BaseProjectWebpages extends ProjectDataObjects {
 	 * @return array
 	 */
 	function getSystemColumns() {
-		return array_merge(parent::getSystemColumns(), array('project_id'));
+		return array_merge(parent::getSystemColumns());
 	} // getSystemColumns
 	
 	/**

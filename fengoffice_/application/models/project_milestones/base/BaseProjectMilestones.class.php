@@ -105,7 +105,7 @@ abstract class BaseProjectMilestones extends ProjectDataObjects {
 	 */
 	function getSystemColumns() {
 		return array_merge(parent::getSystemColumns(), array(
-      		'project_id', 'assigned_to_company_id', 'assigned_to_user_id', 'completed_by_id', 'from_template_id')
+      		'assigned_to_company_id', 'assigned_to_user_id', 'completed_by_id', 'from_template_id')
 		);
 	} // getSystemColumns
 	

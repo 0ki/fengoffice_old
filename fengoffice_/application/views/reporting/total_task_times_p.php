@@ -46,16 +46,6 @@
 				), array('onchange' => 'og.dateselectchange(this)'));
 			?></td>
 		</tr>
-		<tr style='height:30px;'>
-			<td><b><?php echo lang("timeslots") ?>:&nbsp;</b></td>
-			<td align='left'><?php 
-				echo select_box('report[timeslot_type]', array(
-					option_tag(lang('task timeslots'),0, array_var($report_data, "timeslot_type") == 0? array('selected' => 'selected'):null),
-					option_tag(lang('time timeslots'),1, array_var($report_data, "timeslot_type") == 1? array('selected' => 'selected'):null),
-					option_tag(lang('all timeslots'),2, array_var($report_data, "timeslot_type") == 2? array('selected' => 'selected'):null)
-				), array('onchange' => 'og.timeslotTypeSelectChange(this, \'' . $genid . '\')'));
-			?></td>
-		</tr>
 		<?php
 			if (array_var($report_data, "date_type") == 6) {
 				//echo var_dump($_SESSION); die();
@@ -63,7 +53,7 @@
 		       	$st = DateTimeValueLib::dateFromFormatAndString(user_config_option('date_format', 'd/m/Y'), array_var($report_data, 'start_value'));
 		       	$et = DateTimeValueLib::dateFromFormatAndString(user_config_option('date_format', 'd/m/Y'), array_var($report_data, 'end_value'));
 			} else {
-				$style = 'display:none';
+				$style = 'display:none;';
 				$st = DateTimeValueLib::now();
 				$et = $st;
 			} 
@@ -75,6 +65,16 @@
 		<tr class="dateTr"  style="<?php echo $style ?>">
 			<td style="padding-bottom:18px"><b><?php echo lang("end date") ?>:&nbsp;</b></td>
 			<td align='left'><?php echo pick_date_widget2('report[end_value]', $et, $genid);?></td>
+		</tr>
+		<tr style='height:30px;'>
+			<td><b><?php echo lang("timeslots") ?>:&nbsp;</b></td>
+			<td align='left'><?php 
+				echo select_box('report[timeslot_type]', array(
+					option_tag(lang('task timeslots'),0, array_var($report_data, "timeslot_type") == 0? array('selected' => 'selected'):null),
+					option_tag(lang('time timeslots'),1, array_var($report_data, "timeslot_type") == 1? array('selected' => 'selected'):null),
+					option_tag(lang('all timeslots'),2, array_var($report_data, "timeslot_type") == 2? array('selected' => 'selected'):null)
+				), array('onchange' => 'og.timeslotTypeSelectChange(this, \'' . $genid . '\')'));
+			?></td>
 		</tr>
 		<tr style='height:30px;'>
 			<td><b><?php echo lang("user") ?>:&nbsp;</b></td>

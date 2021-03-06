@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Figazza upgrade script will upgrade OpenGoo 1.4.2 to OpenGoo 1.5-beta
+ * Figazza upgrade script will upgrade OpenGoo 1.4.2 to OpenGoo 1.5-beta2
  *
  * @package ScriptUpgrader.scripts
  * @version 1.1
@@ -41,7 +41,7 @@ class FigazzaUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('1.4.2');
-		$this->setVersionTo('1.5-beta');
+		$this->setVersionTo('1.5-beta2');
 	} // __construct
 
 	function getCheckIsWritable() {

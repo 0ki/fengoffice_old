@@ -584,7 +584,7 @@ class Project extends BaseProject {
 			$user_cond = ' AND timeslots.user_id = ' . $user_id;
 		
 		$row = DB::executeOne('SELECT SUM(timeslots.fixed_billing) as total_billing from ' . Timeslots::instance()->getTableName() . ' as timeslots, ' . ProjectTasks::instance()->getTableName() .
-			' as tasks WHERE ((tasks.project_id = ' . $this->getId() . ' AND timeslots.object_id = tasks.id AND timeslots.object_manager = \'ProjectTasks\')' .
+			' as tasks WHERE ((' . ProjectTasks::getWorkspaceString($this->getId()) . ' AND timeslots.object_id = tasks.id AND timeslots.object_manager = \'ProjectTasks\')' .
 			' OR (timeslots.object_manager = \'Project\' AND timeslots.object_id = ' . $this->getId() . '))' . $user_cond);
 		
 		return array_var($row, 'total_billing', 0);
@@ -1045,21 +1045,6 @@ class Project extends BaseProject {
 	// ---------------------------------------------------
 	//  Tags
 	// ---------------------------------------------------
-
-	/**
-	 * This function will return unique tags used on objects of this project. Result is cached!
-	 *
-	 * @access public
-	 * @param void
-	 * @return array
-	 */
-	function getTagNames() {
-		$exclude_private = !logged_user()->isMemberOfOwnerCompany();
-		if(is_null($this->tag_names)) {
-			$this->tag_names = Tags::getProjectTagNames($this, $exclude_private);
-		} // if
-		return $this->tag_names;
-	} // getTagNames
 
 	/**
 	 * This function return associative array of project objects tagged with specific tag. Array has following elements:

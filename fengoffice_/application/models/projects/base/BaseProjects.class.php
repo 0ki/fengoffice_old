@@ -108,7 +108,7 @@
     */
     function getSystemColumns() {
       return array_merge(parent::getSystemColumns(), array(
-      	'project_id', 'completed_by_id', 'color', 'p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8', 'p9', 'p10')
+      	'completed_by_id', 'color', 'p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8', 'p9', 'p10')
       );
     } // getSystemColumns
     

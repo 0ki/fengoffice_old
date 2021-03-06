@@ -621,7 +621,7 @@ SlimeyDeleteTool.prototype.notifySelectionChange = function() {
  */
 var SlimeyUndoTool = function(slimey) {
 	/* create the DOM element that represents the tool (a clickable image) */
-	var img = createImageButton('undo', 'Undo', this);
+	var img = createImageButton('undo', lang('undo'), this);
 
 	SlimeyTool.call(this, 'undo', img, slimey);
 

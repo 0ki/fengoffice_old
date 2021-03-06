@@ -200,45 +200,6 @@ class Tags extends BaseTags {
 	} // setObjectTags
 
 	/**
-	 * Return unique tag names used on project objects
-	 *
-	 * @access public
-	 * @param Project $project
-	 * @return array
-	 */
-	function getProjectTagNames(Project $project, $exclude_private = false) {
-		if($exclude_private) {
-			$private = " AND `is_private` = 0 ";
-		} // if
-		else
-		$private='';
-		$proj_ids = logged_user()->getWorkspacesQuery();
-		$rows = DB::executeAll("SELECT DISTINCT `tag` FROM " . self::instance()->getTableName(true) . " WHERE
-      ((`rel_object_manager` = ? AND `rel_object_id` in ( SELECT id  FROM " . TABLE_PREFIX . "project_messages co WHERE project_id in (" . $proj_ids ."))) OR 
-      (`rel_object_manager` = ? AND `rel_object_id` in ( SELECT id  FROM " . TABLE_PREFIX . "project_files co WHERE project_id in (" . $proj_ids ."))) OR 
-      (`rel_object_manager` = ? AND `rel_object_id` in ( SELECT id  FROM " . TABLE_PREFIX . "project_events co WHERE project_id in (" . $proj_ids ."))) OR 
-      (`rel_object_manager` = ? AND `rel_object_id` in ( SELECT id  FROM " . TABLE_PREFIX . "project_tasks co WHERE project_id in (" . $proj_ids ."))) OR 
-      (`rel_object_manager` = ? AND `rel_object_id` in ( SELECT id  FROM " . TABLE_PREFIX . "project_webpages co WHERE project_id in (" . $proj_ids ."))) OR 
-      (`rel_object_manager` = ? AND `rel_object_id` in ( SELECT id  FROM " . TABLE_PREFIX . "project_milestones co WHERE project_id in (" . $proj_ids ."))) OR 
-      (`rel_object_manager` = ? AND `rel_object_id` in ( SELECT id  FROM " . TABLE_PREFIX . "project_contacts co WHERE project_id in (" . $proj_ids ."))) ) ".$private." ORDER BY `tag`",
-       'ProjectMessages',
-       'ProjectFiles',
-       'ProjectEvents',
-       'ProjectTasks',
-       'ProjectWebPages',
-       'ProjectMilestones',
-       'Contacts' );
-		 
-		if(!is_array($rows) || !count($rows)) return null;
-
-		$tags = array();
-		foreach($rows as $row) {
-			$tags[] = $row['tag'];
-		} // foreach
-		return $tags;
-	} // getProjectTagNames
-
-	/**
 	 * Return array of project objects. Optional filters are by tag and / or by object class
 	 *
 	 * @access public
@@ -249,7 +210,7 @@ class Tags extends BaseTags {
 	 * @return array
 	 */
 	function getObjects(Project $project, $tag = null, $class = null, $exclude_private = false) {
-		$conditions = '1=1'; //`project_id` = ' . DB::escape($project->getId());
+		$conditions = '1=1';
 		if(trim($tag) <> '') $conditions .= ' AND `tag` = ' . DB::escape($tag);
 		if(trim($class) <> '') $conditions .= ' AND `rel_object_manager` = ' .  DB::escape($class);
 		if($exclude_private) $conditions .= ' AND `is_private` = ' . DB::escape(0);

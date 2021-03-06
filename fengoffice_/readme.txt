@@ -1,6 +1,6 @@
 
-    About OpenGoo 1.5 beta
-    ======================
+    About OpenGoo 1.5 beta 2
+    ========================
 
     OpenGoo is a free and open source WebOffice, project management and collaboration
     tool, licensed under the Affero GPL 3 license.
@@ -61,11 +61,11 @@
     ====================
     
     1. Backup you current installation (important!)
-    2. Download OpenGoo 1.4 beta 2 - http://www.opengoo.org/
+    2. Download OpenGoo 1.5 beta 2 - http://www.opengoo.org/
     3. Unpack into your OpenGoo installation, overwriting your previous files and folders,
     	but keeping your config, upload and public/files folders.
     5. Go to <your_opengoo>/public/upgrade in your browser and choose to upgrade
-    	from your current version to 1.4 beta 2
+    	from your current version to 1.5 beta 2
     6. Refresh your browser or clear its cache to load new javascript, css and images.   
 
     
@@ -86,6 +86,14 @@
 
 	Changelog
 	=========
+
+	Since 1.5-beta
+	--------------
+	
+	- bugfix: Checking email on a new email account would delete emails from server (the delete emails from server was being stored incorrectly)
+	- bugfix: Cannot send email on new 1.5 beta installations. `content` column was missing in `mail_contents` table.
+	- bugfix: Error when executing the "Total task execution time" report.
+	- langs: Updated french, portuguese and spanish and added a missing key in Slimey. 
 
 	Since 1.4.2
 	-----------

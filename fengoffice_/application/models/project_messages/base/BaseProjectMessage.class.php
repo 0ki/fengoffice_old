@@ -56,29 +56,7 @@
     function setMilestoneId($value) {
       return $this->setColumnValue('milestone_id', $value);
     } // setMilestoneId() 
-    
-    /**
-    * Return value of 'project_id' field
-    *
-    * @access public
-    * @param void
-    * @return integer 
-    */
-    function getProjectId() {
-      return $this->getColumnValue('project_id');
-    } // getProjectId()
-    
-    /**
-    * Set value of 'project_id' field
-    *
-    * @access public   
-    * @param integer $value
-    * @return boolean
-    */
-    function setProjectId($value) {
-      return $this->setColumnValue('project_id', $value);
-    } // setProjectId() 
-    
+        
     /**
     * Return value of 'title' field
     *

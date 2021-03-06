@@ -181,7 +181,6 @@ class MailController extends ApplicationController {
  			ob_start();
  			print_r($attach_contents);
  			$a = ob_get_clean();
- 			alert("ATCON: " . $a);
  			if (is_array($objects)) {
  				$err = 0;
  				$count = 0;
@@ -193,9 +192,7 @@ class MailController extends ApplicationController {
  						flash_error(lang('file dnx'));
 	 					$err++;
  					} else {
- 						alert("ATCON[$count] = " . $attach_contents[$count]);
 	 					if (isset($attach_contents[$count]) && $split[0] == 'ProjectFiles') {
-	 						alert("ATTACHING: " . $objid);
 		 					$file = ProjectFiles::findById($object->getId());
 		 					if (!($file instanceof ProjectFile)) {
 		 						flash_error(lang('file dnx'));
@@ -750,7 +747,7 @@ class MailController extends ApplicationController {
 		}
 		try {
 			foreach ($accounts as $acc) {
-				if ($acc->getDelFromServer() >= 0) {
+				if ($acc->getDelFromServer() > 0) {
 					MailUtilities::deleteMailsFromServer($acc);
 				}
 			}
@@ -800,7 +797,7 @@ class MailController extends ApplicationController {
 
 			try {
 				$mailAccount_data['user_id'] = logged_user()->getId();
-				if (!array_var($mailAccount_data, 'del_mails_from_server', false)) $mailAccount_data['del_from_server'] = -1;
+				if (!array_var($mailAccount_data, 'del_mails_from_server', false))
 				if (!array_var($mailAccount_data, 'is_default', false)) $mailAccount_data['is_default'] = 0;
 				$mailAccount->setFromAttributes($mailAccount_data);
 				$mailAccount->setPassword(MailUtilities::ENCRYPT_DECRYPT($mailAccount->getPassword()));
@@ -962,7 +959,7 @@ class MailController extends ApplicationController {
 
 		if(is_array(array_var($_POST, 'mailAccount'))) {
 			try {
-				if (!array_var($mailAccount_data, 'del_mails_from_server', false)) $mailAccount_data['del_from_server'] = -1;
+				if (!array_var($mailAccount_data, 'del_mails_from_server', false))
 				$mailAccount->setFromAttributes($mailAccount_data);
 				$mailAccount->setPassword(MailUtilities::ENCRYPT_DECRYPT($mailAccount->getPassword()));
 				$mailAccount->setSmtpPassword(MailUtilities::ENCRYPT_DECRYPT($mailAccount->getSmtpPassword()));

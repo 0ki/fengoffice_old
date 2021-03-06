@@ -147,4 +147,5 @@
 	'add files to zip' => 'Adicionar arquivos ao zip',
 	'copy file' => 'Copiar este arquivo',
 	'open weblink' => 'Abrir link web',
+	'show all linked objects' => 'Exibir todos os objetos vinculados({0})',
 ); ?>

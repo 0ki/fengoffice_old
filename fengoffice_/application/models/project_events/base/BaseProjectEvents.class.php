@@ -109,7 +109,7 @@ abstract class BaseProjectEvents extends ProjectDataObjects {
 	 */
 	function getSystemColumns() {
 		return array_merge(parent::getSystemColumns(), array(
-      		'project_id', 'type_id', 'special_id')
+      		'type_id', 'special_id')
 		);
 	} // getSystemColumns
 	

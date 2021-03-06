@@ -202,8 +202,8 @@
 	'n years' => '{0} años',
   	'every' => 'cada',
 	'generate repetitition' => 'Generar repetición de la tarea',
-  	'end of task' => 'Inicio de Tarea',
-	'start of task' => 'Fin de Tarea',
+  	'end of task' => 'Fin de Tarea',
+	'start of task' => 'Inicio de Tarea',
   	'new task repetition generated' => 'Se ha generado una nueva repetición de la tarea',
   
 	'reminders will not apply to repeating events' => 'Aviso: los recordatorios no se aplican a eventos repetitivos',

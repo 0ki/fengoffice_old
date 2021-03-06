@@ -110,7 +110,7 @@ abstract class BaseProjectFiles extends ProjectDataObjects {
 	 */
 	function getSystemColumns() {
 		return array_merge(parent::getSystemColumns(), array(
-      		'project_id', 'checked_out_by_id', 'was_auto_checked_out', 'mail_id', 'type')
+      		'checked_out_by_id', 'was_auto_checked_out', 'mail_id', 'type')
 		);
 	} // getSystemColumns
 	

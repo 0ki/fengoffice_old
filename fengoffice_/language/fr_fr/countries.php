@@ -60,7 +60,7 @@
 	'country dj' => 'Djibouti',
 	'country dm' => 'Dominique',
 	'country do' => 'République Dominicaine',
-	'country tl' => 'Timor oriental',
+	'country tp' => 'Timor oriental',
 	'country ec' => 'Équateur',
 	'country eg' => 'Égypte',
 	'country sv' => 'Salvador',
@@ -235,8 +235,10 @@
 	'country wf' => 'Îles de Wallis & Futuna',
 	'country eh' => 'Sahara occidental',
 	'country ye' => 'Yémen',
-	
+	'country zr' => 'Zaïre',
 	'country zm' => 'Zambie',
 	'country zw' => 'Zimbabwe',
 	'country sb' => 'Îles Salomon',
+	'country tl' => 'Timor oriental',
+	'country cd' => 'République démocratique du Congo',
 ); ?>

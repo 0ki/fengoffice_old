@@ -210,7 +210,7 @@
 	'country tm' => 'Turquemenistão',
 	'country tn' => 'Tunísia',
 	'country to' => 'Tonga',
-	'country tl' => 'Timor-Leste',
+	'country tp' => 'Timor-Leste',
 	'country tr' => 'Turquia',
 	'country tt' => 'Trinidade e Tobago',
 	'country tv' => 'Tuvalu',
@@ -236,6 +236,8 @@
 	'country yt' => 'Mayotte',
 	'country za' => 'África do Sul',
 	'country zm' => 'Zâmbia',
-	
+	'country zr' => 'República Democrática do Congo',
 	'country zw' => 'Zimbabwe',
+	'country tl' => 'Timor Leste',
+	'country cd' => 'República Democrática do Congo',
 ); ?>

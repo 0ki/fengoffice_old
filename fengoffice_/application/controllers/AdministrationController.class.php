@@ -53,7 +53,6 @@ class AdministrationController extends ApplicationController {
 						}// switch
 						}
 					$url = get_url($ref_controller, $ref_action, $ref_params);
-					//alert("URL = $url");
 					$this->redirectTo('administration', 'password_autentify', array('url' => $url));
 				}//foreach
 			}//if

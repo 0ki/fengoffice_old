@@ -108,25 +108,8 @@ class ProjectController extends ApplicationController {
 		tpl_assign('search_results', $search_results);
 		tpl_assign('pagination', $pagination);
 		tpl_assign('time', $timeEnd - $timeBegin);
-
-//		tpl_assign('tag_names', active_project()->getTagNames());
 	} // search
 
-	/**
-	 * Show tags page
-	 *
-	 * @param void
-	 * @return null
-	 */
-	function tags() {
-		if(!logged_user()->isProjectUser(active_project())) {
-			flash_error(lang('no access permissions'));
-			ajx_current("empty");
-			return;
-		} // if
-
-		tpl_assign('tag_names', active_project()->getTagNames());
-	} // tags
 
 	/**
 	 * List all companies and users involved in this project

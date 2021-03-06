@@ -633,25 +633,6 @@ function select_chart_type($name, $chart_types, $selected = null, $attributes = 
 } // select_company
 
 /**
- * Show project tags combo
- *
- * @param Project $project
- * @Param array $attributes Array of control attributes
- * @return string
- */
-function show_project_tags_option(Project $project, $comboName, $attributes) {
-	$options=array();
-	foreach ($project->getTagNames() as $tag) {
-		$tag=trim($tag);
-		if(strcmp($tag,""))
-		{//foreach tag
-			$options[] = option_tag($tag,$tag);
-		}
-	}
-	return select_box($comboName,$options,$attributes);
-}
-
-/**
  * Show button with javascript to add tag from combo to text box
  * $src source control name
  * $dest destination control name

@@ -374,16 +374,14 @@ class Reports extends BaseReports {
 		$duplicateIds = array_keys($duplicateIds);
 		foreach($rows as $row){
 			if(in_array($row['id'], $duplicateIds)){
-				alert(implode(',',array_keys($row)));
 				foreach($row as $col => $value){
 					$cp = CustomProperties::getCustomProperty($col);
 					if($cp instanceof CustomProperty && $cp->getIsMultipleValues()){
-						alert($cp->getCustomPropertyId());
+
 					}
 				}
 			}
 		}
-		//alert(implode(',', array_keys($duplicateIds)));
 		return $rows;
 	}
 

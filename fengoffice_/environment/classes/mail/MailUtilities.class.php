@@ -469,7 +469,7 @@ class MailUtilities {
 	}
 
 	function deleteMailsFromServer(MailAccount $account) {
-		if ($account->getDelFromServer() >= 0) {
+		if ($account->getDelFromServer() > 0) {
 			$max_date = DateTimeValueLib::now();
 			$max_date->add('d', -1 * $account->getDelFromServer());
 			if ($account->getIsImap()) {

@@ -2,7 +2,7 @@
 	'upgrade' => 'Mise à jour',
 	'upgrade from' => 'Mise à jour depuis',
 	'upgrade to' => 'Mise à jour vers',
-	'already upgraded' => 'Vous avez déjà la toute dernière mise à jour.',
+	'already upgraded' => 'Vous disposez de la toute dernière version.',
 	'back to opengoo' => 'Retour à OpenGoo',
 	'all rights reserved' => 'Tous droits réservés',
 	'upgrade process log' => 'Log du processus de mise à jour',

@@ -43,6 +43,7 @@ addLangs({
 	"specific fonts": "Specific fonts",
 	"delete element": "Delete element",
 	"redo": "Redo",
+	"undo": "Undo",
 	"send element to the back": "Send element to the back",
 	"bring element to the front": "Bring element to the front",
 	"view source code": "View source code",
