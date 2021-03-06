@@ -1,0 +1,44 @@
+-- <?php echo $table_prefix ?> fo_
+-- <?php echo $default_charset ?> DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci
+-- <?php echo $default_collation ?> collate utf8_unicode_ci
+-- <?php echo $engine ?> InnoDB
+
+ALTER TABLE `<?php echo $table_prefix ?>project_events` CHANGE `special_id` `special_id` TEXT CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT NULL;
+ALTER TABLE `<?php echo $table_prefix ?>project_file_revisions` ADD `hash` TEXT CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT NULL;
+
+ALTER TABLE `<?php echo $table_prefix ?>contact_config_option_values` ADD `member_id` INT( 10 ) UNSIGNED NULL DEFAULT '0';
+ALTER TABLE `<?php echo $table_prefix ?>contact_config_option_values` drop PRIMARY KEY;
+ALTER TABLE `<?php echo $table_prefix ?>contact_config_option_values` ADD PRIMARY KEY ( `option_id` , `contact_id` , `member_id` );
+
+INSERT INTO `<?php echo $table_prefix ?>widgets` (`name`, `title`, `plugin_id`, `path`, `default_options`, `default_section`, `default_order`) VALUES
+ ('activity_feed', 'activity_feed', 0, '', '', 'left', 0)
+ON DUPLICATE KEY UPDATE name=name;
+
+INSERT INTO `<?php echo $table_prefix ?>contact_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
+ ('dashboard', 'filters_dashboard', '0,0,10,0', 'StringConfigHandler', '0', '0', 'first position: entry to see the dimension, second position: view timeslot, third position: recent activities to show, fourth position: view views and downloads')
+ON DUPLICATE KEY UPDATE name=name;
+
+INSERT INTO `<?php echo $table_prefix ?>config_categories` (`name`, `is_system`) VALUES ('brand_colors', 1) ON DUPLICATE KEY UPDATE name=name;
+INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`,`name`,`value`,`config_handler_class`,`is_system`) VALUES
+	('brand_colors', 'brand_colors_head_back', '', 'StringConfigHandler', 1),
+	('brand_colors', 'brand_colors_head_font', '', 'StringConfigHandler', 1),
+	('brand_colors', 'brand_colors_tabs_back', '', 'StringConfigHandler', 1),
+	('brand_colors', 'brand_colors_tabs_font', '', 'StringConfigHandler', 1)
+ON DUPLICATE KEY UPDATE name=name;
+
+INSERT INTO `<?php echo $table_prefix ?>searchable_objects` (`rel_object_id`, `column_name`, `content`, `contact_id`) 
+ SELECT id,'name',name,'0' FROM `<?php echo $table_prefix ?>objects` WHERE `object_type_id` = (SELECT id FROM <?php echo $table_prefix ?>object_types WHERE name='message')
+ON DUPLICATE KEY UPDATE rel_object_id=id,column_name='name';
+
+INSERT INTO `<?php echo $table_prefix ?>tab_panels` (`id`,`title`,`icon_cls`,`refresh_on_context_change`,`default_controller`,`default_action`,`initial_controller`,`initial_action`,`enabled`,`type`,`ordering`,`plugin_id`,`object_type_id`) VALUES 
+ ('contacts-panel','contacts','ico-contacts',1,'contact','init','','',0,'system',7,0, (SELECT id FROM <?php echo $table_prefix ?>object_types WHERE name='contact')) 
+ON DUPLICATE KEY UPDATE id=id;
+
+INSERT INTO `<?php echo $table_prefix ?>tab_panel_permissions` (`permission_group_id`, `tab_panel_id`) VALUES 
+	((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Super Administrator'),	'contacts-panel'),
+	((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Administrator'), 'contacts-panel'),  
+	((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Manager'), 'contacts-panel'),  
+	((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Executive'), 'contacts-panel'),  
+	((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Collaborator Customer'), 'contacts-panel'),  
+	((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Non-Exec Director'), 'contacts-panel') 
+ON DUPLICATE KEY UPDATE tab_panel_id = tab_panel_id;

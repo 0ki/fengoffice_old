@@ -379,7 +379,7 @@ Bu sistem her kullanıcı için otomatik bir şekilde çalışma alanı yaratır
 	'minutes' => 'Dakikalar',
 	'seconds' => 'Saniyeler',
 	'days' => 'Günler',
-	'time estimate' => 'Tahmini süre',
+	'estimated time' => 'Tahmini süre',
 	'work in progress' => 'Çalışma devam etmekte',
 	'total time' => 'Yerel saat',
 	'upload anyway' => 'Yinede yükle',

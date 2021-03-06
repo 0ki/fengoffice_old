@@ -71,7 +71,7 @@
 
 <?php
 tpl_assign('genid', $genid);
-tpl_assign('disable_sysperm_inputs', true);
+//tpl_assign('disable_sysperm_inputs', true);
 $this->includeTemplate(get_template_path('system_permissions', 'account'));
 
 echo submit_button(lang('update permissions'));

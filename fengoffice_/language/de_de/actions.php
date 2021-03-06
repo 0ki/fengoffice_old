@@ -159,4 +159,7 @@
 	'not spam' => 'Kein Spam',
 	'mark as unread' => 'Als „ungelesen“ markieren',
 	'show' => 'Anzeigen',
+	'activate' => 'Aktivieren',
+	'disabled' => 'Deaktiviert',
+	'template context' => 'Wählen Sie den Ort des Templates',
 ); ?>

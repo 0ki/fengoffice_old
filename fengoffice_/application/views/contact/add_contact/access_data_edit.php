@@ -22,8 +22,8 @@
 			$("<?php echo $jqid ?> .field-error-msg").remove();
 			$("<?php echo $jqid ?> .password input, <?php echo $jqid ?> .repeat input").removeClass("field-error");
 		}
-                
-                $("<?php echo $jqid ?>.access-data #create-user").click(function(){
+
+		$("<?php echo $jqid ?>.access-data #create-user").click(function(){
 			if ($(this).is(":checked")) {
 				$("<?php echo $jqid ?>.access-data .user-data").slideDown();
 				$("<?php echo $jqid ?> .password input").focus();

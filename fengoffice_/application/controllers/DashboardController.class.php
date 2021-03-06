@@ -459,16 +459,12 @@ class DashboardTools {
 			"conditions" => " plugin_id = 0 OR plugin_id IS NULL OR plugin_id IN ( SELECT id FROM ".TABLE_PREFIX."plugins WHERE is_activated > 0 AND is_installed > 0 )",
 			"order" => "default_order",
 			"order_dir" => "DESC",
-		
 		));
+		
 		// If exists an instance of cw for this section, render the widgets with the options overriden
 		foreach (self::$widgets as $w) {
-			/* @var $w Widget */
 			
-			if 	($cw = ContactWidgets::instance()->findById(array(
-				'contact_id'=>logged_user()->getId(), 
-				'widget_name'=>$w->getName()))
-			){
+			if 	($cw = ContactWidgets::instance()->findById(array('contact_id'=>logged_user()->getId(),'widget_name'=>$w->getName()))){
 				if ( $cw->getSection() == $name ) {
 					$w->setOptions($cw->getOptions()); 
 					$w->setDefaultOrder($cw->getOrder());
@@ -480,7 +476,7 @@ class DashboardTools {
 		}
 		
 		usort($widgetsToRender, "widget_sort") ;
-		foreach ($widgetsToRender as $k=> $w) {
+		foreach ($widgetsToRender as $k => $w) {
 			$w->execute();
 		}
 		

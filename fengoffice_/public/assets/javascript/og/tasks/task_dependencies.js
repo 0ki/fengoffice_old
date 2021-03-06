@@ -1,5 +1,5 @@
 
-og.pickPreviousTask = function(before, genid) {
+og.pickPreviousTask = function(before, genid, task_id) {
 	og.ObjectPicker.show(function (objs) {
 		if (objs && objs.length > 0) {
 			var obj = objs[0].data;
@@ -12,7 +12,7 @@ og.pickPreviousTask = function(before, genid) {
 	}, before, {
 		types: ['task'],
 		selected_type: 'task'
-	});
+	},'',task_id);
 };
 
 og.addPreviousTask = function(before, obj, genid) {
@@ -54,5 +54,5 @@ og.pickPreviousTaskFromView = function(tid) {
 	}, this, {
 		types: ['task'],
 		selected_type: 'task'
-	});
+	},'',tid);
 };

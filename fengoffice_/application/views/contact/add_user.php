@@ -27,12 +27,14 @@
     </div>
     
     <!-- email -->
-    <?php if ($ask_email):  ?>
+    <?php if ($ask_email) : ?>
     <div>
       <?php echo label_tag(lang('email address'), 'userFormEmail', true) ?>
       <?php echo text_field('user[email]', array_var($user_data, 'email'), 
     	array('class' => 'title', 'id' => 'userFormEmail', 'tabindex' => '200')) ?>
     </div>
+    <?php else : ?>
+    <input name="user[email]" type="hidden" value="<?php echo array_var($user_data, 'email') ?>" />
     <?php endif; ?>
   
   <script>
@@ -201,7 +203,7 @@
 	<div id="<?php echo $genid ?>add_user_permissions" style="display:none">
   <?php
   	tpl_assign('genid', $genid);
-  	tpl_assign('disable_sysperm_inputs', true);
+  	//tpl_assign('disable_sysperm_inputs', true);
   	$this->includeTemplate(get_template_path('system_permissions', 'account'));
   ?>
   	</div>

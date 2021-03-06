@@ -114,21 +114,16 @@ class AccountController extends ApplicationController {
 			try {
 				DB::beginWork();
 
-				$user->setUserType(array_var($user_data,'type'));
 				$user->setTimezone(array_var($user_data,'timezone'));
 				$user->setDefaultBillingId(array_var($user_data,'default_billing_id'));
 				$user->setUpdatedOn(DateTimeValueLib::now());
 				
 				if (logged_user()->isAdministrator()){
-					//if ($user->getId() != 2) { // System admin cannot change it's company (from Feng 2.0 onwards administrador has id = 2)
-					//	$user->setCompanyId(array_var($user_data,'company_id'));
-					//}
-					
 					$user->setUsername(array_var($user_data,'username'));
 				} else {
 					$user->setCompanyId(array_var($user_data,'company_id'));
 				}
-				if(!isset($_POST['sys_perm'])){
+				if(!isset($_POST['sys_perm']) && array_var($user_data, 'type')){
 					$rol_permissions=SystemPermissions::getRolePermissions(array_var($user_data, 'type'));
 					$_POST['sys_perm']=array();
 					$not_rol_permissions=SystemPermissions::getNotRolePermissions(array_var($user_data, 'type'));
@@ -513,7 +508,7 @@ class AccountController extends ApplicationController {
 				ajx_current("empty");
 			}
 			
-			flash_success('success disable user');
+			flash_success(lang('success disable user', $user->getObjectName()));
 			
 		} catch (Exception $e) {
 			flash_error($e->getMessage());
@@ -544,7 +539,7 @@ class AccountController extends ApplicationController {
 			$ret = null ; 
 			Hook::fire("user_disabled", $user, $ret );
 			DB::commit();
-			flash_success('success delete user');
+			flash_success(lang('success delete user', $user->getObjectName()));
 			
 			if(array_var($_GET,'current')=="administration") {
 				ajx_current("reload");
@@ -581,7 +576,7 @@ class AccountController extends ApplicationController {
 			$ret = null ; 
 			Hook::fire("user_restored", $user, $ret );			
 			DB::commit();
-			flash_success('success delete user');
+			flash_success(lang('success restore user', $user->getObjectName()));
 			ajx_current("reload");
 			
 		} catch (Exception $e) {

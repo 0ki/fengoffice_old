@@ -30,9 +30,8 @@
     * @return array
     */
     function getContactEmails(Contact $contact, $type_id) {
-      	$contact_emails = self::findAll(array('conditions' => array("`is_main` = 0 AND `contact_id` = ? AND `email_type_id` = ?", 
-    					 $contact->getId(), $type_id)));
-     	return $contact_emails;
+    	$contact_emails = self::findAll(array('conditions' => array("`is_main` = 0 AND `contact_id` = ? AND `email_type_id` = ?", $contact->getId(), $type_id)));
+    	return $contact_emails;
     } // getContactEmails
     
     

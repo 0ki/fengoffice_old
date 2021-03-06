@@ -365,7 +365,7 @@
 	'add timeslot' => '타임슬롯 추가',
 	'edit timeslot' => '타임슬롯 수정',
 	'workspace permamanent delete' => '작업장이 삭제될 때 딸려있는 <b>내용은 영구히 삭제됩니다!<b>',
-	'time estimate' => '추정시간',
+	'estimated time' => '추정시간',
 	'statistics' => '통계',
 	'group by' => '그룹기준',
 	'pause time cannot exceed timeslot time' => '일시정지 시간은 시간슬롯 시간을 초과할 수 없습니다.',

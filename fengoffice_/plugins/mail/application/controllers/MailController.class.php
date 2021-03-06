@@ -157,6 +157,7 @@ class MailController extends ApplicationController {
 			if (defined('SANDBOX_URL')) {
 				$re_body = str_replace('<!--', '<!-- ', $re_body);
 			}
+			$re_body = preg_replace("/<body*[^>]*>/i",'<body>', $re_body);
 
 			$mail_data = array(
 				'to' => $to,
@@ -585,6 +586,7 @@ class MailController extends ApplicationController {
 				set_user_config_option('last_mail_format', array_var($mail_data, 'format', 'plain'), logged_user()->getId());
 				$body = utf8_safe($body);
 				if (array_var($mail_data,'format') == 'html') {
+					$body = preg_replace("/<body*[^>]*>/i",'<body>', $body);
 					$mail->setBodyHtml($body);
 					$mail->setBodyPlain(utf8_safe(html_to_text($body)));
 				} else {
@@ -1415,7 +1417,7 @@ class MailController extends ApplicationController {
 						$ctrl->add_to_members($conv_email, $members);
 						MailUtilities::parseMail($conv_email->getContent(), $decoded, $parsedEmail, $warnings);
 						if ($conv_email->getHasAttachments()) {
-							$this->classifyFile($classification_data, $conv_email, $parsedEmail, $members);
+							$this->classifyFile($classification_data, $conv_email, $parsedEmail, $members, true);
 						}
 					}
 					DB::commit();
@@ -1442,8 +1444,7 @@ class MailController extends ApplicationController {
 		tpl_assign('parsedEmail', $parsedEmail);
 	}
 
-	function classifyFile($classification_data, $email, $parsedEmail, $members) {
-		//return true ; //TODO Feng 2
+	function classifyFile($classification_data, $email, $parsedEmail, $member, $remove_prev) {
 		if (!is_array($classification_data)) $classification_data = array();
 
 		if (!isset($parsedEmail["Attachments"])) throw new Exception(lang('no attachments found for email'));
@@ -1453,68 +1454,82 @@ class MailController extends ApplicationController {
 				$att = $parsedEmail["Attachments"][$c];
 				$fName = str_starts_with($att["FileName"], "=?") ? iconv_mime_decode($att["FileName"], 0, "UTF-8") : utf8_safe($att["FileName"]);
 				if (trim($fName) == "" && strlen($att["FileName"]) > 0) $fName = utf8_encode($att["FileName"]);
-				try {
-					$file = ProjectFiles::findOne(array('conditions' => "`filename` = ".DB::escape($fName)." AND `mail_id` = ".$email->getId()));
-					DB::beginWork();
-					if ($file == null){
-						$fileIsNew = true;
-						$file = new ProjectFile();
-						$file->setFilename($fName);
-						$file->setIsVisible(true);
-						$file->setIsPrivate(false);
-						$file->setCommentsEnabled(true);
-						$file->setAnonymousCommentsEnabled(false);
-						$file->setMailId($email->getId());
-						$file->save();
-					} else {
-						$fileIsNew = false;
-					}
-				
-					if (!$mantainWs && !$fileIsNew) {
-						$file->removeFromWorkspaces(logged_user()->getWorkspacesQuery());
-					}
-					foreach ($validWS as $w) {
-						if (!$file->hasWorkspace($w)) {
-							$file->addToWorkspace($w);
-						}
-					}
-					
-					$file->setTagsFromCSV($csv);
-					$enc = array_var($parsedMail,'Encoding','UTF-8');
-					
-					$ext = utf8_substr($fName, strrpos($fName, '.') + 1, utf8_strlen($fName, $enc), $enc);					
-								
-					$mime_type = '';
-					if (Mime_Types::instance()->has_type($att["content-type"])) {
-						$mime_type = $att["content-type"]; //mime type is listed & valid
-					} else {
-						$mime_type = Mime_Types::instance()->get_type($ext); //Attempt to infer mime type
-					}
+                                
+                                $extension = get_file_extension(basename($fName));
+                                $type_file_allow = FileTypes::getByExtension($extension);
+                                if(!($type_file_allow instanceof FileType) || $type_file_allow->getIsAllow() == 1){                                    
+                                        try {
+                                                //$sql = "SELECT o.id FROM ".TABLE_PREFIX."objects o,".TABLE_PREFIX."project_files f WHERE o.id = f.object_id AND f.mail_id = ".$email->getId()." AND o.name = ".DB::escape($fName)."";
+                                                $sql = "SELECT o.id FROM ".TABLE_PREFIX."objects o,".TABLE_PREFIX."project_files f WHERE o.id = f.object_id AND o.name = ".DB::escape($fName)."";
+                                                $db_res = DB::execute($sql);
+                                                $row = $db_res->fetchRow();
+                                                
+                                                $file = ProjectFiles::findById($row['id']);
+                                                DB::beginWork();
+                                                if ($file == null){
+                                                        $fileIsNew = true;
+                                                        $file = new ProjectFile();
+                                                        $file->setFilename($fName);
+                                                        $file->setIsVisible(true);
+                                                        $file->setMailId($email->getId());
+                                                        $file->save();
 
-					if ($fileIsNew) {
-						$tempFileName = ROOT ."/tmp/". logged_user()->getId()."x".gen_id();
-						$fh = fopen($tempFileName, 'w') or die("Can't open file");
-						fwrite($fh, $att["Data"]);
-						fclose($fh);
-						
-						$fileToSave = array(
-		      				"name" => $fName, 
-		      				"type" => $mime_type, 
-		      				"tmp_name" => $tempFileName,
-		      				"error" => 0,
-		      				"size" => filesize($tempFileName));
-	
-						$revision = $file->handleUploadedFile($fileToSave, true, lang('attachment from email', $email->getSubject())); // handle uploaded file
-						$email->linkObject($file);
-						ApplicationLogs::createLog($file, $email->getWorkspaces(), ApplicationLogs::ACTION_ADD);
-					}
-					DB::commit();
-					// Error...
-				} catch(Exception $e) {
-					DB::rollback();
-					flash_error($e->getMessage());
-					ajx_current("empty");
-				}
+                                                        $object_controller = new ObjectController();
+                                                        $object_controller->add_to_members($file, array());
+                                                } else {
+                                                        $fileIsNew = false;
+                                                }
+
+                                                if($remove_prev){
+                                                    ObjectMembers::delete('`object_id` = ' . $file->getId() . ' AND `member_id` IN (SELECT `m`.`id` FROM `'.TABLE_PREFIX.'members` `m` WHERE `m`.`dimension_id` = '.$member->getDimensionId().')');
+                                                }
+
+                                                $file->addToMembers(array($member));  
+
+                                                $enc = array_var($parsedMail,'Encoding','UTF-8');					
+                                                $ext = utf8_substr($fName, strrpos($fName, '.') + 1, utf8_strlen($fName, $enc), $enc);					
+
+                                                $mime_type = '';
+                                                if (Mime_Types::instance()->has_type($att["content-type"])) {
+                                                        $mime_type = $att["content-type"]; //mime type is listed & valid
+                                                } else {
+                                                        $mime_type = Mime_Types::instance()->get_type($ext); //Attempt to infer mime type
+                                                }
+                                                
+                                                $tempFileName = ROOT ."/tmp/". logged_user()->getId()."x".gen_id();
+                                                $fh = fopen($tempFileName, 'w') or die("Can't open file");
+                                                fwrite($fh, $att["Data"]);
+                                                fclose($fh);
+
+                                                $fileToSave = array(
+                                                "name" => $fName, 
+                                                "type" => $mime_type, 
+                                                "tmp_name" => $tempFileName,
+                                                "error" => 0,
+                                                "size" => filesize($tempFileName));
+
+                                                if ($fileIsNew) {
+                                                        $revision = $file->handleUploadedFile($fileToSave, true, lang('attachment from email', $email->getSubject())); // handle uploaded file
+                                                        ApplicationLogs::createLog($file, ApplicationLogs::ACTION_ADD);
+                                                }else{
+                                                        $revision = $file->getLastRevision();
+                                                        $new_hash = hash_file("sha256", $tempFileName);
+                                                        if ($revision->getHash() != $new_hash) {
+                                                                $revision = $file->handleUploadedFile($fileToSave, true, lang('attachment from email', $email->getSubject())); // handle uploaded file
+                                                                ApplicationLogs::createLog($file, ApplicationLogs::ACTION_ADD);
+                                                        }                                                        
+                                                }
+                                                DB::commit();
+                                                // Error...
+                                        } catch(Exception $e) {
+                                                DB::rollback();
+                                                flash_error($e->getMessage());
+                                                ajx_current("empty");
+                                        }                                    
+                                }else{
+                                    flash_error(lang('file extension no allow classify', $fName));
+                                }
+				
 				if (isset($tempFileName) && is_file($tempFileName)) unlink($tempFileName);
 			}
 		}
@@ -2047,7 +2062,7 @@ class MailController extends ApplicationController {
 		ajx_current("empty");
 		$type = array_var($_GET,'type');
 		 
-		$accounts = MailAccounts::getMailAccountsByUser(logged_user());
+		$accounts = MailAccounts::getMailAccountsEditByUser(logged_user());
 		 
 		$object = array();
 		if (isset($accounts)){
@@ -2251,6 +2266,7 @@ class MailController extends ApplicationController {
 			if (defined('SANDBOX_URL')) {
 				$fwd_body = str_replace('<!--', '<!-- ', $fwd_body);
 			}
+			$fwd_body = preg_replace("/<body*[^>]*>/i",'<body>', $fwd_body);
 			
 			$mail_data = array(
 	          'to' => '',
@@ -2387,22 +2403,26 @@ class MailController extends ApplicationController {
 			$dir = 'ASC';
 		}
 		$order = array_var($_GET,'sort');
+                $join_params = array();
 		switch ($order){
 			case 'title':
 			case 'subject':
 				$order = '`name`';
-				$join_params = array(
-					'table' => TABLE_PREFIX.'_objects',
-					'jt_field' => 'id',
-					'e_field' => 'object_id',
-					'join_type' => 'inner'
-				);
 			break;
 			case 'accountName':
 				$order = '`account_email`';
 			break;
 			case 'from':
 				$order = "`from_name` $dir, `from`";
+			break;
+                        case 'to':
+				$order = "`to`";
+                                $join_params = array(
+					'table' => TABLE_PREFIX.'mail_datas',
+					'jt_field' => 'id',
+					'e_field' => 'object_id',
+					'join_type' => 'inner'
+				);
 			break;
 			case 'folder':
 				$order = '`imap_folder_name`';
@@ -2425,7 +2445,7 @@ class MailController extends ApplicationController {
 		// Get all emails to display
 		$context = active_context();
 		
-		$result = $this->getEmails($attributes, $context, $start, $limit, $order, $dir);
+		$result = $this->getEmails($attributes, $context, $start, $limit, $order, $dir, $join_params);
 		
 		$total = $result->total;
 		$emails = $result->objects;
@@ -2447,7 +2467,7 @@ class MailController extends ApplicationController {
 	 * @param Project $project
 	 * @return array
 	 */
-	private function getEmails($attributes, $context = null, $start = null, $limit = null, $order_by = 'sent_date', $dir = 'ASC') {
+	private function getEmails($attributes, $context = null, $start = null, $limit = null, $order_by = 'sent_date', $dir = 'ASC',$join_params = null) {
 		// Return if no emails should be displayed
 		if (!isset($attributes["viewType"]) || ($attributes["viewType"] != "all" && $attributes["viewType"] != "emails")) return null;
 		$account = array_var($attributes, "accountId");
@@ -2461,7 +2481,7 @@ class MailController extends ApplicationController {
 		
 		$state = array_var($attributes, 'stateType');
 		
-		$result = MailContents::getEmails($account, $state, $read_filter, $classif_filter, $context, $start, $limit, $order_by, $dir);
+		$result = MailContents::getEmails($account, $state, $read_filter, $classif_filter, $context, $start, $limit, $order_by, $dir, $join_params);
 		
 
 		return $result;

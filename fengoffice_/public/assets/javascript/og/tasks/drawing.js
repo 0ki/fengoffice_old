@@ -506,7 +506,8 @@ ogTasks.drawGroup = function(displayCriteria, drawOptions, group){
 		sb.append("<table><tr>");
 		if (drawOptions.show_dates){
 			sb.append('<td><span style="padding-left:12px;color:#888;">');
-			var date = new Date(milestone.dueDate * 1000);
+			var date = new Date();
+			date.setTime((milestone.dueDate + date.getTimezoneOffset()*60)* 1000);
 			var now = new Date();
 			var dateFormatted = date.getYear() != now.getYear() ? date.dateFormat('M j, Y'): date.dateFormat('M j');
 			if (milestone.completedById > 0){
@@ -568,7 +569,7 @@ ogTasks.drawGroup = function(displayCriteria, drawOptions, group){
                 
             
             var format_total_estimate = hours_estimate + minutes_estimate
-            sb.append("<div style='float:right;'><span style='font-weight:bold;color:#888'>" +  lang('time estimates') + ':&nbsp;' + format_total_estimate + "</span>");
+            sb.append("<div style='float:right;'><span style='font-weight:bold;color:#888'>" +  lang('estimated time') + ':&nbsp;' + format_total_estimate + "</span>");
         }
         
 	sb.append("</div></div></div>");
@@ -964,6 +965,15 @@ ogTasks.ToggleCompleteStatusOk = function(task_id, status, opt){
                                 var task = ogTasks.getTask(task_id);
                                 prev_status = task.status;
                                 task.setFromTdata(data.task);
+                                
+                                if (data.subtasks) {
+					for (i=0; i < data.subtasks.length; i++) {
+						var subtask = this.getTask(data.subtasks[i].id);
+						if (subtask) {
+							subtask.setFromTdata(data.subtasks[i]);
+						}
+					}
+				}
 
                                 //Redraw task, or redraw whole panel
                                 var bottomToolbar = Ext.getCmp('tasksPanelBottomToolbarObject');
@@ -973,7 +983,8 @@ ogTasks.ToggleCompleteStatusOk = function(task_id, status, opt){
                                         this.UpdateDependants(task, status!=1, prev_status);
                                 }
                                 if (displayCriteria.group_by != 'status') {
-                                        this.UpdateTask(task.id);
+                                        //this.UpdateTask(task.id);
+                                        this.draw();
                                 } else {
                                         this.draw();
                                 }

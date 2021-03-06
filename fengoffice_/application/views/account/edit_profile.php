@@ -28,7 +28,6 @@
 		<?php if (can_manage_billing(logged_user()) && isset($billing_categories) && count($billing_categories) > 0) {?>
 			<a href="#" class="option" tabindex=1010 onclick="og.toggleAndBolden('<?php echo $genid ?>update_profile_billing',this)"><?php echo lang('billing') ?></a> - 
 		<?php } // if ?>
-			<a href="#" class="option" tabindex=1020 onclick="og.toggleAndBolden('<?php echo $genid ?>update_profile_timezone',this)"><?php echo lang('timezone') ?></a>
 		<?php foreach ($categories as $category) { ?>
 			- <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid . $category['name'] ?>', this)"><?php echo lang($category['name'])?></a>
 		<?php } ?>
@@ -46,24 +45,12 @@
 	      <?php echo label_tag(lang('username'), $genid . 'profileFormUsername', true) ?>
 	      <?php echo text_field('user[username]', array_var($user_data, 'username'), array('id' => $genid . 'profileFormUsername', 'tabindex' => '2000')) ?>
 	    </div>
-		     
 		
-		<div class="formBlock">
-		<?php 
-			echo label_tag(lang('user type'), null, true);
-			$permission_groups=array();
-			foreach($groups as $group){
-				$permission_groups[]=array($group->getId(),$group->getName());
-			}
-			echo simple_select_box('user[type]', $permission_groups,array_var($user_data, "type"));
-		?>
-		</div>
 	<?php else: ?>
 		<div>
 		  <?php echo label_tag(lang('username')) ?>
 		  <?php echo clean(array_var($user_data, 'username')) ?>
 		  <input type="hidden" name="user[username]" value="<?php echo clean(array_var($user_data, 'username')) ?>" />
-		  <input type="hidden" name="user[type]" value="<?php echo  $permission_groups,array_var($user_data, "type") ?>" />
 		</div>
 	<?php endif; ?>
     <input type="hidden" name="user[company_id]" value="<?php echo array_var($user_data, 'company_id')?>" /> 
@@ -88,7 +75,7 @@
 	 
 <div class="formBlock">	   
 	<div id="<?php echo $genid ?>update_profile_timezone" >
-		<span class="desc"><?php echo lang('auto detect user timezone') ?></span>
+		<label><?php echo lang('auto detect user timezone') ?></label>
 		<div id ="<?php echo $genid?>detectTimeZone">
 			<?php echo yes_no_widget('user[autodetect_time_zone]', 'userFormAutoDetectTimezone', user_config_option('autodetect_time_zone', null, $user->getId()), lang('yes'), lang('no'), null, array('onclick' => "og.showSelectTimezone('$genid')")) ?>
 		</div>

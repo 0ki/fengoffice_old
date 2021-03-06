@@ -35,11 +35,25 @@ INSERT INTO `fo_object_types` (`name`, `handler_class`, `table_name`, `type`, `i
 
 
 -- TABS
-UPDATE fo_tab_panels SET enabled = 1 WHERE id = 'webpages-panel';
+UPDATE fo_tab_panels SET enabled = (SELECT value FROM og_config_options WHERE name='enable_notes_module') WHERE id = 'webpages-panel';
+UPDATE fo_tab_panels SET enabled = (SELECT value FROM og_config_options WHERE name='enable_email_module') WHERE id = 'mails-panel';
+UPDATE fo_tab_panels SET enabled = (SELECT value FROM og_config_options WHERE name='enable_contacts_module') WHERE id = 'contacts-panel';
+UPDATE fo_tab_panels SET enabled = (SELECT value FROM og_config_options WHERE name='enable_calendar_module') WHERE id = 'calendar-panel';
+UPDATE fo_tab_panels SET enabled = (SELECT value FROM og_config_options WHERE name='enable_weblinks_module') WHERE id = 'webpages-panel';
+UPDATE fo_tab_panels SET enabled = (SELECT value FROM og_config_options WHERE name='enable_documents_module') WHERE id = 'documents-panel';
+UPDATE fo_tab_panels SET enabled = (SELECT value FROM og_config_options WHERE name='enable_tasks_module') WHERE id = 'tasks-panel';
+UPDATE fo_tab_panels SET enabled = (SELECT value FROM og_config_options WHERE name='enable_time_module') WHERE id = 'time-panel';
+UPDATE fo_tab_panels SET enabled = (SELECT value FROM og_config_options WHERE name='enable_reporting_module') WHERE id = 'reporting-panel';
+
 
 INSERT INTO `fo_tab_panels` (`id`,`ordering`,`title`,`icon_cls`,`refresh_on_context_change`,`default_controller`,`default_action`,`initial_controller`,`initial_action`,`type`,`object_type_id`, `enabled`) VALUES
  ('mails-panel', 4, 'email tab', 'ico-mail', 1, 'mail', 'init', '', '', 'system', (SELECT id FROM fo_object_types WHERE name='mail'), 1);
 
+-- WS WIDGETS
+INSERT INTO fo_widgets(name, title, plugin_id, default_section,default_order) VALUES
+ ('ws_description', 'workspace description', (SELECT id from fo_plugins WHERE name = 'workspaces'), 'top', -100),
+ ('workspaces', 'workspaces', (SELECT id from fo_plugins WHERE name = 'workspaces'), 'right', 1)
+ON DUPLICATE KEY update name = name;
 
 -- DIMENSIONS
 
@@ -70,11 +84,11 @@ INSERT INTO fo_dimension_object_type_contents (dimension_id, dimension_object_ty
 
 INSERT INTO fo_dimension_object_type_contents (dimension_id, dimension_object_type_id, content_object_type_id, is_required, is_multiple)
  SELECT (SELECT id FROM fo_dimensions WHERE code = 'feng_persons'), (SELECT id FROM fo_object_types WHERE name='person'), ot.id, 0, 1
- FROM fo_object_types ot WHERE ot.type IN ('content_object', 'comment');
+ FROM fo_object_types ot WHERE ot.type IN ('content_object', 'comment', 'located');
 
 INSERT INTO fo_dimension_object_type_contents (dimension_id, dimension_object_type_id, content_object_type_id, is_required, is_multiple)
  SELECT (SELECT id FROM fo_dimensions WHERE code = 'feng_persons'), (SELECT id FROM fo_object_types WHERE name='company'), ot.id, 0, 1
- FROM fo_object_types ot WHERE ot.type IN ('content_object', 'comment');
+ FROM fo_object_types ot WHERE ot.type IN ('content_object', 'comment', 'located');
 
 
 -- WORKSPACES
@@ -135,7 +149,7 @@ INSERT INTO `fo_objects` (`name`, `f1_id`, `object_type_id`, `created_on`, `crea
 
 INSERT INTO `fo_contacts` (`object_id`, `first_name`, `is_company`, `timezone`, `company_id`, `user_type`, `is_active_user`, `token`, `salt`, `twister`, `display_name`, `username`, `picture_file`, `default_billing_id`)
  SELECT (SELECT `id` FROM `fo_objects` WHERE `f1_id` = `u`.`id` AND `object_type_id` = (SELECT `ot`.`id` FROM `fo_object_types` `ot` WHERE `ot`.`name`='contact')), IF(`display_name`!='', `display_name`, `username`), 0, `u`.`timezone`, 
- 	(SELECT `id` FROM `fo_objects` WHERE `f1_id` = `u`.`company_id` AND `object_type_id` = (SELECT `ot`.`id` FROM `fo_object_types` `ot` WHERE `ot`.`name`='company')), (IF(`u`.`type`='admin', IF(`u`.`id`=1, 1, 2), IF(`u`.`type`='guest', 12, 4))),
+ 	(SELECT `id` FROM `fo_objects` WHERE `f1_id` = `u`.`company_id` AND `object_type_id` = (SELECT `ot`.`id` FROM `fo_object_types` `ot` WHERE `ot`.`name`='company')), (IF(`u`.`type`='admin', IF(`u`.`id`=(SELECT MIN(uu.id) FROM og_users uu WHERE uu.`type`='admin'), 1, 2), IF(`u`.`type`='guest', 12, 4))),
  	 1, `u`.`token`, `u`.`salt`, `u`.`twister`, `u`.`display_name`, `u`.`username`, `u`.`avatar_file`, `u`.`default_billing_id`
  FROM `og_users` `u`;
 
@@ -218,58 +232,71 @@ INSERT INTO `fo_tab_panel_permissions` (`permission_group_id`, `tab_panel_id`)
 INSERT INTO `fo_contact_member_permissions` (`permission_group_id`, `member_id`, `object_type_id`, `can_delete`, `can_write`)
  SELECT `c`.`permission_group_id`, (SELECT `m`.`id` FROM `fo_members` `m` WHERE `m`.`ws_id` = `pu`.`project_id` AND `m`.`dimension_id` = (SELECT `id` FROM `fo_dimensions` WHERE `code`='workspaces')), `ot`.`id`, (`pu`.`can_write_messages`=1), (`pu`.`can_write_messages`=1)
  FROM `og_project_users` `pu` INNER JOIN `fo_objects` `o` ON `pu`.`user_id` = `o`.`f1_id` INNER JOIN `fo_contacts` `c` ON `c`.`object_id` = `o`.`id` JOIN `fo_object_types` `ot`
- WHERE `c`.`user_type` != 0 AND `ot`.`name` = 'message' AND `pu`.`can_read_messages`=1;
+ WHERE `c`.`user_type` != 0 AND `ot`.`name` = 'message' AND `pu`.`can_read_messages`=1
+ON DUPLICATE KEY UPDATE member_id=member_id;
 
 INSERT INTO `fo_contact_member_permissions` (`permission_group_id`, `member_id`, `object_type_id`, `can_delete`, `can_write`)
  SELECT `c`.`permission_group_id`, (SELECT `m`.`id` FROM `fo_members` `m` WHERE `m`.`ws_id` = `pu`.`project_id` AND `m`.`dimension_id` = (SELECT `id` FROM `fo_dimensions` WHERE `code`='workspaces')), `ot`.`id`, (`pu`.`can_write_tasks`=1), (`pu`.`can_write_tasks`=1)
  FROM `og_project_users` `pu` INNER JOIN `fo_objects` `o` ON `pu`.`user_id` = `o`.`f1_id` INNER JOIN `fo_contacts` `c` ON `c`.`object_id` = `o`.`id` JOIN `fo_object_types` `ot`
- WHERE `c`.`user_type` != 0 AND `ot`.`name` = 'task' AND `pu`.`can_read_tasks`=1;
+ WHERE `c`.`user_type` != 0 AND `ot`.`name` = 'task' AND `pu`.`can_read_tasks`=1
+ON DUPLICATE KEY UPDATE member_id=member_id;
 
 INSERT INTO `fo_contact_member_permissions` (`permission_group_id`, `member_id`, `object_type_id`, `can_delete`, `can_write`)
  SELECT `c`.`permission_group_id`, (SELECT `m`.`id` FROM `fo_members` `m` WHERE `m`.`ws_id` = `pu`.`project_id` AND `m`.`dimension_id` = (SELECT `id` FROM `fo_dimensions` WHERE `code`='workspaces')), `ot`.`id`, (`pu`.`can_write_milestones`=1), (`pu`.`can_write_milestones`=1)
  FROM `og_project_users` `pu` INNER JOIN `fo_objects` `o` ON `pu`.`user_id` = `o`.`f1_id` INNER JOIN `fo_contacts` `c` ON `c`.`object_id` = `o`.`id` JOIN `fo_object_types` `ot`
- WHERE `c`.`user_type` != 0 AND `ot`.`name` = 'milestone' AND `pu`.`can_read_milestones`=1;
+ WHERE `c`.`user_type` != 0 AND `ot`.`name` = 'milestone' AND `pu`.`can_read_milestones`=1
+ON DUPLICATE KEY UPDATE member_id=member_id;
 
 INSERT INTO `fo_contact_member_permissions` (`permission_group_id`, `member_id`, `object_type_id`, `can_delete`, `can_write`)
  SELECT `c`.`permission_group_id`, (SELECT `m`.`id` FROM `fo_members` `m` WHERE `m`.`ws_id` = `pu`.`project_id` AND `m`.`dimension_id` = (SELECT `id` FROM `fo_dimensions` WHERE `code`='workspaces')), `ot`.`id`, (`pu`.`can_write_files`=1), (`pu`.`can_write_files`=1)
  FROM `og_project_users` `pu` INNER JOIN `fo_objects` `o` ON `pu`.`user_id` = `o`.`f1_id` INNER JOIN `fo_contacts` `c` ON `c`.`object_id` = `o`.`id` JOIN `fo_object_types` `ot`
- WHERE `c`.`user_type` != 0 AND `ot`.`name` = 'file' AND `pu`.`can_read_files`=1;
+ WHERE `c`.`user_type` != 0 AND `ot`.`name` = 'file' AND `pu`.`can_read_files`=1
+ON DUPLICATE KEY UPDATE member_id=member_id;
 
 INSERT INTO `fo_contact_member_permissions` (`permission_group_id`, `member_id`, `object_type_id`, `can_delete`, `can_write`)
  SELECT `c`.`permission_group_id`, (SELECT `m`.`id` FROM `fo_members` `m` WHERE `m`.`ws_id` = `pu`.`project_id` AND `m`.`dimension_id` = (SELECT `id` FROM `fo_dimensions` WHERE `code`='workspaces')), `ot`.`id`, (`pu`.`can_write_events`=1), (`pu`.`can_write_events`=1)
  FROM `og_project_users` `pu` INNER JOIN `fo_objects` `o` ON `pu`.`user_id` = `o`.`f1_id` INNER JOIN `fo_contacts` `c` ON `c`.`object_id` = `o`.`id` JOIN `fo_object_types` `ot`
- WHERE `c`.`user_type` != 0 AND `ot`.`name` = 'event' AND `pu`.`can_read_events`=1;
+ WHERE `c`.`user_type` != 0 AND `ot`.`name` = 'event' AND `pu`.`can_read_events`=1
+ON DUPLICATE KEY UPDATE member_id=member_id;
 
 INSERT INTO `fo_contact_member_permissions` (`permission_group_id`, `member_id`, `object_type_id`, `can_delete`, `can_write`)
  SELECT `c`.`permission_group_id`, (SELECT `m`.`id` FROM `fo_members` `m` WHERE `m`.`ws_id` = `pu`.`project_id` AND `m`.`dimension_id` = (SELECT `id` FROM `fo_dimensions` WHERE `code`='workspaces')), `ot`.`id`, (`pu`.`can_write_weblinks`=1), (`pu`.`can_write_weblinks`=1)
  FROM `og_project_users` `pu` INNER JOIN `fo_objects` `o` ON `pu`.`user_id` = `o`.`f1_id` INNER JOIN `fo_contacts` `c` ON `c`.`object_id` = `o`.`id` JOIN `fo_object_types` `ot`
- WHERE `c`.`user_type` != 0 AND `ot`.`name` = 'weblink' AND `pu`.`can_read_weblinks`=1;
+ WHERE `c`.`user_type` != 0 AND `ot`.`name` = 'weblink' AND `pu`.`can_read_weblinks`=1
+ON DUPLICATE KEY UPDATE member_id=member_id;
 
 INSERT INTO `fo_contact_member_permissions` (`permission_group_id`, `member_id`, `object_type_id`, `can_delete`, `can_write`)
  SELECT `c`.`permission_group_id`, (SELECT `m`.`id` FROM `fo_members` `m` WHERE `m`.`ws_id` = `pu`.`project_id` AND `m`.`dimension_id` = (SELECT `id` FROM `fo_dimensions` WHERE `code`='workspaces')), `ot`.`id`, (`pu`.`can_write_mails`=1), (`pu`.`can_write_mails`=1)
  FROM `og_project_users` `pu` INNER JOIN `fo_objects` `o` ON `pu`.`user_id` = `o`.`f1_id` INNER JOIN `fo_contacts` `c` ON `c`.`object_id` = `o`.`id` JOIN `fo_object_types` `ot`
- WHERE `c`.`user_type` != 0 AND `ot`.`name` = 'mail' AND `pu`.`can_read_mails`=1;
+ WHERE `c`.`user_type` != 0 AND `ot`.`name` = 'mail' AND `pu`.`can_read_mails`=1
+ON DUPLICATE KEY UPDATE member_id=member_id;
 
 INSERT INTO `fo_contact_member_permissions` (`permission_group_id`, `member_id`, `object_type_id`, `can_delete`, `can_write`)
  SELECT `c`.`permission_group_id`, (SELECT `m`.`id` FROM `fo_members` `m` WHERE `m`.`ws_id` = `pu`.`project_id` AND `m`.`dimension_id` = (SELECT `id` FROM `fo_dimensions` WHERE `code`='workspaces')), `ot`.`id`, (`pu`.`can_write_contacts`=1), (`pu`.`can_write_contacts`=1)
  FROM `og_project_users` `pu` INNER JOIN `fo_objects` `o` ON `pu`.`user_id` = `o`.`f1_id` INNER JOIN `fo_contacts` `c` ON `c`.`object_id` = `o`.`id` JOIN `fo_object_types` `ot`
- WHERE `c`.`user_type` != 0 AND `ot`.`name` = 'contact' AND `pu`.`can_read_contacts`=1;
+ WHERE `c`.`user_type` != 0 AND `ot`.`name` = 'contact' AND `pu`.`can_read_contacts`=1
+ON DUPLICATE KEY UPDATE member_id=member_id;
 
 INSERT INTO `fo_contact_member_permissions` (`permission_group_id`, `member_id`, `object_type_id`, `can_delete`, `can_write`)
  SELECT `c`.`permission_group_id`, (SELECT `m`.`id` FROM `fo_members` `m` WHERE `m`.`ws_id` = `pu`.`project_id` AND `m`.`dimension_id` = (SELECT `id` FROM `fo_dimensions` WHERE `code`='workspaces')), `ot`.`id`, (`pu`.`can_write_comments`=1), (`pu`.`can_write_comments`=1)
  FROM `og_project_users` `pu` INNER JOIN `fo_objects` `o` ON `pu`.`user_id` = `o`.`f1_id` INNER JOIN `fo_contacts` `c` ON `c`.`object_id` = `o`.`id` JOIN `fo_object_types` `ot`
- WHERE `c`.`user_type` != 0 AND `ot`.`name` = 'comment' AND `pu`.`can_read_comments`=1;
+ WHERE `c`.`user_type` != 0 AND `ot`.`name` = 'comment' AND `pu`.`can_read_comments`=1
+ON DUPLICATE KEY UPDATE member_id=member_id;
 
--- give permissions over timeslots in all workspaces where the user can manage tasks, if the user can manage time.
+-- give permissions over timeslots in all workspaces where the user can manage tasks, if the user can manage time. Idem for templates and reports.
 INSERT INTO `fo_contact_member_permissions` (`permission_group_id`, `member_id`, `object_type_id`, `can_delete`, `can_write`)
  SELECT `c`.`permission_group_id`, (SELECT `m`.`id` FROM `fo_members` `m` WHERE `m`.`ws_id` = `pu`.`project_id` AND `m`.`dimension_id` = (SELECT `id` FROM `fo_dimensions` WHERE `code`='workspaces')), `ot`.`id`, 1, 1
  FROM `og_project_users` `pu`
      INNER JOIN `fo_objects` `o` ON `pu`.`user_id` = `o`.`f1_id`
      INNER JOIN `fo_contacts` `c` ON `c`.`object_id` = `o`.`id`
+     INNER JOIN `og_users` `u` ON `u`.`id` = `pu`.`user_id`
      JOIN `fo_object_types` `ot`
      INNER JOIN `fo_system_permissions` `sp` ON `sp`.`permission_group_id` = `c`.`permission_group_id`
- WHERE `c`.`user_type` != 0 AND `ot`.`name` = 'timeslot' AND `pu`.`can_read_tasks`=1 AND `sp`.`can_manage_time`=1
+ WHERE `c`.`user_type` != 0 AND (`ot`.`name` = 'timeslot' AND `pu`.`can_read_tasks`=1 AND `sp`.`can_manage_time`=1
+ 	OR `ot`.`name` = 'template' AND `pu`.`can_read_tasks`=1 AND `sp`.`can_manage_templates`=1
+ 	OR `ot`.`name` = 'report' AND `u`.`can_manage_reports`=1)
 ON DUPLICATE KEY UPDATE `can_write`=`can_write`;
+
 
 -- GROUP PERMISSIONS
 
@@ -295,47 +322,56 @@ INSERT INTO `fo_tab_panel_permissions` (`permission_group_id`, `tab_panel_id`)
 INSERT INTO `fo_contact_member_permissions` (`permission_group_id`, `member_id`, `object_type_id`, `can_delete`, `can_write`)
  SELECT `pg`.`id`, (SELECT `m`.`id` FROM `fo_members` `m` WHERE `m`.`ws_id` = `pu`.`project_id` AND `m`.`dimension_id` = (SELECT `id` FROM `fo_dimensions` WHERE `code`='workspaces')), `ot`.`id`, (`pu`.`can_write_messages`=1), (`pu`.`can_write_messages`=1)
  FROM `og_project_users` `pu` INNER JOIN `fo_permission_groups` `pg` ON `pu`.`user_id` = `pg`.`contact_id` JOIN `fo_object_types` `ot`
- WHERE `pu`.`user_id` >= 10000000 AND `ot`.`name` = 'message' AND `pu`.`can_read_messages`=1;
+ WHERE `pu`.`user_id` >= 10000000 AND `ot`.`name` = 'message' AND `pu`.`can_read_messages`=1
+ON DUPLICATE KEY UPDATE member_id=member_id;
 
 INSERT INTO `fo_contact_member_permissions` (`permission_group_id`, `member_id`, `object_type_id`, `can_delete`, `can_write`)
  SELECT `pg`.`id`, (SELECT `m`.`id` FROM `fo_members` `m` WHERE `m`.`ws_id` = `pu`.`project_id` AND `m`.`dimension_id` = (SELECT `id` FROM `fo_dimensions` WHERE `code`='workspaces')), `ot`.`id`, (`pu`.`can_write_tasks`=1), (`pu`.`can_write_tasks`=1)
  FROM `og_project_users` `pu` INNER JOIN `fo_permission_groups` `pg` ON `pu`.`user_id` = `pg`.`contact_id` JOIN `fo_object_types` `ot`
- WHERE `pu`.`user_id` >= 10000000 AND `ot`.`name` = 'task' AND `pu`.`can_read_tasks`=1;
+ WHERE `pu`.`user_id` >= 10000000 AND `ot`.`name` = 'task' AND `pu`.`can_read_tasks`=1
+ON DUPLICATE KEY UPDATE member_id=member_id;
 
 INSERT INTO `fo_contact_member_permissions` (`permission_group_id`, `member_id`, `object_type_id`, `can_delete`, `can_write`)
  SELECT `pg`.`id`, (SELECT `m`.`id` FROM `fo_members` `m` WHERE `m`.`ws_id` = `pu`.`project_id` AND `m`.`dimension_id` = (SELECT `id` FROM `fo_dimensions` WHERE `code`='workspaces')), `ot`.`id`, (`pu`.`can_write_milestones`=1), (`pu`.`can_write_milestones`=1)
  FROM `og_project_users` `pu` INNER JOIN `fo_permission_groups` `pg` ON `pu`.`user_id` = `pg`.`contact_id` JOIN `fo_object_types` `ot`
- WHERE `pu`.`user_id` >= 10000000 AND `ot`.`name` = 'milestone' AND `pu`.`can_read_milestones`=1;
+ WHERE `pu`.`user_id` >= 10000000 AND `ot`.`name` = 'milestone' AND `pu`.`can_read_milestones`=1
+ON DUPLICATE KEY UPDATE member_id=member_id;
 
 INSERT INTO `fo_contact_member_permissions` (`permission_group_id`, `member_id`, `object_type_id`, `can_delete`, `can_write`)
  SELECT `pg`.`id`, (SELECT `m`.`id` FROM `fo_members` `m` WHERE `m`.`ws_id` = `pu`.`project_id` AND `m`.`dimension_id` = (SELECT `id` FROM `fo_dimensions` WHERE `code`='workspaces')), `ot`.`id`, (`pu`.`can_write_files`=1), (`pu`.`can_write_files`=1)
  FROM `og_project_users` `pu` INNER JOIN `fo_permission_groups` `pg` ON `pu`.`user_id` = `pg`.`contact_id` JOIN `fo_object_types` `ot`
- WHERE `pu`.`user_id` >= 10000000 AND `ot`.`name` = 'file' AND `pu`.`can_read_files`=1;
+ WHERE `pu`.`user_id` >= 10000000 AND `ot`.`name` = 'file' AND `pu`.`can_read_files`=1
+ON DUPLICATE KEY UPDATE member_id=member_id;
 
 INSERT INTO `fo_contact_member_permissions` (`permission_group_id`, `member_id`, `object_type_id`, `can_delete`, `can_write`)
  SELECT `pg`.`id`, (SELECT `m`.`id` FROM `fo_members` `m` WHERE `m`.`ws_id` = `pu`.`project_id` AND `m`.`dimension_id` = (SELECT `id` FROM `fo_dimensions` WHERE `code`='workspaces')), `ot`.`id`, (`pu`.`can_write_events`=1), (`pu`.`can_write_events`=1)
  FROM `og_project_users` `pu` INNER JOIN `fo_permission_groups` `pg` ON `pu`.`user_id` = `pg`.`contact_id` JOIN `fo_object_types` `ot`
- WHERE `pu`.`user_id` >= 10000000 AND `ot`.`name` = 'event' AND `pu`.`can_read_events`=1;
+ WHERE `pu`.`user_id` >= 10000000 AND `ot`.`name` = 'event' AND `pu`.`can_read_events`=1
+ON DUPLICATE KEY UPDATE member_id=member_id;
 
 INSERT INTO `fo_contact_member_permissions` (`permission_group_id`, `member_id`, `object_type_id`, `can_delete`, `can_write`)
  SELECT `pg`.`id`, (SELECT `m`.`id` FROM `fo_members` `m` WHERE `m`.`ws_id` = `pu`.`project_id` AND `m`.`dimension_id` = (SELECT `id` FROM `fo_dimensions` WHERE `code`='workspaces')), `ot`.`id`, (`pu`.`can_write_weblinks`=1), (`pu`.`can_write_weblinks`=1)
  FROM `og_project_users` `pu` INNER JOIN `fo_permission_groups` `pg` ON `pu`.`user_id` = `pg`.`contact_id` JOIN `fo_object_types` `ot`
- WHERE `pu`.`user_id` >= 10000000 AND `ot`.`name` = 'weblink' AND `pu`.`can_read_weblinks`=1;
+ WHERE `pu`.`user_id` >= 10000000 AND `ot`.`name` = 'weblink' AND `pu`.`can_read_weblinks`=1
+ON DUPLICATE KEY UPDATE member_id=member_id;
 
 INSERT INTO `fo_contact_member_permissions` (`permission_group_id`, `member_id`, `object_type_id`, `can_delete`, `can_write`)
  SELECT `pg`.`id`, (SELECT `m`.`id` FROM `fo_members` `m` WHERE `m`.`ws_id` = `pu`.`project_id` AND `m`.`dimension_id` = (SELECT `id` FROM `fo_dimensions` WHERE `code`='workspaces')), `ot`.`id`, (`pu`.`can_write_mails`=1), (`pu`.`can_write_mails`=1)
  FROM `og_project_users` `pu` INNER JOIN `fo_permission_groups` `pg` ON `pu`.`user_id` = `pg`.`contact_id` JOIN `fo_object_types` `ot`
- WHERE `pu`.`user_id` >= 10000000 AND `ot`.`name` = 'mail' AND `pu`.`can_read_mails`=1;
+ WHERE `pu`.`user_id` >= 10000000 AND `ot`.`name` = 'mail' AND `pu`.`can_read_mails`=1
+ON DUPLICATE KEY UPDATE member_id=member_id;
 
 INSERT INTO `fo_contact_member_permissions` (`permission_group_id`, `member_id`, `object_type_id`, `can_delete`, `can_write`)
  SELECT `pg`.`id`, (SELECT `m`.`id` FROM `fo_members` `m` WHERE `m`.`ws_id` = `pu`.`project_id` AND `m`.`dimension_id` = (SELECT `id` FROM `fo_dimensions` WHERE `code`='workspaces')), `ot`.`id`, (`pu`.`can_write_contacts`=1), (`pu`.`can_write_contacts`=1)
  FROM `og_project_users` `pu` INNER JOIN `fo_permission_groups` `pg` ON `pu`.`user_id` = `pg`.`contact_id` JOIN `fo_object_types` `ot`
- WHERE `pu`.`user_id` >= 10000000 AND `ot`.`name` = 'contact' AND `pu`.`can_read_contacts`=1;
+ WHERE `pu`.`user_id` >= 10000000 AND `ot`.`name` = 'contact' AND `pu`.`can_read_contacts`=1
+ON DUPLICATE KEY UPDATE member_id=member_id;
 
 INSERT INTO `fo_contact_member_permissions` (`permission_group_id`, `member_id`, `object_type_id`, `can_delete`, `can_write`)
  SELECT `pg`.`id`, (SELECT `m`.`id` FROM `fo_members` `m` WHERE `m`.`ws_id` = `pu`.`project_id` AND `m`.`dimension_id` = (SELECT `id` FROM `fo_dimensions` WHERE `code`='workspaces')), `ot`.`id`, (`pu`.`can_write_comments`=1), (`pu`.`can_write_comments`=1)
  FROM `og_project_users` `pu` INNER JOIN `fo_permission_groups` `pg` ON `pu`.`user_id` = `pg`.`contact_id` JOIN `fo_object_types` `ot`
- WHERE `pu`.`user_id` >= 10000000 AND `ot`.`name` = 'comment' AND `pu`.`can_read_comments`=1;
+ WHERE `pu`.`user_id` >= 10000000 AND `ot`.`name` = 'comment' AND `pu`.`can_read_comments`=1
+ON DUPLICATE KEY UPDATE member_id=member_id;
 
 UPDATE `fo_permission_groups` SET `contact_id` = 0 WHERE `contact_id` >= 10000000;
 
@@ -425,6 +461,7 @@ INSERT INTO `fo_project_tasks` (`object_id`, `text`, `parent_id`, `due_date`, `s
  )
  FROM `og_project_tasks` `c`;
 
+UPDATE fo_project_tasks SET parent_id = (SELECT `id` FROM `fo_objects` WHERE `f1_id` = `parent_id` AND `object_type_id` = (SELECT `ot`.`id` FROM `fo_object_types` `ot` WHERE `ot`.`name`='task')) WHERE parent_id > 0;
 
 -- weblinks
 
@@ -867,7 +904,11 @@ INSERT INTO `fo_object_types` (`name`, `handler_class`, `table_name`, `type`, `i
 -- CONTACTS
 
 INSERT INTO `fo_objects` (`name`, `f1_id`, `object_type_id`, `created_on`, `created_by_id`, `updated_on`, `updated_by_id`, `trashed_on`, `trashed_by_id`, `archived_on`, `archived_by_id`)
- SELECT CONCAT(`c`.`firstname`,' ',`c`.`lastname`), `c`.`id`, (SELECT `id` FROM `fo_object_types` WHERE `name` = 'contact_tmp'), `c`.`created_on`, `c`.`created_by_id`, `c`.`updated_on`, `c`.`updated_by_id`, `c`.`trashed_on`, `c`.`trashed_by_id`, `c`.`archived_on`, `c`.`archived_by_id`
+ SELECT CONCAT(`c`.`firstname`,' ',`c`.`lastname`), `c`.`id`, (SELECT `id` FROM `fo_object_types` WHERE `name` = 'contact_tmp'),
+  `c`.`created_on`, (SELECT `id` FROM `fo_objects` WHERE `f1_id` = `c`.`created_by_id` AND `object_type_id` = (SELECT `ot`.`id` FROM `fo_object_types` `ot` WHERE `ot`.`name`='contact')),
+  `c`.`updated_on`, (SELECT `id` FROM `fo_objects` WHERE `f1_id` = `c`.`updated_by_id` AND `object_type_id` = (SELECT `ot`.`id` FROM `fo_object_types` `ot` WHERE `ot`.`name`='contact')),
+  `c`.`trashed_on`, (SELECT `id` FROM `fo_objects` WHERE `f1_id` = `c`.`trashed_by_id` AND `object_type_id` = (SELECT `ot`.`id` FROM `fo_object_types` `ot` WHERE `ot`.`name`='contact')),
+  `c`.`archived_on`, (SELECT `id` FROM `fo_objects` WHERE `f1_id` = `c`.`archived_by_id` AND `object_type_id` = (SELECT `ot`.`id` FROM `fo_object_types` `ot` WHERE `ot`.`name`='contact'))
  FROM `og_contacts` `c` where `c`.`user_id` = 0;
 
 INSERT INTO `fo_contacts` (`object_id`, `first_name`, `surname`, `is_company`, `timezone`, `picture_file`, `comments`, `company_id`, `department`, `job_title`, `birthday`)
@@ -966,30 +1007,6 @@ INSERT INTO `fo_contact_addresses` (`contact_id`, `address_type_id`, `street`, `
 ON DUPLICATE KEY UPDATE `contact_id`=`contact_id`;
 
 
--- put all contacts in a new workspace 'Contacts' with all permissions for people who has 'can manage contacts'
--- FIXME: dar permisos en todos los miembros persona a todos los que tenian can_manage_contacts, poner cada obj contact en su miembro 
-
--- INSERT INTO `fo_objects` (`name`, `f1_id`, `object_type_id`, `created_on`, `created_by_id`, `updated_on`, `updated_by_id`, `trashed_on`, `trashed_by_id`, `archived_on`, `archived_by_id`) VALUES
---  ('Contacts', 0, 1, NOW(), 1, NOW(), 1, '0000-00-00', 0, '0000-00-00', 0);
-
--- INSERT INTO `fo_workspaces` (`object_id`, `description`, `show_description_in_overview`, `color`) VALUES 
---  ((SELECT MAX(o.id) FROM fo_objects o), 'Default workspace for contacts added while using Feng Office version 1.x', 1, 21);
-
--- INSERT INTO `fo_members` (`dimension_id`, `object_type_id`, `parent_member_id`, `depth`, `name`, `object_id`, `ws_id`) VALUES 
---  (1, 1, 0, 1, 'Contacts', (SELECT MAX(o.id) FROM fo_objects o), 0);
-
--- INSERT INTO `fo_object_members` (`object_id`, `member_id`, `is_optimization`)
---  SELECT c.object_id, (SELECT MAX(m.id) FROM fo_members m), 0
---  FROM `fo_contacts` `c`
--- ON DUPLICATE KEY UPDATE `is_optimization`=`is_optimization`;
-
--- INSERT INTO `fo_contact_member_permissions` (`permission_group_id`, `member_id`, `object_type_id`, `can_delete`, `can_write`)
---  SELECT c.permission_group_id, (SELECT MAX(m.id) FROM fo_members m), (SELECT `ot`.`id` FROM `fo_object_types` `ot` WHERE `ot`.`name`='contact'), 1, 1
---  FROM fo_contacts c
---  INNER JOIN fo_objects o ON o.id=c.object_id
---  INNER JOIN og_users u ON u.id=o.f1_id
---  WHERE c.is_company=0 AND c.user_type>0 AND u.can_manage_contacts=1
--- ON DUPLICATE KEY UPDATE can_write=can_write;
 
 
 -- contact object members (workspaces)
@@ -1074,6 +1091,17 @@ INSERT INTO `fo_contact_member_permissions` (`permission_group_id`, `member_id`,
  	AND `m`.`dimension_id` IN (SELECT `id` FROM `fo_dimensions` WHERE `code` = 'feng_persons')
  	AND `c`.`object_id` = `m`.`object_id`
  ON DUPLICATE KEY UPDATE member_id=member_id;
+
+INSERT INTO `fo_contact_member_permissions` (`permission_group_id`, `member_id`, `object_type_id`, `can_write`, `can_delete`)
+ SELECT `c`.`permission_group_id`, `m`.`id`, `ot`.`id`, (`c`.`object_id` = `m`.`object_id`) as `can_write`, (`c`.`object_id` = `m`.`object_id`) as `can_delete`
+ FROM `fo_contacts` `c` JOIN `fo_members` `m`, `fo_object_types` `ot`
+ WHERE `c`.`is_company`=0
+ 	AND `c`.`user_type`!=0
+ 	AND `ot`.`type` IN ('content_object', 'located', 'comment')
+ 	AND `m`.`dimension_id` IN (SELECT `id` FROM `fo_dimensions` WHERE `code` = 'feng_persons')
+   AND `m`.`object_type_id` IN (20,21)
+   AND `m`.`object_id` IN (SELECT om.object_id FROM fo_object_members om WHERE om.member_id IN (SELECT cmp.member_id FROM fo_contact_member_permissions cmp WHERE cmp.permission_group_id=c.permission_group_id))
+ ON DUPLICATE KEY UPDATE member_id=member_id;;
 
 
 

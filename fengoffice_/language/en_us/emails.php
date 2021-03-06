@@ -13,12 +13,14 @@ return array(
     
     'new task assigned to you' => 'Assigned to the Task: {0}',
     'new task assigned to you desc' => '{1} has assigned you the task:',
-    'new task work estimate to you desc' => 'The next task has exceeded the time estimated:',
+    'new task work estimate to you desc' => 'The following task has exceeded the estimated time:',
 
 // Interface
     'hi john doe' => 'Hi {0}',
  
-    'user password reseted desc' => 'You have requested to reset your password. If you want to reset your password follow the next link. If you have not requested to reset your password simply ignore this email.',
+	'user password reseted desc' => 'You have received this notifications because you have requested to reset your password. In order to do so, please access the following link:',
+	'user password reset ignore' => 'If you have not requested to change your password, simply ignore this email.',
+    
     'user password reseted username' => 'Username: {0}',
     'user password reseted password' => 'Your New password is {0} (we recomend you to change it as soon as login)',
 
@@ -38,7 +40,7 @@ return array(
     'user created your account' => '{0} created a new Feng Office account for you',
     'visit and login' => 'Please visit {0} and log in with',
     'need to set up your new password' => 'You just need to set up your new password by following this link:',
-    'visit feel free to log in' => 'Please visit {0} and feel free to log in with your username {1} or with your email address {2}',
+    'visit feel free to log in' => 'Once the password has been set, please visit {0} and log in with your username <b>{1}</b> or with your email address {2}',
     
     'milestone assigned' => 'Milestone "{0}" has been assigned to you',
     'task assigned' => 'Task "{0}" has been assigned to you',
@@ -126,6 +128,7 @@ return array(
     'view tag' => 'View tag',
     'view template' => 'View template',
     'view timeslot' => 'View timeslot',
+	'view timeslots' => 'View timeslots',
     'view user' => 'View user',	
 
     'original message' => 'Original message',
@@ -173,8 +176,8 @@ return array(
     'modified notification milestone desc' => '{1} modified the milestone:',
     'modified notification email' => 'Email modified: {0}',
     'modified notification email desc' => '{1} modified the email:',
-    'modified notification comment' => 'Comment by {1} modified {2}: {0}',
-    'modified notification comment desc' => '{1} has modified the comment in {2}:',
+    'modified notification comment' => '{1} has modified the comment in the {2}: {0}',
+    'modified notification comment desc' => '{1} has modified the comment in the {2}:',
 
     'deleted notification task' => 'Task sent to trash: {0}',
     'deleted notification task desc' => 'trash sent to the task:',
@@ -199,7 +202,7 @@ return array(
     'deleted notification comment' => 'Sent to the trash comment {1} on {2}: {0}',
     'deleted notification comment desc' => 'Sent to the trash {1} comment by {3} on {2}:',
     
-    'view object and comments' => 'View {0} and all comments',
+    'view object and comments' => 'View {0} and all comments on Feng Office',
 
     'closed notification task' => 'Task completed: {0}',
     'closed notification task desc' => 'Task has been completed by {1}:',

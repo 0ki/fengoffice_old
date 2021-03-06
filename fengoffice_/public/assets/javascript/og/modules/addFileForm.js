@@ -124,22 +124,12 @@ og.checkFileName = function(genid) {
 	  	if (!fileIsNew){
 	 		eid = Ext.get(genid + 'hfFileId').getValue();
 	  	}
-		var memberChoosers = Ext.getCmp(genid + "-member-chooser-panel-6").items ;
-
-		var members = [] ;
-		if ( memberChoosers ) {
-			memberChoosers.each(function(item, index, length) {
-				var checked = item.getChecked("id") ;
-				for (var j = 0 ; j < checked.length ; j++ ) {
-					members.push(checked[j]) ;
-				}
-			}) ;
-		}
+		
 	    og.openLink(og.getUrl('files', 'check_filename', {
 			id: eid
 		}), {
 			post: {
-				members: Ext.util.JSON.encode(members),
+				members: Ext.fly(Ext.get(genid + 'members')).getValue(),
 				filename: name
 			},
 			caller: this,

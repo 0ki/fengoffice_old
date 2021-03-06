@@ -15,14 +15,14 @@
   define('UPGRADER_PATH', dirname(__FILE__)); // upgrader is here
   define('INSTALLATION_PATH', realpath(UPGRADER_PATH . '/../../')); // Feng Office installation that we need to upgrade is here
   
-  require UPGRADER_PATH . '/library/functions.php';
-  require UPGRADER_PATH . '/library/classes/ScriptUpgrader.class.php';
-  require UPGRADER_PATH . '/library/classes/ScriptUpgraderScript.class.php';
-  require UPGRADER_PATH . '/library/classes/ChecklistItem.class.php';
-  require UPGRADER_PATH . '/library/classes/Output.class.php';
-  require UPGRADER_PATH . '/library/classes/Output_Console.class.php';
-  require UPGRADER_PATH . '/library/classes/Output_Html.class.php';
-  require UPGRADER_PATH . '/library/classes/Localization.class.php';
+  require_once UPGRADER_PATH . '/library/functions.php';
+  require_once UPGRADER_PATH . '/library/classes/ScriptUpgrader.class.php';
+  require_once UPGRADER_PATH . '/library/classes/ScriptUpgraderScript.class.php';
+  require_once UPGRADER_PATH . '/library/classes/ChecklistItem.class.php';
+  require_once UPGRADER_PATH . '/library/classes/Output.class.php';
+  require_once UPGRADER_PATH . '/library/classes/Output_Console.class.php';
+  require_once UPGRADER_PATH . '/library/classes/Output_Html.class.php';
+  require_once UPGRADER_PATH . '/library/classes/Localization.class.php';
   
   require_once UPGRADER_PATH . '/library/classes/Template.class.php';
   

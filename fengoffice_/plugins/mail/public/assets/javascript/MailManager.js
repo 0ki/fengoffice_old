@@ -342,7 +342,6 @@ og.MailManager = function() {
 			dataIndex: 'to',
 			width: 200,
 			hidden: true,
-			sortable: false,
 			renderer: renderTo
         },{
 			id: 'subject',

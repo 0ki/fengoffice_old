@@ -569,4 +569,5 @@ Wenn Sie diesen Arbeitsbereich bearbeiten, wird der Benutzer vollen Zugriff auf 
 	'guest user' => 'Gast',
 	'admin user' => 'Administrator',
 	'user type' => 'Benutzertyp',
+	'calendar' => 'Kalender',
 ); ?>

@@ -8,7 +8,7 @@ if (!isset($conditions)) $conditions = array();
 ?>
 <form style='height: 100%; background-color: white' class="internalForm"
 	action="<?php echo $url  ?>" method="post"
-	onsubmit="return og.validateReport('<?php echo $genid ?>') && og.handleMemberChooserSubmit('<?php echo $genid; ?>', <?php echo $object->manager()->getObjectTypeId() ?>);"><input
+	onsubmit="return og.validateReport('<?php echo $genid ?>');"><input
 	type="hidden" name="report[report_object_type_id]" id="report[report_object_type_id]"
 	value="<?php echo array_var($report_data, 'report_object_type_id', '') ?>" />
 <div class="coInputHeader">
@@ -64,10 +64,11 @@ array('id' => 'objectTypeSel' ,'onchange' => 'og.reportObjectTypeChanged("'.$gen
 	<div id="<?php echo $genid ?>add_report_select_context_div" style="<?php echo $context_div_display ?>"> 
 		<fieldset><legend><?php echo lang('context')?></legend>
 		<?php
+			$listeners = array('on_selection_change' => 'og.reload_subscribers("'.$genid.'",'.$object->manager()->getObjectTypeId().')');
 			if ($object->isNew()) {
-				render_dimension_trees($object->manager()->getObjectTypeId(), $genid, null, array('select_current_context' => true));
+				render_member_selectors($object->manager()->getObjectTypeId(), $genid, null, array('select_current_context' => true, 'listeners' => $listeners));
 			} else {
-				render_dimension_trees($object->manager()->getObjectTypeId(), $genid, $object->getMemberIds());
+				render_member_selectors($object->manager()->getObjectTypeId(), $genid, $object->getMemberIds(), array('listeners' => $listeners));
 			}
 		?>
 		</fieldset>

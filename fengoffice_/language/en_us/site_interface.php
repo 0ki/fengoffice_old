@@ -65,7 +65,7 @@ return array(
     'check for upgrade now' => 'Check now',
 
 // Forgot password
-    'forgot password' => 'Send new password',
+    'forgot password' => 'Send a new password',
     'email me my password' => 'Send password',
 
 // Complete installation
@@ -458,7 +458,7 @@ return array(
   //'search for in project' => 'Search results for \'<i>{0}</i>\' in \'{1}\'',
   'search for in project' => 'Search results in \'{1}\'',
   //'search for' => 'Search results for \'{0}\' in all dimensions',
-  'search for' => 'Search results in all dimensions',
+  'search for' => 'Search results everywhere',
 
   'workspace permamanent delete' =>  'When a Workspace is deleted the following <b>content is lost permanently</b>',
 	'workspace permamanent delete messages'  => ' All notes in the workspace',
@@ -480,7 +480,7 @@ return array(
   'minutes' => 'Minutes',
   'seconds' => 'Seconds',
   'days' => 'Days',
-  'time estimate' => 'Time estimate',
+  'estimated time' => 'Estimated time',
   'work in progress' => 'Work in progress',
   'total time' => 'Total time',
   'total time worked' => 'Total time worked',
@@ -733,6 +733,14 @@ return array(
 	
 	'click to expand' => 'Click to expand',
 	'select member to add timeslots' => 'To add general time records you have to select at least one item of: {0}',
+
+	'add new relation' => 'Add new relation',
+	'remove relation' => 'Remove relation',
+	'type member name begin' => 'Enter name...',
+	'quick find' => 'Quick find...',
+	'show all possibilites' => 'Show all possibilites',
+	'remove all filters' => 'Remove all filters',
+	'plugins' => 'Plugins',
 ); // array
 
 ?>

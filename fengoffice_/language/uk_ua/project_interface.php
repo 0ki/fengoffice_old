@@ -237,8 +237,8 @@ return array(
 	'normal priority' => 'Нормальний',
 	'low priority' => 'Низький',
 	
-	'time estimate' => 'Підрахування часу',
-	'time estimate desc' => 'Очікувана тривалість завдання у годинах.',
+	'estimated time' => 'Підрахування часу',
+	'estimated time desc' => 'Очікувана тривалість завдання у годинах.',
 	'x hours' => '{0} годин.',
 	'pending' => 'Очікування',
 	

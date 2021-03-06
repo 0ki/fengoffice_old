@@ -122,4 +122,10 @@
 	'zip not supported' => 'Zip-Archive werden vom Server nicht unterstützt!',
 	'no tag specified' => 'Kein Schlagwort festgelegt!',
 	'no mailAccount error' => 'Aktion unmöglich! Es wurde kein E-Mail-Postfach eingerichtet.',
+	'error invalid recipients' => 'Ungültige E-Mailadresse gefunden in Feld "{0}": {1}',
+	'no context permissions to add' => 'Sie besitzen keine Berechtigung um {0} zu {1} hinzuzufügen',
+	'error cannot assign task to user' => '{0} kann nicht Aufgabenabonnent sein für {1}.',
+	'member name already exists in dimension' => 'Das Mitglied \'{0}\' existiert bereits in der gewählten Dimension.',
+	'must choose at least one member of' => 'Sie müssen mindestens ein Mitglied von {0} auswählen.',
+	'content too long not loaded' => 'Der vorherige E-Mailinhalt ist zu lang und konnte nicht geladen werden. Er wird trotzdem mit dieser E-Mail versendet.',
 ); ?>

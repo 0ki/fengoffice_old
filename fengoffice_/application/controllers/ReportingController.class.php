@@ -491,18 +491,16 @@ class ReportingController extends ApplicationController {
 				$newReport = new Report();
 				
 				$member_ids = json_decode(array_var($_POST, 'members'));
-				if (!is_array($member_ids) || count($member_ids) == 0) {
-					flash_error(lang('must choose at least one member'));
+				
+				$notAllowedMember = '';
+				if(!$newReport->canAdd(logged_user(), active_context(), $notAllowedMember )) {
+					if (str_starts_with($notAllowedMember, '-- req dim --')) flash_error(lang('must choose at least one member of', str_replace_first('-- req dim --', '', $notAllowedMember, $in)));
+					else flash_error(lang('no context permissions to add', lang("report"), $notAllowedMember ));
 					ajx_current("empty");
 					return;
 				}
+				
 				$members = Members::findAll(array("conditions" => array("`id` IN(?)", $member_ids)));
-
-				if(!$newReport->canAdd(logged_user(), $members)) {
-					flash_error(lang('no access permissions'));
-					ajx_current("empty");
-					return;
-				} // if
 
 				$newReport->setObjectName($report_data['name']);
 				$newReport->setDescription($report_data['description']);

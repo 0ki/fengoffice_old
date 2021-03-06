@@ -6,7 +6,7 @@
                 if (isset($attachments['logo']) && is_array($attachments['logo'])){
                 ?>
 <!--                    <img src="cid:<?php echo $attachments['logo']['cid']?>"/>-->
-                    <img src="<?php echo ROOT_URL . '/upload/logo_empresa.png' ?>"/>
+                    <img src="<?php echo ROOT_URL . '/tmp/logo_empresa.png' ?>"/>
                 <?php 
                     unset($attachments['logo']);
                 }else{  
@@ -113,6 +113,15 @@
             </span>
             <?php }?>
             <!-- END DUE DATE AND START DATE -->
+        </div>
+        <div>
+            <!-- SUBSCRIBERS -->
+            <?php if ((isset($subscribers) && $subscribers != "")){?>
+            <span style="width: 100%; line-height: 20px; display: block;">
+                <?php echo lang('subscribers')?>: <?php echo $subscribers ?>
+            </span>
+            <?php }?>
+            <!-- END SUBSCRIBERS -->
         </div>
     </div>
 </div>

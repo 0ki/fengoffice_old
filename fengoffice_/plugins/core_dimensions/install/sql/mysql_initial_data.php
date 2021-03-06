@@ -28,7 +28,7 @@ INSERT INTO `<?php echo $table_prefix ?>dimension_object_type_contents` (`dimens
  	(SELECT `id` FROM `<?php echo $table_prefix ?>object_types` WHERE `name`='person'),
  	`id`, 0, 1
  FROM `<?php echo $table_prefix ?>object_types` 
- WHERE `type` IN ('content_object', 'comment')
+ WHERE `type` IN ('content_object', 'comment', 'located')
 ON DUPLICATE KEY UPDATE dimension_id=dimension_id;
 
 INSERT INTO `<?php echo $table_prefix ?>dimension_object_type_contents` (`dimension_id`,`dimension_object_type_id`,`content_object_type_id`, `is_required`, `is_multiple`)

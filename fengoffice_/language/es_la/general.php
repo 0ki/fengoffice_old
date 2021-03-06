@@ -21,7 +21,6 @@
 	'search results' => 'Resultados de la búsqueda',
 	'account' => 'Cuenta',
 	'settings' => 'Configuraciones',
-	'specify password?' => 'Especificar password?',
 	'index' => 'Índice',
 	'view' => 'Ver',
 	'edit' => 'Editar',
@@ -32,6 +31,7 @@
 	'delete' => 'Eliminar',
 	'empty trash can' => 'Vaciar la papelera',
 	'save' => 'Guardar',
+	'specify password?' => 'Especificar password?',
 	'update' => 'Actualizar',
 	'submit' => 'Ingresar',
 	'reset' => 'Reiniciar',
@@ -276,6 +276,7 @@
   	'task timeslots report desc' => ' * Solo los tiempos de trabajo asociados a una tarea serán desplegados.',
   	'general timeslots report desc' => ' * Solo los tiempos de trabajo agregados desde la pestaña "Tiempo" serán desplegados.',
 	'see all' => 'Ver todos',
+	'view all' => 'Ver todos',
 	'name required' => "Nombre requerido",
   	'viewing all information' => 'Viendo toda la Infomación',
   	'no due date' => 'Sin Fecha Límite',
@@ -285,8 +286,13 @@
 	'late tasks and upcoming tasks' => 'Tareas atrasadas y próximas',
         'advanced search' => 'Búsqueda avanzada',
 	'empty title' => 'Título vacío',
+	'people in' => 'Personas en {0}',
     
         'field Objects type_content' => 'Tipo de contenido',    
         'option repetitive task completed' => 'Esta tarea ya ha sido completada. Para modificar los datos de repetición por favor edite alguna tarea pendiente de esta serie.',
-
+        
+        'subscribers' => 'Personas involucradas',
+        'and' => ' y ',
+        'apply everywhere' => 'Aplicar a todo',
+        'apply for this' => 'Aplicar para este {0}',
 ); ?>

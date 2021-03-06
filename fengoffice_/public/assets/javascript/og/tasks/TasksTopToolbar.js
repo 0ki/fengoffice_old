@@ -205,12 +205,24 @@ og.TasksTopToolbar = function(config) {
                         iconCls: 'ico-archive-obj',
 			disabled: true,
 			handler: function() {
-                                this.dialog = new og.TaskPopUp("archive",'');
+                                var ids = ogTasks.getSelectedIds()+'';
+                                var arr_ids = ids.split(',')
+                                for(var i = 0; i < arr_ids.length; i++){
+                                    var related = og.checkRelated("task",arr_ids[i]);
+                                    if(related){
+                                        break;    
+                                    }                                
+                                }
+
+                                if(related){
+                                    this.dialog = new og.TaskPopUp("archive",'');
                                 this.dialog.setTitle(lang('tasks related'));	                                
                                 this.dialog.show();
-//				if (confirm(lang('confirm archive selected objects'))) {
-//					ogTasks.executeAction('archive');
-//				}
+                                }else{
+                                    if (confirm(lang('confirm archive selected objects'))) {
+					ogTasks.executeAction('archive');
+                                    }
+                                }
 			},
 			scope: this
 		})
@@ -269,7 +281,7 @@ og.TasksTopToolbar = function(config) {
 				}
 			},
                         time_estimates: {
-		        text: lang('time estimates'),
+		        text: lang('estimated time'),
 				checked: (ogTasks.userPreferences.showTimeEstimates == 1),
 				checkHandler: function() {
 					ogTasks.redrawGroups = false;

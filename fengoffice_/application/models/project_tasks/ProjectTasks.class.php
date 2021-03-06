@@ -40,7 +40,6 @@ class ProjectTasks extends BaseProjectTasks {
 			$assigned_to_str = " AND `e`.`assigned_to_contact_id` = " . DB::escape ( $assigned_to_contact ) . " ";
 		}
 			
-		//$result = self::getContentObjects($context, ObjectTypes::findById(self::instance()->getObjectTypeId()), 'due_date', 'ASC', ' AND `is_template` = false' . $archived_cond . $assigned_to_str . $open_timeslot);
 		$result = self::instance()->listing(array(
 			"order" => 'due_date',
 			"order_dir" => "ASC",
@@ -103,11 +102,6 @@ class ProjectTasks extends BaseProjectTasks {
 	 * @return array
 	 */
 	function getRangeTasksByUser(DateTimeValue $date_start, DateTimeValue $date_end, $assignedUser, $task_filter = null, $archived = false) {
-		
-//		$from_date = new DateTimeValue ( $date_start->getTimestamp () );
-//		$from_date = $from_date->beginningOfDay ();
-//		$to_date = new DateTimeValue ( $date_end->getTimestamp () );
-//		$to_date = $to_date->endOfDay ();
                 
                 $from_date = new DateTimeValue ( $date_start->getTimestamp () - logged_user()->getTimezone() * 3600 );
 		$from_date = $from_date->beginningOfDay ();

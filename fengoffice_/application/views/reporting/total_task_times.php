@@ -52,7 +52,7 @@
 	function total_task_times_print_table($objects, $left, $options, $group_name, &$sub_total = 0, &$sub_total_billing = 0) {
 		
 		echo '<div style="padding-left:'. $left .'px;">';
-		echo '<table class="report-table"><tr class="report-table-heading">';
+		echo '<table class="reporting-table"><tr class="reporting-table-heading">';
 		echo '<th>' . lang('date') . '</th>';
 		echo '<th>' . lang('title') . '</th>';
 		echo '<th>' . lang('description') . '</th>';

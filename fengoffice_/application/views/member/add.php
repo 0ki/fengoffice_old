@@ -24,7 +24,7 @@
 		} else {
 			add_page_action(lang('unarchive'), "javascript:if(confirm('".lang('confirm unarchive member',$ot_name)."')) og.openLink('".get_url('member', 'unarchive', array('id' => $member->getId()))."');", 'ico-unarchive-obj');
 		}
-		add_page_action(lang('delete'), "javascript:if(confirm('".lang('confirm delete permanently', $member->getName())."')) og.openLink('".get_url('member', 'delete', array('id' => $member->getId(),'start' => true))."');", 'ico-delete');
+		add_page_action(lang('delete'), "javascript:if(confirm('".lang('confirm delete permanently', $ot_name)."')) og.openLink('".get_url('member', 'delete', array('id' => $member->getId(),'start' => true))."');", 'ico-delete');
 	}
 	$form_title = $object_type_name ? ($member->isNew() ? lang('new') : lang('edit')) . " $object_type_name" : lang('new member');
 ?>

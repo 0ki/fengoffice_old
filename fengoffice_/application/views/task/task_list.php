@@ -73,7 +73,7 @@ $showCompletedSubtasksDiv = is_array($task_list->getCompletedSubTasks()) && coun
 
 if($showOpenSubtasksDiv) { ?>
 <table style="border:1px solid #717FA1;width:100%; padding-left:10px;">
-<tr><th style="padding-left:10px;padding-top:4px;padding-bottom:4px;background-color:#E8EDF7;font-size:120%;font-weight:bolder;color:#717FA1;width:100%;"><?php echo lang("view open tasks") ?></th></tr>
+<tr><th style="padding-left:10px;padding-top:4px;padding-bottom:4px;background-color:#E8EDF7;font-size:120%;font-weight:bolder;color:#717FA1;width:100%;"><?php echo lang("open subtasks") ?></th></tr>
 <tr><td style="padding-left:10px;">
   <div class="openTasks">
     <table class="blank">
@@ -227,7 +227,7 @@ if($showOpenSubtasksDiv) { ?>
 if($showCompletedSubtasksDiv) { ?>
 <br/>
   <table style="border:1px solid #717FA1;width:100%; padding-left:10px;">
-  <tr><th style="padding-left:10px;padding-top:4px;padding-bottom:4px;background-color:#E8EDF7;font-size:120%;font-weight:bolder;color:#717FA1;width:100%;"><?php echo lang("completed tasks") ?></th></tr>
+  <tr><th style="padding-left:10px;padding-top:4px;padding-bottom:4px;background-color:#E8EDF7;font-size:120%;font-weight:bolder;color:#717FA1;width:100%;"><?php echo lang("completed subtasks") ?></th></tr>
   <tr><td style="padding-left:10px;">
   <div class="completedTasks">
     <table class="blank">
@@ -286,7 +286,7 @@ if ($time_estimate > 0 || $total_minutes > 0){?>
 
 <?php if ($time_estimate > 0) {?>
 <tr><td>
-	<div style="font-weight:bold"><?php echo lang('time estimate'). ':&nbsp;'?></div></td><td> 
+	<div style="font-weight:bold"><?php echo lang('estimated time'). ':&nbsp;'?></div></td><td> 
 		<?php echo DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($time_estimate * 60), 'hm', 60) ?></td></tr>
 <?php } ?>
 

@@ -120,8 +120,8 @@ class SearchController extends ApplicationController {
 	function search() {
 		// Init vars
 		$search_for = array_var($_GET, 'search_for');
-                $search_dimension = array_var($_GET, 'search_dimension');
-                $advanced = array_var($_GET, 'advanced');
+        $search_dimension = array_var($_GET, 'search_dimension');
+        $advanced = array_var($_GET, 'advanced');
 		$minWordLength = $this->minWordLength($search_for);
 		$useLike = ( $minWordLength && ($this->ignoreMinWordLength) && ($minWordLength < self::$MYSQL_MIN_WORD_LENGHT) );
 		$search_pieces= explode(" ", $search_for);
@@ -140,12 +140,12 @@ class SearchController extends ApplicationController {
 				if ( !str_starts_with($word, " ") ) {
 					$word = " +".$word;
 				}
-				$search_string .= mysql_escape_string( $word ). " ";
+				$search_string .= mysql_real_escape_string( $word ). " ";
 			}
 			$search_string = substr($search_string, 0 , -1);
 		}else{
 			// USE Like Query
-			$search_string = mysql_escape_string($search_for);
+			$search_string = mysql_real_escape_string($search_for);
 		}
 		
 		$this->search_for = $search_for ;
@@ -199,9 +199,9 @@ class SearchController extends ApplicationController {
                                 $value = $condValue;
                         }              
                         if($condition['condition'] == "like"){
-                            $where_condiition .= " AND " . $condition['field_name'] . " " . $condition['condition'] . " '" . $value . "%' ";
+                            $where_condiition .= " AND `" . $condition['field_name'] . "` " . $condition['condition'] . " '" . $value . "%' ";
                         }else{
-                            $where_condiition .= " AND " . $condition['field_name'] . " " . $condition['condition'] . " '" . $value . "' ";
+                            $where_condiition .= " AND `" . $condition['field_name'] . "` " . $condition['condition'] . " '" . $value . "' ";
                         }
                         $conditions_view[$cont]['id'] = $condition['id'];
                         $conditions_view[$cont]['custom_property_id'] = $condition['custom_property_id'];

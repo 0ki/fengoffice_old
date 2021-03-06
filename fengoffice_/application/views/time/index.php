@@ -194,7 +194,7 @@
 					<label><?php echo lang("related to")?></label>
 				</div>
 				<div class="context-body" style="display:none">
-					<?php render_dimension_trees(Timeslots::instance()->getObjectTypeId(), $genid, array());	?>
+					<?php render_member_selectors(Timeslots::instance()->getObjectTypeId(), $genid, null, array('select_current_context' => true));	?>
 				</div>
 			</div>
 			
@@ -253,7 +253,7 @@
 			$nav = '';
 			if ($page != 0) { ?>
 				<a class="internalLink" href="<?php echo get_url('time', 'index', array('start' => '0', 'limit' => $limit)) ?>"><span class="x-tbar-page-first db-ico" style="padding-left:16px">&nbsp;</span></a>
-				<a class="internalLink" href="<?php  echo get_url('time', 'index', array('start' => $start - $limit, 'limit' => $limit)) ?>"><span class="x-tbar-page-prev db-ico" style="padding-left:16px">&nbsp;</span></a>&nbsp;
+				<a class="internalLink" href="<?php echo get_url('time', 'index', array('start' => $start - $limit, 'limit' => $limit)) ?>"><span class="x-tbar-page-prev db-ico" style="padding-left:16px">&nbsp;</span></a>&nbsp;
 			<?php } else { ?>
 				<span class="og-disabled x-tbar-page-first db-ico" style="padding-left:16px">&nbsp;</span>
 				<span class="og-disabled x-tbar-page-prev db-ico" style="padding-left:16px">&nbsp;</span>&nbsp;

@@ -190,8 +190,8 @@
 	'high priority' => 'Hoch',
 	'normal priority' => 'Normal',
 	'low priority' => 'Niedrig',
-	'time estimate' => 'Zeitschätzung',
-	'time estimate desc' => 'Geschätzte Zeitdauer der Aufgaben in Stunden.',
+	'estimated time' => 'Zeitschätzung',
+	'estimated time desc' => 'Geschätzte Zeitdauer der Aufgaben in Stunden.',
 	'x hours' => '{0} Stunden.',
 	'pending' => 'Ausstehend',
 	'new task template' => 'Neue Aufgabenvorlage',
@@ -279,4 +279,5 @@ Thema:     {0}
 	'apply assignee to subtasks' => 'Unteraufgaben auf Begünstigten anwenden',
 	'urgent priority' => 'Dringend',
 	'attachment from email' => 'An E-Mail „{0}“ angehängt',
+	'field workspace color' => 'Farbe des Arbeitsbereichs',
 ); ?>

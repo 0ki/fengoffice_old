@@ -104,7 +104,7 @@ foreach ($callbacks as $callback) {
 }
 
 
-@include ROOT . '/cache/autoloader.php';
+@include CACHE_DIR . '/autoloader.php';
 
 // Prepare logger... We might need it early...
 //if(Env::isDebugging()) {

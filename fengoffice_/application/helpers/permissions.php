@@ -121,8 +121,6 @@
 			//dimension does not define permissions - user can freely add in all members
 			if ($check_dimension && !$dimension->getDefinesPermissions()) return true;
 			
-			$contact_pg_ids = ContactPermissionGroups::getPermissionGroupIdsByContactCSV($user->getId(),false);
-			
 			//dimension defines permissions and user has maximum level of permissions so can freely in all members
 			if ($check_dimension && $dimension->hasAllowAllForContact($contact_pg_ids)) return true;
 			
@@ -932,7 +930,7 @@
 		
 		if (count($allowed_permission_groups) > 0) {
 			$result = Contacts::instance()->findAll(array(
-				'conditions' => "id IN (SELECT DISTINCT contact_id FROM ".TABLE_PREFIX."contact_permission_groups
+				'conditions' => "disabled=0 AND id IN (SELECT DISTINCT contact_id FROM ".TABLE_PREFIX."contact_permission_groups
 								WHERE permission_group_id IN (".implode(",",$allowed_permission_groups).") $extra_conditions)",
 				'order' => 'name'));
 		}

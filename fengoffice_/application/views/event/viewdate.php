@@ -82,7 +82,7 @@ $genid = gen_id();
                         if($task->getDueDate() instanceof DateTimeValue){
                             $due_date = new DateTimeValue($task->getDueDate()->getTimestamp() + logged_user()->getTimezone() * 3600);
                             if ($dtv->getTimestamp() == mktime(0,0,0, $due_date->getMonth(), $due_date->getDay(), $due_date->getYear())) {
-                                    if ($task->getUseDueTime()) {
+                                    if ($task->getUseDueTime() && ($task->getStartDate() instanceof DateTimeValue || $task->getTimeEstimate() > 0)) {
                                             $result[] = $task;
                                     } else {
                                             $alldayevents[] = $task;
@@ -93,7 +93,7 @@ $genid = gen_id();
                         if($task->getStartDate() instanceof DateTimeValue){
                             $start_date = new DateTimeValue($task->getStartDate()->getTimestamp() + logged_user()->getTimezone() * 3600);
                             if (!$added && $dtv->getTimestamp() == mktime(0,0,0, $start_date->getMonth(), $start_date->getDay(), $start_date->getYear())) {
-                                    if ($task->getUseStartTime()) {
+                                    if ($task->getUseStartTime() && ($task->getDueDate() instanceof DateTimeValue|| $task->getTimeEstimate() > 0)) {
                                             $result[] = $task;
                                     } else {
                                             $alldayevents[] = $task;
@@ -107,7 +107,10 @@ $genid = gen_id();
 		$alldayevents = array_merge($alldayevents,$birthdays);
 	
 	$alldaygridHeight = count($alldayevents)*PX_HEIGHT/2 + PX_HEIGHT/3;
-	
+        if($alldaygridHeight > 150){
+            $alldaygridHeight = 150;
+        }
+        
 	$loc = new Localization();
 	$loc->setDateFormat(lang('view date title'));
 	$view_title = $loc->formatDate($dtv);// lang(strtolower(date('l', $dtv))) . date(' j, ', $dtv) . lang('month ' . date('n', $dtv)) . date(' Y', $dtv);
@@ -163,12 +166,12 @@ $genid = gen_id();
 			<td class="coViewBody" style="padding:0px;height:100%;" colspan=2>
 			<div id="chrome_main2" style="width:100%; height:100%;">
 					
-				<div id="allDayGrid" class="inset grid"  style="height: <?php echo $alldaygridHeight ?>px; margin-bottom: 5px;background:#E8EEF7;margin-right:0px;margin-left:40px;"
+				<div id="allDayGrid" class="inset grid"  style="height: <?php echo $alldaygridHeight ?>px; margin-bottom: 5px;background:#E8EEF7;margin-right:0px;margin-left:40px; overflow: auto"
 				<?php if (!logged_user()->isGuest()) { ?>
  					onclick="og.showEventPopup(<?php echo $dtv->getDay() ?>, <?php echo $dtv->getMonth()?>, <?php echo $dtv->getYear()?>, -1, -1, <?php echo ($use_24_hours ? 'true' : 'false'); ?>,'<?php echo $dtv->format($date_format) ?>', '<?php echo $genid?>', '<?php echo ProjectEvents::instance()->getObjectTypeId()?>');">
 				<?php } else echo ">"; ?>
 					<div id="allDay0" class="allDayCell" style="left: 0px; height: <?php echo $alldaygridHeight ?>px;border-left:3px double #DDDDDD !important; position:absolute;width:3px;"></div>
-					<div id="alldayeventowner" onclick="og.disableEventPropagation(event) ">
+                                        <div id="alldayeventowner" onclick="og.disableEventPropagation(event)">
 						<?php	
 							$top=0;
 							foreach ($alldayevents as $event){	
@@ -192,13 +195,18 @@ $genid = gen_id();
 									$end_of_task = false;
 									if ($event->getDueDate() instanceof DateTimeValue) {
 										$due_date = new DateTimeValue($event->getDueDate()->getTimestamp() + logged_user()->getTimezone() * 3600);
-										if ($dtv->getTimestamp() == mktime(0,0,0, $due_date->getMonth(), $due_date->getDay(), $due_date->getYear())) $end_of_task = true;
+										if ($dtv->getTimestamp() == mktime(0,0,0, $due_date->getMonth(), $due_date->getDay(), $due_date->getYear())){
+                                                                                    $end_of_task = true;
+                                                                                    $start_of_task = true;
+                                                                                }
 									}
 									if ($event->getStartDate() instanceof DateTimeValue) {
 										$start_date = new DateTimeValue($event->getStartDate()->getTimestamp() + logged_user()->getTimezone() * 3600);
-										if ($dtv->getTimestamp() == mktime(0,0,0, $start_date->getMonth(), $start_date->getDay(), $start_date->getYear())) $start_of_task = true;
-									}
-									
+										if ($dtv->getTimestamp() == mktime(0,0,0, $start_date->getMonth(), $start_date->getDay(), $start_date->getYear())){
+                                                                                    $start_of_task = true;
+                                                                                    $end_of_task = true;                                                                                    
+                                                                                }
+									}									
 									if ($start_of_task && $end_of_task) {
 										$tip_title = lang('task');
 										$img_url = image_url('/16x16/tasks.png');

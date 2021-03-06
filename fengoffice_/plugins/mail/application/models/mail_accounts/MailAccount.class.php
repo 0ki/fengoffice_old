@@ -190,9 +190,9 @@ class MailAccount extends BaseMailAccount {
 	 * @return boolean
 	 */
 	function canDelete(Contact $user) {
-		//$accountUser = MailAccountContacts::getByAccountAndContact($this, $user);
 		$accountUser = MailAccountContacts::getByAccountAndContact($this, $user);
-		return $accountUser instanceof MailAccountContact && $accountUser->getCanEdit() || can_manage_security(logged_user());
+		//return $accountUser instanceof MailAccountContact && $accountUser->getCanEdit() || can_manage_security(logged_user());
+                return $accountUser instanceof MailAccountContact && $accountUser->getCanEdit();
 	} // canDelete
 
 	// ---------------------------------------------------

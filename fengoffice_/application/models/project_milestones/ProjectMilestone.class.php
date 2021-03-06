@@ -454,7 +454,8 @@ class ProjectMilestone extends BaseProjectMilestone {
 			't' => $this->getTitle(),
 			'tnum' => $tnum,
 			'tc' => $tc,
-			'dd' => $this->getDueDate()->getTimestamp() + logged_user()->getTimezone() * 3600);
+			'dd' => $this->getDueDate()->getTimestamp()
+		);
 		
 		if ($this->getCompletedById() > 0){
 			$result['compId'] = $this->getCompletedById();

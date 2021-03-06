@@ -208,7 +208,6 @@ class Contacts extends BaseContacts {
 			'contact[o_country]' => lang('country'),
 			'contact[o_phone_number]' => lang('phone'),
 			'contact[o_phone_number2]' => lang('phone 2'),
-			'contact[o_fax_number]' => lang('fax'),
 			'contact[o_birthday]' => lang('birthday'),
 			'contact[email2]' => lang('email address 2'),
 			'contact[email3]' => lang('email address 3'),

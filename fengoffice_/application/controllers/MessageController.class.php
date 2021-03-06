@@ -80,7 +80,6 @@ class MessageController extends ApplicationController {
 		
 
 		$context = active_context();
-		//$res =  ProjectMessages::instance()->getContentObjects($context, ObjectTypes::findById(ProjectMessages::instance()->getObjectTypeId()), $order, $order_dir,null,null,false, false, $start, $limit);
 		$res = ProjectMessages::instance()->listing(array(
 			"order" => $order,
 			"order_dir" => $order_dir,
@@ -379,8 +378,8 @@ class MessageController extends ApplicationController {
 				$member_ids = json_decode(array_var($_POST, 'members'));
 				
 				$object_controller->add_to_members($message, $member_ids);
-				$object_controller->link_to_new_object($message);
-				$object_controller->add_subscribers($message);
+                                $object_controller->add_subscribers($message);
+				$object_controller->link_to_new_object($message);				
 				$object_controller->add_custom_properties($message);
 				
 				ApplicationLogs::createLog($message, ApplicationLogs::ACTION_ADD);

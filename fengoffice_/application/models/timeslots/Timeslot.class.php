@@ -181,7 +181,7 @@ class Timeslot extends BaseTimeslot {
 	 */
 	function getViewUrl() {
 		$object = $this->getRelObject();
-		return $object instanceof ContentDataObject ? $object->getObjectUrl() . '#timeslot' . $this->getId() : '';
+		return $object instanceof ContentDataObject ? $object->getObjectUrl() : '';
 	} // getViewUrl
 
 	/**

@@ -14,7 +14,7 @@
     * @param ContentDataObject $object
     * @return array
     */
-    static function getUsersByObject(ContentDataObject$object) {
+    static function getUsersByObject(ContentDataObject $object) {
       $users = array();
       $subscriptions = ObjectSubscriptions::findAll(array(
         'conditions' => '`object_id` = ' . DB::escape($object->getId())

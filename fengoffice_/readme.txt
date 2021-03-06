@@ -1,5 +1,5 @@
 
-    About Feng Office 2.1 - Beta
+    About Feng Office 2.2 - Beta
     ================================
  
     Feng Office is a Collaboration Platform and Project Management System.
@@ -97,42 +97,64 @@
  
     Changelog
     =========
-    
-    Since 2.0 RC
- 	----------------
- 	bugfix: Notifications not sent when no company logo is uploaded.
- 	bugfix: Invited people does not show in certain conditions.
- 	bugfix: Invited people query performance improvements.
- 	bugfix: Email fix when enabling message_id verification.
- 	bugfix: Tasks does not save progress when no estimated time is set.
- 	bugfix: Templates instantiation does not susbscribe assigned users.
- 	bugfix: Total tasks time report fixed date parameters.
- 	bugfix: Timeslots permissions fixed, for read/write of any user type.
- 	bugfix: Performance improvements in tasks list and tasks widget.
- 	bugfix: Subscribers permissions fix.
- 	bugfix: Fixed dimension member deletion.
- 	bugfix: Fixed events fatal error.
- 	bugfix: Added several missing langs (en_us, es_la).
- 	bugfix: Events description goes out the event region in calendar views.
- 	bugfix: Tasks name and description goes out the widget in dashboard. 
- 	bugfix: Several bugfixes in task's module drag & drop.
- 	bugfix: Drag & drop: Drag bugfixes when dragging from grids to dimension members.
- 	bugfix: Bugfix when adding subworkspaces and error.
- 	bugfix: Task reclassiffication bugfix with due date and parent data.
- 	bugfix: User task toolbar's selectboxes only show "me" when filtering by anything but assigned to. 
- 	bugfix: Repetitive task fixes
- 	bugfix: Bugfix in google-calendar import-export cron job and synchronization.
- 	bugfix: Task's quick add and quick edit is not subscribing the creator.
- 	bugfix: Translation tool now includes plugin's language files.
- 	
- 	usability: Dimension panels' selected member color now is similar to tabs color.
- 	
+	
+	Since 2.1
+	----------------
+	bugfix: several fixes in repetitive tasks.
+	bugfix: quick add of tasks does not subscribe creator.
+	bugfix: google calendar import fixed.
+	bugfix: fixed event deletion.
+	bugfix: fixed email account sharing.
+	bugfix: fixed AM/PM issue when selecting task's dates.
+	bugfix: special characters in workspace when adding from quick add.
+	bugfix: error 500 in workspaces dashboard.
+	bugfix: error when searching emails by "From" field in advanced search.
+	bugfix: 1.7 -> 2.x upgrade fixed subtasks.
+	bugfix: permissions in user's card.
+	bugfix: task's drag and drop edition bugfixes.
+	bugfix: task's quick add does not keep the task name when switching to complete edition.
+	bugfix: several LDAP integration fixes.
+	bugfix: fixed contact phones display in list.
+	bugfix: config option descriptions added.
+	bugfix: user email is not required.
+	bugfix: milestone selector does not show all available milestones.
+	bugfix: person email cannot be edited.
+	bugfix: disabled users are shown in subscribers and invited people.
+	bugfix: permission groups upgrade does not set type.
+	bugfix: Javascript problems in IE.
+	bugfix: issues with breadcrumbs with special characters.
+	bugfix: VCard import/export fixed.
+	bugfix: cannot delete workspace with apostrophe.
+	bugfix: fixed "enters" issue in tasks description wysisyg editor.
+	bugfix: File copy makes two copies.
+	bugfix: permissions fixed for submembers.
+	bugfix: when updating a file, does not subscribe the updater user.
+	bugfix: milestones display diferent dates in milestone view and task list.
+	bugfix: "assigned to" filter in tasks does not work properly.
+	bugfix: cannot archive dimension members.
+	bugfix: cannot archive several tasks at once.
+
+	feature: activity widget.
+	feature: new workspace and tag selectors.
+	feature: add timeslot entries to application_logs.
+	feature: complete parent tasks asks to complete child tasks.
+
+	usability: sort email panel by "to" column.
+	usability: changes in advanced search for email fields.
+	usability: can change imported calendar names.
+	usability: email with attachments classification process upgraded.
+	usability: linked objects selector can filter by workspace and tags.
+
+	system: CKEditor updated.
+	system: translation module upgraded - translate plugins files.
+	system: German, Russian and French languages upgraded.
+
     
     Since 2.0.0.8
     ----------------
     bugfix: Google Calendar issues solved
 	bugfix: 'Executive' users not being able to assign tasks to themseleves at some places
-	bugfix: Admins and Superadmins may now unblock blocked documents
+	bugfix: Admins and Superadmins may now unblock bloqued documents
 	bugfix: Subscriptions and permissions issues solved
 	bugfix: Solved some issues when editing objects
 	bugfix: Solved issue when classifying emails and then accesing them

@@ -5,7 +5,7 @@
 	'company homepage invalid' => 'El nombre del sitio web ingresado no es una URL válida',
 	'username value required' => 'Nombre de usuario no ingresado, intente nuevamente',
 	'username must be unique' => 'El Nombre de usuario seleccionado ya esta en uso',
-	'email value is required' => 'Dirección de correo electrónico no ingresada, intente nuevamente',
+	'email value is required' => 'Debe ingresar una dirección de correo electrónico',
 	'email address must be unique' => 'La dirección de correo ya esta en uso, intente con una distinta',
 	'invalid email' => 'La dirección de correo es incorrecta',
 

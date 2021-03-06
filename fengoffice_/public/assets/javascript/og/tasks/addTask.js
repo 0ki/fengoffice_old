@@ -85,16 +85,16 @@ ogTasks.drawEditTaskForm = function(task_id, group_id){
 			priority: task.priority,
 			members: task.members,
 			dueDate: task.dueDate,
-                        startDate: task.startDate,
+			startDate: task.startDate,
 			assignedTo: task.assignedToId,
 			taskId: task_id,
-                        time_estimated: task.TimeEstimate,
-                        multiAssignment: task.multiAssignment,
+			time_estimated: task.TimeEstimate,
+			multiAssignment: task.multiAssignment,
 			isEdit: true
 		});
-                if(og.config.wysiwyg_tasks){
-                    loadCKeditor(task_id);
-                }
+		if(og.config.wysiwyg_tasks){
+			loadCKeditor(task_id);
+		}
 	}
 }
 
@@ -165,7 +165,7 @@ ogTasks.drawTaskForm = function(container_id, data){
 	}
 	html += "<div id='ogTasksPanelATObjectType' style='padding-top:5px;'><table><tr><td style='width:120px;'><b>" + lang('object type') + ":&nbsp;</b></td><td><input id='ogTasksPanelObjectTypeSelector' style='min-width:120px;max-width:300px' type='text' value='" + (data.otype ? data.otype : og.defaultTaskType) + "' name='task[object_subtype]'/></td></tr></table></div>";
         
-        if(og.config.multi_assignment){
+        if(og.config.multi_assignment == 1){
             if(typeof window.loadMultiAssignmentHtml == 'function'){
                 html += loadMultiAssignmentHtml(data.taskId);
             }            
@@ -194,7 +194,7 @@ ogTasks.drawTaskForm = function(container_id, data){
                 var totalTime = data.time_estimated; 
                 var minutes = totalTime % 60;
                 var hours = (totalTime - minutes) / 60;
-		html += "<div id='ogTasksPanelATTime' style='padding-top:5px;'><table><tr><td style='width:130px; vertical-align:middle;'><b>" + lang('time estimate') + ":</b></td><td>";
+		html += "<div id='ogTasksPanelATTime' style='padding-top:5px;'><table><tr><td style='width:130px; vertical-align:middle;'><b>" + lang('estimated time') + ":</b></td><td>";
 		html += "<input type='text' id='ogTasksPanelATHours' style='width:25px' tabIndex=1250  name='task[time_estimate_hours]' value='" + hours + "'/>&nbsp;" + lang('hours') + "</td>";
                 html += "<td>&nbsp;<select name='task[time_estimate_minutes]' id='ogTasksPanelATMinutes' size='1' tabindex='1250'>";
                 var minuteOptions = new Array(0,5,10,15,20,25,30,35,40,45,50,55);
@@ -215,7 +215,8 @@ ogTasks.drawTaskForm = function(container_id, data){
 	//if (!data.isEdit)
 	//	html += "<a href='#' class='internalLink' onclick='ogTasks.addNewTaskShowMore()' id='ogTasksPanelATShowMore'><b>" + lang('more options') + "...</b></a>";
 	html += "<a href='#' class='internalLink' onclick='ogTasks.TaskFormShowAll(" + data.taskId + ")' id='ogTasksPanelATShowAll'><b>" + lang('all options') + "...</b></a>";
-	html += "</td><td style='text-align:right; padding-right:30px;'>";	
+	html += "</td><td style='text-align:right; padding-right:30px;'>";
+        html += "<input type='hidden' value='false' name='control_dates' id='control_dates'/>";
 	
 	//Buttons
         if(og.config.multi_assignment == 1){
@@ -424,12 +425,16 @@ ogTasks.GetNewTaskParameters = function(wrapWith,task_id){
 	var parentField = document.getElementById('ogTasksPanelATParentId');
 	if (parentField)
 		parameters["parent_id"] = parentField.value;
+            
+        var controlDates = document.getElementById('control_dates');
+	if (controlDates)
+		parameters["control_dates"] = controlDates.value;
 	
 	var hoursPanel = document.getElementById('ogTasksPanelATHours');
 	if (hoursPanel)
 		parameters["hours"] = hoursPanel.value;
             
-        var minutePanel = document.getElementById('ogTasksPanelATMinutes');
+    var minutePanel = document.getElementById('ogTasksPanelATMinutes');
 	if (minutePanel)
 		parameters["minutes"] = minutePanel.value;
 	
@@ -558,7 +563,13 @@ ogTasks.GetNewTaskParameters = function(wrapWith,task_id){
 }
 
 ogTasks.SubmitNewTask = function(task_id,view_popup){
-	var parameters = this.GetNewTaskParameters('task',task_id);
+        if(typeof window.og.ControlQuickDates == 'function'){
+                var continuing_process = og.ControlQuickDates(task_id);
+                if(!continuing_process){
+                    return false
+                }
+        }
+	var parameters = this.GetNewTaskParameters('task',task_id);        
         var url = '';
 	if (task_id > 0) {
                 if(view_popup){
@@ -602,22 +613,21 @@ ogTasks.SubmitNewTask = function(task_id,view_popup){
 					}
                                         
                                         if (data.subtasks) {
-                                                for (i=0; i<data.subtasks.length; i++) {
-                                                        var task = new ogTasksTask();
-                                                        task.setFromTdata(data.subtasks[i]);
-                                                        if (data.subtasks[i].s) {
-                                                                task.statusOnCreate = data.subtasks[i].s;
-                                                        }
-                                                        task.isCreatedClientSide = true;
-                                                        this.Tasks[this.Tasks.length] = task;
-                                                        var parent = this.getTask(task.parentId);
-                                                        if (parent){
-                                                                task.parent = parent;
-                                                                parent.subtasks[parent.subtasks.length] = task;
-                                                        }
-                                                }
-                                        }
-                                        
+                                            for (i=0; i<data.subtasks.length; i++) {
+                                                    var task = new ogTasksTask();
+                                                    task.setFromTdata(data.subtasks[i]);
+                                                    if (data.subtasks[i].s) {
+                                                            task.statusOnCreate = data.subtasks[i].s;
+                                                    }
+                                                    task.isCreatedClientSide = true;
+                                                    this.Tasks[this.Tasks.length] = task;
+                                                    var parent = this.getTask(task.parentId);
+                                                    if (parent){
+                                                            task.parent = parent;
+                                                            parent.subtasks[parent.subtasks.length] = task;
+                                                    }
+                                            }
+                                        }                                        
 				} else {
 					task.setFromTdata(data.task);
 				}
@@ -630,6 +640,14 @@ ogTasks.SubmitNewTask = function(task_id,view_popup){
 						}
 					}
 				}
+                                
+                                if (data.parent) {
+                                        var parent = this.getTask(data.parent.id);
+                                        if (parent) {
+                                                parent.setFromTdata(data.parent);
+                                        }
+				}
+                                
 				this.redrawGroups = false;
 				this.draw();
 				this.redrawGroups = true;
@@ -669,6 +687,7 @@ ogTasks.buildAssignedToComboStore = function(companies, only_me) {
 				if (usr.isCurrent) usersStore.unshift([usr.id, lang('me')]);
 			}
 		}
+                usersStore[cantU++] = ['0', '--'];
 	}        
 	usersStore = usersStore.concat(comp_array);
 		

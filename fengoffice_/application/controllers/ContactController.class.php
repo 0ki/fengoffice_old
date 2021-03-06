@@ -37,7 +37,6 @@ class ContactController extends ApplicationController {
 		ajx_current("empty");
 		$context = active_context();
 		
-		//$contacts = Contacts::instance()->getContentObjects($context, ObjectTypes::instance()->findById(Contacts::instance()->getObjectTypeId()))->objects;
 		$contacts = Contacts::instance()->listing();
 		$defaultCompany = Contacts::instance()->findById(1);
 		if ($defaultCompany instanceof Contact)  $contacts[] = $defaultCompany ;
@@ -137,7 +136,7 @@ class ContactController extends ApplicationController {
 					ajx_current("empty");
 					flash_error(lang("contact email is required to create user"));
 					return false;
-				}	
+				}
 			
 				//if it will be created from a contact
 				$user_data = array(
@@ -153,14 +152,14 @@ class ContactController extends ApplicationController {
 			} else {
 				// if it is new, and created from admin interface
 				$user_data = array(
-                                  'password_generator' => 'random',
-                                  'company_id' => $company->getId(),
-                                  'timezone' => $company->getTimezone(),
-				  'create_contact' => true ,
-				  'send_email_notification' => true ,
-				  'type' => 'Executive',
-				  'can_manage_time' => true,
-				); // array
+					'password_generator' => 'random',
+					'company_id' => $company->getId(),
+					'timezone' => $company->getTimezone(),
+					'create_contact' => true,
+					'send_email_notification' => true,
+					'type' => 'Executive',
+					'can_manage_time' => true,
+				);
 				tpl_assign('ask_email', true);
 			}
 			
@@ -418,7 +417,6 @@ class ContactController extends ApplicationController {
 		$context = active_context();
 		if (context_type() == 'mixed') {
 			// There are members selected
-			//$content_objects = Contacts::getContentObjects($context, ObjectTypes::findById(Contacts::instance()->getObjectTypeId()), $order, $order_dir, $extra_conditions, null, false,false, $start, $limit);
 			$content_objects = Contacts::instance()->listing(array(
 				"order" => $order,
 				"order_dir" => $order_dir,
@@ -587,18 +585,18 @@ class ContactController extends ApplicationController {
 						"companyName" => $companyName,
 						"website" => $c->getWebpage('personal') ? cleanUrl($c->getWebpageUrl('personal'), false) : '',
 						"jobTitle" => $c->getJobTitle(),
-                        "department" => $c->getDepartment(),
+						"department" => $c->getDepartment(),
 						"email2" => !is_null($personal_emails) && isset($personal_emails[0]) ? $personal_emails[0]->getEmailAddress() : '',
 						"email3" => !is_null($personal_emails) && isset($personal_emails[1]) ? $personal_emails[1]->getEmailAddress() : '',
 						"workWebsite" => $c->getWebpage('work') ? cleanUrl($c->getWebpageUrl('work'), false) : '',
 						"workAddress" => $w_address ? $c->getFullAddress($w_address) : '',
-						"workPhone1" => $c->getPhone('work',true) ? cleanUrl($c->getPhoneNumber('work',true), false) : '',
-						"workPhone2" => $c->getPhone('work') ? cleanUrl($c->getPhoneNumber('work'), false) : '',
+						"workPhone1" => $c->getPhone('work',true) ? $c->getPhoneNumber('work',true) : '',
+						"workPhone2" => $c->getPhone('work') ? $c->getPhoneNumber('work') : '',
 						"homeWebsite" => $c->getWebpage('personal') ? cleanUrl($c->getWebpageUrl('personal'), false) : '',
 						"homeAddress" => $h_address ? $c->getFullAddress($h_address) : '',
-						"homePhone1" => $c->getPhone('home',true) ? cleanUrl($c->getPhoneNumber('home',true), false) : '',
-						"homePhone2" => $c->getPhone('home') ? cleanUrl($c->getPhoneNumber('home'), false) : '',
-						"mobilePhone" =>$c->getPhone('mobile') ? cleanUrl($c->getPhoneNumber('mobile'), false) : '',
+						"homePhone1" => $c->getPhone('home',true) ? $c->getPhoneNumber('home',true) : '',
+						"homePhone2" => $c->getPhone('home') ? $c->getPhoneNumber('home') : '',
+						"mobilePhone" =>$c->getPhone('mobile') ? $c->getPhoneNumber('mobile') : '',
 						"createdOn" => $c->getCreatedOn() instanceof DateTimeValue ? ($c->getCreatedOn()->isToday() ? format_time($c->getCreatedOn()) : format_datetime($c->getCreatedOn())) : '',
 						"createdOn_today" => $c->getCreatedOn() instanceof DateTimeValue ? $c->getCreatedOn()->isToday() : 0,
 						"createdBy" => $c->getCreatedByDisplayName(),
@@ -621,8 +619,8 @@ class ContactController extends ApplicationController {
 						'name' => $c->getObjectName(),
 						'email' => $c->getEmailAddress(),
 						'website' => $c->getWebpage('work') ? cleanUrl($c->getWebpageUrl('work'), false) : '',
-						'workPhone1' => $c->getPhone('work',true) ? cleanUrl($c->getPhoneNumber('work',true), false) : '',
-                        'workPhone2' => $c->getPhone('fax',true) ? cleanUrl($c->getPhoneNumber('fax',true), false) : '',
+						'workPhone1' => $c->getPhone('work',true) ? $c->getPhoneNumber('work',true) : '',
+                        'workPhone2' => $c->getPhone('fax',true) ? $c->getPhoneNumber('fax',true) : '',
                         'workAddress' => $w_address ? $c->getFullAddress($w_address) : '',
 						"companyId" => $c->getId(),
 						"companyName" => $c->getObjectName(),
@@ -837,11 +835,11 @@ class ContactController extends ApplicationController {
 			$contact_data['new_contact_from_mail_div_id'] = array_var($_GET, 'div_id');
 			$contact_data['hf_contacts'] = array_var($_GET, 'hf_contacts');
 		}
-                if($contact_email){
-                    tpl_assign('contact_mail', true);
-                }else{
-                    tpl_assign('contact_mail', false);
-                }
+		if($contact_email){
+			tpl_assign('contact_mail', true);
+		}else{
+			tpl_assign('contact_mail', false);
+		}
 		tpl_assign('contact', $contact);
 		tpl_assign('contact_data', $contact_data);
 		tpl_assign('im_types', $im_types);
@@ -851,7 +849,7 @@ class ContactController extends ApplicationController {
 			ajx_current("empty");
 			try {
 				DB::beginWork();
-				$contact_data['email']= trim ($contact_data['email']);
+				$contact_data['email'] = trim($contact_data['email']);
 				
 				Contacts::validate($contact_data);
 				$newCompany = false;
@@ -874,17 +872,17 @@ class ContactController extends ApplicationController {
 					ApplicationLogs::createLog($company, ApplicationLogs::ACTION_ADD);
 					$newCompany = true;
 				}
-				
+
 				$contact_data['birthday'] = getDateValue($contact_data["birthday"]);
-                                if(isset($contact_data['specify_username'])){
-                                    if($contact_data['user']['username'] != ""){
-                                        $contact_data['name'] = $contact_data['user']['username'];
-                                    }else{
-                                        $contact_data['name'] = $contact_data['first_name']." ".$contact_data['surname'];
-                                    }
-                                }else{
-                                    $contact_data['name'] = $contact_data['first_name']." ".$contact_data['surname'];
-                                }
+				if(isset($contact_data['specify_username'])){
+					if($contact_data['user']['username'] != ""){
+						$contact_data['name'] = $contact_data['user']['username'];
+					}else{
+						$contact_data['name'] = $contact_data['first_name']." ".$contact_data['surname'];
+					}
+				}else{
+					$contact_data['name'] = $contact_data['first_name']." ".$contact_data['surname'];
+				}
 				$contact->setFromAttributes($contact_data);
 
 				if($newCompany)
@@ -1045,37 +1043,37 @@ class ContactController extends ApplicationController {
 		// Populate form fields
 		if(!is_array($contact_data)) {
 			$contact_data = array(
-          	'first_name' => $contact->getFirstName(),
-          	'surname' => $contact->getSurname(), 
-                'username' => $contact->getUsername(),
-          	'department' => $contact->getDepartment(),
-          	'job_title' => $contact->getJobTitle(),
-                'email' => $contact->getEmailAddress(),
-                'email2' => !is_null($personal_emails) && isset($personal_emails[0]) ? $personal_emails[0]->getEmailAddress() : '',
-                'email3' => !is_null($personal_emails) && isset($personal_emails[1])? $personal_emails[1]->getEmailAddress() : '',
+				'first_name' => $contact->getFirstName(),
+				'surname' => $contact->getSurname(),
+				'username' => $contact->getUsername(),
+				'department' => $contact->getDepartment(),
+				'job_title' => $contact->getJobTitle(),
+				'email' => $contact->getEmailAddress(),
+				'email2' => !is_null($personal_emails) && isset($personal_emails[0]) ? $personal_emails[0]->getEmailAddress() : '',
+				'email3' => !is_null($personal_emails) && isset($personal_emails[1])? $personal_emails[1]->getEmailAddress() : '',
 
-                'w_web_page'=> $contact->getWebpageUrl('work'), 
-                'birthday'=> $contact->getBirthday(),	 
-                'w_phone_number'=> $contact->getPhoneNumber('work', true), 
-                'w_phone_number2'=> $contact->getPhoneNumber('work'), 
-                'w_fax_number'=> $contact->getPhoneNumber('fax', true), 
-                'w_assistant_number'=> $contact->getPhoneNumber('assistant'), 
-                'w_callback_number'=> $contact->getPhoneNumber('callback'), 
-
-                'h_web_page'=> $contact->getWebpageUrl('personal'), 
-                'h_phone_number'=> $contact->getPhoneNumber('home', true), 
-                'h_phone_number2'=> $contact->getPhoneNumber('home'),
-                'h_fax_number'=> $contact->getPhoneNumber('fax'), 
-                'h_mobile_number'=> $contact->getPhoneNumber('mobile'),   
-                'h_pager_number'=> $contact->getPhoneNumber('pager'),
-
-                'o_web_page'=> $contact->getWebpageUrl('other'),
-                'o_phone_number'=> $contact->getPhoneNumber('other',true), 
-                'o_phone_number2'=> $contact->getPhoneNumber('other'), 
-
-                'picture_file' => $contact->getPictureFile(),
-          	'timezone' => $contact->getTimezone(),
-          	'company_id' => $contact->getCompanyId(),
+				'w_web_page'=> $contact->getWebpageUrl('work'),
+				'birthday'=> $contact->getBirthday(),
+				'w_phone_number'=> $contact->getPhoneNumber('work', true),
+				'w_phone_number2'=> $contact->getPhoneNumber('work'),
+				'w_fax_number'=> $contact->getPhoneNumber('fax', true),
+				'w_assistant_number'=> $contact->getPhoneNumber('assistant'),
+				'w_callback_number'=> $contact->getPhoneNumber('callback'),
+				
+				'h_web_page'=> $contact->getWebpageUrl('personal'),
+				'h_phone_number'=> $contact->getPhoneNumber('home', true),
+				'h_phone_number2'=> $contact->getPhoneNumber('home'),
+				'h_fax_number'=> $contact->getPhoneNumber('fax'),
+				'h_mobile_number'=> $contact->getPhoneNumber('mobile'),
+				'h_pager_number'=> $contact->getPhoneNumber('pager'),
+				
+				'o_web_page'=> $contact->getWebpageUrl('other'),
+				'o_phone_number'=> $contact->getPhoneNumber('other',true),
+				'o_phone_number2'=> $contact->getPhoneNumber('other'),
+				
+				'picture_file' => $contact->getPictureFile(),
+                'timezone' => $contact->getTimezone(),
+                'company_id' => $contact->getCompanyId(),
       	    ); // array
 			
       	    $w_address = $contact->getAddress('work');
@@ -1114,8 +1112,8 @@ class ContactController extends ApplicationController {
       	    $default_im = $contact->getMainImType();
       	    $contact_data['default_im'] = $default_im instanceof ImType ? $default_im->getId() : '';
 		} // if
-                
-                tpl_assign('isEdit', array_var($_GET, 'isEdit',false));
+		
+		tpl_assign('isEdit', array_var($_GET, 'isEdit',false));
 		tpl_assign('contact', $contact);
 		tpl_assign('contact_data', $contact_data);
 		tpl_assign('im_types', $im_types);
@@ -1123,28 +1121,6 @@ class ContactController extends ApplicationController {
 		
 		//Contact Submit
 		if(is_array(array_var($_POST, 'contact'))) {
-			//	MANAGE CONCURRENCE WHILE EDITING
-			/* FIXME or REMOVEME			
-			$upd = array_var($_POST, 'updatedon');
-			if ($upd && $contact->getUpdatedOn()->getTimestamp() > $upd && !array_var($_POST,'merge-changes') == 'true')
-			{
-				ajx_current('empty');
-				evt_add("handle edit concurrence", array(
-					"updatedon" => $contact->getUpdatedOn()->getTimestamp(),
-					"genid" => array_var($_POST,'genid')
-				));
-				return;
-			}
-			if (array_var($_POST,'merge-changes') == 'true')
-			{					
-				$this->setTemplate('card');
-				$new_contact = Contacts::findById($contact->getId());
-				ajx_set_panel(lang ('tab name',array('name'=>$new_contact->getObjectName())));
-				ajx_extra_data(array("title" => $new_contact->getObjectName(), 'icon'=>'ico-contact'));
-				ajx_set_no_toolbar(true);
-				return;
-			}
-			*/
 			
 			try {
 				DB::beginWork();
@@ -1175,15 +1151,15 @@ class ContactController extends ApplicationController {
 				}
 				
 				$contact_data['birthday'] = getDateValue($contact_data["birthday"]);
-                                if(isset($contact_data['specify_username'])){
-                                    if($contact_data['user']['username'] != ""){
-                                        $contact_data['name'] = $contact_data['user']['username'];
-                                    }else{
-                                        $contact_data['name'] = $contact_data['first_name']." ".$contact_data['surname'];
-                                    }
-                                }else{
-                                    $contact_data['name'] = $contact_data['first_name']." ".$contact_data['surname'];
-                                }
+				if(isset($contact_data['specify_username'])){
+					if($contact_data['user']['username'] != ""){
+						$contact_data['name'] = $contact_data['user']['username'];
+					}else{
+						$contact_data['name'] = $contact_data['first_name']." ".$contact_data['surname'];
+					}
+				}else{
+					$contact_data['name'] = $contact_data['first_name']." ".$contact_data['surname'];
+				}
 				
 				$contact->setFromAttributes($contact_data);
 				
@@ -1663,10 +1639,10 @@ class ContactController extends ApplicationController {
 							$contact = Contacts::findOne(array(
 								"conditions" => "first_name = ".$fname." AND surname = ".$lname." $email_cond",
 								'join' => array(
-                                    'table' => ContactEmails::instance()->getTableName(),
-                                    'jt_field' => 'contact_id',
-                                    'e_field' => 'object_id',
-							)));
+                                                                    'table' => ContactEmails::instance()->getTableName(),
+                                                                    'jt_field' => 'contact_id',
+                                                                    'e_field' => 'object_id',
+                                                                )));
 							$log_action = ApplicationLogs::ACTION_EDIT;
 							if (!$contact) {
 								$contact = new Contact();
@@ -1688,11 +1664,42 @@ class ContactController extends ApplicationController {
 								} else {
 									$contact_data['company_id'] = 0;
 								}
+                                                                $contact_data['birthday'] = $contact_data["o_birthday"];
 								$contact_data['name'] = $contact_data['first_name']." ".$contact_data['surname'];
 								$contact->setFromAttributes($contact_data);
 								$contact->save();
 
-								$contact->addEmail(array_var($contact_data, "email"),'personal');
+								//Home form
+                                                                if($contact_data['h_address'] != "")
+                                                                    $contact->addAddress($contact_data['h_address'], $contact_data['h_city'], $contact_data['h_state'], $contact_data['h_country'], $contact_data['h_zipcode'], 'home');
+                                                                if($contact_data['h_phone_number'] != "") $contact->addPhone($contact_data['h_phone_number'], 'home', true);
+                                                                if($contact_data['h_phone_number2'] != "") $contact->addPhone($contact_data['h_phone_number2'], 'home');
+                                                                if($contact_data['h_mobile_number'] != "") $contact->addPhone($contact_data['h_mobile_number'], 'mobile');
+                                                                if($contact_data['h_fax_number'] != "") $contact->addPhone($contact_data['h_fax_number'], 'fax');
+                                                                if($contact_data['h_pager_number'] != "") $contact->addPhone($contact_data['h_pager_number'], 'pager');
+                                                                if($contact_data['h_web_page'] != "") $contact->addWebpage($contact_data['h_web_page'], 'personal');
+
+                                                                //Work form
+                                                                if($contact_data['w_address'] != "")
+                                                                    $contact->addAddress($contact_data['w_address'], $contact_data['w_city'], $contact_data['w_state'], $contact_data['w_country'], $contact_data['w_zipcode'], 'work');
+                                                                if($contact_data['w_phone_number'] != "") $contact->addPhone($contact_data['w_phone_number'], 'work', true);
+                                                                if($contact_data['w_phone_number2'] != "") $contact->addPhone($contact_data['w_phone_number2'], 'work');
+                                                                if($contact_data['w_assistant_number'] != "") $contact->addPhone($contact_data['w_assistant_number'], 'assistant');
+                                                                if($contact_data['w_callback_number'] != "") $contact->addPhone($contact_data['w_callback_number'], 'callback');
+                                                                if($contact_data['w_fax_number'] != "") $contact->addPhone($contact_data['w_fax_number'], 'fax', true);
+                                                                if($contact_data['w_web_page'] != "") $contact->addWebpage($contact_data['w_web_page'], 'work');
+
+                                                                //Other form
+                                                                if($contact_data['o_address'] != "")
+                                                                    $contact->addAddress($contact_data['o_address'], $contact_data['o_city'], $contact_data['o_state'], $contact_data['o_country'], $contact_data['o_zipcode'], 'other');
+                                                                if($contact_data['o_phone_number'] != "") $contact->addPhone($contact_data['o_phone_number'], 'other', true);
+                                                                if($contact_data['o_phone_number2'] != "") $contact->addPhone($contact_data['o_phone_number2'], 'other');
+                                                                if($contact_data['o_web_page'] != "") $contact->addWebpage($contact_data['o_web_page'], 'other');
+
+                                                                //Emails and instant messaging form
+                                                                if($contact_data['email'] != "") $contact->addEmail($contact_data['email'], 'personal', true);
+                                                                if($contact_data['email2'] != "") $contact->addEmail($contact_data['email2'], 'personal');
+                                                                if($contact_data['email3'] != "") $contact->addEmail($contact_data['email3'], 'personal');
 
 								ApplicationLogs::createLog($contact, null, $log_action);
 								$import_result['import_ok'][] = $contact_data;
@@ -1830,7 +1837,7 @@ class ContactController extends ApplicationController {
 			$filename = rand().'.tmp';
 			$handle = fopen(ROOT.'/tmp/'.$filename, 'wb');
 			fwrite($handle, $titles);
-			
+			$conditions = '';
 			$ids_sql = ($ids)? " AND id IN (".$ids.") " : "";
 			if (array_var($_SESSION, 'import_type', 'contact') == 'contact') {
                                 $conditions .= ($conditions == "" ? "" : " AND ") . "`archived_by_id` = 0" . ($conditions ? " AND $conditions" : "");
@@ -1918,7 +1925,7 @@ class ContactController extends ApplicationController {
 		if (isset($checked['w_assistant_number']) && $checked['w_assistant_number'] == 'checked') $str .= self::build_csv_field($contact->getPhoneNumber('assistant'));
 		if (isset($checked['w_callback_number']) && $checked['w_callback_number'] == 'checked') $str .= self::build_csv_field($contact->getPhoneNumber('callback'));
 		
-		if (isset($checked['h_web_page']) && $checked['h_web_page'] == 'checked') $str .= self::build_csv_field($contact->getWebPageUrl('home'));
+		if (isset($checked['h_web_page']) && $checked['h_web_page'] == 'checked') $str .= self::build_csv_field($contact->getWebPageUrl('personal'));
 		$home_address = $contact->getAddress('home');
 		if ($home_address){
 			if (isset($checked['h_address']) && $checked['h_address'] == 'checked') $str .= self::build_csv_field($home_address->getStreet());
@@ -1949,9 +1956,9 @@ class ContactController extends ApplicationController {
 		
 		$personal_emails = $contact->getContactEmails('personal');
 		if (isset($checked['email2']) && $checked['email2'] == 'checked' && !is_null($personal_emails) && isset($personal_emails[0])) 
-			$str .= self::build_csv_field($personal_emails[0]);
+			$str .= self::build_csv_field($personal_emails[0]->getEmailAddress());
 		if (isset($checked['email3']) && $checked['email3'] == 'checked' && !is_null($personal_emails) && isset($personal_emails[1])) 
-			$str .= self::build_csv_field($personal_emails[1]);
+			$str .= self::build_csv_field($personal_emails[1]->getEmailAddress());
 		if (isset($checked['job_title']) && $checked['job_title'] == 'checked') $str .= self::build_csv_field($contact->getJobTitle());
 		if (isset($checked['department']) && $checked['department'] == 'checked') $str .= self::build_csv_field($contact->getDepartment());
 		
@@ -2046,11 +2053,42 @@ class ContactController extends ApplicationController {
                                                     } else {
                                                             $contact_data['company_id'] = 0;
                                                     }
+                                                    $contact_data['birthday'] = $contact_data["o_birthday"];
                                                     $contact_data['name'] = $contact_data['first_name']." ".$contact_data['surname'];
                                                     $contact->setFromAttributes($contact_data);
                                                     $contact->save();
 
-                                                    $contact->addEmail(array_var($contact_data, "email"),'personal');
+                                                    //Home form
+                                                    if($contact_data['h_address'] != "")
+                                                        $contact->addAddress($contact_data['h_address'], $contact_data['h_city'], $contact_data['h_state'], $contact_data['h_country'], $contact_data['h_zipcode'], 'home');
+                                                    if($contact_data['h_phone_number'] != "") $contact->addPhone($contact_data['h_phone_number'], 'home', true);
+                                                    if($contact_data['h_phone_number2'] != "") $contact->addPhone($contact_data['h_phone_number2'], 'home');
+                                                    if($contact_data['h_mobile_number'] != "") $contact->addPhone($contact_data['h_mobile_number'], 'mobile');
+                                                    if($contact_data['h_fax_number'] != "") $contact->addPhone($contact_data['h_fax_number'], 'fax');
+                                                    if($contact_data['h_pager_number'] != "") $contact->addPhone($contact_data['h_pager_number'], 'pager');
+                                                    if($contact_data['h_web_page'] != "") $contact->addWebpage($contact_data['h_web_page'], 'personal');
+
+                                                    //Work form
+                                                    if($contact_data['w_address'] != "")
+                                                        $contact->addAddress($contact_data['w_address'], $contact_data['w_city'], $contact_data['w_state'], $contact_data['w_country'], $contact_data['w_zipcode'], 'work');
+                                                    if($contact_data['w_phone_number'] != "") $contact->addPhone($contact_data['w_phone_number'], 'work', true);
+                                                    if($contact_data['w_phone_number2'] != "") $contact->addPhone($contact_data['w_phone_number2'], 'work');
+                                                    if($contact_data['w_assistant_number'] != "") $contact->addPhone($contact_data['w_assistant_number'], 'assistant');
+                                                    if($contact_data['w_callback_number'] != "") $contact->addPhone($contact_data['w_callback_number'], 'callback');
+                                                    if($contact_data['w_fax_number'] != "") $contact->addPhone($contact_data['w_fax_number'], 'fax', true);
+                                                    if($contact_data['w_web_page'] != "") $contact->addWebpage($contact_data['w_web_page'], 'work');
+
+                                                    //Other form
+                                                    if($contact_data['o_address'] != "")
+                                                        $contact->addAddress($contact_data['o_address'], $contact_data['o_city'], $contact_data['o_state'], $contact_data['o_country'], $contact_data['o_zipcode'], 'other');
+                                                    if($contact_data['o_phone_number'] != "") $contact->addPhone($contact_data['o_phone_number'], 'other', true);
+                                                    if($contact_data['o_phone_number2'] != "") $contact->addPhone($contact_data['o_phone_number2'], 'other');
+                                                    if($contact_data['o_web_page'] != "") $contact->addWebpage($contact_data['o_web_page'], 'other');
+
+                                                    //Emails and instant messaging form
+                                                    if($contact_data['email'] != "") $contact->addEmail($contact_data['email'], 'personal', true);
+                                                    if($contact_data['email2'] != "") $contact->addEmail($contact_data['email2'], 'personal');
+                                                    if($contact_data['email3'] != "") $contact->addEmail($contact_data['email3'], 'personal');
 
                                                     ApplicationLogs::createLog($contact, null, $log_action);
                                                     $import_result['import_ok'][] = $contact_data;
@@ -2080,9 +2118,13 @@ class ContactController extends ApplicationController {
                 return;
             }
             // parse VCard blocks
-            $in_block = true;
+            $in_block = false;
             $results = array();
             while (($line = fgets($handle)) !== false) {
+                if (preg_match('/^.+;encoding\s?=\s?quoted[^a-z0-9]?printable\s?:/i', $line)) {
+                    $line = quoted_printable_decode($line);
+                }
+                $line = preg_replace('/;charset=[-a-z0-9.]+(:|;)/i',"$\1",$line);
                 if (preg_match('/^BEGIN:VCARD/', $line)) {
                     // START OF CONTACT
                     $in_block = true;
@@ -2090,10 +2132,9 @@ class ContactController extends ApplicationController {
                 } else if (preg_match('/^END:VCARD/', $line)) {
                     // END OF CONTACT
                     $in_block = false;
-                    if (isset($photo_data))
                     if (isset($photo_data)) {
-                        $filename = ROOT."/tmp/".rand().".$photo_type";
-                        $f_handle = fopen($filename, "wb");
+                        $filename = ROOT.'/tmp/'.rand().".$photo_type";
+                        $f_handle = fopen($filename, 'wb');
                         fwrite($f_handle, base64_decode($photo_data));
                         fclose($f_handle);
                         $block_data['photo_tmp_filename'] = $filename;
@@ -2101,118 +2142,201 @@ class ContactController extends ApplicationController {
                     unset($photo_data);
                     unset($photo_enc);
                     unset($photo_type);
+                    
+                    unset($block_data['w_addr_is_set']);
+                    unset($block_data['h_addr_is_set']);
+                    unset($block_data['o_addr_is_set']);
 
                     $results[] = $block_data;
                     if ($only_first_record && count($results) > 0) return $results;
-                } else if (preg_match('/^N(:|;charset=[-a-zA-Z0-9.]+:)([^;]*);([^;]*)/i', $line, $matches)) {
-                    // NAME
-                    $block_data["first_name"] = trim($matches[count($matches)-1]);
-                    $block_data["surname"] = trim($matches[count($matches)-2]);
-                } else if (preg_match('/^ORG(:|;charset=[-a-zA-Z0-9.]+:)([^;]*)/i', $line, $matches)) {
-                    // ORGANIZATION
-                    $block_data["company_name"] = str_replace(array("\r\n", "\n", "\r", "\t", '\r\n', '\n', '\r', '\t'), " ", trim($matches[2]));
-                } else if (preg_match('/^NOTE(:|;charset=[-a-zA-Z0-9.]+:)([^;]*)/i', $line, $matches)) {
-                    // NOTES
-                    $block_data["notes"] = trim($matches[count($matches)-1]);
-                } else if (preg_match('/EMAIL;type=(PREF,)?INTERNET(,PREF)?(;type=(HOME|WORK))?(;type=PREF)?:([-a-zA-Z0-9_.]+@[-a-zA-Z0-9.]+)/i', $line, $matches)) {
-                    // EMAIL
-                    $email = trim($matches[count($matches)-1]);
-                    if (!isset($block_data["email"])) 
-                            $block_data["email"] = $email;
-                    else if (!isset($block_data["email2"])) 
-                            $block_data["email2"] = $email;
-                    else if (!isset($block_data["email3"])) 
-                            $block_data["email3"] = $email;
+                } else if (preg_match('/^\s*N(:|;.*?:)(.+)/i', $line, $matches)) {
+                        // NAME
+                        $name = str_replace(array("\r\n", "\n", "\r", "\t", '\r\n', '\n', '\r', '\t'), ' ', trim($matches[2]));
+                        if (strpos($name, '\\') !== FALSE) {
+                                $name = preg_replace('/^;/', ' ;', $name);
+                                $name = preg_replace('/(.*?[^\\](?:\\\\)*);;/', "\1; ;", $name);
+                                preg_match_all('/(.*?[^\\;](?:\\\\)*)(?:;|$)/', $name, $name, PREG_PATTERN_ORDER);
+                                $name = $name[1];
+                        } else {
+                                $name = explode(';', $name);
+                        }
+                        $block_data['first_name'] = str_replace(array("\r\n", "\n", "\r", "\t", '\r\n', '\n', '\r', '\t'), ' ', trim($name[1]));
+                        $block_data['surname'] = str_replace(array("\r\n", "\n", "\r", "\t", '\r\n', '\n', '\r', '\t'), ' ', trim($name[0]));
+                } else if (preg_match('/^\s*ORG(:|;.*?:)([^;]*)/i', $line, $matches)) {
+                        // ORGANIZATION
+                        $block_data['company_name'] = str_replace(array("\r\n", "\n", "\r", "\t", '\r\n', '\n', '\r', '\t'), ' ', trim($matches[2]));
+                } else if (preg_match('/^\s*NOTE(:|;.*?:)(.+)/i', $line, $matches)) {
+                        // NOTES
+                        $block_data['notes'] = trim($matches[2]);
+                } else if (preg_match('/^\s*EMAIL(:|;.*?:)([-a-z0-9_.]+@[-a-z0-9.]+)/i', $line, $matches)) {
+                        // EMAIL
+                        $email = trim($matches[2]);
+                        if (!isset($block_data['email'])) 
+                                $block_data['email'] = $email;
+                        else if (!isset($block_data['email2'])) 
+                                $block_data['email2'] = $email;
+                        else if (!isset($block_data['email3'])) 
+                                $block_data['email3'] = $email;
 
-                } else if (preg_match('/URL(;type=(HOME|WORK))?.*?:(.+)/i', $line, $matches)) {
-                    // WEB URL
-                    $url = trim($matches[3]);
-                    $url = str_replace(array("\r\n", "\n", "\r", "\t", '\r\n', '\n', '\r', '\t'), " ", $url);
-                    if ($matches[2] == "HOME") {
-                            $block_data['h_web_page'] = $url;
-                    } else if ($matches[2] == "WORK") {
-                            $block_data['w_web_page'] = $url;
-                    } else {
-                            $block_data['o_web_page'] = $url;
-                    }
-                } else if (preg_match('/TEL(;type=(HOME|WORK|CELL|FAX)[,A-Z]*)?.*:(.+)/i', $line, $matches)) {
+                } else if (preg_match('/^\s*URL(:|;.*?:)(.+)/i', $line, $matches)) {
+                        // WEB URL
+                        $url = str_replace(array("\r\n", "\n", "\r", "\t", '\r\n', '\n', '\r', '\t'), ' ', trim($matches[2]));
+                        $matches[1] = preg_replace('/\s*,\s*/',';', $matches[1]);
+                        $matches[1] = str_ireplace(array('TYPE=','"','\''),'',$matches[1]);
+                        preg_match_all('/[^;:]+/', $matches[1], $types, PREG_PATTERN_ORDER);
+                        $types = $types[0];
+
+                        if (!isset($block_data['w_web_page']) && in_array('WORK', $types)) {
+                                $block_data['w_web_page'] = $url;
+                        } else if (!isset($block_data['h_web_page']) && in_array('HOME', $types)) {
+                                $block_data['h_web_page'] = $url;
+                        } else if (!isset($block_data['o_web_page'])) {
+                                $block_data['o_web_page'] = $url;
+                        } else if (!isset($block_data['h_web_page'])) {
+                                $block_data['h_web_page'] = $url;
+                        } else if (!isset($block_data['w_web_page'])) {
+                                $block_data['w_web_page'] = $url;
+                        }
+                } else if (preg_match('/^\s*TEL(:|;.*?:)(.+)/i', $line, $matches)) {
                     // PHONE
-                    $phone = trim($matches[3]);
-                    $phone = str_replace(array("\r\n", "\n", "\r", "\t", '\r\n', '\n', '\r', '\t'), " ", $phone);
-                    if ($matches[2] == "HOME") {
-                        $block_data["h_phone_number"] = $phone;
-                    } else if ($matches[2] == "CELL") {
-                        $block_data["h_mobile_number"] = $phone;
-                    } else if ($matches[2] == "WORK") {
-                        $block_data["w_phone_number"] = $phone;
-                    } else if ($matches[2] == "FAX") {
-                        $block_data["w_fax_number"] = $phone;
-                    } else {
-                        $block_data["o_phone_number"] = $phone;
+                    $phone = str_replace(array("\r\n", "\n", "\r", "\t", '\r\n', '\n', '\r', '\t'), ' ', trim($matches[2]));
+                    $matches[1] = preg_replace('/\s*,\s*/',';', $matches[1]);
+                    $matches[1] = str_ireplace(array('TYPE=','"','\''),'',$matches[1]);
+                    preg_match_all('/[^;:]+/', $matches[1], $types, PREG_PATTERN_ORDER);
+                    $types = $types[0];
+
+                    if (in_array('FAX', $types) || in_array('FACSIMILE', $types)) {
+                            if (!isset($block_data['w_fax_number']) && in_array('WORK', $types)) {
+                                    $block_data['w_fax_number'] = $phone;
+                            } else if (!isset($block_data['h_fax_number']) && in_array('HOME', $types)) {
+                                    $block_data['h_fax_number'] = $phone;
+                            } else if (!isset($block_data['o_fax_number'])) {
+                                    $block_data['o_fax_number'] = $phone;
+                            } else if (!isset($block_data['h_fax_number'])) {
+                                    $block_data['h_fax_number'] = $phone;
+                            } else if (!isset($block_data['w_fax_number'])) {
+                                    $block_data['w_fax_number'] = $phone;
+                            }
+                    } else if (!isset($block_data['h_mobile_number']) && (in_array('CELL', $types) || in_array('MOBILE', $types) || in_array('CELLULAR', $types))) {
+                            $block_data['h_mobile_number'] = $phone;
+                    } else if (!isset($block_data['h_pager_number']) && (in_array('PAGER', $types) || in_array('BEEPER', $types))) {
+                            $block_data['h_pager_number'] = $phone;
+                    } else if (!isset($block_data['w_assistant_number']) && (in_array('X-ASSISTANT', $types) || in_array('ASST', $types))) {
+                            $block_data['w_assistant_number'] = $phone;
+                    } else if (!isset($block_data['w_callback_number']) && (in_array('X-CALLBACK', $types))) {
+                            $block_data['w_callback_number'] = $phone;
+
+                    } else if (!isset($block_data['w_phone_number']) && in_array('WORK', $types)) {
+                                    $block_data['w_phone_number'] = $phone;
+                    } else if (!isset($block_data['w_phone_number2']) && in_array('WORK', $types)) {
+                                    $block_data['w_phone_number2'] = $phone;
+                    } else if (!isset($block_data['h_phone_number']) && in_array('HOME', $types)) {
+                                    $block_data['h_phone_number'] = $phone;
+                    } else if (!isset($block_data['h_phone_number2']) && in_array('HOME', $types)) {
+                                    $block_data['h_phone_number2'] = $phone;
+                    } else if (!isset($block_data['o_phone_number'])) {
+                                    $block_data['o_phone_number'] = $phone;
+                    } else if (!isset($block_data['o_phone_number2'])) {
+                                    $block_data['o_phone_number2'] = $phone;
+                    } else if (!isset($block_data['h_phone_number'])) {
+                                    $block_data['h_phone_number'] = $phone;
+                    } else if (!isset($block_data['w_phone_number'])) {
+                                    $block_data['w_phone_number'] = $phone;
+                    } else if (!isset($block_data['h_phone_number2'])) {
+                                    $block_data['h_phone_number2'] = $phone;
+                    } else if (!isset($block_data['w_phone_number2'])) {
+                                    $block_data['w_phone_number2'] = $phone;
+
                     }
-                    } else if (preg_match('/ADR;type=(HOME|WORK|[A-Z0-9]*)[,A-Z]*(:|;charset=[-a-zA-Z0-9.]+:|;type=pref:);;([^;]*);([^;]*);([^;]*);([^;]*);([^;]*)/i', $line, $matches)) {
-                    // ADDRESS
-                    // $matches is
-                    // [1] <-- street
-                    // [2] <-- city
-                    // [3] <-- state
-                    // [4] <-- zip
-                    // [5] <-- country
-                    $addr = array_slice($matches, count($matches)-5);
-                    foreach ($addr as $k=>$v) $addr[$k] = str_replace(array("\r\n", "\n", "\r", "\t", '\r\n', '\n', '\r', '\t'), " ", trim($v));
-                    if ($matches[1] == "HOME") {
-                        $block_data["h_address"] = $addr[0];
-                        $block_data["h_city"] = $addr[1];
-                        $block_data["h_state"] = $addr[2];
-                        $block_data["h_zipcode"] = $addr[3];
-                        $block_data["h_country"] = CountryCodes::getCountryCodeByName($addr[4]);
-                    } else if ($matches[1] == "WORK") {
-                        $block_data["w_address"] = $addr[0];
-                        $block_data["w_city"] = $addr[1];
-                        $block_data["w_state"] = $addr[2];
-                        $block_data["w_zipcode"] = $addr[3];
-                        $block_data["w_country"] = CountryCodes::getCountryCodeByName($addr[4]);
+                } else if (preg_match('/^\s*ADR(:|;.*?:)(.+)/i', $line, $matches)) {
+                    // ADDRESS		
+                    $matches[1] = preg_replace('/\s*,\s*/',';', $matches[1]);
+                    $matches[1] = str_ireplace(array('TYPE=','"','\''),'',$matches[1]);
+                    preg_match_all('/[^;:]+/', $matches[1], $types, PREG_PATTERN_ORDER);
+                    $types = $types[0];
+
+                    $matches[2] = str_replace(array("\r\n", "\n", "\r", "\t", '\r\n', '\n', '\r', '\t'), ' ', trim($matches[2]));
+                    if (strpos($matches[2], '\\') !== FALSE) {
+                            $matches[2] = preg_replace('/^;/', ' ;', $matches[2]);
+                            $matches[2] = preg_replace('/(.*?[^\\](?:\\\\)*);;/', "\1; ;", $matches[2]);
+                            preg_match_all('/(.*?[^\\;](?:\\\\)*)(?:;|$)/', $matches[2], $addr, PREG_PATTERN_ORDER);
+                            $addr = $addr[1];
                     } else {
-                        $block_data["o_address"] = $addr[0];
-                        $block_data["o_city"] = $addr[1];
-                        $block_data["o_state"] = $addr[2];
-                        $block_data["o_zipcode"] = $addr[3];
-                        $block_data["o_country"] = CountryCodes::getCountryCodeByName($addr[4]);
+                            $addr = explode(';', $matches[2]);
                     }
-                } else if (preg_match('/^BDAY[;value=date]*:([0-9]+)-([0-9]+)-([0-9]+)/i', $line, $matches)) {
+
+                    if (!isset($block_data['w_addr_is_set']) && in_array('WORK', $types)) {
+                        $block_data['w_address'] = $addr[0];
+                        $block_data['w_city'] = $addr[1];
+                        $block_data['w_state'] = $addr[2];
+                        $block_data['w_zipcode'] = $addr[3];
+                        $block_data['w_country'] = CountryCodes::getCountryCodeByName($addr[4]);
+                        $block_data['w_addr_is_set'] = true;
+                    } else if (!isset($block_data['h_addr_is_set']) && in_array('HOME', $types)) {
+                        $block_data['h_address'] = $addr[0];
+                        $block_data['h_city'] = $addr[1];
+                        $block_data['h_state'] = $addr[2];
+                        $block_data['h_zipcode'] = $addr[3];
+                        $block_data['h_country'] = CountryCodes::getCountryCodeByName($addr[4]);
+                        $block_data['h_addr_is_set'] = true;
+                    } else if (!isset($block_data['o_addr_is_set'])) {
+                        $block_data['o_address'] = $addr[0];
+                        $block_data['o_city'] = $addr[1];
+                        $block_data['o_state'] = $addr[2];
+                        $block_data['o_zipcode'] = $addr[3];
+                        $block_data['o_country'] = CountryCodes::getCountryCodeByName($addr[4]);
+                        $block_data['o_addr_is_set'] = true;
+                    } else if (!isset($block_data['h_addr_is_set'])) {
+                        $block_data['h_address'] = $addr[0];
+                        $block_data['h_city'] = $addr[1];
+                        $block_data['h_state'] = $addr[2];
+                        $block_data['h_zipcode'] = $addr[3];
+                        $block_data['h_country'] = CountryCodes::getCountryCodeByName($addr[4]);
+                        $block_data['h_addr_is_set'] = true;
+                    } else if (!isset($block_data['w_addr_is_set'])) {
+                        $block_data['w_address'] = $addr[0];
+                        $block_data['w_city'] = $addr[1];
+                        $block_data['w_state'] = $addr[2];
+                        $block_data['w_zipcode'] = $addr[3];
+                        $block_data['w_country'] = CountryCodes::getCountryCodeByName($addr[4]);
+                        $block_data['w_addr_is_set'] = true;
+                    }
+                } else if (preg_match('/^\s*BDAY[;value=date]*:([0-9]+)-([0-9]+)-([0-9]+)/i', $line, $matches)) {
                     // BIRTHDAY
                     // $matches[1]  <-- year     $matches[2]  <-- month    $matches[3]  <-- day
-                    $block_data["o_birthday"] = $matches[1] . '-' . $matches[2] . '-' . $matches[3] . "00:00:00";
-
-                } else if (preg_match('/TITLE(:|;charset=[-a-zA-Z0-9.]+:)(.*)/i', $line, $matches)) {
+                    $block_data['o_birthday'] = $matches[1] . '-' . $matches[2] . '-' . $matches[3] . '00:00:00';
+                } else if (preg_match('/^\s*TITLE(:|;.*?:)(.+)/i', $line, $matches)) {
                     // JOB TITLE
-                    $block_data["job_title"] = str_replace(array("\r\n", "\n", "\r", "\t", '\r\n', '\n', '\r', '\t'), " ", trim($matches[2]));
-
-                } else if (preg_match('/PHOTO(;ENCODING=(b|BASE64)?(;TYPE=([-a-zA-Z.]+))|;VALUE=uri):(.*)/i', $line, $matches)) {
+                    $block_data['job_title'] = str_replace(array("\r\n", "\n", "\r", "\t", '\r\n', '\n', '\r', '\t'), ' ', trim($matches[2]));
+                } else if (preg_match('/^\s*X-DEPARTMENT(:|;.*?:)(.+)/i', $line, $matches)) {
+                    // X-DEPARTMENT
+                    $block_data['department'] = str_replace(array("\r\n", "\n", "\r", "\t", '\r\n', '\n', '\r', '\t'), ' ', trim($matches[2]));
+                } else if (preg_match('/^\s*PHOTO(;ENCODING=(b|BASE64)?(;TYPE=([-a-zA-Z.]+))|;VALUE=uri):(.*)/i', $line, $matches)) {
 
                     foreach ($matches as $k => $v) {
-                            if (str_starts_with(strtoupper($v), ";ENCODING")) $enc_idx = $k+1;
-                            if (str_starts_with(strtoupper($v), ";TYPE")) $type_idx = $k+1;
-                            if (str_starts_with(strtoupper($v), ";VALUE=uri")) $uri_idx = $k+1;
+                            if (str_starts_with(strtoupper($v), ';ENCODING')) $enc_idx = $k+1;
+                            if (str_starts_with(strtoupper($v), ';TYPE')) $type_idx = $k+1;
+                            if (str_starts_with(strtoupper($v), ';VALUE=uri')) $uri_idx = $k+1;
                     }
                     if (isset($enc_idx) && isset($type_idx)) {
                             $photo_enc = $matches[$enc_idx];
                             $photo_type = $matches[$type_idx];
-                            $photo_data = str_replace(array("\r\n", "\n", "\r", "\t"), "", trim($matches[count($matches)-1]));
+                            $photo_data = str_replace(array("\r\n", "\n", "\r", "\t"), '', trim($matches[count($matches)-1]));
                     } else if (isset($uri_idx)) {
                             $uri = trim($matches[count($matches)-1]);            		
-                            $photo_type = substr($uri, strrpos($uri, "."));
+                            $photo_type = substr($uri, strrpos($uri, '.'));
                             $data = file_get_contents(urldecode($uri));
-                            $filename = ROOT."/tmp/".rand().".$photo_type";
-                            $f_handle = fopen($filename, "wb");
+                            $filename = ROOT.'/tmp/'.rand().".$photo_type";
+			    $f_handle = fopen($filename, 'wb');
                             fwrite($f_handle, $data);
                             fclose($f_handle);
                             $block_data['photo_tmp_filename'] = $filename;
                     }
                 } else {
                     if (isset($photo_data) && isset($enc_idx) && isset($type_idx)) {
-                            $photo_data .= str_replace(array("\r\n", "\n", "\r", "\t"), "", trim($line));
+                            $photo_data .= str_replace(array("\r\n", "\n", "\r", "\t"), '', trim($line));
                     }
+                    // unknown / ignored VCard field
                 }
                 unset($matches);
             }
@@ -2223,53 +2347,69 @@ class ContactController extends ApplicationController {
     
     private function build_vcard($contacts) {
     	$vcard = "";
-
     	foreach($contacts as $contact) {
-    		$vcard .= "BEGIN:VCARD\nVERSION:3.0\n";
-    		
+    		$vcard .= "BEGIN:VCARD\nVERSION:3.0\n";    		
     		$vcard .= "N:" . $contact->getSurname() . ";" . $contact->getFirstname() . "\n";
     		$vcard .= "FN:" . $contact->getFirstname() . " " . $contact->getSurname() . "\n";
     		if ($contact->getCompany() instanceof Contact)
     			$vcard .= "ORG:" . $contact->getCompany()->getObjectName() . "\n";
     		if ($contact->getJobTitle())
     			$vcard .= "TITLE:" . $contact->getJobTitle() . "\n";
+                if ($contact->getDepartment())
+                        $vcard .= "X-DEPARTMENT:" . $contact->getDepartment() . "\n";
     		if ($contact->getBirthday() instanceof DateTimeValue)
     			$vcard .= "BDAY:" . $contact->getBirthday()->format("Y-m-d") . "\n";
-    		$haddress = $contact->getAddress('home');
-    		if ($haddress)
-    			$vcard .= "ADR;TYPE=HOME:;;" . $haddress->getStreet() .";". $haddress->getCity() .";". $haddress->getState() .";". $haddress->getZipcode() .";". $haddress->getCountryName() . "\n";
-    		$waddress = $contact->getAddress('work');
-    		if ($waddress)
-    			$vcard .= "ADR;TYPE=WORK:;;" . $waddress->getStreet() .";". $waddress->getCity() .";". $waddress->getState() .";". $waddress->getZipcode() .";". $waddress->getCountryName() . "\n";
-    		$oaddress = $contact->getAddress('other');
-    		if ($oaddress)
-    			$vcard .= "ADR;TYPE=INTL:;;" . $oaddress->getStreet() .";". $oaddress->getCity() .";". $oaddress->getState() .";". $oaddress->getZipcode() .";". $oaddress->getCountryName() . "\n";
-    		if ($contact->getPhoneNumber('home',true))
+                //HOME
+                if ($contact->getPhoneNumber('home',true))
     			$vcard .= "TEL;TYPE=HOME,VOICE:" . $contact->getPhoneNumber('home',true) . "\n";
+                if ($contact->getPhoneNumber('home'))
+    			$vcard .= "TEL;TYPE=HOME,VOICE:" . $contact->getPhoneNumber('home') . "\n";
+                if ($contact->getPhoneNumber('fax'))
+    			$vcard .= "TEL;TYPE=HOME,FAX:" . $contact->getPhoneNumber('fax') . "\n";
+                if ($contact->getPhoneNumber('mobile'))
+    			$vcard .= "TEL;TYPE=CELL,VOICE:" . $contact->getPhoneNumber('mobile') . "\n";
+                if ($contact->getPhoneNumber('pager'))
+                        $vcard .= "TEL;TYPE=PAGER:" . $contact->getPhoneNumber('pager') . "\n";
+                $haddress = $contact->getAddress('home');
+    		if ($haddress)
+    			$vcard .= "ADR;TYPE=HOME:" . $haddress->getStreet() .";". $haddress->getCity() .";". $haddress->getState() .";". $haddress->getZipcode() .";". $haddress->getCountryName() . "\n";
+                if ($contact->getWebpageUrl('personal'))
+    			$vcard .= "URL;TYPE=HOME:" . $contact->getWebpageUrl('personal') . "\n";
+                //WORK
     		if ($contact->getPhoneNumber('work',true))
     			$vcard .= "TEL;TYPE=WORK,VOICE:" . $contact->getPhoneNumber('work',true) . "\n";
-    		if ($contact->getPhoneNumber('other',true))
-    			$vcard .= "TEL;TYPE=VOICE:" . $contact->getPhoneNumber('other',true) . "\n";
-    		if ($contact->getPhoneNumber('fax'))
-    			$vcard .= "TEL;TYPE=HOME,FAX:" . $contact->getPhoneNumber('fax') . "\n";
+                if ($contact->getPhoneNumber('work'))
+    			$vcard .= "TEL;TYPE=WORK,VOICE:" . $contact->getPhoneNumber('work') . "\n";
     		if ($contact->getPhoneNumber('fax', true))
-    			$vcard .= "TEL;TYPE=WORK,FAX:" . $contact->getPhoneNumber('fax', true) . "\n";
-    		if ($contact->getPhoneNumber('mobile'))
-    			$vcard .= "TEL;TYPE=CELL,VOICE:" . $contact->getPhoneNumber('mobile') . "\n";
-    		if ($contact->getWebpageUrl('personal'))
-    			$vcard .= "URL;TYPE=HOME:" . $contact->getWebpageUrl('personal') . "\n";
-    		if ($contact->getWebpageUrl('work'))
+    			$vcard .= "TEL;TYPE=WORK,FAX:" . $contact->getPhoneNumber('fax', true) . "\n";  
+                $waddress = $contact->getAddress('work');
+    		if ($waddress)
+    			$vcard .= "ADR;TYPE=WORK:" . $waddress->getStreet() .";". $waddress->getCity() .";". $waddress->getState() .";". $waddress->getZipcode() .";". $waddress->getCountryName() . "\n";
+                if ($contact->getPhoneNumber('assistant'))
+                        $vcard .= "TEL;TYPE=X-ASSISTANT,VOICE:" . $contact->getPhoneNumber('assistant') . "\n";
+                if ($contact->getPhoneNumber('callback'))
+                        $vcard .= "TEL;TYPE=X-CALLBACK,VOICE:" . $contact->getPhoneNumber('callback') . "\n";    
+                if ($contact->getWebpageUrl('work'))
     			$vcard .= "URL;TYPE=WORK:" . $contact->getWebpageUrl('work') . "\n";
-    		if ($contact->getWebpageUrl('other'))
+                //OTHER
+                if ($contact->getPhoneNumber('other',true))
+    			$vcard .= "TEL;TYPE=VOICE:" . $contact->getPhoneNumber('other',true) . "\n";
+                if ($contact->getPhoneNumber('other'))
+    			$vcard .= "TEL;TYPE=VOICE:" . $contact->getPhoneNumber('other') . "\n"; 
+    		$oaddress = $contact->getAddress('other');
+    		if ($oaddress)
+    			$vcard .= "ADR;TYPE=INTL:" . $oaddress->getStreet() .";". $oaddress->getCity() .";". $oaddress->getState() .";". $oaddress->getZipcode() .";". $oaddress->getCountryName() . "\n";
+                if ($contact->getWebpageUrl('other'))
     			$vcard .= "URL:" . $contact->getWebpageUrl('other') . "\n";
+                
     		if ($contact->getEmailAddress('personal'))
     			$vcard .= "EMAIL;TYPE=PREF,INTERNET:" . $contact->getEmailAddress() . "\n";
     		$personal_emails = $contact->getContactEmails('personal');
     		if (!is_null($personal_emails) && isset($personal_emails[0]))
-    			$vcard .= "EMAIL;TYPE=INTERNET:" . $personal_emails[0] . "\n";
+    			$vcard .= "EMAIL;TYPE=INTERNET:" . $personal_emails[0]->getEmailAddress() . "\n";
     		if (!is_null($personal_emails) && isset($personal_emails[1]))
-    			$vcard .= "EMAIL;TYPE=INTERNET:" . $personal_emails[1] . "\n";
-			if ($contact->hasPicture()) {
+    			$vcard .= "EMAIL;TYPE=INTERNET:" . $personal_emails[1]->getEmailAddress()  . "\n";
+                if ($contact->hasPicture()) {
     			$data = FileRepository::getFileContent($contact->getPictureFile());
     			$chunklen = 62;
     			$pre = "PHOTO;ENCODING=BASE64;TYPE=PNG:";
@@ -2278,29 +2418,25 @@ class ContactController extends ApplicationController {
     			$enc_data .= chunk_split(substr($b64, $chunklen + 1 - strlen($pre)), $chunklen, "\n ");
     			$vcard .= $pre . $enc_data . "\n";
     		}
-
-			$vcard .= "END:VCARD\n";
+                $vcard .= "END:VCARD\n";   
     	}
     	return $vcard;
     }
     
     function export_to_vcard() {
     	$ids = array_var($_GET, 'ids');
-    	$contacts = array();
-   		$contacts = Contacts::instance()->getAllowedContacts(" id IN (".$ids.")");
+   	$contacts = Contacts::instance()->getAllowedContacts(" id IN (".$ids.")");
     	if (count($contacts) == 0) {
-			flash_error(lang("you must select the contacts from the grid"));
-			ajx_current("empty");
-			return;
-		}
-		
+                flash_error(lang("you must select the contacts from the grid"));
+                ajx_current("empty");
+                return;
+        }
     	$data = self::build_vcard($contacts);
     	$name = (count($contacts) == 1 ? $contacts[0]->getObjectName() : "contacts") . ".vcf";
 
     	download_contents($data, 'text/x-vcard', $name, strlen($data), true);
     	die();
     }
-    
 
     function export_to_vcard_all() {
       $contacts_all = Contacts::instance()->getAllowedContacts();
@@ -2369,8 +2505,8 @@ class ContactController extends ApplicationController {
 		          
 		$contact_data['is_private'] = false;
 		$contact_data['timezone'] = logged_user()->getTimezone();
-
-		return $contact_data;
+                
+		return $contact_data;                
 	} // buildContactData
 	
 	
@@ -2972,71 +3108,86 @@ class ContactController extends ApplicationController {
 		}catch (Exception $e){
 			DB::rollback();
 			flash_error($e->getMessage());
-		}
-		
+		}		
 		
 		// Reload 
-		evt_add("reload dimension tree", $dimensionId);
+		evt_add("reload dimension tree", array('dim_id' => $dimensionId));
 	}
         
         function quick_config_filter_activity(){     
             $this->setLayout('empty');
             $submited_values = array_var($_POST, 'filter');
             $members = array_var($_GET, 'members');
-            tpl_assign('members', array_var($_GET, 'members'));
+            tpl_assign('members', array_var($_GET, 'members'));            
             
-            $filters_default = ContactConfigOptions::getFilterActivity();
+            $member_name = lang('view');
+            $obj_member = Members::findById($members);
+            if($obj_member){
+                $type_obj = ObjectTypes::findById($obj_member->getObjectTypeId());
+                if($obj_member){
+                    $member_name = lang($type_obj->getName());
+                }
+            }            
+            tpl_assign('dim_name', $member_name);
             
+            $filters_default = ContactConfigOptions::getFilterActivity();            
             $filters = ContactConfigOptionValues::getFilterActivityMember($filters_default->getId(),$members);
+            
             if(!$filters){
                 $filters = ContactConfigOptions::getFilterActivity();
                 $filter_value = $filters->getDefaultValue();
                 tpl_assign('id', $filters->getId());
             }else{
                 $filter_value = $filters->getValue();
+                tpl_assign('id', '');
             }
             $filters_def = explode(",",$filter_value);            
-            if($filters_def[0] == 1){
-                tpl_assign('checked_dimension_yes', 'checked="checked"');
-            }else{
-                tpl_assign('checked_dimension_no', 'checked="checked"');
-            }
+//            if($filters_def[0] == 1){
+//                tpl_assign('checked_dimension_yes', 'checked="checked"');
+//            }else{
+//                tpl_assign('checked_dimension_no', 'checked="checked"');
+//            }
             if($filters_def[1] == 1){
-                tpl_assign('checked_timeslot_yes', 'checked="checked"');
+                tpl_assign('timeslot', 'checked="checked"');
             }else{
-                tpl_assign('checked_timeslot_no', 'checked="checked"');
+                tpl_assign('timeslot', '');
             }
             tpl_assign('show', $filters_def[2]);            
-            if($filters_def[3] == 1){
-                tpl_assign('checked_view_downloads_yes', 'checked="checked"');
-            }else{
-                tpl_assign('checked_view_downloads_no', 'checked="checked"');
-            }            
+//            if($filters_def[3] == 1){
+//                tpl_assign('checked_view_downloads_yes', 'checked="checked"');
+//            }else{
+//                tpl_assign('checked_view_downloads_no', 'checked="checked"');
+//            }            
             if(is_array($submited_values)) {
                     $members = array_var($submited_values,"members");
+                    $new_value = array_var($submited_values,"dimension",0) . "," . array_var($submited_values,"timeslot",0) . "," . array_var($submited_values,"show",10). "," . array_var($submited_values,"view_downloads",0);
                     $filters_default = ContactConfigOptions::getFilterActivity();
-                    $filters = ContactConfigOptionValues::getFilterActivityMember($filters_default->getId(),$members);  
-                    // update cache if available
-                    if (GlobalCache::isAvailable()) {
-                            GlobalCache::delete('user_config_option_'.logged_user()->getId().'_'.$filters_default->getName()."_".$members);
-                    }                 
-                    
-                    $new_value = array_var($submited_values,"dimension") . "," . array_var($submited_values,"timeslot") . "," . array_var($submited_values,"show"). "," . array_var($submited_values,"view_downloads");
-                    
-                    if(!$filters){
-                        $filter_opt = new ContactConfigOptionValue();
-                        $filter_opt->setOptionId($filters_default->getId());
-                        $filter_opt->setContactId(logged_user()->getId());
-                        $filter_opt->setValue($new_value);
-                        $filter_opt->setMemberId($members);
-                        $filter_opt->save();
+                    if(array_var($submited_values,"apply_everywhere") == 1){
+                        $filters_default->setDefaultValue($new_value);
+                        $filters_default->save();
+                        
+                        $filters = ContactConfigOptionValues::getFilterActivityDelete($filters_default->getId());
                     }else{
-                        $filters->setValue($new_value);
-                        $filters->save();
+                            $filters = ContactConfigOptionValues::getFilterActivityMember($filters_default->getId(),$members);  
+                            // update cache if available
+                            if (GlobalCache::isAvailable()) {
+                                    GlobalCache::delete('user_config_option_'.logged_user()->getId().'_'.$filters_default->getName()."_".$members);
+                            }
+
+                            if(!$filters){
+                                $filter_opt = new ContactConfigOptionValue();
+                                $filter_opt->setOptionId($filters_default->getId());
+                                $filter_opt->setContactId(logged_user()->getId());
+                                $filter_opt->setValue($new_value);
+                                $filter_opt->setMemberId($members);
+                                $filter_opt->save();
+                            }else{
+                                $filters->setValue($new_value);
+                                $filters->save();
+                            }
+                            evt_add("user preference changed", array('name' => $filters_default->getName()."_".$members, 'value' => $new_value));
                     }
-                    
-                    evt_add("user preference changed", array('name' => $filters_default->getName()."_".$members, 'value' => $new_value));
-                    redirect_to("index.php?c=dashboard&a=main_dashboard");
+                    ajx_current("reload");
             }
             
         }

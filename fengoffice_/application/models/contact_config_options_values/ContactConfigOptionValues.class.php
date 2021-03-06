@@ -25,6 +25,14 @@
 		return $rows[0]["c"] > 0;
     } // getOptionsByCategory
     
+    function getFilterActivityMember($id,$member) {
+            return ContactConfigOptionValues::findOne(array('conditions' => array('`option_id` = ? AND `member_id` = ? AND `contact_id` = ?', $id, $member, logged_user()->getId())));
+    }
+    
+    function getFilterActivityDelete($id) {
+            return DB::execute('DELETE FROM `' . TABLE_PREFIX . 'contact_config_option_values` WHERE `option_id` = ? AND `contact_id` = ?',$id, logged_user()->getId());
+    }
+    
 //    /**
 //    * Return all options in specific category
 //    *

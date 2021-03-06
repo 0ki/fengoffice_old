@@ -7,7 +7,7 @@
 	$visible_cps = CustomProperties::countVisibleCustomPropertiesByObjectType($object->getObjectTypeId());
 ?>
 
-<form onsubmit="return og.handleMemberChooserSubmit('<?php echo $genid; ?>', <?php echo $contact->manager()->getObjectTypeId() ?>);" id="<?php echo $genid ?>submit-edit-form" style='height:100%;background-color:white' class="internalForm" action="<?php echo $contact->isNew() ? $contact->getAddUrl() : $contact->getEditUrl() ?>" method="post">
+<form id="<?php echo $genid ?>submit-edit-form" style='height:100%;background-color:white' class="internalForm" action="<?php echo $contact->isNew() ? $contact->getAddUrl() : $contact->getEditUrl() ?>" method="post">
 <input id="<?php echo $genid ?>hfIsNewCompany" type="hidden" name="contact[isNewCompany]" value=""/>
 
 <div class="contact">
@@ -99,10 +99,11 @@
 	<fieldset>
 		<legend><?php echo lang('context')?></legend>
 			<?php 
+				$listeners = array('on_selection_change' => 'og.reload_subscribers("'.$genid.'",'.$object->manager()->getObjectTypeId().')');
 				if ($contact->isNew()) {
-					render_dimension_trees($contact->manager()->getObjectTypeId(), $genid, null, array('select_current_context' => true)); 
+					render_member_selectors($contact->manager()->getObjectTypeId(), $genid, null, array('select_current_context' => true, 'listeners' => $listeners)); 
 				} else {
-					render_dimension_trees($contact->manager()->getObjectTypeId(), $genid, $contact->getMemberIds()); 
+					render_member_selectors($contact->manager()->getObjectTypeId(), $genid, $contact->getMemberIds(), array('listeners' => $listeners)); 
 				} 
 			?>
 	</fieldset>
@@ -394,59 +395,22 @@
   	<?php echo submit_button($contact->isNew() ? lang('add contact') : lang('save changes'),'s',array('tabindex' => '20000', 'id' => $genid . 'submit2')) ?>
 
 	<script>
-	<?php if ($renderContext) :?>
-		var memberChoosers = Ext.getCmp('<?php echo "$genid-member-chooser-panel-".$contact->manager()->getObjectTypeId()?>').items;
-		
-		if (memberChoosers) {
-			memberChoosers.each(function(item, index, length) {
-				item.on('all trees updated', function() {
-					
-					var dimensionMembers = {};
-					memberChoosers.each(function(it, ix, l) {
-						dim_id = this.dimensionId;
-						dimensionMembers[dim_id] = [];
-						var checked = it.getChecked("id");
-						for (var j = 0 ; j < checked.length ; j++ ) {
-							dimensionMembers[dim_id].push(checked[j]);
-						}
-					});
-					
-					// Subscribers
-					var uids = App.modules.addMessageForm.getCheckedUsers('<?php echo $genid ?>');
-					Ext.get('<?php echo $genid ?>add_subscribers_content').load({
-						url: og.getUrl('object', 'render_add_subscribers', {
-							context: Ext.util.JSON.encode(dimensionMembers),
-							users: uids,
-							genid: '<?php echo $genid ?>',
-							otype: '<?php echo $contact->manager()->getObjectTypeId()?>'
-						}),
-						scripts: true
-					});
-					// Companies
-					// og.reloadCompanies(dimensionMembers, '<?php echo $genid ?>');
-					
-				});
-			});
-		}
-	<?php endif;?>
-	Ext.get('<?php echo $genid ?>profileFormFirstName').focus();
 
-	<?php //if ($contact->isNew()):?>
+		Ext.get('<?php echo $genid ?>profileFormFirstName').focus();
+
 		$(function(){
 			og.checkEmailAddress("#<?php echo $genid ?>profileFormEmail",'<?php echo $contact->getId();?>','<?php echo $genid ?>');
 		});
-	<?php //endif;?>
 	
         $(function(){
-                $("#<?php echo $genid ?>specify-username").click(function(){
-                    
-			if ($(this).is(":checked")) {
-				$("#<?php echo $genid ?>profileFormUsername").show();
-			} else {
-                                $("#<?php echo $genid ?>profileFormUsername").hide();
-			}
+            $("#<?php echo $genid ?>specify-username").click(function(){
+                if ($(this).is(":checked")) {
+					$("#<?php echo $genid ?>profileFormUsername").show();
+				} else {
+					$("#<?php echo $genid ?>profileFormUsername").hide();
+				}
+			});
 		});
-	});
 	</script>
 </div>
 </div>

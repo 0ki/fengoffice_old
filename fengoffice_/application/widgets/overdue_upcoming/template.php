@@ -19,6 +19,7 @@
 			$today = DateTimeValueLib::now()->beginningOfDay();
 			$tomorrow = DateTimeValueLib::now()->beginningOfDay()->add('d', 1);
 			$c = 0;
+			$row_cls = "";
 			
 			foreach($overdue_upcoming_objects as $object):
 				$c++;
@@ -39,7 +40,7 @@
 						}
 					}
 				}?>
-		    <tr class="<?php echo ' ' . ($c > 55? 'noDispLM':''); ?>" style="<?php echo $c > 55? 'display:none':'' ?>">
+		    <tr class="<?php echo $row_cls . ($c > 55? 'noDispLM':''); ?>" style="<?php echo $c > 55? 'display:none':'' ?>">
 			    
 			    <td class="date-col nobr">
 			    	<div class="<?php echo isset($cls)?$cls:'';?>-row">
@@ -79,19 +80,20 @@
 				</td>
 				
 			</tr>
+			<?php $row_cls = $row_cls == "" ? "dashAltRow" : ""; ?>
 		<?php endforeach; ?>
 		</table>
 		
-		<div class="">
+		<div class="view-all-container">
 			<a href="#" onmousedown="og.openLink(og.getUrl('task', 'new_list_tasks'), {caller:'tasks-panel'});" onclick="Ext.getCmp('tabs-panel').activate('tasks-panel');">
-				<?php if ($show_more) echo lang('see all');?>
+				<?php if ($show_more) echo lang('view all');?>
 			</a>
 		</div>
 		
 		
 	<?php else:?>
 		<div class="empty">
-			<?php echo lang("no data to show") ?>
+			<?php //echo lang("no data to show") ?>
 		</div>
 	<?php endif; ?>
 	
@@ -123,8 +125,8 @@
 			<?php } ?>
 			<div class="x-clear"></div>
 			
-			<button class="submit-task" ><?php echo lang('add task')?></button>	
-			<a class= "task-more-details" href="#"><?php echo lang("more")?>>></a>
+			<button class="submit-task" ><?php echo lang('add task')?></button>
+			<a class="task-more-details coViewAction ico-edit" href="#"><?php echo lang("details")?></a>
 			<div class="x-clear"></div>
 			
 		</div>
@@ -157,8 +159,8 @@
 				});
 				
 			}else{
-				alert('<?php echo lang('name required')?>');
-				$(container).find("input.add-project-field").focus();
+				og.err('<?php echo lang('error add name required', lang('task'))?>');
+				$(container).find("input.task-name").focus();
 				container.removeClass("loading");
 			}	
 			

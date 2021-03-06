@@ -60,7 +60,7 @@ og.showWsPaths = function(containerItemName, showPath, showCurrent){
 			var html = '';
 			if (ids.length > 2){
 				html = '<span class="og-wsname og-wsname-color-0 ico-workspaces-expand" id="spshow' + rand_no + '-' + i + '" onclick="document.getElementById(\'sphide' + rand_no + '-' + i + '\').style.display =\'inline\';document.getElementById(\'spcont' + rand_no + '-' + i + '\').style.display =\'inline\';this.style.display=\'none\'">' + ids.length + '&nbsp;'+ lang('workspaces') + '</span>';
-				html += '<span class="ico-workspaces-collapse" id="sphide' + rand_no + '-' + i + '" onclick="document.getElementById(\'spshow' + rand_no + '-' + i + '\').style.display =\'inline\';document.getElementById(\'spcont' + rand_no + '-' + i + '\').style.display =\'none\';this.style.display=\'none\'" style="display:none">&nbsp</span>';
+				html += '<span class="ico-workspaces-collapse" id="sphide' + rand_no + '-' + i + '" onclick="document.getElementById(\'spshow' + rand_no + '-' + i + '\').style.display =\'inline\';document.getElementById(\'spcont' + rand_no + '-' + i + '\').style.display =\'none\';this.style.display=\'none\'" style="display:none">&nbsp;</span>';
 				html += '<span id="spcont' + rand_no + '-' + i + '" style="display:none">';
 			}
 			for(var j = 0; j < ids.length; j++){

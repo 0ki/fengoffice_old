@@ -24,9 +24,12 @@ class ProjectMilestones extends BaseProjectMilestones {
 		if (is_null($context)) {
 			$context = active_context();
 		}
+		$members = array();
 		$parents = array();
 		foreach ($context as $k => $member) {
 			if ($member instanceof Member) {
+				if ($member->getDimension()->getCode() == 'tags') continue;
+				$members[] = $member->getId();
 				$tmp = $member->getParentMember();
 				while ($tmp != null){
 					$parents[] = $tmp->getId();
@@ -35,18 +38,9 @@ class ProjectMilestones extends BaseProjectMilestones {
 			}
 		}
 		
-		$extra_conditions = "";
-		/*
-		if (count($parents) > 0) {
-			$extra_conditions = "OR EXISTS (SELECT `aux`.`object_id` FROM ".ObjectMembers::instance()->getTableName(true)." `aux` WHERE `aux`.`is_optimization` = 0 
-				AND `aux`.`object_id`=`om`.`object_id` AND `aux`.`member_id` IN (".implode(",",$parents)."))";
-		}
-		
-		$result = ProjectMilestones::getContentObjects($context, ObjectTypes::findById(ProjectMilestones::instance()->getObjectTypeId()), null, null, $extra_conditions);
-		*/
-		
 		$result = ProjectMilestones::instance()->listing(array(
-			"extra_conditions" => $extra_conditions,
+			"ignore_context" => true,
+			"member_ids" => $members,
 			"extra_member_ids" => $parents
 		));
 		$milestones = $result->objects;

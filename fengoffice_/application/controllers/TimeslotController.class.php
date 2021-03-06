@@ -116,7 +116,7 @@ class TimeslotController extends ApplicationController {
 			$object_controller = new ObjectController();
 			$object_controller->add_to_members($timeslot, $object->getMemberIds());
 		*/	
-			ApplicationLogs::createLog($timeslot, ApplicationLogs::ACTION_OPEN);
+			ApplicationLogs::createLog($timeslot, ApplicationLogs::ACTION_ADD);
 			                        
 			$task = ProjectTasks::findById($object_id);
 			if($task->getTimeEstimate() > 0){
@@ -151,7 +151,7 @@ class TimeslotController extends ApplicationController {
 	 * @return null
 	 */
 	function close() {
-		
+
 		$this->setTemplate('add_timeslot');
 
 		$timeslot = Timeslots::findById(get_id());
@@ -211,7 +211,7 @@ class TimeslotController extends ApplicationController {
 	} 
 	
 	function pause() {
-		
+
 		ajx_current("empty");
 
 		$timeslot = Timeslots::findById(get_id());
@@ -251,7 +251,7 @@ class TimeslotController extends ApplicationController {
 	} 
 	
 	function resume() {
-		
+
 		ajx_current("empty");
 
 		$timeslot = Timeslots::findById(get_id());
@@ -297,7 +297,7 @@ class TimeslotController extends ApplicationController {
 	 * @return null
 	 */
 	function edit() {
-		
+
 		$this->setTemplate('add_timeslot');
 		
 		$timeslot = Timeslots::findById(get_id());
@@ -418,6 +418,8 @@ class TimeslotController extends ApplicationController {
 					$task->setPercentCompleted($total_percentComplete);
 					$task->save();
 				}
+                                
+                                ApplicationLogs::createLog($timeslot, ApplicationLogs::ACTION_EDIT);
 				
 				$this->notifier_work_estimate($task);
 				
@@ -441,7 +443,7 @@ class TimeslotController extends ApplicationController {
 	 * @return null
 	 */
 	function delete() {
-		
+
 		$timeslot = Timeslots::findById(get_id());
 		if(!($timeslot instanceof Timeslot)) {
 			flash_error(lang('timeslot dnx'));
@@ -491,7 +493,7 @@ class TimeslotController extends ApplicationController {
             if($task->getTimeEstimate() > 0){
                 $timeslot_percent = round(($timeslot_time * 100) / ($task->getTimeEstimate() / 60));
                 $total_percentComplete = $task->getPercentCompleted() - $timeslot_percent;
-				if ($total_percentComplete < 0) $total_percentComplete = 0;
+                if ($total_percentComplete < 0) $total_percentComplete = 0;
                 $task->setPercentCompleted($total_percentComplete);
                 $task->save();
             }            

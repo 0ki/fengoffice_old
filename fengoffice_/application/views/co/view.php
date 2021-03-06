@@ -31,7 +31,8 @@
 						
 						</tr></table>
 					</div>
-					<div title="<?php echo lang('close') ?>" onclick="<?php echo $object instanceof Contact ? "og.onPersonClose()" : "og.closeView()"?>" class="coViewClose"><?php echo lang('close') ?>&nbsp;&nbsp;X</div>
+					<?php $oncloseclick = $object instanceof Contact && Plugins::instance()->isActivePlugin('core_dimensions') ? "og.onPersonClose()" : "og.closeView()" ?>
+					<div title="<?php echo lang('close') ?>" onclick="<?php echo $oncloseclick; ?>" class="coViewClose"><?php echo lang('close') ?>&nbsp;&nbsp;X</div>
 				</div>
 				<div class="coViewDesc">
 					<?php if (!isset($description)) $description = "";

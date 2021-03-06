@@ -3,11 +3,11 @@
 }
 
 #header {
-	/*border-bottom: 1px solid black;*/
+	box-shadow: 0 0 3px 3px #CCCCCC;
 	background-color: #000000;
 	height: 55px;
 	xoverflow: hidden;
-	z-index: 8000; /* Object pick has z-idex 9000 approx */
+	z-index: 8000;
 }
 #content {
 	position: absolute;
@@ -26,6 +26,23 @@
 #helpFrame {
 	border: 0px;
 }
+
+#header .header-content-right {
+	background-color: #DDDDDD;
+	border-radius: 5px 5px 5px 5px;
+	float: right;
+	height: 21px;
+	margin-right: 6px;
+	margin-top: 9px;
+	padding: 8px 0 8px 10px;
+	z-index: 10000;
+}
+
+#header .header-content-right a {
+	background-color: transparent;
+	color: #333333;
+}
+
 .menuCont {
 	/*height: 100%;*/
 	font-size: 11px;
@@ -534,9 +551,6 @@ div.layout-container.contact .right-column {
 
 /** End Contact Fluid layotu */
 
-.left {
-	float: left;
-}
 
 
 /*----------------------------------------
@@ -596,26 +610,6 @@ div.layout-container.contact .right-column {
 	/* border: 1px solid #AAAAAA;*/
 }
 
-
-.TMTimespanAddNew .context-switcher {
-	display: none ;	
-}
-
-.TMTimespanEdit .context-switcher {
-	disply:block;	 
-}
-
-.context-switcher .context-header label {
-	cursor: pointer ;	 
-	text-decoration: underline;	
-	color: #003562;
-	display: inline;
-}
-
-#timePanel .member-chooser-container .x-panel-body {
-	background: none ;
-}
-	
 .nobr {
 	white-space: nowrap;
 }

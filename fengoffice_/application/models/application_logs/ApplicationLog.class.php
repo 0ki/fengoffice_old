@@ -176,7 +176,7 @@ class ApplicationLog extends BaseApplicationLog {
 		}
 		else{
 			$object_link = clean($this->getObjectName()).'&nbsp;'.lang('object is deleted');
-		}			
+		}	
 		switch ($this->getAction()) {
 			case ApplicationLogs::ACTION_EDIT :
 			case ApplicationLogs::ACTION_ADD :
@@ -287,6 +287,135 @@ class ApplicationLog extends BaseApplicationLog {
 						return lang('activity ' . $this->getAction() . ' to', lang('the '.$this->getRelObjectManager()), $user->getDisplayName(), $object_link, $to_str);
 					}
 				}	*/		
+			default: return false;
+		}
+		return false;
+	}
+        
+        function getActivityDataView($user,$object,$made_several_changes = false) {
+		if (!$user) return false;
+		
+		$icon_class = "";
+		if ($object instanceof ProjectFile) {
+			$path = explode("-", str_replace(".", "_", str_replace("/", "-", $object->getTypeString())));
+			$acc = "";
+			foreach ($path as $p) {
+				$acc .= $p;
+				$icon_class .= ' ico-' . $acc;
+				$acc .= "-";
+			}			
+		}
+		// Build data depending on type
+		if ($object){
+			if ($object instanceof Contact && $object->isUser()) {
+				$type  = "user" ;
+			}else{
+				$type = $object->getObjectTypeName() ;
+			}
+			
+			$object_link = '<a style="font-weight:bold" href="' . $object->getObjectUrl() . '">&nbsp;'.
+			'<span style="padding: 1px 0 3px 18px;" class="db-ico ico-unknown ico-' . $type . $icon_class . '"/>'.clean($object->getObjectName()).'</a>';
+		}
+		else{
+			$object_link = clean($this->getObjectName()).'&nbsp;'.lang('object is deleted');
+		}	
+                if($made_several_changes){
+                    $this->setAction("made ​​several changes");
+                }  
+		switch ($this->getAction()) {
+            case ApplicationLogs::ACTION_MADE_SEVERAL_CHANGES :
+            	$object_history = '<a style="font-weight:bold" href="' . $object->getViewHistoryUrl() . '">&nbsp;'.
+                '<span style="padding: 1px 0 3px 18px;" class="db-ico ico-unknown ico-history"/>'.lang('view history').'</a>';
+            	return lang('activity ' . $this->getAction(), lang('the ' .$type. ' activity', $object_link), $user->getDisplayName()," -" .$object_history);
+			case ApplicationLogs::ACTION_EDIT :
+			case ApplicationLogs::ACTION_ADD :
+			case ApplicationLogs::ACTION_DELETE :
+			case ApplicationLogs::ACTION_TRASH :
+			case ApplicationLogs::ACTION_UNTRASH :
+			case ApplicationLogs::ACTION_OPEN :
+			case ApplicationLogs::ACTION_CLOSE :
+			case ApplicationLogs::ACTION_ARCHIVE :
+			case ApplicationLogs::ACTION_UNARCHIVE :
+			case ApplicationLogs::ACTION_READ :				
+			case ApplicationLogs::ACTION_DOWNLOAD :				
+			case ApplicationLogs::ACTION_CHECKIN :
+			case ApplicationLogs::ACTION_CHECKOUT :
+				if ($object) {
+					return lang('activity ' . $this->getAction(), lang('the '.$type," "), $user->getDisplayName(), $object_link);
+				}
+			case ApplicationLogs::ACTION_SUBSCRIBE :
+			case ApplicationLogs::ACTION_UNSUBSCRIBE :
+				$user_ids = explode(",", $this->getLogData());
+				if (count($user_ids) < 8) {
+					$users_str = "";
+					foreach ($user_ids as $usid) {
+						$su = Contacts::findById($usid);
+						if ($su instanceof Contact)
+							$users_str .= '<a style="font-weight:bold" href="'.$su->getObjectUrl().'">&nbsp;<span style="padding: 0 0 3px 18px;" class="db-ico ico-unknown ico-user"/>'.clean($su->getObjectName()).'</a>, ';
+					}
+					if (count($user_ids) == 1) {
+						$users_text = substr(trim($users_str), 0, -1);
+					} else {
+						$users_text = lang('x users', count($user_ids), ": $users_str");
+					} 
+				} else {
+					$users_text = lang('x users', count($user_ids), "");
+				}
+				if ($object)
+					return lang('activity ' . $this->getAction(), lang('the '.$object->getObjectTypeName()," "), $user->getDisplayName(), $object_link, $users_text);
+			case ApplicationLogs::ACTION_COMMENT :
+				if ($object) {
+					return lang('activity ' . $this->getAction(), lang('the '.$object->getRelObject()->getObjectTypeName()," "), $user->getDisplayName(), $object_link, $this->getLogData());
+				}
+			case ApplicationLogs::ACTION_LINK :
+			case ApplicationLogs::ACTION_UNLINK :
+                                $linked_object_link = '';
+                                $linked_object = Objects::findObject($this->getLogData());
+                                if ($linked_object instanceof ApplicationDataObject ) {
+                                        $icon_class = "";
+                                        if ($linked_object instanceof ProjectFile) {
+                                                $path = explode("-", str_replace(".", "_", str_replace("/", "-", $linked_object->getTypeString())));
+                                                $acc = "";
+                                                foreach ($path as $p) {
+                                                        $acc .= $p;
+                                                        $icon_class .= ' ico-' . $acc;
+                                                        $acc .= "-";
+                                                }			
+                                        }
+                                        $linked_object_link = '<a style="font-weight:bold" href="' . $linked_object->getObjectUrl() . '">&nbsp;<span style="padding: 1px 0 3px 18px;" class="db-ico ico-unknown ico-'.$linked_object->getObjectTypeName() . $icon_class . '"/>'.clean($linked_object->getObjectName()).'</a>';
+                                }			
+				if ($object) {
+					return lang('activity ' . $this->getAction(), lang('the '.$object->getObjectTypeName()," "), $user->getDisplayName(), $object_link, $linked_object instanceof ApplicationDataObject ? lang('the '.$linked_object->getObjectTypeName()) : '', $linked_object_link);
+				}
+			case ApplicationLogs::ACTION_LOGIN :
+			case ApplicationLogs::ACTION_LOGOUT :
+				return lang('activity ' . $this->getAction(), $user->getDisplayName());
+                        case ApplicationLogs::ACTION_COPY :				
+				$to_str = "";
+                                $to_str_member = "";
+				$members_ids_csv = str_replace("to:", "", $this->getLogData());
+				$mem_ids = explode(",", $members_ids_csv);
+				if (is_array($mem_ids) && count($mem_ids) > 0) {                                    
+                                    foreach($mem_ids as $mem_id){
+                                        $member = Members::findById($mem_id);
+                                        if($member){
+                                            $to_str_member .= $member->getName() . ", ";
+                                        }
+                                    }                                    
+                                    if($to_str_member != ""){
+                                        $to_str_member = substr($to_str_member , 0, -2);
+                                        $to_str .= $to_str_member;
+                                    }                                    
+				}
+				if($object){
+					if ($to_str != "") {
+						return lang('activity ' . $this->getAction() . ' to', lang('the '.$object->getObjectTypeName()), $user->getDisplayName(), $object_link, $to_str);
+					} 
+				}else{
+					if ($to_str != "") {
+						return lang('activity ' . $this->getAction() . ' to', lang('the '.$this->getRelObjectManager()), $user->getDisplayName(), $object_link, $to_str);
+					}
+				}
 			default: return false;
 		}
 		return false;

@@ -225,7 +225,6 @@ class Timeslots extends BaseTimeslots {
 			$user_sql = " AND contact_id = " . $user->getId();
 		}
 		
-		//$result = Timeslots::getContentObjects($context, ObjectTypes::findById(Timeslots::instance()->getObjectTypeId()), array('start_time', 'rel_object_id'), 'DESC', " AND rel_object_id = 0" . $user_sql, null, null, null, $offset, $limit);
 		$result = Timeslots::instance()->listing(array(
 			"order" => array('start_time', 'rel_object_id'),
 			"order_dir" => "DESC",

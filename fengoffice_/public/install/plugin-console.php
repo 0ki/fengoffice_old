@@ -1,6 +1,6 @@
 <?php
 $argv or die("Are you using console ? \n");
-$usage = "USAGE: plugin-console.php COMMAND [list, install, activate, deactivate, update, update_all] PLUGIN_NAME \n" ;
+$usage = "USAGE: plugin-console.php COMMAND [list, install, activate, install_activate, deactivate, update, update_all] PLUGIN_NAME \n" ;
 chdir(dirname(__FILE__) . '/../..');
 define("CONSOLE_MODE", true);
 define("PLUGIN_MANAGER_CONSOLE", true );
@@ -20,8 +20,10 @@ CompanyWebsite::instance()->logUserIn($usr);
 $ctrl = new PluginController();
 trim($command) or die("Command is required \n".$usage);
 
+$plugins = $ctrl->index();
+
 if ($command == 'list') {
-	foreach ($ctrl->index() as $plg){
+	foreach ($plugins as $plg){
 		/* @var $plg Plugin */
 		echo "---------------------------------------------\n";
 		echo "NAME: \t\t".$plg->getSystemName() ."\n" ;
@@ -47,6 +49,10 @@ if ($command == 'list') {
 			$ctrl->install($plg->getId());
 			break;
 		case 'activate':
+			$plg->activate();
+			break;
+		case 'install_activate':
+			$ctrl->install($plg->getId());
 			$plg->activate();
 			break;
 		case 'deactivate':

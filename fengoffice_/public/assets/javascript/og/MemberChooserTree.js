@@ -75,7 +75,7 @@ og.MemberChooserTree = function(config) {
 			// Avoid multiple check
 			if (!this.isMultiple) {
 				if (checked) {
-					var oldChecked = this.getChecked() ;
+					var oldChecked = this.getChecked();
 					for (var i = 0 ; i < oldChecked.length ; i++) {
 						if ( oldChecked[i] && oldChecked[i].id != node.id ) {
 							this.suspendEvents();
@@ -94,6 +94,21 @@ og.MemberChooserTree = function(config) {
 					this.suspendEvents();
 					this.totalFilterTrees = 0 ;
 					this.filteredTrees = 0 ;
+					
+					var selected_members = [];
+					trees.each(function (item, index, length){
+						if (typeof(item.getSelectionModel().getSelectedNode) == 'function') {
+							var sel = item.getSelectionModel().getSelectedNode();
+							if (sel && !isNaN(sel.attributes.id)) selected_members.push(sel.attributes.id);
+						} else if (typeof(item.getChecked) == 'function') {
+							var sels = item.getChecked();
+							for (x=0; x<sels.length; x++) {
+								var sel = sels[x];
+								if (sel && !isNaN(sel.id)) selected_members.push(sel.id);
+							}
+						}
+					});
+					
 					trees.each(function (item, index, length){
 
 						if ( self.id != item.id && self.reloadDimensions.indexOf(item.dimensionId) != -1  ) {
@@ -110,7 +125,7 @@ og.MemberChooserTree = function(config) {
 								}
 							}
 							
-							item.filterByMember(nid ,function(){
+							item.filterByMember(selected_members ,function(){
 								self.filteredTrees ++ ;
 								if (self.filteredTrees == self.totalFilterTrees) {
 									self.resumeEvents() ;
@@ -159,14 +174,14 @@ Ext.extend(og.MemberChooserTree, Ext.tree.TreePanel, {
 	},
 
 	
-	filterByMember: function(memberId,callback) {
+	filterByMember: function(selected_members, callback) {
 		var checked = this.getChecked("id");
 		//this.collapseAll() ;
 		this.loader =  new og.MemberChooserTreeLoader({	
 			dataUrl:	
-				'index.php?c=dimension&a=list_dimension_members_tree&ajax=true&checkboxes=true'
+				'index.php?c=dimension&a=initial_list_dimension_members_tree&ajax=true&checkboxes=true'
 				+'&dimension_id='+this.dimensionId
-				+'&member_id='+memberId
+				+'&selected_ids='+Ext.util.JSON.encode(selected_members)
 				+'&object_type_id='+this.objectTypeId 
 				+'&avoid_session=1',
 			ownerTree: this 			 

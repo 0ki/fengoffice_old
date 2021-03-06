@@ -129,16 +129,16 @@ abstract class ApplicationDataObject extends DataObject {
 								}
 
 							}elseif($file->getFileTypeId() == $pdf_id){
-
-								$file_path = "tmp/pdf_filecontent_".$this->getObjectId().".pdf";
-								$file_tmp = @fopen($file_path, 'w');
-								if ($file_tmp) {
-									fwrite($file_tmp, $file->getFileContent());
-									fclose($file_tmp);
-									$content = pdf2text($file_path);
-									unlink($file_path);
-								}
-								
+								if (class_exists('DOMDocument')) {
+									$file_path = "tmp/pdf_filecontent_".$this->getObjectId().".pdf";
+									$file_tmp = @fopen($file_path, 'w');
+									if ($file_tmp) {
+										fwrite($file_tmp, $file->getFileContent());
+										fclose($file_tmp);
+										$content = pdf2text($file_path);
+										unlink($file_path);
+									}
+								}								
 							}elseif($file->getFileTypeId() == $odt_id){
 								if (class_exists('DOMDocument')) {
 									$file_path = "tmp/odt_filecontent_".$this->getObjectId().".odt";

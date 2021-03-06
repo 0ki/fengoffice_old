@@ -4,10 +4,8 @@
         <div class="left-column-wrapper">
             <div class="left-column view-container">
                 <div class="person-view">
-                	<div class="close-wrapper" onclick="og.onPersonClose();">
-                		<?php echo lang("close");?>
-	            		<div class="close" ></div>
-	            	</div>
+                	<?php $oncloseclick = $object instanceof Contact && Plugins::instance()->isActivePlugin('core_dimensions') ? "og.onPersonClose()" : "og.closeView()" ?>
+                	<div class="close-wrapper" onclick="<?php echo $oncloseclick; ?>"><?php echo lang("close");?><div class="close"></div></div>
                     <div class="person-information">
                         <div class="picture">
                             <img src="<?php echo $contact->getPictureUrl() ?>" alt="<?php echo clean($contact->getObjectName()) ?> picture" />
@@ -29,7 +27,7 @@
                             
                             <h4 class="editable"><?php echo lang ('contact info') ?>
                                 <?php if ($contact->canEdit(logged_user())):?>
-                            		<a class="edit-link" href="<?php echo $contact->getEditUrl()?>">[<?php echo lang("edit")?>]</a>
+                            		<a class="edit-link coViewAction ico-edit" href="<?php echo $contact->getEditUrl()?>"><?php echo lang("edit")?></a>
                             	<?php endif;?>                        
                             </h4>
                             
@@ -47,14 +45,16 @@
                             <?php if ($contact->isUser()) :?>
                             <h4 class="editable"><?php echo lang ('user info') ?>
                             	<?php if ($contact->canEdit(logged_user())):?>
-                            		<a class="edit-link" href="<?php echo $contact->getEditProfileUrl()?>">[<?php echo lang("edit")?>]</a>
+                            		<a class="edit-link coViewAction ico-edit" href="<?php echo $contact->getEditProfileUrl()?>"><?php echo lang("edit")?></a>
                             	<?php endif;?>
                             </h4>
                             
                             <ul>
                                 <li>
+                                	<strong><?php echo lang("user type")?>: </strong><span class="username"><?php echo $contact->getUserTypeName()?></span>
+                                </li>
+                                <li>
                                     <strong><?php echo lang("username")?>: </strong><span class="username"><?php echo $contact->getUsername()?></span>
-                                    <strong><?php echo lang("user type")?>: </strong><span class="username"><?php echo $contact->getUserTypeName()?></span>
                                 </li>
                             </ul>
                             <?php endif ;?>
@@ -95,9 +95,9 @@
                                     </li>
                                     <?php endif; ?>
                                     
-                                    <?php if(($contact->getWebpageUrl('home'))):?>
+                                    <?php if(($contact->getWebpageUrl('personal'))):?>
                                     <li>
-                                        <?php echo  '<strong>' . lang('webpage') . ':</strong> ' . $contact->getWebpageUrl('home');?>
+                                        <?php echo  '<strong>' . lang('webpage') . ':</strong> ' . $contact->getWebpageUrl('personal');?>
                                     </li>
                                     <?php endif; ?>    
                               

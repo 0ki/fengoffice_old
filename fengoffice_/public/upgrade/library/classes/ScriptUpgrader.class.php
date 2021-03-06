@@ -193,8 +193,11 @@ final class ScriptUpgrader {
 			
 			// execute scripts
 			foreach($scripts as $script) {
-				if((version_compare($script->getVersionTo(), $version_from) > 0) &&
-						version_compare($script->getVersionTo(), $version_to) <= 0) {
+				if((version_compare($script->getVersionTo(), $version_from) > 0) && version_compare($script->getVersionTo(), $version_to) <= 0) {
+					if ($this->getOutput() instanceof Output_Console) {
+						$this->printMessage(date('Y-m-d H:i:s') . " - Starting upgrade to " . $script->getVersionTo());
+					}
+					
 					$script->setDatabaseConnection($dbc);
 					if ($script->execute() === false) {
 						$this->printMessage("Error upgrading to version " . $script->getVersionTo());
@@ -203,6 +206,10 @@ final class ScriptUpgrader {
 					$last_correct_version = $script->getVersionTo();
 					tpl_assign('version', $last_correct_version);
 					file_put_contents(INSTALLATION_PATH . '/config/installed_version.php', tpl_fetch(get_template_path('installed_version')));
+					
+					if ($this->getOutput() instanceof Output_Console) {
+						$this->printMessage(date('Y-m-d H:i:s') . " - Finished upgrade to " . $script->getVersionTo());
+					}
 				} // if
 			} // foreach
 			if (isset($last_correct_version)) {

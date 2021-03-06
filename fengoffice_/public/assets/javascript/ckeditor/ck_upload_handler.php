@@ -1,19 +1,14 @@
 <?php
-	if ( !defined( 'DIRECTORY_SEPARATOR' ) ) {
-		define( 'DIRECTORY_SEPARATOR',
-		strtoupper(substr(PHP_OS, 0, 3) == 'WIN') ? '\\' : '/'
-		) ;
-	}
+	$exp = explode("/", $_SERVER['REQUEST_URI']);
+	$iname = $exp[1];
+	
 	define('CONSOLE_MODE', true);
-	define('APP_ROOT', realpath(dirname(__FILE__) . "/../../../../"));
+	define('APP_ROOT', realpath(dirname(__FILE__) . "/../../../../../$iname"));
 	define('TEMP_PATH', realpath(APP_ROOT . '/tmp/'));
 	
 	// Include library
-	require_once APP_ROOT . '/index.php';
-	
-	function my_log($msg) {
-		file_put_contents(dirname(__FILE__).'/log.txt', "$msg\n", FILE_APPEND);
-	}
+	//require_once APP_ROOT . '/index.php';
+	require_once APP_ROOT . '/config/config.php';
 	
 	if (count($_FILES) > 0) {
 		$file_info = array_shift($_FILES);
@@ -28,7 +23,7 @@
         if(count($matches) <= 0)
         	die('Invalid File');*/
         	
-		copy($file_info['tmp_name'], TEMP_PATH . DIRECTORY_SEPARATOR . $file_name);
+		copy($file_info['tmp_name'], TEMP_PATH . "/" . $file_name);
 		unlink($file_info['tmp_name']);
 		
 		$err_msg = "";

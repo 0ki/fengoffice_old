@@ -29,14 +29,34 @@ if (isset($_REQUEST['modules']) && $_REQUEST['modules']) {
 		);
 	}
 	
+	// members
+	$members = array();
+	$db_res = mysql_query("select count(*) as num, ot.name as type, p.name as plugin from ".TABLE_PREFIX."members m 
+		inner join fo_object_types ot on ot.id=m.object_type_id 
+		left outer join fo_plugins p on p.id=ot.plugin_id
+		group by ot.name order by ot.plugin_id, ot.name");
+	while ($row = mysql_fetch_assoc($db_res)) {
+		$members[$row['type']] = $row;
+	}
+	$folders = null;
+	foreach ($members as $k=>&$m) {
+		if (in_array($m['type'], array('folder','customer_folder','project_folder'))) {
+			unset($members[$k]);
+			if (is_null($folders)) $folders = array('type' => 'folder', 'num' => 0, 'plugin' => $m['plugin']);
+			$folders['num'] = $folders['num'] + $m['num'];
+		}
+	}
+	if (!is_null($folders)) $members['folder'] = $folders;
+	
 	$all_statistics['modules'] = $info;
+	$all_statistics['members'] = $members;
 }
 
 // build last month logins information
 if (isset($_REQUEST['logins']) && $_REQUEST['logins']) {
 	$last_logins = array();
 	
-	$db_res = mysql_query("SELECT `created_on`, `object_name`, `rel_object_id` FROM `".TABLE_PREFIX."application_logs` WHERE `action` = 'login' AND `created_on` > ADDDATE(NOW(), INTERVAL -1 MONTH) ORDER BY `rel_object_id`", $db_link);
+	$db_res = mysql_query("SELECT `created_on`, `object_name`, `rel_object_id` FROM `".TABLE_PREFIX."application_logs` WHERE `action` = 'login' AND `created_on` > ADDDATE(NOW(), INTERVAL -1 MONTH) ORDER BY `rel_object_id`, `created_on` desc", $db_link);
 	while ($row = mysql_fetch_assoc($db_res)) {
 		$last_logins[] = array(
 			'id' => $row['rel_object_id'],
@@ -90,6 +110,18 @@ if (isset($_REQUEST['sizes']) && $_REQUEST['sizes']) {
 	if (count($splitted_output) > 0) $sizes['fs'] = $splitted_output[0];
 	
 	$all_statistics['sizes'] = $sizes;
+}
+
+// get plugin info
+if (isset($_REQUEST['plugins']) && $_REQUEST['plugins']) {
+	$plugins = array();
+	
+	$db_res = mysql_query("SELECT id,name,version FROM ".TABLE_PREFIX."plugins WHERE is_installed=1 AND is_activated=1");
+	while ($row = mysql_fetch_assoc($db_res)) {
+		$plugins[] = $row;
+	}
+	
+	$all_statistics['plugins'] = $plugins;
 }
 
 // print response

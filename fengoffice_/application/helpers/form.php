@@ -528,12 +528,12 @@
     return text_field($name, $value);
   } // pick_time_widget
   
-  function pick_time_widget2($name, $value = null, $genid = null, $tabindex = null, $format = null) {
+  function pick_time_widget2($name, $value = null, $genid = null, $tabindex = null, $format = null, $id = null) {
   	if ($format == null) $format = (user_config_option('time_format_use_24') ? 'G:i' : 'g:i A');
   	if ($value instanceof DateTimeValue) {
   		$value = $value->format($format);
   	}
-  	
+  	if (!$id) $id = $genid . $name . "Cmp";
   	$html = "<table><tr><td><div id='" . $genid . $name . "'></div></td></tr></table>
 	<script>
 		var tp" . gen_id() . " = new Ext.form.TimeField({
@@ -541,6 +541,7 @@
 			name: '" . $name . "',
 			format: '" . $format . "',
 			emptyText: 'hh:mm',
+                        id: '" . $id . "',
 			width: 80,".
 			(isset($tabindex) ? "tabIndex: '$tabindex'," : "").
 			"value: '" . $value . "'});

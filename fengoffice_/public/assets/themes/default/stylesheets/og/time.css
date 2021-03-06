@@ -11,7 +11,7 @@
 	font-weight:bold;
 	color:white;
 	width:100%;
-	background-color:#F7CD4D;
+	background-color:#BF9715;
 }
 
 .TMActiveTasksHeader {
@@ -31,7 +31,7 @@
 
 .TMTimespanEdit {
 	color:#333;
-	background-color: #FFEE8F;
+	background-color: #FFF7C8;
 }
 
 .TMTimespanContents {
@@ -40,4 +40,22 @@
 
 .TMActiveTasksContents {
 	color:#666;
+}
+
+.TMTimespanEdit select, .TMTimespanAddNew select {
+	height: 21px;
+}
+
+.TMTimespanEdit .context-switcher {
+	disply:block;	 
+}
+
+.context-switcher .context-header {
+	margin-bottom: 5px;
+}
+.context-switcher .context-header label {
+	cursor: pointer ;	 
+	text-decoration: underline;	
+	color: #003562;
+	display: inline;
 }

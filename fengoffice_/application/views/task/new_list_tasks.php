@@ -221,6 +221,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
                             ogTasks.executeAction('complete','',opt);
                         }  
                         this.close();
+                        $("#<?php echo $genid?>complete_task").val("yes");
                 }
         });
         
@@ -230,22 +231,21 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
         
         function loadCKeditor(id){
             var instance = CKEDITOR.instances['<?php echo $genid ?>ckeditor' + id];
-            if(instance)
-            {
+            if(instance){
                 CKEDITOR.remove(instance);
             }
             var editor = CKEDITOR.replace('<?php echo $genid ?>ckeditor' + id, {
-                uiColor: '#BBCCEA',
-                height: '100px',
-                enterMode: CKEDITOR.ENTER_BR,
+                height: '120px',
+                enterMode: CKEDITOR.ENTER_DIV,
                 shiftEnterMode: CKEDITOR.ENTER_BR,
                 disableNativeSpellChecker: false,
                 language: '<?php echo $loc ?>',
-                customConfig: '',
+                customConfig: '',               
                 toolbar: [
-                                ['FontSize','-','Bold','Italic','Underline','-', 'SpellChecker', 'Scayt','-',
-                                //'NumberedList','BulletedList','-',
+                                ['FontSize','-','Bold','Italic','Underline', 'Blockquote','-',
+				                'SpellChecker', 'Scayt','-',
                                 'TextColor','BGColor','-',
+                                'Link','Unlink','-',
                                 'JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock']
                         ],
                 on: {

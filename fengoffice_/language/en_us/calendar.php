@@ -198,7 +198,7 @@
         'must enter the password gmail' => 'Must enter your Gmail account password',
         'untitle event' => 'Untitled event',
         'click sincronizar' => 'Click here if you want Feng Office to synchronize events with Google Calendar',
-        'feng calendar' => 'Feng Office Calendar',
+        'feng calendar' => 'Feng Office Calendar - {0}',
         'import calendars' => 'Import',
         'account has already' => 'Account has already been entered',
         'sync event feng' => 'Synchronize all events from Feng Office',

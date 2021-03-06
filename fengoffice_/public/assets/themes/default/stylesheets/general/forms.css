@@ -272,12 +272,15 @@ a.button {
 	border: 1px solid #CCC;
 	clear: both ;
 }
+#quick-form input[type=text], #quick-form input[type=email] {
+	width:95%;
+}
 
 #quick-form select {
 	clear: both ;
 }
 
-#quick-form  .field {
+#quick-form .field {
 	margin-bottom: 0 ;
 }	
 
@@ -341,7 +344,6 @@ a.button {
 
 .access-data {
 	padding: 10px ;
-	/* width: 220px ; */
 }
 .access-data label.checkbox, .access-data input.checkbox {
 	float: left ;	 
@@ -356,14 +358,26 @@ a.button {
 }
 .access-data label.checkbox {
 	margin-right: 5px;
-	margin-top: 0;  		
+	margin-top: 2px;  		
 }
 
 input.field-error{
 	box-shadow: 0px 0px 2px 1px #FF0000;
 }
 
+div.field {
+	min-height: 25px ;
+}
+
 div.field-error-msg {
 	color: red; 
 	font-size: 10px ;
+}
+
+div.add-person-form div.field label {
+	width: 100px;
+	float: left;
+}
+div.add-person-form div.field label.checkbox {
+	width: auto;
 }

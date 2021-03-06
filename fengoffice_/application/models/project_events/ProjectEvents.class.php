@@ -81,6 +81,8 @@ class ProjectEvents extends BaseProjectEvents {
 				) 
 				OR 
 				(
+					original_event_id = 0
+					AND
 					`repeat_h` = 0 
 					AND
 					DATE(`start`) <= '$start_date_str' 
@@ -129,6 +131,8 @@ class ProjectEvents extends BaseProjectEvents {
 				)
 				OR
 				(
+					original_event_id = 0
+					AND
 					DATE(`start`) <= '$start_date_str'
 					AND
 					`repeat_h` = 1 
@@ -143,15 +147,13 @@ class ProjectEvents extends BaseProjectEvents {
 		
 			$start = null ;
 			$limit = null ;
-			//$result_events = self::getContentObjects(active_context(), ObjectTypes::findById(self::instance()->getObjectTypeId()), '`start`', 'ASC', $conditions,null,false,false,$start, $limit)->objects;
 			$result_events = self::instance()->listing(array(
 				"order" => 	'start',
 				"order_dir"=> 'ASC',
 				"extra_conditions" => $conditions ,
 				"start" => $start,
-				"limit" => $limit		
-				
-			))->objects ;
+				"limit" => $limit
+			))->objects;
 
 			// Find invitations for events and logged user
 			if (is_array($result_events) && count($result_events)) {
@@ -228,6 +230,8 @@ class ProjectEvents extends BaseProjectEvents {
 				) 
 				OR 
 				(
+					original_event_id = 0
+					AND
 					`repeat_h` = 0 
 					AND
 					DATE(`start`) < '$end_date_str'
@@ -239,9 +243,9 @@ class ProjectEvents extends BaseProjectEvents {
                                         repeat_forever = 1
 							OR
 							repeat_end >= '$start_year-$start_month-$start_day'
-				)
-				OR
-				(
+						)
+						OR
+						(
 							DATE_ADD(`start`, INTERVAL (`repeat_num`-1)*`repeat_m` MONTH) >= '$start_date_str' 
 							OR
 							repeat_forever = 1
@@ -260,6 +264,8 @@ class ProjectEvents extends BaseProjectEvents {
 				)
 				OR
 				(
+					original_event_id = 0
+					AND
 					DATE(`start`) <= '$start_date_str'
 					AND
 					`repeat_h` = 1 
@@ -274,8 +280,6 @@ class ProjectEvents extends BaseProjectEvents {
 			$invited
 		)";
 
-		//$result_events = self::getContentObjects(active_context(), ObjectTypes::findById(self::instance()->getObjectTypeId()), '`start`', 'ASC', $conditions, null, false, false, $start, $limit);
-		
 		$result_events = self::instance()->listing(array(
 			"order" => 	'start',
 			"order_dir"=> 'ASC',
@@ -346,15 +350,21 @@ class ProjectEvents extends BaseProjectEvents {
                                     if(!$delete_calendar){
                                         $calendar_user = $calendar->getCalendarUser();
                                         $calendar_visibility = $calendar->getCalendarVisibility();
-
+                                        $start_sel = date('Y-m-d', strtotime('-1 week'));
+                                        $end_sel = date('Y-m-d', strtotime('+2 year'));                                        
+                                        
                                         $query = $gdataCal->newEventQuery();
                                         $query->setUser($calendar_user);
                                         $query->setVisibility($calendar_visibility);
                                         $query->setSingleEvents(true);
                                         $query->setProjection('full');
+                                        $query->setOrderby('starttime');
+                                        $query->setSortOrder('ascending'); 
+                                        $query->setStartMin($start_sel);
+                                        $query->setStartMax($end_sel);
+                                        $query->setMaxResults(2000);
                                         // execute and get results
                                         $event_list = $gdataCal->getCalendarEventFeed($query);
-
                                         $array_events_google = array();
                                         foreach ($event_list as $event){
                                             $event_id = explode("/",$event->id->text);
@@ -451,7 +461,7 @@ class ProjectEvents extends BaseProjectEvents {
                                                         $member[] = $member_id;
                                                     }
                                                     $object_controller = new ObjectController();
-                                                    $object_controller->add_to_members($new_event, $member); 
+                                                    $object_controller->add_to_members($new_event, $member, $contact); 
                                                 }else{
                                                     $member_ids = array();
                                                     $context = active_context();
@@ -511,13 +521,13 @@ class ProjectEvents extends BaseProjectEvents {
                         }
                         catch(Exception $e)
                         {
-                                //Logger::log($e->getMessage());
+                                Logger::log($e->getMessage());
                         }
                     }
                 }
 	}
         
-        function export_google_calendar() { 
+        function export_google_calendar() {
                 $users_cal = ExternalCalendarUsers::findAll();  
                 if(count($users_cal) > 0){
                     foreach ($users_cal as $users){
@@ -581,7 +591,9 @@ class ProjectEvents extends BaseProjectEvents {
                                         $appCalUrl = '';
                                         $calFeed = $gdataCal->getCalendarListFeed();        
                                         foreach ($calFeed as $calF){
-                                            if($calF->title->text == lang('feng calendar')){
+                                            $instalation = explode("/", ROOT_URL);
+                                            $instalation_name = end($instalation);
+                                            if($calF->title->text == lang('feng calendar',$instalation_name)){
                                                 $appCalUrl = $calF->content->src;
                                                 $t_calendario = $calF->title->text;
                                             }
@@ -590,8 +602,10 @@ class ProjectEvents extends BaseProjectEvents {
                                         if($appCalUrl != ""){
                                             $title_cal = $t_calendario;
                                         }else{
+                                            $instalation = explode("/", ROOT_URL);
+                                            $instalation_name = end($instalation);
                                             $appCal = $gdataCal -> newListEntry();
-                                            $appCal -> title = $gdataCal-> newTitle(lang('feng calendar'));                         
+                                            $appCal -> title = $gdataCal-> newTitle(lang('feng calendar',$instalation_name));                         
                                             $own_cal = "http://www.google.com/calendar/feeds/default/owncalendars/full";                        
                                             $new_cal = $gdataCal->insertEvent($appCal, $own_cal);
 
@@ -650,7 +664,7 @@ class ProjectEvents extends BaseProjectEvents {
                             }
                             catch(Exception $e)
                             {
-                                    //Logger::log($e->getMessage());
+                                    Logger::log($e->getMessage());
                             }
                         }
                     }

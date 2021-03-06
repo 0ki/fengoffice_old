@@ -29,7 +29,6 @@
      'display_name' => DATA_TYPE_STRING,	
      'permission_group_id' => DATA_TYPE_INTEGER,
      'username' => DATA_TYPE_STRING,
-     'brand_colors' => DATA_TYPE_STRING,     
      'contact_passwords_id' => DATA_TYPE_INTEGER,
      'picture_file' => DATA_TYPE_STRING,
      'avatar_file' => DATA_TYPE_STRING,	 	
@@ -112,7 +111,7 @@
     function getSystemColumns() {
       return array_merge(parent::getSystemColumns(), array(
       	'company_id', 'picture_file', 'timezone', 'user_id', 'avatar_file',
-      	'brand_colors', 'contact_passwords_id', 'permission_group_id', 
+      	'contact_passwords_id', 'permission_group_id', 
       	'personal_member_id', 'salt', 'token', 'twister', 'comments',
       	'is_active_user', 'user_type', 'default_billing_id')
       );

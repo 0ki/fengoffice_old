@@ -368,12 +368,10 @@ class ProjectTask extends BaseProjectTask {
 		}
 		$this->setCompletedOn(DateTimeValueLib::now());
 		$this->setCompletedById(logged_user()->getId());
-
+                
                 if($options == "yes"){
                     foreach ($this->getAllSubTasks() as $subt) {
-                            $subt->setCompletedById(logged_user()->getId());
-                            $subt->setCompletedOn(DateTimeValueLib::now());
-                            $subt->save();
+                            $subt->completeTask($options);
                     }
                 }                
                 
@@ -420,33 +418,6 @@ class ProjectTask extends BaseProjectTask {
 		}
 		$this->setPercentCompleted(100);
 		$this->save();
-
-		//TODO: Agregar funciones de timeslots a ContentDataObject
-/*		
-		$timeslots = $this->getTimeslots();
-		if ($timeslots){
-			foreach ($timeslots as $timeslot){
-				if ($timeslot->isOpen())
-					$timeslot->close();
-					$timeslot->save();
-			}
-		}
-*/
-		/*
-		 * if this is run then when the user wants to reopen a task
-		 * he will have to manually reopen the subtasks
-		$tasks = $this->getOpenSubTasks();
-		foreach ($tasks as $task) {
-			$task->completeTask();
-		}*/
-		
-		/*
-		 * this is done in the controller
-		$task_list = $this->getParent();
-		if(($task_list instanceof ProjectTask) && $task_list->isOpen()) {
-			$open_tasks = $task_list->getOpenSubTasks();
-			if(empty($open_tasks)) $task_list->complete(DateTimeValueLib::now(), logged_user());
-		} // if*/
 		ApplicationLogs::createLog($this, ApplicationLogs::ACTION_CLOSE, false, false, true, substr($log_info,0,-1));
 	} // completeTask
 
@@ -477,13 +448,17 @@ class ProjectTask extends BaseProjectTask {
                                     $timeslot_percent = round(($timeslot_time * 100) / ($this->getTimeEstimate() / 60));
                                     $total_percentComplete += $timeslot_percent;                                
                             }
+                            if ($total_percentComplete < 0) $total_percentComplete = 0;
                             $this->setPercentCompleted($total_percentComplete);
                             $this->save();
                     }else{
                         $this->setPercentCompleted(0);
                         $this->save();
                     }
-                }                
+                }else{
+                    $this->setPercentCompleted(0);
+                    $this->save();
+                }               
 
 		$log_info = "";
 		if (config_option('use tasks dependencies')) {                    

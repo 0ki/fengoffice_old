@@ -240,8 +240,8 @@ return array(
     'normal priority' => '標準',
     'low priority' => '低い',
 
-    'time estimate' => '時間の見積もり',
-    'time estimate desc' => 'タスクのおおよその見積もり時間',
+    'estimated time' => '時間の見積もり',
+    'estimated time desc' => 'タスクのおおよその見積もり時間',
     'x hours' => '{0}時間',
     'pending' => '保留',
 

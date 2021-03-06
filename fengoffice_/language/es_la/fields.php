@@ -71,8 +71,8 @@
 	'field Contacts surname' => 'Apellido',
 	'field Contacts username' => 'Nombre de usuario',
 
-
-	'field MailContents from' => 'De',
+        'field MailContents name' => 'Asunto',
+	'field MailContents from' => 'De (casilla de correo)',
 	'field MailContents from_name' => 'De nombre',
 	'field MailContents to' => 'Para',
 	'field MailContents date' => 'Fecha',

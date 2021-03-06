@@ -375,7 +375,7 @@ Sistema automatiškai sukuria asmeninį projektą kiekvienam naujam naudotojui (
 	'minutes' => 'Minutės',
 	'seconds' => 'Sekundės',
 	'days' => 'Dienos',
-	'time estimate' => 'Numatomas laikas',
+	'estimated time' => 'Numatomas laikas',
 	'work in progress' => 'Darbas vyksta',
 	'total time' => 'Visas laikas',
 	'upload anyway' => 'Vis vien pakrauti',

@@ -339,7 +339,7 @@
  "minutes" => "分鐘",
  "seconds" => "秒",
  "days" => "天",
- "time estimate" => "時間預估",
+ "estimated time" => "時間預估",
  "work in progress" => "進行中工作",
  "total time" => "總計時間",
  "upload anyway" => "一定要上傳",

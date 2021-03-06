@@ -46,7 +46,7 @@ function feng__autoload($load_class_name) {
 		mysql_close($temp_link);
 		
 		
-		$loader->setIndexFilename(ROOT . '/cache/autoloader.php');
+		$loader->setIndexFilename(CACHE_DIR . '/autoloader.php');
 		
 	} // if
 
@@ -328,7 +328,7 @@ function prepare_company_website_controller(PageController $controller, $layout 
 	} // if
 
 	$controller->setLayout($layout);
-	$controller->addHelper('form', 'breadcrumbs', 'pageactions', 'tabbednavigation', 'company_website', 'project_website', 'textile');
+	$controller->addHelper('form', 'breadcrumbs', 'pageactions', 'tabbednavigation', 'company_website', 'project_website', 'textile', 'dimension');
 } // prepare_company_website_controller
 
 // ---------------------------------------------------
@@ -542,7 +542,7 @@ function set_config_option($option_name, $value) {
  * @param int $user_id User Id, if null logged user is taken
  * @return mixed
  */
-function user_config_option($option, $default = null, $user_id = null) {
+function user_config_option($option, $default = null, $user_id = null, $options_members = false) {
 	if (is_null($user_id)) {
 		if (logged_user() instanceof Contact) {
 			$user_id = logged_user()->getId();
@@ -569,8 +569,14 @@ function user_config_option($option, $default = null, $user_id = null) {
 		$option_value = GlobalCache::get('user_config_option_'.$user_id.'_'.$option, $success);
 		if ($success) return $option_value;
 	}
-	// default value not found in cache
-	$option_value = ContactConfigOptions::getOptionValue($option, $user_id, $default);
+        
+        if($options_members){
+            $members = implode ( ',',active_context_members(false));
+            // default value not found in cache
+            $option_value = ContactConfigOptions::getOptionValue($option, $user_id, $default, $members);
+        }else{
+            $option_value = ContactConfigOptions::getOptionValue($option, $user_id, $default);
+        }
 	if (GlobalCache::isAvailable()) {
 		GlobalCache::update('user_config_option_'.$user_id.'_'.$option, $option_value);
 	}
@@ -819,9 +825,10 @@ function create_user($user_data, $permissionsString) {
 	// try to find contact by some properties 
 	$contact_id = array_var($user_data, "contact_id") ;
 	$contact =  Contacts::instance()->findById($contact_id) ; 
-	/*if (!$contact instanceof Contact) {
-		$contact = Contacts::getByEmail(array_var($user_data, 'email'), true);
-	}*/
+	
+	if (!is_valid_email(array_var($user_data, 'email'))) {
+		throw new Exception(lang("email value is required"));
+	}
 
 	if (!$contact instanceof Contact) {
 		// Create a new user
@@ -853,7 +860,7 @@ function create_user($user_data, $permissionsString) {
 	$permission_group->setName('User '.$contact->getId().' Personal');
 	$permission_group->setContactId($contact->getId());
 	$permission_group->setIsContext(false);
-        $permission_group->setType("permission_groups");
+	$permission_group->setType("permission_groups");
 	$permission_group->save();
 	$contact->setPermissionGroupId($permission_group->getId());
 	

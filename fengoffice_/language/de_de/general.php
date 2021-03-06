@@ -219,4 +219,8 @@
 	'advanced' => 'Erweitert',
 	'in capitalized' => 'In',
 	'workspace and tags' => 'Arbeitsbereich und Schlagworte',
+	'viewing all information' => 'Alle Informationen',
+        'late tasks and upcoming tasks' => 'Verspätete und kommende Aufgaben',
+        'no data to show' => 'Keine Daten anzuzeigen',
+        'email or username' => 'Email oder Benutzer',
 ); ?>

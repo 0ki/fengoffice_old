@@ -346,7 +346,7 @@
 	//'search for in project' => 'Buscar resultados para \'<i>{0}</i>\' en el Área de trabajo \'{1}\'',
         'search for in project' => 'Buscar resultados en el Área de trabajo \'{1}\'',
 	//'search for' => 'Buscar resultados para \'{0}\' en todas las Áreas de trabajo',
-        'search for' => 'Buscar resultados en todas las Áreas de trabajo',
+    'search for' => 'Buscar resultados en todas partes',
 	'workspace permamanent delete' => 'Cuando un Ã¡rea de trabajo es eliminada, la siguiente informaciÃ³n se perderÃ¡ permanentemente</b>',
 	'workspace permamanent delete messages' => ' Todos las notas en el Ã¡rea de trabajo',
 	'workspace permamanent delete tasks' => ' Todas las tareas en el Ã¡rea de trabajo',
@@ -366,7 +366,7 @@
 	'minutes' => 'Minutos',
 	'seconds' => 'Segundos',
 	'days' => 'DÃ­as',
-	'time estimate' => 'Tiempo estimado',
+	'estimated time' => 'Tiempo estimado',
 	'work in progress' => 'Trabajo en progreso',
 	'total time' => 'Tiempo total',
         'total time worked' => 'Tiempo total trabajado',
@@ -580,4 +580,5 @@
   	'mail account password confirmation' => 'Puede utilizar este campo para chequear su contraseÃ±a',
   	'wrong password confirmation' => 'Advertencia: Las contraseÃ±as no coinciden. VerifÃ­quelas por favor.',
 	'view more' => 'Ver más',
+	'plugins' => 'Plugins',
 ); ?>

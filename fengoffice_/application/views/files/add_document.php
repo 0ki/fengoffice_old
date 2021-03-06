@@ -48,9 +48,8 @@
 
 var h = document.getElementById("<?php echo $genid ?>ckcontainer").offsetHeight;
 var editor = CKEDITOR.replace('<?php echo $genid ?>ckeditor', {
-	uiColor: '#BBCCEA',
 	height: (h-60) + 'px',
-	enterMode: CKEDITOR.ENTER_P,
+	enterMode: CKEDITOR.ENTER_DIV,
 	shiftEnterMode: CKEDITOR.ENTER_BR,
 	disableNativeSpellChecker: false,
 	language: '<?php echo $loc ?>',
@@ -63,11 +62,12 @@ var editor = CKEDITOR.replace('<?php echo $genid ?>ckeditor', {
 				['Bold','Italic','Underline','Strike','-','Subscript','Superscript','-',
 				'NumberedList','BulletedList','-','Outdent','Indent','Blockquote','-',
 				'JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock','-',
-				'Link','Unlink','-','Maximize','-',
+				'Link','Unlink', 'Anchor', '-','Maximize','-',
 				'Image','Table','HorizontalRule','Smiley','SpecialChar','PageBreak','-', 
 				'TextColor','BGColor','RemoveFormat']
 			],
-	skin: 'office2003',
+	skin: 'kama',
+	contentsCss: '<?php echo get_javascript_url("ckeditor/contents.css")."?rev=".product_version_revision()?>',
 	keystrokes: [
 		[ CKEDITOR.ALT + 121 /*F10*/, 'toolbarFocus' ],
 		[ CKEDITOR.ALT + 122 /*F11*/, 'elementsPathFocus' ],
@@ -84,7 +84,7 @@ var editor = CKEDITOR.replace('<?php echo $genid ?>ckeditor', {
 		[ CKEDITOR.CTRL + 73 /*I*/, 'italic' ],
 		[ CKEDITOR.CTRL + 85 /*U*/, 'underline' ],
 
-		[ CKEDITOR.CTRL + 83 /*S*/, 'save' ],
+		//[ CKEDITOR.CTRL + 83 /*S*/, 'save' ],
 
 		[ CKEDITOR.ALT + 109 /*-*/, 'toolbarCollapse' ]
 	],
@@ -124,15 +124,15 @@ og.resizeresizeCkSpaceAux = function() {
 	var parentTd = document.getElementById('cke_contents_<?php echo $genid ?>ckeditor');
 	if (container && parentTd) {
 		var iframe = parentTd.firstChild;
-		iframe.style.height = (container.offsetHeight - 60 ) + 'px';
-		parentTd.style.height = (container.offsetHeight - 60 ) + 'px';
+		iframe.style.height = (container.offsetHeight - 75 ) + 'px';
+		parentTd.style.height = (container.offsetHeight - 75 ) + 'px';
 	}
 }
 og.resizeCkSpace = function() {
 	if (Ext.isIE) setTimeout('og.resizeresizeCkSpaceAux()', 100);
 	else og.resizeresizeCkSpaceAux();
 }
-og.resizeCkSpace();
+setTimeout('og.resizeCkSpace()', 100);
 window.onresize = og.resizeCkSpace;
 
 </script>

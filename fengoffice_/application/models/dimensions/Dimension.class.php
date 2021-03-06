@@ -8,7 +8,7 @@
 class Dimension extends BaseDimension {
 	
 	
-	function getAllMembers($only_ids = false, $order = null, $filter_deleted_objects = false, $extra_conditions = "") {
+	function getAllMembers($only_ids = false, $order = null, $filter_deleted_objects = false, $extra_conditions = "", $limit = null) {
 		$contactsType = ObjectTypes::instance()->findByName('person');
 		if ($contactsType) {
 			$contactsTypeId = $contactsType->getId();
@@ -19,6 +19,9 @@ class Dimension extends BaseDimension {
 		);
 		if (!is_null($order)) { 
 			$parameters['order'] = $order;
+		}
+		if (!is_null($limit)) { 
+			$parameters['limit'] = $limit;
 		}
 		
 		if ($filter_deleted_objects){
@@ -63,12 +66,27 @@ class Dimension extends BaseDimension {
 		return $res->numRows() > 0;
   	}
   	
+	function getPermissionGroupsAllowAll($permission_group_ids = null){
+		return $this->getPermissionGroupsByPermissionType('allow all', $permission_group_ids);
+  	}
+	
+  	function getPermissionGroupsCheck($permission_group_ids = null){
+		return $this->getPermissionGroupsByPermissionType('check', $permission_group_ids);
+  	}
   	
-	function getPermissionGroupsAllowAll($permission_group_ids){
-		if (is_array($permission_group_ids)) {
+	function getPermissionGroupsDenyAll($permission_group_ids = null){
+		return $this->getPermissionGroupsByPermissionType('deny all', $permission_group_ids);
+  	}
+  	
+	function getPermissionGroupsByPermissionType($permission_type, $permission_group_ids = null){
+		if (!is_null($permission_group_ids) && is_array($permission_group_ids)) {
 			$permission_group_ids = implode(",", $permission_group_ids);
 		}
-		$rows = DB::executeAll("SELECT permission_group_id FROM ".TABLE_PREFIX."contact_dimension_permissions WHERE `dimension_id` = " . $this->getId(). " AND `permission_type` = ". DB::escape('allow all') ." AND `permission_group_id` in ($permission_group_ids)");
+		$permission_group_ids_cond = "";
+		if (!is_null($permission_group_ids)) {
+			$permission_group_ids_cond = " AND `permission_group_id` in ($permission_group_ids)";
+		}
+		$rows = DB::executeAll("SELECT permission_group_id FROM ".TABLE_PREFIX."contact_dimension_permissions WHERE `dimension_id` = " . $this->getId(). " AND `permission_type` = ". DB::escape($permission_type) . $permission_group_ids_cond);
 		$res = array();
 		if ($rows && is_array($rows)) {
 			foreach ($rows as $row) $res[] = $row['permission_group_id'];

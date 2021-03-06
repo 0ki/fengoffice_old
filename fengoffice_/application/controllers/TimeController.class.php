@@ -155,10 +155,10 @@ class TimeController extends ApplicationController {
 				$hours = substr($hoursToAdd, 0, $pos-1);
 				$hoursToAdd = $hours + $mins;
 			}
-                        if($minutes){
-                            $min = str_replace('.','',($minutes/6));
-                            $hoursToAdd = $hoursToAdd + ("0.".$min);                    
-                        }
+			if($minutes){
+				$min = str_replace('.','',($minutes/6));
+				$hoursToAdd = $hoursToAdd + ("0.".$min);
+			}
 				
 			if ($hoursToAdd <= 0){
 				flash_error(lang('time has to be greater than 0'));
@@ -178,8 +178,9 @@ class TimeController extends ApplicationController {
 			
 			
 			//Only admins can change timeslot user
-			if (!array_var($timeslot_data, 'contact_id', false) || !logged_user()->isAdministrator())
+			if (!array_var($timeslot_data, 'contact_id', false) || !logged_user()->isAdministrator()) {
 				$timeslot_data['contact_id'] = logged_user()->getId();
+			}
 			$timeslot->setFromAttributes($timeslot_data);
 			
 			$user = Contacts::findById($timeslot_data['contact_id']);
@@ -195,13 +196,11 @@ class TimeController extends ApplicationController {
 			DB::beginWork();
 			$timeslot->save();
 			
-			$member_ids = array();
-			$context = active_context();
-			foreach ($context as $selection) {
-				if ($selection instanceof Member) $member_ids[] = $selection->getId();
-			}
+			$member_ids = json_decode(array_var($_POST, 'members'));
 			$object_controller = new ObjectController();
 			$object_controller->add_to_members($timeslot, $member_ids);
+			
+			ApplicationLogs::createLog($timeslot, ApplicationLogs::ACTION_ADD);
 			DB::commit();
 			
 			$show_billing = can_manage_billing(logged_user());
@@ -301,6 +300,8 @@ class TimeController extends ApplicationController {
 			
 			$object_controller = new ObjectController();
 			$object_controller->add_to_members($timeslot, $member_ids);
+			
+			ApplicationLogs::createLog($timeslot, ApplicationLogs::ACTION_EDIT);
 			DB::commit();
 			
 			ajx_extra_data(array("timeslot" => $timeslot->getArrayInfo()));
@@ -332,6 +333,7 @@ class TimeController extends ApplicationController {
 		try {
 			DB::beginWork();
 			$timeslot->delete();
+                        ApplicationLogs::createLog($timeslot, ApplicationLogs::ACTION_DELETE);
 			DB::commit();
 			
 			ajx_extra_data(array("timeslotId" => get_id()));

@@ -99,6 +99,25 @@ og.MemberTree = function(config) {
 						if (mpath && mpath[config.dimensionId]) has_relations = true;
 					}
 				}
+                                
+                                function selectionHasAttachments() {
+                                    if(Ext.getCmp('mails-manager') != undefined){
+                                        var sm = Ext.getCmp('mails-manager').getSelectionModel();
+                                        var selections = sm.getSelections();
+                                        if (selections.length <= 0) {
+                                                return false;
+                                        } else {
+                                                for (var i=0; i < selections.length; i++) {
+                                                        if (selections[i].data.hasAttachment || selections[i].data.conv_hasatt) return true;
+                                                }	
+                                                return false;
+                                        }
+                                    }else{
+                                        return false;
+                                    }
+                                        
+                                }
+                                this.selectionHasAttachments = selectionHasAttachments;
 				
 				if (e.data.selections[0] && og.dimension_object_type_contents[config.dimensionId][e.target.object_type_id][e.data.selections[0].data.ot_id] &&
 						og.dimension_object_type_contents[config.dimensionId][e.target.object_type_id][e.data.selections[0].data.ot_id].multiple) {
@@ -106,22 +125,42 @@ og.MemberTree = function(config) {
 					if (og.preferences['drag_drop_prompt'] == 'prompt') {
 						var rm_prev = has_relations ? (confirm(lang('do you want to mantain the current associations of this obj with members of', config.title)) ? "0" : "1") : "1";
 					}else if (og.preferences['drag_drop_prompt'] == 'move') {
-						var rm_prev = true ;
+						var rm_prev = 1 ;
 					}else if (og.preferences['drag_drop_prompt'] == 'keep') {
-						var rm_prev = false ;
+						var rm_prev = 0 ;
 					}
-					
+
+                                        if (this.selectionHasAttachments() && e.target.id) {                                        
+                                            if (og.preferences['mail_drag_drop_prompt'] == 'prompt') {
+                                                    var attachment = confirm(lang('do you want to classify the unclassified emails attachments', config.title)) ? "1" : "0";
+                                            }else if (og.preferences['mail_drag_drop_prompt'] == 'classify') {
+                                                    var attachment = 1 ;
+                                            } else if (og.preferences['mail_drag_drop_prompt'] == 'dont') {
+                                                    var attachment = 0 ;
+                                            }
+                                        }
+                                        
 					og.openLink(og.getUrl('member', 'add_objects_to_member'),{
 						method: 'POST',
-						post: {objects: Ext.util.JSON.encode(ids), member: e.target.id, remove_prev:rm_prev},
+						post: {objects: Ext.util.JSON.encode(ids), member: e.target.id, remove_prev:rm_prev, attachment:attachment},
 						callback: function(){
 							e.data.grid.load();
 						}
-					});
+					});                                        
 				} else {
+                                        if (this.selectionHasAttachments() && e.target.id) {                                        
+                                            if (og.preferences['mail_drag_drop_prompt'] == 'prompt') {
+                                                    var attachment = confirm(lang('do you want to classify the unclassified emails attachments', config.title)) ? "1" : "0";
+                                            }else if (og.preferences['mail_drag_drop_prompt'] == 'classify') {
+                                                    var attachment = 1 ;
+                                            } else if (og.preferences['mail_drag_drop_prompt'] == 'dont') {
+                                                    var attachment = 0 ;
+                                            }
+                                        }
+                                        
 					og.openLink(og.getUrl('member', 'add_objects_to_member'),{
 						method: 'POST',
-						post: {objects: Ext.util.JSON.encode(ids), member: e.target.id},
+						post: {objects: Ext.util.JSON.encode(ids), member: e.target.id, attachment:attachment},
 						callback: function(){
 							e.data.grid.load();
 						}
@@ -203,12 +242,19 @@ og.MemberTree = function(config) {
 						if (trees){
 							this.suspendEvents();
 							this.totalFilterTrees = 0 ;
-							this.filteredTrees = 0 ;
+							this.filteredTrees = 0;
+							
+							var selected_members = [];
+							trees.each(function (item, index, length){
+								var sel = item.getSelectionModel().getSelectedNode();
+								if (sel && !isNaN(sel.attributes.id)) selected_members.push(sel.attributes.id);
+							});
+							
 							trees.each(function (item, index, length){
 								if ( self.id != item.id  && (!item.hidden ||item.reloadHidden) && self.reloadDimensions.indexOf(item.dimensionId) != -1  ) {
 									// Filter other Member Trees
 									self.totalFilterTrees++;
-									item.filterByMember(member ,function(){
+									item.filterByMember(selected_members ,function(){
 										self.filteredTrees ++ ;
 										if (self.filteredTrees == self.totalFilterTrees) {
 											self.resumeEvents() ;
@@ -308,6 +354,7 @@ Ext.extend(og.MemberTree, Ext.tree.TreePanel, {
 			c = c.nextSibling;
 		}
 		n.getUI().show();
+                this.collapseAll();
 		if (n.previousState == "e") {
 			n.expand(false, false);
 		} else if (n.previousState == "c") {
@@ -412,7 +459,7 @@ Ext.extend(og.MemberTree, Ext.tree.TreePanel, {
 		this.removeClass("root-hidden");
 	},
 	
-	filterByMember: function(memberId, callback) {
+	filterByMember: function(memberIds, callback) {
 		var tree = this ; //scope
 		var expandedNodes = tree.expandedNodes() ;
 		var selectedMembers = og.contextManager.getDimensionMembers(this.dimensionId) ;
@@ -422,7 +469,7 @@ Ext.extend(og.MemberTree, Ext.tree.TreePanel, {
 		this.collapseAll() ;
 		
 		this.loader =  new og.MemberChooserTreeLoader({
-			dataUrl: 'index.php?c=dimension&a=list_dimension_members_tree&ajax=true&dimension_id='+this.dimensionId+'&member_id='+memberId +'&avoid_session=1',	
+			dataUrl: 'index.php?c=dimension&a=initial_list_dimension_members_tree&ajax=true&dimension_id='+this.dimensionId+'&selected_ids='+ Ext.util.JSON.encode(memberIds) +'&avoid_session=1',	
 			ownerTree: this
 		});
 		this.loader.load(this.getRootNode(), function() {

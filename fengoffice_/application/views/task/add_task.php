@@ -13,14 +13,14 @@
 	
 	$visible_cps = CustomProperties::countVisibleCustomPropertiesByObjectType($task->getObjectTypeId());
         
-        $loc = user_config_option('localization');
+    $loc = user_config_option('localization');
 	if (strlen($loc) > 2) $loc = substr($loc, 0, 2);
 ?>
 <script>
 og.genid = '<?php echo $genid?>';
 og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Plugins::instance()->isActivePlugin('crpm') ? '1' : '0' ?>';
 </script>
-<form id="<?php echo $genid ?>submit-edit-form" style='height:100%;background-color:white' class="add-task" action="<?php echo $task->isNew() ? get_url('task', 'add_task', array("copyId" => array_var($task_data, 'copyId'))) : $task->getEditListUrl() ?>" method="post" onsubmit="return App.modules.addTaskForm.checkSubmitAddTask('<?php echo $genid; ?>','<?php echo $task->manager()->getObjectTypeId()?>') && og.handleMemberChooserSubmit('<?php echo $genid; ?>', <?php echo $task->manager()->getObjectTypeId() ?>) && og.setDescription() <?php if (array_var($task_data, 'multi_assignment') && Plugins::instance()->isActivePlugin('crpm')) { echo "&& og.TaskMultiAssignment()";}?>;">
+<form id="<?php echo $genid ?>submit-edit-form" style='height:100%;background-color:white' class="add-task" action="<?php echo $task->isNew() ? get_url('task', 'add_task', array("copyId" => array_var($task_data, 'copyId'))) : $task->getEditListUrl() ?>" method="post" onsubmit="return App.modules.addTaskForm.checkSubmitAddTask('<?php echo $genid; ?>','<?php echo $task->manager()->getObjectTypeId()?>') && og.setDescription() <?php if (Plugins::instance()->isActivePlugin('gantt')) { echo "&& og.ControlDates('". array_var($task_data, 'type_control')."')";}?> <?php if (array_var($task_data, 'multi_assignment') && Plugins::instance()->isActivePlugin('crpm')) { echo "&& og.TaskMultiAssignment()";}?>;">
 
 <div class="task">
 <div class="coInputHeader">
@@ -77,15 +77,17 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
         <input id="<?php echo $genid?>type_related" type="hidden" name="type_related" value="only" />
         <input id="<?php echo $genid?>multi_assignment_aplly_change" type="hidden" name="task[multi_assignment_aplly_change]" value="" />
         <input id="<?php echo $genid?>view_add" type="hidden" name="view_add" value="true" />
+        <input id="<?php echo $genid?>control_dates" type="hidden" name="control_dates" value="false" />
 	
 	<div id="<?php echo $genid ?>add_task_select_context_div" style="display:none">
 	<fieldset>
 		<legend><?php echo lang('context')?></legend>
 		<?php
+			$listeners = array('on_selection_change' => 'og.reload_task_form_selectors()');
 			if ($task->isNew()) {
-				render_dimension_trees($task->manager()->getObjectTypeId(), $genid, null, array('select_current_context' => true));
+				render_member_selectors($task->manager()->getObjectTypeId(), $genid, null, array('select_current_context' => true, 'listeners' => $listeners));
 			} else {
-				render_dimension_trees($task->manager()->getObjectTypeId(), $genid, $task->getMemberIds());
+				render_member_selectors($task->manager()->getObjectTypeId(), $genid, $task->getMemberIds(), array('listeners' => $listeners));
 			} 
 		?>
 	</fieldset>
@@ -176,21 +178,21 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
     	</td><td>
 			<div style="float:left;"><?php echo pick_date_widget2('task_start_date', array_var($task_data, 'start_date'), $genid, 60, true, $genid.'start_date') ?></div>
 			<?php if (config_option('use_time_in_task_dates')) { ?>
-			<div style="float:left;margin-left:10px;"><?php echo pick_time_widget2('task_start_time', $task->getUseStartTime() ? array_var($task_data, 'start_date') : user_config_option('work_day_start_time'), $genid, 65) ?></div>
+			<div style="float:left;margin-left:10px;"><?php echo pick_time_widget2('task_start_time', $task->getUseStartTime() ? array_var($task_data, 'start_date') : user_config_option('work_day_start_time'), $genid, 65, null, $genid.'start_date_time') ?></div>
 			<?php } ?>
 		</td></tr><tr><td style="padding-right: 10px">
 		<?php echo label_tag(lang('due date')) ?>
     	</td><td>
     		<div style="float:left;"><?php echo pick_date_widget2('task_due_date', array_var($task_data, 'due_date'), $genid, 70, true, $genid.'due_date'); ?></div>
     		<?php if (config_option('use_time_in_task_dates')) { ?>
-    		<div style="float:left;margin-left:10px;"><?php echo pick_time_widget2('task_due_time', $task->getUseDueTime() ? array_var($task_data, 'due_date') : user_config_option('work_day_end_time'), $genid, 75); ?></div>
+    		<div style="float:left;margin-left:10px;"><?php echo pick_time_widget2('task_due_time', $task->getUseDueTime() ? array_var($task_data, 'due_date') : user_config_option('work_day_end_time'), $genid, 75, null, $genid.'due_date_time'); ?></div>
     		<?php } ?>
     		<div class="clear"></div>
 		</td></tr></tbody></table>
 		</div>
 		
 		<div id='<?php echo $genid ?>add_task_time_div' style="padding-top:6px">
-		<?php echo label_tag(lang('time estimate')) ?>
+		<?php echo label_tag(lang('estimated time')) ?>
                 <?php 
                         $totalTime = array_var($task_data, 'time_estimate', 0); 
                         $minutes = $totalTime % 60;
@@ -262,7 +264,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 				<?php $k++;
 				}
 			} ?>
-			</div><a class="coViewAction ico-add" id="<?php echo $genid?>previous_before" href="#" onclick="og.pickPreviousTask(this, '<?php echo $genid?>')"><?php echo lang('add previous task') ?></a>
+			</div><a class="coViewAction ico-add" id="<?php echo $genid?>previous_before" href="#" onclick="og.pickPreviousTask(this, '<?php echo $genid?>',<?php echo $task->getId()?>)"><?php echo lang('add previous task') ?></a>
 		
 		</div>
 		<?php } ?>
@@ -464,7 +466,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
                 <?php 
                     if(config_option("wysiwyg_tasks")){
                         if(array_var($task_data, 'type_content') == "text"){
-                            $ckEditorContent = nl2br(htmlspecialchars(array_var($task_data, 'text')));
+                            $ckEditorContent = purify_html(nl2br(array_var($task_data, 'text')));
                         }else{
                             $ckEditorContent = purify_html(nl2br(array_var($task_data, 'text')));
                         }                        
@@ -476,18 +478,18 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
                 <script>
                     var h = document.getElementById("<?php echo $genid ?>ckcontainer").offsetHeight;
                     var editor = CKEDITOR.replace('<?php echo $genid ?>ckeditor', {
-                        uiColor: '#BBCCEA',
                         height: h,
-                        enterMode: CKEDITOR.ENTER_BR,
+                        enterMode: CKEDITOR.ENTER_DIV,
                         shiftEnterMode: CKEDITOR.ENTER_BR,
                         disableNativeSpellChecker: false,
                         language: '<?php echo $loc ?>',
-                        customConfig: '',
+                        customConfig: '',                      
                         toolbar: [
-                                        ['FontSize','-','Bold','Italic','Underline','-', 'SpellChecker', 'Scayt','-',
-                                        //'NumberedList','BulletedList','-',
-                                        'TextColor','BGColor','-',
-                                        'JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock']
+									['FontSize','-','Bold','Italic','Underline', 'Blockquote','-',
+									 'SpellChecker', 'Scayt','-',
+									 'TextColor','BGColor','-',
+									 'Link','Unlink','-',
+									 'JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock']
                                 ],
                         on: {
                                 instanceReady: function(ev) {
@@ -595,6 +597,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 	        cls: 'assigned-to-combo',
 	        triggerAction: 'all',
 	        selectOnFocus:true,
+	        listWidth: 'auto',
 	        width:160,
 	        tabIndex: '150',
 	        valueField: 'value',
@@ -664,7 +667,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 		}		
 	}
 	
-	og.redrawUserLists(og.contextManager.plainContext());
+	//og.redrawUserLists(og.contextManager.plainContext());
         
         <?php if(!$task->isCompleted()){?>
 	og.changeTaskRepeat = function() {
@@ -687,50 +690,36 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 	og.changeTaskRepeat();
         <?php }?>
 
-	var memberChoosers = Ext.getCmp('<?php echo "$genid-member-chooser-panel-".$task->manager()->getObjectTypeId()?>').items;
-	
-	if (memberChoosers) {
-		
-		memberChoosers.each(function(item, index, length) {
-			item.on('all trees updated', function() {
-				var dimensionMembers = {};
-				memberChoosers.each(function(it, ix, l) {
-					dim_id = this.dimensionId;
-					dimensionMembers[dim_id] = [];
-					var checked = it.getChecked("id");
-					for (var j = 0 ; j < checked.length ; j++ ) {
-						dimensionMembers[dim_id].push(checked[j]);
-					}
-				});
 
-				var milestone_el = document.getElementById('<?php echo $genid ?>taskListFormMilestone');
-				var actual_value = milestone_el ? milestone_el.value : 0;
-				Ext.get('<?php $genid ?>add_task_more_div_milestone_combo').load({
-					url: og.getUrl('milestone', 'render_add_milestone', {
-						context: Ext.util.JSON.encode(dimensionMembers),
-						genid: '<?php echo $genid ?>',
-						selected: actual_value
-					}),
-					scripts: true
-				});
 
-				var uids = App.modules.addMessageForm.getCheckedUsers('<?php echo $genid ?>');
-
-				Ext.get('<?php echo $genid ?>add_subscribers_content').load({
-					url: og.getUrl('object', 'render_add_subscribers', {
-						context: Ext.util.JSON.encode(dimensionMembers),
-						users: uids,
-						genid: '<?php echo $genid ?>',
-						otype: '<?php echo $task->manager()->getObjectTypeId()?>'
-					}),
-					scripts: true
-				});
-				og.redrawUserLists(Ext.util.JSON.encode(dimensionMembers));
-
-			});
+	og.reload_task_form_selectors = function() {
+		var dimension_members_json = Ext.util.JSON.encode(member_selector['<?php echo $genid ?>'].sel_context);
+		var milestone_el = document.getElementById('<?php echo $genid ?>taskListFormMilestone');
+		var actual_value = milestone_el ? milestone_el.value : 0;
+		Ext.get('<?php $genid ?>add_task_more_div_milestone_combo').load({
+			url: og.getUrl('milestone', 'render_add_milestone', {
+				context: dimension_members_json,
+				genid: '<?php echo $genid ?>',
+				selected: actual_value
+			}),
+			scripts: true
 		});
+	
+		var uids = App.modules.addMessageForm.getCheckedUsers('<?php echo $genid ?>');
+	
+		Ext.get('<?php echo $genid ?>add_subscribers_content').load({
+			url: og.getUrl('object', 'render_add_subscribers', {
+				context: dimension_members_json,
+				users: uids,
+				genid: '<?php echo $genid ?>',
+				otype: '<?php echo $task->manager()->getObjectTypeId()?>'
+			}),
+			scripts: true
+		});
+		og.redrawUserLists(dimension_members_json);
 	}
-
+	og.reload_task_form_selectors();
+	
 	Ext.get('ogTasksPanelATTitle').focus();
         
         Ext.extend(og.TaskPopUp, Ext.Window, {
@@ -773,4 +762,17 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
             <?php       }
                     }//foreach ?>
         <?php }//if ?>
+            
+        og.ControlDates = function(type){
+            <?php if (!array_var($task_data, 'multi_assignment')){?>
+                if(type == "child"){
+                    return og.PermissionControlDateSubtask('<?php echo array_var($task_data, 'parent_id')?>');
+                } else if (type == "father"){
+                    return og.ControlDateParent('<?php echo array_var($task_data, 'control_start_date')?>','<?php echo array_var($task_data, 'control_due_date')?>');
+                }
+                return true;
+            <?php }else{?>
+                return true;
+            <?php }?>
+        }
 </script>

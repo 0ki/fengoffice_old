@@ -419,9 +419,7 @@ class html2text
         $text = str_replace('"',"'",$text);
 
         // Run our defined search-and-replace
-        Logger::setEnabled(false);
         $text = @preg_replace($this->search, $this->replace, $text);
-        Logger::setEnabled(true);
 
         // Strip any other HTML tags
         $text = strip_tags($text, $this->allowed_tags);

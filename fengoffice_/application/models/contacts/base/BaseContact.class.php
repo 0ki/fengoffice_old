@@ -625,28 +625,6 @@
       return $this->setColumnValue('default_billing_id', $value);
     } // setDefaultBillingId()
     
-    /**
-    * Set value of brand_colors field
-    *
-    * @access public   
-    * @param integer $value
-    * @return boolean
-    */
-    function setBrandColors($value) {
-      return $this->setColumnValue('brand_colors', $value);
-    } // setBrandColors()    
-    
-    /**
-    * Get value of brand_colors field
-    *
-    * @access public   
-    * @param integer $value
-    * @return boolean
-    */
-    function getBrandColors() {
-      return $this->getColumnValue('brand_colors');
-    } // getBrandColors()      
-    
 	
     /**
     * Return manager instance

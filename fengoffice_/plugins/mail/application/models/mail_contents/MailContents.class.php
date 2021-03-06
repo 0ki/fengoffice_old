@@ -208,7 +208,7 @@ class MailContents extends BaseMailContents {
 	 * @param Project $project
 	 * @return array
 	 */
-	function getEmails($account_id = null, $state = null, $read_filter = "", $classif_filter = "", $context = null, $start = null, $limit = null, $order_by = 'received_date', $dir = 'ASC', $archived = false) {
+	function getEmails($account_id = null, $state = null, $read_filter = "", $classif_filter = "", $context = null, $start = null, $limit = null, $order_by = 'received_date', $dir = 'ASC', $join_params = null, $archived = false) {
 		$mailTablePrefix = "e";
 		
 		$accountConditions = "";
@@ -300,7 +300,8 @@ class MailContents extends BaseMailContents {
 			'order' => $order_by,
 			'order_dir' => $dir,
 			'extra_conditions' => "$accountConditions $classified $read $conversation_cond $box_cond",
-			'count_results' => false
+			'count_results' => false,
+                        'join_params' => $join_params
 		));
 		
 		

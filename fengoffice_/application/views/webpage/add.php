@@ -4,10 +4,8 @@
 	$genid = gen_id();
 ?>
 
-<form onsubmit="return og.handleMemberChooserSubmit('<?php echo $genid; ?>', <?php echo $webpage->manager()->getObjectTypeId() ?>);" 
-	id="<?php echo $genid ?>submit-edit-form" style='height: 100%; background-color: white' class="internalForm"
-	action="<?php echo $webpage->isNew() ? get_url('webpage', 'add') : $webpage->getEditUrl() ?>"
-	method="post">
+<form id="<?php echo $genid ?>submit-edit-form" style='height: 100%; background-color: white' class="internalForm"
+	action="<?php echo $webpage->isNew() ? get_url('webpage', 'add') : $webpage->getEditUrl() ?>" method="post">
 
 <div class="webpage">
 <div class="coInputHeader">
@@ -52,10 +50,11 @@
 	<div id="<?php echo $genid ?>add_webpage_select_context_div" style="display:none">
 		
 		<?php 
+		$listeners = array('on_selection_change' => 'og.reload_subscribers("'.$genid.'",'.$webpage->manager()->getObjectTypeId().')');
 		if ($webpage->isNew()) {
-			render_dimension_trees($webpage->manager()->getObjectTypeId(), $genid, null, array('select_current_context' => true)); 
+			render_member_selectors($webpage->manager()->getObjectTypeId(), $genid, null, array('select_current_context' => true, 'listeners' => $listeners)); 
 		} else {
-			render_dimension_trees($webpage->manager()->getObjectTypeId(), $genid, $webpage->getMemberIds()); 
+			render_member_selectors($webpage->manager()->getObjectTypeId(), $genid, $webpage->getMemberIds(), array('listeners' => $listeners)); 
 		} ?>
 	
 	</div>
@@ -112,34 +111,5 @@
 </form>
 
 <script>
-	var memberChoosers = Ext.getCmp('<?php echo "$genid-member-chooser-panel-".$webpage->manager()->getObjectTypeId()?>').items;
-		
-	if (memberChoosers) {
-		memberChoosers.each(function(item, index, length) {
-			item.on('all trees updated', function() {
-				var dimensionMembers = {};
-				memberChoosers.each(function(it, ix, l) {
-					dim_id = this.dimensionId;
-					dimensionMembers[dim_id] = [];
-					var checked = it.getChecked("id");
-					for (var j = 0 ; j < checked.length ; j++ ) {
-						dimensionMembers[dim_id].push(checked[j]);
-					}
-				});
-	
-				var uids = App.modules.addMessageForm.getCheckedUsers('<?php echo $genid ?>');
-				Ext.get('<?php echo $genid ?>add_subscribers_content').load({
-					url: og.getUrl('object', 'render_add_subscribers', {
-						context: Ext.util.JSON.encode(dimensionMembers),
-						users: uids,
-						genid: '<?php echo $genid ?>',
-						otype: '<?php echo $webpage->manager()->getObjectTypeId()?>'
-					}),
-					scripts: true
-				});
-			});
-		});
-	}
-
 	Ext.get('<?php echo $genid ?>webpageFormTitle').focus();
 </script>

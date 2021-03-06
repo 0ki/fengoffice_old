@@ -232,7 +232,10 @@
         'config activity' => 'Filter activity',
         'entry to see the dimension' => 'Entry to see the dimension',
         'recent activities to show' => 'Recent activities to show',
+  		'recent activities to show display' => 'Display',
+  		'recent activities to show lines' => 'lines',
         'views and downloads' => 'View views and downloads',
+        'confirm delete permanently sync' => 'Are you sure you want to delete the sync data?',
   ); // array
 
 ?>

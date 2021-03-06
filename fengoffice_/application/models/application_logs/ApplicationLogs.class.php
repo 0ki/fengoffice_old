@@ -30,6 +30,7 @@ class ApplicationLogs extends BaseApplicationLogs {
 	const ACTION_DOWNLOAD    = 'download';
 	const ACTION_CHECKOUT    = 'checkout';
 	const ACTION_CHECKIN     = 'checkin';
+    const ACTION_MADE_SEVERAL_CHANGES     = 'made ​​several changes';
 	
 	/**
 	 * Create new log entry and return it
@@ -42,7 +43,7 @@ class ApplicationLogs extends BaseApplicationLogs {
 	 * @param boolean $save Save log object before you save it
 	 * @return ApplicationLog
 	 */
-	static function createLog(ApplicationDataObject $object, $action = null, $is_private = false, $is_silent = null, $save = true, $log_data = '') {
+	static function createLog($object, $action = null, $is_private = false, $is_silent = null, $save = true, $log_data = '') {
 		if(is_null($action)) {
 			$action = self::ACTION_ADD;
 		} // if
@@ -73,6 +74,10 @@ class ApplicationLogs extends BaseApplicationLogs {
 		if ($object instanceof ContentDataObject) {
 			$log->setRelObjectId($object->getObjectId());
 			$log->setObjectName($object->getObjectName());
+		}
+		if ($object instanceof Member) {
+			$log->setRelObjectId($object->getId());
+			$log->setObjectName($object->getName());
 		}
 		
 		$log->setAction($action);
@@ -165,10 +170,10 @@ class ApplicationLogs extends BaseApplicationLogs {
 			)); // findAll				
 		} else {	
 			$logs = self::findAll(array(
-	        'conditions' => array('`is_private` <= ? AND `is_silent` <= ? AND `rel_object_id` = (?) OR `is_private` <= ? AND `is_silent` <= ? AND `rel_object_id`IN (SELECT `object_id` FROM '.Comments::instance()->getTableName(true).' WHERE `rel_object_id` = (?))', $private_filter, $silent_filter, $object->getId(),$private_filter, $silent_filter, $object->getId()),
-	        'order' => '`created_on` DESC',
-	        'limit' => $limit,
-	        'offset' => $offset,
+                            'conditions' => array('`is_private` <= ? AND `is_silent` <= ? AND `rel_object_id` = (?) OR `is_private` <= ? AND `is_silent` <= ? AND (`rel_object_id`IN (SELECT `object_id` FROM '.Comments::instance()->getTableName(true).' WHERE `rel_object_id` = (?)) OR `rel_object_id`IN (SELECT `object_id` FROM '.Timeslots::instance()->getTableName(true).' WHERE `rel_object_id` = (?)))', $private_filter, $silent_filter, $object->getId(),$private_filter, $silent_filter, $object->getId(), $object->getId()),
+                            'order' => '`created_on` DESC',
+                            'limit' => $limit,
+                            'offset' => $offset,
 			)); // findAll
 		}
 		
@@ -189,7 +194,7 @@ class ApplicationLogs extends BaseApplicationLogs {
 			// Get more objects to substitute the removed ones
 			if ($limit && $removed > 0) {
 				$other_logs = self::findAll(array(
-			        'conditions' => array('`is_private` <= ? AND `is_silent` <= ? AND `rel_object_id` = (?) OR `is_private` <= ? AND `is_silent` <= ? AND `rel_object_id`IN (SELECT `id` FROM '.Comments::instance()->getTableName(true).' WHERE `rel_object_id` = (?))', $private_filter, $silent_filter, $object->getId(),$private_filter, $silent_filter, $object->getId()),
+			        'conditions' => array('`is_private` <= ? AND `is_silent` <= ? AND `rel_object_id` = (?) OR `is_private` <= ? AND `is_silent` <= ? AND (`rel_object_id`IN (SELECT `id` FROM '.Comments::instance()->getTableName(true).' WHERE `rel_object_id` = (?)) AND `rel_object_id`IN (SELECT `object_id` FROM '.Timeslots::instance()->getTableName(true).' WHERE `rel_object_id` = (?)))', $private_filter, $silent_filter, $object->getId(),$private_filter, $silent_filter, $object->getId(), $object->getId()),
 			        'order' => '`created_on` DESC',
 			        'limit' => $next_offset + $removed,
 			        'offset' => $next_offset,
@@ -202,6 +207,38 @@ class ApplicationLogs extends BaseApplicationLogs {
 		
 		return $logs;
 	} // getObjectLogs
+        
+        static function getLastActivities() {
+            $members = active_context_members(false); // Context Members Ids
+            $options = explode(",",user_config_option("filters_dashboard",null,null,true));
+            
+            $extra_conditions = "action <> 'login' AND action <> 'logout' AND action <> 'subscribe' ";
+            if($options[1] == 0){//no view timeslot
+                $extra_conditions .= "AND action <> 'open' AND action <> 'close' AND ((action <> 'add' OR action <> 'edit' OR action <> 'delete') AND object_name NOT LIKE 'Timeslot%')";
+            }
+            
+            $members_sql = "";
+            if(count($members) > 0){
+                $members_sql = "rel_object_id IN (SELECT object_id FROM " . TABLE_PREFIX . "object_members om WHERE member_id IN (" . implode ( ',', $members ) . ")  
+                                GROUP BY object_id
+                                HAVING count(member_id) = ".count($members).")";
+            }
+            
+            $permissions_sql = '';
+//            $permissions_sql = "AND rel_object_id IN ( 
+//    			SELECT object_id FROM ".TABLE_PREFIX."sharing_table
+//    			WHERE group_id  IN (
+//	     			SELECT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups WHERE contact_id = ".logged_user()->getId()."
+//				)
+//			)";
+            
+            $condition = ($members_sql != "" ? $members_sql . " AND " : "") . $extra_conditions . $permissions_sql;
+            return ApplicationLogs::findAll(array( 
+                "condition" => $condition,
+                "order" => "created_on DESC",
+                "limit" => "100"
+            ));
+	}
 
 } // ApplicationLogs
 

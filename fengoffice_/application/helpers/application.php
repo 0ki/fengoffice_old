@@ -228,7 +228,6 @@ function allowed_users_to_assign_all($context = null) {
 		),
 		"order" => "name"
 	));
-	
 
 	$comp_ids = array("0");
 	$comp_array = array("0" => array('id' => "0", 'name' => lang('without company'), 'users' => array() ));
@@ -249,6 +248,51 @@ function allowed_users_to_assign_all($context = null) {
 	foreach ($contacts as $contact) { /* @var $contact Contact */
 		if ( TabPanelPermissions::instance()->count( array( "conditions" => "permission_group_id = ".$contact->getPermissionGroupId(). " AND tab_panel_id = 'tasks-panel' " ))){
 			$comp_array[]['users'][] = array('id' => $contact->getId(), 'name' => $contact->getObjectName(), 'isCurrent' => $contact->getId() == logged_user()->getId());
+		}
+	}
+	return array_values($comp_array);
+}
+
+function allowed_users_to_assign_all_mobile($member_id = null) {
+	if ($member_id == null) {
+		$context = active_context();
+	}else{
+                $member = Members::findById($member_id) ;													
+                if ($member instanceof Member){
+                        $context[] = $member ;
+                }
+        }
+	
+	// only companies with users
+	$companies = Contacts::findAll(array(
+		"conditions" => "e.is_company = 1 AND EXISTS (SELECT object_id FROM ".TABLE_PREFIX."contacts WHERE is_company = 0 AND user_type > 0 AND company_id = o.id  )",
+		"join" => array(
+			"table" => Contacts::instance()->getTableName(),
+			"jt_field" => "object_id",
+			"j_sub_q" => "SELECT xx.object_id FROM ".Contacts::instance()->getTableName(true)." xx WHERE xx.is_company=0 AND xx.company_id = e.object_id LIMIT 1"
+		),
+		"order" => "name"
+	));
+
+	$comp_ids = array("0");
+	$comp_array = array("0" => array('id' => "0", 'name' => lang('without company'), 'users' => array() ));
+	
+	foreach ($companies as $company) {
+		$comp_ids[] = $company->getId();
+		$comp_array[$company->getId()] = array('id' => $company->getId(), 'name' => $company->getObjectName(), 'users' => array() );
+	}
+	
+	if(!can_manage_tasks(logged_user()) && can_task_assignee(logged_user())) {
+		$contacts = array(logged_user());
+	} else if (can_manage_tasks(logged_user())) {
+		$contacts = allowed_users_in_context(ProjectTasks::instance()->getObjectTypeId(), $context, ACCESS_LEVEL_READ, "AND `is_company`=0 AND `company_id` IN (".implode(",", $comp_ids).")");
+	} else {
+		$contacts = array();
+	}
+	
+	foreach ($contacts as $contact) { /* @var $contact Contact */
+		if ( TabPanelPermissions::instance()->count( array( "conditions" => "permission_group_id = ".$contact->getPermissionGroupId(). " AND tab_panel_id = 'tasks-panel' " ))){
+			$comp_array[$contact->getCompanyId()]['users'][] = array('id' => $contact->getId(), 'name' => $contact->getObjectName(), 'isCurrent' => $contact->getId() == logged_user()->getId());
 		}
 	}
 	return array_values($comp_array);
@@ -650,6 +694,76 @@ function render_application_logs($log_entries, $options = null) {
 } // render_application_logs
 
 
+
+function autocomplete_member_combo($name, $dimension_id, $options, $emptyText, $attributes, $forceSelection = true, $cmp_id = '', $listeners = array()) {
+	require_javascript("og/MemberCombo.js");
+	
+	$is_ajax = array_var($attributes, 'is_ajax');
+	
+	if ($is_ajax) {
+		$mode = 'remote';
+		$min_chars = '2';
+		$store_str = 'store: new Ext.data.Store({
+			proxy: new Ext.data.HttpProxy({
+				method:"GET",
+				url: "'.get_url('dimension', 'initial_list_dimension_members_tree', array('ajax' => 'true', 'dimension_id' => $dimension_id, 'onlyname' => '1')).'"
+			}),
+			reader: new Ext.data.JsonReader({
+				root: "dimension_members",
+				fields: [{name: "id"},{name: "name"},{name: "path"},{name: "to_show"},{name: "ico"},{name: "dim"}]
+			})
+		})';
+	} else {
+		$mode = 'local';
+		$min_chars = '0';
+		$jsArray = "";
+		foreach ($options as $o) {
+			if ($jsArray != "") $jsArray .= ",";
+			$jsArray .= '['.json_encode($o[0]).','.json_encode(clean($o[1])).','.json_encode(clean($o[2])).','.json_encode(clean($o[3])).','.json_encode(clean($o[4])).','.json_encode(clean($o[5])).']';
+		}
+		$store_str = 'store: new Ext.data.SimpleStore({
+        	fields: ["id", "name", "path", "to_show", "ico", "dim"],
+        	data: ['.$jsArray.']
+		})';
+	}
+
+	$id = array_var($attributes, "id", gen_id());
+	$attributes["id"] = $id;
+	$attributes["autocomplete"] = "off";
+	$attributes["onkeypress"] = "if (event.keyCode == 13) return false;";
+	
+	$listeners_str = "";
+	foreach ($listeners as $event => $function) {
+		$listeners_str .= ($listeners_str == "" ? "" : ",");
+		$listeners_str .= "$event: $function";
+	}
+	
+	$html = '<div class="og-membercombo-container">' . text_field($name, array_var($attributes, 'selected_name', ''), $attributes) . '</div>
+		<script>
+		new og.MemberCombo({
+			'.$store_str.',
+			'.($cmp_id == ''?'':'id:"'.$cmp_id.'",').'
+			valueField: "id",
+        	displayField: "to_show",
+        	searchField: "name",
+        	mode: "'.$mode.'",
+        	minChars: '.$min_chars.',
+        	forceSelection: '.($forceSelection?'true':'false').',
+        	triggerAction: "all",
+        	tpl: "<tpl for=\".\"><div class=\"x-combo-list-item\">{to_show}</div></tpl>",
+        	listWidth: "auto",
+        	emptyText: "'.clean($emptyText).'",
+        	applyTo: "'.$id.'",
+        	enableKeyEvents: true,
+        	listeners: {' . $listeners_str . '}
+    	});
+    	</script>
+	';
+	return $html;
+}
+
+
+
 /**
  * Comma separated values from a set of options.
  *
@@ -693,7 +807,7 @@ function autocomplete_textfield($name, $value, $options, $emptyText, $attributes
         	forceSelection: '.($forceSelection?'true':'false').',
         	triggerAction: "all",
         	tpl: "<tpl for=\".\"><div class=\"x-combo-list-item\">{clean}</div></tpl>",
-        	emptyText: "",
+        	emptyText: "'.clean($emptyText).'",
         	applyTo: "'.$id.'"
     	});
     	</script>
@@ -1306,10 +1420,10 @@ function buildTree ($nodeList , $parentField = "parent", $childField = "children
 	do {
 		$insertedCount = 0 ;		
 		foreach ($nodeList as $k => &$node) {
-			if ($textField) $node["text"] = $node[$textField] ;
-			$node['leaf'] = true ;			
-			if ($node['selectable']) $node[$checkedField] = false  ;
-			$parentId = $node[$parentField] ;
+			if ($textField) $node["text"] = $node[$textField];
+			$node['leaf'] = true;
+			if (array_var($node, 'selectable')) $node[$checkedField] = false;
+			$parentId = array_var($node, $parentField, 0);
 			$id = $node[$idField];
 			if ( !isset($inserted[$id])){
 				if ($parentId == 0) {
@@ -1397,6 +1511,7 @@ function buildTree ($nodeList , $parentField = "parent", $childField = "children
 
 			var tree = new og.MemberChooserTree ( config );
 			memberChooserPanel.add(tree);
+			og.can_submit_members = true;
 			memberChooserPanel.doLayout();
 		</script>
 	

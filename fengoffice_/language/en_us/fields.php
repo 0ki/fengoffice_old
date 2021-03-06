@@ -86,7 +86,8 @@ return array(
 	'field Contacts username' => 'Username',
 
 	// Email fields
-    'field MailContents from' => 'From',
+    'field MailContents name' => 'Subject',
+    'field MailContents from' => 'From (email address)',
     'field MailContents from_name' => 'From name',
     'field MailContents to'  => 'To',
     'field MailContents date' => 'Date',
@@ -199,7 +200,7 @@ return array(
 	'field ProjectTasks started_on' => 'Started on',
 	'field ProjectTasks priority' => 'Priority', 
     'field ProjectTasks assigned_on' => 'Assigned on',
-	'field ProjectTasks time_estimate' => 'Time estimate',
+	'field ProjectTasks time_estimate' => 'Estimated time',
 	'field ProjectTasks is_template' => 'Is template',
 	'field ProjectTasks created_by_id' => 'Created by',
 	'field ProjectTasks updated_by_id' => 'Updated by',

@@ -1,4 +1,4 @@
- <?php set_page_title(lang('login')) ?>
+<?php set_page_title(lang('login')) ?>
 <script>
 	showMoreOptions = function() {
 		var div = document.getElementById("optionsDiv");
@@ -48,7 +48,7 @@
 	<!-- table><tr><td -->
   		<div id="loginSubmit">
   			<?php echo submit_button(lang('login')) ?>
-  			<span>(<a class="internalLink" href="<?php echo get_url('access', 'forgot_password') ?>"><?php echo lang('forgot password') ?></a>)</span>
+  			<span><a class="internalLink" href="<?php echo get_url('access', 'forgot_password') ?>"><?php echo lang('forgot password') ?></a></span>
   			<a id="optionsLink" href="javascript:showMoreOptions()"> <?php echo lang('options'); ?></a>
   			<a id="hideOptionsLink" style="display:none" href="javascript:hideMoreOptions()"> <?php echo lang ('hide options'); ?></a>
   		</div>

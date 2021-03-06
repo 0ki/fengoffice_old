@@ -210,6 +210,28 @@
     function setFilesize($value) {
       return $this->setColumnValue('filesize', $value);
     } // setFilesize() 
+    
+    /**
+    * Return value of 'hash' field
+    *
+    * @access public
+    * @param void
+    * @return string 
+    */
+    function getHash() {
+      return $this->getColumnValue('hash');
+    } // getHash()
+    
+    /**
+    * Set value of 'hash' field
+    *
+    * @access public   
+    * @param string $value
+    * @return boolean
+    */
+    function setHash($value) {
+      return $this->setColumnValue('hash', $value);
+    } // setHash() 
 
     
     /**

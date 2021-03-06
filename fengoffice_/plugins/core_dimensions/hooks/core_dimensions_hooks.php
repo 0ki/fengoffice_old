@@ -7,13 +7,12 @@ function core_dimensions_after_edit_profile($user, &$ignored) {
 	if ($person_member instanceof Member) {
 		$person_member->setName($user->getObjectName());
 		$person_member->save();
-		evt_add("reload dimension tree", $person_member->getDimensionId());
+		evt_add("reload dimension tree", array('dim_id' => $person_member->getDimensionId(),'dim_id' => $person_member->getDimensionId(), 'node' => $person_member->getId()));
 	}
 	
 }
 
 function core_dimensions_after_add_to_members($object, &$ignored) {
-	if ($object instanceof Report || $object instanceof Timeslot) return;
 	
 	// Add to persons and users dimensions
 	$user_ids = array();
@@ -38,13 +37,13 @@ function core_dimensions_after_add_to_members($object, &$ignored) {
 	}
 	
 	$context = active_context();
-        if(count($context) > 0){
-            foreach ($context as $selection) {
-                    if ($selection instanceof Member && $selection->getDimension()->getCode() == 'feng_persons') {
-                            $object->addToMembers(array($selection));
-                    }
-            }
-        }
+	if(count($context) > 0){
+		foreach ($context as $selection) {
+			if ($selection instanceof Member && $selection->getDimension()->getCode() == 'feng_persons') {
+				$object->addToMembers(array($selection));
+			}
+		}
+	}
 	
 	
 	core_dim_add_to_person_user_dimensions ($object, $user_ids);
@@ -99,7 +98,7 @@ function core_dimensions_after_update($object, &$ignored) {
 			$member->save();
 			// reload only if not disabling or enabling user
 			if (!(array_var($_REQUEST, 'c') == 'account' && (array_var($_REQUEST, 'a') == 'disable' || array_var($_REQUEST, 'a') == 'restore_user'))) {
-				evt_add("reload dimension tree", $member->getDimensionId());
+				evt_add("reload dimension tree", array('dim_id' => $member->getDimensionId()));
 			}
 			$objectsProcessed[$object->getId()] = true ;
 		}
@@ -202,7 +201,7 @@ function core_dimensions_after_user_deleted(Contact $user, $null) {
 	if ( count($members) ) {
 		foreach ($members as $member){
 			$member->delete();
-			evt_add("reload dimension tree", $member->getDimensionId());
+			evt_add("reload dimension tree", array('dim_id' => $member->getDimensionId()));
 		}
 	}
 }
@@ -308,7 +307,7 @@ function core_dim_add_new_contact_to_person_dimension($object) {
 		}
 		
 		if ($reload_dimension) {
-			evt_add("reload dimension tree", $member->getDimensionId());
+			evt_add("reload dimension tree", array('dim_id' => $member->getDimensionId()));
 		}
 	}
 }

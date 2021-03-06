@@ -1,6 +1,9 @@
 <?php
 set_page_title(lang('calendar sinchronization'));
 $genid = gen_id();
+if(array_var($user, 'id')){
+    add_page_action(lang('delete'), "javascript:if(confirm('".lang('confirm delete permanently sync')."')) og.openLink('".get_url('event', 'delete_calendar_user')."');", 'ico-delete');
+}
 ?>
 
 <div id="<?php echo $genid ?>sincrhonization" class="adminMailAccounts" style="height: 100%; background-color: white">
@@ -58,9 +61,9 @@ $genid = gen_id();
                 <legend><?php echo lang('context') ?></legend>
                 <?php
                         if (array_var($user, 'id')) {
-                                render_dimension_trees(ProjectEvents::instance()->getObjectTypeId(), $genid, array_var($user, 'related_to'));
+                                render_member_selectors(ProjectEvents::instance()->getObjectTypeId(), $genid, array_var($user, 'related_to'), array('listeners' => $listeners));
                         } else {
-                                render_dimension_trees(ProjectEvents::instance()->getObjectTypeId(), $genid, null, array('select_current_context' => true));
+                                render_member_selectors(ProjectEvents::instance()->getObjectTypeId(), $genid, null, array('select_current_context' => true, 'listeners' => $listeners));
                         } 
                 ?>
         </fieldset>
@@ -107,25 +110,7 @@ $genid = gen_id();
                                 }
         };
         
-        var memberChoosers = Ext.getCmp('<?php echo "$genid-member-chooser-panel-" . ProjectEvents::instance()->getObjectTypeId() ?>').items;
-        if (memberChoosers) {
-            memberChoosers.each(function(item, index, length) {			
-                item.on('all trees updated', function() {
-                    var dimensionMembers = {};
-                    memberChoosers.each(function(it, ix, l) {
-                        dim_id = this.dimensionId;
-                        dimensionMembers[dim_id] = [];
-                        var checked = it.getChecked("id");
-                        for (var j = 0 ; j < checked.length ; j++ ) {
-                            dimensionMembers[dim_id].push(checked[j]);
-                        }
-                    });
-                });
-            });
-        }
-        
         function submitCalendar() {
-            og.handleMemberChooserSubmit('<?php echo $genid; ?>', <?php echo ProjectEvents::instance()->getObjectTypeId(); ?>);            
             var members = document.getElementById('<?php echo $genid ?>members');
             $('#<?php echo $genid?>related_to').val(members.value);
             $('#<?php echo $genid ?>submit-sync-form').submit();

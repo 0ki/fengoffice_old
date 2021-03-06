@@ -22,6 +22,18 @@
       )); // array
     } // getAll
     
+    
+    static function getOptionsFromCategory($category_name) {
+    	$rows = DB::executeAll("SELECT `name` FROM `".TABLE_PREFIX."config_options` WHERE `category_name` = '$category_name'");
+    	$result = array();
+    	if (is_array($rows)) {
+    		foreach ($rows as $row) {
+    			$result[] = $row['name'];
+    		}
+    	}
+    	return $result;
+    }
+    
   } // ConfigCategories 
 
 ?>

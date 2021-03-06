@@ -168,7 +168,7 @@ class ObjectController extends ApplicationController {
 		$required_dimensions = Dimensions::findAll(array("conditions" => "id IN (".implode(",",$required_dimension_ids).")"));
 		
 		// If not entered members
-		if (!count($member_ids) > 0){
+		if (count($member_ids) <= 0){
 			$throw_error = true;
 			if (Plugins::instance()->isActivePlugin('core_dimensions')) {
 				$personal_member = Members::findById($user->getPersonalMemberId());
@@ -743,7 +743,10 @@ class ObjectController extends ApplicationController {
 		$start = array_var($_GET,'start') ? (integer)array_var($_GET,'start') : 0;
 		$limit = array_var($_GET,'limit') ? array_var($_GET,'limit') : $filesPerPage;
 		$order = array_var($_GET,'sort');
-		$ignore_context = (bool) array_var($_GET,'ignore_context');
+		$id_no_select = array_var($_GET,'id_no_select',"undefined");
+		$ignore_context = (bool) array_var($_GET, 'ignore_context');
+		$member_ids = json_decode(array_var($_GET, 'member_ids'));
+		$extra_member_ids = json_decode(array_var($_GET, 'extra_member_ids'));
 		
 		if ($order == "dateUpdated") {
 			$order = "updated_on";
@@ -765,7 +768,9 @@ class ObjectController extends ApplicationController {
 		$name_filter = mysql_escape_string( array_var($_GET, 'name') );
 		$linked_obj_filter = array_var($_GET, 'linkedobject');
 		$object_ids_filter = '';
+		$show_all_linked_objects = false;
 		if (!is_null($linked_obj_filter)) {
+			$show_all_linked_objects = true;
 			$linkedObject = Objects::findObject($linked_obj_filter);
 			$objs = $linkedObject->getLinkedObjects();
 			foreach ($objs as $obj) $object_ids_filter .= ($object_ids_filter == '' ? '' : ',') . $obj->getId();
@@ -775,142 +780,146 @@ class ObjectController extends ApplicationController {
 		if (!is_null($types)) $filters['types'] = $types;
 		if (!is_null($name_filter)) $filters['name'] = $name_filter;
 		if ($object_ids_filter != '') $filters['object_ids'] = $object_ids_filter;
+                
 
 		$user = array_var($_GET,'user');
 		$trashed = array_var($_GET, 'trashed', false);
 		$archived = array_var($_GET, 'archived', false);
 
 		/* if there's an action to execute, do so */
-		if (array_var($_GET, 'action') == 'delete') {
-			$ids = explode(',', array_var($_GET, 'objects'));
- 			
- 			$result = ContentDataObjects::listing(array(
- 				"extra_conditions" => " AND o.id IN (".implode(",",$ids).") ",
- 				"include_deleted" => true 	
- 			));
- 			
-			$objects = $result->objects;
-			
-			list($succ, $err) = $this->do_delete_objects($objects);
-			
-			if ($err > 0) {
-				flash_error(lang('error delete objects', $err));
-			} else {
-				Hook::fire('after_object_delete_permanently', $ids, $ignored);
-				flash_success(lang('success delete objects', $succ));
-			}
-		} else if (array_var($_GET, 'action') == 'delete_permanently') {
-			$ids = explode(',', array_var($_GET, 'objects'));
+                if (!$show_all_linked_objects){
+			$linkedObject = null;
+                        if (array_var($_GET, 'action') == 'delete') {
+                                $ids = explode(',', array_var($_GET, 'objects'));
 
-			
-			//$result = Objects::getObjectsFromContext(active_context(), null, null, true, false, array('object_ids' => implode(",",$ids)));
-			
-			$objects = Objects::instance()->findAll(array("conditions"=>
-				"id IN (".implode(",",$ids).")")
-			);
-			
-			list($succ, $err) = $this->do_delete_objects($objects, true);
-			
-			if ($err > 0) {
-				flash_error(lang('error delete objects', $err));
-			}
-			if ($succ > 0) {
-				Hook::fire('after_object_delete_permanently', $ids, $ignored);
-				flash_success(lang('success delete objects', $succ));
-			}
-		}else if (array_var($_GET, 'action') == 'markasread') {
-			$ids = explode(',', array_var($_GET, 'objects'));
-			list($succ, $err) = $this->do_mark_as_read_unread_objects($ids, true);
-			
-		}else if (array_var($_GET, 'action') == 'markasunread') {
-			$ids = explode(',', array_var($_GET, 'objects'));
-			list($succ, $err) = $this->do_mark_as_read_unread_objects($ids, false);
-			
-		}else if (array_var($_GET, 'action') == 'empty_trash_can') {
+                                $result = ContentDataObjects::listing(array(
+                                        "extra_conditions" => " AND o.id IN (".implode(",",$ids).") ",
+                                        "include_deleted" => true 	
+                                ));
 
-			$result = Objects::getObjectsFromContext(active_context(), 'trashed_on', 'desc', true);
-			$objects = $result->objects;
+                                $objects = $result->objects;
 
-			list($succ, $err) = $this->do_delete_objects($objects, true);		
-			if ($err > 0) {
-				flash_error(lang('error delete objects', $err));
-			}
-			if ($succ > 0) {
-				flash_success(lang('success delete objects', $succ));
-			}
-		} else if (array_var($_GET, 'action') == 'archive') {
-			$ids = explode(',', array_var($_GET, 'objects'));
-			list($succ, $err) = $this->do_archive_unarchive_objects($ids, 'archive');
-			if ($err > 0) {
-				flash_error(lang('error archive objects', $err));
-			} else {
-				flash_success(lang('success archive objects', $succ));
-			}
-		} else if (array_var($_GET, 'action') == 'unarchive') {
-			$ids = explode(',', array_var($_GET, 'objects'));
-			list($succ, $err) = $this->do_archive_unarchive_objects($ids, 'unarchive');
-			if ($err > 0) {
-				flash_error(lang('error unarchive objects', $err));
-			} else {
-				flash_success(lang('success unarchive objects', $succ));
-			}
-		}
-		else if (array_var($_GET, 'action') == 'unclassify') {
-			$ids = explode(',', array_var($_GET, 'objects'));
-			$err = 0;
-			$succ = 0;
-			foreach ($ids as $id) {
-				$split = explode(":", $id);
-				$type = $split[0];
-				if (Plugins::instance()->isActivePlugin('mail') && $type == 'MailContents') {
-					$email = MailContents::findById($split[1]);
-					if (isset($email) && !$email->isDeleted() && $email->canEdit(logged_user())){
-						if (MailController::do_unclassify($email)) $succ++;
-						else $err++;
-					} else $err++;
-				}
-			}
-			if ($err > 0) {
-				flash_error(lang('error unclassify emails', $err));
-			} else {
-				flash_success(lang('success unclassify emails', $succ));
-			}
-		}
-		else if (array_var($_GET, 'action') == 'restore') {
-			$errorMessage = null;
-			$ids = explode(',', array_var($_GET, 'objects'));
-			$success = 0; $error = 0;
-			foreach ($ids as $id) {
-				$obj = Objects::findObject($id);
-				if ($obj->canDelete(logged_user())) {
-					try {                                           
-						$obj->untrash($errorMessage);
-                                                
-                                                if($obj->getObjectTypeId() == 11){
-                                                    $event = ProjectEvents::findById($obj->getId());
-                                                    if($event->getExtCalId() != ""){
-                                                        $this->created_event_google_calendar($obj,$event);
-                                                    }                                                    
+                                list($succ, $err) = $this->do_delete_objects($objects);
+
+                                if ($err > 0) {
+                                        flash_error(lang('error delete objects', $err));
+                                } else {
+                                        Hook::fire('after_object_delete_permanently', $ids, $ignored);
+                                        flash_success(lang('success delete objects', $succ));
+                                }
+                        } else if (array_var($_GET, 'action') == 'delete_permanently') {
+                                $ids = explode(',', array_var($_GET, 'objects'));
+
+
+                                //$result = Objects::getObjectsFromContext(active_context(), null, null, true, false, array('object_ids' => implode(",",$ids)));
+
+                                $objects = Objects::instance()->findAll(array("conditions"=>
+                                        "id IN (".implode(",",$ids).")")
+                                );
+
+                                list($succ, $err) = $this->do_delete_objects($objects, true);
+
+                                if ($err > 0) {
+                                        flash_error(lang('error delete objects', $err));
+                                }
+                                if ($succ > 0) {
+                                        Hook::fire('after_object_delete_permanently', $ids, $ignored);
+                                        flash_success(lang('success delete objects', $succ));
+                                }
+                        }else if (array_var($_GET, 'action') == 'markasread') {
+                                $ids = explode(',', array_var($_GET, 'objects'));
+                                list($succ, $err) = $this->do_mark_as_read_unread_objects($ids, true);
+
+                        }else if (array_var($_GET, 'action') == 'markasunread') {
+                                $ids = explode(',', array_var($_GET, 'objects'));
+                                list($succ, $err) = $this->do_mark_as_read_unread_objects($ids, false);
+
+                        }else if (array_var($_GET, 'action') == 'empty_trash_can') {
+
+                                $result = Objects::getObjectsFromContext(active_context(), 'trashed_on', 'desc', true);
+                                $objects = $result->objects;
+
+                                list($succ, $err) = $this->do_delete_objects($objects, true);		
+                                if ($err > 0) {
+                                        flash_error(lang('error delete objects', $err));
+                                }
+                                if ($succ > 0) {
+                                        flash_success(lang('success delete objects', $succ));
+                                }
+                        } else if (array_var($_GET, 'action') == 'archive') {
+                                $ids = explode(',', array_var($_GET, 'objects'));
+                                list($succ, $err) = $this->do_archive_unarchive_objects($ids, 'archive');
+                                if ($err > 0) {
+                                        flash_error(lang('error archive objects', $err));
+                                } else {
+                                        flash_success(lang('success archive objects', $succ));
+                                }
+                        } else if (array_var($_GET, 'action') == 'unarchive') {
+                                $ids = explode(',', array_var($_GET, 'objects'));
+                                list($succ, $err) = $this->do_archive_unarchive_objects($ids, 'unarchive');
+                                if ($err > 0) {
+                                        flash_error(lang('error unarchive objects', $err));
+                                } else {
+                                        flash_success(lang('success unarchive objects', $succ));
+                                }
+                        }
+                        else if (array_var($_GET, 'action') == 'unclassify') {
+                                $ids = explode(',', array_var($_GET, 'objects'));
+                                $err = 0;
+                                $succ = 0;
+                                foreach ($ids as $id) {
+                                        $split = explode(":", $id);
+                                        $type = $split[0];
+                                        if (Plugins::instance()->isActivePlugin('mail') && $type == 'MailContents') {
+                                                $email = MailContents::findById($split[1]);
+                                                if (isset($email) && !$email->isDeleted() && $email->canEdit(logged_user())){
+                                                        if (MailController::do_unclassify($email)) $succ++;
+                                                        else $err++;
+                                                } else $err++;
+                                        }
+                                }
+                                if ($err > 0) {
+                                        flash_error(lang('error unclassify emails', $err));
+                                } else {
+                                        flash_success(lang('success unclassify emails', $succ));
+                                }
+                        }
+                        else if (array_var($_GET, 'action') == 'restore') {
+                                $errorMessage = null;
+                                $ids = explode(',', array_var($_GET, 'objects'));
+                                $success = 0; $error = 0;
+                                foreach ($ids as $id) {
+                                        $obj = Objects::findObject($id);
+                                        if ($obj->canDelete(logged_user())) {
+                                                try {                                           
+                                                        $obj->untrash($errorMessage);
+
+                                                        if($obj->getObjectTypeId() == 11){
+                                                            $event = ProjectEvents::findById($obj->getId());
+                                                            if($event->getExtCalId() != ""){
+                                                                $this->created_event_google_calendar($obj,$event);
+                                                            }                                                    
+                                                        }
+
+                                                        ApplicationLogs::createLog($obj, ApplicationLogs::ACTION_UNTRASH);
+                                                        $success++;
+                                                } catch (Exception $e) {
+                                                        $error++;
                                                 }
-                                                
-						ApplicationLogs::createLog($obj, ApplicationLogs::ACTION_UNTRASH);
-						$success++;
-					} catch (Exception $e) {
-						$error++;
-					}
-				} else {
-					$error++;
-				}
-			}
-			if ($success > 0) {
-				flash_success(lang("success untrash objects", $success));
-			}
-			if ($error > 0) {
-				$errorString = is_null($errorMessage) ? lang("error untrash objects", $error) : $errorMessage;
-				flash_error($errorString);
-			}
-		}
-		
+                                        } else {
+                                                $error++;
+                                        }
+                                }
+                                if ($success > 0) {
+                                        flash_success(lang("success untrash objects", $success));
+                                }
+                                if ($error > 0) {
+                                        $errorString = is_null($errorMessage) ? lang("error untrash objects", $error) : $errorMessage;
+                                        flash_error($errorString);
+                                }
+                        }
+                }
+                
 		$filterName = array_var($_GET,'name');
 		$result = null;
 		
@@ -940,20 +949,31 @@ class ObjectController extends ApplicationController {
 		if ($name_filter) {
 			$extra_conditions[] = "name LIKE '%$name_filter%'" ;
 		}
+                if ($id_no_select != "undefined") {
+			$extra_conditions[] = "id <> $id_no_select" ;
+		}
+                if($object_ids_filter != ""){
+                        $extra_conditions[] = "id in ($object_ids_filter)";
+                }
 		
 		//$pagination = Objects::getObjects($context,$start,$limit,$order,$orderdir,$trashed,$archived, $filters,$start, $limit, $obj_type_types);
-		$pagination = ContentDataObjects::listing(array(
-			"start" => $start,
-			"limit" => $limit,
-			"order" => $order,
-			"order_dir" => $orderdir,
-			"trashed" => $trashed,
-			"archived" => $archived,
-			"types" => $types,
-			"count_results" => false,
-			"extra_conditions" => " AND ".implode(" AND ", $extra_conditions ),
-			"ignore_context" => $ignore_context
-		));
+		if($object_ids_filter == "" && $show_all_linked_objects){
+			$pagination = array();
+		}else{
+			$pagination = ContentDataObjects::listing(array(
+				"start" => $start,
+				"limit" => $limit,
+				"order" => $order,
+				"order_dir" => $orderdir,
+				"trashed" => $trashed,
+				"archived" => $archived,
+				"types" => $types,
+				"count_results" => false,
+				"extra_conditions" => " AND ".implode(" AND ", $extra_conditions ),
+				"ignore_context" => $ignore_context,
+				"extra_member_ids" => $extra_member_ids
+			));
+		}
 		
 		$result = $pagination->objects; 
 		$total_items = $pagination->total ;
@@ -1028,6 +1048,8 @@ class ObjectController extends ApplicationController {
 				if ($obj instanceof ContentDataObject && $obj->canDelete(logged_user())) {
 					if ($permanent) {
 						if (Plugins::instance()->isActivePlugin('mail') && $obj instanceof MailContent) {
+							$obj->delete(false);
+						} elseif (Plugins::instance()->isActivePlugin('income') && $obj instanceof IncomeInvoice) {
 							$obj->delete(false);
 						} else {
 							$obj->delete();
@@ -1211,7 +1233,7 @@ class ObjectController extends ApplicationController {
 			return;
 		}
 		
-		$logs = ApplicationLogs::getObjectLogs($obj);
+		$logs = ApplicationLogs::getObjectLogs($obj,false,true);
 		$logs_read = ApplicationReadLogs::getObjectLogs($obj);
 		
 		tpl_assign('object',$obj);
@@ -1699,7 +1721,7 @@ class ObjectController extends ApplicationController {
                 $when->startTime = $star_time[0]."T".$star_time[1].".000-00:00";
                 $when->endTime = $end_time[0]."T".$end_time[1].".000-00:00";
                 $newEvent->when = array($when);
-            }       
+            }   
 
             // insert event
             $createdEvent = $gdataCal->insertEvent($newEvent, $calendarUrl);

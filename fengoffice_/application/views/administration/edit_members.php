@@ -23,7 +23,7 @@
 			$dim_members = array_var($members, $dimension->getId());
 			$alt = true;
 			if (is_array($dim_members)) {
-				foreach ($dim_members as $mem) {/* @var $mem Member */
+				foreach ($dim_members as $mem) {
 					$alt = !$alt;
 					$indent = 16 * $mem->getDepth();
 ?>
@@ -37,20 +37,26 @@
 								<span class="abm-members-name"><?php echo $mem->getName() . ($mem->getArchivedById() > 0 ? " (".lang('archived').")" : "");?></span>
 							</td><td>
 								<span style="float:right;opacity:0.25;filter:alpha(opacity=25);font-weight:normal;" id="<?php echo $genid?>actions<?php echo $mem->getId()?>">
+								<?php if (can_manage_dimension_members(logged_user())) : ?>
 									<a href="<?php echo get_url('member', 'edit', array('id' => $mem->getId()))?>" class="db-ico ico-edit" style="padding:4px 10px 0 16px;"><?php echo lang('edit')?></a>
-								<?php if ($dimension->getDefinesPermissions()) : ?>	
+								<?php endif; ?>
+								<?php if ($dimension->getDefinesPermissions() && can_manage_security(logged_user())) : ?>	
 									<a href="<?php echo get_url('member', 'edit_permissions', array('id' => $mem->getId()))?>" class="db-ico ico-permissions" style="padding:4px 10px 0 16px;"><?php echo lang('permissions')?></a>
 								<?php endif; ?>
+								<?php if (can_manage_dimension_members(logged_user())) : ?>
 									<a href="<?php echo "javascript:if(confirm(lang('confirm delete permanently'))) og.openLink('" . get_url('member', 'delete', array('id' => $mem->getId(), 'dont_reload' => true)) ."', {callback: function(success, data){if (success) Ext.get('abm-members-item-container-".$mem->getId()."').remove()}});"?>" 
 										class="db-ico ico-delete" style="padding:4px 0 0 16px;"><?php echo lang('delete')?></a>
+								<?php endif; ?>
 								</span>
 							</td></tr></table>
 						</div>
 <?php			}
 			} ?>
+			<?php if (can_manage_dimension_members(logged_user())) : ?>
 				<div style="margin-top:10px;"><a class="db-ico ico-add" style="padding:3px 0 0 20px;" href="<?php echo get_url('member', 'add', array("dim_id" => $dimension->getId()))?>">
 					<?php echo lang('add member to this dimension')?>
 				</a></div>
+			<?php endif; ?>
 				</div>
 			</fieldset>
 <?php

@@ -180,6 +180,24 @@ abstract class ScriptUpgraderScript {
 		return false;
 	}
 	
+	/**
+	 * Checks if a value exists in a column in a table
+	 *
+	 *  This function returns true if the value exists
+	 *
+	 * @param string $table_name Name of the table
+	 * @param string $col_name Name of the column
+	 * @param string $value Value in question
+	 * @return boolean
+	 */
+	function checkValueExists($table_name, $col_name, $value, $connection) {
+		$res = mysql_query("SELECT * FROM `$table_name` WHERE `$table_name`.`$col_name` = '$value' LIMIT 1", $connection);
+		while($row = mysql_fetch_array($res)) {
+			return true;
+		}
+		return false;
+	} // checkValueExists
+	
 	// ---------------------------------------------------
 	//  Getters and setters
 	// ---------------------------------------------------

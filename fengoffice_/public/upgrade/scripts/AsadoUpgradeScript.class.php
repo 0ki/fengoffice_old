@@ -108,6 +108,8 @@ class AsadoUpgradeScript extends ScriptUpgraderScript {
 				return false;
 			}
 			
+			$_SESSION['from_feng1'] = true;
+			
 			$upgrade_script = "";
 			
 			@unlink(ROOT . '/cache/autoloader.php');
@@ -230,49 +232,7 @@ class AsadoUpgradeScript extends ScriptUpgraderScript {
 						$app_log->save();
 					}
 				}
-				
-				
-/*				
-				$sql = "";
-				$first_row = true;
-						
-				$objects = Objects::findAll(array('id'=>true));
-				foreach ($objects as $obj) {
-					$cobj = Objects::findObject($obj);
-					if ($cobj instanceof ContentDataObject) {
-						$cobj->addToSearchableObjects(true);
-						$cobj->addToSharingTable();
-						
-						// add mails to sharing table for account owners
-						if ($cobj instanceof MailContent) {
-							//$macs = MailAccountContacts::findAll(array('conditions' => array('`account_id` = ?', $cobj->getAccountId())));
-							$db_result = DB::execute("SELECT contact_id FROM ".$t_prefix."mail_accounts WHERE id = ".$cobj->getAccountId());
-							$macs = $db_result->fetchAll();
-							$pgs = array();
-							foreach ($macs as $mac) {
-								$contact_id = $mac['contact_id'];
-								$db_result = DB::execute("SELECT permission_group_id FROM ".$t_prefix."contact_permission_groups WHERE contact_id = ".$contact_id);
-								$mac_pgs = $db_result->fetchAll();
-								foreach ($mac_pgs as $mac_pg) $pgs[$mac_pg['permission_group_id']] = $mac_pg['permission_group_id'];
-								//$mac_pgs = ContactPermissionGroups::findAll(array("conditions" => "contact_id = ".$mac->getContactId()));
-								//foreach ($mac_pgs as $mac_pg) $pgs[$mac_pg->getPermissionGroupId()] = $mac_pg->getPermissionGroupId();
-							}
-							if ($sql == "") $sql = "INSERT INTO fo_sharing_table (group_id, object_id) VALUES ";
-							foreach ($pgs as $pgid) {
-								$sql .= ($first_row ? "" : ", ") . "($pgid, {$cobj->getId()})";
-								$first_row = false;
-							}
-							unset($macs);
-							unset($pgs);
-						}
-					}
-					unset($cobj);
-				}
-				// add mails to sharing table for account owners
-				if ($sql != "") DB::execute($sql);
-				
-				$this->printMessage("Searchable Objects & Sharing Table generated");
-	*/			
+
 			} catch (Exception $e) {
 				die("\nError occurred:\n-----------------\n".$e->getMessage()."\n".$e->getTraceAsString());
 			}

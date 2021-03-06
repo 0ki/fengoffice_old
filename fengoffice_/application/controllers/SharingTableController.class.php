@@ -43,31 +43,32 @@ class  SharingTableController extends ApplicationController {
 
 		// INIT LOCAL VARS
 		$stManager = SharingTables::instance();
-		$affectedObjects = array() ;
+		$affectedObjects = array();
 		$members = array();
-		$general_condition = '' ;
-		$read_condition = '' ;
-		$delete_condition = '' ;
+		$general_condition = '';
+		$read_condition = '';
+		$delete_condition = '';
+		$delete_conditions = array();
 
 		// BUILD OBJECT_IDs SUB-QUERIES
 		$from = "FROM ".TABLE_PREFIX."object_members om INNER JOIN ".TABLE_PREFIX."objects o ON o.id = om.object_id";
 		foreach ($permissions as $permission) {
 			$memberId = $permission->m;
 			$objectTypeId = $permission->o;
-			$delete_conditions[] = " (  object_type_id = $objectTypeId AND om.member_id =  $memberId )" ;
+			$delete_conditions[] = " ( object_type_id = $objectTypeId AND om.member_id = $memberId )";
 			if ($permission->r) {
-				$read_conditions[] = " (  object_type_id = $objectTypeId AND om.member_id =  $memberId ) "; 
+				$read_conditions[] = " ( object_type_id = $objectTypeId AND om.member_id = $memberId ) "; 
 			}
 		}
 		
 		// DELETE THE AFFECTED OBJECTS FROM SHARING TABLE
-		$stManager->delete("object_id IN (SELECT object_id $from WHERE  ".implode(' OR ' , $delete_conditions ).") AND group_id = $group ");
+		$stManager->delete("object_id IN (SELECT object_id $from WHERE ".implode(' OR ' , $delete_conditions ).") AND group_id = $group ");
 		
 		// 2. POPULATE THE SHARING TABLE AGAIN WITH THE READ-PERMISSIONS (If there are)
-		if (count($read_conditions)) {
+		if (isset($read_conditions) && count($read_conditions)) {
 			$st_new_rows = "
 				SELECT $group AS group_id, object_id $from
-				WHERE ". implode(' OR ', $read_conditions);
+				WHERE om.is_optimization=0 AND (". implode(' OR ', $read_conditions) . ")";
 
 			$st_insert_sql =  "INSERT INTO ".TABLE_PREFIX."sharing_table(group_id, object_id) $st_new_rows ";
 			DB::execute($st_insert_sql);

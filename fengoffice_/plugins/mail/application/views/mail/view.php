@@ -203,7 +203,7 @@ if (isset($email)){
 			if (defined('SANDBOX_URL')) {
 				$html_content = $email->getBodyHtml();
 				// prevent some outlook malformed tags
-				if(substr_count($html_content, "<style>") != substr_count($html_content, "</style>") && substr_count($html_content, "/* Font Definitions */") >= 1) {
+				if(substr_count($html_content, "<style") != substr_count($html_content, "</style>") && substr_count($html_content, "/* Font Definitions */") >= 1) {
 					$p1 = strpos($html_content, "/* Font Definitions */", 0);
 					$html_content1 = substr($html_content, 0, $p1);
 					$p0 = strrpos($html_content1, "</style>");
@@ -226,6 +226,9 @@ if (isset($email)){
 			//$html_content = convert_to_links($html_content); // commented because it can break HTML (e.g. if an URL or email is found on the title of an element)
 			// links must open in a new tab or window
 			$html_content = preg_replace('/<a\s/', '<a target="_blank" ', $html_content);
+			
+			//remove attributes from body
+			$html_content = preg_replace("/<body*[^>]*>/i",'<body>', $html_content);
 			
 			$html_content = str_replace("<head>", '<head><link rel="stylesheet" type="text/css" href="'.ROOT_URL.'/public/assets/javascript/ckeditor/contents.css" />', $html_content);
 			$html_content = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">' . "\n" . $html_content;

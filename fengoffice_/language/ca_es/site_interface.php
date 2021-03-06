@@ -365,7 +365,7 @@
 	'minutes' => 'Minuts',
 	'seconds' => 'Segons',
 	'days' => 'Dies',
-	'time estimate' => 'Temps estimat',
+	'estimated time' => 'Temps estimat',
 	'work in progress' => 'Treball en progrés',
 	'total time' => 'Temps total',
 	'upload anyway' => 'Carrega des totes maneres',

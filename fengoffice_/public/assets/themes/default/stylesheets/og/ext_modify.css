@@ -174,7 +174,8 @@ input.x-tree-node-cb {
 }
 
 .x-tree-node .x-tree-selected {
-    background-color: #EEEEEE;
+    background-color: #DAFAD8;
+    border-color: #AACAA8
     border-left: 0 none;
 	border-right: 0 none;
 }
@@ -240,4 +241,7 @@ div#menu-panel .x-panel-tbar-noheader .x-toolbar, div#menu-panel .x-panel-mc .x-
 	width: 16px !important;
 	height: 18px !important;
 	display: block ;
+}
+.x-panel-tbar-noheader .x-toolbar, .x-panel-mc .x-panel-tbar .x-toolbar {
+	border-top: 0px none;
 }

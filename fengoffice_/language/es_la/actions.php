@@ -18,7 +18,7 @@
 	'add group' => 'Agregar grupo',
 	'edit group' => 'Editar grupo',
 	'delete group' => 'Eliminar grupo',
-	'add project' => 'Agregar espacio',
+	'add workspace' => 'Agregar espacio',
 	'edit project' => 'Editar espacio',
 	'delete project' => 'Eliminar espacio',
 	'mark project as finished' => 'Marcar espacio como cerrado',
@@ -172,5 +172,8 @@
 	'config activity' => 'Filtros de actividad',
 	'entry to see the dimension' => 'Entrada a la dimensión',
 	'recent activities to show' => 'Actividades para mostrar',
+	'recent activities to show display' => 'Mostrar',
+  	'recent activities to show lines' => 'líneas',
 	'views and downloads' => 'ver vistas y descargas',
+    'confirm delete permanently sync' => '¿Está seguro que desea borrar los datos de sincronización?',
 ); ?>

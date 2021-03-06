@@ -118,7 +118,8 @@
 	<tr<?php echo ($isAlt ? ' style="background-color:#F4F8F9"' : "") ?>>
 		<?php foreach($row as $k => $value) {
 				if ($k == 'object_type_id') continue;
-				$db_col = isset($db_columns[$columns[$i]]) ? $db_columns[$columns[$i]] : '';
+				if (isset($columns[$i])) $db_col = array_var($db_columns, $columns[$i],'');
+				else continue;
 			?>
 			<td style="padding-right:10px;"><?php echo format_value_to_print($db_col, $value, ($k == 'link'?'':array_var($types, $k)), array_var($row, 'object_type_id'), '', is_numeric(array_var($db_columns, $k)) ? "Y-m-d" : user_config_option('date_format')) ?></td>
 		<?php

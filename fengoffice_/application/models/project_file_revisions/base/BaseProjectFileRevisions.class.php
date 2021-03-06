@@ -23,7 +23,8 @@
     	'revision_number' => DATA_TYPE_INTEGER, 
     	'comment' => DATA_TYPE_STRING, 
     	'type_string' => DATA_TYPE_STRING, 
-    	'filesize' => DATA_TYPE_INTEGER 
+    	'filesize' => DATA_TYPE_INTEGER,
+        'hash' => DATA_TYPE_STRING 
 
     );
   

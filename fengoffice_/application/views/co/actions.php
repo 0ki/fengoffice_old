@@ -29,15 +29,8 @@
 			</div> <?php
 			
 			$count = count($pactions);
-			$hidden = false;
 			foreach ($pactions as $action) {
-				if (!$action->isCommon) {
-					if (!$hidden && $shown >= 4 && $shown + 1 < $count) {
-						// if 4 actions have already been shown and there's more than one action left to show, hide the rest ?>
-			 			<div id="otherActions<?php echo $genid ?>" style="display:none"><?php
-			 			$hidden = true;
-			 		}
-			 		
+				if (!$action->isCommon) {			 		
 			 		if ($action->getTarget() != '') { ?>
 						<a style="display:block" class="coViewAction <?php echo $action->getName()?>" href="<?php echo $action->getURL()?>" target="<?php echo $action->getTarget()?>"> <?php echo $action->getTitle() ?></a>
 					<?php } else { ?>
@@ -45,14 +38,7 @@
 					<?php }
 			    	$shown++;
 				}
-			} // foreach
-			if ($hidden) {
-				// close the hidden div and show the "More" link ?>
-				</div>											
-				<a id="moreOption<?php echo $genid; ?>" style="display:block" class="coViewAction" href="javascript: og.showMoreActions('<?php echo $genid ?>')">
-			    	<?php echo lang('more').'...' ?>
-			    </a> <?php 
-			}
+			} // foreach			
 		 }
 		 PageActions::clearActions(); ?>
 		</td>

@@ -3,7 +3,7 @@
   $genid = gen_id();
   $visible_cps = CustomProperties::countVisibleCustomPropertiesByObjectType($milestone->getObjectTypeId());
 ?>
-<form class="add-milestone" style='height:100%;background-color:white' class="internalForm" action="<?php echo $milestone->isNew() ? get_url('milestone', 'add', array("copyId" => array_var($milestone_data, 'copyId'))) : $milestone->getEditUrl() ?>" method="post" onsubmit="return og.handleMemberChooserSubmit('<?php echo $genid; ?>', <?php echo $milestone->manager()->getObjectTypeId() ?>);">
+<form class="add-milestone" style='height:100%;background-color:white' class="internalForm" action="<?php echo $milestone->isNew() ? get_url('milestone', 'add', array("copyId" => array_var($milestone_data, 'copyId'))) : $milestone->getEditUrl() ?>" method="post">
 
 <div class="milestone">
 <div class="coInputHeader">
@@ -65,10 +65,11 @@
 	<fieldset>
 		<legend><?php echo lang('context') ?></legend>
 		<?php
+			$listeners = array('on_selection_change' => 'og.reload_milestone_form_selectors()');
 			if ($milestone->isNew()) {
-				render_dimension_trees($milestone->manager()->getObjectTypeId(), $genid, null, array('select_current_context' => true));
+				render_member_selectors($milestone->manager()->getObjectTypeId(), $genid, null, array('select_current_context' => true, 'listeners' => $listeners));
 			} else {
-				render_dimension_trees($milestone->manager()->getObjectTypeId(), $genid, $milestone->getMemberIds());
+				render_member_selectors($milestone->manager()->getObjectTypeId(), $genid, $milestone->getMemberIds(), array('listeners' => $listeners));
 			} 
 		?>
 		
@@ -155,52 +156,41 @@
 </form>
 
 <script>
-	var memberChoosers = Ext.getCmp('<?php echo "$genid-member-chooser-panel-".$milestone->manager()->getObjectTypeId()?>').items;
-	
-	if (memberChoosers) {
-		memberChoosers.each(function(item, index, length) {
-			item.on('all trees updated', function() {
-				var dimensionMembers = {};
-				memberChoosers.each(function(it, ix, l) {
-					dim_id = this.dimensionId;
-					dimensionMembers[dim_id] = [];
-					var checked = it.getChecked("id");
-					for (var j = 0 ; j < checked.length ; j++ ) {
-						dimensionMembers[dim_id].push(checked[j]);
-					}
-				});
-	
-				var uids = App.modules.addMessageForm.getCheckedUsers('<?php echo $genid ?>');
-				Ext.get('<?php echo $genid ?>add_subscribers_content').load({
-					url: og.getUrl('object', 'render_add_subscribers', {
-						context: Ext.util.JSON.encode(dimensionMembers),
-						users: uids,
-						genid: '<?php echo $genid ?>',
-						otype: '<?php echo $milestone->manager()->getObjectTypeId()?>'
-					}),
-					scripts: true
-				});
-			
-				var combo = Ext.getCmp('<?php echo $genid ?>taskFormAssignedToCombo');
-				if (combo) {
-					combo.collapse();
-					combo.disable();
-				}
-				
-				var parameters = {context: Ext.util.JSON.encode(dimensionMembers)};
-				og.openLink(og.getUrl('task', 'allowed_users_to_assign', parameters), {callback: function(success, data){
-					companies = data.companies;
-					if (combo) {
-						combo.reset();
-						combo.store.removeAll();
-						combo.store.loadData(ogTasks.buildAssignedToComboStore(companies));
-						combo.setValue(0);
-						combo.enable();
-					}
-				}});
-			});
+
+	og.reload_milestone_form_selectors = function() {
+		var dimension_members_json = Ext.util.JSON.encode(member_selector['<?php echo $genid ?>'].sel_context);
+		
+		var uids = App.modules.addMessageForm.getCheckedUsers('<?php echo $genid ?>');
+		Ext.get('<?php echo $genid ?>add_subscribers_content').load({
+			url: og.getUrl('object', 'render_add_subscribers', {
+				context: dimension_members_json,
+				users: uids,
+				genid: '<?php echo $genid ?>',
+				otype: '<?php echo $milestone->manager()->getObjectTypeId()?>'
+			}),
+			scripts: true
 		});
+	
+		var combo = Ext.getCmp('<?php echo $genid ?>taskFormAssignedToCombo');
+		if (combo) {
+			combo.collapse();
+			combo.disable();
+		}
+		
+		var parameters = {context: dimension_members_json};
+		og.openLink(og.getUrl('task', 'allowed_users_to_assign', parameters), {callback: function(success, data){
+			companies = data.companies;
+			if (combo) {
+				combo.reset();
+				combo.store.removeAll();
+				combo.store.loadData(ogTasks.buildAssignedToComboStore(companies));
+				combo.setValue(0);
+				combo.enable();
+			}
+		}});
 	}
+	
+	og.reload_milestone_form_selectors();
 
 	Ext.get('<?php echo $genid ?>milestoneFormName').focus();
 </script>

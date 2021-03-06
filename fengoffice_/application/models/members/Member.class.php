@@ -109,8 +109,9 @@ class Member extends BaseMember {
 	 */
 	function getParentMember() {
 		if ($this->parent_member == null){
-			if ($this->getParentMemberId() != 0) 
+			if ($this->getParentMemberId() != 0) {
 				 $this->parent_member = Members::findById($this->getParentMemberId());
+			}
 		}
 		return $this->parent_member;
 	}
@@ -184,6 +185,8 @@ class Member extends BaseMember {
 			if ($object instanceof ContentDataObject) $object->delete();
 		}
 		
+		ApplicationLogs::createLog($this, ApplicationLogs::ACTION_DELETE, false, true, true, 'member deleted');
+		
 		return parent::delete();
 	}
 
@@ -196,6 +199,10 @@ class Member extends BaseMember {
 	
 	
 	function canBeDeleted(&$error_message) {
+		if ($this->getObjectId() == owner_company()->getCreatedById()) {
+			$error_message = lang("cannot delete member is account owner");
+			return false;
+		}
 		$childs = $this->getAllChildren();
 		if (MemberPropertyMembers::isMemberAssociated($this->getId())){
 			$error_message = lang("cannot delete member is associated");
@@ -484,5 +491,44 @@ class Member extends BaseMember {
 		}
 		
 		return $count;
+	}
+	
+	
+	/**
+	 * @abstract Returns all permission groups that has 'allow all' in the member's dimension
+	 * and all permission groups that have $access_level permissions for any object type in this member
+	 * @param $access_level Permission level check
+	 * @return Array of permission group ids
+	 */
+	function getAllowedPermissionGroups($access_level = ACCESS_LEVEL_READ) {
+		$dimension = $this->getDimension();
+		$allowall_pg_ids = $dimension->getPermissionGroupsAllowAll();
+		$hascheck_pg_ids = $dimension->getPermissionGroupsCheck();
+		if (count($hascheck_pg_ids) == 0) $hascheck_pg_ids[] = 0;
+		
+		$access_level_condition = "";
+		if ($access_level == ACCESS_LEVEL_WRITE) $access_level_condition = " AND can_write = 1";
+		if ($access_level == ACCESS_LEVEL_DELETE) $access_level_condition = " AND can_delete = 1";
+		
+		$sql = "SELECT permission_group_id FROM ".TABLE_PREFIX."contact_member_permissions 
+			WHERE member_id=".$this->getId()." AND permission_group_id IN (".implode(",", $hascheck_pg_ids).")" . $access_level_condition;
+		$checked_pg_ids = array_flat(DB::executeAll($sql));
+		
+		return array_unique(array_merge($allowall_pg_ids, $checked_pg_ids));
+	}
+	
+	/**
+	 * @abstract Returns user ids that has a permission group with $access_level permissions in this member
+	 * @param $access_level Permission level check
+	 * @return Array of contact ids
+	 */
+	function getAllowedContactIds($access_level = ACCESS_LEVEL_READ) {
+		$allowed_permission_groups = $this->getAllowedPermissionGroups($access_level);
+		if (count($allowed_permission_groups) == 0) return array();
+		
+		$imploded_pgs = implode(",", $allowed_permission_groups);
+		if (str_ends_with($imploded_pgs, ",")) $imploded_pgs = substr($imploded_pgs, 0, -1);
+		$contact_ids = DB::executeAll("SELECT contact_id FROM ".TABLE_PREFIX."contact_permission_groups WHERE permission_group_id IN (".$imploded_pgs.")");
+		return array_unique(array_flat($contact_ids));
 	}
 }

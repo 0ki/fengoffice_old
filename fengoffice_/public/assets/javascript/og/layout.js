@@ -122,7 +122,7 @@ Ext.onReady(function(){
 
 				        	id: 'menu-panel',
 				        	split: true,
-				        	width: 242,
+				        	width: 250,
 				        	//bodyBorder: false,
 				        	hideCollapseTool:true,
 				        	collapseMode:'mini',

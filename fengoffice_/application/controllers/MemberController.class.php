@@ -79,14 +79,15 @@ class MemberController extends ApplicationController {
 				$member = $totMsg[$i];
 				if ($member instanceof Member){
 					$object["members"][] = array(
-                                                            'object_id' => $member->getObjectId(),
-                                                            'name' => $member->getName(),
-                                                            'depth' => $member->getDepth(),
-                                                            'parent_member_id' => $member->getParentMemberId(),
-                                                            'dimension_id' => $member->getDimensionId(),
-                                                            'id' => $member->getId(),
-                                                            'ico_color' => $member->getMemberColor());
-                                }
+						'object_id' => $member->getObjectId(),
+						'name' => $member->getName(),
+						'depth' => $member->getDepth(),
+						'parent_member_id' => $member->getParentMemberId(),
+						'dimension_id' => $member->getDimensionId(),
+						'id' => $member->getId(),
+						'ico_color' => $member->getMemberColor()
+					);
+				}
 			}
 		}
 		
@@ -156,8 +157,13 @@ class MemberController extends ApplicationController {
 				$dimension_obj_types_info[] = $info;
 			}
 			tpl_assign('dimension_obj_types', $dimension_obj_types_info);
-			if (count($dimension_obj_types_info) == 1)
-				tpl_assign('obj_type_sel', $dimension_obj_types_info[0]['id']);
+			if (isset($_GET['type'])) {
+				tpl_assign('obj_type_sel', $_GET['type']);
+			} else {
+				if (count($dimension_obj_types_info) == 1) {
+					tpl_assign('obj_type_sel', $dimension_obj_types_info[0]['id']);
+				}
+			}
 			
 			tpl_assign('parents', array());
 			tpl_assign('can_change_type', true);
@@ -194,8 +200,8 @@ class MemberController extends ApplicationController {
 				));
 				$ret = null;
 				Hook::fire('after_add_member', $member, $ret);
-				evt_add("reload dimension tree", $member->getDimensionId());
-			//	evt_add('select dimension member', array('dim_id' => $member->getDimensionId(), 'node' => $member->getId()));
+				evt_add("reload dimension tree", array('dim_id' => $member->getDimensionId(), 'node' => $member->getId()));
+				//evt_add('select dimension member', array('dim_id' => $member->getDimensionId(), 'node' => $member->getId()));
 				if (array_var($_POST, 'rest_genid')) evt_add('reload member restrictions', array_var($_POST, 'rest_genid'));
 				if (array_var($_POST, 'prop_genid')) evt_add('reload member properties', array_var($_POST, 'prop_genid'));
 				if (array_var($_GET, 'current') == 'overview-panel' && array_var($_GET, 'quick') ) {
@@ -281,7 +287,7 @@ class MemberController extends ApplicationController {
 			if ($ok) {
 				$ret = null;
 				Hook::fire('after_edit_member', $member, $ret);
-				evt_add("reload dimension tree", $member->getDimensionId());
+				evt_add("reload dimension tree", array('dim_id' => $member->getDimensionId()));
 //				ApplicationLogs::createLog($member, ApplicationLogs::ACTION_EDIT, false, true);
 			}
 		}
@@ -294,6 +300,8 @@ class MemberController extends ApplicationController {
 			if (!$is_new) {
 				$old_parent = $member->getParentMemberId();
 			}
+			
+			$member_data['name'] = remove_css_and_scripts($member_data['name']);
 						
 			$member->setFromAttributes($member_data);
 			
@@ -619,19 +627,19 @@ class MemberController extends ApplicationController {
 
 //			ApplicationLogs::createLog($member, ApplicationLogs::ACTION_DELETE, false, true);
 			$ok = $member->delete();
-			if ($ok) evt_add("reload dimension tree", $dim_id);
+			if ($ok) evt_add("reload dimension tree", array('dim_id' => $dim_id));
 			
 			DB::commit();
 			flash_success(lang('success delete member', $member->getName()));
-			if (get_id('start')) {
-				ajx_current("start");
-			} else {
-				if (get_id('dont_reload')) {
-					ajx_current("empty");
-				} else {
-					ajx_current("reload");
-				}
-			}
+                        if (get_id('start')) {
+                            ajx_current("start");
+                        } else {
+                            if (get_id('dont_reload')) {
+                                ajx_current("empty");
+                            } else {
+                                ajx_current("reload");
+                            }
+                        }			
 		} catch (Exception $e) {
 			DB::rollback();
 			flash_error($e->getMessage());
@@ -1090,7 +1098,7 @@ class MemberController extends ApplicationController {
 			ajx_current("empty");
 			return;
 		}
-		
+                
 		$member = Members::findById($mem_id);
 		
 		try {
@@ -1113,6 +1121,20 @@ class MemberController extends ApplicationController {
 				$obj->addToMembers(array($member));
 				$obj->addToSharingTable();
 				$objects[] = $obj;
+                                
+                                if ($obj instanceof MailContent) {
+                                        $conversation = MailContents::getMailsFromConversation($obj);
+                                        foreach ($conversation as $conv_email) {
+                                                if (array_var($_POST, 'attachment') && $conv_email->getHasAttachments()) {
+                                                        MailUtilities::parseMail($conv_email->getContent(), $decoded, $parsedEmail, $warnings);
+                                                        $classification_data = array();
+                                                        for ($j=0; $j < count(array_var($parsedEmail, "Attachments", array())); $j++) {
+                                                                $classification_data["att_".$j] = true;		
+                                                        }
+                                                        MailController::classifyFile($classification_data, $conv_email, $parsedEmail, $member, array_var($_POST, 'remove_prev'));
+                                                }
+                                        }
+                                }
 			}
 			
 			DB::commit();
@@ -1164,12 +1186,8 @@ class MemberController extends ApplicationController {
 			
 			$count = $member->archive($user);
 			
-			evt_add("reload dimension tree", $member->getDimensionId());
-			
+			evt_add("reload dimension tree", array('dim_id' => $member->getDimensionId()));
 			ajx_current("back");
-			flash_success(lang('success archive member', $member->getName(), $count));
-			
-			DB::commit();
 		} catch (Exception $e) {
 			DB::rollback();
 			flash_error($e->getMessage());
@@ -1204,7 +1222,7 @@ class MemberController extends ApplicationController {
 			
 			$count = $member->unarchive($user);
 			
-			evt_add("reload dimension tree", $member->getDimensionId());
+			evt_add("reload dimension tree", array('dim_id' => $member->getDimensionId()));
 			
 			ajx_current("back");
 			flash_success(lang('success unarchive member', $member->getName(), $count));

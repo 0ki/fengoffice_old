@@ -54,6 +54,7 @@ ogTasksTask = function(){
 	this.memPath;
 	this.useDueTime = false;
 	this.useStartTime = false;
+        this.multiAssignment = 0;
 	
 	this.createdByName;
 	this.assignedToName;

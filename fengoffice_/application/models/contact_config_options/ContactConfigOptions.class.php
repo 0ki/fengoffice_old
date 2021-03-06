@@ -97,9 +97,9 @@ class ContactConfigOptions extends BaseContactConfigOptions {
 	 * @param mixed $default Default value that is returned in case of any error
 	 * @return null
 	 */
-	static function getOptionValue($name, $user_id, $default = null) {
+	static function getOptionValue($name, $user_id, $default = null, $member = 0) {
 		$option = self::instance()->getByNameFromCache($name);
-		return $option instanceof ContactConfigOption ? $option->getContactValue($user_id, $default) : $default;
+		return $option instanceof ContactConfigOption ? $option->getContactValue($user_id, $default, $member) : $default;
 	} // getOptionValue
 
 	/**
@@ -151,6 +151,10 @@ class ContactConfigOptions extends BaseContactConfigOptions {
 		
 		return $object;
 	} // getByName
+        
+        function getFilterActivity() {
+                return ContactConfigOptions::findOne(array('conditions' => array('`name` = "filters_dashboard"')));
+        }
 
 } // ConfigOptions
 

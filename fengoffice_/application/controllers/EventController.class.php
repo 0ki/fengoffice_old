@@ -354,6 +354,7 @@ class EventController extends ApplicationController {
 		
 		tpl_assign('event', $event);
 		tpl_assign('event_data', $event_data);
+                tpl_assign('event_related', false);
 		
 		if (is_array(array_var($_POST, 'event'))) {
 			try {
@@ -420,14 +421,18 @@ class EventController extends ApplicationController {
                                 }
                                 
                                 $opt_rep_day = array();
-                                if(array_var($event_data, 'repeat_saturdays',false)){
+                                if(array_var($event_data, 'repeat_saturdays')){
                                     $opt_rep_day['saturday'] = true;
+                                }else{
+                                    $opt_rep_day['saturday'] = false;
                                 }
-                                if(array_var($event_data, 'repeat_sundays',false)){
+                                if(array_var($event_data, 'repeat_sundays')){
                                     $opt_rep_day['sunday'] = true;
+                                }else{
+                                    $opt_rep_day['sunday'] = false;
                                 }
                                 
-                                $this->repetitive_event($event, $opt_rep_day);
+                                //$this->repetitive_event($event, $opt_rep_day);
                                 
 				if (array_var($_POST, 'popup', false)) {
 					$event->subscribeUser(logged_user());
@@ -873,18 +878,6 @@ class EventController extends ApplicationController {
 				if (isset($data['confirmAttendance'])) {
                                     $this->change_invitation_state($data['confirmAttendance'], $event->getId(), $user_filter);
                                 }
-                                
-                                $is_silent = false;
-                                if (isset($data['send_notification']) && $data['send_notification']) {
-                                                    $users_to_inv = array();
-                                    foreach ($data['users_to_invite'] as $us => $v) {
-                                            if ($us != logged_user()->getId()) {
-                                                    $users_to_inv[] = Contacts::findById(array('id' => $us));
-                                            }
-                                    }
-                                    Notifier::notifEvent($event, $users_to_inv, 'modified', logged_user());
-                                    $is_silent = true;
-                                }
 				    
                                 DB::beginWork();
                                 $event->save();  
@@ -904,25 +897,41 @@ class EventController extends ApplicationController {
                                 $object_controller->add_reminders($event);
 
                                 $event->resetIsRead();
+                                DB::commit();
+                                
+                                $is_silent = false;
+                                if (isset($data['send_notification']) && $data['send_notification']) {
+                                                    $users_to_inv = array();
+                                    foreach ($data['users_to_invite'] as $us => $v) {
+                                            if ($us != logged_user()->getId()) {
+                                                    $users_to_inv[] = Contacts::findById(array('id' => $us));
+                                            }
+                                    }
+                                    Notifier::notifEvent($event, $users_to_inv, 'modified', logged_user());
+                                    $is_silent = true;
+                                }
 
                                 ApplicationLogs::createLog($event, ApplicationLogs::ACTION_EDIT, false, $is_silent);
                                 
                                 $opt_rep_day = array();
-                                if(array_var($event_data, 'repeat_saturdays',false)){
+                                if(array_var($event_data, 'repeat_saturdays')){
                                     $opt_rep_day['saturday'] = true;
+                                }else{
+                                    $opt_rep_day['saturday'] = false;
                                 }
-                                if(array_var($event_data, 'repeat_sundays',false)){
+                                if(array_var($event_data, 'repeat_sundays')){
                                     $opt_rep_day['sunday'] = true;
+                                }else{
+                                    $opt_rep_day['sunday'] = false;
                                 }
                                 
-                                $this->repetitive_event($event, $opt_rep_day);
+                                //$this->repetitive_event($event, $opt_rep_day);
                                 
                                 if($_POST['type_related'] == "all" || $_POST['type_related'] == "news"){
                                     $data['members'] = json_decode(array_var($_POST, 'members'));
                                     $this->repetitive_event_related($event,"edit",$_POST['type_related'],$data);
-                                }   
-
-                                DB::commit();
+                                }
+                                
                                 flash_success(lang('success edit event', clean($event->getObjectName())));
 
                                 if (array_var($_POST, 'popup', false)) {
@@ -1343,7 +1352,7 @@ class EventController extends ApplicationController {
                     {
                             flash_error(lang('check your account'));
                     }
-                    
+                    $calendar_google = array();
                     if(count($calFeed) > 0){
                         foreach ($calFeed as $calF){
                             $cal_src = explode("/",$calF->content->src);
@@ -1398,7 +1407,7 @@ class EventController extends ApplicationController {
                     
                     $cal_data['id'] = $edit_calendar->getId();
                     
-                    $cal_data['calendar_link'] = "https://www.google.com/calendar/feeds/".$edit_calendar->getCalendarUser()."/".$edit_calendar->getCalendarVisibility()."/basic";
+                    $cal_data['calendar_link'] = "http://www.google.com/calendar/feeds/".$edit_calendar->getCalendarUser()."/".$edit_calendar->getCalendarVisibility()."/basic";
                     $cal_data['calendar_name'] = $edit_calendar->getCalendarName();
                     tpl_assign('cal_data', $cal_data);
                 }
@@ -1504,6 +1513,38 @@ class EventController extends ApplicationController {
                 }         
 	}
         
+        function delete_calendar_user() {
+                ajx_current("empty");
+                
+                try
+                {
+                    $cal_users = ExternalCalendarUsers::findByContactId();
+                    $calendars = ExternalCalendars::findByExtCalUserId($cal_users->getId());                
+                    foreach ($calendars as $calendar){
+                        $events = ProjectEvents::findByExtCalId($calendar->getId());
+                        foreach ($events as $event){
+                            if($calendar->getCalendarFeng() == 0){
+                                $event->trash();
+                            }
+                            $event->setSpecialID("");
+                            $event->setExtCalId(0);
+                            $event->save();
+                        }
+                        $calendar->delete();
+                    }
+                    
+                    $cal_users->delete();  
+
+                    flash_success(lang('success delete calendar'));
+                    ajx_current("reload");
+                }
+                catch(Exception $e)
+                {
+                        flash_error($e->getMessage());
+                        ajx_current("empty");
+                }
+	}
+        
         function delete_calendar() {
                 ajx_current("empty");
                                     
@@ -1542,12 +1583,11 @@ class EventController extends ApplicationController {
                                 try
                                 {
                                         $client = Zend_Gdata_ClientLogin::getHttpClient($user,$pass,$service);
-                                        $gdataCal = new Zend_Gdata_Calendar($client); 
-
                                         $gdataCal = new Zend_Gdata_Calendar($client);
                                         $query = $gdataCal->newEventQuery();
                                         $query->setUser($calendar_user);
                                         $query->setVisibility($calendar_visibility);
+                                        $query->setMaxResults(999999999);
 
                                         $event_list = $gdataCal->getCalendarEventFeed($query);
                                         foreach ($event_list as $event)
@@ -1557,6 +1597,7 @@ class EventController extends ApplicationController {
                                 }
                                 catch(Exception $e)
                                 {
+                                		Logger::log($e->getMessage());
                                         flash_error(lang('could not connect to calendar'));
                                         ajx_current("empty");
                                 }
@@ -1585,78 +1626,97 @@ class EventController extends ApplicationController {
             $user = $users->getAuthUser();
             $pass = $users->getAuthPass();
             $service = Zend_Gdata_Calendar::AUTH_SERVICE_NAME;
-
-            $client = Zend_Gdata_ClientLogin::getHttpClient($user,$pass,$service);
-
-            $event_id = 'http://www.google.com/calendar/feeds/'.$calendar->getCalendarUser().'/private/full/'.$event->getSpecialID();
-
-            $gcal = new Zend_Gdata_Calendar($client);
-
-            $edit_event = $gcal->getCalendarEventEntry($event_id);
-            $edit_event->title = $gcal->newTitle($event->getObjectName()); 
-            $edit_event->content = $gcal->newContent($event->getDescription());
-
-            $star_time = explode(" ",$event->getStart()->format("Y-m-d H:i:s"));
-            $end_time = explode(" ",$event->getDuration()->format("Y-m-d H:i:s"));
-
-            if($event->getTypeId() == 2){
-                $when = $gcal->newWhen();
-                $when->startTime = $star_time[0];
-                $when->endTime = $end_time[0];
-                $edit_event->when = array($when);
-            }else{                                    
-                $when = $gcal->newWhen();
-                $when->startTime = $star_time[0]."T".$star_time[1].".000-00:00";
-                $when->endTime = $end_time[0]."T".$end_time[1].".000-00:00";
-                $edit_event->when = array($when);
-            }
-
-            $edit_event->save();  
+			
+            try
+            {
+	            $client = Zend_Gdata_ClientLogin::getHttpClient($user,$pass,$service);
+	
+	            $event_id = 'http://www.google.com/calendar/feeds/'.$calendar->getCalendarUser().'/private/full/'.$event->getSpecialID();
+	
+	            $gcal = new Zend_Gdata_Calendar($client);
+	
+	            $edit_event = $gcal->getCalendarEventEntry($event_id);
+	            $edit_event->title = $gcal->newTitle($event->getObjectName()); 
+	            $edit_event->content = $gcal->newContent($event->getDescription());
+	
+	            $star_time = explode(" ",$event->getStart()->format("Y-m-d H:i:s"));
+	            $end_time = explode(" ",$event->getDuration()->format("Y-m-d H:i:s"));
+	
+	            if($event->getTypeId() == 2){
+	                $when = $gcal->newWhen();
+	                $when->startTime = $star_time[0];
+	                $when->endTime = $end_time[0];
+	                $edit_event->when = array($when);
+	            }else{                                    
+	                $when = $gcal->newWhen();
+	                $when->startTime = $star_time[0]."T".$star_time[1].".000-00:00";
+	                $when->endTime = $end_time[0]."T".$end_time[1].".000-00:00";
+	                $edit_event->when = array($when);
+	            }
+	
+	            $edit_event->save(); 
+	        }
+	        catch(Exception $e)
+	        {
+	           	flash_error($e->getMessage());
+	            ajx_current("empty");
+	        } 
         }
         
         function delete_event_calendar_extern($event){
             ajx_current("empty");
-            require_once 'Zend/Loader.php';
+            if($event->getExtCalId() > 0){
+                require_once 'Zend/Loader.php';
 
-            Zend_Loader::loadClass('Zend_Gdata');
-            Zend_Loader::loadClass('Zend_Gdata_AuthSub');
-            Zend_Loader::loadClass('Zend_Gdata_ClientLogin');
-            Zend_Loader::loadClass('Zend_Gdata_Calendar');
+                Zend_Loader::loadClass('Zend_Gdata');
+                Zend_Loader::loadClass('Zend_Gdata_AuthSub');
+                Zend_Loader::loadClass('Zend_Gdata_ClientLogin');
+                Zend_Loader::loadClass('Zend_Gdata_Calendar');
 
-            $users = ExternalCalendarUsers::findByContactId();
-            $calendar = ExternalCalendars::findById($event->getExtCalId());
+                $users = ExternalCalendarUsers::findByContactId();
+                $calendar = ExternalCalendars::findById($event->getExtCalId());
 
-            $user = $users->getAuthUser();
-            $pass = $users->getAuthPass();
-            $service = Zend_Gdata_Calendar::AUTH_SERVICE_NAME;
-
-            $client = Zend_Gdata_ClientLogin::getHttpClient($user,$pass,$service);
-
-            $event_id = 'http://www.google.com/calendar/feeds/'.$calendar->getCalendarUser().'/private/full/'.$event->getSpecialID();
-
-            $gcal = new Zend_Gdata_Calendar($client);
-
-            $edit_event = $gcal->getCalendarEventEntry($event_id);
-            $edit_event->delete(); 
+                $user = $users->getAuthUser();
+                $pass = $users->getAuthPass();
+                $service = Zend_Gdata_Calendar::AUTH_SERVICE_NAME;
+				
+                try
+                {
+	                $client = Zend_Gdata_ClientLogin::getHttpClient($user,$pass,$service);
+	
+	                $event_id = 'http://www.google.com/calendar/feeds/'.$calendar->getCalendarUser().'/private/full/'.$event->getSpecialID();
+	
+	                $gcal = new Zend_Gdata_Calendar($client);
+	
+	                $edit_event = $gcal->getCalendarEventEntry($event_id);
+	                $edit_event->delete(); 
+	            }
+	            catch(Exception $e)
+	            {
+	                flash_error($e->getMessage());
+	                ajx_current("empty");
+	            }
+            }            
         }
         
         function import_calendars(){
             ajx_current("empty");
             if(array_var($_POST, 'e_calendars')){
                 $users = ExternalCalendarUsers::findByContactId();
-                $sync = false;
                 foreach (array_var($_POST, 'e_calendars') as $cal_title => $cal_user){
                     $sql = "SELECT ec.* FROM `".TABLE_PREFIX."external_calendars` ec,`".TABLE_PREFIX."external_calendar_users` ecu 
                             WHERE ec.calendar_user = '".$cal_user."' AND ecu.contact_id = ".logged_user()->getId()."";
                     $calendar_feng = DB::executeOne($sql);  
                     
                     if(!$calendar_feng){
+                        $instalation = explode("/", ROOT_URL);
+                        $instalation_name = end($instalation);
                         $calendar = new ExternalCalendar();
                         $calendar->setCalendarUser($cal_user);
                         $calendar->setCalendarVisibility("private");
                         $calendar->setCalendarName($cal_title);
                         $calendar->setExtCalUserId($users->getId());
-                        if($cal_title == lang('feng calendar')){
+                        if($cal_title == lang('feng calendar',$instalation_name)){
                             $calendar->setCalendarFeng(1);
                         }
                         $calendar->save();
@@ -1664,16 +1724,13 @@ class EventController extends ApplicationController {
                         $sync = true;
                     }
                 }
-//                if($sync){
-//                    $this->import_google_calendar();
-//                }
                 $this->import_google_calendar();
                 flash_success(lang('success import calendar'));
                 ajx_current("reload");
             }
         }
         
-        function import_google_calendar() {      
+        function import_google_calendar() {
                 ajx_current("empty");
                 $users = ExternalCalendarUsers::findByContactId();  
                 if($users){
@@ -1716,17 +1773,24 @@ class EventController extends ApplicationController {
                                 if($delete_calendar){
                                     $calendar_user = $calendar->getCalendarUser();
                                     $calendar_visibility = $calendar->getCalendarVisibility();
+                                    $start_sel = date('Y-m-d', strtotime('-1 week'));
+                                    $end_sel = date('Y-m-d', strtotime('+2 year'));
 
                                     $query = $gdataCal->newEventQuery();
                                     $query->setUser($calendar_user);
                                     $query->setVisibility($calendar_visibility);
                                     $query->setSingleEvents(true);
                                     $query->setProjection('full');
+                                    $query->setOrderby('starttime');
+                                    $query->setSortOrder('ascending'); 
+                                    $query->setStartMin($start_sel);
+                                    $query->setStartMax($end_sel);
+                                    $query->setMaxResults(50);
                                     // execute and get results
                                     $event_list = $gdataCal->getCalendarEventFeed($query);
 
                                     $array_events_google = array();
-                                    foreach ($event_list as $event){
+                                    foreach ($event_list as $event){                                        
                                         $event_id = explode("/",$event->id->text);
                                         $special_id = end($event_id); 
                                         $event_name = lang("untitle event");
@@ -1865,6 +1929,7 @@ class EventController extends ApplicationController {
                     }
                     catch(Exception $e)
                     {
+                    		Logger::log($e->getMessage());
                             flash_error(lang('could not connect to calendar'));
                             ajx_current("empty");
                     }
@@ -1935,7 +2000,9 @@ class EventController extends ApplicationController {
                                     $appCalUrl = '';
                                     $calFeed = $gdataCal->getCalendarListFeed();        
                                     foreach ($calFeed as $calF){
-                                        if($calF->title->text == lang('feng calendar')){
+                                        $instalation = explode("/", ROOT_URL);
+                                        $instalation_name = end($instalation);
+                                        if($calF->title->text == lang('feng calendar',$instalation_name)){
                                             $appCalUrl = $calF->content->src;
                                             $t_calendario = $calF->title->text;
                                         }
@@ -1944,8 +2011,10 @@ class EventController extends ApplicationController {
                                     if($appCalUrl != ""){
                                         $title_cal = $t_calendario;
                                     }else{
+                                        $instalation = explode("/", ROOT_URL);
+                                        $instalation_name = end($instalation);
                                         $appCal = $gdataCal -> newListEntry();
-                                        $appCal -> title = $gdataCal-> newTitle(lang('feng calendar'));                         
+                                        $appCal -> title = $gdataCal-> newTitle(lang('feng calendar',$instalation_name));                         
                                         $own_cal = "http://www.google.com/calendar/feeds/default/owncalendars/full";                        
                                         $new_cal = $gdataCal->insertEvent($appCal, $own_cal);
 
@@ -2006,8 +2075,7 @@ class EventController extends ApplicationController {
                         }
                         catch(Exception $e)
                         {
-                                // prevent Google username and password from being displayed
-                                // if a problem occurs
+                        		Logger::log($e->getMessage());
                                 flash_error(lang('could not connect to calendar'));
                                 ajx_current("empty");
                         }
@@ -2086,9 +2154,9 @@ class EventController extends ApplicationController {
 				$new_due_date = $new_due_date->add('y', $event->getRepeatY());
 			}
 		}
-                
-                $this->correct_days_event_repetitive($new_st_date,$opt_rep_day['saturday'],$opt_rep_day['sunday']);
-                $this->correct_days_event_repetitive($new_due_datev, $opt_rep_day['saturday'], $opt_rep_day['sunday']);
+		
+		$this->correct_days_event_repetitive($new_st_date, $opt_rep_day['saturday'], $opt_rep_day['sunday']);
+		$this->correct_days_event_repetitive($new_due_date, $opt_rep_day['saturday'], $opt_rep_day['sunday']);
 	}
         
         function repetitive_event_related($event,$action,$type_related = "",$event_data = array()){
@@ -2185,7 +2253,7 @@ class EventController extends ApplicationController {
                 if($repeat_sunday) $working_days[] = 0;
                 if(!in_array(date("w",  $date->getTimestamp()), $working_days)){
                     $date = $date->add('d', 1);
-                    $this->correct_days_event_repetitive($date);
+                    $this->correct_days_event_repetitive($date, $repeat_saturday, $repeat_sunday);
                 }
             }
             return $date;

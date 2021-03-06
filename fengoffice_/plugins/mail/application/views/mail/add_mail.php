@@ -94,7 +94,7 @@ sig.actualHtmlSignature = '';
 
 
 <div class="mail" id="<?php echo $genid ?>mail_div" style="height:100%;">
-<div class="coInputHeader" id="<?php echo $genid ?>header_div">
+<div class="coInputHeader" id="<?php echo $genid ?>header_div" style="border-bottom:0px none;">
 
   	<div style="display: none;">
   		<table><tr><td>
@@ -123,11 +123,7 @@ sig.actualHtmlSignature = '';
     	</td></tr></table>
 	</div>
   
- 	<?php if (substr_count(array_var($mail_data, 'cc'), '@') > 0){ ?>
-		<div id="add_mail_CC" style="padding-top:2px;display:block;">
-	<?php }else{ ?>
-	 	<div id="add_mail_CC" style="padding-top:2px;display:none;">
-	<?php }?>
+ 	<div id="add_mail_CC" style="padding-top:2px;display:<?php echo (substr_count(array_var($mail_data, 'cc'), '@') > 0 ? 'block' : 'none')?>;">
 		<table style="width:95%"><tr><td style="width: 60px;">
 		<label for="mailCC"><?php echo lang('mail CC')?> </label>
 		</td><td>
@@ -261,7 +257,7 @@ sig.actualHtmlSignature = '';
 	<?php } ?>
   
 </div>
-<div class="coInputSeparator"></div>
+
 <div id="<?php echo $genid ?>mail_body_container" style="height: 105%; overflow-y: auto">
     <?php 
     $display = ($type == 'html') ? 'none' : 'block';
@@ -305,12 +301,11 @@ var focus_editor = false;
 var h = document.getElementById("<?php echo $genid ?>ck_editor").offsetHeight;
 try {
 var editor = CKEDITOR.replace('<?php echo $genid ?>ckeditor', {
-	uiColor: '#BBCCEA',
 	height: (h-205) + 'px',
-	enterMode: CKEDITOR.ENTER_BR,
+	enterMode: CKEDITOR.ENTER_DIV,
 	shiftEnterMode: CKEDITOR.ENTER_P,
 	disableNativeSpellChecker: false,
-	resize_enabled: false,
+	//resize_enabled: false, //this causes a bug when pasting info into Google Chrome and other browsers 
 	customConfig: '',
 	contentsCss: og.getUrl('mail', 'get_mail_css'),
 	language: '<?php echo $loc ?>',
@@ -323,7 +318,8 @@ var editor = CKEDITOR.replace('<?php echo $genid ?>ckeditor', {
 		'Font','FontSize','-',
 		'TextColor','BGColor']
 	],
-	skin: 'office2003',
+	skin: 'kama',
+	contentsCss: '<?php echo get_javascript_url("ckeditor/contents.css")."?rev=".product_version_revision()?>',
 	keystrokes: [
 		[ CKEDITOR.ALT + 121 /*F10*/, 'toolbarFocus' ],
 		[ CKEDITOR.ALT + 122 /*F11*/, 'elementsPathFocus' ],
@@ -340,14 +336,15 @@ var editor = CKEDITOR.replace('<?php echo $genid ?>ckeditor', {
 		[ CKEDITOR.CTRL + 73 /*I*/, 'italic' ],
 		[ CKEDITOR.CTRL + 85 /*U*/, 'underline' ],
 
-		[ CKEDITOR.CTRL + 83 /*S*/, 'save' ],
+		//[ CKEDITOR.CTRL + 83 /*S*/, 'save' ],
 
 		[ CKEDITOR.ALT + 109 /*-*/, 'toolbarCollapse' ]
 	],
 	filebrowserImageUploadUrl : '<?php echo ROOT_URL ?>/public/assets/javascript/ckeditor/ck_upload_handler.php',
 	on: {
 		instanceReady: function(ev) {
-			og.adjustCkEditorArea('<?php echo $genid ?>');
+			og.adjustCkEditorArea('<?php echo $genid ?>', '', true);
+			var genid = '<?php echo $genid ?>';
 			var mb = Ext.getDom('<?php echo $genid ?>mailBody');
 			mb.oldMailBody = og.getMailBodyFromUI('<?php echo $genid ?>');
 			ev.editor.resetDirty();
@@ -384,18 +381,18 @@ og.resizeMailDiv = function() {
 	maindiv = document.getElementById('<?php echo $genid ?>main_div');
 	headerdiv = document.getElementById('<?php echo $genid ?>header_div');
 	if (maindiv != null && headerdiv != null) {
-		var divHeight = maindiv.offsetHeight - headerdiv.offsetHeight - 15;
+		var divHeight = maindiv.offsetHeight - headerdiv.offsetHeight - 30;
 		document.getElementById('<?php echo $genid ?>mail_div').style.height = divHeight + 'px';
 		
 		var parentTd = document.getElementById('cke_contents_<?php echo $genid ?>ckeditor');
 		if (parentTd) {
 			var iframe = parentTd.firstChild;
-			iframe.style.height = (divHeight - 20 ) + 'px';
-			parentTd.style.height = (divHeight - 20 ) + 'px';
+			iframe.style.height = (divHeight - 35 ) + 'px';
+			parentTd.style.height = (divHeight - 35 ) + 'px';
 		}
 	}
 }
-og.resizeMailDiv();
+setTimeout('og.resizeMailDiv()', 50);
 window.onresize = og.resizeMailDiv;
 
 if (Ext.getDom('<?php echo $genid ?>format_html') && !Ext.getDom('<?php echo $genid ?>format_html').checked) {

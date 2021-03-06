@@ -341,7 +341,7 @@
 	'minutes' => 'Minuten',
 	'seconds' => 'Seconden',
 	'days' => 'Dagen',
-	'time estimate' => 'Geschatte tijd',
+	'estimated time' => 'Geschatte tijd',
 	'work in progress' => 'Werk in uitvoering',
 	'total time' => 'Totaal tijd',
 	'upload anyway' => 'Sowieso uploaden',

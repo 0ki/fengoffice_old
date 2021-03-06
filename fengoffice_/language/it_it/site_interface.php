@@ -437,7 +437,7 @@
 	'this week' => 'Questa settimana',
 	'time' => 'Tempo',
 	'meeting_time' => 'Tempo',
-	'time estimate' => 'Tempo stimato',
+	'estimated time' => 'Tempo stimato',
 	'time has to be greater than 0' => 'La durata deve essere maggiore di 0',
 	'time since pause' => 'Tempo trascorso dalla pausa',
 	'time timeslots' => 'Compiti generali',

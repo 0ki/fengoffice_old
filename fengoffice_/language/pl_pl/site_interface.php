@@ -341,7 +341,7 @@
 	'minutes' => 'Minut',
 	'seconds' => 'Sekund',
 	'days' => 'Dni',
-	'time estimate' => 'Szacowany czas realizacji',
+	'estimated time' => 'Szacowany czas realizacji',
 	'work in progress' => 'Praca w toku',
 	'total time' => 'Czas całkowity',
 	'upload anyway' => 'Wyślij mimo wszystko',

@@ -126,13 +126,20 @@ class Comment extends BaseComment {
 	 * @param Member $member
 	 * @return boolean
 	 */
-	function canAddToMember(Contact $user, Member $member, $context_members) {		
-		return can_add_to_member($user, $member, $context_members, $this->getRelObject()->getObjectTypeId());
+	function canAddToMember(Contact $user, Member $member, $context_members) {
+		$rel_object = $this->getRelObject();
+		if (!$rel_object instanceof ContentDataObject) {
+			return false;
+		}
+		return can_add_to_member($user, $member, $context_members, $rel_object->getObjectTypeId());
 	} // canAdd
 
 	
 	function canAdd(Contact $user, $context, &$notAllowedMember = ''){
 		$object = $this->getRelObject();
+		if (!$object instanceof ContentDataObject) {
+			return false;
+		}
 		return can_add($user, $context, $object->getObjectTypeId(), $notAllowedMember );
 	}
 	
@@ -145,6 +152,9 @@ class Comment extends BaseComment {
 		$userId = $user->getId();
 		$creatorId = $this->getCreatedById();
 		$object = $this->getRelObject();
+		if (!$object instanceof ContentDataObject) {
+			return false;
+		}
 		return can_write($user, $object->getMembers(), $object->getObjectTypeId()) && ($user->isAdministrator() || $userId == $creatorId);
 	} // canEdit
 
@@ -157,6 +167,9 @@ class Comment extends BaseComment {
 	 */
 	function canDelete(Contact $user) {
 		$object = $this->getRelObject();
+		if (!$object instanceof ContentDataObject) {
+			return false;
+		}
 		return can_delete($user, $object->getMembers(), $object->getObjectTypeId());
 	} // canDelete
 
@@ -187,7 +200,6 @@ class Comment extends BaseComment {
 		$saved = parent::save();
 		if($saved) {
 			$object = $this->getRelObject();
-			$object->save(); // update object
 			
 			if($object instanceof ContentDataObject) {
 				if($is_new) {
@@ -195,6 +207,7 @@ class Comment extends BaseComment {
 				} else {
 					$object->onEditComment($this);
 				}
+				$object->save();
 			}
 		}
 		return $saved;
@@ -230,7 +243,7 @@ class Comment extends BaseComment {
 	function getObjectName() {
 		$object = $this->getRelObject();
 		//return $object instanceof ContentDataObject ? lang('comment on object', substr_utf($this->getText(), 0, 50) . '...', $object->getObjectName()) : $this->getObjectTypeName();
-                return $object->getObjectName();
+		return $object instanceof ContentDataObject ? $object->getObjectName() : $this->getObjectTypeName();
 	} // getObjectName
 
 	/**

@@ -1,6 +1,7 @@
 <?php 
 $members = implode (',', active_context_members(false));
 $ws_dim = Dimensions::findByCode('workspaces');
+$row_cls = "";
 ?>
 
 <div class="ws-widget widget">
@@ -12,28 +13,39 @@ $ws_dim = Dimensions::findByCode('workspaces');
 	
 	<div class="widget-body" id="<?php echo $genid; ?>_widget_body" >
 	
+	<?php if (isset($data_ws) && $data_ws && count($data_ws) > 0) : ?>
 		<div class="project-list">
 		<?php foreach($data_ws as $ws):?>
-			<div class="project-row-container">
-                                    
+			<div class="workspace-row-container <?php echo $row_cls ?>">
 				<a class="internalLink" href="javascript:void(0);" onclick="og.workspaces.onWorkspaceClick(<?php echo $ws->getId() ?>);">
 					<img class="ico-color<?php echo $ws->getMemberColor() ?>" unselectable="on" src="s.gif"/>
 					<?php echo $ws->getName() ?>
 				</a>		
 			</div>
 			<div class="x-clear"></div>
+			<?php $row_cls = $row_cls == "" ? "dashAltRow" : ""; ?>
 		<?php endforeach;?>
 		</div>
 		
-		<?php if ($total < count ($workspaces)) : ?>
-			<a href="javascript:og.customDashboard('member', 'init', {},true)" ><?php echo lang('see all');?></a>
+		<?php if ($total <= count ($workspaces)) : ?>
+			<div class="view-all-container">
+				<a href="javascript:og.customDashboard('member', 'init', {},true)" ><?php echo lang('view all');?></a>
+			</div>
+			<div class="clear"></div>
 		<?php endif ;?>
-				
-		<label><?php echo lang('add project')?></label>
+		
+		<div class="x-clear"></div>
+		
+	<?php endif; ?>
+	
+	<?php if (can_manage_dimension_members(logged_user())) : ?>
+	
+		<label><?php echo lang('add workspace')?></label>
 		<input type="text" class="ws-name" />
 		<button class="submit-ws" ><?php echo lang('add')?></button>
-		<a class= "ws-more-details" href="#" onclick="return false;" ><?php echo lang("more")?>>></a>
-		<div class="x-clear"></div>		
+		<a class="ws-more-details coViewAction ico-edit" href="#" onclick="return false;" ><?php echo lang("details")?></a>
+	
+	<?php endif; ?>
 
 	</div>
 </div>
@@ -58,8 +70,8 @@ $ws_dim = Dimensions::findByCode('workspaces');
 				});
 				
 			}else{
-				alert('<?php echo lang('name required')?>');
-				$(container).find("input.add-project-field").focus();
+				og.err('<?php echo lang('error add name required', lang('workspace'))?>');
+				$(container).find("input.ws-name").focus();
 				container.removeClass("loading");
 			}	
 			

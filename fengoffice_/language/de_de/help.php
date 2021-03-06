@@ -30,4 +30,8 @@
 	'success enable all context help' => 'Die Hilfetexte wurden erfolgreich aktiviert!',
 	'success enable context help' => 'Die Hilfetexte wurden erfolgreich aktiviert!',
 	'success disable context help' => 'Die Hilfetexte wurden erfolgreich deaktiviert!',
+	'how to purchase' => 'Hinweise zum Erwerb',
+	'how to purchase desc' => 'Informationen über unsere unterschiedlichen Angebote und Vorteile',
+	'add ticket' => 'Ein neues Supportticket hinzufügen',
+	'add ticket desc' => 'Persönliche Hilfe zu Feng Office erhalten',
 ); ?>

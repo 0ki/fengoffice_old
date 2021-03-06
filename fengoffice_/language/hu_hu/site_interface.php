@@ -447,7 +447,7 @@ return array(
 	'minutes' => 'Perc',
 	'seconds' => 'Másodperc',
 	'days' => 'Nap',
-	'time estimate' => 'Becsült időtartam',
+	'estimated time' => 'Becsült időtartam',
 	'work in progress' => 'Folyamatban lévő munka',
 	'total time' => 'Összes idő',
 

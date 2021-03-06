@@ -23,8 +23,10 @@ return array(
 
     'completed task' => 'Completed task',
     'completed tasks' => 'Completed tasks',
+	'completed subtasks' => 'Completed subtasks',
     'open task' => 'Open task',
     'open tasks' => 'Open tasks',
+    'open subtasks' => 'Pending subtasks',
     'view all completed tasks' => 'All completed tasks (total {0})',
     'recently completed tasks' => 'Recently completed tasks',
     'task open of total tasks' => '{0} open of {1} tasks in list',
@@ -241,8 +243,8 @@ return array(
 	'normal priority' => 'Normal',
 	'low priority' => 'Low',
 
-	'time estimate' => 'Time estimate',
-	'time estimate desc' => 'Estimated duration of the task in hours.',
+	'estimated time' => 'Estimated time',
+	'estimated time desc' => 'Estimated duration of the task in hours.',
 	'x hours' => '{0} hours.',
 	'pending' => 'Pending',
 

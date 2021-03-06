@@ -69,7 +69,7 @@ class Workspaces extends BaseWorkspaces {
     	$members = Members::findAll(array('conditions' => $sql, 'order' => 'name'));
     	$res = array();
     	foreach ($members as $mem) {
-    		// controlar permissos para cada fucking miembro
+    		// FIXME: check permissions
     	}
     	return $members;
     }

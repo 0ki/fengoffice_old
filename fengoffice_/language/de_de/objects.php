@@ -126,4 +126,8 @@
 	'activity download' => '{1} lud {0} „{2}“ herunter.',
 	'x users' => '{0} Benutzer{1}',
 	'the file_revision' => 'die Dateirevision',
+	'mail' => 'E-Mail',
+	'report' => 'Bericht',
+	'activity checkout' => '{1} ausgecheckt {0} {2}',
+	'activity checkin' => '{1} eingecheckt {0} {2}',
 ); ?>

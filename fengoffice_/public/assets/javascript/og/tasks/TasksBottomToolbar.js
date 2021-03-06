@@ -109,6 +109,7 @@ og.TasksBottomToolbar = function(config) {
 	        	,['assigned_by', lang('assigned by')]
 	        	,['milestone', lang('milestone')]
 	        	,['priority', lang('priority')]
+                        ,['subscribed_to', lang('subscribed to')]
 	//        	,['subtype', lang('object type')]
 	        ]
 	    }),
@@ -228,6 +229,7 @@ og.TasksBottomToolbar = function(config) {
         triggerAction: 'all',
         selectOnFocus:true,
         width:140,
+        listWidth: 'auto',
         valueField: 'value',
         emptyText: (lang('select user or group') + '...'),
         valueNotFoundText: '',
@@ -280,6 +282,7 @@ og.TasksBottomToolbar = function(config) {
         triggerAction: 'all',
         selectOnFocus:true,
         width:140,
+        listWidth: 'auto',
         valueField: 'value',
         emptyText: (lang('select user or group') + '...'),
         valueNotFoundText: '',
@@ -390,7 +393,7 @@ og.TasksBottomToolbar = function(config) {
     	id: 'ogTasksStatusCombo',
         store: new Ext.data.SimpleStore({
 	        fields: ['value', 'text'],
-	        data : [[2, '--' + lang('no filter') + '--'],[0, lang('pending')],[1, lang('complete')], [10, lang('active')], [11, lang('overdue')], [12, lang('today')], [13, lang('overdue')+"+"+lang('today')], [20, lang('my active')], [21, lang('my subscribed')]]
+	        data : [[2, '--' + lang('no filter') + '--'],[0, lang('pending')],[1, lang('complete')], [10, lang('active')], [11, lang('overdue')], [12, lang('today')], [13, lang('overdue')+"+"+lang('today')]]
 	    }),
         displayField:'text',
         typeAhead: true,
@@ -459,12 +462,11 @@ Ext.extend(og.TasksBottomToolbar, Ext.Toolbar, {
 			default:
 				filterValue = this.filterNamesCombo.getValue();
 				break;
-		}
-		
+		}		
 		return {
-			status: this.statusCombo.getValue(),
-			filter:this.filtercombo.getValue(),
-			fval:filterValue
+			status : this.statusCombo.getValue(),
+			filter : this.filtercombo.getValue(),
+			fval : filterValue
 		}
 	},
 	cloneUserCompanyCombo : function(newId){

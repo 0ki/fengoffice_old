@@ -87,9 +87,7 @@
 }
 
 #logodiv {
-	position: relative;
-	margin: 2 auto;
-	text-align: left;
+        float: left;
 	background-repeat: no-repeat;
 	height: 45px;
 	margin-left: 15px;
@@ -110,15 +108,9 @@
 #logodiv h1
 {
    	color: #FFFFFF;
-    font-size: 22px;
-    font-weight: normal;
-    padding: 0 0 0 5px;
-}
-
-
-#logodiv div
-{
-	padding-top: 15px;
+        font-size: 22px;
+        font-weight: normal;
+        padding: 0 0 0 5px;
 }
 
 #subWsExpander {
@@ -137,6 +129,7 @@
 
 #searchbox input {
 	width: 120px;
+	border-radius: 4px 0 0 4px;
 }
 
 .ico-quick-add {
@@ -221,6 +214,9 @@ div.user-box-actions a
 	font-weight: bold;
 }
 
+div.user-box-actions div.color-pickers-container {
+	margin-bottom: 16px;
+}
 
 div.user-box-actions div.theme-color-picker input
 {
@@ -425,12 +421,7 @@ div.overview-activity textarea, div.overview-activity textarea.huge
 
 .clear {
 	clear: both;
-	height: 1px;
 	overflow: hidden;
-}
-
-.u-clear {
-	clear: both;
 }
 
 #error, #success {

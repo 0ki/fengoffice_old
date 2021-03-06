@@ -21,4 +21,4 @@ ALTER TABLE `<?php echo $table_prefix ?>project_events` ADD `update_sync` DATETI
 ALTER TABLE  `<?php echo $table_prefix ?>permission_groups` ADD  `type` ENUM(  'roles',  'permission_groups',  'user_groups' ) NOT NULL;
 UPDATE `<?php echo $table_prefix ?>permission_groups` SET `type` = 'roles' WHERE `id` <= 13;
 UPDATE `<?php echo $table_prefix ?>permission_groups` SET `type` = 'permission_groups' WHERE `contact_id` > 0;
-UPDATE `<?php echo $table_prefix ?>permission_groups` SET `type` = 'user_groups' WHERE `type` = '' OR `type` IS NULL;
+UPDATE `<?php echo $table_prefix ?>permission_groups` SET `type` = 'user_groups' WHERE `contact_id` = 0 AND `id` > 13;

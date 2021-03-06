@@ -99,7 +99,8 @@ class MollejaUpgradeScript extends ScriptUpgraderScript {
 		$upgrade_script = "";
 
 		$original_version_from = array_var(array_var($_POST, 'form_data'), 'upgrade_from', $installed_version);
-		if (version_compare($installed_version, $this->getVersionFrom()) <= 0 && version_compare($original_version_from, '2.0.0.0-beta') > 0 ) {
+		if (version_compare($installed_version, $this->getVersionFrom()) <= 0 && version_compare($original_version_from, '2.0.0.0-beta') > 0
+			 && (!isset($_SESSION['from_feng1']) || !$_SESSION['from_feng1'])) {
 			// upgrading from a version lower than this script's 'from' version
 			$upgrade_script = tpl_fetch(get_template_path('db_migration/2_1_molleja'));
 		} else {
@@ -129,7 +130,7 @@ class MollejaUpgradeScript extends ScriptUpgraderScript {
 				$upgrade_script .= "
 					UPDATE `".$t_prefix."permission_groups` SET `type` = 'roles' WHERE `id` <= 13;
 					UPDATE `".$t_prefix."permission_groups` SET `type` = 'permission_groups' WHERE `contact_id` > 0;
-					UPDATE `".$t_prefix."permission_groups` SET `type` = 'user_groups' WHERE `type` = '' OR `type` IS NULL;";
+					UPDATE `".$t_prefix."permission_groups` SET `type` = 'user_groups' WHERE `contact_id` = 0 AND `id` > 13;";
 			}
 
 			//UPDATE VERSION 2.1

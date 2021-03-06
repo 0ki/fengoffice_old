@@ -16,7 +16,6 @@
 				$iconUrl = $document->getTypeIconUrl(true, "16x16");
 				$crumbOptions = json_encode($document->getMembersToDisplayPath());
 				$crumbJs = " og.getCrumbHtml($crumbOptions) ";
-				$row_cls = ($k%2)?"dashAltRow":"" ;
 			?>
 				<li id="<?php echo "document-".$document->getId()?>" class="document-row co-row <?php echo $row_cls ?>" style="background: url(<?php echo $iconUrl?>) no-repeat left center; ">
 					<span class="breadcrumb"></span>
@@ -26,10 +25,13 @@
 						$("#document-<?php echo $document->getId()?> .breadcrumb").html(crumbHtml);
 					</script>
 				</li>
+				<?php $row_cls = $row_cls == "" ? "dashAltRow" : ""; ?>
 			<?php endforeach; ?>
 		</ul>	
 		<?php if (count($documents)<$total) :?>
-			<a href="<?php echo get_url('files', 'init')?>" ><?php echo lang("see all") ?></a>
+		<div class="view-all-container">
+			<a href="<?php echo get_url('files', 'init')?>" ><?php echo lang("view all") ?></a>
+		</div>
 		<?php endif;?>
 		<div class="x-clear"></div>
 		<div class="progress-mask"></div>

@@ -5,8 +5,6 @@ if (!$mailAccount->isNew() && $mailAccount->canDelete(logged_user())) {
 	add_page_action(lang('delete mail account'),  "javascript:og.promptDeleteAccount(".$mailAccount->getId().");", 'ico-delete');
 }
 $logged_user_settings = MailAccountContacts::getByAccountAndContact($mailAccount, logged_user());
-//MailAccountContacts::instance()->getB
-//$logged_user_settings = MailAccountUsers::getByAccountAndContact($mailAccount, logged_user());
 if (!$logged_user_settings instanceof MailAccountContact) {
 	$logged_user_can_edit = $mailAccount->isNew();
 	$user_settings = array();
@@ -28,11 +26,15 @@ if ($mailAccount->getContactId() == logged_user()->getId()) {
 if (!$mailAccount->isNew()){	
 	$mail_acc_id = $mailAccount->getId();	
 }
+
+$loc = user_config_option('localization');
+if (strlen($loc) > 2) $loc = substr($loc, 0, 2);
 ?>
 
-<form onsubmit="return og.handleMemberChooserSubmit('<?php echo $genid; ?>', <?php echo MailContents::instance()->getObjectTypeId() ?>);" style="height: 100%; background-color: white" class="internalForm"
+<form onsubmit="return og.setDescription();" style="height: 100%; background-color: white" class="internalForm"
 	action="<?php echo $mailAccount->isNew() ? get_url('mail', 'add_account') : $mailAccount->getEditUrl()?>"
-	method="post">
+	id="<?php echo $genid ?>submit-edit-form" method="post">
+	
 <input type="hidden" name="submitted" value="true" />
 
 <div class="adminAddMailAccount">
@@ -172,12 +174,10 @@ if (!$mailAccount->isNew()){
 				<span class="desc"><?php echo lang ('classify mails on workspace desc') ?> </span>
 			</label>
 				<?php
-					//alert_r($mailAccount);
-					// TODO context PEPE	
 					if ($mailAccount->isNew()) {
-						render_dimension_trees(MailContents::instance()->getObjectTypeId(), $genid, null, array('select_current_context' => true)); 						
+						render_member_selectors(MailContents::instance()->getObjectTypeId(), $genid, null, array('select_current_context' => true)); 						
 					} else {
-						render_dimension_trees(MailContents::instance()->getObjectTypeId(), $genid, $mailAccount->getMemberIds()); 
+						render_member_selectors(MailContents::instance()->getObjectTypeId(), $genid, $mailAccount->getMemberIds()); 
 					} 				
 				?>
 		</div>
@@ -350,11 +350,62 @@ if (!$mailAccount->isNew()){
 		</div>
 		
 		<div>
-		    <label for="mailSignature">
-		    	<?php echo lang('signature')?>
-		    	<span class="desc"><?php echo lang('signature description') ?></span>
+		    <label for="mailSignature">		
+		    				<?php                
+		                         if($mailAccount->isNew()) {	                         	
+				                        $ckEditorContent = '';
+				                 } else {
+				                 		$ckEditorContent = array_var($user_settings, 'signature');			                 
+				                 }
+                        	?>    
+		    				<div>
+					            <?php echo lang('signature')?>
+		    					<span class="desc"><?php echo lang('signature description') ?></span>
+					            <div id="<?php echo $genid ?>ckcontainer">
+					                <textarea cols="60" id="<?php echo $genid ?>ckeditor" name="signature" rows="10"><?php echo clean($ckEditorContent) ?></textarea>
+					            </div>
+					        </div>
+					        
+					        <script>
+					            var h = document.getElementById("<?php echo $genid ?>ckcontainer").offsetHeight;
+					            var editor = CKEDITOR.replace('<?php echo $genid ?>ckeditor', {
+					                height: (h-200) + 'px',
+					                enterMode: CKEDITOR.ENTER_DIV,
+					                shiftEnterMode: CKEDITOR.ENTER_BR,
+					                disableNativeSpellChecker: false,
+					                language: '<?php echo $loc ?>',
+					                customConfig: '',
+					                toolbar: [
+					                                ['FontSize','-','Bold','Italic','Underline','-', 'SpellChecker', 'Scayt','-',					                              
+					                                'Link','Unlink','-',
+					                                'TextColor','BGColor','-',
+					                                'JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock']
+					                        ],
+					                on: {
+					                        instanceReady: function(ev) {
+					                                og.adjustCkEditorArea('<?php echo $genid ?>');
+					                                editor.resetDirty();
+					                        }
+					                    },
+					                entities_additional : '#39,#336,#337,#368,#369'
+					            });
+					
+					            og.setDescription = function() {					            		
+					                    var form = Ext.getDom('<?php echo $genid ?>submit-edit-form');
+					                    if (form.preventDoubleSubmit) return false;
+					
+					                    setTimeout(function() {
+					                            form.preventDoubleSubmit = false;
+					                    }, 2000);
+					
+					                    var editor = og.getCkEditorInstance('<?php echo $genid ?>ckeditor');
+					                    form['signature'].value = editor.getData();				                  
+					
+					                    return true;
+					            };   
+					        </script>	
 		    </label>
-		    <?php echo textarea_field('signature', array_var($user_settings, 'signature', ''), array('id' => $genid.'signature', 'tabindex'=>'1230', 'style' => 'width:100%;max-width:500px;height:100px;')) ?>
+		
 		</div>
 	</fieldset>
 	

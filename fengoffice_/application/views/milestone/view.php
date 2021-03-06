@@ -54,9 +54,9 @@ if (isset($milestone) && $milestone instanceof ProjectMilestone) {
 <?php 
 	$content = '';
 	if ($milestone->getDueDate()->getYear() > DateTimeValueLib::now()->getYear()) { 
-		$content = '<div class="dueDate"><b>'.lang('due date').':</b> ' . format_date($milestone->getDueDate(), null) . '</div>';
+		$content = '<div class="dueDate"><b>'.lang('due date').':</b> ' . format_date($milestone->getDueDate(), null, 0) . '</div>';
 	} else { 
-		$content = '<div class="dueDate"><b>' . lang('due date') . ':</b> ' . format_descriptive_date($milestone->getDueDate()) . '</div>';
+		$content = '<div class="dueDate"><b>' . lang('due date') . ':</b> ' . format_descriptive_date($milestone->getDueDate(), 0) . '</div>';
 	} // if 
 	if ($milestone->getDescription()){
 		$content .= '<fieldset><legend>'.lang('description').'</legend>'. escape_html_whitespace(convert_to_links(clean($milestone->getDescription()))) . '</fieldset>';

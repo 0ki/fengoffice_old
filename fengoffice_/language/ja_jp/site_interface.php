@@ -460,7 +460,7 @@ return array(
     'minutes' => '分',
     'seconds' => '秒',
     'days' => '日',
-    'time estimate' => '見積もり時間',
+    'estimated time' => '見積もり時間',
     'work in progress' => '進行中の仕事',
     'total time' => '合計時間',
 

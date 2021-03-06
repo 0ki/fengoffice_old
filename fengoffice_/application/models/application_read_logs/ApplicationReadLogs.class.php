@@ -89,14 +89,12 @@ class ApplicationReadLogs extends BaseApplicationReadLogs {
 	 * @return array
 	 */
 	static function getObjectLogs($object, $limit = null, $offset = null) {
-		$private_filter = $include_private ? 1 : 0;
-		$silent_filter = $include_silent ? 1 : 0;
 
 		return self::findAll(array(
-        'conditions' => array('`rel_object_id` = (?)', $object->getId()),
-        'order' => '`created_on` DESC',
-        'limit' => $limit,
-        'offset' => $offset,
+                    'conditions' => array('`rel_object_id` = (?)', $object->getId()),
+                    'order' => '`created_on` DESC',
+                    'limit' => $limit,
+                    'offset' => $offset,
 		)); // findAll
 	} // getObjectLogs
 

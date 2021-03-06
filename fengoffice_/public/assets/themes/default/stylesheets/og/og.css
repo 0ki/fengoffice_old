@@ -335,6 +335,12 @@
 .ico-time {
 	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -160px !important;
 }
+.ico-Time {
+	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -160px !important;
+}
+.ico-timeslot {
+	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -160px !important;
+}
 .ico-time-layout {
 	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -157px !important;
 }
@@ -511,7 +517,7 @@
 	border: 2px solid deepskyblue;
 }
 
-.x-grid3-scroller .inner-message {
+.x-grid3-scroller .inner-message, .x-grid3-scroller .inner-item {
 	position: absolute;
 	width: 100%;
 	padding-top: 10px;

@@ -1155,8 +1155,9 @@ og.displayFileContents = function(genid, isFull){
 	document.getElementById(genid + 'file_display').innerHTML = text;
 };
 
-og.dashExpand = function(genid){
-	var widget = Ext.get(genid + '_widget_body');
+og.dashExpand = function(genid, expand_id){
+	if (!expand_id) expand_id = '_widget_body';
+	var widget = Ext.get(genid + expand_id);
 	if (widget){
 		var setExpanded = widget.dom.style.display == 'none';
 		
@@ -1337,6 +1338,7 @@ og.ToggleTrap = function(trapid, fsid) {
 };
 
 og.FileIsZip = function(mimetype, name) {
+	if (!name) return false;
 	var ix = name.lastIndexOf('.');
 	var extension = ix >= 0 ? name.substring(ix + 1) : "";
 	return (mimetype == 'application/zip' || mimetype == 'application/x-zip-compressed' || 
@@ -1425,7 +1427,7 @@ og.confirmRemoveTags = function(manager) {
 	
 	var removeAction = function() {
 		og.ExtendedDialog.dialog.destroy();
-		man.removeTags();
+		if (man) man.removeTags();
 	};
 	
 	var cancelAction = function() {
@@ -1734,19 +1736,12 @@ og.getCkEditorInstance = function(name) {
 	return editor;
 };
 
-og.adjustCkEditorArea = function(genid,id) {
-    
-        if(id != undefined){
-            document.getElementById('cke_' + genid + 'ckeditor' + id).style.padding = '0px';
-            document.getElementById('cke_contents_' + genid + 'ckeditor' + id).style.padding = '0px';
-            document.getElementById('cke_contents_' + genid + 'ckeditor' + id).style.border = '0px none';
-            document.getElementById('cke_bottom_' + genid + 'ckeditor' + id).style.display = 'none';
-        }else{
-            document.getElementById('cke_' + genid + 'ckeditor').style.padding = '0px';
-            document.getElementById('cke_contents_' + genid + 'ckeditor').style.padding = '0px';
-            document.getElementById('cke_contents_' + genid + 'ckeditor').style.border = '0px none';
-            document.getElementById('cke_bottom_' + genid + 'ckeditor').style.display = 'none';
-        }	
+og.adjustCkEditorArea = function(genid, id, keep_bottom) {
+	if(id == undefined) id = '';
+	document.getElementById('cke_' + genid + 'ckeditor' + id).style.padding = '0px';
+	document.getElementById('cke_contents_' + genid + 'ckeditor' + id).style.padding = '0px';
+    document.getElementById('cke_contents_' + genid + 'ckeditor' + id).style.border = '0px none';
+	if (!keep_bottom) document.getElementById('cke_bottom_' + genid + 'ckeditor' + id).style.display = 'none';
 };
 
 og.hideFlashObjects = function() {
@@ -2043,6 +2038,7 @@ og.drawComboBox = function(config) {
 	if (!config.empty_text) config.empty_text = '';
 	if (!config.tab_index) config.tab_index = '500';
 	if (!config.width) config.width = 200;
+	//if (!config.editable) config.editable = true;
 	
 	var combo = new Ext.form.ComboBox({
 		renderTo: config.render_to,
@@ -2058,6 +2054,7 @@ og.drawComboBox = function(config) {
         listWidth: config.width,
         tabIndex: config.tab_index,
         displayField: 'text',
+        editable: config.editable == true,
         typeAhead: true,
         mode: 'local',
         triggerAction: 'all',
@@ -2068,6 +2065,7 @@ og.drawComboBox = function(config) {
         hidden: config.hidden == true
 	});
 	
+	Ext.get(config.id).setWidth(config.width - 18);
 	combo.setWidth(config.width);
 	return combo;
 }
@@ -2131,8 +2129,9 @@ og.quickForm = function (config) {
                 case "configFilter":				
 				var e = $("#" + config.genid + "configFilters") ;    
                                 $("#quick-form .form-container").html('').load(og.getUrl('contact', 'quick_config_filter_activity',{members: config.members}),function(){
-                                        $(this).parent().css(e.offset()).slideDown();
-                                        return true ;
+                                        var new_offset = {top:e.offset().top,left:e.offset().left-240,right:e.offset().right,bottom:e.offset().bottom};
+                                        $(this).parent().css(new_offset).slideDown();
+                                    return true ;
                                 });
                                 return false;
 			break;
@@ -2191,17 +2190,19 @@ og.getCrumbHtml = function(dims) {
 			var member_path_content = "";
 			
 			for (i=texts.length-1; i>=0; i--) {
+                                var text = texts[i].text;
+                                text = text.replace("&amp;","&");
 				if (i>0) {
-					str = texts[i].text.length > max_len ? texts[i].text.substring(0, max_len-3) + ".." : texts[i].text;
+					str = text.length > max_len ? text.substring(0, max_len-3) + ".." : text;
 				} else {
-					str = texts[i].text.length > 12 ? texts[i].text.substring(0, 10) + ".." : texts[i].text;
+					str = text.length > 12 ? text.substring(0, 10) + ".." : text;
 				}
 				title += texts[i].text + (i>0 ? "/" : " ");
 				
 				var onclick = "return false;";
 				if (og.additional_on_dimension_object_click[texts[i].ot]) {
 					onclick = og.additional_on_dimension_object_click[texts[i].ot].replace('<parameters>', texts[i].id);
-				}
+				}                                
 				var link = '<a href="#" onclick="' + onclick + '">' + str + '</a>';
 				
 				member_path_content += link;
@@ -2455,6 +2456,19 @@ og.checkRelated = function(type,related_id) {
 
 og.openTab = function (id) {
 	Ext.getCmp('tabs-panel').activate(id);
+}
+
+og.reload_subscribers = function(genid, object_type_id) {
+	var uids = App.modules.addMessageForm.getCheckedUsers(genid);
+	Ext.get(genid + 'add_subscribers_content').load({
+		url: og.getUrl('object', 'render_add_subscribers', {
+			context: Ext.util.JSON.encode(member_selector[genid].sel_context),
+			users: uids,
+			genid: genid,
+			otype: object_type_id
+		}),
+		scripts: true
+	});
 }
 
 function dump(arr,level) {

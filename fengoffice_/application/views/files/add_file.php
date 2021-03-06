@@ -19,7 +19,7 @@ $visible_cps = CustomProperties::countVisibleCustomPropertiesByObjectType($objec
 
 ?>
 <form 
-	onsubmit=" return og.fileCheckSubmit('<?php echo $genid ?>') && og.handleMemberChooserSubmit('<?php echo $genid; ?>', <?php echo $file->manager()->getObjectTypeId() ?>);"
+	onsubmit=" return og.fileCheckSubmit('<?php echo $genid ?>');"
 	class="internalForm" style="height: 100%; background-color: white" id="<?php echo $genid ?>addfile" name="<?php echo $genid ?>addfile" action="<?php echo $submit_url ?>"  method="post"
 >
 	<input id="<?php echo $genid ?>hfFileIsNew" type="hidden" value="<?php echo $file->isNew()?>">
@@ -218,10 +218,12 @@ $visible_cps = CustomProperties::countVisibleCustomPropertiesByObjectType($objec
 	<div id="<?php echo $genid ?>add_file_select_context_div" style="display:none">
 		<fieldset>
 			<legend><?php echo lang('context') ?></legend>
-			<?php if ($file->isNew()) {
-				render_dimension_trees($file->manager()->getObjectTypeId(), $genid, null, array('select_current_context' => true)); 
+			<?php
+			$listeners = array('on_selection_change' => 'og.reload_subscribers("'.$genid.'",'.$object->manager()->getObjectTypeId().')'); 
+			if ($file->isNew()) {
+				render_member_selectors($file->manager()->getObjectTypeId(), $genid, null, array('select_current_context' => true, 'listeners' => $listeners)); 
 			} else {
-				render_dimension_trees($file->manager()->getObjectTypeId(), $genid, $file->getMemberIds()); 
+				render_member_selectors($file->manager()->getObjectTypeId(), $genid, $file->getMemberIds(), array('listeners' => $listeners)); 
 			} ?>
 			<?php if (!$file->isNew()) {?>
 				<div id="<?php echo $genid ?>addFileFilenameCheck" style="display: none">
@@ -313,41 +315,15 @@ $visible_cps = CustomProperties::countVisibleCustomPropertiesByObjectType($objec
 </form>
 
 <script>
-	var memberChoosers = Ext.getCmp('<?php echo "$genid-member-chooser-panel-".$file->manager()->getObjectTypeId()?>').items;
-	if (memberChoosers) {
-		memberChoosers.each(function(item, index, length) {
-			item.on('all trees updated', function() {
-				var dimensionMembers = {};
-				memberChoosers.each(function(it, ix, l) {
-					dim_id = this.dimensionId;
-					dimensionMembers[dim_id] = [];
-					var checked = it.getChecked("id");
-					for (var j = 0 ; j < checked.length ; j++ ) {
-						dimensionMembers[dim_id].push(checked[j]);
-					}
-				});
 	
-				var uids = App.modules.addMessageForm.getCheckedUsers('<?php echo $genid ?>');
-				Ext.get('<?php echo $genid ?>add_subscribers_content').load({
-					url: og.getUrl('object', 'render_add_subscribers', {
-						context: Ext.util.JSON.encode(dimensionMembers),
-						users: uids,
-						genid: '<?php echo $genid ?>',
-						otype: '<?php echo $file->manager()->getObjectTypeId()?>'
-					}),
-					scripts: true
-				});
-			});
-		});
-	}
-
 	var ctl = Ext.get('<?php echo $genid ?>fileFormFile');
 	if (ctl) ctl.focus();
         
         $(document).ready(function() {
             $('#<?php echo $genid ?>fileFormFile').change(function () {
                 var extension = this.value.split('.');
-                var extension_old = $('#extension_old').html().split('.');                
+                var ext_old_html = $('#extension_old').html();
+                var extension_old = ext_old_html ? ext_old_html.split('.') : "";
                 if(extension_old[1] != extension[1]){
                     var html = "<strong style='color:#FF0000'><?php echo lang('warning file extension type') ?></strong>";                
                     $('#warning_extension_file').html(html);

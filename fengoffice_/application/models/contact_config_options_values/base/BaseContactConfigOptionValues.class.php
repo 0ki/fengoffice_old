@@ -17,7 +17,8 @@
     static private $columns = array(
     	'option_id' => DATA_TYPE_INTEGER,
     	'contact_id' => DATA_TYPE_INTEGER,
-    	'value' => DATA_TYPE_STRING
+    	'value' => DATA_TYPE_STRING,
+        'member_id' => DATA_TYPE_INTEGER
     );
   
     /**
@@ -68,7 +69,7 @@
     * @return array or string
     */
     function getPkColumns() {
-      return array('option_id','contact_id');
+      return array('option_id','contact_id','member_id');
     } // getPkColumns
     
     /**

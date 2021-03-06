@@ -31,10 +31,10 @@
 .dashActions .viewAsList img {
 	height: 16px;
 	padding-left:20px;
-        padding-top: 5px;
+	padding-top: 5px;
 	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -100px !important;
 	cursor: pointer;
-        vertical-align: middle;
+	vertical-align: middle;
 }
 
 .dashHeader {
@@ -77,7 +77,8 @@
 }
 
 .dashMessages .dashAltRow {
-	background-color:#FFE099;	
+/*	background-color:#FAEBC9 !important;*/
+	background-color:#ECEFF7 !important;;
 }
 
 .dashMessages .internalLink {	
@@ -168,6 +169,9 @@
 	border-color: #596480;
 }
 
+.dashDocuments .dashAltRow {
+	background-color: #ECEFF7 !important;
+}
 
 /*----------------------------------------
 		Tasks in progress
@@ -349,14 +353,73 @@
 }
 
 
-.widget-persons .field.email,
-.widget-persons .field.name {
-	float: left ;
-	margin-right: 10px ;
+.widget-activity .widget-header {
+	color: white;
+	background: #437691;
+	border-color: #437691;
+}
+
+/*----------------------------------------
+		Persons widget
+----------------------------------------*/
+.widget-persons {
+	float: left;
+	width: 100%;
+}
+
+.widget-persons ul li.alt-row {
+	background-color: #DFE8F6;
+}
+
+.widget-persons ul li div.contact-avatar {
+	float: left;
+	padding: 5px;
+	font-size: 12px;
+	color: #666666;
+	text-align: center;
+	width: 50px;
+}
+
+.widget-persons ul li a.person {
+	font-size: 13px;
+	font-weight: bold;
+}
+
+.widget-persons ul li div.email{
+	font-size: 11px;
+}
+
+.widget-persons ul li div.contact-info {
+	padding-top: 15px;
+}
+
+.widget-persons .widget-header {
+	color: white;
+	background: #884F7A;
+	border-color: #884F7A;
+}
+.widget-persons .field.email input[type=email],
+.widget-persons .field.name input[type=text] {
+	width: 300px;
 }
 
 .widget-persons .access-data {
-	padding-left: 0px ;
+	padding: 0;
+}
+
+.widget-persons div.person-list-separator {
+	margin-top: 10px;
+	border-top: 1px solid #ddd;
+}
+.widget-persons .add-person-form h2 {
+	padding-top: 10px;
+	border: 0px none;
+	font-size: 130%;
+	color: #333;
+}
+
+.widget-body .view-all-container {
+	float:right;
 }
 
 .widget-body.loading {
@@ -367,10 +430,9 @@
 .late-objects-widget .field.assigned,
 .late-objects-widget .field.due,
 .late-objects-widget button.submit-task,
-.late-objects-widget a.task-more-details
-	{
-	float: left ;	 	
-	margin-right: 20px ;
+.late-objects-widget a.task-more-details {
+	float: left;
+	margin-right: 20px;
 	
 }
 

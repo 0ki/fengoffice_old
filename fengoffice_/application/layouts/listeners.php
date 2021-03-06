@@ -21,36 +21,44 @@ og.eventManager.addListener('reload member properties',
 );
 
 og.eventManager.addListener('reload dimension tree', 
- 	function (dim_id){
- 		if (!og.reloadingDimensions){ 
- 			og.reloadingDimensions = {} ;
- 		}
- 		if (!og.reloadingDimensions[dim_id]){
-	 		og.reloadingDimensions[dim_id] = true ;
-	 		
-	 		var tree = Ext.getCmp("dimension-panel-" + dim_id);
-	 		if (tree) {
-	 			var selection = tree.getSelectionModel().getSelectedNode();
-	 			
-		 		tree.suspendEvents();
-		 		var expanded = [];
-		 		tree.root.cascade(function(){
-	 				if (this.isExpanded()) expanded.push(this.id);
-	 			});
-		 		tree.loader.load(tree.getRootNode(), function() {
-			 		tree.expanded_once = false;
-		 			og.expandCollapseDimensionTree(tree, expanded, selection ? selection.id : null);
-			 		og.reloadingDimensions[dim_id] = false;
-			 		if (og.select_member_after_reload) {
-			 			og.selectDimensionTreeMember(og.select_member_after_reload);
-			 			og.select_member_after_reload = null;
-			 		}
-			 	});
-		 		tree.resumeEvents();
-	 		}
- 		}
- 		
- 	}
+        function (data){
+                if (!og.reloadingDimensions){ 
+                        og.reloadingDimensions = {} ;
+                }
+                if (!og.reloadingDimensions[data.dim_id]){
+                        og.reloadingDimensions[data.dim_id] = true ;
+
+                        var tree = Ext.getCmp("dimension-panel-" + data.dim_id);
+                        if (tree) {
+                                var selection = tree.getSelectionModel().getSelectedNode();
+
+                                tree.suspendEvents();
+                                var expanded = [];
+                                tree.root.cascade(function(){
+                                        if (this.isExpanded()) expanded.push(this.id);
+                                });
+                                tree.loader.load(tree.getRootNode(), function() {
+                                        tree.expanded_once = false;
+                                        og.expandCollapseDimensionTree(tree, expanded, selection ? selection.id : null);
+                                        og.reloadingDimensions[data.dim_id] = false;
+                                        if(selection){
+                                            og.Breadcrumbs.refresh(selection);
+                                            og.contextManager.addActiveMember(selection.id, data.dim_id, selection.id);
+                                        }
+                                        if (data.node) {
+                                                var treenode = tree.getNodeById(data.node);
+                                                if (treenode) {                            
+                                                        treenode.select();
+                                                        treenode.ensureVisible();
+                                                }
+                                                og.Breadcrumbs.refresh(treenode);
+                                        }
+                                });
+                                tree.resumeEvents();
+                                
+                        }                
+                }
+        }
 );
 
 og.eventManager.addListener('reset dimension tree', 
@@ -79,8 +87,8 @@ og.eventManager.addListener('select dimension member',
 		if (og.reloadingDimensions[data.dim_id]) {
 		//	og.select_member_after_reload = data;
 		} else {
-			og.selectDimensionTreeMember(data);
-		}
+                        og.selectDimensionTreeMember(data);
+                }
 	}
 );
 
@@ -175,16 +183,6 @@ og.eventManager.addListener('expand menu panel',
 
 og.eventManager.addListener('after member save', 
 	function (member){
-		/*
-		member = {
-    		dimension_id:"1", 
-			member_id:"368", 
-			name:"Weekly Planningg", 
-			object_type_id:"1", 
-			parent_member_id:"8"
-		}
-		*/
-
 		if (og.dimensions[member.dimension_id]){
 			if (!og.dimensions[member.dimension_id][member.member_id]) {
 				og.dimensions[member.dimension_id][member.member_id] = {};

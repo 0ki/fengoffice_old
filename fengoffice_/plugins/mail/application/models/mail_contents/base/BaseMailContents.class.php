@@ -99,7 +99,7 @@ abstract class BaseMailContents extends ContentDataObjects {
 	 */
 	function getSystemColumns() {
 		return array_merge(parent::getSystemColumns(), array(
-                'message_id', 'conversation_id', 'in_reply_to_id', 'account_id', 'uid', 'content_file_id')
+                'message_id', 'conversation_id', 'in_reply_to_id', 'account_id', 'uid', 'content_file_id', 'is_deleted', 'is_shared', 'sync', 'updated_on' )
 		);
 	} // getSystemColumns
 	

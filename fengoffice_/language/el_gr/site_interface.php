@@ -301,7 +301,7 @@
 	'pending tasks' => 'Εκκρεμούσες εργασίες',
 	'my pending tasks' => 'Εκκρεμούσες εργασίες μου',
 	'tasks in progress' => 'Εργασίες σε εξέλιξη',
-	'time estimate' => 'Εκτίμηση χρόνου',
+	'estimated time' => 'Εκτίμηση χρόνου',
 	'mail account server description' => 'Η διεύθυνση του server ηλεκτρονικής αλληλογραφίας (π.χ. \'pop3.mailserver.com\')',
 	'mail account delete mails from server description' => 'Ενεργοποιήστε αυτή την επιλογή ώστε να διαγράφονται τα ηλ. μηνύματα από τον server μετά από συγκεκριμένο χρόνο.',
 	'can read milestones' => 'Μπορεί να διαβάσει ορόσημα',

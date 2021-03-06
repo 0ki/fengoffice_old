@@ -549,7 +549,7 @@ og.CalendarSecondTopToolbar = function(config) {
 	this.add(' ');
 	this.add(status_menu);	
         this.add(' ');
-        this.add(lang('task status'));
+        this.add(lang('tasks'));
         this.add(' ');
         this.add(filterTaskCombo);
 	this.add(' ');

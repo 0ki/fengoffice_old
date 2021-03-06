@@ -120,12 +120,21 @@ if (can_manage_dimension_members(logged_user())) {
 	);
 }
 
+if (can_manage_security(logged_user()) && Plugins::instance()->isActivePlugin('income')) {
+	$icons[] = array(
+		'ico' => 'ico-large-files',
+		'url' => get_url('income', 'administration'),
+		'name' => lang('income'),
+		'extra' => '',
+	);
+}
+
 
 if (defined("PLUGIN_MANAGER") && PLUGIN_MANAGER && can_manage_plugins(logged_user())) {
 	$icons[] = array(
 		'ico' => 'ico-large-plugins',
 		'url' => get_url('plugin', 'index'),
-		'name' => lang('plugins'). ' (Alpha 1)',
+		'name' => lang('plugins'),
 		'extra' => '',
 	);
 }

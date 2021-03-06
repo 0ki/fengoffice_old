@@ -202,7 +202,7 @@ CREATE TABLE `<?php echo $table_prefix ?>system_permissions` (
   `can_manage_tasks` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `can_task_assignee` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `can_manage_billing` tinyint(1) unsigned NOT NULL DEFAULT '0',
-  `can_view_billing` tinyint(1) unsigned NOT NULL DEFAULT '0', 
+  `can_view_billing` tinyint(1) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY  (`permission_group_id`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 
@@ -254,7 +254,6 @@ CREATE TABLE `<?php echo $table_prefix ?>contacts` (
   `surname` varchar(50) <?php echo $default_collation ?> NOT NULL default '',
   `is_company` tinyint(1) unsigned NOT NULL default '0',
   `company_id` int(10) unsigned,
-  `brand_colors` varchar(1024) <?php echo $default_collation ?> NOT NULL default '',  
   `department` varchar(50) <?php echo $default_collation ?> default NULL,
   `job_title` varchar(50) <?php echo $default_collation ?> default NULL,
   `birthday` datetime default NULL,
@@ -520,7 +519,7 @@ CREATE TABLE  `<?php echo $table_prefix ?>project_events` (
   `repeat_wnum` int(10) unsigned NOT NULL default '0',
   `repeat_mjump` int(10) unsigned NOT NULL default '0',
   `type_id` int(11) NOT NULL default '0',
-  `special_id` VARCHAR(100) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
+  `special_id` text <?php echo $default_collation ?>,
   `update_sync` DATETIME DEFAULT NULL,
   `ext_cal_id` INT(10) UNSIGNED NOT NULL,
   `original_event_id` INT( 10 ) UNSIGNED NULL DEFAULT '0',
@@ -540,6 +539,7 @@ CREATE TABLE `<?php echo $table_prefix ?>project_file_revisions` (
   `comment` text <?php echo $default_collation ?>,
   `type_string` varchar(255) <?php echo $default_collation ?> NOT NULL default '',
   `filesize` int(10) unsigned NOT NULL default '0',
+  `hash` text <?php echo $default_collation ?>,
   PRIMARY KEY  (`object_id`),
   KEY `file_id` USING BTREE (`file_id`,`revision_number`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
@@ -914,7 +914,8 @@ CREATE TABLE `<?php echo $table_prefix ?>contact_config_option_values` (
   `option_id` int(10) unsigned NOT NULL default '0',
   `contact_id` int(10) unsigned NOT NULL default '0',
   `value` text <?php echo $default_collation ?>,
-  PRIMARY KEY  (`option_id`,`contact_id`)
+  `member_id` INT( 10 ) UNSIGNED NULL DEFAULT '0',
+  PRIMARY KEY  ( `option_id` , `contact_id` , `member_id` )
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 
 CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>project_co_types` (
@@ -999,15 +1000,6 @@ CREATE TABLE `<?php echo $table_prefix ?>role_object_type_permissions` (
   `can_write` BOOLEAN NOT NULL,
   PRIMARY KEY (`role_id`, `object_type_id`)
 ) ENGINE = <?php echo $engine ?> <?php echo $default_charset ?>;
-
-CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>mail_spam_filters` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `account_id` int(10) unsigned NOT NULL,
-  `text_type` enum('email_address','subject') COLLATE utf8_unicode_ci NOT NULL,
-  `text` text COLLATE utf8_unicode_ci NOT NULL,
-  `spam_state` enum('no spam','spam') COLLATE utf8_unicode_ci NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE = <?php echo $engine ?> <?php echo $default_charset ?> ;
 
 CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>external_calendar_users` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,

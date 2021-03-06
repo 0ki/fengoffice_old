@@ -49,11 +49,12 @@
   		static function removeObjectFromMembers(ContentDataObject $object, Contact $contact, $context_members){
   			
   			$object_type_id = $object->getObjectTypeId();
-  			$member_ids = self::getMemberIdsbyObject($object->getId());
+  			$member_ids = array_flat(DB::executeAll("SELECT member_id FROM ".TABLE_PREFIX."object_members WHERE object_id = " . $object->getId()));
   			
   			foreach($member_ids as $id){
 				
 				$member = Members::findById($id);
+				if (!$member instanceof Member) continue;
 				
 				//can write this object type in the member
 				$can_write = $object->canAddToMember($contact, $member, $context_members);
@@ -61,14 +62,16 @@
 				
 				if ($can_write){
 					$om = self::findById(array('object_id' => $object->getId(), 'member_id' => $id));
-					$om->delete();
+					if ($om instanceof ObjectMember) {
+						$om->delete();
+					}
 					
-					$stop=false;
-					while ($member->getParentMember()!=null && !$stop){
+					$stop = false;
+					while ($member->getParentMember() != null && !$stop){
 						$member = $member->getParentMember();
 						$obj_member = ObjectMembers::findOne(array("conditions" => array("`object_id` = ? AND `member_id` = ? AND 
 									`is_optimization` = 1", $object->getId(),$member->getId())));
-						if (!is_null($obj_member)){
+						if (!is_null($obj_member)) {
 							$obj_member->delete();
 						}
 						else $stop = true;
@@ -85,13 +88,13 @@
   			} else {
   				return array();
   			}
-  			
+  				
   			$member_ids = array();
-                        if(count($rows) > 0){
-                            foreach ($rows as $row){
-                                    $member_ids[] = $row['member_id'];
-                            }
-                        }
+  			if(count($rows) > 0){
+  				foreach ($rows as $row){
+  					$member_ids[] = $row['member_id'];
+  				}
+  			}
   			
   			return $member_ids;
   		}

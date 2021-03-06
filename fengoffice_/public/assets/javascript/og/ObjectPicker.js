@@ -1,12 +1,11 @@
-og.ObjectPicker = function(config,object_id) {	
+og.ObjectPicker = function(config,object_id,object_id_no_select) {
 	if (!config) config = {};
-	
 	var Grid = function(config) {
 		if (!config) config = {};
 		this.store = new Ext.data.Store({
         	proxy: new Ext.data.HttpProxy(new Ext.data.Connection({
 				method: 'GET',
-            	url: og.getUrl('object', 'list_objects', {ajax: true, include_comments:true, ignore_context: true })
+            	url: og.getUrl('object', 'list_objects', {ajax: true, include_comments:true, id_no_select : object_id_no_select })
         	})),
         	reader: new Ext.data.JsonReader({
             	root: 'objects',
@@ -105,6 +104,7 @@ og.ObjectPicker = function(config,object_id) {
 		Grid.superclass.constructor.call(this, Ext.apply(config, {
 	        store: this.store,
 			layout: 'fit',
+			id: 'obj_picker_grid',
 	        cm: cm,
 	        stripeRows: true,
 	        loadMask: true,
@@ -122,15 +122,24 @@ og.ObjectPicker = function(config,object_id) {
 	    }));
 	}
 	Ext.extend(Grid, Ext.grid.GridPanel, {
+		member_filter: {},
+		
 		getSelected: function() {
 			return this.getSelectionModel().getSelections();
 		},
 		
 		filterSelect: function(filter) {
-			if (filter.filter == 'type') {
+			if (filter && filter.filter == 'type') {
 				this.type = filter.type;
 				this.store.baseParams.type = this.type;
 			}
+			var member_ids = [];
+			for (x in this.member_filter) {
+				member_ids.push(this.member_filter[x]);
+			}
+			this.store.baseParams.extra_member_ids = Ext.util.JSON.encode(member_ids);
+			this.store.baseParams.ignore_context = member_ids.length > 0;
+			
 			this.load();
 		},
 		
@@ -349,12 +358,42 @@ og.ObjectPicker = function(config,object_id) {
 				items: [{
 						xtype: 'typefilter',
 						id: 'typeFilter',
-						region: 'center',
+						region: 'north',
 						autoScroll: true,
 						listeners: {
 							filterselect: {
 								fn: this.grid.filterSelect,
 								scope: this.grid
+							}
+						}
+					},{
+						xtype: 'panel',
+						id: 'dimFilter',
+						region: 'center',
+						autoScroll: true,
+						split: true,
+						autoLoad: {
+							scripts: true,
+							url: og.getUrl('dimension', 'linked_object_filters', {context: og.contextManager.plainContext()})
+						},
+						listeners: {
+							memberselected: {
+								fn: function(member) {
+									grid = Ext.getCmp('obj_picker_grid');
+									grid.member_filter[member.dim] = member.id;
+									grid.filterSelect();
+								}
+							},
+							clearfilters: {
+								fn: function(genid) {
+									grid = Ext.getCmp('obj_picker_grid');
+									for (x in grid.member_filter) {
+										var combo = Ext.getCmp(genid + 'add-member-input-dim' + x);
+										if (combo) combo.clearValue();
+									}
+									grid.member_filter = {};
+									grid.filterSelect();
+								}
 							}
 						}
 					}
@@ -392,9 +431,9 @@ Ext.extend(og.ObjectPicker, Ext.Window, {
 	}
 });
 
-og.ObjectPicker.show = function(callback, scope, config, object_id) {
+og.ObjectPicker.show = function(callback, scope, config, object_id, object_id_no_select) {
     
-	this.dialog = new og.ObjectPicker(config,object_id);
+	this.dialog = new og.ObjectPicker(config,object_id,object_id_no_select);
 	
 	if (!config) config = {};
 	if (config.context) {

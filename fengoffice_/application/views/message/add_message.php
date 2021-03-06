@@ -7,7 +7,7 @@
         $loc = user_config_option('localization');
 	if (strlen($loc) > 2) $loc = substr($loc, 0, 2);
 ?>
-<form onsubmit="return og.handleMemberChooserSubmit('<?php echo $genid; ?>', <?php echo $message->manager()->getObjectTypeId() ?>) && og.setDescription();" class="add-message" id="<?php echo $genid ?>submit-edit-form" style='height:100%;background-color:white' action="<?php echo $message->isNew() ? get_url('message', 'add') : $message->getEditUrl() ?>" method="post" enctype="multipart/form-data" >
+<form onsubmit="return og.setDescription();" class="add-message" id="<?php echo $genid ?>submit-edit-form" style='height:100%;background-color:white' action="<?php echo $message->isNew() ? get_url('message', 'add') : $message->getEditUrl() ?>" method="post" enctype="multipart/form-data" >
 <div class="message">
 <div class="coInputHeader">
 <div class="coInputHeaderUpperRow">
@@ -36,7 +36,7 @@
 	<?php $categories = array(); Hook::fire('object_edit_categories', $object, $categories); ?>
 	
 	<div style="padding-top:5px">
-		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_message_select_context_div',this)"><?php echo lang('context') ?></a> - 
+		<a href="#" class="option bold" onclick="og.toggleAndBolden('<?php echo $genid ?>add_message_select_context_div',this)"><?php echo lang('context') ?></a> - 
 		<a href="#" class="option <?php echo $visible_cps>0 ? 'bold' : ''?>" onclick="og.toggleAndBolden('<?php echo $genid ?>add_custom_properties_div',this)"><?php echo lang('custom properties') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_subscribers_div',this)"><?php echo lang('object subscribers') ?></a>
 		<?php if($object->isNew() || $object->canLinkObject(logged_user())) { ?> - 
@@ -54,14 +54,15 @@
 	<input id="<?php echo $genid?>genid"                type="hidden" name="genid"         value="<?php echo $genid ?>" >
 	<input id="<?php echo $genid?>updated-on-hidden"    type="hidden" name="updatedon"     value="<?php echo !$message->isNew() ? $message->getUpdatedOn()->getTimestamp() : '' ?>">
 	
-	<div id="<?php echo $genid ?>add_message_select_context_div" style="display:none"> 
+	<div id="<?php echo $genid ?>add_message_select_context_div"> 
 		<fieldset>
 			<legend><?php echo lang('context')?></legend>
 			<?php
+			$listeners = array('on_selection_change' => 'og.reload_subscribers("'.$genid.'",'.$object->manager()->getObjectTypeId().')');
 			if ($message->isNew()) {
-				render_dimension_trees($message->manager()->getObjectTypeId(), $genid, null, array('select_current_context' => true)); 
+				render_member_selectors($message->manager()->getObjectTypeId(), $genid, null, array('select_current_context' => true, 'listeners' => $listeners));
 			} else {
-				render_dimension_trees($message->manager()->getObjectTypeId(), $genid, $message->getMemberIds()); 
+				render_member_selectors($message->manager()->getObjectTypeId(), $genid, $message->getMemberIds(), array('listeners' => $listeners));
 			} 
 			?>
 		
@@ -116,18 +117,19 @@
         <script>
             var h = document.getElementById("<?php echo $genid ?>ckcontainer").offsetHeight;
             var editor = CKEDITOR.replace('<?php echo $genid ?>ckeditor', {
-                uiColor: '#BBCCEA',
-                height: (h-60) + 'px',
-                enterMode: CKEDITOR.ENTER_BR,
-                shiftEnterMode: CKEDITOR.ENTER_BR,
-                disableNativeSpellChecker: false,
-                language: '<?php echo $loc ?>',
-                customConfig: '',
-                toolbar: [
-                                ['FontSize','-','Bold','Italic','Underline','-', 'SpellChecker', 'Scayt','-',
-                                //'NumberedList','BulletedList','-',
-                                'TextColor','BGColor','-',
-                                'JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock']
+            	height: (h-60) + 'px',
+            	enterMode: CKEDITOR.ENTER_DIV,
+            	shiftEnterMode: CKEDITOR.ENTER_BR,
+            	disableNativeSpellChecker: false,
+            	language: '<?php echo $loc ?>',
+            	customConfig: '',
+            	toolbar: [
+							['FontSize','-','Bold','Italic','Underline', 'Blockquote','-',
+							 'SpellChecker', 'Scayt','-',
+							 'TextColor','BGColor','-',
+							 'Link','Unlink','-',
+							 'JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock']
+                          
                         ],
                 on: {
                         instanceReady: function(ev) {
@@ -186,35 +188,3 @@
 </div>
 </div>
 </form>
-
-<script>
-	var memberChoosers = Ext.getCmp('<?php echo "$genid-member-chooser-panel-".$message->manager()->getObjectTypeId()?>').items;
-	if (memberChoosers) {
-		memberChoosers.each(function(item, index, length) {
-			
-			item.on('all trees updated', function() {
-				var dimensionMembers = {};
-				memberChoosers.each(function(it, ix, l) {
-					dim_id = this.dimensionId;
-					dimensionMembers[dim_id] = [];
-					var checked = it.getChecked("id");
-					for (var j = 0 ; j < checked.length ; j++ ) {
-						dimensionMembers[dim_id].push(checked[j]);
-					}
-				});
-				var uids = App.modules.addMessageForm.getCheckedUsers('<?php echo $genid ?>');
-				Ext.get('<?php echo $genid ?>add_subscribers_content').load({
-					url: og.getUrl('object', 'render_add_subscribers', {
-						context: Ext.util.JSON.encode(dimensionMembers),
-						users: uids,
-						genid: '<?php echo $genid ?>',
-						otype: '<?php echo $message->manager()->getObjectTypeId()?>'
-					}),
-					scripts: true
-				});
-			});
-		});
-	}
-	
-	Ext.get('<?php echo $genid ?>messageFormTitle').focus();        
-</script>

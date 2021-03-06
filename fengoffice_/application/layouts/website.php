@@ -98,63 +98,73 @@
 
 <div id="subWsExpander" onmouseover="clearTimeout(og.eventTimeouts['swst']);" onmouseout="og.eventTimeouts['swst'] = setTimeout('og.HideSubWsTooltip()', 2000);" style="display:none;top:10px;"></div>
 
-<?php echo render_page_javascript() ?>
-<?php echo render_page_inline_js() ?>
-<?php $use_owner_company_logo = owner_company()->hasLogo(); ?>
+<?php 
+echo render_page_javascript();
+echo render_page_inline_js();
+$use_owner_company_logo = owner_company()->hasLogo();
+?>
 <!-- header -->
 <div id="header">
 	<div id="headerContent">
-	    <table class="headerLogoAndWorkspace"><tr><td>
-			<div id="logodiv">
-                <img src="<?php echo ($use_owner_company_logo) ? owner_company()->getLogoUrl() : 's.gif' ?>" />
-                <div>
-                <?php if(!$use_owner_company_logo){?>
-                    <a style="color: #fff; font-size: 10px;" href="index.php?c=contact&a=edit_logo&id=<?php echo owner_company()->getObjectId(); ?>"><?php echo lang('change logo')?></a>
-                <?php } ?>
-                    <h1><?php echo clean(owner_company()->getObjectName()) ?></h1>
+            <div style="float: left;">
+                <div id="logodiv">
+                    <div style="" id="logo_company_margin_top">
+                        <img src="<?php echo ($use_owner_company_logo) ? owner_company()->getLogoUrl() : 's.gif' ?>" name="img_company_margin" id="img_company_margin" style="display: none;"/>
+                        <script>
+                            $('#img_company_margin').load(function() {
+                                var margin = Math.round(parseInt(document.img_company_margin.height) / 2);
+                                var magin_top = "-" + margin + "px";
+                                $("#logo_company_margin_top").css({'margin-top':magin_top, 'position': 'relative', 'top': '50%'});
+                                $("#img_company_margin").show();
+                            });
+                        </script>
+                    </div>
+                    <div style="float: left;">
+                        <?php if(!$use_owner_company_logo){?>
+                        <a style="color: #fff; font-size: 10px; padding-top:15px;" href="index.php?c=contact&a=edit_logo&id=<?php echo owner_company()->getObjectId(); ?>"><?php echo lang('change logo')?></a>
+                        <?php } ?>
+                        <h1 style="padding-top:15px;"><?php echo clean(owner_company()->getObjectName()) ?></h1>
+                    </div>
                 </div>
+                
             </div>
-		</td><td>
-			
-		</td></tr></table>
-		<div style="float: right; z-index: 10000; padding-top:15px;">
+                        
+            </table>
+		<div class="header-content-right">
 			<div id="searchbox">
-				
+				<form name='search_form' class="internalForm" action="<?php echo ROOT_URL . '/index.php' ?>" method="get" id="form_search">
 					<table>
-                                            <tr>
-                                                <form name='search_form' class="internalForm" action="<?php echo ROOT_URL . '/index.php' ?>" method="get" id="form_search">
-                                                    <td>
-                                                        <input name="search_for" placeholder="<?php echo lang('search') . "..."?>" id="search_for"/>
-                                                        <input type="hidden" name="c" value="search" />
-                                                        <input type="hidden" name="a" value="search" />
-                                                        <input type="hidden" name="current" value="search" />
-                                                        <input type="hidden" id="hfVars" name="vars" value="dashboard" />
-                                                        <input style="display:none" id="searchButtonReal" type="submit" />
-                                                    </td>
-                                                    <td>
-                                                        <div class="btn-group">
-                                                            <a class="btn" href="#" style="height: 11px;" id="searchButton"><span style="margin-top: -3px; display: block;"><?php echo lang('search')?></span></a>
-                                                            <a class="btn dropdown-toggle" style="height: 11px;" data-toggle="dropdown" href="#"><span class="caret"></span></a>
-                                                            <ul class="dropdown-menu">
-                                                                <li>
-                                                                    <a href="<?php echo get_url('search', 'search', array('advanced' => true))?>"><?php echo lang('advanced search')?></a>
-                                                                </li>
-                                                            </ul>
-                                                        </div>
-                                                    </td>
-                                                </form>                                                
-                                                <td style="padding-left:10px">
-                                                        <div id="quickAdd" style="display: none"></div>
-                                                </td>
-                                            </tr>
-                                        </table>
+						<tr>
+							<td>
+								<input name="search_for" placeholder="<?php echo lang('search') . "..."?>" id="search_for"/>
+								<input type="hidden" name="c" value="search" />
+								<input type="hidden" name="a" value="search" />
+								<input type="hidden" name="current" value="search" />
+								<input type="hidden" id="hfVars" name="vars" value="dashboard" />
+								<input style="display:none" id="searchButtonReal" type="submit" />
+							</td>
+							<td>
+								<div class="btn-group">
+									<a class="btn" href="#" style="height: 11px;" id="searchButton"><span style="margin-top: -3px; display: block;"><?php echo lang('search')?></span></a>
+									<a class="btn dropdown-toggle" style="height: 11px;" data-toggle="dropdown" href="#"><span class="caret"></span></a>
+									<ul class="dropdown-menu">
+										<li><a href="<?php echo get_url('search', 'search', array('advanced' => true))?>"><?php echo lang('advanced search')?></a></li>
+									</ul>
+								</div>
+							</td>
+							<td style="padding-left:10px">
+								<div id="quickAdd" style="display: none"></div>
+							</td>
+						</tr>
+					</table>
+				</form>
 			</div>			
 			<div id="userboxWrapper">
 				<h2>
 				<a href="#" onclick="showUserOptionsPanel()"><?php echo clean(logged_user()->getObjectName()); ?></a></h2>
 				<a href="#" class="account" onclick="showUserOptionsPanel()">&nbsp;</a>								
 			</div>
-			<div class="u-clear"></div>
+			<div class="clear"></div>
 			<?php echo render_user_box(logged_user())?>
 		</div>
 		<?php Hook::fire('render_page_header', null, $ret) ?>
@@ -175,31 +185,41 @@
             */            
             function saveBrandColors (element)
             {
-                element.disabled = true;  
-                var colors = '';
-                $('div.theme-color-picker form input[type=text]').each(function(inx, obj){colors += obj.value;});            
-                $.post('index.php?c=administration&a=scolors', 'colors=' + colors,
-                    function ()
-                    {
-                         $('li.theme-color-picker-wrapper').slideUp();
-                         element.disabled = false;  
-                    }
-                ); 
+                element.disabled = true;
+                var parameters = {};
+                $('div.theme-color-picker form input[type=text]').each(function(inx, obj){
+                    parameters[obj['name']] = obj.value;
+                });
+                $.ajax({
+    				data: parameters,	
+    				url: og.makeAjaxUrl(og.getUrl('administration','scolors')),
+    				dataType: "json",
+    				type: "POST",
+    				complete: function(data){
+	                	$('li.theme-color-picker-wrapper').slideUp();
+	                    element.disabled = false;
+                	}
+                });
             }
                         
             /*** Brand color-picker ***/
             
-            brand_colors = '<?php echo owner_company()->getBrandColors(); ?>'.split('#');         
+            brand_colors = {
+				head_back: '<?php echo config_option('brand_colors_head_back')?>',
+				head_font: '<?php echo config_option('brand_colors_head_font')?>',
+				tabs_back: '<?php echo config_option('brand_colors_tabs_back')?>',
+				tabs_font: '<?php echo config_option('brand_colors_tabs_font')?>',
+            };
             
             /**
             * Create style sheet for current colors
             */
             function createBrandColorsSheet ()
             {
-                var header_back = brand_colors[1];
-                var tabs_back = brand_colors[2];
-                var tabs_font = brand_colors[3];
-                var header_font = brand_colors[4];
+                var header_back = brand_colors['head_back'];
+                var tabs_back = brand_colors['tabs_back'];
+                var tabs_font = brand_colors['tabs_font'];
+                var header_font = brand_colors['head_font'];
 
                 var cssRules = '.x-accordion-hd, ul.x-tab-strip li {background-color: #' + tabs_back + '}';
                 cssRules += 'ul.x-tab-strip li {border-color: #' + tabs_back + '}';
@@ -208,8 +228,13 @@
                 cssRules += 'ul.x-tab-strip li.x-tab-strip-active {background-color: #' + tabs_font + ' !important}';
                 cssRules += 'ul.x-tab-strip li.x-tab-strip-active span.x-tab-strip-text {color: #' + tabs_back + ' !important}';
                 cssRules += '#logodiv h1, #userboxWrapper h2 a, div.og-loading {color: #' + header_font + '}';
+				// dimension title
+                cssRules += '.x-accordion-hd {background-color: #' + tabs_back + '}';
+				// selected member
 				var node_selected_back = color_utils.make_transparent_color('#'+tabs_back);
                 if (node_selected_back) cssRules += '.x-tree-node .x-tree-selected {background-color: '+node_selected_back+'; border-color: '+color_utils.darker_html_color(node_selected_back)+'}';
+				// ckeditor back color
+                cssRules += '.cke_wrapper {background-color: #'+tabs_back+' !important;}';
 
                 var styleElement = document.createElement("style");
                 styleElement.type = "text/css";
@@ -225,24 +250,22 @@
             * OnReady events
             */ 
             $(document).ready(
-                function()
-                {
+                function() {
                     createBrandColorsSheet();
-                    $('.back-color-value').val('#'+brand_colors[1]);
-                    $('.front-color-value').val('#'+brand_colors[2]);
-                    $('.face-font-color-value').val('#'+brand_colors[3]);
-                    $('.title-font-color-value').val('#'+brand_colors[4]);
+                    $('.back-color-value').val('#'+brand_colors['head_back']);
+                    $('.front-color-value').val('#'+brand_colors['tabs_back']);
+                    $('.face-font-color-value').val('#'+brand_colors['tabs_font']);
+                    $('.title-font-color-value').val('#'+brand_colors['head_font']);
 
                     $('.back-color-value, .front-color-value, .face-font-color-value, .title-font-color-value').modcoder_excolor({
-                       round_corners : false,
                        shadow : false,
                        background_color : '#eeeeee',
                        backlight : false,
                        callback_on_ok : function() {
-                            brand_colors[1] = $('.back-color-value').val().substring(1,7);
-                            brand_colors[2] = $('.front-color-value').val().substring(1,7);
-                            brand_colors[3] = $('.face-font-color-value').val().substring(1,7);
-                            brand_colors[4] = $('.title-font-color-value').val().substring(1,7);
+                            brand_colors['head_back'] = $('.back-color-value').val().substring(1,7);
+                            brand_colors['tabs_back'] = $('.front-color-value').val().substring(1,7);
+                            brand_colors['tabs_font'] = $('.face-font-color-value').val().substring(1,7);
+                            brand_colors['head_font'] = $('.title-font-color-value').val().substring(1,7);
                             createBrandColorsSheet();
                        }
                     });
@@ -418,7 +441,7 @@ og.dimensionPanels = [
 			requiredObjectTypes: <?php echo json_encode($dimension->getRequiredObjectTypes()) ?>,
 			hidden: <?php echo (int) ! $dimension->getIsRoot(); ?>,
 			isManageable: <?php echo (int) $dimension->getIsManageable() ?>,
-			quickAdd: <?php echo ( $dimension->getOptions(1) && $dimension->getOptions(1)->quickAdd ) ? 'true' : 'false'  ?>,
+			quickAdd: <?php echo ( $dimension->getOptions(1) && isset($dimension->getOptions(1)->quickAdd) && $dimension->getOptions(1)->quickAdd ) ? 'true' : 'false'  ?>,
 					
 			minHeight: 10
 			//animate: false,
@@ -495,8 +518,9 @@ og.dimension_object_type_contents = [];
 <?php include_once(Env::getLayoutPath("listeners"));?>
 
 	<div id="quick-form" > 
-		<div class="close" ></div>
-		<div class="form-container"></div>
+            <div style="float: right; cursor: pointer;height: 12px;position: absolute;right: 19px;top: 2px;"><a href="#" onclick="$('.close').click();">close</a></div>
+            <div class="close" style="float: right;"></div>
+            <div class="form-container"></div>
 	</div>
 </body>
 </html>

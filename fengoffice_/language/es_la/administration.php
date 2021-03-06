@@ -77,15 +77,15 @@
 	'config option desc use_time_in_task_dates' => 'Permite ingresar hora de fin y hora de inicio de tareas.',
 	'config option name untitled_notes' => 'Notas sin título',
 	'config option desc untitled_notes' => 'Permite agregar notas sin título',
-        'config option name repeating_task' => 'Tareas repetitivas',
+	'config option name repeating_task' => 'Tareas repetitivas',
 	'config option desc repeating_task' => 'Las tareas repetitivas serán mostradas individualmente, y no como una sola',
-        'config option name wysiwyg_messages' => 'Descripción de las notas con WYSIWYG',
-        'config option desc wysiwyg_messages' => '',
-        'config option name wysiwyg_tasks' => 'Descripción de las tareas con WYSIWYG',
-        'config option desc wysiwyg_tasks' => '',
-        'config option name wysiwyg_projects' => 'Descripción de los proyectos con WYSIWYG',
-        'config option desc wysiwyg_projects' => '',
-    
+	'config option name wysiwyg_messages' => 'Descripción de las notas con WYSIWYG',
+	'config option desc wysiwyg_messages' => 'Habilite esta opción para poder escribir las descripciones de sus notas utilizando formato de texto enriquecido.',
+	'config option name wysiwyg_tasks' => 'Descripción de las tareas con WYSIWYG',
+	'config option desc wysiwyg_tasks' => 'Habilite esta opción para poder escribir las descripciones de sus tareas utilizando formato de texto enriquecido.',
+	'config option name wysiwyg_projects' => 'Descripción de los proyectos con WYSIWYG',
+	'config option desc wysiwyg_projects' => 'Habilite esta opción para poder escribir las descripciones de sus Proyectos utilizando formato de texto enriquecido.',
+	
 	'user ws config category name dashboard' => 'Opciones del panel de resumen',
 	'user ws config category name task panel' => 'Opciones del panel de tareas',
 	'user ws config category name calendar panel' => 'Opciones del Calendario',
@@ -201,11 +201,10 @@
 	'cron event desc send_reminders' => 'Este evento de Cron envía los recordatorios definidos.',
 	'cron event name check_upgrade' => 'Verificar actualizaciones',
 	'cron event desc check_upgrade' => 'Este evento de Cron verifica la existencia de nuevas versiones de Feng Office.',
-	'cron event name import_google_calendar' => 'Importar desde Google Calendar',
-  	'cron event desc import_google_calendar' => 'Si este evento esta habilitado se importaran todos los eventos desde Google Calendar.',
-        'cron event name export_google_calendar' => 'Exportar desde Feng Office',
-  	'cron event desc export_google_calendar' => 'Si este evento esta habilitado se exportaran todos los eventos desde Google Calendar.',
-	'next execution' => 'Próxima ejecución',
+	'cron event name import_google_calendar' => 'Importación de eventos de Google Calendar',
+  	'cron event desc import_google_calendar' => 'Si esta opción está habilitada, se importarán los eventos de Google Calendar, siempre cuando haya configurado la sincronización correctamente.',
+    'cron event name export_google_calendar' => 'Exportación de eventos Feng Office',
+  	'cron event desc export_google_calendar' => 'Si esta opción está habilitada, se exportarán los eventos de Feng Office correspondientes a calendarios externos, como Google Calendar.','next execution' => 'Próxima ejecución',
 	'delay between executions' => 'Período entre ejecuciones',
 	'enabled' => 'Habilitado',
 	'no cron events to display' => 'No hay eventos para mostrar',
@@ -328,6 +327,7 @@
 	'cannot delete member is associated' => 'No se puede eliminar el miembro, ya que el mismo se encuentra asociado a miembros de otras dimensiones.',
 	'cannot delete member has objects' => 'No se puede eliminar el miembro, ya que el mismo contiene objetos.',
 	'cannot delete member is required for objects' => 'No se puede eliminar el miembro, ya que el mismo es requerido para objetos existentes.',
+	'cannot delete member is account owner' => 'No se puede eliminar el dueño de la cuenta.',
 
 	'expand-collapse' => 'Expandir/Colapsar',
 	'check all' => 'Marcar todos',
@@ -351,6 +351,7 @@
   	'font color' => 'Color de las Fuentes',
   	'title color' => 'Color del Título',
   	'save colors' => 'Guardar',
+        'members color' => 'Color de las Dimensiones',
 
 	// System permissions
 	'can manage security' => 'Puede modificar configuraciones de seguridad (usuarios, grupos y permisos)',
@@ -388,5 +389,6 @@
         'allow' => 'Permitir',
         'success file extension' => 'Prevención de subida de archivos modificada exitosamente.',
         'file extension no allow' => 'Su Administrador no permite esta extensión de archivos. Por favor utilice otro formato.',
+        'file extension no allow classify' => 'No se pudo clasificar el adjunto \'{0}\'. Su Administrador no permite esta extensión de archivos.',
 
 ); ?>

@@ -341,7 +341,7 @@
 	'minutes' => '分钟',
 	'seconds' => '秒',
 	'days' => '天',
-	'time estimate' => '估计时长',
+	'estimated time' => '估计时长',
 	'work in progress' => '进行中的工作',
 	'total time' => '总时长',
 	'upload anyway' => '直接上传',

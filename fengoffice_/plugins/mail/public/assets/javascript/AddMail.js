@@ -145,6 +145,10 @@ og.addContactsToAdd = function(genid) {
 };
 
 og.changeSignature = function(genid, acc_id) {
+	setting_autoreply = genid.indexOf("autoreply")? true:false;
+	if (setting_autoreply){
+		genid = genid.replace(/autoreply/g,'');  
+	}	
 	var sig = Ext.getDom(genid + 'signatures');
 	for (i=0; i < sig.accountSignatures.length; i++) {
 		if (sig.accountSignatures[i].acc == acc_id) {
@@ -153,7 +157,7 @@ og.changeSignature = function(genid, acc_id) {
 			break;
 		}
 	}
-	if (Ext.getDom(genid + 'format_html').checked) {
+	if (setting_autoreply || Ext.getDom(genid + 'format_html').checked) {
 		var iname = genid + 'ckeditor';
 		var editor = og.getCkEditorInstance(iname);
 		html = editor.getData();

@@ -313,7 +313,7 @@
 	'minutes' => 'Minutter',
 	'seconds' => 'Sekunder',
 	'days' => 'Dager',
-	'time estimate' => 'Tidsestimat',
+	'estimated time' => 'Tidsestimat',
 	'work in progress' => 'Det arbeides for øyeblikket',
 	'total time' => 'Total tid',
 	'upload anyway' => 'Last opp uansett',

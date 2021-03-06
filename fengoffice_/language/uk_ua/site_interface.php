@@ -459,7 +459,7 @@ Last update:  see readme_ua.txt
 	'minutes' => 'Хвилини',
 	'seconds' => 'Секунди',
 	'days' => 'день/днів',
-	'time estimate' => 'Оцінка часу',
+	'estimated time' => 'Оцінка часу',
 	'work in progress' => 'Йде робота',
 	'total time' => 'Всього',
 	

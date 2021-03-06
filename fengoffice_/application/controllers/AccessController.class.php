@@ -108,13 +108,15 @@ class AccessController extends ApplicationController {
 				$this->render();
 			} // if
 	
+			$userIsValidPassword = false;
 			// If ldap authentication is enabled ldap.config.php will return true.
 			$config_ldap_file_path = ROOT . '/config/ldap.config.php'; 
-			$config_ldap_is_set = file_exists($config_ldap_file_path) && include_once($config_ldap_file_path);			
+			$config_ldap_is_set = file_exists($config_ldap_file_path) && include_once($config_ldap_file_path);				
 			if($config_ldap_is_set === true) {
 			  $userIsValidPassword = $user->isValidPasswordLdap($username, $password, $config_ldap);
-			} else {
-			  $userIsValidPassword = $user->isValidPassword($password);
+			}
+			if (!$userIsValidPassword){
+			  	$userIsValidPassword = $user->isValidPassword($password);
 			}
 		
 			if (!$userIsValidPassword) {
@@ -505,6 +507,12 @@ class AccessController extends ApplicationController {
 				$company->setObjectName();
 				$company->setIsCompany(true);
 				$company->save();
+				
+				// Init default colors
+				set_config_option('brand_colors_head_back', "000000");
+				set_config_option('brand_colors_tabs_back', "14780e");
+				set_config_option('brand_colors_head_font', "ffffff");
+				set_config_option('brand_colors_tabs_font', "ffffff");
 
 				// Create the administrator user
 				$administrator = new Contact();
@@ -534,7 +542,7 @@ class AccessController extends ApplicationController {
 				$permission_group->setName('Account Owner');
 				$permission_group->setContactId($administrator->getId());
 				$permission_group->setIsContext(false);
-                                $permission_group->setType("permission_groups");
+				$permission_group->setType("permission_groups");
 				$permission_group->save();
 				
 				$administrator->setPermissionGroupId($permission_group->getId());

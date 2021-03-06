@@ -179,23 +179,27 @@ class Notifier {
                 }
 		
 		$attachments = array();
-		if (config_option('show images in document notifications') && $object instanceof ProjectFile && in_array($object->getTypeString(), ProjectFiles::$image_types)) {
-			if (FileRepository::getBackend() instanceof FileRepository_Backend_FileSystem) {
-				$file_path = FileRepository::getBackend()->getFilePath($object->getLastRevision()->getRepositoryId());
-			} else {
-				$file_path = ROOT . "/tmp/" . $object->getFilename();
-				$handle = fopen($file_path, 'wb');
-				fwrite($handle, $object->getLastRevision()->getFileContent(), $object->getLastRevision()->getFilesize());
-				fclose($handle);
-			}
-			$attachments[] = array(
-				'cid' => gen_id() . substr($senderemail, strpos($senderemail, '@')),
-				'path' => $file_path,
-				'type' => $object->getTypeString(),
-				'disposition' => 'inline',
-				'name' => $object->getFilename(),
-			);
-		}
+                try {
+                    if (config_option('show images in document notifications') && $object instanceof ProjectFile && in_array($object->getTypeString(), ProjectFiles::$image_types)) {
+                            if (FileRepository::getBackend() instanceof FileRepository_Backend_FileSystem) {
+                                    $file_path = FileRepository::getBackend()->getFilePath($object->getLastRevision()->getRepositoryId());
+                            } else {
+                                    $file_path = ROOT . "/tmp/" . $object->getFilename();
+                                    $handle = fopen($file_path, 'wb');
+                                    fwrite($handle, $object->getLastRevision()->getFileContent(), $object->getLastRevision()->getFilesize());
+                                    fclose($handle);
+                            }
+                            $attachments[] = array(
+                                    'cid' => gen_id() . substr($senderemail, strpos($senderemail, '@')),
+                                    'path' => $file_path,
+                                    'type' => $object->getTypeString(),
+                                    'disposition' => 'inline',
+                                    'name' => $object->getFilename(),
+                            );
+                    }
+                } catch (FileNotInRepositoryError $e) {
+                        // If no logo is set, don't interrupt notifications.
+                }
 		tpl_assign('object', $object);
 		tpl_assign('title', $name);//title
                 tpl_assign('by', $assigned_by);//by
@@ -206,6 +210,31 @@ class Notifier {
                                 
 		$emails = array();		
 		foreach($people as $user) {
+                    if ($object instanceof Comment) {
+                            $subscribers = $object->getRelObject()->getSubscribers();
+                    } else {
+                            $subscribers = $object->getSubscribers();
+                    }                    
+                    //ALL SUBSCRIBERS
+                    if(count($subscribers) > 0){
+                        $string_subscriber = '';
+                        $total_s = count($subscribers);
+                        $c = 0;
+                        foreach ($subscribers as $subscriber){
+                            $c++;
+                            if($c == $total_s && $total_s > 1){
+                                $string_subscriber .= lang('and');
+                            }else if($c > 1){
+                                $string_subscriber .= ", ";
+                            }
+
+                            $string_subscriber .= $subscriber->getFirstName();
+                            if($subscriber->getSurname() != "")
+                                $string_subscriber .=" " . $subscriber->getSurname();
+
+                        }
+                        tpl_assign('subscribers', $string_subscriber);// subscribers
+                    }
                     if ($user instanceof Contact && $user->getId() != $senderid && $object->canView($user)) {
                         // send notification on user's locale and with user info
                         $locale = $user->getLocale();
@@ -348,9 +377,9 @@ class Notifier {
                         }
 
                         $toemail = $user->getEmailAddress();
-						try {
+                        try {
 	                        $content = FileRepository::getBackend()->getFileContent(owner_company()->getPictureFile());
-	                        $file_path = ROOT . "/upload/logo_empresa.png";
+	                        $file_path = ROOT . "/tmp/logo_empresa.png";
 	                        $handle = fopen($file_path, 'wb');
 	                        fwrite($handle, $content);
 	                        fclose($handle);
@@ -363,10 +392,10 @@ class Notifier {
 	                                    'name' => 'logo_empresa.png',
 	                            );
 	                        }
-						} catch (FileNotInRepositoryError $e) {
-							// If no logo is set, don't interrupt notifications.
-						}
-						tpl_assign('attachments', $attachments);// attachments
+                        } catch (FileNotInRepositoryError $e) {
+                                unset($attachments['logo']);
+                        }
+                        tpl_assign('attachments', $attachments);// attachments
                         $from = self::prepareEmailAddress($senderemail, $sendername);
                         if (!$toemail) continue;
                         $emails[] = array(
@@ -392,7 +421,6 @@ class Notifier {
 	 * @throws NotifierConnectionError
 	 */
 	static function newObjectComment(Comment $comment, $all_subscribers) {
-		$object = $comment->getRelObject();
 		$subscribers = array();
 		foreach($all_subscribers as $subscriber) {
 			$subscribers[] = $subscriber;
@@ -612,22 +640,22 @@ class Notifier {
 		
 		$attachments = array();
 		try {
-                $content = FileRepository::getBackend()->getFileContent(owner_company()->getPictureFile());
-                $file_path = ROOT . "/upload/logo_empresa.png";
-                $handle = fopen($file_path, 'wb');
-                fwrite($handle, $content);
-                fclose($handle);
-                if($content != ""){
-                    $attachments['logo'] = array(
-                            'cid' => gen_id() . substr($sender->getEmailAddress(), strpos($sender->getEmailAddress(), '@')),
-                            'path' => $file_path,
-                            'type' => 'image/png',
-                            'disposition' => 'inline',
-                            'name' => 'logo_empresa.png',
-                    );
-                }
+                    $content = FileRepository::getBackend()->getFileContent(owner_company()->getPictureFile());
+                    $file_path = ROOT . "/tmp/logo_empresa.png";
+                    $handle = fopen($file_path, 'wb');
+                    fwrite($handle, $content);
+                    fclose($handle);
+                    if($content != ""){
+                        $attachments['logo'] = array(
+                                'cid' => gen_id() . substr($sender->getEmailAddress(), strpos($sender->getEmailAddress(), '@')),
+                                'path' => $file_path,
+                                'type' => 'image/png',
+                                'disposition' => 'inline',
+                                'name' => 'logo_empresa.png',
+                        );
+                    }
 		} catch (FileNotInRepositoryError $e) {
-			// If no logo is set, don't interrupt notifications.
+			unset($attachments['logo']);
 		}
 		tpl_assign('attachments', $attachments);// attachments
                 //invitations
@@ -666,6 +694,28 @@ class Notifier {
 				// send notification on user's locale and with user info
 				$locale = $user->getLocale();
 				Localization::instance()->loadSettings($locale, ROOT . '/language');
+                                
+                                //ALL SUBSCRIBERS
+                                if($object->getSubscribers()){
+                                    $subscribers = $object->getSubscribers();
+                                    $string_subscriber = '';
+                                    $total_s = count($subscribers);
+                                    $c = 0;
+                                    foreach ($subscribers as $subscriber){
+                                        $c++;
+                                        if($c == $total_s && $total_s > 1){
+                                            $string_subscriber .= lang('and');
+                                        }else if($c > 1){
+                                            $string_subscriber .= ", ";
+                                        }
+
+                                        $string_subscriber .= $subscriber->getFirstName();
+                                        if($subscriber->getSurname() != "")
+                                            $string_subscriber .=" " . $subscriber->getSurname();
+
+                                    }
+                                    tpl_assign('subscribers', $string_subscriber);// subscribers
+                                }
                                 
                                 //start
                                 if ($object->getStart() instanceof DateTimeValue) {
@@ -856,7 +906,7 @@ class Notifier {
                     $text = escape_html_whitespace($task->getDescription());
                 }
                 tpl_assign('description', $text);//descripction
-                tpl_assign('description_title', lang("new task assigned to you desc", $task->getObjectName(),$task->getCreatedBy()->getObjectName()));//description_title
+                tpl_assign('description_title', lang("new task assigned to you desc", $task->getObjectName(),$task->getAssignedBy()->getObjectName()));//description_title
                 
                 //priority
                 if ($task->getPriority()) {
@@ -875,6 +925,28 @@ class Notifier {
                     }
                     tpl_assign('priority', array($priority,$priorityColor));
 		}
+                
+                //ALL SUBSCRIBERS
+                if($task->getSubscribers()){
+                    $subscribers = $task->getSubscribers();
+                    $string_subscriber = '';
+                    $total_s = count($subscribers);
+                    $c = 0;
+                    foreach ($subscribers as $subscriber){
+                        $c++;
+                        if($c == $total_s && $total_s > 1){
+                            $string_subscriber .= lang('and');
+                        }else if($c > 1){
+                            $string_subscriber .= ", ";
+                        }
+
+                        $string_subscriber .= $subscriber->getFirstName();
+                        if($subscriber->getSurname() != "")
+                            $string_subscriber .=" " . $subscriber->getSurname();
+
+                    }
+                    tpl_assign('subscribers', $string_subscriber);// subscribers
+                }
                 
                 //context
                 $contexts = array();
@@ -915,23 +987,23 @@ class Notifier {
 		
 		$attachments = array();
 		try {
-                $content = FileRepository::getBackend()->getFileContent(owner_company()->getPictureFile());
-                $file_path = ROOT . "/upload/logo_empresa.png";
-                $handle = fopen($file_path, 'wb');
-                fwrite($handle, $content);
-                fclose($handle);
-                if($content != ""){
-                    $attachments['logo'] = array(
-                            'cid' => gen_id() . substr($task->getAssignedTo()->getEmailAddress(), strpos($task->getAssignedTo()->getEmailAddress(), '@')),
-                            'path' => $file_path,
-                            'type' => 'image/png',
-                            'disposition' => 'inline',
-                            'name' => 'logo_empresa.png',
-                    );
-                    tpl_assign('attachments', $attachments);// attachments
-                }
+                    $content = FileRepository::getBackend()->getFileContent(owner_company()->getPictureFile());
+                    $file_path = ROOT . "/tmp/logo_empresa.png";
+                    $handle = fopen($file_path, 'wb');
+                    fwrite($handle, $content);
+                    fclose($handle);
+                    if($content != ""){
+                        $attachments['logo'] = array(
+                                'cid' => gen_id() . substr($task->getAssignedTo()->getEmailAddress(), strpos($task->getAssignedTo()->getEmailAddress(), '@')),
+                                'path' => $file_path,
+                                'type' => 'image/png',
+                                'disposition' => 'inline',
+                                'name' => 'logo_empresa.png',
+                        );
+                        tpl_assign('attachments', $attachments);// attachments
+                    }
 		} catch (FileNotInRepositoryError $e) {
-			// If no logo is set, don't interrupt notifications.
+			unset($attachments['logo']);
 		}
 		tpl_assign('attachments', $attachments);// attachments
 		
@@ -973,7 +1045,7 @@ class Notifier {
                     $text = escape_html_whitespace($task->getDescription());
                 }
                 tpl_assign('description', $text);//descripction
-                tpl_assign('description_title', lang("new task work estimate to you desc", $task->getObjectName(),$task->getCreatedBy()->getObjectName()));//description_title
+                tpl_assign('description_title', lang("new task work estimate to you desc", $task->getObjectName(),$task->getAssignedBy()->getObjectName()));//description_title
                 
                 //priority
                 if ($task->getPriority()) {
@@ -1032,35 +1104,72 @@ class Notifier {
 		
 		$attachments = array();
 		try {
-                $content = FileRepository::getBackend()->getFileContent(owner_company()->getPictureFile());
-                $file_path = ROOT . "/upload/logo_empresa.png";
-                $handle = fopen($file_path, 'wb');
-                fwrite($handle, $content);
-                fclose($handle);
-                if($content != ""){
-                    $attachments['logo'] = array(
-                            'cid' => gen_id() . substr($task->getAssignedBy()->getEmailAddress(), strpos($task->getAssignedBy()->getEmailAddress(), '@')),
-                            'path' => $file_path,
-                            'type' => 'image/png',
-                            'disposition' => 'inline',
-                            'name' => 'logo_empresa.png',
-                    );
-                    tpl_assign('attachments', $attachments);// attachments
-                }
+                    $content = FileRepository::getBackend()->getFileContent(owner_company()->getPictureFile());
+                    $file_path = ROOT . "/tmp/logo_empresa.png";
+                    $handle = fopen($file_path, 'wb');
+                    fwrite($handle, $content);
+                    fclose($handle);
+                    if($content != ""){
+                        $attachments['logo'] = array(
+                                'cid' => gen_id() . substr($task->getAssignedBy()->getEmailAddress(), strpos($task->getAssignedBy()->getEmailAddress(), '@')),
+                                'path' => $file_path,
+                                'type' => 'image/png',
+                                'disposition' => 'inline',
+                                'name' => 'logo_empresa.png',
+                        );
+                    }
 		} catch (FileNotInRepositoryError $e) {
-			// If no logo is set, don't interrupt notifications.
+			unset($attachments['logo']);
 		}
 		tpl_assign('attachments', $attachments);// attachments
 		
-		self::queueEmail(
-			array(self::prepareEmailAddress($task->getCreatedBy()->getEmailAddress(), $task->getCreatedBy()->getObjectName())),
-			self::prepareEmailAddress($task->getUpdatedBy()->getEmailAddress(), $task->getUpdatedByDisplayName()),
-			lang('work estimate title'),
-			tpl_fetch(get_template_path('work_estimate', 'notifier')),
-                        'text/html',
-                        '8bit',
-                        $attachments
-		); // send
+                //ALL SUBSCRIBERS
+                if($task->getSubscribers()){
+                    $subscribers = $task->getSubscribers();
+                    $string_subscriber = '';
+                    $total_s = count($subscribers);
+                    $c = 0;
+                    foreach ($subscribers as $subscriber){
+                        $c++;
+                        if($c == $total_s && $total_s > 1){
+                            $string_subscriber .= lang('and');
+                        }else if($c > 1){
+                            $string_subscriber .= ", ";
+                        }
+
+                        $string_subscriber .= $subscriber->getFirstName();
+                        if($subscriber->getSurname() != "")
+                            $string_subscriber .=" " . $subscriber->getSurname();
+
+                    }
+                    tpl_assign('subscribers', $string_subscriber);// subscribers
+                }
+		
+		if($task->getAssignedById() == $task->getAssignedToContactId()){
+			$emails[] = array(
+                            "to" => array(self::prepareEmailAddress($task->getAssignedBy()->getEmailAddress(), $task->getAssignedBy()->getObjectName())),
+                            "from" => self::prepareEmailAddress($task->getUpdatedBy()->getEmailAddress(), $task->getUpdatedByDisplayName()),
+                            "subject" => lang('work estimate title'),
+                            "body" => tpl_fetch(get_template_path('work_estimate', 'notifier')),
+                            "attachments" => $attachments
+                        ); 
+		}else{
+			$emails[] = array(
+                            "to" => array(self::prepareEmailAddress($task->getAssignedBy()->getEmailAddress(), $task->getAssignedBy()->getObjectName())),
+                            "from" => self::prepareEmailAddress($task->getUpdatedBy()->getEmailAddress(), $task->getUpdatedByDisplayName()),
+                            "subject" => lang('work estimate title'),
+                            "body" => tpl_fetch(get_template_path('work_estimate', 'notifier')),
+                            "attachments" => $attachments
+                        );
+			$emails[] = array(
+                            "to" => array(self::prepareEmailAddress($task->getAssignedTo()->getEmailAddress(), $task->getAssignedTo()->getObjectName())),
+                            "from" => self::prepareEmailAddress($task->getUpdatedBy()->getEmailAddress(), $task->getUpdatedByDisplayName()),
+                            "subject" => lang('work estimate title'),
+                            "body" => tpl_fetch(get_template_path('work_estimate', 'notifier')),
+                            "attachments" => $attachments
+			);
+		}
+		self::queueEmails($emails);
 		
 		$locale = logged_user() instanceof Contact ? logged_user()->getLocale() : DEFAULT_LOCALIZATION;
 		Localization::instance()->loadSettings($locale, ROOT . '/language');

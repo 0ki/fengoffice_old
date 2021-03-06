@@ -400,6 +400,7 @@ Ext.extend(og.WebpageManager, Ext.grid.GridPanel, {
 	
 	reset: function() {
 		this.load({start:0});
+                this.getSelectionModel().clearSelections();
 	},
 	
 	showMessage: function(text) {

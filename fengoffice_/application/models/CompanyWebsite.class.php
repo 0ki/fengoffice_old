@@ -110,8 +110,8 @@ final class CompanyWebsite {
                 $contact = Contacts::findAll(array("conditions" => "`token` = '".$_REQUEST['auth']. "'"));
                 $contact = $contact[0];
             }else{
-                $username = $_REQUEST['username'];
-                $password = $_REQUEST['password'];
+                $username = urldecode($_REQUEST['username']);
+                $password = urldecode($_REQUEST['password']);
                 if (preg_match(EMAIL_FORMAT, $username)) {
                         $contact = Contacts::getByEmail($username);
                 } else {
@@ -139,12 +139,11 @@ final class CompanyWebsite {
                     );
                     echo json_encode($temp);
                     exit;
-                }
-                    
+                }                    
             }
             else
                 die('API Response: Invalid authorization code.');
-        }		
+        }	
         
         $user_id       = Cookie::getValue('id');
 		$twisted_token = Cookie::getValue('token');

@@ -8,7 +8,7 @@
  */
 class ProjectMessage extends BaseProjectMessage {
 
-	protected $searchable_columns = array('text');
+	protected $searchable_columns = array('name','text');
 	
 	/**
 	 * @var string
@@ -78,7 +78,7 @@ class ProjectMessage extends BaseProjectMessage {
 	// ---------------------------------------------------
 
 	function canAdd(Contact $user, $context, &$notAllowedMember = ''){
-		return can_add($user, $context, ProjectMessages::instance()->getObjectTypeId(),$notAllowedMember);
+		return can_add($user, $context, ProjectMessages::instance()->getObjectTypeId(), $notAllowedMember);
 	}
 	
 

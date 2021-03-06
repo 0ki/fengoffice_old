@@ -6,6 +6,9 @@ require_javascript('og/EventPopUp.js');
 require_javascript('og/CalendarPrint.js');
 require_javascript('og/EventRelatedPopUp.js');
 $genid = gen_id();
+
+$max_events_to_show = user_config_option('displayed events amount');
+if (!$max_events_to_show) $max_events_to_show = 3;
 ?>
 
 <script>
@@ -59,11 +62,13 @@ $genid = gen_id();
 //	$date_start->add('h', logged_user()->getTimezone());
 //	$date_end->add('h', logged_user()->getTimezone());
 	
+	$tasks = array();
 	$milestones = ProjectMilestones::getRangeMilestones($date_start, $date_end);
-        if($task_filter != "hide"){
-            $tasks = ProjectTasks::getRangeTasksByUser($date_start, $date_end, ($user_filter != -1 ? $user : null), $task_filter);
-        }
-        // FIXME
+    if($task_filter != "hide"){
+    	$tasks = ProjectTasks::getRangeTasksByUser($date_start, $date_end, ($user_filter != -1 ? $user : null), $task_filter);
+    }
+    
+    // FIXME
 	$birthdays = array(); //Contacts::instance()->getRangeContactsByBirthday($date_start, $date_end);
 
 	$tmp_tasks = array();
@@ -131,16 +136,16 @@ $genid = gen_id();
 			}
 		}
 		
-		if(is_array($tasks)){
+		if(isset($tasks) && is_array($tasks)){
 			$task_starts[$day_of_week] = array();
 			$task_ends[$day_of_week] = array();
 			
 			foreach ($tmp_tasks as $task) {
-				$added = false;
-                                if($task->getDueDate() instanceof DateTimeValue){
+				$added = false;                                
+                                if ($task->getDueDate() instanceof DateTimeValue){
                                     $due_date = new DateTimeValue($task->getDueDate()->getTimestamp() + logged_user()->getTimezone() * 3600);
                                     if ($dates[$day_of_week]->getTimestamp() == mktime(0,0,0, $due_date->getMonth(), $due_date->getDay(), $due_date->getYear())) {
-                                            if ($task->getUseDueTime()) {
+                                            if ($task->getUseDueTime() && ($task->getStartDate() instanceof DateTimeValue || $task->getTimeEstimate() > 0)) {
                                                     $results[$day_of_week][] = $task;
                                                     $task_ends[$day_of_week][$task->getId()] = true;
                                             } else {
@@ -148,20 +153,20 @@ $genid = gen_id();
                                             }
                                             $added = true;
                                     }
-                                }
-				if($task->getStartDate() instanceof DateTimeValue){
+                                }           
+				if ($task->getStartDate() instanceof DateTimeValue){
                                     $start_date = new DateTimeValue($task->getStartDate()->getTimestamp() + logged_user()->getTimezone() * 3600);
                                     if (!$added && $dates[$day_of_week]->getTimestamp() == mktime(0,0,0, $start_date->getMonth(), $start_date->getDay(), $start_date->getYear())) {
-                                            if ($task->getUseStartTime()) {
+                                            if ($task->getUseStartTime() && ($task->getDueDate() instanceof DateTimeValue|| $task->getTimeEstimate() > 0)) {
                                                     $results[$day_of_week][] = $task;
                                                     $task_starts[$day_of_week][$task->getId()] = true;
                                             } else {
                                                     $alldayevents[$day_of_week][] = $task;
                                             }
                                             $added = true;
-                                        }
+                                    }
                                 }
-                        }
+			}
                     }
 		
 		if (is_array($birthdays)) {
@@ -192,7 +197,9 @@ $genid = gen_id();
 	
 	$max_events = max($allday_events_count) == 0 ? 1 : max($allday_events_count);
 	$alldaygridHeight = $max_events * PX_HEIGHT / 2 + PX_HEIGHT / 2;//Day events container height= all the events plus an extra free space
-
+        if($alldaygridHeight > 100){
+            $alldaygridHeight = 100;
+        }
 
 	$users_array = array();
 	$companies_array = array();
@@ -320,75 +327,84 @@ $genid = gen_id();
 				<?php } else echo ">"; ?>
 					<?php	
 						$top=5;
+                                                $count = 0;
 						if(is_array(array_var($alldayevents,$day_of_week))){
 							foreach ($alldayevents[$day_of_week] as $event){
-								$tipBody = '';
-								$divtype = '';
-								$div_prefix = '';
-								if ($event instanceof ProjectMilestone ){
-									$div_prefix = 'w5_ms_div_';
-									$objType = 'milestone';									
-									$subject = clean($event->getObjectName());
-									$img_url = image_url('/16x16/milestone.png');
-									$due_date=$event->getDueDate();
-									$divtype = '<span class="italic">' . lang('milestone') . '</span> - ';
-									$tipBody = trim(clean($event->getDescription()));
-								}elseif ($event instanceof ProjectTask){
-									$start_of_task = false;
-									$end_of_task = false;
-									$is_repe_task = $event->isRepetitive();
-									if ($event->getDueDate() instanceof DateTimeValue) {
-										$due_date = new DateTimeValue($event->getDueDate()->getTimestamp() + logged_user()->getTimezone() * 3600);
-										if ($dates[$day_of_week]->getTimestamp() == mktime(0,0,0, $due_date->getMonth(), $due_date->getDay(), $due_date->getYear())) $end_of_task = true;
-									}
-									if ($event->getStartDate() instanceof DateTimeValue) {
-										$start_date = new DateTimeValue($event->getStartDate()->getTimestamp() + logged_user()->getTimezone() * 3600);
-										if ($dates[$day_of_week]->getTimestamp() == mktime(0,0,0, $start_date->getMonth(), $start_date->getDay(), $start_date->getYear())) $start_of_task = true;
-									}
-									if ($start_of_task && $end_of_task) {
-										$tip_title = lang('task');
-										$img_url = image_url('/16x16/tasks.png');
-										$tip_pre = '';
-									} else if ($end_of_task) {
-										$tip_title = lang('end of task');
-										$img_url = image_url('/16x16/task_end.png');
-										$tip_pre = 'end_';
-									} else {
-										$tip_title = lang('start of task');
-										$img_url = image_url('/16x16/task_start.png');
-										$tip_pre = 'st_';
-									}
-									$tip_pre .= gen_id()."_";
-									$div_prefix = 'w5_ta_div_' . $tip_pre;
-									$objType = 'task';
-									$subject = clean($event->getObjectName());
-									$divtype = '<span class="italic">' . $tip_title . '</span> - ';
-									$tipBody = lang('assigned to') .': '. clean($event->getAssignedToName()) . (trim(clean($event->getText())) != '' ? '<br><br>' . trim(clean($event->getText())) : '') ;
-								}elseif ($event instanceof ProjectEvent){
-									$div_prefix = 'w5_ev_div_';
-									$objType = 'event';
-									$subject = clean($event->getObjectName());
-									$img_url = image_url('/16x16/calendar.png'); /* @var $event ProjectEvent */											
-									$divtype = '<span class="italic">' . lang('event') . '</span> - ';
-									$tipBody = (trim(clean($event->getDescription())) != '' ? '<br>' . clean($event->getDescription()) : '');									
-								}elseif ($event instanceof Contact ) {
-									$div_prefix = 'w5_bd_div_';
-									$objType = 'contact';
-									$subject = clean($event->getObjectName());
-									$img_url = image_url('/16x16/contacts.png');
-									$due_date = new DateTimeValue(mktime(0,0,0, $event->getOBirthday()->getMonth(), $event->getOBirthday()->getDay(), $dates[$day_of_week]->getYear()));
-									$divtype = '<span class="italic">' . lang('birthday') . '</span> - ';
-								}
-								$tipBody = str_replace("\r", '', $tipBody);
-								$tipBody = str_replace("\n", '<br>', $tipBody);
-								if (strlen_utf($tipBody) > 200) $tipBody = substr_utf($tipBody, 0, strpos($tipBody, ' ', 200)) . ' ...';
-								
-								if ($event instanceof ProjectMilestone || $event instanceof ProjectEvent || ($due_date instanceof DateTimeValue && $dates[$day_of_week]->getTimestamp() == mktime(0,0,0, $due_date->getMonth(), $due_date->getDay(), $due_date->getYear()))
-																   || ($start_date instanceof DateTimeValue && $dates[$day_of_week]->getTimestamp() == mktime(0,0,0, $start_date->getMonth(), $start_date->getDay(), $start_date->getYear()))) {	
-									
-									$ws_color = $event->getObjectColor($event instanceof ProjectEvent ? 1 : 12);
-									
-									cal_get_ws_color($ws_color, $ws_style, $ws_class, $txt_color, $border_color);
+                                                                $count++;
+                                                                if($count <= $max_events_to_show){
+                                                                        $tipBody = '';
+                                                                        $divtype = '';
+                                                                        $div_prefix = '';
+                                                                        if ($event instanceof ProjectMilestone ){
+                                                                                $div_prefix = 'w5_ms_div_';
+                                                                                $objType = 'milestone';									
+                                                                                $subject = clean($event->getObjectName());
+                                                                                $img_url = image_url('/16x16/milestone.png');
+                                                                                $due_date=$event->getDueDate();
+                                                                                $divtype = '<span class="italic">' . lang('milestone') . '</span> - ';
+                                                                                $tipBody = trim(clean($event->getDescription()));
+                                                                        }elseif ($event instanceof ProjectTask){
+                                                                                $start_of_task = false;
+                                                                                $end_of_task = false;
+                                                                                $is_repe_task = $event->isRepetitive();
+                                                                                if ($event->getDueDate() instanceof DateTimeValue) {
+                                                                                        $due_date = new DateTimeValue($event->getDueDate()->getTimestamp() + logged_user()->getTimezone() * 3600);
+                                                                                        if ($dates[$day_of_week]->getTimestamp() == mktime(0,0,0, $due_date->getMonth(), $due_date->getDay(), $due_date->getYear())){
+                                                                                            $end_of_task = true;
+                                                                                            $start_of_task = true;
+                                                                                        }
+                                                                                }
+                                                                                if ($event->getStartDate() instanceof DateTimeValue) {
+                                                                                        $start_date = new DateTimeValue($event->getStartDate()->getTimestamp() + logged_user()->getTimezone() * 3600);
+                                                                                        if ($dates[$day_of_week]->getTimestamp() == mktime(0,0,0, $start_date->getMonth(), $start_date->getDay(), $start_date->getYear())) {
+                                                                                            $start_of_task = true;
+                                                                                            $end_of_task = true;                                                                                    
+                                                                                        }
+                                                                                }
+                                                                                if ($start_of_task && $end_of_task) {
+                                                                                        $tip_title = lang('task');
+                                                                                        $img_url = image_url('/16x16/tasks.png');
+                                                                                        $tip_pre = '';
+                                                                                } else if ($end_of_task) {
+                                                                                        $tip_title = lang('end of task');
+                                                                                        $img_url = image_url('/16x16/task_end.png');
+                                                                                        $tip_pre = 'end_';
+                                                                                } else {
+                                                                                        $tip_title = lang('start of task');
+                                                                                        $img_url = image_url('/16x16/task_start.png');
+                                                                                        $tip_pre = 'st_';
+                                                                                }
+                                                                                $tip_pre .= gen_id()."_";
+                                                                                $div_prefix = 'w5_ta_div_' . $tip_pre;
+                                                                                $objType = 'task';
+                                                                                $subject = clean($event->getObjectName());
+                                                                                $divtype = '<span class="italic">' . $tip_title . '</span> - ';
+                                                                                $tipBody = lang('assigned to') .': '. clean($event->getAssignedToName()) . (trim(clean($event->getText())) != '' ? '<br><br>' . trim(clean($event->getText())) : '') ;
+                                                                        }elseif ($event instanceof ProjectEvent){
+                                                                                $div_prefix = 'w5_ev_div_';
+                                                                                $objType = 'event';
+                                                                                $subject = clean($event->getObjectName());
+                                                                                $img_url = image_url('/16x16/calendar.png'); /* @var $event ProjectEvent */											
+                                                                                $divtype = '<span class="italic">' . lang('event') . '</span> - ';
+                                                                                $tipBody = (trim(clean($event->getDescription())) != '' ? '<br>' . clean($event->getDescription()) : '');									
+                                                                        }elseif ($event instanceof Contact ) {
+                                                                                $div_prefix = 'w5_bd_div_';
+                                                                                $objType = 'contact';
+                                                                                $subject = clean($event->getObjectName());
+                                                                                $img_url = image_url('/16x16/contacts.png');
+                                                                                $due_date = new DateTimeValue(mktime(0,0,0, $event->getOBirthday()->getMonth(), $event->getOBirthday()->getDay(), $dates[$day_of_week]->getYear()));
+                                                                                $divtype = '<span class="italic">' . lang('birthday') . '</span> - ';
+                                                                        }
+                                                                        $tipBody = str_replace("\r", '', $tipBody);
+                                                                        $tipBody = str_replace("\n", '<br>', $tipBody);
+                                                                        if (strlen_utf($tipBody) > 200) $tipBody = substr_utf($tipBody, 0, strpos($tipBody, ' ', 200)) . ' ...';
+
+                                                                        if ($event instanceof ProjectMilestone || $event instanceof ProjectEvent || ($due_date instanceof DateTimeValue && $dates[$day_of_week]->getTimestamp() == mktime(0,0,0, $due_date->getMonth(), $due_date->getDay(), $due_date->getYear()))
+                                                                                                                                           || ($start_date instanceof DateTimeValue && $dates[$day_of_week]->getTimestamp() == mktime(0,0,0, $start_date->getMonth(), $start_date->getDay(), $start_date->getYear()))) {	
+
+                                                                                $ws_color = $event->getObjectColor($event instanceof ProjectEvent ? 1 : 12);
+
+                                                                                cal_get_ws_color($ws_color, $ws_style, $ws_class, $txt_color, $border_color);
 					?>
 					<div id="<?php echo $div_prefix . $event->getId() ?>" class="adc" style="left: 4%; top: <?php echo $top ?>px; z-index: 5;width: 92%;margin:1px;position:absolute;">
 						<div class="t3 <?php echo  $ws_class?>" style="<?php echo  $ws_style?>;margin:0px 1px 0px 1px;height:0px; border-bottom:1px solid; border-color:<?php echo $border_color ?>"></div>
@@ -418,7 +434,16 @@ $genid = gen_id();
 									$top += 21;
 								}	
 							}
-						}
+                                                }
+                                                if ($count > $max_events_to_show) {
+                                        ?>
+
+                                        <div id="<?php echo $div_prefix . $event->getId() ?>" class="adc" style="left: 4%; top: <?php echo $top ?>px; z-index: 5;width: 92%;margin:1px;position:absolute; text-align: center;">
+                                                <a href="<?php echo $p?>" class="internalLink"  onclick="og.disableEventPropagation(event);return true;"><?php echo ($count-$max_events_to_show) . ' ' . lang('more');?> </a>
+                                        </div>
+                                        <?php
+                                                }
+                                        }
 					?>
 				</div>
 			<script>

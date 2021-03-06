@@ -371,7 +371,7 @@ class Contact extends BaseContact {
 				WHERE TRIM(email_address) <> ''
 				AND email_address IS NOT NULL
 				AND contact_id = $contact_id
-				$type_condition LIMIT 1";
+				$type_condition order by is_main desc LIMIT 1";
 		if ($row = DB::executeOne($sql)) {
 			return $row['email_address'];	
 		}				
@@ -547,7 +547,45 @@ class Contact extends BaseContact {
 		return sha1 ( $this->getSalt () . $check_password ) == $this->getToken ();
 	} // isValidPassword
     
-    
+	/**
+	 * Check if $user and $password are related to a valid user and password
+	 *
+	 * @param string $check_password
+	 * @return boolean
+	 */	
+    function isValidPasswordLdap($user, $password, $config) {
+
+                // Connecting using the configuration:
+                require_once "Net/LDAP2.php";
+
+                $ldap = Net_LDAP2::connect($config);
+
+                // Testing for connection error
+                if (PEAR::isError($ldap)) {       
+                        return false;
+                }
+                
+                $filter = Net_LDAP2_Filter::create($config['uid'], 'equals', $user);
+                $search = $ldap->search(null, $filter, null);
+
+                if (Net_LDAP2::isError($search)) {
+                        return false;
+                }
+
+                if ($search->count() != 1) {
+                        return false;
+                }
+
+                // User exists so we may rebind to authenticate the password
+                $entries = $search->entries();
+                $bind_result = $ldap->bind($entries[0]->dn(), $password);
+
+                if (PEAR::isError($bind_result)) {
+                        return false;
+                }
+                return true;
+    } // isValidPasswordLdap
+	
     /**
     *
     *@param api hash code
@@ -1279,7 +1317,7 @@ class Contact extends BaseContact {
 		if (!is_readable($source)) return false;
 
 		do {
-			$temp_file = ROOT . '/cache/' . sha1(uniqid(rand(), true));
+			$temp_file = CACHE_DIR . '/' . sha1(uniqid(rand(), true));
 		} while(is_file($temp_file));
 
 		Env::useLibrary('simplegd');
@@ -1374,7 +1412,7 @@ class Contact extends BaseContact {
 		if(!is_readable($source)) return false;
 
 		do {
-			$temp_file = ROOT . '/cache/' . sha1(uniqid(rand(), true));
+			$temp_file = CACHE_DIR . '/' . sha1(uniqid(rand(), true));
 		} while(is_file($temp_file));
 
 		try {
@@ -1517,7 +1555,7 @@ class Contact extends BaseContact {
 		if(!is_readable($source)) return false;
 
 		do {
-			$temp_file = ROOT . '/cache/' . sha1(uniqid(rand(), true));
+			$temp_file = CACHE_DIR . '/' . sha1(uniqid(rand(), true));
 		} while(is_file($temp_file));
 
 		try {

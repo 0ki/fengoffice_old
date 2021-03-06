@@ -39,6 +39,7 @@ return array(
 	"og/modules/dashboardComments.js",
 	"og/ofc.js",
 	"og/Breadcrumbs.js",
+	"og/MemberCombo.js",
 	"h5f.min.js",
 	"og/main.js",
 	"jquery/bootstrap-dropdown.js",

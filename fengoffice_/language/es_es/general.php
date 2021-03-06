@@ -20,6 +20,7 @@
 	'empty trash can' => 'Vaciar la papelera',
 	'save' => 'Guardar',
 	'update' => 'Actualizar',
+	'specify password?' => 'Especificar password?',
 	'submit' => 'Enviar',
 	'reset' => 'Reiniciar',
 	'change' => 'Cambiar',
@@ -92,10 +93,10 @@
 	'download' => 'Descarga',
 	'downloads' => 'Descargass',
 	'replace' => 'Reemplazar',
-	'specify password?' => 'Especificar password?',
 	'expand' => 'Expandir',
 	'collapse' => 'Contraer',
 	'author' => 'Autor',
+	'change logo' => 'Cambiar logo',
 	'user title' => 'Cargo',
 	'more' => 'Más',
 	'order by' => 'Ordenar por',
@@ -243,4 +244,9 @@
         'specify username?' => 'Especificar Usuario?',
         
         'option repetitive task completed' => 'Esta tarea ya ha sido completada. Para modificar los datos de repetición por favor edite alguna tarea pendiente de esta serie.',
+        
+        'subscribers' => 'Personas involucradas',
+        'and' => ' y ',
+        'apply everywhere' => 'Aplicar a todo',
+        'apply for this' => 'Aplicar para este {0}',
 ); ?>

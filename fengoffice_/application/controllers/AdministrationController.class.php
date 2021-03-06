@@ -76,14 +76,15 @@ class AdministrationController extends ApplicationController {
     
 	function scolors () {
 		if (can_manage_configuration(logged_user())) {
-			$colors = array_var($_POST,'colors');
-			$owner_company = owner_company();
-			$owner_company->setBrandColors($colors);
-			$owner_company->save();
 			
-			if (GlobalCache::isAvailable()) {
-				GlobalCache::update('owner_company', $owner_company);
+			$valid_options = ConfigCategories::getOptionsFromCategory('brand_colors');
+			foreach ($_POST as $k => $v) {
+				print("$k => $v");
+				if (in_array($k, $valid_options)) {
+					set_config_option($k, str_replace("#", "", $v));
+				}
 			}
+			
 		}
 		exit;
     }
@@ -754,12 +755,21 @@ class AdministrationController extends ApplicationController {
 		$dimensions = Dimensions::findAll(array('conditions' => '`is_manageable` = 1'));
 		$members = array();
 		
+		$logged_user_pgs = implode(',', logged_user()->getPermissionGroupIds());
+		
 		foreach($dimensions as $dim) {
 			$dimensions = Dimensions::findAll(array('conditions' => '`is_manageable` = 1'));
 			$members = array();
 			foreach($dimensions as $dim) {
+				if ($dim->deniesAllForContact($logged_user_pgs)) continue;
+				
+				$allows_all = $dim->hasAllowAllForContact($logged_user_pgs);
+				
 				$root_members = Members::findAll(array('conditions' => array('`dimension_id`=? AND `parent_member_id`=0', $dim->getId()), 'order' => '`name` ASC'));
 				foreach ($root_members as $mem) {
+					if (!$allows_all) {
+						if (!$mem->canBeReadByContact($logged_user_pgs, logged_user())) continue;
+					}
 					$members[$dim->getId()][] = $mem;
 					$members[$dim->getId()] = array_merge($members[$dim->getId()], $mem->getAllChildrenSorted());
 				}

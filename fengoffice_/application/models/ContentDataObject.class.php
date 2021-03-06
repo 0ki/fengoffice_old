@@ -1358,10 +1358,10 @@ abstract class ContentDataObject extends ApplicationDataObject {
 		
 		$table_prefix = defined('FORCED_TABLE_PREFIX') && FORCED_TABLE_PREFIX ? FORCED_TABLE_PREFIX : TABLE_PREFIX;
 		
-		//1 clear sharing table for this object
+		//1. clear sharing table for this object
 		SharingTables::delete("object_id=$oid");
 		
-		//2 get dimensions of this object's members that defines permissions
+		//2. get dimensions of this object's members that defines permissions
 		$res = DB::execute("SELECT d.id as did FROM ".$table_prefix."dimensions d INNER JOIN ".$table_prefix."members m on m.dimension_id=d.id
 			WHERE m.id IN ( SELECT member_id FROM ".$table_prefix."object_members WHERE object_id = $oid AND is_optimization = 0 ) AND d.defines_permissions = 1");
 		$dids_tmp = array();
@@ -1378,7 +1378,7 @@ abstract class ContentDataObject extends ApplicationDataObject {
 		
 		$sql_where = "member_id IN ( SELECT member_id FROM ".$table_prefix."object_members WHERE object_id = $oid AND is_optimization = 0) AND cmp.object_type_id = $tid";
 
-		//3 If there are dimensions that defines permissions containing any of the object members
+		//3. If there are dimensions that defines permissions containing any of the object members
 		if ( count($dids) ){
 			// 3.1 get permission groups with permissions over the object.
 			$sql_fields = "permission_group_id  AS group_id" ;
@@ -1485,6 +1485,7 @@ abstract class ContentDataObject extends ApplicationDataObject {
 		
 		$object_controller = new ObjectController();
 		$object_controller->add_to_members($timeslot, $this->getMemberIds());
+                return $timeslot;
 	}
 
 	function hasOpenTimeslots($user = null){
@@ -1504,6 +1505,8 @@ abstract class ContentDataObject extends ApplicationDataObject {
 			$timeslot->close($description);
 			$timeslot->save();
 		}
+                
+                return $timeslot;
 	}
 
 	function pauseTimeslots(Contact $user){

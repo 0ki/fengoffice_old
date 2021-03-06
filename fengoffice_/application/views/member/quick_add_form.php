@@ -38,67 +38,66 @@
 <script>
 	$( function() {
 		
-		// To make ajax submit:
-		og.captureLinks("quick-form");
-		
-		// Auto focus member name:
-		$("#quick-form #member-name").focus();
+            // To make ajax submit:
+            og.captureLinks("quick-form");
 
-		// Show only one "more link" 
-		$(".more").hide().eq(0).show();
+            // Auto focus member name:
+            $("#quick-form #member-name").focus();
 
-		// Set form title based on combo if it has no title
-		if (!$(".quick-form-title").html()){
-			var type =  $(".quick-add-object-type option:selected").attr('name') ;
-			if (type){	
-				$(".quick-form-title").html(lang('new '+type));
-			}else{
-				$(".quick-form-title").html(lang('new'));
-			}		
-		}
-		
-		// Handle "more" link click
-		$("#quick-form .more").click(function(){
-			$("#quick-form").slideUp();
-			var title = $("#member-name").val();
-			var parent = $("#parent_id").val();
-		
-			var url = og.makeAjaxUrl($(this).attr('href')+"&name="+escape(title));
-			if (parent) {
-				url += "&parent="+parent;
-			}		
-			og.openLink(url);		
-		});
-		
+            // Show only one "more link" 
+            $(".more").hide().eq(0).show();
 
-		// After sumbmit hide form 
-		$("#quick-form form").submit(function(a){
-			$("#quick-form").slideUp();
-		});
+            // Set form title based on combo if it has no title
+            if (!$(".quick-form-title").html()){
+                    var type =  $(".quick-add-object-type option:selected").attr('name') ;
+                    if (type){	
+                            $(".quick-form-title").html(lang('new '+type));
+                    }else{
+                            $(".quick-form-title").html(lang('new'));
+                    }		
+            }
 
-		// Fire submit on 'enter'
-		$('#quick-form #member-name').keypress(function(e){
-			if(e.which == 13){
-				$('#quick-form .submit').click();
-				e.preventDefault();
-				return false ;
-			}
+            // Handle "more" link click
+            $("#quick-form .more").click(function(){
+                    $("#quick-form").slideUp();
+                    var title = $("#member-name").val();
+                    var parent = $("#parent_id").val();
+
+                    var url = og.makeAjaxUrl($(this).attr('href')+"&name="+encodeURIComponent(title));
+                    if (parent) {
+                            url += "&parent="+parent;
+                    }		
+                    og.openLink(url);		
+            });
+
+
+            // After sumbmit hide form 
+            $("#quick-form form").submit(function(a){
+                    $("#quick-form").slideUp();
+            });
+
+            // Fire submit on 'enter'
+            $('#quick-form #member-name').keypress(function(e){
+                    if(e.which == 13){
+                            $('#quick-form .submit').click();
+                            e.preventDefault();
+                            return false ;
+                    }
 	    });
 
 	    // Select Handler 
-		$('.quick-add-object-type').change(function () {
-			var otId = $(this).find("option:selected").val() ;
-			var type = $(this).find("option:selected").attr('name');
-			if (otId){ 
-				$(".more").hide();
-				$(".more" + ".object-type-"+otId).show();
-				$(".quick-form-title").html(lang('new '+type));
-			}
-			
-		});
+            $('.quick-add-object-type').change(function () {
+                    var otId = $(this).find("option:selected").val() ;
+                    var type = $(this).find("option:selected").attr('name');
+                    if (otId){ 
+                            $(".more").hide();
+                            $(".more" + ".object-type-"+otId).show();
+                            $(".quick-form-title").html(lang('new '+type));
+                    }
 
-		og.eventManager.fireEvent("after quickadd render");
-	    
+            });
+
+            og.eventManager.fireEvent("after quickadd render");	    
 				
 	});
 </script>

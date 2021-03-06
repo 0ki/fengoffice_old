@@ -353,7 +353,7 @@
 	'minutes' => 'Minuty',
 	'seconds' => 'Vteřiny',
 	'days' => 'Dny',
-	'time estimate' => 'Časový odhad',
+	'estimated time' => 'Časový odhad',
 	'work in progress' => 'Pokračující práce',
 	'total time' => 'Celkový čas',
 	'upload anyway' => 'Přesto nahrát',

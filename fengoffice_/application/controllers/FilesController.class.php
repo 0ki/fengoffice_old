@@ -85,9 +85,9 @@ class FilesController extends ApplicationController {
 			return;
 		} // if
 
-		//read object for this user	
+		//read object for this user
 		$file->setIsRead(logged_user()->getId(),true);
-		
+
 		tpl_assign('file', $file);
 		tpl_assign('last_revision', $file->getLastRevision());
 		tpl_assign('revisions', $revisions);
@@ -95,7 +95,7 @@ class FilesController extends ApplicationController {
 		tpl_assign('page', null);
 		ajx_extra_data(array("title" => $file->getFilename(), 'icon'=>'ico-file'));
 		ajx_set_no_toolbar(true);
-		
+
 		ApplicationReadLogs::createLog($file, ApplicationReadLogs::ACTION_READ);
 	} // file_details
 
@@ -496,30 +496,32 @@ class FilesController extends ApplicationController {
 					$revision->setComment($revision_comment);
 					$revision->save();
 				}
-                                
-                                $member_ids = array();
+
+				$member_ids = array();
 				$object_controller = new ObjectController();
-                                if(count(active_context_members(false)) > 0 ){
-                                    $object_controller->add_to_members($file, active_context_members(false));
-                                }elseif(array_var($file_data, 'object_id')){
-                                    $object = Objects::findObject(array_var($file_data, 'object_id'));
-                                    $member_ids = $object->getMemberIds();
-                                    $object_controller->add_to_members($file, $member_ids);
-                                }
-//                                else{
-//                                    $m = Members::findById(logged_user()->getPersonalMemberId());
-//                                    if (!$m instanceof Member) {
-//                                            $person_dim = Dimensions::findByCode('feng_persons');
-//                                            if ($person_dim instanceof Dimension) {
-//                                                    $member_ids = Members::findAll(array(
-//                                                            'id' => true, 
-//                                                            'conditions' => array("object_id = ? AND dimension_id = ?", logged_user()->getId(), $person_dim->getId())
-//                                                    ));
-//                                            }
-//                                    } else {
-//                                            $member_ids[] = $m->getId();
-//                                    }
-//                                    $object_controller->add_to_members($file, $member_ids);
+				if(count(active_context_members(false)) > 0 ){
+					$object_controller->add_to_members($file, active_context_members(false));
+				}elseif(array_var($file_data, 'object_id')){
+					$object = Objects::findObject(array_var($file_data, 'object_id'));
+					if ($object instanceof ContentDataObject) {
+						$member_ids = $object->getMemberIds();
+						$object_controller->add_to_members($file, $member_ids);
+					}
+				}
+				//                                else{
+				//                                    $m = Members::findById(logged_user()->getPersonalMemberId());
+				//                                    if (!$m instanceof Member) {
+				//                                            $person_dim = Dimensions::findByCode('feng_persons');
+				//                                            if ($person_dim instanceof Dimension) {
+				//                                                    $member_ids = Members::findAll(array(
+				//                                                            'id' => true,
+				//                                                            'conditions' => array("object_id = ? AND dimension_id = ?", logged_user()->getId(), $person_dim->getId())
+				//                                                    ));
+				//                                            }
+				//                                    } else {
+				//                                            $member_ids[] = $m->getId();
+				//                                    }
+				//                                    $object_controller->add_to_members($file, $member_ids);
 //                                }
 
 				DB::commit();
@@ -669,6 +671,12 @@ class FilesController extends ApplicationController {
 						$img_file->save();
 					}
 				}
+				
+				//subscribe user if not subscribed
+				if(!$file->isSubscriber(logged_user())) {
+					$file->subscribeUser(logged_user());
+				} // if
+				
 				
 				ApplicationLogs::createLog($file, ApplicationLogs::ACTION_EDIT);
 				DB::commit();
@@ -1363,7 +1371,6 @@ class FilesController extends ApplicationController {
 		$extra_conditions = $hide_private ? 'AND `is_visible` = 1' : '';
 		
 		$context = active_context();
-		//$objects = ProjectFiles::getContentObjects($context, ObjectTypes::findById(ProjectFiles::instance()->getObjectTypeId()), $order, $order_dir, $extra_conditions, $join_params,  false, false, $start, $limit);
 		$objects = ProjectFiles::instance()->listing(array(
 			"order"=>$order,
 			"order_dir" => $order_dir,
@@ -1568,11 +1575,12 @@ class FilesController extends ApplicationController {
 				$file->resetIsRead();
 				
 				ApplicationLogs::createLog($file, ApplicationLogs::ACTION_EDIT);
-
+                                
 				DB::commit();
 								
 				flash_success(lang('success edit file', $file->getFilename()));
-				ajx_current("back");
+				//ajx_current("back");
+                                redirect_to('index.php?c=files&a=file_details&id=' . $file->getObjectId());
 			} catch(Exception $e) {
 				
 				DB::rollback();
@@ -1650,13 +1658,16 @@ class FilesController extends ApplicationController {
 					@unlink($uploaded_file['tmp_name']);
 				} // if
 
-				
-
 				$object_controller = new ObjectController();
 				$object_controller->link_to_new_object($file);
 				$object_controller->add_subscribers($file);
 				$object_controller->add_custom_properties($file);
 
+				//subscribe user if not subscribed
+				if(!$file->isSubscriber(logged_user())) {				
+					$file->subscribeUser(logged_user());
+				} // if
+				
 				ApplicationLogs::createLog($file, ApplicationLogs::ACTION_EDIT);
 				ApplicationLogs::createLog($file, ApplicationLogs::ACTION_CHECKIN);
 				DB::commit();
@@ -1992,6 +2003,15 @@ class FilesController extends ApplicationController {
 			tpl_assign('file', $copy);
 			tpl_assign('last_revision', $copy->getLastRevision());
 			tpl_assign('revisions', $copy->getRevisions());
+                        tpl_assign('order', null);
+                        tpl_assign('page', null);
+                        ajx_extra_data(array("title" => $copy->getFilename(), 'icon'=>'ico-file'));
+                        ajx_set_no_toolbar(true);
+
+                        //read object for this user
+                        $copy->setIsRead(logged_user()->getId(),true);
+                        ApplicationReadLogs::createLog($copy, ApplicationReadLogs::ACTION_READ);
+
 		} catch (Exception $ex) {
 			DB::rollback();
 			flash_error($ex->getMessage());

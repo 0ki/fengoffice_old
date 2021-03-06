@@ -115,8 +115,8 @@
     'success edit task list' => 'Task \'{0}\' has been updated',
     'success delete task list' => 'Task \'{0}\' has been deleted',
     
-    'success add task' => 'Task \'{0}\' has been added',
-    'success edit task' => 'Task \'{0}\' has been updated',
+    'success add task' => 'Selected task has been added',
+    'success edit task' => 'Selected task has been updated',
     'success delete task' => 'Selected task has been deleted',
     'success complete task' => 'Selected task has been completed',
     'success open task' => 'Selected task has been reopened',
@@ -140,6 +140,8 @@
     'success add user' => 'User {0} has been added successfully',
     'success edit user' => 'User {0} has been updated successfully',
     'success delete user' => 'User {0} has been deleted successfully',
+	'success disable user' => 'Account for user {0} has been disabled successfully',
+	'success restore user' => 'Account for user {0} has been activated successfully',
     
     'success update project permissions' => 'Workspace permissions have been updated successfully',
     'success remove user from project' => 'User has been successfully removed from the workspace',

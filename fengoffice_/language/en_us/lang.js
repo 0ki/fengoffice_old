@@ -379,6 +379,7 @@ addLangs({
 	
 	/* tasks */
 	'assigned to': 'Assigned to',
+        'subscribed to': 'Subscribed to',
 	'assign to': 'Assign to',
 	'add subtask to': 'Add subtask to \'{0}\'',
 	'add task to': 'Add task to \'{0}\'',
@@ -464,8 +465,8 @@ addLangs({
 	'task name': 'Task name',
 	'show': 'Show',
 	'time': 'Time',
-    'time estimates': 'Estimated time',
-    'time estimate': 'Estimated time',
+    'estimated times': 'Estimated times',
+    'estimated time': 'Estimated time',
 	'dates': 'Dates',
 	'empty milestones': 'Empty milestones',
 	'select user or group': 'Select user or group',

@@ -326,7 +326,7 @@
 	'minutes' => 'Minutos',
 	'seconds' => 'Segundos',
 	'days' => 'Dias',
-	'time estimate' => 'Tempo estimado',
+	'estimated time' => 'Tempo estimado',
 	'work in progress' => 'Trabalho em progresso',
 	'total time' => 'Tempo total',
 	'upload anyway' => 'Carregar assim mesmo',

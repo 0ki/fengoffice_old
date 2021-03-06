@@ -1,6 +1,11 @@
 <?php
 abstract class DimensionObject extends ContentDataObject {
 	
+	
+	protected $is_commentable = false;
+	protected $is_linkable_object = false;
+	
+	
 	/**
 	 * A Dimension Object has one to one member associated.
 	 * This function returns the memeber associatted with this CO. 

@@ -355,10 +355,10 @@ abstract class ContentDataObjects extends DataManager {
 		$result->total =array();
 		$type_id  = self::getObjectTypeId();
 		$SQL_BASE_JOIN = '';
-		$SQL_EXTRA_JOINS = '' ;
-		$SQL_TYPE_CONDITION = 'true' ;
+		$SQL_EXTRA_JOINS = '';
+		$SQL_TYPE_CONDITION = 'true';
 
-		$count_results = ! ( defined('INFINITE_PAGING') && INFINITE_PAGING ) ; 
+		$count_results = ! ( defined('INFINITE_PAGING') && INFINITE_PAGING ); 
 		$start = array_var($args,'start');
 		$limit = array_var($args,'limit');
 		$member_ids = array_var($args, 'member_ids');
@@ -392,14 +392,21 @@ abstract class ContentDataObjects extends DataManager {
 			$SQL_EXTRA_JOINS = self::prepareJoinConditions(array_var($args,'join_params'));
 			
 		}
+		
 		if (!$ignore_context && !$member_ids) {
 			$members = active_context_members(false); // Context Members Ids
-		}elseif ( count($member_ids) ) {
-			$members = $member_ids ;
+		} elseif ( count($member_ids) ) {
+			$members = $member_ids;
 		}
+		
 		if  (is_array($extra_member_ids)) {
-			$members = array_merge($members,$extra_member_ids);
+			if (isset($members)) {
+				$members = array_merge($members, $extra_member_ids);
+			} else {
+				$members = $extra_member_ids;
+			}
 		}
+		
 		$uid = logged_user()->getId() ;
 
 		// Order statement
@@ -429,7 +436,7 @@ abstract class ContentDataObjects extends DataManager {
 			}
 			if (count( $object_ids )) {
 				$object_ids = implode ( ",", $object_ids );
-				$SQL_CONTEXT_CONDITION = "id IN ($object_ids)";
+				$SQL_CONTEXT_CONDITION = "o.id IN ($object_ids)";
 			}else{
 				$SQL_CONTEXT_CONDITION = ' false ' ;
 			}
@@ -454,7 +461,7 @@ abstract class ContentDataObjects extends DataManager {
 	    	$SQL_EXTRA_JOINS 
 	    	
 	    	WHERE 
-	    		id IN ( 
+	    		o.id IN ( 
 	    			SELECT object_id FROM ".TABLE_PREFIX."sharing_table
 	    			WHERE group_id  IN (
 		     			SELECT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups WHERE contact_id = $uid
@@ -495,6 +502,7 @@ abstract class ContentDataObjects extends DataManager {
 		if ( defined('DEBUG_TIME') && DEBUG_TIME ) {
 			Logger::log("Query time: ". (microtime(1) - $start_time) ) ;
 		}
+		
 		return $result;
 	}
 	
@@ -587,9 +595,9 @@ abstract class ContentDataObjects extends DataManager {
 	}
 	
 	static function prepareJoinConditions($join_params){
-        if (!$join_params) 
+        if (!$join_params) {
     		$join_conditions = "";
-    	else {
+        } else {
     		if (isset($join_params['join_type'])){
     			$join_type = strtoupper($join_params['join_type']);
     		}else{
@@ -865,7 +873,6 @@ abstract class ContentDataObjects extends DataManager {
 				$objects_list[$i]->timeslots_count = 0;
 			}
 			if (count($ids > 0)){
-				//$result = Timeslots::getContentObjects(active_context(), ObjectTypes::findById(Timeslots::instance()->getObjectTypeId()), null, null, ' AND `e`.`object_id` in (' . implode(',', $ids) . ')');
 				$result = Timeslots::instance()->listing(array(
 					"extra_conditions" => ' AND `e`.`object_id` in (' . implode(',', $ids) . ')'
 				));

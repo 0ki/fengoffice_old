@@ -279,4 +279,5 @@
 	'linked event tab' => 'События',
 	'apply assignee to subtasks' => 'Добавить исполнителя к подзадачам',
 	'attachment from email' => 'Прикреплено к письму "{0}"',
+	'field workspace color' => 'Цвет проекта',
 ); ?>
