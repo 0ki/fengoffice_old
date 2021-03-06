@@ -826,7 +826,9 @@ CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>reports` (
   `report_object_type_id` int(10)unsigned NOT NULL, 
   `order_by` varchar(255) <?php echo $default_collation ?> NOT NULL,
   `is_order_by_asc` tinyint(1) <?php echo $default_collation ?> NOT NULL,
-  PRIMARY KEY (`object_id`)
+  `ignore_context` tinyint(1) NOT NULL DEFAULT '1',
+  PRIMARY KEY (`object_id`),
+  KEY `object_type` (`report_object_type_id`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 
 CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>report_columns` (

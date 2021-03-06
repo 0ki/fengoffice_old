@@ -82,42 +82,42 @@ class DimensionController extends ApplicationController {
 	 * $minimum_display = minimum amount of dimension members to return, otherwise return all
 	 * $maximum_display = maximum amount of dimension members to return  
 	*/
-	function latest_active_dimension_members($dimension_id, $object_type_id, $allowed_member_type_ids = null, $logs_amount_range, $minimum_display, $maximum_display) {		
-		//sql query created to filter the members with latest activity through the $extra_conditions variable below     
+	function latest_active_dimension_members($dimension_id, $object_type_id, $allowed_member_type_ids = null, $logs_amount_range, $minimum_display, $maximum_display) {
+		//sql query created to filter the members with latest activity through the $extra_conditions variable below
         $sql = "SELECT DISTINCT `".TABLE_PREFIX."object_members`.`member_id`,`".TABLE_PREFIX."application_logs`.`id`
 				FROM `".TABLE_PREFIX."application_logs`, `".TABLE_PREFIX."object_members`, `".TABLE_PREFIX."members`
 				WHERE (`".TABLE_PREFIX."application_logs`.`rel_object_id` = `".TABLE_PREFIX."object_members`.`object_id`) 
 					  AND (`".TABLE_PREFIX."object_members`.`member_id` = `".TABLE_PREFIX."members`.`id` AND `".TABLE_PREFIX."members`.`object_type_id` = '".mysql_real_escape_string($object_type_id)."')
-				ORDER BY `".TABLE_PREFIX."application_logs`.`id` DESC LIMIT ".mysql_real_escape_string($logs_amount_range);        
-        $members_to_filter = DB::executeAll($sql);             
-        $member_amount = 0;  
+				ORDER BY `".TABLE_PREFIX."application_logs`.`id` DESC LIMIT ".mysql_real_escape_string($logs_amount_range);
+        $members_to_filter = DB::executeAll($sql);
+        $member_amount = 0;
         //if the dimension members in the search are below the minimum amount to be displayed, show all dimension members the user can access to
-        if (is_array($members_to_filter)){	
-        	$members_to_filter_string = '';  
-        	foreach ($members_to_filter as $row) {        		
+        if (is_array($members_to_filter)){
+        	$members_to_filter_string = '';
+        	foreach ($members_to_filter as $row) {
         		//do not repeat member_ids that already are in the array
-        		if (!stristr($members_to_filter_string, ($row['member_id']))){        			    		
+        		if (!stristr($members_to_filter_string, ($row['member_id']))){
         			$members_to_filter_string .= "'".$row['member_id']."',";
-        			$member_amount++;    
-        		} 
+        			$member_amount++;
+        		}
         		//show only up to the limit specified
-        		if ($member_amount >= $maximum_display) break;        		 		        		
-        	}     
-        	$members_to_filter_string = substr_replace($members_to_filter_string ,"",-1);	
+        		if ($member_amount >= $maximum_display) break;
+        	}
+        	$members_to_filter_string = substr_replace($members_to_filter_string ,"",-1);
         }
-        if ($member_amount > $minimum_display){             
-            $extra_conditions = " AND id IN (".$members_to_filter_string.")";                  
-		}else{			 
+        if ($member_amount > $minimum_display){
+            $extra_conditions = " AND id IN (".$members_to_filter_string.")";
+		}else{
 			$extra_conditions = "";
-		}                  
-        return $this->initial_list_dimension_members($dimension_id, $object_type_id,$allowed_member_type_ids, false, $extra_conditions);	
+		}
+        return $this->initial_list_dimension_members($dimension_id, $object_type_id,$allowed_member_type_ids, false, $extra_conditions);
 	}
 	
 	/** 
 	 * Returns all the members to be displayed in the panel that corresponds to the dimension whose id is received by
 	 * parameter. It is called when the application is first loaded. 
 	*/
-	function initial_list_dimension_members($dimension_id, $object_type_id, $allowed_member_type_ids = null, $return_all_members = false, $extra_conditions = "", $limit=null, $return_member_objects = false, $order=null, $return_only_members_name=false, $filter_by_members=array()){
+	function initial_list_dimension_members($dimension_id, $object_type_id, $allowed_member_type_ids = null, $return_all_members = false, $extra_conditions = "", $limit=null, $return_member_objects = false, $order=null, $return_only_members_name=false, $filter_by_members=array(), $access_level=ACCESS_LEVEL_READ){
 		$allowed_member_types = array();
 		$item_object = null ;
 		if(logged_user()->isAdministrator())$return_all_members=true;
@@ -154,7 +154,7 @@ class DimensionController extends ApplicationController {
 				$member_list = $dimension->getAllMembers(false, $order, true, $extra_conditions, $limit);
 				$allowed_members = array();
 				foreach ($member_list as $dim_member){
-					if (ContactMemberPermissions::instance()->contactCanReadMemberAll($contact_pg_ids, $dim_member->getId(), logged_user())) {
+					if (ContactMemberPermissions::instance()->contactCanAccessMemberAll($contact_pg_ids, $dim_member->getId(), logged_user(), $access_level)) {
 						$allowed_members[] = $dim_member;
 					}
 				}
@@ -183,7 +183,7 @@ class DimensionController extends ApplicationController {
 	
 	
 	function apply_association_filters($dimension, $dimension_members, $selected_members) {
-				
+		
 		$members_to_retrieve = array();
 		$all_associated_members_ids = array();
 		
@@ -192,10 +192,11 @@ class DimensionController extends ApplicationController {
 			
 			if (count($association_ids) > 0) {
 				$associated_members_ids = array();
-				$property_members_members = null;
-				$property_members_props = null;
 					
 				foreach ($association_ids as $id){
+					$property_members_members = null;
+					$property_members_props = null;
+					
 					$association = DimensionMemberAssociations::findById($id);
 					$children = $member->getAllChildrenInHierarchy();
 					

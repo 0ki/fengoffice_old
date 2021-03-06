@@ -50,9 +50,9 @@
 <div class="coInputSeparator"></div>
 <div class="coInputMainBlock">
 	
-	<input id="<?php echo $genid?>merge-changes-hidden" type="hidden" name="merge-changes" value="" >
-	<input id="<?php echo $genid?>genid"                type="hidden" name="genid"         value="<?php echo $genid ?>" >
-	<input id="<?php echo $genid?>updated-on-hidden"    type="hidden" name="updatedon"     value="<?php echo !$message->isNew() ? $message->getUpdatedOn()->getTimestamp() : '' ?>">
+	<input id="<?php echo $genid?>merge-changes-hidden" type="hidden" name="merge-changes" value="">
+	<input id="<?php echo $genid?>genid" type="hidden" name="genid" value="<?php echo $genid ?>">
+	<input id="<?php echo $genid?>updated-on-hidden" type="hidden" name="updatedon" value="<?php echo !$message->isNew() ? $message->getUpdatedOn()->getTimestamp() : '' ?>">
 	
 	<div id="<?php echo $genid ?>add_message_select_context_div"> 
 		<fieldset>
@@ -94,19 +94,19 @@
 	</fieldset>	
 	</div>
 	<?php } // if ?>
-        
-        <?php 
-            if(config_option("wysiwyg_messages")){
-                if($message->isNew()) {
-                        $ckEditorContent = '';
-                } else {
-                    if(array_var($message_data, 'type_content') == "text"){
-                        $ckEditorContent = nl2br(htmlspecialchars(array_var($message_data, 'text')));
-                    }else{
-                        $ckEditorContent = purify_html(nl2br(array_var($message_data, 'text')));
-                    }
-                }
-        ?>
+	
+	<?php
+		if(config_option("wysiwyg_messages")){
+			if($message->isNew()) {
+				$ckEditorContent = '';
+			} else {
+				if(array_var($message_data, 'type_content') == "text"){
+					$ckEditorContent = nl2br(htmlspecialchars(array_var($message_data, 'text')));
+				}else{
+					$ckEditorContent = purify_html(nl2br(array_var($message_data, 'text')));
+				}
+			}
+		?>
         <div>
             <?php echo label_tag(lang('text'), $genid . 'messageFormText', false) ?>
             <div id="<?php echo $genid ?>ckcontainer" style="height: 350px">

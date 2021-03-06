@@ -214,7 +214,7 @@ class AdministrationController extends ApplicationController {
 			return;
 		}
 		
-		$object_types = ObjectTypes::instance()->findAll(array("conditions" => "`type` = 'content_object' AND `name` <> 'file revision'", "order" => "name"));
+		$object_types = ObjectTypes::instance()->findAll(array("conditions" => "`type` IN ('content_object') AND `name` <> 'file revision'", "order" => "name"));
 		$ordered_object_types = array();
 		foreach ($object_types as $ot) {
 			$ordered_object_types[$ot->getId()] = lang($ot->getName());

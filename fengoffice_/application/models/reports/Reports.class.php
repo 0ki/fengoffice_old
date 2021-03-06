@@ -49,8 +49,24 @@ class Reports extends BaseReports {
 	 * @return array
 	 */
 	static function getAllReportsByObjectType() {
+		$ignore_context_reports = Reports::findAll(array("conditions" => "ignore_context = 1"));
+		
 		$reports_result = Reports::instance()->listing();
 		$reports = $reports_result->objects;
+		
+		$to_merge_reports = array();
+		foreach ($ignore_context_reports as $icr) {
+			$add = true;
+			foreach ($reports as $r) {
+				if ($r->getId() == $icr->getId()) {
+					$add = false;
+					break;
+				}
+			}
+			if ($add) $to_merge_reports[] = $icr;
+		}
+		$reports = array_merge($reports, $to_merge_reports);
+		$reports = feng_sort($reports, "getObjectName");
 		
 		$result = array();
 		foreach ($reports as $report){
@@ -149,48 +165,50 @@ class Reports extends BaseReports {
 				}
 			}
 			if(count($conditionsCp) > 0){
-
+				$dateFormat = user_config_option('date_format');
+				$date_format_tip = date_format_tip($dateFormat);
+				
 				foreach($conditionsCp as $condCp){
 					$cp = CustomProperties::getCustomProperty($condCp->getCustomPropertyId());
 
 					$skip_condition = false;
-					$dateFormat = 'm/d/Y';
+					
 					if(isset($params[$condCp->getId()."_".$cp->getName()])){
 						$value = $params[$condCp->getId()."_".$cp->getName()];
-						if ($cp->getType() == 'date')
-						$dateFormat = user_config_option('date_format');
 					}else{
 						$value = $condCp->getValue();
 					}
 					if ($value == '' && $condCp->getIsParametrizable()) $skip_condition = true;
 					if (!$skip_condition) {
-						$allConditions .= ' AND ';
-						$allConditions .= 'o.id IN ( SELECT object_id as id FROM '.TABLE_PREFIX.'custom_property_values cpv WHERE ';
-						$allConditions .= ' cpv.custom_property_id = '.$condCp->getCustomPropertyId();
+						$current_condition = ' AND ';
+						$current_condition .= 'o.id IN ( SELECT object_id as id FROM '.TABLE_PREFIX.'custom_property_values cpv WHERE ';
+						$current_condition .= ' cpv.custom_property_id = '.$condCp->getCustomPropertyId();
 						$fieldType = $object->getColumnType($condCp->getFieldName());
 
 						if($condCp->getCondition() == 'like' || $condCp->getCondition() == 'not like'){
 							$value = '%'.$value.'%';
 						}
 						if ($cp->getType() == 'date') {
+							if ($value == $date_format_tip) continue;
 							$dtValue = DateTimeValueLib::dateFromFormatAndString($dateFormat, $value);
 							$value = $dtValue->format('Y-m-d H:i:s');
 						}
 						if($condCp->getCondition() != '%'){
 							if ($cp->getType() == 'numeric') {
-								$allConditions .= ' AND cpv.value '.$condCp->getCondition().' '.DB::escape($value);
+								$current_condition .= ' AND cpv.value '.$condCp->getCondition().' '.DB::escape($value);
 							}else if ($cp->getType() == 'boolean') {
-								$allConditions .= ' AND cpv.value '.$condCp->getCondition().' '.$value;
+								$current_condition .= ' AND cpv.value '.$condCp->getCondition().' '.$value;
 								if (!$value) {
-									$allConditions .= ') OR o.id NOT IN (SELECT object_id as id FROM '.TABLE_PREFIX.'custom_property_values cpv2 WHERE cpv2.object_id=o.id AND cpv2.value=1 AND cpv2.custom_property_id = '.$condCp->getCustomPropertyId();
+									$current_condition .= ') OR o.id NOT IN (SELECT object_id as id FROM '.TABLE_PREFIX.'custom_property_values cpv2 WHERE cpv2.object_id=o.id AND cpv2.value=1 AND cpv2.custom_property_id = '.$condCp->getCustomPropertyId();
 								}
 							}else{
-								$allConditions .= ' AND cpv.value '.$condCp->getCondition().' "'.DB::escape($value).'"';
+								$current_condition .= ' AND cpv.value '.$condCp->getCondition().' '.DB::escape($value);
 							}
 						}else{
-							$allConditions .= ' AND cpv.value like '.DB::escape("%$value");
+							$current_condition .= ' AND cpv.value like '.DB::escape("%$value");
 						}
-						$allConditions .= ')';
+						$current_condition .= ')';
+						$allConditions .= $current_condition;
 					}
 				}
 			}
@@ -204,7 +222,7 @@ class Reports extends BaseReports {
 			
 			if ($managerInstance) {
 				$result = $managerInstance->listing(array(
-					"order" => $order_by_col,
+					"order" => "`$order_by_col`",
 					"order_dir" => ($order_by_asc ? "ASC" : "DESC"),
 					"extra_conditions" => $allConditions			
 				));
@@ -239,6 +257,8 @@ class Reports extends BaseReports {
 							$results['db_columns'][$column_name] = $field;
 						}
 					}
+				} else {
+					$results['columns'][$column->getCustomPropertyId()] = $column->getCustomPropertyId();
 				}
 			}
 			

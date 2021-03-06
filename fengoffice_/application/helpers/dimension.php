@@ -16,7 +16,7 @@ function render_member_selectors($content_object_type_id, $genid = null, $select
 							$dimension['dimension_name'] = lang($dimension['dimension_code']);
 						}
 					}
-					$dimensions[] = $dimension ;
+					$dimensions[] = $dimension;
 				}
 			}
 		}

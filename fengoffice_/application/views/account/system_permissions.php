@@ -28,7 +28,7 @@
 	    
 		<?php
 			$other_permissions = array();
-			if (!is_null($user)) {
+			if (isset($user) && !is_null($user)) {
 				Hook::fire('add_user_permissions', $user, $other_permissions);
 			}
 			foreach ($other_permissions as $perm => $perm_val) {?>

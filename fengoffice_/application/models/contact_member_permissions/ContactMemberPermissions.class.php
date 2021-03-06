@@ -8,27 +8,45 @@
 class ContactMemberPermissions extends BaseContactMemberPermissions {
 	
 	private static $readable_members = array();
+	private static $writable_members = array();
 	
 	/**
 	 * Same as contactCanReadMember but uses a permission cache to avoid similar queries for the same user
 	 */
-	function contactCanReadMemberAll($permission_group_ids, $member_id, $user) {
+	function contactCanAccessMemberAll($permission_group_ids, $member_id, $user, $access_level) {
 		if ($user instanceof Contact && $user->isAdministrator ()) {
 			return true;
 		}
 		
-		if (!isset(self::$readable_members["$permission_group_ids"])) {
-			$res = DB::execute("SELECT DISTINCT member_id FROM ".TABLE_PREFIX."contact_member_permissions WHERE permission_group_id IN (" . $permission_group_ids . ")" );
-			$rows = $res->fetchAll();
-			if (is_array($rows)) {
-				self::$readable_members["$permission_group_ids"] = array();
-				foreach ($rows as $row) {
-					self::$readable_members["$permission_group_ids"][] = $row['member_id'];
+		if ($access_level == ACCESS_LEVEL_READ) {
+			
+			if (!isset(self::$readable_members["$permission_group_ids"])) {
+				$res = DB::execute("SELECT DISTINCT member_id FROM ".TABLE_PREFIX."contact_member_permissions WHERE permission_group_id IN (" . $permission_group_ids . ")" );
+				$rows = $res->fetchAll();
+				if (is_array($rows)) {
+					self::$readable_members["$permission_group_ids"] = array();
+					foreach ($rows as $row) {
+						self::$readable_members["$permission_group_ids"][] = $row['member_id'];
+					}
 				}
 			}
+			return in_array($member_id, self::$readable_members["$permission_group_ids"]);
+			
+		} else {
+			
+			if (!isset(self::$writable_members["$permission_group_ids"])) {
+				$res = DB::execute("SELECT DISTINCT member_id FROM ".TABLE_PREFIX."contact_member_permissions WHERE can_write=1 AND permission_group_id IN (" . $permission_group_ids . ")" );
+				$rows = $res->fetchAll();
+				if (is_array($rows)) {
+					self::$writable_members["$permission_group_ids"] = array();
+					foreach ($rows as $row) {
+						self::$writable_members["$permission_group_ids"][] = $row['member_id'];
+					}
+				}
+			}
+			return in_array($member_id, self::$writable_members["$permission_group_ids"]);
+			
 		}
-		
-		return in_array($member_id, self::$readable_members["$permission_group_ids"]);
 	}
 	
 	function contactCanReadMember($permission_group_ids, $member_id, $user) {

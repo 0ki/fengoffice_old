@@ -1,5 +1,5 @@
 
-	About Feng Office 2.2.2
+	About Feng Office 2.2.3.1-beta
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -62,7 +62,7 @@
 	
 	WARNING: Default memory limit por PHP is 8MB. As a new Feng Office install consumes about 10 MB,
 	administrators could get a message similar to "Allowed memory size of 8388608 bytes exhausted".
-	This can be solved by setting "memory_limit=32" in php.ini.   
+	This can be solved by setting "memory_limit=32" in php.ini.
 	
 	Upgrade
 	=======
@@ -101,6 +101,23 @@
 	
 	Changelog
 	=========
+	
+	Since 2.2.2
+	----------------
+	bugfix: Owner company cannot be classified.
+	bugfix: Task list group by user fix.
+	bugfix: Add pdf and docx files to searchable objects.
+	bugfix: js managers bugfixes.
+	bugfix: Cannot edit/delete mails from deleted accounts.
+	bugfix: Error in tasks reports when ordering by 'order' column.
+	bugfix: Fixes in migration from 1.X of custom properties.
+	
+	usability: Reports can be edited to allow execution in every context.
+	usability: Performance improved in tasks list.
+	usability: Users are filtered by permissions in 'People' dimension when filtering by a workspace.
+	usability: Contacts are filtered in 'People' dimension when filtering by a workspace if they belong to the workspace.
+	
+	system: Portuguese language updated.
 	
 	
 	Since 2.2.1

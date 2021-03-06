@@ -60,6 +60,8 @@ INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`
     ('general', 'wysiwyg_projects', '0', 'BoolConfigHandler', '0', '0', NULL),
     ('general', 'use_milestones', '0', 'BoolConfigHandler', '0', '0', NULL),
     ('general', 'show_tab_icons', '1', 'BoolConfigHandler', '0', '0', NULL),
+	('general', 'can_assign_tasks_to_companies', '0', 'BoolConfigHandler', '0', '0', NULL),
+    ('general', 'use_object_properties', '0', 'BoolConfigHandler', '0', '0', NULL),
 	('task panel', 'tasksShowTimeEstimates', '1', 'BoolConfigHandler', '1', '0', NULL),
 	('brand_colors', 'brand_colors_head_back', '', 'StringConfigHandler', '1', '0', NULL),
 	('brand_colors', 'brand_colors_head_font', '', 'StringConfigHandler', '1', '0', NULL),

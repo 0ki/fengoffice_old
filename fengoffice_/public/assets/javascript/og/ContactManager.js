@@ -33,10 +33,12 @@ og.ContactManager = function() {
 					} else {
 						this.fireEvent('messageToShow', "");
 					}
-					Ext.getCmp('contact-manager').getView().focusRow(og.lastSelectedRow.contacts+1);
-                                        
-                                        var sm = Ext.getCmp('contact-manager').getSelectionModel();
-                                        sm.clearSelections();
+					var cmp = Ext.getCmp('contact-manager');
+					if (cmp) {
+						cmp.getView().focusRow(og.lastSelectedRow.contacts+1);
+						var sm = cmp.getSelectionModel();
+						sm.clearSelections();
+					}
 				}
 			}
 	    });
@@ -57,7 +59,6 @@ og.ContactManager = function() {
     	var name = lang('n/a');
 		if (r.data.type == 'company'){
 			name = String.format(
-					
 					'<a style="font-size:120%" href="{1}" onclick="if (og.core_dimensions) og.core_dimensions.buildBeforeObjectViewAction('+r.data.object_id+'); og.openLink(\'{1}\');return false;" title="{2}">{0}</a>',
 					og.clean(value), og.getUrl('contact', 'view_company', {id: r.data.object_id}), og.clean(r.data.name));
 		}
@@ -77,7 +78,7 @@ og.ContactManager = function() {
 		var mpath = Ext.util.JSON.decode(r.data.memPath);
 		if (mpath) mem_path = og.getCrumbHtml(mpath);
 		
-		return mem_path + name;
+		return name + mem_path;
     }
     
     function renderCompany(value, p, r) {

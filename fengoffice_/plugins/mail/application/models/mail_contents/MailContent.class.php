@@ -402,12 +402,12 @@ class MailContent extends BaseMailContent {
 	 * @param Contact $user
 	 * @return boolean
 	 */
-	function canView(Contact $user) {	
+	function canView(Contact $user) {
 		$account = $this->getAccount();
 		if ($account) {
 			return ($account->getContactId() == logged_user()->getId() || can_read_sharing_table($user, $this->getId()));
 		}else{
-			return false;
+			return can_read_sharing_table($user, $this->getId());
 		}
 	}
 
@@ -423,10 +423,10 @@ class MailContent extends BaseMailContent {
 		if ($account) {
 			return ( 
 				$account->getContactId() == logged_user()->getId() || 
-				can_write($user, $this->getMembers(), $this->manager()->getObjectTypeId())
+				can_write($user, $this->getMembers(), $this->getObjectTypeId())
 			);	
 		}else{
-			return false;
+			return can_write($user, $this->getMembers(), $this->getObjectTypeId());
 		}
 	} 
 
@@ -439,7 +439,7 @@ class MailContent extends BaseMailContent {
 	 * @return booelean
 	 */
 	function canAdd(Contact $user, $context, &$notAllowedMember = '') {
-		return can_add($user, $context, $this->manager()->getObjectTypeId(), $notAllowedMember);
+		return can_add($user, $context, $this->getObjectTypeId(), $notAllowedMember);
 	} // canAdd
 
 	/**
@@ -453,10 +453,10 @@ class MailContent extends BaseMailContent {
 		if ($account) {
 			return ( 
 				$account->getContactId() == logged_user()->getId() || 
-				can_delete($user,$this->getMembers(), $this->manager()->getObjectTypeId())
+				can_delete($user,$this->getMembers(), $this->getObjectTypeId())
 			);	
 		}else{
-			return false;
+			return can_delete($user, $this->getMembers(), $this->getObjectTypeId());
 		}
 	}
 

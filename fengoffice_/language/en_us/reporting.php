@@ -34,7 +34,8 @@
   	'report pdf page layout' => 'Page layout',
   	'report pdf vertical' => 'Vertical',
   	'report pdf landscape' => 'Landscape',
-  	'report font size' => 'Font size'
+  	'report font size' => 'Font size',
+	'show always' => 'Show this report always (use the "Related to" options only to check permissions and not to filter the list of reports)',
   );
   
 ?>

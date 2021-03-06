@@ -378,7 +378,6 @@ og.CalendarSecondTopToolbar = function(config) {
 
 	ucsOtherUsers = [];
 	for (var i=0; i<usersArray.length; i++){
-		str+=i+"\n";
 		var companyName = '';
 		for(var j=0; j<companiesArray.length; j++){
 			if (companiesArray[j] && companiesArray[j].id == usersArray[i].cid) {

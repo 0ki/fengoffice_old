@@ -100,26 +100,28 @@ og.MemberTree = function(config) {
 						if (mpath && mpath[config.dimensionId]) has_relations = true;
 					}
 				}
-                                
-                                function selectionHasAttachments() {
-                                    if(Ext.getCmp('mails-manager') != undefined){
-                                        var sm = Ext.getCmp('mails-manager').getSelectionModel();
-                                        var selections = sm.getSelections();
-                                        if (selections.length <= 0) {
-                                                return false;
-                                        } else {
-                                                for (var i=0; i < selections.length; i++) {
-                                                        if (selections[i].data.hasAttachment || selections[i].data.conv_hasatt) return true;
-                                                }	
-                                                return false;
-                                        }
-                                    }else{
-                                        return false;
-                                    }
-                                        
-                                }
-                                this.selectionHasAttachments = selectionHasAttachments;
-				
+
+				function selectionHasAttachments() {
+					if (Ext.getCmp('mails-manager') != undefined) {
+						var sm = Ext.getCmp('mails-manager').getSelectionModel();
+						var selections = sm.getSelections();
+						if (selections.length <= 0) {
+							return false;
+						} else {
+							for ( var i = 0; i < selections.length; i++) {
+								if (selections[i].data.hasAttachment || selections[i].data.conv_hasatt) {
+									return true;
+								}
+							}
+							return false;
+						}
+					} else {
+						return false;
+					}
+
+				}
+				this.selectionHasAttachments = selectionHasAttachments;
+
 				if (e.data.selections[0] && og.dimension_object_type_contents[config.dimensionId][e.target.object_type_id][e.data.selections[0].data.ot_id] &&
 						og.dimension_object_type_contents[config.dimensionId][e.target.object_type_id][e.data.selections[0].data.ot_id].multiple) {
 					
@@ -131,16 +133,16 @@ og.MemberTree = function(config) {
 						var rm_prev = 0 ;
 					}
 
-                                        if (this.selectionHasAttachments() && e.target.id) {                                        
-                                            if (og.preferences['mail_drag_drop_prompt'] == 'prompt') {
-                                                    var attachment = confirm(lang('do you want to classify the unclassified emails attachments', config.title)) ? "1" : "0";
-                                            }else if (og.preferences['mail_drag_drop_prompt'] == 'classify') {
-                                                    var attachment = 1 ;
-                                            } else if (og.preferences['mail_drag_drop_prompt'] == 'dont') {
-                                                    var attachment = 0 ;
-                                            }
-                                        }
-                                        
+					if (this.selectionHasAttachments() && e.target.id) {
+						if (og.preferences['mail_drag_drop_prompt'] == 'prompt') {
+							var attachment = confirm(lang('do you want to classify the unclassified emails attachments', config.title)) ? "1" : "0";
+						} else if (og.preferences['mail_drag_drop_prompt'] == 'classify') {
+							var attachment = 1;
+						} else if (og.preferences['mail_drag_drop_prompt'] == 'dont') {
+							var attachment = 0;
+						}
+					}
+
 					og.openLink(og.getUrl('member', 'add_objects_to_member'),{
 						method: 'POST',
 						post: {objects: Ext.util.JSON.encode(ids), member: e.target.id, remove_prev:rm_prev, attachment:attachment},
@@ -149,16 +151,16 @@ og.MemberTree = function(config) {
 						}
 					});                                        
 				} else {
-                                        if (this.selectionHasAttachments() && e.target.id) {                                        
-                                            if (og.preferences['mail_drag_drop_prompt'] == 'prompt') {
-                                                    var attachment = confirm(lang('do you want to classify the unclassified emails attachments', config.title)) ? "1" : "0";
-                                            }else if (og.preferences['mail_drag_drop_prompt'] == 'classify') {
-                                                    var attachment = 1 ;
-                                            } else if (og.preferences['mail_drag_drop_prompt'] == 'dont') {
-                                                    var attachment = 0 ;
-                                            }
-                                        }
-                                        
+                        if (this.selectionHasAttachments() && e.target.id) {
+						if (og.preferences['mail_drag_drop_prompt'] == 'prompt') {
+							var attachment = confirm(lang('do you want to classify the unclassified emails attachments', config.title)) ? "1" : "0";
+						} else if (og.preferences['mail_drag_drop_prompt'] == 'classify') {
+							var attachment = 1;
+						} else if (og.preferences['mail_drag_drop_prompt'] == 'dont') {
+							var attachment = 0;
+						}
+					}
+
 					og.openLink(og.getUrl('member', 'add_objects_to_member'),{
 						method: 'POST',
 						post: {objects: Ext.util.JSON.encode(ids), member: e.target.id, attachment:attachment},
@@ -197,17 +199,15 @@ og.MemberTree = function(config) {
 				if ( node.options && node.options.defaultAjax && node.options.defaultAjax.controller && node.options.defaultAjax.action) {
 					var reload = ( this.getSelectionModel() && this.getSelectionModel().getSelectedNode() && this.getSelectionModel().getSelectedNode().id  ==  node.id );
 					og.customDashboard( node.options.defaultAjax.controller, node.options.defaultAjax.action, {id: node.object_id}, reload);
-                                        this.clearFilter();
-                                        if(this.dimensionCode == 'feng_persons'){//people
-                                            og.core_dimensions.onContactClick(node.id);
-                                        }else if(this.dimensionCode == 'workspaces'){//workspaces
-                                            og.workspaces.onWorkspaceClick(node.id);
-                                        }else if(this.dimensionCode == 'customer_project'){//crpm     
-                                            og.projects.onProjectClick(node.id);
-                                        }
-                                        node.expand();
-                                        $("#" + this.id + '-textfilter').val("");
-                                }else{
+					this.clearFilter();
+
+					if (og.additional_on_dimension_object_click[node.object_type_id]) {
+						eval(og.additional_on_dimension_object_click[node.object_type_id].replace('<parameters>', node.id));
+					}
+					
+					node.expand();
+					$("#" + this.id + '-textfilter').val("");
+				} else {
 					og.resetDashboard();
 				}
 			
@@ -222,7 +222,7 @@ og.MemberTree = function(config) {
 			if (selection && !this.pauseEvents) {
 				og.contextManager.cleanActiveMembers(this.dimensionId) ;
 				if ( ! this.isMultiple() ){
-					//Single Selection
+					// Single Selection
 					var node = selection ; 
 					if (node.getDepth()) {
 						var member = node.attributes.id ;

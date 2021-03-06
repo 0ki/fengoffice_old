@@ -264,6 +264,7 @@
 	'tabs' => 'Pestañas',
   	'field Objects percent_completed' => 'Porcentaje complatado',
   	'field Objects name' => 'Nombre',
+	'field Objects id' => 'Id',
 
   	'new person' => 'Nueva Persona',
 	'fee' => 'Tarifa',  
@@ -271,7 +272,7 @@
 	'change logo' => 'Cambiar logo',
 	'without company' => 'Sin Organización',
 	'will this person use feng office?' => 'Esta persona va a usar Feng Office?',
-        'specify username?' => 'Especificar Usuario?',
+	'specify username?' => 'Especificar nombre de usuario',
 	'persons' => 'Personas',
   	'task timeslots report desc' => ' * Solo los tiempos de trabajo asociados a una tarea serán desplegados.',
   	'general timeslots report desc' => ' * Solo los tiempos de trabajo agregados desde la pestaña "Tiempo" serán desplegados.',

@@ -3,6 +3,9 @@
 	$genid = gen_id();
 	$object = $contact;
 	$renderContext = has_context_to_render($contact->manager()->getObjectTypeId());
+	if (!$object->isNew() && $object->isUser()) {
+		$renderContext = false;
+	}
 	
 	$visible_cps = CustomProperties::countVisibleCustomPropertiesByObjectType($object->getObjectTypeId());
 ?>
@@ -14,8 +17,8 @@
 <div class="coInputHeader">
 	<div class="coInputHeaderUpperRow">
 	<div class="coInputTitle"><table style="width:535px">
-	<tr><td><?php echo $contact->isNew() ? lang('new contact') : lang('edit contact') ?>
-	</td><td style="text-align:right"><?php echo submit_button($contact->isNew() ? lang('add contact') : lang('save changes'),'s',array('style'=>'margin-top:0px;margin-left:10px', 'tabindex' => 4, 'id' => $genid . 'submit1')) ?></td></tr></table>
+		<tr><td><?php echo $contact->isNew() ? lang('new contact') : lang('edit contact') ?>
+		</td><td style="text-align:right"><?php echo submit_button($contact->isNew() ? lang('add contact') : lang('save changes'),'s',array('style'=>'margin-top:0px;margin-left:10px', 'tabindex' => 4, 'id' => $genid . 'submit1')) ?></td></tr></table>
 	</div>
 	
 	</div>
@@ -41,16 +44,7 @@
 				array('id' => $genid.'profileFormEmail', 'maxlength' => 100, 'style' => 'width:260px;')) ?>
 		</div>
 	</td>
-        <?php if($object->isNew()){?>
-        <td style="padding-left:20px">
-		<div>
-                        <label><?php echo lang("specify username?")?></label>
-                        <input class="checkbox" type="checkbox" name="contact[specify_username]" id="<?php echo $genid ?>specify-username"/>
-                        <input id="<?php echo $genid ?>profileFormUsername" type="text" value="<?php echo array_var($contact_data, 'username')?>" name="contact[user][username]" maxlength="50" style="display: none;"/>
-		</div>
-	</td>
-        <?php }?>
-            </tr></table>
+</tr></table>
 	
 	<?php $categories = array(); Hook::fire('object_edit_categories', $object, $categories); ?>
 	
@@ -59,7 +53,7 @@
 		<a href="#" class="option" <?php if ($category['visible']) echo 'style="font-weight: bold"'; ?> onclick="og.toggleAndBolden('<?php echo $genid . $category['name'] ?>', this)"><?php echo lang($category['name'])?></a>-
 		<?php endforeach; ?>	
 		<?php if ( $renderContext ) :?>
-		<a href="#" class="option"  onclick="og.toggleAndBolden('<?php echo $genid ?>add_contact_select_context_div',this)"><?php echo lang('context') ?></a> -
+		<a href="#" class="option" id="<?php echo $genid?>related_to_link" onclick="og.toggleAndBolden('<?php echo $genid ?>add_contact_select_context_div',this)"><?php echo lang('context') ?></a> -
 		<?php endif;?>
 		<a href="#" class="option" style="font-weight:bold" onclick="og.toggleAndBolden('<?php echo $genid ?>add_contact_work', this)"><?php echo lang('work') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_contact_email_and_im', this)"><?php echo lang('email and instant messaging') ?></a> - 
@@ -83,6 +77,8 @@
 	<input id="<?php echo $genid?>genid" type="hidden" name="genid" value="<?php echo $genid ?>" >
 		<?php if ($contact->isNew() || $isEdit){
 			tpl_assign('contact_mail', $contact_mail);
+			tpl_assign('orig_genid', $genid);
+			tpl_assign('new_contact', $object->isNew());
 			$this->includeTemplate(get_template_path("add_contact/access_data_edit","contact")); 
 		}?>
 	
@@ -415,18 +411,8 @@
 		$(function(){
 			og.checkEmailAddress("#<?php echo $genid ?>profileFormEmail",'<?php echo $contact->getId();?>','<?php echo $genid ?>');
 		});
-	
-        $(function(){
-            $("#<?php echo $genid ?>specify-username").click(function(){
-                if ($(this).is(":checked")) {
-					$("#<?php echo $genid ?>profileFormUsername").show();
-				} else {
-					$("#<?php echo $genid ?>profileFormUsername").hide();
-				}
-			});
-		});
-
-        og.load_company_combo("<?php echo $genid?>profileFormCompany", '<?php echo array_var($contact_data, 'company_id', '0') ?>');
+		
+		og.load_company_combo("<?php echo $genid?>profileFormCompany", '<?php echo array_var($contact_data, 'company_id', '0') ?>');
 	</script>
 </div>
 </div>

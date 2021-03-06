@@ -18,7 +18,8 @@
     	'description' => DATA_TYPE_STRING,
     	'report_object_type_id' => DATA_TYPE_INTEGER,
     	'order_by' => DATA_TYPE_STRING,
-    	'is_order_by_asc' => DATA_TYPE_BOOLEAN
+    	'is_order_by_asc' => DATA_TYPE_BOOLEAN,
+    	'ignore_context' => DATA_TYPE_BOOLEAN,
     );
   
     /**

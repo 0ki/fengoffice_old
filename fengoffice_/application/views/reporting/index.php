@@ -46,9 +46,12 @@
 	if ($hasNonCustomReports) {
 		?><ul style="padding-top:4px;padding-bottom:15px"><?php 
 	}
-	foreach ($page_default_reports as $def_report) { ?>
-		<li><div><a style="font-weight:bold" class="internalLink" href="<?php echo array_var($def_report, 'url') ?>"><?php echo array_var($def_report, 'name') ?></a>
-			<div style="padding-left:15px"><?php echo array_var($def_report, 'description') ?></div>
+	$alt = true;
+	foreach ($page_default_reports as $def_report) {
+		$alt = !$alt; ?>
+		<li><div style="<?php echo $alt ? 'background-color:#ECEFF7;' : '';?>">
+			<a style="font-weight:bold" class="internalLink" href="<?php echo array_var($def_report, 'url') ?>"><?php echo array_var($def_report, 'name') ?></a>
+			<div class="desc"><?php echo array_var($def_report, 'description') ?></div>
 		</div></li>
 <?php
 	}
@@ -62,18 +65,35 @@
 ?>
 <div class="report_header"><?php echo lang('custom reports') ?></div>
 <?php 
-	if(count($reports) > 0){  ?>
+	if(count($reports) > 0){
+		$alt = true;
+?>
 	<ul>
-	<?php foreach($reports as $report){ ?>
-		<li style="padding-top:4px"><div><a style="font-weight:bold;margin-right:15px" class="internalLink" href="<?php echo get_url('reporting','view_custom_report', array('id' => $report->getId()))?>"><?php echo $report->getObjectName() ?></a>
+	<?php foreach($reports as $report){
+			$alt = !$alt; 
+	?>
+		<li style="padding-top:4px">
+		<div style="max-width:700px;<?php echo $alt ? 'background-color:#ECEFF7;' : '';?>">
+			<a style="font-weight:bold;margin-right:15px" class="internalLink" href="<?php echo get_url('reporting','view_custom_report', array('id' => $report->getId()))?>"><?php echo $report->getObjectName() ?></a>
+			<div style="float:right;padding-left:15px;">
 			<?php if ($report->canEdit(logged_user())) { ?>
 				<a style="margin-right:5px" class="internalLink coViewAction ico-edit" href="<?php echo get_url('reporting','edit_custom_report', array('id' => $report->getId()))?>"><?php echo lang('edit') ?></a>
 			<?php } ?>
 			<?php if ($report->canDelete(logged_user())) { ?>
 				<a style="margin-right:5px" class="internalLink coViewAction ico-delete" href="javascript:og.deleteReport(<?php echo $report->getId() ?>)"><?php echo lang('delete') ?></a>
 			<?php } ?>
-			<div style="padding-left:15px"><?php echo $report->getDescription() ?></div>
 			</div>
+			<div style="float:right;max-width:700px;" id="report-<?php echo $report->getId();?>">
+				<span class="breadcrumb"></span>
+				<script>
+					<?php $crumbOptions = json_encode($report->getMembersToDisplayPath());
+					$crumbJs = " og.getCrumbHtml($crumbOptions) ";?>
+					var crumbHtml = <?php echo $crumbJs;?>;
+					$("#report-<?php echo $report->getId()?> .breadcrumb").html(crumbHtml);
+				</script>
+			</div>
+			<div class="desc"><?php echo $report->getDescription() ?></div>
+		</div>
 		</li>
 	<?php } //foreach?>
 	</ul>

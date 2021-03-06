@@ -228,6 +228,9 @@
 	'system notification email' => 'Esto es una notificación del sistema, no responder a este correo.',
 	'modifications tab' => 'Modificaciones',
 	'views tab' => 'Vistas',
+  	'field Objects percent_completed' => 'Porcentaje complatado',
+  	'field Objects name' => 'Nombre',
+	'field Objects id' => 'Id',
 	'latest activity' => 'Última actividad',
 	'view all activity' => 'Ver toda la actividad...',
 	'advanced' => 'Avanzado',
@@ -241,7 +244,7 @@
         'advanced search' => 'Búsqueda avanzada',
 	'empty title' => 'Título vacío',
         'will this person use feng office?' => 'Esta persona va a usar Feng Office?',
-        'specify username?' => 'Especificar Usuario?',
+        'specify username?' => 'Especificar nombre de usuario',
         
         'option repetitive task completed' => 'Esta tarea ya ha sido completada. Para modificar los datos de repetición por favor edite alguna tarea pendiente de esta serie.',
         

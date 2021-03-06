@@ -15,10 +15,8 @@ class RoleObjectTypePermissions extends BaseRoleObjectTypePermissions {
 		$member_id = $member->getId();
 		
 		try {
-			DB::beginWork();
-			
 			if ($remove_previous) {
-				ContactMemberPermissions::delete("permission_group_id = $permission_group_id AND member_id = $member_id");
+				ContactMemberPermissions::delete("permission_group_id = '$permission_group_id' AND member_id = $member_id");
 			}
 			
 			$shtab_permissions = array();
@@ -45,14 +43,26 @@ class RoleObjectTypePermissions extends BaseRoleObjectTypePermissions {
 				}
 			}
 			if (count($shtab_permissions)) {
+				$cdp = ContactDimensionPermissions::instance()->findOne(array('conditions' => "permission_group_id = '$permission_group_id' AND dimension_id = ".$member->getDimensionId()));
+				if (!$cdp instanceof ContactDimensionPermission) {
+					$cdp = new ContactDimensionPermission();
+					$cdp->setPermissionGroupId($permission_group_id);
+					$cdp->setContactDimensionId($member->getDimensionId());
+					$cdp->setPermissionType('check');
+					$cdp->save();
+				} else {
+					if ($cdp->getPermissionType() == 'deny all') {
+						$cdp->setPermissionType('check');
+						$cdp->save();
+					}
+				}
 				$stCtrl = new SharingTableController();
 				$stCtrl->afterPermissionChanged($permission_group_id, $shtab_permissions);
 			}
 			
-			DB::commit();
 			return $new_permissions;
+			
 		} catch (Exception $e) {
-			DB::rollback();
 			throw $e;
 		}
 	}
@@ -66,7 +76,6 @@ class RoleObjectTypePermissions extends BaseRoleObjectTypePermissions {
 		if (!$dimension instanceof Dimension || !$dimension->getDefinesPermissions()) return;
 		
 		try {
-			DB::beginWork();
 			
 			$shtab_permissions = array();
 			$new_permissions = array();
@@ -102,14 +111,26 @@ class RoleObjectTypePermissions extends BaseRoleObjectTypePermissions {
 			}
 			
 			if (count($shtab_permissions)) {
+				$cdp = ContactDimensionPermissions::instance()->findOne(array('conditions' => "permission_group_id = '$permission_group_id' AND dimension_id = $dimension_id"));
+				if (!$cdp instanceof ContactDimensionPermission) {
+					$cdp = new ContactDimensionPermission();
+					$cdp->setPermissionGroupId($permission_group_id);
+					$cdp->setContactDimensionId($dimension_id);
+					$cdp->setPermissionType('check');
+					$cdp->save();
+				} else {
+					if ($cdp->getPermissionType() == 'deny all') {
+						$cdp->setPermissionType('check');
+						$cdp->save();
+					}
+				}
 				$stCtrl = new SharingTableController();
 				$stCtrl->afterPermissionChanged($permission_group_id, $shtab_permissions);
 			}
 			
-			DB::commit();
 			return $new_permissions;
+			
 		} catch (Exception $e) {
-			DB::rollback();
 			throw $e;
 		}
 	}

@@ -49,16 +49,16 @@
 		<?php 	} // if ?>
 		
 				<div class="commentBody">
-				<table style="width:100%"><tr>
+					<table style="width:100%"><tr>
 		<?php 	if(($comment->getCreatedBy() instanceof Contact) && ($comment->getCreatedBy()->hasAvatar())) { ?>
 					<td style="vertical-align:top;width:60px"><div class="commentUserAvatar"><img src="<?php echo $comment->getCreatedBy()->getAvatarUrl() ?>" alt="<?php echo clean($comment->getCreatedBy()->getObjectName()) ?>" /></div></td>
 		<?php 	} // if ?>
-					<td style="text-align:left">
-						<?php echo escape_html_whitespace(convert_to_links(clean($comment->getText()))) ?>
-					</td><?php $object_links_render = render_object_links($comment, ($comment->canEdit(logged_user()) && !$__comments_object->isTrashed()), true, false);
-						if ($object_links_render != '') { ?><td style="width:173px">
-						<?php echo $object_links_render; ?>
-					</td><?php } ?></tr></table>
+					<td style="text-align:left"><?php echo escape_html_whitespace(convert_to_links(clean($comment->getText()))) ?></td>
+					<?php $object_links_render = render_object_links($comment, ($comment->canEdit(logged_user()) && !$__comments_object->isTrashed()), true, false);
+						if ($object_links_render != '') { 
+							echo '<td style="width:200px">'. $object_links_render .'</td>'; 
+						} 
+					?></tr></table>
 				</div>
 			</div>
 	<?php } // foreach ?>

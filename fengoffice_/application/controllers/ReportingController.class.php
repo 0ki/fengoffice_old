@@ -275,7 +275,7 @@ class ReportingController extends ApplicationController {
 		tpl_assign('users', $users);
 		tpl_assign('has_billing', BillingCategories::count() > 0);
 	}
-
+	
 	function total_task_times_print(){
 		if (!isset($_REQUEST['exportCSV'])) {
 			$this->setLayout("html");
@@ -296,6 +296,7 @@ class ReportingController extends ApplicationController {
 		
 		if (array_var($_GET, 'export') == 'csv' || (isset($csv) && $csv == true)){
 			$context = build_context_array(array_var($_REQUEST, 'context'));
+			CompanyWebsite::instance()->setContext($context);
 			$report_data = json_decode(str_replace("'",'"', $_REQUEST['parameters']), true);
 			tpl_assign('context', $context);
 		} else {
@@ -393,13 +394,12 @@ class ReportingController extends ApplicationController {
 		tpl_assign('post', $report_data);
 		tpl_assign('title', lang('task time report'));
 		tpl_assign('allow_export', false);
-		if (array_var($_GET, 'export') == 'csv' || (isset($csv) && $csv == true)) {	
-			tpl_assign('template_name', 'total_task_times_csv');		
-			$this->setTemplate('total_task_times_csv');
-		//	ajx_current("empty");
+		if (array_var($_GET, 'export') == 'csv' || (isset($csv) && $csv == true)) {
+			tpl_assign('template_name', 'total_task_times_csv');
+			tpl_assign('is_csv', true);
 		}else{
 			tpl_assign('template_name', 'total_task_times');
-		 	$this->setTemplate('report_wrapper');
+			$this->setTemplate('report_wrapper');
 		}
 	}
 
@@ -412,17 +412,17 @@ class ReportingController extends ApplicationController {
 		$et = DateTimeValueLib::make(23,59,59,12,31,2036);
 
 		$timeslotsArray = Timeslots::getTaskTimeslots(active_context(), null,null,$st,$et, get_id());
-                
-                tpl_assign('columns', array());
-                tpl_assign('user', array());
-                tpl_assign('group_by', array());
-                tpl_assign('grouped_timeslots', array());
+
+		tpl_assign('columns', array());
+		tpl_assign('user', array());
+		tpl_assign('group_by', array());
+		tpl_assign('grouped_timeslots', array());
 		tpl_assign('template_name', 'total_task_times');
-                tpl_assign('estimate', $task->getTimeEstimate());
+		tpl_assign('estimate', $task->getTimeEstimate());
 		tpl_assign('timeslotsArray', $timeslotsArray);
 		tpl_assign('title',lang('task time report'));
 		tpl_assign('task_title', $task->getTitle());
-                tpl_assign('start_time', $st);
+		tpl_assign('start_time', $st);
 		tpl_assign('end_time', $et);
 		$this->setTemplate('report_printer');
 	}
@@ -442,18 +442,6 @@ class ReportingController extends ApplicationController {
 		if (!$report_data)
 		$report_data = array_var($_POST, 'report');
 
-/*		$workspace = Projects::findById(array_var($report_data, 'project_id'));
-		if ($workspace instanceof Project){
-			if (array_var($report_data, 'include_subworkspaces')) {
-				$workspacesCSV = $workspace->getAllSubWorkspacesQuery(false);
-			} else {
-				$workspacesCSV = $workspace->getId();
-			}
-		}
-		else {
-			$workspacesCSV = null;
-		}
-*/
 		$start = getDateValue(array_var($report_data, 'start_value'));
 		$end = getDateValue(array_var($report_data, 'end_value'));
 
@@ -466,7 +454,6 @@ class ReportingController extends ApplicationController {
 		$timeslots = array();
 
 		tpl_assign('timeslots', $timeslots);
-//		tpl_assign('workspace', $workspace);
 		tpl_assign('start_time', $st);
 		tpl_assign('end_time', $et);
 		tpl_assign('user', $user);
@@ -519,6 +506,7 @@ class ReportingController extends ApplicationController {
 				$newReport->setReportObjectTypeId($report_data['report_object_type_id']);
 				$newReport->setOrderBy($report_data['order_by']);
 				$newReport->setIsOrderByAsc($report_data['order_by_asc'] == 'asc');
+				$newReport->setIgnoreContext(array_var($report_data, 'ignore_context') == 'checked');
 				
 				try{
 					DB::beginWork();
@@ -630,6 +618,7 @@ class ReportingController extends ApplicationController {
 				$report->setReportObjectTypeId($report_data['report_object_type_id']);
 				$report->setOrderBy($report_data['order_by']);
 				$report->setIsOrderByAsc($report_data['order_by_asc'] == 'asc');
+				$report->setIgnoreContext(array_var($report_data, 'ignore_context') == 'checked');
 				
 				$report->save();				
 					
@@ -705,6 +694,7 @@ class ReportingController extends ApplicationController {
 					'report_object_type_id' => $report->getReportObjectTypeId(),
 					'order_by' => $report->getOrderBy(),
 					'order_by_asc' => $report->getIsOrderByAsc(),
+					'ignore_context' => $report->getIgnoreContext(),
 				);
 				tpl_assign('report_data', $report_data);
 				$conditions = ReportConditions::getAllReportConditions($report_id);
@@ -876,7 +866,7 @@ class ReportingController extends ApplicationController {
 				$db_col = isset($results['columns'][$i]) && isset($results['db_columns'][$results['columns'][$i]]) ? $results['db_columns'][$results['columns'][$i]] : '';
 
 				$cell = format_value_to_print($db_col, html_to_text($value), ($k == 'link'?'':array_var($types, $k)), array_var($row, 'object_type_id'), '', is_numeric(array_var($results['db_columns'], $k)) ? "Y-m-d" : user_config_option('date_format'));
-				$cell = iconv(mb_internal_encoding(),"ISO-8859-1",html_entity_decode($cell ,ENT_COMPAT));
+				$cell = iconv(mb_internal_encoding(),"UTF-8",html_entity_decode($cell ,ENT_COMPAT));
 				echo $cell.';';
 				$i++;
 			}
@@ -893,6 +883,8 @@ class ReportingController extends ApplicationController {
 		$externalCols = $managerInstance->getExternalColumns();
 		$filename = str_replace(' ', '_',$report->getObjectName()).date('_YmdHis');
 		
+		$actual_encoding = mb_internal_encoding();
+		
 		Hook::fire("report_header", $ot, $results['columns']);
 		
 		$pageLayout = $_POST['pdfPageLayout'];
@@ -903,7 +895,11 @@ class ReportingController extends ApplicationController {
 		$pdf->AddPage();
 		$pdf->SetFont('Arial','',$fontSize);
 		$pdf->Cell(80);
-		$report_title = iconv(mb_internal_encoding(), "ISO-8859-1", html_entity_decode($report->getObjectName(), ENT_COMPAT));
+		if (strtoupper($actual_encoding) == "UTF-8") {
+			$report_title = html_entity_decode($report->getObjectName(), ENT_COMPAT);
+		} else {
+			$report_title = iconv(mb_internal_encoding(), "UTF-8", html_entity_decode($report->getObjectName(), ENT_COMPAT));
+		}
 		$pdf->Cell(30, 10, $report_title);
 		$pdf->Ln(20);
 		$colSizes = array();
@@ -941,9 +937,14 @@ class ReportingController extends ApplicationController {
 		foreach($results['columns'] as $col){
 			$colMaxTextSize = $fixed_col_sizes[$i];
 			$colFontSize = $colMaxTextSize + 5;
-			$colSizes[$i] = $colFontSize ;
-			$col_name = iconv(mb_internal_encoding(), "ISO-8859-1", html_entity_decode($col, ENT_COMPAT));
-    		$pdf->Cell($colFontSize, 7, $col_name);
+			$colSizes[$i] = $colFontSize;
+			
+			if (strtoupper($actual_encoding) == "UTF-8") {
+				$col_name = html_entity_decode($col, ENT_COMPAT);
+			} else {
+				$col_name = iconv(mb_internal_encoding(), "UTF-8", html_entity_decode($col, ENT_COMPAT));
+			}
+			$pdf->Cell($colFontSize, 7, $col_name);
     		$max_char_len[$i] = self::get_max_length_from_pdfsize($pdf, $colFontSize);
     		$i++;
 		}
@@ -960,9 +961,13 @@ class ReportingController extends ApplicationController {
 				$db_col = isset($results['columns'][$i]) && isset($results['db_columns'][$results['columns'][$i]]) ? $results['db_columns'][$results['columns'][$i]] : '';
 
 				$cell = format_value_to_print($db_col, html_to_text($value), ($k == 'link'?'':array_var($types, $k)), array_var($row, 'object_type_id'), '', is_numeric(array_var($results['db_columns'], $k)) ? "Y-m-d" : user_config_option('date_format'));
-					
-				$cell = iconv(mb_internal_encoding(), "ISO-8859-1", html_entity_decode($cell, ENT_COMPAT));
-
+				
+				if (strtoupper($actual_encoding) == "UTF-8") {
+					$cell = html_entity_decode($cell, ENT_COMPAT);
+				} else {
+					$cell = iconv(mb_internal_encoding(), "UTF-8", html_entity_decode($cell, ENT_COMPAT));
+				}
+				
 				$splitted = self::split_column_value($cell, $max_char_len[$i]);
 				$cell = $splitted[0];
 				if (count($splitted) > 1) {

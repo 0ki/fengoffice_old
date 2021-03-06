@@ -40,6 +40,7 @@ og.Breadcrumbs = {
 	},
 
 	refresh: function (node) {
+		if (typeof(node) == 'undefined') return;
 		/*if (!this.status) {
 			return ;
 		}*/

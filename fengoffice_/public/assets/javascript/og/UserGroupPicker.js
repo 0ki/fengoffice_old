@@ -14,7 +14,7 @@ og.UserPicker = function(config) {
 		collapseFirst: false,
 		tbar: [{
 			xtype: 'textfield',
-			width: 200,
+			width: config.width ? config.width-6 : 234,
 			emptyText:lang('filter users and groups'),
 			listeners: {
 				render: {

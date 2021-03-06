@@ -45,12 +45,13 @@ og.FileManager = function() {
 					} else {
 						this.fireEvent('messageToShow', "");
 					}
-					Ext.getCmp('file-manager').getView().focusRow(og.lastSelectedRow.documents+1);
-					
-					Ext.getCmp('file-manager').objectTypeId = d.objType;
-					
-					var sm = Ext.getCmp('file-manager').getSelectionModel();
-					sm.clearSelections();
+					var cmp = Ext.getCmp('file-manager');
+					if (cmp) {
+						cmp.getView().focusRow(og.lastSelectedRow.documents+1);
+						cmp.objectTypeId = d.objType;
+						var sm = cmp.getSelectionModel();
+						sm.clearSelections();
+					}
 				}
 			}
 		});

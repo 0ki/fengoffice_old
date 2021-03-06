@@ -142,7 +142,7 @@ function select_users_or_groups($name = "", $selected = null, $id = null) {
 	}
 	$jsonUsers = json_encode($json);
 	
-	$output = "<div id=\"$id-user-picker\"></div>
+	$output = "<div id=\"$id-user-picker\" style=\"box-shadow:2px 4px 5px 1px #CCCCCC; border-top:1px solid #ccc;\"></div>
 			<input id=\"$id-field\" type=\"hidden\" value=\"$selectedCSV\" name=\"$name\"></input>
 		<script>
 		var userPicker = new og.UserPicker({
@@ -151,7 +151,7 @@ function select_users_or_groups($name = "", $selected = null, $id = null) {
 			id: '$id',
 			users: $jsonUsers,
 			height: 320,
-			width: 210
+			width: 240
 		});
 		</script>
 	";
@@ -204,36 +204,9 @@ function allowed_users_to_assign($context = null) {
 			$comp_array[$contact->getCompanyId()]['users'][] = array('id' => $contact->getId(), 'name' => $contact->getObjectName(), 'isCurrent' => $contact->getId() == logged_user()->getId());
 		}
 	}
-	return array_values($comp_array);
-}
-
-function allowed_users_to_assign_all($context = null) {
-	if ($context == null) {
-		$context = active_context();
-	}
-	
-	// only companies with users
-	$companies = Contacts::findAll(array("conditions" => "is_company = 1 AND object_id IN (SELECT company_id FROM ".TABLE_PREFIX."contacts WHERE user_type>0 AND disabled=0)", "order" => "first_name ASC"));
-
-	$comp_ids = array("0");
-	$comp_array = array("0" => array('id' => "0", 'name' => lang('without company'), 'users' => array() ));
-	
-	foreach ($companies as $company) {
-		$comp_ids[] = $company->getId();
-		$comp_array[$company->getId()] = array('id' => $company->getId(), 'name' => $company->getObjectName(), 'users' => array() );
-	}
-	
-	if(!can_manage_tasks(logged_user()) && can_task_assignee(logged_user())) {
-		$contacts = array(logged_user());
-	} else if (can_manage_tasks(logged_user())) {
-		$contacts = allowed_users_in_context(ProjectTasks::instance()->getObjectTypeId(), $context, ACCESS_LEVEL_READ, "AND `is_company`=0 AND `company_id` IN (".implode(",", $comp_ids).")");
-	} else {
-		$contacts = array();
-	}
-	
-	foreach ($contacts as $contact) { /* @var $contact Contact */
-		if ( TabPanelPermissions::instance()->count( array( "conditions" => "permission_group_id = ".$contact->getPermissionGroupId(). " AND tab_panel_id = 'tasks-panel' " ))){
-			$comp_array[$contact->getCompanyId()]['users'][] = array('id' => $contact->getId(), 'name' => $contact->getObjectName(), 'isCurrent' => $contact->getId() == logged_user()->getId());
+	foreach ($comp_array as $company_id => &$comp_data) {
+		if (count($comp_data['users']) == 0) {
+			unset($comp_array[$company_id]);
 		}
 	}
 	return array_values($comp_array);
@@ -271,6 +244,11 @@ function allowed_users_to_assign_all_mobile($member_id = null) {
 	foreach ($contacts as $contact) { /* @var $contact Contact */
 		if ( TabPanelPermissions::instance()->count( array( "conditions" => "permission_group_id = ".$contact->getPermissionGroupId(). " AND tab_panel_id = 'tasks-panel' " ))){
 			$comp_array[$contact->getCompanyId()]['users'][] = array('id' => $contact->getId(), 'name' => $contact->getObjectName(), 'isCurrent' => $contact->getId() == logged_user()->getId());
+		}
+	}
+	foreach ($comp_array as $company_id => &$comp_data) {
+		if (count($comp_data['users']) == 0) {
+			unset($comp_array[$company_id]);
 		}
 	}
 	return array_values($comp_array);

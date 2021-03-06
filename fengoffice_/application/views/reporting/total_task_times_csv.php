@@ -4,7 +4,7 @@
 	header('Cache-control: private');
 	header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
 	header('Content-Description: File Transfer');
-	header('Content-Type: application/csv; charset=iso-8859-1;');
+	header('Content-Type: application/csv; charset=UTF-8;');
 	header('Content-disposition: attachment; filename='.$filename.'.csv');
 	
 	function cvs_total_task_times_group($group_obj, $grouped_objects, $options, $skip_groups = array(), $level = 0, $prev = "", &$total = 0) {
@@ -16,7 +16,8 @@
 		$next_level = $level + 1;
 			
 		$group_name = $group_obj['group']['name'];
-		echo '"'. $pad_str .iconv('utf-8', 'iso-8859-1', $group_name) . '"'. "\n";
+		//echo '"'. $pad_str .iconv('utf-8', 'iso-8859-1', $group_name) . '"'. "\n";
+		echo '"'. $pad_str . $group_name . '"'. "\n";
 		
 		$mem_index = $prev . $group_obj['group']['id'];
 		

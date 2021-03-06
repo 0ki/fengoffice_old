@@ -767,5 +767,6 @@ addLangs({
 	'confirm disable user': 'El usuario será deshabilitado. Continuar?',
 	'confirm delete user': 'Está seguro de querer borrar esta cuenta de usuario?',
 	'add sub task': 'Añadir subtarea',
-	'do you want to mantain the current associations of this obj with members of': '¿Quiere mantener las asociaciones actuales de este objeto con {0}?'
+	'do you want to mantain the current associations of this obj with members of': '¿Quiere mantener las asociaciones actuales de este objeto con {0}?',
+	'company not found': 'Empresa no encontrada (id: {0})'
 });

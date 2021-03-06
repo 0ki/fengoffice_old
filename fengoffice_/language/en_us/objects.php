@@ -116,6 +116,7 @@
     'the comment activity' => 'the comment{0}',
     'the user activity' => 'the user{0}',
     'the project activity' => 'the workspace{0}',
+    'the Time activity' => 'a timeslot',
       
     'the message' => 'the note',
     'the mail' => 'the email',

@@ -12,7 +12,45 @@ function core_dimensions_after_edit_profile($user, &$ignored) {
 	
 }
 
-function core_dimensions_after_add_to_members($object, &$ignored) {
+
+function core_dimensions_after_dragdrop_classify($objects, &$member) {
+	$count = 0;
+	foreach ($objects as $obj) {
+		$count++;
+		if ($obj instanceof Contact) {
+			if (!isset($persons_dim)) $persons_dim = Dimensions::findByCode("feng_persons");
+			if (!isset($dim_ids)) $dim_ids = array($persons_dim->getId());
+			$contact_member = Members::findOneByObjectId($obj->getId(), $persons_dim->getId());
+			
+			$affected_dimensions = core_dim_create_member_associations($obj, $contact_member, array($member), $count == count($objects));
+			$dim_ids = array_merge($dim_ids, $affected_dimensions);
+		}
+	}
+	foreach (array_unique($dim_ids) as $dim_id) {
+		evt_add("reload dimension tree", array('dim_id' => $dim_id, 'node' => null));
+	}
+}
+
+function core_dimensions_after_contact_quick_add(Contact $contact, &$null) {
+	$member = Members::findOneByObjectId($contact->getId(), Dimensions::findByCode("feng_persons")->getId());
+	if (!$member instanceof Member) return;
+	$dim_ids = array($member->getDimensionId());
+	
+	$active_context = active_context();
+	foreach ($active_context as $selection) {
+		if ($selection instanceof Member) {
+			$contact->addToMembers(array($selection));
+			$affected_dimensions = core_dim_create_member_associations($contact, $member, array($selection), false);
+			$dim_ids = array_merge($dim_ids, $affected_dimensions);
+		}
+	}
+	foreach (array_unique($dim_ids) as $dim_id) {
+		evt_add("reload dimension tree", array('dim_id' => $dim_id, 'node' => null));
+	}
+}
+
+
+function core_dimensions_after_add_to_members($object, &$added_members) {
 	
 	// Add to persons and users dimensions
 	$user_ids = array();
@@ -29,10 +67,13 @@ function core_dimensions_after_add_to_members($object, &$ignored) {
 		foreach ($invitations as $inv) $user_ids[] = $inv->getContactId();
 	}
 	
+	// only simple contacts, not users
 	if ($object instanceof Contact && !$object->isUser()) {
 		$member = Members::findOne(array("conditions" => "`object_id` = (".$object->getId().") AND `dimension_id` = (SELECT `id` FROM `".TABLE_PREFIX."dimensions` WHERE `code` = 'feng_persons')"));
 		if ($member instanceof Member) {
 			$object->addToMembers(array($member));
+			
+			core_dim_create_member_associations($object, $member, $added_members);
 		}
 	}
 	
@@ -45,8 +86,223 @@ function core_dimensions_after_add_to_members($object, &$ignored) {
 		}
 	}
 	
-	
 	core_dim_add_to_person_user_dimensions ($object, $user_ids);
+}
+
+/**
+ * 
+ * Instantiates dimension asociations for the contact member in feng_persons and the members where the contact belongs to.
+ * @param $contact The contact
+ * @param $contact_member Member of the contact
+ * @param $all_members Members where the object belongs
+ */
+function core_dim_create_member_associations(Contact $contact, $contact_member, $all_members, $reload_dim = true) {
+	$affected_dimensions = array();
+	if ($contact->isUser()) {
+		$del_sub_query = "SELECT member_id FROM ".TABLE_PREFIX."contact_member_permissions WHERE permission_group_id='".$contact->getPermissionGroupId()."'";
+	} else {
+		$del_sub_query = "SELECT member_id FROM ".TABLE_PREFIX."object_members WHERE object_id='".$contact->getId()."'";
+	}
+	
+	// one way
+	$associations = DimensionMemberAssociations::getAssociatations ( $contact_member->getDimensionId(), $contact_member->getObjectTypeId() );
+	foreach ( $associations as $a ) {
+		foreach ( $all_members as $m ) {
+			if ($m->getDimensionId() == $a->getAssociatedDimensionMemberAssociationId() && $m->getObjectTypeId() == $a->getAssociatedObjectType()) {
+				
+				$mpm = MemberPropertyMembers::findOne(array('conditions' => array('association_id = ? AND member_id = ? AND property_member_id = ?', $a->getId(), $contact_member->getId(), $m->getId())));
+				if (!$mpm instanceof MemberPropertyMember) {
+					$sql = "INSERT INTO " . TABLE_PREFIX . "member_property_members (association_id, member_id, property_member_id, is_active, created_on, created_by_id)
+						VALUES (" . $a->getId() . "," . $contact_member->getId() . "," . $m->getId() . ", 1, NOW()," . logged_user()->getId() . ") ";
+					DB::execute( $sql );
+					$affected_dimensions[$m->getDimensionId()] = $m->getDimensionId();
+				}
+			}
+		}
+		MemberPropertyMembers::instance()->delete('association_id = '.$a->getId().' AND member_id = '.$contact_member->getId() . " AND property_member_id NOT IN ($del_sub_query)");
+	}
+	
+	// reverse way
+	$associations = DimensionMemberAssociations::findAll(array("conditions" => array("`associated_dimension_id` = ? AND `associated_object_type_id` = ?", $contact_member->getDimensionId(), $contact_member->getObjectTypeId())));
+	foreach ( $associations as $a ) {
+		foreach ( $all_members as $m ) {
+			if ($m->getDimensionId() == $a->getDimensionId() && $m->getObjectTypeId() == $a->getObjectTypeId()) {
+				
+				$mpm = MemberPropertyMembers::findOne(array('conditions' => array('association_id = ? AND property_member_id = ? AND member_id = ?', $a->getId(), $contact_member->getId(), $m->getId())));
+				if (!$mpm instanceof MemberPropertyMember) {
+					$sql = "INSERT INTO " . TABLE_PREFIX . "member_property_members (association_id, property_member_id, member_id, is_active, created_on, created_by_id)
+						VALUES (" . $a->getId() . "," . $contact_member->getId() . "," . $m->getId() . ", 1, NOW()," . logged_user()->getId() . ") ";
+					DB::execute( $sql );
+					$affected_dimensions[$m->getDimensionId()] = $m->getDimensionId();
+				}
+			}
+		}
+		MemberPropertyMembers::instance()->delete('association_id = '.$a->getId().' AND property_member_id = '.$contact_member->getId() . " AND member_id NOT IN ($del_sub_query)");
+	}
+	
+	// reload affected dimensions
+	if ($reload_dim) {
+		foreach ($affected_dimensions as $dim_id) {
+			evt_add("reload dimension tree", array('dim_id' => $dim_id, 'node' => null));
+		}
+	}
+	
+	return $affected_dimensions;
+}
+
+/**
+ * 
+ * After editing permissions refresh associations and object_members for the contact owner of the permission_group modified
+ * @param $pg_id Permission group id
+ * @param $ignored Ignored
+ */
+function core_dimensions_after_save_contact_permissions($pg_id, &$ignored) {
+	$pg = PermissionGroups::findById($pg_id);
+	if ($pg instanceof PermissionGroup && $pg->getContactId() > 0 && $pg->getType() == 'permission_groups') {
+		$user = Contacts::findById($pg->getContactId());
+		if (!$user instanceof Contact || !$user->isUser()) return;
+		
+		$member_ids = array();
+		$cmps = ContactMemberPermissions::instance()->findAll(array("conditions" => "permission_group_id = ".$pg_id));
+		foreach ($cmps as $cmp) {
+			$member_ids[$cmp->getMemberId()] = $cmp->getMemberId();
+		}
+		if (count($member_ids) == 0) return;
+		
+		$members = Members::findAll(array('conditions' => 'id IN ('.implode(',', $member_ids).')'));
+		$persons_dim = Dimensions::findByCode("feng_persons");
+		$user_member = Members::findOneByObjectId($user->getId(), $persons_dim->getId());
+		
+		//alert_r($member_ids);
+		
+		$affected_dimensions = core_dim_create_member_associations($user, $user_member, $members);
+		
+		// remove from all members of the affected dimensions
+		if (count($affected_dimensions) > 0) {
+			$affected_member_ids = Members::findAll(array('id' => true, 'conditions' => 'dimension_id IN ('.implode(',', $affected_dimensions).')'));
+			if (count($affected_member_ids) > 0) {
+				ObjectMembers::removeObjectFromMembers($user, logged_user(), $members, $affected_member_ids);
+			}
+		}		
+		// add user content object to associated members
+		$obj_controller = new ObjectController();
+		ObjectMembers::addObjectToMembers($user->getId(), $members);
+		$user->addToSharingTable();
+	}
+}
+
+
+function core_dimensions_after_save_member_permissions($member, &$ignored) {
+	if (!$member instanceof Member) return;
+	$permission_group_ids = array();
+	
+	$cmp_rows = DB::executeAll("SELECT DISTINCT permission_group_id FROM ".TABLE_PREFIX."contact_member_permissions WHERE member_id = ".$member->getId()." AND permission_group_id IN (SELECT id FROM ".TABLE_PREFIX."permission_groups WHERE type IN ('permission_groups','user_groups'))");
+	foreach ($cmp_rows as $row) {
+		$permission_group_ids[$row['permission_group_id']] = $row['permission_group_id'];
+	}
+	
+	$contacts = array();
+	// users
+	if (count($permission_group_ids) > 0) {
+		$contacts = Contacts::findAll(array('conditions' => 'user_type > 0 && permission_group_id IN ('.implode(',', $permission_group_ids).')'));
+	}
+	// contacts
+	$contact_rows = DB::executeAll("SELECT DISTINCT om.object_id FROM fo_object_members om INNER JOIN fo_contacts c ON c.object_id=om.object_id 
+		WHERE om.member_id=".$member->getId()." AND c.user_type=0");
+	$no_user_ids = array();
+	foreach ($contact_rows as $row) {
+		$no_user_ids[] = $row['object_id'];
+	}
+	$more_contacts = Contacts::findAll(array('conditions' => 'object_id IN ('.implode(',', $no_user_ids).')'));
+	
+	$contacts = array_merge($contacts, $more_contacts);
+	$contact_ids = array(0);
+	
+	$persons_dim = Dimensions::findByCode("feng_persons");
+
+	core_dim_remove_contacts_member_associations($member);
+	
+	foreach ($contacts as $contact) {
+		$contact_id = $contact->getId();
+		$contact_member = Members::findOneByObjectId($contact_id, $persons_dim->getId());
+		if ($contact_member instanceof Member) {
+			core_dim_add_contact_member_associations($contact_member, $member);
+			
+			if ($contact instanceof Contact && $contact->isUser()) {
+				$has_project_permissions = ContactMemberPermissions::instance()->count("permission_group_id = '".$contact->getPermissionGroupId()."' AND member_id = ".$member->getId()) > 0;
+				if (!$has_project_permissions) {
+					RoleObjectTypePermissions::createDefaultUserPermissions($contact, $member);
+				}
+			}
+		}
+		// add user content object to customer member
+		ObjectMembers::addObjectToMembers($contact_id, array($member));
+		$contact->addToSharingTable();
+		$contact_ids[] = $contact_id;
+	}
+	
+	// remove contacts whose members are no longer associated to the customer member
+	$previous_users_in_member = Contacts::instance()->listing(array(
+		'member_ids' => array($member->getId()),
+		'ignore_context' => true,
+		'extra_conditions' => ' AND e.user_type > 0 AND e.object_id NOT IN ('.implode(',', $contact_ids).')',
+	))->objects;
+	foreach ($previous_users_in_member as $prev_u) {
+		ObjectMembers::removeObjectFromMembers($prev_u, logged_user(), array($member), array($member->getId()));
+	}
+	
+	// refresh dimensions
+	evt_add("reload dimension tree", array('dim_id' => $persons_dim->getId(), 'node' => null));
+}
+
+function core_dim_add_contact_member_associations($contact_member, $member) {
+	// one way
+	$associations = DimensionMemberAssociations::findAll(array("conditions" => array("`dimension_id` = ? AND `object_type_id` = ? AND `associated_dimension_id` = ? AND `associated_object_type_id` = ?", 
+		$member->getDimensionId(), $member->getObjectTypeId(), $contact_member->getDimensionId(), $contact_member->getObjectTypeId())));
+	foreach ( $associations as $a ) {
+		$mpm = MemberPropertyMembers::findOne(array('conditions' => array('association_id = ? AND member_id = ? AND property_member_id = ?', $a->getId(), $member->getId(), $contact_member->getId())));
+		if (!$mpm instanceof MemberPropertyMember) {
+			$mpm = new MemberPropertyMember();
+			$mpm->setAssociationId($a->getId());		
+			$mpm->setMemberId($member->getId());
+			$mpm->setPropertyMemberId($contact_member->getId());
+			$mpm->setIsActive(1);
+			$mpm->save();
+		}
+	}
+	
+	// reverse way
+	$associations = DimensionMemberAssociations::findAll(array("conditions" => array("`dimension_id` = ? AND `object_type_id` = ? AND `associated_dimension_id` = ? AND `associated_object_type_id` = ?", 
+		$contact_member->getDimensionId(), $contact_member->getObjectTypeId(), $member->getDimensionId(), $member->getObjectTypeId())));
+	foreach ( $associations as $a ) {
+		$mpm = MemberPropertyMembers::findOne(array('conditions' => array('association_id = ? AND property_member_id = ? AND member_id = ?', $a->getId(), $member->getId(), $contact_member->getId())));
+		if (!$mpm instanceof MemberPropertyMember) {
+			$mpm = new MemberPropertyMember();
+			$mpm->setAssociationId($a->getId());		
+			$mpm->setMemberId($contact_member->getId());
+			$mpm->setPropertyMemberId($member->getId());
+			$mpm->setIsActive(1);
+			$mpm->save();
+		}
+	}
+}
+
+function core_dim_remove_contacts_member_associations(Member $member) {
+	// one way
+	$associations = DimensionMemberAssociations::getAssociatations ( $member->getDimensionId(), $member->getObjectTypeId() );
+	foreach ( $associations as $a ) {
+		$condition = "association_id = ".$a->getId()." AND member_id = ".$member->getId()." AND property_member_id IN 
+			(SELECT m.id FROM ".TABLE_PREFIX."members m WHERE m.object_type_id=".$a->getAssociatedObjectType()." AND m.dimension_id=".$a->getAssociatedDimensionMemberAssociationId().")";
+		MemberPropertyMembers::instance()->delete($condition);
+	}
+	
+	// reverse way
+	$associations = DimensionMemberAssociations::findAll(array("conditions" => array("`associated_dimension_id` = ? AND `associated_object_type_id` = ?", $member->getDimensionId(), $member->getObjectTypeId())));
+	foreach ( $associations as $a ) {
+		$condition = "association_id = ".$a->getId()." AND property_member_id = ".$member->getId()." AND member_id IN 
+			(SELECT m.id FROM ".TABLE_PREFIX."members m WHERE m.object_type_id=".$a->getObjectTypeId()." AND m.dimension_id=".$a->getDimensionId().")";
+		MemberPropertyMembers::instance()->delete($condition);
+	}
 }
 
 
@@ -106,79 +362,8 @@ function core_dimensions_after_update($object, &$ignored) {
 }
 
 function core_dimensions_after_user_add($object, $ignored) {
-	// if contact is user then add new member also to users dimension
 	if ($object instanceof Contact) {
-		/* @var $object Contact */
-		
 		core_dim_add_new_contact_to_person_dimension($object);
-/*		
-		$user_ot = ObjectTypes::findOne(array("conditions" => "`name` = 'user'"));
-		$company_ot = ObjectTypes::findOne(array("conditions" => "`name` = 'company'"));
-		$user_dim = Dimensions::findOne(array("conditions" => "`code` = 'feng_users'"));
-
-		if ($user_ot instanceof ObjectType && $user_dim instanceof Dimension) {
-			$member = new Member();
-			$member->setName($object->getObjectName());
-			$member->setObjectTypeId($user_ot->getId());
-			$member->setDimensionId($user_dim->getId());
-			
-			$parent_member_id = 0;
-			$depth = 1;
-			if ($object->getCompanyId() > 0) {
-				$pmember = Members::findOne(array('conditions' => '`object_id` = '.$object->getCompanyId().' AND `object_type_id` = '.$company_ot->getId(). ' AND `dimension_id` = '.$user_dim->getId()));
-				if (!$pmember instanceof Member) {
-					// if company member does not exists in users dimension -> create it
-					$company = Contacts::findById($object->getCompanyId());
-					$pmember = core_dim_add_company_to_users_dimension($company, $user_dim, $company_ot);
-				}
-				$parent_member_id = $pmember->getId();
-				$depth = $pmember->getDepth() + 1;
-			}
-			$member->setDepth($depth);
-			$member->setParentMemberId($parent_member_id);
-			$member->setObjectId($object->getId());
-			$member->save();
-			
-			// permisssions
-			$sql = "INSERT INTO `".TABLE_PREFIX."contact_dimension_permissions` (`permission_group_id`, `dimension_id`, `permission_type`)
-					 SELECT `c`.`permission_group_id`, ".$user_dim->getId().", 'check'
-					 FROM `".TABLE_PREFIX."contacts` `c` 
-					 WHERE `c`.`is_company`=0 AND `c`.`user_type`!=0 AND `c`.`disabled`=0 AND `c`.`object_id`=".$object->getId()."
-					 ON DUPLICATE KEY UPDATE `dimension_id`=`dimension_id`;";
-			DB::execute($sql);
-			
-			$sql = "INSERT INTO `".TABLE_PREFIX."contact_member_permissions` (`permission_group_id`, `member_id`, `object_type_id`, `can_write`, `can_delete`)
-					 SELECT `c`.`permission_group_id`, ".$member->getId().", `ot`.`id`, (`c`.`object_id` = ".$object->getId().") as `can_write`, (`c`.`object_id` = ".$object->getId().") as `can_delete`
-					 FROM `".TABLE_PREFIX."contacts` `c` JOIN `".TABLE_PREFIX."object_types` `ot` 
-					 WHERE `c`.`is_company`=0 AND `c`.`object_id`=".$object->getId()."
-					 	AND `c`.`user_type`!=0 AND `c`.`disabled`=0
-						AND `ot`.`type` IN ('content_object', 'located', 'comment')
-					 ON DUPLICATE KEY UPDATE `member_id`=`member_id`;";
-			DB::execute($sql);
-			
-			
-			// my stuff
-			$ws_ot = ObjectTypes::findOne(array("conditions" => "`name` = 'workspace'"));
-			$stuff = new Member();
-			$stuff->setName(lang('my stuff'));
-			$stuff->setObjectTypeId($ws_ot->getId());
-			$stuff->setDimensionId($user_dim->getId());
-			$stuff->setDepth($member->getDepth() + 1);
-			$stuff->setParentMemberId($member->getId());
-			$stuff->save();
-			
-			$object->setPersonalMemberId($stuff->getId());
-			$object->save();
-			
-			$sql = "INSERT INTO `".TABLE_PREFIX."contact_member_permissions` (`permission_group_id`, `member_id`, `object_type_id`, `can_write`, `can_delete`)
-					 SELECT ".$object->getPermissionGroupId().", ".$stuff->getId().", `ot`.`id`, 1, 1
-					 FROM `".TABLE_PREFIX."object_types` `ot` 
-					 WHERE `ot`.`type` IN ('content_object', 'located', 'comment')
-					 ON DUPLICATE KEY UPDATE `member_id`=`member_id`;";
-			DB::execute($sql);
-			evt_add("reload dimension tree", $member->getDimensionId());
-		}
-*/
 	}
 }
 
@@ -189,15 +374,14 @@ function core_dimensions_after_user_add($object, $ignored) {
  * @param Contact $user
  */
 function core_dimensions_after_user_deleted(Contact $user, $null) {
-	$uid  =  $user->getId() ;
+	$uid = $user->getId();
 	
-	//Delete MyStuff
 	if ( $myStuff = Members::findById($user->getPersonalMemberId() ) ) {
 		$myStuff->delete();
 	}
 	
 	// Delete All members
-	$members =  Members::instance()->findByObjectId($uid) ;
+	$members = Members::instance()->findByObjectId($uid) ;
 	if ( count($members) ) {
 		foreach ($members as $member){
 			$member->delete();

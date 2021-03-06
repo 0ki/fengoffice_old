@@ -412,13 +412,13 @@ function current_member(){
 }
 
 function current_member_search(){
-        $members = array();
-        foreach (active_context() as $item){
-                if ($item instanceof Member) {
-                        $members[] = $item;
-                }
-        }
-	return $members;   
+	$members = array();
+	foreach (active_context() as $item){
+		if ($item instanceof Member) {
+			$members[] = $item;
+		}
+	}
+	return $members;
 }
 
 function context_type() {
@@ -999,10 +999,27 @@ function create_user($user_data, $permissionsString) {
 
 	ApplicationLogs::createLog($contact, ApplicationLogs::ACTION_ADD);
 
-  	$pg_id = $contact->getPermissionGroupId();
-  	save_permissions($pg_id, $contact->isGuest());
-
+	// Set role permissions for active members
+	$active_context = active_context();
+	$sel_members = array();
+	foreach ($active_context as $selection) {
+		if ($selection instanceof Member) {
+			$sel_members[] = $selection;
+			$has_project_permissions = ContactMemberPermissions::instance()->count("permission_group_id = '".$contact->getPermissionGroupId()."' AND member_id = ".$selection->getId()) > 0;
+			if (!$has_project_permissions) {
+				RoleObjectTypePermissions::createDefaultUserPermissions($contact, $selection);
+			}
+		}
+	}
+	save_permissions($contact->getPermissionGroupId(), $contact->isGuest());
+	
 	Hook::fire('after_user_add', $contact, $null);
+	
+	// add user content object to associated members
+	if (count($sel_members) > 0) {
+		ObjectMembers::addObjectToMembers($contact->getId(), $sel_members);
+		$contact->addToSharingTable();
+	}
 	
 	// Send notification
 	try {
@@ -1242,7 +1259,6 @@ function getAllRoleUsers($role){
 	$pgs=array();
 	if(!$contacts)return false;
 	foreach ($contacts as $contact){
-		alert(" ".$contact->getObjectName());
 		$pgs[]=$contact->getPermissionGroupId();
 	}
 	return $pgs;

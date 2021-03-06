@@ -142,13 +142,13 @@ class Dimension extends BaseDimension {
   	
   	
 	function canContainObject($object_type_id){
-		$res = DB::execute("SELECT is_required FROM ".TABLE_PREFIX."dimension_object_type_contents WHERE `dimension_id` = ".$this->getId()." AND `content_object_type_id` = $object_type_id limit 1");
+		$res = DB::execute("SELECT is_required FROM ".TABLE_PREFIX."dimension_object_type_contents WHERE `dimension_id` = ".$this->getId()." AND `content_object_type_id` = '$object_type_id' limit 1");
 		return $res->numRows() > 0;
 	}
 	
 	
 	function isRequired($object_type_id){
-		$res = DB::execute("SELECT is_required FROM ".TABLE_PREFIX."dimension_object_type_contents WHERE `dimension_id` = ".$this->getId()." AND `content_object_type_id` = $object_type_id AND `is_required` = 1 limit 1");
+		$res = DB::execute("SELECT is_required FROM ".TABLE_PREFIX."dimension_object_type_contents WHERE `dimension_id` = ".$this->getId()." AND `content_object_type_id` = '$object_type_id' AND `is_required` = 1 limit 1");
 		return $res->numRows() > 0;
 	}
 	

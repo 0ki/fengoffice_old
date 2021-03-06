@@ -69,7 +69,7 @@
 		<fieldset>
 			<legend><?php echo lang('custom properties') ?></legend>
 			<?php echo render_object_custom_properties($object, false) ?>
-			<?php //echo render_add_custom_properties($object); ?>
+			<?php echo render_add_custom_properties($object); ?>
 		</fieldset>
 	</div>
 	
@@ -91,22 +91,7 @@
 		</fieldset>
 	</div>
 	
-	<script>
-	/*var wsch = Ext.getCmp('<?php echo $genid ?>ws_ids');
-	wsch.on("wschecked", function(arguments) {
-		if (!this.getValue().trim()) return;
-		var uids = App.modules.addMessageForm.getCheckedUsers('<?php echo $genid ?>');
-		Ext.get('<?php echo $genid ?>add_subscribers_content').load({
-			url: og.getUrl('object', 'render_add_subscribers', {
-				workspaces: this.getValue(),
-				users: uids,
-				genid: '<?php echo $genid ?>',
-				object_type: '<?php echo get_class($object->manager()) ?>'
-			}),
-			scripts: true
-		});
-	}, wsch);*/
-	</script>
+	
 
 	<?php if($object->isNew() || $object->canLinkObject(logged_user())) { ?>
 	<div style="display:none" id="<?php echo $genid ?>add_linked_objects_div">

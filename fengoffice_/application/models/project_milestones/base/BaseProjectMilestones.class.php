@@ -104,7 +104,7 @@ abstract class BaseProjectMilestones extends ContentDataObjects {
     * @return array
     */
     function getExternalColumns() {
-      return array_merge(parent::getExternalColumns(), array('assigned_to_contact_id'));
+      return parent::getExternalColumns();
     } // getExternalColumns
 	
 	/**

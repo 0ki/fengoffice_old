@@ -116,7 +116,7 @@ abstract class ApplicationDataObject extends DataObject {
 
 						try {
 							
-							if($file->getFileTypeId() == $docx_id){
+							if($file->getFileTypeId() == $docx_id[0]){
 								if (class_exists('DOMDocument')) {
 									$file_path = "tmp/doc_filecontent_".$this->getObjectId().".docx";
 									$file_tmp = @fopen($file_path, 'w');
@@ -128,18 +128,22 @@ abstract class ApplicationDataObject extends DataObject {
 									}
 								}
 
-							}elseif($file->getFileTypeId() == $pdf_id){
+							}elseif($file->getFileTypeId() == $pdf_id[0]){
 								if (class_exists('DOMDocument')) {
 									$file_path = "tmp/pdf_filecontent_".$this->getObjectId().".pdf";
 									$file_tmp = @fopen($file_path, 'w');
 									if ($file_tmp) {
 										fwrite($file_tmp, $file->getFileContent());
 										fclose($file_tmp);
-										$content = pdf2text($file_path);
+										if (function_exists('pdf_to_text_pro')) {
+											$content = pdf_to_text_pro($file_path);
+										} else {
+											$content = pdf2text($file_path);
+										}
 										unlink($file_path);
 									}
-								}								
-							}elseif($file->getFileTypeId() == $odt_id){
+								}
+							}elseif($file->getFileTypeId() == $odt_id[0]){
 								if (class_exists('DOMDocument')) {
 									$file_path = "tmp/odt_filecontent_".$this->getObjectId().".odt";
 									$file_tmp = @fopen($file_path, 'w');
@@ -151,7 +155,7 @@ abstract class ApplicationDataObject extends DataObject {
 									}
 								}
 								
-							}elseif($file->getFileTypeId() == $fodt_id){
+							}elseif($file->getFileTypeId() == $fodt_id[0]){
 								$file_path = "tmp/fodt_filecontent_".$this->getObjectId().".fodt";
 								$file_tmp = @fopen($file_path, 'w');
 								if ($file_tmp) {
@@ -175,7 +179,8 @@ abstract class ApplicationDataObject extends DataObject {
 					if (strlen($content) > 65535) {
 						$content = utf8_safe(substr($content, 0, 65535));
 					}
-					$content = DB::escape($content);
+					
+					$content = utf8_encode(DB::escape($content));
 					$sql = "
 						INSERT INTO ".TABLE_PREFIX."searchable_objects (rel_object_id, column_name, content)
 						VALUES (".$searchable_object->getRelObjectId().",".$searchable_object->getColumnName().",".$content.")

@@ -33,4 +33,5 @@
 	'report pdf landscape' => 'Horizontal',
 	'report font size' => 'Tamaño de fuente',
 	'mail' => 'Correo',
+	'show always' => 'Mostrar siempre este reporte',
 ); ?>

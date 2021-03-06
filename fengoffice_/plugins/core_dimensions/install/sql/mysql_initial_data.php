@@ -118,3 +118,6 @@ UPDATE `<?php echo $table_prefix ?>contact_config_options`
  SET default_value = concat(default_value,',', (SELECT `id` FROM `<?php echo $table_prefix ?>dimensions` WHERE `code`='feng_persons') ) 
  WHERE name='root_dimensions';
 
+INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`) VALUES
+	('system', 'hide_people_vinculations', '1', 'BoolConfigHandler', 1, 0)
+ON DUPLICATE KEY UPDATE name=name;

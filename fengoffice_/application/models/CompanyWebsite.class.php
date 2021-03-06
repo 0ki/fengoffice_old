@@ -263,12 +263,14 @@ final class CompanyWebsite {
 	function setLoggedUser(Contact $user, $remember = false, $set_last_activity_time = true, $set_cookies = true) {
 		if($set_last_activity_time) {
 			$last_activity_mod_timestamp = array_var($_SESSION, 'last_activity_mod_timestamp', null);
-			if (!$last_activity_mod_timestamp || $last_activity_mod_timestamp < time() - 60 * 10) {
+			if (!isset($_SESSION['last_activity_updating']) && (!$last_activity_mod_timestamp || $last_activity_mod_timestamp < time() - 60 * 10)) {
+				$_SESSION['last_activity_updating'] = true;
 				
 				$sql = "UPDATE ".TABLE_PREFIX."contacts SET last_activity = '".DateTimeValueLib::now()->toMySQL()."' WHERE object_id = ".$user->getId();
 				DB::execute($sql);
 				
 				$_SESSION['last_activity_mod_timestamp'] = time();
+				unset($_SESSION['last_activity_updating']);
 			}
 		}
 

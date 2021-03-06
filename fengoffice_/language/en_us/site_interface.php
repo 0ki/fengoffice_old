@@ -313,7 +313,7 @@ return array(
 
 //Checkout
   'checkout file' => 'Checkout file',
-  'checkin file' => 'Checkin file',
+  'checkin file' => 'Upload a new version of the file',
 
   'new filename' => 'New filename',
   'new weblink' => 'New weblink',
@@ -741,6 +741,7 @@ return array(
 	'show all possibilites' => 'Show all possibilites',
 	'remove all filters' => 'Remove all filters',
 	'plugins' => 'Plugins',
+	'located under' => 'Located under',
 ); // array
 
 ?>

@@ -48,10 +48,12 @@ og.LinkedObjectManager = function(config) {
 					} else {
 						this.fireEvent('messageToShow', "");
 					}
-					Ext.getCmp('linked-objects-manager').getView().focusRow(og.lastSelectedRow.linkedobjs+1);
-                                        
-                                        var sm = Ext.getCmp('linked-objects-manager').getSelectionModel();
-                                        sm.clearSelections();
+					var cmp = Ext.getCmp('linked-objects-manager');
+					if (cmp) {
+						cmp.getView().focusRow(og.lastSelectedRow.linkedobjs+1);
+						var sm = cmp.getSelectionModel();
+						sm.clearSelections();
+					}
 				}
 			}
 		});

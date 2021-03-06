@@ -380,13 +380,120 @@ class ProjectTasks extends BaseProjectTasks {
 		}
 		return array();
 	}
-        
-        function findByRelated($task_id) {
-                return ProjectTasks::findAll(array('conditions' => array('`original_task_id` = ?', $task_id)));
-        }
-        
-        function findByTaskAndRelated($task_id,$original_task_id) {
-                return ProjectTasks::findAll(array('conditions' => array('(`original_task_id` = ? OR `object_id` = ?) AND `object_id` <> ?', $original_task_id,$original_task_id,$task_id)));
-        }
+
+	function findByRelated($task_id) {
+		return ProjectTasks::findAll(array('conditions' => array('`original_task_id` = ?', $task_id)));
+	}
+
+	function findByTaskAndRelated($task_id,$original_task_id) {
+		return ProjectTasks::findAll(array('conditions' => array('(`original_task_id` = ? OR `object_id` = ?) AND `object_id` <> ?', $original_task_id,$original_task_id,$task_id)));
+	}
+	
+	
+	static function getArrayInfo($raw_data, $full = false){
+		if(config_option("wysiwyg_tasks")){
+			if($raw_data['type_content'] == "text"){
+				$desc = nl2br(htmlspecialchars($raw_data['text']));
+			}else{
+				$desc = purify_html(nl2br($raw_data['text']));
+			}
+		}else{
+			if($raw_data['type_content'] == "text"){
+				$desc = htmlspecialchars($raw_data['text']);
+			}else{
+				$desc = html_to_text(html_entity_decode(nl2br($raw_data['text']), null, "UTF-8"));
+			}
+		}
+
+		$member_ids = ObjectMembers::instance()->getCachedObjectMembers($raw_data['id']);
+		$tmp_task = new ProjectTask();
+		$tmp_task->setObjectId($raw_data['id']);
+		$tmp_task->setId($raw_data['id']);
+		$tmp_task->setAssignedToContactId($raw_data['assigned_to_contact_id']);
+		
+		$result = array(
+			'id' => $raw_data['id'],
+			't' => $raw_data['name'],
+			'desc' => $desc,
+			'members' => $member_ids,
+			'c' => strtotime($raw_data['created_on']),
+			'cid' => (int)$raw_data['created_by_id'],
+			'otype' => $raw_data['object_subtype'],
+			'pc' => (int)$raw_data['percent_completed'],
+			'memPath' => str_replace('"',"'", str_replace("'", "\'", json_encode($tmp_task->getMembersToDisplayPath($member_ids))))
+		);
+
+		if ($full) {
+			$result['description'] = $raw_data['text'];
+		}
+
+		$result['mas'] = (int)$raw_data['multi_assignment'];
+			
+		if ($raw_data['completed_by_id'] > 0) {
+			$result['s'] = 1;
+		}
+			
+		if ($raw_data['parent_id'] > 0) {
+			$result['pid'] = (int)$raw_data['parent_id'];
+		}
+		//if ($this->getPriority() != 200)
+		$result['pr'] = (int)$raw_data['priority'];
+
+		if ($raw_data['milestone_id'] > 0) {
+			$result['mid'] = (int)$raw_data['milestone_id'];
+		}
+			
+		if ($raw_data['assigned_to_contact_id'] > 0) {
+			$result['atid'] = (int)$raw_data['assigned_to_contact_id'];
+		}
+		$result['atName'] = $tmp_task->getAssignedToName();
+
+		if ($raw_data['completed_by_id'] > 0) {
+			$result['cbid'] = (int)$raw_data['completed_by_id'];
+			$result['con'] = strtotime($raw_data['completed_on']);;
+		}
+			
+		if ($raw_data['due_date'] != EMPTY_DATETIME) {
+			$result['dd'] = strtotime($raw_data['due_date']) + logged_user()->getTimezone() * 3600;
+			$result['udt'] = $raw_data['use_due_time'] ? 1 : 0;
+		}
+		if ($raw_data['start_date'] != EMPTY_DATETIME) {
+			$result['sd'] = strtotime($raw_data['start_date']) + logged_user()->getTimezone() * 3600;
+			$result['ust'] = $raw_data['use_start_time'] ? 1 : 0;
+		}
+
+		$time_estimate = $raw_data['time_estimate'];
+		$result['te'] = $raw_data['time_estimate'];
+		if ($time_estimate > 0) $result['et'] = DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($time_estimate * 60), 'hm', 60) ;
+
+
+		$result['tz'] = logged_user()->getTimezone() * 3600;
+
+		$ot = $tmp_task->getOpenTimeslots();
+
+		if ($ot){
+			$users = array();
+			$time = array();
+			$paused = array();
+			foreach ($ot as $t){
+				if (!$t instanceof Timeslot) continue;
+				$time[] = $t->getSeconds();
+				$users[] = $t->getContactId();
+				$paused[] = $t->isPaused()?1:0;
+				if ($t->isPaused() && $t->getContactId() == logged_user()->getId()) {
+					$result['wpt'] = $t->getPausedOn()->getTimestamp();
+				}
+			}
+			$result['wt'] = $time;
+			$result['wid'] = $users;
+			$result['wp'] = $paused;
+		}
+
+		if ($raw_data['repeat_forever'] > 0 || $raw_data['repeat_num'] > 0 || $raw_data['repeat_end'] != EMPTY_DATETIME) {
+			$result['rep'] = 1;
+		}
+		
+		return $result;
+	}
 	
 } // ProjectTasks

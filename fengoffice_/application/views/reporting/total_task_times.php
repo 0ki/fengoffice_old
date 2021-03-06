@@ -73,14 +73,14 @@
 			echo "<td class='name'>" . clean($ts->getDescription()) ."</td>";
 			echo "<td class='person'>" . clean($ts->getUser()->getObjectName()) ."</td>";
 			if (array_var($options, 'show_billing') == 'checked') {
-                                if($ts->getIsFixedBilling()){
-                                    echo "<td class='nobr right'>" . config_option('currency_code', '$') . " " . number_format($ts->getFixedBilling(), 2) . "</td>";
-                                    $sub_total_billing += $ts->getFixedBilling();
-                                }else{
-                                    $min = $ts->getMinutes();
-                                    echo "<td class='nobr right'>" . config_option('currency_code', '$') . " " . number_format(($ts->getHourlyBilling()/60) * $min, 2) . "</td>";
-                                    $sub_total_billing += ($ts->getHourlyBilling()/60) * $min;
-                                }				
+				if($ts->getIsFixedBilling()){
+					echo "<td class='nobr right'>" . config_option('currency_code', '$') . " " . number_format($ts->getFixedBilling(), 2) . "</td>";
+					$sub_total_billing += $ts->getFixedBilling();
+				}else{
+					$min = $ts->getMinutes();
+					echo "<td class='nobr right'>" . config_option('currency_code', '$') . " " . number_format(($ts->getHourlyBilling()/60) * $min, 2) . "</td>";
+					$sub_total_billing += ($ts->getHourlyBilling()/60) * $min;
+				}
 			}
 			$lastStop = $ts->getEndTime() != null ? $ts->getEndTime() : ($ts->isPaused() ? $ts->getPausedOn() : DateTimeValueLib::now());
 			echo "<td class='time nobr right'>" . DateTimeValue::FormatTimeDiff($ts->getStartTime(), $lastStop, "hm", 60, $ts->getSubtract()) ."</td>";
@@ -93,13 +93,6 @@
 		echo '</table></div>';
 	}
         
-        function has_value($array, $value){
-		foreach ($array as $val)
-			if ($val == $value)
-				return true;
-		return false;
-	}
-
 	function has_difference($previousTSRow, $tsRow, $field){
 		
 		if (is_array($previousTSRow))
@@ -116,8 +109,8 @@
 				($field == 'priority' && $previousTS->getObject()->getPriority() != $ts->getObject()->getPriority()) ||
 				($field == 'milestone_id' && $previousTS->getObject()->getMilestoneId() != $ts->getObject()->getMilestoneId());
 	}
-        
-        function get_cols($columns){ //get the columns selected by the user to be shown
+	
+	function get_cols($columns){ //get the columns selected by the user to be shown
 		if (!is_array($columns)) $columns = array();
 		$cols = array();		
 		foreach($columns as $k=>$i){					
@@ -156,6 +149,24 @@
 		<br />
 		<span class="bold"><?php echo lang('reporting user')?></span>:&nbsp;<?php echo clean($user->getObjectName()); ?>
 	<?php }	?>
+
+	<?php if (count(active_context_members(false)) > 0) : ?>
+	<div class="clear"></div>
+	<div style="margin-bottom: 10px; padding-bottom: 5px; float:left;">
+		<h5><?php echo lang('showing information for')?>:</h5>
+		<ul>
+		<?php
+			$context = active_context();
+			foreach ($context as $selection) :
+				if ($selection instanceof Member) : ?>
+					<li><span class="coViewAction <?php echo $selection->getIconClass()?>"><?php echo $selection->getName()?></span></li>	
+		<?php 	endif;
+			endforeach;
+		?>
+		</ul>
+	</div>
+	<div class="clear"></div>
+	<?php endif; ?>
 		
 	
 	<div class="timeslot-report-container">
@@ -176,7 +187,7 @@
             ?>
                     <div class="report-group-footer" style="margin-top:20px;">
                             <span class="bold" style="font-size:150%;"><?php echo lang('total').": "; ?></span>
-                            <div style="float:right;width:127px;" class="bold right"><?php echo DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($total * 60), "hm", 60) ?></div>
+                            <div style="float:right;width:150px;" class="bold right"><?php echo DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($total * 60), "hm", 60) ?></div>
                     <?php if (array_var(array_var($_SESSION, 'total_task_times_report_data'), 'show_billing') == 'checked') { ?>
                             <div style="float:right;" class="bold"><?php echo config_option('currency_code', '$') . " " . number_format($billing_total, 2) ?></div>
                     <?php }?>
@@ -187,16 +198,14 @@
     <?php 
 	$sumTime = 0;
 	$sumBilling = 0;
-        $showBillingCol = array_var($post, 'show_billing', false);
+	$showBillingCol = array_var($post, 'show_billing', false);
 	if (count($timeslotsArray) > 0){
     ?>
         <table style="min-width:564px">
-            <?php 
-                    if ($task_title) { 
-            ?>
-                    <div style="font-size:120%"><span style="font-weight:bold"><?php echo lang('title')?></span>:&nbsp;<?php echo clean($task_title) ?></div> 
-            <?php } ?>
-            <br/><br/>
+<?php if ($task_title) { ?>
+		<div style="font-size:120%"><span style="font-weight:bold"><?php echo lang('title')?></span>:&nbsp;<?php echo clean($task_title) ?></div> 
+<?php } ?>
+		<br/><br/>
             
         <?php 
 	//Initialize
@@ -214,8 +223,8 @@
 		}
 	}
 	$showSelCol = false; //show selected columns
-	$showUserCol = !has_value($group_by, 'user_id');
-	$showTitleCol = !has_value($group_by, 'id');
+	$showUserCol = !in_array('user_id', $group_by);
+	$showTitleCol = !in_array('id', $group_by);
 	if (!$showUserCol) $totCols--;
 	if (!$showTitleCol) $totCols--;
 	if (!$showBillingCol) $totCols--;

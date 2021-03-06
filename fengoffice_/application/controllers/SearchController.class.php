@@ -383,26 +383,28 @@ class SearchController extends ApplicationController {
 			if (!is_numeric($search_result_id)) continue;
 			
 			$obj = Objects::findObject($search_result_id);
+			
+			if (!$obj instanceof ContentDataObject) continue;
 			/* @var $obj ContentDataObject */
 			
 			$search_result['id'] = $obj->getId();
 			$search_result['otid'] = $obj->getObjectTypeId();
 			$search_result['title'] = $this->prepareTitle($obj->getObjectName());
 			$search_result['url'] = $obj->getViewUrl();
-			$search_result['created_by'] = $this->prepareCreatedBy($obj->getCreatedByDisplayName(), $obj->getCreatedById()) ;
-			$search_result['updated_by'] = $this->prepareCreatedBy($obj->getUpdatedByDisplayName(), $obj->getUpdatedById()) ;
-			$search_result['type'] = $obj->getObjectTypeName() ;
-			$search_result['created_on'] = friendly_date($obj->getCreatedOn()) ;
-			$search_result['updated_on'] = friendly_date($obj->getUpdatedOn()) ;
+			$search_result['created_by'] = $this->prepareCreatedBy($obj->getCreatedByDisplayName(), $obj->getCreatedById());
+			$search_result['updated_by'] = $this->prepareCreatedBy($obj->getUpdatedByDisplayName(), $obj->getUpdatedById());
+			$search_result['type'] = $obj->getObjectTypeName();
+			$search_result['created_on'] = friendly_date($obj->getCreatedOn());
+			$search_result['updated_on'] = friendly_date($obj->getUpdatedOn());
 			$search_result['content'] = $this->highlightResult($obj->getSummary(array(
 				"size" => $this->contentSize,
-				"near" => $this->search_for  
+				"near" => $this->search_for
 			)));
 			hook::fire("search_result", $search_result, $search_result);
 			$return[] = $search_result;
 			$limit--;
 		}
-		return $return  ;
+		return $return;
 		
 	} 	
 		

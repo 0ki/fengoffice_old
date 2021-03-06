@@ -424,7 +424,7 @@ class ContactController extends ApplicationController {
 		
 		
 		// Prepare response object
-		$object = $this->newPrepareObject($content_objects->objects, $content_objects->total, $start, $attributes);
+		$object = $this->prepareObject($content_objects->objects, $content_objects->total, $start, $attributes);
 		ajx_extra_data($object);
     	tpl_assign("listing", $object);
 
@@ -522,7 +522,7 @@ class ContactController extends ApplicationController {
 	 * @param integer $limit
 	 * @return array
 	 */
-	private function newPrepareObject($objects, $count, $start = 0, $attributes = null)
+	private function prepareObject($objects, $count, $start = 0, $attributes = null)
 	{
 		$object = array(
 			"totalCount" => $count,
@@ -894,11 +894,14 @@ class ContactController extends ApplicationController {
 				
 				//link it!
 				$object_controller = new ObjectController();
-				$member_ids = json_decode(array_var($_POST, 'members'));
 				
-				if($newCompany)
+				if($newCompany) {
 					$object_controller->add_to_members($company, $member_ids);
-				$object_controller->add_to_members($contact, $member_ids);
+				}
+				$member_ids = json_decode(array_var($_POST, 'members'));
+				if (count($member_ids) && !array_var(array_var($contact_data, 'user'), 'create_user')) {
+					$object_controller->add_to_members($contact, $member_ids);
+				}
 				$object_controller->link_to_new_object($contact);
 				$object_controller->add_subscribers($contact);
 				$object_controller->add_custom_properties($contact);
@@ -1333,22 +1336,22 @@ class ContactController extends ApplicationController {
 					$object_controller->add_to_members($contact, $member_ids);
 				}
 				if ($newCompany) $object_controller->add_to_members($company, $member_ids);
-                                $object_controller->link_to_new_object($contact);
+				$object_controller->link_to_new_object($contact);
 				$object_controller->add_subscribers($contact);
 				$object_controller->add_custom_properties($contact);
 				
 				ApplicationLogs::createLog($contact, ApplicationLogs::ACTION_EDIT );
-                                
-                                // User settings
-                                $user = array_var(array_var($_POST, 'contact'),'user');
-                                if($user){                                    
-                                    $user['username'] = str_replace(" ","",strtolower($name));
-                                    $this->createUserFromContactForm($user, $contact->getId(), $contact->getEmailAddress());
 
-                                    // Reload contact again due to 'createUserFromContactForm' changes
-                                    Hook::fire("after_contact_quick_add", Contacts::instance()->findById($contact->getId()), $ret);
-                                }
-                                
+				// User settings
+				$user = array_var(array_var($_POST, 'contact'),'user');
+				if($user){
+					$user['username'] = str_replace(" ","",strtolower($name));
+					$this->createUserFromContactForm($user, $contact->getId(), $contact->getEmailAddress());
+
+					// Reload contact again due to 'createUserFromContactForm' changes
+					Hook::fire("after_contact_quick_add", Contacts::instance()->findById($contact->getId()), $ret);
+				}
+				
 				DB::commit();
 				
 	     		flash_success(lang('success edit contact', $contact->getObjectName()));
@@ -2637,7 +2640,7 @@ class ContactController extends ApplicationController {
 				$zipcode = $address->getZipCode();
 				$country = $address->getCountry();
 			}
-				
+			
 			$company_data = array(
 				'first_name' => $company->getFirstName(),
 				'timezone' => $company->getTimezone(),
@@ -2708,12 +2711,11 @@ class ContactController extends ApplicationController {
 				$member_ids = json_decode(array_var($_POST, 'members'));
 				
 				$object_controller = new ObjectController();
-				if (!$company->isOwnerCompany()){
-					$object_controller->add_to_members($company, $member_ids);
-			    	$object_controller->link_to_new_object($company);
-					$object_controller->add_subscribers($company);
-					$object_controller->add_custom_properties($company);
-				}
+				
+				$object_controller->add_to_members($company, $member_ids);
+		    	$object_controller->link_to_new_object($company);
+				$object_controller->add_subscribers($company);
+				$object_controller->add_custom_properties($company);
 				
 				ApplicationLogs::createLog($company, ApplicationLogs::ACTION_EDIT);
 				DB::commit();
@@ -2795,9 +2797,10 @@ class ContactController extends ApplicationController {
 				$object_controller->add_subscribers($company);
 
 				$member_ids = json_decode(array_var($_POST, 'members'));
-				if (!is_null($member_ids))
+				if (!is_null($member_ids)) {
 					$object_controller->add_to_members($company, $member_ids);
-                                $object_controller->link_to_new_object($company);
+				}
+				$object_controller->link_to_new_object($company);
 				$object_controller->add_custom_properties($company);
 				
 				ApplicationLogs::createLog($company, ApplicationLogs::ACTION_ADD);
@@ -2958,39 +2961,43 @@ class ContactController extends ApplicationController {
 			));
 		}
 	}
-	
+
 	private function createUserFromContactForm ($user, $contactId, $email) {
-		$createUser = false ;
-                $createPass = false ; 
-                
+		$createUser = false;
+		$createPass = false;
+
 		if ( array_var ($user, 'create-user')) {
-			$createUser = true ;
-                        if ( array_var ($user, 'create-password')) {
-                            $createPass = true ;    
-                            $password =  array_var($user, 'password') ;
-                            $password_a =  array_var($user, 'password_a') ;                            
-                        }
-			$type =  array_var($user, 'type') ;
-			$username =  array_var($user, 'username') ;
+			$createUser = true;
+			if ( array_var ($user, 'create-password')) {
+				$createPass = true;
+				$password =  array_var($user, 'password');
+				$password_a =  array_var($user, 'password_a');
+			}
+			$type =  array_var($user, 'type');
+			$username =  array_var($user, 'username');
 		}
-		if ($createUser){			                       
-        	if ($createPass){
-            	$userData = array(  'contact_id' => $contactId,
-                                    'username' => $username,
-                                    'email' => $email,
-                                    'password' => $password,
-                                    'password_a' => $password_a,
-                                    'type' => $type,
-                                    'password_generator' => 'specify',
-                                    'send_email_notification' => true);
-            }else{
-                $userData = array(	'contact_id' => $contactId,
-									'username' => $username,
-									'email' => $email,
-									'type' => $type,
-									'password_generator' => 'link',
-									'send_email_notification' => true);
-            }
+		if ($createUser){
+			if ($createPass){
+				$userData = array(
+					'contact_id' => $contactId,
+					'username' => $username,
+					'email' => $email,
+					'password' => $password,
+					'password_a' => $password_a,
+					'type' => $type,
+					'password_generator' => 'specify',
+					'send_email_notification' => true
+				);
+			}else{
+				$userData = array(
+					'contact_id' => $contactId,
+					'username' => $username,
+					'email' => $email,
+					'type' => $type,
+					'password_generator' => 'link',
+					'send_email_notification' => true
+				);
+			}
 			$valid =  Contacts::validateUser($contactId);
 			create_user($userData, '');
 		}
@@ -3063,7 +3070,8 @@ class ContactController extends ApplicationController {
 		if ($surname) {
 			$contact->setSurname($surname);
 		}
-                $contact->setCompanyId($company);
+		
+		$contact->setCompanyId($company);
 		$contact->setIsCompany($objectType == "company");
 		if ($parentMemberId){
 			if ( $companyId = Members::findById($parentMemberId)->getObjectId()) {
@@ -3104,88 +3112,88 @@ class ContactController extends ApplicationController {
 			flash_error($e->getMessage());
 		}		
 		
-		// Reload 
+		// Reload
 		evt_add("reload dimension tree", array('dim_id' => $dimensionId));
 	}
-        
-        function quick_config_filter_activity(){     
-            $this->setLayout('empty');
-            $submited_values = array_var($_POST, 'filter');
-            $members = array_var($_GET, 'members');
-            tpl_assign('members', array_var($_GET, 'members'));            
-            
-            $member_name = lang('view');
-            $obj_member = Members::findById($members);
-            if($obj_member){
-                $type_obj = ObjectTypes::findById($obj_member->getObjectTypeId());
-                if($obj_member){
-                    $member_name = lang($type_obj->getName());
-                }
-            }            
-            tpl_assign('dim_name', $member_name);
-            
-            $filters_default = ContactConfigOptions::getFilterActivity();            
-            $filters = ContactConfigOptionValues::getFilterActivityMember($filters_default->getId(),$members);
-            
-            if(!$filters){
-                $filters = ContactConfigOptions::getFilterActivity();
-                $filter_value = $filters->getDefaultValue();
-                tpl_assign('id', $filters->getId());
-            }else{
-                $filter_value = $filters->getValue();
-                tpl_assign('id', '');
-            }
-            $filters_def = explode(",",$filter_value);            
-//            if($filters_def[0] == 1){
-//                tpl_assign('checked_dimension_yes', 'checked="checked"');
-//            }else{
-//                tpl_assign('checked_dimension_no', 'checked="checked"');
-//            }
-            if($filters_def[1] == 1){
-                tpl_assign('timeslot', 'checked="checked"');
-            }else{
-                tpl_assign('timeslot', '');
-            }
-            tpl_assign('show', $filters_def[2]);            
-//            if($filters_def[3] == 1){
-//                tpl_assign('checked_view_downloads_yes', 'checked="checked"');
-//            }else{
-//                tpl_assign('checked_view_downloads_no', 'checked="checked"');
-//            }            
-            if(is_array($submited_values)) {
-                    $members = array_var($submited_values,"members");
-                    $new_value = array_var($submited_values,"dimension",0) . "," . array_var($submited_values,"timeslot",0) . "," . array_var($submited_values,"show",10). "," . array_var($submited_values,"view_downloads",0);
-                    $filters_default = ContactConfigOptions::getFilterActivity();
-                    if(array_var($submited_values,"apply_everywhere") == 1){
-                        $filters_default->setDefaultValue($new_value);
-                        $filters_default->save();
-                        
-                        $filters = ContactConfigOptionValues::getFilterActivityDelete($filters_default->getId());
-                    }else{
-                            $filters = ContactConfigOptionValues::getFilterActivityMember($filters_default->getId(),$members);  
-                            // update cache if available
-                            if (GlobalCache::isAvailable()) {
-                                    GlobalCache::delete('user_config_option_'.logged_user()->getId().'_'.$filters_default->getName()."_".$members);
-                            }
 
-                            if(!$filters){
-                                $filter_opt = new ContactConfigOptionValue();
-                                $filter_opt->setOptionId($filters_default->getId());
-                                $filter_opt->setContactId(logged_user()->getId());
-                                $filter_opt->setValue($new_value);
-                                $filter_opt->setMemberId($members);
-                                $filter_opt->save();
-                            }else{
-                                $filters->setValue($new_value);
-                                $filters->save();
-                            }
-                            evt_add("user preference changed", array('name' => $filters_default->getName()."_".$members, 'value' => $new_value));
-                    }
-                    ajx_current("reload");
-            }
-            
-        }
-        
+	function quick_config_filter_activity(){
+		$this->setLayout('empty');
+		$submited_values = array_var($_POST, 'filter');
+		$members = array_var($_GET, 'members');
+		tpl_assign('members', array_var($_GET, 'members'));
+
+		$member_name = lang('view');
+		$obj_member = Members::findById($members);
+		if($obj_member){
+			$type_obj = ObjectTypes::findById($obj_member->getObjectTypeId());
+			if($obj_member){
+				$member_name = lang($type_obj->getName());
+			}
+		}
+		tpl_assign('dim_name', $member_name);
+
+		$filters_default = ContactConfigOptions::getFilterActivity();
+		$filters = ContactConfigOptionValues::getFilterActivityMember($filters_default->getId(),$members);
+
+		if(!$filters){
+			$filters = ContactConfigOptions::getFilterActivity();
+			$filter_value = $filters->getDefaultValue();
+			tpl_assign('id', $filters->getId());
+		}else{
+			$filter_value = $filters->getValue();
+			tpl_assign('id', '');
+		}
+		$filters_def = explode(",",$filter_value);
+		//            if($filters_def[0] == 1){
+		//                tpl_assign('checked_dimension_yes', 'checked="checked"');
+		//            }else{
+		//                tpl_assign('checked_dimension_no', 'checked="checked"');
+		//            }
+		if($filters_def[1] == 1){
+			tpl_assign('timeslot', 'checked="checked"');
+		}else{
+			tpl_assign('timeslot', '');
+		}
+		tpl_assign('show', $filters_def[2]);
+		//            if($filters_def[3] == 1){
+		//                tpl_assign('checked_view_downloads_yes', 'checked="checked"');
+		//            }else{
+		//                tpl_assign('checked_view_downloads_no', 'checked="checked"');
+		//            }
+		if(is_array($submited_values)) {
+			$members = array_var($submited_values,"members");
+			$new_value = array_var($submited_values,"dimension",0) . "," . array_var($submited_values,"timeslot",0) . "," . array_var($submited_values,"show",10). "," . array_var($submited_values,"view_downloads",0);
+			$filters_default = ContactConfigOptions::getFilterActivity();
+			if(array_var($submited_values,"apply_everywhere") == 1){
+				$filters_default->setDefaultValue($new_value);
+				$filters_default->save();
+
+				$filters = ContactConfigOptionValues::getFilterActivityDelete($filters_default->getId());
+			}else{
+				$filters = ContactConfigOptionValues::getFilterActivityMember($filters_default->getId(),$members);
+				// update cache if available
+				if (GlobalCache::isAvailable()) {
+					GlobalCache::delete('user_config_option_'.logged_user()->getId().'_'.$filters_default->getName()."_".$members);
+				}
+
+				if(!$filters){
+					$filter_opt = new ContactConfigOptionValue();
+					$filter_opt->setOptionId($filters_default->getId());
+					$filter_opt->setContactId(logged_user()->getId());
+					$filter_opt->setValue($new_value);
+					$filter_opt->setMemberId($members);
+					$filter_opt->save();
+				}else{
+					$filters->setValue($new_value);
+					$filters->save();
+				}
+				evt_add("user preference changed", array('name' => $filters_default->getName()."_".$members, 'value' => $new_value));
+			}
+			ajx_current("reload");
+		}
+	}
+	
+	
 	function get_companies_json() {
 		$data = array();
 		

@@ -138,6 +138,7 @@
 	'edit permissions explanation' => 'Seleccione los usuarios habilitados para acceder al área de trabajo creada.',
 	'save as new revision' => 'Guardar como nueva revisión',
 	'save as' => 'Guardar como',
+  	'save with a new name' => 'Guardar con un nuevo nombre',
 	'details' => 'Detalles',
 	'view history for' => 'Ver historial',
 	'view history' => 'Ver historial',

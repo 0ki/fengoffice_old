@@ -671,9 +671,11 @@
 				$root_cmp->save();
 			}
 			
-			foreach ($all_perm_deleted as $mid => $pd) {
-				if ($pd) {
-					ContactMemberPermissions::instance()->delete("`permission_group_id` = $pg_id AND `member_id` = $mid");
+			if (isset($all_perm_deleted)) {
+				foreach ($all_perm_deleted as $mid => $pd) {
+					if ($pd) {
+						ContactMemberPermissions::instance()->delete("`permission_group_id` = $pg_id AND `member_id` = $mid");
+					}
 				}
 			}
 		}
@@ -736,16 +738,19 @@
 				}
 			}
 		}
+		Hook::fire('after_save_contact_permissions', $pg_id, $pg_id);
 	}
 	
 	
 	
-	function permission_member_form_parameters($member = null) {
+	function permission_member_form_parameters($member = null, $dimension_id = null) {
 		
 		if ( $member ) {
 			$dim = $member->getDimension();
 		}elseif (array_var( $_REQUEST,'dim_id')) {
 			$dim = Dimensions::getDimensionById(array_var( $_REQUEST,'dim_id'));
+		}elseif (!is_null($dimension_id)) {
+			$dim = Dimensions::getDimensionById($dimension_id);
 		}
 		
 		if (!$dim instanceof Dimension) {
@@ -922,8 +927,8 @@
 					foreach ($dim_obj_types as $dim_obj_type) {
 						
 						$mem_ids_for_ot = array();
-						foreach($members as $member) {
-							if ($dim_obj_type->getDimensionObjectTypeId() == $member->getObjectTypeId()) $mem_ids_for_ot[] = $member->getId();
+						foreach($members as $member_aux) {
+							if ($dim_obj_type->getDimensionObjectTypeId() == $member_aux->getObjectTypeId()) $mem_ids_for_ot[] = $member_aux->getId();
 						}
 						if (count($mem_ids_for_ot) == 0) $mem_ids_for_ot[] = 0;
 						
@@ -943,6 +948,8 @@
 				}
 			}
 		}
+		
+		Hook::fire('after_save_member_permissions', $member, $member);
 	}
 
 	/**

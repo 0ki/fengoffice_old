@@ -120,4 +120,4 @@
     'no mailAccount error' => 'La acción no está disponible. Debe agregar su cuenta de correo.',
 	'content too long not loaded' => 'El contenido anterior del correo es muy extenso y no se ha cargado en el editor, igualmente será enviado al enviar este correo.',
 	'timeslot dnx' => 'No existe el tiempo de trabajo',
-); ?>
+);

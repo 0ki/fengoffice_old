@@ -392,10 +392,10 @@ class EventController extends ApplicationController {
 						if ($selection instanceof Member) $member_ids[] = $selection->getId();
 					}
 				}
-                                
-                                ApplicationLogs::createLog($event, ApplicationLogs::ACTION_ADD, false, $is_silent);
-                                
-                                $object_controller = new ObjectController();
+				
+				ApplicationLogs::createLog($event, ApplicationLogs::ACTION_ADD, false, $is_silent);
+				
+				$object_controller = new ObjectController();
 				$object_controller->add_to_members($event, $member_ids);
 				$object_controller->add_subscribers($event);
 				$object_controller->link_to_new_object($event);
@@ -1267,7 +1267,7 @@ class EventController extends ApplicationController {
 	    $event->save();
             
             if (!$is_read) {
-                    $event->setIsRead(logged_user()->getId(), false);
+				$event->setIsRead(logged_user()->getId(), false);
             }
             
             if($event->getSpecialID() != ""){

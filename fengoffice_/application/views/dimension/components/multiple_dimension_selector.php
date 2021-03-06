@@ -49,7 +49,7 @@ if (!member_selector) var member_selector = {};
 		
 		$autocomplete_options = array();
 		if (!isset($dim_controller)) $dim_controller = new DimensionController();
-		$members = $dim_controller->initial_list_dimension_members($dimension_id, $content_object_type_id, $allowed_member_type_ids, false, "", null, false, null, true, $initial_selected_members);
+		$members = $dim_controller->initial_list_dimension_members($dimension_id, $content_object_type_id, $allowed_member_type_ids, false, "", null, false, null, true, $initial_selected_members, ACCESS_LEVEL_WRITE);
 		
 		foreach ($members as $m) {
 			$autocomplete_options[] = array($m['id'], $m['name'], $m['path'], $m['to_show'], $m['ico'], $m['dim']);

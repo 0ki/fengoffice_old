@@ -46,10 +46,13 @@
 		 * Removes the object from those members where the user can see the object(and its corresponding parents)
 		 * 
 		 */
-  		static function removeObjectFromMembers(ContentDataObject $object, Contact $contact, $context_members){
+  		static function removeObjectFromMembers(ContentDataObject $object, Contact $contact, $context_members, $members_to_remove = null){
   			
-  			$object_type_id = $object->getObjectTypeId();
-  			$member_ids = array_flat(DB::executeAll("SELECT member_id FROM ".TABLE_PREFIX."object_members WHERE object_id = " . $object->getId()));
+  			if (is_null($members_to_remove)) {
+  				$member_ids = array_flat(DB::executeAll("SELECT member_id FROM ".TABLE_PREFIX."object_members WHERE object_id = " . $object->getId()));
+  			} else {
+  				$member_ids = $members_to_remove;
+  			}
   			
   			foreach($member_ids as $id){
 				

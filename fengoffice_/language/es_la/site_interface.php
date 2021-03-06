@@ -600,4 +600,5 @@
 	'add new relation' => 'Agregar nueva relación',
 	'type member name begin' => 'Ingrese nombre...',
 	'show all possibilites' => 'Mostrar todas las posibilidades',
+	'located under' => 'Ubicado en',
 ); ?>

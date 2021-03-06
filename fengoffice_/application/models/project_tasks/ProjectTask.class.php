@@ -507,12 +507,12 @@ class ProjectTask extends BaseProjectTask {
 	function cloneTask($new_st_date='',$new_due_date='',$copy_status = false,$copy_repeat_options = true,$parent_subtask=0) {
 
 		$new_task = new ProjectTask();
-				
-                if($parent_subtask != 0){
-                    $new_task->setParentId($parent_subtask);
-                }else{
-                    $new_task->setParentId($this->getParentId());
-                }		
+		
+		if($parent_subtask != 0){
+			$new_task->setParentId($parent_subtask);
+		}else{
+			$new_task->setParentId($this->getParentId());
+		}
 		$new_task->setObjectName($this->getObjectName());
 		$new_task->setText($this->getText());
 		$new_task->setAssignedToContactId($this->getAssignedToContactId());
@@ -529,18 +529,20 @@ class ProjectTask extends BaseProjectTask {
 		$new_task->setFromTemplateId($this->getFromTemplateId());
 		$new_task->setUseStartTime($this->getUseStartTime());
 		$new_task->setUseDueTime($this->getUseDueTime());
-                $new_task->setTypeContent($this->getTypeContent());
-                if($this->getParentId() == 0){//if not subtask
-                    if($this->getOriginalTaskId() == 0){
-                            $new_task->setOriginalTaskId($this->getObjectId());
-                    }else{
-                            $new_task->setOriginalTaskId($this->getOriginalTaskId());
-                    }    
-                }                            
-		if ($this->getDueDate() instanceof DateTimeValue )
+		$new_task->setTypeContent($this->getTypeContent());
+		if($this->getParentId() == 0){//if not subtask
+			if($this->getOriginalTaskId() == 0){
+				$new_task->setOriginalTaskId($this->getObjectId());
+			}else{
+				$new_task->setOriginalTaskId($this->getOriginalTaskId());
+			}
+		}
+		if ($this->getDueDate() instanceof DateTimeValue ) {
 			$new_task->setDueDate(new DateTimeValue($this->getDueDate()->getTimestamp()));
-		if ($this->getStartDate() instanceof DateTimeValue )
+		}
+		if ($this->getStartDate() instanceof DateTimeValue ) {
 			$new_task->setStartDate(new DateTimeValue($this->getStartDate()->getTimestamp()));
+		}
 		if ($copy_status) {
 			$new_task->setCompletedById($this->getCompletedById());
 			$new_task->setCompletedOn($this->getCompletedOn());
@@ -570,7 +572,7 @@ class ProjectTask extends BaseProjectTask {
 		
 		$sub_tasks = $this->getAllSubTasks();
 		foreach ($sub_tasks as $st) {
-                        $new_dates = $this->getNextRepetitionDatesSubtask($st,$new_task, $new_st_date, $new_due_date);
+			$new_dates = $this->getNextRepetitionDatesSubtask($st,$new_task, $new_st_date, $new_due_date);
 			if ($st->getParentId() == $this->getId()) {
 				$new_st = $st->cloneTask(array_var($new_dates, 'st'),array_var($new_dates, 'due'),$copy_status, $copy_repeat_options, $new_task->getId());
 				if ($copy_status) {
@@ -1434,7 +1436,7 @@ class ProjectTask extends BaseProjectTask {
 			'c' => $this->getCreatedOn() instanceof DateTimeValue ? $this->getCreatedOn()->getTimestamp() : 0,
 			'cid' => $this->getCreatedById(),
 			'otype' => $this->getObjectSubtype(),
-			'percentCompleted' => $this->getPercentCompleted(),
+			'pc' => $this->getPercentCompleted(),
 			'memPath' => str_replace('"',"'", str_replace("'", "\'", json_encode($this->getMembersToDisplayPath($member_ids))))
 		);
 
@@ -1442,7 +1444,7 @@ class ProjectTask extends BaseProjectTask {
 			$result['description'] = $this->getText();
 		}
 
-		$result['multiAssignment'] = $this->getColumnValue('multi_assignment',0);
+		$result['mas'] = $this->getColumnValue('multi_assignment',0);
 			
 		if ($this->isCompleted()) {
 			$result['s'] = 1;
@@ -1478,8 +1480,8 @@ class ProjectTask extends BaseProjectTask {
 		}
 
 		$time_estimate = $this->getTimeEstimate() ;
-		$result['TimeEstimate'] = $this->getTimeEstimate();
-		if ($time_estimate > 0) $result['estimatedTime'] = DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($time_estimate * 60), 'hm', 60) ;
+		$result['te'] = $this->getTimeEstimate();
+		if ($time_estimate > 0) $result['et'] = DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($time_estimate * 60), 'hm', 60) ;
 
 
 		$result['tz'] = logged_user()->getTimezone() * 3600;
@@ -1505,16 +1507,6 @@ class ProjectTask extends BaseProjectTask {
 
 		if ($this->isRepetitive()) {
 			$result['rep'] = 1;
-		} else {
-			//I find all those related to the task to find out if the original
-			$task_related = ProjectTasks::instance()->findByRelatedCached($this->getObjectId());
-			if(!$task_related){
-				//is not the original as the original look plus other related
-				if($this->getOriginalTaskId() != "0"){
-					$task_related = ProjectTasks::findByTaskAndRelated($this->getObjectId(),$this->getOriginalTaskId());
-				}
-			}
-			if ($task_related) $result['rep'] = 1;
 		}
 		
 		return $result;

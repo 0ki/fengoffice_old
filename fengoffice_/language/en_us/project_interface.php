@@ -11,7 +11,7 @@ return array(
     'search result description short' => '{0} to {1} of {2}',
 
 // Options and descriptions
-	'edit this file' => 'Edit this file',
+	'edit this file' => 'Edit file contents',
 	'file contents' => 'File contents',
 
     'important message desc' => 'Important notes are listed in the "Important notes" sidebar on the workspace notes page',
@@ -121,7 +121,7 @@ return array(
     'file revision title long' => '<b><a class="internalLink" href="{0}">{1}</a></b> on {2}',
     'file checkout info short' => '<span>Checked out on {0}</span>',
     'file checkout info long' => '<span>Checked out by </span> <a class="internalLink" href="{0}">{1}</a> <span> on {2}</span>',
-    'update file' => 'Update file',
+    'update file' => 'Edit file properties',
     'version file change' => 'Remember this change (old file will be saved for future reference)',
     'last revision' => 'Last revision',
     'revision comment' => 'Revision comment',

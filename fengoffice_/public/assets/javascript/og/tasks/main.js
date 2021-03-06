@@ -105,16 +105,16 @@ ogTasksTask.prototype.setFromTdata = function(tdata){
 	if (tdata.rep) this.repetitive = true;
 	if (tdata.isread) this.isRead = true; else this.isRead = false;
 	if (tdata.otype) this.otype = tdata.otype; else this.otype = null;
-	if (tdata.percentCompleted) this.percentCompleted = tdata.percentCompleted; else this.percentCompleted = 0;
+	if (tdata.pc) this.percentCompleted = tdata.pc; else this.percentCompleted = 0;
 	if (tdata.members) this.members = tdata.members; else this.members = [];
 	//if (tdata.estimatedTime) this.estimatedTime =  Math.round( tdata.estimatedTime * 10  / 60 ) / 10; else this.estimatedTime = '' ;
-	if (tdata.estimatedTime) this.estimatedTime = tdata.estimatedTime ; else this.estimatedTime = '' ;
-	if (tdata.TimeEstimate) this.TimeEstimate = tdata.TimeEstimate ; else this.TimeEstimate = 0 ;
+	if (tdata.et) this.estimatedTime = tdata.et; else this.estimatedTime = '';
+	if (tdata.te) this.TimeEstimate = tdata.te; else this.TimeEstimate = 0;
 	if (tdata.depCount) this.depCount = tdata.depCount; else this.depCount = null;
 	if (tdata.memPath) this.memPath = tdata.memPath; else this.memPath = [];
 	if (tdata.udt) this.useDueTime = tdata.udt;
 	if (tdata.ust) this.useStartTime = tdata.ust;
-	if (tdata.multiAssignment) this.multiAssignment = tdata.multiAssignment;
+	if (tdata.mas) this.multiAssignment = tdata.mas;
 }
 
 ogTasksMilestone = function(id, title, dueDate, totalTasks, completedTasks, isInternal, isUrgent){
@@ -325,11 +325,12 @@ ogTasks.getGroupData = function(displayCriteria, groups,tasks){
 					name = og.getFullWorkspacePath(groupId, true);
 					break;
 				case 'assigned_to' : 
-					var contact = this.getUser(groupId);
+					var contact = this.getUser(groupId, true);
 					if (contact){
 						var company_name = "";
 						if (contact.companyId > 0) {
-							company_name = " : " + this.getCompany(contact.companyId).name;
+							comp = this.getCompany(contact.companyId);
+							if (comp) company_name = " : " + comp.name;
 							icon = 'ico-user';
 						} else {
 							icon = 'ico-company';

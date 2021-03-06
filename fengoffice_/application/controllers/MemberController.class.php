@@ -19,16 +19,17 @@ class MemberController extends ApplicationController {
 	function __construct() {
 		parent::__construct();
 		prepare_company_website_controller($this, 'website');
-	} 
+	}
 	
-        
-        function init() {
+	
+	function init() {
 		require_javascript("og/MemberManager.js");
 		ajx_current("panel", "members", null, null, true);
 		ajx_replace(true);
 	}
-        
-        function list_all() {
+	
+	
+	function list_all() {
 		
 		ajx_current("empty");
 		// Get all variables from request
@@ -51,14 +52,14 @@ class MemberController extends ApplicationController {
 		$ids = array();
 		foreach ($members as $m){
 			$ids[]=$m['object_id'];
-		}		
-                $members = active_context_members(false); // Context Members Ids
-                $members_sql = "";
-                if(count($members) > 0){
-                    $members_sql .= " AND parent_member_id IN (" . implode ( ',', $members ) . ")";
-                }else{
-                    $members_sql .= " AND parent_member_id = 0";
-                }
+		}
+		$members = active_context_members(false); // Context Members Ids
+		$members_sql = "";
+		if(count($members) > 0){
+			$members_sql .= " AND parent_member_id IN (" . implode ( ',', $members ) . ")";
+		}else{
+			$members_sql .= " AND parent_member_id = 0";
+		}
 		$res = Members::findAll(array("conditions" => "object_id IN (".implode(',', $ids).") ". $members_sql,'offset' => $start, 'limit' => $limit, 'order' => "$order $order_dir"));
 		
 		$object = $this->prepareObject($res, $start, $limit, count($res));
@@ -631,15 +632,15 @@ class MemberController extends ApplicationController {
 			
 			DB::commit();
 			flash_success(lang('success delete member', $member->getName()));
-                        if (get_id('start')) {
-                            ajx_current("start");
-                        } else {
-                            if (get_id('dont_reload')) {
-                                ajx_current("empty");
-                            } else {
-                                ajx_current("reload");
-                            }
-                        }			
+			if (get_id('start')) {
+				ajx_current("start");
+			} else {
+				if (get_id('dont_reload')) {
+					ajx_current("empty");
+				} else {
+					ajx_current("reload");
+				}
+			}
 		} catch (Exception $e) {
 			DB::rollback();
 			flash_error($e->getMessage());
@@ -819,6 +820,12 @@ class MemberController extends ApplicationController {
 		
 		$associations = DimensionMemberAssociations::getAssociatations($dim_id, $obj_type);
 		foreach ($associations as $assoc) {
+			if (Plugins::instance()->isActivePlugin('core_dimensions') && config_option('hide_people_vinculations')) {
+				$persons_dim = Dimensions::findByCode('feng_persons');
+				if ($assoc->getAssociatedDimensionMemberAssociationId() == $persons_dim->getId()) {
+					continue;
+				}
+			}
 			$assoc_info = array('id' => $assoc->getId(), 'required' => $assoc->getIsRequired(), 'multi' => $assoc->getIsMultiple(), 'ot' => $assoc->getAssociatedObjectType());
 			$assoc_info['members'] = Members::getByDimensionObjType($assoc->getAssociatedDimensionMemberAssociationId(), $assoc->getAssociatedObjectType());
 			
@@ -1161,6 +1168,8 @@ class MemberController extends ApplicationController {
 					}
 				}
 			}
+			
+			Hook::fire('after_dragdrop_classify', $objects, $member);
 			
 			DB::commit();
 			

@@ -210,7 +210,7 @@ class ObjectController extends ApplicationController {
 		
 		$object->addToMembers($validMembers, true);
 		
-		Hook::fire ('after_add_to_members', $object, $null);
+		Hook::fire ('after_add_to_members', $object, $validMembers);
 		
 		$object->addToSharingTable();
 		return $validMembers;
@@ -763,8 +763,7 @@ class ObjectController extends ApplicationController {
 		}
 	}
 
-	function list_objects() {	
-		//alert("debugging. remove this line");ajx_current('empty'); return array() ; //TODO remove this line
+	function list_objects() {
 		/* get query parameters */
 		$filesPerPage = config_option('files_per_page');
 		$start = array_var($_GET,'start') ? (integer)array_var($_GET,'start') : 0;

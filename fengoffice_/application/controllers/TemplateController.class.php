@@ -201,7 +201,6 @@ class TemplateController extends ApplicationController {
 
 										
 							$split = explode(":", $objInfo);
-							$object_id = $split[1];
 							$templateObjPropValue = new TemplateObjectProperty();
 							$templateObjPropValue->setTemplateId($cotemplate->getId());
 							$templateObjPropValue->setObjectId($object_ids[$objInfo]);

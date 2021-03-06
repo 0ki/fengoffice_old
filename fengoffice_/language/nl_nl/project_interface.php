@@ -191,8 +191,8 @@
 	'high priority' => 'Hoog',
 	'normal priority' => 'Normaal',
 	'low priority' => 'Laag',
-	'estimated time' => 'Geschatte tijd',
-	'estimated time desc' => 'Geschatte duur van de taak in uren',
+	'time estimate' => 'Geschatte tijd',
+	'time estimate desc' => 'Geschatte duur van de taak in uren',
 	'x hours' => '{0} uren.',
 	'pending' => 'Openstaand',
 	'new task template' => 'Nieuw taak sjabloon',
@@ -277,4 +277,7 @@ werkomgeving zal altijd door alle gebruikers van die werkomgeving gelezen kunnen
 	'linked task tab' => 'Taken',
 	'linked event tab' => 'Gebeurtenissen',
 	'apply assignee to subtasks' => 'Voeg subtaken aan verantwoordelijke toe',
+	'field workspace color' => 'Workspacekleur',
+	'urgent priority' => 'Dringend',
+	'attachment from email' => 'Toegevoegd aan email "{0}"',
 ); ?>

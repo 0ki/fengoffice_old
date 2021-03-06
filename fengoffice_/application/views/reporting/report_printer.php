@@ -1,3 +1,4 @@
+<?php if ( !isset($is_csv) && !$is_csv ) : ?>
 <style>
 body {
 	font-family: sans-serif;
@@ -32,10 +33,13 @@ table {
 
 <div class="printHeader">
 <h1 align="center"><?php echo $title ?></h1>
+<?php endif; ?>
 <?php $this->includeTemplate(get_template_path($template_name, 'reporting'));?>
+<?php if ( !$is_csv) : ?>
 </div>
 </div>
 
 <script>
 window.print();
 </script>
+<?php endif; ?>

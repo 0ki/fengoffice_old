@@ -32,10 +32,12 @@ og.MessageManager = function() {
 					} else {
 						this.fireEvent('messageToShow', "");
 					}
-					Ext.getCmp('message-manager').getView().focusRow(og.lastSelectedRow.messages+1);
-                                        
-                                        var sm = Ext.getCmp('message-manager').getSelectionModel();
-                                        sm.clearSelections();
+					var cmp = Ext.getCmp('message-manager');
+					if (cmp) {
+						cmp.getView().focusRow(og.lastSelectedRow.messages+1);
+						var sm = cmp.getSelectionModel();
+						sm.clearSelections();
+					}
 				}
 			}
 		});

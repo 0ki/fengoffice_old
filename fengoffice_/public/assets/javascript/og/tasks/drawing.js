@@ -562,9 +562,9 @@ ogTasks.drawGroup = function(displayCriteria, drawOptions, group){
 
 	for (var c = 0; c < group.group_tasks.length; c++){
 		if (group.group_tasks[c].subtasks.length > 0){
-			time_estimated += this.subtasksTimeEstimate(group.group_tasks[c].TimeEstimate,group.group_tasks[c], displayCriteria)
+			time_estimated += this.subtasksTimeEstimate(Number(group.group_tasks[c].TimeEstimate), group.group_tasks[c], displayCriteria);
 		}else{
-			time_estimated += group.group_tasks[c].TimeEstimate;
+			time_estimated += Number(group.group_tasks[c].TimeEstimate);
 		}
 	}
 
@@ -936,51 +936,52 @@ ogTasks.drawSubtasks = function(task, drawOptions, displayCriteria, group_id, le
                     
 ogTasks.subtasksTimeEstimate = function(time_estimated, task, displayCriteria){
 	var orderedTasks = this.orderTasks(displayCriteria, task.subtasks);
-        for (var i = 0; i < orderedTasks.length; i++){
-                if (orderedTasks[i].subtasks.length > 0){
-                        time_estimated += this.subtasksTimeEstimate(orderedTasks[i].TimeEstimate, orderedTasks[i], displayCriteria);
-                }else{
-                        time_estimated = time_estimated + orderedTasks[i].TimeEstimate
-                }
-        }
+	for (var i = 0; i < orderedTasks.length; i++){
+		if (orderedTasks[i].subtasks.length > 0){
+			time_estimated += this.subtasksTimeEstimate(Number(orderedTasks[i].TimeEstimate), orderedTasks[i], displayCriteria);
+		}else{
+			time_estimated = time_estimated + Number(orderedTasks[i].TimeEstimate);
+		}
+	}
 	return time_estimated;
 }
 
-ogTasks.ToggleCompleteStatus = function(task_id, status){
-        var related = false;  
-        if(status == 0){
-            var task = ogTasks.getTask(task_id);
-            for(var j = 0; j < task.subtasks.length; j++){
-                if(task.subtasks[j].status == 0){
-                    related = true;
-                }                                        
-                if(related){
-                    break;    
-                }
-            }
-        }
+ogTasks.ToggleCompleteStatus = function(task_id, status) {
+	var related = false;
+	if (status == 0) {
+		var task = ogTasks.getTask(task_id);
+		for ( var j = 0; j < task.subtasks.length; j++) {
+			if (task.subtasks[j].status == 0) {
+				related = true;
+			}
+			if (related) {
+				break;
+			}
+		}
+	}
 
-        if(related){
-                this.dialog = new og.TaskCompletePopUp(task_id);
-                this.dialog.setTitle(lang('do complete'));	                                
-                this.dialog.show();
-        }else{
-                ogTasks.ToggleCompleteStatusOk(task_id, status, '');
-        }      
+	if (related) {
+		this.dialog = new og.TaskCompletePopUp(task_id);
+		this.dialog.setTitle(lang('do complete'));
+		this.dialog.show();
+	} else {
+		ogTasks.ToggleCompleteStatusOk(task_id, status, '');
+	}
 }
 
 ogTasks.ToggleCompleteStatusOk = function(task_id, status, opt){
 	var action = (status == 0)? 'complete_task' : 'open_task';
-        og.openLink(og.getUrl('task', action, {id: task_id, quick: true, options: opt}), {
-                callback: function(success, data) {
-                        if (!success || data.errorCode) {
-                        } else {
-                                //Set task data
-                                var task = ogTasks.getTask(task_id);
-                                prev_status = task.status;
-                                task.setFromTdata(data.task);
-                                
-                                if (data.subtasks) {
+	og.openLink(og.getUrl('task', action, {id: task_id, quick: true, options: opt}), {
+		callback: function(success, data) {
+			if (!success || data.errorCode) {
+				
+			} else {
+				//Set task data
+				var task = ogTasks.getTask(task_id);
+				prev_status = task.status;
+				task.setFromTdata(data.task);
+				
+				if (data.subtasks) {
 					for (i=0; i < data.subtasks.length; i++) {
 						var subtask = this.getTask(data.subtasks[i].id);
 						if (subtask) {
@@ -988,24 +989,24 @@ ogTasks.ToggleCompleteStatusOk = function(task_id, status, opt){
 						}
 					}
 				}
-
-                                //Redraw task, or redraw whole panel
-                                var bottomToolbar = Ext.getCmp('tasksPanelBottomToolbarObject');
-                                var displayCriteria = bottomToolbar.getDisplayCriteria();
-                                if (og.config.use_tasks_dependencies) {
-                                        var dc = ogTasks.getDependencyCount(task.id);
-                                        this.UpdateDependants(task, status!=1, prev_status);
-                                }
-                                if (displayCriteria.group_by != 'status') {
-                                        //this.UpdateTask(task.id);
-                                        this.draw();
-                                } else {
-                                        this.draw();
-                                }
-                        }
-                },
-                scope: this
-        });
+				
+				//Redraw task, or redraw whole panel
+				var bottomToolbar = Ext.getCmp('tasksPanelBottomToolbarObject');
+				var displayCriteria = bottomToolbar.getDisplayCriteria();
+				if (og.config.use_tasks_dependencies) {
+					var dc = ogTasks.getDependencyCount(task.id);
+					this.UpdateDependants(task, status!=1, prev_status);
+				}
+				if (displayCriteria.group_by != 'status') {
+					//this.UpdateTask(task.id);
+					this.draw();
+				} else {
+					this.draw();
+				}
+			}
+		},
+		scope: this
+	});
 }
 
 ogTasks.readTask = function(task_id,isUnRead){

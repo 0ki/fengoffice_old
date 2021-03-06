@@ -40,10 +40,11 @@ og.ArchivedObjects = function() {
 						this.fireEvent('messageToShow', "");
 					}
 					var cmp = Ext.getCmp('archivedobjects-manager');
-					if (cmp) cmp.getView().focusRow(og.lastSelectedRow.archived+1);
-                                        
-                                        var sm = Ext.getCmp('archivedobjects-manager').getSelectionModel();
-                                        sm.clearSelections();
+					if (cmp) {
+						cmp.getView().focusRow(og.lastSelectedRow.archived+1);
+						var sm = cmp.getSelectionModel();
+						sm.clearSelections();
+					}
 				}
 			}
 		});

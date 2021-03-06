@@ -94,7 +94,7 @@
 	'user ws config category name dashboard' => 'Opciones del panel de resumen',
 	'user ws config category name task panel' => 'Opciones del panel de tareas',
 	'user ws config category name calendar panel' => 'Opciones del Calendario',
-	'user ws config category name mails panel' => 'Opciones del módulo de Email',
+	'user ws config category name mails panel' => 'Opciones del módulo de Correo',
 	'user ws config option name show pending tasks widget' => 'Mostrar widget de tareas pendientes',
 	'user ws config option name pending tasks widget assigned to filter' => 'Mostrar tareas asignadas a',
 	'user ws config option name show late tasks and milestones widget' => 'Mostrar widget de hitos y tareas atrasadas',
@@ -334,4 +334,4 @@
         'success file extension' => 'Prevención de subida de archivos modificada exitosamente.',
         'file extension no allow' => 'Su Administrador no permite esta extensión de archivos. Por favor utilice otro formato.',
         'file extension no allow classify' => 'No se pudo clasificar el adjunto \'{0}\'. Su Administrador no permite esta extensión de archivos.',
-); ?>
+);

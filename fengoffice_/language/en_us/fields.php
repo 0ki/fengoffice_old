@@ -3,6 +3,7 @@
 return array(
 
 	// Company fields
+	'field Companies id' => 'Id',
 	'field Companies name' => 'Name',
 	'field Companies address' => 'Address',
 	'field Companies address2' => 'Address 2',
@@ -24,6 +25,7 @@ return array(
 	'field Companies archived_by_id' => 'Archived by',
 
 	// Contact fields
+	'field Contacts id' => 'Id',
 	'field Contacts company_id' => 'Company',
 	'field Contacts firstname' => 'First name',
 	'field Contacts lastname' => 'Last name',
@@ -86,7 +88,8 @@ return array(
 	'field Contacts username' => 'Username',
 
 	// Email fields
-    'field MailContents name' => 'Subject',
+    'field MailContents id' => 'Id',
+	'field MailContents name' => 'Subject',
     'field MailContents from' => 'From (email address)',
     'field MailContents from_name' => 'From name',
     'field MailContents to'  => 'To',
@@ -115,7 +118,8 @@ return array(
 	'field MailContents sync' => 'Synchronized',
 
 	// Event fields
-    'field ProjectEvents duration' => 'End',
+    'field ProjectEvents id' => 'Id',
+	'field ProjectEvents duration' => 'End',
     'field ProjectEvents start' => 'Start',
     'field ProjectEvents subject' => 'Subject',
     'field ProjectEvents repeat_forever'=> 'Repeat forever',
@@ -138,6 +142,7 @@ return array(
 	'field ProjectEvents repeat_wnum' => 'Repeat week number',
 
 	// File fields
+	'field ProjectFiles id' => 'Id',
 	'field ProjectFiles filename' => 'Filename', 
     'field ProjectFiles description' => 'Description', 
     'field ProjectFiles is_important' => 'Is important', 
@@ -174,6 +179,7 @@ return array(
 	'field ProjectMilestones is_urgent' => 'Is urgent',
 
 	// Message fields
+	'field ProjectMessages id' => 'Id',
 	'field ProjectMessages title' => 'Title', 
     'field ProjectMessages text' => 'Text', 
     'field ProjectMessages additional_text' => 'Additional text', 
@@ -189,6 +195,7 @@ return array(
 	'field ProjectMessages archived_by_id' => 'Archived by',
 
 	// Task fields
+	'field ProjectTasks id' => 'Id',
 	'field ProjectTasks text' => 'Text',
 	'field ProjectTasks completed_on' => 'Completed on', 
 	'field ProjectTasks due_date' => 'Due date',

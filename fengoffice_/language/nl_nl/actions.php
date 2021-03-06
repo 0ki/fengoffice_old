@@ -161,4 +161,8 @@
 	'mark as read' => 'Markeer als gelezen',
 	'report as spam' => 'Spam',
 	'not spam' => 'Geen spam',
+	'show' => 'Tonen',
+	'activate' => 'Activeren',
+	'disabled' => 'Uitgeschakeld',
+	'template context' => 'Kies de locatie van de template',
 ); ?>

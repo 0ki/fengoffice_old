@@ -120,4 +120,12 @@
 	'mailAccount dnx' => 'Email account bestaat niet',
 	'error add contact from user' => 'Niet mogelijk contact van gebruiker toe te voegen',
 	'zip not supported' => 'Bestandscompressie wordt niet door de server ondersteunt',
+	'error invalid recipients' => 'Ongeldig emailadres in veld "{0}": {1}',
+	'no context permissions to add' => 'Je bent niet gemachtigd om {0} toe te voegen aan {1}',
+	'error cannot assign task to user' => '{0} kan niet toegewezen zijn aan {1}',
+	'no tag specified' => 'Geen tag toegewezen.',
+	'no mailAccount error' => 'Actie is niet bescshikbaar. je hebt geen e-mailaccount toegevoegd.',
+	'content too long not loaded' => 'Previous email content is too long and was not loaded, but will be sent with this email.',
+	'member name already exists in dimension' => 'Member \'{0}\' already exists in selected dimension.',
+	'must choose at least one member of' => 'You must choose at least one member of {0}.',
 ); ?>

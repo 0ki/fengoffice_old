@@ -744,6 +744,18 @@ INSERT INTO `fo_report_conditions` (`report_id`, `custom_property_id`, `field_na
  FROM `og_report_conditions` `c`;
 
 
+-- CUSTOM PROPERTIES
+INSERT INTO fo_custom_properties (`id`, `object_type_id`, `name`, `type`, `description`, `values`, `default_value`, `is_required`, `is_multiple_values`, `property_order`, `visible_by_default`)
+ SELECT `cp`.`id`, (SELECT id FROM fo_object_types WHERE handler_class=object_type limit 1), `cp`.`name`, `cp`.`type`, `cp`.`description`, `cp`.`values`, `cp`.`default_value`, `cp`.`is_required`, `cp`.`is_multiple_values`, `cp`.`property_order`, `cp`.`visible_by_default`
+ FROM og_custom_properties cp
+ON DUPLICATE KEY UPDATE name=cp.name;
+
+INSERT INTO fo_custom_property_values (`object_id`, `custom_property_id`, `value`)
+ SELECT (SELECT `id` FROM `fo_objects` WHERE `f1_id` = `cpv`.`object_id` AND `object_type_id` = (SELECT `ot`.`id` FROM `fo_object_types` `ot` WHERE `ot`.`handler_class`=(SELECT cp.object_type FROM og_custom_properties cp WHERE cp.id=cpv.custom_property_id) limit 1)),
+  `cpv`.`custom_property_id`, `cpv`.`value`
+ FROM og_custom_property_values cpv
+ON DUPLICATE KEY UPDATE id=cpv.id;
+
 
 -- COMMENTS
 INSERT INTO `fo_objects` (`name`, `f1_id`, `object_type_id`, `created_on`, `created_by_id`, `updated_on`, `updated_by_id`, `trashed_on`, `trashed_by_id`)

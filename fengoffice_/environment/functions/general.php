@@ -755,7 +755,7 @@ function HttpRequest( $url, $method = 'GET', $data = NULL, $additional_headers =
 	if($method == 'POST') $out .= $data."\r\n";
 	if(!$fp = @fsockopen($host, $port, $es, $en, 5)){
 		$err =  error_get_last();
-		fs_log('Error on fsockopen: ' . $err["message"] . $err["file"] . $err["line"]);
+		Logger::log('Error on fsockopen: ' . $err["message"] . $err["file"] . $err["line"]);
 		return false;
 	}
 	fwrite($fp, $out);

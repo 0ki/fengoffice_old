@@ -229,7 +229,7 @@
 	'conversation x mails' => 'Conversación ({0} correos)',
 	'show quoted text' => 'Mostrar texto citado',
 	'checkout file' => 'Bloquear documento',
-	'checkin file' => 'Actualizar documento',
+	'checkin file' => 'Subir una nueva versión del archivo',
 	'new filename' => 'Nuevo nombre de documento',
 	'new weblink' => 'Nuevo enlace web',
 	'add as revision' => 'Agregar como revision',
@@ -380,7 +380,7 @@
 	'print view' => 'Vista de impresión',
 	'activity' => 'Actividad',
 	'statistics' => 'Estadísticas',
-	'time' => 'Tiempo',
+	'time' => 'Horas',
 	'meeting_time' => 'Hora',
 	'task time report' => 'Tiempo total de ejecución',
 	'new tasks by user' => 'Nuevas tareas por usuario',
@@ -600,4 +600,5 @@
 	'add new relation' => 'Agregar nueva relación',
 	'type member name begin' => 'Ingrese nombre...',
 	'show all possibilites' => 'Mostrar todas las posibilidades',
-); ?>
+	'located under' => 'Ubicado en',
+);

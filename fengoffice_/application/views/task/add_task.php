@@ -47,8 +47,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 	</div>
 	<div>
 		<?php echo label_tag(lang('name'),'ogTasksPanelATTitle', true ) ?>
-                <?php echo text_field('task[name]', array_var($task_data, 'name'), 
-    		array('class' => 'title', 'id' => 'ogTasksPanelATTitle', 'tabindex' => '1',"size"=>"255", "maxlength"=>"255")) ?>
+		<?php echo text_field('task[name]', array_var($task_data, 'name'), array('class' => 'title', 'id' => 'ogTasksPanelATTitle', 'tabindex' => '1',"size"=>"255", "maxlength"=>"255")) ?>
     </div>
 	
 	<?php $categories = array(); Hook::fire('object_edit_categories', $task, $categories); ?>
@@ -571,19 +570,10 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 		</td></tr></table>
 		
 	</div>
-        
-        <?php 
-            if(config_option('multi_assignment') && Plugins::instance()->isActivePlugin('crpm')){
-                if($task->isNew()){
-                    $null = null;
-                    Hook::fire('draw_html', $genid, $null);
-                }                
-                require_javascript('multi_assignment.js', 'crpm');
-            }
-        ?>
-        
+	<?php Hook::fire('draw_additional_task_html', $genid, $task); ?>
+	
 	<?php echo input_field("task[is_template]", array_var($task_data, 'is_template', false), array("type" => "hidden", 'tabindex' => '160')); ?>
-        <?php echo submit_button($task->isNew() ? (array_var($task_data, 'is_template', false) ? lang('save template') : lang('add task list')) : lang('save changes'), 's', array('tabindex' => '20000')) ?>
+	<?php echo submit_button($task->isNew() ? (array_var($task_data, 'is_template', false) ? lang('save template') : lang('add task list')) : lang('save changes'), 's', array('tabindex' => '20000')) ?>
 </div>
 </div>
 </form>
@@ -593,8 +583,8 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 	var assigned_user = '<?php echo array_var($task_data, 'assigned_to_contact_id', 0) ?>';
 	var start = true;
 	
-	og.drawAssignedToSelectBox = function(companies, only_me) {
-		usersStore = ogTasks.buildAssignedToComboStore(companies, only_me);
+	og.drawAssignedToSelectBox = function(companies, only_me, groups) {
+		usersStore = ogTasks.buildAssignedToComboStore(companies, only_me, groups);
 		var assignCombo = new Ext.form.ComboBox({
 			renderTo:'<?php echo $genid ?>assignto_container_div',
 			name: 'taskFormAssignedToCombo',
@@ -658,16 +648,15 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 			
 			parameters = context ? {context: context} : {};
 			og.openLink(og.getUrl('task', 'allowed_users_to_assign', parameters), {callback: function(success, data){
-				companies = data.companies;
 				only_me = data.only_me ? data.only_me : null;
 				if (combo) {
 					combo.reset();
 					combo.store.removeAll();
-					combo.store.loadData(ogTasks.buildAssignedToComboStore(companies, only_me));
+					combo.store.loadData(ogTasks.buildAssignedToComboStore(data.companies, only_me, data.groups));
 					combo.setValue(prev_value);
 					combo.enable();
 				} else {
-					og.drawAssignedToSelectBox(companies, only_me);
+					og.drawAssignedToSelectBox(data.companies, only_me, data.groups);
 				}
 				og.redrawingUserList = false ;
 			}});
@@ -679,7 +668,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 	
 	//og.redrawUserLists(og.contextManager.plainContext());
         
-        <?php if(!$task->isCompleted()){?>
+<?php if(!$task->isCompleted()){?>
 	og.changeTaskRepeat = function() {
 		document.getElementById("<?php echo $genid ?>repeat_options").style.display = 'none';
 		var word = '';
@@ -697,7 +686,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 		document.getElementById("<?php echo $genid ?>word").innerHTML = word;
 		document.getElementById("<?php echo $genid ?>repeat_options").style.display = opt_display;		
 	}
-        <?php }?>
+<?php }?>
 
 
 

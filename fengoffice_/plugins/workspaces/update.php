@@ -38,3 +38,20 @@
 			ON DUPLICATE KEY UPDATE dimension_id=dimension_id;
 		");
 	}
+	
+	function workspaces_update_5_6() {
+		// create associations
+		DB::execute("
+			INSERT INTO `".TABLE_PREFIX."dimension_member_associations` (`dimension_id`,`object_type_id`,`associated_dimension_id`, `associated_object_type_id`, `is_required`,`is_multiple`, `keeps_record`) VALUES
+			((SELECT id from ".TABLE_PREFIX."dimensions WHERE code = 'workspaces'),(SELECT id FROM ".TABLE_PREFIX."object_types WHERE name = 'workspace'),(SELECT id from ".TABLE_PREFIX."dimensions WHERE code = 'feng_persons'),(SELECT id FROM ".TABLE_PREFIX."object_types WHERE name = 'person'),0,1,0),
+			((SELECT id from ".TABLE_PREFIX."dimensions WHERE code = 'workspaces'),(SELECT id FROM ".TABLE_PREFIX."object_types WHERE name = 'workspace'),(SELECT id from ".TABLE_PREFIX."dimensions WHERE code = 'feng_persons'),(SELECT id FROM ".TABLE_PREFIX."object_types WHERE name = 'company'),0,1,0);
+		");
+		// instantiate actual associations
+		$ws_dim = Dimensions::findByCode('workspaces');
+		$ws_ot = ObjectTypes::findByName('workspace');
+		$ws_members = Members::findAll(array('conditions' => 'dimension_id = '.$ws_dim->getId().' AND object_type_id = '.$ws_ot->getId()));
+		foreach($ws_members as $ws_mem) {
+			// after saving permissions the associations are instantiated by 'core_dimensions' plugin 
+			save_member_permissions($ws_mem);
+		}
+	}

@@ -102,6 +102,7 @@
 	'the comment activity' => 'el comentario{0}',
 	'the user activity' => 'el usuario{0}',
 	'the project activity' => 'el espacio{0}',
+	'the Time activity' => 'un tiempo de trabajo',
         
         'the message' => 'la nota',
 	'the mail' => 'el correo',

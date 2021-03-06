@@ -226,8 +226,8 @@ class ToolController extends ApplicationController {
 	}
 	
 	function translate() {
-		if (!logged_user()->isAdministrator()) {
-			die("You must be an administrator to run this tool.");
+		if (!can_manage_security(logged_user())) {
+			die(lang('no access permissions'));
 		}
 		
 		if (!defined('LANG_DIR')) define('LANG_DIR', 'language');

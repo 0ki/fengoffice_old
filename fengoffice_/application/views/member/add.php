@@ -75,23 +75,30 @@
 			<div id="<?php echo $genid ?>object_type_combo_container"></div>
 		</div>
 		
-		<div id="<?php echo $genid?>memberParentContainer" <?php echo ($parent_sel > 0 ? "" : 'style="display:none;margin-top: 5px"')?>>
+		<div id="<?php echo $genid?>memberParentContainer" <?php echo ($parent_sel > 0 ? "" : 'style="display:none; margin-top: 5px; float:left;"')?>>
 			<?php  
 				
 				$selected_members = array();
 				if ($parent_sel) {
 					$selected_members[] = $parent_sel ;
 				}
-				echo label_tag(lang('parent member'), "", false);
+				echo label_tag(lang('located under'), "", false);
 				render_single_dimension_tree($current_dimension, $genid, $selected_members, array('checkBoxes'=>false,'all_members' => true));
 				
 			?>
 				<input type="hidden" id="<?php echo $genid ?>memberParent" value="<?php echo $parent_sel; ?>" name="member[parent_member_id]"></input>
-				
-			<!-- 
-				<div id="<?php echo $genid ?>parent_combo_container"></div>
-			 -->
 		</div>
+		<div style="margin-top: 5px; float:left;">
+		<?php if ($current_dimension->getDefinesPermissions() && can_manage_security(logged_user())):?>
+			<label><?php echo lang("permissions")?></label>			
+			<?php
+				tpl_assign('genid', $genid); 
+				$this->includeTemplate(get_template_path('member_permissions_control', 'member'));
+			?>
+		<?php endif ;?>
+		</div>
+		
+		<div class="x-clear"></div>
 		
 		<div id="<?php echo $genid?>dimension_object_fields" style="display:none;"></div>
 		
@@ -117,14 +124,6 @@
 				onclick="App.modules.addMemberForm.deleteDimensionRestrictions('<?php echo $genid?>');"
 				class="db-ico ico-delete bold" style="padding:3px 0 0 20px; cursor:pointer; display:none;"><?php echo lang('hide restrictions')?></span>
 		</div>
-		<?php if ($current_dimension->getDefinesPermissions() && can_manage_security(logged_user())):?>
-			<label><?php  echo lang("permissions")?></label>			
-			<?php
-				// Permissions (new!)
-				tpl_assign('genid', $genid); 
-				$this->includeTemplate(get_template_path('member_permissions_control', 'member'));
-			?>
-		<?php endif ;?>
 		
 		<div id="<?php echo $genid?>dimension_restrictions" style="width:750px;"></div>
 	<?php if (isset($rest_genid)) { ?>

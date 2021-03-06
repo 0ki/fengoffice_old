@@ -34,9 +34,12 @@ og.OverviewManager = function() {
 					} else {
 						this.fireEvent('messageToShow', "");
 					}
-					Ext.getCmp('overview-manager').getView().focusRow(og.lastSelectedRow.overview+1);
-					var sm = Ext.getCmp('overview-manager').getSelectionModel();
-					sm.clearSelections();
+					var cmp = Ext.getCmp('overview-manager');
+					if (cmp) {
+						cmp.getView().focusRow(og.lastSelectedRow.overview+1);
+						var sm = cmp.getSelectionModel();
+						sm.clearSelections();
+					}
 				}
 			}
 		});

@@ -46,14 +46,14 @@
 			$project_templates_array[] = $template->getArrayInfo();
 		}
 	}
-	
+
 	if (isset($tasks)) {
 		$ids = array();
 		foreach($tasks as $task) {
-			$ids[] = $task->getId();
-			$tasks_array[] = $task->getArrayInfo();
+			$ids[] = $task['id'];
+			$tasks_array[] = ProjectTasks::getArrayInfo($task);
 		}
-				
+
 		$read_objects = ReadObjects::getReadByObjectList($ids, logged_user()->getId());
 		foreach($tasks_array as &$data) {
 			$data['isread'] = isset($read_objects[$data['id']]);
@@ -119,8 +119,8 @@ og.config.use_milestones = <?php echo config_option('use_milestones') ? 'true' :
 	<input type="hidden" id="hfUserPreferences" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($userPreferences)))) ?>"/>
 	<input type="hidden" id="hfObjectSubtypes" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($object_subtypes_array)))) ?>"/>
 	<input type="hidden" id="hfDependencyCount" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($dependency_count)))) ?>"/>
-        <input id="<?php echo $genid?>type_related" type="hidden" name="type_related" value="only" />
-        <input id="<?php echo $genid?>complete_task" type="hidden" name="complete_task" value="yes" />        
+	<input id="<?php echo $genid?>type_related" type="hidden" name="type_related" value="only" />
+	<input id="<?php echo $genid?>complete_task" type="hidden" name="complete_task" value="yes" />        
 </div>
 
 <div id="tasksPanel" class="ogContentPanel" style="background-color:white;background-color:#F0F0F0;height:100%;width:100%;">
@@ -159,7 +159,7 @@ og.config.use_milestones = <?php echo config_option('use_milestones') ? 'true' :
 			projectTemplatesHfId:'hfProjectTemplates',
 			allTemplatesHfId:'hfAllTemplates',
 			renderTo:'tasksPanelTopToolbar'
-			});
+		});
 		var ogTasksBT = new og.TasksBottomToolbar({
 			renderTo:'tasksPanelBottomToolbar',
 			usersHfId:'hfUsers',
@@ -167,7 +167,7 @@ og.config.use_milestones = <?php echo config_option('use_milestones') ? 'true' :
 			internalMilestonesHfId:'hfIMilestones',
 			externalMilestonesHfId:'hfEMilestones',
 			subtypesHfId:'hfObjectSubtypes'
-			});
+		});
 	
 		og.defaultTaskType = '<?php echo config_option('default task co type') ?>';
 		
@@ -187,79 +187,76 @@ og.config.use_milestones = <?php echo config_option('use_milestones') ? 'true' :
 		resizeTasksPanel();
 		ogTasks.loadDataFromHF();
 
-	<?php if(isset($tasks) || $userPreferences['groupBy'] == 'milestone') {?>
 		ogTasks.draw();
-	<?php } ?>
 
 	}, mili);
-        
-        Ext.extend(og.TaskPopUp, Ext.Window, {
-                accept: function() {
-                        var task_id = $("#related_task_id").val();
-                        var action = $("#action_related").val();
-                        var opt = $("#<?php echo $genid?>type_related").val();
-                        if(action == "edit"){
-                            ogTasks.SubmitNewTask(task_id, false);
-                        }else{
-                            ogTasks.executeAction(action,'',opt);
-                        }
-                        
-                        this.close();
-                }
-        });
-        
-        function selectRelated(val){
-            $("#<?php echo $genid?>type_related").val(val);
-        }
-        
-        Ext.extend(og.TaskCompletePopUp, Ext.Window, {
-                accept: function() {
-                        var task_id = $("#complete_task_id").val();
-                        var opt = $("#<?php echo $genid?>complete_task").val();
-                        if(task_id != ""){
-                            ogTasks.ToggleCompleteStatusOk(task_id, 0 ,opt);
-                        }else{
-                            ogTasks.executeAction('complete','',opt);
-                        }  
-                        this.close();
-                        $("#<?php echo $genid?>complete_task").val("yes");
-                }
-        });
-        
-        function selectTaskCompletePopUp(val){
-            $("#<?php echo $genid?>complete_task").val(val);
-        }
-        
-        function loadCKeditor(id){
-            var instance = CKEDITOR.instances['<?php echo $genid ?>ckeditor' + id];
-            if(instance){
-                CKEDITOR.remove(instance);
-            }
-            var editor = CKEDITOR.replace('<?php echo $genid ?>ckeditor' + id, {
-                height: '120px',
-                enterMode: CKEDITOR.ENTER_DIV,
-                shiftEnterMode: CKEDITOR.ENTER_BR,
-                disableNativeSpellChecker: false,
-                language: '<?php echo $loc ?>',
-                customConfig: '',               
-                toolbar: [
-                                ['Font','FontSize','-','Bold','Italic','Underline', 'Blockquote','-',
-				                'SpellChecker', 'Scayt','-',
-                                'TextColor','BGColor','-',
-                                'Link','Unlink','-',
-                                'JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock']
-                        ],
-                on: {
-                        instanceReady: function(ev) {
-                                og.adjustCkEditorArea('<?php echo $genid ?>',id);
-                                editor.resetDirty();
-                        }
-                    },
-                entities_additional : '#39,#336,#337,#368,#369'
-            });
-        }
-</script>
 
+	Ext.extend(og.TaskPopUp, Ext.Window, {
+		accept: function() {
+			var task_id = $("#related_task_id").val();
+			var action = $("#action_related").val();
+			var opt = $("#<?php echo $genid?>type_related").val();
+			if(action == "edit"){
+				ogTasks.SubmitNewTask(task_id, false);
+			}else{
+				ogTasks.executeAction(action,'',opt);
+			}
+			this.close();
+		}
+	});
+
+	function selectRelated(val){
+		$("#<?php echo $genid?>type_related").val(val);
+	}
+
+	Ext.extend(og.TaskCompletePopUp, Ext.Window, {
+		accept: function() {
+			var task_id = $("#complete_task_id").val();
+			var opt = $("#<?php echo $genid?>complete_task").val();
+			if(task_id != ""){
+				ogTasks.ToggleCompleteStatusOk(task_id, 0 ,opt);
+			}else{
+				ogTasks.executeAction('complete','',opt);
+			}
+			this.close();
+			$("#<?php echo $genid?>complete_task").val("yes");
+		}
+	});
+
+	function selectTaskCompletePopUp(val){
+		$("#<?php echo $genid?>complete_task").val(val);
+	}
+
+	function loadCKeditor(id){
+		var instance = CKEDITOR.instances['<?php echo $genid ?>ckeditor' + id];
+		if(instance){
+			CKEDITOR.remove(instance);
+		}
+		var editor = CKEDITOR.replace('<?php echo $genid ?>ckeditor' + id, {
+			height: '120px',
+			enterMode: CKEDITOR.ENTER_DIV,
+			shiftEnterMode: CKEDITOR.ENTER_BR,
+			disableNativeSpellChecker: false,
+			language: '<?php echo $loc ?>',
+			customConfig: '',
+			toolbar: [
+				['Font','FontSize','-','Bold','Italic','Underline', 'Blockquote','-',
+					'SpellChecker', 'Scayt','-',
+					'TextColor','BGColor','-',
+					'Link','Unlink','-',
+					'JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock'
+				]
+			],
+			on: {
+				instanceReady: function(ev) {
+					og.adjustCkEditorArea('<?php echo $genid ?>',id);
+					editor.resetDirty();
+				}
+			},
+			entities_additional : '#39,#336,#337,#368,#369'
+		});
+	}
+</script>
 <?php 
 	// to include additional templates in the tasks list
 	$more_content_templates = array();
@@ -267,4 +264,3 @@ og.config.use_milestones = <?php echo config_option('use_milestones') ? 'true' :
 	foreach ($more_content_templates as $ct) {
 		$this->includeTemplate(get_template_path(array_var($ct, 'template'), array_var($ct, 'controller'), array_var($ct, 'plugin')));
 	}
-?>

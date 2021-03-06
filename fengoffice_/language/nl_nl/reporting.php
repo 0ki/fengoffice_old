@@ -25,4 +25,11 @@
 	'columns to print desc' => 'Verplaats de kolommen die u wilt printen naar rechts door op de pijltjes te klikken',
 	'reporting workspace' => 'Werkomgeving',
 	'reporting user' => 'Gebruiker',
+	'showing indformation for' => 'Informatie weergeven voor:',
+	'columns' => 'Kolommen',
+	'report pdf options' => 'PDF-opties',
+	'report pdf page layout' => 'Pagina-layout',
+	'report pdf vertical' => 'Vertikaal',
+	'report pdf landscape' => 'Landscape',
+	'report font size' => 'Font-grootte',
 ); ?>

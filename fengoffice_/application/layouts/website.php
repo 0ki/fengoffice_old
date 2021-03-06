@@ -106,7 +106,7 @@ $use_owner_company_logo = owner_company()->hasLogo();
 <!-- header -->
 <div id="header">
 	<div id="headerContent">
-            <div style="float: left;">
+            <div style="float: left; cursor:pointer;" onclick="og.clearDimensionSelection();">
                 <div id="logodiv">
                     <div style="" id="logo_company_margin_top">
                         <img src="<?php echo ($use_owner_company_logo) ? owner_company()->getLogoUrl() : 's.gif' ?>" name="img_company_margin" id="img_company_margin" style="display: none;"/>
@@ -203,8 +203,7 @@ $use_owner_company_logo = owner_company()->hasLogo();
             }
                         
             /*** Brand color-picker ***/
-            
-            brand_colors = {
+			var brand_colors = {
 				head_back: '<?php echo config_option('brand_colors_head_back')?>',
 				head_font: '<?php echo config_option('brand_colors_head_font')?>',
 				tabs_back: '<?php echo config_option('brand_colors_tabs_back')?>',
@@ -232,7 +231,7 @@ $use_owner_company_logo = owner_company()->hasLogo();
                 cssRules += '.x-accordion-hd {background-color: #' + tabs_back + '}';
 				// selected member
 				var node_selected_back = color_utils.make_transparent_color('#'+tabs_back);
-                if (node_selected_back) cssRules += '.x-tree-node .x-tree-selected {background-color: '+node_selected_back+'; border-color: '+color_utils.darker_html_color(node_selected_back)+'}';
+				if (node_selected_back) cssRules += '.x-tree-node .x-tree-selected {background-color: '+node_selected_back+'; border-color: '+color_utils.darker_html_color(node_selected_back)+'}';
 				// ckeditor back color
                 cssRules += '.cke_wrapper {background-color: #'+tabs_back+' !important;}';
 
@@ -339,7 +338,7 @@ og.loggedUser = {
 	isAdmin: <?php echo logged_user()->isAdministrator() ? 'true' : 'false' ?>,
 	isGuest: <?php echo logged_user()->isGuest() ? 'true' : 'false' ?>,
 	tz: <?php echo logged_user()->getTimezone() ?>,
-        type: <?php echo logged_user()->getUserType() ?>
+	type: <?php echo logged_user()->getUserType() ?>
 };
 og.zipSupported = <?php echo zip_supported() ? 1 : 0 ?>;
 og.hasNewVersions = <?php

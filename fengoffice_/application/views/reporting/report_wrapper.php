@@ -9,22 +9,20 @@ if (!isset($allow_export)) $allow_export = true;
     
 <div class="report" style="padding:7px">
 <table style="min-width:600px">
-
 <tr>
 	<td rowspan=2 colspan="2" class="coViewHeader" style="width:auto;">
 		<div id="iconDiv" class="coViewIconImage ico-large-report" style="float:left;"></div>
 
 		<div class="coViewTitleContainer">
-			<div class="coViewTitle" style="margin-left:55px;"><?php echo $title ?></div>			
-                        <input type="submit" name="print" value="<?php echo lang('print view') ?>" onclick="og.reports.printReport('<?php echo $genid?>','<?php echo $title ?>'); return false;" style="width:120px; margin-top:10px;"/>
+			<div class="coViewTitle" style="margin-left:55px;"><?php echo $title ?></div>
+			<input type="submit" name="print" value="<?php echo lang('print view') ?>" onclick="og.reports.printReport('<?php echo $genid?>','<?php echo $title ?>'); return false;" style="width:120px; margin-top:10px;"/>
 
-                        <input type="submit" name="exportCSV" value="<?php echo lang('export csv') ?>" onclick="document.getElementById('form<?php echo $genid ?>').target = '_download';" style="width:120px; margin-top:10px;"/>
-                        <?php if ($allow_export) { ?>
-                        <input type="button" name="exportPDFOptions" onclick="og.showPDFOptions();" value="<?php echo lang('export pdf') ?>" style="width:120px; margin-top:10px;"/>
-                        <?php } ?>
-
-                        <input name="parameters" type="hidden" value="<?php echo str_replace('"',"'", json_encode($post))?>"/>
-                        <input name="context" type="hidden" value="" id="<?php echo $genid?>_plain_context"/>
+			<input type="submit" name="exportCSV" value="<?php echo lang('export csv') ?>" onclick="document.getElementById('form<?php echo $genid ?>').target = '_download';" style="width:120px; margin-top:10px;"/>
+		<?php if ($allow_export) { ?>
+			<input type="button" name="exportPDFOptions" onclick="og.showPDFOptions();" value="<?php echo lang('export pdf') ?>" style="width:120px; margin-top:10px;"/>
+		<?php } ?>
+			<input name="parameters" type="hidden" value="<?php echo str_replace('"',"'", json_encode($post))?>"/>
+			<input name="context" type="hidden" value="" id="<?php echo $genid?>_plain_context"/>
 		</div>
 		<div class="clear"></div>
 	</td>
@@ -38,7 +36,7 @@ if (!isset($allow_export)) $allow_export = true;
 	<td colspan=2 class="coViewBody" style="padding-left:12px" id="<?php echo $genid?>report_container">
 		<?php $this->includeTemplate(get_template_path($template_name, 'reporting'));?>
 	</td>
-		<td class="coViewRight"/>
+	<td class="coViewRight"/>
 </tr>
 <tr>
 	<td class="coViewBottomLeft"></td>

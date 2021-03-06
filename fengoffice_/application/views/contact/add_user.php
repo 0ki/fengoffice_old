@@ -85,36 +85,33 @@
   <div class="adminMainBlock">
   
   <div id="<?php echo $genid ?>add_user_advanced" style="display:none">
-	  	<fieldset>
-	  		<legend><?php echo lang('advanced')?></legend>
-	  		<div class="formBlock" onclick="og.showSelectTimezone('<?php echo $genid ?>')" >
-			    <?php echo label_tag(lang('timezone'), 'userFormTimezone', false)?>
-			    <span class="desc"><?php echo lang('auto detect user timezone') ?></span>
-			    <div id ="<?php echo $genid?>detectTimeZone">
-			    <?php echo yes_no_widget('user[autodetect_time_zone]', 'userFormAutoDetectTimezone', user_config_option('autodetect_time_zone', null, $user->getId()), lang('yes'), lang('no')) ?>
-			    <div id="<?php echo $genid?>selecttzdiv" <?php if (user_config_option('autodetect_time_zone', null, $user->getId())) echo 'style="display:none"'; ?>>
-			    <?php echo select_timezone_widget('user[timezone]', array_var($user_data, 'timezone'), 
-			    	array('id' => 'userFormTimezone', 'class' => 'long', 'tabindex' => '600')) ?>
-			    </div>
-			    </div>
-			  
-			    <script type="text/javascript">
-			    og.addUserTypeChange('<?php echo $genid?>',$(':input[name$="user[type]"]').val());
-				og.showSelectTimezone = function(genid)	{
-					check = document.getElementById("userFormAutoDetectTimezoneYes");
-					div = document.getElementById(genid + "selecttzdiv");
-					if (check.checked == true){
-						div.style.display= "none";
-					}else{
-						div.style.display= "";
-					}
-					
-				  };
-				  
-			    </script>
-			  </div>
-		</fieldset>
-  </div>
+  	<fieldset>
+  		<legend><?php echo lang('advanced')?></legend>
+  		<div class="formBlock" onclick="og.showSelectTimezone('<?php echo $genid ?>')">
+			<?php echo label_tag(lang('timezone'), 'userFormTimezone', false)?>
+			<span class="desc"><?php echo lang('auto detect user timezone') ?></span>
+			<div id ="<?php echo $genid?>detectTimeZone">
+			<?php echo yes_no_widget('user[autodetect_time_zone]', 'userFormAutoDetectTimezone', user_config_option('autodetect_time_zone', null, $user->getId()), lang('yes'), lang('no')) ?>
+			<div id="<?php echo $genid?>selecttzdiv" <?php if (user_config_option('autodetect_time_zone', null, $user->getId())) echo 'style="display:none"'; ?>>
+			<?php echo select_timezone_widget('user[timezone]', array_var($user_data, 'timezone'), 
+				array('id' => 'userFormTimezone', 'class' => 'long', 'tabindex' => '600')) ?>
+			</div>
+			</div>
+			<script type="text/javascript">
+			og.addUserTypeChange('<?php echo $genid?>',$(':input[name$="user[type]"]').val());
+			og.showSelectTimezone = function(genid)	{
+				check = document.getElementById("userFormAutoDetectTimezoneYes");
+				div = document.getElementById(genid + "selecttzdiv");
+				if (check.checked == true){
+					div.style.display= "none";
+				}else{
+					div.style.display= "";
+				}
+			};
+			</script>
+		</div>
+	</fieldset>
+ </div>
 
   
 <?php if($user->isNew() || logged_user()->isAdministrator()) { ?>

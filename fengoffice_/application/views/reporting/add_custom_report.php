@@ -25,14 +25,13 @@ if (!isset($conditions)) $conditions = array();
 </div>
 
 <div>
-<?php echo label_tag(lang('name'), $genid . 'reportFormName', true) ?>
-<?php echo text_field('report[name]', array_var($report_data, 'name'),
-array('id' => $genid . 'reportFormName', 'tabindex' => '1', 'class' => 'title')) ?>
-<?php echo label_tag(lang('description'), $genid . 'reportFormDescription', false) ?>
-<?php echo text_field('report[description]', array_var($report_data, 'description'),
-array('id' => $genid . 'reportFormDescription', 'tabindex' => '2', 'class' => 'title')) ?>
-<?php echo label_tag(lang('object type'), $genid . 'reportFormObjectType', true) ?>
 <?php
+echo label_tag(lang('name'), $genid . 'reportFormName', true);
+echo text_field('report[name]', array_var($report_data, 'name'), array('id' => $genid . 'reportFormName', 'tabindex' => '1', 'class' => 'title'));
+echo label_tag(lang('description'), $genid . 'reportFormDescription', false);
+echo text_field('report[description]', array_var($report_data, 'description'), array('id' => $genid . 'reportFormDescription', 'tabindex' => '2', 'class' => 'title'));
+echo label_tag(lang('object type'), $genid . 'reportFormObjectType', true); 
+
 $selected_option=null;
 $options = array();
 foreach ($object_types as $type) {
@@ -47,10 +46,14 @@ foreach ($object_types as $type) {
 
 $context_menu_style = "font-weight:bold";
 $context_div_display ="display:none;";
-$strDisabled = count($options) > 1 ? '' : 'disabled'; 
-echo select_box('objectTypeSel', $options,
-array('id' => 'objectTypeSel' ,'onchange' => 'og.reportObjectTypeChanged("'.$genid.'", "", 1, "")', 'style' => 'width:200px;', $strDisabled => '', 'tabindex' => '10')) ?>
+$strDisabled = count($options) > 1 ? '' : 'disabled';
+echo select_box('objectTypeSel', $options, array('id' => 'objectTypeSel' ,'onchange' => 'og.reportObjectTypeChanged("'.$genid.'", "", 1, "")', 'style' => 'width:200px;', $strDisabled => '', 'tabindex' => '10'));
+?>
 
+	<span style="margin-left:30px;">
+		<?php echo checkbox_field("report[ignore_context]", array_var($report_data, 'ignore_context', true), array('id' => $genid.'ignore_context')); ?>
+		<label class="checkbox" for="<?php echo $genid.'ignore_context'?>"><?php echo lang('show always')?></label>
+	</span>
 </div>
 
 <div style="padding-top:5px">

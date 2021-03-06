@@ -31,9 +31,12 @@ og.WebpageManager = function() {
 					} else {
 						this.fireEvent('messageToShow', "");
 					}
-                                        
-                                        var sm = Ext.getCmp('webpage-manager').getSelectionModel();
-                                        sm.clearSelections();
+					
+					var cmp = Ext.getCmp('webpage-manager');
+					if (cmp) {
+						var sm = cmp.getSelectionModel();
+						sm.clearSelections();
+					}
 				}
 			}
 	    });

@@ -849,30 +849,31 @@ addLangs({
   	'confirm delete user' : 'Are you sure that you want to delete this user account?',
 	'add sub task' : 'Add subtask',
 	'add first task' : 'Add the first task',
-        'do you want to mantain the current associations of this obj with members of': 'Do you want to mantain the current associations of this object with {0}?',
-        
-        'sync' : 'Sync',
-        'delete calendar' : 'Delete calendar?',      
-        'delete calendar events' : 'Events within Feng Office related to the calendar will be deleted. Enable the checkbox on your right if you also want to delete them from Google Caelndar.',
-        
-        'tasks related' : 'Related tasks',
-        'apply changes to' : 'Apply changes to:',
-        'only this task' : 'Only this task',
-        'this task alone and all to come forward' : 'This task and all to come forward',
-        'all tasks related' : 'All tasks related',
-        'accept' : 'Accept',
-        'events related' : 'Related events',
-        'only this event' : 'Only this events',
-        'this event alone and all to come forward' : 'This events alone and all to come forward',
-        'all events related' : 'All events related',
-        
-        'add new workspace': 'Add new workspace',
-        'edit selected workspace': 'Edit selected workspace',
-        'delete selected workspace_': 'Delete selected workspace',
-        'delete workspace warning': 'Are you sure you want to move the selected workspace to the trash can?',
-        
-        'complete task and subtask' : 'This task contains subtasks which are still pending.<br/>Would you like to complete them too?',
-        'option repetitive title popup' : 'This task is already completed. <br/>Do you wish to:',
-        'option repetitive only task' : 'Modify this task data?',
-        'option repetitive pending task' : 'Modify all task series? (Edit upcoming pending task)'
+	'do you want to mantain the current associations of this obj with members of' : 'Do you want to mantain the current associations of this object with {0}?',
+
+	'company not found': 'Company not found (id: {0})',
+	'sync' : 'Sync',
+	'delete calendar' : 'Delete calendar?',
+	'delete calendar events' : 'Events within Feng Office related to the calendar will be deleted. Enable the checkbox on your right if you also want to delete them from Google Caelndar.',
+
+	'tasks related' : 'Related tasks',
+	'apply changes to' : 'Apply changes to:',
+	'only this task' : 'Only this task',
+	'this task alone and all to come forward' : 'This task and all to come forward',
+	'all tasks related' : 'All tasks related',
+	'accept' : 'Accept',
+	'events related' : 'Related events',
+	'only this event' : 'Only this events',
+	'this event alone and all to come forward' : 'This events alone and all to come forward',
+	'all events related' : 'All events related',
+
+	'add new workspace' : 'Add new workspace',
+	'edit selected workspace' : 'Edit selected workspace',
+	'delete selected workspace_' : 'Delete selected workspace',
+	'delete workspace warning' : 'Are you sure you want to move the selected workspace to the trash can?',
+
+	'complete task and subtask' : 'This task contains subtasks which are still pending.<br/>Would you like to complete them too?',
+	'option repetitive title popup' : 'This task is already completed. <br/>Do you wish to:',
+	'option repetitive only task' : 'Modify this task data?',
+	'option repetitive pending task' : 'Modify all task series? (Edit upcoming pending task)'
 });

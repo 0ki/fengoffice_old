@@ -117,18 +117,18 @@ class Notifier {
 		$type = $object->getObjectTypeName();
 		$typename = lang($object->getObjectTypeName());
 		$name = $object instanceof Comment ? $object->getRelObject()->getObjectName() : $object->getObjectName();
-                
-                $assigned_to = "";
-                $assigned_by = "";
-                if($object instanceof ProjectTask){
-                    if($object->getAssignedTo()){
-                        $assigned_to = $object->getAssignedTo()->getObjectName();
-                        $assigned_by = $object->getAssignedBy()->getObjectName();
-                    }
-                }		             
-                
-                $text = "";
-                //text, descripction or revision comment
+
+		$assigned_to = "";
+		$assigned_by = "";
+		if($object instanceof ProjectTask){
+			if($object->getAssignedTo() instanceof Contact){
+				$assigned_to = $object->getAssignedToName();
+				if($object->getAssignedBy() instanceof Contact) $assigned_by = $object->getAssignedBy()->getObjectName();
+			}
+		}
+		
+		$text = "";
+		//text, descripction or revision comment
 		if ($object->columnExists('text') && trim($object->getColumnValue('text'))) {
                     if($object->getObjectTypeId() == "3" || $object->getObjectTypeId() == "5"){
                         if(config_option("wysiwyg_tasks") || config_option("wysiwyg_messages")){

@@ -58,3 +58,7 @@ ALTER TABLE `<?php echo $table_prefix ?>system_permissions` ADD COLUMN `can_see_
 INSERT INTO <?php echo $table_prefix ?>widgets (name, title, plugin_id, path, default_options, default_section, default_order) VALUES
  ('completed_tasks_list', 'completed tasks list', 0, '', '', 'right', 150)
 ON DUPLICATE KEY UPDATE name=name;
+
+ALTER TABLE `<?php echo $table_prefix ?>reports`
+ ADD COLUMN `ignore_context` BOOLEAN NOT NULL DEFAULT 1,
+ ADD INDEX `object_type`(`report_object_type_id`);

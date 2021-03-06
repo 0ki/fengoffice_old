@@ -90,7 +90,7 @@ class MailController extends ApplicationController {
 					}
 				}				
 			}else{
-				$re_body = $original_mail->getBodyPlain();
+				$re_body = ($type == 'html' ? htmlentities($original_mail->getBodyPlain()) : $original_mail->getBodyPlain());
 			}
 			if ($type == 'html') {
 				$pre_quote = '<blockquote type="cite" style="padding-left:10px; border-left: 1px solid #987ADD;">';
@@ -2238,7 +2238,7 @@ class MailController extends ApplicationController {
 					}
 				}				
 			}else{
-				$body = $original_mail->getBodyPlain();
+				$body = ($type == 'html' ? htmlentities($original_mail->getBodyPlain()) : $original_mail->getBodyPlain());
 			}	
 			if ($type == 'html') {
 				$pre_quote = "<blockquote type='cite' style='padding-left:10px; border-left:1px solid #987ADD;'>";

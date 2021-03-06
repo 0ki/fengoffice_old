@@ -950,11 +950,11 @@ og.clone = function(o) {
 og.closeView = function(obj){
 	var currentPanel = Ext.getCmp('tabs-panel').getActiveTab();
 	currentPanel.back();
-        
-        if(Ext.getCmp('mails-manager') !== undefined){
-            var sm = Ext.getCmp('mails-manager').getSelectionModel();
-            sm.clearSelections();
-        }   
+	var mails_cmp = Ext.getCmp('mails-manager');
+	if (mails_cmp !== undefined) {
+		var sm = mails_cmp.getSelectionModel();
+		sm.clearSelections();
+	}
 };
 
 og.activeTabHasBack = function(){
@@ -2414,7 +2414,7 @@ og.onPersonClose = function() {
 				if (n.id == item.getRootNode().id) {
 					item.getSelectionModel().fireEvent('selectionchange', item.getSelectionModel(), n);
 				}
-			}, 200);
+			}, 500);
 		}
 	});
 }
@@ -2536,5 +2536,40 @@ og.load_company_combo = function(combo_id, selected_id) {
 	
 		$("#"+combo_id+"-loading").css('display', 'none');
 		$("#"+combo_id).css('display', '');
+	}
+}
+
+/**
+ * Clears all dimension tree selections  
+ */
+og.clearDimensionSelection = function() {
+	var dimensions_panel = Ext.getCmp('menu-panel');
+	var n = null;
+	var tree = null;
+	
+	// select all root nodes
+	dimensions_panel.items.each(function(item, index, length) {
+		item.selectRoot();
+		if (n == null || tree == null) {
+			n = item.getRootNode();
+			tree = item;
+		}
+		og.contextManager.cleanActiveMembers(item.dimensionId);
+	});
+	
+	// reset bradcrumbs with the first dimension onclick event
+	if (tree != null && n != null) {
+		tree.fireEvent('click', n);
+	}
+	
+	// force all tab panels reload when needed
+	Ext.getCmp('tabs-panel').items.each(function(tab, index, length) {
+		tab.loaded = false;
+	});
+
+	// relaod current tab
+	var currentPanel = Ext.getCmp('tabs-panel').getActiveTab();
+	if (currentPanel && currentPanel.id != 'overview') {
+		currentPanel.reload();
 	}
 }

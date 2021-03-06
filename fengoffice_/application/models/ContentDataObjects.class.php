@@ -359,7 +359,11 @@ abstract class ContentDataObjects extends DataManager {
 		$SQL_EXTRA_JOINS = '';
 		$SQL_TYPE_CONDITION = 'true';
 
-		$count_results = ! ( defined('INFINITE_PAGING') && INFINITE_PAGING );
+		if (isset($args['count_results'])) {
+			$count_results = $args['count_results'];
+		} else {
+			$count_results = !( defined('INFINITE_PAGING') && INFINITE_PAGING );
+		}
 		$return_raw_data = array_var($args,'raw_data');
 		$start = array_var($args,'start');
 		$limit = array_var($args,'limit');
@@ -476,7 +480,7 @@ abstract class ContentDataObjects extends DataManager {
 	    	$SQL_LIMIT";
 
 
-    	// Execute query and build the resultset
+		// Execute query and build the resultset
     	$rows = DB::executeAll($sql);
     	if ($return_raw_data) {
     		$result->objects = $rows;

@@ -121,7 +121,29 @@
     function setIsOrderByAsc($value) {
       return $this->setColumnValue('is_order_by_asc', $value);
     } // setIsOrderByAsc() 
-   
+    
+    /**
+    * Return value of 'ignore_context' field
+    *
+    * @access public
+    * @param void
+    * @return boolean 
+    */
+    function getIgnoreContext() {
+      return $this->getColumnValue('ignore_context');
+    } // getIgnoreContext()
+    
+    /**
+    * Set value of 'ignore_context' field
+    *
+    * @access public   
+    * @param string $value
+    * @return boolean
+    */
+    function setIgnoreContext($value) {
+      return $this->setColumnValue('ignore_context', $value);
+    } // setIgnoreContext() 
+    
 
     /**
     * Return manager instance

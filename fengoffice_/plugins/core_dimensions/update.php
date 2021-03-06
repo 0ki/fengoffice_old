@@ -37,3 +37,11 @@ function core_dimensions_update_2_3() {
 		UPDATE ".TABLE_PREFIX."dimensions SET permission_query_method='not_mandatory' WHERE code='feng_persons';
 	");
 }
+
+function core_dimensions_update_3_4() {
+	DB::execute("
+		INSERT INTO `".TABLE_PREFIX."config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`) VALUES
+			('system', 'hide_people_vinculations', '1', 'BoolConfigHandler', 1, 0)
+		ON DUPLICATE KEY UPDATE name=name;
+	");
+}
