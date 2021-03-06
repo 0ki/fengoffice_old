@@ -205,6 +205,7 @@ og.WebpageManager = function() {
         closable: true,
 		stripeRows: true,
         loadMask: true,
+		style: "padding:7px;",
         bbar: new Ext.PagingToolbar({
             pageSize: og.pageSize,
             store: this.store,
@@ -250,9 +251,9 @@ og.WebpageManager = function() {
     	}
 	}, this);
 	og.eventManager.addListener("workspace changed", function(ws) {
-		if (this.store.lastOptions) {
-			cm.setHidden(cm.getIndexById('project'), this.store.lastOptions.params.active_project != 0);
-		}
+		//if (this.store.lastOptions) {
+		//	cm.setHidden(cm.getIndexById('project'), this.store.lastOptions.params.active_project != 0);
+		//}
 		
 	}, this);
 };

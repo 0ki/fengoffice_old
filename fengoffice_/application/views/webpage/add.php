@@ -18,10 +18,10 @@
   $project = active_or_personal_project();
   $projects =  active_projects();
   if (!$webpage->isNew()) 
-  	add_page_action(lang('delete webpage'), $webpage->getDeleteUrl(), 'ico-delete');
+  	add_page_action(lang('delete webpage'), "javascript:if(confirm(lang('confirm delete webpage'))) og.openLink('" . $webpage->getDeleteUrl()."');", 'ico-delete');
 ?>
 
-<form class="internalForm" action="<?php echo $webpage->isNew() ? get_url('webpage', 'add') : $webpage->getEditUrl() ?>" method="post">
+<form style='height:100%;background-color:white' class="internalForm" action="<?php echo $webpage->isNew() ? get_url('webpage', 'add') : $webpage->getEditUrl() ?>" method="post">
 
 <div class="webpage">
 <div class="coInputHeader">
@@ -43,9 +43,6 @@
 		<?php } ?>
 		<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('add_webpage_tags_div', this)"><?php echo lang('tags') ?></a> - 
 		<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('add_webpage_description_div', this)"><?php echo lang('description') ?></a> - 
-  		<?php if(logged_user()->isMemberOfOwnerCompany()) { ?>
-			<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('add_webpage_options_div', this)"><?php echo lang('options') ?></a> - 
-		<?php } // if ?>
 		<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('add_webpage_properties_div', this)"><?php echo lang('properties') ?></a>
 		<?php if(!$webpage->isNew() && $project instanceof Project && $webpage->canLinkObject(logged_user(), $project)) { ?> - 
 			<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('add_webpage_linked_objects_div', this)"><?php echo lang('linked objects') ?></a>
@@ -79,18 +76,6 @@
     </fieldset>
 	</div>
   
-  <?php if(logged_user()->isMemberOfOwnerCompany()) { ?>
-  <div id="add_webpage_options_div" style="display:none">
-   <fieldset>
-    <legend><?php echo lang('options') ?></legend>
- 
-    <label><?php echo lang('private webpage') ?>: <span class="desc">(<?php echo lang('private webpage desc') ?>)</span></label>
-    <?php echo yes_no_widget('webpage[is_private]', 'webpageFormIsPrivate', array_var($webpage_data, 'is_private'), lang('yes'), lang('no')) ?>
-	  <? echo render_object_properties('webpage',$webpage); ?>
-  </fieldset>
-  </div>
-<?php } // if ?>
-
 	<div id='add_webpage_properties_div' style="display:none">
 	<fieldset>
 	<legend><?php echo lang('properties') ?></legend>

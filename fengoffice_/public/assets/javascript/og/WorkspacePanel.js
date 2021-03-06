@@ -1,14 +1,9 @@
 og.WorkspacePanel = function(config) {
 	if (!config) config = {};
-	this.tree = new og.WorkspaceTree(config.wstree);
+	if (!config.wstree)  config.wstree = {};
 	
-	this.tree.getSelectionModel().on({
-		'selectionchange' : function(sm, node) {
-			this.getTopToolbar().items.get('delete').setDisabled(!node || node == this.tree.workspaces);
-			this.getTopToolbar().items.get('edit').setDisabled(!node || node == this.tree.workspaces);
-		},
-		scope:this
-	});
+	config.wstree.xtype = 'wstree';
+	//this.tree = new og.WorkspaceTree(config.wstree);
 	
 	Ext.applyIf(config, {
 		autoScroll: true,
@@ -16,36 +11,42 @@ og.WorkspacePanel = function(config) {
 		region: 'center',
 		minSize: 200,
 		layout: 'fit',
-		items: [this.tree],
+		items: [config.wstree],
 		tbar: [{
 			iconCls: 'ico-workspace-add',
 			tooltip: lang('create a workspace'),
-			handler: this.tree.newWS,
-			scope: this.tree
-		},{
+			handler: function() {
+				this.tree.newWS();
+			},
+			scope: this
+		},/*{
 			id: 'delete',
 			iconCls: 'ico-workspace-del',
 			tooltip: lang('delete selected workspace'),
 			disabled: true,
 			handler: function(){
-				var s = this.getSelectionModel().getSelectedNode();
-				if(s && confirm(lang('confirm delete workspace', this.getActiveWorkspace().name))) {
-					this.delWS(s.attributes);
+				var s = this.tree.getSelectionModel().getSelectedNode();
+				if(s && confirm(lang('confirm delete workspace', this.tree.getActiveWorkspace().name))) {
+					this.tree.delWS(s.attributes);
 				}
 			},
-			scope: this.tree
-		},{
+			scope: this
+		},*/{
 			id: 'edit',
 			iconCls: 'ico-workspace-edit',
 			tooltip: lang('edit workspace'),
 			disabled: true,
-			handler: this.tree.editWS,
-			scope: this.tree
+			handler: function() {
+				this.tree.editWS();
+			},
+			scope: this
 		},{
 			iconCls: 'ico-workspace-refresh',
 			tooltip: lang('refresh desc'),
-			handler: this.tree.loadWorkspaces,
-			scope: this.tree
+			handler: function() {
+				this.tree.loadWorkspaces();
+			},
+			scope: this
 		}/*,'-',{
 			iconCls: 'ico-workspace-sort',
 			tooltip: lang('sort desc'),
@@ -64,6 +65,16 @@ og.WorkspacePanel = function(config) {
 	});
 	
 	og.WorkspacePanel.superclass.constructor.call(this, config);
+	
+	this.tree = this.findById('workspace-panel');
+	
+	this.tree.getSelectionModel().on({
+		'selectionchange' : function(sm, node) {
+			//this.getTopToolbar().items.get('delete').setDisabled(!node || node == this.tree.workspaces);
+			this.getTopToolbar().items.get('edit').setDisabled(!node || node == this.tree.workspaces);
+		},
+		scope:this
+	});
 };
 
 Ext.extend(og.WorkspacePanel, Ext.Panel,{});
@@ -94,7 +105,7 @@ og.WorkspaceTree = function(config) {
 
 	Ext.applyIf(config, {
 		ddGroup: 'WorkspaceDD',
-		enableDD: true,
+		enableDD: false,
 		autoScroll: true,
 		id: 'workspace-panel',
 		rootVisible: false,
@@ -249,15 +260,37 @@ Ext.extend(og.WorkspaceTree, Ext.tree.TreePanel, {
 		}
 	},
 	
-	loadWorkspaces: function(node) {
-		//this.removeAll();
-		og.openLink(og.getUrl('project', 'list_projects', {parent: node&&node.ws?node.ws.id:0}), {
-			callback: function(success, data) {
-				this.addWorkspaces(data.workspaces);
-				
-				this.pauseEvents = true;
-				this.workspaces.select();
-				this.pauseEvents = false;
+	loadWorkspaces: function(node, showWsDiv) {
+		if (!node) node = this.workspaces;
+		og.openLink(og.getUrl('project', 'list_projects', {parent: node.ws.id}), {
+			callback: function(success, data, showWsDiv) {
+				if (success) {
+					// remove deleted nodes
+					var ch = node.firstChild;
+					while (ch) {
+						var exists = false;
+						for (var i=0; i < data.workspaces.length; i++) {
+							if (ch.ws.id == data.workspaces[i].id) {
+								exists = true;
+							}
+						}
+						if (!exists) {
+							ch.remove();
+						}
+						ch = ch.nextSibling;
+					}
+
+					this.addWorkspaces(data.workspaces);
+										
+					if (!this.getSelectionModel().getSelectedNode()) {
+						this.pauseEvents = true;
+						this.workspaces.select();
+						this.pauseEvents = false;
+					}
+					
+					if (showWsDiv)
+						og.showSubWsTooltip(node);
+				}
 			},
 			scope: this
 		});
@@ -276,6 +309,17 @@ Ext.extend(og.WorkspaceTree, Ext.tree.TreePanel, {
 			var node = this.getNodeById('ws' + id);
 			if (node) {
 				node.select();
+			}
+		}
+	},
+	
+	getNode: function(id) {
+		if (!id) {
+			return this.workspaces;
+		} else {
+			var node = this.getNodeById('ws' + id);
+			if (node) {
+				return node;
 			}
 		}
 	},

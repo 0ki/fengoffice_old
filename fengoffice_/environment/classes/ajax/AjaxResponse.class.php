@@ -11,6 +11,10 @@ class AjaxResponse {
 	public $errorCode = 0;
 
 	public $errorMessage = "";
+	
+	public $notbar = false;
+	
+	public $contentProperty = "current";
 
 	function __construct() {
 
@@ -18,6 +22,10 @@ class AjaxResponse {
 
 	function setEvents($events) {
 		$this->events = $events;
+	}
+	
+	function setContentProperty($property) {
+		$this->contentProperty = $property;
 	}
 
 	function addContent($panel, $type = null, $data = null, $actions = null) {
@@ -28,25 +36,35 @@ class AjaxResponse {
 		if (isset($actions)) {
 			$this->contents[$panel]["actions"] = $actions;
 		}
+		if ($this->notbar)
+			$this->current["notbar"] = true;
 	}
 
 	function setCurrentContent($type, $data = null, $actions = null, $panel = null) {
+		$prop = $this->contentProperty;
 		if ($type == 'empty') {
-			$this->current = false;
+			$this->$prop = false;
 			return;
 		}
-		$this->current = array(
-			"type" => $type,
-			"data" => $data
-		);
-		if (isset($actions)) {
-			$this->current["actions"] = $actions;
-		}
+		
 		if (isset($panel)) {
-			$this->current["panel"] = $panel;
+			$dpanel = $panel;
 		} else {
-			$this->current["panel"] = ajx_get_panel();
+			$dpanel = ajx_get_panel();
 		}
+		 
+		$this->$prop = array(
+			"type" => $type,
+			"data" => $data,
+			"actions" => $actions,
+			"panel" => $dpanel,
+			"notbar" => $this->notbar
+		);
+	}
+	
+	function unsetCurrentContent() {
+		$prop = $this->contentProperty;
+		$this->$prop = null;
 	}
 	
 	/**
@@ -55,8 +73,10 @@ class AjaxResponse {
 	 * @param array
 	 */
 	function addExtraData($data) {
-		foreach ($data as $k => $v) {
-			$this->$k = $v;
+		if (is_array($data)) {
+			foreach ($data as $k => $v) {
+				$this->$k = $v;
+			}
 		}
 	}
 	

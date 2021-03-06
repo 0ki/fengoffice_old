@@ -195,7 +195,7 @@
 						return 'can_read_mails';
 					else return false;
 					break;
-				case 'Contacts' :  
+				case 'ProjectContacts' :  
 					if ($access_level == ACCESS_LEVEL_WRITE)
 						return 'can_write_contacts';
 					else if ($access_level == ACCESS_LEVEL_READ)
@@ -216,12 +216,14 @@
   	 * @param int $user_id user whose permissions are being checked
   	 * @return unknown
   	 */
-	function permissions_sql_for_listings (DataManager $manager, $access_level, $user_id, $project_id='project_id', $table_alias = null){
+	function permissions_sql_for_listings (DataManager $manager, $access_level, User $user, $project_id='project_id', $table_alias = null){
 		if(! ($manager instanceof DataManager )){
 			throw new Exception("Invalid manager '$manager' in permissions helper",-1);
 			return '';
 		}
+		$user_id = $user->getId();
 		$oup_tablename = ObjectUserPermissions::instance()->getTableName(true);
+		$wo_tablename = WorkspaceObjects::instance()->getTableName(true);
 		$users_table_name =  Users::instance()->getTableName(true);
 		$pu_table_name = ProjectUsers::instance()->getTableName(true);
 		if ( isset($table_alias) && $table_alias && $table_alias!='')
@@ -241,9 +243,17 @@
 		$str = " ( created_by_id = $user_id) ";
 		// element belongs to personal project
 		if($is_project_data_object) // TODO: type of element belongs to a project
-			$str .= "\n OR ( $project_id = (SELECT personal_project_id FROM $users_table_name xx_u WHERE xx_u.id = $user_id)) ";
+			if ($manager instanceof ProjectMessages || $manager instanceof ProjectFiles) {
+				$str .= "\n OR ( exists(SELECT * FROM $users_table_name xx_u, $wo_tablename xx_wo
+				WHERE xx_u.id = $user_id
+					AND xx_u.personal_project_id = xx_wo.workspace_id
+					AND xx_wo.object_id = $object_id 
+					AND xx_wo.object_manager = '$object_manager' )) ";
+			} else {
+				$str .= "\n OR ( $project_id = (SELECT personal_project_id FROM $users_table_name xx_u WHERE xx_u.id = $user_id)) ";
+			}
 		// user or group has specific permissions over object
-		$group_ids = GroupUsers::getGroupsCSVsByUser($user_id);
+		$group_ids = $user->getGroupsCSV();
 		$all_ids = '(' . $user_id . (($group_ids!='')?','.$group_ids:'' ) . ')';
 		$str .= "\n OR ( exists ( SELECT * FROM $oup_tablename xx_oup 
 				WHERE xx_oup.rel_object_id = $object_id 
@@ -251,11 +261,21 @@
 					and xx_oup.user_id in $all_ids 
 					and xx_oup.$access_level_text = true) )" ; 
 		if($is_project_data_object){ // TODO: type of element belongs to a project
-			$str .= "\n OR ( exists ( SELECT * FROM $pu_table_name xx_pu 
+			if ($manager instanceof ProjectMessages || $manager instanceof ProjectFiles) {
+				$str .= "\n OR ( exists ( SELECT * FROM $pu_table_name xx_pu, $wo_tablename xx_wo 
+				WHERE xx_pu.user_id in $all_ids 
+					AND xx_pu.project_id = xx_wo.workspace_id
+					AND xx_wo.object_id = $object_id 
+					AND xx_wo.object_manager = '$object_manager'
+					AND xx_pu.$can_manage_object = true ) ) ";
+			} else {
+				$str .= "\n OR ( exists ( SELECT * FROM $pu_table_name xx_pu 
 				WHERE xx_pu.user_id in $all_ids 
 					AND xx_pu.project_id = $project_id 
 					AND xx_pu.$can_manage_object = true ) ) ";
+			}
 		}
+		//return ' (1=1) ';
 		return ' (' . $str . ') ';
 	}	
 	
@@ -333,37 +353,86 @@
 	 * @return unknown
 	 */
 	function can_access(User $user, ApplicationDataObject $object, $access_level){
-		try{
-			$user_id = $user->getId();
-			if($object->getCreatedById() == $user_id)
-				return true; // the user is the creator of the object
-			if($object instanceof ProjectDataObject && $object->getProject() instanceof Project && $object->getProject()->getId() == $user->getPersonalProjectId() )
-				return true; // The object belongs to the user's personal project
-			$perms = ObjectUserPermissions::getAllPermissionsByObject($object, $user->getId());		
-			if ($perms && is_array($perms)) //if the permissions for the user in the object are specially set
-				return has_access_level($perms[0],$access_level); 
-			$group_ids = GroupUsers::getGroupsCSVsByUser($user_id);
-			if($group_ids && $group_ids!= ''){ //user belongs to at least one group
-				$perms = ObjectUserPermissions::getAllPermissionsByObject($object, $group_ids);			
-				if($perms){
-					foreach ($perms as $perm){
-						if ( has_access_level($perm,$access_level))
-							return true; //there is one group permission that allows the user to access
-					}				
+		try {
+			if ($object instanceof ProjectMessage || $object instanceof ProjectFile) {
+				// handle object in multiple workspaces
+				$user_id = $user->getId();
+				if($object->getCreatedById() == $user_id) {
+					return true; // the user is the creator of the object
 				}
-			}
-			if($object instanceof ProjectDataObject && $object->getProject()){
-				//if the object has a project assigned to it
-				$proj_perm = ProjectUsers::findOne(array('conditions' => array('user_id = ? AND project_id = ? ',  $user_id , $object->getProject()->getId())));
-				if ($proj_perm && can_manage_type(get_class($object->manager()),$proj_perm,$access_level)){
-					return true; // if user has permissions over type of object in the project
+				if ($object instanceof ProjectDataObject) {
+					$ws = $object->getWorkspaces();
+					foreach ($ws as $w) {
+						if ($w->getId() == $user->getPersonalProjectId()) {
+							return true;
+						}
+					}
 				}
+				$perms = ObjectUserPermissions::getAllPermissionsByObject($object, $user->getId());		
+				if ($perms && is_array($perms)) { //if the permissions for the user in the object are specially set
+					return has_access_level($perms[0],$access_level);
+				} 
+				$group_ids = GroupUsers::getGroupsCSVsByUser($user_id);
+				if($group_ids && $group_ids!= '') { //user belongs to at least one group
+					$perms = ObjectUserPermissions::getAllPermissionsByObject($object, $group_ids);			
+					if($perms) {
+						foreach ($perms as $perm){
+							if ( has_access_level($perm,$access_level)) {
+								return true; //there is one group permission that allows the user to access
+							}
+						}				
+					}
+				}
+				if($object instanceof ProjectDataObject){
+					$ws = $object->getWorkspaces();
+					foreach ($ws as $w) {
+						// if the object has a project assigned to it
+						$proj_perm = ProjectUsers::findOne(array('conditions' => array('user_id = ? AND project_id = ? ',  $user_id , $w->getId())));
+						if ($proj_perm && can_manage_type(get_class($object->manager()), $proj_perm, $access_level)){
+							return true; // if user has permissions over type of object in the project
+						}
+						if ($group_ids && $group_ids!= '') { //user belongs to at least one group
+							$proj_perms = ProjectUsers::findAll(array('conditions' => array('project_id = '.$w->getId().' AND user_id in ('. $group_ids .')')));
+							if($proj_perms) {
+								foreach ($proj_perms as $perm) {
+									if( can_manage_type(get_class($object->manager()),$perm,$access_level)) return true; // if any group has permissions over type of object in the project
+								}	
+							}
+						}
+					}
+				}
+			} else {
+				$user_id = $user->getId();
+				if(!$object instanceof ProjectContact && $object->getCreatedById() == $user_id)
+					return true; // the user is the creator of the object
+				if($object instanceof ProjectDataObject && $object->getProject() instanceof Project && $object->getProject()->getId() == $user->getPersonalProjectId() )
+					return true; // The object belongs to the user's personal project
+				$perms = ObjectUserPermissions::getAllPermissionsByObject($object, $user->getId());		
+				if ($perms && is_array($perms)) //if the permissions for the user in the object are specially set
+					return has_access_level($perms[0],$access_level); 
+				$group_ids = GroupUsers::getGroupsCSVsByUser($user_id);
 				if($group_ids && $group_ids!= ''){ //user belongs to at least one group
-					$proj_perms = ProjectUsers::findAll(array('conditions' => array('project_id = '.$object->getProject()->getId().' AND user_id in ('. $group_ids .')')));
-					if($proj_perms){
-						foreach ($proj_perms as $perm){
-							if( can_manage_type(get_class($object->manager()),$perm,$access_level)) return true; // if any group has permissions over type of object in the project
-						}	
+					$perms = ObjectUserPermissions::getAllPermissionsByObject($object, $group_ids);			
+					if($perms){
+						foreach ($perms as $perm){
+							if ( has_access_level($perm,$access_level))
+								return true; //there is one group permission that allows the user to access
+						}				
+					}
+				}
+				if($object instanceof ProjectDataObject && $object->getProject()){
+					//if the object has a project assigned to it
+					$proj_perm = ProjectUsers::findOne(array('conditions' => array('user_id = ? AND project_id = ? ',  $user_id , $object->getProject()->getId())));
+					if ($proj_perm && can_manage_type(get_class($object->manager()),$proj_perm,$access_level)){
+						return true; // if user has permissions over type of object in the project
+					}
+					if($group_ids && $group_ids!= ''){ //user belongs to at least one group
+						$proj_perms = ProjectUsers::findAll(array('conditions' => array('project_id = '.$object->getProject()->getId().' AND user_id in ('. $group_ids .')')));
+						if($proj_perms){
+							foreach ($proj_perms as $perm){
+								if( can_manage_type(get_class($object->manager()),$perm,$access_level)) return true; // if any group has permissions over type of object in the project
+							}	
+						}
 					}
 				}
 			}

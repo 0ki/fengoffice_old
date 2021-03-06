@@ -352,15 +352,31 @@ og.MessageManager = function() {
 		}
 	
 	actions = {
-			newMessage: new Ext.Action({
-				text: lang('new'),
-	            tooltip: lang('add new message'),
-	            iconCls: 'ico-message',
-	            handler: function() {
-					var url = og.getUrl('message', 'add');
-					og.openLink(url, null);
+		newCO: new Ext.Action({
+			text: lang('new'),
+            tooltip: lang('create an object'),
+            iconCls: 'ico-new',
+            menu: {items: [
+            	{
+					text: lang('email'),
+		            tooltip: lang('write new mail'),
+		            iconCls: 'ico-messages',
+		            handler: function() {
+						var url = og.getUrl('mail', 'add_mail');
+						og.openLink(url, null);
+					}
+				},
+            	{ 	
+            		text: lang('message'),
+		            tooltip: lang('add new message'),
+		            iconCls: 'ico-message',
+		            handler: function() {
+						var url = og.getUrl('message', 'add');
+						og.openLink(url, null);
+					}
 				}
-			}),
+			]}
+		}),
 		tag: new Ext.Action({
 			text: lang('tag'),
             tooltip: lang('tag selected objects'),
@@ -442,6 +458,7 @@ og.MessageManager = function() {
 		stripeRows: true,
 		closable: true,
 		loadMask: true,
+		style: "padding:7px;",
 		bbar: new Ext.PagingToolbar({
 			pageSize: og.pageSize,
 			store: this.store,
@@ -454,7 +471,7 @@ og.MessageManager = function() {
 		},
 		sm: sm,
 		tbar:[
-			actions.newMessage,
+			actions.newCO,
 			'-',
 			actions.tag,
 			actions.del,
@@ -490,9 +507,9 @@ og.MessageManager = function() {
     	}
 	}, this);
 	og.eventManager.addListener("workspace changed", function(ws) {
-		if (this.store.lastOptions) {
-			cm.setHidden(cm.getIndexById('project'), this.store.lastOptions.params.active_project != 0);
-		}
+		//if (this.store.lastOptions) {
+		//	cm.setHidden(cm.getIndexById('project'), this.store.lastOptions.params.active_project != 0);
+		//}
 	}, this);
 };
 

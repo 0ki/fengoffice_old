@@ -64,7 +64,7 @@ og.TaskViewer = function() {
 
 	function renderName(value, p, r) {
 		if (r.data.type == 'task') {
-			var url = og.getUrl('task', 'view_list', {id: r.data.object_id});
+			var url = og.getUrl('task', 'view_task', {id: r.data.object_id});
 		} else if (r.data.type == 'milestone') {
 			var url = og.getUrl('milestone', 'view', {id: r.data.object_id});
 		}
@@ -144,6 +144,12 @@ og.TaskViewer = function() {
 				actions.more.setDisabled(false);
 			}
 		});
+	var expander = new og.RowExpander({
+		tpl : new Ext.Template(
+			'<p><b>Name:</b> {name}</p><br>',
+			'<p><b>Workspace:</b> {project}</p>'
+		)
+	});
 	var cm = new Ext.grid.ColumnModel([
 		sm,{
         	id: 'icon',
@@ -156,7 +162,7 @@ og.TaskViewer = function() {
         	resizable: false,
         	hideable:false,
         	menuDisabled: true
-        },{
+        },expander,{
 			id: 'name',
 			header: lang("name"),
 			dataIndex: 'name',
@@ -235,7 +241,7 @@ og.TaskViewer = function() {
             iconCls: 'ico-new',
             menu: {items: [
             	{text: lang('task'), iconCls: 'ico-task', handler: function() {
-					var url = og.getUrl('task', 'add_list');
+					var url = og.getUrl('task', 'add_task');
 					og.openLink(url);
 				}},
 				{text: lang('milestone'), iconCls: 'ico-milestone', handler: function() {
@@ -307,6 +313,8 @@ og.TaskViewer = function() {
 		stripeRows: true,
 		closable: true,
 		loadMask: true,
+		plugins: expander,
+		style: "padding:7px;",
 		bbar: new Ext.PagingToolbar({
 			pageSize: og.pageSize,
 			store: this.store,
@@ -352,9 +360,9 @@ og.TaskViewer = function() {
     	}
 	}, this);
 	og.eventManager.addListener("workspace changed", function(ws) {
-		if (this.store.lastOptions) {
-			cm.setHidden(cm.getIndexById('project'), this.store.lastOptions.params.active_project != 0);
-		}
+		//if (this.store.lastOptions) {
+		//	cm.setHidden(cm.getIndexById('project'), this.store.lastOptions.params.active_project != 0);
+		//}
 	}, this);
 	
 	//this.load();

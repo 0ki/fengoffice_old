@@ -63,7 +63,7 @@
     * @return boolean
     */
     static function clearRelationsByObject(ApplicationDataObject $object) {
-      return self::delete(array('(`object_id` = ? and `object_manager` = ?) or (`object_id` = ? and `object_manager` = ?)', 
+      return self::delete(array('(`object_id` = ? and `object_manager` = ?) or (`rel_object_id` = ? and `rel_object_manager` = ?)', 
       $object->getId(), get_class($object->manager()), $object->getId(),  get_class($object->manager())));
     } // clearRelationsByObject
     

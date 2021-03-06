@@ -34,7 +34,7 @@ class ProjectEvents extends BaseProjectEvents {
 		//permission check
 		$limitation='';
 
-		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectEvents::instance(),ACCESS_LEVEL_READ, logged_user()->getId()) .')';
+		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectEvents::instance(),ACCESS_LEVEL_READ, logged_user()) .')';
 
 		if ($project instanceof Project ){
 			$pids = $project->getAllSubWorkspacesCSV(true, logged_user());
@@ -42,8 +42,8 @@ class ProjectEvents extends BaseProjectEvents {
 			$pids = logged_user()->getActiveProjectIdsCSV();
 		}
 		$limitation = " AND (`project_id` IN ($pids))";
-		if (isset($tag) && $tag && $tag!='') {
-	    		$tag_str = " AND exists (SELECT * from " . TABLE_PREFIX . "tags t WHERE tag='".$tag."' AND  ".TABLE_PREFIX."project_events.id=t.rel_object_id AND t.rel_object_manager='ProjectEvents') ";
+		if (isset($tags) && $tags && $tags!='') {
+	    		$tag_str = " AND exists (SELECT * from " . TABLE_PREFIX . "tags t WHERE tag='".$tags."' AND  ".TABLE_PREFIX."project_events.id=t.rel_object_id AND t.rel_object_manager='ProjectEvents') ";
 		} else {
 			$tag_str= "";
 		}
@@ -156,6 +156,8 @@ class ProjectEvents extends BaseProjectEvents {
 			$limitation  
 			$permissions 
 			$tag_str ";
+		
+		
 		return self::findAll(array(
 			'conditions' => $conditions,
 			'order' => '`start`',
@@ -167,6 +169,144 @@ class ProjectEvents extends BaseProjectEvents {
 //    	$rows=$result->fetchAll();
 //		return $rows;
 	}
+	
+	
+	
+	/**
+	 * Returns all events for the given range, tag and considers the active project
+	 *
+	 * @param DateTimeValue $date
+	 * @param String $tags
+	 * @return unknown
+	 */
+	static function getRangeProjectEvents(DateTimeValue $start_date, DateTimeValue $end_date,  $tags = '', $project = null){
+		$start_day = $start_date->getDay();
+		$start_month = $start_date->getMonth();
+		$start_year = $start_date->getYear();
+		
+		$end_day = $end_date->getDay();
+		$end_month = $end_date->getMonth();
+		$end_year = $end_date->getYear();
+		
+		if(!is_numeric($start_day) OR !is_numeric($start_month) OR !is_numeric($start_year) OR !is_numeric($end_day) OR !is_numeric($end_month) OR !is_numeric($end_year)){
+			return NULL;
+		}
+		// fix any date issues
+		$start_year = date("Y",mktime(0,0,1,$start_month, $start_day, $start_year));
+		$start_month = date("m",mktime(0,0,1,$start_month, $start_day, $start_year));
+		$start_day = date("d",mktime(0,0,1,$start_month, $start_day, $start_year));
+		
+		$end_year = date("Y",mktime(0,0,1,$end_month, $end_day, $end_year));
+		$end_month = date("m",mktime(0,0,1,$end_month, $end_day, $end_year));
+		$end_day = date("d",mktime(0,0,1,$end_month, $end_day, $end_year));
+		//permission check
+		$limitation='';
+
+		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectEvents::instance(),ACCESS_LEVEL_READ, logged_user()) .')';
+
+		if ($project instanceof Project ){
+			$pids = $project->getAllSubWorkspacesCSV(true, logged_user());
+		} else {
+			$pids = logged_user()->getActiveProjectIdsCSV();
+		}
+		$limitation = " AND (`project_id` IN ($pids))";
+		if (isset($tags) && $tags && $tags!='') {
+	    		$tag_str = " AND exists (SELECT * from " . TABLE_PREFIX . "tags t WHERE tag='".$tags."' AND  ".TABLE_PREFIX."project_events.id=t.rel_object_id AND t.rel_object_manager='ProjectEvents') ";
+		} else {
+			$tag_str= "";
+		}
+		
+		$conditions = "	(
+				-- 
+				-- THIS RETURNS EVENTS ON THE ACTUAL DAY IT'S SET FOR (ONE TIME EVENTS)
+				-- 
+				(
+					duration >= '$start_year-$start_month-$start_day 00:00:00' 
+					AND `start` <= '$end_year-$end_month-$end_day 23:59:59' 
+				) 
+				-- 
+				-- THIS RETURNS REGULAR REPEATING EVENTS - DAILY, WEEKLY, MONTHLY, OR YEARLY.
+				-- 
+				OR 
+				(
+					DATE(`start`) <= '$end_year-$end_month-$end_day' --starts before the end date of the range
+					AND
+					(							
+						(
+							ADDDATE(DATE(`start`), INTERVAL ((repeat_num-1)*repeat_d) DAY) >= '$start_year-$start_month-$start_day' 
+							OR
+							repeat_forever = 1
+							OR
+							repeat_end >= '$start_year-$start_month-$start_day'
+						)
+						OR
+						(
+							ADDDATE(DATE(`start`), INTERVAL ((repeat_num-1)*repeat_m) MONTH) >= '$start_year-$start_month-$start_day' 
+							OR
+							repeat_forever = 1
+							OR
+							repeat_end >= '$start_year-$start_month-$start_day'
+						)
+						OR
+						(
+							ADDDATE(DATE(`start`), INTERVAL ((repeat_num-1)*repeat_y) YEAR) >= '$start_year-$start_month-$start_day' 
+							OR
+							repeat_forever = 1
+							OR
+							repeat_end >= '$start_year-$start_month-$start_day')
+						)
+					)		
+				)
+				-- 
+				-- THIS RETURNS EVENTS SET TO BE A CERTAIN DAY OF THE WEEK IN A CERTAIN WEEK OF THE MONTH NUMBERED 1-4
+				-- 
+				OR
+				(
+					repeat_h = 1
+					AND
+					MONTH(`start`) = $start_month 
+					AND 
+					(
+						(
+							DAYOFWEEK('$start_year-$start_month-01') <= DAYOFWEEK(`start`)
+							AND 
+							( DAYOFWEEK(`start`) - (DAYOFWEEK('$start_year-$start_month-01') - 1) + ( FLOOR((DAY(`start`)-1)/7) * 7) ) = $start_day
+						)
+						OR
+						(
+							DAYOFWEEK('$start_year-$start_month-01') > DAYOFWEEK(`start`)
+							AND 
+							( ( 7 - ( DAYOFWEEK('$start_year-$start_month-01') - 1 ) + DAYOFWEEK(`start`) ) + ( FLOOR((DAY(`start`)-1)/7) * 7 ) ) = $start_day
+						)
+					)			
+				)
+				-- 
+				-- THIS RETURNS EVENTS SET TO BE A CERTAIN DAY OF THE WEEK IN THE LAST WEEK OF THE MONTH.
+				-- 
+				OR
+				(
+					repeat_h = 2
+					AND
+					MONTH(`start`) = $start_month 
+					AND 
+					DAY('$start_year-$start_month-$start_day') > (DAY(LAST_DAY('$start_year-$start_month-$start_day')) - 7) 
+					AND 
+					DAYOFWEEK(`start`) = DAYOFWEEK('$start_year-$start_month-$start_day')
+				)				
+			)
+			$limitation  
+			$permissions 
+			$tag_str ";
+		
+		
+		return self::findAll(array(
+			'conditions' => $conditions,
+			'order' => '`start`',
+		));
+	}
+	
+	
+	
 	/**
 	* Return paged project Events
 	*

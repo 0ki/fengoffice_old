@@ -144,7 +144,7 @@
     'collapse all' => 'Collapse All',
     'expand all' => 'Expand all',
 
-    'properties' => 'Edit Properties',
+    'properties' => 'Properties',
     'edit file' => 'Edit file',
     'edit document' => 'Edit document',
     'edit spreadsheet' => 'Edit spreadsheet',

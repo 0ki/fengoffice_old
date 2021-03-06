@@ -75,34 +75,7 @@ class ProjectFile extends BaseProjectFile {
 		parent::__construct();
 	} // __construct
 
-//	/**
-//	 * Return parent folder instance
-//	 *
-//	 * @param void
-//	 * @return ProjectFolder
-//	 */
-//	function getFolder() {
-//		if(is_null($this->folder)) {
-//			$this->folder = ProjectFolders::findById($this->getFolderId());
-//			if(($this->folder instanceof ProjectFolder) && ($this->folder->getProjectId() <> $this->getProjectId())) {
-//				$this->folder = null;
-//			} // if
-//		} // if
-//		return $this->folder;
-//	} // getFolder
 
-	/**
-	 * Return parent project instance
-	 *
-	 * @param void
-	 * @return Project
-	 */
-	function getProject() {
-		if(is_null($this->project)) {
-			$this->project = Projects::findById($this->getProjectId());
-		} // if
-		return $this->project;
-	} // getProject
 
 	/**
 	 * Return all file revisions
@@ -283,7 +256,7 @@ class ProjectFile extends BaseProjectFile {
 		return $revision instanceof ProjectFileRevision ? $revision->getFileContent() : null;
 	} // getFileContent
 
-
+	
 	// ---------------------------------------------------
 	//  Util functions
 	// ---------------------------------------------------
@@ -379,29 +352,24 @@ class ProjectFile extends BaseProjectFile {
 	function getModifyUrl() {
 		if (strcmp('sprd', $this->getTypeString()) == 0) {
 			return get_url('files', 'add_spreadsheet', array(
-					'id' => $this->getId(), 
-					'active_project' => $this->getProjectId())
-			);
+					'id' => $this->getId()
+			));
 		} else if (strcmp('txt', $this->getTypeString()) == 0 || strcmp('text/html', $this->getTypeString()) == 0) {
 			return get_url('files', 'add_document', array(
-					'id' => $this->getId(), 
-					'active_project' => $this->getProjectId())
-			);
+					'id' => $this->getId()
+			));
 		} else if (strcmp('prsn', $this->getTypeString()) == 0) {
 			return get_url('files', 'add_presentation', array(
-					'id' => $this->getId(), 
-					'active_project' => $this->getProjectId())
-			);
+					'id' => $this->getId()
+			));
 		} else if (substr($this->getTypeString(), 0, 4) == "text") {
 			return get_url('files', 'text_edit', array(
-					'id' => $this->getId(), 
-					'active_project' => $this->getProjectId())
-			);
+					'id' => $this->getId()
+			));
 		} else {
 			return get_url('files', 'edit_file', array(
-					'id' => $this->getId(),
-					'active_project' => $this->getProjectId())
-			);
+					'id' => $this->getId()
+			));
 		}
 	} // getModifyUrl
 
@@ -414,24 +382,20 @@ class ProjectFile extends BaseProjectFile {
 	function getOpenUrl() {
 		if (strcmp('sprd', $this->getTypeString()) == 0) {
 			return get_url('files', 'add_spreadsheet', array(
-					'id' => $this->getId(), 
-					'active_project' => $this->getProjectId())
-			);
+					'id' => $this->getId()
+			));
 		} else if (strcmp('txt', $this->getTypeString()) == 0) {
 			return get_url('files', 'add_document', array(
-					'id' => $this->getId(), 
-					'active_project' => $this->getProjectId())
-			);
+					'id' => $this->getId()
+			));
 		} else if (strcmp('prsn', $this->getTypeString()) == 0) {
 			return get_url('files', 'add_presentation', array(
-					'id' => $this->getId(), 
-					'active_project' => $this->getProjectId())
-			);
+					'id' => $this->getId()
+			));
 		} else {
 			return get_url('files', 'download_file', array(
-					'id' => $this->getId(),
-					'active_project' => $this->getProjectId())
-			);
+					'id' => $this->getId()
+			));
 		}
 	} // getOpenUrl
 	 
@@ -455,10 +419,13 @@ class ProjectFile extends BaseProjectFile {
 	 */
 	function getDetailsUrl() {
 		return get_url('files', 'file_details', array(
-        'id' => $this->getId(), 
-        'active_project' => $this->getProjectId())
-		); // get_url
+        'id' => $this->getId()
+		)); // get_url
 	} // getDetailsUrl
+	
+	function getViewUrl() {
+		return $this->getDetailsUrl();
+	}
 
 	/**
 	 * Return revisions URL
@@ -488,8 +455,7 @@ class ProjectFile extends BaseProjectFile {
 	 */
 	function getDownloadUrl() {
 		return get_url('files', 'download_file', array(
-        'id' => $this->getId(), 
-        'active_project' => $this->getProjectId())
+        'id' => $this->getId())
 		); // get_url
 	} // getDownloadUrl
 
@@ -501,8 +467,7 @@ class ProjectFile extends BaseProjectFile {
 	 */
 	function getEditUrl() {
 		return get_url('files', 'edit_file', array(
-        'id' => $this->getId(), 
-        'active_project' => $this->getProjectId())
+        'id' => $this->getId())
 		); // get_url
 	} // getEditUrl
 
@@ -514,8 +479,7 @@ class ProjectFile extends BaseProjectFile {
 	 */
 	function getCheckoutUrl() {
 		return get_url('files', 'checkout_file', array(
-        'id' => $this->getId(), 
-        'active_project' => $this->getProjectId())
+        'id' => $this->getId())
 		); // get_url
 	} // getCheckoutUrl
 
@@ -527,11 +491,22 @@ class ProjectFile extends BaseProjectFile {
 	 */
 	function getCheckinUrl() {
 		return get_url('files', 'checkin_file', array(
-        'id' => $this->getId(), 
-        'active_project' => $this->getProjectId())
+        'id' => $this->getId())
 		); // get_url
 	} // getCheckinUrl
 
+	/* Return undo checkout file URL
+	 *
+	 * @param void
+	 * @return string
+	 */
+	function getUndoCheckoutUrl() {
+		return get_url('files', 'undo_checkout', array(
+        	'id' => $this->getId())); // get_url
+	} // getCheckinUrl
+
+	
+	
 	/**
 	 * Return delete file URL
 	 *
@@ -540,8 +515,7 @@ class ProjectFile extends BaseProjectFile {
 	 */
 	function getDeleteUrl() {
 		return get_url('files', 'delete_file', array(
-        'id' => $this->getId(), 
-        'active_project' => $this->getProjectId())
+        'id' => $this->getId())
 		); // get_url
 	} // getDeleteUrl
 

@@ -329,7 +329,7 @@
   *   year + 10
   * @return null
   */
-  function pick_date_widget($name, $value = null, $year_from = null, $year_to = null, $attributes = null) {
+  function pick_date_widget($name, $value = null, $year_from = null, $year_to = null, $attributes = null, $id = null) {
   	$oldValue = $value;
     if(!($value instanceof DateTimeValue)) $value = new DateTimeValue($value);
     
@@ -360,11 +360,23 @@
       $option_attributes = ($i == $value->getYear() && !is_null($oldValue)) ? array('selected' => 'selected') : null;
       $year_options[] = option_tag($i, $i, $option_attributes);
     } // if
+    $attM = $attributes;
+    $attY = $attributes;
+    $attD = $attributes;
+    if ($attM['id']) {
+    	$attM['id'] .= '_month';
+    }
+    if ($attY['id']) {
+    	$attY['id'] .= '_year';
+    }
+    if ($attD['id']) {
+    	$attD['id'] .= '_day';
+    }
     if (strpos($name, "]")) {
     	$preName = substr($name,0,strpos($name,"]"));
-    	return select_box($preName . '_month]', $month_options, $attributes) . select_box($preName.'_day]', $day_options, $attributes) . select_box($preName . '_year]', $year_options, $attributes);
+    	return select_box($preName . '_month]', $month_options, $attM) . select_box($preName.'_day]', $day_options, $attD) . select_box($preName . '_year]', $year_options, $attY);
     } else
-    	return select_box($name . '_month', $month_options, $attributes) . select_box($name . '_day', $day_options, $attributes) . select_box($name . '_year', $year_options, $attributes );
+    	return select_box($name . '_month', $month_options, $attM) . select_box($name . '_day', $day_options, $attD) . select_box($name . '_year', $year_options, $attY );
   } // pick_date_widget
   
   /**

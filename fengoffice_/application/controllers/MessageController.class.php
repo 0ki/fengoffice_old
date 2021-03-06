@@ -175,7 +175,7 @@ class MessageController extends ApplicationController {
 			while (($e + $m) < $totCount){
 				if ($e < count($emails))
 					if ($m < count($messages))
-						if ($emails[$e]->getSentDate() > $messages[$m]->getUpdatedOn()){
+						if ($emails[$e]['comp_date'] > $messages[$m]['comp_date']){
 							$totMsg[] = $emails[$e];
 							$e++;
 						} else {
@@ -192,6 +192,7 @@ class MessageController extends ApplicationController {
 				}
 			}
 		}
+		
 		return $totMsg;
 	}
 	
@@ -271,11 +272,18 @@ class MessageController extends ApplicationController {
 					"($accountConditions OR (`project_id` in ($pids) AND is_private = 0))";
 		}
 		
-		$permissions = ' AND ( ' . permissions_sql_for_listings(MailContents::instance(),ACCESS_LEVEL_READ, logged_user()->getId(), 'project_id') .')';
+		$permissions = ' AND ( ' . permissions_sql_for_listings(MailContents::instance(),ACCESS_LEVEL_READ, logged_user(), 'project_id') .')';
 	
-		return MailContents::findAll(array(
+		$res = DB::execute("SELECT `id`, 'MailContents' as manager, `sent_date` as comp_date from " . TABLE_PREFIX. "mail_contents where " . 
+			$projectConditions . " AND " . $tagstr . " AND " . $classified . " AND is_deleted = 0 " . $permissions 
+			. " ORDER BY sent_date DESC");
+			
+		if(!$res) return null;
+		return $res->fetchAll();
+		
+		/*return MailContents::findAll(array(
 				'conditions' => $projectConditions . " AND " . $tagstr . " AND " . $classified . " AND is_deleted = 0 " . $permissions, 
-				'order' => 'sent_date DESC'));
+				'order' => 'sent_date DESC'));*/
 	}
 	
 	/**
@@ -288,14 +296,13 @@ class MessageController extends ApplicationController {
 		if (isset($attributes["viewType"]) && 
 			($attributes["viewType"] != "all" && $attributes["viewType"] != "messages"))
 			return null;
-		
+
 		if ($project instanceof Project){
 			$pids = $project->getAllSubWorkspacesCSV(true, logged_user());
-			$messageConditions = "`project_id` IN ($pids)";
 		} else {
-			$proj_ids = logged_user()->getActiveProjectIdsCSV();
-			$messageConditions = "`project_id` in ($proj_ids)" ;
+			$pids = logged_user()->getActiveProjectIdsCSV();
 		}
+		$messageConditions = "`id` IN (SELECT `object_id` FROM `".TABLE_PREFIX."workspace_objects` WHERE `object_manager` = 'ProjectMessages' && `workspace_id` IN ($pids))";
 
 		if (!isset($tag) || $tag == '' || $tag == null) {
 			$tagstr = " '1' = '1'"; // dummy condition
@@ -305,11 +312,14 @@ class MessageController extends ApplicationController {
 				TABLE_PREFIX . "tags.tag = '".$tag."' and " . TABLE_PREFIX . "tags.rel_object_manager ='ProjectMessages' ) > 0 ";
 		}
 		
-		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectMessages::instance(),ACCESS_LEVEL_READ, logged_user()->getId(), 'project_id') .')';
+		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectMessages::instance(),ACCESS_LEVEL_READ, logged_user(), 'project_id') .')';
 
-		return ProjectMessages::findAll(array(
-			'conditions' => $messageConditions . " AND " . $tagstr . $permissions,
-			'order' => 'updated_on DESC'));
+		$res = DB::execute("SELECT id, 'ProjectMessages' as manager, `updated_on` as comp_date from " . TABLE_PREFIX. "project_messages where " . 
+			$messageConditions . " AND " . $tagstr . $permissions 
+			. " ORDER BY updated_on DESC");
+			
+		if(!$res) return null;
+		return $res->fetchAll();
 	}
 	
 	/**
@@ -326,55 +336,59 @@ class MessageController extends ApplicationController {
 			"totalCount" => count($totMsg),
 			"messages" => array()
 		);
-		for ($i = $start; $i < $start + $limit; $i++)
-		{
+		for ($i = $start; $i < $start + $limit; $i++){
 			if (isset($totMsg[$i])){
-				$msg = $totMsg[$i];
-				if ($msg instanceof MailContent){
-					$projectName = "";
-					if ($msg->getProject() instanceof Project){
-						$projectName = $msg->getProject()->getName();
+				$manager= $totMsg[$i]['manager'];
+    			$id = $totMsg[$i]['id'];
+    			if($id && $manager){
+    				$msg=get_object_by_manager_and_id($id,$manager);  
+					
+					if ($msg instanceof MailContent){
+						$projectName = "";
+						if ($msg->getProject() instanceof Project){
+							$projectName = $msg->getProject()->getName();
+						}
+						$text = $msg->getBodyPlain();
+						if (strlen($text) > 300)
+							$text = substr($text,0,300) . "...";
+						$object["messages"][] = array(
+						    "id" => $i,
+							"object_id" => $msg->getId(),
+							"type" => 'email',
+							"hasAttachment" => $msg->getHasAttachments(),
+							"accountId" => $msg->getAccountId(),
+							"accountName" => $msg->getAccount()->getName(),
+							"title" => $msg->getSubject(),
+							"text" => $text,
+							"date" => $msg->getSentDate()->getTimestamp(),
+							"projectId" => $msg->getWorkspacesIdsCSV(),
+							"projectName" => $msg->getWorkspacesNamesCSV(),
+							"userId" => $msg->getAccount()->getOwner()->getId(),
+							"userName" => $msg->getAccount()->getOwner()->getDisplayName(),
+							"tags" => project_object_tags($msg)
+						);
+					} else if ($msg instanceof ProjectMessage){
+						$text = $msg->getText();
+						if (strlen($text) > 300)
+							$text = substr($text,0,300) . "...";
+						$object["messages"][] = array(
+						    "id" => $i,
+							"object_id" => $msg->getId(),
+							"type" => 'message',
+							"hasAttachment" => false,
+							"accountId" => 0,
+							"accountName" => '',
+							"title" => $msg->getTitle(),
+							"text" => $text,
+							"date" => $msg->getUpdatedOn()->getTimestamp(),
+							"projectId" => $msg->getWorkspacesIdsCSV(),
+							"projectName" => $msg->getWorkspacesNamesCSV(),
+							"userId" => $msg->getCreatedById(),
+							"userName" => $msg->getCreatedBy()->getDisplayName(),
+							"tags" => project_object_tags($msg)
+						);
 					}
-					$text = $msg->getBodyPlain();
-					if (strlen($text) > 300)
-						$text = substr($text,0,300) . "...";
-					$object["messages"][] = array(
-					    "id" => $i,
-						"object_id" => $msg->getId(),
-						"type" => 'email',
-						"hasAttachment" => $msg->getHasAttachments(),
-						"accountId" => $msg->getAccountId(),
-						"accountName" => $msg->getAccount()->getName(),
-						"title" => $msg->getSubject(),
-						"text" => $text,
-						"date" => $msg->getSentDate()->getTimestamp(),
-						"projectId" => $msg->getProjectId(),
-						"projectName" => $projectName,
-						"userId" => $msg->getAccount()->getOwner()->getId(),
-						"userName" => $msg->getAccount()->getOwner()->getDisplayName(),
-						"tags" => project_object_tags($msg)
-					);
-				} else if ($msg instanceof ProjectMessage){
-					$text = $msg->getText();
-					if (strlen($text) > 300)
-						$text = substr($text,0,300) . "...";
-					$object["messages"][] = array(
-					    "id" => $i,
-						"object_id" => $msg->getId(),
-						"type" => 'message',
-						"hasAttachment" => false,
-						"accountId" => 0,
-						"accountName" => '',
-						"title" => $msg->getTitle(),
-						"text" => $text,
-						"date" => $msg->getUpdatedOn()->getTimestamp(),
-						"projectId" => $msg->getProjectId(),
-						"projectName" => $msg->getProject()->getName(),
-						"userId" => $msg->getCreatedById(),
-						"userName" => $msg->getCreatedBy()->getDisplayName(),
-						"tags" => project_object_tags($msg)
-					);
-				}
+    			}
 			}
 		}
 		return $object;
@@ -471,8 +485,10 @@ class MessageController extends ApplicationController {
 			return;
 		} // if
 
+		ajx_extra_data(array("title" => $message->getTitle(), 'icon'=>'ico-message'));
 		tpl_assign('message', $message);
 		tpl_assign('subscribers', $message->getSubscribers());
+		ajx_set_no_toolbar(true);
 
 //		$this->setSidebar(get_template_path('view_sidebar', 'message'));
 	} // view
@@ -489,12 +505,6 @@ class MessageController extends ApplicationController {
 		$message = new ProjectMessage();
 		tpl_assign('message', $message);
 
-		if(active_or_personal_project() && !ProjectMessage::canAdd(logged_user(), active_or_personal_project())) {
-			flash_error(lang('no access permissions'));
-			ajx_current("empty");
-			return;
-		} // if
-
 		$message_data = array_var($_POST, 'message');
 		if(!is_array($message_data)) {
 			$message_data = array(); // array
@@ -502,28 +512,22 @@ class MessageController extends ApplicationController {
 		tpl_assign('message_data', $message_data);
 
 		if(is_array(array_var($_POST, 'message'))) {
-			$enteredProject = Projects::findById($message_data["project_id"]);
-			
-			if ($enteredProject instanceof Project)
-				if (!ProjectMessage::canAdd(logged_user(), $enteredProject)){
-					flash_error(lang('no access permissions'));
-					ajx_current("empty");
-					return;
-				} else {
-					$project = $enteredProject;
+			$ids = array_var($_POST, "ws_ids", "");
+			$enteredWS = Projects::findByCSVIds($ids);
+			$validWS = array();
+			foreach ($enteredWS as $ws) {
+				if (ProjectMessage::canAdd(logged_user(), $ws)) {
+					$validWS[] = $ws;
 				}
-			else
-				$project = active_or_personal_project();
+			}
+			if (empty($validWS)) {
+				flash_error(lang('no access permissions'));
+				ajx_current("empty");
+				return;
+			}
 			
-			try {
-				$uploaded_files = ProjectFiles::handleHelperUploads($project);
-			} catch(Exception $e) {
-				$uploaded_files = null;
-			} // try
-
 			try {
 				$message->setFromAttributes($message_data);
-				$message->setProjectId($project->getId());
 
 				// Options are reserved only for members of owner company
 				if(!logged_user()->isMemberOfOwnerCompany()) {
@@ -537,40 +541,47 @@ class MessageController extends ApplicationController {
 				$message->save();
 				$message->subscribeUser(logged_user());
 				$message->setTagsFromCSV(array_var($message_data, 'tags'));
-
-				if(is_array($uploaded_files)) {
-					foreach($uploaded_files as $uploaded_file) {
-						$message->attachFile($uploaded_file);
-						$uploaded_file->setIsPrivate($message->isPrivate());
-						$uploaded_file->setIsVisible(true);
-						$uploaded_file->setExpirationTime(EMPTY_DATETIME);
-						$uploaded_file->save();
-					} // if
-				} // if
+				$message->removeFromAllWorkspaces();
+				foreach ($validWS as $w) {
+					$message->addToWorkspace($w);
+				}
 
 				$message->save_properties($message_data);
-				ApplicationLogs::createLog($message, $project, ApplicationLogs::ACTION_ADD);
+				foreach ($validWS as $w) {
+					ApplicationLogs::createLog($message, $w, ApplicationLogs::ACTION_ADD);
+				}
 				DB::commit();
 
 				// Try to send notifications but don't break submission in case of an error
 				try {
 					$notify_people = array();
-					$project_companies = $project->getCompanies();
-					foreach($project_companies as $project_company) {
-						$company_users = $project_company->getUsersOnProject($project);
-						if(is_array($company_users)) {
-							foreach($company_users as $company_user) {
-								if((array_var($message_data, 'notify_company_' . $project_company->getId()) == 'checked') || (array_var($message_data, 'notify_user_' . $company_user->getId()))) {
-									$message->subscribeUser($company_user); // subscribe
-									$notify_people[] = $company_user;
-								} // if
-							} // if
-						} // if
-					} // if
+					$project_companies = array();
+					$processedCompanies = array();
+					$processedUsers = array();
+					foreach ($validWS as $w) {
+						$workspace_companies = $w->getCompanies();
+						foreach ($workspace_companies as $c) {
+							if (!isset($processedCompanies[$c->getId()])) {
+								$processedCompanies[$c->getId()] = true;
+								$company_users = $c->getUsersOnProject($w);
+								if (is_array($company_users)) {
+									foreach ($company_users as $company_user) {
+										if (!isset($processedCompanies[$company_user->getId()])) {
+											$processedUsers[$company_user->getId()] = true;
+											if ((array_var($message_data, 'notify_company_' . $w->getId()) == 'checked') || (array_var($message_data, 'notify_user_' . $company_user->getId()))) {
+												$message->subscribeUser($company_user); // subscribe
+												$notify_people[] = $company_user;
+											} // if
+										}
+									} // if
+								}
+							}
+						}
+					}
 
 					Notifier::newMessage($message, $notify_people); // send notification email...
 				} catch(Exception $e) {
-
+					flash_error($e->getMessage());
 				} // try
 
 				flash_success(lang('success add message', $message->getTitle()));
@@ -578,12 +589,6 @@ class MessageController extends ApplicationController {
 				// Error...
 			} catch(Exception $e) {
 				DB::rollback();
-
-				if(is_array($uploaded_files)) {
-					foreach($uploaded_files as $uploaded_file) {
-						$uploaded_file->delete();
-					} // foreach
-				} // if
 
 				$message->setNew(true);
 				flash_error($e->getMessage());
@@ -621,15 +626,15 @@ class MessageController extends ApplicationController {
 		if(!is_array($message_data)) {
 			$tag_names = $message->getTagNames();
 			$message_data = array(
-          'milestone_id' => $message->getMilestoneId(),
-          'title' => $message->getTitle(),
-          'text' => $message->getText(),
-          'additional_text' => $message->getAdditionalText(),
-          'tags' => is_array($tag_names) ? implode(', ', $tag_names) : '',
-          'is_private' => $message->isPrivate(),
-          'is_important' => $message->getIsImportant(),
-          'comments_enabled' => $message->getCommentsEnabled(),
-          'anonymous_comments_enabled' => $message->getAnonymousCommentsEnabled(),
+				'milestone_id' => $message->getMilestoneId(),
+				'title' => $message->getTitle(),
+				'text' => $message->getText(),
+				'additional_text' => $message->getAdditionalText(),
+				'tags' => is_array($tag_names) ? implode(', ', $tag_names) : '',
+				'is_private' => $message->isPrivate(),
+				'is_important' => $message->getIsImportant(),
+				'comments_enabled' => $message->getCommentsEnabled(),
+				'anonymous_comments_enabled' => $message->getAnonymousCommentsEnabled(),
 			); // array
 		} // if
 
@@ -656,9 +661,32 @@ class MessageController extends ApplicationController {
 				DB::beginWork();
 				$message->save();
 				$message->setTagsFromCSV(array_var($message_data, 'tags'));
+				
+				/* <multiples workspaces> */
+				$oldws = $message->getWorkspaces();
+				foreach ($oldws as $oldw) {
+					$message->removeFromWorkspace($oldw);
+				}
+				$ids = array_var($_POST, "ws_ids", "");
+				$enteredWS = Projects::findByCSVIds($ids);
+				$validWS = array();
+				foreach ($enteredWS as $ws) {
+					if (ProjectMessage::canAdd(logged_user(), $ws)) {
+						$validWS[] = $ws;
+					}
+				}
+				if (empty($validWS)) {
+					throw new Exception(lang('no access permissions'));
+				}
+				foreach ($validWS as $w) {
+					$message->addToWorkspace($w);
+				}
+				/* </multiples workspaces> */
 
 				$message->save_properties($message_data);
-				ApplicationLogs::createLog($message, $message->getProject(), ApplicationLogs::ACTION_EDIT);
+				foreach ($validWS as $w) {
+					ApplicationLogs::createLog($message, $w, ApplicationLogs::ACTION_EDIT);
+				}
 				DB::commit();
 
 				flash_success(lang('success edit message', $message->getTitle()));
@@ -704,7 +732,10 @@ class MessageController extends ApplicationController {
 				DB::beginWork();
 				$message->save();				
 				$message->save_properties($message_data);
-				ApplicationLogs::createLog($message, $message->getProject(), ApplicationLogs::ACTION_EDIT);
+				$ws = $message->getWorkspaces();
+				foreach ($ws as $w) {
+					ApplicationLogs::createLog($message, $w, ApplicationLogs::ACTION_EDIT);
+				}
 				DB::commit();
 
 				flash_success(lang('success edit message', $message->getTitle()));
@@ -741,7 +772,10 @@ class MessageController extends ApplicationController {
 
 			DB::beginWork();
 			$message->delete();
-			ApplicationLogs::createLog($message, $message->getProject(), ApplicationLogs::ACTION_DELETE);
+			$ws = $message->getWorkspaces();
+			foreach ($ws as $w) {
+				ApplicationLogs::createLog($message, $w, ApplicationLogs::ACTION_DELETE);
+			}
 			DB::commit();
 
 			flash_success(lang('success deleted message', $message->getTitle()));
@@ -851,7 +885,10 @@ class MessageController extends ApplicationController {
 				$comment->save();
 				
 				$comment->save_properties($comment_data);
-				ApplicationLogs::createLog($comment, $project, ApplicationLogs::ACTION_ADD);
+				$ws = $message->getWorkspaces();
+				foreach ($ws as $w) {
+					ApplicationLogs::createLog($comment, $w, ApplicationLogs::ACTION_ADD);
+				}
 				DB::commit();
 
 				// Try to send notification but don't break
@@ -926,7 +963,10 @@ class MessageController extends ApplicationController {
 				DB::beginWork();
 				$comment->save();				
 				$comment->save_properties($comment_data);
-				ApplicationLogs::createLog($comment, $project, ApplicationLogs::ACTION_EDIT);
+				$ws = $message->getWorkspaces();
+				foreach ($ws as $w) {
+					ApplicationLogs::createLog($comment, $w, ApplicationLogs::ACTION_EDIT);
+				}
 				DB::commit();
 
 				flash_success(lang('success edit comment'));
@@ -973,7 +1013,10 @@ class MessageController extends ApplicationController {
 
 			DB::beginWork();
 			$comment->delete();
-			ApplicationLogs::createLog($comment, $project, ApplicationLogs::ACTION_DELETE);
+			$ws = $message->getWorkspaces();
+			foreach ($ws as $w) {
+				ApplicationLogs::createLog($comment, $w, ApplicationLogs::ACTION_DELETE);
+			}
 			DB::commit();
 
 			flash_success(lang('success delete comment'));

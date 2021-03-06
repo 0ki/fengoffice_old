@@ -1,31 +1,99 @@
-<?php
-
-  set_page_title(lang('tasks'));
-  project_tabbed_navigation(PROJECT_TAB_TASKS);
-  project_crumbs(array(
-    array(lang('tasks'), get_url('task')),
-    array(lang('index'))
-  ));
-  if(!active_project() || ProjectTask::canAdd(logged_user(), active_project())) {
-    add_page_action(lang('add task list'), get_url('task', 'add_list'), 'ico-task');
-  } // if
-  //add_javascript_to_page('task_related.js');
-  //add_javascript_to_page('modules/addTaskForm.js');
-
-?>
-<?php if(isset($open_task_lists) && is_array($open_task_lists) && count($open_task_lists)) { ?>
-<div id="openTaskLists">
-<?php 
-  foreach($open_task_lists as $task_list) {
-    $this->assign('task_list', $task_list);
-    $this->assign('on_list_page', false);
-    $this->includeTemplate(get_template_path('task_list', 'task'));
-  } // foreach
-?>
+<div style="display:none">
+<!--  this select box will be cloned by the quick-add task forms  -->
+<?php echo assign_to_select_box("task[assigned_to]", null, "0:0", array("id" => "og-task-new-assigned-to")) ?>
 </div>
-<script type="text/javascript">
-  App.modules.addTaskForm.hideAllAddTaskForms();
+
+<script>
+function filterTasks() {
+	var to = Ext.getDom('og-task-filter-to').value;
+	var status = Ext.getDom('og-task-filter-status').value;
+	og.openLink(og.getUrl('task', 'index', {
+		assigned_to: to,
+		status: status 
+	}));
+}
 </script>
-<?php } else { ?>
-<p><?php echo lang('no open task lists in project') ?></p>
-<?php } // if ?>
+
+<div style="padding:7px">
+
+
+
+<table style="width:100%">
+	<col width=12/><col width=226/><col width=12/>
+	<tr><td class="coViewHeader" colspan=2 rowspan=2 style="background-color:#8181A1"><div class="coViewPropertiesHeader">
+		<div class="og-tasks-actions">
+	<table class="og-task-table-filter"><tr>
+	<td class="td-buttons">
+		<?php $butt_id = gen_id() ?>
+		<div id="<?php echo $butt_id ?>" class="og-tasks-buttons">
+		</div>
+	</td>
+	<td class="td-assigned-to">Show assigned to: <?php echo assign_to_select_box("assigned_to", null, $assignedTo, array("id" => "og-task-filter-to", "onchange" => "filterTasks()")); ?></td>
+	<?php
+		$option = array();
+		$attrs1 = array();
+		$attrs2 = array();
+		if ($status == 'all' || $status == null) {
+			$attrs1["selected"] = "selected"; 
+		} else {
+			$attrs2["selected"] = "selected";
+		}
+		$option[] = option_tag("All", "all", $attrs1);
+		$option[] = option_tag("Pending", "pending", $attrs2);
+		
+	?>
+	<td class="td-status">Show by status: <?php echo select_box("status", $option, array("id" => "og-task-filter-status", "onchange" => "filterTasks()")) ?></td>
+	</tr></table>
+	</div></td>
+	<td class="coViewTopRight"></td></tr>
+		
+	<tr><td class="coViewRight" rowspan=2></td></tr>
+	<tr><td class="coViewBody" colspan=2>
+	
+		<div style="og-tasks-container">
+		
+		</div>
+		
+		<script>
+		var butt = new Ext.Button({
+			renderTo: '<?php echo $butt_id ?>',
+			iconCls: 'ico-new',
+			text: lang('new'),
+			menu: {items: [
+				{text: lang('new milestone'), iconCls: 'ico-milestone', handler: function() {
+					var url = og.getUrl('milestone', 'add');
+					og.openLink(url);
+				}},
+				{text: lang('new task'), iconCls: 'ico-task', handler: function() {
+					var url = og.getUrl('task', 'add_task');
+					og.openLink(url);
+				}}
+			]}
+		});
+		</script>
+		
+		<div style="padding:7px;">
+		<div class="tpMilestoneHeader"><?php echo lang('milestones') ?></div>
+		
+		<div id="og-milestones" class="og-milestones">
+		<?php
+		include "view_milestones.php";
+		?>
+		</div>
+		
+		<div class="tpTaskHeader"><?php echo lang('tasks') ?></div>
+		
+		<div id="og-sub-tasks-0" class="og-tasks">
+		<?php
+		include "view_tasks.php";
+		?>
+		</div>
+		</div>
+	</td></tr>
+	
+	<tr><td class="coViewBottomLeft"></td>
+	<td class="coViewBottom"></td>
+	<td class="coViewBottomRight"></td></tr>
+	</table>
+	
+</div>

@@ -35,6 +35,8 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 	 * @var FileType
 	 */
 	private $file_type;
+	
+	private $workspaces;
 
 	/**
 	 * Construct file revision object
@@ -61,29 +63,18 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 	} // getFile
 
 	/**
-	 * Return parent project
+	 * Return parent workspaces
 	 *
 	 * @param void
-	 * @return Project
+	 * @return array
 	 */
-	function getProject() {
-		if(is_null($this->project)) {
+	function getWorkspaces() {
+		if(is_null($this->workspaces)) {
 			$file = $this->getFile();
-			if($file instanceof ProjectFile) $this->project = $file->getProject();
+			if($file instanceof ProjectFile) $this->workspaces = $file->getWorkspaces();
 		} // if
-		return $this->project;
-	} // getProject
-
-	/**
-	 * Return project ID
-	 *
-	 * @param void
-	 * @return integer
-	 */
-	function getProjectId() {
-		$project = $this->getProject();
-		return $project instanceof Project ? $project->getId() : null;
-	} // getProjectId
+		return $this->workspaces;
+	} // getWorkspaces
 
 	/**
 	 * Return file type object
@@ -202,7 +193,7 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 	 * @return string
 	 */
 	function getDownloadUrl() {
-		return get_url('files', 'download_revision', array('id' => $this->getId(), 'active_project' => $this->getProjectId()));
+		return get_url('files', 'download_revision', array('id' => $this->getId()));
 	} // getDownloadUrl
 
 	/**
@@ -212,7 +203,7 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 	 * @return string
 	 */
 	function getEditUrl() {
-		return get_url('files', 'edit_file_revision', array('id' => $this->getId(), 'active_project' => $this->getProjectId()));
+		return get_url('files', 'edit_file_revision', array('id' => $this->getId()));
 	} // getEditUrl
 
 	/**
@@ -222,7 +213,7 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 	 * @return string
 	 */
 	function getDeleteUrl() {
-		return get_url('files', 'delete_file_revision', array('id' => $this->getId(), 'active_project' => $this->getProjectId()));
+		return get_url('files', 'delete_file_revision', array('id' => $this->getId()));
 	} // getDeleteUrl
 
 	/**
@@ -341,7 +332,6 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 		parent::save();
 		
 		if ($this->getFile()->isModifiable()){
-			$project = $this->getFile()->getProject();
 			
 			if (!$this->isNew())
 	    		SearchableObjects::dropContentByObjectColumn($this,'filecontent');
@@ -352,7 +342,7 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 		    $searchable_object->setRelObjectId($this->getObjectId());
 		    $searchable_object->setColumnName('filecontent');
 		    $searchable_object->setContent($this->getFileContent());
-	        if($project instanceof Project) $searchable_object->setProjectId($project->getId());
+	        $searchable_object->setProjectId(0); //TODO: search
 		    $searchable_object->setIsPrivate($this->isPrivate());
 		            
 		    $searchable_object->save();

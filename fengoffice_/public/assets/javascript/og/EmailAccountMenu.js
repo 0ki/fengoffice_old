@@ -12,12 +12,21 @@ og.EmailAccountMenu = function(config, accounts, type) {
 	
 	this.loadAccounts(type);
 	og.eventManager.addListener('mail account added', this.addAccount, this);
+	og.eventManager.addListener('mail account deleted', this.removeAccount, this);
+	og.eventManager.addListener('mail account edited', this.editAccount, this);
 };
 
 Ext.extend(og.EmailAccountMenu, Ext.menu.Menu, {
 
+	editAccount: function(account) {
+		var item = this.accountnames[account.id];
+		if (item) {
+			item.setText(account.name);
+		}
+	},
+
 	removeAccount: function(account) {
-		var item = this.accountnames[account.name];
+		var item = this.accountnames[account.id];
 		if (item) {
 			this.remove(item);
 		}

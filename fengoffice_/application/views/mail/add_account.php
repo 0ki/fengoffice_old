@@ -1,7 +1,7 @@
 <?php 
   set_page_title($mailAccount->isNew() ? lang('add mail account') : lang('edit mail account'));
   if (!$mailAccount->isNew() && $mailAccount->canDelete(logged_user()))
-  	add_page_action(lang('delete mail account'), $mailAccount->getDeleteUrl(), 'ico-delete');
+  	add_page_action(lang('delete mail account'),  "javascript:if(confirm(lang('confirm delete mail account'))) og.openLink('" . $mailAccount->getDeleteUrl() . "');", 'ico-delete');
 ?>
 
 <form class="internalForm" action="<?php echo $mailAccount->isNew() ? get_url('mail', 'add_account') : $mailAccount->getEditUrl()?>" method="post">
@@ -49,6 +49,54 @@
     <?php echo text_field('mailAccount[server]', array_var($mailAccount_data, 'server'), 
     array('id' => 'mailAccountFormServer', 'tabindex'=>'4')) ?>
   </div>
+
+  <div>
+    <label for="mailSmtpServer"><?php echo lang('smtp server')?> <span class="label_required">*</span>
+    <span class="desc"><?php echo lang('mail account smtp server description') ?></span></label>
+    <?php echo text_field('mailAccount[smtp_server]', array_var($mailAccount_data, 'smtp_server'), 
+    array('id' => 'mailSmtpServer', 'tabindex'=>'5')) ?>
+  </div>
+
+  <div>
+    <label for="mailSmtpPort"><?php echo lang('smtp port')?> <span class="label_required">*</span>
+    <span class="desc"><?php echo lang('mail account smtp port description') ?></span></label>
+    <?php echo text_field('mailAccount[smtp_port]', array_var($mailAccount_data, 'smtp_port',25), 
+    array('id' => 'mailSmtpPort', 'tabindex'=>'5')) ?>
+  </div>
+
+  <div>
+    <label for="mailSmtpUseAuth"><?php echo lang('smtp use auth')?> <span class="label_required">*</span>
+    <span class="desc"><?php echo lang('mail account smtp use auth description') ?></span></label>
+    <?php 
+    $use_auth = array_var($mailAccount_data, 'smtp_use_auth',1);
+	$options = array(
+			option_tag(lang('no smtp auth'), 0, ($use_auth==0)?array('selected' => 'selected'):null),
+			option_tag(lang('same as incoming'), 1, ($use_auth==1)?array('selected' => 'selected'):null),
+			option_tag(lang('smtp specific'), 2, ($use_auth==2)?array('selected' => 'selected'):null)
+		);
+	echo select_box('mailAccount[smtp_use_auth]', $options, 
+		array('id' => 'mailSmtpUseAuth', 'tabindex'=>'6',
+		'onchange' => "if(document.getElementById('mailSmtpUseAuth').selectedIndex ==2) document.getElementById('smtp_specific_auth').style.display = 'block'; else document.getElementById('smtp_specific_auth').style.display = 'none';"));
+    ?>
+  </div>
+
+  
+  <div id = 'smtp_specific_auth' <?php if(array_var($mailAccount_data, 'smtp_use_auth',1)!=2) echo 'style="display:none"';?>>
+  <div>
+    <label for="mailSmtpUsername"><?php echo lang('smtp username')?> <span class="label_required"></span>
+    <span class="desc"><?php echo lang('mail account smtp username description') ?></span></label>
+    <?php echo text_field('mailAccount[smtp_username]', array_var($mailAccount_data, 'smtp_username'), 
+    array('id' => 'mailSmtpUsername', 'tabindex'=>'5')) ?>
+  </div>
+
+  <div>
+    <label for="mailSmtpPassword"><?php echo lang('smtp password')?> <span class="label_required"></span>
+    <span class="desc"><?php echo lang('mail account smtp password description') ?></span></label>
+    <?php echo password_field('mailAccount[smtp_password]', array_var($mailAccount_data, 'smtp_password'), 
+    array('id' => 'mailSmtpPassword', 'tabindex'=>'5')) ?>
+  </div>
+  </div>
+  <br>
 
 <fieldset style="display:none">
 	<legend><?php echo lang('email connection method')?></legend>

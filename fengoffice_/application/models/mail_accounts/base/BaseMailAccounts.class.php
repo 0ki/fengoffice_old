@@ -21,9 +21,14 @@
     'email' => DATA_TYPE_STRING, 
     'password' => DATA_TYPE_STRING, 
     'server' => DATA_TYPE_STRING, 
+    'smtp_server' => DATA_TYPE_STRING, 
     'is_imap' => DATA_TYPE_BOOLEAN, 
     'incoming_ssl' => DATA_TYPE_BOOLEAN, 
-    'incoming_ssl_port' => DATA_TYPE_INTEGER,  
+    'incoming_ssl_port' => DATA_TYPE_INTEGER, 
+    'smtp_port' => DATA_TYPE_INTEGER,  
+    'smtp_use_auth' => DATA_TYPE_INTEGER,  
+    'smtp_username' => DATA_TYPE_STRING, 
+    'smtp_password' => DATA_TYPE_STRING 
 );
   
     /**

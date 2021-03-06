@@ -74,17 +74,18 @@ class AccountController extends ApplicationController {
 		$user_data = array_var($_POST, 'user');
 		if(!is_array($user_data)) {
 			$user_data = array(
-          'username'      => $user->getUsername(),
-          'email'         => $user->getEmail(),
-          'display_name'  => $user->getDisplayName(),
-          'title'         => $user->getTitle(),
-          'office_number' => $user->getOfficeNumber(),
-          'fax_number'    => $user->getFaxNumber(),
-          'mobile_number' => $user->getMobileNumber(),
-          'home_number'   => $user->getHomeNumber(),
-          'timezone'      => $user->getTimezone(),
-          'auto_assign'   => $user->getAutoAssign(),
-          'company_id'    => $user->getCompanyId(),
+	          'username'      => $user->getUsername(),
+	          'email'         => $user->getEmail(),
+	          'display_name'  => $user->getDisplayName(),
+	          'title'         => $user->getTitle(),
+	          'office_number' => $user->getOfficeNumber(),
+	          'fax_number'    => $user->getFaxNumber(),
+	          'mobile_number' => $user->getMobileNumber(),
+	          'home_number'   => $user->getHomeNumber(),
+	          'timezone'      => $user->getTimezone(),
+	          'auto_assign'   => $user->getAutoAssign(),
+	          'company_id'    => $user->getCompanyId(),
+	          'is_admin'    => $user->isAdministrator()
 			); // array
 
 			if(is_array($im_types)) {
@@ -112,6 +113,9 @@ class AccountController extends ApplicationController {
 
 				$user->clearImValues();
 
+				if (array_var($user_data, 'is_admin')) {
+					$user->setAsAdministrator();
+				}
 				foreach($im_types as $im_type) {
 					$value = trim(array_var($user_data, 'im_' . $im_type->getId()));
 					if($value <> '') {
@@ -246,7 +250,19 @@ class AccountController extends ApplicationController {
 		if((trim($redirect_to)) == '' || !is_valid_url($redirect_to)) {
 			$redirect_to = $user->getCardUrl();
 		} // if
+		
+		$user_data = array_var($_POST, 'user');
+		if(!is_array($user_data)) {
+			$user_data = array(
+	          'can_edit_company_data' => $user->getCanEditCompanyData(),
+	          'can_manage_security' => $user->getCanManageSecurity(),
+	          'can_manage_workspaces' => $user->getCanManageWorkspaces(),
+	          'can_manage_configuration' => $user->getCanManageConfiguration(),
+	          'can_manage_contacts' => $user->getCanManageContacts(),
+			); // array			
+		} // if
 
+		tpl_assign('user_data', $user_data);
 		tpl_assign('user', $user);
 		tpl_assign('company', $company);
 		tpl_assign('projects', $projects);
@@ -284,6 +300,14 @@ class AccountController extends ApplicationController {
 						} // if
 					} // if
 				} // if
+				
+				$user->setCanEditCompanyData(false);
+				$user->setCanManageSecurity(false);
+				$user->setCanManageConfiguration(false);
+				$user->setCanManageWorkspaces(false);
+				$user->setCanManageContacts(false);
+				$user->setFromAttributes($user_data);
+				$user->save();
 				DB::commit();
 	
 				flash_success(lang('success user permissions updated'));

@@ -1,7 +1,7 @@
 <?php
 
   /**
-  * DulceDeLeche upgrade script will upgrade OpenGoo 0.5.x to OpenGoo 0.6
+  * DulceDeLeche upgrade script will upgrade OpenGoo 0.6.4 to OpenGoo 0.6.6
   *
   * @package ScriptUpgrader.scripts
   * @version 1.0
@@ -46,8 +46,8 @@
     */
     function __construct(Output $output) {
       parent::__construct($output);
-      $this->setVersionFrom('0.5');
-      $this->setVersionTo('0.6');
+      $this->setVersionFrom('0.6.4');
+      $this->setVersionTo('0.6.6');
     } // __construct
     
     /**
@@ -179,7 +179,7 @@
         return false;
       } // if
 
-      $this->printMessage('OpenGoo has been upgraded. You are now running OpenGoo 0.6. Enjoy!');
+      $this->printMessage('OpenGoo has been upgraded. You are now running OpenGoo '.$this->getVersionTo().' Enjoy!');
     } // execute
   } // DulceDeLecheUpgradeScript
 

@@ -5,11 +5,18 @@
 //some event handlers
 og.eventManager.addListener('tag changed', 
  	function (tag){ 
- 		if (Ext.getCmp('tabs-panel').getActiveTab().id == 'calendar-panel')
+ 		if (Ext.getCmp('tabs-panel').getActiveTab().id == 'calendar-panel') {
  			og.openLink('<?php echo get_url('event')?>',
  				{caller:'calendar-panel',
  				get:{tag:tag.name}}
  			);
+ 		}
+ 		if (Ext.getCmp('tabs-panel').getActiveTab().id == 'tasks-panel') {
+ 			og.openLink('<?php echo get_url('task')?>',
+ 				{caller:'tasks-panel',
+ 				get:{tag:tag.name}}
+ 			);
+ 		}
  	}
 );
 og.eventManager.addListener('company added', 
@@ -20,11 +27,6 @@ og.eventManager.addListener('company added',
  		}
  	}
 );
-
-og.eventManager.addListener('filename checked', 
-	function (fileInfo) {
-		checkFileNameReturn(fileInfo);
-	});
 
 og.eventManager.addListener('debug',
 	function (text){

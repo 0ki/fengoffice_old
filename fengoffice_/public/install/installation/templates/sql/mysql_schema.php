@@ -1,3 +1,7 @@
+-- <?php echo $table_prefix ?> og_
+-- <?php echo $default_charset ?> DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci
+-- <?php echo $default_collation ?> collate utf8_unicode_ci
+
 CREATE TABLE `<?php echo $table_prefix ?>administration_tools` (
   `id` tinyint(3) unsigned NOT NULL auto_increment,
   `name` varchar(50) <?php echo $default_collation ?> NOT NULL default '',
@@ -260,7 +264,6 @@ CREATE TABLE `<?php echo $table_prefix ?>project_file_revisions` (
 
 CREATE TABLE `<?php echo $table_prefix ?>project_files` (
   `id` int(10) unsigned NOT NULL auto_increment,
-  `project_id` int(10) unsigned NOT NULL default '0',
   `filename` varchar(100) <?php echo $default_collation ?> NOT NULL default '',
   `description` text <?php echo $default_collation ?>,
   `is_private` tinyint(1) unsigned NOT NULL default '0',
@@ -276,8 +279,7 @@ CREATE TABLE `<?php echo $table_prefix ?>project_files` (
   `updated_by_id` int(10) unsigned default '0',
   `checked_out_on` datetime NOT NULL default '0000-00-00 00:00:00',
   `checked_out_by_id` int(10) unsigned DEFAULT 0,
-  PRIMARY KEY  (`id`),
-  KEY `project_id` (`project_id`)
+  PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB <?php echo $default_charset ?>;
 
 CREATE TABLE `<?php echo $table_prefix ?>project_forms` (
@@ -301,7 +303,6 @@ CREATE TABLE `<?php echo $table_prefix ?>project_forms` (
 CREATE TABLE `<?php echo $table_prefix ?>project_messages` (
   `id` int(10) unsigned NOT NULL auto_increment,
   `milestone_id` int(10) unsigned NOT NULL default '0',
-  `project_id` int(10) unsigned default NULL,
   `title` varchar(100) <?php echo $default_collation ?> default NULL,
   `text` text <?php echo $default_collation ?>,
   `additional_text` text <?php echo $default_collation ?>,
@@ -315,7 +316,6 @@ CREATE TABLE `<?php echo $table_prefix ?>project_messages` (
   `updated_by_id` int(10) unsigned default NULL,
   PRIMARY KEY  (`id`),
   KEY `milestone_id` (`milestone_id`),
-  KEY `project_id` (`project_id`),
   KEY `created_on` (`created_on`)
 ) ENGINE=InnoDB <?php echo $default_charset ?>;
 
@@ -564,11 +564,13 @@ CREATE TABLE  `<?php echo $table_prefix ?>project_contacts` (
 CREATE TABLE  `<?php echo $table_prefix ?>project_webpages` (
   `id` int(10) unsigned NOT NULL auto_increment,
   `project_id` int(10) unsigned NOT NULL default '0',
-  `url` varchar(500) <?php echo $default_collation ?> NOT NULL default '',
+  `url` text <?php echo $default_collation ?> NOT NULL ,
   `title` varchar(100) <?php echo $default_collation ?> default '',
   `description` varchar(255) <?php echo $default_collation ?> default '',
   `created_on` datetime default NULL,
   `created_by_id` int(10) unsigned NOT NULL default '0',	
+  `updated_on` datetime NOT NULL default '0000-00-00 00:00:00',
+  `updated_by_id` int(10) unsigned default NULL,
   `is_private` tinyint(1) unsigned NOT NULL default '0',
   PRIMARY KEY  (`id`),
   KEY `project_id` (`project_id`)
@@ -584,6 +586,11 @@ CREATE TABLE  `<?php echo $table_prefix ?>mail_accounts` (
   `is_imap` int(1) NOT NULL default '0',
   `incoming_ssl` int(1) NOT NULL default '0',
   `incoming_ssl_port` int default '995',
+  `smtp_server` VARCHAR(100) <?php echo $default_collation ?> NOT NULL default '',
+  `smtp_use_auth` INTEGER UNSIGNED NOT NULL default 0,
+  `smtp_username` VARCHAR(100) <?php echo $default_collation ?>,
+  `smtp_password` VARCHAR(100) <?php echo $default_collation ?>,
+  `smtp_port` INTEGER UNSIGNED NOT NULL default 25,
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB <?php echo $default_charset ?>;
 
@@ -606,7 +613,7 @@ CREATE TABLE  `<?php echo $table_prefix ?>mail_contents` (
   `is_shared` INT(1) NOT NULL default '0',
   `is_private` INT(1) NOT NULL default 0,
   `created_on` datetime default NULL,
-  `created_by_id` int(10) unsigned NOT NULL default '0',	
+  `created_by_id` int(10) unsigned NOT NULL default '0',
   PRIMARY KEY  (`id`),
   KEY `project_id` (`project_id`),
   KEY `account_id` (`account_id`)
@@ -617,4 +624,39 @@ CREATE TABLE  `<?php echo $table_prefix ?>guistate` (
   `user_id` int(10) unsigned NOT NULL default '1',
   `name` varchar(100) NOT NULL,
   `value` text NOT NULL
+) ENGINE=InnoDB <?php echo $default_charset ?>;
+
+CREATE TABLE `<?php echo $table_prefix ?>workspace_objects` (
+  `workspace_id` int(10) unsigned NOT NULL default 0,
+  `object_manager` varchar(50) NOT NULL default '',
+  `object_id` int(10) unsigned NOT NULL default 0,
+  `created_by_id` int(10) unsigned default NULL,
+  `created_on` datetime default NULL,
+  PRIMARY KEY  (`workspace_id`, `object_manager`, `object_id`),
+  KEY `workspace_id` (`workspace_id`),
+  KEY `object_manager` (`object_manager`),
+  KEY `object_id` (`object_id`)
+) ENGINE=InnoDB <?php echo $default_charset ?>;
+
+CREATE TABLE  `<?php echo $table_prefix ?>project_charts` (
+  `id` int(10) unsigned NOT NULL auto_increment,
+  `project_id` int(10) unsigned default NULL,
+  `type_id` int(10) unsigned default NULL,
+  `display_id` int(10) unsigned default NULL,
+  `title` varchar(100) <?php echo $default_collation ?> default NULL,
+  `show_in_project` tinyint(1) unsigned NOT NULL default '1',
+  `show_in_parents` tinyint(1) unsigned NOT NULL default '0',
+  `created_on` datetime NOT NULL default '0000-00-00 00:00:00',
+  `created_by_id` int(10) unsigned default NULL,
+  `updated_on` datetime NOT NULL default '0000-00-00 00:00:00',
+  `updated_by_id` int(10) unsigned default NULL,
+  PRIMARY KEY  (`id`),
+  KEY `project_id` (`project_id`)
+) ENGINE=InnoDB <?php echo $default_charset ?>;
+
+CREATE TABLE  `<?php echo $table_prefix ?>project_chart_params` (
+  `id` int(10) unsigned NOT NULL,
+  `chart_id` int(10) unsigned NOT NULL,
+  `value` varchar(80) NOT NULL,
+  PRIMARY KEY  (`id`,`chart_id`)
 ) ENGINE=InnoDB <?php echo $default_charset ?>;

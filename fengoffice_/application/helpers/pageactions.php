@@ -1,5 +1,9 @@
 <?php
 
+	function clear_page_actions(){
+		return PageActions::instance()->clearActions();
+	}
+
   /**
   * Return all page actions
   *
@@ -247,6 +251,10 @@
       
     } // instance
     
+    function clearActions(){
+    	$this->actions = array();
+    	return true;
+    }
   } // PageActions
 
 ?>

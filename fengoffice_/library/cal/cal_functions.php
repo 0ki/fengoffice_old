@@ -59,11 +59,8 @@ return "";
   cal_navmenu()
    returns the navigation buttons for the day/module
 ###################################################################*/
-function cal_navmenu($show_date_title= true){
-	// get the date being requested.
-	$day = $_SESSION['cal_day'];
-	$month = $_SESSION['cal_month'];
-	$year = $_SESSION['cal_year'];
+function cal_navmenu($show_date_title= true,$day,$month,$year){
+	
 	$a = array_var($_GET,'a');
 	// make calculations
 	if($a=="calendar" OR $a=="" OR $a=="admin" OR $a=="search"){
@@ -84,32 +81,23 @@ function cal_navmenu($show_date_title= true){
 	$ny = date('Y', $nexttime);
 	if ( !$show_date_title) $title ='';
 	// return menu output
-	$o = "
-	<table width='90%' cellpadding='3' cellspacing='0'><tr>
-    <td>
-	<span class='month_title'>$title</span>
-	</td><td align='right' valign='bottom'>";
 	
-	add_page_action(lang('back to calendar'), 'javascript:(function(){ Ext.getCmp(\'calendar-panel\').reset(); })()');
-	//$o .= "<input type=\"button\" value=\"".CAL_MENU_BACK_CALENDAR."\" class=\"formButtons\" onClick=\"og.openLink('index.php?c=event&action=calendar&year=$year&month=$month&day=1');\"> ";
+	/*add_page_action(lang('back to calendar'), 'javascript:(function(){ Ext.getCmp(\'calendar-panel\').reset(); })()');
+
 	$can_add = (!active_project() || ProjectEvent::canAdd(logged_user(),active_project()));
 	if( ($a=="viewdate" OR $a=="delete" OR $a=="submitevent") AND  $can_add ) {		
  		add_page_action(lang('add event'), cal_getlink("index.php?action=add&year=$year&month=$month&day=$day") );
-		//$o .= "<input type=\"button\" value=\"".CAL_MENU_NEWEVENT."\" class=\"formButtons\" onClick=\"og.openLink('" . cal_getlink("index.php?action=add&year=$year&month=$month&day=$day") . "');\"> ";
+		
 	}
 	if($a=="add" OR $a=="modify" OR $a=="viewevent") {		
  		add_page_action(lang('back to day'), cal_getlink("index.php?c=event&action=viewdate&year=$year&month=$month&day=$day") );
-		//$o .= "<input type=\"button\" value=\"".CAL_MENU_BACK_EVENTS."\" class=\"formButtons\" onClick=\"og.openLink('index.php?c=event&action=viewdate&year=$year&month=$month&day=$day');\">";
+		
 	}
 	if($a!="viewevent" AND $a!="search" AND $a!="search_results" AND $a!="admin" AND $a!="login"){
 		 add_page_action(lang('previous day'), cal_getlink("index.php?c=event&a=viewdate&year=$py&month=$pm&day=$pd"));
 		 add_page_action(lang('next day'), cal_getlink("index.php?c=event&a=viewdate&year=$ny&month=$nm&day=$nd"));
-	//	$o .= "
-	//	<input type=\"button\" value=\"<<\" class=\"formButtons\" onClick=\"og.openLink('index.php?c=event&a=viewdate&year=$py&month=$pm&day=$pd');\"> 
-	//	<input type=\"button\" value=\">>\" class=\"formButtons\" onClick=\"og.openLink('index.php?c=event&a=viewdate&year=$ny&month=$nm&day=$nd');\"> ";
-	}
-	$o .= "</td></tr></table>";
-	return $o;
+	
+	}*/
 }
 
 
@@ -258,18 +246,11 @@ function cal_month_short($month){
    css stylesheet file links (acording to which skin is loaded) etc
 ###################################################################*/
 function cal_top(){
-	// set date stuff
-	$day = $_SESSION['cal_day'];
-	$month = $_SESSION['cal_month'];
-	$year = $_SESSION['cal_year'];
-	$output = '';
-	// get all css stuff.  I do this temporarily until I work in a better stylesheet system into my site.
-	$skin = cal_option("skin");
-	if($skin=="") $skin_link = "default";
-	else $skin_link = "skins/".$skin;
+	
 	// print the beginning of the calendar module
-	$output .= '
+	$output = '
 		<script type="text/javascript">
+		
 			function cal_toggle(id){
 				obj = document.getElementById(id);
 				if(obj.style.display=="none"){
@@ -287,14 +268,7 @@ function cal_top(){
 		</script>
 		<!-- overlib -->
 		<div id="overDiv" style="position:absolute; visibility:hidden; z-index:1000;"></div>
-		<!-- start main calendar tables -->
-		<table id="cal" class="main-outer" width="100%" border="0" cellpadding="1" cellspacing="0"><tr><td>
-		<table class="main-inner" width="100%" border="0" cellpadding="5" cellspacing="0">
-		<tr>
-		<td align="left" valign="top">
-		<table border="0" cellspacing="0" cellpadding="4" width="100%">
-		<tr valign="top" align="center"><td>';
-	$output .= "</td></tr></table></td></tr><tr><td align='center' valign='top'>";
+		<!-- start main calendar tables -->';
 	return $output;	
 }
 
@@ -312,7 +286,7 @@ function cal_bottom(){
 	$year = $_SESSION['cal_year'];
 	// start output
 	$output = cal_submenu($year, $month, $day);
-	$output .= '<br></td></tr></table></td></tr></table>';
+	//$output .= '<br></td></tr></table></td></tr></table>';
 	return $output;
 }
 

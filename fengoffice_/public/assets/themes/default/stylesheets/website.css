@@ -1,5 +1,6 @@
 @import 'general/rewrites.css';
 @import '../extjs/css/ext-all.css';
+@import 'og/ext_modify.css';
 @import 'general/layout.css';
 @import 'general/forms.css';
 @import 'general/construction.css';
@@ -20,7 +21,6 @@
 @import 'dashboard/my_tasks.css';
 @import 'file/types.css';
 @import 'help.css';
-@import 'modules/addMessageForm.js';
 @import 'project/comments.css';
 @import 'project/documents.css';
 @import 'project/files.css';

@@ -37,6 +37,9 @@
     <td class="optionLabel"><label for="configFormDatabasePrefix">Table prefix:</label></td>
     <td><input type="text" name="config_form[database_prefix]" id="configFormDatabasePrefix" value="<?php echo array_var($config_form_data, 'database_prefix', 'og_') ?>" /></td>
   </tr>
+  <tr>
+    <td colspan="2"><b>Note:</b> You must manually create the database schema before you can continue.</td>
+  </tr>
 </table>
 
 <table class="formBlock">

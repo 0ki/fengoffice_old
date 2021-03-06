@@ -8,7 +8,7 @@ og.RowExpander = function(config) {
 		collapse: true
 	});
 
-	Ext.grid.RowExpander.superclass.constructor.call(this);
+	og.RowExpander.superclass.constructor.call(this);
 
 	if (this.tpl) {
 		if (typeof this.tpl == 'string') {
@@ -21,7 +21,7 @@ og.RowExpander = function(config) {
 	this.bodyContent = {};
 };
 
-Ext.extend(Ext.grid.RowExpander, Ext.util.Observable, {
+Ext.extend(og.RowExpander, Ext.util.Observable, {
 	header: "",
 	width: 20,
 	sortable: false,
@@ -50,7 +50,7 @@ Ext.extend(Ext.grid.RowExpander, Ext.util.Observable, {
 		var view = grid.getView();
 		view.getRowClass = this.getRowClass.createDelegate(this);
 		
-		view.enableRowBody = true;
+		//view.enableRowBody = true;
 		
 		grid.on('render', function() {
 			view.mainBody.on('mousedown', this.onMouseDown, this);
@@ -78,7 +78,6 @@ Ext.extend(Ext.grid.RowExpander, Ext.util.Observable, {
 	},
 
 	renderer: function(v, p, record) {
-		p.cellAttr = 'rowspan="2"';
 		return '<div class="x-grid3-row-expander">&#160;</div>';
 	},
 
@@ -105,12 +104,57 @@ Ext.extend(Ext.grid.RowExpander, Ext.util.Observable, {
 			row = this.grid.view.getRow(row);
 		}
 		var record = this.grid.store.getAt(row.rowIndex);
-		var body = Ext.DomQuery.selectNode('tr:nth(2) div.x-grid3-row-body', row);
-		if (this.beforeExpand(record, body, row.rowIndex)) {
-			this.state[record.id] = true;
-			Ext.fly(row).replaceClass('x-grid3-row-collapsed', 'x-grid3-row-expanded');
-			this.fireEvent('expand', this, record, body, row.rowIndex);
+		var tr1 = Ext.DomQuery.selectNode('tr:nth(1)', row);
+		var tr2 = Ext.DomQuery.selectNode('tr:nth(2)', row);
+		if (!tr2) {
+			// cargar sub tareas
+			var count = 0;
+			var elem = tr1.firstChild;
+			while (elem) {
+				if (elem.tagName && elem.tagName == 'TD') {
+					count++;
+				}
+				elem = elem.nextSibling;
+			}
+			var tr2 = document.createElement('TR');
+			var td = document.createElement('TD');
+			td.colspan = count;
+			td.innerHTML = 'Loading...';
+			tr2.appendChild(td);
+			tr1.parentNode.appendChild(tr2);
+			og.openLink(og.getUrl('task', 'list_tasks', {ajax:true}), {
+				callback: function(success, data) {
+					if (success) {
+						tr1.parentNode.removeChild(tr2);
+						for (var i=0; i < data.objects.length; i++) {
+							var task = data.objects[i];
+							var elem = tr1.firstChild;
+							var tr = document.createElement('TR');
+							while (elem) {
+								if (elem.tagName && elem.tagName == 'TD') {
+									var splitString = 'x-grid3-td-';
+									var index = elem.className.indexOf(splitString);
+									var colName = elem.className.substring(index + splitString.length());
+									colName = colName.substring(0, colName.indexOf(' '));
+									alert(colName);
+									var td = document.createElement('TD');
+									td.innerHTML = task[colName];
+									tr.appendChild(td);
+								}
+								elem = elem.nextSibling;
+							}
+							tr1.parentNode.appendChild(tr);
+						}
+					} else {
+						td.innerHTML = "Error";
+					}
+				}
+			});
 		}
+		tr2.style.display = tr1.style.display;
+
+		this.state[record.id] = true;
+		Ext.fly(row).replaceClass('x-grid3-row-collapsed', 'x-grid3-row-expanded');
 	},
 
 	collapseRow : function(row) {
@@ -118,11 +162,12 @@ Ext.extend(Ext.grid.RowExpander, Ext.util.Observable, {
 			row = this.grid.view.getRow(row);
 		}
 		var record = this.grid.store.getAt(row.rowIndex);
-		var body = Ext.fly(row).child('tr:nth(1) div.x-grid3-row-body', true);
-		if (this.fireEvent('beforcollapse', this, record, body, row.rowIndex) !== false) {
-			this.state[record.id] = false;
-			Ext.fly(row).replaceClass('x-grid3-row-expanded', 'x-grid3-row-collapsed');
-			this.fireEvent('collapse', this, record, body, row.rowIndex);
+		var tr2 = Ext.fly(row).child('tr:nth(2)', true);
+		if (tr2) {
+			tr2.style.display = 'none';
 		}
+
+		this.state[record.id] = false;
+		Ext.fly(row).replaceClass('x-grid3-row-expanded', 'x-grid3-row-collapsed');
 	}
 });

@@ -4,8 +4,9 @@ class MailUtilities
 	function getmails($accounts = null, &$err, &$succ, &$errAccounts, &$mailsReceived)
 	{
 		if ($_SERVER["SERVER_ADDR"] == $_SERVER["REMOTE_ADDR"]);
-		if (!$accounts);
-		$accounts = MailAccounts::findAll();
+		if (!isset($accounts) || is_null($accounts));
+			$accounts = MailAccounts::findAll();
+			
 		$err = 0;
 		$succ = 0;
 		$errAccounts = array();
@@ -226,7 +227,7 @@ class MailUtilities
         $Encrypted_Byte = CHR($Xored_Byte); 
         $Str_Encrypted_Message .= $Encrypted_Byte; 
         
-        //short code of  the function once explained 
+        //short code of the function once explained 
         //$str_encrypted_message .= chr((ord(substr($str_message, $position, 1))) ^ ((255+(($len_str_message+$position)+1)) % 255)); 
     } 
     RETURN $Str_Encrypted_Message; 
@@ -254,6 +255,30 @@ class MailUtilities
 		} else { 
 			return $email;
 		}
+	}
+        
+	function sendMail($smtp_server,$to,$from,$subject,$body,$cc,$bcc,$smtp_port=25,$smtp_username = null, $smtp_password =''){
+		//Load in the files we'll need
+		Env::useLibrary('swift');
+        // Load SMTP config
+		$transport = 0;
+        $smtp_authenticate = $smtp_username != null;
+		//Start Swift       
+        $mailer = new Swift(new Swift_Connection_SMTP($smtp_server, $smtp_port, $transport));
+        if(!$mailer->isConnected()) {
+          return false;
+        } // if        
+        $mailer->setCharset('UTF-8');      
+//        if($cc) $mailer->addCc($cc);  
+//        if($bcc) $mailer->addBcc($bcc);  
+        if($smtp_authenticate) {
+          if(!($mailer->authenticate($smtp_username, self::ENCRYPT_DECRYPT($smtp_password)))) {
+            return false;
+          } // if
+        }
+        if(! $mailer->isConnected() )  return false;
+		// Send Swift mail
+		return $mailer->send($to, $from, $subject,$body);
 	}
 }
 ?>

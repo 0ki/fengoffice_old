@@ -79,6 +79,8 @@
   define('COOKIE_DOMAIN', '');
   define('COOKIE_SECURE', false);
   
+  define('USE_JS_CACHE', false); //to use this, Apache's mod_rewrite is needed with some rewrites set. Set more options in /library/combinator/combine.php (used for grouping gzip + cache).
+  
   define('SLIMEY_PATH', ROOT_URL . '/public/assets/javascript/slimey/');
   
   // ---------------------------------------------------
@@ -96,7 +98,7 @@
   @include ROOT . '/cache/autoloader.php';
   
   // Prepare logger... We might need it early...
-  if(!Env::isDebugging()) {
+  if(Env::isDebugging()) {
     Logger::setSession(new Logger_Session('default'));
     Logger::setBackend(new Logger_Backend_File(CACHE_DIR . '/log.php'));
      

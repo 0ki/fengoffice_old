@@ -102,6 +102,20 @@ class User extends BaseUser {
 	private $today_milestones;
 
 	/**
+	 * Cached late tasks
+	 *
+	 * @var array
+	 */
+	private $late_tasks;
+
+	/**
+	 * Cached today tasks
+	 *
+	 * @var array
+	 */
+	private $today_tasks;
+	
+	/**
 	 * Cached array of new objects
 	 *
 	 * @var array
@@ -114,6 +128,12 @@ class User extends BaseUser {
 	 * @var array
 	 */
 	private $visible_companies = array();
+	
+	private $groups;
+	
+	private $groups_csv;
+	
+	
 
 
 	/**
@@ -184,7 +204,7 @@ class User extends BaseUser {
 	} // isAdministrator
 
 	function setAsAdministrator() {
-		if ($this->isAdministrator()) {
+		if ($this->isAdministrator() && can_manage_security(logged_user())) {
 			return;
 		}
 		$group_user = new GroupUser();
@@ -286,13 +306,15 @@ class User extends BaseUser {
 		return $this->projects;
 	} // getProjects
 
-	function getWorkspaces($active = false, $parent = 0) {
+	function getWorkspaces($active = false, $parent = null) {
 		$conditions = '';
 		if ($active) {
 			$conditions .= '`completed_on` = ' . DB::escape(EMPTY_DATETIME);
 		}
-		if ($conditions != '') $conditions .= " AND ";
-		$conditions .= '`parent_id` = ' . DB::escape($parent);
+		if ($parent != null) {
+			if ($conditions != '') $conditions .= " AND ";
+			$conditions .= '`parent_id` = ' . DB::escape($parent);
+		}
 		return ProjectUsers::getProjectsByUser($this, $conditions);
 	}
 	/**
@@ -336,24 +358,17 @@ class User extends BaseUser {
 	 * @return array
 	 */
 	function getActiveProjectIdsCSV() {
-		if(is_null($this->active_projects)) {
-			$this->active_projects = ProjectUsers::getProjectsByUser($this, '`completed_on` = ' . DB::escape(EMPTY_DATETIME));
-		} // if
-		if(!is_null($this->active_projects)){
-			if(is_null($this->active_projects_ids)){
-				$first = true;
-				foreach ($this->active_projects as $proj){
-					if($first){
-						$first=false;
-						$this->active_projects_ids = $proj->getId();
-					}
-					else{
-						$this->active_projects_ids .= ',' . $proj->getId();
-					}
-				}
+		if(is_null($this->active_projects_ids)){
+			$active_proj = $this->getActiveProjects();
+			if (!is_null($active_proj)){
+				$list = array();
+				foreach ($active_proj as $p)
+					$list[] = $p->getId();
+				$this->active_projects_ids = implode(',', $list);
 			}
+			else 
+				$this->active_projects_ids = "";
 		}
-		else $this->active_projects_ids = "";
 		return $this->active_projects_ids;
 	} // getActiveProjects
 	/**
@@ -404,9 +419,9 @@ class User extends BaseUser {
 	 * @param void
 	 * @return array
 	 */
-	function getLateMilestones() {
+	function getLateMilestones($project = null) {
 		if(is_null($this->late_milestones)) {
-			$this->late_milestones = ProjectMilestones::getLateMilestonesByUser($this);
+			$this->late_milestones = ProjectMilestones::getLateMilestonesByUser($this, $project);
 		} // if
 		return $this->late_milestones;
 	} // getLateMilestones
@@ -418,13 +433,43 @@ class User extends BaseUser {
 	 * @param void
 	 * @return array
 	 */
-	function getTodayMilestones() {
+	function getTodayMilestones($project = null) {
 		if(is_null($this->today_milestones)) {
-			$this->today_milestones = ProjectMilestones::getTodayMilestonesByUser($this);
+			$this->today_milestones = ProjectMilestones::getTodayMilestonesByUser($this, $project);
 		} // if
 		return $this->today_milestones;
 	} // getTodayMilestones
 
+	
+	/**
+	 * Return late tasks that this user has access to
+	 *
+	 * @access public
+	 * @param void
+	 * @return array
+	 */
+	function getLateTasks($project = null) {
+		if(is_null($this->late_tasks)) {
+			$this->late_tasks = ProjectTasks::getLateTasksByUser($this, $project);
+		} // if
+		return $this->late_tasks;
+	} // getLateMilestones
+
+	/**
+	 * Return today tasks that this user has access to
+	 *
+	 * @access public
+	 * @param void
+	 * @return array
+	 */
+	function getTodayTasks($project = null) {
+		if(is_null($this->today_tasks)) {
+			$this->today_tasks = ProjectTasks::getDayTasksByUser(new DateTimeValue(mktime()),$this, $project);
+		} // if
+		return $this->today_tasks;
+	} // getTodayMilestones
+	
+	
 	/**
 	 * Return display name for this account. If there is no display name set username will be used
 	 *
@@ -453,6 +498,21 @@ class User extends BaseUser {
 		return MailAccounts::getMailAccountsByUser($this);
 	}
 
+	function getGroups(){
+		if(is_null($this->groups)) {
+			$this->groups = GroupUsers::getGroupsByUser($this->getId());
+		} // if
+		return $this->groups;
+	}
+	
+	function getGroupsCSV(){
+		if (is_null($this->groups_csv)){
+			$this->groups_csv = GroupUsers::getGroupsCSVsByUser($this->getId());
+		} // if
+		return $this->groups_csv;
+	}
+	
+	
 	// ---------------------------------------------------
 	//  IMs
 	// ---------------------------------------------------

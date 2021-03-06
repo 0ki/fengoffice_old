@@ -149,7 +149,7 @@ og.ObjectPicker = function(config) {
 		
 		filterSelect: function(filter) {
 			if (filter.filter == 'type') {
-				this.type = filter.name;
+				this.type = filter.type;
 			} else if (filter.filter == 'tag') {
 				this.tag = filter.name;
 			} else if (filter.filter == 'ws') {
@@ -227,31 +227,43 @@ og.ObjectPicker = function(config) {
 			this.addFilter({
 				id: 'messages',
 				name: lang('messages'),
+				type: 'Messages',
 				filter: 'type'
-			}, {iconCls: 'ico-messages'});
+			}, {iconCls: 'ico-message'});
+			this.addFilter({
+				id: 'email',
+				name: lang('email'),
+				type: 'Emails',
+				filter: 'type'
+			}, {iconCls: 'ico-email'});
 			this.addFilter({
 				id: 'calendar',
 				name: lang('calendar'),
+				type: 'Calendar',
 				filter: 'type'
 			}, {iconCls: 'ico-calendar'});
 			this.addFilter({
 				id: 'contacts',
 				name: lang('contacts'),
+				type: 'Contacts',
 				filter: 'type'
 			}, {iconCls: 'ico-contacts'});
 			this.addFilter({
 				id: 'documents',
 				name: lang('documents'),
+				type: 'Documents',
 				filter: 'type'
 			}, {iconCls: 'ico-documents'});
 			this.addFilter({
 				id: 'tasks',
 				name: lang('tasks'),
+				type: 'Tasks',
 				filter: 'type'
 			}, {iconCls: 'ico-tasks'});
 			this.addFilter({
 				id: 'webpages',
 				name: lang('web pages'),
+				type: 'Web Pages',
 				filter: 'type'
 			}, {iconCls: 'ico-webpages'});
 			
@@ -298,7 +310,7 @@ og.ObjectPicker = function(config) {
 				region: 'center',
 				layout: 'fit',
 				tbar: [
-					{
+					/*{
 						text: lang('view'),
 			            tooltip: lang('view desc'),
 			            iconCls: 'op-ico-view',
@@ -310,15 +322,13 @@ og.ObjectPicker = function(config) {
 								alert('icons');
 							}}
 						]}
-					},{
+					},*/{
 						text: lang('refresh'),
 			            tooltip: lang('refresh desc'),
 			            iconCls: 'op-ico-refresh',
 						handler: function() {
 							this.grid.store.reload();
-							this.tagFilter.loadTags();
-							this.typeFilter.loadFilters();
-							this.wsFilter.loadWorkspaces();
+							this.loadFilters();
 						},
 						scope: this
 					}

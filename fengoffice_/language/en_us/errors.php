@@ -69,6 +69,11 @@
     // Add task
     'task text required' => 'Task text is required',
     
+    // Add event
+    'event subject required' => 'Event subject is required',
+    'event description maxlength' => 'Description must be under 3000 characters',
+    'event subject maxlength' => 'Subject must be under 100 characters',
+    
     // Add project form
     'form name required' => 'Form name is required',
     'form name unique' => 'Form name must be unique',

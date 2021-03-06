@@ -1,0 +1,10 @@
+[Session]
+Active=0
+Last=1
+1=%LOCALPATH%\xampp\htdocs\ac\application\controllers\FilesController.class.php
+1.CX=7
+1.CY=331
+1.LC=1
+1.TL=308
+[Options]
+BrowserPath=InternetExplorer

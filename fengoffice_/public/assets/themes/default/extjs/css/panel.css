@@ -27,7 +27,7 @@
     border:1px solid #99bbe8;
     border-top:0 none;
     overflow:hidden;
-    background:white;
+    background:#EEEEEE;
     position: relative; /* added for item scroll positioning */
 }
 
@@ -50,7 +50,7 @@
     border-bottom: 0 none;
 }
 .x-panel-body-noheader, .x-panel-mc .x-panel-body {
-    border-top:1px solid #99bbe8;
+    /*border-top:1px solid #99bbe8;*/
 }
 .x-panel-header {
     overflow:hidden;

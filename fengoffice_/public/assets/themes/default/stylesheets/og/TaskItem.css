@@ -1,0 +1,113 @@
+.og-task-subtasks {
+	padding-left: 16px;
+}
+.og-task-checkbox {
+	width: 16px;
+	height: 16px;
+	/*background-color: #ff66ff;*/
+	cursor: pointer;
+}
+.og-task-chekbox-hover {
+	/*background-color: #66ff66;*/
+}
+.og-task-checkbox-checked {
+	/*background-color: #6666ff;*/
+}
+.og-task-new-form {
+	margin-left: 106px;
+}
+.og-task-new textarea {
+	width: 200px;
+	height: 50px;
+}
+.og-task-move-down {
+	width: 16px;
+	height: 16px;
+	/*background-color: #ffff66;*/
+	cursor: pointer;
+}
+.og-task-delete {
+	width: 16px;
+	height: 16px;
+	/*background-color: #ff6666;*/
+	cursor: pointer;
+}
+.og-task-subtask-info {
+	font-style: italic;
+	color: #777777;
+}
+.og-task-name {
+	padding-left: 20px;
+	background-image: url(../../images/16x16/tasks.png) !important;
+	background-repeat: no-repeat;
+	line-height: 16px;
+}
+.og-task-expander {
+	padding: 0 2px;
+	width: 16px;
+	height: 16px;
+	cursor: pointer;
+}
+.og-task-late > table > tbody > tr > td > .og-task-name,
+.og-task-late > table > tbody > tr > td > .td-duedate {
+	color: #FF0000;
+	font-weight: bold;
+}
+.og-task-completed > table > tbody > tr > td > .og-task-name,
+.og-task-completed > table > tbody > tr > td > .td-duedate {
+	text-decoration: line-through;
+	color: #inherit;
+	font-weight: normal;
+}
+/*.og-task table {
+	width: 100%;
+}*/
+.og-task .td-name {
+	width: 200px;
+	max-width: 200px;
+	overflow: hidden;
+	white-space: nowrap;
+}
+.og-task .td-delete, .og-task .td-move-down, .og-task .td-checkbox, .og-task .td-toggle {
+	width: 16px;
+}
+.og-task .td-edit {
+	text-align: center;
+	width: 30px;
+}
+.og-task .td-workspace {
+	padding-left: 20px;
+	width: 100px;
+	overflow: hidden;
+	white-space: nowrap;
+	max-width: 100px;
+}
+.og-task .td-assigned-to {
+	padding-left: 20px;
+	width: 200px;
+	overflow: hidden;
+	white-space: nowrap;
+	max-width: 200px;
+}
+
+.og-task-delete {
+	background-image: url('../../images/16x16/delete_task.png');
+	background-repeat: no-repeat;
+	padding-right:2px;
+}
+.og-task-move-down {
+	background-image: url('../../images/16x16/lower_task.png');
+	background-repeat: no-repeat;
+	padding-left:1px;
+	padding-right:1px;
+}
+.og-task-checkbox {
+	background-image: url('../../images/16x16/chkoff.png');
+	background-repeat: no-repeat;
+	background-position:1px 2px;
+}
+.og-task-completed > table > tbody > tr > td > .og-task-checkbox {
+	background-image: url('../../images/16x16/chkon.png');
+	background-repeat: no-repeat;
+	background-position:1px 2px;
+}

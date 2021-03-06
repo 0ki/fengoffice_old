@@ -33,6 +33,7 @@ return array(
     'comment on object' => "Comment '{0}' on '{1}'",
     'revisions on file' => '{0} revision(s)',
     
+    'message posted on by linktitle' => 'Posted on {0} by {1}',
     'message posted on by' => 'Posted on {0} by <a class="internalLink" href="{1}">{2}</a>',
     'comment posted on' => 'Posted on {0}',
     'comment posted on by' => 'Posted on {0} by <a class="internalLink" href="{1}">{2}</a>',
@@ -61,7 +62,8 @@ return array(
     'collapse additional text' => 'Collapse',
     'email notification' => 'Email notification',
     'email notification desc' => 'Notify selected people about this message via email',
-
+	'assign milestone task list desc' => 'The task can be assigned to an existing milestone',
+	
     'link existing object' => 'Link existing object (from Files section)',
     'upload and link' => 'Upload new file and attach it to object',
     'file permissions description' => 'Select users from Combo or write their name on the Text Box. Then press Add user to visualize them on the grid. <br>When you see them, select the approriate permissions in the grid.<br>Note: the Combo Box will only display users you are currently sharing files with.',
@@ -177,6 +179,9 @@ return array(
 	'color8' => 'Violet',
 	'choose a color' => 'Choose a color',
 
+	'show more' => 'Show more',
+	'show more amount' => 'Show more ({0})',
+
 //Contacts
 
 	'new contact' => 'New contact',
@@ -185,13 +190,25 @@ return array(
 	'other' => 'Other',
 
 
-/*Charting*/
+	/* Reporting */
+  
+  	'display' => 'Display',
+  	'display options' => 'Display options',
+  	'show in project' => 'Show in project',
+  	'show in project desc' => 'Show this chart in the overview panel of the selected workspace',
+  	'show in parents' => 'Show in parents',
+  	'show in parents desc' => 'Show this chart in the overview panel of every parent workspace of the selected workspace',
+  	'reporting' => 'Reporting',
 	'chart' => 'Chart',
 	'new chart' => 'New chart',
 	'add chart' => 'Add chart',
 	'edit chart' => 'Edit chart',
+	'delete chart' => 'Delete chart',
 	'ObjectTypeCount' => 'Object quantities by type',
 	'TasksByDueDate' => 'Personal tasks sorted by due date',
+	'BudgetExecution' => 'Budget execution',
+	'BudgetExecutionTrack' => 'Budget execution by month',
+	'MonthlyBudgetExecution' => 'Budget execution in the current month',
 	'bars chart' => 'Bars',
 	'pie chart' => 'Pie',
 	'lines chart' => 'Lines',
@@ -200,6 +217,17 @@ return array(
 	'bar sketch' => 'Sketch bars',
 	'bar 3d' => '3d bars',
 	'bar glass' => 'Glass bars',
+	'budgeted' => 'Budgeted',
+	'current' => 'Current',
+
+	'executed' => 'Executed',
+	'not executed' => 'Not executed',
+
+	'success deleted chart' => 'Chart \'{0}\' deleted successfully',
+	'error deleted chart' => 'An error occurred while deleting the chart',
+
+
+
 ); // array
 
 ?>

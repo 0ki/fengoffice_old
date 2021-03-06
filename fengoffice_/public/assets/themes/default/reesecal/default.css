@@ -55,11 +55,16 @@ div.event_block{
 	color: black;
 	text-decoration: none;
 	background-color: inherit;
-	border-left: 5px solid #AAEE00;
+	border-left: 0px solid #AAEE00;
 	margin: 1px;
 	padding-left: 1px;
-	border-bottom: 1px solid #888888;
+	padding-bottom: 2px;
+	border-bottom: 0px solid #888888;
 }
+
+div.event_block img{
+	margin-right:2px;
+	}
 table.event_block{
 	background-color: #AAEE00;
 	border: 1px solid #777777;
@@ -108,7 +113,7 @@ a.viewdateoption, a.viewdateoption:visited, a.viewdateoption:hover, a.viewdateop
 /* The titles that say the month year, and sometimes the day at the top. */
 .month_title{
 	font-family: Geneva, Verdana, Arial, sans-serif;
-	font-size: 20px;
+	font-size: 15px;
 	font-weight: Bold;
 	color: #355881;
 }
@@ -277,85 +282,82 @@ between the cells of the main calendar.  */
 }
 #calendar div.daylink{
 	width: 100%;
-	background-color: #6485af;
+	background-color: #E6E6E6;/*#6485af;*/
 	padding: 3px;
 }
 #calendar div.daylink a, #calendar div.daylink a:active, #calendar div.daylink a:visited{
 	font-family: Arial, Helvetica, sans-serif;
 	font-size: 10px;
-	font-weight: bold;
-	color: white;
+	color: #999;
 	padding: 0px;
-	padding-left: 4px;
-	padding-right: 4px;
+	padding-left: 3px;
+	padding-right: 3px;
 	margin-right: 1px;
 	display: inline;
-	border-width: 0px;
 	text-decoration: none;
 }
 #calendar div.daylink a:hover{
-	color: black;
+	color: #999;
 	font-family: Arial, Helvetica, sans-serif;
 	font-size: 10px;
-	background-color: #FFCC00;
-	border: 1px solid #444455;
 	padding-left: 3px;
 	padding-right: 3px;
-	text-decoration: none;
+	text-decoration:none;
 }
 #calendar div.todaylink{
 	width: 100%;
-	background-color: #FBEA86; /* #FFCC33; /* #31528E; */
+	background-color: #FFFFB3; /*#FBEA86;  #FFCC33; /* #31528E; */
 	padding: 3px;
 }
 #calendar div.todaylink a, #calendar div.todaylink a:active, #calendar div.todaylink a:visited{
 	font-family: Arial, Helvetica, sans-serif;
 	font-size: 10px;
-	font-weight: bold;
 	padding: 0px;
-	padding-left: 4px;
-	padding-right: 4px;
+	padding-left: 3px;
+	padding-right: 3px;
 	margin-right: 1px;
 	display: inline;
-	border-width: 0px;
-	color: #555566;
 	text-decoration: none;
 }
 #calendar div.todaylink a:hover{
 	color: black;
 	font-family: Arial, Helvetica, sans-serif;
 	font-size: 10px;
-	background-color: #FFCC00;
-	border: 1px solid #444455;
 	padding-left: 3px;
 	padding-right: 3px;
+	margin-right: 1px;
 	text-decoration: none;
 }
+
+#calendar td.today{
+  text-align: left;
+  color: black;
+  background-color: #FFFFCC;
+  border: 1px solid  #999999;
+  }
+
 #calendar div.extralink{
 	width: 100%;
-	background-color: #A9BCD5; /* D1DCEE; /* #A2A9BB; */
+	background-color: #FFF;/*#A9BCD5;  D1DCEE; /* #A2A9BB; */
 	padding: 3px;
 }
 #calendar div.extralink a, #calendar div.extralink a:active, #calendar div.extralink a:visited{
 	font-family: Arial, Helvetica, sans-serif;
 	font-size: 10px;
 	font-weight: bold;
-	color: white;
+	color: #999;
 	padding: 0px;
 	padding-left: 4px;
-	padding-right: 4px;
+	padding-right: 3px;
 	margin-right: 1px;
 	display: inline;
-	border-width: 0px;
-	color: white;
 	text-decoration: none;
 }
 #calendar div.extralink a:hover{
-	color: black;
+	color: #999;
 	font-family: Arial, Helvetica, sans-serif;
 	font-size: 10px;
-	background-color: #FFCC00;
-	border: 1px solid #444455;
+	
 	padding-left: 3px;
 	padding-right: 3px;
 	text-decoration: none;
@@ -364,19 +366,26 @@ between the cells of the main calendar.  */
 #calendar td.weekend{
   text-align: left;
   color: black;
-  background-color: #EFF7FF;}
+  background-color: #EFF7FF;
+  border: #999999 1px solid;
+  }
 #calendar td.weekday{
   text-align: left;
   color: black;
-  background-color: white;}
+  background-color: white;
+  border: #999999 1px solid;}
 #calendar td.weekday_future{
   text-align: left;
   color: black;
-  background-color: #CFE0F1;}
+  background-color: #fff;
+  border: #999999 1px solid;
+  }
 #calendar td.weekend, #calendar td.weekday, #calendar td.weekday_future{
   text-align: left;
-  height: 80px;
+  height: 110px;
+  border:#999 thin solid;
 }
+
 
 /*#################################################*/
 
@@ -417,7 +426,7 @@ span.cal_admin_usernames{
 	font-size: 14px; 
 	font-family: Arial; 
 	font-weight: bold;
-}
+} 
 
 /* this is the wrapper table arround all the edit user blocks in the admin section */
 table.cal_admin_userlist{
@@ -451,11 +460,3 @@ input.cal_admin_edituser_button{
 	font-family: Geneva, Arial, Helvetica, sans-serif;
 	text-align: center;
 }
-/* this is the title of the event in viewevent.php */
-span.viewevent_title{
-	font-family: Arial, Helvetica, sans-serif;
-	font-size: 20px;
-	font-weight: bold;
-	color: #006666;
-}
-

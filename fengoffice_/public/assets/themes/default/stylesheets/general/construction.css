@@ -8,9 +8,11 @@
 
 #headerContent {
 	background-position: 2px 3px;
-	background-image: url('../../images/layout/logo.png');
-	background-repeat: no-repeat;
-	height: 56px;
+	/*background-image: url('../../images/layout/logo.png');*/
+	background-image: url('../../images/layout/header_bottom.gif');
+	background-repeat: repeat-x;
+	background-position: bottom;
+	height: 55px;
 	width: 100%;
 	position: relative;
 	margin: 0 auto;
@@ -41,21 +43,52 @@
 	text-decoration: underline;
 }
 
+#wsCrumbsDiv {
+	position: relative;
+	height: 45px;
+	padding-top:14px;
+	font-family: Helvetica,Verdana,Arial,sans-serif;
+	font-size: 150%;
+	font-weight:bolder;
+	color: #555555;
+}
+
+#logodiv {
+	background-image: url('../../images/layout/logo.png');
+	width: 60px;
+	position: relative;
+	margin: 5 auto;
+	text-align: left;
+	background-repeat: no-repeat;
+	height: 45px;
+	margin-top:2px;
+}
+
+#subWsExpander {
+	position:absolute; 
+	z-index:10000; 
+	top:10px;
+	left:400px; 
+	background:white; 
+	border: 1px solid #99BBE8; 
+	padding:6px; 
+}
+
 #searchbox {
 	position: absolute;
-	left: 250px;
-	top: 20px;
+	right: 10px;
+	top: 24px;
 }
 
 #searchbox input {
-	width: 200px;
+	width: 120px;
 }
 
 #searchbox button {
-	width: 80px;
-	height: 22px;
+	width: 60px;
+	height: 20px;
 	border: 1px solid #666;
-	background: transparent url(../../extjs/images/default/button/btn-sprite.gif) repeat-x scroll 0pt -42px !important;
+	background: transparent url(../../extjs/images/default/button/btn-sprite.gif) repeat-x scroll 0pt -43px !important;
 }
 
 #searchbox button:hover {
@@ -64,16 +97,22 @@
 
 #userboxWrapper {
 	position: absolute;
-	top: 15px;
-	right: 10px;
-	color: #666;
+	top: -2px;
+	right: 0px;
+	/*color: #666;*/
 	font-size: 10px; 
 }
 
 #userbox {
-	padding: 5px 8px;
-	border: 1px solid #999;
-	background: #ffffcc;
+	/*padding: 0px 8px;*/
+	/*border: 1px solid #999;
+	background: #ffffcc;*/
+	background-image: url('../../images/layout/userborder.png');
+	padding-bottom:8px;
+	padding-left: 10px;
+	padding-right: 10px;
+	padding-top:2px;
+	margin-right:0px;
 }
 
 #userbox ul {

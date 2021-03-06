@@ -52,36 +52,175 @@ class EventController extends ApplicationController {
 		$this->setTemplate('calendar');
 	}
 	
-	function add(){		
-		//check auth
-	    if(! (ProjectEvent::canAdd(logged_user(), active_or_personal_project()))){	    	
-			flash_error(lang('no access permissions'));
-			$this->redirectTo('event');
-	    }
-		$this->setTemplate('event');	  
-		$tag = active_tag();
-		tpl_assign('tags',$tag);
-		tpl_assign('cal_action','add');
+	function getData($event_data){
+		// get the day
+			$day = array_var($event_data, 'start_day');
+       		$month = array_var($event_data, 'start_month');
+       		$year = array_var($event_data, 'start_year');
+       		
+       		$hour = array_var($event_data, 'hour');
+       		$minute = array_var($event_data, 'minute');       		
+			if(array_var($event_data, 'pm') == 1) $hour += 12;
+			// make sure the date is actually valid
+			$redotime = mktime(0,0,1,$month, $day, $year);
+			$day = date("d",$redotime);
+			$month = date("m",$redotime);
+			$year = date("Y",$redotime);
+			
+			
+			// repeat defaults
+			$repeat_d = 0;
+			$repeat_m = 0;
+			$repeat_y = 0;
+			$repeat_h = 0;
+			$rend = "0000-00-00";		
+			// get the options
+			$forever = 0;
+			$jump = array_var($event_data,'occurance_jump');
+			
+			if(array_var($event_data,'repeat_option')==1) $forever = 1;
+			elseif(array_var($event_data,'repeat_option')==2) $rnum = array_var($event_data,'repeat_num');
+			elseif(array_var($event_data,'repeat_option')==3) $rend = array_var($event_data,'repeat_end');
+			// verify the options above are valid
+			if(isset($rnum) && $rnum !=""){
+				if(!is_numeric($rnum) || $rnum < 1 || $rnum > 1000) {throw new Exception(CAL_EVENT_COUNT_ERROR);}
+			}else $rnum = 0;
+			if($jump !=""){
+				if(!is_numeric($jump) || $jump<1 || $jump>1000) {throw new Exception(CAL_REPEAT_EVERY_ERROR);}
+			}else $jump = 1;
+			if(isset($rend) && $rend!=null && $rend!=""){
+					$endarray = explode("-",$rend);
+					if(count($endarray)!=3) {throw new Exception(CAL_ENDING_DATE_ERROR);}
+					foreach($endarray as $v){ if(!is_numeric($v)) {throw new Exception(CAL_ENDING_DATE_ERROR);}}
+					$rend = date("Y-m-d",mktime(0,0,1,$endarray[1], $endarray[2], $endarray[0]));
+			}
+			
+		
+		    // check for repeating options
+			// 1=repeat once, 2=repeat daily, 3=weekly, 4=monthy, 5=yearly, 6=holiday repeating
+			$oend = null;
+			switch(array_var($event_data,'occurance')){
+				case "2":
+					$repeat_d = $jump;
+					if(isset($forever) && $forever==1) $oend = null;
+					else $oend = $rend;
+					break;
+				case "3":
+					$repeat_d = 7*$jump;
+					if(isset($forever) &&$forever==1) $oend = null;
+					else $oend = $rend;
+					break;
+				case "4":
+					$repeat_m = $jump;
+					if(isset($forever) &&$forever==1) $oend = null;
+					else $oend = $rend;
+					break;
+				case "5":
+					$repeat_y = $jump;
+					if(isset($forever) && $forever==1) $oend = null;
+					else $oend = $rend;
+					break;
+				case "6":
+					$repeat_h = 1;
+					if(array_var($event_data, 'cal_holiday_lastweek')) $repeat_h = 2;
+					break;
+			}
+			$repeat_number = $rnum;
+			
+			
+		 	// get duration
+			$durationhour = array_var($event_data,'durationhour');
+			$durationmin = array_var($event_data,'durationmin');
+
+			// get event type:  2=full day, 3=time/duratin not specified, 4=time not specified
+			$typeofevent = array_var($event_data,'type_id');
+			if(!is_numeric($typeofevent) OR ($typeofevent!=1 AND $typeofevent!=2 AND $typeofevent!=3)) $typeofevent = 1;
+					
+						
+			// calculate timestamp and durationstamp
+			// By putting through mktime(), we don't have to check for sql injection here and ensure the date is valid at the same time.
+			$timestamp = date('Y-m-d H:i:s', mktime($hour,$minute,0,$month,$day,$year));
+			$durationstamp = date('Y-m-d H:i:s', mktime($hour + $durationhour,$minute + $durationmin, 0,$month,$day,$year)); 
+			
+			// organize the data expected by the query function
+			$data = array();
+			$data['repeat_num'] = $rnum;
+			$data['repeat_h'] = $repeat_h;
+			$data['repeat_d'] = $repeat_d;
+			$data['repeat_m'] = $repeat_m;
+			$data['repeat_y'] = $repeat_y;
+			$data['repeat_forever'] = $forever;
+			$data['repeat_end'] =  $oend;
+			$data['start'] = $timestamp;
+			$data['subject'] =  array_var($event_data,'subject');
+			$data['description'] =  array_var($event_data,'description');
+			$data['type_id'] = $typeofevent;
+			$data['duration'] = $durationstamp;
+			
+			return $data;
 	}
-	function modify(){	
-		//check auth
-		$event = ProjectEvents::findById(get_id());
-	    if(!$event->canEdit(logged_user())){	    	
+	
+	function add(){		
+		if(! (ProjectEvent::canAdd(logged_user(), active_or_personal_project()))){	    	
 			flash_error(lang('no access permissions'));
 			$this->redirectTo('event');
 	    }
-	          
-        $tag_names = $event->getTagNames();
-        $event_data = array(
-          'tags' => is_array($tag_names) && count($tag_names) ? implode(', ', $tag_names) : '',
-        ); // array
-        
-		$this->setTemplate('event');
-		$tag = active_tag();
-		tpl_assign('tags',$tag);
+	    $this->setTemplate('event');
+		$event = new ProjectEvent();		
+		$event_data = array_var($_POST, 'event');
+		
+		$event->setStart(DateTimeValueLib::make(12,0,0,isset($_GET['month'])?$_GET['month']:date('n'),isset($_GET['day'])?$_GET['day']:date('n'),isset($_GET['year'])?$_GET['year']:date('Y')));
+		if(!is_array($event_data)) {
+			$event_data = array(
+				'month' => isset($_GET['month'])?$_GET['month']:date('n'),
+				'year' => isset($_GET['year'])?$_GET['year']:date('Y'),
+				'day' => isset($_GET['day'])?$_GET['day']:date('n'),
+				'typeofevent' => 1				
+			); // array
+		} // if
+		
+		
 		tpl_assign('event',$event);
-		tpl_assign('cal_action','modify');
 		tpl_assign('event_data',$event_data);
+
+		if (is_array(array_var($_POST, 'event'))) {
+			try {
+				$data = $this->getData($event_data);
+				// run the query to set the event data 
+				$projId = array_var($event_data,'project_id');      
+				if($projId != '') {
+					$project = Projects::findById($projId );
+				}
+				else {
+			 		$project = active_or_personal_project();
+				}
+	        	$event->setProjectId($project->getId());
+			    $event->setFromAttributes($data); 
+			    
+			    
+			    if(!logged_user()->isMemberOfOwnerCompany()) $event->setIsPrivate(false);  
+			
+			    DB::beginWork();
+	          	$event->save();
+	          	$event->setTagsFromCSV(array_var($event_data, 'tags'));   
+	        //  $event->save_properties(array_var($event_data,'event'));
+			    
+			    $object_controller = new ObjectController();
+			    $object_controller->link_to_new_object($event);
+	         	DB::commit();
+	          	ApplicationLogs::createLog($event, $project, ApplicationLogs::ACTION_ADD);
+	          	
+	          	flash_success(lang('success add event', $event->getObjectName()));
+	          	ajx_current("start");
+	          
+	        } catch(Exception $e) {
+	          	DB::rollback();
+				flash_error($e->getMessage());
+				ajx_current("empty");
+	          //tpl_assign('error', $e);
+	        } // try
+		    
+		}
 	}
 	
 
@@ -97,18 +236,37 @@ class EventController extends ApplicationController {
 		tpl_assign('tags',$tag);
 		//tpl_assign('cal_action','calendar');
 		//tpl_assign('action','calendar');
-   		if(!$event->delete()){
-			echo $this->cal_error($del_error);
-		}
+		try {
+			/* @event ProjectEvent */
+			
+			DB::beginWork();
+			$event->delete();
+			ApplicationLogs::createLog($event, $event->getProject(), ApplicationLogs::ACTION_DELETE);
+			DB::commit();
+
+			flash_success(lang('success delete event', $event->getSubject()));
+			ajx_current("start");
+	   		/*if(!$event->delete()){
+				echo $this->cal_error($del_error);
+			}*/
+		} catch(Exception $e) {
+			DB::rollback();
+			flash_error(lang('error delete event'));
+			ajx_current("empty");
+		} // try
 	}
 	function viewdate(){
 		$tag = active_tag();
 		tpl_assign('tags',$tag);	
 		tpl_assign('cal_action','viewdate');
+		
+		tpl_assign('cal_action','viewdate');
 		$this->setTemplate('viewdate');		
 	}
 	function viewevent(){
 		//check auth
+		$this->addHelper('textile');
+		ajx_set_no_toolbar(true);
 	    $event = ProjectEvents::findById(get_id());
 	    if(!$event->canView(logged_user())){	    	
 			flash_error(lang('no access permissions'));
@@ -119,6 +277,7 @@ class EventController extends ApplicationController {
 		tpl_assign('tags',$tag);	
 		tpl_assign('event',$event);
 		tpl_assign('cal_action','viewevent');	
+		ajx_extra_data(array("title" => $event->getSubject(), 'icon'=>'ico-calendar'));
 	}
 	/*function search(){
 		$this->setTemplate('search');		
@@ -127,333 +286,126 @@ class EventController extends ApplicationController {
 		$output = "<center><span class='failure'>$text</span></center><br>";
 		return $output;
 	}
-	/**
-	 * 	  cal_submit_event()
-	 * 	   Add's an event to the database if required fields are
-	 * 	   all provided, else it produces an error.
-	 * */
-	private function cal_submit_event($day = NULL, $month = NULL, $year = NULL){
-		global $cal_db;
-		if(array_var($_POST,'modify')){
-			if(!is_numeric($_POST['id'])) return CAL_MISSING_INFO;
-			$id = $_POST['id'];
-			$modify = 1;
-		} else $modify = 0;
-		// get the day
-		if( $day==NULL AND is_numeric($_SESSION['cal_day'])) $day   = $_SESSION['cal_day'];
-		elseif($day==NULL AND is_numeric($_POST['day'])) $day = $_POST['day'];
-		elseif($day==NULL) return "You did not enter the Day: $day";
-		// get month
-		if($month==NULL AND is_numeric($_SESSION['cal_month'])) $month = $_SESSION['cal_month'];
-		elseif($month==NULL AND $_POST['month']!="" AND is_numeric($_POST['month'])) $month = $_POST['month'];
-		elseif($month==NULL ) return "You did not enter the month";
-		// get year
-		if($year==NULL AND is_numeric($_SESSION['cal_year'])) $year  = $_SESSION['cal_year'];
-		elseif($year==NULL AND $_POST['year']!="" AND is_numeric($_POST['year'])) $year = $_POST['year'];
-		elseif($year==NULL  ) return "You did not enter the year";
-		// get the posted times
-		if(isset($_POST['hour']) AND $_POST['hour']!="" AND is_numeric($_POST['hour'])) $hour = $_POST['hour'];
-		//else return "You did not enter the Hour";
-		if(isset($_POST['pm']) AND ($_POST['pm']) && $_POST['pm'] == 1) $hour += 12;
-		if(isset($_POST['minute']) AND$_POST['minute']!="" AND is_numeric($_POST['minute'])) $minute = $_POST['minute'];
-		//else return "Your did not enter the minute";
-		// make sure the date is actually valid
-		// must do this here or else they could put in something crazy that could somehow bypass the editpast permission
-		$redotime = mktime(0,0,1,$month, $day, $year);
-		$day = date("d",$redotime);
-		$month = date("m",$redotime);
-		$year = date("Y",$redotime);
-		// if modifying, get the event and check it's data
-		if($modify){
-			// get event data to do permissions checking.			
-			$perm = ProjectEvents::findById($id)->canEdit(logged_user());
-			if(!$perm) return CAL_NO_MODIFY;
-		}
-		// if not modifying, make sure they have permission to write new events
-		else{
-			if(active_project() && !ProjectEvent::canAdd(logged_user(), active_project())) return CAL_NO_WRITE;
-			// note that I dont just compare strings like above, because I don't know if passed in variables have leading zero or not
-		}
-		// repeat defaults
-		$repeat_d = 0;
-		$repeat_m = 0;
-		$repeat_y = 0;
-		$repeat_h = 0;
-		$rend = "0000-00-00";		
-		// get the options
-		$forever = 0;
-		$jump = array_var($_POST,'occurance_jump');
-		if(array_var($_POST,'repeat_option')==1) $forever = 1;
-		elseif(array_var($_POST,'repeat_option')==2) $rnum = $_POST['repeat_num'];
-		elseif(array_var($_POST,'repeat_option')==3) $rend = $_POST['repeat_end'];
-		// verify the options above are valid
-		// I made the jump and rnum values max out at 1000 for performance purposes, but you can change that.
-		if(isset($rnum) && $rnum !=""){
-			if(!is_numeric($rnum)) return CAL_EVENT_COUNT_ERROR;
-			if($rnum < 1) return CAL_EVENT_COUNT_ERROR;
-			if($rnum > 1000) return CAL_EVENT_COUNT_ERROR;
-		}else $rnum = 0;
-		if($jump !=""){
-			if(!is_numeric($jump)) return CAL_REPEAT_EVERY_ERROR;
-			if($jump<1) return CAL_REPEAT_EVERY_ERROR;
-			if($jump>1000) return CAL_REPEAT_EVERY_ERROR;
-		}else $jump = 1;
-		if(isset($rend) && $rend!=null && $rend!=""){
-			$endarray = explode("-",$rend);
-			if(count($endarray)!=3) return CAL_ENDING_DATE_ERROR;
-			foreach($endarray as $v){ if(!is_numeric($v)) return CAL_ENDING_DATE_ERROR;}
-			$rend = date("Y-m-d",mktime(0,0,1,$endarray[1], $endarray[2], $endarray[0]));
-		}
-		// check for repeating options
-		// 1=repeat once, 2=repeat daily, 3=weekly, 4=monthy, 5=yearly, 6=holiday repeating
-		$oend = null;
-		switch(array_var($_POST,'occurance')){
-		case "2":
-			$repeat_d = $jump;
-			if(isset($forever) && $forever==1) $oend = null;
-			else $oend = $rend;
-			break;
-		case "3":
-			$repeat_d = 7*$jump;
-			if(isset($forever) &&$forever==1) $oend = null;
-			else $oend = $rend;
-			break;
-		case "4":
-			$repeat_m = $jump;
-			if(isset($forever) &&$forever==1) $oend = null;
-			else $oend = $rend;
-			break;
-		case "5":
-			$repeat_y = $jump;
-			if(isset($forever) && $forever==1) $oend = null;
-			else $oend = $rend;
-			break;
-		case "6":
-			$repeat_h = 1;
-			if($_POST['cal_holiday_lastweek']) $repeat_h = 2;
-			break;
-		}
-		$repeat_number = $rnum;
-		// get event type
-		$type = array_var($_POST,'eventtype');
-		if(!is_numeric($type)) $type = 0;
-		// get description
-		if(array_var($_POST,'description')) {
-			$description = $_POST['description'];
-			if(count($description)>3000) return CAL_DESCRIPTION_ERROR;
-		} else $description = '';
-	 	// get subject
-		if(array_var($_POST,'subject')) {
-			$subject = $_POST['subject'];
-			if($subject=='' || count($subject)>100) return CAL_SUBJECT_ERROR;
-		} else return CAL_SUBJECT_ERROR;
-		// check if private event or not
-		$private = array_var($_POST,'private');
-		if($private=="1" AND !cal_anon());
-		else $private=="0";
-	 	// get duration
-		$durationhour = array_var($_POST,'durationhour');
-		//else return CAL_DURATION_ERROR;
-		$durationmin = array_var($_POST,'durationmin');
-		//else return CAL_DURATION_ERROR;
-	 	// get anonymous alias
-		if(array_var($_POST,'alias')) $alias = $_POST['alias'];
-		else $alias = "";
-		// get event type:  2=full day, 3=time/duratin not specified, 4=time not specified
-		$typeofevent = array_var($_POST,'type_id');
-		if(!is_numeric($typeofevent) OR ($typeofevent!=1 AND $typeofevent!=2 AND $typeofevent!=3)) $typeofevent = 1;
-		if(!array_var($_POST,'usetimeandduration')){
-			$typeofevent = 3; 
-			$hour = 0;
-			$minute = 0;
-		}		
-		// calculate timestamp and durationstamp
-		// By putting through mktime(), we don't have to check for sql injection here and ensure the date is valid at the same time.
-		$timestamp = date('Y-m-d H:i:s', mktime($hour,$minute,0,$month,$day,$year));
-		$durationstamp = date('Y-m-d H:i:s', mktime($hour + $durationhour,$minute + $durationmin, 0,$month,$day,$year)); 
-		// organize the data expected by the query function
-		$data = array();
-		$data['repeat_num'] = $rnum;
-		$data['eventtype'] = $type;
-		$data['repeat_h'] = $repeat_h;
-		$data['repeat_d'] = $repeat_d;
-		$data['repeat_m'] = $repeat_m;
-		$data['repeat_y'] = $repeat_y;
-		$data['repeat_forever'] = $forever;
-		$data['repeat_end'] =  $oend;
-		$data['start'] = $timestamp;
-		$data['subject'] = $subject;
-		$data['private'] = $private;
-		$data['description'] = $description;
-		$data['type_id'] = $typeofevent;
-		$data['duration'] = $durationstamp;
-		// run the query to set the event data 
-		$projId = array_var(array_var($_POST,'event'),'project_id');                    
-		if($modify) {
-			$event = ProjectEvents::findById($id);		
-			if($projId != '') {
-				$project = Projects::findById($projId );
-			}
-			else {
-				$project = $event->getProject();
-			} 
-        	$event->setProjectId($project->getId());
-		}
-		else {
-			$event=new ProjectEvent();			
-			if($projId != '') {
-				$project = Projects::findById($projId );
-			}
-			else {
-		 		$project = active_or_personal_project();
-			}
-        	$event->setProjectId($project->getId());
-		}
-        $event->setFromAttributes($data); 
-        if(!logged_user()->isMemberOfOwnerCompany()) $event->setIsPrivate(false);  
-		try {
-          
-          DB::beginWork();
-          $event->save();
-          $event->setTagsFromCSV(array_var(array_var($_POST,'event'), 'tags'));          
-		  $event->save_properties(array_var($_POST,'event'));
-          ApplicationLogs::createLog($event, $project, ApplicationLogs::ACTION_ADD);
-          DB::commit();
-          
-          flash_success(lang('success add event', $event->getObjectName()));
-          
-        } catch(Exception $e) {
-          DB::rollback();
-          tpl_assign('error', $e);
-        } // try
-        /*
-		if($modify) 
-		$result = cal_query_setevent($data, $id); // if we specify the ID, it updates that ID using $data
-		else 
-		$result = cal_query_setevent($data); // if we don't specify ID, it create a new event using $data
-		// return an error if the SQL query failed
-		if(!$result) return CAL_EVENT_UPDATE_FAILED;*/
-		// returning NULL means it was a success (no error message)
-		return NULL;
-	} //cal_submit_event
-
-	function submitevent(){
-		//check auth
-	    if(active_project() && !ProjectEvent::canAdd(logged_user(),active_project())){	    	
+	
+	
+	
+		
+	function edit() {
+		$this->setTemplate('event');
+		$event = ProjectEvents::findById(get_id());
+		if(!$event->canEdit(logged_user())){	    	
 			flash_error(lang('no access permissions'));
 			$this->redirectTo('event');
 	    }
-	    $_SESSION['cal_day'] = $day = array_var($_POST,'start_day');
-	    $_SESSION['cal_month'] = $month = array_var($_POST,'start_month');
-	    $_SESSION['cal_year'] = $year = array_var($_POST,'start_year');
-		$sub_error = $this->cal_submit_event($day,$month,$year);		
-		if(isset($sub_error) && $sub_error!=null && $sub_error!="") 
-		{
-			echo $this->cal_error($sub_error) ;			
-		}
-		$this->viewdate();
-	}	
+	    
+	    
+		$event_data = array_var($_POST, 'event');
+		if(!is_array($event_data)) {
+			$tag_names = $event->getTagNames();
+			$setlastweek = false;
+			$rsel1=false;$rsel2=false; $rsel3=false;
+			$forever= $event->getRepeatForever();
+			$occ = 1;
+			if($event->getRepeatD()  > 0){ $occ = 2; $rjump = $event->getRepeatD();}
+			if($event->getRepeatD() > 0 AND $event->getRepeatD()%7==0){ $occ = 3; $rjump = $event->getRepeatD()/7;}
+			if($event->getRepeatM() > 0){ $occ = 4; $rjump = $event->getRepeatM();}
+			if($event->getRepeatY() > 0){ $occ = 5; $rjump = $event->getRepeatY();}
+			if($event->getRepeatH() > 0){ $occ = 6;}
+			if($event->getRepeatH()==2){ $setlastweek = true;}
+			if($event->getRepeatEnd()) { $rend = $event->getRepeatEnd()->format('Y-m-d');	}
+			if($event->getRepeatNum() > 0) $rnum = $event->getRepeatNum();
+			if(!isset($rjump) || !is_numeric($rjump)) $rjump = 1;
+			// decide which repeat type it is
+			if($forever) $rsel1 = true; //forever
+			else if(isset($rnum) AND $rnum>0) $rsel2 = true; //repeat n-times
+			else if(isset($rend) AND $rend!="") $rsel3 = true; //repeat until
+			
+			if(isset($rend) AND $rend=="9999-00-00") $rend = "";
+			// organize the time and date data for the html select drop downs.
+			$thetime = $event->getStart()->getTimestamp();
+			$durtime = $event->getDuration()->getTimestamp() - $thetime;
+			$hour = date('G', $thetime);
+			// format time to 24-hour or 12-hour clock.
+			if(!cal_option("hours_24")){
+				if($hour >= 12){
+					$pm = 1;
+					$hour = $hour - 12;
+				}else $pm = 0;
+			}
+			
+						
+			$event_data = array(
+	          'subject'        => $event->getSubject(),
+	          'description'        => $event->getDescription(),
+	          'name'    => $event->getCreatedById(),
+	          'username' => $event->getCreatedById(),
+	          'typeofevent'  => $event->getTypeId(),
+	          'forever'  => $event->getRepeatForever(),
+	          'usetimeandduration'  => ($event->getTypeId())==3?0:1,
+	          'occ' => $occ,
+	          'rjump' => $rjump,
+	          'setlastweek' => $setlastweek,
+	          'rend' => isset($rend)?$rend:NULL,
+	          'rnum' => isset($rnum)?$rnum:NULL,
+	          'rsel1' => $rsel1,
+	          'rsel2' => $rsel2,
+	          'rsel3' => $rsel3,
+	          'thetime' => $event->getStart()->getTimestamp(),
+			  'hour' => $hour,
+			  'minute' => date('i', $thetime),
+			  'month' => date('n', $thetime),
+			  'year' => date('Y', $thetime),
+			  'day' => date('j', $thetime),
+			  'durtime' => ($event->getDuration()->getTimestamp() - $thetime),
+			  'durmin' => ($durtime / 60) % 60,
+			  'durhr'  => ($durtime / 3600) % 24,
+			  'durday' => floor($durtime / 86400),
+			  'pm' => $pm,
+	          'tags' => is_array($tag_names) ? implode(', ', $tag_names) : ''
+				); // array
+			} // if
 	
-	/**
-	 * add event type
-	 *
-	 * @access public
-	 * @param void
-	 * @return null
-	 */
-	function add_type(){		 
-		$type = new EventType();
-		$type_data = array_var($_POST, 'eventtype');
-		 
-		tpl_assign('eventtype', $type);
-		tpl_assign('eventtype_data', $type_data);
-		 
-		if(is_array($type_data)) {
-			$type->setFromAttributes($type_data);
-			$type->setProjectId(active_project()->getId());
-
-			try {
-				DB::beginWork();
-				$type->save();
+			tpl_assign('event_data', $event_data);
+			tpl_assign('event', $event);
+	
+			if(is_array(array_var($_POST, 'event'))) {
+				try {
+					$data = $this->getData($event_data);
+					// run the query to set the event data 
+					$projId = array_var($event_data,'project_id');                    
 				
-				DB::commit();
-
-				flash_success(lang('success add event type', $type->getName()));
-				$this->redirectTo('event');
-			} catch(Exception $e) {
-				DB::rollback();
-				tpl_assign('error', $e);
-			} // try
-		} // if
-	}
-	
-	
-	
-	/**
-	 * edit event type
-	 *
-	 * @access public
-	 * @param void
-	 * @return null
-	 */
-	function edit_type(){
-		$type = EventTypes::findById(get_id());
-		if(!($type instanceof EventType )) {
-			flash_error(lang('event type dnx'));
-			$this->redirectTo('event');
-		} // if
-		$type_data = array_var($_POST, 'eventtype');
-		 
-		tpl_assign('eventtype', $type);
-		tpl_assign('eventtype_data', $type_data);
-		 
-		if(is_array($type_data)) {
-			$type->setFromAttributes($type_data);
-			$type->setProjectId(active_project()->getId());
-
-			try {
-				DB::beginWork();
-				$type->save();
+					if($projId != '') {
+						$project = Projects::findById($projId );
+					}
+					else {
+						$project = $event->getProject();
+					} 
+		        	$event->setProjectId($project->getId());
+				    $event->setFromAttributes($data); 
+				    
+				    if(!logged_user()->isMemberOfOwnerCompany()) $event->setIsPrivate(false);  
 				
-				DB::commit();
-
-				flash_success(lang('success add event type', $type->getName()));
-				$this->redirectTo('event');
-			} catch(Exception $e) {
-				DB::rollback();
-				tpl_assign('error', $e);
-			} // try
-		} // if
-	}
+		          
+		          	DB::beginWork();
+		         	$event->save();
+		         	$event->setTagsFromCSV(array_var($event_data, 'tags')); 
+				 	$event->save_properties(array_var($event_data,'event'));
+		          	ApplicationLogs::createLog($event, $project, ApplicationLogs::ACTION_ADD);
+		          	DB::commit();
+		          
+		          	flash_success(lang('success edit event', $event->getObjectName()));
+					ajx_current("start");		          
+		          
+		        } catch(Exception $e) {
+		        	DB::rollback();
+					flash_error($e->getMessage());
+					ajx_current("empty");		          
+		          //tpl_assign('error', $e);
+		        } // try
+			} // if
+	} // edit
 	
-	
-	/**
-	 * Delete event type
-	 *
-	 * @access public
-	 * @param void
-	 * @return null
-	 */
-	function delete_type() {
-		$type = EventTypes::findById(get_id());
-		if(!($type instanceof EventType )) {
-			flash_error(lang('event type dnx'));
-			$this->redirectTo('event');
-		} // if
-		 
-		try {
-			DB::beginWork();
-			$type->delete();
-			DB::commit();
 
-			flash_success(lang('success delete event type', $type->getName()));
-		} catch(Exception $e) {
-			DB::rollback();
-			flash_error(lang('error delete event type'));
-		} // try
-		 
-		$this->redirectTo('files');
-	} // delete_eventtype
 } // EventController
 
 /***************************************************************************
@@ -463,7 +415,7 @@ class EventController extends ApplicationController {
  *   copyright            : (C) 2001 The phpBB Group
  *   email                : support@phpbb.com
  *
- *   $Id: EventController.class.php,v 1.16 2008/05/27 19:18:08 msaiz Exp $
+ *   $Id: EventController.class.php,v 1.22 2008/07/21 20:59:03 chonwil Exp $
  *
  ***************************************************************************/
 

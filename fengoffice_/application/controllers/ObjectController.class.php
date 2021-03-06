@@ -78,7 +78,34 @@ class ObjectController extends ApplicationController {
 		}
 	}
 	
-	
+	/**
+	* Function called from other controllers when creating a new object an linking objects to it
+	*
+	* @param void
+	* @return null
+	*/
+	function link_to_new_object($the_object){
+	    $linked_data = array_var($_POST, 'rel_objects');
+	    $linked_count = count($linked_data);			    
+	    for ($i=0; $i<$linked_count; $i++){
+	    	$linked_obj_id = array_var($linked_data, "id_$i");			    	
+	    	if ($linked_obj_id){
+		    	$linked_obj_type = ucwords(array_var($linked_data, "type_$i"));						    	
+		    	$rel_object = get_object_by_manager_and_id($linked_obj_id, $linked_obj_type);
+				if(!($rel_object instanceof ApplicationDataObject)) {
+					flash_error(lang('no access permissions'));
+					ajx_current("empty");
+					return;
+				} // if
+				if(!($rel_object->canEdit(logged_user()))){
+					flash_error(lang('no access permissions'));
+					ajx_current("empty");
+					return;
+				} // if
+				$the_object->linkObject($rel_object);
+	    	}
+	    }
+	}
 	/**
 	* Link object to the object
 	*
@@ -180,9 +207,8 @@ class ObjectController extends ApplicationController {
 	  
 		$object1 = get_object_by_manager_and_id($object_id, $manager_class);
 		$object2 = get_object_by_manager_and_id($rel_object_id, $rel_object_manager);
-		if(!($object1 instanceof ProjectDataObject)|| !($object2 instanceof ProjectDataObject)) {
-			flash_error(lang('no access permissions'));
-			//$this->redirectToReferer(get_url('dashboard'));
+		if(!($object1 instanceof ApplicationDataObject)|| !($object2 instanceof ApplicationDataObject)) {
+			flash_error(lang('object not found'));
 			ajx_current("empty");
 			return;
 		} // if
@@ -205,7 +231,6 @@ class ObjectController extends ApplicationController {
 		
 		if(!($linked_object instanceof LinkedObject )) {
 			flash_error(lang('object not linked to object'));
-			//$this->redirectToReferer(get_url('dashboard'));
 			ajx_current("empty");
 			return;
 		} // if
@@ -318,7 +343,6 @@ class ObjectController extends ApplicationController {
       } // if
     } // update_properties	
     
-    
 	/**
 	 * Show handins list
 	 * 
@@ -411,7 +435,6 @@ class ObjectController extends ApplicationController {
       } // if
     } // update_handins
     
-
     /**
      * Returns array of queries that will return Dashboard Objects
      *
@@ -425,48 +448,54 @@ class ObjectController extends ApplicationController {
     	} else {
     		$proj_ids = logged_user()->getActiveProjectIdsCSV();
     	}
-    	$proj_cond = ' project_id in (' . $proj_ids . ')';
+    	$proj_cond = ' `project_id` IN (' . $proj_ids . ')';
+    	$proj_cond2 = ' `id` IN (SELECT `object_id` FROM `'.TABLE_PREFIX.'workspace_objects` WHERE `object_manager` = `object_manager_value` AND `workspace_id` IN ('.$proj_ids.'))';
     	if(isset($tag) && $tag && $tag!='')
-    		$tag_str = " AND exists (SELECT * from " . TABLE_PREFIX . "tags t WHERE tag='".$tag."' AND oid=t.rel_object_id AND t.rel_object_manager=object_manager) ";
+    		$tag_str = " AND exists (SELECT * from " . TABLE_PREFIX . "tags t WHERE tag='".$tag."' AND oid=t.rel_object_id AND t.rel_object_manager=object_manager_value) ";
     	else
     		$tag_str= ' ';
     	$unclassifiedMails = "";
     	if (!isset($project)){
     		$accountIds = logged_user()->getMailAccountIdsCSV();
     		if ($accountIds != "")
-    			$unclassifiedMails = " union SELECT 'MailContents' as object_manager, id as oid, sent_date as last_update FROM " . TABLE_PREFIX . "mail_contents co WHERE account_id in (" . $accountIds . ") " . $tag_str;
+    			$unclassifiedMails = " union SELECT 'MailContents' as object_manager_value, id as oid, sent_date as last_update FROM " . TABLE_PREFIX . "mail_contents co WHERE account_id in (" . $accountIds . ") " . $tag_str;
     	}
     	$res = array();
-		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectMessages::instance(),ACCESS_LEVEL_READ, logged_user()->getId(), 'project_id','co') .')';
-		$res['Messages']  = "SELECT  'ProjectMessages' as object_manager, id as oid, updated_on as last_update FROM " . 
-					TABLE_PREFIX . "project_messages co WHERE " . $proj_cond . $tag_str . $permissions;
-		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectEvents::instance(),ACCESS_LEVEL_READ, logged_user()->getId(), 'project_id','co') .')';
-		$res['Calendar'] = "SELECT  'ProjectEvents' as object_manager, id as oid, updated_on as last_update FROM " . 
+		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectMessages::instance(),ACCESS_LEVEL_READ, logged_user(), 'project_id','co') .')';
+		$res['Messages']  = "SELECT  'ProjectMessages' as object_manager_value, id as oid, updated_on as last_update FROM " . 
+					TABLE_PREFIX . "project_messages co WHERE " . $proj_cond2 . $tag_str . $permissions;
+		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectEvents::instance(),ACCESS_LEVEL_READ, logged_user(), 'project_id','co') .')';
+		$res['Calendar'] = "SELECT  'ProjectEvents' as object_manager_value, id as oid, updated_on as last_update FROM " . 
 					TABLE_PREFIX . "project_events co WHERE  " . $proj_cond . $tag_str . $permissions;
-		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectFiles::instance(),ACCESS_LEVEL_READ, logged_user()->getId(), 'project_id','co') .')';
-		$res['Documents'] = "SELECT  'ProjectFiles' as object_manager, id as oid, updated_on as last_update FROM " . 
-					TABLE_PREFIX . "project_files co WHERE " . $proj_cond . $tag_str . $permissions;
-		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectTasks::instance(),ACCESS_LEVEL_READ, logged_user()->getId(), 'project_id','co') .')';
-		$res['Tasks'] = "SELECT  'ProjectTasks' as object_manager, id as oid, updated_on as last_update FROM " . 
+		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectFiles::instance(),ACCESS_LEVEL_READ, logged_user(), 'project_id','co') .')';
+		$res['Documents'] = "SELECT  'ProjectFiles' as object_manager_value, id as oid, updated_on as last_update FROM " . 
+					TABLE_PREFIX . "project_files co WHERE " . $proj_cond2 . $tag_str . $permissions;
+		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectTasks::instance(),ACCESS_LEVEL_READ, logged_user(), 'project_id','co') .')';
+		$res['Tasks'] = "SELECT  'ProjectTasks' as object_manager_value, id as oid, updated_on as last_update FROM " . 
 					TABLE_PREFIX . "project_tasks co WHERE parent_id=0 AND " . $proj_cond . $tag_str . $permissions;
-		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectMilestones::instance(),ACCESS_LEVEL_READ, logged_user()->getId(), 'project_id','co') .')';
-		$res['Milestones'] = "SELECT  'ProjectMilestones' as object_manager, id as oid, updated_on as last_update FROM " . 
+		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectMilestones::instance(),ACCESS_LEVEL_READ, logged_user(), 'project_id','co') .')';
+		$res['Milestones'] = "SELECT  'ProjectMilestones' as object_manager_value, id as oid, updated_on as last_update FROM " . 
 					TABLE_PREFIX . "project_milestones co WHERE " . $proj_cond . $tag_str . $permissions;
-		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectWebpages::instance(),ACCESS_LEVEL_READ, logged_user()->getId(), 'project_id','co') .')';
-		$res['Web Pages'] = "SELECT  'ProjectWebPages' as object_manager, id as oid, created_on as last_update FROM " . 
+		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectWebpages::instance(),ACCESS_LEVEL_READ, logged_user(), 'project_id','co') .')';
+		$res['Web Pages'] = "SELECT  'ProjectWebPages' as object_manager_value, id as oid, created_on as last_update FROM " . 
 					TABLE_PREFIX . "project_webpages co WHERE " . $proj_cond . $tag_str . $permissions;
-		$permissions = ' AND ( ' . permissions_sql_for_listings(MailContents::instance(),ACCESS_LEVEL_READ, logged_user()->getId(), 'project_id','co') .')';
-		$res['Emails'] = "SELECT  'MailContents' as object_manager, id as oid, sent_date as last_update FROM " . 
+		$permissions = ' AND ( ' . permissions_sql_for_listings(MailContents::instance(),ACCESS_LEVEL_READ, logged_user(), 'project_id','co') .')';
+		$res['Emails'] = "SELECT  'MailContents' as object_manager_value, id as oid, sent_date as last_update FROM " . 
 					TABLE_PREFIX . "mail_contents co WHERE " . $proj_cond . $tag_str . $permissions . $unclassifiedMails;
-		$permissions = ' AND ( ' . permissions_sql_for_listings(Contacts::instance(),ACCESS_LEVEL_READ, logged_user()->getId(), 'project_id','co') .')';
+		
+		if (!can_manage_contacts(logged_user())){
+			$pcTableName = TABLE_PREFIX . 'project_contacts';
+			$permissions = " AND co.id in ( SELECT contact_id from $pcTableName pc where pc.contact_id = co.id AND (" . permissions_sql_for_listings(ProjectContacts::instance(),ACCESS_LEVEL_READ, logged_user(), 'project_id','pc') .'))';
+		} else $permissions = '';
+		
 		if (isset($project)) {
-			$res['Contacts'] = "SELECT 'Contacts' as object_manager, id as oid, created_on as last_update FROM " . 
+			$res['Contacts'] = "SELECT 'Contacts' as object_manager_value, id as oid, created_on as last_update FROM " . 
 					TABLE_PREFIX . "contacts co WHERE exists (SELECT * FROM " . 
 					TABLE_PREFIX . "project_contacts pc WHERE pc.contact_id = co.id and ". $proj_cond.	")" .
-					str_replace('=object_manager',"='ProjectContacts'",$tag_str) . $permissions;
+					str_replace('=object_manager_value',"='ProjectContacts'",$tag_str) . $permissions;
 		} else{
-			$res['Contacts'] = "SELECT 'Contacts' as object_manager, id as oid, created_on as last_update FROM " . 
-						TABLE_PREFIX . "contacts co WHERE '1' = '1' " . str_replace('=object_manager',"='Contacts'",$tag_str) . $permissions;
+			$res['Contacts'] = "SELECT 'Contacts' as object_manager_value, id as oid, created_on as last_update FROM " . 
+						TABLE_PREFIX . "contacts co WHERE '1' = '1' " . str_replace('=object_manager_value',"='Contacts'",$tag_str) . $permissions;
 		}
 		if($count){
 			foreach ($res as $p => $q){
@@ -522,7 +551,7 @@ class ObjectController extends ApplicationController {
     	if(!$rows)  return $objects;
     	$i=1;
     	foreach ($rows as $row){
-    		$manager= $row['object_manager'];
+    		$manager= $row['object_manager_value'];
     		$id = $row['oid'];
     		if($id && $manager){
     			$obj=get_object_by_manager_and_id($id,$manager);    			
@@ -575,14 +604,10 @@ class ObjectController extends ApplicationController {
 		ajx_current("empty");
     	
     	/* get query parameters */
-		$start = array_var($_GET,'start');
-		$limit = array_var($_GET,'limit');
-		if (! $start) {
-			$start = 0;
-		}
-		if (! $limit) {
-			$limit = config_option('files_per_page');
-		}
+		$filesPerPage = config_option('files_per_page');
+		$start = array_var($_GET,'start') ? array_var($_GET,'start') : 0;
+		$limit = array_var($_GET,'limit') ? array_var($_GET,'limit') : $filesPerPage;
+		
 		$order = array_var($_GET,'sort');
 		$orderdir = array_var($_GET,'dir');
 		$page = (integer) ($start / $limit) + 1;
@@ -617,7 +642,7 @@ class ObjectController extends ApplicationController {
 		//$result = $this->getDashboardObjects($page, config_option('files_per_page'), $tag, $order, $orderdir, $type);
 		$project_id = array_var($_GET, 'active_project', 0);
 		$project = Projects::findById($project_id);
-		$result = $this->getDashboardObjects($page, config_option('files_per_page'), $tag, null, null, $type, $project);
+		$result = $this->getDashboardObjects($page, $filesPerPage, $tag, null, null, $type, $project);
 		if(!$result)
 			$result = array();
 		$total_items=$this->countDashboardObjects($tag, $type, $project);

@@ -275,6 +275,8 @@ class Tags extends BaseTags {
 		return array_var($row, 'row_count', 0);
 	} // countObjectsByTag
 
+	
+	
 } // Tags
 
 ?>

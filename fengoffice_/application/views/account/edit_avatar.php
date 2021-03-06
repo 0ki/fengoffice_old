@@ -3,11 +3,11 @@
   
   if($user->canUpdateProfile(logged_user())) {
 	add_page_action(lang('update profile'), $user->getEditProfileUrl(), 'ico-edit');
-	add_page_action(lang('change password'),$user->getEditPasswordUrl(), 'ico-properties');
+	add_page_action(lang('change password'),$user->getEditPasswordUrl(), 'ico-password');
   } // if
   
   if($user->canUpdatePermissions(logged_user())) {
-  	add_page_action(lang('permissions'), $user->getUpdatePermissionsUrl(), 'ico-properties');
+  	add_page_action(lang('permissions'), $user->getUpdatePermissionsUrl(), 'ico-permissions');
   } // if
 
 ?>

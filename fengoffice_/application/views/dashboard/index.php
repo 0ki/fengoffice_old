@@ -1,13 +1,32 @@
-<?php 
-  set_page_title(lang('dashboard'));
-  
-  if(Project::canAdd(logged_user())) {
-    add_page_action(lang('add project'), get_url('project', 'add'), 'ico-add');
-  } // if
-  
 
+<div style="padding:7px">
+<div class="dashboard">
+
+<div class="dashWorkspace">
+<?php 
+if(active_project() instanceof Project) 
+	echo active_project()->getName();
+else 
+	echo lang('all projects');
+	
+	$hasPendingTasks = isset($dashtasks) && is_array($dashtasks) && count($dashtasks) > 0;
+	$hasLateMilestones = (isset($today_milestones) && is_array($today_milestones) && count($today_milestones)) || (isset($late_milestones) && is_array($late_milestones) && count($late_milestones));
+	$hasMessages = isset($messages) && is_array($messages) && count($messages) > 0;
+	$hasDocuments = isset($documents) && is_array($documents) && count($documents) > 0;
+	$hasCharts = isset($charts) && is_array($charts) && count($charts) > 0;
 ?>
-<?php if(logged_user()->isMemberOfOwnerCompany() && !owner_company()->getHideWelcomeInfo()) { ?>
+</div>
+
+<div class="dashActions">
+	<a class="internalLink" href="#" onclick="og.switchToOverview(); return false;">
+	<div class="viewAsList"><?php echo lang('view as list') ?></div></a>
+</div>
+
+
+
+
+<?php //--------------------------------------------- Remove FALSE
+ if(!(active_project() instanceof Project) && false && logged_user()->isMemberOfOwnerCompany() && !owner_company()->getHideWelcomeInfo()) { ?>
 <div class="hint">
 
   <div class="header"><?php echo lang('welcome to new account') ?></div>
@@ -50,46 +69,54 @@
 </div>
 <?php } // if ?>
 
-<?php if((isset($today_milestones) && is_array($today_milestones) && count($today_milestones)) || (isset($late_milestones) && is_array($late_milestones) && count($late_milestones))) { ?>
-<div id="lateOrTodayMilestones" class="important">
-<?php if(isset($late_milestones) && is_array($late_milestones) && count($late_milestones)) { ?>
-  <div class="header"><?php echo lang('late milestones') ?></div>
-  <ul>
-<?php foreach($late_milestones as $milestone) { ?>
-<?php if($milestone->getAssignedTo() instanceof ApplicationDataObject) { ?>
-    <li><?php echo clean($milestone->getAssignedTo()->getObjectName()) ?>: <a class="internalLink" href="<?php echo $milestone->getViewUrl() ?>"><?php echo clean($milestone->getName()) ?></a> <?php echo strtolower(lang('in')) ?> <a class="internalLink" href="<?php echo $milestone->getProject()->getOverviewUrl() ?>"><?php echo clean($milestone->getProject()->getName()) ?></a> (<?php echo lang('days late', $milestone->getLateInDays()) ?>)</li>
-<?php } else { ?>
-    <li><a class="internalLink" href="<?php echo $milestone->getViewUrl() ?>"><?php echo clean($milestone->getName()) ?></a> <?php echo strtolower(lang('in')) ?> <a class="internalLink" href="<?php echo $milestone->getProject()->getOverviewUrl() ?>"><?php echo clean($milestone->getProject()->getName()) ?></a> (<?php echo lang('days late', $milestone->getLateInDays()) ?>)</li>
-<?php } // if ?>
-<?php } // foreach ?>
-  </ul>
-<?php } // if ?>
+<table style="width:100%"><tr><td>
 
-<?php if(isset($today_milestones) && is_array($today_milestones) && count($today_milestones)) { ?>
-  <div class="header"><?php echo lang('today') ?></div>
-  <ul>
-<?php foreach($today_milestones as $milestone) { ?>
-<?php if($milestone->getAssignedTo() instanceof ApplicationDataObject) { ?>
-    <li><?php echo clean($milestone->getAssignedTo()->getObjectName()) ?>: <a class="internalLink" href="<?php echo $milestone->getViewUrl() ?>"><?php echo clean($milestone->getName()) ?></a> <?php echo strtolower(lang('in')) ?> <a class="internalLink" href="<?php echo $milestone->getProject()->getOverviewUrl() ?>"><?php echo clean($milestone->getProject()->getName()) ?></a></li>
-<?php } else { ?>
-    <li><a class="internalLink" href="<?php echo $milestone->getViewUrl() ?>"><?php echo clean($milestone->getName()) ?></a> <?php echo strtolower(lang('in')) ?> <a class="internalLink" href="<?php echo $milestone->getProject()->getOverviewUrl() ?>"><?php echo clean($milestone->getProject()->getName()) ?></a></li>
-<?php } // if ?>
-<?php } // foreach ?>
-  </ul>
-<?php } // if ?>
-</div>
-<?php } // if ?>
-<br>
 
-<b>Upcoming events, milestones and tasks</b><br>
-<br>
-
+<div class="dashCalendar">
+<table style="width:100%">
+	<col width=12/><col /><col width=12/><tr><tr>
+	<td colspan=2 rowspan=2 class="dashHeader"><div class="dashTitle">Upcoming events, milestones and tasks</div></td>
+	<td class="coViewTopRight"></td></tr>
+	<tr><td class="coViewRight" rowspan=2 colspan=2 ></td></tr>
+	
+		<tr><td colspan=2>
+			<script language="javascript">
+			
+			function cancel (evt) {//cancel clic event bubbling. used to cancel opening a New Event window when clicking an object
+			    var e=(evt)?evt:window.event;
+			    if (window.event) {
+			        e.cancelBubble=true;
+			    } else {
+			        e.stopPropagation();
+			    }
+			}
+			
+			var ob=true;
+			function show_overlib(overlib_desc,fg_color,bg_color,txt_color,cap_text,cap_color){	
+				if (ob){
+					return overlib(overlib_desc,FGCOLOR,fg_color,BGCOLOR,bg_color,TEXTCOLOR,txt_color,CAPTION,cap_text,CAPCOLOR,cap_color);
+				}
+				return false;
+			}
+			//disable showing the overlib. 
+			function disable_overlib(){
+				ob = false;
+			}
+			</script>
   <?php
-  $startday =date("d",mktime());
-  $endday =date("d",mktime()) +14;
+  
+  $startday = date("d",mktime()) - (date("N", mktime()) %7);
+  $endday = $startday +14;
   $currentday = date("j");
-	$currentmonth = date("n");
-	$currentyear = date("Y");
+  $currentmonth = date("n");
+  $currentyear = date("Y");
+  
+  $date_start = new DateTimeValue(mktime(0,0,0,$currentmonth,$startday,$currentyear)); 
+  $date_end = new DateTimeValue(mktime(0,0,0,$currentmonth,$endday,$currentyear)); 
+  $milestones = ProjectMilestones::getRangeMilestonesByUser($date_start,$date_end,logged_user(), '', active_project());
+  $tasks = ProjectTasks::getRangeTasksByUser($date_start,$date_end,logged_user(), '', active_project());
+	
+ 
 	// load the day we are currently viewing in the calendar
 	$cday = $_SESSION['cal_day'];
 	$cmonth = $_SESSION['cal_month'];
@@ -101,14 +128,14 @@
 	$lastday = date("t", mktime(0,0,0,$cmonth,1,$cyear)); // # of days in the month
 	
 	
-	$output .= "<table id=\"calendar\" border='0' cellspacing='1' cellpadding='0'>
-	<colgroup span=\"7\" width=\"1*\">
-	<tr>\n";
+	$output .= "<table id=\"calendar\" border='0' style='width:100%;margin-right:5px;border-collapse:collapse' cellspacing='1' cellpadding='0'>\n";
 	$day = date("d");
 	$month = date("m");
 	$year = date("Y");
 	// Loop to render the calendar
-	for ($week_index = 0;$week_index < 2; $week_index++) {
+	
+	$can_add_event = !active_project() || ProjectEvent::canAdd(logged_user(),active_project());	
+	for ($week_index = 0;$week_index<2; $week_index++) {
 		$output .= '  <tr>' . "\n";
 		for ($day_of_week = 0; $day_of_week < 7; $day_of_week++) {
 			$i = $week_index * 7 + $day_of_week;
@@ -119,11 +146,45 @@
 				$daytitle = 'todaylink';
 				$today_text = "Today ";
 			}else $daytitle = 'daylink';
+			
+			// if weekends override do this
+			if(cal_option("weekendoverride")){
+				// set whether the date is in the past or future/present
+				if($day_of_week==0 OR $day_of_week==6){
+					$daytype = "weekend";
+				}elseif($day_of_month <= $lastday AND $day_of_month >= 1){
+					$daytype = "weekday";
+				}else{
+					$daytype = "weekday_future";
+				}
+			}else{
+				if( !cal_option("start_monday") AND ($day_of_week==0 OR $day_of_week==6) AND $day_of_month <= $lastday AND $day_of_month >= 1){
+					$daytype = "weekend";
+				}elseif( cal_option("start_monday") AND ($day_of_week==5 OR $day_of_week==6) AND $day_of_month <= $lastday AND $day_of_month >= 1){
+					$daytype = "weekend";
+				}elseif($day_of_month <= $lastday AND $day_of_month >= 1){
+					$daytype = "weekday";
+				}else{
+					$daytype = "weekday_future";
+				}
+			}
+			// see what type of day it is
+			if($currentyear == $year && $currentmonth == $month && $currentday == $day_of_month){
+			  $daytitle = 'todaylink';
+			  $daytype = "today";
+			}elseif($day_of_month > $lastday OR $day_of_month < 1){
+				$daytitle = 'extralink';
+			}else $daytitle = 'daylink';
+			// writes the cell info (color changes) and day of the month in the cell.
+			$output .= "<td valign=\"top\" class=\"$daytype\" ";
 			if($day_of_month <= $lastday AND $day_of_month >= 1){ 
 				$p = cal_getlink("index.php?action=viewdate&day=$day_of_month&month=$month&year=$year");
 				$t = cal_getlink("index.php?action=add&day=$day_of_month&month=$month&year=$year");
-				$w = $today_text . $day_of_month;				
-				$current_day = date("w",mktime(0,0,0,$month,$day_of_month,$year));
+				$w = $day_of_month;
+			}elseif($day_of_month < 1){
+				$p = cal_getlink("index.php?action=viewdate&day=$day_of_month&month=$month&year=$year");
+				$t = cal_getlink("index.php?action=add&day=$day_of_month&month=$month&year=$year");
+				$w = "&nbsp;";
 			}else{
 				if($day_of_month==$lastday+1){
 					$month++;
@@ -134,26 +195,19 @@
 				}
 				$p = cal_getlink("index.php?action=viewdate&day=".($day_of_month-$lastday)."&month=$month&year=$year");
 				$t = cal_getlink("index.php?action=add&day=".($day_of_month-$lastday)."&month=$month&year=$year");
-				$w = $day_of_month - $lastday . ' / ' . $month;
-				$current_day = date("w",mktime(0,0,0,$month,$day_of_month-$lastday,$year));
+				$w = $day_of_month - $lastday;
 			}
-			if($current_day ==0 OR $current_day ==6){
-				$daytype = "weekend";
-			}else{
-				$daytype = "weekday";
-			}
-			// writes the cell info (color changes) and day of the month in the cell.
-			$output .= "<td valign=\"top\" class=\"$daytype\"";
-			$output .= "><div class='$daytitle'>";
+			$output .= "><div style='z-index:0; height:100%;' onclick=\"og.openLink('". $t."');disable_overlib();\") >
+			<div class='$daytitle' style='text-align:right'>";
 			if($day_of_month >= 1){
-				$output .= "<a class='internalLink' href=\"$p\">$w</a>";				
+				$output .= "<a class='internalLink' href=\"$p\" onclick=\"cancel(event);\"  style='color:#5B5B5B' >$w</a>";				
 				// only display this link if the user has permission to add an event
 				if(!active_project() || ProjectEvent::canAdd(logged_user(),active_project())){
 					// if single digit, add a zero
 					$dom = $day_of_month;
 					if($dom < 10) $dom = "0".$dom;
 					// make sure user is allowed to edit the past
-						$output .= "<a  class='internalLink' href=\"$t\">+</a>";
+						
 				}
 				
 			}else $output .= "&nbsp;";
@@ -165,151 +219,405 @@
 				$result = ProjectEvents::getDayProjectEvents($date, $tags, active_project()); 
 				if(!$result)
 					$result = array();
-				$milestones = ProjectMilestones::getDayMilestonesByUser($date,logged_user());
 				if($milestones)
 					$result = array_merge($result,$milestones );
-				$tasks = ProjectTasks::getDayTasksByUser($date,logged_user());
+					
+					
 				if($tasks)
 					$result = array_merge($result,$tasks );
+				
 				if(count($result)<1) $output .= "&nbsp;";
-				else
-				foreach ($result as $event){ 
-					if($event instanceof ProjectEvent ){
-						$subject = $event->getSubject();
-						$typeofevent = $event->getTypeId(); 
-						$private = $event->getIsPrivate(); 
-						$eventid = $event->getId(); 
-						$desc = $event->getDescription(); 
-						$overlib = "<strong>$subject</strong> - <i>Event</i><br>$desc";
-						$event_type_obj = $event->getEventTypeObject();
-						$color = $event_type_obj?$event_type_obj->getTypeColor():''; 
-						$start_stamp =$event->getStart()->getTimestamp();
-						if($color=="") $color = "AAEE00";
-						// organize the time and duraton data
-						$overlib_time = CAL_UNKNOWN_TIME;
-						switch($typeofevent) {
-							case 1:
-								if(!cal_option("hours_24")) $timeformat = 'g:i A';
-								else $timeformat = 'G:i';
-								$event_time = date($timeformat, $start_stamp); 
-								$overlib_time = "<br>@ $event_time";
-								break;
-							case 2:
-								$event_time = CAL_FULL_DAY;
-								$overlib_time = "<br>" . CAL_FULL_DAY;
-								break;
-							case 3:
-								$event_time = '??:??';
-								$overlib_time = '';
-								break;
-							default: ;
-						} 
-						// build overlib text
-						$overlib = "<strong>$subject - <i>Event</i>$overlib_time</strong><br>" . $desc;
-						// see if event type color is dark.  If it is, make text white in overlib box.
-						$c1 = $color[0];
-						$c2 = $color[2];
-						$c3 = $color[4];
-						if(!is_numeric($c1)) $c1 = 10;
-						if(!is_numeric($c2)) $c2 = 10;
-						if(!is_numeric($c3)) $c3 = 10;
-						if($c1<4 AND $c2<9 AND $c3<9) $overlibtext = "#FFFFFF";
-						elseif($c2<4 AND $c1<9 AND $c3<9) $overlibtext = "#FFFFFF";
-						elseif($c3<4 AND $c1<9 AND $c2<9) $overlibtext = "#FFFFFF";
-						else $overlibtext = "#000000";
-						// make the event subjects links or not according to the variable $whole_day in gatekeeper.php
-						if(!$private || !cal_anon()){
-							if($event_type_obj && $color=="") $output .= '<div class="event_block">';
-							else $output .= '<div class="event_block" style="border-left-color: #'.$color.';">';
-							if($subject=="") $subject = "[".CAL_NO_SUBJECT."]";
-							$output .= '<span onmouseover="return overlib(\''.str_replace("'","\\'",$overlib).'\',FGCOLOR,\'#'.$color.'\',BGCOLOR,\'#000000\',TEXTCOLOR,\''.$overlibtext.'\');" onmouseout="return nd();">';
-							$output .= "<img src=" . image_url('/16x16/calendar.png') . "> ";
-							if(cal_option("show_times")) $output .= "$event_time - $subject";
-							else $output .= "$subject";
-							$output .= '</span>';
-							$output .= "</div>";
-						}
-					} // end if event
-					elseif($event instanceof ProjectMilestone ){
-						$milestone=$event;
-						$overlib = "<strong>".$milestone->getName()."</strong> - <i>Milestone</i><br>" . $milestone->getDescription();
-						$color = 'FF0000'; 
-						$subject = $milestone->getName();
-						// build overlib text
-						// see if event type color is dark.  If it is, make text white in overlib box.
-						$c1 = $color[0];
-						$c2 = $color[2];
-						$c3 = $color[4];
-						if(!is_numeric($c1)) $c1 = 10;
-						if(!is_numeric($c2)) $c2 = 10;
-						if(!is_numeric($c3)) $c3 = 10;
-						if($c1<4 AND $c2<9 AND $c3<9) $overlibtext = "#FFFFFF";
-						elseif($c2<4 AND $c1<9 AND $c3<9) $overlibtext = "#FFFFFF";
-						elseif($c3<4 AND $c1<9 AND $c2<9) $overlibtext = "#FFFFFF";
-						else $overlibtext = "#000000";
-						// make the event subjects links or not according to the variable $whole_day in gatekeeper.php
-						if($color == "") $output .= '<div class="event_block">';
-						else $output .= '<div class="event_block" style="border-left-color: #'.$color.';">';
-						$output .= '<span onmouseover="return overlib(\''.str_replace("'","\\'",$overlib).'\',FGCOLOR,\'#'.$color.'\',BGCOLOR,\'#000000\',TEXTCOLOR,\''.$overlibtext.'\');" onmouseout="return nd();">';
-						$output .= "<img src=" . image_url('/16x16/milestone.png') . ">$subject";
-						$output .= '</span>';
-						$output .= "</div>";
-					}//endif milestone
-					elseif($event instanceof ProjectTask){
-						$task=$event;
-						$overlib = "<strong>".$task->getTitle()."</strong> - <i>Task</i><br>" . $task->getText();
-						$color = '0000FF'; 
-						$subject = $task->getTitle();
-						// build overlib text
-						// see if event type color is dark.  If it is, make text white in overlib box.
-						$c1 = $color[0];
-						$c2 = $color[2];
-						$c3 = $color[4];
-						if(!is_numeric($c1)) $c1 = 10;
-						if(!is_numeric($c2)) $c2 = 10;
-						if(!is_numeric($c3)) $c3 = 10;
-						if($c1<4 AND $c2<9 AND $c3<9) $overlibtext = "#FFFFFF";
-						elseif($c2<4 AND $c1<9 AND $c3<9) $overlibtext = "#FFFFFF";
-						elseif($c3<4 AND $c1<9 AND $c2<9) $overlibtext = "#FFFFFF";
-						else $overlibtext = "#000000";
-						// make the event subjects links or not according to the variable $whole_day in gatekeeper.php
-						if($color == "") $output .= '<div class="event_block">';
-						else $output .= '<div class="event_block" style="border-left-color: #'.$color.';">';
-						$output .= '<span onmouseover="return overlib(\''.str_replace("'","\\'",$overlib).'\',FGCOLOR,\'#'.$color.'\',BGCOLOR,\'#000000\',TEXTCOLOR,\''.$overlibtext.'\');" onmouseout="return nd();">';
-						$output .= "<img src=" . image_url('/16x16/tasks.png') . ">$subject";
-						$output .= '</span>';
-						$output .= "</div>";
-					}//endif task
-				} // end foreach event writing loop
-				$output .= '</td>';
+				else{
+					$count=0;
+					foreach($result as $event){
+						if($event instanceof ProjectEvent ){
+							$count++;
+							$subject =   truncate($event->getSubject(),20,'','UTF-8',true,true);
+							$typeofevent = $event->getTypeId(); 
+							$private = $event->getIsPrivate(); 
+							$eventid = $event->getId(); 
+						
+							$color = $event->getEventTypeObject()?$event->getEventTypeObject()->getTypeColor():''; 
+							if($color=="") $color = "9DFF80";
+							// organize the time and duraton data
+							$overlib_time = CAL_UNKNOWN_TIME;
+							switch($typeofevent) {
+								case 1:
+									if(!cal_option("hours_24")) $timeformat = 'g:i A';
+									else $timeformat = 'G:i';
+									$event_time = date($timeformat, $event->getStart()->getTimestamp()); 
+									$overlib_time = "@ $event_time";
+									break;
+								case 2:
+									$event_time = CAL_FULL_DAY;
+									$overlib_time = CAL_FULL_DAY;
+									break;
+								case 3:
+									$event_time = '??:??';
+									$overlib_time = CAL_UNKNOWN_TIME;
+									break;
+								default: ;
+							} 
+							
+							// build overlib text
+							$overlib_text = "<strong>$overlib_time</strong><br>" . truncate($event->getDescription(),195);
+							$overlibtext_color = "#000000";
+							// make the event subjects links or not according to the variable $whole_day in gatekeeper.php
+							if(!$private && $count <= 3){
+								if($event->getEventTypeObject() && $event->getEventTypeObject()->getTypeColor()=="") $output .= '<div class="event_block">';
+								else $output .= "<div class='event_block'   style='z-index:1000;border-left-color: #$color;'>";
+								if($subject=="") $subject = "[".CAL_NO_SUBJECT."]";
+								$output .= '<span onmouseover="return show_overlib(\''.str_replace("'","\\'",$overlib_text).'\',\'#'.$color.'\',\'#75BF60\',\''.$overlibtext_color.'\',\''.$subject.'\',\'#000\');" onmouseout="return nd();">';			
+								$output .="<img src=" . image_url('/16x16/calendar.png') . " align='absmiddle'>";
+								$output .= "<a href='".cal_getlink("index.php?action=viewevent&amp;id=".$event->getId())."' class='internalLink' onclick=\"cancel(event); nd();disable_overlib();\" >".$subject."</a>";
+								$output .= '</span>';
+								$output .= "</div>";
+							}
+						} elseif($event instanceof ProjectMilestone ){
+							$milestone=$event;
+							$due_date=$milestone->getDueDate();
+							if (mktime(0,0,0,$month,$day_tmp,$year) == mktime(0,0,0,$due_date->getMonth(),$due_date->getDay(),$due_date->getYear())) {	
+								$count++;
+								if ($count<=3){
+									$overlib_text = truncate($milestone->getDescription(),195)."<br>";
+									
+									if ($milestone->getAssignedTo() instanceof ApplicationDataObject) { 
+										$overlib_text .= 'Assigned to:'. clean($milestone->getAssignedTo()->getObjectName());
+									} else $overlib_text .= 'Assigned to: None';
+									$color = 'FFC0B3'; 
+									
+									$subject = "&nbsp;". truncate($milestone->getName(),20,'','UTF-8',true,true)." - <i>Milestone</i>";
+									$cal_text = truncate($milestone->getName(),20,'','UTF-8',true,true);
+									$overlibtext_color = "#000000";
+									$output .= '<div class="event_block" style="border-left-color: #'.$color.';">';
+									$output .= '<span onmouseover="return show_overlib(\''.str_replace("'","\\'",$overlib_text).'\',\'#'.$color.'\',\'#FF9680\',\''.$overlibtext_color.'\',\''.$subject.'\',\'#000\');" onmouseout="return nd();">';
+									$output .= "<img src=" . image_url('/16x16/milestone.png') . " align='absmiddle'>";
+									$output .= "<a href='".$milestone->getViewUrl()."' class='internalLink' onclick=\"cancel(event);nd();disable_overlib();\" >".$cal_text."</a>";
+									$output .= '</span>';
+									$output .= "</div>";
+								}//if count
+							}
+							
+						}//endif milestone
+						elseif($event instanceof ProjectTask){
+							$task=$event;
+							$start_date=$task->getStartDate();
+							$due_date=$task->getDueDate();
+							$now = mktime(0,0,0,$month,$day_tmp,$year);
+							if ($now == mktime(0,0,0,$due_date->getMonth(),$due_date->getDay(),$due_date->getYear())) {	
+								$count++;
+								if ($count<=3){
+									$overlib_text = "&nbsp;".truncate($task->getText(),25,'','UTF-8',true,true)."<br>";
+									if ($task->getAssignedTo() instanceof ApplicationDataObject) { 
+										$overlib_text .= 'Assigned to:'. clean($task->getAssignedTo()->getObjectName());
+									} else $overlib_text .= 'Assigned to: None';
+									
+									$color = 'D0F29D'; 
+									$subject = truncate($task->getTitle(),20,'','UTF-8',true,true).'- <i>Task</i>';
+									$cal_text = truncate($task->getTitle(),20,'','UTF-8',true,true);
+									
+								    $overlibtext_color = "#000000";
+									$output .= '<div class="event_block" style="border-left-color: #'.$color.';">';
+									$output .= '<span onmouseover="return show_overlib(\''.str_replace("'","\\'",$overlib_text).'\',\'#'.$color.'\',\'#92A96E\',\''.$overlibtext_color.'\',\''.$subject.'\',\'#000\');" onmouseout="return nd();">';
+									$output .= "<img src=" . image_url('/16x16/tasks.png') . " align='absmiddle'>";
+									$output .= "<a href='".$task->getViewUrl()."' class='internalLink' onclick=\"cancel(event);nd();disable_overlib();\" >".$cal_text."</a>";
+									$output .= '</span>';
+									$output .= "";
+								}//if count
+							}
+						}//endif task
+					} // end foreach event writing loop
+					if ($count > 3) {
+						$output .= '<div style="witdh:100%;text-align:center;font-size:9px" ><a href="'.$p.'" class="internalLink"  onclick="cancel(event);nd();disable_overlib();">+'.($count-3).' more</a></div>';
+					}
+				}
+				
+				$output .= '</div></td>';
 			} //if is_numeric($w) 
 		} // end weekly loop
 		$output .= "\n  </tr>\n";
 		// If it's the last day, we're done
-		if($day_of_month >= $endday) {
+		if($day_of_month >= $lastday+7) {
 			break;
 		}
 	} // end main loop
-echo $output;
+echo $output . '</table>';
   ?>
- </table>
+  		</td></tr>
+		<tr><td class="coViewBottomLeft"></td>
+		<td class="coViewBottom"></td>
+		<td class="coViewBottomRight"></td></tr>
+	</table>
+</div>
+ 
  <br>
-<b>Pending tasks</b><br>
 
-<br>
-
-<?php
-$tasks = ProjectTasks::getUndatedTaskListsForTwoWeeks();
-$i=false;
-foreach ($tasks as $task){
-	$i=!$i;
-	if($i)	echo "<div style='background-color:#CCCCFF;'>";
-	$text = $task->getText();
-	if(strlen($text)>100)
-		$text = substr($text,0,100) . " ...";
-	echo "<a class='internalLink' href='".$task->getEditUrl()."'><b>".$task->getTitle() . "</b> : " . $text . "</a><br>";
-	if($i) echo "</div>";
-}
-
-//echo "<img src=" . image_url("/16x16/milestone.png") . ">"
+<?php if((isset($today_milestones) && is_array($today_milestones) && count($today_milestones)) 
+			|| (isset($late_milestones) && is_array($late_milestones) && count($late_milestones)) 
+			|| (isset($late_tasks) && is_array($late_tasks) && count($late_tasks))
+			|| (isset($today_tasks) && is_array($today_tasks) && count($today_tasks))) { 
 ?>
+<div class="dashLate">
+<table style="width:100%">
+	<tr>
+	<td colspan=2 rowspan=2 class="dashHeader"><div class="dashTitle"><?php echo lang('late milestones and tasks') ?></div></td>
+	<td class="coViewTopRight"></td></tr>
+	<tr><td class="coViewRight" rowspan=2></td></tr>
+	
+		<tr><td style="background:white"></td><td class="coViewBody" style="padding-left:0px;">
+		
+<?php if((isset($late_milestones) && is_array($late_milestones) && count($late_milestones)) ||
+		(isset($late_tasks) && is_array($late_tasks) && count($late_tasks))) { 
+	$c = 0;
+	?>
+<div>
+  <table style="width:100%">
+<?php
+	if (isset($late_milestones) && is_array($late_milestones) && count($late_milestones))
+	foreach($late_milestones as $milestone) { 
+	$c++;
+	?>
+    <tr class="<?php echo $c % 2 == 1? '':'dashAltRow' ?>"><td class="db-ico ico-milestone"></td>
+<?php if($milestone->getAssignedTo() instanceof ApplicationDataObject) { ?>
+    <td style="padding-left:5px;padding-bottom:2px"><?php echo clean($milestone->getAssignedTo()->getObjectName()) ?>: <a class="internalLink" href="<?php echo $milestone->getViewUrl() ?>"><?php echo clean($milestone->getName()) ?></a></td>
+<?php } else { ?>
+    <td style="padding-left:5px;padding-bottom:2px"><a class="internalLink" href="<?php echo $milestone->getViewUrl() ?>"><?php echo clean($milestone->getName()) ?></a></td>
+<?php } // if ?>
+    <td><a href="#" onclick="Ext.getCmp('workspace-panel').select(<?php echo $milestone->getProjectId()?>)"><?php echo clean($milestone->getProject()->getName()) ?></a></td>
+    <td style="text-align:right"><?php echo lang('days late', $milestone->getLateInDays()) ?></td>
+	</tr>
+<?php } // foreach ?>
+<?php
+	if (isset($late_tasks) && is_array($late_tasks) && count($late_tasks))
+	foreach($late_tasks as $task) { 
+	$c++;
+	?>
+    <tr class="<?php echo $c % 2 == 1? '':'dashAltRow' ?>"><td class="db-ico ico-task"></td>
+<?php if($task->getAssignedTo() instanceof ApplicationDataObject) { ?>
+    <td style="padding-left:5px;padding-bottom:2px"><?php echo clean($task->getAssignedTo()->getObjectName()) ?>: <a class="internalLink" href="<?php echo $task->getViewUrl() ?>"><?php echo clean($task->getTitle()) ?></a></td>
+<?php } else { ?>
+    <td style="padding-left:5px;padding-bottom:2px"><a class="internalLink" href="<?php echo $task->getViewUrl() ?>"><?php echo clean($task->getTitle()) ?></a></td>
+<?php } // if ?>
+    <td><a href="#" onclick="Ext.getCmp('workspace-panel').select(<?php echo $task->getProjectId()?>)"><?php echo clean($task->getProject()->getName()) ?></a></td>
+    <td style="text-align:right"><?php echo lang('days late', $task->getLateInDays()) ?></td>
+	</tr>
+<?php } // foreach ?>
+  </table></div>
+<?php } // if ?>
+
+<?php if((isset($today_milestones) && is_array($today_milestones) && count($today_milestones))
+			|| (isset($today_tasks) && is_array($today_tasks) && count($today_tasks))) { $c = 1; ?>
+  <div class="dashSubtitle"><?php echo lang('today') ?></div>
+  <div>
+  <table style="width:100%">
+<?php 
+	if (isset($today_milestones) && is_array($today_milestones) && count($today_milestones))
+	foreach($today_milestones as $milestone) { 
+	$c++;?>
+    <tr class="<?php echo $c % 2 == 1? '':'dashAltRow' ?>"><td class="db-ico ico-milestone"></td>
+<?php if($milestone->getAssignedTo() instanceof ApplicationDataObject) { ?>
+    <td style="padding-left:5px;padding-bottom:2px"><?php echo clean($milestone->getAssignedTo()->getObjectName()) ?>: <a class="internalLink" href="<?php echo $milestone->getViewUrl() ?>"><?php echo clean($milestone->getName()) ?></a> </td>
+<?php } else { ?>
+    <td style="padding-left:5px;padding-bottom:2px"><a class="internalLink" href="<?php echo $milestone->getViewUrl() ?>"><?php echo clean($milestone->getName()) ?></a></td> 
+<?php } // if ?>
+	<td style="text-align:right"><a href="#" onclick="Ext.getCmp('workspace-panel').select(<?php echo $milestone->getProjectId()?>)"><?php echo clean($milestone->getProject()->getName()) ?></a></td>
+    </tr>
+<?php } // foreach ?>
+<?php 
+	if (isset($today_tasks) && is_array($today_tasks) && count($today_tasks))
+	foreach($today_tasks as $task) { 
+	$c++;?>
+    <tr class="<?php echo $c % 2 == 1? '':'dashAltRow' ?>"><td class="db-ico ico-task"></td>
+<?php if($task->getAssignedTo() instanceof ApplicationDataObject) { ?>
+    <td style="padding-left:5px;padding-bottom:2px"><?php echo clean($task->getAssignedTo()->getObjectName()) ?>: <a class="internalLink" href="<?php echo $task->getViewUrl() ?>"><?php echo clean($task->getTitle()) ?></a> </td>
+<?php } else { ?>
+    <td style="padding-left:5px;padding-bottom:2px"><a class="internalLink" href="<?php echo $task->getViewUrl() ?>"><?php echo clean($task->getTitle()) ?></a></td> 
+<?php } // if ?>
+	<td style="text-align:right"><a href="#" onclick="Ext.getCmp('workspace-panel').select(<?php echo $task->getProjectId()?>)"><?php echo clean($task->getProject()->getName()) ?></a></td>
+    </tr>
+<?php } // foreach ?>
+  </table></div>
+<?php } // if ?>
+		</td></tr>
+
+		<tr><td class="coViewBottomLeft"></td>
+		<td class="coViewBottom"></td>
+		<td class="coViewBottomRight"></td></tr>
+	</table>
+</div>
+<?php } // if ?>
+<br>
+ 
+ 
+<?php if (isset($dashtasks) && is_array($dashtasks) && count($dashtasks) > 0) { ?>
+<div class="dashPendingTasks">
+<table style="width:100%"><tr>
+	<td colspan=2 rowspan=2 class="dashHeader"><div class="dashTitle"><?php echo lang('pending tasks') ?></div></td>
+	<td class="coViewTopRight"></td></tr>
+	<tr><td class="coViewRight" rowspan=2></td></tr>
+	
+		<tr><td style="background:white"></td><td class="coViewBody" style="padding-left:0px;">
+		<table id="dashTablePT" style="width:100%">
+		<?php
+		$c = 0;
+		foreach ($dashtasks as $task){
+			$stCount = $task->countAllSubTasks();
+			$c++;
+			$text = $task->getText();
+			if ($text != '')
+				$text = ": " . $text;
+			if(strlen($text)>100)
+				$text = substr($text,0,100) . " ...";
+			?>
+				<tr class="<?php echo $c % 2 == 1? '':'dashAltRow'; echo ' ' . ($c > 5? 'dashSMTC':''); ?>" style="<?php echo $c > 5? 'display:none':'' ?>"><td class="db-ico ico-task"></td><td style="padding-left:5px;padding-bottom:2px">
+			<a class='internalLink' href='<?php echo $task->getViewUrl() ?>'><?php echo $task->getTitle()?><?php echo $text ?></a></td>
+			<td><a href="#" onclick="Ext.getCmp('workspace-panel').select(<?php echo $task->getProjectId()?>)"><?php echo clean($task->getProject()->getName()) ?></a></td>
+			<td><?php if ($stCount > 0) echo "(" . lang('subtask count all open', $stCount, $task->countOpenSubTasks()) . ')'?></td>
+			<td><?php if (!is_null($task->getDueDate())){
+				if ($task->getRemainingDays() >= 0)
+					if ($task->getRemainingDays() == 0)
+						echo lang('due today');
+					else
+						echo lang('due in x days', $task->getRemainingDays());
+				else
+					echo lang('overdue by x days', -$task->getRemainingDays());
+				}?></td>
+			<td style="text-align:right"><a class='internalLink' href='<?php echo $task->getCompleteUrl() ?>' title="<?php echo lang('complete task')?>"><?php echo lang('complete')?></a></td>
+			</tr>
+		<?php } // foreach ?>
+		</table>
+		<?php if ($c > 5) { ?>
+		<div id="dashSMTT" style="width:100%; text-align:right">
+			<a href="#" onclick="og.hideAndShowByClass('dashSMTT', 'dashSMTC', 'dashTablePT'); return false;"><?php echo lang("show more amount", $c -5) ?>...</a>
+		</div>
+		<? } //if ?>
+		</td></tr>
+
+		<tr><td class="coViewBottomLeft"></td>
+		<td class="coViewBottom"></td>
+		<td class="coViewBottomRight"></td></tr>
+	</table>
+</div>
+<? } ?>
+
+</td>
+<?php if ($hasMessages || $hasDocuments || $hasCharts){ ?>
+<td style="width:280px">
+
+<?php if (isset($messages) && is_array($messages) && count($messages) > 0) { ?>
+<div class="dashMessages">
+<table style="width:100%">
+	<col width=12/><col width=226/><col width=12/><tr>
+	<td colspan=2 rowspan=2 class="dashHeader"><div class="dashTitle"><?php echo lang('messages') ?></div></td>
+	<td class="coViewTopRight"></td></tr>
+	<tr><td class="coViewRight" rowspan=2></td></tr>
+	
+		<tr><td class="coViewBody" colspan=2>
+		<table id="dashTableMessages" style="width:100%">
+		<?php $c = 0;
+			foreach ($messages as $message){ $c++;?>
+			<tr class="<?php echo $c % 2 == 1? '':'dashAltRow'; echo ' ' . ($c > 5? 'dashSMMC':''); ?>" style="<?php echo $c > 5? 'display:none':'' ?>">
+			<td class="db-ico ico-message"></td>
+			<td style="padding-left:5px">
+			<a class="internalLink" href="<?php echo get_url('message','view', array('id' => $message->getId()))?>"
+				title="<?php echo lang('message posted on by linktitle', format_datetime($message->getCreatedOn()), $message->getCreatedByDisplayName()) ?>">
+			<?php echo $message->getTitle()?>
+			</a></td></tr>
+		<?php } // foreach?>
+		</table>
+		<?php if ($c > 5) { ?>
+		<div id="dashSMMT" style="width:100%;text-align:right">
+			<a href="#" onclick="og.hideAndShowByClass('dashSMMT', 'dashSMMC', 'dashTableMessages'); return false;"><?php echo lang("show more amount", $c -5) ?>...</a>
+		</div>
+		<? } // if ?>
+		</td></tr>
+
+		<tr><td class="coViewBottomLeft"></td>
+		<td class="coViewBottom"></td>
+		<td class="coViewBottomRight"></td></tr>
+	</table>
+</div>
+<?php } ?>
+
+
+<?php if (isset($charts) && is_array($charts) && count($charts) > 0) {
+	$pcf = new ProjectChartFactory();?>
+	
+<div class="dashChart">
+<table style="width:100%">
+	<col width=12/><col width=226/><col width=12/>
+	<tr><td style="height:1px;width:12px;"></td><td style="height:1px;width:216px;"></td><td></td></tr>
+	<tr>
+	<td colspan=2 rowspan=2 class="dashHeader"><div class="dashTitle"><?php echo lang('charts') ?></div></td>
+	<td class="coViewTopRight"></td></tr>
+	<tr><td class="coViewRight" rowspan=2></td></tr>
+	
+		<tr><td class="coViewBody" colspan=2>
+<?php
+	$c = 1;
+	foreach ($charts as $chart) {
+?>
+		<div style="padding-bottom:10px; margin-bottom:10px;<?php echo $c != count($charts)? 'border-bottom:1px solid #DDDDDD':'' ?>">
+		<div style="font-size:120%;font-weight:bold"><?php echo $chart->getTitle() ?></div>
+		<?php 
+		$chart2 = $pcf->loadChart($chart->getId());
+		$chart2->ExecuteQuery();
+		echo $chart2->DashboardDraw();
+		echo $chart2->PrintInfo();
+		$c++;
+		 ?>
+		 </div>
+<?php } // foreach ?>
+		</td></tr>
+
+		<tr><td class="coViewBottomLeft"></td>
+		<td class="coViewBottom"></td>
+		<td class="coViewBottomRight"></td></tr>
+	</table>
+</div>
+<?php } // if ?>
+
+<?php if ($hasDocuments) { ?>
+<div class="dashDocuments">
+<table style="width:100%">
+	<col width=12/><col width=226/><col width=12/><tr>
+	<td colspan=2 rowspan=2 class="dashHeader"><div class="dashTitle"><?php echo lang('documents') ?></div></td>
+	<td class="coViewTopRight"></td></tr>
+	<tr><td class="coViewRight" rowspan=2></td></tr>
+	
+		<tr><td class="coViewBody" colspan=2>
+		<table id="dashTableDocuments" style="width:100%">
+		<?php $c = 0;
+			foreach ($documents as $document){ $c++;?>
+			<tr class="<?php echo $c % 2 == 1? '':'dashAltRow'; echo ' ' . ($c > 5? 'dashSMDC':''); ?>" style="<?php echo $c > 5? 'display:none':'' ?>">
+			<td class="db-ico ico-unknown ico-<?php echo str_replace("/", "-", $document->getTypeString())?>"></td>
+			<td style="padding-left:5px">
+			<a class="internalLink" href="<?php echo get_url('files','file_details', array('id' => $document->getId()))?>"
+				title="<?php echo lang('message posted on by linktitle', format_datetime($document->getCreatedOn()), $document->getCreatedByDisplayName()) ?>">
+			<?php echo $document->getFilename()?>
+			</a></td>
+			<td style="text-align:right">
+			<?php if ($document->isModifiable() && $document->canEdit(logged_user())){ ?>
+				<a class="internalLink"  href="<?php echo $document->getModifyUrl()?>"><?php echo lang('edit') ?></a>
+			<?php } ?></td></tr>
+		<?php } // foreach ?>
+		</table>
+		<?php if ($c > 5) { ?>
+		<div id="dashSMDT" style="width:100%; text-align:right">
+			<a href="#" onclick="og.hideAndShowByClass('dashSMDT', 'dashSMDC', 'dashTableDocuments'); return false;"><?php echo lang("show more amount", $c -5) ?>...</a>
+		</div>
+		<? } // if ?>
+		</td></tr>
+
+		<tr><td class="coViewBottomLeft"></td>
+		<td class="coViewBottom"></td>
+		<td class="coViewBottomRight"></td></tr>
+	</table>
+</div>
+<?php } ?>
+
+
+</td>
+<?php } ?></tr></table>
+</div>
+</div>

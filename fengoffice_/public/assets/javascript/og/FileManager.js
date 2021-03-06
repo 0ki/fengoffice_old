@@ -109,11 +109,20 @@ og.FileManager = function() {
 
 	function renderCheckout(value, p, r) {
 		if (value =='')
-			return String.format('<a href="#" onclick="og.openLink(\'{1}\')")" title="{2}">{0}</a>', lang('checkout'), og.getUrl('files', 'checkout_file', {id: r.id}), lang('checkout description'));
-		else if (value == 'self' && r.data.checkedOutById == "0")
-			return String.format('<a href="#" onclick="og.openLink(\'{1}\')" title="{2}">{0}</a>', lang('checkin'), og.getUrl('files', 'checkin_file', {id: r.id}), lang('checkin description'));
+			return String.format('<div class="ico-unlocked" style="display:block;height:16px;background-repeat:no-repeat;padding-left:18px">'
+			+ '<a href="#" onclick="og.openLink(\'{1}\')" title="{2}">{0}</a>', lang('lock'), og.getUrl('files', 'checkout_file', {id: r.id}), lang('checkout description'));
+		else if (value == 'self' && r.data.checkedOutById == "0"){
+			return String.format('<div class="ico-locked" style="display:block;height:16px;background-repeat:no-repeat;padding-left:18px">' +
+				'<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', 
+				lang('unlock'), og.getUrl('files', 'undo_checkout', {id: r.id})) + ', ' +
+				String.format('<a href="#" onclick="og.openLink(\'{1}\')" title="{2}">{0}</a>', 
+				lang('checkin'), og.getUrl('files', 'checkin_file', {id: r.id}), lang('checkin description'))
+				 + '</div>';
+			}
 		else
-			return lang('checked out by', String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', r.data.checkedOutByName, og.getUrl('user', 'card', {id: r.data.checkedOutById})));
+			return '<div class="ico-locked" style="display:block;height:16px;background-repeat:no-repeat;padding-left:18px">' +
+				lang('checked out by', String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', 
+				r.data.checkedOutByName, og.getUrl('user', 'card', {id: r.data.checkedOutById}))) + '</div>';
 	}
 
 	function getSelectedIds() {
@@ -181,7 +190,7 @@ og.FileManager = function() {
 			sortable: false
         },{
         	id: 'user',
-        	header: lang('user'),
+        	header: lang('updated by'),
         	dataIndex: 'updatedBy',
         	width: 120,
         	renderer: renderUser,
@@ -215,15 +224,15 @@ og.FileManager = function() {
 			renderer: renderDate
 		},{
 			id: 'author',
-			header: lang("author"),
+			header: lang("created by"),
 			dataIndex: 'createdBy',
 			width: 120,
 			sortable: false,
 			renderer: renderAuthor,
 			hidden: true
 		},{
-			id: 'checkout',
-			header: lang("checkout"),
+			id: 'status',
+			header: lang("status"),
 			dataIndex: 'checkedOutByName',
 			width: 120,
 			sortable: false,
@@ -265,6 +274,10 @@ og.FileManager = function() {
             tooltip: lang('create an object'),
             iconCls: 'ico-new',
 			menu: {items: [
+				{text: lang('upload file'), iconCls: 'ico-upload', handler: function() {
+					var url = og.getUrl('files', 'add_file');
+					og.openLink(url);
+				}},'-',
 				{text: lang('document'), iconCls: 'ico-doc', handler: function() {
 					var url = og.getUrl('files', 'add_document');
 					og.openLink(url);
@@ -275,10 +288,6 @@ og.FileManager = function() {
 				}},*/
 				{text: lang('presentation'), iconCls: 'ico-prsn', handler: function() {
 					var url = og.getUrl('files', 'add_presentation');
-					og.openLink(url);
-				}},
-				{text: lang('upload file'), iconCls: 'ico-upload', handler: function() {
-					var url = og.getUrl('files', 'add_file');
 					og.openLink(url);
 				}}
 			]}
@@ -348,6 +357,7 @@ og.FileManager = function() {
 		stripeRows: true,
 		closable: true,
 		loadMask: true,
+		style: "padding:7px;",
 		bbar: new Ext.PagingToolbar({
 			pageSize: og.pageSize,
 			store: this.store,
@@ -393,9 +403,9 @@ og.FileManager = function() {
     	}
 	}, this);
 	og.eventManager.addListener("workspace changed", function(ws) {
-		if (this.store.lastOptions) {
-			cm.setHidden(cm.getIndexById('project'), this.store.lastOptions.params.active_project != 0);
-		}
+		//if (this.store.lastOptions) {
+		//	cm.setHidden(cm.getIndexById('project'), this.store.lastOptions.params.active_project != 0);
+		//}
 	}, this);
 };
 
@@ -428,7 +438,9 @@ Ext.extend(og.FileManager, Ext.grid.GridPanel, {
 	},
 	
 	showMessage: function(text) {
-		this.innerMessage.innerHTML = text;
+		if (this.innerMessage) {
+			this.innerMessage.innerHTML = text;
+		}
 	}
 });
 

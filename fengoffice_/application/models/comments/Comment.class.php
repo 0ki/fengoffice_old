@@ -99,8 +99,7 @@ class Comment extends BaseComment {
 	static function getAddUrl(ProjectDataObject $object) {
 		return get_url('comment', 'add', array(
         'object_id' => $object->getObjectId(),
-        'object_manager' => get_class($object->manager()),
-        'active_project' => $object->getProject()->getId(),
+        'object_manager' => get_class($object->manager())
 		)); // get_url
 	} // getAddUrl
 

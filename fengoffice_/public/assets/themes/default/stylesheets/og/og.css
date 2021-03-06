@@ -6,6 +6,8 @@
 @import 'TagPanel.css';
 @import 'WorkspacePanel.css';
 @import 'MessageManager.css';
+@import 'MilestoneItem.css';
+@import 'TaskItem.css';
 
 /** autoCompleter **/
 .autoCompleter .selected {
@@ -21,8 +23,16 @@
 }
 /** /autoCompleter **/
 
+
+.ico-reporting {
+	background-image: url(../../images/16x16/reporting.png) !important;
+}
+
 .ico-account {
 	background-image: url(../../images/16x16/account.png);
+}
+.ico-add {
+	background-image: url(../../images/16x16/add.png) !important;
 }
 .ico-addtag {
 	background-image: url(../../images/16x16/tags.png) !important;
@@ -36,6 +46,9 @@
 .ico-back {
 	background-image: url(../../images/16x16/back.png) !important;
 }
+.ico-chart {
+	background-image: url(../../images/16x16/chart.png) !important;
+}
 .ico-checkin {
 	background-image: url(../../images/16x16/checkin.png) !important;
 }
@@ -44,6 +57,9 @@
 }
 .ico-classify {
 	background-image: url(../../images/16x16/classify.png) !important;
+}
+.ico-complete {
+	background-image: url(../../images/16x16/complete.png) !important;
 }
 .ico-contact {
 	background-image: url(../../images/16x16/contacts.png) !important;
@@ -75,6 +91,9 @@
 .ico-hide_messages {
 	background-image: url(../../images/16x16/hide_messages.png) !important;
 }
+.ico-locked {
+	background-image: url(../../images/16x16/locked.png) !important;
+}
 .ico-message {
 	background-image: url(../../images/16x16/message.png) !important;
 }
@@ -86,6 +105,15 @@
 }
 .ico-new {
 	background-image: url(../../images/16x16/new.png) !important;
+}
+.ico-password {
+	background-image: url(../../images/16x16/password.png) !important;
+}
+.ico-permissions {
+	background-image: url(../../images/16x16/permissions.png) !important;
+}
+.ico-picture {
+	background-image: url(../../images/16x16/picture.png) !important;
 }
 .ico-properties {
 	background-image: url(../../images/16x16/properties.png) !important;
@@ -114,6 +142,12 @@
 .ico-task {
 	background-image: url(../../images/16x16/tasks.png) !important;
 }
+.ico-undo {
+	background-image: url(../../images/16x16/undo.png) !important;
+}
+.ico-unlocked {
+	background-image: url(../../images/16x16/unlocked.png) !important;
+}
 .ico-upload {
 	background-image: url(../../images/16x16/upload.png) !important;
 }
@@ -122,12 +156,6 @@
 }
 .ico-workspace {
 	background-image: url(../../images/16x16/workspace.png) !important;
-}
-.ico-picture {
-	background-image: url(../../images/16x16/picture.png) !important;
-}
-.ico-add {
-	background-image: url(../../images/16x16/add.png) !important;
 }
 .ico-today {
 	background-image: url(../../images/16x16/today.png) !important;
@@ -143,6 +171,7 @@
 .db-ico {
 	height: 16px;
 	width: 16px;
+	background-repeat: no-repeat;
 }
 .x-grid3-col-icon {
 	padding: 1px 3px;
@@ -169,3 +198,58 @@
 	font-size: 14px;
 	text-align: center;
 }
+
+.subwscrumbs {
+	font-weight: bold;
+}
+
+/** wschooser **/
+.og-wschooser th {
+	background-color: transparent;
+	font-weight: bold;
+}
+.og-wschooser table * {
+	padding: 5px;
+}
+.og-wschooser table {
+	width: 400px;
+}
+.og-wschooser select {
+	width: 100%;
+	height: 200px;
+}
+.og-wschooser .wschooser-from {
+	width: 49%;
+}
+.og-wschooser .wschooser-to {
+	width: 49%;
+}
+.og-wschooser .wschooser-buttons {
+	width: 2%;
+	vertical-align: middle;
+	text-align: center;
+}
+/** /wschooser **/
+
+/** tasks **/
+.og-tasks-container {
+	background-color: white;
+	border: 1px solid #AAA;
+}
+.og-tasks-actions {
+	font-weight: bolder;
+	color: white;
+	background-color: #8181A1;
+	padding: 5px;
+}
+.og-task-table-filter {
+	wdth: 100%;
+}
+.og-task-table-filter > tbody > tr > td {
+	padding-left: 10px;
+}
+.og-task-table-filter .td-assigned-to {
+	width: 300px;
+	white-space: nowrap;
+}
+/** /tasks **/

@@ -1,16 +1,8 @@
-<?php
-  //add_stylesheet_to_page('project/task_list.css');
-  
-  if($task_list->canEdit(logged_user())) {
-    add_page_action(lang('edit'), $task_list->getEditListUrl(), 'ico-edit');
-  } // if
-  if($task_list->canDelete(logged_user())) {
-    add_page_action(lang('delete'), $task_list->getDeleteListUrl(), 'ico-delete');
-  } // if
-  if($task_list->canReorderTasks(logged_user())) {
-    add_page_action(lang('reorder sub tasks'), $task_list->getReorderTasksUrl($on_list_page), 'ico-properties');
-  } // if
+<?php  $task_list = $object;
+		//$on_list_page = $variables["on_list_page"];
+	
 ?>
+
 <script type="text/javascript">
   if(App.modules.addTaskForm) {
     App.modules.addTaskForm.task_lists[<?php echo $task_list->getId() ?>] = {
@@ -24,36 +16,23 @@
     };
   } // if
 </script>
-
-
-<div style="padding:7px">
-<div class="task">
-<div class="coContainer">
-  <div class="coHeader">
-  <div class="coHeaderUpperRow">
-  <?php if($task_list->isPrivate()) { ?>
-    <div class="private" title="<?php echo lang('private task list') ?>"><span><?php echo lang('private task list') ?></span></div>
-<?php } // if ?>
-	<div class="coTitle"><?php echo $task_list->getTitle() != '' ? $task_list->getTitle() : $task_list->getText() ?></div>
-	<div class="coTags"><span><?php echo lang('tags') ?>:</span> <?php echo project_object_tags($task_list) ?></div>
-  </div>
-  <div class="coInfo">
-  	<?php if ($task_list->getParent() instanceof ProjectTask) {
-  		$parent = $task_list->getParent(); ?>
-  		<?php echo lang('subtask of', $parent->getViewUrl(), $parent->getTitle() != ''? $parent->getTitle() : $parent->getText()) ?>
-  	<?php }?>
-  </div>
-  </div>
   
-  <div class="coMainBlock">
-  <div class="coLinkedObjects">
-  <?php echo render_object_links($task_list, $task_list->canEdit(logged_user())) ?>
-  </div>
-  <div class="coContent">
+<div class="taskStatus" style="padding-bottom:6px;font-size:120%"><table><tr><td><b><?php echo lang("status") ?></b>:</td><td style="padding-left:5px">
+<?php if($task_list->isCompleted()) {?>
+	<div class="db-ico ico-complete"></div></td><td style="padding-left:4px"><?php echo lang('complete')?>
+<?php } else { ?>
+	<div class="db-ico ico-incomplete"></div></td><td style="padding-left:4px"><?php echo lang('incomplete')?>
+<?php } // if ?></td></tr></table>
+</div>
   
 <?php if($task_list->getText()) { ?>
-  <div class="desc"><?php echo clean($task_list->getText()) ?></div>
+  <div class="desc" style="padding-bottom:6px"><?php echo clean($task_list->getText()) ?></div>
 <?php } // if ?>
+
+
+
+
+  <table style="border:1px solid #B1BFAC;width:100%; padding-left:10px;"><tr><th style="padding-left:10px;padding-top:4px;padding-bottom:4px;background-color:#B1BFAC;font-size:120%;font-weight:bolder;color:white;width:100%;"><?php echo lang("open tasks") ?></th></tr><tr><td style="padding-left:10px;">
   <div class="openTasks">
 <?php if(is_array($task_list->getOpenSubTasks())) { ?>
     <table class="blank">
@@ -62,7 +41,7 @@
       
 <!-- Checkbox -->
 <?php if($task->canChangeStatus(logged_user())) { ?>
-    <td class="taskCheckbox"><?php echo checkbox_link($task->getCompleteUrl(), false, lang('mark task as completed')) ?></td>
+    <td class="taskCheckbox"><?php echo checkbox_link($task->getCompleteUrl(rawurlencode(get_url('task', 'view_task', array('id' => $task_list->getId())))), false, lang('mark task as completed')) ?></td>
 <?php } else { ?>
         <td class="taskCheckbox"><img src="<?php echo icon_url('not-checked.jpg') ?>" alt="<?php echo lang('open task') ?>" /></td>
 <?php } // if?>
@@ -76,18 +55,19 @@
         </td>
       </tr>
 <?php } // foreach ?>
-    </table>
+   </table>
 <?php } else { ?>
   <?php echo lang('no open task in task list') ?>
-<?php } // if ?>
-  </div>
+<?php } // if ?></div>
   
+  
+    
   <div class="addTask">
 <?php if($task_list->canAddSubTask(logged_user())) { ?>
-    <div id="addTaskForm<?php echo $task_list->getId() ?>ShowLink"><a class="internalLink" href="<?php echo $task_list->getAddTaskUrl($on_list_page) ?>" onclick="App.modules.addTaskForm.showAddTaskForm(<?php echo $task_list->getId() ?>); return false"><?php echo lang('add sub task') ?></a></div>
+    <div id="addTaskForm<?php echo $task_list->getId() ?>ShowLink"><a class="internalLink" href="<?php echo $task_list->getAddTaskUrl(false) ?>" onclick="App.modules.addTaskForm.showAddTaskForm(<?php echo $task_list->getId() ?>); return false"><?php echo lang('add sub task') ?></a></div>
   
     <div id="addTaskForm<?php echo $task_list->getId() ?>" style="display:none">
-      <form class="internalForm" action="<?php echo $task_list->getAddTaskUrl($on_list_page) ?>" method="post">
+      <form class="internalForm" action="<?php echo $task_list->getAddTaskUrl(false) ?>" method="post">
         <div class="taskListAddTaskText">
           <label for="addTaskText<?php echo $task_list->getId() ?>"><?php echo lang('name') ?>:</label>
           <?php echo textarea_field("task[title]", null, array('class' => 'short', 'id' => 'addTaskText' . $task_list->getId())) ?>
@@ -109,8 +89,15 @@
 	<?php } // if ?>
 <?php } // if ?>
   </div>
+</td></tr></table>
+
+<br/>
+
+
   
 <?php if(is_array($task_list->getCompletedSubTasks())) { ?>
+<table style="border:1px solid #B1BFAC;width:100%; padding-left:10px;"><tr><th style="padding-left:10px;padding-top:4px;padding-bottom:4px;background-color:#B1BFAC;font-size:120%;font-weight:bolder;color:white;width:100%;"><?php echo lang("completed tasks") ?></th></tr><tr><td style="padding-left:10px;">
+  
   <div class="completedTasks">
     <table class="blank">
 <?php $counter = 0; ?>
@@ -119,7 +106,7 @@
 <?php if($on_list_page || ($counter <= 5)) { ?>
       <tr>
 <?php if($task->canChangeStatus(logged_user())) { ?>
-    <td class="taskCheckbox"><?php echo checkbox_link($task->getOpenUrl(), true, lang('mark task as open')) ?></td>
+    <td class="taskCheckbox"><?php echo checkbox_link($task->getOpenUrl(rawurlencode(get_url('task', 'view_task', array('id' => $task_list->getId())))), true, lang('mark task as open')) ?></td>
 <?php } else { ?>
         <td class="taskCheckbox"><img src="<?php echo icon_url('checked.jpg') ?>" alt="<?php echo lang('completed task') ?>" /></td>
 <?php } // if ?>
@@ -139,11 +126,7 @@
 <?php } // if ?>
     </table>
   </div>
+</td></tr></table>
 <?php } // if ?>
-	</div>
+
   
-  <?php echo render_object_comments($task_list) ?>
-  </div>
-</div>
-  </div>
-</div>

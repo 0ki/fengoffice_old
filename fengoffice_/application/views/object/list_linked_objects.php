@@ -1,4 +1,8 @@
-<?php if (isset($linked_objects) && is_array($linked_objects) && count($linked_objects)) { ?>
+<?php 
+if ($linked_objects_object->isNew()){
+	$linked_objects = array();
+	echo render_link_to_new_object(lang('link more objects'));
+} else if (isset($linked_objects) && is_array($linked_objects) && count($linked_objects)) { ?>
 	<div class="objectFiles">
 	<div class="objectFilesTitle"><span><?php echo lang('linked objects') ?>:</span></div>
 	<table style="width:100%;margin-left:2px;margin-right:3px">
@@ -23,18 +27,14 @@
 	<?php 	} // foreach ?>
 	</table>
 	<?php 		
-	$project1 = null;
-	if ($linked_objects_object instanceof ProjectDataObject && $linked_objects_object->getProject() instanceof Project) {
-		$project1 = $linked_objects_object->getProject();
-	}
-	if ($project1 && $linked_objects_object->canLinkObject(logged_user(), $project1) && $enableAdding) { ?>
+	if ($linked_objects_object->canLinkObject(logged_user()) && $enableAdding) { ?>
 		<p><?php echo render_link_to_object($linked_objects_object,lang('link more objects')); ?> </p>
 		<!--a class="internalLink" href="<?php echo $linked_objects_object->getLinkObjectUrl() ?>">&raquo; <?php echo lang('link more objects') ?></a-->
 	<?php } // if ?>
 	</div>
 <?php } else {
 	echo $shortDisplay ? '' : lang('no linked objects').'.';
-	if ((!($linked_objects_object->isNew())) && $linked_objects_object->canLinkObject(logged_user(), $linked_objects_object instanceof ProjectDataObject? $linked_objects_object->getProject():null) && $enableAdding) {
+	if ((!($linked_objects_object->isNew())) && $linked_objects_object->canLinkObject(logged_user()) && $enableAdding) {
 		echo render_link_to_object($linked_objects_object,lang('link objects'));
 	} // if
 } // if ?>

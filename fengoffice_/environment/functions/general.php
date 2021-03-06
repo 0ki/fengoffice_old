@@ -475,4 +475,22 @@ function make_ajax_url($url) {
 		return substr($url, 0, $q + 1) . "ajax=true&" . substr($url, $q + 1);
 	}
 }
+
+
+/**
+ * Generates a random id to be used as id of HTML elements.
+ * It does not guarantee the uniqueness of the id, but the probability
+ * of generating a duplicate id is very small.
+ *
+ */
+function gen_id() {
+	static $ids = array();
+	do {
+		$time = time();
+		$rand = rand(0, 1000000);
+		$id = "og-$time-$rand";
+	} while (array_var($ids, $id, false));
+	$ids[$id] = true;
+	return $id;
+}
 ?>

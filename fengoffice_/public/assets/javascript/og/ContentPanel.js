@@ -87,13 +87,15 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 			}
 		}
 		this.content = content;
-		while (this.getComponent(0)) {
-			var comp = this.getComponent(0);
-			if (comp.doNotDestroy) {
-				this.remove(this.getComponent(0), false);
-				comp.getEl().dom.parentNode.removeChild(comp.getEl().dom);
-			} else {
-				this.remove(this.getComponent(0));
+		if (this.content.type != 'url') {
+			while (this.getComponent(0)) {
+				var comp = this.getComponent(0);
+				if (comp.doNotDestroy) {
+					this.remove(this.getComponent(0), false);
+					comp.getEl().dom.parentNode.removeChild(comp.getEl().dom);
+				} else {
+					this.remove(this.getComponent(0));
+				}
 			}
 		}
 		if (content.type == 'html') {
@@ -140,6 +142,9 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 					});
 				}
 			}
+			if (content.notbar){
+				tbar = null;
+			}
 			var p = new og.HtmlPanel({
 				html: og.extractScripts(content.data),
 				autoScroll: true,
@@ -151,9 +156,9 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 		} else if (content.type == 'url') {
 			og.openLink(content.data, {caller: this});
 			//og.captureLinks(this.id, this);
-		} else if (content.type == 'dashboard') {
-			this.add(og.Dashboard.getInstance());
-			og.Dashboard.getInstance().load({start:0});
+		} else if (content.type == 'overview') {
+			this.add(og.Overview.getInstance());
+			og.Overview.getInstance().load({start:0});
 			this.doLayout();
 			og.captureLinks(this.id, this);
 		} else if (content.type == 'files') {
@@ -179,6 +184,11 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 		} else if (content.type == 'tasks') {
 			this.add(og.TaskViewer.getInstance());
 			og.TaskViewer.getInstance().load({start:0});
+			this.doLayout();
+			og.captureLinks(this.id, this);
+		} else if (content.type == 'reporting') {
+			this.add(og.ReportingManager.getInstance());
+			og.ReportingManager.getInstance().load({start:0});
 			this.doLayout();
 			og.captureLinks(this.id, this);
 		} else {

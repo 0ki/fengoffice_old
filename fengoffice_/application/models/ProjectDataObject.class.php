@@ -30,25 +30,6 @@
     protected $is_taggable = false;
     
     // ---------------------------------------------------
-    //  Search
-    // ---------------------------------------------------
-    
-    /**
-    * If this object is searchable search related methods will be unlocked for it. Else this methods will 
-    * throw exceptions pointing that this object is not searchable
-    *
-    * @var boolean
-    */
-    protected $is_searchable = false;
-    
-    /**
-    * Array of searchable columns
-    *
-    * @var array
-    */
-    protected $searchable_columns = array();
-    
-    // ---------------------------------------------------
     //  Comments
     // ---------------------------------------------------
     
@@ -88,7 +69,7 @@
     */
     protected $comments_count;
     
-     
+    
     
     /**
      * Whether the object can have properties
@@ -117,12 +98,113 @@
       return $this->project;
     } // getProject
     
+    /**
+     * Returns the object's workspaces
+     *
+     * @return array
+     */
     function getWorkspaces() {
     	if ($this->isNew()) {
     		return array(active_or_personal_project());
     	} else {
-    		return WorkspaceObjects::getWorkspacesByObject($this->getObjectTypeName(), $this->getObjectId());
+    		return WorkspaceObjects::getWorkspacesByObject($this->getObjectManagerName(), $this->getObjectId());
     	}
+    }
+    
+    /**
+     * Returns the object¡s workspaces names separated by a comma
+     *
+     * @return unknown
+     */
+  	function getWorkspacesNamesCSV() {
+    	if ($this->isNew()) {
+    		return active_or_personal_project()->getName();
+    	} else {
+    		//TODO Begin Remove for multiple workspaces
+    		if ($this->getProject() instanceof Project)
+    			return $this->getProject()->getName();
+    		//End todo
+    		$ws = WorkspaceObjects::getWorkspacesByObject($this->getObjectManagerName(), $this->getObjectId());
+    		$names = array();
+    		foreach ($ws as $w) {
+    			$names[] = $w->getName();
+    		}
+    		return join(", ", $names);
+    	}
+    }
+    
+  	function getWorkspacesIdsCSV() {
+    	if ($this->isNew()) {
+    		return active_or_personal_project()->getId();
+    	} else {
+    		//TODO Begin Remove for multiple workspaces
+    		if ($this->getProject() instanceof Project)
+    			return $this->getProject()->getId();
+    		//End todo
+    		$ws = WorkspaceObjects::getWorkspacesByObject($this->getObjectManagerName(), $this->getObjectId());
+    		$ids = array();
+    		foreach ($ws as $w) {
+    			$ids[] = $w->getId();
+    		}
+    		return join(", ", $ids);
+    	}
+    }
+    
+    /**
+     * Returns true if the object is in workspace $w.
+     *
+     * @param Project $w
+     * @return boolean
+     */
+    function hasWorkspace($w) {
+    	$object_manager = $this->getObjectManagerName();
+    	$object_id = $this->getId();
+    	$workspace_id = $w->getId(); 
+    	$exists = WorkspaceObjects::findOne(array("conditions" => array("`workspace_id` = ? AND `object_manager` = ? AND `object_id` = ? ", $workspace_id, $object_manager, $object_id)));
+    	return $exists != null;
+    }
+    
+    /**
+     * Adds the object to workspace $w.
+     *
+     * @param Project $w
+     */
+    function addToWorkspace($w) {
+    	if (!$this->hasWorkspace($w)) {
+    		$wo = new WorkspaceObject();
+    		$wo->setObjectManager($this->getObjectManagerName());
+    		$wo->setObjectId($this->getId());
+    		$wo->setWorkspaceId($w->getId());
+    		$wo->setCreatedById(logged_user()->getId());
+    		$wo->setCreatedOn(DateTimeValueLib::now());
+    		$wo->save();
+    	}
+    }
+    
+  	/**
+  	 * Returns the object's manager's name.
+  	 *
+  	 * @return string
+  	 */
+  	function getObjectManagerName() {
+  		return get_class($this->manager());
+  	}
+    
+    /**
+     * Removes the object from workspace $w.
+     *
+     * @param Project $w
+     */
+    function removeFromWorkspace($w) {
+    	WorkspaceObjects::delete(array("`workspace_id` = ? AND `object_manager` = ? AND `object_id` = ?", $w->getId(), $this->getObjectManagerName(), $this->getId()));
+    }
+    
+    /**
+     * Remove from all workspaces.
+     *
+     */
+    function removeFromAllWorkspaces() {
+    	WorkspaceObjects::delete(array("`object_manager` = ? AND `object_id` = ?", $this->getObjectManagerName(), $this->getId()));
     }
     // ---------------------------------------------------
     //  Permissions
@@ -240,7 +322,8 @@
     * @return array
     */
     function getTagNames() {
-      if(!$this->isTaggable()) throw new Error('Object not taggable');
+      if(!$this->isTaggable()) 
+      	throw new Error('Object not taggable');
       return Tags::getTagNamesByObject($this, get_class($this->manager()));
     } // getTagNames
     
@@ -286,10 +369,13 @@
     * @return boolean
     */
     function setTags() {
-      if(!$this->isTaggable()) throw new Error('Object not taggable');
+      if(!$this->isTaggable()) 
+      	throw new Error('Object not taggable');
       $args = array_flat(func_get_args());
-      return Tags::setObjectTags($args, $this, get_class($this->manager()), $this->getProject());
-	  $this->addTagsToSearchableObject();
+      Tags::setObjectTags($args, $this, get_class($this->manager()), $this->getProject());
+      if ($this->isSearchable())
+	  	$this->addTagsToSearchableObject();
+	  return true;
     } // setTags
     
     /**
@@ -304,54 +390,7 @@
       return Tags::clearObjectTags($this, get_class($this->manager()));
     } // clearTags
     
-    // ---------------------------------------------------
-    //  Searchable
-    // ---------------------------------------------------
-    
-    /**
-    * Returns true if this object is searchable (maked as searchable and has searchable columns)
-    *
-    * @param void
-    * @return boolean
-    */
-    function isSearchable() {
-      return $this->is_searchable && is_array($this->searchable_columns) && count($this->searchable_columns);
-    } // isSearchable
-    
-    /**
-    * Returns array of searchable columns or NULL if this object is not searchable or there 
-    * is no searchable columns
-    *
-    * @param void
-    * @return array
-    */
-    function getSearchableColumns() {
-      if(!$this->isSearchable()) return null;
-      return $this->searchable_columns;
-    } // getSearchableColumns
-    
-    /**
-    * This function will return content of specific searchable column. It can be overriden in child 
-    * classes to implement extra behaviour (like reading file contents for project files)
-    *
-    * @param string $column_name Column name
-    * @return string
-    */
-    function getSearchableColumnContent($column_name) {
-      if(!$this->columnExists($column_name)) throw new Error("Object column '$column_name' does not exist");
-      return (string) $this->getColumnValue($column_name);
-    } // getSearchableColumnContent
-    
-    /**
-    * Clear search index that is associated with this object
-    *
-    * @param void
-    * @return boolean
-    */
-    function clearSearchIndex() {
-      return SearchableObjects::dropContentByObject($this);
-    } // clearSearchIndex
-    
+   
     // ---------------------------------------------------
     //  Commentable
     // ---------------------------------------------------
@@ -490,17 +529,19 @@
     * @return boolean
     */
     function onAddComment(Comment $comment) {
-        $project = $this->getProject();
-        $searchable_object = new SearchableObject();
-		            
-		$searchable_object->setRelObjectManager(get_class($this->manager()));
-		$searchable_object->setRelObjectId($this->getObjectId());
-		$searchable_object->setColumnName('comment' . $comment->getId());
-		$searchable_object->setContent($comment->getText());
-		if($project instanceof Project) $searchable_object->setProjectId($project->getId());
-		     $searchable_object->setIsPrivate($this->isPrivate());
-		            
-		$searchable_object->save();
+    	if ($this->isSearchable()){
+	        $project = $this->getProject();
+	        $searchable_object = new SearchableObject();
+			            
+			$searchable_object->setRelObjectManager(get_class($this->manager()));
+			$searchable_object->setRelObjectId($this->getObjectId());
+			$searchable_object->setColumnName('comment' . $comment->getId());
+			$searchable_object->setContent($comment->getText());
+			if($project instanceof Project) $searchable_object->setProjectId($project->getId());
+			     $searchable_object->setIsPrivate($this->isPrivate());
+			            
+			$searchable_object->save();
+    	}
 		return true;
     } // onAddComment
     
@@ -511,18 +552,20 @@
     * @return boolean
     */
     function onEditComment(Comment $comment) {
-        SearchableObjects::dropContentByObjectColumn($this,'comment' . $comment->getId());
-        $project = $this->getProject();
-        $searchable_object = new SearchableObject();
-		            
-		$searchable_object->setRelObjectManager(get_class($this->manager()));
-		$searchable_object->setRelObjectId($this->getObjectId());
-		$searchable_object->setColumnName('comment' . $comment->getId());
-		$searchable_object->setContent($comment->getText());
-		if($project instanceof Project) $searchable_object->setProjectId($project->getId());
-		     $searchable_object->setIsPrivate($this->isPrivate());
-		            
-		$searchable_object->save();
+    	if ($this->isSearchable()){
+	        SearchableObjects::dropContentByObjectColumn($this,'comment' . $comment->getId());
+	        $project = $this->getProject();
+	        $searchable_object = new SearchableObject();
+			            
+			$searchable_object->setRelObjectManager(get_class($this->manager()));
+			$searchable_object->setRelObjectId($this->getObjectId());
+			$searchable_object->setColumnName('comment' . $comment->getId());
+			$searchable_object->setContent($comment->getText());
+			if($project instanceof Project) $searchable_object->setProjectId($project->getId());
+			     $searchable_object->setIsPrivate($this->isPrivate());
+			            
+			$searchable_object->save();
+    	}
 		return true;
     } // onEditComment
     
@@ -592,7 +635,10 @@
 					$property->delete( 'id = $id');
 				}else{
 					if($id){
-						$property = ObjectProperties::findById($id);
+						{
+							SearchableObjects::dropContentByObjectColumn($this, 'property' . $id);
+							$property = ObjectProperties::findById($id);
+						}
 					}else{
 						$property = new ObjectProperty();
 						$property->setRelObjectId($this->getId());
@@ -600,6 +646,9 @@
 					}
 					$property->setFromAttributes($object_data["property$i"]);
 					$property->save();
+					
+					if ($this->isSearchable())
+						$this->addPropertyToSearchableObject($property);
 				}				
 			} // if
 			else break;
@@ -620,62 +669,63 @@
     * @return boolean
     */
     function save() {
-      $result = parent::save();
-      // If searchable refresh content in search table
-      if($this->isSearchable()) {
-      	$this->addToSearchableObjects();
-      } // if
-      
-      return $result;
+    	return parent::save();
     } // save
     
-    function addToSearchableObjects(){
-    	SearchableObjects::dropContentByObject($this);
-        $project = $this->getProject();
-        
-        foreach($this->getSearchableColumns() as $column_name) {
-          $content = $this->getSearchableColumnContent($column_name);
-          if(trim($content) <> '') {
-            $searchable_object = new SearchableObject();
-            
-            $searchable_object->setRelObjectManager(get_class($this->manager()));
-            $searchable_object->setRelObjectId($this->getObjectId());
-            $searchable_object->setColumnName($column_name);
-            $searchable_object->setContent($content);
-            if($project instanceof Project) $searchable_object->setProjectId($project->getId());
-            $searchable_object->setIsPrivate($this->isPrivate());
-            
-            $searchable_object->save();
-          } // if
-        } // foreach
-        
-        if ($this->is_taggable){
-	        $this->addTagsToSearchableObject();
-        }
-        
-        if($this->is_commentable)
-        {
-	        $comments = $this->getComments();
-	        if (is_array($comments)){
-	        	foreach($comments as $comment){
-		        	$searchable_object = new SearchableObject();
-		            
-		            $searchable_object->setRelObjectManager(get_class($this->manager()));
-		            $searchable_object->setRelObjectId($this->getObjectId());
-		            $searchable_object->setColumnName('comment' . $comment->getId());
-		            $searchable_object->setContent($comment->getText());
-		            if($project instanceof Project) $searchable_object->setProjectId($project->getId());
-		            $searchable_object->setIsPrivate($this->isPrivate());
-		            
-		            $searchable_object->save();
-	        	}
-	        }
-        }
+  	function addToSearchableObjects(){
+  		$columns_to_drop = array();
+    	if ($this->isNew())
+    		$columns_to_drop = $this->getSearchableColumns();
+    	else {
+	    	foreach ($this->getSearchableColumns() as $column_name){
+	    		if ($this->isColumnModified($column_name))
+	    			$columns_to_drop[] = $column_name;
+	    	}
+    	}
+    	
+    	if (count($columns_to_drop) > 0){
+    		SearchableObjects::dropContentByObjectColumns($this,$columns_to_drop);
+    		
+	        foreach($columns_to_drop as $column_name) {
+	          $content = $this->getSearchableColumnContent($column_name);
+	          if(trim($content) <> '') {
+	            $searchable_object = new SearchableObject();
+	            
+	            $searchable_object->setRelObjectManager(get_class($this->manager()));
+	            $searchable_object->setRelObjectId($this->getObjectId());
+	            $searchable_object->setColumnName($column_name);
+	            $searchable_object->setContent($content);
+		        if($this->getProject() instanceof Project) 
+		           	$searchable_object->setProjectId($this->getProject()->getId());
+		        else
+		           	$searchable_object->setProjectId(0);
+	            $searchable_object->setIsPrivate(false);
+	            
+	            $searchable_object->save();
+	          } // if
+	        } // foreach
+    	} // if
+    }
+    
+    function addPropertyToSearchableObject(ObjectProperty $property){
+    	$searchable_object = new SearchableObject();
+	            
+	    $searchable_object->setRelObjectManager(get_class($this->manager()));
+	    $searchable_object->setRelObjectId($this->getObjectId());
+	    $searchable_object->setColumnName('property'.$property->getId());
+	    $searchable_object->setContent($property->getPropertyValue());
+		if($this->getProject() instanceof Project) 
+		   	$searchable_object->setProjectId($this->getProject()->getId());
+		else
+		   	$searchable_object->setProjectId(0);
+	    $searchable_object->setIsPrivate(false);
+	    
+	    $searchable_object->save();
     }
     
     function addTagsToSearchableObject(){
-        $project = $this->getProject();
     	$tag_names = $this->getTagNames();
+    	
 	    if (is_array($tag_names)){
 			if (!$this->isNew())
     			SearchableObjects::dropContentByObjectColumn($this,'tags');
@@ -686,7 +736,10 @@
 	        $searchable_object->setRelObjectId($this->getObjectId());
 	        $searchable_object->setColumnName('tags');
 	        $searchable_object->setContent(implode(' ', $tag_names));
-            if($project instanceof Project) $searchable_object->setProjectId($project->getId());
+	        if($this->getProject() instanceof Project) 
+	           	$searchable_object->setProjectId($this->getProject()->getId());
+	        else
+	           	$searchable_object->setProjectId(0);
 	        $searchable_object->setIsPrivate($this->isPrivate());
 	            
 	        $searchable_object->save();
@@ -706,9 +759,6 @@
       if($this->isTaggable()) {
         $this->clearTags();
       } // if
-      if($this->isSearchable()) {
-        $this->clearSearchIndex();
-      } // if
       if($this->isCommentable()) {
         $this->clearComments();
       } // if
@@ -718,6 +768,7 @@
       if($this->isPropertyContainer()){
       	$this->clearObjectProperties();
       }
+      WorkspaceObjects::delete(array("`object_manager` = ? AND `object_id` = ?", $this->getObjectManagerName(), $this->getId()));
       return parent::delete();
     } // delete
     
@@ -735,6 +786,9 @@
     		$updated_on =($this->getObjectCreationTime())? $this->getObjectCreationTime()->getTimestamp(): lang('n/a');
     	}
     	
+    	
+    	
+    	
     	return array(
 				"id" => $this->getObjectTypeName() . $this->getId(),
 				"object_id" => $this->getId(),
@@ -747,8 +801,8 @@
 				"updatedBy" => $updated_by_name,
 				"updatedById" => $updated_by_id,
 				"dateUpdated" => $updated_on,
-				"project" => $this->getProject()->getName(),
-				"projectId" => $this->getProjectId(),
+				"project" => $this->getWorkspacesNamesCSV(),
+				"projectId" => $this->getWorkspacesIdsCSV(),
 				"url" => $this->getObjectUrl(),
 				"manager" => get_class($this->manager())
 			);

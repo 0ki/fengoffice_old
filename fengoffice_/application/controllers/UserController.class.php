@@ -147,11 +147,13 @@ class UserController extends ApplicationController {
 		  } // if
 
 		  DB::commit();
-		  evt_add("workspace added", array(
+		  if (logged_user()->isProjectUser($new_project)) {
+		  	evt_add("workspace added", array(
 				"id" => $new_project->getId(),
 				"name" => $new_project->getName(),
 				"color" => $new_project->getColor()
-		  ));
+			));
+		  }
 
 		  // Send notification...
 		  try {

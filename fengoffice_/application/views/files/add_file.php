@@ -1,13 +1,14 @@
 <?php
-  	set_page_title($file->isNew() ? lang('upload file') : lang('edit file') . ": " . $file->getFilename());
-
-	if ($file->isNew()){
+  	if ($file->isNew()){
 		$submit_url = get_url('files', 'add_file');
 	} else if (isset($checkin) && $checkin){
 		$submit_url = $file->getCheckinUrl();
 	} else {
 		$submit_url = $file->getEditUrl();
 	}
+	
+	$project = active_or_personal_project();
+	$projects =  active_projects();
 	
 	$enableUpload = $file->isNew() 
 	|| (isset($checkin) && $checkin) || ($file->getCheckedOutById() == 0 && logged_user()->isAdministrator()) 
@@ -16,28 +17,64 @@
 <script type="text/javascript" src="<?php echo get_javascript_url('modules/addFileForm.js') ?>"></script>
 
 
-<form name="addFileForm" action="<?php echo $submit_url ?>" method="post" enctype="multipart/form-data" onsubmit="return false;">
+<form style='height:100%;background-color:white' name="addFileForm" action="<?php echo $submit_url ?>" method="post" enctype="multipart/form-data" onsubmit="return false;">
   <?php tpl_display(get_template_path('form_errors'));?>
   <input id="hfExistingFileId" name='file[existing_file_id]' type="hidden" value="0">
   <input id="hfFileIsNew" type="hidden" value="<?php echo $file->isNew()?>">
-
-  <div class="hint">
-  <table style="width:100%"><tr>
-  
-  <?php if ($enableUpload) { ?>
-  <td style="width:50%">
-  <?php if($file->isNew()) { //----------------------------------------------------ADD   ?>
-	<input id="hfAddFileAddType" name='file[add_type]' type="hidden" value="regular">
-    <input id="fileFormNewFilenameH" type="hidden"/>
-    <input id="fileFormFilenameH" type="hidden"/>
+  <input id="hfAddFileAddType" name='file[add_type]' type="hidden" value="regular">
+  <input id="fileFormNewFilenameH" type="hidden"/>
+  <input id="fileFormFilenameH" type="hidden"/>
+  <input id="hfFileId" name='file[file_id]' type="hidden" value="<?php echo array_var($file_data, 'file_id') ?>">
+  <input id="hfEditFileName" name='file[edit_name]' type="hidden" value="<?php echo array_var($file_data, 'edit_name') ?>">
     
-    <div class="content">
-      <div id="selectFileControl">
+
+<div class="file">
+<div class="coInputHeader">
+<div class="coInputHeaderUpperRow">
+<div class="coInputTitle"><table style="width:535px"><tr><td><?php echo $file->isNew() ? lang('upload file') : (isset($checkin) ? lang('checkin file') : lang('file properties')) ?>
+	</td><td style="text-align:right"><?php echo submit_button($file->isNew() ? lang('add file') : (isset($checkin) ? lang('checkin file') : lang('save changes')),'s',array("onclick" => 'javascript:submitMe(document.addFileForm)', 'style'=>'margin-top:0px;margin-left:10px')) ?></td></tr></table>
+	</div>
+	</div>
+	<?php if ($enableUpload) { 
+		if ($file->isNew()) {?>
+		
+    <div id="selectFileControlDiv">
         <?php echo label_tag(lang('file'), 'fileFormFile', true) ?>
-        <?php echo file_field('file_file', null, array('id' => 'fileFormFile', 'onchange' => 'javascript:updateFileName();checkFileName()')) ?>
-      </div>
-      <p><?php echo lang('upload file desc', format_filesize(get_max_upload_size())) ?></p>
+        <?php echo file_field('file_file', null, array('id' => 'fileFormFile', 'class' => 'title', 'onchange' => 'javascript:updateFileName();checkFileName()')) ?>
+    	<p><?php echo lang('upload file desc', format_filesize(get_max_upload_size())) ?></p>  
+    </div>
+    <?php }} // if ?>
+    
+    
+    
+    <div id="addFileFilenameDNX" style="display:none">
+      	<?php echo label_tag(lang('new filename'), 'fileFormFilename') ?>
+        <?php echo text_field('file[name]',$file->getFilename(), array("id" => 'fileFormFilename', 'onchange' => 'javascript:checkFileName(this.value)')) ?>
+		<br/>
+    </div>
       
+	
+	<div style="padding-top:5px">
+		<a href="#" class="option" onclick="og.toggleAndBolden('add_file_select_workspace_div',this)"><?php echo lang('workspace') ?></a> - 
+		<a href="#" class="option" onclick="og.toggleAndBolden('add_file_tags_div', this)"><?php echo lang('tags') ?></a> - 
+		<a href="#" class="option" onclick="og.toggleAndBolden('add_file_description_div',this)"><?php echo lang('description') ?></a> -
+  		<?php if(logged_user()->isMemberOfOwnerCompany()) { ?>
+			<a href="#" class="option" onclick="og.toggleAndBolden('add_file_options_div',this)"><?php echo lang('options') ?></a> -
+		<?php } ?>
+		<a href="#" class="option" onclick="og.toggleAndBolden('add_file_properties_div',this)"><?php echo lang('properties') ?></a>
+  		<?php if(!$file->isNew() && $file->canLinkObject(logged_user())) { ?> -
+			<a href="#" class="option" onclick="og.toggleAndBolden('add_file_linked_objects_div',this)"><?php echo lang('linked objects') ?></a>
+		<?php } ?>
+	</div>
+</div>
+<div class="coInputSeparator"></div>
+<div class="coInputMainBlock">
+
+
+
+<?php if ($enableUpload) { ?>
+  <?php if($file->isNew()) { //----------------------------------------------------ADD   ?>
+    <div class="content">
       <div id="addFileFilenameCheck" style="display:none">
   		<h2><?php echo lang("checking filename") ?></h2>
 	  </div>
@@ -62,40 +99,33 @@
       		<div id="fileNotCheckedOut" style="display:none">
       			<?php echo label_tag(lang('add as revision'), 'fileFormCheckAddRevision', false,null,'')  ?>
       		</div>
+      		<div id="fileCheckedOutPermission" style="display:none">
+      			<?php echo label_tag(lang('add file check in'), 'fileFormCheckInAddRevision', false,null,'')  ?>
+      		</div>
       		<div id="fileCheckedOut" style="display:none">
       		</div>
       		<div id="fileCheckedOutNoPermission" style="display:none">
       			<?php echo lang("no permission to check in") ?>
       		</div>
-      		<div id="fileCheckedOutPermission" style="display:none">
-      			<?php echo label_tag(lang('add file check in'), 'fileFormCheckInAddRevision', false,null,'')  ?>
-      		</div>
 		  </td></tr>
 		</table>
       </div>
-      
-      <div id="addFileFilenameDNX" style="display:none">
-      	<?php echo label_tag(lang('new filename'), 'fileFormFilename') ?>
-        <?php echo text_field('file[name]',$file->getFilename(), array("id" => 'fileFormFilename', 'onchange' => 'javascript:checkFileName(this.value)')) ?>
-		<br/>
-      </div>
     </div>
     
-  <?php } else { //----------------------------------------------------------------EDIT
+   <?php }  else {//----------------------------------------------------------------EDIT
 	if (!isset($checkin)) {?>
       <div class="header">
     	<?php echo checkbox_field('file[update_file]', array_var($file_data, 'update_file'), array('class' => 'checkbox', 'id' => 'fileFormUpdateFile', 'onclick' => 'App.modules.addFileForm.updateFileClick()')) ?> <?php echo label_tag(lang('update file'), 'fileFormUpdateFile', false, array('class' => 'checkbox'), '') ?>
       </div>
     <?php } // if ?>
-    <input id="hfFileId" name='file[file_id]' type="hidden" value="<?php echo array_var($file_data, 'file_id') ?>">
-    <input id="hfEditFileName" name='file[edit_name]' type="hidden" value="<?php echo array_var($file_data, 'edit_name') ?>">
     <div class="content">
     <?php if (!isset($checkin)) {?>
+    
       <div id="updateFileDescription">
         <p><?php echo lang('replace file description') ?></p>
       </div>
       <?php } // if ?>
-      <div id="updateFileForm">
+      <div id="updateFileForm"  style="<?php echo isset($checkin) ? '': 'display:none' ?>">
         <p><strong><?php echo lang('existing file') ?>:</strong> <a target="_blank" href="<?php echo $file->getDownloadUrl() ?>"><?php echo clean($file->getFilename()) ?></a> | <?php echo format_filesize($file->getFilesize()) ?></p>
         <div>
           <?php echo label_tag(lang('new file'), 'fileFormFile', true) ?>
@@ -118,30 +148,19 @@
       </script>
       <?php } // if ?>
     </div>
-<?php } // if ?>	
-</td>
+<?php } // if ?>
 <?php } // if enableupload ?> 
 
 
- <td style="width:50%">
- <div id="fileOptions">
+
+ <div id="add_file_select_workspace_div" style="display:none">
  <fieldset >
-    <legend class="toggle_collapsed" onclick="og.toggle('add_file_project_div',this)"><?php echo lang('workspace') ?></legend>
-    <div id="add_file_project_div" style="display:none">
-	  <select id="file[project_id]" name="file[project_id]" onchange='javascript:checkFileName()'>
-		<?php // add project combo
-		if ($file->isNew())
-		  $projId = active_or_personal_project()->getId();
-		else
-		  $projId = $file->getProjectId();
-		  
-		$active_projects = logged_user()->getActiveProjects();
-		if (isset($active_projects) && is_array($active_projects) && count($active_projects)) {
-		  foreach($active_projects as $project) { //list all projects, marking the active as selected ?>
-			<option value="<?php echo $project->getId() ?>"<?php if ($projId == $project->getId()) { echo ' selected="selected"'; } ?>><?php echo clean($project->getName()) ?></option>
-		<?php } // foreach 
-		} // if ?>
-	  </select>
+    <legend><?php echo lang('workspace') ?></legend>
+	  <?php if ($file->isNew()) {
+			echo select_workspaces('ws_ids', $projects, array($project), 'ws_ids');
+		} else {
+			echo select_workspaces('ws_ids', $projects, $file->getWorkspaces(), 'ws_ids');
+		} ?>
 	  
 	  <?php if (!$file->isNew()) {?>
 	    <div id="addFileFilenameCheck" style="display:none">
@@ -152,11 +171,12 @@
       	  <?php echo lang("filename exists edit") ?>
         </div>
       <?php } // if ?>
-	</div>
   </fieldset>
+  </div>
   
+  <div id="add_file_tags_div" style="display:none">
   <fieldset>
-    <legend class="toggle_collapsed" onclick="og.toggle('add_file_tags_div',this)"><?php echo lang('tags') ?></legend>
+    <legend><?php echo lang('tags') ?></legend>
     <script type="text/javascript">
     	var allTags = [<?php
     		$coma = false;
@@ -172,19 +192,23 @@
     		}
     	?>];
     </script>
-	<?php echo autocomplete_textfield("file[tags]", array_var($file_data, 'tags'), 'allTags', array('id'=>'add_file_tags_div', 'style'=>'display:none', 'class' => 'long')); ?>
+	<?php echo autocomplete_textfield("file[tags]", array_var($file_data, 'tags'), 'allTags', array('id'=>'add_file_tags_div', 'class' => 'long')); ?>
   </fieldset> 
+  </div>
   
+  
+  <div id="add_file_description_div" style="display:none">
   <fieldset>
-    <legend class="toggle_collapsed" onclick="og.toggle('fileFormDescription',this)"><?php echo lang('description') ?></legend>
-    <?php echo textarea_field('file[description]', array_var($file_data, 'description'), array('class' => 'short',  'style'=>'display:none', 'id' => 'fileFormDescription')) ?>
+    <legend><?php echo lang('description') ?></legend>
+    <?php echo textarea_field('file[description]', array_var($file_data, 'description'), array('class' => 'short', 'id' => 'fileFormDescription')) ?>
   </fieldset>
+  </div>
 
   
   <?php if(logged_user()->isMemberOfOwnerCompany()) { ?>
+  <div id="add_file_options_div" style="display:none">
   <fieldset>
-    <legend  class="toggle_collapsed" onclick="og.toggle('add_file_options_div',this)"><?php echo lang('options') ?></legend>
-    <div id='add_file_options_div' style="display:none">
+    <legend><?php echo lang('options') ?></legend>
   		<div class="objectOption">
 	      <div class="optionLabel"><label><?php echo lang('private file') ?>:</label></div>
 	      <div class="optionControl"><?php echo yes_no_widget('file[is_private]', 'fileFormIsPrivate', array_var($file_data, 'is_private'), lang('yes'), lang('no')) ?></div>
@@ -208,28 +232,26 @@
 	      <div class="optionControl"><?php echo yes_no_widget('file[anonymous_comments_enabled]', 'fileFormEnableAnonymousComments', array_var($file_data, 'anonymous_comments_enabled', false), lang('yes'), lang('no')) ?></div>
 	      <div class="optionDesc"><?php echo lang('enable anonymous comments desc') ?></div>
 	    </div>
-    </div>
   </fieldset>
+  </div>
   <?php } // if ?>
 
+  <div id="add_file_properties_div" style="display:none">
   <fieldset>
-    <legend class="toggle_collapsed" onclick="og.toggle('add_file_properties_div',this)"><?php echo lang('properties') ?></legend>
-    <div id='add_file_properties_div' style="display:none">
-	  <? echo render_object_properties('file',$file); ?>
-  	</div>
+    <legend><?php echo lang('properties') ?></legend>
+      <? echo render_object_properties('file',$file); ?>
   </fieldset>
+  </div>
   
   <?php if(!$file->isNew() && $file->canLinkObject(logged_user())) { ?>
+  <div style="display:none" id="add_file_linked_objects_div">
   <fieldset>
-    <legend class="toggle_collapsed" onclick="og.toggle('add_file_linked_objects_div',this)"><?php echo lang('linked objects') ?></legend>
-    <div style="display:none" id="add_file_linked_objects_div">
+    <legend><?php echo lang('linked objects') ?></legend>
       <?php echo render_object_links($file, $file->canEdit(logged_user())) ?>
-    </div>
   </fieldset>
+  </div>
   <?php } // if ?>
   
-  </div>
-  </td></tr></table>
 
   <div id="fileSubmitButton" style="display:inline">
   <?php 
@@ -237,7 +259,7 @@
   	if (isset($checkin) && $checkin)
 	  echo submit_button(lang('checkin file'),'s',array("onclick" => 'javascript:submitMe(document.addFileForm)'));
 	else
-	  echo submit_button(lang('edit file'),'s',array("onclick" => 'javascript:submitMe(document.addFileForm)'));
+	  echo submit_button(lang('save changes'),'s',array("onclick" => 'javascript:submitMe(document.addFileForm)'));
   else //New file
     echo submit_button(lang('add file'),'s',array("id" => 'addFileButton', "onclick" => 'javascript:submitMe(document.addFileForm)'));
   ?>

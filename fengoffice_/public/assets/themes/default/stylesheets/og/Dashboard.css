@@ -1,1 +1,105 @@
+.dashWorkspace {
+  	font-size: 200%;
+  	font-weight: bolder;
+  	padding-bottom: 4px;
+  	border-bottom: 1px solid #AAA;
+	width: 100%;
+	color: #666;
+	margin-bottom: 10px;
+	padding-top:10px;
+}
+
+.dashActions {
+	position: absolute;
+	top: 19px;
+	right: 7px;	
+}
+
+.dashActions .viewAsList {
+	backgroud-position: 0pt 2px;
+	background-repeat: no-repeat;
+	height: 16px;
+	padding-left:20px;
+	background-image: url('../../images/16x16/view_as_list.png');		
+}
+
+.ico-view-as-dashboard {
+	background-image: url('../../images/16x16/view_as_db.png') !important; 
+}
+
+.dashHeader {
+	padding:8px;	
+  	border-bottom: 1px solid;
+}
+
+.dashHeader .dashTitle {
+  	font-size: 130%;
+  	font-weight: bolder;
+  	border-bottom: 0px solid;
+}
+
+.dashAltRow {
+	background-color:rgb(224,227,235);	
+}
+
+.dashMessages .dashAltRow {
+	background-color:#FFE099;	
+}
+
+.dashSubtitle {
+  	font-weight: bolder;
+  	padding-top: 10px;
+  	padding-bottom: 2px;
+  	border-bottom: 1px solid #AAA;
+}
+
+
+
+.dashCalendar .dashHeader{
+	color: white;
+	background: #717FA1;
+	border-color: #596480;
+}
+
+.dashDocuments .dashHeader{
+	color: white;
+	background: #717FA1;
+	border-color: #596480;
+}
+
+
+.dashLate .dashHeader{
+	color: white;
+	background: #FF3333;
+	border-color: #CC1111;
+}
+
+.dashPendingTasks .dashHeader{
+	color: white;
+	background: #717FA1;
+	border-color: #596480;
+}
+
+.dashChart .dashHeader{
+	color: white;
+	background: #717FA1;
+	border-color: #596480;
+}
+
+.dashMessages .dashHeader{
+	color: rgb(101,82,5);
+	background: rgb(246,214,78);
+	border-color: rgb(201,163,10);
+}
+
+.dashMessages .coViewBody {
+	background: #FFF2BF;	
+	color: rgb(101,82,5);
+}
+
+.dashMessages .internalLink {	
+	color: rgb(101,82,5);
+}
+
+
 

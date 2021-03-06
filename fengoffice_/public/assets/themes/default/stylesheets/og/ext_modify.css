@@ -1,0 +1,24 @@
+/*--- layout.css ---*/
+.x-layout-collapsed{
+    border:0px;
+}
+
+/*--- panel.css ---*/
+.x-panel-body-noheader, .x-panel-mc .x-panel-body {
+    border-top:0px;
+}
+.x-panel-body{
+	background-color: #EEEEEE;	
+}
+
+/*--- tabs.css ---*/
+.x-tab-panel-header, .x-tab-panel-footer {
+	border: 0px;
+}
+.x-tab-panel-header {
+	border: 0px;
+	padding-bottom: 0px;
+}
+.x-tab-panel-body {
+    border: 0px;
+}

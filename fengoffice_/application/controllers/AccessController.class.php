@@ -195,7 +195,7 @@ class AccessController extends ApplicationController {
 				$administrator->setCanManageSecurity(true);
 				$administrator->setCanManageWorkspaces(true);
 				$administrator->setCanManageContacts(true);
-				$administrator->setAutoAssign(true);
+				$administrator->setAutoAssign(false);
 				$administrator->setPersonalProjectId(1);
 
 				$administrator->save();

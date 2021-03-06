@@ -1,342 +1,332 @@
-.coContainer {
-	padding: 5px;
+.coViewAction {
+	background-position:0pt 2px;
+	background-repeat:no-repeat;
+	padding:3px 0pt 2px 18px;
 }
 
-.coHeader {
-    padding: 2px 5px;
-    position: relative;
-}
-
-.coHeaderUpperRow {
-	margin: 3px;
-	border-bottom: 1px solid;
-    position: relative;
-    padding-bottom: 2px;
-}
-
-.coTitle {
-  	font-size: 150%;
-  	font-weight: bold;
-  	display: inline;
-}
-
-.coTags {
+.coViewClose{
 	position:absolute;
-	top:0px;
-	right:0px;
+	top:7px;
+	right:279px;
+	border-bottom:2px solid;
+	border-left:2px solid;
+	width: 16px;
+	height: 16px;
+  	font-weight: bold;
+  	padding-left:3px;
 }
 
-.coInfo {
-	padding: 3px;
+.coViewIcon{
+	padding:12px;
+	width:48px;	
+  	border-bottom: 1px solid;
 }
 
-.coMainBlock {
-	margin-bottom: 5px;
-	margin-top: 5px;
-	width:100%;
-}
-.coContent {
-	padding: 8px;
-	display:table-cell;
+.coViewIconImage{
+	height: 48px;
+	width: 48px;
 }
 
-.coLinkedObjects {
-	display:table-cell;
-	float:right;
-	width: 200px;
-	border: solid 1px;
-	padding: 3px;
-	height: 100%;
-	margin-left:10px;
+.coViewHeader {
+	padding:12px;
+	padding-bottom:6px;	
+  	border-bottom: 1px solid;
 }
 
-.coOptBar {
-	padding-left: 8px;
-	padding-bottom: 3px;
+.coViewHeader .coViewTitle {
+  	font-size: 130%;
+  	font-weight: bold;
+  	padding-bottom: 4px;
+  	border-bottom: 3px solid;
 }
 
-.coOption {
-	display: none;
-	padding:5px;
-	margin:8px;
+.coViewBody {
+	padding:12px;
+	background:white;	
+}
+
+.prop-col-div {
+	border-bottom: 1px solid #dddddd;	
+	padding-top:4px;
+	padding-bottom :2px;
+	margin-bottom: 2px;
+	margin-right: 12px;
+}
+
+.coViewPropertiesHeader {
+  	font-size: 120%;
+  	font-weight: bold;
 }
 
 
+/* ----Shadows---- */
 
-
-/* Messages */
-
-.message .coContainer {
-	border: 2px solid #e8e8a8;
-  	background: #f8f8d8;
+.coViewTopRight {
+	width:12px;
+	height:12px;
+	background-image: url('../../images/layout/shcornertop.png');	
+	background-repeat: no-repeat;
 }
 
-.message .coHeader {
-    border: 1px solid #e8e8a8;
-    background: #f8f8e8;
+.coViewRight {
+	background-image: url('../../images/layout/shr.png');	
+	background-repeat: repeat-y;
 }
 
-.message .coHeaderUpperRow {
-	border-bottom: 1px solid #e8e8a8;
+.coViewBottomRight {
+	background-image: url('../../images/layout/shcorner.png');
+	background-repeat: no-repeat;
+	width:12px;
+	height:12px;
 }
 
-.message .coLinkedObjects {
-    border: 1px solid #e8e8a8;
-    background: #f8f8e8;
+.coViewBottom {
+	background-image: url('../../images/layout/shb.png');
+	background-repeat: repeat-x;
 }
 
-.message .coOption {
-    border: 1px solid #e8e8a8;
-    background: #f8f8e8;
+.coViewBottomLeft {
+	background-image: url('../../images/layout/shcornerbottom.png');
+	width:12px;
+	height:12px;
+	background-repeat: no-repeat;
 }
 
-.message div.comment .odd {
-	background-color: #D9D9A3;
+
+/* ------------------------------------- Specific Content Objects -----------------------------*/
+
+
+/* -----  Message  ----- */
+
+.message .coViewHeader {
+  	background: rgb(246,214,78);
+  	border-color: rgb(201,163,10);
+  	color: rgb(101,82,5);
 }
 
-.message .linkedObjectodd {
-	background-color: #f8f8d8;
-} 
-
-
-
-
-/* Emails */
-
-.email .coContainer {
-	border: 2px solid #BDBFE6;
-  	background: #EAEAF2;
+.message .coViewIcon {
+  	background: rgb(232,232,168);
+  	border-color: rgb(246,214,78);
 }
 
-.email .coHeader {
-    border: 1px solid #BDBFE6;
-    background: #F4F4FF;
+.message .coViewHeader .coViewTitle {
+  	border-color: rgb(201,163,10);
 }
 
-.email .coHeaderUpperRow {
-	border-bottom: 1px solid #BDBFE6;
+.message .coViewClose {
+  	background: rgb(232,232,168);
+  	color: rgb(201,163,10);
 }
 
-.email .coLinkedObjects {
-    border: 1px solid #BDBFE6;
-    background: #F4F4FF;
+.ico-large-message {
+	background-image: url('../../images/48x48/note.png');
 }
 
-.email .coOption {
-    border: 1px solid #BDBFE6;
-    background: #F4F4FF;
+
+/* -----  Email  ----- */
+
+.email .coViewHeader {
+  	background: #BABFD9;
+  	border-color: #7882BF;
+  	color: #404566;
 }
 
-.email .linkedObjectodd {
-	background-color: #EAEAF2;
-} 
-
-
-
-/* emailClassify */
-
-.emailClassify .coContainer {
-	border: 2px solid #BDBFE6;
-  	background: #EAEAF2;
+.email .coViewIcon {
+  	background: #DBE0FF;
+  	border-color: #BABFD9;
 }
 
-.emailClassify .coHeader {
-    border: 1px solid #BDBFE6;
-    background: #F4F4FF;
+.email .coViewHeader .coViewTitle {
+  	border-color: #7882BF;
 }
 
-.emailClassify .coHeaderUpperRow {
-	border-bottom: 1px solid #BDBFE6;
+.email .coViewClose {
+  	background: #DBE0FF;
+  	color: #7882BF;
 }
 
-.emailClassify .coLinkedObjects {
-    border: 1px solid #BDBFE6;
-    background: #F4F4FF;
+.ico-large-email {
+	background-image: url('../../images/48x48/email.png');
 }
 
-.emailClassify .coOption {
-    border: 1px solid #BDBFE6;
-    background: #F4F4FF;
+
+/* -----  Chart  ----- */
+
+.chart .coViewHeader {
+  	background: #BABFD9;
+  	border-color: #7882BF;
+  	color: #404566;
 }
 
-.emailClassify .linkedObjectodd {
-	background-color: #EAEAF2;
-} 
-
-
-/* Files */
-
-.file .coContainer {
-	border: 2px solid #CCCCCC;
-  	background: #F2F2F2;
+.chart .coViewIcon {
+  	background: #DBE0FF;
+  	border-color: #BABFD9;
 }
 
-.file .coHeader {
-    border: 1px solid #CCCCCC;
-    background: #FAFAFA;
+.chart .coViewHeader .coViewTitle {
+  	border-color: #7882BF;
 }
 
-.file .coHeaderUpperRow {
-	border-bottom: 1px solid #CCCCCC;
+.chart .coViewClose {
+  	background: #DBE0FF;
+  	color: #7882BF;
 }
 
-.file .coLinkedObjects {
-    border: 1px solid #CCCCCC;
-    background: #FAFAFA;
+.ico-large-chart {
+	background-image: url('../../images/48x48/chart.png');
 }
 
-.file .coOption {
-    border: 1px solid #CCCCCC;
-    background: #FAFAFA;
+
+/* -----  Contact  ----- */
+
+.contact .coViewHeader {
+  	background: #F2D7AA;
+  	border-color: #CCA970;
+  	color: #735D39;
 }
 
-.file .linkedObjectodd {
-	background-color: #F2F2F2;
-} 
-
-
-/* Tasks */
-
-.task .coContainer {
-	border: 2px solid #D0F29D;
-  	background: #F5FFE6;
+.contact .coViewIcon {
+  	background: #F2E0C2;
+  	border-color: #F2D7AA;
 }
 
-.task .coHeader {
-    border: 1px solid #D0F29D;
-    background: #FAFFF2;
+.contact .coViewHeader .coViewTitle {
+  	border-color: #CCA970;
 }
 
-.task .coHeaderUpperRow {
-	border-bottom: 1px solid #D0F29D;
+.contact .coViewClose {
+  	background: #F2E0C2;
+  	color: #CCA970;
 }
 
-.task .coLinkedObjects {
-    border: 1px solid #D0F29D;
-    background: #FAFFF2;
+.ico-large-contact {
+	background-image: url('../../images/48x48/contact.png');
 }
 
-.task .coOption {
-    border: 1px solid #D0F29D;
-    background: #FAFFF2;
+
+/* -----  Files  ----- */
+
+.files .coViewHeader {
+  	background: #C9D9C3;
+  	border-color: #B1BFAC;
+  	color: #3F4D39;
 }
 
-.task .linkedObjectodd {
-	background-color: #F5FFE6;
-} 
-
-/* Milestones */
-
-.milestone .coContainer {
-	border: 2px solid #D09DF2;
-  	background: #F5E6FF;
+.files .coViewIcon {
+  	background: #EDFFE6;
+  	border-color: #C9D9C3;
 }
 
-.milestone-late .coContainer {
-	border: 2px solid #FF4433;
-	background: #FFAA99;
+.files .coViewHeader .coViewTitle {
+  	border-color: #B1BFAC;
 }
 
-.milestone-completed .coContainer {
-	border: 2px solid #D0F29D;
-	background: #F5FFE6;
+.files .coViewClose {
+  	background: #EDFFE6;
+  	color: #B1BFAC;
 }
 
-.milestone .coHeader {
-    border: 1px solid #D09DF2;
-    background: #FAF2FF;
+.ico-large-files {
+	background-image: url('../../images/48x48/files.png');
 }
 
-.milestone-late .coHeader {
-	background:#FFCCB1 none repeat scroll 0% 50%;
-	border:1px solid #FF4433;
+
+/* -----  Tasks  ----- */
+
+.tasks .coViewHeader {
+  	background: #C9D9C3;
+  	border-color: #B1BFAC;
+  	color: #3F4D39;
 }
 
-.milestone-completed .coHeader {
-	border: 1px solid #D0F29D;
-    background: #FAFFF2;
+.tasks .coViewIcon {
+  	background: #EDFFE6;
+  	border-color: #C9D9C3;
 }
 
-.milestone .coHeaderUpperRow {
-	border-bottom: 1px solid #D09DF2;
+.tasks .coViewHeader .coViewTitle {
+  	border-color: #B1BFAC;
 }
 
-.milestone-late .coHeaderUpperRow {
-	border-bottom: 1px solid #FF4433;
+.tasks .coViewClose {
+  	background: #EDFFE6;
+  	color: #B1BFAC;
 }
 
-.milestone-completed .coHeaderUpperRow {
-	border-bottom: 1px solid #D0F29D;
+.ico-large-tasks {
+	background-image: url('../../images/48x48/tasks.png');
 }
 
-.milestone .coLinkedObjects {
-    border: 1px solid #D09DF2;
-    background: #FAF2FF;
+
+/* -----  Milestones  ----- */
+
+.milestone .coViewHeader {
+  	background: #C9D9C3;
+  	border-color: #B1BFAC;
+  	color: #3F4D39;
 }
 
-.milestone-late .coLinkedObjects {
-    border: 1px solid #FF4433;
-    background: #FFCCB1;
+.milestone .coViewIcon {
+  	background: #EDFFE6;
+  	border-color: #C9D9C3;
 }
 
-.milestone-completed .coLinkedObjects {
-    border: 1px solid #D0F29D;
-    background: #FAFFF2;
+.milestone .coViewHeader .coViewTitle {
+  	border-color: #B1BFAC;
 }
 
-.milestone .coOption {
-    border: 1px solid #D09DF2;
-    background: #FAF2FF;
+.milestone .coViewClose {
+  	background: #EDFFE6;
+  	color: #B1BFAC;
 }
 
-.milestone-late .coOption {
-    border: 1px solid #F29DD0;
-    background: #FFF2FA;
+.ico-large-milestone {
+	background-image: url('../../images/48x48/milestone.png');
 }
 
-.milestone-completed .coOption {
-    border: 1px solid #D0F29D;
-    background: #FAFFF2;
+/* Events */
+
+.event .coViewHeader {
+  	background: #C2FFBF;
+  	border-color: #7AAB78;
+  	color: #4F664D;
 }
 
-.milestone .linkedObjectodd {
-	background-color: #F5R6FF;
+.event .coViewIcon {
+  	background: #EBFFE6;
+  	border-color: #C2FFBF;
 }
 
-.milestone-late .linkedObjectodd {
-	background-color: #FFE6F5;
+.event .coViewHeader .coViewTitle {
+  	border-color: #7AAB78;
 }
 
-.milestone-completed .linkedObjectodd {
-	background-color: #F5FFE6;
+.event .coViewClose {
+  	background: #EBFFE6;
+  	color: #7AAB78;
 }
 
-/* Contacts */
-
-.contact .coContainer {
-	border: 2px solid #E6D3B8;
-  	background: #F2EDE6;
+.ico-large-event {
+	background-image: url('../../images/48x48/view_calendar_day.png');
 }
 
-.contact .coHeader {
-    border: 1px solid #E6D3B8;
-    background: #FFFAF2;
-}
 
-.contact .coHeaderUpperRow {
-	border-bottom: 1px solid #E6D3B8;
+.tpTaskHeader, .tpMilestoneHeader {
+	width: 90%;
+	border-bottom: solid 1px #AAA;
+	font-size: 130%;
+	font-weight: bold;
+	color: #666;
+	padding-top: 12px;
+	padding-left: 20px;
 }
-
-.contact .coLinkedObjects {
-    border: 1px solid #E6D3B8;
-    background: #FFFAF2;
+.tpTaskHeader {
+	background-image: url(../../images/16x16/tasks.png) !important;
+	background-repeat: no-repeat;
+	background-position: bottom left;
 }
-
-.contact .coOption {
-    border: 1px solid #E6D3B8;
-    background: #FFFAF2;
+.tpMilestoneHeader {
+	background-image: url(../../images/16x16/milestone.png) !important;
+	background-repeat: no-repeat;
+	background-position: bottom left;
 }
-
-.contact .linkedObjectodd {
-	background-color: #F2EDE6;
-} 

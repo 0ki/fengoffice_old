@@ -14,6 +14,20 @@ function ajx_current($type, $data = null, $actions = null, $panel = null) {
 	AjaxResponse::instance()->setCurrentContent($type, $data, $actions, $panel);
 }
 
+function ajx_unset_current() {
+	AjaxResponse::instance()->unsetCurrentContent();
+}
+
+/**
+ * Set the name of the object's property where the generated content is returned.
+ * Defaults to "current".
+ *
+ * @param string $property
+ */
+function ajx_content_property($property) {
+	AjaxResponse::instance()->setContentProperty($property);
+}
+
 /**
  * Add content for a panel. Expects the panel's id, the type of content
  * (html, url), the data (html code, url), and the page actions.
@@ -82,6 +96,10 @@ function ajx_check_login() {
  */
 function ajx_extra_data($data) {
 	AjaxResponse::instance()->addExtraData($data);
+}
+
+function ajx_set_no_toolbar($nt){
+	AjaxResponse::instance()->notbar = $nt;
 }
 
 ?>

@@ -177,10 +177,10 @@
       
       // Prepare SQL
       $sql = "SELECT * FROM " . $this->getTableName(true) . " $where_string $order_by_string $limit_string";
-      
+
       // Run!
       $rows = DB::executeAll($sql);
-      
+
       // Empty?
       if(!is_array($rows) || (count($rows) < 1)) return null;
       
@@ -376,10 +376,10 @@
       // OK, get class and construct item...
       $class = $this->getItemClass();
       $item = new $class();
-      
+
       // If not valid item break
       if(!instance_of($item, 'DataObject')) return null;
-      
+
       // Load item...
       if($item->loadFromRow($row) && $item->isLoaded()) {
         if($this->getCaching()) $this->cacheItem($item);

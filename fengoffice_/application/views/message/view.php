@@ -6,44 +6,24 @@
   	add_page_action(lang('edit'), $message->getEditUrl(), 'ico-edit');
   } // if
   if($message->canDelete(logged_user())) {
-  	add_page_action(lang('delete'), $message->getDeleteUrl(), 'ico-delete');
+  	add_page_action(lang('delete'), "javascript:if(confirm(lang('confirm delete message'))) og.openLink('" . $message->getDeleteUrl() ."');", 'ico-delete');
   } // if
 
 ?>
 
 <div style="padding:7px">
 <div class="message">
-<div class="coContainer">
-  <div class="coHeader">
-  <div class="coHeaderUpperRow">
-	<div class="coTitle">
-<?php if($message->isPrivate()) { ?>
-    <div class="private" title="<?php echo lang('private message') ?>"><span><?php echo lang('private message') ?></span></div>
-<?php } // if ?><?php echo clean($message->getTitle()) ?></div>
-	<div class="coTags"><span><?php echo lang('tags') ?>:</span> <?php echo project_object_tags($message) ?></div>
-	</div>
-    <div class="coInfo">
-    	<?php if($message->getCreatedBy() instanceof User) { ?>
-    		<?php echo lang('message posted on by', format_datetime($message->getCreatedOn()), $message->getCreatedBy()->getCardUrl(), clean($message->getCreatedBy()->getDisplayName())) ?>
-		<?php } // if ?>
-	</div>
-  </div>
-  <div class="coMainBlock">
-  <div class="coLinkedObjects">
-  <?php echo render_object_links($message, $message->canEdit(logged_user())) ?>
-  </div>
-  <div class="coContent">
-    <?php echo do_textile($message->getText()) ?>
-<?php if(trim($message->getAdditionalText())) { ?>
-    <div class="messageSeparator"><?php echo lang('message separator') ?></div>
-    <?php echo do_textile($message->getAdditionalText()) ?>
-<?php } // if?>
-  </div>
-  
-  </div>
-  <div style="clear:both">
-  <?php echo render_object_comments($message, $message->getViewUrl()) ?></div>
-
-  
+	<?php 
+		$content = do_textile($message->getText());
+		if(trim($message->getAdditionalText())) {
+    		$content .= '<div class="messageSeparator">' . lang('message separator') . '</div>' 
+    			. do_textile($message->getAdditionalText());
+		}
+		
+		tpl_assign("content", $content);
+		tpl_assign("object", $message);
+		
+		$this->includeTemplate(get_template_path('view', 'co'));
+	?>
 </div>
 </div>

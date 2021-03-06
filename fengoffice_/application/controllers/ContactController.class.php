@@ -29,24 +29,21 @@ class ContactController extends ApplicationController {
 	{
 		ajx_current("empty");
 		
-		$pid = array_var($_GET, 'active_project', 0);
-		$project = Projects::findById($pid);
+		$project = active_project();
 		$isProjectView = ($project instanceof Project);
-		 
-		$start = array_var($_GET,'start');
-		$limit = array_var($_GET,'limit');
-		if (! $start) {
-			$start = 0;
-		}
-		if (! $limit) {
-			$limit = config_option('files_per_page');
-		}
-		$order = array_var($_GET,'sort');
-		$orderdir = array_var($_GET,'dir');
+		$filesPerPage = config_option('files_per_page');
+		$start = array_var($_GET,'start') ? array_var($_GET,'start') : 0;
+		$limit = array_var($_GET,'limit') ? array_var($_GET,'limit') : $filesPerPage;
+		//$order = array_var($_GET,'sort');
+		//$orderdir = array_var($_GET,'dir');
 		$tag = array_var($_GET,'tag');
 		$page = (integer) ($start / $limit) + 1;
+		if ($page < 0) $page = 1;
 		$hide_private = !logged_user()->isMemberOfOwnerCompany();
 
+		/**
+		 * Resolve actions if any
+		 */
 		if (array_var($_GET,'action') == 'delete') {
 			$ids = explode(',', array_var($_GET, 'contacts'));
 			$err = $this->do_delete_contacts($ids);
@@ -65,11 +62,10 @@ class ContactController extends ApplicationController {
 				flash_success(lang('success tag contacts', $succ));
 			}
 		}
-
-		if($page < 0) $page = 1;
-
-//		$conditions = logged_user()->isMemberOfOwnerCompany() ? ' \'1\' = \'1\'' : ' `is_private` = 0';
-	
+		
+		/**
+		 * Search by tags
+		 */ 
 		if ($tag == '' || $tag == null) {
 			$tagstr = " '1' = '1'"; // dummy condition
 		} else {
@@ -77,21 +73,27 @@ class ContactController extends ApplicationController {
 			TABLE_PREFIX . "contacts.id = " . TABLE_PREFIX . "tags.rel_object_id and " .
 			TABLE_PREFIX . "tags.tag = '".$tag."' and " . TABLE_PREFIX . "tags.rel_object_manager ='Contacts' ) > 0 ";
 		}
-		$permission_str = ' AND (' . permissions_sql_for_listings(Contacts::instance(),ACCESS_LEVEL_READ, logged_user()->getId(),'project_id') . ')';
-
-		if ($isProjectView) {
-			$pids = $project->getAllSubWorkspacesCSV(true, logged_user());
-			$pc_tbl = ProjectContacts::instance()->getTableName(true);
-			$project_str = " AND `id` IN (SELECT `contact_id` FROM $pc_tbl pc WHERE pc.`project_id` IN ($pids))";
+		
+		/**
+		 * If logged user cannot manage contacts, only contacts which belong to a project where the user can manage contacts are displayed.
+		 */
+		$pc_tbl = ProjectContacts::instance()->getTableName(true);
+		if (!can_manage_contacts(logged_user())) {
+			$pids = $isProjectView ? $project->getAllSubWorkspacesCSV(true, logged_user()): logged_user()->getActiveProjectIdsCSV();
+			$permission_str = " AND `id` IN (SELECT `contact_id` FROM $pc_tbl WHERE $pc_tbl.`project_id` IN ($pids) AND (" . permissions_sql_for_listings(ProjectContacts::instance(),ACCESS_LEVEL_READ, logged_user(),'project_id') . '))';
 		} else {
-			$project_str = "";
+			if ($isProjectView) {
+				$pids = $project->getAllSubWorkspacesCSV(true, logged_user());
+				$permission_str = " AND `id` IN (SELECT `contact_id` FROM $pc_tbl pc WHERE pc.`project_id` IN ($pids))";
+			} else $permission_str = "";
 		}
+		
 		list($contacts, $pagination) = Contacts::paginate(
 			array(
-				'conditions' => $tagstr . $permission_str . $project_str,
+				'conditions' => $tagstr . $permission_str,
 				'order' => 'UPPER(`lastname`) ASC, UPPER(`firstname`) ASC'
 			),
-			config_option('files_per_page', 10),
+			$filesPerPage,
 			$page
 		); // paginate
 
@@ -104,8 +106,7 @@ class ContactController extends ApplicationController {
 			"totalCount" => $pagination->getTotalItems(),
 			"contacts" => array()
 		);
-		if (isset($contacts))
-		{
+		if (isset($contacts)) {
 			foreach ($contacts as $c) {
 				$roleName = "";
 				$roleTags = "";
@@ -120,29 +121,29 @@ class ContactController extends ApplicationController {
 				if (!is_null($company))
 				$companyName= $company->getName();
 				$object["contacts"][] = array(
-				"id" => $c->getId(),
-				"name" => $c->getReverseDisplayName(),
-				"email" => $c->getEmail(),
-				"companyId" => $c->getCompanyId(),
-				"companyName" => $companyName,
-				"website" => $c->getHWebPage(),
-				"jobTitle" => $c->getJobTitle(),
-				"createdBy" => Users::findById($c->getCreatedById())->getUsername(),
-				"createdById" => $c->getCreatedById(),
-			    "role" => $roleName,
-				"tags" => project_object_tags($c),
-				"department" => $c->getDepartment(),
-				"email2" => $c->getEmail2(),
-				"email3" => $c->getEmail3(),
-				"workWebsite" => $c->getWWebPage(),
-				"workAddress" => $c->getFullWorkAddress(),
-				"workPhone1" => $c->getWPhoneNumber(),
-				"workPhone2" => $c->getWPhoneNumber2(),
-				"homeWebsite" => $c->getHWebPage(),
-				"homeAddress" => $c->getFullHomeAddress(),
-				"homePhone1" => $c->getWPhoneNumber(),
-				"homePhone2" => $c->getWPhoneNumber2(),
-				"mobilePhone" =>$c->getHMobileNumber()
+					"id" => $c->getId(),
+					"name" => $c->getReverseDisplayName(),
+					"email" => $c->getEmail(),
+					"companyId" => $c->getCompanyId(),
+					"companyName" => $companyName,
+					"website" => $c->getHWebPage(),
+					"jobTitle" => $c->getJobTitle(),
+					"createdBy" => Users::findById($c->getCreatedById())->getUsername(),
+					"createdById" => $c->getCreatedById(),
+			    	"role" => $roleName,
+					"tags" => project_object_tags($c),
+					"department" => $c->getDepartment(),
+					"email2" => $c->getEmail2(),
+					"email3" => $c->getEmail3(),
+					"workWebsite" => $c->getWWebPage(),
+					"workAddress" => $c->getFullWorkAddress(),
+					"workPhone1" => $c->getWPhoneNumber(),
+					"workPhone2" => $c->getWPhoneNumber2(),
+					"homeWebsite" => $c->getHWebPage(),
+					"homeAddress" => $c->getFullHomeAddress(),
+					"homePhone1" => $c->getWPhoneNumber(),
+					"homePhone2" => $c->getWPhoneNumber2(),
+					"mobilePhone" =>$c->getHMobileNumber()
 				);
 			}
 		}
@@ -219,6 +220,8 @@ class ContactController extends ApplicationController {
 		tpl_assign('roles',$roles);
 		if (isset($tags))
 		tpl_assign('tags',$tags);
+		ajx_extra_data(array("title" => $contact->getDisplayName(), 'icon'=>'ico-contact'));
+		ajx_set_no_toolbar(true);
 	} // view
 
 	/**

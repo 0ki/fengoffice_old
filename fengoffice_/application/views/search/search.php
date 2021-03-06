@@ -1,7 +1,7 @@
 <?php
   set_page_title(lang('search results'));
 ?>
-
+<div style='height:100%;background-color:white'>
 <div id="searchForm">
   <form class="internalForm" action="<?php echo get_url('search','search') ?>" method="get">
     <?php echo input_field('search_for', array_var($_GET, 'search_for')) ?>
@@ -67,5 +67,6 @@
 
 <div style="width:100%;text-align:center">
 	<p><?php echo lang('time used in search', sprintf("%01.2f",$time)) ?></p>
+</div>
 </div>
 </div>

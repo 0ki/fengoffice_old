@@ -263,9 +263,15 @@ class Project extends BaseProject {
 	 */
 	private $orphaned_files;
 
+	private $subWScache = array();
+	
+	private $sub_ws_ids = array();
+	
 	// ---------------------------------------------------
 	//  Workspace Hierarchy
 	// ---------------------------------------------------
+	
+	
 	
 	/**
 	 * Returns true if the workspace has a Parent workspace
@@ -290,29 +296,38 @@ class Project extends BaseProject {
 	 * @return array
 	 */
 	function getSubWorkspaces($active = false, $user = null) {
-		$conditions = array("`parent_id` = ?", $this->getId());
-		if ($active) {
-			$conditions[0] .= ' AND `completed_on` = ? ';
-			$conditions[] = EMPTY_DATETIME;
+		$key = ($active?"active":"closed")."_".($user instanceof User?$user->getId():0);
+		if (!(array_var($this->subWScache, $key))) {
+			$conditions = array("`parent_id` = ?", $this->getId());
+			if ($active) {
+				$conditions[0] .= ' AND `completed_on` = ? ';
+				$conditions[] = EMPTY_DATETIME;
+			}
+			if ($user instanceof User) {
+				$pu_tbl = ProjectUsers::instance()->getTableName(true);
+				$conditions[0] .= " AND `id` IN (SELECT `project_id` FROM $pu_tbl WHERE `user_id` = ?)";
+				$conditions[] = $user->getId();
+			}
+			$this->subWScache[$key] = Projects::findAll(array('conditions' => $conditions));
 		}
-		if ($user instanceof User) {
-			$pu_tbl = ProjectUsers::instance()->getTableName(true);
-			$conditions[0] .= " AND `id` IN (SELECT `project_id` FROM $pu_tbl WHERE `user_id` = ?)";
-			$conditions[] = $user->getId();
-		}
-		return Projects::findAll(array('conditions' => $conditions));
+		return $this->subWScache[$key];
 	}
 	
 	function getAllSubWorkspacesCSV($active = false, $user = null) {
-		$csv = "".$this->getId();
-		$subs = $this->getSubWorkspaces($active, $user);
-		if (isset($subs)) {
-			foreach ($subs as $ws) {
-				$subcsv = $ws->getAllSubWorkspacesCSV($active, $user);
-				$csv .= "," . $subcsv;
+		$key = ($active?"active":"closed")."_".($user instanceof User?$user->getId():0);
+		
+		if (!(array_var($this->sub_ws_ids, $key))){
+			$csv = "".$this->getId();
+			$subs = $this->getSubWorkspaces($active, $user);
+			if (isset($subs)) {
+				foreach ($subs as $ws) {
+					$subcsv = $ws->getAllSubWorkspacesCSV($active, $user);
+					$csv .= "," . $subcsv;
+				}
 			}
+			$this->sub_ws_ids[$key] = $csv;
 		}
-		return $csv;
+		return $this->sub_ws_ids[$key];
 	}
 	
 	// ---------------------------------------------------
@@ -1074,14 +1089,14 @@ class Project extends BaseProject {
 	} // canAdd
 
 	/**
-	 * Returns true if user can update speicific project
+	 * Returns true if user can update specific project
 	 *
 	 * @access public
 	 * @param User $user
 	 * @return boolean
 	 */
 	function canEdit(User $user) {
-		return $user->isAccountOwner() || can_manage_workspaces(logged_user());
+		return $user->getPersonalProjectId() == $this->getId() || $user->isAccountOwner() || can_manage_workspaces(logged_user());
 	} // canEdit
 
 	/**
@@ -1147,6 +1162,17 @@ class Project extends BaseProject {
 	//  URLS
 	// ---------------------------------------------------
 
+	/**
+	 * Link to project dashboard page
+	 *
+	 * @access public
+	 * @param void
+	 * @return stirng
+	 */
+	function getDashboardUrl() {
+		return get_url('dashboard', 'index', array('active_project' => $this->getId()));
+	} // getOverviewUrl
+	
 	/**
 	 * Link to project overview page
 	 *
@@ -1394,6 +1420,10 @@ class Project extends BaseProject {
 	 * @return boolean
 	 */
 	function delete() {
+		$ws = $this->getSubWorkspaces();
+		foreach ($ws as $w) {
+			$w->delete();
+		}
 		$this->clearMessages();
 		$this->clearTasks();
 		$this->clearMilestones();
@@ -1431,7 +1461,11 @@ class Project extends BaseProject {
 		$messages = $this->getAllMessages();
 		if(is_array($messages)) {
 			foreach($messages as $message) {
-				$message->delete();
+				if (count($message->getWorkspaces()) == 1){
+					$message->delete();
+				} else {
+					$message->removeFromWorkspace($this);
+				} // if
 			} // foreach
 		} // if
 	} // clearMessages
@@ -1521,7 +1555,11 @@ class Project extends BaseProject {
 		$files = ProjectFiles::getAllFilesByProject($this);
 		if(is_array($files)) {
 			foreach($files as $file) {
-				$file->delete();
+				if (count($file->getWorkspaces()) == 1){
+					$file->delete();
+				} else {
+					$file->removeFromWorkspace($this);
+				} // if
 			} // foreach
 		} // if
 	} // clearFiles

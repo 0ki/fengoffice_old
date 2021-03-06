@@ -86,10 +86,10 @@
       <?php echo yes_no_widget('is_admin', 'userFormIsAdmin', $user->isAdministrator(), lang('yes'), lang('no')) ?>
     </div>
     
-    <div>
+    <!-- div>
       <?php echo label_tag(lang('is auto assign'), null, true) ?>
       <?php echo yes_no_widget('user[auto_assign]', 'userFormAutoAssign', array_var($user_data, 'auto_assign'), lang('yes'), lang('no')) ?>
-    </div>
+    </div -->
   </div>
 <?php } else { ?>
   <input type="hidden" name="user[auto_assign]" value="0" />

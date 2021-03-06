@@ -5,9 +5,9 @@
 		$countComments = count($comments);
 	$random = rand();
 ?>
-	<fieldset>
-    	<legend class="<?php echo $countComments > 0? 'toggle_expanded': 'toggle_collapsed' ?>" onclick="og.toggle('<?php echo $random ?>objectComments',this)">
-    	<?php echo $countComments > 0? lang('comments') . ' (' . $countComments .')': lang('comments') ?></legend>
+
+<?php if ($countComments > 0) { ?>
+    <div class="commentsTitle"><?php echo lang('comments')?> </div>
 
 		<div class="objectComments" id="<?php echo $random ?>objectComments" style="<?php echo $countComments > 0? '':'display:none'?>">
 <?php
@@ -64,9 +64,8 @@
 		<p><?php echo lang('no comments associated with object') ?></p>
 <?php } // if ?>
 
+<?php } ?>
+
 <?php if($__comments_object->canComment(logged_user())) { ?>
 	<?php echo render_comment_form($__comments_object) ?>
 <?php } // if ?>
-
-		</div>
-	</fieldset>

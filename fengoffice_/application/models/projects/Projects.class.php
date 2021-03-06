@@ -73,6 +73,22 @@
 			'conditions' => $conditions
 		));
 	} // getByFilename
+	
+	/**
+	 * Receives comma seperated ids and returns the workspaces with those ids
+	 *
+	 * @param string $csv
+	 * @return array
+	 */
+	static function findByCSVIds($csv) {
+		$ids = split(",", $csv);
+		if (!is_array($ids)) return array();
+		$ws = array();
+		foreach ($ids as $id) {
+			$ws[] = Projects::findById($id);
+		}
+		return $ws;
+	}
   } // Projects 
 
 ?>

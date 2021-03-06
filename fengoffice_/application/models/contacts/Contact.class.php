@@ -7,6 +7,21 @@
  */
 class Contact extends BaseContact
 {
+	
+	/**
+	 * Contacts are searchable
+	 *
+	 * @var boolean
+	 */
+	protected $is_searchable = true;
+
+	/**
+	 * Array of searchable columns
+	 *
+	 * @var array
+	 */
+	protected $searchable_columns = array('firstname', 'lastname', 'email', 'email2', 'email3');
+	
 	/**
     * This project object is taggable
     *
@@ -569,7 +584,16 @@ class Contact extends BaseContact
     * @return boolean
     */
     function canView(User $user) {
-		return can_manage_contacts($user, true);
+		if (can_manage_contacts($user, true))
+			return true;
+		else {
+			$roles = $this->getRoles();
+			foreach ($roles as $role){
+				if ($role->canView($user))
+					return true;
+			}
+			return false;
+		}
     } // canView
     
     /**

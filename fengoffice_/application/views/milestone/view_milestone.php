@@ -4,7 +4,7 @@
 		add_page_action(lang('edit'), $milestone->getEditUrl(), 'ico-edit');
 	} // if
 	if($milestone->canDelete(logged_user())) {
-		add_page_action(lang('delete'), $milestone->getDeleteUrl(), 'ico-delete');
+		add_page_action(lang('delete'),  "javascript:if(confirm(lang('confirm delete milestone'))) og.openLink('" . $milestone->getDeleteUrl() . "');", 'ico-delete');
 	} // if
 ?>
 
@@ -78,7 +78,8 @@
 		</ul>
 	<?php } // if ?>
 
-</div>    
+</div>
+<div style="clear:both;"></div>    
 </div>
 </div>
 </div>

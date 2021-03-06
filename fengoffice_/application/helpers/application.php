@@ -120,6 +120,42 @@ function select_project($name, $projects, $selected = null, $attributes = null, 
 } // select_project
 
 /**
+ * Returns a control to select multiple workspaces
+ *
+ * @param string $name
+ * 		Name for the control
+ * @param array $workspaces
+ * 		Array of workspaces to choose from
+ * @param array $selected
+ * 		Array of workspaces selected by default
+ * @return string
+ * 		HTML for the control
+ */
+function select_workspaces($name, $workspaces, $selected = null, $id = 'default_id') {
+	$set = array();
+	if (is_array($selected)) {
+		foreach ($selected as $s) {
+			if ($s instanceof Project) {
+				$set[$s->getId()] = true;
+			}
+		}
+	}
+	$output = "<div id=\"ws_chooser_$id\" />";
+	$output .= "<script type=\"text/javascript\">\n";
+	$wslist = '';
+	if (is_array($workspaces)) {
+		foreach($workspaces as $w) {
+			if ($w instanceof Project) {
+				if ($wslist != '') $wslist .= ",";
+				$wslist .= '{id:'.$w->getId().',name:"'.$w->getName().'",selected:'.(isset($set[$w->getId()])?'true':'false').'}';
+			}
+		} // foreach
+	} // if
+	$output .= "new og.WorkspaceChooser({el: 'ws_chooser_$id', name: '$name', ws: [$wslist], id: '$id'});\n";
+	return $output . "</script>\n";
+} // select_workspaces
+
+/**
  * Render assign to SELECT
  *
  * @param string $list_name Name of the select control
@@ -231,17 +267,21 @@ function select_milestone($name, $project = null, $selected = null, $attributes 
  * @return string
  */
 function select_task_list($name, $project = null, $selected = null, $open_only = false, $attributes = null) {
-	if(is_null($project)) $project = active_project();
-	if(!($project instanceof Project)) throw new InvalidInstanceError('$project', $project, 'Project');
+	if (is_null($project)) $project = active_project();
+	//if (!($project instanceof Project)) throw new InvalidInstanceError('$project', $project, 'Project');
 
-	if(is_array($attributes)) {
-		if(!isset($attributes['class'])) $attributes['class'] = 'select_task_list';
+	if (is_array($attributes)) {
+		if (!isset($attributes['class'])) $attributes['class'] = 'select_task_list';
 	} else {
 		$attributes = array('class' => 'select_task_list');
 	} // if
 
 	$options = array(option_tag(lang('none'), 0));
-	$task_lists = $open_only ? $project->getOpenTasks() : $project->getTasks();
+	if ($project instanceof Project) { 
+		$task_lists = $open_only ? $project->getOpenTasks() : $project->getTasks();
+	} else {
+		$task_lists = $open_only ? ProjectTasks::getProjectTasks(null, null, 'ASC', 0, null, null, null, null, null, true) : ProjectTasks::getProjectTasks(null, null, 'ASC', 0, null, null, null, null, null, false);
+	}
 	if(is_array($task_lists)) {
 		foreach($task_lists as $task_list) {
 			$option_attributes = $task_list->getId() == $selected ? array('selected' => 'selected') : null;
@@ -450,6 +490,25 @@ function select_project_file($name, $project = null, $selected = null, $exclude_
 } // select_project_file
 
 /**
+ * Render select chart type box
+ *
+ * @param array $chart_types list of chart types as returned by the factory
+ * @param integer $selected ID of selected chart type
+ * @param array $attributes Additional attributes
+ * @return string
+ */
+function select_chart_type($name, $chart_types, $selected = null, $attributes = null) {
+	$options = array();
+	if(is_array($chart_types)) {
+		foreach($chart_types as $ct) {
+			$option_attributes = array_search($ct,$chart_types) == $selected ? array('selected' => 'selected') : null;
+			$options[] = option_tag(lang($ct), array_search($ct,$chart_types), $option_attributes);
+		} // foreach
+	} // if
+	return select_box($name, $options, $attributes);
+} // select_company
+
+/**
  * Show project tags combo
  *
  * @param Project $project
@@ -628,6 +687,22 @@ function render_link_to_object_2($object, $text=null){
 }
 
 /**
+ * Creates a button that shows an object picker to link an object with an object which has not been created yet
+ *
+ */
+function render_link_to_new_object( $text=null){
+	//$id = $object->getId();
+	//$manager = get_class($object->manager());
+	if($text==null)
+	$text=lang('link object');
+	$result = '';
+	$result .= '<a href="#" onclick="og.ObjectPicker.show(function (data){	if(data) {	og.addLinkedObjectRow(\'tbl_linked_objects\',data[0].data.type,data[0].data.object_id, data[0].data.name,data[0].data.manager,\''.lang('confirm unlink object').'\',\''.lang('unlink').'\'); } })">';
+	$result .=  $text;
+	$result .= '</a>';
+	return $result;
+}
+
+/**
  * Render application logs
  *
  * This helper will render array of log entries. Options array of is array of template options and it can have this
@@ -747,4 +822,29 @@ function render_object_properties( $object_name,ProjectDataObject $object=null){
 	$output.= "</table>  ";
 	return $output;
 }
+
+
+/**
+ * Returns a control to select mail account
+ *
+ * @param string $name
+ * 		Name for the control
+ * @param array $mail_accounts
+ * 		Array of accounts to choose from
+ * @param array $selected
+ * 		Index of account selected by default
+ * @return string
+ * 		HTML for the control
+ */
+function render_select_mail_account($name, $mail_accounts, $selected = null, $attributes = null) {
+	$options = null;
+	if(is_array($mail_accounts)) {
+		foreach($mail_accounts as $mail_account) {
+			$option_attributes = $mail_account->getId() == $selected ? array('selected' => 'selected') : null;
+			$mail = $mail_account->getName() . " [" . $mail_account->getEmail() . "]";
+			$options[] = option_tag($mail, $mail_account->getId(), $option_attributes);
+		} // foreach
+	} // if
+	return select_box($name, $options, $attributes);
+} //  render_select_mail_account
 ?>

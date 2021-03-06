@@ -1,4 +1,11 @@
-<?php if($project->isNew()) { ?>
+<?php
+	$user = logged_user();
+	
+  	if($project->canDelete(logged_user())) {
+  		add_page_action(lang('delete'), "javascript:if(confirm(lang('confirm delete project'))) og.openLink('" . $project->getDeleteUrl() ."');", 'ico-delete');
+  	} // if
+  	
+if($project->isNew()) { ?>
 <form class="internalForm" action="<?php echo get_url('project', 'add') ?>" method="post">
 <?php } else { ?>
 <form class="internalForm" action="<?php echo $project->getEditUrl() ?>" method="post">
@@ -128,7 +135,7 @@
 	<?php } // if ?>
 	<!-- /permissions -->
 		
-	<?php if (isset ($projects) && count($projects) > 0) { ?>
+	<?php if (($project->getId() != $user->getPersonalProjectId() || $user->isAdministrator()) && isset ($projects) && count($projects) > 0) { ?>
 	<fieldset>
 	<legend><?php echo lang('parent workspace') ?></legend>
 		<?php echo select_project('project[parent_id]', $projects, $project->isNew()?active_project()?active_project()->getId():0:$project->getParentId(), null, true) ?>

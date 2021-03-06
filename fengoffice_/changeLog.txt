@@ -13,3 +13,36 @@ since 0.6.4
 	- Added support for Lucene/PHP based search. CP (currently not working after certain updates to the search)
 - Workspace hierarchy added
 - Upgrading shall henceforth be supported
+
+------> 0.6.6 released
+
+since 0.6.6
+- bug fixed in email view where HTML emails were not displayed correctly.
+- USE_JS_CACHE option implemented for faster javascript loading. MSz- USE_JS_CACHE option implemented for faster javascript loading. MSz
+- Email can be sent. MSz
+- Email can be replied. MSz
+- Bug: Object properties were displayed twice for webpages. MSz
+- Minor changes in add_task.php: Subtasks are now label Subtasks instead of Tasks; Milestone assignment has a little help text. MSz
+- Alt text for edit weblink corrected. MSz
+- Bug: Installation impossible with versions of MySql previous than 5.0.3. url field was VARCHAR (500), changed to text=======
+- Alt text for edit weblink corrected. MSz
+- Added reporting tab & charts support. CP
+- Added Dashboard. CP
+- Added "undo checkout" option. CP
+- "Checkout" column updated in documents panel. CP
+- Search: search by tags now working. CP
+- Search: added search in contacts. CP
+- Workspace crumbs added in header. CP
+- Header layout modified. CP
+- File upload window design updated. CP
+- Updated the display for content objects. CP
+- 'Classify email' display updated. CP
+- Overall CSS design slightly updated (amount of lines & borders reduced and tabs updated). CP
+- Search: added search by object properties.
+- New tasks GUI. ID
+- Messages can reside in multiple workspaces. ID
+- Documents can reside in multiple workspaces. ID
+- Bugfix: If a user has permissions on a workspace that is child of a workspace that the user can't access, it will now be displayed as a child of its first ancestor that the user can access.
+- Bugfix: Documents in OpenGoo now have an HTML extension. Documents downloaded from OpenGoo can now be viewed on any browser. Documents uploaded back to OpenGoo can now be edited in OpenGoo. 
+- SQL Logging added: the line define('DEBUG_DB', false); in config/config.php can be added manually to log all sql queries
+

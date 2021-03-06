@@ -21,6 +21,87 @@ class MilestoneController extends ApplicationController {
 		parent::__construct();
 		prepare_company_website_controller($this, 'website');
 	} // __construct
+	
+	function view_milestones() {
+		ajx_content_property("content");
+		$project_id = array_var($_GET, 'active_project', 0);
+		$project = Projects::findById($project_id);
+		$tag = active_tag();
+		$assigned_by = array_var($_GET, 'assigned_by', '');
+		$assigned_to = array_var($_GET, 'assigned_to', '');
+		$status = array_var($_GET, 'status', null);
+		
+		$assigned_to = explode(':', $assigned_to);
+		$to_company = array_var($assigned_to, 0, null);
+		$to_user = array_var($assigned_to, 1, null);
+		$assigned_by = explode(':', $assigned_by);
+		$by_company = array_var($assigned_by, 0, null);
+		$by_user = array_var($assigned_by, 1, null);
+		
+		$milestones = ProjectMilestones::getProjectMilestones($project, null, 'ASC', $tag, $to_company, $to_user, $by_user, $status == 'pending');
+
+		$milestones_bottom_complete = array();
+		foreach ($milestones as $milestone) {
+			if (!$milestone->isCompleted()) {
+				$milestones_bottom_complete[] = $milestone;
+			}
+		}
+		foreach ($milestones as $milestone) {
+			if ($milestone->isCompleted()) {
+				$milestones_bottom_complete[] = $milestone;
+			}
+		}
+		
+		tpl_assign('milestones', $milestones_bottom_complete);
+		tpl_assign('project', $project);
+	}
+	
+	function quick_add_milestone() {
+		ajx_current("empty");
+		$milestone = new ProjectMilestone();
+		$milestone_data = array_var($_POST, 'milestone');
+		$project = active_or_personal_project();
+		if(!ProjectMilestone::canAdd(logged_user(), $project)) {
+			flash_error(lang('no access permissions'));
+			return;
+		} // if
+		
+		if (is_array($milestone_data)) {
+			try {
+				$milestone->setFromAttributes($milestone_data);
+				$now = DateTimeValueLib::now();
+				$milestone->setDueDate(DateTimeValueLib::make(0, 0, 0, array_var($milestone_data, 'due_date_month', $now->getMonth()), array_var($milestone_data, 'due_date_day', $now->getDay()), array_var($milestone_data, 'due_date_year', $now->getYear())));
+				$milestone->setProjectId($project->getId());
+				// Set assigned to
+				$assigned_to = explode(':', array_var($milestone_data, 'assigned_to', ''));
+				$milestone->setAssignedToCompanyId(array_var($assigned_to, 0, 0));
+				$milestone->setAssignedToUserId(array_var($assigned_to, 1, 0));			
+				$milestone->setIsPrivate(false); // Not used, but defined as not null.
+				DB::beginWork();
+				$milestone->save();
+
+				ApplicationLogs::createLog($milestone, $project, ApplicationLogs::ACTION_ADD);
+				DB::commit();
+
+				ajx_extra_data(array("milestone" => array(
+					"id" => $milestone->getId(),
+					"title" => $milestone->getName(),
+					"assignedTo" => $milestone->getAssignedToName(),
+					"workspaces" => $milestone->getProject()->getName(),
+					"completed" => $milestone->isCompleted(),
+					"completedBy" => $milestone->getCompletedByName(),
+					"isLate" => $milestone->isLate(),
+					"daysLate" => $milestone->getLateInDays(),
+					"duedate" => $milestone->getDueDate()->getTimestamp()
+				)));
+				flash_success(lang('success add milestone', $milestone->getName()));
+			} catch(Exception $e) {
+				DB::rollback();
+				flash_error($e->getMessage());
+			} // try
+		} // if
+	}
+	
 //
 //	/**
 //	 * List all milestones in specific (this) project
@@ -64,6 +145,8 @@ class MilestoneController extends ApplicationController {
 			return;
 		} // if
 
+		ajx_extra_data(array("title" => $milestone->getName(), 'icon'=>'ico-milestone'));
+		ajx_set_no_toolbar(true);
 		tpl_assign('milestone', $milestone);
 	} // view
 
@@ -84,9 +167,13 @@ class MilestoneController extends ApplicationController {
 		} // if
 
 		$milestone_data = array_var($_POST, 'milestone');
+		$now = DateTimeValueLib::now();
+		$due_date = DateTimeValueLib::make(0, 0, 0, array_var($_GET, 'due_month', $now->getMonth()), array_var($_GET, 'due_day', $now->getDay()), array_var($_GET, 'due_year', $now->getYear()));
 		if(!is_array($milestone_data)) {
 			$milestone_data = array(
-				'due_date' => DateTimeValueLib::now(),
+				'due_date' => $due_date,
+				'name' => array_var($_GET, 'name', ''),
+				'assigned_to' => array_var($_GET, 'assigned_to', '0:0')
 			); // array
 		} // if
 		$milestone = new ProjectMilestone();
@@ -94,10 +181,10 @@ class MilestoneController extends ApplicationController {
 		tpl_assign('milestone', $milestone);
 
 		if (is_array(array_var($_POST, 'milestone'))) {
-			$milestone_data['due_date'] = DateTimeValueLib::make(0, 0, 0, array_var($_POST, 'milestone_due_date_month', 1), array_var($_POST, 'milestone_due_date_day', 1), array_var($_POST, 'milestone_due_date_year', 1970));
+			$milestone_data['due_date'] = DateTimeValueLib::make(0, 0, 0, array_var($_POST, 'milestone_due_date_month', $now->getMonth()), array_var($_POST, 'milestone_due_date_day', $now->getDay()), array_var($_POST, 'milestone_due_date_year', $now->getYear()));
 
 			$assigned_to = explode(':', array_var($milestone_data, 'assigned_to', ''));
-
+			$milestone->setIsPrivate(true); //Mandatory to set
 			$milestone->setFromAttributes($milestone_data);
 			if(!logged_user()->isMemberOfOwnerCompany()) $milestone->setIsPrivate(false);
 
@@ -232,21 +319,19 @@ class MilestoneController extends ApplicationController {
 	 * @return null
 	 */
 	function delete() {
+		ajx_current("empty");
 		$milestone = ProjectMilestones::findById(get_id());
 		if(!($milestone instanceof ProjectMilestone)) {
 			flash_error(lang('milestone dnx'));
-			ajx_current("empty");
 			return;
 		} // if
 
 		if(!$milestone->canDelete(logged_user())) {
 			flash_error(lang('no access permissions'));
-			ajx_current("empty");
 			return;
 		} // if
 
 		try {
-
 			DB::beginWork();
 			$milestone->delete();
 			ApplicationLogs::createLog($milestone, $milestone->getProject(), ApplicationLogs::ACTION_DELETE);
@@ -257,7 +342,6 @@ class MilestoneController extends ApplicationController {
 		} catch(Exception $e) {
 			DB::rollback();
 			flash_error(lang('error delete milestone'));
-			ajx_current("empty");
 		} // try
 	} // delete
 
@@ -269,16 +353,15 @@ class MilestoneController extends ApplicationController {
 	 * @return null
 	 */
 	function complete() {
+		ajx_current("empty");
 		$milestone = ProjectMilestones::findById(get_id());
 		if(!($milestone instanceof ProjectMilestone)) {
 			flash_error(lang('milestone dnx'));
-			ajx_current("empty");
 			return;
 		} // if
 
 		if(!$milestone->canChangeStatus(logged_user())) {
 			flash_error(lang('no access permissions'));
-			ajx_current("empty");
 			return;
 		} // if
 
@@ -293,11 +376,9 @@ class MilestoneController extends ApplicationController {
 			DB::commit();
 
 			flash_success(lang('success complete milestone', $milestone->getName()));
-			$this->redirectToReferer($milestone->getViewUrl());
 		} catch(Exception $e) {
 			DB::rollback();
 			flash_error(lang('error complete milestone'));
-			ajx_current("empty");
 		} // try
 
 	} // complete
@@ -310,16 +391,15 @@ class MilestoneController extends ApplicationController {
 	 * @return null
 	 */
 	function open() {
+		ajx_current("empty");
 		$milestone = ProjectMilestones::findById(get_id());
 		if(!($milestone instanceof ProjectMilestone)) {
 			flash_error(lang('milestone dnx'));
-			ajx_current("empty");
 			return;
 		} // if
 
 		if(!$milestone->canChangeStatus(logged_user())) {
 			flash_error(lang('no access permissions'));
-			ajx_current("empty");
 			return;
 		} // if
 
@@ -334,12 +414,10 @@ class MilestoneController extends ApplicationController {
 			DB::commit();
 
 			flash_success(lang('success open milestone', $milestone->getName()));
-			$this->redirectToReferer($milestone->getViewUrl());
 
 		} catch(Exception $e) {
 			DB::rollback();
 			flash_error(lang('error open milestone'));
-			ajx_current("empty");
 		} // try
 
 	} // open

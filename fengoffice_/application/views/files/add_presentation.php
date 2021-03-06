@@ -22,8 +22,7 @@
 <?php
 	if (!$file->isNew()) {
 		$url = str_replace("&amp;", "&", get_url('files', 'save_presentation', array(
-				'id' => $file->getId(), 
-				'active_project' =>  $file->getProjectId())));
+				'id' => $file->getId())));
 		$filename = $file->getFilename();
 		$slimContent = escapeSLIM($file->getFileContent());
 	} else {

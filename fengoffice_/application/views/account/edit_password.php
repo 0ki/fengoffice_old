@@ -7,7 +7,7 @@
   } // if
   
   if($user->canUpdatePermissions(logged_user())) {
-  	add_page_action(lang('permissions'), $user->getUpdatePermissionsUrl(), 'ico-properties');
+  	add_page_action(lang('permissions'), $user->getUpdatePermissionsUrl(), 'ico-permissions');
   } // if
 
 ?>

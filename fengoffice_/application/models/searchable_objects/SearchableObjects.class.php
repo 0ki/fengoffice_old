@@ -45,7 +45,7 @@
         return array($items, $pagination);
     } // searchPaginated
     
-    static function searchByType($search_for, $project_csvs, $object_type = '', $include_private = false, $items_per_page = 10, $current_page = 1) {
+    static function searchByType($search_for, $project_csvs, $object_type = '', $include_private = false, $items_per_page = 10, $current_page = 1, $columns_csv = null) {
         $remaining = 0;
     	if (LUCENE_SEARCH) {
         	throw new Exception("Not implemented");
@@ -54,9 +54,13 @@
       		$pagination = new DataPagination(count($hits), $items_per_page, $current_page);
       		$items = SearchableObjects::doLuceneSearch($hits, $pagination->getItemsPerPage(), $pagination->getLimitStart());
         } else {
-		    $conditions = SearchableObjects::getSearchConditions($search_for, $project_csvs, true, $object_type);
-		    $pagination = new DataPagination(SearchableObjects::countUniqueObjects($conditions), $items_per_page, $current_page);
-		    $items = SearchableObjects::doSearch($conditions, $pagination->getItemsPerPage(), $pagination->getLimitStart());
+		    $conditions = SearchableObjects::getSearchConditions($search_for, $project_csvs, true, $object_type, $columns_csv);
+		    $count = SearchableObjects::countUniqueObjects($conditions);
+		    $pagination = new DataPagination($count, $items_per_page, $current_page);
+		    if ($count > 0)
+		    	$items = SearchableObjects::doSearch($conditions, $pagination->getItemsPerPage(), $pagination->getLimitStart());
+		    else
+		    	$items = array();
 		}
         return array($items, $pagination);
     } // searchPaginated
@@ -79,16 +83,20 @@
     * @param string $project_csvs Search in this project
     * @return array
     */
-    function getSearchConditions($search_for, $project_csvs, $include_private = false, $object_type = '') {
-      $otSearch = '';	
-      if ($object_type != '')
-      	$otSearch = " AND `rel_object_manager` = '$object_type'";
-      
-      if($include_private) {
-        return DB::prepareString('MATCH (`content`) AGAINST (? IN BOOLEAN MODE) AND `project_id` in (' . $project_csvs . ')' . $otSearch, array($search_for));
-      } else {
-        return DB::prepareString('MATCH (`content`) AGAINST (? IN BOOLEAN MODE) AND `is_private` = ? AND `project_id` in (' . $project_csvs . ')' . $otSearch, array($search_for,  false));
-      } // if
+    function getSearchConditions($search_for, $project_csvs, $include_private = false, $object_type = '', $columns_csv = null) {
+    	$otSearch = '';
+    	$columnsSearch = '';
+    	if (!is_null($columns_csv))
+    		$columnsSearch = " AND `column_name` in (" . $columns_csv . ")";
+    		
+    	if ($object_type != '')
+    		$otSearch = " AND `rel_object_manager` = '$object_type'";
+    
+    	if($include_private) {
+    		return DB::prepareString('MATCH (`content`) AGAINST (? IN BOOLEAN MODE) AND (`project_id` in (' . $project_csvs . ') OR project_id = null)' . $otSearch . $columnsSearch, array($search_for));
+    	} else {
+    		return DB::prepareString('MATCH (`content`) AGAINST (? IN BOOLEAN MODE) AND `is_private` = ? AND (`project_id` in (' . $project_csvs . ') or `project_id` = null)' . $otSearch . $columnsSearch, array($search_for,  false));
+    	} // if
     } // getSearchConditions
     
     /* Prepare search conditions string based on input params
@@ -149,7 +157,7 @@
     */
     function doSearch($conditions, $limit = null, $offset = null) {
       $table_name = SearchableObjects::instance()->getTableName(true);
-      $tags_table_name = Tags::instance()->getTableName();
+      //$tags_table_name = Tags::instance()->getTableName();
       
       $limit_string = '';
       if((integer) $limit > 0) {
@@ -174,7 +182,7 @@
         if(!isset($loaded[$manager_class . '-' . $object_id]) || !($loaded[$manager_class . '-' . $object_id])) {
           if(class_exists($manager_class)) {
             $object = get_object_by_manager_and_id($object_id, $manager_class);
-            if($object instanceof ProjectDataObject) {
+            if($object instanceof ApplicationDataObject) {
               $loaded[$manager_class . '-' . $object_id] = true;
               $objects[] = $object;
             } // if
@@ -193,11 +201,11 @@
     */
     function countUniqueObjects($conditions) {
       $table_name = SearchableObjects::instance()->getTableName(true);
-      $tags_table_name = Tags::instance()->getTableName();
+      //$tags_table_name = Tags::instance()->getTableName();
       $where = '';
       if(trim($conditions <> '')) $where = "WHERE $conditions";
       
-      $sql = "SELECT `rel_object_manager`, `rel_object_id` FROM $table_name $where";
+      $sql = "SELECT distinct `rel_object_manager`, `rel_object_id` FROM $table_name $where";
       $result = DB::executeAll($sql);
       if(!is_array($result) || !count($result)) return 0;
       
@@ -219,7 +227,7 @@
     * @param ProjectDataObject $object
     * @return boolean
     */
-    static function dropContentByObject(ProjectDataObject $object) {
+    static function dropContentByObject(ApplicationDataObject $object) {
     	if (!LUCENE_SEARCH)
     		return SearchableObjects::delete(array('`rel_object_manager` = ? AND `rel_object_id` = ?', get_class($object->manager()), $object->getObjectId()));
     	else {
@@ -233,9 +241,25 @@
     * @param ProjectDataObject $object
     * @return boolean
     */
-    static function dropContentByObjectColumn(ProjectDataObject $object, $column = '') {
+    static function dropContentByObjectColumn(ApplicationDataObject $object, $column = '') {
     	if (!LUCENE_SEARCH)
     		return SearchableObjects::delete(array('`rel_object_manager` = ? AND `rel_object_id` = ? AND `column_name` = '. "'". $column . "'" , get_class($object->manager()), $object->getObjectId(), $column));
+    	else {
+    		return LuceneDB::DeleteFromIndex($object, false);
+    	}
+    } // dropContentByObject
+    
+    /**
+    * Drop columns content from table related to $object
+    *
+    * @param ApplicationDataObject $object
+    * @return boolean
+    */
+    static function dropContentByObjectColumns(ApplicationDataObject $object, $columns = array()) {
+    	$columns_csv = "'" . implode("','",$columns) . "'";
+    	
+    	if (!LUCENE_SEARCH)
+    		return SearchableObjects::delete(array('`rel_object_manager` = ? AND `rel_object_id` = ? AND `column_name` in ('. $columns_csv . ')' , get_class($object->manager()), $object->getObjectId()));
     	else {
     		return LuceneDB::DeleteFromIndex($object, false);
     	}

@@ -25,18 +25,20 @@ function showProjectTagsDiv()
     		} //if
     	?>];
     </script>
-<div style="padding:7px">
+    <form id='formClassify' name='formClassify' style='height:100%;background-color:white'  class="internalForm" action="<?php echo get_url('mail','classify', array('id'=>$email->getId())) ?>" method="post">
+    
 <div class="emailClassify">
-<div class="coContainer">
-  <div class="coHeader">
-  <div class="coHeaderUpperRow">
-  	<div class="coTitle"><?php echo lang('classify email subject', $email->getSubject()) ?></div>
+  <div class="coInputHeader">
+  <div class="coInputHeaderUpperRow">
+  	<div class="coInputTitle"><?php echo lang('classify email subject', $email->getSubject()) ?></div>
   </div>
   </div>
-  <div class="coMainBlock">
-  <div class="coContent">
-  <form id='formClassify' name='formClassify' class="internalForm" action="<?php echo get_url('mail','classify', array('id'=>$email->getId())) ?>" method="post">
-<fieldset>
+  
+  
+<div class="coInputSeparator"></div>
+<div class="coInputMainBlock">
+
+  <fieldset>
 <legend><?php echo lang('project') ?></legend>
 <?php echo select_project('classification[project_id]', $projects, array_var($classification_data, 'project_id'), array('id' => 'classifyFormProject')); ?>
 <?php echo label_tag(lang('tags')) ?>
@@ -58,14 +60,6 @@ function showProjectTagsDiv()
 <?php } ?>
 
 <?php echo submit_button(lang('classify email')) ?>
+  </div>
+</div>
 </form>
-  </div>
-  </div>
-</div>
-</div>
-</div>
-  
-  
-<div id="divClassify">
-
-</div>

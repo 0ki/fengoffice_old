@@ -23,6 +23,97 @@
 	  }
     } // __construct
     
+    function reply_mail(){
+    	$this->setTemplate('add_mail');
+    	$mail = new MailContent();
+    	if(array_var($_GET,'id','') == ''){
+			flash_error('Invalid parameter.');
+			ajx_current("empty");    		
+    	}
+    	$original_mail = MailContents::findById(get_id('id',$_GET));    	
+    	if(! $original_mail){
+			flash_error('Invalid parameter.');
+			ajx_current("empty");    		
+    	}
+		$mail_data = array_var($_POST, 'mail', null);
+     	if(!is_array($mail_data)) {     		
+     		$re_subject = str_starts_with($original_mail->getSubject(),'Re:')?$original_mail->getSubject():'Re: '.$original_mail->getSubject();
+	        $mail_data = array(
+	          'to' => $original_mail->getFrom(),
+	          'subject' => $re_subject,
+	          'account_id' => $original_mail->getAccountId()
+	        ); // array
+      	} // if
+		$mail_accounts = MailAccounts::getMailAccountsByUser(logged_user());
+		tpl_assign('mail', $mail);
+		tpl_assign('mail_data', $mail_data);
+		tpl_assign('mail_accounts', $mail_accounts);
+    }
+    
+    /**
+	 * Add single mail
+	 *
+	 * @access public
+	 * @param void
+	 * @return null
+	 */
+	function add_mail() {
+		
+		$mail_accounts = MailAccounts::getMailAccountsByUser(logged_user());
+		if (!is_array($mail_accounts)){
+			flash_error(lang('no mail accounts set'));
+			ajx_current("empty");
+			return;
+		}
+		
+		$mail = new MailContent();
+		$mail_data = array_var($_POST, 'mail');
+		tpl_assign('mail', $mail);
+		tpl_assign('mail_data', $mail_data);
+		tpl_assign('mail_accounts', $mail_accounts);
+
+		// Form is submited
+		if(is_array($mail_data)) {
+			$account = 	MailAccounts::findById(array_var($mail_data,'account_id'));
+			$to = array_var($mail_data,'to');
+			$subject = array_var($mail_data,'subject');
+			$body = array_var($mail_data,'body');
+			$cc = array_var($mail_data,'cc');
+			$bcc = array_var($mail_data,'bcc');
+			$mail->setFromAttributes($mail_data);
+//			$assigned_to = explode(':', array_var($mail_data, 'assigned_to', ''));
+//			$mail->setAssignedToCompanyId(array_var($assigned_to, 0, 0));
+//			$mail->setAssignedToUserId(array_var($assigned_to, 1, 0));
+//			$mail->setProjectId(active_or_personal_project()->getId());
+//			$mail->setIsPrivate($mail_list->getIsPrivate());
+			try {
+				$utils = new MailUtilities();
+				if ($utils->sendMail($account->getSmtpServer(),$to,$account->getEmail(),$subject,$body,$cc,$bcc,$account->getSmtpPort(),$account->smtpUsername(),$account->smtpPassword())){
+					$mail->setSentDate( DateTimeValueLib::now());
+					DB::beginWork();
+						$mail->setUid('UID');
+						$mail->setIsPrivate(true);
+						$mail->save();
+						$mail->setTagsFromCSV(array_var($mail_data, 'tags'));
+	//					$mail_list->attachmail($mail);
+	//			  		$mail->save_properties($mail_data);
+				 	 	ApplicationLogs::createLog($mail, active_or_personal_project(), ApplicationLogs::ACTION_ADD);
+			  		DB::commit();
+			  		flash_success(lang('success add mail'));
+					ajx_current("start");
+				}
+				else {
+					flash_error('Error while sending mail. Possibly wrong SMTP settings.');
+					ajx_current("empty");					
+				}
+			} catch(Exception $e) {
+				DB::rollback();
+				flash_error($e->getMessage());
+				ajx_current("empty");
+			} // try
+		} // if
+	} // add_mail
+	
     /**
      * View specific email
      *
@@ -30,7 +121,6 @@
     function view()
     {
     	$this->addHelper('textile');
-    	
     	$email = MailContents::findById(get_id());
     	if (!$email instanceof MailContent){
     		flash_error(lang('email dnx'));
@@ -51,6 +141,8 @@
         MailUtilities::parseMail($email->getContent(),$decoded,$parsedEmail,$warnings);
     	tpl_assign('email', $email);
         tpl_assign('parsedEmail', $parsedEmail);
+		ajx_extra_data(array("title" => $email->getSubject(), 'icon'=>'ico-email'));
+		ajx_set_no_toolbar(true);
         if ($email->getIsClassified()){
     		tpl_assign('project', $email->getProject());
         }
@@ -241,6 +333,7 @@
       tpl_assign('parsedEmail', $parsedEmail);
     }
     
+    
     function checkFileWritability($classification_data, $parsedEmail){
     	$c = 0;
     	while(isset($classification_data["att_".$c]))
@@ -262,11 +355,14 @@
     	return true;
     }
     
+    
     function checkmail(){
     	$accounts = MailAccounts::findAll(array(
     		"conditions" => "`user_id` = " . logged_user()->getId()
     	));
+    	
     	MailUtilities::getmails($accounts, $err, $succ, $errAccounts, $mailsReceived);
+    	
         $errMessage = lang('success check mail', $mailsReceived);
     	if ($err > 0){
     		foreach($errAccounts as $error) {
@@ -309,6 +405,7 @@
           $mailAccount_data['user_id'] = logged_user()->getId();
           $mailAccount->setFromAttributes($mailAccount_data);
           $mailAccount->setPassword(MailUtilities::ENCRYPT_DECRYPT($mailAccount->getPassword()));
+          $mailAccount->setSmtpPassword(MailUtilities::ENCRYPT_DECRYPT($mailAccount->getSmtpPassword()));
           
           DB::beginWork();
           $mailAccount->save();
@@ -365,7 +462,12 @@
           'server' => $mailAccount->getServer(),
           'is_imap' => $mailAccount->getIsImap(),
           'incoming_ssl' => $mailAccount->getIncomingSsl(),
-          'incoming_ssl_port' => $mailAccount->getIncomingSslPort()
+          'incoming_ssl_port' => $mailAccount->getIncomingSslPort(),
+          'smtp_server' => $mailAccount->getSmtpServer(),
+          'smtp_port' => $mailAccount->getSmtpPort(),
+          'smtp_username' => $mailAccount->getSmtpUsername(),
+          'smtp_password' => MailUtilities::ENCRYPT_DECRYPT($mailAccount->getSmtpPassword()),
+          'smtp_use_auth' => $mailAccount->getSmtpUseAuth()
         ); // array
       } // if
       
@@ -376,13 +478,21 @@
         try {
           $mailAccount->setFromAttributes($mailAccount_data);
           $mailAccount->setPassword(MailUtilities::ENCRYPT_DECRYPT($mailAccount->getPassword()));
+          $mailAccount->setSmtpPassword(MailUtilities::ENCRYPT_DECRYPT($mailAccount->getSmtpPassword()));
           
           DB::beginWork();
           $mailAccount->save();
           DB::commit();
           
+
+	        evt_add("mail account edited", array(
+					"id" => $mailAccount->getId(),
+					"name" => $mailAccount->getName(),
+					"email" => $mailAccount->getEmail()
+	        ));
+          
           flash_success(lang('success edit mail account', $mailAccount->getName()));
-      	  ajx_current("empty");
+      	  ajx_current("start");
           
         // Error...
         } catch(Exception $e) {
@@ -443,16 +553,23 @@
     	$mails = $account->getMailContents();
     	try
     	{
+    		$accId = $account->getId();
+    		$accName = $account->getName();
+    		$accEmail = $account->getEmail();
     		
     		DB::beginWork();
-    		foreach ($mails as $mail){
-    			$mail->delete();
-    		}
     		$account->delete();
     		DB::commit();
 
+	        evt_add("mail account deleted", array(
+					"id" => $accId,
+					"name" => $accName,
+					"email" => $accEmail
+	        ));
+	        
     		flash_success(lang('success delete mail account'));
       		ajx_current("start");
+      		
     	} catch(Exception $e) {
     		DB::rollback();
     		flash_error(lang('error delete mail account'));

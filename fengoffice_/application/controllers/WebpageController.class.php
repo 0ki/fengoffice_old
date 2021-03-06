@@ -89,7 +89,7 @@ class WebpageController extends ApplicationController {
 
 				$project_id = $webpage_data["project_id"];
 				$webpage->setProjectId($project_id);
-
+				$webpage->setIsPrivate(false);
 				// Options are reserved only for members of owner company
 				if(!logged_user()->isMemberOfOwnerCompany()) {
 					$webpage->setIsPrivate(false);
@@ -282,7 +282,7 @@ class WebpageController extends ApplicationController {
 		}
 		$permission_str = ' AND (' . permissions_sql_for_listings(ProjectWebpages::instance(),
 							ACCESS_LEVEL_READ, 
-							logged_user()->getId()) . ')';
+							logged_user()) . ')';
 
 		if ($isProjectView) {
 			$pids = $project->getAllSubWorkspacesCSV(true, logged_user());

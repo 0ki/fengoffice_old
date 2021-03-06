@@ -21,8 +21,9 @@
       
         // Current...
         if($i == $advanced_pagination_object->getCurrentPage()) {
-          
-          $advanced_pagination_urls[] = "\n" . '<select onchange="location = this.value">';
+        $advanced_pagination_urls[] = "($i)";
+          /*
+          $advanced_pagination_urls[] = "\n" . '<select onchange="location=og.getUrl(this.value)">';
           for($j = 1; $j <= $advanced_pagination_object->getTotalPages(); $j++) {
             
             if($j == $advanced_pagination_object->getCurrentPage()) {
@@ -32,7 +33,7 @@
             } // if
           } // for
           $advanced_pagination_urls[count($advanced_pagination_urls) - 1] .= "\n" . '</select>';
-          
+          */
         // Not current...
         } else {
           $advanced_pagination_urls[] = '<a class="internalLink" href="' . str_replace($advanced_pagination_page_placeholder, $i, $advanced_pagination_url_base) . '">' . $i . '</a>';

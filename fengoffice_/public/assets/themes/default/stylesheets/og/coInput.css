@@ -27,6 +27,7 @@
 
 .coInputMainBlock {
 	padding: 5px 15px;
+	background-color:white;
 }
 
 .coInputTags {
@@ -52,4 +53,16 @@
 .message .coInputHeader {
     background: #D0DEF0;
   	/*color: #99BBE8;*/
+}
+
+.event .coInputHeader {
+    background: #D0DEF0;
+    text-align: left;
+  	/*color: #99BBE8;*/
+}
+
+.event .coInputMainBlock {
+	padding: 5px 15px;
+	background-color:white;
+	text-align:left;
 }

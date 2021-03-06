@@ -14,7 +14,20 @@
     * @var array
     * @static
     */
-    static private $columns = array('id' => DATA_TYPE_INTEGER, 'milestone_id' => DATA_TYPE_INTEGER, 'project_id' => DATA_TYPE_INTEGER, 'title' => DATA_TYPE_STRING, 'text' => DATA_TYPE_STRING, 'additional_text' => DATA_TYPE_STRING, 'is_important' => DATA_TYPE_BOOLEAN, 'is_private' => DATA_TYPE_BOOLEAN, 'comments_enabled' => DATA_TYPE_BOOLEAN, 'anonymous_comments_enabled' => DATA_TYPE_BOOLEAN, 'created_on' => DATA_TYPE_DATETIME, 'created_by_id' => DATA_TYPE_INTEGER, 'updated_on' => DATA_TYPE_DATETIME, 'updated_by_id' => DATA_TYPE_INTEGER);
+    static private $columns = array(
+    	'id' => DATA_TYPE_INTEGER, 
+    	'milestone_id' => DATA_TYPE_INTEGER,  
+    	'title' => DATA_TYPE_STRING, 
+    	'text' => DATA_TYPE_STRING, 
+    	'additional_text' => DATA_TYPE_STRING, 
+    	'is_important' => DATA_TYPE_BOOLEAN, 
+    	'is_private' => DATA_TYPE_BOOLEAN, 
+    	'comments_enabled' => DATA_TYPE_BOOLEAN, 
+    	'anonymous_comments_enabled' => DATA_TYPE_BOOLEAN, 
+    	'created_on' => DATA_TYPE_DATETIME, 
+    	'created_by_id' => DATA_TYPE_INTEGER, 
+    	'updated_on' => DATA_TYPE_DATETIME, 
+    	'updated_by_id' => DATA_TYPE_INTEGER);
   
     /**
     * Construct

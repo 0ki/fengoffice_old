@@ -49,7 +49,7 @@ class MailAccount extends BaseMailAccount {
 	 *
 	 * @access public
 	 * @param void
-	 * @return one or MailContents objects
+	 * @return one or more MailContents objects
 	 */
 	function getMailContents() {
 		return MailContents::findAll(array(
@@ -206,5 +206,50 @@ class MailAccount extends BaseMailAccount {
 		return $this->getEditUrl();
 	} // getObjectUrl
 
+	
+	function delete(){
+		$mails = $this->getMailContents();
+		foreach ($mails as $mail){
+			$mail->delete();
+		}
+		parent::delete();
+	}
+	
+	
+	/**
+	 * Return smtp username that should be used according to smtp_use_Auth settings  
+	 *
+	 * @return unknown
+	 */
+	function smtpUsername(){
+		$auth_level = $this->getSmtpUseAuth(); // 0 is no authentication, 1 is same as pop, 2 is use smtp specific settings
+		if ($auth_level  == 0)	{
+			return null;
+		}
+		else if ($auth_level == 1)	{
+			return $this->getEmail();
+		}
+		else if ($auth_level == 2)	{
+			return $this->getSmtpUsername();
+		}
+	}
+	
+	/**
+	 * Return smtp password that should be used according to smtp_use_Auth settings  
+	 *
+	 * @return unknown
+	 */
+	function smtpPassword(){
+		$auth_level = $this->getSmtpUseAuth(); // 0 is no authentication, 1 is same as pop, 2 is use smtp specific settings
+		if ($auth_level  == 0)	{
+			return null;
+		}
+		else if ($auth_level == 1)	{
+			return $this->getPassword();
+		}
+		else if ($auth_level == 2)	{
+			return $this->getSmtpPassword();
+		}
+	}
 }
 ?>

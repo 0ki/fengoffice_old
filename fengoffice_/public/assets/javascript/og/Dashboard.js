@@ -66,10 +66,17 @@ og.Dashboard = function() {
 	function renderName(value, p, r) {
 		if (r.data.type == "weblink"){
 			return String.format('<a href="#" onclick="window.open(\'{1}\'); return false">{0}</a>', value, r.data.url);
-		} else
-		return String.format(
-			'<a href="#" onclick="og.openLink(\'{2}\')">{0}</a>',
-			value, r.data.name, og.getUrl('object', 'view', {id: r.data.object_id, manager:r.data.manager}));
+		} else{
+			var tabpanel = '';
+			switch (r.data.type){
+				case 'message':
+					tabpanel = 'messages';
+			}
+			
+			return String.format(
+				'<a href="#" onclick="og.openLink(\'{2}\', {caller:\'{1}\'})">{0}</a>',
+				value, tabpanel, og.getUrl('object', 'view', {id: r.data.object_id, manager:r.data.manager}));
+		}
 	}
 
 	function renderType(value, p, r){
@@ -277,7 +284,7 @@ og.Dashboard = function() {
 					og.openLink(url/*, {caller: 'calendar-panel'}*/);
 				}},
 				{text: lang('task'), iconCls: 'ico-task', handler: function() {
-					var url = og.getUrl('task', 'add_list');
+					var url = og.getUrl('task', 'add_task');
 					og.openLink(url/*, {caller: 'tasks-panel'}*/);
 				}},
 				{text: lang('milestone'), iconCls: 'ico-milestone', handler: function() {
@@ -423,9 +430,9 @@ og.Dashboard = function() {
     	}
 	}, this);
 	og.eventManager.addListener("workspace changed", function(ws) {
-		if (this.store.lastOptions) {
-			cm.setHidden(cm.getIndexById('project'), this.store.lastOptions.params.active_project != 0);
-		}
+		//if (this.store.lastOptions) {
+		//	cm.setHidden(cm.getIndexById('project'), this.store.lastOptions.params.active_project != 0);
+		//}
 	}, this);
 	
 	//this.load();

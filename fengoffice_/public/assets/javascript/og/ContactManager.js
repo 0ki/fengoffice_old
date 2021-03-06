@@ -322,6 +322,7 @@ og.ContactManager = function() {
         closable: true,
 		stripeRows: true,
         loadMask: true,
+		style: "padding:7px;",
         bbar: new Ext.PagingToolbar({
             pageSize: og.pageSize,
             store: this.store,

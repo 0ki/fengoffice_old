@@ -72,7 +72,7 @@ class Env {
 
 		// Check error instance...
 		if(!instance_of($error, 'Error')) {
-			print '$error is not valid <i>Error</i> instance!';
+			print '$error is not a valid <i>Error</i> instance!' . $error;
 			return;
 		} // if
 
@@ -119,6 +119,7 @@ class Env {
 			$response = AjaxResponse::instance();
 			if (!$response->hasCurrent()) {
 				// set the current content
+				//WITH COMPRESSION: $response->setCurrentContent("html", str_replace("\t", '', str_replace("\r\n",'',$controller->getContent())), page_actions(), ajx_get_panel($controller_class, $action));
 				$response->setCurrentContent("html", $controller->getContent(), page_actions(), ajx_get_panel($controller_class, $action));
 			}
 			$response->setEvents(evt_pop());

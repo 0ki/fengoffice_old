@@ -29,6 +29,22 @@ class ProjectController extends ApplicationController {
 		$this->forward('overview');
 	} // index
 
+	function get_subws(){
+		
+		if (active_project() instanceof Project){
+			if(!logged_user()->isProjectUser(active_project())) {
+				flash_error(lang('no access permissions'));
+				ajx_current("empty");
+				return;
+			} // if
+			
+			tpl_assign('projects', active_project()->getSubWorkspaces());
+		} else {
+			
+			tpl_assign('projects', logged_user()->getWorkspaces(false,0));
+		}
+	}
+	
 	/**
 	 * Show project overview
 	 *
@@ -336,7 +352,7 @@ class ProjectController extends ApplicationController {
 								$continue = true;
 								foreach ($auto_assign_users as $already_added_user){
 									if($user->getId() == $already_added_user->getId()){
-										$continue= false;
+										$continue= false; //if the user was auto-assigned we do not want to add him again.
 									}
 								}
 								if($continue){
@@ -369,12 +385,14 @@ class ProjectController extends ApplicationController {
 				ApplicationLogs::createLog($project, null, ApplicationLogs::ACTION_ADD, false, true);
 				DB::commit();
 				
-				evt_add("workspace added", array(
-					"id" => $project->getId(),
-					"name" => $project->getName(),
-					"color" => $project->getColor(),
-					"parent" => $project->getParentId()
-				));
+				if (logged_user()->isProjectUser($project)) {
+					evt_add("workspace added", array(
+						"id" => $project->getId(),
+						"name" => $project->getName(),
+						"color" => $project->getColor(),
+						"parent" => $project->getParentId()
+					));
+				}
 
 				flash_success(lang('success add project', $project->getName()));
 				ajx_current("start");
@@ -508,12 +526,14 @@ class ProjectController extends ApplicationController {
 				ApplicationLogs::createLog($project, null, ApplicationLogs::ACTION_EDIT, false, true);
 				DB::commit();
 
-				evt_add("workspace edited", array(
-					"id" => $project->getId(),
-					"name" => $project->getName(),
-					"color" => $project->getColor(),
-					"parent" => $project->getParentId()
-				));
+				if (logged_user()->isProjectUser($project)) {
+					evt_add("workspace edited", array(
+						"id" => $project->getId(),
+						"name" => $project->getName(),
+						"color" => $project->getColor(),
+						"parent" => $project->getParentId()
+					));
+				}
 				
 				flash_success(lang('success edit project', $project->getName()));
 				ajx_current("start");
@@ -777,26 +797,41 @@ class ProjectController extends ApplicationController {
 	 */
 	function list_projects() {
 		ajx_current("empty");
-		//$this->setLayout("json");
-		//$this->setTemplate(get_template_path("json"));
 		
-		$ps = array();
-		$all_projects=array();
 		$parent = array_var($_GET, 'parent', 0);
-		$all_projects = logged_user()->getWorkspaces(true, $parent);
-		if (isset($all_projects)) {
-			foreach ($all_projects as $p) {
-				$ps[] = array(
-					"id" => $p->getId(),
-					"name" => $p->getName(),
-					"color" => $p->getColor(),
-					"parent" => $p->getParentId()
+		$all_ws = logged_user()->getWorkspaces(true);
+		if (!is_array($all_ws)) $all_ws = array();
+		
+		$wsset = array();
+		foreach ($all_ws as $w) {
+			$wsset[$w->getId()] = true;
+		}
+		$ws = array();
+		foreach ($all_ws as $w) {
+			$toBeAdded = false;
+			if ($w->getParentId() == $parent) {
+				$toBeAdded = true;
+			} else {//if ($wsset[$w->getParentId()] !== true) {
+				$x = $w;
+				while ($x instanceof Project && $x->getParentId() != $parent && !isset($wsset[$x->getParentId()])) {
+					$x = $x->getParentWorkspace();
+				}
+				if ($x instanceof Project && $x->getParentId() == $parent) {
+					$toBeAdded = true;
+				}
+			}
+			if ($toBeAdded) {
+				$ws[] = array(
+					"id" => $w->getId(),
+					"name" => $w->getName(),
+					"color" => $w->getColor(),
+					"parent" => $parent,
+					"realParent" => $w->getParentId()
 				);
 			}
 		}
 		
-		//tpl_assign('object', $ps);
-		ajx_extra_data(array('workspaces' => $ps));
+		ajx_extra_data(array('workspaces' => $ws));
 	}
 	
 	function move() {

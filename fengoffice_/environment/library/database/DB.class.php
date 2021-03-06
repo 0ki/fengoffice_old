@@ -136,7 +136,17 @@
       array_shift($arguments);
       $arguments = count($arguments) ? array_flat($arguments) : null;
       
-      return self::connection()->execute($sql, $arguments);
+      if (defined('DEBUG_DB') && DEBUG_DB)
+      	$start = microtime(true);
+      
+      $result = self::connection()->execute($sql, $arguments);
+      
+      if (defined('DEBUG_DB') && DEBUG_DB){
+      	$end = microtime(true);
+      	Logger::log(($end - $start) . " - " .  DB::prepareString($sql, $arguments));
+      }
+      
+      return $result;
     } // execute
     
     /**
@@ -152,7 +162,17 @@
       array_shift($arguments);
       $arguments = count($arguments) ? array_flat($arguments) : null;
       
-      return self::connection()->executeOne($sql, $arguments);
+      if (defined('DEBUG_DB') && DEBUG_DB)
+      	$start = microtime(true);
+      
+      $result = self::connection()->executeOne($sql, $arguments);
+      
+      if (defined('DEBUG_DB') && DEBUG_DB){
+      	$end = microtime(true);
+      	Logger::log(($end - $start) . " - " .  DB::prepareString($sql, $arguments));
+      }
+      
+      return $result;
     } // executeOne
     
     /**
@@ -168,7 +188,19 @@
       array_shift($arguments);
       $arguments = count($arguments) ? array_flat($arguments) : null;
       
-      return self::connection()->executeAll($sql, $arguments);
+      if (defined('DEBUG_DB') && DEBUG_DB)
+      	$start = microtime(true);
+      
+      if (defined('DEBUG_DB') && DEBUG_DB)
+      	Logger::log($sql);
+      $result = self::connection()->executeAll($sql, $arguments);
+    
+      if (defined('DEBUG_DB') && DEBUG_DB){
+      	$end = microtime(true);
+      	Logger::log(($end - $start) . " - " .  DB::prepareString($sql, $arguments));
+      }
+      
+      return $result;
     } // executeAll
     
     /**

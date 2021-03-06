@@ -8,9 +8,18 @@
 */
 class ProjectFiles extends BaseProjectFiles {
     
+	private static $workspace_string;
+	
 	const ORDER_BY_NAME = 'name';
 	const ORDER_BY_POSTTIME = 'dateCreated';
 	const ORDER_BY_MODIFYTIME = 'dateUpdated';
+	
+	public function __construct() {
+		parent::__construct();
+		if (!self::$workspace_string) {
+			self::$workspace_string = '`id` IN (SELECT `object_id` FROM `'.TABLE_PREFIX.'workspace_objects` WHERE `object_manager` = \'ProjectFiles\' AND workspace_id` = ?)';
+		}
+	}
 	
 	/**
 	* Array of types that will script treat as images (provide thumbnail, add 
@@ -55,12 +64,13 @@ class ProjectFiles extends BaseProjectFiles {
 			$files_per_page = 10;
 		} // if		
 		
-		if ($project instanceof Project) {
+		if ($project instanceof Project){
 			$pids = $project->getAllSubWorkspacesCSV(true, logged_user());
 		} else {
 			$pids = logged_user()->getActiveProjectIdsCSV();
 		}
-		$projectstr = " AND `project_id` IN ($pids) ";
+		$projectstr = " AND `id` IN (SELECT `object_id` FROM `".TABLE_PREFIX."workspace_objects` WHERE `object_manager` = 'ProjectFiles' && `workspace_id` IN ($pids)) ";
+		
 		if ($tag == '' || $tag == null) {
 			$tagstr = "";
 		} else {
@@ -81,7 +91,7 @@ class ProjectFiles extends BaseProjectFiles {
 		} else {
 			$userstr = " AND `created_by_id` = ".DB::escape($userId)." ";
 		}
-		$permissionstr = ' AND ( ' . permissions_sql_for_listings(ProjectFiles::instance(),ACCESS_LEVEL_READ, logged_user()->getId()) . ') ';
+		$permissionstr = ' AND ( ' . permissions_sql_for_listings(ProjectFiles::instance(),ACCESS_LEVEL_READ, logged_user()) . ') ';
 		
 		$otherConditions = $projectstr . $tagstr . $typestr . $userstr . $permissionstr;
 		
@@ -107,10 +117,11 @@ class ProjectFiles extends BaseProjectFiles {
 	* @return null
 	*/
 	static function getOrphanedFilesByProject(Project $project, $show_private = false) {
+		$condstr = self::$workspace_string;
 		if ($show_private) {
-			$conditions = array('`project_id` =?', $project->getId());
+			$conditions = array($condstr, $project->getId());
 		} else {
-			$conditions = array('`project_id` =? AND `is_private` = ?', $project->getId(), false);
+			$conditions = array($condstr . ' AND `is_private` = ?', $project->getId(), false);
 		} // if
 		
 		return self::findAll(array(
@@ -126,35 +137,12 @@ class ProjectFiles extends BaseProjectFiles {
 	* @return array
 	*/
 	static function getAllFilesByProject(Project $project) {
+		$condstr = self::$workspace_string;
 		return self::findAll(array(
-			'conditions' => array('`project_id` = ?', $project->getId())
+			'conditions' => array($condstr, $project->getId())
 		)); // findAll
 	} // getAllFilesByProject
 	
-//	/**
-//	* Return files by URL. Files will be ordered by filename
-//	*
-//	* @param ProjectFolder $folder
-//	* @param boolean $show_private
-//	* @return array
-//	*/
-//	static function getByFolder(ProjectFolder $folder, $show_private = false) {
-//		$project = $folder->getProject();
-//		if (!($project instanceof Project)) {
-//			return null;
-//		} // if
-//		
-//		if ($show_private) {
-//			$conditions = array('`project_id` =? AND `folder_id` = ?', $project->getId(), $folder->getId());
-//		} else {
-//			$conditions = array('`project_id` =? AND `folder_id` = ? AND `is_private` = ?', $project->getId(), $this->getId(), false);
-//		} // if
-//		
-//		return self::findAll(array(
-//			'conditions' => $conditions,
-//			'order' => '`filename`',
-//		));
-//	} // getByFolder
 	
 	/**
 	* Return file by name.
@@ -202,10 +190,11 @@ class ProjectFiles extends BaseProjectFiles {
 	* @return array
 	*/
 	static function getImportantProjectFiles(Project $project, $include_private = false) {
+		$condstr = self::$workspace_string;
 		if ($include_private) {
-			$conditions = array('`project_id` = ? AND `is_important` = ?', $project->getId(), true);
+			$conditions = array($condstr . ' AND `is_important` = ?', $project->getId(), true);
 		} else {
-			$conditions = array('`project_id` = ? AND `is_important` = ? AND `is_private` = ?', $project->getId(), true, false);
+			$conditions = array($condstr . ' AND `is_important` = ? AND `is_private` = ?', $project->getId(), true, false);
 		} // if
 		
 		return self::findAll(array(

@@ -8,6 +8,118 @@
   */
   abstract class ApplicationDataObject extends DataObject {
     
+    // ---------------------------------------------------
+    //  Search
+    // ---------------------------------------------------
+    
+    /**
+    * If this object is searchable search related methods will be unlocked for it. Else this methods will 
+    * throw exceptions pointing that this object is not searchable
+    *
+    * @var boolean
+    */
+    protected $is_searchable = false;
+    
+    /**
+    * Array of searchable columns
+    *
+    * @var array
+    */
+    protected $searchable_columns = array();
+   
+    /**
+    * Returns true if this object is searchable (maked as searchable and has searchable columns)
+    *
+    * @param void
+    * @return boolean
+    */
+    function isSearchable() {
+      return $this->is_searchable && is_array($this->searchable_columns) && (count($this->searchable_columns) > 0);
+    } // isSearchable
+    
+    /**
+    * Returns array of searchable columns or NULL if this object is not searchable or there 
+    * is no searchable columns
+    *
+    * @param void
+    * @return array
+    */
+    function getSearchableColumns() {
+      if(!$this->isSearchable()) return null;
+      return $this->searchable_columns;
+    } // getSearchableColumns
+    
+    /**
+    * This function will return content of specific searchable column. It can be overriden in child 
+    * classes to implement extra behaviour (like reading file contents for project files)
+    *
+    * @param string $column_name Column name
+    * @return string
+    */
+    function getSearchableColumnContent($column_name) {
+      if(!$this->columnExists($column_name)) throw new Error("Object column '$column_name' does not exist");
+      return (string) $this->getColumnValue($column_name);
+    } // getSearchableColumnContent
+    
+    /**
+    * Clear search index that is associated with this object
+    *
+    * @param void
+    * @return boolean
+    */
+    function clearSearchIndex() {
+      return SearchableObjects::dropContentByObject($this);
+    } // clearSearchIndex
+  
+    function addToSearchableObjects(){
+    	$columns_to_drop = array();
+    	if ($this->isNew())
+    		$columns_to_drop = $this->getSearchableColumns();
+    	else {
+	    	foreach ($this->getSearchableColumns() as $column_name){
+	    		if ($this->isColumnModified($column_name))
+	    			$columns_to_drop[] = $column_name;
+	    	}
+    	}
+    	
+    	if (count($columns_to_drop) > 0){
+    		SearchableObjects::dropContentByObjectColumns($this,$columns_to_drop);
+    		
+	        foreach($columns_to_drop as $column_name) {
+	          $content = $this->getSearchableColumnContent($column_name);
+	          if(trim($content) <> '') {
+	            $searchable_object = new SearchableObject();
+	            
+	            $searchable_object->setRelObjectManager(get_class($this->manager()));
+	            $searchable_object->setRelObjectId($this->getObjectId());
+	            $searchable_object->setColumnName($column_name);
+	            $searchable_object->setContent($content);
+	            $searchable_object->setProjectId(0);
+	            $searchable_object->setIsPrivate(false);
+	            
+	            $searchable_object->save();
+	          } // if
+	        } // foreach
+    	} // if
+    }
+    
+    function save() {
+  		$result = parent::save();
+  		
+  		if ($result && $this->isSearchable())
+  			$this->addToSearchableObjects();
+  		
+  		return $result;
+  	} // save
+  	
+  	function delete(){
+      if($this->isSearchable()) {
+        $this->clearSearchIndex();
+      } // if
+      
+      return parent::delete();
+  	}
+    
   	// ---------------------------------------------------
     //  Linked Objects (Replacement for attached files)
     // ---------------------------------------------------

@@ -34,7 +34,9 @@ Ext.onReady(function(){
 				iconCls: 'ico-overview',
 				refreshOnWorkspaceChange: true,
 				defaultContent: {
-					type: "dashboard"
+					type: "url",
+					data: og.getUrl('dashboard','index')
+					//type: "overview"
 				}
 			}),
 			new og.ContentPanel({
@@ -80,7 +82,8 @@ Ext.onReady(function(){
 				iconCls: 'ico-tasks',
 				refreshOnWorkspaceChange: true,
 				defaultContent: {
-					type: "tasks"
+					type: "url",
+					data: og.getUrl('task','index')
 				}
 			}),
 			new og.ContentPanel({
@@ -91,12 +94,22 @@ Ext.onReady(function(){
 				defaultContent: {
 					type: "webpages"
 				}
-			})
+			})/*,
+			new og.ContentPanel({
+				title: lang('reporting'),
+				id: 'reporting-panel',
+				iconCls: 'ico-reporting',
+				refreshOnWorkspaceChange: true,
+				defaultContent: {
+					type: "reporting"
+				}
+			})*/
 		]
 	});
 	
 	var viewport = new Ext.Viewport({
 		layout: 'border',
+		stateful: false,
 		items: [
 			{
 				xtype: 'panel',
@@ -132,13 +145,21 @@ Ext.onReady(function(){
 				collapsible: true,
 				margins: '0 0 0 0',
 				layout: 'border',
+				stateful: false,
 				items: [{
+					id: 'workspaces-tree',
 					xtype: 'wspanel',
 					wstree: {
 						listeners: {
 							workspaceselect: function(ws) {
 								og.eventManager.fireEvent('workspace changed', ws);
+								og.updateWsCrumbs(ws);
 							}
+						}
+					},
+					listeners: {
+						render: function() {
+							this.getTopToolbar().setHeight(20);
 						}
 					}
 				},{

@@ -120,10 +120,19 @@
 .slimeyEditor *, .slidePreview *, .slidePreviewSel *, .slidePreviewH * {
 	line-height: 1;
 }
-.slimeyEditor ul, #slimeyEditor ol, .slidePreview ul, .slidePreview ol,
+.slimeyEditor ul, .slimeyEditor ol, .slidePreview ul, .slidePreview ol,
 .slidePreviewSel ul, .slidePreviewSel ol, .slidePreviewH ul, .slidePreviewH ol {
-	padding-left: 8%;
+	padding-left: 0px;
 	margin-left: 0px;
+	list-style-image: none;
+	list-style-position: inside;
+	marker-offset: 100px;
+}
+.slimeyEditor ul, .slidePreview ul, .slidePreviewSel ul, .slidePreviewH ul {
+	list-style-type: disc;
+}
+.slimeyEditor ol, .slidePreview ol, .slidePreviewSel ol, .slidePreviewH ol {
+	list-style-type: decimal;
 }
 .slidePreview, .slidePreviewSel, .slidePreviewH {
     font-size: 5px;
@@ -133,11 +142,9 @@
     font-size: 100%;
 }
 .slidePreview h1, .slidePreviewSel h1, .slidePreviewH h1 {
-    font-size: 150%;
+    font-size: 140%;
 }
 .slidePreview h2, .slidePreviewSel h2, .slidePreviewH h2 {
     font-size: 120%;
 }
-.slidePreview ol, .slidePreview ul, .slidePreview dir, .slidePreviewSel ol, .slidePreview ul, .slidePreview dir, .slidePreviewH ol, .slidePreview ul {
-    margin-left: 5px;
-}
+

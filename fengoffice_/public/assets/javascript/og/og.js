@@ -1,4 +1,8 @@
 var og = {};
+var vtindex = 0;
+var vtlist = new Array();
+
+og.globalVars = new Array();
 
 // default config (to be overridden by server)
 og.pageSize = 10;
@@ -24,14 +28,39 @@ og.msg =  function(title, format) {
 	m.slideIn('t').pause(4).ghost("t", {remove:true});
 }
 
-og.toggleOpt = function(itemToDisplay){
-	var options = Ext.select("div.coOption");
-	var item = Ext.get(itemToDisplay);
-	var wasDisplayed = item.isDisplayed();
-	for (var i =0; i < options.getCount(); i++){
-		options.item(i).setDisplayed("none");
+og.hideAndShow = function(itemToHide, itemToDisplay){
+	Ext.get(itemToHide).setDisplayed('none');
+	Ext.get(itemToDisplay).setDisplayed('block');
+}
+
+og.hideAndShowByClass = function(itemToHide, classToDisplay, containerItemName){
+	Ext.get(itemToHide).setDisplayed('none');
+	
+	var list;
+	var container;
+	if (containerItemName != ''){
+		container = document.getElementById(containerItemName);
+	} else container = document;
+	
+	list = container.getElementsByTagName('tr');
+	
+	for(var i = 0; i < list.length; i++){
+		var obj = list[i];
+		if (obj.className != '' && obj.className.indexOf(classToDisplay) >= 0)
+			obj.style.display = '';
 	}
-	wasDisplayed? item.setDisplayed("none"): item.setDisplayed("block");
+}
+
+og.switchToOverview = function(){
+	var opanel = Ext.getCmp('overview-panel');
+	opanel.defaultContent = {type: 'overview'};
+	opanel.load(opanel.defaultContent);
+}
+
+og.switchToDashboard = function(){
+	var opanel = Ext.getCmp('overview-panel');
+	opanel.defaultContent = {type: "url", data: og.getUrl('dashboard','index')};
+	opanel.load(opanel.defaultContent);
 }
 
 og.loading = function() {
@@ -61,24 +90,24 @@ og.hideLoading = function() {
 }
 
 og.toggle = function(id, btn) {
-	var obj = Ext.getDom(id);
-	if (obj.style.display == 'block') {
-		obj.style.display = 'none';
-		if (btn) btn.className = 'toggle_collapsed';
+	var obj = Ext.get(id);
+	if (obj.isDisplayed()) {
+		obj.slideOut("t", {duration: 0.5, useDisplay: true});
+		if (btn) Ext.fly(btn).replaceClass('toggle_expanded', 'toggle_collapsed');
 	} else {
-		obj.style.display = 'block';
-		if (btn) btn.className = 'toggle_expanded';
+		obj.slideIn("t", {duration: 0.5, useDisplay: true});
+		if (btn) Ext.fly(btn).replaceClass('toggle_collapsed', 'toggle_expanded');
 	}
 }
 
 og.toggleAndBolden = function(id, btn) {
-	var obj = Ext.getDom(id);
-	if (obj.style.display == 'block') {
-		obj.style.display = 'none';
+	var obj = Ext.get(id);
+	if (obj.isDisplayed()) {
+		obj.slideOut("t", {duration: 0.5, useDisplay: true});
 		if (btn) 
 			btn.style.fontWeight = 'normal';
 	} else {
-		obj.style.display = 'block';
+		obj.slideIn("t", {duration: 0.5, useDisplay: true});
 		if (btn) 
 			btn.style.fontWeight = 'bold';
 	}
@@ -322,11 +351,24 @@ og.captureLinks = function(id, caller) {
 	});
 }
 
+og.getViewTab = function(){
+	vtindex++;
+	if (vtlist.length >= 3){
+		var toRemove = vtlist.shift();
+		Ext.getCmp('tabs-panel').remove(toRemove);
+	}
+	vtlist.push('vtab' + vtindex);
+		
+	return 'vtab' + vtindex;
+}
 
 og.openLink = function(url, options) {
 	if (!options) options = {};
 	if (typeof options.caller == "object") {
 		options.caller = options.caller.id;
+	}
+	if (options.caller == 'viewTab'){
+		options.caller = og.getViewTab();
 	}
 	if (!options.caller) {
 		var tabs = Ext.getCmp('tabs-panel');
@@ -352,7 +394,7 @@ og.openLink = function(url, options) {
 			if (success) {
 				try {
 					var data = Ext.util.JSON.decode(response.responseText);
-					og.processResponse(data, options.caller);
+					og.processResponse(data, options);
 				} catch (e) {
 					// response isn't valid JSON, display it on the caller panel or new tab
 					var p = Ext.getCmp(options.caller);
@@ -370,7 +412,8 @@ og.openLink = function(url, options) {
 		},
 		caller: options.caller,
 		postProcess: options.callback || options.postProcess,
-		scope: options.scope
+		scope: options.scope,
+		preventPanelLoad: options.preventPanelLoad
 	});
 }
 
@@ -427,7 +470,9 @@ og.submit = function(form, callback) {
 	return false;
 }
 
-og.processResponse = function(data, caller) {
+og.processResponse = function(data, options) {
+	if (options)
+		var caller = options.caller;
 	if (!data) return;
 	if (data.events) {
 		for (var i=0; i < data.events.length; i++) {
@@ -445,7 +490,7 @@ og.processResponse = function(data, caller) {
 			}
 		}
 	}
-	if (data.current) {
+	if (data.current && !options.preventPanelLoad) {
 		if (data.current.panel) {
 			var p = Ext.getCmp(data.current.panel);
 			if (p) {
@@ -460,10 +505,14 @@ og.processResponse = function(data, caller) {
 		} else if (caller) {
 			var p = Ext.getCmp(caller);
 			if (p) {
+				var tp = p.ownerCt;
+				if (tp.setActiveTab) {
+					tp.setActiveTab(p);
+				}
 				p.load(data.current);
 				p = Ext.getCmp('tabs-panel');
 			} else {
-				og.newTab(data.current, caller);
+				og.newTab(data.current, caller, data);
 			}
 		} else {
 			og.newTab(data.current);
@@ -476,13 +525,17 @@ og.processResponse = function(data, caller) {
 	}
 }
 
-og.newTab = function(content, id) {
+og.newTab = function(content, id, data) {
+	var title = id?lang(id):lang('new tab');
+	if (data && data.title)
+		title = data.title;
 	var tp = Ext.getCmp('tabs-panel');
 	var t = new og.ContentPanel({
 		closable: true,
-		title: (id?lang(id):lang('new tab')),
+		title: title.length < 15?title:title.substring(0,12) + '...',
+		tabTip: title,
 		id: id || Ext.id(),
-		iconCls: (id?'ico-' + id:'ico-tab'),
+		iconCls: ((data && data.icon)?data.icon:(id?'ico-' + id:'ico-tab')),
 		defaultContent: content
 	});
 	tp.add(t);
@@ -539,6 +592,7 @@ og.extractScripts = function(html) {
 	var id = Ext.id();
 	html += '<span id="' + id + '"></span>';
 	Ext.lib.Event.onAvailable(id, function() {
+		try {
 		var re = /(?:<script([^>]*)?>)((\n|\r|.)*?)(?:<\/script>)/ig;
 		var match;
 		while (match = re.exec(html)) {
@@ -556,6 +610,7 @@ og.extractScripts = function(html) {
 		}
 		var el = document.getElementById(id);
 		if (el) { Ext.removeNode(el); }
+		} catch (e) { alert(e);}
 	});
 	
 	return html.replace(/(?:<script.*?>)((\n|\r|.)*?)(?:<\/script>)/ig, "");
@@ -579,6 +634,11 @@ og.clone = function(o) {
 	return c;
 }
 
+og.closeView = function(obj){
+	var currentPanel = Ext.getCmp('tabs-panel').getActiveTab();
+	currentPanel.back();
+}
+
 og.slideshow = function(id) {
 	var url = og.getUrl('files', 'slideshow', {fileId: id});
 	var top = screen.height * 0.1;
@@ -588,3 +648,122 @@ og.slideshow = function(id) {
 	window.open(url, 'slideshow', 'top=' + top + ',left=' + left + ',width=' + width + ',height=' + height + ',status=no,menubar=no,location=no,toolbar=no,scrollbars=no,directories=no,resizable=yes')
 }
 
+og.expandSubWsCrumbs = function(wsid){
+	var tree = Ext.getCmp('workspaces-tree');
+	var node = tree.tree.getNode(wsid);
+	
+	if (!node || node.childNodes.length == 0){
+		tree.tree.loadWorkspaces(node, true);
+	} else {
+		og.showSubWsTooltip(node);
+	}
+}
+
+og.showSubWsTooltip = function(node){
+	var html = "";
+	for (var i = 0; i < node.childNodes.length; i++){
+		var cn = node.childNodes[i];
+		html += "<div class=\"subwscrumbs\"><a href=\"#\" onclick=\"Ext.getCmp('workspace-panel').select(" + cn.ws.id + ");og.clearSubWsCrumbs()\">" + cn.ws.name + "</a></div>";
+	}
+		
+	var expander = document.getElementById('subWsExpander');
+	expander.innerHTML = html;
+	var wsCrumbs = document.getElementById('wsCrumbsDiv');
+	expander.style.left = (wsCrumbs.offsetWidth + 70) + "px";
+	expander.style.display = 'block';
+	
+	clearTimeout(og.globalVars['swst']);
+	var obj = Ext.get('subWsExpander');
+	obj.slideIn("l", {duration: 0.5, useDisplay: true});
+	og.setSubWsTooltipTimeout(3000);
+}
+
+og.setSubWsTooltipTimeout = function(value){
+	og.globalVars['swst'] = setTimeout("og.HideSubWsTooltip()", value);
+}
+
+og.HideSubWsTooltip = function(){
+	var obj = Ext.get('subWsExpander');
+	obj.slideOut("l", {duration: 0.5, useDisplay: true});
+}
+
+og.clearSubWsCrumbs = function(){
+	var expander = document.getElementById('subWsExpander');
+   	expander.innerHTML = '';
+   	expander.style.display = 'none';
+	clearTimeout(og.globalVars['swst']);
+}
+
+og.updateWsCrumbs = function(newWs) {
+	var html = '';
+	var first = true;
+	var tree = Ext.getCmp('workspaces-tree');
+	while (newWs.id != 0){
+		if (first){
+			first = false;
+			html = '<div id="curWsDiv" style="font-size:150%;display:inline;"><a href="#" style="display:inline;line-height:28px" onmouseover="og.expandSubWsCrumbs(' + newWs.id + ')">' + newWs.name + '</a></div>' + html;
+		} else
+			html = '<a href="#" onclick="Ext.getCmp(\'workspace-panel\').select(' + newWs.id + ')">' + newWs.name + '</a>' + html;
+		
+		html = ' / ' + html;
+		var node = tree.tree.getNode(newWs.parent)
+		if (node)
+			newWs = node.ws;
+		else
+			break;
+	}
+	
+	if (first){
+		html = '<div id="curWsDiv" style="font-size:150%;display:inline;"><a href="#" style="display:inline;line-height:28px" onmouseover="og.expandSubWsCrumbs(' + newWs.id + ')">' + newWs.name + '</a></div>' + html;
+	} else html = '<a href="#" onclick="Ext.getCmp(\'workspace-panel\').select(0)">' + lang('all') + '</a>' + html;
+	var crumbsdiv = Ext.get('wsCrumbsDiv');
+	crumbsdiv.dom.innerHTML = html;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+og.removeLinkedObjectRow = function (r, tblId, confirm_msg){
+	if (confirm(confirm_msg)){
+		var i=r.parentNode.parentNode.rowIndex;		
+		var tbl = document.getElementById(tblId);
+		tbl.deleteRow(i);
+		tbl.deleteRow(i-1);
+	}
+}
+
+og.addLinkedObjectRow = function (tblId,obj_type,obj_id,obj_name, obj_manager, confirm_msg, unlink_msg){
+	var tbl = document.getElementById(tblId);
+	var cantRows = tbl.rows.length / 2;
+	var row1=tbl.insertRow(tbl.rows.length);
+	row1.className = 'linkedObject';
+	row1.className += (cantRows% 2 == 0) ? 'even' : 'odd';
+	
+	var td1 = row1.insertCell(0);
+	td1.rowSpan = 2;
+	td1.style.paddingLeft = 1;
+	td1.style.verticalAlign = 'middle';
+	td1.style.width = '25px'
+	td1.innerHTML = "<input type='hidden' value='"+obj_id+"' name='rel_objects[id_"+ cantRows +"]' />";
+	td1.innerHTML += "<input type='hidden' value='"+obj_manager+"' name='rel_objects[type_"+ cantRows +"]' />";
+	td1.innerHTML += "<div class='db-ico unknown ico-"+obj_type+ "' title='"+obj_type+"'></div>";
+	
+	var td2 = row1.insertCell(1);
+	
+	td2.innerHTML = "<b><span>"+obj_name+"</span></b>";
+	
+	var row2=tbl.insertRow(tbl.rows.length);
+	row2.className = row1.className;
+	var td2 = row2.insertCell(0);
+	td2.innerHTML = '<a class="internalLink" href="#" onclick="og.removeLinkedObjectRow(this,\''+tblId+'\',\''+confirm_msg+'\')" title="' +unlink_msg+ ' object">' +unlink_msg+ '</a>';
+}

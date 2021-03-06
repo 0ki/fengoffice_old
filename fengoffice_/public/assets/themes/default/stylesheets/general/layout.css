@@ -6,10 +6,10 @@
 }
 
 #header {
-	border-bottom: 1px solid black;
+	/*border-bottom: 1px solid black;*/
 	background-color: white;
 	height: 55px;
-	border-bottom: 1px solid #8888EE;
+	/*border-bottom: 1px solid #8888EE;*/
 	overflow: hidden;
 }
 #content {
@@ -74,12 +74,12 @@
 .toggle_collapsed {
 	background-repeat: no-repeat;
 	background-image: url(../../images/menu/plus.gif);
-	padding-left: 24px;
+	padding-left: 20px;
 	cursor: pointer;
 }
 .toggle_expanded {
 	background-repeat: no-repeat;
 	background-image: url(../../images/menu/minus.gif);
-	padding-left: 24px;
+	padding-left: 20px;
 	cursor: pointer;
 }

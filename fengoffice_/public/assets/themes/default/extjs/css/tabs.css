@@ -11,15 +11,15 @@
 }
 .x-tab-panel-header, .x-tab-panel-footer {
 	background: #deecfd;
-	border: 1px solid #8db2e3;
+	/*border: 1px solid #8db2e3;*/
     overflow:hidden;
     zoom:1;
 }
 
 
 .x-tab-panel-header {
-	border: 1px solid #8db2e3;
-	padding-bottom: 2px;
+	/*border: 1px solid #8db2e3;*/
+	/*padding-bottom: 2px;*/
 }
 
 .x-tab-panel-footer {
@@ -266,7 +266,7 @@ ul.x-tab-strip li.x-tab-edge {
 }
 
 .x-tab-panel-body {
-    border: 1px solid #8db2e3;
+    /*border: 1px solid #8db2e3;*/
     background:#fff;
 }
 .x-tab-panel-body-top {

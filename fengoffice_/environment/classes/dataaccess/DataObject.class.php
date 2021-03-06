@@ -16,7 +16,14 @@
   * @copyright 2005 by Ilija Studen
   */
   abstract class DataObject {
-  
+    
+  	/**
+  	 * Indicates if the 'create' and 'update' timestamps will be set on the save() method.
+  	 *
+  	 * @var unknown_type
+  	 */
+  	private $mark_timestamps = true;
+  	
   	/**
   	* Indicates if this is new object (not saved)
   	*
@@ -106,6 +113,7 @@
   	* @return DataManager
   	*/
   	abstract function manager();
+
   	
   	/**
   	* Validate input data (usualy collected from from). This method is called
@@ -535,18 +543,18 @@
   		if($this->isNew()) {
   		  
   		  // Lets check if we have created_on and updated_on columns and they are empty
-  		  if($this->columnExists('created_on') && !$this->isColumnModified('created_on')) {
+  		  if($this->mark_timestamps && $this->columnExists('created_on') && !$this->isColumnModified('created_on')) {
   		    $this->setColumnValue('created_on', DateTimeValueLib::now());
   		  } // if
-  		  if($this->columnExists('updated_on') && !$this->isColumnModified('updated_on')) {
+  		  if($this->mark_timestamps && $this->columnExists('updated_on') && !$this->isColumnModified('updated_on')) {
   		    $this->setColumnValue('updated_on', DateTimeValueLib::now());
   		  } // if
   		  
   		  if(function_exists('logged_user') && (logged_user() instanceof User)) {
-    		  if($this->columnExists('created_by_id') && !$this->isColumnModified('created_by_id') && (logged_user() instanceof User)) {
+    		  if($this->mark_timestamps && $this->columnExists('created_by_id') && !$this->isColumnModified('created_by_id') && (logged_user() instanceof User)) {
     		    $this->setColumnValue('created_by_id', logged_user()->getId());
     		  } // if
-    		  if($this->columnExists('updated_by_id') && !$this->isColumnModified('updated_by_id')) {
+    		  if($this->mark_timestamps && $this->columnExists('updated_by_id') && !$this->isColumnModified('updated_by_id')) {
     		    $this->setColumnValue('updated_by_id', logged_user()->getId());
     		  } // if
   		  } // if
@@ -574,12 +582,12 @@
   		} else {
   		  
   		  // Set value of updated_on column...
-  		  if($this->columnExists('updated_on') && !$this->isColumnModified('updated_on')) {
+  		  if($this->mark_timestamps && $this->columnExists('updated_on') && !$this->isColumnModified('updated_on')) {
   		    $this->setColumnValue('updated_on', DateTimeValueLib::now());
   		  } // if
   		  
   		  if(function_exists('logged_user') && (logged_user() instanceof User)) {
-    		  if($this->columnExists('updated_by_id') && !$this->isColumnModified('updated_by_id')) {
+    		  if($this->mark_timestamps && $this->columnExists('updated_by_id') && !$this->isColumnModified('updated_by_id')) {
     		    $this->setColumnValue('updated_by_id', logged_user()->getId());
     		  } // if
   		  } // if
@@ -993,6 +1001,19 @@
   	    } // foreach
   	  } // if
   	} // addAcceptableAttribute
+  	
+  	/**
+  	 * Sets if the 'create' and 'update' timestamps will be set on the next save() method
+  	 *
+  	 * @param boolean $value
+  	 */
+  	function setMarkTimestamps($value = true){
+  		$this->mark_timestamps = $value;
+  	} //setMarkTimestamp
+  	
+  	function getMarkTimestamps(){
+  		return (boolean) $this->mark_timestamps;
+  	}
   	
   	// ---------------------------------------------------------------
   	//  Validators

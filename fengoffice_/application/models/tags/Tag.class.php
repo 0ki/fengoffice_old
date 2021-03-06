@@ -101,6 +101,9 @@ class Tag extends BaseTag {
 		return $this->getViewUrl();
 	} // getObjectUrl
 
+	function __toString() {
+        return $this->getTag();
+    }
 } // Tag
 
 ?>

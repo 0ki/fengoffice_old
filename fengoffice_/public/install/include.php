@@ -10,7 +10,7 @@
     die('<strong>Installation error:</strong> OpenGoo will not run on PHP installations that have <strong>zend.ze1_compatibility_mode</strong> set to On. <strong>Please turn it off</strong> (in your php.ini file) in order to continue.');
   } // if
 
-  session_start();
+  if(!isset($_SESSION)) session_start();
   error_reporting(E_ALL);
   
   if(function_exists('date_default_timezone_set')) {

@@ -9,7 +9,8 @@
 
   return array(
   
-    // Empty, dnx etc
+    // Empty, dnx et
+    'no mail accounts set' => 'There are no email accounts through which to send an email, please create an email account first',
     'email dnx' => 'Requested email does not exist',
   	'email dnx deleted' => 'Requested email was deleted from database',
     'project dnx' => 'Requested workspace does not exist in database',
@@ -31,7 +32,7 @@
     'no recent activities' => 'There are no recent activities logged in the database',
     'no open task lists in project' => 'There are no open task in this workspace',
     'no completed task lists in project' => 'There are no completed task in this workspace',
-    'no open task in task list' => 'There are no tasks in this list',
+    'no open task in task list' => 'There are no open tasks in this list',
     'no projects in db' => 'There are no defined workspaces in database',
     'no projects owned by company' => 'There are no workspaces owned by this company',
     'no projects started' => 'There are no started workspaces',
@@ -166,8 +167,8 @@
     'success edit file revision' => 'Revision has been updated',
     'success delete file revision' => 'File revision has been deleted',
     
-    'success link objects' => '%s file(s) has been successfully linked',
-    'success unlink object' => 'File(s) has been successfully unlinked',
+    'success link objects' => '%s object(s) has been successfully linked',
+    'success unlink object' => 'Object has been successfully unlinked',
     
     'success update config category' => '{0} configuration values have been updated',
     'success forgot password' => 'Your password has been emailed to you',
@@ -179,6 +180,7 @@
     'success user permissions updated' => 'User permissions have been updated',
   
     'success add event' => 'Event has been added',
+    'success edit event' => 'Event has been updated',
     'success delete event' => 'Event has been deleted',
     
     'success add event type' => 'Event Type has been added',
@@ -187,7 +189,7 @@
     'success add webpage' => 'Web link has been added',
     'success edit webpage' => 'Web link has been updated',
     'success deleted webpage' => 'Web link has been deleted',
-
+    
     'success add chart' => 'Chart has been added',
     'success edit chart' => 'Chart has been updated',
     'success delete chart' => 'Chart has been deleted',
@@ -215,6 +217,7 @@
   
     'success checkout file' => 'File checked out successfully',
     'success checkin file' => 'File checked in successfully',
+  	'success undo checkout file' => 'File checkout canceled successfully',
     
     // Failures
     'error form validation' => 'Failed to save object because some of its properties are not valid',
@@ -281,6 +284,7 @@
     'invalid request' => 'Invalid request!',
     
     // Confirmation
+    'confirm delete mail account' => 'Warning: All emails belonging to this account will be deleted as well, are you sure that you want to delete this mail account?',
     'confirm delete message' => 'Are you sure that you want to delete this message?',
     'confirm delete milestone' => 'Are you sure that you want to delete this milestone?',
     'confirm delete task list' => 'Are you sure that you want to delete this task and all of its sub tasks?',

@@ -1,5 +1,5 @@
 <?php
-
+ 
 /**
  * ProjectTask class
  * Generated on Sat, 04 Mar 2006 12:50:11 +0100 by DataObject generation tool
@@ -97,7 +97,7 @@ class ProjectTask extends BaseProjectTask {
 	 * Return parent task that this task belongs to
 	 *
 	 * @param void
-	 * @return Project
+	 * @return ProjectTask
 	 */
 	function getParent() {
 		if ($this->getParentId()==0) return null;
@@ -119,6 +119,16 @@ class ProjectTask extends BaseProjectTask {
 			return $this->getAssignedToCompany();
 		} else {
 			return null;
+		} // if
+	} // getAssignedTo
+	
+	function getAssignedToName() {
+		if($this->getAssignedToUserId() > 0) {
+			return $this->getAssignedToUser()->getDisplayName();
+		} elseif($this->getAssignedToCompanyId() > 0) {
+			return $this->getAssignedToCompany()->getName();
+		} else {
+			return lang("anyone");
 		} // if
 	} // getAssignedTo
 
@@ -166,6 +176,51 @@ class ProjectTask extends BaseProjectTask {
 		return $this->getCompletedOn() instanceof DateTimeValue;
 	} // isCompleted
 
+	/**
+	 * Check if this milestone is late
+	 *
+	 * @access public
+	 * @param void
+	 * @return null
+	 */
+	function isLate() {
+		if($this->isCompleted()) return false;
+		if(!$this->getDueDate() instanceof DateTimeValue) return false;
+		return !$this->isToday() && ($this->getDueDate()->getTimestamp() < time());
+	} // isLate
+	
+	/**
+	 * Check if this milestone is today
+	 *
+	 * @access public
+	 * @param void
+	 * @return null
+	 */
+	function isToday() {
+		$now = DateTimeValueLib::now();
+		$due = $this->getDueDate();
+
+		// getDueDate and similar functions can return NULL
+		if(!($due instanceof DateTimeValue)) return false;
+
+		return $now->getDay() == $due->getDay() &&
+		$now->getMonth() == $due->getMonth() &&
+		$now->getYear() == $due->getYear();
+	} // isToday
+	
+	/**
+	 * Return number of days that this task is late for
+	 *
+	 * @access public
+	 * @param void
+	 * @return integer
+	 */
+	function getLateInDays() {
+		if (!$this->getDueDate() instanceof DateTimeValue) return 0;
+		$due_date_start = $this->getDueDate()->beginningOfDay();
+		return floor(abs($due_date_start->getTimestamp() - DateTimeValueLib::now()->getTimestamp()) / 86400);
+	} // getLateInDays
+	
 	/**
 	 * Returns value of is private flag inehrited from parent task list
 	 *
@@ -295,7 +350,7 @@ class ProjectTask extends BaseProjectTask {
 	// ---------------------------------------------------
 
 	/**
-	 * Complete this task and check if we need to complete the parent
+	 * Complete this task and subtasks and check if we need to complete the parent
 	 *
 	 * @access public
 	 * @param void
@@ -306,11 +361,21 @@ class ProjectTask extends BaseProjectTask {
 		$this->setCompletedById(logged_user()->getId());
 		$this->save();
 
+		/*
+		 * if this is run then when the user wants to reopen a task
+		 * he will have to manually reopen the subtasks
+		$tasks = $this->getOpenSubTasks();
+		foreach ($tasks as $task) {
+			$task->completeTask();
+		}*/
+		
+		/*
+		 * this is done in the controller
 		$task_list = $this->getParent();
 		if(($task_list instanceof ProjectTask) && $task_list->isOpen()) {
 			$open_tasks = $task_list->getOpenSubTasks();
 			if(empty($open_tasks)) $task_list->complete(DateTimeValueLib::now(), logged_user());
-		} // if
+		} // if*/
 		ApplicationLogs::createLog($this, $this->getProject(), ApplicationLogs::ACTION_CLOSE);
 	} // completeTask
 
@@ -326,14 +391,28 @@ class ProjectTask extends BaseProjectTask {
 		$this->setCompletedById(0);
 		$this->save();
 
+		/*
+		 * this is done in the controller
 		$task_list = $this->getParent();
 		if(($task_list instanceof ProjectTask) && $task_list->isCompleted()) {
 			$open_tasks = $task_list->getOpenSubTasks();
 			if(!empty($open_tasks)) $task_list->open();
-		} // if
+		} // if*/
 		ApplicationLogs::createLog($this, $this->getProject(), ApplicationLogs::ACTION_OPEN);
 	} // openTask
 
+	function getRemainingDays(){
+		if (is_null($this->getDueDate()))
+			return null;
+		else{
+			$due = $this->getDueDate();
+			$date = mktime();
+			$nowDays = floor($date/(60*60*24));
+			$dueDays = floor($due->getTimestamp()/(60*60*24));
+			return $dueDays - $nowDays;
+		}
+	}
+	
 	// ---------------------------------------------------
 	//  TaskList Operations
 	// ---------------------------------------------------
@@ -588,6 +667,26 @@ class ProjectTask extends BaseProjectTask {
 		return $this->completed_by;
 	} // getCompletedBy
 
+	/**
+	 * Return the name of who completed this task
+	 *
+	 * @access public
+	 * @param void
+	 * @return User
+	 */
+	function getCompletedByName() {
+		if ($this->isCompleted()){
+			if(!($this->completed_by instanceof User)) {
+				$this->completed_by = Users::findById($this->getCompletedById());
+			} // if
+			if ($this->completed_by instanceof User) {
+				return $this->completed_by->getDisplayName();
+			} else {
+				return '';
+			}
+		} else return '';
+	} // getCompletedBy
+	
 
 	/**
 	 * Return all handins for this task, NOT the ones associated with its subtasks
@@ -635,7 +734,7 @@ class ProjectTask extends BaseProjectTask {
 	 * @return string
 	 */
 	function getEditListUrl() {
-		return get_url('task', 'edit_list', array('id' => $this->getId(), 'active_project' => $this->getProjectId()));
+		return get_url('task', 'edit_task', array('id' => $this->getId(), 'active_project' => $this->getProjectId()));
 	} // getEditUrl
 
 	/**
@@ -657,7 +756,7 @@ class ProjectTask extends BaseProjectTask {
 	 * @return string
 	 */
 	function getDeleteListUrl() {
-		return get_url('task', 'delete_list', array('id' => $this->getId(), 'active_project' => $this->getProjectId()));
+		return get_url('task', 'delete_task', array('id' => $this->getId(), 'active_project' => $this->getProjectId()));
 	} // getDeleteUrl
 
 	/**
@@ -735,7 +834,7 @@ class ProjectTask extends BaseProjectTask {
 	 * @return string
 	 */
 	function getViewUrl() {
-		return get_url('task', 'view_list', array('id' => $this->getId(), 'active_project' => $this->getProjectId()));
+		return get_url('task', 'view_task', array('id' => $this->getId(), 'active_project' => $this->getProjectId()));
 	} // getViewUrl
 
 	/**

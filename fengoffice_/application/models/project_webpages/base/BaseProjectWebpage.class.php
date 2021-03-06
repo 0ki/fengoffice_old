@@ -154,10 +154,6 @@
 	function getCreatedById() {
 		return $this->getColumnValue('created_by_id');
 	} // getCreatedById()
-	
-	function getUpdatedById() {
-		return $this->getColumnValue('created_by_id');
-	} // getUpdatedById()
 
 	/**
 	 * Set value of 'created_by_id' field
@@ -169,6 +165,50 @@
 	function setCreatedById($value) {
 		return $this->setColumnValue('created_by_id', $value);
 	} // setCreatedById()
+    
+	/**
+	 * Return value of 'updated_on' field
+	 *
+	 * @access public
+	 * @param void
+	 * @return DateTimeValue
+	 */
+	function getUpdatedOn() {
+		return $this->getColumnValue('updated_on');
+	} // getupdatedOn()
+
+	/**
+	 * Set value of 'updated_on' field
+	 *
+	 * @access public
+	 * @param DateTimeValue $value
+	 * @return boolean
+	 */
+	function setUpdatedOn($value) {
+		return $this->setColumnValue('updated_on', $value);
+	} // setupdatedOn()
+
+	/**
+	 * Return value of 'updated_by_id' field
+	 *
+	 * @access public
+	 * @param void
+	 * @return integer
+	 */
+	function getUpdatedById() {
+		return $this->getColumnValue('updated_by_id');
+	} // getupdatedById()
+
+	/**
+	 * Set value of 'updated_by_id' field
+	 *
+	 * @access public
+	 * @param integer $value
+	 * @return boolean
+	 */
+	function setUpdatedById($value) {
+		return $this->setColumnValue('updated_by_id', $value);
+	} // setupdatedById()
     
 	
 	/**

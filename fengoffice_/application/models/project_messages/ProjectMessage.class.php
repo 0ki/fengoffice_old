@@ -282,7 +282,7 @@ class ProjectMessage extends BaseProjectMessage {
 	 * @return string
 	 */
 	function getViewUrl() {
-		return get_url('message', 'view', array('id' => $this->getId(), 'active_project' => $this->getProjectId()));
+		return get_url('message', 'view', array('id' => $this->getId()));
 	} // getViewUrl
 
 	/**
@@ -293,7 +293,7 @@ class ProjectMessage extends BaseProjectMessage {
 	 * @return string
 	 */
 	function getEditUrl() {
-		return get_url('message', 'edit', array('id' => $this->getId(), 'active_project' => $this->getProjectId()));
+		return get_url('message', 'edit', array('id' => $this->getId()));
 	} // getEditUrl
 
 	/**
@@ -303,7 +303,7 @@ class ProjectMessage extends BaseProjectMessage {
 	 * @return string
 	 */
 	function getUpdateOptionsUrl() {
-		return get_url('message', 'update_options', array('id' => $this->getId(), 'active_project' => $this->getProjectId()));
+		return get_url('message', 'update_options', array('id' => $this->getId()));
 	} // getUpdateOptionsUrl
 
 	/**
@@ -314,7 +314,7 @@ class ProjectMessage extends BaseProjectMessage {
 	 * @return string
 	 */
 	function getDeleteUrl() {
-		return get_url('message', 'delete', array('id' => $this->getId(), 'active_project' => $this->getProjectId()));
+		return get_url('message', 'delete', array('id' => $this->getId()));
 	} // getDeleteUrl
 
 	/**
@@ -325,7 +325,7 @@ class ProjectMessage extends BaseProjectMessage {
 	 * @return string
 	 */
 	function getAddCommentUrl() {
-		return get_url('message', 'add_comment', array('id' => $this->getId(), 'active_project' => $this->getProjectId()));
+		return get_url('message', 'add_comment', array('id' => $this->getId()));
 	} // getAddCommentUrl
 
 	/**
@@ -335,7 +335,7 @@ class ProjectMessage extends BaseProjectMessage {
 	 * @return boolean
 	 */
 	function getSubscribeUrl() {
-		return get_url('message', 'subscribe', array('id' => $this->getId(), 'active_project' => $this->getProjectId()));
+		return get_url('message', 'subscribe', array('id' => $this->getId()));
 	} // getSubscribeUrl
 
 	/**
@@ -345,7 +345,7 @@ class ProjectMessage extends BaseProjectMessage {
 	 * @return boolean
 	 */
 	function getUnsubscribeUrl() {
-		return get_url('message', 'unsubscribe', array('id' => $this->getId(), 'active_project' => $this->getProjectId()));
+		return get_url('message', 'unsubscribe', array('id' => $this->getId()));
 	} // getUnsubscribeUrl
 
 	// ---------------------------------------------------
@@ -371,6 +371,7 @@ class ProjectMessage extends BaseProjectMessage {
 			} // foreach
 		} // if
 		$this->clearSubscriptions();
+		
 		return parent::delete();
 	} // delete
 
@@ -382,9 +383,7 @@ class ProjectMessage extends BaseProjectMessage {
 	 * @return null
 	 */
 	function validate(&$errors) {
-		if($this->validatePresenceOf('title')) {
-			if(!$this->validateUniquenessOf('title', 'project_id')) $errors[] = lang('message title unique');
-		} else {
+		if(!$this->validatePresenceOf('title')) {
 			$errors[] = lang('message title required');
 		} // if
 		//if(!$this->validatePresenceOf('text')) $errors[] = lang('message text required');

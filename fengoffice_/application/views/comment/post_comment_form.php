@@ -11,12 +11,11 @@
 
 	<table><tr><td>
   <div class="formAddCommentText">
-    <?php echo label_tag(lang('text'), 'addCommentText', true) ?>
     <?php echo textarea_field("comment[text]", '', array('class' => 'short', 'id' => 'addCommentText')) ?>
   </div>
   </td>
     <td style="padding-left:10px">
-<?php if(logged_user()->isMemberOfOwnerCompany()) { ?>
+<?php if(false && logged_user()->isMemberOfOwnerCompany()) { ?>
     
     <div class="objectOption">
       <div class="optionLabel"><label><?php echo lang('private comment') ?>:</label></div>

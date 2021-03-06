@@ -14,17 +14,17 @@
     Foundation Inc, 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 	
 */
+/* @var $event ProjectEvent*/
 
-echo  cal_top();
+if($event->canDelete(logged_user())) {
+		add_page_action(lang('delete'), "javascript:if(confirm(lang('confirm delete event'))) og.openLink('" . $event->getDeleteUrl() ."');", 'ico-delete');
+} // if
 
-
-/* ##################################################################
-  cal_display()
-   writes the events for a particular day out,
-   with the delete/modify/add event options.
-###################################################################*/
-//function cal_display(){
-	global $cal_db;
+if($event->canEdit(logged_user())) {
+		add_page_action(lang('edit'), $event->getEditUrl(), 'ico-edit');
+}
+	
+	
 	$modified="";
 	$error = "";
 	// get the date requested.
@@ -80,68 +80,41 @@ echo  cal_top();
 		$duration = CAL_NOT_SPECIFIED;
 	}
 	elseif($typeofevent=="4") $duration = CAL_NOT_SPECIFIED;
-	// start the output
-	$output = "";
-	$output .= cal_navmenu();
-	$output .= '
-		<table align="center" class="box"><tr><td><table border="0" cellpadding="3" width="100%" cellspacing="0">	
-		<tr><td colspan="3" height="10"></td></tr>';
-	// make sure user is allowed to modify this event.
-	//$edit=0;
+	
 	$permission = ProjectEvents::findById($id)->canEdit(logged_user());
-	// print modify/delete links if allowed to modify the event
-	if($permission){
-		$modify_link = " - <a  class='internalLink' class='viewdateoption' href=\"".cal_getlink("index.php?action=modify&amp;id=$id&amp;day=$day&amp;month=$month&amp;year=$year")."\">".CAL_MODIFY."</a>";
-    	$del_link = "<a  class='internalLink' class='viewdateoption' href='#' onClick=\"if(confirm('".CAL_DELETE_EVENT_CONFIRM."')){ og.openLink( '".cal_getlink("index.php?action=delete&id=$id&month=$month&day=$day&year=$year")."');}\">".CAL_DELETE."</a>";
-	}else{
-		$modify_link = "";
-		$del_link = "";
-	}
-	// print alias information if the event was submitted by anonymous user and alias is enabled.
-	$alias = trim($username);
-	if(cal_option("anon_naming") AND $alias!=""){
-		$name = "<i>$alias</i> ";
-	}else{
-		$name = $username;
-	}
-	// set subject and if event is private or not.
-	if($subject=="") $subject = "[".CAL_NO_SUBJECT."]";
-	if($private) $private = "(".CAL_PRIVATE_EVENT.")";
-	else $private = "";
-	// if modified, print modifier username and timestamp
-	// must test agains $row variable here, as testing NULL agains $mod_username is always true (fuck you php)
-	if($event->getUpdatedById()){//$row['updated_by_id']!==NULL){
-		if(!cal_option("hours_24")) $modtimeformat = 'g:i A';
-		else $modtimeformat = 'G:i';
-		$modified = "<br><strong>".CAL_LAST_MODIFIED_ON." ".date("F j, Y @ $modtimeformat")." ".CAL_BY.":</strong> ".$mod_username;
-	}
-	// print any error messages that were thrown.
-	if($error!="") $output .= "<tr><td><br><br><br><center><span class='failure'>$error</span></center><br><br><br></td></tr>";
-	// output all the information organized above.
-	else{ $output .= "  <tr align='left' valign='top'>
-	   	<td width='80'>&nbsp;</td><td colspan='2'><span class='viewevent_title'>:: $subject $private</span>
-		</td></tr><tr align='left' valign='top'><td>&nbsp;</td>
-		<td><strong>".CAL_POSTED_BY.":</strong> $name
-		$modified
-		<br>$del_link $modify_link<br>
-    	<br><b>".CAL_STARTING_TIME.":</b> $time
-		<br><b>".CAL_DURATION.":</b> $duration<br>
-    	<br><b>".CAL_DESCRIPTION.":</b><br>$desc<br>";
-    	if($event->canLinkObject(logged_user(), active_or_personal_project())) { 
-			 $output .= "<fieldset>
-			    <legend class='toggle_collapsed' onclick=\"og.toggle('add_event_linked_objects_div',this)\">" . lang('linked objects') . "</legend>
-			    <div style='display:none' id='add_event_linked_objects_div'>" .
-			    render_object_links($event, $event->canEdit(logged_user())). 
-			"</div>	</fieldset>";
-		} // if 
-    	 $output .= "</td>
-		<td>&nbsp;</td>
-  		</tr>\n";
-	}
-	// return the output to be printed.
-  	echo $output . "</table><br><br></td></tr></table>";
-//} // end function
-
-
-echo cal_bottom();
+	echo cal_navmenu(true,$day,$month,$year);
+	
 ?>
+<div style="padding:7px">
+<div class="event">
+
+<?php
+	
+
+	$title = $event->getSubject();
+	
+	$description = CAL_STARTING_TIME.": $time";
+  	tpl_assign('description', $description);
+		
+	$variables = array();
+	$variables['username'] = $username;
+	if (isset($modtimeformat))
+		$variables['modtimeformat'] = $modtimeformat;
+	$variables['mod_username'] = $mod_username;
+	$variables['time'] = $time;
+	$variables['duration'] = $duration;
+	$variables['desc'] = $desc;
+	
+	
+		
+	
+	tpl_assign("variables", $variables);
+	tpl_assign("content_template", array('view_event', 'event'));
+	tpl_assign('object', $event);
+	tpl_assign('title', $title);
+	tpl_assign('iconclass', 'ico-large-event');
+
+	$this->includeTemplate(get_template_path('view', 'co'));
+?>
+</div>
+</div>

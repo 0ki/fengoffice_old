@@ -72,7 +72,11 @@ class ProjectEvent extends BaseProjectEvent {
 	 * @return string
 	 */
 	function getModifyUrl() {
-		return get_url('event','modify',array('id'=> $this->getId() ));
+		return get_url('event','edit',array('id'=> $this->getId() ));
+		
+		
+		//return get_url('event','submitevent',array('id'=> $this->getId() ));
+		//antes: return get_url('event','modify',array('id'=> $this->getId() ));
 		//ejemplo:http://localhost/opengoo/index.php?ajax=true&a=modify&id=8&day=02&month=4&year=2008&c=event&_dc=1208295398801
 	} // getModifyUrl
 
@@ -94,7 +98,7 @@ class ProjectEvent extends BaseProjectEvent {
 	 * @return string
 	 */
 	function getDetailsUrl() {
-		return $this->getModifyUrl();
+		return get_url('event', 'viewevent', array('id' => $this->getId(), 'active_project' => $this->getProjectId()));
 	} // getDetailsUrl
 
 	/**
@@ -134,10 +138,16 @@ class ProjectEvent extends BaseProjectEvent {
 	 * @return string
 	 */
 	function getDeleteUrl() {
-		get_url('event','delete',array('id'=> $this->getId() ));
+		return get_url('event','delete',array('id'=> $this->getId() ));
 
 	} // getDeleteUrl
 
+	
+	function getViewUrl() {
+		return get_url('event', 'viewdate', array('id' => $this->getId(), 'active_project' => $this->getProjectId()));
+	}
+	
+	
 	// ---------------------------------------------------
 	//  Permissions
 	// ---------------------------------------------------
@@ -254,7 +264,7 @@ class ProjectEvent extends BaseProjectEvent {
 	 * @return string
 	 */
 	function getObjectUrl() {
-		return $this->getDetailsurl();
+		return $this->getDetailsUrl();
 	} // getObjectUrl
 
 	/**
@@ -284,6 +294,21 @@ class ProjectEvent extends BaseProjectEvent {
 		return $this->event_type_object;
 	 } // getEventTypeObject
 	 
+	 
+	 /**
+	 * Validate before save
+	 *
+	 * @access public
+	 * @param array $errors
+	 * @return boolean
+	 */
+	function validate(&$errors) {
+		if(!$this->validatePresenceOf('subject')) $errors[] = lang('event subject required');
+		if(!$this->validateMaxValueOf('description',3000)) $errors[] = lang('event description maxlength');
+		if(!$this->validateMaxValueOf('subject', 100)) $errors[] = lang('event subject maxlength');
+	} // validate
+	
+	
 
 	// ---------------------------------------------------
 	//  Revision interface

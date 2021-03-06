@@ -21,6 +21,13 @@ class ProjectMilestone extends BaseProjectMilestone {
 	 * @var boolean
 	 */
 	protected $is_searchable = true;
+	
+	/**
+	 * Message comments are searchable
+	 *
+	 * @var boolean
+	 */
+	protected $is_commentable = true;
 
 	/**
 	 * Array of searchable columns
@@ -35,7 +42,7 @@ class ProjectMilestone extends BaseProjectMilestone {
 	 * @var User
 	 */
 	private $completed_by;
-
+	
 	/**
 	 * Return if this milestone is completed
 	 *
@@ -81,6 +88,18 @@ class ProjectMilestone extends BaseProjectMilestone {
 	} // isToday
 
 	/**
+	 * Return the name of the user that completed the milestone
+	 *
+	 */
+	function getCompletedByName() {
+		if (!$this->isCompleted()) {
+			return '';
+		} else {
+			return $this->getCompletedBy()->getDisplayName();
+		}
+	}
+	
+	/**
 	 * Check if this is upcoming milestone
 	 *
 	 * @access public
@@ -88,7 +107,7 @@ class ProjectMilestone extends BaseProjectMilestone {
 	 * @return null
 	 */
 	function isUpcoming() {
-		return !$this->isCompleted() && !$this->isToday() && ($this->getDueDate()->getTimestamp() > time());
+		return /*!$this->isCompleted() && */!$this->isToday() && ($this->getLeftInDays() > 0);
 	} // isUpcoming
 
 	/**
@@ -150,11 +169,19 @@ class ProjectMilestone extends BaseProjectMilestone {
 	 */
 	function getTasks() {
 		return ProjectTasks::findAll(array(
-        'conditions' => '`milestone_id` = ' . DB::escape($this->getId()),
-        'order' => 'created_on'
+	        'conditions' => '`milestone_id` = ' . DB::escape($this->getId()),
+	        'order' => 'created_on'
         )); // findAll
 	} // getTasks
 
+	function countAllTasks() {
+		return ProjectTasks::count('`milestone_id` = ' . DB::escape($this->getId()));
+	} // countAllTasks
+	
+	function countOpenTasks() {
+		return ProjectTasks::count('`milestone_id` = ' . DB::escape($this->getId()) . ' AND `completed_on` = ' . DB::escape(EMPTY_DATETIME));
+	} // countAllTasks
+	
 	/**
 	 * Returns true if there are task lists in this milestone
 	 *
@@ -207,6 +234,16 @@ class ProjectMilestone extends BaseProjectMilestone {
 			return null;
 		} // if
 	} // getAssignedTo
+	
+	function getAssignedToName() {
+		if($this->getAssignedToUserId() > 0) {
+			return $this->getAssignedToUser()->getDisplayName();
+		} elseif($this->getAssignedToCompanyId() > 0) {
+			return $this->getAssignedToCompany()->getName();
+		} else {
+			return lang("anyone");
+		} // if
+	} // getAssignedToName
 
 	/**
 	 * Return responsible company
@@ -237,8 +274,10 @@ class ProjectMilestone extends BaseProjectMilestone {
 	 * @return User
 	 */
 	function getCompletedBy() {
-		if(is_null($this->completed_by)) $this->completed_by = Users::findById($this->getCompletedById());
-		return $this->completed_by;
+		if ($this->isCompleted()){
+			if(is_null($this->completed_by)) $this->completed_by = Users::findById($this->getCompletedById());
+			return $this->completed_by;
+		} else return null;
 	} // getCompletedBy
 
 	// ---------------------------------------------------
@@ -382,7 +421,7 @@ class ProjectMilestone extends BaseProjectMilestone {
 	 * @return string
 	 */
 	function getAddTaskUrl() {
-		return get_url('task', 'add_list', array('milestone_id' => $this->getId(), 'active_project' => $this->getProjectId()));
+		return get_url('task', 'add_task', array('milestone_id' => $this->getId(), 'active_project' => $this->getProjectId()));
 	} // getAddTaskUrl
 
 	// ---------------------------------------------------

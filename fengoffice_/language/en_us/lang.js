@@ -40,8 +40,18 @@ _lang = {
 	"tag selected objects": "Tag selected objects",
 	"delete": "Delete",
 	"delete selected objects": "Delete selected objects",
-	"confirm delete object": "Are you sure you want to delete the selected objects?",
+	"confirm delete object": "Are you sure you want to delete the selected object(s)?",
+	"confirm delete contact": "Are you sure you want to delete this contact?",
+	"confirm delete event": "Are you sure you want to delete this event?",
+	"confirm delete file": "Are you sure you want to delete this file?",
+	"confirm delete mail content": "Are you sure you want to delete this email?",
+	"confirm delete milestone": "Are you sure you want to delete this milestone?",
+	"confirm delete chart": "Are you sure you want to delete this chart?",
+	"confirm delete message": "Are you sure you want to delete this message?",
+	"confirm delete task list": "Are you sure you want to delete this task list, along with its subtasks?",
+	"confirm delete webpage": "Are you sure you want to delete this weblink?",
 	"confirm delete workspace": "Are you sure you want to delete workspace '{0}'?",
+	"confirm delete project": "Are you sure that you want to delete this workspace and all related data (messages, tasks, milestones, files...)?",
 	"more": "More",
 	"more actions": "More actions",
 	"more actions on first selected object": "More actions on first selected object",
@@ -142,6 +152,7 @@ _lang = {
 	'confirm delete webpages': 'Are you sure you want to delete the selected web links?',
 	'tag selected webpages': 'Tag selected web links',
 	'edit': 'Edit',
+	'edit selected webpage': 'Edit',
 	
 	/* message manager */
 	'text':'Text',
@@ -182,13 +193,15 @@ _lang = {
 	'no objects with tag message': 'There are no {0} tagged as \'{2}\' in \'{1}\'',
 	'objects': 'Objects',
 	
-	'checkout description': 'Check out this file for editing',
+	'checkout description': 'Lock this file for editing',
+	'undo checkout description': 'Make this file available',
 	'checkin description': 'Check in new version of this file',
 	
 	'existing filename info': '{0}, created by {1} on {2}',
 	
 	/*  */
-	
+	'write' : 'Write',
+	'write new mail' : 'Write E-Mail',
 	'email': 'Email',
 	'weblink': 'Web link',
 	'webpage': 'Web link',
@@ -206,6 +219,55 @@ _lang = {
 	'late': 'Late',
 	'status': 'Status',
 	
-	'open link in new window' : "Open '{0}' in new window" 
+	'open link in new window' : "Open '{0}' in new window",
+	
+	'wschooser desc from': 'Available workspaces',
+	'wschooser desc to': 'Object\'s workspaces',
 
+	'updated by': 'Updated by',
+	'created by': 'Created by',
+	'view as dashboard': 'View as dashboard',
+	
+	/* Charts */
+	'reporting' : 'Reporting',
+	'add new chart' : 'Add new chart',
+	'delete selected charts' : 'Delete selected charts',
+	'confirm delete charts' : 'Are you sure you want to delete the selected charts?',
+	'edit selected chart' : 'Edit selected chart',
+	'tag selected charts' : 'Tag the selected charts',
+	'displaying charts of': 'Displaying charts {0} to {1} of {2}',
+	'no charts to display' : 'There are no charts to display',
+	'charts' : 'Charts',
+	'unlock': 'In use',
+	'lock': 'Available',
+	
+	/* tasks */
+	'assigned to': 'Assigned to',
+	'assign to': 'Assign to',
+	'add subtask to': 'Add subtask to \'{0}\'',
+	'add task to': 'Add task to \'{0}\'',
+	'add task': 'Add task',
+	'add milestone': 'Add milestone',
+	'add new task': 'Add new task',
+	'add new milestone': 'Add new milestone',
+	'confirm delete task': 'Are you sure you want to delete this task and all of its subtasks?',
+	'confirm delete milestone': 'Are you sure you want to delete this milestone?',
+	'due date': 'Due date',
+	'milestone delete tip': 'Delete this milestone',
+	'milestone edit tip': 'Edit this milestone',
+	'milestone check tip': 'Complete/open this milestone',
+	'milestone expand tip': 'Show/hide this milestone\'s tasks',
+	'milestone view tip': 'Milestone: {0} (Click to view more)',
+	'task delete tip': 'Delete this task',
+	'task edit tip': 'Edit this task',
+	'task check tip': 'Complete/open this task',
+	'task expand tip': 'Show/hide this task\'s subtasks',
+	'task view tip': 'Task: {0} (Click to view more)',
+	'task move down tip': 'Move task down one place',
+	
+	'new milestone': 'New milestone',
+	'new task': 'New task',
+	'error adding task': 'Error adding task',
+	'error adding milestone': 'Error adding milestone',
+	'error fetching tasks': 'Error fetching tasks'
 }

@@ -66,7 +66,7 @@ checkFileName = function(name) {
 	var eid = 0;
     
 	var fileIsNew = Ext.get("hfFileIsNew").getValue();
-  	var ws = Ext.get("file[project_id]").getValue();
+  	var ws = Ext.get("ws_ids").getValue();
     if (!name){
     	if(fileIsNew){
     		if (Ext.get('fileFormFilename').dom.value != '')
@@ -89,7 +89,14 @@ checkFileName = function(name) {
  		eid = Ext.get('hfFileId').getValue();
   	}
  	
-    og.openLink(og.getUrl('files','check_filename', {filename: name, wsid: ws, id: eid}), {caller:this});
+    og.openLink(og.getUrl('files','check_filename', {filename: name, wsid: ws, id: eid}), {
+    	caller:this,
+    	callback: function(success, data) {
+    		if (success) {
+    			checkFileNameReturn(data);
+    		}
+    	}
+    });
 }
 
 checkFileNameReturn = function(fileInfo){

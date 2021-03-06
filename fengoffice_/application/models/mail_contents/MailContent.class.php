@@ -147,6 +147,29 @@ class MailContent extends BaseMailContent {
 	function getClassifyUrl() {
 		return get_url('mail', 'classify', array( 'id' => $this->getId(), 'type' => 'email'));
 	} // getClassifyUrl
+
+	/**
+	 * Return send mail URL
+	 *
+	 * @access public
+	 * @param void
+	 * @return string
+	 */
+	function getSendMailUrl() {
+		return get_url('mail', 'add_mail');
+	} // getClassifyUrl
+
+	/**
+	 * Return reply mail URL
+	 *
+	 * @access public
+	 * @param void
+	 * @return string
+	 */
+	function getReplyMailUrl() {
+		return get_url('mail', 'reply_mail', array( 'id' => $this->getId(), 'type' => 'email'));
+	} // getReplyMailUrl
+	
 	// ---------------------------------------------------
 	//  Permissions
 	// ---------------------------------------------------
@@ -235,7 +258,6 @@ class MailContent extends BaseMailContent {
 	function getObjectUrl() {
 		return $this->getViewUrl();
 	} // getObjectUrl
-
 
 
 

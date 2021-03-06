@@ -2,7 +2,7 @@
   set_page_title(lang('groups'));
   
   if(owner_company()->canAddGroup(logged_user())) {
-    add_page_action(lang('add group'), get_url('group', 'add_group'));
+    add_page_action(lang('add group'), get_url('group', 'add_group'), 'ico-add');
   } // if
 ?>
 

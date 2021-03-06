@@ -2,12 +2,12 @@
     set_page_title(lang('update profile'));
   
   if($user->canUpdateProfile(logged_user())) {
-	add_page_action(lang('change password'),$user->getEditPasswordUrl(), 'ico-properties');
 	add_page_action(lang('update avatar'), $user->getUpdateAvatarUrl(), 'ico-picture');
+	add_page_action(lang('change password'),$user->getEditPasswordUrl(), 'ico-password');
   } // if
   
   if($user->canUpdatePermissions(logged_user())) {
-  	add_page_action(lang('permissions'), $user->getUpdatePermissionsUrl(), 'ico-properties');
+  	add_page_action(lang('permissions'), $user->getUpdatePermissionsUrl(), 'ico-permissions');
   } // if
 
 ?>
@@ -72,10 +72,10 @@
           <?php echo yes_no_widget('user[is_admin]', 'userFormIsAdmin', array_var($user_data, 'is_admin'), lang('yes'), lang('no')) ?>
         </div>
         
-        <div>
+        <!-- div>
           <?php echo label_tag(lang('is auto assign'), null, true) ?>
           <?php echo yes_no_widget('user[auto_assign]', 'userFormAutoAssign', array_var($user_data, 'auto_assign'), lang('yes'), lang('no')) ?>
-        </div>
+        </div -->
       </fieldset>
 <?php } else { ?>
       <input type="hidden" name="user[is_admin]" value="0" />

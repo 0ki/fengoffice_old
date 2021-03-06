@@ -86,7 +86,25 @@
 .ico-image {
 	background-image: url(../../images/16x16/types/image.png);
 }
+.ico-image-jpg {
+	background-image: url(../../images/16x16/types/image.png);
+}
+.ico-image-jpeg {
+	background-image: url(../../images/16x16/types/image.png);
+}
+.ico-image-bmp {
+	background-image: url(../../images/16x16/types/image.png);
+}
+.ico-image-gif {
+	background-image: url(../../images/16x16/types/image.png);
+}
 .ico-text {
+	background-image: url(../../images/16x16/types/text.png);
+}
+.ico-text-plain {
+	background-image: url(../../images/16x16/types/text.png);
+}
+.ico-txt {
 	background-image: url(../../images/16x16/types/text.png);
 }
 .ico-text-html {

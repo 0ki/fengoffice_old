@@ -19,8 +19,7 @@
 <form class="internalForm" action="<?php echo get_url('files', 'save_spreadsheet') ?>" method="post" enctype="multipart/form-data">
 <?php } else { ?>
 <form class="internalForm" action="<?php echo get_url('files', 'save_spreadsheet',array(
-	        'id' => $file->getId(), 
-	        'active_project' =>  $file->getProjectId())) ?>" method="post" enctype="multipart/form-data">
+	        'id' => $file->getId())) ?>" method="post" enctype="multipart/form-data">
 <?php } // if ?>
 
 <?php tpl_display(get_template_path('form_errors')) ?>

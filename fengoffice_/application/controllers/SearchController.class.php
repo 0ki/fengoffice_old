@@ -56,14 +56,34 @@ class SearchController extends ApplicationController {
 				}
 				$c++;
 			}
+			if ( (logged_user()))
+				$search_results = $this->searchContacts($search_for,$search_results,5);
 		} // if
 		$timeEnd = microtime(true);
 		
 		tpl_assign('search_string', $search_for);
 		tpl_assign('search_results', $search_results);
 		tpl_assign('time', $timeEnd - $timeBegin);
+		ajx_set_no_toolbar(true);
 	} // search
 	
+	function searchContacts($search_term, $search_results = null, $row_count = 5){
+		if (!is_array($search_results))
+			$search_results = array();
+			
+		$results = SearchableObjects::searchByType($search_term, '0', 'Contacts', true, $row_count);
+		if (count($results[0]) > 0){
+			$sr = array();
+			$sr['result'] = $results[0];
+			$sr['pagination'] = $results[1];
+			$sr['type'] = lang('contacts');
+			$sr['icontype'] = 'contact';
+			$sr['manager'] = 'Contacts';
+			$search_results[] = $sr;
+		}
+		
+		return $search_results;
+	}
 	
 	/**
 	 * Execute search

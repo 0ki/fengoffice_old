@@ -144,6 +144,116 @@
     } // setServer()
 
     /**
+     * Return value of 'smtp_server' server name field
+     *
+     * @access public
+     * @param void
+     * @return string
+     */
+    function getSmtpServer() {
+    	return $this->getColumnValue('smtp_server');
+    } // getsmtp()
+
+    /**
+     * Set value of 'smtp' server name field
+     *
+     * @access public
+     * @param string $value
+     * @return boolean
+     */
+    function setSmtpServer($value) {
+    	return $this->setColumnValue('smtp_server', $value);
+    } // setsmtp()
+
+    /**
+     * Return value of 'smtpPort' server name field
+     *
+     * @access public
+     * @param void
+     * @return string
+     */
+    function getSmtpPort() {
+    	return $this->getColumnValue('smtp_port');
+    } // getsmtpPort()
+
+    /**
+     * Set value of 'smtpPort' server name field
+     *
+     * @access public
+     * @param string $value
+     * @return boolean
+     */
+    function setSmtpPort($value) {
+    	return $this->setColumnValue('smtp_port', $value);
+    } // setsmtpPort()
+
+    /**
+     * Return value of 'smtpUsername' field
+     *
+     * @access public
+     * @param void
+     * @return string
+     */
+    function getSmtpUsername() {
+    	return $this->getColumnValue('smtp_username');
+    } // getsmtpUsername()
+
+    /**
+     * Set value of 'smtpUsername' field
+     *
+     * @access public
+     * @param string $value
+     * @return boolean
+     */
+    function setSmtpUsername($value) {
+    	return $this->setColumnValue('smtp_username', $value);
+    } // setsmtpUsername()
+
+    /**
+     * Return value of 'smtpPassword' field
+     *
+     * @access public
+     * @param void
+     * @return string
+     */
+    function getSmtpPassword() {
+    	return $this->getColumnValue('smtp_password');
+    } // getsmtpPassword()
+
+    /**
+     * Set value of 'smtpPassword' field
+     *
+     * @access public
+     * @param string $value
+     * @return boolean
+     */
+    function setSmtpPassword($value) {
+    	return $this->setColumnValue('smtp_password', $value);
+    } // setsmtpPassword()
+
+    /**
+     * Return value of 'smtp_use_auth' field
+     *
+     * @access public
+     * @param void
+     * @return string
+     */
+    function getSmtpUseAuth() {
+    	return $this->getColumnValue('smtp_use_auth');
+    } //  getSmtpUseAuth()
+
+    /**
+     * Set value of 'smtp_use_auth' field
+     *
+     * @access public
+     * @param string $value
+     * @return boolean
+     */
+    function  setSmtpUseAuth($value) {
+    	return $this->setColumnValue('smtp_use_auth', $value);
+    } //  setSmtpUseAuth()
+
+    /**
      * Return value of 'is_imap' field
      *
      * @access public

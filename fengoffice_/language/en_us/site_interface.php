@@ -17,7 +17,7 @@
     'online users' => 'Online users',
     'online users desc' => 'Users who were active in last 15 minutes:',
     
-  
+  	'charts' => 'Charts',
     'contacts' => 'Contacts',
     'dashboard' => 'Dashboard',
     'administration' => 'Administration',
@@ -271,6 +271,7 @@
   'new company' => 'New company',
   'new workspace' => 'New workspace',
   'new task list' => 'New task',
+  'new event' => 'New event',
   'new webpage' => 'New weblink',
   'new milestone' => 'New milestone',
   'new message' => 'New message',
@@ -280,15 +281,41 @@
   'save changes' => 'Save changes',
   'administrator options' => 'Administrator options',
   
+  'system permissions' => 'System permissions',
+  'project permissions' => 'Workspace permissions',
+  
+  
   /* Search */
   
+  'actions' => 'Actions',
+  'edit properties' => 'Edit properties',
+  'you' => 'You',
+  'created by' => 'Created by',
+  'modified by' => 'Modified by',
+  'user date' => '<a class="internalLink" href="{0}">{1}</a>, on {2}',
   'created by on' => 'Created by <a class="internalLink" href="{0}">{1}</a> on {2}',
+  'modified by on' => 'Modified by <a class="internalLink" href="{0}">{1}</a> on {2}',
   'created by on short' => '<a class="internalLink" href="{0}">{1}</a>, {2}',
   'time used in search' => 'Search performed in {0} seconds',
   'more results' => 'There are {0} more results...',
   
   
   'parent workspace' => 'Parent Workspace',
+  'close' => 'Close',
+  'all projects' => 'All workspaces',
+  'view as list' => 'View as list',
+  'pending tasks' => 'Pending tasks',
+  'messages' => 'Messages',
+  'complete' => 'Complete',
+  'incomplete' => 'Incomplete',
+  'complete task' => 'Complete this task',
+  'subtask count all open' => '{0} subtasks, {1} still open',
+  'due in x days' => 'Due in {0} days',
+  'overdue by x days' => 'Overdue by {0} days',
+  'due today' => 'Due today',
+  
+  
+  'undo checkout' => 'Undo file checkout'
   ); // array
 
 ?>
