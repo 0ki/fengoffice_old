@@ -623,15 +623,15 @@ class MemberController extends ApplicationController {
 			
 			DB::commit();
 			flash_success(lang('success delete member', $member->getName()));
-                        if (get_id('start')) {
-                            ajx_current("start");
-                        } else {
-                            if (get_id('dont_reload')) {
-                                ajx_current("empty");
-                            } else {
-                                ajx_current("reload");
-                            }
-                        }			
+			if (get_id('start')) {
+				ajx_current("start");
+			} else {
+				if (get_id('dont_reload')) {
+					ajx_current("empty");
+				} else {
+					ajx_current("reload");
+				}
+			}
 		} catch (Exception $e) {
 			DB::rollback();
 			flash_error($e->getMessage());

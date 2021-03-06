@@ -44,7 +44,9 @@
     } // connect
     
     function close() {
-    	@mysql_close($this->getLink());
+    	if ($this->isResource($this->link)) {
+    		@mysql_close($this->getLink());
+    	}
     }
     
     function isResource($resource) {
@@ -59,7 +61,10 @@
     * @return mixed
     */
     protected function executeQuery($sql) {
-      return @mysql_query($sql, $this->link);
+		if (!$this->isResource($this->link)) {
+    		$this->connect($this->getParams());
+    	}
+    	return @mysql_query($sql, $this->link);
     } // executeQuery
     
     /**
@@ -278,6 +283,10 @@
         return implode(', ', $escaped_array);
       } // if
       
+      if (!$this->isResource($this->link)) {
+    	$this->connect($this->getParams());
+      }
+
       if(is_object($unescaped) && ($unescaped instanceof DateTimeValue)) {
         return "'" . mysql_real_escape_string($unescaped->toMySQL(), $this->link) . "'";
       } // if

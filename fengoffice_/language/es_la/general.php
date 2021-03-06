@@ -282,9 +282,10 @@
   	'dont assign' => 'No asignar',
 	'me'=> 'Usted',
 	'late tasks and upcoming tasks' => 'Tareas atrasadas y próximas',
-    'advanced search' => 'Búsqueda avanzada',
+        'advanced search' => 'Búsqueda avanzada',
 	'empty title' => 'Título vacío',
     
-        'field Objects type_content' => 'Tipo de contenido',
+        'field Objects type_content' => 'Tipo de contenido',    
+        'option repetitive task completed' => 'Esta tarea ya ha sido completada. Para modificar los datos de repetición por favor edite alguna tarea pendiente de esta serie.',
 
 ); ?>

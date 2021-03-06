@@ -464,24 +464,12 @@ class TemplateController extends ApplicationController {
 			if ($copy instanceof ProjectTask) {
 				ProjectTasks::copySubTasks($object, $copy, false);
 				foreach($copy->getOpenSubTasks(false) as $m_task){
-				/*	if (!can_write(logged_user(), $selected_members_instances, $m_task->getObjectTypeId()) ) {
-						flash_error(lang('no context permissions to add', lang("tasks")));
-						DB::rollback();
-						ajx_current("empty");
-						return;
-					}*/
 					$controller->add_to_members($m_task, $object_members);
 				}
 				$manager = $copy->manager();
 			} else if ($copy instanceof ProjectMilestone) {
 				ProjectMilestones::copyTasks($object, $copy, false);
 				foreach($copy->getTasks(false) as $m_task){
-				/*	if (!can_write(logged_user(), $selected_members_instances, $m_task->getObjectTypeId()) ) {
-						flash_error(lang('no context permissions to add', lang("tasks")));
-						DB::rollback();
-						ajx_current("empty");
-						return;
-					}*/
 					$controller->add_to_members($m_task, $object_members);
 				}
 				$manager = $copy->manager();
@@ -534,9 +522,26 @@ class TemplateController extends ApplicationController {
 					}
 					$copy->save();
 				}
-			
-			
 			}
+			
+			// subscribe assigned to
+			if ($copy instanceof ProjectTask) {
+				foreach($copy->getOpenSubTasks(false) as $m_task){
+					if ($m_task->getAssignedTo() instanceof Contact) {
+						$m_task->subscribeUser($copy->getAssignedTo());
+					}
+				}
+				if ($copy->getAssignedTo() instanceof Contact) {
+					$copy->subscribeUser($copy->getAssignedTo());
+				}
+			} else if ($copy instanceof ProjectMilestone) {
+				foreach($copy->getTasks(false) as $m_task){
+					if ($m_task->getAssignedTo() instanceof Contact) {
+						$m_task->subscribeUser($copy->getAssignedTo());
+					}
+				}
+			}
+			
 			// copy reminders
 			$reminders = ObjectReminders::getByObject($object);
 			foreach ($reminders as $reminder) {

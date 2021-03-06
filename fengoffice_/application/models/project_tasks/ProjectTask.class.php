@@ -360,14 +360,22 @@ class ProjectTask extends BaseProjectTask {
 	 * @param void
 	 * @return null
 	 */
-	function completeTask() {
+	function completeTask($options) {
 		if (!$this->canChangeStatus(logged_user())) {
 			flash_error('no access permissions');
 			ajx_current("empty");
 			return;
 		}
 		$this->setCompletedOn(DateTimeValueLib::now());
-		$this->setCompletedById(logged_user()->getId());		
+		$this->setCompletedById(logged_user()->getId());
+
+                if($options == "yes"){
+                    foreach ($this->getAllSubTasks() as $subt) {
+                            $subt->setCompletedById(logged_user()->getId());
+                            $subt->setCompletedOn(DateTimeValueLib::now());
+                            $subt->save();
+                    }
+                }                
                 
                 if(user_config_option('close timeslot open')){
                     $timeslots = $this->getTimeslots();
@@ -516,11 +524,15 @@ class ProjectTask extends BaseProjectTask {
 		}
 	}
 	
-	function cloneTask($new_st_date='',$new_due_date='',$copy_status = false,$copy_repeat_options = true) {
+	function cloneTask($new_st_date='',$new_due_date='',$copy_status = false,$copy_repeat_options = true,$parent_subtask=0) {
 
 		$new_task = new ProjectTask();
 				
-		$new_task->setParentId($this->getParentId());
+                if($parent_subtask != 0){
+                    $new_task->setParentId($parent_subtask);
+                }else{
+                    $new_task->setParentId($this->getParentId());
+                }		
 		$new_task->setObjectName($this->getObjectName());
 		$new_task->setText($this->getText());
 		$new_task->setAssignedToContactId($this->getAssignedToContactId());
@@ -537,7 +549,14 @@ class ProjectTask extends BaseProjectTask {
 		$new_task->setFromTemplateId($this->getFromTemplateId());
 		$new_task->setUseStartTime($this->getUseStartTime());
 		$new_task->setUseDueTime($this->getUseDueTime());
-                $new_task->setOriginalTaskId($this->getObjectId());
+                $new_task->setTypeContent($this->getTypeContent());
+                if($this->getParentId() == 0){//if not subtask
+                    if($this->getOriginalTaskId() == 0){
+                            $new_task->setOriginalTaskId($this->getObjectId());
+                    }else{
+                            $new_task->setOriginalTaskId($this->getOriginalTaskId());
+                    }    
+                }                            
 		if ($this->getDueDate() instanceof DateTimeValue )
 			$new_task->setDueDate(new DateTimeValue($this->getDueDate()->getTimestamp()));
 		if ($this->getStartDate() instanceof DateTimeValue )
@@ -554,15 +573,13 @@ class ProjectTask extends BaseProjectTask {
 			$new_task->setRepeatD($this->getRepeatD());
 			$new_task->setRepeatM($this->getRepeatM());
 			$new_task->setRepeatY($this->getRepeatY());
-		}
-		
+		}		
 		if($new_st_date != "") {
 			if ($new_task->getStartDate() instanceof DateTimeValue) $new_task->setStartDate($new_st_date);
 		}
 		if($new_due_date != "") {
 			if ($new_task->getDueDate() instanceof DateTimeValue) $new_task->setDueDate($new_due_date);
-		}
-		
+		}		
 		$new_task->save();
 		
 		if (is_array($this->getAllLinkedObjects())) {
@@ -573,8 +590,9 @@ class ProjectTask extends BaseProjectTask {
 		
 		$sub_tasks = $this->getAllSubTasks();
 		foreach ($sub_tasks as $st) {
+                        $new_dates = $this->getNextRepetitionDatesSubtask($st,$new_task, $new_st_date, $new_due_date);
 			if ($st->getParentId() == $this->getId()) {
-				$new_st = $st->cloneTask($new_st_date,$new_due_date,$copy_status);
+				$new_st = $st->cloneTask(array_var($new_dates, 'st'),array_var($new_dates, 'due'),$copy_status, $copy_repeat_options, $new_task->getId());
 				if ($copy_status) {
 					$new_st->setCompletedById($st->getCompletedById());
 					$new_st->setCompletedOn($st->getCompletedOn());
@@ -583,6 +601,7 @@ class ProjectTask extends BaseProjectTask {
 				$new_task->attachTask($new_st);
 			}
 		}
+                
 		foreach ($this->getAllComments() as $com) {
 			$new_com = new Comment();
 			$new_com->setAuthorEmail($com->getAuthorEmail());
@@ -597,10 +616,12 @@ class ProjectTask extends BaseProjectTask {
 			
 			$new_com->save();
 		}
+                
 		$_POST['subscribers'] = array();
 		foreach ($this->getSubscribers() as $sub) {
 			$_POST['subscribers']["user_" . $sub->getId()] = "checked";
 		}
+                
 		$obj_controller = new ObjectController();
 		$obj_controller->add_to_members($new_task, $this->getMemberIds());
 		$obj_controller->add_subscribers($new_task);
@@ -657,20 +678,20 @@ class ProjectTask extends BaseProjectTask {
 		$this->setRepeatY(0);
 	}
         
-	function getNextRepetitionDates($task, &$new_st_date, &$new_due_date) {
+	private function getNextRepetitionDatesSubtask($subtask, $task, &$new_st_date, &$new_due_date) {
 		$new_due_date = null;
 		$new_st_date = null;
-
-		if ($task->getStartDate() instanceof DateTimeValue ) {
-			$new_st_date = new DateTimeValue($task->getStartDate()->getTimestamp());
+                
+		if ($subtask->getStartDate() instanceof DateTimeValue ) {
+			$new_st_date = new DateTimeValue($subtask->getStartDate()->getTimestamp());
 		}
-		if ($task->getDueDate() instanceof DateTimeValue ) {
-			$new_due_date = new DateTimeValue($task->getDueDate()->getTimestamp());
+		if ($subtask->getDueDate() instanceof DateTimeValue ) {
+			$new_due_date = new DateTimeValue($subtask->getDueDate()->getTimestamp());
 		}
 		if ($task->getRepeatD() > 0) {
 			if ($new_st_date instanceof DateTimeValue) {
 				$new_st_date = $new_st_date->add('d', $task->getRepeatD());
-			}
+			}                        
 			if ($new_due_date instanceof DateTimeValue) {
 				$new_due_date = $new_due_date->add('d', $task->getRepeatD());
 			}
@@ -689,7 +710,23 @@ class ProjectTask extends BaseProjectTask {
 				$new_due_date = $new_due_date->add('y', $task->getRepeatY());
 			}
 		}
+
+		$new_st_date = $this->correct_days_task_repetitive($new_st_date);
+		$new_due_date = $this->correct_days_task_repetitive($new_due_date);
+		
+		return array('st' => $new_st_date, 'due' => $new_due_date);
 	}
+        
+        function correct_days_task_repetitive($date){
+            if($date != ""){
+                $working_days = explode(",",config_option("working_days"));
+                if(!in_array(date("w",  $date->getTimestamp()), $working_days)){
+                    $date = $date->add('d', 1);
+                    $this->correct_days_task_repetitive($date);
+                }
+            }
+            return $date;
+        }
 	
 	// ---------------------------------------------------
 	//  TaskList Operations

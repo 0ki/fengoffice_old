@@ -21,12 +21,14 @@
 				<div id="<?php echo $genid?>dimension<?php echo $dimension->getId()?>" style="display:none;">
 <?php
 			$dim_members = array_var($members, $dimension->getId());
+			$alt = true;
 			if (is_array($dim_members)) {
 				foreach ($dim_members as $mem) {/* @var $mem Member */
+					$alt = !$alt;
 					$indent = 16 * $mem->getDepth();
 ?>
 						<div style="margin-left:<?php echo $indent?>px;width:<?php echo 800 - $indent?>px;" id="abm-members-item-container-<?php echo $mem->getId() ?>"
-							class="<?php echo ($mem->getArchivedById() > 0 ? "member-item-archived" : "")?>"
+							class="<?php echo ($mem->getArchivedById() > 0 ? "member-item-archived" : "")?><?php echo ($alt ? " edit-mem-alt" : "")?>"
 							onmouseover="og.editMembers.showHideOptions('<?php echo $genid?>actions<?php echo $mem->getId()?>', <?php echo $mem->getId()?>, true);" 
 							onmouseout="og.editMembers.showHideOptions('<?php echo $genid?>actions<?php echo $mem->getId()?>', <?php echo $mem->getId()?>, false);">
 
@@ -34,7 +36,7 @@
 								<span class="coViewAction <?php echo $mem->getIconClass()?>">&nbsp;</span>
 								<span class="abm-members-name"><?php echo $mem->getName() . ($mem->getArchivedById() > 0 ? " (".lang('archived').")" : "");?></span>
 							</td><td>
-								<span style="float:right;visibility:hidden;font-weight:normal;" id="<?php echo $genid?>actions<?php echo $mem->getId()?>">
+								<span style="float:right;opacity:0.25;filter:alpha(opacity=25);font-weight:normal;" id="<?php echo $genid?>actions<?php echo $mem->getId()?>">
 									<a href="<?php echo get_url('member', 'edit', array('id' => $mem->getId()))?>" class="db-ico ico-edit" style="padding:4px 10px 0 16px;"><?php echo lang('edit')?></a>
 								<?php if ($dimension->getDefinesPermissions()) : ?>	
 									<a href="<?php echo get_url('member', 'edit_permissions', array('id' => $mem->getId()))?>" class="db-ico ico-permissions" style="padding:4px 10px 0 16px;"><?php echo lang('permissions')?></a>
@@ -44,7 +46,7 @@
 								</span>
 							</td></tr></table>
 						</div>
-<?php			} 
+<?php			}
 			} ?>
 				<div style="margin-top:10px;"><a class="db-ico ico-add" style="padding:3px 0 0 20px;" href="<?php echo get_url('member', 'add', array("dim_id" => $dimension->getId()))?>">
 					<?php echo lang('add member to this dimension')?>

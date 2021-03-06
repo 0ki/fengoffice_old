@@ -416,6 +416,7 @@ ogTasks.groupTasks = function(displayCriteria, tasksContainer){
 	for (var i = 0; i < tasksContainer.length; i++){
 		var task = tasksContainer[i];
 		if (!task.parent){
+			var this_task_groups = [];
 			var group = null;
 			switch(displayCriteria.group_by){
 				case 'milestone': group = (task.milestoneId?(this.getMilestone(task.milestoneId)?task.milestoneId:null):null); break;
@@ -437,26 +438,35 @@ ogTasks.groupTasks = function(displayCriteria, tasksContainer){
 							for (j=0; j<og.dimensions[dim_id].length; j++) {
 								if (og.dimensions[dim_id][task.members[k]]) {
 									group = task.members[k];
+									this_task_groups.push(group);
 									break;
 								}
 							}
 						}
+						if (this_task_groups.length == 0) {
+							this_task_groups.push(groups[0]);
+						}
 					}
 			}
 			
-			if (group || group == 0){
-				if (groups.indexOf(group) < 0){
-					groups[groups.length] = group;
-					tasks[tasks.length] = [];
-				}
-				if (!tasks[groups.indexOf(group)])
-					 tasks[groups.indexOf(group)] = [];
-				var tasksArray = tasks[groups.indexOf(group)]; 
-				tasksArray[tasksArray.length]= task;
-			} else {
-				tasks[0][tasks[0].length] = task;
+			if (displayCriteria.group_by.indexOf('dimension_') != 0) {
+				this_task_groups.push(group);
 			}
-			
+			for (var x=0; x<this_task_groups.length; x++) {
+				group = this_task_groups[x];
+				if (group || group == 0){
+					if (groups.indexOf(group) < 0){
+						groups[groups.length] = group;
+						tasks[tasks.length] = [];
+					}
+					if (!tasks[groups.indexOf(group)])
+						 tasks[groups.indexOf(group)] = [];
+					var tasksArray = tasks[groups.indexOf(group)]; 
+					tasksArray[tasksArray.length]= task;
+				} else {
+					tasks[0][tasks[0].length] = task;
+				}
+			}
 		}
 	}
 	if (displayCriteria.group_by == 'milestone'){ 			//Show all milestones
@@ -952,15 +962,19 @@ ogTasks.mouseMovement = function(task_id, group_id, mouse_is_over){
 
 ogTasks.groupMouseOver = function(group_id){
 	var actions = document.getElementById('ogTasksPanelGroupActions' + group_id);
-	if (actions)
-		actions.style.visibility = 'visible';
+	if (actions) {
+		actions.style.opacity = '1.0';
+		actions.style.filter = 'alpha(opacity=100)';
+	}
 }
 
 ogTasks.groupMouseOut = function(group_id){
 	if (!ogTaskEvents.lastGroupId || ogTaskEvents.lastGroupId != group_id){
 		var actions = document.getElementById('ogTasksPanelGroupActions' + group_id);
-		if (actions)
-			actions.style.visibility = 'hidden';
+		if (actions) {
+			actions.style.opacity = '0.35';
+			actions.style.filter = 'alpha(opacity=35)';
+		}
 	}
 }
 

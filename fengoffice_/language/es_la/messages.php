@@ -546,6 +546,7 @@
 	'copied from file' => 'Copied from file {0} ({1})',
 	'success purging trash' => '{0} objects deleted.',
 	'success sending reminders' => '{0} reminders sent.',
+	'error upload file' => 'No se ha podido subir el archivo',
 	'failed to assign contact due to permissions' => 'No tiene permisos para escribir personas en los siguientes espacios: {0}',
 	'success assign user billing categories' => 'Las categorías de facturación fueron asignadas a los usuarios correctamente',
 	'confirm delete billing category' => 'Está seguro que desea eliminar la categoría de facturación seleccionada?',

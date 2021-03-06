@@ -1337,7 +1337,14 @@ abstract class ContentDataObject extends ApplicationDataObject {
 	}
 	
 	function addToMembers($members_array){
-		ObjectMembers::addObjectToMembers($this->getId(),$members_array);	
+		ObjectMembers::addObjectToMembers($this->getId(),$members_array);
+		if ($this instanceof ProjectFile) {
+			$inline_images = ProjectFiles::findAll(array("conditions" => "mail_id = ".$this->getId()));
+			foreach ($inline_images as $inline_img) {
+				$inline_img->addToMembers($members_array);
+				$inline_img->addToSharingTable();
+			}
+		}
 	}
 	
 	/**
@@ -1740,6 +1747,10 @@ abstract class ContentDataObject extends ApplicationDataObject {
 		Hook::fire('override_object_color', $this, $color);
 		
 		return $color;
+	}
+	
+	function canAddTimeslot($user) {
+		return can_add_timeslots($user, $this->getMembers());
 	}
 	
 }

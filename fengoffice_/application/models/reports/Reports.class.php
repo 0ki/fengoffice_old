@@ -141,7 +141,7 @@ class Reports extends BaseReports {
 											break;
 										case '<=':
 										case '>=':
-											$allConditions .= '`'.$condField->getFieldName().'` '.$condField->getCondition().' '.DB::escape($value).' OR '.$equal.' ';
+											$allConditions .= '(`'.$condField->getFieldName().'` '.$condField->getCondition().' '.DB::escape($value).' OR '.$equal.') ';
 											break;																
 									}										
 								} else {

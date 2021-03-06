@@ -805,7 +805,7 @@ class ContactController extends ApplicationController {
 		//$this->setTemplate('add_contact');
 		
 		if (array_var($_GET, 'is_user') || array_var(array_var($_POST, 'contact'),'user')) {
-			if (!can_manage_configuration(logged_user())) {
+			if (!can_manage_security(logged_user())) {
 				flash_error(lang('no access permissions'));
 				ajx_current("empty");
 				return;

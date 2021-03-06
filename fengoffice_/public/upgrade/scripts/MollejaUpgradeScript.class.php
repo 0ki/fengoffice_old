@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Molleja upgrade script will upgrade FengOffice 2.0.1 to FengOffice 2.1-rc
+ * Molleja upgrade script will upgrade FengOffice 2.0.1 to FengOffice 2.1-rc2
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -40,7 +40,7 @@ class MollejaUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('2.0.1');
-		$this->setVersionTo('2.1-rc');
+		$this->setVersionTo('2.1-rc2');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -117,19 +117,14 @@ class MollejaUpgradeScript extends ScriptUpgraderScript {
 					INSERT INTO `".$t_prefix."file_types` (`id` ,`extension` ,`icon` ,`is_searchable` ,`is_image`) VALUES
 					 ('34', 'odt', 'doc.png', '1', '0'), ('35', 'fodt', 'doc.png', '1', '0')
 					ON DUPLICATE KEY UPDATE id=id;";
-				
-				// FILE EXTENSION PREVENTION UPLOADING
-				if (!$this->checkColumnExists($t_prefix."file_types", 'is_allow', $this->database_connection)) {
-					$upgrade_script .= "
-						ALTER TABLE `".$t_prefix."file_types` ADD COLUMN `is_allow` TINYINT(1) NOT NULL DEFAULT '1';";
-				}
 			}
-				
+
 			// UPDATE VERSION 2.1-rc
 			if (version_compare($installed_version, '2.1-rc') < 0) {
 				//TYPES IN PERMISSION GROUPS
 				if (!$this->checkColumnExists($t_prefix."permission_groups", 'type', $this->database_connection)) {
-					$upgrade_script .= "ALTER TABLE  `".$t_prefix."permission_groups` ADD `type` ENUM(  'roles',  'permission_groups',  'user_groups' ) NOT NULL;";
+					$upgrade_script .= "
+						ALTER TABLE  `".$t_prefix."permission_groups` ADD `type` ENUM(  'roles',  'permission_groups',  'user_groups' ) NOT NULL;";
 				}
 				$upgrade_script .= "
 					UPDATE `".$t_prefix."permission_groups` SET `type` = 'roles' WHERE `id` <= 13;
@@ -139,6 +134,12 @@ class MollejaUpgradeScript extends ScriptUpgraderScript {
 
 			//UPDATE VERSION 2.1
 			if (version_compare($installed_version, '2.1') < 0) {
+				// FILE EXTENSION PREVENTION UPLOADING
+				if (!$this->checkColumnExists($t_prefix."file_types", 'is_allow', $this->database_connection)) {
+					$upgrade_script .= "
+						ALTER TABLE `".$t_prefix."file_types` ADD COLUMN `is_allow` TINYINT(1) NOT NULL DEFAULT '1';";
+				}
+				
 				//CLASIFFY EVENTS
 				if (!$this->checkColumnExists($t_prefix."external_calendar_users", 'related_to', $this->database_connection)) {
 					$upgrade_script .= "

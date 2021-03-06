@@ -124,7 +124,7 @@ class ConfigController extends ApplicationController {
 				foreach ($options as $option) {
 				// update global cache if available					
 					if (GlobalCache::isAvailable()) {							
-						GlobalCache::delete('user_config_option_def_'.$option->getName(), $new_value);
+						GlobalCache::delete('user_config_option_def_'.$option->getName());
 					}
 					
 					$new_value = array_var($submited_values, $option->getName());

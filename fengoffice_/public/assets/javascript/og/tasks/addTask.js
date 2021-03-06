@@ -109,7 +109,7 @@ ogTasks.checkEnterPress = function (e,id)
 		characterCode = e.keyCode;
 	}
 	if (characterCode == 13) {
-		ogTasks.SubmitNewTask(id);
+		ogTasks.SubmitNewTask(id,true);
 		return false;
 	}
 	return true;
@@ -134,7 +134,8 @@ ogTasks.drawTaskForm = function(container_id, data){
 		html += "<input type='hidden' id='ogTasksPanelATParentId' value='" + data.parentId + "'>";
 	}
 	html += "<b>" + lang('title') + ":</b><br/>";
-	html += "<input id='ogTasksPanelATTitle' type='text' class='title' name='task[name]' tabIndex=1000 value='' onkeypress='return ogTasks.checkEnterPress(event,"+ data.taskId +");' maxlength='255' size='255'   />";
+        //html += "<input id='ogTasksPanelATTitle' type='text' class='title' name='task[name]' tabIndex=1000 value='' onkeypress='return ogTasks.checkEnterPress(event,"+ data.taskId +");' maxlength='255' size='255'   />";
+	html += "<input id='ogTasksPanelATTitle' type='text' class='title' name='task[name]' tabIndex=1000 value='' maxlength='255' size='255'   />";
 		
 	//First column
 	html += "<table style='width:100%; margin-top:7px'><tr><td>";
@@ -222,13 +223,13 @@ ogTasks.drawTaskForm = function(container_id, data){
                 if(data.multiAssignment){
                     html += "<button onclick='og.TaskMultiAssignment();return false;' tabIndex=1600 type='submit' class='submit'>" + (data.isEdit? lang('save changes') : lang('add task')) + "</button>&nbsp;&nbsp;<button class='submit' tabIndex=1700 onclick='ogTasks.hideAddNewTaskForm();return false;'>" + lang('cancel') + "</button>";
                 }else{
-                    html += "<button onclick='ogTasks.SubmitNewTask(" + data.taskId + ");return false;' tabIndex=1600 type='submit' class='submit'>" + (data.isEdit? lang('save changes') : lang('add task')) + "</button>&nbsp;&nbsp;<button class='submit' tabIndex=1700 onclick='ogTasks.hideAddNewTaskForm();return false;'>" + lang('cancel') + "</button>";
+                    html += "<button onclick='ogTasks.SubmitNewTask(" + data.taskId + ", true);return false;' tabIndex=1600 type='submit' class='submit'>" + (data.isEdit? lang('save changes') : lang('add task')) + "</button>&nbsp;&nbsp;<button class='submit' tabIndex=1700 onclick='ogTasks.hideAddNewTaskForm();return false;'>" + lang('cancel') + "</button>";
                 }
             }else{
-                html += "<button onclick='ogTasks.SubmitNewTask(" + data.taskId + ");return false;' tabIndex=1600 type='submit' class='submit'>" + (data.isEdit? lang('save changes') : lang('add task')) + "</button>&nbsp;&nbsp;<button class='submit' tabIndex=1700 onclick='ogTasks.hideAddNewTaskForm();return false;'>" + lang('cancel') + "</button>";
+                html += "<button onclick='ogTasks.SubmitNewTask(" + data.taskId + ", true);return false;' tabIndex=1600 type='submit' class='submit'>" + (data.isEdit? lang('save changes') : lang('add task')) + "</button>&nbsp;&nbsp;<button class='submit' tabIndex=1700 onclick='ogTasks.hideAddNewTaskForm();return false;'>" + lang('cancel') + "</button>";
             }
         }else{
-            html += "<button onclick='ogTasks.SubmitNewTask(" + data.taskId + ");return false;' tabIndex=1600 type='submit' class='submit'>" + (data.isEdit? lang('save changes') : lang('add task')) + "</button>&nbsp;&nbsp;<button class='submit' tabIndex=1700 onclick='ogTasks.hideAddNewTaskForm();return false;'>" + lang('cancel') + "</button>";
+            html += "<button onclick='ogTasks.SubmitNewTask(" + data.taskId + ", true);return false;' tabIndex=1600 type='submit' class='submit'>" + (data.isEdit? lang('save changes') : lang('add task')) + "</button>&nbsp;&nbsp;<button class='submit' tabIndex=1700 onclick='ogTasks.hideAddNewTaskForm();return false;'>" + lang('cancel') + "</button>";
         }
 	
 	html += "</td></table>";	
@@ -556,12 +557,28 @@ ogTasks.GetNewTaskParameters = function(wrapWith,task_id){
 	}
 }
 
-ogTasks.SubmitNewTask = function(task_id){
+ogTasks.SubmitNewTask = function(task_id,view_popup){
 	var parameters = this.GetNewTaskParameters('task',task_id);
+        var url = '';
 	if (task_id > 0) {
-		var url = og.getUrl('task', 'quick_edit_task', {id:task_id});
+                if(view_popup){
+                        var related = og.checkRelated("task",task_id);
+                        if(related){
+                            this.dialog = new og.TaskPopUp("edit",task_id);
+                            this.dialog.setTitle(lang('tasks related'));	                                
+                            this.dialog.show();
+                            return false;
+                        }else{
+                            url = og.getUrl('task', 'quick_edit_task', {id:task_id});
+                        }
+                } else {
+                        var opt = $("#" + og.genid + "type_related").val();
+                        parameters["type_related"] = opt;
+                        url = og.getUrl('task', 'quick_edit_task', {id:task_id});
+                }
+		
 	} else {
-		var url = og.getUrl('task', 'quick_add_task');
+		url = og.getUrl('task', 'quick_add_task');
 	}
 
 	og.openLink(url, {

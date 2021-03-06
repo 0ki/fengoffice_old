@@ -867,5 +867,10 @@ addLangs({
         'add new workspace': 'Add new workspace',
         'edit selected workspace': 'Edit selected workspace',
         'delete selected workspace_': 'Delete selected workspace',
-        'delete workspace warning': 'Are you sure you want to move the selected workspace to the trash can?'
+        'delete workspace warning': 'Are you sure you want to move the selected workspace to the trash can?',
+        
+        'complete task and subtask' : 'This task contains subtasks which are still pending.<br/>Would you like to complete them too?',
+        'option repetitive title popup' : 'This task is already completed. <br/>Do you wish to:',
+        'option repetitive only task' : 'Modify this task data?',
+        'option repetitive pending task' : 'Modify all task series? (Edit upcoming pending task)'
 });

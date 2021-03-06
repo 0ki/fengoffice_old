@@ -240,5 +240,6 @@
 	'empty title' => 'Título vacío',
         'will this person use feng office?' => 'Esta persona va a usar Feng Office?',
         'specify username?' => 'Especificar Usuario?',
-
+        
+        'option repetitive task completed' => 'Esta tarea ya ha sido completada. Para modificar los datos de repetición por favor edite alguna tarea pendiente de esta serie.',
 ); ?>

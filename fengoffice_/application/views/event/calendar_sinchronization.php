@@ -8,7 +8,7 @@ $genid = gen_id();
         <div class="adminTitle"><?php echo lang('calendar sinchronization') ?></div>
         <div class="adminSeparator"></div>
         <div style="float: left; width: 350px;">
-            <form id ="<?php echo $genid ?>submit-sync-form" class="internalForm" action="<?php echo get_url('event', 'add_calendar_user', array('cal_user_id' => array_var($user, 'id'))); ?>" method="post" onsubmit="return og.handleMemberChooserSubmit('<?php echo $genid; ?>', <?php echo ProjectEvents::instance()->getObjectTypeId(); ?>) && setRelatedTo();">
+            <form id ="<?php echo $genid ?>submit-sync-form" class="internalForm" action="<?php echo get_url('event', 'add_calendar_user', array('cal_user_id' => array_var($user, 'id'))); ?>" method="post">
                 <?php 
                     echo label_tag(lang('account gmail'), $genid . 'auth_user', true);
                     echo text_field('auth_user', array_var($user, 'auth_user'),array('id' => $genid . 'auth_user', 'tabindex' => '1'));

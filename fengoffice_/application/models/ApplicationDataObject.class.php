@@ -101,11 +101,11 @@ abstract class ApplicationDataObject extends DataObject {
 				SearchableObjects::dropContentByObjectColumns($this,$columns_to_drop);
 			}
 			
-			$docx_id = FileTypes::getByExtension('docx')->getId();
-			$pdf_id = FileTypes::getByExtension('pdf')->getId();
-			$odt_id = FileTypes::getByExtension('odt')->getId();
-			$fodt_id = FileTypes::getByExtension('fodt')->getId();
-							
+			$docx_id = FileTypes::findOne(array('id' => true, 'conditions' => '`extension` = '.DB::escape('docx')));
+			$pdf_id = FileTypes::findOne(array('id' => true, 'conditions' => '`extension` = '.DB::escape('pdf')));
+			$odt_id = FileTypes::findOne(array('id' => true, 'conditions' => '`extension` = '.DB::escape('odt')));
+			$fodt_id = FileTypes::findOne(array('id' => true, 'conditions' => '`extension` = '.DB::escape('fodt')));
+			
 			foreach($columns_to_drop as $column_name) {
 				$content = $this->getSearchableColumnContent($column_name);
 				if (get_class($this->manager()) == 'ProjectFiles') {

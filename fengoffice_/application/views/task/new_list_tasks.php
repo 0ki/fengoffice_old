@@ -119,6 +119,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 	<input type="hidden" id="hfObjectSubtypes" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($object_subtypes_array)))) ?>"/>
 	<input type="hidden" id="hfDependencyCount" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($dependency_count)))) ?>"/>
         <input id="<?php echo $genid?>type_related" type="hidden" name="type_related" value="only" />
+        <input id="<?php echo $genid?>complete_task" type="hidden" name="complete_task" value="yes" />        
 </div>
 
 <div id="tasksPanel" class="ogContentPanel" style="background-color:white;background-color:#F0F0F0;height:100%;width:100%;">
@@ -193,15 +194,38 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
         
         Ext.extend(og.TaskPopUp, Ext.Window, {
                 accept: function() {
+                        var task_id = $("#related_task_id").val();
                         var action = $("#action_related").val();
                         var opt = $("#<?php echo $genid?>type_related").val();
-                        ogTasks.executeAction(action,'',opt);
+                        if(action == "edit"){
+                            ogTasks.SubmitNewTask(task_id, false);
+                        }else{
+                            ogTasks.executeAction(action,'',opt);
+                        }
+                        
                         this.close();
                 }
         });
         
         function selectRelated(val){
             $("#<?php echo $genid?>type_related").val(val);
+        }
+        
+        Ext.extend(og.TaskCompletePopUp, Ext.Window, {
+                accept: function() {
+                        var task_id = $("#complete_task_id").val();
+                        var opt = $("#<?php echo $genid?>complete_task").val();
+                        if(task_id != ""){
+                            ogTasks.ToggleCompleteStatusOk(task_id, 0 ,opt);
+                        }else{
+                            ogTasks.executeAction('complete','',opt);
+                        }  
+                        this.close();
+                }
+        });
+        
+        function selectTaskCompletePopUp(val){
+            $("#<?php echo $genid?>complete_task").val(val);
         }
         
         function loadCKeditor(id){
@@ -212,7 +236,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
             }
             var editor = CKEDITOR.replace('<?php echo $genid ?>ckeditor' + id, {
                 uiColor: '#BBCCEA',
-                height: '70px',
+                height: '100px',
                 enterMode: CKEDITOR.ENTER_P,
                 shiftEnterMode: CKEDITOR.ENTER_BR,
                 disableNativeSpellChecker: false,

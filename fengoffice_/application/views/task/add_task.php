@@ -288,15 +288,16 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 		<fieldset>
 			<legend><?php echo lang('repeating task')?></legend>
 		<?php
-			$occ = array_var($task_data, 'occ'); 
-			$rsel1 = array_var($task_data, 'rsel1', true); 
-			$rsel2 = array_var($task_data, 'rsel2', ''); 
-			$rsel3 = array_var($task_data, 'rsel3', ''); 
-			$rnum = array_var($task_data, 'rnum', ''); 
-			$rend = array_var($task_data, 'rend', '');
-			// calculate what is visible given the repeating options
-			$hide = '';
-			if((!isset($occ)) OR $occ == 1 OR $occ=="") $hide = "display: none;";
+                        if(!$task->isCompleted()){
+                                $occ = array_var($task_data, 'occ'); 
+                                $rsel1 = array_var($task_data, 'rsel1', true); 
+                                $rsel2 = array_var($task_data, 'rsel2', ''); 
+                                $rsel3 = array_var($task_data, 'rsel3', ''); 
+                                $rnum = array_var($task_data, 'rnum', ''); 
+                                $rend = array_var($task_data, 'rend', '');
+                                // calculate what is visible given the repeating options
+                                $hide = '';
+                                if((!isset($occ)) OR $occ == 1 OR $occ=="") $hide = "display: none;";
 		?>
 		<table border="0" cellpadding="0" cellspacing="0">
 			<tr>
@@ -396,6 +397,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
                             </td>
 			</tr>
 		</table>
+                <?php }else{ echo lang('option repetitive task completed');}?>
 		</fieldset>
 	</div>
   
@@ -663,7 +665,8 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 	}
 	
 	og.redrawUserLists(og.contextManager.plainContext());
-	
+        
+        <?php if(!$task->isCompleted()){?>
 	og.changeTaskRepeat = function() {
 		document.getElementById("<?php echo $genid ?>repeat_options").style.display = 'none';
 		var word = '';
@@ -682,7 +685,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 		document.getElementById("<?php echo $genid ?>repeat_options").style.display = opt_display;		
 	}
 	og.changeTaskRepeat();
-
+        <?php }?>
 
 	var memberChoosers = Ext.getCmp('<?php echo "$genid-member-chooser-panel-".$task->manager()->getObjectTypeId()?>').items;
 	
@@ -732,20 +735,32 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
         
         Ext.extend(og.TaskPopUp, Ext.Window, {
                 accept: function() {
+                        var opt = $("#<?php echo $genid?>type_related").val();
+                        if(opt == "pending"){
+                            var url = og.getUrl('task', 'edit_task', {id : <?php echo $pending_task_id ?>, replace : true});
+                            og.openLink(url, {
+                                    method: 'POST',
+                                    scope: this
+                            });
+                        }                        
                         this.close();
                 }
         });
                 
         $(document).ready(function() {
             if($("#<?php echo $genid?>view_related").val()){
-                this.dialog = new og.TaskPopUp();
+                <?php if($task->isCompleted()){ ?>
+                        this.dialog = new og.TaskPopUp('task_complete','');
+                <?php }else{?>
+                        this.dialog = new og.TaskPopUp('','');
+                <?php }?>
                 this.dialog.setTitle(lang('tasks related'));
                 this.dialog.show();      
             }
         });
         
         function selectRelated(val){
-            $("#<?php echo $genid?>type_related").val(val);
+                $("#<?php echo $genid?>type_related").val(val);
         }
         
         

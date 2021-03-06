@@ -3,7 +3,8 @@ og.editMembers = {};
 og.editMembers.showHideOptions = function(id, mem_id, show) {
 	var el = Ext.get(id);
 	if (el) {
-		el.dom.style.visibility = show ? 'visible' : 'hidden';
+		el.dom.style.opacity = show ? '1.0' : '0.25';
+		el.dom.style.filter = 'alpha(opacity='+ (show ? '100' : '25') +')';
 		var container = Ext.get("abm-members-item-container-"+mem_id);
 		if (container) {
 			container.dom.style.fontWeight = show ? 'bold' : 'normal';

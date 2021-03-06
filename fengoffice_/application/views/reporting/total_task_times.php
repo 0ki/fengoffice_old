@@ -134,11 +134,11 @@
 	$totCols = 6 + count_extra_cols($columns);
 	$date_format = user_config_option('date_format');
 
-	if ($start_time) { ?>
-		<span class="bold"><?php echo lang('from')?></span>:&nbsp;<?php echo format_date($start_time) ?>
+	if (array_var($post, 'start_value')) { ?>
+		<span class="bold"><?php echo lang('from')?></span>:&nbsp;<?php echo array_var($post, 'start_value') ?>
 	<?php }
-	if ($end_time) { ?>
-		<span class="bold" style="padding-left:10px"><?php echo lang('to date')?></span>:&nbsp;<?php echo format_date($end_time) ?>
+	if (array_var($post, 'end_value')) { ?>
+		<span class="bold" style="padding-left:10px"><?php echo lang('to date')?></span>:&nbsp;<?php echo array_var($post, 'end_value') ?>
 	<?php } ?>
 	
 	<?php if ($user instanceof Contact) { ?>

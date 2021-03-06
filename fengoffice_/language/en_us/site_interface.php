@@ -65,7 +65,7 @@ return array(
     'check for upgrade now' => 'Check now',
 
 // Forgot password
-    'forgot password' => 'Forgot password',
+    'forgot password' => 'Send new password',
     'email me my password' => 'Send password',
 
 // Complete installation

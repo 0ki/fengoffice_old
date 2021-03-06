@@ -172,7 +172,7 @@ og.ReportingManager = function() {
 			scope: this
 		}),
 		refresh: new Ext.Action({
-			text: lang('refresh'),
+			text: lang('save'),
             tooltip: lang('refresh desc'),
             iconCls: 'ico-refresh',
 			handler: function() {

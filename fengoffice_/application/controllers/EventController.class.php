@@ -982,30 +982,34 @@ class EventController extends ApplicationController {
 		if (is_null($context_plain) || $context_plain == "") $context = active_context();
 		else $context = build_context_array($context_plain);
 		
+		$users = allowed_users_in_context(ProjectEvents::instance()->getObjectTypeId(), $context, ACCESS_LEVEL_READ);
+		
 		foreach ($companies as $id => $comp) {
-			$users = allowed_users_in_context(ProjectEvents::instance()->getObjectTypeId(), $context, ACCESS_LEVEL_READ, "AND `company_id` = " . $id);
-			if (is_array($users)) {
-				if (count($users) > 0) {
-					$comp_data = array(
-						'id' => $comp['id'],
-						'object_id' => $id,
-						'name' => $comp['name'],
-						'logo_url' => $comp['logo_url'],
-						'users' => array() 
-					);
-					foreach ($users as $user) {
+			if (is_array($users) && count($users) > 0) {
+				$comp_data = array(
+					'id' => $comp['id'],
+					'object_id' => $id,
+					'name' => $comp['name'],
+					'logo_url' => $comp['logo_url'],
+					'users' => array() 
+				);
+				foreach ($users as $user) {
+					if ($user->getCompanyId() == $id) {
 						$comp_data['users'][] = array(
 							'id' => $user->getId(),
 							'name' => $user->getObjectName(),
 							'avatar_url' => $user->getPictureUrl(),
 							'invited' => $evid == 0 ? ($user->getId() == $actual_user_id) : (EventInvitations::findOne(array('conditions' => "`event_id` = $evid and `contact_id` = ".$user->getId())) != null),
 							'mail' => $user->getEmailAddress()
-						);			
+						);
 					}
-					$comp_array[] = $comp_data;
+				}
+				if (count($comp_data['users']) > 0) {
+					$comp_array[$comp['name']] = $comp_data;
 				}
 			}
 		}
+		
 		$object = array(
 			"totalCount" => count($comp_array),
 			"start" => 0,
@@ -1316,6 +1320,7 @@ class EventController extends ApplicationController {
                 
                 if($user){
                     $external_calendars = array();
+                    $calFeed = array();
                     require_once 'Zend/Loader.php';
 
                     Zend_Loader::loadClass('Zend_Gdata');
@@ -1339,23 +1344,25 @@ class EventController extends ApplicationController {
                             flash_error(lang('check your account'));
                     }
                     
-                    foreach ($calFeed as $calF){
-                        $cal_src = explode("/",$calF->content->src);
-                        array_pop($cal_src);
-                        $calendar_visibility = end($cal_src);
-                        array_pop($cal_src);
-                        $calendar_user = end($cal_src);
-                        
-                        $sql = "SELECT ec.* FROM `".TABLE_PREFIX."external_calendars` ec,`".TABLE_PREFIX."external_calendar_users` ecu 
-                                WHERE ec.calendar_user = '".$calendar_user."' AND ecu.contact_id = ".logged_user()->getId()."";
-                        $calendar_feng = DB::executeOne($sql);
-                        $sel = 0;
-                        if($calendar_feng){
-                            $sel = 1;
+                    if(count($calFeed) > 0){
+                        foreach ($calFeed as $calF){
+                            $cal_src = explode("/",$calF->content->src);
+                            array_pop($cal_src);
+                            $calendar_visibility = end($cal_src);
+                            array_pop($cal_src);
+                            $calendar_user = end($cal_src);
+
+                            $sql = "SELECT ec.* FROM `".TABLE_PREFIX."external_calendars` ec,`".TABLE_PREFIX."external_calendar_users` ecu 
+                                    WHERE ec.calendar_user = '".$calendar_user."' AND ecu.contact_id = ".logged_user()->getId()."";
+                            $calendar_feng = DB::executeOne($sql);
+                            $sel = 0;
+                            if($calendar_feng){
+                                $sel = 1;
+                            }
+                            $external_calendars[] = array('user' => $calendar_user, 'title' => $calF->title->text , 'sel' => $sel);                        
+
+                            $calendar_google[] = $calendar_user;
                         }
-                        $external_calendars[] = array('user' => $calendar_user, 'title' => $calF->title->text , 'sel' => $sel);                        
-                                            
-                        $calendar_google[] = $calendar_user;
                     }
                     
                     $view_calendars = array();
@@ -1381,7 +1388,9 @@ class EventController extends ApplicationController {
                     
                     tpl_assign('user', $user_data);
                     tpl_assign('external_calendars', $external_calendars);
-                }              
+                }else{
+                    tpl_assign('external_calendars', array());
+                }
                 
                 $cal_data = array();
                 if(get_id('cal_id')){

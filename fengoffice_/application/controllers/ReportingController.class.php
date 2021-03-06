@@ -310,44 +310,40 @@ class ReportingController extends ApplicationController {
 	
 		$user = Contacts::findById(array_var($report_data, 'user'));
 		
-		$st = DateTimeValueLib::now();
-		$et = DateTimeValueLib::now();
+		$now = DateTimeValueLib::now();
+		$now->advance(logged_user()->getTimezone()*3600, true);
 		switch (array_var($report_data, 'date_type')){
 			case 1: //Today
-				$now = DateTimeValueLib::now();
 				$st = DateTimeValueLib::make(0,0,0,$now->getMonth(),$now->getDay(),$now->getYear());
 				$et = DateTimeValueLib::make(23,59,59,$now->getMonth(),$now->getDay(),$now->getYear());break;
 			case 2: //This week
-				$now = DateTimeValueLib::now();
 				$monday = $now->getMondayOfWeek();
 				$nextMonday = $now->getMondayOfWeek()->add('w',1)->add('d',-1);
 				$st = DateTimeValueLib::make(0,0,0,$monday->getMonth(),$monday->getDay(),$monday->getYear());
 				$et = DateTimeValueLib::make(23,59,59,$nextMonday->getMonth(),$nextMonday->getDay(),$nextMonday->getYear());break;
 			case 3: //Last week
-				$now = DateTimeValueLib::now();
 				$monday = $now->getMondayOfWeek()->add('w',-1);
 				$nextMonday = $now->getMondayOfWeek()->add('d',-1);
 				$st = DateTimeValueLib::make(0,0,0,$monday->getMonth(),$monday->getDay(),$monday->getYear());
 				$et = DateTimeValueLib::make(23,59,59,$nextMonday->getMonth(),$nextMonday->getDay(),$nextMonday->getYear());break;
 			case 4: //This month
-				$now = DateTimeValueLib::now();
 				$st = DateTimeValueLib::make(0,0,0,$now->getMonth(),1,$now->getYear());
 				$et = DateTimeValueLib::make(23,59,59,$now->getMonth(),1,$now->getYear())->add('M',1)->add('d',-1);break;
 			case 5: //Last month
-				$now = DateTimeValueLib::now();
 				$now->add('M',-1);
 				$st = DateTimeValueLib::make(0,0,0,$now->getMonth(),1,$now->getYear());
 				$et = DateTimeValueLib::make(23,59,59,$now->getMonth(),1,$now->getYear())->add('M',1)->add('d',-1);break;
 			case 6: //Date interval
 				$st = getDateValue(array_var($report_data, 'start_value'));
 				$st = $st->beginningOfDay();
+				$st->advance(logged_user()->getTimezone()*3600, true);
+				
 				$et = getDateValue(array_var($report_data, 'end_value'));
 				$et = $et->beginningOfDay()->add('d',1);
+				$et->advance(logged_user()->getTimezone()*3600, true);
 				break;
 		}
-
-		$st = new DateTimeValue($st->getTimestamp() - logged_user()->getTimezone() * 3600);
-		$et = new DateTimeValue($et->getTimestamp() - logged_user()->getTimezone() * 3600);
+		
 		$timeslotType = array_var($report_data, 'timeslot_type', 0);
 		$group_by = array();
 		for ($i = 1; $i <= 3; $i++){
@@ -375,9 +371,9 @@ class ReportingController extends ApplicationController {
 			else if (str_starts_with($text, 'dim_')) $gb_criterias[] = array('type' => 'dimension', 'value' => str_replace_first('dim_', '', $text));
 		}
 		$grouped_timeslots = groupObjects($gb_criterias, $timeslots);
-                
-                tpl_assign('columns', $columns);
-                tpl_assign('timeslotsArray', array());                        
+		
+		tpl_assign('columns', $columns);
+		tpl_assign('timeslotsArray', array());                        
 		tpl_assign('grouped_timeslots', $grouped_timeslots);
 		tpl_assign('start_time', $st);
 		tpl_assign('end_time', $et);
@@ -483,8 +479,9 @@ class ReportingController extends ApplicationController {
 		if(is_array($report_data)){
 			tpl_assign('report_data', $report_data);
 			$conditions = array_var($_POST, 'conditions');
-			if(!is_array($conditions))
+			if(!is_array($conditions)) {
 				$conditions = array();
+			}
 			tpl_assign('conditions', $conditions);
 			$columns = array_var($_POST, 'columns');
 			if(is_array($columns) && count($columns) > 0){
@@ -514,7 +511,7 @@ class ReportingController extends ApplicationController {
 				try{
 					DB::beginWork();
 					$newReport->save();
-					$allowed_columns = $this->get_allowed_columns($report_data['object_type_id'], true);
+					$allowed_columns = $this->get_allowed_columns($report_data['report_object_type_id'], true);
 					foreach($conditions as $condition){
 						if($condition['deleted'] == "1") continue;
 						foreach ($allowed_columns as $ac){
@@ -625,8 +622,10 @@ class ReportingController extends ApplicationController {
 				$report->save();				
 					
 				$conditions = array_var($_POST, 'conditions');
-				if (!is_array($conditions))
+				if (!is_array($conditions)) {
 					$conditions = array();
+				}
+				
 				foreach($conditions as $condition){
 					$newCondition = new ReportCondition();
 					if($condition['id'] > 0){

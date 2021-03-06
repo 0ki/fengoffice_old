@@ -72,6 +72,9 @@
   	}
   	
   	
+  	function can_add_timeslots($user, $members) {
+  		return (can_manage_time($user) || can_access_pgids($user->getPermissionGroupIds(), $members, Timeslots::instance()->getObjectTypeId(), ACCESS_LEVEL_WRITE));
+  	}
   	
   	/**
   	 * Returns whether a user can manage configuration.
@@ -926,11 +929,10 @@
 		$allowed_permission_groups = can_access_pgids($all_permission_groups, $members, $object_type_id, $access_level);
 		
 		if (count($allowed_permission_groups) > 0) {
-			$result = Contacts::instance()->findAll(
-                                array(
-                                    'conditions' => "id IN (SELECT DISTINCT contact_id FROM ".TABLE_PREFIX."contact_permission_groups 
-                                                    WHERE permission_group_id IN (".implode(",",$allowed_permission_groups)."))",
-                                    'order' => 'name'));
+			$result = Contacts::instance()->findAll(array(
+				'conditions' => "id IN (SELECT DISTINCT contact_id FROM ".TABLE_PREFIX."contact_permission_groups
+								WHERE permission_group_id IN (".implode(",",$allowed_permission_groups).") $extra_conditions)",
+				'order' => 'name'));
 		}
 		
 		return $result;

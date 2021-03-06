@@ -938,7 +938,7 @@ class Contact extends BaseContact {
 			return false;
 		}
 		if (parent::getUserType() != 0) {
-			return can_manage_configuration($user) && can_manage_security($user);
+			return can_manage_security($user) && $this->getUserType() > $user->getUserType();
 		} else {
 			return can_delete($user, $this->getMembers(), $this->getObjectTypeId());
 		}

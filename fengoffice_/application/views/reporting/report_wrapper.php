@@ -11,12 +11,11 @@ if (!isset($allow_export)) $allow_export = true;
 <table style="min-width:600px">
 
 <tr>
-	<td  class="coViewIcon" width="36px">
-		<div id="iconDiv" class="coViewIconImage ico-large-report"></div>
-	</td>
-	<td rowspan=2 colspan="1" class="coViewHeader" style="width:auto;">
+	<td rowspan=2 colspan="2" class="coViewHeader" style="width:auto;">
+		<div id="iconDiv" class="coViewIconImage ico-large-report" style="float:left;"></div>
+
 		<div class="coViewTitleContainer">
-			<div class="coViewTitle"><?php echo $title ?></div>			
+			<div class="coViewTitle" style="margin-left:55px;"><?php echo $title ?></div>			
                         <input type="submit" name="print" value="<?php echo lang('print view') ?>" onclick="og.reports.printReport('<?php echo $genid?>','<?php echo $title ?>'); return false;" style="width:120px; margin-top:10px;"/>
 
                         <input type="submit" name="exportCSV" value="<?php echo lang('export csv') ?>" onclick="document.getElementById('form<?php echo $genid ?>').target = '_download';" style="width:120px; margin-top:10px;"/>
@@ -27,6 +26,7 @@ if (!isset($allow_export)) $allow_export = true;
                         <input name="parameters" type="hidden" value="<?php echo str_replace('"',"'", json_encode($post))?>"/>
                         <input name="context" type="hidden" value="" id="<?php echo $genid?>_plain_context"/>
 		</div>
+		<div class="clear"></div>
 	</td>
 	
 	<td class="coViewTopRight" width="10px"></td>
@@ -42,7 +42,7 @@ if (!isset($allow_export)) $allow_export = true;
 </tr>
 <tr>
 	<td class="coViewBottomLeft"></td>
-	<td class="coViewBottom" ></td>
+	<td class="coViewBottom" style="width:100%;"></td>
 	
 	<td class="coViewBottomRight"></td>
 </tr>

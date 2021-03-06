@@ -147,7 +147,7 @@ class ObjectController extends ApplicationController {
 	}
 	
 	
-	function add_to_members($object, $member_ids, $user = null) {
+	function add_to_members($object, $member_ids, $user = null, $check_allowed_members = true) {
 		if (!$user instanceof Contact) $user = logged_user();
 		
 		if ($user->isGuest()) {
@@ -186,7 +186,7 @@ class ObjectController extends ApplicationController {
 		
 		$object->removeFromMembers($user, $enteredMembers);
 		/* @var $object ContentDataObject */
-		$validMembers = $object->getAllowedMembersToAdd($user,$enteredMembers);
+		$validMembers = $check_allowed_members ? $object->getAllowedMembersToAdd($user,$enteredMembers) : $enteredMembers;
 
 		foreach($required_dimensions as $rdim){
 			$exists = false;
@@ -1686,13 +1686,20 @@ class ObjectController extends ApplicationController {
             $newEvent->title = $gdataCal->newTitle($event->getObjectName());
             $newEvent->content = $gdataCal->newContent($event->getDescription());
 
-            $star_time = explode(" ",$event->getStart()->format("Y-m-d H:m:s"));
-            $end_time = explode(" ",$event->getDuration()->format("Y-m-d H:m:s"));
+            $star_time = explode(" ",$event->getStart()->format("Y-m-d H:i:s"));
+            $end_time = explode(" ",$event->getDuration()->format("Y-m-d H:i:s"));
 
-            $when = $gdataCal->newWhen();
-            $when->startTime = $star_time[0]."T".$star_time[1].".000-00:28";
-            $when->endTime = $end_time[0]."T".$end_time[1].".000-00:28";
-            $newEvent->when = array($when);
+            if($event->getTypeId() == 2){
+                $when = $gdataCal->newWhen();
+                $when->startTime = $star_time[0];
+                $when->endTime = $end_time[0];
+                $newEvent->when = array($when);
+            }else{                                    
+                $when = $gdataCal->newWhen();
+                $when->startTime = $star_time[0]."T".$star_time[1].".000-00:00";
+                $when->endTime = $end_time[0]."T".$end_time[1].".000-00:00";
+                $newEvent->when = array($when);
+            }       
 
             // insert event
             $createdEvent = $gdataCal->insertEvent($newEvent, $calendarUrl);

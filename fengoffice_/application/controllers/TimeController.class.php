@@ -18,20 +18,9 @@ class TimeController extends ApplicationController {
 	function __construct() {
 		parent::__construct();
 		prepare_company_website_controller($this, 'website');
-		/* FIXME: ver si puede ver el panel de time
-		if (!can_manage_time(logged_user())) {
-			flash_error(lang('no access permissions'));
-			ajx_current("empty");
-		}*/
 	} // __construct
 	
 	function index() {
-/*
-		if (!can_manage_time(logged_user())) {
-			flash_error(lang('no access permissions'));
-			ajx_current("empty");
-			return;
-		}*/
 		
 		$tasksUserId = array_var($_GET, 'tu');
 		if (is_null($tasksUserId)) {

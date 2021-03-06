@@ -763,5 +763,10 @@ addLangs({
         'add new workspace': 'Agregar nuevo workspace',
         'edit selected workspace': 'Editar workspace',
         'delete selected workspace_': 'Elimiar workspace seleccionados',
-        'delete workspace warning': '¿Está seguro que desea enviar los workspace seleccionados a la papelera?'
+        'delete workspace warning': '¿Está seguro que desea enviar los workspace seleccionados a la papelera?',
+        
+        'complete task and subtask' : 'Esta tarea contiene subtareas aún pendientes.<br/>¿Desea completar las mismas también?',
+        'option repetitive title popup' : 'Esta tarea ya ha sido completada. <br/>Desea:',
+        'option repetitive only task' : 'Modificar los datos de esta tarea?',
+        'option repetitive pending task' : 'Modificar los datos de la serie? (Edita la próxima tarea pendiente)'
 });

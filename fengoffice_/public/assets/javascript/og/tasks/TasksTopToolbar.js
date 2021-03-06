@@ -149,7 +149,7 @@ og.TasksTopToolbar = function(config) {
                             }
                             
                             if(related){
-                                this.dialog = new og.TaskPopUp("delete");
+                                this.dialog = new og.TaskPopUp("delete",'');
                                 this.dialog.setTitle(lang('tasks related'));	                                
                                 this.dialog.show();
                             }else{
@@ -167,7 +167,27 @@ og.TasksTopToolbar = function(config) {
                         iconCls: 'ico-complete',
 			disabled: true,
 			handler: function() {
-				ogTasks.executeAction('complete');
+                                var ids = ogTasks.getSelectedIds();
+                                var related = false;
+                                for(var i = 0; i < ids.length; i++){
+                                    var task = ogTasks.getTask(ids[i]);
+                                    for(var j = 0; j < task.subtasks.length; j++){
+                                        if(task.subtasks[j].status == 0){
+                                            related = true;
+                                        }                                        
+                                        if(related){
+                                            break;    
+                                        }
+                                    }                             
+                                }
+
+                                if(related){
+                                    this.dialog = new og.TaskCompletePopUp('');
+                                    this.dialog.setTitle(lang('do complete'));	                                
+                                    this.dialog.show();
+                                }else{
+                                    ogTasks.executeAction('complete');
+                                }
 			},
 			scope: this
 		}),
@@ -185,7 +205,7 @@ og.TasksTopToolbar = function(config) {
                         iconCls: 'ico-archive-obj',
 			disabled: true,
 			handler: function() {
-                                this.dialog = new og.TaskPopUp("archive");
+                                this.dialog = new og.TaskPopUp("archive",'');
                                 this.dialog.setTitle(lang('tasks related'));	                                
                                 this.dialog.show();
 //				if (confirm(lang('confirm archive selected objects'))) {

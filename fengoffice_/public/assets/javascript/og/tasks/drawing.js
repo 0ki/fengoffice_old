@@ -500,6 +500,7 @@ ogTasks.drawGroup = function(displayCriteria, drawOptions, group){
 			sb.append("<div class='ogTasksGroupHeaderName'>" + og.clean(group.group_name) + '</div>');
 	}
 	sb.append("</td><td align='right'>");
+	var transparent_style = "opacity:0.35;filter:alpha(opacity=35);";
 	if (displayCriteria.group_by == 'milestone' && this.getMilestone(group.group_id)){
 		var milestone = this.getMilestone(group.group_id);
 		sb.append("<table><tr>");
@@ -519,9 +520,10 @@ ogTasks.drawGroup = function(displayCriteria, drawOptions, group){
 			sb.append('</span></td>');
 		}
 		sb.append("<td><div id='ogTasksPanelCompleteBar" + group.group_id + "'>" + this.drawMilestoneCompleteBar(group) + "</div></td>");
-		sb.append("<td><div class='ogTasksGroupHeaderActions' style='visibility:hidden;padding-left:15px' id='ogTasksPanelGroupActions" + group.group_id + "'>" + this.drawGroupActions(group) + '</div></td></tr></table>');
-	} else
-		sb.append("<div class='ogTasksGroupHeaderActions' style='visibility:hidden' id='ogTasksPanelGroupActions" + group.group_id + "'>" + this.drawGroupActions(group) + '</div>');
+		sb.append("<td><div class='ogTasksGroupHeaderActions' style='"+transparent_style+"padding-left:15px' id='ogTasksPanelGroupActions" + group.group_id + "'>" + this.drawGroupActions(group) + '</div></td></tr></table>');
+	} else {
+		sb.append("<div class='ogTasksGroupHeaderActions' style='"+transparent_style+"' id='ogTasksPanelGroupActions" + group.group_id + "'>" + this.drawGroupActions(group) + '</div>');
+	}
 	sb.append('</td></tr></table></div>');
 	
 	sb.append("<div id='ogTasksPanelTaskRowsContainer" + group.group_id + "'>");
@@ -930,34 +932,57 @@ ogTasks.subtasksTimeEstimate = function(time_estimated, task, displayCriteria){
 }
 
 ogTasks.ToggleCompleteStatus = function(task_id, status){
-	var action = (status == 0)? 'complete_task' : 'open_task';
-	
-	og.openLink(og.getUrl('task', action, {id: task_id, quick: true}), {
-		callback: function(success, data) {
-			if (!success || data.errorCode) {
-			} else {
-				//Set task data
-				var task = ogTasks.getTask(task_id);
-				prev_status = task.status;
-				task.setFromTdata(data.task);
-				
-				//Redraw task, or redraw whole panel
-				var bottomToolbar = Ext.getCmp('tasksPanelBottomToolbarObject');
-				var displayCriteria = bottomToolbar.getDisplayCriteria();
-				if (og.config.use_tasks_dependencies) {
-					var dc = ogTasks.getDependencyCount(task.id);
-					this.UpdateDependants(task, status!=1, prev_status);
-				}
-				if (displayCriteria.group_by != 'status') {
-					this.UpdateTask(task.id);
-				} else {
-					this.draw();
-				}
-			}
-		},
-		scope: this
-	});
+        var related = false;  
+        if(status == 0){
+            var task = ogTasks.getTask(task_id);
+            for(var j = 0; j < task.subtasks.length; j++){
+                if(task.subtasks[j].status == 0){
+                    related = true;
+                }                                        
+                if(related){
+                    break;    
+                }
+            }
+        }
+
+        if(related){
+                this.dialog = new og.TaskCompletePopUp(task_id);
+                this.dialog.setTitle(lang('do complete'));	                                
+                this.dialog.show();
+        }else{
+                ogTasks.ToggleCompleteStatusOk(task_id, status, '');
+        }      
 }
+
+ogTasks.ToggleCompleteStatusOk = function(task_id, status, opt){
+	var action = (status == 0)? 'complete_task' : 'open_task';
+        og.openLink(og.getUrl('task', action, {id: task_id, quick: true, options: opt}), {
+                callback: function(success, data) {
+                        if (!success || data.errorCode) {
+                        } else {
+                                //Set task data
+                                var task = ogTasks.getTask(task_id);
+                                prev_status = task.status;
+                                task.setFromTdata(data.task);
+
+                                //Redraw task, or redraw whole panel
+                                var bottomToolbar = Ext.getCmp('tasksPanelBottomToolbarObject');
+                                var displayCriteria = bottomToolbar.getDisplayCriteria();
+                                if (og.config.use_tasks_dependencies) {
+                                        var dc = ogTasks.getDependencyCount(task.id);
+                                        this.UpdateDependants(task, status!=1, prev_status);
+                                }
+                                if (displayCriteria.group_by != 'status') {
+                                        this.UpdateTask(task.id);
+                                } else {
+                                        this.draw();
+                                }
+                        }
+                },
+                scope: this
+        });
+}
+
 ogTasks.readTask = function(task_id,isUnRead){
 	var task = ogTasks.getTask(task_id);
 	if (!isUnRead){

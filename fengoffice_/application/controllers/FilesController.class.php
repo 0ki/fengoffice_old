@@ -191,13 +191,13 @@ class FilesController extends ApplicationController {
 		if(!($file instanceof ProjectFile)) {
 			flash_error(lang('file dnx'));
 			ajx_current("empty");
-			return;
+			die();
 		} // if
 			
 		if(!$file->canDownload(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
-			return;
+			die();
 		} // if
 		session_commit();
 		download_from_repository($file->getLastRevision()->getRepositoryId(), $file->getTypeString(), $file->getFilename(), !$inline);
@@ -664,7 +664,9 @@ class FilesController extends ApplicationController {
 				if (count($image_file_ids) > 0) {
 					$image_files = ProjectFiles::findAll(array('conditions' => 'id IN ('.implode(',',$image_file_ids).')'));
 					foreach ($image_files as $img_file) {
-						$object_controller->add_to_members($img_file, $file_member_ids);
+						$object_controller->add_to_members($img_file, $file_member_ids, null, false);
+						$img_file->setMailId($file->getId());
+						$img_file->save();
 					}
 				}
 				
@@ -754,7 +756,9 @@ class FilesController extends ApplicationController {
 				if (count($image_file_ids) > 0) {
 					$image_files = ProjectFiles::findAll(array('conditions' => 'id IN ('.implode(',',$image_file_ids).')'));
 					foreach ($image_files as $img_file) {
-						$object_controller->add_to_members($img_file, $member_ids);
+						$object_controller->add_to_members($img_file, $member_ids, null, false);
+						$img_file->setMailId($file->getId());
+						$img_file->save();
 					}
 				}
 				
@@ -1948,22 +1952,29 @@ class FilesController extends ApplicationController {
 			return;
 		}
 		if (!$file->canView(logged_user())) {
-			flash_error("no access permissions");
+			flash_error(lang("no access permissions"));
 			ajx_current("empty");
 			return;
 		}
 		
-		if (!$file->canAdd(logged_user(), $file->getMembers()) ){
-			flash_error("no access permissions");
+		$original_members = $file->getMembers();
+		$members = $file->getAllowedMembersToAdd(logged_user(), $original_members);
+		
+		if (!$file->canAdd(logged_user(), $members, $notAllowedMember) ){
+			if (str_starts_with($notAllowedMember, '-- req dim --')) flash_error(lang('must choose at least one member of', str_replace_first('-- req dim --', '', $notAllowedMember, $in)));
+			else flash_error(lang('no context permissions to add',lang("files"), $notAllowedMember));
 			ajx_current("empty");
 			return;
 		}
+		
 		try {
+			
 			DB::beginWork();
 			$copy = $file->copy();
 			$copy->setFilename(lang('copy of file', $file->getFilename()));
 			$copy->save();
-			$copy->addToMembers($file->getMembers());
+			$copy->addToMembers($members);
+			$copy->addToSharingTable();
 
 			$rev_data = array();
 			$rev_data['name'] = $copy->getFilename();

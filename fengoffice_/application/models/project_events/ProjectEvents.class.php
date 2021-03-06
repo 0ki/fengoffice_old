@@ -366,7 +366,7 @@ class ProjectEvents extends BaseProjectEvents {
                                             $array_events_google[] = $special_id;
                                             $new_event = ProjectEvents::findBySpecialId($special_id);
                                             if($new_event){
-                                                if(strtotime(ProjectEvents::date_google_to_sql($event->updated)) > $new_event->getUpdateSync()->getTimestamp()){
+                                                if($new_event->getUpdateSync() instanceof DateTimeValue && strtotime(ProjectEvents::date_google_to_sql($event->updated)) > $new_event->getUpdateSync()->getTimestamp()){                                                	
                                                     $start = strtotime(ProjectEvents::date_google_to_sql($event->when[0]->startTime));
                                                     $fin = strtotime(ProjectEvents::date_google_to_sql($event->when[0]->endTime));
                                                     if(($fin - $start) == 86400){

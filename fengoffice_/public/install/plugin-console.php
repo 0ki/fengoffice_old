@@ -13,8 +13,8 @@ if(!isset($argv) || !is_array($argv)) {
 
 $command = array_var($argv, 1);
 $arg1 = array_var($argv, 2);
-$usr = Contacts::findOne(array("conditions"=>"user_type = 1"));
-$usr or die("User not found\n");
+$usr = Contacts::findOne(array("conditions"=>"user_type = (SELECT id FROM ".TABLE_PREFIX."permission_groups WHERE name='Super Administrator')"));
+$usr or die("Super Administrator user not found\n");
 CompanyWebsite::instance()->logUserIn($usr);
 
 $ctrl = new PluginController();

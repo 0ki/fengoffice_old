@@ -41,7 +41,7 @@
 	'company card of' => 'Tarjeta de la organización: {0}',
 	'upgrade is not available' => 'No hay nuevas versiones de Feng Office',
 	'check for upgrade now' => 'Verificar ahora',
-	'forgot password' => 'Olvidó su contraseña',
+	'forgot password' => 'Enviar nueva contraseña',
 	'email me my password' => 'Enviar contraseña',
 	'complete installation' => 'Completar la instalación',
 	'complete installation desc' => 'Éste es el paso final del proceso de instalación, el cual le permitira crear una cuenta de administrador y proveer de una breve información sobre su organización',

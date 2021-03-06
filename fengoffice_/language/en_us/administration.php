@@ -36,6 +36,8 @@
     'config category desc modules' => 'Use these settings to enable or disable Feng Office modules. Disabling a module only hides it from the graphical interface. It doesn\'t remove permissions from users to create or edit content objects.',
     'config category name passwords' => 'Passwords',
     'config category desc passwords' => 'Use these settings to manage password options.',
+	'config category name documents' => 'Files',
+    'config category desc documents' => 'Manage file configurations.',
 	
 	//--------------------------------------------------
     // Validate Password

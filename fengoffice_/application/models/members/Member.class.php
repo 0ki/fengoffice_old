@@ -248,7 +248,6 @@ class Member extends BaseMember {
 					$obj_members = ObjectMembers::findAll(array("conditions" => array("`object_id` = ? AND `is_optimization` = 0 AND member_id IN ($child_ids_str) AND EXISTS (SELECT o.id FROM ".TABLE_PREFIX."objects o WHERE o.id = ? AND o.trashed_by_id=0 $object_id_condition)".$more_conditions, $om->getObjectId(), $om->getObjectId())));
 					if (count($obj_members) >= 1) {
 						$error_message = lang("cannot delete member has objects");
-						foreach ($obj_members as $om) alert_r($om->getObjectId());
 						return false;
 					}
 					$db_res = DB::execute("SELECT object_type_id FROM ".TABLE_PREFIX."objects WHERE id=".$om->getObjectId());

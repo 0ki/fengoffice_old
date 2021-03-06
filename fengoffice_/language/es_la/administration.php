@@ -17,6 +17,8 @@
 	'config category desc mailing' => 'Use estas configuraciones para cambiar la forma en que Feng Office maneja el envío de mails. Pueden usarse configuraciones provistas en su php.ini o establecer cualquier otro servidor SMTP.',
 	'config category name passwords' => 'Contraseñas',
 	'config category desc passwords' => 'Use estas configuraciones para manejar las opciones de contraseñas.',
+	'config category name documents' => 'Documentos',
+    'config category desc documents' => 'Configuraciones para documentos.',
 	'config option name site_name' => 'Nombre del sitio',
 	'config option desc site_name' => 'Este valor va a ser desplegado como el nombre del sitio en la página Dashboard',
 	'config option name file_storage_adapter' => 'Almacenamiento de archivos',

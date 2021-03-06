@@ -312,4 +312,5 @@
   	'empty title' => 'Empty title',
       
         'field Objects type_content' => 'Type content',
+        'option repetitive task completed' => 'This task is already completed. To modify repetition data, please edit a pending task from this series.',
   );
