@@ -125,7 +125,7 @@ $use_owner_company_logo = owner_company()->hasLogo();
                     </div>
                     <div style="float: left;">
                         <?php if(!$use_owner_company_logo){?>
-                        <a id="change-logo-link" style="color: #fff; font-size: 10px; padding-top:15px;" href="index.php?c=contact&a=edit_logo&id=<?php echo owner_company()->getObjectId(); ?>"><?php echo lang('change logo')?></a>
+                        <a id="change-logo-link" style="color: <?php echo "#".config_option('brand_colors_head_font')?>; font-size: 10px; padding-top:15px;" href="index.php?c=contact&a=edit_logo&id=<?php echo owner_company()->getObjectId(); ?>"><?php echo lang('change logo')?></a>
                         <?php } ?>
                         <h1 style="padding-top:15px;"><?php echo clean(owner_company()->getObjectName()) ?></h1>
                     </div>

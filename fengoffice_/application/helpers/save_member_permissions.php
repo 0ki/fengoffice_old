@@ -31,7 +31,7 @@ try {
 	
 	$member = Members::findById($member_id);
 	if ($member instanceof Member) {
-		save_member_permissions($member, $permissions, false);
+		save_member_permissions($member, $permissions, true);
 	}
 	
 	@unlink($permissions_filename);

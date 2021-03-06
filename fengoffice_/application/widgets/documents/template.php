@@ -18,8 +18,8 @@
 				$crumbJs = " og.getCrumbHtml($crumbOptions) ";
 			?>
 				<li id="<?php echo "document-".$document->getId()?>" class="document-row co-row <?php echo $row_cls ?>" style="background: url(<?php echo $iconUrl?>) no-repeat left center; ">
-					<span class="breadcrumb"></span>
 					<a href="<?php echo $document->getViewUrl() ?>"><span class="document-title"><?php echo clean($document->getName());?></span></a>
+					<span class="breadcrumb"></span>
 					<script>
 						var crumbHtml = <?php echo $crumbJs?> ;
 						$("#document-<?php echo $document->getId()?> .breadcrumb").html(crumbHtml);

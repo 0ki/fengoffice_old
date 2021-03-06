@@ -59,16 +59,15 @@
 			    			$crumbOptions = json_encode($object->getMembersToDisplayPath());
 							$crumbJs = " og.getCrumbHtml($crumbOptions) "; 
 			    		?>
-			    		<span id="object_crumb_<?php echo $object->getId()?>"></span>
+			    		<a class="internalLink" href="<?php echo $object->getViewUrl() ?>" title="<?php echo clean($object->getObjectName()) ?>">
+							<?php if ($object instanceof ProjectTask && $object->getAssignedToContactId() > 0) echo "<span class='bold'>". clean($object->getAssignedToName()).": </span>"; ?>
+							<?php echo clean($object->getObjectName()) ?>
+						</a>
+						<span id="object_crumb_<?php echo $object->getId()?>"></span>
 			    		<script>
 							var crumbHtml = <?php echo $crumbJs?>;
 							$("#object_crumb_<?php echo $object->getId()?>").html(crumbHtml);
 						</script>
-			    	
-						<a class="internalLink" href="<?php echo $object->getViewUrl() ?>" title="<?php echo clean($object->getObjectName()) ?>">
-							<?php if ($object instanceof ProjectTask && $object->getAssignedToContactId() > 0) echo "<span class='bold'>". clean($object->getAssignedToName()).": </span>"; ?>
-							<?php echo clean($object->getObjectName()) ?>
-						</a>
 						<?php if ($object instanceof ProjectTask) :
 								$text = strlen_utf($object->getText()) > 100 ? substr_utf(html_to_text($object->getText()), 0, 100) . "..." : strip_tags($object->getText());
 								if (strlen_utf($text) > 0) : 

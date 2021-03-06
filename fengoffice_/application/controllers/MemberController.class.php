@@ -661,8 +661,12 @@ class MemberController extends ApplicationController {
 			}
 			$member_data['path'] = trim(clean($member->getPath()));
 			$member_data['ico'] = $member->getIconClass();
+			if (isset($allowed_object_types) && is_array($allowed_object_types)) {
+				$member_data['perms'] = array();
+				foreach ($allowed_object_types as $ot_id) $member_data['perms'][$ot_id] = true;
+			}
 			
-			evt_add("after member save", $member_data) ;
+			evt_add("after member save", $member_data);
 			return $member;
 		} catch (Exception $e) {
 			DB::rollback();

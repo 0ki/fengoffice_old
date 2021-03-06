@@ -88,7 +88,7 @@ og.LinkedObjectManager = function(config) {
 		var mpath = Ext.util.JSON.decode(r.data.memPath);
 		if (mpath) mem_path = og.getCrumbHtml(mpath);
 		
-		var name = mem_path + String.format('<a style="font-size:120%" href="{1}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', cleanvalue, viewUrl);
+		var name = String.format('<a style="font-size:120%" href="{1}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', cleanvalue, viewUrl) + mem_path;
 		
 		return name + actions;
 	}

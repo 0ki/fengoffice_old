@@ -457,20 +457,20 @@ class ContactController extends ApplicationController {
 				
 		$extra_conditions = "";
 		
-		if(!user_config_option("viewCompaniesChecked", 1,logged_user()->getId())){
+		if(!user_config_option("viewCompaniesChecked")){
 			$extra_conditions = ' AND `is_company` = 0 ';
 		}
-		if(!user_config_option("viewContactsChecked", 1,logged_user()->getId())){
-			if(user_config_option("viewCompaniesChecked", 1,logged_user()->getId())){
+		if(!user_config_option("viewContactsChecked")){
+			if(user_config_option("viewCompaniesChecked")){
 				$extra_conditions = ' AND `is_company` = 1 ';
-				if(user_config_option("viewUsersChecked", 0,logged_user()->getId())){
+				if(user_config_option("viewUsersChecked")){
 					$extra_conditions = ' AND `is_company` = 1  OR `user_type` != 0 ';
 				}
 			}else{
 				$extra_conditions.= ' AND `user_type` != 0  ';
 			}
 		}
-		if(!user_config_option("viewUsersChecked", 1,logged_user()->getId())){
+		if(!user_config_option("viewUsersChecked")){
 			$extra_conditions.= ' AND `user_type` < 1 ';
 		}
 		$extra_conditions.= " AND disabled = 0 " ;

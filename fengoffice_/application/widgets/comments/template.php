@@ -19,12 +19,12 @@
 				if ($count >= 5) $style = 'display:none;';
 			?>
 				<li id="<?php echo "comment-".$comment->getId()?>" class="comment-row ico-comment <?php echo $row_cls ?>" style="<?php echo $style;?>">
-					<span class="breadcrumb"></span>
 					<a href="<?php echo $comment->getViewUrl() ?>" title="<?php echo lang('comment posted on by linktitle', format_datetime($comment->getCreatedOn()), clean($comment->getCreatedByDisplayName())) ?>">
 						<span class="bold"><?php echo clean($comment->getCreatedByDisplayName());?>: </span>
 						<span class="comment-title"><?php echo clean($comment->getObjectName());?></span>
 						<span class="previewText"><?php echo clean($comment->getText());?></span>
 					</a>
+					<span class="breadcrumb"></span>
 					<script>
 						var crumbHtml = <?php echo $crumbJs?> ;
 						$("#comment-<?php echo $comment->getId()?> .breadcrumb").html(crumbHtml);

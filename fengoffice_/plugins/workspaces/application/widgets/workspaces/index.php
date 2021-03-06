@@ -1,5 +1,5 @@
 <?php
-$total = 5;
+$limit = 5;
 $genid = gen_id();
 
 $ws_dimension = Dimensions::findByCode('workspaces');
@@ -22,8 +22,6 @@ if(isset($context)){
 
 $extra_conditions = " AND parent_member_id " . ($add_ctx_members && count($allowed_members) > 0 ? "IN (". implode(",", $allowed_members) .")" : "=0");
 
-$workspaces = $dim_controller->initial_list_dimension_members($ws_dimension->getId(), null, null, false, $extra_conditions, $total, true);
-
 $parent = null;
 $context = active_context();
 if (is_array($context)) {
@@ -35,7 +33,40 @@ if (is_array($context)) {
 	}
 }
 
-if ((is_array($workspaces) && count($workspaces) > 0) || can_manage_dimension_members(logged_user())) {
-	$data_ws = $workspaces;
+$ws_ot_id = ObjectTypes::findByName('workspace')->getId();
+$pg_array = logged_user()->getPermissionGroupIds();
+$current_member_cond = $parent instanceof Member ? "AND parent_member_id=".$parent->getId() : "";
+
+$members = Members::findAll(array(
+	'limit' => $limit,
+	'order' => "depth, name",
+	'conditions' => "object_type_id=$ws_ot_id $current_member_cond AND archived_by_id=0 AND EXISTS (
+		SELECT cmp.member_id FROM ".TABLE_PREFIX."contact_member_permissions cmp WHERE cmp.member_id=".TABLE_PREFIX."members.id AND cmp.permission_group_id IN (".implode(',',$pg_array)."))"
+));
+
+if ($parent instanceof Member && count($members) < $limit) {
+	$tmp_ids = array();
+	foreach ($members as $m) {
+		$tmp_ids[] = $m->getId();
+	}
+	
+	$extra_conds = "AND archived_by_id=0 AND EXISTS (
+		SELECT cmp.member_id FROM ".TABLE_PREFIX."contact_member_permissions cmp WHERE cmp.member_id=".TABLE_PREFIX."members.id AND cmp.permission_group_id IN (".implode(',',$pg_array)."))";
+
+	$childs = $parent->getAllChildren(true, 'name', $extra_conds);
+
+	foreach ($childs as $ch) {
+		if (in_array($ch->getId(), $tmp_ids)) continue;
+		if ($ch->getObjectTypeId() == $ws_ot_id && count($members) <= $limit) {
+			$members[] = $ch;
+		}
+		if (count($members) >= $limit) break;
+	}
+}
+
+$total = count($members);
+
+if ((is_array($members) && count($members) > 0) || can_manage_dimension_members(logged_user())) {
+	$data_ws = $members;
 	include_once 'template.php';
 }

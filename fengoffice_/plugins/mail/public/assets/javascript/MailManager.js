@@ -109,7 +109,7 @@ og.MailManager = function() {
 			text = '&nbsp;-&nbsp;<span style="color:#888888;white-space:nowrap">';
 			text += og.clean(r.data.text) + "</span></i>";
 		}
-		return mem_path + name + text ;
+		return name + mem_path + text;
 	}
 	
 	

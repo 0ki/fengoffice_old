@@ -1,5 +1,5 @@
 
-	About Feng Office 2.5.1.3
+	About Feng Office 2.5.1.4
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -103,6 +103,22 @@
 	=========
 	
 	
+	Since 2.5.1.3
+	----------------
+	bugfix: when viewing a note or task and text is html and has no enters, text overflow is visible and goes over other html, it should break word.
+	bugfix: search results shows html content and should show only text
+	bugfix: application header default color changed to white
+	bugfix: member tree and general breadcrumb are not reloaded correctly when adding a person
+	bugfix: if a new member is added it is not added in real time to member selectors
+	bugfix: in contacts tab users are not shown by default
+	bugfix: performance in workspace, clients, projects and folders widgets
+	bugfix: use 'exec' function only if it is enabled in the environment
+	
+	usability: put object breadcrumbs to the right
+	
+	language update: fr_ca
+	
+	
 	Since 2.5.1.2
 	----------------
 	bugfix: When edit timeslots show all members.
@@ -115,14 +131,11 @@
 	bugfix: Attribute title not escaped in reports when renedering object links.
 	bugfix: Workspace selectors are not preloaded in time panel.
 	bugfix: add web document  fail if have http in the url.
-	bugfix: Missing argument 3 for save_user_permissions_background() in GroupController
-		
-	performance: When classifying emails classify attachments in background.
-	
-	Since 2.5.1.2
-	----------------	
-	bugxix: add web document  fail if have http in the url.
+	bugfix: add web document  fail if have http in the url.
 	bugfix: search query problem with members.
+	bugfix: Missing argument 3 for save_user_permissions_background() in GroupController
+	
+	performance: When classifying emails classify attachments in background.
 	
 	Since 2.5.1.1
 	----------------

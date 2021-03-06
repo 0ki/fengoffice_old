@@ -47,8 +47,6 @@ og.eventManager.addListener('reload dimension tree',
 			var tree = Ext.getCmp("dimension-panel-" + data.dim_id);
 			if (tree) {
 				var selection = tree.getSelectionModel().getSelectedNode();
-			/*	if (data.pid && data.pid > 0) var new_parent = tree.getNodeById(data.pid);
-				if (new_parent) selection.parentNode = new_parent;*/
 
 				tree.suspendEvents();
 				var expanded = [];
@@ -61,19 +59,15 @@ og.eventManager.addListener('reload dimension tree',
 					og.expandCollapseDimensionTree(tree, expanded, selection ? selection.id : null);
 					if(selection){
 						setTimeout(function(){
-							if (data.node) og.Breadcrumbs.refresh(selection);
-							else og.Breadcrumbs.refresh(tree.getRootNode());
+							if (data.node) {
+								var treenode = tree.getNodeById(data.node);
+							} else {
+								var treenode = tree.getNodeById(selection.id);
+							}
+							og.Breadcrumbs.refresh(treenode);
+							treenode.fireEvent('click', treenode);
 						}, 200);
 						og.contextManager.addActiveMember(selection.id, data.dim_id, selection.id);
-					}
-					if (data.node) {
-						var treenode = tree.getNodeById(data.node);
-						if (treenode) {
-							treenode.fireEvent('click', treenode);
-						}
-						setTimeout(function(){
-							og.Breadcrumbs.refresh(treenode);
-						}, 200);
 					}
 				});
 				tree.resumeEvents();
@@ -201,12 +195,15 @@ og.eventManager.addListener('after member save',
 		if (og.dimensions[member.dimension_id]){
 			if (!og.dimensions[member.dimension_id][member.member_id]) {
 				og.dimensions[member.dimension_id][member.member_id] = {};
-				og.dimensions[member.dimension_id][member.member_id].id = member.member_id ;
+				og.dimensions[member.dimension_id][member.member_id].id = member.member_id;
 			}
-			og.dimensions[member.dimension_id][member.member_id].name=member.name;
-			og.dimensions[member.dimension_id][member.member_id].path=member.path;
-			og.dimensions[member.dimension_id][member.member_id].ico=member.ico;
-			og.dimensions[member.dimension_id][member.member_id].ot=member.object_type_id;
+			og.dimensions[member.dimension_id][member.member_id].name = member.name;
+			og.dimensions[member.dimension_id][member.member_id].path = member.path;
+			og.dimensions[member.dimension_id][member.member_id].ico = member.ico;
+			og.dimensions[member.dimension_id][member.member_id].ot = member.object_type_id;
+		}
+		if (member.perms) {
+			og.member_permissions[member.dimension_id][member.member_id] = member.perms;
 		}
 	}
 );

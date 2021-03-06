@@ -42,3 +42,5 @@ INSERT INTO `<?php echo $table_prefix ?>contact_widget_options` (widget_name,con
 ('overdue_upcoming',0,0,'assigned_to_user',0,'UserCompanyConfigHandler',0),
 ('calendar',0,0,'filter_by_myself',1,'BooleanConfigHandler',0)
 ON DUPLICATE KEY UPDATE widget_name=widget_name;
+
+update `<?php echo $table_prefix ?>contact_config_options` set `default_value`=1 where `name`='viewUsersChecked';

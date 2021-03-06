@@ -23,14 +23,14 @@ $section = $ws_widget instanceof Widget && in_array($ws_widget->getDefaultSectio
 				<a class="internalLink" href="javascript:void(0);" onclick="og.workspaces.onWorkspaceClick(<?php echo $ws->getId() ?>);">
 					<img class="ico-color<?php echo $ws->getMemberColor() ?>" unselectable="on" src="s.gif"/>
 					<?php echo $ws->getName() ?>
-				</a>		
+				</a>
 			</div>
 			<div class="x-clear"></div>
 			<?php $row_cls = $row_cls == "" ? "dashAltRow" : ""; ?>
 		<?php endforeach;?>
 		</div>
 		
-		<?php if ($total <= count ($workspaces)) : ?>
+		<?php if (false && $total > 0) : ?>
 			<div class="view-all-container">
 				<a href="javascript:og.customDashboard('member', 'init', {},true)" ><?php echo lang('view all');?></a>
 			</div>

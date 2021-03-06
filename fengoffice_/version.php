@@ -12,6 +12,6 @@
   *
   * @author Ilija Studen <ilija.studen@gmail.com>
   */
-  return '2.5.1.3';
+  return '2.5.1.4';
   
 ?>

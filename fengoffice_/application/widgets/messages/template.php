@@ -16,8 +16,8 @@
 				$crumbJs = " og.getCrumbHtml($crumbOptions) ";
 			?>
 				<li id="<?php echo "message-".$message->getId()?>" class="message-row ico-message <?php echo $row_cls ?>">
-					<span class="breadcrumb"></span>
 					<a href="<?php echo $message->getViewUrl() ?>"><span class="message-title"><?php echo clean($message->getName());?></span></a>
+					<span class="breadcrumb"></span>
 					<script>
 						var crumbHtml = <?php echo $crumbJs?> ;
 						$("#message-<?php echo $message->getId()?> .breadcrumb").html(crumbHtml);

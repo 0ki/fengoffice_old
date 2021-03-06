@@ -44,7 +44,7 @@ try {
 		'root_perm_genid' => $root_permissions_genid,
 	);
 	
-	save_permissions($pg_id, $is_guest, $perms, false);
+	save_permissions($pg_id, $is_guest, $perms, true);
 	
 	@unlink($permissions_filename);
 	@unlink($sys_permissions_filename);

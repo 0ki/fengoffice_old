@@ -373,7 +373,7 @@ ogTasks.getGroupData = function(displayCriteria, groups,tasks){
 						// Group by dimension
 						var dim_id = displayCriteria.group_by.replace('dimension_', '');
 						if (og.dimensions[dim_id]) {
-							for (j=0; j<og.dimensions[dim_id].length; j++) {
+							for (var j in og.dimensions[dim_id]) {
 								if (og.dimensions[dim_id][j].id == groupId) {
 									name = og.dimensions[dim_id][j].name;
 									icon = og.dimensions[dim_id][j].ico;
@@ -470,8 +470,8 @@ ogTasks.groupTasks = function(displayCriteria, tasksContainer){
 						// Group by dimension
 						var dim_id = displayCriteria.group_by.replace('dimension_', '');
 						for (k=0; k<task.members.length; k++) {
-							for (j=0; j<og.dimensions[dim_id].length; j++) {
-								if (og.dimensions[dim_id][j].id == task.members[k]) {
+							for (var j in og.dimensions[dim_id]) {
+								if (og.dimensions[dim_id][j] && og.dimensions[dim_id][j].id == task.members[k]) {
 									group = task.members[k];
 									this_task_groups.push(group);
 									break;

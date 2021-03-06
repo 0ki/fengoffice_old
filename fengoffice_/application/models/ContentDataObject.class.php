@@ -1806,9 +1806,9 @@ abstract class ContentDataObject extends ApplicationDataObject {
 
 	
 	function getSummary($options = null ){
-		$text = $this->getSummaryText() ;
-		$size =  array_var($options, 'size') ;
-		$near = array_var($options, 'near') ;		
+		$text = html_to_text($this->getSummaryText());
+		$size = array_var($options, 'size');
+		$near = array_var($options, 'near');		
 
 		if (is_array($options)) {
 			if ($near){

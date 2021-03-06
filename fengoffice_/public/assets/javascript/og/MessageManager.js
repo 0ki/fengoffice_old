@@ -69,9 +69,9 @@ og.MessageManager = function() {
 		var mpath = Ext.util.JSON.decode(r.data.memPath);
 		if (mpath) mem_path = og.getCrumbHtml(mpath, false, og.breadcrumbs_skipped_dimensions);
 		
-		name = mem_path + String.format(
+		name = String.format(
 				'<a style="font-size:120%;" class="{3}" href="{1}" onclick="og.openLink(\'{1}\');return false;" title="{2}">{0}</a>',
-				og.clean(value), og.getUrl('message', 'view', {id: r.data.object_id}), og.clean(r.data.text), classes);
+				og.clean(value), og.getUrl('message', 'view', {id: r.data.object_id}), og.clean(r.data.text), classes) + mem_path;
 	
 		var text = '';
 		if (r.data.text != ''){

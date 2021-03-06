@@ -81,9 +81,9 @@ og.FileManager = function() {
 		var mpath = Ext.util.JSON.decode(r.data.memPath);
 		if (mpath) mem_path = og.getCrumbHtml(mpath, false, og.breadcrumbs_skipped_dimensions);
 		
-		var name = mem_path + String.format(
+		var name = String.format(
 			'<a style="font-size:120%;" class="{3}" href="{2}" onclick="og.openLink(\'{2}\');return false;">{0}</a>',
-			og.clean(value), r.data.name, og.getUrl('files', 'file_details', {id: r.data.object_id}), classes);
+			og.clean(value), r.data.name, og.getUrl('files', 'file_details', {id: r.data.object_id}), classes) + mem_path;
 		
 		return name;
 	}

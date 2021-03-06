@@ -61,7 +61,7 @@ og.TrashCan = function() {
 		var mpath = Ext.util.JSON.decode(r.data.memPath);
 		if (mpath) mem_path = og.getCrumbHtml(mpath,false,false,true);
 		
-		var name = mem_path + String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', og.clean(value), viewUrl);
+		var name = String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', og.clean(value), viewUrl) + mem_path;
 		
 		return name + actions;
 	}

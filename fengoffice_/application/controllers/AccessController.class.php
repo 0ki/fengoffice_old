@@ -509,9 +509,9 @@ class AccessController extends ApplicationController {
 				$company->save();
 				
 				// Init default colors
-				set_config_option('brand_colors_head_back', "000000");
+				set_config_option('brand_colors_head_back', "FFFFFF");
 				set_config_option('brand_colors_tabs_back', "14780e");
-				set_config_option('brand_colors_head_font', "ffffff");
+				set_config_option('brand_colors_head_font', "000000");
 				set_config_option('brand_colors_tabs_font', "ffffff");
 
 				// Create the administrator user

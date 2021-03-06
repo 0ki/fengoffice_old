@@ -39,15 +39,15 @@ class Member extends BaseMember {
 		return $all_children;
 	}
 	
-	function getAllChildren($recursive = false, $order = null) {
+	function getAllChildren($recursive = false, $order = null, $extra_conditions="") {
 		$child_members = array();
-		$find_options = array('conditions' => '`parent_member_id` = ' . $this->getId());
+		$find_options = array('conditions' => '`parent_member_id` = ' . $this->getId() .' '. $extra_conditions);
 		if ($order != null) $find_options['order'] = $order;
 		$members = Members::findAll($find_options);
 		foreach ($members as $mem){
 			$child_members[] = $mem;
 			if ($recursive) {
-				$children = $mem->getAllChildren($recursive, $order);
+				$children = $mem->getAllChildren($recursive, $order, $extra_conditions);
 				$child_members = array_merge($child_members, $children);
 			}
 		}

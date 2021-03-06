@@ -753,6 +753,8 @@
 	border-bottom: 1px solid #CCCCCC;
 	margin-bottom: 8px;
 	padding-bottom: 10px;
+	line-height: normal;
+	word-wrap: break-word;
 }
 .wysiwyg-description ul{
 	padding-left: 25px;

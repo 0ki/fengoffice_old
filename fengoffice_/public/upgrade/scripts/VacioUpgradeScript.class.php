@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Vacio upgrade script will upgrade FengOffice 2.4.1 to FengOffice 2.5.1.3
+ * Vacio upgrade script will upgrade FengOffice 2.4.1 to FengOffice 2.5.1.4
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -40,7 +40,7 @@ class VacioUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('2.4.1');
-		$this->setVersionTo('2.5.1.3');
+		$this->setVersionTo('2.5.1.4');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -166,6 +166,13 @@ class VacioUpgradeScript extends ScriptUpgraderScript {
 					update ".$t_prefix."system_permissions set can_manage_tasks=1 where permission_group_id in (select id from ".$t_prefix."permission_groups where name in ('Super Administrator','Administrator','Manager','Executive'));
 				";
 			}
+			
+			if (version_compare($installed_version, '2.5.1.4') < 0) {
+				$upgrade_script .= "
+					update `".$t_prefix."contact_config_options` set `default_value`=1 where `name`='viewUsersChecked';
+				";
+			}
+			
 			
 			
 			if(!$this->executeMultipleQueries($upgrade_script, $total_queries, $executed_queries, $this->database_connection)) {

@@ -86,7 +86,7 @@ og.WebpageManager = function() {
 		var mpath = r.data.memPath ? Ext.util.JSON.decode(r.data.memPath) : "";
 		if (mpath) mem_path = og.getCrumbHtml(mpath, false, og.breadcrumbs_skipped_dimensions);
 	    
-		return mem_path + name + actions + text;
+		return name + actions + mem_path + text;
 	}
     
     function renderIcon(value, p, r) {

@@ -51,7 +51,7 @@ if($current_member instanceof Member){
 					</td><td style="padding-left:10px">
 						<table cellpadding="0" cellspacing="0" style="width:100%;">
 						<tr><td style="height: 17px;">
-							<div><span class="breadcrumb"></span><?php echo $acts['act_data'][$k] ?></div>
+							<div><?php echo $acts['act_data'][$k] ?><span class="breadcrumb"></span></div>
 						</td></tr>
 						<tr><td style="padding-bottom:3px;"><div class="desc"><?php echo $acts['date'][$k] ?></div>
 						</td></tr>

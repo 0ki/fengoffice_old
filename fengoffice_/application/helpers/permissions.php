@@ -1188,6 +1188,7 @@
 
 	
 	function save_member_permissions_background($user, $member, $permissions) {
+		if (!defined('DONT_SAVE_PERMISSIONS_IN_BACKGROUND')) define('DONT_SAVE_PERMISSIONS_IN_BACKGROUND', !is_exec_available());
 		
 		if (substr(php_uname(), 0, 7) == "Windows" || (defined('DONT_SAVE_PERMISSIONS_IN_BACKGROUND') && DONT_SAVE_PERMISSIONS_IN_BACKGROUND)){
 			//pclose(popen("start /B ". $command, "r"));
@@ -1196,27 +1197,27 @@
 
 			// populate permission groups
 			$permissions_decoded = json_decode($permissions);
-			if (!is_array($permissions_decoded)) return;
 			
 			$to_insert = array();
 			$to_delete = array();
-			foreach ($permissions_decoded as $perm) {
-			if ($perm->r) {
-					$to_insert[] = "('".$perm->pg."','".$member->getId()."','".$perm->o."','".$perm->d."','".$perm->w."')";
-				} else {
-					$to_delete[] = "(permission_group_id='".$perm->pg."' AND member_id='".$member->getId()."' AND object_type_id='".$perm->o."')";
+			if (is_array($permissions_decoded)) {
+				foreach ($permissions_decoded as $perm) {
+					if ($perm->r) {
+						$to_insert[] = "('".$perm->pg."','".$member->getId()."','".$perm->o."','".$perm->d."','".$perm->w."')";
+					} else {
+						$to_delete[] = "(permission_group_id='".$perm->pg."' AND member_id='".$member->getId()."' AND object_type_id='".$perm->o."')";
+					}
+				}
+				if (count($to_insert) > 0) {
+					$values = implode(',', $to_insert);
+					DB::execute("INSERT INTO ".TABLE_PREFIX."contact_member_permissions (permission_group_id,member_id,object_type_id,can_delete,can_write)
+					 VALUES $values ON DUPLICATE KEY UPDATE member_id=member_id");
+				}
+				if (count($to_delete) > 0) {
+					$where = implode(' OR ', $to_delete);
+					DB::execute("DELETE FROM ".TABLE_PREFIX."contact_member_permissions WHERE $where;");
 				}
 			}
-			if (count($to_insert) > 0) {
-				$values = implode(',', $to_insert);
-				DB::execute("INSERT INTO ".TABLE_PREFIX."contact_member_permissions (permission_group_id,member_id,object_type_id,can_delete,can_write)
-				 VALUES $values ON DUPLICATE KEY UPDATE member_id=member_id");
-			}
-			if (count($to_delete) > 0) {
-				$where = implode(' OR ', $to_delete);
-				DB::execute("DELETE FROM ".TABLE_PREFIX."contact_member_permissions WHERE $where;");
-			}
-			
 			// save permissions in background
 			$perm_filename = ROOT ."/tmp/perm_".gen_id();
 			file_put_contents($perm_filename, $permissions);
@@ -1250,6 +1251,7 @@
 	
 	
 	function save_user_permissions_background($user, $pg_id, $is_guest=false) {
+		if (!defined('DONT_SAVE_PERMISSIONS_IN_BACKGROUND')) define('DONT_SAVE_PERMISSIONS_IN_BACKGROUND', !is_exec_available());
 		
 		// system permissions
 		$sys_permissions_data = array_var($_POST, 'sys_perm');
@@ -1320,6 +1322,8 @@
 	
 	function add_object_to_sharing_table($object, $user) {
 		if (!$object instanceof ContentDataObject) return;
+		
+		if (!defined('DONT_SAVE_PERMISSIONS_IN_BACKGROUND')) define('DONT_SAVE_PERMISSIONS_IN_BACKGROUND', !is_exec_available());
 		
 		if (substr(php_uname(), 0, 7) == "Windows" || (defined('DONT_SAVE_PERMISSIONS_IN_BACKGROUND') && DONT_SAVE_PERMISSIONS_IN_BACKGROUND)){
 			$object->addToSharingTable();

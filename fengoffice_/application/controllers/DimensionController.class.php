@@ -358,7 +358,7 @@ class DimensionController extends ApplicationController {
 					}
 				}
 				
-				$dims_info[$dim->getId()][] = $mem_info;
+				$dims_info[$dim->getId()][$member->getId()] = $mem_info;
 				$perms_info[$dim->getId()][$member->getId()] = $p_info;
 			}
 		}

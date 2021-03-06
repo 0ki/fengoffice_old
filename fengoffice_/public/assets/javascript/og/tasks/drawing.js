@@ -770,12 +770,6 @@ ogTasks.drawTaskRow = function(task, drawOptions, displayCriteria, group_id, lev
 	//Center td
 	sb.append('<td style="text-align:left;width:'+(drawOptions.show_dates ? '47' : (drawOptions.show_time_estimates ? '47' : '63'))+'%;">');
 	
-	//Member Path
-	mem_path = "";
-	var mpath = Ext.util.JSON.decode(task.memPath);
-	if (mpath) mem_path = og.getCrumbHtml(mpath);
-	sb.append(mem_path);
-	
 	var taskName = '';
 	//Draw the Assigned user
 	if (task.assignedToId && (displayCriteria.group_by != 'assigned_to' || task.assignedToId != group_id)){
@@ -796,6 +790,12 @@ ogTasks.drawTaskRow = function(task, drawOptions, displayCriteria, group_id, lev
 	}
 	var viewUrl = og.getUrl('task', 'view', {id: task.id});
 	sb.append('<a class="internalLink" href="' + viewUrl + '" onclick="og.openLink(\'' + viewUrl + '\');return false;" id="rx__dd'+(++rx__dd)+'">' + taskName + '</a>');
+	
+	//Member Path
+	mem_path = "";
+	var mpath = Ext.util.JSON.decode(task.memPath);
+	if (mpath) mem_path = og.getCrumbHtml(mpath);
+	sb.append(mem_path);
 	
 	//Draw repeat icon (if repetitive)
 	if (task.repetitive > 0){

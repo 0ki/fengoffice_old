@@ -19,11 +19,9 @@
 				if ($count >= 5) $style = 'display:none;';
 			?>
 				<li id="<?php echo "email-".$email->getId()?>" class="email-row ico-email <?php echo $row_cls ?>" style="<?php echo $style;?>">
-					<span class="breadcrumb"></span>
-					<span>
-					</span>
 					<a href="<?php echo $email->getViewUrl() ?>">
 						<span class="bold"><?php echo clean($email->getSubject());?>: </span>
+						<span class="breadcrumb"></span>
 						<br />
 						<span><?php echo clean($email->getFrom());?></span><span class="desc" style="float:right;"><?php echo friendly_date($email->getSentDate())?></span>
 					</a>
