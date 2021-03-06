@@ -69,8 +69,8 @@ function disable_overlib(){
 
 </script>
 <div style="padding:7px">
-<div class="calendar">
-<table style="width:100%">
+<div class="calendar" align="center">
+<table style="width:95%">
 <tr>
 <td>
 	<table style="width:100%">
@@ -93,7 +93,7 @@ function disable_overlib(){
 		<tr>
 			<td class="coViewBody" style="padding:0px" colspan=2>
 				<div style="padding-bottom:0px">
-				<table id="calendar" border='0' cellspacing='1' cellpadding='0' width="100%">
+				<table id="calendar" border='0' cellspacing='0' cellpadding='0' width="100%">
 					<colgroup span="7" width="1*">
 					<tr>
 					<?php 
@@ -156,9 +156,9 @@ function disable_overlib(){
 									$daytype = "weekday_future";
 								}
 							}
-								
+							$date_tmp = DateTimeValueLib::make(0, 0, 0, $month_aux, $day_of_month, $year_aux);
 							// see what type of day it is
-							if($currentyear == $year_aux && $currentmonth == $month_aux && $currentday == $day_of_month){
+							if($currentyear == $date_tmp->getYear() && $currentmonth == $date_tmp->getMonth() && $currentday == $date_tmp->getDay()){
 								$daytitle = 'todaylink';
 								$daytype = "today";
 							} else if($year == $year_aux && $month == $month_aux && $day == $day_of_month){
@@ -206,8 +206,8 @@ function disable_overlib(){
 					?>	
 							
 							
-								<div style='z-index:0; height:100%;cursor:pointer' onclick="og.EventPopUp.show(null, {day:'<?php echo $dtv->getDay() ?>',	month:'<?php echo $dtv->getMonth()?>',year:'<?php echo $dtv->getYear()?>',type_id:2,hour:'0',minute:'0',title:'<?php echo date("l, F j",  mktime(0, 0, 0, $dtv->getMonth(), $dtv->getDay(), $dtv->getYear()))?>'},'');" >
-									<div class='<?php echo $daytitle ?>' style='text-align:right'>
+								<div style='z-index:0; height:100%;cursor:pointer' onclick="showEventPopup('<?php echo $dtv->getDay() ?>','<?php echo $dtv->getMonth()?>','<?php echo $dtv->getYear()?>');" >
+									<div class='<?php echo $daytitle?>' style='text-align:right'>
 							
 							 		<a class='internalLink' href="<?php echo $p ?>" onclick="cancel(event);return true;"  style='color:#5B5B5B' ><?php echo $w?></a>				
 					<?php
@@ -459,4 +459,33 @@ function disable_overlib(){
 		  },
 	    showTitle: false 
   	});
+  	
+  	function quickTip(id, title, bdy, link) {
+		tt = new Ext.ToolTip({
+			target: id,
+	        html: bdy,
+	        title: '<a href="' + link + '">'+title+'</a>',
+	        showDelay: 800,
+	        hideDelay: 1200,
+	        minWidth: 250
+	    });
+	}
+	
+	function showEventPopup(day, month, year) {
+		if (lang('date format') == 'm/d/Y') 
+			st_val = month + '/' + day + '/' + year;
+		else
+			st_val = day + '/' + month + '/' + year;
+
+		og.EventPopUp.show(null, {day: day,
+								month: month,
+								year: year,
+								hour: 9,
+								minute: 0,
+								durationhour: 1,
+								durationmin: 0,
+								start_value: st_val,
+								type_id:2, view:'month', title: lang('add event')
+								}, '');
+	}
 </script>

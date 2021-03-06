@@ -49,7 +49,7 @@ ogTasks.drawAddNewTaskForm = function(group_id, task_id, level){
 	}
 	var displayDefault = displayCriteria.group_by != 'assigned_to';
 	html += "<table><tr><td><div id='ogTasksPanelATAssigned' style='padding-top:5px;visibility:" + (displayDefault? 'visible' : 'hidden') + "'><table><tr><td><b>" + lang('assigned to') + ":&nbsp;</b></td><td><span id='ogTasksPanelATAssignedCont'></span></td></tr></table></div></td>";
-	html += '<td style="padding-top:7px;padding-left:15px"><div style="display:' + ((displayDefault || assignedToValue == '-1:-1' || assignedToValue.split(':')[0] == '0')? 'none' : 'inline') + '" id="ogTasksPanelATNotifyDiv"><label for="ogTasksPanelATNotify"><input style="width:14px" type="checkbox" name="task[notify]" id="ogTasksPanelATNotify" ' + ((assignedToValue != (ogTasks.currentUser.id + ':' + ogTasks.currentUser.companyId))? 'checked':'') + '/>&nbsp;' + lang('send notification') + '</label></div></td></tr></table>'; 
+	html += '<td style="padding-top:7px;padding-left:15px"><div style="display:' + ((displayDefault || assignedToValue == '-1:-1' || assignedToValue.split(':')[1] == '0')? 'none' : 'inline') + '" id="ogTasksPanelATNotifyDiv"><label for="ogTasksPanelATNotify"><input style="width:14px" type="checkbox" name="task[notify]" id="ogTasksPanelATNotify" ' + ((assignedToValue != (ogTasks.currentUser.id + ':' + ogTasks.currentUser.companyId))? 'checked':'') + '/>&nbsp;' + lang('send notification') + '</label></div></td></tr></table>'; 
 	
 	html += "<div id='ogTasksPanelATWorkspace' style='padding-top:5px;display:none'><table><tr><td><b>" + lang('workspace') + ":&nbsp;</b></td><td><div id='ogTasksPanelWsSelector'></div></td></tr></table></div>";
 	
@@ -98,17 +98,37 @@ ogTasks.drawAddNewTaskForm = function(group_id, task_id, level){
 	og.drawWorkspaceSelector('ogTasksPanelWsSelector',(displayCriteria.group_by == 'workspace')? group_id:null);
 	document.getElementById('ogTasksPanelATTitle').focus();
 	if (drawOptions.show_dates){
-		var DtStart = new Ext.form.DateField({
+		var DtStart = new og.DateField({
 			renderTo:'ogTasksPanelATStartDate',
 			id:'ogTasksPanelATStartDateCmp',
 			style:'width:100px',
-			tabIndex:1300
+			tabIndex:1300,
+			listeners: {
+				'change': {
+					fn: function(start, val, old) {
+						if (this.getValue() && this.getValue() < start.getValue()) {
+							alert(lang("warning start date greater than due date"));
+						}
+					},
+					scope: DtDue
+				}
+			}
 		});
-		var DtDue = new Ext.form.DateField({
+		var DtDue = new og.DateField({
 			renderTo:'ogTasksPanelATDueDate',
 			id:'ogTasksPanelATDueDateCmp',
 			style:'width:100px',
-			tabIndex:1400
+			tabIndex:1400,
+			listeners: {
+				'change': {
+					fn: function(due, val, old) {
+						if (this.getValue() && this.getValue() > due.getValue()) {
+							alert(lang("warning start date greater than due date"));
+						}
+					},
+					scope: DtStart
+				}
+			}
 		});
 	}
 	var namesCombo = topToolbar.filterNamesCompaniesCombo.cloneConfig({
@@ -123,7 +143,7 @@ ogTasks.drawAddNewTaskForm = function(group_id, task_id, level){
 				'select':function(combo, record){
 					var checkbox = document.getElementById('ogTasksPanelATNotify');
 					var checkboxDiv = document.getElementById('ogTasksPanelATNotifyDiv');
-					if (record.data.value != '-1:-1' && record.data.value.split(':')[0] != '0'){
+					if (record.data.value != '-1:-1' && record.data.value.split(':')[1] != '0'){
 						checkboxDiv.style.display = 'block';
 						var currentUser = ogTasks.currentUser;
 						checkbox.checked = (record.data.value != (currentUser.id + ':' + currentUser.companyId));
@@ -169,8 +189,8 @@ ogTasks.addNewTaskShowMore = function(){
 }
 
 ogTasks.addNewTaskShowAll = function(){
-	var url = og.getUrl('task', 'add_task');
-	og.openLink(url);
+	var params = this.GetNewTaskParameters(false);
+	og.openLink(og.getUrl('task', 'add_task'), {'post' : params});
 }
 
 ogTasks.hideAddNewTaskForm = function(){
@@ -224,40 +244,55 @@ ogTasks.WorkspaceSelected = function(workspace){
 	document.getElementById('ogTasksPanelWsSelValue').value = workspace.id;
 }
 
-ogTasks.SubmitNewTask = function(){
+
+ogTasks.GetNewTaskParameters = function(wrapWithTask){
 	var parameters = [];
 
 	//Conditional fields
 	var parentField = document.getElementById('ogTasksPanelATParentId');
 	if (parentField)
-		parameters["task[parent_id]"] = parentField.value;
+		parameters["parent_id"] = parentField.value;
 	
 	var milestoneField = document.getElementById('ogTasksPanelATMilestoneId');
 	if (milestoneField)
-		parameters["task[milestone_id]"] = milestoneField.value;
+		parameters["milestone_id"] = milestoneField.value;
 	
 	var hoursPanel = document.getElementById('ogTasksPanelATHours');
 	if (hoursPanel)
-		parameters["task[hours]"] = hoursPanel.value;
+		parameters["hours"] = hoursPanel.value;
 	
 	var startPanel = Ext.getCmp('ogTasksPanelATStartDateCmp');
 	if (startPanel && startPanel.getValue() != '')
-		parameters["task[task_start_date]"] = startPanel.getValue().format('m/d/Y');
+		parameters["task_start_date"] = startPanel.getValue().format(lang('date format'));
 	
 	var duePanel = Ext.getCmp('ogTasksPanelATDueDateCmp');
 	if (duePanel && duePanel.getValue() != '')
-		parameters["task[task_due_date]"] = duePanel.getValue().format('m/d/Y');
+		parameters["task_due_date"] = duePanel.getValue().format(lang('date format'));
 		
 	var notify = document.getElementById('ogTasksPanelATNotify');
 	if (notify.style.display != 'none' && notify.checked)
-		parameters["task[notify]"] = true;
+		parameters["notify"] = true;
 	
 	//Always visible
-	parameters["task[assigned_to]"] = Ext.getCmp('ogTasksPanelATUserCompanyCombo').getValue();
-	parameters["task[priority]"] = Ext.getCmp('ogTasksPanelATPriorityCombo').getValue();
-	parameters["task[title]"] = document.getElementById('ogTasksPanelATTitle').value;
-	parameters["task[text]"] = document.getElementById('ogTasksPanelATDescCtl').value;
-	parameters["task[project_id]"] = document.getElementById('ogTasksPanelWsSelectorValue').value;
+	parameters["assigned_to"] = Ext.getCmp('ogTasksPanelATUserCompanyCombo').getValue();
+	parameters["priority"] = Ext.getCmp('ogTasksPanelATPriorityCombo').getValue();
+	parameters["title"] = document.getElementById('ogTasksPanelATTitle').value;
+	parameters["text"] = document.getElementById('ogTasksPanelATDescCtl').value;
+	parameters["project_id"] = document.getElementById('ogTasksPanelWsSelectorValue').value;
+	
+	if (wrapWithTask){
+		var params2 = [];
+		for (var i in parameters)
+			if (parameters[i])
+				params2["task[" + i + "]"] = parameters[i];
+		return params2;
+	}
+	else
+		return parameters;
+}
+
+ogTasks.SubmitNewTask = function(){
+	var parameters = this.GetNewTaskParameters(true);
 
 	og.openLink(og.getUrl('task', 'quick_add_task'), {
 		method: 'POST',

@@ -101,6 +101,15 @@
    	'user ws config option name always show unread mail in dashboard' => 'Siempre mostrar correo no leído en la vista de resumen',
    	'user ws config option desc always show unread mail in dashboard' => 'Al seleccionar NO sólo se mostraran los correos del espacio de trabajo activo',
  	'workspace emails' => 'Correos del espacio de trabajo',
+  	'user ws config option name tasksShowWorkspaces' => 'Mostrar espacios',
+  	'user ws config option name tasksShowTime' => 'Mostrar tiempo',
+  	'user ws config option name tasksShowDates' => 'Mostrar fechas',
+  	'user ws config option name tasksShowTags' => 'Mostrar etiquetas',
+  	'user ws config option name tasksShowGroupBy' => 'Agrupar por',
+  	'user ws config option name tasksShowOrderBy' => 'Ordenar por',
+  	'user ws config option name task panel status' => 'Estado',
+  	'user ws config option name task panel filter' => 'Filtrar por',
+  	'user ws config option name task panel filter value' => 'Valor del filtro',
   ); // array
 
 ?>

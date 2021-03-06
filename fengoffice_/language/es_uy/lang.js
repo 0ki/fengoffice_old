@@ -51,7 +51,7 @@ addLangs({
 	'confirm delete object': '¿Está seguro que desea eliminar los objetos seleccionados?',
 	'confirm delete contact': '¿Está seguro que desea eliminar contacto(s)?',
 	'confirm delete company': '¿Está seguro que desea eliminar la companía?',
-	'confirm delete event': '¿Está seguro que desea eliminar este evento?',
+	'confirm delete event': '¿Está seguro de que desea eliminar permanentemente este evento? \nSi lo elimina, dejará de estar disponible para otros usuarios.',
 	'confirm delete file': '¿Está seguro que desea eliminar este archivo?',
 	'confirm delete mail content': '¿Está seguro que desea eliminar este correo?',
 	'confirm delete mail account': 'Advertencia: Todos los correos pertenecientes a esta cuenta también serán eliminados, ¿Está seguro que desea eliminar esta cuenta?',
@@ -61,7 +61,7 @@ addLangs({
 	'confirm delete task list': '¿Está seguro que desea eliminar esta tarea, y sus subtareas?',
 	'confirm delete webpage': '¿Está seguro que desea eliminar esta página web?',
 	'confirm delete workspace': '¿Está seguro que desea eliminar el espacio \'{0}\'?',
-	'confirm delete project': '¿Está seguro que desea eliminar este espacio y todos los datos relacionados con él (mensajes, tareas, hitos, archivos...)?',
+	'confirm delete project': '¿Está seguro que desea eliminar este espacio y todos los datos relacionados con él (notas, tareas, hitos, archivos...)?',
 	'confirm cancel work timeslot': 'Está seguro que desea cancelar el tiempo de trabajo?',
 	'more': 'Más',
 	'more actions': 'Más acciones',
@@ -83,7 +83,7 @@ addLangs({
 		
 	'song': 'Canción',
 	'artist': 'Artista',
-	'album': 'Álbum',
+	'album': '�?lbum',
 	'year': 'Año',
 	'playlist': 'Lista de reproducción',
 	'playlists': 'Listas de reproducción',
@@ -103,6 +103,10 @@ addLangs({
 	'shuffle playlist': 'Mezclar lista',
 	'toggle loop playlist': 'Cambiar modo reproducción continua',
 	'play this file': 'Reproducir este archivo',
+	'queue': 'Encolar',
+	'queue this file': 'Encolar este archivo en el reproductor',
+	'must choose a file': 'Debe elegir un archivo',
+	'file has no valid songs': 'El archivo elegido no contiene canciones válidas',
 		
 	'error': 'Error',
 	'success': 'Éxito',
@@ -228,7 +232,7 @@ addLangs({
 	
 	'no objects message': 'No hay \'{0}\' en \'{1}\'',
 	'no objects with tag message': 'No hay {0} etiquetados como \'{2}\' en \'{1}\'',
-	'objects': 'Objectos',
+	'objects': 'Objetos',
 	
 	'checkout description': 'Bloquear archivo para edición',
 	'undo checkout description': 'Habilitar archivo',
@@ -252,6 +256,7 @@ addLangs({
 	'debug': 'Debug',
 	'incomplete': 'Incompleto',
 	'complete': 'Completo',
+	'do complete': 'Completar',
 	'late': 'Tarde',
 	'status': 'Situación',
 	
@@ -286,6 +291,7 @@ addLangs({
 	'prev':'Anterior',
 	'next':'Suiguiente',
 	'my calendar': 'Mi Calendario',
+	'edit event details': 'Editar detalles del evento',
 	
 	/* Charts */
 	'reporting' : 'Reportar',
@@ -455,5 +461,9 @@ addLangs({
   	'add a new task to this group': 'Agregar una nueva tarea a este grupo',
   	'login dialog desc': 'Se ha cerrado su cesión debido a inactividad. Llene este formulario para volver a ingresar al sistema.',
   	'duplicate company name': '<span style="color:#F00">Ya existe una empresa con nombre \'{0}\'. </span><a href="#" style="text-decoration:underline" onclick="og.selectCompany(\'{1}\',{2})>Elija esta empresa</a>, o elija un nombre distinto',
-  	'user not found' : 'Usuario no encontrado (id:{0})'  	
+  	'user not found' : 'Usuario no encontrado (id:{0})',
+  
+  	'date format' : 'd/m/Y',
+  	'date format alternatives' : 'd/m/y|j/n/Y|j/n/y|j/m/y|d/n/y|j/m/Y|d/n/Y',
+  	'warning start date greater than due date': 'Aviso: la fecha de inicio es mayor que la fecha límite'
 });

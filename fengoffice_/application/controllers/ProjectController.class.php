@@ -78,6 +78,7 @@ class ProjectController extends ApplicationController {
 	 * @return null
 	 */
 	function search() {
+		ajx_set_panel("search");
 		$timeBegin = microtime(true);
 		if(active_project() && !logged_user()->isProjectUser(active_project())) {
 			flash_error(lang('no access permissions'));

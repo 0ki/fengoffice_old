@@ -22,7 +22,7 @@
 	<fieldset><legend class="toggle_collapsed" onclick="og.toggle('<?php echo $genid ?>file_contents',this)"><?php echo lang('file contents') ?></legend>
 	<div id="<?php echo $genid ?>file_contents" style="display:none">
 		<?php if ($file->getTypeString() == "text/html"){
-			echo escape_css($file->getFileContent(), "$genidfile_contents");
+			echo escape_css($file->getFileContent(), $genid . "file_contents");
 		} else if ($file->getTypeString() == "text/xml"){
 			echo nl2br(htmlEntities($file->getFileContent() ));
 		} else {

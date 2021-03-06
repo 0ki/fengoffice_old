@@ -170,7 +170,10 @@
   	'read only' => 'Read only',
   	'none no bars' => 'None',
   	'apply to all subworkspaces' => 'Apply these permissions to all subworkspaces',
-  	'weblinks' => 'Web links'
+  	'weblinks' => 'Web links',
+  
+  	'date format' => 'm/d/Y',
+  	'date format description' => '(mm/dd/yyyy)'
 
   ); // array
 

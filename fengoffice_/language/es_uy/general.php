@@ -171,6 +171,9 @@
   	'weblinks' => 'Páginas Web',
   	'include subworkspaces' => 'Incluir subespacios',
     'timeslot on object' => 'Tiempo de trabajo en {0}',
+  
+  	'date format' => 'd/m/Y',
+  	'date format description' => '(día/mes/año)'
   ); // array
 
 ?>

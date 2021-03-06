@@ -619,7 +619,7 @@ og.MailManager = function() {
     	}),
 	
 		unread_email: new Ext.Action({
-	        text: 'Unread',
+	        text: lang('unread'),
 	        enableToggle: true,
 	        pressed: false,
 	        id: 'unread_btn',

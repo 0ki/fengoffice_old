@@ -17,7 +17,15 @@ $isAlt = true;
 foreach ($logs as $log) {
 	$isAlt = !$isAlt;
 	echo '<tr' . ($isAlt? ' class="altRow"' : '') .  '><td>';
-	echo  $log->getCreatedOn()->format("M d Y H:i:s") . ' </td><td> '  . $log->getTakenByDisplayName() . '  </td><td> ' . $log->getText();
+	if ($log->getCreatedOn()->getYear() != DateTimeValueLib::now()->getYear())
+		$date = format_time($log->getCreatedOn(), "M d Y, H:i");
+	else{
+		if ($log->isToday())
+			$date = lang('today') . format_time($log->getCreatedOn(), ", H:i:s");
+		else
+			$date = format_time($log->getCreatedOn(), "M d, H:i");
+	}
+	echo $date . ' </td><td><a class="internalLink" href="' . $log->getTakenBy()->getCardUrl() . '">'  . $log->getTakenByDisplayName() . '</a></td><td> ' . $log->getText();
 	echo '</td></tr>';
 }
 

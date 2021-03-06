@@ -222,7 +222,8 @@ CREATE TABLE  `<?php echo $table_prefix ?>object_properties` (
   `rel_object_manager` varchar(50) NOT NULL,
   `name` text NOT NULL,
   `value` text NOT NULL,
-  PRIMARY KEY  (`id`)
+  PRIMARY KEY  (`id`),
+  INDEX `ObjectID` (`rel_object_id`,`rel_object_manager`)
 ) ENGINE=InnoDB <?php echo $default_charset ?>;
 
 CREATE TABLE `<?php echo $table_prefix ?>project_companies` (

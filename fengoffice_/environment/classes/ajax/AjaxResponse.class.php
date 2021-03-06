@@ -4,7 +4,7 @@ class AjaxResponse {
 
 	public $events = array();
 
-	public $contents = array();
+	public $contents = null;
 
 	public $current = null;
 
@@ -19,7 +19,7 @@ class AjaxResponse {
 	public $replace = false;
 	
 	function __construct() {
-
+		$this->contents = new stdClass();
 	}
 
 	function setEvents($events) {
@@ -27,18 +27,18 @@ class AjaxResponse {
 	}
 	
 	function addContent($panel, $type = null, $data = null, $actions = null, $notbar = null, $preventClose = null) {
-		$this->contents[$panel] = array(
+		$this->contents->$panel = array(
 			"type" => $type,
 			"data" => $data
 		);
 		if (isset($actions)) {
-			$this->contents[$panel]["actions"] = $actions;
+			$this->contents->$panel["actions"] = $actions;
 		}
 		if (isset($notbar)) {
-			$this->contents[$panel]["notbar"] = $notbar;
+			$this->contents->$panel["notbar"] = $notbar;
 		}
 		if (isset($preventClose)) {
-			$this->contents[$panel]["preventClose"] = $preventClose;
+			$this->contents->$panel["preventClose"] = $preventClose;
 		}
 	}
 
@@ -51,7 +51,7 @@ class AjaxResponse {
 		if (isset($panel)) {
 			$dpanel = $panel;
 		} else {
-			$dpanel = ajx_get_panel();
+			$dpanel = "";
 		}
 		 
 		$this->current = array(

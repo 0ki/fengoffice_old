@@ -1,10 +1,5 @@
 <?php
-  $genid = gen_id();
-//  if (isset($base_task) && $base_task instanceof ProjectTask && $base_task->getIsTemplate()) {
-//  	add_page_action(lang("delete template"), "javascript:if(confirm('".lang('confirm delete template')."')) og.openLink('" . get_url("task", "delete_task", array("id" => $base_task->getId())) ."');", "ico-delete");
-//  }
-  $project = $task->getProject();
-  $projects =  active_projects();
+	$genid = gen_id();
 ?>
 
 <form style='height:100%;background-color:white' class="internalForm" action="<?php echo $task->isNew() ? get_url('task', 'add_task', array("copyId" => array_var($task_data, 'copyId'))) : $task->getEditListUrl() ?>" method="post">
@@ -37,14 +32,10 @@
     </div>
 	
 	<div style="padding-top:5px">
-		<?php if (isset ($projects) && count($projects) > 0) { ?>
-			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_select_workspace_div', this)"><?php echo lang('workspace') ?></a> - 
-		<?php } ?>
+		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_select_workspace_div', this)"><?php echo lang('workspace') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_tags_div', this)"><?php echo lang('tags') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_more_div', this)"><?php echo lang('more') ?></a> - 
-		<?php if($task->isNew()) { ?>
-			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_mail_notif_div', this)"><?php echo lang('email notification') ?></a> - 
-		<?php } ?>
+		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_mail_notif_div', this)"><?php echo lang('email notification') ?></a> - 
 		<?php /*<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_handins_div', this)"><?php echo lang('handins') ?></a> - */ ?> 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_properties_div', this)"><?php echo lang('properties') ?></a>
 		<?php if($task->isNew() || $task->canLinkObject(logged_user())) { ?>  
@@ -55,14 +46,12 @@
 <div class="coInputSeparator"></div>
 <div class="coInputMainBlock">
 
-	<?php if (isset ($projects) && count($projects) > 0) { ?>
 	<div id="<?php echo $genid ?>add_task_select_workspace_div" style="display:none">
 	<fieldset>
 	<legend><?php echo lang('workspace') ?></legend>
-		<div id="<?php echo $genid ?>wsSel"></div><?php //echo select_project('task[project_id]', $projects, ($project instanceof Project)? $project->getId():active_or_personal_project()->getId()) ?>
+		<?php echo select_project2('task[project_id]', (array_var($task_data, 'project_id') > 0) ? array_var($task_data, 'project_id'):active_or_personal_project()->getId(), $genid) ?>
 	</fieldset>
 	</div>
-	<?php } ?>
 
 	<div id="<?php echo $genid ?>add_task_tags_div" style="display:none">
 	<fieldset>
@@ -85,34 +74,9 @@
     	</div>
     	
     	<div style="padding-top:4px">	
-    	<?php echo label_tag(lang('dates')) ?>	
-		<script language="javascript">
-		function toggle_start_date(){ 
-			if(document.getElementById('start_date_div').style.display =='none')
-				document.getElementById('start_date_div').style.display='block';
-			else
-				document.getElementById('start_date_div').style.display='none';
-		}
-		</script>
-		<?php echo checkbox_field('use_start_date',(array_var($task_data, 'start_date')!='')?true:false,array('onclick'=>"javascript:toggle_start_date();") ) ?>
-		<?php echo lang('use start date') ?> <br> 
-			<div id="start_date_div" style="<?php if (array_var($task_data, 'start_date')=='') echo "display:none;"?>">
-			<?php echo pick_date_widget2('task_start_date', array_var($task_data, 'start_date'),$genid) ?>
-			</div>	
-				
-		<script language="javascript">
-		function toggle_due_date(){ 
-			if(document.getElementById('due_date_div').style.display =='none')
-				document.getElementById('due_date_div').style.display='block';
-			else
-				document.getElementById('due_date_div').style.display='none';
-		}
-		</script>
-		<?php echo checkbox_field('use_due_date',(array_var($task_data, 'due_date')!='')?true:false,array('onclick'=>"javascript:toggle_due_date();") ) ?>
-		<?php echo lang('use due date')  ?> <br> 
-			<div id="due_date_div" style = "<?php  if (array_var($task_data, 'due_date')=='') echo "display:none;"?>">
-			<?php echo pick_date_widget2('task_due_date', array_var($task_data, 'due_date'),$genid) ?>
-			</div>	
+    	<?php echo label_tag(lang('dates')) ?>
+		<?php echo pick_date_widget2('task_start_date', array_var($task_data, 'start_date'),$genid) ?>
+		<?php echo pick_date_widget2('task_due_date', array_var($task_data, 'due_date'),$genid) ?>
 		</div>
 		
 		<div id='<?php echo $genid ?>add_task_time_div' style="padding-top:6px">
@@ -151,16 +115,17 @@
 	<?php if (isset($base_task) && $base_task instanceof ProjectTask && $base_task->getIsTemplate()) { ?>
 		<input type="hidden" name="task[from_template_id]" value="<?php echo $base_task->getId() ?>" />
 	<?php } ?>
+<?php } // if ?>
 	<div id="<?php echo $genid ?>add_task_mail_notif_div" style="display:none">
 	<fieldset id="emailNotification">
 	<legend><?php echo lang('email notification') ?></legend>
 	<p><?php echo lang('email notification desc') ?></p>
-	<?php if ($project instanceof Project) {
-		$companies = $project->getCompanies();
-	} else {
+	<?php 
 		$companies = Companies::findAll();
-	}?>
-	<?php foreach($companies as $company) { ?>
+		foreach($companies as $company) {
+			if ($company->getClientOfId() > 0 || $company->getId() == 1){
+			$users = $company->getUsers();
+			if(is_array($users) && count($users)) { ?>
 		<script type="text/javascript">
 			App.modules.addMessageForm.notify_companies.company_<?php echo $company->getId() ?> = {
 				id          : <?php echo $company->getId() ?>,
@@ -168,12 +133,6 @@
 				users       : []
 			};
 		</script>
-		<?php if ($project instanceof Project) {
-			$users = $company->getUsersOnProject($project);
-		} else {
-			$users = $company->getUsers();
-		}?>
-		<?php if(is_array($users) && count($users)) { ?>
 		<div class="companyDetails">
 			<div class="companyName">
 				<?php echo checkbox_field('task[notify_company_' . $company->getId() . ']', 
@@ -202,10 +161,10 @@
 			</div>
 			</div>
 		<?php } // if ?>
+		<?php } // if ?>
 	<?php } // foreach ?>
 	</fieldset>
 	</div>
-<?php } // if ?>
 
   
 	<?php /*<div style="display:none" id="<?php echo $genid ?>add_task_handins_div">
@@ -262,7 +221,7 @@
 
 	<div>
 		<label><?php echo lang('assign to') ?>:</label> 
-		<?php echo assign_to_select_box("task[assigned_to]", $project, array_var($task_data, 'assigned_to')) ?>
+		<?php echo assign_to_select_box("task[assigned_to]", null, array_var($task_data, 'assigned_to')) ?>
 		<br /><?php echo checkbox_field('task[send_notification]', array_var($task_data, 'send_notification', true), array('id' => $genid . 'taskFormSendNotification')) ?> 
 		<label for="<?php echo $genid ?>taskFormSendNotification" class="checkbox"><?php echo lang('send task assigned to notification') ?></label>
 	</div>
@@ -276,5 +235,4 @@
 
 <script type="text/javascript">
 	Ext.get('<?php echo $genid ?>taskListFormName').focus();
-	og.drawWorkspaceSelector('<?php echo $genid ?>wsSel',<?php echo ($project instanceof Project)? $project->getId():active_or_personal_project()->getId() ?>,'task[project_id]');
 </script>

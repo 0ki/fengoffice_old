@@ -306,8 +306,10 @@ class AccessController extends ApplicationController {
 		$filenames = get_files("./language/" . Localization::instance()->getLocale(), "js");
 		$content = "/* inicio */\n";
 		foreach ($filenames as $f) {
-			$content .= "\n/* $f */\n";				
+			$content .= "\n/* $f */\n";
+			$content .= "try {";				
 			$content .= file_get_contents($f);
+			$content .= "} catch (e) {}";
 		}
 		$content .= "\n/* fin */\n";
 		$this->setLayout("json");

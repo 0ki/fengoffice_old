@@ -209,8 +209,10 @@ class MailAccount extends BaseMailAccount {
 	
 	function delete(){
 		$mails = $this->getMailContents();
-		foreach ($mails as $mail){
-			$mail->delete();
+		if($mails){
+			foreach ($mails as $mail){
+				$mail->delete();
+			}
 		}
 		parent::delete();
 	}

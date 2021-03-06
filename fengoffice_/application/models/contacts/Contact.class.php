@@ -570,7 +570,7 @@ class Contact extends BaseContact {
     * @return boolean
     */
     function delete() {
-      if($this->getUserId()) {
+      if($this->getUserId() && !can_manage_security(logged_user())) {
         return false;
       } // if
       
@@ -706,6 +706,9 @@ class Contact extends BaseContact {
      */
     function getRole(Project $project)
     {
+    	if (!$project instanceof Project) {
+    		return null;
+    	}
     	return ProjectContacts::getRole($this,$project);
     }
 

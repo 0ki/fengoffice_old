@@ -1192,6 +1192,7 @@ class User extends BaseUser {
 
 		$this->deleteAvatar();
 		$this->deletePersonalProject();
+		Contacts::updateUserIdOnUserDelete($this->getId());
 		ProjectUsers::clearByUser($this);
 		ObjectSubscriptions::clearByUser($this);
 		ObjectReminders::clearByUser($this);

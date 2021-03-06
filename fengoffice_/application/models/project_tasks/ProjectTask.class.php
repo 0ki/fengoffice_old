@@ -1107,7 +1107,7 @@ class ProjectTask extends BaseProjectTask {
 			$result['mid'] = $this->getMilestoneId();
 			
 		if ($this->getAssignedToUserId() > 0 || $this->getAssignedToCompanyId() > 0)
-			$result['atid'] = $this->getAssignedToUserId() . ':' . $this->getAssignedToCompanyId();
+			$result['atid'] = $this->getAssignedToCompanyId() . ':' . $this->getAssignedToUserId();
 			
 		if ($this->getCompletedById() > 0){
 			$result['cbid'] = $this->getCompletedById();

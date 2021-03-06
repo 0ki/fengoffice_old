@@ -3,7 +3,7 @@
  
 ------------------------------------------------------------
 
-<?php echo lang('new task created', $new_task->getTitle(), $new_task->getProject()->getName()) ?>. <?php echo lang('view new task') ?>:
+<?php echo lang('task has been modified', $new_task->getTitle(), $new_task->getProject()->getName()) ?>. <?php echo lang('view task') ?>:
 
  <?php echo str_replace('&amp;', '&', $new_task->getViewUrl()) ?> 
 

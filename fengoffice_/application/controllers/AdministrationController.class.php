@@ -18,6 +18,7 @@ class AdministrationController extends ApplicationController {
 	function __construct() {
 		parent::__construct();
 		prepare_company_website_controller($this, 'website');
+		ajx_set_panel("administration");
 
 		// Access permissios
 		if(!logged_user()->isCompanyAdmin(owner_company())) {

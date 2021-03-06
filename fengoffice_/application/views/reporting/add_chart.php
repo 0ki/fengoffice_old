@@ -1,5 +1,6 @@
-<?php $projects = logged_user()->getActiveProjects();
+<?php
 	$project = active_or_personal_project();
+	$genid = gen_id();
 ?>
 <form style='height:100%;background-color:white' class="internalForm" action="<?php echo get_url('reporting', 'add_chart')  ?>" method="post">
 
@@ -39,22 +40,19 @@ function setSave(){
 	</div>
 	
 	<div style="padding-top:5px">
-		<?php if (isset ($projects) && count($projects) > 0) { ?>
-			<a href="#" class="option" onclick="og.toggleAndBolden('add_chart_select_workspace_div',this)"><?php echo lang('workspace') ?></a> - 
-		<?php } ?>
+		<a href="#" class="option" onclick="og.toggleAndBolden('add_chart_select_workspace_div',this)"><?php echo lang('workspace') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('add_chart_add_tags_div', this)"><?php echo lang('tags') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('add_chart_display_div', this)"><?php echo lang('display') ?></a>
 	</div>
 </div>
 <div class="coInputSeparator"></div>
 <div class="coInputMainBlock">
-	<?php if (isset ($projects) && count($projects) > 0) { ?>
+
 	<div id="add_chart_select_workspace_div" style="display:none">
 	<fieldset><legend><?php echo lang('workspace')?></legend>
-		<?php echo select_project('chart[project_id]', $projects, ($project instanceof Project)? $project->getId():0) ?>
+		<?php echo select_project2('chart[project_id]', ($project instanceof Project)? $project->getId():0, $genid) ?>
 	</fieldset>
 	</div>
-	<?php } ?>
 	
 	<div id="add_chart_add_tags_div" style="display:none">
 	<fieldset><legend><?php echo lang('tags')?></legend>

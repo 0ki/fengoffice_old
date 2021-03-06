@@ -53,15 +53,11 @@
 		?>
 		<tr class="dateTr"  style="<?php echo $style ?>">
 			<td><b><?php echo lang("start date") ?>:&nbsp;</b></td>
-			<td align='left'><?php
-				echo pick_date_widget2('report[start_value]', $st, $genid);
-			?></td>
+			<td align='left'><?php echo pick_date_widget2('report[start_value]', $st, $genid);?></td>
 		</tr>
 		<tr class="dateTr"  style="<?php echo $style ?>">
 			<td style="padding-bottom:18px"><b><?php echo lang("end date") ?>:&nbsp;</b></td>
-			<td align='left'><?php
-				echo pick_date_widget2('report[end_value]', $et, $genid);
-			?></td>
+			<td align='left'><?php echo pick_date_widget2('report[end_value]', $et, $genid);?></td>
 		</tr>
 		<tr style='height:30px;'>
 			<td><b><?php echo lang("user") ?>:&nbsp;</b></td>

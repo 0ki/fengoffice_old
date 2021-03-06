@@ -402,11 +402,13 @@ og.openLink = function(url, options) {
 					og.processResponse(data, options);
 				} catch (e) {
 					// response isn't valid JSON, display it on the caller panel or new tab
-					var p = Ext.getCmp(options.caller);
-					if (p) {
-						p.load(response.responseText);
-					} else {
-						og.newTab(response.responseText);
+					if (!options.preventPanelLoad) {
+						var p = Ext.getCmp(options.caller);
+						if (p) {
+							p.load(response.responseText);
+						} else {
+							og.newTab(response.responseText);
+						}
 					}
 				}
 				if (options.postProcess) options.postProcess.call(options.scope || this, true, data || response.responseText, options.options);
@@ -510,10 +512,10 @@ og.processResponse = function(data, options, url) {
 	if (!options || !options.preventPanelLoad){
 		//Load data into more than one panel
 		if (data.contents) {
-			for (var i=0; i < data.contents.length; i++) {
-				var p = Ext.getCmp(data.contents[i].panel);
+			for (var k in data.contents) {
+				var p = Ext.getCmp(k);
 				if (p) {
-					p.load(data.contents[i]);
+					p.load(data.contents[k]);
 				}
 			}
 		}
@@ -553,18 +555,19 @@ og.processResponse = function(data, options, url) {
 };
 
 og.newTab = function(content, id, data) {
-	var title = id?lang(id):lang('new tab');
-	if (data && data.title)
-		title = data.title;
+	if (!data) data = {};
+	if (!data.title) {
+		data.title = id?lang(id):lang('new tab');
+	}
+	data.tabTip = data.tabTip || data.title;
+	if (data.title.length >= 15) data.title = data.title.substring(0,12) + '...';
+	data.iconCls = data.iconCls || data.icon || (id ? 'ico-' + id : 'ico-tab');
 	var tp = Ext.getCmp('tabs-panel');
-	var t = new og.ContentPanel({
+	var t = new og.ContentPanel(Ext.apply(data, {
 		closable: true,
-		title: title.length < 15?title:title.substring(0,12) + '...',
-		tabTip: title,
 		id: id || Ext.id(),
-		iconCls: ((data && data.icon)?data.icon:(id?'ico-' + id:'ico-tab')),
 		defaultContent: content
-	});
+	}));
 	tp.add(t);
 	tp.setActiveTab(t);
 };
@@ -755,5 +758,76 @@ Ext.extend (og.PagingToolbar, Ext.PagingToolbar, {
 	}
 });
 
+og.getGooPlayerPanel = function() {
+	var gppanel = Ext.getCmp('gooplayer-panel');
+	if (!gppanel) {
+		og.newTab({
+				type: "panel",
+				data: "gooplayer",
+				config: {
+					id: 'gooplayer',
+					sound: og.GooPlayer.sound
+				}
+			},
+			'gooplayer-panel', {
+				title: 'GooPlayer',
+				icon: 'ico-gooplayer'
+			}
+		);
+		gppanel = Ext.getCmp('gooplayer-panel');
+	}
+	return gppanel;
+}
 
-/***********************************************************************/
+og.playMP3 = function(track) {
+	var gppanel = og.getGooPlayerPanel();
+	Ext.getCmp('tabs-panel').setActiveTab(gppanel);
+	var gooplayer = Ext.getCmp('gooplayer');
+	gooplayer.loadPlaylist([track]);
+	gooplayer.start();
+}
+
+og.queueMP3 = function(track) {
+	var gppanel = og.getGooPlayerPanel();
+	//Ext.getCmp('tabs-panel').setActiveTab(gppanel);
+	var gooplayer = Ext.getCmp('gooplayer');
+	gooplayer.queueTrack(track);
+}
+
+og.playXSPF = function(id) {
+	var gppanel = og.getGooPlayerPanel();
+	Ext.getCmp('tabs-panel').setActiveTab(gppanel);
+	var gooplayer = Ext.getCmp('gooplayer');
+	gooplayer.loadPlaylistFromFile(id, true);
+}
+
+function StringBuffer() { 
+   this.buffer = []; 
+ } 
+
+ StringBuffer.prototype.append = function append(string) { 
+   this.buffer.push(string); 
+   return this; 
+ }; 
+
+ StringBuffer.prototype.toString = function toString() { 
+   return this.buffer.join(""); 
+ }; 
+ 
+ og.xmlFetchTag = function(xml, tag) {
+	var i1 = xml.indexOf("<" + tag + ">");
+	var i2 = xml.indexOf("</" + tag + ">");
+	if (i1 >= 0 && i2 > i1) {
+		return {
+			found: true,
+			value: xml.substring(i1 + tag.length + 2, i2),
+			rest: xml.substring(i2 + tag.length + 3)
+		};
+	} else {
+		return {
+			found: false,
+			value: "",
+			rest: xml
+		};
+	}
+}

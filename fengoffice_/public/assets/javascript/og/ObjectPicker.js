@@ -161,11 +161,11 @@ og.ObjectPicker = function(config) {
 			this.load();
 		},
 		
-		load: function() {
-			var params = {
+		load: function(params) {
+			Ext.apply(params, {
 				start: 0,
 				limit: og.pageSize
-			};
+			});
 			this.store.load({
 				params: params
 			});
@@ -398,7 +398,7 @@ og.ObjectPicker = function(config) {
 		]
 	}));
 	this.grid.on('rowdblclick', this.accept, this);
-	this.grid.load();
+	//this.grid.load();
 	this.addEvents({'objectselected': true});
 }
 
@@ -418,18 +418,19 @@ Ext.extend(og.ObjectPicker, Ext.Window, {
 		this.findById('typeFilter').loadFilters();
 	},
 	
-	load: function() {
-		this.grid.load();
+	load: function(params) {
+		this.grid.load(params);
 	}
 });
 
-og.ObjectPicker.show = function(callback, scope) {
+og.ObjectPicker.show = function(callback, scope, config) {
 	if (!this.dialog) {
 		this.dialog = new og.ObjectPicker();
 	}
-
+	
+	if (!config) config = {};
 	this.dialog.loadFilters();
-	this.dialog.load();
+	this.dialog.load(config.extraParams);
 	this.dialog.purgeListeners();
 	this.dialog.on('objectselected', callback, scope, {single:true});
 	this.dialog.show();

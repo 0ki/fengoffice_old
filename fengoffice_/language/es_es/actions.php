@@ -158,6 +158,9 @@
     'edit spreadsheet' => 'Editar hoja de cálculo',
     'edit presentation' => 'Editar presentación',
 
+  	'play' => 'Reproducir',
+  	'queue' => 'Encolar',
+  
     'delete file' => 'Eliminar archivo',
     
     'add folder' => 'Añadir carpeta',
@@ -190,7 +193,7 @@
 	'view history' => 'Ver historial',
 	'edit preferences' => 'Editar preferencias',
   	'add new message' => 'Añadir nueva nota',  
-    
+    'view milestone' => 'Ver hito',
   ); // array
 
 ?>

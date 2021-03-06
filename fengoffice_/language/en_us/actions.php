@@ -159,6 +159,9 @@
     'edit spreadsheet' => 'Edit spreadsheet',
     'edit presentation' => 'Edit presentation',
 
+  	'play' => 'Play',
+  	'queue' => 'Queue',
+  
     'delete file' => 'Delete file',
     
     'add folder' => 'Add folder',
@@ -190,7 +193,7 @@
 	'view history for' => 'View history for',
 	'view history' => 'View History',    
 	'edit preferences' => 'Edit preferences',
-	
+	'view milestone' => 'View milestone',
   ); // array
 
 ?>

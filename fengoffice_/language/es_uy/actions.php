@@ -159,6 +159,9 @@
     'edit spreadsheet' => 'Editar hoja de cálculo',
     'edit presentation' => 'Editar presentación',
 
+  	'play' => 'Reproducir',
+  	'queue' => 'Encolar',
+  
     'delete file' => 'Eliminar archivo',
     
     'add folder' => 'Agregar carpeta',
@@ -169,12 +172,12 @@
     'version' => 'ver',
     'last modification' => 'Última modifiación',
     
-    'link object' => 'Vincular este objecto',
-    'link objects' => 'Vincular estos objectos',
-    'link more objects' => 'Vincular a más objectos',
+    'link object' => 'Vincular objeto',
+    'link objects' => 'Vincular objetos',
+    'link more objects' => 'Vincular a más objetos',
     'unlink' => 'Eliminar vínculo',
-    'unlink object' => 'Eliminar vínculo con este objecto',
-    'unlink objects' => 'Eliminar vínculo con estos objectos',
+    'unlink object' => 'Eliminar vínculo con este objeto',
+    'unlink objects' => 'Eliminar vínculo con estos objetos',
   	
     // Tags
     'delete tag'  => 'Eliminar etiqueta',
@@ -190,7 +193,7 @@
 	'view history for' => 'Ver historial',
 	'view history' => 'Ver historial',
 	'edit preferences' => 'Editar preferencias',
-    
+    'view milestone' => 'Ver hito',
   ); // array
 
 ?>

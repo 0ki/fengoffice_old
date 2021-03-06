@@ -67,7 +67,7 @@
 	"CAL_EVERY" => "Cada",
 	"CAL_REPEAT_FOREVER" => "Repetir para siempre",
 	"CAL_REPEAT_UNTIL" => "Repetir hasta",
-	"CAL_TIMES" => "Horas",
+	"CAL_TIMES" => "Veces",
 	"CAL_HOLIDAY_EXPLAIN" => "Hará que el evento se repita en ",
 	"CAL_DURING" => "Durante",
 	"CAL_EVERY_YEAR" => "Todos los años",
@@ -77,7 +77,7 @@
 	"CAL_SUBMIT_ITEM" => "Enviar item",
 	"CAL_MINUTES" => "Minutos", 
 	"CAL_MINUTES_SHORT" => "min",
-	"CAL_TIME_AND_DURATION" => "Fecha, tiempoy duración",
+	"CAL_TIME_AND_DURATION" => "Fecha, hora y duración",
 	"CAL_REPEATING_EVENT" => "Evento Repetitivo",
 	"CAL_EXTRA_OPTIONS" => "Opciones Extra",
 	"CAL_ONLY_TODAY" => "Sólo este día",
@@ -104,7 +104,7 @@
 	"CAL_NOT_SPECIFIED" => "No Especificado", // (view event, view date, calendar)
 	"CAL_FULL_DAY" => "Todo el día", // (view event, view date, calendar, submit event)
 	"CAL_HACKING_ATTEMPT" => "Intento de hackeo - se almanenó la dirección IP", // (delete)
-	"CAL_TIME" => "Tiempo", // (view date, submit event)
+	"CAL_TIME" => "Hora", // (view date, submit event)
 	"CAL_HOURS" => "Horas", // (view event, submit event)
 	"CAL_HOUR" => "Hora", // (view event, submit event)
 	"CAL_ANONYMOUS" => "Anónimo", // (view event, view date, submit event)

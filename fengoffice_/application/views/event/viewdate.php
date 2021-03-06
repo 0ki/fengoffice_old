@@ -171,7 +171,7 @@ $user = Users::findById(array('id' => $user_filter));
 													}
 													$top = (PX_HEIGHT/2) * $hour;
 											?>
-													<div id="r<?php echo $hour?>"" class="hrule <?php echo $parity?>" style="top: <?php echo $top?>px; z-index: 0;position:absolute;left:0px;<?php echo $style?>;width:100%"></div>
+													<div id="r<?php echo $hour?>"" class="hrule <?php echo $parity?>" style="top: <?php echo $top?>px; height:1px; z-index:0; position:absolute; left:0px;<?php echo $style?>;width:100%"></div>
 													<div id="h<?php echo $hour?>"" style="width:100%;top: <?php echo $top?>px; z-index: 100; height:20px;position:absolute;" 
 														onmousedown="selectStartDateTime(<?php echo $dtv->getDay() ?>, <?php echo $dtv->getMonth()?>, <?php echo $dtv->getYear()?>, <?php echo date("G",mktime($hour/2))?>, <?php echo ($hour % 2 ==0)?0:30 ?>);"
 														onmouseup="showEventPopup(<?php echo $dtv->getDay() ?>, <?php echo $dtv->getMonth()?>, <?php echo $dtv->getYear()?>, <?php echo date("G",mktime($hour/2))?>, <?php echo ($hour % 2 ==0)?0:30 ?>);"></div>
@@ -372,12 +372,12 @@ $user = Users::findById(array('id' => $user_filter));
 
 <script type="text/javascript">
 
-	function quickTip(id, title, body) {
-		var tt = new Ext.ToolTip({
+	function quickTip(id, title, bdy) {
+		tt = new Ext.ToolTip({
 			target: id,
-	        html: body,
+	        html: bdy,
 	        title: title,
-	        showDelay: 200,
+	        showDelay: 800,
 	        hideDelay: 1200,
 	        minWidth: 250
 	    });
@@ -448,6 +448,11 @@ $user = Users::findById(array('id' => $user_filter));
 			mins = 0;
 		}
 
+		if (lang('date format') == 'm/d/Y') 
+			st_val = ev_start_month + '/' + ev_start_day + '/' + ev_start_year;
+		else
+			st_val = ev_start_day + '/' + ev_start_month + '/' + ev_start_year;
+			
 		og.EventPopUp.show(null, {day: ev_start_day,
 								month: ev_start_month,
 								year: ev_start_year,
@@ -455,7 +460,7 @@ $user = Users::findById(array('id' => $user_filter));
 								minute: ev_start_minute,
 								durationhour: hrs,
 								durationmin: mins,
-								start_value: ev_start_month + '/' + ev_start_day + '/' + ev_start_year,
+								start_value: st_val,
 								type_id:1, view:'week', title: lang('add event')
 								}, '');
 	}

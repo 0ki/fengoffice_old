@@ -26,8 +26,9 @@ function showProjectTagsDiv()
 
   <fieldset>
 <legend><?php echo lang('project') ?></legend>
-	<div id="<?php echo $genid ?>wsSel"></div><?php // echo select_project('classification[project_id]', $projects, array_var($classification_data, 'project_id'), array('id' => 'classifyFormProject')); ?>
-<?php echo label_tag(lang('tags')) ?>
+		<?php echo select_project2('classification[project_id]', (array_var($classification_data, 'project_id'))? array_var($classification_data, 'project_id'):active_or_personal_project()->getId(), $genid) ?>
+
+		<?php echo label_tag(lang('tags')) ?>
 	<?php echo autocomplete_textfield("classification[tag]", array_var($classification_data, 'tags'), Tags::getTagNames(), lang("enter tags desc"), array("id" => "ProjectTagsFS", "class" => "long")); ?>
 </fieldset>
    
@@ -49,6 +50,3 @@ function showProjectTagsDiv()
   </div>
 </div>
 </form>
-<script type="text/javascript">
-	og.drawWorkspaceSelector('<?php echo $genid ?>wsSel',<?php echo (array_var($classification_data, 'project_id'))? array_var($classification_data, 'project_id'):active_or_personal_project()->getId() ?>,'classification[project_id]');
-</script>

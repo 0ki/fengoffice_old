@@ -222,9 +222,9 @@ class WebpageController extends ApplicationController {
 			$ids = explode(',', array_var($_GET, 'webpages'));
 			list($succ, $err) = ObjectController::do_delete_objects($ids, 'ProjectWebpages');
 			if ($err > 0) {
-				flash_error(lang('error delete objects'), $err);
+				flash_error(lang('error delete objects', $err));
 			} else {
-				flash_success(lang('success delete objects'), $succ);
+				flash_success(lang('success delete objects', $succ));
 			}
 		} else if (array_var($_GET, 'action') == 'tag') {
 			$ids = explode(',', array_var($_GET, 'webpages'));

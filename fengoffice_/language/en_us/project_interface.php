@@ -65,7 +65,6 @@ return array(
 
     'project permissions form hint' => 'Using <a class="internalLink" href="{0}">permissions form</a> you can easily add or remove companies and users and control their access permissions.',
 
-    'additional message text desc' => 'Additional note text is visible only on comments page',
     'expand additional text' => 'Expand',
     'collapse additional text' => 'Collapse',
     'email notification' => 'Email notification',
@@ -259,6 +258,7 @@ return array(
 	'latest comments' => 'Latest comments',
 	'include unworked pending tasks' => 'Include unworked pending tasks',
 	'unworked pending tasks' => 'Unworked pending tasks',
+	'assign contact to workspace desc' => 'To assign the contact to a workspace check the workspace and then fill in the role in the text field.',
 ); // array
 
 ?>

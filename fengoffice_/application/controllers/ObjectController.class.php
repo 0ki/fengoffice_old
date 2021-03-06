@@ -483,8 +483,16 @@ class ObjectController extends ApplicationController {
 					TABLE_PREFIX . "project_events` `co`, `" . TABLE_PREFIX . "object_subscriptions` `os` WHERE " . $proj_cond . $tag_str . $permissions . " AND `co`.`id` = `os`.`object_id` AND `os`.`object_manager` = 'ProjectEvents' AND `os`.`user_id` = " . logged_user()->getId() . ")";
 
 		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectFiles::instance(), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`co`') .')';
+		$typestring = array_var($_GET, "typestring");
+		if ($typestring) {
+			$typecond = " AND  ((SELECT count(*) FROM `" . TABLE_PREFIX . "project_file_revisions` `pfr` WHERE `" .
+				"pfr`.`type_string` LIKE ".DB::escape($typestring)." AND `".
+				"co`.`id` = `pfr`.`file_id`) > 0)";
+		} else {
+			$typecond = "";
+		}
 		$res['Documents'] = "SELECT  'ProjectFiles' AS `object_manager_value`, `id` as `oid`, `updated_on` AS `last_update` FROM `" . 
-					TABLE_PREFIX . "project_files` `co` WHERE " . $proj_cond_docs . $tag_str . $permissions;
+					TABLE_PREFIX . "project_files` `co` WHERE " . $proj_cond_docs . $tag_str . $permissions . $typecond;
 		$res['DocumentsComments'] = "SELECT  'Comments' AS `object_manager_value`, `id` AS `oid`, `updated_on` AS `last_update` FROM `" . 
 					TABLE_PREFIX . "comments` WHERE `rel_object_manager` = 'ProjectFiles' AND `rel_object_id` IN (SELECT `co`.`id` FROM `" . 
 					TABLE_PREFIX . "project_files` `co`, `" . TABLE_PREFIX . "object_subscriptions` `os` WHERE " . $proj_cond_docs . $tag_str . $permissions . " AND `co`.`id` = `os`.`object_id` AND `os`.`object_manager` = 'ProjectFiles' AND `os`.`user_id` = " . logged_user()->getId() . ")";
@@ -911,6 +919,30 @@ class ObjectController extends ApplicationController {
 			}
 		}
 		tpl_assign("sent", $sent);
+	}
+	
+	/**
+	 * Properties are sent as POST name:values
+	 *
+	 */
+	function save_properties() {
+		ajx_current("empty");
+		$id = array_var($_GET,'id');
+		$manager = array_var($_GET,'manager');
+		$object = get_object_by_manager_and_id($id, $manager);
+		if (!$object->canEdit(logged_user())) {
+			//flash_error(lang('no access permissions'));
+			return ;
+		}
+		try {
+			$count = 0;
+			foreach ($_POST as $n => $v) {
+				$object->setProperty($n, $v);
+				$count++;
+			}
+		} catch (Exception $e) {
+			
+		}
 	}
 }
 ?>

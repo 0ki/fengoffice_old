@@ -547,8 +547,9 @@ class ContactController extends ApplicationController {
 	 * @return null
 	 */
 	function add() {
-		if (active_project() instanceof Project)
-		tpl_assign('isAddProject',true);
+		if (active_project() instanceof Project) {
+			tpl_assign('isAddProject',true);
+		}
 		$this->setTemplate('edit_contact');
 
 		if(!Contact::canAdd(logged_user(),active_or_personal_project())) {
@@ -589,10 +590,7 @@ class ContactController extends ApplicationController {
 					$newCompany = true;
 				}
 				
-				if ($contact_data["o_birthday_value"] != '') {
-					$birthday = explode('/', array_var($contact_data, 'o_birthday_value'));
-					$contact_data['o_birthday'] = DateTimeValueLib::make(0, 0, 0, $birthday[0], $birthday[1], $birthday[2]);
-				}
+				$contact_data['o_birthday'] = getDateValue($contact_data["o_birthday_value"]);
 				
 				$contact->setFromAttributes($contact_data);
 
@@ -663,6 +661,10 @@ class ContactController extends ApplicationController {
 	 */
 	function edit() {
 		$this->setTemplate('edit_contact');
+		
+		if (active_project() instanceof Project) {
+			tpl_assign('isAddProject',true);
+		}
 
 		$contact = Contacts::findById(get_id());
 		if(!($contact instanceof Contact)) {
@@ -678,7 +680,15 @@ class ContactController extends ApplicationController {
 		} // if
 
 		$im_types = ImTypes::findAll(array('order' => '`id`'));
-
+		$active_project = active_project();
+		$role = "" ;
+		if($active_project){
+			$pc = $contact->getRole(active_project());
+			if ($pc instanceof ProjectContact) {
+				$role = $pc->getRole();
+			}
+		}
+		
 		$contact_data = array_var($_POST, 'contact');
 		if(!is_array($contact_data)) {
 			$contact_data = array(
@@ -729,7 +739,7 @@ class ContactController extends ApplicationController {
           	'notes' => $contact->getNotes(),
           	'is_private' => $contact->getIsPrivate(),
           	'company_id' => $contact->getCompanyId(),
-      	    'role' => ''
+      	    'role' => $role
       	    ); // array
 
       	    if(is_array($im_types)) {
@@ -768,10 +778,7 @@ class ContactController extends ApplicationController {
 					$newCompany = true;
 				}
 				
-				if ($contact_data["o_birthday_value"] != '') {
-					$birthday = explode('/', array_var($contact_data, 'o_birthday_value'));
-					$contact_data['o_birthday'] = DateTimeValueLib::make(0, 0, 0, $birthday[0], $birthday[1], $birthday[2]);
-				} else $contact_data['o_birthday'] = null;
+				$contact_data['o_birthday'] = getDateValue($contact_data["o_birthday_value"]);
 				
 				$contact->setFromAttributes($contact_data);
 				
@@ -807,6 +814,24 @@ class ContactController extends ApplicationController {
 				} // foreach
 
 				DB::commit();
+				
+				if (trim(array_var($contact_data, 'role', '')) != '' && active_project() instanceof Project) {
+					if(!ProjectContact::canAdd(logged_user(), active_project())) {
+						flash_error(lang('error contact added but not assigned', $contact->getDisplayName(), active_project()->getName()));
+						ajx_current("back");
+						return;
+					} // if
+					
+					$pc = new ProjectContact();
+					$pc->setContactId($contact->getId());
+					$pc->setProjectId(active_project()->getId());
+					$pc->setRole(array_var($contact_data,'role'));
+					
+					DB::beginWork();
+					$pc->save();
+					DB::commit();
+					ApplicationLogs::createLog($contact, active_project(), ApplicationLogs::ACTION_ADD);
+				}
 
 				flash_success(lang('success edit contact', $contact->getDisplayName()));
 				ajx_current("back");

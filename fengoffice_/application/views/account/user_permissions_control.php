@@ -82,7 +82,7 @@
 	ogLoadPermissions('<?php echo $genid ?>');
 	var wsch = Ext.getCmp('workspace-chooser<?php echo $genid ?>');
 	wsch.on("wschecked", function(arguments) {
-		ogPermAllChecked('<?php echo $genid ?>', arguments['checked'], arguments['wsid']);
+		ogPermAllChecked('<?php echo $genid ?>', arguments['checked'], arguments['id']);
 	}, document);
 	wsch.on("wsselected", function() {
 		ogPermSelectedWsChanged('<?php echo $genid ?>');

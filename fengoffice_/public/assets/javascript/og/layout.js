@@ -1,25 +1,6 @@
 Ext.onReady(function(){
 	Ext.get("loading").hide();
-	
-	/** TODO: HISTORY MGMT
-	var hframe = document.createElement("iframe");
-	hframe.className = "x-hidden";
-	hframe.id = "x-history-frame";
-	document.body.appendChild(hframe);
-	var hinput = document.createElement("input");
-	hinput.type = "hidden";
-	hinput.id = "x-history-field";
-	document.body.appendChild(hinput);
-	Ext.History.init(hinput);
-	Ext.History.on('change', function(token){
-		if (token) {
-			//og.openLink("?" + token);
-		} else {
-			// initial state
-		}
-    });
-    **/
-	
+		
 	// fix cursor not showing on message boxs
 	Ext.MessageBox.getDialog().on("show", function(d) {
 		var div = Ext.get(d.el);
@@ -38,6 +19,7 @@ Ext.onReady(function(){
 	}));
 	Ext.state.Manager.getProvider().initState(og.initialGUIState);*/
 	
+	today_date = new Date();
 	Ext.QuickTips.init();
 
 	var tab_panel = new Ext.TabPanel({
@@ -95,10 +77,10 @@ Ext.onReady(function(){
 				title: lang('calendar'),
 				id: 'calendar-panel',
 				iconCls: 'ico-calendar',
-				refreshOnWorkspaceChange: true,
+				refreshOnWorkspaceChange: false, //the handler is in listeners.php
 				defaultContent: {
 					type: "url",
-					data: og.getUrl('event','viewweek')
+					data: og.getUrl('event', actual_view, {day: today_date.format('d'), month: today_date.format('n'), year: today_date.format('Y'), user_filter: 0, state_filter: -1})
 				},
 				baseCls: '',
 				tbar: og.CalendarToolbarItems

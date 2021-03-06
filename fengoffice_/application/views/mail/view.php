@@ -3,7 +3,7 @@
   add_page_action(lang('reply to all mail'), $email->getReplyMailUrl()."&all=1"  , 'ico-reply-all');
   add_page_action(lang('forward mail'), $email->getForwardMailUrl()  , 'ico-forward');
   if($email->canDelete(logged_user())) {
-    add_page_action(lang('delete email'),"javascript:if(confirm(lang('confirm delete mail content'))) og.openLink('" . $email->getDeleteUrl() ."');" , 'ico-delete');
+    add_page_action(lang('delete email'),"javascript:if(confirm(lang('confirm delete mail content'))) {og.openLink('" . $email->getDeleteUrl() ."');" , 'ico-delete');
   }
   if ($email->canEdit(logged_user())){
     add_page_action(lang('classify'), $email->getClassifyUrl(), 'ico-classify');
@@ -61,9 +61,9 @@
 			}
 		} else {
 			if ($email->getBodyPlain() != ''){
-				$content =  '<div>' . convert_to_links(nl2br(clean($email->getBodyPlain()))) . '</div>';
+				$content =  '<div>' . clean(convert_to_links(nl2br($email->getBodyPlain()))) . '</div>';
 			} else {
-				$content =  '<div>' .convert_to_links(nl2br(clean($email->getContent()))) . '</div>';
+				$content =  '<div>' . clean(convert_to_links(nl2br($email->getContent()))) . '</div>';
 			}
 		}
 		$strDraft = '';

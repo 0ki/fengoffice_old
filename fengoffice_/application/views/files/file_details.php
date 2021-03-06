@@ -5,6 +5,20 @@ $options = array();
 		add_page_action(lang('slideshow'), "javascript:og.slideshow(".$file->getId().")", 'ico-slideshow');
 	}
 	
+	if ($file && strcmp($file->getTypeString(), 'audio/mpeg')==0) {
+		$songname = $file->getProperty("songname");
+		$artist = $file->getProperty("songartist");
+		$album = $file->getProperty("songalbum");
+		$track = $file->getProperty("songtrack");
+		$year = $file->getProperty("songyear");
+		$duration = $file->getProperty("songduration");
+		$songdata = "['" . str_replace("'", "\\'", $songname) . "','" . str_replace("'", "\\'", $artist) . "','" . str_replace("'", "\\'", $album) . "','" . str_replace("'", "\\'", $track) . "','" . str_replace("'", "\\'", $year) . "','" . str_replace("'", "\\'", $duration) . "','" . $file->getDownloadUrl() ."','" . str_replace("'", "\\'", $file->getFilename()) . "'," . $file->getId() . "]";
+		add_page_action(lang('play'), "javascript:og.playMP3(" . $songdata . ")", 'ico-play');
+		add_page_action(lang('queue'), "javascript:og.queueMP3(" . $songdata . ")", 'ico-queue');
+	} else if ($file && strcmp($file->getTypeString(), 'application/xspf+xml')==0) {
+		add_page_action(lang('play'), "javascript:og.playXSPF(" . $file->getId() . ")", 'ico-play');
+	}
+	
 	if($file->canDownload(logged_user())) 
 		add_page_action(lang('download') . ' (' . format_filesize($file->getFilesize()) . ')', $file->getDownloadUrl(), 'ico-download', '', array("download" => true));
 	

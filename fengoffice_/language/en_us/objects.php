@@ -49,6 +49,7 @@
     
     // Variations
     'owner company' => 'Owner company',
+  	'client companies' => 'Client companies',
     
     'open milestone' => 'Open milestone',
     'open milestones' => 'Open milestones',

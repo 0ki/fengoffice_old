@@ -110,6 +110,7 @@ class Notifier {
 		} // if
 
 		tpl_assign('new_task', $task);
+		tpl_assign('is_new', true);
 
 		$recepients = array();
 		foreach($people as $user) {
@@ -123,6 +124,35 @@ class Notifier {
 		tpl_fetch(get_template_path('new_task', 'notifier'))
 		); // send
 	} // newTask
+	
+	/**
+	 * Send task changed notification to the list of users ($people)
+	 *
+	 * @param ProjectTask $task task
+	 * @param array $people
+	 * @return boolean
+	 * @throws NotifierConnectionError
+	 */
+	static function taskChanged(ProjectTask $task, $people) {
+		if(!is_array($people) || !count($people)) {
+			return; // nothing here...
+		} // if
+
+		tpl_assign('new_task', $task);
+		tpl_assign('is_new', false);
+
+		$recepients = array();
+		foreach($people as $user) {
+			$recepients[] = self::prepareEmailAddress($user->getEmail(), $user->getDisplayName());
+		} // foreach
+
+		return self::sendEmail(
+		$recepients,
+		self::prepareEmailAddress($task->getCreatedBy()->getEmail(), $task->getCreatedByDisplayName()),
+		$task->getProject()->getName() . ' - ' . lang('task modified'),
+		tpl_fetch(get_template_path('new_task', 'notifier'))
+		); // send
+	} // taskChanged
 	
 	/**
 	 * Send task due notification to the list of users ($people)
@@ -182,7 +212,7 @@ class Notifier {
 	} // notifEvent
 	
 	/**
-	 * Send new comment notification to message subscriber
+	 * Send new comment notification to message subscribers
 	 *
 	 * @param Comment $comment
 	 * @return boolean

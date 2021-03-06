@@ -1,6 +1,7 @@
 <?php
 header("Content-Type: text/html");
 define('LANG_DIR', 'language');
+define('TEST_LIST_PATH', 'all_langs.txt');
 ?>
 <html>
 <head>
@@ -133,6 +134,49 @@ if (isset($a) && isset($b)) {
 	
 	echo "</pre>";
 	
+}
+elseif (isset($a)){
+	
+//	foreach ($locales as $l => $v) {
+	$handle = opendir(LANG_DIR . "/" . $a);
+	while (false !== ($file = readdir($handle))) {
+		if (!is_dir(LANG_DIR . "/" . $a . "/" . $file) && substr($file, -4) == ".php") {
+			$locales[$a][$file] = include LANG_DIR . "/" . $a . "/" . $file;
+		} else if (!is_dir(LANG_DIR . "/" . $a . "/" . $file) && substr($file, -3) == ".js") {
+			echo "<script>";
+			echo "locale = '$a';";
+			echo "file = '$file';";
+			echo "try {";
+			include LANG_DIR . "/" . $a . "/" . $file;
+			echo "} catch (e) {
+				document.write('<span class=\"error\">There was an error loading file $file: \"' + e.message + '\"</span>');
+			}";
+			echo "if (typeof _lang == 'object') {
+				addLangs(_lang);
+				_lang = false;
+			}";
+			echo "</script>";
+		}
+	}
+	closedir($handle);
+//	}
+	echo "<pre>";
+	$langlist = file(TEST_LIST_PATH,   FILE_IGNORE_NEW_LINES   |   FILE_SKIP_EMPTY_LINES   );
+	foreach ($langlist as $line_num => $line) {
+//    	echo "Line #<b>{$line_num}</b> : " . htmlspecialchars($line) . "<br />\n";
+    	$found = false;
+    	foreach ($locales[$a] as $engf => $engfv) {
+    		//for each file
+			if (!$found && isset($locales[$a] [$engf])) {
+				if (isset($locales[$a][$engf][$line])){
+					$found = true;
+				}
+			}
+		}
+		if(!$found)
+			echo "<span class=\"missing\">$line missing</span>\n";
+//		else echo "-$line_num-$line-OK-\n";
+	}
 }
 	
 ?>

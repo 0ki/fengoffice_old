@@ -63,7 +63,6 @@ return array(
 
     'project permissions form hint' => 'Usando <a class="internalLink" href="{0}">formularios de permisos</a> puede fácilmente agregar o eliminar empresas y usuarios y controlar sus permisos de acceso.',
 
-    'additional message text desc' => 'Mensaje de texto adicional sólo visible en la página de comentarios',
     'expand additional text' => 'Expandir',
     'collapse additional text' => 'Contraer',
     'email notification' => 'Notificación de correo',
@@ -259,6 +258,7 @@ return array(
 	'include unworked pending tasks' => 'Incluir tareas pendientes no trabajadas',
 	'unworked pending tasks' => 'Tareas pendientes no trabajadas',
 	'email sent by linktitle' => 'Enviado por {1}, {0}',
+	'assign contact to workspace desc' => 'Para signar un contacto a un espacio marque el espacio y luego ingrese el rol en el campo de texto.',
 ); // array
 
 ?>

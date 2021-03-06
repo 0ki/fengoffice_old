@@ -137,7 +137,7 @@ ogTasks.loadData = function(data){
 		if (tdata.id){
 			var task = new ogTasksTask();
 			task.setFromTdata(tdata);
-			task.statusOnLoad = tdata.s;
+			task.statusOnCreate = tdata.s;
 			this.Tasks[ogTasks.Tasks.length] = task;
 		}
 	}
@@ -241,16 +241,16 @@ ogTasks.getGroupData = function(displayCriteria, groups,tasks){
 					break;
 				case 'assigned_to' : 
 					var split = groupId.split(':'); 
-					if (split[0] > 0){
-						var user = this.getUser(split[0]);
+					if (split[1] > 0){
+						var user = this.getUser(split[1]);
 						if (user){
 							var company = this.getCompany(user.companyId);
 							name = user.name + " : " + company.name;
-						} else name = lang('user not found', split[0]);
+						} else name = lang('user not found', split[1]);
 						icon = 'ico-user';
 					} else {
-						if (split[1] > 0){
-							name = this.getCompany(split[1]).name;
+						if (split[0] > 0){
+							name = this.getCompany(split[0]).name;
 							icon = 'ico-company';
 						}
 					}
@@ -587,13 +587,13 @@ ogTasks.setAllExpandedValue = function(expanded){
 ogTasks.getUserCompanyName = function(assigned_to){
 	var split = assigned_to.split(':');
 	var name = '';
-	if (split[0] > 0){ //Look for user
-		var user = this.getUser(split[0]);
+	if (split[1] > 0){ //Look for user
+		var user = this.getUser(split[1]);
 		if (user)
 			name = user.name;
 	} else { //Look for company
-		if (split[1] > 0){
-			var company = this.getCompany(split[1]);
+		if (split[0] > 0){
+			var company = this.getCompany(split[0]);
 			if (company)
 				name = company.name;
 		}

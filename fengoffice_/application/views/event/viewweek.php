@@ -22,6 +22,7 @@ $tags = active_tag();
 	$currentday = date("j");
 	$currentmonth = date("n");
 	$currentyear = date("Y");
+	
 	$lastday = date("t", mktime(0, 0, 0, $month, 1, $year)); // # of days in the month
 	//DateTimeValue
 	
@@ -49,7 +50,7 @@ $tags = active_tag();
 		} elseif($day_of_month < 1) {								
 			$w = $day_of_month;
 		} else {
-			if($day_of_month == $lastday+1) {
+			if($day_of_month == $lastday + 1) {
 				$month_aux++;
 				if($month_aux == 13){
 					$month_aux = 1;
@@ -62,9 +63,9 @@ $tags = active_tag();
 		$day_tmp = (isset($w) && is_numeric($w)) ? $w : 0;
 	
 		$dates[$day_of_week] = new DateTimeValue(mktime(0, 0, 0, $month_aux, $day_tmp, $year_aux)); 
-		
+
 		$today_style[$day_of_week] = '';
-		if($currentyear == $year_aux && $currentmonth == $month_aux && $currentday == $day_of_month) { // Today
+		if($currentyear == $dates[$day_of_week]->getYear() && $currentmonth == $dates[$day_of_week]->getMonth() && $currentday == $dates[$day_of_week]->getday()) { // Today
 			$today_style[$day_of_week] = 'background-color:#FFFFCC;';
 		} else if($year == $year_aux && $month == $month_aux && $day == $day_of_month) { // Selected day
 			$today_style[$day_of_week] = 'background-color:#F5FFFF;';
@@ -111,7 +112,7 @@ $tags = active_tag();
 	<tr>
 	<td class="coViewHeader" colspan=2  rowspan=2>
 	<div class="coViewTitle">				
-		<span id="chead0"><?php echo  date('d/m/y'/*Localization::instance()->getDateFormat()*/, mktime(0, 0, 0, $month, $startday, $year)) ." - ". date('d/m/y'/*Localization::instance()->getDateFormat()*/, mktime(0, 0, 0, $month, $endday-1, $year))
+		<span id="chead0"><?php echo  date(lang('date format'), mktime(0, 0, 0, $month, $startday, $year)) ." - ". date(lang('date format'), mktime(0, 0, 0, $month, $endday-1, $year))
 		 .' - '. ($user_filter == -1 ? lang('all users') : lang('calendar of', $user->getDisplayName()));?></span>	
 	</div>		
 	</td>
@@ -174,11 +175,13 @@ $tags = active_tag();
 							$dtv_temp = $dates[$day_of_week];
 							$p = cal_getlink("index.php?action=viewdate&day=".$dtv_temp->getDay()."&month={$dtv_temp->getMonth()}&year={$dtv_temp->getYear()}");
 							$t = cal_getlink("index.php?action=add&day=".$dtv_temp->getDay()."&month={$dtv_temp->getMonth()}&year={$dtv_temp->getYear()}");							
-											
+
+							$format_d_m = str_replace('d', 'j', lang('date format'));
+							$format_d_m = str_replace('/Y', '', $format_d_m);
 					?>
 							<div class="chead cheadNotToday" style="width: <?php echo $width_percent ?>%; left: <?php echo $width ?>%;text-align:center;position:absolute;top:0%;">
 								<span id="chead<?php echo $day_of_week ?>">
-									<a class="internalLink" href="<?php echo $p; ?>"  onclick="stopPropagation(event) "><?php $dtime = mktime(0, 0, 0, $dtv_temp->getMonth(), $dtv_temp->getDay(), $dtv_temp->getYear()); echo lang(strtolower(date("l", $dtime)) . ' short') . date(" j/n", $dtime); ?></a>
+									<a class="internalLink" href="<?php echo $p; ?>"  onclick="stopPropagation(event) "><?php $dtime = mktime(0, 0, 0, $dtv_temp->getMonth(), $dtv_temp->getDay(), $dtv_temp->getYear()); echo lang(strtolower(date("l", $dtime)) . ' short') . date(' '. $format_d_m, $dtime); ?></a>
 								</span>
 							</div>
 							<div id="allDay<?php echo $day_of_week ?>" class="allDayCell" style="left: <?php echo $width ?>%; height: <?php echo $alldaygridHeight ?>px;border-left:3px double #DDDDDD !important; position:absolute;width:3px;z-index:110;background:#E8EEF7;top:0%;"></div>
@@ -268,7 +271,7 @@ $tags = active_tag();
 												}
 												$top = (PX_HEIGHT/2) * $hour;
 										?>
-<div id="r<?php echo $hour?>"" class="hrule <?php echo $parity?>" style="top: <?php echo $top?>px; z-index: 101;position:absolute;left:0px;<?php echo $style?>;width:100%">
+<div id="r<?php echo $hour?>"" class="hrule <?php echo $parity?>" style="top: <?php echo $top?>px; height:1px; z-index: 101;position:absolute;left:0px;<?php echo $style?>;width:100%">
 <?php $hour == $curr_hour? print("<span id='curr_hour' style='visibility:hidden;height:0px;width:0px'></span>"):print('');?>
 </div>
 <?php
@@ -288,9 +291,9 @@ $tags = active_tag();
 												for ($hour=0; $hour<=47; $hour++){
 													$top = (PX_HEIGHT/2) * $hour;
 										?>
-<div id="h<?php echo $day_of_week."_".$hour?>" style="left:<?php echo $left ?>%;width:<?php echo $width_percent ?>%;top:<?php echo $top?>px;z-index:100;height:20px;position:absolute;<?php echo $today_style[$day_of_week] ?>"
-onmousedown="selectStartDateTime(<?php echo $date->getDay() ?>, <?php echo $date->getMonth()?>, <?php echo $date->getYear()?>, <?php echo date("G",mktime($hour/2))?>, <?php echo ($hour % 2 ==0)?0:30 ?>);"
-onmouseup="showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMonth()?>, <?php echo $date->getYear()?>, <?php echo date("G",mktime($hour/2))?>, <?php echo ($hour % 2 ==0)?0:30 ?>);"
+<div id="h<?php echo $day_of_week."_".$hour?>" style="left:<?php echo $left ?>%;width:<?php echo $width_percent ?>%;top:<?php echo $top?>px;height:20px;position:absolute;<?php echo $today_style[$day_of_week] ?>"
+onmousedown="selectStartDateTime(<?php echo $date->getDay() ?>, <?php echo $date->getMonth()?>, <?php echo $date->getYear()?>, <?php echo date("G",mktime($hour/2))?>, <?php echo ($hour % 2 == 0) ? 0 : 30 ?>);"
+onmouseup="showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMonth()?>, <?php echo $date->getYear()?>, <?php echo date("G",mktime($hour/2))?>, <?php echo ($hour % 2 == 0) ? 0 : 30 ?>);"
 ></div>
 										<?php
 												}
@@ -419,7 +422,7 @@ onmouseup="showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMo
 														//if ($procesados[$hr_start] == $horas[$hr_start]) $width = $width - 1.5;
 												?>
 						<div id="ev_div_<?php echo $event->getId()?>" class="chip" style="position: absolute; top: <?php echo $top?>px; left: <?php echo $left?>%; width: <?php echo $width?>%;z-index:120;"  onclick="stopPropagation(event)"
-						onmouseover="quickTip('ev_div_<?php echo $event->getId()?>', '<?php echo $event->getSubject()?>', '<?php echo $event->getStart()->format('h:i') .'-'. $event->getDuration()->format('h:i') . '<br><br>' . $event->getDescription();?>','<?php echo cal_getlink("index.php?action=viewevent&amp;view=week&amp;id=".$event->getId())."&amp;user_id=".$user_filter;?>');stopPropagation(event);"
+						onmouseover="quickTip('ev_div_<?php echo $event->getId()?>', '<?php echo $event->getSubject()?>', '<?php echo $event->getStart()->format('h:i') .'-'. $event->getDuration()->format('h:i') . '<br><br>' . $event->getDescription();?>');stopPropagation(event);"
 						><!-- title="<?php echo "$start_time - $end_time : " . $event->getSubject() . (trim($event->getDescription() != '' ? ' - ' . $event->getDescription() : ''))?>"-->
 						
 						<div class="t1 <?php echo $ws_class ?>" style="<?php echo $ws_style ?>;margin:0px 2px 0px 2px;height:1px;"></div>
@@ -495,21 +498,16 @@ onmouseup="showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMo
 
 <script type="text/javascript">
 
-	function quickTip(id, title, bdy, link) {
+	function quickTip(id, title, bdy) {
 		tt = new Ext.ToolTip({
 			target: id,
 	        html: bdy,
-	        title: '<a href="'+link+'">'+title+'</a>',
-	        showDelay: 200,
+	        title: title,
+	        showDelay: 800,
 	        hideDelay: 1200,
-	        minWidth: 250,
-	        buttons: [{
-				text: lang('view event'),
-				handler: this.gotoevent,
-				scope: this
-			}]
+	        minWidth: 250
 	    });
-	}	
+	}
   
 	var ev_start_day, ev_start_month, ev_start_year, ev_start_hour, ev_start_minute;
 	var ev_end_day, ev_end_month, ev_end_year, ev_end_hour, ev_end_minute;
@@ -575,6 +573,11 @@ onmouseup="showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMo
 			hrs = 1;
 			mins = 0;
 		}
+		
+		if (lang('date format') == 'm/d/Y') 
+			st_val = ev_start_month + '/' + ev_start_day + '/' + ev_start_year;
+		else
+			st_val = ev_start_day + '/' + ev_start_month + '/' + ev_start_year;
 
 		og.EventPopUp.show(null, {day: ev_start_day,
 								month: ev_start_month,
@@ -583,7 +586,7 @@ onmouseup="showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMo
 								minute: ev_start_minute,
 								durationhour: hrs,
 								durationmin: mins,
-								start_value: ev_start_month + '/' + ev_start_day + '/' + ev_start_year,
+								start_value: st_val,
 								type_id:1, view:'week', title: lang('add event')
 								}, '');
 	}

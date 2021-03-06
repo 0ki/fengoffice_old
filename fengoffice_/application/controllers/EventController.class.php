@@ -118,16 +118,24 @@ class EventController extends ApplicationController {
 		// get the day
 			if (array_var($event_data, 'start_value') != ''){
 				$startDate = explode('/', array_var($event_data, 'start_value'));
-				$day = $startDate[1];
-	       		$month = $startDate[0];
-	       		$year = $startDate[2];
+				$posD = 0;
+				$posM = 1;
+				$posY = 2;
+				if (lang('date format') == 'm/d/Y') {
+					$posD = 1;
+					$posM = 0;
+				}
+				$day = $startDate[$posD];
+	       		$month = $startDate[$posM];
+	       		$year = $startDate[$posY];
 			} else {
 				$month = isset($_GET['month'])?$_GET['month']:date('n');
 				$day = isset($_GET['day'])?$_GET['day']:date('j');
 				$year = isset($_GET['year'])?$_GET['year']:date('Y');
 			}
-       		$hour = array_var($event_data, 'hour') == 0 ? 12 : array_var($event_data, 'hour');
-       		$minute = array_var($event_data, 'minute');       		
+       		//$hour = array_var($event_data, 'hour') == 0 ? 12 : array_var($event_data, 'hour');
+       		$hour = array_var($event_data, 'hour');
+       		$minute = array_var($event_data, 'minute');
 			if(array_var($event_data, 'pm') == 1) $hour += 12;
 			if (array_var($event_data, 'type_id') == 2 && $hour == 24) $hour = 23;
 			// make sure the date is actually valid
@@ -142,27 +150,25 @@ class EventController extends ApplicationController {
 			$repeat_m = 0;
 			$repeat_y = 0;
 			$repeat_h = 0;
-			$rend = "0000-00-00";		
+			$rend = '';		
 			// get the options
 			$forever = 0;
 			$jump = array_var($event_data,'occurance_jump');
 			
-			if(array_var($event_data,'repeat_option')==1) $forever = 1;
-			elseif(array_var($event_data,'repeat_option')==2) $rnum = array_var($event_data,'repeat_num');
-			elseif(array_var($event_data,'repeat_option')==3) $rend = array_var($event_data,'repeat_end');
+			if(array_var($event_data,'repeat_option') == 1) $forever = 1;
+			elseif(array_var($event_data,'repeat_option') == 2) $rnum = array_var($event_data,'repeat_num');
+			elseif(array_var($event_data,'repeat_option') == 3) $rend = getDateValue(array_var($event_data,'repeat_end'));
 			// verify the options above are valid
-			if(isset($rnum) && $rnum !=""){
-				if(!is_numeric($rnum) || $rnum < 1 || $rnum > 1000) {throw new Exception(CAL_EVENT_COUNT_ERROR);}
-			}else $rnum = 0;
+			if(isset($rnum) && $rnum !="") {
+				if(!is_numeric($rnum) || $rnum < 1 || $rnum > 1000) {
+					throw new Exception(CAL_EVENT_COUNT_ERROR);
+				}
+			} else $rnum = 0;
 			if($jump != ""){
-				if(!is_numeric($jump) || $jump<1 || $jump>1000) {throw new Exception(CAL_REPEAT_EVERY_ERROR);}
-			}else $jump = 1;
-			if(isset($rend) && $rend != null && $rend != ""){
-					$endarray = explode("-",$rend);
-					if(count($endarray) != 3) {throw new Exception(CAL_ENDING_DATE_ERROR);}
-					foreach($endarray as $v){ if(!is_numeric($v)) {throw new Exception(CAL_ENDING_DATE_ERROR);}}
-					$rend = date("Y-m-d", mktime(0, 0, 1, $endarray[1], $endarray[2], $endarray[0]));
-			}
+				if(!is_numeric($jump) || $jump < 1 || $jump > 1000) {
+					throw new Exception(CAL_REPEAT_EVERY_ERROR);
+				}
+			} else $jump = 1;
 			
 		
 		    // check for repeating options
@@ -229,7 +235,7 @@ class EventController extends ApplicationController {
 			$data['users_to_invite'] = array();
 			// owner user always is invited and confirms assistance
 			$data['users_to_invite'][logged_user()->getId()] = 1; 
-			
+
 			$compstr = 'invite_user_';
 			foreach ($event_data as $k => $v) {
 				if (str_starts_with($k, $compstr) && $v == 'checked') {
@@ -276,7 +282,7 @@ class EventController extends ApplicationController {
 				if($hour >= 12){
 					$pm = 1;
 					$hour = $hour - 12;
-				}else $pm = 0;
+				} else $pm = 0;
 			}
 			$event_data = array(
 				'month' => isset($_GET['month']) ? $_GET['month'] : date('n'),
@@ -339,12 +345,13 @@ class EventController extends ApplicationController {
 	          	ApplicationLogs::createLog($event, $project, ApplicationLogs::ACTION_ADD);
 	          	
 	          	flash_success(lang('success add event', $event->getObjectName()));
-	          	
+
 	          	if (array_var($_POST, 'popup', false)) {
 					ajx_current("reload");
 	          	} else {
 	          		ajx_current("back");
 	          	}
+	          	ajx_add("overview-panel", "reload");
 	        } catch(Exception $e) {
 	          	DB::rollback();
 				flash_error($e->getMessage());
@@ -379,7 +386,13 @@ class EventController extends ApplicationController {
 			DB::commit();
 
 			flash_success(lang('success delete event', $event->getSubject()));
-			ajx_current("back");
+			
+			if (array_var($_POST, 'popup', false)) {
+				ajx_current("reload");
+          	} else {
+          		ajx_current("back");
+          	}
+          	ajx_add("overview-panel", "reload");          	
 		} catch(Exception $e) {
 			DB::rollback();
 			flash_error(lang('error delete event'));
@@ -429,19 +442,21 @@ class EventController extends ApplicationController {
 		$this->addHelper('textile');
 		ajx_set_no_toolbar(true);
 	    $event = ProjectEvents::findById(get_id());
-	    if(!$event->canView(logged_user())){	    	
-			flash_error(lang('no access permissions'));
-			$this->redirectTo('event');
-			return ;
+	    if (isset($event) && $event != null) {
+		    if(!$event->canView(logged_user())){
+				flash_error(lang('no access permissions'));
+				$this->redirectTo('event');
+				return ;
+		    }
+			$this->setTemplate('viewevent');
+			$tag = active_tag();
+			tpl_assign('tags',$tag);	
+			tpl_assign('event',$event);
+			tpl_assign('cal_action','viewevent');	
+			tpl_assign('view', array_var($_GET, 'view','month'));	
+			tpl_assign('active_projects',logged_user()->getActiveProjects());
+			ajx_extra_data(array("title" => $event->getSubject(), 'icon'=>'ico-calendar'));
 	    }
-		$this->setTemplate('viewevent');
-		$tag = active_tag();
-		tpl_assign('tags',$tag);	
-		tpl_assign('event',$event);
-		tpl_assign('cal_action','viewevent');	
-		tpl_assign('view', array_var($_GET, 'view','month'));	
-		tpl_assign('active_projects',logged_user()->getActiveProjects());
-		ajx_extra_data(array("title" => $event->getSubject(), 'icon'=>'ico-calendar'));
 	}
 
 	function cal_error($text){
@@ -484,15 +499,15 @@ class EventController extends ApplicationController {
 			if($event->getRepeatY() > 0){ $occ = 5; $rjump = $event->getRepeatY();}
 			if($event->getRepeatH() > 0){ $occ = 6;}
 			if($event->getRepeatH()==2){ $setlastweek = true;}
-			if($event->getRepeatEnd()) { $rend = $event->getRepeatEnd()->format('Y-m-d');	}
+			if($event->getRepeatEnd()) { $rend = $event->getRepeatEnd();	}
 			if($event->getRepeatNum() > 0) $rnum = $event->getRepeatNum();
 			if(!isset($rjump) || !is_numeric($rjump)) $rjump = 1;
 			// decide which repeat type it is
 			if($forever) $rsel1 = true; //forever
 			else if(isset($rnum) AND $rnum>0) $rsel2 = true; //repeat n-times
-			else if(isset($rend) AND $rend!="") $rsel3 = true; //repeat until
+			else if(isset($rend) AND $rend instanceof DateTimeValue) $rsel3 = true; //repeat until
 			
-			if(isset($rend) AND $rend=="9999-00-00") $rend = "";
+			//if(isset($rend) AND $rend=="9999-00-00") $rend = "";
 			// organize the time and date data for the html select drop downs.
 			$thetime = $event->getStart()->getTimestamp();
 			$durtime = $event->getDuration()->getTimestamp() - $thetime;
@@ -576,10 +591,15 @@ class EventController extends ApplicationController {
 				 	$event->save_properties(array_var($event_data,'event'));
 		          	ApplicationLogs::createLog($event, $project, ApplicationLogs::ACTION_ADD);
 		          	DB::commit();
-		          
+		          	
 		          	flash_success(lang('success edit event', $event->getObjectName()));
-					ajx_current("back");						          
-		          
+
+		          	if (array_var($_POST, 'popup', false)) {
+						ajx_current("reload");
+		          	} else {
+		          		ajx_current("back");
+		          	}
+		          	ajx_add("overview-panel", "reload");          	
 		        } catch(Exception $e) {
 		        	DB::rollback();
 					flash_error($e->getMessage());
@@ -598,7 +618,7 @@ class EventController extends ApplicationController {
  *   copyright            : (C) 2001 The phpBB Group
  *   email                : support@phpbb.com
  *
- *   $Id: EventController.class.php,v 1.49 2008/10/27 20:07:19 alvarotm01 Exp $
+ *   $Id: EventController.class.php,v 1.55 2008/10/31 18:54:55 alvarotm01 Exp $
  *
  ***************************************************************************/
 

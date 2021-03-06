@@ -62,8 +62,8 @@ class TaskController extends ApplicationController {
 		try{
 			DB::beginWork();
 			
-			$company_id = array_var($assigned_to, 1, 0);
-			$user_id = array_var($assigned_to, 0, 0);
+			$company_id = array_var($assigned_to, 0, 0);
+			$user_id = array_var($assigned_to, 1, 0);
 			if ($company_id < 0) $company_id = 0;
 			if ($user_id < 0) $user_id = 0;
 			
@@ -105,22 +105,16 @@ class TaskController extends ApplicationController {
 		} // if
 		
 		if (is_array($task_data)) {
-			if (array_var($task_data, 'task_due_date')) {
-				$dueDate = explode('/', array_var($task_data, 'task_due_date'));
-				$task_data['due_date'] = DateTimeValueLib::make(0, 0, 0, $dueDate[0], $dueDate[1], $dueDate[2]);
-			}
-			if (array_var($task_data, 'task_start_date')) {
-				$startDate = explode('/', array_var($task_data, 'task_start_date'));
-				$task_data['start_date'] = DateTimeValueLib::make(0, 0, 0, $startDate[0], $startDate[1], $startDate[2]);
-				//$task_data['start_date'] = DateTimeValueLib::make(0, 0, 0, array_var($_POST, 'task_start_date_month', 1), array_var($_POST, 'task_start_date_day', 1), array_var($_POST, 'task_start_date_year', 1970));
-			}
+			$task_data['due_date'] = getDateValue(array_var($task_data, 'task_due_date'));
+			$task_data['start_date'] = getDateValue(array_var($task_data, 'task_start_date'));
+			
 			$task->setFromAttributes($task_data);
 			$task->setProjectId($project->getId());
-			$task->setOrder(ProjectTasks::maxOrder(array_var($task_data, "parent_id", 0), array_var($task_data, "milestone_id", 0)));
+			//$task->setOrder(ProjectTasks::maxOrder(array_var($task_data, "parent_id", 0), array_var($task_data, "milestone_id", 0)));
 			// Set assigned to
 			$assigned_to = explode(':', array_var($task_data, 'assigned_to', ''));
-			$task->setAssignedToCompanyId(array_var($assigned_to, 1, 0));
-			$task->setAssignedToUserId(array_var($assigned_to, 0, 0));			
+			$task->setAssignedToCompanyId(array_var($assigned_to, 0, 0));
+			$task->setAssignedToUserId(array_var($assigned_to, 1, 0));			
 			$task->setIsPrivate(false); // Not used, but defined as not null.
 			
 			if (array_var($task_data,'is_completed',false) == 'true'){
@@ -207,7 +201,7 @@ class TaskController extends ApplicationController {
 					case 'start_work':
 						if ($task->canEdit(logged_user())){
 							$task->addTimeslot(logged_user());
-							ApplicationLogs::createLog($timeslot, Projects::findById($task->getProjectId()), ApplicationLogs::ACTION_OPEN);
+							ApplicationLogs::createLog($task, Projects::findById($task->getProjectId()), ApplicationLogs::ACTION_OPEN);
 							
 							$tasksToReturn[] = $task->getArrayInfo();
 						}
@@ -215,7 +209,7 @@ class TaskController extends ApplicationController {
 					case 'close_work':
 						if ($task->canEdit(logged_user())){
 							$task->closeTimeslots(logged_user());
-							ApplicationLogs::createLog($timeslot, Projects::findById($task->getProjectId()), ApplicationLogs::ACTION_CLOSE);
+							ApplicationLogs::createLog($task, Projects::findById($task->getProjectId()), ApplicationLogs::ACTION_CLOSE);
 							
 							$tasksToReturn[] = $task->getArrayInfo();
 						}
@@ -279,8 +273,8 @@ class TaskController extends ApplicationController {
 		switch($filter){
 			case 'assigned_to':
 				$assigned_to = explode(':', $filter_value);
-				$assigned_to_user = array_var($assigned_to,0,0);
-				$assigned_to_company = array_var($assigned_to,1,0);
+				$assigned_to_user = array_var($assigned_to,1,0);
+				$assigned_to_company = array_var($assigned_to,0,0);
 				if ($assigned_to_user > 0)
 					$task_filter_condition = " AND (`assigned_to_user_id` = " . $assigned_to_user 
 						. " OR (`assigned_to_company_id` = " . $assigned_to_company . " AND `assigned_to_user_id` = 0)) ";
@@ -355,9 +349,11 @@ class TaskController extends ApplicationController {
 		
 		//Find all external milestones for these tasks
 		$milestone_ids = array();
-		foreach ($tasks as $task){
-			if ($task->getMilestoneId() != 0)
-				$milestone_ids[$task->getMilestoneId()]	= $task->getMilestoneId();
+		if($tasks){
+			foreach ($tasks as $task){
+				if ($task->getMilestoneId() != 0)
+					$milestone_ids[$task->getMilestoneId()]	= $task->getMilestoneId();
+			}
 		}
 		
 		$milestone_ids_condition = '';
@@ -381,16 +377,20 @@ class TaskController extends ApplicationController {
 		$milestone_conditions = " '1' = '1' " . $projectstr . $pendingstr . $tagstr . $milestone_ids_condition;
 		$externalMilestonesTemp = ProjectMilestones::findAll(array('conditions' => $milestone_conditions));
 		$externalMilestones = array();
-		foreach ($externalMilestonesTemp as $em){
-			$found = false;
-			foreach ($internalMilestones as $im){
-				if ($im->getId() == $em->getId()){
-					$found = true;
-					break;
+		if($externalMilestonesTemp){
+			foreach ($externalMilestonesTemp as $em){
+				$found = false;
+				if($internalMilestones){
+					foreach ($internalMilestones as $im){
+						if ($im->getId() == $em->getId()){
+							$found = true;
+							break;
+						}
+					}
 				}
+				if (!$found)
+					$externalMilestones[] = $em;
 			}
-			if (!$found)
-			$externalMilestones[] = $em;
 		}
 		
 		//Get Users Info
@@ -485,12 +485,16 @@ class TaskController extends ApplicationController {
 		$task_data = array_var($_POST, 'task');
 		if(!is_array($task_data)) {
 			$task_data = array(
-				'milestone_id' => array_var($_GET, 'milestone_id'),
-				'title' => array_var($_GET, 'title', ''),
-				'assigned_to' => array_var($_GET, 'assigned_to', '0:0'),
-				'parent_id' => array_var($_GET, 'parent_id', 0),
-				'priority' => ProjectTasks::PRIORITY_NORMAL,
-				'is_template' => array_var($_GET, "is_template", false)
+				'milestone_id' => array_var($_POST, 'milestone_id',0),
+				'project_id' => array_var($_POST, 'project_id',0),
+				'title' => array_var($_POST, 'title', ''),
+				'assigned_to' => array_var($_POST, 'assigned_to', '0:0'),
+				'parent_id' => array_var($_POST, 'parent_id', 0),
+				'priority' => array_var($_POST, 'priority', ProjectTasks::PRIORITY_NORMAL),
+				'text' => array_var($_POST, 'text', ''),
+				'start_date' => getDateValue(array_var($_POST, 'task_start_date', '')),
+				'due_date' => getDateValue(array_var($_POST, 'task_due_date', '')),
+				'is_template' => array_var($_POST, "is_template", false)
 			); // array
 		} // if
 
@@ -505,15 +509,9 @@ class TaskController extends ApplicationController {
 			// order
 			$task->setOrder(ProjectTasks::maxOrder(array_var($task_data, "parent_id", 0), array_var($task_data, "milestone_id", 0)));
 			
-			if (array_var($_POST, 'use_due_date')) {
-				$dueDate = explode('/', array_var($_POST, 'task_due_date'));
-				$task_data['due_date'] = DateTimeValueLib::make(0, 0, 0, $dueDate[0], $dueDate[1], $dueDate[2]);
-			}
-			if (array_var($_POST, 'use_start_date')) {
-				$startDate = explode('/', array_var($_POST, 'task_start_date'));
-				$task_data['start_date'] = DateTimeValueLib::make(0, 0, 0, $startDate[0], $startDate[1], $startDate[2]);
-				//$task_data['start_date'] = DateTimeValueLib::make(0, 0, 0, array_var($_POST, 'task_start_date_month', 1), array_var($_POST, 'task_start_date_day', 1), array_var($_POST, 'task_start_date_year', 1970));
-			}
+			$task_data['due_date'] = getDateValue(array_var($_POST, 'task_due_date'));
+			$task_data['start_date'] = getDateValue(array_var($_POST, 'task_start_date'));
+			
 			$task->setFromAttributes($task_data);
 			
 			$totalMinutes = (array_var($task_data, 'time_estimate_hours') * 60) +
@@ -718,11 +716,10 @@ class TaskController extends ApplicationController {
 				'title' => $task->getTitle(),
 				'text' => $task->getText(),
 				'milestone_id' => $task->getMilestoneId(),
-				'use_due_date' => ($task->getDueDate()==EMPTY_DATETIME)?1:false,
 				'due_date' => $task->getDueDate(),
-				'use_start_date' => ($task->getStartDate()==EMPTY_DATETIME)?1:false,
 				'start_date' => $task->getStartDate(),
 				'parent_id' => $task->getParentId(),
+				'project_id' => $task->getProjectId(),
 				'tags' => is_array($tag_names) && count($tag_names) ? implode(', ', $tag_names) : '',
 				'is_private' => $task->isPrivate(),
 				'assigned_to' => $task->getAssignedToCompanyId() . ':' . $task->getAssignedToUserId(),
@@ -754,16 +751,10 @@ class TaskController extends ApplicationController {
 			}
 			$old_is_private = $task->isPrivate();
 			$old_project_id = $task->getProjectId();
-			if (array_var($_POST, 'use_due_date')) {
-				$dueDate = explode('/', array_var($_POST, 'task_due_date'));
-				$task_data['due_date'] = DateTimeValueLib::make(0, 0, 0, $dueDate[0], $dueDate[1], $dueDate[2]);
-			} else
-				$task_data['due_date'] = EMPTY_DATETIME;
-			if (array_var($_POST, 'use_start_date')) {
-				$startDate = explode('/', array_var($_POST, 'task_start_date'));
-				$task_data['start_date'] = DateTimeValueLib::make(0, 0, 0, $startDate[0], $startDate[1], $startDate[2]);
-			} else
-				$task_data['start_date'] = EMPTY_DATETIME;
+			
+			$task_data['due_date'] = getDateValue(array_var($_POST, 'task_due_date'));
+			$task_data['start_date'] = getDateValue(array_var($_POST, 'task_start_date'));
+			
 			$task->setFromAttributes($task_data);
 			// Set assigned to
 			$assigned_to = explode(':', array_var($task_data, 'assigned_to', ''));
@@ -819,6 +810,42 @@ class TaskController extends ApplicationController {
 				}
 				
 				DB::commit();
+				
+			// notify email recipients
+				if (!$task->getIsTemplate()) {
+					try {
+						$notify_people = array();
+						$project_companies = array();
+						$processedCompanies = array();
+						$processedUsers = array();
+						$validWS = array($task->getProject());
+						if (is_array($validWS)) {
+							foreach ($validWS as $w) {
+								$workspace_companies = $w->getCompanies();
+								foreach ($workspace_companies as $c) {
+									if (!isset($processedCompanies[$c->getId()])) {
+										$processedCompanies[$c->getId()] = true;
+										$company_users = $c->getUsersOnProject($w);
+										if (is_array($company_users)) {
+											foreach ($company_users as $company_user) {
+												if (!isset($processedUsers[$company_user->getId()])) {
+													$processedUsers[$company_user->getId()] = true;
+													if ((array_var($task_data, 'notify_company_' . $w->getId()) == 'checked') || (array_var($task_data, 'notify_user_' . $company_user->getId()))) {
+														//$task->subscribeUser($company_user); // subscribe
+														$notify_people[] = $company_user;
+													} // if
+												}
+											} // if
+										}
+									}
+								}
+							}
+						}
+					Notifier::taskChanged($task, $notify_people); // send notification email...
+					} catch(Exception $e) {
+						evt_add("debug", $e->getMessage());
+					} // try
+				}
 				
 				try {
 					$new_owner = $task->getAssignedTo();

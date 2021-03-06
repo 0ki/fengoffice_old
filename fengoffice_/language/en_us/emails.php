@@ -77,6 +77,9 @@ return array(
 	'view due task' => 'View due task',
 	'due task email' => 'Task "{0}" is due on "{1}" and is still pending',
 	'due task' => 'Due task soon',
+	'task has been modified' => 'Task "{0}" in workspace "{1}" has been modified',
+	'task modified' => 'Task modified',
+	'view task' => 'View task',
     ); // array
 
     ?>

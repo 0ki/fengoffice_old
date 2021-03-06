@@ -17,8 +17,7 @@ og.TasksTopToolbar = function(config) {
 		
 	var templates = [];
 	var templatesArray = Ext.util.JSON.decode(document.getElementById(config.templatesHfId).value);
-	var i;
-	for (i in templatesArray){
+	for (var i = 0; i < templatesArray.length; i++){
 		templates[templates.length] = {text: templatesArray[i].t,
 			iconCls: 'ico-template-task',
 			handler: function() {
@@ -39,8 +38,17 @@ og.TasksTopToolbar = function(config) {
 				og.openLink(url);
 			}},
 			{text: lang('new task'), iconCls: 'ico-task', handler: function() {
+				var additionalParams = {};
+				var toolbar = Ext.getCmp('tasksPanelTopToolbarObject');
+				if (toolbar.filterNamesCompaniesCombo.isVisible()){
+					var value = toolbar.filterNamesCompaniesCombo.getValue();
+					var split = value.split(':');
+					if (split[0] > 0 || split[1] > 0){
+						additionalParams.assigned_to = value;
+					}
+				}
 				var url = og.getUrl('task', 'add_task');
-				og.openLink(url);
+				og.openLink(url, {post:additionalParams});
 			}},
 			'-', 
 			{text: lang('all'),
@@ -156,11 +164,11 @@ og.TasksTopToolbar = function(config) {
     var companiesArray = Ext.util.JSON.decode(document.getElementById(config.companiesHfId).value);
     for (i in usersArray){
 		if (usersArray[i].isCurrent)
-			currentUser = usersArray[i].id + ':' + usersArray[i].cid;
+			currentUser = usersArray[i].cid + ':' + usersArray[i].id;
 	}
 	var ucsData = [[currentUser, lang('me')],['0:0',lang('anyone')],['-1:-1', lang('unclassified')],['0:0','--']];
 	for (i in companiesArray)
-		if (companiesArray[i].id) ucsData[ucsData.length] = [('0:' + companiesArray[i].id), companiesArray[i].name];
+		if (companiesArray[i].id) ucsData[ucsData.length] = [(companiesArray[i].id + ':0'), companiesArray[i].name];
 	ucsData[ucsData.length] = ['0:0','--'];
 	for (i in usersArray){
 		var companyName = '';
@@ -168,9 +176,9 @@ og.TasksTopToolbar = function(config) {
 		for(j in companiesArray)
 			if (companiesArray[j].id == usersArray[i].cid)
 				companyName = companiesArray[j].name;
-		if (!usersArray[i].isCurrent && usersArray[i].cid) ucsData[ucsData.length] = [(usersArray[i].id + ':' + usersArray[i].cid), usersArray[i].name + ' : ' + companyName];
+		if (!usersArray[i].isCurrent && usersArray[i].cid) ucsData[ucsData.length] = [(usersArray[i].cid + ':' + usersArray[i].id), usersArray[i].name + ' : ' + companyName];
 		if (usersArray[i].isCurrent)
-			currentUser = usersArray[i].id + ':' + usersArray[i].cid;
+			currentUser = usersArray[i].cid + ':' + usersArray[i].id;
 	}
 	
 	

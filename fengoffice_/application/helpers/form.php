@@ -406,14 +406,21 @@
   } // pick_date_widget
   
   function pick_date_widget2($name, $value = null, $genid = null) {
-  	$html = "<table><tr><td width=130><span id='" . $genid . $name . "'></span></td><td style='padding-top:4px;font-size:80%'><span class='desc'>(mm/dd/yyyy)</span></td></tr></table>";
+  	$dateValue = '';
+  	if ($value instanceOf DateTimeValue){
+  		if (lang('date format') == 'm/d/Y')
+  			$dateValue =  $value->getMonth() . '/' . $value->getDay() . '/' . $value->getYear();
+  		else
+  			$dateValue =  $value->getDay() . '/' . $value->getMonth() . '/' . $value->getYear();
+  	}
+  	
+  	$html = "<table><tr><td width=140><span id='" . $genid . $name . "'></span></td><td style='padding-top:4px;font-size:80%'><span class='desc'>" . lang('date format description') . "</span></td></tr></table>";
 	$html .= "<script type='text/javascript'>
-			var DtStart" . gen_id() . " = new Ext.form.DateField({
-				renderTo:'" . $genid . $name . "',
-				width:120,
-				name: '" . $name . "',
-				value: " . (($value instanceOf DateTimeValue) ? ("'" . $value->getMonth() . '/' . $value->getDay() . '/' . $value->getYear() ) . "'":"''") . "});
-			</script>";
+	var dtp" . gen_id() . " = new og.DateField({
+		renderTo:'" . $genid . $name . "',
+		name: '" . $name . "',
+		value: '" . $dateValue . "'});
+	</script>";
 	return $html;
   } // pick_date_widget
   

@@ -25,7 +25,7 @@ og.FileManager = function() {
 					{name: 'dateUpdated', type: 'date', dateFormat: 'timestamp'},
 					'icon', 'wsIds', 'manager', 'checkedOutById',
 					'checkedOutByName', 'mimeType', 'isModifiable',
-					'modifyUrl'
+					'modifyUrl', 'songInfo'
 				]
 			}),
 			remoteSort: true,
@@ -81,8 +81,21 @@ og.FileManager = function() {
 		
 		if (r.data.isModifiable) {
 			actions += String.format(
-			'<a class="ico-edit" href="#" onclick="og.openLink(\'{0}\')" title="{1}" ' + actionStyle + '>' + lang('edit') + '</a>',
+			'<a class="list-action ico-edit" href="#" onclick="og.openLink(\'{0}\')" title="{1}" ' + actionStyle + '>' + lang('edit') + '</a>',
 			r.data.modifyUrl,lang('edit this document'));
+		}
+		
+		if (r.data.mimeType == "audio/mpeg") {
+			actions += String.format(
+			'<a class="list-action ico-play" href="#" onclick="og.playMP3({0})" title="{1}" ' + actionStyle + '>{2}</a>',
+					r.data.songInfo.replace(/'/g, "\\'").replace(/"/g, "'"), lang('play this file'), lang('play'));
+			actions += String.format(
+			'<a class="list-action ico-queue" href="#" onclick="og.queueMP3({0})" title="{1}" ' + actionStyle + '>{2}</a>',
+					r.data.songInfo.replace(/'/g, "\\'").replace(/"/g, "'"), lang('queue this file'), lang('queue'));
+		} else if (r.data.mimeType == 'application/xspf+xml') {
+			actions += String.format(
+			'<a class="list-action ico-play" href="#" onclick="og.playXSPF({0})" title="{1}" ' + actionStyle + '>{2}</a>',
+					r.id, lang('play this file'), lang('play'));
 		}
 		
 		if (actions != '')

@@ -46,17 +46,22 @@ function ajx_error($code, $message) {
 }
 
 /**
+ * Sets the target panel of the request.
+ *
+ * @param string $panel
+ */
+function ajx_set_panel($panel) {
+	AjaxResponse::instance()->currentPanel = $panel;
+}
+
+/**
  * Returns the target panel of the request.
  *
  * @return string
  */
 function ajx_get_panel($controller = null, $action = null) {
-	if ($controller instanceof AccountController) {
-		return "account";
-	} else if ($controller instanceof AdministrationController) {
-		return "administration";
-	} else if ($action == 'search') {
-		return "search";
+	if (isset(AjaxResponse::instance()->currentPanel)) {
+		return AjaxResponse::instance()->currentPanel;
 	} else {
 		return array_var($_GET, 'current');
 	}

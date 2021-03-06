@@ -119,6 +119,15 @@ function select_project($name, $projects, $selected = null, $attributes = null, 
 	return select_box($name, $options, $attributes);
 } // select_project
 
+function select_project2($name, $projectId, $genid) {
+	$html = "<div id='" . $genid  . "wsSel'></div>";
+	$html .= "<script type='text/javascript'>
+	og.drawWorkspaceSelector('" .  $genid  . "wsSel'," . $projectId . ", '" . $name ."');
+	</script>";
+	
+	return $html;
+} // select_project
+
 /**
  * Returns a control to select multiple workspaces
  *
@@ -198,20 +207,31 @@ function select_workspaces($name = "", $workspaces = null, $selected = null, $id
  * @return null
  */
 function assign_to_select_box($list_name, $project = null, $selected = null, $attributes = null) {
-	if(is_null($project)) {
+	/*if(is_null($project)) {
 		$project = active_or_personal_project();
 	} // if
 	if(!($project instanceof Project)) {
 		throw new InvalidInstanceError('$project', $project, 'Project');
-	} // if
+	} // if*/
 
 	$logged_user = logged_user();
 
-	$can_assign_to_owners = $logged_user->isMemberOfOwnerCompany() || $logged_user->getProjectPermission($project, ProjectUsers::CAN_ASSIGN_TO_OWNERS);
-	$can_assign_to_other = $logged_user->isMemberOfOwnerCompany() || $logged_user->getProjectPermission($project, ProjectUsers::CAN_ASSIGN_TO_OTHER);
+	//$can_assign_to_owners = $logged_user->isMemberOfOwnerCompany() || $logged_user->getProjectPermission($project, ProjectUsers::CAN_ASSIGN_TO_OWNERS);
+	//$can_assign_to_other = $logged_user->isMemberOfOwnerCompany() || $logged_user->getProjectPermission($project, ProjectUsers::CAN_ASSIGN_TO_OTHER);
 
-	$grouped_users = $project->getUsers(true);
-
+	$usersArr = Users::getAll();
+	if(!is_array($usersArr) || !count($usersArr)) {
+		$grouped_users = null;
+	} else {
+		$grouped_users = array();
+		foreach($usersArr as $user) {
+			if(!isset($grouped_users[$user->getCompanyId()]) || !is_array($grouped_users[$user->getCompanyId()])) {
+				$grouped_users[$user->getCompanyId()] = array();
+			} // if
+			$grouped_users[$user->getCompanyId()][] = $user;
+		} // foreach
+	}
+	
 	$options = array(option_tag(lang('anyone'), '0:0'));
 	if(is_array($grouped_users) && count($grouped_users)) {
 		foreach($grouped_users as $company_id => $users) {
@@ -221,7 +241,7 @@ function assign_to_select_box($list_name, $project = null, $selected = null, $at
 			} // if
 
 			// Check if $logged_user can assign task to members of this company
-			if($company_id <> $logged_user->getCompanyId()) {
+			/*if($company_id <> $logged_user->getCompanyId()) {
 				if($company->isOwner()) {
 					if(!$can_assign_to_owners) {
 						continue;
@@ -231,7 +251,7 @@ function assign_to_select_box($list_name, $project = null, $selected = null, $at
 						continue;
 					} // if
 				} // if
-			} // if
+			} // if*/
 
 			$options[] = option_tag('--', '0:0'); // separator
 

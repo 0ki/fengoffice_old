@@ -181,7 +181,20 @@
       $where = '';
       if(trim($conditions) <> '') $where = "WHERE $conditions";
       
-      $sql = "SELECT `rel_object_manager`, `rel_object_id`, `column_name` FROM $table_name $where ORDER BY `rel_object_id` DESC $limit_string";
+      $sql = "SELECT distinct `rel_object_manager`, `rel_object_id` FROM $table_name $where ORDER BY `rel_object_id` DESC $limit_string";
+      $result = DB::executeAll($sql);
+      if(!is_array($result)) return null;
+      
+      
+      $new_where = "'1' = '2' ";
+      foreach($result as $row) {
+        $manager_class = array_var($row, 'rel_object_manager');
+        $object_id = array_var($row, 'rel_object_id');
+        $new_where .= " OR (rel_object_manager = '" . $manager_class ."' AND rel_object_id = '" . $object_id . "')";
+      }
+      $new_where = " AND (" . $new_where . ')';
+      
+      $sql = "SELECT `rel_object_manager`, `rel_object_id`, 'column_name' FROM $table_name $where $new_where ORDER BY `rel_object_id`";
       $result = DB::executeAll($sql);
       if(!is_array($result)) return null;
       
@@ -197,9 +210,13 @@
             $object = get_object_by_manager_and_id($object_id, $manager_class);
             if($object instanceof ApplicationDataObject) {
               $loaded[$manager_class . '-' . $object_id] = true;
-              $objects[] = array('object' => $object, 'column_name' => array_var($row, 'column_name'));
+              $objects[] = array('object' => $object, 'column_name' => array(array_var($row, 'column_name')));
             } // if
           } // if
+        } else {
+        	for ($i = 0; $i < count($objects); $i++)
+        		if ($objects[$i]['object'] instanceof ProjectDataObject && $objects[$i]['object']->getObjectId() == $object_id && get_class($objects[$i]['object']->getObjectManagerName()) == $manager_class)
+        			$objects[$i]['column_name'][] = array_var($row, 'column_name');
         } // if
       } // foreach
       

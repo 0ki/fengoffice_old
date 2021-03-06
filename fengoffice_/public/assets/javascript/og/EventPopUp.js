@@ -34,7 +34,7 @@ og.EventPopUp = function(data,config) {
 								        labelWidth: 75, // label settings here cascade unless overridden
 								        frame:false,
 								        height: 80,
-								        url: '',//og.getUrl('event', 'add', {popup:'true', ajax:'true'),
+								        url: '',
 								        bodyStyle:'padding:20px 20px 0',
 								        defaultType: 'textfield',
 										border:false,
@@ -112,7 +112,7 @@ og.EventPopUp = function(data,config) {
 			},{
 				region: 'south',
 				height: 20,
-		        html:"<div style='width:100%; text-align:right; padding-right:8px'><a href='#' onclick=\"og.EventPopUp.goToEdit()\">Edit event details</a></div>"
+		        html:"<div style='width:100%; text-align:right; padding-right:8px'><a href='#' onclick=\"og.EventPopUp.goToEdit()\">" + lang('edit event details') + "</a></div>"
 			}
 		]
 	}));
@@ -123,8 +123,7 @@ og.EventPopUp = function(data,config) {
 Ext.extend(og.EventPopUp, Ext.Window, {
 	accept: function() {		
 		this.hide();
-		//var start_value = Ext.getCmp('month').getValue() + '/' + Ext.getCmp('day').getValue() + '/' + Ext.getCmp('year').getValue();
-		og.openLink(og.getUrl('event', 'add'),{post:'popup=true&event[start_day]='+Ext.getCmp('day').getValue()+'&event[start_month]='+Ext.getCmp('month').getValue()+'&event[start_year]='+Ext.getCmp('year').getValue()+'&event[hour]='+Ext.getCmp('hour').getValue()+'&event[minute]='+Ext.getCmp('min').getValue()+'&event[type_id]='+Ext.getCmp('type_id').getValue()+'&event[durationhour]='+Ext.getCmp('durationhour').getValue()+'&event[durationmin]='+Ext.getCmp('durationmin').getValue()+'&view='+Ext.getCmp('view').getValue()+'&event[start_value]='+Ext.getCmp('start_value').getValue()+'&event[subject]='+Ext.getCmp('subject').getValue()});	
+		og.openLink(og.getUrl('event', 'add'),{post:'popup=true&event[start_day]='+Ext.getCmp('day').getValue()+'&event[start_month]='+Ext.getCmp('month').getValue()+'&event[start_year]='+Ext.getCmp('year').getValue()+'&event[hour]='+Ext.getCmp('hour').getValue()+'&event[minute]='+Ext.getCmp('min').getValue()+'&event[type_id]='+Ext.getCmp('type_id').getValue()+'&event[durationhour]='+Ext.getCmp('durationhour').getValue()+'&event[durationmin]='+Ext.getCmp('durationmin').getValue()+'&view='+Ext.getCmp('view').getValue()+'&event[start_value]='+Ext.getCmp('start_value').getValue()+'&event[subject]='+Ext.getCmp('subject').getValue()});
 	},
 	
 	cancel: function() {

@@ -48,7 +48,8 @@
     'handins' => 'Entregas',
     
     // Variations
-    'owner company' => 'Dueño de la empresa',
+    'owner company' => 'Empresa propietaria',
+  	'client companies' => 'Empresas clientes',
     
     'open milestone' => 'Abrir hito',
     'open milestones' => 'Abrir hitos',

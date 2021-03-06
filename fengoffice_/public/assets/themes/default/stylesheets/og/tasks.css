@@ -13,7 +13,7 @@
 	font-size:130%;
 }
 
-.ogTasksTaskRow {
+.ogTasksGroup {
 	max-width:1000px;
 }
 
@@ -35,7 +35,7 @@
 
 .ogTaskActions {
 	visibility: hidden;
-	margin-top:4px;
+	margin-top:2px;
 	padding-right:3px;
 	padding-left:3px;
 }

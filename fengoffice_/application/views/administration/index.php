@@ -18,10 +18,25 @@
     <div style="width:150px;display:block; margin-right:10px;margin-bottom:40px">
     <table width="100%" align="center"><tr><td align="center">
     	<a class="internalLink" href="<?php echo get_url('administration', 'company') ?>"><div class="coViewIconImage ico-large-company"></div></a>
-    </td></tr><tr><td align="center"><b><a class="internalLink" href="<?php echo get_url('administration', 'company') ?>"><?php echo lang('company') ?></a></b>
+    </td></tr><tr><td align="center"><b><a class="internalLink" href="<?php echo get_url('administration', 'company') ?>"><?php echo lang('owner company') ?></a></b>
     </td></tr></table>
     </div>
 </td>
+<?php } ?>
+
+<?php if(can_manage_security(logged_user())){ ?>
+<td align="center">
+    <div style="width:150px;display:block; margin-right:10px;margin-bottom:40px">
+    <table width="100%" align="center"><tr><td align="center">
+    	<a class="internalLink" href="<?php echo get_url('administration', 'clients') ?>"><div class="coViewIconImage ico-large-company"></div></a>
+    </td></tr><tr><td align="center"><b><a class="internalLink" href="<?php echo get_url('administration', 'clients') ?>"><?php echo lang('client companies') ?></a></b>
+    	<br/><a class="internalLink coViewAction ico-add" href="<?php echo get_url('company', 'add_client') ?>"><?php echo lang('add client') ?></a>
+    	</td></tr></table>
+    </div>
+</td>
+<?php } ?>
+
+<?php if(can_edit_company_data(logged_user())){ ?>
 <td align="center">
     <div style="width:150px;display:block; margin-right:10px;margin-bottom:40px">
     <table width="100%" align="center"><tr><td align="center">
@@ -37,15 +52,6 @@
 <td align="center">
     <div style="width:150px;display:block; margin-right:10px;margin-bottom:40px">
     <table width="100%" align="center"><tr><td align="center">
-    	<a class="internalLink" href="<?php echo get_url('administration', 'clients') ?>"><div class="coViewIconImage ico-large-company"></div></a>
-    </td></tr><tr><td align="center"><b><a class="internalLink" href="<?php echo get_url('administration', 'clients') ?>"><?php echo lang('clients') ?></a></b>
-    	<br/><a class="internalLink coViewAction ico-add" href="<?php echo get_url('company', 'add_client') ?>"><?php echo lang('add client') ?></a>
-    	</td></tr></table>
-    </div>
-</td>
-<td align="center">
-    <div style="width:150px;display:block; margin-right:10px;margin-bottom:40px">
-    <table width="100%" align="center"><tr><td align="center">
     	<a class="internalLink" href="<?php echo get_url('administration', 'groups') ?>"><div class="coViewIconImage ico-large-group"></div></a>
     </td></tr><tr><td align="center"><b><a class="internalLink" href="<?php echo get_url('administration', 'groups') ?>"><?php echo lang('groups') ?></a></b>
     	<br/><a class="internalLink coViewAction ico-add" href="<?php echo owner_company()->getAddGroupUrl() ?>"><?php echo lang('add group') ?></a>
@@ -53,6 +59,7 @@
     </div>
 </td>
 <?php } ?>
+
 </tr></table>
 
 

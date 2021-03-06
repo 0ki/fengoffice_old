@@ -76,7 +76,25 @@ function clean($str) {
 	return $str;
 } // clean
 
-/*
+/**
+ * Returns a DateTimeValue from a date representation from pick_date_widget2
+ *
+ * @param string $value
+ * @param DateTimeValue $default
+ * @return DateTimeValue
+ */
+function getDateValue($value = '', $default = EMPTY_DATETIME){
+	if ($value != '') {
+		$date = explode('/', $value);
+		if (lang('date format') == 'm/d/Y')
+			return DateTimeValueLib::make(0, 0, 0, $date[0], $date[1], $date[2]);
+		else
+			return DateTimeValueLib::make(0, 0, 0, $date[1], $date[0], $date[2]);
+	}
+	return $default;
+}
+
+/**
  * Checks a string to see if it is a valid url address and appends http:// if it doesn't have it
  */
 function cleanUrl($url){
@@ -178,11 +196,6 @@ function get_id($var_name = 'id', $from = null, $default = null) {
 	$value = array_var($from, $var_name, $default);
 	return is_numeric($value) ? (integer) $value : $default;
 } // get_id
-
-/**
- * This function checks wether the current http request is ajax, so as to know
- * wether we should send the whole page or only the content.
- */
 
 /**
  * This function checks wether the current http request is ajax

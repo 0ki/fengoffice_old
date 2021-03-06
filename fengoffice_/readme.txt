@@ -1,5 +1,5 @@
 
-    About OpenGoo 1.0 RC1 
+    About OpenGoo 1.0 RC2 
     =======================
 
     OpenGoo is a free, web based WebOffice, project management and collaboration
@@ -77,11 +77,11 @@
 	First time from 0.6.6 to 0.7, second time from 0.7 to 0.8 and finally from 0.8 to 0.9.
     
     
-    Upgrade from 0.9.2
-    ================
+    Upgrade from 0.9.X or 1.0 RC1
+    ==============================
     
     1. Backup you current installation (important !)
-    2. Download OpenGoo 1.0 RC1 - http://www.opengoo.org/
+    2. Download OpenGoo 1.0 RC2 - http://www.opengoo.org/
     3. Unpack and remove the following folders:
     	- cache (cache files)
     	- config (configuration options are stores here)
@@ -89,7 +89,8 @@
     	- tmp (temporary files)
     	- upload (uploaded files are stored here)
     4. Move remaining files and folders to your OpenGoo installation, replacing all files.
-    5. If necessary, refresh your browser or clear its cache so that the new javascript, css and images load.
+    5. (only for upgrades from 0.9.X) In your browser, go to <your_opengoo>/public/upgrade and choose to upgrade from 0.9 to 1.0.
+    6. If necessary, refresh your browser or clear its cache so that the new javascript, css and images load.
     
     
 	Open Source Libraries 
@@ -128,7 +129,7 @@
 		- Better look and feel
 			- The tasks module now looks much nicer and better ressembles the look and feel of the rest of OpenGoo.
 	- Also improved the calendar module.
-		- It now fits more space. Actions were moved to the top toolbar.
+		- Now it uses better the available space. Actions were moved to the top toolbar.
 		- You can now invite users to events and confirm assistance to an event.
 		- The default view is the "My calendar" view, that shows you only events related to you.
 		- You can also filter by event state and by users or just show all events.
@@ -142,7 +143,7 @@
 	- When your session expires you can now easily log back in with a popup dialog that prompts you for your username
 		and password, without the need to refresh the page. This allows you to comfortably continue working in OpenGoo
 		as if your session had never expired.
-	- Easy backup your OpenGoo installation from the Administration panel.
+	- Easily backup your OpenGoo installation from the Administration panel.
 	- Several configuration options added, accessible through Account / Edit preferences, including for example, choosing
 		what widgets you see on the dashboard and choosing whether to show information about all users or only you.
 	- Improved workspace selection controls throughout OpenGoo.

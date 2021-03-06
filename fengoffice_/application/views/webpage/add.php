@@ -1,7 +1,6 @@
 <?php 
   set_page_title($webpage->isNew() ? lang('add webpage') : lang('edit webpage'));
-  $project = active_or_personal_project();
-  $projects =  active_projects();
+  $project = $webpage->getProject();
   if (!$webpage->isNew()) 
   	add_page_action(lang('delete webpage'), "javascript:if(confirm(lang('confirm delete webpage'))) og.openLink('" . $webpage->getDeleteUrl()."');", 'ico-delete');
 ?>
@@ -23,9 +22,7 @@
   	</div>
 	
 	<div style="padding-top:5px">
-		<?php if (isset ($projects) && count($projects) > 0) { ?>
-			<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('add_webpage_select_workspace_div', this)"><?php echo lang('workspace') ?></a> - 
-		<?php } ?>
+		<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('add_webpage_select_workspace_div', this)"><?php echo lang('workspace') ?></a> - 
 		<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('add_webpage_tags_div', this)"><?php echo lang('tags') ?></a> - 
 		<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('add_webpage_description_div', this)"><?php echo lang('description') ?></a> - 
 		<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('add_webpage_properties_div', this)"><?php echo lang('properties') ?></a>
@@ -36,12 +33,10 @@
 </div>
 <div class="coInputSeparator"></div>
 <div class="coInputMainBlock">
-
-
     <div id="add_webpage_select_workspace_div" style="display:none">
 	<fieldset>
 	<legend><?php echo lang('workspace') ?></legend>
-		<?php echo select_project('webpage[project_id]', $projects, array_var($webpage_data, 'project_id')) ?>
+		<?php echo select_project2('webpage[project_id]', ($project instanceof Project)? $project->getId():active_or_personal_project()->getId(), $genid) ?>
 	</fieldset>
     </div>
   

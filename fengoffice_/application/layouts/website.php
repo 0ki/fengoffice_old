@@ -20,6 +20,7 @@
 			'og/tasks/TasksTopToolbar.js',
 			'og/tasks/TasksBottomToolbar.js',
 			'og/WorkspaceChooser.js',
+			'og/QuickAdd.js',
 			'og/Permissions.js',
 			'og/WorkspaceUtils.js',
 			'og/CalendarDatePicker.js',
@@ -35,6 +36,8 @@
 			'og/ReportingFunctions.js',
 			'og/swfobject.js',
 			'og/ImageChooser.js',
+			'og/Sound.js',
+			'og/GooPlayer.js',
 			'og/ObjectPicker.js',
 			'og/CSVCombo.js',
 			'og/LoginDialog.js',
@@ -71,9 +74,7 @@
 			'modules/spreadsheet_engine.js',
 			'modules/spreadsheet_ui.js',
 			'modules/overlib.js',
-			'og/TaskItem.js',
-			'og/MilestoneItem.js',
-			'og/DatePicker.js',
+			'og/DateField.js',
 			'jquery/jquery.min.js',
 			'jquery/jquery.dimensions.js',
 			'jquery/jquery.hoverIntent.js',
@@ -132,9 +133,9 @@
 				'onblur' => 'if (value == \'\') value = \'' . $search_field_default_value . '\'');
 				?>
 				<?php echo input_field('search_for', $search_field_default_value, $search_field_attrs) ?>
-				</td><td>
+				</td><td id="searchboxSearch">
 				<button type="submit"><?php echo lang('search button caption') ?></button>
-				</td></tr></table>
+				</td><td style="padding-left:10px"><div id="quickAdd"></div></td></tr></table>
 				<input type="hidden" name="c" value="search" />
 				<input type="hidden" name="a" value="search" />
 				<input type="hidden" name="current" value="search" />
@@ -169,6 +170,9 @@ og.initialGUIState = <?php echo json_encode(GUIController::getState()) ?>;
 og.initialURL = '<?php echo ROOT_URL . "?" . $_SERVER['QUERY_STRING'] ?>';
 
 og.hideMailsTab = <?php echo (defined('HIDE_MAILS_TAB') ? HIDE_MAILS_TAB : 0)?>;
+og.GooPlayer.sound = new Sound();
+
+var quickAdd = new og.QuickAdd();
 
 </script>
 <?php include_once(Env::getLayoutPath("listeners"));?>

@@ -153,9 +153,9 @@ class ReportingController extends ApplicationController {
 			$ids = explode(',', array_var($_GET, 'charts'));
 			list($succ, $err) = ObjectController::do_delete_objects($ids, 'ProjectCharts');
 			if ($err > 0) {
-				flash_error(lang('error delete objects'), $err);
+				flash_error(lang('error delete objects', $err));
 			} else {
-				flash_success(lang('success delete objects'), $succ);
+				flash_success(lang('success delete objects', $succ));
 			}
 		} else if (array_var($_GET, 'action') == 'tag') {
 			$ids = explode(',', array_var($_GET, 'charts'));
@@ -294,10 +294,10 @@ class ReportingController extends ApplicationController {
 				$st = DateTimeValueLib::make(0,0,0,$now->getMonth(),1,$now->getYear());
 				$et = DateTimeValueLib::make(23,59,59,$now->getMonth(),1,$now->getYear())->add('M',1)->add('d',-1);break;
 			case 6:
-				$start = explode('/', array_var($report_data, 'start_value'));
-		       	$st = DateTimeValueLib::make(0, 0, 0, $start[0], $start[1], $start[2]);
-		       	$end = explode('/', array_var($report_data, 'end_value'));
-		       	$et = DateTimeValueLib::make(23,59,59, $end[0], $end[1], $end[2]);
+				$st = getDateValue(array_var($report_data, 'start_value'));
+		       	$st = $st->beginningOfDay();
+				$et = getDateValue(array_var($report_data, 'end_value'));
+		       	$et = $et->endOfDay();
 				break;
 		}
 		
@@ -387,10 +387,11 @@ class ReportingController extends ApplicationController {
 			$workspacesCSV = logged_user()->getActiveProjectIdsCSV();
 		}
 		
-		$start = explode('/', array_var($report_data, 'start_value'));
-		$end = explode('/', array_var($report_data, 'end_value'));
-		$st = DateTimeValueLib::make(0, 0, 0, $start[0], $start[1], $start[2]);
-		$et = DateTimeValueLib::make(23,59,59, $end[0], $end[1], $end[2]);
+		$start = getDateValue(array_var($report_data, 'start_value'));
+		$end = getDateValue(array_var($report_data, 'end_value'));
+		
+		$st = $start->beginningOfDay();
+		$et = $end->endOfDay();
 		$st = new DateTimeValue($st->getTimestamp() - logged_user()->getTimezone() * 3600);
 		$et = new DateTimeValue($et->getTimestamp() - logged_user()->getTimezone() * 3600);
 		

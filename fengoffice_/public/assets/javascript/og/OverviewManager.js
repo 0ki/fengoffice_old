@@ -290,6 +290,10 @@ og.OverviewManager = function() {
 				{text: lang('upload file'), iconCls: 'ico-upload', handler: function() {
 					var url = og.getUrl('files', 'add_file');
 					og.openLink(url/*, {caller: 'documents-panel'}*/);
+				}},
+				{text: lang('email'), iconCls: 'ico-email', handler: function() {
+					var url = og.getUrl('mail', 'add_mail');
+					og.openLink(url/*, {caller: 'documents-panel'}*/);
 				}}
 			]}
 		}),

@@ -42,7 +42,7 @@
      			if($parsedEmail["Cc"]){
 					foreach ($parsedEmail["Cc"] as $cc_value) {
 						if ($cc != '') $cc .= ", ";
-						$cc .= $cc_value[address];
+						$cc .= $cc_value['address'];
 					}
      			}
 				$accounts = MailAccounts::findAll(array(
@@ -55,9 +55,9 @@
 		    	}
 		    	
 				foreach ($parsedEmail["To"] as $to_value) {
-					if(!in_array($to_value[address], $account_emails)){
+					if(!in_array($to_value['address'], $account_emails)){
 						if ($cc != '') $cc .= ", ";
-						$cc .= $to_value[address];	
+						$cc .= $to_value['address'];	
 					}					
 				}
 				
@@ -269,7 +269,7 @@
     		DB::commit();
     		
         	flash_success(lang('success delete email'));
-        	ajx_current("back");
+        	
     	} catch(Exception $e) {
     		DB::rollback();
         	flash_error(lang('error delete email'));
@@ -1044,6 +1044,7 @@
 							break;
 					}; // switch
 				}; // for
+				ajx_add("overview-panel", "reload");          	
 				break;
 						
 			case "tag":
@@ -1071,6 +1072,7 @@
 				$resultCheck = MailController::checkmail();
 				$resultMessage = $resultCheck[1];// if 
 				$resultCode = $resultCheck[0];
+				ajx_add("overview-panel", "reload");
 				break;
 				
 			case "markAsRead":case "markAsUnRead":
@@ -1100,6 +1102,8 @@
 							break;
 					}; // switch
 				}; // for
+				
+				ajx_add("overview-panel", "reload");
 				break;
 			
 			default:

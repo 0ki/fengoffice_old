@@ -429,7 +429,13 @@ class MessageController extends ApplicationController {
 				} // try
 
 				flash_success(lang('success add message', $message->getTitle()));
-				ajx_current("back");
+				if (array_var($_POST, 'popup', false)) {
+					ajx_current("reload");
+	          	} else {
+	          		ajx_current("back");
+	          	}
+	          	ajx_add("overview-panel", "reload");          	
+					
 				// Error...
 			} catch(Exception $e) {
 				DB::rollback();
@@ -534,7 +540,12 @@ class MessageController extends ApplicationController {
 				DB::commit();
 
 				flash_success(lang('success edit message', $message->getTitle()));
-				ajx_current("back");
+				if (array_var($_POST, 'popup', false)) {
+					ajx_current("reload");
+	          	} else {
+	          		ajx_current("back");
+	          	}
+	          	ajx_add("overview-panel", "reload");          	
 
 			} catch(Exception $e) {
 				DB::rollback();
@@ -577,7 +588,12 @@ class MessageController extends ApplicationController {
 			DB::commit();
 
 			flash_success(lang('success deleted message', $message->getTitle()));
-			ajx_current("back");
+			if (array_var($_POST, 'popup', false)) {
+				ajx_current("reload");
+          	} else {
+          		ajx_current("back");
+          	}
+          	ajx_add("overview-panel", "reload");          	
 		} catch(Exception $e) {
 			DB::rollback();
 			flash_error(lang('error delete message'));

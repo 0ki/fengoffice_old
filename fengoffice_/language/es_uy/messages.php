@@ -174,7 +174,7 @@
     'success edit file revision' => 'Revisiones editadas',
     'success delete file revision' => 'Revision de archivo eliminados',
     
-    'success link objects' => '{0} objecto(s) vinculados',
+    'success link objects' => '{0} objeto(s) vinculados',
     'success unlink object' => 'Este objeto dejó de estar vinculado',
     
     'success update config category' => '{0} valores de configuración modificados y guardados',
@@ -215,12 +215,12 @@
   
   	'success check mail' => 'Correo recibido satisfactoriamente: {0} correos recibidos.',
   
-	'success delete objects' => '{0} Objecto(s) eliminados satisfactoriamente',
-	'success tag objects' => '{0} Objecto(s) etiquetados satisfactoriamente',
-	'error delete objects' => 'No fue posible eliminar {0} objecto(s)',
-	'error tag objects' => 'No fue posible etiquetar {0} objecto(s)',
-	'success move objects' => '{0} Objecto(s) tranferidos satisfactoriamente',
-	'error move objects' => 'No fue posible transferir {0} objecto(s)',
+	'success delete objects' => '{0} Objeto(s) eliminados satisfactoriamente',
+	'success tag objects' => '{0} Objeto(s) etiquetados satisfactoriamente',
+	'error delete objects' => 'No fue posible eliminar {0} objeto(s)',
+	'error tag objects' => 'No fue posible etiquetar {0} objeto(s)',
+	'success move objects' => '{0} Objeto(s) tranferidos satisfactoriamente',
+	'error move objects' => 'No fue posible transferir {0} objeto(s)',
   
     'success checkout file' => 'Archivo bloqueado para edición en forma exitosa',
     'success checkin file' => 'Archivo devuelto en forma exitosa',
@@ -307,7 +307,7 @@
     'confirm delete task list' => '¿Realmente quiere eliminar esta tarea y todas las sub tareas?',
     'confirm delete task' => '¿Realmente quiere eliminar esta tarea',
     'confirm delete comment' => '¿Realmente quiere eliminar este comentario?',
-    'confirm delete project' => '¿Realmente quiere eliminar este espacio y todos los datos relacionados (mensajes, tareas, hitos, archivos...)?',
+    'confirm delete project' => '¿Realmente quiere eliminar este espacio y todos los datos relacionados (notas, tareas, hitos, archivos...)?',
     'confirm complete project' => '¿Realmente quiere marcar este espacio como cerrado? Esto bloqueará todas las acciones del espacio',
     'confirm open project' => '¿Realmente quiere marcar este espacio como abierto? Esto desbloqueara todas las acciones del espacio',
     'confirm delete client' => '¿Realmente quiere eliminar el cliente de la empresa y todos sus usuarios?\nEsta acción también eliminará el espacio personal de cada usuario.',
@@ -320,7 +320,7 @@
     'confirm delete current avatar' => '¿Realmente quiere eliminar esta imagen?',
     'confirm unlink object' => '¿Realmente quiere romper el vínculo de este objeto?',
     'confirm delete company logo' => '¿Realmente quiere eliminar el logo actual de la empresa?',
-    'confirm subscribe' => '¿Realmente quiere subscribirse a este mensaje? Recibirá un correo cada vez que alguien publique un comentario sobre el objeto',
+    'confirm subscribe' => '¿Realmente quiere subscribirse a este objeto? Recibirá un correo cada vez que alguien publique un comentario sobre el objeto',
     'confirm unsubscribe' => '¿Realmente quiere dejar de estar suscripto?',
     'confirm delete project form' => '¿Realmente quiere eliminar este formulario?',
     'confirm delete folder' => '¿Realmente quiere eliminar esta carpeta?',

@@ -7,7 +7,7 @@
     array($task_list->getTitle())
   ));
   if(!$task_list->isCompleted() && $task_list->canEdit(logged_user())) {
-    add_page_action(lang('complete task'), $task_list->getCompleteUrl(rawurlencode(get_url('task','view_task',array('id'=>$task_list->getId())))) , 'ico-complete');
+    add_page_action(lang('do complete'), $task_list->getCompleteUrl(rawurlencode(get_url('task','view_task',array('id'=>$task_list->getId())))) , 'ico-complete');
   } // if
   if($task_list->isCompleted() && $task_list->canEdit(logged_user())) {
     add_page_action(lang('open task'), $task_list->getOpenUrl(rawurlencode(get_url('task','view_task',array('id'=>$task_list->getId())))) , 'ico-reopen');

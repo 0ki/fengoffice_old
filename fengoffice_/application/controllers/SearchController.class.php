@@ -4,6 +4,7 @@ class SearchController extends ApplicationController {
 	function __construct() {
 		parent::__construct();
 		prepare_company_website_controller($this, 'website');
+		ajx_set_panel("search");
 	} // __construct
 	
 	
@@ -24,11 +25,11 @@ class SearchController extends ApplicationController {
 		$search_for = array_var($_GET, 'search_for');
 		
 		$objectManagers = array("ProjectWebpages", "ProjectMessages", "MailContents", "ProjectFiles",
-			 "ProjectFileRevisions", "ProjectMilestones", "ProjectTasks");
+			 "ProjectFileRevisions", "ProjectMilestones", "ProjectTasks", "ProjectEvents");
 		$objectTypes = array(lang('webpages'), lang('messages'), lang('emails'), 
-			lang('files'), lang('files'), lang('milestones'), lang('tasks'));
+			lang('files'), lang('files'), lang('milestones'), lang('tasks'), lang('events'));
 		$iconTypes = array('webpage', 'message', 'email', 
-			'file', 'file', 'milestone', 'task');                        
+			'file', 'file', 'milestone', 'task', 'event');                        
 		
 		$search_results = array();
 		
@@ -156,11 +157,11 @@ class SearchController extends ApplicationController {
 		$manager = array_var($_GET, 'manager');
 		
 		$objectManagers = array("ProjectWebpages", "ProjectMessages", "MailContents", "ProjectFiles",
-			 "ProjectFileRevisions", "ProjectMilestones", "ProjectTasks");
+			 "ProjectFileRevisions", "ProjectMilestones", "ProjectTasks", "ProjectEvents");
 		$objectTypes = array(lang('webpages'), lang('messages'), lang('emails'), 
-			lang('files'), lang('files'), lang('milestones'), lang('tasks'));
+			lang('files'), lang('files'), lang('milestones'), lang('tasks'), lang('events'));
 		$iconTypes = array('webpage', 'message', 'email', 
-			'file', 'file', 'milestone', 'task');
+			'file', 'file', 'milestone', 'task', 'event');  
 		
 		$search_results = array();
 		
@@ -185,7 +186,8 @@ class SearchController extends ApplicationController {
 					$search_results = $this->searchUsers($search_for, array(), 20);
 					break;
 				default:
-					$results = SearchableObjects::searchByType($search_for, $projects, $manager, true, 20,$page);
+					$user_id = $manager == "MailContents" ? logged_user()->getId() : 0;
+					$results = SearchableObjects::searchByType($search_for, $projects, $manager, true, 20,$page, null, $user_id);
 					if (count($results[0]) > 0){
 						$c = array_search($manager, $objectManagers);
 						$sr = array();

@@ -49,6 +49,9 @@
 .ico-sent {
 	background-image: url(../../images/16x16/mail_send.png) !important;
 }
+.ico-reply {
+	background-image: url(../../images/16x16/mail_reply.png) !important;
+}
 .ico-back {
 	background-image: url(../../images/16x16/back.png) !important;
 }
@@ -105,7 +108,7 @@
 }
 
 .ico-email_menu {
-	background-image: url(../../images/16x16/messages.png) !important;
+	background-image: url(../../images/16x16/email.png) !important;
 }
 .ico-empty {
 	background-image: url(../../images/s.gif) !important;
@@ -223,6 +226,9 @@
 }
 .ico-view_options {
 	background-image: url(../../images/16x16/view.png) !important;
+}
+.ico-history {
+	background-image: url(../../images/16x16/history.png) !important;
 }
 .ico-view-as-dashboard {
 	background-image: url('../../images/16x16/view_as_db.png') !important; 
@@ -536,4 +542,8 @@
 
 .adminMainBlock td {
 	padding:2px 5px;
+}
+
+.list-action {
+	margin-left: 6px;
 }

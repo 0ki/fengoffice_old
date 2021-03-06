@@ -54,3 +54,5 @@ Ext.extend(og.HtmlPanel, Ext.Panel, {
 		og.captureLinks(this.id, this.ownerCt);
 	}
 });
+
+Ext.reg("htmlpanel", og.HtmlPanel);

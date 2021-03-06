@@ -77,6 +77,9 @@ return array(
 	'view due task' => 'Ver tarea a vencer',
 	'due task email' => 'La tarea "{0}" vencerá el "{1}" y aún está pendiente',
 	'due task' => 'Tarea a vencer',
+	'task has been modified' => 'La tarea "{0}" en el espacio "{1}" ha sido modificada.',
+	'task modified' => 'Tarea modificada',
+	'view task' => 'Ver tarea',
     ); // array
 
     ?>

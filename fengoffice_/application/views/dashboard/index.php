@@ -253,7 +253,13 @@ else
 				$w = $day_of_month - $lastday;
 				$dtv = DateTimeValueLib::make(0,0,0,$month,$w,$year);
 			}
-			$output .= "><div style='z-index:0; height:100%;cursor:pointer' onclick=\"og.EventPopUp.show(null, {day:'{$dtv->getDay()}',	month:'{$dtv->getMonth()}',year:'{$dtv->getYear()}',type_id:1,hour:'0',minute:'0',title:'".date("l, F j",  mktime(0, 0, 0, $dtv->getMonth(), $dtv->getDay(), $dtv->getYear()))."'},'');\") >
+			$loc = Localization::instance();
+			if (lang('date format') == 'm/d/Y') {
+				$start_value = $dtv->getMonth()."+'/'+".$dtv->getDay()."+'/'+".$dtv->getYear();
+			} else {
+				$start_value = $dtv->getDay()."+'/'+".$dtv->getMonth()."+'/'+".$dtv->getYear();
+			}
+			$output .= "><div style='z-index:0; height:100%;cursor:pointer' onclick=\"og.EventPopUp.show(null, {caller:'overview-panel', day:'".$dtv->getDay()."', month:'".$dtv->getMonth()."', year:'".$dtv->getYear()."', type_id:1, hour:'9', minute:'0', durationhour:1, durationmin:0, start_value: ".$start_value.", title:'".$loc->dateByLocalization('l, j F', $dtv->getTimestamp()) ."', view: 'week'},'');\") >
 			<div class='$daytitle' style='text-align:right'>";
 			if($day_of_month >= 1){
 				$output .= "<a class='internalLink' href=\"$p\" onclick=\"cancel(event);return true;\"  style='color:#5B5B5B' >$w</a>";				
@@ -628,7 +634,7 @@ echo $output . '</table>';
 				else
 					echo lang('overdue by x days', -$task->getRemainingDays());
 				}?></td>
-			<td style="text-align:right"><a class='internalLink' href='<?php echo $task->getCompleteUrl() ?>' title="<?php echo lang('complete task')?>"><?php echo lang('complete task')?></a></td>
+			<td style="text-align:right"><a class='internalLink' href='<?php echo $task->getCompleteUrl() ?>' title="<?php echo lang('complete task')?>"><?php echo lang('do complete')?></a></td>
 			</tr>
 		<?php } // foreach ?>
 		</table>

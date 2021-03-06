@@ -51,7 +51,7 @@ addLangs({
 	'confirm delete object': 'Are you sure you want to delete the selected object(s)?',
 	'confirm delete contact': 'Are you sure you want to delete this contact?',
 	'confirm delete company': 'Are you sure you want to delete this company?',
-	'confirm delete event': 'Are you sure you want to delete this event?',
+	'confirm delete event': 'Are you sure you want to permanenetly delete this event? \nAfter deleting an event other users won\'t be able to see it in their calendars'   ,
 	'confirm delete file': 'Are you sure you want to delete this file?',
 	'confirm delete mail content': 'Are you sure you want to delete this email?',
 	'confirm delete mail account': 'Warning: All emails belonging to this account will be deleted as well, are you sure that you want to delete this mail account?',
@@ -103,6 +103,10 @@ addLangs({
 	'shuffle playlist': 'Shuffle playlist',
 	'toggle loop playlist': 'Toggle loop playlist',
 	'play this file': 'Play this file',
+	'queue': 'Queue',
+	'queue this file': 'Queue this file in the player',
+	'must choose a file': 'You must choose a file',
+	'file has no valid songs': 'The file you chose has no valid songs',
 
 	'error': 'Error',
 	'success': 'Success',
@@ -252,6 +256,7 @@ addLangs({
 	'debug': 'Debug',
 	'incomplete': 'Incomplete',
 	'complete': 'Complete',
+	'do complete': 'Complete',
 	'late': 'Late',
 	'status': 'Status',
 	
@@ -286,7 +291,8 @@ addLangs({
 	'prev':'Previous',
 	'next':'Next',
 	'my calendar': 'My Calendar',
-
+	'edit event details': 'Edit event details',
+	
 	/* Charts */
 	'reporting' : 'Reporting',
 	'add new chart' : 'Add new chart',
@@ -454,5 +460,9 @@ addLangs({
   	'click to change workspace': 'Click to change workspace',
   	'add a new task to this group': 'Add a new task to this group',
    	'login dialog desc': 'Your session expired due to inactivity. Fill in this form to log back in.',
-   	'user not found' : 'User not found (id:{0})'
+   	'user not found' : 'User not found (id:{0})',
+  
+  	'date format' : 'm/d/Y',
+  	'date format alternatives' : 'm/d/y|n/j/Y|n/j/y|m/j/y|n/d/y|m/j/Y|n/d/Y',
+  	'warning start date greater than due date': 'Warning: the start date is later than the due date'
 });

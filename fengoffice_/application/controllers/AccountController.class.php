@@ -18,6 +18,7 @@ class AccountController extends ApplicationController {
 	function __construct() {
 		parent::__construct();
 		prepare_company_website_controller($this, 'website');
+		ajx_set_panel("account");
 	} // __construct
 
 	/**

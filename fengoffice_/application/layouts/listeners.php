@@ -6,7 +6,7 @@
 og.eventManager.addListener('tag changed', 
  	function (tag){ 
  		if (Ext.getCmp('tabs-panel').getActiveTab().id == 'calendar-panel') {
- 			og.openLink('<?php echo get_url('event','viewweek')?>',
+ 			og.openLink(og.getUrl('event', actual_view, {day: today_date.format('d'), month: today_date.format('n'), year: today_date.format('Y'), user_filter: 0, state_filter: -1}), 
  				{caller:'calendar-panel',
  				get:{tag:tag.name}}
  			);
@@ -19,6 +19,16 @@ og.eventManager.addListener('tag changed',
  		}
  	}
 );
+og.eventManager.addListener('workspace changed', 
+ 	function (ws){ 
+ 		if (Ext.getCmp('tabs-panel').getActiveTab().id == 'calendar-panel') {
+ 			og.openLink(og.getUrl('event', actual_view, {day: today_date.format('d'), month: today_date.format('n'), year: today_date.format('Y'), user_filter: 0, state_filter: -1}), 
+ 				{caller:'calendar-panel'}
+ 			);
+ 		}
+ 	}
+);
+
 og.eventManager.addListener('company added', 
  	function (company) {
  		var elems = document.getElementsByName("contact[company_id]");

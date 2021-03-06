@@ -220,7 +220,7 @@
     * @param integer $offset
     * @return array
     */
-    static function getObjectLogs(Project $object, $include_private = false, $include_silent = false, $limit = null, $offset = null) {
+    static function getObjectLogs($object, $include_private = false, $include_silent = false, $limit = null, $offset = null) {
       $private_filter = $include_private ? 1 : 0;
       $silent_filter = $include_silent ? 1 : 0;
       

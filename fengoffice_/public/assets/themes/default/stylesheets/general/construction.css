@@ -116,14 +116,14 @@
 	width: 120px;
 }
 
-#searchbox button {
+#searchboxSearch button {
 	width: 60px;
 	height: 20px;
 	border: 1px solid #666;
 	background: transparent url(../../extjs/images/default/button/btn-sprite.gif) repeat-x scroll 0pt -43px !important;
 }
 
-#searchbox button:hover {
+#searchboxSearch button:hover {
 	border: 1px solid deepskyblue;
 }
 

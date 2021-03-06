@@ -170,17 +170,15 @@
 
 	<div>
 	<?php if(!$message->isNew() && trim($message->getAdditionalText())) { ?>
-		<label for="<?php echo $genid ?>messageFormAdditionalText"><?php echo lang('additional text') ?>: <span class="desc">- (<?php echo lang('additional message text desc') ?>)</span></label>
+		<label for="<?php echo $genid ?>messageFormAdditionalText"><?php echo lang('additional text') ?>:</label>
 		<?php echo editor_widget('message[additional_text]', array_var($message_data, 'additional_text'), array('id' => $genid . 'messageFormAdditionalText')) ?>
-	<?php } else { ?>
-		<label for="<?php echo $genid ?>messageFormAdditionalText"><?php echo lang('additional text') ?> (
-			<a href="#" onclick="return App.modules.addMessageForm.toggleAdditionalText(this, '<?php echo $genid ?>messageFormAdditionalText', 
-				'<?php echo lang('expand additional text') ?>', '<?php echo lang('collapse additional text') ?>')"><?php echo lang('expand additional text') ?></a>): 
-				<span class="desc">- <?php echo lang('additional message text desc') ?></span></label>
+	<?php } /* else { ?>
+		<label for="<?php echo $genid ?>messageFormAdditionalText"><?php echo lang('additional text') ?> (<a href="#" onclick="return App.modules.addMessageForm.toggleAdditionalText(this, '<?php echo $genid ?>messageFormAdditionalText', 
+				'<?php echo lang('expand additional text') ?>', '<?php echo lang('collapse additional text') ?>')"><?php echo lang('expand additional text') ?></a>):</label>
 		<?php echo editor_widget('message[additional_text]', array_var($message_data, 'additional_text'), array('id' => $genid . 'messageFormAdditionalText')) ?>
 		<script type="text/javascript">
 		document.getElementById('<?php echo $genid ?>messageFormAdditionalText').style.display = 'none';</script>
-	<?php } // if ?>
+	<?php } */ // if ?>
 	</div>
 	
 	<?php echo submit_button($message->isNew() ? lang('add message') : lang('save changes'),'s',

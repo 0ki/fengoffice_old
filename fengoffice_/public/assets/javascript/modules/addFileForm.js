@@ -51,10 +51,10 @@ og.updateFileName = function(genid) {
 	fff.value = name;
 }
 
-og.checkFileName = function(genid, name) {
+og.checkFileName = function(genid) {
 	allowSubmit = false;
 	var fff = document.getElementById(genid + 'fileFormFilename');
-	name = fff.value;
+	var name = fff.value;
 	//Disable Add file buttons and show corresponding divs
 	Ext.get(genid + 'add_file_submit1').dom.disabled = true;
 	Ext.get(genid + 'add_file_submit2').dom.disabled = true;
@@ -66,9 +66,12 @@ og.checkFileName = function(genid, name) {
   	if (!fileIsNew){
  		eid = Ext.get(genid + 'hfFileId').getValue();
   	}
-  	var ws = Ext.get(genid + "ws_ids").getValue();
+  	var ws = Ext.getCmp(genid + "ws_ids").getValue();
  	
-    og.openLink(og.getUrl('files','check_filename', {filename: escape(name), wsid: ws, id: eid}), {
+    og.openLink(og.getUrl('files','check_filename', {wsid: ws, id: eid}), {
+    	post: {
+    		filename: name
+    	},
     	caller:this,
     	callback: function(success, data) {
     		if (success) {
@@ -87,25 +90,32 @@ og.checkFileName = function(genid, name) {
   
 og.showFileExists = function(genid, fileInfo){
  	Ext.get(genid + "addFileFilenameExists").setDisplayed(true);
- 	var table = Ext.getDom(genid + 'upload-table');
- 	table.innerHTML = '';
+ 	var table = document.getElementById(genid + 'upload-table');
+ 	while(table.rows.length>0) 
+    	table.deleteRow(table.rows.length-1);
  	
  	for (var i = 0; i < fileInfo.files.length; i++)
- 		og.addFileOption(table, fileInfo.files[i]);
+ 		og.addFileOption(table, fileInfo.files[i], genid);
 }
 
-og.addFileOption = function(table, file){
+og.addFileOption = function(table, file, genid){
 	var row = table.insertRow(table.rows.length);
 	var cell = row.insertCell(0);
 	cell.style.paddingRight='4px';
 
 	if (file.can_edit && (!file.is_checked_out || file.can_check_in)){
-		var el = document.createElement('input');
-		el.type="radio";
+	
+		if (Ext.isIE)
+			var el = document.createElement('<input type="radio" name="file[upload_option]">');
+		else
+		{
+			var el = document.createElement('input');
+			el.type = "radio";
+			el.name = 'file[upload_option]';
+		}
+		el.id = file.id + "chk" + genid;
 		el.className = "checkbox";
-		el.name='file[upload_option]';
-		el.value=file.id;
-		el.checked = false;
+		el.value = file.id;
 		el.enabled = file.can_edit && (!file.is_checked_out || (file.is_checked_out && file.can_check_in));
 		cell.appendChild(el);
 	}

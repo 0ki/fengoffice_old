@@ -248,8 +248,8 @@
   'filters' => 'Filtros',
   
   'permissions for user' => 'Permisos para el usuario {0}',
-  'can read messages' => 'Puede leer mensajes',
-  'can write messages' => 'Puede escribir mensajes',
+  'can read messages' => 'Puede leer notas',
+  'can write messages' => 'Puede escribir notas',
   'can read tasks' => 'Puede leer tareas',
   'can write tasks' => 'Puede escribir tareas',
   'can read milestones' => 'Puede leer hitos',
@@ -275,7 +275,7 @@
   'new event' => 'Nuevo evento',
   'new webpage' => 'Nueva pagina web',
   'new milestone' => 'Nuevo hito',
-  'new message' => 'Mensaje nuevo',
+  'new message' => 'Nueva nota',
   'new group' => 'Grupo nuevo',
   'new user' => 'Usuario nuevo',
   'add tags' => 'Agregar etiquetas',
@@ -310,7 +310,7 @@
   'view as list' => 'Ver como lista',
   'pending tasks' => 'Tareas pendientes',
   'my pending tasks' => 'Mis tareas pendientes',
-  'messages' => 'Mensajes',
+  'messages' => 'Notas',
   'complete' => 'Completo',
   'incomplete' => 'Incompleto',
   'complete task' => 'Completar tarea',
@@ -365,7 +365,7 @@
   'search for' => 'Buscar resultados para \'{0}\' en todos los espacios',
   
   'workspace permamanent delete' =>  'Cuando un espacio es eliminado, la siguiente información es perdida de forma permanente</b>',
-	'workspace permamanent delete messages'  => ' Todos los mensajes en el espacio',
+	'workspace permamanent delete messages'  => ' Todas las notas en el espacio',
  'workspace permamanent delete tasks' => ' Todas las tareas en el espacio',
  'workspace permamanent delete milestones' => ' Todos los hitos en el espacio',
  'workspace permamanent delete files' => ' Todos los archivos en el espacio',
@@ -438,6 +438,7 @@
   'total' => 'Total',
   'too many tasks to display' => 'Hay demasiadas tareas para mostrar, se despliegan las 500 tareas más recientes. Para mostrar las tareas y ocultar esta advertencia, por favor filtre las tareas por espacio, tag, estado o filtro.',
   'success create timeslot' => 'Tiempo de trabajo creado en forma satisfactoria',
+  'do complete' => 'Completar',
   ); // array
 
 ?>

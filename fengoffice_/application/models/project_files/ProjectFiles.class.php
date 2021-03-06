@@ -109,6 +109,55 @@ class ProjectFiles extends BaseProjectFiles {
 	} // getProjectFiles
 	
 	/**
+	 * Gets project files that satisfy condition and that the user can read
+	 *
+	 * @param unknown_type $condition
+	 */
+	function getUserFiles($user = null, $workspace = null, $tag = null, $type_string = null, $order = null, $orderdir = 'ASC') {
+		if (!$user instanceof User) $user = logged_user();
+
+		if ($workspace instanceof Project){
+			$wsids = $workspace->getAllSubWorkspacesCSV(true, $user);
+		} else {
+			$wsids = $user->getActiveProjectIdsCSV();
+		}
+		$wscond = " `id` IN (SELECT `object_id` FROM `".TABLE_PREFIX."workspace_objects` WHERE `object_manager` = 'ProjectFiles' && `workspace_id` IN ($wsids)) ";
+		
+		if ($tag == '' || $tag == null) {
+			$tagcond = "";
+		} else {
+			$tagcond = " AND (SELECT count(*) FROM `" . TABLE_PREFIX . "tags` WHERE `" .
+				TABLE_PREFIX . "project_files`.`id` = `" . TABLE_PREFIX . "tags`.`rel_object_id` AND `" .
+				TABLE_PREFIX . "tags`.`tag` = ".DB::escape($tag)." AND `" . TABLE_PREFIX . "tags`.`rel_object_manager` ='ProjectFiles' ) > 0 ";
+		}
+		
+		if ($type_string == '' || $type_string == null) {
+			$typecond = "";
+		} else {
+			$typecond = " AND  (SELECT count(*) FROM `" . TABLE_PREFIX . "project_file_revisions` WHERE `" .
+				TABLE_PREFIX . "project_file_revisions`.`type_string` LIKE ".DB::escape($type_string)." AND `" . TABLE_PREFIX .
+				"project_files`.`id` = `" . TABLE_PREFIX . "project_file_revisions`.`file_id`)";
+		}
+		
+		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectFiles::instance(), ACCESS_LEVEL_READ, $user) . ') ';
+		
+		$conditions = $wscond . $tagcond . $typecond . $permissions;
+		
+		if ($order == self::ORDER_BY_POSTTIME) {
+			$order_by = '`created_on` ' . $orderdir;
+		} else if ($order == self::ORDER_BY_MODIFYTIME) {
+			$order_by = '`updated_on` ' . $orderdir;
+		} else {
+			$order_by = '`filename`' . $orderdir;
+		}
+		
+		return self::findAll(array(
+			'conditions' => $conditions,
+			'order' => $order_by
+		));
+	}
+	
+	/**
 	* Orphened files are files that are not part of any folder, but project itself
 	*
 	* @param Project $project

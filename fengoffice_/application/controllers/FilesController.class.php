@@ -112,13 +112,13 @@ class FilesController extends ApplicationController {
 		$file = ProjectFiles::findById(get_id());
 		if(!($file instanceof ProjectFile)) {
 			flash_error(lang('file dnx'));
-			ajx_current("empty");
+			//ajx_current("empty");
 			return;
 		} // if
 			
 		if(!$file->canDownload(logged_user())) {
 			flash_error(lang('no access permissions'));
-			ajx_current("empty");
+			//ajx_current("empty");
 			return;
 		} // if
 
@@ -330,7 +330,13 @@ class FilesController extends ApplicationController {
 				$_SESSION["uploads_success"] = $uploads;
 
 				flash_success(lang('success add file', $file->getFilename()));
-				ajx_current("back");
+	          	if (array_var($_POST, 'popup', false)) {
+					ajx_current("reload");
+	          	} else {
+	          		ajx_current("back");
+	          	}
+	          	ajx_add("overview-panel", "reload");
+			
 			} catch(Exception $e) {
 				DB::rollback();
 				flash_error($e->getMessage());
@@ -378,16 +384,13 @@ class FilesController extends ApplicationController {
 				$file_dt['name'] = $file->getFilename();
 				$file_content = array_var($_POST, 'fileContent');
 				$file_dt['size'] = strlen($file_content);
-				$file_dt['type'] = 'text/html';
+				$file_dt['type'] = array_var($_POST, 'fileMIME', 'text/html');
 				$file_dt['tmp_name'] = './tmp/' . rand () ;
 				$handler = fopen($file_dt['tmp_name'], 'w');
 				fputs($handler,$file_content);
 				fclose($handler);
 				$name = array_var($postFile, 'name');
-				//eyedoc MOD
-				if (!str_ends_with($name, ".html") && !str_ends_with($name, ".eyedoc")) {
-					$name .= ".html";
-				}//eyedoc MOD
+
 				$file->setFilename($name);
 				$file->save();	
 				$file->setTagsFromCSV(array_var($file_data, 'tags'));
@@ -403,6 +406,7 @@ class FilesController extends ApplicationController {
 				flash_success(lang('success save file', $file->getFilename()));
 				evt_add("document saved", array("id" => $file->getId(), "instance" => array_var($_POST, 'instanceName')));
 				//$this->redirectTo('files', 'add_document', array('id' => $file->getId()));
+				ajx_add("overview-panel", "reload");          					
 			} catch(Exception $e) {
 				DB::rollback();
 				unlink($file_dt['tmp_name']);
@@ -420,9 +424,6 @@ class FilesController extends ApplicationController {
 			// prepare the file object
 			$file = new ProjectFile();
 			$name = array_var($postFile, 'name');
-			if (!str_ends_with($name, ".html")) {
-				$name .= ".html";
-			}
 			$file->setFilename($name);
 			$file->setIsVisible(true);
 
@@ -435,7 +436,7 @@ class FilesController extends ApplicationController {
 			$file_content = array_var($_POST, 'fileContent');
 			$file_dt['name'] = array_var($postFile,'name');
 			$file_dt['size'] = strlen($file_content);
-			$file_dt['type'] = 'text/html';
+			$file_dt['type'] = array_var($_POST, 'fileMIME', 'text/html');
 
 			$file->setCreatedOn(new DateTimeValue(time()) );
 			try {
@@ -512,6 +513,7 @@ class FilesController extends ApplicationController {
 
 				flash_success(lang('success save file', $file->getFilename()));
 				//$this->redirectTo('files', 'add_presentation', array('id' => $file->getId()));
+				ajx_add("overview-panel", "reload");
 			} catch(Exception $e) {
 				DB::rollback();
 				unlink($file_dt['tmp_name']);
@@ -626,6 +628,7 @@ class FilesController extends ApplicationController {
 
 				flash_success(lang('success save file', $file->getFilename()));
 				$this->redirectTo('files', 'add_spreadsheet', array('id' => $file->getId()));
+				ajx_add("overview-panel", "reload");
 			} catch(Exception $e) {
 				DB::rollback();
 				unlink($file_dt['tmp_name']);
@@ -1007,6 +1010,18 @@ class FilesController extends ApplicationController {
 						$coName = Users::findById($coId)->getUsername();
 					}
 				}
+				
+				if ($o->getTypeString() == 'audio/mpeg') {
+					$songname = $o->getProperty("songname");
+					$artist = $o->getProperty("songartist");
+					$album = $o->getProperty("songalbum");
+					$track = $o->getProperty("songtrack");
+					$year = $o->getProperty("songyear");
+					$duration = $o->getProperty("songduration");
+					$songInfo = json_encode(array($songname, $artist, $album, $track, $year, $duration, $o->getDownloadUrl(), $o->getFilename(), $o->getId()));
+				} else {
+					$songInfo = array();
+				}
 
 				$listing["files"][] = array(
 					"id" => $o->getId(),
@@ -1029,7 +1044,8 @@ class FilesController extends ApplicationController {
 					"checkedOutByName" => $coName,
 					"checkedOutById" => $coId,
 					"isModifiable" => $o->isModifiable() && $o->canEdit(logged_user()),
-					"modifyUrl" => $o->getModifyUrl()
+					"modifyUrl" => $o->getModifyUrl(),
+					"songInfo" => $songInfo
 				);
 			}
 		}
@@ -1187,11 +1203,10 @@ class FilesController extends ApplicationController {
 					ApplicationLogs::createLog($file, $w, ApplicationLogs::ACTION_EDIT);
 				}
 				DB::commit();
-
+				
 				$uploads = array_var($_SESSION, "uploads_success", array());
 				$uploads[array_var($_POST, "upload_id")] = true;
 				$_SESSION["uploads_success"] = $uploads;
-				
 				
 				flash_success(lang('success edit file', $file->getFilename()));
 				ajx_current("back");
@@ -1322,7 +1337,12 @@ class FilesController extends ApplicationController {
 			DB::commit();
 
 			flash_success(lang('success delete file', $file->getFilename()));
-			ajx_current("back");
+          	if (array_var($_POST, 'popup', false)) {
+				ajx_current("reload");
+          	} else {
+          		ajx_current("back");
+          	}
+          	ajx_add("overview-panel", "reload");          	
 		} catch(Exception $e) {
 			flash_error(lang('error delete file'));
 			ajx_current("empty");
@@ -1331,7 +1351,7 @@ class FilesController extends ApplicationController {
 
 	function check_filename(){
 		ajx_current("empty");
-		$filename = array_var($_GET, 'filename');
+		$filename = array_var($_POST, 'filename');
 		$files = ProjectFiles::getAllByFilename($filename, logged_user()->getActiveProjectIdsCSV());
 
 		if (is_array($files) && count($files) > 0){
@@ -1500,6 +1520,40 @@ class FilesController extends ApplicationController {
 		} // try
 	} // delete_file_revision
 
+	/**
+	 * Loads the logged user's mp3 files
+	 *
+	 */
+	function get_mp3() {
+		ajx_current("empty");
+		
+		/* get arguments */
+		$project_id = array_var($_GET, 'active_project', 0);
+		$project = Projects::findById($project_id);
+		$tag = array_var($_GET, 'tag');
+		$type = 'audio/mpeg';
+
+		/* query */
+		$files = ProjectFiles::getUserFiles(logged_user(), $project, $tag, $type,
+				ProjectFiles::ORDER_BY_NAME, 'ASC');
+		if (!is_array($files)) $files = array();
+
+		/* prepare response object */
+		$mp3 = array(
+			'mp3' => array()
+		);
+		foreach ($files as $f) {
+			$songname = $f->getProperty("songname");
+			$artist = $f->getProperty("songartist");
+			$album = $f->getProperty("songalbum");
+			$track = $f->getProperty("songtrack");
+			$year = $f->getProperty("songyear");
+			$duration = $f->getProperty("songduration");
+			$mp3["mp3"][] = array($songname, $artist, $album, $track, $year, $duration, $f->getDownloadUrl(), $f->getFilename(), $f->getId()
+			);
+		}
+		ajx_extra_data($mp3);
+	}
 
 } // FilesController
 

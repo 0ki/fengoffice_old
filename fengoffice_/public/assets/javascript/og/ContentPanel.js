@@ -7,19 +7,22 @@
  *  	- plus all Ext.Panel options
  */
 og.ContentPanel = function(config) {
+	if (!config) config = {};
+	if (!config.listeners) config.listeners = {};
+	this.onClose = config.onClose;
 	Ext.apply(config, {
 		//autoScroll: true,
 		layout: 'contentpanel',
 		loaded: false,
 		cls: 'og-content-panel', // identifies ContentPanels (see: og.getParentContentPanel)
-		listeners: {
-			activate: this.activate,
-			deactivate: this.deactivate
-		},
 		items: [{
 			xtype: 'panel',
 			html: ""
-		}]
+		}],
+		listeners: Ext.apply(config.listeners, {
+			activate: this.activate,
+			deactivate: this.deactivate
+		})
 	});
 	
 	
@@ -27,6 +30,8 @@ og.ContentPanel = function(config) {
 	
 	this.history = [];
 	this.contentLoaded = false;
+	
+	this.onClose = config.onClose;
 	
 	if (config.refreshOnWorkspaceChange) {
 		og.eventManager.addListener('workspace changed', this.reset, this);
@@ -37,38 +42,24 @@ og.ContentPanel = function(config) {
 	
 	// dirty stuff to allow refreshing a content panel when clicking on its tab
 	this.on('render', function() {
-		var tabs = this.ownerCt.getEl().select('.x-tab-with-icon');
-		var p = this;
-		og._activeTab = p.id;
-		tabs.each(function() {
-			if (this.dom.id == 'tabs-panel__' + p.id) {
-				this.on('click', function() { 
-					if (p.id == og._activeTab) {
-						p.reset();
+		var tab = Ext.get("tabs-panel__" + this.id);
+		if (tab) {
+			tab.on('click', function() { 
+				if (this.id == og._activeTab) {
+					this.reset();
+				}
+				og._activeTab = this.id;
+			}, this);
+		}
+		if (this.ownerCt) {
+			this.ownerCt.on('remove', function(ct, item) {
+				if (item == this) {
+					if (typeof this.onClose == 'function') {
+						this.onClose();
 					}
-					og._activeTab = p.id;
-				});
-			}
-		});
-	}, this);
-	
-	this.on('hide', function() {  
-		/*if (this.id == 'calendar-panel'){
-			var tb = Ext.getCmp('calendar-tb');
-			tb.hide();
-		}*/
-	}, this);
-	
-	this.on('show', function() {  
-		/*if (this.id == 'calendar-panel'){
-			var tb = Ext.getCmp('calendar-tb');
-			if (tb == null){
-				cp = Ext.getCmp('tabs-panel');
-				var tb = new og.CalendarToolbar();				
-			}
-			cp.syncSize();
-			tb.show();
-		}*/
+				}
+			}, this);
+		}
 	}, this);
 };
 
@@ -244,7 +235,9 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 			**/
 		} else if (content.type == 'url') {
 			if (this.active) {
-				og.openLink(content.data, {caller: this});
+				og.openLink(content.data, {caller: this, preventSwitch: true});
+			} else {
+				this.loaded = false;
 			}
 		} else if (content.type == 'panel') {
 			if (!content.panel) {

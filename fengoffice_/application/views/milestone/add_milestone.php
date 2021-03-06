@@ -4,7 +4,6 @@
   	add_page_action(lang("delete template"), "javascript:if(confirm('".lang('confirm delete template')."')) og.openLink('" . get_url("milestone", "delete", array("id" => $base_milestone->getId())) ."');", "ico-delete");
   }
   $project = $milestone->getProject();
-  $projects =  active_projects();
 ?>
 <form style='height:100%;background-color:white' class="internalForm" action="<?php echo $milestone->isNew() ? get_url('milestone', 'add', array("copyId" => array_var($milestone_data, 'copyId'))) : $milestone->getEditUrl() ?>" method="post">
 
@@ -16,7 +15,7 @@
 		if ($milestone->isNew()) {
 			if (array_var($milestone_data, 'is_template', false)) {
 				echo lang('new milestone template');
-			} else if ($milestone_task instanceof ProjectTask) {
+			} else if (isset($milestone_task ) && $milestone_task instanceof ProjectTask) {
 				echo lang('new milestone from template');
 			} else {
 				echo lang('new milestone');
@@ -36,9 +35,7 @@
 	</div>
 	
 	<div style="padding-top:5px">
-		<?php if (isset ($projects) && count($projects) > 0) { ?>
-			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_milestone_select_workspace_div', this)"><?php echo lang('workspace') ?></a> - 
-		<?php } ?>
+		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_milestone_select_workspace_div', this)"><?php echo lang('workspace') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_milestone_tags_div', this)"><?php echo lang('tags') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_milestone_description_div', this)"><?php echo lang('description') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_milestone_options_div', this)"><?php echo lang('options') ?></a> - 
@@ -55,14 +52,12 @@
 		<input type="hidden" name="milestone[from_template_id]" value="<?php echo $base_milestone->getId() ?>" />
 	<?php } ?>
 	
-	<?php if (isset ($projects) && count($projects) > 0) { ?>
 	<div id="<?php echo $genid ?>add_milestone_select_workspace_div" style="display:none">
 	<fieldset>
 	<legend><?php echo lang('workspace') ?></legend>
-		<?php echo select_project('milestone[project_id]', $projects, ($project instanceof Project)? $project->getId():active_or_personal_project()->getId()) ?>
+		<?php echo select_project2('milestone[project_id]', ($project instanceof Project)? $project->getId():active_or_personal_project()->getId(), $genid) ?>
 	</fieldset>
 	</div>
-	<?php } ?>
 
 	<div id="<?php echo $genid ?>add_milestone_tags_div" style="display:none">
 	<fieldset>
@@ -117,7 +112,6 @@
 	
 	<div>
 	<?php echo label_tag(lang('due date'), null, true) ?>
-	<?php //echo pick_date_widget('milestone_due_date', array_var($milestone_data, 'due_date')) ?>
 	<?php echo pick_date_widget2('milestone[due_date_value]', array_var($milestone_data, 'due_date'),$genid) ?>
 	</div>
 

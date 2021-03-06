@@ -146,6 +146,19 @@
 		}
 		return array($succ, $err);
 	}
+	
+	/**
+	 * Set user_id to 0 for all users that that previously were associated with a recently deleted user
+	 *
+	 */
+	function updateUserIdOnUserDelete($user_id){
+		if(!is_numeric($user_id))
+			return false;
+		$c = new Contact();
+		$name = $c->getTableName(true);
+		$sql = "UPDATE " . $name  . " SET user_id = 0 WHERE user_id = " .$user_id ;
+		return DB::execute($sql);
+	}
   } // Contacts 
   
 ?>

@@ -126,7 +126,7 @@ class Env {
 				// set the current content
 				//WITH COMPRESSION: $response->setCurrentContent("html", str_replace("\t", '', str_replace("\r\n",'',$controller->getContent())), page_actions(), ajx_get_panel($controller_class, $action));
 				
-				$response->setCurrentContent("html", $controller->getContent(), page_actions(), ajx_get_panel($controller_class, $action));
+				$response->setCurrentContent("html", $controller->getContent(), page_actions(), ajx_get_panel());
 			}
 			$response->setEvents(evt_pop());
 			$error = flash_pop('error');

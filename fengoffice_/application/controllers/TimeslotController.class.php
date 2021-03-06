@@ -217,24 +217,15 @@ class TimeslotController extends ApplicationController {
 		if(is_array(array_var($_POST, 'timeslot'))) {
 			try {
 				$timeslot->setDescription(array_var($timeslot_data, 'description'));
-				
-				$shour = array_var($timeslot_data, 'start_hour');
-				$sminute = array_var($timeslot_data, 'start_minute');
-				$ehour = array_var($timeslot_data, 'end_hour');
-				$eminute = array_var($timeslot_data, 'end_minute');
        			
-				if (array_var($timeslot_data, 'start_value') != ''){
-       				$start = explode('/', array_var($timeslot_data, 'start_value'));
-					$st = DateTimeValueLib::make($shour, $sminute, 0, $start[0], $start[1], $start[2]);
-				} else
-					$st = DateTimeValueLib::now();
-					
-				if (array_var($timeslot_data, 'end_value') != ''){
-       				$end = explode('/', array_var($timeslot_data, 'end_value'));
-					$et = DateTimeValueLib::make($ehour,$eminute,0, $end[0], $end[1], $end[2]);
-				} else
-					$et = DateTimeValueLib::now();
-					
+				$st = getDateValue(array_var($timeslot_data, 'start_value'),DateTimeValueLib::now());
+				$st->setHour(array_var($timeslot_data, 'start_hour'));
+				$st->setMinute(array_var($timeslot_data, 'start_minute'));
+				
+				$et = getDateValue(array_var($timeslot_data, 'end_value'),DateTimeValueLib::now());
+				$et->setHour(array_var($timeslot_data, 'end_hour'));
+				$et->setMinute(array_var($timeslot_data, 'end_minute'));
+				
 				$st = new DateTimeValue($st->getTimestamp() - logged_user()->getTimezone() * 3600);
 				$et = new DateTimeValue($et->getTimestamp() - logged_user()->getTimezone() * 3600);
        			$timeslot->setStartTime($st);

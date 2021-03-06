@@ -1,6 +1,6 @@
 <?php 
 	if($object instanceof ProjectDataObject && $object->canView(logged_user())) 	{
-		add_page_action(lang('view history'),$object->getViewHistoryUrl(),'view_as_list');
+		add_page_action(lang('view history'),$object->getViewHistoryUrl(),'ico-history');
 	}
 	$coId = $object->getId() . get_class($object->manager()); 
 	if (!isset($iconclass))

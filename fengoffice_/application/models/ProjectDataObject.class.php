@@ -753,7 +753,7 @@
 		$timeslot->save();
 	}
 	
-	function closeTimeslots(User $user, $description){
+	function closeTimeslots(User $user, $description = ''){
 		$manager_class = get_class($this->manager());
 		$object_id = $this->getObjectId();
 		
@@ -985,6 +985,71 @@
 			else break;
 		} // for
 
+    }
+    
+    /**
+     * Get one value of a property. Returns an empty string if there's no value.
+     *
+     * @param string $name
+     * @return string
+     */
+    function getProperty($name) {
+    	$op = ObjectProperties::getPropertyByName($this, $name);
+    	if ($op instanceof ObjectProperty) {
+    		return $op->getPropertyValue();
+    	} else {
+    		return "";
+    	}
+    }
+    
+    /**
+     * Return all values of a property
+     *
+     * @param string $name
+     * @return array
+     */
+    function getProperties($name) {
+    	$ops = ObjectProperties::getAllProperties($this, $name);
+    	$ret = array();
+    	foreach ($ops as $op) {
+    		$ret[] = $op->getPropertyValue();
+    	}
+    	return $ret;
+    }
+    
+    /**
+     * Sets the value of a property, removing all its previous values.
+     *
+     * @param string $name
+     * @param string $value
+     */
+    function setProperty($name, $value) {
+    	$this->deleteProperty($name);
+    	$this->addProperty($name, $value);
+    }
+    
+    /**
+     * Adds a value to property $name
+     *
+     * @param string $name
+     * @param string $value
+     */
+    function addProperty($name, $value) {
+    	$op = new ObjectProperty();
+    	$op->setRelObjectId($this->getId());
+    	$op->setRelObjectManager(get_class($this->manager()));
+    	$op->setPropertyName($name);
+    	$op->setPropertyValue($value);
+    	$op->save();
+    }
+    
+    /**
+     * Deletes all values of property $name.
+     *
+     * @param string $name
+     */
+    function deleteProperty($name) {
+    	ObjectProperties::deleteByObjectAndName($this, $name);
     }
     
     

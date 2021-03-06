@@ -11,12 +11,11 @@
 	$projects =  active_projects();
 	
 	$enableUpload = $file->isNew() 
-	|| (isset($checkin) && $checkin) || ($file->getCheckedOutById() == 0 && logged_user()->isAdministrator()) 
+	|| (isset($checkin) && $checkin) || ($file->getCheckedOutById() == 0) || ($file->getCheckedOutById() != 0 && logged_user()->isAdministrator()) 
 	|| ($file->getCheckedOutById() == logged_user()->getId()); 
 	$genid = gen_id();
 ?>
 <script type="text/javascript" src="<?php echo get_javascript_url('modules/addFileForm.js') ?>"></script>
-
 
 <form style='height:100%;background-color:white' id="<?php echo $genid ?>addfile" name="<?php echo $genid ?>addfile" action="<?php echo $submit_url ?>" method="post" enctype="multipart/form-data" onsubmit="return false;">
   <?php tpl_display(get_template_path('form_errors'));?>
@@ -38,7 +37,7 @@
 		
     <div id="<?php echo $genid ?>selectFileControlDiv">
         <?php echo label_tag(lang('file'), $genid . 'fileFormFile', true) ?>
-        <?php echo file_field('file_file', null, array('id' => $genid . 'fileFormFile', 'class' => 'title', 'size' => '88', 'onchange' => 'javascript:og.updateFileName(\'' . $genid .  '\');og.checkFileName(\'' . $genid .  '\',this.value)')) ?>
+        <?php echo file_field('file_file', null, array('id' => $genid . 'fileFormFile', 'class' => 'title', 'size' => '88', 'onchange' => 'javascript:og.updateFileName(\'' . $genid .  '\');og.checkFileName(\'' . $genid .  '\')')) ?>
     	<p><?php echo lang('upload file desc', format_filesize(get_max_upload_size())) ?></p>
     </div>
     <?php }} // if ?>
@@ -47,7 +46,7 @@
     
     <div id="<?php echo $genid ?>addFileFilename" style="<?php echo $file->isNew()? 'display:none' : '' ?>">
       	<?php echo label_tag(lang('new filename'), $genid .'fileFormFilename') ?>
-        <?php echo text_field('file[name]',$file->getFilename(), array("id" => $genid .'fileFormFilename',  'onblur' => 'javascript:og.onBlurFileName()', 'onchange' => ('javascript:og.checkFileName(\'' . $genid .  '\',this.value)'))) ?>
+        <?php echo text_field('file[name]',$file->getFilename(), array("id" => $genid .'fileFormFilename',  'onblur' => 'javascript:og.onBlurFileName()', 'onchange' => ('javascript:og.checkFileName(\'' . $genid .  '\')'))) ?>
 		<br/>
     </div>
       

@@ -10,11 +10,11 @@
 
 #configCategoryOptions .configOptionInfo {
   float: left;
-  width: 200px;
+  width: 300px;
 }
 
 #configCategoryOptions .configOptionControl {
-  margin-left: 210px;
+  margin-left: 310px;
 }
 
 #configCategoryOptions textarea {

@@ -31,7 +31,7 @@
     */
     static function getPropertyByName(ProjectDataObject $obj, $property_name) {
       return self::findOne(array(
-        'conditions' => array("`rel_object_id` = ? and `rel_object_manager` = ? and `name` = '?' ",
+        'conditions' => array("`rel_object_id` = ? and `rel_object_manager` = ? and `name` = ? ",
         				 $obj->getId(), get_class($obj->manager()), $property_name)
       )); // findAll
     } //  getProperty
@@ -57,13 +57,17 @@
     */
     static function getAllProperties(ProjectDataObject $obj, $property_name) {
       return self::findAll(array(
-        'conditions' => array("`rel_object_id` = ? and `rel_object_manager` = ? and `name` = '?' ",
+        'conditions' => array("`rel_object_id` = ? and `rel_object_manager` = ? and `name` = ? ",
         				 $obj->getId(), get_class($obj->manager()), $property_name)
       )); // findAll
     } //  getAllProperties
     
     static function deleteAllByObject(ProjectDataObject $object){
     	return self::delete('`rel_object_id` = '.$object->getId()." and `rel_object_manager` = '" . get_class($object->manager()) . "'");      
+    }
+    
+    static function deleteByObjectAndName(ProjectDataObject $object, $name) {
+    	return self::delete('`rel_object_id` = '.$object->getId()." AND `rel_object_manager` = '" . get_class($object->manager()) . "' AND `name` = " . DB::escape($name));
     }
   
   } // ObjectProperties

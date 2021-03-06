@@ -15,25 +15,22 @@
 	
 */
 /* @var $event ProjectEvent*/
-
 if($event->canDelete(logged_user())) {
-		add_page_action(lang('delete'), "javascript:if(confirm(lang('confirm delete event'))) og.openLink('" . $event->getDeleteUrl() ."');", 'ico-delete');
+	add_page_action(lang('delete'), "javascript:if(confirm(lang('confirm delete event'))) og.openLink('" . $event->getDeleteUrl() ."');", 'ico-delete');
 } // if
 
 $user_id = isset($_GET['user_id']) ? $_GET['user_id'] : logged_user()->getId();
 
 if($event->canEdit(logged_user())) {
-		add_page_action(lang('edit'), $event->getEditUrl()."&view=$view&user_id=$user_id", 'ico-edit');
+	add_page_action(lang('edit'), $event->getEditUrl()."&view=$view&user_id=$user_id", 'ico-edit');
 }
-	
-	
 	$modified="";
 	$error = "";
 	// get the date requested.
-	$day = $_SESSION['day'];//$_SESSION['cal_day'];
-	$month = $_SESSION['month'];//$_SESSION['cal_month'];
-	$year = $_SESSION['year'];//$_SESSION['cal_year'];
-	// Do this if we are MODIFYING a form.
+/*	$day = $_SESSION['day'];
+	$month = $_SESSION['month'];
+	$year = $_SESSION['year'];
+*/	// Do this if we are MODIFYING a form.
 	$id = $_GET['id'];
 	
     if(!is_numeric($id)) $error = lang('CAL_NO_EVENT_SELECTED');
@@ -47,11 +44,15 @@ if($event->canEdit(logged_user())) {
     $thetime = $event->getStart();//$row['start_since_epoch'];
 	$mod_username = Users::findById($event->getUpdatedById())->getUsername();//$row['updated_by_id'];
 	$mod_stamp = $event->getUpdatedOn();//$row['updated_on'];
+	
 	// check username to see if it's anonymous or not
 	if($username=="") $username = lang('CAL_ANONYMOUS');
+	
 	if($mod_username=="") $mod_username = lang('CAL_ANONYMOUS');
+	
 	// if the event is private and the user is anonymous, return that the event does not exist.
 	if($private AND cal_anon() AND $error=="") $error = lang('CAL_DOESNT_EXIST');
+	
 	// begin organizing the event's time and date for display.
     $hour = date('G', $thetime->getTimestamp());
     $minute = date('i', $thetime->getTimestamp());
@@ -64,11 +65,11 @@ if($event->canEdit(logged_user())) {
     $durday = floor($durtime / 86400);  //seconds per day
 	// organize time according to either 12 or 24 hour clock
     if(!cal_option("hours_24")) {
-      if($hour >= 12) {
-        $hour = $hour - 12;
-		$extra = " PM";
-      } else $extra = " AM";
-    }else $extra = "";
+    	if($hour >= 12) {
+        	$hour = $hour - 12;
+			$extra = " PM";
+      	} else $extra = " AM";
+    } else $extra = "";
 	$time = $hour.":".$minute.$extra;
 	// organize duration of event
 	$duration = $durhr." ";
@@ -94,7 +95,7 @@ if($event->canEdit(logged_user())) {
 <?php
 	
 	$dtv = $event->getStart();
-	$title = date("l, F j",  mktime(0, 0, 0, $dtv->getMonth(), $dtv->getDay(), $dtv->getYear())). " - ".$event->getSubject();
+	$title = date("l, F j",  mktime(0, 0, 0, $dtv->getMonth(), $dtv->getDay(), $dtv->getYear())). " - " . $event->getSubject();
 	
 	$description = lang('CAL_STARTING_TIME').": $time";
   	tpl_assign('description', $description);

@@ -307,7 +307,7 @@
     'confirm delete task list' => '¿Realmente quiere eliminar esta tarea y todas las sub-tareas?',
     'confirm delete task' => '¿Realmente quiere eliminar esta tarea',
     'confirm delete comment' => '¿Realmente quiere eliminar este comentario?',
-    'confirm delete project' => '¿Realmente quiere eliminar este proyecto y todos los datos relacionados (mensajes, tareas, hitos, archivos...)?',
+    'confirm delete project' => '¿Realmente quiere eliminar este proyecto y todos los datos relacionados (notas, tareas, hitos, archivos...)?',
     'confirm complete project' => '¿Realmente quiere marcar este proyecto como completado? Esto bloqueará todas las acciones del proyecto',
     'confirm open project' => '¿Realmente quiere marcar este proyecto como abierto? Esto desbloqueará todas las acciones del proyecto',
     'confirm delete client' => '¿Realmente quiere eliminar el cliente de la empresa y todos sus usuarios?\nEsta acción también eliminará el espacio personal de cada usuario.',

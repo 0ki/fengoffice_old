@@ -103,6 +103,15 @@
    	'user ws config option name always show unread mail in dashboard' => 'Always show unread email in dashboard',
    	'user ws config option desc always show unread mail in dashboard' => 'When NO is chosen emails from the active workspace will be shown',
    	'workspace emails' => 'Workspace Mails',
+  	'user ws config option name tasksShowWorkspaces' => 'Show workspaces',
+  	'user ws config option name tasksShowTime' => 'Show time',
+  	'user ws config option name tasksShowDates' => 'Show dates',
+  	'user ws config option name tasksShowTags' => 'Show tags',
+  	'user ws config option name tasksShowGroupBy' => 'Group by',
+  	'user ws config option name tasksShowOrderBy' => 'Order by',
+  	'user ws config option name task panel status' => 'Status',
+  	'user ws config option name task panel filter' => 'Filter by',
+  	'user ws config option name task panel filter value' => 'Filter value',
   	); // array
 
 ?>

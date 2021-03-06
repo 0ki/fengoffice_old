@@ -172,6 +172,9 @@
   	'include subworkspaces' => 'Incluir subespacios',
     'timeslot on object' => 'Tiempo de trabajo en {0}',
 	'add work' => 'Agregar trabajo',
+  
+  	'date format' => 'd/m/Y',
+  	'date format description' => '(día/mes/año)'
   ); // array
 
 ?>

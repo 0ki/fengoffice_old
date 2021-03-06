@@ -1,10 +1,10 @@
 <?php
-  set_page_title(lang('configuration'));
+  set_page_title(lang('edit preferences'));
 ?>
 
 <div class="adminConfiguration" style="height:100%;background-color:white">
   <div class="adminHeader">
-  	<div class="adminTitle"><?php echo lang('configuration') ?></div>
+  	<div class="adminTitle"><?php echo lang('edit preferences') ?></div>
   </div>
   <div class="adminSeparator"></div>
   <div class="adminMainBlock">
