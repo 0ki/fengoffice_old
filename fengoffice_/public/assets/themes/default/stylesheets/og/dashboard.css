@@ -371,6 +371,12 @@
 	border-color: #437691;
 }
 
+.widget-active-context-info .widget-header {
+	color: white;
+	background: #42A489;
+	border-color: #42A489;
+}
+
 /*----------------------------------------
 		Persons widget
 ----------------------------------------*/
@@ -491,4 +497,8 @@
 	margin-top: 2px;
 	padding: 0 0 2px 22px;
 	/*background-position: 0 center !important;*/
+}
+
+.widget-body li {
+	white-space: nowrap;
 }

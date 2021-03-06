@@ -63,7 +63,7 @@
 							<?php if ($object instanceof ProjectTask && $object->getAssignedToContactId() > 0) echo "<span class='bold'>". clean($object->getAssignedToName()).": </span>"; ?>
 							<?php echo clean($object->getObjectName()) ?>
 						</a>
-						<span id="object_crumb_<?php echo $object->getId()?>"></span>
+			    		<span id="object_crumb_<?php echo $object->getId()?>"></span>
 			    		<script>
 							var crumbHtml = <?php echo $crumbJs?>;
 							$("#object_crumb_<?php echo $object->getId()?>").html(crumbHtml);

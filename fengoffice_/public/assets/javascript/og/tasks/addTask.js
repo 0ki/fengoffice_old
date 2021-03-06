@@ -71,7 +71,9 @@ ogTasks.drawAddNewTaskForm = function(group_id, parent_id, level){
 		isEdit: false                
 	});
         if(og.config.wysiwyg_tasks){
-            loadCKeditor(0);
+        	var height = $("#tasks_quick_add_selectors").height();
+    		height = "auto";
+        	loadCKeditor(0,height);
         }
 }
 
@@ -108,7 +110,9 @@ ogTasks.performDrawEditTaskForm = function(containerName, task) {
 		isEdit: true
 	});
 	if(og.config.wysiwyg_tasks){
-		loadCKeditor(task.id);
+		var height = $("#tasks_quick_add_selectors").height();
+		height = "auto";
+		loadCKeditor(task.id, height);
 	}
 }
 
@@ -148,125 +152,213 @@ ogTasks.drawTaskForm = function(container_id, data){
 		html += "<input type='hidden' id='ogTasksPanelATParentId' value='" + data.parentId + "'>";
 	}
 	html += "<b>" + lang('title') + ":</b><br/>";
-        //html += "<input id='ogTasksPanelATTitle' type='text' class='title' name='task[name]' tabIndex=1000 value='' onkeypress='return ogTasks.checkEnterPress(event,"+ data.taskId +");' maxlength='255' size='255'   />";
-	html += "<input id='ogTasksPanelATTitle' type='text' class='title' name='task[name]' tabIndex=1000 value='' maxlength='255' size='255'   />";
+        
+	html += "<input id='ogTasksPanelATTitle' type='text' class='title' name='task[name]' tabIndex=1000 value='' maxlength='255' size='255'>";
 		
+	
+	html += "<table style='width:100%; margin-top:7px'><tr>";
+	
 	//First column
-	html += "<table style='width:100%; margin-top:7px'><tr><td>";
-        if(og.config.wysiwyg_tasks){
-            html += "<div id='ogTasksPanelATDesc'><b>" + lang('description') + ":</b><br/>";
-            html += "<textarea id='" + og.genid + "ckeditor" + data.taskId + "' cols='40' rows='10' name='task[text]' class='short ckeditor' tabIndex=1100 style='height:50px'>" + data.description + "</textarea></div>";
-        }else{
-            html += "<div id='ogTasksPanelATDesc'><b>" + lang('description') + ":</b><br/>";
-            html += "<textarea id='ogTasksPanelATDescCtl' cols='40' rows='10' name='task[text]' class='short' tabIndex=1100 style='height:50px'>" + data.description + "</textarea></div>";
-        }
+	html += "<td style='padding-left:10px; margin-right:10px;width:410px;'>";
 	
-	var chkIsVisible = data.assignedTo && data.assignedTo != '0';
-	var chkIsChecked = chkIsVisible && ogTasks.userPreferences.defaultNotifyValue && (!this.currentUser || data.assignedTo != this.currentUser.id);
+	// <TASK SELECTORS>
+	html +="<div id='tasks_quick_add_selectors'>";
 	
-	html += "<div id='ogTasksPanelATContext' style='padding-top:5px;padding-bottom: 10px; display:none'><table><tr><td style='width:120px;'><b>" + lang('context') + ":&nbsp;</b></td><td><input type=\"hidden\" id=\"ogTasksPanelMembers\" name=\"members\" value=\"\"/><div id='ogTasksPanelContextSelector'>";
-
-	html += og.popupMemberChooserHtml('', ogTasks.tasks_object_type_id, "ogTasksPanelMembers", data.members, true);
-	html += "</div></td>";
-	//if (data.isEdit && data.subtasksCount>0) html += "<td style=\"padding-left:15px\"><label for=\"ogTasksPanelApplyWS\"><input style=\"width:14px;\" type=\"checkbox\" name=\"task[apply_ws_subtasks]\" id=\"ogTasksPanelApplyWS\" />&nbsp;" + lang('apply workspace to subtasks') + "</label></td>";
-	html += "</tr></table></div>";
-	html += "<div id='ogTasksPanelATMilestone' style='padding-top:5px; display:none'><table><tr><td style='width:120px;'><b>" + lang('milestone') + ":&nbsp;</b></td><td><div id='ogTasksPanelMilestoneSelector'></div></td>";
-	//html += "<div id='ogTasksPanelATMilestone' style='padding-top:5px;" + (data.isEdit? '': 'display:none') + "'><table><tr><td style='width:120px;'><b>" + lang('milestone') + ":&nbsp;</b></td><td><div id='ogTasksPanelMilestoneSelector'></div></td>";
-	//if (data.isEdit && data.subtasksCount>0) html += "<td style=\"padding-left:15px\"><label for=\"ogTasksPanelApplyMI\"><input style=\"width:14px;\" type=\"checkbox\" name=\"task[apply_milestone_subtasks]\" id=\"ogTasksPanelApplyMI\" />&nbsp;" + lang('apply milestone to subtasks') + "</label></td>";
-	html += "</tr></table></div>";
-	if (data.milestoneId) {
-		html += "<input type='hidden' name='task_milestone_id' value='"+data.milestoneId+"'/>";
+	// <MEMBERS SELECTORS>
+	//this function only return a visual combo to display, must be repleaced by ajax.
+	function dimCombo (name){
+		var comboHtml = "<div id='og_1396374293_867959member-seleector-dim2' class='small-member-selector' style='min-height: 50px;'>" +
+							"<label>"+ name +":</label>" +
+							"<div class='selector-body' id='og_1396374878_972175selector-body-dim2'>" +
+								"<div id='og_1396374293_867959selected-members-dim2' class='selected-members'></div>" +
+								"<div id='og_1396374293_867959add-member-form-dim2' class='' style='display:block;'>" +
+									"<div id='ext-gen1481' class='og-membercombo-container'>" +
+										"<div style='width: 248px;' id='ext-gen1482' class='x-form-field-wrap'>" +
+											"<input class='member-name-input x-form-text x-form-field x-form-empty-field ' style='width : 240px' is_ajax='is_ajax' id='og_1396374878_246291' autocomplete='off' onkeypress='if (event.keyCode == 13) return false;' name='member_autocomplete-dim2' value='' type=text'>" +
+											"<img id='ext-gen1483' src='s.gif' class='x-form-trigger x-form-arrow-trigger'>" +
+										"</div>" +
+									"</div>" +
+									"<div class='clear'></div>" +
+								"</div>" +
+							"</div>" +
+						"</div>";
+		return comboHtml;
 	}
-	html += "<div id='ogTasksPanelATObjectType' style='padding-top:5px;'><table><tr><td style='width:120px;'><b>" + lang('object type') + ":&nbsp;</b></td><td><input id='ogTasksPanelObjectTypeSelector' style='min-width:120px;max-width:300px' type='text' value='" + (data.otype ? data.otype : og.defaultTaskType) + "' name='task[object_subtype]'/></td></tr></table></div>";
-        
-        if(og.config.multi_assignment == 1){
-            if(typeof window.loadMultiAssignmentHtml == 'function'){
-                html += loadMultiAssignmentHtml(data.taskId);
-            }            
-        }
-        
-	//Second column
-	html += "</td><td style='padding-left:10px; margin-right:10px;width:375px;'>";
-	  
+	
+	html +="<div id='member_selectors_quick_add'>";
+	og.config.quick_add_task_combos.forEach(function(entry) {
+		html += dimCombo (entry);
+	});	
+	html +="</div>";
+	// </MEMBERS SELECTORS>
+	
 	// <ASSIGN_TO COMBO>
-	html += "<table><tr><td><div id='ogTasksPanelATAssigned' style='padding-top:5px;'><table><tr><td style='width:130px; vertical-align:middle;'><b>" + lang('assigned to') + ":&nbsp;</b></td><td><span id='ogTasksPanelATAssignedCont'></span></td></tr></table>";
-	html += '<div  id="ogTasksPanelATNotifyDiv"><label for="ogTasksPanelATNotify"><input style="width:14px;" type="checkbox" tabindex="1250" name="task[notify]" id="ogTasksPanelATNotify" ' + (chkIsChecked? 'checked':'') + '/>&nbsp;' + lang('send notification') + '</label></div>';
-	//if (data.isEdit && data.subtasksCount>0) html += '<label for="ogTasksPanelApplyAssignee"><input style="width:14px;" type="checkbox" name="task[apply_assignee_subtasks]" id="ogTasksPanelApplyAssignee" />&nbsp;' + lang('apply assignee to subtasks') + '</label>';
-	html += '</div><td></tr></table>'; 
+	html += "<div id='ogTasksPanelATAssigned' class='small-member-selector'>" +
+				"<b>" + lang('assigned to') + ":&nbsp;</b>" +
+				"<span id='ogTasksPanelATAssignedCont' style='float:right;'></span>" +
+			"</div>"; 
 	// </ASSIGN_TO COMBO>
 	
-	html += "<table id='ogTasksPanelATDates' style='padding-top:5px;'>";
-	html += "<tr><td style='width:130px; vertical-align:middle;'><b>" + lang('start date') + ":</b>&nbsp;</td>";
-	var time_picker_html_start = og.config.use_time_in_task_dates ? "<div style='float:left;margin-left:10px;' id='ogTasksPanelATStartTime'></div>" : "";
-	html += "<td><div style='float:left;' id='ogTasksPanelATStartDate'></div>"+time_picker_html_start+"</td></tr>";
+	// <PANEL DATES>
+	html += "<div id='ogTasksPanelATDates'>";
 	
-	html += "<tr><td colspan='2' style='height:5px;'></td></tr>";
-	html += "<tr><td style='width:130px; vertical-align:middle;'><b>" + lang('due date') + ":</b>&nbsp;</td>";
-	var time_picker_html_duetime = og.config.use_time_in_task_dates ? "<div style='float:left;margin-left:10px;' id='ogTasksPanelATDueTime'></div>" : "";
-	html += "<td><div style='float:left;' id='ogTasksPanelATDueDate'></div>" + time_picker_html_duetime + "</td></tr></table>";
-
+	var time_picker_html_start = og.config.use_time_in_task_dates ? "<div style='float:left;margin-left: 5px;' id='ogTasksPanelATStartTime'></div>" : "";
+	html += "<div id='ogTasksPanelStartDateCont' class='small-member-selector'>" +
+				"<div style='float:left;width: 125px;'><b>" + lang('start date') + ":</b></div>&nbsp;" +
+				"<div style='float:left;' id='ogTasksPanelATStartDate'></div>" +
+				time_picker_html_start +
+			"</div>";
+	
+	var time_picker_html_duetime = og.config.use_time_in_task_dates ? "<div style='float:left;margin-left: 5px;' id='ogTasksPanelATDueTime'></div>" : "";
+	html += "<div id='ogTasksPanelDueDateCont' class='small-member-selector'>" +
+				"<div style='float:left;width: 125px;'><b>" + lang('due date') + ":</b></div>&nbsp;" +
+				"<div style='float:left;' id='ogTasksPanelATDueDate'></div>" + 
+				time_picker_html_duetime +
+			"</div>";
+	
+	html += "</div>";
+	// </PANEL DATES>
+	
+	
+	
 	if (drawOptions.show_time_estimates) {
 		var totalTime = data.time_estimated;
 		var minutes = totalTime % 60;
 		var hours = (totalTime - minutes) / 60;
-		html += "<div id='ogTasksPanelATTime' style='padding-top:5px;'><table><tr><td style='width:130px; vertical-align:middle;'><b>" + lang('estimated time') + ":</b></td><td>";
-		html += "<input type='text' id='ogTasksPanelATHours' style='width:25px' tabIndex=1450  name='task[time_estimate_hours]' value='" + hours + "'/>&nbsp;" + lang('hours') + "</td>";
-		html += "<td>&nbsp;<select name='task[time_estimate_minutes]' id='ogTasksPanelATMinutes' size='1' tabindex='1450'>";
-		var minuteOptions = new Array(0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55);
+		
+		// Minute options
+		var minuteOptionsHtml = "";
+		var minuteOption = 0;
 		for (var i = 0; i < 12; i++) {
-			html += "<option value=\"" + minuteOptions[i] + "\"";
-			if (minutes == minuteOptions[i]) html += ' selected="selected"';
-			html += ">" + minuteOptions[i] + "</option>\n";
+			minuteOption = i * 5;
+			minuteOptionsHtml += "<option value=\"" + minuteOption + "\"";
+			if (minutes == minuteOption) minuteOptionsHtml += ' selected="selected"';
+			minuteOptionsHtml += ">" + minuteOption + "</option>\n";
 		}
-		html += "</select>&nbsp;" + lang('minutes') + "</td></tr></table></div>";
+		
+		html += "<div id='ogTasksPanelATTime' class='small-member-selector'>" +
+					"<b>" + lang('estimated time') + ":</b>" +
+					"<div class='timeSelectors'>" +
+						"<input type='text' id='ogTasksPanelATHours' style='width:25px' tabIndex=1000  name='task[time_estimate_hours]' value='" + hours + "'/>" +
+						"&nbsp;" + 
+						lang('hours') + 
+						"&nbsp;" +
+						"<select name='task[time_estimate_minutes]' id='ogTasksPanelATMinutes' size='1' tabindex='1000'>" +
+						minuteOptionsHtml +
+						"</select>" +
+						"&nbsp;" + 
+						lang('minutes') + 
+					"</div>" +
+				"</div>";
 	}
 	
-	html += "<div id='ogTasksPanelATPriority' style='padding-top:5px;'><table><tr><td style='width:130px; vertical-align:middle;'><b>" + lang('priority') + ":&nbsp;</b></td>";
-	html += "<td><span id='ogTasksPanelATPriorityCont'></span></td></tr></table></div>";
-	
-	html += "</td></tr><tr><td style='padding-top:15px'>";
-	
-	// No more options... show 'all options' link
-	//if (!data.isEdit)
-	//	html += "<a href='#' class='internalLink' onclick='ogTasks.addNewTaskShowMore()' id='ogTasksPanelATShowMore'><b>" + lang('more options') + "...</b></a>";
-	html += "<a href='#' class='internalLink' onclick='ogTasks.TaskFormShowAll(" + data.taskId + ")' id='ogTasksPanelATShowAll'><b>" + lang('all options') + "...</b></a>";
-	html += "</td><td style='text-align:right; padding-right:30px;'>";
+	// Priority
+	html += "<div id='ogTasksPanelATPriority' class='small-member-selector'>" +
+				"<b>" + lang('priority') + ":&nbsp;</b>" +			
+				"<span id='ogTasksPanelATPriorityCont' style='float:right;margin-right: 165px;'></span>" +
+			"</div>";
+			
+	//Show all options
+    html += "<a href='#' class='internalLink' style='float: left;' tabIndex=1000 onclick='ogTasks.TaskFormShowAll(" + data.taskId + ")' id='ogTasksPanelATShowAll'>" + lang('all options') + "...</a>";
+    
 	html += "<input type='hidden' value='false' name='control_dates' id='control_dates'/>";
-	
-	// Buttons
+	// <BUTTONS>
+	html +="<div style='display: inline-block; float: left; clear: left;'>";
 	if (og.config.multi_assignment == 1) {
 		if (typeof window.loadMultiAssignmentHtml == 'function') {
 			if (data.multiAssignment) {
-				html += "<button onclick='if (og.TaskMultiAssignment) {og.TaskMultiAssignment();return false;}' tabIndex=1600 type='submit' class='submit'>"
+				html += "<button onclick='if (og.TaskMultiAssignment) {og.TaskMultiAssignment();return false;}' tabIndex=1001 type='submit' class='submit'>"
 						+ (data.isEdit ? lang('save changes') : lang('add task'))
-						+ "</button>&nbsp;&nbsp;<button class='submit' tabIndex=1700 onclick='ogTasks.hideAddNewTaskForm();return false;'>"
+						+ "</button>&nbsp;&nbsp;<button class='submit' tabIndex=1001 onclick='ogTasks.hideAddNewTaskForm();return false;'>"
 						+ lang('cancel') + "</button>";
 			} else {
 				html += "<button onclick='ogTasks.SubmitNewTask("
 						+ data.taskId
-						+ ", true);return false;' tabIndex=1600 type='submit' class='submit'>"
+						+ ", true);return false;' tabIndex=1001 type='submit' class='submit'>"
 						+ (data.isEdit ? lang('save changes') : lang('add task'))
-						+ "</button>&nbsp;&nbsp;<button class='submit' tabIndex=1700 onclick='ogTasks.hideAddNewTaskForm();return false;'>"
+						+ "</button>&nbsp;&nbsp;<button class='submit' tabIndex=1001 onclick='ogTasks.hideAddNewTaskForm();return false;'>"
 						+ lang('cancel') + "</button>";
 			}
 		} else {
 			html += "<button onclick='ogTasks.SubmitNewTask("
 					+ data.taskId
-					+ ", true);return false;' tabIndex=1600 type='submit' class='submit'>"
+					+ ", true);return false;' tabIndex=1001 type='submit' class='submit'>"
 					+ (data.isEdit ? lang('save changes') : lang('add task'))
-					+ "</button>&nbsp;&nbsp;<button class='submit' tabIndex=1700 onclick='ogTasks.hideAddNewTaskForm();return false;'>"
+					+ "</button>&nbsp;&nbsp;<button class='submit' tabIndex=1001 onclick='ogTasks.hideAddNewTaskForm();return false;'>"
 					+ lang('cancel') + "</button>";
 		}
 	} else {
 		html += "<button onclick='ogTasks.SubmitNewTask("
 				+ data.taskId
-				+ ", true);return false;' tabIndex=1600 type='submit' class='submit'>"
+				+ ", true);return false;' tabIndex=1001 type='submit' class='submit'>"
 				+ (data.isEdit ? lang('save changes') : lang('add task'))
-				+ "</button>&nbsp;&nbsp;<button class='submit' tabIndex=1700 onclick='ogTasks.hideAddNewTaskForm();return false;'>"
+				+ "</button>&nbsp;&nbsp;<button class='submit' tabIndex=1001 onclick='ogTasks.hideAddNewTaskForm();return false;'>"
 				+ lang('cancel') + "</button>";
 	}
+	html +="</div>";
+	// </BUTTONS>
+	
+	// </TASK SELECTORS>
+	html +="</div>";
+	
+	//End First column
+	html += "</td>";
+	
+	//Second column
+	html += "<td>";
+    
+	//Description
+	if(og.config.wysiwyg_tasks){
+    	html += "<div id='ogTasksPanelATDesc'><b>" + lang('description') + ":</b><br/>";
+        html += "<textarea id='" + og.genid + "ckeditor" + data.taskId + "' cols='40' rows='10' name='task[text]' class='short ckeditor' tabIndex=1000 style='height:50px'>" + data.description + "</textarea></div>";
+    }else{
+        html += "<div id='ogTasksPanelATDesc'><b>" + lang('description') + ":</b><br/>";
+        html += "<textarea id='ogTasksPanelATDescCtl' cols='40' rows='10' name='task[text]' class='short' tabIndex=1000 style='height:50px'>" + data.description + "</textarea></div>";
+    }
+    
+	//MultiAssignment
+	if(og.config.multi_assignment == 1){
+         if(typeof window.loadMultiAssignmentHtml == 'function'){
+        	 html += '<a href="#" class="link-ico ico-add" onclick="addMultiAssignment(\'' + og.genid + '\',\'\',\'\',\'\',\'\');return false;">' +  lang('add multi assignment') + '</a>';
+         }            
+    }
+	
+    //Send mail notification
+	var chkIsVisible = data.assignedTo && data.assignedTo != '0';
+	var chkIsChecked = parseInt(chkIsVisible && ogTasks.userPreferences.defaultNotifyValue); //&& (!this.currentUser || data.assignedTo != this.currentUser.id)
+	if(og.config.show_notify_checkbox_in_quick_add){
+		html += '<div  id="ogTasksPanelATNotifyDiv" style="float: right;"><label for="ogTasksPanelATNotify">' + lang('send notification') + '<input style="width:14px; vertical-align: middle; margin-left: 10px;" type="checkbox" tabindex="1000" name="task[notify]" id="ogTasksPanelATNotify" ' + (chkIsChecked? 'checked':'') + '/>&nbsp;</label></div>';
+	}
+	
+	//MultiAssignment
+	if(og.config.multi_assignment == 1){
+         if(typeof window.loadMultiAssignmentHtml == 'function'){
+        	 html += loadMultiAssignmentHtml(data.taskId);
+         }            
+    }
+	
+	html += "<div id='ogTasksPanelATContext' style='padding-top:5px;padding-bottom: 10px; display:none'><table><tr><td style='width:120px;'><b>" + lang('context') + ":&nbsp;</b></td><td><input type=\"hidden\" id=\"ogTasksPanelMembers\" name=\"members\" value=\"\"/><div id='ogTasksPanelContextSelector'>";
 
-	html += "</td></table>";
+	html += og.popupMemberChooserHtml('', ogTasks.tasks_object_type_id, "ogTasksPanelMembers", data.members, true);
+	html += "</div></td>";
+	
+	html += "</tr></table></div>";
+	html += "<div id='ogTasksPanelATMilestone' style='padding-top:5px; display:none'><table><tr><td style='width:120px;'><b>" + lang('milestone') + ":&nbsp;</b></td><td><div id='ogTasksPanelMilestoneSelector'></div></td>";
+	
+	html += "</tr></table></div>";
+	if (data.milestoneId) {
+		html += "<input type='hidden' name='task_milestone_id' value='"+data.milestoneId+"'/>";
+	}
+	html += "<div id='ogTasksPanelATObjectType' style='padding-top:5px;'><table><tr><td style='width:120px;'><b>" + lang('object type') + ":&nbsp;</b></td><td><input id='ogTasksPanelObjectTypeSelector' style='min-width:120px;max-width:300px' type='text' value='" + (data.otype ? data.otype : og.defaultTaskType) + "' name='task[object_subtype]'/></td></tr></table></div>";
+       
+	
+    //End Second column
+    html += "</td>";
+	
+	
+    html += "</tr><tr>";
+	
+	html += "</tr></table>";
 	html += '</div>';
 	
 	var div = document.createElement('div');
@@ -295,7 +387,7 @@ ogTasks.drawTaskForm = function(container_id, data){
 		id: 'ogTasksPanelObjectTypeSelector',
 		valueField: 'value',
 		displayField : 'text',
-		typeAhead : true,
+		//typeAhead : true,
 		mode : 'local',
 		triggerAction : 'all',
 		selectOnFocus : true,
@@ -314,7 +406,7 @@ ogTasks.drawTaskForm = function(container_id, data){
 		hidden: true,
 		width: 200,
 		value: data.milestoneId,
-		tabIndex:1220
+		tabIndex:1000
 	});
 	ogTasks.selectedMilestone = data.milestoneId;
 	og.openLink(og.getUrl('milestone', 'get_assignable_milestones'), {callback:ogTasks.drawMilestonesCombo});
@@ -323,9 +415,34 @@ ogTasks.drawTaskForm = function(container_id, data){
 	if (data.members && data.members.length > 0) {
 		get_params['member_ids'] = data.members;
 	}
+	
+	var member_to_render = [];
+	if (data.member_id && data.member_id > 0) {
+		member_to_render = data.member_id;
+	}else{
+		
+	}
+	
 	ogTasks.assignedTo = data.assignedTo ? data.assignedTo : 0;
 	og.openLink(og.getUrl('task', 'allowed_users_to_assign', get_params), {callback:ogTasks.drawAssignedToCombo});
 	
+	//re render member selectors
+	if(og.config.quick_add_task_combos.length > 0){   
+		og.openLink(og.getUrl('member', 'get_rendered_member_selectors', {id: data.taskId, view_name: 'quick_add_task', members: member_to_render, objtypeid: ogTasks.tasks_object_type_id,genid: og.genid, ajax: true}), {
+			callback: function(success, data) {
+				$('#member_selectors_quick_add').html(data.htmlToAdd);
+				var height_sel = $("#tasks_quick_add_selectors").height()
+				//resize description size
+				$("#ogTasksPanelATDesc").css({
+				    height:height_sel +20
+				});
+				var editor = og.getCkEditorInstance(og.genid + 'ckeditor' + data.objectId);
+				// The height value now applies to the editing area.
+				editor.resize( '100%', height_sel);			
+			},
+			scope: this
+		});
+	}
 	document.getElementById('ogTasksPanelATTitle').value = data.title;
 	document.getElementById('ogTasksPanelATTitle').focus();
 	
@@ -340,7 +457,7 @@ ogTasks.drawTaskForm = function(container_id, data){
 		id:'ogTasksPanelATStartDateCmp',
 		style:'width:100px',
 		emptyText: og.preferences.date_format_tip,
-		tabIndex:1300,
+		tabIndex:1000,
 		value: sd
 	});
 	if (data.dueDate){
@@ -353,7 +470,7 @@ ogTasks.drawTaskForm = function(container_id, data){
 		renderTo:'ogTasksPanelATDueDate',
 		id:'ogTasksPanelATDueDateCmp',
 		style:'width:100px',
-		tabIndex:1400,
+		tabIndex:1000,
 		value: dd,
 		emptyText: og.preferences.date_format_tip,
 		listeners: {
@@ -385,7 +502,7 @@ ogTasks.drawTaskForm = function(container_id, data){
 			id: 'ogTasksPanelATStartTimeCmp',
 			width: 80,
                         format: og.config.time_format_use_24_duetime,
-			tabIndex: 1320,
+			tabIndex: 1000,
 			emptyText: 'hh:mm',
 			value: starttime
 		});
@@ -400,7 +517,7 @@ ogTasks.drawTaskForm = function(container_id, data){
 			id: 'ogTasksPanelATDueTimeCmp',
 			width: 80,
 			format: og.config.time_format_use_24_duetime,
-			tabIndex: 1420,
+			tabIndex: 1000,
 			emptyText: 'hh:mm',
 			value: duetime
 		});
@@ -411,9 +528,9 @@ ogTasks.drawTaskForm = function(container_id, data){
 		renderTo: 'ogTasksPanelATPriorityCont',
 		id: 'ogTasksPanelATPriorityCombo',
 		hidden: false,
-		width: 120,
+		width: 100,
 		value: data.priority,
-		tabIndex:1500
+		tabIndex:1000
 	});
 }
 
@@ -458,12 +575,16 @@ ogTasks.hideAddNewTaskForm = function(){
 ogTasks.GetNewTaskParameters = function(wrapWith,task_id){
 	var parameters = [];
 
+	//Members
+	var members = $("#"+og.genid +"members").val();
+	parameters.members=members;
+	
 	//Conditional fields
 	var parentField = document.getElementById('ogTasksPanelATParentId');
 	if (parentField)
 		parameters["parent_id"] = parentField.value;
             
-        var controlDates = document.getElementById('control_dates');
+    var controlDates = document.getElementById('control_dates');
 	if (controlDates)
 		parameters["control_dates"] = controlDates.value;
 	
@@ -630,7 +751,7 @@ ogTasks.SubmitNewTask = function(task_id,view_popup){
 	} else {
 		url = og.getUrl('task', 'quick_add_task');
 	}
-
+	
 	og.openLink(url, {
 		method: 'POST',
 		post: parameters,
@@ -781,16 +902,16 @@ ogTasks.drawAssignedToCombo = function(success, data) {
 		id: 'ogTasksPanelATUserCompanyCombo',
 		store: usersStore,
 		hidden: false,
-		width: 210,
+		width: 265,
 		displayField:'text',
-        typeAhead: true,
+        //typeAhead: true,
         mode: 'local',
         triggerAction: 'all',
         selectOnFocus:true,
         value: ogTasks.assignedTo,
 		emptyText: (lang('select user or group') + '...'),
 	    valueNotFoundText: '',
-		tabIndex:1200,
+		tabIndex:1000,
 		listeners: {
 			'select':function(combo, record){
 				var checkbox = document.getElementById('ogTasksPanelATNotify');
@@ -842,6 +963,6 @@ ogTasks.drawMilestonesCombo = function(success, data) {
 		hidden: false,
 		width: 200,
 		value: ogTasks.selectedMilestone,
-		tabIndex:1220
+		tabIndex:1000
 	});
 }

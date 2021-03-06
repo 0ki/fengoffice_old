@@ -1,5 +1,5 @@
 <?php $hidden_field_name = array_var($options, 'hidden_field_name', 'members');?>
-<div id='<?php echo $component_id ?>-container' class="member-selectors-container" >
+<div id='<?php echo $component_id ?>-container'>
 	<input id='<?php echo $genid . $hidden_field_name ?>' name='<?php echo $hidden_field_name ?>' type='hidden' value="<?php echo str_replace('"', "'", $selected_members_json); ?>"></input>
 
 <?php
@@ -30,69 +30,17 @@
 			if ($selected_member->getDimensionId() == $dimension_id) $dimension_selected_members[] = $selected_member;
 		}
 		$autocomplete_options = array();
-/*
-Logger::log(__FILE__." : ".__LINE__." - $dimension_id - ".date('H:i:s'));
-		if (!isset($dim_controller)) $dim_controller = new DimensionController();
-		$members = $dim_controller->initial_list_dimension_members($dimension_id, $content_object_type_id, $allowed_member_type_ids, false, "", null, false, null, true, $initial_selected_members, ACCESS_LEVEL_WRITE);
-Logger::log(__FILE__." : ".__LINE__." - $dimension_id - ".date('H:i:s'));
-		foreach ($members as $m) {
-			if (can_add_to_member(logged_user(), $m, active_context(), $content_object_type_id)) {
-				$autocomplete_options[] = array($m['id'], $m['name'], $m['path'], $m['to_show'], $m['ico'], $m['dim']);
-				$members_dimension[$m['id']] = $m['dim'];
-			}
-		}
-Logger::log(__FILE__." : ".__LINE__." - $dimension_id - ".date('H:i:s'));
-*/
+
 		$expgenid = gen_id();
 
+		// Render view by obj type
+		if(!$default_view && file_exists(get_template_path("components/small_view", "dimension"))){
+			include get_template_path("components/small_view", "dimension");
+		}else{
+			include get_template_path("components/default_view", "dimension");
+		}		
 ?>
-	<div id="<?php echo $genid; ?>member-seleector-dim<?php echo $dimension_id?>" class="single-dimension-selector" <?php echo $is_ie ? 'style="max-width:350px;"' : ''?>>
-		<div class="header x-accordion-hd" onclick="og.dashExpand('<?php echo $expgenid?>', 'selector-body-dim<?php echo $dimension_id ?>');">
-			<?php echo $dimension_name?>
-			<div id="<?php echo $expgenid; ?>expander" class="dash-expander ico-dash-expanded"></div>
-		</div>
-		<div class="selector-body" id="<?php echo $expgenid?>selector-body-dim<?php echo $dimension_id ?>">
-			<div id="<?php echo $genid; ?>selected-members-dim<?php echo $dimension_id?>" class="selected-members">
-
-	<?php
-		$dimension_has_selection = false; 
-		if (count($dimension_selected_members) > 0) : 
-			$alt_cls = "";
-			foreach ($dimension_selected_members as $selected_member) :
-				$allowed_members = array_keys($members_dimension);
-				if (count($allowed_members) > 0 && !in_array($selected_member->getId(), $allowed_members)) continue;
-				$dimension_has_selection = true;
-				?>
-				<div class="selected-member-div <?php echo $alt_cls?>" id="<?php echo $genid?>selected-member<?php echo $selected_member->getId()?>">
-					<span class="coViewAction <?php echo $selected_member->getIconClass()?>">&nbsp;</span><?php
-						$complete_path = $selected_member->getPath();
-						$complete_path = ($complete_path == "" ? "" : '<span class="path">'.$complete_path.'/</span>') . '<span class="bold">' . $selected_member->getName() . '</span>';
-						echo $complete_path;
-					?><div class="selected-member-actions" <?php echo $is_ie ? 'style="display:inline;margin-left:40px;float:none;"' : ''?>>
-						<a href="#" class="coViewAction ico-delete" title="<?php echo lang('remove relation')?>" onclick="member_selector.remove_relation(<?php echo $dimension_id?>,'<?php echo $genid?>', <?php echo $selected_member->getId()?>)"><?php echo lang('remove')?></a>
-					</div>
-				</div>
-	<?php		$alt_cls = $alt_cls == "" ? "alt-row" : "";
-				$sel_mem_ids[] = $selected_member->getId();
-		 	endforeach; ?>
-				<div class="separator"></div>
-	<?php endif;?>
-			</div>
-			<?php $form_visible = $dimension['is_multiple'] || (!$dimension['is_multiple'] && !$dimension_has_selection); ?>
-			<div id="<?php echo $genid; ?>add-member-form-dim<?php echo $dimension_id?>" class="add-member-form" style="display:<?php echo ($form_visible?'block':'none')?>;">
-				<?php
-				$combo_listeners = array(
-					"select" => "function (combo, record, index) { member_selector.autocomplete_select($dimension_id, '$genid', combo, record, 1); }",
-					"blur" => "function (combo) { var rec = combo.store.getAt(0); if (combo.getValue().trim() != '' && rec) { combo.select(0, true); combo.fireEvent('select', combo, rec, 0); } }"
-				);
-				$empty_text = array_var($options, 'empty_text', lang('add new relation ' . $dimension['dimension_code']));
-				echo autocomplete_member_combo("member_autocomplete-dim".$dimension_id, $dimension_id, $autocomplete_options, 
-					$empty_text, array('class' => 'member-name-input', 'is_ajax' => true), true, $genid .'add-member-input-dim'. $dimension_id, $combo_listeners);
-				?>
-				<div class="clear"></div>
-			</div>
-		</div>
-	</div>
+	
 
 	<script>
 	if (!member_selector['<?php echo $genid; ?>']) member_selector['<?php echo $genid; ?>'] = {};

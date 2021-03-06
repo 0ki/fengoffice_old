@@ -134,7 +134,7 @@ if (strlen($loc) > 2) $loc = substr($loc, 0, 2);
 					$attributes['selected'] = "selected";
 				}
 				$options[] = option_tag(lang('pop3'), '0', $attributes);
-				$onchange = "var ssl = document.getElementById('$genid' + 'sslport');var folders = document.getElementById('$genid' + 'folders');if (this.value == 1) { folders.style.display = 'block'; ssl.value = '993'; } else { folders.style.display = 'none'; ssl.value = '995'; }";
+				$onchange = "var ssl = document.getElementById('$genid' + 'sslport');var folders = document.getElementById('$genid' + 'folders');var readOnServer = document.getElementById('$genid' + 'readOnServer');if (this.value == 1) { folders.style.display = 'block'; readOnServer.style.display = 'block'; ssl.value = '993'; } else { folders.style.display = 'none'; readOnServer.style.display = 'none'; ssl.value = '995'; }";
 				echo select_box('mailAccount[is_imap]', $options, array("onchange" => $onchange, 'tabindex' => '60', 'id' => $genid . 'method'));
 
 				$onchange = "var div = document.getElementById('$genid' + 'sslportdiv');if(this.checked) div.style.display='block';else div.style.display='none';";
@@ -166,6 +166,16 @@ if (strlen($loc) > 2) $loc = substr($loc, 0, 2);
 			<?php echo '<span style="margin-left: 10px">' . lang('after') . '</span>'?>
 			<?php echo text_field('mailAccount[del_from_server]', $del_from_server <= 0 ? 1 : $del_from_server, array('id' => 'mailAccountDelFromServer', 'tabindex'=>'140', 'style'=>'width:25px')) ?>
 			<?php echo lang('days'); ?>
+		</div>
+		<br>
+		<div id="<?php echo $genid ?>readOnServer" style="<?php if (!array_var($mailAccount_data, 'is_imap', false)) echo 'display:none'; ?>">
+			<label for="mailAccountMarkReadOnServer">
+				<?php echo lang('mark as read mails from server')?>
+				
+			</label>
+			<?php $mark_read_on_server = array_var($mailAccount_data, 'mark_read_on_server', 0) ?>
+			<?php echo yes_no_widget('mailAccount[mark_read_on_server]', 'mailAccountMarkReadOnServer', $mark_read_on_server > 0, lang('yes'), lang('no'), 130) ?>
+			
 		</div>
 		
 		<div>

@@ -18,8 +18,13 @@ startDrag: function(x, y) {
 	
 	if (!Ext.isIE) dragEl.applyStyles({'border':'1px solid gray;','border-width':'1px 1px 1px 6px','width':'auto','height':'auto','cursor':'move'});
 	else dragEl.setWidth('auto');
-	var task = ogTasks.getTask(this.config.dragData.i_t);	
-	dragEl.update(task.title);
+	var task = ogTasks.getTask(this.config.dragData.i_t);
+	var str = '';
+	for (var i=0; i < rx__TasksDrag.tasks_to_edit.length; i++) {
+		var t = ogTasks.getTask(rx__TasksDrag.tasks_to_edit[i]);
+		str += (str == '' ? '' : '<hr />') + t.title;
+	}
+	dragEl.update(str);
 	dragEl.addClass(el.dom.className + ' RX__tasks_dd-proxy'); 
 },
 onDragOver: function(e, targetId) {
@@ -36,7 +41,7 @@ onDragOver: function(e, targetId) {
 	}
 },
 onDragOut: function(e, targetId) {
-    var target = Ext.get(targetId);
+	var target = Ext.get(targetId);
 	if(targetId.indexOf(rx__TasksDrag.idGroup)>=0) /* group */ {
         this.lastTargetId = ''; //targetId;		
         target.removeClass('RX__tasks_dd-over');
@@ -50,11 +55,11 @@ onDragOut: function(e, targetId) {
 endDrag: function() {
     var dragEl = Ext.get(this.getDragEl());
     var el = Ext.get(this.getEl());
-	if(this.lastGroupTargetId) 
+    if(this.lastGroupTargetId) 
 		Ext.get(this.lastGroupTargetId).removeClass('RX__tasks_dd-over');
 	if(this.lastTargetId) 
 		Ext.get(this.lastTargetId).removeClass('RX__tasks_dd-over');
-		
+	
 	var targetId = this.lastTargetId;
 	rx__TasksDrag.d = rx__TasksDrag.haveExtDD[this.lastGroupTargetId];
 	rx__TasksDrag.p = rx__TasksDrag.haveExtDD[this.lastTargetId];
@@ -90,6 +95,7 @@ var rx__TasksDrag = {
 	g: false,
 	d: false,
 	p: false,
+	tasks_to_edit: [],
 	// (g::t)-->(d::p)
 	displayCriteria: '',
 	allowDrag: false,
@@ -106,6 +112,16 @@ var rx__TasksDrag = {
 	
 	initialize: function() {
 		this.haveExtDD = {};
+	},
+	addTaskToMove: function(task_id) {
+		task_id = task_id.toString();
+		var index = this.tasks_to_edit.indexOf(task_id);
+		if (index < 0) this.tasks_to_edit.push(task_id);
+	},
+	removeTaskToMove: function(task_id) {
+		task_id = task_id.toString();
+		var index = this.tasks_to_edit.indexOf(task_id);
+		if (index > -1) this.tasks_to_edit.splice(index, 1);
 	},
 	prepareExt: function(t,g,id) {
 		if(this.haveExtDD[id]) return;
@@ -138,10 +154,11 @@ var rx__TasksDrag = {
 		/*Ext.get(id).dd =*/ new Ext.dd.DropZone(id, {ddGroup: rx__TasksDrag.ddGroup});
 		this.haveExtDD[id] = d;
 	},
-	parametersFromTask: function(task) {
+	parametersFromTask: function(task, wrapper) {
 		var parameters = [];
 		
 		// mandatory
+		parameters["id"] = task.id;
 		parameters["assigned_to_contact_id"] = task.assignedToId;
 		parameters["milestone_id"] = task.milestoneId;
 		parameters["priority"] = task.priority;
@@ -175,51 +192,56 @@ var rx__TasksDrag = {
 			}
 		}
 		
-		return parameters;
-	},
-	quickEdit: function(task_id, parameters) {
-		// wrap
-		var params2 = [];
-		for (var i in parameters) {
-			if (parameters[i] || parameters[i] === 0) {
-				params2["task[" + i + "]"] = parameters[i];
+		if (wrapper) {
+			var params2 = [];
+			for (var i in parameters) {
+				if (parameters[i] || parameters[i] === 0) {
+					params2[wrapper + "[" + i + "]"] = parameters[i];
+				}
 			}
+			parameters = params2;
 		}
 		
-		parameters = params2;
-		var url = og.getUrl('task', 'quick_edit_task', {id:task_id, dont_mark_as_read:1});
+		return parameters;
+	},
+	quickEdit: function(parameters) {
+		
+		var url = og.getUrl('task', 'quick_edit_multiple_task', {dont_mark_as_read:1});
 	
 		og.openLink(url, {
 			method: 'POST',
 			post: parameters,
 			callback: function(success, data) {
 				if (success && ! data.errorCode) {
-					var task = ogTasks.getTask(data.task.id);
-					if (!task){
-						var task = new ogTasksTask();
-						task.setFromTdata(data.task);
-						if (data.task.s) {
-							task.statusOnCreate = data.task.s;
+					
+					for (var k=0; k<data.tasks.length; k++) {
+						var task = ogTasks.getTask(data.tasks[k].task.id);
+						if (!task){
+							var task = new ogTasksTask();
+							task.setFromTdata(data.tasks[k].task);
+							if (data.tasks[k].task.s) {
+								task.statusOnCreate = data.tasks[k].task.s;
+							}
+							task.isCreatedClientSide = true;
+							ogTasks.Tasks[ogTasks.Tasks.length] = task;
+							var parent = ogTasks.getTask(task.parentId);
+							if (parent){
+								task.parent = parent;
+								parent.subtasks[parent.subtasks.length] = task;
+							}
+						} else {
+							task.setFromTdata(data.tasks[k].task);
+							var parent = ogTasks.getTask(task.parentId);
+							if (parent){
+								task.parent = parent;
+								parent.subtasks[parent.subtasks.length] = task;
+							}
 						}
-						task.isCreatedClientSide = true;
-						ogTasks.Tasks[ogTasks.Tasks.length] = task;
-						var parent = ogTasks.getTask(task.parentId);
-						if (parent){
-							task.parent = parent;
-							parent.subtasks[parent.subtasks.length] = task;
-						}
-					} else {
-						task.setFromTdata(data.task);
-						var parent = ogTasks.getTask(task.parentId);
-						if (parent){
-							task.parent = parent;
-							parent.subtasks[parent.subtasks.length] = task;
+						task.isChecked = false;
+						if (data.tasks[k].subtasks && data.tasks[k].subtasks.length > 0) {
+							ogTasks.setSubtasksFromData(task, data.tasks[k].subtasks);
 						}
 					}
-					
-					if (data.subtasks && data.subtasks.length > 0)
-						ogTasks.setSubtasksFromData(task, data.subtasks);
-					
 					if(!rx__TasksDrag.full_redraw) ogTasks.redrawGroups = false;
 					else rx__TasksDrag.full_redraw = true;
 					ogTasks.draw();
@@ -236,93 +258,106 @@ var rx__TasksDrag = {
 		
 	},
 	process: function() {
-		var task = ogTasks.getTask(this.t);
-		this.p = parseInt(this.p);
-		
-		// non-edits
-		if (this.g == this.d && !this.p) {
-			// task is being dragged from group #G to group #G
-			if (task.parentId != 0) {
-				// however, the intention might be to un-attach the task from its parent (!)
-				this.p = 0;
-			} else return;
-		}
-		if (task.parentId == this.d && task.parentId) {// is the task being dragged as a subtask o its own parent?
-			return;
-		}
 
-		// check for unwanted cycles - #t cannot be a predecessor of #p 
-		var ti = this.p;
-		var tiQ = {};
-		while(ti!=0 && !tiQ[ti]) {
-			if(ti == this.t) return;
-			var tt = ogTasks.getTask(ti);
-			if(!tt) break;
-			tiQ[ti] = 1; // loop protection - mark visited vertices
-			ti = tt.parentId;
-		}
+		var all_parameters = [];
+		this.addTaskToMove(this.t);
 		
-		// unattach from current parent
-		if(task.parentId) {
-			// delete task #t from the list of its parent subtasks 
-			var parent = ogTasks.getTask(task.parentId);
-			for(var i=parent.subtasks.length; i-->0;) 
-				if(parent.subtasks[i].id == this.t)
-				{
-					parent.subtasks.splice(i,1);
-					break;
+		for (var k = 0; k < this.tasks_to_edit.length; k++) {
+
+			var task = ogTasks.getTask(this.tasks_to_edit[k]);
+			
+			this.p = parseInt(this.p);
+			
+			// non-edits
+			if (this.g == this.d && !this.p) {
+				// task is being dragged from group #G to group #G
+				if (task.parentId != 0) {
+					// however, the intention might be to un-attach the task from its parent (!)
+					this.p = 0;
+				} else return;
+			}
+			if (task.parentId == this.d && task.parentId) {// is the task being dragged as a subtask o its own parent?
+				return;
+			}
+			
+			// check for unwanted cycles - #t cannot be a predecessor of #p 
+			var ti = this.p;
+			var tiQ = {};
+			while(ti!=0 && !tiQ[ti]) {
+				if(ti == task.id) return;
+				var tt = ogTasks.getTask(ti);
+				if(!tt) break;
+				tiQ[ti] = 1; // loop protection - mark visited vertices
+				ti = tt.parentId;
+			}
+			
+			// unattach from current parent
+			if(task.parentId) {
+				// delete task #t from the list of its parent subtasks 
+				var parent = ogTasks.getTask(task.parentId);
+				for(var i=parent.subtasks.length; i-->0;) { 
+					if(parent.subtasks[i].id == task.id)
+					{
+						parent.subtasks.splice(i,1);
+						break;
+					}
 				}
-			// change task #t parent to #0
-			for (var i = 0; i < ogTasks.Tasks.length; i++)
-				if (ogTasks.Tasks[i].id == this.t) {
-					ogTasks.Tasks[i].parentId = 0;
-					ogTasks.Tasks[i].parent = null;
-					break;
+				// change task #t parent to #0
+				for (var i = 0; i < ogTasks.Tasks.length; i++) {
+					if (ogTasks.Tasks[i].id == task.id) {
+						ogTasks.Tasks[i].parentId = 0;
+						ogTasks.Tasks[i].parent = null;
+						break;
+					}
 				}
-
-		}
-		
-		var parameters = this.parametersFromTask(task);
-		
-		// special edits
-		switch(this.displayCriteria.group_by) {
-			case 'status': ogTasks.ToggleCompleteStatus(task.id, 1-this.d); return; break;
-			default:
-		}
-
-		parameters['parent_id'] = this.p?this.p:0;
-		parameters['apply_ws_subtasks'] = "checked";
-		parameters['apply_milestone_subtasks'] = "checked";
+			}
+			
+			// special edits
+			switch(this.displayCriteria.group_by) {
+				case 'status': ogTasks.ToggleCompleteStatus(task.id, 1-this.d); return; break;
+				default:
+			}
 	
-		var group = ogTasks.getGroup(this.d);
-		var group_not_empty = group && group.group_tasks && group.group_tasks.length > 0;
+			var parameters = this.parametersFromTask(task);
+			
+			parameters['parent_id'] = this.p ? this.p : 0;
+			parameters['apply_ws_subtasks'] = "checked";
+			parameters['apply_milestone_subtasks'] = "checked";
 		
-		// change
-		switch (this.displayCriteria.group_by){
-			case 'milestone':	parameters["milestone_id"] = this.d != 'unclassified' ? ogTasks.getMilestone(this.d).id : 0; break;
-			case 'priority':	parameters["priority"] = this.d != 'unclassified' ? parseInt(this.d) : 200; /*100,200,300*/ break;
-			case 'assigned_to':	parameters["assigned_to_contact_id"] = this.d; break;
-			case 'due_date' : 	if(group_not_empty) parameters["task_due_date"] = group.group_tasks[0].dueDate; break;
-			case 'start_date' : if(group_not_empty) parameters["task_start_date"] = group.group_tasks[0].startDate; break;
-			case 'created_on' : if(group_not_empty) parameters["created_on"] = group.group_tasks[0].createdOn; break;
-			case 'completed_on':if(group_not_empty) parameters["completed_on"] = group.group_tasks[0].completedOn.toString().format(lang('date format')); break;
-			case 'created_by' :	parameters["created_by"] = this.d; /* ? */ break;
-			case 'status' : 	parameters["status"] = this.d; /* done previously, special request */ break;
-			case 'completed_by':parameters["completed_by"] = this.d; /* ? */ break;
-			case 'subtype':parameters["object_subtype"] = this.d; /* ? */ break;
-			default:
-				if (this.displayCriteria.group_by.indexOf('dimension_') == 0) {
-					// Group by dimension
-					var dim_id = this.displayCriteria.group_by.replace('dimension_', '');
-					parameters['member_id'] = this.d;
-					parameters['remove_from_dimension'] = dim_id;
-				}
-				break;
+			var group = ogTasks.getGroup(this.d);
+			var group_not_empty = group && group.group_tasks && group.group_tasks.length > 0;
+			
+			// change
+			switch (this.displayCriteria.group_by){
+				case 'milestone':	parameters["milestone_id"] = this.d != 'unclassified' ? ogTasks.getMilestone(this.d).id : 0; break;
+				case 'priority':	parameters["priority"] = this.d != 'unclassified' ? parseInt(this.d) : 200; /*100,200,300*/ break;
+				case 'assigned_to':	parameters["assigned_to_contact_id"] = this.d; break;
+				case 'due_date' : 	if(group_not_empty) parameters["task_due_date"] = group.group_tasks[0].dueDate; break;
+				case 'start_date' : if(group_not_empty) parameters["task_start_date"] = group.group_tasks[0].startDate; break;
+				case 'created_on' : if(group_not_empty) parameters["created_on"] = group.group_tasks[0].createdOn; break;
+				case 'completed_on':if(group_not_empty) parameters["completed_on"] = group.group_tasks[0].completedOn.toString().format(lang('date format')); break;
+				case 'created_by' :	parameters["created_by"] = this.d; /* ? */ break;
+				case 'status' : 	parameters["status"] = this.d; /* done previously, special request */ break;
+				case 'completed_by':parameters["completed_by"] = this.d; /* ? */ break;
+				case 'subtype':parameters["object_subtype"] = this.d; /* ? */ break;
+				default:
+					if (this.displayCriteria.group_by.indexOf('dimension_') == 0) {
+						// Group by dimension
+						var dim_id = this.displayCriteria.group_by.replace('dimension_', '');
+						parameters['member_id'] = this.d == 'unclassified' ? '0' : this.d;
+						parameters['remove_from_dimension'] = dim_id;
+					}
+					break;
+			}
+			for (var n in parameters) {
+				if (typeof(parameters[n]) == 'function') continue;
+				all_parameters['tasks['+k+']['+n+']'] = parameters[n];
+			}
 		}
 		
 		rx__TasksDrag.full_redraw = true;
-		task_id = this.t;
-		this.quickEdit(task_id, parameters);
+		this.tasks_to_edit = [];
+		this.quickEdit(all_parameters);
 		
 	},
 	onDragStart: function(t,g,id) {

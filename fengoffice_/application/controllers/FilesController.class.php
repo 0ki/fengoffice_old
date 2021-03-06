@@ -663,7 +663,7 @@ class FilesController extends ApplicationController {
 					$file_to_ret = ProjectFiles::findById($file_id);
 					if($file_to_ret instanceof ProjectFile){
 						$ajx_file["file"][]= get_class($file_to_ret->manager()) . ':' . $file_to_ret->getId();
-						$file_titles .= $file_to_ret->getFilename() . "; ";
+						$file_titles .= ($file_titles == "" ? "" : ", ") . $file_to_ret->getFilename();
 					}
 				}
 					
@@ -704,6 +704,7 @@ class FilesController extends ApplicationController {
 		tpl_assign('file_data', $file_data);
 		tpl_assign('genid', array_var($_GET, 'genid'));
 		tpl_assign('object_id', array_var($_GET, 'object_id'));
+		tpl_assign('new_rev_file_id', array_var($_GET, 'new_rev_file_id'));
 			
 		if (is_array(array_var($_POST, 'file'))) {
 			//$this->setLayout("html");
@@ -711,21 +712,38 @@ class FilesController extends ApplicationController {
 			try {
 				DB::beginWork();
 				
-				$type = array_var($file_data, 'type');
-				$file->setType($type);
-				$file->setFilename(array_var($file_data, 'name'));
-				$file->setFromAttributes($file_data);
+				$uploading_revision_for_existing_file = false;
+				$file_id = array_var($file_data, 'new_rev_file_id');
+				if ($file_id > 0) {
+					$f = ProjectFiles::findById($file_id);
+					if ($f instanceof ProjectFile) {
+						$file = $f;
+						$uploading_revision_for_existing_file = true;
+					}
+				}
 				
-				$file->setIsVisible(true);
-				
-				$file->save();
+				if (!$uploading_revision_for_existing_file) {
+					$type = array_var($file_data, 'type');
+					$file->setType($type);
+					$file->setFilename(array_var($file_data, 'name'));
+					$file->setFromAttributes($file_data);
+					
+					$file->setIsVisible(true);
+					
+					$file->save();
+				} else {
+					// set updated on
+					$file->setUpdatedById(logged_user()->getId());
+					$file->setUpdatedOn(DateTimeValueLib::now());
+					$file->save();
+				}
 				$file->subscribeUser(logged_user());
 					
 				if($file->getType() == ProjectFiles::TYPE_DOCUMENT){
 					// handle uploaded file
 					$upload_id = array_var($file_data, 'upload_id');
 					$uploaded_file = array_var($_SESSION, $upload_id, array());
-					$revision = $file->handleUploadedFile($uploaded_file, true); // handle uploaded file
+					$revision = $file->handleUploadedFile($uploaded_file, true, array_var($file_data, 'revision_comment')); // handle uploaded file
 					@unlink($uploaded_file['tmp_name']);
 					unset($_SESSION[$upload_id]);
 				} else if ($file->getType() == ProjectFiles::TYPE_WEBLINK) {
@@ -766,6 +784,8 @@ class FilesController extends ApplicationController {
 				
 				DB::commit();
 				
+				ApplicationLogs::createLog($file, ApplicationLogs::ACTION_UPLOAD, false, false);
+				
 				ajx_extra_data(array("file_id" => $file->getId()));
 				ajx_extra_data(array("file_name" => $file->getFilename()));
 				ajx_extra_data(array("icocls" => 'ico-file ico-' . str_replace(".", "_", str_replace("/", "-", $file->getTypeString()))));
@@ -773,7 +793,12 @@ class FilesController extends ApplicationController {
 				if (!array_var($_POST, 'no_msg')) {
 					flash_success(lang('success add file', $file->getFilename()));
 				}
-				ajx_current("empty");
+				
+				if ($uploading_revision_for_existing_file) {
+					ajx_current("reload");
+				} else {
+					ajx_current("empty");
+				}
 				
 			} catch(Exception $e) {
 				DB::rollback();
@@ -1035,7 +1060,7 @@ class FilesController extends ApplicationController {
 
 				flash_success(lang('success save file', $file->getFilename()));
 				evt_add("document saved", array("id" => $file->getId(), "instance" => array_var($_POST, 'instanceName')));
-				
+				evt_add("new document add save as button", array("id" => $file->getId(), "name" => clean($file->getFilename()), "genid" => array_var($_POST, 'instanceName')));
 				ajx_add("overview-panel", "reload");
 			}
 			} catch(Exception $e) {
@@ -1736,11 +1761,15 @@ class FilesController extends ApplicationController {
 		
 		$extra_conditions = $hide_private ? 'AND `is_visible` = 1' : '';
 		
+		$only_count_result = array_var($_GET, 'only_result',false);
+		
 		$context = active_context();
 		$objects = ProjectFiles::instance()->listing(array(
 			"order"=>$order,
 			"order_dir" => $order_dir,
 			"extra_conditions"=> $extra_conditions,
+			'count_results' => false,
+			'only_count_results' => $only_count_result,
 			"join_params"=> $join_params,
 			"start"=> $start,
 			"limit"=> $limit,
@@ -1770,7 +1799,7 @@ class FilesController extends ApplicationController {
 					} else {
 						$coUser = Contacts::findById($coId);
 						if ($coUser instanceof Contact) {
-							$coName = $coUser->getUsername();
+							$coName = $coUser->getObjectName();
 						} else {
 							$coName = "";
 						}

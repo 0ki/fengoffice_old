@@ -2,13 +2,13 @@
 
 $panel = TabPanels::instance()->findById('messages-panel');
 if ($panel instanceof TabPanel && $panel->getEnabled()) {
-	$limit = 5 ;
-	$result =  ProjectMessages::instance()->listing(array(
-		"order" => "name",
-		"order_dir" => "asc",
+	$limit = 5;
+	$result = ProjectMessages::instance()->listing(array(
+		"order" => "updated_on",
+		"order_dir" => "desc",
 		"start" => 0,
 		"limit" => $limit
-	)) ;
+	));
 	
 	$active_members = array();
 	$context = active_context();
@@ -24,7 +24,7 @@ if ($panel instanceof TabPanel && $panel->getEnabled()) {
 		$widget_title = lang('notes'). ' '. lang('in').' '. implode(", ", $mnames);
 	}
 		
-	$total = $result->total ;
+	$total = $result->total;
 	$messages = $result->objects;
 	$genid = gen_id();
 	if ($total) {

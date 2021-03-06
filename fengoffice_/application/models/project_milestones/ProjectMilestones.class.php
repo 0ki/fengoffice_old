@@ -24,26 +24,42 @@ class ProjectMilestones extends BaseProjectMilestones {
 		if (is_null($context)) {
 			$context = active_context();
 		}
+		
+		$filter_option = config_option('milestone_selector_filter');
+		
 		$members = array();
 		$parents = array();
-		foreach ($context as $k => $member) {
-			if ($member instanceof Member) {
-				if ($member->getDimension()->getCode() == 'tags') continue;
-				$members[] = $member->getId();
-				$tmp = $member->getParentMember();
-				while ($tmp != null){
-					$parents[] = $tmp->getId();
-					$tmp = $tmp->getParentMember();
+		if ($filter_option == 'current_and_parents' || $filter_option == 'current') {
+			foreach ($context as $k => $member) {
+				if ($member instanceof Member) {
+					if ($member->getDimension()->getCode() == 'tags') continue;
+					$members[] = $member->getId();
+					if ($filter_option == 'current_and_parents') {
+						$tmp = $member->getParentMember();
+						while ($tmp != null){
+							$parents[] = $tmp->getId();
+							$tmp = $tmp->getParentMember();
+						}
+					}
 				}
 			}
 		}
+		$members = array_merge($members, $parents);
 		
-		$result = ProjectMilestones::instance()->listing(array(
-			"ignore_context" => true,
-			"member_ids" => $members,
-			"extra_member_ids" => $parents
-		));
-		$milestones = $result->objects;
+		$pgs = logged_user()->getPermissionGroupIds();
+		if (count($pgs) == 0) $pgs[] = 0;
+		
+		$permission_conditions = "EXISTS(SELECT sh.object_id FROM ".TABLE_PREFIX."sharing_table sh WHERE sh.object_id=o.id AND sh.group_id IN (".implode(',',$pgs)."))";
+		
+		if ($filter_option != 'all' && count($members) > 0) {
+			$member_conditions = " AND EXISTS(SELECT om.object_id FROM ".TABLE_PREFIX."object_members om WHERE om.object_id=o.id AND om.member_id IN (".implode(',',$members)."))";
+		} else {
+			$member_conditions = "";
+		}
+		
+		$conditions = "$permission_conditions $member_conditions";
+		$milestones = ProjectMilestones::findAll(array('conditions' => $conditions, 'order' => 'name'));
+
 		return $milestones;
 	} // getActiveMilestonesByUser
 

@@ -105,7 +105,7 @@ class TaskController extends ApplicationController {
 				$task->setTimeEstimate($totalMinutes);
 				$task->save();
 				
-				$gb_member_id = array_var($task_data, 'member_id');				
+				$gb_member_ids = array_var($task_data, 'members');				
 				$member_ids = array();
 				$persons_dim = Dimensions::findByCode('feng_persons');
 				$persons_dim_id = $persons_dim instanceof Dimension ? $persons_dim->getId() : 0;
@@ -124,9 +124,10 @@ class TaskController extends ApplicationController {
 				if(count($member_ids) == 0){
 					$member_ids = active_context_members(false);
 				}
-                                
-				if ($gb_member_id && is_numeric($gb_member_id)) {
-					$member_ids[] = $gb_member_id;
+
+				// get member ids
+				if ($gb_member_ids && !empty($gb_member_ids)) {
+					$member_ids = json_decode(array_var($task_data, 'members'));
 				}
                                 
 				$object_controller = new ObjectController();
@@ -201,9 +202,10 @@ class TaskController extends ApplicationController {
 				$task->subscribeUser(logged_user());
                                 
 				DB::commit();
-				ApplicationLogs::createLog($task, ApplicationLogs::ACTION_ADD);
+				$isSailent = true;
 				// notify asignee
-				if(array_var($task_data, 'notify') == 'true') {
+				if(array_var($task_data, 'notify') == 'true' || (user_config_option("can notify from quick add") && !user_config_option("show_notify_checkbox_in_quick_add"))) {
+					$isSailent = false;
 					try {
 						Notifier::taskAssigned($task);
 					} catch(Exception $e) {
@@ -211,6 +213,7 @@ class TaskController extends ApplicationController {
 						Logger::log($e->getTraceAsString());
 					} // try
 				}
+				ApplicationLogs::createLog($task, ApplicationLogs::ACTION_ADD, null, $isSailent);
 				ajx_extra_data(array("task" => $task->getArrayInfo(), 'subtasks' => $subs));
 				flash_success(lang('success add task', $task->getObjectName()));
 			} catch(Exception $e) {
@@ -220,6 +223,46 @@ class TaskController extends ApplicationController {
 		} // if
 	}
 
+	function quick_edit_multiple_task() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
+		ajx_current("empty");
+		
+		$tasks_info = array();
+		$task_names = array();
+		
+		$tasks_data = array_var($_POST, 'tasks');
+		
+		foreach ($tasks_data as $task_data) {
+			//alert_r($task_data);
+			$task_id = array_var($task_data, 'id');
+			
+			$task = ProjectTasks::findById($task_id);
+			if(!($task instanceof ProjectTask)) {
+				continue;
+			}
+	
+			if(!$task->canEdit(logged_user())) {
+				continue;
+			}
+	
+			$this->do_quick_edit_task($task_data, $task);
+			
+			$p = $task->getParent();
+			$parent = $p instanceof ProjectTask ? $p->getArrayInfo() : '';
+			
+			$tasks_info[] = array("task" => $task->getArrayInfo(), 'subtasks' => $subs, 'parent' => $parent);
+			$task_names[] = $task->getObjectName();
+		}
+		if (count($tasks_info) > 0) {
+			ajx_extra_data(array("tasks" => $tasks_info));
+			flash_success(lang('success edit task list', implode(', ',$task_names)));
+		}
+	}
+	
 	function quick_edit_task() {
 		if (logged_user()->isGuest()) {
 			flash_error(lang('no access permissions'));
@@ -240,7 +283,17 @@ class TaskController extends ApplicationController {
 		}
 
 		$task_data = array_var($_POST, 'task');
+		$type_related = array_var($_POST, 'type_related');
+		
+		$this->do_quick_edit_task($task_data, $task, $type_related);
+		$subs = array();
+		$p = $task->getParent();
+		$parent = $p instanceof ProjectTask ? $p->getArrayInfo() : '';
+		ajx_extra_data(array("task" => $task->getArrayInfo(), 'subtasks' => $subs, 'parent' => $parent));
+		flash_success(lang('success edit task', $task->getObjectName()));
+	}
 
+	private function do_quick_edit_task($task_data, &$task, $type_related = null) {
 		// set task dates
 		if (is_array($task_data)) {
 			$send_edit = false;
@@ -297,7 +350,7 @@ class TaskController extends ApplicationController {
 				}
 				$parent->save();
 			}
-				
+			
 			if(config_option("wysiwyg_tasks")){
 				$task_data['type_content'] = "html";
 				if (array_var($task_data, 'text') !== null) {
@@ -334,13 +387,15 @@ class TaskController extends ApplicationController {
 				// get member ids
 				$member_ids = array();
 				if (array_var($task_data, 'members')) {
-					$member_ids = json_decode(array_var($task_data, 'members'));
+					$member_ids = json_decode(array_var($task_data, 'members'));					
 				}
 				
 				$remove_members_from_dim = array_var($task_data, 'remove_from_dimension');
-				$old_members = $task->getMembers();
-				foreach ($old_members as $old_mem) {
-					if ($old_mem->getDimensionId() != $remove_members_from_dim) $member_ids[] = $old_mem->getId();
+				if(isset($task_data['remove_from_dimension'])){
+					$old_members = $task->getMembers();
+					foreach ($old_members as $old_mem) {
+						if ($old_mem->getDimensionId() != $remove_members_from_dim) $member_ids[] = $old_mem->getId();
+					}
 				}
 
 				// get member id when changing member via drag & drop
@@ -359,7 +414,7 @@ class TaskController extends ApplicationController {
 
 				// add to members, subscribers, etc
 				$object_controller = new ObjectController();
-				if (count($member_ids) > 0) {
+				if (count($member_ids) > 0 || !isset($task_data['remove_from_dimension'])) {
 					foreach ($tasks_to_update as $task_to_update) {
 						$object_controller->add_to_members($task_to_update, $member_ids);
 					}
@@ -405,28 +460,31 @@ class TaskController extends ApplicationController {
 				
 				// subscribe
 				$task->subscribeUser(logged_user());
-				if(isset($_POST['type_related'])){
-					if($_POST['type_related'] == "all" || $_POST['type_related'] == "news"){
-						$task_data['members'] = $member_ids;
-						unset($task_data['due_date']);
-						unset($task_data['use_due_time']);
-						unset($task_data['start_date']);
-						unset($task_data['use_start_time']);
-						$this->repetitive_tasks_related($task,"edit",$_POST['type_related'],$task_data);
-					}
+				
+				if($type_related == "all" || $type_related == "news"){
+					$task_data['members'] = $member_ids;
+					unset($task_data['due_date']);
+					unset($task_data['use_due_time']);
+					unset($task_data['start_date']);
+					unset($task_data['use_start_time']);
+					$this->repetitive_tasks_related($task, "edit", $type_related, $task_data);
 				}
 
 				DB::commit();
-				ApplicationLogs::createLog($task, ApplicationLogs::ACTION_EDIT, false, false, true, $log_info);
-
+				
 				// notify asignee
-				if(array_var($task_data, 'notify') == 'true' && $send_edit == false) {
+				if((array_var($task_data, 'notify') == 'true' && $send_edit == false) || (user_config_option("can notify from quick add") && !user_config_option("show_notify_checkbox_in_quick_add"))) {
 					try {
 						Notifier::taskAssigned($task);
 					} catch(Exception $e) {
+						Logger::log('Error sending notifications for task: '.$task->getId());
 					} // try
 				}
-
+				
+				$isSailent = true;
+				if(array_var($task_data, 'notify') == 'true') $isSailent = false;
+				ApplicationLogs::createLog($task, ApplicationLogs::ACTION_EDIT, false, $isSailent, true, $log_info);
+				
 				$subs = array();
 				$subtasks = $task->getAllSubTasks(); // findAll
 
@@ -460,12 +518,7 @@ class TaskController extends ApplicationController {
 					}
 					$subs[] = $sub->getArrayInfo();
 				}
-				$parent = '';
-				if($task->getParent()){
-					$parent = $task->getParent()->getArrayInfo();
-				}
-				ajx_extra_data(array("task" => $task->getArrayInfo(), 'subtasks' => $subs, 'parent' => $parent));
-				flash_success(lang('success edit task', $task->getObjectName()));
+				
 			} catch(Exception $e) {
 				DB::rollback();
 				flash_error($e->getMessage());
@@ -1148,6 +1201,7 @@ class TaskController extends ApplicationController {
 				'project_id' => 1 ,
 				'name' => array_var($_POST, 'name', ''),
 				'assigned_to_contact_id' => array_var($_POST, 'assigned_to_contact_id', '0'),
+				'selected_members_ids' => json_decode(array_var($_POST, 'members', null)),
 				'parent_id' => array_var($_REQUEST, 'parent_id', 0),
 				'priority' => array_var($_POST, 'priority', ProjectTasks::PRIORITY_NORMAL),
 				'text' => $text_post,
@@ -1233,6 +1287,7 @@ class TaskController extends ApplicationController {
 				}
 				$task_data['object_type_id'] = $task->getObjectTypeId();
 				$member_ids = json_decode(array_var($_POST, 'members'));
+				
 				$task->setFromAttributes($task_data);
 				if(!can_task_assignee(logged_user())){
 					flash_error(lang('no access permissions'));
@@ -1359,8 +1414,7 @@ class TaskController extends ApplicationController {
 				}
 				
 				DB::commit();
-				ApplicationLogs::createLog($task, ApplicationLogs::ACTION_ADD);
-				
+								
 				//Send Template task to view
 				if($task instanceof TemplateTask){
 					$objectId = $task->getObjectId();
@@ -1377,15 +1431,17 @@ class TaskController extends ApplicationController {
 															
 					evt_add("template object added", $object);
 				}
-
+				$isSailent = true;
 				// notify asignee
 				if(array_var($task_data, 'send_notification') == 'checked') {
+					$isSailent = false;
 					try {
 						Notifier::taskAssigned($task);
 					} catch(Exception $e) {
 						evt_add("debug", $e->getMessage());
 					} // try
 				}
+				ApplicationLogs::createLog($task, ApplicationLogs::ACTION_ADD, null, $isSailent);
 
 				if ($task->getIsTemplate()) {
 					flash_success(lang('success add template', $task->getObjectName()));
@@ -1564,7 +1620,6 @@ class TaskController extends ApplicationController {
 			}else{
 				$text_post = array_var($_POST, 'text', $task->getText());
 			}
-			
 			$task_data = array(
 				'name' => array_var($_POST, 'name', $task->getObjectName()),
 				'text' => $text_post,
@@ -1573,6 +1628,7 @@ class TaskController extends ApplicationController {
 				'start_date' => getDateValue($post_st, $sd),
 				'parent_id' => $task->getParentId(),
 				'assigned_to_contact_id' => array_var($_POST, 'assigned_to_contact_id', $task->getAssignedToContactId()),
+				'selected_members_ids' => json_decode(array_var($_POST, 'members', null)),
 				'priority' => array_var($_POST, 'priority', $task->getPriority()),
 				'send_notification' => array_var($_POST, 'notify') == 'true',
 				'time_estimate' => $estimatedTime,
@@ -1906,8 +1962,7 @@ class TaskController extends ApplicationController {
 				}
 
 				DB::commit();
-				ApplicationLogs::createLog($task, ApplicationLogs::ACTION_EDIT, false, false, true, $log_info);
-				
+								
 				//Send Template task to view
 				if($task instanceof TemplateTask){
 					$objectId = $task->getObjectId();
@@ -1924,7 +1979,7 @@ class TaskController extends ApplicationController {
 						
 					evt_add("template object added", $object);
 				}
-
+				
 				try {
 					if(array_var($task_data, 'send_notification') == 'checked' && $send_edit == false) {
 						$new_owner = $task->getAssignedTo();
@@ -1935,7 +1990,10 @@ class TaskController extends ApplicationController {
 				} catch(Exception $e) {
 
 				} // try
-
+				$isSailent = true;
+				if(array_var($task_data, 'send_notification') == 'checked') $isSailent = false;
+				ApplicationLogs::createLog($task, ApplicationLogs::ACTION_EDIT, false, $isSailent, true, $log_info);
+				
 				flash_success(lang('success edit task list', $task->getObjectName()));
 				ajx_current("back");
 
@@ -2349,7 +2407,8 @@ class TaskController extends ApplicationController {
 		ajx_extra_data($object);
 		ajx_current("empty");
 	} // allowed_users_to_assign
-
+	
+	
 	function change_start_due_date() {
 		$task = ProjectTasks::findById(get_id());
 		if(!$task->canEdit(logged_user())){

@@ -310,9 +310,15 @@ class WebpageController extends ApplicationController {
 			}
 		}
 		
+		$only_count_result = array_var($_GET, 'only_result',false);
+		
 		$res =  ProjectWebpages::instance()->listing(array(
+			"start" =>$start,
+			"limit" => $limit,
 			"order" => $order , 
-			"order_dir" => $order_dir  
+			"order_dir" => $order_dir,
+			'count_results' => false,
+			'only_count_results' => $only_count_result
 		));
 		
 		$object = array(

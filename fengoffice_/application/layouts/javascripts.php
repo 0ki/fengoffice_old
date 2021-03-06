@@ -48,6 +48,13 @@ return array(
 	"h5f.min.js",
 	"og/main.js",
 	"jquery/bootstrap-dropdown.js",
-	"jquery/bootstrap-button.js"
+	"jquery/bootstrap-button.js",
+	"og/tasks/main.js",
+	"og/tasks/addTask.js",
+	"og/tasks/drawing.js",
+	"og/tasks/TasksTopToolbar.js",
+	"og/tasks/TasksBottomToolbar.js",
+	"og/tasks/print.js",
+	"og/tasks/TaskPopUp.js"
 );
 

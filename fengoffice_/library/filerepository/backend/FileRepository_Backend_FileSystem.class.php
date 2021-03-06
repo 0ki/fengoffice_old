@@ -213,7 +213,7 @@ class FileRepository_Backend_FileSystem implements FileRepository_Backend {
 			if(!force_mkdir($destination_dir, 0777)) {
 				throw new FailedToCreateFolderError($destination_dir);
 			} // if
-			exec("chmod -R 777 $destination_dir");
+			if (is_exec_available()) exec("chmod -R 777 $destination_dir");
 		} // if
 
 		if(!copy($source, $file_path)) {
@@ -225,7 +225,8 @@ class FileRepository_Backend_FileSystem implements FileRepository_Backend {
 				$this->setFileAttribute($file_id, $attribute_name, $attribute_value);
 			} // foreach
 		} // if
-
+		
+		Hook::fire('after_adding_file_to_repository', $file_path, $ret);
 		return $file_id;
 	} // addFile
 

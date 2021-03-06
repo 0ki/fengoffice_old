@@ -757,6 +757,7 @@ INSERT INTO `fo_report_conditions` (`report_id`, `custom_property_id`, `field_na
 INSERT INTO fo_custom_properties (`id`, `object_type_id`, `name`, `type`, `description`, `values`, `default_value`, `is_required`, `is_multiple_values`, `property_order`, `visible_by_default`)
  SELECT `cp`.`id`, (SELECT id FROM fo_object_types WHERE handler_class=object_type limit 1), `cp`.`name`, `cp`.`type`, `cp`.`description`, `cp`.`values`, `cp`.`default_value`, `cp`.`is_required`, `cp`.`is_multiple_values`, `cp`.`property_order`, `cp`.`visible_by_default`
  FROM og_custom_properties cp
+ WHERE cp.object_type <> 'Projects'
 ON DUPLICATE KEY UPDATE name=cp.name;
 
 INSERT INTO fo_custom_property_values (`object_id`, `custom_property_id`, `value`)
@@ -774,7 +775,27 @@ INSERT INTO fo_custom_property_values (`object_id`, `custom_property_id`, `value
 			SELECT cp.object_type FROM og_custom_properties cp WHERE cp.id=cpv.custom_property_id limit 1
 		) limit 1
 	) limit 1) is NULL)
-ON DUPLICATE KEY UPDATE id=cpv.id;
+ON DUPLICATE KEY UPDATE custom_property_id=cpv.custom_property_id;
+
+-- WORKSPACE CUSTOM PROPERTIES
+INSERT INTO fo_member_custom_properties (`id`, `object_type_id`, `name`, `type`, `description`, `values`, `default_value`, `is_required`, `is_multiple_values`, `property_order`, `visible_by_default`)
+ SELECT `cp`.`id`, (SELECT id FROM fo_object_types WHERE name='workspace' limit 1), `cp`.`name`, `cp`.`type`, `cp`.`description`, `cp`.`values`, `cp`.`default_value`, `cp`.`is_required`, `cp`.`is_multiple_values`, `cp`.`property_order`, `cp`.`visible_by_default`
+ FROM og_custom_properties cp
+ WHERE cp.object_type = 'Projects'
+ON DUPLICATE KEY UPDATE name=cp.name;
+
+INSERT INTO fo_member_custom_property_values (`member_id`, `custom_property_id`, `value`)
+ SELECT (
+	SELECT `id` FROM `fo_members` WHERE `ws_id` = `cpv`.`object_id` AND `object_type_id` = (
+		SELECT `ot`.`id` FROM `fo_object_types` `ot` WHERE `ot`.`name`='workspace' limit 1
+	) limit 1
+ ) as oid,  `cpv`.`custom_property_id`, `cpv`.`value`
+ FROM og_custom_property_values cpv
+ WHERE 
+ 	NOT ((SELECT `id` FROM `fo_members` WHERE `ws_id` = `cpv`.`object_id` AND `object_type_id` = (
+		SELECT `ot`.`id` FROM `fo_object_types` `ot` WHERE `ot`.`name`='workspace' limit 1
+	) limit 1) is NULL)
+ON DUPLICATE KEY UPDATE custom_property_id=cpv.custom_property_id;
 
 
 -- COMMENTS
@@ -1214,13 +1235,9 @@ update fo_objects set updated_by_id=0 where updated_by_id is null;
 
 
 -- companies comments
-update fo_comments set rel_object_id = (
-  select o.id from fo_objects o
-    inner join og_comments og on o.f1_id=og.rel_object_id and o.object_type_id=(select id from fo_object_types where name='contact')
-    where og.text=fo_comments.text
-    limit 1
-)
-where rel_object_id=0;
+update fo_comments set fo_comments.rel_object_id = (select o.id from fo_objects o inner join fo_contacts co on co.object_id=o.id where o.object_type_id=16 and co.is_company=1 and o.f1_id=(
+  select ogc.rel_object_id FROM og_comments ogc where ogc.rel_object_manager='Companies' AND ogc.`text`=fo_comments.`text` limit 1
+)) where fo_comments.rel_object_id=0;
 
 -- fix null contact fields
 update fo_contacts set company_id=0 where company_id is null;

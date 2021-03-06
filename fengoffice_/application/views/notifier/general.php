@@ -198,23 +198,31 @@
         <div>
             <span style="width: 100%; line-height: 20px; display: block;">
                 <!-- CONTEXTS -->
-                <?php 
-                    foreach ($contexts as $dimension => $context) { 
+                <?php
+                	$first = true;
+                    foreach ($contexts as $dimension => $context) {
+                    	if ($first) {
+                    		$first = false;
+                    	} else {
+                    		echo '<br />';
+                    	}
                         if($dimension == "customer_project"){
                             foreach ($context as $obj => $cont){
                                 echo lang($obj). ": ";
                                 foreach ($cont as $c){
                                     echo $c;
-                                } 
+                                }
                                 echo "&nbsp;";
                             }
                         }else{
                             echo lang($dimension). ": ";
+                            $f = true;
                             foreach ($context as $c){
-                                echo $c;
+                                echo ($f ? "" : " - ") . $c;
+                                $f = false;
                             }
                             echo "&nbsp;";
-                        }                        
+                        }
                     }
                 ?>
                 <!-- CONTEXTS -->

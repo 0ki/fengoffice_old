@@ -47,7 +47,7 @@ class Member extends BaseMember {
 		foreach ($members as $mem){
 			$child_members[] = $mem;
 			if ($recursive) {
-				$children = $mem->getAllChildren($recursive, $order, $extra_conditions);
+				$children = $mem->getAllChildren($recursive, $order);
 				$child_members = array_merge($child_members, $children);
 			}
 		}
@@ -307,7 +307,11 @@ class Member extends BaseMember {
 	 * 
 	 */
 	function getMemberColor($default = null) {
-		$color = is_null($default) || !is_numeric($default) ? 0 : $default;
+		if ($this->getColor() <= 0) {
+			$color = is_null($default) || !is_numeric($default) ? 0 : $default;
+		} else {
+			$color = $this->getColor();
+		}
 		
 		Hook::fire('override_member_color', $this, $color);
 		
@@ -341,14 +345,17 @@ class Member extends BaseMember {
 	 */
 	function getIconClass() {
 		if (!$this->icon_class) {
-			if( $itemClass = $this->getObjectClass() ) {
-				eval ("\$o = new $itemClass();");
-				if ($o instanceof DimensionObject ) {
-					$o->setId($this->getObjectId());
-					$o->setObjectId($this->getObjectId());
-					if( $icon_cls = $o->getIconClass()){
-						$this->icon_class = $icon_cls;
-						return $this->icon_class;
+			if (method_exists($this->getObjectClass(), 'getIconClass')) {
+				
+				if($itemClass = $this->getObjectClass()) {
+					eval ("\$o = new $itemClass();");
+					if ($o instanceof DimensionObject) {
+						$o->setId($this->getObjectId());
+						$o->setObjectId($this->getObjectId());
+						if( $icon_cls = $o->getIconClass()){
+							$this->icon_class = $icon_cls;
+							return $this->icon_class;
+						}
 					}
 				}
 			}

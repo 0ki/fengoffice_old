@@ -236,6 +236,19 @@ Ext.onReady(function(){
 				og.msg(lang('new version notification title'), og.hasNewVersions, 0);
 			}					
 
+			//get all dimensions with mmbers
+			og.openLink(og.getUrl('dimension', 'reload_dimensions_js'), {
+				hideLoading: true,
+				hideErrors: true,
+				preventPanelLoad: true,
+				callback: function(s, d) {
+					if (d.dims) {
+						og.dimensions = d.dims;
+						og.dimensions_check_date = new Date();
+						if (d.perms) og.member_permissions = d.perms;
+					}
+				}
+			});
 		},
 		onError: function(data) {
 		}

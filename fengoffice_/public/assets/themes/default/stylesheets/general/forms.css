@@ -84,12 +84,12 @@ legend label.checkbox {
   font-weight: bolder;
 }
 
-textarea, textarea.long {
+textarea.long {
   width: 67%; /* 99% */
   height: 60px;
 }
 
-textarea, textarea.huge {
+textarea.huge {
   width: 97%; /* 99% */
   height: 180px;
 }

@@ -1092,7 +1092,7 @@ abstract class ContentDataObject extends ApplicationDataObject {
 	function setIsRead($contact_id, $isRead) {
 		if ($isRead) {
 			if ($this->getIsRead($contact_id)) {
-				return; // object is already marked as read
+				return false; // object is already marked as read
 			}
 			$now = DateTimeValueLib::now();
 			DB::execute("INSERT INTO ".TABLE_PREFIX."read_objects (rel_object_id, contact_id, is_read, created_on) VALUES (?, ?, 1, ?) ON DUPLICATE KEY UPDATE is_read=1", $this->getId(), $contact_id, $now);
@@ -1100,6 +1100,8 @@ abstract class ContentDataObject extends ApplicationDataObject {
 		} else {
 			ReadObjects::delete('rel_object_id = ' . $this->getId() . ' AND contact_id = ' . $contact_id);
 		}
+		
+		return true;
 	} 
 	
 	
@@ -1400,8 +1402,7 @@ abstract class ContentDataObject extends ApplicationDataObject {
 		$sql_where = "($member_where_conditions member_id IN ( SELECT member_id FROM ".$table_prefix."object_members WHERE object_id = $oid AND is_optimization = 0)) AND cmp.object_type_id = $tid";
 
 		//3. If there are dimensions that defines permissions containing any of the object members
-		if ( count($dids) || config_option('let_users_create_objects_in_root')){
-			if (config_option('let_users_create_objects_in_root') && count($dids)==0) $dids[] = 0;
+		if ( count($dids) ){
 			// 3.1 get permission groups with permissions over the object.
 			$sql_fields = "permission_group_id  AS group_id";
 			
@@ -1846,7 +1847,7 @@ abstract class ContentDataObject extends ApplicationDataObject {
 				if (isset($options->showInPaths) && $options->showInPaths) {
 					if (!isset($members_info[$mem['dimension_id']])) $members_info[$mem['dimension_id']] = array();
 					
-					if (!$show_all_members && count($members_info[$mem['dimension_id']]) < $to_display && !in_array($mem['id'], $active_context_ids)) {
+					if (!$show_all_members && count($members_info[$mem['dimension_id']]) < $to_display /*&& !in_array($mem['id'], $active_context_ids)*/) {
 						$members_info[$mem['dimension_id']][$mem['id']] = array(
 							'ot' => $mem['object_type_id'],
 							'c' => Members::getMemberById($mem['id'])->getMemberColor(),
@@ -1870,6 +1871,14 @@ abstract class ContentDataObject extends ApplicationDataObject {
 	function getObjectColor($default = null) {
 		$color = is_null($default) || !is_numeric($default) ? 1 : $default;
 		
+		$members = $this->getMembers();
+		foreach ($members as $member) {
+			if ($member->getDimension()->getIsManageable()) {
+				$color = $member->getColor();
+				if ($color > 0) break;
+			}
+		}
+	
 		Hook::fire('override_object_color', $this, $color);
 		
 		return $color;

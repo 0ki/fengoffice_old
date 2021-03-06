@@ -48,10 +48,13 @@ og.MemberManager = function() {
 					var d = this.reader.jsonData;
 					og.members.dimension_id = d.dimension_id;
 					this.fireEvent('after list load', "");
-                                        if (d.totalCount === 0) {
-						this.fireEvent('messageToShow', lang("no objects message", lang("members"), lang('context')));
-					} else if (d.members.length == 0) {
-						this.fireEvent('messageToShow', lang("no more objects message", lang("members")));
+					if (d.totalCount == 0) {
+						var sel_context_names = og.contextManager.getActiveContextNames();
+						if (sel_context_names.length > 0) {
+							this.fireEvent('messageToShow', lang("no objects message", lang("members"), sel_context_names.join(', ')));
+						} else {
+							this.fireEvent('messageToShow', lang("no more objects message", lang("members")));
+						}
 					} else {
 						this.fireEvent('messageToShow', "");
 					}

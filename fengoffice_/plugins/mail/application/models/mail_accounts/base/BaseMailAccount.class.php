@@ -364,6 +364,28 @@ abstract class BaseMailAccount extends DataObject {
 	function setDelFromServer($value) {
 		return $this->setColumnValue('del_from_server', $value);
 	} // setDelFromServer()
+	
+	/**
+	 * Return value of 'mark_read_on_server' field
+	 *
+	 * @access public
+	 * @param void
+	 * @return integer
+	 */
+	function getMarkReadOnServer() {
+		return $this->getColumnValue('mark_read_on_server');
+	} // getMarkReadOnServer()
+	
+	/**
+	 * Set value of 'mark_read_on_server' field
+	 *
+	 * @access public
+	 * @param integer $value
+	 * @return boolean
+	 */
+	function setMarkReadOnServer($value) {
+		return $this->setColumnValue('mark_read_on_server', $value);
+	} // setMarkReadOnServer()
 
 
 	/**

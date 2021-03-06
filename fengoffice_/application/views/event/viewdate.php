@@ -1,5 +1,4 @@
 <?php
-require_javascript('og/tasks/TasksTopToolbar.js');
 require_javascript('og/CalendarToolbar.js');
 require_javascript('og/CalendarFunctions.js');
 require_javascript('og/EventPopUp.js');

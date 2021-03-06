@@ -28,7 +28,7 @@ require_javascript('og/modules/addMessageForm.js');
 		else $context[] = $dimension;
 	}
 	
-	$allowed_users = allowed_users_in_context($object->getObjectTypeId(), $context, ACCESS_LEVEL_READ);
+	$allowed_users = allowed_users_in_context($objectTypeId, $context, ACCESS_LEVEL_READ);
 	
 	Hook::fire('allowed_subscribers', $object, $allowed_users);
 	

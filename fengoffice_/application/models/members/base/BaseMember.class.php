@@ -210,6 +210,27 @@
       return $this->setColumnValue('archived_by_id', $value);
     } // setArchivedById()
     
+    /**
+    * Return value of 'color' field
+    *
+    * @access public
+    * @param void
+    * @return integer 
+    */
+    function getColor() {
+      return $this->getColumnValue('color');
+    } // getColor()
+    
+    /**
+    * Set value of 'color' field
+    *
+    * @access public   
+    * @param integer $value
+    * @return boolean
+    */
+    function setColor($value) {
+      return $this->setColumnValue('color', $value);
+    } // setColor() 
     
     /**
     * Return manager instance

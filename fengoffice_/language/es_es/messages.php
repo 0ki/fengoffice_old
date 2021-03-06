@@ -656,4 +656,11 @@
         'the weblink notification' => 'el enlace web',
   	'the timeslot notification' => 'el tiempo de trabajo',
         'the time notification' => 'el tiempo de trabajo',
+
+	'objects moved to member success' => 'Los objetos se han agregado a {0} exitosamente',
+	'object moved to member success' => 'El objeto se ha agregado a {0} exitosamente',
+  	'objects removed from' => 'Ha quitado {0} de los objetos seleccionados exitosamente',
+  	'object removed from' => 'Ha quitado {0} del objeto seleccionado exitosamente',
+  	'contact email is required to create user' => 'Para crear un usuario, la persona debe tener una direccón de correo válida. Por favor edite la persona e intente nuevamente.',
+	'disable' => 'Desactivar',
 ); ?>

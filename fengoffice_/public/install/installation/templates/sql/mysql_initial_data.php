@@ -6,7 +6,7 @@ INSERT INTO `<?php echo $table_prefix ?>config_categories` (`name`, `is_system`,
 	('general', 0, 1),
 	('mailing', 0, 2),
 	('passwords', 0, 4);
-
+('general', 'milestone_selector_filter', 'current_and_parents', 'MilestoneSelectorFilterConfigHandler', 0, 0, NULL)
 
 INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
 	('system', 'project_logs_per_page', '10', 'IntegerConfigHandler', 1, 0, NULL),
@@ -64,6 +64,7 @@ INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`
     ('general', 'use_object_properties', '0', 'BoolConfigHandler', '0', '0', NULL),
     ('general', 'let_users_create_objects_in_root', '1', 'BoolConfigHandler', '0', '0', NULL),
     ('general', 'add_default_permissions_for_users', '1', 'BoolConfigHandler', '0', '0', NULL),
+    ('general', 'milestone_selector_filter', 'current_and_parents', 'MilestoneSelectorFilterConfigHandler', 0, 0, NULL),
 	('task panel', 'tasksShowTimeEstimates', '1', 'BoolConfigHandler', '1', '0', NULL),
 	('general', 'notify_myself_too', '0', 'BoolConfigHandler', '0', '100', ''),
 	('brand_colors', 'brand_colors_head_back', '', 'StringConfigHandler', '1', '0', NULL),
@@ -137,12 +138,13 @@ INSERT INTO `<?php echo $table_prefix ?>contact_config_categories` (`name`, `is_
 	('task panel', 0, 0, 2),
 	('calendar panel', 0, 0, 4),
 	('context help', 1, 0, 5),
-	('time panel', 1, 0, 3),
+	('time panel', 0, 0, 3),
 	('listing preferences', 0, 0, 10);
 	
 INSERT INTO `<?php echo $table_prefix ?>contact_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES 
  ('task panel','tasksDateStart','0000-00-00 00:00:00','DateTimeConfigHandler',1,0,'date from to filter out task list'),
  ('task panel','tasksDateEnd','0000-00-00 00:00:00','DateTimeConfigHandler',1,0,'the date up to filter the list of tasks'),
+ ('task panel', 'show_notify_checkbox_in_quick_add', '0', 'BoolConfigHandler', 0, 0, 'Show notification checkbox in quick add task view'),
  ('task panel', 'can notify from quick add', '1', 'BoolConfigHandler', 0, 0, 'Notification checkbox default value'),
  ('task panel', 'tasksShowWorkspaces', '1', 'BoolConfigHandler', 1, 0, ''),
  ('task panel', 'tasksShowTime', '1', 'BoolConfigHandler', 1, 0, ''),
@@ -250,6 +252,7 @@ INSERT INTO `<?php echo $table_prefix ?>contact_config_options` (`category_name`
  ('time panel', 'TM report show time type', '0', 'IntegerConfigHandler', 1, 0, ''),
  ('time panel', 'TM user filter', '0', 'IntegerConfigHandler', 1, 0, ''),
  ('time panel', 'TM tasks user filter', '0', 'IntegerConfigHandler', 1, 0, ''),
+ ('time panel', 'add_timeslot_view_dimensions_combos', '', 'ManageableDimensionsConfigHandler', '0', '0', 'dimensions ids for skip'),
  ('general', 'show_context_help', 'until_close', 'ShowContextHelpConfigHandler', '0', '0', NULL),
  ('dashboard', 'show charts widget', '1', 'BoolConfigHandler', 0, 600, ''),
  ('dashboard', 'show dashboard info widget', '1', 'BoolConfigHandler', 0, 900, ''),
@@ -262,6 +265,7 @@ INSERT INTO `<?php echo $table_prefix ?>contact_config_options` (`category_name`
  ('task panel', 'add_task_autoreminder', '0', 'BoolConfigHandler', '0', '21', NULL),
  ('task panel', 'add_self_task_autoreminder', '1', 'BoolConfigHandler', '0', '22', NULL),
  ('task panel', 'add_task_default_reminder', '1', 'BoolConfigHandler', '0', '20', NULL),
+ ('task panel', 'quick_add_task_view_dimensions_combos', '', 'ManageableDimensionsConfigHandler', '0', '0', 'dimensions ids for skip'),
  ('calendar panel', 'add_event_autoreminder', '1', 'BoolConfigHandler', '0', '0', NULL),
  ('calendar panel', 'autoassign_events', '0', 'BoolConfigHandler', '0', '0', NULL),
  ('calendar panel', 'event_send_invitations', '1', 'BoolConfigHandler', '0', '0', NULL),
@@ -468,7 +472,7 @@ INSERT INTO `<?php echo $table_prefix ?>system_permissions` (`permission_group_i
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Super Administrator'),	1,	1,	1,	1,	1,		1,	1,	1,	1,	1,	1,	1, 1),
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Administrator'),	1,	1,	1,	1,	1,		1,	1,	1,	1,	1,	1,	1, 0),
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Manager'),	1,	0,	1,	1,	1,		0,	1,	1,	1,	1,	1,	1, 0),
-((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Executive'),	1,	0,	0,	0,	1,		0,	1,	1,	1,	0,	1,	1, 0),
+((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Executive'),	1,	0,	0,	0,	1,		0,	1,	0,	1,	0,	1,	1, 0),
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Collaborator Customer'),	0,	0,	0,	0,	0,		0,	0,	0,	1,	0,	1,	1, 0),
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Internal Collaborator'),	0,	0,	0,	0,	0,		0,	0,	0,	1,	0,	0,	1, 0),
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'External Collaborator'),	0,	0,	0,	0,	0,		0,	0,	0,	1,	0,	0,	1, 0),
@@ -483,8 +487,9 @@ INSERT INTO `<?php echo $table_prefix ?>widgets` (`name`,`title`,`plugin_id`,`pa
  ('documents','documents',0,'','','right',1100,'ico-file'),
  ('calendar','upcoming events milestones and tasks',0,'','','top',0,'ico-event'),
  ('completed_tasks_list','completed tasks list',0,'','','right',150,'ico-task'),
- ('activity_feed', 'activity_feed', 0, '', '', 'left', 0,'ico-properties'),
- ('comments','comments',0,'','','left',5,'ico-comment');
+ ('activity_feed', 'activity_feed', 0, '', '', 'left', 10,'ico-properties'),
+ ('active_context_info', 'active context info', 0, '', '', 'left', 0, 'ico-workspace'),
+ ('comments','comments',0,'','','left',15,'ico-comment');
 
 INSERT INTO <?php echo $table_prefix ?>role_object_type_permissions (role_id, object_type_id, can_delete, can_write)
  SELECT p.id, o.id, 1, 1
@@ -528,3 +533,11 @@ INSERT INTO `<?php echo $table_prefix ?>contact_widget_options` (widget_name,con
 ('overdue_upcoming',0,0,'assigned_to_user',0,'UserCompanyConfigHandler',0),
 ('calendar',0,0,'filter_by_myself',1,'BooleanConfigHandler',0)
 ON DUPLICATE KEY UPDATE widget_name=widget_name;
+
+UPDATE `<?php echo $table_prefix ?>contact_config_options` 
+ SET default_value = concat((SELECT `id` FROM `<?php echo $table_prefix ?>dimensions` WHERE `code`='workspaces'),',', (SELECT `id` FROM `<?php echo $table_prefix ?>dimensions` WHERE `code`='customer_project'),',', (SELECT `id` FROM `<?php echo $table_prefix ?>dimensions` WHERE `code`='tags')) 
+ WHERE name='quick_add_task_view_dimensions_combos';
+
+UPDATE `<?php echo $table_prefix ?>contact_config_options` 
+ SET default_value = concat((SELECT `id` FROM `<?php echo $table_prefix ?>dimensions` WHERE `code`='workspaces'),',', (SELECT `id` FROM `<?php echo $table_prefix ?>dimensions` WHERE `code`='customer_project'),',', (SELECT `id` FROM `<?php echo $table_prefix ?>dimensions` WHERE `code`='tags')) 
+ WHERE name='add_timeslot_view_dimensions_combos';

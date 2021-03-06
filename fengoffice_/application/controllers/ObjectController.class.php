@@ -125,8 +125,15 @@ class ObjectController extends ApplicationController {
 				$subscriberIds[] = $u->getId();
 			}
 		}
-
+		if($object instanceof TemplateTask){
+			$objectTypeId = ProjectTasks::instance()->getObjectTypeId();
+		}else{
+			$objectTypeId = $object->getObjectTypeId();
+		}
+		
+		
 		tpl_assign('object', $object);
+		tpl_assign('objectTypeId', $objectTypeId);
 		tpl_assign('subscriberIds', $subscriberIds);
 		tpl_assign('genid', $genid);
 	}
@@ -831,14 +838,14 @@ class ObjectController extends ApplicationController {
 		ajx_current('empty');
 		$csvids = array_var($_GET, 'ids');
 		$ids = explode(",", $csvids);
-		$this->do_mark_as_read_unread_objects($ids, true, user_config_option('show_emails_as_conversations'));
+		$this->do_mark_as_read_unread_objects($ids, true);
 	}
 	
 	function mark_as_unread() {
 		ajx_current('empty');
 		$csvids = array_var($_GET, 'ids');
 		$ids = explode(",", $csvids);
-		$this->do_mark_as_read_unread_objects($ids, false, user_config_option('show_emails_as_conversations'));
+		$this->do_mark_as_read_unread_objects($ids, false);
 	}
 	
 	static function reloadPersonsDimension() {
@@ -1256,21 +1263,19 @@ class ObjectController extends ApplicationController {
 		return array($succ, $err);
 	}
 
-	function do_mark_as_read_unread_objects($ids, $read, $mark_conversation = false) {
+	function do_mark_as_read_unread_objects($ids, $read) {
 		$err = 0; // count errors
 		$succ = 0; // count updated objects
+		$ids_to_mark = array();
+		
 		foreach ($ids as $id) {
 			try {
 				$obj = Objects::findObject($id);
+				
 				if ($obj instanceof ContentDataObject && logged_user() instanceof Contact) {
-					$obj->setIsRead(logged_user()->getId(), $read);
-					if (Plugins::instance()->isActivePlugin('mail')) {
-						if ($obj instanceof MailContent && $mark_conversation) {
-							$emails_in_conversation = MailContents::getMailsFromConversation($obj);
-							foreach ($emails_in_conversation as $email) {
-								$email->setIsRead(logged_user()->getId(), $read);
-							}
-						}
+					$ret = $obj->setIsRead(logged_user()->getId(), $read);
+					if($ret){
+						$ids_to_mark[] = $id;
 					}
 				}
 				$succ++;
@@ -1278,6 +1283,8 @@ class ObjectController extends ApplicationController {
 				$err ++;
 			} // try
 		}
+		
+		Hook::fire('do_mark_as_read_unread_objects', $ids_to_mark, $read);
 		return array($succ, $err);
 	}
 	

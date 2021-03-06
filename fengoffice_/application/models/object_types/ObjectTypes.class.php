@@ -17,7 +17,6 @@
   	static $listableObjectTypesIds = null ;
   	
   	/**
-  	 * Used only for reports
   	 * @param unknown_type $external_conditions
   	 */
 	static function getAvailableObjectTypes($external_conditions = "") {

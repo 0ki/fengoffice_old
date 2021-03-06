@@ -1,5 +1,5 @@
 
-.ico-folder {
+.ico-folder, .ico-customer_folder, .ico-project_folder {
 	background-image: url(../../extjs/images/default/tree/folder-open.gif) !important;
 }
 
@@ -22,7 +22,7 @@
 	background-image: url(../../images/16x16/types/classify.png) !important;
 }
 .ico-weblinks, .ico-webpages {
-	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -78px !important;
+	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -77px !important;
 }
 .ico-projectwebpage, .ico-weblink, .ico-webpage {
 	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -80px !important;

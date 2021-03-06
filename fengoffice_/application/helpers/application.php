@@ -270,8 +270,6 @@ function allowed_users_to_assign_all_mobile($member_id = null) {
  */
 function assign_to_select_box($list_name, $context = null, $selected = null, $attributes = null, $genid = null) {
 	if (!$genid) $genid = gen_id();
-	require_javascript('og/tasks/main.js');
-	require_javascript('og/tasks/addTask.js');
 	ob_start(); ?>
     <input type="hidden" id="<?php echo $genid ?>taskFormAssignedTo" name="<?php echo $list_name?>"></input>
 	<div id="<?php echo $genid ?>assignto_div">
@@ -287,7 +285,7 @@ function assign_to_select_box($list_name, $context = null, $selected = null, $at
 			value: user,
 			store: usersStore,
 			displayField:'text',
-	        typeAhead: true,
+	        //typeAhead: true,
 	        mode: 'local',
 	        triggerAction: 'all',
 	        selectOnFocus:true,
@@ -445,6 +443,18 @@ function render_object_custom_properties($object, $required, $co_type=null) {
 	tpl_assign('co_type', $co_type);
 	return tpl_fetch(get_template_path('object_custom_properties', 'custom_properties'));
 } // render_object_custom_properties
+
+/**
+ * Show object custom properties block
+ *
+ * @param ContentDataObject $object Show custom properties of this object
+ * @return null
+ */
+function render_member_custom_properties($member, $required) {
+	tpl_assign('member', $member);
+	return tpl_fetch(get_template_path('member_custom_properties', 'custom_properties'));
+} // render_member_custom_properties
+
 
 /**
  * Show object timeslots block
@@ -710,6 +720,9 @@ function autocomplete_member_combo($name, $dimension_id, $options, $emptyText, $
 	$attributes["autocomplete"] = "off";
 	$attributes["onkeypress"] = "if (event.keyCode == 13) return false;";
 	
+	if (!isset($listeners['beforeselect'])) {
+		$listeners['beforeselect'] = 'function(combo, record, index) {record.data.to_show = Ext.util.Format.htmlDecode(record.data.to_show);}';
+	}
 	$listeners_str = "";
 	foreach ($listeners as $event => $function) {
 		$listeners_str .= ($listeners_str == "" ? "" : ",");
@@ -730,7 +743,7 @@ function autocomplete_member_combo($name, $dimension_id, $options, $emptyText, $
         	triggerAction: "all",
         	tpl: "<tpl for=\".\"><div class=\"x-combo-list-item\">{to_show}</div></tpl>",
         	listWidth: "auto",
-        	emptyText: "'.clean($emptyText).'",
+        	emptyText: "'.($emptyText).'",
         	applyTo: "'.$id.'",
         	enableKeyEvents: true,
         	listeners: {' . $listeners_str . '}

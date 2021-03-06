@@ -269,11 +269,11 @@
 }
 
 input#ogTasksPanelATTitle {
-	width: 96%; 
+	width: 99%; 
 }
 
 #ogTasksPanelATDesc {
-	margin-right: 15px;
+	height: auto;
 }
 textarea#ogTasksPanelATDescCtl {
 	width: 100%; 
@@ -310,3 +310,48 @@ button.add-first-btn.no-tasks-add-task-btn {
 	font-size: 18px;
     margin: 25px;
 }
+
+#tasks_quick_add_selectors{
+	margin-right: 20px;
+	margin-top: 5px;
+}
+
+#tasks_quick_add_selectors .small-member-selector {
+	display: inherit;
+	float: none;
+	margin-left: 0px;
+	margin-bottom: 4px;
+	min-height: 23px!important;
+}
+
+#member_selectors_quick_add label {
+	float: left;		
+}
+
+#member_selectors_quick_add .selector-body{
+	float:right;
+	width: 265px!important;
+}
+
+#member_selectors_quick_add .completePath{
+	margin-bottom: 0px;
+}
+
+#member_selectors_quick_add .selected-member-div{
+	margin-top: 3px;
+}
+
+#member_selectors_quick_add .member-path{
+	margin-left: 0;
+}
+
+#member_selectors_quick_add .loading-indicator{
+	color: #848282!important;
+}
+
+#ogTasksPanelATTime .timeSelectors{
+	float:right;
+	width: 205px;
+	margin-right: 60px;
+}
+

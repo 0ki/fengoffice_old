@@ -157,34 +157,30 @@ ogTimeManager.insertRow = function(genid, timeslot, position){
 		row.style.backgroundColor = '#F0F6FF';
 	
 	var pos = 0;
+	
 	var cell = row.insertCell(pos++);
-	if (date.dateFormat('Y') != now.dateFormat('Y'))
-		var textNode = document.createTextNode(date.dateFormat('M j, Y'));
-	else
-		var textNode = document.createTextNode(date.dateFormat('M j'));
-	
-	cell.appendChild(textNode);
-	
+	mem_path = "";
+	var mpath = Ext.util.JSON.decode(timeslot.memPath);
+	if (mpath) mem_path = og.getCrumbHtml(mpath);
+	cell.innerHTML = mem_path;
+		
 	cell = row.insertCell(pos++);
 	textNode = document.createTextNode(timeslot.userName);
 	cell.appendChild(textNode);
 	
 	cell = row.insertCell(pos++);
-	mem_path = "";
-	var mpath = Ext.util.JSON.decode(timeslot.memPath);
-	if (mpath) mem_path = og.getCrumbHtml(mpath);
-	cell.innerHTML = mem_path;
-	
-	cell = row.insertCell(pos++);
-	updatedInfo = '';
-	if (timeslot.lastUpdated != '') {
-		updatedInfo = lang('last updated by on', timeslot.lastUpdatedBy, timeslot.lastUpdated);
-	}
-	textNode = document.createTextNode(updatedInfo);
+	if (date.dateFormat('Y') != now.dateFormat('Y'))
+		var textNode = document.createTextNode(date.dateFormat('M j, Y'));
+	else
+		var textNode = document.createTextNode(date.dateFormat('M j'));
 	cell.appendChild(textNode);
 	
 	cell = row.insertCell(pos++);
 	textNode = document.createTextNode(hours + ":" + minutes);
+	cell.appendChild(textNode);
+	
+	cell = row.insertCell(pos++);
+	textNode = document.createTextNode(timeslot.description);
 	cell.appendChild(textNode);
 	
 	if (table.rows[0].cells.length >= 8) {
@@ -194,7 +190,11 @@ ogTimeManager.insertRow = function(genid, timeslot, position){
 	}
 	
 	cell = row.insertCell(pos++);
-	textNode = document.createTextNode(timeslot.description);
+	updatedInfo = '';
+	if (timeslot.lastUpdated != '') {
+		updatedInfo = lang('last updated by on', timeslot.lastUpdatedBy, timeslot.lastUpdated);
+	}
+	textNode = document.createTextNode(updatedInfo);
 	cell.appendChild(textNode);
 	
 	if (ogTimeManager.DrawInputs) {
@@ -206,7 +206,7 @@ ogTimeManager.insertRow = function(genid, timeslot, position){
 		cell.innerHTML = '<a class="internalLink coViewAction ico-delete" href="javascript:if(confirm(lang(\'confirm delete timeslot\'))) ogTimeManager.DeleteTimeslot(' + timeslot.id + ')" style="display: block;width:0;padding-bottom:0;padding-top:0;line-height:18px" title="' + lang('delete') + '">&nbsp;</a>';
 		cell.width = 18;
 	}
-	
+			
 	cell = row.insertCell(pos++);
 	var textNode = document.createTextNode(timeslot.id);
 	cell.appendChild(textNode);

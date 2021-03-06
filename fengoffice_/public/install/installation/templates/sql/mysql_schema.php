@@ -45,6 +45,7 @@ CREATE TABLE `<?php echo $table_prefix ?>members` (
   `depth` int(2) unsigned NOT NULL,
   `name` varchar(160) <?php echo $default_collation ?> NOT NULL default '',
   `object_id` int(10) unsigned,
+  `color` int(10) unsigned NOT NULL default '0',
   `archived_on` datetime NOT NULL default '0000-00-00 00:00:00',
   `archived_by_id` int(10) unsigned default NULL,
   PRIMARY KEY  (`id`),
@@ -164,7 +165,7 @@ CREATE TABLE `<?php echo $table_prefix ?>objects` (
   KEY `trashed_on` (`trashed_on`),
   KEY `archived_on` (`archived_on`),
   KEY `object_type` (`object_type_id`),
-  KEY `name` USING HASH (`name`)  
+  KEY `name` USING HASH (`name`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 
 CREATE TABLE `<?php echo $table_prefix ?>plugins` (
@@ -814,7 +815,7 @@ CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>custom_property_values` (
   `id` int(10) NOT NULL AUTO_INCREMENT,
   `object_id` int(10) NOT NULL,
   `custom_property_id` int(10) NOT NULL,
-  `value` varchar(255) NOT NULL,
+  `value` text <?php echo $default_collation ?>,
   PRIMARY KEY (`id`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 
@@ -1108,4 +1109,28 @@ CREATE TABLE `<?php echo $table_prefix ?>contact_widget_options` (
   `config_handler_class` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
   `is_system` tinyint(1) unsigned default 0,
   PRIMARY KEY (`widget_name`,`contact_id`,`member_type_id`,`option`) USING BTREE
+) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
+
+CREATE TABLE `<?php echo $table_prefix ?>member_custom_properties` (
+  `id` int(10) NOT NULL AUTO_INCREMENT,
+  `object_type_id` int(10) unsigned NOT NULL,
+  `name` varchar(255) <?php echo $default_collation ?> NOT NULL,
+  `type` varchar(255) <?php echo $default_collation ?> NOT NULL,
+  `description` text <?php echo $default_collation ?> NOT NULL,
+  `values` text <?php echo $default_collation ?> NOT NULL,
+  `default_value` text <?php echo $default_collation ?> NOT NULL,
+  `is_system` tinyint(1) NOT NULL,
+  `is_required` tinyint(1) NOT NULL,
+  `is_multiple_values` tinyint(1) NOT NULL,
+  `property_order` int(10) NOT NULL,
+  `visible_by_default` tinyint(1) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
+
+CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>member_custom_property_values` (
+  `id` int(10) NOT NULL AUTO_INCREMENT,
+  `member_id` int(10) NOT NULL,
+  `custom_property_id` int(10) NOT NULL,
+  `value` text <?php echo $default_collation ?> NOT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;

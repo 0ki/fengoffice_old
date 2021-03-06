@@ -243,6 +243,12 @@ og.addFileOption = function(table, file, genid){
 
 
 og.updateFileName = function(genid, name) {
+	var new_rev_el = document.getElementById(genid + 'new_rev_file_id');
+	if (new_rev_el && new_rev_el.value > 0) {
+		// if is new revision of an existing document return
+		return;
+	}
+	
 	var start = Math.max(0, Math.max(name.lastIndexOf('/'), name.lastIndexOf('\\')) + 1);
 	name = name.substring(start);
 	document.getElementById(genid + 'fileFormFilename').value = name;
@@ -356,9 +362,13 @@ og.addDocumentTypeChanged = function(type, genid){
 		document.getElementById(genid + 'hfType').value = 0;
 		document.getElementById(genid + 'fileUploadDiv').style.display = '';
 		document.getElementById(genid + 'weblinkDiv').style.display = 'none';
+		var comments_box = document.getElementById(genid + 'addFileRevisionComments');
+		if (comments_box) comments_box.style.display = '';
 	}else{
 		document.getElementById(genid + 'hfType').value = 1;
 		document.getElementById(genid + 'fileUploadDiv').style.display = 'none';
 		document.getElementById(genid + 'weblinkDiv').style.display = '';
+		var comments_box = document.getElementById(genid + 'addFileRevisionComments');
+		if (comments_box) comments_box.style.display = 'none';
 	}
 }

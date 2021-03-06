@@ -155,6 +155,36 @@ function forwardRepDate(ProjectTask $task, $min_date) {
 	} else return array('date' => $min_date, 'count' => 0);
 }
 
+function forwardRepDateRawTask($task, $min_date) {
+	
+	if ($task['repeat_forever'] > 0 || $task['repeat_num'] > 0 || $task['repeat_end'] != EMPTY_DATETIME) {
+		if (($task['repeat_by'] == 'start_date' && $task['start_date'] == EMPTY_DATETIME) ||
+			($task['repeat_by'] == 'due_date' && $task['due_date'] == EMPTY_DATETIME) ||
+			$task['repeat_by'] != 'due_date' && $task['repeat_by'] != 'start_date' ||
+			!$min_date instanceof DateTimeValue) {
+				return array('date' => $min_date, 'count' => 0); //This should not happen...
+		}
+		$ts_date = new DateTimeValue($task['repeat_by'] == 'start_date' ? strtotime($task['start_date']) : strtotime($task['due_date']));
+		$date = new DateTimeValue($ts_date);
+		$count = 0;
+		if($date->getTimestamp() >= $min_date->getTimestamp()) {
+			return array('date' => $date, 'count' => $count);
+		}
+		
+		while ($date->getTimestamp() < $min_date->getTimestamp()) {
+			if ($task['repeat_d'] > 0) { 
+				$date = $date->add('d', $task['repeat_d']);
+			} else if ($task['repeat_m'] > 0) { 
+				$date = $date->add('M', $task['repeat_m']);
+			} else if ($task['repeat_y'] > 0) { 
+				$date = $date->add('y', $task['repeat_y']);
+			}
+			$count++;
+		}
+		return array('date' => $date, 'count' => $count);
+	} else return array('date' => $min_date, 'count' => 0);
+}
+
 function replicateRepetitiveTaskForCalendar(ProjectTask $task, $from_date, $to_date) {
 	$new_task_array = array($task);
 	
@@ -252,4 +282,95 @@ function replicateRepetitiveTaskForCalendar(ProjectTask $task, $from_date, $to_d
 	}
 	return $new_task_array;
 }
-?>
+
+
+function replicateRepetitiveTaskForCalendarRawTask($task, $from_date, $to_date) {
+	
+	$new_task_array = array();
+	
+	if ($task['repeat_forever'] > 0 || $task['repeat_num'] > 0 || $task['repeat_end'] != EMPTY_DATETIME) {
+		$res = forwardRepDateRawTask($task, $from_date);
+		$ref_date = $res['date'];
+		$top_repeat_num = $task['repeat_num'] - $res['count'];
+
+		$last_repeat = $task['repeat_end'] != EMPTY_DATETIME ? new DateTimeValue(strtotime($task['repeat_end'])) : null;
+		if (($task['repeat_num'] > 0 && $top_repeat_num <= 0) || ($last_repeat instanceof DateTimeValue && $last_repeat->getTimestamp() < $ref_date->getTimestamp())) {
+			return array();
+		}
+		
+		$num_repetitions = 0;
+		while ($ref_date->getTimestamp() < $to_date->getTimestamp()) {
+			if ($task['repeat_by'] == 'start_date' && $task['start_date'] == EMPTY_DATETIME) return $new_task_array;
+			if ($task['repeat_by'] == 'due_date' && $task['due_date'] == EMPTY_DATETIME) return $new_task_array;
+			
+			if ($task['repeat_by'] == 'start_date') {
+				$diff = $ref_date->getTimestamp() - strtotime($task['start_date']);
+				$task['start_date'] = $ref_date->toMySQL();
+				if ($task['due_date'] != EMPTY_DATETIME) {
+					$dd = new DateTimeValue(strtotime($task['due_date']));
+					$dd->advance($diff);
+					$task['due_date'] = $dd->toMySQL();
+				}
+			} else if ($task['repeat_by'] == 'due_date') {
+				$diff = $ref_date->getTimestamp() - strtotime($task['due_date']);
+				$task['due_date'] = $ref_date->toMySQL();
+				if ($task['start_date'] != EMPTY_DATETIME) {
+					$sd = new DateTimeValue(strtotime($task['start_date']));
+					$sd->advance($diff);
+					$task['start_date'] = $sd->toMySQL();
+				}
+			}
+			
+			$new_task = array();
+			foreach ($task as $k => $v) $new_task[$k] = $v;
+			
+			$new_due_date = null;
+			$new_st_date = null;
+			if ($task['start_date'] != EMPTY_DATETIME) {
+				$new_st_date = new DateTimeValue(strtotime($task['start_date']));
+			} 
+			if ($task['due_date'] != EMPTY_DATETIME) {
+				$new_due_date = new DateTimeValue(strtotime($task['due_date']));
+			}
+			
+			if ($task['repeat_d'] > 0) {
+				if ($new_st_date instanceof DateTimeValue)
+					$new_st_date = $new_st_date->add('d', $task['repeat_d']);
+				if ($new_due_date instanceof DateTimeValue)
+					$new_due_date = $new_due_date->add('d', $task['repeat_d']);
+				$ref_date->add('d', $task['repeat_d']);
+			}
+			else if ($task['repeat_m'] > 0) {
+				if ($new_st_date instanceof DateTimeValue)
+					$new_st_date = $new_st_date->add('M', $task['repeat_m']);
+				if ($new_due_date instanceof DateTimeValue)
+					$new_due_date = $new_due_date->add('M', $task['repeat_m']);
+				$ref_date->add('M', $task['repeat_m']);
+			}
+			else if ($task['repeat_y'] > 0) {
+				if ($new_st_date instanceof DateTimeValue)
+					$new_st_date = $new_st_date->add('y', $task['repeat_y']);
+				if ($new_due_date instanceof DateTimeValue)
+					$new_due_date = $new_due_date->add('y', $task['repeat_y']);
+				$ref_date->add('y', $task['repeat_y']);
+			}
+			
+			if ($new_st_date instanceof DateTimeValue) $new_task['start_date'] = $new_st_date->toMySQL();
+			if ($new_due_date instanceof DateTimeValue) $new_task['due_date'] = $new_due_date->toMySQL();
+			
+			$num_repetitions++;
+			if ($top_repeat_num > 0 && $top_repeat_num == $num_repetitions) break;
+			if ($last_repeat instanceof DateTimeValue && $last_repeat->getTimestamp() < $ref_date->getTimestamp()) break;
+
+			$new_task_array[] = $new_task;
+			$task = array();
+			foreach ($new_task as $k => $v) $task[$k] = $v;
+		}
+	} else {
+		return array($task);
+	}
+	return $new_task_array;
+}
+
+
+

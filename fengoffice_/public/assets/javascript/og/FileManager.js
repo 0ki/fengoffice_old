@@ -41,13 +41,17 @@ og.FileManager = function() {
 			}),
 			remoteSort: true,
 			listeners: {
-				'load': function(result) {
+				'load': function(store, result) {
 					var d = this.reader.jsonData;
 					
+					
 					if (d.totalCount == 0) {
-						this.fireEvent('messageToShow', lang("no objects message", lang("documents"), lang('context')));
-					} else if (d.files.length == 0) {
-						this.fireEvent('messageToShow', lang("no more objects message", lang("documents")));
+						var sel_context_names = og.contextManager.getActiveContextNames();
+						if (sel_context_names.length > 0) {
+							this.fireEvent('messageToShow', lang("no objects message", lang("documents"), sel_context_names.join(', ')));
+						} else {
+							this.fireEvent('messageToShow', lang("no more objects message", lang("documents")));
+						}
 					} else {
 						this.fireEvent('messageToShow', "");
 					}
@@ -58,6 +62,9 @@ og.FileManager = function() {
 						var sm = cmp.getSelectionModel();
 						sm.clearSelections();
 					}
+					
+					Ext.getCmp('file-manager').reloadGridPagingToolbar('files','list_files','file-manager');
+					
 				}
 			}
 		});
@@ -152,22 +159,31 @@ og.FileManager = function() {
 
 	function renderCheckout(value, p, r) {
 		if(r.data.ftype == 0){
-			if (value =='')
+			if (value =='') {
 				return String.format('<div class="ico-unlocked" style="display:block;height:16px;background-repeat:no-repeat;padding-left:18px">'
 				+ '<a href="#" onclick="og.openLink(\'{1}\')" title="{2}">{0}</a>', lang('lock'), og.getUrl('files', 'checkout_file', {id: r.id}), lang('checkout description'));
-			else if (r.data.checkedOutById == og.loggedUser.id || og.loggedUser.type == 1 || og.loggedUser.type == 2){
-                                //og.loggedUser.type 1 = Super Administrator, 2 = Administrator
-				return String.format('<div class="ico-locked" style="display:block;height:16px;background-repeat:no-repeat;padding-left:18px">' +
-					'<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', 
-					lang('unlock'), og.getUrl('files', 'undo_checkout', {id: r.id})) + ', ' +
-					String.format('<a href="#" onclick="og.openLink(\'{1}\')" title="{2}">{0}</a>', 
-					lang('checkin'), og.getUrl('files', 'checkin_file', {id: r.id}), lang('checkin description'))
-					 + '</div>';
+			} else if (r.data.checkedOutById == og.loggedUser.id || og.loggedUser.type == 1 || og.loggedUser.type == 2) {
+				//og.loggedUser.type 1 = Super Administrator, 2 = Administrator
+				var html = String.format('<div class="ico-locked" style="display:block;height:16px;background-repeat:no-repeat;padding-left:18px"><a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', 
+					lang('unlock'), og.getUrl('files', 'undo_checkout', {id: r.id}));
+				
+				if (r.data.checkedOutById == og.loggedUser.id) {
+					html += String.format(', <a href="#" onclick="og.openLink(\'{1}\')" title="{2}">{0}</a>', lang('checkin'), 
+						og.getUrl('files', 'checkin_file', {id: r.id}), lang('checkin description'));
+				} else {
+					html += ', ' + lang('checked out by', String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', 
+						r.data.checkedOutByName, og.getUrl('contact', 'card', {id: r.data.checkedOutById})));
 				}
-			else
+				
+				html += '</div>';
+				
+				return html;
+			
+			} else {
 				return '<div class="ico-locked" style="display:block;height:16px;background-repeat:no-repeat;padding-left:18px">' +
 					lang('checked out by', String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', 
 					r.data.checkedOutByName, og.getUrl('contact', 'card', {id: r.data.checkedOutById}))) + '</div>';
+			}
 		} else {
 			return "--";
 		}

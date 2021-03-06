@@ -2,13 +2,13 @@
 
 $panel = TabPanels::instance()->findById('documents-panel');
 if ($panel instanceof TabPanel && $panel->getEnabled()) {
-	$limit = 5 ;
-	$result =  ProjectFiles::instance()->listing(array(
-		"order" => "name",
-		"order_dir" => "asc",
+	$limit = 5;
+	$result = ProjectFiles::instance()->listing(array(
+		"order" => "updated_on",
+		"order_dir" => "desc",
 		"start" => 0,
 		"limit" => $limit
-	)) ;
+	));
 	$active_members = array();
 	$context = active_context();
 	foreach ($context as $selection) {
@@ -23,7 +23,7 @@ if ($panel instanceof TabPanel && $panel->getEnabled()) {
 		$widget_title = lang('documents'). ' '. lang('in').' '. implode(", ", $mnames);
 	}
 	
-	$total = $result->total ;
+	$total = $result->total;
 	$documents = $result->objects;
 	$genid = gen_id();
 	if ($total) {

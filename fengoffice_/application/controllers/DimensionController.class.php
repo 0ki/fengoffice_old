@@ -113,10 +113,17 @@ class DimensionController extends ApplicationController {
         return $this->initial_list_dimension_members($dimension_id, $object_type_id,$allowed_member_type_ids, false, $extra_conditions);
 	}
 	
-	/** 
-	 * Returns all the members to be displayed in the panel that corresponds to the dimension whose id is received by
-	 * parameter. It is called when the application is first loaded. 
-	*/
+	/**
+	 * Returns all the members to be displayed in the panel that corresponds to the dimension for which the id is received by
+	 * parameter.
+	 * It is called when the application is first loaded.
+	 * @todo: return only the members that are going to be retrieved
+	 * @todo: add a function to retrieve the rest of the members - dimension_members - and make it more efficient
+	 * @todo: add a funciton to retrieve a specific set of members
+	 * @todo: check where this function is called
+	 * @todo: check (and fix) that the system doesn't use the left-panel navigation tree to get member's data
+	 *
+	 */
 	function initial_list_dimension_members($dimension_id, $object_type_id, $allowed_member_type_ids = null, $return_all_members = false, $extra_conditions = "", $limit=null, $return_member_objects = false, $order=null, $return_only_members_name=false, $filter_by_members=array(), $access_level=ACCESS_LEVEL_READ){
 		$allowed_member_types = array();
 		$item_object = null ;
@@ -303,32 +310,6 @@ class DimensionController extends ApplicationController {
 		ajx_extra_data(array('dimension_members' => $tree, 'dimension_id' => $dimension_id));	
 	}
 	
-	function dimensions_js () {
-		session_write_close();
-		header("Content-Type: text/javascript" ); 
-		$dimensions = Dimensions::findAll();
-		echo "og.dimensions = [];\n";
-		echo "og.dimensions_info = [];\n";
-		foreach ($dimensions as $dim) {
-			$members = $dim->getAllMembers();
-			echo "var members = [];\n";
-			foreach ($members as $member) {
-				echo "members[".$member->getId()."] = {\n";
-				echo "  id: ".$member->getId().",\n";
-				echo "  name:'". str_replace(array("'", "\\"), array("","\\\\" ), clean($member->getName()))."',\n";
-				echo "  ot:". $member->getObjectTypeId().",\n";
-				if ($dim->getIsManageable()) echo "  path:'". str_replace(array("'", "\\"), array("","\\\\" ), trim(clean($member->getPath())))."',\n";
-				else echo "  path:'',\n";
-				echo "  ico:'".$member->getIconClass()."'\n";
-				echo "};\n";
-			}
-			echo "og.dimensions[".$dim->getId()."] = members;\n\n";
-			echo "og.dimensions_info[".$dim->getId()."] = {name:'".clean($dim->getName())."'};\n\n";
-		}
-		exit;
-	}
-	
-	
 	function reload_dimensions_js () {
 		ajx_current("empty");
 		$dimensions = Dimensions::findAll();
@@ -350,7 +331,10 @@ class DimensionController extends ApplicationController {
 				$mem_info['ot'] = $member->getObjectTypeId();
 				$mem_info['path'] = $dim->getIsManageable() ? trim(clean($member->getPath())) : '';
 				$mem_info['ico'] = $member->getIconClass();
-				
+				$mem_info['color'] = $member->getMemberColor();
+				$mem_info['parent_id'] = $member->getParentMemberId();
+				$mem_info['archived'] = $member->getArchivedById();
+								
 				$p_info = array();
 				if ($dim->getIsManageable()) {
 					foreach ($ots as $ot) {
@@ -363,6 +347,17 @@ class DimensionController extends ApplicationController {
 			}
 		}
 		ajx_extra_data(array("dims" => $dims_info, "perms" => $perms_info));
+	}
+	
+	function load_dimensions_info() {
+		ajx_current("empty");
+		$dimensions = Dimensions::findAll();
+		
+		$dim_names = array();
+		foreach ($dimensions as $dim) {
+			$dim_names[$dim->getId()] = array("name" => clean($dim->getName()));
+		}
+		ajx_extra_data(array("dim_names" => $dim_names));
 	}
 	
 	

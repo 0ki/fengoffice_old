@@ -1,14 +1,7 @@
 <?php
 	require_javascript("og/CSVCombo.js");
 	require_javascript("og/DateField.js");
-	require_javascript('og/tasks/main.js');
-	require_javascript('og/tasks/addTask.js');
-	require_javascript('og/tasks/drawing.js');
-	require_javascript('og/tasks/TasksTopToolbar.js');
-	require_javascript('og/tasks/TasksBottomToolbar.js');
-	require_javascript('og/tasks/print.js');
-	require_javascript('og/tasks/TaskPopUp.js');
-
+	
 	if (config_option('use tasks dependencies')) {
 		require_javascript('og/tasks/task_dependencies.js');
 	}
@@ -119,6 +112,20 @@ og.config.work_day_start_time = '<?php echo strtotime(user_config_option('work_d
 og.config.work_day_end_time = '<?php echo strtotime(user_config_option('work_day_end_time')) ?>';
 og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Plugins::instance()->isActivePlugin('crpm') ? '1' : '0' ?>';
 og.config.use_milestones = <?php echo config_option('use_milestones') ? 'true' : 'false' ?>;
+og.config.show_notify_checkbox_in_quick_add = <?php echo user_config_option('show_notify_checkbox_in_quick_add') ? 'true' : 'false' ?>;
+og.config.quick_add_task_combos = <?php 
+		$dimensions_from_config = explode(",",user_config_option("quick_add_task_view_dimensions_combos"));
+		$dimensions_user = get_user_dimensions_ids();	
+		$object = "";
+		foreach ($dimensions_from_config as $key=>$conf){
+			if(in_array($conf, $dimensions_user)){
+				$dim = Dimensions::instance()->getDimensionById($conf);
+				if($key!=0) $object .=",";
+				$object .= "'".$dim->getName()."'";
+			}
+		}		
+		echo "[".$object."]";
+?>;
 var task_ids = <?php echo json_encode($ids)?>;
 if (!task_ids) task_ids = [];
 </script>
@@ -251,13 +258,13 @@ if (!task_ids) task_ids = [];
 		$("#<?php echo $genid?>complete_task").val(val);
 	}
 
-	function loadCKeditor(id){
+	function loadCKeditor(id, height){
 		var instance = CKEDITOR.instances['<?php echo $genid ?>ckeditor' + id];
 		if(instance){
 			CKEDITOR.remove(instance);
 		}
 		var editor = CKEDITOR.replace('<?php echo $genid ?>ckeditor' + id, {
-			height: '120px',
+			height: height,
 			enterMode: CKEDITOR.ENTER_DIV,
 			shiftEnterMode: CKEDITOR.ENTER_BR,
 			disableNativeSpellChecker: false,

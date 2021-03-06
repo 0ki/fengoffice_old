@@ -97,7 +97,7 @@ class MessageController extends ApplicationController {
 			}
 		}
 		
-
+		$only_count_result = array_var($_GET, 'only_result',false);
 		$context = active_context();
 		$res = ProjectMessages::instance()->listing(array(
 			"order" => $order,
@@ -105,6 +105,8 @@ class MessageController extends ApplicationController {
 			"start" => $start,
 			"limit" => $limit,
 			"extra_conditions" => $extra_conditions,
+			'count_results' => false,
+			'only_count_results' => $only_count_result,
 			"join_params"=> $join_params,
 			"select_columns"=> $select_columns
 		));

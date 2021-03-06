@@ -248,6 +248,14 @@ og.hideLoading = function() {
 	}
 };
 
+//get loading icon to put it wherever you want
+og.getIndependentLoading = function() {
+	loadingCt = document.createElement('div');
+	loadingCt.innerHTML = lang('loading');
+	loadingCt.className = 'loading-indicator';
+	return loadingCt;
+};
+
 og.otherMsgCt = null;
 og.showOtherMessage = function(msg, left_percent) {
 	if (!og.otherMsgCt) {
@@ -1036,8 +1044,9 @@ Ext.extend (og.PagingToolbar, Ext.PagingToolbar, {
 	// when the server doesn't return the 'start' parameter.
 	// (JSON example).
 	getPageData : function(){
- 		var total = this.store.getTotalCount();
-		var	ap	=	Math.ceil((this.cursor+this.pageSize)/this.pageSize);
+		var total = this.store.getTotalCount();
+ 		 		
+ 		var	ap	=	Math.ceil((this.cursor+this.pageSize)/this.pageSize);
 		if (this.store.reader.jsonData) {
 			var start = parseInt(this.store.reader.jsonData.start);
 			// go to the specified page
@@ -1045,7 +1054,7 @@ Ext.extend (og.PagingToolbar, Ext.PagingToolbar, {
 			// also set the cursor so that 'prev' and 'next' buttons behave correctly
 			this.cursor	= start;
 		}
-
+		
 		return {
 			total : total,
 			activePage : ap,
@@ -2050,6 +2059,7 @@ og.drawComboBox = function(config) {
 	if (!config.empty_text) config.empty_text = '';
 	if (!config.tab_index) config.tab_index = '500';
 	if (!config.width) config.width = 200;
+	if (!config.typeAhead) config.typeAhead = false;
 	//if (!config.editable) config.editable = true;
 	
 	var combo = new Ext.form.ComboBox({
@@ -2067,7 +2077,7 @@ og.drawComboBox = function(config) {
         tabIndex: config.tab_index,
         displayField: 'text',
         editable: config.editable == true,
-        typeAhead: true,
+        typeAhead: config.typeAhead,
         mode: 'local',
         triggerAction: 'all',
         selectOnFocus: true,
@@ -2169,7 +2179,7 @@ og.flash2img = function() {
 }
 
 
-og.getCrumbHtml = function(dims, draw_all_members, skipped_dimensions, show_archived) {
+og.getCrumbHtml = function(dims, draw_all_members, skipped_dimensions, show_archived, fixed_mem_len) {
 	var html = '';
 	var dim_index = 0;
 	var max_members_per_dim = og.preferences['breadcrumb_member_count'];
@@ -2204,10 +2214,14 @@ og.getCrumbHtml = function(dims, draw_all_members, skipped_dimensions, show_arch
 			all_texts[id] = texts;
 		}
 		
-		if (total_texts == 1) max_len = 13
-		else if (total_texts < 3) max_len = 9;
-		else if (total_texts < 5) max_len = 5;
-		else max_len = 4;
+		if (fixed_mem_len && !isNaN(fixed_mem_len)) {
+			max_len = fixed_mem_len;
+		} else {
+			if (total_texts == 1) max_len = 13
+			else if (total_texts < 3) max_len = 9;
+			else if (total_texts < 5) max_len = 5;
+			else max_len = 4;
+		}
 		
 		breadcrumb_count = 0;
 		for (id in members) {
@@ -2261,6 +2275,159 @@ og.getCrumbHtml = function(dims, draw_all_members, skipped_dimensions, show_arch
 	return html;
 }
 
+og.getCrumbHtmlWithoutLinksMemPath = function(dims, draw_all_members, skipped_dimensions, show_archived, fixed_mem_len , total_length) {
+	var html = '';
+	var dim_index = 0;
+	var max_members_per_dim = og.preferences['breadcrumb_member_count'];
+	for (x in dims) {
+		if (isNaN(x)) continue;
+		
+		var skip_this_dimension = false;
+		if (skipped_dimensions) {
+			for (sd in skipped_dimensions) {
+				if (skipped_dimensions[sd] == x) {
+					skip_this_dimension = true;
+					break;
+				}
+			}
+		}
+		if (skip_this_dimension) continue;
+		
+		var members = dims[x];
+		var inner_html = "";
+		var title = "";
+		var total_texts = 0;
+		var all_texts = [];
+		var total_text_length = 0;
+		var total_texts_in_Crumb = 0;
+		var important_member_name = "";
+		
+		for (id in members) {
+			var m = members[id];
+			if (!m.archived) {
+				var texts = og.getMemberFromTrees(x, id, true);
+			} else {
+				var texts = [];
+				texts.push({id:m.id, text:m.name, ot:m.ot, c:m.c});
+			}
+			if (texts.length == 0 && show_archived){
+				texts.push({id:id, text:m.name, ot:m.ot, c:m.c});
+			}
+			total_texts += texts.length;
+			
+			all_texts[id] = texts;
+			
+			if(total_length && !isNaN(total_length)){
+				texts.forEach(function(text) {
+				    total_text_length += text.text.length;
+				    total_texts_in_Crumb ++;
+				});
+			}
+		}
+		
+		if (fixed_mem_len && !isNaN(fixed_mem_len)) {
+			max_len = fixed_mem_len;
+		} else {
+			if (total_texts == 1) max_len = 13
+			else if (total_texts < 3) max_len = 9;
+			else if (total_texts < 5) max_len = 5;
+			else max_len = 4;
+			
+			if(total_length && !isNaN(total_length)){
+				max_len = Math.floor(total_length/total_texts_in_Crumb);
+			}
+		}
+		
+		
+		breadcrumb_count = 0;
+		for (id in members) {
+			if (isNaN(id)) continue;
+			texts = all_texts[id];
+			
+			if (texts.length > 0) {
+				breadcrumb_count++;
+			}
+			if (!draw_all_members && breadcrumb_count > max_members_per_dim) break;
+			
+			if (title != "" && breadcrumb_count <= max_members_per_dim) title += '- ';
+			var color = members[id]['c'];
+			var member_path_span = '<span class="member-path og-wsname-color-'+ color +'">';
+			var member_path_content = "";
+			
+			for (i=texts.length-1; i>=0; i--) {
+				var text = texts[i].text;
+				text = text.replace("&amp;","&");
+				if (i>0) {
+					str = text.length > max_len ? text.substring(0, max_len-3) + ".." : text;
+				} else {
+					min_len = max_len < 12 ?  10 : max_len-3;					
+					str = (text.length > 12 && text.length > max_len) ? text.substring(0, min_len) + ".." : text;
+					important_member_name = text.substring(0, total_length);
+				}
+				if (breadcrumb_count <= max_members_per_dim) {
+					title += texts[i].text + (i>0 ? "/" : " ");
+				}
+				
+				var onclick = "return false;";
+				if (og.additional_on_dimension_object_click[texts[i].ot]) {
+					onclick = og.additional_on_dimension_object_click[texts[i].ot].replace('<parameters>', texts[i].id);
+				}                                
+				
+				member_path_content += str;
+				
+				if (i>0) member_path_content += "/";
+			}
+						
+			if(member_path_content.length > total_length && max_len <= 3){
+				member_path_content = ".../"+important_member_name;
+			}
+			member_path_span += member_path_content + '</span>';
+			
+			if (member_path_content != '') inner_html += member_path_span;
+		}
+		
+		if (members['total'] > max_members_per_dim) {
+			title += lang('and number more', (members['total'] - max_members_per_dim));
+		}
+		
+		if (inner_html != "") html += '<span class="member-path" title="'+title+'">' + inner_html + '</span>';
+		dim_index++;
+	}
+	
+	return html;
+}
+
+//return the member bredcrumb without links. Length of bredcrumb is calculate from completePath contenedor
+og.getCrumbHtmlWithoutLinks = function (member_id, dimension_id, genid) {
+	//calculate bredcrumb width
+	width = $("#"+genid+"selected-member"+member_id+" .completePath").width();
+	if(width == null || width == 0){
+		width = 240;
+	}
+	
+	var member = og.dimensions[dimension_id][member_id];
+	
+	bredcrumb_total_length = width / 7;
+			
+	if (member == null) return false;
+	
+	var member_info = {};
+	member_info[member.id] ={
+			"ot":"1",
+			"c":member.color,
+			"archived": member.archived,
+			"name":member.name
+	};
+	member_info["total"] = 1;
+	
+	var member_path = {};
+	member_path[dimension_id] = member_info;
+	
+	mem_path = og.getCrumbHtmlWithoutLinksMemPath(member_path, false, og.breadcrumbs_skipped_dimensions,false,null,bredcrumb_total_length);
+	
+	return mem_path;
+}
+
 og.getMemberTreeNodeColor = function(node) {
 	var color = "";
 	if (node.ui && node.ui.getIconEl()) {
@@ -2282,7 +2449,7 @@ og.getMemberFromTrees = function(dim_id, mem_id, include_parents) {
 		selnode_id = selnode ? selnode.id : -1;
 		node = tree.getNodeById(mem_id);
 		if (node) {
-			if (node.id != selnode_id) {
+			//if (node.id != selnode_id) {
 				texts.push({id:node.id, text:node.text, ot:node.object_type_id, c:og.getMemberTreeNodeColor(node)});
 				if (include_parents) {
 					while(node.parentNode && node.parentNode.id > 0 && node.parentNode.id != selnode_id) {
@@ -2290,7 +2457,7 @@ og.getMemberFromTrees = function(dim_id, mem_id, include_parents) {
 						if (node) texts.push({id:node.id, text:node.text, ot:node.object_type_id, c:og.getMemberTreeNodeColor(node)});
 					}
 				}
-			}
+			//}
 		}
 	}
 	return texts;
@@ -2645,11 +2812,12 @@ og.renderDimCol = function(value, p, r) {
 	
 	var mpath = Ext.util.JSON.decode(r.data.memPath);
 	if (mpath) {
+		var mpath_aux = {};
+		mpath_aux[dim_id] = {};
 		for (t in mpath[dim_id]) {
-			if (mpath[dim_id][t].name) {
-				text += (text=='' ? '' : ', ') + mpath[dim_id][t].name;
-			}
+			mpath_aux[dim_id][t] = mpath[dim_id][t];
 		}
+		text = og.getCrumbHtml(mpath_aux);
 	}
 	return text;
 }
@@ -2684,4 +2852,28 @@ og.showHideWidgetMoreLink = function(cls, linkid, show) {
 
 	if (show) $(cls).show("slow");
 	else $(cls).hide("slow");
+}
+
+og.getColorInputHtml = function(genid, field_name, value, col, label) {
+	if (!col) col = 'color';
+	if (!field_name) field_name = 'member';
+	if (!value) value = 0;
+	
+	var html = '';
+	if (label) {
+		html += '<label for="'+ genid + field_name +'_' + col +'">' + label + ':</label>';
+	}
+	html += '<input name="'+field_name+'[' + col + ']" id="'+ genid + field_name +'_' + col +'" class="color-code" type="hidden" value="'+value+'" />';
+	html += "<div class='ws-color-chooser'>";
+	for (var i=1; i<=24; i++) {
+		var cls = (value == i)?'selected':'';
+		html += "<div  class='ico-color"+i+ " "+ cls + " color-cell'  onClick='$(\"input.color-code\").val(\""+i+"\");$(\".color-cell\").removeClass(\"selected\");$(this).addClass(\"selected\");'></div>";
+		if (i==12) {
+			html +=	'<div class="x-clear"></div>';
+		}
+	}
+	html+=	'<div class="x-clear"></div>';
+	html+=	'</div>';
+	
+	return html;
 }

@@ -241,7 +241,7 @@ class ApplicationLogs extends BaseApplicationLogs {
 
 		
 		$sql = "SELECT al.id FROM ".TABLE_PREFIX."application_logs al INNER JOIN ".TABLE_PREFIX."sharing_table st ON st.object_id=al.rel_object_id
-				WHERE st.group_id IN (SELECT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups WHERE contact_id = ".logged_user()->getId().") AND $extra_conditions";
+				WHERE EXISTS (SELECT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups WHERE st.group_id=permission_group_id and contact_id = ".logged_user()->getId().") AND $extra_conditions";
 		if ($members_sql != "") {
 			$sql .= " AND $members_sql";
 		}

@@ -90,6 +90,7 @@
 	'file properties' => 'Propiedades del archivo',
 	'upload file' => 'Cargar archivo',
 	'create new revision' => 'Crear nueva revisión',
+  	'upload new revision' => 'Cargar una nueva versión',
 	'add document' => 'Añadir documento',
 	'save document' => 'Guardar documento',
 	'add spreadsheet' => 'Añadir hoja de cálculo',

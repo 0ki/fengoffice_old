@@ -137,7 +137,7 @@ ogTimeManager.GetNewTimeslotParameters = function(genid){
 
 	parameters["timeslot[hours]"] = document.getElementById(genid + 'tsHours').value;
         parameters["timeslot[minutes]"] = document.getElementById(genid + 'tsMinutes').value;
-	parameters["timeslot[description]"] = document.getElementById(genid + 'tsDesc').value;
+	parameters["timeslot[description]"] = document.getElementById(genid + 'tsDesc').innerHTML;
 	var userSel = document.getElementById(genid + 'tsUser');
 	if (userSel){
 		parameters["timeslot[contact_id]"] = userSel.value;
@@ -182,9 +182,9 @@ ogTimeManager.SubmitNewTimeslot = function(genid,obj_type){
 					this.deleteTimeslot(timeslot.id);
 					this.CancelEdit();
 				}
-				document.getElementById(genid + 'tsDesc').value = '';
+				document.getElementById(genid + 'tsDesc').innerHTML = '';
 				document.getElementById(genid + 'tsHours').value = 0;
-                                document.getElementById(genid + 'tsMinutes').value = 0;
+                document.getElementById(genid + 'tsMinutes').value = 0;
 				this.insertTimeslot(timeslot, genid);
 			} else {
 				if (!data.errorMessage || data.errorMessage == '')
@@ -193,6 +193,7 @@ ogTimeManager.SubmitNewTimeslot = function(genid,obj_type){
 		},
 		scope: this
 	});
+	Ext.getCmp(genid+"timeslot[date]Cmp").focus();
 }
 
 ogTimeManager.DeleteTimeslot = function(timeslotId){
@@ -215,13 +216,13 @@ ogTimeManager.CancelEdit = function(){
 	document.getElementById(this.genid + 'TMTimespanHeader').className = 'TMTimespanHeader';
 	
 	document.getElementById(this.genid + 'tsHours').value = '0';
-	document.getElementById(this.genid + 'tsDesc').value = '';
+	document.getElementById(this.genid + 'tsMinutes').value = '0';
+	document.getElementById(this.genid + 'tsDesc').innerHTML = '';
 	var datePick = Ext.getCmp(this.genid + 'timeslot[date]Cmp');
 	if (datePick){
 		datePick.setValue(new Date());
 	}
-	
-	$(".context-body").slideUp();
+	member_selector.remove_all_selections(this.genid);
 }
 
 ogTimeManager.EditTimeslot = function(timeslotId){
@@ -231,8 +232,6 @@ ogTimeManager.EditTimeslot = function(timeslotId){
 		document.getElementById(this.genid + 'TMTimespanSubmitAdd').style.display = 'none';
 		document.getElementById(this.genid + 'TMTimespanAddNew').className = 'TMTimespanEdit';
 		document.getElementById(this.genid + 'TMTimespanHeader').className = 'TMTimespanEditHeader';
-		
-		$(".context-body:hidden").slideDown();
 		
 		var time_edit = parseFloat(ts.time / 3600);
 		var new_time = (time_edit + "").split(".");
@@ -265,7 +264,7 @@ ogTimeManager.EditTimeslot = function(timeslotId){
 			document.getElementById(this.genid + 'tsMinutes').value = 55;
 		}
 		
-		document.getElementById(this.genid + 'tsDesc').value = ts.description;
+		document.getElementById(this.genid + 'tsDesc').innerHTML = ts.description;
 		document.getElementById(this.genid + 'tsId').value = timeslotId;
 		
 		var userSel = document.getElementById(this.genid + 'tsUser');

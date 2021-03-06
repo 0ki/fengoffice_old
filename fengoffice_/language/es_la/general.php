@@ -352,4 +352,6 @@
 	'projects widget title' => 'Proyectos',
 	'statics' => 'Estadísticas',
 	'summary' => 'Resumen',
+	'color' => 'Color',
+	'active context info' => 'Información del contexto',
 ); ?>

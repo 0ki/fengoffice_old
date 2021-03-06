@@ -131,7 +131,7 @@
     'success add group' => 'Group {0} has been added',
     'success edit group' => 'Group {0} has been updated',
     'success delete group' => 'Group {0} has been deleted',
-  	'no groups in company' => 'No Groups in Company',
+  	'no groups in company' => 'No groups have been added yet',
     
     'success edit company' => 'Company data has been updated',
     'success edit company logo' => 'Company logo has been updated',

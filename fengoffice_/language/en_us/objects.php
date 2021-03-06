@@ -117,8 +117,8 @@
     'the comment activity' => 'the comment{0}',
     'the user activity' => 'the user{0}',
     'the project activity' => 'the workspace{0}',
-	'the timeslot activity' => 'the timeslot{0}',
     'the Time activity' => 'a timeslot',
+	'the timeslot activity' => 'the timeslot{0}',
       
     'the message' => 'the note',
     'the mail' => 'the email',
@@ -171,6 +171,7 @@
     'activity copy' => "{1} copied {0} {2}",
     'activity read' => "{1} read {0} {2}",
     'activity download' => "{1} downloaded {0} {2}",
+    'activity upload' => "{1} uploaded a new version of {0} {2}",
     'activity checkout' => "{1} checked out {0} {2}",
     'activity checkin' => "{1} checked in {0} {2}",
     'activity made several changes' => "{1} made ​​several changes on {0} {2}",

@@ -19,11 +19,26 @@ $section = $ws_widget instanceof Widget && in_array($ws_widget->getDefaultSectio
 	<?php if (isset($data_ws) && $data_ws && count($data_ws) > 0) : ?>
 		<div class="project-list">
 		<?php foreach($data_ws as $ws):?>
-			<div class="workspace-row-container <?php echo $row_cls ?>">
+			<div class="workspace-row-container <?php echo $row_cls ?>" id="workspace-<?php echo $ws->getId()?>">
 				<a class="internalLink" href="javascript:void(0);" onclick="og.workspaces.onWorkspaceClick(<?php echo $ws->getId() ?>);">
 					<img class="ico-color<?php echo $ws->getMemberColor() ?>" unselectable="on" src="s.gif"/>
 					<?php echo $ws->getName() ?>
 				</a>
+				<?php
+					$p = $ws->getParentMember();
+					if ($p instanceof Member) {
+						$crumb_members = array(
+							$p->getId() => array('name' => $p->getName(), 'ot' => $p->getObjectTypeId(), 'c' => $p->getColor()),
+						);
+						$crumbOptions = json_encode(array($ws_dim->getId() => $crumb_members));
+						$crumbJs = " og.getCrumbHtml($crumbOptions)";
+					?>
+				<span class="breadcrumb"></span>
+				<script>
+					var crumbHtml = <?php echo $crumbJs?>;
+					$("#workspace-<?php echo $ws->getId()?> .breadcrumb").html(crumbHtml);
+				</script>
+				<?php } ?>
 			</div>
 			<div class="x-clear"></div>
 			<?php $row_cls = $row_cls == "" ? "dashAltRow" : ""; ?>
@@ -32,7 +47,7 @@ $section = $ws_widget instanceof Widget && in_array($ws_widget->getDefaultSectio
 		
 		<?php if (false && $total > 0) : ?>
 			<div class="view-all-container">
-				<a href="javascript:og.customDashboard('member', 'init', {},true)" ><?php echo lang('view all');?></a>
+				<a href="#" onclick="og.openLink(og.getUrl('member','init',{dim_id:'<?php echo $ws_dim->getId()?>', ot:'<?php echo $ws_ot_id?>'}), {caller:'workspaces'})"><?php echo lang("view all") ?></a>
 			</div>
 			<div class="clear"></div>
 		<?php endif ;?>

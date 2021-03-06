@@ -6,8 +6,13 @@
 	if (!isset($parent_sel)) $parent_sel = 0;
 	if (!isset($obj_type_sel)) $obj_type_sel = 0;
 	if (!isset($member)) $member = null;
+	$member_color = 0;
 	if ($member instanceof Member && !$member->isNew()) {
 		$memberId = $member->getId();
+		$member_color = $member->getColor();
+	} else if ($parent_sel > 0) {
+		$p = Members::getMemberById($parent_sel);
+		if ($p instanceof Member) $member_color = $p->getColor();
 	}
 	
 	$object_type_selected = $obj_type_sel > 0 ? ObjectTypes::findById($obj_type_sel) : null;
@@ -15,6 +20,9 @@
 		$object_type_name = lang(ObjectTypes::findById($member->getObjectTypeId())->getName());
 	} else {
 		$object_type_name = $object_type_selected instanceof ObjectType ? lang($object_type_selected->getName()) : null;
+	}
+	if ($member instanceof Member && $member->isNew()) {
+		$member->setObjectTypeId($obj_type_sel);
 	}
 	if($member instanceof Member && !$member->isNew()) {
 		$ot = ObjectTypes::findById($member->getObjectTypeId());
@@ -102,6 +110,16 @@
 		
 		<div class="x-clear"></div>
 		
+		<div id="<?php echo $genid?>member_color_input" style="margin:15px 0;"></div>
+		
+		<div class="x-clear"></div>
+		
+		<div id="<?php echo $genid ?>add_custom_properties_div"><?php 
+			echo render_member_custom_properties($member, false);
+		?></div>
+		
+		<div class="x-clear"></div>
+		
 		<div id="<?php echo $genid?>dimension_object_fields" style="display:none;"></div>
 		
 		<div style="margin-top:10px; display:none;" id="<?php echo $genid?>property_links">
@@ -168,5 +186,7 @@
 		genid: genid,
 		dimensionCode: '<?php echo $current_dimension->getCode()?>'
 	});
+
+	document.getElementById(genid + 'member_color_input').innerHTML = og.getColorInputHtml(genid, 'member', <?php echo "$member_color"?>, 'color', '<?php echo lang('color')?>');
 	
 </script>

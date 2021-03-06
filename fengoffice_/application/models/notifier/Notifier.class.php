@@ -30,7 +30,7 @@ class Notifier {
 		if (!$object instanceof ContentDataObject) {
 			return;
 		}
-                if ($object instanceof Comment) {
+		if ($object instanceof Comment) {
 			$subscribers = $object->getRelObject()->getSubscribers();
 		} else {
 			$subscribers = $object->getSubscribers();
@@ -54,32 +54,32 @@ class Notifier {
 		if ($action == ApplicationLogs::ACTION_ADD) {
 			self::objectNotification($object, $subscribers, logged_user(), 'new');
 		} else if ($action == ApplicationLogs::ACTION_EDIT) {
-                        $contactIds = $log_data ;
+			$contactIds = $log_data ;
 			if ($contactIds) {
 				$contacts = Contacts::instance()->findAll(array("conditions"=>" o.id IN (".$contactIds.")"));
-                                foreach ($contacts as $contact){
-                                    $subscribers[] = $contact;
-                                }
+				foreach ($contacts as $contact){
+					$subscribers[] = $contact;
+				}
 			}
 			self::objectNotification($object, $subscribers, logged_user(), 'modified');
 		} else if ($action == ApplicationLogs::ACTION_TRASH) {
 			self::objectNotification($object, $subscribers, logged_user(), 'deleted');
 		} else if ($action == ApplicationLogs::ACTION_CLOSE) {
-                        $contactIds = $log_data ;
+			$contactIds = $log_data ;
 			if ($contactIds) {
 				$contacts = Contacts::instance()->findAll(array("conditions"=>" o.id IN (".$contactIds.")"));
-                                foreach ($contacts as $contact){
-                                    $subscribers[] = $contact;
-                                }
+				foreach ($contacts as $contact){
+					$subscribers[] = $contact;
+				}
 			}
 			self::objectNotification($object, $subscribers, logged_user(), 'closed');
-                } else if ($action == ApplicationLogs::ACTION_OPEN) {
-                        $contactIds = $log_data ;
+		} else if ($action == ApplicationLogs::ACTION_OPEN) {
+			$contactIds = $log_data ;
 			if ($contactIds) {
 				$contacts = Contacts::instance()->findAll(array("conditions"=>" o.id IN (".$contactIds.")"));
-                                foreach ($contacts as $contact){
-                                    $subscribers[] = $contact;
-                                }
+				foreach ($contacts as $contact){
+					$subscribers[] = $contact;
+				}
 			}
 			self::objectNotification($object, $subscribers, logged_user(), 'open');
 		} else if ($action == ApplicationLogs::ACTION_SUBSCRIBE) {
@@ -92,6 +92,8 @@ class Notifier {
 			self::objectNotification($object, $contacts, logged_user(), 'subscribed');
 		} else if ($action == ApplicationLogs::ACTION_COMMENT) {
 			self::newObjectComment($object, $subscribers);
+		} else if ($action == ApplicationLogs::ACTION_UPLOAD) {
+			self::objectNotification($object, $subscribers, logged_user(), ApplicationLogs::ACTION_UPLOAD);
 		}
 		
 	}
@@ -170,13 +172,21 @@ class Notifier {
 				foreach ($members as $member){
 					$dim = $member->getDimension();
 					if($dim->getIsManageable()){
+						/* @var $member Member */
+						$parent_members = $member->getAllParentMembersInHierarchy();
+						$parents_str = '';
+						foreach ($parent_members as $pm) {
+							/* @var $pm Member */
+							if (!$pm instanceof Member) continue;
+							$parents_str .= '<span style="'.get_workspace_css_properties($pm->getMemberColor()).'">'. $pm->getName() .'</span>';
+						}
 						if ($dim->getCode() == "customer_project"){
 							$obj_type = ObjectTypes::findById($member->getObjectTypeId());
 							if ($obj_type instanceof ObjectType) {
-								$contexts[$dim->getCode()][$obj_type->getName()][]= '<span style="'.get_workspace_css_properties($member->getMemberColor()).'">'. $member->getName() .'</span>';
+								$contexts[$dim->getCode()][$obj_type->getName()][]= $parents_str . '<span style="'.get_workspace_css_properties($member->getMemberColor()).'">'. $member->getName() .'</span>';
 							}
 						}else{
-							$contexts[$dim->getCode()][]= '<span style="'.get_workspace_css_properties($member->getMemberColor()).'">'. $member->getName() .'</span>';
+							$contexts[$dim->getCode()][]= $parents_str . '<span style="'.get_workspace_css_properties($member->getMemberColor()).'">'. $member->getName() .'</span>';
 						}
 					}
 				}

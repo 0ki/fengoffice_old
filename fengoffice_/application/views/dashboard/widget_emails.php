@@ -39,7 +39,7 @@ if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user
 </table>
 <?php if ($c > 5) { ?>
 <div id="dashSMUT" style="width:100%;text-align:right">
-	<a href="#" onclick="og.hideAndShowByClass('dashSMUT', 'dashSMUC', 'dashTableEmails'); return false;"><?php echo lang("show more amount", $c -5) ?>...</a>
+	<a href="#" onclick="og.hideAndShowByClass('dashSMUT', 'dashSMUC', 'dashTableEmails'); return false;"><?php echo lang("show more") ?>...</a>
 </div>
 <?php } // if ?>
 </div>

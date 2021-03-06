@@ -61,10 +61,14 @@ class MemberController extends ApplicationController {
 				case 'name': $order_dir = 'ASC'; break;
 				default: $order_dir = 'DESC';
 			}
-		}		
-
+		}
+		
+		$dim_id = array_var($_REQUEST, 'dim_id');
+		if (!is_numeric($dim_id)) return;
+		$ot_id = array_var($_REQUEST, 'ot');
+		
 		$dim_controller = new DimensionController();
-		$members = $dim_controller->initial_list_dimension_members(Dimensions::findByCode('workspaces')->getId(), ObjectTypes::findByName('workspace')->getId(), $context, true);
+		$members = $dim_controller->initial_list_dimension_members($dim_id, $ot_id);
 		$ids = array();
 		foreach ($members as $m){
 			$ids[]=$m['object_id'];
@@ -75,6 +79,7 @@ class MemberController extends ApplicationController {
 			$members_sql .= " AND parent_member_id IN (" . implode ( ',', $members ) . ")";
 		}else{
 			$members_sql .= " AND parent_member_id = 0";
+			//$members_sql .= "";
 		}
 		$res = Members::findAll(array("conditions" => "object_id IN (".implode(',', $ids).") ". $members_sql,'offset' => $start, 'limit' => $limit, 'order' => "$order $order_dir"));
 		
@@ -175,6 +180,21 @@ class MemberController extends ApplicationController {
 					}
 				}
 			}
+			// Inherit parent permissions
+			$parent_member = Members::findById($parent);
+			if ($parent_member instanceof Member) {
+				$cmps = ContactMemberPermissions::findAll(array('conditions' => 'member_id='.$parent_member->getId()));
+				foreach ($cmps as $cmp){
+					$parent_pg = array(
+						'o' => $cmp->getObjectTypeId(),
+						'w' => $cmp->getCanWrite(),
+						'd' => $cmp->getCanDelete(),
+						'r' => 1
+					);
+					$permission_parameters['member_permissions'][$cmp->getPermissionGroupId()][] = $parent_pg;
+				}
+			}
+			
 			tpl_assign('permission_parameters', $permission_parameters);
 			//--
 			
@@ -228,6 +248,7 @@ class MemberController extends ApplicationController {
 			if (array_var($_GET, 'prop_genid') != "") tpl_assign('prop_genid', array_var($_GET, 'prop_genid'));
 			
 		} else {
+		try {
 			$ok = $this->saveMember($member_data, $member);
 			
 			// if added from quick-add add default permissions for executives, managers and administrators
@@ -287,8 +308,13 @@ class MemberController extends ApplicationController {
 					//ajx_current("reload");
 				}
 			}
+		} catch (Exception $e) {
+			DB::rollback();
+			flash_error($e->getMessage());
+			ajx_current("empty");
 		}
 
+		}
 	}
 	
 	function edit() {
@@ -361,16 +387,22 @@ class MemberController extends ApplicationController {
 			tpl_assign('ot_with_associations', $ot_with_associations);
 			
 		} else {
-			$ok = $this->saveMember($member_data, $member, false);
-			
-			Env::useHelper('permissions');
-			save_member_permissions_background(logged_user(), $member, array_var($_REQUEST, 'permissions'));
-			
-			if ($ok) {
-				ApplicationLogs::createLog($member, ApplicationLogs::ACTION_EDIT);
-				$ret = null;
-				Hook::fire('after_edit_member', $member, $ret);
-				evt_add("reload dimension tree", array('dim_id' => $member->getDimensionId(), 'mid' => $member->getId(), 'pid' => $member->getParentMemberId()));
+			try {
+				$ok = $this->saveMember($member_data, $member, false);
+				
+				Env::useHelper('permissions');
+				save_member_permissions_background(logged_user(), $member, array_var($_REQUEST, 'permissions'));
+				
+				if ($ok) {
+					ApplicationLogs::createLog($member, ApplicationLogs::ACTION_EDIT);
+					$ret = null;
+					Hook::fire('after_edit_member', $member, $ret);
+					evt_add("reload dimension tree", array('dim_id' => $member->getDimensionId(), 'mid' => $member->getId(), 'pid' => $member->getParentMemberId()));
+				}
+			} catch (Exception $e) {
+				DB::rollback();
+				flash_error($e->getMessage());
+				ajx_current("empty");
 			}
 		}
 	}
@@ -381,6 +413,11 @@ class MemberController extends ApplicationController {
 			
 			if (!$is_new) {
 				$old_parent = $member->getParentMemberId();
+			}
+			
+			if (!isset($member_data['color']) && array_var($member_data, 'parent_member_id') > 0) {
+				$p = Members::findById(array_var($member_data, 'parent_member_id'));
+				$member_data['color'] = $p->getColor();
 			}
 			
 			$member_data['name'] = remove_css_and_scripts($member_data['name']);
@@ -452,7 +489,11 @@ class MemberController extends ApplicationController {
 				
 			}
 			
-			
+			// add custom properties
+			if (method_exists('MemberCustomPropertiesController', 'add_custom_properties')) {
+				$mcp_controller = new MemberCustomPropertiesController();
+				$mcp_controller->add_custom_properties($member);
+			}
 			
 			
 			// Other dimensions member restrictions
@@ -659,6 +700,7 @@ class MemberController extends ApplicationController {
 			if ($is_new) {
 				$member_data['member_id'] = $member->getId();
 			}
+			$member_data['archived'] = $member->getArchivedById();
 			$member_data['path'] = trim(clean($member->getPath()));
 			$member_data['ico'] = $member->getIconClass();
 			if (isset($allowed_object_types) && is_array($allowed_object_types)) {
@@ -671,6 +713,7 @@ class MemberController extends ApplicationController {
 		} catch (Exception $e) {
 			DB::rollback();
 			flash_error($e->getMessage());
+			throw $e;
 			ajx_current("empty");
 		}
 	}
@@ -1182,7 +1225,7 @@ class MemberController extends ApplicationController {
 			}else {
 				$parent_member_id = 0;
 				$parent_member = null;
-				$object_types = DimensionObjectTypes::instance()->findAll(array("conditions"=>"dimension_id = $dimension_id AND is_root = 1 "));
+				$object_types = DimensionObjectTypes::instance()->findAll(array("conditions"=>"dimension_id = $dimension_id AND is_root = 1 AND object_type_id<>(SELECT id from ".TABLE_PREFIX."object_types WHERE name='company')"));
 			}
 			if (count($object_types)) {
 				if (count($object_types) == 1) { 
@@ -1456,4 +1499,47 @@ class MemberController extends ApplicationController {
 			ajx_current("empty");
 		}
 	}
+	
+	// get member selectors for add to the view 
+	function get_rendered_member_selectors() {
+		$object_members = array();
+		$objectId = 0;
+		if(get_id()){
+			$object = Objects::findObject(get_id());
+			$object_type_id = $object->manager()->getObjectTypeId();
+			$object_members = $object->getMemberIds();
+			$objectId = get_id();
+		}else{
+			$object_type_id = array_var($_GET, 'objtypeid');
+			if(array_var($_GET,'members')){
+				$object_members = explode(',', array_var($_GET,'members'));	
+			}			
+		}
+		
+		if(count($object_members) == 0){
+			$object_members = active_context_members(false);
+		}
+		
+		$genid = array_var($_GET, 'genid');
+		$listeners = array();
+	
+		//ob_start — Turn on output buffering
+		//no output is sent from the script (other than headers), instead the output is stored in an internal buffer.
+		ob_start();
+		//get skipped dimensions for this view
+		$view_name = array_var($_GET, 'view_name');
+		$dimensions_to_show = explode(",",user_config_option($view_name."_view_dimensions_combos"));
+		$dimensions_to_skip = array_diff(get_user_dimensions_ids(), $dimensions_to_show);
+		
+		render_member_selectors($object_type_id, $genid, $object_members, array('listeners' => $listeners),$dimensions_to_skip,null,false);
+	
+		ajx_current("empty");
+	
+		//Gets the current buffer contents and delete current output buffer.
+		//ob_get_clean() essentially executes both ob_get_contents() and ob_end_clean().
+		ajx_extra_data(array("htmlToAdd" => ob_get_clean()));
+		ajx_extra_data(array("objectId" => $objectId));
+		
+	
+	} // get_rendered_member_selectors
 }

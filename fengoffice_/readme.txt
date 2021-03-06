@@ -1,5 +1,5 @@
 
-	About Feng Office 2.5.1.4
+	About Feng Office 2.6-beta
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -102,6 +102,70 @@
 	Changelog
 	=========
 	
+	Since 2.5.1.5
+	----------------
+	
+	feature: easier and faster way to classify tasks from the quick add/edit view
+	feature: easier way to manage timeslots
+	feature: multiple tasks drag and drop
+	feature: custom properties can be added for Projects, Clients and other dimension members in the Professional Edition
+	feature: Projects, Clients (and other dimensions) can now be colour coded
+	feature: IMAP support has been developed
+	feature: listings now show may show the breadcrumbs (workspace, client, project, etc.) in separate columns
+	feature: templates now support subscribing users to the tasks, and take them into account
+	feature: config option to select which milestones are shown in milestone selectors 
+	 
+	perfomance: cleaner load process
+	performance: improved for most widgets
+	 
+	translations update: fr_fr, fr_ca, nb_no, tr_tr
+	 
+	bugfix: cannot print report when report title has a "'", it exports to csv
+	bugfix: when saving clients using the complete form and permissions are saved in background the creator user is not associated
+	bugfix: when note description is html and has no enters text overflow is visible and goes over other html, must break word.
+	bugfix: search results shows html content and must show only text
+	bugfix: when viewing tasks or notes with big font, the lines overlap
+	bugfix: when deleting a Google calendar, events and invitations were not deleted correctly
+	bugfix: import deleted external events (and try to delete in server again)
+	bugfix: editing a user from contact tab redirected to edit company
+	bugfix: permissions group were not working correctly for contacts
+	bugfix: import companies from .csv file error
+	bugfix: marking as read a document from an email resulted in an error
+	bugfix: mails pagination bug
+	bugfix: not all config options were set
+	bugfix: show feng version for all users
+	bugfix: tasks subscribers were receiving notifications even though they were not supposed to (check was disabled)
+	bugfix: clients list fixes, view all links fixed in widgets
+	bugfix: client, project, folder and workspace widgets fixed
+	bugfix: client widget doesn't show all clients
+	bugfix: in contacts tab users are not shown by default
+	bugfix: assignees comboboxes selects and replace the input when it finds any match
+	bugfix: dimension config handler alignments
+	bugfix: when a document is blocked, it was not showing the right username
+	bugfix: if a link href contains character "#" it is cut if sent in an email or in the html description of a task (e.g. feng wiki links)
+	bugfix: other users can edit file properties of a checked out file
+	bugfix: workspace quick add does not inherit color
+	bugfix: tasks disappear when grouping by workspace and adding a new workspace
+	bugfix: dont hide selected members in breadcrumbs
+	bugfix: when attaching files to send mails
+	bugfix: custom properties values are 256 chars length, now they have been changed to Text
+	bugfix: several "undefined variable" fixes
+	bugfix: missing lang when classifying emails (for "es_es" languages)
+	bugfix: non utf-8 characters in custom reports produces an error when rendering
+	bugfix: some folder icons are shown as '?' in activity widget.
+	bugfix: file quick-add doesn't change the file modification date if it is a new revision. 
+	bugfix: file quick-add doesn't create a log entry. 
+	bugfix: file quick-add doesn't notify subscribers.
+	bugfix: check if exec is available before using it in FileRepository
+	bugfix: when loading lots of tasks and changing workspace before loading ends, two error messages appear.
+	bugfix: after deleting a folder the top breadcrumb is not refreshed correctly
+	
+	
+	Since 2.5.1.4
+	----------------
+	bugfix: Import companies from .csv file error
+	bugfix: can't add subscribers in template task.
+	
 	
 	Since 2.5.1.3
 	----------------
@@ -118,7 +182,6 @@
 	
 	language update: fr_ca
 	
-	
 	Since 2.5.1.2
 	----------------
 	bugfix: When edit timeslots show all members.
@@ -133,7 +196,6 @@
 	bugfix: add web document  fail if have http in the url.
 	bugfix: add web document  fail if have http in the url.
 	bugfix: search query problem with members.
-	bugfix: Missing argument 3 for save_user_permissions_background() in GroupController
 	
 	performance: When classifying emails classify attachments in background.
 	
@@ -198,8 +260,8 @@
 	bugfix: when edit a template if have milestones you can't see tasks.
 	bugfix: don't show members that cannot be used in member selector.
 	
-	feature: Dashboards can be customized by user, and so can their widgets. 
-		
+	feature: Dashboards can be customized by user, and so can their widgets.
+	
 	Since 2.5.0.5
 	----------------
 	bugfix: Tasks grouping by dimension fixed.

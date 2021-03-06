@@ -188,6 +188,7 @@ class ApplicationLog extends BaseApplicationLog {
 			case ApplicationLogs::ACTION_UNARCHIVE :
 			case ApplicationLogs::ACTION_READ :				
 			case ApplicationLogs::ACTION_DOWNLOAD :				
+			case ApplicationLogs::ACTION_UPLOAD :				
 			case ApplicationLogs::ACTION_CHECKIN :
 			case ApplicationLogs::ACTION_CHECKOUT :
 				if ($object) {

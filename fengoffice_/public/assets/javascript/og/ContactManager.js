@@ -33,12 +33,16 @@ og.ContactManager = function() {
 	        }),
 	        remoteSort: true,
 			listeners: {
-				'load': function(result) {
+				'load': function(store, result) {
 					var d = this.reader.jsonData;
+					
 					if (d.totalCount == 0) {
-						this.fireEvent('messageToShow', lang("no objects message", lang("contacts"), ''));
-					} else if (d.contacts.length == 0) {
-						this.fireEvent('messageToShow', lang("no more objects message", lang("contacts")));
+						var sel_context_names = og.contextManager.getActiveContextNames();
+						if (sel_context_names.length > 0) {
+							this.fireEvent('messageToShow', lang("no objects message", lang("contacts"), sel_context_names.join(', ')));
+						} else {
+							this.fireEvent('messageToShow', lang("no more objects message", lang("contacts")));
+						}
 					} else {
 						this.fireEvent('messageToShow', "");
 					}
@@ -48,6 +52,8 @@ og.ContactManager = function() {
 						var sm = cmp.getSelectionModel();
 						sm.clearSelections();
 					}
+					
+					Ext.getCmp('contact-manager').reloadGridPagingToolbar('contact','list_all','contact-manager');
 				}
 			}
 	    });
@@ -557,7 +563,7 @@ og.ContactManager = function() {
 			disabled: true,
 			handler: function() {
 				var url = '';
-				if (getFirstSelectedType() == 'contact')
+				if (getFirstSelectedType() == 'contact' || getFirstSelectedType() == 'user' )
 					url = og.getUrl('contact', 'edit', {id:getFirstSelectedId()});
 				else
 					url = og.getUrl('contact', 'edit_company', {id:getFirstSelectedId()});

@@ -30,11 +30,12 @@
 	       			$checked = 0 ;
 	       		}
 	       		$out.='<div class="dimension" >';
-	       		$out.=label_tag($dim->getName());
+	       		$out.=label_tag($dim->getName(), null, false, array('style' => 'display:inline;margin:10px;vertical-align:super;'));
 	       		$out.=checkbox_field($control_name.'['.$dim->getId().']',$checked );
 	       		$out.='</div >';
        		}
        }
+       $out.='<input type="hidden" name="'.$control_name.'[0]" value=" ">';
 	   return $out ;	 
     }
     
@@ -52,6 +53,7 @@
     
 	function phpToRaw($value) {
 		if (is_array($value) && count($value)) {
+			unset($value[0]);
 			return implode(',', array_keys($value));
 		}else{
 			return $value;

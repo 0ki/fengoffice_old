@@ -101,7 +101,7 @@ class ProjectTasks extends BaseProjectTasks {
 	 * @param void
 	 * @return array
 	 */
-	function getRangeTasksByUser(DateTimeValue $date_start, DateTimeValue $date_end, $assignedUser, $task_filter = null, $archived = false) {
+	function getRangeTasksByUser(DateTimeValue $date_start, DateTimeValue $date_end, $assignedUser, $task_filter = null, $archived = false, $raw_data = false) {
 		
 		$from_date = new DateTimeValue ( $date_start->getTimestamp () - logged_user()->getTimezone() * 3600 );
 		$from_date = $from_date->beginningOfDay ();
@@ -123,7 +123,8 @@ class ProjectTasks extends BaseProjectTasks {
 			(IF(due_date>0,(`due_date` >= ? AND `due_date` < ?),false) OR IF(start_date>0,(`start_date` >= ? AND `start_date` < ?),false) OR ' . $rep_condition . ') ' . $archived_cond . $assignedFilter, array(EMPTY_DATETIME,$from_date, $to_date, $from_date, $to_date));
 		
 		$result = self::instance()->listing(array(
-			"extra_conditions" => $conditions
+			"extra_conditions" => $conditions,
+			"raw_data" => $raw_data,
 		));
 		
 		return $result->objects;

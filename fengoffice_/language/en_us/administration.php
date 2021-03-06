@@ -130,6 +130,7 @@
     'config option name user_email_fetch_count' => 'Email fetch limit',
     'config option desc user_email_fetch_count' => 'How many emails to fetch when a user clicks on the "Check mail accounts" button. Using a large value may cause timeout errors to the user. Use 0 for no limit. Note, this doesn\'t affect email fetching through cron.',
     'config option name check_spam_in_subject' => 'Check spam in subject',
+  	'config option desc check_spam_in_subject' => 'Filter all the emails that contain the word "Spam" in the subject',
     'config option name show images in document notifications' => 'Attach images in document notifications',
     'config option desc show images in document notifications' => 'If the document is an image, it is attached in the content of the notification.',
 
@@ -177,6 +178,12 @@
   	'config option desc notify_myself_too' => 'When enabled, the automatic notifications will include yourself (only available for documents)',
 
   	'user config option name breadcrumb_member_count' => 'Amount of breadcrumbs to show when listing objects',
+  
+	'config option name milestone_selector_filter' => 'Milestone selector filters',
+	'config option desc milestone_selector_filter' => 'This option is used to filter the milestones selector, you can choose to show all milestones, only milestones in the current workspace, client, project or folder; or milestones in current workspace, client, project or folder and its parent hierarchy.',
+	'only in current member' => 'Only milestones in current member',
+	'only in current member and parents' => 'Only milestones in current member or parents',
+	'all milestones' => 'All milestones',
   	
   	'notify myself too' => 'Include myself in automatic notifications',
 	
@@ -190,6 +197,7 @@
   	
     'user ws config category name dashboard' => 'Dashboard options',
     'user ws config category name task panel' => 'Task options',
+  	'user ws config category name time panel' => 'Time options',
     'user ws config category name general' => 'General',
     'user ws config category name calendar panel' => 'Calendar options',
     'user ws config category name mails panel' => 'Email options',
@@ -296,6 +304,9 @@
   
   	'user config option name breadcrumb_member_count' => 'Amount of breadcrumbs to show when listing objects',
   	'user config option name attach_to_notification' => 'When working with a document, attach it to its notifications',
+  		
+  	'user config option name show_notify_checkbox_in_quick_add' => 'Show the "Send notification" option',
+  	'user config option desc show_notify_checkbox_in_quick_add' => 'When enabled, if you are quick adding or editing a task you will be able to select whether a notification should be sent or not.',
   		
   	'show context help always' => 'Always',
     'show context help never' => 'Never',
@@ -451,6 +462,8 @@
   	'user config option desc search_engine' => 'Choose which search engine to use. "Full" will do a more exhaustive search but will take much longer than "Quick". "Full" is not recommended for heavily loaded installations.',
   	'user config option name descriptive_date_format' => 'Descriptive date format' ,
   	'user config option desc descriptive_date_format' => 'Template format to be applied to descriptive date values. Code explanations: d = Day number (2 digits with leading zeros), D = Day name (three letters), j = Day number, l = Complete day name, m = Month number (with leading zeros), M = Month name (three letters), n = Month number, F = Complete month name, Y = Year (4 digits), y = Year (2 digits). Refresh required.' ,
+  	'user config option name add_timeslot_view_dimensions_combos' => 'Timeslots classification',
+  	'user config option desc add_timeslot_view_dimensions_combos' => 'In here you will be able to choose where will you be able to classify timeslots',
   	'search engine mysql like' => 'Full',
   	'search engine mysql match' => 'Quick',
   
@@ -484,6 +497,8 @@
   	'user config option name noOfTasks' => 'Number Of Tasks',
   	'user config option name task_display_limit' => 'Maximum number of tasks to display',
   	'user config option desc task_display_limit' => 'For performance reasons, this number should not be too big. Use 0 for no limit',
+  	'user config option name quick_add_task_view_dimensions_combos' => 'Tasks quick add/edit classification',
+  	'user config option desc quick_add_task_view_dimensions_combos' => 'In here you will be able to choose where will you be able to classify tasks when using the quick methods',
 	'config option name use tasks dependencies' => 'Use tasks dependencies',
 	'config option desc use tasks dependencies' => 'Enables the definition of dependencies between tasks',
   

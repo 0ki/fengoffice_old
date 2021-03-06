@@ -100,7 +100,8 @@ return array(
     'unread emails' => 'Unread emails',
     //'view due task' => 'View due task',
     'due_date reminder notification task' => 'Due task reminder: {0}',
-    'due_date task reminder desc' => 'The following task due date is {4} and is still pending:',
+	'due_date task reminder' => 'Due task reminder: {0}',
+    'due_date task reminder desc' => 'The following task due date is {1} and is still pending: {0}',
     'due_date reminder notification milestone' => 'Due milestone reminder: {0}',
     'due_date milestone reminder desc' => 'The following milestone due date is {4} and is still pending:',
     'start reminder notification event' => 'Event reminder: {0}',
@@ -205,6 +206,9 @@ return array(
     'deleted notification comment' => 'Sent to the trash comment {1} on {2}: {0}',
     'deleted notification comment desc' => 'Sent to the trash {1} comment by {3} on {2}:',
     
+	'upload notification file' => 'A new version of the file \'{0}\' has been uploaded',
+	'upload notification file desc' => '{1} has uploaded a new version of the file:',
+	
     'view object and comments' => 'View {0} and all comments on Feng Office',
 
     'closed notification task' => 'Task completed: {0}',

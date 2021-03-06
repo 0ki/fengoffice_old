@@ -21,6 +21,32 @@ require_javascript("og/modules/addFileForm.js");
 			selected_type: 'file'
 		});
 	}
+
+
+	og.uploadNewRevision = function(file_id, quickId) {
+		og.openLink(og.getUrl('files', 'quick_add_files', {genid: quickId, object_id: file_id, new_rev_file_id: file_id}), {
+			preventPanelLoad: true,
+			onSuccess: function(data) {
+				og.ExtendedDialog.show({
+	        		html: data.current.data,
+	        		height: 300,
+	        		width: 600,
+	        		title: '<?php echo lang('upload new revision')?>',
+	        		ok_fn: function() {
+	    				og.doFileUpload(quickId, {
+	    					callback: function() {
+	    						form = document.getElementById(quickId + 'quickaddfile');
+	    						og.ajaxSubmit(form);
+	    					}
+	    				});
+	            		og.ExtendedDialog.hide();
+	    			}
+	        	});
+	        	return;
+			}
+		});
+	}
+	
 </script>
 
 <?php
@@ -71,7 +97,7 @@ if (isset($file) && $file instanceof ProjectFile) {
 		if (config_option('checkout_notification_dialog')) { 
 			$checkedOutById = $file->getCheckedOutById();
 			if($checkedOutById != 0){
-				$checkedOutByName = ($checkedOutById == logged_user()->getId() ?  "self" : Contacts::findById($checkedOutById)->getUsername());
+				$checkedOutByName = ($checkedOutById == logged_user()->getId() ?  "self" : Contacts::findById($checkedOutById)->getObjectName());
 			}else{
 				$checkedOutByName = '';
 			}
@@ -93,7 +119,7 @@ if (isset($file) && $file instanceof ProjectFile) {
 	if (!$file->isTrashed()){
 		if ($file->isCheckedOut()){
 			if ($file->canCheckin(logged_user()) && $file->getType() == ProjectFiles::TYPE_DOCUMENT){
-				add_page_action(lang('checkin file'), $file->getCheckinUrl(), 'ico-checkin', null, null, true); 
+				//add_page_action(lang('checkin file'), $file->getCheckinUrl(), 'ico-checkin', null, null, true); 
 				add_page_action(lang('undo checkout'), $file->getUndoCheckoutUrl() . "&show=redirect", 'ico-undo', null, null, true); 
 			}
 			
@@ -107,7 +133,10 @@ if (isset($file) && $file instanceof ProjectFile) {
 			if ($file->isModifiable() && $file->getType() != ProjectFiles::TYPE_WEBLINK) { 
 				add_page_action(lang('edit this file'), $file->getModifyUrl(), 'ico-edit', null, null, true);
 			}
-			
+			if (!$file->isModifiable() && $file->getType() != ProjectFiles::TYPE_WEBLINK) {
+				// if file is checked out, only allow to upload to the user who has checked it out
+				add_page_action(lang('upload new revision'), "javascript:og.uploadNewRevision(".$file->getId().",'".gen_id()."')", 'ico-upload', null, null, true);
+			}
 			add_page_action(lang('edit file properties'), $file->getEditUrl(), 'ico-properties',null,null,true);
 		}
 	}

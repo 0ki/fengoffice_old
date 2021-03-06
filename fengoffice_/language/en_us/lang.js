@@ -297,9 +297,8 @@ addLangs({
 	
 	'confirm_mail_without_attach': 'Hello! I have noticed that you typed a word just like or similar to attach in this email, but no attachments have been found.\nWould you like to proceed sending the email anyway?',
 	
-	//'no objects message': 'There are no \'{0}\' in \'{1}\'',
-	'no objects message': 'There are no {0}',
-	'no more objects message': 'There are no more \'{0}\' to display',
+	'no objects message': 'There are no {0} in {1}',
+	'no more objects message': 'There are no more {0} to display',
 	'no objects with tag message': 'There are no {0} tagged as \'{2}\' in \'{1}\'',
 	'objects': 'Objects',
 	
@@ -540,7 +539,7 @@ addLangs({
 	'show all groups' : 'Show all the groups',
 	
 	'send notification' : 'Send email notification',
-	'all options': 'All options',
+	'all options': 'View full task-form',
 	'click to change workspace': 'Click to change workspace',
 	
 	'month 1': 'January',

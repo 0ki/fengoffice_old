@@ -1,13 +1,16 @@
-og.addCPValue = function(id, memo){	
+og.addCPValue = function(id, memo, is_member_cp){	
 	var listDiv = document.getElementById('listValues' + id);
 	var newValue = document.createElement('div');
 	var count = listDiv.getElementsByTagName('div').length;
 	newValue.id = 'value' + count;
+	
+	var field_name = is_member_cp ? 'member_custom_properties' : 'object_custom_properties';
+	
 	if(memo){
-		newValue.innerHTML = '<textarea cols="40" rows="10" name="object_custom_properties[' + id + '][]" id="object_custom_properties[' + id + '][]"></textarea>' +
+		newValue.innerHTML = '<textarea cols="40" rows="10" name="'+field_name+'[' + id + '][]" id="object_custom_properties[' + id + '][]"></textarea>' +
 			'&nbsp;<a href="#" class="link-ico ico-add" onclick="og.addCPValue(' + id + ', true)">' + lang('add value') + '</a><br/>';
 	}else{
-		newValue.innerHTML = '<input type="text" name="object_custom_properties[' + id + '][]" id="object_custom_properties[' + id + '][]" />' +
+		newValue.innerHTML = '<input type="text" name="'+field_name+'[' + id + '][]" id="object_custom_properties[' + id + '][]" />' +
 			'&nbsp;<a href="#" class="link-ico ico-add" onclick="og.addCPValue(' + id + ', false)">' + lang('add value') + '</a><br/>';
 	}
 	
@@ -15,15 +18,18 @@ og.addCPValue = function(id, memo){
 	var item = listDiv.childNodes.item(count - 1);
 	var value = item.firstChild.value;
 	if(memo){
-		item.innerHTML = '<textarea cols="40" rows="10" name="object_custom_properties[' + id + '][]" id="object_custom_properties[' + id + '][]">' + value + '</textarea>' +
+		item.innerHTML = '<textarea cols="40" rows="10" name="'+field_name+'[' + id + '][]" id="object_custom_properties[' + id + '][]">' + value + '</textarea>' +
 		'&nbsp;<a href="#" class="link-ico ico-delete" onclick="og.removeCPValue(' + id + ',' + (count - 1) + ', true)" ></a>';
 	}else{
-		item.innerHTML = '<input type="text" name="object_custom_properties[' + id + '][]" id="object_custom_properties[' + id + '][]" value="' + value + '" />' +
+		item.innerHTML = '<input type="text" name="'+field_name+'[' + id + '][]" id="object_custom_properties[' + id + '][]" value="' + value + '" />' +
 			'&nbsp;<a href="#" class="link-ico ico-delete" onclick="og.removeCPValue(' + id + ',' + (count - 1) + ', false)" ></a>';
 	}
 };
  
-og.removeCPValue = function(id, pos, memo){
+og.removeCPValue = function(id, pos, memo, is_member_cp){
+	
+	var field_name = is_member_cp ? 'member_custom_properties' : 'object_custom_properties';
+	
 	var listDiv = document.getElementById('listValues' + id);
 	var item = listDiv.childNodes.item(pos);
 	listDiv.removeChild(item);
@@ -33,10 +39,10 @@ og.removeCPValue = function(id, pos, memo){
 		item = listDiv.childNodes.item(0);
 		value = item.firstChild.value;
 		if(memo){
-			item.innerHTML = '<textarea cols="40" rows="10" name="object_custom_properties[' + id + '][]" id="object_custom_properties[' + id + '][]">' + value + '</textarea>' +
+			item.innerHTML = '<textarea cols="40" rows="10" name="'+field_name+'[' + id + '][]" id="object_custom_properties[' + id + '][]">' + value + '</textarea>' +
 				'&nbsp;<a href="#" class="link-ico ico-add" onclick="og.addCPValue(' + id + ', true)">' + lang('add value') + '</a><br/>';
 		}else{
-			item.innerHTML = '<input type="text" name="object_custom_properties[' + id + '][]" id="object_custom_properties[' + id + '][]" value="' + value + '" />' +
+			item.innerHTML = '<input type="text" name="'+field_name+'[' + id + '][]" id="object_custom_properties[' + id + '][]" value="' + value + '" />' +
 				'&nbsp;<a href="#" class="link-ico ico-add" onclick="og.addCPValue(' + id + ', false)">' + lang('add value') + '</a><br/>';
 		}
 	}else{
@@ -46,10 +52,10 @@ og.removeCPValue = function(id, pos, memo){
 			value = item.firstChild.value;
 			if(i < listDiv.childNodes.length - 1){
 				if(memo){
-					item.innerHTML = '<textarea cols="40" rows="10" name="object_custom_properties[' + id + '][]" id="object_custom_properties[' + id + '][]">' + value + '</textarea>' +
+					item.innerHTML = '<textarea cols="40" rows="10" name="'+field_name+'[' + id + '][]" id="object_custom_properties[' + id + '][]">' + value + '</textarea>' +
 					'&nbsp;<a href="#" class="link-ico ico-delete" onclick="og.removeCPValue(' + id + ',' + i + ', true)" ></a>';
 				}else{
-					item.innerHTML = '<input type="text" name="object_custom_properties[' + id + '][]" id="object_custom_properties[' + id + '][]" value="' + value + '" />' +
+					item.innerHTML = '<input type="text" name="'+field_name+'[' + id + '][]" id="object_custom_properties[' + id + '][]" value="' + value + '" />' +
 						'&nbsp;<a href="#" class="link-ico ico-delete" onclick="og.removeCPValue(' + id + ',' + i + ', false)" ></a>';
 				}
 			}
@@ -58,13 +64,13 @@ og.removeCPValue = function(id, pos, memo){
 	}
 };
 
-og.addCPDateValue = function(genid, id){
+og.addCPDateValue = function(genid, id, is_member_cp){
 	var dateTable = document.getElementById('table' + genid + id);
 	var tBody = dateTable.getElementsByTagName('tbody')[0];
 	var dateCount = tBody.childNodes.length;
 	var newTR = document.createElement('tr');
 	var dateTD = document.createElement('td');
-	var name = 'object_custom_properties[' + id + '][]';
+	var name = (is_member_cp ? 'member_custom_properties' : 'object_custom_properties') + '[' + id + '][]';
 	dateTD.id = 'td' + genid + id + dateCount;
 	var dateCond = new og.DateField({
 		renderTo: dateTD,
@@ -79,13 +85,13 @@ og.addCPDateValue = function(genid, id){
 	
 };
 
-og.removeCPDateValue = function(genid, id, pos){
+og.removeCPDateValue = function(genid, id, pos, is_member_cp){
 	var dateTable = document.getElementById('table' + genid + id);
 	var tBody = dateTable.getElementsByTagName('tbody')[0];
 	var item = tBody.childNodes.item(pos);
 	tBody.removeChild(item);
 	var newTBody = document.createElement('tbody');
-	var name = 'object_custom_properties[' + id + '][]';
+	var name = (is_member_cp ? 'member_custom_properties' : 'object_custom_properties') + '[' + id + '][]';
 	for(var i=0; i < tBody.childNodes.length; i++){
 		dateTR = tBody.childNodes.item(i);
 		var value = dateTR.firstChild.getElementsByTagName('input')[0].value;
@@ -108,7 +114,10 @@ og.removeCPDateValue = function(genid, id, pos){
 	dateTable.replaceChild(newTBody, tBody);
 };
 
-og.addTableCustomPropertyRow = function(parent, focus, values, col_count, ti, cpid) {
+og.addTableCustomPropertyRow = function(parent, focus, values, col_count, ti, cpid, is_member_cp) {
+	
+	var field_name = is_member_cp ? 'member_custom_properties' : 'object_custom_properties';
+	
 	var count = parent.getElementsByTagName("tr").length;
 	var tbody = parent.getElementsByTagName("tbody")[0];
 	var tr = document.createElement("tr");
@@ -117,7 +126,7 @@ og.addTableCustomPropertyRow = function(parent, focus, values, col_count, ti, cp
 	for (row = 0; row < col_count; row++) {
 		var td = document.createElement("td");						
 		var row_val = values && values[row] ? values[row] : "";
-		td.innerHTML = '<input class="value" style="width:'+cell_w+';min-width:120px;" type="text" name="object_custom_properties[' + cpid + '][' + count + '][' + row + ']" value="' + row_val + '" tabindex=' + ti + '>';
+		td.innerHTML = '<input class="value" style="width:'+cell_w+';min-width:120px;" type="text" name="'+field_name+'[' + cpid + '][' + count + '][' + row + ']" value="' + row_val + '" tabindex=' + ti + '>';
 		if (td.children && row == 0) var input = td.children[0];
 		tr.appendChild(td);
 		ti += 1;

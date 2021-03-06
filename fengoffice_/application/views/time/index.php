@@ -1,5 +1,4 @@
 <?php
-	require_javascript('og/tasks/main.js');
 	require_javascript('og/time/main.js');
 	require_javascript('og/time/drawing.js');
 
@@ -134,79 +133,70 @@
 	<div id="<?php echo $genid ?>TMTimespanAddNew" class="TMTimespanAddNew" <?php echo ($draw_inputs ? "" : 'style="display:none;"') ?>>
 		<input type="hidden" id="<?php echo $genid ?>tsId" name="timeslot[id]" value=""/>
 		<div style="padding:7px;">
-			<table style="width:100%;">
-				<tr>
-					<td style="padding-right: 10px; width:140px;vertical-align:bottom">
-						<?php echo label_tag(lang('date')) ?>
-					</td>
-					
-					<td style="padding-right: 10px; width:140px;vertical-align:bottom">
-						<?php echo label_tag(lang('user')) ?>
-					</td>
-					<td style="padding-right: 10px; width:140px;vertical-align:bottom">
-						<?php echo label_tag(lang('hours')) ?>
-					</td>
-                                        <td style="padding-right: 10px; width:140px;vertical-align:bottom">
-						<?php echo label_tag(lang('minutes')) ?>
-					</td>
-					<td style="padding-right: 10px; width:95%; margin-top: 0px;vertical-align:bottom">
-						<?php echo label_tag(lang('description')) ?>
-					</td>
-					<td style="padding-left: 10px;text-align:right; vertical-align: middle;">
-					</td>
-				</tr>
-				<tr>
-					<td style="padding-right: 10px; width:140px;">
-						<?php echo pick_date_widget2('timeslot[date]', DateTimeValueLib::now(), $genid, 100, false) ?>
-					</td>
-		
-					<td style="padding-right: 10px; width:140px;">
-						<?php
-							$options = array();
-							foreach ($users as $user) {
-								$options[] = option_tag($user->getObjectName(), $user->getId(), $selected_user == $user->getId() ? array("selected" => "selected") : null);
-							}
-							echo select_box("timeslot[contact_id]", $options, array('id' => $genid . 'tsUser', 'tabindex' => '150')); 
-						?>
-					</td>
-				<td style="padding-right: 10px; width: 140px;"><?php echo text_field('timeslot[hours]', 0, 
-				array('style' => 'width:28px', 'tabindex' => '200', 'id' => $genid . 'tsHours','onkeypress'=>'og.checkEnterPress(event,\''.$genid.'\')')) ?>
-				</td>
-				<td style="padding-right: 10px; width: 140px;">
-					<select name="timeslot[minutes]" size="1" tabindex="220" id="<?php echo $genid . 'tsMinutes'?>">
-					<?php
-						$minuteOptions = array(0,5,10,15,20,25,30,35,40,45,50,55);
-						for($i = 0; $i < 12; $i++) {
-							echo "<option value=\"" . $minuteOptions[$i] . "\"";
-							echo ">" . $minuteOptions[$i] . "</option>\n";
-						}
-					?>
-					</select>
-				</td>
-				<td style="padding-right: 10px; width:95%; margin-top: 0px;">
-						<?php echo textarea_field('timeslot[description]', '', array('class' => 'short', 'style' => 'height:30px;width:100%;min-width:200px', 'tabindex' => '250', 'id' => $genid . 'tsDesc')) ?>
-					</td>
-					<td style="padding-left: 10px;text-align:right; vertical-align: top">
-						<div id="<?php echo $genid ?>TMTimespanSubmitAdd"><?php echo submit_button(lang('add'),'s',array('style'=>'margin-top:0px;margin-left:0px', 'tabindex' => '300', 'onclick' => 'ogTimeManager.SubmitNewTimeslot(\'' .$genid . '\');return false;')) ?></div>
-						<div id="<?php echo $genid ?>TMTimespanSubmitEdit" style="display:none">
-							<?php echo submit_button(lang('save'),'s',array('style'=>'margin-top:0px;margin-left:0px', 
-								'tabindex' => '310', 'onclick' => 'ogTimeManager.SubmitNewTimeslot(\'' .$genid . '\');return false;')) ?><br/>
-							<?php echo submit_button(lang('cancel'),'c',array('style'=>'margin-top:0px;margin-left:0px', 
-								'tabindex' => '320', 'onclick' => 'ogTimeManager.CancelEdit();return false;')) ?>
-						</div>
-					</td>
-				</tr>
-			</table>
 			
-			<div class="context-switcher">
-				<div class="context-header">
-					<label><?php echo lang("related to")?></label>
-				</div>
-				<div class="context-body" style="display:<?php echo $display_members ? 'block' : 'none'?>;">
-					<?php render_member_selectors(Timeslots::instance()->getObjectTypeId(), $genid, null, array('select_current_context' => true));	?>
-				</div>
+			<div class="context-body" style="float: left;">
+				<?php
+					//get skipped dimensions for this view
+					$dimensions_to_show = explode(",",user_config_option("add_timeslot_view_dimensions_combos"));
+					$dimensions_to_skip = array_diff(get_user_dimensions_ids(), $dimensions_to_show);
+					if(intval($dimensions_to_show[0]) != 0){
+						render_member_selectors(Timeslots::instance()->getObjectTypeId(), $genid, null, array('select_current_context' => true), $dimensions_to_skip, null, false);	
+					}
+					?>
+					
+			</div>
+						
+			<div class="small-member-selector TMTimespanSelectorHeight" style="<?php echo (can_manage_time(logged_user())) ? '':'display: none;'?>">
+				<?php echo label_tag(lang('user')) ?>
+				<?php
+					$options = array();
+					foreach ($users as $user) {
+						$options[] = option_tag($user->getObjectName(), $user->getId(), $selected_user == $user->getId() ? array("selected" => "selected") : null);
+					}
+					echo select_box("timeslot[contact_id]", $options, array('id' => $genid . 'tsUser', 'style' => 'max-width:100px','tabIndex' => 1000,'class' => 'TMTimespanRealSelector')); 
+				?>
 			</div>
 			
+			<div class="small-member-selector TMTimespanSelectorHeight" >
+				<?php echo label_tag(lang('date')) ?>
+				<?php echo pick_date_widget2('timeslot[date]', DateTimeValueLib::now(), $genid, 1000, false) ?>
+			</div>
+			
+			<div class="small-member-selector TMTimespanSelectorHeight" >
+				<?php echo label_tag(lang('hours')) ?>
+				<?php echo text_field('timeslot[hours]', 0, 
+							array('style' => 'width:45px', 'id' => $genid . 'tsHours', 'tabIndex'=>1000,'onkeypress'=>'og.checkEnterPress(event,\''.$genid.'\')')) ?>
+			</div>
+			
+			<div class="small-member-selector TMTimespanSelectorHeight" >
+				<?php echo label_tag(lang('minutes')) ?>
+				<select name="timeslot[minutes]" class="TMTimespanRealSelector" tabIndex=1000 style="width: 63px" size="1" id="<?php echo $genid . 'tsMinutes'?>">
+								<?php
+									$minuteOptions = array(0,5,10,15,20,25,30,35,40,45,50,55);
+									for($i = 0; $i < 12; $i++) {
+										echo "<option value=\"" . $minuteOptions[$i] . "\"";
+										echo ">" . $minuteOptions[$i] . "</option>\n";
+									}
+								?>
+				</select>
+			</div>
+			
+			<div class="small-member-selector" style="width: 280px; ">
+				<?php echo label_tag(lang('description'), '', '') ?>
+				<div id="<?php echo $genid .'tsDesc'?>" tabIndex=1000 contentEditable="true" class="TMTimespanDesc"></div>
+			</div>
+			
+			<div class="small-member-selector submit-btns" style="margin-top: 20px;">
+				<div id="<?php echo $genid ?>TMTimespanSubmitAdd"><?php echo submit_button(lang('add'),'s',array('style'=>'margin-top:0px;margin-left:0px', 'tabIndex'=>'1000','onclick' => 'ogTimeManager.SubmitNewTimeslot(\'' .$genid . '\');return false;')) ?></div>
+				<div id="<?php echo $genid ?>TMTimespanSubmitEdit" style="display:none">
+					<?php echo submit_button(lang('save'),'s',array('style'=>'margin-top:0px;margin-left:0px', 
+								'onclick' => 'ogTimeManager.SubmitNewTimeslot(\'' .$genid . '\');return false;')) ?>
+					<?php echo submit_button(lang('cancel'),'c',array('style'=>'margin-top:0px;margin-left:0px', 
+								'onclick' => 'ogTimeManager.CancelEdit();return false;')) ?>
+				</div>
+			</div>			
+			
+					
 		</div>
 	</div>
 	<div id="<?php echo $genid ?>TMTimespanAddNew" class="TMTimespanAddNew" style="padding: 6px 0;<?php echo (!$draw_inputs ? "" : 'display:none;') ?>">
@@ -230,15 +220,15 @@
 		<div style="padding:7px">
 			<table style="width:100%" id="<?php echo $genid ?>TMTimespanTable">
 			<tr>
-				<td width='70px'><span class="bold"><?php echo lang('date') ?></span></td>
-				<td width='15%'><span class="bold"><?php echo lang('user') ?></span></td>
 				<td width='20%'><span class="bold"><?php echo lang('related to') ?></span></td>
-				<td width='180px'><span class="bold"><?php echo lang('last updated by') ?></span></td>
+				<td width='15%'><span class="bold"><?php echo lang('user') ?></span></td>
+				<td width='70px'><span class="bold"><?php echo lang('date') ?></span></td>
 				<td width='60px'><span class="bold"><?php echo lang('time') ?></span></td>
+				<td><span class="bold"><?php echo lang('description') ?></span></td>
 				<?php if ($show_billing) { ?>
 					<td width="100px"><span class="bold"><?php echo lang('billing') ?></span></td>
 				<?php } ?>
-				<td><span class="bold"><?php echo lang('description') ?></span></td>
+				<td width='220px'><span class="bold"><?php echo lang('last updated by') ?></span></td>
 				<td></td>
 			</tr>
 			</table>

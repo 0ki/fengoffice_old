@@ -1,10 +1,7 @@
 <?php
 	require_javascript('og/modules/addTaskForm.js');
-	require_javascript('og/tasks/main.js');
-	require_javascript('og/tasks/addTask.js');
 	require_javascript("og/ObjectPicker.js");
-        require_javascript('og/tasks/TaskPopUp.js');
-	$genid = gen_id();
+    $genid = gen_id();
 	$co_type = array_var($task_data, 'object_subtype');
 	
 	if (config_option('use tasks dependencies')) {
@@ -50,8 +47,9 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_more_div', this)" style="font-weight:bold" ><?php echo lang('task data') ?></a> -  
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>task_repeat_options_div',this)"><?php echo lang('repeating task') ?></a>  -
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_reminders_div',this)"><?php echo lang('object reminders') ?></a>  -
+		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_subscribers_div',this)"><?php echo lang('object subscribers') ?></a> -
 		<?php /* <a href="#" class="option <?php echo $visible_cps>0 ? 'bold' : ''?>" onclick="og.toggleAndBolden('<?php echo $genid ?>add_custom_properties_div', this)"><?php echo lang('custom properties') ?></a> -
-		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_subscribers_div',this)"><?php echo lang('object subscribers') ?></a> */?>
+		 */?>
 		<?php if($task->isNew() || $task->canLinkObject(logged_user())) { ?> - 
 			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_linked_objects_div',this)"><?php echo lang('linked objects') ?></a>
 		<?php } ?>
@@ -435,8 +433,8 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 		<fieldset>
 		<legend><?php echo lang('object subscribers') ?></legend>
 		<?php $subscriber_ids = array();
-			if (!$projectTask->isNew()) {
-				$subscriber_ids = $projectTask->getSubscriberIds();
+			if (!$task->isNew()) {
+				$subscriber_ids = $task->getSubscriberIds();
 			} else {
 				$subscriber_ids[] = logged_user()->getId();
 			}
@@ -593,7 +591,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 			value: assigned_user,
 			store: usersStore,
 			displayField:'text',
-	        typeAhead: true,
+	        //typeAhead: true,
 	        mode: 'local',
 	        cls: 'assigned-to-combo',
 	        triggerAction: 'all',
@@ -704,7 +702,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 				context: dimension_members_json,
 				users: uids,
 				genid: '<?php echo $genid ?>',
-				otype: '<?php echo $task->manager()->getObjectTypeId()?>'
+				otype: '<?php echo $projectTask->manager()->getObjectTypeId()?>'
 			}),
 			scripts: true
 		});

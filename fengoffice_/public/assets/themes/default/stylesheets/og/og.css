@@ -366,7 +366,7 @@
 	background-image: url(../../images/16x16/unlocked.png) !important;
 }
 .ico-upload {
-	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -120px !important;
+	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -119px !important;
 }
 .ico-view_options {
 	background-image: url(../../images/16x16/view.png) !important;
@@ -548,7 +548,7 @@
 .og-wsname-color-0, .og-wsname-color-0 a {
 	border-color: #777777;
 	background-color: #EEEEEE;
-	color: #777777;
+	color: #303030 ;
 }
 
 .og-wsname-color-1, .og-wsname-color-1 a {

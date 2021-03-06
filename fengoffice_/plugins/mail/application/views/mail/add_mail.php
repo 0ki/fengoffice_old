@@ -51,6 +51,8 @@ sig.actualHtmlSignature = '';
 	tpl_display(get_template_path('form_errors'));
 	
     $acc_id = array_var($mail_data, 'account_id', (isset($default_account) ? $default_account : $mail_accounts[0]->getId()));
+    $acc_id = isset($default_account_replay) ? $default_account_replay : $acc_id;
+    
     $orig_textsignature = $orig_htmlsignature = "";
     ?><script type="text/javascript">
     		sig.actualTextSignature = sig.actualHtmlSignature = "";

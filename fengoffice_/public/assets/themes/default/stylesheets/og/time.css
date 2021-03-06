@@ -27,11 +27,53 @@
 	color:#333;
 	background-color: #DAE3F0;
 	width:100%;
+	float:left;
+}
+
+.TMTimespanAddNew .selector-body, .TMTimespanEdit .selector-body{
+	width: 170px!important;
+	margin-bottom: 4px;
+}
+
+.TMTimespanAddNew .member-name-input, .TMTimespanEdit .member-name-input{
+	width: 145px!important;
+}
+
+.TMTimespanEdit .submit-btns{
+	clear: left;
+}
+
+.TMTimespanSelectorHeight {
+	height: 50px;
+}
+
+
+.TMTimespanDesc {
+	overflow-y: auto; 
+	word-wrap: break-word; 
+	tabindex:250; 
+	display:inline-block; 
+	border: solid 1px #CCCCCC; 
+	min-height: 3em; 
+	max-height: 12em;
+	width: 100%;
+	background: white;
+}
+
+.TMTimespanDesc:focus {
+	outline: 0;
+	border: solid 1px black; 
+}
+
+.TMTimespanRealSelector {
+	height: 22px !important;	
 }
 
 .TMTimespanEdit {
 	color:#333;
 	background-color: #FFF7C8;
+	width:100%;
+	float:left;
 }
 
 .TMTimespanContents {

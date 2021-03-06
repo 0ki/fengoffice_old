@@ -236,19 +236,10 @@ class Workspace extends BaseWorkspace {
     }
     
     function getIconClass() {
+    	$d = Dimensions::findByCode('workspaces');
+    	$m = Members::findOneByObjectId($this->getId(), $d->getId());
     	
-    	if ($this->isLoaded()) {
-    		$colorCode = $this->getColumnValue("color");
-    	}else{
-    		if ($id = $this->getId()) {
-    			$colorCode = Workspaces::getWorkspaceColor($id);
-    		}
-    	}
-    	if ( isset($colorCode) ) {
-    		return "ico-color".$colorCode;
-    	}else{
-    		return "ico-color0";	
-    	}
+    	return "ico-color" . ($m instanceof Member ? $m->getColor() : '0');
     }
     
 } 

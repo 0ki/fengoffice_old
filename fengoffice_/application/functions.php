@@ -260,7 +260,7 @@ function installed_version() {
  * @return string
  */
 function product_signature() {
-	if(function_exists('logged_user') && (logged_user() instanceof Contact) && logged_user()->isMemberOfOwnerCompany()) {
+	if(function_exists('logged_user') && (logged_user() instanceof Contact)) {
 		$result = lang('footer powered', clean(PRODUCT_URL), clean(product_name()) . ' ' . product_version());
 		if(Env::isDebugging()) {
 			ob_start();

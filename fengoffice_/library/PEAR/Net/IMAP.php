@@ -366,6 +366,52 @@ class Net_IMAP extends Net_IMAPProtocol
 
 
     /**
+     * Returns an array containing the message ID, and the UID
+     * of each message selected.
+     * message selection can be a valid IMAP command, a number or an array of
+     * messages
+     *
+     * @param mixed $msg_id Message number or an array
+     *
+     * @return mixed Either array of message data or PearError on error
+     *
+     * @access public
+     */
+    function getMessagesListUid($msg_id = null)
+    {
+        if ($msg_id != null) {
+            if (is_array($msg_id)) {
+                $message_set = $this->_getSearchListFromArray($msg_id);
+            } else {
+                $message_set = $msg_id;
+            }
+        } else {
+            $message_set = '1:*';
+        }
+		
+		if (PEAR::isError($ret = $this->cmdUidFetch($message_set,
+				'(UID)'))) {
+				return $ret;
+		}
+		
+		if (strtoupper($ret['RESPONSE']['CODE']) != 'OK') {
+			return new PEAR_Error($ret['RESPONSE']['CODE']
+					. ', '
+					. $ret['RESPONSE']['STR_CODE']);
+		}
+		
+		if(!isset($ret['PARSED'])) return;
+		
+		foreach ($ret['PARSED'] as $msg) {
+			$ret_aux[] = array('msg_id' => $msg['NRO'],
+					'uidl'   => $msg['EXT']['UID']);
+		}
+		        
+        return $ret_aux;
+    }
+    
+    
+    /**
      * Returns an array containing the message ID, the size and the UID
      * of each message selected.
      * message selection can be a valid IMAP command, a number or an array of
@@ -379,30 +425,33 @@ class Net_IMAP extends Net_IMAPProtocol
      */
     function getMessagesList($msg_id = null)
     {
-        if ($msg_id != null) {
-            if (is_array($msg_id)) {
-                $message_set = $this->_getSearchListFromArray($msg_id);
-            } else {
-                $message_set = $msg_id;
-            }
-        } else {
-            $message_set = '1:*';
-        }
-        if (PEAR::isError($ret = $this->cmdFetch($message_set,
-                                                 '(RFC822.SIZE UID)'))) {
-            return $ret;
-        }
-        if (strtoupper($ret['RESPONSE']['CODE']) != 'OK') {
-            return new PEAR_Error($ret['RESPONSE']['CODE'] 
-                                  . ', ' 
-                                  . $ret['RESPONSE']['STR_CODE']);
-        }
-        foreach ($ret['PARSED'] as $msg) {
-            $ret_aux[] = array('msg_id' => $msg['NRO'],
-                               'size'   => $msg['EXT']['RFC822.SIZE'],
-                               'uidl'   => $msg['EXT']['UID']);
-        }
-        return $ret_aux;
+    	if ($msg_id != null) {
+    		if (is_array($msg_id)) {
+    			$message_set = $this->_getSearchListFromArray($msg_id);
+    		} else {
+    			$message_set = $msg_id;
+    		}
+    	} else {
+    		$message_set = '1:*';
+    	}
+    	
+    	if (PEAR::isError($ret = $this->cmdFetch($message_set,
+    			'(RFC822.SIZE UID)'))) {
+    			return $ret;
+    	}
+    		 
+    	if (strtoupper($ret['RESPONSE']['CODE']) != 'OK') {
+    		return new PEAR_Error($ret['RESPONSE']['CODE']
+    			. ', '
+    			. $ret['RESPONSE']['STR_CODE']);
+    	}
+    	foreach ($ret['PARSED'] as $msg) {
+    		$ret_aux[] = array('msg_id' => $msg['NRO'],
+    				'size'   => $msg['EXT']['RFC822.SIZE'],
+    				'uidl'   => $msg['EXT']['UID']);
+    	}
+    	    
+    	return $ret_aux;
     }
 
 

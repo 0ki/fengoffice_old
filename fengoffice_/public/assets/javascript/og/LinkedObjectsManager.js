@@ -40,11 +40,13 @@ og.LinkedObjectManager = function(config) {
 			listeners: {
 				'load': function() {
 					var d = this.reader.jsonData;
-
 					if (d.totalCount == 0) {
-						this.fireEvent('messageToShow', lang("no objects message", lang("objects"), ws));
-					} else if (d.objects.length == 0) {
-						this.fireEvent('messageToShow', lang("no more objects message", lang("objects")));
+						var sel_context_names = og.contextManager.getActiveContextNames();
+						if (sel_context_names.length > 0) {
+							this.fireEvent('messageToShow', lang("no objects message", lang("objects"), sel_context_names.join(', ')));
+						} else {
+							this.fireEvent('messageToShow', lang("no more objects message", lang("objects")));
+						}
 					} else {
 						this.fireEvent('messageToShow', "");
 					}

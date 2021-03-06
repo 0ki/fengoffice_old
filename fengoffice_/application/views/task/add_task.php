@@ -1,9 +1,7 @@
 <?php
 	require_javascript('og/modules/addTaskForm.js');
-	require_javascript('og/tasks/main.js');
-	require_javascript('og/tasks/addTask.js');
 	require_javascript("og/ObjectPicker.js");
-        require_javascript('og/tasks/TaskPopUp.js');
+    
 	$genid = gen_id();
 	$co_type = array_var($task_data, 'object_subtype');
 	
@@ -84,9 +82,9 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 		<?php
 			$listeners = array('on_selection_change' => 'og.reload_task_form_selectors()');
 			if ($task->isNew()) {
-				render_member_selectors($task->manager()->getObjectTypeId(), $genid, null, array('select_current_context' => true, 'listeners' => $listeners));
+				render_member_selectors($task->manager()->getObjectTypeId(), $genid, array_var($task_data, 'selected_members_ids', null), array('select_current_context' => true, 'listeners' => $listeners));
 			} else {
-				render_member_selectors($task->manager()->getObjectTypeId(), $genid, $task->getMemberIds(), array('listeners' => $listeners));
+				render_member_selectors($task->manager()->getObjectTypeId(), $genid, array_var($task_data, 'selected_members_ids', $task->getMemberIds()), array('listeners' => $listeners));
 			} 
 		?>
 	</fieldset>
@@ -598,7 +596,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 			value: assigned_user,
 			store: usersStore,
 			displayField:'text',
-	        typeAhead: true,
+	    //    typeAhead: true,
 	        mode: 'local',
 	        cls: 'assigned-to-combo',
 	        triggerAction: 'all',

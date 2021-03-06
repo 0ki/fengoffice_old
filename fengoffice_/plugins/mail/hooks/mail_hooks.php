@@ -48,3 +48,65 @@ function mail_on_page_load(){
 		}
 	}
 }
+
+function mail_do_mark_as_read_unread_objects($ids_to_mark, $read) {
+	$all_accounts = array();
+	$all_accounts_ids = array();
+	
+	foreach ($ids_to_mark as $id) {
+		$obj = Objects::findObject($id);
+		if ($obj instanceof MailContent && logged_user() instanceof Contact) {
+			//conversation set the rest of the conversation
+			$uds_to_mark_from_conver = array();
+			if (user_config_option('show_emails_as_conversations')) {
+				$emails_in_conversation = MailContents::getMailsFromConversation($obj);
+				foreach ($emails_in_conversation as $email) {
+					//$id is marked on object controller only mark the rest of the conversation
+					if($id != $email->getId()){		
+						$email->setIsRead(logged_user()->getId(), $read);
+						$uds_to_mark_from_conver[] = $email->getUid();
+					}
+				}
+			}
+
+			//make the array with accounts and uids to send to the mail server
+			//accounts
+			if(!in_array($obj->getAccountId(), $all_accounts_ids)){
+				$account = $obj->getAccount();
+				
+				//if logged user is owner of this account and is imap
+				if($account instanceof MailAccount && $account->getContactId() == logged_user()->getId() && $account->getIsImap()){
+					$all_accounts_ids[] = $obj->getAccountId();
+					$all_accounts[$account->getId()]['account'] = $account;					
+				}
+			}
+			//uids
+			if(in_array($obj->getAccountId(), $all_accounts_ids)){
+				//add conversations uids
+				//mientras ande mal el uid de los mails enviados si estan sincronizados no usar esta parte
+				/*if (user_config_option('show_emails_as_conversations')) {
+					foreach ($uds_to_mark_from_conver as $uid_conver){
+						$all_accounts[$obj->getAccountId()]['uids'][] = $uid_conver;
+					}
+				}*/
+				
+				$all_accounts[$obj->getAccountId()]['folders'][$obj->getImapFolderName()][] = $obj->getUid();
+			}
+		} 
+	}
+			
+	//foreach account send uids by folder to mark in the mail server
+	foreach ($all_accounts as $account_data){
+		$account = $account_data['account'];
+		$folders = $account_data['folders'];
+		foreach ($folders as $key => $folder){
+			$folder_name = $key;
+			$uids = $folder;
+			if(!empty($folder_name)){
+				MailUtilities::setReadUnreadImapMails($account, $folder_name, $uids, $read);
+			}
+		}
+		
+	}	
+
+}

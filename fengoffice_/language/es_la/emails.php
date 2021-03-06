@@ -146,10 +146,13 @@
 	'deleted notification milestone desc' => '{1} ha enviado a la papelera el hito:',
 	'deleted notification email' => 'Correo enviado a la papelera: {0}',
 	'deleted notification email desc' => '{1} ha enviado a la papelera el correo:',
-        'deleted notification comment' => 'Enviado a la papelera comentario de {1} en {2}: {0}',
-        'deleted notification comment desc' => '{1} ha enviado a la papelera el comentario de {3} en {2}:',
-        
-        'view object and comments' => 'Ver {0} y todos sus comentarios en Feng Office',
+	'deleted notification comment' => 'Enviado a la papelera comentario de {1} en {2}: {0}',
+	'deleted notification comment desc' => '{1} ha enviado a la papelera el comentario de {3} en {2}:',
+
+	'upload notification file' => 'Una nueva versión del documento \'{0}\' ha sido cargada',
+	'upload notification file desc' => '{1} ha cargado una nueva versión del archivo:',
+	
+	'view object and comments' => 'Ver {0} y todos sus comentarios en Feng Office',
         
 	'view file' => 'Ver documento',
 	'view message' => 'Ver nota',
@@ -183,7 +186,8 @@
 	'user password reseted username' => 'Usuario: {0}',
 	'user password reseted password' => 'Contraseña: {0}',
 	'due_date reminder notification task' => 'Recordatorio de tarea con vencimiento: {0}',
-	'due_date task reminder desc' => 'La siguiente tarea vence el {4} y aún está pendiente',
+	'due_date task reminder' => 'Recordatorio de tarea con vencimiento: {0}',
+	'due_date task reminder desc' => 'La siguiente tarea vence el {1} y aún está pendiente: {0}',
 	'due_date reminder notification milestone' => 'Recordatorio de hito con vencimiento: {0}',
 	'due_date milestone reminder desc' => 'El siguiente hito vence el {4} y aún está pendiente',
 	'start reminder notification event' => 'Recordatorio de evento: {0}',

@@ -247,6 +247,7 @@ og.attachFromFileSystem = function(genid) {
         		html: data.current.data,
         		height: 300,
         		width: 600,
+        		title: lang('upload file'),
         		ok_fn: function() {
     				og.doFileUpload(quickId, {
     					callback: function() {

@@ -40,7 +40,7 @@ class VacioUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('2.4.1');
-		$this->setVersionTo('2.5.1.4');
+		$this->setVersionTo('2.5.1.5');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -156,7 +156,7 @@ class VacioUpgradeScript extends ScriptUpgraderScript {
 				$upgrade_script .= "
 				INSERT INTO `".$t_prefix."contact_widget_options` (widget_name,contact_id,member_type_id,`option`,`value`,config_handler_class,is_system) VALUES
 				('overdue_upcoming',0,0,'assigned_to_user',0,'UserCompanyConfigHandler',0),
-				('calendar',0,0,'filter_by_myself',1,'BooleanConfigHandler',0)
+				('calendar',0,0,'filter_by_myself',0,'BooleanConfigHandler',0)
 				ON DUPLICATE KEY UPDATE widget_name=widget_name;
 				";
 			}

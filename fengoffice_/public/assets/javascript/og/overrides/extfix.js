@@ -174,4 +174,36 @@ Ext.form.ComboBox.override({
 	}
 });
 
+Ext.grid.GridPanel.override({
+	reloadGridPagingToolbar: function (  controller , func , manager) {
+		var bba_before = Ext.getCmp(manager).getBottomToolbar();
+		bba_before.loading.disable();		
+		var params = Ext.getCmp(manager).store.lastOptions.params;
+		if(typeof params != 'undefined'){
+			delete params.action;
+			params.only_result = 1;
+			og.openLink(og.getUrl(controller, func, params), {callback: function(success, data) {
+				
+				Ext.getCmp(manager).store.proxy.totalLength = data.totalCount;
+				Ext.getCmp(manager).store.totalLength = data.totalCount;
+						
+				var bba = Ext.getCmp(manager).getBottomToolbar();
+				bba.updateInfo();
+				
+				var total_pag =  data.totalCount < bba.pageSize ? 1 : Math.ceil(data.totalCount/bba.pageSize)
+				bba.afterTextEl.el.textContent = String.format(bba.afterPageText, total_pag);
+				
+				if(parseInt(data.start) == 0 && total_pag > 1){
+					bba.last.enable();
+					bba.next.enable();
+				}
+				
+				bba.loading.enable();			
+			}});
+		
+			params.only_result = 0;	
+		}
+	}
+});
+
 /**/

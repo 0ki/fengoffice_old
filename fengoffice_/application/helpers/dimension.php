@@ -1,8 +1,7 @@
 <?php
 require_javascript('og/modules/addMessageForm.js');
 
-function render_member_selectors($content_object_type_id, $genid = null, $selected_member_ids = null, $options = array(), $skipped_dimensions = null, $simulate_required = null) {
-	
+function render_member_selectors($content_object_type_id, $genid = null, $selected_member_ids = null, $options = array(), $skipped_dimensions = null, $simulate_required = null, $default_view = true) {
 	if (is_numeric($content_object_type_id)) {
 		if (is_null($genid)) $genid = gen_id();
 		$user_dimensions  = get_user_dimensions_ids(); // User allowed dimensions
@@ -69,7 +68,7 @@ function render_member_selectors($content_object_type_id, $genid = null, $select
 }
 
 
-function render_single_member_selector(Dimension $dimension, $genid = null, $selected_member_ids = null, $options = array()) {
+function render_single_member_selector(Dimension $dimension, $genid = null, $selected_member_ids = null, $options = array(), $default_view = true) {
 	if (is_null($genid)) $genid = gen_id();
 	
 	$dimension_options = $dimension->getOptions(true);

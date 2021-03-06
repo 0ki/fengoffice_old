@@ -89,6 +89,7 @@ og.MemberTree = function(config) {
 	if (!config.listeners) config.listeners = {};
 	Ext.apply(config.listeners, {
 		beforenodedrop: function(e) {
+			//console.log(e);
 			if (!isNaN(e.target.id) && e.data.grid) {
 				
 				var has_relations = false;

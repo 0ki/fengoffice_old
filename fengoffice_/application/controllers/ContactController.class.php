@@ -523,12 +523,16 @@ class ContactController extends ApplicationController {
 			}
 		}
 		
+		$only_count_result = array_var($_GET, 'only_result',false);
+		
 		$content_objects = Contacts::instance()->listing(array(
 			"order" => $order,
 			"order_dir" => $order_dir,
 			"extra_conditions" => $extra_conditions,
 			"start" =>$start,
 			"limit" => $limit,
+			'count_results' => false,
+			'only_count_results' => $only_count_result,
 			"join_params"=> $join_params,
 			"select_columns"=> $select_columns
 		));
@@ -1065,7 +1069,7 @@ class ContactController extends ApplicationController {
 				}else{
 					set_user_config_option("sendEmailNotification", 0,logged_user()->getId());
 				}
-								
+				
 				DB::commit();
 				
 				if (array_var($contact_data, 'isNewCompany') == 'true' && is_array(array_var($_POST, 'company'))){
@@ -1097,27 +1101,18 @@ class ContactController extends ApplicationController {
 		ajx_current("empty");
 		$email = array_var($_REQUEST, 'email');
 		$id_contact = array_var($_REQUEST, 'id_contact');
-		$contact = Contacts::getByEmailCheck($email,$id_contact);
+		$contact = Contacts::getByEmailCheck($email, $id_contact);
 
-		if($contact){
-			if ($contact->getUserType() != 0) {
-				ajx_extra_data(array(
-					"contact" => array(
+		if ($contact instanceof Contact) {
+			ajx_extra_data(array(
+				"contact" => array(
 					"name" => $contact->getFirstName(),
 					"email" => $contact->getEmailAddress(),
 					"id" => $contact->getEmailAddress(),
-					"status" => true
-				)));
-			}else{
-				ajx_extra_data(array(
-					"contact" => array(
-					"name" => $contact->getFirstName(),
-					"email" => $contact->getEmailAddress(),
-					"id" => $contact->getObjectId(),
-					"status" => false
-				)));
-			}
-		}else{
+					"status" => true,
+				)
+			));
+		} else {
 			ajx_extra_data(array("contact" => array("status" => false)));
 		}
 	}
@@ -1864,6 +1859,12 @@ class ContactController extends ApplicationController {
 								$contact_data['is_company'] = 1;
 								$company->setFromAttributes($contact_data);
 								$company->save();
+								
+								if($contact_data['address'] != "") $company->addAddress($contact_data['address'], $contact_data['city'], $contact_data['state'], $contact_data['country'], $contact_data['zipcode'], 'work', true);
+								if($contact_data['phone_number'] != "") $company->addPhone($contact_data['phone_number'], 'work', true);
+								if($contact_data['fax_number'] != "") $company->addPhone($contact_data['fax_number'], 'fax', true);
+								if($contact_data['homepage'] != "") $company->addWebpage($contact_data['homepage'], 'work');
+								if($contact_data['email'] != "") $company->addEmail($contact_data['email'], 'work' , true);
 								
 								if(count(active_context_members(false)) > 0 ){
                                     $object_controller->add_to_members($company, active_context_members(false));
@@ -3130,7 +3131,6 @@ class ContactController extends ApplicationController {
 			$type =  array_var($user, 'type');
 			$username =  array_var($user, 'username');
 		}
-		$userData = array();
 		if ($createUser){
 			if ($createPass){
 				$userData = array(

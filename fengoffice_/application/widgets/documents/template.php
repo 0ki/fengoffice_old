@@ -30,7 +30,7 @@
 		</ul>	
 		<?php if (count($documents)<$total) :?>
 		<div class="view-all-container">
-			<a href="<?php echo get_url('files', 'init')?>" target="documents-panel"><?php echo lang("view all") ?></a>
+			<a href="#" onclick="og.openLink(og.getUrl('files','init'), {caller:'documents-panel'})"><?php echo lang("view all") ?></a>
 		</div>
 		<?php endif;?>
 		<div class="x-clear"></div>

@@ -62,3 +62,4 @@
     if (count($acts['data']) > 0) {
     	include_once 'template.php';
     }
+?>

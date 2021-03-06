@@ -355,12 +355,21 @@ abstract class ContentDataObjects extends DataManager {
 		$SQL_BASE_JOIN = '';
 		$SQL_EXTRA_JOINS = '';
 		$SQL_TYPE_CONDITION = 'true';
+		$SQL_FOUND_ROWS = '';
 
 		if (isset($args['count_results'])) {
 			$count_results = $args['count_results'];
 		} else {
-			$count_results = !( defined('INFINITE_PAGING') && INFINITE_PAGING );
+			$count_results = defined('INFINITE_PAGING') ? !INFINITE_PAGING : false;
 		}
+		
+		//get only the number of results without limit not data
+		if (isset($args['only_count_results'])){
+			$only_count_results = $args['only_count_results'];
+		}else{
+			$only_count_results = false;
+		}
+		
 		$return_raw_data = array_var($args,'raw_data');
 		$start = array_var($args,'start');
 		$limit = array_var($args,'limit');
@@ -373,12 +382,7 @@ abstract class ContentDataObjects extends DataManager {
 			$select_columns = array('*');
 		}
 		
-		if ($count_results) {
-			$SQL_FOUND_ROWS = "SQL_CALC_FOUND_ROWS";
-		}else{
-			$SQL_FOUND_ROWS = "";
-		}
-		
+				
 		$handler_class = "Objects";
 	
 		if ($type_id){
@@ -426,14 +430,12 @@ abstract class ContentDataObjects extends DataManager {
 		
 		$SQL_CONTEXT_CONDITION = " true ";
 		if (!empty($members) && count($members)) {
-			$SQL_CONTEXT_CONDITION = "(EXISTS
-											(SELECT om.object_id
-												FROM  ".TABLE_PREFIX."object_members om
-												WHERE	om.member_id IN (" . implode ( ',', $members ) . ") AND o.id = om.object_id
-												GROUP BY object_id
-												HAVING count(member_id) = ".count($members)."
-											)
-									)";
+			$SQL_CONTEXT_CONDITION = "(EXISTS (SELECT om.object_id
+					FROM  ".TABLE_PREFIX."object_members om
+					WHERE	om.member_id IN (" . implode ( ',', $members ) . ") AND o.id = om.object_id
+					GROUP BY object_id
+					HAVING count(member_id) = ".count($members)."
+			))";
 			
 		}
 		
@@ -454,57 +456,71 @@ abstract class ContentDataObjects extends DataManager {
 		if (logged_user() instanceof Contact) {
 			$uid = logged_user()->getId();
 			// Build Main SQL
-			
-			$permissions_condition = "o.id in (
-											SELECT object_id FROM ".TABLE_PREFIX."sharing_table sh
-											WHERE o.id = sh.object_id
-											AND sh.group_id  IN (SELECT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups WHERE contact_id = $uid)
-									)";
+					
+			$permissions_condition = "o.id IN (
+					SELECT sh.object_id FROM ".TABLE_PREFIX."sharing_table sh
+					WHERE o.id = sh.object_id
+					AND sh.group_id  IN (SELECT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups WHERE contact_id = $uid)
+			)";
 			
 			if ($this instanceof Contacts && $this->object_type_name == 'contact' && can_manage_contacts(logged_user())) {
 				$permissions_condition = "true";
 			}
-		    $sql = "
-		    	SELECT $SQL_FOUND_ROWS $SQL_COLUMNS FROM ".TABLE_PREFIX."objects o
+			$sql = "
+				SELECT $SQL_FOUND_ROWS $SQL_COLUMNS FROM ".TABLE_PREFIX."objects o
 				$SQL_BASE_JOIN
-		    	$SQL_EXTRA_JOINS 
-		    	
-		    	WHERE 
-		    		$permissions_condition
+				$SQL_EXTRA_JOINS
+				WHERE
+					$permissions_condition
 					AND	$SQL_CONTEXT_CONDITION
 					AND $SQL_TYPE_CONDITION
-					AND $SQL_TRASHED_CONDITION $SQL_ARCHIVED_CONDITION $SQL_EXTRA_CONDITIONS 
-				$SQL_ORDER 
-		    	$SQL_LIMIT";
+					AND $SQL_TRASHED_CONDITION $SQL_ARCHIVED_CONDITION $SQL_EXTRA_CONDITIONS
+				$SQL_ORDER
+				$SQL_LIMIT";
+			
+			$sql_total = "
+				SELECT count(o.id) as total FROM ".TABLE_PREFIX."objects o
+				$SQL_BASE_JOIN
+				$SQL_EXTRA_JOINS
+				WHERE
+					$permissions_condition
+					AND	$SQL_CONTEXT_CONDITION
+					AND $SQL_TYPE_CONDITION
+					AND $SQL_TRASHED_CONDITION $SQL_ARCHIVED_CONDITION $SQL_EXTRA_CONDITIONS";
 
-
-			// Execute query and build the resultset
-	    	$rows = DB::executeAll($sql);
-	    	if ($return_raw_data) {
-	    		$result->objects = $rows;
-	    	} else {
-	    		if($rows && is_array($rows)) {
-	    			foreach ($rows as $row) {
-	    				if ($handler_class) {
-	    					$phpCode = '$co = '.$handler_class.'::instance()->loadFromRow($row);';
-	    					eval($phpCode);
-	    				}
-	    				if ( $co ) {
-	    					$result->objects[] = $co ;
-	    				}
-	    			}
-	    		}
-	    	}
-			if ($count_results) {
-				$total = DB::executeOne("SELECT FOUND_ROWS() as total");
-				$result->total = $total['total'];	
-			}else{
-				if  ( count($result->objects) == $limit ) {
-					$result->total = 10000000;
+			
+		    if(!$only_count_results){
+				// Execute query and build the resultset
+		    	$rows = DB::executeAll($sql);
+		    	if ($return_raw_data) {
+		    		$result->objects = $rows;
+		    	} else {
+		    		if($rows && is_array($rows)) {
+		    			foreach ($rows as $row) {
+		    				if ($handler_class) {
+		    					$phpCode = '$co = '.$handler_class.'::instance()->loadFromRow($row);';
+		    					eval($phpCode);
+		    				}
+		    				if ( $co ) {
+		    					$result->objects[] = $co;
+		    				}
+		    			}
+		    		}
+		    	}
+				if ($count_results) {
+					$total = DB::executeOne($sql_total);
+					$result->total = $total['total'];	
 				}else{
-					$result->total = $start + count($result->objects) ;
+					if  ( count($result->objects) == $limit ) {
+						$result->total = 10000000;
+					}else{
+						$result->total = $start + count($result->objects);
+					}
 				}
-			}
+		    }else{
+		    	$total = DB::executeOne($sql_total);
+		    	$result->total = $total['total'];		    	
+		    }
 		} else {
 			$result->objects = array();
 			$result->total = 0;

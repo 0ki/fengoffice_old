@@ -217,7 +217,7 @@ class ProjectEvents extends BaseProjectEvents {
 
 		$invited = "";
 		if ($user instanceof Contact) {
-			$invited = " AND `id` IN (SELECT `event_id` FROM `" . TABLE_PREFIX . "event_invitations` WHERE `contact_id` = ".$user->getId().")";
+			$invited = " AND o.`id` IN (SELECT `event_id` FROM `" . TABLE_PREFIX . "event_invitations` WHERE `contact_id` = ".$user->getId().")";
 		}
 		
 		$tz_hm = "'" . floor(logged_user()->getTimezone()) . ":" . (abs(logged_user()->getTimezone()) % 1)*60 . "'";

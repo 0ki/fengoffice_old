@@ -26,6 +26,10 @@
 	
 	Hook::fire('modify_default_reports', $ignored, $default_reports); // To add, edit or remove default reports
 	
+	
+	Hook::fire('add_report_categories', $ignored, $report_categories);
+	Hook::fire('add_reports_by_category', $ignored, $reports_by_category);
+	
 	require_javascript("og/ReportingFunctions.js");
 ?>
 
@@ -55,6 +59,22 @@
 
 				<?php } ?>
 			</div>
+			<?php 
+			if (is_array($report_categories) && count($report_categories) > 0) {
+				foreach ($report_categories as $cat => $cat_name) { ?>
+			<div class="report-list-section">
+				<div class="title"><?php echo $cat_name ?></div>
+				<?php foreach ($reports_by_category[$cat] as $report) { ?>
+				<div class="report-name">
+					<a href="<?php echo array_var($report, 'url') ?>" class="internalLink" target="reporting-panel" style="padding:10px 0;"><?php echo array_var($report, 'name') ?></a>
+					<div class="desc"><?php echo array_var($report, 'description') ?></div>
+				</div>
+				<?php } ?>
+			</div>
+			<?php
+				}
+			}
+			?>
 			
 			<div class="report-list-section">
 				<div class="title"><?php echo lang('custom reports') ?></div>

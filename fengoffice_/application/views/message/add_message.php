@@ -129,11 +129,13 @@
             	language: '<?php echo $loc ?>',
             	customConfig: '',
             	toolbar: [
-							['Font','FontSize','-','Bold','Italic','Underline', 'Blockquote','-',
-							 'SpellChecker', 'Scayt','-',
+							['Bold','Italic','Underline','Strike','-',
+							 'Font','FontSize','-', 'Blockquote','-',
+							 'SpellChecker', 'Scayt','-', 
+							 'NumberedList','BulletedList','-',
 							 'TextColor','BGColor','RemoveFormat','-',
 							 'Link','Unlink','-',
-							 'JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock']
+							 'JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock']							
                           
                         ],
                 on: {

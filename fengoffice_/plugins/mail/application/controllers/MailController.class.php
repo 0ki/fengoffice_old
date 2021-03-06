@@ -177,6 +177,13 @@ class MailController extends ApplicationController {
 			flash_error(lang('no mail accounts set'));
 			ajx_current("empty");
 		}
+		
+		$def_acc = $this->getDefaultAccountId();
+		if ($def_acc > 0){
+			tpl_assign('default_account_replay', $def_acc);
+		}else{
+			tpl_assign('default_account_replay', $mail_accounts[0]->getId());
+		}
 		tpl_assign('mail', $mail);
 		tpl_assign('mail_data', $mail_data);
 		tpl_assign('mail_accounts', $mail_accounts);
@@ -1021,7 +1028,8 @@ class MailController extends ApplicationController {
 		ajx_current("empty");
 		$email = MailContents::findById(array_var($_GET, 'id', 0));
 		if ($email instanceof MailContent) {
-			$email->setIsRead(logged_user()->getId(), false);
+			$object_controler = new ObjectController();
+			$object_controler->do_mark_as_read_unread_objects(array($email->getId()), false);
 			redirect_to(get_url('mail', 'init'));
 		} else {
 			flash_error(lang("email dnx"));
@@ -1174,7 +1182,8 @@ class MailController extends ApplicationController {
 		}
 		
 		if(!$email->getIsRead(logged_user()->getId())){
-			$email->setIsRead(logged_user()->getId(), true);
+			$object_controler = new ObjectController();
+			$object_controler->do_mark_as_read_unread_objects(array($email->getId()), true);
 		}
 		ApplicationReadLogs::createLog($email, null , ApplicationReadLogs::ACTION_READ);
 	}
@@ -1739,7 +1748,8 @@ class MailController extends ApplicationController {
 
 		return array($err, $errMessage);
 	}
-
+	
+	
 	// ---------------------------------------------------
 	//  Mail Accounts
 	// ---------------------------------------------------
@@ -1801,6 +1811,7 @@ class MailController extends ApplicationController {
 				$mailAccount_data['contact_id'] = $mail_account_user->getId();
 
 				if (!array_var($mailAccount_data, 'del_mails_from_server', false)) $mailAccount_data['del_from_server'] = 0;
+				if (!array_var($mailAccount_data, 'mark_read_on_server', false)) $mailAccount_data['mark_read_on_server'] = 0;
 				$mailAccount->setFromAttributes($mailAccount_data);
 				$mailAccount->setPassword(MailUtilities::ENCRYPT_DECRYPT($mailAccount->getPassword()));
 				$mailAccount->setSmtpPassword(MailUtilities::ENCRYPT_DECRYPT($mailAccount->getSmtpPassword()));
@@ -1904,7 +1915,7 @@ class MailController extends ApplicationController {
 									AND mc.`account_id` NOT IN (SELECT `id` FROM `" . TABLE_PREFIX . "mail_accounts`)");
 				
 				DB::commit();
-				
+
 				flash_success(lang('success add mail account', $mailAccount->getName()));
 				ajx_current("back");
 				// Error...
@@ -1979,6 +1990,7 @@ class MailController extends ApplicationController {
 		          'smtp_password' => MailUtilities::ENCRYPT_DECRYPT($mailAccount->getSmtpPassword()),
 		          'smtp_use_auth' => $mailAccount->getSmtpUseAuth(),
 		          'del_from_server' => $mailAccount->getDelFromServer(),
+				  'mark_read_on_server' => $mailAccount->getMarkReadOnServer(),
 		          'outgoing_transport_type' => $mailAccount->getOutgoingTrasnportType(),
 				  'workspace' => $mailAccount->getColumnValue('workspace',0),			
 			); // array
@@ -2048,6 +2060,7 @@ class MailController extends ApplicationController {
 				$logged_user_can_edit = $logged_user_settings instanceof MailAccountContact && $logged_user_settings->getCanEdit() || $mailAccount->getContactId() == logged_user()->getId() || logged_user()->isAdministrator();
 				if ($logged_user_can_edit || $is_admin) {
 					if (!array_var($mailAccount_data, 'del_mails_from_server', false)) $mailAccount_data['del_from_server'] = 0;
+					if (!array_var($mailAccount_data, 'mark_read_on_server', false)) $mailAccount_data['mark_read_on_server'] = 0;
 					$mailAccount->setFromAttributes($mailAccount_data);
 					$mailAccount->setPassword(MailUtilities::ENCRYPT_DECRYPT($mailAccount->getPassword()));
 					$mailAccount->setSmtpPassword(MailUtilities::ENCRYPT_DECRYPT($mailAccount->getSmtpPassword()));
@@ -2564,7 +2577,9 @@ class MailController extends ApplicationController {
 			$conversation_list = 0;
 		}
 		
-		$result = $this->getEmails($attributes, $context, $start, $limit, $order, $dir, $join_params, $conversation_list);
+		$only_count_result = array_var($_GET, 'only_result',false);
+		
+		$result = $this->getEmails($attributes, $context, $start, $limit, $order, $dir, $join_params, $conversation_list,$only_count_result);
 		
 		$total = $result->total;
 		$emails = $result->objects;
@@ -2586,7 +2601,7 @@ class MailController extends ApplicationController {
 	 * @param Project $project
 	 * @return array
 	 */
-	private function getEmails($attributes, $context = null, $start = null, $limit = null, $order_by = 'sent_date', $dir = 'ASC',$join_params = null, $conversation_list = null) {
+	private function getEmails($attributes, $context = null, $start = null, $limit = null, $order_by = 'sent_date', $dir = 'ASC',$join_params = null, $conversation_list = null, $only_count_result = null) {
 		// Return if no emails should be displayed
 		if (!isset($attributes["viewType"]) || ($attributes["viewType"] != "all" && $attributes["viewType"] != "emails")) return null;
 		$account = array_var($attributes, "accountId");
@@ -2599,7 +2614,7 @@ class MailController extends ApplicationController {
 		
 		$state = array_var($attributes, 'stateType');
 		
-		$result = MailContents::getEmails($account, $state, $read_filter, $classif_filter, $context, $start, $limit, $order_by, $dir, $join_params, null, $conversation_list);
+		$result = MailContents::getEmails($account, $state, $read_filter, $classif_filter, $context, $start, $limit, $order_by, $dir, $join_params, null, $conversation_list, $only_count_result);
 		
 
 		return $result;

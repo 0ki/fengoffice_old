@@ -232,7 +232,7 @@ class Timeslots extends BaseTimeslots {
 		}
 		
 		$result = Timeslots::instance()->listing(array(
-			"order" => array('start_time', 'rel_object_id'),
+			"order" => array('start_time', 'updated_on'),
 			"order_dir" => "DESC",
 		 	"extra_conditions" => " AND rel_object_id = 0" . $user_sql,
 			"start" => $offset,

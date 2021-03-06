@@ -79,7 +79,6 @@
 	}
 	
 	?>
-	<?php echo add_javascript_to_page(get_url('dimension', 'dimensions_js')); // loaded first because it's needed for translating?>
 	<style>
 		#loading {
 		    font-size: 20px;
@@ -482,19 +481,6 @@ setInterval(function() {
 }, 60000);
 <?php } ?>
 
-og.openLink(og.getUrl('dimension', 'reload_dimensions_js'), {
-	hideLoading: true,
-	hideErrors: true,
-	preventPanelLoad: true,
-	callback: function(s, d) {
-		if (d.dims) {
-			og.dimensions = d.dims;
-			og.dimensions_check_date = new Date();
-			if (d.perms) og.member_permissions = d.perms;
-		}
-	}
-});
-
 <?php if (Plugins::instance()->isActivePlugin('mail')) { ?>
 	og.loadEmailAccounts('view');
 	og.loadEmailAccounts('edit');
@@ -517,17 +503,20 @@ og.menuPanelCollapsed = false;
 
 og.dimensionPanels = [
 	<?php
-	$dimensionController = new DimensionController() ;
-	$first = true ; 
-	$dimensions = $dimensionController->get_context() ;
+	$dimensionController = new DimensionController();
+	$first = true; 
+	$dimensions = $dimensionController->get_context();
 	foreach ( $dimensions['dimensions'] AS $dimension ):
 	 	if ( $dimension->getOptions(1) && isset($dimension->getOptions(1)->hidden) && $dimension->getOptions(1)->hidden ) {
 	 		continue ;
 	 	}
 	 		
 		/* @var $dimension Dimension */
-		$title = ( $dimension->getOptions() && isset ($dimension->getOptions(1)->useLangs) && ($dimension->getOptions(1)->useLangs) )   ? lang($dimension->getCode()) : $dimension->getName(); 
-		if (!$first): ?>,<?php endif; $first = false ;?>                      
+		$title = ( $dimension->getOptions() && isset($dimension->getOptions(1)->useLangs) && ($dimension->getOptions(1)->useLangs) ) ? lang($dimension->getCode()) : $dimension->getName(); 
+		if (!$first) echo ",";
+		$first = false;
+		
+		?>                      
 		{	
 			reloadDimensions: <?php echo json_encode( DimensionMemberAssociations::instance()->getDimensionsToReload($dimension->getId()) ) ; ?>,
 			xtype: 'member-tree',
@@ -547,10 +536,10 @@ og.dimensionPanels = [
 			minHeight: 10
 			//animate: false,
 			//animCollapse: false
+			
 		}	
 	<?php endforeach; ?>
 ];
-
 
 og.contextManager.construct();
 og.objPickerTypeFilters = [];
@@ -637,6 +626,17 @@ $(document).ready(function() {
 	og.openLink(og.getUrl('object', 'get_cusotm_property_columns'), {
 		callback: function(success, data){
 			og.custom_properties_by_type = data.properties;
+		}
+	});
+
+	og.openLink(og.getUrl('dimension', 'load_dimensions_info'), {
+		hideLoading: true,
+		hideErrors: true,
+		preventPanelLoad: true,
+		callback: function(s, d) {
+			if (d.dim_names) {
+				og.dimensions_info = d.dim_names;
+			}
 		}
 	});
 });

@@ -31,12 +31,15 @@ og.MessageManager = function() {
 			}),
 			remoteSort: true,
 			listeners: {
-				'load': function() {
+				'load': function(store, result) {
 					var d = this.reader.jsonData;
-					if (d.totalCount === 0) {
-						this.fireEvent('messageToShow', lang("no objects message", lang("messages"), lang('context')));
-					} else if (d.messages.length == 0) {
-						this.fireEvent('messageToShow', lang("no more objects message", lang("messages")));
+					if (d.totalCount == 0) {
+						var sel_context_names = og.contextManager.getActiveContextNames();
+						if (sel_context_names.length > 0) {
+							this.fireEvent('messageToShow', lang("no objects message", lang("messages"), sel_context_names.join(', ')));
+						} else {
+							this.fireEvent('messageToShow', lang("no more objects message", lang("messages")));
+						}
 					} else {
 						this.fireEvent('messageToShow', "");
 					}
@@ -46,6 +49,7 @@ og.MessageManager = function() {
 						var sm = cmp.getSelectionModel();
 						sm.clearSelections();
 					}
+					Ext.getCmp('message-manager').reloadGridPagingToolbar('message','list_all','message-manager');
 				}
 			}
 		});

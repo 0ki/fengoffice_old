@@ -60,7 +60,7 @@ foreach ($dashtasks as $task){
 <?php if ($c > 5) { ?>
   <div id="dashSMTT" style="width:100%; text-align:right">
 	<a href="#" onclick="og.hideAndShowByClass('dashSMTT', 'dashSMTC', 'dashTablePT'); return false;">
-		<?php echo lang("show more amount", $c -5) ?>...
+		<?php echo lang("show more") ?>...
 	</a>
   </div>
 <?php } //if ?>

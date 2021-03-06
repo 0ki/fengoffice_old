@@ -36,7 +36,7 @@
 			<?php endforeach; ?>
 		</ul>
 		<?php if ($count > 5) { ?>
-		<div style="text-align:right;"><a id='showlnk-comments' href="#" onclick="og.showHideWidgetMoreLink('.comment-row.ico-comment','-comments',true)"><?php echo lang("show more amount", $total-5) ?></div>
+		<div style="text-align:right;"><a id='showlnk-comments' href="#" onclick="og.showHideWidgetMoreLink('.comment-row.ico-comment','-comments',true)"><?php echo lang("show more") ?></div>
 		<?php }?>
 		<div class="x-clear"></div>
 		<div class="progress-mask"></div>

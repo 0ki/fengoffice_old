@@ -811,7 +811,10 @@ class Net_IMAPProtocol
         if (isset($ret['PARSED'])) {
             for ($i=0; $i<count($ret['PARSED']); $i++) {
                 $command               = $ret['PARSED'][$i]['EXT'];
-                $parsed[key($command)] = $command[key($command)];
+                if(!empty ($command)){
+                	$parsed[key($command)] = $command[key($command)];
+                };
+                
             }
         }
 
@@ -931,7 +934,7 @@ class Net_IMAPProtocol
      */
     function cmdFetch($msgset, $fetchparam)
     {
-        return $this->_genericCommand('FETCH', $msgset . ' ' . $fetchparam);
+    	 return $this->_genericCommand('FETCH', $msgset . ' ' . $fetchparam);
     }
 
 
@@ -1316,7 +1319,7 @@ class Net_IMAPProtocol
      */
     function cmdCopy($message_set, $mailbox)
     {
-        $mailbox_name = $this->_createQuotedString($mailbox);
+    	$mailbox_name = $this->_createQuotedString($mailbox);
         return $this->_genericCommand('COPY', 
                                       sprintf("%s %s", 
                                               $message_set,
@@ -1357,7 +1360,7 @@ class Net_IMAPProtocol
      */
     function cmdUidCopy($message_set, $mailbox)
     {
-        $mailbox_name = $this->_createQuotedString($mailbox);
+    	$mailbox_name = $this->_createQuotedString($mailbox);
         return $this->_genericCommand('UID COPY', 
                                       sprintf("%s %s",
                                               $message_set,

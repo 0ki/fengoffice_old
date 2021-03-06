@@ -295,6 +295,7 @@ og.ObjectPicker = function(config,object_id,object_id_no_select) {
 				                		html: data.current.data,
 				                		height: 300,
 				                		width: 600,
+				                		title: lang('upload file'),
 				                		ok_fn: function() {
 					        				og.doFileUpload(quickId, {
 					        					callback: function() {

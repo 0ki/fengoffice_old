@@ -18,8 +18,8 @@ class MailUtilities {
 		if (is_null($accounts)) {
 			$accounts = MailAccounts::findAll();
 		}
-		if (config_option('max_email_fetch') && ($maxPerAccount == 0 || config_option('max_email_fetch') < $maxPerAccount)) {
-			$maxPerAccount = config_option('max_email_fetch');
+		if (config_option('user_email_fetch_count') && $maxPerAccount == 0) {
+			$maxPerAccount = config_option('user_email_fetch_count');
 		}
 
 		$old_memory_limit = ini_get('memory_limit');
@@ -182,7 +182,7 @@ class MailUtilities {
 		return $res;
 	}
 	
-	function SaveMail(&$content, MailAccount $account, $uidl, $state = 0, $imap_folder_name = '') {
+	function SaveMail(&$content, MailAccount $account, $uidl, $state = 0, $imap_folder_name = '', $read = null) {
 		
 		try {
 			DB::beginWork();
@@ -501,6 +501,10 @@ class MailUtilities {
 			$mail->addToSharingTable();
 			$mail->orderConversation();
 			
+			//if email is from an imap account copy the state (read/unread) from the server
+			if(!is_null($read)){
+				$mail->setIsRead($account->getContactId(), $read);
+			}
 			// to apply email rules
 			$null = null;
 			Hook::fire('after_mail_download', $mail, $null);
@@ -864,7 +868,60 @@ class MailUtilities {
 	}
 
 	/****************************** IMAP ******************************/
+	/**
+	 * Sets read or unread the selected messages
+	 *
+	 * @param MailAccount $account   
+	 * @param mixed   $uid    UID's of messages can be an array or a number
+	 * @param boolean  $read   if true mark as unread else mark as read
+	 * 
+	 * @return 
+	 *
+	 */
+	static function setReadUnreadImapMails(MailAccount $account, $folder, $uid, $read = true) {
+		if ($account->getIncomingSsl()) {
+			$imap = new Net_IMAP($ret, "ssl://" . $account->getServer(), $account->getIncomingSslPort());
+		} else {
+			$imap = new Net_IMAP($ret, "tcp://" . $account->getServer());
+		}
+		if (PEAR::isError($ret)) {
+			throw new Exception($ret->getMessage());
+		}
+		
+		//login
+		$login_ret = $imap->login($account->getEmail(), self::ENCRYPT_DECRYPT($account->getPassword()),null,false);
+		if (PEAR::isError($login_ret)) {
+			throw new Exception($login_ret->getMessage());
+		}
+				
+		//select folder
+		$folder_ret = $imap->selectMailbox($folder);
+		if (PEAR::isError($folder_ret)) {
+			throw new Exception($folder_ret->getMessage());
+		}
 
+		//get msgs ids by uids
+		$ret = $imap->getMessagesListUid($uid);
+		if(!empty ($ret)){
+			$msg_id = array();
+			foreach ($ret as $msg){
+				$msg_id[] = $msg['msg_id'];
+			}
+			
+			//mark as read or unread by msg id
+			if($read){
+				//mark as read
+				$imap->addSeen($msg_id);
+			}else{
+				//mark as unread			
+				$imap->removeSeen($msg_id);
+			}
+							
+			
+		}
+		//disconnect
+		$imap->disconnect();
+	}
 	private function getNewImapMails(MailAccount $account, $max = 0) {
 		$received = 0;
 
@@ -876,13 +933,15 @@ class MailUtilities {
 		if (PEAR::isError($ret)) {
 			throw new Exception($ret->getMessage());
 		}
-		$ret = $imap->login($account->getEmail(), self::ENCRYPT_DECRYPT($account->getPassword()));
+		
+		$ret = $imap->login($account->getEmail(), self::ENCRYPT_DECRYPT($account->getPassword()),null,false);
 		$mailboxes = MailAccountImapFolders::getMailAccountImapFolders($account->getId());
 		if (is_array($mailboxes)) {
 			foreach ($mailboxes as $box) {
 				if ($max > 0 && $received >= $max) break;
 				if ($box->getCheckFolder()) {
-					if ($imap->selectMailbox(utf8_decode($box->getFolderName()))) {
+					//if the account is configured to mark as read emails on server call selectMailBox else call examineMailBox.
+					if ($account->getMarkReadOnServer() > 0 ? $imap->selectMailbox(utf8_decode($box->getFolderName())) : $imap->examineMailbox(utf8_decode($box->getFolderName()))) {
 						$oldUids = $account->getUids($box->getFolderName(), 1);
 						$numMessages = $imap->getNumberOfMessages(utf8_decode($box->getFolderName()));
 						if (!is_array($oldUids) || count($oldUids) == 0 || PEAR::isError($numMessages) || $numMessages == 0) {
@@ -921,6 +980,10 @@ class MailUtilities {
 									if ($imap->isDraft($index)) $state = 2;
 									else $state = 0;
 									
+									//get the state (read/unread) from the server
+									if ($imap->isSeen($index)) $read = 1;
+									else $read = 0;
+									
 									$messages = $imap->getMessages($index);
 									if (PEAR::isError($messages)) {
 										continue;
@@ -928,7 +991,7 @@ class MailUtilities {
 									$content = array_var($messages, $index, '');
 									if ($content != '') {
 										try {
-											$stop_checking = self::SaveMail($content, $account, $summary[0]['UID'], $state, $box->getFolderName());
+											$stop_checking = self::SaveMail($content, $account, $summary[0]['UID'], $state, $box->getFolderName(), $read);
 											if ($stop_checking) break;
 											$received++;
 										} catch (Exception $e) {

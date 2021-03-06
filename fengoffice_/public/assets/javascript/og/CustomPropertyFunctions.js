@@ -1,9 +1,11 @@
 var cpModified = false;
 var selectedObjTypeIndex = -1;
+og.isMemberCustomProperties = 0;
 
-og.loadCustomPropertyFlags = function(){
+og.loadCustomPropertyFlags = function(is_member_cps){
 	cpModified = false;
 	selectedObjTypeIndex = -1;
+	og.isMemberCustomProperties = is_member_cps ? 1 : 0;
 };
   	
 og.enterCP = function(id) {
@@ -43,7 +45,8 @@ og.objectTypeChanged = function(genid){
 					if (success) {
 						og.coTypes = data.co_types;
 						
-						og.openLink(og.getUrl('property', 'get_custom_properties', {object_type: type}), {
+						var controller = og.isMemberCustomProperties ? 'member_custom_properties' : 'property';
+						og.openLink(og.getUrl(controller, 'get_custom_properties', {object_type: type}), {
 							callback: function(success, data) {
 								if (success) {
 									for(var i=0; i < data.custom_properties.length; i++){
@@ -151,7 +154,7 @@ og.addCustomProperty = function(genid, property){
   	
   	if(property != null){
   	  	var defaultValue = (property.type != 'boolean' ? property.default_value : (property.default_value ? 'checked' : ''));
-  		table = String.format(table, property.id, property.name, (property.values ? property.values : ''), property.description, defaultValue, property.required == true ? 'checked="checked"' : '', property.multiple_values == true ? 'checked="checked"' : '', property.visible_by_default == true ? 'checked="checked"' : '');
+  		table = String.format(table, property.id, property.name, (property.values ? og.clean(property.values) : ''), property.description, defaultValue, property.required == true ? 'checked="checked"' : '', property.multiple_values == true ? 'checked="checked"' : '', property.visible_by_default == true ? 'checked="checked"' : '');
   	}else{
   		table = String.format(table, '', '', '', '', '', '', '');
   	}

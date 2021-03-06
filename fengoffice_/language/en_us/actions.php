@@ -128,9 +128,10 @@
     
     // Files
     'add file' => 'Add file',
-    'edit file properties' => 'Edit file Properties',
+    'edit file properties' => 'Edit file properties',
     'upload file' => 'Upload file',
-    'create new revision' => 'Create new Revision',
+    'create new revision' => 'Create new revision',
+  	'upload new revision' => 'Upload a new version',
 
     'add document' => 'Add document',
     'save document' => 'Save document',

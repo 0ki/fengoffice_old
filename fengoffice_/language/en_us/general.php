@@ -375,4 +375,6 @@ return array(
 	'projects widget title' => 'Projects',
 	'statics' => 'Statistics',
 	'summary' => 'Summary',
+	'color' => 'Color',
+	'active context info' => 'Active context information',
 );

@@ -404,7 +404,7 @@ og.CalendarSecondTopToolbar = function(config) {
 	        data : ucsData
 	    }),
 	    displayField:'text',
-        typeAhead: true,
+        //typeAhead: true,
         mode: 'local',
         triggerAction: 'all',
         selectOnFocus:true,
@@ -446,7 +446,7 @@ og.CalendarSecondTopToolbar = function(config) {
 	        	data :  [["no filter", '--' + lang('no filter') + '--'],["pending", lang('pending')],["complete", lang('complete')], ["hide", lang('none')]]
 			}),
 	        displayField:'text',
-	        typeAhead: true,
+	        //typeAhead: true,
 	        mode: 'local',
 	        triggerAction: 'all',
 	        selectOnFocus:true,

@@ -3,7 +3,7 @@
 function check_mail() {
 	if (Plugins::instance()->isActivePlugin('mail')) {
 		_log("Checking email...");
-		MailUtilities::getmails(null, $err, $succ, $errAcc, $received);
+		MailUtilities::getmails(null, $err, $succ, $errAcc, $received, 100);
 		_log("$received emails fetched.");
 	}
 }

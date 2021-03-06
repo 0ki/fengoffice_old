@@ -46,11 +46,14 @@ og.MailManager = function() {
 			listeners: {
 				'load': function(store, rs) {
 					var d = this.reader.jsonData;
-
-					if (d.totalCount === 0) {
-						this.fireEvent('messageToShow', lang("no objects message", lang("emails")));
-					} else if (d.messages.length == 0) {
-						this.fireEvent('messageToShow', lang("no more objects message", lang("emails")));
+					store.totalLength = store.proxy.totalLength;
+					if (d.totalCount == 0) {
+						var sel_context_names = og.contextManager.getActiveContextNames();
+						if (sel_context_names.length > 0) {
+							this.fireEvent('messageToShow', lang("no objects message", lang("emails"), sel_context_names.join(', ')));
+						} else {
+							this.fireEvent('messageToShow', lang("no more objects message", lang("emails")));
+						}
 					} else {
 						this.fireEvent('messageToShow', "");
 					}
@@ -68,6 +71,8 @@ og.MailManager = function() {
 					
 					//reload columns for this folder
 					showFolderColumns();
+					
+					Ext.getCmp('mails-manager').reloadGridPagingToolbar('mail','list_all','mails-manager');
 				}
 			}
 		});
@@ -109,7 +114,7 @@ og.MailManager = function() {
 			text = '&nbsp;-&nbsp;<span style="color:#888888;white-space:nowrap">';
 			text += og.clean(r.data.text) + "</span></i>";
 		}
-		return name + mem_path + text;
+		return name + mem_path + text ;
 	}
 	
 	
@@ -1203,7 +1208,7 @@ og.MailManager = function() {
 		var p = me.getBottomToolbar().getPageData().activePage;
 		if (window.isActiveBrowserTab && (Ext.getCmp('tabs-panel').getActiveTab().id == 'mails-panel' && p == 1)) {
 			me.needRefresh = false;
-			og.MailManager.store.load();
+			og.MailManager.store.reload();
 		} else {
 			me.needRefresh = true;
 		}
@@ -1228,6 +1233,7 @@ Ext.extend(og.MailManager, Ext.grid.GridPanel, {
 		} else {
 			start = 0;
 		}
+		
 		this.store.baseParams = {
 	      read_type: this.readType,
 	      view_type: this.viewType,

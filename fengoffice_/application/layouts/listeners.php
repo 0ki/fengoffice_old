@@ -201,6 +201,7 @@ og.eventManager.addListener('after member save',
 			og.dimensions[member.dimension_id][member.member_id].path = member.path;
 			og.dimensions[member.dimension_id][member.member_id].ico = member.ico;
 			og.dimensions[member.dimension_id][member.member_id].ot = member.object_type_id;
+			og.dimensions[member.dimension_id][member.member_id].archived = member.archived;
 		}
 		if (member.perms) {
 			og.member_permissions[member.dimension_id][member.member_id] = member.perms;

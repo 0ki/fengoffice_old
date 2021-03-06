@@ -1677,11 +1677,7 @@ class EventController extends ApplicationController {
                     if($calendar->delete()){
                         if($events){
                             foreach($events as $event){                            
-                                $event->trash();
-                                
-                                $event->setSpecialID("");
-                                $event->setExtCalId(0);
-                                $event->save();
+                                $event->delete();                                                               
                             }                        
 
                             if($deleteCalendar){
@@ -1941,8 +1937,8 @@ class EventController extends ApplicationController {
                                         }else{*/
                                         //If event deleted in google, delete event from feng
                                         if(array_pop(explode( '.', $event->getEventStatus() )) == "canceled"){
+                                        	//$event_controller->delete_event_calendar_extern($new_event);
                                         	if($new_event){
-                                        		$event_controller->delete_event_calendar_extern($new_event);
                                         		EventInvitations::delete(array("conditions"=>"event_id = ".$new_event->getId()));
                                         		$new_event->trash();
                                         		 
