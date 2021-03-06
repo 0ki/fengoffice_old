@@ -355,7 +355,7 @@ class AdministrationController extends ApplicationController {
 					if (is_numeric($delay)) {
 						$event->setDelay($delay);
 					}
-					$enabled = $data['enabled'] == 'checked';
+					$enabled = array_var($data, 'enabled') == 'checked';
 					$event->setEnabled($enabled);
 					$event->save();
 				}

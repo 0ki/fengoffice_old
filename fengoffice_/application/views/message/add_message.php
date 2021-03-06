@@ -4,7 +4,10 @@
 	$projects =  active_projects();
 	$genid = gen_id();
 	$object = $message;
+
 ?>
+		
+		
 <form style='height:100%;background-color:white' class="internalForm" action="<?php echo $message->isNew() ? get_url('message', 'add') : $message->getEditUrl() ?>" method="post" enctype="multipart/form-data">
 
 <div class="message">
@@ -41,9 +44,26 @@
 </div>
 <div class="coInputSeparator"></div>
 <div class="coInputMainBlock">
+
+		<?php 
+			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_note_context_help', true, logged_user()->getId())) {?>
+			<div id="addNotesPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+				<?php render_context_help($this, 'chelp add note','add_note'); ?>
+			</div>
+		<?php }?>
+
 	<?php if (isset ($projects) && count($projects) > 0) { ?>
 	<div id="<?php echo $genid ?>add_message_select_workspace_div" style="display:none">
-	<fieldset><legend><?php echo lang('workspace')?></legend>
+	<fieldset>
+		<?php 
+			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+						if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_note_workspace_context_help', true, logged_user()->getId())) {?>
+			<div id="addContactPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+				<?php render_context_help($this, 'chelp add note workspace','add_note_workspace'); ?>
+			</div>
+		<?php }?>
+	<legend><?php echo lang('workspace')?></legend>
 		<?php if ($message->isNew()) {
 			echo select_workspaces('ws_ids', null, array($project), $genid.'ws_ids');
 		} else {
@@ -54,7 +74,15 @@
 	<?php } ?>
 	
 	<div id="<?php echo $genid ?>add_message_add_tags_div" style="display:none">
-	<fieldset><legend><?php echo lang('tags')?></legend>
+	<fieldset>
+	<?php 
+			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+						if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_note_tags_context_help', true, logged_user()->getId())) {?>
+			<div id="addNotesPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+				<?php render_context_help($this, 'chelp add note tags','add_note_tags'); ?>
+			</div>
+		<?php }?>
+	<legend><?php echo lang('tags')?></legend>
 		<?php echo autocomplete_tags_field("message[tags]", array_var($message_data, 'tags'), null, 40); ?>
 	</fieldset>
 	</div>
@@ -92,6 +120,13 @@
 
 	<div id='<?php echo $genid ?>add_custom_properties_div' style="display:none">
 	<fieldset>
+		<?php 
+			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+						if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_note_custom_properties_context_help', true, logged_user()->getId())) {?>
+			<div id="addNotesPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+				<?php render_context_help($this, 'chelp add note custom properties','add_note_custom_properties'); ?>
+			</div>
+		<?php }?>
 		<legend><?php echo lang('custom properties') ?></legend>
 		<?php echo render_object_custom_properties($message, 'ProjectMessages', false) ?><br/><br/>
 		<?php echo render_add_custom_properties($object); ?>
@@ -100,6 +135,13 @@
 
 	<div id="<?php echo $genid ?>add_subscribers_div" style="display:none">
 		<fieldset>
+			<?php 
+				$show_help_option = user_config_option('show_context_help', 'until_close'); 
+							if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_note_subscribers_context_help', true, logged_user()->getId())) {?>
+				<div id="addNotesPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+			<?php render_context_help($this, 'chelp add note subscribers','add_note_subscribers'); ?>
+			</div>
+		<?php }?>
 		<legend><?php echo lang('object subscribers') ?></legend>
 		<div id="<?php echo $genid ?>add_subscribers_content">
 			<?php echo render_add_subscribers($object, $genid); ?>
@@ -126,6 +168,13 @@
 	<?php if($object->isNew() || $object->canLinkObject(logged_user(), $project)) { ?>
 	<div style="display:none" id="<?php echo $genid ?>add_linked_objects_div">
 	<fieldset>
+		<?php 
+			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_note_linked_object_context_help', true, logged_user()->getId())) {?>
+			<div id="addNotesPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+				<?php render_context_help($this, 'chelp add note linked objects','add_note_linked_object'); ?>
+			</div>
+		<?php }?>
 		<legend><?php echo lang('linked objects') ?></legend>
 		<?php echo render_object_link_form($object) ?>
 	</fieldset>	

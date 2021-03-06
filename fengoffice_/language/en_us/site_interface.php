@@ -91,22 +91,42 @@
     'massmailer recipients' => 'Recipients',
     
     // Dashboard
-    'welcome to new account' => 'Welcome to your newly created account',
-    'welcome to new account info' => '{0}, welcome to your new account. From now on it will always be available on {1} (you can bookmark this link). You can get started in a minute following these easy steps:',
-    'new account step1 owner' => 'Step 1: Update your company info',
-    'new account step1 owner info' => '<a class="internalLink" href="{0}">Set your company details</a> such as phone and fax number, address, email, homepage etc',
+
+  	'welcome to new account' => '{0}, Welcome to your new account',
+    'welcome to new account info' => 'From now on you can access your account on {0} ( We recommend you bookmark this link ).<br/> Start using Feng Office by following these steps:',
+    
+  	'new account step1' => 'Step 1: Create your own company profile ',
+  	'new account step1 info' => 'To enter your company data and the members you work with click on the Administration link located at the top right of the page.',
+  
+  	'new account step1 owner' => 'Step 1: Create your own company profile',
+    'new account step1 owner info' => 'To enter your company data and the members you work with click on the Administration link located the the top right of the page.',
+  
+  	'new account step update account' => 'Step {0}: Update your personal account ',
+    'new account step update account info' => 'Update your personal information and change your password by clicking the Account link at the top right of the page.',
+  
    	'new account step add members' => 'Step {0}: Add team members',
     'new account step add members info' => 'You can <a class="internalLink" href="{0}">create user accounts</a> for all members of your team. Every member will get their username and password which they can use to access the system',
-    'new account step start workspace' => 'Step {0}: Start a workspace',
-    'new account step start workspace info' => 'Defining a <a class="internalLink" href="{0}">new workspace</a> is really easy: set a name and description (optional) and click submit. After that you can set permissions for your team members and clients.',
+  
+    'new account step start workspace' => 'Step {0}: Start organizing your information: create a workspace',
+    'new account step start workspace info' => 'A workspace is where you keep and organize all your company\'s information.<br/>
+    											Workspaces can be divided by clients, projects, company departments or any other division in the classification system you use.<br/>
+    											Click on {0} located on the left panel to create a new workspace.<br/>
+    											The system automatically creates a personal workspace for every user ({1}). All the information in this workspace is only visible to its owner by default.',
+    
   	'new account step configuration' => 'Step {0}: Configuration',
   	'new account step configuration info' => '<a class="internalLink" href="{0}">Manage</a> opengoo general settings, mailing configuration, enable/disable modules, among other options',
-	'new account step profile' => 'Step {0}: Update profile',
+	
+  	'new account step profile' => 'Step {0}: Update profile',
   	'new account step profile info' => 'Update your <a class="internalLink" href="{0}">user profile</a>',
+  	
   	'new account step preferences' => 'Step {0}: Update user preferences',
   	'new account step preferences info' => 'Update your <a class="internalLink" href="{0}">user preferences</a> such as general preferences, dashboard options and task options',
-  	'new account step actions' => 'Step {0}: Actions',
-  	'getting started' => 'Getting Started',
+  	
+  	'new account step actions' => 'Step {0}: Assume the complete management of your online office',
+  	'new account step actions info' => 'Create documents and tasks in your company workspaces to share with the company users.<br>
+										Click on the workspace you want to work with and <b>Add a new:</b><br/>',
+  
+   	'getting started' => 'Getting Started',
   	
     // Application log
     'application log details column name' => 'Details',

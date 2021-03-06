@@ -1,5 +1,16 @@
 <?php if(isset($company) && ($company instanceof Company)) { ?>
 <div class="card">
+
+<?php
+	$show_help_option = user_config_option('show_context_help', 'until_close'); 
+	if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_company_context_help', true, logged_user()->getId()))) {?>
+		<div style="padding-bottom:10px;">
+		<?php 
+			render_context_help($this, 'chelp company card', 'company');
+		?>
+		</div>
+	<?php } ?>
+
   <div class="cardIcon"><img src="<?php echo $company->getLogoUrl() ?>" alt="<?php echo clean($company->getName()) ?> logo" /></div>
   <div class="cardData">
     

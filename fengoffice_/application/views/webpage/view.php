@@ -24,7 +24,6 @@ if (isset($object) && $object instanceof ProjectWebpage) {
 		tpl_assign("description", "<b>".lang("url").": </b><a target=\"_blank\" href=\"$url\">$url</a>");
 		tpl_assign("desc", $description);
 		tpl_assign("content_template", array('view_content', 'webpage'));
-		tpl_assign("variables", $variables);
 		tpl_assign("object", $object);
 		tpl_assign('iconclass', $object->isTrashed()? 'ico-large-weblink-trashed' :  'ico-large-weblink');
 		

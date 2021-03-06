@@ -515,4 +515,8 @@
 	'success sending reminders' => '{0} herinneringen verstuurd',
 	'failed to assign contact due to permissions' => 'U heeft niet genoeg gebruikersrechten om contacten toe te voegen binnen deze werkomgeving: {0}',
 	'weblink dnx' => 'De door u opgevraagde weblink bestaat niet (meer).',
+	'document checked out' => 'Het document is reeds op non-actief gesteld door een andere gebruiker.',
+	'success trash file revision' => 'Bestandsrevisie is in de prullenbak gegooid. ',
+	'success unclassify email' => 'Classificatie van de email is ongedaan gemaakt.',
+	'error unclassify email' => 'Het ongedaan maken van de classificatie van de email is mislukt. ',
 ); ?>

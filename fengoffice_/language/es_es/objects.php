@@ -35,7 +35,7 @@
     'form' => 'Formulario',
     'forms' => 'Formularios',
     'file' => 'Archivo',
-    'files' => 'Archivos',
+  	'files' => 'Archivos',
     'file revision' => 'Revisión de archivo',
     'file revisions' => 'Revisión de archivos',
     'revision' => 'Revisión',
@@ -47,6 +47,8 @@
     'handin' => 'Entrega',
     'handins' => 'Entregas',
     'emailunclassified' => 'Correo',
+  	'time' => 'Horas',
+  	'reporting' => 'Reportes',
   
     // Variations
     'owner company' => 'Empresa propietaria',
@@ -87,6 +89,9 @@
   	'object reminders' => 'Recordatorios',
     'add object reminder' => 'Agregar recordatorio',
   
+  	'load file'=> 'Cargar archivo',
+  	'create document' => 'Crear Documentos',
+  	'create presentation' => 'Crear Presentación',
     
   ); // array
 

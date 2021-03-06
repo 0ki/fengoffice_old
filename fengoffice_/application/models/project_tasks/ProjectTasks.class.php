@@ -117,7 +117,8 @@ class ProjectTasks extends BaseProjectTasks {
 		$project_ids = $project->getAllSubWorkspacesCSV();
 		else
 		$project_ids = $user->getActiveProjectIdsCSV();
-			
+		
+		$date = $date->add('h', logged_user()->getTimezone());
 		$from_date =   (new DateTimeValue($date->getTimestamp()));
 		$from_date = $from_date->beginningOfDay();
 		$to_date =  (new DateTimeValue($date->getTimestamp()));
@@ -156,10 +157,8 @@ class ProjectTasks extends BaseProjectTasks {
 		$project_ids = $project->getAllSubWorkspacesCSV();
 		else
 		$project_ids = $user->getActiveProjectIdsCSV();
-			
-		$time = strtotime("-1 day", time());
-		$to_date =  (new DateTimeValue($time));
-		$to_date = $to_date->endOfDay();
+
+		$to_date = DateTimeValueLib::now()->add('h', logged_user()->getTimezone())->beginningOfDay();
 		
 		$assignedToStr = "";
 		if ($assigned_to_company) {

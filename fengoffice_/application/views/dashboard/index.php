@@ -1,12 +1,11 @@
-
 <?php $genid = gen_id();
 
 	$assign_type = 0; //All
-	if ($assigned_to_user_filter > 0){
+	if (isset($assigned_to_user_filter) && $assigned_to_user_filter > 0){
 		$assigned_to = Users::findById($assigned_to_user_filter);
 		$assigned_to_me = $assigned_to->getId() == logged_user()->getId();
 		$assign_type = $assigned_to_me? 1 : 2;
-	} else if ($assigned_to_company_filter > 0){
+	} else if (isset($assigned_to_company_filter) && $assigned_to_company_filter > 0){
 		$assigned_to = Companies::findById($assigned_to_company_filter);
 		$assign_type = 3;
 	}

@@ -238,7 +238,8 @@ class ReportingController extends ApplicationController {
 	// ---------------------------------------------------
 
 	function total_task_times_p(){
-		$users = owner_company()->getUsers();
+		$comp = logged_user()->getCompany();
+		$users = ( $comp instanceof Company ? $comp->getUsers() : owner_company()->getUsers());
 		$workspaces = logged_user()->getActiveProjects();
 
 		tpl_assign('workspaces', $workspaces);

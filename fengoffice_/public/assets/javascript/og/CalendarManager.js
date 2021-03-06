@@ -9,7 +9,7 @@ og.CalendarManager = function() {
 	if (!og.CalendarManager.store) {
 		og.CalendarManager.store = new Ext.data.Store({
 	        proxy: new og.GooProxy({
-	            url: og.getUrl('event', 'view_calendar', {day: today_date.format('d'), month: today_date.format('n'), year: today_date.format('Y')})
+	            url: og.getUrl('event', 'view_calendar', {})
 	        }),
 	        reader: new Ext.data.JsonReader({
 	            root: 'events',
@@ -35,7 +35,6 @@ og.CalendarManager = function() {
 	og.CalendarManager.superclass.constructor.call(this, {
 		store: this.store,
 		layout: 'fit',
-		//tbar: og.CalendarToolbarItems,
         closable: true
     });
 
@@ -73,6 +72,10 @@ Ext.extend(og.CalendarManager, Ext.Panel, {
 			this.load({start: 0});
 		}
 	},
+	
+	reset: function() {
+		this.load({start:0});
+	},	
 	
 	showMessage: function(text) {
 		this.innerMessage.innerHTML = text;

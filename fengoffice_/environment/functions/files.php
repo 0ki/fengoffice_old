@@ -191,6 +191,11 @@ function dir_size($dir) {
 	return $totalsize;
 } // end func dir_size
 
+function file_is_zip($mime_type, $extension = '') {
+	return ($mime_type == 'application/zip' || $mime_type == 'application/x-zip-compressed' || 
+			($mime_type == 'application/x-compressed' && $extension == 'zip'));
+}
+
 /**
  * Remove specific directory
  *

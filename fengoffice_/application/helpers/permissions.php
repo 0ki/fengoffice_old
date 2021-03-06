@@ -440,14 +440,7 @@
 				if($object->getCreatedById() == $user_id) {
 					return true; // the user is the creator of the object
 				}
-				if ($object instanceof ProjectDataObject) {
-					$ws = $object->getWorkspaces();
-					foreach ($ws as $w) {
-						if ($w->getId() == $user->getPersonalProjectId()) {
-							return true;
-						}
-					}
-				}
+				
 				$perms = ObjectUserPermissions::getAllPermissionsByObject($object, $user->getId());		
 				if ($perms && is_array($perms)) { //if the permissions for the user in the object are specially set
 					return has_access_level($perms[0],$access_level);

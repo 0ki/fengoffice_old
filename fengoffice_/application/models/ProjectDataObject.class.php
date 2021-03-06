@@ -151,9 +151,9 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 		if ($this->isNew()) {
 			return array(active_or_personal_project());
 		} else if (!$this->columnExists('project_id')) {
-			if (is_null($this->workspaces)){
+			//if (is_null($this->workspaces)){
 				$this->workspaces = WorkspaceObjects::getWorkspacesByObject($this->getObjectManagerName(), $this->getObjectId());
-			}
+			//}
 
 			if (!is_null($wsIds)){
 				$result = array();

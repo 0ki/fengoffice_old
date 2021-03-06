@@ -1131,7 +1131,7 @@ class FilesController extends ApplicationController {
 					"modifyUrl" => $o->getModifyUrl(),
 					"songInfo" => $songInfo,
 					"ftype" => $o->getType(),
-					"url" => $o->getUrl()
+					"url" => $o->getUrl(),
 				);
 				Hook::fire('add_classification_value', $o, $values);
 				$listing["files"][] = $values;
@@ -1801,7 +1801,6 @@ class FilesController extends ApplicationController {
 		} catch (Exception $e) {
 			DB::rollback();
 			flash_error($e->getMessage());
-			flash_error($e->getTraceAsString());
 			ajx_current("empty");
 		}
 		return false;
@@ -1868,12 +1867,18 @@ class FilesController extends ApplicationController {
 		if (!$file->canView(logged_user())) {
 			die(lang("no access permissions"));
 		}
+		
+		$content = $file->getFileContent();
+		$encoding = detect_encoding($content, array('UTF-8', 'ISO-8859-1', 'WINDOWS-1252'));
+		
 		header("Expires: " . gmdate("D, d M Y H:i:s", mktime(date("H") + 2, date("i"), date("s"), date("m"), date("d"), date("Y"))) . " GMT");
 		header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
-		header("Content-Type: " . $file->getTypeString());
+		header("Content-Type: " . $file->getTypeString() . ";charset=".$encoding);
 		header("Content-Length: " . (string) $file->getFileSize());
-		$content = purify_html($file->getFileContent());
-		print iconv(detect_encoding($content, array('UTF-8', 'ISO-8859-1')), 'UTF-8', $content);
+		
+		if ($file->getTypeString() == 'text/html') $content = purify_html($content);
+
+		print($content);
 		die();
 	}
 

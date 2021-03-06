@@ -80,7 +80,7 @@ if (isset($file) && $file instanceof ProjectFile) {
 			if ($file->isModifiable() && $file->getType() != ProjectFiles::TYPE_WEBLINK) { 
 				add_page_action(lang('edit this file'), $file->getModifyUrl(), 'ico-edit');
 			}
-			if ($file->getTypeString() == 'application/zip') {
+			if (file_is_zip($file->getTypeString(), get_file_extension($file->getFilename()))) {
 				add_page_action(lang('extract'), get_url('files', 'zip_extract', array('id' => $file->getId())), 'ico-zip-extract');
 				add_page_action(lang('add files to zip'), "javascript:og.pickObjectToZip({$file->getId()})", 'ico-zip-add');
 			}

@@ -55,7 +55,7 @@ og.WebpageManager = function() {
 		
 		var actions = '';
 		var actionStyle= ' style="font-size:90%;color:#777777;padding-top:3px;padding-left:18px;background-repeat:no-repeat" '; 
-		actions += String.format('<a class="list-action ico-open-link" href="#" onclick="window.open(\'{0}\')" title="{1}" ' + actionStyle + '> </a>',
+		actions += String.format('<a class="list-action ico-open-link" href="{0}" target="_blank" title="{1}" ' + actionStyle + '> </a>',
 			r.data.url.replace(/\"/g, escape("\"")).replace(/\'/g, escape("'")), lang('open link in new window', og.clean(value)));
 		actions = '<span>' + actions + '</span>';
 		
@@ -294,6 +294,10 @@ Ext.extend(og.WebpageManager, Ext.grid.GridPanel, {
 		}
 	},
 	
+	reset: function() {
+		this.load({start:0});
+	},
+
 	showMessage: function(text) {
 		this.innerMessage.innerHTML = text;
 	}

@@ -130,7 +130,7 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 		return !this.preventClose;
 	},
 
-	load: function(content, isBack) {
+	load: function(content, isBack, isReset) {
 
 		if (!this.confirmClose()) {
 			if (isBack) {
@@ -269,9 +269,14 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 					content.panel = Ext.ComponentMgr.create(config);
 				}
 			}
+			if (isReset) {
+				content.panel.reset();
+			} else {
+				content.panel.load();
+			}
+
 			this.add(content.panel);
 			content.panel.show();
-			content.panel.load();
 			this.doLayout();
 			og.captureLinks(this.id, this);
 		} else {
@@ -316,7 +321,7 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 		if (!this.confirmClose()) return;
 		this.loaded = false;
 		if (this.active) {
-			this.load(this.defaultContent);
+			this.load(this.defaultContent, true, true);
 		}
 		this.history = [];
 	}

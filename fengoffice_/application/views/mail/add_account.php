@@ -144,19 +144,21 @@
     	$attributes['selected'] = "selected";
     }
   	$options[] = option_tag(lang('pop3'), '0', $attributes);
-  	$onchange = "if (this.value == 1) document.getElementById('$genid' + 'folders').style.display = 'block'; else document.getElementById('$genid' + 'folders').style.display = 'none'"; 
+  	$onchange = "var fld = document.getElementById('$genid' + 'folders'); var ssl = document.getElementById('$genid' + 'sslport'); if (this.value == 1) { fld.style.display = 'block'; ssl.value = '993'; } else { fld.style.display = 'none'; ssl.value = '995'; }"; 
     echo select_box('mailAccount[is_imap]', $options, array("onchange" => $onchange, 'tabindex' => '145'));
     ?>
+  </div><br/>
+  <div> <?php
+  	$onchange = "var div = document.getElementById('$genid' + 'sslportdiv');if(this.checked) div.style.display='block';else div.style.display='none';";
+    echo checkbox_field('mailAccount[incoming_ssl]', array_var($mailAccount_data, 'incoming_ssl'), array('id' => $genid.'ssl', 'tabindex'=>'150', 'onchange' => $onchange)) ?>
+    <label for="<?php echo $genid ?>ssl" class="yes_no"><?php echo lang('incoming ssl') ?></label>
+  </div>
+  <div id="<?php echo $genid ?>sslportdiv" <?php if (!array_var($mailAccount_data, 'incoming_ssl')) echo 'style="display:none"'; ?>>
+    <?php echo label_tag(lang('incoming ssl port'), 'mailAccountFormIncomingSslPort') ?>
+    <?php echo text_field('mailAccount[incoming_ssl_port]', array_var($mailAccount_data, 'incoming_ssl_port', array_var($mailAccount_data, 'is_imap', false) ? 993 : 995), array('id' => $genid.'sslport', 'tabindex'=>'160')) ?>
   </div>
   <div id="<?php echo $genid ?>folders" style="padding:5px;<?php if (!array_var($mailAccount_data, 'is_imap', false)) echo 'display:none'; ?>">
-	  <div>
-	    <?php echo checkbox_field('mailAccount[incoming_ssl]', array_var($mailAccount_data, 'incoming_ssl'), array('id' => $genid.'ssl', 'tabindex'=>'150')) ?>
-	    <label for="<?php echo $genid ?>ssl" class="yes_no"><?php echo lang('incoming ssl') ?></label>
-	  </div>
-	  <div>
-	    <?php echo label_tag(lang('incoming ssl port'), 'mailAccountFormIncomingSslPort') ?>
-	    <?php echo text_field('mailAccount[incoming_ssl_port]', array_var($mailAccount_data, 'incoming_ssl_port', 993), array('id' => $genid.'sslport', 'tabindex'=>'160')) ?>
-	  </div>
+	  
 	  <div id="<?php echo $genid ?>imap_folders">
 	    <?php
 	    tpl_assign('imap_folders', isset($imap_folders) ? $imap_folders : array());

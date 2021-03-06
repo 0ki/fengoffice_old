@@ -3,7 +3,7 @@
 	'login' => 'Login',
 	'logout' => 'Logout',
 	'hide welcome info' => '» Ocultar información de forma permanente',
-	'add company' => 'Agregar compañía',
+	'add company' => 'Agregar empresa',
 	'edit company' => 'Editar datos de la compañía',
 	'delete company' => 'Eliminar compañía',
 	'edit company logo' => 'Guardar logo',

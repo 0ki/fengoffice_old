@@ -15,9 +15,10 @@
 		$startday = date("j") - date("N"); // beginning of the week, sunday
 	}
 	$endday = $startday + 7;
-	$currentday = date("j");
-	$currentmonth = date("n");
-	$currentyear = date("Y");
+	$today = DateTimeValueLib::now()->add('h', logged_user()->getTimezone());
+	$currentday = $today->getDay();
+	$currentmonth = $today->getMonth();
+	$currentyear = $today->getYear();
 	
 	$date_start = new DateTimeValue(mktime(0,0,0,$currentmonth,$startday,$currentyear)); 
 	$date_end = new DateTimeValue(mktime(0,0,0,$currentmonth,$endday,$currentyear)); 

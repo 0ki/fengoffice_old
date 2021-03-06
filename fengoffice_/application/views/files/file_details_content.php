@@ -2,10 +2,7 @@
 	$revisions = $file->getRevisions();
 	$last_revision = $file->getLastRevision();
 	$genid = gen_id();
-	
-	if(($file->getDescription())) { ?>
-      <div id="fileDescription"><b><?php echo lang('description')?>:&nbsp;</b><?php echo convert_to_links(nl2br(clean($file->getDescription()))) ?></div>
-<?php } // if ?>
+?>
 
 <?php if ($file->isDisplayable()) {?>
 <div>
@@ -62,8 +59,8 @@
 
 <?php if ($file->getType() == ProjectFiles::TYPE_DOCUMENT){?>
 <fieldset>
-  <legend class="toggle_collapsed" onclick="og.toggle('revisions',this)"><?php echo lang('revisions'); ?> (<?php echo count($revisions);?>)</legend>
-<div id="revisions" style="display:none">
+  <legend class="toggle_collapsed" onclick="og.toggle('<?php echo $genid ?>revisions',this)"><?php echo lang('revisions'); ?> (<?php echo count($revisions);?>)</legend>
+<div id="<?php echo $genid ?>revisions" style="display:none">
 <table class="revisions">
 <?php  $counter = 0;
 	foreach($revisions as $revision) { 
@@ -115,6 +112,12 @@
 </table>
 </div>
 </fieldset>
+<?php } // if ?>
+
+<?php if(($file->getDescription())) { ?>
+      <fieldset><legend><?php echo lang('description')?></legend>
+      <?php echo nl2br(convert_to_links(clean($file->getDescription()))) ?>
+      </fieldset>
 <?php } // if ?>
 
 <?php if(($ftype = $file->getFileType()) instanceof FileType && $ftype->getIsImage()){?>

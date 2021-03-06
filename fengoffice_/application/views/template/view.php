@@ -19,7 +19,6 @@
 		);
 		tpl_assign("variables", $variables);
 		tpl_assign("content_template", array('content', 'template'));
-		tpl_assign("content", $content);
 		tpl_assign("object", $cotemplate);
 		tpl_assign('iconclass', $cotemplate->isTrashed()? 'ico-large-template-trashed' :  'ico-large-template');
 		

@@ -23,9 +23,7 @@ class MailUtilities {
 					$accId = $account->getId();
 					$emails = array();
 					if (!$account->getIsImap()) {
-						if (!$account->getIncomingSsl()) {
-							$mailsReceived += self::getNewPOP3Mails($account, $maxPerAccount);
-						}
+						$mailsReceived += self::getNewPOP3Mails($account, $maxPerAccount);
 					} else {
 						$mailsReceived += self::getNewImapMails($account, $maxPerAccount);
 					}
@@ -79,13 +77,19 @@ class MailUtilities {
 		if (strpos($content, '+OK ') > 0) $content = substr($content, strpos($content, '+OK '));
 		self::parseMail($content, $decoded, $parsedMail, $warnings);
 		$encoding = array_var($parsedMail,'Encoding', 'UTF-8');
+		$from = self::getAddresses(array_var($parsedMail, "From"));
+		if ($state == 0) {
+			if ($from == $account->getEmailAddress()) {
+				$state = 1;
+			}
+		}
 
 		if (!isset($parsedMail['Subject'])) $parsedMail['Subject'] = '';
 		$mail = new MailContent();
 		$mail->setAccountId($account->getId());
 		$mail->setState($state);
 		$mail->setImapFolderName($imap_folder_name);
-		$mail->setFrom(self::getAddresses(array_var($parsedMail, "From")));
+		$mail->setFrom($from);
 		
 		if (array_key_exists('Encoding', $parsedMail)){
 			$mail->setFromName(iconv($encoding, 'UTF-8//IGNORE', array_var(array_var(array_var($parsedMail, 'From'), 0), 'name')));
@@ -97,6 +101,8 @@ class MailUtilities {
 		$mail->setTo(self::getAddresses(array_var($parsedMail, "To")));
 		if (array_key_exists("Date", $parsedMail)) {
 			$mail->setSentDate(new DateTimeValue(strtotime($parsedMail["Date"])));
+		}else{
+			$mail->setSentDate(new DateTimeValue(DateTimeValueLib::now()));
 		}
 		$mail->setSize(strlen($content));
 		$mail->setHasAttachments(!empty($parsedMail["Attachments"]));
@@ -137,9 +143,14 @@ class MailUtilities {
 		try {
 			DB::beginWork();
 			$mail->save();
+			$user = Users::findById($account->getUserId());
+			if ($user instanceof User) {
+				$mail->subscribeUser($user);
+			}
 			DB::commit();
 		} catch(Exception $e) {
 			DB::rollback();
+			Logger::log($e->getMessage());
 		}
 		unset($parsedMail);
 	}
@@ -174,7 +185,11 @@ class MailUtilities {
 		$pop3 = new Net_POP3();
 
 		// Connect to mail server
-		$pop3->connect($account->getServer());
+		if ($account->getIncomingSsl()) {
+			$pop3->connect("ssl://" . $account->getServer(), $account->getIncomingSslPort());
+		} else {
+			$pop3->connect($account->getServer());
+		}
 		if (PEAR::isError($ret=$pop3->login($account->getEmail(), self::ENCRYPT_DECRYPT($account->getPassword()), 'USER'))) {
 			throw new Exception($ret->getMessage());
 		}
@@ -367,14 +382,13 @@ class MailUtilities {
 							if (PEAR::isError($summary)) {
 								Logger::log($summary->getMessage());
 							} else {
-								if ($imap->isDraft($index)) $state = '2';
-								else if ($summary[0]['FROM'][0]['EMAIL'] == $account->getEmail()) $state = '1';
-								else $state = '0';
+								if ($imap->isDraft($index)) $state = 2;
+								else $state = 0;
 								
 								$messages = $imap->getMessages($index);
 								if (PEAR::isError($messages)) {
 									Logger::log($messages->getMessage());
-									return $received;
+									continue;
 								}
 								self::SaveMail($messages[$index], $account, $summary[0]['UID'], $state, $box->getFolderName());
 								$received++;

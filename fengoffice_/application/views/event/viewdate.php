@@ -78,9 +78,9 @@ $date_format = user_config_option('date_format', 'd/m/Y');
 		$companies_array[] = $company->getArrayInfo();	
 ?>
 <div id="calHiddenFields">
-	<input type="hidden" id="hfUsers" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($users_array)))) ?>"/>
-	<input type="hidden" id="hfCompanies" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($companies_array)))) ?>"/>
-	<input type="hidden" id="hfUserPreferences" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($userPreferences)))) ?>"/>
+	<input type="hidden" id="hfCalUsers" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($users_array)))) ?>"/>
+	<input type="hidden" id="hfCalCompanies" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($companies_array)))) ?>"/>
+	<input type="hidden" id="hfCalUserPreferences" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($userPreferences)))) ?>"/>
 </div>
 
 <div class="calendar" style="padding:0px;height:100%;overflow:hidden;" id="cal_main_div" onmouseup="clearPaintedCells();">
@@ -461,10 +461,10 @@ $date_format = user_config_option('date_format', 'd/m/Y');
  
 <script type="text/javascript">
 	// Top Toolbar	
-	ogCalendarUserPreferences = Ext.util.JSON.decode(document.getElementById('hfUserPreferences').value);
+	ogCalendarUserPreferences = Ext.util.JSON.decode(document.getElementById('hfCalUserPreferences').value);
 	var ogCalTT = new og.CalendarTopToolbar({
-		usersHfId:'hfUsers',
-		companiesHfId:'hfCompanies',
+		usersHfId:'hfCalUsers',
+		companiesHfId:'hfCalCompanies',
 		renderTo:'calendarPanelTopToolbar'
 	});	
 

@@ -158,9 +158,24 @@ $use_24_hours = user_config_option('time_format_use_24');
 	
 		<div class="coInputSeparator"></div>
 		<div class="coInputMainBlock">	
-
+		
+		<?php 
+			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_event_context_help', true, logged_user()->getId())) {?>
+			<div id="addEventPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+				<?php render_context_help($this, 'chelp add event','add_event'); ?>
+			</div>
+		<?php }?>
+		
 		<div id="<?php echo $genid ?>add_event_select_workspace_div" style="display:none">
 		<fieldset>
+		<?php 
+			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_event_workspace_context_help', true, logged_user()->getId())) {?>
+			<div id="addEventPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+				<?php render_context_help($this, 'chelp add event workspace','add_event_workspace'); ?>
+			</div>
+		<?php }?>
 		<legend><?php echo lang('workspace') ?></legend>
 			<?php echo select_project2('event[project_id]', $project->getId(), $genid) ?>
 		</fieldset>
@@ -169,6 +184,13 @@ $use_24_hours = user_config_option('time_format_use_24');
 		
 		<div id="<?php echo $genid ?>add_event_tags_div" style="display:none">
 		<fieldset>
+		<?php 
+			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_event_tag_context_help', true, logged_user()->getId())) {?>
+			<div id="addEventPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+				<?php render_context_help($this, 'chelp add event tag','add_event_tag'); ?>
+			</div>
+		<?php }?>
 			<legend><?php echo lang('tags')?></legend>
 			<?php echo autocomplete_tags_field("event[tags]", array_var($event_data, 'tags'), "event[tags]", 20); ?>
 		</fieldset>
@@ -177,6 +199,13 @@ $use_24_hours = user_config_option('time_format_use_24');
 		
 		<div id="<?php echo $genid ?>add_event_description_div" style="display:none">
 			<fieldset>
+			<?php 
+			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_event_description_context_help', true, logged_user()->getId())) {?>
+			<div id="addEventPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+				<?php render_context_help($this, 'chelp add event description','add_event_description'); ?>
+			</div>
+		<?php }?>
 			<legend><?php echo lang('description')?></legend>
 				<?php echo textarea_field('event[description]',array_var($event_data, 'description'), array('id' => 'descriptionFormText', 'tabindex' => '30'));?>
 			</fieldset>
@@ -192,6 +221,13 @@ $use_24_hours = user_config_option('time_format_use_24');
 		
 		<div id="<?php echo $genid ?>event_repeat_options_div" style="display:none">
 		<fieldset>
+		<?php 
+			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_event_repeat_options_context_help', true, logged_user()->getId())) {?>
+			<div id="addEventPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+				<?php render_context_help($this, 'chelp add event repeat options','add_event_repeat_options'); ?>
+			</div>
+		<?php }?>
 			<legend><?php echo lang('CAL_REPEATING_EVENT')?></legend>
 		<?php
 		// calculate what is visible given the repeating options
@@ -281,6 +317,13 @@ $use_24_hours = user_config_option('time_format_use_24');
 
 	<div id="<?php echo $genid ?>add_reminders_div" style="display:none">
 	<fieldset>
+	<?php 
+			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_event_reminders_context_help', true, logged_user()->getId())) {?>
+			<div id="addEventPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+				<?php render_context_help($this, 'chelp add event reminders','add_event_reminders'); ?>
+			</div>
+		<?php }?>
 	<legend><?php echo lang('object reminders')?></legend>
 		<?php echo render_add_reminders($object, "start");?>
 	</fieldset>
@@ -289,6 +332,13 @@ $use_24_hours = user_config_option('time_format_use_24');
 
 	<div id="<?php echo $genid ?>add_custom_properties_div" style="display:none">
 	<fieldset>
+	<?php 
+			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_event_custom_properties_context_help', true, logged_user()->getId())) {?>
+			<div id="addEventPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+				<?php render_context_help($this, 'chelp add event custom properties','add_event_custom_properties'); ?>
+			</div>
+		<?php }?>
 	<legend><?php echo lang('custom properties')?></legend>
 		<?php echo render_object_custom_properties($object, 'ProjectEvents', false) ?><br/><br/>
 		<?php echo render_add_custom_properties($object);?>
@@ -298,6 +348,13 @@ $use_24_hours = user_config_option('time_format_use_24');
 
 	<div id="<?php echo $genid ?>add_subscribers_div" style="display:none">
 		<fieldset>
+		<?php 
+			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_event_subscribers_context_help', true, logged_user()->getId())) {?>
+			<div id="addEventPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+				<?php render_context_help($this, 'chelp add event subscribers','add_event_subscribers'); ?>
+			</div>
+		<?php }?>
 		<legend><?php echo lang('object subscribers') ?></legend>
 		<div id="<?php echo $genid ?>add_subscribers_content">
 			<?php echo render_add_subscribers($object, $genid); ?>
@@ -331,6 +388,13 @@ $use_24_hours = user_config_option('time_format_use_24');
 
 	<div style="display:none" id="<?php echo $genid ?>add_linked_objects_div">
 	<fieldset>
+	<?php 
+			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_event_linked_objects_context_help', true, logged_user()->getId())) {?>
+			<div id="addEventPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+				<?php render_context_help($this, 'chelp add event linked objects','add_event_linked_objects'); ?>
+			</div>
+		<?php }?>
 		<legend><?php echo lang('linked objects') ?></legend>
 		<?php echo render_object_link_form($object) ?>
 	</fieldset>	
@@ -340,6 +404,13 @@ $use_24_hours = user_config_option('time_format_use_24');
 
 	<div id="<?php echo $genid ?>add_event_invitation_div" style="display:none" class="og-add-subscribers">
 	<fieldset id="emailNotification">
+	<?php 
+			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_event_invitation_context_help', true, logged_user()->getId())) {?>
+			<div id="addEventPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+				<?php render_context_help($this, 'chelp add event invitation','add_event_invitation'); ?>
+			</div>
+		<?php }?>
 		<legend><?php echo lang('event invitations') ?></legend>
 		<?php // ComboBox for Assistance confirmation 
 			if (!$event->isNew()) {

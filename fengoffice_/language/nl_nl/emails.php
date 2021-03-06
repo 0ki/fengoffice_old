@@ -148,4 +148,10 @@
 	'closed notification task desc' => 'Taak \'{0}\' is voltooid door {1}.',
 	'closed notification milestone' => 'Mijlpaal \'{0}\' is voltooid',
 	'closed notification milestone desc' => 'Mijlpaal \'{0}\' is voltooid door {1}.',
+	'password expiration reminder' => 'herinnering: wachtwoord verlopen',
+	'password expires days' => 'Uw wachtwoord verloopt in {0} dagen.',
+	'start event reminder' => 'herinnering',
+	'mail attachments' => 'bijlagen',
+	'select attachment' => 'selecteer en upload een bijlage',
+	'attach from workspace' => 'selecteer een bijlage van een werkomgeving',
 ); ?>

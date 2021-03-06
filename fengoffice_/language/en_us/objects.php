@@ -35,7 +35,7 @@
     'form' => 'Form',
     'forms' => 'Forms',
     'file' => 'File',
-    'files' => 'Files',
+  	'files' => 'Files',
     'file revision' => 'File revision',
     'file revisions' => 'File revisions',
   	'file contents' => 'File contents',
@@ -48,7 +48,11 @@
     'handin' => 'Hand-In',
     'handins' => 'Hand-Ins',
 	'emailunclassified' => 'Email',
-    
+
+    'load file'=> 'Load file',
+    'time' => 'Time',
+  	'reporting' => 'Reports',
+  
     // Variations
     'owner company' => 'Owner company',
   	'client companies' => 'Client companies',
@@ -87,6 +91,10 @@
   
   	'object reminders' => 'Reminders',
   	'add object reminder' => 'Add reminder',
+  
+  	'create document' => 'Create Documents',
+  	'create presentation' => 'Create Presentations',
+  
   ); // array
 
 ?>

@@ -127,6 +127,7 @@ class AccountController extends ApplicationController {
 
 				flash_success(lang('success update profile'));
 				ajx_current("back");
+				ajx_add("overview-panel", "reload");
 			} catch(Exception $e) {
 				DB::rollback();
 				ajx_current("empty");
@@ -241,8 +242,11 @@ class AccountController extends ApplicationController {
 			return;
 		} // if
 
-		if (logged_user()->isAdministrator())
+		if (logged_user()->isAdministrator()) {
 			$projects = Projects::getAll();
+		} else {
+			$projects = null;
+		}
 
 		$permissions = ProjectUsers::getNameTextArray();
 

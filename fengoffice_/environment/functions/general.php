@@ -542,8 +542,29 @@ function make_ajax_url($url) {
 	}
 }
 
+/**
+ * Preppends a backslash before single quotes
+ * @param $text
+ * @return string
+ */
 function escape_single_quotes($text) {
 	return str_replace("'", "\\'", $text);
+}
+
+function escape_html_whitespace($html) {
+	return str_replace(array("\r\n", "\r", "\n", "  ", "\t", "  ", "<br/> "), array("<br/>", "<br/>", "<br/>", "&nbsp; ", "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ", "&nbsp; ", "<br/>&nbsp;"), $html);
+}
+
+function convert_to_links($text){
+	//Replace full urls with hyperinks. Avoids " character for already rendered hyperlinks
+	$text = preg_replace('@([^"\']|^)(https?://([-\w\.]+)+(:\d+)?(/([\w/_\-\.]*(\?\S+)?)?)?)@', '<a href="$2" target="_blank">$2</a>', $text);
+
+	//Convert every word starting with "www." into a hyperlink
+	$text = preg_replace('@(>|\s|^)(www.([-\w\.]+)+(:\d+)?(/([\w/_\-\.]*(\?\S+)?)?)?)@', '<a href="http://$2" target="_blank">$2</a>', $text);
+		
+	//Convert every email address into an <a href="mailto:... hyperlink
+	$text = preg_replace('/[^\:a-zA-Z0-9>"]([a-zA-Z0-9]+[a-zA-Z0-9\._\-\+]*@[a-zA-Z0-9_\-]+([a-zA-Z0-9\._\-]+)+)/', '<a href="mailto:$1" target="_blank">$1</a>', $text);
+	return $text;
 }
 
 /**

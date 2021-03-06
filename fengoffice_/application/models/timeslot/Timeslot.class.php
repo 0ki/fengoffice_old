@@ -108,7 +108,7 @@ class Timeslot extends BaseTimeslot {
     		
     	$endTime = $this->getEndTime();
     	if (!$endTime)
-    		$endTime = DateTimeValueLib::now();
+    		$endTime = $this->isPaused() ? $this->getPausedOn() : DateTimeValueLib::now();
     	$timeDiff = DateTimeValueLib::get_time_difference($this->getStartTime()->getTimestamp(),$endTime->getTimestamp(), $this->getSubtract());
     	
     	return $timeDiff['days'] * 1440 + $timeDiff['hours'] * 60 + $timeDiff['minutes'];

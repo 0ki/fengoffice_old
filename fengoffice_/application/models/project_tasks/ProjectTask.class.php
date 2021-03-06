@@ -221,7 +221,7 @@ class ProjectTask extends BaseProjectTask {
 	function isLate() {
 		if($this->isCompleted()) return false;
 		if(!$this->getDueDate() instanceof DateTimeValue) return false;
-		return !$this->isToday() && ($this->getDueDate()->getTimestamp() < time());
+		return !$this->isToday() && ($this->getDueDate()->getTimestamp() < DateTimeValueLib::now()->add('h', logged_user()->getTimezone())->getTimestamp());
 	} // isLate
 	
 	/**
@@ -232,7 +232,7 @@ class ProjectTask extends BaseProjectTask {
 	 * @return null
 	 */
 	function isToday() {
-		$now = DateTimeValueLib::now();
+		$now = DateTimeValueLib::now()->add('h', logged_user()->getTimezone())->getTimestamp();
 		$due = $this->getDueDate();
 
 		// getDueDate and similar functions can return NULL
@@ -253,7 +253,10 @@ class ProjectTask extends BaseProjectTask {
 	function getLateInDays() {
 		if (!$this->getDueDate() instanceof DateTimeValue) return 0;
 		$due_date_start = $this->getDueDate()->beginningOfDay();
-		return floor(abs($due_date_start->getTimestamp() - DateTimeValueLib::now()->getTimestamp()) / 86400);
+		$today = DateTimeValueLib::now();
+		$today = $today->add('h', logged_user()->getTimezone())->beginningOfDay();
+		
+		return floor(abs($due_date_start->getTimestamp() - $today->getTimestamp()) / 86400);
 	} // getLateInDays
 	
 	/**
@@ -450,7 +453,7 @@ class ProjectTask extends BaseProjectTask {
 			return null;
 		else{
 			$due = $this->getDueDate();
-			$date = mktime();
+			$date = DateTimeValueLib::now()->add('h', logged_user()->getTimezone())->getTimestamp();
 			$nowDays = floor($date/(60*60*24));
 			$dueDays = floor($due->getTimestamp()/(60*60*24));
 			return $dueDays - $nowDays;

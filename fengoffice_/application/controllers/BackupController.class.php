@@ -155,7 +155,7 @@ function do_backup() {
 	$db_name = DB_NAME;
 	$db_backup = BACKUP_FOLDER .'/'. DB_BACKUP_FILENAME;
 	$mysqldump_cmd = MYSQLDUMP_COMMAND;
-	exec("$mysqldump_cmd --host=$db_host --user=$db_user --password=$db_pass $db_name > $db_backup",$ret);
+	exec("$mysqldump_cmd --host=$db_host --user=$db_user --password=$db_pass $db_name > $db_backup", $ret, $code);
 	if ($code != 0) {
 		throw new Exception(lang("return code", $code) . ". " . implode("\n",  $ret));
 	}
@@ -166,7 +166,6 @@ function do_backup() {
 		do_backup_zip();
 		unlink($db_backup);
 	} else {
-		unlink($db_backup);
 		throw new Exception(lang('backup command failed'));
 	}
 }

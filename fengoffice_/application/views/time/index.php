@@ -19,7 +19,12 @@
 		foreach($companies as $company)
 			$companies_array[] = $company->getArrayInfo();
 ?>
+		<?php 
+			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_time_context_help', true, logged_user()->getId()))) {?>
+				<?php render_context_help($this, 'chelp time panel','time'); ?>
 
+		<?php }?>
 <div id="timePanel" class="ogContentPanel" style="background-color:#F0F0F0;height:100%;">
 <div style="padding:7px;max-width:929px;">
 <input type="hidden" id="<?php echo $genid ?>hfTasks" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($tasks_array)))) ?>"/>
@@ -48,7 +53,6 @@
 </div>
 
 </td><td class="coViewRight"></td></tr>
-
 		<tr><td class="coViewBottomLeft"></td>
 		<td class="coViewBottom">&nbsp;&nbsp;</td>
 		<td class="coViewBottomRight"></td></tr>
@@ -92,6 +96,8 @@
 			<?php if(logged_user()->isAdministrator()) {?><td style="padding-right: 10px">
 				<?php echo label_tag(lang('user')) ?>
 				<?php echo user_select_box("timeslot[user_id]", logged_user()->getId(),array('id' => $genid . 'tsUser')) ?>
+			</td><?php } else { ?><td style="padding-right: 10px">
+						<input type="hidden" id="<?php echo $genid ?>tsUser" name="timeslot[user_id]" value="<?php echo logged_user()->getId() ?>"/>				
 			</td><?php } ?>
 			<td style="padding-right: 10px">
 				<?php echo label_tag(lang('time')) ?>

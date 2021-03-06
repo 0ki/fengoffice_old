@@ -47,7 +47,9 @@
     'handin' => 'Entregable',
     'handins' => 'Entregables',
 	'emailunclassified' => 'Correo',
-    
+    'time' => 'Horas',
+  	'reporting' => 'Reportes',
+  
     // Variations
     'owner company' => 'Empresa propietaria',
   	'client companies' => 'Empresas clientes',
@@ -86,6 +88,10 @@
   
   	'object reminders' => 'Recordatorios',
     'add object reminder' => 'Agregar recordatorio',
+  
+  	'load file'=> 'Cargar archivo',
+  	'create document' => 'Crear Documentos',
+  	'create presentation' => 'Crear Presentación',
     
   ); // array
 

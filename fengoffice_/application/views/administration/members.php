@@ -12,6 +12,13 @@
   </div>
   <div class="adminSeparator"></div>
   <div class="adminMainBlock">
+  		<?php 
+			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_member_context_help', true, logged_user()->getId())) {?>
+			<div id="membersPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+				<?php render_context_help($this, 'chelp members page','member'); ?>
+			</div>
+		<?php }?>
   <?php
 		foreach ($users_by_company as $company_row){
 			$company = $company_row['details'];

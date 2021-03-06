@@ -18,7 +18,6 @@ return array(
 		'og/OverviewManager.js',
 		'og/TrashCan.js',
 		'og/FileManager.js',
-		'og/ReportingManager.js',
 		'og/CalendarManager.js',
 		'og/Sound.js',
 		'og/LoginDialog.js',
@@ -29,7 +28,6 @@ return array(
 		'og/TagMenu.js',
 		'og/ContentPanelLayout.js',
 		'og/ContentPanel.js',
-		'og/HelpPanel.js',
 		'og/layout.js',
 );
 ?>

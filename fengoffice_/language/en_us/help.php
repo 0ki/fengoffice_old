@@ -12,16 +12,16 @@ return array(
  	'chelp emails widget' => 'This widget displays the latest emails classified in the current workspace.',
  	'chelp messages widget' => 'This widget shows the latest notes for the selected workspace.',
  	
- 	'chelp active tasks panel' => 'All your active tasks are displayed below, regardless of the current workspace. You can pause, resume and stop them or mark them as completed.',
-	'chelp general timeslots panel' => 'This panel displays timeslots directly assigned to a workspace. This is a quick way to assign and count time for users. You can also print time reports by clicking on the \'Print report\' link.',
+ 	'chelp active tasks panel' => 'All your active tasks are displayed below, regardless of the current workspace. This panel also offers the possibility to pause the task, continue it and set it as complete when finished.',
+	'chelp general timeslots panel' => 'This panel displays timeslots directly assigned to a workspace. ',
 
 	'chelp personal account' => 'This is your personal account.<br/>In this view you can update your profile and avatar, change your password and edit your personal preferences.',
 	'chelp user account' => 'This is a user account.',
 	'chelp user account admin' => 'This is a user account.<br/>Being an administrator, you may update the user\'s profile and avatar, change his or her password, and edit his or her preferences through this view.',
 
-	'chelp reporting panel' => 'This is the reporting panel. In here you can execute reports involving all the different object types found to the left.',
-	'chelp reporting panel manage' => 'This is the reporting panel. In here you can execute reports involving all the different object types found to the left.<br/>As you also have report management privileges, you can create and manage custom reports for each object type.',
-	'chelp reporting panel manage admin' => 'This is the reporting panel. In here you can execute reports involving all the different object types found to the left.<br/>As you also have report management privileges, you can create and manage custom reports for each object type. These privileges are set for each user in the user permissions section.',
+	'chelp reporting panel' => '<b>Welcome to the Reports panel</b><br/>You can customize reports from the different objects located in the left panel.',
+	'chelp reporting panel manage' => '<b>Welcome to the Reports panel</b><br/>You can customize reports from the different objects located in the left panel.<br/>As you also have report management privileges, you can create and manage custom reports for each object type.',
+	'chelp reporting panel manage admin' => '<b>Welcome to the Reports panel</b><br/>You can customize reports from the different objects located in the left panel.<br/>As you also have report management privileges, you can create and manage custom reports for each object type. These privileges are set for each user in the user permissions section.',
 
 	'chelp addfile' => 'Choose "File" to upload a file, or "Weblink" to add a file as a reference to another file that is not physically stored in your server.',
 

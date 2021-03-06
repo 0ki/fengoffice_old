@@ -1,5 +1,5 @@
 <?php
-$include_script = false;
+require_javascript("og/CustomProperties.js");
 $cps = CustomProperties::getAllCustomPropertiesByObjectType($type);
 $ti = 0;
 if (!isset($genid))
@@ -105,7 +105,6 @@ if(count($cps) > 0){
 		}
 	}
 }
-if ($include_script)
-require_javascript("og/CustomProperties.js");
+
 
 ?>

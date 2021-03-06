@@ -164,7 +164,7 @@ class Reports extends BaseReports {
 							$value = $dtValue->format('Y-m-d');
 						}
 						if($condField->getCondition() != '%'){
-						if ($col_type == DATA_TYPE_INTEGER || $col_type == DATA_TYPE_FLOAT) {
+							if ($col_type == DATA_TYPE_INTEGER || $col_type == DATA_TYPE_FLOAT) {
 								$sql .= '`'.$condField->getFieldName().'` '.$condField->getCondition().' '.mysql_real_escape_string($value);
 							}else{
 								$sql .= '`'.$condField->getFieldName().'` '.$condField->getCondition().' \''.mysql_real_escape_string($value).'\'';
@@ -204,7 +204,7 @@ class Reports extends BaseReports {
 							$value = $dtValue->format('Y-m-d H:i:s');
 						}
 						if($condCp->getCondition() != '%'){
-						if ($cp->getType() == 'numeric') {
+							if ($cp->getType() == 'numeric') {
 								$sql .= ' AND cpv.value '.$condCp->getCondition().' '.mysql_real_escape_string($value);
 							}else{
 								$sql .= ' AND cpv.value '.$condCp->getCondition().' "'.mysql_real_escape_string($value).'"';

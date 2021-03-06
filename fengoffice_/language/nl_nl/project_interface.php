@@ -215,4 +215,8 @@
 	'copy of file' => 'Kopie van {0}',
 	'add subscribers desc' => 'Abonneer de geselecteerde personen op dit object. De geabonneerde gebruikers krijgen dan automatisch bericht zodra dit object wordt gewijzigd.  ',
 	'add custom property' => 'Een aangepaste eigenschap toevoegen',
+	'fetch imap folders' => 'haal IMAP mappen op',
+	'no reports found' => 'geen raporten gevonden voor {0} ',
+	'remove this widget' => 'verwijder deze widget',
+	'add a new' => 'nieuwe toevoegen',
 ); ?>

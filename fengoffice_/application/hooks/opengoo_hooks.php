@@ -12,6 +12,10 @@ Hook::register("opengoo");
  *  	- $unused
  *   	- &$unused
  *   
+ * - render_getting_started: Add additional getting started help.
+ * 		- $unused
+ * 		- &$unused
+ *   
  * - render_object_properties: Called when drawing properties for an object's view. Echo the HTML to be drawn.
  *  	- $object : ProjectDataObject,
  *  		Object that is being viewed.

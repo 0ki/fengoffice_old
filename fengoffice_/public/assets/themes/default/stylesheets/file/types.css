@@ -89,6 +89,9 @@
 .ico-application-vnd_rn-realmedia {
 	background-image: url(../../images/16x16/types/video.png);
 }
+.ico-application-x-compressed {
+	background-image: url(../../images/16x16/types/application-zip.png);
+}
 .ico-application-x-zip-compressed {
 	background-image: url(../../images/16x16/types/application-zip.png);
 }

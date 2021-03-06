@@ -14,7 +14,7 @@
 	'add user' => 'Ajouter un utilisateur',
 	'edit user' => 'Éditer un utilisateur',
 	'delete user' => 'Supprimer un utilisateur',
-	'create user from contact' => 'Créer un utilisateur depuis un contact',
+	'create user from contact' => 'Créer un utilisateur depuis ce contact',
 	'add group' => 'Ajouter un groupe',
 	'edit group' => 'Éditer un groupe',
 	'delete group' => 'Supprimer un groupe',

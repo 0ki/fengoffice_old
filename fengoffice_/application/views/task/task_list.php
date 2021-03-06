@@ -16,13 +16,28 @@ $task_list = $object;
   } // if
 </script>
 
-<?php if ($task_list->getDueDate() instanceof DateTimeValue) { ?>
-	<?php if ($task_list->getDueDate()->getYear() > DateTimeValueLib::now()->getYear()) { ?> 
-	  <div class="dueDate"><span><?php echo lang('due date') ?>: </span><?php echo format_date($task_list->getDueDate(), null, 0) ?></div>
+<?php if ($task_list->getStartDate() instanceof DateTimeValue) { ?>
+	<?php if ($task_list->getStartDate()->getYear() > DateTimeValueLib::now()->getYear()) { ?> 
+	  <div class="startDate"><b><?php echo lang('start date') ?>: </b><?php echo format_date($task_list->getDueDate(), null, 0) ?></div>
 	<?php } else { ?> 
-	  <div class="dueDate"><span><?php echo lang('due date') ?>: </span><?php echo format_descriptive_date($task_list->getDueDate(), 0) ?></div>
+	  <div class="startDate"><b><?php echo lang('start date') ?>: </b><?php echo format_descriptive_date($task_list->getDueDate(), 0) ?></div>
 	<?php } // if ?>
 <?php } // if ?>
+
+<?php if ($task_list->getDueDate() instanceof DateTimeValue) { ?>
+	<?php if ($task_list->getDueDate()->getYear() > DateTimeValueLib::now()->getYear()) { ?> 
+	  <div class="dueDate"><b><?php echo lang('due date') ?>: </b><?php echo format_date($task_list->getDueDate(), null, 0) ?></div>
+	<?php } else { ?> 
+	  <div class="dueDate"><b><?php echo lang('due date') ?>: </b><?php echo format_descriptive_date($task_list->getDueDate(), 0) ?></div>
+	<?php } // if ?>
+<?php } // if ?>
+		<?php 
+				$show_help_option = user_config_option('show_context_help', 'until_close');
+			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_list_task_context_help', true, logged_user()->getId()))) {?>
+					<div id="tasksCardContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+						<?php render_context_help($this, 'chelp task card','list_task'); ?>
+					</div>
+		<?php }?>
 
 <?php if($task_list->getText()) { ?>
   <div style="padding-bottom:20px;color:#333"><table><tr><td style="padding-right:5px;"><b>

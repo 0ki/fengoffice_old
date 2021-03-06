@@ -161,7 +161,7 @@
 	'show in project desc' => 'Mostrar en el panel de descripción general del espacio',
 	'show in parents' => 'Mostrar en los padres',
 	'show in parents desc' => 'Mostrar en el panel de descripción general de cada espacio selaccionado',
-	'reporting' => 'Reportando',
+	'reporting' => 'Reportes',
 	'chart' => 'Gráfico',
 	'new chart' => 'Nuevo gráfico',
 	'add chart' => 'Agregar gráfico',

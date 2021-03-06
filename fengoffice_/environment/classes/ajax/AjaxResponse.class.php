@@ -54,7 +54,7 @@ class AjaxResponse {
 		if (isset($panel)) {
 			$dpanel = $panel;
 		} else {
-			$dpanel = "";
+			$dpanel = array_var($_GET, 'current', "");
 		}
 		 
 		$this->current = array(

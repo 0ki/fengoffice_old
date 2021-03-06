@@ -12,8 +12,8 @@
 	'package' => 'Paket',
 	'project' => 'Arbeitsbereich',
 	'projects' => 'Arbeitsbereiche',
-	'message' => 'Nachricht',
-	'messages' => 'Nachrichten',
+	'message' => 'Notiz',
+	'messages' => 'Notizen',
 	'comment' => 'Kommentar',
 	'comments' => 'Kommentare',
 	'milestone' => 'Meilenstein',
@@ -73,4 +73,7 @@
 	'private comment' => 'Persönlicher Kommentar',
 	'private file' => 'Persönliche Datei',
 	'file contents' => 'Datei-Inhalt',
+	'emailunclassified' => 'E-Mail',
+	'object reminders' => 'Erinnerungen',
+	'add object reminder' => 'Erinnerung hinzufügen',
 ); ?>

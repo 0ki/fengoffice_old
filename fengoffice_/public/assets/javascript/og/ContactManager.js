@@ -572,6 +572,10 @@ Ext.extend(og.ContactManager, Ext.grid.GridPanel, {
 		}
 	},
 	
+	reset: function() {
+		this.load({start:0});
+	},
+	
 	showMessage: function(text) {
 		this.innerMessage.innerHTML = text;
 	}

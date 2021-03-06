@@ -460,3 +460,7 @@ div.private span {
 td.td-pr {
 	padding-right:8px;
 }
+
+.dashboard-link {
+	text-decoration: underline;
+}

@@ -215,4 +215,8 @@
 	'add custom property' => 'Ajouter une propriété personnalisée',
 	'add subscribers desc' => 'Souscrire à cet objet par les personnes sélectionnées. Les souscripteurs recevront une notification des changements effectués à cet objet.',
 	'edit revision comment' => 'Réviser le commentaire',
+	'fetch imap folders' => 'Dossiers de Fetch IMAP',
+	'no reports found' => 'Aucun rapport trouvé pour {0}',
+	'remove this widget' => 'Supprimer ce widget',
+	'add a new' => 'Ajouter un nouveau',
 ); ?>

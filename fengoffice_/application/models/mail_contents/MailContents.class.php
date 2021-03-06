@@ -32,14 +32,22 @@
 	      		$rows = DB::executeAll($sql);
 				
 	      		if (is_array($rows)) {
+	      			$count = 0;$err=0;
 	      			foreach ($rows as $row) {
 						if (isset($row['content_file_id']) && $row['content_file_id'] != '') {
-							FileRepository::deleteFile($row['content_file_id']);
+							try {
+								FileRepository::deleteFile($row['content_file_id']);
+								$count++;
+							} catch (Exception $e) {
+								$err++;
+								Logger::log($e->getMessage());
+							}
 						}
 					}
+					Logger::log("Mails deleted: $count --- errors: $err");					
 	      		}
 			}
-			return true;//parent::delete($condition);
+			return parent::delete($condition);
 		} else {
 			return MailContents::instance()->delete($condition);
 		}

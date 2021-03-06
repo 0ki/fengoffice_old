@@ -271,7 +271,7 @@ addLangs({
 	'my calendar': 'Mi Calendario',
 	'edit event details': 'Editar detalles del evento',
 	'duration': 'Duración',
-	'reporting': 'Reportar',
+	'reporting': 'Reportes',
 	'add new chart': 'Agregar nuevo gráfico',
 	'delete selected charts': 'Eliminar gráficos seleccionados',
 	'confirm delete charts': '¿Está seguro que desea eliminar los gráficos seleccionados?',

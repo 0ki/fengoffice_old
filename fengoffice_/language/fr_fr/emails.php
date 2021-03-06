@@ -153,4 +153,12 @@
 	'closed notification task desc' => 'La tâche \'{0}\' a été achevée par {1}.',
 	'closed notification milestone' => 'Le jalon \'{0}\' a été achevé',
 	'closed notification milestone desc' => 'Le jalon \'{0}\' a été achevé par {1}.',
+	'password expiration reminder' => 'Rappel de mot-de-passe expiré',
+	'password expires days' => 'Votre mot-de-passe expire dans {0} jours',
+	'start event reminder' => 'Rappel d\'évènement',
+	'new notification comment' => 'Nouveau commentaire sur \'{0}\'',
+	'new notification comment desc' => 'Un nouveau commentaire sur \'{0}\' a été ajouté par {1}.',
+	'mail attachments' => 'pièces jointes',
+	'select attachment' => 'Sélectionner et charger la pièce jointe',
+	'attach from workspace' => 'Sélectionner la pièce jointe depuis le contexte',
 ); ?>

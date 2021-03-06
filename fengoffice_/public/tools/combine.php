@@ -84,11 +84,16 @@ if (!in_array('combine.php', $allowed)) die("This tool is disabled.");
 		if ($cache) 
 		{
 			// Determine supported compression method
-			$gzip = strstr($_SERVER['HTTP_ACCEPT_ENCODING'], 'gzip');
-			$deflate = strstr($_SERVER['HTTP_ACCEPT_ENCODING'], 'deflate');
+			if (isset($_SERVER['HTTP_ACCEPT_ENCODING'])) {
+				$gzip = strstr($_SERVER['HTTP_ACCEPT_ENCODING'], 'gzip');
+				$deflate = strstr($_SERVER['HTTP_ACCEPT_ENCODING'], 'deflate');
+				// Determine used compression method
+				$encoding = $gzip ? 'gzip' : ($deflate ? 'deflate' : 'none');
+			} else {
+				$encoding = 'none';
+			}
 	
-			// Determine used compression method
-			$encoding = $gzip ? 'gzip' : ($deflate ? 'deflate' : 'none');
+			
 	
 			// Check for buggy versions of Internet Explorer
 			if (!strstr($_SERVER['HTTP_USER_AGENT'], 'Opera') && 

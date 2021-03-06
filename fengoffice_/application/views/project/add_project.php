@@ -62,8 +62,23 @@
   <div class="adminSeparator"></div>
   <div class="adminMainBlock">
 
+		<?php 
+			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_workspace_context_help', true, logged_user()->getId()))) {?>
+			<div id="projectPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+				<?php render_context_help($this, 'chelp add workspace','add_workspace'); ?>
+			</div>
+		<?php }?>
+		
 	<div id="<?php echo $genid ?>workspace_description" style="display:none">
-	<fieldset>	
+	<fieldset>
+	<?php 
+			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_workspace_context_help', true, logged_user()->getId()))) {?>
+			<div id="tasksPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+				<?php render_context_help($this, 'chelp add workspace description','add_workspace'); ?>
+			</div>
+		<?php }?>	
 	<legend><?php echo lang('description') ?></legend>
 		<?php echo textarea_field('project[description]', array_var($project_data, 'description'), array('id' => 'projectFormDescription', 'tabindex' => '10')) ?>
 		<?php echo label_tag(lang('show project desciption in overview')) ?>
@@ -76,6 +91,13 @@
 		<?php $field_tab = 30; ?>
 		<div id="<?php echo $genid ?>workspace_permissions" style="display:none">
 		<fieldset>
+		<?php 
+			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_workspace_context_help', true, logged_user()->getId()))) {?>
+			<div id="tasksPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+				<?php render_context_help($this, 'chelp add workspace permissions','add_workspace'); ?>
+			</div>
+		<?php }?>
 		<legend><?php echo lang('edit permissions') ?></legend>
 		
 		<label><?php echo lang('edit permissions explanation') ?></label>

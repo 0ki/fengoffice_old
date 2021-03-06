@@ -124,8 +124,8 @@
     * @return array
     */
     function getTodayMilestonesByUser(User $user, $project = null, $tag = null) {
-      $from_date = DateTimeValueLib::now()->beginningOfDay();
-      $to_date = DateTimeValueLib::now()->endOfDay();
+      $from_date = DateTimeValueLib::now()->add('h', logged_user()->getTimezone())->beginningOfDay();
+      $to_date = DateTimeValueLib::now()->add('h', logged_user()->getTimezone())->endOfDay();
       
       if ($project instanceof Project)
       	$project_ids = $project->getAllSubWorkspacesCSV();
@@ -150,6 +150,7 @@
     function getDayMilestonesByUser(DateTimeValue $date,User $user) {
 //      $date = new DateTimeValue($date->getTimestamp());
 		
+      $date = $date->add('h', logged_user()->getTimezone());
       $from_date =   (new DateTimeValue($date->getTimestamp()));
       $from_date = $from_date->beginningOfDay();
       $to_date =  (new DateTimeValue($date->getTimestamp()));

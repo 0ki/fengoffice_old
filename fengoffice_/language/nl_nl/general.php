@@ -164,4 +164,7 @@
 	'date format' => 'd/m/y',
 	'date format description' => '(dd/mm/yyyy)',
 	'confirm move to trash' => 'Weet u zeker dat u het geselecteerde object in de prullenbak wilt gooien? ',
+	'new password' => 'nieuw wachtwoord',
+	'change' => 'wijzigen',
+	'remove' => 'verwijderen',
 ); ?>

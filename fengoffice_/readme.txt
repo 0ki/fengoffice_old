@@ -1,6 +1,6 @@
 
-    About OpenGoo 1.4 RC
-    ====================
+    About OpenGoo 1.4
+    =================
 
     OpenGoo is a free and open source WebOffice, project management and collaboration
     tool, licensed under the Affero GPL 3 license.
@@ -61,11 +61,11 @@
     ====================
     
     1. Backup you current installation (important!)
-    2. Download OpenGoo 1.4 RC - http://www.opengoo.org/
+    2. Download OpenGoo 1.4 - http://www.opengoo.org/
     3. Unpack into your OpenGoo installation, overwriting your previous files and folders,
     	but keeping your config, upload and public/files folders.
     5. Go to <your_opengoo>/public/upgrade in your browser and choose to upgrade
-    	from your current version to 1.4 RC
+    	from your current version to 1.4
     6. Refresh your browser or clear its cache to load new javascript, css and images.   
 
     
@@ -86,6 +86,23 @@
 
 	Changelog
 	=========
+
+	Since 1.4 RC
+	------------
+	
+	- usability: Now you can open weblinks with ctrl+click, mouse wheel or context menu.
+	- usability: Users are now automatically subscribed to emails they receive.
+	
+	- bugfix: When fetching email through IMAP, an error on one email would cause no more emails to be fetched.
+	- bugfix: Encoding was being ignored when displaying text files.
+	- bugfix: Paused time was not being calculated correctly for incomplete tasks on reports.
+	- bugfix: Task filters on the task panel were sometimes left blank.
+	- bugfix: Users without permissions on their personal workspaces were still able to write documents.
+	- bugfix: When viewing an event and then closing it you were always being taken to "today" instead of the date you were viewing.
+	- bugfix: When viewing page X of Email module and changing to a workspace with less pages, you were still being shown page X with no objects (same for other listings).
+	- bugfix: Zip files with mime types other than application/zip were not being recognized as zip files.
+	
+	- system: Help panel removed as it was not helpful enough. Top right help link now points to the wiki.
 
 	Since 1.4 beta 2
 	----------------
@@ -180,7 +197,7 @@
 
 	- system: Initial loading time reduced by loading javascript files as they are needed.
 	- system: Added new lang folder for plugin langs, which is loaded in filename order and after default OpenGoo lang files.
-	- system: Added new lang folder for hel langs, displayed in the right sidebar of OpenGoo.
+	- system: Added new lang folder for help langs, displayed in the right sidebar of OpenGoo.
 	- system: New hooks added.
 	- system: Mail notifications can be sent through cron, so that user doesn't have to wait for it to send.
 	- system: Slimey updated to 0.2. It is now translatable.

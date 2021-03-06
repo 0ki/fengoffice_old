@@ -57,13 +57,28 @@ og.noOfTasks = <?php echo user_config_option('noOfTasks', 8) ?>;
 	<div id="tasksPanelTopToolbar" class="x-panel-tbar" style="width:100%;height:30px;display:block;background-color:#F0F0F0;"></div>
 	<div id="tasksPanelBottomToolbar" class="x-panel-tbar" style="width:100%;height:30px;display:block;background-color:#F0F0F0;border-bottom:1px solid #CCC;"></div>
 	<div id="tasksPanelContent" style="background-color:white;padding:7px;padding-top:0px;overflow-y:scroll;">
+		
 		<?php 
-			$show_help_option = user_config_option('show_context_help', 'until_close'); 
-			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_tasks_context_help', true, logged_user()->getId()))) {?>
-			<div id="tasksPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
-				<?php render_context_help($this, 'chelp tasks list', 'tasks', 'tasks'); ?>
-			</div>
-		<?php }?>
+			$show_help_option = user_config_option('show_context_help', 'until_close');
+			//$task = ProjectTasks::findOne(array('conditions'=>'created_by_id='.logged_user()->getId()));
+			//si no hay task para este usuario muestra ayuda para crear tasks
+			if (!isset($task)){
+				if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_tasks_context_help', true, logged_user()->getId()))) {?>
+					<div id="tasksPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+						<?php render_context_help($this, 'chelp tasks list', 'tasks', 'tasks'); ?>
+					</div>
+			<?php }//if
+			}//if
+			else
+			{
+				//si ya hay tasks mustra la ayuda de filtros
+				if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_tasks_context_help', true, logged_user()->getId()))) {?>
+					<div id="tasksPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+						<?php render_context_help($this, 'chelp tasks filter list','tasks'); ?>
+					</div>
+			<?php }
+			}?>
+		
 	<?php if (isset($displayTooManyTasks) && $displayTooManyTasks){ ?>
 	<div class="tasksPanelWarning ico-warning32" style="font-size:10px;color:#666;background-repeat:no-repeat;padding-left:40px;max-width:920px; margin:20px;border:1px solid #E3AD00;background-color:#FFF690;background-position:4px 4px;">
 		<div style="font-weight:bold;width:99%;text-align:center;padding:4px;color:#AF8300;"><?php echo lang('too many tasks to display') ?></div>

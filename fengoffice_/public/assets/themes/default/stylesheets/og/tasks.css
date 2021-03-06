@@ -114,51 +114,16 @@
 	line-height:18px;
 }
 
-.task-prio-low {
-	background-color:white;
-}
 
-.task-prio-mid {
-	background-color:#DAE3F0;
-}
 
-.task-prio-high {
-	background-color:#FF9088;
-}
 
-/* <RX dragdrop> */
 
-.RX__tasks_og-drag 	{
-	cursor: move;
-	position: absolute;
-	margin-left: -9px;
-	width: 9px;
-	min-height: 24px;
-	height: 100%; 
-	background: url(../../images/drag_handle.png) repeat center center;
-	visibility: hidden;
-}
+.RX__tasks_og-drag 	{ cursor: move; position: absolute; margin-left: -9px; width: 9px; min-height: 24px; height: 100%; 
+					  background: url(../../images/rx/drag_handle.png) repeat center center; visibility: hidden; }
+.RX__tasks_dd-proxy	{ border: 1px solid gray; z-index:2000; padding:2px 12px 2px 22px;  cursor: move !important;
+					  width:auto; height:auto; background: rgb(218, 227, 240) url(../../images/rx/drag_handle.png) repeat-y left top; }
+.RX__tasks_dd-over 	{ background-color: #f0f8e8; border: 1px solid olive !important; }
+/*.RX__tasks_dd-over .RX__tasks_og-drag 	{ visibility: visible !important; x-background: url(../../images/rx/Forward.png) no-repeat center center; }*/
+.RX__tasks_row		{ position: relative; }
+.ogTasksGroup		{ border: 1px solid white; }
 
-.RX__tasks_dd-proxy	{
-	border: 1px solid gray;
-	z-index:2000;
-	padding:2px 12px 2px 22px; 
-	cursor: move;
-	width:auto;
-	height:auto;
-	background:
-	rgb(218, 227, 240) url(../../images/drag_handle.png) repeat-y left top;
-}
-
-.RX__tasks_dd-over 	{
-	background-color: #f0f8e8;
-}
-
-.RX__tasks_dd-over .RX__tasks_og-drag {
-	visibility: visible !important;
-	/*background: url(../../images/rx/Forward.png) no-repeat center center;*/
-}
-
-.RX__tasks_row {
-	position: relative;
-}

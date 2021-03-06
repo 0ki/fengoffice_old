@@ -2,96 +2,89 @@
 
 <?php $step = 1; ?>
 
-<b><?php echo lang('welcome to new account') ?></b><br/><hr/>
-<?php echo lang('welcome to new account info', logged_user()->getDisplayName(), ROOT_URL) ?><br/><br/>
+<b><?php echo lang('welcome to new account', logged_user()->getDisplayName()) ?></b><br/>
+<?php echo lang('welcome to new account info', '<a target="_blank" href="'.ROOT_URL.'">'. ROOT_URL . '</a>') ?><br/><br/>
 
 <?php if(logged_user()->isAccountOwner()){
 		$step++;
 		if(owner_company()->isInfoUpdated()) { ?>
-  <p><b><del><?php echo lang('new account step1 owner') ?></del></b></p><br/>
+  <p><b><?php echo '<a class="internalLink dashboard-link" href="'. get_url('company', 'edit_client', array('id' => owner_company()->getId())) .'">' . lang('new account step1 owner'). '</a>'?></b><img src="<?php echo image_url('16x16/complete.png');?>"/></p>
+  <?php echo lang('new account step1 owner info')?><br/><br/>
 <?php 	} else { ?>
-  <b><?php echo lang('new account step1 owner') ?></b><br/><hr/>
-  <?php echo lang('new account step1 owner info', get_url('company', 'edit_client', array('id' => owner_company()->getId())))?><br/><br/>
+  <p><b><?php echo '<a class="internalLink dashboard-link" href="'. get_url('company', 'edit_client', array('id' => owner_company()->getId())) .'">' . lang('new account step1 owner'). '</a>'?></b></p>
+  <?php echo lang('new account step1 owner info')?><br/><br/>
 <?php } // if 
 }?>
 
-<?php if(User::canAdd(logged_user(), owner_company())){ 
-	if(owner_company()->countUsers() > 1) { ?>
-  <p><b><del><?php echo lang('new account step add members', $step) ?></del></b></p><br/>
+<?php 
+	if(logged_user()->isInfoUpdated()) { ?>
+  <p><b><?php echo '<a class="internalLink dashboard-link" href="'.get_url('account','index').'">'. lang('new account step update account', $step).'</a>'?></b><img src="<?php echo image_url('16x16/complete.png');?>"/></p>
+  <?php echo lang('new account step update account info') ?><br/><br/>
 <?php } else { ?>
-  <b><?php echo lang('new account step add members', $step) ?></b><br/><hr/>
-  <?php echo lang('new account step add members info', owner_company()->getAddUserUrl()) ?><br/><br/>
+  <b><?php echo '<a class="internalLink dashboard-link" href="'.get_url('account','index').'">'. lang('new account step update account', $step).'</a>' ?></b><br/>
+  <?php echo lang('new account step update account info') ?><br/><br/>
 <?php } // if
 	$step++;
-} ?>
+?>
 
 <?php if(count(logged_user()->getOwnProjects()) > 1) { ?>
-  <p><b><del><?php echo lang('new account step start workspace', $step) ?></del></b></p><br/>
+  <p><b><?php echo '<a class="internalLin dashboard-link" href="' . get_url('project', 'add') . '">' . lang('new account step start workspace', $step) . '</a>' ?></b><img src="<?php echo image_url('16x16/complete.png');?>"/></p>
+  <?php echo lang('new account step start workspace info', '<img src="'.image_url('16x16/add.png').'" />', logged_user()->getPersonalProject()->getName()) ?><br/><br/>
 <?php } else { ?>
-  <b><?php echo lang('new account step start workspace', $step) ?></b><br/><hr/>
-  <?php echo lang('new account step start workspace info', get_url('project', 'add')) ?><br/><br/>
+  <b><?php echo '<a class="internalLink dashboard-link" href="' . get_url('project', 'add') . '">' . lang('new account step start workspace', $step) . '</a>' ?></b><br/>
+  <?php echo lang('new account step start workspace info', '<img src="'.image_url('16x16/add.png').'" />', logged_user()->getPersonalProject()->getName()) ?><br/><br/>
 <?php } ?>
 <?php $step++ ?>  
 
-<?php if(logged_user()->isAccountOwner()) { ?>
-  <b><?php echo lang('new account step configuration',$step) ?></b><br/><hr/>
-  <?php echo lang('new account step configuration info', get_url('administration', 'configuration')) ?><br/><br/>
-<?php  $step++;
-} ?> 
-
-<?php if(!logged_user()->isAccountOwner()) { 
-	if(logged_user()->isInfoUpdated()) {?>
-  <p><b><del><?php echo lang('new account step profile',$step) ?></del></b></p><br/>
-<?php } else {?>
-  <b><?php echo lang('new account step profile',$step) ?></b><br/><hr/>
-  <?php echo lang('new account step profile info', get_url('account', 'edit_profile', array('id' => logged_user()->getId()))) ?><br/><br/>
-<?php } ?>
-<?php  $step++;
-} ?> 
-
-<?php if(!logged_user()->isAccountOwner()) {
-	if(logged_user()->hasPreferencesUpdated()) {?>
-  <p><b><del><?php echo lang('new account step preferences',$step) ?></del></b></p><br/>
-<?php } else {?>
-  <b><?php echo lang('new account step preferences',$step) ?></b><br/><hr/>
-  <?php echo lang('new account step preferences info', get_url('user', 'list_user_categories')) ?><br/><br/>
-<?php } ?>
-<?php  $step++;
-} ?> 
-
-<b><?php echo lang('new account step actions',$step) ?></b><br/><hr/>
-
-<?php echo lang('add a new')?>:
+<b><?php echo lang('new account step actions',$step) ?></b>
+	<?php 
+	$task = ProjectTasks::findOne(array('conditions'=>'created_by_id='.logged_user()->getId()));
+	$note = ProjectMessages::findOne(array('conditions'=>'created_by_id='.logged_user()->getId()));
+	//$contact = ProjectContacts::findOne(array('conditions'=>'created_by_id='.logged_user()->getId()));
+	if($task instanceof ProjecTasks || $note instanceof ProjectMessages){
+		echo '<img src="'.image_url('16x16/complete.png').'" />';
+	}?><br/>
+<?php echo lang('new account step actions info') ?><br/>
 
 <image src='<?php echo image_url('/16x16/message.png')?> ' />&nbsp;
-<a class='internalLink' href='<?php echo get_url('message', 'add')?> ' ><?php echo lang('message')?></a>&nbsp;|&nbsp;
+<a class='internalLink dashboard-link' href='<?php echo get_url('message', 'add')?> ' ><?php echo lang('message')?></a>&nbsp;|&nbsp;
 
 <image src='<?php echo image_url('/16x16/types/contact.png')?> ' />&nbsp;
-<a class='internalLink' href='<?php echo get_url('contact', 'add')?> ' ><?php echo lang('contact')?></a>&nbsp;|&nbsp;
+<a class='internalLink dashboard-link' href='<?php echo get_url('contact', 'add')?> ' ><?php echo lang('contact')?></a>&nbsp;|&nbsp;
 
 <image src='<?php echo image_url('/16x16/companies.png')?> ' />&nbsp;
-<a class='internalLink' href='<?php echo get_url('company', 'add_client')?> ' ><?php echo lang('company')?></a>&nbsp;|&nbsp;
+<a class='internalLink dashboard-link' href='<?php echo get_url('company', 'add_client')?> ' ><?php echo lang('company')?></a>&nbsp;|&nbsp;
 
 <image src='<?php echo image_url('/16x16/types/event.png')?> ' />&nbsp;
-<a class='internalLink' href='<?php echo get_url('event', 'add')?> ' ><?php echo lang('event')?></a>&nbsp;|&nbsp;
+<a class='internalLink dashboard-link' href='<?php echo get_url('event', 'add')?> ' ><?php echo lang('event')?></a>&nbsp;|&nbsp;
 
 <image src='<?php echo image_url('/16x16/upload.png')?> ' />&nbsp;
-<a class='internalLink' href='<?php echo get_url('files', 'add_file')?> ' ><?php echo lang('file')?></a>&nbsp;|&nbsp;
+<a class='internalLink dashboard-link' href='<?php echo get_url('files', 'add_file')?> ' ><?php echo lang('upload a file')?></a>&nbsp;|&nbsp;
 
 <image src='<?php echo image_url('/16x16/documents.png')?> ' />&nbsp;
-<a class='internalLink' href='<?php echo get_url('files', 'add_document')?> ' ><?php echo lang('document')?></a>&nbsp;|&nbsp;
+<a class='internalLink dashboard-link' href='<?php echo get_url('files', 'add_document')?> ' ><?php echo lang('document')?></a>&nbsp;|&nbsp;
 
 <image src='<?php echo image_url('/16x16/prsn.png')?> ' />&nbsp;
-<a class='internalLink' href='<?php echo get_url('files', 'add_presentation')?> ' ><?php echo lang('presentation')?></a>&nbsp;|&nbsp;
+<a class='internalLink dashboard-link' href='<?php echo get_url('files', 'add_presentation')?> ' ><?php echo lang('presentation')?></a>&nbsp;|&nbsp;
 
 <image src='<?php echo image_url('/16x16/milestone.png')?> ' />&nbsp;
-<a class='internalLink' href='<?php echo get_url('milestone', 'add')?> ' ><?php echo lang('milestone')?></a>&nbsp;|&nbsp;
+<a class='internalLink dashboard-link' href='<?php echo get_url('milestone', 'add')?> ' ><?php echo lang('milestone')?></a>&nbsp;|&nbsp;
 
 <image src='<?php echo image_url('/16x16/types/task.png')?> ' />&nbsp;
-<a class='internalLink' href='<?php echo get_url('task', 'add_task')?> ' ><?php echo lang('task')?></a>&nbsp;|&nbsp;
+<a class='internalLink dashboard-link' href='<?php echo get_url('task', 'add_task')?> ' ><?php echo lang('task')?></a>&nbsp;|&nbsp;
 
 <image src='<?php echo image_url('/16x16/types/webpage.png')?> ' />&nbsp;
-<a class='internalLink' href='<?php echo get_url('webpage', 'add')?> ' ><?php echo lang('weblink')?></a>&nbsp;&nbsp;
+<a class='internalLink dashboard-link' href='<?php echo get_url('webpage', 'add')?> ' ><?php echo lang('weblink')?></a>
+
+<?php /*&nbsp;|&nbsp;
+<image src='<?php echo image_url('/16x16/time.png')?> ' />&nbsp;
+<a class='internalLink dashboard-link' href='<?php echo get_url('time', 'index')?> ' ><?php echo lang('time')?></a>&nbsp;|&nbsp;
+
+<image src='<?php echo image_url('/16x16/reporting.png')?> ' />&nbsp;
+<a class='internalLink dashboard-link' href='<?php echo get_url('reporting', 'index')?> ' ><?php echo lang('reporting')?></a>&nbsp;&nbsp;
+*/?>
+
+<?php Hook::fire('render_getting_started', $null, $ret)?>
 
 <br/><br/><p><a class='internalLink' href='<?php echo get_url('config', 'remove_getting_started_widget')?> ' ><?php echo lang('remove this widget')?></a></p>
 	

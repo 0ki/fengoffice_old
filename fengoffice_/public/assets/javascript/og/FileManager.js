@@ -176,7 +176,7 @@ og.FileManager = function() {
 					r.id, lang('view slideshow'));
 		}
 		
-		if (r.data.mimeType == "application/zip" || r.data.mimeType == "application/x-zip-compressed") {
+		if (og.FileIsZip(r.data.mimeType, r.data.name)) {
 			actions += String.format(
 			'<a class="list-action ico-zip-extract" href="#" onclick="og.openLink(og.getUrl(\'files\', \'zip_extract\', {id:{0}}))" title="{1}" ' + actionStyle + '>.</a>',
 			r.data.object_id,lang('extract files'));
@@ -494,6 +494,10 @@ Ext.extend(og.FileManager, Ext.grid.GridPanel, {
 		if (this.needRefresh) {
 			this.load({start: 0});
 		}
+	},
+	
+	reset: function() {
+		this.load({start:0});
 	},
 	
 	showMessage: function(text) {

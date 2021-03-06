@@ -10,7 +10,13 @@
     <?php echo lang('welcome to administration info') ?>
     <br/>
     <br/>
-    
+    <?php 
+		$show_help_option = user_config_option('show_context_help', 'until_close'); 
+		if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_administration_context_help', true, logged_user()->getId()))) {?>
+		<div id="administrationPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+			<?php render_context_help($this, 'chelp administrator panel','administration'); ?>
+		</div>
+	<?php }?>
 <div style="width:100%;max-width:700px; text-align:center">
     <table><tr>
 <?php if(can_edit_company_data(logged_user())){ ?>

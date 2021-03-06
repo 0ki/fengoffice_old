@@ -1174,3 +1174,11 @@ og.ToggleTrap = function(trapid, fsid) {
 		}
 	}
 };
+
+og.FileIsZip = function(mimetype, name) {
+	var ix = name.lastIndexOf('.');
+	var extension = ix >= 0 ? name.substring(ix + 1) : "";
+	return (mimetype == 'application/zip' || mimetype == 'application/x-zip-compressed' || 
+			(mimetype == 'application/x-compressed' && extension == 'zip'));
+};
+

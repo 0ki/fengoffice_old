@@ -18,16 +18,4 @@ function do_textile($text, $lite = false, $encode = false, $noimage = false, $st
 } // do_textile
 
 
-function convert_to_links($text){
-	//Replace full urls with hyperinks. Avoids " character for already rendered hyperlinks
-	$text = preg_replace('@([^"\']|^)(https?://([-\w\.]+)+(:\d+)?(/([\w/_\-\.]*(\?\S+)?)?)?)@', '<a href="$2" target="_blank">$2</a>', $text);
-
-	//Convert every word starting with "www." into a hyperlink
-	$text = preg_replace('@(>|\s|^)(www.([-\w\.]+)+(:\d+)?(/([\w/_\-\.]*(\?\S+)?)?)?)@', '<a href="http://$2" target="_blank">$2</a>', $text);
-		
-	//Convert every email address into an <a href="mailto:... hyperlink
-	$text = preg_replace('/[^\:a-zA-Z0-9>"]([a-zA-Z0-9]+[a-zA-Z0-9\._\-\+]*@[a-zA-Z0-9_\-]+([a-zA-Z0-9\._\-]+)+)/', '<a href="mailto:$1" target="_blank">$1</a>', $text);
-	return $text;
-}
-
 ?>

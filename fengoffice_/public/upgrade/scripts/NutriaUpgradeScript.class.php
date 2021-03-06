@@ -41,7 +41,7 @@ class NutriaUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('1.3.1');
-		$this->setVersionTo('1.4-rc');
+		$this->setVersionTo('1.4');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -184,9 +184,129 @@ class NutriaUpgradeScript extends ScriptUpgraderScript {
 				ALTER TABLE `".TABLE_PREFIX."companies` MODIFY COLUMN `fax_number` varchar(50) $default_collation default NULL;
 				";
 			}
-			if (version_compare($installed_version, '1.4-beta2') == 0) {
+			if (version_compare($installed_version, '1.4-beta2') <= 0) {
 				$upgrade_script .= "
 				ALTER TABLE `".TABLE_PREFIX."reports` ADD COLUMN `is_order_by_asc` TINYINT(1) $default_collation NOT NULL DEFAULT 1;
+				";
+			}
+			if (version_compare($installed_version, '1.4-rc') <= 0) {
+				$upgrade_script .= "
+				INSERT INTO `".TABLE_PREFIX."user_ws_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
+				 ('context help', 'show_administration_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_member_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_add_contact_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_add_company_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_upload_file_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_upload_file_workspace_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_upload_file_tags_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_upload_file_description_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_upload_file_custom_properties_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_upload_file_subscribers_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_upload_file_linked_objects_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_add_note_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_add_note_workspace_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_add_note_tags_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_add_note_custom_properties_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_add_note_subscribers_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_add_note_linked_object_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_add_milestone_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_add_milestone_workspace_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_add_milestone_tags_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_add_milestone_description_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_add_milestone_reminders_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_add_milestone_custom_properties_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_add_milestone_linked_object_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_add_milestone_subscribers_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_add_workspace_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_print_report_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_add_task_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_add_task_workspace_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_add_task_tags_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_add_task_reminders_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_add_task_custom_properties_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_add_task_linked_objects_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_add_task_subscribers_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_list_task_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_time_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_add_webpage_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_add_webpage_workspace_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_add_webpage_tags_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_add_webpage_description_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_add_webpage_custom_properties_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_add_webpage_subscribers_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_add_webpage_linked_objects_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('dashboard', 'show calendar widget', '1', 'BoolConfigHandler', 0, 80, ''),
+				 ('dashboard', 'show late tasks and milestones widget', '1', 'BoolConfigHandler', 0, 100, ''),
+				 ('dashboard', 'show pending tasks widget', '1', 'BoolConfigHandler', 0, 200, ''),
+				 ('dashboard', 'pending tasks widget assigned to filter', '0:0', 'UserCompanyConfigHandler', 0, 210, ''),
+				 ('dashboard', 'show emails widget', '1', 'BoolConfigHandler', 0, 300, ''),
+				 ('dashboard', 'show messages widget', '1', 'BoolConfigHandler', 0, 400, ''),
+				 ('dashboard', 'show documents widget', '1', 'BoolConfigHandler', 0, 500, ''),
+				 ('dashboard', 'show charts widget', '1', 'BoolConfigHandler', 0, 600, ''),
+				 ('dashboard', 'show tasks in progress widget', '1', 'BoolConfigHandler', 0, 700, ''),
+				 ('dashboard', 'show comments widget', '1', 'BoolConfigHandler', 0, 800, ''),
+				 ('dashboard', 'show dashboard info widget', '1', 'BoolConfigHandler', 0, 900, ''),
+				 ('dashboard', 'always show unread mail in dashboard', '0', 'BoolConfigHandler', 0, 10, 'when false, active workspace email is shown'),
+				 ('dashboard', 'calendar_widget_expanded', '1', 'BoolConfigHandler', 1, 0, ''),
+				 ('dashboard', 'emails_widget_expanded', '1', 'BoolConfigHandler', 1, 0, ''),
+				 ('dashboard', 'messages_widget_expanded', '1', 'BoolConfigHandler', 1, 0, ''),
+				 ('dashboard', 'active_tasks_widget_expanded', '1', 'BoolConfigHandler', 1, 0, ''),
+				 ('dashboard', 'pending_tasks_widget_expanded', '1', 'BoolConfigHandler', 1, 0, ''),
+				 ('dashboard', 'late_tasks_widget_expanded', '1', 'BoolConfigHandler', 1, 0, ''),
+				 ('dashboard', 'comments_widget_expanded', '1', 'BoolConfigHandler', 1, 0, ''),
+				 ('dashboard', 'documents_widget_expanded', '1', 'BoolConfigHandler', 1, 0, ''),
+				 ('dashboard', 'charts_widget_expanded', '1', 'BoolConfigHandler', 1, 0, ''),
+				 ('dashboard', 'dashboard_info_widget_expanded', '1', 'BoolConfigHandler', 1, 0, ''),
+				 ('task panel', 'can notify from quick add', '1', 'BoolConfigHandler', 0, 0, ''),
+				 ('task panel', 'tasksShowWorkspaces', '1', 'BoolConfigHandler', 1, 0, ''),
+				 ('task panel', 'tasksShowTime', '1', 'BoolConfigHandler', 1, 0, ''),
+				 ('task panel', 'tasksShowDates', '1', 'BoolConfigHandler', 1, 0, ''),
+				 ('task panel', 'tasksShowTags', '1', 'BoolConfigHandler', 1, 0, ''),
+				 ('task panel', 'tasksGroupBy', 'milestone', 'StringConfigHandler', 1, 0, ''),
+				 ('task panel', 'tasksOrderBy', 'priority', 'StringConfigHandler', 1, 0, ''),
+				 ('task panel', 'task panel status', '1', 'IntegerConfigHandler', 1, 0, ''),
+				 ('task panel', 'task panel filter', 'assigned_to', 'StringConfigHandler', 1, 0, ''),
+				 ('task panel', 'task panel filter value', '0:0', 'UserCompanyConfigHandler', 1, 0, ''),
+				 ('time panel', 'TM show time type', '0', 'IntegerConfigHandler', 1, 0, ''),
+				 ('time panel', 'TM report show time type', '0', 'IntegerConfigHandler', 1, 0, ''),
+				 ('time panel', 'TM user filter', '0', 'IntegerConfigHandler', 1, 0, ''),
+				 ('time panel', 'TM tasks user filter', '0', 'IntegerConfigHandler', 1, 0, ''),
+				 ('general', 'localization', '', 'LocalizationConfigHandler', 0, 100, ''),
+				 ('general', 'initialWorkspace', '0', 'InitialWorkspaceConfigHandler', 0, 200, ''),
+				 ('general', 'lastAccessedWorkspace', '0', 'IntegerConfigHandler', 1, 0, ''),
+				 ('general', 'rememberGUIState', '0', 'BoolConfigHandler', 0, 300, ''),
+				 ('general', 'work_day_start_time', '9:00', 'TimeConfigHandler', 0, 400, 'Work day start time'),
+				 ('general', 'time_format_use_24', '0', 'BoolConfigHandler', 0, 500, 'Use 24 hours time format'),
+				 ('general', 'date_format', 'd/m/Y', 'StringConfigHandler', 0, 600, 'Date objects will be displayed using this format.'),
+				 ('general', 'descriptive_date_format', 'l, j F', 'StringConfigHandler', 0, 700, 'Descriptive dates will be displayed using this format.'),
+				 ('calendar panel', 'calendar view type', 'viewweek', 'StringConfigHandler', 1, 0, ''),
+				 ('calendar panel', 'calendar user filter', '0', 'IntegerConfigHandler', 1, 0, ''),
+				 ('calendar panel', 'calendar status filter', '', 'StringConfigHandler', 1, 0, ''),
+				 ('calendar panel', 'start_monday', '', 'BoolConfigHandler', 0, 0, ''),
+				 ('calendar panel', 'show_week_numbers', '', 'BoolConfigHandler', 0, 0, ''),
+				 ('dashboard', 'show getting started widget', '1', 'BoolConfigHandler', '0', '1000', NULL),
+				 ('dashboard', 'getting_started_widget_expanded', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_tasks_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_account_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_active_tasks_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_general_timeslots_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_late_tasks_widget_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_pending_tasks_widget_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_documents_widget_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_active_tasks_widget_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_calendar_widget_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_messages_widget_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_dashboard_info_widget_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_comments_widget_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_emails_widget_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_reporting_panel_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('context help', 'show_add_file_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+				 ('general', 'custom_report_tab', 'tasks', 'StringConfigHandler', '1', '0', NULL),
+				 ('general', 'show_context_help', 'until_close', 'ShowContextHelpConfigHandler', '0', '0', NULL),
+				 ('task panel', 'noOfTasks', '8', 'IntegerConfigHandler', '0', '100', NULL)
+				 ON DUPLICATE KEY UPDATE id=id;
+				UPDATE `".TABLE_PREFIX."user_ws_config_options`
+					SET `is_system` = 1, `category_name` = 'context help' WHERE `name` = 'show_tasks_context_help';
 				";
 			}
 		}

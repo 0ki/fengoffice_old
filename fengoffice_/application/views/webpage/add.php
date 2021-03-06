@@ -52,8 +52,22 @@
 </div>
 <div class="coInputSeparator"></div>
 <div class="coInputMainBlock">
+		<?php 
+			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_webpage_context_help', true, logged_user()->getId()))) {?>
+			<div id="webpagePanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+				<?php render_context_help($this, 'chelp add webpage','add_webpage'); ?>
+			</div>
+		<?php }?>
     <div id="add_webpage_select_workspace_div" style="display:none">
 	<fieldset>
+		<?php 
+			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_webpage_workspace_context_help', true, logged_user()->getId()))) {?>
+			<div id="webpagePanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+				<?php render_context_help($this, 'chelp add webpage workspace','add_webpage_workspace'); ?>
+			</div>
+		<?php }?>
 	<legend><?php echo lang('workspace') ?></legend>
 		<?php echo select_project2('webpage[project_id]', ($project instanceof Project)? $project->getId():active_or_personal_project()->getId(), $genid) ?>
 	</fieldset>
@@ -61,6 +75,13 @@
   
     <div id="add_webpage_tags_div" style="display:none">
     <fieldset>
+    <?php 
+			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+						if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_webpage_tags_context_help', true, logged_user()->getId()))) {?>
+			<div id="webpagePanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+				<?php render_context_help($this, 'chelp add webpage tags','add_webpage_tags'); ?>
+			</div>
+		<?php }?>
     <legend>
     	<?php echo lang('tags') ?></legend>
     	<?php echo autocomplete_tags_field("webpage[tags]", array_var($webpage_data, 'tags'), null, 30); ?>
@@ -69,6 +90,13 @@
 
 	<div id="add_webpage_description_div" style="display:none">
 	<fieldset>
+	<?php 
+			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+					if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_webpage_description_context_help', true, logged_user()->getId()))) {?>
+			<div id="webpagePanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+				<?php render_context_help($this, 'chelp add webpage description','add_webpage_description'); ?>
+			</div>
+		<?php }?>
 	<legend>
 		<?php echo label_tag(lang('description'), 'webpageFormDesc') ?> </legend>
     	<?php echo textarea_field('webpage[description]', array_var($webpage_data, 'description'), array('class' => 'long', 'id' => 'webpageFormDesc', 'tabindex' => '40')) ?>
@@ -77,6 +105,13 @@
   
 	<div id='add_custom_properties_div' style="display:none">
 	<fieldset>
+	<?php 
+			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_webpage_custom_properties_context_help', true, logged_user()->getId()))) {?>
+			<div id="webpagePanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+				<?php render_context_help($this, 'chelp add webpage custom properties','add_webpage_custom_properties'); ?>
+			</div>
+		<?php }?>
 	<legend><?php echo lang('custom properties') ?></legend>
 		<?php echo render_object_custom_properties($object, 'ProjectWebPages', false) ?><br/><br/>
 		<?php echo render_add_custom_properties($object); ?>
@@ -86,6 +121,13 @@
   
  	<div id="<?php echo $genid ?>add_subscribers_div" style="display:none">
 		<fieldset>
+		<?php 
+			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_webpage_subscribers_context_help', true, logged_user()->getId()))) {?>
+			<div id="webpagePanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+				<?php render_context_help($this, 'chelp add webpage subscribers','add_webpage_subscribers'); ?>
+			</div>
+		<?php }?>
 		<legend><?php echo lang('object subscribers') ?></legend>
 		<div id="<?php echo $genid ?>add_subscribers_content">
 			<?php echo render_add_subscribers($object, $genid); ?>
@@ -117,6 +159,13 @@
 	<?php if($object->isNew() || $object->canLinkObject(logged_user(), $project)) { ?>
 	<div style="display:none" id="<?php echo $genid ?>add_linked_objects_div">
 	<fieldset>
+		<?php 
+			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_webpage_linked_objects_context_help', true, logged_user()->getId()))) {?>
+			<div id="webpagePanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+				<?php render_context_help($this, 'chelp add webpage linked objects','add_webpage_linked_objects'); ?>
+			</div>
+		<?php }?>
 		<legend><?php echo lang('linked objects') ?></legend>
 		<?php echo render_object_link_form($object) ?>
 	</fieldset>	

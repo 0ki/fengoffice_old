@@ -228,6 +228,7 @@ class WebpageController extends ApplicationController {
 		}
 		$order = array_var($_GET, 'sort');
 		if ($order == "updatedOn" || $order == "updated") $order = "updated_on";
+		else if ($order == "name") $order = "title";
 		$orderdir = array_var($_GET, 'dir');
 		$tag = array_var($_GET,'tag');
 		$page = (integer) ($start / $limit) + 1;

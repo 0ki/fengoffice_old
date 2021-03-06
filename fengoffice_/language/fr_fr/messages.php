@@ -515,4 +515,8 @@
 	'success edit billing category' => 'La catégorie de facturation a bien été modifiée',
 	'success assign user billing categories' => 'Les catégories de facturation ont bien été affectées aux utilisateurs',
 	'confirm delete billing category' => 'Êtes-vous sûr de vouloir supprimer la catégorie de facturation sélectionnée ?',
+	'document checked out' => 'Le document a déjà été vérifié par un autre utilisateur',
+	'success trash file revision' => 'La révision du fichier à été mise à la corbeille',
+	'success unclassify email' => 'Le courriel a bien été déclassé',
+	'error unclassify email' => 'Échec de déclassement du courriel',
 ); ?>

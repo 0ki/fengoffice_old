@@ -56,9 +56,7 @@ class EventController extends ApplicationController {
 		ajx_set_no_toolbar(true);
 		ajx_replace(true);
 				 
-		$year = isset($_GET['year']) ? $_GET['year'] : date('Y', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600);
-		$month = isset($_GET['month']) ? $_GET['month'] : date('n', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600);
-		$day = isset($_GET['day']) ? $_GET['day'] : date('j', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600);
+		$this->getActualDateToShow($day, $month, $year);
 		
 		if ($view_type == null)
 			$this->getUserPreferences($view_type, $user_filter, $status_filter);
@@ -433,10 +431,8 @@ class EventController extends ApplicationController {
 		tpl_assign('cal_action','viewdate');
 		ajx_set_no_toolbar(true);
 		
-		$day = isset($_GET['day'])?$_GET['day']:date('j', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600);
-		$month = isset($_GET['month'])?$_GET['month']:date('n', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600);
-	    $year = isset($_GET['year'])?$_GET['year']:date('Y', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600);
-
+		$this->getActualDateToShow($day, $month, $year);
+		
 	    if ($view_type == null)
 	        $this->getUserPreferences($view_type, $user_filter, $status_filter);
 		
@@ -449,16 +445,20 @@ class EventController extends ApplicationController {
 		tpl_assign('tags',$tag);	
 		tpl_assign('cal_action','viewdate');
 		ajx_set_no_toolbar(true);
-						
-		$day = isset($_GET['day']) ? $_GET['day'] : date('j', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600);
-		$month = isset($_GET['month']) ? $_GET['month'] : date('n', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600);
-	    $year = isset($_GET['year']) ? $_GET['year'] : date('Y', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600);
-
+		
+		$this->getActualDateToShow($day, $month, $year);
+		
 	    if ($view_type == null)
 	    	$this->getUserPreferences($view_type, $user_filter, $status_filter);
 	    
 	    $this->setTemplate('viewweek');
 		$this->setViewVariables($view_type, $user_filter, $status_filter);
+	}
+	
+	private function getActualDateToShow(&$day, &$month, &$year) {
+		$day = isset($_GET['day']) ? $_GET['day'] : (isset($_SESSION['day']) ? $_SESSION['day'] : date('j', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600));
+		$month = isset($_GET['month']) ? $_GET['month'] : (isset($_SESSION['month']) ? $_SESSION['month'] : date('n', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600));
+	    $year = isset($_GET['year']) ? $_GET['year'] : (isset($_SESSION['year']) ? $_SESSION['year'] : date('Y', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600));
 	}
 	
 	function setViewVariables($view_type, $user_filter, $status_filter) {
@@ -577,12 +577,12 @@ class EventController extends ApplicationController {
 			$rsel1=false;$rsel2=false; $rsel3=false;
 			$forever= $event->getRepeatForever();
 			$occ = 1;
-			if($event->getRepeatD()  > 0){ $occ = 2; $rjump = $event->getRepeatD();}
+			if($event->getRepeatD() > 0){ $occ = 2; $rjump = $event->getRepeatD();}
 			if($event->getRepeatD() > 0 AND $event->getRepeatD()%7==0){ $occ = 3; $rjump = $event->getRepeatD()/7;}
 			if($event->getRepeatM() > 0){ $occ = 4; $rjump = $event->getRepeatM();}
 			if($event->getRepeatY() > 0){ $occ = 5; $rjump = $event->getRepeatY();}
 			if($event->getRepeatH() > 0){ $occ = 6;}
-			if($event->getRepeatH()==2){ $setlastweek = true;}
+			if($event->getRepeatH() == 2){ $setlastweek = true;}
 			if($event->getRepeatEnd()) { $rend = $event->getRepeatEnd();	}
 			if($event->getRepeatNum() > 0) $rnum = $event->getRepeatNum();
 			if(!isset($rjump) || !is_numeric($rjump)) $rjump = 1;
@@ -605,13 +605,13 @@ class EventController extends ApplicationController {
 			}
 				
 			$event_data = array(
-	          'subject'        => $event->getSubject(),
-	          'description'        => $event->getDescription(),
-	          'name'    => $event->getCreatedById(),
+	          'subject' => $event->getSubject(),
+	          'description' => $event->getDescription(),
+	          'name' => $event->getCreatedById(),
 	          'username' => $event->getCreatedById(),
-	          'typeofevent'  => $event->getTypeId(),
-	          'forever'  => $event->getRepeatForever(),
-	          'usetimeandduration'  => ($event->getTypeId())==3?0:1,
+	          'typeofevent' => $event->getTypeId(),
+	          'forever' => $event->getRepeatForever(),
+	          'usetimeandduration' => ($event->getTypeId())==3?0:1,
 	          'occ' => $occ,
 	          'rjump' => $rjump,
 	          'setlastweek' => $setlastweek,
@@ -628,11 +628,11 @@ class EventController extends ApplicationController {
 			  'day' => date('j', $thetime),
 			  'durtime' => ($event->getDuration()->getTimestamp() - $thetime),
 			  'durationmin' => ($durtime / 60) % 60,
-			  'durationhour'  => ($durtime / 3600) % 24,
+			  'durationhour' => ($durtime / 3600) % 24,
 			  'durday' => floor($durtime / 86400),
 			  'pm' => isset($pm) ? $pm : 0,
 	          'tags' => is_array($tag_names) ? implode(', ', $tag_names) : ''
-				); // array
+			); // array
 		} // if
 	
 		tpl_assign('event_data', $event_data);
@@ -897,7 +897,7 @@ class EventController extends ApplicationController {
  *   copyright            : (C) 2001 The phpBB Group
  *   email                : support@phpbb.com
  *
- *   $Id: EventController.class.php,v 1.85 2009/04/28 17:38:30 alvarotm01 Exp $
+ *   $Id: EventController.class.php,v 1.85.2.1 2009/05/18 17:49:16 alvarotm01 Exp $
  *
  ***************************************************************************/
 

@@ -63,8 +63,24 @@
 <div class="coInputSeparator"></div>
 <div class="coInputMainBlock">
 
+		<?php 
+			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_task_context_help', true, logged_user()->getId()))) {?>
+			<div id="tasksPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+				<?php render_context_help($this, 'chelp add new task','add_task'); ?>
+			</div>
+		<?php }?>
+		
+
 	<div id="<?php echo $genid ?>add_task_select_workspace_div" style="display:none">
 	<fieldset>
+	 	<?php 
+			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_task_workspace_context_help', true, logged_user()->getId()))) {?>
+			<div id="tasksPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+				<?php render_context_help($this, 'chelp add new task workspace','add_task_workspace'); ?>
+			</div>
+		<?php }?>
 	<legend><?php echo lang('workspace') ?></legend>
 		<?php echo select_project2('task[project_id]', $project->getId(), $genid) ?>
 	</fieldset>
@@ -72,6 +88,13 @@
 
 	<div id="<?php echo $genid ?>add_task_tags_div" style="display:none">
 	<fieldset>
+		<?php 
+			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_task_tags_context_help', true, logged_user()->getId()))) {?>
+			<div id="tasksPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+				<?php render_context_help($this, 'chelp add new task tag','add_task_tags'); ?>
+			</div>
+		<?php }?>
 	<legend><?php echo lang('tags') ?></legend>
 		<?php echo autocomplete_tags_field("task[tags]", array_var($task_data, 'tags'), null, 30); ?>
 	</fieldset>
@@ -80,7 +103,7 @@
 	
 	<div id="<?php echo $genid ?>add_task_more_div" style="display:block">
   	<fieldset>
-    <legend><?php echo lang('task data') ?></legend>
+	<legend><?php echo lang('task data') ?></legend>
     
 	    <label><?php echo lang('milestone') ?>: <span class="desc">(<?php echo lang('assign milestone task list desc') ?>)</span></label>
     	<?php echo select_milestone('task[milestone_id]', null, array_var($task_data, 'milestone_id'), array('id' => $genid . 'taskListFormMilestone', 'tabindex' => '40')) ?>
@@ -170,6 +193,13 @@
   
 	<div id="<?php echo $genid ?>add_reminders_div" style="display:none">
 		<fieldset>
+		<?php 
+			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_task_reminders_context_help', true, logged_user()->getId()))) {?>
+			<div id="tasksPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+				<?php render_context_help($this, 'chelp add new task reminders','add_task_reminders'); ?>
+			</div>
+		<?php }?>
 		<legend><?php echo lang('object reminders') ?></legend>
 		<label><?php echo lang("due date")?>:</label>
 		<div id="<?php echo $genid ?>add_reminders_content">
@@ -184,6 +214,13 @@
 	
 	<div id='<?php echo $genid ?>add_custom_properties_div' style="display:none">
 	<fieldset>
+	<?php 
+			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_task_custom_properties_context_help', true, logged_user()->getId()))) {?>
+			<div id="tasksPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+				<?php render_context_help($this, 'chelp add new task custom properties','add_task_custom_properties'); ?>
+			</div>
+		<?php }?>
     <legend><?php echo lang('custom properties') ?></legend>
       <?php echo render_object_custom_properties($object, 'ProjectTasks', false) ?><br/><br/>
       <?php echo render_add_custom_properties($object); ?>
@@ -192,6 +229,13 @@
   
     <div id="<?php echo $genid ?>add_subscribers_div" style="display:none">
 		<fieldset>
+		<?php 
+			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_task_subscribers_context_help', true, logged_user()->getId()))) {?>
+			<div id="tasksPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+				<?php render_context_help($this, 'chelp add new task subscribers','add_task_subscribers'); ?>
+			</div>
+		<?php }?>
 		<legend><?php echo lang('object subscribers') ?></legend>
 		<div id="<?php echo $genid ?>add_subscribers_content">
 			<?php echo render_add_subscribers($object, $genid); ?>
@@ -223,13 +267,19 @@
 	<?php if($object->isNew() || $object->canLinkObject(logged_user(), $project)) { ?>
 	<div style="display:none" id="<?php echo $genid ?>add_linked_objects_div">
 	<fieldset>
+		<?php 
+			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_task_linked_objects_context_help', true, logged_user()->getId()))) {?>
+			<div id="tasksPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+				<?php render_context_help($this, 'chelp add new task linked object','add_task_linked_objects'); ?>
+			</div>
+		<?php }?>
 		<legend><?php echo lang('linked objects') ?></legend>
 		<?php echo render_object_link_form($object) ?>
 	</fieldset>	
 	</div>
 	<?php } // if ?>
 		
-   	
 	<div><?php echo label_tag(lang('description'), $genid . 'taskListFormDescription') ?>
 	<?php echo textarea_field('task[text]', array_var($task_data, 'text'), array('class' => 'long', 'id' => $genid . 'taskListFormDescription', 'tabindex' => '140')) ?>
 	</div>

@@ -373,6 +373,10 @@ Ext.extend(og.TrashCan, Ext.grid.GridPanel, {
 		}
 	},
 	
+	reset: function() {
+		this.load({start:0});
+	},
+
 	showMessage: function(text) {
 		if (this.innerMessage) {
 			this.innerMessage.innerHTML = text;

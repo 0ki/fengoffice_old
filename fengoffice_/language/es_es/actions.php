@@ -10,7 +10,7 @@
     'hide welcome info' => '&raquo; Ocultar información de forma permanente',
     
     // Companies
-    'add company' => 'Añadir compañía',
+    'add company' => 'Añadir empresa',
     'edit company' => 'Editar datos de la compañía',
     'delete company' => 'Eliminar compañía',
     'edit company logo' => 'Guardar logo',

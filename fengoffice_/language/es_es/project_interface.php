@@ -161,7 +161,7 @@
 	'show in project desc' => 'Mostrar en el panel de descripción general del área de trabajo',
 	'show in parents' => 'Mostrar en los padres',
 	'show in parents desc' => 'Mostrar en el panel de descripción general de cada área de trabajo selaccionada',
-	'reporting' => 'Informando',
+	'reporting' => 'Reportes',
 	'chart' => 'Gráfica',
 	'new chart' => 'Nueva gráfica',
 	'add chart' => 'Añadir gráfica',
