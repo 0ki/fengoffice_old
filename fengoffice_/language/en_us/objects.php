@@ -142,7 +142,7 @@
 	'the object' => 'the object',
   	'the customer_folder' => 'the folder',
   	'the project_folder' => 'the folder',
-  		
+  	'the report' => 'the report',
     'activity add' => "{1} added {0} {2}",
     'activity edit' => "{1} edited {0} {2}",
     'activity delete' => "{1} deleted {0} {2}",

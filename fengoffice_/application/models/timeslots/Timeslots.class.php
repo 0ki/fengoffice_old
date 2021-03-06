@@ -112,7 +112,7 @@ class Timeslots extends BaseTimeslots {
 		
 		switch($timeslot_type){
 			case 0: //Task timeslots
-				$conditions = " AND `e`.`rel_object_id` IN (SELECT `obj`.`id` FROM `" . TABLE_PREFIX . "objects` `obj` WHERE `obj`.`trashed_on` = 0 AND `obj`.`archived_on` = 0)";
+				$conditions = " AND EXISTS (SELECT `obj`.`id` FROM `" . TABLE_PREFIX . "objects` `obj` WHERE `obj`.`id` = `e`.`rel_object_id` AND `obj`.`trashed_on` = 0 AND `obj`.`archived_on` = 0)";
 				break;
 			case 1: //Time timeslots
 				$conditions = " AND `e`.`rel_object_id` = 0";

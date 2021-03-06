@@ -660,7 +660,7 @@ class ContactController extends ApplicationController {
 						"ix" => $i,
 						"object_id" => $c->getId(),
 						"ot_id" => $c->getObjectTypeId(),
-						"type" => 'contact',
+						"type" => $c->getUserType() > 0 ? 'user' : 'contact',
 						"name" => $c->getReverseDisplayName(),
 						"email" => $c->getEmailAddress('personal',true),
 						"companyId" => $c->getCompanyId(),
@@ -687,7 +687,7 @@ class ContactController extends ApplicationController {
 						"updatedOn_today" => $c->getUpdatedOn() instanceof DateTimeValue ? $c->getUpdatedOn()->isToday() : 0,
 						"updatedBy" => $c->getUpdatedByDisplayName(),
 						"updatedById" => $c->getUpdatedById(),
-						"memPath" => json_encode($c->getUserType()?"":$c->getMembersToDisplayPath()),
+						"memPath" => json_encode($c->getMembersToDisplayPath()),
 						"userType" => $c->getUserType(),
 					);
 				} else if ($c instanceof Contact){
@@ -910,7 +910,7 @@ class ContactController extends ApplicationController {
 			$notAllowedMember = '';
 			if(!Contact::canAdd(logged_user(), active_context(), $notAllowedMember)) {
 				if (str_starts_with($notAllowedMember, '-- req dim --')) flash_error(lang('must choose at least one member of', str_replace_first('-- req dim --', '', $notAllowedMember, $in)));
-				else flash_error(lang('no context permissions to add',lang("contacts"), $notAllowedMember));
+				else trim($notAllowedMember) == "" ? flash_error(lang('you must select where to keep', lang('the contact'))) : flash_error(lang('no context permissions to add',lang("contacts"), $notAllowedMember));
 				ajx_current("empty");
 				return;
 			}
@@ -2913,7 +2913,7 @@ class ContactController extends ApplicationController {
 		$notAllowedMember = '';				
 		if(!Contact::canAdd(logged_user(),active_context(),$notAllowedMember)) {
 			if (str_starts_with($notAllowedMember, '-- req dim --')) flash_error(lang('must choose at least one member of', str_replace_first('-- req dim --', '', $notAllowedMember, $in)));
-			else flash_error(lang('no context permissions to add',lang("contacts"), $notAllowedMember));
+			else trim($notAllowedMember) == "" ? flash_error(lang('you must select where to keep', lang('the contact'))) : flash_error(lang('no context permissions to add',lang("contacts"), $notAllowedMember));
 			ajx_current("empty");
 			return;
 		} // if
@@ -3130,6 +3130,7 @@ class ContactController extends ApplicationController {
 			$type =  array_var($user, 'type');
 			$username =  array_var($user, 'username');
 		}
+		$userData = array();
 		if ($createUser){
 			if ($createPass){
 				$userData = array(

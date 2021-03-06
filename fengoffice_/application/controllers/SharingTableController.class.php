@@ -87,6 +87,26 @@ class  SharingTableController extends ApplicationController {
 		
 		// DELETE THE AFFECTED OBJECTS FROM SHARING TABLE
 		foreach ($all_del_conditions as $delete_conditions) {
+			
+			// check if the permission group still can view any of the affected objects (if they are classified in another dimension member)
+			$del_objs = DB::executeAll("SELECT object_id $from WHERE ".implode(' OR ' , $delete_conditions ));
+			$del_objs = array_flat($del_objs);
+			
+			$del_objs_can_read = array();
+			foreach ($del_objs as $do) {
+				$dobj = Objects::findObject($do);
+				if ($dobj instanceof ContentDataObject && can_access_pgids(array($group), $dobj->getMembers(), $dobj->getObjectTypeId(), ACCESS_LEVEL_READ)) {
+					$del_objs_can_read[] = $do;
+				}
+			}
+			
+			// objects that were included to be deleted but still can be read
+			$not_to_del_objs_cond = "";
+			if (count($del_objs_can_read) > 0) {
+				$not_to_del_objs_cond = " AND object_id NOT IN (".implode(',',$del_objs_can_read).")";
+			}
+			
+			// delete registers only for objects that cannot be read anymore for this permission group
 			$stManager->delete("object_id IN (SELECT object_id $from WHERE ".implode(' OR ' , $delete_conditions ).") AND group_id = '$group'");
 		}
 		// 2. POPULATE THE SHARING TABLE AGAIN WITH THE READ-PERMISSIONS (If there are)

@@ -504,8 +504,7 @@ ogTasks.GetNewTaskParameters = function(wrapWith,task_id){
 		parameters["text"] = editor.getData();
 	} else {
 		var description = document.getElementById('ogTasksPanelATDescCtl');
-		if (description)
-			parameters["text"] = description.value;
+		parameters["text"] = description ? description.value : "";
 	}
 	
 	var applyMI = document.getElementById('ogTasksPanelApplyMI');
@@ -579,7 +578,7 @@ ogTasks.GetNewTaskParameters = function(wrapWith,task_id){
 	if (wrapWith) {
 		var params2 = [];
 		for (var i in parameters) {
-			if (parameters[i] || parameters[i] === 0) {
+			if (parameters[i] || parameters[i] === 0 || parameters[i] === "") {
 				params2[wrapWith + "[" + i + "]"] = parameters[i];
 			}
 		}

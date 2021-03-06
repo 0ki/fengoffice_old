@@ -227,55 +227,41 @@ class ApplicationLogs extends BaseApplicationLogs {
 		}
 		
 		//do not display template tasks logs 
-		$extra_conditions .= " AND IF((SELECT o.object_type_id FROM ".TABLE_PREFIX."objects o WHERE o.id=rel_object_id)=(SELECT ot.id FROM ".TABLE_PREFIX."object_types ot WHERE ot.name='template_task'),
-				false,
-				true)";
+		$extra_conditions .= " AND IF((SELECT o.object_type_id FROM ".TABLE_PREFIX."objects o WHERE o.id=rel_object_id)=(SELECT ot.id FROM ".TABLE_PREFIX."object_types ot WHERE ot.name='template_task'), false, true)";
 
 		$members_sql = "";
 		if(count($members) > 0){
-			         $members_sql = "(EXISTS
-										(SELECT om.object_id
-											FROM  ".TABLE_PREFIX."object_members om
-											WHERE	om.member_id IN (" . implode ( ',', $members ) . ") AND rel_object_id = om.object_id
-											GROUP BY object_id
-											HAVING count(member_id) = ".count($members)."
-										)
-									  )";
+			$members_sql = "(EXISTS(
+				SELECT om.object_id FROM  ".TABLE_PREFIX."object_members om
+				WHERE om.member_id IN (" . implode ( ',', $members ) . ") AND rel_object_id = om.object_id
+				GROUP BY object_id
+				HAVING count(member_id) = ".count($members)."
+			))";
 		}
 
-		$permissions_sql = "AND(
-								(EXISTS
-										(SELECT object_id
-										FROM  ".TABLE_PREFIX."sharing_table sh
-										WHERE rel_object_id = sh.object_id 
-										AND sh.group_id  IN (
-															SELECT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups WHERE contact_id = ".logged_user()->getId()."
-															)
-										)
-								)
-								OR
-								(
-								 (rel_object_id = 0 AND member_id <> 0)
-								 AND (EXISTS
-								 			(SELECT cmp.member_id
-								 			FROM ".TABLE_PREFIX."contact_member_permissions cmp
-											WHERE ".TABLE_PREFIX."application_logs.member_id = cmp.member_id
-											AND  cmp.permission_group_id IN (
-																			SELECT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups
-																			WHERE contact_id = ".logged_user()->getId()."
-																			)
-											AND cmp.member_id = ".TABLE_PREFIX."application_logs.member_id
-											)
-									)
-								)
-							)";
-
-		$condition = ($members_sql != "" ? $members_sql . " AND " : "") . $extra_conditions . $permissions_sql;
-		return ApplicationLogs::findAll(array(
-			"condition" => $condition,
-			"order" => "created_on DESC",
-			"limit" => "100"
-		));
+		
+		$sql = "SELECT al.id FROM ".TABLE_PREFIX."application_logs al INNER JOIN ".TABLE_PREFIX."sharing_table st ON st.object_id=al.rel_object_id
+				WHERE st.group_id IN (SELECT permission_group_id FROM fo_contact_permission_groups WHERE contact_id = ".logged_user()->getId().") AND $extra_conditions";
+		if ($members_sql != "") {
+			$sql .= " AND $members_sql";
+		}
+		$sql .= " ORDER BY created_on DESC LIMIT 100";
+		$id_rows = array_flat(DB::executeAll($sql));
+		
+		$member_logs_sql = "SELECT al.id FROM ".TABLE_PREFIX."application_logs al INNER JOIN ".TABLE_PREFIX."contact_member_permissions cmp ON cmp.member_id=al.member_id
+				WHERE al.rel_object_id=0 AND al.member_id>0 AND cmp.permission_group_id IN (
+					SELECT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups
+					WHERE contact_id = ".logged_user()->getId()."
+				) ORDER BY created_on DESC LIMIT 100";
+		$m_id_rows = array_flat(DB::executeAll($member_logs_sql));
+		
+		$id_rows = array_filter(array_merge($id_rows, $m_id_rows));
+		
+		$logs = array();
+		if (count($id_rows) > 0) {
+			$logs = ApplicationLogs::findAll(array("condition" => "id IN (".implode(',',$id_rows).")", "order" => "created_on DESC"));
+		}
+		return $logs;
 	}
 
 } // ApplicationLogs

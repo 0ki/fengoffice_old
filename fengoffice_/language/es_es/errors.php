@@ -125,6 +125,7 @@
 	'must choose at least one member of' => 'Debe seleccionar al menos un miembro de {0}.',
 	'must choose at least one member' => 'Debe seleccionar al menos un miembro donde guardar el objeto.',
 	'no context permissions to add' => 'No puede agregar {0} en {1}',
+	'you must select where to keep' => 'Debe seleccionar donde guardar {0}.',
 	'no permissions to add' => 'No puede agregar {0} en {1}',
 	'you must select a valid object type' => 'Debe seleccionar un tipo de objeto válido.',
 	'name required' => 'Debe ingresar un nombre.',

@@ -14,6 +14,7 @@
     'invalid email address' => 'Email address format is not valid',
 	'error invalid recipients' => 'Invalid email addresses found in field "{0}": {1}',
 	'no context permissions to add' => 'You don\'t have permissions to add {0} in {1}',
+	'you must select where to keep' => 'You must select where to keep {0}.',
 
     // Company validation errors
     'company name required' => 'Company / organization name is required',

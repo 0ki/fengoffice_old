@@ -278,4 +278,19 @@ Oggetto: {0}
 	'linked task tab' => 'Attività',
 	'linked event tab' => 'Eventi',
 	'apply assignee to subtasks' => 'Assegna anche le sottoattivit&agrave;',
+	'completed subtasks' => 'sottoattività completate',
+	'open subtasks' => 'sottoattività sospese',
+	'assigned by' => 'assegnato da',
+	'to start' => 'per iniziare',
+	'work performed' => 'Lavori effettuati',
+	'field workspace color' => 'colore Area di lavoro',
+	'urgent priority' => 'Urgente',
+	'variables' => 'Variabili',
+	'add a variable to this template' => 'Aggiungere una variabile di questo modello',
+	'add a new task to this template' => 'Aggiungere una nuova attività di questo modello',
+	'add a new milestone to this template' => 'Aggiungere un nuovo obiettivo per questo modello',
+	'linked weblink tab' => 'Weblink',
+	'attachment from email' => 'Attaccato alla posta elettronica "{0}"',
+ ); ?>
+	
 ); ?>

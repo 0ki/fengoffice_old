@@ -84,7 +84,7 @@ class MilestoneController extends ApplicationController {
 		$notAllowedMember = '' ;
 		if(!ProjectMilestone::canAdd(logged_user(), active_context(), $notAllowedMember)) {
 			if (str_starts_with($notAllowedMember, '-- req dim --')) flash_error(lang('must choose at least one member of', str_replace_first('-- req dim --', '', $notAllowedMember, $in)));
-			else flash_error(lang('no context permissions to add',lang("milestones"),$notAllowedMember));
+			else trim($notAllowedMember) == "" ? flash_error(lang('you must select where to keep', lang('the milestone'))) : flash_error(lang('no context permissions to add',lang("milestones"),$notAllowedMember));
 			ajx_current("empty");
 			return;
 		} 
@@ -440,7 +440,7 @@ class MilestoneController extends ApplicationController {
 		$notAllowedMember = '';
 		if(!ProjectMilestone::canAdd(logged_user(), active_context(), $notAllowedMember)) {
 			if (str_starts_with($notAllowedMember, '-- req dim --')) flash_error(lang('must choose at least one member of', str_replace_first('-- req dim --', '', $notAllowedMember, $in)));
-			else flash_error(lang('no context permissions to add',lang("milestones"), $notAllowedMember));
+			else trim($notAllowedMember) == "" ? flash_error(lang('you must select where to keep', lang('the milestone'))) : flash_error(lang('no context permissions to add',lang("milestones"),$notAllowedMember));
 			ajx_current("empty");
 			return;
 		} // if
@@ -483,7 +483,7 @@ class MilestoneController extends ApplicationController {
 		$notAllowedMember = '';
 		if(!ProjectMilestone::canAdd(logged_user(), active_context(),$notAllowedMember)) {
 			if (str_starts_with($notAllowedMember, '-- req dim --')) flash_error(lang('must choose at least one member of', str_replace_first('-- req dim --', '', $notAllowedMember, $in)));
-			else flash_error(lang('no context permissions to add',lang("milestones"),$notAllowedMember));
+			else trim($notAllowedMember) == "" ? flash_error(lang('you must select where to keep', lang('the milestone'))) : flash_error(lang('no context permissions to add',lang("milestones"),$notAllowedMember));
 			ajx_current("empty");
 			return;
 		} // if

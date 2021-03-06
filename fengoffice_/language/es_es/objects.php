@@ -128,7 +128,7 @@
 	'the object' => 'el objeto',
 	'the customer_folder' => 'la carpeta',
 	'the project_folder' => 'la carpeta',
-    
+    'the report' => 'el reporte',
 	'activity add' => '{1} agregó {0} {2}',
 	'activity edit' => '{1} editó {0} {2}',
 	'activity delete' => '{1} borró {0} {2}',

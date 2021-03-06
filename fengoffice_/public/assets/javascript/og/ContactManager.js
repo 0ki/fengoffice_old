@@ -68,17 +68,17 @@ og.ContactManager = function() {
     	var name = lang('n/a');
 		if (r.data.type == 'company'){
 			name = String.format(
-					'<a style="font-size:120%" href="{1}" onclick="if (og.core_dimensions) og.core_dimensions.buildBeforeObjectViewAction('+r.data.object_id+'); og.openLink(\'{1}\');return false;" title="{2}">{0}</a>',
+					'<a style="font-size:120%" href="{1}" onclick="og.openLink(\'{1}\');return false;" title="{2}">{0}</a>',
 					og.clean(value), og.getUrl('contact', 'view_company', {id: r.data.object_id}), og.clean(r.data.name));
 		}
 		else{
 			name = String.format(
-					'<a style="font-size:120%" href="{1}" onclick="if (og.core_dimensions) og.core_dimensions.buildBeforeObjectViewAction('+r.data.object_id+'); og.openLink(\'{1}\');return false;" title="{2}">{0}</a>',
+					'<a style="font-size:120%" href="{1}" onclick="og.openLink(\'{1}\');return false;" title="{2}">{0}</a>',
 					og.clean(value), og.getUrl('contact', 'card', {id: r.data.object_id}), og.clean(r.data.name));
 			
 			if(r.data.companyId != null && r.data.companyId != 0 && r.data.companyName.trim()!=''){
 				name += String.format(
-					' (<a style="font-size:80%" href="{1}" onclick="if (og.core_dimensions) og.core_dimensions.buildBeforeObjectViewAction('+r.data.companyId+'); og.openLink(\'{1}\');return false;" title="{2}">{0}</a>)',
+					' (<a style="font-size:80%" href="{1}" onclick="og.openLink(\'{1}\');return false;" title="{2}">{0}</a>)',
 					og.clean(r.data.companyName), og.getUrl('contact', 'view_company', {id: r.data.companyId}), og.clean(r.data.companyName));
 			} //end else
 		}

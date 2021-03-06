@@ -90,7 +90,7 @@
 <?php } ?>
 
 
-<?php if (count($revisions)){?>
+<?php if (count($revisions) && !$file->getType() == ProjectFiles::TYPE_WEBLINK){?>
 <fieldset>
   <legend class="toggle_expanded" onclick="og.toggle('<?php echo $genid ?>revisions',this)"><?php echo lang('revisions'); ?> (<?php echo count($revisions);?>)</legend>
 <div id="<?php echo $genid ?>revisions" >

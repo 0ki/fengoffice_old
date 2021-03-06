@@ -2,8 +2,14 @@
 	$genid = gen_id();
 	$selectedPage = user_config_option('custom_report_tab');
 	$customReports = Reports::getAllReportsByObjectType();
-	$report = new Report(); 
-	$can_add_reports = $report->canAdd(logged_user(), active_context());
+	
+	$active_members = active_context_members(false);
+	if (count($active_members) > 0) {
+		$report = new Report();
+		$can_add_reports = $report->canAdd(logged_user(), active_context());
+	} else {
+		$can_add_reports = logged_user()->isManager() || logged_user()->isAdminGroup();
+	}
 	
 	$reports_by_type = array();
 	$object_types = ObjectTypes::getAvailableObjectTypes();

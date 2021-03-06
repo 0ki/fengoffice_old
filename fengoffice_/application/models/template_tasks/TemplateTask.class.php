@@ -596,7 +596,7 @@ class TemplateTask extends BaseTemplateTask {
 		}
 	
 		$obj_controller = new ObjectController();
-		$obj_controller->add_to_members($new_task, $this->getMemberIds());
+		//$obj_controller->add_to_members($new_task, $this->getMemberIds());
 		$obj_controller->add_subscribers($new_task);
 	
 		foreach($this->getCustomProperties() as $prop) {

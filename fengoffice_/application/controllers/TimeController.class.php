@@ -216,11 +216,7 @@ class TimeController extends ApplicationController {
 	}
 	
 	function edit_timeslot(){
-		if (!can_add(logged_user(), active_context(), Timeslots::instance()->getObjectTypeId())) {
-			flash_error(lang('no access permissions'));
-			ajx_current("empty");
-			return;
-		}
+		
 		ajx_current("empty");
 		$timeslot_data = array_var($_POST, 'timeslot');
 		$timeslot = Timeslots::findById(array_var($timeslot_data,'id',0));
@@ -229,7 +225,12 @@ class TimeController extends ApplicationController {
 			flash_error(lang('timeslot dnx'));
 			return;
 		}
-
+		
+		if(!$timeslot->canAdd(logged_user(), active_context())) {
+			flash_error(lang('no access permissions'));
+			return;
+		}
+		
 		try {
 			$hoursToAdd = array_var($timeslot_data, 'hours',0);
 			$minutes = array_var($timeslot_data, 'minutes',0);
@@ -286,22 +287,7 @@ class TimeController extends ApplicationController {
 			DB::beginWork();
 			$timeslot->save();
 
-			
 			$member_ids = json_decode(array_var($_POST, 'members', ''));
-			if ($member_ids && count($member_ids) ) {
-				ajx_add("time-panel", "reload");
-			}else{
-				foreach (active_context() as $dimension) {
-					$names[] = $dimension->getName();
-				} 
-	
-				flash_error(lang('select member to add timeslots', implode(", ", $names)));
-				
-				//flash_error(lang('must choose at least one member'));
-				DB::rollback();
-				return ;
-			}
-			
 			$object_controller = new ObjectController();
 			$object_controller->add_to_members($timeslot, $member_ids);
 			

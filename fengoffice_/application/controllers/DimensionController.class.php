@@ -352,7 +352,7 @@ class DimensionController extends ApplicationController {
 				$p_info = array();
 				if ($dim->getIsManageable()) {
 					foreach ($ots as $ot) {
-						$p_info[$ot->getId()] = can_read(logged_user(), array($member), $ot->getId());
+						$p_info[$ot->getId()] = $dim->getDefinesPermissions() ? can_read(logged_user(), array($member), $ot->getId()): true;
 					}
 				}
 				

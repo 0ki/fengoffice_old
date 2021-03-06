@@ -47,6 +47,8 @@ og.eventManager.addListener('reload dimension tree',
 			var tree = Ext.getCmp("dimension-panel-" + data.dim_id);
 			if (tree) {
 				var selection = tree.getSelectionModel().getSelectedNode();
+				if (data.pid && data.pid > 0) var new_parent = tree.getNodeById(data.pid);
+				if (new_parent) selection.parentNode = new_parent;
 
 				tree.suspendEvents();
 				var expanded = [];
@@ -58,7 +60,9 @@ og.eventManager.addListener('reload dimension tree',
 					tree.expanded_once = false;
 					og.expandCollapseDimensionTree(tree, expanded, selection ? selection.id : null);
 					if(selection){
-						og.Breadcrumbs.refresh(selection);
+						setTimeout(function(){
+							og.Breadcrumbs.refresh(selection);
+						}, 100);
 						og.contextManager.addActiveMember(selection.id, data.dim_id, selection.id);
 					}
 					if (data.node) {
@@ -66,7 +70,9 @@ og.eventManager.addListener('reload dimension tree',
 						if (treenode) {
 							treenode.fireEvent('click', treenode);
 						}
-						og.Breadcrumbs.refresh(treenode);
+						setTimeout(function(){
+							og.Breadcrumbs.refresh(treenode);
+						}, 100);
 					}
 				});
 				tree.resumeEvents();

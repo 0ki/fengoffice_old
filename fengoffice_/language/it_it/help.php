@@ -34,4 +34,18 @@
 							<b>traguardo</b>: raggruppa i task che appartengono ad uno specifico traguardo <br/>
 							<b>Priority</b>: raggruppa i task con una specifica priorità (bassa, normale, alta) <br/>
 							<b>Workspace</b>: raggruppa i task che appartengono ad uno specifico progetto <br/>',
+	'help opt show' => 'Mostra',
+	'help opt hide' => 'Nascondi',
+	'context help messages' => 'Contesto messaggi di aiuto',
+	'enable all chelp messages' => 'Per attivare tutti i messaggi di contesto chiusa manualmente',
+	'enable all chelp messages click' => 'clicca qui',
+	'help manual' => 'Manuale di aiuto',
+	'about us' => 'Chi siamo',
+	'how to purchase' => 'Come acquistare',
+	'how to purchase desc' => 'Informazioni sui nostri diversi piani e benefici',
+	'add ticket' => 'Aggiungere un nuovo ticket di assistenza',
+	'add ticket desc' => 'Per ottenere un aiuto personalizzato su Feng Ufficio',
+	'success enable all context help' => 'Aiuto contestuale riaperto con successo.',
+	'success enable context help' => 'Aiuto contestuale abilitato con successo.',
+	'success disable context help' => 'Aiuto contestuale disabilitato con successo.',
 ); ?>

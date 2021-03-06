@@ -1,5 +1,5 @@
 
-	About Feng Office 2.5.1
+	About Feng Office 2.5.1.1
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -101,6 +101,29 @@
 	
 	Changelog
 	=========
+	
+	Since 2.5.1
+	----------------
+	bugfix: Cannot edit unclassified timeslot.
+	bugfix: Bug when classifying email and attachments has no name.
+	bugfix: Add weblinks in documents panel.
+	bugfix: French langs fixed.
+	bugfix: Total task times performance improvements.
+	bugfix: Message changed when trying to add objects in root with no permissions.
+	bugfix: If member name contains "'" advanced reports are broken.
+	bugfix: Allow managers and administrators to add reports in root even if the don't have permissions to add reports in root.
+	bugfix: Wrong date on activity widget if there are several changes on an object.
+	bugfix: Selecting contact in contact tab must not filter by the contact dimension member.
+	bugfix: Users and contact have the same icon.
+	bugfix: Breadcrumbs are not shown for users.
+	bugfix: Encoding fixed when saving files to filesystem.
+	bugfix: When changing dimension member parent, breadcrumbs are not reloaded correctly.
+	bugfix: Performance improvements in activity widget.
+	bugfix: Cannot delete task description from quick-edit.
+	
+	feature: Add 'can_manage_tasks' permission to executive users.
+	feature: Use "on duplicate key update" in DataObject insert queries, if specified.
+	
 	
 	Since 2.5.1-rc
 	----------------

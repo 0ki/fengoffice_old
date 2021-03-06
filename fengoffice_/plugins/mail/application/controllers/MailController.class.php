@@ -1208,7 +1208,7 @@ class MailController extends ApplicationController {
 						
 						if (isset($part['Headers']['content-id:']) && $part['Headers']['content-id:'] == "<$part_name>") {
 							$filename = isset($part['FileName']) ? $part['FileName'] : $part_name;
-							$filename = $enc_conv->convert(detect_encoding($filename), "ISO-8859-1", $filename, false);
+							$filename = $enc_conv->convert(detect_encoding($filename), "UTF-8", $filename, false);
 							$file_content = $part['Body'];
 							$handle = fopen(ROOT."$tmp_folder/$filename", "wb");
 							fwrite($handle, $file_content);
@@ -1548,7 +1548,7 @@ class MailController extends ApplicationController {
 		$account_owner = logged_user() instanceof contact ? logged_user() : Contacts::findById($email->getAccount()->getContactId());
 		
 		for ($c = 0; $c < count($classification_data); $c++) {
-			if (isset($classification_data["att_".$c]) && $classification_data["att_".$c]) {
+			if (isset($classification_data["att_".$c]) && $classification_data["att_".$c] && isset($parsedEmail["Attachments"][$c])) {
 				$att = $parsedEmail["Attachments"][$c];
 				$fName = str_starts_with($att["FileName"], "=?") ? iconv_mime_decode($att["FileName"], 0, "UTF-8") : utf8_safe($att["FileName"]);
 				if (trim($fName) == "" && strlen($att["FileName"]) > 0) $fName = utf8_encode($att["FileName"]);
@@ -1891,13 +1891,8 @@ class MailController extends ApplicationController {
 				}
 
 				// Restore old emails, if account was deleted and its emails weren't
-				$old_emails = MailContents::findAll(array('conditions' => '`created_by_id` = ' . $mail_account_user->getId() . " AND `account_email` = '" . $mailAccount->getEmail() . "' AND `account_id` NOT IN (SELECT `id` FROM `" . TABLE_PREFIX . "mail_accounts`)"));
-				if (isset($old_emails) && is_array($old_emails) && count($old_emails)) {
-					foreach ($old_emails as $email) {
-						$email->setAccountId($mailAccount->getId());
-						$email->save();
-					}
-				}
+				DB::executeAll("UPDATE ".TABLE_PREFIX."mail_contents SET account_id=".$mailAccount->getId()." WHERE `created_by_id` = " . $mail_account_user->getId() . " AND `account_email` = '" . $mailAccount->getEmail() . "' AND `account_id` NOT IN (SELECT `id` FROM `" . TABLE_PREFIX . "mail_accounts`)");
+				
 				
 				DB::commit();
 
@@ -2055,13 +2050,9 @@ class MailController extends ApplicationController {
 					
 					
 					//in case there is a new owner of the email account
-					if ($user_changed && $mail_account_user instanceof Contact){						
-						$conditions = array("conditions" => "`created_by_id` = '$old_user_id' AND `account_id` = ".$mailAccount->getId()."");
-						$all_emails = MailContents::findAll($conditions);					
-						foreach ($all_emails as $e){							
-							$e->setCreatedById($mail_account_user->getId());
-							$e->save();
-						}		
+					if ($user_changed && $mail_account_user instanceof Contact){
+						DB::executeAll("UPDATE ".TABLE_PREFIX."objects SET created_by_id=".$mail_account_user->getId()." WHERE  
+							`created_by_id` = '$old_user_id' AND (select `account_id` FROM ".TABLE_PREFIX."mail_contents mc WHERE mc.object_id=id) = ".$mailAccount->getId());
 						$mailAccount->setContactId($mail_account_user->getId());
 					}
 					
@@ -2557,8 +2548,12 @@ class MailController extends ApplicationController {
 		// Get all emails to display
 		$context = active_context();
 		
-		// Get only last mail in conversation for this folder
-		$conversation_list = 1;
+		// Get only last mail in conversation for this folder if is set show_emails_as_conversations
+		if(user_config_option('show_emails_as_conversations')){
+			$conversation_list = 1;
+		}else{
+			$conversation_list = 0;
+		}
 		
 		$result = $this->getEmails($attributes, $context, $start, $limit, $order, $dir, $join_params, $conversation_list);
 		

@@ -40,7 +40,7 @@ class Cookie {
 	 * @param integer $expiration Number of seconds from current time when this cookie need to expire
 	 * @return null
 	 */
-	static function setValue($name, $value, $expiration = null) {
+	static function setValue($name, $value, $expiration = null, $domainF = null) {
 		$expiration_time = DateTimeValueLib::now();
 		if((integer) $expiration > 0) {
 			$expiration_time->advance($expiration);
@@ -51,7 +51,10 @@ class Cookie {
 		$path = defined('COOKIE_PATH') ? COOKIE_PATH : '/';
 		$domain = defined('COOKIE_DOMAIN') ? COOKIE_DOMAIN : '';
 		$secure = defined('COOKIE_SECURE') ? COOKIE_SECURE : false;
-
+		
+		if(!is_null($domainF)){
+			$domain = $domainF;
+		}
 		$name = Cookie::getPrefix() . $name;
 		setcookie($name, $value, $expiration_time->getTimestamp(), $path, $domain, $secure);
 	} // setValue

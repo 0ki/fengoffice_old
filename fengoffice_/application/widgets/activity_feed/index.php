@@ -31,8 +31,7 @@
                     $acts['data'][$key] = $object;
                     $acts['created_by'][$key] = $user;
                     $acts['act_data'][$key] = $activity->getActivityDataView($user,$object,true);
-                    $acts['date'][$key] = $activity->getCreatedOn() instanceof DateTimeValue ? friendly_date($activity->getCreatedOn()) : lang('n/a');
-                }            
+                }      
             }else{
                 break;
             }        

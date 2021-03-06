@@ -304,6 +304,81 @@ class FilesController extends ApplicationController {
 
 	
 	/**
+	 * Add weblink
+	 *
+	 * @access public
+	 * @param void
+	 * @return null
+	 */
+	function add_weblink() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
+		$file_data = array_var($_POST, 'webpage');
+	
+		$file = new ProjectFile();
+		
+		if(is_array(array_var($_POST, 'webpage'))) {
+			try {
+				$type = ProjectFiles::TYPE_WEBLINK;
+				$file->setType($type);
+				$file->setFilename(array_var($file_data, 'name'));
+				$file->setFromAttributes($file_data);
+				
+				$url = array_var($file_data, 'url', '');
+				if ($url && strpos($url, ':') === false) {
+					$url = $this->protocol ."://". $url;
+					$file->setUrl($url);
+					$file->save();
+				}
+					
+				$revision = new ProjectFileRevision();
+				$revision->setFileId($file->getId());
+				$revision->setRevisionNumber($file->getNextRevisionNumber());
+				$revision->setFileTypeId(FileTypes::getByExtension('webfile')->getId());
+				$revision->setTypeString($file->getUrl());
+				$revision->setRepositoryId('webfile');
+				$revision_comment = array_var($file_data, 'revision_comment', lang('initial versions'));
+				$revision->setComment($revision_comment);
+				
+				DB::beginWork();
+				$revision->save();
+		
+				$member_ids = json_decode(array_var($_POST, 'members'));
+		
+				//link it!
+				$object_controller = new ObjectController();
+				$object_controller->add_subscribers($file);
+				$object_controller->add_to_members($file, $member_ids);
+				$object_controller->link_to_new_object($file);
+				$object_controller->add_subscribers($file);
+				$object_controller->add_custom_properties($file);
+		
+				DB::commit();
+				ApplicationLogs::createLog($file, ApplicationLogs::ACTION_ADD);
+		
+		
+				flash_success(lang('success add webpage', $file->getObjectName()));
+				ajx_current("back");
+				// Error...
+			} catch(Exception $e) {
+				DB::rollback();
+				flash_error($e->getMessage());
+				ajx_current("empty");
+			}
+		
+		}
+		
+			
+		tpl_assign('file', $file);
+		tpl_assign('file_data', $file_data);
+		
+	} // add_weblink
+	
+	
+	/**
 	 * Add file
 	 *
 	 * @access public
@@ -319,7 +394,7 @@ class FilesController extends ApplicationController {
 		$file_data = array_var($_POST, 'file');
 
 		$file = new ProjectFile();
-			
+		
 		tpl_assign('file', $file);
 		tpl_assign('file_data', $file_data);
 			
@@ -971,7 +1046,7 @@ class FilesController extends ApplicationController {
 			$notAllowedMember = '';
 			if (!ProjectFile::canAdd(logged_user(), active_context(),$notAllowedMember)) {
 				if (str_starts_with($notAllowedMember, '-- req dim --')) flash_error(lang('must choose at least one member of', str_replace_first('-- req dim --', '', $notAllowedMember, $in)));
-				else flash_error(lang('no context permissions to add',lang("documents"),$notAllowedMember));
+				else trim($notAllowedMember) == "" ? flash_error(lang('you must select where to keep', lang('the file'))) : flash_error(lang('no context permissions to add',lang("documents"),$notAllowedMember));
 				ajx_current("empty");
 				return ;
 			} // if
@@ -1122,7 +1197,7 @@ class FilesController extends ApplicationController {
 			$notAllowedMember = '';
 			if (!ProjectFile::canAdd(logged_user(), active_context(), $notAllowedMember)) {
 				if (str_starts_with($notAllowedMember, '-- req dim --')) flash_error(lang('must choose at least one member of', str_replace_first('-- req dim --', '', $notAllowedMember, $in)));
-				else flash_error(lang('no context permissions to add',lang("presentations"),$notAllowedMember));
+				else trim($notAllowedMember) == "" ? flash_error(lang('you must select where to keep', lang('the file'))) : flash_error(lang('no context permissions to add',lang("presentations"),$notAllowedMember));
 				$this->redirectToReferer(get_url('files'));
 				return ;
 			} // if
@@ -1403,7 +1478,7 @@ class FilesController extends ApplicationController {
 			//new document
 			if (!ProjectFile::canAdd(logged_user(), active_context(), $notAllowedMember )) {
 				if (str_starts_with($notAllowedMember, '-- req dim --')) flash_error(lang('must choose at least one member of', str_replace_first('-- req dim --', '', $notAllowedMember, $in)));
-				else flash_error(lang('no context permissions to add', lang("documents"),$notAllowedMember));
+				else trim($notAllowedMember) == "" ? flash_error(lang('you must select where to keep', lang('the file'))) : flash_error(lang('no context permissions to add', lang("documents"),$notAllowedMember));
 				ajx_current("empty");
 				return;
 			} // if
@@ -1501,7 +1576,7 @@ class FilesController extends ApplicationController {
 			$notAllowedMember = '' ;
 			if (!ProjectFile::canAdd(logged_user(), active_context(), $notAllowedMember)) {
 				if (str_starts_with($notAllowedMember, '-- req dim --')) flash_error(lang('must choose at least one member of', str_replace_first('-- req dim --', '', $notAllowedMember, $in)));
-				else flash_error(lang('no context permissions to add',lang("presentations"), $notAllowedMember));
+				else trim($notAllowedMember) == "" ? flash_error(lang('you must select where to keep', lang('the file'))) : flash_error(lang('no context permissions to add',lang("presentations"), $notAllowedMember));
 				ajx_current("empty");
 				return;
 			} // if
@@ -1910,6 +1985,91 @@ class FilesController extends ApplicationController {
 		} // if
 	} // edit_file
 
+	/**
+	 * Edit weblink properties
+	 *
+	 * @access public
+	 * @param void
+	 * @return null
+	 */
+	function edit_weblink() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
+		$this->setTemplate('add_weblink');
+		
+		$file = ProjectFiles::findById(get_id());
+		
+		if(!($file instanceof ProjectFile)) {
+			flash_error(lang('file dnx'));
+			ajx_current("empty");
+			return;
+		} // if
+			
+		if(!$file->canEdit(logged_user())) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		} // if
+		
+		$file_data = array_var($_POST, 'webpage');
+		if(!is_array($file_data)) {
+			$file_data = array(
+					'description' => $file->getDescription(),
+					'name' => $file->getFilename(),
+					'url' => $file->getUrl(),
+					'attach_to_notification' => $file->getAttachToNotification(),
+					'default_subject' => $file->getDefaultSubject(),
+					'file_id' => get_id()
+			); // array
+		} // if
+		tpl_assign('file', $file);
+		tpl_assign('file_data', $file_data);//*******************
+	
+		if(is_array(array_var($_POST, 'webpage'))) {
+			try {
+								
+				$file->setFilename(array_var($file_data, 'name'));
+				$file->setFromAttributes($file_data);
+	
+				$url = array_var($file_data, 'url', '');
+				if ($url && strpos($url, ':') === false) {
+					$url = $this->protocol ."://". $url;
+					$file->setUrl($url);
+					
+				}
+	
+				DB::beginWork();
+				$file->save();
+	
+				$member_ids = json_decode(array_var($_POST, 'members'));
+	
+				//link it!
+				$member_ids = json_decode(array_var($_POST, 'members'));
+				$object_controller = new ObjectController();
+				$object_controller->add_to_members($file, $member_ids);
+				$object_controller->link_to_new_object($file);
+				$object_controller->add_subscribers($file);
+				$object_controller->add_custom_properties($file);
+				
+				$file->resetIsRead();
+	
+				DB::commit();
+				ApplicationLogs::createLog($file, ApplicationLogs::ACTION_EDIT);	
+	
+				flash_success(lang('success edit webpage', $file->getObjectName()));
+				ajx_current("back");
+				// Error...
+			} catch(Exception $e) {
+				DB::rollback();
+				flash_error($e->getMessage());
+				ajx_current("empty");
+			}
+	
+		}
+	}
 	
 	function release_file() {
 		ajx_current("empty");
@@ -2296,7 +2456,7 @@ class FilesController extends ApplicationController {
 		
 		if (!$file->canAdd(logged_user(), $members, $notAllowedMember) ){
 			if (str_starts_with($notAllowedMember, '-- req dim --')) flash_error(lang('must choose at least one member of', str_replace_first('-- req dim --', '', $notAllowedMember, $in)));
-			else flash_error(lang('no context permissions to add',lang("files"), $notAllowedMember));
+			else trim($notAllowedMember) == "" ? flash_error(lang('you must select where to keep', lang('the file'))) : flash_error(lang('no context permissions to add',lang("files"), $notAllowedMember));
 			ajx_current("empty");
 			return;
 		}

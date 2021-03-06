@@ -263,7 +263,7 @@ class MemberController extends ApplicationController {
 				));
 				$ret = null;
 				Hook::fire('after_add_member', $member, $ret);
-				evt_add("reload dimension tree", array('dim_id' => $member->getDimensionId(), 'node' => null));
+				evt_add("reload dimension tree", array('dim_id' => $member->getDimensionId()));
 				$member_type = ObjectTypes::findById($member->getObjectTypeId());
 				$context = active_context();
 				$sel_mem = null;
@@ -368,7 +368,7 @@ class MemberController extends ApplicationController {
 				ApplicationLogs::createLog($member, ApplicationLogs::ACTION_EDIT);
 				$ret = null;
 				Hook::fire('after_edit_member', $member, $ret);
-				evt_add("reload dimension tree", array('dim_id' => $member->getDimensionId()));				
+				evt_add("reload dimension tree", array('dim_id' => $member->getDimensionId(), 'mid' => $member->getId(), 'pid' => $member->getParentMemberId()));
 			}
 		}
 	}

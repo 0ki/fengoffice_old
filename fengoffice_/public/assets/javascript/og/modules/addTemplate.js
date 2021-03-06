@@ -130,7 +130,7 @@ og.addObjectToTemplate = function(target, obj, dont_draw_milestone_combo) {
 			
 	var divActions = document.createElement('div');
 	divActions.className = "template-object-actions";
-	console.log(obj);
+
 	var divhtml =
 		'<a id="toggleTemplatePropertys'+obj.object_id+'" href="#" onclick="og.toggleTemplatePropertys('+obj.object_id+')" class="toggle_collapsed">'+ lang("edit variables") + '</a>'+
 		"<a href='#' class='internalLink coViewAction ico-edit' onclick='"+"og.editTempObj("+obj.object_id+", \""+obj.type+"\")"+"'>" + lang('edit') + '</a>';

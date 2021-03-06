@@ -2421,7 +2421,7 @@ og.quickAddWs = function (data, callback) {
 
 og.onPersonClose = function() {
 	var currentPanel = Ext.getCmp('tabs-panel').getActiveTab();
-	if (currentPanel.id == 'administration') {
+	if (currentPanel.id != 'overview-panel') {
 		og.closeView();
 		return;
 	}

@@ -364,7 +364,7 @@ class MessageController extends ApplicationController {
 		$notAllowedMember = '';
 		if(!ProjectMessage::canAdd(logged_user(), active_context(), $notAllowedMember )) {
 			if (str_starts_with($notAllowedMember, '-- req dim --')) flash_error(lang('must choose at least one member of', str_replace_first('-- req dim --', '', $notAllowedMember, $in)));
-			else flash_error(lang('no context permissions to add',lang("messages"),$notAllowedMember ));
+			else trim($notAllowedMember) == "" ? flash_error(lang('you must select where to keep', lang('the message'))) : flash_error(lang('no context permissions to add',lang("messages"),$notAllowedMember ));
 			ajx_current("empty");
 			return;
 		} // if

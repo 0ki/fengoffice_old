@@ -192,6 +192,7 @@ class Reports extends BaseReports {
 		}
 		$results = array();
 		$report = self::getReport($id);
+		$show_archived = false;
 		if($report instanceof Report){
 			$conditionsFields = ReportConditions::getAllReportConditionsForFields($id);
 			$conditionsCp = ReportConditions::getAllReportConditionsForCustomProperties($id);
@@ -215,7 +216,9 @@ class Reports extends BaseReports {
 			
 			if(count($conditionsFields) > 0){
 				foreach($conditionsFields as $condField){
-					
+					if($condField->getFieldName() == "archived_on"){
+						$show_archived = true;
+					}
 					$skip_condition = false;
 					$model = $ot->getHandlerClass();
 					$model_instance = new $model();
@@ -373,6 +376,9 @@ class Reports extends BaseReports {
 					$listing_parameters["start"] = $offset;
 					$listing_parameters["limit"] = $limit;
 				}
+				if($show_archived){
+					$listing_parameters["archived"] = true;
+				}				
 				$result = $managerInstance->listing($listing_parameters);
 			}else{
 				// TODO Performance Killer

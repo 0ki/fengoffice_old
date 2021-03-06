@@ -1395,6 +1395,7 @@ class Notifier {
 				if ($email->columnExists('attachments')) {
 					$attachments = json_decode($email->getColumnValue('attachments'));
 					foreach ($attachments as $a) {
+						if (!file_exists($a->path)) continue;
 						$attach = Swift_Attachment::fromPath($a->path, $a->type);
 						$attach->setDisposition($a->disposition);
 						if ($a->cid) $attach->setId($a->cid);

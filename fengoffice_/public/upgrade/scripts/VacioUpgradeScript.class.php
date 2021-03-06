@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Vacio upgrade script will upgrade FengOffice 2.4.1 to FengOffice 2.5.1
+ * Vacio upgrade script will upgrade FengOffice 2.4.1 to FengOffice 2.5.1.1
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -40,7 +40,7 @@ class VacioUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('2.4.1');
-		$this->setVersionTo('2.5.1');
+		$this->setVersionTo('2.5.1.1');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -158,6 +158,12 @@ class VacioUpgradeScript extends ScriptUpgraderScript {
 				('overdue_upcoming',0,0,'assigned_to_user',0,'UserCompanyConfigHandler',0),
 				('calendar',0,0,'filter_by_myself',1,'BooleanConfigHandler',0)
 				ON DUPLICATE KEY UPDATE widget_name=widget_name;
+				";
+			}
+			
+			if (version_compare($installed_version, '2.5.1.1') < 0) {
+				$upgrade_script .= "
+					update ".$t_prefix."system_permissions set can_manage_tasks=1 where permission_group_id in (select id from ".$t_prefix."permission_groups where name in ('Super Administrator','Administrator','Manager','Executive'));
 				";
 			}
 			

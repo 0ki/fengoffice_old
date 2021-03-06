@@ -148,6 +148,13 @@ final class CompanyWebsite {
         $user_id       = Cookie::getValue('id');
 		$twisted_token = Cookie::getValue('token');
 		$remember      = (boolean) Cookie::getValue('remember', false);
+		
+		//check if thers a croos domain cookie
+		if(empty($user_id) || empty($twisted_token)){
+			$user_id       = Cookie::getValue('idCross');
+			$twisted_token = Cookie::getValue('tokenCross');
+		}
+		
 
 		if(empty($user_id) || empty($twisted_token)) {
 			return false; // we don't have a user
@@ -202,6 +209,27 @@ final class CompanyWebsite {
 		Cookie::unsetValue('id');
 		Cookie::unsetValue('token');
 		Cookie::unsetValue('remember');
+		
+		//check if thers a cross domain cookie
+		$user_id       = Cookie::getValue('idCross');
+		$twisted_token = Cookie::getValue('tokenCross');
+		if(!empty($user_id) || !empty($twisted_token)){
+			$local_domain = parse_url(ROOT_URL, PHP_URL_HOST);
+			
+			if(($pos = strpos($local_domain, '.')) !== false){
+				$local_domain = substr($local_domain, $pos);
+			}
+						
+			$domain = defined('COOKIE_CROSS_DOMAIN') ? COOKIE_CROSS_DOMAIN : $local_domain;
+			
+			//croos
+			Cookie::setValue('idCross',false,null,$domain);
+			Cookie::setValue('tokenCross',false,null,$domain);
+			//local
+			Cookie::unsetValue('idCross');
+			Cookie::unsetValue('tokenCross');
+		}
+		
 		if(session_id() != "") {
 			@session_destroy();
 		}

@@ -245,9 +245,7 @@ member_selector.remove_all_selections = function(genid) {
 			var length = member_selector[genid].sel_context[dim_id].length;
 			for (var i=0;i<length;i++){
 				var member_id = member_selector[genid].sel_context[dim_id][0];
-				console.log(member_id);
 				member_selector.remove_relation(dim_id, genid, member_id, true);
-				console.log(member_selector[genid].sel_context[dim_id]);
 			}
 			member_selector.reload_dependant_selectors(dim_id, genid);
 		}

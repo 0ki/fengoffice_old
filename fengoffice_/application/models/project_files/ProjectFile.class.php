@@ -575,7 +575,11 @@ class ProjectFile extends BaseProjectFile {
 	 * @return string
 	 */
 	function getEditUrl() {
-		return get_url('files', 'edit_file', array(
+		$edit_func = 'edit_file';
+		if($this->getType() == 1){
+			$edit_func = 'edit_weblink';
+		}
+		return get_url('files', $edit_func, array(
         'id' => $this->getId())
 		); // get_url
 	} // getEditUrl

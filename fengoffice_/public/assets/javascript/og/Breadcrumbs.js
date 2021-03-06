@@ -44,9 +44,12 @@ og.Breadcrumbs = {
 		
 		// Clean Previews state
 		var itemclass = '';
-	    var dimensionName = node.attributes.loader.ownerTree.initialConfig.dimensionCode ;
-	    var mainDimensionId = node.attributes.loader.ownerTree.initialConfig.dimensionId ;  
-	    var parent = node.parentNode ;
+	    var dimensionName = node.attributes.loader.ownerTree.initialConfig.dimensionCode;
+	    var mainDimensionId = node.attributes.loader.ownerTree.initialConfig.dimensionId;  
+	    var parent = node.parentNode;
+	    if (parent) {
+	    	parent = node.attributes.loader.ownerTree.getNodeById(parent.id);
+	    }
 	    var allInfo = true;
 	    var defineMainTitle = false;
 	    

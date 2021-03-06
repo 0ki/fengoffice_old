@@ -67,7 +67,7 @@
 		$mids = implode(",", $mids);
 	
 	} else {
-		
+		$widget_title = lang("people");
 		$result = Contacts::instance()->listing(array(
 			"order" => $order,
 			"order_dir" => "DESC",

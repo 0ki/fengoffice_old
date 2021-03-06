@@ -487,9 +487,9 @@ class ReportingController extends ApplicationController {
 				$member_ids = json_decode(array_var($_POST, 'members'));
 				
 				$notAllowedMember = '';
-				if(!$newReport->canAdd(logged_user(), active_context(), $notAllowedMember )) {
+				if(!logged_user()->isManager() && !logged_user()->isAdminGroup() && !$newReport->canAdd(logged_user(), active_context(), $notAllowedMember )) {
 					if (str_starts_with($notAllowedMember, '-- req dim --')) flash_error(lang('must choose at least one member of', str_replace_first('-- req dim --', '', $notAllowedMember, $in)));
-					else flash_error(lang('no context permissions to add', lang("report"), $notAllowedMember ));
+					else trim($notAllowedMember) == "" ? flash_error(lang('you must select where to keep', lang('the report'))) : flash_error(lang('no context permissions to add', lang("report"), $notAllowedMember ));
 					ajx_current("empty");
 					return;
 				}
@@ -548,9 +548,11 @@ class ReportingController extends ApplicationController {
 						}
 					}
 					
-					$object_controller = new ObjectController();
-					
-					$object_controller->add_to_members($newReport, $member_ids);
+					$no_need_to_add_to_members = count($member_ids) == 0 && (logged_user()->isManager() || logged_user()->isAdminGroup());
+					if (!$no_need_to_add_to_members) {
+						$object_controller = new ObjectController();
+						$object_controller->add_to_members($newReport, $member_ids);
+					}
 					
 					DB::commit();
 					flash_success(lang('custom report created'));

@@ -694,6 +694,7 @@
 			
 			$sys_permissions_data['can_task_assignee'] = !$is_guest;
 			$system_permissions->setFromAttributes($sys_permissions_data);
+			$system_permissions->setUseOnDuplicateKeyWhenInsert(true);
 			$system_permissions->save();
 			
 			//object type root permissions
@@ -1232,11 +1233,13 @@
 			$permissions_decoded = json_decode($permissionsString);
 			$to_insert = array();
 			$to_delete = array();
-			foreach ($permissions_decoded as $perm) {
-			if ($perm->r) {
-					$to_insert[] = "('".$pg_id."','".$perm->m."','".$perm->o."','".$perm->d."','".$perm->w."')";
-				} else {
-					$to_delete[] = "(permission_group_id='".$pg_id."' AND member_id='".$perm->m."' AND object_type_id='".$perm->o."')";
+			if (is_array($permissions_decoded)) {
+				foreach ($permissions_decoded as $perm) {
+					if ($perm->r) {
+						$to_insert[] = "('".$pg_id."','".$perm->m."','".$perm->o."','".$perm->d."','".$perm->w."')";
+					} else {
+						$to_delete[] = "(permission_group_id='".$pg_id."' AND member_id='".$perm->m."' AND object_type_id='".$perm->o."')";
+					}
 				}
 			}
 			if (count($to_insert) > 0) {

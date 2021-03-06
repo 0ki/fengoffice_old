@@ -454,6 +454,10 @@ og.FileManager = function() {
 				{text: lang('upload file'), iconCls: 'ico-upload', handler: function() {
 					var url = og.getUrl('files', 'add_file');
 					og.openLink(url);
+				}},
+				{text: lang('weblink'), iconCls: 'ico-weblink', handler: function() {
+					var url = og.getUrl('files', 'add_weblink');
+					og.openLink(url);
 				}},'-',
 				{text: lang('document'), iconCls: 'ico-doc', handler: function() {
 					var url = og.getUrl('files', 'add_document');

@@ -1,4 +1,5 @@
-<?php 
+<?php
+if (logged_user()->hasMailAccounts()) { 
 
 	$limit = 10;
 	$result = MailContents::instance()->listing(array(
@@ -21,10 +22,11 @@
 		}
 		$widget_title = lang('unread emails'). ' '. lang('in').' '. implode(", ", $mnames);
 	}
-		
+	
 	$total = $result->total;
 	$emails = $result->objects;
 	$genid = gen_id();
 	if ($total > 0) {
 		include_once 'template.php';
 	}
+}

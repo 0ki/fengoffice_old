@@ -92,6 +92,20 @@
   	protected $attr_acceptable = null;
   	
   	/**
+  	 * Set to true to append ON DUPLICATE KEY UPDATE to insert query
+  	 * 
+  	 * @var boolean
+  	 */
+  	protected $use_on_duplicate_key_when_insert = false;
+  	
+  	function setUseOnDuplicateKeyWhenInsert($value) {
+  		$this->use_on_duplicate_key_when_insert = $value;
+  	}
+  	function getUseOnDuplicateKeyWhenInsert() {
+  		return $this->use_on_duplicate_key_when_insert;
+  	}
+  	
+  	/**
   	* Constructor
   	*
   	* @param void
@@ -671,13 +685,15 @@
   			
   		} // foreach
   		
+  		$on_duplicate_key_string = $this->use_on_duplicate_key_when_insert ? "ON DUPLICATE KEY UPDATE ".$this_columns[0]."=".$this_columns[0] : "";
   		$this_columns = null;
   		
   		// And put it all together
-  		return sprintf("INSERT INTO %s (%s) VALUES (%s)", 
+  		return sprintf("INSERT INTO %s (%s) VALUES (%s) %s", 
   		  $this->getTableName(true), 
   		  implode(', ', $columns), 
-  		  implode(', ', $values)
+  		  implode(', ', $values),
+  		  $on_duplicate_key_string
   		); // sprintf
   		
   	} // getInsertQuery
