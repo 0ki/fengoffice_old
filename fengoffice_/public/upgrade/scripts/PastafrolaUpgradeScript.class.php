@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Pastafrola upgrade script will upgrade FengOffice 1.6 to FengOffice 1.7
+ * Pastafrola upgrade script will upgrade FengOffice 1.6 to FengOffice 1.7.1
  *
  * @package ScriptUpgrader.scripts
  * @version 1.1
@@ -40,7 +40,7 @@ class PastafrolaUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('1.6.2');
-		$this->setVersionTo('1.7');
+		$this->setVersionTo('1.7.1');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -114,6 +114,35 @@ class PastafrolaUpgradeScript extends ScriptUpgraderScript {
 				$upgrade_script .= "
 					ALTER TABLE `" . TABLE_PREFIX . "administration_tools` ADD COLUMN `visible` BOOLEAN NOT NULL DEFAULT 1;
 					UPDATE `" . TABLE_PREFIX . "administration_tools` SET `visible`=0 WHERE `name`='mass_mailer';
+				";
+			}
+			if (version_compare($installed_version, '1.7') <= 0) {
+				$upgrade_script .= "
+					ALTER TABLE `" . TABLE_PREFIX . "mail_accounts` 
+					 ADD COLUMN `last_error_date` DATETIME NOT NULL default '0000-00-00 00:00:00',
+					 ADD COLUMN `last_error_msg` VARCHAR(255) NOT NULL default '',
+					 ADD COLUMN `sync_addr` VARCHAR( 100 ) NOT NULL default '',
+					 ADD COLUMN `sync_pass` VARCHAR( 40 ) NOT NULL default '',
+					 ADD COLUMN `sync_server` VARCHAR( 100 ) NOT NULL default '',
+					 ADD COLUMN `sync_ssl` BOOL NOT NULL DEFAULT '0',
+					 ADD COLUMN `sync_ssl_port` INT( 11 ) NOT NULL DEFAULT '993',
+					 ADD COLUMN `sync_folder` VARCHAR( 100 ) NOT NULL default '';
+					ALTER TABLE `" . TABLE_PREFIX . "mail_account_users` ADD COLUMN `last_error_state` INT(1) UNSIGNED NOT NULL DEFAULT 0 COMMENT '0:no error,1:err unread, 2:err read';
+					INSERT INTO `" . TABLE_PREFIX . "user_ws_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES 
+					 ('mails panel', 'mail_account_err_check_interval', '300', 'IntegerConfigHandler', 0, 120, NULL),
+					 ('mails panel', 'classify_mail_with_conversation', '1', 'BoolConfigHandler', 0, 130, NULL),
+					 ('task panel', 'tasksShowEmptyMilestones', '1', 'BoolConfigHandler', 1, 0, '')
+					ON DUPLICATE KEY UPDATE id=id;
+					INSERT INTO `" . TABLE_PREFIX . "file_types` (`extension`, `icon`, `is_searchable`, `is_image`) VALUES
+						('docx', 'doc.png', 0, 0),
+						('xlsx', 'xls.png', 0, 0)
+					ON DUPLICATE KEY UPDATE id=id;
+					INSERT INTO `" . TABLE_PREFIX . "config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
+						('system', 'min_chars_for_match', '3', 'IntegerConfigHandler', 1, 0, 'If search criteria len is less than this, then use always LIKE'),
+						('mailing', 'sent_mails_sync', '1', 'BoolConfigHandler', '0', '0', 'imap email accounts synchronization possibility')
+					ON DUPLICATE KEY UPDATE id=id;
+					ALTER TABLE `" . TABLE_PREFIX . "application_logs` MODIFY COLUMN `action` enum('upload','open','close','delete','edit','add','trash','untrash','subscribe','unsubscribe','tag','untag','comment','link','unlink','login','logout','archive','unarchive','move','copy','read','download','checkin','checkout') collate utf8_unicode_ci default NULL;
+					ALTER TABLE `" . TABLE_PREFIX . "mail_contents` ADD COLUMN `sync` BOOL NOT NULL DEFAULT '0';
 				";
 			}
 			

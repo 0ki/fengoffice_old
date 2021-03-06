@@ -25,7 +25,7 @@ class TaskController extends ApplicationController {
 
 		return array(
 			"id" => $task->getId(),
-			"title" => $task->getObjectName(),
+			"title" => clean($task->getObjectName()),
 			"parent" => $task->getParentId(),
 			"milestone" => $task->getMilestoneId(),
 			"assignedTo" => $task->getAssignedTo()? $task->getAssignedToName():'',
@@ -569,6 +569,11 @@ class TaskController extends ApplicationController {
 			case 'priority':
 				$task_filter_condition = " AND  `priority` = " . $filter_value . " ";
 				break;
+			case 'subtype':
+				if ($filter_value != 0) {
+					$task_filter_condition = " AND  `object_subtype` = " . $filter_value . " ";
+				}
+				break;
 			case 'no_filter':
 				$task_filter_condition = "";
 				break;
@@ -594,6 +599,38 @@ class TaskController extends ApplicationController {
 			case 1: // Complete tasks
 				$task_status_condition = " AND `completed_on` > " . DB::escape(EMPTY_DATETIME);
 				break;
+			case 10: // Active tasks
+				$now=date('Y-m-j 00:00:00');
+				$task_status_condition = " AND `completed_on` = " . DB::escape(EMPTY_DATETIME) . " AND `start_date` <= '$now'";
+				break;
+			case 11: // Overdue tasks
+				$now=date('Y-m-j 00:00:00');
+				$task_status_condition = " AND `completed_on` = " . DB::escape(EMPTY_DATETIME) . " AND `due_date` < '$now'";
+				break;
+			case 12: // Today tasks
+				$now=date('Y-m-j 00:00:00');
+				$task_status_condition = " AND `completed_on` = " . DB::escape(EMPTY_DATETIME) . " AND `due_date` = '$now'";
+				break;
+			case 13: // Today + Overdue tasks
+				$now=date('Y-m-j 00:00:00');
+				$task_status_condition = " AND `completed_on` = " . DB::escape(EMPTY_DATETIME) . " AND `due_date` <= '$now'";
+				break;
+			case 14: // Today + Overdue tasks
+				$now=date('Y-m-j 00:00:00');
+				$task_status_condition = " AND `completed_on` = " . DB::escape(EMPTY_DATETIME) . " AND `due_date` <= '$now'";
+				break;
+			case 20: // Actives task by current user
+			$now=date('Y-m-j 00:00:00');
+				$task_status_condition = " AND `completed_on` = " . DB::escape(EMPTY_DATETIME) . " AND `start_date` <= '$now' AND `assigned_to_user_id` = " . logged_user()->getId();
+				break;
+			case 21: // Subscribed tasks by current user
+				$res20=DB::execute("SELECT object_id FROM ". TABLE_PREFIX . "object_subscriptions WHERE `object_manager` LIKE 'ProjectTasks' AND `user_id` = " . logged_user()->getId());
+				$subs_rows=$res20->fetchAll($res20);
+				foreach($subs_rows as $row) $subs[]=$row['object_id'];
+				unset($res20,$subs_rows,$row);
+				$now=date('Y-m-j 00:00:00');
+				$task_status_condition = " AND `completed_on` = " . DB::escape(EMPTY_DATETIME) . " AND `id` IN(" . implode(',',$subs) . ")";
+				break;				
 			case 2: // All tasks
 				break;
 			default:
@@ -614,7 +651,7 @@ class TaskController extends ApplicationController {
 		$tasks = ProjectTasks::findAll(array('conditions' => $conditions, 'order' => 'created_on DESC', 'limit' => user_config_option('task_display_limit') > 0 ? user_config_option('task_display_limit') + 1 : null));
 		ProjectTasks::populateData($tasks);
 		//Find all internal milestones for these tasks
-		$internalMilestones = ProjectMilestones::getProjectMilestones(active_or_personal_project(), null, 'DESC', $tag, null, null, null, ($status == 0), false);
+		$internalMilestones = ProjectMilestones::getProjectMilestones(active_or_personal_project(), null, 'DESC', "", null, null, null, ($status == 0), false);
 		ProjectMilestones::populateData($internalMilestones);
 		
 		//Find all external milestones for these tasks
@@ -647,7 +684,7 @@ class TaskController extends ApplicationController {
 		}
 		$projectstr = " AND (" . ProjectMilestones::getWorkspaceString($pids) . $milestone_ids_condition . ")";
 		$archivedstr = " AND `archived_by_id` = 0 ";
-		$milestone_conditions = " `is_template` = false " . $archivedstr . $projectstr . $pendingstr . $tagstr;
+		$milestone_conditions = " `is_template` = false " . $archivedstr . $projectstr . $pendingstr;
 		$externalMilestonesTemp = ProjectMilestones::findAll(array('conditions' => $milestone_conditions));
 		$externalMilestones = array();
 		if($externalMilestonesTemp){
@@ -711,6 +748,7 @@ class TaskController extends ApplicationController {
 				'showTime' => user_config_option('tasksShowTime',0),
 				'showDates' => user_config_option('tasksShowDates',0),
 				'showTags' => user_config_option('tasksShowTags',0),
+				'showEmptyMilestones' => user_config_option('tasksShowEmptyMilestones',0),
 				'groupBy' => user_config_option('tasksGroupBy','milestone'),
 				'orderBy' => user_config_option('tasksOrderBy','priority'),
 				'defaultNotifyValue' => user_config_option('can notify from quick add')
@@ -1161,7 +1199,9 @@ class TaskController extends ApplicationController {
 					$task_data['parent_id'] = 0;	
 				}
 				
+				$was_template = $task->getIsTemplate();
 				$task->setFromAttributes($task_data);
+				$task->setIsTemplate($was_template); // is_template value must not be changed from ui
 				
 				// Set assigned to
 				$assigned_to = explode(':', array_var($task_data, 'assigned_to', ''));
@@ -1204,7 +1244,7 @@ class TaskController extends ApplicationController {
 				$task->setTagsFromCSV(array_var($task_data, 'tags'));
 
 				$object_controller = new ObjectController();
-				$object_controller->add_to_workspaces($task);
+				$object_controller->add_to_workspaces($task, !$task->getIsTemplate());
 				$object_controller->link_to_new_object($task);
 				$object_controller->add_subscribers($task);
 				$object_controller->add_custom_properties($task);

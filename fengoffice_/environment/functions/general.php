@@ -576,7 +576,7 @@ function convert_to_links($text){
 		
 	//Convert every email address into an <a href="mailto:... hyperlink
 	$text = preg_replace('/([^\:a-zA-Z0-9>"\._\-\+=])([a-zA-Z0-9]+[a-zA-Z0-9\._\-\+]*@[a-zA-Z0-9_\-]+([a-zA-Z0-9\._\-]+)+)/', '$1<a href="mailto:$2" target="_blank">$2</a>', $text);
-	Hook::fire('convert_to_links', array('original' => $orig, 'text' => $text), &$text);
+	Hook::fire('convert_to_links', array('original' => $orig, 'text' => $text), $text);
 	return $text;
 }
 
@@ -599,7 +599,12 @@ function gen_id() {
 
 function purify_html($html) {
 	require_once LIBRARY_PATH . "/htmlpurifier/HTMLPurifier.standalone.php";
-	$p = new HTMLPurifier();
+	$config = null;
+	if (defined('CUSTOM_HTMLPURIFIER_CACHEDIR') && is_dir(CUSTOM_HTMLPURIFIER_CACHEDIR)) {
+		$config = HTMLPurifier_Config::createDefault();
+		$config->set('Cache', 'SerializerPath', CACHE_DIR);
+	}
+	$p = new HTMLPurifier($config);
 	return $p->purify($html);
 }
 /**

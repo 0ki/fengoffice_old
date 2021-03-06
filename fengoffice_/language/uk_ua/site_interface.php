@@ -469,6 +469,7 @@ Last update:  see readme_ua.txt
 	'activity' => 'Активність',
 	'statistics' => 'Статистика',
 	'time' => 'Час',
+ 	'meeting_time' => 'Час',
 	'task time report' => 'Загальний час виконання завдання',
 	'new tasks by user' => 'Нові завдання користувачів',
 	'generate report' => 'Скласти звіт',

@@ -277,4 +277,5 @@ Oggetto: {0}
 	'linked milestone tab' => 'Trafuardi',
 	'linked task tab' => 'Attività',
 	'linked event tab' => 'Eventi',
+	'apply assignee to subtasks' => 'Assegna anche le sottoattivit&agrave;',
 ); ?>

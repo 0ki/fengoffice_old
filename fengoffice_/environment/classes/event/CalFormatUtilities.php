@@ -113,7 +113,7 @@ class CalFormatUtilities {
             $ical_info .= "SUMMARY:" . $event->getSubject() . "\r\n";
 		    $ical_info .= "UID:$uid\r\n";
 		    $ical_info .= "SEQUENCE:0\r\n";
-		    $ical_info .= "DTSTAMP:".$event->getCreatedOn()->format('Ymd').'T'.$event->getCreatedOn()->format('His')."\r\n";
+		    $ical_info .= "DTSTAMP:".$event->getUpdatedOn()->format('Ymd').'T'.$event->getUpdatedOn()->format('His')."\r\n";
 			
 		    $invitations = $event->getInvitations();
 			if (is_array($invitations) && array_var($invitations, $user->getId())) {

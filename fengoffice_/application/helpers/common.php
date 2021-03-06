@@ -114,7 +114,7 @@
 		$images = array();
 		if (is_array($urls)) {
 			foreach ($urls as $url) {
-				if (substr($url, 0, 5) != 'http:' && substr($url, 0, 6) != 'https:') continue; // ignore non-http urls
+				if (substr($url, 0, 5) != 'http:' && substr($url, 0, 6) != 'https:' || !is_file($url)) continue; // ignore non-http urls
 				if (defined('CACHE_EMAIL_IMAGE_URLS') && CACHE_EMAIL_IMAGE_URLS) {
 					$cache_name = preg_replace("/[^a-zA-Z0-9]/", "_", $url);
 					$cache_path = "cache/$cache_name.cache";

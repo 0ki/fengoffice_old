@@ -81,7 +81,7 @@ class Timeslots extends BaseTimeslots {
 	 * @param array $order_by
 	 * @return array
 	 */
-	static function getTaskTimeslots($workspace = null, $user = null, $workspacesCSV = null, $start_date = null, $end_date = null, $object_id = 0, $group_by = null, $order_by = null, $limit = 0, $offset = 0, $timeslot_type = 0){
+	static function getTaskTimeslots($workspace = null, $user = null, $workspacesCSV = null, $start_date = null, $end_date = null, $object_id = 0, $group_by = null, $order_by = null, $limit = 0, $offset = 0, $timeslot_type = 0, $custom_conditions = null, $object_subtype = null){
 		$wslevels = 0;
 		foreach ($group_by as $gb)
 			if ($gb == "project_id")
@@ -118,12 +118,62 @@ class Timeslots extends BaseTimeslots {
 		$commonConditions .= $object_id > 0 ? ' AND `ts`.`object_manager` = "ProjectTasks" AND `ts`.`object_id` = ' . $object_id : ''; //Only applies to tasks
 		
 		$sql = '';
+
+		//Custom properties conditions
+		$custom_cond ='';
+		$custom = false; 		
+		if(count($custom_conditions) > 0){		
+				$custom = true;			
+				foreach($custom_conditions as $condCp){		
+										
+					//array_var($condCp, 'custom_property_id');
+					$cp = CustomProperties::getCustomProperty(array_var($condCp, 'custom_property_id'));
+					
+					//$skip_condition = false;
+					$dateFormat = 'm/d/Y';
+					if(isset($params[array_var($condCp, 'id')."_".$cp->getName()])){
+						$value = $params[array_var($condCp, 'id')."_".$cp->getName()];
+						if ($cp->getType() == 'date')
+						$dateFormat = user_config_option('date_format');
+					}else{
+						$value = array_var($condCp, 'value');
+					}
+							
+					
+					$custom_cond .= ' AND `pt`.id IN ( SELECT object_id as id FROM '.TABLE_PREFIX.'custom_property_values cpv WHERE ';
+					$custom_cond .= ' cpv.custom_property_id = '.array_var($condCp, 'custom_property_id');				
+
+					if(array_var($condCp, 'condition') == 'like' || array_var($condCp, 'condition') == 'not like'){
+						$value = '%'.$value.'%';
+					}
+					if ($cp->getType() == 'date') {
+						$dtValue = DateTimeValueLib::dateFromFormatAndString($dateFormat, $value);
+						$value = $dtValue->format('Y-m-d H:i:s');
+					}
+					if(array_var($condCp, 'condition') != '%'){
+						if ($cp->getType() == 'numeric') {
+							$custom_cond .= ' AND cpv.value '.array_var($condCp, 'condition').' '.mysql_real_escape_string($value);
+						}else{
+							$custom_cond .= ' AND cpv.value '.array_var($condCp, 'condition').' "'.mysql_real_escape_string($value).'"';
+						}
+					}else{
+						$custom_cond .= ' AND cpv.value like "%'.mysql_real_escape_string($value).'"';
+					}
+					$custom_cond .= ')';
+				
+				}									
+		}
+		
 		switch($timeslot_type){
 			case 0: //Task timeslots
 				$from = "`" . TABLE_PREFIX . "timeslots` AS `ts`, `" . TABLE_PREFIX . "project_tasks` AS `pt`, `" . TABLE_PREFIX ."projects` AS `pr`, `" . TABLE_PREFIX ."workspace_objects` AS `wo`";
 				$conditions = " WHERE `ts`.`object_manager` = 'ProjectTasks'  AND `pt`.`id` = `ts`.`object_id` AND `pt`.`trashed_by_id` = 0 AND `pt`.`archived_by_id` = 0 AND `wo`.`object_manager` = 'ProjectTasks' AND `wo`.`object_id` = `ts`.`object_id` AND `wo`.`workspace_id` = `pr`.`id`";
 				//Project condition
 				$conditions .= $workspacesCSV ? ' AND `pr`.`id` IN (' . $workspacesCSV . ')' : '';
+				if ($custom) {
+					$commonConditions .= $custom_cond;
+				}
+				if ($object_subtype) $conditions .= " AND `pt`.`object_subtype`=$object_subtype";
 				
 				$sql = $select . $preFrom . $from . $postFrom . $conditions . $commonConditions;
 				break;
@@ -131,7 +181,7 @@ class Timeslots extends BaseTimeslots {
 				$from = "`" . TABLE_PREFIX . "timeslots` AS `ts`, `" . TABLE_PREFIX ."projects` AS `pr`";
 				$conditions = " WHERE `ts`.`object_manager` = 'Projects'";
 				$conditions .= $workspacesCSV ? ' AND `ts`.`object_id` IN (' . $workspacesCSV . ") AND `ts`.`object_id` = `pr`.`id`" : " AND `ts`.`object_id` = `pr`.`id`";
-				
+
 				$sql = $select . $preFrom . $from . $postFrom . $conditions . $commonConditions;
 				break;
 			case 2: //All timeslots
@@ -141,12 +191,12 @@ class Timeslots extends BaseTimeslots {
 				$conditions1 = " WHERE `ts`.`object_manager` = 'ProjectTasks'  AND `pt`.`id` = `ts`.`object_id` AND `pt`.`trashed_by_id` = 0 AND `pt`.`archived_by_id` = 0 AND `wo`.`object_manager` = 'ProjectTasks' AND `wo`.`object_id` = `ts`.`object_id` AND `wo`.`workspace_id` = `pr`.`id`";
 				//Project condition
 				$conditions1 .= $workspacesCSV ? ' AND `pr`.`id` IN (' . $workspacesCSV . ')' : '';
+				if ($object_subtype) $conditions1 .= " AND `pt`.`object_subtype`=$object_subtype";
 				
 				$conditions2 = " WHERE `object_manager` = 'Projects'";
 				$conditions2 .= $workspacesCSV ? ' AND `ts`.`object_id` IN (' . $workspacesCSV . ") AND `ts`.`object_id` = `pr`.`id`" : " AND `ts`.`object_id` = `pr`.`id`";
-				
-				
-				$sql = $select . $preFrom . $from1 . $postFrom . $conditions1 . $commonConditions . ' UNION ' . $select . $preFrom . $from2 . $postFrom . $conditions2 . $commonConditions;
+
+				$sql = $select . $preFrom . $from1 . $postFrom . $conditions1 . $commonConditions . $custom_cond . ' UNION ' . $select . $preFrom . $from2 . $postFrom . $conditions2 . $commonConditions;
 				break;
 			default:
 				throw new Error("Timeslot type not recognised: " . $timeslot_type);

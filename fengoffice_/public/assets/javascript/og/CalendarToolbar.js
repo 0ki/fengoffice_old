@@ -293,8 +293,8 @@ og.CalendarTopToolbar = function(config) {
 		this.addSeparator();
 		this.add(topToolbarItems.edit);
 		this.add(topToolbarItems.tag);
-		this.add(topToolbarItems.del);
 		this.add(topToolbarItems.archive);
+		this.add(topToolbarItems.del);		
 		this.addSeparator();
 	}
 	this.add(topToolbarItems.markAs);

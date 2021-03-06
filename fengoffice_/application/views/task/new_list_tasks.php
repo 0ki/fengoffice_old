@@ -106,7 +106,8 @@ og.noOfTasks = <?php echo user_config_option('noOfTasks') ?>;
 		usersHfId:'hfUsers',
 		companiesHfId:'hfCompanies',
 		internalMilestonesHfId:'hfIMilestones',
-		externalMilestonesHfId:'hfEMilestones'
+		externalMilestonesHfId:'hfEMilestones',
+		subtypesHfId:'hfObjectSubtypes'
 		});
 
 	og.defaultTaskType = <?php echo config_option('default task co type', '0') ?>;

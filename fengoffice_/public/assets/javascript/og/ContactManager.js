@@ -556,6 +556,11 @@ og.ContactManager = function() {
 											location.href = url;
 										} else og.err(lang("you must select the contacts from the grid"));
 									}
+								},
+								{ text: lang('to vcard all'), iconCls: 'ico-account', handler: function() {										
+										var url = og.getUrl('contact', 'export_to_vcard_all');
+										location.href = url;										
+									}
 								}
 		            		]}
 		            	})
@@ -585,8 +590,8 @@ og.ContactManager = function() {
 		tbar.push('-');
 		tbar.push(actions.editContact);
 		tbar.push(actions.tag);
-		tbar.push(actions.delContact);
 		tbar.push(actions.archive);
+		tbar.push(actions.delContact);
 		tbar.push('-');
 		tbar.push(actions.assignContact);
 	}

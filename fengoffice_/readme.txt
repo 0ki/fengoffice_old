@@ -1,6 +1,6 @@
 
-    About Feng Office 1.7
-    =====================
+    About Feng Office 1.7.1
+    =======================
 
     Feng Office is a free and open source Web Office, project management
     and collaboration tool, licensed under the Affero GPL 3 license.
@@ -90,6 +90,64 @@
 
 	Changelog
 	=========
+	
+	Since 1.7
+	------------
+	feature: Tasks subtypes definition.
+	feature: Add/edit email account now allows to set the user asociated to the account.
+	feature: Forward email puts forwarded email in the conversation's workspaces.
+	feature: Login using email address or username.
+	feature: Direct object url in object view.
+	feature: Config option to view empty milestones.
+	feature: Notify user when there are unsent emails in outbox.
+	feature: Multiline email address fields.
+	feature: Enclosing search criteria with quotes (") will search for the full coicidence.
+	feature: More task status filters in task listing.
+	feature: Export all contacts to vcard.
+	feature: Save sent emails in email server (through imap).
+	feature: Adding object with "All" ws selected, shows workpsace selector opened.
+	feature: Config option to put email received replies in the conversation's workspaces.
+	feature: Trash and Archived icons position switched.
+	feature: Added languages: Turkish, Lithuanian.
+	
+	system: Swift mailer library updated to version 4.0.6
+	
+	bugfix: Fixed deprecated calls.
+	bugfix: When instantiating a task template task sometimes is asociated to two workspaces.
+	bugfix: Error when editing a task of a template.
+	bugfix: Draft emails drag & drop not working.
+	bugfix: If search criteria length is less than 3 the search does not return all the results. 
+	bugfix: CSV and PDF reports export do not work in IE.
+	bugfix: Duplicate entry when upgrading to 1.7.
+	bugfix: Cannot download files in IE.
+	bugfix: "Missing langs" fixed.
+	bugfix: Fixed bug at mail listing when using conversations.
+	bugfix: Comments with html tags not escaped.
+	bugfix: Error when sending event invitations.
+	bugfix: PDF report export columns widths fixed.
+	bugfix: Date issues in task listing.
+	bugfix: HtmlPurifier cache folder changed.
+	bugfix: Issue with documents with images in multiple tabs.	
+	bugfix: Dates in event invitations does not use user's timezone. 
+	bugfix: When updating subscribers list, selected ones are not remembered.
+	bugfix: Archived emails are listed when "All" is selected.
+	bugfix: Bug when replying some emails.
+	bugfix: Creating tasks in a milestone are grouped in "Unclassified" group.
+	bugfix: Names too long in monthly and overview calendar.
+	bugfix: Some file icons are not shown correctly in dashboard.
+	bugfix: Add subtask from "view task" view, does not save assigned to, start and due date.
+	bugfix: Error when putting a string in the date value of a milestone.
+	bugfix: Missing checkin/checkout logs. 
+	bugfix: Charset issue in pdf reports.
+	bugfix: Long tags cause filtering malfunction.
+	bugfix: Dashboard document widget order is not correct.
+	bugfix: Missing activity in user activiy widget.
+	bugfix: When filtering by tag, grouping tasks by milestones does not work.
+	bugfix: "Apply to subtasks" checkbox is not shown when task has no subtasks.
+	bugfix: Event assistance email reformated.
+	bugfix: Fixed problem with filenames when downloading some email attachments.
+	bugfix: Fixed security issues.
+	
 	
 	Since 1.7-rc3
 	------------

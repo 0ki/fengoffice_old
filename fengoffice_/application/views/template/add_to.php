@@ -12,7 +12,7 @@
 	<div class="adminSeparator"></div>
 	<div class="adminMainBlock">
 	
-	<div class="addToTemplateDesc"><?php echo lang("you are adding object to template", lang($object->getObjectTypeName()), '<span class="bg-ico ico-'.$object->getObjectTypeName().'">\''.$object->getObjectName().'\'</span>') ?>
+	<div class="addToTemplateDesc"><?php echo lang("you are adding object to template", lang($object->getObjectTypeName()), '<span class="bg-ico ico-'.$object->getObjectTypeName().'">\''.clean($object->getObjectName()).'\'</span>') ?>
 
 <?php if(isset($templates) && is_array($templates) && count($templates)) { ?>
 <table style="min-width:400px;margin-top:10px;">

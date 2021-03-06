@@ -1,5 +1,6 @@
 <?php return array(
 	'username' => 'Nombre de usuario',
+	'email or username' => 'Email o usuario',
 	'password' => 'Contraseña',
 	'password again' => 'Repita su contraseña',
 	'old password' => 'Contraseña anterior',
@@ -31,6 +32,7 @@
 	'use due date' => 'Usar fecha límite',
 	'use start date' => 'Usar fecha de inicio',
 	'assign to' => 'Asignar a',
+	'assigned to description' => 'Para seleccionar al dueño de la cuenta de correo electrónico',
 	'late' => 'Tarde',
 	'upcoming' => 'Próximo',
 	'today' => 'Hoy',
@@ -220,4 +222,6 @@
 	'view all activity' => 'Ver toda la actividad...',
 	'advanced' => 'Avanzado',
 	'workspace and tags' => 'Espacio y etiquetas',
+	'direct url' => 'URL Directa',
+	'the' => 'el',
 ); ?>

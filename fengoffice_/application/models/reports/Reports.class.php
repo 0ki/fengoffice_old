@@ -184,7 +184,7 @@ class Reports extends BaseReports {
 								//if is a fixed tag value and is set
 								$tval = $condField->getValue();
 								if (isset ($tval)){
-									$tags = explode(',', $tags_csv);									
+									$tags = explode(',', $tval);
 								}else{
 									//if there is no tag to filter with it doesnt filter at all.
 									$fiterUsingTag = false;
@@ -384,6 +384,8 @@ class Reports extends BaseReports {
 				foreach($row as $col => &$value){
 					if(in_array($col, $managerInstance->getExternalColumns())){
 						$value = self::getExternalColumnValue($col, $value);
+					} else if ($col != 'link'){
+						$value = html_to_text($value);
 					}
 					if(self::isReportColumnEmail($value)){
 						if(logged_user()->hasMailAccounts()){
@@ -394,7 +396,7 @@ class Reports extends BaseReports {
 					}
 				}
 				if ($print_tags_idx > -1) {
-					$row['tags'] = implode(", ", Tags::getTagNamesByObjectIds($id, $report->getObjectType()));
+					$row['tag'] = implode(", ", Tags::getTagNamesByObjectIds($id, $report->getObjectType()));
 				}
 				if ($print_ws_idx > -1) {
 					$row['workspace'] = "";
@@ -505,6 +507,9 @@ class Reports extends BaseReports {
 		}else if($field == 'milestone_id'){
 			$milestone = ProjectMilestones::findById($id);
 			if($milestone instanceof ProjectMilestone) $value = $milestone->getName();
+		}else if($field == 'object_subtype'){
+			$object_subtype = ProjectCoTypes::findById($id);
+			if($object_subtype instanceof ProjectCoType) $value = $object_subtype->getName();
 		}
 		return $value;
 	}

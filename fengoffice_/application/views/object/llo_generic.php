@@ -9,12 +9,18 @@ if ($linked_object instanceof ProjectFile)
 		<div class="db-ico unknown ico-<?php echo clean($icon_class) ?>" title="<?php echo clean($linked_object->getObjectTypeName()) ?>"></div>
 	</a></td>
 	
-	<td><a class="internalLink" href="<?php echo $linked_object->getObjectUrl() ?>" title="<?php echo $linked_object->getObjectName() ?>">
+	<td><a class="internalLink" href="<?php echo $linked_object->getObjectUrl() ?>" title="<?php echo clean($linked_object->getObjectName()) ?>">
 	<span><?php echo clean($linked_object->getObjectName()) ?></span></a></td>
 	
 	<td style="text-align:right;">
-	<?php if ($linked_object instanceof ProjectFile && $linked_object->getType() == ProjectFiles::TYPE_DOCUMENT){ ?>
-		<a target="_self" href="<?php echo $linked_object->getDownloadUrl() ?>"><?php echo lang('download') . ' (' . format_filesize($linked_object->getFilesize()) . ')'?></a> | 
+	<?php if ($linked_object instanceof ProjectFile && $linked_object->getType() == ProjectFiles::TYPE_DOCUMENT){
+			$download_url = $linked_object->getDownloadUrl();
+			include_once ROOT . "/library/browser/Browser.php";
+			if (Browser::instance()->getBrowser() == Browser::BROWSER_IE) {
+				$download_url = "javascript:location.href = '$download_url';";
+			}
+		?>
+		<a target="_self" href="<?php echo $download_url ?>"><?php echo lang('download') . ' (' . format_filesize($linked_object->getFilesize()) . ')'?></a> | 
 	<?php }
 	if ($linked_object instanceof ProjectWebpage || $linked_object instanceof ProjectFile && $linked_object->getType() == ProjectFiles::TYPE_WEBLINK) { ?>
 		<a target="_blank" href="<?php echo $linked_object->getUrl() ?>"><?php echo lang('open weblink')?></a> |

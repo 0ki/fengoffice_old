@@ -8,7 +8,11 @@
 		$form_action = get_url('company', 'add_client'); 
 	} else {
 		$form_action = $company->getEditUrl();
-	}?>
+	}
+	$all = true;
+	if (active_project()!= null)
+		$all = false;
+?>
 <form style="height:100%;background-color:white" class="internalForm" action="<?php echo $form_action ?>" method="post">
 
 
@@ -31,7 +35,11 @@
   	<?php $categories = array(); Hook::fire('object_edit_categories', $object, $categories); ?>
   	
   	<div style="padding-top:5px">
-		<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('<?php echo $genid ?>add_company_select_workspace_div',this)"><?php echo lang('workspace') ?></a> - 
+		<?php if ($all) { ?>
+			<a href="#" class="option" style="font-weight:bold" onclick="og.toggleAndBolden('<?php echo $genid ?>add_contact_select_workspace_div',this)"><?php echo lang('workspace') ?></a> - 
+		<?php } else {?>
+			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_company_select_workspace_div',this)"><?php echo lang('workspace') ?></a> -
+		<?php }?> 
 		<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('<?php echo $genid ?>add_company_add_tags_div', this)"><?php echo lang('tags') ?></a> -
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_company_notes', this)"><?php echo lang('notes') ?></a> - 
 		<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('add_company_timezone',this)"><?php echo lang('timezone') ?></a> -
@@ -55,7 +63,11 @@
 			</div>
 		<?php }?>
 	
-	<div id="<?php echo $genid ?>add_company_select_workspace_div" style="display:none">
+	<?php if ($all) { ?>
+			<div id="<?php echo $genid ?>add_company_select_workspace_div" style="display:block"> 
+	<?php } else {?>
+			<div id="<?php echo $genid ?>add_company_select_workspace_div" style="display:none">
+	<?php }?>
 	<fieldset><legend><?php echo lang('workspace')?></legend>
 		<?php if ($company->isNew()) {
 			echo select_workspaces('ws_ids', null, array($project), $genid.'ws_ids');

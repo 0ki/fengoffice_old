@@ -59,9 +59,11 @@
     * @return array
     */
     function getSearchConditions($search_for, $project_csvs = null, $include_private = false, $object_type = '', $columns_csv = null, $user_id = 0) {
-    	$otSearch = '';
+       	$otSearch = '';
     	$columnsSearch = '';
     	$wsSearch = '';
+    	$search_deep = false;
+    	$few_chars = false;
     	if (!is_null($columns_csv))
     		$columnsSearch = " AND `column_name` in (" . $columns_csv . ")";
     		
@@ -112,22 +114,44 @@
     	} else {
     		$privSearch = '';
     	}
-    	if (user_config_option('search_engine', substr(Localization::instance()->getLocale(),0,2) == 'zh' ? 'like' : null) == 'like') {
-    		$search_for = str_replace("*", "%", $search_for);
-    		$search_words = explode(" ", $search_for);
-    		$search_string = "";
-    		foreach ($search_words as $word) {
-    			if ($search_string) $search_string .= " AND "; 
-    			$search_string .= "`content` LIKE '%$word%'";
-    		}
+    	
+    	//in case the string to be looked for contains one to three chars and therefore find no objects with a 'quick search'
+    	if (strlen($search_for)<=config_option("min_chars_for_match"))
+    		$few_chars = true;
+    			
+    	//in case the user does a deeper search with " or '
+    	if(str_starts_with($search_for,'"') && str_ends_with($search_for,'"')){    		
+    		$search_deep = true;    		
+    		$search_for = str_replace('"', '', $search_for);    		
+    	}	  	    	
+
+    	
+    	if (user_config_option('search_engine', substr(Localization::instance()->getLocale(),0,2) == 'zh' ? 'like' : null) == 'like' || $few_chars == true) {
+    	    $search_for = str_replace("*", "%", $search_for); 
+    		if (!$search_deep){     				
+	    		$search_words = explode(" ", $search_for);    			
+	    		$search_string = "";	    		
+	    		foreach ($search_words as $word) {
+	    			if ($search_string) $search_string .= " AND "; 
+	    			$search_string .= "`content` LIKE '%$word%'";
+	    		}
+    	    }
+    	    else{
+    	    	$search_string .= "`content` LIKE '%$search_for%'";    	    	
+    	    }    	    
     		return DB::prepareString("$search_string $privSearch $wsSearch $trashed $otSearch $columnsSearch");
     	} else {
     		$search_words = preg_split('/[\s\.\+\-\~]/', $search_for);
-    		$search_for = "";
-    		foreach ($search_words as $word) {
-    			if ($word != "" && $word[0] != "+" && $word[0] != "-") {
-    				$search_for .= " +$word";
-    			}
+    		if(!$search_deep){	    		
+	    		$search_for = "";
+	    		foreach ($search_words as $word) {
+	    			if ($word != "" && $word[0] != "+" && $word[0] != "-") {
+	    				$search_for .= " +$word";
+	    			}
+	    		}
+    		}
+    		else{
+    			$search_for = "\"".$search_for."\"";	
     		}
     		return DB::prepareString("MATCH (`content`) AGAINST ('$search_for' IN BOOLEAN MODE) $privSearch $wsSearch $trashed $otSearch $columnsSearch");
     	}

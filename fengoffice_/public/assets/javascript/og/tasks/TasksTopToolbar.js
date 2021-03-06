@@ -212,8 +212,8 @@ og.TasksTopToolbar = function(config) {
 		this.addSeparator();
 		this.add(actions.complete)
 		this.add(actions.tag);
-		this.add(actions.del);;
 		this.add(actions.archive);
+		this.add(actions.del);		
 		this.addSeparator();
 	}
 	this.add(actions.markAs);
@@ -263,6 +263,18 @@ og.TasksTopToolbar = function(config) {
 					var url = og.getUrl('account', 'update_user_preference', {name: 'tasksShowDates', value:(this.checked?1:0)});
 					og.openLink(url,{hideLoading:true});
 				}
+			},
+			empty_milestones: {
+		        text: lang('empty milestones'),
+				checked: (ogTasks.userPreferences.showEmptyMilestones == 1),
+				checkHandler: function() {
+					ogTasks.userPreferences.showEmptyMilestones = 1 - ogTasks.userPreferences.showEmptyMilestones;
+					ogTasks.redrawGroups = false;
+					ogTasks.draw();
+					ogTasks.redrawGroups = true;
+					var url = og.getUrl('account', 'update_user_preference', {name: 'tasksShowEmptyMilestones', value:(this.checked?1:0)});
+					og.openLink(url,{hideLoading:true});
+				}
 			}
 		};
 
@@ -273,7 +285,8 @@ og.TasksTopToolbar = function(config) {
 				this.displayOptions.workspaces,
 				this.displayOptions.time,
 				this.displayOptions.tags,
-				this.displayOptions.dates
+				this.displayOptions.dates,
+				this.displayOptions.empty_milestones
 			]}
 		});
 	this.add(this.show_menu);

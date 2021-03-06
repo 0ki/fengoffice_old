@@ -339,7 +339,7 @@ function download_file($path, $type = 'application/octet-stream', $name = '', $f
 	if (!function_exists('readfile')) {
 		$contents = file_get_contents($path);
 		return download_contents($contents, $type, $name, $size, $force_download);
-	}	
+	}
 	if(connection_status() != 0) return false; // check connection
 
 	/*
@@ -352,7 +352,7 @@ function download_file($path, $type = 'application/octet-stream', $name = '', $f
 	} // if
 	*/
 	if (ob_get_length()) ob_clean();
-	header("Expires: " . gmdate("D, d M Y H:i:s", mktime(date("H") + 2, date("i"), date("s"), date("m"), date("d"), date("Y"))) . " GMT");
+	header("Expires: " . gmdate("D, d M Y H:i:s", mktime(date("H"), date("i"), date("s"), date("m"), date("d"), date("Y"))) . " GMT");
 	header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
 	header("Content-Type: $type");
 	header("Content-Length: " . (string) $size);
@@ -361,7 +361,9 @@ function download_file($path, $type = 'application/octet-stream', $name = '', $f
 	$disposition = $force_download ? 'attachment' : 'inline';
 	header("Content-Disposition: $disposition; filename=\"" . $name . "\"");
 	header("Content-Transfer-Encoding: binary");
-	header("Cache-Control: maxage=1"); // Age is in seconds.
+	//header("Cache-Control: maxage=1"); // Age is in seconds.
+	header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+    header("Cache-Control: post-check=0, pre-check=0", false);
    	header("Pragma: public");
 	readfile($path);
 
@@ -395,6 +397,7 @@ function download_contents($content, $type, $name, $size, $force_download = fals
 		header("Pragma: no-cache");
 	} // if
 	*/
+	if (ob_get_length()) ob_clean();
 	header("Expires: " . gmdate("D, d M Y H:i:s", mktime(date("H") + 2, date("i"), date("s"), date("m"), date("d"), date("Y"))) . " GMT");
 	header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
 	header("Content-Type: $type");

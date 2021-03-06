@@ -123,7 +123,7 @@
    	'activity close' => "{1} closed {0} {2}",
   	'activity subscribe' => "{1} subscribed {3} to {0} {2}",
   	'activity unsubscribe' => "{1} unsubscribed {3} from {0} {2}",
-   	'activity tag' => "{1} tagged {0} {2} with tags {3}",
+   	'activity tag' => "{1} tagged {0} {2} with tags {3}",  	  
   	'activity untag' => "{1} removed tags from {0} {2}",
   	'activity comment' => "{1} commented {0} {2}:<br>&nbsp;&nbsp;&nbsp;&nbsp;\"{3}\"",
 	'activity link' => "{1} linked {0} {2} with {3} {4}",
@@ -140,6 +140,8 @@
   	'activity copy' => "{1} copied {0} {2}",
   	'activity read' => "{1} read {0} {2}",
 	'activity download' => "{1} downloaded {0} {2}",
+    'activity checkout' => "{1} checked out {0} {2}",
+    'activity checkin' => "{1} checked in {0} {2}",
   
   	'x users' => "{0} users{1}",
   ); // array

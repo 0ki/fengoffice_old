@@ -2,7 +2,7 @@
 /*
  * mime_parser.php
  *
- * @(#) $Id: mime_parser.class.php,v 1.1 2010/01/22 18:13:25 acio Exp $
+ * @(#) $Id: mime_parser.class.php,v 1.1.6.1 2010/08/12 16:27:59 alvaro Exp $
  *
  */
 
@@ -30,7 +30,7 @@ define('MIME_ADDRESS_FIRST',            2);
 
 	<package>net.manuellemos.mimeparser</package>
 
-	<version>@(#) $Id: mime_parser.class.php,v 1.1 2010/01/22 18:13:25 acio Exp $</version>
+	<version>@(#) $Id: mime_parser.class.php,v 1.1.6.1 2010/08/12 16:27:59 alvaro Exp $</version>
 	<copyright>Copyright  (C) Manuel Lemos 2006 - 2008</copyright>
 	<title>MIME parser</title>
 	<author>Manuel Lemos</author>
@@ -920,8 +920,9 @@ class mime_parser_class
 												break;
 										}
 									}
+									$last = count($decoded_header)-1;
 									if(count($decoded_header)
-									&& (!strcmp($decoded_header[$last = count($decoded_header)-1]['Encoding'], 'ASCII')
+									&& (!strcmp($decoded_header[$last]['Encoding'], 'ASCII')
 									|| !strcmp($decoded_header[$last]['Encoding'], $encoding)))
 									{
 										$decoded_header[$last]['Value'].= $decoded;

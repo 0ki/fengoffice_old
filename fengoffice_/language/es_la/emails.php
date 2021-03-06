@@ -185,4 +185,12 @@
 	'subscribed notification webpage' => 'Suscrito al Enlace \'{0}\'',
 	'subscribed notification milestone' => 'Suscrito al Hito \'{0}\'',
 	'subscribed notification email' => 'Suscrito al Correo \'{0}\'',
+
+	'sent mails sync' => 'Ajustes de sincronización de los emails enviados (sólo para IMAP)',
+	'connnection security' => 'Seguridad de la conexión',
+	'select folder for outbox' => 'Seleccione su bandeja de salida',
+	'sync complete' => 'Sincronización completada',
+	'invalid sync settings' => 'Ajustes de sincronización inválidos. No se puede establecer una conexión con el servidor',
+	'cant find user' => 'No se puede encontrar al usuario requerido',
+	'cant find account' => 'No se puede encontrar la cuenta de correo electrónico requerida',
 ); ?>

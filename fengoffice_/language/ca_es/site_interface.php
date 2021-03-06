@@ -373,6 +373,7 @@
 	'activity' => 'Activitat',
 	'statistics' => 'Estadístiques',
 	'time' => 'Temps',
+	'meeting_time' => 'Temps',
 	'task time report' => 'Temps total d\'execució de la tasca',
 	'new tasks by user' => 'Noves tasques per l\'usuari',
 	'generate report' => 'Genera informe',

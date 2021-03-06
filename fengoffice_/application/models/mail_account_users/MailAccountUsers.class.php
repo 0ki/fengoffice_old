@@ -7,6 +7,10 @@
  */
 class MailAccountUsers extends BaseMailAccountUsers {
 	
+	const MA_NO_ERROR = 0;
+	const MA_ERROR_UNREAD = 1;
+	const MA_ERROR_READ = 2;
+	
 	function getByAccount($account) {
 		return MailAccountUsers::findAll(array('conditions' => array('`account_id` = ?', $account->getId())));
 	}

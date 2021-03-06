@@ -215,6 +215,7 @@ addLangs({
 	'from vcard': 'From VCard',
 	'to csv': 'To csv',
 	'to vcard': 'To VCard',
+	'to vcard all' : 'All To VCard',
 	
 	/* webpage manager*/
 	'description': 'Description',
@@ -389,6 +390,10 @@ addLangs({
 	'task view tip': 'Task: {0} (Click to view more)',
 	'task move down tip': 'Move task down one place',
 	'dont assign': 'Don\'t assign',
+	'overdue': 'Overdue',
+    'active': 'Active',
+    'my active': 'My active',
+    'my subscribed': 'My subscribed',
 	
 	'new milestone': 'New milestone',
 	'new task': 'New task',
@@ -448,6 +453,7 @@ addLangs({
 	'show': 'Show',
 	'time': 'Time',
 	'dates': 'Dates',
+	'empty milestones': 'Empty milestones',
 	'select user or group': 'Select user or group',
 	'select milestone': 'Select milestone',
 	'select priority': 'Select priority',
@@ -791,5 +797,9 @@ addLangs({
     'mark spam': 'Mark as SPAM',
     'mark ham': 'Mark as not SPAM',
     
-    'select all tasks': 'Select all tasks'
+    'select all tasks': 'Select all tasks',
+    'add object subtype': 'Add object subtype',
+    'delete object subtype': 'Delete object subtype',
+    'delete object subtype warning': 'If you delete this subtype it will be removed from all objects that have it set. Are you sure you want to delete this subtype?',
+    'object subtype deleted': 'Subtype deleted. {0}'
 });

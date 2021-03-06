@@ -211,7 +211,7 @@ class FilesController extends ApplicationController {
 			DB::beginWork();
 			$file->checkOut();
 			DB::commit();
-
+			ApplicationLogs::createLog($file, $file->getWorkspaces(), ApplicationLogs::ACTION_CHECKOUT);
 			flash_success(lang('success checkout file'));
 			ajx_current("reload");
 		}
@@ -497,6 +497,7 @@ class FilesController extends ApplicationController {
 				
 				ajx_extra_data(array("file_id" => $file->getId()));
 				ajx_extra_data(array("file_name" => $file->getFilename()));
+				ajx_extra_data(array("icocls" => 'ico-file ico-' . str_replace(".", "_", str_replace("/", "-", $file->getTypeString()))));
 
 				if (!array_var($_POST, 'no_msg')) {
 					flash_success(lang('success add file', $file->getFilename()));
@@ -549,19 +550,21 @@ class FilesController extends ApplicationController {
 		$file_dt['tmp_name'] = $tmp_name;
 		
 		$file = ProjectFiles::getByFilename($name);
-		if (!$file) {
-			$file = new ProjectFile();
-			$file->setIsVisible(true);
-			$file->setIsPrivate(false);
-			$file->setIsImportant(false);
-			$file->setCommentsEnabled(true);
-			$file->setAnonymousCommentsEnabled(false);
-			$file->setFilename($name);
-			$file->setDescription($description);
-			$file->setArchivedById(logged_user()->getId());
-			$file->setArchivedOn(DateTimeValueLib::now());
-			$file->save();
+		if ($file) {
+			$file->delete();
 		}
+		$file = new ProjectFile();
+		$file->setIsVisible(true);
+		$file->setIsPrivate(false);
+		$file->setIsImportant(false);
+		$file->setCommentsEnabled(true);
+		$file->setAnonymousCommentsEnabled(false);
+		$file->setFilename($name);
+		$file->setDescription($description);
+		$file->setArchivedById(logged_user()->getId());
+		$file->setArchivedOn(DateTimeValueLib::now());
+		$file->save();
+		
 		$file->setTagsFromCSV($tags);
 		$file->handleUploadedFile($file_dt, true, $description);
 		
@@ -602,9 +605,10 @@ class FilesController extends ApplicationController {
 					$img_num = 1;
 					foreach ($urls as $url) {
 						if (strpos(html_entity_decode($url), get_url('files', 'download_image')) === false ) {
-							$img_file_id = self::upload_document_image($url, $file->getFilename(), $img_num++, array_var($file_data, 'tags'));
+							$img_file_id = self::upload_document_image($url, $file->getFilename(), $img_num, array_var($file_data, 'tags'));
 							$file_content = str_replace($url, get_url('files', 'download_image', array('id' => $img_file_id, 'inline' => 1)) , $file_content);
 						}
+						$img_num++;
 					}
 				}
 				
@@ -670,9 +674,10 @@ class FilesController extends ApplicationController {
 				$img_num = 1;
 				foreach ($urls as $url) {
 					if (strpos($url, get_url('files', 'download_image')) === false ) {
-						$img_file_id = self::upload_document_image($url, $file->getFilename(), $img_num++, array_var($file_data, 'tags'));
+						$img_file_id = self::upload_document_image($url, $file->getFilename(), $img_num, array_var($file_data, 'tags'));
 						$file_content = str_replace($url, get_url('files', 'download_image', array('id' => $img_file_id, 'inline' => 1)) , $file_content);
 					}
+					$img_num++;
 				}
 			}
 			
@@ -1761,7 +1766,7 @@ class FilesController extends ApplicationController {
 				$object_controller->add_custom_properties($file);
 
 				ApplicationLogs::createLog($file, $ws, ApplicationLogs::ACTION_EDIT);
-
+				ApplicationLogs::createLog($file, $file->getWorkspaces(), ApplicationLogs::ACTION_CHECKIN);
 				DB::commit();
 
 				flash_success(lang('success add file', $file->getFilename()));

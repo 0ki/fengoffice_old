@@ -17,18 +17,21 @@
 </div>
 <?php } // if ?> 
 
+<?php if ($file->getUpdatedOn() instanceof DateTimeValue) {
+	$modtime = $file->getUpdatedOn()->getTimestamp();
+} else {
+	$modtime = $file->getCreatedOn()->getTimestamp();
+}?>
+
 <?php if(($ftype = $file->getFileType()) instanceof FileType && $ftype->getIsImage()){?>
 	<div>
-			<?php if ($file->getUpdatedOn() instanceof DateTimeValue) {
-				$modtime = $file->getUpdatedOn()->getTimestamp();
-			} else {
-				$modtime = $file->getCreatedOn()->getTimestamp();
-			}?>
 		<a href="<?php echo get_url('files', 'download_image', array('id' => $file->getId(), 'inline' => true, 'modtime' => $modtime)); ?>" target="_blank" title="<?php echo lang('show image in new page') ?>">
 			<img id="<?php echo $genid ?>Image" src="<?php echo get_url('files', 'download_image', array('id' => $file->getId(), 'inline' => true, 'modtime' => $modtime)); ?>" style="max-width:450px;max-height:500px"/>
 		</a>
 	</div>
 <?php }?>
+
+
 
 <?php if (substr($file->getFilename(), -3) == '.mm') {
 	require_javascript('flashobject.js');

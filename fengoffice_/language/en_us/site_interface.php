@@ -39,7 +39,7 @@ return array(
     'administrator update profile notice' => 'Administration options (available only to administrators!)',
 
     'project completed on by' => 'Completed on {0} by {1}',
-
+	
     'im service' => 'Service',
     'primary im service' => 'Primary IM',
     'primary im description' => 'All IM addresses that you enter will be listed on your card page. Only the primary IM will be shown on other pages (like the people page of the workspace).',
@@ -306,6 +306,9 @@ return array(
   'linked attachments' => 'Linked attachments',
   'conversation x mails' => 'Conversation ({0} emails)',
   'show quoted text' => 'Show quoted text',
+  'password confirmation' => 'Password confirmation',
+  'mail account password confirmation' => 'You may use this field in order to double-check your password',
+  'wrong password confirmation' => 'Warning: The passwords do not match. Please verify them.',		
 
 //Checkout
   'checkout file' => 'Checkout file',
@@ -479,6 +482,7 @@ return array(
   'activity' => 'Activity',
   'statistics' => 'Statistics',
   'time' => 'Time',
+  'meeting_time' => 'Time',
   'task time report' => 'Total task execution time',
   'new tasks by user' => 'New tasks by user',
   'generate report' => 'Generate report',
@@ -669,7 +673,7 @@ return array(
 
   'reset password expired' => 'Reset password request has expired. Please issue a new one by clicking on "{0}"',
   'invalid parameters' => 'Invalid parameters',
-  'reset password' => 'Reset password',
+  'reset password' => 'Request to change your Feng Office password',
   'reset password form desc' => '<b>{0}</b>, please enter your new password twice:',
   'success reset password' => 'Your new password has been saved',
 
@@ -700,6 +704,8 @@ return array(
   'guest user' => 'Guest',
   'admin user' => 'Administrator',
   'user type' => 'User type',
+  'object subtypes' => 'Object subtypes',
+  'add object subtype' => 'Add object subtype',
 ); // array
 
 ?>

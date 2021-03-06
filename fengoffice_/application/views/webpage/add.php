@@ -8,6 +8,9 @@ if ($webpage->isNew()) {
 }
 $genid = gen_id();
 $object = $webpage;
+$all = true;
+if (active_project()!= null)
+	$all = false;
 ?>
 
 <form id="<?php echo $genid ?>submit-edit-form" style='height: 100%; background-color: white' class="internalForm"
@@ -34,7 +37,11 @@ $object = $webpage;
 <?php $categories = array(); Hook::fire('object_edit_categories', $object, $categories); ?>
 
 <div style="padding-top: 5px">
-<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('<?php echo $genid?>add_webpage_select_workspace_div', this)"><?php echo lang('workspace') ?></a>
+<?php if ($all) { ?>
+	<a href="#" class="option" style="font-weight:bold" onclick="og.toggleAndBolden('<?php echo $genid ?>add_webpage_select_workspace_div',this)"><?php echo lang('workspace') ?></a> - 
+<?php } else {?>
+	<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_webpage_select_workspace_div',this)"><?php echo lang('workspace') ?></a> -
+<?php }?>
 - <a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('<?php echo $genid?>add_webpage_tags_div', this)"><?php echo lang('tags') ?></a>
 - <a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('<?php echo $genid?>add_webpage_description_div', this)"><?php echo lang('description') ?></a>
 - <a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('<?php echo $genid?>add_custom_properties_div', this)"><?php echo lang('custom properties') ?></a>
@@ -59,7 +66,11 @@ if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user
 	class="contextHelpStyle"><?php render_context_help($this, 'chelp add webpage','add_webpage'); ?>
 </div>
 <?php }?>
-<div id="<?php echo $genid?>add_webpage_select_workspace_div" style="display: none">
+<?php if ($all) { ?>
+			<div id="<?php echo $genid ?>add_webpage_select_workspace_div" style="display:block"> 
+<?php } else {?>
+			<div id="<?php echo $genid ?>add_webpage_select_workspace_div" style="display:none">
+<?php }?>
 <fieldset><?php 
 $show_help_option = user_config_option('show_context_help');
 if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_webpage_workspace_context_help', true, logged_user()->getId()))) {?>

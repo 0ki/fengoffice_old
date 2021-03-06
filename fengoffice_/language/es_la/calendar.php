@@ -84,7 +84,7 @@
 	"CAL_DAILY_EVENT" => "Repetir diariamente",
 	"CAL_WEEKLY_EVENT" => "Repetir semanalmente",
 	"CAL_MONTHLY_EVENT" => "Repetir mensualmente",
-	"CAL_YEARLY_EVENT" => "Repetir anulamente",
+	"CAL_YEARLY_EVENT" => "Repetir anualmente",
 	"CAL_HOLIDAY_EVENT" => "Repetir vacaciones",
 	"CAL_UNKNOWN_TIME" => "Tiempo de inicio desconocido",
 	"CAL_ADDING_TO" => "Agregando a",
@@ -138,6 +138,12 @@
 	"weeks" => "semanas",
 	"months" => "meses",
 	"years" => "años",
+  
+  	'also confirmed attendance' => 'También confirmaron asistencia',
+  	'awaiting confirmation' => 'Esperando confirmación',
+    'rejected invitation' => 'No asistirán',
+	'who' => 'Quién',
+  	'what' => 'Qué',
   
   	'invitations' => 'Invitaciones',
 	'pending response' => 'Respuesta pendiente',

@@ -4,6 +4,9 @@
 	$projects =  active_projects();
 	$genid = gen_id();
 	$object = $message;
+	$all = true;
+	if (active_project()!= null)
+		$all = false;
 ?>
 <form id="<?php echo $genid ?>submit-edit-form" style='height:100%;background-color:white' action="<?php echo $message->isNew() ? get_url('message', 'add') : $message->getEditUrl() ?>" method="post" enctype="multipart/form-data">
 <div class="message">
@@ -27,7 +30,11 @@
 	<?php $categories = array(); Hook::fire('object_edit_categories', $object, $categories); ?>
 	
 	<div style="padding-top:5px">
-		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_message_select_workspace_div',this)"><?php echo lang('workspace') ?></a> - 
+		<?php if ($all) { ?>
+			<a href="#" class="option" style="font-weight:bold" onclick="og.toggleAndBolden('<?php echo $genid ?>add_message_select_workspace_div',this)"><?php echo lang('workspace') ?></a> - 
+		<?php } else {?>
+			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_message_select_workspace_div',this)"><?php echo lang('workspace') ?></a> -
+		<?php }?> 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_message_add_tags_div', this)"><?php echo lang('tags') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_message_options_div',this)"><?php echo lang('options') ?></a> -
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_custom_properties_div',this)"><?php echo lang('custom properties') ?></a> - 
@@ -55,7 +62,11 @@
 			</div>
 		<?php }?>
 
-	<div id="<?php echo $genid ?>add_message_select_workspace_div" style="display:none">
+	<?php if ($all) { ?>
+			<div id="<?php echo $genid ?>add_message_select_workspace_div" style="display:block"> 
+	<?php } else {?>
+			<div id="<?php echo $genid ?>add_message_select_workspace_div" style="display:none">
+	<?php }?>
 	<fieldset>
 		<?php 
 			$show_help_option = user_config_option('show_context_help'); 
@@ -77,7 +88,7 @@
 	<fieldset>
 	<?php 
 			$show_help_option = user_config_option('show_context_help'); 
-						if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_note_tags_context_help', true, logged_user()->getId())) {?>
+			if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_note_tags_context_help', true, logged_user()->getId())) {?>
 			<div id="addNotesPanelContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp add note tags','add_note_tags'); ?>
 			</div>

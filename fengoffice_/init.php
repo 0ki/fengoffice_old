@@ -11,7 +11,7 @@ define('LIBRARY_PATH',     ROOT . '/library');
 define('CACHE_DIR',        ROOT . '/cache');
 define('THEMES_DIR',       ROOT . '/public/assets/themes');
 
-set_include_path(ROOT . PATH_SEPARATOR . APPLICATION_PATH);
+set_include_path(ROOT . PATH_SEPARATOR . APPLICATION_PATH . PATH_SEPARATOR . get_include_path());
 set_include_path(LIBRARY_PATH . "/zend" . PATH_SEPARATOR . get_include_path());
 set_include_path(LIBRARY_PATH . "/PEAR" . PATH_SEPARATOR . get_include_path());
 set_include_path(LIBRARY_PATH . "/pdf" . PATH_SEPARATOR . get_include_path());
@@ -67,7 +67,7 @@ define('PRODUCT_URL', 'http://www.fengoffice.com');
 define('DEFAULT_HELP_LINK', 'http://fengoffice.com/web/wiki');
 
 define('MAX_SEARCHABLE_FILE_SIZE', 1048576); // if file type is searchable script will load its content into search index. Using this constant you can set the max filesize of the file that will be imported. Noone wants 500MB in search index for single file
-define('SESSION_LIFETIME', 14400);
+define('SESSION_LIFETIME', 7200);
 define('REMEMBER_LOGIN_LIFETIME', 1209600); // two weeks
 
 // Defaults
@@ -91,6 +91,17 @@ include_once 'library/json/json.php';
 
 // Lets prepare everything for autoloader
 require APPLICATION_PATH . '/functions.php'; // __autoload() function is defined here...
+
+if (!$callbacks = spl_autoload_functions()) $callbacks = array();
+foreach ($callbacks as $callback) {
+	spl_autoload_unregister($callback);
+}
+spl_autoload_register('feng__autoload');
+foreach ($callbacks as $callback) {
+	spl_autoload_register($callback);
+}
+
+
 @include ROOT . '/cache/autoloader.php';
 
 // Prepare logger... We might need it early...
@@ -137,7 +148,9 @@ if(Env::isDebugging()) {
 // some of the application classes may need CONTROLLER, ACTION or $_GET
 // data collected by the matched route
 require_once APPLICATION_PATH . '/application.php';
-require_once LIBRARY_PATH . '/utf8/utf8.php';
+if (!defined('DONT_USE_FENG_UTF8') || !DONT_USE_FENG_UTF8) {
+	require_once LIBRARY_PATH . '/utf8/utf8.php';
+}
 
 // Set handle request timer...
 if(Env::isDebugging()) {
@@ -152,6 +165,7 @@ try {
 	}
 } catch(Exception $e) {
 	if(Env::isDebugging()) {
+		Logger::log($e, Logger::FATAL);
 		Env::dumpError($e);
 	} else {
 		Logger::log($e, Logger::FATAL);

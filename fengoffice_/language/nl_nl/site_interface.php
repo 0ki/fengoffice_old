@@ -349,6 +349,7 @@
 	'activity' => 'Activiteiten',
 	'statistics' => 'Statistieken',
 	'time' => 'Tijd',
+	'meeting_time' => 'Tijd',
 	'task time report' => 'Totale verstreken tijd per taak',
 	'new tasks by user' => 'Nieuwe taken op gebruiker',
 	'generate report' => 'Genereer rapport',

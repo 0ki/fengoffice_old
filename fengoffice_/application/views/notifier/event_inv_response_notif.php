@@ -1,12 +1,50 @@
 <div style="font-family: Verdana, Arial, sans-serif; font-size: 12px;">
 
-	<?php echo "<a href='".$event->getViewUrl()."' target='_blank' style='font-size: 18px;'>".lang('event invitation response').': ' . $event->getSubject() . ' - ' . lang('date') . ': ' . $date . "</a>" ?><br><br>
+	<?php echo "<a href='".$event->getViewUrl()."' target='_blank' style='font-size: 18px;'>".lang('what').': ' . $event->getSubject(). "</a>" ?> 
+	<br><br> <?php echo lang('date') . ': ' . $date?><br>
 	<br />
 	<?php
+	
+		echo lang('who').': '; ?><br><?php 
+		echo ('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
 		if ($invitation->getInvitationState() == 1)
 			echo lang('user will attend to event', $from_user->getDisplayName());
 		else if ($invitation->getInvitationState() == 2)
 			echo lang('user will not attend to event', $from_user->getDisplayName());
+		?>
+		<br><br>
+		<?php
+		if(!count($assist)<1){
+			echo lang('also confirmed attendance').':';	?><br><?php
+			foreach ($assist as $k1=>$name1){
+				echo ('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');			
+				echo ($name1);	?><br><?php	
+			}		
+			?>
+			<br><br>
+			<?php
+		}
+		if(!count($pending)<1){
+			echo lang('awaiting confirmation').':';	?><br><?php		
+			foreach ($pending as $k2=>$name2){
+				echo ('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
+				echo ($name2);	?><br><?php
+			}
+			?>
+			<br><br>
+			<?php
+		}
+		if(!count($not_assist)<1){
+			echo lang('rejected invitation').':';	?><br><?php
+			foreach ($not_assist as $k3=>$name3){
+				echo ('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
+				echo ($name3);	?><br><?php
+			}
+			?>
+			<br><br>
+			<?php
+		}
+		
 	?>
 	<br><br>
 	
@@ -19,3 +57,4 @@
 	</div>
 
 </div>
+

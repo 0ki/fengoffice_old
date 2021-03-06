@@ -12,6 +12,7 @@
 	'custom report updated' => 'Reporte personalizado actualizado',
 	'conditions' => 'Condiciones',
 	'columns and order' => 'Columnas & Orden',
+	'columns' => 'Columnas',
 	'true' => 'Verdadero',
 	'false' => 'Falso',
 	'ends with' => 'Termina en',

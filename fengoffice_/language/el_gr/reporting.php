@@ -25,4 +25,9 @@
 	'columns to print desc' => 'Μετακινήστε τις στήλες που θέλετε να εκτυπώσετε στο πλαίσιο στα δεξιά, κάνοντας κλικ στα εικονίδια με το βέλος.',
 	'reporting workspace' => 'Περιοχή εργασίας',
 	'reporting user' => 'Χρήστης',
+	'report pdf options' => 'Επιλογές PDF',
+	'report pdf page layout' => 'Σχέδιο σελίδας',
+	'report pdf vertical' => 'Κάθετα',
+	'report pdf landscape' => 'Οριζόντια',
+	'report font size' => 'Μέγεθος γραμματοσειράς',
 ); ?>

@@ -1,7 +1,7 @@
 locale = 'zh_cn';
 addLangs({
 	'enter the url of the image': '输入图片的链接地址',
-	'enter a color': '输入一个颜色',
+	'enter a color': '输入颜色',
 	'drag the bottom right corner to resize': '拖动右下角按钮进行调整大小',
 	'double click to edit content': '双击编辑内容',
 	'some text': '文本',
@@ -19,7 +19,7 @@ addLangs({
 	'align text to the center': '居中对齐',
 	'align text to the right': '右对齐',
 	'generic tool': '通用工具',
-	'insert an element': '插入一个元素',
+	'insert an element': '插入元素',
 	'what element do you wish to insert?': '你想插入什么元素呢？',
 	'insert text': '插入文本',
 	'insert image': '插入图片',
@@ -40,10 +40,10 @@ addLangs({
 	'view source code': '查看源代码(HTML)',
 	'save slideshow': '保存幻灯片',
 	'preview slideshow': '预览幻灯片',
-	'add a new slide after the selected one': '添加后，选择了一个新的幻灯片',
+	'add a new slide after the selected one': '在所选幻灯片后新建',
 	'delete the selected slide': '删除所选的幻灯片',
 	'move the selected slide down one place': '移动选定的幻灯片下滑一个位置',
-	'move the selected slide up one place': '选定的幻灯片向上移动一个位置',
+	'move the selected slide up one place': '选定的幻灯片上滑一个位置',
 	'new slideshow': '新建幻灯片',
 	'second slide': '第二张幻灯片'
 });

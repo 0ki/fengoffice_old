@@ -347,6 +347,7 @@
  "activity" => "活動",
  "statistics" => "統計",
  "time" => "時間",
+ "meeting_time" => "時間",
  "task time report" => "總計任務執行時間",
  "new tasks by user" => "依使用者新任務",
  "generate report" => "產生報告",

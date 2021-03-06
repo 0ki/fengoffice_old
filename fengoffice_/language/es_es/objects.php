@@ -106,8 +106,8 @@
 	'activity untrash' => '{1} quitó de la papelera {0} {2}',
 	'activity open' => '{1} abrió {0} {2}',
 	'activity close' => '{1} cerró {0} {2}',
-	'activity subscribe' => '{1} suscribió {3} a {0} {2}',
-	'activity unsubscribe' => '{1} desuscribió {3} de {0} {2}',
+	'activity subscribe' => '{1} suscribió a {3} a {0} {2}',
+	'activity unsubscribe' => '{1} desuscribió a {3} de {0} {2}',
 	'activity tag' => '{1} etiquetó {0} {2} con las etiquetas {3}',
 	'activity untag' => '{1} desetiquetó {0} {2}',
 	'activity comment' => '{1} comentó {0} {2}:<br>    "{3}"',
@@ -125,5 +125,8 @@
 	'activity copy' => '{1} copió {0} {2}',
 	'activity read' => '{1} leyó {0} {2}',
 	'activity download' => '{1} descargó {0} {2}',
+	'activity checkout' => "{1} ha bloqueado {0} {2}",
+    'activity checkin' => "{1} ha actualizado {0} {2}",
+
 	'x users' => '{0} usuarios {1}',
 ); ?>

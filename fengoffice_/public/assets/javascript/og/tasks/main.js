@@ -342,6 +342,7 @@ ogTasks.getGroupData = function(displayCriteria, groups,tasks){
 						name = lang('complete');
 					}
 					break;
+				case 'subtype' : name = this.getObjectSubtype(groupId) ? this.getObjectSubtype(groupId).name : lang('ungrouped') ; break;
 				default:
 			}
 		}
@@ -431,6 +432,7 @@ ogTasks.groupTasks = function(displayCriteria, tasksContainer){
 						tasks[0][tasks[0].length] = task;
 					}
 					break;
+				case 'subtype' : group = task.otype; break;
 				default:
 			}
 			
@@ -798,6 +800,13 @@ ogTasks.getGroup = function(id){
 	return null;
 }
 
+ogTasks.getObjectSubtype = function(id){
+	for (var i = 0; i < this.ObjectSubtypes.length; i++)
+		if (this.ObjectSubtypes[i].id == id)
+			return this.ObjectSubtypes[i];
+	return null;
+}
+
 ogTasks.setSubtasksFromData = function(task, subtdata){
 	for (var j = 0; j < task.subtasks.length; j++) {
 		var subt = task.subtasks[j];
@@ -839,7 +848,8 @@ ogTasks.getTimeDistances = function(){
 *	Given a specific datetime, returns the time distance for the datetime
 */
 ogTasks.getTimeDistance = function(timestamp){
-	var date = new Date(timestamp * 1000);
+	var tz = og.loggedUser.tz ? og.loggedUser.tz : 0;
+	var date = new Date((timestamp - tz * 3600) * 1000);
 	date.clearTime();
 	var today = new Date();
 	today.clearTime();

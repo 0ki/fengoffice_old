@@ -278,4 +278,5 @@ Thema:     {0}
 	'linked event tab' => 'Termine',
 	'apply assignee to subtasks' => 'Unteraufgaben auf Begünstigten anwenden',
 	'urgent priority' => 'Dringend',
+	'attachment from email' => 'An E-Mail „{0}“ angehängt',
 ); ?>

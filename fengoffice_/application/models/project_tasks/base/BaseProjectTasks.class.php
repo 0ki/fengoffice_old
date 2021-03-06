@@ -138,7 +138,7 @@ abstract class BaseProjectTasks extends ProjectDataObjects {
     * @return array
     */
     function getExternalColumns() {
-      return array_merge(parent::getExternalColumns(), array('assigned_to_user_id', 'assigned_to_company_id', 'completed_by_id', 'milestone_id'));
+      return array_merge(parent::getExternalColumns(), array('object_subtype', 'assigned_to_user_id', 'assigned_to_company_id', 'completed_by_id', 'milestone_id'));
     } // getExternalColumns
 	
 	/**

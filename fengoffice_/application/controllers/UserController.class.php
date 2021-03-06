@@ -317,9 +317,12 @@ class UserController extends ApplicationController {
 		if (active_project() instanceof Project) {
 			$pids = active_project()->getAllSubWorkspacesQuery();
 		}
-		$logs = ApplicationLogs::getOverallLogs(false, false, $pids, 15, 0, get_id());
-
-		tpl_assign('logs', $logs);
+		
+		if (logged_user()->isAdministrator() || logged_user()->getId() ==  get_id()){						
+			$logs = ApplicationLogs::getOverallLogs(false, false, $pids, 15, 0, get_id());
+			tpl_assign('logs', $logs);
+			tpl_assign('user_id', get_id());
+		}
 		tpl_assign('user', $user);
 		ajx_set_no_toolbar(true);
 		ajx_extra_data(array("title" => $user->getDisplayName(), 'icon'=>'ico-user'));

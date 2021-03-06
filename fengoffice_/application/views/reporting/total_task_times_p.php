@@ -1,4 +1,6 @@
 <?php
+	require_javascript("og/ReportingFunctions.js");
+	require_javascript('og/modules/doubleListSelCtrl.js');	
 	$genid = gen_id();
 	$project_id = 0;
 	$report_data = array_var($_SESSION, 'total_task_times_report_data', array());
@@ -12,6 +14,8 @@
 	}
 	if (!array_var($report_data, 'date_type'))
 		$report_data['date_type'] = 1;
+	if (!isset($conditions)) $conditions = array();
+	$object_subtypes = ProjectCoTypes::getObjectTypesByManager("ProjectTasks");
 ?>
 <form style='height:100%;background-color:white' class="internalForm" action="<?php echo get_url('reporting', 'total_task_times') ?>" method="post" enctype="multipart/form-data">
 
@@ -127,6 +131,19 @@
 				</span>
 			</td>
 		</tr>
+		<?php if (is_array($object_subtypes) && count($object_subtypes) > 0) { ?>
+		<tr style='height:30px;' id="<?php echo $genid ?>_object_type_combo">
+			<td><b><?php echo lang("object type") ?>:&nbsp;</b></td>
+			<td align='left'>
+				<select id="<?php echo $genid ?>object_type" name="report[object_subtype]" )">
+					<option value="0">-- <?php echo lang('select') ?> --</option>
+				<?php foreach ($object_subtypes as $subtype) { ?>
+					<option value="<?php echo $subtype->getId() ?>"><?php echo $subtype->getName() ?></option>
+				<?php } ?>
+				</select>
+			</td>
+		</tr>
+		<?php } ?>
 		<tr style='height:30px;'>
 			<td>&nbsp;</td>
 			<td align='left'>
@@ -145,9 +162,36 @@
 		<?php } ?>
 	</table>
 	
+	<fieldset><legend><?php echo lang('conditions') ?></legend>
+		<div id="<?php echo $genid ?>"></div>
+		<br />
+		<a href="#" class="link-ico ico-add"
+			onclick="og.addCondition('<?php echo $genid ?>', 0, 0, '', '', '', false, true)"><?php echo lang('add condition')?></a>
+	</fieldset>
+	
+	<fieldset><legend><?php echo lang('columns') ?></legend>
+		<div id="<?php echo $genid ?>columnListContainer"></div>
+	</fieldset>
+	
 <br/>
 <?php echo submit_button(lang('generate report'),'s',array('style'=>'margin-top:0px;margin-left:10px')) ?>
 </div>
 </div>
 
 </form>
+
+<script>
+	og.loadReportingFlags();	
+	og.reportTask('<?php echo $genid?>', '<?php echo array_var($report_data, 'order_by') ?>', '<?php echo array_var($report_data, 'order_by_asc') ?>', '<?php echo (isset($columns) ? implode(',', $columns) : '') ?>');	
+	<?php if(isset($conditions)){ ?>
+		<?php foreach($conditions as $condition){ ?>
+		    og.addCondition('<?php echo $genid?>',<?php echo $condition->getId() ?>, <?php echo $condition->getCustomPropertyId() ?> , '<?php echo $condition->getFieldName() ?>', '<?php echo $condition->getCondition() ?>', '<?php echo $condition->getValue() ?>', '<?php echo $condition->getIsParametrizable() ?>', true);		
+		<?php 
+		}//foreach ?>
+	<?php }//if ?>
+
+	
+	var first = document.getElementById('<?php echo $genid ?>reportFormName');
+	if (first) first.focus();
+	
+</script>

@@ -3,6 +3,41 @@
 	
 	$showBillingCol = false;
 	
+	function format_value_to_print_task($value, $type, $textWrapper='', $dateformat='Y-m-d') {			
+		switch ($type) {
+			case DATA_TYPE_STRING:
+				if(preg_match(EMAIL_FORMAT, strip_tags($value))){
+					$formatted = $value;
+				}else{ 
+					$formatted = $textWrapper . clean($value) . $textWrapper;
+				}
+				break;
+			case DATA_TYPE_INTEGER: $formatted = clean($value);
+				break;
+			case DATA_TYPE_BOOLEAN: $formatted = ($value == 1 ? lang('yes') : lang('no'));
+				break;
+			case DATA_TYPE_DATE:
+				if ($value != 0) { 
+					if (str_ends_with($value, "00:00:00")) $dateformat .= " H:i:s";
+					$dtVal = DateTimeValueLib::dateFromFormatAndString($dateformat, $value);
+					$formatted = format_date($dtVal, null, 0);
+				} else $formatted = '';
+				break;
+			case DATA_TYPE_DATETIME:
+				if ($value != 0) {
+					$dtVal = DateTimeValueLib::dateFromFormatAndString("$dateformat H:i:s", $value);					
+					$formatted = format_date($dtVal, null, 0);
+				} else $formatted = '';
+				break;
+			default: $formatted = $value;
+		}
+		if($formatted == ''){
+			$formatted = '--';
+		}
+		
+		return $formatted;
+	}
+		
 	function has_value($array, $value){
 		foreach ($array as $val)
 			if ($val == $value)
@@ -59,8 +94,26 @@
 		return '';
 	}
 	
+	function get_cols($columns){ //get the columns selected by the user to be shown
+		$cols = array();		
+		foreach($columns as $k=>$i){					
+			if ($i != 0){
+				$cols[] = $k;
+			}		 					
+		}		
+		return $cols;		
+	}
+	
+	function count_extra_cols($columns){ //counts the columns selected by the user to be shown
+		$cols = get_cols($columns);
+		if ($cols == null)
+			return 0;
+		else
+			return count($cols);
+	}
+	
 	$sectionDepth = 0;
-	$totCols = 6;
+	$totCols = 6 + count_extra_cols($columns);
 	$date_format = user_config_option('date_format');
 	
 ?>
@@ -102,19 +155,21 @@ if ($task_title) { ?><div style="font-size:120%"><span style="font-weight:bold">
 			$group_by[$i] = 'project_id_' . $c;
 			$c++;
 		}
+	$showSelCol = false; //show selected columns
 	$showUserCol = !has_value($group_by, 'user_id');
 	$showTitleCol = !has_value($group_by, 'id');
 	$showBillingCol = array_var($post, 'show_billing', false);
 	if (!$showUserCol) $totCols--;
 	if (!$showTitleCol) $totCols--;
 	if (!$showBillingCol) $totCols--;
+	if (count_extra_cols($columns)>0) $showSelCol = true;
 	
 	$previousTSRow = null;
-	foreach ($timeslotsArray as $tsRow)
-	{
+	foreach ($timeslotsArray as $tsRow)	{
 		$ts = $tsRow["ts"];
 		$showHeaderRow = false;
-		
+		//to skip showing workspaces in case there are conditions
+		if (isset($has_conditions) && $has_conditions && $ts->getObjectManager() == 'Projects') continue;
 		//Footers
 		for ($i = $sectionDepth - 1; $i >= 0; $i--){
 			$has_difference = false;
@@ -162,8 +217,20 @@ if ($task_title) { ?><div style="font-size:120%"><span style="font-weight:bold">
 	<th style="padding:4px;border-bottom:1px solid #666666"><?php echo lang('description') ?></th>
 	<?php if ($showUserCol) { ?><th style="padding:4px;border-bottom:1px solid #666666"><?php echo lang('user') ?></th><?php } ?>
 	<th style="padding:4px;text-align:right;border-bottom:1px solid #666666"><?php echo lang('time') ?></th>
-	<?php if ($showBillingCol) { ?><th style="padding:4px;text-align:right;border-bottom:1px solid #666666"><?php echo lang('billing') ?></th><?php } ?></tr><?php 
-		}
+	<?php if ($showBillingCol) { ?><th style="padding:4px;text-align:right;border-bottom:1px solid #666666"><?php echo lang('billing') ?></th><?php } ?>
+	<?php if ($showSelCol) {
+			$cols = get_cols($columns);
+			foreach ($cols as $k => $i){
+				if (!is_numeric($i)){
+					?><th style="padding:4px;border-bottom:1px solid #666666"><?php echo lang("field ProjectTasks ".$i) ?></th><?php 
+				} 
+				else {
+					$cp = CustomProperties::getCustomProperty($i);
+					?><th style="padding:4px;border-bottom:1px solid #666666"><?php echo ($cp->getName()) ?></th><?php
+				}
+			}
+		  }//if 
+	} ?></tr><?php
 		
 		//Print row info
 ?>
@@ -175,9 +242,36 @@ if ($task_title) { ?><div style="font-size:120%"><span style="font-weight:bold">
 	<?php $lastStop = $ts->getEndTime() != null ? $ts->getEndTime() : ($ts->isPaused() ? $ts->getPausedOn() : DateTimeValueLib::now()); ?>
 	<td style="padding:4px;text-align:right;<?php echo $isAlt? 'background-color:#F2F2F2':'' ?>"><?php echo DateTimeValue::FormatTimeDiff($ts->getStartTime(), $lastStop, "hm", 60, $ts->getSubtract()) ?>
 	<?php if ($showBillingCol) { ?><td style="padding:4px;text-align:right;<?php echo $isAlt? 'background-color:#F2F2F2':'' ?>"><?php echo config_option('currency_code', '$') ?>&nbsp;<?php echo $ts->getFixedBilling() ?></td><?php } ?>
+	<?php if ($showSelCol) {
+			$cols = get_cols($columns);	
+			foreach ($cols as $k => $i){
+				if ($ts->getObjectManager() == 'ProjectTasks'){
+					$task = $ts->getObject();						
+						if (!is_numeric($i)){	//for normal properties		
+												//currently disabled as at the moment the only columns that can be added are custom properties							
+								$value = format_value_to_print_task($task->getColumnValue($i),$task->getColumnType($i));
+								?><td style="padding:4px;max-width:250px;<?php echo $isAlt? 'background-color:#F2F2F2':'' ?>"><?php echo ($value) ?></td><?php			
+							
+						} 
+						else {//for custom properties									
+							$values = CustomPropertyValues::getCustomPropertyValue($task->getId(), $i);	
+							if ($values != null){
+								$cp = CustomProperties::getCustomProperty($i);											
+								$value = format_value_to_print_task($values->getValue(),$cp->getOgType());
+								?><td style="padding:4px;max-width:250px;<?php echo $isAlt? 'background-color:#F2F2F2':'' ?>"><?php echo ($value) ?></td><?php
+							}else{						
+								?><td style="padding:4px;max-width:250px;<?php echo $isAlt? 'background-color:#F2F2F2':'' ?>"><?php echo ('') ?></td><?php
+							}							
+						}
+				} else{				
+					?><td style="padding:4px;max-width:250px;<?php echo $isAlt? 'background-color:#F2F2F2':'' ?>"><?php echo ('') ?></td><?php
+				}	
+								
+		   } //foreach ?>
 </tr>
-<?php } // foreach
-} // if 
+<?php } // if
+	} //foreach
+}
 
 		for ($i = $sectionDepth - 1; $i >= 0; $i--){?>
 <tr style="padding-top:2px;text-align:right;font-weight:bold;">
@@ -212,6 +306,7 @@ if (isset($unworkedTasks) && count($unworkedTasks) > 0) {
 if (is_array($timeslotsArray)) {
 	foreach ($timeslotsArray as $ts) {
 		$t = $ts['ts'];
+		if (isset($has_conditions) && $has_conditions && $t->getObjectManager() == 'Projects') continue;
 		$sumTime += $t->getMinutes();
 		$sumBilling += $t->getFixedBilling();
 	}

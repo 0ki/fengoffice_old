@@ -54,7 +54,7 @@ class MailUtilities {
 					}
 					$account->setLastChecked(EMPTY_DATETIME);
 					$account->save();
-
+//					self::cleanCheckingAccountError($account);
 					$succ++;
 				} catch(Exception $e) {
 					$account->setLastChecked(EMPTY_DATETIME);
@@ -62,6 +62,7 @@ class MailUtilities {
 					$errAccounts[$err]["accountName"] = $account->getEmail();
 					$errAccounts[$err]["message"] = $e->getMessage();
 					$err++;
+//					self::setErrorCheckingAccount($account, $e);
 				}
 			}
 		}
@@ -73,6 +74,33 @@ class MailUtilities {
 		tpl_assign('accounts',$accounts);
 		tpl_assign('mailsReceived',$mailsReceived);
 	}
+/*	
+	private function setErrorCheckingAccount(MailAccount $account, $exception) {
+		Logger::log("ERROR CHECKING EMAIL ACCOUNT ".$account->getEmail().": ".$exception->getMessage());
+		if (!$account->getLastErrorDate() instanceof DateTimeValue || $account->getLastErrorDate()->getTimestamp() == 0) {
+			$acc_users = MailAccountUsers::getByAccount($account);
+			foreach ($acc_users as $acc_user) {
+				$acc_user->setLastErrorState(MailAccountUsers::MA_ERROR_UNREAD);
+				$acc_user->save();
+			}
+		}
+		$account->setLastErrorDate(DateTimeValueLib::now());
+		$account->setLastErrorMsg($exception->getMessage());
+		$account->save();
+	}
+	
+	private function cleanCheckingAccountError(MailAccount $account) {
+		if ($account->getLastErrorDate() instanceof DateTimeValue && $account->getLastErrorDate()->getTimestamp() > 0) {
+			$acc_users = MailAccountUsers::getByAccount($account);
+			foreach ($acc_users as $acc_user) {
+				$acc_user->setLastErrorState(MailAccountUsers::MA_NO_ERROR);
+				$acc_user->save();
+			}
+			$account->setLastErrorDate(EMPTY_DATETIME);
+			$account->setLastErrorMsg("");
+			$account->save();
+		}
+	}*/
 
 	private function getAddresses($field) {
 		$f = '';
@@ -190,7 +218,11 @@ class MailUtilities {
 		$mail->setState($state);
 		$mail->setImapFolderName($imap_folder_name);
 		$mail->setFrom($from);
-		$mail->setCc(self::getAddresses(array_var($parsedMail, "Cc")));
+		$cc = trim(self::getAddresses(array_var($parsedMail, "Cc")));
+		if ($cc == '' && array_var($decoded, 0) && array_var($decoded[0], 'Headers')) {
+			$cc = array_var($decoded[0]['Headers'], 'cc:', '');
+		}
+		$mail->setCc($cc);
 		
 		$from_name = trim(array_var(array_var(array_var($parsedMail, 'From'), 0), 'name'));
 		if ($from_name == '') $from_name = $from;
@@ -241,6 +273,8 @@ class MailUtilities {
 			$mail->setReceivedDate($mail->getSentDate());
 		} else {
 			$mail->setReceivedDate(new DateTimeValue($received_timestamp));
+			if ($state == 5 && $mail->getSentDate()->getTimestamp() > $received_timestamp)
+				$mail->setReceivedDate($mail->getSentDate());
 		}
 		$mail->setSize(strlen($content));
 		$mail->setHasAttachments(!empty($parsedMail["Attachments"]));
@@ -326,6 +360,13 @@ class MailUtilities {
 			
 			$mail->save();
 
+			// CLASSIFY RECEIVED MAIL WITH THE CONVERSATION
+			if (user_config_option('classify_mail_with_conversation', null, $account->getUserId()) && isset($conv_mail) && $conv_mail instanceof MailContent) {
+				$wss = $conv_mail->getWorkspaces();
+				foreach($wss as $ws) {
+					$mail->addToWorkspace($ws);
+				}
+			}
 			// CLASSIFY MAILS IF THE ACCOUNT HAS A WORKSPACE
 			if ($account->getColumnValue('workspace',0) != 0) {
 				$workspace = Projects::findById($account->getColumnValue('workspace',0));
@@ -412,9 +453,10 @@ class MailUtilities {
 					$stop_checking = self::SaveMail($content, $account, $uid);
 					if ($stop_checking) break;
 				} catch (Exception $e) {
-					$mail_file = "unsaved_mail_".$uid.".eml";
-					file_put_contents(ROOT."/$mail_file", $content);
-					Logger::log("Could not save mail, original mail saved as $mail_file, exception:\n".$e->getMessage());
+					$mail_file = ROOT."/tmp/unsaved_mail_".$uid.".eml";
+					$res = file_put_contents($mail_file, $content);
+					if ($res === false) Logger::log("Could not save mail, and original could not be saved as $mail_file, exception:\n".$e->getMessage());
+					else Logger::log("Could not save mail, original mail saved as $mail_file, exception:\n".$e->getMessage());
 				}
 				unset($content);
 				$received++;
@@ -503,91 +545,129 @@ class MailUtilities {
 		}
 	}
 
+	
+	function prepareEmailAddresses($addr_str) {
+		$result = array();
+		$addresses = explode(",", $addr_str);
+		foreach ($addresses as $addr) {
+			$addr = trim($addr);
+			if ($addr == '') continue;
+			$pos = strpos($addr, "<");
+			if ($pos !== FALSE && strpos($addr, ">", $pos) !== FALSE) {
+				$name = trim(substr($addr, 0, $pos));
+				$val = trim(substr($addr, $pos + 1, -1));
+				$result[] = array($val, $name);
+			} else {
+				$result[] = array($addr);
+			}
+		}
+		return $result;
+	}
 
 	function sendMail($smtp_server, $to, $from, $subject, $body, $cc, $bcc, $attachments=null, $smtp_port=25, $smtp_username = null, $smtp_password ='', $type='text/plain', $transport=0, $message_id=null, $in_reply_to=null, $inline_images = null, &$complete_mail) {
 		//Load in the files we'll need
 		Env::useLibrary('swift');
-		// Load SMTP config
-		$smtp_authenticate = $smtp_username != null;
-		switch ($transport) {
-			case 'ssl': $transport = SWIFT_SSL; break;
-			case 'tls': $transport = SWIFT_TLS; break;
-			default: $transport = 0; break;
-		}
-
-		//Start Swift
-		$mailer = new Swift(new Swift_Connection_SMTP($smtp_server, $smtp_port, $transport));
-		$mailer->loadPlugin(new SwiftLogger());
-		if(!$mailer->isConnected()) {
-			Logger::log($mailer->lastError);
-			throw new Exception($mailer->lastError);
-		} // if
-		$mailer->setCharset('UTF-8');
-		if($smtp_authenticate) {
-			if(!($mailer->authenticate($smtp_username, self::ENCRYPT_DECRYPT($smtp_password)))) {
-				Logger::log($mailer->lastError);
-				throw new Exception($mailer->lastError);
-			} // if
-		}
-		if(! $mailer->isConnected() )  {
-			Logger::log($mailer->lastError);
-			throw new Exception($mailer->lastError);
-		}
-		// Send Swift mail
-		foreach ($to as $k => $v) {
-			if (is_array($v)) {
-				if (isset($v[1]) && trim($v[1]) == '') unset($to[$k]);
-			} 
-			else if (trim($v) == '') unset($to[$k]);
+		try {		
+			$mail_transport = Swift_SmtpTransport::newInstance($smtp_server, $smtp_port, $transport);		
+			$smtp_authenticate = $smtp_username != null;
+			if($smtp_authenticate) {
+				$mail_transport->setUsername($smtp_username);
+				$mail_transport->setPassword(self::ENCRYPT_DECRYPT($smtp_password));
+			}
+			
+			$mailer = Swift_Mailer::newInstance($mail_transport);
+	
+			if (is_string($from)) {
+				$pos = strrpos($from, "<");
+				if ($pos !== false) {
+					$sender_name = trim(substr($from, 0, $pos));
+					$sender_address = str_replace(array("<",">"),array("",""), trim(substr($from, $pos, strlen($from)-1)));
+				} else {
+					$sender_name = "";
+					$sender_address = $from;
+				}
+				$from = array($sender_address => $sender_name); 
+			}
+						
+			//Create a message
+			$message = Swift_Message::newInstance($subject)
+			  ->setFrom($from)
+			  ->setContentType($type)
+			;
+			
+			$to = self::prepareEmailAddresses($to);
+			$cc = self::prepareEmailAddresses($cc);
+			$bcc = self::prepareEmailAddresses($bcc);
+			foreach ($to as $address) {
+				$message->addTo(array_var($address, 0), array_var($address, 1));
+			}
+			foreach ($cc as $address) {
+				$message->addCc(array_var($address, 0), array_var($address, 1));
+			}
+			foreach ($bcc as $address) {
+				$message->addBcc(array_var($address, 0), array_var($address, 1));
+			}
+	
+			if ($in_reply_to) {
+				if (str_starts_with($in_reply_to, "<")) $in_reply_to = substr($in_reply_to, 1, -1);
+				$message->getHeaders()->addIdHeader("In-Reply-To", $in_reply_to);
+			}
+			if ($message_id) {
+				if (str_starts_with($message_id, "<")) $message_id = substr($message_id, 1, -1);
+				$message->setId($message_id);
+			}
+			
+			// add attachments
+	 		if (is_array($attachments)) {
+	         	foreach ($attachments as $att) {
+	         		$swift_att = Swift_Attachment::newInstance($att["data"], $att["name"], $att["type"]);
+	         		if (substr($att['name'], -4) == '.eml') $swift_att->setEncoder(Swift_Encoding::get7BitEncoding());
+	         		$message->attach($swift_att);
+	 			}
+	 		}
+	 		// add inline images
+	 		if (is_array($inline_images)) {
+	 			foreach ($inline_images as $image_url => $image_path) {
+	 				$cid = $message->embed(Swift_Image::fromPath($image_path));
+	 				$body = str_replace($image_url, $cid, $body);
+	 			}
+	 		}
+			
+	 		self::adjustBody($message, $type, $body);
+	 		$message->setBody($body);
+			
+			//Send the message
+			$complete_mail = self::retrieve_original_mail_code($message);
+			$result = $mailer->send($message);
+			return $result;
+			
+		} catch (Exception $e) {
+			Logger::log("ERROR SENDING EMAIL: ". $e->getTraceAsString(), Logger::ERROR);
+			throw $e;
 		}
 		
-		$ccArr = preg_split('/;|,/', $cc);
-		foreach ($ccArr as $k => $v) {
-			if (trim($v) == '') unset($ccArr[$k]);
-		}
-		if(count($ccArr)>0) $mailer->addCc($ccArr);
-		
-		$bccArr = preg_split('/;|,/', $bcc);
-		foreach ($bccArr as $k => $v) {
-			if (trim($v) == '') unset($bccArr[$k]);
-		}
-		if(count($bccArr)>0) $mailer->addBcc($bccArr);
-		
-		if ($message_id) $mailer->setMessageId($message_id);
-		if ($in_reply_to) $mailer->setInReplyToId($in_reply_to);
-		
-		// add inline images
- 		if (is_array($inline_images)) {
- 			foreach ($inline_images as $image_url => $image_path) {
- 				$cid = $mailer->addImage($image_path);
- 				$body = str_replace($image_url, $cid, $body);
- 			}
- 		}
-
- 		self::adjustBody($mailer, $type, $body);
- 		$mailer->addPart($body, $type); // real body
- 		$body = false; // multipart
- 		
-		// add attachments
- 		if (is_array($attachments)) {
-         	foreach ($attachments as $att) {
-         		if (substr($att['name'], -4) == '.eml') {
- 					$mailer->addAttachment($att["data"], $att["name"], $att["type"], '7bit', 'attachment');
-         		} else {
-         			$mailer->addAttachment($att["data"], $att["name"], $att["type"]);
-         		}
- 			}
- 		}
- 		$mailer->useExactCopy();
- 		$ok = $mailer->send($to, $from, $subject, $body, $type, false, $complete_mail);
- 		$mailer->close();
- 		
- 		if (!$ok) throw new Exception($mailer->lastError);
-		
-		return $ok;
 	}
 	
-	private function adjustBody($mailer, $type, &$body) {
+	private function retrieve_original_mail_code(Swift_Message $message) {
+		$complete_mail = "";
+		try {
+			$complete_mail = $message->toString();
+		} catch (Swift_IoException $e) {
+			$original_body = $message->getBody();
+			try {
+				// if io error occurred (images not found tmp folder), try removing images from content to get the content
+				$reduced_body = preg_replace("/<img[^>]*src=[\"']([^\"']*)[\"']/", "", $original_body);
+				$complete_mail = $message->toString();
+				$message->setBody($original_body);
+			} catch (Exception $ex) {
+				$complete_mail = $original_body;
+				Logger::log("ERROR SENDING EMAIL: ". $ex->getTraceAsString(), Logger::ERROR);
+			}
+		}
+		return $complete_mail;
+	}
+	
+	private function adjustBody($message, $type, &$body) {
 		// add <html> tag
 		if ($type == 'text/html' && stripos($body, '<html>') === FALSE) {
 			$pre = '<html>';
@@ -602,7 +682,7 @@ class MailUtilities {
 		// add text/plain alternative part
 		if ($type == 'text/html') {
 			$onlytext = html_to_text($body);
- 			$mailer->addPart($onlytext, 'text/plain');
+			$message->addPart($onlytext, 'text/plain');
  		}
 	}
 
@@ -701,9 +781,10 @@ class MailUtilities {
 											if ($stop_checking) break;
 											$received++;
 										} catch (Exception $e) {
-											$mail_file = "unsaved_mail_".$summary[0]['UID'].".eml";
-											file_put_contents(ROOT."/$mail_file", $content);
-											Logger::log("Could not save mail, original mail saved as $mail_file, exception:\n".$e->getMessage());
+											$mail_file = ROOT."/tmp/unsaved_mail_".$summary[0]['UID'].".eml";
+											$res = file_put_contents($mail_file, $content);
+											if ($res === false) Logger::log("Could not save mail, and original could not be saved as $mail_file, exception:\n".$e->getMessage());
+											else Logger::log("Could not save mail, original mail saved as $mail_file, exception:\n".$e->getMessage());
 										}
 									} // if content
 								}
@@ -873,8 +954,42 @@ class MailUtilities {
 		$content = $mailer->getFullContent(false);
 		$mailer->close();
 		return $content;
+	}	
+	
+	// to check an IMAP mailbox for syncrhonization
+	function checkSyncMailbox($server, $with_ssl, $transport, $ssl_port, $box, $from, $password){
+		$check = true;
+		$password = self::ENCRYPT_DECRYPT($password);			
+		$ssl = ($with_ssl=='1' || $transport == 'ssl') ? '/ssl' : '';		
+		$tls = ($transport =='tls') ? '/tls' : '';
+		$no_valid_cert = ($ssl=='' && $tls=='') ? '/novalidate-cert' : '';
+		$port = ($with_ssl=='1') ? ':'.$ssl_port : '';		
+		$mail_box = (isset ($box)) ? $box : 'INBOX.Sent';					
+		$connection = '{'.$server.$port.'/imap'.$no_valid_cert.$ssl.$tls.'}'.$mail_box;				
+		$stream = imap_open($connection, $from, $password);		
+		$check_mailbox = imap_check($stream);
+		if (!isset ($check_mailbox)){			
+			return $check = false; 				
+		}			
+		imap_close($stream);			
+		
+		return $check;
 	}
-
+	
+	// to send an email to the email server through IMAP 	
+	function sendToServerThroughIMAP($server, $with_ssl, $transport, $ssl_port, $box, $from, $password, $content){	
+		$password = self::ENCRYPT_DECRYPT($password);			
+		$ssl = ($with_ssl=='1' || $transport == 'ssl') ? '/ssl' : '';		
+		$tls = ($transport =='tls') ? '/tls' : '';
+		$no_valid_cert = ($ssl=='' && $tls=='') ? '/novalidate-cert' : '';
+		$port = ($with_ssl=='1') ? ':'.$ssl_port : '';		
+		$mail_box = (isset ($box)) ? $box : 'INBOX.Sent';					
+		$connection = '{'.$server.$port.'/imap'.$no_valid_cert.$ssl.$tls.'}'.$mail_box;				
+		$stream = imap_open($connection, $from, $password);		
+		imap_append($stream, $connection, $content);				
+		imap_close($stream);			
+	}
+	
 	public function saveContent($content)
 	{
 		return $this->saveContentToFilesystem("UID".rand(), $content);
@@ -931,8 +1046,9 @@ class MailUtilities {
 			}
 			$id_right = preg_replace('/[^a-zA-Z0-9\.\!\#\/\$\%\&\'\*\+\-\=\?\^\_\`\{\|\}\~]/', '', $id_right);
 		}
+		$id_left = str_replace("_", ".", gen_id());
 		if (!$id_right) $id_right = gen_id();
-	 	return "<" . gen_id() . "@" . $id_right . ">";
+	 	return "<" . $id_left . "@" . $id_right . ">";
  	}
 	
 }

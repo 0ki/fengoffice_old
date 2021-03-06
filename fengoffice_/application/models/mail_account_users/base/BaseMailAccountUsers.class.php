@@ -22,6 +22,7 @@ abstract class BaseMailAccountUsers extends DataManager {
 		'signature' => DATA_TYPE_STRING,
 		'sender_name' => DATA_TYPE_STRING,
 		'is_default' => DATA_TYPE_BOOLEAN,
+		'last_error_state' => DATA_TYPE_INTEGER,
 	);
 
 	/**

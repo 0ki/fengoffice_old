@@ -371,6 +371,7 @@
   	'log comment projectmessages' => 'Commented on \'{0}\'',
   	'log comment projectmessages data' => 'Commented on \'{0}\'',
     'log subscribe projectmessages' => 'Subscribed to \'{0}\'',
+  	'log subscribe projectmessages data' => 'Subscribed to \'{0}\'',
   	'log unsubscribe projectmessages' => 'Unsubscribed to \'{0}\'',
     'log tag projectmessages' => '\'{0}\' tagged',
     'log link projectmessages' => '\'{0}\' linked',
@@ -474,7 +475,7 @@
     'log unlink projecttasks' => '\'{0}\' unlinked',
     'log tag projecttasks data' => '\'{0}\' tagged as \'{1}\'',
     'log link projecttasks data' => '\'{0}\' linked to {1}',
-    'log unlink projecttasks data' => '\'{0}\' unlinked from  {1}',
+    'log unlink projecttasks data' => '\'{0}\' unlinked from  {1}',    
     
     'log add projectforms' => '\'{0}\' added',
     'log edit projectforms' => '\'{0}\' updated',
@@ -636,6 +637,7 @@
   
   	'log login users data' => 'user {0} logged from IP: {1}',
   	'log login users' => 'user {0} logged',
+    'log logout users data' => 'user {0} logged out',  
     'log edit users' => 'user {0} edited',
   	'log delete users' => 'user {0} deleted',
   	'log add users' => 'user {0} added',
@@ -651,7 +653,7 @@
   	'log read projectmilestones' => 'Viewed \'{0}\'',
   	'log read projectwebpages' => 'Viewed \'{0}\'',
   	'log read reports' => 'Viewed \'{0}\'',
-  
+    
   
   	'error assign workspace' => 'Failed to assign template to workspace',
   	'success assign workspaces' => 'Succeeded to assign template to workspace',
@@ -699,6 +701,8 @@
 	'some objects could not be linked' => '{0} object(s) could not be linked due to permission restrictions',
   	'user cannot link objects' => 'You don\'t have enough permissions to link objects to this object',
   	'ie browser outdated' => 'Your browser is not officially supported. For a better experience please upgrade your browser.',
+  	'outbox mail not sent' => 'You still have {0} electronic mail in your outbox folder which has not been sent yet',
+  	'outbox mails not sent' => 'You still have {0} electronic mails in your outbox folder which have not been sent yet',
   
     'short search query warning' => 'You search query is too short. You can try searching for "<b>{0}*</b>" to find words starting with "<b>{0}</b>".',
   	'no attachments found for email' => 'No attachments found for email',
@@ -710,6 +714,24 @@
   	'error mark as spam' => 'Error moving {0} emails to Junk',
   	'success mark as ham' => '{0} emails removed from Junk',
   	'error mark as ham' => 'Error removing {0} emails from Junk',
+  
+  	'object is deleted' => ' (this object has been deleted)',  	
+    'the Users' => 'the user',
+  	'the Comments' => 'the comment',
+  	'the Companies' => 'the company',
+  	'the Contacts' => 'the contact',
+  	'the MailContents' => 'the email',
+  	'the ProjectEvents' => 'the event',
+  	'the ProjectFileRevisions' => 'the file revision',
+  	'the ProjectFiles' => 'the file',
+  	'the ProjectMessages' => 'the note',
+	'the ProjectMilestones' => 'the milestone',
+  	'the Projects' => 'the workspace',
+  	'the ProjectTasks' => 'the task',
+  	'the ProjectWebpages' => 'the webpage',
+  	'the Timeslots' => 'the timeslot',
+  
+  
   ); // array
 
 ?>

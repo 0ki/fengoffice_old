@@ -96,7 +96,11 @@ class AccessController extends ApplicationController {
 				$this->render();
 			} // if
 			
-			$user = Users::getByUsername($username, owner_company());
+			if (preg_match(EMAIL_FORMAT, $username)) {
+				$user = Users::getByEmail($username);
+			} else {
+				$user = Users::getByUsername($username, owner_company());
+			}
 			if(!($user instanceof User)) {
 				AdministrationLogs::createLog("invalid login", array_var($_SERVER, 'REMOTE_ADDR'), AdministrationLogs::ADM_LOG_CATEGORY_SECURITY);
 				tpl_assign('error', new Error(lang('invalid login data')));
@@ -119,8 +123,9 @@ class AccessController extends ApplicationController {
 			} // if
 			
 			//Start change user language
-			if ($localization != 'Default')
-			set_user_config_option('localization',$localization,$user->getId());
+			if ($localization != 'Default' && self::check_valid_localization($localization)) {
+				set_user_config_option('localization',$localization,$user->getId());
+			}
 			
 			$ref_controller = null;
 			$ref_action = null;
@@ -651,6 +656,22 @@ class AccessController extends ApplicationController {
 	
 	function view_help_manual() {
 		$this->redirectToUrl(help_link());
+	}
+	
+	private function check_valid_localization($localization) {
+		$language_dir = with_slash(ROOT . "/language");
+		$result = false;
+		if (is_dir($language_dir)) {
+			$d = dir($language_dir);
+			while (!$result && ($entry = $d->read()) !== false) {
+				if (str_starts_with($entry, '.') || str_starts_with($entry, '..') || $entry == "CVS") {
+					continue;
+				}
+				$result = is_dir($language_dir . $entry) && $entry == $localization;
+			}
+			$d->close();
+		}
+		return $result;
 	}
 } // AccessController
 

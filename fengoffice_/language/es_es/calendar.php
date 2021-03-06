@@ -69,7 +69,7 @@
 	'CAL_DAILY_EVENT' => 'Repetir diariamente',
 	'CAL_WEEKLY_EVENT' => 'Repetir semanalmente',
 	'CAL_MONTHLY_EVENT' => 'Repetir mensualmente',
-	'CAL_YEARLY_EVENT' => 'Repetir anulamente',
+	'CAL_YEARLY_EVENT' => 'Repetir anualmente',
 	'CAL_HOLIDAY_EVENT' => 'Repetir vacaciones',
 	'CAL_UNKNOWN_TIME' => 'Tiempo de inicio desconocido',
 	'CAL_ADDING_TO' => 'Añadiendo a',
@@ -126,6 +126,12 @@
 	'no invitations to this event' => 'No se enviaron invitaciones para este evento',
 	'duration must be at least 15 minutes' => 'La duración debe ser al menos 15 minutos',
 	'event dnx' => 'El evento requerido no existe',
+	
+	'also confirmed attendance' => 'También confirmaron asistencia',
+  	'awaiting confirmation' => 'Esperando confirmación',
+    'rejected invitation' => 'No asistirán',
+	'who' => 'Quién',
+  	'what' => 'Qué',
 
 	'no subject' => 'Sin Asunto',
 	'success import events' => 'Se importaron {0} eventos.',

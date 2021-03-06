@@ -79,6 +79,13 @@ return array(
     'discard' => 'Discard',
     'mail address' => 'Email Address',
     'mail address description' => 'Email address is the address that other people use to send you emails',
+	'sent mails sync' => 'Sent mails synchronization settings (for IMAP only)',
+	'connnection security' => 'Connection security',
+	'select folder for outbox' => 'Select your outbox folder',
+	'sync complete' => 'Sinchronization completed',
+	'invalid sync settings' => 'Invalid synchronization settings. Cannot establish a connection with the server',
+	'cant find user' => 'Cannot find the requested user',
+	'cant find account' => 'Cannot find the requested email account',
 
 	'unread emails' => 'Unread emails',
 	//'view due task' => 'View due task',

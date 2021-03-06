@@ -2,6 +2,9 @@
 	require_javascript("og/modules/addContactForm.js");
 	$genid = gen_id();
 	$object = $contact;
+	$all = true;
+	if (active_project()!= null)
+		$all = false;		
 ?>
 
 <form id="<?php echo $genid ?>submit-edit-form" style='height:100%;background-color:white' class="internalForm" action="<?php echo $contact->isNew() ? $contact->getAddUrl() : $contact->getEditUrl() ?>" method="post">
@@ -40,12 +43,16 @@
 	
 	<?php $categories = array(); Hook::fire('object_edit_categories', $object, $categories); ?>
 	
-	<div style="padding-top:5px">
-		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_contact_select_workspace_div',this)"><?php echo lang('workspace') ?></a> - 
+	<div style="padding-top:5px">		
+		<?php if ($all) { ?>
+			<a href="#" class="option" style="font-weight:bold" onclick="og.toggleAndBolden('<?php echo $genid ?>add_contact_select_workspace_div',this)"><?php echo lang('workspace') ?></a> - 
+		<?php } else {?>
+			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_contact_select_workspace_div',this)"><?php echo lang('workspace') ?></a> -
+		<?php }?>
 		<?php if (isset($isAddProject) && $isAddProject) { ?>
 			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_contact_role_div', this)"><?php echo lang('role') ?></a> - 
-		<?php } ?>
-		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_contact_add_tags_div', this)"><?php echo lang('tags') ?></a> - 
+		<?php } ?>		
+		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_contact_add_tags_div', this)"><?php echo lang('tags') ?></a> -
 		<a href="#" class="option" style="font-weight:bold" onclick="og.toggleAndBolden('<?php echo $genid ?>add_contact_work', this)"><?php echo lang('work') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_contact_email_and_im', this)"><?php echo lang('email and instant messaging') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_contact_home', this)"><?php echo lang('home') ?></a> - 
@@ -75,13 +82,17 @@
 			</div>
 		<?php }?>
 		
-	<div id="<?php echo $genid ?>add_contact_select_workspace_div" style="display:none">
+	<?php if ($all) { ?>
+			<div id="<?php echo $genid ?>add_contact_select_workspace_div" style="display:block"> 
+	<?php } else {?>
+			<div id="<?php echo $genid ?>add_contact_select_workspace_div" style="display:none">
+	<?php }?>
 	<fieldset><legend><?php echo lang('workspace')?></legend>
-		<?php if ($object->isNew()) {
-			echo select_workspaces('ws_ids', null, array(active_or_personal_project()), $genid.'ws_ids');
-		} else {
-			echo select_workspaces('ws_ids', null, $object->getWorkspaces(null, 'workspace'), $genid.'ws_ids');
-		} ?>
+	<?php if ($object->isNew()) {
+		echo select_workspaces('ws_ids', null, array(active_or_personal_project()), $genid.'ws_ids');
+	} else {
+	echo select_workspaces('ws_ids', null, $object->getWorkspaces(null, 'workspace'), $genid.'ws_ids');
+	} ?>
 	</fieldset>
 	</div>
 		

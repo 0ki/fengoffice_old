@@ -9,7 +9,27 @@
 					$formatted = $textWrapper . clean($value) . $textWrapper;
 				}
 				break;
-			case DATA_TYPE_INTEGER: $formatted = clean($value);
+			case DATA_TYPE_INTEGER:				
+				if ($col == 'priority'){
+					switch($value){
+					case 100:
+						$formatted = lang('low priority'); 
+						break;
+					case 200:
+						$formatted = lang('normal priority');
+						break;
+					case 300:
+						$formatted = lang('high priority');
+						break;
+					case 400:
+						$formatted = lang('urgent priority');
+						break;
+					default: $formatted = clean($value);
+					}					
+				}
+				else{				
+					$formatted = clean($value);
+				}
 				break;
 			case DATA_TYPE_BOOLEAN: $formatted = ($value == 1 ? lang('yes') : lang('no'));
 				break;

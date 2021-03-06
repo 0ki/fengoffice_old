@@ -268,4 +268,10 @@ Code explanations: d = Day number (2 digits with leading zeros), D = Day name (t
 	'user ws config option desc autodetect_time_zone' => 'Quando questa opzione è abilitata, il fuso orario verrà rilevato automaticamente dalle impostazioni del browser.',
 	'user ws config option name search_engine' => 'Motore di ricerca',
 	'user ws config option desc search_engine' => 'Scegli il motore di ricerca da usare. "LIKE" effettuerà una ricerca più esaustiva ma più lenta di "MATCH".',
+	'user ws config option name detect_mime_type_from_extension' => 'Individua il tipo mime dall\\\'estensione',
+	'user ws config option desc detect_mime_type_from_extension' => 'Abilita per individuare il tipo mime dall\'\\estensione',
+	'user ws config option name hide_quoted_text_in_emails' => 'Nascondi il testo quotato quando visualizzi una mail',
+	'user ws config option desc hide_quoted_text_in_emails' => 'Se abilitato i messaggi email saranno mostrati senza il testo quotato. Ci sarà un\\\'opzione per mostrare tutto durante la lettura',
+	'search engine mysql like' => 'Completo',
+	'search engine mysql match' => 'Veloce',
 ); ?>

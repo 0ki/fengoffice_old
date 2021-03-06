@@ -98,7 +98,7 @@ class ApplicationReadLog extends BaseApplicationReadLog {
 
 		$object = $this->getObject();
 		
-		return lang($code, $object->getTitle());
+		return lang($code, clean($object->getTitle()));
 	} // getText
 	
 	function getActionData() {

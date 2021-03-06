@@ -275,12 +275,12 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 	 * @param void
 	 * @return string
 	 */
-	function getTypeIconUrl($showImage = true) {
+	function getTypeIconUrl($showImage = true, $size = '48x48') {
 		// return image depending on type string
 		$image = "file.png";
 		$mimeType = str_replace(array("/", "+"), "-", $this->getTypeString());
 		$theme = config_option("theme", DEFAULT_THEME);
-		$base = ROOT . "/" . PUBLIC_FOLDER . "/assets/themes/$theme/images/48x48/types/";
+		$base = ROOT . "/" . PUBLIC_FOLDER . "/assets/themes/$theme/images/$size/types/";
 		$extension = get_file_extension($this->getFile()->getFilename());
 		if (is_file($base . $extension . ".png")) {
 			$image = $extension . ".png";
@@ -299,7 +299,7 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 				$temp = substr($temp, 0, $i);
 			}
 		}
-		return get_image_url("48x48/types/$image");
+		return get_image_url("$size/types/$image");
 	} // getTypeIconUrl
 
 	// ---------------------------------------------------

@@ -493,6 +493,180 @@ abstract class BaseMailAccount extends DataObject {
 		return $this->setColumnValue('sender_name', $value);
 	}
 	
+		
+	/**
+	 * Set value of 'last_error_date' field
+	 *
+	 * @access public
+	 * @param DateTimeValie $value
+	 * @return boolean
+	 */
+	function setLastErrorDate($value) {
+		return $this->setColumnValue('last_error_date', $value);
+	} // setLastErrorDate()
+
+	/**
+	 * Return value of 'last_error_date' field
+	 *
+	 * @access public
+	 * @param void
+	 * @return DateTimeValue
+	 */
+	function getLastErrorDate() {
+		return $this->getColumnValue('last_error_date');
+	} // getLastErrorDate()
+	
+	
+	/**
+	 * Return value of 'last_error_msg' field
+	 * @return string
+	 */
+	function getLastErrorMsg() {
+		return $this->getColumnValue('last_error_msg');
+	}
+	
+	/**
+	 * Set value of 'last_error_msg' field
+	 * @param string $value
+	 * @return boolean
+	 */
+	function setLastErrorMsg($value) {
+		return $this->setColumnValue('last_error_msg', $value);
+	}
+		
+	/**
+	 * Return value of 'sync_addr' field
+	 *
+	 * @access public
+	 * @param void
+	 * @return string
+	 */
+	function getSyncAddr() {
+		return $this->getColumnValue('sync_addr');
+	} // getsyncAddr()
+
+	/**
+	 * Set value of 'sync_addr' field
+	 *
+	 * @access public
+	 * @param string $value
+	 * @return boolean
+	 */
+	function setSyncAddr($value) {
+		return $this->setColumnValue('sync_addr', $value);
+	} // setSyncAddr()
+	
+		
+	/**
+	 * Return value of 'sync_pass' field
+	 *
+	 * @access public
+	 * @param void
+	 * @return string
+	 */
+	function getSyncPass() {
+		return $this->getColumnValue('sync_pass');
+	} // getSyncPass()
+
+	/**
+	 * Set value of 'sync_pass' field
+	 *
+	 * @access public
+	 * @param string $value
+	 * @return boolean
+	 */
+	function setSyncPass($value) {
+		return $this->setColumnValue('sync_pass', $value);
+	} // setSyncPass()
+	
+	/**
+	 * Return value of 'sync_server' field
+	 *
+	 * @access public
+	 * @param void
+	 * @return string
+	 */
+	function getSyncServer() {
+		return $this->getColumnValue('sync_server');
+	} // getSyncServer()
+
+	/**
+	 * Set value of 'sync_server' field
+	 *
+	 * @access public
+	 * @param string $value
+	 * @return boolean
+	 */
+	function setSyncServer($value) {
+		return $this->setColumnValue('sync_server', $value);
+	} // setSyncServer()
+	
+	/**
+	 * Return value of 'sync_ssl' field
+	 *
+	 * @access public
+	 * @param void
+	 * @return boolean
+	 */
+	function getSyncSsl() {
+		return $this->getColumnValue('sync_ssl');
+	} // getSyncSsl()
+
+	/**
+	 * Set value of 'sync_ssl' field
+	 *
+	 * @access public
+	 * @param string $value
+	 * @return boolean
+	 */
+	function setSyncSsl($value) {
+		return $this->setColumnValue('sync_ssl', $value);
+	} // setSyncSsl()
+	
+	/**
+	 * Return value of 'sync_ssl_port' field
+	 *
+	 * @access public
+	 * @param void
+	 * @return int
+	 */
+	function getSyncSslPort() {
+		return $this->getColumnValue('sync_ssl_port');
+	} // getSyncSslPort()
+
+	/**
+	 * Set value of 'sync_ssl_port' field
+	 *
+	 * @access public
+	 * @param string $value
+	 * @return boolean
+	 */
+	function setSyncSslPort($value) {
+		return $this->setColumnValue('sync_ssl_port', $value);
+	} // setSyncSslPort()	
+
+	/**
+	 * Return value of 'sync_folder' field
+	 *
+	 * @access public
+	 * @param void
+	 * @return string
+	 */
+	function getSyncFolder() {
+		return $this->getColumnValue('sync_folder');
+	} // getSyncFolder()
+
+	/**
+	 * Set value of 'sync_folder' field
+	 *
+	 * @access public
+	 * @param string $value
+	 * @return boolean
+	 */
+	function setSyncFolder($value) {
+		return $this->setColumnValue('sync_folder', $value);
+	} // setSyncSslPort()	
+	
 	/**
 	 * Return manager instance
 	 *

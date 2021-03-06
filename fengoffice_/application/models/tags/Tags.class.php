@@ -213,7 +213,8 @@ class Tags extends BaseTags {
 			$tag->setIsPrivate(false);
 			$tag->save();
 			if (!$exists) {
-				evt_add("tag added", array("name"=>$tag_name));
+				$real_tag = self::findById($tag->getId());
+				evt_add("tag added", array("name"=>$real_tag->getTag()));
 			}
 		} // if
 		 

@@ -38,7 +38,14 @@ if (isset($email)){
 	if (count($email->getWorkspaces()) && !logged_user()->isGuest()) {
 		add_page_action(lang('create task from email'), get_url('task', 'add_task', array('from_email' => $email->getId())), 'ico-task', null, null, true);
 	}
-	add_page_action(lang('download email'), get_url('mail', 'download', array('id' => $email->getId())), 'ico-download', '_self');
+	if ($email->getState() < 200) {
+		$download_url = get_url('mail', 'download', array('id' => $email->getId()));
+		include_once ROOT . "/library/browser/Browser.php";
+		if (Browser::instance()->getBrowser() == Browser::BROWSER_IE) {
+			$download_url = "javascript:location.href = '$download_url';";
+		}
+		add_page_action(lang('download email'), $download_url, 'ico-download', '_self');
+	}
 } 
 	$c = 0;
 	$genid = gen_id();
@@ -97,13 +104,13 @@ if (isset($email)){
 	}
 	$description .= '<tr><td>' . lang('date') . ':</td><td>' . format_datetime($email->getSentDate(), 'l, j F Y - '.$time_format, logged_user()->getTimezone()) . '</td></tr>';
 	
-	if ($email->getHasAttachments()) {
+	if ($email->getHasAttachments() && is_array($attachments) && count($attachments) > 0) {
 		$description .=	'<tr><td colspan=2>	<fieldset>
 		<legend class="toggle_collapsed" onclick="og.toggle(\'mv_attachments\',this)">' . lang('attachments') . '</legend>
 		<div id="mv_attachments" style="display:none">
 		<table>';
 		foreach($attachments as $att) {
-			$size = format_filesize(strlen($att["Data"]));
+			$size = $att['size'];//format_filesize(strlen($att["Data"]));
 			$fName = str_starts_with($att["FileName"], "=?") ? iconv_mime_decode($att["FileName"], 0, "UTF-8") : utf8_safe($att["FileName"]);
 			$description .= '<tr><td style="padding-right: 10px">';
 			$ext = get_file_extension($fName);
@@ -112,9 +119,13 @@ if (isset($email)){
 				$icon = $fileType->getIcon();
 			else
 				$icon = "unknown.png";
+			$download_url = get_url('mail', 'download_attachment', array('email_id' => $email->getId(), 'attachment_id' => $c));
+			include_once ROOT . "/library/browser/Browser.php";
+			if (Browser::instance()->getBrowser() == Browser::BROWSER_IE) {
+				$download_url = "javascript:location.href = '$download_url';";
+			}
       		$description .=	'<img src="' . get_image_url("filetypes/" . $icon) .'"></td>
-			<td><a target="_self" href="' . get_url('mail', 'download_attachment', 
-      			array('email_id' => $email->getId(), 'attachment_id' => $c)) . '">' . clean($fName) . " ($size)" . '</a></td></tr>';
+			<td><a target="_self" href="' . $download_url . '">' . clean($fName) . " ($size)" . '</a></td></tr>';
       		$c++;
 		}
 		$description .= '</table></div></fieldset></td></tr>';

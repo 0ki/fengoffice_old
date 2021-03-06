@@ -195,6 +195,7 @@
 				if(count($result)<1) $output .= "&nbsp;";
 				else{
 					$count=0;
+					$to_show_len = 25;
 					foreach($result as $event){
 						if($event instanceof ProjectEvent ){
 							$count++;
@@ -210,9 +211,10 @@
 							if(!$private && $count <= 3){
 								$output .= "<div class='event_block'   style='z-index:1000;'>";
 								if($subject=="") $subject = "[".lang('CAL_NO_SUBJECT')."]";
+								$subject_toshow = mb_strlen($subject) < $to_show_len ? $subject : mb_substr($subject, 0, $to_show_len-3)."...";
 								$output .= "<span id='o_ev_div_" . $event->getId() . "'>";			
 								$output .= "<a class=\"internalLink link-ico ico-event\" style='vertical-align:bottom;' href='" . get_url('event', 'viewevent', array('id' => $event->getId())) . "' onclick=\"og.disableEventPropagation(event);\" >";
-								$output .= $subject."</a>";
+								$output .= $subject_toshow."</a>";
 								$output .= '</span>';
 								$output .= "</div>";
 								
@@ -231,8 +233,8 @@
 							if ($dtv->getTimestamp() == mktime(0,0,0,$due_date->getMonth(),$due_date->getDay(),$due_date->getYear())) {	
 								$count++;
 								if ($count<=3){
-									$subject = "&nbsp;". clean($milestone->getName())." - <i>Milestone</i>";
 									$cal_text = clean($milestone->getName());
+									$cal_text = mb_strlen($cal_text) < $to_show_len ? $cal_text : mb_substr($cal_text, 0, $to_show_len-3)."...";
 									$output .= '<div class="event_block">';
 									$output .= "<span id='o_ms_div_" . $milestone->getId() . "'>";
 									$output .= "<a class=\"internalLink link-ico ico-milestone\" style='vertical-align:bottom;' href='".$milestone->getViewUrl()."' onclick=\"og.disableEventPropagation(event);\" >";
@@ -280,10 +282,12 @@
 								
 								$count++;
 								if ($count<=3){
+									$cal_text = clean($task->getTitle());
+									$cal_text = mb_strlen($cal_text) < $to_show_len ? $cal_text : mb_substr($cal_text, 0, $to_show_len-3)."...";
 									$output .= '<div class="event_block">';
 									$output .= "<span id='o_ta_div_$tip_pre" . $task->getId() . "'>";
 									$output .= "<a class=\"internalLink link-ico $ico\" style='vertical-align:bottom;' href='".$task->getViewUrl()."' onclick=\"og.disableEventPropagation(event);\" >";
-									$output .= clean($task->getTitle())."</a>";
+									$output .= $cal_text."</a>";
 									$output .= '</span>';
 									$output .= "</div>";
 									

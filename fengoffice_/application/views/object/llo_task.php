@@ -15,7 +15,7 @@ $attr = $linked_object->isCompleted() ? 'style="text-decoration:line-through"' :
 		<div class="db-ico unknown ico-<?php echo clean($icon_class) ?>" title="<?php echo clean($linked_object->getObjectTypeName()) ?>"></div>
 	</a></td>
 	
-	<td><a <?php echo $attr ?> href="<?php echo $linked_object->getObjectUrl() ?>" title="<?php echo $linked_object->getObjectName() ?>">
+	<td><a <?php echo $attr ?> href="<?php echo $linked_object->getObjectUrl() ?>" title="<?php echo clean($linked_object->getObjectName()) ?>">
 		<?php if ($linked_object->isAssigned()){?><b><?php echo clean($linked_object->getAssignedToName()) ?></b>: <?php } // if is assigned?>
 		<span><?php echo clean($linked_object->getObjectName()) ?></span>
 	</a></td>

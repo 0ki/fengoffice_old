@@ -718,6 +718,17 @@
       return class_exists($this->item_class);
     } // end func isReady
     
+    // ---------------------------------------------------
+    //  Checkers
+    // ---------------------------------------------------
+    
+    function is_valid_csv_ids($csv) {
+    	$exploded = explode(",", $csv);
+    	foreach ($exploded as $value) {
+    		if (!is_numeric($value)) return false;
+    	}
+    	return true;
+    }
   } // end func DataManager
 
 ?>

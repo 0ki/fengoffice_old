@@ -18,6 +18,9 @@ $enableUpload = $file->isNew()
 $genid = gen_id();
 $object = $file;
 $comments_required = config_option('file_revision_comments_required');
+$all = true;
+if (active_project()!= null)
+	$all = false;
 ?>
 
 <form class="internalForm" style="height: 100%; background-color: white" id="<?php echo $genid ?>addfile" name="<?php echo $genid ?>addfile" action="<?php echo $submit_url ?>" onsubmit="return og.fileCheckSubmit('<?php echo $genid ?>');" method="post">
@@ -103,7 +106,11 @@ $comments_required = config_option('file_revision_comments_required');
 	<?php $categories = array(); Hook::fire('object_edit_categories', $object, $categories); ?>
 
 	<div style="padding-top: 5px">
-	<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_file_select_workspace_div',this)"><?php echo lang('workspace') ?></a>
+	<?php if ($all) { ?>
+		<a href="#" class="option" style="font-weight:bold" onclick="og.toggleAndBolden('<?php echo $genid ?>add_file_select_workspace_div',this)"><?php echo lang('workspace') ?></a> - 
+	<?php } else {?>
+		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_file_select_workspace_div',this)"><?php echo lang('workspace') ?></a> -
+	<?php }?>
 	- <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_file_tags_div', this)"><?php echo lang('tags') ?></a>
 	- <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_file_description_div',this)"><?php echo lang('description') ?></a>
 	<?php if(logged_user()->isMemberOfOwnerCompany()) { ?>
@@ -227,7 +234,11 @@ $comments_required = config_option('file_revision_comments_required');
 
 
 
-	<div id="<?php echo $genid ?>add_file_select_workspace_div" style="display: none">
+	<?php if ($all) { ?>
+			<div id="<?php echo $genid ?>add_file_select_workspace_div" style="display:block"> 
+	<?php } else {?>
+			<div id="<?php echo $genid ?>add_file_select_workspace_div" style="display:none">
+	<?php }?>
 		<fieldset>
 			<legend><?php echo lang('workspace') ?></legend>
 			<?php if ($file->isNew()) {
@@ -274,7 +285,7 @@ $comments_required = config_option('file_revision_comments_required');
 			</div>
 		<?php }?>
 		<legend><?php echo lang('description') ?></legend>
-		<?php echo textarea_field('file[description]', array_var($file_data, 'description'), array('class' => 'long', 'id' => $genid.'fileFormDescription', 'tabindex' => '90')) ?>
+		<?php echo textarea_field('file[description]', array_var($file_data, 'description'), array('class' => '', 'id' => $genid.'fileFormDescription', 'tabindex' => '90')) ?>
 		</fieldset>
 	</div>
 

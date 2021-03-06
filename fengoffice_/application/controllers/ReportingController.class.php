@@ -266,7 +266,7 @@ class ReportingController extends ApplicationController {
 			$_SESSION['total_task_times_report_data'] = $report_data;
 			$this->redirectTo('reporting', 'total_task_times_p', array('type' => array_var($_GET, 'type', '')));
 		}
-		
+
 		$comp = logged_user()->getCompany();
 		$users = ( $comp instanceof Company ? $comp->getUsers() : owner_company()->getUsers());
 		$workspaces = logged_user()->getActiveProjects();
@@ -278,14 +278,44 @@ class ReportingController extends ApplicationController {
 	}
 
 	function total_task_times($report_data = null, $task = null){
-		tpl_assign('allow_export', false);
-		$this->setTemplate('report_wrapper');
-
 		if (!$report_data) {
 			$report_data = array_var($_POST, 'report');
 			// save selections into session
 			$_SESSION['total_task_times_report_data'] = $report_data;
 		}
+		
+		$conditions = array();
+		$all_conditions = array_var($report_data, 'conditions');
+		if (!is_array($all_conditions)) $all_conditions = array_var($_POST, 'conditions');
+		if ($all_conditions != null) tpl_assign('has_conditions', true);
+		if (is_array($all_conditions)) {
+			foreach($all_conditions as $condition){
+				 if($condition['deleted'] != "1"){
+					$conditions[] = ($condition);
+				 }
+			}
+		}
+		
+		$columns = array_var($report_data, 'columns');
+		if (!is_array($columns)) $columns = array_var($_POST, 'columns');
+									
+		asort($columns); //sort the array by column order
+		foreach($columns as $column => $order){
+			if ($order > 0) {
+				$newColumn = new ReportColumn();
+				//$newColumn->setReportId($newReport->getId());
+				if(is_numeric($column)){
+					$newColumn->setCustomPropertyId($column);
+				}else{
+					$newColumn->setFieldName($column);
+				}
+				
+			}
+		}
+	
+		tpl_assign('allow_export', false);
+		$this->setTemplate('report_wrapper');
+
 
 		$user = Users::findById(array_var($report_data, 'user'));
 		$workspace = Projects::findById(array_var($report_data, 'project_id'));
@@ -349,23 +379,36 @@ class ReportingController extends ApplicationController {
 			$group_by[] = $gb;
 		}
 
-		$timeslotsArray = Timeslots::getTaskTimeslots($workspace, $user, $workspacesCSV, $st, $et, array_var($report_data, 'task_id', 0), $group_by,null,0,0,$timeslotType);
+		$object_subtype = array_var($report_data, 'object_subtype');
+
+		$timeslotsArray = Timeslots::getTaskTimeslots($workspace, $user, $workspacesCSV, $st, $et, array_var($report_data, 'task_id', 0), $group_by,null,0,0,$timeslotType, $conditions, $object_subtype);
 		$unworkedTasks = null;
 		if (array_var($report_data, 'include_unworked') == 'checked') {
 			$unworkedTasks = ProjectTasks::getPendingTasks(logged_user(), $workspace);
 			tpl_assign('unworkedTasks', $unworkedTasks);
 		}
 
-		tpl_assign('timeslot_type', $timeslotType);
-		tpl_assign('group_by', $group_by);
-		tpl_assign('timeslotsArray', $timeslotsArray);
-		tpl_assign('workspace', $workspace);
-		tpl_assign('start_time', $st);
-		tpl_assign('end_time', $et);
-		tpl_assign('user', $user);
-		tpl_assign('post', $report_data);
-		tpl_assign('template_name', 'total_task_times');
-		tpl_assign('title',lang('task time report'));
+		if(array_var($_POST, 'exportCSV')){
+			$skip_ws = ($all_conditions!=null)?true:false;
+			self::total_task_times_csv($report_data, $columns, $timeslotsArray, $skip_ws);
+		}else if(array_var($_POST, 'exportPDF')){
+			//self::total_task_times_pdf($report_data, $columns, $timeslotsArray);
+		}else{
+			tpl_assign('columns', $columns);
+			tpl_assign('conditions', $conditions);
+			tpl_assign('timeslot_type', $timeslotType);
+			tpl_assign('group_by', $group_by);
+			tpl_assign('timeslotsArray', $timeslotsArray);
+			tpl_assign('workspace', $workspace);
+			tpl_assign('start_time', $st);
+			tpl_assign('end_time', $et);
+			tpl_assign('user', $user);
+			$report_data['conditions'] = $conditions;
+			$report_data['columns'] = $columns;
+			tpl_assign('post', $report_data);
+			tpl_assign('template_name', 'total_task_times');
+			tpl_assign('title',lang('task time report'));
+		}
 	}
 
 	function total_task_times_by_task_print(){
@@ -443,6 +486,79 @@ class ReportingController extends ApplicationController {
 		tpl_assign('title',lang('task time report'));
 	}
 
+	
+	
+	function total_task_times_csv($report_data, $columns, $timeslotsArray, $skip_ws=false){
+		//$types = self::get_report_column_types($report->getId());
+		$filename = str_replace(' ', '_',lang('task time report')).date('_YmdHis');
+		header('Expires: 0');
+		header('Cache-control: private');
+		header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+		header('Content-Description: File Transfer');
+		header('Content-Type: application/csv');
+		header('Content-disposition: attachment; filename='.$filename.'.csv');
+		
+		// titles
+		$titles = lang('date').";".lang('title').";".lang('description').";".lang('user').";".lang('time').";";
+		
+		if (array_var($report_data, 'show_billing', false)) $titles .= lang('billing').";";
+		foreach($columns as $id => $pos){
+			if ($pos == 0) continue;
+			if (!is_numeric($id)){
+				$col_name = lang("field ProjectTasks ".$id);
+			} else {
+				$cp = CustomProperties::getCustomProperty($id);					
+				$col_name = $cp->getName();
+			}
+			$titles .= $col_name.";";
+		}
+		$titles = iconv(mb_internal_encoding(),"ISO-8859-1",html_entity_decode($titles, ENT_COMPAT));
+		echo "$titles\n";
+
+		// data
+		foreach($timeslotsArray as $tsRow) {
+			$ts = $tsRow["ts"];
+			if ($skip_ws && $ts->getObjectManager() == 'Projects') continue;
+			$to_print = format_date($ts->getStartTime()) . ";";
+			if ($ts->getObject() instanceof ProjectTask) {
+				$to_print .= $ts->getObject()->getTitle() . ";";
+				$to_print .= $ts->getObject()->getText() . ";";
+			} else if ($ts->getObject() instanceof Project) {
+				$ws_name = lang('workspace') . ' ' . clean($ts->getObject()->getName());
+				$to_print .= "$ws_name;;";
+			} else $to_print .= ";;";
+			
+			$to_print .= clean(Users::getUserDisplayName($ts->getUserId())) . ";";
+			$lastStop = $ts->getEndTime() != null ? $ts->getEndTime() : ($ts->isPaused() ? $ts->getPausedOn() : DateTimeValueLib::now()) . ";";
+			$to_print .= DateTimeValue::FormatTimeDiff($ts->getStartTime(), $lastStop, "hm", 60, $ts->getSubtract()) . ";";
+			if (array_var($report_data, 'show_billing', false)) 
+				$to_print .= config_option('currency_code', '$') ." ". $ts->getFixedBilling();
+
+			// other columns
+			foreach($columns as $id => $pos){
+				if ($pos == 0) continue;
+				if ($ts->getObject() instanceof ProjectTask) {
+					if (!is_numeric($id)){
+						$col_value = self::format_value_to_print($id, $ts->getObject()->getColumnValue($id), $ts->getObject()->manager()->getColumnType($id), $ts->getObject()->getObjectManagerName()); 
+						
+					} else {
+						$cp = CustomProperties::getCustomProperty($id);
+						$cpv = CustomPropertyValues::getCustomPropertyValue($ts->getObject()->getId(), $cp->getId());
+						if ($cpv instanceof CustomPropertyValue) {
+							$col_value = self::format_value_to_print($cp->getName(), $cpv->getValue(), $cp->getOgType(), $ts->getObject()->getObjectManagerName());
+						} else $col_value = "";
+					}
+				} else $col_value = "";
+				$to_print .= $col_value.";";
+			}
+			$to_print = iconv(mb_internal_encoding(),"ISO-8859-1",html_entity_decode($to_print, ENT_COMPAT));
+			echo "$to_print\n";
+		}
+		die();
+	}
+	
+	
+	
 	// ---------------------------------------------------
 	//  Custom Reports
 	// ---------------------------------------------------
@@ -482,7 +598,6 @@ class ReportingController extends ApplicationController {
 					DB::beginWork();
 					$newReport->save();
 					$allowed_columns = $this->get_allowed_columns($report_data['object_type'], true);
-										
 					foreach($conditions as $condition){
 						if($condition['deleted'] == "1") continue;
 						foreach ($allowed_columns as $ac){
@@ -705,7 +820,7 @@ class ReportingController extends ApplicationController {
 			$externalCols = $managerInstance->getExternalColumns();
 			$externalFields = array();
 			foreach($externalCols as $extCol){
-				$externalFields[$extCol] = $this->get_ext_values($extCol);
+				$externalFields[$extCol] = $this->get_ext_values($extCol, $report->getObjectType());
 			}
 			$params = array_var($_GET, 'params');
 			if(count($paramConditions) > 0 && !isset($params)){
@@ -839,10 +954,12 @@ class ReportingController extends ApplicationController {
 		$pdf->AddPage();
 		$pdf->SetFont('Arial','',$fontSize);
 		$pdf->Cell(80);
-    	$pdf->Cell(30,10,$report->getName());
+		$report_title = iconv(mb_internal_encoding(), "ISO-8859-1", html_entity_decode($report->getName(), ENT_COMPAT));
+    	$pdf->Cell(30, 10, $report_title);
     	$pdf->Ln(20);
     	$colSizes = array();
     	$maxValue = array();
+    	$fixed_col_sizes = array();
 		foreach($results['rows'] as $row) {
 			$i = 0;			
 			foreach($row as $k => $value){	
@@ -853,26 +970,41 @@ class ReportingController extends ApplicationController {
 				$i++;  
 			}
     	}
+    	$k=0;
+    	foreach ($maxValue as $str) {
+    		$col_title_len = $pdf->GetStringWidth($results['columns'][$k]);
+    		$colMaxTextSize = max($pdf->GetStringWidth($str), $col_title_len);
+    		$db_col = $results['columns'][$k];
+    		$colType = array_var($types, array_var($results['db_columns'], $db_col, ''), '');
+    		if($colType == DATA_TYPE_DATETIME && !($report->getObjectType() == 'ProjectEvents' && $results['db_columns'][$db_col] == 'start')){
+    			$colMaxTextSize = $colMaxTextSize / 2;
+    			if ($colMaxTextSize < $col_title_len) $colMaxTextSize = $col_title_len;
+    		}
+    		$fixed_col_sizes[$k] = $colMaxTextSize;
+    		$k++;
+    	}
+    	
+    	$fixed_col_sizes = self::fix_column_widths(($pageLayout=='P'?172:260), $fixed_col_sizes);
+    	
+    	$max_char_len = array();
 		$i = 0;
 		foreach($results['columns'] as $col){
-			$db_col = isset($results['db_columns'][$col]) ? $results['db_columns'][$col] : '';
-			$colFontSize = $pdf->GetStringWidth($col);
-			$colMaxTextSize = $pdf->GetStringWidth($maxValue[$i]);
-			$colType = isset($types[$db_col]) ? $types[$db_col] : '';
-    		if($colType == DATA_TYPE_DATETIME && !($report->getObjectType() == 'ProjectEvents' && $results['db_columns'][$col] == 'start')){
-    			$colMaxTextSize = $colMaxTextSize / 2;       			
-    		}
-    		
-			$colFontSize = max($colFontSize, $colMaxTextSize) + 5;
-			$colSizes[$i] = $colFontSize ; 
-    		$pdf->Cell($colFontSize,7,$col);       		
-			$i++;
+			$colMaxTextSize = $fixed_col_sizes[$i];
+			$colFontSize = $colMaxTextSize + 5;
+			$colSizes[$i] = $colFontSize ;
+			$col_name = iconv(mb_internal_encoding(), "ISO-8859-1", html_entity_decode($col, ENT_COMPAT));
+    		$pdf->Cell($colFontSize, 7, $col_name);
+    		$max_char_len[$i] = self::get_max_length_from_pdfsize($pdf, $colFontSize);
+    		$i++;
 		}
+		
 		$lastColX = $pdf->GetX();
 		$pdf->Ln();
 		$pdf->Line($pdf->GetX(), $pdf->GetY(), $lastColX, $pdf->GetY());
 		foreach($results['rows'] as $row) {
-			$i = 0;			
+			$i = 0;
+			$more_lines = array();
+			$col_offsets = array();
 			foreach($row as $k => $value){				
 				if($k == 'link'){
 					$value = strip_tags($value);	
@@ -881,17 +1013,121 @@ class ReportingController extends ApplicationController {
 					$cell = $this->format_value_to_print($k, $value, $types[$k], $report->getObjectType());	
 				}
 							
-				$cell = iconv(mb_internal_encoding(),"ISO-8859-1",html_entity_decode($cell ,ENT_COMPAT));
+				$cell = iconv(mb_internal_encoding(), "ISO-8859-1", html_entity_decode($cell, ENT_COMPAT));
+				
+				$splitted = self::split_column_value($cell, $max_char_len[$i]);
+				$cell = $splitted[0];
+				if (count($splitted) > 1) {
+					array_shift($splitted);
+					$ml = 0;
+					foreach ($splitted as $sp_val) {
+						if (!isset($more_lines[$ml]) || !is_array($more_lines[$ml])) $more_lines[$ml] = array();
+						$more_lines[$ml][$i] = $sp_val;
+						$ml++;
+					}
+					$col_offsets[$i] = $pdf->x;
+				}
+				
 				$pdf->Cell($colSizes[$i],7,$cell);
 				$i++;
 			}
+			foreach ($more_lines as $ml_values) {
+				$pdf->Ln();
+				foreach ($ml_values as $col_idx => $col_val) {
+					$pdf->SetX($col_offsets[$col_idx]);
+					$pdf->Cell($colSizes[$col_idx],7,$col_val);
+				}
+			}
 			$pdf->Ln();
+			$pdf->SetDrawColor(220, 220, 220);
+			$pdf->Line($pdf->GetX(), $pdf->GetY(), $lastColX, $pdf->GetY());
+			$pdf->SetDrawColor(0, 0, 0);
 		}
 		$filename = ROOT."/tmp/".gen_id().".pdf";
 		$pdf->Output($filename, "F");
 		download_file($filename, "application/pdf", $report->getName(), true);
 		unlink($filename);
 		die();
+	}
+	
+	/**
+	 * Returns an array containing the fixed widths of every column.
+	 * If the sum of the column widths is longer than the page's width
+	 * the bigger columns are resized to fit the page.
+	 *
+	 * @param integer $total_width
+	 * @param array $max_col_valuesues
+	 * @return array containing the fixed widths for every column
+	 */
+	function fix_column_widths($total_width, $max_col_values) {
+		$fixed_widths = array();
+		$columns_to_adjust = array();
+		$to_add = 0;
+		
+		$average = floor($total_width / count($max_col_values));
+		foreach ($max_col_values as $k => $width) {
+			if ($width <= $average) {
+				$fixed_widths[$k] = $width;
+				$to_add += floor($average - $width);
+			} else {
+				$columns_to_adjust[] = $k;
+			}
+		}
+		if (count($columns_to_adjust) > 0)
+			$new_col_width = $average + (floor($to_add / count($columns_to_adjust)));
+
+		foreach ($columns_to_adjust as $col) {
+			if ($max_col_values[$col] > $new_col_width) $fixed_widths[$col] = $new_col_width;
+			else $fixed_widths[$col] = $max_col_values[$col];
+		}
+		
+		return $fixed_widths;
+	}
+	
+	/**
+	 * Gets the aproximated character count that can be written in the space delimited by $width.
+	 *
+	 * @param $pdf
+	 * @param $width
+	 * @return integer
+	 */
+	function get_max_length_from_pdfsize($pdf, $width) {
+		$cw = &$pdf->CurrentFont['cw'];
+		$w = 0;
+		$i = 0;
+		while($w < $width) {
+			$w += $cw['a'] * $pdf->FontSize / 1000;
+			$i++;
+		}
+		return $i;
+	}
+	
+	/**
+	 * Splits a value in pieces of maximum length = $length.
+	 * The split point is the last position of a space char that is before the piece length 
+	 *
+	 * @param $value: value to split
+	 * @param $length: max length of each piece
+	 * @return array containing the pieces after splitting the value
+	 */
+	function split_column_value($value, $length) {
+		if (strlen($value) <= $length) return array($value);
+		$splitted = array();
+		$i=0;
+		while (strlen($value) > $length) {
+			$pos = -1;
+			while ($pos !== false && $pos < $length) {
+				$pos_ant = $pos;
+				$pos = strpos($value, " ", $pos+1);
+			}
+			if ($pos_ant != -1) $pos = $pos_ant;
+
+			$splitted[$i] = substr($value, 0, $pos+1);
+			$value = substr($value, $pos+1);
+			$i++;
+		}
+		$splitted[$i] = $value;
+		return $splitted;
 	}
 	
 	function format_value_to_print($col, $value, $type, $obj_type, $textWrapper='', $dateformat='Y-m-d') {
@@ -903,7 +1139,27 @@ class ReportingController extends ApplicationController {
 					$formatted = $textWrapper . clean($value) . $textWrapper;
 				}
 				break;
-			case DATA_TYPE_INTEGER: $formatted = clean($value);
+			case DATA_TYPE_INTEGER:
+				if ($col == 'priority'){
+					switch($value){
+					case 100:
+						$formatted = lang('low priority'); 
+						break;
+					case 200:
+						$formatted = lang('normal priority');
+						break;
+					case 300:
+						$formatted = lang('high priority');
+						break;
+					case 400:
+						$formatted = lang('urgent priority');
+						break;
+					default: $formatted = clean($value);
+					}					
+				}
+				else{				
+					$formatted = clean($value);
+				}
 				break;
 			case DATA_TYPE_BOOLEAN: $formatted = ($value == 1 ? lang('yes') : lang('no'));
 				break;
@@ -963,6 +1219,43 @@ class ReportingController extends ApplicationController {
 		ajx_current("empty");
 		ajx_extra_data(array('fields' => $fields));
 	}
+
+	function get_object_fields_custom_properties(){ //returns only the custom properties
+		$fields = $this->get_allowed_columns_custom_properties(array_var($_GET, 'object_type'), true);
+
+		ajx_current("empty");
+		ajx_extra_data(array('fields' => $fields));
+	}
+	
+	
+	private function get_allowed_columns_custom_properties($object_type, $includeWsAndTag=false) {
+		$fields = array();
+		if(isset($object_type)){
+			$customProperties = CustomProperties::getAllCustomPropertiesByObjectType($object_type);
+			$objectFields = array();
+			foreach($customProperties as $cp){				
+				if ($cp->getType() != 'table')
+					$fields[] = array('id' => $cp->getId(), 'name' => $cp->getName(), 'type' => $cp->getType(), 'values' => $cp->getValues(), 'multiple' => $cp->getIsMultipleValues());
+			}
+			eval('$managerInstance = ' . $object_type . "::instance();");	
+	
+			foreach($objectFields as $name => $type){
+				if($type == DATA_TYPE_FLOAT || $type == DATA_TYPE_INTEGER){
+					$type = 'numeric';
+				}else if($type == DATA_TYPE_STRING){
+					$type = 'text';
+				}else if($type == DATA_TYPE_BOOLEAN){
+					$type = 'boolean';
+				}else if($type == DATA_TYPE_DATE || $type == DATA_TYPE_DATETIME){
+					$type = 'date';
+				}
+				$fields[] = array('id' => $name, 'name' => lang('field ' . $object_type . ' ' .$name), 'type' => $type);
+			}
+	
+		}
+		usort($fields, array(&$this, 'compare_FieldName'));
+		return $fields;
+	}
 	
 	function get_object_column_list(){
 		$allowed_columns = $this->get_allowed_columns(array_var($_GET, 'object_type'), true);
@@ -977,14 +1270,28 @@ class ReportingController extends ApplicationController {
 		$this->setTemplate("column_list");
 	}
 
+	function get_object_column_list_task(){
+		$allowed_columns = $this->get_allowed_columns_custom_properties(array_var($_GET, 'object_type'), true);
+		$for_task = true;
+		
+		tpl_assign('allowed_columns', $allowed_columns);
+		tpl_assign('columns', explode(',', array_var($_GET, 'columns', array())));	
+		tpl_assign('genid', array_var($_GET, 'genid'));
+		tpl_assign('for_task', $for_task);
+		
+		$this->setLayout("html");
+		$this->setTemplate("column_list");
+	}
+	
 	function get_external_field_values(){
 		$field = array_var($_GET, 'external_field');
-		$values = $this->get_ext_values($field);
+		$report_type = array_var($_GET, 'report_type');
+		$values = $this->get_ext_values($field, $report_type);
 		ajx_current("empty");
 		ajx_extra_data(array('values' => $values));
 	}
 
-	private function get_ext_values($field){
+	private function get_ext_values($field, $manager = null){
 		$values = array(array('id' => '', 'name' => '-- ' . lang('select') . ' --'));
 		if($field == 'company_id' || $field == 'assigned_to_company_id'){
 			$companies = Companies::getVisibleCompanies(logged_user());
@@ -1010,6 +1317,11 @@ class ReportingController extends ApplicationController {
 			$tags = Tags::getTagNames();
 			foreach($tags as $tag){
 				$values[] = array('id' => $tag['name'], 'name' => $tag['name']);
+			}
+		} else if($field == 'object_subtype'){
+			$object_types = ProjectCoTypes::findAll(array('conditions' => (!is_null($manager) ? "`object_manager`='$manager'" : "")));
+			foreach($object_types as $object_type){
+				$values[] = array('id' => $object_type->getId(), 'name' => $object_type->getName());
 			}
 		}
 		return $values;

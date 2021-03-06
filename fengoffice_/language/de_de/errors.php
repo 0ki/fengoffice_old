@@ -121,4 +121,5 @@
 	'error add contact from user' => 'Der Kontakt vom Benutzer konnte nicht hinzugefügt werden!',
 	'zip not supported' => 'Zip-Archive werden vom Server nicht unterstützt!',
 	'no tag specified' => 'Kein Schlagwort festgelegt!',
+	'no mailAccount error' => 'Aktion unmöglich! Es wurde kein E-Mail-Postfach eingerichtet.',
 ); ?>

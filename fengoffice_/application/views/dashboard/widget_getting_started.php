@@ -46,34 +46,34 @@
 	}?><br/>
 <?php echo lang('new account step actions info') ?><br/>
 
-<image src='<?php echo image_url('/16x16/message.png')?> ' />&nbsp;
+<img src='<?php echo image_url('16x16/message.png')?> ' />&nbsp;
 <a class='internalLink dashboard-link' href='<?php echo get_url('message', 'add')?> ' ><?php echo lang('message')?></a>&nbsp;|&nbsp;
 
-<image src='<?php echo image_url('/16x16/types/contact.png')?> ' />&nbsp;
+<img src='<?php echo image_url('16x16/types/contact.png')?> ' />&nbsp;
 <a class='internalLink dashboard-link' href='<?php echo get_url('contact', 'add')?> ' ><?php echo lang('contact')?></a>&nbsp;|&nbsp;
 
-<image src='<?php echo image_url('/16x16/companies.png')?> ' />&nbsp;
+<img src='<?php echo image_url('16x16/companies.png')?> ' />&nbsp;
 <a class='internalLink dashboard-link' href='<?php echo get_url('company', 'add_client')?> ' ><?php echo lang('company')?></a>&nbsp;|&nbsp;
 
-<image src='<?php echo image_url('/16x16/types/event.png')?> ' />&nbsp;
+<img src='<?php echo image_url('16x16/types/event.png')?> ' />&nbsp;
 <a class='internalLink dashboard-link' href='<?php echo get_url('event', 'add')?> ' ><?php echo lang('event')?></a>&nbsp;|&nbsp;
 
-<image src='<?php echo image_url('/16x16/upload.png')?> ' />&nbsp;
+<img src='<?php echo image_url('16x16/upload.png')?> ' />&nbsp;
 <a class='internalLink dashboard-link' href='<?php echo get_url('files', 'add_file')?> ' ><?php echo lang('upload a file')?></a>&nbsp;|&nbsp;
 
-<image src='<?php echo image_url('/16x16/documents.png')?> ' />&nbsp;
+<img src='<?php echo image_url('16x16/documents.png')?> ' />&nbsp;
 <a class='internalLink dashboard-link' href='<?php echo get_url('files', 'add_document')?> ' ><?php echo lang('document')?></a>&nbsp;|&nbsp;
 
-<image src='<?php echo image_url('/16x16/prsn.png')?> ' />&nbsp;
+<img src='<?php echo image_url('16x16/prsn.png')?> ' />&nbsp;
 <a class='internalLink dashboard-link' href='<?php echo get_url('files', 'add_presentation')?> ' ><?php echo lang('presentation')?></a>&nbsp;|&nbsp;
 
-<image src='<?php echo image_url('/16x16/milestone.png')?> ' />&nbsp;
+<img src='<?php echo image_url('16x16/milestone.png')?> ' />&nbsp;
 <a class='internalLink dashboard-link' href='<?php echo get_url('milestone', 'add')?> ' ><?php echo lang('milestone')?></a>&nbsp;|&nbsp;
 
-<image src='<?php echo image_url('/16x16/types/task.png')?> ' />&nbsp;
+<img src='<?php echo image_url('16x16/types/task.png')?> ' />&nbsp;
 <a class='internalLink dashboard-link' href='<?php echo get_url('task', 'add_task')?> ' ><?php echo lang('task')?></a>&nbsp;|&nbsp;
 
-<image src='<?php echo image_url('/16x16/types/webpage.png')?> ' />&nbsp;
+<img src='<?php echo image_url('16x16/types/webpage.png')?> ' />&nbsp;
 <a class='internalLink dashboard-link' href='<?php echo get_url('webpage', 'add')?> ' ><?php echo lang('weblink')?></a>
 
 <?php /*&nbsp;|&nbsp;

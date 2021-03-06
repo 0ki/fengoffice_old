@@ -10,7 +10,7 @@ if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user
 	foreach ($documents as $document){ $c++;?>
 	<tr class="<?php echo $c % 2 == 1? '':'dashAltRow'; echo ' ' . ($c > 5? 'dashSMDC':''); ?>" style="<?php echo $c > 5? 'display:none':'' ?>">
 	<td width=18>
-		<div class="db-ico ico-unknown ico-<?php echo str_replace(".", "_", str_replace("/", "-", $document->getTypeString()))?>"></div>
+		<div class="db-ico ico-unknown ico-<?php echo str_replace(".", "_", str_replace("/", "-", $document->getTypeString()))?> ico-ext-<?php echo pathinfo($document->getFilename(), PATHINFO_EXTENSION)?>"></div>
 		
 	</td>
 	<td style="padding-left:2px">

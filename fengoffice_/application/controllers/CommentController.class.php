@@ -89,6 +89,7 @@ class CommentController extends ApplicationController {
 					if ($lastpos === false) $comment_head = $comment->getText();
 					else $comment_head = substr($comment->getText(), 0, $lastpos) . "...";
 				}
+				$comment_head = html_to_text($comment_head);
 				ApplicationLogs::createLog($object, $object->getWorkspaces(), ApplicationLogs::ACTION_COMMENT, false, null, true, $comment_head);
 
 				DB::commit();

@@ -75,7 +75,7 @@ class Notifier {
 		$name = $object instanceof Comment ? $object->getObject()->getObjectName() : $object->getObjectName();
 		if (!isset($description)) {
 			$description = "$notification notification $type desc";
-			$descArgs = array($object->getObjectName(), $sendername);
+			$descArgs = array(clean($object->getObjectName()), $sendername);
 		}
 		if (!isset($descArgs)) {
 			$descArgs = array();
@@ -84,7 +84,8 @@ class Notifier {
 			$text = escape_html_whitespace(convert_to_links(clean("\n" . $object->getColumnValue('text'))));
 			$properties['text'] = $text;
 		}
-		$properties['unique id'] = $uid;
+		$second_properties = array();
+		//$properties['unique id'] = $uid;
 		if ($object->columnExists('description') && trim($object->getColumnValue('description'))) {
 			$text = escape_html_whitespace(convert_to_links(clean("\n" . $object->getColumnValue('description'))));
 			$properties['description'] = $text;
@@ -99,6 +100,7 @@ class Notifier {
 				
 		tpl_assign('object', $object);
 		tpl_assign('properties', $properties);
+		tpl_assign('second_properties', $second_properties);
 		
 		$emails = array();
 		foreach($people as $user) {
@@ -179,7 +181,7 @@ class Notifier {
 		Localization::instance()->loadSettings($locale, ROOT . '/language');
 		
 		self::queueEmail(
-			self::prepareEmailAddress($user->getEmail(), $user->getDisplayName()),
+			array(self::prepareEmailAddress($user->getEmail(), $user->getDisplayName())),
 			self::prepareEmailAddress($administrator->getEmail(), $administrator->getDisplayName()),
 			lang('reset password'),
 			tpl_fetch(get_template_path('forgot_password', 'notifier'))
@@ -206,7 +208,7 @@ class Notifier {
 		Localization::instance()->loadSettings($locale, ROOT . '/language');
 		
 		self::queueEmail(
-			self::prepareEmailAddress($user->getEmail(), $user->getDisplayName()),
+			array(self::prepareEmailAddress($user->getEmail(), $user->getDisplayName())),
 			self::prepareEmailAddress("noreply@fengoffice.com", "noreply@fengoffice.com"),
 			lang('password expiration reminder'),
 			tpl_fetch(get_template_path('password_expiration_reminder', 'notifier'))
@@ -235,7 +237,7 @@ class Notifier {
 		Localization::instance()->loadSettings($locale, ROOT . '/language');
 		
 		self::queueEmail(
-			self::prepareEmailAddress($user->getEmail(), $user->getDisplayName()),
+			array(self::prepareEmailAddress($user->getEmail(), $user->getDisplayName())),
 			self::prepareEmailAddress($sender->getEmail(), $sender->getDisplayName()),
 			lang('your account created'),
 			tpl_fetch(get_template_path('new_account', 'notifier'))
@@ -259,14 +261,41 @@ class Notifier {
 		$context = $reminder->getContext();
 		$type = $object->getObjectTypeName();
 		$date = $object->getColumnValue($context);
+		$isEvent = false;
+		$several_event_subscribers = false;
+		Env::useHelper("format");
+		if ($object instanceof ProjectEvent)
+			$isEvent = true;		
+			
 		if ($reminder->getUserId() == 0) {
 			$people = $object->getSubscribers();
+			if ($isEvent){
+				$several_event_subscribers = true;
+				$aux = array();
+				foreach ($people as $person){        //grouping people by different timezone
+					$time = $person->getTimezone();
+					if (isset ($aux["$time"])){
+						$aux["$time"][] = $person;
+					}else{
+						$aux["$time"] = array($person);
+					}
+				}
+				foreach ($aux as $tz => $group){
+					$string_date = format_datetime($date, 0, $tz);
+					self::objectNotification($object, $group, null, "$context reminder", "$context $type reminder desc", array($object->getObjectName(), $string_date));
+				}
+			}
 		} else {
 			$people = array($reminder->getUser());
+			if ($isEvent){
+				$string_date = format_datetime($date, 0, $reminder->getUser()->getTimezone());
+			}else{
+				$string_date = $date->format("Y/m/d H:i:s");
+			}
 		}
-		Env::useHelper("format");
-
-		self::objectNotification($object, $people, null, "$context reminder", "$context $type reminder desc", array($object->getObjectName(), $date->format("Y/m/d H:i:s")));
+		
+		if(!$several_event_subscribers)
+			self::objectNotification($object, $people, null, "$context reminder", "$context $type reminder desc", array($object->getObjectName(), $string_date));
 	} // taskDue
 	
 	/**
@@ -314,7 +343,7 @@ class Notifier {
 				$properties['workspace'] = $ws;
 				$properties['date'] = Localization::instance()->formatDescriptiveDate($object->getStart(), $user->getTimezone());
 				if ($object->getTypeId() != 2) {
-					$properties['CAL_HOUR'] = Localization::instance()->formatTime($object->getStart(), $user->getTimezone());
+					$properties['meeting_time'] = Localization::instance()->formatTime($object->getStart(), $user->getTimezone());
 				}
 		
 				$properties['accept or reject invitation help, click on one of the links below'] = '';
@@ -350,7 +379,7 @@ class Notifier {
 	 * @return boolean
 	 * @throws NotifierConnectionError
 	 */
-	static function notifEventAssistance(ProjectEvent $event, EventInvitation $invitation, $from_user) {
+	static function notifEventAssistance(ProjectEvent $event, EventInvitation $invitation, $from_user, $invs = null) {
 		if ((!$event instanceof ProjectEvent) || (!$invitation instanceof EventInvitation) 
 			|| (!$event->getCreatedBy() instanceof User) || (!$from_user instanceof User)) {
 			return;
@@ -359,6 +388,29 @@ class Notifier {
 		tpl_assign('event', $event);
 		tpl_assign('invitation', $invitation);
 		tpl_assign('from_user', $from_user);
+
+		$assist = array();
+		$not_assist = array();
+		$pending = array();
+		
+		if (isset ($invs)){
+			foreach ($invs as $inv){
+				$decision = $inv->getInvitationState();
+				$user_name = Users::findById($inv->getUserId())->getDisplayName();
+				if ($inv->getUserId() == ($from_user->getId())) continue;
+				if ($decision == 1){
+					$assist[] = ($user_name);
+				}else if ($decision == 2){
+					$not_assist[] = ($user_name);
+				}else{
+					$pending[] = ($user_name);
+				}
+			}
+		}
+
+		tpl_assign('assist', $assist);
+		tpl_assign('not_assist', $not_assist);
+		tpl_assign('pending', $pending);
 		
 		$people = array($event->getCreatedBy());
 		$recepients = array();
@@ -423,7 +475,7 @@ class Notifier {
 		}
 		
 		return self::queueEmail(
-			self::prepareEmailAddress($milestone->getAssignedTo()->getEmail(), $milestone->getAssignedTo()->getDisplayName()),
+			array(self::prepareEmailAddress($milestone->getAssignedTo()->getEmail(), $milestone->getAssignedTo()->getDisplayName())),
 			self::prepareEmailAddress($milestone->getCreatedBy()->getEmail(), $milestone->getCreatedByDisplayName()),
 			lang('milestone assigned to you', $milestone->getName(), $milestone->getProject() instanceof Project ? $milestone->getProject()->getName() : ''),
 			tpl_fetch(get_template_path('milestone_assigned', 'notifier'))
@@ -541,7 +593,7 @@ class Notifier {
 		Env::useLibrary('swift');
 
 		$mailer = self::getMailer();
-		if(!($mailer instanceof Swift)) {
+		if(!($mailer instanceof Swift_Mailer)) {
 			throw new NotifierConnectionError();
 		} // if
 
@@ -554,30 +606,37 @@ class Notifier {
 			} else {
 				$sender_name = "";
 			}
-			$from = self::prepareEmailAddress($smtp_address, $sender_name);
+			$from = array($smtp_address => $sender_name);
+		} else {
+			$pos = strrpos($from, "<");
+			if ($pos !== false) {
+				$sender_name = trim(substr($from, 0, $pos));
+				$sender_address = str_replace(array("<",">"),array("",""), trim(substr($from, $pos, strlen($from)-1)));
+			} else {
+				$sender_name = "";
+				$sender_address = $from;
+			}
+			$from = array($sender_address => $sender_name);
 		}
-		
-		$mailer->addPart($body, 'text/html');
-		
-		// add text/plain alternative part
-		if ($type == 'text/html') {
-// 			$onlytext = preg_replace("/(<br[^>]*>)/i", "\n", $body);
-// 			$onlytext = trim(preg_replace("/(<[\/]?[a-z][a-z0-9\s]*[^>]*>)/i", "", $onlytext));
-// 			$mailer->addPart(escape_html_whitespace_reversed($onlytext), 'text/plain');
 
- 			$onlytext = html_to_text($body);
- 			$mailer->addPart($onlytext, 'text/plain');
+		//Create the message
+		$message = Swift_Message::newInstance($subject)
+		  ->setFrom($from)
+		  ->setBody($body)
+		  ->setContentType($type)
+		;
+				
+		$message->setContentType($type);
+		$to = MailUtilities::prepareEmailAddresses(implode(",", $to));
+		foreach ($to as $address) {
+			$message->addTo(array_var($address, 0), array_var($address, 1));
 		}
- 		
- 		$body = false;
- 		
-		$result = $mailer->send($to, $from, $subject, $body, $type, $encoding, $ignore);
-		$mailer->close();
-
+		$result = $mailer->send($message);
+		
 		return $result;
 	} // sendEmail
 	
-	static function queueEmail($to, $from, $subject, $body = false, $type = 'text/plain', $encoding = '8bit') {
+	static function queueEmail($to, $from, $subject, $body = false, $type = 'text/html', $encoding = '8bit') {
 		$cron = CronEvents::getByName('send_notifications_through_cron');
 		if ($cron instanceof CronEvent && $cron->getEnabled()) {
 			$qm = new QueuedEmail();
@@ -615,7 +674,7 @@ class Notifier {
 		
 		Env::useLibrary('swift');
 		$mailer = self::getMailer();
-		if(!($mailer instanceof Swift)) {
+		if(!($mailer instanceof Swift_Mailer)) {
 			throw new NotifierConnectionError();
 		} // if
 		$fromSMTP = config_option("mail_transport", self::MAIL_TRANSPORT_MAIL) == self::MAIL_TRANSPORT_SMTP && config_option("smtp_authenticate", false);
@@ -628,25 +687,19 @@ class Notifier {
 				Hook::fire('notifier_email_body', $body, $body);
 				Hook::fire('notifier_email_subject', $subject, $subject);
 				
-				$mailer->addPart($body, 'text/html');
-		
-				// add text/plain alternative part
-//				if ($type == 'text/html') {
-					$onlytext = html_to_text($body);
-		 			$mailer->addPart($onlytext, 'text/plain');
-//				}
-		 		
-		 		$body = false;
-		 		
-				$result = $mailer->send(
-					explode(";", $email->getTo()),
-					$fromSMTP ? self::prepareEmailAddress(config_option("smtp_username"), $email->getFrom()) : $email->getFrom(),
-					$subject,
-					$body,
-					'text/html',
-					'8bit',
-					$complete
-				);
+				if ($fromSMTP) $from = array(config_option("smtp_username") => $email->getFrom());
+				$message = Swift_Message::newInstance($subject)
+				  ->setFrom($from)
+				  ->setBody($body)
+				  ->setContentType('text/html')
+				;
+				
+				$to = MailUtilities::prepareEmailAddresses(implode(",", explode(";", $email->getTo())));
+				foreach ($to as $address) {
+					$message->addTo(array_var($address, 0), array_var($address, 1));
+				}
+				$result = $mailer->send($message);
+
 				$email->delete();
 				$count++;
 			} catch (Exception $e) {
@@ -668,13 +721,7 @@ class Notifier {
 
 		// Emulate mail() - use NativeMail
 		if($mail_transport_config == self::MAIL_TRANSPORT_MAIL) {
-			$mailer = new Swift(new Swift_Connection_NativeMail());
-			if(!$mailer->isConnected()) {
-//				Logger::log($mailer->lastError);
-				throw new Exception($mailer->lastError);
-			} // if
-			return $mailer;
-
+			return Swift_Mailer::newInstance(Swift_MailTransport::newInstance());
 			// Use SMTP server
 		} elseif($mail_transport_config == self::MAIL_TRANSPORT_SMTP) {
 
@@ -690,35 +737,23 @@ class Notifier {
 
 			switch($smtp_secure_connection) {
 				case self::SMTP_SECURE_CONNECTION_SSL:
-					$transport = SWIFT_SSL;
+					$transport = 'ssl';
 					break;
 				case self::SMTP_SECURE_CONNECTION_TLS:
-					$transport = SWIFT_TLS;
+					$transport = 'tls';
 					break;
 				default:
-					$transport = SWIFT_OPEN;
+					$transport = null;
 			} // switch
-
-			$mailer = new Swift(new Swift_Connection_SMTP($smtp_server, $smtp_port, $transport));
-			$mailer->loadPlugin(new SwiftLogger());
-			if(!$mailer->isConnected()) {
-//				Logger::log($mailer->lastError);
-				throw new Exception($mailer->lastError);
-			} // if
-
-			$mailer->setCharset('UTF-8');
-
+			
+			$mail_transport = Swift_SmtpTransport::newInstance($smtp_server, $smtp_port, $transport);		
+			$smtp_authenticate = $smtp_username != null;
 			if($smtp_authenticate) {
-				if($mailer->authenticate($smtp_username, $smtp_password)) {
-					return $mailer;
-				} else {
-//					Logger::log($mailer->lastError);
-					throw new Exception($mailer->lastError);
-				} // if
-			} else {
-				return $mailer;
-			} // if
-
+				$mail_transport->setUsername($smtp_username);
+				$mail_transport->setPassword($smtp_password);
+			}
+			return Swift_Mailer::newInstance($mail_transport);
+			
 			// Somethings wrong here...
 		} else {
 			return null;

@@ -65,7 +65,9 @@ class SearchController extends ApplicationController {
 			}
 		} // if
 		$timeEnd = microtime(true);
-		
+	    if(str_starts_with($search_for,'"') && str_ends_with($search_for,'"')){    		
+    		$search_for = str_replace('"', '', $search_for);    		
+		}
 		tpl_assign('search_string', $search_for);
 		tpl_assign('search_results', $search_results);
 		tpl_assign('time', $timeEnd - $timeBegin);
@@ -73,7 +75,7 @@ class SearchController extends ApplicationController {
 		ajx_replace(true);
 	} // search
 	
-	function searchContacts($search_term, $search_results = null, $row_count = 5){
+	function searchContacts($search_term, $search_results = null, $row_count = 5, $page){
 		if (!is_array($search_results))
 			$search_results = array();
 		
@@ -83,7 +85,7 @@ class SearchController extends ApplicationController {
 			$projects = null;
 		}
 			
-		$results = SearchableObjects::searchByType($search_term, $projects, 'Contacts', true, $row_count);
+		$results = SearchableObjects::searchByType($search_term, $projects, 'Contacts', true, $row_count, $page);
 		if (count($results[0]) > 0){
 			$sr = array();
 			$sr['result'] = $results[0];
@@ -94,7 +96,7 @@ class SearchController extends ApplicationController {
 			$search_results[] = $sr;
 		}
 		
-		$results = SearchableObjects::searchByType($search_term, $projects, 'Companies', true, $row_count);
+		$results = SearchableObjects::searchByType($search_term, $projects, 'Companies', true, $row_count, $page);
 		if (count($results[0]) > 0){
 			$sr = array();
 			$sr['result'] = $results[0];
@@ -108,11 +110,11 @@ class SearchController extends ApplicationController {
 		return $search_results;
 	}
 	
-	function searchWorkspaces($search_term, $search_results = null, $row_count = 5){
+	function searchWorkspaces($search_term, $search_results = null, $row_count = 5, $page){
 		if (!is_array($search_results))
 			$search_results = array();
 		
-		$results = SearchableObjects::searchByType($search_term, '0', 'Projects', true, $row_count);
+		$results = SearchableObjects::searchByType($search_term, '0', 'Projects', true, $row_count, $page);
 		if (count($results[0]) > 0){
 			$sr = array();
 			$sr['result'] = $results[0];
@@ -126,11 +128,11 @@ class SearchController extends ApplicationController {
 		return $search_results;
 	}
 	
-	function searchUsers($search_term, $search_results = null, $row_count = 5){
+	function searchUsers($search_term, $search_results = null, $row_count = 5, $page){
 		if (!is_array($search_results))
 			$search_results = array();
 		
-		$results = SearchableObjects::searchByType($search_term, '0', 'Users', true, $row_count);
+		$results = SearchableObjects::searchByType($search_term, '0', 'Users', true, $row_count, $page);
 		if (count($results[0]) > 0){
 			$sr = array();
 			$sr['result'] = $results[0];
@@ -187,13 +189,13 @@ class SearchController extends ApplicationController {
 			switch($manager) {
 				case 'Contacts':
 				case 'Companies':
-					$search_results = $this->searchContacts($search_for, array(), 20);
+					$search_results = $this->searchContacts($search_for, array(), 20, $page);
 					break;
 				case 'Projects':
-					$search_results = $this->searchWorkspaces($search_for, array(), 20);
+					$search_results = $this->searchWorkspaces($search_for, array(), 20, $page);
 					break;
 				case 'Users':
-					$search_results = $this->searchUsers($search_for, array(), 20);
+					$search_results = $this->searchUsers($search_for, array(), 20, $page);
 					break;
 				default:
 					$user_id = $manager == "MailContents" ? logged_user()->getId() : 0;

@@ -2,7 +2,9 @@
 
   // Return array of langs
   return array(
+  	'the' => 'the',
     'username' => 'Username',
+	'email or username' => 'Email or username',
     'password' => 'Password',
     'password again' => 'Repeat password',
     'old password' => 'Old password',
@@ -35,6 +37,7 @@
     'use due date' => 'Use due date',
     'use start date' => 'Use start date',
     'assign to' => 'Assign to',
+  	'assigned to description' => 'To select the electronic mail account owner',
     'late' => 'Late',
     'upcoming' => 'Upcoming',
     'today' => 'Today',
@@ -241,7 +244,8 @@
   	'latest activity' => 'Latest activity', 
   	'view all activity' => 'View all activity...', 
   	'advanced' => 'Advanced',
-  
+
+	'direct url' => 'Direct URL',
   ); // array
 
 ?>

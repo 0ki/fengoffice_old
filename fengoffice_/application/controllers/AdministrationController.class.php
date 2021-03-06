@@ -671,6 +671,65 @@ class AdministrationController extends ApplicationController {
 		tpl_assign('all_accounts', $all_accounts);
 	}
 
+	
+	function object_subtypes() {
+		if(!logged_user()->isCompanyAdmin(owner_company())) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		} // if
+		
+		$co_types = array();
+		//$managers = array("ProjectMessages", "MailContents", "Contacts", "Companies", "ProjectEvents", "ProjectFiles", "ProjectTasks", "ProjectWebpages");
+		$managers = array("tasks" => "ProjectTasks");
+		foreach ($managers as $title => $manager) {
+			$co_types[$manager] = ProjectCoTypes::getObjectTypesByManager($manager);
+		}
+		
+		tpl_assign('managers', $managers);
+		tpl_assign('co_types', $co_types);
+		
+		$object_subtypes = array_var($_POST, 'subtypes');
+		if (is_array($object_subtypes)) {
+			try {
+				DB::beginWork();
+				foreach ($object_subtypes as $manager => $subtypes) {
+					foreach ($subtypes as $subtype) {
+						$type = ProjectCoTypes::findById(array_var($subtype, 'id', 0));
+						if (!$type instanceof ProjectCoType) {
+							$type = new ProjectCoType();
+							$type->setObjectManager($manager);
+						}
+						if (!array_var($subtype, 'deleted')) {
+							$type->setName(array_var($subtype, 'name', ''));
+							$type->save();
+						} else {
+							eval('$man_instance = ' . $manager . "::instance();");
+							if ($man_instance instanceof ProjectDataObjects && array_var($subtype, 'id', 0) > 0) {
+								$objects = $man_instance->findAll(array('conditions' => "`object_subtype`=".array_var($subtype, 'id', 0)));
+								if (is_array($objects)) {
+									foreach ($objects as $obj) {
+										if ($obj instanceof DataObject) {
+											$obj->setColumnValue('object_subtype', 0);
+											$obj->save();
+										}
+									}
+								}
+							}
+							if ($type instanceof ProjectCoType) $type->delete();
+						}
+					}
+				}
+				DB::commit();
+				flash_success(lang("success save object subtypes"));
+				ajx_current("back");
+			} catch (Exception $e) {
+				DB::rollback();
+				flash_error($e->getMessage());
+				ajx_current("empty");
+			}
+		}
+	}
 
 } // AdministrationController
 

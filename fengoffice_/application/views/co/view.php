@@ -72,7 +72,13 @@
 			<?php if (isset($internalDivs)){
 				foreach ($internalDivs as $idiv)
 					echo $idiv;
-			}		
+			}
+			
+			if (!$object instanceof User) {
+			?><div style="padding-bottom:15px"><b><?php echo lang('direct url') ?>:</b>
+				<a id="<?php echo $genid ?>task_url" href="<?php echo($object->getViewUrl()) ?>" target="_blank"><?php echo($object->getViewUrl()) ?></a>
+			</div><?php
+			}
 			
 			if ($object instanceof ApplicationDataObject)
 				echo render_custom_properties($object);

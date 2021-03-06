@@ -359,8 +359,8 @@ og.WebpageManager = function() {
 		tbar.push('-');
 		tbar.push(actions.editWebpage);
 		tbar.push(actions.tag);
-		tbar.push(actions.delWebpage);
 		tbar.push(actions.archive);
+		tbar.push(actions.delWebpage);		
 		tbar.push('-');
 	}
 	tbar.push(actions.markAs);

@@ -22,7 +22,7 @@
 						$dtv = DateTimeValueLib::dateFromFormatAndString("Y-m-d H:i:s", $cpv->getValue());
 						$value = $dtv->format(user_config_option('date_format'));
 					} else {
-						$value = $cpv->getValue();
+						$value = clean($cpv->getValue());
 					}
 					
 					$title = '';
@@ -85,8 +85,8 @@ if (is_array($properties) && count($properties) > 0){ ?>
 	<table class="og-custom-properties">
 	<?php foreach ($properties as $prop) {?>
 		<tr>
-			<td class="name" title="<?php echo $prop->getPropertyName() ?>"><?php echo $prop->getPropertyName() ?>:&nbsp;</td>
-			<td title="' . $prop->getPropertyValue() . '"><?php echo $prop->getPropertyValue() ?></td>
+			<td class="name" title="<?php echo clean($prop->getPropertyName()) ?>"><?php echo clean($prop->getPropertyName()) ?>:&nbsp;</td>
+			<td title="<?php echo clean($prop->getPropertyValue()) ?>"><?php echo clean($prop->getPropertyValue()) ?></td>
 		</tr>
 	<?php } // foreach ?>
 	</table>

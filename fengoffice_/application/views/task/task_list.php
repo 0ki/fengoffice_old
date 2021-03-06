@@ -7,7 +7,7 @@ $genid = gen_id();
   if(App.modules.addTaskForm) {
     App.modules.addTaskForm.task_lists[<?php echo $task_list->getId() ?>] = {
       id               : <?php echo $task_list->getId() ?>,
-	      can_add_task     : <?php echo ($task_list->canAddSubTask(logged_user()) && !$task_list->isTrashed()) ? 'true' : 'false' ?>,
+	  can_add_task     : <?php echo ($task_list->canAddSubTask(logged_user()) && !$task_list->isTrashed()) ? 'true' : 'false' ?>,
       add_task_link_id : 'addTaskForm<?php echo $task_list->getId() ?>ShowLink',
       task_form_id     : 'addTaskForm<?php echo $task_list->getId() ?>',
       text_id          : 'addTaskText<?php echo $task_list->getId() ?>',
@@ -33,20 +33,21 @@ $genid = gen_id();
 	<?php } // if ?>
 <?php } // if ?>
 		<?php 
-				$show_help_option = user_config_option('show_context_help');
+			$show_help_option = user_config_option('show_context_help');
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_list_task_context_help', true, logged_user()->getId()))) {?>
 					<div id="tasksCardContextHelp" class="contextHelpStyle">
 						<?php render_context_help($this, 'chelp task card','list_task'); ?>
 					</div>
 		<?php }?>
 		
-<?php if ($task_list->getObjectSubtype() > 0) { 
+<?php if ($task_list->getObjectSubtype() > 0) {
 		$subType = ProjectCoTypes::findById($task_list->getObjectSubtype());
 		if ($subType instanceOf ProjectCoType ) {
-			echo "<div><b>" . lang('object type') . "</b>: " . $subType->getName() . "</div>";
+			echo "<div><b>" . lang('object type') . ":</b> " . $subType->getName() . "</div>";
 		}
-	 ?>
-<?php } ?>
+	  }
+?>
+
 <?php if($task_list->getText()) { ?>
   <fieldset><legend><?php echo lang('description') ?></legend>
   	<?php echo escape_html_whitespace(convert_to_links(clean($task_list->getText())))?>
@@ -110,11 +111,11 @@ if($showOpenSubtasksDiv) { ?>
 	       <table><tbody><tr><td style="padding-right: 10px">
 	       <?php echo label_tag(lang('start date')) ?>            
 	       </td><td>
-	      <?php echo pick_date_widget2('task[start_date]', array_var($task_data, 'start_date'),$genid, 60) ?>
+	      <?php echo pick_date_widget2('task_start_date', array_var($task_data, 'start_date'),$genid, 60) ?>
 	      </td></tr><tr><td style="padding-right: 10px">
 	      <?php echo label_tag(lang('due date')) ?>
 	       </td><td>
-	      <?php echo pick_date_widget2('task[due_date]', array_var($task_data, 'due_date'),$genid, 70) ?>
+	      <?php echo pick_date_widget2('task_due_date', array_var($task_data, 'due_date'),$genid, 70) ?>
 	      </td></tr><tr><td style="padding-right: 10px">
 	      	<label><?php echo lang('assign to') ?>:</label>
 	       </td><td>

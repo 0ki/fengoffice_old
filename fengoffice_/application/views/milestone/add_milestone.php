@@ -2,6 +2,9 @@
   require_javascript('og/modules/addMessageForm.js'); 
   $genid = gen_id();
   $object = $milestone;
+  $all = true;
+	if (active_project()!= null)
+		$all = false;
   if ($milestone->isNew()) {
   	$project = active_or_personal_project();
   } else {
@@ -41,7 +44,11 @@
 	<?php $categories = array(); Hook::fire('object_edit_categories', $object, $categories); ?>
 	
 	<div style="padding-top:5px">
-		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_milestone_select_workspace_div', this)"><?php echo lang('workspace') ?></a> - 
+		<?php if ($all) { ?>
+			<a href="#" class="option" style="font-weight:bold" onclick="og.toggleAndBolden('<?php echo $genid ?>add_milestone_select_workspace_div',this)"><?php echo lang('workspace') ?></a> - 
+		<?php } else {?>
+			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_milestone_select_workspace_div',this)"><?php echo lang('workspace') ?></a> -
+		<?php }?> 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_milestone_tags_div', this)"><?php echo lang('tags') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_milestone_description_div', this)"><?php echo lang('description') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_milestone_options_div', this)"><?php echo lang('options') ?></a> -
@@ -71,7 +78,11 @@
 		<input type="hidden" name="milestone[from_template_id]" value="<?php echo $base_milestone->getId() ?>" />
 	<?php } ?>
 	
-	<div id="<?php echo $genid ?>add_milestone_select_workspace_div" style="display:none">
+	<?php if ($all) { ?>
+			<div id="<?php echo $genid ?>add_milestone_select_workspace_div" style="display:block"> 
+	<?php } else {?>
+			<div id="<?php echo $genid ?>add_milestone_select_workspace_div" style="display:none">
+	<?php }?>
 	<fieldset>
 	<?php 
 			$show_help_option = user_config_option('show_context_help'); 

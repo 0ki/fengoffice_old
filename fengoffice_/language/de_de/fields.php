@@ -225,4 +225,6 @@
 	'field ProjectWebpages archived_by_id' => 'Archiviert durch',
 	'field Projects archived_on' => 'Archiviert am',
 	'field Projects archived_by_id' => 'Archiviert durch',
+	'field Users type' => 'Typ',
+	'field MailContents received_date' => 'Erhalten',
 ); ?>

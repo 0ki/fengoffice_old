@@ -1,16 +1,16 @@
 <?php
-if (is_array($logs) && count($logs) > 0) {
+if (is_array($logs) && count($logs)> 0) {
 ?>
 
 <div class="commentsTitle"><?php echo lang('latest activity'); ?> </div>
 
 <table style="min-width:400px;margin-top:10px;" class='dashActivity'>
 <tbody>
-<?php 
-
+<?php
 $isAlt = true;
 if (is_array($logs)) {
-	foreach ($logs as $log) {
+	foreach ($logs as $log) {		
+		if ($log->getRelObjectManager() == 'Users' && ( logged_user()->getId()!=$user_id && !logged_user()->isAdministrator())) break;		
 		$isAlt = !$isAlt;
 		echo '<tr' . ($isAlt? ' class="dashAltRow"' : '') . '><td  style="padding:5px;padding-right:15px;">';
 		if ($log->getCreatedOn()->getYear() != DateTimeValueLib::now()->getYear())
@@ -21,7 +21,10 @@ if (is_array($logs)) {
 			else
 				$date = format_time($log->getCreatedOn(), "M d, H:i");
 		}
-		echo $date . ' </td><td style="padding:5px;padding-right:15px;"> ' . $log->getActivityData();
+		if($log->getRelObjectManager() == 'Timeslots' && ($log->getAction()==ApplicationLogs::ACTION_OPEN || $log->getAction()==ApplicationLogs::ACTION_CLOSE))
+			echo $date . ' </td><td style="padding:5px;padding-right:15px;"> ' . $log->getText();
+		else
+			echo $date . ' </td><td style="padding:5px;padding-right:15px;"> ' . $log->getActivityData();
 		echo '</td></tr>';
 	}
 }

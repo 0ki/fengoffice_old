@@ -8,6 +8,10 @@ http://code.google.com/p/opengooru/
 
 locale = 'ru_ru';
 addLangs({
+	'overdue': 'Просрочено',
+	'active': 'Активные',
+	'my active': 'Мои активные',
+	'my subscribed': 'Я в подписчиках',
 	'gantt': 'Гантт',
 	'check in': '<b>Проверить</b>',
 	'cannot check in': 'Не удается проверить',
@@ -785,7 +789,7 @@ addLangs({
   	'new email in conversation text': 'В переписке, которую вы ведете, есть новое сообщение. Вы все равно хотите отправить сообщение или посмотрите почтовое сообщение в новом окошке?',
   	'send anyway': 'Отправить в любом случае',
   	'view new email': 'Открыть новую почту',
-	'apply assignee to subtasks': 'Добавить исполнителя к подзадачам'
+	'apply assignee to subtasks': 'Добавить исполнителя к подзадачам',
 	'confirm delete permanently company': 'Вы действительно хотите удалить эту компанию?\nВсе пользователи компании также будут удалены.',
     'confirm move to trash company': 'Вы действительно хотите переместить компанию в корзину?\nВсе пользователи компании также будут удалены.',
     
@@ -795,6 +799,6 @@ addLangs({
     'mark spam': 'Пометить как "Спам"',
     'mark ham': 'Убрать пометку "Спам"',
     
-    'select all tasks': 'Выбрать все задачи'	
+    'select all tasks': 'Выбрать все задачи',	
  // 	'click here to download the csv file': 'Нажмите здесь, чтоб скачать csv файл.'
 });

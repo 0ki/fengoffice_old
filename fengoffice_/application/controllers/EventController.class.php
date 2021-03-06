@@ -69,10 +69,11 @@ class EventController extends ApplicationController {
 		$this->setViewVariables($view_type, $user_filter, $status_filter);
 	}
 	
-	function registerInvitations($data, $event) {
-		$event->clearInvitations();
+	function registerInvitations($data, $event, $clear=true) {
+		if ($clear) $event->clearInvitations();
 		// Invitations
-		foreach (array_var($data, 'users_to_invite', array()) as $id => $assist) {
+		$invitations = array_var($data, 'users_to_invite', array());
+		foreach ($invitations as $id => $assist) {
 			$conditions = array('event_id' => $event->getId(), 'user_id' => $id);
 			//insert only if not exists 
 			if (EventInvitations::findById($conditions) == null) { 
@@ -85,6 +86,11 @@ class EventController extends ApplicationController {
 	            	$_POST['subscribers']['user_' . $id] = 'checked';
 	            }
             }
+		}
+		// Delete non checked invitations
+		$previuos_invitations = EventInvitations::findAll(array('conditions' => '`event_id` = ' . $event->getId()));
+		foreach ($previuos_invitations as $pinv) {
+			if (!array_key_exists($pinv->getUserId(), $invitations)) $pinv->delete();
 		}
 	}
 	
@@ -106,10 +112,12 @@ class EventController extends ApplicationController {
 		} else {
 			$conditions = array('conditions' => "`event_id` = " . DB::escape($event_id) . " AND `user_id` = ". DB::escape($user_id));
 			$inv = EventInvitations::findOne($conditions);
+			$conditions_all = array('conditions' => "`event_id` = " . DB::escape($event_id));
+			$invs = EventInvitations::findAll($conditions_all);			
 			if ($inv != null) {
 				if ($inv->getUserId() != logged_user()->getId()) {
-					flash_error(lang('no access permissions'));
-					ajx_current("empty");
+					flash_error(lang('no access permissions'));					
+					self::view_calendar();
 					return;
 				}
 				try {
@@ -130,7 +138,7 @@ class EventController extends ApplicationController {
 					$event = ProjectEvents::findById(array('id' => $event_id));
 					$user = Users::findById(array('id' => $user_id));
 					session_commit();
-					Notifier::notifEventAssistance($event, $inv, $user);
+					Notifier::notifEventAssistance($event, $inv, $user, $invs);
 					if ($inv->getInvitationState() == 1) flash_success(lang('invitation accepted'));
 					else flash_success(lang('invitation rejected'));
 				} else {
@@ -418,7 +426,7 @@ class EventController extends ApplicationController {
 	          	}
 	         	DB::commit();
 	          	
-	          	flash_success(lang('success add event', $event->getObjectName()));
+	          	flash_success(lang('success add event', clean($event->getObjectName())));
 	          	ajx_add("overview-panel", "reload");
 	        } catch(Exception $e) {
 	          	DB::rollback();
@@ -823,7 +831,7 @@ class EventController extends ApplicationController {
 				// run the query to set the event data
 			    $event->setFromAttributes($data);
 
-			    $this->registerInvitations($data, $event);
+			    $this->registerInvitations($data, $event, false);
 				if (isset($data['confirmAttendance'])) {
 	            	$this->change_invitation_state($data['confirmAttendance'], $event->getId(), $user_filter);
 	            }
@@ -855,7 +863,7 @@ class EventController extends ApplicationController {
 				
 	          	ApplicationLogs::createLog($event, $event->getWorkspaces(), ApplicationLogs::ACTION_EDIT);
 	          	DB::commit();
-	          	flash_success(lang('success edit event', $event->getObjectName()));
+	          	flash_success(lang('success edit event', clean($event->getObjectName())));
 
 	          	if (array_var($_POST, 'popup', false)) {
 					ajx_current("reload");
@@ -1012,7 +1020,7 @@ class EventController extends ApplicationController {
 				$events_data = CalFormatUtilities::decode_ical_file($filename);
 				if (count($events_data)) {
 					try {
-						DB::beginWork();		
+						DB::beginWork();
 						foreach ($events_data as $ev_data) {
 							$event = new ProjectEvent();
 					 		$project = active_or_personal_project();

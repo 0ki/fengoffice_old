@@ -74,43 +74,45 @@ App.modules.addMessageForm = {
    * @param integer company_id Company ID
    */
   getCheckedUsers: function(genid) {
-  	var ids = "";
+  	var ids = "", ret = '';
   	var notcomp = Ext.getDom(genid + 'notify_companies');
   	if (notcomp) {
-  		var companies_divs = new Array();
+  		var companies_divs = new Array();  		
   		for (var i=0;i<notcomp.childNodes.length;i++){
   			if (notcomp.childNodes[i].id){
   				companies_divs.push(notcomp.childNodes[i]);
   			}
   		}
-  		users_div = companies_divs[0];
-  		if (! users_div){
-  			return null;
-  		}
-  			var p = '';
-  			var usrs_div;
-  			for (var n = 0;n<users_div.childNodes.length;n++){
-  				if (users_div.childNodes[n].id){
-  					var pos = users_div.childNodes[n].id.length;  					
-  					var t = users_div.childNodes[n].id.substring(pos - 13); 
-	  				if( t == 'company_users')
-	  				{
-	  					usrs_div = (users_div.childNodes[n]);
+  		for (var x=0; x<companies_divs.length;x++){
+	  		var users_div = companies_divs[x];
+	  		if (! users_div){
+	  			return null;
+	  		}
+	  			var p = '';
+	  			var usrs_div;
+	  			for (var n = 0;n<users_div.childNodes.length;n++){	  				
+	  				if (users_div.childNodes[n].id){	  					
+	  					var pos = users_div.childNodes[n].id.length;  					
+	  					var t = users_div.childNodes[n].id.substring(pos - 13); 
+		  				if( t == 'company_users')
+		  				{
+		  					usrs_div = (users_div.childNodes[n]);
+		  				}
 	  				}
-  				}
-  			}
-  			var ret='';
-  			for (var d=0;d<usrs_div.childNodes.length;d++){
-  				if (usrs_div.childNodes[d].id)
-  				{
-  					if(hu = document.getElementById('hiddenUser' + usrs_div.childNodes[d].id)){
-  						if(hu.value == 'checked'){
-  							ret += (hu.name.substring(17,hu.name.length-1)) + ', ';
-  						}
-  					};
-  				}
-  			}
-  			return ret;  		
+	  			}  			
+	  			for (var d=0;d<usrs_div.childNodes.length;d++){
+	  				if (usrs_div.childNodes[d].id)
+	  				{  		  					
+	  					var div_user = document.getElementById(usrs_div.childNodes[d].id);
+	  					var user = document.getElementById(usrs_div.childNodes[d].id.substr(3));
+						if(div_user.className == 'container-div checked-user'){						
+							ret += (user.name.substring(17,user.name.length-1)) + ', ';
+						}  					
+	  					
+	  				}
+	  			} 
+	  	}  		
+  		return ret;  		
   	}
     return ids;
   } // emailNotifyClickCompany

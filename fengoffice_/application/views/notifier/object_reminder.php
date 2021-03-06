@@ -1,6 +1,6 @@
 <div style="font-family: Verdana, Arial, sans-serif; font-size: 12px;"><br><br>
 
-<?php echo lang("$context $type reminder desc", $object->getObjectName(), $date) ?><br><br>
+<?php echo lang("$context $type reminder desc", clean($object->getObjectName()), $date) ?><br><br>
 
 <?php echo lang("view $type") ?>: <?php echo str_replace('&amp;', '&', $object->getViewUrl()) ?><br><br>
 

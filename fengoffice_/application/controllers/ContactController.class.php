@@ -2246,6 +2246,23 @@ class ContactController extends ApplicationController {
     	download_contents($data, 'text/x-vcard', $name, strlen($data), true);
     	die();
     }
+    
+
+    function export_to_vcard_all() {
+      $contacts_all = Contacts::instance()->getAllowedContacts();
+      $user=logged_user();
+      if (count($contacts_all) == 0) {
+        flash_error(lang("you must select the contacts from the grid"));
+        ajx_current("empty");
+        return;
+      }
+
+      $data = self::build_vcard($contacts_all);
+      $name = "contacts_all_".$user->getUsername().".vcf";
+
+      download_contents($data, 'text/x-vcard', $name, strlen($data), true);
+      die();
+    }
 } // ContactController
 
 ?>

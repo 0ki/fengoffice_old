@@ -9,7 +9,7 @@ if (!isset($attr)) $attr = "";
 		<div class="db-ico unknown ico-<?php echo clean($icon_class) ?>" title="<?php echo clean($linked_object->getObjectTypeName()) ?>"></div>
 	</a></td>
 	
-	<td><a <?php echo $attr ?> href="<?php echo $linked_object->getObjectUrl() ?>" title="<?php echo $linked_object->getObjectName() ?>">
+	<td><a <?php echo $attr ?> href="<?php echo $linked_object->getObjectUrl() ?>" title="<?php echo clean($linked_object->getObjectName()) ?>">
 		<?php echo clean($linked_object->getObjectName()) ?>
 	</a></td>
 	

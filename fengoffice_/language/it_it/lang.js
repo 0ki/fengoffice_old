@@ -671,5 +671,14 @@ addLangs({
 	'select co types to apply': 'Seleziona il tipo di oggetto a cui applicare la proprietà',
 	'write an email to contact': 'Scrivi una email a {0}',
 	'quick upload desc': 'Collega un nuovo file da questo computer',
-	'switch format warn': 'Passando alla modalità Testo verrà persa tutta la formattazione HTML. Procedo ?'
+	'switch format warn': 'Passando alla modalità Testo verrà persa tutta la formattazione HTML. Procedo ?',
+	'confirm delete permanently company': 'Confermi la cancellazione permanente di questa Società? Nota che saranno cancellati anche tutti i relativi utenti.',
+	'confirm move to trash company': 'Confermi la cancellazione di questa Società? Nota che saranno cancellati anche tutti i relativi utenti.',
+	'expand': 'Espandi',
+	'collapse': 'Comprimi',
+	'warning': 'Attenzione',
+	'new email in conversation text': 'C\\\'è un nuovo messaggio nella conversazione a cui stai rispondendo. Vuoi inviare lo stesso questa mail o prima vuoi vedere il nuovo messaggio?',
+	'send anyway': 'Invia comunque',
+	'view new email': 'Mostra il nuovo messaggio',
+	'mark spam': 'Marca come SPAM'
 });

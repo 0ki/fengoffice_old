@@ -104,7 +104,8 @@ ogTasks.drawEditTaskForm = function(task_id, group_id){
 			taskId: task.id,
 			isEdit: true,
 			tags: task.tags,
-			otype: task.otype
+			otype: task.otype,
+			subtasksCount: task.subtasks.length
 		});
 	}
 }
@@ -117,7 +118,6 @@ ogTasks.checkEnterPress = function (e,id)
 	if (e && e.which) {
 		characterCode = e.which;
 	} else {
-		e = event;
 		characterCode = e.keyCode;
 	}
 	if (characterCode == 13) {
@@ -158,16 +158,16 @@ ogTasks.drawTaskForm = function(container_id, data){
 	html += "<table><tr><td><div id='ogTasksPanelATAssigned' style='padding-top:5px;'><table><tr><td style='width:120px;'><b>" + lang('assigned to') + ":&nbsp;</b></td><td><span id='ogTasksPanelATAssignedCont'></span></td></tr></table></div></td>";
 	html += '<td style="' + (!data.isEdit?'padding-top:7px;':'') + 'padding-left:15px">';
 	html += '<div style="display:' + (chkIsVisible?'inline':'none') + '" id="ogTasksPanelATNotifyDiv"><label for="ogTasksPanelATNotify"><input style="width:14px;" type="checkbox" name="task[notify]" id="ogTasksPanelATNotify" ' + (chkIsChecked? 'checked':'') + '/>&nbsp;' + lang('send notification') + '</label></div>';
-	if (data.isEdit) html += '<label for="ogTasksPanelApplyAssignee"><input style="width:14px;" type="checkbox" name="task[apply_assignee_subtasks]" id="ogTasksPanelApplyAssignee" />&nbsp;' + lang('apply assignee to subtasks') + '</label>';
+	if (data.isEdit && data.subtasksCount>0) html += '<label for="ogTasksPanelApplyAssignee"><input style="width:14px;" type="checkbox" name="task[apply_assignee_subtasks]" id="ogTasksPanelApplyAssignee" />&nbsp;' + lang('apply assignee to subtasks') + '</label>';
 	html += '</td>';
 	html += '</tr></table>'; 
 	
 	html += "<div id='ogTasksPanelATWorkspace' style='padding-top:5px;" + (data.isEdit? '': 'display:none') + "'><table><tr><td style='width:120px;'><b>" + lang('workspace') + ":&nbsp;</b></td><td><div id='ogTasksPanelWsSelector'></div></td>";
-	if (data.isEdit) html += "<td style=\"padding-left:15px\"><label for=\"ogTasksPanelApplyWS\"><input style=\"width:14px;\" type=\"checkbox\" name=\"task[apply_ws_subtasks]\" id=\"ogTasksPanelApplyWS\" />&nbsp;" + lang('apply workspace to subtasks') + "</label></td>";
+	if (data.isEdit && data.subtasksCount>0) html += "<td style=\"padding-left:15px\"><label for=\"ogTasksPanelApplyWS\"><input style=\"width:14px;\" type=\"checkbox\" name=\"task[apply_ws_subtasks]\" id=\"ogTasksPanelApplyWS\" />&nbsp;" + lang('apply workspace to subtasks') + "</label></td>";
 	html += "</tr></table></div>";
 	html += "<div id='ogTasksPanelATMilestone' style='padding-top:5px;" + (data.isEdit? '': 'display:none') + "'><table><tr><td style='width:120px;'><b>" + lang('milestone') + ":&nbsp;</b></td><td><div id='ogTasksPanelMilestoneSelector'></div></td>";
-	if (data.isEdit) html += "<td style=\"padding-left:15px\"><label for=\"ogTasksPanelApplyMI\"><input style=\"width:14px;\" type=\"checkbox\" name=\"task[apply_milestone_subtasks]\" id=\"ogTasksPanelApplyMI\" />&nbsp;" + lang('apply milestone to subtasks') + "</label></td>";
-	html += "</tr></table></div>";
+	if (data.isEdit && data.subtasksCount>0) html += "<td style=\"padding-left:15px\"><label for=\"ogTasksPanelApplyMI\"><input style=\"width:14px;\" type=\"checkbox\" name=\"task[apply_milestone_subtasks]\" id=\"ogTasksPanelApplyMI\" />&nbsp;" + lang('apply milestone to subtasks') + "</label></td>";
+	html += "</tr></table></div>";	
 	html += "<div id='ogTasksPanelATTags' style='padding-top:5px;" + (data.isEdit? '': 'display:none') + "'><table><tr><td style='width:120px;'><b>" + lang('tags') + ":&nbsp;</b></td><td><input id='ogTasksPanelTagsSelector' style='min-width:120px;max-width:300px' type='text' value='" + (data.tags?data.tags + ',':'') + "' name='task[tags]'/></td></tr></table></div>";
 	html += "<div id='ogTasksPanelATObjectType' style='padding-top:5px;'><table><tr><td style='width:120px;'><b>" + lang('object type') + ":&nbsp;</b></td><td><input id='ogTasksPanelObjectTypeSelector' style='min-width:120px;max-width:300px' type='text' value='" + (data.otype ? data.otype : og.defaultTaskType) + "' name='task[object_subtype]'/></td></tr></table></div>";
 
@@ -550,8 +550,11 @@ ogTasks.drawAssignedToCombo = function(success, data) {
 					var checkboxDiv = document.getElementById('ogTasksPanelATNotifyDiv');
 					if (record.data.value != '-1:-1' && record.data.value.split(':')[1] != '0'){
 						checkboxDiv.style.display = 'block';
-						var currentUser = ogTasks.currentUser;
-						checkbox.checked = (record.data.value != (currentUser.companyId + ':' + currentUser.id));
+						var currentUser = ogTasks.currentUser;						
+						if (ogTasks.userPreferences.defaultNotifyValue == 1)
+							checkbox.checked = (record.data.value != (currentUser.companyId + ':' + currentUser.id));
+						else
+							checkbox.checked = false;
 						ogTasks.assignedTo = combo.getValue();
 					} else {
 						checkboxDiv.style.display = 'none';

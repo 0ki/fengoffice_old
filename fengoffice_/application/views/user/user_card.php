@@ -48,7 +48,7 @@
 					echo format_date($log->getCreatedOn());
 				}?></td>
 			<td><div class="db-ico ico-<?php echo $log_object->getObjectTypeName() ?>"></div></td>
-			<td><a class='internalLink' href='<?php echo $log_object->getObjectUrl() ?>'><?php echo $log_object->getObjectName() ?></a></td>
+			<td><a class='internalLink' href='<?php echo $log_object->getObjectUrl() ?>'><?php echo clean($log_object->getObjectName()) ?></a></td>
 			<td><?php echo $log->getText() ?></td>
 			</tr>
 			

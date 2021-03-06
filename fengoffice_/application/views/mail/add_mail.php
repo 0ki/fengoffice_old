@@ -100,6 +100,9 @@ sig.actualHtmlSignature = '';
 <input type="hidden" id="<?php echo $genid ?>hf_mail_contacts" value="<?php echo implode(',',$allEmails) ?>" />
 
 
+<div id="textarea_new"></div>
+
+
 <div class="mail" id="<?php echo $genid ?>mail_div" style="height:100%;">
 <div class="coInputHeader" id="<?php echo $genid ?>header_div">
 	<div class="coInputHeaderUpperRow">
@@ -129,35 +132,41 @@ sig.actualHtmlSignature = '';
 		<table style="width:95%"><tr><td style="width: 60px;">
     	<label for='mailTo'><?php echo lang('mail to')?> <span class="label_required">*</span></label>
     	</td><td>
-    	<?php echo autocomplete_emailfield('mail[to]', $mail_to, $allEmails, '', 
-    		array('class' => 'title', 'tabindex'=>'10', 'id' => $genid . 'mailTo', 'style' => 'width:100%;', 'onchange' => "og.addContactsToAdd('$genid')"), false); ?>
+    	<?php echo autocomplete_textarea_field('mail[to]', $mail_to, $allEmails, 30, 
+    		array('class' => 'title', 'tabindex'=>'10', 'id' => $genid . 'mailTo' )); ?>
+    	<?php //echo autocomplete_emailfield('mail[to]', $mail_to, $allEmails, '', 
+    		//array('class' => 'title', 'tabindex'=>'10', 'id' => $genid . 'mailTo', 'style' => 'width:100%;', 'onchange' => "og.addContactsToAdd('$genid')"), false); ?>
     	</td></tr></table>
 	</div>
   
- 	<div id="add_mail_CC" style="padding-top:7px;">
+ 	<div id="add_mail_CC" style="padding-top:2px;">
  		<table style="width:95%"><tr><td style="width: 60px;">
     	<label for="mailCC"><?php echo lang('mail CC')?> </label>
     	</td><td>
-    	<?php echo autocomplete_emailfield('mail[cc]', array_var($mail_data, 'cc'), $allEmails, '', 
-    		array('class' => 'title', 'tabindex'=>'20', 'id' => $genid . 'mailCC', 'style' => 'width:100%;', 'onchange' => "og.addContactsToAdd('$genid')"), false); ?>
+    	<?php echo autocomplete_textarea_field('mail[cc]', array_var($mail_data, 'cc'), $allEmails, 30, 
+    		array('class' => 'title', 'tabindex'=>'20', 'id' => $genid . 'mailCC' )); ?>
+    	<?php //echo autocomplete_emailfield('mail[cc]', array_var($mail_data, 'cc'), $allEmails, '', 
+    		//array('class' => 'title', 'tabindex'=>'20', 'id' => $genid . 'mailCC', 'style' => 'width:100%;', 'onchange' => "og.addContactsToAdd('$genid')"), false); ?>
     	</td></tr></table>
  	</div>
  	
- 	<div id="add_mail_BCC" style="padding-top:7px;display:none;">
+ 	<div id="add_mail_BCC" style="padding-top:2px;display:none;">
  		<table style="width:95%"><tr><td style="width: 60px;">
 	    <label for="mailBCC"><?php echo lang('mail BCC')?></label>
 	    </td><td>
-	    <?php echo autocomplete_emailfield('mail[bcc]', array_var($mail_data, 'bcc'), $allEmails, '', 
-    		array('class' => 'title', 'tabindex'=>'30', 'id' => $genid . 'mailBCC', 'style' => 'width:100%;', 'onchange' => "og.addContactsToAdd('$genid')"), false); ?>
+	    <?php echo autocomplete_textarea_field('mail[bcc]', array_var($mail_data, 'bcc'), $allEmails, 30, 
+    		array('class' => 'title', 'tabindex'=>'30', 'id' => $genid . 'mailBCC' )); ?>
+    	<?php //echo autocomplete_emailfield('mail[bcc]', array_var($mail_data, 'bcc'), $allEmails, '', 
+    		//array('class' => 'title', 'tabindex'=>'30', 'id' => $genid . 'mailBCC', 'style' => 'width:100%;', 'onchange' => "og.addContactsToAdd('$genid')"), false); ?>
     	</td></tr></table>
 	</div>
  	
-	<div style="padding-top:7px;">
+	<div style="padding-top:2px;">
 		<table style="width:95%"><tr><td style="width: 60px;">
     	<label for='mailSubject'><?php echo lang('mail subject')?></label>
     	</td><td>
     	<?php echo text_field('mail[subject]', array_var($mail_data, 'subject'), 
-    		array('class' => 'title', 'tabindex'=>'40', 'id' => $genid . 'mailSubject', 'style' => 'width:100%;', 'autocomplete' => 'off')) ?>
+    		array('class' => 'title', 'tabindex'=>'0', 'id' => $genid . 'mailSubject', 'style' => 'width:100%;', 'autocomplete' => 'off')) ?>
     	</td></tr></table>
 	</div>
 		
@@ -217,12 +226,14 @@ sig.actualHtmlSignature = '';
 		$attachs = array_var($mail_data, 'attachs');
 		if (is_array($attachs)) {
 			foreach ($attachs as $att) {
-				$split = explode(':', $att); 
+				$split = explode(':', $att);
+				$icon_class = 'ico-file ico-' . str_replace(".", "_", str_replace("/", "-", $split[2]));
 	?>
 	og.addMailAttachment(container, {
 		object_id: '<?php echo $split[1] . ":" . $split[2] . ":" . $split[3] ?>',
 		manager: '<?php echo $split[0] ?>',
-		name: '<?php echo $split[1] ?>'
+		name: '<?php echo $split[1] ?>',
+		icocls: '<?php echo $icon_class ?>'
 	});
 	<?php 
 			}
@@ -401,5 +412,5 @@ if (og.preferences['draft_autosave_timeout'] > 0) {
 		og.autoSaveDraft('<?php echo $genid ?>');
 	}, og.preferences['draft_autosave_timeout'] * 1000);
 }
-Ext.get('<?php echo $genid ?>mailTo').focus();
+Ext.get('auto_complete_input_<?php echo $genid ?>mailTo').focus();
 </script>

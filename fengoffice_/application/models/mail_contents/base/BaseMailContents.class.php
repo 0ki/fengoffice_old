@@ -41,6 +41,7 @@ abstract class BaseMailContents extends ProjectDataObjects {
 	'message_id' => DATA_TYPE_STRING,
 	'conversation_id' => DATA_TYPE_STRING,
 	'in_reply_to_id' => DATA_TYPE_STRING,
+	'sync' => DATA_TYPE_BOOLEAN, 
 	);
 
 	/**

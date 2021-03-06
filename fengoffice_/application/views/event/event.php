@@ -124,7 +124,9 @@ $project = active_or_personal_project();
 $day =  array_var($event_data, 'day');
 $month =  array_var($event_data, 'month');
 $year =  array_var($event_data, 'year');
-
+$all = true;
+if (active_project()!= null)
+	$all = false;	
 $filter_user = isset($_GET['user_id']) ? $_GET['user_id'] : logged_user()->getId();
 
 $use_24_hours = user_config_option('time_format_use_24');
@@ -193,7 +195,11 @@ $use_24_hours = user_config_option('time_format_use_24');
 	 	<?php $categories = array(); Hook::fire('object_edit_categories', $object, $categories); ?>
 	 	
 	 	<div style="padding-top:5px;text-align:left;">
-		<a href='#' class='option' onclick="og.ToggleTrap('trap1', 'fs1');og.toggleAndBolden('<?php echo $genid ?>add_event_select_workspace_div', this)"><?php echo lang('workspace')?></a> - 
+		<?php if ($all) { ?>
+			<a href="#" class="option" style="font-weight:bold" onclick="og.toggleAndBolden('<?php echo $genid ?>add_event_select_workspace_div',this)"><?php echo lang('workspace') ?></a> - 
+		<?php } else {?>
+			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_event_select_workspace_div',this)"><?php echo lang('workspace') ?></a> -
+		<?php }?> 
 		<a href='#' class='option' onclick="og.ToggleTrap('trap2', 'fs2');og.toggleAndBolden('<?php echo $genid ?>add_event_tags_div', this)"><?php echo lang('tags')?></a> - 
 		<a href='#' class='option' onclick="og.ToggleTrap('trap3', 'fs3');og.toggleAndBolden('<?php echo $genid ?>add_event_description_div', this)"><?php echo lang('description')?></a> - 
 		<a href='#' class='option' onclick="og.ToggleTrap('trap4', 'fs4');og.toggleAndBolden('<?php echo $genid ?>event_repeat_options_div', this)"><?php echo lang('CAL_REPEATING_EVENT')?></a> -
@@ -223,7 +229,11 @@ $use_24_hours = user_config_option('time_format_use_24');
 			</div>
 		<?php }?>
 		
-		<div id="<?php echo $genid ?>add_event_select_workspace_div" style="display:none">
+		<?php if ($all) { ?>
+			<div id="<?php echo $genid ?>add_event_select_workspace_div" style="display:block"> 
+		<?php } else {?>
+				<div id="<?php echo $genid ?>add_event_select_workspace_div" style="display:none">
+		<?php }?>		
 		<fieldset>
 		<?php 
 			$show_help_option = user_config_option('show_context_help'); 

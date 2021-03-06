@@ -462,8 +462,8 @@ Ext.extend(og.WorkspaceTree, Ext.tree.TreePanel, {
 							this.pauseEvents = false;
 							og.updateWsCrumbs(this.getActiveWorkspace());
 						}
-						this.addTrash();
 						this.addArchived();
+						this.addTrash();						
 					}
 				},
 				scope: this

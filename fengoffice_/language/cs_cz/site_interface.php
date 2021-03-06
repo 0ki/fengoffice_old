@@ -361,6 +361,7 @@
 	'activity' => 'Činnost',
 	'statistics' => 'Statistiky',
 	'time' => 'Čas',
+	'meeting_time' => 'Čas',
 	'task time report' => 'Celková doba provedení úlohy',
 	'new tasks by user' => 'Nové úlohy uživatele',
 	'generate report' => 'Generovat hlášení',

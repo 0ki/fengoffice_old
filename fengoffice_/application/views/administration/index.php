@@ -73,8 +73,13 @@ if (can_manage_configuration(logged_user())) {
 		'name' => lang('custom properties'),
 		'extra' => '',
 	);
-}
-if (can_manage_configuration(logged_user())) {
+	$icons[] = array(
+		'ico' => 'ico-large-object-subtypes',
+		'url' => get_url('administration', 'object_subtypes'),
+		'name' => lang('object subtypes'),
+		'extra' => '',
+	);
+	
 	$icons[] = array(
 		'ico' => 'ico-large-configuration',
 		'url' => get_url('administration', 'configuration'),
@@ -138,7 +143,7 @@ foreach ($icons as $icon) {
 <td align="center">
     <div style="width:150px;display:block; margin-right:10px;margin-bottom:40px">
     <table width="100%" align="center"><tr><td align="center">
-    	<a class="internalLink" href="<?php echo $icon['url'] ?>"><div class="coViewIconImage <?php echo $icon['ico']?>"></div></a>
+    	<a class="internalLink" href="<?php echo $icon['url'] ?>"><span style="display: block;" class="coViewIconImage <?php echo $icon['ico']?>"></span></a>
         </td></tr><tr><td align="center"><b><a class="internalLink" href="<?php echo $icon['url'] ?>"><?php echo $icon['name'] ?></a></b>
     <?php if (isset($icon['extra'])) { ?>
     </td></tr><tr><td align="center"><?php echo $icon['extra']; ?>

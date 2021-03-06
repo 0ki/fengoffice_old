@@ -22,7 +22,7 @@
 <?php tpl_display(get_template_path('form_errors')) ?>
 
   <div id="loginUsernameDiv">
-    <label for="loginUsername"><?php echo lang('username') ?>:</label>
+    <label for="loginUsername"><?php echo lang('email or username') ?>:</label>
     <?php echo text_field('login[username]', array_var($login_data, 'username'), array('id' => 'loginUsername', 'class' => 'medium')) ?>
   </div>
   <div id="loginPasswordDiv">

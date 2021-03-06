@@ -5,6 +5,9 @@
 	require_javascript("og/ObjectPicker.js");
 	$genid = gen_id();
 	$object = $task;
+	$all = true;
+	if (active_project()!= null)
+		$all = false;	
 	if ($task->isNew()) {
 		$project = Projects::findById(array_var($task_data, 'project_id'));
 		if (isset($from_email) && $from_email instanceof MailContent) {
@@ -68,7 +71,11 @@ og.checkSubmitAddTask = function(genid) {
 	<?php $categories = array(); Hook::fire('object_edit_categories', $object, $categories); ?>
 	
 	<div style="padding-top:5px">
-		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_select_workspace_div', this)"><?php echo lang('workspace') ?></a> - 
+	<?php if ($all) { ?>
+			<a href="#" class="option" style="font-weight:bold" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_select_workspace_div',this)"><?php echo lang('workspace') ?></a> - 
+		<?php } else {?>
+			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_select_workspace_div',this)"><?php echo lang('workspace') ?></a> -
+		<?php }?> 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_tags_div', this)"><?php echo lang('tags') ?></a> - 
 		<a href="#" class="option" style="font-weight:bold" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_more_div', this)"><?php echo lang('task data') ?></a> -  
 		<?php /*<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_handins_div', this)"><?php echo lang('handins') ?></a> - */ ?>
@@ -98,7 +105,11 @@ og.checkSubmitAddTask = function(genid) {
 		<?php }?>
 		
 
-	<div id="<?php echo $genid ?>add_task_select_workspace_div" style="display:none">
+	<?php if ($all) { ?>
+			<div id="<?php echo $genid ?>add_task_select_workspace_div" style="display:block"> 
+	<?php } else {?>
+			<div id="<?php echo $genid ?>add_task_select_workspace_div" style="display:none">
+	<?php }?>
 	<fieldset>
 	 	<?php 
 			$show_help_option = user_config_option('show_context_help'); 

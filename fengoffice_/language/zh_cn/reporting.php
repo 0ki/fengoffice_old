@@ -25,4 +25,9 @@
 	'reporting workspace' => '工作区',
 	'reporting user' => '用户',
 	'columns to print desc' => '单击箭头图标以将你要打印的列移到右边框框里。',
+	'report pdf options' => 'PDF选项',
+	'report pdf page layout' => '页面布局',
+	'report pdf vertical' => '纵向',
+	'report pdf landscape' => '横向',
+	'report font size' => '字体大小',
 ); ?>

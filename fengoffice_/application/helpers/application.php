@@ -444,6 +444,11 @@ function assign_to_select_box($list_name, $project = null, $selected = null, $at
 	        emptyText: (lang('select user or group') + '...'),
 	        valueNotFoundText: ''
 		});
+		assignCombo.on('select', function() {
+			combo = Ext.getCmp(genid + 'taskFormAssignedToCombo');
+			assignedto = document.getElementById(genid + 'taskFormAssignedTo');
+			if (assignedto) assignedto.value = combo.getValue();
+		});
 	}
 	og.drawAssignedToSelectBoxSimple(<?php echo json_encode(allowed_users_to_assign($ws_id)) ?>, '<?php echo ($selected ? $selected : '0:0') ?>', '<?php echo $genid ?>');
 	</script> <?php
@@ -1301,6 +1306,46 @@ function autocomplete_emailfield($name, $value, $options, $emptyText, $attribute
 }
 
 
+/**
+ * Comma separated values from a set of options.
+ *
+ * @param string $name Control name
+ * @param string $value Initial value
+ * @param string $options
+ * 		An array of arrays with the values that will be shown when autocompleting.
+ * 		The first value of each array will be assumed as the value and the second as the display name.
+ * @param array $attributes Other control attributes
+ * @return string
+ */
+function autocomplete_textarea_field($name, $value, $options, $max_options, $attributes) {
+	require_javascript("og/AutocompleteTextarea.js");
+	$jsArray = "";
+	foreach ($options as $o) {
+		if ($jsArray != "") $jsArray .= ",";
+		$jsArray .= json_encode($o);
+	}
+	$jsArray = "[$jsArray]";
+
+	$id = array_var($attributes, "id", gen_id());
+	$attributes["id"] = $id;
+	$render_to = gen_id().$name;
+	
+	$html = '<div id="'.$render_to.'"></div>
+		<script>
+		og.render_autocomplete_field({
+			render_to: "'.$render_to.'",
+			name: "'.$name.'",
+			id: "'.$id.'",
+			value: "'.clean($value).'",
+			store: '.$jsArray.',
+			limit: '.$max_options.'
+		});
+    	</script>
+	';
+	return $html;
+}
+
+
 function autocomplete_tags_field($name, $value, $id = null, $tabindex = null) {
 	require_javascript("og/CSVCombo.js");
 	if (!isset($id)) $id = gen_id();
@@ -1463,7 +1508,7 @@ function render_add_custom_properties(ProjectDataObject $object) {
 	$properties = ObjectProperties::getAllPropertiesByObject($object);
 	if (is_array($properties)) {
 		foreach($properties as $property) {
-			$output .= '<script>og.addObjectCustomProperty(document.getElementById("'.$genid.'"), "'.$property->getPropertyName().'", "'.$property->getPropertyValue().'");</script>';
+			$output .= '<script>og.addObjectCustomProperty(document.getElementById("'.$genid.'"), "'.clean($property->getPropertyName()).'", "'.clean($property->getPropertyValue()).'");</script>';
 		} // for
 	} // if
 	$output .= '<script>og.addObjectCustomProperty(document.getElementById("'.$genid.'"), "", "");</script>';

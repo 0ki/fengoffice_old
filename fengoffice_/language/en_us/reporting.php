@@ -16,6 +16,7 @@
   	'custom report updated' => 'Custom report updated',
   	'conditions' => 'Conditions',
   	'columns and order' => 'Columns & Order',
+    'columns' => 'Columns',
   	'true' => 'True',
   	'false' => 'False',
   	'field' => 'Field',

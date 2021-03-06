@@ -51,12 +51,30 @@ og.reportObjectTypeChanged = function(genid, order_by, order_by_asc, cols){
 	}
 };
 
-og.addCondition = function(genid, id, cpId, fieldName, condition, value, is_parametrizable){
-	var type = document.getElementById('report[object_type]').value;
-	if(type == ""){
-  		alert(lang('object type not selected'));
-  		return;
+og.reportTask = function(genid, order_by, order_by_asc, cols){
+	type = "ProjectTasks";
+	Ext.get(genid+'columnListContainer').load({
+		url: og.getUrl('reporting', 'get_object_column_list_task', {object_type: type, columns:cols, orderby:order_by, orderbyasc:order_by_asc, genid:genid}),
+		scripts: true
+	});
+};
+
+og.addCondition = function(genid, id, cpId, fieldName, condition, value, is_parametrizable, is_for_time_report){ //param is_for_time_report only used for time reporting
+	var time_report = false;	
+	if (is_for_time_report!=null)
+		time_report = true;
+	if(!time_report){		
+		var get_object_fields = 'get_object_fields';
+		var type = document.getElementById('report[object_type]').value;
+		if(type == ""){
+	  		alert(lang('object type not selected'));
+	  		return;
+		}
+	}else{
+		var get_object_fields = 'get_object_fields_custom_properties';
+		var type = "ProjectTasks";
 	}
+
 	var condDiv = Ext.getDom(genid);
 	var count = condDiv.childNodes.length;
 	var classname = "";
@@ -70,10 +88,13 @@ og.addCondition = function(genid, id, cpId, fieldName, condition, value, is_para
 	'<td ' + style + ' id="tdFields' + count + '"></td>' +
 	'<td ' + style + ' id="tdConditions' + count + '"></td>' +
 	'<td ' + style + ' id="tdValue' + count + '"><b>' + lang('value') + '</b>:<br/>' +
-	'<input type="text" style="width:100px;" id="conditions[' + count + '][value]" name="conditions[' + count + '][value]" name="conditions[' + count + '][value]" value="{1}" ></td>' +
-	'<td ' + style + '><b>' + lang('parametrizable') + '</b>:<br/>' + 
-	'<input type="checkbox" class="checkbox" onclick="og.changeParametrizable(' + count + ')" id="conditions[' + count + '][is_parametrizable]" name="conditions[' + count + '][is_parametrizable]" {2}></td>' +
-	'<td style="padding-left:20px;"><div style="display:none;" id="delete' + count + '" class="clico ico-delete" onclick="og.deleteCondition(' + count + ',\'' + genid + '\')"></div></td>' +
+	'<input type="text" style="width:100px;" id="conditions[' + count + '][value]" name="conditions[' + count + '][value]" name="conditions[' + count + '][value]" value="{1}" ></td>';	
+	
+	if (!time_report)
+		table = table + '<td ' + style + '><b>' + lang('parametrizable') + '</b>:<br/>' + 
+		'<input type="checkbox" class="checkbox" onclick="og.changeParametrizable(' + count + ')" id="conditions[' + count + '][is_parametrizable]" name="conditions[' + count + '][is_parametrizable]" {2}></td>';	
+	
+	table = table +'<td style="padding-left:20px;"><div style="display:none;" id="delete' + count + '" class="clico ico-delete" onclick="og.deleteCondition(' + count + ',\'' + genid + '\')"></div></td>' +
 	'<td id="tdDelete' + count + '" style="display:none;"><b>' + lang('condition deleted') +
 	'</b><a class="internalLink" href="javascript:og.undoDeleteCondition(' + count + ',\'' + genid + '\')">&nbsp;(' + lang('undo') + ')</a></td>' +
   	'</tr></table>';
@@ -86,7 +107,7 @@ og.addCondition = function(genid, id, cpId, fieldName, condition, value, is_para
 	newCondition.className = classname;
 	newCondition.innerHTML = table;
 	condDiv.appendChild(newCondition);
-	og.openLink(og.getUrl('reporting', 'get_object_fields', {object_type: type}), {
+	og.openLink(og.getUrl('reporting', get_object_fields, {object_type: type}), {
 		callback: function(success, data) {
 			if (success) {
 				var disabled = ((cpId > 0 || fieldName != '') ? 'disabled' : '');
@@ -243,8 +264,9 @@ og.fieldChanged = function(id, condition, value){
 		        	emptyText: "",
 		        	applyTo: "conditions[" + id + "][value]"
 		    	});			
-			}else{			
-				og.openLink(og.getUrl('reporting', 'get_external_field_values', {external_field: fields[selField].value}), {
+			}else{
+				var objectTypeSel = document.getElementById('objectTypeSel');
+				og.openLink(og.getUrl('reporting', 'get_external_field_values', {external_field: fields[selField].value, report_type: objectTypeSel[objectTypeSel.selectedIndex].value}), {
 					callback: function(success, data) {
 						if (success) {
 							var externalValueField = '<b>' + lang('value') + '</b>:<br/><select class="reportConditionDD" id="conditions[' + id + '][value]" name="conditions[' + id + '][value]">';
@@ -256,7 +278,8 @@ og.fieldChanged = function(id, condition, value){
 							document.getElementById('tdValue' + id).innerHTML = externalValueField;
 							
 							if(condition != ""){
-								var parametrizable = document.getElementById('conditions[' + id + '][is_parametrizable]').checked;
+								var isparam_el = document.getElementById('conditions[' + id + '][is_parametrizable]');
+								var parametrizable = isparam_el && isparam_el.checked;
 								var valueField = document.getElementById('conditions[' + id + '][value]');
 								valueField.disabled = parametrizable;
 							}
@@ -277,10 +300,12 @@ og.fieldChanged = function(id, condition, value){
 			}
 		}
 		if(condition == "") {
-			document.getElementById('conditions[' + id + '][is_parametrizable]').checked = false;
+			var isparam_el = document.getElementById('conditions[' + id + '][is_parametrizable]');
+			if (isparam_el) isparam_el.checked = false;
 			modified = true;
 		}else{
-			var parametrizable = document.getElementById('conditions[' + id + '][is_parametrizable]').checked;
+			var isparam_el = document.getElementById('conditions[' + id + '][is_parametrizable]');
+			var parametrizable = isparam_el && isparam_el.checked;
 			var valueField = document.getElementById('conditions[' + id + '][value]');
 			if(valueField){
 				valueField.disabled = parametrizable;
@@ -290,7 +315,8 @@ og.fieldChanged = function(id, condition, value){
 };
 
 og.changeParametrizable = function(id){
-	var parametrizable = document.getElementById('conditions[' + id + '][is_parametrizable]').checked;
+	var isparam_el = document.getElementById('conditions[' + id + '][is_parametrizable]');
+	var parametrizable = isparam_el && isparam_el.checked;
 	var valueField = document.getElementById('conditions[' + id + '][value]');
 	if(valueField){
 		valueField.disabled = parametrizable;
@@ -302,7 +328,8 @@ og.validateReport = function(genid){
 	var cpConditions = Ext.getDom(genid);
 	for(var i=0; i < cpConditions.childNodes.length; i++){
 		var deleted = document.getElementById('conditions[' + i + '][deleted]').value;
-		var parametrizable = document.getElementById('conditions[' + i + '][is_parametrizable]').checked;
+		var isparam_el = document.getElementById('conditions[' + i + '][is_parametrizable]');
+		var parametrizable = isparam_el && isparam_el.checked;
 		if(deleted == "0" && !parametrizable){
 			var fields = document.getElementById('conditions[' + i + '][custom_property_id]');
 			var fieldName = fields[fields.selectedIndex].text;

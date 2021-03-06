@@ -357,6 +357,7 @@ var rx__TasksDrag = {
 			case 'created_by' :	parameters["created_by"] = this.d; /* ? */ break;
 			case 'status' : 	parameters["status"] = this.d; /* done previously, special request */ break;
 			case 'completed_by':parameters["completed_by"] = this.d; /* ? */ break;
+			case 'subtype':parameters["object_subtype"] = this.d; /* ? */ break;
 			case 'tag':			{
 				if(this.d=='unclassified') /* remove single tag */ {
 					//var untag = ogTasks.Groups[this.g].group_id; // group id (=tag name) from group index
@@ -445,7 +446,7 @@ ogTasks.draw = function(){
 	rx__TasksDrag.displayCriteria = displayCriteria;
 	rx__TasksDrag.allowDrag = false;
 	if(displayCriteria.group_by=='milestone' || displayCriteria.group_by=='priority' 
-	|| displayCriteria.group_by=='assigned_to' || displayCriteria.group_by=='status' 
+	|| displayCriteria.group_by=='assigned_to' || displayCriteria.group_by=='status' || displayCriteria.group_by=='subtype' 
 	|| displayCriteria.group_by=='tag' || displayCriteria.group_by=='workspace') rx__TasksDrag.allowDrag = true;
 	// *** /RX ***
 	
@@ -453,7 +454,7 @@ ogTasks.draw = function(){
 	var sb = new StringBuffer();
 	for (var i = 0; i < this.Groups.length; i++){
 		if (i != (this.Groups.length-1) || this.Groups[i].group_tasks.length > 0) { //If there are no unclassified or unassigned tasks, do not show unassigned group
-			if (displayCriteria.group_by == 'milestone' && this.Groups[i].group_tasks.length == 0) continue;
+			if (ogTasks.userPreferences.showEmptyMilestones == 0 && displayCriteria.group_by == 'milestone' && this.Groups[i].group_tasks.length == 0) continue;
 			sb.append(this.drawGroup(displayCriteria, drawOptions, this.Groups[i]));
 		}
 	}

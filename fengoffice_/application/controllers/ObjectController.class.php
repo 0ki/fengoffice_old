@@ -1176,18 +1176,27 @@ class ObjectController extends ApplicationController {
 				$fn = " AND firstname LIKE '%". $filterName ."%'";
 				$fn2 = " AND name LIKE '%". $filterName ."%'";
 			}
+				
+			
 			// companies
 			$permissions = ' AND ( ' . permissions_sql_for_listings(Companies::instance(), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`co`') .')';
 			if ($filterManager == '' || $filterManager == "Companies")
 			$res['Companies'] = "SELECT  'Companies' AS `object_manager_value`, `id` as `oid`, $order_crit_companies AS `order_value` FROM `" .
 			TABLE_PREFIX . "companies` `co` WHERE " . $trashed_cond ." AND $archived_cond AND ".$proj_cond_companies . str_replace('= `object_manager_value`', "= 'Companies'", $tag_str) . $permissions . $fn2;
-
+			$res['CompaniesComments'] = "SELECT  'Comments' AS `object_manager_value`, `id` AS `oid`, $order_crit_comments AS `order_value` FROM `" .
+			TABLE_PREFIX . "comments` WHERE $trashed_cond AND `rel_object_manager` = 'Companies' AND `rel_object_id` IN (SELECT `co`.`id` FROM `" .
+			TABLE_PREFIX . "companies` `co` WHERE `trashed_by_id` = 0 AND $comments_arch_cond AND " . $proj_cond_documents . str_replace('= `object_manager_value`', "= 'Companies'", $tag_str) . $permissions . $cfn .")";
+			
+			
 			// contacts
 			$permissions = ' AND ( ' . permissions_sql_for_listings(Contacts::instance(), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`co`') . ')';
 			if ($filterManager == '' || $filterManager == "Contacts")
 			$res['Contacts'] = "SELECT 'Contacts' AS `object_manager_value`, `id` AS `oid`, $order_crit_contacts AS `order_value` FROM `" .
 			TABLE_PREFIX . "contacts` `co` WHERE $trashed_cond AND $archived_cond AND $proj_cond_contacts " .
 			str_replace('= `object_manager_value`', "= 'Contacts'", $tag_str) . $permissions . $fn;
+			$res['ContactsComments'] = "SELECT  'Comments' AS `object_manager_value`, `id` AS `oid`, $order_crit_comments AS `order_value` FROM `" .
+			TABLE_PREFIX . "comments` WHERE $trashed_cond AND `rel_object_manager` = 'Contacts' AND `rel_object_id` IN (SELECT `co`.`id` FROM `" .
+			TABLE_PREFIX . "contacts` `co` WHERE `trashed_by_id` = 0 AND $comments_arch_cond AND " . $proj_cond_documents . str_replace('= `object_manager_value`', "= 'Contacts'", $tag_str) . $permissions . $cfn .")";
 		}
 		
 		// Workspaces (only for archived objects view)
@@ -1895,6 +1904,11 @@ class ObjectController extends ApplicationController {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
+		} // if		
+		if ($obj instanceof User && (logged_user()->getId() != $id && !logged_user()->isAdministrator())){
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
 		} // if
 		$logs = ApplicationLogs::getObjectLogs($obj);
 		$logs_read = ApplicationReadLogs::getObjectLogs($obj);
@@ -2326,7 +2340,7 @@ class ObjectController extends ApplicationController {
 				}
 			}
 			$url = $object->getViewUrl();
-			$link = '<a href="#" onclick="og.openLink(\''.$url.'\');return false;">'.$object->getObjectName().'</a>';
+			$link = '<a href="#" onclick="og.openLink(\''.$url.'\');return false;">'.clean($object->getObjectName()).'</a>';
 			evt_add("popup", array(
 				'title' => lang("$context $type reminder"),
 				'message' => lang("$context $type reminder desc", $link, format_datetime($date)),

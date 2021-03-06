@@ -401,6 +401,7 @@ class ProjectMilestones extends BaseProjectMilestones {
 				}
 			}
 			if (!$as_template && active_project() instanceof Project && ProjectTask::canAdd(logged_user(), active_project())) {
+				$new->removeFromAllWorkspaces();
 				$new->addToWorkspace(active_project());
 			}
 			$new->copyCustomPropertiesFrom($sub);

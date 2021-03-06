@@ -303,6 +303,7 @@
 	'print view' => '보기 인쇄',
 	'activity' => '활동',
 	'time' => '시간',
+	'meeting_time' => '시간',
 	'task time report' => '총 작업실행시간',
 	'new tasks by user' => '사용자별 새 작업',
 	'generate report' => '보고서 생성하기',

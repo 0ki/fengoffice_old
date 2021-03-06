@@ -133,7 +133,8 @@ ALTER TABLE `<?php echo $table_prefix ?>project_tasks` ADD COLUMN `object_subtyp
 ALTER TABLE `<?php echo $table_prefix ?>project_contacts` ADD INDEX contact_project_ids(`contact_id`, `project_id`);
 
 INSERT INTO `<?php echo $table_prefix ?>cron_events` (`name`, `recursive`, `delay`, `is_system`, `enabled`, `date`) VALUES
-	('clear_tmp_folder', '1', '1440', '1', '1', '0000-00-00 00:00:00');
+	('clear_tmp_folder', '1', '1440', '1', '1', '0000-00-00 00:00:00')
+ON DUPLICATE KEY UPDATE id=id;
 
 ALTER TABLE `<?php echo $table_prefix ?>mail_contents`
  ADD COLUMN `archived_on` DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00',

@@ -457,6 +457,7 @@ return array(
 	'activity' => 'Tevékenység',
 	'statistics' => 'Statisztika',
 	'time' => 'Idő',
+	'meeting_time' => 'Idő',
 	'task time report' => 'Teljes feladat végrehajtási idő',
 	'new tasks by user' => 'Felhasználó által létrehozott új feladat',
 	'generate report' => 'Beszámoló generálása',

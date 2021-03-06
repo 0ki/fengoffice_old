@@ -20,6 +20,10 @@ if ($mailAccount->getUserId() == logged_user()->getId()) {
 	// the creator of the account can always edit it
 	$logged_user_can_edit = true;
 }
+
+if (!$mailAccount->isNew()){	
+	$mail_acc_id = $mailAccount->getId();	
+}
 ?>
 
 <form style="height: 100%; background-color: white" class="internalForm"
@@ -59,7 +63,8 @@ if ($mailAccount->getUserId() == logged_user()->getId()) {
 			<span class="label_required">*</span> <span class="desc"><?php echo lang('mail address description') ?></span>
 		</label>
 		<?php if ($logged_user_can_edit) {
-			echo text_field('mailAccount[email_addr]', array_var($mailAccount_data, 'email_addr'), array('id' => 'mailAccountFormEmail', 'tabindex'=>'20','onchange'=> 'og.autofillmailaccountinfo(this.value,\''.$genid.'\')'));
+			$sync = (config_option("sent_mails_sync")) ? '1' : '0';
+			echo text_field('mailAccount[email_addr]', array_var($mailAccount_data, 'email_addr'), array('id' => 'mailAccountFormEmail', 'tabindex'=>'20','onchange'=> 'og.autofillmailaccountinfo(this.value,\''.$genid.'\','.$sync.')'));
 		} else {
 			echo text_field('', array_var($mailAccount_data, 'email_addr'), array('id' => 'mailAccountFormEmail', 'tabindex'=>'20', 'disabled' => 'disabled'));
 		} ?>
@@ -238,6 +243,67 @@ if ($mailAccount->getUserId() == logged_user()->getId()) {
 		</div>
 	</fieldset>
 	
+	<?php		
+		if (config_option("sent_mails_sync")) { ?>
+			<fieldset id="<?php echo $genid ?>sent_mails_sync">
+				<legend><?php echo lang('sent mails sync'); ?></legend>
+							<div class="mail-account-item">
+								<label for="<?php echo $genid ?>sync_addr">
+									<?php echo lang('mail account id')?><span class="label_required">*</span>
+									<span class="desc"><?php echo lang('mail account id description') ?></span>
+								</label>
+								<?php echo text_field('mailAccount[sync_addr]', array_var($mailAccount_data, 'sync_addr'), array('id' => $genid.'sync_addr', 'tabindex'=>'30')) ?>
+							</div>
+					
+							<div class="mail-account-item">
+								<label for="<?php echo $genid?>sync_pass">
+									<?php echo lang('password')?><span class="label_required">*</span>
+									<span class="desc"><?php echo lang('mail account password description') ?></span>
+								</label>
+								<?php echo password_field('mailAccount[sync_pass]', array_var($mailAccount_data, 'sync_pass'), array('id' => $genid.'sync_pass', 'tabindex'=>'40')) ?>
+							</div>
+					
+							<div class="mail-account-item">
+								<label for="<?php echo $genid ?>sync_server">
+									<?php echo lang('server address')?><span class="label_required">*</span>
+									<span class="desc"><?php echo lang('mail account server description') ?></span>
+								</label>
+								<?php echo text_field('mailAccount[sync_server]', array_var($mailAccount_data, 'sync_server'), array('id' => $genid.'sync_server', 'tabindex'=>'50')) ?>
+							</div>
+					
+							<div class="mail-account-item">
+								<label for="<?php echo $genid ?>method"><?php echo lang('connnection security')?></label>
+								<input id="<?php echo $genid.'is_imap'?>sync_is_imap" type="hidden" name="sync_imap" value="1" ><?php 
+																
+									$onchange = "var div = document.getElementById('$genid' + 'sync_sslportdiv');if(this.checked) div.style.display='block';else div.style.display='none';";
+									echo checkbox_field('mailAccount[sync_ssl]', array_var($mailAccount_data, 'sync_ssl'), array('id' => $genid.'sync_ssl', 'tabindex'=>'70', 'onclick' => $onchange)) ?>											
+							
+								<label for="<?php echo $genid ?>sync_ssl" class="yes_no"><?php echo lang('incoming ssl') ?></label>
+							</div>
+					
+							<div class="mail-account-item" id="<?php echo $genid ?>sync_sslportdiv" <?php if (!array_var($mailAccount_data, 'sync_ssl')) echo 'style="display:none"'; ?>>
+								<?php echo label_tag(lang('incoming ssl port'), 'mailAccountFormIncomingSslPort') ?>
+								<?php echo text_field('mailAccount[sync_ssl_port]', array_var($mailAccount_data, 'sync_ssl_port', 993), array('id' => $genid.'sync_sslport', 'tabindex'=>'120')) ?>
+							</div>
+					
+							<div class="mail-account-item" id="<?php echo $genid ?>sync_folders" style="padding:5px;<?php  ?>">
+					
+								<div id="<?php echo $genid ?>imap_folders_sync"><?php
+									tpl_assign('imap_folders_sync', isset($imap_folders_sync) ? $imap_folders_sync : array());									
+									tpl_assign('genid', $genid);
+									tpl_assign('mail_acc_id',$mail_acc_id);
+									tpl_display(get_template_path("fetch_imap_folders_sync", "mail")) ?>
+								</div>
+							</div>
+												
+			
+			</fieldset>
+			
+		<?php }
+
+	?>
+	
+	
 <?php } ?>
 	
 	<fieldset id="<?php echo $genid ?>other_settings_div">
@@ -250,6 +316,20 @@ if ($mailAccount->getUserId() == logged_user()->getId()) {
 			</label>
 			<?php echo input_field('sender_name', array_var($user_settings, 'sender_name', ''), array('id' => $genid."sender_name", 'tabindex' => 1210)) ?>
 		</div>
+		
+		<?php if ($is_admin){?>
+		<div class="mail-account-item">
+			<label for="<?php echo $genid ?>assign_to">
+				<?php echo lang('assign to')?>
+				<span class="desc"><?php echo lang('assigned to description') ?></span>
+			</label>
+			<?php			
+			$select_box_attrib = array('id'=>$genid.'users_select_box');
+			echo user_select_box('users_select_box', logged_user()->getId(),$select_box_attrib);			
+		?>
+							
+		</div>
+		<?php }?>
 		
 		<div class="mail-account-item">
 			<label for="<?php echo $genid ?>is_default">
@@ -314,7 +394,31 @@ if ($mailAccount->getUserId() == logged_user()->getId()) {
 </form>
 
 <script>
-	og.autofillmailaccountinfo = function (addres , genid) {
+	og.autofillsyncinfo = function (genid, sync){		
+		if (sync){					
+			var method = document.getElementById(genid+'method');			
+			if (method[0].selected){			
+				var serverAddress = document.getElementById(genid+'server');
+				var serverAddressSync = document.getElementById(genid+'sync_server');				
+				serverAddressSync.value = serverAddress.value;
+				var emailAddress = document.getElementById(genid+'email');
+				var emailAddressSync = document.getElementById(genid+'sync_addr');
+				emailAddressSync.value = emailAddress.value;
+				var ssl = document.getElementById(genid+'ssl');
+				var sslSync = document.getElementById(genid+'sync_ssl');
+				sslSync.checked = ssl.checked;
+				var sslport = document.getElementById(genid+'sslport');
+				var sslportSync = document.getElementById(genid+'sync_sslport');
+				sslportSync.value = sslport.value;
+				passInput = document.getElementById(genid+'sync_pass');
+				var sync = 'og.fetchImapFoldersSync(\''+genid+'\')';
+				passInput.setAttribute('onchange',sync);
+			}
+		}
+	}	
+
+
+	og.autofillmailaccountinfo = function (addres , genid, sync) {
 		atIndex = addres.indexOf("@");
 		var autoconf = false;
 		if (atIndex != -1) {
@@ -406,7 +510,8 @@ if ($mailAccount->getUserId() == logged_user()->getId()) {
 					break;
 				default:
 					return;
-			}
+			}					
+			og.autofillsyncinfo(genid, sync);			
 			if (autoconf) {
 				messageDiv.innerHTML = lang('autoconfig ' + domainName + ' message');
 			}

@@ -195,7 +195,9 @@
 	'user ws config option desc block_email_images' => 'Do not show images that are embedded in mail objects.',
 	'user ws config option name draft_autosave_timeout' => 'Draft autosave interval',
 	'user ws config option desc draft_autosave_timeout' => 'Seconds between each autosave operation for draft mails (0 to disable autosave)',
-
+	'user ws config option name classify_mail_with_conversation' => 'Classify mails with its conversation',
+	'user ws config option desc classify_mail_with_conversation' => 'If enabled received mails are classified into the conversation workspaces (if email belongs to a conversation).',
+  
 	'user ws config option name detect_mime_type_from_extension' => 'Detect mime type from extension',
   	'user ws config option desc detect_mime_type_from_extension' => 'Enable this to detect file\'s mime type by its extension',
   
@@ -315,12 +317,22 @@
   	'user ws config option desc search_engine' => 'Choose which search engine to use. "Full" will do a more exhaustive search but will take much longer than "Quick". "Full" is not recommended for heavily loaded installations.',
 	'user ws config option name activity widget elements' => 'Activity widget size',
 	'user ws config option desc activity widget elements' => 'Number of items displayed in Activity widget.',
+	'user ws config option name mail_account_err_check_interval' => 'Email accounts error checking interval',
+	'user ws config option desc mail_account_err_check_interval' => 'Time between each verification at email accounts (0 to disable)',
   
   	'search engine mysql like' => 'Full',
   	'search engine mysql match' => 'Quick',
   
   	'user ws config option name task_display_limit' => 'Maximum number of tasks to display',
   	'user ws config option desc task_display_limit' => 'For performance reasons, this number should not be too big. Use 0 for no limit.',
+  
+  	'sync' => 'Sync',
+  	'mails on imap acc already sync' => 'There are no emails left to be synchronized in this account',
+  	'cant sync account' => 'This account cannot be synchronized. Check IMAP settings',
+  	'config option name sent_mails_sync' => 'Enable IMAP synchronization when sending emails from Feng Office',
+  
+  	'succes save object subtypes' => 'Object subtypes saved sucessfully',
+  
   ); // array
 
 ?>

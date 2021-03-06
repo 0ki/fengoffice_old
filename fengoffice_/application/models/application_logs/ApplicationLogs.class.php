@@ -30,6 +30,8 @@ class ApplicationLogs extends BaseApplicationLogs {
 	const ACTION_COPY        = 'copy';
 	const ACTION_READ        = 'read';
 	const ACTION_DOWNLOAD    = 'download';
+	const ACTION_CHECKOUT    = 'checkout';
+	const ACTION_CHECKIN     = 'checkin';
 	
 	public static function getWorkspaceString($ids = '?') {
 		if (is_array($ids)) $ids = implode(",", $ids);
@@ -68,7 +70,7 @@ class ApplicationLogs extends BaseApplicationLogs {
 				
 			}
 		}
-		
+		if($object!=null)
 		$manager = $object->manager();
 		if(!($manager instanceof DataManager)) {
 			throw new Error('Invalid object manager');
@@ -203,7 +205,7 @@ class ApplicationLogs extends BaseApplicationLogs {
 	 * @param integer $offset
 	 * @return array
 	 */
-	static function getOverallLogs($include_private = false, $include_silent = false, $project_ids = null, $limit = null, $offset = null, $user_id = null) {
+	static function getOverallLogs($include_private = false, $include_silent = false, $project_ids = null, $limit = null, $offset = null, $user_id = null) {		
 		$private_filter = $include_private ? 1 : 0;
 		$silent_filter = $include_silent ? 1 : 0;
 
@@ -268,7 +270,9 @@ class ApplicationLogs extends BaseApplicationLogs {
 			self::ACTION_MOVE,
 			self::ACTION_COPY,
 			self::ACTION_READ,
-			self::ACTION_DOWNLOAD
+			self::ACTION_DOWNLOAD,
+			self::ACTION_CHECKOUT,
+			self::ACTION_CHECKIN
 			); // array
 		} // if
 
@@ -291,14 +295,31 @@ class ApplicationLogs extends BaseApplicationLogs {
 	 */
 	static function getObjectLogs($object, $include_private = false, $include_silent = false, $limit = null, $offset = null) {
 		$private_filter = $include_private ? 1 : 0;
-		$silent_filter = $include_silent ? 1 : 0;
+		$silent_filter = $include_silent ? 1 : 0;		
 
-		$logs = self::findAll(array(
-        'conditions' => array('`is_private` <= ? AND `is_silent` <= ? AND `rel_object_id` = (?) AND `rel_object_manager` = (?)', $private_filter, $silent_filter, $object->getId(),get_class($object->manager())),
-        'order' => '`created_on` DESC',
-        'limit' => $limit,
-        'offset' => $offset,
-		)); // findAll
+		if (get_class($object->manager()) == 'Users'){			
+			$private_filter = $include_private ? 1 : 0;
+			$silent_filter = $include_silent ? 1 : 0;		
+			$userCond = " AND `taken_by_id` = " . $object->getId();
+			if(!is_null($project_ids)) {
+				$conditions = array('`is_private` <= ? AND `is_silent` <= ? AND '.self::getWorkspaceString($project_ids) . $userCond, $private_filter, $silent_filter);
+			} else {
+				$conditions = array('`is_private` <= ? AND `is_silent` <= ?' . $userCond, $private_filter, $silent_filter);
+			} // if
+			return self::findAll(array(
+				'conditions' => $conditions,
+				'order' => '`created_on` DESC',
+				'limit' => $limit,
+				'offset' => $offset,
+			)); // findAll				
+		} else {			
+			$logs = self::findAll(array(
+	        'conditions' => array('`is_private` <= ? AND `is_silent` <= ? AND `rel_object_id` = (?) AND `rel_object_manager` = (?) OR `is_private` <= ? AND `is_silent` <= ? AND `rel_object_id`IN (SELECT `id` FROM '.Comments::instance()->getTableName(true).' WHERE `rel_object_id` = (?) AND `rel_object_manager` = (?)) AND `rel_object_manager` = "Comments"', $private_filter, $silent_filter, $object->getId(),get_class($object->manager()),$private_filter, $silent_filter, $object->getId(),get_class($object->manager())),
+	        'order' => '`created_on` DESC',
+	        'limit' => $limit,
+	        'offset' => $offset,
+			)); // findAll
+		}
 		
 		$next_offset = $offset + $limit;
 		do {
@@ -308,7 +329,7 @@ class ApplicationLogs extends BaseApplicationLogs {
 				if ($log->getAction() == 'link') {
 					$id = explode(":", $log->getLogData());
 					$lobj = get_object_by_manager_and_id($id[1], $id[0]);
-					if (!can_access(logged_user(), $lobj, ACCESS_LEVEL_READ)) {
+					if (!$lobj instanceof ApplicationDataObject || !can_access(logged_user(), $lobj, ACCESS_LEVEL_READ)) {
 						$removed++;
 						unset($logs[$k]);
 					}
@@ -317,7 +338,7 @@ class ApplicationLogs extends BaseApplicationLogs {
 			// Get more objects to substitute the removed ones
 			if ($limit && $removed > 0) {
 				$other_logs = self::findAll(array(
-			        'conditions' => array('`is_private` <= ? AND `is_silent` <= ? AND `rel_object_id` = (?) AND `rel_object_manager` = (?)', $private_filter, $silent_filter, $object->getId(),get_class($object->manager())),
+			        'conditions' => array('`is_private` <= ? AND `is_silent` <= ? AND `rel_object_id` = (?) AND `rel_object_manager` = (?) OR `is_private` <= ? AND `is_silent` <= ? AND `rel_object_id`IN (SELECT `id` FROM '.Comments::instance()->getTableName(true).' WHERE `rel_object_id` = (?) AND `rel_object_manager` = (?)) AND `rel_object_manager` = "Comments"', $private_filter, $silent_filter, $object->getId(),get_class($object->manager()),$private_filter, $silent_filter, $object->getId(),get_class($object->manager())),
 			        'order' => '`created_on` DESC',
 			        'limit' => $next_offset + $removed,
 			        'offset' => $next_offset,

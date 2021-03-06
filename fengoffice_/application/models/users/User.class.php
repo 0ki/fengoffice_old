@@ -407,7 +407,14 @@ class User extends BaseUser {
 	function getProjects($order_by = '', $where = null) {
 		return ProjectUsers::getProjectsByUser($this, $where, $order_by);
 	} // getProjects
-
+	
+	/*
+	 * Get all top level workspaces for this user 
+	 */
+	
+	function getTopLevelWorkspaces($order_by = ''){
+		 return  $this->getProjects($order_by , ' p2 = 0 ');		
+	}
 	function getWorkspaces($active = false, $parent = null) {
 		$conditions = '';
 		if ($active) {

@@ -303,6 +303,7 @@
 	'activity' => 'Activité',
 	'statistics' => 'Statistiques',
 	'time' => 'Durée',
+	'meeting_time' => 'Durée',
 	'task time report' => 'Durée totale d\'exécution des tâches',
 	'new tasks by user' => 'Nouvelles tâches par utilisateur',
 	'generate report' => 'Générer un rapport',

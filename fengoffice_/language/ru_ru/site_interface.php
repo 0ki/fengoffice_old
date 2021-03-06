@@ -476,6 +476,7 @@ http://code.google.com/p/opengooru/
 	'activity' => 'Активность',
 	'statistics' => 'Статистика',
 	'time' => 'Время',
+ 	'meeting_time' => 'Время',
 	'task time report' => 'Общее время выполнения задачи',
 	'new tasks by user' => 'Новые задачи пользователя',
 	'generate report' => 'Составить отчёт',

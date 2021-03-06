@@ -374,8 +374,8 @@ og.MessageManager = function() {
 		tbar.push('-');
 		tbar.push(actions.edit);
 		tbar.push(actions.tag);
-		tbar.push(actions.del);
 		tbar.push(actions.archive);
+		tbar.push(actions.del);		
 		tbar.push('-');
 	}
 	tbar.push(actions.markAs);

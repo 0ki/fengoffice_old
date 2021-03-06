@@ -9,7 +9,7 @@ class MailContents extends BaseMailContents {
 	
 	public static function getMailsFromConversation(MailContent $mail) {
 		$conversation_id = $mail->getConversationId();
-		if ($conversation_id == 0) return array($mail);
+		if ($conversation_id == 0 || $mail->getIsDraft()) return array($mail);
 		return self::findAll(array(
 			"conditions" => "`conversation_id` = '$conversation_id' AND `account_id` = " . $mail->getAccountId() . " AND `state` <> 2",
 			"order" => "`received_date` DESC"
@@ -253,7 +253,7 @@ class MailContents extends BaseMailContents {
 		if (user_config_option('show_emails_as_conversations')) {
 			$archived_by_id = $archived ? "AND `mc`.`archived_by_id` != 0" : "AND `mc`.`archived_by_id` = 0";
 			$trashed_by_id = "AND `mc`.`trashed_by_id` = 0";
-			$conversation_cond = "AND IF(`conversation_id` = 0, $stateConditions, $state_conv_cond_1 NOT EXISTS (SELECT * FROM `".TABLE_PREFIX."mail_contents` `mc` WHERE `".TABLE_PREFIX."mail_contents`.`conversation_id` = `mc`.`conversation_id` AND `".TABLE_PREFIX."mail_contents`.`received_date` < `mc`.`received_date` $archived_by_id AND `mc`.`is_deleted` = 0 $trashed_by_id $subtagstr $subread $state_conv_cond_2))";
+			$conversation_cond = "AND IF(`conversation_id` = 0, $stateConditions, $state_conv_cond_1 NOT EXISTS (SELECT * FROM `".TABLE_PREFIX."mail_contents` `mc` WHERE `".TABLE_PREFIX."mail_contents`.`conversation_id` = `mc`.`conversation_id` AND `".TABLE_PREFIX."mail_contents`.`account_id` = `mc`.`account_id` AND `".TABLE_PREFIX."mail_contents`.`received_date` < `mc`.`received_date` $archived_by_id AND `mc`.`is_deleted` = 0 $trashed_by_id $subtagstr $subread $state_conv_cond_2))";
 			$box_cond = "AND IF(EXISTS(SELECT * FROM `".TABLE_PREFIX."mail_contents` `mc` WHERE `".TABLE_PREFIX."mail_contents`.`conversation_id` = `mc`.`conversation_id` AND `".TABLE_PREFIX."mail_contents`.`id` <> `mc`.`id` AND `".TABLE_PREFIX."mail_contents`.`account_id` = `mc`.`account_id` $archived_by_id AND `mc`.`is_deleted` = 0 $trashed_by_id AND $stateConditions), TRUE, $stateConditions)";
 		} else {
 			$conversation_cond = "";	

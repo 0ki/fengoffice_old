@@ -64,7 +64,7 @@ class DashboardController extends ApplicationController {
 			tpl_assign('comments', $comments);
 		}
 		if (user_config_option('show documents widget') && module_enabled('documents')) {
-			list($documents, $pagination) = ProjectFiles::getProjectFiles(active_project(), null, false, '`updated_on`', 'DESC', 1, 10, false, active_tag(), null);
+			list($documents, $pagination) = ProjectFiles::getProjectFiles(active_project(), null, false, ProjectFiles::ORDER_BY_MODIFYTIME, 'DESC', 1, 10, false, active_tag(), null);
 			tpl_assign('documents', $documents);
 		}
 		
@@ -108,7 +108,17 @@ class DashboardController extends ApplicationController {
 		}
 		
 		tpl_assign('activity_log', $activity_log);
-
+		
+		$usu = logged_user();
+		$conditions = array("conditions" => array("`state` >= 200 AND `created_by_id` =".$usu->getId()));
+		$outbox_mails = MailContents::findAll($conditions);
+		if ($outbox_mails!= null){
+			if (count($outbox_mails)==1){		
+				flash_error(lang('outbox mail not sent', 1));
+			} else if (count($outbox_mails)>1){
+				flash_error(lang('outbox mails not sent', count($outbox_mails)));
+			}
+		}		
 		ajx_set_no_toolbar(true);
 	} // index
 

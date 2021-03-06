@@ -147,6 +147,26 @@ abstract class BaseMailAccountUser extends DataObject {
 		return $this->setColumnValue('sender_name', $value);
 	}
 	
+
+	/**
+	 * Return value of 'last_error_state' field
+	 * @return integer (MA_NO_ERROR, MA_ERROR_UNREAD, MA_ERROR_READ)
+	 */
+	function getLastErrorState() {
+		return $this->getColumnValue('last_error_state');
+	}
+	 
+	/**
+	 * Set value of 'last_error_state' field
+	 *
+	 * @access public
+	 * @param integer $value (MA_NO_ERROR, MA_ERROR_UNREAD, MA_ERROR_READ)
+	 * @return boolean
+	 */
+	function setLastErrorState($value) {
+		return $this->setColumnValue('last_error_state', $value);
+	}
+	
 	/**
 	 * Return manager instance
 	 *

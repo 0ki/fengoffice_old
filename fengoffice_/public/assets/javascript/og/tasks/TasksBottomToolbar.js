@@ -29,7 +29,8 @@ og.TasksBottomToolbar = function(config) {
 	        	,['completed_on', lang('completed on')]
 	        	,['completed_by', lang('completed by')]
 	        	,['status', lang('status')]
-	        	,['tag', lang('tag')]]
+	        	,['tag', lang('tag')]
+	        	,['subtype', lang('object type')]]
 	    	}),
         displayField:'text',
         typeAhead: true,
@@ -90,7 +91,8 @@ og.TasksBottomToolbar = function(config) {
 	        	,['assigned_to', lang('assigned to')]
 	        	,['assigned_by', lang('assigned by')]
 	        	,['milestone', lang('milestone')]
-	        	,['priority', lang('priority')]]
+	        	,['priority', lang('priority')]
+	        	,['subtype', lang('object type')]]
 	    }),
         displayField:'text',
         typeAhead: true,
@@ -107,6 +109,7 @@ og.TasksBottomToolbar = function(config) {
         				Ext.getCmp('ogTasksFilterNamesCompaniesCombo').hide();
         				Ext.getCmp('ogTasksFilterMilestonesCombo').hide();
         				Ext.getCmp('ogTasksFilterPriorityCombo').hide();
+        				Ext.getCmp('ogTasksFilterSubtypeCombo').hide();
 						var toolbar = Ext.getCmp('tasksPanelBottomToolbarObject');
         				toolbar.load();
         				break;
@@ -116,6 +119,7 @@ og.TasksBottomToolbar = function(config) {
         				Ext.getCmp('ogTasksFilterMilestonesCombo').show();
         				Ext.getCmp('ogTasksFilterMilestonesCombo').setValue('');
         				Ext.getCmp('ogTasksFilterPriorityCombo').hide();
+        				Ext.getCmp('ogTasksFilterSubtypeCombo').hide();
         				break;
         			case 'priority':
         				Ext.getCmp('ogTasksFilterNamesCombo').hide();
@@ -123,6 +127,7 @@ og.TasksBottomToolbar = function(config) {
         				Ext.getCmp('ogTasksFilterMilestonesCombo').hide();
         				Ext.getCmp('ogTasksFilterPriorityCombo').show();
         				Ext.getCmp('ogTasksFilterPriorityCombo').setValue('');
+        				Ext.getCmp('ogTasksFilterSubtypeCombo').hide();
         				break;
         			case 'assigned_to':
         				Ext.getCmp('ogTasksFilterNamesCombo').hide();
@@ -130,6 +135,15 @@ og.TasksBottomToolbar = function(config) {
         				Ext.getCmp('ogTasksFilterNamesCompaniesCombo').setValue('');
         				Ext.getCmp('ogTasksFilterMilestonesCombo').hide();
         				Ext.getCmp('ogTasksFilterPriorityCombo').hide();
+        				Ext.getCmp('ogTasksFilterSubtypeCombo').hide();
+        				break;
+        			case 'subtype':
+        				Ext.getCmp('ogTasksFilterNamesCombo').hide();
+        				Ext.getCmp('ogTasksFilterNamesCompaniesCombo').hide();
+        				Ext.getCmp('ogTasksFilterNamesCompaniesCombo').setValue('');
+        				Ext.getCmp('ogTasksFilterMilestonesCombo').hide();
+        				Ext.getCmp('ogTasksFilterPriorityCombo').hide();
+        				Ext.getCmp('ogTasksFilterSubtypeCombo').show();
         				break;
         			default:
         				Ext.getCmp('ogTasksFilterNamesCombo').show();
@@ -137,6 +151,7 @@ og.TasksBottomToolbar = function(config) {
         				Ext.getCmp('ogTasksFilterNamesCompaniesCombo').hide();
         				Ext.getCmp('ogTasksFilterMilestonesCombo').hide();
         				Ext.getCmp('ogTasksFilterPriorityCombo').hide();
+        				Ext.getCmp('ogTasksFilterSubtypeCombo').hide();
         				break;
         		}
         	}
@@ -218,7 +233,7 @@ og.TasksBottomToolbar = function(config) {
 	        fields: ['value', 'text'],
 	        data : uData
 	    }),
-	    hidden: (ogTasks.userPreferences.filter == 'milestone' || ogTasks.userPreferences.filter == 'priority' || ogTasks.userPreferences.filter == 'assigned_to' || ogTasks.userPreferences.filter == 'no_filter'),
+	    hidden: (ogTasks.userPreferences.filter == 'milestone' || ogTasks.userPreferences.filter == 'priority' || ogTasks.userPreferences.filter == 'assigned_to' || ogTasks.userPreferences.filter == 'subtype' || ogTasks.userPreferences.filter == 'no_filter'),
         displayField:'text',
         typeAhead: true,
         mode: 'local',
@@ -263,6 +278,38 @@ og.TasksBottomToolbar = function(config) {
     });
     this.filterPriorityCombo.setValue(ogTasks.userPreferences.filterValue);
     
+    var subtypesArray = Ext.util.JSON.decode(document.getElementById(config.subtypesHfId).value);
+    var subtypes_data = [[0, lang('all')]];
+    for (i=0; i<subtypesArray.length; i++) {
+    	var ost = subtypesArray[i];
+    	subtypes_data[subtypes_data.length] = [ost.id, ost.name];
+    }
+    this.filterSubtypeCombo = new Ext.form.ComboBox({
+    	id: 'ogTasksFilterSubtypeCombo',
+        store: new Ext.data.SimpleStore({
+			fields: ['value', 'text'],
+			data : subtypes_data
+	    }),
+	    hidden: ogTasks.userPreferences.filter != 'subtype',
+        displayField:'text',
+        typeAhead: true,
+        mode: 'local',
+        triggerAction: 'all',
+        selectOnFocus:true,
+        width:140,
+        valueField: 'value',
+        emptyText: '...',
+        valueNotFoundText: '',
+        listeners: {
+        	'select' : function(combo, record) {
+				var toolbar = Ext.getCmp('tasksPanelBottomToolbarObject');
+        		if (toolbar.filterSubtypeCombo == this)
+        			toolbar.load();
+        	}
+        }
+    });
+    this.filterSubtypeCombo.setValue(ogTasks.userPreferences.filterValue);
+    
     
     var milestones = Ext.util.JSON.decode(document.getElementById(config.internalMilestonesHfId).value);
     milestones = milestones.concat(Ext.util.JSON.decode(document.getElementById(config.externalMilestonesHfId).value));
@@ -303,14 +350,14 @@ og.TasksBottomToolbar = function(config) {
     	id: 'ogTasksStatusCombo',
         store: new Ext.data.SimpleStore({
 	        fields: ['value', 'text'],
-	        data : [[2, lang('all')],[0, lang('pending')],[1, lang('complete')]]
+	        data : [[2, lang('all')],[0, lang('pending')],[1, lang('complete')], [10, lang('active')], [11, lang('overdue')], [12, lang('today')], [13, lang('overdue')+"+"+lang('today')], [20, lang('my active')], [21, lang('my subscribed')] ]
 	    }),
         displayField:'text',
         typeAhead: true,
         mode: 'local',
         triggerAction: 'all',
         selectOnFocus:true,
-        width:80,
+        width:120,
         valueField: 'value',
         listeners: {
         	'select' : function(combo, record) {
@@ -325,6 +372,7 @@ og.TasksBottomToolbar = function(config) {
     this.add(this.filterNamesCombo);
     this.add(this.filterNamesCompaniesCombo);
     this.add(this.filterPriorityCombo);
+    this.add(this.filterSubtypeCombo);
     this.add(this.filterMilestonesCombo);
     this.add('&nbsp;&nbsp;&nbsp;' + lang('status') + ':');
     this.add(this.statusCombo);
@@ -355,6 +403,9 @@ Ext.extend(og.TasksBottomToolbar, Ext.Toolbar, {
 				break;
 			case 'priority':
 				filterValue = this.filterPriorityCombo.getValue();
+				break;
+			case 'subtype':
+				filterValue = this.filterSubtypeCombo.getValue();
 				break;
 			case 'assigned_to':
 				filterValue = this.filterNamesCompaniesCombo.getValue();

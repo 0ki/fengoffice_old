@@ -678,5 +678,15 @@ addLangs({
 	'condition value not numeric': 'Η τιμή του πεδίου {0} πρέπει να είναι αριθμητική',
 	'milestones': 'Ορόσημα',
 	'no subject': 'Χωρίς θέμα',
-	'value is already in the list': 'Αυτή η τιμή είναι ήδη στην λίστα'
+	'value is already in the list': 'Αυτή η τιμή είναι ήδη στην λίστα',
+	'urgent': 'Επείγον',
+	'work week': '5 μέρες',
+	'select all tasks': 'Επιλογή όλων των εργασιών',
+	'mark spam': 'Σήμανση ως Ανεπιθύμητο',
+	'mark ham': 'Σήμανση ως Μη ανεπιθύμητο',
+	'assign roles': 'Ανάθεση ρόλων',
+	'assign contact role on workspace': 'Ανάθεση στις επαφές ρόλους για την περιοχή εργασίας',
+	'work week view': 'Εβδομάδα εργασίας',
+	'autoconfig ymail message': 'Εντοπίστηκαν αυτόματες ρυθμίσεις από το Yahoo Mail. <br> Για να χρησιμοποιήσετε την υπηρεσία POP3 πρέπει να διαθέτετε έναν λογαριασμό Yahoo Plus. Περισσότερες πληροφορίες θα βρείτε <a href="http://overview.mail.yahoo.com/enhancements/mailplus" class="internallink" target="_blank">εδώ</a>',
+	'autoconfig rocketmail message': 'Εντοπίστηκαν αυτόματες ρυθμίσεις από το Yahoo Mail. <br> Για να χρησιμοποιήσετε την υπηρεσία POP3 πρέπει να διαθέτετε έναν λογαριασμό Yahoo Plus. Περισσότερες πληροφορίες θα βρείτε <a href="http://overview.mail.yahoo.com/enhancements/mailplus" class="internallink" target="_blank">εδώ</a>'
 });

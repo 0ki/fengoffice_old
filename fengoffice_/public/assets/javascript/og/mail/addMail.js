@@ -204,7 +204,8 @@ og.addMailAttachment = function(container, obj) {
 		"</span>" +
 		"<a class=\"removeDiv\" onclick=\"og.removeMailAttachment(this.parentNode)\" href=\"#\">" + lang('remove') + "</a>";
 	var div = document.createElement('div');
-	div.className = 'og-add-template-object ico-file';
+	var icocls = obj.icocls ? obj.icocls : 'ico-file ' + (obj.mimeType ? "ico-" + obj.mimeType.replace(/\//g, "-").replace(/\./g, "_") : '');
+	div.className = 'og-add-template-object ' + icocls;
 	div.innerHTML = html;
 	container.appendChild(div);
 };
@@ -249,7 +250,7 @@ og.attachFromFileSystem = function(selws, seltag, genid) {
     							callback: function(success, data) {
     								if (success) {
 	    								var container = document.getElementById(genid + "attachments");
-	    								var obj = {object_id: data.file_id, manager: 'ProjectFiles', name: data.file_name};
+	    								var obj = {object_id: data.file_id, manager: 'ProjectFiles', name: data.file_name, icocls: data.icocls};
 	    								og.addMailAttachment(container, obj);
     								}
     							}

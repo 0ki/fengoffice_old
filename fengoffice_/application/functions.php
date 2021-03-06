@@ -10,7 +10,7 @@
  *d
  * @param_string $load_class_name
  */
-function __autoload($load_class_name) {
+function feng__autoload($load_class_name) {
 	static $loader = null;
 	$class_name = strtoupper($load_class_name);
 
@@ -32,7 +32,11 @@ function __autoload($load_class_name) {
 	try {
 		$loader->loadClass($class_name);
 	} catch(Exception $e) {
-		die('Caught Exception in AutoLoader: ' . $e->__toString());
+		try {
+			if (function_exists("__autoload")) __autoload($class_name);
+		} catch(Exception $ex) {
+			die('Caught Exception in AutoLoader: ' . $ex->__toString());
+		}
 	} // try
 } // __autoload
 

@@ -162,9 +162,9 @@ class ProjectFile extends BaseProjectFile {
 	 * @param void
 	 * @return string
 	 */
-	function getTypeIconUrl($showImage = true) {
+	function getTypeIconUrl($showImage = true, $size = '48x48') {
 		$last_revision = $this->getLastRevision();
-		return $last_revision instanceof ProjectFileRevision ? $last_revision->getTypeIconUrl($showImage) : '';
+		return $last_revision instanceof ProjectFileRevision ? $last_revision->getTypeIconUrl($showImage, $size) : '';
 	} // getTypeIconUrl
 
 	// ---------------------------------------------------

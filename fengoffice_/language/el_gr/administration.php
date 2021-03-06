@@ -259,4 +259,9 @@
 	'search engine mysql match' => 'Γρήγορη',
 	'user ws config option name task_display_limit' => 'Μέγιστο πλήθος εργασιών προς εμφάνιση',
 	'user ws config option desc task_display_limit' => 'Για λόγους απόδοσης, αυτός ο αριθμός δεν πρέπει να είναι πολύ μεγάλος. Χρησιμοποιήστε 0 για να μην υπάρχει όριο.',
+	'config option name use_owner_company_logo_at_header' => 'Χρησιμοποιήστε το λογότυπο της εταιρείας ιδιοκτήτη ως λογότυπο εφαρμογής',
+	'config option desc use_owner_company_logo_at_header' => 'Τοποθετήστε το λογότυπο της εταιρείας ιδιοκτήτη στην πάνω δεξιά γωνία της οθόνης. Θα πρέπει να ανανεώσετε την σελίδα (F5) για να εφαρμοστούν οι αλλαγές. Προτεινόμενο μέγεθος: 50x50 px. ',
+	'user ws config option name show activity widget' => 'Εμφάνιση του widget δραστηριότητας',
+	'user ws config option name activity widget elements' => 'Μέγεθος widget δραστηριότητας',
+	'user ws config option desc activity widget elements' => 'Αριθμός αντικειμένων που θα εμφανίζονται στο widget δραστηριότητας.',
 ); ?>

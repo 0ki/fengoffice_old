@@ -13,4 +13,6 @@
 	'error upgrade invalid zip url' => 'Indirizzo non valido per il download della versione indicata. Impossibile continuare con l\'aggiornamento automatico. Prego ripetere l\'operazione o provare con l\'aggiornamento manuale.',
 	'error upgrade cannot open zip file' => 'Impossibile aprire lo zip file con la nuova versione. Impossibile continuare con l\'aggiornamento automatico. Prego ripetere l\'operazione o provare con l\'aggiornamento manuale.',
 	'upgrade from to' => 'Aggiorna da {0} a {1}',
+	'upgrade warning' => 'Attenzione',
+	'upgrade warning desc' => 'Procedi a un <a href="{0}" target="_blank">backup</a> dell\\\'installazione prima di aggiornare!',
 ); ?>

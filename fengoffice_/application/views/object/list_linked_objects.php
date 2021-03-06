@@ -40,11 +40,17 @@ if ($linked_objects_object->isNew()){
 		<a href="<?php echo $linked_object->getObjectUrl() ?>">
 		<div class="db-ico unknown ico-<?php echo clean($icon_class) ?>" title="<?php echo clean($linked_object->getObjectTypeName()) ?>"></div>
 		
-		</a></td><td><b><a <?php echo $attr ?> href="<?php echo $linked_object->getObjectUrl() ?>" title="<?php echo $linked_object->getObjectName() ?>">
+		</a></td><td><b><a <?php echo $attr ?> href="<?php echo $linked_object->getObjectUrl() ?>" title="<?php echo clean($linked_object->getObjectName()) ?>">
 		<span><?php echo $object_title ?></span> </a></b> </td></tr>
 		<tr class="linkedObject<?php echo $counter % 2 ? 'even' : 'odd' ?>"><td>
-		<?php if ($linked_object instanceof ProjectFile){ ?>
-			<a target="_self" href="<?php echo $linked_object->getDownloadUrl() ?>"><?php echo lang('download') . ' (' . format_filesize($linked_object->getFilesize()) . ')'?></a> | 
+		<?php if ($linked_object instanceof ProjectFile){ 
+				$download_url = $linked_object->getDownloadUrl();
+				include_once ROOT . "/library/browser/Browser.php";
+				if (Browser::instance()->getBrowser() == Browser::BROWSER_IE) {
+					$download_url = "javascript:location.href = '$download_url';";
+				}
+			?>
+			<a target="_self" href="<?php echo $download_url ?>"><?php echo lang('download') . ' (' . format_filesize($linked_object->getFilesize()) . ')'?></a> | 
 		<?php }
 		if ($linked_object instanceof ProjectWebpage) { ?>
 			<a target="_blank" href="<?php echo $linked_object->getUrl() ?>"><?php echo lang('open weblink')?></a> |

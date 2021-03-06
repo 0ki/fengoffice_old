@@ -37,6 +37,14 @@
     'signature' => DATA_TYPE_STRING,
     'workspace' => DATA_TYPE_INTEGER,
     'sender_name' => DATA_TYPE_STRING,
+    'last_error_date' => DATA_TYPE_DATETIME,
+    'last_error_msg' => DATA_TYPE_STRING,
+    'sync_addr' => DATA_TYPE_STRING,
+    'sync_server' => DATA_TYPE_STRING,
+    'sync_pass' => DATA_TYPE_STRING,
+    'sync_ssl' => DATA_TYPE_BOOLEAN, 
+    'sync_ssl_port' => DATA_TYPE_INTEGER, 
+    'sync_folder' => DATA_TYPE_STRING,
 );
   
     /**

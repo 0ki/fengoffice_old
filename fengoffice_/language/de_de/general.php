@@ -218,4 +218,5 @@
 	'view all activity' => 'Alle Aktivitäten anzeigen...',
 	'advanced' => 'Erweitert',
 	'in capitalized' => 'In',
+	'workspace and tags' => 'Arbeitsbereich und Schlagworte',
 ); ?>

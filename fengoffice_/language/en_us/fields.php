@@ -100,6 +100,7 @@ return array(
 	'field MailContents bcc' => 'BCC',
 	'field MailContents archived_on' => 'Archived on',
 	'field MailContents archived_by_id' => 'Archived by',
+	'field MailContents sync' => 'Synchronized',
 
 	// Event fields
     'field ProjectEvents duration' => 'End',
@@ -201,6 +202,7 @@ return array(
     'field ProjectTasks repeat_d' => 'Repeat day',
     'field ProjectTasks repeat_m' => 'Repeat month',
     'field ProjectTasks repeat_y' => 'Repeat year',
+    'field ProjectTasks object_subtype' => 'Object subtype',
 
 	// User fields
     'field Users username' => 'Username', 

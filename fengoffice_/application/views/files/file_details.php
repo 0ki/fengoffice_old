@@ -74,6 +74,10 @@ if (isset($file) && $file instanceof ProjectFile) {
 			}
 			add_page_action(lang('download') . ' (' . format_filesize($file->getFilesize()) . ')', "javascript:og.checkDownload('$url',$checkedOutById,'$checkedOutByName');", 'ico-download', '', array("download" => true), true);
 		} else {
+			include_once ROOT . "/library/browser/Browser.php";
+			if (Browser::instance()->getBrowser() == Browser::BROWSER_IE) {
+				$url = "javascript:location.href = '$url';";
+			}
 			add_page_action(lang('download') . ' (' . format_filesize($file->getFilesize()) . ')', $url, 'ico-download', '_self', null, true);
 		}
 	}

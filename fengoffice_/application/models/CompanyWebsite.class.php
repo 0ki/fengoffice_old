@@ -121,7 +121,7 @@ final class CompanyWebsite {
 		if ($last_act) {
 			$session_expires = $last_act->advance(SESSION_LIFETIME, false);
 		}
-		if(!$last_act || DateTimeValueLib::now()->getTimestamp() < $session_expires->getTimestamp()) {
+		if(!$last_act || $session_expires!=null && DateTimeValueLib::now()->getTimestamp() < $session_expires->getTimestamp()) {
 			$this->setLoggedUser($user, $remember, true);
 		} else {
 			$this->logUserIn($user, $remember);

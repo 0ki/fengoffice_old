@@ -26,7 +26,7 @@ og.ObjectPicker = function(config) {
 		function renderIcon(value, p, r) {
 			var classes = "db-ico ico-unknown ico-" + r.data.type;
 			if (r.data.mimeType) {
-				var path = r.data.mimeType.replace(/\//ig, "-").split("-");
+				var path = r.data.mimeType.replace(/\./ig, "_").replace(/\//ig, "-").split("-");
 				var acc = "";
 				for (var i=0; i < path.length; i++) {
 					acc += path[i];

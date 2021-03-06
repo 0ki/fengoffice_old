@@ -376,6 +376,7 @@ addLangs({
 	'show': 'Mostrar',
 	'time': 'Horas',
 	'dates': 'Fechas',
+	'empty milestones': 'Hitos vacíos',
 	'select user or group': 'Seleccionar usuario o empresa',
 	'select milestone': 'Seleccionar un hito',
 	'select priority': 'Seleccionar prioridad',
@@ -655,6 +656,7 @@ addLangs({
 	'from vcard': 'De VCard',
 	'to csv': 'A csv',
 	'to vcard': 'A VCard',
+	'to vcard all' : 'Todos a VCard',
 	'task milestone workspace inconsistency': 'NOTA: Esta acción moverá la tarea al espacio del hito seleccionado. ¿Desea continuar?',
 	'updated on': 'Actualizado el',
 	'no recipient': 'Sin destinatarios',
@@ -688,5 +690,13 @@ addLangs({
 	'work week view': 'Semana laboral',
 	'mark spam': 'Marcar como SPAM',
 	'mark ham': 'Marcar como no SPAM',
-    'select all tasks': 'Seleccionar todas las tareas'
+    'select all tasks': 'Seleccionar todas las tareas',
+    'overdue': 'Atrasada',
+    'active': 'Activa',
+    'my active': 'Mi activa',
+    'my subscribed': 'Mi subscripta',
+    'add object subtype' : 'Agregar tipo de objeto',
+    'delete object subtype' : 'Eliminar tipo de objeto',
+    'delete object subtype warning' : 'Si elimina este tipo de objeto éste será removido de todos los objetos a los cuales ha sido asignado. ¿Está seguro que lo quiere eliminar?',
+    'object subtype deleted' : 'Subtype deleted. {0}'
 });

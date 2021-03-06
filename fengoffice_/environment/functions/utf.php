@@ -11,7 +11,9 @@
  * @return string
  */
 function substr_utf($string, $start = 0, $length = false) {
+	if (function_exists('utf8_substr'))
 		return utf8_substr($string, $start, $length, 'UTF-8');
+	else return substr($string, $start, $length);
 } // substr_utf
 
 /**
@@ -22,7 +24,9 @@ function substr_utf($string, $start = 0, $length = false) {
  * @return integer
  */
 function strlen_utf($string) {
+	if (function_exists('utf8_strlen'))
 		return utf8_strlen($string);
+	else return strlen($string);
 } // strlen_utf
 
 if (!function_exists('iconv')) {
@@ -32,7 +36,9 @@ if (!function_exists('iconv')) {
 }
 
 function strpos_utf($haystack, $needle, $offset = 0) {
-	return utf8_strpos($haystack, $needle, $offset, 'UTF-8');
+	if (function_exists('utf8_strlen'))
+		return utf8_strpos($haystack, $needle, $offset, 'UTF-8');
+	else return strpos($haystack, $needle, $offset);
 }
 
 function detect_encoding($string, $encoding_list = null, $strict = false) {

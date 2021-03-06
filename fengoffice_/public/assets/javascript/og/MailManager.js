@@ -113,7 +113,7 @@ og.MailManager = function() {
 		if (!r.data.isRead) classes += ' bold';
 
 		var draw_to = (r.data.isSent || r.data.isDraft) && Ext.getCmp('mails-manager').stateType != 'sent';
-		
+		if (!r.data.to) r.data.to = "";
 		var to_cut = r.data.to.length > 70 ? og.clean(r.data.to.substring(0, 67) + "...") : og.clean(r.data.to);
 		var sender = (draw_to ? to_cut : og.clean(value.trim())) || '<i>' + lang("no sender") + '</i>';
 		var title = draw_to ? og.clean(r.data.to) : og.clean(r.data.from_email);
@@ -791,7 +791,7 @@ og.MailManager = function() {
 					this.store.removeAll();
        				this.stateType = "received";	
 					this.viewType = "all";
-					if (Ext.fly('send_outbox_btn')) Ext.fly('send_outbox_btn').hide();
+					if (obox_btn = Ext.getCmp('send_outbox_btn')) obox_btn.hide();
 					markactions.markAsSpam.show();
 					markactions.markAsHam.hide();
         			cm.setHidden(cm.getIndexById('from'), false);
@@ -826,7 +826,7 @@ og.MailManager = function() {
 					this.store.removeAll();
 					this.stateType = "sent";
 					this.viewType = "all";
-					if (Ext.fly('send_outbox_btn')) Ext.fly('send_outbox_btn').hide();
+					if (obox_btn = Ext.getCmp('send_outbox_btn')) obox_btn.hide();
 					markactions.markAsSpam.show();
 					markactions.markAsHam.hide();
 					cm.setHidden(cm.getIndexById('from'), true);
@@ -862,7 +862,7 @@ og.MailManager = function() {
 					this.store.removeAll();
 					this.stateType = "draft";
 					this.viewType = "all";
-					if (Ext.fly('send_outbox_btn')) Ext.fly('send_outbox_btn').hide();
+					if (obox_btn = Ext.getCmp('send_outbox_btn')) obox_btn.hide();
 					markactions.markAsSpam.show();
 					markactions.markAsHam.hide();
         			cm.setHidden(cm.getIndexById('from'), true);
@@ -898,7 +898,7 @@ og.MailManager = function() {
 					this.store.removeAll();
 					this.stateType = "junk";
 					this.viewType = "all";
-					if (Ext.fly('send_outbox_btn')) Ext.fly('send_outbox_btn').hide();
+					if (obox_btn = Ext.getCmp('send_outbox_btn')) obox_btn.hide();
 					markactions.markAsSpam.hide();
 					markactions.markAsHam.show();
         			cm.setHidden(cm.getIndexById('from'), false);
@@ -934,7 +934,7 @@ og.MailManager = function() {
 					this.store.removeAll();
 					this.stateType = "outbox";
 					this.viewType = "all";
-					if (Ext.fly('send_outbox_btn')) Ext.fly('send_outbox_btn').show();
+					if (obox_btn = Ext.getCmp('send_outbox_btn')) obox_btn.show();
 					markactions.markAsSpam.show();
 					markactions.markAsHam.hide();
         			cm.setHidden(cm.getIndexById('from'), true);
@@ -1039,8 +1039,8 @@ og.MailManager = function() {
 		top1.push(actions.newCO);
 		top1.push('-');
 		top1.push(actions.tag);
-		top1.push(actions.del);
 		top1.push(actions.archive);
+		top1.push(actions.del);		
 		top1.push('-');
 	}
 	top1.push(actions.markAs);
@@ -1169,6 +1169,14 @@ og.MailManager = function() {
 			me.needRefresh = true;
 		}
 	}, 60000);
+	/*poll to see if an error has happened while checking mail*/
+	if (og.preferences.email_check_acc_errors > 0) {
+		this.accountErrCheckInterval = setInterval(function() {
+			if (Ext.getCmp('tabs-panel').getActiveTab().id == 'mails-panel') {
+				og.openLink(og.getUrl('mail', 'check_account_errors'), {hideLoading:true});
+			}
+		}, og.preferences.email_check_acc_errors * 1000);
+	}
 };
 
 

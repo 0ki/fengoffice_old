@@ -10,7 +10,7 @@ $belongs_to_conversation = MailContents::countMailsInConversation($linked_object
 		<div class="db-ico unknown ico-<?php echo clean($icon_class) ?>" title="<?php echo clean($linked_object->getObjectTypeName()) ?>"></div>
 	</a></td>
 	
-	<td><a class="internalLink" href="<?php echo $linked_object->getObjectUrl() ?>" title="<?php echo $linked_object->getObjectName() ?>">
+	<td><a class="internalLink" href="<?php echo $linked_object->getObjectUrl() ?>" title="<?php echo clean($linked_object->getObjectName()) ?>">
 	<span><?php if ($linked_object->getState() == 2) {?><span style="color:red;font-weight:bold"><?php echo lang('draft') ?></span> - <?php } ?><?php echo clean($linked_object->getObjectName()) ?></span></a></td>
 	
 	<td><span class="desc"><?php echo lang('from')?>: </span><?php echo $linked_object->getFrom()?></td>

@@ -223,4 +223,6 @@
 	'field ProjectEvents repeat_dow' => 'Επανάληψη σε μέρα της εβδομάδας',
 	'field ProjectEvents repeat_mjump' => 'Επανάληψη στην αρχή του μήνα',
 	'field ProjectEvents repeat_wnum' => 'Επανάληψη αριθμού εβδομάδας',
+	'field MailContents received_date' => 'Ημερομηνία παραλαβής',
+	'field Users type' => 'Τύπος',
 ); ?>

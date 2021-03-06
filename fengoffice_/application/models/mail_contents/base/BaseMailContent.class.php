@@ -647,6 +647,29 @@ abstract class BaseMailContent extends ProjectDataObject {
 		if(!($this->manager instanceof MailContents)) $this->manager = MailContents::instance();
 		return $this->manager;
 	} // manager
+	
+	 /**
+    * Return value of 'sync' field
+    *
+    * @access public
+    * @param void
+    * @return integer 
+    */
+    function getSync() {
+      return $this->getColumnValue('sync');
+    } // getSync()
+    
+    /**
+    * Set value of 'sync' field
+    *
+    * @access public   
+    * @param string $value
+    * @return boolean
+    */
+    function setSync($value) {
+      return $this->setColumnValue('sync', $value);
+    } // setSync()
+    
 
 } // BaseMailContent
 
