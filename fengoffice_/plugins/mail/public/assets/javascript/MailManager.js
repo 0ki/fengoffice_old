@@ -1389,6 +1389,12 @@ Ext.extend(og.MailManager, Ext.grid.GridPanel, {
 			show_message = true;
 		}
 		
+		// dont check if use has filtered the result
+		var text_filter = $("#mails-manager #text_filter").val();
+		if(text_filter && text_filter.trim() != ''){
+			return;
+		}
+		
 		// use same params of last query
 		var params = {
 	      read_type: this.readType,
@@ -1403,6 +1409,7 @@ Ext.extend(og.MailManager, Ext.grid.GridPanel, {
 		og.openLink(og.getUrl('mail', 'check_if_new_mails', params), {
 			hideLoading: true,
 			callback: function(success, data) {
+				if (!data) return;
 				
 				// if context has changed => dont load the response
 				var current_context = og.contextManager.plainContext();

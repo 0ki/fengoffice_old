@@ -108,7 +108,7 @@
 	            	height: '330px',
 	            	allowedContent: true,
 	            	resize_enabled: false,
-	            	enterMode: CKEDITOR.ENTER_DIV,
+	            	//enterMode: CKEDITOR.ENTER_DIV,
 	            	shiftEnterMode: CKEDITOR.ENTER_BR,
 	            	disableNativeSpellChecker: false,
 	            	language: '<?php echo $loc ?>',
@@ -130,7 +130,7 @@
 	                        }
 	                    },
 	                removePlugins: 'magicline',
-	                entities_additional : '#39,#336,#337,#368,#369,#124'
+	                entities_additional : '#336,#337,#368,#369,#124'
 	            });
 	
 	            og.setDescription = function() {

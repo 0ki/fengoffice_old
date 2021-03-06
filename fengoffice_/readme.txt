@@ -1,5 +1,5 @@
 
-	About Feng Office 3.4.2
+	About Feng Office 3.4.2.2
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -105,7 +105,15 @@
 	
 	Changelog
 	=========
-	
+
+	Since 3.4.2.1
+    ----------------
+    bugfix: overview error after selecting a member if the data base table prefix is different than fo.
+
+	Since 3.4.2
+    ----------------
+    bugfix: company name length restriction.
+
 	Since 3.4.2-rc2
 	----------------
 	bugfix: dont use JSON_NUMERIC_CHECK constant if not defined (is a php predefined constant).

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Bauru upgrade script will upgrade FengOffice 3.3.2-beta to FengOffice 3.4.2
+ * Bauru upgrade script will upgrade FengOffice 3.3.2-beta to FengOffice 3.4.2.2
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -39,7 +39,7 @@ class BauruUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('3.3.2-beta');
-		$this->setVersionTo('3.4.2');
+		$this->setVersionTo('3.4.2.2');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -280,6 +280,20 @@ class BauruUpgradeScript extends ScriptUpgraderScript {
 			$upgrade_script .= "
 				UPDATE ".$t_prefix."members SET name=LTRIM(name);
 			";
+		}
+
+		if (version_compare($installed_version, '3.4.2.1') < 0) {
+			if ($this->checkColumnExists($t_prefix . "contacts", "first_name", $this->database_connection)) {
+				$upgrade_script .= "
+					ALTER TABLE  `" . $t_prefix . "contacts` MODIFY `first_name` varchar(255) COLLATE 'utf8_unicode_ci' NOT NULL DEFAULT '';
+				";
+			}
+
+			if ($this->checkColumnExists($t_prefix . "contacts", "surname", $this->database_connection)) {
+				$upgrade_script .= "
+					ALTER TABLE  `" . $t_prefix . "contacts` MODIFY `surname` varchar(255) COLLATE 'utf8_unicode_ci' NOT NULL DEFAULT '';
+				";
+			}
 		}
 		
 		// Execute all queries

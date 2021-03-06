@@ -30,7 +30,7 @@
 	} else {
 		$content = $file->getFileContentWithRealUrls() ;		
 		require_once LIBRARY_PATH . "/htmlpurifier/HTMLPurifier.standalone.php";
-		$ckEditorContent = HTMLPurifier::instance()->purify($content);
+		$ckEditorContent = HTMLPurifier::instance()->purify($content, array('HTML.Trusted' => true));
 		$filename = $file->getName();
 	}
 
@@ -71,7 +71,7 @@ var h = document.getElementById("<?php echo $genid ?>ckcontainer").offsetHeight;
 var editor = CKEDITOR.replace('<?php echo $genid ?>ckeditor', {
 	height: (h-100) + 'px',
 	allowedContent: true,
-	enterMode: CKEDITOR.ENTER_DIV,
+	//enterMode: CKEDITOR.ENTER_DIV,
 	shiftEnterMode: CKEDITOR.ENTER_BR,
 	disableNativeSpellChecker: false,
 	language: '<?php echo $loc ?>',
@@ -122,7 +122,7 @@ var editor = CKEDITOR.replace('<?php echo $genid ?>ckeditor', {
 		}
 	},
 	removePlugins: 'magicline',
-	entities_additional : '#39,#336,#337,#368,#369'
+	entities_additional : '#336,#337,#368,#369'
 });
 
 

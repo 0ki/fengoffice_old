@@ -456,6 +456,7 @@ class ContactController extends ApplicationController {
 				flash_success($actionMessage["errorMessage"]);
 			} else {
 				flash_error($actionMessage["errorMessage"]);
+				ajx_current("reload");
 			}
 		} 
 		
@@ -582,7 +583,7 @@ class ContactController extends ApplicationController {
 					$type = $attributes["types"][$i];
 					
 					$contact = Contacts::findById($id);
-					if (isset($contact) && $contact->canDelete(logged_user())){
+					if ($contact instanceof Contact && $contact->canDelete(logged_user()) && !$contact->isUser()){
 						try{
 							DB::beginWork();
 							$contact->trash();

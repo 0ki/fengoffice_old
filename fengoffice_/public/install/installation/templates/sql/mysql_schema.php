@@ -301,8 +301,8 @@ CREATE TABLE `<?php echo $table_prefix ?>permission_contexts` (
 
 CREATE TABLE `<?php echo $table_prefix ?>contacts` (
   `object_id` int(10) unsigned NOT NULL auto_increment,
-  `first_name` varchar(50) <?php echo $default_collation ?> NOT NULL default '',
-  `surname` varchar(50) <?php echo $default_collation ?> NOT NULL default '',
+  `first_name` varchar(255) <?php echo $default_collation ?> NOT NULL default '',
+  `surname` varchar(255) <?php echo $default_collation ?> NOT NULL default '',
   `is_company` tinyint(1) unsigned NOT NULL default '0',
   `company_id` int(10) unsigned,
   `department` varchar(50) <?php echo $default_collation ?> default NULL,
