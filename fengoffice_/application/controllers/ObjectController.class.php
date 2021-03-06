@@ -34,6 +34,22 @@ class ObjectController extends ApplicationController {
 	function render_cps() {
 		ajx_current("empty");
 		$object = Objects::findObject(get_id());
+		
+		// if object not found, use a new object with the same object type
+		if (!$object instanceof ContentDataObject) {
+			$object_type = ObjectTypes::findById(get_id('ot_id'));
+			if ($object_type instanceof ObjectType && class_exists($object_type->getHandlerClass()) ) {
+				eval('$ot_manager = '.$object_type->getHandlerClass().'::instance();');
+				if ($ot_manager) {
+					eval('$object = new '.$ot_manager->getItemClass().'();');
+					if ($object instanceof ContentDataObject) {
+						$object->setObjectTypeId($object_type->getId());
+					}
+				}
+			}
+		}
+		
+		// get custom properties html to render
 		$html = "";
 		if ($object instanceof ContentDataObject) {
 			$html = render_object_custom_properties($object);

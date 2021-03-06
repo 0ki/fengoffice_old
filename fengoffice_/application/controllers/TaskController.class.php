@@ -3414,11 +3414,14 @@ class TaskController extends ApplicationController {
 						} // if
 
 					} // if
-					if(array_var($task_data, 'send_notification')) {
-						foreach ($sub_tasks_to_log['assigned'] as $st_to_log) {
+					
+					// notify assignee of new subtasks and subtasks that changed its assigned user.
+					foreach ($sub_tasks_to_log['assigned'] as $st_to_log) {
+						if($st_to_log instanceof ProjectTask && $st_to_log->getAssignedToContactId() != $st_to_log->getAssignedById()) {
 							Notifier::taskAssigned($st_to_log);
 						}
 					}
+				
 				} catch(Exception $e) {
 					Logger::log('Error sending notifications for task: '.$task->getId());
 					Logger::log($e->getMessage());

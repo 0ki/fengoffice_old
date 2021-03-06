@@ -851,5 +851,7 @@ addLangs({
 	'confirm delete permanently this member': 'Bu {0} ögesini silmek istediğinize emin misiniz?',
 	'upload new revision': 'Yeni bir sürüm yükleyin',
 	'previous tasks': 'Bu Görevden Önce Tamamlanması Gereken Görev',
-	'previous pending tasks': 'Önceki bekleyen görev sayısı'
+	'previous pending tasks': 'Önceki bekleyen görev sayısı',
+	'birthday': 'Doğum Günü',
+	'job title': 'İş Ünvanı'
 });

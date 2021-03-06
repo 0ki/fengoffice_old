@@ -394,5 +394,12 @@
 	'select contact' => 'Kişi seçin',
 	'select user' => 'Kullanıcı seçin',
 	'completed by name on' => '{0} tarafından {1} tarihinde tamamlandı',
+	'notify assigned user' => 'Atanmış kullanıcıya bildir',
 	'overdue and upcomming' => 'Zamanı Geçmiş ve Yaklaşan',
+	'extend billing categories with advanced billing' => 'Ayrıntılı faturalama kullanarak faturalama kategorilerini genişletin',
+	'relations' => 'İlişkiler',
+	'table' => 'Tablo',
+	'task status' => 'Görev durumu',
+	'time report task status desc' => 'Bir durum seçildiğinde, görev zaman aralıkları görev durumuna göre süzülür. Bu süzgeç Zaman panosundan oluşturulmuş zaman aralıklarına uygulanmaz.',
+	'all tasks' => 'Tüm Görevler',
 ); ?>

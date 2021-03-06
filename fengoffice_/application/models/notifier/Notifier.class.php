@@ -331,7 +331,10 @@ class Notifier {
 					}
 					
 					if ( ($user->getId() != $senderid || $user->notify_myself) && ($object->canView($user) || $user->ignore_permissions_for_notifications)) {
-						$to_addresses[$user->getId()] = self::prepareEmailAddress($user->getEmailAddress(), $user->getObjectName());
+						$email_address = trim($user->getEmailAddress());
+						if ($email_address != '') {
+							$to_addresses[$user->getId()] = self::prepareEmailAddress($email_address, $user->getObjectName());
+						}
 					}
 				}
 				
@@ -1016,15 +1019,20 @@ class Notifier {
 			tpl_assign('date', $date);
 		}
 		
-		return self::queueEmail(
-			array(self::prepareEmailAddress($milestone->getAssignedTo()->getEmailAddress(), $milestone->getAssignedTo()->getObjectName())),
-			null,
-			null,
-			self::prepareEmailAddress($milestone->getCreatedBy()->getEmailAddress(), $milestone->getCreatedByDisplayName()),
-			lang('milestone assigned to you', $milestone->getObjectName()),
-			tpl_fetch(get_template_path('milestone_assigned', 'notifier'))
-		); // send
-		
+		$assigned_to = $milestone->getAssignedTo();
+		if ($assigned_to instanceof Contact) {
+			$email_address = trim($assigned_to->getEmailAddress());
+			if ($email_address != '') {
+				return self::queueEmail(
+					array(self::prepareEmailAddress($email_address, $assigned_to->getObjectName())),
+					null,
+					null,
+					self::prepareEmailAddress($milestone->getCreatedBy()->getEmailAddress(), $milestone->getCreatedByDisplayName()),
+					lang('milestone assigned to you', $milestone->getObjectName()),
+					tpl_fetch(get_template_path('milestone_assigned', 'notifier'))
+				); // send
+			}
+		}
 		$locale = logged_user() instanceof Contact ? logged_user()->getLocale() : DEFAULT_LOCALIZATION;
 		Localization::instance()->loadSettings($locale, ROOT . '/language');
 	} // milestoneAssigned
@@ -1164,17 +1172,23 @@ class Notifier {
 		}
 		tpl_assign('attachments', $attachments);// attachments
 		
-		self::queueEmail(
-			array(self::prepareEmailAddress($task->getAssignedTo()->getEmailAddress(), $task->getAssignedTo()->getObjectName())),
-			null,
-			null,
-			self::prepareEmailAddress($task->getUpdatedBy()->getEmailAddress(), $task->getUpdatedByDisplayName()),
-			lang('new task assigned to you',$task->getObjectName()),
-			tpl_fetch(get_template_path('task_assigned', 'notifier')),
-			'text/html',
-			'8bit',
-			$attachments
-		); // send
+		$assigned_to = $task->getAssignedTo();
+		if ($assigned_to instanceof Contact) {
+			$assigned_to_email = trim($assigned_to->getEmailAddress());
+			if ($assigned_to_email != '') {
+				self::queueEmail(
+					array(self::prepareEmailAddress($assigned_to_email, $assigned_to->getObjectName())),
+					null,
+					null,
+					self::prepareEmailAddress($task->getUpdatedBy()->getEmailAddress(), $task->getUpdatedByDisplayName()),
+					lang('new task assigned to you',$task->getObjectName()),
+					tpl_fetch(get_template_path('task_assigned', 'notifier')),
+					'text/html',
+					'8bit',
+					$attachments
+				);
+			}
+		}
 		
 		$locale = logged_user() instanceof Contact ? logged_user()->getLocale() : DEFAULT_LOCALIZATION;
 		Localization::instance()->loadSettings($locale, ROOT . '/language');

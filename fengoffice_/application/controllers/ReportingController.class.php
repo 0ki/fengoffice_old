@@ -1495,13 +1495,24 @@ class ReportingController extends ApplicationController {
 		$ot = ObjectTypes::findById($report->getReportObjectTypeId());
 		$model = $ot->getHandlerClass();
 		$manager = new $model();
+		
+		if ($ot->getName() == 'timeslot') {
+			$task_manager = ProjectTasks::instance();
+		}
 
 		$columns = ReportColumns::getAllReportColumns($report_id);
 
 		foreach ($columns as $col) {
 			$cp_id = $col->getCustomPropertyId();
 			if ($cp_id == 0) {
-				$col_types[$col->getFieldName()] = $manager->getColumnType($col->getFieldName());
+				
+				// timeslot reports includes task columns, if timeslot manager does not know the column => ask task manager
+				if ($ot->getName() == 'timeslot' && $task_manager->columnExists($col->getFieldName())) {
+					$col_types[$col->getFieldName()] = $task_manager->getColumnType($col->getFieldName());
+				} else {
+					$col_types[$col->getFieldName()] = $manager->getColumnType($col->getFieldName());
+				}
+			
 			} else {
 				$cp = CustomProperties::getCustomProperty($cp_id);
 				if ($cp) {

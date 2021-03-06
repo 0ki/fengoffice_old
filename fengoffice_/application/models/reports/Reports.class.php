@@ -554,10 +554,11 @@ class Reports extends BaseReports {
 							if(in_array($field, $managerInstance->getExternalColumns())){
 								if ($object instanceof Timeslot && $field == 'time') {
 									$lastStop = $object->getEndTime() != null ? $object->getEndTime() : ($object->isPaused() ? $object->getPausedOn() : DateTimeValueLib::now());
-									$seconds = $lastStop->getTimestamp() - $object->getStartTime()->getTimestamp();
-									$hours = number_format($seconds / 3600, 2, ',', '.');
-									$value = $hours;
-									//$value = DateTimeValue::FormatTimeDiff($object->getStartTime(), $lastStop, "hm", 60, $object->getSubtract());
+									$seconds = $lastStop->getTimestamp() - $object->getStartTime()->getTimestamp() - $object->getSubtract();
+									$minutes = floor($seconds / 60);
+									
+									$value = DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($minutes * 60), 'hm', 60);
+									
 								} else if ($object instanceof Timeslot && $field == 'billing') {
 									$value = config_option('currency_code', '$') .' '. $object->getFixedBilling();
 								} else {

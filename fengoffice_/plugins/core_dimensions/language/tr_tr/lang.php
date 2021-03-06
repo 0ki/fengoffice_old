@@ -31,5 +31,8 @@
 	'delete selected member' => 'Seçilmiş {0} Ögesini Sil',
 	'delete member warning' => 'Bu {0} ögesini silmek istediğinize emin misiniz?',
 	'tasks list' => 'Görev Listesi',
-	'notify assigned user' => 'Atanmış kullanıcıya bildir',
+	'add timeslot' => 'Zaman Aralığı Ekle',
+	'add new row' => 'Satır Ekle',
+	'update subtasks' => 'Alt Görevleri Güncelle',
+	'success complete subtasks of' => '\'{0}\' ögesinin alt görevleri güncellendi',
 ); ?>

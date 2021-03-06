@@ -375,6 +375,45 @@ class ProjectTask extends BaseProjectTask {
 	function canAddSubTask(Contact $user) {
 		return can_write($user, $this->getMembers(), $this->getObjectTypeId());
 	} // canAddTask
+	
+	
+	// ---------------------------------------------------
+	//  ContentDataObject override
+	// ---------------------------------------------------
+	/**
+	 * This event is triggered when we create a new timeslot
+	 *
+	 * @param Timeslot $timeslot
+	 * @return boolean
+	 */
+	function onAddTimeslot(Timeslot $timeslot, $params = array()) {
+		$params['total_worked_time_column'] = 'total_worked_time';
+		return parent::onAddTimeslot($timeslot, $params);
+	}
+	
+	/**
+	 * This event is trigered when Timeslot that belongs to this object is updated
+	 *
+	 * @param Timeslot $timeslot
+	 * @return boolean
+	 */
+	function onEditTimeslot(Timeslot $timeslot, $params = array()) {
+		$params['total_worked_time_column'] = 'total_worked_time';
+		return parent::onAddTimeslot($timeslot, $params);
+	}
+	
+	/**
+	 * This event is triggered when timeslot that belongs to this object is deleted
+	 *
+	 * @param Timeslot $timeslot
+	 * @return boolean
+	 */
+	function onDeleteTimeslot(Timeslot $timeslot, $params = array()) {
+		$params['total_worked_time_column'] = 'total_worked_time';
+		return parent::onAddTimeslot($timeslot, $params);
+	}
+	
+	
 	// ---------------------------------------------------
 	//  Operations
 	// ---------------------------------------------------

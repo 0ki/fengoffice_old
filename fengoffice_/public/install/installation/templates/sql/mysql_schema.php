@@ -686,13 +686,15 @@ CREATE TABLE `<?php echo $table_prefix ?>project_tasks` (
   `original_task_id` INT( 10 ) UNSIGNED NULL DEFAULT '0',
   `instantiation_id` int(10) unsigned NOT NULL default '0',
   `type_content` ENUM( 'text', 'html' ) NOT NULL DEFAULT 'text',
+  `total_worked_time` int(10) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY  (`object_id`),
   KEY `parent_id` (`parent_id`),
   KEY `completed_on` (`completed_on`),
   KEY `order` (`order`),
   KEY `milestone_id` (`milestone_id`),
   KEY `priority` (`priority`),
-  KEY `assigned_to` USING HASH (`assigned_to_contact_id`)
+  KEY `assigned_to` USING HASH (`assigned_to_contact_id`),
+  KEY `total_worked_time` (`total_worked_time`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 
 CREATE TABLE `<?php echo $table_prefix ?>workspaces` (

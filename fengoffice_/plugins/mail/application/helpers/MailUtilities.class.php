@@ -980,16 +980,18 @@ class MailUtilities {
 			foreach ($mailboxes as $box) {
 				if ($max > 0 && $received >= $max) break;
 				if ($box->getCheckFolder()) {
-					debug_log("  getting imap folder ".$box->getCheckFolder(), "checkmail_log.php");
+					debug_log("  getting imap folder ".$box->getFolderName(), "checkmail_log.php");
 					//if the account is configured to mark as read emails on server call selectMailBox else call examineMailBox.
 					if ($account->getMarkReadOnServer() > 0 ? $imap->selectMailbox(utf8_decode($box->getFolderName())) : $imap->examineMailbox(utf8_decode($box->getFolderName()))) {
 						$oldUids = $account->getUids($box->getFolderName(), 1);
 						$numMessages = $imap->getNumberOfMessages(utf8_decode($box->getFolderName()));
 						if (!is_array($oldUids) || count($oldUids) == 0 || PEAR::isError($numMessages) || $numMessages == 0) {
 							if (PEAR::isError($numMessages)) {
+								debug_log("    PEAR ERROR numMessages has error: ".$numMessages->getMessage(), "checkmail_log.php");
 								continue;
 							}
 						}
+						debug_log("    numMessages=$numMessages", "checkmail_log.php");
 						
 						// determine the starting uid and number of message
 						$max_uid = $account->getMaxUID($box->getFolderName());
@@ -1012,12 +1014,18 @@ class MailUtilities {
 						debug_log("    is_last_mail_on_mail_server = $is_last_mail_on_mail_server", "checkmail_log.php");
 						
 						//Server Data
-						$server_max_summary = $imap->getSummary($numMessages);
 						$server_max_uid = null;
-						if (PEAR::isError($server_max_summary)) {
-							Logger::log($server_max_summary->getMessage());							
-						}else{					
-							$server_max_uid = $server_max_summary[0]['UID'];
+						if ($numMessages != null) {
+							$server_max_summary = $imap->getSummary($numMessages);
+							if (PEAR::isError($server_max_summary)) {
+								debug_log("    PEAR ERROR in imap->getSummary(numMessages). numMessages=$numMessages. errmsg: ".$server_max_summary->getMessage(), "checkmail_log.php");
+								Logger::log($server_max_summary->getMessage());							
+							}else{					
+								$server_max_uid = $server_max_summary[0]['UID'];
+							}
+							debug_log("    summary of msg:$numMessages received", "checkmail_log.php");
+						} else {
+							debug_log("    numMessages is null, server_max_uid not calculated", "checkmail_log.php");
 						}
 						debug_log("    server_max_uid = $server_max_uid", "checkmail_log.php");
 						

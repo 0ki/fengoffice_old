@@ -1602,7 +1602,7 @@ class ContactController extends ApplicationController {
 			$p->d = array_var($row, 'can_delete');
 			$p->w = array_var($row, 'can_write');
 			$p->r = 1;
-			$permissions[] = $p;
+			$permissions_array[] = $p;
 		}
 		
 		$sharing_table_controller = new SharingTableController();

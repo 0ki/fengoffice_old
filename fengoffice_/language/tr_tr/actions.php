@@ -180,4 +180,6 @@
 	'recent activities to show lines' => 'satır',
 	'views and downloads' => 'Bakma ve indirmeler görüntülensin',
 	'confirm delete permanently sync' => 'Eşitleme verilerini silmek istediğinize emin misiniz?',
+	'dont filter' => 'Süzülmesin',
+	'select all' => 'Tümünü Seç',
 ); ?>

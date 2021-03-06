@@ -1574,7 +1574,12 @@ abstract class ContentDataObject extends ApplicationDataObject {
 	 * @param Timeslot $timeslot
 	 * @return boolean
 	 */
-	function onAddTimeslot(Timeslot $timeslot) {
+	function onAddTimeslot(Timeslot $timeslot, $params = array()) {
+		if ($this->allowsTimeslots()) {
+			$total_worked_time = $this->calculateTotalWorkedTime();
+			$twt_column = array_var($params, 'total_worked_time_column');
+			$this->saveTotalWorkedTime($total_worked_time, $twt_column);
+		}
 		return true;
 	}
 
@@ -1584,7 +1589,12 @@ abstract class ContentDataObject extends ApplicationDataObject {
 	 * @param Timeslot $timeslot
 	 * @return boolean
 	 */
-	function onEditTimeslot(Timeslot $timeslot) {
+	function onEditTimeslot(Timeslot $timeslot, $params = array()) {
+		if ($this->allowsTimeslots()) {
+			$total_worked_time = $this->calculateTotalWorkedTime();
+			$twt_column = array_var($params, 'total_worked_time_column');
+			$this->saveTotalWorkedTime($total_worked_time, $twt_column);
+		}
 		return true;
 	}
 
@@ -1594,8 +1604,46 @@ abstract class ContentDataObject extends ApplicationDataObject {
 	 * @param Timeslot $timeslot
 	 * @return boolean
 	 */
-	function onDeleteTimeslot(Timeslot $timeslot) {
+	function onDeleteTimeslot(Timeslot $timeslot, $params = array()) {
+		if ($this->allowsTimeslots()) {
+			$total_worked_time = $this->calculateTotalWorkedTime();
+			$twt_column = array_var($params, 'total_worked_time_column');
+			$this->saveTotalWorkedTime($total_worked_time, $twt_column);
+		}
 		return true;
+	}
+	
+	/**
+	 * Returns the total worked time in minutes for this object
+	 *
+	 * @return integer
+	 */
+	function calculateTotalWorkedTime() {
+		if ($this->allowsTimeslots()) {
+			
+			$sql = "SELECT (SUM(GREATEST(TIMESTAMPDIFF(MINUTE,start_time,end_time),0)) - SUM(subtract/60)) as total_minutes 
+					FROM ".TABLE_PREFIX."timeslots ts WHERE ts.rel_object_id=".$this->getId();
+			
+			$row = DB::executeOne($sql);
+			return array_var($row, 'total_minutes');
+			
+		} else {
+			return 0;
+		}
+	}
+	
+	/**
+	 * Saves the $total_worked_time in the column '$total_worked_time_column'
+	 * 
+	 * @param integer $total_worked_time
+	 * @param string $total_worked_time_column
+	 */
+	function saveTotalWorkedTime($total_worked_time=0, $total_worked_time_column='') {
+		$total_worked_time_column = trim($total_worked_time_column);
+		if ($total_worked_time_column && $this->columnExists($total_worked_time_column)) {
+			$this->setColumnValue($total_worked_time_column, $total_worked_time);
+			$this->save();
+		}
 	}
 
 	/**

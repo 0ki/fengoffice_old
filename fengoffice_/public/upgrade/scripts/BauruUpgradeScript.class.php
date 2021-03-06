@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Bauru upgrade script will upgrade FengOffice 3.3.2-beta to FengOffice 3.4.1-rc
+ * Bauru upgrade script will upgrade FengOffice 3.3.2-beta to FengOffice 3.4.1
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -39,7 +39,7 @@ class BauruUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('3.3.2-beta');
-		$this->setVersionTo('3.4.1-rc');
+		$this->setVersionTo('3.4.1');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -185,7 +185,7 @@ class BauruUpgradeScript extends ScriptUpgraderScript {
 				INSERT INTO ".$t_prefix."custom_property_values (`object_id`,`custom_property_id`,`value`) SELECT
 					c.object_id, (SELECT cp.id FROM ".$t_prefix."custom_properties cp WHERE cp.code='job_title'), c.job_title
 					FROM ".$t_prefix."contacts c WHERE c.job_title<>''
-				ON DUPLICATE KEY UPDATE fo_custom_property_values.object_id=fo_custom_property_values.object_id;
+				ON DUPLICATE KEY UPDATE ".$t_prefix."custom_property_values.object_id=".$t_prefix."custom_property_values.object_id;
 			";
 			$upgrade_script .= "
 				ALTER TABLE `".$t_prefix."custom_property_values`
@@ -205,7 +205,27 @@ class BauruUpgradeScript extends ScriptUpgraderScript {
 			";
 			
 			$upgrade_script .= "
-				ALTER TABLE `".$t_prefix."members` ADD INDEX `name` (`name`);
+				ALTER TABLE `".$t_prefix."members` ADD INDEX (`name`);
+			";
+		}
+		
+		if (version_compare($installed_version, '3.4.1') < 0) {
+			// add total worked time column to tasks
+			$upgrade_script .= "
+				ALTER TABLE `".$t_prefix."project_tasks` ADD `total_worked_time` int(10) unsigned NOT NULL DEFAULT 0;
+			";
+			// add index by total worked time
+			$upgrade_script .= "
+				ALTER TABLE `".$t_prefix."project_tasks` ADD INDEX `total_worked_time` (`total_worked_time`);
+			";
+			
+			// calculate total worked time foreach task
+			$upgrade_script .= "
+				UPDATE ".$t_prefix."project_tasks SET total_worked_time = (
+					SELECT (SUM(GREATEST(TIMESTAMPDIFF(MINUTE,start_time,end_time),0)) - SUM(subtract/60)) 
+					FROM ".$t_prefix."timeslots ts 
+					WHERE ts.rel_object_id=".$t_prefix."project_tasks.object_id
+				)
 			";
 		}
 		

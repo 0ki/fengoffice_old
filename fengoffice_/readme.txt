@@ -1,5 +1,5 @@
 
-	About Feng Office 3.4.1-rc
+	About Feng Office 3.4.1
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -105,6 +105,15 @@
 	Changelog
 	=========
 	
+	Since 3.4.1-rc
+	----------------
+	bugfix: error when adding task with more than 10 custom properties
+	bugfix: error when changing user role and permissions in the same submit.
+	bugfix: timeslot report has wrong time format
+	bugfix: when editing a task and adding subtasks notifications are not sent if parent task assigned to is not changed.
+	
+	language updates: Türkçe (tr_tr)
+	
 	Since 3.4.1-beta
 	----------------
 	bugfix: in firefox monthly calendar view does not expand the boxes if there are more events to show.
@@ -117,6 +126,7 @@
 	
 	Since 3.4.0.24
 	----------------
+	feature: new calculated column total_worked_time in tasks
 	feature: Tasks list drag & drop between task groups.
 	feature: Tasks list drag & drop to dimension members.
 	feature: Newsletters plugin.

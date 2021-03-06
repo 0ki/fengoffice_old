@@ -1010,7 +1010,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 
 		<?php if ($cp_count > 10) { ?>
 		$('#<?php echo $genid ?>not_required_custom_properties').html('<div class="widget-body loading">'+lang('loading')+'</div>');
-		og.openLink(og.getUrl('object','render_cps', {id:<?php echo $task->getId()?>, ot_id: <?php echo $task->getObjectTypeId()?>}), {
+		og.openLink(og.getUrl('object','render_cps', {id:'<?php echo $task->getId()?>', ot_id: <?php echo $task->getObjectTypeId()?>}), {
 			callback: function(success, data) {
 				$('#<?php echo $genid ?>not_required_custom_properties').html(data.html);
 			}
