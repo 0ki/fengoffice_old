@@ -15,7 +15,7 @@
 		 */
 	?>
 	<div style="overflow: hidden;" class="widget-header" onclick="og.dashExpand('<?php echo $genid?>');">
-		<?php echo (isset($widget_title)) ? $widget_title : lang("people");?>
+		<?php echo (isset($widget_title)) ? $widget_title : lang("contacts");?>
 		<input name="mids" type="hidden" value="<?php echo isset($mids) ? $mids : "" ?>" />
 		<div class="dash-expander ico-dash-expanded" id="<?php echo $genid; ?>expander"></div>
 	</div>

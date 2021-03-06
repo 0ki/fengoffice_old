@@ -95,7 +95,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 		<label><?php echo lang('milestone') ?>: <span class="desc">(<?php echo lang('assign milestone task list desc') ?>)</span></label>
 	    
 	    <div style="float:left;" id="<?php $genid ?>add_task_more_div_milestone_combo" >
-    		<?php  echo select_milestone('task[milestone_id]', null, array_var($task_data, 'milestone_id'), array('id' => $genid . 'taskListFormMilestone', 'tabindex' => '40', 'template_milestone' => '1')) ?>    		
+    		<?php  echo select_milestone('task[milestone_id]', null, array_var($task_data, 'milestone_id'), array('id' => $genid . 'taskListFormMilestone', 'tabindex' => '40', 'template_milestone' => '1', 'template_id' => $template_id)) ?>    		
     	</div>
     	<?php if (!$task->isNew()) { ?>
 			<div style="float:left; padding:5px;"><?php echo checkbox_field('task[apply_milestone_subtasks]', array_var($task_data, 'apply_milestone_subtasks', false), array("id" => "$genid-checkapplymi")) ?><label class="checkbox" for="<?php echo "$genid-checkapplymi" ?>"><?php echo lang('apply milestone to subtasks') ?></label></div>

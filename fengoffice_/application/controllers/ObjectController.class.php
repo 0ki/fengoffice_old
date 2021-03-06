@@ -38,13 +38,18 @@ class ObjectController extends ApplicationController {
 			return;
 		}
 		$log_info = "";
+		$log_info_unsubscribe = "";
 		$subscribers = array_var($_POST, 'subscribers');
-		$object->clearSubscriptions();
+		$subscribers_ids = array();
+		
 		if (is_array($subscribers)) {
 			$user_ids = array();
+			
+			//add new subscribers
 			foreach ($subscribers as $key => $checked) {
 				$user_id = substr($key, 5);
-				if ($checked == "checked") {
+				$subscribers_ids[] = $user_id;
+				if ($checked == "checked" && !in_array($user_id, $object->getSubscriberIds())) {
 					$user = Contacts::findById($user_id);
 					if ($user instanceof Contact) {
 						$object->subscribeUser($user);
@@ -54,11 +59,36 @@ class ObjectController extends ApplicationController {
 				}
 			}
 			
+			//remove subscribers
+			$subscribers_to_remove = array_diff($object->getSubscriberIds(), $subscribers_ids);
+			
+			foreach ($subscribers_to_remove as $subs_remove) {
+				$user = Contacts::findById($subs_remove);
+				if ($user instanceof Contact) {
+					$object->unsubscribeUser($user);
+					$log_info_unsubscribe .= ($log_info_unsubscribe == "" ? "" : ",") . $user->getId();
+				}
+			}
+			
 			Hook::fire ('after_add_subscribers', array('object' => $object, 'user_ids' => $user_ids), $null);
 			
 			if ($log_info != "") {
 				ApplicationLogs::createLog($object, ApplicationLogs::ACTION_SUBSCRIBE, false, true, true, $log_info);
 			}
+			if ($log_info_unsubscribe != "") {
+				ApplicationLogs::createLog($object, ApplicationLogs::ACTION_UNSUBSCRIBE, false, true, true, $log_info_unsubscribe);
+			}
+		}else{
+			$subscribers_to_remove = $object->getSubscriberIds();
+			foreach ($subscribers_to_remove as $user_id_remove) {
+				$log_info_unsubscribe.= ($log_info_unsubscribe == "" ? "" : ",") . $user_id_remove;
+			}
+			
+			$object->clearSubscriptions();
+			
+			if ($log_info_unsubscribe != "") {
+				ApplicationLogs::createLog($object, ApplicationLogs::ACTION_UNSUBSCRIBE, false, true, true, $log_info_unsubscribe);
+			}			
 		}
 	}
 	
@@ -196,7 +226,9 @@ class ObjectController extends ApplicationController {
 			if ($ent_mem->getDimension()->getIsManageable() && $ent_mem->getDimension()->getDefinesPermissions()) $manageable_members[] = $ent_mem;
 		}
 		
-		if ((!can_add($user, $check_allowed_members ? $object->getAllowedMembersToAdd($user, $manageable_members):$manageable_members, $object->getObjectTypeId())) && !$object instanceof TemplateTask) {
+		if ((!can_add($user, $check_allowed_members ? $object->getAllowedMembersToAdd($user, $manageable_members):$manageable_members, $object->getObjectTypeId()))
+			&& !($object instanceof TemplateTask || $object instanceof TemplateMilestone)) {
+			
 			$dinfos = DB::executeAll("SELECT name, code, options FROM ".TABLE_PREFIX."dimensions WHERE is_manageable = 1");
 			$dimension_names = array();
 			foreach ($dinfos as $dinfo) {
@@ -1501,7 +1533,7 @@ class ObjectController extends ApplicationController {
 		$object_id = get_id('object_id');
 		$dont_reload = array_var($_GET, 'dont_reload');
 		$object = Objects::findObject($object_id);
-		if (($object instanceof ContentDataObject && $object->canDelete(logged_user()) && (!$object instanceof Contact || !$object->isUser())) || $object instanceof TemplateTask) {
+		if (($object instanceof ContentDataObject && $object->canDelete(logged_user()) && (!$object instanceof Contact || !$object->isUser())) || $object instanceof TemplateTask || $object instanceof TemplateMilestone) {
 			try {
 				$errorMessage = null;
 				DB::beginWork();

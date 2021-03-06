@@ -198,7 +198,7 @@ class ReportingController extends ApplicationController {
 		$cp_ids = CustomProperties::getCustomPropertyIdsByObjectType(ProjectTasks::instance()->getObjectTypeId());
 		tpl_assign('has_custom_properties', count($cp_ids) > 0);
 		
-		$users = Contacts::getAllUsers();
+		$users = allowed_users_in_context(Timeslots::instance()->getObjectTypeId(), active_context());
 		$_SESSION['total_task_times_report_data'] = $report_data;
 		tpl_assign('report_data', $report_data);
 		tpl_assign('users', $users);

@@ -372,9 +372,14 @@ ogTasks.getGroupData = function(displayCriteria, groups,tasks){
 					if (displayCriteria.group_by.indexOf('dimension_') == 0) {
 						// Group by dimension
 						var dim_id = displayCriteria.group_by.replace('dimension_', '');
-						if (og.dimensions[dim_id] && og.dimensions[dim_id][groupId]) {
-							name = og.dimensions[dim_id][groupId].name;
-							icon = og.dimensions[dim_id][groupId].ico;
+						if (og.dimensions[dim_id]) {
+							for (j=0; j<og.dimensions[dim_id].length; j++) {
+								if (og.dimensions[dim_id][j].id == groupId) {
+									name = og.dimensions[dim_id][j].name;
+									icon = og.dimensions[dim_id][j].ico;
+									break;
+								}
+							}
 						}
 					}
 			}
@@ -466,7 +471,7 @@ ogTasks.groupTasks = function(displayCriteria, tasksContainer){
 						var dim_id = displayCriteria.group_by.replace('dimension_', '');
 						for (k=0; k<task.members.length; k++) {
 							for (j=0; j<og.dimensions[dim_id].length; j++) {
-								if (og.dimensions[dim_id][task.members[k]]) {
+								if (og.dimensions[dim_id][j].id == task.members[k]) {
 									group = task.members[k];
 									this_task_groups.push(group);
 									break;

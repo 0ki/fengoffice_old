@@ -468,6 +468,7 @@ setInterval(function() {
 							if (d.dims) {
 								og.dimensions = d.dims;
 								og.dimensions_check_date = new Date();
+								if (d.perms) og.member_permissions = d.perms;
 							}
 						}
 					});
@@ -486,6 +487,7 @@ og.openLink(og.getUrl('dimension', 'reload_dimensions_js'), {
 		if (d.dims) {
 			og.dimensions = d.dims;
 			og.dimensions_check_date = new Date();
+			if (d.perms) og.member_permissions = d.perms;
 		}
 	}
 });

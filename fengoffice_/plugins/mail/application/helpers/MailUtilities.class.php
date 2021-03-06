@@ -222,7 +222,7 @@ class MailUtilities {
 			
 			if (defined('EMAIL_MESSAGEID_CONTROL') && EMAIL_MESSAGEID_CONTROL) {
 				if (trim($message_id) != "") {
-					$id_condition = " AND `message_id`='".trim($message_id)."'";
+					$id_condition = " AND `message_id`='".trim($message_id)."' AND `from`='$from'";
 				} else {
 					$id_condition = " AND `name`= ". DB::escape(trim(array_var($parsedMail, 'Subject'))) ." AND `from`='$from'";
 					

@@ -50,7 +50,7 @@ class ApplicationLogs extends BaseApplicationLogs {
 		if(!self::isValidAction($action)) {
 			throw new Error("'$action' is not valid log action");
 		} // if
-		if($object instanceof TemplateTask){
+		if($object instanceof TemplateTask || $object instanceof TemplateMilestone){
 			$is_silent = true;
 		}
 		if(is_null($is_silent)) {

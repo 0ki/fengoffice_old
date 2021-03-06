@@ -66,7 +66,7 @@
 <?php }?>
 
 <?php
-   if (substr($file->getFilename(), -3) == 'pdf'){
+   if (strtolower(substr($file->getFilename(), -3)) == 'pdf'){
       echo'<div>';
       if($file->getType() != ProjectFiles::TYPE_WEBLINK){       
         $urlpdf=get_url('files', 'download_image', array('id' => $file->getId(), 'inline' => true, 'modtime' => $modtime));

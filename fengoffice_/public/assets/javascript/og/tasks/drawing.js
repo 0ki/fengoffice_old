@@ -608,10 +608,13 @@ ogTasks.drawGroup = function(displayCriteria, drawOptions, group){
 }
 
 ogTasks.drawGroupActions = function(group){
-	return '<a id="ogTasksPanelGroupSoloOn' + group.group_id + '" style="margin-right:15px;display:' + (group.solo? "none" : "inline") + '" href="#" class="internalLink" onClick="ogTasks.hideShowGroups(\'' + group.group_id + '\')" title="' + lang('hide other groups') + '">' + (lang('hide others')) + '</a>' +
+	var html = '<a id="ogTasksPanelGroupSoloOn' + group.group_id + '" style="margin-right:15px;display:' + (group.solo? "none" : "inline") + '" href="#" class="internalLink" onClick="ogTasks.hideShowGroups(\'' + group.group_id + '\')" title="' + lang('hide other groups') + '">' + (lang('hide others')) + '</a>' +
 	'<a id="ogTasksPanelGroupSoloOff' + group.group_id + '" style="display:' + (group.solo? "inline" : "none") + ';margin-right:15px;" href="#" class="internalLink" onClick="ogTasks.hideShowGroups(\'' + group.group_id + '\')" title="' + lang('show all groups') + '">' + (lang('show all')) + '</a>' +
-	'<a href="#" class="internalLink ogTasksGroupAction ico-print" style="margin-right:15px;" onClick="ogTasks.printGroup(\'' + group.group_id + '\')" title="' + lang('print this group') + '">' + (lang('print')) + '</a>' +
-	'<a href="#" class="internalLink ogTasksGroupAction ico-add" onClick="ogTasks.drawAddNewTaskForm(\'' + group.group_id + '\')" title="' + lang('add a new task to this group') + '">' + (lang('add task')) + '</a>';
+	'<a href="#" class="internalLink ogTasksGroupAction ico-print" style="margin-right:15px;" onClick="ogTasks.printGroup(\'' + group.group_id + '\')" title="' + lang('print this group') + '">' + (lang('print')) + '</a>';
+	if (ogTasks.userPermissions.can_add) {
+		html += '<a href="#" class="internalLink ogTasksGroupAction ico-add" onClick="ogTasks.drawAddNewTaskForm(\'' + group.group_id + '\')" title="' + lang('add a new task to this group') + '">' + (lang('add task')) + '</a>';
+	}
+	return html;
 }
 
 
@@ -808,12 +811,16 @@ ogTasks.drawTaskRow = function(task, drawOptions, displayCriteria, group_id, lev
 	sb.append("<td class='nobr'><div id='ogTasksPanelTaskActions" + tgId + "' class='ogTaskActions'><table><tr>");
 	
 	// Add Subtask
-	sb.append("<td style='padding-left:8px;'><div id='ogTasksPanelExpander" + tgId + "' style='visibility:hidden' class='add-subtask-link ico-add coViewAction' onClick='ogTasks.drawAddNewTaskForm(\"" + group_id + "\", " + task.id + "," + level +")' title='" + lang('add subtask') + "'>"+lang('add sub task')+"</div></td>");
-
-	sb.append("<td style='padding-left:8px;'><a href='#' onclick='ogTasks.drawEditTaskForm(" + task.id + ", \"" + group_id + "\")'>");
-	// FIXME: remove this function when wuick add is enabled
+	if (ogTasks.userPermissions.can_add) {
+		sb.append("<td style='padding-left:8px;'><div id='ogTasksPanelExpander" + tgId + "' style='visibility:hidden' class='add-subtask-link ico-add coViewAction' onClick='ogTasks.drawAddNewTaskForm(\"" + group_id + "\", " + task.id + "," + level +")' title='" + lang('add subtask') + "'>"+lang('add sub task')+"</div></td>");
+	}
+	
+	if (ogTasks.userPermissions.can_add) {
+		sb.append("<td style='padding-left:8px;'><a href='#' onclick='ogTasks.drawEditTaskForm(" + task.id + ", \"" + group_id + "\")'>");
+		// FIXME: remove this function when quick add is enabled
         //sb.append("<td style='padding-left:8px;'><a href='#' onclick='ogTasks.goToCompleteEditForm(" + task.id + ")'>");
-	sb.append("<div class='ico-edit coViewAction' title='" + lang('edit') + "' style='cursor:pointer;height:16px;padding-top:0px'>" + lang('edit') + "</div></a></td>");
+		sb.append("<div class='ico-edit coViewAction' title='" + lang('edit') + "' style='cursor:pointer;height:16px;padding-top:0px'>" + lang('edit') + "</div></a></td>");
+	}
 	sb.append("<td style='padding-left:8px;'><a href='#' onclick='ogTasks.ToggleCompleteStatus(" + task.id + ", " + task.status + ")'>");
 	if (task.status > 0){
 		sb.append("<div class='ico-reopen coViewAction' title='" + lang('reopen this task') + "' style='cursor:pointer;height:16px;padding-top:0px'>" + lang('reopen') + "</div></a></td>");

@@ -264,11 +264,29 @@ final class acInstallation {
 	 * @return boolean
 	 */
 	function haveInnoDbSupport() {
-		if($result = mysql_query("SHOW VARIABLES LIKE 'have_innodb'", $this->database_connection)) {
-			if($row = mysql_fetch_assoc($result)) {
-				return strtolower(array_var($row, 'Value')) == 'yes';
+		$mysql_version = mysql_get_server_info($this->database_connection);
+		
+		// check if mysql is >= mysql 5.6 
+		if($mysql_version && version_compare($mysql_version, '5.6', '>=')){
+			//mysql 5.6 have_innodb is deprecated
+			if($res = mysql_query("SHOW ENGINES", $this->database_connection)){
+				while($rows = mysql_fetch_assoc($res)) {
+					$engine = strtolower(array_var($rows, 'Engine'));
+					$support = strtolower(array_var($rows, 'Support'));
+			
+					if($engine == 'innodb' && ($support == 'default' || $support == 'yes')){
+						return true;
+					} // if
+				} // while
 			} // if
-		} // if
+		}else{
+			if($result = mysql_query("SHOW VARIABLES LIKE 'have_innodb'", $this->database_connection)) {
+				if($row = mysql_fetch_assoc($result)) {
+					return strtolower(array_var($row, 'Value')) == 'yes';
+				} // if
+			} // if
+		}
+		
 		return false;
 	} // haveInnoDBSupport
 

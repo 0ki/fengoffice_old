@@ -290,12 +290,16 @@ member_selector.preload_members = function(genid, d) {
 			if (typeof m == 'function') continue;
 			// ["id", "name", "path", "to_show", "ico", "dim"]
 			
-			var to_show = m.path == '' ? m.name : m.name + " ("+m.path+")";
-			var record = new Ext.data.Record(
-				{'id':m.id, 'name':m.name, 'path':m.path, 'to_show':to_show, 'ico':m.ico, 'dim':dim_id},
-				m.id
-			);
-			records.push(record);
+			// check permissions
+			if (og.member_permissions[dim_id] && og.member_permissions[dim_id][m.id] && og.member_permissions[dim_id][m.id][member_selector[genid].otid]) {
+				
+				var to_show = m.path == '' ? m.name : m.name + " ("+m.path+")";
+				var record = new Ext.data.Record(
+					{'id':m.id, 'name':m.name, 'path':m.path, 'to_show':to_show, 'ico':m.ico, 'dim':dim_id},
+					m.id
+				);
+				records.push(record);
+			}
 		}
 	
 		if (records.length > 0) {

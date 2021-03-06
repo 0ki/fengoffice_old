@@ -1,5 +1,5 @@
 
-	About Feng Office 2.5.1-beta
+	About Feng Office 2.5.1-rc
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -101,6 +101,23 @@
 	
 	Changelog
 	=========
+	
+	Since 2.5.1-beta
+	----------------
+	bugfix: cannot add milestones in templates
+	bugfix: when adding template, after adding milestone cannot select it when adding a task
+	
+	
+	Since 2.5.0.6
+	----------------
+	bugfix: Template view broken by single quote in property name.
+	bugfix: when edit a template if have milestones you can't see tasks.
+	bugfix: don't show members that cannot be used in member selector.
+	
+	
+	Since 2.5.0.5
+	----------------
+	bugfix: Tasks grouping by dimension fixed.
 	
 	
 	Since 2.5.0.4

@@ -1150,6 +1150,8 @@
 
 			// populate permission groups
 			$permissions_decoded = json_decode($permissions);
+			if (!is_array($permissions_decoded)) return;
+			
 			$to_insert = array();
 			$to_delete = array();
 			foreach ($permissions_decoded as $perm) {

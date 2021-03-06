@@ -568,10 +568,6 @@ class TemplateController extends ApplicationController {
 				}*/
 				$manager = $copy->manager();
 			} else if ($copy instanceof ProjectMilestone) {
-				ProjectMilestones::copyTasks($object, $copy, false);
-				foreach($copy->getTasks(false) as $m_task){
-					$controller->add_to_members($m_task, $object_members);
-				}
 				$manager = $copy->manager();
 			}
 			
@@ -693,11 +689,7 @@ class TemplateController extends ApplicationController {
 		if (is_array($parameters) && count($parameters) > 0){
 			ajx_current("back");
 		}else{
-			if(!$choose_ctx){
-				ajx_current("back");
-			}else{
-				ajx_current("reload");
-			}
+			ajx_current("back");
 		}
 	}
 	

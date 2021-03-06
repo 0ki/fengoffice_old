@@ -130,12 +130,19 @@ og.addObjectToTemplate = function(target, obj, dont_draw_milestone_combo) {
 			
 	var divActions = document.createElement('div');
 	divActions.className = "template-object-actions";
-	divActions.innerHTML =
+	console.log(obj);
+	var divhtml =
 		'<a id="toggleTemplatePropertys'+obj.object_id+'" href="#" onclick="og.toggleTemplatePropertys('+obj.object_id+')" class="toggle_collapsed">'+ lang("edit variables") + '</a>'+
-		"<a href='#' class='internalLink coViewAction ico-edit' onclick='"+"og.editTempObj("+obj.object_id+", \""+obj.type+"\")"+"'>" + lang('edit') + '</a>'+
-		'<a href="#" onclick="og.openLink(og.getUrl(\'task\', \'add_task\', {template_task:1, parent_id:'+ obj.object_id +'}), {caller:\'new_task_template\'})" class="internalLink ico-add coViewAction">'+lang("add sub task")+'</a>'+
-		'<a href="#" onclick="og.removeObjectFromTemplate(this.parentNode, ' + obj.object_id + ')" class="internalLink coViewAction ico-delete">'+lang('delete')+'</a>';
-		
+		"<a href='#' class='internalLink coViewAction ico-edit' onclick='"+"og.editTempObj("+obj.object_id+", \""+obj.type+"\")"+"'>" + lang('edit') + '</a>';
+	if (obj.type == 'template_task') {
+		divhtml += '<a href="#" onclick="og.openLink(og.getUrl(\'task\', \'add_task\', {template_task:1, parent_id:'+ obj.object_id +', template_id:'+og.actual_template_id+'}), {caller:\'new_task_template\'})" class="internalLink ico-add coViewAction">'+lang("add sub task")+'</a>';
+	} else if (obj.type == 'template_milestone') {
+		divhtml += '<a href="#" onclick="og.openLink(og.getUrl(\'task\', \'add_task\', {template_task:1, milestone_id:'+ obj.object_id +', template_id:'+og.actual_template_id+'}), {caller:\'new_task_template\'})" class="internalLink ico-add coViewAction">'+lang("add sub task")+'</a>';
+	}
+	
+	divhtml += '<a href="#" onclick="og.removeObjectFromTemplate(this.parentNode, ' + obj.object_id + ')" class="internalLink coViewAction ico-delete">'+lang('delete')+'</a>';
+	
+	divActions.innerHTML = divhtml;
 	//if(obj.sub_tasks.length > 0){
 		var subtasksExpander = document.createElement('div');
 		subtasksExpander.id = 'subtasksExpander' + obj.object_id;

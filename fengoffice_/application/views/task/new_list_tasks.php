@@ -133,6 +133,7 @@ if (!task_ids) task_ids = [];
 	<input type="hidden" id="hfAllUsers" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($allUsers_array)))) ?>"/>
 	<input type="hidden" id="hfCompanies" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($companies_array)))) ?>"/>
 	<input type="hidden" id="hfUserPreferences" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($userPreferences)))) ?>"/>
+	<input type="hidden" id="hfUserPermissions" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($userPermissions)))) ?>"/>
 	<input type="hidden" id="hfObjectSubtypes" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($object_subtypes_array)))) ?>"/>
 	<input type="hidden" id="hfDependencyCount" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($dependency_count)))) ?>"/>
 	<input id="<?php echo $genid?>type_related" type="hidden" name="type_related" value="only" />
@@ -163,6 +164,9 @@ if (!task_ids) task_ids = [];
 		rx__TasksDrag.initialize();
 
 	ogTasks.userPreferences = Ext.util.JSON.decode(document.getElementById('hfUserPreferences').value);
+
+	ogTasks.userPermissions = Ext.util.JSON.decode(document.getElementById('hfUserPermissions').value);
+	
 
 	var mili = 0;
 	if (og.TasksTopToolbar == 'undefined') {

@@ -703,8 +703,12 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 
 
 
-	og.reload_task_form_selectors = function() {
-		var dimension_members_json = Ext.util.JSON.encode(member_selector['<?php echo $genid ?>'].sel_context);
+	og.reload_task_form_selectors = function(is_new) {
+		if (!is_new) {
+			var dimension_members_json = Ext.util.JSON.encode(member_selector['<?php echo $genid ?>'].sel_context);
+		} else {
+			var dimension_members_json = og.contextManager.plainContext();
+		}
 		var milestone_el = document.getElementById('<?php echo $genid ?>taskListFormMilestone');
 		var actual_value = milestone_el ? milestone_el.value : 0;
 		var milestone_div = Ext.get('<?php $genid ?>add_task_more_div_milestone_combo');
@@ -764,7 +768,9 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 		}
 
 		og.changeTaskRepeat();
-		og.reload_task_form_selectors();
+		setTimeout(function() {
+			og.reload_task_form_selectors(<?php echo $task->isNew() ? '1' : '0'?>);
+		}, 500);
 	});
 
 	function selectRelated(val){

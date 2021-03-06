@@ -5,8 +5,10 @@
 	
 	$active_members = array();
 	$context = active_context();
-	foreach ($context as $selection) {
-		if ($selection instanceof Member) $active_members[] = $selection;
+	if (is_array($context)) {
+		foreach ($context as $selection) {
+			if ($selection instanceof Member) $active_members[] = $selection;
+		}
 	}
 	//if there are members selcted
 	if (count($active_members) > 0) {

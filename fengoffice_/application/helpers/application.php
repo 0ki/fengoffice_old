@@ -349,7 +349,13 @@ function select_milestone($name, $context = null, $selected = null, $attributes 
 		$milestones = ProjectMilestones::getActiveMilestonesByUser(logged_user(), $context);
 	}else{
 		//add conditions
-		$conditions = '`session_id` =  '.logged_user()->getId().' AND `template_id` = 0';
+		if(isset($attributes['template_id']) && $attributes['template_id'] != 0){
+			$tmp_id = $attributes['template_id'];
+			$conditions = '`session_id` =  0 AND `template_id` = '.$tmp_id.'';
+		}else{
+			$conditions = '`session_id` =  '.logged_user()->getId().' AND `template_id` = 0';
+		}
+		
 		$milestones = TemplateMilestones::findAll(array('conditions' => $conditions));
 	}
 	

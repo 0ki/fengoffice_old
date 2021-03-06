@@ -332,9 +332,14 @@ class DimensionController extends ApplicationController {
 	function reload_dimensions_js () {
 		ajx_current("empty");
 		$dimensions = Dimensions::findAll();
+		
+		$ots = ObjectTypes::getAvailableObjectTypes();
+		
 		$dims_info = array();
+		$perms_info = array();
 		foreach ($dimensions as $dim) {
 			$dims_info[$dim->getId()] = array();
+			$perms_info[$dim->getId()] = array();
 			$members = $dim->getAllMembers();
 			foreach ($members as $member) {
 				$mem_info = array();
@@ -344,10 +349,18 @@ class DimensionController extends ApplicationController {
 				$mem_info['path'] = $dim->getIsManageable() ? trim(clean($member->getPath())) : '';
 				$mem_info['ico'] = $member->getIconClass();
 				
+				$p_info = array();
+				if ($dim->getIsManageable()) {
+					foreach ($ots as $ot) {
+						$p_info[$ot->getId()] = can_read(logged_user(), array($member), $ot->getId());
+					}
+				}
+				
 				$dims_info[$dim->getId()][] = $mem_info;
+				$perms_info[$dim->getId()][$member->getId()] = $p_info;
 			}
 		}
-		ajx_extra_data(array("dims" => $dims_info));
+		ajx_extra_data(array("dims" => $dims_info, "perms" => $perms_info));
 	}
 	
 	

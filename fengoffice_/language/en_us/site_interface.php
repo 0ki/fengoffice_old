@@ -18,7 +18,7 @@ return array(
     'online users desc' => 'Users who were active in last 15 minutes:',
 
   	'charts' => 'Charts',
-    'contacts' => 'People',
+    'contacts' => 'Contacts',
     'dashboard' => 'Dashboard',
     'administration' => 'Administration',
     'my account' => 'My account',

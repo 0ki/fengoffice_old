@@ -26,10 +26,12 @@ $workspaces = $dim_controller->initial_list_dimension_members($ws_dimension->get
 
 $parent = null;
 $context = active_context();
-foreach ($context as $selection) {
-	if ($selection instanceof Member && $selection->getDimensionId() == $ws_dimension->getId()) {
-		$parent = $selection;
-		break;
+if (is_array($context)) {
+	foreach ($context as $selection) {
+		if ($selection instanceof Member && $selection->getDimensionId() == $ws_dimension->getId()) {
+			$parent = $selection;
+			break;
+		}
 	}
 }
 

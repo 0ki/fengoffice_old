@@ -51,7 +51,7 @@
 			<br/>
 			<div class="db-ico ico-task" style="float: left;"></div>
 			
-			<a id="<?php echo $genid ?>add_template_task" class='internalLink dashboard-link' href="#" onmousedown="og.openLink(og.getUrl('task', 'add_task', {template_task:1}), {caller:'new_task_template'});" onclick="Ext.getCmp('tabs-panel').activate('new_task_template');">
+			<a id="<?php echo $genid ?>add_template_task" class='internalLink dashboard-link' href="#" onmousedown="og.openLink(og.getUrl('task', 'add_task', {template_task:1, template_id:<?php echo $cotemplate->getId()? $cotemplate->getId():0 ?>}), {caller:'new_task_template'});" onclick="Ext.getCmp('tabs-panel').activate('new_task_template');">
 		<?php echo lang('add a new task to this template') ?></a>
 		 
 		 <?php if (config_option('use_milestones')){ ?>	
@@ -59,7 +59,7 @@
 		
 		 		<div class="db-ico ico-milestone" style="float: left;"></div>
 			
-			<a id="<?php echo $genid ?>add_template_milestone" class='internalLink dashboard-link' href="#" onmousedown="og.openLink(og.getUrl('milestone', 'add', {template_milestone:1}), {caller:'new_task_template'});" onclick="Ext.getCmp('tabs-panel').activate('new_task_template');">
+			<a id="<?php echo $genid ?>add_template_milestone" class='internalLink dashboard-link' href="#" onmousedown="og.openLink(og.getUrl('milestone', 'add', {template_milestone:1, template_id:<?php echo $cotemplate->getId()? $cotemplate->getId():0 ?>}}), {caller:'new_task_template'});" onclick="Ext.getCmp('tabs-panel').activate('new_task_template');">
 		 	<?php echo lang('add a new milestone to this template') ?></a>
 		 <?php }?>
 		
@@ -95,6 +95,7 @@
 </form>
 
 <script>
+		og.actual_template_id = <?php echo $cotemplate->getId()? $cotemplate->getId():'0' ?>;
 		og.loadTemplateVars();
 		Ext.get('<?php echo $genid ?>templateFormName').focus();
 	<?php
@@ -102,7 +103,7 @@
 	
 	if (isset($parameters) && is_array($parameters)) {
 		foreach ($parameters as $param) { ?>
-		og.addParameterToTemplate(document.getElementById('<?php echo $genid ?>params'), '<?php echo $param->getName() ?>','<?php echo $param->getType() ?>'); 
+		og.addParameterToTemplate(document.getElementById('<?php echo $genid ?>params'), '<?php echo str_replace("'","\'",$param->getName()) ?>','<?php echo $param->getType() ?>'); 
 	<?php }
 	}?>
 
@@ -158,7 +159,7 @@
 						if(isset($object_properties[$oid])){
 							foreach($object_properties[$oid] as $objProp){  
 								$property = $objProp->getProperty();
-								$value =  $objProp->getValue();
+								$value =  str_replace("'","\'",$objProp->getValue());
 
 							?>
 							og.addTemplateObjectProperty(<?php echo $oid ?>, <?php echo $oid ?>, '<?php echo $property ?>', '<?php echo $value ?>');

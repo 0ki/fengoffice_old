@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Vacio upgrade script will upgrade FengOffice 2.4.1 to FengOffice 2.5.1-beta
+ * Vacio upgrade script will upgrade FengOffice 2.4.1 to FengOffice 2.5.1-rc
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -40,7 +40,7 @@ class VacioUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('2.4.1');
-		$this->setVersionTo('2.5.1-beta');
+		$this->setVersionTo('2.5.1-rc');
 	} // __construct
 
 	function getCheckIsWritable() {

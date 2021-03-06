@@ -258,12 +258,18 @@
 			}
 			if (is_null($group)) {
 				if ($gb_val != 'unclassified' && in_array($column, $rel_obj->manager()->getExternalColumns())) {
-					$related_object = Objects::findObject($obj->getColumnValue($column));
+					if ($obj instanceof Timeslot) {
+						$related_object = Objects::findObject($rel_obj->getColumnValue($column));
+					} else {
+						$related_object = Objects::findObject($obj->getColumnValue($column));
+					}
 					if ($related_object instanceof ContentDataObject) {
 						$name = $related_object->getObjectName();
 					} else {
 						$name = lang('unclassified');
 					}
+				} else if ($gb_val == 'unclassified') {
+					$name = lang('unclassified');
 				} else {
 					$name = lang("$column $gb_val");
 				}

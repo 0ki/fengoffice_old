@@ -1000,6 +1000,9 @@ class TaskController extends ApplicationController {
 			hook::fire('tasks_user_preferences', null, $userPref);
 			
 			tpl_assign('userPreferences', $userPref);
+			
+			tpl_assign('userPermissions', array('can_add' => ProjectTask::canAdd(logged_user(), active_context()) ? 1 : 0));
+			
 			ajx_set_no_toolbar(true);
 		}
 	}
@@ -1082,6 +1085,12 @@ class TaskController extends ApplicationController {
 		$isTemplateTask = false;
 		if(array_var($_REQUEST, 'template_task') == true){
 			$isTemplateTask = true;
+			if(array_var($_REQUEST, 'template_id')){
+				$template_id = array_var($_REQUEST, 'template_id');
+			}else{
+				$template_id = 0;
+			}			
+			tpl_assign('template_id', $template_id);
 		}
 		
 		if (logged_user()->isGuest()) {
@@ -1133,8 +1142,9 @@ class TaskController extends ApplicationController {
 			}else{
 				$text_post = array_var($_POST, 'text', '');
 			}
+			
 			$task_data = array(
-				'milestone_id' => array_var($_POST, 'milestone_id',0),
+				'milestone_id' => array_var($_REQUEST, 'milestone_id',0),
 				'project_id' => 1 ,
 				'name' => array_var($_POST, 'name', ''),
 				'assigned_to_contact_id' => array_var($_POST, 'assigned_to_contact_id', '0'),

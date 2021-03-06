@@ -337,8 +337,8 @@ class Reports extends BaseReports {
 				$join_params = self::get_extra_contact_column_order_by($order_by_col, $order_by_col, $select_columns);
 			}
 			
+			$original_order_by_col = $order_by_col;
 			if (in_array($order_by_col, self::$external_columns)) {
-				$original_order_by_col = $order_by_col;
 				$order_by_col = 'name_order';
 				$join_params = array(
 					'table' => Objects::instance()->getTableName(),
@@ -381,7 +381,7 @@ class Reports extends BaseReports {
 			$objects = $result->objects;
 			$totalResults = $result->total;
 
-			$results['pagination'] = Reports::getReportPagination($id, $params, $order_by_col, $order_by_asc, $offset, $limit, $totalResults);
+			$results['pagination'] = Reports::getReportPagination($id, $params, $original_order_by_col, $order_by_asc, $offset, $limit, $totalResults);
 		
 			$dimensions_cache = array();
 			
@@ -466,7 +466,7 @@ class Reports extends BaseReports {
 							if(in_array($field, $managerInstance->getExternalColumns())){
 								$value = self::instance()->getExternalColumnValue($field, $value, $managerInstance);
 							} else if ($field != 'link'){
-								$value = html_to_text($value);
+								$value = html_to_text(html_entity_decode($value));
 							}
 							if(self::isReportColumnEmail($value)) {
 								if(logged_user()->hasMailAccounts()){
