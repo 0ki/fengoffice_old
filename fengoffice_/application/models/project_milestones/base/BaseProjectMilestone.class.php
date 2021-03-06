@@ -167,6 +167,27 @@
       return $this->setColumnValue('is_private', $value);
     } // setIsPrivate() 
     
+    /** Return value of 'is_urgent' field
+    *
+    * @access public
+    * @param void
+    * @return boolean 
+    */
+    function getIsUrgent() {
+      return $this->getColumnValue('is_urgent');
+    } // getIsUrgent()
+    
+    /**
+    * Set value of 'is_urgent' field
+    *
+    * @access public   
+    * @param boolean $value
+    * @return boolean
+    */
+    function setIsUrgent($value) {
+      return $this->setColumnValue('is_urgent', $value);
+    } // setIsUrgent() 
+    
     /**
     * Return value of 'completed_on' field
     *

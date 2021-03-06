@@ -65,8 +65,7 @@ class MessageController extends ApplicationController {
 		} 
 
 		// Get all emails and messages to display
-		$pid = array_var($_GET, 'active_project', 0);
-		$project = Projects::findById($pid);
+		$project = active_project();
 		list($messages, $pagination) = ProjectMessages::getMessages($tag, $project, $start, $limit, $order, $order_dir);
 		$total = $pagination->getTotalItems();
 
@@ -242,12 +241,6 @@ class MessageController extends ApplicationController {
 					$resultCode = 1;
 				} else {
 					$count = 0;
-					$active = active_project();
-					if ($active instanceof Project) {
-						$ws_ids = $active->getAllSubWorkspacesQuery(true, logged_user());
-					} else {
-						$ws_ids = logged_user()->getWorkspacesQuery();
-					}
 					for($i = 0; $i < count($attributes["ids"]); $i++){
 						$id = $attributes["ids"][$i];
 						$type = $attributes["types"][$i];
@@ -256,15 +249,23 @@ class MessageController extends ApplicationController {
 								$message = ProjectMessages::findById($id);
 								if ($message instanceof ProjectMessage && $message->canEdit(logged_user())){
 									if (!$attributes["mantainWs"]) {
-										$ws = $message->getWorkspaces($ws_ids);
+										$removed = "";
+										$ws = $message->getWorkspaces();
 										foreach ($ws as $w) {
 											if (can_add(logged_user(), $w, 'ProjectMessages')) {
 												$message->removeFromWorkspace($w);
+												$removed .= $w->getId() . ",";
 											}
 										}
+										$removed = substr($removed, 0, -1);
+										$log_action = ApplicationLogs::ACTION_MOVE;
+										$log_data = ($removed == "" ? "" : "from:$removed;") . "to:$wsid";
+									} else {
+										$log_action = ApplicationLogs::ACTION_COPY;
+										$log_data = "to:$wsid";
 									}
 									$message->addToWorkspace($destination);
-									ApplicationLogs::createLog($message, $message->getWorkspaces(), ApplicationLogs::ACTION_EDIT);
+									ApplicationLogs::createLog($message, $message->getWorkspaces(), $log_action, false, null, true, $log_data);
 									$count++;
 								};
 								break;
@@ -403,7 +404,8 @@ class MessageController extends ApplicationController {
 		tpl_assign('subscribers', $message->getSubscribers());
 		ajx_extra_data(array("title" => $message->getTitle(), 'icon'=>'ico-message'));
 		ajx_set_no_toolbar(true);
-
+		
+		ApplicationReadLogs::createLog($message, $message->getWorkspaces(), ApplicationReadLogs::ACTION_READ);
 	} // view
 	
 	/**
@@ -439,6 +441,13 @@ class MessageController extends ApplicationController {
 	 */
 	function add() {
 		$this->setTemplate('add_message');
+		
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current('empty');
+			return;
+		}
+		
 		$message = new ProjectMessage();
 		tpl_assign('message', $message);
 
@@ -503,6 +512,12 @@ class MessageController extends ApplicationController {
 	 */
 	function edit() {
 		$this->setTemplate('add_message');
+		
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current('empty');
+			return;
+		}
 
 		$message = ProjectMessages::findById(get_id());
 		if(!($message instanceof ProjectMessage)) {
@@ -587,18 +602,7 @@ class MessageController extends ApplicationController {
 				$object_controller->add_subscribers($message);
 				$object_controller->add_custom_properties($message);
 				
-				$ro = ReadObjects::findAll(array('conditions' => 'rel_object_id = '.
-																$message->getId().
-																' AND rel_object_manager = \'' .
-																 get_class($message->manager()) . 
-																 '\' AND ' . 'user_id <> ' . logged_user()->getId()));
-				if (is_array($ro) && count($ro) > 0){
-					foreach ($ro as $r){
-						if ($r instanceof ReadObject){							
-							$r->delete();
-						}
-					}
-				}
+				$message->resetIsRead();
 				
 				ApplicationLogs::createLog($message, $message->getWorkspaces(), ApplicationLogs::ACTION_EDIT);
 			    
@@ -627,6 +631,12 @@ class MessageController extends ApplicationController {
 	 * @return null
 	 */
 	function delete() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current('empty');
+			return;
+		}
+		
 		ajx_current("empty");
 		$message = ProjectMessages::findById(get_id());
 		if(!($message instanceof ProjectMessage)) {

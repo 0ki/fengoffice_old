@@ -16,6 +16,10 @@ if (!$logged_user_settings instanceof MailAccountUser) {
 		'signature' => $logged_user_settings->getSignature(),
 	);
 }
+if ($mailAccount->getUserId() == logged_user()->getId()) {
+	// the creator of the account can always edit it
+	$logged_user_can_edit = true;
+}
 ?>
 
 <form style="height: 100%; background-color: white" class="internalForm"

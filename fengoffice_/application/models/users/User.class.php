@@ -290,12 +290,7 @@ class User extends BaseUser {
 	 * @return boolean
 	 */
 	function isAdministrator() {
-		if(is_null($this->is_administrator)) {
-			if (!$this->getId())
-				return false;
-			$this->is_administrator = GroupUsers::isUserInGroup($this->getId(),Group::CONST_ADMIN_GROUP_ID );
-		} // if
-		return $this->is_administrator;
+		return $this->getType() == 'admin';
 	} // isAdministrator
 
 	function setAsAdministrator($setAsAdmin = true) {
@@ -503,22 +498,23 @@ class User extends BaseUser {
 	 * @param bool $active If null, all projects; if true, only active, if false, only archived
 	 * @return string
 	 */
-	function getWorkspacesQuery($active = null) {
+	function getWorkspacesQuery($active = null, $additional_conditions = null) {
 		//return $this->getActiveProjectIdsCSV();
 		$project_users_table =  ProjectUsers::instance()->getTableName(true);
 		$group_users_table = GroupUsers::instance()->getTableName(true);
 		
 		$usercond = "($project_users_table.`user_id` = " . DB::escape($this->getId()) . ")";
 		$groupcond = "($project_users_table.`user_id` IN (SELECT `group_id` FROM $group_users_table WHERE $group_users_table.`user_id` = " . DB::escape($this->getId()) . "))";
+		$addcond = $additional_conditions ==null ? "" : "AND ".$additional_conditions;
 		
 		if ($active === null) {
-			return "SELECT $project_users_table.`project_id` FROM $project_users_table WHERE ($usercond OR $groupcond)";
+			return "SELECT $project_users_table.`project_id` FROM $project_users_table WHERE ($usercond OR $groupcond) $addcond";
 		} else {
 			$projects_table =  Projects::instance()->getTableName(true);
 			$empty_date = DB::escape(EMPTY_DATETIME);
 			$active_cond = $active ? "$projects_table.`completed_on` = $empty_date" : "$projects_table.`completed_on` <> $empty_date";
 			$projectcond = "($project_users_table.`project_id` = $projects_table.`id` AND  $active_cond)";
-			return "SELECT $project_users_table.`project_id` FROM $project_users_table, $projects_table WHERE ($usercond OR $groupcond) AND $projectcond";
+			return "SELECT $project_users_table.`project_id` FROM $project_users_table, $projects_table WHERE ($usercond OR $groupcond) AND $projectcond $addcond";
 		}
 	}
 	
@@ -532,6 +528,12 @@ class User extends BaseUser {
 	function getPersonalProject() {
 		if(is_null($this->personal_project)) {
 			$this->personal_project = Projects::findById($this->getPersonalProjectId());
+			if (!$this->personal_project instanceof Project) {
+				$this->personal_project = new Project();
+				$this->personal_project->setId(0);
+				$this->personal_project->setColor(0);
+				$this->personal_project->setParentWorkspace(null);
+			}
 		} // if
 		return $this->personal_project;
 	} // getPersonalProject
@@ -845,6 +847,44 @@ class User extends BaseUser {
 	 */
 	function isValidPassword($check_password) {
 		return  sha1($this->getSalt() . $check_password) == $this->getToken();
+	} // isValidPassword
+
+	/**
+	 * Check if $check_password is valid user password
+	 *
+	 * @param string $check_password
+	 * @return boolean
+	 */
+	function isValidPasswordLdap($user, $password, $config) {
+	
+		// Connecting using the configuration:
+		require_once "Net/LDAP2.php";
+		
+		$ldap = Net_LDAP2::connect($config);
+
+		// Testing for connection error
+		if (PEAR::isError($ldap)) {
+			return false;
+		}
+		$filter = Net_LDAP2_Filter::create($config['uid'], 'equals', $user);
+		$search = $ldap->search(null, $filter, null);
+
+		if (Net_LDAP2::isError($search)) {
+			return false;
+		}
+		
+		if ($search->count() != 1) {
+			return false;
+		}
+
+		// User exists so we may rebind to authenticate the password
+		$entries = $search->entries();
+		$bind_result = $ldap->bind($entries[0]->dn(), $password);
+
+		if (PEAR::isError($bind_result)) {
+			return false;
+		}
+		return true;
 	} // isValidPassword
 
 	/**
@@ -1186,6 +1226,16 @@ class User extends BaseUser {
 		return get_url('account', 'update_permissions', $attributes);
 	} // getUpdatePermissionsUrl
 
+	function giveAccessToObject(ProjectDataObject $object) {
+		$ou = new ObjectUserPermission();
+		$ou->setObjectId($object->getId());
+		$ou->setObjectManager($object->getObjectManagerName());
+		$ou->setUserId($this->getId());
+		$ou->setReadPermission(true);
+		$ou->setWritePermission(false);
+		$ou->save();
+	}
+	
 	/**
 	 * Return update avatar URL
 	 *
@@ -1314,6 +1364,7 @@ class User extends BaseUser {
 		ObjectSubscriptions::clearByUser($this);
 		ObjectReminders::clearByUser($this);
 		EventInvitations::clearByUser($this);
+		UserPasswords::clearByUser($this);
 		return parent::delete();
 	} // delete
 
@@ -1393,6 +1444,68 @@ class User extends BaseUser {
 		if(is_null($this->mail_accounts))
 			$this->mail_accounts = MailAccounts::getMailAccountsByUser(logged_user());
 		return is_array($this->mail_accounts) && count($this->mail_accounts) > 0;
+	}
+	
+	function isGuest() {
+		return $this->getType() == 'guest';
+	}
+	
+	function getAssignableUsers($project = null) {
+		if ($this->isMemberOfOwnerCompany()) {
+			return Users::getAll();
+		}
+		TimeIt::start('get assignable users');
+		if ($project instanceof Project) {
+			$ws = $project->getAllSubWorkspacesQuery(true);
+		}
+		$users = $this->getCompany()->getUsers();
+		$uid = $this->getId();
+		$cid = $this->getCompany()->getId();
+		$tp = TABLE_PREFIX;
+		$gids = "SELECT `group_id` FROM `{$tp}group_users` WHERE `user_id` = $uid";
+		$q1 = "SELECT `project_id` FROM `{$tp}project_users` WHERE (`user_id` = $uid OR `user_id` IN ($gids)) AND `can_assign_to_other` = '1'";
+		$q2 = "SELECT `project_id` FROM `{$tp}project_users` WHERE (`user_id` = $uid OR `user_id` IN ($gids)) AND `can_assign_to_owners` = '1'";
+		if ($ws) {
+			 $q1 .= " AND `project_id` IN ($ws)";
+			 $q2 .= " AND `project_id` IN ($ws)";
+		}
+		$query1 = "SELECT `user_id` FROM `{$tp}project_users` WHERE `project_id` IN ($q1)";
+		$query2 = "SELECT `user_id` FROM `{$tp}project_users` WHERE `project_id` IN ($q2)";
+		// get users from other client companies that share workspaces in which the user can assign to other clients' members
+		$us1 = Users::findAll(array('conditions' => "`id` IN ($query1) AND `company_id` <> 1 AND `company_id` <> $cid"));
+		// get users from the owner company that share workspaces in which the user can assign to owner company members
+		$us2 = Users::findAll(array('conditions' => "`id` IN ($query2) AND `company_id` = 1"));
+		$users = array_merge($users, $us1);
+		$users = array_merge($users, $us2);
+		TimeIt::stop();
+		return $users;
+	}
+	
+	function getAssignableCompanies($project = null) {
+		if ($this->isMemberOfOwnerCompany()) {
+			return Companies::getCompaniesWithUsers();
+		}
+		TimeIt::start('get assignable companies');
+		if ($project instanceof Project) {
+			$ws = $project->getAllSubWorkspacesQuery(true);
+		}
+		$uid = $this->getId();
+		$cid = $this->getCompany()->getId();
+		$tp = TABLE_PREFIX;
+		$gids = "SELECT `group_id` FROM `{$tp}group_users` WHERE `user_id` = $uid";
+		$q1 = "SELECT `project_id` FROM `{$tp}project_users` WHERE (`user_id` = $uid OR `user_id` IN ($gids)) AND `can_assign_to_other` = '1'";
+		$q2 = "SELECT `project_id` FROM `{$tp}project_users` WHERE (`user_id` = $uid OR `user_id` IN ($gids)) AND `can_assign_to_owners` = '1'";
+		if ($ws) {
+			 $q1 .= " AND `project_id` IN ($ws)";
+			 $q2 .= " AND `project_id` IN ($ws)";
+		}
+		$query1 = "SELECT `user_id` FROM `{$tp}project_users` WHERE `project_id` IN ($q1)";
+		$query2 = "SELECT `user_id` FROM `{$tp}project_users` WHERE `project_id` IN ($q2)";
+		$query = "SELECT `company_id` FROM `{$tp}users` WHERE `id` IN ($query1) AND `company_id` <> 1 AND `company_id` <> $cid OR `id` IN ($query2) AND `company_id` = 1";
+		// get companies for assignable users (see getAssignableUsers)
+		$companies = Companies::findAll(array('conditions' => "`id` = $cid OR `id` IN ($query)"));
+		TimeIt::stop();
+		return $companies;
 	}
 	
 } // User

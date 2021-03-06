@@ -96,7 +96,20 @@ class MailContents extends BaseMailContents {
 		$mail = self::findOne(array('conditions' => $conditions, 'include_trashed' => true));
 		return $mail instanceof MailContent;
 	}
-	 
+	
+	static function getUidsFromAccount($account_id, $folder = null) {
+		$uids = array();
+		$folder_cond = $folder == null ? "" : "AND `imap_folder_name` = " . DB::escape($folder);
+		$sql = "SELECT `uid` FROM `".TABLE_PREFIX."mail_contents` WHERE `account_id` = $account_id $folder_cond";
+		$rows = DB::executeAll($sql);
+		if (is_array($rows)) {
+			foreach ($rows as $row) {
+				$uids[] = $row['uid'];
+			}
+		}
+		return $uids;
+	}
+
 	/**
 	 * Return mails that belong to specific project
 	 *
@@ -127,11 +140,10 @@ class MailContents extends BaseMailContents {
 							$count++;
 						} catch (Exception $e) {
 							$err++;
-							Logger::log($e->getMessage());
+							//Logger::log($e->getMessage());
 						}
 					}
 				}
-				Logger::log("Mails deleted: $count --- errors: $err");
 			}
 			
 			return parent::delete($condition);
@@ -213,7 +225,7 @@ class MailContents extends BaseMailContents {
 		
 		//Check for projects (uses accountConditions
 		if ($project instanceof Project) {
-			$pids = $project->getAllSubWorkspacesQuery(!$archived, logged_user());
+			$pids = $project->getAllSubWorkspacesQuery(!$archived);
 			$projectConditions = " AND " . self::getWorkspaceString($pids);
 		} else {
 			$projectConditions = "";
@@ -240,6 +252,8 @@ class MailContents extends BaseMailContents {
 		if ($count) {
 			return self::count($conditions);
 		} else {
+			return self::paginate(array('conditions' => $conditions, 'order' => "$order_by $dir"), config_option('files_per_page'), $start / $limit + 1);
+			/* COMPLEX WORKAROUND FOR PERFORMANCE
 			$page = (integer) ($start / $limit) + 1;
 			$order = "$order_by $dir";
 			$count = null;
@@ -279,7 +293,7 @@ class MailContents extends BaseMailContents {
 			foreach ($ids as $id) {
 				$objects[] = self::findById($id);
 			}
-      		return array($objects, $pagination);
+      		return array($objects, $pagination);*/
 		}
 	}
 	
@@ -288,7 +302,15 @@ class MailContents extends BaseMailContents {
 	}
 	
 	function countUserInboxUnreadEmails() {
-		return self::getEmails(null, null, 'received', 'unread', "", null, null, null, 'sent_date', 'ASC', false, true);
+		$tp = TABLE_PREFIX;
+		$uid = logged_user()->getId();
+		$sql = "SELECT count(*) `c` FROM `{$tp}mail_contents` `a`, `{$tp}read_objects` `b` WHERE `b`.`rel_object_manager` = 'MailContents' AND `b`.`rel_object_id` = `a`.`id` AND `b`.`user_id` = '$uid' AND `b`.`is_read` = '1' AND `a`.`trashed_on` = '0000-00-00 00:00:00' AND `a`.`is_deleted` = 0 AND `a`.`archived_by_id` = 0 AND (`a`.`state` = '0' OR `a`.`state` = '5') AND " . permissions_sql_for_listings(MailContents::instance(), ACCESS_LEVEL_READ, logged_user(), null, '`a`');
+		$rows = DB::executeAll($sql);
+		$read = $rows[0]['c'];
+		$sql = "SELECT count(*) `c` FROM `{$tp}mail_contents` `a` WHERE `a`.`trashed_on` = '0000-00-00 00:00:00' AND `a`.`is_deleted` = 0 AND `a`.`archived_by_id` = 0 AND (`a`.`state` = '0' OR `a`.`state` = '5') AND " . permissions_sql_for_listings(MailContents::instance(), ACCESS_LEVEL_READ, logged_user(), null, '`a`');
+		$rows = DB::executeAll($sql);
+		$all = $rows[0]['c'];
+		return $all - $read;
 	}
 
 } // MailContents

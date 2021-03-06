@@ -34,7 +34,7 @@ if (isset($task_list) && $task_list instanceof ProjectTask) {
 		} // if
 	} // if
 
-	if (!$task_list->isTrashed()){
+	if (!$task_list->isTrashed() && !logged_user()->isGuest()){
 		if ($task_list->getIsTemplate()) {
 			add_page_action(lang('new task from template'), get_url("task", "copy_task", array("id" => $task_list->getId())), 'ico-copy');
 		} else {
@@ -108,7 +108,9 @@ if ($task_list->getMilestone() instanceof ProjectMilestone){
 }
 
 $priority = '';
-if ($task_list->getPriority() >= ProjectTasks::PRIORITY_HIGH) {
+if ($task_list->getPriority() >= ProjectTasks::PRIORITY_URGENT) {
+	$priority = '<div class="og-task-priority-high"><span style="font-weight:bold">'.lang('task priority').": </span>".lang('urgent priority').'</div>';
+}else if ($task_list->getPriority() >= ProjectTasks::PRIORITY_HIGH) {
 	$priority = '<div class="og-task-priority-high"><span style="font-weight:bold">'.lang('task priority').": </span>".lang('high priority').'</div>';
 } else if ($task_list->getPriority() <= ProjectTasks::PRIORITY_LOW) {
 	$priority = '<div class="og-task-priority-low"><span style="font-weight:bold">'.lang('task priority').": </span>".lang('low priority').'</div>';

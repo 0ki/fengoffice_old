@@ -16,7 +16,7 @@
 // | Authors: Alexander Merz <alexander.merz@web.de>				  |
 // +----------------------------------------------------------------------+
 //
-// $Id: IPv6.php,v 1.1 2008/11/27 12:11:13 alvarotm01 Exp $
+// $Id: IPv6.php,v 1.1 2010/01/22 18:07:08 acio Exp $
 
 /**
 * Class to validate and to work with IPv6
@@ -24,7 +24,7 @@
 * @author  Alexander Merz <alexander.merz@t-online.de>
 * @author elfrink at introweb dot nl
 * @package Net_IPv6
-* @version $Id: IPv6.php,v 1.1 2008/11/27 12:11:13 alvarotm01 Exp $
+* @version $Id: IPv6.php,v 1.1 2010/01/22 18:07:08 acio Exp $
 * @access  public
 */
 class Net_IPv6 {

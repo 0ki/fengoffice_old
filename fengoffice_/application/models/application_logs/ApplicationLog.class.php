@@ -183,6 +183,127 @@ class ApplicationLog extends BaseApplicationLog {
 		return $object instanceof ApplicationDataObject ? $object->getObjectTypeName() : null;
 	} // getObjectTypeName
 
+	function getActivityData() {
+		$user = Users::findById($this->getCreatedById());
+		$object = get_object_by_manager_and_id($this->getRelObjectId(), $this->getRelObjectManager());
+		if (!$user || !$object) return false;
+		
+		$icon_class = "";
+		if ($object instanceof ProjectFile) {
+			$path = explode("-", str_replace(".", "_", str_replace("/", "-", $object->getTypeString())));
+			$acc = "";
+			foreach ($path as $p) {
+				$acc .= $p;
+				$icon_class .= ' ico-' . $acc;
+				$acc .= "-";
+			}			
+		}
+		$object_link = '<a style="font-weight:bold" href="' . $object->getObjectUrl() . '">&nbsp;'.
+			'<span style="padding: 1px 0 3px 18px;" class="db-ico ico-unknown ico-' . $object->getObjectTypeName() . $icon_class . '"/>'.$object->getObjectName().'</a>';
+		switch ($this->getAction()) {
+			case ApplicationLogs::ACTION_EDIT :
+				return lang('activity ' . $this->getAction(), lang('the '.$object->getObjectTypeName()), $user->getDisplayName(), $object_link);
+			case ApplicationLogs::ACTION_ADD :
+			case ApplicationLogs::ACTION_DELETE :
+			case ApplicationLogs::ACTION_TRASH :
+			case ApplicationLogs::ACTION_UNTRASH :
+			case ApplicationLogs::ACTION_OPEN :
+			case ApplicationLogs::ACTION_CLOSE :
+				return lang('activity ' . $this->getAction(), lang('the '.$object->getObjectTypeName()), $user->getDisplayName(), $object_link);
+			case ApplicationLogs::ACTION_SUBSCRIBE :
+			case ApplicationLogs::ACTION_UNSUBSCRIBE :
+				$user_ids = explode(",", $this->getLogData());
+				if (count($user_ids) < 8) {
+					$users_str = "";
+					foreach ($user_ids as $usid) {
+						$su = Users::findById($usid);
+						if ($su instanceof User)
+							$users_str .= '<a style="font-weight:bold" href="'.$su->getObjectUrl().'">&nbsp;<span style="padding: 0 0 3px 18px;" class="db-ico ico-unknown ico-user"/>'.$su->getObjectName().'</a>, ';
+					}
+					if (count($user_ids) == 1) {
+						$users_text = substr(trim($users_str), 0, -1);
+					} else {
+						$users_text = lang('x users', count($user_ids), ": $users_str");
+					} 
+				} else {
+					$users_text = lang('x users', count($user_ids), "");
+				}
+				return lang('activity ' . $this->getAction(), lang('the '.$object->getObjectTypeName()), $user->getDisplayName(), $object_link, $users_text);
+			case ApplicationLogs::ACTION_COMMENT :
+				return lang('activity ' . $this->getAction(), lang('the '.$object->getObjectTypeName()), $user->getDisplayName(), $object_link, $this->getLogData());
+			case ApplicationLogs::ACTION_LINK :
+			case ApplicationLogs::ACTION_UNLINK :
+				$exploded = explode(":", $this->getLogData());
+				$linked_object = get_object_by_manager_and_id($exploded[1], $exploded[0]);
+				if ($linked_object instanceof ApplicationDataObject ) {
+					$icon_class = "";
+					if ($linked_object instanceof ProjectFile) {
+						$path = explode("-", str_replace(".", "_", str_replace("/", "-", $linked_object->getTypeString())));
+						$acc = "";
+						foreach ($path as $p) {
+							$acc .= $p;
+							$icon_class .= ' ico-' . $acc;
+							$acc .= "-";
+						}			
+					}
+					$linked_object_link = '<a style="font-weight:bold" href="' . $linked_object->getObjectUrl() . '">&nbsp;<span style="padding: 1px 0 3px 18px;" class="db-ico ico-unknown ico-'.$linked_object->getObjectTypeName() . $icon_class . '"/>'.$linked_object->getObjectName().'</a>';
+				} else $linked_object_link = '';
+				return lang('activity ' . $this->getAction(), lang('the '.$object->getObjectTypeName()), $user->getDisplayName(), $object_link, $linked_object instanceof ApplicationDataObject ? lang('the '.$linked_object->getObjectTypeName()) : '', $linked_object_link);
+			case ApplicationLogs::ACTION_LOGIN :
+			case ApplicationLogs::ACTION_LOGOUT :
+				return lang('activity ' . $this->getAction(), $user->getDisplayName());
+			case ApplicationLogs::ACTION_ARCHIVE :
+			case ApplicationLogs::ACTION_UNARCHIVE :
+				return lang('activity ' . $this->getAction(), lang('the '.$object->getObjectTypeName()), $user->getDisplayName(), $object_link);
+			case ApplicationLogs::ACTION_MOVE :
+				$exploded = explode(";", $this->getLogData());
+				$to_str = "";
+				$from_str = "";
+				foreach ($exploded as $str) {
+					if (str_starts_with($str, "from:")) {
+						$wsids_csv = str_replace("from:", "", $str);
+						$wsids = array_intersect(explode(",", logged_user()->getActiveProjectIdsCSV()), explode(",", $wsids_csv));
+						if (is_array($wsids) && count($wsids) > 0) {
+							$from_str = '<span class="project-replace">' . implode(",", $wsids) . '</span>';
+						}
+					} else if (str_starts_with($str, "to:")) {
+						$wsids_csv = str_replace("to:", "", $str);
+						$wsids = array_intersect(explode(",", logged_user()->getActiveProjectIdsCSV()), explode(",", $wsids_csv));
+						if (is_array($wsids) && count($wsids) > 0) {
+							$to_str = '<span class="project-replace">' . implode(",", $wsids) . '</span>';
+						}						
+					}
+				}
+				
+				if ($from_str != "" && $to_str != "") {
+					return lang('activity ' . $this->getAction() . ' from to', lang('the '.$object->getObjectTypeName()), $user->getDisplayName(), $object_link, $from_str, $to_str);
+				} else if ($from_str != "") {
+					return lang('activity ' . $this->getAction() . ' from', lang('the '.$object->getObjectTypeName()), $user->getDisplayName(), $object_link, $from_str);
+				} else if ($to_str != "") {
+					return lang('activity ' . $this->getAction() . ' to', lang('the '.$object->getObjectTypeName()), $user->getDisplayName(), $object_link, $to_str);
+				} else {
+					return lang('activity ' . $this->getAction() . ' no ws', lang('the '.$object->getObjectTypeName()), $user->getDisplayName(), $object_link);
+				}
+			case ApplicationLogs::ACTION_COPY :
+				$to_str = "";
+				$wsids_csv = str_replace("to:", "", $this->getLogData());
+				$wsids = array_intersect(explode(",", logged_user()->getActiveProjectIdsCSV()), explode(",", $wsids_csv));
+				if (is_array($wsids) && count($wsids) > 0) {
+					$to_str = '<span class="project-replace">' . implode(",", $wsids) . '</span>';
+				}
+				if ($to_str != "") {
+					return lang('activity ' . $this->getAction() . ' to', lang('the '.$object->getObjectTypeName()), $user->getDisplayName(), $object_link, $to_str);
+				} else {
+					return lang('activity ' . $this->getAction(), lang('the '.$object->getObjectTypeName()), $user->getDisplayName(), $object_link);
+				}
+			case ApplicationLogs::ACTION_READ :
+				return lang('activity ' . $this->getAction(), lang('the '.$object->getObjectTypeName()), $user->getDisplayName(), $object_link);
+			case ApplicationLogs::ACTION_DOWNLOAD :
+				return lang('activity ' . $this->getAction(), lang('the '.$object->getObjectTypeName()), $user->getDisplayName(), $object_link);
+			default: return false;
+		}
+		return false;
+	}
 } // ApplicationLog
 
 ?>

@@ -14,6 +14,7 @@ define('THEMES_DIR',       ROOT . '/public/assets/themes');
 set_include_path(ROOT . PATH_SEPARATOR . APPLICATION_PATH);
 set_include_path(LIBRARY_PATH . "/zend" . PATH_SEPARATOR . get_include_path());
 set_include_path(LIBRARY_PATH . "/PEAR" . PATH_SEPARATOR . get_include_path());
+set_include_path(LIBRARY_PATH . "/pdf" . PATH_SEPARATOR . get_include_path());
 
 if ((defined('LUCENE_SEARCH') && LUCENE_SEARCH)) {
 	require_once('Zend/Search/Lucene.php');

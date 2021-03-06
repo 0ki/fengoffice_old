@@ -1,6 +1,6 @@
 <?php
 /**
-* @version $Id: strcasecmp.php,v 1.1 2009/06/10 15:33:52 osiniscalchi Exp $
+* @version $Id: strcasecmp.php,v 1.1 2010/01/22 18:06:23 acio Exp $
 * @package utf8
 * @subpackage strings
 */

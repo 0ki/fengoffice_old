@@ -45,16 +45,16 @@ class ProjectEvents extends BaseProjectEvents {
 		$month = date("m",mktime(0,0,1,$month, $day, $year));
 		$day = date("d",mktime(0,0,1,$month, $day, $year));
 		//permission check
-		$limitation='';
 
 		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectEvents::instance(),ACCESS_LEVEL_READ, logged_user()) .')';
 
 		if ($project instanceof Project ){
-			$pids = $project->getAllSubWorkspacesQuery(!$archived, logged_user());
+			$pids = $project->getAllSubWorkspacesQuery(!$archived);
+			$wsstring = " AND " . self::getWorkspaceString($pids);
 		} else {
-			$pids = logged_user()->getWorkspacesQuery(!$archived);
+			$wsstring = "";
 		}
-		$limitation = " AND " . self::getWorkspaceString($pids);
+		
 		if (isset($tags) && $tags && $tags!='') {
 			$tag_str = " AND EXISTS (SELECT * FROM `" . TABLE_PREFIX . "tags` `t` WHERE `tag` IN (" . DB::escape($tags) . ") AND  `" . TABLE_PREFIX . "project_events`.`id` = `t`.`rel_object_id` AND `t`.`rel_object_manager` = 'ProjectEvents') ";
 		} else {
@@ -95,7 +95,7 @@ class ProjectEvents extends BaseProjectEvents {
 							MOD( DATEDIFF(ADDDATE(`start`, INTERVAL ".logged_user()->getTimezone()." HOUR), '$year-$month-$day') ,repeat_d) = 0
 							AND
 							(
-								ADDDATE(DATE(`start`), INTERVAL ((repeat_num-1)*repeat_d) DAY) >= '$start_date_str' 
+								TIMESTAMPADD(DAY, (`repeat_num`-1)*`repeat_d`, `start`) >= '$start_date_str'
 								OR
 								repeat_forever = 1
 								OR
@@ -109,7 +109,7 @@ class ProjectEvents extends BaseProjectEvents {
 							`start` <= '$start_date_str' AND DAY(`start`) = $day 
 							AND
 							(
-								ADDDATE(DATE(`start`), INTERVAL ((repeat_num-1)*repeat_m) MONTH) >= '$start_date_str' 
+								TIMESTAMPADD(MONTH, (`repeat_num`-1)*`repeat_m`, `start`) >= '$start_date_str'
 								OR
 								repeat_forever = 1
 								OR
@@ -123,7 +123,7 @@ class ProjectEvents extends BaseProjectEvents {
 							`start` <= '$start_date_str' AND DAY(`start`) = $day AND MONTH(`start`) = $month 
 							AND
 							(
-								ADDDATE(DATE(`start`), INTERVAL ((repeat_num-1)*repeat_y) YEAR) >= '$start_date_str' 
+								TIMESTAMPADD(YEAR, (`repeat_num`-1)*`repeat_y`, `start`) >= '$start_date_str'
 								OR
 								repeat_forever = 1
 								OR
@@ -148,7 +148,7 @@ class ProjectEvents extends BaseProjectEvents {
 					MOD( PERIOD_DIFF(DATE_FORMAT(`start`, '%Y%m'), DATE_FORMAT('$start_date_str', '%Y%m')), `repeat_mjump`) = 0
 				)
 			)
-			$limitation
+			$wsstring
 			$permissions
 			$tag_str $archived_cond";
 
@@ -166,13 +166,13 @@ class ProjectEvents extends BaseProjectEvents {
 						if ($user != -1) $conditions .= ' AND `user_id` = ' . $user;
 						$inv = EventInvitations::findAll(array ('conditions' => $conditions));
 						if (!is_array($inv)) {
-							if ($inv == null || (trim($inv_state) != '-1' && !strstr($inv_state, ''.$inv->getInvitationState()))) {
+							if ($inv == null || (trim($inv_state) != '-1' && !strstr($inv_state, ''.$inv->getInvitationState()) && $inv->getUserId() == logged_user()->getId())) {
 								unset($result_events[$k]);
 							}
 						} else {
 							if (count($inv) > 0){
 								foreach ($inv as $key => $v) {
-									if ($v == null || (trim($inv_state) != '-1' && !strstr($inv_state, ''.$v->getInvitationState()))) {
+									if ($v == null || (trim($inv_state) != '-1' && !strstr($inv_state, ''.$v->getInvitationState()) && $v->getUserId() == logged_user()->getId())) {
 										unset($result_events[$k]);
 										break;
 									}
@@ -210,16 +210,15 @@ class ProjectEvents extends BaseProjectEvents {
 		}
 
 		//permission check
-		$limitation='';
 
 		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectEvents::instance(),ACCESS_LEVEL_READ, logged_user()) .')';
 
 		if ($project instanceof Project ){
-			$pids = $project->getAllSubWorkspacesQuery(!$archived, logged_user());
+			$pids = $project->getAllSubWorkspacesQuery(!$archived);
+			$wsstring = " AND " . self::getWorkspaceString($pids);
 		} else {
-			$pids = logged_user()->getWorkspacesQuery(!$archived);
+			$wsstring = "";
 		}
-		$limitation = " AND " . self::getWorkspaceString($pids);
 		if (isset($tags) && $tags && $tags!='') {
 			$tag_str = " AND EXISTS (SELECT * FROM `" . TABLE_PREFIX . "tags` `t` WHERE `tag` IN (" . DB::escape($tags) . ") AND `" . TABLE_PREFIX . "project_events`.`id` = `t`.`rel_object_id` AND `t`.`rel_object_manager` = 'ProjectEvents') ";
 		} else {
@@ -262,7 +261,7 @@ class ProjectEvents extends BaseProjectEvents {
 					AND
 					(							
 						(
-							ADDDATE(DATE(`start`), INTERVAL ((repeat_num-1)*repeat_d) DAY) >= '$start_date_str' 
+							TIMESTAMPADD(DAY, (`repeat_num`-1)*`repeat_d`, `start`) >= '$start_date_str' 
 							OR
 							repeat_forever = 1
 							OR
@@ -270,7 +269,7 @@ class ProjectEvents extends BaseProjectEvents {
 						)
 						OR
 						(
-							ADDDATE(DATE(`start`), INTERVAL ((repeat_num-1)*repeat_m) MONTH) >= '$start_date_str' 
+							TIMESTAMPADD(MONTH, (`repeat_num`-1)*`repeat_m`, `start`) >= '$start_date_str' 
 							OR
 							repeat_forever = 1
 							OR
@@ -278,7 +277,7 @@ class ProjectEvents extends BaseProjectEvents {
 						)
 						OR
 						(
-							ADDDATE(DATE(`start`), INTERVAL ((repeat_num-1)*repeat_y) YEAR) >= '$start_date_str' 
+							TIMESTAMPADD(YEAR, (`repeat_num`-1)*`repeat_y`, `start`) >= '$start_date_str' 
 							OR
 							repeat_forever = 1
 							OR
@@ -335,17 +334,29 @@ class ProjectEvents extends BaseProjectEvents {
 	 * @param Project $project
 	 * @return array
 	 */
-	static function getAllEventsByProject($project = null, $archived = false) {
+	static function getAllEventsByProject($project = null, $archived = false, $inc_sub = true, $user = null) {
 		if ($project instanceof Project) {
-			$pids = $project->getAllSubWorkspacesQuery(!$archived, logged_user());
+			if ($inc_sub) {
+				$pids = $project->getAllSubWorkspacesQuery(true);
+			} else {
+				$pids = $project->getId();
+			}
+			$wsstring = " AND " . self::getWorkspaceString($pids);
 		} else {
-			$pids = logged_user()->getWorkspacesQuery(!$archived);
+			$wsstring = "";
 		}
-		if ($archived) $archived_cond = " AND `archived_by_id` <> 0";
-		else $archived_cond = " AND `archived_by_id` = 0";
+		if ($user instanceof User) {
+			$permissions = " AND " . permissions_sql_for_listings(self::instance(), ACCESS_LEVEL_READ, $user);
+		} else {
+			$permissions = "";
+		}
+		if ($archived) {
+			$archived_cond = " `archived_by_id` <> 0";
+		} else {
+			$archived_cond = " `archived_by_id` = 0";
+		}
 		
-		$cond_str = self::getWorkspaceString($pids);
-		$cond_str .= $archived_cond;
+		$cond_str = $archived_cond . $wsstring . $permissions;
 		$result_events = self::findAll(array(
 			'conditions' => array($cond_str)
 		)); // findAll

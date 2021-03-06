@@ -1112,8 +1112,8 @@
   	  $value = $this->getColumnValue($column);
   	  
   	  // Integer and float...
-  	  if(is_int($value) || is_float($column)) {
-  	    return $column <= $max;
+  	  if(is_int($value) || is_float($value)) {
+  	    return $value <= $max;
   	    
   	  // String...
   	  } elseif(is_string($value)) {
@@ -1121,7 +1121,7 @@
   	    
   	  // Any other value...
   	  } else {
-  	    return $column <= $max;
+  	    return $value <= $max;
   	  } // if
   	  
   	} // validateMaxValueOf
@@ -1144,7 +1144,7 @@
   	  
   	  // Integer and float...
   	  if(is_int($value) || is_float($value)) {
-  	    return $column >= $min;
+  	    return $value >= $min;
   	    
   	  // String...
   	  } elseif(is_string($value)) {
@@ -1152,7 +1152,7 @@
   	    
   	  // Any other value...
   	  } else {
-  	    return $column >= $min;
+  	    return $value >= $min;
   	  } // if
   	  
   	} // validateMinValueOf

@@ -97,7 +97,7 @@ class ProjectController extends ApplicationController {
 			if (active_project()) {
 				$projects = active_project()->getId();
 			} else { 
-				$projects = logged_user()->getWorkspacesQuery();
+				$projects = null;
 			}
 			list($search_results, $pagination) = SearchableObjects::searchPaginated($search_for, $projects, logged_user()->isMemberOfOwnerCompany());
 		} // if
@@ -245,6 +245,11 @@ class ProjectController extends ApplicationController {
 	 * @return null
 	 */
 	function add() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$this->setTemplate('add_project');
 
 		if(!Project::canAdd(logged_user())) {
@@ -323,20 +328,6 @@ class ProjectController extends ApplicationController {
 					}
 				}
 
-				$auto_assign_users = owner_company()->getAutoAssignUsers();
-
-				// We are getting the list of auto assign users. If current user is not in the list
-				// add it. He's creating the project after all...
-				if(is_array($auto_assign_users)) {
-					$auto_assign_logged_user = false;
-					foreach($auto_assign_users as $user) {
-						if($user->getId() == logged_user()->getId()) $auto_assign_logged_user = true;
-					} // if
-					if(!$auto_assign_logged_user) $auto_assign_users[] = logged_user();
-				} else {
-					$auto_assign_users[] = logged_user();
-				} // if
-
 				/* <permissions> */
 				$permissionsString = array_var($_POST, 'permissions');
 				if ($permissionsString && $permissionsString != '') {
@@ -351,23 +342,14 @@ class ProjectController extends ApplicationController {
 					  		$relation->setProjectId($project->getId());
 					  		$relation->setUserId($perm->wsid);
 				  			
-					  		$relation->setCheckboxPermissions($perm->pc);
-					  		$relation->setRadioPermissions($perm->pr);
+					  		$relation->setCheckboxPermissions($perm->pc, $relation->getUser()->isGuest() ? false : true);
+					  		$relation->setRadioPermissions($perm->pr, $relation->getUser()->isGuest() ? false : true);
 					  		$relation->save();
 			  			} //endif
 			  			//else if the user has no permissions at all, he is not a project_user. ProjectUser is not created
 			  		} //end foreach
 				} // if
 				/* </permissions> */
-				
-				foreach ($auto_assign_users as $user) {
-					ProjectUsers::clearByProjectAndUser($project, $user);
-					$project_user = new ProjectUser();
-					$project_user->setProjectId($project->getId());
-					$project_user->setUserId($user->getId());
-					$project_user->setAllPermissions(true);
-					$project_user->save();
-				} // foreach
 				
 				$object_controller = new ObjectController();
 				$object_controller->add_custom_properties($project);
@@ -403,6 +385,11 @@ class ProjectController extends ApplicationController {
 	 * @return null
 	 */
 	function edit() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$this->setTemplate('add_project');
 
 		$project = Projects::findById(get_id());
@@ -526,8 +513,8 @@ class ProjectController extends ApplicationController {
 					  		$relation->setProjectId($project->getId());
 					  		$relation->setUserId($perm->wsid);
 				  			
-					  		$relation->setCheckboxPermissions($perm->pc);
-					  		$relation->setRadioPermissions($perm->pr);
+					  		$relation->setCheckboxPermissions($perm->pc, $relation->getUser()->isGuest() ? false : true);
+					  		$relation->setRadioPermissions($perm->pr, $relation->getUser()->isGuest() ? false : true);
 					  		$relation->save();
 			  			} //endif
 			  			//else if the user has no permissions at all, he is not a project_user. ProjectUser is not created
@@ -564,6 +551,11 @@ class ProjectController extends ApplicationController {
 	 * @return null
 	 */
 	function delete() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$pid = get_id();
 		$u = Users::findOne(array("conditions" => "personal_project_id = $pid"));
 		if ($u) {
@@ -626,7 +618,11 @@ class ProjectController extends ApplicationController {
 	 * @return null
 	 */
 	function complete() {
-
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$project = Projects::findById(get_id());
 		if(!($project instanceof Project)) {
 			flash_error(lang('project dnx'));
@@ -649,6 +645,11 @@ class ProjectController extends ApplicationController {
 	 * @return null
 	 */
 	function open() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$project = Projects::findById(get_id());
 		if(!($project instanceof Project)) {
 			flash_error(lang('project dnx'));
@@ -889,6 +890,11 @@ class ProjectController extends ApplicationController {
 	}
 	
 	function move() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		ajx_current("empty");
 		$id = get_id();
 		$to = array_var($_GET, 'to', 0);

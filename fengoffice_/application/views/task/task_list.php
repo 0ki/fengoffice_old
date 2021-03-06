@@ -1,6 +1,7 @@
 <?php
 require_javascript("og/modules/addTaskForm.js");
 $task_list = $object;
+$genid = gen_id();
 ?>
 <script>
   if(App.modules.addTaskForm) {
@@ -114,12 +115,17 @@ if($showOpenSubtasksDiv) { ?>
 	      <?php echo label_tag(lang('due date')) ?>
 	       </td><td>
 	      <?php echo pick_date_widget2('task[due_date]', array_var($task_data, 'due_date'),$genid, 70) ?>
+	      </td></tr><tr><td style="padding-right: 10px">
+	      	<label><?php echo lang('assign to') ?>:</label>
+	       </td><td>
+	       	<div class="taskListAddTaskAssignedTo">
+	      	<?php
+	      		$assigned_to = $task_list->getAssignedTo() instanceof User ? $task_list->getAssignedTo()->getCompany()->getId().":".$task_list->getAssignedTo()->getId() : null; 
+	      		echo assign_to_select_box('task[assigned_to]', $task_list->getProject(), $assigned_to);
+	      	?>
+	      	</div>
 	      </td></tr></tbody></table>
 		</div>
-        <div class="taskListAddTaskAssignedTo">
-          <label for="addTaskAssignTo<?php echo $task_list->getId() ?>"><?php echo lang('assign to') ?>:</label>
-          <?php echo assign_to_select_box("task[assigned_to]", $task_list->getProject(), null, array('id' => 'addTaskAssignTo' . $task_list->getId())) ?>
-        </div>
 		<input type="hidden" id="addTaskMilestoneId<?php echo $task_list->getId() ?>" name="task[milestone_id]" value="<?php echo $task_list->getMilestoneId() ?>"/>
 		<input type="hidden" id="addTaskProjectId<?php echo $task_list->getId() ?>" name="task[project_id]" value="<?php echo $task_list->getProjectId() ?>"/>
 		<input type="hidden" id="addTaskTags<?php echo $task_list->getId() ?>" name="task[tags]" value="<?php echo implode(',',$task_list->getTagNames()) ?>"/>
@@ -219,4 +225,3 @@ if ($time_estimate > 0 || $total_minutes > 0){?>
 	?>
 	</div>
 <?php } ?>
-  

@@ -150,7 +150,7 @@ og.TasksTopToolbar = function(config) {
 					},
 					'tagdelete': {
 						fn: function(tag) {
-							ogTasks.executeAction('untag', null, tag.text);
+							ogTasks.executeAction('untag', null, tag);
 						},
 						scope: this
 					}
@@ -207,13 +207,15 @@ og.TasksTopToolbar = function(config) {
     
     
     //Add stuff to the toolbar
-	this.add(butt);
-	this.addSeparator();
-	this.add(actions.complete)
-	this.add(actions.tag);
-	this.add(actions.del);;
-	this.add(actions.archive);
-	this.addSeparator();
+	if (!og.loggedUser.isGuest) {
+		this.add(butt);
+		this.addSeparator();
+		this.add(actions.complete)
+		this.add(actions.tag);
+		this.add(actions.del);;
+		this.add(actions.archive);
+		this.addSeparator();
+	}
 	this.add(actions.markAs);
 	this.addSeparator();
 	

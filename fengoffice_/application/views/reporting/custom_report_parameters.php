@@ -94,15 +94,14 @@
 				if($condition->getFieldName() == 'workspace'){
 					echo select_project2('params[workspace]',isset($val)?$val:0, $genid , true);
 				}
-				if($condition->getFieldName() == 'tag'){
-					
-					echo autocomplete_tags_field("params[tags]", isset($val)?$val:null, null, 40);
+				if($condition->getFieldName() == 'tag'){					
+					echo autocomplete_tags_field("params[tag]", null, null, 40);
 				}
 			 } ?>
 			</tr>
 		<?php
-			unset($cp);
 			}//else 
+			unset($cp);
 		}//foreach ?>
 	</table>
 	

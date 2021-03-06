@@ -67,6 +67,7 @@
 }
 
 .wsTagCrumbsElement {
+	float: left;
 	padding-left: 18px;
 	margin-left: 10px;
 	background-image: url(../../images/16x16/tags.png);

@@ -91,7 +91,8 @@ class AccountController extends ApplicationController {
 	          'timezone'      => $user->getTimezone(),
 	          'auto_assign'   => $user->getAutoAssign(),
 	          'company_id'    => $user->getCompanyId(),
-	          'is_admin'    => $user->isAdministrator()
+	          'is_admin'      => $user->isAdministrator(),
+			  'type'          => $user->getType(),
 			); // array
 
 		} // if
@@ -112,6 +113,7 @@ class AccountController extends ApplicationController {
 				
 				$user->setDisplayName(array_var($user_data,'display_name'));
 				$user->setEmail(array_var($user_data,'email'));
+				$user->setType(array_var($user_data,'type'));
 				$user->setTimezone(array_var($user_data,'timezone'));
 				$user->setTitle(array_var($user_data,'title'));
 				$user->setUpdatedOn(DateTimeValueLib::now());
@@ -146,11 +148,16 @@ class AccountController extends ApplicationController {
 			  	$object_controller->add_custom_properties($user);
 			  
 				if ($user->getId() != 1) { //System admin cannot change its own admin status
-					if ($user->getCompanyId() != 1) {
-						// only users from owner company can be administrators
-						$user->setAsAdministrator(false);
+					if ($user->getType() == 'admin') {
+						if ($user->getCompanyId() != owner_company()->getId()) {
+							// external users can't be admins => set as Normal 
+							$user->setType('normal');
+							$user->setAsAdministrator(false);
+						} else {
+							$user->setAsAdministrator(true);
+						}
 					} else {
-						$user->setAsAdministrator(array_var($user_data, 'is_admin'));
+						$user->setAsAdministrator(false);
 					}
 				}
 				
@@ -335,8 +342,8 @@ class AccountController extends ApplicationController {
 					  		$relation->setProjectId($perm->wsid);
 					  		$relation->setUserId($user->getId());
 				  			
-					  		$relation->setCheckboxPermissions($perm->pc);
-					  		$relation->setRadioPermissions($perm->pr);
+					  		$relation->setCheckboxPermissions($perm->pc, $user->isGuest() ? false : true);
+					  		$relation->setRadioPermissions($perm->pr, $user->isGuest() ? false : true);
 					  		$relation->save();
 			  			} //endif
 			  			//else if the user has no permissions at all, he is not a project_user. ProjectUser is not created

@@ -58,6 +58,7 @@ if(array_var($_GET, 'priority', 'all')!='all'){
 		case '100': echo lang('low priority'); break ;
 		case '200': echo lang('normal priority'); break ;
 		case '300': echo lang('high priority'); break ;
+		case '400': echo lang('urgent priority'); break ;
 	}
 }
 else 

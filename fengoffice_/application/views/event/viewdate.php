@@ -141,8 +141,11 @@ require_javascript('og/EventPopUp.js');
 			<td class="coViewBody" style="padding:0px;height:100%;" colspan=2>
 			<div id="chrome_main2" style="width:100%; height:100%;">
 					
-				<div id="allDayGrid" class="inset grid"  style="height: <?php echo $alldaygridHeight ?>px; margin-bottom: 5px;background:#E8EEF7;margin-right:0px;margin-left:40px;" 
-					onclick="og.showEventPopup(<?php echo $dtv->getDay() ?>, <?php echo $dtv->getMonth()?>, <?php echo $dtv->getYear()?>, -1, -1, <?php echo ($use_24_hours ? 'true' : 'false'); ?>,'<?php echo $dtv->format($date_format) ?>');" >
+				<div id="allDayGrid" class="inset grid"  style="height: <?php echo $alldaygridHeight ?>px; margin-bottom: 5px;background:#E8EEF7;margin-right:0px;margin-left:40px;"
+				<?php if (!logged_user()->isGuest()) { ?> 
+					onclick="og.showEventPopup(<?php echo $dtv->getDay() ?>, <?php echo $dtv->getMonth()?>, <?php echo $dtv->getYear()?>, -1, -1, <?php echo ($use_24_hours ? 'true' : 'false'); ?>,'<?php echo $dtv->format($date_format) ?>');"
+				<?php } ?>
+				>
 					
 					<div id="allDay0" class="allDayCell" style="left: 0px; height: <?php echo $alldaygridHeight ?>px;border-left:3px double #DDDDDD !important; position:absolute;width:3px;"></div>
 					<div id="alldayeventowner" onclick="og.disableEventPropagation(event) ">
@@ -292,11 +295,14 @@ require_javascript('og/EventPopUp.js');
 											?>
 													<div id="r<?php echo $hour?>"" class="hrule <?php echo $parity?>" style="top: <?php echo $top?>px; height:1px; z-index:1;position:absolute;left:0px;<?php echo $style?>;width:100%"></div>
 
-													<div id="<?php echo $div_id?>" style="<?php echo $style ?>;width:100%;top: <?php echo $top?>px; z-index: 90; height:21px;position:absolute; border-left:3px double #DDDDDD;" 
+													<div id="<?php echo $div_id?>" style="<?php echo $style ?>;width:100%;top: <?php echo $top?>px; z-index: 90; height:21px;position:absolute; border-left:3px double #DDDDDD;"
+													<?php if (!logged_user()->isGuest()) { ?> 
 														onmouseover="if (!og.selectingCells) og.overCell('<?php echo $div_id?>'); else og.paintSelectedCells('<?php echo $div_id?>');"
 														onmouseout="if (!og.selectingCells) og.resetCell('<?php echo $div_id?>')";
 														onmousedown="og.selectStartDateTime(<?php echo $dtv->getDay() ?>, <?php echo $dtv->getMonth()?>, <?php echo $dtv->getYear()?>, <?php echo date("G",mktime($hour/2))?>, <?php echo ($hour % 2 ==0)?0:30 ?>); og.resetCell('<?php echo $div_id?>'); og.paintingDay=0; og.paintSelectedCells('<?php echo $div_id?>');"
-														onmouseup="og.showEventPopup(<?php echo $dtv->getDay() ?>, <?php echo $dtv->getMonth()?>, <?php echo $dtv->getYear()?>, <?php echo date("G",mktime(($hour+1)/2))?>, <?php echo (($hour+1) % 2 ==0)?0:30 ?>, <?php echo ($use_24_hours ? 'true' : 'false'); ?>,'<?php echo $dtv->format($date_format) ?>');">
+														onmouseup="og.showEventPopup(<?php echo $dtv->getDay() ?>, <?php echo $dtv->getMonth()?>, <?php echo $dtv->getYear()?>, <?php echo date("G",mktime(($hour+1)/2))?>, <?php echo (($hour+1) % 2 ==0)?0:30 ?>, <?php echo ($use_24_hours ? 'true' : 'false'); ?>,'<?php echo $dtv->format($date_format) ?>');"
+													<?php } ?>
+													>
 													</div>
 
 													<script>
@@ -515,7 +521,9 @@ require_javascript('og/EventPopUp.js');
 													og.setResizableEvent('d_ev_div_<?php echo $event->getId()?>', '<?php echo $event->getId()?>'); //Resize
 													<?php } ?>
 													<?php $is_repetitive = $event->isRepetitive() ? 'true' : 'false'; ?>
-													og.createEventDrag('d_ev_div_<?php echo $event->getId()?>', '<?php echo $event->getId()?>', <?php echo $is_repetitive ?>, '<?php echo $event_start->format('Y-m-d H:i:s') ?>', 'event', false, 'ev_dropzone'); // Drag													
+													<?php if (!logged_user()->isGuest()) { ?>
+													og.createEventDrag('d_ev_div_<?php echo $event->getId()?>', '<?php echo $event->getId()?>', <?php echo $is_repetitive ?>, '<?php echo $event_start->format('Y-m-d H:i:s') ?>', 'event', false, 'ev_dropzone'); // Drag
+													<?php }?>													
 												</script>
 										<?php
 											}

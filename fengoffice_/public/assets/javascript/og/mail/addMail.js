@@ -65,7 +65,7 @@ og.mailAlertFormat = function(genid, opt) {
 				Ext.getDom(genid + 'ck_editor').style.display= 'none';
 
 				var sig = Ext.getDom(genid + 'signatures');
-				
+
 				var iText = oEditor.getData();
 				 // remove line breaks
 				iText = iText.replace(/[\n\r]/ig, "");

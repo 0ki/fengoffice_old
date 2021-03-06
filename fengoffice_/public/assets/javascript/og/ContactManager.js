@@ -27,7 +27,7 @@ og.ContactManager = function() {
 				'load': function(result) {
 					var d = this.reader.jsonData;
 					var ws = og.clean(Ext.getCmp('workspace-panel').getActiveWorkspace().name);
-					var tag = og.clean(Ext.getCmp('tag-panel').getSelectedTag().name);
+					var tag = og.clean(Ext.getCmp('tag-panel').getSelectedTag());
 					if (d.totalCount == 0) {
 						if (tag) {
 							this.fireEvent('messageToShow', lang("no objects with tag message", lang("contacts"), ws, tag));
@@ -463,8 +463,8 @@ og.ContactManager = function() {
 			scope: this
 		}),
 		assignContact: new Ext.Action({
-			text: lang('assign to project'),
-            tooltip: lang('assign contact to project'),
+			text: lang('assign roles'),
+            tooltip: lang('assign contact role on workspace'),
             iconCls: 'ico-workspaces',
 			disabled: true,
 			handler: function() {
@@ -512,15 +512,15 @@ og.ContactManager = function() {
 						scope: this
 					},'tagdelete': {
 						fn: function(tag) {
-						this.load({
-							action: 'untag',
-							ids: getSelectedIds(),
-							types: getSelectedTypes(),
-							tagTag: tag
-						});
-					},
-					scope: this
-				}
+							this.load({
+								action: 'untag',
+								ids: getSelectedIds(),
+								types: getSelectedTypes(),
+								tagTag: tag
+							});
+						},
+						scope: this
+					}
 				}
 			})
 		}),
@@ -587,6 +587,23 @@ og.ContactManager = function() {
 		})
     };
     
+	var tbar = [];
+	if (!og.loggedUser.isGuest) {
+		tbar.push(actions.newContact);
+		tbar.push('-');
+		tbar.push(actions.editContact);
+		tbar.push(actions.tag);
+		tbar.push(actions.delContact);
+		tbar.push(actions.archive);
+		tbar.push('-');
+		tbar.push(actions.assignContact);
+	}
+	tbar.push(actions.view);
+	if (!og.loggedUser.isGuest) {
+		tbar.push('-');
+		tbar.push(actions.imp_exp);
+	}
+	
 	og.ContactManager.superclass.constructor.call(this, {
         store: this.store,
 		layout: 'fit',
@@ -608,19 +625,7 @@ og.ContactManager = function() {
             forceFit: true
         },
 		sm: sm,
-		tbar:[
-			actions.newContact,
-			'-',
-			actions.editContact,
-			actions.tag,
-			actions.delContact,
-			actions.archive,
-			'-',
-			actions.assignContact,
-			actions.view,
-			'-',
-			actions.imp_exp
-		],
+		tbar: tbar,
 		listeners: {
 			'render': {
 				fn: function() {
@@ -660,7 +665,7 @@ Ext.extend(og.ContactManager, Ext.grid.GridPanel, {
 			var start = 0;
 		}
 		Ext.apply(this.store.baseParams, {
-			tag: Ext.getCmp('tag-panel').getSelectedTag().name,
+			tag: Ext.getCmp('tag-panel').getSelectedTag(),
 			view_type: this.viewType,
 			active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id
 		});

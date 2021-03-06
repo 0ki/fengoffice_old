@@ -29,7 +29,9 @@ require_javascript('og/modules/addMessageForm.js');
 	$users = array_values($users);
 
 	$grouped = array();
+	$allChecked = true;
 	foreach($users as $user) {
+		if (!in_array($user->getId(), $subscriberIds)) $allChecked = false;
 		if(!isset($grouped[$user->getCompanyId()]) || !is_array($grouped[$user->getCompanyId()])) {
 			$grouped[$user->getCompanyId()] = array();
 		} // if
@@ -44,7 +46,7 @@ require_javascript('og/modules/addMessageForm.js');
 <div id="<?php echo $companyId?>" class="company-users" <?php echo is_array($users) == true? 'style ="margin-bottom: 10px;"' : '' ?> >
 
 	<?php if(is_array($users) && count($users)) { ?>
-		<div onclick="og.subscribeCompany(this)" class="container-div company-name" onmouseout="og.rollOut(this,true)" onmouseover="og.rollOver(this)">
+		<div onclick="og.subscribeCompany(this)" class="container-div company-name<?php echo $allChecked ? ' checked' : '' ?>" onmouseout="og.rollOut(this,true)" onmouseover="og.rollOver(this)">
 		<?php $theCompany = Companies::findById($companyId) ?>
 			<label for="<?php echo $genid ?>notifyCompany<?php echo $theCompany->getId() ?>" style="background: url('<?php echo $theCompany->getLogoUrl() ?>') no-repeat;"><?php echo clean($theCompany->getName()) ?></label><br/>
 		</div>
@@ -53,8 +55,8 @@ require_javascript('og/modules/addMessageForm.js');
 				<?php
 					$checked = in_array($user->getId(), $subscriberIds);
 				?>
-				<div id="<?php echo $user->getDisplayName() ?>" class="container-div <?php echo $checked==true? 'checked-user':'user-name' ?>" onmouseout="og.rollOut(this,false <?php echo $checked==true? ',true':',false' ?>)" onmouseover="og.rollOver(this)" onclick="og.checkUser(this)">
-					<input id="hiddenUser<?php echo $user->getDisplayName()?>" type="hidden" name="<?php echo 'subscribers[user_'.$user->getId() .']' ?>" value="<?php echo $checked == true? 'checked': '' ?>" />
+				<div id="div<?php echo $genid ?>inviteUser<?php echo $user->getId() ?>" class="container-div <?php echo $checked==true? 'checked-user':'user-name' ?>" onmouseout="og.rollOut(this,false <?php echo $checked==true? ',true':',false' ?>)" onmouseover="og.rollOver(this)" onclick="og.checkUser(this)">
+					<input <?php echo $checked? 'checked="checked"':'' ?> id="<?php echo $genid ?>inviteUser<?php echo $user->getId()?>" type="checkbox" style="display:none" name="<?php echo 'subscribers[user_'.$user->getId() .']' ?>" value="checked" />
 					<label for="<?php echo $genid ?>notifyUser<?php echo $user->getId() ?>" style=" width: 120px; overflow:hidden; background:url('<?php echo $user->getAvatarUrl() ?>') no-repeat;">
 						<span class="ico-user link-ico"><?php echo clean($user->getDisplayName()) ?></span>
 						<br>

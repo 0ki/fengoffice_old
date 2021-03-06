@@ -4,7 +4,7 @@
   * What to do on drag and drop
   *
   * @version 1.0
-  * @author Ilija Studen <ilija.studen@gmail.com>
+  * @author Ignacio de Soto <ignacio.desoto@fengoffice.com>
   */
   class DragDropPromptConfigHandler extends ConfigHandler {
   

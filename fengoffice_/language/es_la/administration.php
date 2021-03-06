@@ -259,4 +259,7 @@
 	'user ws config option desc hide_quoted_text_in_emails' => 'Si se habilita, los correos se mostraran sin texto citado. Habrá una opción para podrá mostrar el texto citado en la vista del correo.',
 	'user ws config option name task_display_limit' => 'Número máximo de tareas a desplegar',
 	'user ws config option desc task_display_limit' => 'Por motivos de agilidad, este número no debe ser muy grande. Use 0 para no limitar.',
+	'user ws config option name show activity widget' => 'Mostrar widget de actividad',
+	'user ws config option name activity widget elements' => 'Tamaño del widget de actividad',
+	'user ws config option desc activity widget elements' => 'Cantidad de elementos a desplegar en el widget de actividad',
 ); ?>

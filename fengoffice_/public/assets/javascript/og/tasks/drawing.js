@@ -403,7 +403,7 @@ var rx__TasksDrag = {
 		return false;
 	},
 	showHandle: function(id,v) {
-		if(!rx__TasksDrag.allowDrag) return;
+		if(!rx__TasksDrag.allowDrag || og.loggedUser.isGuest) return;
 		var o = document.getElementById('RX__ogTasksPanelDrag'+id);
 		var ine = Ext.get('ogTasksPanelAT');
 		if(ine) if(ine.isVisible()) v = false;
@@ -443,8 +443,10 @@ ogTasks.draw = function(){
 	//Drawing
 	var sb = new StringBuffer();
 	for (var i = 0; i < this.Groups.length; i++){
-		if (i != (this.Groups.length-1) || this.Groups[i].group_tasks.length > 0) //If there are no unclassified or unassigned tasks, do not show unassigned group
+		if (i != (this.Groups.length-1) || this.Groups[i].group_tasks.length > 0) { //If there are no unclassified or unassigned tasks, do not show unassigned group
+			if (displayCriteria.group_by == 'milestone' && this.Groups[i].group_tasks.length == 0) continue;
 			sb.append(this.drawGroup(displayCriteria, drawOptions, this.Groups[i]));
+		}
 	}
 	
 	// *** <RX ***
@@ -516,7 +518,8 @@ ogTasks.drawGroup = function(displayCriteria, drawOptions, group){
 	//rx__TasksDrag.haveExtDD['ogTasksPanelGroupCont'+group.group_id] = group.group_id;
 	sb.append("<div id='ogTasksPanelGroupCont" + group.group_id + "' class='ogTasksGroup' style='display:" + ((this.existsSoloGroup() && !group.solo)? 'none':'block') + "'><div id='ogTasksPanelGroup" + group.group_id + "' class='ogTasksGroupHeader' onmouseover='ogTasks.mouseMovement(null,\"" + group.group_id + "\",true)' onmouseout='ogTasks.mouseMovement(null,\"" + group.group_id + "\", false)'>");
 	sb.append("<table width='100%'><tr>");
-	sb.append('<td style="width:20px"><input style="width:14px;height:14px" type="checkbox" id="ogTasksPanelGroupChk' + group.group_id + '" ' + (group.isChecked?'checked':'') + ' onclick="ogTasks.GroupSelected(this,\'' + group.group_id + '\')"/></td>');
+	//sb.append('<td style="width:20px"><div onclick="ogTasks.expandCollapseAllTasksGroup(\'' + group.group_id + '\')" class="og-task-expander toggle_expanded" id="ogTasksPanelGroupExpanderG' + group.group_id + '"></div></td>');
+	sb.append('<td style="width:20px" title="'+lang('select all tasks')+'"><input style="width:14px;height:14px" type="checkbox" id="ogTasksPanelGroupChk' + group.group_id + '" ' + (group.isChecked?'checked':'') + ' onclick="ogTasks.GroupSelected(this,\'' + group.group_id + '\')"/></td>');
 	
 	sb.append("<td width='20px'><div class='db-ico " + group.group_icon + "'></div></td>");
 	
@@ -525,6 +528,9 @@ ogTasks.drawGroup = function(displayCriteria, drawOptions, group){
 		case 'milestone':
 			var milestone = this.getMilestone(group.group_id);
 			if (milestone){
+				if (milestone.isUrgent){
+					sb.append("</td><td><div class='db-ico ico-urgent-milestone'></div></td><td>");
+				}
 				sb.append("<table><tr><td><div class='ogTasksGroupHeaderName'>");
 				if (milestone.completedById){
 					var user = this.getUser(milestone.completedById);
@@ -666,6 +672,27 @@ ogTasks.collapseGroup = function(group_id){
 	}
 }
 
+/*ogTasks.expandCollapseAllTasksGroup = function(group_id) {
+	var group = this.getGroup(group_id);
+	if (group){
+		var expander = document.getElementById('ogTasksPanelGroupExpanderG' + group_id);
+		if (group.alltasks_collapsed) {
+			group.alltasks_collapsed = false;
+			if (expander) expander.className = 'og-task-expander toggle_expanded';
+			visibility = 'block';
+		} else {
+			group.alltasks_collapsed = true;
+			if (expander) expander.className = 'og-task-expander toggle_collapsed';
+			visibility = 'none';
+		}
+		
+		for (var i=0; i < group.group_tasks.length; i++) {
+			var div_id = 'ogTasksPanelTaskTableT' + group.group_tasks[i].id + 'G' +  group.group_id;
+			var task_div = document.getElementById(div_id);
+			if (task_div) task_div.style.display = visibility;
+		}
+	}
+}*/
 
 
 ogTasks.drawAddTask = function(id_subtask, group_id, level){
@@ -714,6 +741,7 @@ ogTasks.drawTaskRow = function(task, drawOptions, displayCriteria, group_id, lev
 	switch(task.priority){
 		case 200: priorityColor = "#DAE3F0"; break;
 		case 300: priorityColor = "#FF9088"; break;
+		case 400: priorityColor = "#FF0000"; break;
 		default: break;
 	}
 	sb.append('<td width=19 class="ogTasksCheckbox" style="background-color:' + priorityColor + '">');

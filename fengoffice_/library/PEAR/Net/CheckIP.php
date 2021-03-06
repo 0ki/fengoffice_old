@@ -21,7 +21,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
  * DEALINGS IN THE SOFTWARE.
  *
- * $Id: CheckIP.php,v 1.1 2008/11/27 12:11:20 alvarotm01 Exp $
+ * $Id: CheckIP.php,v 1.1 2010/01/22 18:07:08 acio Exp $
  */
 
 /**

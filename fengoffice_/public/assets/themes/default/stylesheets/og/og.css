@@ -187,6 +187,12 @@
 .ico-mark-as-unread {
 	background-image: url(../../images/16x16/mail_mark_unread.png) !important;
 }
+.ico-mail-mark-spam {
+	background-image: url(../../images/16x16/mail_mark_spam.png) !important;
+}
+.ico-mail-mark-ham {
+	background-image: url(../../images/16x16/mail_mark_ham.png) !important;
+}
 .ico-email_menu {
 	background-image: url(../../images/16x16/email.png) !important;
 }
@@ -204,6 +210,9 @@
 }
 .ico-calendar-week {
 	background-image: url(../../images/16x16/view_calendar_week.png) !important;
+}
+.ico-calendar-week5 {
+	background-image: url(../../images/16x16/view_calendar_week5.png) !important;
 }
 .ico-file_revision {
 	background-image: url(../../images/16x16/types/file.png) !important;
@@ -249,6 +258,9 @@
 }
 .ico-milestone, .ico-milestones {
 	background-image: url(../../images/16x16/milestone.png) !important;
+}
+.ico-urgent-milestone {
+	background-image: url(../../images/16x16/exclamation.png) !important;
 }
 .ico-more {
 	background-image: url(../../images/16x16/more.png) !important;

@@ -21,7 +21,7 @@ og.CalendarManager = function() {
 				'load': function() {
 					var d = this.reader.jsonData;
 					var ws = og.clean(Ext.getCmp('workspace-panel').getActiveWorkspace().name);
-					var tag = og.clean(Ext.getCmp('tag-panel').getSelectedTag().name);
+					var tag = og.clean(Ext.getCmp('tag-panel').getSelectedTag());
 				}
 			},
 			renderTo: Ext.getBody()
@@ -56,12 +56,12 @@ Ext.extend(og.CalendarManager, Ext.Panel, {
 	load: function(params) {
 		if (!params) params = {};
 		Ext.apply(this.store.baseParams, {
-			tag: Ext.getCmp('tag-panel').getSelectedTag().name,
+			tag: Ext.getCmp('tag-panel').getSelectedTag(),
 			active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id
 		});
 		this.store.load({
 			params: Ext.apply(params, {
-				tag: Ext.getCmp('tag-panel').getSelectedTag().name,
+				tag: Ext.getCmp('tag-panel').getSelectedTag(),
 				active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id
 			})
 		});

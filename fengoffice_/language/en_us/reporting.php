@@ -29,6 +29,11 @@
   	'columns to print desc' => 'Move the columns you want to print to the box in the right by clicking the arrow icons.',
   	'reporting workspace' => 'Workspace',
   	'reporting user' => 'User',
+  	'report pdf options' => 'PDF options',
+  	'report pdf page layout' => 'Page layout',
+  	'report pdf vertical' => 'Vertical',
+  	'report pdf landscape' => 'Landscape',
+  	'report font size' => 'Font size'
   );
   
 ?>

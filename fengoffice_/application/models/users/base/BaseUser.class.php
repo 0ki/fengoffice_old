@@ -669,6 +669,14 @@ abstract class BaseUser extends ApplicationDataObject {
 		return $this->setColumnValue('default_billing_id', $value);
 	} // setDefaultBillingId()
 
+	function getType() {
+		return $this->getColumnValue('type');
+	}
+	
+	function setType($type) {
+		return $this->setColumnValue('type', $type);
+	}
+	
 	/**
 	 * Return manager instance
 	 *

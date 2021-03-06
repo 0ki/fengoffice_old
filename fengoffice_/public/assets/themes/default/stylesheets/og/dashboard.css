@@ -216,6 +216,35 @@
 	border-color: #69598F;
 }
 
+/*----------------------------------------
+		Activity
+----------------------------------------*/
+
+.dashActivity .dashAltRow {
+	background-color:#E1E9FF;		
+}
+
+.dashActivity .dashHeader{
+	color: white;
+	background: #496AB9;
+	border-color: #496AB9;
+}
+
+.dashActivity .avatar{
+	border: 0px none;
+	height: 26px;
+	width: 26px;
+	padding: 3px;
+}
+
+.dashActivity .groupTitle{
+	font-size: 150%;
+	border-bottom: 1px solid graytext;
+	vertical-align: middle;
+	height: 25px;
+	font-weight: bold;
+	color: navy;
+}
 
 
 

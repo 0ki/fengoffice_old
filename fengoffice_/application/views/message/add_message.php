@@ -27,9 +27,7 @@
 	<?php $categories = array(); Hook::fire('object_edit_categories', $object, $categories); ?>
 	
 	<div style="padding-top:5px">
-		<?php if (isset ($projects) && count($projects) > 0) { ?>
-			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_message_select_workspace_div',this)"><?php echo lang('workspace') ?></a> - 
-		<?php } ?>
+		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_message_select_workspace_div',this)"><?php echo lang('workspace') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_message_add_tags_div', this)"><?php echo lang('tags') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_message_options_div',this)"><?php echo lang('options') ?></a> -
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_custom_properties_div',this)"><?php echo lang('custom properties') ?></a> - 
@@ -57,7 +55,6 @@
 			</div>
 		<?php }?>
 
-	<?php if (isset ($projects) && count($projects) > 0) { ?>
 	<div id="<?php echo $genid ?>add_message_select_workspace_div" style="display:none">
 	<fieldset>
 		<?php 
@@ -75,7 +72,6 @@
 		} ?>
 	</fieldset>
 	</div>
-	<?php } ?>
 	
 	<div id="<?php echo $genid ?>add_message_add_tags_div" style="display:none">
 	<fieldset>

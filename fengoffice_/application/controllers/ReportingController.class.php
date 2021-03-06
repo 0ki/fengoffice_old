@@ -45,8 +45,12 @@ class ReportingController extends ApplicationController {
 	 * @param void
 	 * @return null
 	 */
-	function add_chart()
-	{
+	function add_chart() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$factory = new ProjectChartFactory();
 		$types = $factory->getChartTypes();
 
@@ -99,7 +103,12 @@ class ReportingController extends ApplicationController {
 		tpl_assign('chart_list', $factory->getChartTypes());
 	}
 
-	function delete_chart(){
+	function delete_chart() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$chart = ProjectCharts::findById(get_id());
 		if(!($chart instanceof ProjectChart)) {
 			flash_error(lang('chart dnx'));
@@ -144,8 +153,7 @@ class ReportingController extends ApplicationController {
 	{
 		ajx_current("empty");
 
-		$pid = array_var($_GET, 'active_project', 0);
-		$project = Projects::findById($pid);
+		$project = active_project();
 		$isProjectView = ($project instanceof Project);
 			
 		$start = array_var($_GET,'start');
@@ -191,16 +199,17 @@ class ReportingController extends ApplicationController {
 			TABLE_PREFIX . "project_charts.id = " . TABLE_PREFIX . "tags.rel_object_id and " .
 			TABLE_PREFIX . "tags.tag = '".$tag."' and " . TABLE_PREFIX . "tags.rel_object_manager ='ProjectCharts' ) > 0 ";
 		}
-		$permission_str = ''; /* ' AND (' . permissions_sql_for_listings(ProjectCharts::instance(),
-		ACCESS_LEVEL_READ,
-		logged_user()) . ')';*/
+		/* TODO: handle with permissions_sql_for_listings */
+		//$permission_str = ' AND (' . permissions_sql_for_listings(ProjectCharts::instance(), ACCESS_LEVEL_READ, logged_user()) . ')';
+		$permission_str = " AND " . ProjectCharts::getWorkspaceString(logged_user()->getWorkspacesQuery(true));
 
 		if ($isProjectView) {
-			$pids = $project->getAllSubWorkspacesQuery(true, logged_user());
+			$pids = $project->getAllSubWorkspacesQuery(true);
+			$project_str = " AND " . ProjectCharts::getWorkspaceString($pids);
 		} else {
-			$pids = logged_user()->getWorkspacesQuery(true);
+			$project_str = "";
 		}
-		$project_str = " AND " . ProjectCharts::getWorkspaceString($pids);
+		
 
 		list($charts, $pagination) = ProjectCharts::paginate(
 		array("conditions" => '`trashed_by_id` = 0 AND `archived_by_id` = 0 AND ' . $tagstr . $permission_str . $project_str ,
@@ -404,13 +413,13 @@ class ReportingController extends ApplicationController {
 		$workspace = Projects::findById(array_var($report_data, 'project_id'));
 		if ($workspace instanceof Project){
 			if (array_var($report_data, 'include_subworkspaces')) {
-				$workspacesCSV = $workspace->getAllSubWorkspacesQuery(false,logged_user());
+				$workspacesCSV = $workspace->getAllSubWorkspacesQuery(false);
 			} else {
 				$workspacesCSV = $workspace->getId();
 			}
 		}
 		else {
-			$workspacesCSV = logged_user()->getWorkspacesQuery();
+			$workspacesCSV = null;
 		}
 
 		$start = getDateValue(array_var($report_data, 'start_value'));
@@ -421,7 +430,7 @@ class ReportingController extends ApplicationController {
 		$st = new DateTimeValue($st->getTimestamp() - logged_user()->getTimezone() * 3600);
 		$et = new DateTimeValue($et->getTimestamp() - logged_user()->getTimezone() * 3600);
 
-		$timeslots = Timeslots::getTimeslotsByUserWorkspacesAndDate($st,$et,'ProjectTasks',null,$workspacesCSV,array_var($report_data, 'task_id',0));
+		$timeslots = Timeslots::getTimeslotsByUserWorkspacesAndDate($st, $et, 'ProjectTasks', null, $workspacesCSV, array_var($report_data, 'task_id',0));
 
 		tpl_assign('timeslots', $timeslots);
 		tpl_assign('workspace', $workspace);
@@ -438,6 +447,11 @@ class ReportingController extends ApplicationController {
 	// ---------------------------------------------------
 
 	function add_custom_report(){
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		tpl_assign('url', get_url('reporting', 'add_custom_report'));
 		$report_data = array_var($_POST, 'report');
 		if(is_array($report_data)){
@@ -466,55 +480,8 @@ class ReportingController extends ApplicationController {
 				try{
 					DB::beginWork();
 					$newReport->save();
-					$allowed_columns = $this->get_allowed_columns($report_data['object_type']);
-					//create conditions for workspaces and tags
-					$tag_names = array();
-					$tags_csv = $report_data['tags'];
-					$tgs = "";
-					if(trim($tags_csv)) {
-						$tag_set = array();
-						$tags = explode(',', $tags_csv);
-						foreach($tags as $k => $v) {
-							$tag = trim($v);
-							if($tag <> '' && array_var($tag_set, $tag) == null) {
-								$tag_names[] = $tag;
-								$tag_set[$tag] = true;
-							}
-						} // foreach
-					} // if
-					if (is_array($tag_names) && count($tag_names)>0)
-						{
-							$tgs = $tag_names[0];
-						}						
-					$ws = $report_data['workspace'];
-					$parametrizable_ws = array_var($_POST,'parametizable_ws');
-					$parametrizable_tag = array_var($_POST,'parametizable_tags');
-					if (isset($ws)&& $ws!=0 || isset($parametrizable_ws)){
-						$wsCondition = new ReportCondition();
-						$wsCondition->setReportId($newReport->getId());
-						$wsCondition->setCustomPropertyId(0);
-						$wsCondition->setFieldName('workspace');
-						$wsCondition->setCondition('=');
-						$condValue = $ws;
-						$wsCondition->setValue($condValue);
-						$wsCondition->setIsParametrizable(isset($parametrizable_ws));
-						$wsCondition->save();
-					}					
-					
-					//	tagcondition
-					if (isset($tgs) && $tgs != '' || isset($parametrizable_tag)){
-						$tagCondition = new ReportCondition();
-						$tagCondition->setReportId($newReport->getId());
-						$tagCondition->setCustomPropertyId(0);
-						$tagCondition->setFieldName('tag');
-						$tagCondition->setCondition('=');
-						$condValue = $tgs;
-						$tagCondition->setValue($condValue);
-						$tagCondition->setIsParametrizable(isset($parametrizable_tag));
-						$tagCondition->save();
-					}
-					//end WS and tags conditions
-					
+					$allowed_columns = $this->get_allowed_columns($report_data['object_type'], true);
+										
 					foreach($conditions as $condition){
 						foreach ($allowed_columns as $ac){
 							if ($condition['field_name'] == $ac['id']){
@@ -587,6 +554,11 @@ class ReportingController extends ApplicationController {
 	}
 
 	function edit_custom_report(){
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$report_id = array_var($_GET, 'id');
 		$report = Reports::getReport($report_id);
 
@@ -598,6 +570,7 @@ class ReportingController extends ApplicationController {
 
 		if(is_array(array_var($_POST, 'report'))) {
 			try{
+				ajx_current("empty");
 				$report_data = array_var($_POST, 'report');
 				DB::beginWork();
 				$report->setName($report_data['name']);
@@ -606,78 +579,11 @@ class ReportingController extends ApplicationController {
 				$report->setOrderBy($report_data['order_by']);
 				$report->setIsOrderByAsc($report_data['order_by_asc'] == 'asc');
 				
-				
-				$report->save();
-				
-					//create conditions for workspaces and tags
-					$tag_names = array();
-					$tags_csv = $report_data['tags'];
-					$tgs = "";
-					if(trim($tags_csv)) {
-						$tag_set = array();
-						$tags = explode(',', $tags_csv);
-						foreach($tags as $k => $v) {
-							$tag = trim($v);
-							if($tag <> '' && array_var($tag_set, $tag) == null) {
-								$tag_names[] = $tag;
-								$tag_set[$tag] = true;
-							}
-						} // foreach
-					} // if
-					if (is_array($tag_names) && count($tag_names)>0)
-						{
-							$tgs = $tag_names[0];
-						}						
-					$ws = $report_data['workspace'];
-					$parametrizable_ws = array_var($_POST,'parametizable_ws');
-					$parametrizable_tag = array_var($_POST,'parametizable_tags');
-					$continue = true;
-					$wsCondition = new ReportCondition();
-					if (isset($report_data['workspceid'])){
-						$wsCondition = ReportConditions::getCondition($report_data['workspceid']);
-						if ($ws == 0 && !isset($parametrizable_ws) )
-						{
-							$wsCondition->delete();
-							$continue = false;
-						}							
-					}							
-					if ($continue && ($ws != "" || isset($parametrizable_ws))){
-						$wsCondition->setReportId($report->getId());
-						$wsCondition->setCustomPropertyId(0);
-						$wsCondition->setFieldName('workspace');
-						$wsCondition->setCondition('=');
-						$condValue = $ws;
-						$wsCondition->setValue($condValue);
-						$wsCondition->setIsParametrizable(isset($parametrizable_ws));
-						$wsCondition->save();
-					}					
-					//	tagcondition
-									
-					$continue = true;
-					$tagCondition = new ReportCondition();
-					if (isset($report_data['tagid'])){
-						$tagCondition = ReportConditions::getCondition($report_data['tagid']);
-						if ($tgs == "" && ! isset($parametrizable_tag) )
-						{
-							$tagCondition->delete();
-							$continue = false;
-						}
-					}
-					if ($continue && ($tgs != "" || isset($parametrizable_tag))){
-						$tagCondition->setReportId($report->getId());
-						$tagCondition->setCustomPropertyId(0);
-						$tagCondition->setFieldName('tag');
-						$tagCondition->setCondition('=');
-						$condValue = $tgs;
-						$tagCondition->setValue($condValue);
-						$tagCondition->setIsParametrizable(isset($parametrizable_tag));
-						$tagCondition->save();						
-					}
-					//end WS and tags conditions
-				
+				$report->save();				
+					
 				$conditions = array_var($_POST, 'conditions');
 				if (!is_array($conditions))
-				$conditions = array();
+					$conditions = array();
 				foreach($conditions as $condition){
 					$newCondition = new ReportCondition();
 					if($condition['id'] > 0){
@@ -777,7 +683,7 @@ class ReportingController extends ApplicationController {
 			tpl_assign('object_types', $types);
 			tpl_assign('selected_type', $selected_type);
 			
-			tpl_assign('allowed_columns', $this->get_allowed_columns($selected_type));
+			tpl_assign('allowed_columns', $this->get_allowed_columns($selected_type), true);
 		}
 	}
 
@@ -811,13 +717,28 @@ class ReportingController extends ApplicationController {
 				$this->setTemplate('report_wrapper');
 				tpl_assign('template_name', 'view_custom_report');
 				tpl_assign('title', $report->getName());
+				tpl_assign('genid', gen_id());
+				$parameters = '';
+				if(isset($params)){
+					foreach($params as $id => $value){
+						$parameters .= '&params['.$id.']='.$value;
+					}
+				}
+				tpl_assign('parameterURL', $parameters);
 				$offset = array_var($_GET, 'offset');
 				if(!isset($offset)) $offset = 0;
 				$limit = array_var($_GET, 'limit');
 				if(!isset($limit)) $limit = 50;
-				$results = Reports::executeReport($report_id, $params, $offset, $limit);
+				$order_by = array_var($_GET, 'order_by');
+				if(!isset($order_by)) $order_by = '';
+				tpl_assign('order_by', $order_by);
+				$order_by_asc = array_var($_GET, 'order_by_asc');
+				if(!isset($order_by_asc)) $order_by_asc = true;
+				tpl_assign('order_by_asc', $order_by_asc);
+				$results = Reports::executeReport($report_id, $params, $order_by, $order_by_asc, $offset, $limit);
 				if(!isset($results['columns'])) $results['columns'] = array(); 
 				tpl_assign('columns', $results['columns']);
+				tpl_assign('db_columns', $results['db_columns']);
 				if(!isset($results['rows'])) $results['rows'] = array();
 				tpl_assign('rows', $results['rows']);
 				if(!isset($results['pagination'])) $results['pagination'] = '';
@@ -829,7 +750,10 @@ class ReportingController extends ApplicationController {
 				tpl_assign('conditions', $conditions);
 				tpl_assign('parameters', $params);
 				tpl_assign('id', $report_id);
+				tpl_assign('to_print', false);
 			}
+			
+			ApplicationReadLogs::createLog($report, "", ApplicationReadLogs::ACTION_READ);
 		}
 	}
 
@@ -839,24 +763,181 @@ class ReportingController extends ApplicationController {
 		$params = json_decode(str_replace("'",'"', array_var($_POST, 'post')),true);
 
 		$report_id = array_var($_POST, 'id');
+		$order_by = array_var($_POST, 'order_by');
+		if(!isset($order_by)) $order_by = '';
+		tpl_assign('order_by', $order_by);
+		$order_by_asc = array_var($_POST, 'order_by_asc');
+		if(!isset($order_by_asc)) $order_by_asc = true;
+		tpl_assign('order_by_asc', $order_by_asc);
 		$report = Reports::getReport($report_id);
-		$results = Reports::executeReport($report_id, $params, 0, 50, true);
+		$results = Reports::executeReport($report_id, $params, $order_by, $order_by_asc, 0, 50, true);
 		if(isset($results['columns'])) tpl_assign('columns', $results['columns']);
 		if(isset($results['rows'])) tpl_assign('rows', $results['rows']);
+		tpl_assign('db_columns', $results['db_columns']);
 
-		tpl_assign('types', self::get_report_column_types($report_id));
-		tpl_assign('template_name', 'view_custom_report');
-		tpl_assign('title', $report->getName());
-		tpl_assign('model', $report->getObjectType());
-		tpl_assign('description', $report->getDescription());
-		$conditions = ReportConditions::getAllReportConditions($report_id);
-		tpl_assign('conditions', $conditions);
-		tpl_assign('parameters', $params);
-		tpl_assign('id', $report_id);
-		$this->setTemplate('report_printer');
+		if(array_var($_POST, 'exportCSV')){
+			$this->generateCSVReport($report, $results);
+		}else if(array_var($_POST, 'exportPDF')){
+			$this->generatePDFReport($report, $results);
+		}else{
+			tpl_assign('types', self::get_report_column_types($report_id));
+			tpl_assign('template_name', 'view_custom_report');
+			tpl_assign('title', $report->getName());
+			tpl_assign('model', $report->getObjectType());
+			tpl_assign('description', $report->getDescription());
+			$conditions = ReportConditions::getAllReportConditions($report_id);
+			tpl_assign('conditions', $conditions);
+			tpl_assign('parameters', $params);
+			tpl_assign('id', $report_id);
+			tpl_assign('to_print', true);
+			$this->setTemplate('report_printer');
+		}
+	}
+	
+	function generateCSVReport($report, $results){
+		$types = self::get_report_column_types($report->getId());
+		$filename = str_replace(' ', '_',$report->getName()).date('_YmdHis');
+		header('Expires: 0');
+		header('Cache-control: private');
+		header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+		header('Content-Description: File Transfer');
+		header('Content-Type: application/csv');
+		header('Content-disposition: attachment; filename='.$filename.'.csv');
+		foreach($results['columns'] as $col){
+			echo $col.';';
+		}
+		echo "\n";
+		foreach($results['rows'] as $row) {
+			foreach($row as $k => $value){
+				$type = '';
+				if($k == 'link'){
+					$value = strip_tags($value);
+				}else{
+					$type = $types[$k];
+				}
+				$cell = $this->format_value_to_print($k, $value, $type, $report->getObjectType());				
+				$cell = iconv(mb_internal_encoding(),"ISO-8859-1",html_entity_decode($cell ,ENT_COMPAT));
+				echo $cell.';';
+			}
+			echo "\n";
+		}
+		die();
+	}
+	
+	function generatePDFReport($report, $results){
+		$types = self::get_report_column_types($report->getId());
+		eval('$managerInstance = ' . $report->getObjectType() . "::instance();");
+		$externalCols = $managerInstance->getExternalColumns();
+		$filename = str_replace(' ', '_',$report->getName()).date('_YmdHis');
+		$pageLayout = $_POST['pdfPageLayout'];
+		$fontSize = $_POST['pdfFontSize'];
+		include_once('fpdf.php');
+		$pdf = new FPDF($pageLayout);
+		$pdf->setTitle($report->getName());
+		$pdf->AddPage();
+		$pdf->SetFont('Arial','',$fontSize);
+		$pdf->Cell(80);
+    	$pdf->Cell(30,10,$report->getName());
+    	$pdf->Ln(20);
+    	$colSizes = array();
+    	$maxValue = array();
+    	foreach($results['rows'] as $row) {
+			$i = 0;			
+			foreach($row as $k => $value){	
+				if(!isset($maxValue[$i])) $maxValue[$i] = '';
+				if(strlen(strip_tags($value)) > strlen($maxValue[$i])){
+					$maxValue[$i] = strip_tags($value);
+				}
+				$i++;  
+			}
+    	}
+		$i = 0;
+		foreach($results['columns'] as $col){
+			$db_col = isset($results['db_columns'][$col]) ? $results['db_columns'][$col] : '';
+			$colFontSize = $pdf->GetStringWidth($col);
+			$colMaxTextSize = $pdf->GetStringWidth($maxValue[$i]);
+			$colType = isset($types[$db_col]) ? $types[$db_col] : '';
+    		if($colType == DATA_TYPE_DATETIME && !($report->getObjectType() == 'ProjectEvents' && $results['db_columns'][$col] == 'start')){
+    			$colMaxTextSize = $colMaxTextSize / 2;       			
+    		}
+    		
+			$colFontSize = max($colFontSize, $colMaxTextSize) + 5;
+			$colSizes[$i] = $colFontSize ; 
+    		$pdf->Cell($colFontSize,7,$col);       		
+			$i++;
+		}
+		$lastColX = $pdf->GetX();
+		$pdf->Ln();
+		$pdf->Line($pdf->GetX(), $pdf->GetY(), $lastColX, $pdf->GetY());
+		foreach($results['rows'] as $row) {
+			$i = 0;			
+			foreach($row as $k => $value){				
+				if($k == 'link'){
+					$value = strip_tags($value);	
+					$cell = $value;					
+				}else{
+					$cell = $this->format_value_to_print($k, $value, $types[$k], $report->getObjectType());	
+				}
+							
+				$cell = iconv(mb_internal_encoding(),"ISO-8859-1",html_entity_decode($cell ,ENT_COMPAT));
+				$pdf->Cell($colSizes[$i],7,$cell);
+				$i++;
+			}
+			$pdf->Ln();
+		}
+		//echo mb_internal_encoding();die();
+		header('Expires: 0');
+		header('Cache-control: private');
+		header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+		header('Content-Description: File Transfer');
+		header('Content-Type: application/pdf');
+		header('Content-disposition: attachment; filename='.$filename.'.pdf');
+		echo $pdf->output();
+		die();
+	}
+	
+	function format_value_to_print($col, $value, $type, $obj_type, $textWrapper='', $dateformat='Y-m-d') {
+		switch ($type) {
+			case DATA_TYPE_STRING: 
+				if(preg_match(EMAIL_FORMAT, strip_tags($value))){
+					$formatted = strip_tags($value);
+				}else{ 
+					$formatted = $textWrapper . clean($value) . $textWrapper;
+				}
+				break;
+			case DATA_TYPE_INTEGER: $formatted = clean($value);
+				break;
+			case DATA_TYPE_BOOLEAN: $formatted = ($value == 1 ? lang('yes') : lang('no'));
+				break;
+			case DATA_TYPE_DATE:
+				if ($value != 0) { 
+					if (str_ends_with($value, "00:00:00")) $dateformat .= " H:i:s";
+					$dtVal = DateTimeValueLib::dateFromFormatAndString($dateformat, $value);
+					$formatted = format_date($dtVal, null, 0);
+				} else $formatted = '';
+				break;
+			case DATA_TYPE_DATETIME:
+				if ($value != 0) {
+					$dtVal = DateTimeValueLib::dateFromFormatAndString("$dateformat H:i:s", $value);
+					if ($obj_type == 'ProjectEvents' && $col == 'start') $formatted = format_datetime($dtVal);
+					else $formatted = format_date($dtVal, null, 0);
+				} else $formatted = '';
+				break;
+			default: $formatted = $value;
+		}
+		if($formatted == ''){
+			$formatted = '--';
+		}
+		
+		return $formatted;
 	}
 
 	function delete_custom_report(){
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$report_id = array_var($_GET, 'id');
 		$report = Reports::getReport($report_id);
 
@@ -879,14 +960,14 @@ class ReportingController extends ApplicationController {
 	}
 
 	function get_object_fields(){
-		$fields = $this->get_allowed_columns(array_var($_GET, 'object_type'));
+		$fields = $this->get_allowed_columns(array_var($_GET, 'object_type'), true);
 
 		ajx_current("empty");
 		ajx_extra_data(array('fields' => $fields));
 	}
 	
 	function get_object_column_list(){
-		$allowed_columns = $this->get_allowed_columns(array_var($_GET, 'object_type'));
+		$allowed_columns = $this->get_allowed_columns(array_var($_GET, 'object_type'), true);
 
 		tpl_assign('allowed_columns', $allowed_columns);
 		tpl_assign('columns', explode(',', array_var($_GET, 'columns', array())));
@@ -922,11 +1003,21 @@ class ReportingController extends ApplicationController {
 			foreach($milestones as $milestone){
 				$values[] = array('id' => $milestone->getId(), 'name' => $milestone->getName());
 			}
+		} else if($field == 'workspace'){
+			$workspaces = logged_user()->getWorkspaces(false,0);
+			foreach($workspaces as $ws){
+				$values[] = array('id' => $ws->getId(), 'name' => $ws->getName());
+			}
+		} else if($field == 'tag'){
+			$tags = Tags::getTagNames();
+			foreach($tags as $tag){
+				$values[] = array('id' => $tag['name'], 'name' => $tag['name']);
+			}
 		}
 		return $values;
 	}
 
-	private function get_allowed_columns($object_type) {
+	private function get_allowed_columns($object_type, $includeWsAndTag=false) {
 		$fields = array();
 		if(isset($object_type)){
 			$customProperties = CustomProperties::getAllCustomPropertiesByObjectType($object_type);
@@ -959,6 +1050,11 @@ class ReportingController extends ApplicationController {
 			foreach($externalFields as $extField){
 				
 				$fields[] = array('id' => $extField, 'name' => lang('field ' . $object_type . ' '.$extField), 'type' => 'external', 'multiple' => 0);
+			}
+			// Workspace and Tags
+			if($includeWsAndTag && $object_type != 'Projects' && $object_type != 'Users'){
+				$fields[] = array('id' => 'workspace', 'name' => lang('workspace'), 'type' => 'external');
+				$fields[] = array('id' => 'tag', 'name' => lang('tag'), 'type' => 'external');
 			}
 		}
 		usort($fields, array(&$this, 'compare_FieldName'));

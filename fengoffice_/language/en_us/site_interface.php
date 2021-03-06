@@ -474,6 +474,8 @@ return array(
   'upload anyway' => 'Upload anyway',
 
   'print view' => 'Print view',
+  'export csv' => 'Export to CSV',
+  'export pdf' => 'Export to PDF',
   'activity' => 'Activity',
   'statistics' => 'Statistics',
   'time' => 'Time',
@@ -680,7 +682,7 @@ return array(
   'update image' => 'Update image',
 
   'can_edit_company_data description' => 'If this permission is checked the user will be able to edit the owner company\'s data.',
-  'can_manage_security description' => 'If this permission is checked the user will be able to create, update and delete users and grorps, and modify their permissions.',
+  'can_manage_security description' => 'If this permission is checked the user will be able to create, update and delete users and groups, and modify their permissions.',
   'can_manage_workspaces description' => 'If this permission is checked the user will be able to create, update or delete workspaces.',
   'can_manage_configuration description' => 'If this permission is checked the user will be able to edit application settings like Configuration, Custom Properties and Cron Events, and Upgrade the application.',
   'can_manage_contacts description' => 'If this permission is checked the user will be able to create, update, delete and view all Contacts in the system.',
@@ -694,6 +696,10 @@ return array(
   'subscribe invited users' => 'Subscribe invited users',
   'personal project' => 'Personal workspace',
   'personal project desc' => 'The personal workspace is the workspace where objects are stored by default (when "All" is selected in the Workspaces panel). If you change this workspace the user will be given full access to it. You can later change this by editing user or workspace permissions.',
+  'normal user' => 'Normal',
+  'guest user' => 'Guest',
+  'admin user' => 'Administrator',
+  'user type' => 'User type',
 ); // array
 
 ?>

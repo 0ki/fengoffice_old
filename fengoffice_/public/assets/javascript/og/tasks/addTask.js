@@ -55,8 +55,8 @@ ogTasks.drawAddNewTaskForm = function(group_id,parent_id, level){
 	var tags = '';
 	var selectedTag = Ext.getCmp("tag-panel").getSelectedTag();
 	if (selectedTag)
-		tags += og.clean(selectedTag.name);
-	if (displayCriteria.group_by == 'tag' && group_id != 'unclassified' && !(selectedTag && group_id == selectedTag.name)){
+		tags += og.clean(selectedTag);
+	if (displayCriteria.group_by == 'tag' && group_id != 'unclassified' && !(selectedTag && group_id == selectedTag)){
 		if (tags != '')
 			tags += ',';
 		tags += group_id;
@@ -114,17 +114,17 @@ ogTasks.drawEditTaskForm = function(task_id, group_id){
 ogTasks.checkEnterPress = function (e,id)
 {
 	var characterCode;
-	if(e && e.which){
+	if (e && e.which) {
 		characterCode = e.which;
-	}
-	else{
+	} else {
 		e = event;
 		characterCode = e.keyCode;
 	}
-	if(characterCode == 13){
+	if (characterCode == 13) {
 		ogTasks.SubmitNewTask(id);
 		return false;
 	}
+	return true;
 }
 
 ogTasks.drawTaskForm = function(container_id, data){
@@ -142,7 +142,7 @@ ogTasks.drawTaskForm = function(container_id, data){
 		html += "<input type='hidden' id='ogTasksPanelATParentId' value='" + data.parentId + "'>";
 	}
 	html += "<b>" + lang('title') + ":</b><br/>";
-	html += "<input id='ogTasksPanelATTitle' type='text' class='title' name='task[title]' tabIndex=1000 value='' onkeypress='ogTasks.checkEnterPress(event,"+ data.taskId +")' />";
+	html += "<input id='ogTasksPanelATTitle' type='text' class='title' name='task[title]' tabIndex=1000 value='' onkeypress='return ogTasks.checkEnterPress(event,"+ data.taskId +");' />";
 	
 	
 	//First column

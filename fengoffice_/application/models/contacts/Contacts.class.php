@@ -9,7 +9,7 @@
 class Contacts extends BaseContacts {
 
 	public static function getWorkspaceString($ids = '?') {
-		return " `id` IN (SELECT `contact_id` FROM `" . TABLE_PREFIX . "project_contacts` WHERE `project_id` IN ($ids)) ";
+		return " `id` IN (SELECT `object_id` FROM `" . TABLE_PREFIX . "workspace_objects` WHERE `object_manager` = 'Contacts' AND `workspace_id` IN ($ids)) ";
 	}
 	
 	/**

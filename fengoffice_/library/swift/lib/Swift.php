@@ -1575,7 +1575,7 @@ class Swift
 					if ($get_body && ($this->responseCode == 354 || $this->responseCode == -1))
 					{
 						$cached_body = $command;
-						$command = $this->makeRecipientHeaders($address).$command;
+						//$command = $this->makeRecipientHeaders($address).$command;
 					}
 					if (is_array($command))
 					{
@@ -1653,6 +1653,7 @@ class Swift
 			$rcpt = array();
 			foreach ($this->to as $address) $rcpt[] = "RCPT TO: ".$this->getAddress($address)."\r\n";
 			foreach ($this->Cc as $address) $rcpt[] = "RCPT TO: ".$this->getAddress($address)."\r\n";
+			foreach ($this->Bcc as $address) $rcpt[] = "RCPT TO: ".$this->getAddress($address)."\r\n";
 			$ret[] = $rcpt;
 			$ret[] = "DATA\r\n";
 			$complete_mail = $headers.$this->headers.$data;

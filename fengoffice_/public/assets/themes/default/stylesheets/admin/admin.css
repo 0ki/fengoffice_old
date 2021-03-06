@@ -85,6 +85,13 @@
   color: #333;
 }
 
+#usersList div.userIsGuest span {
+  font-size: 90%;
+  color: #555;
+  font-weight: bolder;
+  font-style: italic;
+}
+
 #usersList div.userAutoAssign {
   margin-bottom: 10px;
 }

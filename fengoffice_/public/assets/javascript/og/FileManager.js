@@ -36,7 +36,7 @@ og.FileManager = function() {
 				'load': function(result) {
 					var d = this.reader.jsonData;
 					var ws = og.clean(Ext.getCmp('workspace-panel').getActiveWorkspace().name);
-					var tag = og.clean(Ext.getCmp('tag-panel').getSelectedTag().name);
+					var tag = og.clean(Ext.getCmp('tag-panel').getSelectedTag());
 					if (d.totalCount == 0) {
 						if (tag) {
 							this.fireEvent('messageToShow', lang("no objects with tag message", lang("documents"), ws, tag));
@@ -450,7 +450,7 @@ og.FileManager = function() {
 							this.load({
 								action: 'untag',
 								objects: getSelectedIds(),
-								tagTag: tag.text
+								tagTag: tag
 							});
 						},
 						scope: this
@@ -539,6 +539,19 @@ og.FileManager = function() {
 		})
     };
     
+	var tbar = [];
+	if (!og.loggedUser.isGuest) {
+		tbar.push(actions.newCO);
+		tbar.push('-');
+		tbar.push(actions.properties);
+		tbar.push(actions.tag);
+		tbar.push(actions.zip_add);
+		tbar.push(actions.del);
+		tbar.push(actions.archive);
+		tbar.push('-');
+	}
+	tbar.push(actions.markAs);
+	
 	og.FileManager.superclass.constructor.call(this, {
 		store: this.store,
 		layout: 'fit',
@@ -560,17 +573,7 @@ og.FileManager = function() {
 			forceFit: true
 		},
 		sm: sm,
-		tbar:[
-			actions.newCO,
-			'-',
-			actions.properties,
-			actions.tag,
-			actions.zip_add,
-			actions.del,
-			actions.archive,
-			'-',
-			actions.markAs
-		],
+		tbar: tbar,
 		listeners: {
 			'render': {
 				fn: function() {
@@ -616,7 +619,7 @@ Ext.extend(og.FileManager, Ext.grid.GridPanel, {
 			var start = 0;
 		}
 		Ext.apply(this.store.baseParams, {
-			tag: Ext.getCmp('tag-panel').getSelectedTag().name,
+			tag: Ext.getCmp('tag-panel').getSelectedTag(),
 			active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id
 		});
 		this.store.load({

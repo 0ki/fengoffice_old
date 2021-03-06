@@ -43,6 +43,11 @@ class TaskController extends ApplicationController {
 	}
 
 	function assign(){
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		ajx_current("empty");
 		$task_id = array_var($_POST, 'taskId');
 		$task = ProjectTasks::findById($task_id);
@@ -87,6 +92,11 @@ class TaskController extends ApplicationController {
 	}
 
 	function quick_add_task() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		ajx_current("empty");
 		$task = new ProjectTask();
 		$task_data = array_var($_POST, 'task');
@@ -200,6 +210,11 @@ class TaskController extends ApplicationController {
 	}
 
 	function quick_edit_task() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		ajx_current("empty");
 
 		$task = ProjectTasks::findById(get_id());
@@ -250,7 +265,7 @@ class TaskController extends ApplicationController {
 				$task->save();
 				
 				if (array_var($_GET, 'dont_mark_as_read') && !$is_read) {
-					ReadObjects::delete(array("conditions" => "`rel_object_manager` = 'ProjectTasks' AND `rel_object_id` = " . $task->getId() . " AND `user_id` = " . logged_user()->getId()));
+					$task->setIsRead(logged_user()->getId(), false);
 				}					
 				
 				if ($project instanceof Project && $task->canAdd(logged_user(),$project)) {
@@ -559,11 +574,14 @@ class TaskController extends ApplicationController {
 		}
 
 		if ($project instanceof Project) {
-			$pids = $project->getAllSubWorkspacesQuery(true, logged_user());
+			$pids = $project->getAllSubWorkspacesQuery(true);
+			$projectstr = " AND " . ProjectTasks::getWorkspaceString($pids);
 		} else {
-			$pids = logged_user()->getWorkspacesQuery(true);
+			$pids = "";
+			$projectstr = "";
 		}
-		$projectstr = " AND " . ProjectTasks::getWorkspaceString($pids);
+		$permissions = " AND " . permissions_sql_for_listings(ProjectTasks::instance(), ACCESS_LEVEL_READ, logged_user());
+		
 
 		$task_status_condition = "";
 		switch($status){
@@ -587,7 +605,7 @@ class TaskController extends ApplicationController {
 			TABLE_PREFIX . "tags.tag = ".DB::escape($tag)." and " . TABLE_PREFIX . "tags.rel_object_manager ='ProjectTasks' ) > 0 ";
 		}
 
-		$conditions = $template_condition . $task_filter_condition . $task_status_condition . $tagstr . $projectstr . " AND `trashed_by_id` = 0 AND `archived_by_id` = 0";
+		$conditions = $template_condition . $task_filter_condition . $task_status_condition . $permissions . $tagstr . $projectstr . " AND `trashed_by_id` = 0 AND `archived_by_id` = 0";
 
 		//Now get the tasks
 		$tasks = ProjectTasks::findAll(array('conditions' => $conditions, 'order' => 'created_on DESC', 'limit' => user_config_option('task_display_limit') > 0 ? user_config_option('task_display_limit') + 1 : null));
@@ -616,7 +634,7 @@ class TaskController extends ApplicationController {
 		} else {
 			$pendingstr = "";
 		}
-
+		
 		if ($tag == '') {
 			$tagstr = "";
 		} else {
@@ -625,7 +643,8 @@ class TaskController extends ApplicationController {
 			TABLE_PREFIX . "tags.tag = ".DB::escape($tag)." and " . TABLE_PREFIX . "tags.rel_object_manager ='ProjectMilestones' ) > 0 ";
 		}
 		$projectstr = " AND " . ProjectMilestones::getWorkspaceString($pids);
-		$milestone_conditions = " `is_template` = false " . $projectstr . $pendingstr . $tagstr . $milestone_ids_condition;
+		$archivedstr = " AND `archived_by_id` = 0 ";
+		$milestone_conditions = " `is_template` = false " . $archivedstr . $projectstr . $pendingstr . $tagstr . $milestone_ids_condition;
 		$externalMilestonesTemp = ProjectMilestones::findAll(array('conditions' => $milestone_conditions));
 		$externalMilestones = array();
 		if($externalMilestonesTemp){
@@ -651,14 +670,14 @@ class TaskController extends ApplicationController {
 			$users = Users::getAll();
 			$allUsers = array();
 		} else {
-			$users = logged_user()->getCompany()->getUsers();
+			$users = logged_user()->getAssignableUsers();
 			$allUsers = Users::getAll();
 		}
 		//Get Companies Info
 		if (logged_user()->isMemberOfOwnerCompany()) {
 			$companies = Companies::getCompaniesWithUsers();
 		} else {
-			$companies = array(logged_user()->getCompany());
+			$companies = logged_user()->getAssignableCompanies();
 		}
 
 		if (!$isJson){
@@ -740,6 +759,8 @@ class TaskController extends ApplicationController {
 		$this->addHelper('textile');
 		ajx_extra_data(array("title" => $task_list->getTitle(), 'icon'=>'ico-task'));
 		ajx_set_no_toolbar(true);
+		
+		ApplicationReadLogs::createLog($task_list, $task_list->getWorkspaces(), ApplicationReadLogs::ACTION_READ);
 	} // view_task
 
 	function print_task() {
@@ -770,6 +791,11 @@ class TaskController extends ApplicationController {
 	 * @return null
 	 */
 	function add_task() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$project = active_or_personal_project();
 		if(!ProjectTask::canAdd(logged_user(), $project)) {
 			flash_error(lang('no access permissions'));
@@ -881,7 +907,7 @@ class TaskController extends ApplicationController {
 
 				DB::beginWork();
 				$task->save();
-				$task->setProject($project);
+				//$task->setProject($project);
 				//echo 'pepe'; DB::rollback(); die();
 				$task->setTagsFromCSV(array_var($task_data, 'tags'));
 					
@@ -903,6 +929,7 @@ class TaskController extends ApplicationController {
 				
 				//Link objects
 				$object_controller = new ObjectController();
+				$object_controller->add_to_workspaces($task);
 				$object_controller->link_to_new_object($task);
 				$object_controller->add_subscribers($task);
 				$object_controller->add_custom_properties($task);
@@ -948,6 +975,11 @@ class TaskController extends ApplicationController {
 	 * @return null
 	 */
 	function copy_task() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$project = active_or_personal_project();
 		if(!ProjectTask::canAdd(logged_user(), $project)) {
 			flash_error(lang('no access permissions'));
@@ -997,6 +1029,11 @@ class TaskController extends ApplicationController {
 	 * @return null
 	 */
 	function edit_task() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$this->setTemplate('add_task');
 
 		$task = ProjectTasks::findById(get_id());
@@ -1090,7 +1127,7 @@ class TaskController extends ApplicationController {
 			}
 			$old_is_private = $task->isPrivate();
 			$old_project_id = $task->getProjectId();
-			$project_id = $task_data['project_id'];
+			$project_id = array_var($_POST, 'ws_ids', 0);
 			if ($old_project_id != $project_id) {
 				$newProject = Projects::findById($project_id);
 				if (!$newProject instanceof Project || !$task->canAdd(logged_user(), $newProject)) {
@@ -1156,11 +1193,15 @@ class TaskController extends ApplicationController {
 
 				DB::beginWork();
 				$task->save();
-				if (isset($newProject) && $newProject instanceof Project) {
-					$task->setProject($newProject);
-				}
 				$task->setTagsFromCSV(array_var($task_data, 'tags'));
 
+				$object_controller = new ObjectController();
+				$object_controller->add_to_workspaces($task);
+				$object_controller->link_to_new_object($task);
+				$object_controller->add_subscribers($task);
+				$object_controller->add_custom_properties($task);
+				$object_controller->add_reminders($task);
+				
 				// apply values to subtasks
 				$subtasks = $task->getAllSubTasks();
 				$project = $task->getProject();
@@ -1188,24 +1229,7 @@ class TaskController extends ApplicationController {
 					}
 				}
 
-				$object_controller = new ObjectController();
-				$object_controller->link_to_new_object($task);
-				$object_controller->add_subscribers($task);
-				$object_controller->add_custom_properties($task);
-				$object_controller->add_reminders($task);
-
-				$ro = ReadObjects::findAll(array('conditions' => 'rel_object_id = '.
-																$task->getId().
-																' AND rel_object_manager = \'' .
-																 get_class($task->manager()) . 
-																 '\' AND ' . 'user_id <> ' . logged_user()->getId()));
-				if (is_array($ro) && count($ro) > 0){
-					foreach ($ro as $r){
-						if ($r instanceof ReadObject){							
-							$r->delete();
-						}
-					}
-				}
+				$task->resetIsRead();
 				
 				ApplicationLogs::createLog($task, $task->getWorkspaces(), ApplicationLogs::ACTION_EDIT);
 
@@ -1241,6 +1265,11 @@ class TaskController extends ApplicationController {
 	 * @return null
 	 */
 	function delete_task() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		ajx_current("empty");
 		$project = active_or_personal_project();
 		$task = ProjectTasks::findById(get_id());
@@ -1375,6 +1404,11 @@ class TaskController extends ApplicationController {
 	 * @return null
 	 */
 	function complete_task() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		ajx_current("empty");
 		$task = ProjectTasks::findById(get_id());
 		if(!($task instanceof ProjectTask)) {
@@ -1469,6 +1503,11 @@ class TaskController extends ApplicationController {
 	 * @return null
 	 */
 	function open_task() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		ajx_current("empty");
 		$task = ProjectTasks::findById(get_id());
 		if(!($task instanceof ProjectTask)) {
@@ -1595,6 +1634,11 @@ class TaskController extends ApplicationController {
 	 *
 	 */
 	function new_template() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$project = active_or_personal_project();
 		if(!ProjectTask::canAdd(logged_user(), $project)) {
 			flash_error(lang('no access permissions'));
@@ -1644,40 +1688,8 @@ class TaskController extends ApplicationController {
 	} // print_view
 
 	function allowed_users_to_assign() {
-		$comp_array = array();
-		$wspace_id = isset($_GET['ws_id']) ? $_GET['ws_id'] : 0;
-		$ws = Projects::findById($wspace_id);
-
-		$companies = Companies::findAll();
-
-		if ($companies != null) {
-			foreach ($companies as $comp) {
-				if ($ws != null) $users = $comp->getUsersOnProject($ws);
-				else continue;
-				if (is_array($users)) {
-					foreach ($users as $k => $user) {
-						// if logged_user can assign tasks to user and user can read tasks the user is allowed
-						if (!can_assign_task(logged_user(), $ws, $user) || !can_read_type($user, $ws, 'ProjectTasks')) {
-							unset($users[$k]);
-						}
-					}
-					if (count($users) > 0) {
-						$comp_data = array(
-										'id' => $comp->getId(),
-										'name' => $comp->getName(),
-										'users' => array() 
-						);
-						foreach ($users as $user) {
-							$comp_data['users'][] = $user->getArrayInfo();
-						}
-						//if ($ws == null || can_assign_task(logged_user(), $ws, $comp)) {
-						if (count($users) > 0) {
-							$comp_array[] = $comp_data;
-						}
-					}
-				}
-			}
-		}
+		$wspace_id = array_var($_GET, "ws_id");
+		$comp_array = allowed_users_to_assign($wspace_id);
 		$object = array(
 			"totalCount" => count($comp_array),
 			"start" => 0,

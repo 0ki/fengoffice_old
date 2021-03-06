@@ -232,7 +232,7 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 				}
 			}, 100);
 		}
-		var tag = Ext.getCmp('tag-panel'); if (tag) tag=tag.getSelectedTag();if(tag)tag=tag.name;
+		var tag = Ext.getCmp('tag-panel'); if (tag) tag=tag.getSelectedTag();
 		var ws = Ext.getCmp('workspace-panel'); if (ws) ws=ws.getActiveWorkspace();if(ws)ws=ws.id;
 		var tab = Ext.getCmp('tabs-panel'); if (tab) tab=tab.getActiveTab();if(tab)tab=tab.id;
 		og.addLocation({
@@ -395,7 +395,9 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 			if (isReset) {
 				content.panel.reset();
 			} else {//if (!isBack) {//if (isReload) {
-				content.panel.load();
+				if (!isBack || content.data != 'mails-containerpanel') {
+					content.panel.load();
+				}
 			}
 
 			this.add(content.panel);

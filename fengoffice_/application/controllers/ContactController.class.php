@@ -4,7 +4,7 @@
  * Contact controller
  *
  * @version 1.0
- * @author Ilija Studen <ilija.studen@gmail.com>,  Marcos Saiz <marcos.saiz@fengoffice.com>
+ * @author Marcos Saiz <marcos.saiz@fengoffice.com>
  */
 class ContactController extends ApplicationController {
 
@@ -74,6 +74,7 @@ class ContactController extends ApplicationController {
 			"viewType" => array_var($_GET, 'view_type'),
 			"moveTo" => array_var($_GET, 'moveTo'),
 			"mantainWs" => array_var($_GET, 'mantainWs'),
+			"tagTag" => array_var($_GET, 'tagTag'),
 		);
 		
 		//Resolve actions to perform
@@ -88,8 +89,7 @@ class ContactController extends ApplicationController {
 		} 
 		
 		// Get all emails and companies to contacts
-		$pid = array_var($_GET, 'active_project', 0);
-		$project = Projects::findById($pid);
+		$project = active_project();
 		/*$contacts = $this->getContacts($tag, $attributes, $project);
 		$companies = array();
 		$companies = $this->getCompanies($tag, $attributes, $project);
@@ -102,14 +102,14 @@ class ContactController extends ApplicationController {
 			$type = 'Companies';
 		}
 
-		$count = $this->countContactObjects($tag, $type, active_project());
+		$count = $this->countContactObjects($tag, $type, $project);
 		if ($start > $count) {
 			$start = 0;
 			$page = 1;
 		}
 
 		if ($count > 0) {
-			$union = $this->getContactObjects($page, $limit, $tag, $order, $order_dir, $type, active_project());
+			$union = $this->getContactObjects($page, $limit, $tag, $order, $order_dir, $type, $project);
 		} else {
 			$union = array();
 		}
@@ -144,45 +144,33 @@ class ContactController extends ApplicationController {
 				$order_crit_companies = 'name';
 				break;
 		}
-		if (isset($project)) {
-    		$proj_ids = $project->getAllSubWorkspacesQuery(!$archived, logged_user());
+		if ($project instanceof Project) {
+    		$proj_ids = $project->getAllSubWorkspacesQuery(!$archived);
+    		$proj_cond_companies = " AND " . Companies::getWorkspaceString($proj_ids);
+			$proj_cond_contacts = " AND " . Contacts::getWorkspaceString($proj_ids);
     	} else {
-    		$proj_ids = logged_user()->getWorkspacesQuery(!$archived);
+    		$proj_cond_companies = "";
+			$proj_cond_contacts = "";
     	}
     	
-    	$proj_cond_companies = ' `id` IN (SELECT `object_id` FROM `'.TABLE_PREFIX.'workspace_objects` WHERE `object_manager` = \'Companies\' AND `workspace_id` IN ('.$proj_ids.'))';
-    	$proj_cond_contacts = ' `project_id` IN (' . $proj_ids . ')';
-    	
-    	// show companies with no workspace when viewing All
-    	if (!isset($project)) {
-    		$proj_cond_companies = 'true';
-    	} 
-    	
-    	if (isset($tag) && $tag && $tag!='') {
+		if (isset($tag) && $tag && $tag!='') {
     		$tag_str = " AND EXISTS (SELECT * FROM `" . TABLE_PREFIX . "tags` `t` WHERE `tag` = ".DB::escape($tag)." AND `co`.`id` = `t`.`rel_object_id` AND `t`.`rel_object_manager` = `object_manager_value`) ";
     	} else {
     		$tag_str= ' ';
     	}
     	$res = array();
     	
-    	if ($archived) $archived_cond = "`archived_by_id` <> 0 AND";
-		else $archived_cond = "`archived_by_id` = 0 AND";
+    	if ($archived) $archived_cond = "AND `archived_by_id` <> 0";
+		else $archived_cond = "AND `archived_by_id` = 0";
     	
 		$permissions = ' AND ( ' . permissions_sql_for_listings(Companies::instance(), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`co`') .')';
 		$res['Companies'] = "SELECT  $order_crit_companies AS `order_value`, 'Companies' AS `object_manager_value`, `id` as `oid` FROM `" . 
-					TABLE_PREFIX . "companies` `co` WHERE `trashed_by_id` = 0 AND $archived_cond " .$proj_cond_companies . str_replace('= `object_manager_value`', "= 'Companies'", $tag_str) . $permissions;
+					TABLE_PREFIX . "companies` `co` WHERE `trashed_by_id` = 0 $archived_cond " .$proj_cond_companies . str_replace('= `object_manager_value`', "= 'Companies'", $tag_str) . $permissions;
 					
 		$permissions = ' AND ( ' . permissions_sql_for_listings(Contacts::instance(), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`co`') . ')';
-		if (isset($project)) {
-			$res['Contacts'] = "SELECT $order_crit_contacts AS `order_value`, 'Contacts' AS `object_manager_value`, `id` AS `oid` FROM `" . 
-					TABLE_PREFIX . "contacts` `co` WHERE `trashed_by_id` = 0 AND $archived_cond EXISTS (SELECT * FROM `" . 
-					TABLE_PREFIX . "project_contacts` `pc` WHERE `pc`.`contact_id` = `co`.`id` AND ".$proj_cond_contacts. ")" .
-					str_replace('= `object_manager_value`', "= 'Contacts'", $tag_str) . $permissions;
-		} else {
-			$res['Contacts'] = "SELECT $order_crit_contacts AS `order_value`, 'Contacts' AS `object_manager_value`, `id` AS `oid` FROM `" . 
-					TABLE_PREFIX . "contacts` `co` WHERE $archived_cond `trashed_by_id` = 0 " . str_replace('= `object_manager_value`', "= 'Contacts'", $tag_str) . $permissions;
-		}
-		
+		$res['Contacts'] = "SELECT $order_crit_contacts AS `order_value`, 'Contacts' AS `object_manager_value`, `id` AS `oid` FROM `" . 
+				TABLE_PREFIX . "contacts` `co` WHERE `trashed_by_id` = 0 $archived_cond $proj_cond_contacts " . str_replace('= `object_manager_value`', "= 'Contacts'", $tag_str) . $permissions;
+
 		if ($count) {
 			foreach ($res as $p => $q) {
 				$res[$p] ="SELECT count(*) AS `quantity`, '$p' AS `objectName` FROM ( $q ) `table_alias`";
@@ -378,7 +366,7 @@ class ContactController extends ApplicationController {
 						case "contact":
 							$contact = Contacts::findById($id);
 							if (isset($contact) && $contact->canEdit(logged_user())){
-								$tag = $attributes['tagstoremove'];
+								$tag = $attributes['tagTag'];
 								if ($tag != ''){
 									Tags::deleteObjectTag($tag, $contact->getId(),get_class($contact->manager()));
 								}else{
@@ -414,18 +402,26 @@ class ContactController extends ApplicationController {
 					$resultCode = 1;
 				} else {
 					$count = 0;
-					$w = active_project();
-					if ($w instanceof Project) {
-						$ws_ids = $w->getAllSubWorkspacesQuery(true, logged_user());
-					} else {
-						$ws_ids = logged_user()->getWorkspacesQuery();
-					}
 					for($i = 0; $i < count($attributes["ids"]); $i++){
 						$id = $attributes["ids"][$i];
 						$type = $attributes["types"][$i];
 						switch ($type){
 							case "contact":
-								$count += $this->addProjectContact($id, $destination, $attributes["mantainWs"]);
+								if (!can_add(logged_user(), $destination, 'Contacts')) continue;
+								$contact = Contacts::findById($id);
+								if ($contact instanceof Contact && $contact->canEdit(logged_user())){
+									if (!$attributes["mantainWs"]) {
+										$ws = $contact->getWorkspaces(null, $destination);
+										foreach ($ws as $w) {
+											if (can_add(logged_user(), $w, 'Contacts')) {
+												$contact->removeFromWorkspace($w);
+											}
+										}
+									}
+									$contact->addToWorkspace($destination);
+									ApplicationLogs::createLog($contact, $contact->getWorkspaces(), ApplicationLogs::ACTION_EDIT);
+									$count++;
+								};
 								break;
 								
 							case "company":
@@ -433,15 +429,23 @@ class ContactController extends ApplicationController {
 								$company = Companies::findById($id);
 								if ($company instanceof Company && $company->canEdit(logged_user())){
 									if (!$attributes["mantainWs"]) {
-										$ws = $company->getWorkspaces($ws_ids);
+										$removed = "";
+										$ws = $company->getWorkspaces($destination);
 										foreach ($ws as $w) {
 											if (can_add(logged_user(), $w, 'Companies')) {
 												$company->removeFromWorkspace($w);
+												$removed .= $w->getId() . ",";
 											}
 										}
+										$removed = substr($removed, 0, -1);
+										$log_action = ApplicationLogs::ACTION_MOVE;
+										$log_data = ($removed == "" ? "" : "from:$removed;") . "to:$wsid";
+									} else {
+										$log_action = ApplicationLogs::ACTION_COPY;
+										$log_data = "to:$wsid";
 									}
 									$company->addToWorkspace($destination);
-									ApplicationLogs::createLog($company, $company->getWorkspaces(), ApplicationLogs::ACTION_EDIT);
+									ApplicationLogs::createLog($company, $company->getWorkspaces(), $log_action, false, null, true, $log_data);
 									$count++;
 								};
 								break;
@@ -528,14 +532,25 @@ class ContactController extends ApplicationController {
 		
 		if (!$pc instanceof ProjectContact) {
 			if (!$mantainWs) {
+				$removed = "";
 				$old_roles = $contact->getRoles();
-				foreach ($old_roles as $role) $role->delete();
+				foreach ($old_roles as $role) {
+					$role->delete();
+					$removed .= $role->getProjectId() . ",";
+				}
+				$removed = substr($removed, 0, -1);
+				$log_action = ApplicationLogs::ACTION_MOVE;
+				$log_data = ($removed == "" ? "" : "from:$removed;") . "to:".$destination->getId();
+			} else {
+				$log_action = ApplicationLogs::ACTION_COPY;
+				$log_data = "to:".$destination->getId();
 			}
 			$pc = new ProjectContact();
 			$pc->setProjectId($destination->getId());
 			$pc->setContactId($contact->getId());
 			$pc->setRole($role);
 			$pc->save();
+			ApplicationLogs::createLog($contact, $contact->getWorkspaces(), $log_action, false, null, true, $log_data);
 		}
 		return 1;		
 	}
@@ -613,15 +628,6 @@ class ContactController extends ApplicationController {
 				} else if ($c instanceof Company ){					
 					$roleName = "";
 					$roleTags = "";
-//					$project = active_project();
-//					if ($project ) {
-//						$role = $c->getRole($project);
-//						if ($role instanceof ProjectContact) {
-//							$roleName = $role->getRole();
-//						}
-//					}
-//					$company = $c->getCompany();
-//					$companyName = '';
 					if (!is_null($c))
 					$companyName= $c->getName();
 					$object["contacts"][] = array(
@@ -709,6 +715,8 @@ class ContactController extends ApplicationController {
 		tpl_assign('tags',$tags);
 		ajx_extra_data(array("title" => $contact->getDisplayName(), 'icon'=>'ico-contact'));
 		ajx_set_no_toolbar(true);
+		
+		ApplicationReadLogs::createLog($contact, $contact->getWorkspaces(), ApplicationReadLogs::ACTION_READ);
 	} // view
 
 	/**
@@ -719,6 +727,11 @@ class ContactController extends ApplicationController {
 	 * @return null
 	 */
 	function add() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		if (active_project() instanceof Project) {
 			tpl_assign('isAddProject',true);
 		}
@@ -780,13 +793,13 @@ class ContactController extends ApplicationController {
 				if($newCompany)
 					$contact->setCompanyId($company->getId());
 				$contact->setIsPrivate(false);
-				
 				$contact->save();
-				//link it!
-			    $object_controller = new ObjectController();
-			    $object_controller->link_to_new_object($contact);
 				$contact->setTagsFromCSV(array_var($contact_data, 'tags'));
 				
+				//link it!
+			    $object_controller = new ObjectController();
+			    $object_controller->add_to_workspaces($contact, !can_manage_contacts(logged_user()));
+			    $object_controller->link_to_new_object($contact);
 				$object_controller->add_subscribers($contact);
 				$object_controller->add_custom_properties($contact);
 				
@@ -805,19 +818,11 @@ class ContactController extends ApplicationController {
 					} // if
 				} // foreach
 				
-				if(active_project() instanceof Project)
-				{
-					if(!ProjectContact::canAdd(logged_user(), active_project())) {
-						flash_error(lang('error contact added but not assigned', $contact->getDisplayName(), active_project()->getName()));
-						ajx_current("start");
-						return;
-					} // if
-					
+				if(active_project() instanceof Project && trim(array_var($contact_data,'role', ''))) {
 					$pc = new ProjectContact();
 					$pc->setContactId($contact->getId());
 					$pc->setProjectId(active_project()->getId());
 					$pc->setRole(array_var($contact_data,'role'));
-					
 					$pc->save();
 				}
 
@@ -850,6 +855,11 @@ class ContactController extends ApplicationController {
 	 * @return null
 	 */
 	function edit() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$this->setTemplate('edit_contact');
 		
 		if (active_project() instanceof Project) {
@@ -1030,6 +1040,7 @@ class ContactController extends ApplicationController {
 				} // foreach
 
 				$object_controller = new ObjectController();
+				$object_controller->add_to_workspaces($contact, !can_manage_contacts(logged_user()));
 			    $object_controller->link_to_new_object($contact);
 				$object_controller->add_subscribers($contact);
 				$object_controller->add_custom_properties($contact);
@@ -1075,6 +1086,11 @@ class ContactController extends ApplicationController {
 	 * @return null
 	 */
 	function edit_picture() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$contact = Contacts::findById(get_id());
 		if(!($contact instanceof Contact)) {
 			flash_error(lang('contact dnx'));
@@ -1142,6 +1158,11 @@ class ContactController extends ApplicationController {
 	 * @return null
 	 */
 	function delete_picture() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$contact = Contacts::findById(get_id());
 		if(!($contact instanceof Contact)) {
 			flash_error(lang('contact dnx'));
@@ -1193,6 +1214,11 @@ class ContactController extends ApplicationController {
 	 * @return null
 	 */
 	function delete() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$contact = Contacts::findById(get_id());
 		if(!($contact instanceof Contact)) {
 			flash_error(lang('contact dnx'));
@@ -1223,8 +1249,12 @@ class ContactController extends ApplicationController {
 		} // try
 	} // delete
 
-	function assign_to_project()
-	{
+	function assign_to_project() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$contact = Contacts::findById(get_id());
 		if(!($contact instanceof Contact)) {
 			flash_error(lang('contact dnx'));
@@ -1267,24 +1297,6 @@ class ContactController extends ApplicationController {
 				$workspaces = array();
 				foreach($projects as $project) {
 					$pc = ProjectContacts::getRole($contact, $project);
-					if (!ProjectContact::canAdd(logged_user(), $project)) {
-						if ($pc instanceof ProjectContact) {
-							if (!isset($contact_data['pid_'.$project->getId()])) {
-								$err++; // trying to unassign with no permissions
-							} else {
-								$role = $contact_data['role_pid_'.$project->getId()];
-								if ($role != $pc->getRole()) {
-									$err++; // trying to edit role with no permissions
-								}
-							}
-						} else {
-							if (isset($contact_data['pid_'.$project->getId()])) {
-								$err++; // trying to assign contact with no permissions
-							}
-						}
-						$workspaces[] = $project->getName();
-						continue;
-					} // if
 					if(!isset($contact_data['pid_'.$project->getId()])){
 						if ($pc instanceof ProjectContact) {
 							$pc->delete();
@@ -1334,6 +1346,11 @@ class ContactController extends ApplicationController {
 	
 	
 	function import_from_csv_file() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		@set_time_limit(0);
 		ini_set('auto_detect_line_endings', '1');
 		if (isset($_GET['from_menu']) && $_GET['from_menu'] == 1) unset($_SESSION['history_back']);
@@ -1682,9 +1699,9 @@ class ContactController extends ApplicationController {
 			$handle = fopen(ROOT.'/tmp/'.$filename, 'wb');
 			fwrite($handle, $titles);
 			
-			$project = Projects::findById(array_var($_GET, 'active_project', 0));
+			$project = active_project();
 			if ($project instanceof Project) {
-				$pids = $project->getAllSubWorkspacesQuery(true, logged_user());
+				$pids = $project->getAllSubWorkspacesQuery(true);
 			}
 			$wsConditions = null;
 			$tag_str = null;
@@ -1697,7 +1714,7 @@ class ContactController extends ApplicationController {
 		    		$tag_str = " EXISTS (SELECT * FROM `" . TABLE_PREFIX . "tags` `t` WHERE `tag` = ".DB::escape($tag)." AND `co`.`id` = `t`.`rel_object_id` AND `t`.`rel_object_manager` = 'Contacts') ";
 
 		    	$conditions = $wsConditions ? ($wsConditions . ($tag_str ? " AND $tag_str" : '')) : $tag_str;
-		    	$conditions .= "`archived_by_id` = 0" . ($conditions ? " AND $conditions" : "");
+		    	$conditions .= ($conditions == "" ? "" : " AND ") . "`archived_by_id` = 0" . ($conditions ? " AND $conditions" : "");
 				$contacts = Contacts::instance()->getAllowedContacts($conditions);
 				foreach ($contacts as $contact) {
 					fwrite($handle, $this->build_csv_from_contact($contact, $checked_fields) . "\n");
@@ -1709,7 +1726,7 @@ class ContactController extends ApplicationController {
 		    		$tag_str = " EXISTS (SELECT * FROM `" . TABLE_PREFIX . "tags` `t` WHERE `tag` = ".DB::escape($tag)." AND `".TABLE_PREFIX . "companies`.`id` = `t`.`rel_object_id` AND `t`.`rel_object_manager` = 'Companies') ";
 					
 		    	$conditions = $wsConditions ? ($wsConditions . ($tag_str ? " AND $tag_str" : '')) : $tag_str;
-		    	$conditions .= "`archived_by_id` = 0" . ($conditions ? " AND $conditions" : "");
+		    	$conditions .= ($conditions == "" ? "" : " AND ") . "`archived_by_id` = 0" . ($conditions ? " AND $conditions" : "");
 				$companies = Companies::getVisibleCompanies(logged_user(), $conditions);
 				foreach ($companies as $company) {
 					fwrite($handle, $this->build_csv_from_company($company, $checked_fields) . "\n");
@@ -1843,8 +1860,11 @@ class ContactController extends ApplicationController {
 		
 		$search_for = array_var($_POST,'search_for',false);
 		if ($search_for){
-			$projects = logged_user()->getActiveProjectIdsCSV();
-			//$projects = logged_user()->getWorkspacesQuery();
+			/*if (active_project() instanceof Project) {
+				$projects = active_project()->getAllSubWorkspacesQuery(false);
+			} else {*/
+				$projects = null;
+			//}
 			
 			$search_results = SearchableObjects::searchByType($search_for, $projects, 'Contacts', true, 50);
 			$contacts = $search_results[0];
@@ -1853,11 +1873,20 @@ class ContactController extends ApplicationController {
 				foreach ($contacts as $contactResult){
 					$contact = $contactResult['object'];
 					$result[] = array(
-						'contact_name' => $contact->getFirstname() . ' ' . $contact->getLastname(),
-						'contact_title' => $contact->getJobTitle(),
-						'company_name' => $contact->getCompany() instanceof Company? $contact->getCompany()->getName() : '',
-						'contact_department' => $contact->getDepartment(),
-						'contact_id' => $contact->getId()
+						'name' => $contact->getFirstname() . ' ' . $contact->getLastname(),
+						'phone' => $contact->getWPhoneNumber(),
+						'email' => $contact->getEmail(),
+						'jobtitle' => $contact->getJobTitle(),
+						'company' => $contact->getCompany() instanceof Company?
+								array(
+									'id' => $contact->getCompany()->getId(),
+									'name' => $contact->getCompany()->getName(),
+									'phone' => $contact->getCompany()->getPhoneNumber(),
+									'email' => $contact->getCompany()->getEmail(),
+								) : array(
+								),
+						'department' => $contact->getDepartment(),
+						'id' => $contact->getId()
 					);
 				}
 				ajx_extra_data(array("results" => $result));
@@ -1866,6 +1895,11 @@ class ContactController extends ApplicationController {
 	}
 	
 	function import_from_vcard() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		@set_time_limit(0);
 		ini_set('auto_detect_line_endings', '1');
 		

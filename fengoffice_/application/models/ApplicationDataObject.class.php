@@ -144,14 +144,23 @@ abstract class ApplicationDataObject extends DataObject {
 	} // save
 	 
 	function delete(){
+		$this->clearEverything();
+		return parent::delete();
+	}
+	
+	/**
+	 * This function deletes everything related to the object.
+	 * Child classes can call this method to clear everything
+	 * but not delete the object. 
+	 * @return void
+	 */
+	function clearEverything() {
 		if($this->isSearchable()) {
 			$this->clearSearchIndex();
 		} // if
 		if($this->isLinkableObject()) {
 			$this->clearLinkedObjects();
 		} // if
-
-		return parent::delete();
 	}
 
 	function getTitle(){
@@ -282,6 +291,15 @@ abstract class ApplicationDataObject extends DataObject {
 	function getObjectTypeName() {
 		return '';
 	} // getObjectTypeName
+	
+	/**
+	 * Returns the object's manager's name.
+	 *
+	 * @return string
+	 */
+	function getObjectManagerName() {
+		return get_class($this->manager());
+	}
 
 	/**
 	 * Return object URL

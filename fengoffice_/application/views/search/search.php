@@ -60,13 +60,13 @@ if($has_search_results) {
 		$object = $srrow['object'];?>
 		<tr style="vertical-align:middle" class="<?php echo $alt? "searchAltRow" : 'searchRow' ?>">
 			<td style="padding:6px" width=36>
-		<?php if ($search_result["manager"] == 'ProjectFiles' || $search_result["manager"] == 'ProjectFileRevisions') {?>
+		<?php if ($object instanceof ProjectFile || $object instanceof ProjectFileRevision) {?>
 			<img style="width:36px" src="<?php echo $object->getTypeIconUrl() ?>"/>
 		<?php } ?>
-		<?php if ($search_result["manager"] == 'Contacts') {?>
+		<?php if ($object instanceof Contacts) {?>
 			<img style="width:36px" src="<?php echo $object->getPictureUrl() ?>"/>
 		<?php } ?>
-		<?php if ($search_result["manager"] == 'Users') {?>
+		<?php if ($object instanceof User) {?>
 			<img style="width:36px" src="<?php echo $object->getAvatarUrl() ?>"/>
 		<?php } ?></td>
 		<td style="padding:6px;vertical-align:middle"><?php if ($object instanceof ProjectDataObject){
@@ -126,6 +126,7 @@ if($has_search_results) {
 					} else
 						break;
 				} else {
+					echo get_class($object);
 					if (Localization::instance()->lang_exists('field ' . $object->getObjectManagerName() . ' ' . $context['column_name']))
 						echo lang('field ' . $object->getObjectManagerName() . ' ' . $context['column_name']);
 					else

@@ -35,6 +35,7 @@ og.ExtendedDialog = function(config) {
 		},{
 			text: (config.YESNO ? lang('no') : lang('cancel')),
 			handler: this.cancel,
+			hidden: config.noCancel,
 			id: config.genid + 'cancel_button',
 			scope: this
 		}],

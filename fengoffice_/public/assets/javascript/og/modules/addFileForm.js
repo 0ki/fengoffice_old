@@ -54,6 +54,7 @@ og.fileCheckSubmit = function(genid) {
 og.fileSubmitMe = function(genid) {
 	var form = document.getElementById(genid + 'addfile');
 	if (form.submitted) return true;
+	var type = document.getElementById(genid + 'hfType').value;
 	var newRevision = (!Ext.get(genid + "fileFormUpdateFile") || Ext.getDom(genid + "fileFormUpdateFile").checked);
 	if (newRevision){
 		var comment = document.getElementById(genid + 'fileFormRevisionComment').value;
@@ -64,14 +65,19 @@ og.fileSubmitMe = function(genid) {
 			return false;
 		}
 	}
-	og.doFileUpload(genid, {
-		callback: function() {
-			var form = document.getElementById(genid + 'addfile');
-			form.submitted = true;
-			form.onsubmit();
-			form.submitted = false;
-		}
-	});
+	if (type == '1') {
+		form.submitted = true;
+		form.onsubmit();
+	} else {
+		og.doFileUpload(genid, {
+			callback: function() {
+				var form = document.getElementById(genid + 'addfile');
+				form.submitted = true;
+				form.onsubmit();
+				form.submitted = false;
+			}
+		});
+	}
 	return false;
 }
 

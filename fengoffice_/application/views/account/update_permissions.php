@@ -14,7 +14,7 @@
 <input name="submitted" type="hidden" value="submitted" />
 <?php echo submit_button(lang('update permissions'));?>
 
-<?php if (logged_user()->isAdministrator()) { ?>
+<?php if (logged_user()->isAdministrator() && !$user->isGuest()) { ?>
 <fieldset class=""><legend class="toggle_expanded" onclick="og.toggle('<?php echo $genid ?>userSystemPermissions',this)"><?php echo lang("system permissions") ?></legend>
 	<div id="<?php echo $genid ?>userSystemPermissions" style="display:block">
 		<div>
@@ -86,3 +86,8 @@
 <?php echo submit_button(lang('update permissions'));?>
 </div>
 </form>
+<?php if ($user->isGuest()) { ?>
+<script>
+og.ogPermReadOnly('<?php echo $genid ?>', true);
+</script>
+<?php } ?>

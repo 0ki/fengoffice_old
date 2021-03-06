@@ -373,7 +373,9 @@ class Project extends BaseProject {
 		foreach($padres as $hijo){
 				$projects[] = $hijo;
 				$aux = 	$hijo->getSortedChildren(logged_user());
-				foreach($aux as $a){$projects[] = $a;}
+				if (is_array($aux)){
+					foreach($aux as $a){$projects[] = $a;}
+				}
 		}
 		return $projects; 
 		}
@@ -420,14 +422,16 @@ class Project extends BaseProject {
 		return $this->sub_ws_ids[$key];
 	}
 	
-	function getAllSubWorkspacesQuery($active = true, $user = null) {
+	function getAllSubWorkspacesQuery($active = true, $user = null, $additional_conditions = null) {
+		
+		$addcond = $additional_conditions ==null ? "" : "AND ".$additional_conditions;
 		$id = $this->getId();
 		$table = $this->getTableName(true);
 		$condition = "(`p1` = $id OR `p2` = $id OR `p3` = $id OR `p4` = $id OR `p5` = $id OR `p6` = $id OR `p7` = $id OR `p8` = $id OR `p9` = $id OR `p10` = $id)";
 		if ($user instanceof User) {
 			$pu_tbl = ProjectUsers::instance()->getTableName(true);
 			$uquery = $user->getWorkspacesQuery();
-			$condition .= " AND `id` IN ($uquery)";
+			$condition .= " AND `id` IN ($uquery) $addcond";
 		}
 		if ($active !== null) {
 			if ($active) {
@@ -1918,7 +1922,7 @@ class Project extends BaseProject {
 	    		$radioArray[7] = ($perm->getCanWriteFiles() ? 2 : ($perm->getCanReadFiles()? 1 : 0));
 	    		$radioArray[8] = ($perm->getCanWriteEvents() ? 2 : ($perm->getCanReadEvents()? 1 : 0));
 	    		
-	    		$result[] = array("wsid" => $perm->getUserId(), "pc" => $chkArray, "pr" => $radioArray);
+	    		$result[] = array("wsid" => $perm->getUserId(), "pc" => $chkArray, "pr" => $radioArray, 'maxPerm' => $perm->getUser()->isGuest() ? 1 : 2);
 	    	}
     	}
     	

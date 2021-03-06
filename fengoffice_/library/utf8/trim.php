@@ -1,6 +1,6 @@
 <?php
 /**
-* @version $Id: trim.php,v 1.1 2009/06/10 15:33:52 osiniscalchi Exp $
+* @version $Id: trim.php,v 1.1 2010/01/22 18:06:24 acio Exp $
 * @package utf8
 * @subpackage strings
 */

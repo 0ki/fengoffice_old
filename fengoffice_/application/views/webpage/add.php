@@ -33,24 +33,18 @@ $object = $webpage;
 
 <?php $categories = array(); Hook::fire('object_edit_categories', $object, $categories); ?>
 
-<div style="padding-top: 5px"><a href="#" class="option" tabindex=0
-	onclick="og.toggleAndBolden('add_webpage_select_workspace_div', this)"><?php echo lang('workspace') ?></a>
-- <a href="#" class="option" tabindex=0
-	onclick="og.toggleAndBolden('add_webpage_tags_div', this)"><?php echo lang('tags') ?></a>
-- <a href="#" class="option" tabindex=0
-	onclick="og.toggleAndBolden('add_webpage_description_div', this)"><?php echo lang('description') ?></a>
-- <a href="#" class="option" tabindex=0
-	onclick="og.toggleAndBolden('add_custom_properties_div', this)"><?php echo lang('custom properties') ?></a>
-- <a href="#" class="option"
-	onclick="og.toggleAndBolden('<?php echo $genid ?>add_subscribers_div',this)"><?php echo lang('object subscribers') ?></a>
+<div style="padding-top: 5px">
+<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('<?php echo $genid?>add_webpage_select_workspace_div', this)"><?php echo lang('workspace') ?></a>
+- <a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('<?php echo $genid?>add_webpage_tags_div', this)"><?php echo lang('tags') ?></a>
+- <a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('<?php echo $genid?>add_webpage_description_div', this)"><?php echo lang('description') ?></a>
+- <a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('<?php echo $genid?>add_custom_properties_div', this)"><?php echo lang('custom properties') ?></a>
+- <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_subscribers_div',this)"><?php echo lang('object subscribers') ?></a>
 <?php if($object->isNew() || $object->canLinkObject(logged_user(), $project)) { ?>
-- <a href="#" class="option"
-	onclick="og.toggleAndBolden('<?php echo $genid ?>add_linked_objects_div',this)"><?php echo lang('linked objects') ?></a>
-<?php } ?> <?php foreach ($categories as $category) { ?> - <a href="#"
-	class="option"
-	<?php if ($category['visible']) echo 'style="font-weight: bold"'; ?>
-	onclick="og.toggleAndBolden('<?php echo $genid . $category['name'] ?>', this)"><?php echo lang($category['name'])?></a>
-	<?php } ?></div>
+	- <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_linked_objects_div',this)"><?php echo lang('linked objects') ?></a>
+<?php } ?>
+<?php foreach ($categories as $category) { ?>
+	- <a href="#" class="option" <?php if ($category['visible']) echo 'style="font-weight: bold"'; ?> onclick="og.toggleAndBolden('<?php echo $genid . $category['name'] ?>', this)"><?php echo lang($category['name'])?></a>
+<?php } ?></div>
 </div>
 <div class="coInputSeparator"></div>
 <div class="coInputMainBlock">
@@ -65,7 +59,7 @@ if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user
 	class="contextHelpStyle"><?php render_context_help($this, 'chelp add webpage','add_webpage'); ?>
 </div>
 <?php }?>
-<div id="add_webpage_select_workspace_div" style="display: none">
+<div id="<?php echo $genid?>add_webpage_select_workspace_div" style="display: none">
 <fieldset><?php 
 $show_help_option = user_config_option('show_context_help');
 if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_webpage_workspace_context_help', true, logged_user()->getId()))) {?>
@@ -81,7 +75,7 @@ if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user
 </fieldset>
 </div>
 
-<div id="add_webpage_tags_div" style="display: none">
+<div id="<?php echo $genid?>add_webpage_tags_div" style="display: none">
 <fieldset><?php 
 $show_help_option = user_config_option('show_context_help');
 if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_webpage_tags_context_help', true, logged_user()->getId()))) {?>
@@ -92,7 +86,7 @@ if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user
 </fieldset>
 </div>
 
-<div id="add_webpage_description_div" style="display: none">
+<div id="<?php echo $genid?>add_webpage_description_div" style="display: none">
 <fieldset><?php 
 $show_help_option = user_config_option('show_context_help');
 if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_webpage_description_context_help', true, logged_user()->getId()))) {?>
@@ -104,7 +98,7 @@ if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user
 </fieldset>
 </div>
 
-<div id='add_custom_properties_div' style="display: none">
+<div id='<?php echo $genid?>add_custom_properties_div' style="display: none">
 <fieldset><?php 
 $show_help_option = user_config_option('show_context_help');
 if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_webpage_custom_properties_context_help', true, logged_user()->getId()))) {?>

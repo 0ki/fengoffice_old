@@ -30,9 +30,7 @@
   	<?php $categories = array(); Hook::fire('object_edit_categories', $object, $categories); ?>
   	
   	<div style="padding-top:5px">
-		<?php if (isset ($projects) && count($projects) > 0) { ?>
-			<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('<?php echo $genid ?>add_company_select_workspace_div',this)"><?php echo lang('workspace') ?></a> - 
-		<?php } ?>
+		<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('<?php echo $genid ?>add_company_select_workspace_div',this)"><?php echo lang('workspace') ?></a> - 
 		<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('<?php echo $genid ?>add_company_add_tags_div', this)"><?php echo lang('tags') ?></a> -
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_company_notes', this)"><?php echo lang('notes') ?></a> - 
 		<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('add_company_timezone',this)"><?php echo lang('timezone') ?></a> -
@@ -51,55 +49,11 @@
  		 <?php 
 			$show_help_option = user_config_option('show_context_help'); 
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close' )&& user_config_option('show_add_company_context_help', true, logged_user()->getId())) {?>
-			<div id="contactPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+			<div id="contactPanelContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp add company','add_company'); ?>
 			</div>
 		<?php }?>
-  <table style="margin-left:12px;margin-right:12px; margin-top:12px">
-		<tr>
-			<td style="padding-right:30px">
-			<table style="width:100%">
-			<tr>
-				<td class="td-pr"><?php echo label_tag(lang('address'), $genid.'profileFormWAddress') ?></td>
-				<td><?php echo text_field('company[address]', array_var($company_data, 'address'), array('id' => $genid.'clientFormAddress', 'tabindex' => '10', 'maxlength' => 100)) ?></td>
-			</tr><tr>
-				<td class="td-pr"><?php echo label_tag(lang('address2'), $genid.'clientFormAddress') ?></td>
-				<td><?php echo text_field('company[address2]', array_var($company_data, 'address2'), array('id' => $genid.'clientFormAddress', 'tabindex' => '20', 'maxlength' => 100)) ?></td>
-			</tr><tr>
-				<td class="td-pr"><?php echo label_tag(lang('city'), $genid.'clientFormCity') ?></td>
-				<td><?php echo text_field('company[city]', array_var($company_data, 'city'), array('id' => $genid.'clientFormCity', 'tabindex' => '30', 'maxlength' => 50)) ?></td>
-			</tr><tr>
-				<td class="td-pr"><?php echo label_tag(lang('state'), $genid.'clientFormState') ?></td>
-				<td><?php echo text_field('company[state]', array_var($company_data, 'state'), array('id' => $genid.'clientFormState', 'tabindex' => '40', 'maxlength' => 50)) ?></td>
-			</tr><tr>
-				<td class="td-pr"><?php echo label_tag(lang('zipcode'), $genid.'clientFormZipcode') ?></td>
-				<td><?php echo text_field('company[zipcode]', array_var($company_data, 'zipcode'), array('id' => $genid.'clientFormZipcode', 'tabindex' => '50', 'maxlength' => 30)) ?></td>
-			</tr><tr>
-				<td class="td-pr"><?php echo label_tag(lang('country'), $genid.'clientFormCountry') ?></td>
-				<td><?php echo select_country_widget('company[country]', array_var($company_data, 'country'), array('id' => $genid.'clientFormCountry', 'tabindex' => '60')) ?></td>
-			</tr>
-			</table>
-			</td><td>
-			<table style="width:100%">
-			<tr>
-				<td class="td-pr"><?php echo label_tag(lang('phone'), $genid.'clientFormPhoneNumber') ?> </td>
-				<td><?php echo text_field('company[phone_number]', array_var($company_data, 'phone_number'), array('id' => $genid.'clientFormPhoneNumber', 'tabindex' => '70', 'maxlength' => 50)) ?></td>
-			</tr><tr>
-				<td class="td-pr"><?php echo label_tag(lang('fax'), $genid.'clientFormFaxNumber') ?> </td>
-				<td><?php echo text_field('company[fax_number]', array_var($company_data, 'fax_number'), array('id' => $genid.'clientFormFaxNumber', 'tabindex' => '80', 'maxlength' => 50)) ?></td>
-			</tr><tr height=20><td></td><td></td></tr><tr>
-				<td class="td-pr"><?php echo label_tag(lang('email address'), $genid.'clientFormEmail') ?> </td>
-				<td><?php echo text_field('company[email]', array_var($company_data, 'email'), array('id' => $genid.'clientFormAssistantNumber', 'tabindex' => '90')) ?></td>
-			</tr><tr height=20><td></td><td></td></tr><tr>
-				<td class="td-pr"><?php echo label_tag(lang('homepage'), $genid.'clientFormHomepage') ?></td>
-				<td><?php echo text_field('company[homepage]', array_var($company_data, 'homepage'), array('id' => $genid.'clientFormCallbackNumber', 'tabindex' => '100')) ?></td>
-			</tr>
-			</table>
-			</td>
-		</tr>
-	</table>
 	
-	<?php if (isset ($projects) && count($projects) > 0) { ?>
 	<div id="<?php echo $genid ?>add_company_select_workspace_div" style="display:none">
 	<fieldset><legend><?php echo lang('workspace')?></legend>
 		<?php if ($company->isNew()) {
@@ -109,7 +63,6 @@
 		} ?>
 	</fieldset>
 	</div>
-	<?php } ?>
 	
 	<div id='<?php echo $genid ?>add_custom_properties_div' style="display:none">
 		<fieldset>
@@ -186,6 +139,51 @@
 	</fieldset>
 	</div>
 	<?php } ?>
+	
+	  <table style="margin-left:12px;margin-right:12px; margin-top:12px">
+		<tr>
+			<td style="padding-right:30px">
+			<table style="width:100%">
+			<tr>
+				<td class="td-pr"><?php echo label_tag(lang('address'), $genid.'profileFormWAddress') ?></td>
+				<td><?php echo text_field('company[address]', array_var($company_data, 'address'), array('id' => $genid.'clientFormAddress', 'tabindex' => '10', 'maxlength' => 100)) ?></td>
+			</tr><tr>
+				<td class="td-pr"><?php echo label_tag(lang('address2'), $genid.'clientFormAddress') ?></td>
+				<td><?php echo text_field('company[address2]', array_var($company_data, 'address2'), array('id' => $genid.'clientFormAddress', 'tabindex' => '20', 'maxlength' => 100)) ?></td>
+			</tr><tr>
+				<td class="td-pr"><?php echo label_tag(lang('city'), $genid.'clientFormCity') ?></td>
+				<td><?php echo text_field('company[city]', array_var($company_data, 'city'), array('id' => $genid.'clientFormCity', 'tabindex' => '30', 'maxlength' => 50)) ?></td>
+			</tr><tr>
+				<td class="td-pr"><?php echo label_tag(lang('state'), $genid.'clientFormState') ?></td>
+				<td><?php echo text_field('company[state]', array_var($company_data, 'state'), array('id' => $genid.'clientFormState', 'tabindex' => '40', 'maxlength' => 50)) ?></td>
+			</tr><tr>
+				<td class="td-pr"><?php echo label_tag(lang('zipcode'), $genid.'clientFormZipcode') ?></td>
+				<td><?php echo text_field('company[zipcode]', array_var($company_data, 'zipcode'), array('id' => $genid.'clientFormZipcode', 'tabindex' => '50', 'maxlength' => 30)) ?></td>
+			</tr><tr>
+				<td class="td-pr"><?php echo label_tag(lang('country'), $genid.'clientFormCountry') ?></td>
+				<td><?php echo select_country_widget('company[country]', array_var($company_data, 'country'), array('id' => $genid.'clientFormCountry', 'tabindex' => '60')) ?></td>
+			</tr>
+			</table>
+			</td><td>
+			<table style="width:100%">
+			<tr>
+				<td class="td-pr"><?php echo label_tag(lang('phone'), $genid.'clientFormPhoneNumber') ?> </td>
+				<td><?php echo text_field('company[phone_number]', array_var($company_data, 'phone_number'), array('id' => $genid.'clientFormPhoneNumber', 'tabindex' => '70', 'maxlength' => 50)) ?></td>
+			</tr><tr>
+				<td class="td-pr"><?php echo label_tag(lang('fax'), $genid.'clientFormFaxNumber') ?> </td>
+				<td><?php echo text_field('company[fax_number]', array_var($company_data, 'fax_number'), array('id' => $genid.'clientFormFaxNumber', 'tabindex' => '80', 'maxlength' => 50)) ?></td>
+			</tr><tr height=20><td></td><td></td></tr><tr>
+				<td class="td-pr"><?php echo label_tag(lang('email address'), $genid.'clientFormEmail') ?> </td>
+				<td><?php echo text_field('company[email]', array_var($company_data, 'email'), array('id' => $genid.'clientFormAssistantNumber', 'tabindex' => '90')) ?></td>
+			</tr><tr height=20><td></td><td></td></tr><tr>
+				<td class="td-pr"><?php echo label_tag(lang('homepage'), $genid.'clientFormHomepage') ?></td>
+				<td><?php echo text_field('company[homepage]', array_var($company_data, 'homepage'), array('id' => $genid.'clientFormCallbackNumber', 'tabindex' => '100')) ?></td>
+			</tr>
+			</table>
+			</td>
+		</tr>
+	</table>
+	
 	
 	<div>
 		<?php echo render_object_custom_properties($object, 'Companies', true) ?>

@@ -25,6 +25,12 @@ class ObjectController extends ApplicationController {
 	} // __construct
 
 	function add_subscribers(ProjectDataObject $object) {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
+		$log_info = "";
 		$subscribers = array_var($_POST, 'subscribers');
 		$object->clearSubscriptions();
 		if (is_array($subscribers)) {
@@ -34,8 +40,12 @@ class ObjectController extends ApplicationController {
 					$user = Users::findById($user_id);
 					if ($user instanceof User) {
 						$object->subscribeUser($user);
+						$log_info .= ($log_info == "" ? "" : ",") . $user->getId();
 					}
 				}
+			}
+			if ($log_info != "") {
+				ApplicationLogs::createLog($object, $object->getWorkspaces(), ApplicationLogs::ACTION_SUBSCRIBE, false, true, true, $log_info);
 			}
 		}
 	}
@@ -52,6 +62,11 @@ class ObjectController extends ApplicationController {
 	}
 	
 	function add_subscribers_list() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$genid = array_var($_GET,'genid');
 		$obj_id = array_var($_GET,'obj_id');
 		$obj_manager = array_var($_GET,'manager');
@@ -81,7 +96,7 @@ class ObjectController extends ApplicationController {
 		tpl_assign('subscriberIds', $subscriberIds);
 		tpl_assign('genid', $genid);
 		//echo tpl_fetch(get_template_path('add_subscribers_list', 'object'));
-}
+	}
 	
 	function add_subscribers_from_object_view() {
 		ajx_current("empty");
@@ -130,7 +145,12 @@ class ObjectController extends ApplicationController {
 		$this->setTemplate("add_subscribers");
 	}
 	
-	function add_to_workspaces($object) {
+	function add_to_workspaces($object, $force_ws = true) {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$object->removeFromWorkspaces(logged_user()->getWorkspacesQuery());
 		$ids = array_var($_POST, "ws_ids", "");
 		$enteredWS = Projects::findByCSVIds($ids);
@@ -140,7 +160,7 @@ class ObjectController extends ApplicationController {
 				$validWS[] = $ws;
 			}
 		}
-		if (empty($validWS)) {
+		if (empty($validWS) && $force_ws) {
 			throw new Exception(lang('must choose at least one workspace error'));
 		}
 		foreach ($validWS as $w) {
@@ -156,6 +176,11 @@ class ObjectController extends ApplicationController {
 	 * @return unknown_type
 	 */
 	function add_custom_properties($object) {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$obj_custom_properties = array_var($_POST, 'object_custom_properties');
 		if (is_array($obj_custom_properties)){
 			$customProps = CustomProperties::getAllCustomPropertiesByObjectType(get_class($object->manager()));
@@ -287,6 +312,11 @@ class ObjectController extends ApplicationController {
 	}
 
 	function add_reminders($object) {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$object->clearReminders(logged_user(), true);
 		$typesC = array_var($_POST, 'reminder_type');
 		if (!is_array($typesC)) return;
@@ -342,6 +372,11 @@ class ObjectController extends ApplicationController {
 	}
 	
 	function link_object() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		ajx_current("empty");
 		$manager_class = array_var($_GET, 'manager');
 		$object_id = get_id('object_id');
@@ -428,6 +463,11 @@ class ObjectController extends ApplicationController {
 	 * @return null
 	 */
 	function link_to_new_object($the_object){
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		if (!$the_object->isNew() && !$the_object->canLinkObject(logged_user())) {
 			flash_error(lang("user cannot link objects"));
 			return;
@@ -468,6 +508,11 @@ class ObjectController extends ApplicationController {
 	 * @return null
 	 */
 	function link_to_object() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$manager_class = array_var($_GET, 'manager');
 		$object_id = get_id('object_id');
 			
@@ -559,6 +604,11 @@ class ObjectController extends ApplicationController {
 	 * @return null
 	 */
 	function unlink_from_object() { // ex detach_from_object() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$manager_class = array_var($_GET, 'manager');
 		$object_id = get_id('object_id');
 		$object1 = get_object_by_manager_and_id($object_id, $manager_class);
@@ -690,6 +740,11 @@ class ObjectController extends ApplicationController {
 	 * @return null
 	 */
 	function update_properties() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$this->setTemplate('add_properties');
 
 		$manager_class = array_var($_GET, 'manager');
@@ -920,21 +975,31 @@ class ObjectController extends ApplicationController {
 				$order_crit_workspaces = '`updated_on`';
 				break;
 		}
-		if (isset($project)) {
-			$proj_ids = $project->getAllSubWorkspacesQuery(!$archived || $archived != 'archived', logged_user());
+		if ($project instanceof Project) {
+			$proj_ids = $project->getAllSubWorkspacesQuery(true);
+			$proj_cond_companies = Companies::getWorkspaceString($proj_ids);
+			$proj_cond_messages = ProjectMessages::getWorkspaceString($proj_ids);
+			$proj_cond_documents = ProjectFiles::getWorkspaceString($proj_ids);
+			$proj_cond_emails = MailContents::getWorkspaceString($proj_ids);
+			$proj_cond_events = ProjectEvents::getWorkspaceString($proj_ids);
+			$proj_cond_tasks = ProjectTasks::getWorkspaceString($proj_ids);
+			$proj_cond_charts = ProjectCharts::getWorkspaceString($proj_ids);
+			$proj_cond_milestones = ProjectMilestones::getWorkspaceString($proj_ids);
+			$proj_cond_weblinks = ProjectWebpages::getWorkspaceString($proj_ids);
+			$proj_cond_contacts = Contacts::getWorkspaceString($proj_ids);
 		} else {
-			$proj_ids = logged_user()->getWorkspacesQuery(!$archived || $archived != 'archived');
+			$proj_cond_companies = "true";
+			$proj_cond_messages = "true";
+			$proj_cond_documents = "true";
+			$proj_cond_emails = "true";
+			$proj_cond_events = "true";
+			$proj_cond_tasks = "true";
+			$proj_cond_charts = "true";
+			$proj_cond_milestones = "true";
+			$proj_cond_weblinks = "true";
+			$proj_cond_contacts = "true";
 		}			
-		$proj_cond_companies = Companies::getWorkspaceString($proj_ids);
-		$proj_cond_messages = ProjectMessages::getWorkspaceString($proj_ids);
-		$proj_cond_documents = ProjectFiles::getWorkspaceString($proj_ids);
-		$proj_cond_emails = "(" . MailContents::getWorkspaceString($proj_ids) . (!isset($project) ? ' OR ' . MailContents::getNotClassifiedString() : '' ) . ")";
-		$proj_cond_events = ProjectEvents::getWorkspaceString($proj_ids);
-		$proj_cond_tasks = ProjectTasks::getWorkspaceString($proj_ids);
-		$proj_cond_charts = ProjectCharts::getWorkspaceString($proj_ids);
-		$proj_cond_milestones = ProjectMilestones::getWorkspaceString($proj_ids);
-		$proj_cond_weblinks = ProjectWebpages::getWorkspaceString($proj_ids);
-		$proj_cond_contacts = Contacts::getWorkspaceString($proj_ids);
+		
 		
 		if ($trashed) {
 			$trashed_cond = '`trashed_by_id` > 0';
@@ -1012,12 +1077,11 @@ class ObjectController extends ApplicationController {
 		}
 
 		// Documents
+		if (module_enabled("documents")) {
 			$fn = '';
 			if ($filterName!=''){
 				$fn = " AND filename LIKE '%". $filterName ."%'";
 			}
-			
-		if (module_enabled("documents")) {
 			$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectFiles::instance(), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`co`') .')';
 			$typestring = array_var($_GET, "typestring");
 			if ($typestring) {
@@ -1057,6 +1121,7 @@ class ObjectController extends ApplicationController {
 			$res['TasksComments'] = "SELECT  'Comments' AS `object_manager_value`, `id` AS `oid`, $order_crit_comments AS `order_value` FROM `" .
 			TABLE_PREFIX . "comments` WHERE $trashed_cond AND `rel_object_manager` = 'ProjectTasks' AND `rel_object_id` IN (SELECT `co`.`id` FROM `" .
 			TABLE_PREFIX . "project_tasks` `co` WHERE `trashed_by_id` = 0 AND $comments_arch_cond AND `is_template` = false AND " . $proj_cond_tasks . str_replace('= `object_manager_value`', "= 'ProjectTasks'", $tag_str) . $permissions . $cfn .")";
+
 			$fn = '';
 			if ($filterName!=''){
 				$fn = " AND name LIKE '%". $filterName ."%'";
@@ -1094,7 +1159,7 @@ class ObjectController extends ApplicationController {
 			if ($filterName!=''){
 				$fn = " AND subject LIKE '%". $filterName ."%'";
 			}
-			$permissions = ' AND ' . permissions_sql_for_listings(MailContents::instance(), ACCESS_LEVEL_READ, logged_user(), isset($project)?$project->getId():0, '`co`');
+			$permissions = ' AND ( ' . permissions_sql_for_listings(MailContents::instance(), ACCESS_LEVEL_READ, logged_user(), $project instanceof Project ? $project->getId() : 0, '`co`') .')';
 			if ($filterManager == '' || $filterManager == "MailContents")
 			$res['Emails'] = "SELECT  'MailContents' AS `object_manager_value`, `id` AS `oid`, $order_crit_emails AS `order_value` FROM `" .
 			TABLE_PREFIX . "mail_contents` `co` WHERE (" . $trashed_cond ." AND $archived_cond AND `is_deleted` = 0 AND ".$proj_cond_emails . str_replace('= `object_manager_value`', "= 'MailContents'", $tag_str) . $permissions .") $fn" ;
@@ -1117,32 +1182,13 @@ class ObjectController extends ApplicationController {
 			if ($filterManager == '' || $filterManager == "Companies")
 			$res['Companies'] = "SELECT  'Companies' AS `object_manager_value`, `id` as `oid`, $order_crit_companies AS `order_value` FROM `" .
 			TABLE_PREFIX . "companies` `co` WHERE " . $trashed_cond ." AND $archived_cond AND ".$proj_cond_companies . str_replace('= `object_manager_value`', "= 'Companies'", $tag_str) . $permissions . $fn2;
-			if ($filterManager == '' || $filterManager == "Comments")
-			$res['CompaniesComments'] = "SELECT  'Comments' AS `object_manager_value`, `id` AS `oid`, $order_crit_comments AS `order_value` FROM `" .
-			TABLE_PREFIX . "comments` WHERE $trashed_cond AND `rel_object_manager` = 'Companies' AND `rel_object_id` IN (SELECT `co`.`id` FROM `" .
-			TABLE_PREFIX . "companies` `co` WHERE " . $trashed_cond ." AND $archived_cond AND ".$proj_cond_companies . str_replace('= `object_manager_value`', "= 'Companies'", $tag_str) . $permissions . $cfn . ")";
 
 			// contacts
 			$permissions = ' AND ( ' . permissions_sql_for_listings(Contacts::instance(), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`co`') . ')';
-			if (isset($project)) {
-				if ($filterManager == '' || $filterManager == "Contacts")
-				$res['Contacts'] = "SELECT 'Contacts' AS `object_manager_value`, `id` AS `oid`, $order_crit_contacts AS `order_value` FROM `" .
-				TABLE_PREFIX . "contacts` `co` WHERE $trashed_cond AND $archived_cond AND $proj_cond_contacts " .
-				str_replace('= `object_manager_value`', "= 'Contacts'", $tag_str) . $permissions . $fn;
-				if ($filterManager == '' || $filterManager == "Comments")
-				$res['ContactsComments'] = "SELECT  'Comments' AS `object_manager_value`, `id` AS `oid`, $order_crit_comments AS `order_value` FROM `" .
-				TABLE_PREFIX . "comments` WHERE $trashed_cond AND `rel_object_manager` = 'Contacts' AND `rel_object_id` IN (SELECT `co`.`id` FROM `" .
-				TABLE_PREFIX . "contacts` `co` WHERE $trashed_cond AND $archived_cond AND $proj_cond_contacts " .
-				str_replace('= `object_manager_value`', "= 'Contacts'", $tag_str) . $permissions . $cfn . ")";
-			} else{
-				if ($filterManager == '' || $filterManager == "Contacts")
-				$res['Contacts'] = "SELECT 'Contacts' AS `object_manager_value`, `id` AS `oid`, $order_crit_contacts AS `order_value` FROM `" .
-				TABLE_PREFIX . "contacts` `co` WHERE $trashed_cond AND $archived_cond " . str_replace('= `object_manager_value`', "= 'Contacts'", $tag_str) . $permissions . $fn;
-				if ($filterManager == '' || $filterManager == "Comments")
-				$res['ContactsComments'] = "SELECT  'Comments' AS `object_manager_value`, `id` AS `oid`, $order_crit_comments AS `order_value` FROM `" .
-				TABLE_PREFIX . "comments` WHERE $trashed_cond AND `rel_object_manager` = 'Contacts' AND `rel_object_id` IN (SELECT `co`.`id` FROM `" .
-				TABLE_PREFIX . "contacts` `co` WHERE $trashed_cond AND $archived_cond " . str_replace('= `object_manager_value`', "= 'Contacts'", $tag_str) . $permissions . $cfn . ")";
-			}
+			if ($filterManager == '' || $filterManager == "Contacts")
+			$res['Contacts'] = "SELECT 'Contacts' AS `object_manager_value`, `id` AS `oid`, $order_crit_contacts AS `order_value` FROM `" .
+			TABLE_PREFIX . "contacts` `co` WHERE $trashed_cond AND $archived_cond AND $proj_cond_contacts " .
+			str_replace('= `object_manager_value`', "= 'Contacts'", $tag_str) . $permissions . $fn;
 		}
 		
 		// Workspaces (only for archived objects view)
@@ -1280,12 +1326,16 @@ class ObjectController extends ApplicationController {
 	
 	function mark_as_read() {
 		ajx_current('empty');
-		$this->do_mark_as_read_unread_objects(array(array_var($_GET, 'ids')), true, user_config_option('show_emails_as_conversations', true, logged_user()->getId()));
+		$csvids = array_var($_GET, 'ids');
+		$ids = explode(",", $csvids);
+		$this->do_mark_as_read_unread_objects($ids, true, user_config_option('show_emails_as_conversations', true, logged_user()->getId()));
 	}
 	
 	function mark_as_unread() {
 		ajx_current('empty');
-		$ids = $this->do_mark_as_read_unread_objects(array(array_var($_GET, 'ids')), false, user_config_option('show_emails_as_conversations', true, logged_user()->getId()));
+		$csvids = array_var($_GET, 'ids');
+		$ids = explode(",", $csvids);
+		$this->do_mark_as_read_unread_objects($ids, false, user_config_option('show_emails_as_conversations', true, logged_user()->getId()));
 	}
 
 	function list_objects() {
@@ -1459,9 +1509,7 @@ class ObjectController extends ApplicationController {
 					$obj = get_object_by_manager_and_id($split[1], $type);
 					$mantainWs = array_var($_GET, "mantainWs");
 					if ($type != 'Projects' && $obj->canEdit(logged_user())) {
-						if ($type == 'Contacts') {
-							$count += ContactController::addProjectContact($split[1], $destination, $mantainWs);
-						} else if ($type == 'MailContents') {
+						if ($type == 'MailContents') {
 							$email = MailContents::findById($split[1]);
 							$conversation = MailContents::getMailsFromConversation($email);
 							foreach ($conversation as $conv_email) {
@@ -1479,15 +1527,23 @@ class ObjectController extends ApplicationController {
 							$count++;
 						} else {
 							if (!$mantainWs || $type == 'ProjectTasks' || $type == 'ProjectMilestones') {
+								$removed = "";
 								$ws = $obj->getWorkspaces();
 								foreach ($ws as $w) {
 									if (can_add(logged_user(), $w, $type)) {
 										$obj->removeFromWorkspace($w);
+										$removed .= $w->getId() . ",";
 									}
 								}
+								$removed = substr($removed, 0, -1);
+								$log_action = ApplicationLogs::ACTION_MOVE;
+								$log_data = ($removed == "" ? "" : "from:$removed;") . "to:$wsid";
+							} else {
+								$log_action = ApplicationLogs::ACTION_COPY;
+								$log_data = "to:$wsid";
 							}
 							$obj->addToWorkspace($destination);
-							ApplicationLogs::createLog($obj, $obj->getWorkspaces(), ApplicationLogs::ACTION_EDIT);
+							ApplicationLogs::createLog($obj, $obj->getWorkspaces(), $log_action, false, null, true, $log_data);
 							$count++;
 						}
 					}
@@ -1505,9 +1561,7 @@ class ObjectController extends ApplicationController {
 		$result = null;
 		
 		/* perform queries according to type*/
-		//$result = $this->getDashboardObjects($page, config_option('files_per_page'), $tag, $order, $orderdir, $type);
-		$project_id = array_var($_GET, 'active_project', 0);
-		$project = Projects::findById($project_id);
+		$project = active_project();
 		$total_items = $this->countDashboardObjects($tag, $types, $project, $trashed, $linkedObject, $filterName, $archived, $filterManager);
 		if ($total_items < ($page - 1) * $limit){
 			$page = 1;
@@ -1565,7 +1619,7 @@ class ObjectController extends ApplicationController {
 				try {
 					if($manager){
 						$obj = get_object_by_manager_and_id($id, $manager);
-						if ($tag != '') {
+						if ($tag) {
 							Tags::deleteObjectTag($tag, $obj->getId(),get_class($obj->manager()));
 						} else {
 							$obj->clearTags();
@@ -1574,7 +1628,7 @@ class ObjectController extends ApplicationController {
 					else{ //call from dashboard, format is manager:id
 						$split = explode(":", $id);
 						$obj = get_object_by_manager_and_id($split[1], $split[0]);
-						if ($tag != '') {
+						if ($tag) {
 							Tags::deleteObjectTag($tag, $obj->getId(),get_class($obj->manager()));
 						} else {
 							$obj->clearTags();
@@ -1731,7 +1785,7 @@ class ObjectController extends ApplicationController {
 								foreach ($emails_in_conversation as $email) {
 									$email->setIsRead(logged_user()->getId(), $read);
 								}
-							};
+							}
 						}
 					}
 					$succ++;
@@ -1744,37 +1798,80 @@ class ObjectController extends ApplicationController {
 	}
 	
 	function move() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		ajx_current("empty");
-
 		$ids = array_var($_GET, 'ids');
-		if (!$ids) {
+		if (!$ids) return;
+		$wsid = array_var($_GET, 'ws');
+		$keep = array_var($_GET, 'keep', 1) == 1;
+		$atts = array_var($_GET, 'atts', 0) == 1;
+		$workspace = Projects::findById($wsid);
+		if (!$workspace instanceof Project) {
+			flash_error(lang('project dnx'));
 			return;
 		}
-		$workspace = array_var($_GET, 'workspace');
-		$p = Projects::findById($workspace);
-		if (!$p instanceof Project) {
-			flash_error(lang("project dnx"));
-			return;
-		}
-		$id_list = explode(";", $ids);
+		$id_list = explode(",", $ids);
 		$err = 0;
 		$succ = 0;
 		foreach ($id_list as $cid) {
 			list($manager, $id) = explode(":", $cid);
+			if (isset($maganer) && $maganer == 'Projects') continue;
 			try {
 				$obj = get_object_by_manager_and_id($id, $manager);
-				if (!$obj) {
-					$err++;
+				if ($obj instanceof ProjectDataObject && $obj->canEdit(logged_user())) {
+					if ($obj instanceof MailContent) {
+						$conversation = MailContents::getMailsFromConversation($obj);
+						$count = 0;
+						foreach ($conversation as $conv_email) {
+							$count += MailController::addEmailToWorkspace($conv_email->getId(), $workspace, $keep);
+							if (array_var($_GET, 'atts') && $conv_email->getHasAttachments()) {
+								MailUtilities::parseMail($conv_email->getContent(), $decoded, $parsedEmail, $warnings);
+								$classification_data = array();
+								for ($j=0; $j < count(array_var($parsedEmail, "Attachments", array())); $j++) {
+									$classification_data["att_".$j] = true;		
+								}
+								$tags = implode(",", $conv_email->getTagNames());
+								MailController::classifyFile($classification_data, $conv_email, $parsedEmail, array($workspace), $keep, $tags);
+							}
+						}
+						$succ++;
+					} else {
+						$remain = 0;
+						if (!$keep || $obj instanceof ProjectTask || $obj instanceof ProjectMilestone) { // Tasks and Milestones can have only 1 workspace
+							$removed = "";
+							$ws = $obj->getWorkspaces();
+							foreach ($ws as $w) {
+								if (can_add(logged_user(), $w, $type)) {
+									$obj->removeFromWorkspace($w);
+									$removed .= $w->getId() . ",";
+								} else {
+									$remain++;
+								}
+							}
+							$removed = substr($removed, 0, -1);
+							$log_action = ApplicationLogs::ACTION_MOVE;
+							$log_data = ($removed == "" ? "" : "from:$removed;") . "to:$wsid";
+						} else {
+							$log_action = ApplicationLogs::ACTION_COPY;
+							$log_data = "to:$wsid";
+						}
+						if ($remain > 0 && ($obj instanceof ProjectTask || $obj instanceof ProjectMilestone)) {
+							$err++;
+						} else {
+							$obj->addToWorkspace($workspace);
+							ApplicationLogs::createLog($obj, $obj->getWorkspaces(), $log_action, false, null, true, $log_data);
+							$succ++;
+						}
+					}
 				} else {
-					DB::beginWork();
-					$obj->setColumnValue('project_id', $workspace);
-					$obj->save();
-					DB::commit();
-					$succ++;
+					$err++;
 				}
 			} catch (Exception $e) {
 				$err++;
-				DB::rollback();
 			}
 		}
 		if ($err > 0) {
@@ -1799,9 +1896,11 @@ class ObjectController extends ApplicationController {
 			return;
 		} // if
 		$logs = ApplicationLogs::getObjectLogs($obj);
+		$logs_read = ApplicationReadLogs::getObjectLogs($obj);
 		
 		tpl_assign('object',$obj);
 		tpl_assign('logs',$logs);
+		tpl_assign('logs_read',$logs_read);
 	}
 
 	// ---------------------------------------------------
@@ -1863,7 +1962,7 @@ class ObjectController extends ApplicationController {
 
 		try {
 			$object->unsubscribeUser(logged_user());
-			ApplicationLogs::createLog($object, $object->getWorkspaces(), ApplicationLogs::ACTION_UNSUBSCRIBE);
+			ApplicationLogs::createLog($object, $object->getWorkspaces(), ApplicationLogs::ACTION_UNSUBSCRIBE, false, null, true, logged_user()->getId());
 			flash_success(lang('success unsubscribe to object'));
 		} catch (Exception $e) {
 			flash_error(lang('error unsubscribe to object'));
@@ -1885,6 +1984,11 @@ class ObjectController extends ApplicationController {
 	 *
 	 */
 	function save_properties() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		ajx_current("empty");
 		$id = array_var($_GET,'id');
 		$manager = array_var($_GET,'manager');
@@ -1905,6 +2009,11 @@ class ObjectController extends ApplicationController {
 	}
 
 	function untrash() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$manager_class = array_var($_GET, 'manager');
 		$object_id = get_id('object_id');
 		$object = get_object_by_manager_and_id($object_id, $manager_class);
@@ -1927,6 +2036,11 @@ class ObjectController extends ApplicationController {
 	}
 
 	function delete_permanently() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$manager_class = array_var($_GET, 'manager');
 		$object_id = get_id('object_id');
 		$object = get_object_by_manager_and_id($object_id, $manager_class);
@@ -1949,25 +2063,135 @@ class ObjectController extends ApplicationController {
 	}
 
 	function trash() {
-		$manager_class = array_var($_GET, 'manager');
-		$object_id = get_id('object_id');
-		$object = get_object_by_manager_and_id($object_id, $manager_class);
-		if ($object instanceof ProjectDataObject && $object->canDelete(logged_user())) {
-			try {
-				DB::beginWork();
-				$object->trash();
-				$ws = $object->getWorkspaces();
-				ApplicationLogs::createLog($object, $ws, ApplicationLogs::ACTION_TRASH);
-				flash_success(lang("success trash object"));
-				DB::commit();
-			} catch (Exception $e) {
-				DB::rollback();
-				flash_error(lang("error trash object"));
-			}
-		} else {
-			flash_error(lang("no access permissions"));
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
 		}
-		ajx_current("back");
+		ajx_current("empty");
+		$csvids = array_var($_GET, 'ids');
+		if (!$csvids && array_var($_GET, 'manager') && array_var($_GET, 'object_id')) {
+			$csvids = array_var($_GET, 'manager') . ":" . array_var($_GET, 'object_id');
+			ajx_current("back");
+		}
+		$ids = explode(",", $csvids);
+		$count = 0;
+		$err = 0;
+		foreach ($ids as $id) {
+			try {
+				$parts = explode(":", $id);
+				$object = get_object_by_manager_and_id($parts[1], $parts[0]);
+				if ($object instanceof ProjectDataObject && $object->canDelete(logged_user())) {
+					$object->trash();
+					ApplicationLogs::createLog($object, $object->getWorkspaces(), ApplicationLogs::ACTION_TRASH);
+					$count++;
+				} else {
+					$err++;
+				}
+			} catch (Exception $e) {
+				$err++;
+			}
+		}
+		if ($err > 0) {
+			flash_error(lang("error trash objects", $err));
+		} else {
+			flash_success(lang("success trash objects", $count));
+		}
+	}
+	
+	function tag() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
+		ajx_current("empty");
+		$csvids = array_var($_GET, 'ids');
+		$tag = trim(array_var($_GET, 'tag', ''));
+		if (!$tag) {
+			flash_error(lang("no tag specified"));
+		}
+		$ids = explode(",", $csvids);
+		$count = 0;
+		$err = 0;
+		foreach ($ids as $id) {
+			try {
+				$parts = explode(":", $id);
+				$object = get_object_by_manager_and_id($parts[1], $parts[0]);
+				if ($object instanceof ProjectDataObject && $object->canEdit(logged_user())) {
+					if ($object instanceof MailContent && user_config_option('show_emails_as_conversations', true, logged_user()->getId())) {
+						$emails = MailContents::getMailsFromConversation($object);
+						foreach ($emails as $email) {
+							if (!$email->hasTag($tag)) {
+								$email->addTag($tag);
+								ApplicationLogs::createLog($email, $email->getWorkspaces(), ApplicationLogs::ACTION_TAG);
+							}
+						}
+					} else {
+						if (!$object->hasTag($tag)) {
+							$object->addTag($tag);
+							ApplicationLogs::createLog($object, $object->getWorkspaces(), ApplicationLogs::ACTION_TAG);
+						}
+					}
+					$count++;
+				} else {
+					$err++;
+				}
+			} catch (Exception $e) {
+				$err++;
+			}
+		}
+		if ($count > 0) evt_add('tag added', array("name" => $tag));
+		if ($err > 0) {
+			flash_error(lang("error tag objects", $err));
+		} else {
+			flash_success(lang("success tag objects", $count));
+		}
+	}
+	
+	function untag() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
+		ajx_current("empty");
+		$csvids = array_var($_GET, 'ids');
+		$tag = trim(array_var($_GET, 'tag', ''));
+		if (!$tag) {
+			flash_error(lang("no tag specified"));
+		}
+		$ids = explode(",", $csvids);
+		$count = 0;
+		$err = 0;
+		foreach ($ids as $id) {
+			try {
+				$parts = explode(":", $id);
+				$object = get_object_by_manager_and_id($parts[1], $parts[0]);
+				if ($object instanceof ProjectDataObject && $object->canEdit(logged_user())) {
+					if ($object instanceof MailContent && user_config_option('show_emails_as_conversations', true, logged_user()->getId())) {
+						$emails = MailContents::getMailsFromConversation($object);
+						foreach ($emails as $email) {
+							$email->deleteTag($tag);
+							ApplicationLogs::createLog($email, $email->getWorkspaces(), ApplicationLogs::ACTION_UNTAG);
+						}
+					} else {
+						$object->deleteTag($tag);
+						ApplicationLogs::createLog($object, $object->getWorkspaces(), ApplicationLogs::ACTION_UNTAG);
+					}
+					$count++;
+				} else {
+					$err++;
+				}
+			} catch (Exception $e) {
+				$err++;
+			}
+		}
+		if ($err > 0) {
+			flash_error(lang("error untag objects", $err));
+		} else {
+			flash_success(lang("success untag objects", $count));
+		}
 	}
 
 	/**
@@ -1975,6 +2199,16 @@ class ObjectController extends ApplicationController {
 	 *
 	 */
 	function purge_trash() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		ajx_current("empty");
 		try {
 			$deleted = Trash::purge_trash();
@@ -1985,28 +2219,43 @@ class ObjectController extends ApplicationController {
 	}
 	
 	function archive() {
-		$manager_class = array_var($_GET, 'manager');
-		$object_id = get_id('object_id');
-		$object = get_object_by_manager_and_id($object_id, $manager_class);
-		if ($object instanceof ProjectDataObject && $object->canEdit(logged_user())) {
-			try {
-				DB::beginWork();
-				$object->archive();
-				$ws = $object->getWorkspaces();
-				ApplicationLogs::createLog($object, $ws, ApplicationLogs::ACTION_ARCHIVE);
-				flash_success(lang("success archive objects", 1));
-				DB::commit();
-			} catch (Exception $e) {
-				DB::rollback();
-				flash_error(lang("error archive objects", 1));
-			}
-		} else {
-			flash_error(lang("no access permissions"));
+		ajx_current("empty");
+		$csvids = array_var($_GET, 'ids');
+		if (!$csvids && array_var($_GET, 'manager') && array_var($_GET, 'object_id')) {
+			$csvids = array_var($_GET, 'manager') . ":" . array_var($_GET, 'object_id');
+			ajx_current("back");
 		}
-		ajx_current("back");
+		$ids = explode(",", $csvids);
+		$count = 0;
+		$err = 0;
+		foreach ($ids as $id) {
+			try {
+				$parts = explode(":", $id);
+				$object = get_object_by_manager_and_id($parts[1], $parts[0]);
+				if ($object instanceof ProjectDataObject && $object->canEdit(logged_user())) {
+					$object->archive();
+					ApplicationLogs::createLog($object, $object->getWorkspaces(), ApplicationLogs::ACTION_ARCHIVE);
+					$count++;
+				} else {
+					$err++;
+				}
+			} catch (Exception $e) {
+				$err++;
+			}
+		}
+		if ($err > 0) {
+			flash_error(lang("error archive objects", $err));
+		} else {
+			flash_success(lang("success archive objects", $count));
+		}
 	}
 	
 	function unarchive() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$manager_class = array_var($_GET, 'manager');
 		$object_id = get_id('object_id');
 		$object = get_object_by_manager_and_id($object_id, $manager_class);
@@ -2039,6 +2288,10 @@ class ObjectController extends ApplicationController {
 			$type = $object->getObjectTypeName();
 			$date = $object->getColumnValue($reminder->getContext());
 			if (!$date instanceof DateTimeValue) continue;
+			if ($object->isTrashed()) {
+				$reminder->delete();
+				continue;
+			}
 			// convert time to the user's locale
 			$timezone = logged_user()->getTimezone();
 			if ($date->getTimestamp() + 5*60 < DateTimeValueLib::now()->getTimestamp()) {
@@ -2247,15 +2500,6 @@ class ObjectController extends ApplicationController {
 				ajx_current("empty");
 			}
 		}
-	}
-	
-	function untag ()
-	{
-		$tagToRemove = array_var($_GET,'tag');
-		$ids = array_var($_GET,'ids');
-		alert ( $tagToRemove );
-		ajx_current("empty");
-		
 	}
 	
 	function get_co_types() {

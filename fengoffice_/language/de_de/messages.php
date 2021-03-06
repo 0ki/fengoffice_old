@@ -399,6 +399,7 @@
 	'log untrash projectfiles' => '\'{0}\' aus dem Papierkorb wiederhergestellt',
 	'log comment projectfiles' => 'Kommentiert zu \'{0}\'',
 	'log subscribe projectfiles' => 'Abonniert zu \'{0}\'',
+	'log subscribe projectfiles data' => 'Abonniert zu \'{0}\'',
 	'log unsubscribe projectfiles' => 'Abo entfernt von \'{0}\'',
 	'log tag projectfiles' => '\'{0}\' verschlagwortet',
 	'log link projectfiles' => '\'{0}\' verknüpft',

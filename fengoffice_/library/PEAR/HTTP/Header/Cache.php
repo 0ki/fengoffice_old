@@ -12,7 +12,7 @@
  * @author      Michael Wallner <mike@php.net>
  * @copyright   2003-2005 The Authors
  * @license     BSD, revised
- * @version     CVS: $Id: Cache.php,v 1.1 2008/11/27 12:11:21 alvarotm01 Exp $
+ * @version     CVS: $Id: Cache.php,v 1.1 2010/01/22 18:14:44 acio Exp $
  * @link        http://pear.php.net/package/HTTP_Header
  */
 

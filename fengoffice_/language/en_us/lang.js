@@ -454,6 +454,7 @@ addLangs({
 	'low':'Low',
 	'normal':'Normal',
 	'high':'High',
+	'urgent':'Urgent',
 	'me': 'Me',
 	'complete selected tasks': 'Complete the selected tasks',
 	'unclassified' : 'Unclassified',
@@ -747,6 +748,8 @@ addLangs({
 
   	'autoconfig gmail message' : 'Gmail autoconfiguration detected. <br> Remember you have to enable IMAP service for your gmail account. More information <a href="http://mail.google.com/support/bin/answer.py?answer=77695" class="internallink" target="_blank">here</a>',
   	'autoconfig hotmail message' : 'Hotmail autoconfiguration detected',
+  	'autoconfig ymail message' : 'Yahoo Mail autoconfiguration detected. <br> In order to be able to use POP3 services you must own a Yahoo Plus account. More information <a href="http://overview.mail.yahoo.com/enhancements/mailplus" class="internallink" target="_blank">here</a>',
+  	'autoconfig rocketmail message' : 'Yahoo Mail autoconfiguration detected. <br> In order to be able to use POP3 services you must own a Yahoo Plus account. More information <a href="http://overview.mail.yahoo.com/enhancements/mailplus" class="internallink" target="_blank">here</a>',
   	'autoconfig yahoo message' : 'Yahoo Mail autoconfiguration detected. <br> In order to be able to use POP3 services you must own a Yahoo Plus account. More information <a href="http://overview.mail.yahoo.com/enhancements/mailplus" class="internallink" target="_blank">here</a>',
   		
   	//concurrence
@@ -769,11 +772,24 @@ addLangs({
   	'quick upload desc': 'Link a new file from your computer',
   	'switch format warn': 'Switching to text will discard all HTML formatting. Continue?',
   	
+  	'assign contact role on workspace': 'Assign contacts a role in a workspace',
+  	'assign roles': 'Assign roles',
   	'expand': 'Expand',
   	'collapse': 'Collapse',
   	'warning': 'Warning',
   	'new email in conversation text': 'There\'s a new email in the conversation you are replying to. Do you want to send the email anyway or view the new email in a new tab?',
   	'send anyway': 'Send anyway',
   	'view new email': 'View new email',
-  	'apply assignee to subtasks': 'Apply assignee to subtasks'
+  	'apply assignee to subtasks': 'Apply assignee to subtasks',
+   
+    'confirm delete permanently company': 'Are you sure you want to permanently delete this company?\nNote that all company users will also be deleted.',
+    'confirm move to trash company': 'Are you sure you want to delete this company?\nNote that all company users will also be deleted.',
+    
+    'work week': '5 days',
+    'work week view': 'Work week',
+    
+    'mark spam': 'Mark as SPAM',
+    'mark ham': 'Mark as not SPAM',
+    
+    'select all tasks': 'Select all tasks'
 });

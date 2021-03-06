@@ -8,6 +8,7 @@
 class ApplicationLogs extends BaseApplicationLogs {
 
 	const ACTION_ADD         = 'add';
+	const ACTION_UPLOAD      = 'upload';
 	const ACTION_EDIT        = 'edit';
 	const ACTION_DELETE      = 'delete';
 	const ACTION_TRASH       = 'trash';
@@ -22,8 +23,13 @@ class ApplicationLogs extends BaseApplicationLogs {
 	const ACTION_LINK     	 = 'link';
 	const ACTION_UNLINK      = 'unlink';
 	const ACTION_LOGIN       = 'login';
+	const ACTION_LOGOUT      = 'logout';
 	const ACTION_ARCHIVE     = 'archive';
 	const ACTION_UNARCHIVE   = 'unarchive';
+	const ACTION_MOVE        = 'move';
+	const ACTION_COPY        = 'copy';
+	const ACTION_READ        = 'read';
+	const ACTION_DOWNLOAD    = 'download';
 	
 	public static function getWorkspaceString($ids = '?') {
 		if (is_array($ids)) $ids = implode(",", $ids);
@@ -240,6 +246,7 @@ class ApplicationLogs extends BaseApplicationLogs {
 
 		if(!is_array($valid_actions)) {
 			$valid_actions = array(
+			self::ACTION_UPLOAD,
 			self::ACTION_ADD,
 			self::ACTION_EDIT,
 			self::ACTION_DELETE,
@@ -250,12 +257,18 @@ class ApplicationLogs extends BaseApplicationLogs {
 			self::ACTION_SUBSCRIBE,
 			self::ACTION_UNSUBSCRIBE,
 			self::ACTION_TAG,
+			self::ACTION_UNTAG,
 			self::ACTION_COMMENT,
 			self::ACTION_LINK,
 			self::ACTION_UNLINK,
 			self::ACTION_LOGIN,
+			self::ACTION_LOGOUT,
 			self::ACTION_ARCHIVE,
-			self::ACTION_UNARCHIVE
+			self::ACTION_UNARCHIVE,
+			self::ACTION_MOVE,
+			self::ACTION_COPY,
+			self::ACTION_READ,
+			self::ACTION_DOWNLOAD
 			); // array
 		} // if
 
@@ -280,14 +293,89 @@ class ApplicationLogs extends BaseApplicationLogs {
 		$private_filter = $include_private ? 1 : 0;
 		$silent_filter = $include_silent ? 1 : 0;
 
-		return self::findAll(array(
+		$logs = self::findAll(array(
         'conditions' => array('`is_private` <= ? AND `is_silent` <= ? AND `rel_object_id` = (?) AND `rel_object_manager` = (?)', $private_filter, $silent_filter, $object->getId(),get_class($object->manager())),
         'order' => '`created_on` DESC',
         'limit' => $limit,
         'offset' => $offset,
 		)); // findAll
+		
+		$next_offset = $offset + $limit;
+		do {
+			// Look for objects that user cannot see
+			$removed = 0;
+			foreach ($logs as $k => $log) {
+				if ($log->getAction() == 'link') {
+					$id = explode(":", $log->getLogData());
+					$lobj = get_object_by_manager_and_id($id[1], $id[0]);
+					if (!can_access(logged_user(), $lobj, ACCESS_LEVEL_READ)) {
+						$removed++;
+						unset($logs[$k]);
+					}
+				}
+			}
+			// Get more objects to substitute the removed ones
+			if ($limit && $removed > 0) {
+				$other_logs = self::findAll(array(
+			        'conditions' => array('`is_private` <= ? AND `is_silent` <= ? AND `rel_object_id` = (?) AND `rel_object_manager` = (?)', $private_filter, $silent_filter, $object->getId(),get_class($object->manager())),
+			        'order' => '`created_on` DESC',
+			        'limit' => $next_offset + $removed,
+			        'offset' => $next_offset,
+				)); // findAll
+				$logs = array_merge($logs, $other_logs);
+				$next_offset += $removed;
+			}
+		} while ($removed > 0);
+		
+		return $logs;
 	} // getObjectLogs
 
+	static function getLastActivities($project, $tag, $quantity) {
+		$conditions = "";
+		$object_ids = array();
+		$queries = ObjectController::getDashboardObjectQueries($project, $tag, false, 'all', null, 'updatedOn', '', 'all');
+		$query = '';
+		foreach ($queries as $q){
+			$res = DB::execute($q);
+			if (!$res) continue;
+			$rows = $res->fetchAll();
+			if (is_array($rows) && count($rows) > 0) {
+				$ids = array();
+				$manager = "";
+				foreach ($rows as $row) {
+					//$ids .= ($ids == "" ? "" : ",") . $row['oid'];
+					$ids[] = $row['oid'];
+					$manager = $row['object_manager_value'];
+				}
+				if (isset($object_ids[$manager])) {
+					$object_ids[$manager] = array_merge($object_ids[$manager], $ids); 
+				} else {
+					$object_ids[$manager] = $ids;
+				}
+			}
+		}
+		foreach ($object_ids as $manager => $ids) {
+			$ids_str = implode(",", $ids);
+			$extra_cond = $manager == 'MailContents' ? "AND `action` <> 'add'" : "";
+			$conditions .= ($conditions == "" ? "" : " OR "). "(`rel_object_manager` = '$manager' AND `rel_object_id` IN ($ids_str) $extra_cond)";
+		}
+		// Show user activity only in root ws
+		if (logged_user()->isAdministrator() && $project == null) {
+			$conditions .= ($conditions == "" ? "" : " OR "). "`rel_object_manager` = 'Users'";
+		}
+		if ($project instanceof Project )
+			$project_ids = $project->getAllSubWorkspacesCSV(true, logged_user());
+		else {
+			$project_ids = logged_user()->getActiveProjectIdsCSV();
+		} 
+		$conditions .= ($conditions == "" ? "" : " OR "). "(`rel_object_manager` = 'Projects' AND `rel_object_id` IN ($project_ids))";
+		
+		return self::findAll(array(
+	        'conditions' => $conditions,
+	        'order' => '`created_on` DESC',
+	        'limit' => $quantity
+		));
+	}
 } // ApplicationLogs
 
 ?>

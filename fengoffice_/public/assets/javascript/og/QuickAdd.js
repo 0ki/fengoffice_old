@@ -76,7 +76,8 @@ og.QuickAdd = function(config) {
 			var module = option.name.substring(7, option.name.length - 7);
 			var buttons = module_buttons[module] || [];
 			for (var i=0; i < buttons.length; i++) {
-				this.menu.items.get(buttons[i]).setVisible(option.value);
+				var btn = this.menu.items.get(buttons[i]);
+				if (btn) btn.setVisible(option.value);
 			}
 		}
 	}, this);

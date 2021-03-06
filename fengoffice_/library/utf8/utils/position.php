@@ -1,7 +1,7 @@
 <?php
 /**
 * Locate a byte index given a UTF-8 character index
-* @version $Id: position.php,v 1.1 2009/06/10 15:33:52 osiniscalchi Exp $
+* @version $Id: position.php,v 1.1 2010/01/22 18:09:15 acio Exp $
 * @package utf8
 * @subpackage position
 */

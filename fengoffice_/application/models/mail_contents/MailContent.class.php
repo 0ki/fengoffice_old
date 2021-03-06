@@ -8,6 +8,7 @@
  */
 class MailContent extends BaseMailContent {
 
+	private $mail_data = null;
 	/**
 	 * Cache of account
 	 *
@@ -37,7 +38,7 @@ class MailContent extends BaseMailContent {
 	 *
 	 * @var array
 	 */
-	protected $searchable_columns = array('from', 'from_name', 'to', 'subject', 'body_plain', );
+	protected $searchable_columns = array('from', 'from_name', 'to', 'cc', 'bcc', 'subject', 'body');
 	 
 	/**
 	 * Project file is commentable object
@@ -48,18 +49,7 @@ class MailContent extends BaseMailContent {
 	
 	protected $mail_conversation_mail_ids;
 	protected $mail_conversation_mail_ids_w_permissions;
-	
-	/**
-	 * Return Project
-	 *
-	 * @access public
-	 * @param void
-	 * @return Project
-	 */
-	function getProject()
-	{
-		return null;
-	}
+
 	
 	function getConversationMailIds($check_permissions = false){
 		if ($check_permissions) {
@@ -80,13 +70,67 @@ class MailContent extends BaseMailContent {
 	 *
 	 * @return MailAccount
 	 */
-	function getAccount()
-	{
+	function getAccount() {
 		if (is_null($this->account)){
 			$this->account = MailAccounts::findById($this->getAccountId());
 		} //if
 		return $this->account;
 	}
+	
+	/* <MailData info> */
+	function setSubject($subject) {
+		if (strlen($subject) > 255) {
+			parent::setSubject(substr($subject, 0, 252) . '...');
+		} else {
+			parent::setSubject($subject);
+		}
+		$this->getMailData()->setSubject($subject);
+	}
+	
+	function getFullSubject() {
+		return $this->getMailData()->getSubject();
+	}
+	
+	function getTo() {
+		return $this->getMailData()->getTo();
+	}
+	
+	function setTo($to) {
+		return $this->getMailData()->setTo($to);
+	}
+	
+	function getCc() {
+		return $this->getMailData()->getCc();
+	}
+	
+	function setCc($cc) {
+		return $this->getMailData()->setCc($cc);
+	}
+	
+	function getBcc() {
+		return $this->getMailData()->getBcc();
+	}
+	
+	function setBcc($bcc) {
+		return $this->getMailData()->setBcc($bcc);
+	}
+	
+	function getBodyHtml() {
+		return $this->getMailData()->getBodyHtml();
+	}
+	
+	function setBodyHtml($html) {
+		return $this->getMailData()->setBodyHtml($html);
+	}
+	
+	function getBodyPlain() {
+		return $this->getMailData()->getBodyPlain();
+	}
+	
+	function setBodyPlain($plain) {
+		return $this->getMailData()->setBodyPlain($plain);
+	}
+	/* </MailData info> */
 	 
 	/**
 	 * Validate before save
@@ -103,50 +147,64 @@ class MailContent extends BaseMailContent {
 			$errors[] = lang('account id required');
 		} // if
 	} // validate
+	
+	function save() {
+		parent::save();
+		$this->getMailData()->setId($this->getId());
+		$this->getMailData()->save();
+	}
 
-	function delete($delete_db_record = true){
+	/**
+	 * 
+	 * @return MailData
+	 */
+	function getMailData() {
+		if (!$this->mail_data instanceof MailData) $this->mail_data = MailDatas::findById($this->getId());
+		if (!$this->mail_data instanceof MailData) $this->mail_data = new MailData();
+		return $this->mail_data;
+	}
+	
+	function delete($delete_db_record = true) {
+		$rows = DB::executeAll("SELECT count(`id`) as `c` FROM `".TABLE_PREFIX."mail_contents` WHERE `conversation_id` = " . DB::escape($this->getConversationId()));
+		if (is_array($rows) && count($rows) > 0) {
+			if ($rows[0]['c'] < 2) {
+				// if no other emails in conversation, delete conversation
+				DB::execute("DELETE FROM `".TABLE_PREFIX."mail_conversations` WHERE `id` = " . DB::escape($this->getCOnversationId()));
+			}
+		}
+		if ($delete_db_record) {
+			return parent::delete();
+		} else {
+			return $this->mark_as_deleted();
+		}
+	}
+	
+	function clearEverything() {
+		$this->clearContentFile();
+		$this->clearMailData();
+		parent::delete();
+	}
+	
+	function clearMailData() {
+		if ($this->getMailData() instanceof MailData) {
+			$this->getMailData()->delete();
+		}
+	}
+	
+	function clearContentFile() {
 		if ($this->getContentFileId() != '') {
 			try {
 				FileRepository::deleteFile($this->getContentFileId());
 			} catch (Exception $e) {
-				Logger::log($e->getMessage());
+				//Logger::log($e->getMessage());
 			}
-		}
-		if ($delete_db_record) {
-			$rows = DB::executeAll("SELECT count(`id`) as `c` FROM `".TABLE_PREFIX."mail_contents` WHERE `conversation_id` = " . DB::escape($this->getConversationId()));
-			if (is_array($rows) && count($rows) > 0) {
-				if ($rows[0]['c'] < 2) {
-					// if no other emails in conversation, delete conversation
-					DB::execute("DELETE FROM `".TABLE_PREFIX."mail_conversations` WHERE `id` = " . DB::escape($this->getCOnversationId()));
-				}
-			}
-			return parent::delete();
-		} else {
-			$this->setIsDeleted(true);
-			$this->clearTags();
-			return $this->save();
 		}
 	}
 	
 	function mark_as_deleted(){
 		$this->setIsDeleted(true);
-		$this->clearTags();
+		$this->clearEverything();
 		return $this->save();
-	}
-
-	function deleteContents()
-	{
-		$this->setContent("");
-		$this->setBodyHtml("");
-		$this->setBodyPlain("");
-		$this->setFrom("");
-		$this->setTo("");
-		$this->setIsDeleted(true);
-		$this->clearTags();
-		$this->clearSearchIndex();
-		$this->clearLinkedObjects();
-		ReadObjects::delete(array('`rel_object_id` = ? AND `rel_object_manager` = ?', $this->getId(), get_class($this->manager()))); // findOne
-		return true;
 	}
 
 	function getTitle(){
@@ -164,10 +222,9 @@ class MailContent extends BaseMailContent {
 	function getContent() {
 		if (FileRepository::isInRepository($this->getContentFileId())) {
 			return FileRepository::getFileContent($this->getContentFileId());
+		} else if ($this->getMailData()->columnExists('content')) {
+			return $this->getMailData()->getContent();
 		}
-		else if ($this->columnExists('content'))
-			return $this->getColumnValue('content');
-		else return '';
 	} // getContent()
 	
 
@@ -194,7 +251,7 @@ class MailContent extends BaseMailContent {
 	 * @return boolean
 	 */
 	function getIsDraft() {
-		return ($this->getColumnValue('state') == 2);
+		return ($this->getState() == 2);
 	} // getIsDraft()
 	
 	
@@ -206,7 +263,7 @@ class MailContent extends BaseMailContent {
 	 * @return boolean
 	 */
 	function getIsSent() {
-		return ($this->getColumnValue('state') == 1);
+		return ($this->getState() == 1 || $this->getState() == 3);
 	} // getIsSent()
 
 	// ---------------------------------------------------
@@ -403,6 +460,16 @@ class MailContent extends BaseMailContent {
 	//  ApplicationDataObject implementation
 	// ---------------------------------------------------
 
+	function getSearchableColumnContent($column_name) {
+		if ($column_name == 'body') {
+			return $this->getTextBody();
+		} else if ($this->getMailData()->columnExists($column_name)) {
+			return $this->getMailData()->getColumnValue($column_name);
+		} else {
+			return parent::getSearchableColumnContent($column_name);
+		}
+	} // getSearchableColumnContent
+	
     function addToSearchableObjects($wasNew){
     	$columns_to_drop = array();
     	if ($wasNew)
@@ -416,8 +483,13 @@ class MailContent extends BaseMailContent {
 							break;
 						}
 					}
-				} else if ($this->isColumnModified($column_name))
+				} else if ($column_name == 'body') {
 					$columns_to_drop[] = $column_name;
+				} else if ($this->getMailData()->columnExists($column_name) && $this->getMailData()->isColumnModified($column_name)) {
+					$columns_to_drop[] = $column_name;
+				} else if ($this->isColumnModified($column_name)) {
+					$columns_to_drop[] = $column_name;
+				}
 			}
     	}
     	
@@ -505,7 +577,7 @@ class MailContent extends BaseMailContent {
 	 * @return string
 	 */
 	function getName() {
-		return $this->getColumnValue('subject');
+		return $this->getSubject();
 	} // getSubject()
 
 
@@ -571,6 +643,7 @@ class MailContent extends BaseMailContent {
     			"archivedById" => $this->getArchivedById(),
     			"archivedBy" => $archivedBy,
     			"dateArchived" => $archivedOn,
+				"subject" => $this->getSubject(),
 				"isRead" => $this->getIsRead(logged_user()->getId())
 		);
 	}

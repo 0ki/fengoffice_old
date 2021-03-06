@@ -451,6 +451,7 @@
 	'log unlink projectfolders data' => '\'{0}\' scollegati da {1}',
 	'log comment projectfiles' => 'Commentati su \'{0}\'',
 	'log subscribe projectfiles' => 'Sottoscritti per \'{0}\'',
+	'log subscribe projectfiles data' => 'Sottoscritti per \'{0}\'',
 	'log unsubscribe projectfiles' => 'Sottoscrizione annullata per \'{0}\'',
 	'log tag projectfiles' => '\'{0}\' marcati',
 	'log link projectfiles' => '\'{0}\' collegati',

@@ -1,8 +1,10 @@
 <?php
 	if (!$email->isTrashed()) {
-		add_page_action(lang('reply mail'), $email->getReplyMailUrl()  , 'ico-reply', null, null, true);
-		add_page_action(lang('reply to all mail'), $email->getReplyMailUrl()."&all=1"  , 'ico-reply-all', null, null, true);
-		add_page_action(lang('forward mail'), $email->getForwardMailUrl()  , 'ico-forward', null, null, true);
+		if (logged_user()->hasEmailAccounts()) {
+			add_page_action(lang('reply mail'), $email->getReplyMailUrl()  , 'ico-reply', null, null, true);
+			add_page_action(lang('reply to all mail'), $email->getReplyMailUrl()."&all=1"  , 'ico-reply-all', null, null, true);
+			add_page_action(lang('forward mail'), $email->getForwardMailUrl()  , 'ico-forward', null, null, true);
+		}
 		add_page_action(lang('print'), $email->getPrintUrl(), 'ico-print', "_blank", null, true);
 	}
 	if($email->canDelete(logged_user())) {
@@ -32,7 +34,7 @@
 		}
 	}
 	add_page_action(lang('mark as unread'), get_url('mail', 'mark_as_unread', array('id' => $email->getId())), 'ico-mark-as-unread');
-	if (count($email->getWorkspaces())) {
+	if (count($email->getWorkspaces()) && !logged_user()->isGuest()) {
 		add_page_action(lang('create task from email'), get_url('task', 'add_task', array('from_email' => $email->getId())), 'ico-task', null, null, true);
 	}
 	add_page_action(lang('download email'), get_url('mail', 'download', array('id' => $email->getId())), 'ico-download', '_self');
@@ -263,7 +265,7 @@
 			}
 			$content .= '<div style="position: relative; left:0; top: 0; width: 100%; height: 100px; background-color: white">';
 			$content .= '<iframe id="'.$genid.'ifr" name="'.$genid.'ifr" style="width:100%;height:100%" frameborder="0" src="'.$url.'" 
-							onload="javascipt:iframe=document.getElementById(\''.$genid.'ifr\'); iframe.parentNode.style.height = Math.min(600, iframe.contentWindow.document.body.scrollHeight) + \'px\' ;">
+							onload="javascipt:iframe=document.getElementById(\''.$genid.'ifr\'); iframe.parentNode.style.height = Math.min(600, iframe.contentWindow.document.body.scrollHeight + 30) + \'px\' ;">
 						</iframe>';
 			'<script>if (Ext.isIE) document.getElementById(\''.$genid.'ifr\').contentWindow.location.reload();</script>';
 			$content .= '<a class="ico-expand" style="display: block; width: 16px; height: 16px; cursor: pointer; position: absolute; right: 20px; top: 2px" title="' . lang('expand') . '" onclick="og.expandDocumentView.call(this)"></a>

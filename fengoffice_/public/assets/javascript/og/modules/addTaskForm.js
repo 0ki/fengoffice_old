@@ -32,11 +32,16 @@ App.modules.addTaskForm = {
     if(!list_details.can_add_task) return;
     if(!Ext.getDom(list_details.text_id)) return;
     
-    Ext.getDom(list_details.text_id).value = '';
-    Ext.getDom(list_details.assign_to_id).value = '0:0';
-    Ext.getDom(list_details.add_task_link_id).style.display = 'block';
-    Ext.getDom(list_details.task_form_id).style.display = 'none';
-    Ext.getDom(list_details.submit_id).accesskey = '';
+    var el = Ext.getDom(list_details.text_id);
+    if (el) el.value = '';
+    el = Ext.getDom(list_details.assign_to_id);
+    if (el) el.value = '0:0';
+    el = Ext.getDom(list_details.add_task_link_id);
+    if (el) el.style.display = 'block';
+    el = Ext.getDom(list_details.task_form_id);
+    if (el) el.style.display = 'none';
+    el = Ext.getDom(list_details.submit_id);
+    if (el) el.accesskey = '';
   }, // hideAddTaskForm
   
   /**

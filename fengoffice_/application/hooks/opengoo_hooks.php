@@ -39,7 +39,19 @@ Hook::register("fengoffice");
  *   			Text to be displayed on the crumb.
  *   		- target
  *   			Panel where the link will be opened (or _blank for new page).
- * 
+ *   
+ * - render_help_options: Called when drawing the help panel.
+ *  	- $ignored,
+ *   	- &$help_options : array of assoc. Add to this array.
+ *   		- url,
+ *   			URL to open.
+ *   		- title,
+ *   			Title to be displayed on the option.
+ *   		- desc,
+ *   			Optional desc to explain what the option does.
+ *   		- target
+ *   			Panel where the link will be opened (or _blank for new page).
+ *   
  * - email_base_css: Called to allow altering email styling when composing an email. Append
  *   CSS rules to the $css argument to alter how email is displayed and sent on HTML emails.
  *   For example, to change font size and color: $css .= 'font-size: 12px; color: red';

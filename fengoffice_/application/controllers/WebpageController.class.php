@@ -34,6 +34,11 @@ class WebpageController extends ApplicationController {
 	 * @return null
 	 */
 	function add() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$this->setTemplate('add');
 
 		if(!ProjectWebpage::canAdd(logged_user(), active_or_personal_project())) {
@@ -100,6 +105,11 @@ class WebpageController extends ApplicationController {
 	 * @return null
 	 */
 	function edit() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$this->setTemplate('add');
 
 		$webpage = ProjectWebpages::findById(get_id());
@@ -172,18 +182,7 @@ class WebpageController extends ApplicationController {
 				  
 				ApplicationLogs::createLog($webpage, $webpage->getWorkspaces(), ApplicationLogs::ACTION_EDIT);
 
-				$ro = ReadObjects::findAll(array('conditions' => 'rel_object_id = '.
-																$webpage->getId().
-																' AND rel_object_manager = \'' .
-																 get_class($webpage->manager()) . 
-																 '\' AND ' . 'user_id <> ' . logged_user()->getId()));
-				if (is_array($ro) && count($ro) > 0){
-					foreach ($ro as $r){
-						if ($r instanceof ReadObject){							
-							$r->delete();
-						}
-					}
-				}
+				$webpage->resetIsRead();
 				
 				DB::commit();
 				
@@ -209,6 +208,11 @@ class WebpageController extends ApplicationController {
 	 * @return null
 	 */
 	function delete() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$webpage = ProjectWebpages::findById(get_id());
 		if(!($webpage instanceof ProjectWebpage)) {
 			flash_error(lang('webpage dnx'));
@@ -241,8 +245,7 @@ class WebpageController extends ApplicationController {
 	function list_all() {
 		ajx_current("empty");
 
-		$pid = array_var($_GET, 'active_project', 0);
-		$project = Projects::findById($pid);
+		$project = active_project();
 		$isProjectView = ($project instanceof Project);
 			
 		$start = (integer)array_var($_GET,'start');
@@ -380,27 +383,29 @@ class WebpageController extends ApplicationController {
 				$resultCode = 1;
 			} else {
 				$count = 0;
-				$active = active_project();
-				if ($active instanceof Project) {
-					$ws_ids = $active->getAllSubWorkspacesQuery(true, logged_user());
-				} else {
-					$ws_ids = logged_user()->getWorkspacesQuery();
-				}
 				$ids = explode(',', array_var($_GET, 'ids', ''));
 				for($i = 0; $i < count($ids); $i++){
 					$id = $ids[$i];
 					$webpage = ProjectWebpages::findById($id);
 					if ($webpage instanceof ProjectWebpage && $webpage->canEdit(logged_user())){
 						if (!array_var($_GET, "mantainWs")) {
-							$ws = $webpage->getWorkspaces($ws_ids);
+							$removed = "";
+							$ws = $webpage->getWorkspaces();
 							foreach ($ws as $w) {
 								if (can_add(logged_user(), $w, 'ProjectWebpages')) {
 									$webpage->removeFromWorkspace($w);
+									$removed .= $w->getId() . ",";
 								}
 							}
+							$removed = substr($removed, 0, -1);
+							$log_action = ApplicationLogs::ACTION_MOVE;
+							$log_data = ($removed == "" ? "" : "from:$removed;") . "to:$wsid";
+						} else {
+							$log_action = ApplicationLogs::ACTION_COPY;
+							$log_data = "to:$wsid";
 						}
 						$webpage->addToWorkspace($destination);
-						ApplicationLogs::createLog($webpage, $webpage->getWorkspaces(), ApplicationLogs::ACTION_EDIT);
+						ApplicationLogs::createLog($webpage, $webpage->getWorkspaces(), $log_action, false, null, true, $log_data);
 						$count++;
 					};
 				}; // for
@@ -435,19 +440,13 @@ class WebpageController extends ApplicationController {
 			}
 		}
 
-		if ($isProjectView) {
-			$pids = $project->getAllSubWorkspacesQuery(true, logged_user());
-		} else {
-			$pids = logged_user()->getWorkspacesQuery();
-		}
-
-		$result = ProjectWebpages::getWebpages($pids, $tag, $page, $limit, $order, $orderdir);
+		$result = ProjectWebpages::getWebpages($project, $tag, $page, $limit, $order, $orderdir);
 		if (is_array($result)) {
 			list($webpages, $pagination) = $result;
 			if ($pagination->getTotalItems() < (($page - 1) * $limit)){
 				$start = 0;
 				$page = 1;
-				$result = ProjectWebpages::getWebpages($pids,$tag,$page,$limit);
+				$result = ProjectWebpages::getWebpages($project,$tag,$page,$limit);
 				if (is_array($result)) {
 					list($webpages, $pagination) = $result;
 				}else {
@@ -473,18 +472,13 @@ class WebpageController extends ApplicationController {
 		{
 			$index = 0;
 			foreach ($webpages as $w) {
-				if ($w->getProject() instanceof Project) {
-					$tags = project_object_tags($w);
-				} else {
-					$tags = "";
-				}
 				$object["webpages"][] = array(
 					"ix" => $index++,
 					"id" => $w->getId(),
 					"title" => $w->getTitle(),
 					"description" => $w->getDescription(),
 					"url" => $w->getUrl(),
-					"tags" => $tags,
+					"tags" => project_object_tags($w),
 					"wsIds" => $w->getWorkspacesIdsCSV(logged_user()->getWorkspacesQuery()),
 					"updatedOn" => $w->getUpdatedOn() instanceof DateTimeValue ? ($w->getUpdatedOn()->isToday() ? format_time($w->getUpdatedOn()) : format_datetime($w->getUpdatedOn())) : '',
 					"updatedOn_today" => $w->getUpdatedOn() instanceof DateTimeValue ? $w->getUpdatedOn()->isToday() : 0,
@@ -520,6 +514,8 @@ class WebpageController extends ApplicationController {
 		tpl_assign('subscribers', $weblink->getSubscribers());
 		ajx_extra_data(array("title" => $weblink->getTitle(), 'icon'=>'ico-weblink'));
 		ajx_set_no_toolbar(true);
+		
+		ApplicationReadLogs::createLog($weblink, $weblink->getWorkspaces(), ApplicationReadLogs::ACTION_READ);
 	}
 } // WebpageController
 

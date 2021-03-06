@@ -17,7 +17,7 @@
 // | 		  Ralf Hofmann <ralf.hofmann@verdisoft.com>					  |
 // +----------------------------------------------------------------------+
 //
-// $Id: DIME.php,v 1.1 2008/11/27 12:11:16 alvarotm01 Exp $
+// $Id: DIME.php,v 1.1 2010/01/22 18:07:10 acio Exp $
 //
 
 require_once 'PEAR.php';

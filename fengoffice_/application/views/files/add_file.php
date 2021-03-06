@@ -56,8 +56,14 @@ $comments_required = config_option('file_revision_comments_required');
 					<?php render_context_help($this, 'chelp addfile', 'add_file'); ?>
 				</div>
 			<?php }?>
-	    	<?php echo radio_field($genid.'_rg', true, array('id' => $genid.'fileRadio', 'onchange' => 'og.addDocumentTypeChanged(0, "'.$genid.'")', 'value' => '0')) . ' ' . lang('file')?>
-	    	<?php echo radio_field($genid.'_rg', false, array('id' => $genid.'weblinkRadio', 'onchange' => 'og.addDocumentTypeChanged(1, "'.$genid.'")', 'value' => '1')) . ' ' . lang('weblink')?>
+			<label class="checkbox">
+	    	<?php echo radio_field($genid.'_rg', true, array('id' => $genid.'fileRadio', 'onchange' => 'og.addDocumentTypeChanged(0, "'.$genid.'")', 'value' => '0'))?>
+	    	<?php echo lang('file') ?>
+	    	</label>
+	    	<label class="checkbox">
+	    	<?php echo radio_field($genid.'_rg', false, array('id' => $genid.'weblinkRadio', 'onchange' => 'og.addDocumentTypeChanged(1, "'.$genid.'")', 'value' => '1'))?>
+	    	<?php echo lang('weblink') ?>
+	    	</label>
 	        <div id="<?php echo $genid ?>fileUploadDiv">
 			<?php echo label_tag(lang('file'), $genid . 'fileFormFile', true) ?>
 			<?php 
@@ -90,9 +96,8 @@ $comments_required = config_option('file_revision_comments_required');
         
     	<?php if ($file->getType() == ProjectFiles::TYPE_WEBLINK){?>
         <?php echo label_tag(lang('new weblink'), $genid .'fileFormFilename') ?>
-        <?php echo text_field('file[url]',$file->getUrl(), array("id" => $genid .'fileFormUrl', 'class' => 'title', 'tabindex' => '21')) ?>   
+        <?php echo text_field('file[url]',$file->getUrl(), array("id" => $genid .'fileFormUrl', 'class' => 'title', 'tabindex' => '21')) ?>
         <?php } //else ?>
-		<br/>
     </div>
 
 	<?php $categories = array(); Hook::fire('object_edit_categories', $object, $categories); ?>
@@ -199,7 +204,7 @@ $comments_required = config_option('file_revision_comments_required');
 				</div>
 				<div id="<?php echo $genid ?>revisionControls">
 					<div>
-						<?php echo checkbox_field('file[version_file_change]', array_var($file_data, 'version_file_change', true), array('id' => $genid.'fileFormVersionChange', 'class' => 'checkbox', 'tabindex' => '70'/*, 'onclick' => 'App.modules.addFileForm.versionFileChangeClick(\'' . $genid .'\')'*/)) ?>
+						<?php echo checkbox_field('file[version_file_change]', array_var($file_data, 'version_file_change', true), array('id' => $genid.'fileFormVersionChange', 'class' => 'checkbox', 'tabindex' => '70')) ?>
 						<?php echo label_tag(lang('version file change'), $genid.'fileFormVersionChange', false, array('class' => 'checkbox'), '') ?>
 					</div>
 					<div id="<?php echo $genid ?>fileFormRevisionCommentBlock">
@@ -209,12 +214,7 @@ $comments_required = config_option('file_revision_comments_required');
 					</div>
 				</div>
 			</div>
-			<?php }else{ ?>
-		    	<div id="<?php echo $genid ?>fileFormRevisionCommentBlock">
-		   			<?php //echo textarea_field('file[revision_comment]', '', array('id' => $genid.'fileFormRevisionComment')) ?>
-		   			<input type='hidden' id ="<?php echo $genid ?>RevisionCommentsRequired" value="0"/>
-		        </div>
-		   	<?php } ?>
+			<?php } ?>
 			<?php if (!isset($checkin) && $file->getType() == ProjectFiles::TYPE_DOCUMENT) {?>
 				<script>
 					App.modules.addFileForm.updateFileClick('<?php echo $genid ?>');
@@ -384,7 +384,19 @@ $comments_required = config_option('file_revision_comments_required');
 	
 	<div>
 		<?php echo render_object_custom_properties($object, 'ProjectFiles', true) ?>
-	</div><br/>
+	</div>
+	
+	<?php if ($file->getType() == ProjectFiles::TYPE_WEBLINK) { ?>
+	<div>
+		<?php echo checkbox_field('file[version_file_change]', array_var($file_data, 'version_file_change', false), array('id' => $genid.'fileFormVersionChange', 'class' => 'checkbox', 'tabindex' => '70')) ?>
+		<?php echo label_tag(lang('version file change'), $genid.'fileFormVersionChange', false, array('class' => 'checkbox'), '') ?>
+	</div>
+	<div id="<?php echo $genid ?>fileFormRevisionCommentBlock">
+		<?php echo label_tag(lang('revision comment'), $genid.'fileFormRevisionComment', $comments_required) ?>
+		<?php echo textarea_field('file[revision_comment]', array_var($file_data, 'revision_comment'), array('class' => 'long', 'tabindex' => '75', 'id' => $genid.'fileFormRevisionComment')) ?>
+		<input type='hidden' id ="<?php echo $genid ?>RevisionCommentsRequired" value="<?php echo $comments_required? '1':'0'?>"/>
+	</div>
+	<?php } ?>
 
 	<div id="<?php echo $genid ?>fileSubmitButton" style="display: inline">
 		<input type="hidden" name="upload_id" value="<?php echo $genid ?>" />

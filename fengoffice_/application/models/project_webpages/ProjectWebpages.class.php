@@ -4,7 +4,7 @@
  * ProjectWebpages, generated on Wed, 15 Mar 2006 22:57:46 +0100 by
  * DataObject generation tool
  *
- * @author Ilija Studen <ilija.studen@gmail.com>
+ * @author Feng Office Dev Team <contact@opengoo.org>
  */
 class ProjectWebpages extends BaseProjectWebpages {
 
@@ -29,7 +29,7 @@ class ProjectWebpages extends BaseProjectWebpages {
 		));
 	}
 
-	function getWebpages($project_ids, $tag = '', $page = 1, $webpages_per_page = 10, $orderBy = 'title', $orderDir = 'ASC', $archived = false) {
+	function getWebpages($project, $tag = '', $page = 1, $webpages_per_page = 10, $orderBy = 'title', $orderDir = 'ASC', $archived = false) {
 		$orderDir = strtoupper($orderDir);
 		if ($orderDir != "ASC" && $orderDir != "DESC") $orderDir = "ASC";
 		if($page < 0) $page = 1;
@@ -43,17 +43,22 @@ class ProjectWebpages extends BaseProjectWebpages {
 					TABLE_PREFIX . "tags`.`tag` = " . DB::escape($tag) ." AND `" . TABLE_PREFIX . "tags`.`rel_object_manager` = 'ProjectWebpages' ) > 0 ";
 		}
 
-		$permission_str = ' AND (' .
-				permissions_sql_for_listings(ProjectWebpages::instance(), ACCESS_LEVEL_READ, logged_user()) .
-				')';
+		$permission_str = ' AND (' . permissions_sql_for_listings(ProjectWebpages::instance(), ACCESS_LEVEL_READ, logged_user()) . ')';
 		
-		$project_str = " AND " . self::getWorkspaceString($project_ids);
+		if ($project instanceof Project) {
+			$pids = $project->getAllSubWorkspacesCSV(true);
+			$project_str = " AND " . self::getWorkspaceString($pids);
+		} else {
+			$project_str = "";
+		}
 		
 		if ($archived) $archived_cond = " AND `archived_by_id` <> 0";
 		else $archived_cond = " AND `archived_by_id` = 0";
 
+		$conditions = $tagstr . $permission_str . $project_str . $archived_cond;
+		
 		return ProjectWebpages::paginate(
-			array("conditions" => $tagstr . $permission_str . $project_str . $archived_cond,
+			array("conditions" => $conditions,
 	        		'order' => DB::escapeField($orderBy)." $orderDir"),
 				config_option('files_per_page', 10),
 				$page

@@ -41,10 +41,11 @@
 	<?php $categories = array(); Hook::fire('object_edit_categories', $object, $categories); ?>
 	
 	<div style="padding-top:5px">
+		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_contact_select_workspace_div',this)"><?php echo lang('workspace') ?></a> - 
 		<?php if (isset($isAddProject) && $isAddProject) { ?>
 			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_contact_role_div', this)"><?php echo lang('role') ?></a> - 
 		<?php } ?>
-		<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('<?php echo $genid ?>add_contact_add_tags_div', this)"><?php echo lang('tags') ?></a> - 
+		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_contact_add_tags_div', this)"><?php echo lang('tags') ?></a> - 
 		<a href="#" class="option" style="font-weight:bold" onclick="og.toggleAndBolden('<?php echo $genid ?>add_contact_work', this)"><?php echo lang('work') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_contact_email_and_im', this)"><?php echo lang('email and instant messaging') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_contact_home', this)"><?php echo lang('home') ?></a> - 
@@ -73,6 +74,17 @@
 				<?php render_context_help($this, 'chelp add contact','add_contact'); ?>
 			</div>
 		<?php }?>
+		
+	<div id="<?php echo $genid ?>add_contact_select_workspace_div" style="display:none">
+	<fieldset><legend><?php echo lang('workspace')?></legend>
+		<?php if ($object->isNew()) {
+			echo select_workspaces('ws_ids', null, array(active_or_personal_project()), $genid.'ws_ids');
+		} else {
+			echo select_workspaces('ws_ids', null, $object->getWorkspaces(null, 'workspace'), $genid.'ws_ids');
+		} ?>
+	</fieldset>
+	</div>
+		
 	<div style="display:block" id="<?php echo $genid ?>add_contact_work">
 	<fieldset><legend><?php echo lang('work') ?></legend>
 		<div style="margin-left:12px;margin-right:12px;">

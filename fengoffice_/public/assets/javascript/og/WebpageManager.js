@@ -25,7 +25,7 @@ og.WebpageManager = function() {
 				'load': function() {
 					var d = this.reader.jsonData;
 					var ws = og.clean(Ext.getCmp('workspace-panel').getActiveWorkspace().name);
-					var tag = og.clean(Ext.getCmp('tag-panel').getSelectedTag().name);
+					var tag = og.clean(Ext.getCmp('tag-panel').getSelectedTag());
 					if (d.totalCount == 0) {
 						if (tag) {
 							this.fireEvent('messageToShow', lang("no objects with tag message", lang("web pages"), ws, tag));
@@ -353,6 +353,18 @@ og.WebpageManager = function() {
 		})
     };
     
+	var tbar = [];
+	if (!og.loggedUser.isGuest) {
+		tbar.push(actions.newWebpage);
+		tbar.push('-');
+		tbar.push(actions.editWebpage);
+		tbar.push(actions.tag);
+		tbar.push(actions.delWebpage);
+		tbar.push(actions.archive);
+		tbar.push('-');
+	}
+	tbar.push(actions.markAs);
+	
 	og.WebpageManager.superclass.constructor.call(this, {
         store: this.store,
 		layout: 'fit',
@@ -374,16 +386,7 @@ og.WebpageManager = function() {
             forceFit: true
         },
 		sm: sm,
-		tbar:[
-			actions.newWebpage,
-			'-',
-			actions.editWebpage,
-			actions.tag,
-			actions.delWebpage,
-			actions.archive,
-			'-',
-			actions.markAs
-        ],
+		tbar: tbar,
 		listeners: {
 			'render': {
 				fn: function() {
@@ -423,14 +426,14 @@ Ext.extend(og.WebpageManager, Ext.grid.GridPanel, {
 			var start = 0;
 		}
 		Ext.apply(this.store.baseParams, {
-			tag: Ext.getCmp('tag-panel').getSelectedTag().name,
+			tag: Ext.getCmp('tag-panel').getSelectedTag(),
 			active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id
 		});
 		this.store.load({
 			params: Ext.apply(params, {
 				start: 0,
 				limit: og.config['files_per_page'],
-				tag: Ext.getCmp('tag-panel').getSelectedTag().name,
+				tag: Ext.getCmp('tag-panel').getSelectedTag(),
 				active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id
 			})
 		});

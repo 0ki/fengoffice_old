@@ -393,7 +393,7 @@ class ProjectFile extends BaseProjectFile {
 	 * @param void
 	 * @return integer
 	 */
-	protected function getNextRevisionNumber() {
+	function getNextRevisionNumber() {
 		$last_revision = $this->getLastRevision();
 		return $last_revision instanceof ProjectFileRevision ? $last_revision->getRevisionNumber() + 1 : 1;
 	} // getNextRevisionNumber
@@ -757,7 +757,6 @@ class ProjectFile extends BaseProjectFile {
 	 */
 	function delete() {
 		$this->clearRevisions();
-		$this->clearObjectRelations();
 		return parent::delete();
 	} // delete
 	

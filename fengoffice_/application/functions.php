@@ -43,6 +43,7 @@ function __autoload($load_class_name) {
  * @return null
  */
 function __shutdown() {
+	DB::close();
 	$logger_session = Logger::getSession();
 	if(($logger_session instanceof Logger_Session) && !$logger_session->isEmpty()) {
 		Logger::saveSession();
@@ -376,8 +377,7 @@ function active_projects() {
  * @return Project
  */
 function personal_project() {
-	$usr = logged_user();
-	return $usr?$usr->getPersonalProject():null;
+	return logged_user() instanceof User ? logged_user()->getPersonalProject():null;
 } // active_project
 
 /**
@@ -662,15 +662,78 @@ function get_language_name($loc) {
 	return array_var($names, $loc, $loc);
 }
 
+function get_workspace_css_properties($num) {
+	static $workspaces_css = array (
+    "main"  => array( "padding" => "1px 5px", "font-size" => "90%"),
+    "0"  => array("border-color" => "#777777", "background-color" => "#EEEEEE", "color" => "#777777"),
+    "1"  => array("color" => "#DEE5F2", "background-color" => "#5A6986", "border-color" => "#5A6986"),
+    "2"  => array("color" => "#E0ECFF", "background-color" => "#206CE1", "border-color" => "#206CE1"),
+    "3"  => array("color" => "#DFE2FF", "background-color" => "#0000CC", "border-color" => "#0000CC"),
+    "4"  => array("color" => "#E0D5F9", "background-color" => "#5229A3", "border-color" => "#5229A3"),
+    "5"  => array("color" => "#FDE9F4", "background-color" => "#854F61", "border-color" => "#854F61"),
+    "6"  => array("color" => "#FFE3E3", "background-color" => "#CC0000", "border-color" => "#CC0000"),
+    "7"  => array("color" => "#FFF0E1", "background-color" => "#EC7000", "border-color" => "#EC7000"),
+    "8"  => array("color" => "#FADCB3", "background-color" => "#B36D00", "border-color" => "#B36D00"),
+    "9"  => array("color" => "#F3E7B3", "background-color" => "#AB8B00", "border-color" => "#AB8B00"),
+    "10"  => array("color" => "#FFFFD4", "background-color" => "#636330", "border-color" => "#636330"),
+    "11"  => array("color" => "#F9FFEF", "background-color" => "#64992C", "border-color" => "#64992C"),
+    "12"  => array("color" => "#F1F5EC", "background-color" => "#006633", "border-color" => "#006633"),
+    "13"  => array("color" => "#5A6986", "background-color" => "#DEE5F2", "border-color" => "#5A6986"),
+    "14"  => array("color" => "#206CE1", "background-color" => "#E0ECFF", "border-color" => "#206CE1"),
+    "15"  => array("color" => "#0000CC", "background-color" => "#DFE2FF", "border-color" => "#0000CC"),
+    "16"  => array("color" => "#5229A3", "background-color" => "#E0D5F9", "border-color" => "#5229A3"),
+    "17"  => array("color" => "#854F61", "background-color" => "#FDE9F4", "border-color" => "#854F61"),
+    "18"  => array("color" => "#CC0000", "background-color" => "#FFE3E3", "border-color" => "#CC0000"),
+    "19"  => array("color" => "#EC7000", "background-color" => "#FFF0E1", "border-color" => "#EC7000"),
+    "20"  => array("color" => "#B36D00", "background-color" => "#FADCB3", "border-color" => "#B36D00"),
+    "21"  => array("color" => "#AB8B00", "background-color" => "#F3E7B3", "border-color" => "#AB8B00"),
+    "22"  => array("color" => "#636330", "background-color" => "#FFFFD4", "border-color" => "#636330"),
+    "23"  => array("color" => "#64992C", "background-color" => "#F9FFEF", "border-color" => "#64992C"),
+    "24"  => array("color" => "#006633", "background-color" => "#F1F5EC", "border-color" => "#006633"),   
+);
+	
+
+	return "border-color: ".$workspaces_css[$num]['border-color']."; background-color: ".$workspaces_css[$num]['background-color']."; color: ".$workspaces_css[$num]['color']."; 
+	padding: ".$workspaces_css['main']['padding']."; font-size: ".$workspaces_css['main']['font-size'].";";
+    
+}
+
 function module_enabled($module, $default = null) {
 	return config_option("enable_".$module."_module", $default);
 }
 
-function create_user($user_data, $is_admin, $permissionsString) {
-	$user = new User();
-	$user->setFromAttributes($user_data);
+function create_user_from_email($email, $name, $type = 'guest', $send_notification = true) {
+	return create_user(array(
+		'username' => substr($email, 0, strpos($email, '@')),
+		'display_name' => trim($name),
+		'email' => $email,
+		'type' => $type,
+		'company_id' => owner_company()->getId(),
+		'send_email_notification' => $send_notification,
+	), '');
+}
 
-	if (array_var($user_data, 'password_generator') == 'random') {
+function create_user($user_data, $permissionsString) {
+	$user = new User();
+	$user->setUsername(array_var($user_data, 'username'));
+	$user->setDisplayName(array_var($user_data, 'display_name'));
+	$user->setEmail(array_var($user_data, 'email'));
+	$user->setCompanyId(array_var($user_data, 'company_id'));
+	$user->setType(array_var($user_data, 'type'));
+	$user->setTimezone(array_var($user_data, 'timezone'));
+	if (!logged_user() instanceof User || can_manage_security(logged_user())) {
+		$user->setCanEditCompanyData(array_var($user_data, 'can_edit_company_data'));
+		$user->setCanManageSecurity(array_var($user_data, 'can_manage_security'));
+		$user->setCanManageWorkspaces(array_var($user_data, 'can_manage_workspaces'));
+		$user->setCanManageConfiguration(array_var($user_data, 'can_manage_configuration'));
+		$user->setCanManageContacts(array_var($user_data, 'can_manage_contacts'));
+		$user->setCanManageTemplates(array_var($user_data, 'can_manage_templates'));
+		$user->setCanManageReports(array_var($user_data, 'can_manage_reports'));
+		$user->setCanManageTime(array_var($user_data, 'can_manage_time'));
+		$user->setCanAddMailAccounts(array_var($user_data, 'can_add_mail_accounts'));
+	}
+
+	if (array_var($user_data, 'password_generator', 'random') == 'random') {
 		// Generate random password
 		$password = UserPasswords::generateRandomPassword();
 	} else {
@@ -695,14 +758,16 @@ function create_user($user_data, $is_admin, $permissionsString) {
 	$user_password->save();
 	
 	if (array_var($user_data, 'autodetect_time_zone', 1) == 1) {
-		$op = UserWsConfigOptions::getByName('autodetect_time_zone');
-		if ($op instanceof UserWsConfigOption) {
-			$op->setUserValue(1 , $user->getId() , 0);
-		}
+		set_user_config_option('autodetect_time_zone', 1, $user->getId());
 	}
 	
-	if ($is_admin) {
-		$user->setAsAdministrator();
+	if ($user->getType() == 'admin') {
+		if ($user->getCompanyId() != owner_company()->getId() || logged_user() instanceof User && !can_manage_security(logged_user())) {
+			// external users can't be admins or logged user has no rights to create admins => set as Normal 
+			$user->setType('normal');
+		} else {
+			$user->setAsAdministrator(true);
+		}
 	}
 
 	/* create contact for this user*/
@@ -755,42 +820,42 @@ function create_user($user_data, $is_admin, $permissionsString) {
 		$contact->save();
 	}
 
-	/* create personal project or assing the selected*/
-	//if recived a personal project assing this 
-	//project as personal project for this user
-	$new_project = null;
-	$personalProjectId = array_var($user_data, 'personal_project', 0);
-	$project = Projects::findById($personalProjectId);
-	if (!$project instanceof Project) {
-		$project = new Project();
-		$wname = new_personal_project_name($user->getUsername());
-		$project->setName($wname);
-		
-		$wdesc = Localization::instance()->lang(lang('personal workspace description'));
-		if (!is_null($wdesc)) {
-			$project->setDescription($wdesc);
-		}
-		$project->setCreatedById($user->getId());
-
-		$project->save(); //Save to set an ID number
-		$project->setP1($project->getId()); //Set ID number to the first project
-		$project->save();
-		$new_project = $project;		
-	}
+	if (!$user->isGuest()) {
+		/* create personal project or assing the selected*/
+		//if recived a personal project assing this 
+		//project as personal project for this user
+		$new_project = null;
+		$personalProjectId = array_var($user_data, 'personal_project', 0);
+		$project = Projects::findById($personalProjectId);
+		if (!$project instanceof Project) {
+			$project = new Project();
+			$wname = new_personal_project_name($user->getUsername());
+			$project->setName($wname);
+			
+			$wdesc = Localization::instance()->lang(lang('personal workspace description'));
+			if (!is_null($wdesc)) {
+				$project->setDescription($wdesc);
+			}
+			$project->setCreatedById($user->getId());
 	
-	$user->setPersonalProjectId($project->getId());
+			$project->save(); //Save to set an ID number
+			$project->setP1($project->getId()); //Set ID number to the first project
+			$project->save();
+			$new_project = $project;		
+		}
+		$user->setPersonalProjectId($project->getId());
+		$project_user = new ProjectUser();
+		$project_user->setProjectId($project->getId());
+		$project_user->setUserId($user->getId());
+		$project_user->setCreatedById($user->getId());
+		$project_user->setAllPermissions(true);
+		
+		$project_user->save();
+		/* end personal project */
+	}
 	$user->save();
 
 	ApplicationLogs::createLog($user, null, ApplicationLogs::ACTION_ADD);
-
-	$project_user = new ProjectUser();
-	$project_user->setProjectId($project->getId());
-	$project_user->setUserId($user->getId());
-	$project_user->setCreatedById($user->getId());
-	$project_user->setAllPermissions(true);
-	
-	$project_user->save();
-	/* end personal project */
 
   	//TODO - Make batch update of these permissions
 	if ($permissionsString && $permissionsString != '') {
@@ -798,7 +863,7 @@ function create_user($user_data, $is_admin, $permissionsString) {
 	} else {
 		$permissions = null;
 	}
-  	if (is_array($permissions)) {
+  	if (is_array($permissions) && (!logged_user() instanceof User || can_manage_security(logged_user()))) {
   		foreach ($permissions as $perm) {			  			
   			if (ProjectUser::hasAnyPermissions($perm->pr, $perm->pc)) {
   				if (!$personalProjectId || $personalProjectId != $perm->wsid) {
@@ -806,8 +871,8 @@ function create_user($user_data, $is_admin, $permissionsString) {
 			  		$relation->setProjectId($perm->wsid);
 			  		$relation->setUserId($user->getId());
 					
-			  		$relation->setCheckboxPermissions($perm->pc);
-			  		$relation->setRadioPermissions($perm->pr);
+			  		$relation->setCheckboxPermissions($perm->pc, $user->isGuest() ? false : true);
+			  		$relation->setRadioPermissions($perm->pr, $user->isGuest() ? false : true);
 			  		$relation->save();
   				}
   			}

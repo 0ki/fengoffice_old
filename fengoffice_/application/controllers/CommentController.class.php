@@ -43,7 +43,7 @@ class CommentController extends ApplicationController {
 		$object = get_object_by_manager_and_id($object_id, $object_manager);
 		if(!($object instanceof ProjectDataObject) || !($object->canComment(logged_user()))) {
 			flash_error(lang('no access permissions'));
-			axj_current("empty");
+			ajx_current("empty");
 			return;
 		} // if
 
@@ -82,8 +82,14 @@ class CommentController extends ApplicationController {
 				if(!$object->isSubscriber(logged_user())) {
 					$object->subscribeUser(logged_user());
 				} // if
-				
-				ApplicationLogs::createLog($object, $object->getWorkspaces(), ApplicationLogs::ACTION_COMMENT);
+				if (strlen($comment->getText()) < 100) {
+					$comment_head = $comment->getText();
+				} else {
+					$lastpos = strpos($comment->getText(), " ", 100);
+					if ($lastpos === false) $comment_head = $comment->getText();
+					else $comment_head = substr($comment->getText(), 0, $lastpos) . "...";
+				}
+				ApplicationLogs::createLog($object, $object->getWorkspaces(), ApplicationLogs::ACTION_COMMENT, false, null, true, $comment_head);
 
 				DB::commit();
 

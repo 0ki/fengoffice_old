@@ -1,15 +1,14 @@
-------------------------------------------------------------<?php echo "\r\n"
-?><?php echo lang('dont reply wraning') ?><?php echo "\r\n"
-?>------------------------------------------------------------<?php echo "\r\n"
-?><?php echo "\r\n"
-?><?php echo lang("$context $type reminder desc", $object->getObjectName(), $date->format("Y/m/d H:i:s")) ?>.<?php echo "\r\n"
-?><?php echo "\r\n"
-?><?php echo lang("view $type") ?>: <?php echo str_replace('&amp;', '&', $object->getViewUrl()) ?><?php echo "\r\n"
-?><?php echo "\r\n"
-?><?php echo "\r\n"
-?><?php echo lang('company') ?>: <?php echo owner_company()->getName() ?><?php echo "\r\n"
-?><?php echo "\r\n"
-?><?php echo "\r\n"
-?>--<?php echo "\r\n"
-?><?php echo ROOT_URL ?><?php echo "\r\n\r\n\r\n"
-?>
+<div style="font-family: Verdana, Arial, sans-serif; font-size: 12px;"><br><br>
+
+<?php echo lang("$context $type reminder desc", $object->getObjectName(), $date) ?><br><br>
+
+<?php echo lang("view $type") ?>: <?php echo str_replace('&amp;', '&', $object->getViewUrl()) ?><br><br>
+
+<br><br>
+
+	<div style="color: #818283; font-style: italic; border-top: 2px solid #818283; padding-top: 2px; font-family: Verdana, Arial, sans-serif; font-size: 12px;">
+	<?php echo lang('system notification email'); ?><br>
+	<a href="<?php echo ROOT_URL; ?>" target="_blank" style="font-family: Verdana, Arial, sans-serif; font-size: 12px;"><?php echo ROOT_URL; ?></a>
+	</div>
+
+</div>

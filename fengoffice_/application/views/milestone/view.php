@@ -13,6 +13,11 @@ if (isset($milestone) && $milestone instanceof ProjectMilestone) {
 		} // if
 		if ($milestone->canEdit(logged_user())) {
 			add_page_action(lang('edit'), $milestone->getEditUrl(), 'ico-edit', null, null, true);
+			if (!$milestone->isArchived()) {
+				add_page_action(lang('archive'), "javascript:if(confirm(lang('confirm archive object'))) og.openLink('" . $milestone->getArchiveUrl() ."');", 'ico-archive-obj');
+			} else {
+				add_page_action(lang('unarchive'), "javascript:if(confirm(lang('confirm unarchive object'))) og.openLink('" . $milestone->getUnarchiveUrl() ."');", 'ico-unarchive-obj');
+			}
 		} // if
 	}
 	
@@ -27,7 +32,7 @@ if (isset($milestone) && $milestone instanceof ProjectMilestone) {
 		}
 	} // if
 	
-	if (!$milestone->isTrashed()){
+	if (!$milestone->isTrashed() && !logged_user()->isGuest()){
 		if ($milestone->getIsTemplate()) {
 			add_page_action(lang('new milestone from template'), get_url("milestone", "copy_milestone", array("id" => $milestone->getId())), 'ico-copy');
 		} else {

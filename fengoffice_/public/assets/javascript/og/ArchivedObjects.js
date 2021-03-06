@@ -30,8 +30,8 @@ og.ArchivedObjects = function() {
 			listeners: {
 				'load': function() {
 					var d = this.reader.jsonData;
-					var ws = og.clean(Ext.getCmp('workspace-panel').getActiveWorkspace().name);
-					var tag = og.clean(Ext.getCmp('tag-panel').getSelectedTag().name);
+					var ws = og.clean(Ext.getCmp('workspace-panel').getActiveWorkspace());
+					var tag = og.clean(Ext.getCmp('tag-panel').getSelectedTag());
 					if (d.totalCount == 0) {
 						if (tag) {
 							this.fireEvent('messageToShow', lang("no archived objects with tag message", lang("objects"), ws, tag));
@@ -353,7 +353,7 @@ Ext.extend(og.ArchivedObjects, Ext.grid.GridPanel, {
 			var start = 0;
 		}
 		Ext.apply(this.store.baseParams, {
-			tag: Ext.getCmp('tag-panel').getSelectedTag().name,
+			tag: Ext.getCmp('tag-panel').getSelectedTag(),
 			active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id
 		});
 		this.store.load({

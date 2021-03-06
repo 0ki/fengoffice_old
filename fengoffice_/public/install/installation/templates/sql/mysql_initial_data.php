@@ -86,7 +86,10 @@ INSERT INTO `<?php echo $table_prefix ?>file_types` (`extension`, `icon`, `is_se
 	('qt', 'mov.png', 0, 0),
 	('vob', 'video.png', 0, 0),
 	('txt', 'doc.png', 1, 0),
-	('ppt', 'ppt.png', 0, 0);
+	('html', 'html.png', 1, 0),
+	('slim', 'ppt.png', 1, 0),
+	('ppt', 'ppt.png', 0, 0),
+	('webfile', 'webfile.png', 0, 0);
 
 INSERT INTO `<?php echo $table_prefix ?>im_types` (`name`, `icon`) VALUES
 	('ICQ', 'icq.gif'),
@@ -130,7 +133,10 @@ INSERT INTO `<?php echo $table_prefix ?>user_ws_config_options` (`category_name`
  ('dashboard', 'show getting started widget', '1', 'BoolConfigHandler', '0', '1000', NULL),
  ('dashboard', 'getting_started_widget_expanded', '1', 'BoolConfigHandler', '1', '0', NULL),
  ('dashboard', 'dashboard_info_widget_expanded', '1', 'BoolConfigHandler', 1, 0, ''),
+ ('dashboard', 'workspace_description_widget_expanded', '1', 'BoolConfigHandler', 1, 0, ''),
  ('dashboard', 'show_two_weeks_calendar', '1', 'BoolConfigHandler', '0', '0', NULL),
+ ('dashboard', 'show activity widget', '1', 'BoolConfigHandler', 0, 1000, ''),
+ ('dashboard', 'activity widget elements', '30', 'IntegerConfigHandler', '0', '1100', NULL),
  ('task panel', 'can notify from quick add', '1', 'BoolConfigHandler', 0, 0, 'Notification checkbox default value'),
  ('task panel', 'tasksShowWorkspaces', '1', 'BoolConfigHandler', 1, 0, ''),
  ('task panel', 'tasksShowTime', '1', 'BoolConfigHandler', 1, 0, ''),
@@ -154,7 +160,7 @@ INSERT INTO `<?php echo $table_prefix ?>user_ws_config_options` (`category_name`
  ('general', 'rememberGUIState', '1', 'RememberGUIConfigHandler', 0, 300, ''),
  ('general', 'work_day_start_time', '9:00', 'TimeConfigHandler', 0, 400, 'Work day start time'),
  ('general', 'time_format_use_24', '0', 'BoolConfigHandler', 0, 500, 'Use 24 hours time format'),
- ('general', 'date_format', 'd/m/Y', 'StringConfigHandler', 0, 600, 'Date objects will be displayed using this format.'),
+ ('general', 'date_format', 'd/m/Y', 'DateFormatConfigHandler', 0, 600, 'Date objects will be displayed using this format.'),
  ('general', 'descriptive_date_format', 'l, j F', 'StringConfigHandler', 0, 700, 'Descriptive dates will be displayed using this format.'),
  ('general', 'custom_report_tab', 'tasks', 'StringConfigHandler', '1', '0', NULL),
  ('general', 'show_context_help', 'until_close', 'ShowContextHelpConfigHandler', '0', '0', NULL),
@@ -172,7 +178,7 @@ INSERT INTO `<?php echo $table_prefix ?>user_ws_config_options` (`category_name`
  ('mails panel', 'view deleted accounts emails', '1', 'BoolConfigHandler', '0', '0', NULL),
  ('mails panel', 'block_email_images', '1', 'BoolConfigHandler', '0', '0', NULL),
  ('mails panel', 'draft_autosave_timeout', '60', 'IntegerConfigHandler', '0', '100', NULL),
- ('mails panel', 'attach_docs_content', '0', 'BoolConfigHandler', '0', '0', NULL),
+ ('mails panel', 'attach_docs_content', '1', 'BoolConfigHandler', '0', '0', NULL),
  ('mails panel', 'email_polling', '0', 'IntegerConfigHandler', '1', '0', NULL),
  ('mails panel', 'show_unread_on_title', '0', 'BoolConfigHandler', '1', '0', NULL),
  ('mails panel', 'max_spam_level', '0', 'IntegerConfigHandler', '0', '100', NULL),

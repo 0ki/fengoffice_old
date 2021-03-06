@@ -160,14 +160,12 @@ class FeedController extends PageController {
 		$inc_sub = isset($_GET['isw']) && $_GET['isw'] == 1;
 		if (Users::tokenExists($token)) {
 			$user = Users::getByToken($token);
-			if ($cal == 0) $pids = $user->getWorkspacesQuery();
+			if ($cal == 0) $project = null;
 			else {
-				if ($inc_sub)
-				$pids = Projects::findById($cal)->getAllSubWorkspacesQuery(true, $user);
-				else $pids = $cal;
+				$project = Projects::findById($cal);
 			}
 				
-			$events = ProjectEvents::findAll(array('conditions' => array(ProjectEvents::getWorkspaceString($pids))));
+			$events = ProjectEvents::getAllEventsByProject($project, false, $inc_sub, $user);
 				
 			$calendar_name = isset($_GET['n']) ? $_GET['n'] : $user->getDisplayName();
 			tpl_assign('content', CalFormatUtilities::generateICalInfo($events, $calendar_name, $user));

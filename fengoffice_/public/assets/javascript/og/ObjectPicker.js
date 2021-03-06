@@ -366,9 +366,9 @@ og.ObjectPicker = function(config) {
 			            iconCls: 'ico-upload',
 			            handler: function() {
 							var tagf = this.findById('tagFilter');
-							var seltag = tagf.getSelectedTag().name;
+							var seltag = tagf.getSelectedTag();
 							
-							var wsf = this.findById('wsFilter');
+							var wsf = Ext.getCmp('workspace-panel');
 							var selws = wsf.getActiveWorkspace().id;
 							var quickId = Ext.id();
 							var picker = this;
@@ -494,7 +494,7 @@ og.ObjectPicker = function(config) {
 								fn: function(tag) {
 									this.filterSelect({
 										filter: 'tag',
-										name: tag.name
+										name: tag
 									});
 								},
 								scope: this.grid

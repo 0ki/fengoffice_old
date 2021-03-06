@@ -15,7 +15,7 @@
 // | Authors: Lucas Nealan <lucas@facebook.com>                           |
 // +----------------------------------------------------------------------+
 
-// $Id: APC.php,v 1.1 2008/11/27 12:11:21 alvarotm01 Exp $
+// $Id: APC.php,v 1.1 2010/01/22 18:14:28 acio Exp $
 
 require_once 'Net_UserAgent/detect.php';
 

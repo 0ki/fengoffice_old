@@ -234,15 +234,6 @@ class ProjectMessage extends BaseProjectMessage {
 	 * @return boolean
 	 */
 	function delete() {
-		$related_forms = $this->getRelatedForms();
-		if(is_array($related_forms)) {
-			foreach($related_forms as $related_form) {
-				$related_form->setInObjectId(0);
-				$related_form->save();
-			} // foreach
-		} // if
-		$this->clearSubscriptions();
-		
 		return parent::delete();
 	} // delete
 

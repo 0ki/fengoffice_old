@@ -451,6 +451,7 @@
 	'log unlink projectfolders data' => '\'{0}\' détaché de \'{1}\'.',
 	'log comment projectfiles' => 'Commentaire sur \'{0}\'.',
 	'log subscribe projectfiles' => 'Abonné à \'{0}\'.',
+	'log subscribe projectfiles data' => 'Abonné à \'{0}\'.',
 	'log unsubscribe projectfiles' => 'Désabonné de \'{0}\'.',
 	'log tag projectfiles' => '\'{0}\' étiqueté.',
 	'log link projectfiles' => '\'{0}\' lié.',

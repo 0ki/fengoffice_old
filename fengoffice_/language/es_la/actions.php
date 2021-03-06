@@ -43,7 +43,7 @@
 	'delete task list' => 'Eliminar tarea',
 	'reorder tasks' => 'Reordenar tareas',
 	'apply milestone to subtasks' => 'Aplicar Hito a Subtareas',
-  	'apply workspace to subtasks' => 'Aplicar Espacio de Trabajo a Subtareas',
+	'apply workspace to subtasks' => 'Aplicar Espacio de Trabajo a Subtareas',
 	'reorder sub tasks' => 'Reordenar sub tareas',
 	'copy task' => 'Crear copia de esta tarea',
 	'copy milestone' => 'Crear copia de este hito',
@@ -132,7 +132,7 @@
 	'unlink object' => 'Eliminar vínculo con este objeto',
 	'unlink objects' => 'Eliminar vínculo con estos objetos',
 	'extract' => 'Extraer',
-  	'add files to zip' => 'Agregar archivos',
+	'add files to zip' => 'Agregar archivos',
 	'delete tag' => 'Eliminar etiqueta',
 	'update permissions' => 'Modificar los permisos',
 	'edit permissions' => 'Editar permisos',
@@ -149,18 +149,15 @@
 	'move to trash' => 'Mover a la papelera',
 	'restore from trash' => 'Restaurar desde la papelera',
 	'delete permanently' => 'Eliminar permanentemente',
-
 	'archive' => 'Archivar',
- 	'unarchive' => 'Desarchivar',
-  	'confirm archive selected objects' => '¿Está seguro que desea archivar los objetos seleccionados?',
+	'unarchive' => 'Desarchivar',
+	'confirm archive selected objects' => '¿Está seguro que desea archivar los objetos seleccionados?',
 	'confirm archive object' => '¿Está seguro que desea archivar este objeto?',
 	'confirm unarchive object' => '¿Está seguro que desea desarchivar este objeto?',
-
 	'copy file' => 'Copiar este archivo',
-  	'open weblink' => 'Abrir enlace web',
-
+	'open weblink' => 'Abrir enlace web',
 	'report as spam' => 'Reportar como Spam',
 	'not spam' => 'No es Spam',
-
 	'mark as unread' => 'Marcar como no leído',
+	'show' => 'Mostrar',
 ); ?>

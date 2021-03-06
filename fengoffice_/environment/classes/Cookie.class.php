@@ -8,6 +8,18 @@
  */
 class Cookie {
 
+	static function getPrefix() {
+		if (defined('USE_COOKIE_PREFIX')) {
+			if (USE_COOKIE_PREFIX == 1) {
+				return preg_replace('/[^a-zA-Z0-9]/', '_', ROOT_URL);
+			} else if (USE_COOKIE_PREFIX) {
+				return USE_COOKIE_PREFIX;
+			} else {
+				return '';
+			}
+		}
+	}
+	
 	/**
 	 * Return value from the cookien
 	 *
@@ -16,9 +28,7 @@ class Cookie {
 	 * @return mixed
 	 */
 	static function getValue($name, $default = null) {
-		if (defined('USE_COOKIE_PREFIX') && USE_COOKIE_PREFIX) {
-			$name = preg_replace('/[^a-zA-Z0-9]/', '_', ROOT_URL) . $name;
-		}
+		$name = Cookie::getPrefix() . $name;
 		return array_var($_COOKIE, $name, $default);
 	} // getValue
 
@@ -42,9 +52,7 @@ class Cookie {
 		$domain = defined('COOKIE_DOMAIN') ? COOKIE_DOMAIN : '';
 		$secure = defined('COOKIE_SECURE') ? COOKIE_SECURE : false;
 
-		if (defined('USE_COOKIE_PREFIX') && USE_COOKIE_PREFIX) {
-			$name = preg_replace('/[^a-zA-Z0-9]/', '_', ROOT_URL) . $name;
-		}
+		$name = Cookie::getPrefix() . $name;
 		setcookie($name, $value, $expiration_time->getTimestamp(), $path, $domain, $secure);
 	} // setValue
 

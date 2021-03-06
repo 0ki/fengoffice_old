@@ -184,6 +184,7 @@
   	'mailAccount dnx' => 'Email account does not exist',
   	'error add contact from user' => 'Could not add contact from user.',
   	'zip not supported' => 'ZIP is not supported by the server',
+  	'no tag specified' => 'No tag specified',
   ); // array
 
 ?>

@@ -360,8 +360,8 @@ og.makeAjaxUrl = function(url, params) {
 	}
 	var at = "";
 	if (url.indexOf("active_tag=") < 0) {
-		if (Ext.getCmp('tag-panel') && Ext.getCmp('tag-panel').getSelectedTag().name != '') {
-			var at = "&active_tag=" + encodeURIComponent(Ext.getCmp('tag-panel').getSelectedTag().name);
+		if (Ext.getCmp('tag-panel') && Ext.getCmp('tag-panel').getSelectedTag() != '') {
+			var at = "&active_tag=" + encodeURIComponent(Ext.getCmp('tag-panel').getSelectedTag());
 		}
 	}
 	if (url.indexOf("ajax=true") < 0) {
@@ -444,7 +444,7 @@ og.captureLinks = function(id, caller) {
 	for (var i=0; i < links.length; i++) {
 		var link = links[i];
 		if (!link.href || Ext.isGecko && link.href == link.baseURI || link.href.indexOf('mailto:') == 0 || link.href.indexOf('javascript:') == 0 || link.href.indexOf('#') >= 0) continue;
-		if (link.target == '_blank' || link.target == '_self' || link.target == '_download') continue;
+		if (link.target && link.target[0] == '_') continue;
 		if (caller && !link.target) {
 			link.target = caller.id;
 		}
@@ -467,13 +467,16 @@ og.captureLinks = function(id, caller) {
 	forms = element.getElementsByTagName("form");
 	for (var i=0; i < forms.length; i++) {
 		var form = forms[i];
-		if (form.target == '_blank' || form.target == '_self' || form.target == '_download') continue;
+		if (form.target && form.target[0] == '_') continue;
+		if (caller && !form.target) {
+			form.target = caller.id;
+		}
 		var onsubmit = form.onsubmit;
 		form.onsubmit = function() {
 			if (onsubmit && !onsubmit()) {
 				return false;
 			} else {
-				og.ajaxSubmit(this);
+				og.ajaxSubmit(this, {caller: this.target});
 			}
 			return false;
 		}
@@ -1312,54 +1315,32 @@ og.rollOut = function(div,isCompany)
 	}
 };
 og.checkUser = function (div){
-	
-	hiddy = document.getElementById("hiddenUser" + div.id);
-	if (hiddy){
-		if (hiddy.value == "checked"){
-			hiddy.value = "";
+	var hiddy = document.getElementById(div.id.substring(3));
+	if (hiddy) {
+		if (hiddy.checked) {
+			hiddy.checked = false;
 			div.className = "container-div user-name";
-		}
-		else{
-			hiddy.value = "checked";
+		} else {
+			hiddy.checked = true;
 			div.className = "container-div checked-user";
-			
 		}
-		
-	}else{
-		hiddy = document.getElementById(div.id.substring(3));
-		if (hiddy){
-			hiddy.click();			
-			if (hiddy.checked){
-				div.className = "container-div checked-user";
-			}
-			else{
-				div.className = "container-div user-name";								
-			}
-		}
-	} 
+	}
 };
 og.subscribeCompany = function (div){
-		isChecked=Ext.fly(div).hasClass("checked");
-		hids = div.parentNode.getElementsByTagName("input");
-		for (i=0;i<hids.length;i++)
-		{
-			if (!isChecked){
-				hiddenTag = hids.item(i);
-				if (hiddenTag.id.substr(0,10)== "hiddenUser" && hiddenTag.value != "checked"){
-					og.checkUser(hiddenTag.parentNode);
-				}				
-			}else{
-				hiddenTag = hids.item(i);
+		var isChecked = Ext.fly(div).hasClass("checked");
+		var hids = div.parentNode.getElementsByTagName("input");
+		for (var i=0; i < hids.length; i++) {
+			var hiddenTag = hids[i];
+			if (!isChecked && !hiddenTag.checked || isChecked && hiddenTag.checked) {
 				og.checkUser(hiddenTag.parentNode);
 			}
 		}
 		
 		if (!isChecked) {
-			div.className += " checked";
-		}else{
-			div.className = "container-div company-name";
+			Ext.fly(div).addClass('checked');
+		} else {
+			Ext.fly(div).removeClass('checked');
 		}
-	
 };
 
 og.confirmRemoveTags = function(manager) {
@@ -1596,8 +1577,8 @@ og.redrawLinkedObjects = function(id, manager) {
 	}
 }
 
-og.redrawSubscribers = function(id, manager) {
-	var div = Ext.get("subscribers_in_prop_panel");
+og.redrawSubscribers = function(id, manager, genid) {
+	var div = Ext.get(genid + "subscribers_in_prop_panel");
 	if (div) {
 		div.load({url: og.getUrl('object', 'redraw_subscribers_list', {id:id, man:manager}), scripts: true});
 	}

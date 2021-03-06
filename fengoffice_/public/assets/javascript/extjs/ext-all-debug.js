@@ -18278,7 +18278,7 @@ Ext.DatePicker = Ext.extend(Ext.Component, {
             if(d > 6){
                 d = d-7;
             }
-            m.push("<th><span>", dn[d].substr(0,1), "</span></th>");
+            m.push("<th><span>", dn[parseInt(d)].substr(0,1), "</span></th>");
         }
         m[m.length] = "</tr></thead><tbody><tr>";
         for(var i = 0; i < 42; i++) {

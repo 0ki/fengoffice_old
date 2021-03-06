@@ -58,7 +58,7 @@
     * @param string $project_csvs Search in this project
     * @return array
     */
-    function getSearchConditions($search_for, $project_csvs, $include_private = false, $object_type = '', $columns_csv = null, $user_id = 0) {
+    function getSearchConditions($search_for, $project_csvs = null, $include_private = false, $object_type = '', $columns_csv = null, $user_id = 0) {
     	$otSearch = '';
     	$columnsSearch = '';
     	$wsSearch = '';
@@ -68,38 +68,28 @@
     	if ($object_type != '')
     		$otSearch = " AND `rel_object_manager` = '$object_type'";
     
-    	if ($user_id > 0)
-    		$wsSearch .= " AND (`user_id` = " . $user_id . " OR ";
-    	else
-    		$wsSearch .= " AND (";
-    		
-    	if ($object_type=="ProjectFileRevisions")
-    		$wsSearch .=  "`rel_object_id` IN (SELECT o.id FROM " . TABLE_PREFIX ."project_file_revisions o where o.file_id IN (SELECT p.`object_id` FROM `".TABLE_PREFIX."workspace_objects` p WHERE p.`object_manager` = 'ProjectFiles' && p.`workspace_id` IN ($project_csvs)))";
-    	else if ($object_type=="Contacts")
-    		$wsSearch .=  " (`rel_object_id` IN (SELECT o.contact_id FROM " . TABLE_PREFIX ."project_contacts o where o.`project_id` IN ($project_csvs)) OR (SELECT COUNT(*) from " . TABLE_PREFIX ."project_contacts o where o.`project_id` IN ($project_csvs) AND o.`contact_id` = `rel_object_id`) = 0)";
-    	else if ($object_type=="Companies")
-    		$wsSearch .=  " (`rel_object_id` IN (SELECT o.company_id FROM " . TABLE_PREFIX ."project_companies o where o.`project_id` IN ($project_csvs)) OR (SELECT COUNT(*) from " . TABLE_PREFIX ."project_companies o where o.`project_id` IN ($project_csvs) AND o.`company_id` = `rel_object_id`) = 0)";
-    	else
-    		$wsSearch .= "`rel_object_id` IN (SELECT `object_id` FROM `".TABLE_PREFIX."workspace_objects` WHERE `object_manager` = '$object_type' && `workspace_id` IN ($project_csvs))";
-    	$wsSearch .=  ')';
-    	
+    	if ($project_csvs) {
+    		$wsSearch .= " AND ";
+	    	/*if ($user_id > 0)
+	    		$wsSearch .= " (`user_id` = " . $user_id . " OR ";
+	    	else
+	    		$wsSearch .= " (";*/
+	    		
+	    	if ($object_type=="ProjectFileRevisions")
+	    		$wsSearch .=  "`rel_object_id` IN (SELECT o.id FROM " . TABLE_PREFIX ."project_file_revisions o where o.file_id IN (SELECT p.`object_id` FROM `".TABLE_PREFIX."workspace_objects` p WHERE p.`object_manager` = 'ProjectFiles' && p.`workspace_id` IN ($project_csvs)))";
+	    	else
+	    		$wsSearch .= "`rel_object_id` IN (SELECT `object_id` FROM `".TABLE_PREFIX."workspace_objects` WHERE `object_manager` = '$object_type' && `workspace_id` IN ($project_csvs))";
+	    	//$wsSearch .=  ')';
+    	} else {
+    		$wsSearch = "";
+    	}
     	
     	//Check for trashed and other permissions
     	$tableName = eval("return $object_type::instance()->getTableName();");
     	$trashed = '';
     	if ($object_type != 'Projects' && $object_type != 'Users'){
     		$trashed = " and EXISTS(SELECT * FROM $tableName co where `rel_object_id` = id and trashed_by_id = 0 ";
-    		if ($object_type != 'ProjectFileRevisions' && $object_type != 'Contacts')
-    			$trashed .= ' AND ( ' . permissions_sql_for_listings(eval("return $object_type::instance();"), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`co`') .')';
-    		else if ($object_type == "Contacts"){
-    			if (!can_manage_contacts(logged_user())){
-					$pcTableName = "`" . TABLE_PREFIX . 'project_contacts`';
-					$trashed .= " AND `co`.`id` IN ( SELECT `contact_id` FROM $pcTableName `pc` WHERE `pc`.`contact_id` = `co`.`id` AND (" . permissions_sql_for_listings(ProjectContacts::instance(), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`pc`') .'))';
-    			}
-    		} else if ($object_type == "ProjectFileRevisions"){
-				$fileTableName = "`" . TABLE_PREFIX . 'project_files`';
-    			$trashed = " and EXISTS(SELECT * FROM $tableName co where `co`.`id` IN ( SELECT `id` FROM $fileTableName `pf` WHERE `pf`.`id` = `co`.`file_id` AND (" . permissions_sql_for_listings(ProjectFiles::instance(), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`pf`') .'))';
-    		}
+    		$trashed .= ' AND ( ' . permissions_sql_for_listings(eval("return $object_type::instance();"), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`co`') .')';
     		$trashed .= ')';
     	}
 

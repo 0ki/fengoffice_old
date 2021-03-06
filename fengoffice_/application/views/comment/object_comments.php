@@ -67,6 +67,6 @@
 
 <?php } ?>
 
-<?php if($__comments_object->canComment(logged_user()) && !$__comments_object->isTrashed()) { ?>
+<?php if($__comments_object->canComment(logged_user()) && !$__comments_object->isTrashed()) {?>
 	<?php echo render_comment_form($__comments_object) ?>
 <?php } // if ?>

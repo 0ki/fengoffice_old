@@ -10,7 +10,7 @@
 	
 	og.currentHourLineTOut = null;
 	og.drawCurrentHourLine = function(d, pre) {
-		if (cal_actual_view == 'viewweek' && pre == 'w_' || cal_actual_view == 'viewdate' && pre == 'd_') {
+		if (cal_actual_view == 'viewweek' && pre == 'w_' || cal_actual_view == 'viewweek5days' && pre == 'w5_' || cal_actual_view == 'viewdate' && pre == 'd_') {
 			if (!og.startLineTime) og.startLineTime = new Date();
 			var now = new Date();
 			var diff = now.getTime() - og.startLineTime.getTime();
@@ -31,7 +31,7 @@
 			
 			var title = date.format(og.config['time_format_use_24'] ? 'G:i' : 'g:i A');
 			var new_top = cell.getTop(true) + cell.getHeight() * top / 100;
-			var cant_d = pre == 'w_' ? 7 : 1;
+			var cant_d = pre == 'w_' ? 7 : (pre == 'w5_' ? 5 : 1);
 			var html = '<div id="'+pre+'currentHourLine" title="'+title+'" style="height:2px; z-index:200; position:absolute; top:'+ new_top +'px; left:'+ (d*100/cant_d) +'%; border-top:2px solid #B95000; width:'+(100/cant_d)+'%; opacity:0.7; filter:alpha(opacity=70);"></div>';
 			Ext.get("eventowner").insertHtml('afterBegin', html);
 			
@@ -212,7 +212,7 @@
 
 									if (els.length > 0) {									
 										for (i=0; i<els.length; i++) {
-											els[i].innerHTML = data.ev_data.start + (cal_actual_view == 'viewweek' ? "" : " - " + data.ev_data.end);												
+											els[i].innerHTML = data.ev_data.start + (cal_actual_view == 'viewweek' || cal_actual_view == 'viewweek5days' ? "" : " - " + data.ev_data.end);												
 										}
 									}
 								}

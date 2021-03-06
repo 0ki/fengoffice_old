@@ -120,6 +120,40 @@
     return $l->formatTime($datetime, $timezone);
   } // format_time
 
+function friendly_date(DateTimeValue $date, $timezone = null) {
+	if ($timezone == null) {
+		$timezone = logged_user()->getTimezone();
+	}
+	
+	//TODO: 7 days before: "Dom at 13:43", older: "Oct, 06 at 15:20"
+	
+	if ($date->isToday()) {
+		$now = DateTimeValueLib::now();
+		$diff = DateTimeValueLib::get_time_difference($date->getTimestamp(), $now->getTimestamp());
+		if ($diff['hours'] == 0) {
+			if ($diff['minutes'] >= 0)
+				return lang('minutes ago', $diff['minutes']);
+			else
+				return format_descriptive_date($date);
+		} else if ($diff['hours'] > 0) {
+			return lang('about hours ago', round($diff['hours'] + ($diff['minutes'] > 30 ? 1 : 0)));
+		} else {
+			return format_descriptive_date($date);
+		}
+	} else if ($date->isYesterday()) {
+		return lang('yesterday at', format_time($date));
+	} else {
+		$now = DateTimeValueLib::now();
+		$diff = DateTimeValueLib::get_time_difference($date->getTimestamp(), $now->getTimestamp());
+		if ($diff['days'] < 7) {
+			return lang('day at', Localization::dateByLocalization("D", $date->getTimestamp()), format_time($date));
+		} else if ($now->getYear() != $date->getYear()) {
+			return lang('day at', Localization::dateByLocalization("M d, Y", $date->getTimestamp()), format_time($date));
+		} else {
+			return lang('day at', Localization::dateByLocalization("M, d", $date->getTimestamp()), format_time($date));
+		}
+	}
+}
   
   /**
  * truncate string and add ellipsis

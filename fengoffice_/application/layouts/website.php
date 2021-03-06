@@ -138,7 +138,8 @@ if ($initialWS === "remember") {
 }
 ?>
 og.initialWorkspace = '<?php echo $initialWS ?>';
-og.initialURL = '<?php echo ROOT_URL . "/?active_project=$initialWS&" . $_SERVER['QUERY_STRING'] ?>';
+<?php $qs = (trim($_SERVER['QUERY_STRING'])) ? "&" . $_SERVER['QUERY_STRING'] : "";  ?>
+og.initialURL = '<?php echo ROOT_URL . "/?active_project=$initialWS" . $qs ?>';
 <?php if (user_config_option("rememberGUIState")) { ?>
 og.initialGUIState = <?php echo json_encode(GUIController::getState()) ?>;
 <?php } ?>
@@ -152,7 +153,8 @@ og.loggedUser = {
 	id: <?php echo logged_user()->getId() ?>,
 	username: <?php echo json_encode(logged_user()->getUsername()) ?>,
 	displayName: <?php echo json_encode(logged_user()->getDisplayName()) ?>,
-	isAdmin: <?php echo logged_user()->isAdministrator() ? 'true' : 'false' ?>
+	isAdmin: <?php echo logged_user()->isAdministrator() ? 'true' : 'false' ?>,
+	isGuest: <?php echo logged_user()->isGuest() ? 'true' : 'false' ?>
 };
 og.zipSupported = <?php echo zip_supported() ? 1 : 0 ?>;
 og.hasNewVersions = <?php
@@ -216,7 +218,7 @@ if (og.emailFilters.account != 0 && og.emailFilters.account != '') {
 	og.emailFilters.accountName = '<?php
 		$acc_id = user_config_option('mails account filter');
 		$acc = $acc_id > 0 ? MailAccounts::findById($acc_id) : null; 
-		echo ($acc instanceof MailAccount ? $acc->getName() : ''); 
+		echo ($acc instanceof MailAccount ? mysql_real_escape_string($acc->getName()) : ''); 
 	?>';
 } else og.emailFilters.accountName = '';
 og.lastSelectedRow = {messages:0, mails:0, contacts:0, documents:0, weblinks:0, overview:0, linkedobjs:0, archived:0};

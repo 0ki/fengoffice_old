@@ -43,6 +43,8 @@ class CompanyController extends ApplicationController {
 		ajx_set_no_toolbar(true);
 		ajx_extra_data(array("title" => $company->getName(), 'icon'=>'ico-company'));
 		tpl_assign('company', $company);
+		
+		ApplicationReadLogs::createLog($company, $company->getWorkspaces(), ApplicationReadLogs::ACTION_READ);
 	} // card
 
 	/**
@@ -124,6 +126,11 @@ class CompanyController extends ApplicationController {
 	 * @return null
 	 */
 	function add_client() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$this->setTemplate('add_company');
 
 		if(!Company::canAdd(logged_user(),active_or_personal_project())) {
@@ -143,14 +150,6 @@ class CompanyController extends ApplicationController {
 		tpl_assign('company_data', $company_data);
 
 		if (is_array(array_var($_POST, 'company'))) {
-			$ids = array_var($_POST, "ws_ids", "");
-			$enteredWS = Projects::findByCSVIds($ids);
-			$validWS = array();
-			foreach ($enteredWS as $ws) {
-				if (Company::canAdd(logged_user(), $ws)) {
-					$validWS[] = $ws;
-				}
-			}
 			$company->setFromAttributes($company_data);
 			$company->setClientOfId(owner_company()->getId());
 
@@ -159,17 +158,14 @@ class CompanyController extends ApplicationController {
 				DB::beginWork();
 				$company->save();
 				$company->setTagsFromCSV(array_var($company_data, 'tags'));
-//				$company->removeFromWorkspaces(logged_user()->getWorkspacesQuery());
-				foreach ($validWS as $w) {
-					$company->addToWorkspace($w);
-				}
 
 				$object_controller = new ObjectController();
+				$object_controller->add_to_workspaces($company, !can_manage_contacts(logged_user()));
 			    $object_controller->link_to_new_object($company);
 				$object_controller->add_subscribers($company);
 				$object_controller->add_custom_properties($company);
 				
-				ApplicationLogs::createLog($company, $validWS, ApplicationLogs::ACTION_ADD);
+				ApplicationLogs::createLog($company, $company->getWorkspaces(), ApplicationLogs::ACTION_ADD);
 					
 //				ApplicationLogs::createLog($company, null, ApplicationLogs::ACTION_ADD);
 				DB::commit();
@@ -192,6 +188,11 @@ class CompanyController extends ApplicationController {
 	 * @return null
 	 */
 	function edit_client() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$this->setTemplate('add_company');
 
 		$company = Companies::findById(get_id());
@@ -245,25 +246,8 @@ class CompanyController extends ApplicationController {
 				DB::beginWork();
 				$company->save();
 				$company->setTagsFromCSV(array_var($company_data, 'tags'));
-				/* <multiples workspaces> */
-				$oldws = $company->getWorkspaces();
-				foreach ($oldws as $oldw) {
-					$company->removeFromWorkspace($oldw);
-				}
-				$ids = array_var($_POST, "ws_ids", "");
-				$enteredWS = Projects::findByCSVIds($ids);
-				$validWS = array();
-				foreach ($enteredWS as $ws) {
-					if ($company->canAdd(logged_user(), $ws)) {
-						$validWS[] = $ws;
-					}
-				}
-				foreach ($validWS as $w) {
-					$company->addToWorkspace($w);
-				}
-				/* </multiples workspaces> */
-				
 				$object_controller = new ObjectController();
+				$object_controller->add_to_workspaces($company, !can_manage_contacts(logged_user()));
 			    $object_controller->link_to_new_object($company);
 				$object_controller->add_subscribers($company);
 				$object_controller->add_custom_properties($company);
@@ -289,6 +273,11 @@ class CompanyController extends ApplicationController {
 	 * @return null
 	 */
 	function delete_client() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$company = Companies::findById(get_id());
 		if(!($company instanceof Company)) {
 			flash_error(lang('client dnx'));
@@ -381,6 +370,11 @@ class CompanyController extends ApplicationController {
 	 * @return null
 	 */
 	function edit_logo() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$company = Companies::findById(get_id());
 		if(!($company instanceof Company)) {
 			flash_error(lang('company dnx'));
@@ -549,18 +543,17 @@ class CompanyController extends ApplicationController {
 		
 		$search_for = array_var($_POST,'search_for',false);
 		if ($search_for){
-			$projects = logged_user()->getActiveProjectIdsCSV();
-			//$projects = logged_user()->getWorkspacesQuery(true);
-			
-			$search_results = SearchableObjects::searchByType($search_for, $projects, 'Companies', true, 50);
+			$search_results = SearchableObjects::searchByType($search_for, null, 'Companies', true, 50);
 			$companies = $search_results[0];
 			if ($companies && count($companies) > 0){
 				$result = array();
 				foreach ($companies as $companyResult){
 					$company = $companyResult['object'];
 					$result[] = array(
-						'company_name' => $company->getName(),
-						'company_id' => $company->getId()
+						'name' => $company->getName(),
+						'id' => $company->getId(),
+						'phone' => $company->getPhoneNumber(),
+						'email' => $company->getEmail(),
 					);
 				}
 				ajx_extra_data(array("results" => $result));

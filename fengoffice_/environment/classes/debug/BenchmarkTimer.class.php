@@ -12,7 +12,7 @@
   // | license@php.net so we can mail you a copy immediately.                 |
   // +------------------------------------------------------------------------+
   //
-  // $Id: BenchmarkTimer.class.php,v 1.1.1.1 2007/08/29 02:56:23 msaiz Exp $
+  // $Id: BenchmarkTimer.class.php,v 1.1 2010/01/22 18:11:08 acio Exp $
   //
 
   /**

@@ -20,7 +20,7 @@
  * @author    Jorrit Schippers <jschippers@php.net>
  * @copyright 1997-2008 The PHP Group
  * @license   http://www.php.net/license/3_0.txt PHP License 3.0
- * @version   CVS: $Id: FTP.php,v 1.1 2008/11/27 12:11:14 alvarotm01 Exp $
+ * @version   CVS: $Id: FTP.php,v 1.1 2010/01/22 18:07:07 acio Exp $
  * @link      http://pear.php.net/package/Net_FTP
  * @since     File available since Release 0.0.1
  */

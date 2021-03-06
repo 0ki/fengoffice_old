@@ -61,7 +61,7 @@ og.ogPermHasAnyPermission = function(){
 
 
 //Returns true if the permission has all permissions set to their highest value
-og.ogPermHasAllPermissions = function(){
+og.ogPermHasAllPermissions = function(genid){
 	var allCheckedTrue = true;
 
 	//Checkboxes
@@ -70,7 +70,7 @@ og.ogPermHasAllPermissions = function(){
 		
 	//Radio buttons
 	for (var i = 0; i < this.pr.length; i++)
-		allCheckedTrue = allCheckedTrue && (this.pr[i] == 2);
+		allCheckedTrue = allCheckedTrue && (i == 4 ? this.pr[i] >= 2 : this.pr[i] >= og.ogPermMax(genid));
 	
 	return allCheckedTrue;
 }
@@ -216,7 +216,7 @@ og.ogPermValueChanged = function(genid){
 	//Update the 'All' checkbox if all permissions are set
 	var chk = document.getElementById(genid + 'pAll');
 	if (chk)
-		chk.checked = permission.hasAllPermissions();
+		chk.checked = permission.hasAllPermissions(genid);
 }
 
 
@@ -233,6 +233,22 @@ og.ogPermSelectedWsChanged = function(genid){
 	document.getElementById(genid + 'project_permissions').style.display="block";
 }
 
+// allow up to read-only permission
+og.ogPermReadOnly = function(genid, setReadOnly) {
+	var x = setReadOnly ? 1 : 2;
+	Ext.getDom(genid + "hfPerms").maxPermValue = x;
+	
+	var ws = og.ogPermGetSelectedWs(genid);
+	var permission = permissionsList[genid][ws.id];
+	if (permission) {
+		og.ogPopulatePermissions(genid,permission);
+	}
+};
+
+og.ogPermMax = function(genid) {
+	var ws = og.ogPermGetSelectedWs(genid);
+	return Ext.getDom(genid + "hfPerms").maxPermValue || (ws.g ? 1 : 2);
+};
 
 //	Action to execute when the 'All' checkbox is checked or unchecked
 og.ogPermAllChecked = function(genid,value,wsid){
@@ -241,10 +257,12 @@ og.ogPermAllChecked = function(genid,value,wsid){
 		wsid = ws.id;
 	}
 	var permission;
-	if (value)
-		permission = new og.ogPermission(wsid, [2,2,2,2,2,2,2,2,2], [1,1]);
-	else
+	if (value) {
+		var x = og.ogPermMax(genid);
+		permission = new og.ogPermission(wsid, [x,x,x,x,2,x,x,x,x], [1,1]);
+	} else {
 		permission = new og.ogPermission(wsid, [0,0,0,0,0,0,0,0,0], [0,0]);
+	}
 	
 	permission.isModified = true;
 	permissionsList[genid][wsid] = permission;
@@ -289,10 +307,12 @@ og.ogPermGetSelectedWs = function(genid){
 og.ogPermSetLevel = function(genid,level){
 	var ws = og.ogPermGetSelectedWs(genid);
 	var permission = permissionsList[genid][ws.id];
+	var x = Math.min(level, og.ogPermMax(genid));
 	if (!permission){
-		permission = new og.ogPermission(ws.id, [level,level,level,level,level,level,level,level,level], [0,0]);
-	} else
-		permission.pr = [level,level,level,level,level,level,level,level,level];
+		permission = new og.ogPermission(ws.id, [x,x,x,x,level,x,x,x,x], [0,0]);
+	} else {
+		permission.pr = [x,x,x,x,level,x,x,x,x];
+	}
 	
 	permissionsList[genid][ws.id] = permission;
 	og.ogPopulatePermissions(genid,permission);
@@ -312,12 +332,15 @@ og.ogPopulatePermissions = function(genid, permission){
 		document.getElementById(genid + "chk_" + i).checked = (permission.pc[i] == 1);
 		
 	//Radio buttons
+	var x = og.ogPermMax(genid);
 	for (var i = 0; i < permission.pr.length; i++)
-		og.ogSetCheckedValue(document.getElementsByName(genid + "rg_" + i),permission.pr[i]);
+		og.ogSetCheckedValue(document.getElementsByName(genid + "rg_" + i), i == 4 ? permission.pr[i] : Math.min(x, permission.pr[i]));
+	
+	Ext.get(genid + "project_permissions").select('.readWritePermission').setDisplayed(x >= 2);
 	
 	var chk = document.getElementById(genid + 'pAll');
 	if (chk) 
-		chk.checked = permission.hasAllPermissions();
+		chk.checked = permission.hasAllPermissions(genid);
 }
 
 

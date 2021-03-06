@@ -235,6 +235,7 @@ return array(
 	'error deleted chart' => 'An error occurred while deleting the chart',
 
 	'task priority' => 'Priority',
+	'urgent priority' => 'Urgent',
 	'high priority' => 'High',
 	'normal priority' => 'Normal',
 	'low priority' => 'Low',

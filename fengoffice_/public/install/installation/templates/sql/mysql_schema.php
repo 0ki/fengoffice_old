@@ -24,7 +24,7 @@ CREATE TABLE `<?php echo $table_prefix ?>application_logs` (
   `rel_object_manager` varchar(50) <?php echo $default_collation ?> NOT NULL default '',
   `created_on` datetime NOT NULL default '0000-00-00 00:00:00',
   `created_by_id` int(10) unsigned default NULL,
-  `action` enum('upload','open','close','delete','edit','add','trash','untrash','subscribe','unsubscribe','tag','comment','link','unlink','login','untag','archive','unarchive') <?php echo $default_collation ?> default NULL,
+  `action` enum('upload','open','close','delete','edit','add','trash','untrash','subscribe','unsubscribe','tag','comment','link','unlink','login','logout','untag','archive','unarchive','move','copy','read','download') <?php echo $default_collation ?> default NULL,
   `is_private` tinyint(1) unsigned NOT NULL default '0',
   `is_silent` tinyint(1) unsigned NOT NULL default '0',
   `log_data` text <?php echo $default_collation ?>,
@@ -374,6 +374,7 @@ CREATE TABLE `<?php echo $table_prefix ?>project_milestones` (
   `assigned_to_company_id` smallint(10) NOT NULL default '0',
   `assigned_to_user_id` int(10) unsigned NOT NULL default '0',
   `is_private` tinyint(1) unsigned NOT NULL default '0',
+  `is_urgent` BOOLEAN NOT NULL default '0',
   `completed_on` datetime NOT NULL default '0000-00-00 00:00:00',
   `completed_by_id` int(10) unsigned default NULL,
   `created_on` datetime NOT NULL default '0000-00-00 00:00:00',
@@ -527,6 +528,7 @@ CREATE TABLE `<?php echo $table_prefix ?>users` (
   `personal_project_id` int(10) unsigned NOT NULL default '0',
   `username` varchar(50) <?php echo $default_collation ?> NOT NULL default '',
   `email` varchar(100) <?php echo $default_collation ?> default NULL,
+  `type` varchar(10) <?php echo $default_collation ?> default NULL DEFAULT 'normal',
   `token` varchar(40) <?php echo $default_collation ?> NOT NULL default '',
   `salt` varchar(13) <?php echo $default_collation ?> NOT NULL default '',
   `twister` varchar(10) <?php echo $default_collation ?> NOT NULL default '',
@@ -663,14 +665,9 @@ CREATE TABLE  `<?php echo $table_prefix ?>mail_contents` (
   `uid` varchar(255) <?php echo $default_collation ?> NOT NULL default '',
   `from` varchar(100) <?php echo $default_collation ?> NOT NULL default '',
   `from_name` VARCHAR( 250 ) NULL,
-  `to` text <?php echo $default_collation ?> NOT NULL,
-  `cc` text <?php echo $default_collation ?> NOT NULL,
-  `bcc` text <?php echo $default_collation ?> NOT NULL,
   `sent_date` datetime NOT NULL default '0000-00-00 00:00:00',
   `received_date` datetime NOT NULL default '0000-00-00 00:00:00',
-  `subject` text <?php echo $default_collation ?>,
-  `body_plain` longtext <?php echo $default_collation ?>,
-  `body_html` longtext <?php echo $default_collation ?>,
+  `subject` varchar(255) <?php echo $default_collation ?> NOT NULL default '',
   `has_attachments` int(1) NOT NULL default '0',
   `size` int(10) NOT NULL default '0',
   `state` INT( 1 ) NOT NULL DEFAULT '0' COMMENT '0:nothing, 1:sent; 2:draft',
@@ -684,7 +681,6 @@ CREATE TABLE  `<?php echo $table_prefix ?>mail_contents` (
   `imap_folder_name` varchar(100) <?php echo $default_collation ?> NOT NULL default '',
   `account_email` varchar(100) <?php echo $default_collation ?> default '',
   `content_file_id` varchar(40) <?php echo $default_collation ?> NOT NULL default '',
-  `content` varchar(1) <?php echo $default_collation ?> NOT NULL default '',
   `archived_on` datetime NOT NULL default '0000-00-00 00:00:00',
   `archived_by_id` int(10) unsigned default NULL,
   `message_id` varchar(255) <?php echo $default_collation ?> NOT NULL COMMENT 'Message-Id header',
@@ -698,6 +694,18 @@ CREATE TABLE  `<?php echo $table_prefix ?>mail_contents` (
   KEY `conversation_id` (`conversation_id`),
   KEY `message_id` (`message_id`),
   KEY `state` (`state`)
+) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
+
+CREATE TABLE  `<?php echo $table_prefix ?>mail_datas` (
+  `id` int(10) unsigned NOT NULL,
+  `to` text <?php echo $default_collation ?> NOT NULL,
+  `cc` text <?php echo $default_collation ?> NOT NULL,
+  `bcc` text <?php echo $default_collation ?> NOT NULL,
+  `subject` text <?php echo $default_collation ?>,
+  `content` text <?php echo $default_collation ?>,
+  `body_plain` longtext <?php echo $default_collation ?>,
+  `body_html` longtext <?php echo $default_collation ?>,
+  PRIMARY KEY (`id`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 
 CREATE TABLE  `<?php echo $table_prefix ?>mail_accounts` (
@@ -1167,4 +1175,17 @@ CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>custom_properties_by_co_t
   `co_type_id` INTEGER UNSIGNED NOT NULL,
   `cp_id` INTEGER UNSIGNED NOT NULL,
   PRIMARY KEY (`co_type_id`, `cp_id`)
+) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
+
+CREATE TABLE  `<?php echo $table_prefix ?>application_read_logs` (
+  `id` int(10) unsigned NOT NULL auto_increment,
+  `taken_by_id` int(10) NOT NULL default '0',
+  `rel_object_id` int(10) NOT NULL default '0',
+  `rel_object_manager` varchar(50) collate utf8_unicode_ci NOT NULL default '',
+  `created_on` datetime NOT NULL default '0000-00-00 00:00:00',
+  `created_by_id` int(10) unsigned default NULL,
+  `action` enum('read','download') collate utf8_unicode_ci default NULL,
+  PRIMARY KEY  (`id`),
+  KEY `created_on` (`created_on`),
+  KEY `object_key` (`rel_object_id`, `rel_object_manager`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;

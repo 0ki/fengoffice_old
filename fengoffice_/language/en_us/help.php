@@ -45,6 +45,17 @@ return array(
 							<b>Priority</b>: group tasks by a specific priority (low, normal, high) <br/>
 							<b>Workspace</b>: group tasks by a specific workspace <br/>',
 	
+	'help opt show' => 'Show',
+	'help opt hide' => 'Hide',
+	'context help messages' => 'Context help messages',
+	'enable all chelp messages' => 'To enable all of the context messages closed manually',
+	'enable all chelp messages click' => 'click here',
+	'help manual' => 'Help Manual',
+	'about us' => 'About us',
+	'success enable all context help' => 'Context help re-opened successfully.',
+	'success enable context help' => 'Context help enabled successfully.',
+	'success disable context help' => 'Context help disabled successfully.',
+	
 ); // array
 
 ?>

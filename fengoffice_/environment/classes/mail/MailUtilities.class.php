@@ -296,7 +296,10 @@ class MailUtilities {
 		try {
 			if ($in_reply_to_id != "") {
 				if ($message_id != "") {
-					$conv_mail = MailContents::findOne(array("conditions" => "`message_id` = '$in_reply_to_id' OR `in_reply_to_id` = '$message_id'"));
+					$conv_mail = MailContents::findOne(array("conditions" => "`in_reply_to_id` = '$message_id'"));
+					if (!$conv_mail) {
+						$conv_mail = MailContents::findOne(array("conditions" => "`message_id` = '$in_reply_to_id'"));
+					}
 				} else {
 					$conv_mail = MailContents::findOne(array("conditions" => "`message_id` = '$in_reply_to_id'"));
 				}
@@ -378,8 +381,10 @@ class MailUtilities {
 		
 		$mailsToGet = array();
 		$summary = $pop3->getListing();
+
+		$uids = MailContents::getUidsFromAccount($account->getId());
 		foreach ($summary as $k => $info) {
-			if (!MailContents::mailRecordExists($account->getId(), $info['uidl'])) {
+			if (!in_array($info['uidl'], $uids)) {
 				$mailsToGet[] = $k;
 			}
 		}
@@ -514,6 +519,7 @@ class MailUtilities {
 			throw new Exception($mailer->lastError);
 		}
 		// Send Swift mail
+		
 		foreach ($to as $k => $v) {
 			if (is_array($v)) {
 				if (isset($v[1]) && trim($v[1]) == '') unset($to[$k]);
@@ -521,12 +527,13 @@ class MailUtilities {
 			else if (trim($v) == '') unset($to[$k]);
 		}
 		
-		$ccArr = explode(",", $cc);
+		$ccArr = preg_split('/;|,/', $cc);
 		foreach ($ccArr as $k => $v) {
 			if (trim($v) == '') unset($ccArr[$k]);
 		}
 		if(count($ccArr)>0) $mailer->addCc($ccArr);
-		$bccArr = explode(",", $bcc);
+		
+		$bccArr = preg_split('/;|,/', $bcc);
 		foreach ($bccArr as $k => $v) {
 			if (trim($v) == '') unset($bccArr[$k]);
 		}
@@ -542,7 +549,7 @@ class MailUtilities {
  				$body = str_replace($image_url, $cid, $body);
  			}
  		}
-
+		
  		self::adjustBody($mailer, $type, $body);
  		$mailer->addPart($body, $type); // real body
  		$body = false; // multipart
@@ -607,7 +614,7 @@ class MailUtilities {
 			$imap = new Net_IMAP($ret, "tcp://" . $account->getServer());
 		}
 		if (PEAR::isError($ret)) {
-			Logger::log($ret->getMessage());
+			//Logger::log($ret->getMessage());
 			throw new Exception($ret->getMessage());
 		}
 		$ret = $imap->login($account->getEmail(), self::ENCRYPT_DECRYPT($account->getPassword()));
@@ -619,8 +626,12 @@ class MailUtilities {
 					if ($imap->selectMailbox(utf8_decode($box->getFolderName()))) {
 						$oldUids = $account->getUids($box->getFolderName());
 						$numMessages = $imap->getNumberOfMessages(utf8_decode($box->getFolderName()));
-						if (!is_array($oldUids) || count($oldUids) == 0 || $numMessages == 0) {
+						if (!is_array($oldUids) || count($oldUids) == 0 || PEAR::isError($numMessages) || $numMessages == 0) {
 							$lastReceived = 0;
+							if (PEAR::isError($numMessages)) {
+								//Logger::log($numMessages->getMessage());
+								continue;
+							}
 						} else {
 							$lastReceived = 0;
 							$maxUID = $account->getMaxUID($box->getFolderName());
@@ -651,6 +662,8 @@ class MailUtilities {
 								} 
 							}
 						}
+						
+						$uids = MailContents::getUidsFromAccount($account->getId(), $box->getFolderName());
 
 						// get mails since last received (last received is not included)
 						for ($i = $lastReceived; ($max == 0 || $received < $max) && $i < $numMessages; $i++) {
@@ -659,7 +672,7 @@ class MailUtilities {
 							if (PEAR::isError($summary)) {
 								Logger::log($summary->getMessage());
 							} else {
-								if (!MailContents::mailRecordExists($account->getId(), $summary[0]['UID'], $box->getFolderName())) {
+								if (!in_array($summary[0]['UID'], $uids)) {
 									if ($imap->isDraft($index)) $state = 2;
 									else $state = 0;
 									
@@ -691,12 +704,12 @@ class MailUtilities {
 			$imap = new Net_IMAP($ret, "tcp://" . $account->getServer());
 		}
 		if (PEAR::isError($ret)) {
-			Logger::log($ret->getMessage());
+			//Logger::log($ret->getMessage());
 			throw new Exception($ret->getMessage());
 		}
 		$ret = $imap->login($account->getEmail(), self::ENCRYPT_DECRYPT($account->getPassword()));
 		if ($ret !== true || PEAR::isError($ret)) {
-			Logger::log($ret->getMessage());
+			//Logger::log($ret->getMessage());
 			throw new Exception($ret->getMessage());
 		}
 		$result = array();

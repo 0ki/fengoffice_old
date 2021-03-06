@@ -509,6 +509,7 @@
   	'log unarchive projectfiles' => '\'{0}\' unarchived',
   	'log comment projectfiles' => 'Commented on \'{0}\'',
   	'log subscribe projectfiles' => 'Subscribed to \'{0}\'',
+  	'log subscribe projectfiles data' => 'Subscribed to \'{0}\'',
   	'log unsubscribe projectfiles' => 'Unsubscribed to \'{0}\'',
     'log tag projectfiles' => '\'{0}\' tagged',
     'log link projectfiles' => '\'{0}\' linked',
@@ -625,6 +626,19 @@
   	'log delete users' => 'user {0} deleted',
   	'log add users' => 'user {0} added',
   
+  	'log read projectfiles' => 'Viewed \'{0}\'',
+  	'log download projectfiles' => 'Downloaded \'{0}\'',
+  	'log read projectmessages' => 'Viewed \'{0}\'',
+  	'log read mailcontents' => 'Viewed \'{0}\'',
+  	'log read companies' => 'Viewed \'{0}\'',
+  	'log read contacts' => 'Viewed \'{0}\'',
+  	'log read projectevents' => 'Viewed \'{0}\'',
+  	'log read projecttasks' => 'Viewed \'{0}\'',
+  	'log read projectmilestones' => 'Viewed \'{0}\'',
+  	'log read projectwebpages' => 'Viewed \'{0}\'',
+  	'log read reports' => 'Viewed \'{0}\'',
+  
+  
   	'error assign workspace' => 'Failed to assign template to workspace',
   	'success assign workspaces' => 'Succeeded to assign template to workspace',
   	'success update config value' => 'Configuration values updated',
@@ -677,6 +691,11 @@
   
   	'success reset gui state' => 'User interface reset successfully',
 	'reset gui state' => 'Reset user interface',
+  
+  	'success mark as spam' => '{0} emails moved to Junk',
+  	'error mark as spam' => 'Error moving {0} emails to Junk',
+  	'success mark as ham' => '{0} emails removed from Junk',
+  	'error mark as ham' => 'Error removing {0} emails from Junk',
   ); // array
 
 ?>

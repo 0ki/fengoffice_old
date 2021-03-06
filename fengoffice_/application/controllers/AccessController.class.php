@@ -28,9 +28,8 @@ class AccessController extends ApplicationController {
 	 * @return null
 	 */
 	function login() {
-		include ROOT . "/library/browser/Browser.php";
-		$browser = new Browser();
-		if ($browser->getBrowser() == Browser::BROWSER_IE && $browser->getVersion() < 7) {
+		include_once ROOT . "/library/browser/Browser.php";
+		if (Browser::instance()->getBrowser() == Browser::BROWSER_IE && Browser::instance()->getVersion() < 7) {
 			flash_error(lang("ie browser outdated"));
 		}
 		$this->addHelper('form');
@@ -89,8 +88,17 @@ class AccessController extends ApplicationController {
 				tpl_assign('error', new Error(lang('invalid login data')));
 				$this->render();
 			} // if
-
-			if(!$user->isValidPassword($password)) {
+	
+			// If ldap authentication is enabled ldap.config.php will return true.
+			$config_ldap_file_path = ROOT . '/config/ldap.config.php'; 
+			$config_ldap_is_set = file_exists($config_ldap_file_path) && include_once($config_ldap_file_path);			
+			if($config_ldap_is_set === true) {
+			  $userIsValidPassword = $user->isValidPasswordLdap($username, $password, $config_ldap);
+			} else {
+			  $userIsValidPassword = $user->isValidPassword($password);
+			}
+		
+			if (!$userIsValidPassword) {
 				tpl_assign('error', new Error(lang('invalid login data')));
 				$this->render();
 			} // if
@@ -173,7 +181,6 @@ class AccessController extends ApplicationController {
 			flash_error(lang("ie browser outdated"));
 		}
 		if (is_ajax_request()) {
-			$active_proj = array_var($_GET,'active_project', 0);
 			$timezone =  array_var($_GET,'utz');
 			if ($timezone && $timezone != ''){
 				$usu = logged_user();
@@ -182,7 +189,7 @@ class AccessController extends ApplicationController {
 					$usu->save();
 				}
 			}
-			$this->redirectTo('dashboard', 'index', array('active_project' => $active_proj));
+			$this->redirectTo('dashboard', 'index');
 		} else {
 			if (!logged_user() instanceof User) {
 				$this->redirectTo('access', 'login');
@@ -387,6 +394,7 @@ class AccessController extends ApplicationController {
 	 * @return null
 	 */
 	function logout() {
+		ApplicationLogs::createLog(logged_user(),null,ApplicationLogs::ACTION_LOGOUT,false,false,true,get_ip_address());
 		CompanyWebsite::instance()->logUserOut();
 		$this->redirectTo('access', 'login');
 	} // logout
@@ -481,6 +489,7 @@ class AccessController extends ApplicationController {
 				$administrator->setCanAddMailAccounts(true);
 				$administrator->setAutoAssign(false);
 				$administrator->setPersonalProjectId(1);
+				$administrator->setType('admin');
 
 				$administrator->save();
 
@@ -500,7 +509,7 @@ class AccessController extends ApplicationController {
 				$project = new Project();
 				$project->setId(1);
 				$project->setP1(1);
-				$project->setName($administrator->getUsername().'_personal');
+				$project->setName(new_personal_project_name($administrator->getUsername()));
 				$project->setDescription(lang('files'));
 				$project->setCreatedById($administrator->getId());
 
@@ -536,7 +545,7 @@ class AccessController extends ApplicationController {
 	
 	function get_javascript_translation() {
 		$content = "/* start */\n";
-		$fileDir = "./language/" . Localization::instance()->getLocale();
+		$fileDir = ROOT . "/language/" . Localization::instance()->getLocale();
 		
 		//Get Feng Office translation files
 		$filenames = get_files($fileDir, "js");

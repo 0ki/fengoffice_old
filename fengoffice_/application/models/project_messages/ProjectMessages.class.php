@@ -82,11 +82,12 @@ class ProjectMessages extends BaseProjectMessages {
 		}
 
 		if ($project instanceof Project) {
-			$pids = $project->getAllSubWorkspacesQuery(!$archived, logged_user());
+			$pids = $project->getAllSubWorkspacesQuery(!$archived);
+			$wsConditions = " AND " . self::getWorkspaceString($pids);
 		} else {
-			$pids = logged_user()->getWorkspacesQuery(!$archived);
+			$wsConditions = "";
 		}
-		$messageConditions = self::getWorkspaceString($pids);
+		
 
 		if (!isset($tag) || $tag == '' || $tag == null) {
 			$tagstr = "";
@@ -98,10 +99,10 @@ class ProjectMessages extends BaseProjectMessages {
 		
 		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectMessages::instance(),ACCESS_LEVEL_READ, logged_user(), 'project_id') .')';
 
-		if ($archived) $archived_cond = "`archived_by_id` <> 0 AND";
-		else $archived_cond = "`archived_by_id` = 0 AND";
+		if ($archived) $archived_cond = "`archived_by_id` <> 0";
+		else $archived_cond = "`archived_by_id` = 0";
 		
-		$conditions = "`trashed_by_id` = 0 AND $archived_cond $messageConditions $tagstr  $permissions";
+		$conditions = "`trashed_by_id` = 0 AND $archived_cond $wsConditions $tagstr  $permissions";
 		$page = (integer) ($start / $limit) + 1;
 		$order = "$order_crit $order_dir";
 

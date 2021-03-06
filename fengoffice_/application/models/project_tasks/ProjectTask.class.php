@@ -348,12 +348,13 @@ class ProjectTask extends BaseProjectTask {
 		if(can_write($user,$this)) {
 			return true;
 		} // if
-		if($this->isAsignedToUserOrCompany($user)) {
-			return true;
-		}
 		$task_list = $this->getParent();
 		return $task_list instanceof ProjectTask ? $task_list->canEdit($user) : false;
 	} // canEdit
+	
+	function canAddTimeslot($user) {
+		return $this->canChangeStatus($user);
+	}
 	
 	/**
 	 * Check if specific user can change task status

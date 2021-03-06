@@ -104,11 +104,20 @@ class EventController extends ApplicationController {
 			flash_error('Missing parameters');
 			ajx_current("back");
 		} else {
-			$conditions = array('event_id' => $event_id, 'user_id' => $user_id);
-			$inv = EventInvitations::findById($conditions);
+			$conditions = array('conditions' => "`event_id` = " . DB::escape($event_id) . " AND `user_id` = ". DB::escape($user_id));
+			$inv = EventInvitations::findOne($conditions);
 			if ($inv != null) {
-				$inv->setInvitationState($attendance);
-				$inv->save();
+				try {
+					DB::beginWork();
+					$inv->setInvitationState($attendance);
+					$inv->save();
+					DB::commit();
+				} catch (Exception $e) {
+					DB::rollback();
+					flash_error($e->getMessage());
+					ajx_current("empty");
+					return;
+				}
 			}
 			if ($from_post_get) {
 				// Notify creator (only when invitation is accepted or declined)
@@ -263,8 +272,8 @@ class EventController extends ApplicationController {
 			$data['duration'] = $durationstamp;
 			
 			$data['users_to_invite'] = array();
-			// owner user always is invited and confirms assistance
-			$data['users_to_invite'][logged_user()->getId()] = 1; 
+			// owner user always is invited and confirms assistance (only for popup quick add)
+			if (array_var($_POST, 'popup')) $data['users_to_invite'][logged_user()->getId()] = 1; 
 
 			$compstr = 'invite_user_';
 			foreach ($event_data as $k => $v) {
@@ -286,7 +295,12 @@ class EventController extends ApplicationController {
 			return $data;
 	}
 	
-	function add(){		
+	function add() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		if(! (ProjectEvent::canAdd(logged_user(), active_or_personal_project()))){	    	
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
@@ -319,7 +333,7 @@ class EventController extends ApplicationController {
 			$event_data = array(
 				'month' => isset($_GET['month']) ? $_GET['month'] : date('n', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600),
 				'year' => isset($_GET['year']) ? $_GET['year'] : date('Y', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600),
-				'day' => isset($_GET['day']) ? $_GET['day'] : date('n', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600),
+				'day' => isset($_GET['day']) ? $_GET['day'] : date('j', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600),
 				'hour' => $hour,
 				'minute' => $minute,
 				'pm' => (isset($pm) ? $pm : 0),
@@ -410,7 +424,12 @@ class EventController extends ApplicationController {
 		}
 	}
 	
-	function delete(){
+	function delete() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		//check auth
 		$event = ProjectEvents::findById(get_id());
 		if ($event != null) {
@@ -467,13 +486,18 @@ class EventController extends ApplicationController {
 			          	
 		} catch(Exception $e) {
 			DB::rollback();
-			Logger::log($e->getTraceAsString());
+			//Logger::log($e->getTraceAsString());
 			flash_error(lang('error delete event'));
 			ajx_current("empty");
 		} // try
 	}
 	
-	function archive(){
+	function archive() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		//check auth
 		$event = ProjectEvents::findById(get_id());
 		if ($event != null) {
@@ -518,7 +542,7 @@ class EventController extends ApplicationController {
 			          	
 		} catch(Exception $e) {
 			DB::rollback();
-			Logger::log($e->getTraceAsString());
+			//Logger::log($e->getTraceAsString());
 			flash_error(lang('error archive objects'));
 			ajx_current("empty");
 		} // try
@@ -551,6 +575,21 @@ class EventController extends ApplicationController {
 	    	$this->getUserPreferences($view_type, $user_filter, $status_filter);
 	    
 	    $this->setTemplate('viewweek');
+		$this->setViewVariables($view_type, $user_filter, $status_filter);
+	}
+	
+	function viewweek5days($view_type = null, $user_filter = null, $status_filter = null){
+		$tag = active_tag();
+		tpl_assign('tags',$tag);	
+		tpl_assign('cal_action','viewdate');
+		ajx_set_no_toolbar(true);
+		
+		$this->getActualDateToShow($day, $month, $year);
+		
+	    if ($view_type == null)
+	    	$this->getUserPreferences($view_type, $user_filter, $status_filter);
+	    
+	    $this->setTemplate('viewweek5days');
 		$this->setViewVariables($view_type, $user_filter, $status_filter);
 	}
 	
@@ -612,6 +651,7 @@ class EventController extends ApplicationController {
 		$this->getUserPreferences($view_type, $user_filter, $status_filter);
 		if($view_type == 'viewdate') $this->viewdate($view_type, $user_filter, $status_filter);
 		else if($view_type == 'index') $this->index($view_type, $user_filter, $status_filter);
+		else if($view_type == 'viewweek5days') $this->viewweek5days($view_type, $user_filter, $status_filter);
 		else $this->viewweek($view_type, $user_filter, $status_filter);
 	}
 	
@@ -629,7 +669,7 @@ class EventController extends ApplicationController {
 		    }
 
 		 	//read object for this user
-			$event->setIsRead(logged_user()->getId(), true);		    	
+			$event->setIsRead(logged_user()->getId(), true);
 			$this->setTemplate('viewevent');
 			$tag = active_tag();
 			tpl_assign('tags',$tag);	
@@ -638,6 +678,8 @@ class EventController extends ApplicationController {
 			tpl_assign('view', array_var($_GET, 'view','month'));	
 			tpl_assign('active_projects',logged_user()->getActiveProjects());
 			ajx_extra_data(array("title" => $event->getSubject(), 'icon'=>'ico-calendar'));
+			
+			ApplicationReadLogs::createLog($event, $event->getWorkspaces(), ApplicationReadLogs::ACTION_READ);
 	    } else {
 	    	flash_error(lang('event dnx'));
 			ajx_current("empty");
@@ -652,6 +694,11 @@ class EventController extends ApplicationController {
 	
 		
 	function edit() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$this->setTemplate('event');
 		$event = ProjectEvents::findById(get_id());
 		
@@ -799,15 +846,7 @@ class EventController extends ApplicationController {
 				$object_controller->add_custom_properties($event);
 				$object_controller->add_reminders($event);
 			 	
-				$ro = ReadObjects::findAll(array('conditions' => '`rel_object_id` = ' . $event->getId() . 
-					' AND `rel_object_manager` = \'' . get_class($event->manager()) . '\' AND `user_id` <> ' . logged_user()->getId()));
-				if (is_array($ro) && count($ro) > 0){
-					foreach ($ro as $r){
-						if ($r instanceof ReadObject){							
-							$r->delete();
-						}
-					}
-				}
+				$event->resetIsRead();
 				
 	          	ApplicationLogs::createLog($event, $event->getWorkspaces(), ApplicationLogs::ACTION_EDIT);
 	          	DB::commit();
@@ -829,6 +868,11 @@ class EventController extends ApplicationController {
 	} // edit
 	
 	function tag_events() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$ids = explode(',', array_var($_GET, 'ids', ''));
 		foreach ($ids as $id) {
 			$event = ProjectEvents::findById($id);
@@ -842,6 +886,11 @@ class EventController extends ApplicationController {
 	}
 	
 	function untag_events() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$ids = explode(',', array_var($_GET, 'ids', ''));
 		$tag = array_var($_GET,'tags');
 		foreach ($ids as $id) {
@@ -902,7 +951,7 @@ class EventController extends ApplicationController {
 							$keep = true;
 						}
 					}
-					if ($user->getId() == $actual_user_id || !$keep) {
+					if (!$keep) {
 						unset($users[$k]);	
 					} 
 				}
@@ -919,7 +968,7 @@ class EventController extends ApplicationController {
 							'id' => $user->getId(),
 							'name' => $user->getDisplayName(),
 							'avatar_url'=>$user->getAvatarUrl(),
-							'invited' => $evid == null ? 1 : (EventInvitations::findOne(array('conditions' => "`event_id` = $evid and `user_id` = ".$user->getId())) != null),
+							'invited' => $evid == 0 ? ($user->getId() == $actual_user_id) : (EventInvitations::findOne(array('conditions' => "`event_id` = $evid and `user_id` = ".$user->getId())) != null),
 							'mail' => $user->getEmail()
 						);			
 					}
@@ -1046,7 +1095,7 @@ class EventController extends ApplicationController {
 		} else {
 			$cal_name = Projects::findById($ws->getId())->getName();
 			if (isset($_GET['inc_subws']) && $_GET['inc_subws'] == 'true') {
-				$ws_ids = $ws->getAllSubWorkspacesQuery(true, logged_user());
+				$ws_ids = $ws->getAllSubWorkspacesQuery(true, logged_user(), ProjectUsers::instance()->getTableName(true).".`can_read_events` = 1");
 			} else {
 				$ws_ids = $ws->getId();
 			}			
@@ -1060,6 +1109,11 @@ class EventController extends ApplicationController {
 	}
 	
 	function change_duration() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$event = ProjectEvents::findById(get_id());
 		if(!$event->canEdit(logged_user())){	    	
 			flash_error(lang('no access permissions'));
@@ -1089,6 +1143,11 @@ class EventController extends ApplicationController {
 	}
 	
 	function move_event() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$event = ProjectEvents::findById(get_id());
 		if(!$event->canEdit(logged_user())){	    	
 			flash_error(lang('no access permissions'));
@@ -1147,7 +1206,7 @@ class EventController extends ApplicationController {
 	    $event->setDuration($new_duration->format("Y-m-d H:i:s"));
 	    $event->save();
 		if (!$is_read) {
-			ReadObjects::delete(array("conditions" => "`rel_object_manager` = 'ProjectEvents' AND `rel_object_id` = " . $event->getId() . " AND `user_id` = " . logged_user()->getId()));
+			$event->setIsRead(logged_user()->getId(), false);
 		}
 	    DB::commit();
     
@@ -1206,7 +1265,7 @@ class EventController extends ApplicationController {
  *   copyright            : (C) 2001 The phpBB Group
  *   email                : support@phpbb.com
  *
- *   $Id: EventController.class.php,v 1.104.2.4 2009/12/18 04:14:58 idesoto Exp $
+ *   $Id: EventController.class.php,v 1.7 2010/03/15 20:50:00 alvaro Exp $
  *
  ***************************************************************************/
 

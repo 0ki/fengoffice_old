@@ -22,6 +22,7 @@ abstract class BaseProjectMilestones extends ProjectDataObjects {
     	'assigned_to_company_id' => DATA_TYPE_INTEGER,
     	'assigned_to_user_id' => DATA_TYPE_INTEGER,
     	'is_private' => DATA_TYPE_BOOLEAN,
+    	'is_urgent' => DATA_TYPE_BOOLEAN,
     	'completed_on' => DATA_TYPE_DATETIME,
     	'completed_by_id' => DATA_TYPE_INTEGER,
     	'created_on' => DATA_TYPE_DATETIME,
@@ -155,7 +156,8 @@ abstract class BaseProjectMilestones extends ProjectDataObjects {
     function getTemplateObjectProperties() {
     	return array(
     		array('id' => 'name', 'type' => self::getColumnType('name')),
-    		array('id' => 'description', 'type' => self::getColumnType('description'))
+    		array('id' => 'description', 'type' => self::getColumnType('description')),
+    		array('id' => 'due_date', 'type' => self::getColumnType('due_date')),
     	);
     } // getTemplateObjectProperties
 

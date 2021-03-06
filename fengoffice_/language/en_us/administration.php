@@ -169,6 +169,7 @@
   	'user ws config option name work_day_start_time' => 'Work day start time',
 	'user ws config option desc work_day_start_time' => 'Specifies the time when work day starts',
   	'user ws config option name show dashboard info widget' => 'Show workspace information widget',
+  	'user ws config option name show activity widget' => 'Show activity widget',
   	
   	'user ws config option name my tasks is default view' => 'Tasks assigned to me is the default view',
   	'user ws config option desc my tasks is default view' => 'If no is selected, the default view of the task panel will show all tasks',
@@ -183,9 +184,9 @@
 	'user ws config option desc show_week_numbers' => 'Shows the week numbers on the monthly and weekly views.',
   
   	'user ws config option name date_format' => 'Date format',
-  	'user ws config option desc date_format' => 'Template format to be applied to date values. Code explanations: d = Day number (2 digits with leading zeros), D = Day name (three letters), j = Day number, l = Complete day name, m = Month number (with leading zeros), M = Month name (three letters), n = Month number, F = Complete month name, Y = Year (4 digits), y = Year (2 digits). Remember that you refresh is required to apply the changes.',
+  	'user ws config option desc date_format' => 'Template format to be applied to date values. d = day, m = month, y = year. You need to refresh in order to apply the changes.',
   	'user ws config option name descriptive_date_format' => 'Descriptive date format',
-  	'user ws config option desc descriptive_date_format' => 'Template format to be applied to descriptive date values. Code explanations: same as \'Date Format\'. Refresh required.',
+  	'user ws config option desc descriptive_date_format' => 'Template format to be applied to descriptive date values. Code explanations: d = Day number (2 digits with leading zeros), D = Day name (three letters), j = Day number, l = Complete day name, m = Month number (with leading zeros), M = Month name (three letters), n = Month number, F = Complete month name, Y = Year (4 digits), y = Year (2 digits). Refresh required.',
 
   	'user ws config option name show_context_help' => 'Show contextual help',
   	'user ws config option desc show_context_help' => 'Select if you want to always view help, never view it, or view it until each box is closed.',
@@ -310,6 +311,8 @@
   	'user ws config option desc autodetect_time_zone' => 'When this option is enabled, the user\'s timezone will be autodetected from browser.',
   	'user ws config option name search_engine' => 'Search engine',
   	'user ws config option desc search_engine' => 'Choose which search engine to use. "Full" will do a more exhaustive search but will take much longer than "Quick".',
+	'user ws config option name activity widget elements' => 'Activity widget size',
+	'user ws config option desc activity widget elements' => 'Number of items displayed in Activity widget.',
   
   	'search engine mysql like' => 'Full',
   	'search engine mysql match' => 'Quick',

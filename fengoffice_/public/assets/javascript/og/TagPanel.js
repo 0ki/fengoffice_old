@@ -47,7 +47,7 @@ og.TagPanel = function(config) {
 							if (text == '') {
 								alert(lang("you must enter a name"));
 							} else {
-								this.renameTag(this.getSelectedTag().name, text);
+								this.renameTag(this.getSelectedTag(), text);
 							}
 						}
 					},
@@ -61,7 +61,7 @@ og.TagPanel = function(config) {
 			id: 'delete',
 			handler: function() {
 				if (confirm(lang('confirm delete tag'))) {
-					this.deleteTag(this.getSelectedTag().name);
+					this.deleteTag(this.getSelectedTag());
 				}
 			},
 			scope: this.tree
@@ -187,8 +187,13 @@ og.TagTree = function(config) {
 
 Ext.extend(og.TagTree, Ext.tree.TreePanel, {
 
+	getNode: function(tagname) {
+		if (!tagname) return this.tags;
+		return this.getNodeById(this.nameToId(tagname));
+	},
+	
 	removeTag: function(tag) {
-		var node = this.getNodeById(this.nameToId(tag.name));
+		var node = this.getNode(tag.name);
 		if (node) {
 			node.unselect();
 			Ext.fly(node.ui.elNode).ghost('l', {
@@ -198,7 +203,7 @@ Ext.extend(og.TagTree, Ext.tree.TreePanel, {
 	},
 
 	addTag : function(tag){
-		var exists = this.getNodeById(this.nameToId(tag.name));
+		var exists = this.getNode(tag.name);
 		if (exists) {
 			return;
 		}
@@ -245,9 +250,9 @@ Ext.extend(og.TagTree, Ext.tree.TreePanel, {
 	getSelectedTag: function() {
 		var s = this.getSelectionModel().getSelectedNode();
 		if (s) {
-			return this.getSelectionModel().getSelectedNode().tag;
+			return this.getSelectionModel().getSelectedNode().tag.name;
 		} else {
-			return {name: ''};
+			return '';
 		}
 	},
 	
@@ -265,7 +270,7 @@ Ext.extend(og.TagTree, Ext.tree.TreePanel, {
 		if (!id) {
 			this.tags.select();
 		} else {
-			var node = this.getNodeById(this.nameToId(id));
+			var node = this.getNode(id);
 			if (node) {
 				node.select();
 			}
@@ -273,7 +278,7 @@ Ext.extend(og.TagTree, Ext.tree.TreePanel, {
 	},
 	
 	hasTag: function(tagname) {
-		return this.getNodeById(this.nameToId(tagname));
+		return this.getNode(tagname);
 	},
 	
 	loadTags: function(url, config) {
@@ -296,9 +301,9 @@ Ext.extend(og.TagTree, Ext.tree.TreePanel, {
 						
 						this.tags.expand();
 						
-						if (this.hasTag(selected.name)) {
+						if (this.hasTag(selected)) {
 							this.pauseEvents = true;
-							this.select(selected.name);
+							this.select(selected);
 							this.pauseEvents = false;
 						} else {
 							this.pauseEvents = true;
@@ -350,11 +355,15 @@ Ext.extend(og.TagTree, Ext.tree.TreePanel, {
 		this.tags.getUI().show();
 	},
 	
+	isSelected: function(tagname) {
+		return this.getSelectedTag() == tagname;
+	},
+	
 	renameTag: function(tagname, newTagname) {
 		if (!this.hasTag(newTagname) || confirm(lang('confirm merge tags', tagname, newTagname))) {
 			this.loadTags(og.getUrl('tag', 'rename_tag', {tag: tagname, new_tag: newTagname}), {
 				callback: function() {
-					this.fireEvent('tagselect', this.tags.tag);
+					this.fireEvent('tagselect', this.tags.tag.name);
 				},
 				scope: this
 			});
@@ -375,7 +384,7 @@ Ext.extend(og.TagTree, Ext.tree.TreePanel, {
 	deleteTag: function(name) {
 		this.loadTags(og.getUrl('tag', 'delete_tag_by_name', {tag: name}), {
 			callback: function() {
-				this.fireEvent('tagselect', this.tags.tag);
+				this.fireEvent('tagselect', this.tags.tag.name);
 			},
 			scope: this
 		});

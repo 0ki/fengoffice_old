@@ -103,13 +103,26 @@ class Tags extends BaseTags {
 	 * @return array
 	 */
 	function getTagNames($order_by = 'count') {
+		$pids = logged_user()->getWorkspacesQuery();
+		$tagConditions = " (`rel_object_manager` <> 'Contacts' AND `rel_object_id` IN
+			(SELECT `object_id` FROM `" . TABLE_PREFIX . "workspace_objects`
+			 WHERE `object_manager` = `rel_object_manager` AND `workspace_id` IN ($pids)))
+			OR (`rel_object_manager` = 'Contacts' AND `rel_object_id` IN
+			(SELECT `contact_id` FROM `" . TABLE_PREFIX . "project_contacts` obj
+			 WHERE `project_id` IN ($pids)))";
+	
 		$query = '';
 		switch ($order_by){
 			case 'name':
-				$query = 'SELECT DISTINCT `tag` as `name`  FROM ' .  self::instance()->getTableName(true) . ' GROUP BY `tag` ORDER BY  `tag` ';
+				$query = 'SELECT DISTINCT `tag` as `name`  FROM '
+					. self::instance()->getTableName(true)
+					. ' WHERE' . $tagConditions . ' GROUP BY `tag` ORDER BY  `tag` ';
 				break ;
 			case 'count':
-				$query = 'SELECT DISTINCT `tag` as `name`, count(`tag`) `count` FROM ' .  self::instance()->getTableName(true) . ' GROUP BY `tag` ORDER BY `count` DESC , `tag`' ;
+				$query = 'SELECT DISTINCT `tag` as `name`, count(`tag`) `count` FROM '
+					. self::instance()->getTableName(true)
+					. ' WHERE' . $tagConditions
+					. ' GROUP BY `tag` ORDER BY `count` DESC , `tag`' ;
 				break ;
 			default:
 				throw new Exception('Invalid tag sort criteria');

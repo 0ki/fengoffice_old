@@ -451,6 +451,7 @@
 	'log unlink projectfolders data' => '\'{0}\' desvinculado de {1}',
 	'log comment projectfiles' => 'Comentado em \'{0}\'',
 	'log subscribe projectfiles' => 'Inscrito em \'{0}\'',
+	'log subscribe projectfiles data' => 'Inscrito em \'{0}\'',
 	'log unsubscribe projectfiles' => 'Cancelado inscrição em \'{0}\'',
 	'log tag projectfiles' => '\'{0}\' marcado',
 	'log link projectfiles' => '\'{0}\' vinculado',

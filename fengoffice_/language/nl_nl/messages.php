@@ -405,6 +405,7 @@
 	'log untrash projectfiles' => '\'{0}\' uit de prullenbak gevist',
 	'log comment projectfiles' => 'Commentaar op \'{0}\' ',
 	'log subscribe projectfiles' => 'Geabonneerd op \'{0}\'',
+	'log subscribe projectfiles data' => 'Geabonneerd op \'{0}\'',
 	'log unsubscribe projectfiles' => 'Abonnement op \'{0}\' opgezegd',
 	'log tag projectfiles' => '\'{0}\' gelabeld',
 	'log link projectfiles' => '\'{0}\' gekoppeld',

@@ -9,7 +9,7 @@
  * @author    Damian Alejandro Fernandez Sosa <damlists@cnba.uba.ar>
  * @copyright 1997-2003 The PHP Group
  * @license   PHP license
- * @version   CVS: $Id: IMAPProtocol.php,v 1.3 2009/07/24 21:01:02 alvarotm01 Exp $
+ * @version   CVS: $Id: IMAPProtocol.php,v 1.2 2010/03/09 14:23:27 alvaro Exp $
  * @link      http://pear.php.net/package/Net_IMAP
  */
 
@@ -2341,6 +2341,7 @@ class Net_IMAPProtocol
 
         if (is_array($params_arr)) {
             foreach ($params_arr as $index => $address_arr) {
+            	if (!is_array($address_arr) || count($address_arr) == 0 || !isset($address_arr[2]) || !isset($address_arr[3])) continue;
                 $personal_name  = $address_arr[0];
                 $at_domain_list = $address_arr[1];
                 $mailbox_name   = $address_arr[2];

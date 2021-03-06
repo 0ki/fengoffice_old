@@ -109,7 +109,7 @@
 			<br />
 		</div>
 		<?php } ?>
-		<?php echo '<div style="float:left;">' .select_project2('task[project_id]', $project instanceof Project ? $project->getId() : 0, $genid) .'</div>'?>
+		<?php echo '<div style="float:left;">' .select_project2('ws_ids', $project instanceof Project ? $project->getId() : 0, $genid) .'</div>'?>
 
 		<?php if (!$task->isNew()) { ?>
 			<div style="float:left; padding:5px;"><?php echo checkbox_field('task[apply_ws_subtasks]', array_var($task_data, 'apply_ws_subtasks', false), array("id" => "$genid-checkapplyws")) ?><label class="checkbox" for="<?php echo "$genid-checkapplyws" ?>"><?php echo lang('apply workspace to subtasks') ?></label></div>
@@ -270,33 +270,6 @@
 		<input type="hidden" name="task[from_template_id]" value="<?php echo $base_task->getId() ?>" />
 	<?php } ?>
 <?php } // if ?>
-  
-	<?php /*<div style="display:none" id="<?php echo $genid ?>add_task_handins_div">
-	<fieldset>
-    <legend><?php echo lang('handins') ?></legend>
-	  <table class="blank">
-	    <tr>
-	      <th><?php echo lang('handin') ?>:</th>
-	      <th><?php echo lang('assign to') ?>:</th>
-	    </tr>
-		<?php for($i = 0; $i < 4; $i++) { ?>
-	    <tr style="background: <?php echo $i % 2 ? '#fff' : '#e8e8e8' ?>">
-	      <td>      
-	        <?php 
-	        if($task->isNew())
-	        	$attr =  array('class' => 'long');
-	        else 
-	        	 $attr = array('class' => 'long', 'disabled' => 'true');
-	        echo text_field("task[handin$i][title]", array_var($task_data["handin$i"], 'title'), $attr) ?>
-	      </td>
-	      <td>
-	        <?php echo assign_to_select_box("task[handin$i][assigned_to]", active_or_personal_project(), array_var($task_data["handin$i"], 'assigned_to'), $task->isNew()?null:array( 'disabled' => 'true')) ?>
-	      </td>
-	    </tr>
-		<?php } // for ?>
-	  </table>
-	</fieldset>
-  	</div> */ ?>
   	
 	<div id="<?php echo $genid ?>task_repeat_options_div" style="display:none">
 		<fieldset>

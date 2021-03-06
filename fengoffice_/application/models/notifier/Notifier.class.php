@@ -80,29 +80,19 @@ class Notifier {
 		if (!isset($descArgs)) {
 			$descArgs = array();
 		}
-		if ($object->columnExists('text')) {
-			$text = "\r\n" . $object->getColumnValue('text');
-			$text = str_replace("\r\n", "\n", $text);
-			$text = str_replace("\r", "\n", $text);
-			$text = str_replace("\n", "\r\n>", $text);
+		if ($object->columnExists('text') && trim($object->getColumnValue('text'))) {
+			$text = escape_html_whitespace(convert_to_links(clean("\n" . $object->getColumnValue('text'))));
 			$properties['text'] = $text;
 		}
-		$properties['view '.$type] = str_replace('&amp;', '&', $object->getViewUrl());
 		$properties['unique id'] = $uid;
-		if ($object->columnExists('description')) {
-			$text = "\r\n" . $object->getColumnValue('description');
-			$text = str_replace("\r\n", "\n", $text);
-			$text = str_replace("\r", "\n", $text);
-			$text = str_replace("\n", "\r\n>", $text);
+		if ($object->columnExists('description') && trim($object->getColumnValue('description'))) {
+			$text = escape_html_whitespace(convert_to_links(clean("\n" . $object->getColumnValue('description'))));
 			$properties['description'] = $text;
 		}
 		if ($object instanceof ProjectFile && $object->getType() == ProjectFiles::TYPE_DOCUMENT) {
 			$revision = $object->getLastRevision();
 			if (trim($revision->getComment())) {
-				$text = "\r\n" . $revision->getComment();
-				$text = str_replace("\r\n", "\n", $text);
-				$text = str_replace("\r", "\n", $text);
-				$text = str_replace("\n", "\r\n>", $text);
+				$text = escape_html_whitespace(convert_to_links(clean("\n" . $revision->getComment())));
 				$properties['revision comment'] = $text;
 			}
 		}
@@ -116,15 +106,23 @@ class Notifier {
 				// send notification on user's locale and with user info
 				$locale = $user->getLocale();
 				Localization::instance()->loadSettings($locale, ROOT . '/language');
-				$workspaces = implode(", ", $object->getUserWorkspacePaths($user));
-				$properties['workspace'] = $workspaces;
+				$workspaces = $object->getUserWorkspaces($user);
+				$ws = "";
+				foreach ($workspaces as $w) {
+					if ($ws) $ws .= ", ";
+					$css = get_workspace_css_properties($w->getColor());
+					$ws .= "<span style=\"$css\">" . $w->getPath() . "</span>";
+				}
+				$properties['workspace'] = $ws;
+				
+				tpl_assign('links', array());				
 				tpl_assign('properties', $properties);
 				tpl_assign('description', langA($description, $descArgs));
 				$from = self::prepareEmailAddress($senderemail, $sendername);
 				$emails[] = array(
 					"to" => array(self::prepareEmailAddress($user->getEmail(), $user->getDisplayName())),
 					"from" => self::prepareEmailAddress($senderemail, $sendername),
-					"subject" => $subject = lang("$notification notification $type", $name, $uid, $typename, $workspaces),
+					"subject" => $subject = lang("$notification notification $type", $name, $uid, $typename, $ws),
 					"body" => tpl_fetch(get_template_path('general', 'notifier'))
 				);
 			}
@@ -288,7 +286,7 @@ class Notifier {
 		$description = lang("$notification notification event desc", $object->getObjectName(), $sender->getDisplayName());
 		
 		$properties['unique id'] = $uid;
-		$properties['view event'] = str_replace('&amp;', '&', $object->getViewUrl());
+		//$properties['view event'] = str_replace('&amp;', '&', $object->getViewUrl());
 
 		tpl_assign('object', $object);
 		tpl_assign('description', $description);
@@ -300,23 +298,34 @@ class Notifier {
 				// send notification on user's locale and with user info
 				$locale = $user->getLocale();
 				Localization::instance()->loadSettings($locale, ROOT . '/language');
-				$workspaces = implode(", ", $object->getUserWorkspaceNames($user));
-				$properties['workspace'] = $workspaces;
+				$workspaces = $object->getUserWorkspaces($user);
+				$ws = "";
+				foreach ($workspaces as $w) {
+					if ($ws) $ws .= ", ";
+					$css = get_workspace_css_properties($w->getColor());
+					$ws .= "<span style=\"$css\">" . $w->getPath() . "</span>";
+				}
+				$properties['workspace'] = $ws;
 				$properties['date'] = Localization::instance()->formatDescriptiveDate($object->getStart(), $user->getTimezone());
 				if ($object->getTypeId() != 2) {
 					$properties['time'] = Localization::instance()->formatTime($object->getStart(), $user->getTimezone());
 				}
 		
 				$properties['accept or reject invitation help, click on one of the links below'] = '';
-				$properties['accept invitation'] = get_url('event', 'change_invitation_state', array('at' => 1, 'e' => $object->getId(), 'u' => $user->getId()));
-				$properties['reject invitation'] = get_url('event', 'change_invitation_state', array('at' => 2, 'e' => $object->getId(), 'u' => $user->getId()));
+			//	$properties['accept invitation'] = get_url('event', 'change_invitation_state', array('at' => 1, 'e' => $object->getId(), 'u' => $user->getId()));
+			//	$properties['reject invitation'] = get_url('event', 'change_invitation_state', array('at' => 2, 'e' => $object->getId(), 'u' => $user->getId()));
+				$links = array(
+					array('img' => get_image_url("/16x16/complete.png"), 'text' => lang('accept invitation'), 'url' => get_url('event', 'change_invitation_state', array('at' => 1, 'e' => $object->getId(), 'u' => $user->getId()))),
+					array('img' => get_image_url("/16x16/del.png"), 'text' => lang('reject invitation'), 'url' => get_url('event', 'change_invitation_state', array('at' => 2, 'e' => $object->getId(), 'u' => $user->getId()))),
+				);
+				tpl_assign('links', $links);
 				
 				tpl_assign('properties', $properties);
 				$from = self::prepareEmailAddress($sender->getEmail(), $sender->getDisplayName());
 				$emails[] = array(
 					"to" => array(self::prepareEmailAddress($user->getEmail(), $user->getDisplayName())),
 					"from" => self::prepareEmailAddress($sender->getEmail(), $sender->getDisplayName()),
-					"subject" => $subject = lang("$notification notification $type", $name, $uid, $typename, $workspaces),
+					"subject" => $subject = lang("$notification notification $type", $name, $uid, $typename, $ws),
 					"body" => tpl_fetch(get_template_path('general', 'notifier'))
 				);
 			}
@@ -351,6 +360,12 @@ class Notifier {
 			$date = Localization::instance()->formatDescriptiveDate($event->getStart(), $user->getTimezone());
 			if ($event->getTypeId() != 2) $date .= " " . Localization::instance()->formatTime($event->getStart(), $user->getTimezone());
 			$workspaces = implode(", ", $event->getUserWorkspacePaths($user));
+			
+			// GET WS COLOR
+			
+			$workspace_color = $event->getWorkspaceColorsCSV(logged_user()->getWorkspacesQuery());
+			
+			tpl_assign('workspace_color', $workspace_color);			
 			tpl_assign('workspaces', $workspaces);
 			tpl_assign('date', $date);
 			self::queueEmail(
@@ -384,8 +399,12 @@ class Notifier {
 			return true; // not assigned to user
 		} // if
 
-		tpl_assign('milestone_assigned', $milestone);
+		// GET WS COLOR
+		$workspace_color = $milestone->getWorkspaceColorsCSV(logged_user()->getWorkspacesQuery());
 
+		tpl_assign('milestone_assigned', $milestone);
+		tpl_assign('workspace_color', $workspace_color);
+		
 		if (! $milestone->getCreatedBy() instanceof User) return;
 		
 		$locale = $milestone->getAssignedTo()->getLocale();
@@ -420,8 +439,13 @@ class Notifier {
 		if(!($task->getAssignedTo() instanceof User)) {
 			return true; // not assigned to user
 		} // if
+		
+		
+		// GET WS COLOR
+		$workspace_color = $task->getWorkspaceColorsCSV(logged_user()->getWorkspacesQuery());
 
 		tpl_assign('task_assigned', $task);
+		tpl_assign('workspace_color', $workspace_color);
 
 		$locale = $task->getAssignedTo()->getLocale();
 		Localization::instance()->loadSettings($locale, ROOT . '/language');
@@ -514,10 +538,27 @@ class Notifier {
 			if ($pos !== false) {
 				//$sender_address = trim(substr($from, $pos + 1), "> ");
 				$sender_name = trim(substr($from, 0, $pos));
+			} else {
+				$sender_name = "";
 			}
 			$from = self::prepareEmailAddress($smtp_address, $sender_name);
 		}
-		$result = $mailer->send($to, $from, $subject, $body, $type, $encoding, $complete);
+		
+		$mailer->addPart($body, 'text/html');
+		
+		// add text/plain alternative part
+		if ($type == 'text/html') {
+// 			$onlytext = preg_replace("/(<br[^>]*>)/i", "\n", $body);
+// 			$onlytext = trim(preg_replace("/(<[\/]?[a-z][a-z0-9\s]*[^>]*>)/i", "", $onlytext));
+// 			$mailer->addPart(escape_html_whitespace_reversed($onlytext), 'text/plain');
+
+ 			$onlytext = html_to_text($body);
+ 			$mailer->addPart($onlytext, 'text/plain');
+		}
+ 		
+ 		$body = false;
+ 		
+		$result = $mailer->send($to, $from, $subject, $body, $type, $encoding, $ignore);
 		$mailer->close();
 
 		return $result;
@@ -547,7 +588,7 @@ class Notifier {
 				array_var($email, 'from'),
 				array_var($email, 'subject'),
 				array_var($email, 'body'),
-				array_var($email, 'type', 'text/plain'),
+				array_var($email, 'type', 'text/html'),
 				array_var($email, 'encoding', '8bit')
 			);
 		}
@@ -568,12 +609,28 @@ class Notifier {
 		$count = 0;
 		foreach ($emails as $email) {
 			try {
+				
+				$body = $email->getBody();
+				
+				$mailer->addPart($body, 'text/html');
+		
+				// add text/plain alternative part
+				if ($type == 'text/html') {
+//		 			$onlytext = preg_replace("/(<br[^>]*>)/i", "\n", $body);
+//		 			$onlytext = trim(preg_replace("/(<[\/]?[a-z][a-z0-9\s]*[^>]*>)/i", "", $onlytext));
+//		 			$mailer->addPart($onlytext, 'text/plain');
+					$onlytext = html_to_text($body);
+		 			$mailer->addPart($onlytext, 'text/plain');
+				}
+		 		
+		 		$body = false;
+		 		
 				$result = $mailer->send(
 					explode(";", $email->getTo()),
 					$fromSMTP ? self::prepareEmailAddress(config_option("smtp_username"), $email->getFrom()) : $email->getFrom(),
 					$email->getSubject(),
-					$email->getBody(),
-					'text/plain',
+					$body,
+					'text/html',
 					'8bit',
 					$complete
 				);
@@ -600,7 +657,7 @@ class Notifier {
 		if($mail_transport_config == self::MAIL_TRANSPORT_MAIL) {
 			$mailer = new Swift(new Swift_Connection_NativeMail());
 			if(!$mailer->isConnected()) {
-				Logger::log($mailer->lastError);
+//				Logger::log($mailer->lastError);
 				throw new Exception($mailer->lastError);
 			} // if
 			return $mailer;
@@ -632,7 +689,7 @@ class Notifier {
 			$mailer = new Swift(new Swift_Connection_SMTP($smtp_server, $smtp_port, $transport));
 			$mailer->loadPlugin(new SwiftLogger());
 			if(!$mailer->isConnected()) {
-				Logger::log($mailer->lastError);
+//				Logger::log($mailer->lastError);
 				throw new Exception($mailer->lastError);
 			} // if
 
@@ -642,7 +699,7 @@ class Notifier {
 				if($mailer->authenticate($smtp_username, $smtp_password)) {
 					return $mailer;
 				} else {
-					Logger::log($mailer->lastError);
+//					Logger::log($mailer->lastError);
 					throw new Exception($mailer->lastError);
 				} // if
 			} else {

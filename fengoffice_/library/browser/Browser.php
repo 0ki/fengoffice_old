@@ -716,5 +716,11 @@
 				$this->_platform = self::PLATFORM_BEOS;
 			}
 		}
+		
+		static function instance() {
+			static $instance = null;
+			if ($instance == null) $instance = new Browser();
+			return $instance;
+		}
 	}
 ?>

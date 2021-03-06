@@ -1,4 +1,3 @@
-
 <?php 
 $show_help_option = user_config_option('show_context_help'); 
 if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_documents_widget_context_help', true, logged_user()->getId()))) {

@@ -1,4 +1,7 @@
 <?php
+$allowed = include 'access.php';
+if (!in_array('frompo.php', $allowed)) die("This tool is disabled.");
+
 /**
  * This tool searches for files ending in .po in the language folder and converts them to PHP or JS files.
  **/

@@ -89,8 +89,12 @@ og.noOfTasks = <?php echo user_config_option('noOfTasks') ?>;
 
 
 <script type="text/javascript">
-	if (rx__TasksDrag)
-		rx__TasksDrag.initialize();
+	try {
+		if (rx__TasksDrag)
+			rx__TasksDrag.initialize();
+	} catch (e) {
+		// by doing this d&d doesn't work but at least tasks are listed in Safari 3.1
+	}
 	ogTasks.userPreferences = Ext.util.JSON.decode(document.getElementById('hfUserPreferences').value);
 	var ogTasksTT = new og.TasksTopToolbar({
 		projectTemplatesHfId:'hfProjectTemplates',

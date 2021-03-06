@@ -19,8 +19,7 @@ function render_user_box(User $user) {
 	tpl_assign('_userbox_projects', $user->getActiveProjects());
 	$crumbs = array();
 	$crumbs[] = array(
-		'url' => help_link(),
-		'target' => '_blank',
+		'url' => get_url('help','help_options', array('current' => 'help')),
 		'text' => lang('help'),
 	);
 	$crumbs[] = array(
@@ -104,8 +103,16 @@ function render_system_notices(User $user) {
  * @param array $attributes Additional attributes
  * @return string
  */
-function select_company($name, $selected = null, $attributes = null, $allow_none = true) {
-	$companies = Companies::findAll(array('order' => 'client_of_id ASC, name ASC'));
+function select_company($name, $selected = null, $attributes = null, $allow_none = true, $check_permissions = false) {
+	if (!$check_permissions) {
+		$companies = Companies::findAll(array('order' => 'client_of_id ASC, name ASC'));
+	} else {
+		$companies = Companies::getVisibleCompanies(logged_user(), "`id` <> " . owner_company()->getId());
+		if (logged_user()->isMemberOfOwnerCompany() || owner_company()->canAddUser(logged_user())) {
+			// add the owner company
+			$companies = array_merge(array(owner_company()), $companies);
+		}
+	}
 	if ($allow_none) {
 		$options = array(option_tag(lang('none'), 0));
 	} else {
@@ -295,7 +302,11 @@ function select_users_or_groups($name = "", $users = null, $selected = null, $id
 	}
 	
 	$json = array();
-	$companies = Companies::findAll(array('order' => 'name ASC'));
+	if (logged_user()->isMemberOfOwnerCompany()) {
+		$companies = Companies::findAll(array('order' => 'name ASC'));
+	} else {
+		$companies = array(owner_company(), logged_user()->getCompany());
+	}
 	foreach ($companies as $company) {
 		$company_users = $company->getUsers();
 		if (count($company_users) > 0) {
@@ -309,6 +320,7 @@ function select_users_or_groups($name = "", $users = null, $selected = null, $id
 				$json[] = array(
 					'p' => 'c' . $company->getId(),
 					't' => 'user',
+					'g' => $u->isGuest() ? 1 : 0,
 					'id' => $u->getId(),
 					'n' => $u->getDisplayName(),
 				);	
@@ -357,6 +369,41 @@ function intersectCSVs($csv1, $csv2){
 	return implode(',', $final);
 }
 
+function allowed_users_to_assign($wsid) {
+	$ws = Projects::findById($wsid);
+	$comp_array = array();
+	$companies = Companies::findAll();
+	if ($companies != null) {
+		foreach ($companies as $comp) {
+			if ($ws != null) $users = $comp->getUsersOnProject($ws);
+			else continue;
+			if (is_array($users)) {
+				foreach ($users as $k => $user) {
+					// if logged_user can assign tasks to user and user can read tasks the user is allowed
+					if (!can_assign_task(logged_user(), $ws, $user) || !can_read_type($user, $ws, 'ProjectTasks')) {
+						unset($users[$k]);
+					}
+				}
+				if (count($users) > 0) {
+					$comp_data = array(
+									'id' => $comp->getId(),
+									'name' => $comp->getName(),
+									'users' => array() 
+					);
+					foreach ($users as $user) {
+						$comp_data['users'][] = $user->getArrayInfo();
+					}
+					//if ($ws == null || can_assign_task(logged_user(), $ws, $comp)) {
+					if (count($users) > 0) {
+						$comp_array[] = $comp_data;
+					}
+				}
+			}
+		}
+	}
+	return $comp_array;
+}
+
 
 /**
  * Render assign to SELECT
@@ -367,69 +414,40 @@ function intersectCSVs($csv1, $csv2){
  * @param array $attributes Array of select box attributes, if needed
  * @return null
  */
-function assign_to_select_box($list_name, $project = null, $selected = null, $attributes = null) {
-	/*if(is_null($project)) {
-		$project = active_or_personal_project();
-	} // if
-	if(!($project instanceof Project)) {
-		throw new InvalidInstanceError('$project', $project, 'Project');
-	} // if*/
-
-	$logged_user = logged_user();
-
-	//$can_assign_to_owners = $logged_user->isMemberOfOwnerCompany() || $logged_user->getProjectPermission($project, ProjectUsers::CAN_ASSIGN_TO_OWNERS);
-	//$can_assign_to_other = $logged_user->isMemberOfOwnerCompany() || $logged_user->getProjectPermission($project, ProjectUsers::CAN_ASSIGN_TO_OTHER);
-
-	$usersArr = Users::getAll();
-	if(!is_array($usersArr) || !count($usersArr)) {
-		$grouped_users = null;
-	} else {
-		$grouped_users = array();
-		foreach($usersArr as $user) {
-			if(!isset($grouped_users[$user->getCompanyId()]) || !is_array($grouped_users[$user->getCompanyId()])) {
-				$grouped_users[$user->getCompanyId()] = array();
-			} // if
-			$grouped_users[$user->getCompanyId()][] = $user;
-		} // foreach
+function assign_to_select_box($list_name, $project = null, $selected = null, $attributes = null, $genid = null) {
+	if (!$genid) $genid = gen_id();
+	$ws_id = $project instanceof Project ? $project->getId() : 0;
+	require_javascript('og/tasks/main.js');
+	require_javascript('og/tasks/addTask.js');
+	ob_start(); ?>
+    <input type="hidden" id="<?php echo $genid ?>taskFormAssignedTo" name="<?php echo $list_name?>"></input>
+	<div id="<?php echo $genid ?>assignto_div">
+		<div id="<?php echo $genid ?>assignto_container_div"></div>
+	</div>
+	<script>
+	og.drawAssignedToSelectBoxSimple = function(companies, user, genid) {
+		usersStore = ogTasks.buildAssignedToComboStore(companies);
+		var assignCombo = new Ext.form.ComboBox({
+			renderTo:genid + 'assignto_container_div',
+			name: 'taskFormAssignedToCombo',
+			id: genid + 'taskFormAssignedToCombo',
+			value: user,
+			store: usersStore,
+			displayField:'text',
+	        typeAhead: true,
+	        mode: 'local',
+	        triggerAction: 'all',
+	        selectOnFocus:true,
+	        width:160,
+	        tabIndex: '150',
+	        valueField: 'value',
+	        emptyText: (lang('select user or group') + '...'),
+	        valueNotFoundText: ''
+		});
 	}
-	
-	$options = array(option_tag(lang('anyone'), '0:0'));
-	if(is_array($grouped_users) && count($grouped_users)) {
-		foreach($grouped_users as $company_id => $users) {
-			$company = Companies::findById($company_id);
-			if(!($company instanceof Company)) {
-				continue;
-			} // if
-
-			// Check if $logged_user can assign task to members of this company
-			/*if($company_id <> $logged_user->getCompanyId()) {
-				if($company->isOwner()) {
-					if(!$can_assign_to_owners) {
-						continue;
-					} // if
-				} else {
-					if(!$can_assign_to_other) {
-						continue;
-					} // if
-				} // if
-			} // if*/
-
-			$options[] = option_tag('--', '0:0'); // separator
-
-			$option_attributes = $company->getId() . ':0' == $selected ? array('selected' => 'selected') : null;
-			$options[] = option_tag($company->getName(), $company_id . ':0', $option_attributes);
-
-			if(is_array($users)) {
-				foreach($users as $user) {
-					$option_attributes = $company_id . ':' . $user->getId() == $selected ? array('selected' => 'selected') : null;
-					$options[] = option_tag($user->getDisplayName() . ' : ' . $company->getName() , $company_id . ':' . $user->getId(), $option_attributes);
-				} // foreach
-			} // if
-
-		} // foreach
-	} // if
-
-	return select_box($list_name, $options, $attributes);
+	og.drawAssignedToSelectBoxSimple(<?php echo json_encode(allowed_users_to_assign($ws_id)) ?>, '<?php echo ($selected ? $selected : '0:0') ?>', '<?php echo $genid ?>');
+	</script> <?php
+	return ob_get_clean();
 } // assign_to_select_box
 
 
@@ -835,6 +853,21 @@ function project_object_tags(ApplicationDataObject $object) {
 } // project_object_tags
 
 /**
+ * Render Latest Activity
+ *
+ * @param ProjectDataObject $object
+ * @return null
+ */
+function render_object_latest_activity($object) {
+	
+	$latest_logs = ApplicationLogs::getObjectLogs($object, false, false, 3, 0);
+	
+	tpl_assign('logs', $latest_logs);
+	return tpl_fetch(get_template_path('activity_log', 'latest_activity'));
+	
+} // render_object_latest_activity
+
+/**
  * Show object comments block
  *
  * @param ProjectDataObject $object Show comments of this object
@@ -1075,7 +1108,7 @@ function render_link_to_object($object, $text=null, $reload=false){
 	if ($text == null) $text = lang('link object');
 	$reload_param = $reload ? '&reload=1' : ''; 
 	$result = '';
-	$result .= '<a href="#" onclick="og.ObjectPicker.show(function (data) {' .
+	$result .= '<a href="#" class="link-ico ico-add" onclick="og.ObjectPicker.show(function (data) {' .
 			'if (data) {' .
 				'var objects = \'\';' .
 				'for (var i=0; i < data.length; i++) {' .
@@ -1480,7 +1513,8 @@ function render_select_mail_account($name, $mail_accounts, $selected = null, $at
  */
 function select_task_priority($name, $selected = null, $attributes = null) {
 	$options = array(
-		option_tag(lang('high priority'), ProjectTasks::PRIORITY_HIGH, ($selected >= ProjectTasks::PRIORITY_HIGH)?array('selected' => 'selected'):null),
+		option_tag(lang('urgent priority'), ProjectTasks::PRIORITY_URGENT, ($selected >= ProjectTasks::PRIORITY_URGENT)?array('selected' => 'selected'):null),
+		option_tag(lang('high priority'), ProjectTasks::PRIORITY_HIGH, ($selected >= ProjectTasks::PRIORITY_HIGH && $selected < ProjectTasks::PRIORITY_URGENT)?array('selected' => 'selected'):null),
 		option_tag(lang('normal priority'), ProjectTasks::PRIORITY_NORMAL, ($selected > ProjectTasks::PRIORITY_LOW && $selected < ProjectTasks::PRIORITY_HIGH)?array('selected' => 'selected'):null),
 		option_tag(lang('low priority'), ProjectTasks::PRIORITY_LOW, ($selected <= ProjectTasks::PRIORITY_LOW)?array('selected' => 'selected'):null),
 	);

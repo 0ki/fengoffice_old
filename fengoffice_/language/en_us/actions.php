@@ -143,6 +143,7 @@
     'new' => 'New',
     'upload' => 'Upload',
     'hide' => 'Hide',
+	'show' => 'Show',
     'new document' => 'New document',
     'new spreadsheet' => 'New spreadsheet',
     'new presentation' => 'New presentation',

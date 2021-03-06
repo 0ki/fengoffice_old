@@ -292,10 +292,10 @@ sig.actualHtmlSignature = '';
 	if (strlen($loc) > 2) $loc = substr($loc, 0, 2);
 ?>
 <script>
-
 var genid = '<?php echo $genid ?>';
 
 var h = document.getElementById(genid + "ck_editor").offsetHeight;
+try {
 var editor = CKEDITOR.replace(genid + 'ckeditor', {
 	uiColor: '#BBCCEA',
 	height: (h-205) + 'px',
@@ -339,23 +339,25 @@ var editor = CKEDITOR.replace(genid + 'ckeditor', {
 	filebrowserImageUploadUrl : '<?php echo ROOT_URL ?>/public/assets/javascript/ckeditor/ck_upload_handler.php',
 	on: {
 		instanceReady: function(ev) {
-			og.adjustCkEditorArea(ev.editor.genid);
-			var mb = Ext.getDom(ev.editor.genid + 'mailBody');
-			mb.oldMailBody = og.getMailBodyFromUI(genid);
+			og.adjustCkEditorArea('<?php echo $genid ?>');
+			var mb = Ext.getDom('<?php echo $genid ?>mailBody');
+			mb.oldMailBody = og.getMailBodyFromUI('<?php echo $genid ?>');
 			ev.editor.resetDirty();
 		},
 		selectionChange: function(ev) {
-			var p = og.getParentContentPanel(Ext.get(ev.editor.genid + 'ckeditor'));
+			var p = og.getParentContentPanel(Ext.get('<?php echo $genid ?>ckeditor'));
 			Ext.getCmp(p.id).setPreventClose(ev.editor.checkDirty());
 		},
 		key: function(ev) {
-			var p = og.getParentContentPanel(Ext.get(ev.editor.genid + 'ckeditor'));
+			var p = og.getParentContentPanel(Ext.get('<?php echo $genid ?>ckeditor'));
 			Ext.getCmp(p.id).setPreventClose(ev.editor.checkDirty());
 		}
-	}
+	},
+	entities_additional : '#39,#336,#337,#368,#369'
 });
-editor.genid = genid;
-
+} catch (e) {
+	og.err(e.message);
+}
 og.eventManager.addListener("email saved", function(obj) {
 	var form = Ext.getDom(obj.instance + "form");
 	if (!form) return;
@@ -390,13 +392,12 @@ if (Ext.getDom(genid + 'format_html') && !Ext.getDom(genid + 'format_html').chec
 	var mb = Ext.getDom(genid + 'mailBody');
 	mb.oldMailBody = og.getMailBodyFromUI(genid);
 }
-
 if (og.preferences['draft_autosave_timeout'] > 0) {
 	var mb = Ext.getDom(genid + 'mailBody');
-	mb.genid = genid;
+	mb.genid = '<?php echo $genid ?>';
 	mb.autoSaveTOut = setTimeout(function() {
-		var mb = Ext.getDom(genid + 'mailBody');
-		og.autoSaveDraft(mb.genid);
+		var mb = Ext.getDom('<?php echo $genid ?>mailBody');
+		og.autoSaveDraft('<?php echo $genid ?>');
 	}, og.preferences['draft_autosave_timeout'] * 1000);
 }
 Ext.get(genid + 'mailTo').focus();

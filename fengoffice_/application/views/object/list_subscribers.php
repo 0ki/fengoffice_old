@@ -11,7 +11,7 @@ if (!$object->isNew()) {
 			echo "<tr><td colspan=\"2\">";
 			echo lang("user not subscribed to object");
 			echo " (";
-			echo '<a class="internalLink" href="'.$object->getSubscribeUrl().'" onclick="return confirm(\''.escape_single_quotes(lang("confirm subscribe")).'\')">'.lang("subscribe to object").'</a>';
+			echo '<a class="internalLink" href="#" onclick="if (confirm(\''.escape_single_quotes(lang("confirm subscribe")).'\')) og.openLink(\''.$object->getSubscribeUrl().'\');">'.lang("subscribe to object").'</a>';
 			echo ")";
 			echo "</td></tr>";
 		}
@@ -23,7 +23,7 @@ if (!$object->isNew()) {
 		<div class="db-ico unknown ico-user"></div>
 		</a></td><td><b><a class="internalLink" href="<?php echo logged_user()->getCardUrl() ?>">
 		<span><?php echo lang("you") ?></span> </a></b> <?php if (!$object->isTrashed()) {?>
-			(<a class="internalLink" href="<?php echo $object->getUnsubscribeUrl() ?>" onclick="return confirm('<?php echo escape_single_quotes(lang("confirm unsubscribe")) ?>')"><?php echo lang("unsubscribe from object") ?></a>)
+			(<a class="internalLink" href="#" onclick="if (confirm('<?php echo escape_single_quotes(lang("confirm unsubscribe")) ?>')) og.openLink('<?php echo $object->getUnsubscribeUrl() ?>');"><?php echo lang("unsubscribe from object") ?></a>)
 		<?php } ?></td></tr>
 	<?php } ?>
 	<?php $subscribers = $object->getSubscribers();

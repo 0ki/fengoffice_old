@@ -27,7 +27,7 @@ og.MessageManager = function() {
 				'load': function() {
 					var d = this.reader.jsonData;
 					var ws = og.clean(Ext.getCmp('workspace-panel').getActiveWorkspace().name);
-					var tag = og.clean(Ext.getCmp('tag-panel').getSelectedTag().name);
+					var tag = og.clean(Ext.getCmp('tag-panel').getSelectedTag());
 					if (d.totalCount === 0) {
 						if (tag) {
 							this.fireEvent('messageToShow', lang("no objects with tag message", lang("messages"), ws, tag));
@@ -368,6 +368,18 @@ og.MessageManager = function() {
     };
 	this.actionRep = actions;
     
+	var tbar = [];
+	if (!og.loggedUser.isGuest) {
+		tbar.push(actions.newCO);
+		tbar.push('-');
+		tbar.push(actions.edit);
+		tbar.push(actions.tag);
+		tbar.push(actions.del);
+		tbar.push(actions.archive);
+		tbar.push('-');
+	}
+	tbar.push(actions.markAs);
+	
 	og.MessageManager.superclass.constructor.call(this, {
 		store: this.store,
 		layout: 'fit',
@@ -391,17 +403,7 @@ og.MessageManager = function() {
 			forceFit: true
 		},
 		sm: sm,
-		tbar:[
-			actions.newCO,
-			'-',
-			actions.edit,
-			actions.tag,
-			actions.del,
-			actions.archive,
-			'-',
-			actions.markAs
-
-		],
+		tbar:tbar,
 		listeners: {
 			'render': {
 				fn: function() {
@@ -443,7 +445,7 @@ Ext.extend(og.MessageManager, Ext.grid.GridPanel, {
 			start = 0;
 		}
 		this.store.baseParams = {
-					      tag: Ext.getCmp('tag-panel').getSelectedTag().name,
+					      tag: Ext.getCmp('tag-panel').getSelectedTag(),
 						  active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id,
 						  account_id: this.accountId
 					    };
@@ -530,7 +532,7 @@ Ext.extend(og.MessageManager, Ext.grid.GridPanel, {
 			action: 'untag',
 			ids: this.getSelectedIds(),
 			types: this.getSelectedTypes(),
-			tagTag: tag.text
+			tagTag: tag
 		});
 	}
 });

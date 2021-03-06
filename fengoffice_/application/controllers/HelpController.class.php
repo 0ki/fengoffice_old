@@ -23,6 +23,37 @@ class HelpController extends ApplicationController {
 		
 	}
 	
+	function help_options(){
+		$show_context_help = user_config_option('show_context_help', 'until_close',logged_user()->getId());
+		$show = true;
+		if($show_context_help == 'never') {
+			$show = false;
+		}
+		tpl_assign('show_help', $show);
+		ajx_set_panel('help');
+		ajx_replace(true);
+	}
+	
+	function show_context_help(){
+		$show_context_help = array_var($_GET, 'show_context_help');
+		set_user_config_option('show_context_help', $show_context_help, logged_user()->getId());
+		ajx_current("empty");
+		if ($show_context_help == 'until_close') {
+			flash_success(lang('success enable context help'));
+		} else {
+			flash_success(lang('success disable context help'));
+		}
+	}
+	
+	function enable_all_context_help(){
+		$context_help_options = UserWsConfigOptions::getOptionsByCategoryName('context help', true);
+		foreach($context_help_options as $option) {
+			set_user_config_option($option->getName(), true, logged_user()->getId());
+		}
+		ajx_current("empty");
+		flash_success(lang('success enable all context help'));
+	}
+	
 	function view_message(){
 		
 	}

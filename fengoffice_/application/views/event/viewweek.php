@@ -65,7 +65,7 @@ require_javascript('og/EventPopUp.js');
 
 	$tmp_tasks = array();
 	foreach ($tasks as $task) {
-		$tmp_tasks = array_merge($tmp_tasks, replicateRepetitiveTaskForCalendar($task, $date_start, $date_end));
+		$tmp_tasks = array_merge($tmp_tasks, replicateRepetitiveTaskForCalendar($task, new DateTimeValue(mktime(0, 0, 0, $month, $startday, $year)), new DateTimeValue(mktime(0, 0, 0, $month, $endday, $year))));
 	}
 	
 	$dates = array(); //datetimevalue for each day of week
@@ -278,7 +278,11 @@ require_javascript('og/EventPopUp.js');
 				</div>
 				<div id="allDay<?php echo $day_of_week ?>" class="allDayCell" style="left: <?php echo $width ?>%; height: 100%;border-left:3px double #DDDDDD !important; position:absolute;width:3px;z-index:110;background:#E8EEF7;top:0%;"></div>
 
-				<div id="alldayeventowner_<?php echo $day_of_week ?>" style="width: <?php echo $width_percent ?>%;position:absolute;left: <?php echo $width ?>%; top: 12px;height: <?php echo $alldaygridHeight ?>px;" onclick="og.showEventPopup(<?php echo $dtv_temp->getDay() ?>, <?php echo $dtv_temp->getMonth()?>, <?php echo $dtv_temp->getYear()?>, -1, -1, <?php echo ($use_24_hours ? 'true' : 'false'); ?>,'<?php echo $dtv_temp->format($date_format) ?>');">
+				<div id="alldayeventowner_<?php echo $day_of_week ?>" style="width: <?php echo $width_percent ?>%;position:absolute;left: <?php echo $width ?>%; top: 12px;height: <?php echo $alldaygridHeight ?>px;"
+				<?php if (!logged_user()->isGuest()) { ?>
+				onclick="og.showEventPopup(<?php echo $dtv_temp->getDay() ?>, <?php echo $dtv_temp->getMonth()?>, <?php echo $dtv_temp->getYear()?>, -1, -1, <?php echo ($use_24_hours ? 'true' : 'false'); ?>,'<?php echo $dtv_temp->format($date_format) ?>');"
+				<?php } ?>
+				>
 					<?php	
 						$top=5;
 						if(is_array(array_var($alldayevents,$day_of_week))){
@@ -371,7 +375,9 @@ require_javascript('og/EventPopUp.js');
 						addTip('<?php echo $div_prefix . $event->getId() ?>', <?php echo json_encode($divtype . $subject) ?>, <?php echo json_encode($tipBody) ?>);
 						<?php if (!($event instanceof Contact || (isset($is_repe_task) && $is_repe_task))) { ?>
 						<?php $is_repetitive = $event instanceof ProjectEvent && $event->isRepetitive() ? 'true' : 'false'; ?>
+						<?php if (!logged_user()->isGuest()) { ?>
 						og.createEventDrag('<?php echo $div_prefix . $event->getId() ?>', '<?php echo $event->getId()?>', <?php echo $is_repetitive ?>, '<?php echo $dates[$day_of_week]->format('Y-m-d')." 00:00:00" ?>', '<?php echo $objType ?>', true, 'ev_dropzone_allday');
+						<?php } ?>
 						<?php } ?>
 					</script>
 					<?php
@@ -444,10 +450,12 @@ require_javascript('og/EventPopUp.js');
 ?>
 
 <div id="<?php echo $div_id?>" style="left:<?php echo $left ?>%;width:<?php echo $width_percent ?>%;top:<?php echo $top?>px;height:21px;position:absolute;z-index: 90;<?php echo $today_style[$day_of_week]?>"
+<?php if (!logged_user()->isGuest()) { ?>
 onmouseover="if (!og.selectingCells) og.overCell('<?php echo $div_id?>'); else og.paintSelectedCells('<?php echo $div_id?>');"
 onmouseout="if (!og.selectingCells) og.resetCell('<?php echo $div_id?>');"
 onmousedown="og.selectStartDateTime(<?php echo $date->getDay() ?>, <?php echo $date->getMonth()?>, <?php echo $date->getYear()?>, <?php echo date("G",mktime($hour/2))?>, <?php echo ($hour % 2 == 0) ? 0 : 30 ?>); og.resetCell('<?php echo $div_id?>'); og.paintingDay = <?php echo $day_of_week ?>; og.paintSelectedCells('<?php echo $div_id?>');"
 onmouseup="og.showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMonth()?>, <?php echo $date->getYear()?>, <?php echo date("G",mktime(($hour+1)/2))?>, <?php echo (($hour+1) % 2 == 0) ? 0 : 30 ?>, <?php echo ($use_24_hours ? 'true' : 'false'); ?>,'<?php echo $date->format($date_format) ?>');"
+<?php } ?>
 ></div>
 
 <script>
@@ -680,7 +688,9 @@ onmouseup="og.showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->ge
 							og.setResizableEvent('w_ev_div_<?php echo $event->getId() . $id_suffix?>', '<?php echo $event->getId()?>'); // Resize
 							<?php } ?>
 							<?php $is_repetitive = $event->isRepetitive() ? 'true' : 'false'; ?>
+							<?php if (!logged_user()->isGuest()) { ?>
 							og.createEventDrag('w_ev_div_<?php echo $event->getId() . $id_suffix?>', '<?php echo $event->getId()?>', <?php echo $is_repetitive ?>, '<?php echo $event_start->format('Y-m-d H:i:s') ?>', 'event', false, 'ev_dropzone'); // Drag
+							<?php } ?>
 						</script>
 
 <?php												}//foreach ?>

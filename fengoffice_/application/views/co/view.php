@@ -80,6 +80,10 @@
 			if ($object instanceof ProjectDataObject && $object->allowsTimeslots() && can_manage_time(logged_user()))
 				echo render_object_timeslots($object, $object->getViewUrl());
 				
+			if ($object instanceof ProjectDataObject && $object->canView(logged_user()) || $object instanceof User) 				
+				echo render_object_latest_activity($object);
+			
+		
 			if ($object instanceof ProjectDataObject && $object->isCommentable())
 				echo render_object_comments($object, $object->getViewUrl());
 			?>
@@ -115,9 +119,9 @@
 					if ($action->isCommon) {
 				 		//if it is a common action sets the style display:block
 				 		if ($action->getTarget() != '') { ?>
-	   				    	<a id="<?php $atrib = $action->getAttributes(); echo $atrib['id']; ?>" style="display:block" class="coViewAction <?php echo $action->getName()?>" href="<?php echo $action->getURL()?>" target="<?php echo $action->getTarget()?>"> <?php
+	   				    	<a id="<?php $atrib = $action->getAttributes(); echo array_var($atrib, 'id'); ?>" style="display:block" class="coViewAction <?php echo $action->getName()?>" href="<?php echo $action->getURL()?>" target="<?php echo $action->getTarget()?>"> <?php
 				 		} else { ?>
-							<a id="<?php $atrib = $action->getAttributes(); echo $atrib['id']; ?>" style="display:block" class="<?php $attribs = $action->getAttributes(); echo isset($attribs["download"]) ? '':'internalLink' ?> coViewAction <?php echo $action->getName()?>" href="<?php echo $action->getURL()?>"> <?php
+							<a id="<?php $atrib = $action->getAttributes(); echo array_var($atrib, 'id'); ?>" style="display:block" class="<?php $attribs = $action->getAttributes(); echo isset($attribs["download"]) ? '':'internalLink' ?> coViewAction <?php echo $action->getName()?>" href="<?php echo $action->getURL()?>"> <?php
 				 		}
 				 		echo $action->getTitle(); ?>
 				 		</a> <?php
@@ -227,7 +231,7 @@
 	                		ok_fn: function() {
 	                			formy = document.getElementById(genid + "add-User-Form");
 	                			var params = Ext.Ajax.serializeForm(formy);
-	            				var options = {callback: function(){og.redrawSubscribers(id, manager)}};
+	            				var options = {callback: function(){og.redrawSubscribers(id, manager, genid)}};
 	            				options[formy.method.toLowerCase()] = params;
 	            				og.openLink(formy.getAttribute('action'), options);
 	            				og.ExtendedDialog.hide();        			
@@ -240,7 +244,7 @@
     	<?php } ?>
     	</script>
 	<div class="prop-col-div" style="width:200;">
-		<div id="subscribers_in_prop_panel">
+		<div id="<?php echo $genid ?>subscribers_in_prop_panel">
 			<?php echo render_object_subscribers($object)?>
 		</div>
 		<?php if ($object->canEdit(logged_user())) {

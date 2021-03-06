@@ -52,13 +52,13 @@
   <fieldset>
     <legend><?php echo lang('administrator update profile notice') ?></legend>
     <div class="content">
-      <div>
+      <div class="formBlock">
         <?php echo label_tag(lang('username'), $genid . 'profileFormUsername', true) ?>
         <?php echo text_field('user[username]', array_var($user_data, 'username'), 
         array('id' => $genid . 'profileFormUsername', 'tabindex' => '2000')) ?>
       </div>
       
-      <div>
+      <div class="formBlock">
         <?php echo label_tag(lang('company'), $genid . 'userFormCompany', true) ?>
         <?php $attributes = array(
         	'id' => $genid . 'userFormCompany',
@@ -72,25 +72,22 @@
         <?php echo select_company('user[company_id]', array_var($user_data, 'company_id'),  $attributes, false) ?>
       </div>
       
-      <div>
+      <div class="formBlock">
         <?php echo label_tag(lang('personal project'), $genid . 'userPersonalProject', true) ?>
         <div class="desc"><?php echo lang('personal project desc') ?></div>
         <?php echo select_project2('user[personal_project_id]', $user->getPersonalProjectId(), $genid, false, null, Projects::getActiveProjects()) ?>
       </div>
       
 
-	<div <?php if (!$company->isOwner()) echo 'style="display:none"'; ?> id="<?php echo $genid ?>options">
-	<fieldset>
-		<legend><?php echo lang('options') ?></legend>
-		<div>
-			<?php echo label_tag(lang('is administrator'), null, true) ?>
-			<?php $attributes = array();
-			if ($user->getId() == 1) $attributes['disabled'] = 'disabled';
-			?>
-			<?php echo yes_no_widget('user[is_admin]', $genid . 'userFormIsAdmin', array_var($user_data, 'is_admin'), lang('yes'), lang('no'), '2200', $attributes) ?>
-		</div>
-    </fieldset>
-    </div>
+	  <!-- user type -->
+	  <div class="formBlock">
+	    <?php echo label_tag(lang('user type'), null, true) ?>
+	    <?php echo simple_select_box('user[type]', array(
+	    		array('admin', lang('admin user')),
+	    		array('normal', lang('normal user')),
+	    		array('guest', lang('guest user')),
+	    		), array_var($user_data, 'type', 'normal')) ?>
+	  </div>
 
 	<input type="hidden" name="user[auto_assign]" value="0" />
     </div>

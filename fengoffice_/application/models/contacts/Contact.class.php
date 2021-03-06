@@ -584,6 +584,14 @@ class Contact extends BaseContact {
 			if(!$this->validateFormatOf('email', EMAIL_FORMAT)) $errors[] = lang('invalid email address');
 			if(!$this->validateUniquenessOf('email')) $errors[] = lang('email address must be unique');
 		}
+		if($this->validatePresenceOf('email2')) {
+			$this->setEmail2(trim($this->getEmail2()));
+			if(!$this->validateFormatOf('email2', EMAIL_FORMAT)) $errors[] = lang('invalid email address');
+		}
+		if($this->validatePresenceOf('email3')) {
+			$this->setEmail3(trim($this->getEmail3()));
+			if(!$this->validateFormatOf('email3', EMAIL_FORMAT)) $errors[] = lang('invalid email address');
+		}
 	} // validate
 
 	/**
@@ -655,26 +663,7 @@ class Contact extends BaseContact {
 	 * @return boolean
 	 */
 	function canView(User $user) {
-		if (can_manage_contacts($user, true))
-		return true;
-		else {
-			if ($user->getId() == $this->getUserId())
-			return true;
-
-			if (can_read($user,$this))
-			return true;
-
-			else{
-				$roles = $this->getRoles();
-				if ($roles){
-					foreach ($roles as $role){
-						if ($role->canView($user))
-						return true;
-					}
-				}
-				return false;
-			}
-		}
+		return can_manage_contacts($user, true) || can_read($user, $this);
 	} // canView
 
 	/**
@@ -686,7 +675,7 @@ class Contact extends BaseContact {
 	 * @return booelean
 	 */
 	function canAdd(User $user, Project $project) {
-		return can_manage_contacts($user, true) || ($project instanceof Project ? $user->getProjectPermission($project, ProjectUsers::CAN_WRITE_CONTACTS) : false);
+		return can_manage_contacts($user, true) || can_add($user, $project, get_class(Contacts::instance()));;
 	} // canAdd
 
 	/**
@@ -697,12 +686,12 @@ class Contact extends BaseContact {
 	 * @return boolean
 	 */
 	function canEdit(User $user) {
-		if($this->getUserId()){
+		if ($this->getUserId()) {
 			// a contact that has a user assigned to it can be modified by anybody that can manage security (this is: users and permissions) or the user himself.
-			return can_manage_contacts($user, true) || can_manage_security($user) || $this->getUserId() == $user->getId() || $this->canWriteByRoles($user);
+			return can_manage_contacts($user, true) || can_manage_security($user) || $this->getUserId() == $user->getId() || can_write($user, $this);
+		} else {
+			return can_manage_contacts($user, true) || can_write($user, $this);
 		}
-		else
-		return can_manage_contacts($user, true) || $this->canWriteByRoles($user);
 	} // canEdit
 
 	/**
@@ -713,20 +702,11 @@ class Contact extends BaseContact {
 	 * @return boolean
 	 */
 	function canDelete(User $user) {
-		return can_manage_contacts($user, true) || $this->canWriteByRoles($user);
+		return can_manage_contacts($user, true) || can_delete($user, $this);
 	} // canDelete
 
 	function canLinkObject(User $user){
-		if (can_manage_contacts($user, true))
-		return true;
-		else {
-			$roles = $this->getRoles();
-			foreach ($roles as $role){
-				if ($role->canView($user))
-				return true;
-			}
-			return false;
-		}
+		return can_manage_contacts($user, true) || can_read($user, $this);
 	}
 
 	// ---------------------------------------------------
@@ -757,19 +737,6 @@ class Contact extends BaseContact {
 			return null;
 		}
 		return ProjectContacts::getRole($this,$project);
-	}
-
-	function canWriteByRoles(User $user){
-		$roles = $this->getRoles();
-		if (is_array($roles)) {
-			foreach ($roles as $pc) {
-				$p = $pc->getProject();
-				if ($user->getProjectPermission($p, ProjectUsers::CAN_WRITE_CONTACTS)) {
-					return true;
-				}
-			}
-		}
-		return false;
 	}
 
 	// ---------------------------------------------------
@@ -894,7 +861,7 @@ class Contact extends BaseContact {
 	}
 
 	function getDashboardObject(){
-		$wsIds =  $this->getProjectIdsCSV();
+		$wsIds = $this->getWorkspacesIdsCSV(logged_user()->getWorkspacesQuery());
 		 
 		if($this->getUpdatedById() > 0 && $this->getUpdatedBy() instanceof User){
 			$updated_by_id = $this->getUpdatedBy()->getObjectId();
@@ -971,11 +938,6 @@ class Contact extends BaseContact {
 		return implode(',',$result);
 	}
 
-	function getUserWorkspacesIdsCSV($user) {
-		if (!$user instanceof User) $user = logged_user();
-		$extra_cond = Projects::instance()->getTableName(true) . ".`id` IN (" . $user->getWorkspacesQuery() . ")";
-		return $this->getProjectIdsCSV(null, $extra_cond);
-	}
 	
     /**
 	 * This function will return content of specific searchable column. It uses inherited

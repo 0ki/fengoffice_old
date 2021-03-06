@@ -39,21 +39,6 @@ og.reportObjectTypeChanged = function(genid, order_by, order_by_asc, cols){
 			document.getElementById(genid + 'MainDiv').style.display = 'none';
 			return;
 		}
-
-		if (type == 'Users' || type == 'Projects')
-		{
-			tohide = document.getElementById("wsandTags");
-			tohide2  = document.getElementById("showhideOptions");
-			tohide.style.display = "none";
-			tohide2.style.display = "none";
-			
-			
-		}else{
-			toshow = document.getElementById("wsandTags");
-			tohide2  = document.getElementById("showhideOptions");
-			tohide2.style.display = "";
-			toshow.style.display = "";
-		}
 		
 		document.getElementById('report[object_type]').value = type;
 		
@@ -73,7 +58,7 @@ og.addCondition = function(genid, id, cpId, fieldName, condition, value, is_para
   		return;
 	}
 	var condDiv = Ext.getDom(genid);
-	var count = condDiv.getElementsByTagName('table').length;
+	var count = condDiv.childNodes.length;
 	var classname = "";
 	if (count % 2 != 0) {
 		classname = "odd";
@@ -127,8 +112,7 @@ og.addCondition = function(genid, id, cpId, fieldName, condition, value, is_para
 					fields += '<input type="hidden" name="conditions[' + count + '][custom_property_id]" value="' + cpId + '">';
 				}
 				document.getElementById('tdFields' + count).innerHTML = fields;
-				og.fieldChanged(count, (condition != "" ? condition : ""), (value != "" ? value : ""));	
-				og.changeParametrizable(count);				
+				og.fieldChanged(count, (condition != "" ? condition : ""), (value != "" ? value : ""));				
 			}
 		},
 		scope: this
@@ -171,10 +155,11 @@ og.fieldChanged = function(id, condition, value){
 		var fieldType = fields[selField].className;
 		var type_and_name = '<input type="hidden" name="conditions[' + id + '][field_name]" value="' + fields[selField].value + '"/>' +
 		'<input type="hidden" name="conditions[' + id + '][field_type]" value="' + fieldType + '"/>'; 
-		
 		var conditions = '<b>' + lang('condition') + '</b>:<br/><select class="reportConditionDD" id="conditions[' + id + '][condition]" name="conditions[' + id + '][condition]">';
 		var textValueField = '<b>' + lang('value') + '</b>:<br/><input type="text" style="width:100px;" id="conditions[' + id + '][value]" name="conditions[' + id + '][value]" value="' + value + '"/>' + type_and_name;
 		var dateValueField = '<b>' + lang('value') + '</b>:<br/>' + '<span id="containerConditions[' + id + '][value]"></span>' + type_and_name; 
+		var wsValueField = '<b>' + lang('value') + '</b>:<br/>' + '<span id="containerConditions[' + id + '][value]"></span>' + type_and_name;
+		var tagValueField = '<b>' + lang('value') + '</b>:<br/>' + '<div class="og-csvcombo-container"><input type="text" style="width:100px;" id="conditions[' + id + '][value]" name="conditions[' + id + '][value]" value="' + value + '"/></div>' + type_and_name;
 		
 		if(fieldType == "text" || fieldType == "memo"){
 			document.getElementById('tdValue' + id).innerHTML = textValueField;
@@ -234,20 +219,51 @@ og.fieldChanged = function(id, condition, value){
 			conditions += '<option value="<>"><></option>';
 			conditions += '</select>';
 			document.getElementById('tdConditions' + id).innerHTML = conditions;
-		}else if(fieldType == "external"){			
-			og.openLink(og.getUrl('reporting', 'get_external_field_values', {external_field: fields[selField].value}), {
-				callback: function(success, data) {
-					if (success) {
-						var externalValueField = '<b>' + lang('value') + '</b>:<br/><select class="reportConditionDD" id="conditions[' + id + '][value]" name="conditions[' + id + '][value]">';
-						for(var j=0; j < data.values.length; j++){
-							var extValue = data.values[j];
-							externalValueField += '<option value="' + extValue.id + '" ' + (extValue.id == value ? "selected" : "") + '>' + extValue.name + '</option>';
-						}
-						externalValueField += '</select>' + type_and_name; 
-						document.getElementById('tdValue' + id).innerHTML = externalValueField;
-					}
+		}else if(fieldType == "external"){
+			if(fields[selField].value == 'workspace'){
+				document.getElementById('tdValue' + id).innerHTML = wsValueField;
+				og.drawWorkspaceSelector('workspace', 'containerConditions[' + id + '][value]', value, 'conditions[' + id + '][value]', true, '');
+			}else if(fields[selField].value == 'tag'){
+				document.getElementById('tdValue' + id).innerHTML = tagValueField;
+				var tags = Ext.getCmp("tag-panel").getTags();
+				var arr = [];
+				for (var i=0; i < tags.length; i++) {
+					arr.push([tags[i].name, og.clean(tags[i].name)]);
 				}
-			});
+				var tagSel = new og.CSVCombo({
+					store: new Ext.data.SimpleStore({
+		        		fields: ["value", "clean"],
+		        		data: arr
+					}),
+					valueField: "value",
+		        	displayField: "value",
+		        	mode: "local",
+		        	forceSelection: true,
+		        	tpl: "<tpl for=\".\"><div class=\"x-combo-list-item\">{clean}</div></tpl>",
+		        	emptyText: "",
+		        	applyTo: "conditions[" + id + "][value]"
+		    	});			
+			}else{			
+				og.openLink(og.getUrl('reporting', 'get_external_field_values', {external_field: fields[selField].value}), {
+					callback: function(success, data) {
+						if (success) {
+							var externalValueField = '<b>' + lang('value') + '</b>:<br/><select class="reportConditionDD" id="conditions[' + id + '][value]" name="conditions[' + id + '][value]">';
+							for(var j=0; j < data.values.length; j++){
+								var extValue = data.values[j];
+								externalValueField += '<option value="' + extValue.id + '" ' + (extValue.id == value ? "selected" : "") + '>' + extValue.name + '</option>';
+							}
+							externalValueField += '</select>' + type_and_name; 
+							document.getElementById('tdValue' + id).innerHTML = externalValueField;
+							
+							if(condition != ""){
+								var parametrizable = document.getElementById('conditions[' + id + '][is_parametrizable]').checked;
+								var valueField = document.getElementById('conditions[' + id + '][value]');
+								valueField.disabled = parametrizable;
+							}
+						}
+					}
+				});
+			}
 			conditions += '<option value="=">=</option>';
 			conditions += '<option value="<>"><></option>';
 			conditions += '</select>';
@@ -263,6 +279,12 @@ og.fieldChanged = function(id, condition, value){
 		if(condition == "") {
 			document.getElementById('conditions[' + id + '][is_parametrizable]').checked = false;
 			modified = true;
+		}else{
+			var parametrizable = document.getElementById('conditions[' + id + '][is_parametrizable]').checked;
+			var valueField = document.getElementById('conditions[' + id + '][value]');
+			if(valueField){
+				valueField.disabled = parametrizable;
+			}
 		}
 	}
 };
@@ -270,7 +292,9 @@ og.fieldChanged = function(id, condition, value){
 og.changeParametrizable = function(id){
 	var parametrizable = document.getElementById('conditions[' + id + '][is_parametrizable]').checked;
 	var valueField = document.getElementById('conditions[' + id + '][value]');
-	valueField.disabled = parametrizable;
+	if(valueField){
+		valueField.disabled = parametrizable;
+	}
 	modified = true;
 };
 
@@ -281,17 +305,19 @@ og.validateReport = function(genid){
 		var parametrizable = document.getElementById('conditions[' + i + '][is_parametrizable]').checked;
 		if(deleted == "0" && !parametrizable){
 			var fields = document.getElementById('conditions[' + i + '][custom_property_id]');
-			var value = document.getElementById('conditions[' + i + '][value]').value;
 			var fieldName = fields[fields.selectedIndex].text;
+			var field_db = fields[fields.selectedIndex].value;
+			if(field_db == 'workspace') continue;
+			var value = document.getElementById('conditions[' + i + '][value]').value;
 			if(value == ""){
 				alert(lang('condition value empty', fieldName));
-				return;
+				return false;
 			}
 			var fieldType = fields[fields.selectedIndex].className;
 			var condition = document.getElementById('conditions[' + i + '][condition]').value;
 			if(fieldType == 'numeric' && condition != '%' && !og.isReportFieldNumeric(value)){
 				alert(lang('condition value not numeric', fieldName));
-				return;
+				return false;
 			}
 		}
 	}
@@ -383,7 +409,9 @@ og.tttReportGbSelected = function(select, genid){
 				document.getElementById(genid + 'gbspan3').innerHTML = '';
 			}
 		}
-	}
-	
-				
+	}				
+};
+
+og.showPDFOptions = function(){
+	document.getElementById('pdfOptions').style.display = '';	
 };

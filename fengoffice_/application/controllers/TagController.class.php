@@ -28,6 +28,11 @@ class TagController extends ApplicationController {
 	 * @return null
 	 */
 	function delete_tag() {
+		if (!logged_user()->isAdministrator()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$tag_name = array_var($_GET,'tag_name');
 		$project_id = array_var($_GET,'project_id');
 		$object_id = array_var($_GET,'object_id');
@@ -88,6 +93,11 @@ class TagController extends ApplicationController {
 	 *
 	 */
 	function rename_tag() {
+		if (!logged_user()->isAdministrator()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		ajx_current("empty");
 		$tag = array_var($_GET, 'tag');
 		$new_tag = array_var($_GET, 'new_tag');

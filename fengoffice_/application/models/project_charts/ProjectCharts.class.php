@@ -15,7 +15,7 @@ class ProjectCharts extends BaseProjectCharts {
 	 * @param Project $project
 	 * @return array
 	 */
-	static function getProjectCharts(Project $project) {
+	static function getProjectCharts($project) {
 		$conditions = array(self::getWorkspaceString(), $project->getId());
 
 		return self::findAll(array(
@@ -23,6 +23,24 @@ class ProjectCharts extends BaseProjectCharts {
 			'order' => '`created_on` DESC',
 		)); // findAll
 	} // getProjectCharts
+	
+	static function getChartsAtProject($project = null, $tag = null, $order = '`updated_on` DESC', $limit = 5) {
+		if ($project instanceof Project) {
+			$ws = ProjectCharts::getWorkspaceString($project->getAllSubWorkspacesQuery()) . ' AND `show_in_parents` = 1 OR ';
+			$ws .= ProjectCharts::getWorkspaceString($project->getId()) . ' AND `show_in_project` = 1';
+		} else {
+			$ws = "`show_in_parents` = 1";
+		}
+		if ($tag) {
+			$tags = " AND `id` IN (SELECT `rel_object_id` FROM `" . TABLE_PREFIX . "tags` `t` WHERE `tag` = " . DB::escape($tag)." AND `t`.`rel_object_manager` = 'ProjectCharts')";
+		} else {
+			$tags = "";
+		}
+		return self::findAll(array(
+			'conditions' => "$ws $tags" ,
+			'order' => $order,
+			'limit' => $limit));
+	}
 	 
 } // ProjectCharts
 ?>

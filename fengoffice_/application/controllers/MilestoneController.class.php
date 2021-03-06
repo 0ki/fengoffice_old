@@ -24,8 +24,7 @@ class MilestoneController extends ApplicationController {
 	
 	function view_milestones() {
 		ajx_current("empty");
-		$project_id = array_var($_GET, 'active_project', 0);
-		$project = Projects::findById($project_id);
+		$project = active_project();
 		$tag = active_tag();
 		$assigned_by = array_var($_GET, 'assigned_by', '');
 		$assigned_to = array_var($_GET, 'assigned_to', '');
@@ -62,6 +61,11 @@ class MilestoneController extends ApplicationController {
 	}
 	
 	function quick_add_milestone() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		ajx_current("empty");
 		$milestone = new ProjectMilestone();
 		$milestone_data = array_var($_POST, 'milestone');
@@ -81,6 +85,8 @@ class MilestoneController extends ApplicationController {
 				$milestone->setAssignedToCompanyId(array_var($assigned_to, 0, 0));
 				$milestone->setAssignedToUserId(array_var($assigned_to, 1, 0));			
 				$milestone->setIsPrivate(false); // Not used, but defined as not null.
+				$urgent = array_var($milestone_data, 'is_urgent') == 'checked';
+				$milestone->setIsUrgent($urgent);
 				DB::beginWork();
 				$milestone->save();
 				$milestone->setProject($project);
@@ -107,7 +113,8 @@ class MilestoneController extends ApplicationController {
 			"completedBy" => $milestone->getCompletedByName(),
 			"isLate" => $milestone->isLate(),
 			"daysLate" => $milestone->getLateInDays(),
-			"duedate" => $milestone->getDueDate()->getTimestamp()
+			"duedate" => $milestone->getDueDate()->getTimestamp(),
+			"urgent" => $milestone->getIsUrgent()
 		);
 	}
 	
@@ -153,9 +160,11 @@ class MilestoneController extends ApplicationController {
 			return;
 		} // if
 
-		ajx_extra_data(array("title" => $milestone->getName(), 'icon'=>'ico-milestone'));
+		ajx_extra_data(array("title" => $milestone->getName(), "urgent" => $milestone->getIsUrgent() ,'icon'=>'ico-milestone'));
 		ajx_set_no_toolbar(true);
 		tpl_assign('milestone', $milestone);
+		
+		ApplicationReadLogs::createLog($milestone, $milestone->getWorkspaces(), ApplicationReadLogs::ACTION_READ);
 	} // view
 
 	/**
@@ -166,6 +175,11 @@ class MilestoneController extends ApplicationController {
 	 * @return null
 	 */
 	function add() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$this->setTemplate('add_milestone');
 
 		if(!ProjectMilestone::canAdd(logged_user(), active_or_personal_project())) {
@@ -195,9 +209,11 @@ class MilestoneController extends ApplicationController {
 			$assigned_to = explode(':', array_var($milestone_data, 'assigned_to', ''));
 			$milestone->setIsPrivate(false); //Mandatory to set
 			$milestone->setFromAttributes($milestone_data);
+			$urgent = array_var($milestone_data, 'is_urgent') == 'checked';
+			$milestone->setIsUrgent($urgent);
 			if(!logged_user()->isMemberOfOwnerCompany()) $milestone->setIsPrivate(false);
 
-			$project = Projects::findById(array_var($milestone_data, 'project_id', 0));
+			$project = Projects::findById(array_var($_POST, 'ws_ids', 0));
 			if (!$project instanceof Project && !ProjectMilestone::canAdd(logged_user(), $project)) {
 				flash_error(lang('no access permissions'));
 				ajx_current("empty");
@@ -210,11 +226,14 @@ class MilestoneController extends ApplicationController {
 				DB::beginWork();
 
 				$milestone->save();
-				$milestone->setProject($project);
 				$milestone->setTagsFromCSV(array_var($milestone_data, 'tags'));
 			    $object_controller = new ObjectController();
-			    $object_controller->link_to_new_object($milestone);
-
+			    $object_controller->add_to_workspaces($milestone);
+				$object_controller->link_to_new_object($milestone);
+				$object_controller->add_subscribers($milestone);
+				$object_controller->add_custom_properties($milestone);
+				$object_controller->add_reminders($milestone);
+			    
 				if (array_var($_GET, 'copyId', 0) > 0) {
 					// copy remaining stuff from the milestone with id copyId
 					$toCopy = ProjectMilestones::findById(array_var($_GET, 'copyId'));
@@ -222,12 +241,6 @@ class MilestoneController extends ApplicationController {
 						ProjectMilestones::copyTasks($toCopy, $milestone, array_var($milestone_data, 'is_template', false));
 					}
 				}
-			    
-				$object_controller = new ObjectController();
-			    $object_controller->link_to_new_object($milestone);
-				$object_controller->add_subscribers($milestone);
-				$object_controller->add_custom_properties($milestone);
-				$object_controller->add_reminders($milestone);
 				
 				ApplicationLogs::createLog($milestone, $milestone->getWorkspaces(), ApplicationLogs::ACTION_ADD);
 				
@@ -265,6 +278,11 @@ class MilestoneController extends ApplicationController {
 	 * @return null
 	 */
 	function edit() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$this->setTemplate('add_milestone');
 
 		$milestone = ProjectMilestones::findById(get_id());
@@ -290,6 +308,7 @@ class MilestoneController extends ApplicationController {
           'assigned_to' => $milestone->getAssignedToCompanyId() . ':' . $milestone->getAssignedToUserId(),
           'tags'        => is_array($tag_names) ? implode(', ', $tag_names) : '',
           'is_private'  => $milestone->isPrivate(),
+          'is_urgent' 	=> $milestone->getIsUrgent()
 			); // array
 		} // if
 
@@ -309,10 +328,12 @@ class MilestoneController extends ApplicationController {
 
 			$old_is_private  = $milestone->isPrivate();
 			$milestone->setFromAttributes($milestone_data);
+			$urgent = array_var($milestone_data, 'is_urgent') == 'checked';
+			$milestone->setIsUrgent($urgent);
 			if(!logged_user()->isMemberOfOwnerCompany()) $milestone->setIsPrivate($old_is_private);
 
 			$old_project_id = $milestone->getProjectId();
-			$project_id = array_var($milestone_data, 'project_id');
+			$project_id = array_var($_POST, 'ws_ids');
 			if ($old_project_id != $project_id) {
 				$newProject = Projects::findById($project_id);
 				if(!$milestone->canAdd(logged_user(),$newProject)) {
@@ -329,10 +350,10 @@ class MilestoneController extends ApplicationController {
 			try {
 				DB::beginWork();
 				$milestone->save();
-				if ($newProject instanceof Project) $milestone->setProject($newProject);
 				$milestone->setTagsFromCSV(array_var($milestone_data, 'tags'));
 
 				$object_controller = new ObjectController();
+				$object_controller->add_to_workspaces($milestone);
 			    $object_controller->link_to_new_object($milestone);
 				$object_controller->add_subscribers($milestone);
 				$object_controller->add_custom_properties($milestone);
@@ -376,6 +397,11 @@ class MilestoneController extends ApplicationController {
 	 * @return null
 	 */
 	function delete() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		ajx_current("empty");
 		$milestone = ProjectMilestones::findById(get_id());
 		if(!($milestone instanceof ProjectMilestone)) {
@@ -418,6 +444,11 @@ class MilestoneController extends ApplicationController {
 	 * @return null
 	 */
 	function complete() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		ajx_current("empty");
 		$milestone = ProjectMilestones::findById(get_id());
 		if(!($milestone instanceof ProjectMilestone)) {
@@ -462,6 +493,11 @@ class MilestoneController extends ApplicationController {
 	 * @return null
 	 */
 	function open() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		ajx_current("empty");
 		$milestone = ProjectMilestones::findById(get_id());
 		if(!($milestone instanceof ProjectMilestone)) {
@@ -506,6 +542,11 @@ class MilestoneController extends ApplicationController {
 	 * @return null
 	 */
 	function copy_milestone() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$project = active_or_personal_project();
 		if(!ProjectMilestone::canAdd(logged_user(), $project)) {
 			flash_error(lang('no access permissions'));
@@ -545,6 +586,11 @@ class MilestoneController extends ApplicationController {
 	 *
 	 */
 	function new_template() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$project = active_or_personal_project();
 		if(!ProjectMilestone::canAdd(logged_user(), $project)) {
 			flash_error(lang('no access permissions'));

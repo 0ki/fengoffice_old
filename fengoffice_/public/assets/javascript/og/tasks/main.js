@@ -101,7 +101,7 @@ ogTasksTask.prototype.setFromTdata = function(tdata){
 	if (tdata.otype) this.otype = tdata.otype; else this.otype = null;
 }
 
-ogTasksMilestone = function(id, title, dueDate, workspaceIds, totalTasks, completedTasks, isInternal){
+ogTasksMilestone = function(id, title, dueDate, workspaceIds, totalTasks, completedTasks, isInternal, isUrgent){
 	this.id = id;
 	this.title = title;
 	
@@ -113,6 +113,7 @@ ogTasksMilestone = function(id, title, dueDate, workspaceIds, totalTasks, comple
 	this.completedTasks = completedTasks;
 	this.totalTasks = totalTasks;
 	this.isInternal = isInternal;
+	this.isUrgent = isUrgent;
 	this.completedById;
 	
 	this.tags;
@@ -211,7 +212,7 @@ ogTasks.loadData = function(data){
 		var mdata = data['internalMilestones'][i];
 		if (mdata.id){
 			with (mdata) {
-				var milestone = new ogTasksMilestone(id,t,dd,wsid,tnum,tc,true);
+				var milestone = new ogTasksMilestone(id,t,dd,wsid,tnum,tc,true,is_urgent);
 			}
 			if (mdata.tags) milestone.tags = mdata.tags;
 			if (mdata.compId) milestone.completedById = mdata.compId;
@@ -223,7 +224,7 @@ ogTasks.loadData = function(data){
 		var mdata = data['externalMilestones'][i];
 		if (mdata.id){
 			with (mdata) {
-				var milestone = new ogTasksMilestone(id,t,dd,wsid,tnum,tc,false);
+				var milestone = new ogTasksMilestone(id,t,dd,wsid,tnum,tc,false,is_urgent);
 			}
 			if (mdata.tags) milestone.tags = mdata.tags;
 			if (mdata.compId) milestone.completedById = mdata.compId;
@@ -276,19 +277,23 @@ ogTasks.getGroupData = function(displayCriteria, groups,tasks){
 		}
 		var icon = '';
 		var id = i;
+		var urgent = false;
 		if (groupId != 'unclassified'){
 			switch(displayCriteria.group_by){
 				case 'milestone':
 					icon = 'ico-milestone';
 					var milestone = this.getMilestone(groupId);
-					if (milestone)
+					if (milestone){
 						name = milestone.title; 
+						urgent = milestone.isUrgent;
+					}
 					break;
 				case 'priority' : 
 					switch(groupId){
 						case 100: name = lang('low'); icon = 'ico-task-low-priority'; break;
 						case 200: name = lang('normal'); icon = 'ico-task'; break;
 						case 300: name = lang('high'); icon = 'ico-task-high-priority'; break;
+						case 400: name = lang('urgent'); icon = 'ico-task-high-priority'; break;
 						default:
 					} break;
 				case 'workspace' : 
@@ -362,7 +367,8 @@ ogTasks.getGroupData = function(displayCriteria, groups,tasks){
 			group_tasks: tasks[i],
 			solo: solo,
 			isExpanded: expanded,
-			isChecked: false
+			isChecked: false,
+			isUrgent: urgent
 		}
 	}
 	return groupData;
@@ -882,6 +888,7 @@ ogTasks.getTimeDistance = function(timestamp){
 //--------------------------------
 
 ogTasks.mouseMovement = function(task_id, group_id, mouse_is_over){
+	if (og.loggedUser.isGuest) return;
 	if (mouse_is_over){
 		if (!task_id)
 			this.groupMouseOver(group_id);

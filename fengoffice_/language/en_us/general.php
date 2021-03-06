@@ -224,7 +224,23 @@
 	'move down' => 'Move down',
   
 	'this file is included in document' => "This file is included in document: {0}",
+	'minutes ago' => "{0} minutes ago",
+  	'about hours ago' => "About {0} hours ago",
+  	'yesterday at' => "Yesterday at {0}",
+	'day at' => "{0} at {1}",
 
+  	'added by capitalized' => 'Added by',
+  	'in capitalized' => 'In', 
+  	'unique id capitalized' => 'Unique Id', 
+  	'system notification email' => 'This is a system notification, do not reply to this email.', 
+  
+  	'modifications tab' => 'Modifications', 
+  	'views tab' => 'Views', 
+
+  	'latest activity' => 'Latest activity', 
+  	'view all activity' => 'View all activity...', 
+  	'advanced' => 'Advanced',
+  
   ); // array
 
 ?>

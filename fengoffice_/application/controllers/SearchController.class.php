@@ -43,10 +43,9 @@ class SearchController extends ApplicationController {
 			$search_results = $this->searchContacts($search_for,$search_results,5);
 			
 			if (array_var($_GET, 'search_all_projects') != "true" && active_project() instanceof Project) {
-				$projects = active_project()->getAllSubWorkspacesCSV(true,logged_user());
+				$projects = active_project()->getAllSubWorkspacesCSV(true);
 			} else {
-				$projects = logged_user()->getActiveProjectIdsCSV();
-				//$projects = logged_user()->getWorkspacesQuery();
+				$projects = null;
 			}
 			
 			$c = 0;
@@ -79,10 +78,9 @@ class SearchController extends ApplicationController {
 			$search_results = array();
 		
 		if (array_var($_GET, 'search_all_projects') != "true" && active_project() instanceof Project) {
-			$projects = active_project()->getAllSubWorkspacesCSV(true,logged_user());
+			$projects = active_project()->getAllSubWorkspacesCSV(true);
 		} else {
-			$projects = logged_user()->getActiveProjectIdsCSV();
-			//$projects = logged_user()->getWorkspacesQuery();
+			$projects = null;
 		}
 			
 		$results = SearchableObjects::searchByType($search_term, $projects, 'Contacts', true, $row_count);
@@ -181,10 +179,9 @@ class SearchController extends ApplicationController {
 			$pagination = null;
 		} else {
 			if (array_var($_GET, 'search_all_projects') != "true" && active_project() instanceof Project) {
-				$projects = active_project()->getAllSubWorkspacesCSV(true,logged_user());
+				$projects = active_project()->getAllSubWorkspacesCSV(true);
 			} else {
-				$projects = logged_user()->getActiveProjectIdsCSV();
-				//$projects = logged_user()->getWorkspacesQuery();
+				$projects = null;
 			}
 				
 			switch($manager) {

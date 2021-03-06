@@ -190,7 +190,9 @@ class AdministrationController extends ApplicationController {
 		foreach($padres as $hijo){
 			$projects[] = $hijo;
 			$aux = 	$hijo->getSortedChildren(logged_user());
-			foreach($aux as $a){$projects[] = $a;}
+			if (is_array($aux)) {
+				foreach($aux as $a){$projects[] = $a;}
+			}
 		}
 		tpl_assign('projects',  $projects);
 	} // projects

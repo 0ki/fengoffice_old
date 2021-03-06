@@ -25,6 +25,9 @@ if(isset($users) && is_array($users) && $cantUsers) { ?>
 	<?php if ($user->isAdministrator()) { ?>
       	<div class="userIsAdmin"><span><?php echo lang('administrator') ?></span></div>
     <?php } ?>
+	<?php if ($user->isGuest()) { ?>
+      	<div class="userIsGuest"><span><?php echo lang('guest user') ?></span></div>
+    <?php } ?>
       <!-- div class="userAutoAssign"><span><?php echo lang('auto assign') ?>:</span> <?php echo $user->getAutoAssign() ? lang('yes') : lang('no') ?></div -->
 <?php } // if  ?>
 <?php

@@ -22,7 +22,7 @@
     	<tr height="19px">
     		<td class="mt1"></td>
     		<td rowspan=2 colspan=3 class="loginContents" >
-			<div style="padding:10px">
+			<div style="padding:10px 0px 10px 6px;">
 <?php if(!is_null(flash_get('success'))) { ?>
           <div id="success" onclick="this.style.display = 'none'"><?php echo clean(flash_get('success')) ?></div>
 <?php } ?>

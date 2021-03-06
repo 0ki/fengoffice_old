@@ -30,7 +30,7 @@ return array(
     'new comment posted' => 'New comment on "{0}" has been posted',
     'view new comment' => 'View that comment',
 
-    'user created your account' => '{0} created new account for you',
+    'user created your account' => '{0} created a new account for you',
     'visit and login' => 'Visit {0} and login with',
 
     'milestone assigned' => 'Milestone "{0}" has been assigned to you',

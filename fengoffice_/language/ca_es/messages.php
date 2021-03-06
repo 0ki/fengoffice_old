@@ -410,6 +410,7 @@
 	'log untrash projectfiles' => '\'{0}\' restaurat de la paperera',
 	'log comment projectfiles' => 'Comentat a \'{0}\'',
 	'log subscribe projectfiles' => 'Subscrit a \'{0}\'',
+	'log subscribe projectfiles data' => 'Subscrita a \'{0}\'',
 	'log unsubscribe projectfiles' => 'Cancel·lada la subscripció a \'{0}\'',
 	'log tag projectfiles' => '\'{0}\' etiquetat',
 	'log link projectfiles' => '\'{0}\' enllaçat',

@@ -39,7 +39,7 @@ class DashboardController extends ApplicationController {
 		if (active_project() instanceof Project){
 			$wscsv = active_project()->getAllSubWorkspacesQuery(true);
 		} else {
-			$wscsv = $logged_user->getWorkspacesQuery(true);
+			$wscsv = null;
 		}
 		$activity_log = null;
 		$include_private = $logged_user->isMemberOfOwnerCompany();
@@ -48,11 +48,7 @@ class DashboardController extends ApplicationController {
 		$activity_log = ApplicationLogs::getOverallLogs($include_private, $include_silent, $wscsv, config_option('dashboard_logs_count', 15));
 
 		if (user_config_option('show charts widget') && module_enabled('reporting')) {
-			$charts = ProjectCharts::findAll(array(
-				'conditions' => "(" . ProjectCharts::getWorkspaceString($wscsv) . ' AND show_in_parents = 1)' 
-					. (active_project() instanceof Project ? ' OR (' . ProjectCharts::getWorkspaceString(active_project()->getId()) . ' AND show_in_project = 1)' : '')
-					. ($tag? (" AND id in (SELECT rel_object_id FROM `" . TABLE_PREFIX . "tags` `t` WHERE `tag` = ".DB::escape($tag)." AND `t`.`rel_object_manager`='ProjectCharts')"):'')
-					, 'order' => 'updated_on DESC', 'limit' => 5));
+			$charts = ProjectCharts::getChartsAtProject(active_project(), active_tag());
 			tpl_assign('charts', $charts);
 			
 			if (BillingCategories::count() > 0 && active_project() instanceof Project){
@@ -60,11 +56,7 @@ class DashboardController extends ApplicationController {
 			}
 		}
 		if (user_config_option('show messages widget') && module_enabled('notes')) {
-			$messages = ProjectMessages::findAll(array(
-				'conditions' => '`archived_by_id` = 0 AND id IN (SELECT `object_id` FROM `' .TABLE_PREFIX. "workspace_objects` WHERE `object_manager` = 'ProjectMessages' && `workspace_id` IN ($wscsv))"
-					. ($tag? (" AND id in (SELECT rel_object_id from " . TABLE_PREFIX . "tags t WHERE tag=".DB::escape($tag)." AND t.rel_object_manager='ProjectMessages')"):'')
-					 . ' AND ' .permissions_sql_for_listings(ProjectMessages::instance(),ACCESS_LEVEL_READ,logged_user())
-					, 'order' => 'updated_on DESC', 'limit' => 10));
+			list($messages, $pagination) = ProjectMessages::getMessages(active_tag(), active_project(), 0, 10, '`updated_on`', 'DESC', false);
 			tpl_assign('messages', $messages);
 		}
 		if (user_config_option('show comments widget')) {
@@ -72,17 +64,12 @@ class DashboardController extends ApplicationController {
 			tpl_assign('comments', $comments);
 		}
 		if (user_config_option('show documents widget') && module_enabled('documents')) {
-			$documents = ProjectFiles::findAll(array(
-				'conditions' => "`archived_by_id` = 0 AND id IN (SELECT `object_id` FROM `" .TABLE_PREFIX. "workspace_objects` WHERE `object_manager` = 'ProjectFiles' && `workspace_id` IN ($wscsv))"
-					. ($tag? (" AND id in (SELECT rel_object_id from " . TABLE_PREFIX . "tags t WHERE tag=".DB::escape($tag)." AND t.rel_object_manager='ProjectFiles')"):'')
-					. ' AND ' .permissions_sql_for_listings(ProjectFiles::instance(),ACCESS_LEVEL_READ,logged_user())
-					, 'order' => 'updated_on DESC', 'limit' => 10));
-					
+			list($documents, $pagination) = ProjectFiles::getProjectFiles(active_project(), null, false, '`updated_on`', 'DESC', 1, 10, false, active_tag(), null);
 			tpl_assign('documents', $documents);
 		}
 		
 		if (user_config_option('show emails widget') && module_enabled('email')) {
-			$activeWs = active_project() instanceof Project ? active_project() : null;
+			$activeWs = active_project();
 			list($unread_emails, $pagination) = MailContents::getEmails($tag, null, 'received', 'unread', '', $activeWs, 0, 10);
 
 			if ($activeWs && user_config_option('always show unread mail in dashboard')) {

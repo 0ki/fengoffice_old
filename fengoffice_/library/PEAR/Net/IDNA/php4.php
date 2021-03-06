@@ -58,7 +58,7 @@
  * @author  Matthias Sommerfeld <mso@phlylabs.de>
  * @author  Stefan Neufeind <pear.neufeind@speedpartner.de>
  * @package Net
- * @version $Id: php4.php,v 1.1 2008/11/27 12:11:21 alvarotm01 Exp $
+ * @version $Id: php4.php,v 1.1 2010/01/22 18:14:44 acio Exp $
  */
 
 class Net_IDNA_php4

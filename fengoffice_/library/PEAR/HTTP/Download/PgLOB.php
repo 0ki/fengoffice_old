@@ -11,7 +11,7 @@
  * @author     Michael Wallner <mike@php.net>
  * @copyright  2003-2005 Michael Wallner
  * @license    BSD, revised
- * @version    CVS: $Id: PgLOB.php,v 1.1 2008/11/27 12:11:21 alvarotm01 Exp $
+ * @version    CVS: $Id: PgLOB.php,v 1.1 2010/01/22 18:11:22 acio Exp $
  * @link       http://pear.php.net/package/HTTP_Download
  */
 

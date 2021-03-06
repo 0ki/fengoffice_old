@@ -651,7 +651,7 @@ addLangs({
 	'is archived': 'Jest zarchiwizowane',
 	'no archived objects message': 'Brak zarchiwizowanych {0} w \'{1}\'',
 	'no archived objects with tag message': 'Brak zarchiwizowanych {0} otagowanych jako \'{2}\' w \'{1}\'',
-	'autoconfig gmail message': 'Wykryto automatyczną konfigurację Gmail. <br> Pamiętaj że musisz IMAP dla swojego konta gmail. Więcej informacji  <a href="http://mail.google.com/support/bin/answer.py?answer=77695" class="internallink" target="_blank">tutaj</a>.',
+	'autoconfig gmail message': 'Wykryto automatyczną konfigurację Gmail. <br> Pamiętaj że musisz włączyć IMAP dla swojego konta gmail. Więcej informacji  <a href="http://mail.google.com/support/bin/answer.py?answer=77695" class="internallink" target="_blank">tutaj</a>.',
 	'autoconfig hotmail message': 'Wykryto automatyczną konfigurację Hotmail.',
 	'autoconfig ymail message': 'Wykryto automatyczną konfigurację Yahoo mail. <br> Aby móc używać POP3 musisz posiadać konto Yahoo Plus. Więcej informacji <a href="http://overview.mail.yahoo.com/enhancements/mailplus" class="internallink" target="_blank">tutaj</a>',
 	'autoconfig rocketmail message': 'Wykryto automatyczną konfigurację Yahoo mail. <br> Aby móc używać POP3 musisz posiadać konto Yahoo Plus. Więcej informacji <a href="http://overview.mail.yahoo.com/enhancements/mailplus" class="internallink" target="_blank">tutaj</a>',
@@ -671,5 +671,13 @@ addLangs({
 	'select co types to apply': 'Wybierz typy obiektów do których chcesz zastosować właściwość',
 	'write an email to contact': 'Napisz e-maila do {0}',
 	'quick upload desc': 'Dowiąż nowy plik z Twojego komputera',
-	'switch format warn': 'Przełączenie w tryb zwykłego tekstu usunie wszelkie formatowanie HTML. Kontynuować?'
+	'switch format warn': 'Przełączenie w tryb zwykłego tekstu usunie wszelkie formatowanie HTML. Kontynuować?',
+	'confirm delete permanently company': 'Czy na pewno na stałe usunąć tą firmę?',
+	'confirm move to trash company': 'Czy na pewno usunąć tą firmę?',
+	'expand': 'Rozwiń',
+	'collapse': 'Zwiń',
+	'warning': 'Ostrzeżenie',
+	'new email in conversation text': 'W konwersacji na którą odpowiadasz znajduje się nowa wiadomość. Czy mimo wszystko wysłać odpowiedź czy też chcesz przeczytać wiadomość w nowej zakładce?',
+	'send anyway': 'Wyślij mimo wszystko',
+	'view new email': 'Zobacz nową wiadomość'
 });

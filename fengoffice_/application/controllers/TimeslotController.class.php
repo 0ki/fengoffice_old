@@ -44,7 +44,7 @@ class TimeslotController extends ApplicationController {
 		} // if
 
 		$object = get_object_by_manager_and_id($object_id, $object_manager);
-		if(!($object instanceof ProjectDataObject) || !($object->canEdit(logged_user()))) {
+		if(!($object instanceof ProjectDataObject) || !($object->canAddTimeslot(logged_user()))) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
@@ -88,7 +88,7 @@ class TimeslotController extends ApplicationController {
 		} // if
 
 		$object = get_object_by_manager_and_id($object_id, $object_manager);
-		if(!($object instanceof ProjectDataObject) || !($object->canEdit(logged_user()))) {
+		if(!($object instanceof ProjectDataObject) || !($object->canAddTimeslot(logged_user()))) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
@@ -163,7 +163,7 @@ class TimeslotController extends ApplicationController {
 			return;
 		} // if
 		
-		if(!($object->canEdit(logged_user()))) {
+		if(!($object->canAddTimeslot(logged_user()))) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
@@ -225,7 +225,12 @@ class TimeslotController extends ApplicationController {
 			return;
 		} // if
 		
-		if(!($object->canEdit(logged_user()))) {
+		if(!($object->canAddTimeslot(logged_user()))) {
+			flash_error(lang('no access permissions'));
+			return;
+		} // if
+		
+		if(!($timeslot->canEdit(logged_user()))) {
 			flash_error(lang('no access permissions'));
 			return;
 		} // if
@@ -264,7 +269,12 @@ class TimeslotController extends ApplicationController {
 			return;
 		} // if
 		
-		if(!($object->canEdit(logged_user()))) {
+		if(!($object->canAddTimeslot(logged_user()))) {
+			flash_error(lang('no access permissions'));
+			return;
+		} // if
+		
+		if(!($timeslot->canEdit(logged_user()))) {
 			flash_error(lang('no access permissions'));
 			return;
 		} // if
@@ -311,7 +321,13 @@ class TimeslotController extends ApplicationController {
 			return;
 		} // if
 		
-		if(!($object->canEdit(logged_user()))) {
+		if(!($object->canAddTimeslot(logged_user()))) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		} // if
+		
+		if(!($timeslot->canEdit(logged_user()))) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
@@ -439,7 +455,7 @@ class TimeslotController extends ApplicationController {
 			ajx_current("empty");
 			return;
 		} // if
-
+		
 		try {
 			DB::beginWork();
 			$timeslot->delete();

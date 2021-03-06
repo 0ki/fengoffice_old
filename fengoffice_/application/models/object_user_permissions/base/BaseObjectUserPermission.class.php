@@ -84,8 +84,8 @@
     * @access public   
     * @return boolean
     */
-    function setWritePermission() {
-      return $this->setColumnValue('can_write');
+    function setWritePermission($value = true) {
+      return $this->setColumnValue('can_write', $value);
     } // setFolderId() 
     
     /**
@@ -94,8 +94,8 @@
     * @access public   
     * @return boolean
     */
-    function setReadPermission() {
-      return $this->setColumnValue('can_read');
+    function setReadPermission($value = true) {
+      return $this->setColumnValue('can_read', $value);
     } // setFolderId() 
     
     /**

@@ -104,15 +104,16 @@ class GroupController extends ApplicationController {
 				} // if
 				
 				$group->save();
-				if(array_var($_POST, 'user') != '')
+				if (array_var($_POST, 'user')) {
 					foreach (array_var($_POST, 'user') as $user_id => $val){
-						if($val='checked' && is_numeric($user_id) && (Users::findById($user_id) instanceof  User)){
-							$gu= new GroupUser();
+						if ($val=='checked' && is_numeric($user_id) && (Users::findById($user_id) instanceof  User)) {
+							$gu = new GroupUser();
 							$gu->setGroupId($group->getId());
 							$gu->setUserId($user_id);
 							$gu->save();
 						}
 					}
+				}
 				ApplicationLogs::createLog($group, null, ApplicationLogs::ACTION_ADD);
 				DB::commit();
 				flash_success(lang('success add group', $group->getName()));
@@ -178,7 +179,7 @@ class GroupController extends ApplicationController {
 		tpl_assign('permissions', $permissions);
 		tpl_assign('projects', $projects);
 		
-		if(is_array(array_var($_POST, 'group'))) {
+		if (is_array(array_var($_POST, 'group'))) {
 			$group->setFromAttributes($group_data);
 			if(array_var($group_data, "can_edit_company_data") != 'checked') $group->setCanEditCompanyData(false);
 			if(array_var($group_data, "can_manage_security") != 'checked') $group->setCanManageSecurity(false);
@@ -221,29 +222,17 @@ class GroupController extends ApplicationController {
 				} // if
 				
 				$group->save();
-				$gus = array();
-				if(array_var($_POST, 'user') != ''){
+				GroupUsers::clearByGroup($group);
+				if (array_var($_POST, 'user')){
 					foreach (array_var($_POST, 'user') as $user_id => $val){
-						if($val == 'checked' && is_numeric($user_id) && (Users::findById($user_id) instanceof  User)){
-							$gu= new GroupUser();
+						if ($val == 'checked' && is_numeric($user_id) && (Users::findById($user_id) instanceof User)) {
+							$gu = new GroupUser();
 							$gu->setGroupId($group->getId());
 							$gu->setUserId($user_id);
-							$gus[] =$gu; //
+							$gu->save();
 						}
 					}
-				}
-				if(count($gus)){
-					//there are still users in the group
-					GroupUsers::removeUsersByGroup($group->getId()); //remove all deleted
-					foreach ($gus as $gu){
-						$gu->save();
-					}
-				}
-				else{
-					// group was left empty, so delete all
-					GroupUsers::removeUsersByGroup($group->getId());					 
-				}
-				
+				}				
 				ApplicationLogs::createLog($group, null, ApplicationLogs::ACTION_EDIT);
 				DB::commit();
 

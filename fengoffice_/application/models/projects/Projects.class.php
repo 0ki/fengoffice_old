@@ -87,16 +87,7 @@
 	 * @return array
 	 */
 	static function findByCSVIds($csv) {
-		$ids = explode(",", $csv);
-		if (!is_array($ids)) return array();
-		$ws = array();
-		foreach ($ids as $id) {
-			$w = Projects::findById($id);
-			if ($w instanceof Project) {
-				$ws[] = $w;
-			}
-		}
-		return $ws;
+		return self::findAll(array('conditions' => "`id` IN ($csv)"));
 	}
     
     /**

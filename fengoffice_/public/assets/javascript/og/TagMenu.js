@@ -16,7 +16,7 @@ og.TagMenu = function(config, tags) {
 					lang('enter the desired tag'),
 					function (btn, text) {
 						if (btn == 'ok' && text) {
-							this.fireEvent('tagselect', text);
+							this.fireEvent('tagselect', text.replace(/^\s*|\s*$/g, ''));
 						}
 					},
 					this	
@@ -98,7 +98,7 @@ Ext.extend(og.TagMenu, Ext.menu.Menu, {
 		items[0] = {
 				text: lang('delete all tag'),
 				handler: function() {
-					this.fireEvent('tagdelete', {'text':''});							
+					this.fireEvent('tagdelete', '');							
 				},
 				scope: this,
 				id: lang('delete all tags')
@@ -110,7 +110,7 @@ Ext.extend(og.TagMenu, Ext.menu.Menu, {
 					lang('enter the desired tag'),
 					function (btn, text) {
 						if (btn == 'ok' && text) {
-							this.fireEvent('tagdelete', {'text':text});
+							this.fireEvent('tagdelete', text.replace(/^\s*|\s*$/g, ''));
 						}
 					},
 					this	
@@ -122,11 +122,10 @@ Ext.extend(og.TagMenu, Ext.menu.Menu, {
 		items [2] = '-';
 		var tags = Ext.getCmp('tag-panel').getTags();
 		for (var i=0; i < tags.length; i++){
-			var tag = tags[i].name;
 			items.push({
-				text : tag,
-				handler : function (tag){
-					this.fireEvent('tagdelete',tag);
+				text : tags[i].name,
+				handler : function (btn) {
+					this.fireEvent('tagdelete', btn.text);
 				},
 				scope: this
 			});

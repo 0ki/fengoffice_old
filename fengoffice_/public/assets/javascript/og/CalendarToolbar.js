@@ -66,6 +66,19 @@ og.getSelectedEventsCsv = function() {
 	return ids;
 }
 
+og.calendarOrderUsers = function(usersList){
+	for (var i = 0; i < usersList.length - 1; i++) {
+		for (var j = i+1; j < usersList.length; j++) {
+			if (usersList[i][1].toUpperCase() > usersList[j][1].toUpperCase()){
+				var aux = usersList[i];
+				usersList[i] = usersList[j];
+				usersList[j] = aux;
+			}
+		}
+	}
+	return usersList;
+}
+
 var markactions = {
 	markAsRead: new Ext.Action({
 		text: lang('mark as read'),
@@ -118,6 +131,16 @@ var topToolbarItems = {
 			changeView(cal_actual_view, date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_status_filter);
 		}
 	}),
+	view_week5days: new Ext.Action({
+		text: lang('work week'),
+        tooltip: lang('work week view'),
+        iconCls: 'ico-calendar-week5',
+        handler: function() {
+			cal_actual_view = 'viewweek5days';
+			var date = og.calToolbarDateMenu.picker.getValue();
+			changeView(cal_actual_view, date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_status_filter);
+		}
+	}),
 	view_date: new Ext.Action({
 		text: lang('day'),
         tooltip: lang('day view'),
@@ -135,6 +158,7 @@ var topToolbarItems = {
         	var date = og.calToolbarDateMenu.picker.getValue();
         	if (cal_actual_view == 'index') date = date.add(Date.MONTH, -1);
         	if (cal_actual_view == 'viewweek') date = date.add(Date.DAY, -7);
+        	if (cal_actual_view == 'viewweek5days') date = date.add(Date.DAY, -7);
         	if (cal_actual_view == 'viewdate') date = date.add(Date.DAY, -1);
         	og.calToolbarDateMenu.picker.setValue(date);
 			
@@ -148,6 +172,7 @@ var topToolbarItems = {
         	var date = og.calToolbarDateMenu.picker.getValue();
         	if (cal_actual_view == 'index') date = date.add(Date.MONTH, 1);
         	if (cal_actual_view == 'viewweek') date = date.add(Date.DAY, 7);
+        	if (cal_actual_view == 'viewweek5days') date = date.add(Date.DAY, 7);
         	if (cal_actual_view == 'viewdate') date = date.add(Date.DAY, 1);
         	og.calToolbarDateMenu.picker.setValue(date);
 			
@@ -190,7 +215,7 @@ var topToolbarItems = {
 				'tagdelete': {
 					fn: function(tag) {
 						ids = og.getSelectedEventsCsv();
-						og.openLink(og.getUrl('event', 'untag_events', {ids: ids, tags: tag.text}));
+						og.openLink(og.getUrl('event', 'untag_events', {ids: ids, tags: tag}));
 				},
 				scope: this
 				}
@@ -263,16 +288,20 @@ og.CalendarTopToolbar = function(config) {
 		
 	og.CalendarTopToolbar.superclass.constructor.call(this, config);
 	
-	this.add(topToolbarItems.add);
-	this.addSeparator();
-	this.add(topToolbarItems.edit);
-	this.add(topToolbarItems.tag);
-	this.add(topToolbarItems.del);
-	this.add(topToolbarItems.archive);
-	this.addSeparator();
+	if (!og.loggedUser.isGuest) {
+		this.add(topToolbarItems.add);
+		this.addSeparator();
+		this.add(topToolbarItems.edit);
+		this.add(topToolbarItems.tag);
+		this.add(topToolbarItems.del);
+		this.add(topToolbarItems.archive);
+		this.addSeparator();
+	}
 	this.add(topToolbarItems.markAs);
-	this.addSeparator();
-	this.add(topToolbarItems.imp_exp);
+	if (!og.loggedUser.isGuest) {
+		this.addSeparator();
+		this.add(topToolbarItems.imp_exp);
+	}
 }
 
 Ext.extend(og.CalendarTopToolbar, Ext.Toolbar, {
@@ -338,7 +367,7 @@ og.CalendarSecondTopToolbar = function(config) {
 		if (usersArray[i].isCurrent)
 			currentUser = usersArray[i].cid + ':' + usersArray[i].id;
 	}
-	ucsData = ucsData.concat(ogTasksOrderUsers(ucsOtherUsers));
+	ucsData = ucsData.concat(og.calendarOrderUsers(ucsOtherUsers));
 
 
     filterNamesCompaniesCombo = new Ext.form.ComboBox({
@@ -443,6 +472,7 @@ og.CalendarSecondTopToolbar = function(config) {
 	
 	this.add(topToolbarItems.view_month);
 	this.add(topToolbarItems.view_week);
+	this.add(topToolbarItems.view_week5days);
 	this.add(topToolbarItems.view_date);
 	this.addSeparator();
 	this.add(topToolbarItems.prev);

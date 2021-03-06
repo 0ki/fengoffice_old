@@ -114,4 +114,5 @@
 	'mailAccount dnx' => 'La cuenta de correo no existe',
 	'error add contact from user' => 'No se pudo crear el contacto a partir del usuario.',
 	'zip not supported' => 'El servidor no soporta ZIP.',
+	'no tag specified' => 'No se especificó una etiqueta',
 ); ?>

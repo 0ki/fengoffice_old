@@ -16,7 +16,7 @@
 // | Authors: Shane Caraveo <Shane@Caraveo.com>                           |
 // +----------------------------------------------------------------------+
 //
-// $Id: interop_client.php,v 1.2.2.1 2009/10/27 21:04:52 idesoto Exp $
+// $Id: interop_client.php,v 1.1 2010/01/22 18:09:22 acio Exp $
 //
 require_once 'DB.php'; // PEAR/DB
 require_once 'SOAP/Client.php';

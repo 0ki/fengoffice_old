@@ -66,11 +66,12 @@ class ProjectFiles extends BaseProjectFiles {
 		} // if		
 		
 		if ($project instanceof Project){
-			$pids = $project->getAllSubWorkspacesQuery(!$archived, logged_user());
+			$pids = $project->getAllSubWorkspacesQuery(!$archived);
+			$projectstr = " AND " . self::getWorkspaceString($pids);
 		} else {
-			$pids = logged_user()->getWorkspacesQuery(!$archived);
+			$projectstr = "";
 		}
-		$projectstr = " AND " . self::getWorkspaceString($pids);
+		
 		
 		if ($tag == '' || $tag == null) {
 			$tagstr = "";
@@ -133,14 +134,14 @@ class ProjectFiles extends BaseProjectFiles {
 
 		if ($workspace instanceof Project){
 			if ($include_sub_workspaces) {
-				$wsids = $workspace->getAllSubWorkspacesQuery(!$archived, $user);
+				$wsids = $workspace->getAllSubWorkspacesQuery(!$archived);
 			} else {
 				$wsids = "".$workspace->getId();
 			}
+			$wscond = " AND " . self::getWorkspaceString($wsids);
 		} else {
-			$wsids = $user->getWorkspacesQuery(!$archived);
+			$wscond = "";
 		}
-		$wscond = self::getWorkspaceString($wsids);
 		
 		if ($tag == '' || $tag == null) {
 			$tagcond = "";
@@ -171,10 +172,13 @@ class ProjectFiles extends BaseProjectFiles {
 		
 		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectFiles::instance(), ACCESS_LEVEL_READ, $user) . ') ';
 		
-		if ($archived) $archived_cond = " AND `archived_by_id` <> 0";
-		else $archived_cond = " AND `archived_by_id` = 0";
+		if ($archived) {
+			$archived_cond = " `archived_by_id` <> 0";
+		} else {
+			$archived_cond = " `archived_by_id` = 0";
+		}
 		
-		$conditions = $wscond . $tagcond . $typecond . $permissions . $archived_cond;
+		$conditions = $archived_cond . $wscond . $tagcond . $typecond . $permissions;
 		
 		if ($order == self::ORDER_BY_POSTTIME) {
 			$order_by = '`created_on` ' . $orderdir;

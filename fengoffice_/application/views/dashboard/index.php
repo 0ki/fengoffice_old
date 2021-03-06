@@ -102,6 +102,13 @@ else
 </td></tr>
 <tr><td>
 <?php 
+if (user_config_option('show activity widget')) {
+	tpl_assign("widgetClass", 'dashActivity');
+	tpl_assign("widgetTitle", lang('activity'));
+	tpl_assign("widgetTemplate", 'activity');
+	$this->includeTemplate(get_template_path('widget', 'dashboard'));
+}
+
 if (isset($tasks_in_progress) && $tasks_in_progress) {
 	switch($assign_type) {
 		case 0: $title = lang('tasks in progress'); break;

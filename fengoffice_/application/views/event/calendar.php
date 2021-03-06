@@ -97,7 +97,8 @@ foreach($companies as $company)
 					 		onclick="Ext.Msg.show({
 									   	title: '<?php echo escape_single_quotes(lang('import events from third party software')) ?>',
 									   	msg: '<?php echo escape_single_quotes(lang('copy this url in your calendar client software')) ."<br><br><br>"?>'+document.getElementById('ical_link').href,
-							   			icon: Ext.MessageBox.INFO }); return false;"></a>
+							   			icon: Ext.MessageBox.INFO }); return false;"
+							></a>
 					<?php } ?>
 					 </td></tr></table>
 				</div>
@@ -275,7 +276,11 @@ foreach($companies as $company)
 							$start_value = $dtv->format(user_config_option('date_format'));
 														
 					?>	
-						 		<div id="m<?php echo $dtv->getMonth() ?>_d<?php echo $dtv->getDay() ?>" style='z-index:0; min-height:90px; height:100%; cursor:pointer;<?php echo $extra_style ?>' onclick="showMonthEventPopup('<?php echo $dtv->getDay() ?>','<?php echo $dtv->getMonth()?>','<?php echo $dtv->getYear()?>','<?php echo $start_value ?>');" >
+						 		<div id="m<?php echo $dtv->getMonth() ?>_d<?php echo $dtv->getDay() ?>" style='z-index:0; min-height:90px; height:100%; cursor:pointer;<?php echo $extra_style ?>'
+						 		<?php if (!logged_user()->isGuest()) { ?>
+						 		onclick="showMonthEventPopup('<?php echo $dtv->getDay() ?>','<?php echo $dtv->getMonth()?>','<?php echo $dtv->getYear()?>','<?php echo $start_value ?>');"
+						 		<?php } ?>
+						 		>
 						 			<div class='<?php echo $daytitle?>' style='text-align:right;'>
 							 		<a class='internalLink' href="<?php echo $p ?>" onclick="og.disableEventPropagation(event);return true;"  style='color:#5B5B5B' ><?php echo $w?></a>				
 					<?php
@@ -388,7 +393,9 @@ foreach($companies as $company)
 										 			?>
 													addTip('m_ev_div_<?php echo $event->getId() . $id_suffix ?>', '<i>' + lang('event') + '</i> - ' + <?php echo json_encode(clean($event->getSubject())) ?>, <?php echo json_encode($tipbody);?>);
 													<?php $is_repetitive = $event->isRepetitive() ? 'true' : 'false'; ?>
-													og.createMonthlyViewDrag('m_ev_div_<?php echo $event->getId() . $id_suffix ?>', '<?php echo $event->getId()?>', <?php echo $is_repetitive ?>, '<?php echo $event_start->format('Y-m-d H:i:s') ?>', 'event'); // Drag
+													<?php if (!logged_user()->isGuest()) { ?>
+													og.createMonthlyViewDrag('m_ev_div_<?php echo $event->getId() . $id_suffix ?>', '<?php echo $event->getId()?>', <?php echo $is_repetitive ?>, 'event', '<?php echo $event_start->format('Y-m-d H:i:s') ?>'); // Drag
+													<?php } ?>
 												</script>
 											 	
 								<?php
@@ -423,7 +430,9 @@ foreach($companies as $company)
 													</div>
 													<script>
 														addTip('m_ms_div_<?php echo $milestone->getId() ?>', '<i>' + lang('milestone') + '</i> - ' + <?php echo json_encode(clean($milestone->getTitle())) ?>, <?php echo json_encode($tip_text != '' ? $tip_text : '');?>);
+														<?php if (!logged_user()->isGuest()) { ?>
 														og.createMonthlyViewDrag('m_ms_div_<?php echo $milestone->getId() ?>', '<?php echo $milestone->getId()?>', false, 'milestone'); // Drag
+														<?php } ?>
 													</script>
 								<?php
 												}//if count
@@ -476,7 +485,9 @@ foreach($companies as $company)
 													</div>
 													<script>
 														addTip('m_ta_div_<?php echo $tip_pre.$task->getId() ?>', '<i>' + '<?php echo $tip_title ?>' + '</i> - ' + <?php echo json_encode(clean($task->getTitle()))?>, <?php echo json_encode(trim($tip_text) != '' ? trim($tip_text) : '');?>);
+														<?php if (!logged_user()->isGuest()) { ?>
 														og.createMonthlyViewDrag('m_ta_div_<?php echo $tip_pre.$task->getId() ?>', '<?php echo $task->getId()?>', false, 'task'); // Drag
+														<?php } ?>
 													</script>
 								<?php
 												}//if count

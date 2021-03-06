@@ -153,6 +153,17 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 		}
 	} // setIsRead()
 	
+	/**
+	 * Sets as unread for everyone except logged user
+	 * @return unknown_type
+	 */
+	function resetIsRead() {
+		$conditions = "`rel_object_id` = " . $this->getId() . " AND `rel_object_manager` = '" . get_class($this->manager()) . "'";
+		if (logged_user() instanceof User) {
+			$conditions .= " AND `user_id` <> " . logged_user()->getId();
+		}
+		ReadObjects::delete($conditions);
+	}
 	
 	// ---------------------------------------------------
 	//  General Methods
@@ -328,9 +339,9 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 		return $paths;
 	}
 	
-	function getUserWorkspacesIdsCSV($user) {
+	function getUserWorkspacesIdsCSV($user, $additional_cond =null) {
 		$project_users_table =  ProjectUsers::instance()->getTableName(true);
-		$pids = $user->getWorkspacesQuery();
+		$pids = $user->getWorkspacesQuery(null,$additional_cond);
 		return $this->getWorkspacesIdsCSV($pids);
 	}
 	
@@ -374,20 +385,12 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 	}
 
 	/**
-	 * Returns the object's manager's name.
-	 *
-	 * @return string
-	 */
-	function getObjectManagerName() {
-		return get_class($this->manager());
-	}
-
-	/**
 	 * Removes the object from workspace $w.
 	 *
 	 * @param Project $w
 	 */
 	function removeFromWorkspace($w) {
+		if (!$w instanceof Project) return;
 		WorkspaceObjects::delete(array("`workspace_id` = ? AND `object_manager` = ? AND `object_id` = ?", $w->getId(), $this->getObjectManagerName(), $this->getId()));
 	}
 
@@ -1251,6 +1254,10 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 	 * @return boolean
 	 */
 	function delete() {
+		return parent::delete();
+	} // delete
+	
+	function clearEverything() {
 		if($this->isTaggable()) {
 			$this->clearTags();
 		} // if
@@ -1263,14 +1270,31 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 		$this->removeFromCOTemplates();
 		$this->clearSubscriptions();
 		$this->clearReminders();
-		if ($this->allowsTimeslots())
+		if ($this->allowsTimeslots()) {
 			$this->clearTimeslots();
-		WorkspaceObjects::delete(array("`object_manager` = ? AND `object_id` = ?", $this->getObjectManagerName(), $this->getId()));
-		SharedObjects::delete(array("`object_manager` = ? AND `object_id` = ?", $this->getObjectManagerName(), $this->getId()));
-		ObjectUserPermissions::delete(array("`rel_object_manager` = ? AND `rel_object_id` = ?", $this->getObjectManagerName(), $this->getId()));
-		ReadObjects::delete(array("`rel_object_manager` = ? AND `rel_object_id` = ?", $this->getObjectManagerName(), $this->getId()));
-		return parent::delete();
-	} // delete
+		}
+		$this->clearWorkspaces();
+		$this->clearShared();
+		$this->clearUserPermissions();
+		$this->clearReads();
+		parent::clearEverything();
+	}
+	
+	function clearWorkspaces() {
+		return WorkspaceObjects::delete(array("`object_manager` = ? AND `object_id` = ?", $this->getObjectManagerName(), $this->getId()));
+	}
+	
+	function clearShared() {
+		return SharedObjects::delete(array("`object_manager` = ? AND `object_id` = ?", $this->getObjectManagerName(), $this->getId()));
+	}
+	
+	function clearUserPermissions() {
+		return ObjectUserPermissions::delete(array("`rel_object_manager` = ? AND `rel_object_id` = ?", $this->getObjectManagerName(), $this->getId()));
+	}
+	
+	function clearReads() {
+		return ReadObjects::delete(array("`rel_object_manager` = ? AND `rel_object_id` = ?", $this->getObjectManagerName(), $this->getId()));
+	}
 
 	function trash($trashDate = null) {
 		if(!isset($trashDate))

@@ -86,7 +86,8 @@ class FilesController extends ApplicationController {
 		tpl_assign('page', null);
 		ajx_extra_data(array("title" => $file->getFilename(), 'icon'=>'ico-file'));
 		ajx_set_no_toolbar(true);
-
+		
+		ApplicationReadLogs::createLog($file, $file->getWorkspaces(), ApplicationReadLogs::ACTION_READ);
 	} // file_details
 
 	function slideshow() {
@@ -148,9 +149,11 @@ class FilesController extends ApplicationController {
 			evt_add('download document', array('id' => get_id(), 'reloadDocs' => true));
 			return;
 		}
-
-		$file->setIsRead(logged_user()->getId(),true);
 		
+		$file->setIsRead(logged_user()->getId(), true);
+
+		ApplicationReadLogs::createLog($file, $file->getWorkspaces(), ApplicationReadLogs::ACTION_DOWNLOAD);
+
 		download_from_repository($file->getLastRevision()->getRepositoryId(), $file->getTypeString(), $file->getFilename(), !$inline);
 		die();
 	} // download_file
@@ -287,6 +290,11 @@ class FilesController extends ApplicationController {
 	 * @return null
 	 */
 	function add_file() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$file_data = array_var($_POST, 'file');
 
 		$file = new ProjectFile();
@@ -344,7 +352,6 @@ class FilesController extends ApplicationController {
 					} // if
 					$file->setIsVisible(true);
 				}
-				
 				$file->save();
 				if($file->getType() == ProjectFiles::TYPE_DOCUMENT){
 					// handle uploaded file
@@ -354,8 +361,23 @@ class FilesController extends ApplicationController {
 					$revision = $file->handleUploadedFile($uploaded_file, true, $revision_comment); // handle uploaded file
 					@unlink($uploaded_file['tmp_name']);
 					unset($_SESSION[$upload_id]);
+				} else if ($file->getType() == ProjectFiles::TYPE_WEBLINK) {
+					$url = array_var($file_data, 'url', '');
+					if ($url && strpos($url, ':') === false) {
+						$url = "http://" . $url;
+						$file->setUrl($url);
+						$file->save();
+					}
+					$revision = new ProjectFileRevision();
+					$revision->setFileId($file->getId());
+					$revision->setRevisionNumber($file->getNextRevisionNumber());
+					$revision->setFileTypeId(FileTypes::getByExtension('webfile')->getId());
+					$revision->setTypeString($file->getUrl());
+					$revision->setRepositoryId('webfile');
+					$revision_comment = array_var($file_data, 'revision_comment', lang('initial versions'));
+					$revision->setComment($revision_comment);
+					$revision->save();
 				}
-				
 				$object_controller = new ObjectController();
 
 				//Add properties
@@ -401,6 +423,11 @@ class FilesController extends ApplicationController {
 	} // add_file
 	
 	function quick_add_files() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$file_data = array_var($_POST, 'file');
 
 		$file = new ProjectFile();
@@ -440,6 +467,22 @@ class FilesController extends ApplicationController {
 					$revision = $file->handleUploadedFile($uploaded_file, true); // handle uploaded file
 					@unlink($uploaded_file['tmp_name']);
 					unset($_SESSION[$upload_id]);
+				} else if ($file->getType() == ProjectFiles::TYPE_WEBLINK) {
+					$url = array_var($file_data, 'url', '');
+					if ($url && strpos($url, ':') === false) {
+						$url = "http://" . $url;
+						$file->setUrl($url);
+						$file->save();
+					}
+					$revision = new ProjectFileRevision();
+					$revision->setFileId($file->getId());
+					$revision->setRevisionNumber($file->getNextRevisionNumber());
+					$revision->setFileTypeId(FileTypes::getByExtension('webfile')->getId());
+					$revision->setTypeString($file->getUrl());
+					$revision->setRepositoryId('webfile');
+					$revision_comment = array_var($file_data, 'revision_comment', lang('initial versions'));
+					$revision->setComment($revision_comment);
+					$revision->save();
 				}
 				
 				$object_controller = new ObjectController();
@@ -529,6 +572,11 @@ class FilesController extends ApplicationController {
 	}
 	
 	function save_document() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		ajx_current("empty");
 		$postFile = array_var($_POST, 'file');
 		$fileId = array_var($postFile, 'id');
@@ -561,7 +609,7 @@ class FilesController extends ApplicationController {
 				$file_dt['name'] = $file->getFilename();
 				$file_dt['size'] = strlen($file_content);
 				$file_dt['type'] = array_var($_POST, 'fileMIME', 'text/html');
-				$file_dt['tmp_name'] = './tmp/' . rand () ;
+				$file_dt['tmp_name'] = ROOT . '/tmp/' . rand () ;
 				$handler = fopen($file_dt['tmp_name'], 'w');
 				fputs($handler,$file_content);
 				fclose($handler);
@@ -633,7 +681,7 @@ class FilesController extends ApplicationController {
 			$file->setCreatedOn(new DateTimeValue(time()) );
 			try {
 				DB::beginWork();
-				$file_dt['tmp_name'] = './tmp/' . rand ();
+				$file_dt['tmp_name'] = ROOT . '/tmp/' . rand ();
 				$handler = fopen($file_dt['tmp_name'], 'w');
 				fputs($handler, array_var($_POST, 'fileContent'));
 				fclose($handler);
@@ -671,6 +719,11 @@ class FilesController extends ApplicationController {
 	}
 
 	function save_presentation() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		ajx_current("empty");
 		$postFile = array_var($_POST, 'file');
 		$fileid = array_var($postFile, 'id');
@@ -691,7 +744,7 @@ class FilesController extends ApplicationController {
 				$file_content = unescapeSLIM(array_var($_POST, 'slimContent'));
 				$file_dt['size'] = strlen($file_content);
 				$file_dt['type'] = 'prsn';
-				$file_dt['tmp_name'] = './tmp/' . rand() ;
+				$file_dt['tmp_name'] = ROOT . '/tmp/' . rand() ;
 				$handler = fopen($file_dt['tmp_name'], 'w');
 				fputs($handler,$file_content);
 				fclose($handler);
@@ -747,7 +800,7 @@ class FilesController extends ApplicationController {
 			$file->setCreatedOn(new DateTimeValue(time()) );
 			try {
 				DB::beginWork();
-				$file_dt['tmp_name'] = './tmp/' . rand ();
+				$file_dt['tmp_name'] = ROOT . '/tmp/' . rand ();
 				$handler = fopen($file_dt['tmp_name'], 'w');
 				fputs($handler, unescapeSLIM(array_var($_POST, 'slimContent')));
 				fclose($handler);
@@ -786,6 +839,11 @@ class FilesController extends ApplicationController {
 	}
 
 	function save_spreadsheet() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		ajx_current("empty");
 		$id = get_id();
 		$file_content = array_var($_GET, "book");
@@ -808,7 +866,7 @@ class FilesController extends ApplicationController {
 				$file_dt['name'] = $name;
 				$file_dt['size'] = strlen($file_content);
 				$file_dt['type'] = 'sprd';
-				$file_dt['tmp_name'] = './tmp/' . rand () ;
+				$file_dt['tmp_name'] = ROOT . '/tmp/' . rand () ;
 				$handler = fopen($file_dt['tmp_name'], 'w');
 				fputs($handler, $file_content);
 				fclose($handler);
@@ -854,7 +912,7 @@ class FilesController extends ApplicationController {
 				$file_dt['name'] = $name;
 				$file_dt['size'] = strlen($file_content);
 				$file_dt['type'] = 'sprd';
-				$file_dt['tmp_name'] = './tmp/' . rand ();
+				$file_dt['tmp_name'] = ROOT . '/tmp/' . rand ();
 				$handler = fopen($file_dt['tmp_name'], 'w');
 				fputs($handler, $file_content);
 				fclose($handler);
@@ -891,6 +949,11 @@ class FilesController extends ApplicationController {
 	}
 
 	function text_edit() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$file_data = array_var($_POST, 'file');
 		if (!isset($file_data)) {
 			// open text file
@@ -931,7 +994,7 @@ class FilesController extends ApplicationController {
 				$file_content = EncodingConverter::instance()->convert(detect_encoding(array_var($_POST, 'fileContent'), array('UTF-8','ISO-8859-1')), array_var($file_data, 'encoding'),array_var($_POST, 'fileContent'));
 				$file_dt['size'] = strlen($file_content);
 				$file_dt['type'] = $file->getTypeString();
-				$file_dt['tmp_name'] = './tmp/' . rand () ;
+				$file_dt['tmp_name'] = ROOT . '/tmp/' . rand () ;
 				$handler = fopen($file_dt['tmp_name'], 'w');
 				fputs($handler, $file_content);
 				fclose($handler);
@@ -955,6 +1018,11 @@ class FilesController extends ApplicationController {
 	} // text_edit
 
 	function add_document() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		if (get_id() > 0) {
 			//open a document
 			try {
@@ -1018,6 +1086,11 @@ class FilesController extends ApplicationController {
 	} // add_document
 
 	function add_spreadsheet() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		if (get_id() > 0) {
 			//open a spreadsheet
 			$file = ProjectFiles::findById(get_id());
@@ -1048,6 +1121,11 @@ class FilesController extends ApplicationController {
 	} // add_spreadsheet
 
 	function add_presentation() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		if (get_id() > 0) {
 			//open presentation
 			try {
@@ -1124,7 +1202,6 @@ class FilesController extends ApplicationController {
 		$orderdir = array_var($_GET,'dir');
 		$page = (integer) ($start / $limit)+1;
 		$hide_private = !logged_user()->isMemberOfOwnerCompany();
-		$project_id = array_var($_GET, 'active_project', 0);
 		$tag = array_var($_GET,'tag');
 		$type = array_var($_GET,'type');
 		$user = array_var($_GET,'user');
@@ -1249,27 +1326,30 @@ class FilesController extends ApplicationController {
 				$resultCode = 1;
 			} else {
 				$count = 0;
-				$active = active_project();
-				if ($active instanceof Project) {
-					$ws_ids = $active->getAllSubWorkspacesQuery(true, logged_user());
-				} else {
-					$ws_ids = logged_user()->getWorkspacesQuery();
-				}
 				$ids = explode(',', array_var($_GET, 'ids', ''));
 				for($i = 0; $i < count($ids); $i++){
 					$id = $ids[$i];
 					$file = ProjectFiles::findById($id);
 					if ($file instanceof ProjectFile && $file->canEdit(logged_user())){
 						if (!array_var($_GET, "mantainWs")) {
-							$ws = $file->getWorkspaces($ws_ids);
+							$removed = "";
+							$ws = $file->getWorkspaces(null);
 							foreach ($ws as $w) {
 								if (can_add(logged_user(), $w, 'ProjectFiles')) {
 									$file->removeFromWorkspace($w);
+									$removed .= $w->getId() . ",";
 								}
 							}
+							$removed = substr($removed, 0, -1);
+							$log_action = ApplicationLogs::ACTION_MOVE;
+							$log_data = ($removed == "" ? "" : "from:$removed;") . "to:$wsid";
+						} else {
+							$log_action = ApplicationLogs::ACTION_COPY;
+							$log_data = "to:$wsid";
 						}
+						
 						$file->addToWorkspace($destination);
-						ApplicationLogs::createLog($file, $file->getWorkspaces(), ApplicationLogs::ACTION_EDIT);
+						ApplicationLogs::createLog($file, $file->getWorkspaces(), $log_action, false, null, true, $log_data);
 						$count++;
 					};
 				}; // for
@@ -1290,7 +1370,7 @@ class FilesController extends ApplicationController {
 						$succ++;
 					} catch(Exception $e){
 						DB::rollback();
-						Logger::log($e->getMessage());
+						//Logger::log($e->getMessage());
 						$err++;
 					}
 				} else {
@@ -1306,7 +1386,7 @@ class FilesController extends ApplicationController {
 		
 		Hook::fire('classify_action', null, $ret);		
 
-		$project = Projects::findById($project_id);
+		$project = active_project();
 		/* perform query */
 		$result = ProjectFiles::getProjectFiles($project, null, $hide_private, $order, $orderdir, $page, $limit, false, $tag, $type, $user);
 		ProjectFiles::populateData($result[0]);
@@ -1356,6 +1436,7 @@ class FilesController extends ApplicationController {
 					$songInfo = array();
 				}
 				
+								
 				$values = array(
 					"id" => $o->getId(),
 					"ix" => $index++,
@@ -1374,7 +1455,7 @@ class FilesController extends ApplicationController {
 					"dateUpdated_today" => $o->getUpdatedOn() instanceof DateTimeValue ? $o->getUpdatedOn()->isToday() : 0,
 					"icon" => $o->getTypeIconUrl(),
 					"size" => $o->getFileSize(),
-					"wsIds" => $o->getUserWorkspacesIdsCSV(logged_user()),
+					"wsIds" => $o->getUserWorkspacesIdsCSV(logged_user(), ProjectUsers::instance()->getTableName(true).".`can_read_files` = 1"),
 					"url" => $o->getOpenUrl(),
 					"manager" => get_class($o->manager()),
 					"checkedOutByName" => $coName,
@@ -1421,6 +1502,11 @@ class FilesController extends ApplicationController {
 	 * @return null
 	 */
 	function tag_file() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$tag = array_var($_GET, 'tag');
 		$ids = explode(',', array_var($_GET, 'files'));
 		list($succ, $err) = $this->do_tag_file($tag, $ids);
@@ -1463,6 +1549,11 @@ class FilesController extends ApplicationController {
 	 * @return null
 	 */
 	function edit_file() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$this->setTemplate('add_file');
 
 		$file = ProjectFiles::findById(get_id());
@@ -1513,7 +1604,22 @@ class FilesController extends ApplicationController {
 				$file->setFilename(array_var($file_data, 'name'));
 				
 				if ($file->getType() == ProjectFiles::TYPE_WEBLINK) {
-					$file->setUrl(array_var($file_data, 'url'));
+					$url = array_var($file_data, 'url', '');
+					if ($url && strpos($url, ':') === false) {
+						$url = "http://" . $url;
+					}
+					$file->setUrl($url);
+					$revision = $file->getLastRevision();
+					if (!$revision instanceof ProjectFileRevision || array_var($file_data, 'version_file_change') == 'checked') {
+						$revision = new ProjectFileRevision();
+						$revision->setFileId($file->getId());
+						$revision->setRevisionNumber($file->getNextRevisionNumber());
+						$revision->setFileTypeId(FileTypes::getByExtension('webfile')->getId());
+						$revision->setRepositoryId('webfile');
+						$revision->setComment($revision_comment);
+					}
+					$revision->setTypeString($file->getUrl());
+					$revision->save();
 				}
 
 				if (!logged_user()->isMemberOfOwnerCompany()) {
@@ -1539,18 +1645,7 @@ class FilesController extends ApplicationController {
 				$object_controller->add_subscribers($file);
 				$object_controller->add_custom_properties($file);
 
-				$ro = ReadObjects::findAll(array('conditions' => 'rel_object_id = '.
-																$file->getId().
-																' AND rel_object_manager = \'' .
-																 get_class($file->manager()) . 
-																 '\' AND ' . 'user_id <> ' . logged_user()->getId()));
-				if (is_array($ro) && count($ro) > 0){
-					foreach ($ro as $r){
-						if ($r instanceof ReadObject){							
-							$r->delete();
-						}
-					}
-				}
+				$file->resetIsRead();
 				
 				ApplicationLogs::createLog($file, $file->getWorkspaces(), ApplicationLogs::ACTION_EDIT);
 
@@ -1680,6 +1775,11 @@ class FilesController extends ApplicationController {
 	 * @return null
 	 */
 	function delete_file() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$file = ProjectFiles::findById(get_id());
 		if(!($file instanceof ProjectFile)) {
 			flash_error(lang('file dnx'));
@@ -1779,6 +1879,11 @@ class FilesController extends ApplicationController {
 	 * @return null
 	 */
 	function edit_file_revision() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$this->setTemplate('add_file_revision');
 			
 		$revision = ProjectFileRevisions::findById(get_id());
@@ -1840,6 +1945,11 @@ class FilesController extends ApplicationController {
 	 * @return null
 	 */
 	function delete_file_revision() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$revision = ProjectFileRevisions::findById(get_id());
 		if(!($revision instanceof ProjectFileRevision)) {
 			flash_error(lang('file revision dnx'));
@@ -1891,8 +2001,7 @@ class FilesController extends ApplicationController {
 		ajx_current("empty");
 
 		/* get arguments */
-		$project_id = array_var($_GET, 'active_project', 0);
-		$project = Projects::findById($project_id);
+		$project = active_project();
 		$tag = array_var($_GET, 'tag');
 		$type = 'audio/mpeg';
 
@@ -1919,6 +2028,11 @@ class FilesController extends ApplicationController {
 	}
 
 	function copy() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		ajx_set_no_toolbar();
 		$ws = active_or_personal_project();
 		$id = get_id();
@@ -1949,7 +2063,7 @@ class FilesController extends ApplicationController {
 			$rev_data['name'] = $copy->getFilename();
 			$rev_data['size'] = $file->getFileSize();
 			$rev_data['type'] = $file->getTypeString();
-			$rev_data['tmp_name'] = './tmp/' . rand () ;
+			$rev_data['tmp_name'] = ROOT . '/tmp/' . rand () ;
 			$handler = fopen($rev_data['tmp_name'], 'w');
 			$file_content = $file->getLastRevision()->getFileContent();
 			fputs($handler, $file_content);
@@ -1969,6 +2083,11 @@ class FilesController extends ApplicationController {
 	}
 
 	function zip_extract() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$fileId = array_var($_GET, 'id');
 		ajx_current("empty");
 		if (!zip_supported()) {
@@ -2065,6 +2184,11 @@ class FilesController extends ApplicationController {
 	} // upload_extracted_file
 
 	function zip_add() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		ajx_current("empty");
 		if (!zip_supported()) {
 			flash_error(lang('zip not supported'));
@@ -2178,8 +2302,7 @@ class FilesController extends ApplicationController {
 		$orderdir = array_var($_GET,'dir');
 		$page = (integer) ($start / $limit)+1;
 		$hide_private = !logged_user()->isMemberOfOwnerCompany();
-		$project_id = array_var($_GET, 'active_project', 0);
-		$project = Projects::findByCSVIds($project_id);
+		$project = active_project();
 		$tag = array_var($_GET,'tag');
 		$type = '%image/';
 		$paginatedImages = ProjectFiles::getProjectFiles($project, null, $hide_private, $order, $orderdir, $page, $limit, false, $tag, $type, logged_user()->getId());
@@ -2190,9 +2313,7 @@ class FilesController extends ApplicationController {
 	}
 	
 	function fckimagesupload(){
-		
-		
-	try {
+		try {
 			if ( isset( $_FILES['NewFile'] ) && !is_null( $_FILES['NewFile']['tmp_name'] ) )
 			{
 				$oFile = $_FILES['NewFile'] ;

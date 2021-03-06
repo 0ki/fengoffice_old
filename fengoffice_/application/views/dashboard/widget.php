@@ -1,10 +1,10 @@
 <?php $widgetGenid = gen_id(); 
+	$isExpanded = user_config_option($widgetTemplate . '_widget_expanded',true);
 	$isWd = $widgetTemplate == 'workspace_description';
-	if ($isWd) {
-		$isExpanded = active_project()->getShowDescriptionInOverview();
-	} else {
-		$isExpanded = user_config_option($widgetTemplate . '_widget_expanded',true);
-	}?>
+	if ($isWd && $isExpanded && active_project() instanceof Project) {
+		$isExpanded = $isExpanded && active_project()->getShowDescriptionInOverview();
+	}
+?>
 <div class="<?php echo $widgetClass; ?>">
 <table style="width:100%">
 	<col width=12/><col/><col width=12/>
@@ -17,7 +17,6 @@
 			<td>
 				<div class="dashTitle"><?php echo $widgetTitle; ?></div>
 			</td>
-			<?php if (!($isWd && $isExpanded)){?>
 			<td align=right style="width:30px">
 				<?php if ($isExpanded) { ?>
 					<div id="<?php echo $widgetGenid ?>expander" class="dash-expander ico-dash-expanded"></div>
@@ -25,7 +24,6 @@
 					<div id="<?php echo $widgetGenid ?>expander" class="dash-expander ico-dash-collapsed"></div>
 				<?php } ?>
 			</td>
-			<?php } ?>
 		</tr></table>
 	</td>
 	<td class="coViewTopRight">&nbsp;&nbsp;</td></tr>

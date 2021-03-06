@@ -45,6 +45,7 @@
 					case 100: return lang('low priority');
 					case 200: return lang('normal priority');
 					case 300: return lang('high priority');
+					case 400: return lang('urgent priority');
 					default: return $ts->getObject()->getPriority();
 				}
 				else

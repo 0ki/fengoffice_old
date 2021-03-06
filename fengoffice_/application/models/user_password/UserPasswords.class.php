@@ -317,6 +317,10 @@ class UserPasswords extends BaseUserPasswords {
 		}
 		return $sent;
 	}
+	
+	static function clearByUser($user) {
+		return self::delete('`user_id` = ' . $user->getId());
+	}
 
 }
 

@@ -327,15 +327,19 @@ function insert_before_file_extension($filename, $insert) {
  * @return boolean
  */
 function download_file($path, $type = 'application/octet-stream', $name = '', $force_download = false) {
-	if (!function_exists('readfile')) {
-		$contents = file_get_contents($path);
-		return download_contents($contents, $type, $name, $force_download);
-	}
 	if (!is_readable($path)) return false;
 
 	$name = trim($name) == '' ? basename($path) : trim($name);
 	$size = filesize($path);
+	include_once ROOT . "/library/browser/Browser.php";
+	if (Browser::instance()->getBrowser() == Browser::BROWSER_IE) {
+		$name = rawurlencode($name);
+	}
 	
+	if (!function_exists('readfile')) {
+		$contents = file_get_contents($path);
+		return download_contents($contents, $type, $name, $size, $force_download);
+	}	
 	if(connection_status() != 0) return false; // check connection
 
 	/*
@@ -356,6 +360,8 @@ function download_file($path, $type = 'application/octet-stream', $name = '', $f
 	$disposition = $force_download ? 'attachment' : 'inline';
 	header("Content-Disposition: $disposition; filename=\"" . $name . "\"");
 	header("Content-Transfer-Encoding: binary");
+	header("Cache-Control: maxage=1"); // Age is in seconds.
+   	header("Pragma: public");
 	readfile($path);
 
 	return((connection_status() == 0) && !connection_aborted());
@@ -374,6 +380,11 @@ function download_file($path, $type = 'application/octet-stream', $name = '', $f
 function download_contents($content, $type, $name, $size, $force_download = false) {
 	if(connection_status() != 0) return false; // check connection
 
+	include_once ROOT . "/library/browser/Browser.php";
+	if (Browser::instance()->getBrowser() == Browser::BROWSER_IE) {
+		$name = rawurlencode($name);
+	}
+	
 	/*
 	if($force_download) {
 		header("Cache-Control: public");
@@ -392,6 +403,9 @@ function download_contents($content, $type, $name, $size, $force_download = fals
 	$disposition = $force_download ? 'attachment' : 'inline';
 	header("Content-Disposition: $disposition; filename=\"" . $name . "\"");
 	header("Content-Transfer-Encoding: binary");
+	header("Cache-Control: maxage=1"); // Age is in seconds.
+   	header("Pragma: public");
+   	
 	print $content;
 
 	return((connection_status() == 0) && !connection_aborted());

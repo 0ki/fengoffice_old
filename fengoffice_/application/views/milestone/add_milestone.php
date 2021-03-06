@@ -84,7 +84,7 @@
 		<?php if (!$milestone->isNew()) {?>
 			<div class="desc" style="margin-bottom:5px"><?php echo lang('add milestone change workspace warning')?></div>
 		<?php } ?>
-		<?php echo select_project2('milestone[project_id]', $milestone->getProjectId(), $genid) ?>
+		<?php echo select_project2('ws_ids', $milestone->getProjectId(), $genid) ?>
 	</fieldset>
 	</div>
 
@@ -133,6 +133,10 @@
 		<div class="optionControl"><?php echo assign_to_select_box('milestone[assigned_to]', active_or_personal_project(), array_var($milestone_data, 'assigned_to'), array('id' => $genid . 'milestoneFormAssignedTo', 'tabindex' => '40')) ?></div>
 		<div class="optionControl"><?php echo checkbox_field('milestone[send_notification]', array_var($milestone_data, 'send_notification', true), array('id' => $genid . 'milestoneFormSendNotification', 'tabindex' => '45')) ?> 
 		<label for="<?php echo $genid ?>milestoneFormSendNotification" class="checkbox"><?php echo lang('send milestone assigned to notification') ?></label></div>
+		</div>
+		<div class="objectOption">
+		<div class="optionLabel"><?php echo label_tag(lang('urgent milestone'), $genid . 'milestoneFormIsUrgent') ?></div>
+		<div class="optionControl"><?php echo checkbox_field('milestone[is_urgent]', array_var($milestone_data, 'is_urgent', false), array('id' => $genid . 'milestoneFormIsUrgent', 'tabindex' => '45')) ?> </div>
 		</div>
 	</fieldset>
 	</div>

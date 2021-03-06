@@ -113,9 +113,12 @@ class DateTimeValue {
 	 */
 	function isYesterday() {
 		$yesterday = DateTimeValueLib::makeFromString('yesterday');
-		return $this->getDay() == $yesterday->getDay() &&
-		$this->getMonth() == $yesterday->getMonth() &&
-		$this->getYear() == $yesterday->getYear();
+		/* TODO: if (logged_user() instanceof User) {
+			$date = new DateTimeValue($this->getTimestamp() + logged_user()->getTimezone() * 3600);
+		} else {
+			$date = $this;
+		}*/
+		return $this->getDay() == $yesterday->getDay() && $this->getMonth() == $yesterday->getMonth() && $this->getYear() == $yesterday->getYear();
 	} // isYesterday
 
 	/**

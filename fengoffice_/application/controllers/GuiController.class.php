@@ -18,13 +18,18 @@ class GUIController extends ApplicationController {
 		$this->setLayout("json");
 		$this->setTemplate(get_template_path("json"));
 		
-		$data = $_POST['data'];
-		if (!isset($data)) {
+		if (!isset($_POST['data'])) {
 			$object = array("success" => true);
 			tpl_assign("object", $object);
 			return;
 		}
+		$data = $_POST['data'];
 		$array = json_decode($data);
+		if (!is_array($array) || count($array) <= 0) {
+			$object = array("success" => true);
+			tpl_assign("object", $object);
+			return;
+		}
 		$query = "INSERT INTO `" . TABLE_PREFIX . "guistate` (`user_id`, `name`, `value`) VALUES ";
 		$queryd = "DELETE FROM `" . TABLE_PREFIX . "guistate` WHERE `user_id` = " . logged_user()->getId() . " AND `name` IN (";
 		$values = "";

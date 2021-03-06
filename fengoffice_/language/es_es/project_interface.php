@@ -277,4 +277,5 @@ Asunto:   {0}
 	'linked task tab' => 'Tareas',
 	'linked event tab' => 'Eventos',
 	'apply assignee to subtasks' => 'Aplicar asignado a subtareas',
+	'urgent priority' => 'Urgente',
 ); ?>

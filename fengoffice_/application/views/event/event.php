@@ -616,9 +616,10 @@ og.eventInvitationsPrevWsVal = -1;
 og.drawInnerHtml = function(companies) {
 	var htmlStr = '';
 	var script = "";
-	htmlStr += '<div id="<?php echo $genid ?>invite_companies"></div>';
+	var genid = Ext.id();
+	htmlStr += '<div id="' + genid + 'invite_companies"></div>';
 	htmlStr += '&nbsp;';
-	script += 'var div = Ext.getDom(\'<?php echo $genid ?>invite_companies\');';
+	script += 'var div = Ext.getDom(genid + \'invite_companies\');';
 	script += 'div.invite_companies = {};';
 	script += 'var cos = div.invite_companies;';
 	htmlStr += '<div class="company-users">';
@@ -627,9 +628,9 @@ og.drawInnerHtml = function(companies) {
 			comp_id = companies[i].object_id;
 			comp_name = companies[i].name;
 			comp_img = companies[i].logo_url;			
-			script += 'cos.company_' + comp_id + ' = {id:\'<?php echo $genid ?>inviteCompany' + comp_id + '\', checkbox_id : \'inviteCompany' + comp_id + '\',users : []};';
-			htmlStr += '<div onclick="App.modules.addMessageForm.emailNotifyClickCompany('+comp_id+',\'<?php echo $genid ?>\',\'invite_companies\', \'invitation\')" class="company-name container-div" onmouseover="og.rollOver(this)" onmouseout="og.rollOut(this,true ,true)" >';
-					htmlStr += '<input type="checkbox" style="display:none;" name="event[invite_company_'+comp_id+']" id="<?php echo $genid ?>inviteCompany'+comp_id+'" ></input>';
+			script += 'cos.company_' + comp_id + ' = {id:\'' + genid + 'inviteCompany' + comp_id + '\', checkbox_id : \'inviteCompany' + comp_id + '\',users : []};';
+			htmlStr += '<div onclick="App.modules.addMessageForm.emailNotifyClickCompany('+comp_id+',\'' + genid + '\',\'invite_companies\', \'invitation\')" class="company-name container-div" onmouseover="og.rollOver(this)" onmouseout="og.rollOut(this,true ,true)" >';
+					htmlStr += '<input type="checkbox" style="display:none;" name="event[invite_company_'+comp_id+']" id="' + genid + 'inviteCompany'+comp_id+'" ></input>';
 					htmlStr += '<label style="background: transparent url('+comp_img+') no-repeat; scroll 0% -5px;" ><span class="link-ico ico-company">'+og.clean(comp_name)+'</span></label>';
 			htmlStr += '</div>';
 			
@@ -638,12 +639,12 @@ og.drawInnerHtml = function(companies) {
 					for (j = 0; j < companies[i].users.length; j++) {
 
 						usr = companies[i].users[j];
-						htmlStr += '<div id="div<?php echo $genid ?>inviteUser'+usr.id+'" class="container-div user-name" style="margin-left:5px;" onmouseover="og.rollOver(this)" onmouseout="og.rollOut(this,false ,true)" onclick="og.checkUser(this)">'
-						htmlStr += '<input style="display:none;" type="checkbox" class="checkbox" name="event[invite_user_'+usr.id+']" id="<?php echo $genid ?>inviteUser'+usr.id+'" onclick="App.modules.addMessageForm.emailNotifyClickUser('+comp_id+','+usr.id+',\'<?php echo $genid ?>\',\'invite_companies\', \'invitation\')"></input>';
+						htmlStr += '<div id="div' + genid + 'inviteUser'+usr.id+'" class="container-div user-name" style="margin-left:5px;" onmouseover="og.rollOver(this)" onmouseout="og.rollOut(this,false ,true)" onclick="og.checkUser(this)">'
+						htmlStr += '<input style="display:none;" type="checkbox" class="checkbox" name="event[invite_user_'+usr.id+']" id="' + genid + 'inviteUser'+usr.id+'" value="checked"></input>';
 						htmlStr += '<label style="overflow:hidden; background: transparent url('+usr.avatar_url+') no-repeat;" ><span class="link-ico ico-user" >'+og.clean(usr.name)+'</span> <br> <span style="color:#888888;font-size:90%;font-weight:normal;">'+ usr.mail+ ' </span></label>';
 						script += 'cos.company_' + comp_id + '.users.push({ id:'+usr.id+', checkbox_id : \'inviteUser' + usr.id + '\'});';
 						if (usr.invited)
-							script += 'og.checkUser(document.getElementById(\'div<?php echo $genid ?>inviteUser'+usr.id+'\'));'
+							script += 'og.checkUser(document.getElementById(\'div' + genid + 'inviteUser'+usr.id+'\'));'
 						htmlStr += '</div>';
 	
 					}
@@ -652,7 +653,7 @@ og.drawInnerHtml = function(companies) {
 		}
 		htmlStr += '</div>';
 	}
-	Ext.lib.Event.onAvailable('<?php echo $genid ?>invite_companies', function() {
+	Ext.lib.Event.onAvailable(genid + 'invite_companies', function() {
 		eval(script);
 	});
 	return htmlStr;

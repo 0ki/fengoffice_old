@@ -25,4 +25,9 @@
 	'columns to print desc' => 'Mueve las columnas que deseas imprimir hacia el cuadro de la derecha presionando los íconos de flecha.',
 	'reporting workspace' => 'Área de trabajo',
 	'reporting user' => 'Usuario',
+	'report pdf options' => 'Opciones de PDF',
+	'report pdf page layout' => 'Formato de página',
+	'report pdf vertical' => 'Vertical',
+	'report pdf landscape' => 'Horizontal',
+	'report font size' => 'Tamaño de fuente',
 ); ?>

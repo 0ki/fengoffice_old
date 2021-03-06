@@ -641,6 +641,8 @@ class ProjectMilestone extends BaseProjectMilestone {
 			$result['compOn'] = $this->getCompletedOn()->getTimestamp();
 		}
 		
+		$result['is_urgent'] = $this->getIsUrgent();
+		
 		return $result;
 	}
 	

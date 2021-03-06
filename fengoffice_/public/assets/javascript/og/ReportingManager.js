@@ -26,7 +26,7 @@ og.ReportingManager = function() {
 					var d = this.reader.jsonData;
 					og.processResponse(d);
 					var ws = og.clean(Ext.getCmp('workspace-panel').getActiveWorkspace().name);
-					var tag = og.clean(Ext.getCmp('tag-panel').getSelectedTag().name);
+					var tag = og.clean(Ext.getCmp('tag-panel').getSelectedTag());
 					if (d.totalCount == 0) {
 						if (tag) {
 							this.fireEvent('messageToShow', lang("no objects with tag message", lang("charts"), ws, tag));
@@ -274,7 +274,7 @@ Ext.extend(og.ReportingManager, Ext.grid.GridPanel, {
 			params: Ext.apply(params, {
 				start: start,
 				limit: og.config['files_per_page'],
-				tag: Ext.getCmp('tag-panel').getSelectedTag().name,
+				tag: Ext.getCmp('tag-panel').getSelectedTag(),
 				active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id
 			})
 		});

@@ -39,6 +39,11 @@ class UserController extends ApplicationController {
 	 * @return null
 	 */
 	function add() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
    		$max_users = config_option('max_users');
 		if ($max_users && (Users::count() >= $max_users)) {
 			flash_error(lang('maximum number of users reached error'));
@@ -75,7 +80,7 @@ class UserController extends ApplicationController {
 					'password_generator' => 'random',
 					'company_id' => $company->getId(),
 					'timezone' => $contact->getTimezone(),
-					'create_contact' => false ,
+					'create_contact' => false,
 				); // array
 				
 			} else {
@@ -102,10 +107,9 @@ class UserController extends ApplicationController {
 			if (!array_var($user_data, 'createPersonalProject')) {
 				$user_data['personal_project'] = 0;
 			}
-			$is_admin = logged_user()->isAdministrator() && array_var($_POST, 'is_admin') && array_var($user_data, 'company_id') == owner_company()->getId();
 			try {
 				DB::beginWork();
-				$user = $this->createUser($user_data, $is_admin, array_var($_POST,'permissions'));
+				$user = $this->createUser($user_data, array_var($_POST,'permissions'));
 			
 				$object_controller = new ObjectController();
 				$object_controller->add_custom_properties($user);
@@ -153,8 +157,8 @@ class UserController extends ApplicationController {
 	 * @param string $personalProjectName
 	 * @return User $user
 	 */
-	function createUser($user_data, $is_admin, $permissionsString) {
-		return create_user($user_data, $is_admin, $permissionsString);
+	function createUser($user_data, $permissionsString) {
+		return create_user($user_data, $permissionsString);
 	}
 
 	function confirm_delete_user(){
@@ -179,6 +183,11 @@ class UserController extends ApplicationController {
 	 * @return null
 	 */
 	function delete() {
+		if (logged_user()->isGuest()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
 		$user = Users::findById(get_id());
 		if(!($user instanceof User)) {
 			flash_error(lang('user dnx'));

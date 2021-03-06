@@ -31,6 +31,7 @@
 				'selected' => false,
 			);
 		}
+		if($order_by == '') $order_by = 'updated_on';
 		$options[] = option_tag($acol['name'], $acol['id'], $acol['id'] == $order_by ? array('selected' => 'selected') : null);
 	}
 	

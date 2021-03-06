@@ -123,18 +123,19 @@ class ProjectMilestones extends BaseProjectMilestones {
 
 		if ($project instanceof Project) {
 			$project_ids = $project->getAllSubWorkspacesQuery(!$archived);
+			$wsstring = " AND " . self::getWorkspaceString($project_ids);
 		} else {
-			$project_ids = $user->getWorkspacesQuery(!$archived);
+			$wsstring = "";
 		}
 		
-		if ($archived) $archived_cond = "`archived_by_id` <> 0 AND ";
-		else $archived_cond = "`archived_by_id` = 0 AND ";
+		if ($archived) $archived_cond = "`archived_by_id` <> 0 ";
+		else $archived_cond = "`archived_by_id` = 0 ";
 
 		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectMilestones::instance(),ACCESS_LEVEL_READ, logged_user(), 'project_id') .')';
 		$tagStr = $tag? (" AND id in (SELECT rel_object_id from " . TABLE_PREFIX . "tags t WHERE tag=".DB::escape($tag)." AND t.rel_object_manager='ProjectMilestones')"):'';
 		if ($limit) {
 			return self::findAll(array(
-				'conditions' => array('`is_template` = false AND `due_date` < ? AND `completed_on` = ? AND ' . $archived_cond . self::getWorkspaceString($project_ids) . $tagStr . $permissions, $due_date, EMPTY_DATETIME),
+				'conditions' => array('`is_template` = false AND `due_date` < ? AND `completed_on` = ? AND ' . $archived_cond . $wsstring . $tagStr . $permissions, $due_date, EMPTY_DATETIME),
 				'order' => '`due_date`',
 				'limit' => $limit
 			)); // findAll
@@ -159,18 +160,19 @@ class ProjectMilestones extends BaseProjectMilestones {
 
 		if ($project instanceof Project) {
 			$project_ids = $project->getAllSubWorkspacesQuery(!$archived);
+			$wsstring = " AND " . self::getWorkspaceString($project_ids);
 		} else {
-			$project_ids = $user->getWorkspacesQuery(!$archived);
+			$wsstring = "";
 		}
 		
-		if ($archived) $archived_cond = "`archived_by_id` <> 0 AND ";
-		else $archived_cond = "`archived_by_id` = 0 AND ";
+		if ($archived) $archived_cond = "`archived_by_id` <> 0 ";
+		else $archived_cond = "`archived_by_id` = 0 ";
 
 		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectMilestones::instance(), ACCESS_LEVEL_READ, logged_user(), 'project_id') .')';
 		$tagStr = $tag? (" AND id in (SELECT rel_object_id from " . TABLE_PREFIX . "tags t WHERE tag=".DB::escape($tag)." AND t.rel_object_manager = 'ProjectMilestones')"):'';
 		if ($limit) {
 			return self::findAll(array(
-				'conditions' => array('`is_template` = false AND `completed_on` = ? AND (`due_date` >= ? AND `due_date` < ?) AND ' . $archived_cond . self::getWorkspaceString($project_ids) . $tagStr . $permissions, EMPTY_DATETIME, $from_date, $to_date),
+				'conditions' => array('`is_template` = false AND `completed_on` = ? AND (`due_date` >= ? AND `due_date` < ?) AND ' . $archived_cond . $wsstring . $tagStr . $permissions, EMPTY_DATETIME, $from_date, $to_date),
 				'limit' => $limit
 			)); // findAll
 		}else {
@@ -210,8 +212,9 @@ class ProjectMilestones extends BaseProjectMilestones {
 	function getDayMilestonesByUserAndProject(DateTimeValue $date,User $user, $project = null, $archived = false) {
 		if ($project instanceof Project) {
 			$project_ids = $project->getAllSubWorkspacesQuery(!$archived);
+			$wsstring = " AND " . self::getWorkspaceString($project_ids);
 		} else {
-			$project_ids = $user->getWorkspacesQuery(!$archived);
+			$wsstring = "";
 		}
 		 
 		$from_date =   (new DateTimeValue($date->getTimestamp()));
@@ -225,7 +228,7 @@ class ProjectMilestones extends BaseProjectMilestones {
 		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectMilestones::instance(),ACCESS_LEVEL_READ, $user, 'project_id') .')';
 
 		$result = self::findAll(array(
-			'conditions' => array('`is_template` = false AND `completed_on` = ? AND (`due_date` >= ? AND `due_date` < ?) AND ' . $archived_cond . self::getWorkspaceString($project_ids) . $permissions, EMPTY_DATETIME, $from_date, $to_date)
+			'conditions' => array('`is_template` = false AND `completed_on` = ? AND (`due_date` >= ? AND `due_date` < ?) AND ' . $archived_cond . $wsstring . $permissions, EMPTY_DATETIME, $from_date, $to_date)
 		)); // findAll
 		return $result;
 	} // getDayMilestonesByUser
@@ -248,11 +251,11 @@ class ProjectMilestones extends BaseProjectMilestones {
 		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectMilestones::instance(),ACCESS_LEVEL_READ, logged_user(), 'project_id') .')';
 		 
 		if ($project instanceof Project ){
-			$pids = $project->getAllSubWorkspacesQuery(!$archived, logged_user());
+			$pids = $project->getAllSubWorkspacesQuery(!$archived);
+			$wsstring = " AND " . self::getWorkspaceString($pids);
 		} else {
-			$pids = logged_user()->getWorkspacesQuery(!$archived);
+			$wsstring = "";
 		}
-		$limitation = " AND " . self::getWorkspaceString($pids);
 		if (isset($tags) && $tags && $tags!='') {
 			$tag_str = " AND exists (SELECT * from " . TABLE_PREFIX . "tags t WHERE tag=".DB::escape($tags)." AND  ".TABLE_PREFIX."project_milestones.id = t.rel_object_id AND t.rel_object_manager = 'ProjectMilestones') ";
 		} else {
@@ -270,7 +273,7 @@ class ProjectMilestones extends BaseProjectMilestones {
 		else $archived_cond = "AND `archived_by_id` = 0 ";
 
 		$result = self::findAll(array(
-			'conditions' => array('`is_template` = false AND `completed_on` = ? AND (`due_date` >= ? AND `due_date` < ?) ' . $archived_cond . $assignedFilter . $permissions . $limitation . $tag_str, EMPTY_DATETIME, $from_date, $to_date)
+			'conditions' => array('`is_template` = false AND `completed_on` = ? AND (`due_date` >= ? AND `due_date` < ?) ' . $archived_cond . $assignedFilter . $permissions . $wsstring . $tag_str, EMPTY_DATETIME, $from_date, $to_date)
 		)); // findAll
 
 		return $result;
@@ -278,13 +281,11 @@ class ProjectMilestones extends BaseProjectMilestones {
 
 	static function getMilestonesRelevantToWorkspace($workspace) {
 		if ($workspace instanceof Project) {
-			$pids = $workspace->getAllSubWorkspacesQuery(true, logged_user());
-			$additional_ws_cond = " OR " . self::getWorkspaceString($workspace->getParentIds());
+			$pids = $workspace->getAllSubWorkspacesQuery(true);
+			$projectstr = " AND (" . self::getWorkspaceString($pids) . " OR " . self::getWorkspaceString($workspace->getParentIds()) . ")";
 		} else {
-			$pids = logged_user()->getWorkspacesQuery();
-			$additional_ws_cond = "";
+			$projectstr = "";
 		}
-		$projectstr = " AND (" . self::getWorkspaceString($pids) . $additional_ws_cond . ")";
 		$pendingstr = " AND `completed_on` = " . DB::escape(EMPTY_DATETIME) . " ";
 		$permissionstr = ' AND ( ' . permissions_sql_for_listings(ProjectMilestones::instance(), ACCESS_LEVEL_READ, logged_user()) . ') ';
 		
@@ -301,11 +302,12 @@ class ProjectMilestones extends BaseProjectMilestones {
 		$order_by = '`due_date` ASC';
 
 		if ($project instanceof Project) {
-			$pids = $project->getAllSubWorkspacesQuery(!$archived, logged_user());
+			$pids = $project->getAllSubWorkspacesQuery(!$archived);
+			$projectstr = " AND " . self::getWorkspaceString($pids);
 		} else {
-			$pids = logged_user()->getWorkspacesQuery(!$archived);
+			$projectstr = "";
 		}
-		$projectstr = " AND " . self::getWorkspaceString($pids);
+		
 
 		if ($tag == '' || $tag == null) {
 			$tagstr = "";
@@ -370,6 +372,7 @@ class ProjectMilestones extends BaseProjectMilestones {
 		$new->setName($milestone->getName());
 		$new->setDescription($milestone->getDescription());
 		$new->setIsPrivate($milestone->getIsPrivate());
+		$new->setIsUrgent($milestone->setIsUrgent());
 		$new->setAssignedToCompanyId($milestone->getAssignedToCompanyId());
 		$new->setAssignedToUserId($milestone->getAssignedToUserId());
 		$new->setDueDate($milestone->getDueDate());
@@ -392,7 +395,14 @@ class ProjectMilestones extends BaseProjectMilestones {
 				$new->setFromTemplateId($sub->getId());
 			}
 			$new->save();
-			$new->setProject($milestoneTo->getProject());
+			foreach ($sub->getWorkspaces() as $workspace) {
+				if (ProjectTask::canAdd(logged_user(), $workspace)) {
+					$new->addToWorkspace($workspace);
+				}
+			}
+			if (!$as_template && active_project() instanceof Project && ProjectTask::canAdd(logged_user(), active_project())) {
+				$new->addToWorkspace(active_project());
+			}
 			$new->copyCustomPropertiesFrom($sub);
 			$new->copyLinkedObjectsFrom($sub);
 			$new->setTagsFromCSV(implode(",", $sub->getTagNames()));

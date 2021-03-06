@@ -1,10 +1,13 @@
 <?php 
 require_javascript("og/Permissions.js");
+
+if (!isset($genid)) $genid = gen_id();
+if (!isset($name)) $name = 'permissions';
 ?>
 	
 	<input id="<?php echo $genid ?>hfPerms" type="hidden" value="<?php echo $group->isNew()? '' : str_replace('"',"'", json_encode($group->getAllPermissions())) ?>"/>
 	
-	<input id="<?php echo $genid ?>hfPermsSend" name="permissions" type="hidden" value=""/>
+	<input id="<?php echo $genid ?>hfPermsSend" name="<?php echo $name ?>" type="hidden" value=""/>
 
 <table><tr><td>
   <?php	

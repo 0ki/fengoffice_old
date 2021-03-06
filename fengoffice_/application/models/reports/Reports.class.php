@@ -66,7 +66,7 @@ class Reports extends BaseReports {
 	 *
 	 * @return array
 	 */
-	static function executeReport($id, $params, $offset=0, $limit=50, $to_print = false) {
+	static function executeReport($id, $params, $order_by_col = '', $order_by_asc = true, $offset=0, $limit=50, $to_print = false) {
 		$results = array();
 		$report = self::getReport($id);
 		if($report instanceof Report){
@@ -157,13 +157,14 @@ class Reports extends BaseReports {
 									$fiterUsingWorkspace = false;
 								}
 							}
+							$wsCondition = $condField->getCondition();
 						}
 						if ($condField->getFieldName() == 'tag'){
 							//if is a tag condition:
 							$fiterUsingTag = true;
-							if ($condField->getIsParametrizable() && isset ($params['tags'])){
+							if ($condField->getIsParametrizable() && isset ($params['tag'])){
 								//if is parameter condition and is set the parameter
-								$tags_csv = $params['tags'];
+								$tags_csv = $params['tag'];
 								$tags = explode(',', $tags_csv);
 								$tag_value = trim($tags[0]);
 							}else{
@@ -176,6 +177,7 @@ class Reports extends BaseReports {
 									$fiterUsingTag = false;
 								}
 							}
+							$tagCondition = $condField->getCondition();
 						}
 						
 					}else{
@@ -259,37 +261,47 @@ class Reports extends BaseReports {
 			// FILTER USING WORKSPACES AND TAGS
 			if(isset($fiterUsingWorkspace)&& $fiterUsingWorkspace && $ws_value != 0)
 			{
+				$parentWS = Projects::findById($ws_value);
+				if($parentWS instanceof Project){
+					$subWorkspaces = $parentWS->getSubWorkspaces();
+					foreach($subWorkspaces as $subWS){
+						$ws_value .= ','.$subWS->getId();
+					}
+				}
 				if ($manager == 'Contacts'){
-					$allConditions .= ' AND t.id IN (SELECT contact_id FROM ' . TABLE_PREFIX . 'project_contacts WHERE project_id = '. $ws_value .')';
+					$allConditions .= ' AND t.id '.($wsCondition == '=' ? 'IN' : 'NOT IN').' (SELECT contact_id FROM ' . TABLE_PREFIX . 'project_contacts WHERE project_id IN ( '. $ws_value .'))';
 				} else {
-					$allConditions .= ' AND t.id IN (SELECT object_id FROM ' . TABLE_PREFIX . 'workspace_objects WHERE object_manager = \''. $manager .'\' AND workspace_id = '. $ws_value .')';
+					$allConditions .= ' AND t.id '.($wsCondition == '=' ? 'IN' : 'NOT IN').' (SELECT object_id FROM ' . TABLE_PREFIX . 'workspace_objects WHERE object_manager = \''. $manager .'\' AND workspace_id IN ( '. $ws_value .'))';
 				}
 			}
 			if(isset($fiterUsingTag)&& $fiterUsingTag && $tag_value != '')
 			{
-				$allConditions .= ' AND t.id IN (SELECT rel_object_id FROM ' . TABLE_PREFIX . 'tags WHERE rel_object_manager = \''. $manager .'\' AND tag = \''. $tag_value .'\')';
+				$allConditions .= ' AND t.id '.($tagCondition == '=' ? 'IN' : 'NOT IN').' (SELECT rel_object_id FROM ' . TABLE_PREFIX . 'tags WHERE rel_object_manager = \''. $manager .'\' AND tag = \''. $tag_value .'\')';
 			}
 			if ($manager != 'Projects' && $manager != 'Users') {
 				$allConditions .= ' AND t.trashed_by_id = 0 ';
 			}
-
+			
 			$sql .= $allConditions;
-					
 			$rows = DB::executeAll($sql);
 			if (is_null($rows)) $rows = array();
 
 			$totalResults = count($rows);
-			$results['pagination'] = Reports::getReportPagination($id, $params, $offset, $limit, $totalResults);
+			$results['pagination'] = Reports::getReportPagination($id, $params, $order_by_col, $order_by_asc, $offset, $limit, $totalResults);
 
 			$selectCols = 'distinct(t.id) as "id"';
 			$titleCols = $managerInstance->getReportObjectTitleColumns();
+			$titleColAlias = array();
 			foreach($titleCols as $num => $title){
 				$selectCols .= ', t.'.$title.' as "titleCol'.$num.'"';
+				$titleColAlias['titleCol'.$num] = $title;
 			}
 
 			$selectFROM = TABLE_PREFIX.$table.' t ';
 			$selectWHERE = "WHERE $allConditions";
 			
+			$order = $order_by_col != '' ? $order_by_col : $report->getOrderBy();
+			$order_asc = $order_by_col != '' ? $order_by_asc : $report->getIsOrderByAsc();
 			$allColumns = ReportColumns::getAllReportColumns($id);
 			if(is_array($allColumns) && count($allColumns) > 0){
 				$first = true;
@@ -300,6 +312,7 @@ class Reports extends BaseReports {
 						if ($managerInstance->columnExists($field)) {
 							$selectCols .= ', t.'.$field;
 							$results['columns'][] = lang('field '.$report->getObjectType().' '.$field);
+							$results['db_columns'][lang('field '.$report->getObjectType().' '.$field)] = $field;
 							$first = false;
 						}
 					} else {
@@ -308,14 +321,16 @@ class Reports extends BaseReports {
 						if ($cp instanceof CustomProperty) {
 							$selectCols .= ', cpv'.$colCp.'.value as "'.$cp->getName().'"';
 							$results['columns'][] = $cp->getName();
+							$results['db_columns'][$cp->getName()] = $colCp;
+							
 							$openPar .= '(';
 							$selectFROM .= ' LEFT OUTER JOIN '.TABLE_PREFIX.'custom_property_values cpv'.$colCp.' ON (t.id = cpv'.$colCp.'.object_id AND cpv'.$colCp.'.custom_property_id = '.$colCp .'))';
 							$first = false;
-							if($report->getOrderBy() == $colCp){
+							if($order == $colCp){
 								if($cp->getType() == 'date'){
-									$order_by = 'ORDER BY STR_TO_DATE(cpv'.$colCp.'.value, "%Y-%m-%d %H:%i:%s") '.($report->getIsOrderByAsc() ? 'asc' : 'desc');
+									$order_by = 'ORDER BY STR_TO_DATE(cpv'.$colCp.'.value, "%Y-%m-%d %H:%i:%s") '.($order_asc ? 'asc' : 'desc');
 								}else{
-									$order_by = 'ORDER BY cpv'.$colCp.'.value '.($report->getIsOrderByAsc() ? 'asc' : 'desc');
+									$order_by = 'ORDER BY cpv'.$colCp.'.value '.($order_asc ? 'asc' : 'desc');
 								}
 							}
 						}
@@ -323,16 +338,16 @@ class Reports extends BaseReports {
 				}
 			}
 			if($order_by == '') {
-				if(is_numeric($report->getOrderBy())){
-					$id = $report->getOrderBy();
+				if(is_numeric($order)){
+					$id = $order;
 					$openPar .= '(';
 					$selectFROM .= ' LEFT OUTER JOIN '.TABLE_PREFIX.'custom_property_values cpv'.$id.' ON (t.id = cpv'.$id.'.object_id AND cpv'.$id.'.custom_property_id = '.$id . '))';
-					$order_by = 'ORDER BY '.$report->getOrderBy();
+					$order_by = 'ORDER BY '.$order;
 				}else{
-					if($object->getColumnType($report->getOrderBy()) == 'date'){
-						$order_by = 'ORDER BY STR_TO_DATE(t.'.$report->getOrderBy().', "%Y-%m-%d %H:%i:%s") '.($report->getIsOrderByAsc() ? 'asc' : 'desc');
+					if($object->getColumnType($order) == 'date'){
+						$order_by = 'ORDER BY STR_TO_DATE(t.'.$order.', "%Y-%m-%d %H:%i:%s") '.($order_asc ? 'asc' : 'desc');
 					}else{
-						$order_by = 'ORDER BY t.'.$report->getOrderBy().' '.($report->getIsOrderByAsc() ? 'asc' : 'desc');
+						$order_by = 'ORDER BY t.'.$order.' '.($order_asc ? 'asc' : 'desc');
 					}
 				}
 			}
@@ -343,29 +358,46 @@ class Reports extends BaseReports {
 			$rows = DB::executeAll($sql);
 			if (is_null($rows)) $rows = array();
 			$rows = Reports::removeDuplicateRows($rows);
+			$reportObjTitleCols = array();
 			foreach($rows as &$row){
-				$title = $managerInstance->getReportObjectTitle($row);
+				foreach($row as $col => $value){
+					if(isset($titleColAlias[$col])){
+						$reportObjTitleCols[$titleColAlias[$col]] = $value;
+					}
+				}
+				$title = $managerInstance->getReportObjectTitle($reportObjTitleCols);
 				$id = $row['id'];
 				unset($row['id']);
 				$row = array_slice($row, count($titleCols));
-				//$row = array('link' => '<a class="internalLink" target="new" href="'.get_url($controller, $view, array('id' => $id)).'">'.$title.'</a>') + $row;
+				$row = array('link' => '<a class="internalLink" target="new" href="'.get_url($controller, $view, array('id' => $id)).'">'.$title.'</a>') + $row;
 				foreach($row as $col => &$value){
 					if(in_array($col, $managerInstance->getExternalColumns())){
 						$value = self::getExternalColumnValue($col, $value);
+					}
+					if(self::isReportColumnEmail($value)){
+						if(logged_user()->hasMailAccounts()){
+							$value = '<a class="internalLink" href="'.get_url('mail', 'add_mail', array('to' => clean($value))).'">'.clean($value).'</a></div>'; 		
+						}else{
+							$value = '<a class="internalLink" target="_self" href="mailto:'.clean($value).'">'.clean($value).'</a></div>'; 
+						}
 					}
 				}
 				$row = str_replace('|', ',', $row);
 			}
 			if (is_array($results['columns'])) {
-				//array_unshift($results['columns'], '');
+				array_unshift($results['columns'], '');
 			} else {
-				//$results['columns'] = array('');
+				$results['columns'] = array('');
 			}
 			$results['rows'] = $rows;
 		}
 
 		return $results;
 	} //  executeReport
+	
+	function isReportColumnEmail($col){
+		return preg_match(EMAIL_FORMAT, $col);
+	}
 	
 	static function removeDuplicateRows($rows){
 		$duplicateIds = array();
@@ -392,7 +424,7 @@ class Reports extends BaseReports {
 		return $rows;
 	}
 
-	static function getReportPagination($report_id, $params, $offset, $limit, $total){
+	static function getReportPagination($report_id, $params, $order_by='', $order_by_asc=true, $offset, $limit, $total){
 		if($total == 0) return '';
 		$a_nav = array(
 			'<span class="x-tbar-page-first" style="padding-left:16px"/>', 
@@ -409,6 +441,9 @@ class Reports extends BaseReports {
 			foreach($params as $id => $value){
 				$parameters .= '&params['.$id.']='.$value;
 			}
+		}
+		if($order_by != ''){
+			$parameters .= '&order_by='.$order_by.'&order_by_asc='.($order_by_asc ? 1 : 0);
 		}
 		
 		$nav = '';

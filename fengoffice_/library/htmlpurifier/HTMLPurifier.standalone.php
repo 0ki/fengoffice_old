@@ -5825,7 +5825,7 @@ class HTMLPurifier_Lexer
                 }
 
                 if (
-                    class_exists('DOMDocument') &&
+                    class_exists('DOMDocument', false) &&
                     method_exists('DOMDocument', 'loadHTML') &&
                     !extension_loaded('domxml')
                 ) {

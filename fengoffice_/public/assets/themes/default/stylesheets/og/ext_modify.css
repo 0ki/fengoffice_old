@@ -9,7 +9,7 @@
 }
 
 /*--- panel.css ---*/
-.x-panel-body-noheader, .x-panel-mc .x-panel-body {
+#tabs-panel .x-panel-body-noheader, .x-panel-mc .x-panel-body {
     border-top:0px;
 }
 .x-panel-body{

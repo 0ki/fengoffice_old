@@ -268,12 +268,19 @@ class Timeslots extends BaseTimeslots {
 			$projectCondition = ' AND (SELECT count(*) FROM `'. TABLE_PREFIX . 'project_tasks` as `pt`, `' . TABLE_PREFIX . 'workspace_objects` AS `wo` WHERE `pt`.`id` = `object_id` AND `pt`.`trashed_by_id` = 0 AND ' .
 			"`wo`.`object_manager` = 'ProjectTasks' AND `wo`.`object_id` = `object_id` AND `wo`.`workspace_id` IN (" . $workspacesCSV . ')) > 0';
 			
+		/* TODO: handle permissions with permissions_sql_for_listings */
+		$permissions = "";
+		if ($object_manager == 'ProjectTasks') {
+			$permissions = ' AND (SELECT count(*) FROM `'. TABLE_PREFIX . 'project_tasks` as `pt`, `' . TABLE_PREFIX . 'workspace_objects` AS `wo` WHERE `pt`.`id` = `object_id` AND `pt`.`trashed_by_id` = 0 AND ' .
+			"`wo`.`object_manager` = 'ProjectTasks' AND `wo`.`object_id` = `object_id` AND `wo`.`workspace_id` IN (" . logged_user()->getWorkspacesQuery() . ')) > 0';
+		}
+			
 		$objectCondition = '';
 		if ($object_id > 0)
 			$objectCondition = ' AND `object_id` = ' . $object_id;
 		
 		return self::findAll(array(
-          'conditions' => array('`object_manager` = ? and `start_time` > ? and `end_time` < ?' . $userCondition . $projectCondition . $objectCondition, $object_manager, $start_date, $end_date),
+          'conditions' => array('`object_manager` = ? and `start_time` > ? and `end_time` < ?' . $userCondition . $projectCondition . $permissions . $objectCondition, $object_manager, $start_date, $end_date),
           'order' => '`start_time`'
           )); // array
 	

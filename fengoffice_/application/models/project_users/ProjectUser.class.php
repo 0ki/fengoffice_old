@@ -8,6 +8,8 @@
  */
 class ProjectUser extends BaseProjectUser {
 
+	private $user = null;
+	
 	/**
 	 * Sets all permissions to a value.
 	 *
@@ -35,8 +37,8 @@ class ProjectUser extends BaseProjectUser {
 		$this->setCanAssignToOwners($value);
 		$this->setCanAssignToOther($value);
 	 } // setAllPermissions
-	 
-	 function setRadioPermissions($radio_array){
+
+	 function setRadioPermissions($radio_array, $can_write = true){
 	 	$this->setCanReadMessages($radio_array[0]>=1);
 		$this->setCanReadTasks($radio_array[1]>=1);
 		$this->setCanReadMilestones($radio_array[2]>=1);
@@ -47,18 +49,18 @@ class ProjectUser extends BaseProjectUser {
 		$this->setCanReadFiles($radio_array[7]>=1);
 		$this->setCanReadEvents($radio_array[8]>=1);
 		
-		$this->setCanWriteMessages($radio_array[0] == 2);
-		$this->setCanWriteTasks($radio_array[1] == 2);
-		$this->setCanWriteMilestones($radio_array[2] == 2);
-		$this->setCanWriteMails($radio_array[3] == 2);
-		$this->setCanWriteComments($radio_array[4] == 2);
-		$this->setCanWriteContacts($radio_array[5] == 2);
-		$this->setCanWriteWeblinks($radio_array[6] == 2);
-		$this->setCanWriteFiles($radio_array[7] == 2);
-		$this->setCanWriteEvents($radio_array[8] == 2);
+		$this->setCanWriteMessages($radio_array[0] == 2 && $can_write);
+		$this->setCanWriteTasks($radio_array[1] == 2 && $can_write);
+		$this->setCanWriteMilestones($radio_array[2] == 2 && $can_write);
+		$this->setCanWriteMails($radio_array[3] == 2 && $can_write);
+		$this->setCanWriteComments($radio_array[4] == 2); // guest users can comment so we don't check the can_write
+		$this->setCanWriteContacts($radio_array[5] == 2 && $can_write);
+		$this->setCanWriteWeblinks($radio_array[6] == 2 && $can_write);
+		$this->setCanWriteFiles($radio_array[7] == 2 && $can_write);
+		$this->setCanWriteEvents($radio_array[8] == 2 && $can_write);
 	 }
 	 
-	 function setCheckboxPermissions($checkbox_array){
+	 function setCheckboxPermissions($checkbox_array, $can_write = true){
 	 	$this->setCanAssignToOwners($checkbox_array[0] == 1);
 		$this->setCanAssignToOther($checkbox_array[1] == 1);
 	 }
@@ -86,6 +88,56 @@ class ProjectUser extends BaseProjectUser {
 	 	}
 	 	return false;
 	 }
+	 
+	function getUser() {
+		if (!$this->user instanceof User) $this->user = Users::findById($this->getUserId());
+		return $this->user; 
+	}
+	 
+	/*function getCanWriteMessages() {
+		if ($this->getUser()->isGuest()) return false;
+		return parent::getcanWriteMessages();
+	}
+	
+	function getCanWriteTasks() {
+		if ($this->getUser()->isGuest()) return false;
+		return parent::getCanWriteTasks();
+	}
+	
+	function getCanWriteWeblinks() {
+		if ($this->getUser()->isGuest()) return false;
+		return parent::getCanWriteWeblinks();
+	}
+	
+	function getCanWriteMilestones() {
+		if ($this->getUser()->isGuest()) return false;
+		return parent::getCanWriteMilestones();
+	}
+	
+	function getCanWriteMails() {
+		if ($this->getUser()->isGuest()) return false;
+		return parent::getCanWriteMails();
+	}
+	
+	function getCanWriteContacts() {
+		if ($this->getUser()->isGuest()) return false;
+		return parent::getCanWriteContacts();
+	}
+	
+	function getCanWriteComments() {
+		if ($this->getUser()->isGuest()) return false;
+		return parent::getCanWriteComments();
+	}
+	
+	function getCanWriteFiles() {
+		if ($this->getUser()->isGuest()) return false;
+		return parent::getCanWriteFiles();
+	}
+	
+	function getCanWriteEvents() {
+		if ($this->getUser()->isGuest()) return false;
+		return parent::getCanWriteEvents();
+	}*/
 } // ProjectUser
 
 ?>

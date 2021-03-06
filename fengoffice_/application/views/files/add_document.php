@@ -96,7 +96,8 @@ var editor = CKEDITOR.replace('<?php echo $genid ?>ckeditor', {
 			var p = og.getParentContentPanel(Ext.get('<?php echo $genid ?>ckeditor'));
 			Ext.getCmp(p.id).setPreventClose(editor.checkDirty());
 		}
-	}
+	},
+	entities_additional : '#39,#336,#337,#368,#369'
 });
 
 

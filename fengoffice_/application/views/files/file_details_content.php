@@ -45,7 +45,7 @@
 <?php } ?>
 
 
-<?php if ($file->getType() == ProjectFiles::TYPE_DOCUMENT){?>
+<?php if (count($revisions)){?>
 <fieldset>
   <legend class="toggle_collapsed" onclick="og.toggle('<?php echo $genid ?>revisions',this)"><?php echo lang('revisions'); ?> (<?php echo count($revisions);?>)</legend>
 <div id="<?php echo $genid ?>revisions" style="display:none">
@@ -59,9 +59,15 @@
 	<tr>
 		<td rowspan=2 class='number' style="background-color:<?php echo $bgColor ?>">
 			<?php if ($file->canDownload(logged_user())){?>
+				<?php if ($file->getType() == ProjectFiles::TYPE_WEBLINK) {?>
+				<a target="_blank" class="downloadLink" href="<?php echo $revision->getTypeString() ?>" title="<?php echo $revision->getTypeString()?>">
+					<span style="font-size:12px">#</span><?php echo $revision->getRevisionNumber() ?>
+				</a>
+				<?php } else { ?>
 				<a target="_self" class="downloadLink" href="<?php echo $revision->getDownloadUrl() ?>" title="<?php echo lang('download') . ' (' . format_filesize($revision->getFileSize()) .')'?>">
 					<span style="font-size:12px">#</span><?php echo $revision->getRevisionNumber() ?>
 				</a>
+				<?php } ?>
 			<?php } else {?>
 				<span style="font-size:12px">#</span><?php echo $revision->getRevisionNumber() ?>
 			<?php } // if ?>
@@ -75,7 +81,11 @@
 		</td>
 		<td class='line_header_icons' style="background-color:<?php echo $bgColor ?>;">
 			<?php if ($file->canDownload(logged_user())){?>
+				<?php if ($file->getType() == ProjectFiles::TYPE_WEBLINK) { ?>
+				<a target="_blank" class="downloadLink coViewAction ico-open-link" href="<?php echo $revision->getTypeString() ?>" title="<?php echo $revision->getTypeString()?>">&nbsp;</a>
+				<?php } else {?>
 				<a target="_self" class="downloadLink coViewAction ico-download" href="<?php echo $revision->getDownloadUrl() ?>" title="<?php echo lang('download') . ' (' . format_filesize($revision->getFileSize()) .')'?>">&nbsp;</a>
+				<?php } ?>
 			<?php } ?>
 			<?php if ($file->canDelete(logged_user()) && !$file->isTrashed()) {?>
 				<a onclick="return confirm('<?php echo escape_single_quotes(lang('confirm move to trash'))?>')" href="<?php echo $revision->getDeleteUrl() ?>" class="internalLink coViewAction ico-trash" title="<?php echo lang('move to trash')?>"></a>

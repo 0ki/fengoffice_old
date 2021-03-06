@@ -113,17 +113,18 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 	function getSearchableColumnContent($column_name) {
 		if($column_name == 'filecontent') {
 			$file_type = $this->getFileType();
-			
 			// Unknown type or type not searchable
 			if(!($file_type instanceof FileType)) {
 				return null;
 			} // if
 			
 			// Simple search for .txt and .html documents
-			if ($file_type->getIsSearchable()){ 
-				$content = $this->getFileContent();
-				if(strlen($content) <= MAX_SEARCHABLE_FILE_SIZE)
-					return strip_tags($content); // Remove unnecesary html tags
+			if ($file_type->getIsSearchable()){
+				$content = strip_tags($this->getFileContent()); // Remove unnecesary html tags
+				if(strlen($content) > MAX_SEARCHABLE_FILE_SIZE) {
+					$content = substr($content, 0, MAX_SEARCHABLE_FILE_SIZE);
+				}
+				return $content; 
 			} else 
 			
 			// Search for .doc and .ppt documents
@@ -135,7 +136,10 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 					$filepath = $backend->getFilePath($this->getRepositoryId());
 					$fileContents = $this->cat_file($filepath,$this->getFileType()->getExtension());
 					
-					if($fileContents && strlen($fileContents) <= MAX_SEARCHABLE_FILE_SIZE){
+					if ($fileContents) {
+						if (strlen($fileContents) > MAX_SEARCHABLE_FILE_SIZE) {
+							$fileContents = substr($fileContents, 0, MAX_SEARCHABLE_FILE_SIZE);
+						}
 					    return $fileContents;
 					}
 				}

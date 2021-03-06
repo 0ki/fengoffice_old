@@ -122,72 +122,6 @@ abstract class BaseMailContent extends ProjectDataObject {
 	function setFromName($value) {
 		return $this->setColumnValue('from_name', $value);
 	} // setFromName()
-	
-	/**
-	 * Return value of 'to' field
-	 *
-	 * @access public
-	 * @param void
-	 * @return string
-	 */
-	function getTo() {
-		return $this->getColumnValue('to');
-	} // getTo()
-
-	/**
-	 * Set value of 'to' field
-	 *
-	 * @access public
-	 * @param string $value
-	 * @return boolean
-	 */
-	function setTo($value) {
-		return $this->setColumnValue('to', $value);
-	} // setTo()
-	
-	/**
-	 * Return value of 'cc' field
-	 *
-	 * @access public
-	 * @param void
-	 * @return string
-	 */
-	function getCc() {
-		return $this->getColumnValue('cc');
-	} // getCc()
-
-	/**
-	 * Set value of 'cc' field
-	 *
-	 * @access public
-	 * @param string $value
-	 * @return boolean
-	 */
-	function setCc($value) {
-		return $this->setColumnValue('cc', $value);
-	} // setCc()
-	
-	/**
-	 * Return value of 'bcc' field
-	 *
-	 * @access public
-	 * @param void
-	 * @return string
-	 */
-	function getBcc() {
-		return $this->getColumnValue('bcc');
-	} // getBcc()
-
-	/**
-	 * Set value of 'bcc' field
-	 *
-	 * @access public
-	 * @param string $value
-	 * @return boolean
-	 */
-	function setBcc($value) {
-		return $this->setColumnValue('bcc', $value);
-	} // setBcc()
 
 	/**
 	 * Return value of 'subject' field
@@ -210,7 +144,8 @@ abstract class BaseMailContent extends ProjectDataObject {
 	function setSubject($value) {
 		return $this->setColumnValue('subject', $value);
 	} // setSubject()
-
+	
+	
 	/**
 	 * Return value of 'sent_date' field
 	 *
@@ -255,72 +190,6 @@ abstract class BaseMailContent extends ProjectDataObject {
 		return $this->setColumnValue('received_date', $value);
 	} // setReceivedDate()
 	
-	/**
-	 * Return value of 'content' field
-	 *
-	 * @access public
-	 * @param void
-	 * @return string
-	 */
-	function getContent() {
-		return $this->getColumnValue('content');
-	} // getContent()
-
-	/**
-	 * Set value of 'content' field
-	 *
-	 * @access public
-	 * @param string $value
-	 * @return boolean
-	 */
-	function setContent($value) {
-		return $this->setColumnValue('content', $value);
-	} // setContent()
-
-	/**
-	 * Return value of 'body_plain' field
-	 *
-	 * @access public
-	 * @param void
-	 * @return string
-	 */
-	function getBodyPlain() {
-		return $this->getColumnValue('body_plain');
-	} // getBodyPlain()
-
-	/**
-	 * Set value of 'body_plain' field
-	 *
-	 * @access public
-	 * @param string $value
-	 * @return boolean
-	 */
-	function setBodyPlain($value) {
-		return $this->setColumnValue('body_plain', $value);
-	} // setBodyPlain()
-
-	/**
-	 * Return value of 'body_html' field
-	 *
-	 * @access public
-	 * @param void
-	 * @return string
-	 */
-	function getBodyHtml() {
-		return $this->getColumnValue('body_html');
-	} // getBodyHtml()
-
-	/**
-	 * Set value of 'body_html' field
-	 *
-	 * @access public
-	 * @param string $value
-	 * @return boolean
-	 */
-	function setBodyHtml($value) {
-		return $this->setColumnValue('body_html', $value);
-	} // setBodyHtml()
-
 	/**
 	 * Return value of 'has_attachments' field
 	 *

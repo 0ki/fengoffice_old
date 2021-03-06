@@ -209,6 +209,7 @@ span.required {
 
 #loginUsernameDiv, #loginPasswordDiv {
   padding-top: 1px;
+  height: 45px;
 }
 
 #loginUsernameDiv {
@@ -255,8 +256,8 @@ span.required {
 
 #optionsLink, #hideOptionsLink {
 	position: absolute;
-	right: 0px;
-	top: 10px;
+	right: 10px;
+	top: 0px;
 }
 
 #optionsDiv {

@@ -241,7 +241,7 @@ og.TasksBottomToolbar = function(config) {
     	id: 'ogTasksFilterPriorityCombo',
         store: new Ext.data.SimpleStore({
 			fields: ['value', 'text'],
-			data : [[100, lang('low')],[200, lang('normal')],[300, lang('high')]]
+			data : [[100, lang('low')],[200, lang('normal')],[300, lang('high')],[400, lang('urgent')]]
 	    }),
 	    hidden: ogTasks.userPreferences.filter != 'priority',
         displayField:'text',

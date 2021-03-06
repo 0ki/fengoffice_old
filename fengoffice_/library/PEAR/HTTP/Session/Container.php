@@ -22,7 +22,7 @@
  * @author    Torsten Roehr <torsten.roehr@gmx.de>
  * @copyright 1997-2005 The PHP Group
  * @license   http://www.php.net/license/3_0.txt  PHP License 3.0
- * @version   CVS: $Id: Container.php,v 1.1 2008/11/27 12:11:21 alvarotm01 Exp $
+ * @version   CVS: $Id: Container.php,v 1.1 2010/01/22 18:10:55 acio Exp $
  * @link      http://pear.php.net/package/HTTP_Session
  * @since     File available since Release 0.4.0
  */

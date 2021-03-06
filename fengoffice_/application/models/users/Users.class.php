@@ -131,7 +131,7 @@ class Users extends BaseUsers {
 	static function getGroupedByCompanyFromProjectIds($project_ids) {
 		// Get user ids for project and subprojects
 		$project_users_table = ProjectUsers::instance()->getTableName(true);
-		$sql = "SELECT DISTINCT user_id FROM $project_users_table WHERE (`project_id` in ( $project_ids ) )";
+		$sql = "SELECT DISTINCT user_id FROM $project_users_table WHERE (`project_id` in ( $project_ids ) ) ";
 		$rows = DB::executeAll($sql);
 		$user_csvs = '';
 		if(is_array($rows)) {

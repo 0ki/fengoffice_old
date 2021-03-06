@@ -119,4 +119,5 @@
 	'this object must belong to a ws to modify its subscribers' => 'Ten obiekt musi być przypisany do projektu aby można było zmodyfikować jego subskrybentów.',
 	'mailAccount dnx' => 'Konto e-mail nie istnieje',
 	'error add contact from user' => 'Nie udało się dodać kontaktu opartego o użytkownika',
+	'zip not supported' => 'Format ZIP nie jest obsługiwany przez serwer',
 ); ?>

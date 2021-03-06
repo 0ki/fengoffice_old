@@ -559,5 +559,11 @@
 	'hidden quoted text' => 'Texto citado oculto',
 	'subscribe invited users' => 'Subscribir a usuarios invitados',
 	'personal project' => 'Espacio personal',
-	'personal project desc' => 'El espacio personal es donde se colocarán los nuevos objetos del usuario por defecto (cuando "Todos" está seleccionado en el panel de Espacios). Si cambia este espacio el usuario obtendrá todos los permisos sobre el espacio. Puede cambiar esto luego modificando los permisos del usuario o del espacio.'
+	'personal project desc' => 'El espacio personal es donde se colocarán los nuevos objetos del usuario por defecto (cuando "Todos" está seleccionado en el panel de Espacios). Si cambia este espacio el usuario obtendrá todos los permisos sobre el espacio. Puede cambiar esto luego modificando los permisos del usuario o del espacio.',
+	'export csv' => 'Exportar a CSV',
+	'export pdf' => 'Exportar a PDF',
+	'normal user' => 'Normal',
+	'guest user' => 'Invitado',
+	'admin user' => 'Administrador',
+	'user type' => 'Tipo de usuario',
 ); ?>

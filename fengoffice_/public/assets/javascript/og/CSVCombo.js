@@ -68,7 +68,7 @@ og.CSVCombo = Ext.extend(Ext.form.ComboBox, {
 		var val = this.getRawValue() || "";
 		var l = val.lastIndexOf(",");
 		val = val.substring(l + 1).trim();
-		this.doQuery(val);
+		if (val) this.doQuery(val); else this.list.hide();
 	},
 
 	doQuery: function(q, forceAll) {
@@ -126,7 +126,7 @@ og.CSVCombo = Ext.extend(Ext.form.ComboBox, {
 				var val = this.getRawValue() || "";
 				var l = val.lastIndexOf(",");
 				val = val.substring(l + 1).trim();
-				this.doQuery(val);
+				if (val) this.doQuery(val); else this.list.hide();
 			}
         	this.el.focus();
 		}

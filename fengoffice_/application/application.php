@@ -8,7 +8,6 @@
  * @version 1.0
  * @author Ilija Studen <ilija.studen@gmail.com>
  */
-
 define('FILE_STORAGE_FILE_SYSTEM', 'fs');
 define('FILE_STORAGE_MYSQL', 'mysql');
 

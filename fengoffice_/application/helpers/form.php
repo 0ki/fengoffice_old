@@ -208,6 +208,33 @@
   } // select_box
   
   /**
+   * 
+   * @param $name Control name
+   * @param $options Array of array(value, text)
+   * @param $selected Selected value string
+   * @param $attributes
+   * @return unknown_type
+   */
+  function simple_select_box($name, $options, $selected = null, $attributes = null) {
+  	if(is_array($attributes)) {
+      $attributes['name'] = $name;
+    } else {
+      $attributes = array('name' => $name);
+    } // if
+    
+    $output = open_html_tag('select', $attributes) . "\n";
+    if(is_array($options)) {
+      foreach($options as $option) {
+      	if ($selected == $option[0]) {
+        	$output .= option_tag($option[1], $option[0], array('selected' => 'selected')) . "\n";
+      	} else {
+      		$output .= option_tag($option[1], $option[0]) . "\n";
+      	}
+      } // foreach
+    } // if
+    return $output . close_html_tag('select') . "\n";
+  }
+  /**
   * Render option tag
   *
   * @access public
@@ -522,7 +549,11 @@
     $country_codes = array_keys(CountryCodes::getAll());
     $countries = array();
     foreach($country_codes as $code) {
-      $countries[$code] = lang("country $code");
+      if (Localization::instance()->lang_exists("country $code")) {
+        $countries[$code] = lang("country $code");
+      } else {
+        $countries[$code] = CountryCodes::getCountryNameByCode($code);
+      }
     } // foreach
     
     asort($countries);

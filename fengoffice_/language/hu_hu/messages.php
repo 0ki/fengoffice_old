@@ -421,6 +421,7 @@
 	'log untrash projectfiles' => '\'{0}\' visszaállítva kukából',
 	'log comment projectfiles' => 'Kommentálva \'{0}\' időpontban',
 	'log subscribe projectfiles' => 'Feliratkozva \'{0}\' időpontban',
+ 	'log subscribe projectfiles data' => 'Feliratkozva \'{0}\' időpontban',
 	'log unsubscribe projectfiles' => 'Leiratkozva \'{0}\' időpontban',
 	'log tag projectfiles' => '\'{0}\' címkézve',
 	'log link projectfiles' => '\'{0}\' összekapcsolva',

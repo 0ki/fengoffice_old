@@ -1,7 +1,13 @@
 <?php
-	function format_value_to_print($value, $type, $textWrapper='', $dateformat='Y-m-d') {
+	
+	function format_value_to_print($col, $value, $type, $obj_type, $textWrapper='', $dateformat='Y-m-d') {
 		switch ($type) {
-			case DATA_TYPE_STRING: $formatted = $textWrapper . clean($value) . $textWrapper;
+			case DATA_TYPE_STRING:
+				if(preg_match(EMAIL_FORMAT, strip_tags($value))){
+					$formatted = $value;
+				}else{ 
+					$formatted = $textWrapper . clean($value) . $textWrapper;
+				}
 				break;
 			case DATA_TYPE_INTEGER: $formatted = clean($value);
 				break;
@@ -17,8 +23,8 @@
 			case DATA_TYPE_DATETIME:
 				if ($value != 0) {
 					$dtVal = DateTimeValueLib::dateFromFormatAndString("$dateformat H:i:s", $value);
-					if (str_ends_with($value, "00:00:00")) $formatted = format_date($dtVal, null, 0);
-					else $formatted = format_datetime($dtVal);
+					if ($obj_type == 'ProjectEvents' && $col == 'start') $formatted = format_datetime($dtVal);
+					else $formatted = format_date($dtVal, null, 0);
 				} else $formatted = '';
 				break;
 			default: $formatted = $value;
@@ -48,20 +54,57 @@
 				}	
 				//$name = lang('field ' . $model . ' ' . $condition->getFieldName());
 				$coltype = array_key_exists($condition->getFieldName(), $types)? $types[$condition->getFieldName()]:'';
-				$paramName = $condition->getId();
+				$paramName = $condition->getFieldName();
 			}
-			 
-			$value = $condition->getIsParametrizable()? clean($parameters[$paramName]) : clean($condition->getValue());
+			$paramValue = isset($parameters[$paramName]) ? $parameters[$paramName] : '';
+			$value = $condition->getIsParametrizable()? clean($paramValue) : clean($condition->getValue());
+			if ($condition->getFieldName() == 'workspace'){
+				$workspace_id = $condition->getIsParametrizable()? clean($parameters['workspace']) : clean($condition->getValue());
+				$project = Projects::findById($workspace_id);
+				if($project instanceof Project){
+					$value = $project->getName();
+					$coltype = 'external';
+				}else{
+					continue;
+				}
+			} 
 			eval('$managerInstance = ' . $model . "::instance();");
 			$externalCols = $managerInstance->getExternalColumns();
 			if(in_array($condition->getFieldName(), $externalCols)){
 				$value = clean(Reports::getExternalColumnValue($condition->getFieldName(), $value));
 			}
+			
 			if ($value != '')
-				$conditionHtml .= '- ' . $name . ' ' . ($condition->getCondition() != '%' ? $condition->getCondition() : lang('ends with') ) . ' ' . format_value_to_print($value, $coltype, '"', user_config_option('date_format')) . '<br/>';
+				$conditionHtml .= '- ' . $name . ' ' . ($condition->getCondition() != '%' ? $condition->getCondition() : lang('ends with') ) . ' ' . format_value_to_print($condition->getFieldName(), $value, $coltype, '', '"', user_config_option('date_format')) . '<br/>';
 		}
 	}
 	
+	?>
+	
+<div id="pdfOptions" style="display:none;">
+	<b><?php echo lang('report pdf options') ?></b><hr/>
+	<?php echo lang('report pdf page layout') ?>:
+	<select name="pdfPageLayout">
+		<option value="P" selected><?php echo lang('report pdf vertical') ?></option>
+		<option value="L"><?php echo lang('report pdf landscape') ?></option>
+	</select>&nbsp;&nbsp;
+	<?php echo lang('report font size') ?>:
+	<select name="pdfFontSize">
+		<option value="8">8</option>
+		<option value="9">9</option>
+		<option value="10">10</option>
+		<option value="11">11</option>
+		<option value="12" selected>12</option>
+		<option value="13">13</option>
+		<option value="14">14</option>
+		<option value="15">15</option>
+		<option value="16">16</option>
+	</select><br/>
+	<input type="submit" name="exportPDF" value="<?php echo lang('export') ?>" onclick="document.getElementById('form<?php echo $genid ?>').target = '_download';" style="width:120px; margin-top:10px;"/>
+</div>
+<br/>
+
+<?php
 	if ($conditionHtml != '') {?>
 <br/>
 <b><?php echo lang('conditions')?>:</b><br/>
@@ -71,22 +114,45 @@
 <?php } // if ?>
 <br/>
 <input type="hidden" name="id" value="<?php echo $id ?>" />
+<input type="hidden" name="order_by" value="<?php echo $order_by ?>" />
+<input type="hidden" name="order_by_asc" value="<?php echo $order_by_asc ?>" />
 <table>
 <tbody>
 <tr>
-<?php foreach($columns as $col) { ?>
-	<td style="padding-right:10px;border-bottom:1px solid #666"><b><?php echo clean($col) ?></b></td>
+<?php foreach($columns as $col) { 
+	$sorted = false;
+	$asc = false;
+	if($col != '' && $db_columns[$col] == $order_by) {
+		$sorted = true;
+		$asc = $order_by_asc;
+	}	?>
+	<td style="padding-right:10px;border-bottom:1px solid #666"><b>
+	<?php if($to_print){ 	
+			echo clean($col);
+		  }else if($col != ''){ ?>
+		<a href="<?php echo get_url('reporting', 'view_custom_report', array('id' => $id, 'order_by' => $db_columns[$col], 'order_by_asc' => $asc ? 0 : 1)).$parameterURL; ?>"><?php echo clean($col) ?></a>
+	<?php } ?>
+	</b>
+	<?php if(!$to_print && $sorted){ ?>
+		<img src="<?php echo icon_url($asc ? 'sorted_asc.gif' : 'sorted_desc.gif') ?>" />
+	<?php } //if ?>
+	</td>
 <?php } //foreach?>
 </tr>
 <?php
 	$isAlt = true; 
 	foreach($rows as $row) {
-		$isAlt = !$isAlt; 
+		$isAlt = !$isAlt;
+		$i = 0; 
 ?>
 	<tr<?php echo ($isAlt ? ' style="background-color:#F4F8F9"' : "") ?>>
-		<?php foreach($row as $k => $value) { ?>
-			<td style="padding-right:10px;"><?php echo format_value_to_print($value, ($k == 'link'?'':$types[$k])) ?></td>
-		<?php }//foreach ?>
+		<?php foreach($row as $k => $value) {
+				$db_col = isset($db_columns[$columns[$i]]) ? $db_columns[$columns[$i]] : '';
+			?>
+			<td style="padding-right:10px;"><?php echo format_value_to_print($db_col, $value, ($k == 'link'?'':$types[$k]), $model) ?></td>
+		<?php
+			$i++; 
+			}//foreach ?>
 	</tr>
 <?php } //foreach ?>
 </tbody>
