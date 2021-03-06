@@ -427,7 +427,7 @@ og.openLink = function(url, options) {
 	}
 	Ext.Ajax.request({
 		url: url,
-		method: 'POST',
+		method: options.post == " " ? 'GET' : 'POST',
 		params: options.post,
 		headers: {
 			'Content-Length': '' + options.post.length
@@ -878,4 +878,13 @@ og.clean = function(text) {
 
 og.removeTags = function(text) {
 	return Ext.util.Format.stripTags(text);
+};
+
+og.displayFileContents = function(genid, isFull){
+	var text = document.getElementById(genid + 'file_contents').innerHTML;
+	if (text.length > 1000 && !isFull){
+		text = text.substring(0,900);
+		text += '&hellip;&nbsp;&nbsp;<a href="#" onclick="og.displayFileContents(\'' + genid + '\',true)">[' + lang('show more') + '&hellip;]</a>';
+	}
+	document.getElementById(genid + 'file_display').innerHTML = text;
 };

@@ -566,6 +566,7 @@ class Contact extends BaseContact {
       
       //if email address is entered, it must be unique
 		if($this->validatePresenceOf('email')) {
+			$this->setEmail(trim($this->getEmail()));
 			if(!$this->validateFormatOf('email', EMAIL_FORMAT)) $errors[] = lang('invalid email address');
 			if(!$this->validateUniquenessOf('email')) $errors[] = lang('email address must be unique');
 		}
@@ -896,7 +897,7 @@ class Contact extends BaseContact {
 				"type" => $this->getObjectTypeName(),
 				"tags" => project_object_tags($this),
 				"createdBy" => $this->getCreatedByDisplayName(),// Users::findById($this->getCreatedBy())->getUsername(),
-				"createdById" => $this->getCreatedBy()->getId(),
+				"createdById" => $this->getCreatedById(),
 				"dateCreated" => ($this->getObjectCreationTime())?$this->getObjectCreationTime()->getTimestamp():lang('n/a'),
 				"updatedBy" => $updated_by_name,
 				"updatedById" => $updated_by_id,

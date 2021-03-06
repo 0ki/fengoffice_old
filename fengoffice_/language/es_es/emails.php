@@ -133,6 +133,33 @@ return array(
     'deleted notification webpage desc' => 'Enlace web \'{0}\' ha sido enviado a la papelera {1}.',
     'deleted notification milestone' => 'Hito \'{0}\' ha sido enviado a la papelera',
     'deleted notification milestone desc' => 'Hito \'{0}\' ha sido enviado a la papelera por {1}.',
-    ); // array
+
+
+	'view file' => 'Ver archivo',
+    'view message' => 'Ver nota',
+    'view comment' => 'Ver comentario',
+    'view company' => 'Ver compañía',
+    'view contact' => 'Ver contacto',
+    'view mail account' => 'Ver cuenta de correo',
+    'view email' => 'Ver correo',
+    'view emailunclassified' => 'Ver correo',
+    'view chart' => 'Ver gráfica',
+    'view event' => 'Ver evento',
+    'view file_revision' => 'Ver revisión de archivo',
+    'view form' => 'Ver formulario',
+    'view milestone' => 'Ver hito',
+    'view webpage' => 'Ver enlace web',
+    'view project' => 'Ver espacio de trabajo',
+    'view tag' => 'Ver etiqueta',
+    'view template' => 'Ver plantilla',
+    'view timeslot' => 'Ver tiempo de trabajo',
+    'view user' => 'Ver usuario',
+    'closed notification task' => 'La tarea \'{0}\' ha sido completada',
+    'closed notification task desc' => 'La tarea \'{0}\' ha sido completada por {1}.',
+    'closed notification milestone' => 'El hito \'{0}\' ha sido completado',
+    'closed notification milestone desc' => 'El hito \'{0}\' ha sido completado por {1}.',
+
+
+); // array
 
     ?>

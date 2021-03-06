@@ -70,7 +70,7 @@ class  BackupController extends ApplicationController {
 			ajx_current("empty");
 			return ;
 		} // if
-		if(!(can_manage_configuration(logged_user()) && can_manage_security(logged_user()))){
+		if(!(can_manage_configuration(logged_user()))){
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return ;
@@ -82,9 +82,9 @@ class  BackupController extends ApplicationController {
 			return ;
 		}
 		
-		$size = strlen($content);
+		$size = filesize($filename);
 		session_commit();
-		download_file($content, 'application/zip', BACKUP_FILENAME , $size, true);
+		download_file($filename, 'application/zip', BACKUP_FILENAME , $size, true);
 		die();
 	}
 	
@@ -113,7 +113,7 @@ class  BackupController extends ApplicationController {
 		else {
 			flash_success(lang('success delete backup'));
 		}
-		$this->redirectTo('backup');
+		ajx_current("reload");
 	}
 	
 	/**
@@ -145,6 +145,9 @@ class  BackupController extends ApplicationController {
 			$db_backup = BACKUP_FOLDER .'/'. DB_BACKUP_FILENAME;
 			$mysqldump_cmd = MYSQLDUMP_COMMAND;
 			exec("$mysqldump_cmd --host=$db_host --user=$db_user --password=$db_pass $db_name > $db_backup",$ret);
+			if ($code != 0) {
+				throw new Exception(lang("return code", $code) . ". " . implode("\n",  $ret));
+			}
 			if (is_file($db_backup)) {
 				if(file_exists($filename)){
 					unlink($filename);
@@ -153,15 +156,14 @@ class  BackupController extends ApplicationController {
 				unlink($db_backup);
 			} else {
 				unlink($db_backup);
-				flash_error(lang('error db backup'));
-				return ;
+				throw new Exception(lang('backup command failed'));
 			}
 			flash_success(lang('success db backup'));
 		} catch (Exception $ex) {
-				flash_error(lang('error db backup') . $ex);
-				return ;
+			flash_error(lang('error db backup', $ex->getMessage()));
+			return;
 		}
-		$this->redirectTo('backup');
+		ajx_current("reload");
 	}
 	
 	private function create_zip(){		
@@ -169,24 +171,31 @@ class  BackupController extends ApplicationController {
 		$files = array();
 		$this->parse_dir(".", $files);
 		if (is_file($filename)) unlink($filename);
-		$backup = new ZipArchive();
-		$backup->open($filename, ZIPARCHIVE::OVERWRITE);
-		$count = 0;
-		foreach ($files as $file) {
-			if (str_starts_with($file, "./tmp")) continue; // don't backup tmp folder
-			$backup->addFile($file, substr($file, 2));
-			$count++;
-			if ($count == 200) {
-				// the ZipArchive class allows upto 200 file descriptors,
-				// so we close the zip to write files and reopen it to continue
-				$backup->close();
-				$backup = new ZipArchive();
-				$backup->open($filename);
-				$count = 0;
+		if (class_exists('ZipArchive')) {
+			$backup = new ZipArchive();
+			$backup->open($filename, ZIPARCHIVE::OVERWRITE);
+			$count = 0;
+			foreach ($files as $file) {
+				if (str_starts_with($file, "./tmp")) continue; // don't backup tmp folder
+				$backup->addFile($file, substr($file, 2));
+				$count++;
+				if ($count == 200) {
+					// the ZipArchive class allows upto 200 file descriptors,
+					// so we close the zip to write files and reopen it to continue
+					$backup->close();
+					$backup = new ZipArchive();
+					$backup->open($filename);
+					$count = 0;
+				}
 			}
+			$backup->addFile(BACKUP_FOLDER .'/'. DB_BACKUP_FILENAME, "db.sql");
+			$backup->close();
+		} else {
+			$backup = new zip_file($filename);
+			$backup->set_options(array('inmemory' => 0, 'recurse' => 1, 'storepaths' => 1));
+			$backup->add_files(array("*")); 
+			$backup->create_archive();
 		}
-		$backup->addFile(BACKUP_FOLDER .'/'. DB_BACKUP_FILENAME, "db.sql");
-		$backup->close();
 	}
 	
 	private function parse_dir($dirname, &$files) {

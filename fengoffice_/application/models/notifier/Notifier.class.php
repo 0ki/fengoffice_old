@@ -43,6 +43,8 @@ class Notifier {
 			self::objectEdited($object, $subscribers);
 		} else if ($action == ApplicationLogs::ACTION_TRASH) {
 			self::objectDeleted($object, $subscribers);
+		} else if ($action == ApplicationLogs::ACTION_CLOSE) {
+			self::objectClosed($object, $subscribers);
 		}
 	}
 	
@@ -61,6 +63,8 @@ class Notifier {
 		} // foreach
 		
 		if (count($recepients) == 0) return;
+		if (! $object->getCreatedBy() instanceof User) return;
+		
 		return self::sendEmail(
 			$recepients,
 			self::prepareEmailAddress($object->getCreatedBy()->getEmail(), $object->getCreatedByDisplayName()),
@@ -78,21 +82,49 @@ class Notifier {
 
 		$recepients = array();
 		foreach($people as $user) {
-			if ($user->getId() != $object->getCreatedById()) {
+			if ($user->getId() != $object->getUpdatedById()) {
 				$recepients[] = self::prepareEmailAddress($user->getEmail(), $user->getDisplayName());
 			}
 		} // foreach
 		
 		if (count($recepients) == 0) return;
+		if (! $object->getUpdatedBy() instanceof User) return;
+		
 		return self::sendEmail(
 			$recepients,
-			self::prepareEmailAddress($object->getCreatedBy()->getEmail(), $object->getCreatedByDisplayName()),
+			self::prepareEmailAddress($object->getUpdatedBy()->getEmail(), $object->getUpdatedByDisplayName()),
 			lang('modified notification ' . $object->getObjectTypeName(), $object->getObjectName()),
 			tpl_fetch(get_template_path('object_edited', 'notifier'))
 		); // send
 	}
 	
-	function objectDeleted(ProjectDataObject $object, $people) {
+	function objectClosed(ProjectDataObject $object, $people) {
+		if (!($object instanceof ProjectTask || $object instanceof ProjectMilestone)) {
+			return;
+		}
+		if(!is_array($people) || !count($people)) {
+			return; // nothing here...
+		} // if
+		$closedBy = $object->getCompletedBy();
+		tpl_assign('object', $object);
+		tpl_assign('closedBy', $closedBy);
+
+		$recepients = array();
+		foreach($people as $user) {
+			if ($user->getId() != $closedBy->getId()) {
+				$recepients[] = self::prepareEmailAddress($user->getEmail(), $user->getDisplayName());
+			}
+		} // foreach
+		if (count($recepients) == 0) return;
+		return self::sendEmail(
+			$recepients,
+			self::prepareEmailAddress($closedBy->getEmail(), $closedBy->getDisplayName()),
+			lang('closed notification ' . $object->getObjectTypeName(), $object->getObjectName()),
+			tpl_fetch(get_template_path('object_closed', 'notifier'))
+		); // send
+	}
+	
+	function objectDeleted(ProjectDataObject $object, $people, $closed_by) {
 		if(!is_array($people) || !count($people)) {
 			return; // nothing here...
 		} // if
@@ -106,10 +138,19 @@ class Notifier {
 			}
 		} // foreach
 
+		$trashedBy = Users::findById($object->getTrashedById());
+		if (!$trashedBy instanceof User) {
+			$displayName = $trashedBy->getDisplayName();
+			$email = $trashedBy->getEmail();
+		} else {
+			$displayName = lang("n/a");
+			$email = lang("n/a");
+		}
 		if (count($recepients) == 0) return;
+		
 		return self::sendEmail(
 			$recepients,
-			self::prepareEmailAddress($object->getCreatedBy()->getEmail(), $object->getCreatedByDisplayName()),
+			self::prepareEmailAddress($email(), $displayName()),
 			lang('deleted notification ' . $object->getObjectTypeName(), $object->getObjectName()),
 			tpl_fetch(get_template_path('object_deleted', 'notifier'))
 		); // send
@@ -128,6 +169,8 @@ class Notifier {
 		$new_password = $user->resetPassword(true);
 		tpl_assign('user', $user);
 		tpl_assign('new_password', $new_password);
+		
+		if (! $administrator instanceof User) return;
 
 		return self::sendEmail(
 		self::prepareEmailAddress($user->getEmail(), $user->getDisplayName()),
@@ -150,6 +193,8 @@ class Notifier {
 		tpl_assign('new_account', $user);
 		tpl_assign('raw_password', $raw_password);
 
+		if (! $user->getCreatedBy() instanceof User) return;
+		
 		return self::sendEmail(
 		self::prepareEmailAddress($user->getEmail(), $user->getDisplayName()),
 		self::prepareEmailAddress($user->getCreatedBy()->getEmail(), $user->getCreatedByDisplayName()),
@@ -181,6 +226,8 @@ class Notifier {
 		} // foreach
 
 		if (count($recepients) == 0) return;
+		if (! $message->getCreatedBy() instanceof User) return;
+		
 		return self::sendEmail(
 		$recepients,
 		self::prepareEmailAddress($message->getCreatedBy()->getEmail(), $message->getCreatedByDisplayName()),
@@ -210,6 +257,8 @@ class Notifier {
 			$recepients[] = self::prepareEmailAddress($user->getEmail(), $user->getDisplayName());
 		} // foreach
 
+		if (! $task->getCreatedBy() instanceof User) return;
+		
 		return self::sendEmail(
 		$recepients,
 		self::prepareEmailAddress($task->getCreatedBy()->getEmail(), $task->getCreatedByDisplayName()),
@@ -239,6 +288,8 @@ class Notifier {
 			$recepients[] = self::prepareEmailAddress($user->getEmail(), $user->getDisplayName());
 		} // foreach
 
+		if (! $task->getCreatedBy() instanceof User) return;
+		
 		return self::sendEmail(
 		$recepients,
 		self::prepareEmailAddress($task->getCreatedBy()->getEmail(), $task->getCreatedByDisplayName()),
@@ -267,6 +318,8 @@ class Notifier {
 			$recepients[] = self::prepareEmailAddress($user->getEmail(), $user->getDisplayName());
 		} // foreach
 
+		if (! $task->getCreatedBy() instanceof User) return;
+		
 		return self::sendEmail(
 		$recepients,
 		self::prepareEmailAddress($task->getCreatedBy()->getEmail(), $task->getCreatedByDisplayName()),
@@ -295,6 +348,8 @@ class Notifier {
 		foreach($people as $user) {
 			$recepients[] = self::prepareEmailAddress($user->getEmail(), $user->getDisplayName());
 		} // foreach
+		
+		if (! $event->getCreatedBy() instanceof User) return;
 
 		return self::sendEmail(
 			$recepients,
@@ -368,6 +423,8 @@ class Notifier {
 		} // if
 
 		tpl_assign('new_comment', $comment);
+		
+		if (! $comment->getCreatedBy() instanceof User) return;
 
 		return self::sendEmail($recepients,
 				self::prepareEmailAddress($comment->getCreatedBy()->getEmail(), $comment->getCreatedByDisplayName()),
@@ -397,6 +454,8 @@ class Notifier {
 
 		tpl_assign('milestone_assigned', $milestone);
 
+		if (! $milestone->getCreatedBy() instanceof User) return;
+		
 		return self::sendEmail(
 		self::prepareEmailAddress($milestone->getAssignedTo()->getEmail(), $milestone->getAssignedTo()->getDisplayName()),
 		self::prepareEmailAddress($milestone->getCreatedBy()->getEmail(), $milestone->getCreatedByDisplayName()),

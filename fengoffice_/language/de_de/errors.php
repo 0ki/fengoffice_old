@@ -1,145 +1,85 @@
-<?php
-
-  /**
-  * Error messages
-  *
-  * @version 1.0
-  * @author Ilija Studen <ilija.studen@gmail.com>
-  */
-
-  // Return langs
-  return array(
-  
-    // General
-    'invalid email address' => 'Email address format is not valid',
-   
-    // Company validation errors
-    'company name required' => 'Company / organization name is required',
-    'company homepage invalid' => 'Homepage value is not a valid URL',
-    
-    // User validation errors
-    'username value required' => 'Username value is required',
-    'username must be unique' => 'Sorry, but selected username is already taken',
-    'email value is required' => 'Email address value is required',
-    'email address must be unique' => 'Sorry, selected email address is already taken',
-    'company value required' => 'User must be part of company / organization',
-    'password value required' => 'Password value is required',
-    'passwords dont match' => 'Passwords don\'t match',
-    'old password required' => 'Old password value is required',
-    'invalid old password' => 'Old password is not valid',
-    'users must belong to a company' => 'Contacts must belong to a company in order to generate a user',
-    'contact linked to user' => 'Contact is linked to user {0}',
-    
-    // Avatar
-    'invalid upload type' => 'Invalid file type. Allowed types are {0}',
-    'invalid upload dimensions' => 'Invalid image dimensions. Max size is {0}x{1} pixels',
-    'invalid upload size' => 'Invalid image size. Max size is {0}',
-    'invalid upload failed to move' => 'Failed to move uplaoded file',
-    
-    // Registration form
-    'terms of services not accepted' => 'In order to create an account you need to read and accept our terms of services',
-    
-    // Init company website
-    'failed to load company website' => 'Failed to load website. Owner company not found',
-    'failed to load project' => 'Failed to load active workspace',
-    
-    // Login form
-    'username value missing' => 'Please insert your username',
-    'password value missing' => 'Please insert your password',
-    'invalid login data' => 'Failed to log you in. Please check your login data and try again',
-    
-    // Add project form
-    'project name required' => 'Workspace name value is required',
-    'project name unique' => 'Workspace name must be unique',
-    
-    // Add message form
-    'message title required' => 'Title value is required',
-    'message title unique' => 'Title value must be unique in this workspace',
-    'message text required' => 'Text value is required',
-    
-    // Add comment form
-    'comment text required' => 'Text of the comment is required',
-    
-    // Add milestone form
-    'milestone name required' => 'Milestone name value is required',
-    'milestone due date required' => 'Milestone due date value is required',
-    
-    // Add task list
-    'task list name required' => 'Task name value is required',
-    'task list name unique' => 'Task name must be unique in workspace',
-    'task title required' => 'Task title is required',
-  
-    // Add task
-    'task text required' => 'Task text is required',
-    
-    // Add event
-    'event subject required' => 'Event subject is required',
-    'event description maxlength' => 'Description must be under 3000 characters',
-    'event subject maxlength' => 'Subject must be under 100 characters',
-    
-    // Add project form
-    'form name required' => 'Form name is required',
-    'form name unique' => 'Form name must be unique',
-    'form success message required' => 'Success note is required',
-    'form action required' => 'Form action is required',
-    'project form select message' => 'Please select note',
-    'project form select task lists' => 'Please select task',
-    
-    // Submit project form
-    'form content required' => 'Please insert content into text field',
-    
-    // Validate project folder
-    'folder name required' => 'Folder name is required',
-    'folder name unique' => 'Folder name need to be unique in this workspace',
-    
-    // Validate add / edit file form
-    'folder id required' => 'Please select folder',
-    'filename required' => 'Filename is required',
-    
-    // File revisions (internal)
-    'file revision file_id required' => 'Revision needs to be connected with a file',
-    'file revision filename required' => 'Filename required',
-    'file revision type_string required' => 'Unknown file type',
-    
-    // Test mail settings
-    'test mail recipient required' => 'Recipient address is required',
-    'test mail recipient invalid format' => 'Invalid recipient address format',
-    'test mail message required' => 'Mail message is required',
-    
-    // Mass mailer
-    'massmailer subject required' => 'Message subject is required',
-    'massmailer message required' => 'Message body is required',
-    'massmailer select recepients' => 'Please select users that will receive this email',
-    
-  	//Email module
-  	'mail account name required' => 'Account name required',
-  	'mail account id required' => 'Account Id required',
-  	'mail account server required' => 'Server required',
-  	'mail account password required' => 'Password required',	
-  
-  	'session expired error' => 'Session expired due to user inactivity. Please login again',
-  	'unimplemented type' => 'Unimplemented type',
-  	'unimplemented action' => 'Unimplemented action',
-  
-  	'workspace own parent error' => 'A workspace can\'t be its own parent',
-  	'task own parent error' => 'A task can\'t be its own parent',
-  	'task child of child error' => 'A task can\'t be child of one of its descendants',
-  
-  	'chart title required' => 'Chart title is required.',
-  	'chart title unique' => 'Chart title must be unique.',
-    'must choose at least one workspace error' => 'You must choose at least one workspace where to put the object.',
-    
-    
-    'user has contact' => 'There is a contact already assigned to this user',
-    
-    'maximum number of users reached error' => 'The maximum number of users has been reached',
-	'maximum number of users exceeded error' => 'The maximum number of users has been exceeded. The application will not work anymore until this issue is resolved.',
-	'maximum disk space reached' => 'Your disk quota is full. Please delete some object before trying to add new ones, or contact support to enable more users.',
-	'error db backup' => 'Error while creating database backup. Check MYSQLDUMP_COMMAND constant.',
-	'error create backup folder' => 'Error while creating backup folder. Cannot complete backup',
-	'error delete backup' => 'Error while deleting database backup,',
-	'success delete backup' => 'Backup was deleted',
-    'name must be unique' => 'Sorry, but selected name is already taken',
-   ); // array
-
-?>
+<?php return array(
+	'invalid email address' => 'Email Adresse besitzt kein gültiges Format',
+	'company name required' => 'Firma-/ Organisationsname ist erforderlich',
+	'company homepage invalid' => 'Homepage besitzt kein gültiges URL Format',
+	'username value required' => 'Benutzername ist erforderlich',
+	'username must be unique' => 'Sorry, der Benutzername ist bereits vergeben',
+	'email value is required' => 'Email Adresse ist erforderlich',
+	'email address must be unique' => 'Sorry, die Email Adresse ist bereits vergeben',
+	'company value required' => 'Beutzer muss einem Unternehmen / Organisation zugeordnet sein',
+	'password value required' => 'Passwort ist erforderlich',
+	'passwords dont match' => 'Passwörter stimmen nicht überein',
+	'old password required' => 'Altes Passwort wird benötigt',
+	'invalid old password' => 'Altes Passwort stimmt nicht überein',
+	'users must belong to a company' => 'Kontakte müssen einem Unternehmen zugeordnet sein, um einen Benutzer zu generieren.',
+	'contact linked to user' => 'Kontakt ist mit Benutzer {0} verbunden',
+	'invalid upload type' => 'Verkehrter Dateityp. Erlaubte Dateitypen sind {0}',
+	'invalid upload dimensions' => 'Verkehrte Bildgrösse. Maximale Bildgrösse ist {0}x{1} Pixel',
+	'invalid upload size' => 'Fehlerhafte Bildgrösse. Maximale Bildgrösse ist {0}',
+	'invalid upload failed to move' => 'Das Verschieben einer hochgeladenen Datei ist fehlgeschlagen',
+	'terms of services not accepted' => 'Um ein Konto anzulegen, müssen Sie unsere Bedingungen lesen und akzeptieren',
+	'failed to load company website' => 'Das Laden der Webseite ist fehlgeschlagen. Der Besitzer wurde nicht gefunden',
+	'failed to load project' => 'Das Laden des aktiven Arbeitsbereiches ist fehlgeschlagen.',
+	'username value missing' => 'Bitte gib Deinen Benutzernamen ein',
+	'password value missing' => 'Bitte gib Dein Passwort ein',
+	'invalid login data' => 'Login war fehlerhaft. Bitte, überprüfe die Anmeldungsdaten und versuch es noch einmal',
+	'project name required' => 'Der Name des Arbeitsbereiches ist erforderlich',
+	'project name unique' => 'Der Name des Arbeitsbereiches muss eindeutig sein',
+	'message title required' => 'Nachrichtetitel ist erforderlich',
+	'message title unique' => 'Nachrichtentitel muss im Arbeitsbereich eindeutig sein',
+	'message text required' => 'Nachrichtentext ist erforderlich',
+	'comment text required' => 'Kommentartext ist erforderlich',
+	'milestone name required' => 'Meilenstein Bezeichnung ist erforderlich',
+	'milestone due date required' => 'Meilenstein Ende Datum ist erforderlich ',
+	'task list name required' => 'Ein Name für die Aufgabe ist erforderlich',
+	'task list name unique' => 'Der Aufgabenname muss im Arbeitsbereich eindeutig sein',
+	'task title required' => 'Aufgaben Titel ist erforderlich',
+	'task text required' => 'Aufgabenbeschreibung ist erforderlich',
+	'event subject required' => 'Ereignistitel ist erforderlich',
+	'event description maxlength' => 'Beschreibung darf nicht mehr als 3000 Zeichen enthalten',
+	'event subject maxlength' => 'Ereignistitel darf nicht mehr als 100 Zeichen enthalten',
+	'form name required' => 'Formularname ist erforderlich',
+	'form name unique' => 'Formularname muss eindeutig sein',
+	'form success message required' => 'Erfolgsnachricht ist erforderlich',
+	'form action required' => 'Formularaktivität ist erforderlich',
+	'project form select message' => 'Wähle eine Nachricht aus',
+	'project form select task lists' => 'Wähle eine Aufgabe aus',
+	'form content required' => 'Bitte gebe etwas in das Textfeld ein',
+	'folder name required' => 'Eine Bezeichnung für den Ordner ist erforderlich',
+	'folder name unique' => 'Die Bezeichnung für einen Ordner muss im Arbeitsbereich eindeutig sein',
+	'folder id required' => 'Wähle einen Dateiordner aus',
+	'filename required' => 'Dateiname ist erforderlich',
+	'file revision file_id required' => 'Revision muss mit einer Datei verbunden sein',
+	'file revision filename required' => 'Dateiname wird benötigt',
+	'file revision type_string required' => 'Unbekannter Dateityp',
+	'test mail recipient required' => 'Empfängeradresse ist erforderlich',
+	'test mail recipient invalid format' => 'Ungültiges Empfängeradressformat',
+	'test mail message required' => 'Emailnachricht ist erforderlich',
+	'massmailer subject required' => 'Nachrichtenthema ist erforderlich',
+	'massmailer message required' => 'Nachrichtentext ist erforderlich',
+	'massmailer select recepients' => 'Bitte wählen Sie die Benutzer aus, die diese E-Mail erhalten sollen',
+	'mail account name required' => 'Account Name ist erforderlich',
+	'mail account id required' => 'Account Id ist erforderlich',
+	'mail account server required' => 'Server ist erforderlich',
+	'mail account password required' => 'Passwort ist erforderlich',
+	'session expired error' => 'Wegen Inaktivität des Benutzers ist die Session abgelaufen. Bitte noch einmal anmelden.',
+	'unimplemented type' => 'Nicht implementierter Typ',
+	'unimplemented action' => 'Nicht implementierte Aktion',
+	'workspace own parent error' => 'Ein Arbeitsbereich kann sich nicht selbst zugeordnet werden.',
+	'task own parent error' => 'Eine Aufgabe kann nicht sich selbst zugeordnet werden.',
+	'task child of child error' => 'Eine Aufgabe kann nicht einem seiner Unteraufgaben als Unteraufgabe zugeordnet werden',
+	'chart title required' => 'Diagramm Titel ist erforderlich.',
+	'chart title unique' => 'Diagramm Titel muss eindeutig sein.',
+	'must choose at least one workspace error' => 'Es muss ein Arbeitsbereich ausgewählt werden, der dem Objekt zugeordnet wird.',
+	'user has contact' => 'Dem Benutzer ist ein Kontakt zugeordent',
+	'maximum number of users reached error' => 'Die maximale Anzahl von Benutzern wurde erreicht.',
+	'maximum number of users exceeded error' => 'Die maximale Anzahl der Benutzer wurde überschritten. Die Anwendung wird nicht mehr funktionieren, bis dieses Problem behoben ist.',
+	'maximum disk space reached' => 'Der Festplattenbereich ist voll. Bitte löschen Sie einige Objekte, bevor Sie versuchen neue hinzufügen; oder kontakieren Sie den Administrator.',
+	'error db backup' => 'Fehler bei der Erstellung des Datenbank-Backups. Überprüfen Sie die Variable MYSQLDUMP_COMMAND.',
+	'error create backup folder' => 'Fehler bei der Erstellung des Backup-Ordners. Das Backup kann nicht fertiggestellt werden.',
+	'error delete backup' => 'Fehler beim Löschen des Datenbank-Backups.',
+	'success delete backup' => 'Das Backup wurde gelöscht.',
+	'name must be unique' => 'Sorry, aber der ausgewählte Name ist bereits vergeben.',
+	'success db backup' => 'Backup wurde erfolgreich erstellt.',
+	'not implemented' => 'Nicht implementiert',
+); ?>

@@ -543,5 +543,7 @@ addLangs({
     'sort tags': 'Sort tags',
     'sort tags alphabetically': 'Alphabetically',
     'sort tags by count': 'By Count',
-    'confirm template with no objects': 'Are you sure you want to create a template with no objects in it? (You can add objects to it later)'
+    'confirm template with no objects': 'Are you sure you want to create a template with no objects in it? (You can add objects to it later)',
+	'show more' : 'Show more',
+	'actions' : 'Actions'
 });

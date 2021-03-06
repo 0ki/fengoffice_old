@@ -774,7 +774,8 @@ class EventController extends ApplicationController {
 					    
 					    $this->registerInvitations($ev_data, $event);
 						if (isset($ev_data['confirmAttendance'])) {
-			            	$this->change_invitation_state($ev_data['confirmAttendance'], $event->getId(), $event->getCreatedBy()->getId());
+							if ($event->getCreatedBy() instanceof User)
+								$this->change_invitation_state($ev_data['confirmAttendance'], $event->getId(), $event->getCreatedBy()->getId());
 			            }
 					}
 					DB::commit();
@@ -853,7 +854,7 @@ class EventController extends ApplicationController {
  *   copyright            : (C) 2001 The phpBB Group
  *   email                : support@phpbb.com
  *
- *   $Id: EventController.class.php,v 1.71 2009/01/20 13:56:54 idesoto Exp $
+ *   $Id: EventController.class.php,v 1.71.2.1 2009/01/26 13:00:21 alvarotm01 Exp $
  *
  ***************************************************************************/
 

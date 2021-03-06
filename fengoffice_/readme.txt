@@ -1,6 +1,6 @@
 
-    About OpenGoo 1.2 beta 
-    ======================
+    About OpenGoo 1.2 beta 2 
+    ========================
 
     OpenGoo is a free WebOffice, project management and collaboration
     tool. For license details, see license.txt.
@@ -61,7 +61,7 @@
     ====================
     
     1. Backup you current installation (important !)
-    2. Download OpenGoo 1.2 beta - http://www.opengoo.org/
+    2. Download OpenGoo 1.2 beta 2 - http://www.opengoo.org/
     3. Unpack into your OpenGoo installation, overwriting your previous files and folders,
     	but keeping your config and upload folders.
     5. In your browser, go to <your_opengoo>/public/upgrade and choose to upgrade from your current version to 1.2.
@@ -85,6 +85,24 @@
 
 	Changelog
 	=========
+	
+	Since 1.2 beta
+	--------------
+	
+	usability: Allow to hide filtering panels on the object picker.
+	bugfix: Trashed email was incorrectly sorted.
+	bugfix: Email widget showed trashed email.
+	bugfix: Fixed a problem when downloading a backup.
+	bugfix: Error when checking in files "There is no session matching this name".
+	bugfix: Following a link from an email notification to a content object would show the dashboard.
+	bugfix: Email with trailing whitespace was not being considered valid.
+	bugfix: Missing langs on notifications.
+	bugfix: Invalid controller action when viewing a webpage.
+	bugfix: Email notifications for object editions or deletions showed a wrong user.
+	bugfix: Couldn't upload files with unknown extensions.
+	bugfix: Couldn't link objects or invite users to an event.
+	bugfix: Error when filtering by a tag overview / list files or contacts.
+	bugfix: Backup command failed but a success message was being shown.
 	
 	Since 1.1
 	---------

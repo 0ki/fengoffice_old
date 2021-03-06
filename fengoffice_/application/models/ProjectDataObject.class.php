@@ -1160,8 +1160,7 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 		 
 		//Add Unique ID to search
 		if ($wasNew || ($this->columnExists('project_id') && $this->isColumnModified('project_id'))){
-			if (!$wasNew)
-				SearchableObjects::dropContentByObjectColumns($this,array('uid'));
+			SearchableObjects::dropContentByObjectColumns($this,array('uid'));
 			$searchable_object = new SearchableObject();
 
 			$searchable_object->setRelObjectManager(get_class($this->manager()));

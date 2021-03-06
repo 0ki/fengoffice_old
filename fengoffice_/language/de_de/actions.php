@@ -7,7 +7,7 @@
     'register' => 'registrieren',
     'login' => 'Anmelden',
     'logout' => 'Abmelden',
-    'hide welcome info' => '&raquo; Hide this info permanently',
+    'hide welcome info' => '&raquo; Diesen Hinweis nicht mehr anzeigen',
     
     // Companies / Unternehmen
     'add company' => 'Unternehmen anlegen',
@@ -25,7 +25,7 @@
     'add user' => 'Benutzer anlegen',
     'edit user' => 'Benutzer bearbeiten',
     'delete user' => 'Benutzer löschen',
-    'create user from contact' => 'Create user from contact',
+    'create user from contact' => 'Benutzer aus vorhandenem Kontakt erzeugen',
     
     // Group
     'add group' => 'Gruppe anlegen',
@@ -36,15 +36,15 @@
     'add project' => 'Arbeitsbereich anlegen',
     'edit project' => 'Arbeitsbereich bearbeiten',
     'delete project' => 'Arbeitsbereich löschen',
-    'mark project as finished' => 'Mark workspace as closed',
-    'mark project as active' => 'Mark workspace as active',
+    'mark project as finished' => 'Projekt als erledigt markieren',
+    'mark project as active' => 'Projekt als aktiv markieren',
     
     // Workspace
     'add workspace' => 'Arbeitsbereich anlegen',
     'edit workspace' => 'Arbeitsbereich bearbeiten',
     'delete workspace' => 'Arbeitsbereich löschen',
-    'mark workspace as finished' => 'Mark Workspace as finished',
-    'mark workspace as active' => 'Mark Workspace as active',
+    'mark workspace as finished' => 'Arbeitsbereich als erledigt markieren',
+    'mark workspace as active' => 'Arbeitsbereich als aktiv markieren',
     
     // Messages
     'add message' => 'Nachricht erstellen',
@@ -52,7 +52,7 @@
     'edit message' => 'Nachricht bearbeiten',
     'delete message' => 'Nachricht löschen',
     'view message' => 'Nachricht anzeigen',
-    'update message options' => 'Update options',
+    'update message options' => 'Optionen aktualisieren',
     'subscribe to object' => 'Abonnieren',
     'unsubscribe from object' => 'Abo beenden',
     
@@ -64,22 +64,22 @@
     'add task list' => 'Aufgabe erstellen',
     'edit task list' => 'Aufgabe bearbeiten',
     'delete task list' => 'Aufgabe löschen',
-    'reorder tasks' => 'Reorder tasks',
-	'reorder sub tasks' => 'Reorder sub tasks',
-  	'copy task' => 'Create a copy of this task',
-  	'copy milestone' => 'Create a copy of this milestone',
+    'reorder tasks' => 'Aufgaben neu sortieren',
+	'reorder sub tasks' => 'Teilaufgaben neu sortieren',
+  	'copy task' => 'Aufgabe kopieren',
+  	'copy milestone' => 'Meilenstein kopieren',
     
     // Task
     'add task' => 'Aufgabe erstellen',
 	'add sub task' => 'Teilaufgabe erstellen',
     'edit task' => 'Aufgabe bearbeiten',
     'delete task' => 'Aufgabe löschen',
-    'mark task as completed' => 'Aufgabe als erfüllt kennzeichnen',
-    'mark task as open' => 'Aufgabe als offen kennzeichnen',
+    'mark task as completed' => 'Aufgabe als erledigt markieren',
+    'mark task as open' => 'Aufgabe als aktiv markieren',
     
     // Milestone
     'add milestone' => 'Meilenstein erstellen',
-    'edit milestone' => 'Meilenstein bearebiten',
+    'edit milestone' => 'Meilenstein bearbeiten',
     'delete milestone' => 'Meilenstein löschen',
     
     // Events
@@ -104,7 +104,7 @@
     'can manage workspaces' => 'Darf Arbeitsbereiche organisieren',
     'can manage configuration' => 'Darf Konfiguration organisieren',
     'can manage contacts' => 'Darf Kontakte organisieren',
-    'group users' => 'Gruppenmitglied',
+    'group users' => 'Benutzer gruppieren',
     
     
     // People
@@ -119,16 +119,16 @@
     'delete current avatar' => 'lösche jetziges Avatar',
     
     // Forms
-    'add form' => 'Add form',
-    'edit form' => 'Edit form',
-    'delete form' => 'Delete form',
-    'submit project form' => 'Submit',
+    'add form' => 'Formular hinzufügen',
+    'edit form' => 'Formular bearbeiten',
+    'delete form' => 'Formular löschen',
+    'submit project form' => 'Absenden',
     
     // Files
     'add file' => 'Datei erstellen',
     'edit file properties' => 'Datei Eigenschaften',
-    'upload file' => 'Upload Datei',
-    'create new revision' => 'Änderung erstellen',
+    'upload file' => 'Datei hochladen',
+    'create new revision' => 'Neue Revision',
 
     'add document' => 'Dokument erstellen',
     'save document' => 'Dokument speichern',
@@ -139,19 +139,19 @@
     'presentation' => 'Präsentation',
 
     'new' => 'Neu',
-    'upload' => 'Upload',
-    'hide' => 'ausblenden',
+    'upload' => 'Hochladen',
+    'hide' => 'Verstecken',
     'new document' => 'Neues Dokument',
     'new spreadsheet' => 'Neue Tabelle',
     'new presentation' => 'Neue Präsentation',
 
     'slideshow' => 'Diashow',
-    'revisions and comments' =>'Revisions & Comments',
+    'revisions and comments' =>'Revisionen & Kommentare',
         
     'Save' => 'Speichern',
-    'all elements' => 'alle Elemente',
-    'collapse all' => 'alle komprimieren',
-    'expand all' => 'alle erweitern',
+    'all elements' => 'Alle Elemente',
+    'collapse all' => 'Alle verbergen',
+    'expand all' => 'Alle anzeigen',
 
     'properties' => 'Eigenschaften',
     'edit file' => 'Datei bearbeiten',
@@ -159,8 +159,8 @@
     'edit spreadsheet' => 'Tabelle bearbeiten',
     'edit presentation' => 'Präsentation bearbeiten',
 
-  	'play' => 'Play',
-  	'queue' => 'Queue',
+  	'play' => 'Abspielen',
+  	'queue' => 'Warteschlange',
 	
     'delete file' => 'Datei löschen',
     
@@ -168,36 +168,39 @@
     'edit folder' => 'Ordner bearbeiten',
     'delete folder' => 'Ordner löschen',
     
-    'edit file revisions' => 'Bearbeite Revision',
-    'version' => 'ver',
-    'last modification' => 'letzte Änderung',
+    'edit file revisions' => 'Revision bearbeiten',
+    'version' => 'Version',
+    'last modification' => 'Letzte Änderung',
     
-    'link object' => 'verlinke Objekt',
-    'link objects' => 'verlinke Objekte',
-    'link more objects' => 'verlinke weitere Objekte',
-    'unlink' => 'Link aufheben',
-    'unlink object' => 'Objekt abkoppeln',
-    'unlink objects' => 'Objekte abkoppeln',
-  	
+    'link object' => 'Objekt verknüpfen',
+    'link objects' => 'Objekte verknüpfen',
+    'link more objects' => 'Weitere Objekte verknüpfen',
+    'unlink' => 'Verknüpfung entfernen',
+    'unlink object' => 'Objektverknüpfung entfernen',
+    'unlink objects' => 'Objektverknüpfung entfernen',
+ 	'extract' => 'Entpacken',
+  	'add files to zip' => 'Hinzufügen zu Zip',
+ 	
     // Tags
-    'delete tag'  => 'lösche Tag',
+    'delete tag'  => 'Tag löschen',
     
     // Permissions
     'update permissions' => 'Berechtigung aktualisieren',
     'edit permissions' => 'Berechtigung bearbeiten',
-    'edit permissions explanation'  => 'Check the boxes to grant users access to the recently created workspace.',
+    'edit permissions explanation'  => 'Aktivieren Sie die Boxen, um dem Benutzer Zugriff auf die zuletzt erzeugten Arbeitsbereichen zu gewähren.',
   
   	'save as new revision' => 'Als neue Revision sichern',
 	'save as' => 'Umbenennen',
 	'details' => 'Details',
-	'view history for' => 'Verlauf anzeigen für',
+	'view history for' => 'Verlauf anzeigen von',
 	'view history' => 'Verlauf anzeigen',    
-	'edit preferences' => 'Einstellungen bearbeiten',
-	'view milestone' => 'Meilenstein ansehen',
+	'edit preferences' => 'Eigenschaften bearbeiten',
+	'view milestone' => 'Meilenstein anzeigen',
   	'custom properties' => 'Benutzerdefinierte Eigenschaften',
   	'move to trash' => 'In den Papierkorb verschieben',
   	'restore from trash' => 'Aus dem Papierkorb wiederherstellen',
   	'delete permanently' => 'Dauerhaft löschen',
+	'copy file' => 'Datei kopieren',
   ); // array
 
 ?>

@@ -80,6 +80,26 @@ return array(
 	'task has been modified' => 'Task "{0}" in workspace "{1}" has been modified',
 	'task modified' => 'Task modified',
 	'view task' => 'View task',
+	'view file' => 'View file',
+	'view message' => 'View message',
+	'view comment' => 'View comment',
+	'view company' => 'View company',
+	'view contact' => 'View contact',
+	'view mail account' => 'View mail account',
+	'view email' => 'View email',
+	'view emailunclassified' => 'View email',
+	'view chart' => 'View chart',
+	'view event' => 'View event',
+	'view file_revision' => 'View file revision',
+	'view form' => 'View form',
+	'view milestone' => 'View milestone',
+	'view task' => 'View task',
+	'view webpage' => 'View web link',
+	'view project' => 'View workspace',
+	'view tag' => 'View tag',
+	'view template' => 'View template',
+	'view timeslot' => 'View timeslot',
+	'view user' => 'View user',	
 
 	'original message' => 'Original message',
 	'mail sent' => 'Sent',
@@ -135,6 +155,10 @@ return array(
 	'deleted notification milestone' => 'Milestone \'{0}\' has been sent to trash',
 	'deleted notification milestone desc' => 'Milestone \'{0}\' has been sent to trash by {1}.',
 
+	'closed notification task' => 'Task \'{0}\' has been completed',
+	'closed notification task desc' => 'Task \'{0}\' has been completed by {1}.',
+	'closed notification milestone' => 'Milestone \'{0}\' has been completed',
+	'closed notification milestone desc' => 'Milestone \'{0}\' has been completed by {1}.',
     ); // array
 
     ?>

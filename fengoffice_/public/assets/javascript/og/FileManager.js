@@ -64,42 +64,7 @@ og.FileManager = function() {
 				projectsString += String.format('<span class="project-replace">{0}</span>&nbsp;', ids[i]);
 		}
 		
-		var actions = '';
-		var actionStyle= ' style="font-size:90%;color:#777777;padding-top:3px;padding-left:18px;background-repeat:no-repeat" '; 
-		
-		if (r.data.isModifiable) {
-			actions += String.format(
-			'<a class="list-action ico-edit" href="#" onclick="og.openLink(\'{0}\')" title="{1}" ' + actionStyle + '>' + lang('edit') + '</a>',
-			r.data.modifyUrl,lang('edit this document'));
-		}
-		
-		if (r.data.mimeType == "audio/mpeg") {
-			actions += String.format(
-			'<a class="list-action ico-play" href="#" onclick="og.playMP3({0})" title="{1}" ' + actionStyle + '>{2}</a>',
-					r.data.songInfo.replace(/'/g, "\\'").replace(/"/g, "'"), lang('play this file'), lang('play'));
-			actions += String.format(
-			'<a class="list-action ico-queue" href="#" onclick="og.queueMP3({0})" title="{1}" ' + actionStyle + '>{2}</a>',
-					r.data.songInfo.replace(/'/g, "\\'").replace(/"/g, "'"), lang('queue this file'), lang('queue'));
-		} else if (r.data.mimeType == 'application/xspf+xml') {
-			actions += String.format(
-			'<a class="list-action ico-play" href="#" onclick="og.playXSPF({0})" title="{1}" ' + actionStyle + '>{2}</a>',
-					r.id, lang('play this file'), lang('play'));
-		} else if (r.data.mimeType == 'prsn') {
-			actions += String.format(
-			'<a class="list-action ico-slideshow" href="#" onclick="og.slideshow({0})" title="{1}" ' + actionStyle + '>{2}</a>',
-					r.id, lang('view slideshow'), lang('slideshow'));
-		}
-		
-		if (r.data.mimeType == "application/zip") {
-			actions += String.format(
-			'<a class="list-action ico-zip-extract" href="#" onclick="og.openLink(og.getUrl(\'files\', \'zip_extract\', {id:{0}}))" title="{1}" ' + actionStyle + '>' + lang('extract') + '</a>',
-			r.data.object_id,lang('extract files'));
-		}
-		
-		if (actions != '')
-			actions = '<span style="padding-left:15px">-&nbsp;' + actions + '</span>';
-		
-		return projectsString + name + actions;
+		return projectsString + name;
 	}
 
 	function renderIcon(value, p, r) {
@@ -163,6 +128,48 @@ og.FileManager = function() {
 				lang('checked out by', String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', 
 				r.data.checkedOutByName, og.getUrl('user', 'card', {id: r.data.checkedOutById}))) + '</div>';
 	}
+	
+	function renderActions(value, p, r) {
+		var actions = '';
+		var actionStyle= ' style="font-size:90%;color:#777777;padding-top:3px;padding-left:18px;background-repeat:no-repeat" '; 
+		
+		actions += String.format('<a class="list-action ico-download" href="#" onclick="window.open(\'{0}\')" title="{1}" ' + actionStyle + '> </a>',
+			og.getUrl('files', 'download_file', {id: r.id}),lang('download file'));
+		
+		if (r.data.isModifiable) {
+			actions += String.format(
+			'<a class="list-action ico-edit" href="#" onclick="og.openLink(\'{0}\')" title="{1}" ' + actionStyle + '> </a>',
+			r.data.modifyUrl,lang('edit this document'));
+		}
+		
+		if (r.data.mimeType == "audio/mpeg") {
+			actions += String.format(
+			'<a class="list-action ico-play" href="#" onclick="og.playMP3({0})" title="{1}" ' + actionStyle + '> </a>',
+					r.data.songInfo.replace(/'/g, "\\'").replace(/"/g, "'"), lang('play this file'));
+			actions += String.format(
+			'<a class="list-action ico-queue" href="#" onclick="og.queueMP3({0})" title="{1}" ' + actionStyle + '> </a>',
+					r.data.songInfo.replace(/'/g, "\\'").replace(/"/g, "'"), lang('queue this file'));
+		} else if (r.data.mimeType == 'application/xspf+xml') {
+			actions += String.format(
+			'<a class="list-action ico-play" href="#" onclick="og.playXSPF({0})" title="{1}" ' + actionStyle + '> </a>',
+					r.id, lang('play this file'));
+		} else if (r.data.mimeType == 'prsn') {
+			actions += String.format(
+			'<a class="list-action ico-slideshow" href="#" onclick="og.slideshow({0})" title="{1}" ' + actionStyle + '></a>',
+					r.id, lang('view slideshow'));
+		}
+		
+		if (r.data.mimeType == "application/zip") {
+			actions += String.format(
+			'<a class="list-action ico-zip-extract" href="#" onclick="og.openLink(og.getUrl(\'files\', \'zip_extract\', {id:{0}}))" title="{1}" ' + actionStyle + '>' + lang('extract') + '</a>',
+			r.data.object_id,lang('extract files'));
+		}
+		
+		if (actions != '')
+			actions = '<span>' + actions + '</span>';
+			
+		return actions;
+	}
 
 	function getSelectedIds() {
 		var selections = sm.getSelections();
@@ -209,13 +216,11 @@ og.FileManager = function() {
 				actions.properties.setDisabled(true);
 				actions.zip_add.setDisabled(true);
 				actions.del.setDisabled(true);
-				actions.download.setDisabled(true);
 			} else {
 				actions.tag.setDisabled(false);
 				actions.properties.setDisabled(sm.getCount() != 1);
 				actions.zip_add.setDisabled(false);
 				actions.del.setDisabled(false);
-				actions.download.setDisabled(sm.getCount() != 1);
 			}
 		});
 	var cm = new Ext.grid.ColumnModel([
@@ -268,6 +273,12 @@ og.FileManager = function() {
 			dataIndex: 'checkedOutByName',
 			width: 120,
 			renderer: renderCheckout
+		},{
+			id: 'actions',
+			header: lang("actions"),
+			width: 40,
+			renderer: renderActions,
+			sortable: false
 		}]);
 	cm.defaultSortable = false;
 	
@@ -288,11 +299,11 @@ og.FileManager = function() {
 				{text: lang('presentation'), iconCls: 'ico-prsn', handler: function() {
 					var url = og.getUrl('files', 'add_presentation');
 					og.openLink(url);
-				}}/*,
+				}},
 				{text: lang('spreadsheet') + ' (ALPHA)', iconCls: 'ico-sprd', handler: function() {
 					var url = og.getUrl('files', 'add_spreadsheet');
 					og.openLink(url);
-				}}*/
+				}}
 			]}
 		}),
 		tag: new Ext.Action({
@@ -324,16 +335,6 @@ og.FileManager = function() {
 				var o = sm.getSelected();
 				var url = og.getUrl('files', 'edit_file', {id: o.data.object_id, manager: o.data.manager});
 				og.openLink(url);
-			}
-		}),
-		download: new Ext.Action({
-			text: lang('download'),
-			tooltip: lang('download selected file'),
-			iconCls: 'ico-download',
-			disabled: true,
-			handler: function(e) {
-				var url = og.getUrl('files', 'download_file', {id: getFirstSelectedId()});
-				window.open(url);
 			}
 		}),
 		zip_add: new Ext.Action({
@@ -396,7 +397,6 @@ og.FileManager = function() {
 			'-',
 			actions.tag,
 			actions.properties,
-			actions.download,
 			actions.zip_add,
 			actions.del/*,
 			'-',

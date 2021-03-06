@@ -3,7 +3,7 @@
 ?><?php echo lang('dont reply wraning') ?><?php echo "\r\n"
 ?>------------------------------------------------------------<?php echo "\r\n"
 ?><?php echo "\r\n"
-?><?php echo lang('new notification '.$type.' desc', $object->getObjectName(), $object->getCreatedBy()->getDisplayName()) ?>.<?php echo "\r\n"
+?><?php echo lang('new notification '.$type.' desc', $object->getObjectName(), $object->getCreatedByDisplayName()) ?>.<?php echo "\r\n"
 ?><?php echo "\r\n"
 ?><?php echo lang('view '.$type) ?>: <?php echo str_replace('&amp;', '&', $object->getViewUrl()) ?><?php echo "\r\n"
 ?><?php echo "\r\n"

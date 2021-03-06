@@ -101,13 +101,13 @@ og.rememberGUIState = <?php echo user_config_option("rememberGUIState", 0) ?>;
 <?php if (user_config_option("rememberGUIState", 0)) { ?>
 og.initialGUIState = <?php echo json_encode(GUIController::getState()) ?>;
 <?php } ?>
-og.initialURL = '<?php echo ROOT_URL . "?" . $_SERVER['QUERY_STRING'] ?>';
 <?php $initialWS = user_config_option('initialWorkspace', 0);
 if ($initialWS == "remember") {
 	$initialWS = user_config_option('lastAccessedWorkspace', 0);
 }
 ?>
 og.initialWorkspace = '<?php echo $initialWS ?>';
+og.initialURL = '<?php echo ROOT_URL . "/?active_project=$initialWS&" . $_SERVER['QUERY_STRING'] ?>';
 og.loggedUser = {
 	id: <?php echo logged_user()->getId() ?>,
 	username: <?php echo json_encode(logged_user()->getUsername()) ?>,

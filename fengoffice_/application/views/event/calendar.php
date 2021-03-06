@@ -41,9 +41,11 @@ $use_24_hours = user_config_option('time_format_use_24');
 
 global $cal_db;
 // get actual current day info
-$currentday = date("j");
-$currentmonth = date("n");
-$currentyear = date("Y");
+$today = DateTimeValueLib::now();
+$today->add('h', logged_user()->getTimezone());
+$currentday = $today->format("j");
+$currentmonth = $today->format("n");
+$currentyear = $today->format("Y");
 
 if(cal_option("start_monday")) $firstday = (date("w", mktime(0, 0, 0, $month, 1, $year)) - 1) % 7;
 else $firstday = (date("w", mktime(0, 0, 0, $month, 1, $year))) % 7;

@@ -275,10 +275,12 @@ class ProjectMilestone extends BaseProjectMilestone {
 	} // getAssignedTo
 	
 	function getAssignedToName() {
-		if($this->getAssignedToUserId() > 0) {
-			return $this->getAssignedToUser()->getDisplayName();
-		} elseif($this->getAssignedToCompanyId() > 0) {
-			return $this->getAssignedToCompany()->getName();
+		$user = $this->getAssignedToUser();
+		$company = $this->getAssignedToCompany();
+		if ($user instanceof User) {
+			return $user->getDisplayName();
+		} else if ($company instanceof Company) {
+			return $company->getName();
 		} else {
 			return lang("anyone");
 		} // if

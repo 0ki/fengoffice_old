@@ -18,6 +18,7 @@
 <input name="submitted" type="hidden" value="submitted" />
 <?php echo submit_button(lang('update permissions'));?>
 
+<?php if (logged_user()->isAdministrator()) { ?>
 <fieldset class=""><legend class="toggle_expanded" onclick="og.toggle('<?php echo $genid ?>userSystemPermissions',this)"><?php echo lang("system permissions") ?></legend>
 	<div id="<?php echo $genid ?>userSystemPermissions" style="display:block">
 		<div>
@@ -46,6 +47,7 @@
 	    </div>
 	</div>
 </fieldset>
+<?php } ?>
 
 
 <fieldset class="">

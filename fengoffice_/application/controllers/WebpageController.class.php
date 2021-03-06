@@ -341,6 +341,17 @@ class WebpageController extends ApplicationController {
 		ajx_extra_data($object);
 		/*tpl_assign("listing", $object);*/
 	}
+	
+	function view() {
+		$id = get_id();
+		$wl = ProjectWebpages::findById($id);
+		if (!$wl instanceof ProjectWebpage) {
+			flash_error(lang('webpage dnx'));
+			ajx_current("empty");
+			return;
+		}
+		$this->redirectToUrl($wl->getUrl());
+	}
 } // WebpageController
 
 ?>

@@ -4,7 +4,7 @@
 ?>
 
 <script type="text/javascript">
-function submitCsv(genid) {
+og.submitCsv = function(genid) {
 	fname = document.getElementById(genid + 'filenamefield');
 	ok = true;
 	
@@ -39,7 +39,7 @@ function submitCsv(genid) {
 <?php if (!isset($titles) && !isset($import_result)) { ?>
 	<div id="<?php echo $genid ?>selectFileControlDiv">
         <?php echo label_tag(lang('file'), $genid . 'filenamefield', true) ?>
-        <?php echo file_field('csv_file', null, array('id' => $genid . 'filenamefield', 'class' => 'title', 'size' => '88', "onchange" => 'javascript:submitCsv(\'' . $genid .'\')')) ?>
+        <?php echo file_field('csv_file', null, array('id' => $genid . 'filenamefield', 'class' => 'title', 'size' => '88', "onchange" => 'javascript:og.submitCsv(\'' . $genid .'\')')) ?>
     </div>
     <div id="<?php echo $genid ?>first_record_has_names_div">
     	<table><tr><td><?php echo label_tag(lang('first record contains field names'), $genid . 'first_record_has_names') ?></td>

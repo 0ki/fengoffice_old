@@ -162,10 +162,12 @@ abstract class BaseMailContents extends ProjectDataObjects {
 			$join_conditions = " (SELECT count(*) FROM " . TABLE_PREFIX . "read_objects WHERE rel_object_manager = 'MailContents'  and " . 
 				TABLE_PREFIX . "read_objects.rel_object_id = " . $this->getTableName(true) . ".id) = 0";
 			
-			if ($conditions != '')
-				$join_conditions .= ' and ';
+			if ($conditions != '') {
+				$conditions .= " AND ";
+			}
+			$conditions .= "`trashed_by_id` = 0";
 			
-			$where_string = trim($conditions) == '' ? '' : "WHERE $join_conditions $conditions";
+			$where_string = trim($conditions) == '' ? '' : "WHERE $join_conditions AND $conditions";
 			$order_by_string = trim($order_by) == '' ? '' : "ORDER BY $order_by";
 			$limit_string = $limit > 0 ? "LIMIT $offset, $limit" : '';
 
@@ -187,7 +189,7 @@ abstract class BaseMailContents extends ProjectDataObjects {
 					$object = $this->loadFromRow($row);
 					if(instance_of($object, $this->getItemClass())) $objects[] = $object;
 				} // foreach
-				return count($objects) ? $objects : null;
+				return count($objects) > 0 ? $objects : null;
 			} // if
 		} else {
 			return MailContents::instance()->findAllUnread($arguments);

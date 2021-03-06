@@ -332,7 +332,9 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 			exec(($extension == "doc"? CATDOC_PATH . ' -a ' : CATPPT_PATH) . ' ' . escapeshellarg($fname) . ' 2>&1', $result, $return_var);
 			if ($return_var > 0){
 				if (strpos(($extension == 'doc'?'catdoc':'catppt'),implode(" ",$result)) === false) {
-					Logger::log($result,Logger::ERROR);
+					if (Env::isDebugging()) {
+						Logger::log($result,Logger::ERROR);
+					}
 				}
 				return false;
 			}
@@ -358,7 +360,10 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 		    $searchable_object->setIsPrivate($this->isPrivate());
 		            
 		    $searchable_object->save();
-		} else if (($this->getFileType()->getExtension() == "doc" || $this->getFileType()->getExtension() == "ppt") && FileRepository::getBackend() instanceof FileRepository_Backend_FileSystem){
+		} else // add .doc and .ppt files to the search 
+			if ($this->getFileType() && ($this->getFileType()->getExtension() == "doc" || $this->getFileType()->getExtension() == "ppt") 
+				&& FileRepository::getBackend() instanceof FileRepository_Backend_FileSystem){
+					
 			if (!$this->isNew())
 	    		SearchableObjects::dropContentByObjectColumn($this,'filecontent');
 	    		

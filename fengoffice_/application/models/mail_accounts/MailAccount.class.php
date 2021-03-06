@@ -207,6 +207,11 @@ class MailAccount extends BaseMailAccount {
 	
 	function delete($deleteMails = false){
 		if ($deleteMails) {
+			LinkedObjects::delete(array("(`object_id` IN (SELECT `id` FROM `".TABLE_PREFIX."mail_contents` WHERE `account_id` = " . DB::escape($this->getId()).") and `object_manager` = 'MailContents') 
+				or (`rel_object_id` IN (SELECT `id` FROM `".TABLE_PREFIX."mail_contents` WHERE `account_id` = " . DB::escape($this->getId()).") and `rel_object_manager` = 'MailContents')")); 
+			
+      		SearchableObjects::delete(array("`rel_object_manager` = 'MailContents' AND `rel_object_id` IN (SELECT `id` FROM `".TABLE_PREFIX."mail_contents` WHERE `account_id` = " . DB::escape($this->getId()).") "));
+			ReadObjects::delete("`rel_object_manager` = 'MailContents' AND `rel_object_id` IN (SELECT `id` FROM `".TABLE_PREFIX."mail_contents` WHERE `account_id` = " . DB::escape($this->getId()).") ");
 			MailContents::delete('`account_id` = ' . DB::escape($this->getId()));
 		}
 		if ($this->getIsImap()) {

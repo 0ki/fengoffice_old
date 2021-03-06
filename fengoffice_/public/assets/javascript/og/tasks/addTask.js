@@ -361,7 +361,7 @@ ogTasks.GetNewTaskParameters = function(wrapWithTask){
 	if (wrapWithTask){
 		var params2 = [];
 		for (var i in parameters)
-			if (parameters[i])
+			if (parameters[i] || parameters[i] === 0)
 				params2["task[" + i + "]"] = parameters[i];
 		return params2;
 	}

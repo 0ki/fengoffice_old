@@ -696,7 +696,7 @@ echo $output . '</table>';
 <?php if ($hasMessages || $hasDocuments || $hasCharts || $hasEmails || $hasComments){ ?>
 <td style="width:<?php echo ($hasPendingTasks || $hasLate || $hasToday)? '330px' : '100%' ?>">
 
-<?php if ($hasEmails && (defined('SHOW_MAILS_TAB') && SHOW_MAILS_TAB == 1)) { ?>
+<?php if ($hasEmails) { ?>
 <div class="dashUnreadEmails">
 <table style="width:100%">
 	<col width=12/><col /><col width=12/><tr>
@@ -724,7 +724,7 @@ echo $output . '</table>';
 					<a class="internalLink" style="font-weight:bold" href="<?php echo get_url('mail','view', array('id' => $email->getId()))?>"
 						title="">
 					<?php echo clean($email->getSubject()) ?>
-					</a><br/><table width="100%" style="color:#888"><tr><td><?php echo clean($email->getFrom())?></td><td align=right><?php echo $email->getSentDate()->isToday() ? format_time($email->getSentDate()) : format_date($email->getSentDate())?></td></tr></table></td></tr>
+					</a><br/><table width="100%" style="color:#888"><tr><td><?php echo clean($email->getFrom()); ?></td><td align=right><?php if (!$email->getSentDate() instanceof DateTimeValue) echo lang("n/a"); else echo $email->getSentDate()->isToday() ? format_time($email->getSentDate()) : format_date($email->getSentDate());?></td></tr></table></td></tr>
 			<?php } // if?>
 		<?php } // foreach?>
 			<?php if ($c >= 10) {?>

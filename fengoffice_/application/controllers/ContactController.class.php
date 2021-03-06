@@ -142,15 +142,15 @@ class ContactController extends ApplicationController {
     	$proj_cond_companies = ' `id` IN (SELECT `object_id` FROM `'.TABLE_PREFIX.'workspace_objects` WHERE `object_manager` = \'Companies\' AND `workspace_id` IN ('.$proj_ids.'))';
     	$proj_cond_contacts = ' `project_id` IN (' . $proj_ids . ')';
     	
-    	if(isset($tag) && $tag && $tag!='')
-    		$tag_str = " AND EXISTS (SELECT * FROM `" . TABLE_PREFIX . "tags` `t` WHERE `tag`=".DB::escape($tag)." AND `oid` = `t`.`rel_object_id` AND `t`.`rel_object_manager` = `object_manager_value`) ";
+	if(isset($tag) && $tag && $tag!='')
+    		$tag_str = " AND EXISTS (SELECT * FROM `" . TABLE_PREFIX . "tags` `t` WHERE `tag`=".DB::escape($tag)." AND `co`.`id` = `t`.`rel_object_id` AND `t`.`rel_object_manager` = `object_manager_value`) ";
     	else
     		$tag_str= ' ';
     	$res = array();
     	
 		$permissions = ' AND ( ' . permissions_sql_for_listings(Companies::instance(), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`co`') .')';
 		$res['Companies'] = "SELECT  $order_crit_companies AS `order_value`, 'Companies' AS `object_manager_value`, `id` as `oid` FROM `" . 
-					TABLE_PREFIX . "companies` `co` WHERE `trashed_by_id` = 0 AND " .$proj_cond_companies . $tag_str . $permissions;
+					TABLE_PREFIX . "companies` `co` WHERE `trashed_by_id` = 0 AND " .$proj_cond_companies . str_replace('= `object_manager_value`', "= 'Companies'", $tag_str) . $permissions;
 					
 		if (!can_manage_contacts(logged_user())){
 			$pcTableName = "`" . TABLE_PREFIX . 'project_contacts`';
@@ -161,7 +161,7 @@ class ContactController extends ApplicationController {
 			$res['Contacts'] = "SELECT $order_crit_contacts AS `order_value`, 'Contacts' AS `object_manager_value`, `id` AS `oid` FROM `" . 
 					TABLE_PREFIX . "contacts` `co` WHERE `trashed_by_id` = 0 AND EXISTS (SELECT * FROM `" . 
 					TABLE_PREFIX . "project_contacts` `pc` WHERE `pc`.`contact_id` = `co`.`id` AND ".$proj_cond_contacts. ")" .
-					str_replace('= `object_manager_value`', "= 'ProjectContacts'", $tag_str) . $permissions;
+					str_replace('= `object_manager_value`', "= 'Contacts'", $tag_str) . $permissions;
 		} else{
 			$res['Contacts'] = "SELECT $order_crit_contacts AS `order_value`, 'Contacts' AS `object_manager_value`, `id` AS `oid` FROM `" . 
 					TABLE_PREFIX . "contacts` `co` WHERE `trashed_by_id` = 0 " . str_replace('= `object_manager_value`', "= 'Contacts'", $tag_str) . $permissions;

@@ -41,10 +41,10 @@ if (isset($event) && $event instanceof ProjectEvent) {
 	
     if(!is_numeric($id)) $error = lang('CAL_NO_EVENT_SELECTED');
 	// get user who submitted the event, subject, event description, etc.
-    $username = clean($event->getCreatedBy()->getUsername());
+    $username = clean($event->getCreatedByDisplayName());
     $subject = clean($event->getSubject());
 	$private = $event->getIsPrivate();
-	$alias = clean($event->getCreatedBy()->getUsername());
+	$alias = clean($event->getCreatedByDisplayName());
     $desc = convert_to_links(clean($event->getDescription()));
     $start_time = $event->getStart();
 	$mod_username = clean($event->getUpdatedBy()->getUsername());

@@ -347,6 +347,8 @@ og.ObjectPicker = function(config) {
 				split: true,
 				width: 200,
 				region: 'west',
+				collapsible: true,
+				title: lang('filter'),
 				items: [{
 						xtype: 'wstree',
 						id: 'wsFilter',
@@ -354,7 +356,6 @@ og.ObjectPicker = function(config) {
 						autoScroll: true,
 						loadWorkspacesFrom: 'workspace-panel',
 						split: true,
-						title: lang('filter'),
 						height: 120,
 						listeners: {
 							workspaceselect: {

@@ -65,7 +65,7 @@ INSERT INTO `<?php echo $table_prefix ?>user_ws_config_options` (`category_name`
  ('dashboard', 'show tasks in progress widget', '1', 'BoolConfigHandler', 0, 700, ''),
  ('dashboard', 'show comments widget', '1', 'BoolConfigHandler', 0, 800, ''),
  ('dashboard', 'always show unread mail in dashboard', '0', 'BoolConfigHandler', 0, 10, 'when false, active workspace email is shown'),
- ('task panel', 'can notify from quick add', '0', 'BoolConfigHandler', 0, 0, ''),
+ ('task panel', 'can notify from quick add', '1', 'BoolConfigHandler', 0, 0, ''),
  ('task panel', 'tasksShowWorkspaces', '1', 'BoolConfigHandler', 1, 0, ''),
  ('task panel', 'tasksShowTime', '1', 'BoolConfigHandler', 1, 0, ''),
  ('task panel', 'tasksShowDates', '1', 'BoolConfigHandler', 1, 0, ''),

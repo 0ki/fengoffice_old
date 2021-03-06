@@ -402,7 +402,7 @@ addLangs({
 	'start date': 'Fecha de inicio',
 	'task name': 'Nombre de la tarea',
 	'show': 'Mostrar',
-	'time': 'Tiempo',
+	'time': 'Horas',
 	'dates': 'Fechas',
 	'select user or group': 'Seleccionar usuario o compañía',
 	'select milestone': 'Seleccionar un hito',
@@ -543,5 +543,7 @@ addLangs({
     'sort tags': 'Ordenar etiquetas',
     'sort tags alphabetically': 'Alfabéticamente',
     'sort tags by count': 'Por ocurrencias',
-    'confirm template with no objects': '¿Está seguro que desea crear una plantilla sin objetos? (Puede agregar objetos más tarde)'
+    'confirm template with no objects': '¿Está seguro que desea crear una plantilla sin objetos? (Puede agregar objetos más tarde)',
+	'show more' : 'Ver más',
+	'actions' : 'Acciones'
 });

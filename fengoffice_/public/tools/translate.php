@@ -2,7 +2,6 @@
 $allowed = include 'access.php';
 if (!in_array('translate.php', $allowed)) die("This tool is disabled.");
 
-header("Content-Type: text/html; charset=UTF-8");
 define('LANG_DIR', 'language');
 define('TEST_LIST_PATH', 'all_langs.txt');
 chdir("../.."); 
@@ -40,6 +39,38 @@ function loadFileTranslations($locale, $file) {
 	}
 }
 
+function download_zip($locale) {		
+	$filename = "tmp/$locale.zip";
+	if (is_file($filename)) unlink($filename);
+	$zip = new ZipArchive();
+	$zip->open($filename, ZIPARCHIVE::OVERWRITE);
+	$zip->addFile(LANG_DIR . "/$locale.php", "$locale.php");
+	$zip->addEmptyDir($locale);
+	$dir = opendir(LANG_DIR . "/" . $locale);
+	while (false !== ($file = readdir($dir))) {
+		if ($file != "." && $file != ".." && $file != "CVS") {
+			$zip->addFile(LANG_DIR . "/$locale/$file", "$locale/$file");
+		}
+	}
+	closedir($dir);
+	$zip->close();
+	header("Cache-Control: public");
+	header("Expires: -1");
+	header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
+	header("Content-Type: application/zip");
+	header("Content-Length: " . (string) filesize($filename));
+	header("Content-Disposition: 'attachment'; filename=\"$locale.zip\"");
+	header("Content-Transfer-Encoding: binary");
+	readfile($filename);
+	die();
+}
+
+$download = $_GET['download'];
+if (isset($download)) {
+	// download zip file and die
+	download_zip($download);
+	die();
+}
 
 // save submissions
 $lang = $_POST['lang'];
@@ -101,6 +132,8 @@ if (isset($lang)) {
 	}
 	fclose($f);
 }
+
+header("Content-Type: text/html; charset=UTF-8");
 ?>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
@@ -156,6 +189,17 @@ td.empty {
 table.lang td.from textarea.focus, table.lang td.to textarea.focus {
 	background-color: #EEFFEE;
 }
+#moreOptions {
+	margin-bottom: 20px;
+	margin-left: 20px;
+}
+label {
+	font-weight: bold;
+}
+table.options td {
+	vertical-align: middle;
+	padding: 5px 10px;
+}
 </style>
 <script>
 function addLangs(langs) {
@@ -166,6 +210,17 @@ function addLangs(langs) {
 }
 function escLang(text) {
 	return text.replace(/'/g, "\\'").replace(/\n/g, "\\n").replace(/</g, "&lt;");
+}
+function showMoreOptions() {
+	if (this.optionsVisible) {
+		this.optionsVisible = false;
+		this.innerHTML = 'More options';
+		document.getElementById('moreOptions').style.display = 'none';
+	} else {
+		this.optionsVisible = true;
+		this.innerHTML = 'Hide options';
+		document.getElementById('moreOptions').style.display = 'block';
+	}
 }
 var locales = {};
 </script>
@@ -184,7 +239,7 @@ if (!isset($to)) $to = ""; ?>
 $handle = opendir(LANG_DIR); ?>
 <table class="filters"><tbody>
 <tr><td>
-	<b>Choose a locale:</b>
+	<label>Choose a locale:</label>
 	<form action="translate.php" method="get" onsubmit="return localeChosen.call(this)">
 		<input type="hidden" name="from" value="<?php echo $from ?>" />
 		<script>
@@ -250,7 +305,7 @@ if ($to != "") {
 	$file = $_GET["file"];
 	if (!isset($file)) $file = ""; ?>
 	<td>
-	<b>Choose a file:</b>
+	<label>Choose a file:</label>
 	<form action="translate.php" method="get">
 		<input type="hidden" name="from" value="<?php echo $from ?>" />
 		<input type="hidden" name="to" value="<?php echo $to ?>" />
@@ -277,9 +332,11 @@ if ($to != "") {
 		if (!isset($filter)) $filter = "all";
 		$start = $_GET['start'];
 		if (!isset($start)) $start = 0;
-		if ($start >= $added && $filter == "missing") $start -= $added; ?>
+		if ($start >= $added && $filter == "missing") $start -= $added;
+		$pagesize = $_POST['pagesize'];
+		if (!isset($pagesize)) $pagesize = 5; ?>
 		<td>
-		<b>View:</b>
+		<label>View:</label>
 		<form action="translate.php" method="get">
 			<input type="hidden" name="from" value="<?php echo $from ?>" />
 			<input type="hidden" name="to" value="<?php echo $to ?>" />
@@ -296,7 +353,13 @@ if ($to != "") {
 			<button type="submit">Go</button>
 		</form>
 		</td>
+		<td style="text-align:right">
+			<br />
+			<button style="margin-left:50px" type="submit" onclick="saveClick()">Save</button>
+			<a href="#" onclick="showMoreOptions.call(this);return false;" style="margin-left:10px">More options</a>
+		</td>
 		</tr></tbody></table>
+		
 		<script>
 		function textChange() {
 			window.onbeforeunload = function() {
@@ -313,19 +376,47 @@ if ($to != "") {
 			this.className = (" " + this.className + " ").replace(/\s+focus\s+/g, " ");
 		}
 		
+		function saveClick() {
+			var form = document.getElementById('langs');
+			form.action += '&start=<?php echo $start?>';
+			formSubmit();
+			form.submit();
+		}
+		
+		function pagesizeChange() {
+			formSubmit();
+			document.getElementById('langs').submit(); 
+		}
+		
 		function formSubmit() {
 			window.onbeforeunload = null;
 		}
 		
 		</script>
 		<form id="langs" onsubmit="formSubmit()" action="translate.php?from=<?php echo $from ?>&to=<?php echo $to ?>&file=<?php echo $file ?>&filter=<?php echo $filter ?>" method="post">
+			<div id="moreOptions" style="display:none">
+				<table class="options"><tbody><tr><td>
+					<label>Page size:</label>
+					<select name="pagesize" onchange="pagesizeChange.call(this)" value="<?php echo $pagesize ?>">
+						<option value="5"<?php if ($pagesize == 5) echo ' selected="selected"'; ?>>5</option>
+						<option value="10"<?php if ($pagesize == 10) echo ' selected="selected"'; ?>>10</option>
+						<option value="20"<?php if ($pagesize == 20) echo ' selected="selected"'; ?>>20</option>
+						<option value="50"<?php if ($pagesize == 50) echo ' selected="selected"'; ?>>50</option>
+						<option value="100"<?php if ($pagesize == 100) echo ' selected="selected"'; ?>>100</option>
+					</select>
+				</td><td>
+					<a target="blank" href="translate.php?download=<?php echo $to ?>">Download zipped translation files for <?php echo $to ?></a>
+				</td></tr></tbody></table>
+			</div>
 			<input type="hidden" name="locale" value="<?php echo $to ?>" />
 			<input type="hidden" name="file" value="<?php echo $file ?>" />
 			<table class="lang"><tbody>
 			<tr>
 				<th class="key">Key</th>
 				<th class="from"><?php echo $from ?></th>
-				<th class="to"><?php echo $to ?><button type="submit" onclick="document.getElementById('langs').action += '&start=<?php echo $start?>'" style="position:relative;top:-50px">Save</button></th>
+				<th class="to">
+					<?php echo $to ?>
+				</th>
 			</tr><?php
 			$locales[$from][$file] = loadFileTranslations($from, $file);
 			$locales[$to][$file] = array();
@@ -333,7 +424,6 @@ if ($to != "") {
 				$locales[$to][$file] = loadFileTranslations($to, $file);
 			}
 			$count = 0;
-			$pagesize = 5;
 			foreach ($locales[$from][$file] as $key => $value) {
 				if ($filter == "all" || $filter == "missing" && !isset($locales[$to][$file][$key])) {
 					$count++;
@@ -359,7 +449,7 @@ if ($to != "") {
 			} ?>
 			</tbody></table> <br /> <?php
 			if ($start > 0) {
-				$remaining = min($start, 5); ?>
+				$remaining = min($start, $pagesize); ?>
 				<button onclick="this.parentNode.action += '&start=<?php echo $start - $remaining?>'" type="submit">Previous <?php echo $remaining  ?></button><?php
 			}
 			/*if ($filter == 'missing') {
@@ -371,7 +461,7 @@ if ($to != "") {
 				$nextstart = $start + $pagesize;
 			}*/
 			$nextstart = $start + $pagesize;
-			$remaining = min(array(5, $count - $nextstart));
+			$remaining = min(array($pagesize, $count - $nextstart));
 			if ($remaining > 0) { ?>
 				<button onclick="this.parentNode.action += '&start=<?php echo $nextstart ?>'" type="submit">Next <?php echo $remaining  ?></button><?php
 			}

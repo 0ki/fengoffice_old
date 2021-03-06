@@ -1015,7 +1015,7 @@
 		$permissions = ' AND ( ' . permissions_sql_for_listings(MailContents::instance(),ACCESS_LEVEL_READ, logged_user(), ($project instanceof Project ? $project->getId() : 0)) .')';
 	
 		$res = DB::execute("SELECT `id`, 'MailContents' as manager, `sent_date` as comp_date from " . TABLE_PREFIX. "mail_contents where " . 
-			"`trashed_by_id` = 0 AND " . $projectConditions . " AND " . $tagstr . " AND " . $classified . " AND " . $readed  . " AND ". $state ." AND `is_deleted` = 0 " . $permissions 
+			"`trashed_by_id` = 0 AND " . $projectConditions . " AND " . $tagstr . " AND " . $classified . " AND " . $readed  . " AND ". $state ." AND `is_deleted` = 0 AND `account_id` IN (SELECT `id` FROM `".TABLE_PREFIX."mail_accounts` WHERE `user_id` = " . logged_user()->getId() . ") " . $permissions 
 			. " ORDER BY `sent_date` DESC");
 		
 		if(!$res) return null;

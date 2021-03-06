@@ -446,13 +446,23 @@ ogTasks.orderGroups = function(displayCriteria,groups){
 	//Order the rest
 	switch(displayCriteria.group_by){
 		case 'workspace' : //TODO correct order
-		case 'milestone':
 		case 'created_by' :
 		case 'completed_by' :
 		case 'tag' :
 			for (var i = 0; i < groups.length - 2; i++)
 				for (var j = i+1; j < groups.length - 1; j++)
 					if (groups[i].group_name.toUpperCase() > groups[j].group_name.toUpperCase()){
+						var aux = groups[i];
+						groups[i] = groups[j];
+						groups[j] = aux;
+					}
+			break;
+		case 'milestone':
+			for (var i = 0; i < groups.length-1; i++)
+				groups[i].duedate = this.getMilestone(groups[i].group_id).dueDate;
+			for (var i = 0; i < groups.length - 2; i++)
+				for (var j = i+1; j < groups.length - 1; j++)
+					if (groups[i].duedate > groups[j].duedate){
 						var aux = groups[i];
 						groups[i] = groups[j];
 						groups[j] = aux;

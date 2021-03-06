@@ -1,4 +1,15 @@
 <script type="text/javascript">
+
+	og.ToggleTrap = function(fsid) {
+		if (Ext.isIE) {
+			if (!Ext.get(fsid).isDisplayed()) {
+				Ext.get(fsid).setDisplayed('block');
+			} else {
+				Ext.get(fsid).setDisplayed('none');
+			}
+		}
+	}
+	
 	function cal_hide(id) {
 		document.getElementById(id).style.display = "none";
 	}
@@ -140,9 +151,9 @@ $use_24_hours = user_config_option('time_format_use_24');
 		<a href='#' class='option' onclick="og.ToggleTrap('trap5', 'fs5');og.toggleAndBolden('<?php echo $genid ?>add_custom_properties_div', this)"><?php echo lang('custom properties')?></a> - 
 		<a href="#" class="option" onclick="og.ToggleTrap('trap6', 'fs6');og.toggleAndBolden('<?php echo $genid ?>add_subscribers_div',this)"><?php echo lang('object subscribers') ?></a>
 		<?php if($object->isNew() || $object->canLinkObject(logged_user(), $project)) { ?> - 
-			<a href="#" class="option" onclick="og.DrawTrap('trap7', 'fs7');og.toggleAndBolden('<?php echo $genid ?>add_linked_objects_div',this)"><?php echo lang('linked objects') ?></a>
+			<a href="#" class="option" onclick="og.ToggleTrap('trap7', 'fs7');og.toggleAndBolden('<?php echo $genid ?>add_linked_objects_div',this)"><?php echo lang('linked objects') ?></a>
 		<?php } ?> -
-		<a href="#" class="option" onclick="og.DrawTrap('trap8', 'fs8');og.toggleAndBolden('<?php echo $genid ?>add_event_invitation_div', this);"><?php echo lang('event invitations') ?></a>
+		<a href="#" class="option" onclick="og.ToggleTrap('trap8', 'fs8');og.toggleAndBolden('<?php echo $genid ?>add_event_invitation_div', this);"><?php echo lang('event invitations') ?></a>
 		</div></div>
 	
 		<div class="coInputSeparator"></div>
@@ -515,13 +526,4 @@ og.redrawUserList();
 Ext.get('eventSubject').focus();
 <?php if (array_var($event_data, 'typeofevent') == 2) echo 'toggleDiv(\''.$genid.'event[start_time]\'); toggleDiv(\''.$genid.'ev_duration_div\');'; ?>
 
-og.ToggleTrap = function(fsid) {
-	if (Ext.isIE) {
-		if (!Ext.get(fsid).isDisplayed()) {
-			Ext.get(fsid).setDisplayed('block');
-		} else {
-			Ext.get(fsid).setDisplayed('none');
-		}
-	}
-}
 </script>

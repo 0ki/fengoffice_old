@@ -82,25 +82,29 @@ og.swapNames = function(object){
 
 og.showFullPathTooltip = function(object, isMouseOver){
 	var object = og.triggerFPTObject;
-	if (object.currentStyle)
-		var bgColor = object.currentStyle['background-color'];
-	else if (window.getComputedStyle)
-		var bgColor = document.defaultView.getComputedStyle(object,null).getPropertyValue('background-color');
-	var cn = object.childNodes;
-	for (var i = 0; i < cn.length; i++) {
-		if (cn[i].name != null && cn[i].name != ''){
-			var aux = cn[i].innerHTML;
-			cn[i].innerHTML = cn[i].name;
-			cn[i].name = aux;
+	if (object){
+		if (!Ext.isIE){
+			if (object.currentStyle)
+				var bgColor = object.currentStyle['background-color'];
+			else if (window.getComputedStyle)
+				var bgColor = document.defaultView.getComputedStyle(object,null).getPropertyValue('background-color');
+		} else {
+			var bgColor = object.currentStyle['backgroundColor'];
 		}
-	}
-		
-	Tip(object.innerHTML,FOLLOWMOUSE,false,FADEIN,300,STICKY,1,CLICKCLOSE,true,BGCOLOR,bgColor,BORDERCOLOR,bgColor);
-	for (var i = 0; i < cn.length; i++) {
-		if (cn[i].name != null && cn[i].name != ''){
-			var aux = cn[i].innerHTML;
-			cn[i].innerHTML = cn[i].name;
-			cn[i].name = aux;
+		if (bgColor == 'transparent')
+			bgColor = '#FCFCFC';
+	
+		var cn = object.childNodes;
+		for (var i = 0; i < cn.length; i++) {
+			if (cn[i].name != null && cn[i].name != ''){
+				og.swapNames(cn[i]);
+			}
+		}
+		Tip(object.innerHTML,FOLLOWMOUSE,false,FADEIN,300,STICKY,1,CLICKCLOSE,true,BGCOLOR,bgColor,BORDERCOLOR,bgColor);
+		for (var i = 0; i < cn.length; i++) {
+			if (cn[i].name != null && cn[i].name != ''){
+				og.swapNames(cn[i]);
+			}
 		}
 	}
 };

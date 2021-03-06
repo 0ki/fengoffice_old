@@ -125,7 +125,7 @@
 	'new event created' => 'New Event created',
 	'event changed' => 'Event changed',
  	'event deleted' => 'Event deleted',
-	'calendar of' => '{0}\'s Calendar',
+	'calendar of' => 'Calendar for {0}',
 	'all users' => 'All Users',
   	'error delete event' => 'Error deleting event',  
   

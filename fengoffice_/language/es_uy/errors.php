@@ -133,13 +133,17 @@
   	'maximum number of users reached error' => 'El número máximo de usuarios ha sido alcanzado',
 	'maximum number of users exceeded error' => 'El número máximo de usuarios ha sido sobrepasado. El sistema no volverá a funcionar hasta que este problema haya sido resuelto.',
 	'maximum disk space reached' => 'Ha utilizado la totalidad del espacio en disco asignado. Borre objetos antes de ingresar nuevos, o contacte a soporte para que autorice más usuarios.'  ,
- 	'error db backup' => 'Error al crear respaldo de la base de datos. Verificar constante MYSQLDUMP_COMMAND.',
+ 	'error db backup' => 'Error al crear respaldo de la base de datos. {0}',
 	'error create backup folder' => 'Error al crear carpeta de respaldo. No se puede completar el respaldo',
 	'error delete backup' => 'Error al borrar el ultimo respaldo',
 	'success delete backup' => 'Respaldo borrado',
-    'name must be unique' => 'El Nombre del contacto ya esta en uso',
-	'not implemented' => 'No implementado',
-  	'success db backup' => 'Respaldo creado exitosamente.',	
+    'name must be unique' => 'El nombre del contacto ya está en uso',
+  	'not implemented' => 'No implementado',
+  	'success db backup' => 'Respaldo creado exitosamente.',
+  
+	'backup command failed' => 'Error al ejecutar el comando de respaldo. Verificar constante MYSQLDUMP_COMMAND.',	
+ 
+  	'return code' => 'Código de retorno',
  ); // array
 
 ?>

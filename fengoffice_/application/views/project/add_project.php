@@ -1,5 +1,4 @@
 <?php
-	$user = logged_user();
 	
   	if(!$project->isNew() && $project->canDelete(logged_user())) {
   		add_page_action(lang('delete'),  $project->getDeleteUrl() , 'ico-delete');
@@ -137,7 +136,7 @@
 	<?php } // if ?>
 	<!-- /permissions -->
 		
-	<?php if (($project->getId() != $user->getPersonalProjectId() || $user->isAdministrator()) && isset ($projects) && count($projects) > 0) { ?>
+	<?php if (can_manage_workspaces(logged_user()) && logged_user()->isAdministrator() && isset ($projects) && count($projects) > 0) { ?>
 	<fieldset>
 	<legend><?php echo lang('parent workspace') ?></legend>
 		<?php // echo select_project('project[parent_id]', $projects, $project->isNew()?active_project()?active_project()->getId():0:$project->getParentId(), null, true) ?>

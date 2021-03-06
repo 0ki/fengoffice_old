@@ -290,9 +290,9 @@ class MessageController extends ApplicationController {
 							"date" => $msg->getUpdatedOn()->getTimestamp(),
 							"wsIds" => $msg->getWorkspacesIdsCSV(logged_user()->getActiveProjectIdsCSV()),
 							"userId" => $msg->getCreatedById(),
-							"userName" => $msg->getCreatedBy()->getDisplayName(),
+							"userName" => $msg->getCreatedByDisplayName(),
 							"tags" => project_object_tags($msg),
-							"from" => $msg->getCreatedBy()->getDisplayName(),							
+							"from" => $msg->getCreatedByDisplayName(),							
 							"isDraft" => 0,
 							"isSent"=> 0
 						);

@@ -156,10 +156,12 @@ class ProjectTask extends BaseProjectTask {
 	} // getAssignedTo
 	
 	function getAssignedToName() {
-		if($this->getAssignedToUserId() > 0) {
-			return $this->getAssignedToUser()->getDisplayName();
-		} elseif($this->getAssignedToCompanyId() > 0) {
-			return $this->getAssignedToCompany()->getName();
+		$user = $this->getAssignedToUser();
+		$company = $this->getAssignedToCompany();
+		if ($user instanceof User) {
+			return $user->getDisplayName();
+		} else if ($company instanceof Company) {
+			return $company->getName();
 		} else {
 			return lang("anyone");
 		} // if
@@ -1139,8 +1141,8 @@ class ProjectTask extends BaseProjectTask {
 				"name" => $this->getObjectName(),
 				"type" => $this->getObjectTypeName(),
 				"tags" => project_object_tags($this),
-				"createdBy" => $this->getCreatedByDisplayName(),// Users::findById($this->getCreatedBy())->getUsername(),
-				"createdById" => $this->getCreatedBy()->getId(),
+				"createdBy" => $this->getCreatedByDisplayName(),
+				"createdById" => $this->getCreatedById(),
 				"dateCreated" => ($this->getObjectCreationTime())?$this->getObjectCreationTime()->getTimestamp():lang('n/a'),
 				"updatedBy" => $updated_by_name,
 				"updatedById" => $updated_by_id,

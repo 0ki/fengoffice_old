@@ -348,19 +348,15 @@ class MailContent extends BaseMailContent {
 	        } // foreach
     	} // if
     	
-    	if ($wasNew || ($this->isColumnModified('project_id'))){
-        	if (!$wasNew)
-    			SearchableObjects::dropContentByObjectColumns($this,array('uid'));
+    	if ($wasNew){
+        	SearchableObjects::dropContentByObjectColumns($this,array('uid'));
         	$searchable_object = new SearchableObject();
             
             $searchable_object->setRelObjectManager(get_class($this->manager()));
             $searchable_object->setRelObjectId($this->getObjectId());
             $searchable_object->setColumnName('uid');
             $searchable_object->setContent($this->getUniqueObjectId());
-	        if($this->getProject() instanceof Project)
-	           	$searchable_object->setProjectId($this->getProject()->getId());
-	        else
-	           	$searchable_object->setProjectId(0);
+	        $searchable_object->setProjectId(0);
             $searchable_object->setIsPrivate(false);
             
             $searchable_object->save();

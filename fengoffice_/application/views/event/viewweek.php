@@ -31,10 +31,13 @@ $tags = active_tag();
 <?php
 	$startday = date("d", mktime(0, 0, 0, $month, $day, $year)) - (date("N", mktime(0, 0, 0, $month, $day, $year)) % 7);//inicio de la semana
 	$endday = $startday + 7;//fin de la semana
-	$currentday = date("j");
-	$currentmonth = date("n");
-	$currentyear = date("Y");
 	
+	$today = DateTimeValueLib::now();
+	$today->add('h', logged_user()->getTimezone());
+	$currentday = $today->format("j");
+	$currentmonth = $today->format("n");
+	$currentyear = $today->format("Y");
+		
 	$lastday = date("t", mktime(0, 0, 0, $month, 1, $year)); // # of days in the month
 	//DateTimeValue
 	

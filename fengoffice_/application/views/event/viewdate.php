@@ -31,9 +31,11 @@ $use_24_hours = user_config_option('time_format_use_24');
 <?php echo stylesheet_tag('event/day.css') ?>
 
 <?php
-	$currentday = date("j");
-	$currentmonth = date("n");
-	$currentyear = date("Y");
+	$today = DateTimeValueLib::now();
+	$today->add('h', logged_user()->getTimezone());
+	$currentday = $today->format("j");
+	$currentmonth = $today->format("n");
+	$currentyear = $today->format("Y");
 	
 	$today_style = '';
 	if($currentyear == $year && $currentmonth == $month && $currentday == $day){

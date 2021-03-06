@@ -773,7 +773,10 @@ class TaskController extends ApplicationController {
 				} else {
 					flash_success(lang('success add task list', $task->getTitle()));
 				}
-				ajx_current("back");
+				if (array_var($task_data, 'inputtype') != 'taskview')
+					ajx_current("back");
+				else
+					ajx_current("reload");
 
 			} catch(Exception $e) {
 				DB::rollback();

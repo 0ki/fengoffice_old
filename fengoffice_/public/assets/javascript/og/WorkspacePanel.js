@@ -392,11 +392,12 @@ Ext.extend(og.WorkspaceTree, Ext.tree.TreePanel, {
 							this.workspaces.select();
 							this.pauseEvents = false;
 						}
-						this.addTrash();
-						
 						if (isInitial && this.initialWorkspaceId) {
+							this.pauseEvents = true;
 							this.select(this.initialWorkspaceId);
+							this.pauseEvents = false;
 						}
+						this.addTrash();
 					}
 				},
 				scope: this
