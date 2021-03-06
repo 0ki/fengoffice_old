@@ -623,7 +623,7 @@ og.objPickerTypeFilters = [];
 	} 
 ?>
 
-og.dimension_object_type_contents = [];
+og.dimension_object_type_contents = {};
 <?php 
 	$dotcs = DimensionObjectTypeContents::findAll();
 	foreach ($dotcs as $dotc) { /* @var $dotc DimensionObjectTypeContent */?>

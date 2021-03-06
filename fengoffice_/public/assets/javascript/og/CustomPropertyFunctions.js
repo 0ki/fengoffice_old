@@ -67,7 +67,95 @@ og.isNumeric = function(sText){
  }
 
 
+og.addCustomPropertyRow = function(genid, property, id_suffix) {
 
+	var template = $('<tbody></tbody>');
+	
+	var cp_count = og.admin_cp_count[genid] || 0;
+	id_suffix = id_suffix || '';
+
+	var container_id = "cp-container-" + cp_count + id_suffix;
+
+	// get html and replace {number} with new cp index
+	var template_html = $("#"+genid+"-cp-container-template").html();
+	template_html = template_html.replace(/{number}/g, cp_count);
+	template.html(template_html);
+	
+	$(template).attr('id', container_id);
+	$(template).addClass("cp-container").addClass(genid);
+	if (cp_count % 2 != 0) {
+		$(template).addClass("alt");
+	}
+
+	$("#"+genid+"custom-properties-table").append(template);
+	
+	var pre_id = "#" + container_id;
+	
+	$(pre_id + " #order").html(cp_count + 1);
+	$(pre_id + " #deleted_message").html(lang('custom property deleted'));
+	
+	if (property) {
+
+		$(pre_id + " #id").attr('value', property.id);
+		$(pre_id + " #name").attr('value', property.name);
+		$(pre_id + " #description").attr('value', property.description);
+		$(pre_id + " #values").attr('value', property.values);
+		$(pre_id + " #default_value").attr('value', property.default_value);
+		$(pre_id + " #is_special").attr('value', property.is_special);
+		$(pre_id + " #is_disabled").attr('value', property.is_disabled);
+		if (property.default_value) {
+			$(pre_id + " #default_value_bool").attr('checked', 'checked');
+		}
+		if (property.is_required) {
+			$(pre_id + " #is_required").attr('checked', 'checked');
+		}
+		if (property.is_multiple_values) {
+			$(pre_id + " #is_multiple_values").attr('checked', 'checked');
+		}
+		if (property.visible_by_default) {
+			$(pre_id + " #visible_by_default").attr('checked', 'checked');
+		}
+
+		$(pre_id + ' #type option[value="' + property.type + '"]').prop('selected', true);
+		
+		if (property.type == 'list' || property.type == 'table') {
+			$(pre_id + " #values").show();
+			$(pre_id + " #values_hint").hide();
+		} else if (property.type == 'boolean') {
+			$(pre_id + " #default_value_bool").show();
+			$(pre_id + " #default_value").hide();
+		}
+
+		if (property.is_special) {
+			
+			$(pre_id + " #delete_action").hide();
+			$(pre_id + " #undo_delete_action").hide();
+
+			$(pre_id + " #name").attr('disabled', 'disabled');
+			$(pre_id + " #type").hide();
+			$(pre_id + " #values").hide();
+			$(pre_id + " #values_hint").hide();
+			$(pre_id + " #default_value").hide();
+			$(pre_id + " #is_required").hide();
+			$(pre_id + " #is_multiple_values").hide();
+			
+			$(pre_id + " #is_special_hint").show();
+
+			if (property.is_disabled) {
+				$(pre_id + " #disabled_message").show();
+				$(pre_id + " #enable_action").show();
+				$(pre_id + " #disable_action").hide();
+				$(template).addClass("disabled");
+			} else {
+				$(pre_id + " #enable_action").hide();
+				$(pre_id + " #disable_action").show();
+			}
+			
+		}
+	}
+	
+	og.admin_cp_count[genid] = cp_count + 1;
+}
 
 
 

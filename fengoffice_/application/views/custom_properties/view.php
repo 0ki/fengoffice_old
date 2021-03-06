@@ -1,21 +1,45 @@
+<style>
+table.og-custom-properties.main td {
+	line-height: 25px;
+	font-size: 14px;
+}
+</style>
 <?php
+	if (!isset($visibility)) $visibility = 'all';
+	
 	$properties = $__properties_object->getCustomProperties();	
-	$cpvCount = CustomPropertyValues::getCustomPropertyValueCount($__properties_object);
+	$cpvCount = CustomPropertyValues::getCustomPropertyValueCount($__properties_object, $visibility);
 	if ((!is_array($properties) || count($properties) == 0) && $cpvCount == 0) 
 		return "";
+
+if (!($visibility == 'all' || $visibility == 'visible_by_default')) { 
+	?><div class="commentsTitle"><?php
+		echo lang('other properties');
+	?></div><?php
+} 
 ?>
-<div class="commentsTitle"><?php echo lang('custom properties')?></div>
 <?php if($cpvCount > 0){?>
-<table class="og-custom-properties">
+<table class="og-custom-properties <?php echo ($visibility == 'visible_by_default' ? 'main' : 'other')?>">
 <?php 
 	$alt = true;
-	$cps = CustomProperties::getAllCustomPropertiesByObjectType($__properties_object->getObjectTypeId());
+	$cps = CustomProperties::getAllCustomPropertiesByObjectType($__properties_object->getObjectTypeId(), $visibility);
 	foreach($cps as $customProp){ 
 		$cpv = CustomPropertyValues::getCustomPropertyValue($__properties_object->getId(), $customProp->getId());
 		if($cpv instanceof CustomPropertyValue && ($customProp->getIsRequired() || $cpv->getValue() != '')){
 			$alt = !$alt; ?>
 			<tr class="<?php echo $alt ? 'altRow' : ''?>">
-				<td class="name" title="<?php echo clean($customProp->getName()) ?>"><?php echo clean($customProp->getName()) ?>:&nbsp;</td>
+				<td class="name" title="<?php 
+					$label = clean($customProp->getName());
+					if ($customProp->getIsSpecial()) {
+						$label_code = str_replace("_special", "", $customProp->getCode());
+						$label_value = Localization::instance()->lang($label_code);
+						if (is_null($label_value)) {
+							$label_value = Localization::instance()->lang(str_replace('_', ' ', $label_code));
+						}
+						if (!is_null($label_value)) $label = $label_value;
+					}
+					echo $label;
+				?>"><?php echo $label ?>:&nbsp;</td>
 				<?php
 					// dates are in standard format "Y-m-d H:i:s", must be formatted
 					if ($customProp->getType() == 'date') {

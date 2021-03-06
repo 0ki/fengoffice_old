@@ -845,7 +845,7 @@ function create_contact_from_email($email, $name) {
 		if ($pos !== false) {
 			$name = substr($name, 0, $pos);
 		}
-		
+
 		$c = new Contact();
 		$c->setFirstName($name);
 		$c->save();
@@ -2310,7 +2310,7 @@ function copy_additional_object_data($object, &$copy, $options=array()) {
 		$object_members = $object->getMembers();
 		$copy->addToMembers($object_members);
 		Hook::fire ('after_add_to_members', $copy, $object_members);
-		$copy->addToSharingTable();
+		add_object_to_sharing_table($copy, logged_user());
 	}
 
 	// copy linked objects

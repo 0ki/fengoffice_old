@@ -414,6 +414,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 						editor.resetDirty();
 					}
 				},
+				removePlugins: 'magicline',
 				entities_additional : '#39,#336,#337,#368,#369'
 			});
 

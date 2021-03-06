@@ -646,10 +646,12 @@ class ExternalCalendarController extends ApplicationController {
 							try{
 								DB::beginWork();
 								//if event exist update it
+								$is_new_event = false;
 								$new_event = ProjectEvents::findBySpecialId($event_id,$calendar->getId());
 								if(!$new_event instanceof ProjectEvent){
 									//Create ProjectEvent from google event
 									$new_event = new ProjectEvent();
+									$is_new_event = true;
 								}
 																
 								$new_event->setSpecialID($event_id);
@@ -661,37 +663,44 @@ class ExternalCalendarController extends ApplicationController {
 								$new_event->setUpdateSync($event_updated_date);
 								$new_event->setExtCalId($calendar->getId());
 								$new_event->save();		
-														
-								//Invitation insert only if not exists
-								$conditions = array('event_id' => $new_event->getId(), 'contact_id' => $user->getContactId());
-								if (EventInvitations::findById($conditions) == null) {
-										$invitation = new EventInvitation();
-										$invitation->setEventId($new_event->getId());
-										$invitation->setContactId($user->getContactId());
-										$invitation->setInvitationState(1);
-										$invitation->setUpdateSync();
-										$invitation->setSpecialId($event_id);
-										$invitation->save();
+									
+								if($is_new_event){
+									//Invitation insert only if not exists
+									$conditions = array('event_id' => $new_event->getId(), 'contact_id' => $user->getContactId());
+									if (EventInvitations::findById($conditions) == null) {
+											$invitation = new EventInvitation();
+											$invitation->setEventId($new_event->getId());
+											$invitation->setContactId($user->getContactId());
+											$invitation->setInvitationState(1);
+											$invitation->setUpdateSync();
+											$invitation->setSpecialId($event_id);
+											$invitation->save();
+									}
+			
+									//Subscription insert only if not exists
+									if (ObjectSubscriptions::findBySubscriptions($new_event->getId(), $contact) == null) {
+											$subscription = new ObjectSubscription();
+											$subscription->setObjectId($new_event->getId());
+											$subscription->setContactId($user->getContactId());
+											$subscription->save();
+									}
+									
+									//Do not change clasiffication for feng events
+									if($calendar->getCalendarFeng() == 0){
+										$member = array();
+										if($calendar->getRelatedTo()){
+												$member_ids = explode(",",$calendar->getRelatedTo());
+												foreach ($member_ids as $member_id){
+													$member[] = $member_id;
+												}									
+										}
+										
+										if(count($member) > 0){
+											$object_controller = new ObjectController();
+											$object_controller->add_to_members($new_event, $member,$contact);
+										}	
+									}
 								}
-		
-								//Subscription insert only if not exists
-								if (ObjectSubscriptions::findBySubscriptions($new_event->getId(), $contact) == null) {
-										$subscription = new ObjectSubscription();
-										$subscription->setObjectId($new_event->getId());
-										$subscription->setContactId($user->getContactId());
-										$subscription->save();
-								}
-		
-								$member = array();
-								if($calendar->getRelatedTo()){
-										$member_ids = explode(",",$calendar->getRelatedTo());
-										foreach ($member_ids as $member_id){
-											$member[] = $member_id;
-										}									
-								}
-								$object_controller = new ObjectController();
-								$object_controller->add_to_members($new_event, $member,$contact);
-								
 								DB::commit();
 							}
 							catch(Exception $e)

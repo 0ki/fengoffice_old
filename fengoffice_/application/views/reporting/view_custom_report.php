@@ -7,10 +7,21 @@
 	if (count($conditions) > 0) {
 		foreach ($conditions as $condition) {
 			if($condition->getCustomPropertyId() > 0){
-				$cp = CustomProperties::getCustomProperty($condition->getCustomPropertyId());
-				$name = clean($cp->getName());
-				$paramName = $condition->getId()."_".$cp->getName();
-				$coltype = $cp->getOgType();
+				if (!$object_type instanceof ObjectType) continue;
+				
+				if (in_array($object_type->getType(), array('dimension_object','dimension_group'))) {
+					if (Plugins::instance()->isActivePlugin('member_custom_properties')) {
+						$mcp = MemberCustomProperties::getCustomProperty($condition->getCustomPropertyId());
+						$name = clean($mcp->getName());
+						$paramName = $condition->getId()."_".$mcp->getName();
+						$coltype = $mcp->getOgType();
+					}
+				} else {
+					$cp = CustomProperties::getCustomProperty($condition->getCustomPropertyId());
+					$name = clean($cp->getName());
+					$paramName = $condition->getId()."_".$cp->getName();
+					$coltype = $cp->getOgType();
+				}
 			}else{
 				$name = lang('field ' . $model . ' ' . $condition->getFieldName());
 					

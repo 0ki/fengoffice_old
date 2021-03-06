@@ -314,13 +314,17 @@ class ObjectController extends ApplicationController {
 	 * @param $object
 	 * @return unknown_type
 	 */
-	function add_custom_properties($object) {
+	function add_custom_properties($object, $cp_data=null) {
 		if (logged_user()->isGuest()) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
 		}
-		$obj_custom_properties = array_var($_POST, 'object_custom_properties');
+		if (is_array($cp_data)) {
+			$obj_custom_properties = $cp_data;
+		} else {
+			$obj_custom_properties = array_var($_POST, 'object_custom_properties');
+		}
 		if (is_array($obj_custom_properties)) {
 			foreach ($obj_custom_properties as $id => &$val) {
 				$val = remove_scripts($val);
@@ -426,6 +430,19 @@ class ObjectController extends ApplicationController {
 							$custom_property_value->setCustomPropertyId($id);
 							$custom_property_value->setValue($val);
 							$custom_property_value->save();
+							
+						} else if ($custom_property->getType() == 'list') {
+							CustomPropertyValues::deleteCustomPropertyValues($object->getId(), $id);
+							foreach($value as $key => $val){
+								if($val){
+									$custom_property_value = new CustomPropertyValue();
+									$custom_property_value->setObjectId($object->getId());
+									$custom_property_value->setCustomPropertyId($id);
+									$custom_property_value->setValue($key);
+									$custom_property_value->save();
+								}
+							}
+							
 						} else {
 							//Save multiple values
 							CustomPropertyValues::deleteCustomPropertyValues($object->getId(), $id);
@@ -1642,14 +1659,24 @@ class ObjectController extends ApplicationController {
 
 	function get_cusotm_property_columns() {
 		$grouped = array();
-		$cp_rows = DB::executeAll("SELECT cp.id, cp.name as cp_name, cp.code as cp_code, ot.name as obj_type, cp.visible_by_default as visible_def
+		$cp_rows = DB::executeAll("SELECT cp.id, cp.name as cp_name, cp.code as cp_code, ot.name as obj_type, cp.visible_by_default as visible_def, cp.type as cp_type, cp.values as cp_values, cp.default_value as cp_default_value, cp.is_special as cp_special
 				FROM ".TABLE_PREFIX."custom_properties cp INNER JOIN ".TABLE_PREFIX."object_types ot on ot.id=cp.object_type_id 
 				ORDER BY ot.name");
 		
 		if (is_array($cp_rows)) {
 			foreach ($cp_rows as $row) {
 				if (!isset($grouped[$row['obj_type']])) $grouped[$row['obj_type']] = array();
-				$grouped[$row['obj_type']][] = array('id' => $row['id'], 'name' => $row['cp_name'], 'code' => $row['cp_code'], 'visible_def' => $row['visible_def']);
+				$cp_name = $row['cp_name'];
+				if ($row['cp_special']) {
+					$label_code = str_replace("_special", "", $row['cp_code']);
+					$label_value = Localization::instance()->lang($label_code);
+					if (is_null($label_value)) {
+						$label_value = Localization::instance()->lang(str_replace('_', ' ', $label_code));
+					}
+					if (!is_null($label_value)) $cp_name = $label_value;
+				}
+				
+				$grouped[$row['obj_type']][] = array('id' => $row['id'], 'name' => $cp_name, 'code' => $row['cp_code'], 'visible_def' => $row['visible_def'], 'cp_type' => $row['cp_type'], 'cp_values' => $row['cp_values'], 'cp_default_value' => $row['cp_default_value']);
 			}
 		}
 		Hook::fire("get_cusotm_property_columns", array(), $grouped);
@@ -1819,46 +1846,61 @@ class ObjectController extends ApplicationController {
 	
 	
 	function list_objects() {
-		/* get query parameters */
+		
+		$params = $this->get_list_objects_params();
+				
+		$listing = $this->get_objects_list($params);
+		
+		ajx_extra_data($listing);
+		tpl_assign("listing", $listing);
+		
+		if (isset($reload) && $reload) ajx_current("reload");
+		else ajx_current("empty");
+	}
+	
+	function get_list_objects_params() {
+		$params = array();
 		$filesPerPage = config_option('files_per_page');
-		$start = array_var($_GET,'start') ? (integer)array_var($_GET,'start') : 0;
-		$limit = array_var($_GET,'limit') ? array_var($_GET,'limit') : $filesPerPage;
-		$order = array_var($_GET,'sort');
-		$id_no_select = array_var($_GET,'id_no_select',"undefined");
-		$ignore_context = (bool) array_var($_GET, 'ignore_context');
-		$member_ids = json_decode(array_var($_GET, 'member_ids'));
-		$extra_member_ids = json_decode(array_var($_GET, 'extra_member_ids'));
-		$type_filter = array_var($_GET, 'type_filter', 0);
-		
-		if (!is_numeric($type_filter)) $type_filter = 0;
-		
-		$orderdir = array_var($_GET,'dir');
-		if (!in_array(strtoupper($orderdir), array('ASC', 'DESC'))) $orderdir = 'ASC';
-		
-		if ($order == "dateUpdated") {
-			$order = "updated_on";
-		}elseif ($order == "dateArchived") {
-			$order = "archived_on";
-		}elseif ($order == "dateDeleted") {
-			$order = "trashed_on";
-		}elseif ($order == "name") {
-			$order = "name";
-		} else {
-			$order = "";
-			$orderdir = "";
-		}
-		
-		$extra_list_params = array_var($_GET,'extra_list_params');
-		$extra_list_params = json_decode($extra_list_params);
-		
-		$page = (integer) ($start / $limit) + 1;
-		$hide_private = !logged_user()->isMemberOfOwnerCompany();
-		
 		$typeCSV = array_var($_GET, 'type');
 		$types = null;
 		if ($typeCSV) {
 			$types = explode(",", $typeCSV);
 		}
+				
+		$params['start'] = array_var($_GET,'start') ? (integer)array_var($_GET,'start') : 0;
+		$params['limit'] = array_var($_GET,'limit') ? array_var($_GET,'limit') : $filesPerPage;
+		$params['order'] = array_var($_GET,'sort');
+		$params['filesPerPage'] = $filesPerPage;
+		$params['id_no_select'] = array_var($_GET,'id_no_select',"undefined");
+		$params['ignore_context'] = (bool) array_var($_GET, 'ignore_context');
+		$params['member_ids'] = json_decode(array_var($_GET, 'member_ids'));
+		$params['extra_member_ids'] = json_decode(array_var($_GET, 'extra_member_ids'));
+		$params['type_filter'] = array_var($_GET, 'type_filter', 0);
+		$params['orderdir'] = array_var($_GET,'dir');
+		$params['extra_list_params'] = json_decode(array_var($_GET,'extra_list_params'));
+		$params['page'] = (integer) ($params['start'] / $params['limit']) + 1;
+		$params['hide_private'] = !logged_user()->isMemberOfOwnerCompany();
+		$params['types'] = $types;
+		$params['user'] = array_var($_GET,'user');
+		$params['trashed'] = array_var($_GET, 'trashed', false);
+		$params['archived'] = array_var($_GET, 'archived', false);		
+		$params['filters'] = array();
+		
+		if (!in_array(strtoupper($params['orderdir']), array('ASC', 'DESC'))) $params['orderdir'] = 'ASC';
+		
+		if ($params['order'] == "dateUpdated") {
+			$params['order'] = "updated_on";
+		}elseif ($params['order'] == "dateArchived") {
+			$params['order'] = "archived_on";
+		}elseif ($params['order'] == "dateDeleted") {
+			$params['order'] = "trashed_on";
+		}elseif ($params['order'] == "name") {
+			$params['order'] = "name";
+		} else {
+			$params['order'] = "";
+			$params['orderdir'] = "";
+		}
+		
 		$name_filter = mysql_real_escape_string( array_var($_GET, 'name') );
 		$linked_obj_filter = array_var($_GET, 'linkedobject');
 		$object_ids_filter = '';
@@ -1870,21 +1912,49 @@ class ObjectController extends ApplicationController {
 			foreach ($objs as $obj) $object_ids_filter .= ($object_ids_filter == '' ? '' : ',') . $obj->getId();
 		}
 		
-		$filters = array();
-		if (!is_null($types)) $filters['types'] = $types;
-		if (!is_null($name_filter)) $filters['name'] = $name_filter;
-		if ($object_ids_filter != '') $filters['object_ids'] = $object_ids_filter;
-
-		$user = array_var($_GET,'user');
-		$trashed = array_var($_GET, 'trashed', false);
-		$archived = array_var($_GET, 'archived', false);
-
+		$params['filters']['types'] = false;
+		$params['filters']['name'] = false;
+		$params['filters']['object_ids'] = false;
+		
+		if (!is_null($types)) $params['filters']['types'] = $types;
+		if (!is_null($name_filter)) $params['filters']['name'] = $name_filter;
+		if ($object_ids_filter != '') $params['filters']['object_ids'] = $object_ids_filter;
+		
+		$params['show_all_linked_objects'] = $show_all_linked_objects;
+		
+		return $params;
+	}
+	
+	function get_objects_list($params) {
+		/*params*/
+		$only_ids = array_var($params, 'only_ids', false);
+		$start = $params['start'];
+		$limit = $params['limit'];
+		$order = $params['order'];
+		$id_no_select = $params['id_no_select'];
+		$ignore_context = $params['ignore_context'];
+		$member_ids = $params['member_ids'];
+		$extra_member_ids = $params['extra_member_ids'];
+		$type_filter = $params['type_filter'];
+		$orderdir = $params['orderdir'];
+		$extra_list_params = $params['extra_list_params'];
+		$page = $params['page'];
+		$hide_private = $params['hide_private'];
+		$types = $params['types'];
+		$user = $params['user'];
+		$trashed = $params['trashed'];
+		$archived = $params['archived'];
+		$filters = $params['filters'];
+		$show_all_linked_objects = $params['show_all_linked_objects'];
+		
+		$filesPerPage = $params['filesPerPage'];
+		$name_filter = $filters['name'];
+		$object_ids_filter = $filters['object_ids'];
+		
 		/* if there's an action to execute, do so */
 		if (!$show_all_linked_objects){
 			$this->processListActions();
 		}
-		
-		$filterName = array_var($_GET,'name');
 		
 		$template_object_names = "";
 		$template_extra_condition = "true";
@@ -1896,7 +1966,7 @@ class ObjectController extends ApplicationController {
 			$template_objects = true;
 			if(isset($extra_list_params->template_id)){
 				$template_id = $extra_list_params->template_id;
-			}					
+			}
 			$tmpl_task = TemplateTasks::findById(intval($id_no_select));
 			if($tmpl_task instanceof TemplateTask){
 				$template_extra_condition = "o.id IN (SELECT object_id from ".TABLE_PREFIX."template_tasks WHERE `template_id`=".$tmpl_task->getTemplateId()." OR `template_id`=0 AND `session_id`=".logged_user()->getId()." )";
@@ -1909,13 +1979,13 @@ class ObjectController extends ApplicationController {
 		$result = null;
 		
 		$context = active_context();
-
+		
 		$obj_type_types = array('content_object', 'dimension_object');
 		if (array_var($_GET, 'include_comments')) $obj_type_types[] = 'comment';
 		
 		$type_condition = "";
 		if ($types) {
-			$type_condition = " AND name IN ('".implode("','",$types) ."')";  
+			$type_condition = " AND name IN ('".implode("','",$types) ."')";
 		}
 		if ($type_filter > 0) {
 			$type_condition .= " AND id=$type_filter";
@@ -1924,31 +1994,60 @@ class ObjectController extends ApplicationController {
 		
 		$extra_conditions = array();
 		
-		// user filter
-		if (in_array("contact", array_var($filters, 'types', array())) && isset($extra_list_params->is_user)) {
+		if (in_array("contact", array_var($filters, 'types', array()))) {
+			
 			$joins[] = "
 				LEFT JOIN ".TABLE_PREFIX."contacts c on c.object_id=o.id";
 			
+			
+			$contact_type_filter_json = array_var($_REQUEST, 'contact_type_filter');
+			if ($contact_type_filter_json) {
+				$contact_type_filter = json_decode($contact_type_filter_json, true);
+				$show_contacts = array_var($contact_type_filter, 'contact');
+				$show_users = array_var($contact_type_filter, 'user');
+				$show_companies = array_var($contact_type_filter, 'company');
+			
+				if(!$show_companies){
+					$extra_conditions[] = ' c.`is_company` = 0 ';
+				}
+				if(!$show_contacts){
+					if($show_companies){
+						$extra_conditions[] = ' c.`is_company` = 1 ';
+						if($show_users){
+							$extra_conditions[] = ' (c.`is_company` = 1  OR c.`user_type` != 0) ';
+						}
+					}else{
+						$extra_conditions[] = ' c.`user_type` != 0  ';
+					}
+				}
+				if(!$show_users){
+					$extra_conditions[] = ' c.`user_type` < 1 ';
+				}
+			}
+		}
+		
+		// user filter
+		if (in_array("contact", array_var($filters, 'types', array())) && isset($extra_list_params->is_user)) {
 			$extra_conditions[] = "
 				c.user_type ".($extra_list_params->is_user == 1 ? ">" : "=" )." 0";
-			
+				
 			if (isset($extra_list_params->has_permissions) && $extra_list_params->has_permissions > 0) {
 				$mem_id = $extra_list_params->has_permissions;
 				$extra_conditions[] = " EXISTS (
 					SELECT cmp.permission_group_id FROM ".TABLE_PREFIX."contact_member_permissions cmp
 					WHERE cmp.permission_group_id IN (SELECT x.permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups x WHERE x.contact_id=o.id)
-					AND cmp.member_id='$mem_id' 
-					AND cmp.object_type_id NOT IN (SELECT tp.object_type_id FROM ".TABLE_PREFIX."tab_panels tp WHERE tp.enabled=0)
+							AND cmp.member_id='$mem_id'
+							AND cmp.object_type_id NOT IN (SELECT tp.object_type_id FROM ".TABLE_PREFIX."tab_panels tp WHERE tp.enabled=0)
 					AND cmp.object_type_id NOT IN (SELECT oott.id FROM ".TABLE_PREFIX."object_types oott WHERE oott.name IN ('comment','template'))
 					AND cmp.object_type_id IN (SELECT oott2.id FROM ".TABLE_PREFIX."object_types oott2 WHERE oott2.type IN ('content_object','dimension_object'))
 				)";
-			} 
+			}
 		}
 		
 		
 		// Object type filter - exclude template types (if not template picker), filter by required type names (if specified) and match value with objects table
 		$extra_object_type_conditions = "
-			AND name <> 'file revision' $template_object_names $type_condition AND o.object_type_id = ot.id";
+		AND name <> 'file revision' $template_object_names $type_condition AND o.object_type_id = ot.id";
 		
 		$extra_conditions[] = ObjectTypes::getListableObjectsSqlCondition($extra_object_type_conditions);
 		// --
@@ -1956,26 +2055,26 @@ class ObjectController extends ApplicationController {
 		
 		// logged user permission group ids
 		$logged_user_pg_ids = implode(',', logged_user()->getPermissionGroupIds());
-
+		
 		// used in template object picker
 		$extra_conditions[] = $template_extra_condition;
 		
 		// when filtering by name
 		if ($name_filter) {
 			$extra_conditions[] = "
-				name LIKE '%$name_filter%'";
+			name LIKE '%$name_filter%'";
 		}
 		
 		// when excluding some object in particular
 		if ($id_no_select != "undefined") {
 			$extra_conditions[] = "
-				id <> '$id_no_select'";
+			id <> '$id_no_select'";
 		}
 		
 		// when filtering by some group of objects, for example in the linked objects view
 		if($object_ids_filter != ""){
 			$extra_conditions[] = "
-				id in ($object_ids_filter)";
+			id in ($object_ids_filter)";
 		}
 		
 		
@@ -2006,16 +2105,16 @@ class ObjectController extends ApplicationController {
 			foreach ($accounts_of_loggued_user as $acc) {
 				$account_ids[] = $acc->getAccountId();
 			}
-			
+				
 			$joins[] = "
 				LEFT JOIN ".TABLE_PREFIX."mail_contents mc on mc.object_id=o.id
 			";
-			
+				
 			$extra_conditions[] = "
 				IF( mc.account_id IS NULL, true, mc.account_id IN (".implode(',', $account_ids).") OR EXISTS (
-					SELECT om1.object_id FROM ".TABLE_PREFIX."object_members om1 
-						INNER JOIN ".TABLE_PREFIX."members m1 ON m1.id=om1.member_id 
-						INNER JOIN ".TABLE_PREFIX."dimensions d1 ON d1.id=m1.dimension_id 
+					SELECT om1.object_id FROM ".TABLE_PREFIX."object_members om1
+						INNER JOIN ".TABLE_PREFIX."members m1 ON m1.id=om1.member_id
+						INNER JOIN ".TABLE_PREFIX."dimensions d1 ON d1.id=m1.dimension_id
 					WHERE om1.object_id=o.id AND d1.is_manageable=1)
 				)";
 		}
@@ -2023,7 +2122,7 @@ class ObjectController extends ApplicationController {
 		// don't show attached files of emails that cannot be viewed
 		if (logged_user()->isAdministrator() && Plugins::instance()->isActivePlugin('mail')) {
 			$joins[] = "LEFT JOIN ".TABLE_PREFIX."project_files pf on pf.object_id=o.id";
-			$extra_conditions[] = "IF(pf.mail_id IS NULL OR pf.mail_id = 0, true, 
+			$extra_conditions[] = "IF(pf.mail_id IS NULL OR pf.mail_id = 0, true,
 				pf.mail_id IN (SELECT sh.object_id FROM ".TABLE_PREFIX."sharing_table sh WHERE pf.mail_id = sh.object_id AND sh.group_id  IN ($logged_user_pg_ids)))";
 		}
 		
@@ -2053,7 +2152,7 @@ class ObjectController extends ApplicationController {
 			$sql_members = "
 				AND (EXISTS (SELECT om.object_id
 					FROM  ".TABLE_PREFIX."object_members om
-					WHERE om.member_id IN (" . implode ( ',', $members ) . ") AND o.id = om.object_id 
+					WHERE om.member_id IN (" . implode ( ',', $members ) . ") AND o.id = om.object_id
 					GROUP BY object_id
 					HAVING count(member_id) = ".count($members)."
 				))
@@ -2061,21 +2160,27 @@ class ObjectController extends ApplicationController {
 		}
 		// --
 		
+		// External extra conditions
+		Hook::fire("get_objects_list_extra_conditions", null, $extra_conditions);
+		// --
+		
 		// Permissions filter
 		if (isset($template_id) && $template_id > 0) {
 			// editing template items do not check permissions
 			$sql_permissions = "";
 		} else {
-			if(!logged_user()->isAdministrator()){
-				$sql_permissions = "
-								AND EXISTS (SELECT sh.object_id FROM ".TABLE_PREFIX."sharing_table sh WHERE sh.object_id=o.id AND sh.group_id IN ($logged_user_pg_ids))
-							";
-			}			
+			$sql_permissions = "
+				AND EXISTS (SELECT sh.object_id FROM ".TABLE_PREFIX."sharing_table sh WHERE sh.object_id=o.id AND sh.group_id IN ($logged_user_pg_ids))
+						";
 		}
 		
 		// Main select
-		$sql_select = "SELECT * FROM ".TABLE_PREFIX."objects o ";
-		
+		$select_fields = "*";
+		if($only_ids){
+			$select_fields = "o.id";
+		}
+		$sql_select = "SELECT ".$select_fields." FROM ".TABLE_PREFIX."objects o ";
+				
 		// Joins
 		$sql_joins = implode(" ", $joins);
 		
@@ -2087,7 +2192,7 @@ class ObjectController extends ApplicationController {
 		$sql_order = "";
 		if ($order) {
 			$sql_order = "
-				ORDER BY $order $orderdir
+			ORDER BY $order $orderdir
 			";
 		}
 		
@@ -2124,39 +2229,43 @@ class ObjectController extends ApplicationController {
 		// get objects
 		if (isset($rows) && is_array($rows)) {
 			foreach ($rows as $row) {
-				$instance = Objects::findObject($row['id']);
-				
-				if (!$instance instanceof ContentDataObject) continue;
-				
-				$info_elem = $instance->getObject()->getArrayInfo($trashed, $archived);
-				
-				$info_elem['url'] = $instance->getViewUrl();
-				$info_elem['isRead'] = $instance->getIsRead(logged_user()->getId()) ;
-				$info_elem['manager'] = get_class($instance->manager()) ;
-				$info_elem['memPath'] = json_encode($instance->getMembersIdsToDisplayPath());
-				
-				if ($instance instanceof Contact) {
-					if( $instance->isCompany() ) {
-						$info_elem['icon'] = 'ico-company';
-						$info_elem['type'] = 'company';
-					}else{
-						$info_elem['memPath'] = json_encode($instance->getUserType()?"":$instance->getMembersIdsToDisplayPath());
+				if(!$only_ids){
+					$instance = Objects::findObject($row['id']);
+			
+					if (!$instance instanceof ContentDataObject) continue;
+			
+					$info_elem = $instance->getObject()->getArrayInfo($trashed, $archived);
+			
+					$info_elem['url'] = $instance->getViewUrl();
+					$info_elem['isRead'] = $instance->getIsRead(logged_user()->getId()) ;
+					$info_elem['manager'] = get_class($instance->manager()) ;
+					$info_elem['memPath'] = json_encode($instance->getMembersIdsToDisplayPath());
+			
+					if ($instance instanceof Contact) {
+						if( $instance->isCompany() ) {
+							$info_elem['icon'] = 'ico-company';
+							$info_elem['type'] = 'company';
+						}else{
+							$info_elem['memPath'] = json_encode($instance->getUserType()?"":$instance->getMembersIdsToDisplayPath());
+						}
+					} else if ($instance instanceof ProjectFile) {
+						$info_elem['mimeType'] = $instance->getTypeString();
+					} else if ($instance instanceof ProjectTask) {
+						$info_elem['completedBy'] = $instance->getCompletedById();
+						$info_elem['dateCompleted'] = $instance->getCompletedOn() instanceof DateTimeValue ? format_datetime($instance->getCompletedOn()) : '';
 					}
-				} else if ($instance instanceof ProjectFile) {
-					$info_elem['mimeType'] = $instance->getTypeString();
-				} else if ($instance instanceof ProjectTask) {
-					$info_elem['completedBy'] = $instance->getCompletedById();
-					$info_elem['dateCompleted'] = $instance->getCompletedOn() instanceof DateTimeValue ? format_datetime($instance->getCompletedOn()) : '';
+						
+					$info[] = $info_elem;
+				}else{
+					$info[] = $row['id'];
 				}
-					
-				$info[] = $info_elem;
 			}
 		}
 		
 		$listing = array(
-			"totalCount" => $total_items,
-			"start" => $start,
-			"objects" => $info
+				"totalCount" => $total_items,
+				"start" => $start,
+				"objects" => $info
 		);
 		
 		$object_types = ObjectTypes::findAll(array('conditions' => "type IN ('content_object', 'dimension_object', 'dimension_group')"));
@@ -2168,8 +2277,74 @@ class ObjectController extends ApplicationController {
 			$object_types_info[] = array('id' => $ot->getId(), 'name' => clean(lang($ot->getName().'s')));
 		}
 		$listing['filters'] = array(
-			'types' => $object_types_info,
+				'types' => $object_types_info,
 		);
+		
+		return $listing;		
+	}
+	
+	function save_selected_objects() {
+		$this->addHelper('object_selector');
+		
+		$ids_to_add = json_decode(array_var($_REQUEST, 'ids_to_add'), true);
+		$ids_to_remove = json_decode(array_var($_REQUEST, 'ids_to_remove'), true);
+		
+		save_selected_objects_ids($ids_to_add, $ids_to_remove);
+		
+		ajx_current("empty");
+	}
+	
+	function remove_all_selected_objects() {
+		$this->addHelper('object_selector');
+	
+		save_tmp_objects_ids(array(), true);
+	
+		ajx_current("empty");
+	}
+	
+	function revert_object_selector_changes() {
+		$this->addHelper('object_selector');
+	
+		$identifier = get_selector_identifier();
+		$original_object_ids = array_var($_SESSION['object_selector'], $identifier, array());
+		
+		save_tmp_objects_ids($original_object_ids, true);
+	
+		unset($_SESSION['object_selector'][$identifier]);
+		
+		ajx_current("empty");
+	}
+	
+	function clean_temp_object_selector_vars() {
+		$this->addHelper('object_selector');
+		
+		unset($_SESSION['object_selector'][get_selector_identifier()]);
+		
+		ajx_current("empty");
+	}
+	
+	function list_all_selected_objects() {
+		$this->addHelper('object_selector');
+	
+		$listing = get_selected_objects();
+		ajx_extra_data($listing);
+		tpl_assign("listing", $listing);
+		
+		if (isset($reload) && $reload) ajx_current("reload");
+		else ajx_current("empty");		
+	}
+	
+	function list_objects_to_select() {
+		$this->addHelper('object_selector');
+	
+		$params = $this->get_list_objects_params();
+				
+		$listing = $this->get_objects_list($params);
+		
+		$selected_ids = get_selected_objects_ids();
+		foreach ($listing['objects'] as &$object) {
+			$object['checked'] = in_array($object['object_id'], $selected_ids);
+		}
 		
 		ajx_extra_data($listing);
 		tpl_assign("listing", $listing);
@@ -2177,6 +2352,5 @@ class ObjectController extends ApplicationController {
 		if (isset($reload) && $reload) ajx_current("reload");
 		else ajx_current("empty");
 	}
-	
 	
 }

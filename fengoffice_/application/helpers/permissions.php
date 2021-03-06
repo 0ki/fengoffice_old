@@ -1632,7 +1632,7 @@
 	function add_object_to_sharing_table($object, $user) {
 		if (!$object instanceof ContentDataObject) return;
 		
-		if (substr(php_uname(), 0, 7) == "Windows" || !can_save_permissions_in_background()){
+		if (substr(php_uname(), 0, 7) == "Windows" || !can_save_permissions_in_background() || !$user instanceof Contact){
 			$object->addToSharingTable();
 		} else {
 			$command = "nice -n19 ".PHP_PATH." ". ROOT . "/application/helpers/add_object_to_sharing_table.php ".ROOT." ".$user->getId()." ".$user->getTwistedToken()." ".$object->getId();

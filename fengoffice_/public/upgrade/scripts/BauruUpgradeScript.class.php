@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Bauru upgrade script will upgrade FengOffice 3.3.2-beta to FengOffice 3.4.0.17
+ * Bauru upgrade script will upgrade FengOffice 3.3.2-beta to FengOffice 3.4.1-beta
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -39,7 +39,7 @@ class BauruUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('3.3.2-beta');
-		$this->setVersionTo('3.4.0.17');
+		$this->setVersionTo('3.4.1-beta');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -139,6 +139,57 @@ class BauruUpgradeScript extends ScriptUpgraderScript {
 				  token='', salt='', twister='',
 				  display_name='', username='', company_id=0
 				where user_type=0 and permission_group_id>0;
+			";
+			
+			if (!$this->checkColumnExists($t_prefix."custom_properties", "is_special", $this->database_connection)) {
+				$upgrade_script .= "
+					ALTER TABLE `".$t_prefix."custom_properties`
+					 ADD COLUMN `is_special` BOOLEAN NOT NULL DEFAULT 0,
+					 ADD COLUMN `is_disabled` BOOLEAN NOT NULL DEFAULT 0;
+				";
+			}
+			
+			$upgrade_script .= "
+				INSERT INTO `".$t_prefix."config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
+				 ('mailing', 'show company logo in notifications', '1', 'BoolConfigHandler', 0, 0, NULL)
+				ON DUPLICATE KEY UPDATE name=name;
+			";
+			
+			$upgrade_script .= "
+				CREATE TABLE IF NOT EXISTS `".$t_prefix."object_selector_temp_values` (
+				  `user_id` int(11) NOT NULL DEFAULT 0,
+				  `identifier` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+				  `updated_on` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+				  `value` text COLLATE utf8_unicode_ci NOT NULL,
+				  PRIMARY KEY (`user_id`,`identifier`)
+				) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+			";
+			
+			$upgrade_script .= "
+				INSERT INTO `".$t_prefix."cron_events` (`name`, `recursive`, `delay`, `is_system`, `enabled`, `date`) VALUES	
+				 ('clean_object_selector_temp_selection', '1', '360', '1', '1', '0000-00-00 00:00:00')
+				ON DUPLICATE KEY UPDATE name=name;
+			";
+			
+			$upgrade_script .= "
+				UPDATE `".$t_prefix."contacts` SET username=TRIM(CONCAT(first_name,' ',surname))
+				WHERE user_type>0 AND username='';
+			";
+			
+			// custom property for job title
+			$upgrade_script .= "
+				INSERT INTO ".$t_prefix."custom_properties (`object_type_id`,`name`,`code`,`type`,`visible_by_default`,`is_special`) VALUES
+				((SELECT id FROM ".$t_prefix."object_types WHERE name='contact'), 'Job title', 'job_title', 'text', 1, 1);
+			";
+			$upgrade_script .= "
+				INSERT INTO ".$t_prefix."custom_property_values (`object_id`,`custom_property_id`,`value`) SELECT
+					c.object_id, (SELECT cp.id FROM ".$t_prefix."custom_properties cp WHERE cp.code='job_title'), c.job_title
+					FROM ".$t_prefix."contacts c WHERE c.job_title<>''
+				ON DUPLICATE KEY UPDATE fo_custom_property_values.object_id=fo_custom_property_values.object_id;
+			";
+			$upgrade_script .= "
+				ALTER TABLE `".$t_prefix."custom_property_values`
+				ADD INDEX `object_id_custom_property_id` (`object_id`, `custom_property_id`);
 			";
 		}
 		

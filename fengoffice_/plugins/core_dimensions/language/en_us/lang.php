@@ -42,4 +42,10 @@
 	'success complete subtasks of' => 'Subtasks of \'{0}\' completed successfully',
 	'you have x new emails' => 'You have {0} new emails',
 	'notify assigned user' => 'Notify assigned user',
+	'change date' => 'Change date',
+	'new date' => 'New date',
+	'new start date' => 'New start date',
+	'new due date' => 'New due date',
+	'new start date desc' => 'Start date of selected tasks will be changed.',
+	'new due date desc' => 'Due date of selected tasks will be changed.',
 );

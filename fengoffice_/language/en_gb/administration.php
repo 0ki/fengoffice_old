@@ -135,6 +135,8 @@
   	'config option desc check_spam_in_subject' => 'Filter all the emails that contain the word "Spam" in the subject',
     'config option name show images in document notifications' => 'Attach images in document notifications',
     'config option desc show images in document notifications' => 'If the document is an image, it is attached in the content of the notification.',
+    'config option name show company logo in notifications' => 'Attach company logo in notifications',
+    'config option desc show company logo in notifications' => 'The company logo is attached in the content of the notification.',
     'config option name notification_recipients_field' => 'Notification recipients email field',
     'config option desc notification_recipients_field' => 'Select if the recipients for each notifications will be put in the "To" field, in "CC" field or in "BCC" field (by using this last one the recipients will not see each other in the mail header).',
   	'config option name check_unique_mail_contact_comp' => 'Check email unicity between contacts and companies',

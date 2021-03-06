@@ -430,9 +430,11 @@ class DimensionController extends ApplicationController {
 		
 		$extra_cond = $name == "" ? "" : " AND name LIKE '%".$name."%'";
 		
+		$dimension = Dimensions::getDimensionById($dimension_id);
+		
 		$use_member_cache= true;
 		//Super admins are not using the contact member cache
-		if(logged_user()->isAdministrator()){
+		if(logged_user()->isAdministrator() || !$dimension->getDefinesPermissions()){
 			$extra_cond .= "AND `parent_member_id`=0";
 			$use_member_cache= false;
 		}
@@ -637,6 +639,7 @@ class DimensionController extends ApplicationController {
 		$mem_id = array_var($_GET, 'member');
 		$offset = array_var($_REQUEST, 'offset', 0);
 		$limit = array_var($_REQUEST, 'limit', 100);
+		$ignore_context_filters = array_var($_REQUEST, 'ignore_context_filters');
 		$new_limit = $limit + 1;
 		
 		if ((function_exists('logged_user') && logged_user() instanceof Contact && ContactMemberPermissions::contactCanAccessMemberAll(implode(',', logged_user()->getPermissionGroupIds()), $mem_id, logged_user(), ACCESS_LEVEL_READ))) {
@@ -644,19 +647,21 @@ class DimensionController extends ApplicationController {
 			if($mem instanceof Member){
 				
 				$dim_filter_conds = "";
-				// check for other dimensions filtering this dimension
-				$selected_members = array();
-				foreach (active_context() as $selection) {
-					if ($selection instanceof Member && $selection->getDimensionId() != $mem->getDimensionId()) {
-						$selected_members[] = $selection;
+				if (!$ignore_context_filters) {
+					// check for other dimensions filtering this dimension
+					$selected_members = array();
+					foreach (active_context() as $selection) {
+						if ($selection instanceof Member && $selection->getDimensionId() != $mem->getDimensionId()) {
+							$selected_members[] = $selection;
+						}
 					}
-				}
-				if (count($selected_members) > 0) {
-					$dim_filter_conds = $this->get_association_filter_conditions($mem->getDimension(), $selected_members);
+					if (count($selected_members) > 0) {
+						$dim_filter_conds = $this->get_association_filter_conditions($mem->getDimension(), $selected_members);
+					}
 				}
 				
 				//Do not use contact member cache for superadmins
-				if(!logged_user()->isAdministrator()){
+				if(!logged_user()->isAdministrator() && $mem->getDimension()->getDefinesPermissions()){
 					//use the contact member cache
 					$dimension = $mem->getDimension();
 					$params = array(
@@ -685,6 +690,10 @@ class DimensionController extends ApplicationController {
 				
 				ajx_extra_data(array("members" => $members, "dimension" => $mem->getDimensionId(), "member_id" => $mem->getId(), "more_nodes_left" => $more_nodes_left));			
 			}
+		} else {
+			$mem = Members::getMemberById($mem_id);
+			$dim_id = $mem instanceof Member ? $mem->getDimensionId() : 0;
+			ajx_extra_data(array("members" => array(), "dimension" => $dim_id, "member_id" => $mem_id, "more_nodes_left" => false));
 		}
 		ajx_current("empty");
 	}
@@ -758,7 +767,7 @@ class DimensionController extends ApplicationController {
 			if(isset($m->cached_parent_member_id)){
 				$tempParent = $m->cached_parent_member_id;
 			}else{
-				if(!logged_user()->isAdministrator()){
+				if(!logged_user()->isAdministrator() && $dimension->getDefinesPermissions()){
 					$x = $m;
 					while ($x instanceof Member && !isset($membersset[$tempParent])) {
 						$tempParent = $x->getParentMemberId();
@@ -805,7 +814,7 @@ class DimensionController extends ApplicationController {
 				);
 			} else {
 				//Do not use contact member cache for superadmins
-				if(!logged_user()->isAdministrator()){
+				if(!logged_user()->isAdministrator() && $dimension->getDefinesPermissions()){
 					//check childs from contact member cache
 					$childsIds = ContactMemberCaches::getAllChildrenIdsFromCache(logged_user()->getId(), $m->getId());
 				}else{
@@ -878,6 +887,7 @@ class DimensionController extends ApplicationController {
 			$key = strtolower(htmlentities(array_var($m, 'name')));
 			$tmp_members[str_pad(array_var($m, 'depth'), 20, "0", STR_PAD_LEFT) . $key . array_var($m, 'id')] = $m;
 		}
+		
 		ksort($tmp_members, SORT_STRING);
 
 		//remove array keys to prevent json problems
@@ -896,7 +906,11 @@ class DimensionController extends ApplicationController {
 		$genid = gen_id();
 		
 		$listeners = array('on_selection_change' => "Ext.getCmp('dimFilter').fireEvent('memberselected', member_selector['$genid'].sel_context);");		
-		$options = array('select_current_context' => true, 'listeners' => $listeners, 'width' => 195);
+		$options = array('select_current_context' => true, 'listeners' => $listeners, 'width' => 300, 'horizontal' => true);
+		
+		if (array_var($_REQUEST, 'show_associated_dimension_filters')) {
+			$options['allow_non_manageable'] = true;
+		}
 		
 		render_member_selectors(ProjectMessages::instance()->getObjectTypeId(), $genid, null, $options, null, null, false);
 		

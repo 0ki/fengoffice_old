@@ -84,7 +84,12 @@
 	
 			<div class="clear"></div>
 	
-			<div class="dataBlock">
+			<?php 
+				$job_title_cp = CustomProperties::findOne(array('conditions' => "code='job_title' AND object_type_id=".$contact->manager()->getObjectTypeId()));
+				$style = "";
+				if ($job_title_cp instanceof CustomProperty) $style = "display:none;";
+			?>
+			<div class="dataBlock" style="<?php echo $style?>">
 				<div><?php echo label_tag(lang('job title'), $genid.'profileFormJobTitle') ?>
 				<?php echo text_field('contact[job_title]', array_var($contact_data, 'job_title'), array('id' => $genid.'profileFormJobTitle', 'maxlength' => '40', 'maxlength' => 50)) ?></div>
 				<div class="clear"></div>

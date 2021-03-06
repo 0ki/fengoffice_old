@@ -965,21 +965,16 @@ class Contact extends BaseContact {
 				$errors[] = lang('company name required');
 			} 
 
-			// Esta mal porque ya nbo estan en el modelo... hay que validarlo en el submit del controller.. 
-			/*if($this->validatePresenceOf('homepage')) {
-				$page = trim($this->getHomepage());
-				if (substr_utf($page, 0,7) != "http://" && substr_utf($page, 0,8) != "https://") {
-					$this->setHomepage("http://" . $page);
-				}
-				if(!is_valid_url($this->getHomepage())) {
-					$errors[] = lang('company homepage invalid');
-				} // if
-			} // if*/
 		}
 		else{
 			$fields = array();
 			
-			// Validate username if present
+			// Only for users: Validate if username is present
+			if ($this->getUserType() > 0 && !$this->validatePresenceOf('username')) {
+				$errors[] = lang('username value required');
+				$fields[] = 'username';
+			}
+			// Only for users: Validate uniqueness of username
 			if ($this->getUserType() > 0 && !$this->validateUniquenessOf('username')) {
 				$errors[] = lang('username must be unique');
 				$fields[] = 'username';
@@ -2029,4 +2024,41 @@ class Contact extends BaseContact {
 		}
 		return $this->pg_ids_cache;
 	}
+	
+	
+	
+	
+	// override job title attribute getter and setter
+	function getJobTitle() {
+		$cp = CustomProperties::findOne(array('conditions' => "code='job_title' AND object_type_id=".$this->manager()->getObjectTypeId()));
+		if ($cp instanceof CustomProperty) {
+			$cp_val = CustomPropertyValues::getCustomPropertyValue($this->getId(), $cp->getId());
+			if ($cp_val instanceof CustomPropertyValue) {
+				return $cp_val->getValue();
+			} else {
+				return "";
+			}
+		} else {
+			return $this->getColumnValue('job_title');
+		}
+	}
+	
+	function setJobTitle($value) {
+		$cp = CustomProperties::findOne(array('conditions' => "code='job_title' AND object_type_id=".$this->manager()->getObjectTypeId()));
+		if ($cp instanceof CustomProperty) {
+			$cp_val = CustomPropertyValues::getCustomPropertyValue($this->getId(), $cp->getId());
+			if (!$cp_val instanceof CustomPropertyValue) {
+				$cp_val = new CustomPropertyValue();
+				$cp_val->setObjectId($this->getId());
+				$cp_val->setCustomPropertyId($cp->getId());
+			}
+			$cp_val->setValue($value);
+			$cp_val->save();
+			return true;
+			
+		} else {
+			return $this->setColumnValue('job_title', $value);
+		}
+	}
+	
 }

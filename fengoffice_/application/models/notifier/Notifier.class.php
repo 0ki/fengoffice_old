@@ -127,18 +127,28 @@ class Notifier {
 	 * @return For each localization and timezone will return an array of user groups, with a maximum of 20 users per group.
 	 * @param $people array of users to separate in groups
 	 */
-	static function buildPeopleGroups($people) {
+	static function buildPeopleGroups($people, $ignore_lang_and_timezone=false) {
 		$max_users_per_group = 20;
 		$groups = array();
 		
-		// group by lang and timezone
-		$lang_groups = array();
-		foreach ($people as $user) {
-			if ($user instanceof Contact && !$user->getDisabled()) {
-				$key = $user->getLocale() ."|". $user->getTimezone();
-				
+		if ($ignore_lang_and_timezone) {
+			// only group by amount
+			$lang_groups = array();
+			foreach ($people as $user) {
+				$key = "en_us|0";
 				if (!isset($lang_groups[$key])) $lang_groups[$key] = array();
 				$lang_groups[$key][] = $user;
+			}
+		} else {
+			// group by lang and timezone
+			$lang_groups = array();
+			foreach ($people as $user) {
+				if ($user instanceof Contact && !$user->getDisabled()) {
+					$key = $user->getLocale() ."|". $user->getTimezone();
+					
+					if (!isset($lang_groups[$key])) $lang_groups[$key] = array();
+					$lang_groups[$key][] = $user;
+				}
 			}
 		}
 		
@@ -495,7 +505,7 @@ class Notifier {
 					$toemail = $user->getEmailAddress();
 					try {
 						$content = FileRepository::getBackend()->getFileContent(owner_company()->getPictureFile());
-						if ($content != "") {
+						if ($content != "" && config_option('show company logo in notifications')) {
 							$file_path = ROOT . "/tmp/logo_empresa.png";
 							$handle = fopen($file_path, 'wb');
 							if ($handle) {
@@ -786,7 +796,7 @@ class Notifier {
 		$attachments = array();
 		try {
 			$content = FileRepository::getBackend()->getFileContent(owner_company()->getPictureFile());
-			if ($content) {
+			if ($content && config_option('show company logo in notifications')) {
 				$file_path = ROOT . "/tmp/logo_empresa.png";
 				$handle = fopen($file_path, 'wb');
 				if ($handle) {
@@ -1133,7 +1143,7 @@ class Notifier {
 		$attachments = array();
 		try {
 			$content = FileRepository::getBackend()->getFileContent(owner_company()->getPictureFile());
-			if ($content) {
+			if ($content && config_option('show company logo in notifications')) {
 				$file_path = ROOT . "/tmp/logo_empresa.png";
 				$handle = fopen($file_path, 'wb');
 				if ($handle) {
@@ -1260,7 +1270,7 @@ class Notifier {
 		$attachments = array();
 		try {
 			$content = FileRepository::getBackend()->getFileContent(owner_company()->getPictureFile());
-			if ($content) {
+			if ($content && config_option('show company logo in notifications')) {
 				$file_path = ROOT . "/tmp/logo_empresa.png";
 				$handle = fopen($file_path, 'wb');
 				if ($handle) {
@@ -1904,7 +1914,7 @@ class Notifier {
 		$logo_info = array();
 		try {
 			$content = FileRepository::getBackend()->getFileContent(owner_company()->getPictureFile());
-			if ($content != "") {
+			if ($content != "" && config_option('show company logo in notifications')) {
 				$file_path = ROOT . "/tmp/logo_empresa.png";
 				$handle = fopen($file_path, 'wb');
 				if ($handle) {

@@ -3000,6 +3000,11 @@ og.update_modal_main_input_width = function() {
  * Submits a modal form
  */
 og.submit_modal_form = function(form_id, callback_fn, options) {
+	//prevent double submit
+	if ($('#'+form_id).data().isSubmitted) {
+        return false;
+    }
+
 	options = options || {};
 	var form = document.getElementById(form_id);
 	var params = {modal: 1};
@@ -3057,6 +3062,7 @@ og.submit_modal_form = function(form_id, callback_fn, options) {
 			}
 			if (data.errorCode > 0) {
 				if (data.showMessage) og.err(data.errorMessage);
+				$('#'+form_id).data().isSubmitted = false;
 				return;
 			} else {
 				if (callback_fn && typeof(callback_fn) == 'function') {
@@ -3070,6 +3076,14 @@ og.submit_modal_form = function(form_id, callback_fn, options) {
 			}
 		}
 	});
+
+	// mark the form as processed, so we will not process it again 
+    $('#'+form_id).data().isSubmitted = true;
+    setTimeout(function(){ 
+    	if ($('#'+form_id).length){
+    		$('#'+form_id).data().isSubmitted = false; 
+    	}    	
+    }, 5000);
 }
 
 
@@ -3761,6 +3775,7 @@ og.memberTreeAjaxLoad = function(tree, pnode, limit, offset) {
 	var tree_id = tree.id;
 	var parameters = {
 		dimension_id: tree.dimensionId,
+		ignore_context_filters: true,
 		member: pnode.id
 	};
 	

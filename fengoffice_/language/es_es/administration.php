@@ -366,6 +366,8 @@
 	'file extension no allow classify' => 'No se pudo clasificar el adjunto \'{0}\'. Su Administrador no permite esta extensión de archivos.',
 	'config option name show images in document notifications' => 'Adjuntar imágenes al contenido de notificaciones',
 	'config option desc show images in document notifications' => 'Si el documento es una imagen se incluirá la misma en el contenido de la notificación.',
+	'config option name show company logo in notifications' => 'Adjuntar el logo de la organización al contenido de notificaciones',
+    'config option desc show company logo in notifications' => 'Se incluirá el logo de la organización en el contenido de la notificación.',
 	'config option name use_time_in_task_dates' => 'Utilizar horas en fechas de tarea',
 	'config option desc use_time_in_task_dates' => 'Permite ingresar hora de fin y hora de inicio de tareas.',
 	'user config category name mails panel' => 'Opciones del módulo de Correo',

@@ -36,6 +36,7 @@ INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`
 	('mailing', 'smtp_password', '', 'PasswordConfigHandler', 0, 0, NULL),
 	('mailing', 'smtp_secure_connection', 'no', 'SecureSmtpConnectionConfigHandler', 0, 0, 'Values: no, ssl, tls'),
 	('mailing', 'show images in document notifications', '0', 'BoolConfigHandler', 0, 0, NULL),
+	('mailing', 'show company logo in notifications', '1', 'BoolConfigHandler', 0, 0, NULL),
 	('mailing', 'notification_recipients_field', 'to', 'MailFieldConfigHandler', '0', '10', NULL),
 	('passwords', 'min_password_length', '0', 'IntegerConfigHandler', 0, '1', NULL),
 	('passwords', 'password_numbers', '0', 'IntegerConfigHandler', 0, '2', NULL),
@@ -139,6 +140,7 @@ INSERT INTO `<?php echo $table_prefix ?>cron_events` (`name`, `recursive`, `dela
 	('export_google_calendar', '1', '10', '0', '0', '0000-00-00 00:00:00'),
 	('sharing_table_partial_rebuild', '1', '1440', '1', '1', '0000-00-00 00:00:00'),
 	('check_sharing_table_flags', '1', '10', '1', '1', '0000-00-00 00:00:00'),
+	('clean_object_selector_temp_selection', '1', '360', '1', '1', '0000-00-00 00:00:00'),
 	('rebuild_contact_member_cache', '1', '1440', '1', '1', '0000-00-00 00:00:00');
 	
 INSERT INTO `<?php echo $table_prefix ?>object_reminder_types` (`name`) VALUES
@@ -623,3 +625,6 @@ WHERE `name`='give_member_permissions_to_new_users';
 
 INSERT INTO `<?php echo $table_prefix ?>currencies` (`symbol`, `name`, `short_name`, `is_default`) VALUES
 ('$', 'Dollar', 'USD', 0);
+
+INSERT INTO <?php echo $table_prefix ?>custom_properties (`object_type_id`,`name`,`code`,`type`,`visible_by_default`,`is_special`) VALUES
+((SELECT id FROM <?php echo $table_prefix ?>object_types WHERE name='contact'), 'Job title', 'job_title', 'text', 1, 1);

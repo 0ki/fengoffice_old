@@ -2,8 +2,17 @@
 
 	class Currencies extends BaseCurrencies {
 		
+		private static $all_currencies = null;
+		
+		static function getAllCurrencies() {
+			if (is_null(self::$all_currencies)) {
+				self::$all_currencies = self::findAll(array('order' => 'is_default DESC'));
+			}
+			return self::$all_currencies;
+		}
+		
 		static function getCurrenciesInfo() {
-			$currencies = self::findAll(array('order' => 'is_default DESC'));
+			$currencies = self::getAllCurrencies();
 			$info = array();
 			foreach ($currencies as $c) $info[] = $c->getArrayInfo();
 			

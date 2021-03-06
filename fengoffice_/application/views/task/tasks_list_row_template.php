@@ -28,8 +28,8 @@
 </script>
 
 <script id="task-list-group-template" type="text/x-handlebars-template"> 
-<tbody id="ogTasksPanelGroup{{group.group_id}}">
-  <tr>
+<tbody id="ogTasksPanelGroup{{group.group_id}}" class="tasks-panel-group tasks-panel-group-droppable">
+  <tr class="ogTasksGroupHeaderRow">
     <td colspan={{cols_total}} class="ogTasksGroupHeader task-list-row-template">
       <div style="" onclick="ogTasks.expandCollapseAllTasksGroup('{{group.group_id}}')" class="task-single-div og-task-expander toggle_expanded" id="ogTasksPanelGroupExpanderG{{group.group_id}}"></div>
     
@@ -80,6 +80,7 @@
 <tr id="ogTasksPanelTask{{task.id}}G{{group_id}}" class="task-list-row-template task-list-row">
   <td>
   <div style="width: 53px;margin-left: 16px;">
+	<div class="ddhandle">&nbsp;</div>
     <div class="task-row-checkbox" >
       <div class="priority {{priorityColor}}">
         <input type="checkbox" id="ogTasksPanelChk{{tgId}}" onclick="ogTasks.TaskSelected(this,{{task.id}}, '{{group_id}}')"/>

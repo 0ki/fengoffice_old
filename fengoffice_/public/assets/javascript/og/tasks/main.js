@@ -309,9 +309,6 @@ ogTasks.TaskSelected = function(checkbox, task_id, group_id){
 	task.isChecked = checkbox.checked;
 	var topToolbar = Ext.getCmp('tasksPanelTopToolbarObject');
 	topToolbar.updateCheckedStatus();
-	
-	//if (task.isChecked) rx__TasksDrag.addTaskToMove(task_id);
-	//else rx__TasksDrag.removeTaskToMove(task_id);
 }
 
 
@@ -330,9 +327,6 @@ ogTasks.GroupSelected = function(checkbox, group_id){
 		var tgId = "T" + tasks[i].id + 'G' + group_id;
 		var chkTask = document.getElementById('ogTasksPanelChk' + tgId);
 		if (chkTask) chkTask.checked = checkbox.checked;
-		
-		//if (chkTask.checked) rx__TasksDrag.addTaskToMove(tasks[i].id);
-		//else rx__TasksDrag.removeTaskToMove(tasks[i].id);
 		
 		var table = document.getElementById('ogTasksPanelTaskTable' + tgId);
 		if (table)
@@ -445,7 +439,7 @@ ogTasks.getTask = function(id){
 }
 
 ogTasks.removeTask = function(id){
-	rx__TasksDrag.removeTaskToMove(id);
+	
 	for (var i = 0; i < this.Tasks.length; i++) {
 		if (this.Tasks[i].id == id){
 			if (this.Tasks[i].milestoneId > 0) {

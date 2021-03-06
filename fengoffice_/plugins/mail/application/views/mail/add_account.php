@@ -212,6 +212,20 @@ if (strlen($loc) > 2) $loc = substr($loc, 0, 2);
 		
 		<div class="clear"></div>
 		
+		<?php
+			$more_options = array();
+			Hook::fire('more_mail_account_incoming_options', $mailAccount, $more_options);
+			foreach ($more_options as $option) { ?>
+				<div class="mail-account-item dataBlock">
+					<label><?php echo array_var($option, 'label')?></label>
+					<?php echo array_var($option, 'html'); ?>
+					<span class="desc"><?php echo array_var($option, 'description'); ?></span>
+				</div>
+				<div class="clear"></div>
+				<?php
+			}
+		?>
+		
 	</div>
 
 	<div id="<?php echo $genid ?>smtp_settings_div" class="form-tab">
@@ -279,6 +293,21 @@ if (strlen($loc) > 2) $loc = substr($loc, 0, 2);
 			?>
 			<span class="desc"><?php echo lang('mail account outgoing transport type description') ?></span>
 		</div>
+		
+		<?php
+			$more_options = array();
+			Hook::fire('more_mail_account_outgoing_options', $mailAccount, $more_options);
+			foreach ($more_options as $option) { ?>
+				<div class="mail-account-item dataBlock">
+					<label><?php echo array_var($option, 'label')?></label>
+					<?php echo array_var($option, 'html'); ?>
+					<span class="desc"><?php echo array_var($option, 'description'); ?></span>
+				</div>
+				<div class="clear"></div>
+				<?php
+			}
+		?>
+		
 	</div>
 	
 	<?php		
@@ -411,6 +440,7 @@ if (strlen($loc) > 2) $loc = substr($loc, 0, 2);
                                 editor.resetDirty();
                         }
                     },
+                removePlugins: 'magicline',
                 entities_additional : '#39,#336,#337,#368,#369'
             });
 

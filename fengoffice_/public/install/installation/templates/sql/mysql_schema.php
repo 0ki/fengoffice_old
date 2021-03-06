@@ -866,10 +866,12 @@ CREATE TABLE `<?php echo $table_prefix ?>custom_properties` (
   `description` text <?php echo $default_collation ?> NOT NULL,
   `values` text <?php echo $default_collation ?> NOT NULL,
   `default_value` varchar(255) <?php echo $default_collation ?> NOT NULL,
-  `is_required` tinyint(1) NOT NULL,
-  `is_multiple_values` tinyint(1) NOT NULL,
-  `property_order` int(10) NOT NULL,
-  `visible_by_default` tinyint(1) NOT NULL,
+  `is_required` tinyint(1) NOT NULL DEFAULT 0,
+  `is_multiple_values` tinyint(1) NOT NULL DEFAULT 0,
+  `property_order` int(10) NOT NULL DEFAULT 0,
+  `visible_by_default` tinyint(1) NOT NULL DEFAULT 0,
+  `is_special` tinyint(1) NOT NULL DEFAULT 0,
+  `is_disabled` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 
@@ -878,7 +880,8 @@ CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>custom_property_values` (
   `object_id` int(10) NOT NULL,
   `custom_property_id` int(10) NOT NULL,
   `value` text <?php echo $default_collation ?>,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `object_id_custom_property_id` (`object_id`,`custom_property_id`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 
 CREATE TABLE `<?php echo $table_prefix ?>queued_emails` (
@@ -1237,4 +1240,12 @@ CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>currencies` (
   `short_name` VARCHAR(50) NOT NULL,
   `is_default` BOOLEAN NOT NULL,
   PRIMARY KEY (`id`)
+) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
+
+CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>object_selector_temp_values` (
+  `user_id` int(11) NOT NULL DEFAULT 0,
+  `identifier` varchar(255) <?php echo $default_collation ?> NOT NULL,
+  `updated_on` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `value` text <?php echo $default_collation ?> NOT NULL,
+  PRIMARY KEY (`user_id`,`identifier`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;

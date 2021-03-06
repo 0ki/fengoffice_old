@@ -54,6 +54,10 @@ ogTasks.addNewTaskGroup = function(data, group_index, draw){
 	}
 	
 	ogTasks.Groups.push(group);
+	
+	if (typeof draw != 'undefined' && draw) {
+		ogTasks.initDragDrop();
+	}
 };
 
 ogTasks.removeTaskGroup = function(group){
@@ -141,7 +145,7 @@ ogTasks.addTaskToGroup = function(group, task, draw){
 			var displayCriteria = bottomToolbar.getDisplayCriteria();
 			var drawOptions = topToolbar.getDrawOptions();
 						
-			$("#rx__no_tasks_info").remove(); 
+			$("#no_tasks_info").remove(); 
 			
 			ogTasks.drawTask(task, drawOptions, displayCriteria, group.group_id, 1);
 			

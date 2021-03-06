@@ -1142,8 +1142,9 @@ function render_add_custom_properties(ContentDataObject $object) {
  * Renders an object's custom properties
  * @return string
  */
-function render_custom_properties(ApplicationDataObject $object) {
+function render_custom_properties(ApplicationDataObject $object, $visibility='all') {
 	tpl_assign('__properties_object', $object);
+	tpl_assign('visibility', $visibility);
 	return tpl_fetch(get_template_path('view', 'custom_properties'));
 }
 

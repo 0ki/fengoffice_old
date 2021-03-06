@@ -123,6 +123,7 @@ og.MemberTreeAjax = function(config) {
 				var parameters = {
 					member: node.id,
 					limit: limit,
+					ignore_context_filters: true,
 					offset: node.last_childs_offset
 				};
 				

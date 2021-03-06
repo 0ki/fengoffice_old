@@ -773,6 +773,7 @@ return array(
 	'template parameters description' => 'This form contains the parameters that are needed to fill the tasks to be generated.',
 	'template_task' => 'Template task',
 	'repeat options' => 'Repeat options',
+	'other properties' => 'Other properties',
 ); // array
 
 ?>

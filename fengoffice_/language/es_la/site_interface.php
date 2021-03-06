@@ -634,4 +634,5 @@
     'pending' => 'Pendiente',
     'template_task' => 'Plantilla de tarea',
     'repeat options' => 'Opciones de repetición',
+	'other properties' => 'Otras propiedades',
 );

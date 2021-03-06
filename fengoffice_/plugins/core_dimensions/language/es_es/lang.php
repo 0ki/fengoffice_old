@@ -43,4 +43,10 @@
 	'success complete subtasks of' => 'Las subtareas de \'{0}\' fueron completadas exitosamente',
 	'you have x new emails' => 'Tienes {0} nuevos correos.',
 	'notify assigned user' => 'Notificar al usuario asignado',
+	'change date' => 'Cambiar fecha',
+	'new date' => 'Nueva fecha',
+	'new start date' => 'Nueva fecha de inicio',
+	'new due date' => 'Nueva fecha de fin',
+	'new start date desc' => 'Se cambiará la fecha de inicio de las tareas seleccionadas.',
+	'new due date desc' => 'Se cambiará la fecha de fin de las tareas seleccionadas.',
 );

@@ -1780,6 +1780,26 @@ a.underline {
 	margin-bottom: 12px;
 }
 
+.custom-properties .multiple-list-custom-property {
+	float: left;
+	max-width: 250px;
+	border: 1px solid #ccc;
+	padding: 0 5px;
+	max-height: 120px;
+	overflow-y: auto;
+}
+.custom-properties .cp-list-multiple-option-container {
+	min-width: 120px;
+	float: left;
+}
+.custom-properties span.cp-list-multiple-option {
+	margin: 0 5px;
+	cursor: pointer;
+}
+.custom-properties input[type="checkbox"].cp-list-multiple-checkbox {
+	vertical-align: middle;
+}
+
 .ico-view-more {
 	background-image: url(../../images/icons-feng-3/16x16/view_more.png) !important;
 }

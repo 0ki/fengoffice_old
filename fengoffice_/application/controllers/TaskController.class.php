@@ -4271,6 +4271,94 @@ class TaskController extends ApplicationController {
 			$task->save();
 		}
 	}
+	
+	/**
+	 * To handle drag and drop in tasks list
+	 */
+	function edit_tasks_attribute() {
+		ajx_current("empty");
+		
+		$attribute = array_var($_POST, 'attribute');
+		$new_value = array_var($_POST, 'new_value');
+		
+		$task_ids = json_decode(array_var($_POST, 'task_ids'), true);
+		if (is_array($task_ids) && count($task_ids) > 0) {
+			$application_logs = array();
+			
+			$tasks = ProjectTasks::findAll(array('conditions' => 'id IN ('.implode(',', $task_ids).')'));
+			try {
+			
+				foreach ($tasks as $task) {
+					/* @var $task ProjectTask */
+					
+					if ($task->canEdit(logged_user())) {
+						
+						switch ($attribute) {
+							case 'assigned_to':
+								$user = Contacts::findById($new_value);
+								if ($user instanceof Contact && $user->isUser() && can_task_assignee($user) && $task->getAssignedToContactId() != $user->getId()) {
+									$task->setAssignedToContactId($user->getId());
+									$task->setAssignedOn(DateTimeValueLib::now());
+									$task->setAssignedById(logged_user()->getId());
+									$task->save();
+									
+									$application_logs[] = array($task, ApplicationLogs::ACTION_EDIT, false, logged_user()->getId() != $user->getId());
+								}
+								break;
+							case 'status':
+								if ($new_value == 1) {
+									// complete task
+									$task->setCompletedOn(DateTimeValueLib::now());
+									$task->setCompletedById(logged_user()->getId());
+									$application_logs[] = array($task, ApplicationLogs::ACTION_CLOSE);
+								} else {
+									// reopen task
+									$task->setCompletedOn(EMPTY_DATETIME);
+									$task->setCompletedById(0);
+									$application_logs[] = array($task, ApplicationLogs::ACTION_OPEN);
+								}
+								$task->save();
+								break;
+							case 'priority':
+							case 'milestone':
+								$task->setColumnValue($attribute, $new_value);
+								$task->save();
+								$application_logs[] = array($task, ApplicationLogs::ACTION_EDIT);
+								break;
+								
+							case 'due_date':
+							case 'start_date':
+								$new_date_value = getDateValue($new_value);
+								if ($attribute == 'start_date' && $task->getUseStartTime() || $attribute == 'due_date' && $task->getUseDueTime()) {
+									$new_date_value = new DateTimeValue($new_date_value->getTimestamp() - 3600 * logged_user()->getTimezone());
+								}
+								
+								$task->setColumnValue($attribute, $new_date_value);
+								$task->save();
+								$application_logs[] = array($task, ApplicationLogs::ACTION_EDIT);
+								
+								break;
+							default:
+								break;
+						}
+					}
+				}
+			} catch (Exception $e) {
+				DB::rollback();
+				ajx_current("empty");
+				flash_error($e->getMessage());
+			}
+			
+			foreach ($application_logs as $log) {
+				if(count($log) >= 2 && $log[0] instanceof ApplicationDataObject) {
+					call_user_func_array( 'ApplicationLogs::createLog', $log );
+				}
+			}
+			
+			
+		}
+	}
+	
         
         function repetitive_tasks_related($task,$action,$type_related = "",$task_data = array()){
             //I find all those related to the task to find out if the original

@@ -182,8 +182,6 @@ ogTasks.custom_properties = <?php echo json_encode($cp_values)?>;
 
 <script type="text/javascript">
 	if (!ogTasks.tasks_object_type_id) ogTasks.tasks_object_type_id = '<?php echo ProjectTasks::instance()->getObjectTypeId() ?>';
-	if (rx__TasksDrag)
-		rx__TasksDrag.initialize();
 
 	ogTasks.userPreferences = Ext.util.JSON.decode(document.getElementById('hfUserPreferences').value);
 
@@ -299,6 +297,7 @@ ogTasks.custom_properties = <?php echo json_encode($cp_values)?>;
 					editor.resetDirty();
 				}
 			},
+			removePlugins: 'magicline',
 			entities_additional : '#39,#336,#337,#368,#369'
 		});
 	}

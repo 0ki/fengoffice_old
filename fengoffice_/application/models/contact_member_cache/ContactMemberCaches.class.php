@@ -233,6 +233,9 @@ class ContactMemberCaches extends BaseContactMemberCaches {
 			$cm_depth = count($parents) + 1;
 		}
 		$lastParentIdByDepth[$cm_depth] = $lastParentId;
+		
+		// array of member ids to remove from cache for current user
+		$to_delete = array();
 				
 		foreach ($childs as $m) {
 			//Check Permissions
@@ -260,7 +263,16 @@ class ContactMemberCaches extends BaseContactMemberCaches {
 					
 			}else{
 				$lastParentIdByDepth[$m['depth']] = 0;
+				
+				// fill this array with members that the user does not have permissions
+				$to_delete[] = $m['id'];
 			}
+		}
+		
+		// delete member ids that user doesn't have permissions from this user's cache
+		$to_delete = array_filter($to_delete);
+		if (count($to_delete) > 0) {
+			DB::execute("DELETE FROM ".TABLE_PREFIX."contact_member_cache WHERE contact_id=".$user->getId()." AND member_id IN (".implode(',',$to_delete).")");
 		}
 		
 		// Insert new rows

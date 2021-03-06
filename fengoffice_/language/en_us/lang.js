@@ -197,6 +197,10 @@ addLangs({
 	'ok': 'OK',
 	'cancel': 'Cancel',
 	
+	/* object selector */
+	'select all': 'Select all',
+	'select all desc': 'Select all',
+	
 	/* contact manager*/
 	'company': 'Company',
 	'add new contact': 'Add a new person',

@@ -1116,15 +1116,15 @@ class ContactController extends ApplicationController {
 				//NEW ! User data in the same form 
 				$user = array_var(array_var($_POST, 'contact'),'user');
 				if (is_array($user)) {
-				  if(isset($contact_data['specify_username'])){
-					if($contact_data['user']['username'] != ""){
-						$user['username'] = $contact_data['user']['username'];
+					if(isset($contact_data['specify_username'])){
+						if($contact_data['user']['username'] != ""){
+							$user['username'] = $contact_data['user']['username'];
+						}else{
+							$user['username'] = str_replace(" ","",strtolower($contact_data['name'])) ;
+						}
 					}else{
 						$user['username'] = str_replace(" ","",strtolower($contact_data['name'])) ;
 					}
-				  }else{
-					$user['username'] = str_replace(" ","",strtolower($contact_data['name'])) ;
-				  }
 				}
 				
 
@@ -1162,7 +1162,6 @@ class ContactController extends ApplicationController {
 						evt_add("contact added from mail", array("div_id" => $contact_data['new_contact_from_mail_div_id'], "combo_val" => $combo_val, "hf_contacts" => $contact_data['hf_contacts']));
 					}
 					$contact = Contacts::findById($contact->getId());
-					ContactMemberCaches::updateContactMemberCacheAllMembers($contact);
 					
 					evt_add("new user added", $contact->getArrayInfo());
 				}
@@ -1178,6 +1177,9 @@ class ContactController extends ApplicationController {
 					
 					$contact = Contacts::findById($contact->getId());
 					save_user_permissions_background(logged_user(), $contact->getPermissionGroupId(), $contact->isGuest());
+					
+					// create member cache for the new user
+					ContactMemberCaches::updateContactMemberCacheAllMembers($contact);
 					
 					DB::commit();
 				}
@@ -3991,7 +3993,11 @@ class ContactController extends ApplicationController {
 			if ($permissions_checked) {
 				$permissions_condition = ""; // if filtering by users the permissions are already checked with filters
 			} else {
-				$permissions_condition = " AND (o.id=".logged_user()->getId()." OR EXISTS (SELECT sh.object_id FROM ".TABLE_PREFIX."sharing_table sh WHERE sh.object_id=o.id AND group_id IN (".implode(',',$pg_ids).")))";
+				if (logged_user()->isAdministrator()) {
+					$permissions_condition = "";
+				} else {
+					$permissions_condition = " AND (o.id=".logged_user()->getId()." OR EXISTS (SELECT sh.object_id FROM ".TABLE_PREFIX."sharing_table sh WHERE sh.object_id=o.id AND group_id IN (".implode(',',$pg_ids).")))";
+				}
 			}
 			$conditions = "o.trashed_by_id=0 AND o.archived_by_id=0 $name_condition $permissions_condition $type_condition $extra_conditions";
 			$query_params = array(

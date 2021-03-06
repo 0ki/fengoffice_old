@@ -121,6 +121,7 @@ var editor = CKEDITOR.replace('<?php echo $genid ?>ckeditor', {
 			Ext.getCmp(p.id).setPreventClose(editor.checkDirty());
 		}
 	},
+	removePlugins: 'magicline',
 	entities_additional : '#39,#336,#337,#368,#369'
 });
 

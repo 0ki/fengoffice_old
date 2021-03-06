@@ -359,7 +359,7 @@ var editor = CKEDITOR.replace(genid+'ckeditor', {
 			Ext.getCmp(p.id).setPreventClose(ev.editor.checkDirty());
 		}
 	},
-	removePlugins: 'scayt,liststyle,tabletools,contextmenu',
+	removePlugins: 'scayt,liststyle,tabletools,contextmenu,magicline',
 	entities_additional : '#39,#336,#337,#368,#369'
 });
 } catch (e) {

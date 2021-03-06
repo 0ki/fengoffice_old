@@ -31,8 +31,18 @@ if(count($cps) > 0){
 			if ($customProp->getType() == 'boolean')
 				echo checkbox_field($name, $default_value, array('style' => 'margin-right:4px', 'id' => $genid . 'cp' . $customProp->getId()));
 
+			$label = clean($customProp->getName());
+			if ($customProp->getIsSpecial()) {
+				$label_code = str_replace("_special", "", $customProp->getCode());
+				$label_value = Localization::instance()->lang($label_code);
+				if (is_null($label_value)) {
+					$label_value = Localization::instance()->lang(str_replace('_', ' ', $label_code));
+				}
+				if (!is_null($label_value)) $label = $label_value;
+			}
+			
 			$add_style = $customProp->getType() == 'table' ? "min-width:50px;" : "";
-			echo label_tag(clean($customProp->getName()), $genid . 'cp' . $customProp->getId(), $customProp->getIsRequired(), array('style' => 'display:inline;'.$add_style), $customProp->getType() == 'boolean'?'':':');
+			echo label_tag($label, $genid . 'cp' . $customProp->getId(), $customProp->getIsRequired(), array('style' => 'display:inline;'.$add_style), $customProp->getType() == 'boolean'?'':':');
 			
 			echo '</div>';
 
@@ -139,56 +149,52 @@ if(count($cps) > 0){
 					foreach ($multValues as $m){
 						$toSelect[] = $m->getValue();
 					}
+					
+					if($customProp->getIsMultipleValues()) {
+						echo '<div class="multiple-list-custom-property">';
+					}
+					
 					foreach(explode(',', $customProp->getValues()) as $value){
-						$selected = ($value == $default_value) || ($customProp->getIsMultipleValues() && (in_array($value, explode(',', $default_value))) || in_array($value,$toSelect));
-						$attr = array();
-						if ($selected) $attr['selected'] = 'selected';
-						$options[] = option_tag($value, $value, $attr);
+						
+						$text = null;
+						if (strpos($value, '@') !== false) {
+							$exp = explode('@', $value);
+							$value = array_var($exp, 0);
+							$text = array_var($exp, 1);
+						}
+						
+						if ($text == null) {
+							$text = $customProp->getCode() == "" ? $value : lang($value);
+						} else {
+							$text = $customProp->getCode() == "" ? $text : lang($text);
+						}
+						
+						
+						$selected = ($value == $default_value) || ($customProp->getIsMultipleValues() && (in_array($value, explode(',', $default_value)))||in_array($value,$toSelect));
+						
+						if($selected){
+							$options[] = '<option value="'. clean($value) .'" selected>'. clean($text) .'</option>';
+						}else{
+							$options[] = option_tag($text, $value);
+						}
+						
+						if($customProp->getIsMultipleValues()) {
+							echo '<div class="cp-list-multiple-option-container">';
+							echo checkbox_field($name."[$value]", $selected, array('id' => "$genid-$name-$totalOptions", 'class' => "cp-list-multiple-checkbox"));
+							echo '<span class="cp-list-multiple-option" onclick="document.getElementById(\''."$genid-$name-$totalOptions".'\').click();">' . $text . '</span>';
+							echo '</div>';
+						}
+						
 						$totalOptions++;
 					}
 					
-					$cp_id = $customProp->getId();
-					$is_mult = $customProp->getIsMultipleValues() ? '1' : '0';
-					echo select_box('aux_'.$name, $options, array('style' => 'min-width:140px',
-						'id' => $genid . 'cp' . $customProp->getId(), 'onchange' => "og.cp_list_selected(this, '$genid', '$name', $cp_id, $is_mult);"));
-					
-					$display = $customProp->getIsMultipleValues() ? "" : "display:none;";
-					
-					echo '<div id="'.$genid.'cp_list_selected'.$cp_id.'">';
-					$i = 0;
-					foreach ($toSelect as $value) {
-						echo '<div style="width:200px;'.$display.'">'.$value
-							.'&nbsp;<a href="#" onclick="og.cp_list_remove(this, \''.$genid.'\', '.$cp_id.');" class="db-ico coViewAction ico-delete" title="'.lang('remove').'">&nbsp;</a>'
-							.'<input type="hidden" name="'.$name.'['.$i.']" value="'.clean($value).'" /></div>';
-						$i++;
-					}
-					if (count($toSelect) == 0 && $default_value != '') {
-						echo '<div style="width:200px;'.$display.'">'.$default_value
-							.'&nbsp;<a href="#" onclick="og.cp_list_remove(this, \''.$genid.'\', '.$cp_id.');" class="db-ico coViewAction ico-delete" title="'.lang('remove').'">&nbsp;</a>'
-							.'<input type="hidden" name="'.$name.'['.$i.']" value="'.clean($default_value).'" /></div>';
-						$i++;
+					if($customProp->getIsMultipleValues()) {
+						echo '</div><div class="clear"></div>';
 					}
 					
-					echo '<script>
-						if (!og.cp_list_selected_index) og.cp_list_selected_index = [];
-						if (!og.cp_list_selected_index['.$cp_id.']) og.cp_list_selected_index['.$cp_id.'] = [];
-						og.cp_list_selected_index['.$cp_id.']["'.$genid.'"] = '.$i.';
-								
-						if (!og.cp_list_selected_values) og.cp_list_selected_values = [];
-						if (!og.cp_list_selected_values['.$cp_id.']) og.cp_list_selected_values['.$cp_id.'] = [];
-						og.cp_list_selected_values['.$cp_id.']["'.$genid.'"] = [];';
-					
-					foreach ($toSelect as $value) {
-						echo "og.cp_list_selected_values[$cp_id]['$genid'].push('$value');";
+					if(!$customProp->getIsMultipleValues()){
+						echo select_box($name, $options, array('style' => 'min-width:140px', 'id' => $genid . 'cp' . $customProp->getId()));
 					}
-					if (count($toSelect) == 0 && $default_value != '') {
-						echo "og.cp_list_selected_values[$cp_id]['$genid'].push('$default_value');";
-					}
-					echo '</script>';
-					
-					echo '<input type="hidden" id="'.$genid.'_remove_cp_'.$cp_id.'" name="remove_custom_properties['.$cp_id.']" value="0"/>';
-					
-					echo '</div>';
 					
 					break;
 				case 'table':
@@ -279,6 +285,7 @@ if(count($cps) > 0){
 
 				case 'user':
 				case 'contact':
+					$filters = array();
 					$value = '0';
 					$cp_value = CustomPropertyValues::getCustomPropertyValue($_custom_properties_object->getId(), $customProp->getId());
 					if ($cp_value instanceof CustomPropertyValue && is_numeric($cp_value->getValue())) {
@@ -306,7 +313,8 @@ if(count($cps) > 0){
 						$filters_str = 'null';
 					}
 					
-					$html = '<div id="'.$genid.'contacts_combo_container-cp'.$customProp->getId().'"></div><div class="clear"></div>';
+					$html = '<div class="dataBlock" style="width:500px !important">';
+					$html .= '<div id="'.$genid.'contacts_combo_container-cp'.$customProp->getId().'"></div><div class="clear"></div></div>';
 					$html .= '<script>'.
 					'$(function(){
 					  og.renderContactSelector({

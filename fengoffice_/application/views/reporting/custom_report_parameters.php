@@ -28,9 +28,17 @@
 		$model = $ot->getHandlerClass(); 
 		foreach($conditions as $condition){
 			if($condition->getCustomPropertyId() > 0){
-				$cp = CustomProperties::getCustomProperty($condition->getCustomPropertyId());
-				$name = $cp->getName();
+				$cp = null;
+				if ($ot instanceof ObjectType && in_array($ot->getType(), array('dimension_object','dimension_group'))) {
+					if (Plugins::instance()->isActivePlugin('member_custom_properties')) {
+						$cp = MemberCustomProperties::getCustomProperty($condition->getCustomPropertyId());
+					}
+				} else {
+					$cp = CustomProperties::getCustomProperty($condition->getCustomPropertyId());
+				}
 				if (!$cp) continue;
+				$name = $cp->getName();
+				
 			} else {
 				$name = lang('field ' . $model . ' ' . $condition->getFieldName());
 			}

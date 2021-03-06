@@ -804,6 +804,7 @@ class ReportingController extends ApplicationController {
 			} else {
 				$externalCols = array();
 			}
+			tpl_assign('object_type', $ot);
 			$externalFields = array();
 			foreach($externalCols as $extCol){
 				$externalFields[$extCol] = $this->get_ext_values($extCol, $report->getReportObjectTypeId());
@@ -901,6 +902,7 @@ class ReportingController extends ApplicationController {
 			tpl_assign('to_print', true);
 			
 			if (array_var($_POST, 'exportPDF')) {
+				$this->setLayout("empty");
 				tpl_assign('pdf_export', true);
 				$html_filename = ROOT.'/tmp/'.gen_id().'pdf.html';
 				$pdf_filename = $report->getObjectName() . '.pdf';
@@ -1477,6 +1479,7 @@ class ReportingController extends ApplicationController {
 			if (!array_var($_REQUEST, 'noaddcol')) {
 				Hook::fire('custom_reports_additional_columns', array('object_type' => $ot), $fields);
 			}
+			Hook::fire('custom_reports_fixed_additional_columns', array('object_type' => $ot), $fields);
 		}
 		usort($fields, array(&$this, 'compare_FieldName'));
 		return $fields;

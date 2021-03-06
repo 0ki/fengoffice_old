@@ -157,7 +157,10 @@ og.MemberTree = function(config) {
 				}
 				this.selectionHasAttachments = selectionHasAttachments;
 
-				if (e.data.selections[0] && og.dimension_object_type_contents[config.dimensionId][e.target.object_type_id][e.data.selections[0].data.ot_id] &&
+				if (e.data.selections[0] && e.data.selections[0].data && e.target && 
+						og.dimension_object_type_contents[config.dimensionId] &&
+						og.dimension_object_type_contents[config.dimensionId][e.target.object_type_id] &&
+						og.dimension_object_type_contents[config.dimensionId][e.target.object_type_id][e.data.selections[0].data.ot_id] &&
 						og.dimension_object_type_contents[config.dimensionId][e.target.object_type_id][e.data.selections[0].data.ot_id].multiple) {
 					
 					if (og.preferences['drag_drop_prompt'] == 'prompt') {
@@ -838,12 +841,15 @@ Ext.extend(og.MemberTree, Ext.tree.TreePanel, {
 				dimension_tree.suspendEvents();
 				if (node_parent) node_parent.appendChild(new_node);
 				dimension_tree.resumeEvents();
-			}else{				
+			}else{
 				if (node_parent){
-					//node_exist.setText(new_node.text);
-				/*	node_parent.removeChild(node_exist);
-					node_parent.appendChild(new_node);*/								
-				}							
+					// replace existing node with the one that comes from server
+					dimension_tree.suspendEvents();
+					node_parent.removeChild(node_exist);
+					node_parent.appendChild(new_node);
+					node_parent.expand();
+					dimension_tree.resumeEvents();
+				}
 			}
 		}
 	},
@@ -894,8 +900,9 @@ og.updateDimensionTreeNode = function(dimension_id, member, extra_params) {
 	if(member.parent == 0){
 		node_parent = dimension_tree.root;
 	}
-		
-	member.leaf = false;
+	
+	member.leaf = !member.expandable;
+	
 	member.text = member.name;
 	var new_node = dimension_tree.loader.createNode(member);
 		    												

@@ -274,6 +274,25 @@
       return $this->setColumnValue('visible_by_default', $value);
     } // getVisibleByDefault() 
       
+    
+    function getIsSpecial() {
+    	return $this->getColumnValue('is_special');
+    }
+    
+    function setIsSpecial($value) {
+    	return $this->setColumnValue('is_special', $value);
+    }
+    
+    
+    function getIsDisabled() {
+    	return $this->getColumnValue('is_disabled');
+    }
+    
+    function setIsDisabled($value) {
+    	return $this->setColumnValue('is_disabled', $value);
+    }
+    
+    
     /**
     * Return manager instance
     *

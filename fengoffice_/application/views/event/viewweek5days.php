@@ -237,7 +237,7 @@ $max_events_to_show = 300;
 			} else {
 				$alldaygridHeight = 100;
 			}
-        }
+		}
 
 	$users_array = array();
 	$companies_array = array();

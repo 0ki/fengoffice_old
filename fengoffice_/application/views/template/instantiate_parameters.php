@@ -12,8 +12,9 @@ if (array_var($_REQUEST, 'modal')) {
 <div class="template">
 <div class="coInputHeader">
 	<div class="coInputHeaderUpperRow">
-		<div class="coInputTitle"><?php echo lang('template parameters')?></div>
+		<div class="coInputTitle"><?php echo lang('template parameters').': '.$template->getObjectName() ?></div>
 		<div class="desc"><?php echo lang('template parameters description')?></div>
+		<div class="desc"><?php echo $template->getDescription()?></div>
 	</div>
 	<div class="clear"></div>
 </div>

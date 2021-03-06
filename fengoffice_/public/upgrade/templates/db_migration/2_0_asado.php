@@ -155,6 +155,8 @@ INSERT INTO `fo_contacts` (`object_id`, `first_name`, `is_company`, `timezone`, 
  	 1, `u`.`token`, `u`.`salt`, `u`.`twister`, `u`.`display_name`, `u`.`username`, `u`.`avatar_file`, `u`.`default_billing_id`
  FROM `og_users` `u`;
 
+UPDATE `fo_contacts` SET username=TRIM(CONCAT(first_name,' ',surname)) WHERE user_type>0 AND username='';
+
 INSERT INTO fo_contact_passwords (contact_id, password, password_date)
  SELECT (SELECT `id` FROM `fo_objects` WHERE `f1_id` = `o`.`user_id` AND `object_type_id` = (SELECT `ot`.`id` FROM `fo_object_types` `ot` WHERE `ot`.`name`='contact')), o.password, o.password_date
  FROM og_user_passwords o;

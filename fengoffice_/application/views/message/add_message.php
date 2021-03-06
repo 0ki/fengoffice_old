@@ -129,6 +129,7 @@
 	                                editor.resetDirty();
 	                        }
 	                    },
+	                removePlugins: 'magicline',
 	                entities_additional : '#39,#336,#337,#368,#369,#124'
 	            });
 	

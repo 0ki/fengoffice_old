@@ -155,6 +155,23 @@ class PluginController extends ApplicationController {
 		return $plugins ;
 	}
 	
+	
+	function ensure_installed_and_activated($plugin_name) {
+		
+		if (!Plugins::instance()->isActivePlugin($plugin_name)) {
+			
+			$plugin = Plugins::findOne(array('conditions' => "name='$plugin_name'"));
+			if (!$plugin instanceof Plugin || !$plugin->isInstalled()) {
+				
+				$this->executeInstaller($plugin_name);
+		
+				$plugin = Plugins::findOne(array('conditions' => "name='$plugin_name'"));
+			}
+				
+			$plugin->activate();
+		}
+	} 
+	
 /**
  * @param array of string $pluginNames
  */

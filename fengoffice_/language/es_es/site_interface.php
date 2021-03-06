@@ -629,10 +629,10 @@
 	'set manual permissions desc' => 'Si los permisos no se asignan manualmente, serán asignados automáticamente según el rol del usuario (Administradores, Gerentes and Ejecutivos tendrán todos los permisos asignados).',
 	'or you can also' => 'O también puede',
 	'template parameters description' => 'Este formulario contiene los parámetros necesarios para completar los datos de las tareas a generar.',
-
-		'dimensions' => 'Dimensiones',
-		'organization data' => 'Datos de la organización',
-		'pending' => 'Pendiente',
-		'template_task' => 'Plantilla de tarea',
-		'repeat options' => 'Opciones de repetición',
+	'dimensions' => 'Dimensiones',
+	'organization data' => 'Datos de la organización',
+	'pending' => 'Pendiente',
+	'template_task' => 'Plantilla de tarea',
+	'repeat options' => 'Opciones de repetición',
+	'other properties' => 'Otras propiedades',
 );

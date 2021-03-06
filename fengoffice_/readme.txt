@@ -1,5 +1,5 @@
 
-	About Feng Office 3.4.0.17
+	About Feng Office 3.4.1-beta
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -104,6 +104,35 @@
 	
 	Changelog
 	=========
+	
+	Since 3.4.0.22
+	----------------
+	feature: Tasks list drag & drop between task groups.
+	feature: Tasks list drag & drop to dimension members.
+	feature: Newsletters plugin.
+	feature: Include member custom properties in member reports.
+	feature: Make client sectors dimension multiple and hierarchical.
+	bugfix: Contact member cache generation fixed for new users.
+	
+	Since 3.4.0.21
+	----------------
+	bugfix: When editing user and removing a group the member cache was not deleted correctly for some submembers.
+	
+	Since 3.4.0.20
+	----------------
+	bugfix: when searching a child member and then searching the parent member, only the other child members are loaded after expanding the parent.
+	
+	Since 3.4.0.19
+	----------------
+	bugfix: gantt tasks order is not correct.
+	
+	Since 3.4.0.18
+	----------------
+	bugfix: import google calendar event classification fixed.
+	
+	Since 3.4.0.17
+	----------------
+	bugfix: export reports to pdf is adding html content to the file.
 	
 	Since 3.4.0.16
 	----------------

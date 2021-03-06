@@ -54,6 +54,8 @@
 	'config option name smtp_secure_connection' => 'Use la conexión segura SMTP',
 	'config option name show images in document notifications' => 'Adjuntar imágenes al contenido de notificaciones',
 	'config option desc show images in document notifications' => 'Si el documento es una imagen se incluirá la misma en el contenido de la notificación.',
+	'config option name show company logo in notifications' => 'Adjuntar el logo de la organización al contenido de notificaciones',
+    'config option desc show company logo in notifications' => 'Se incluirá el logo de la organización en el contenido de la notificación.',
 	'config option name min_password_length' => 'Tamaño mínimo de la contraseña',
 	'config option desc min_password_length' => 'Cantidad mínima de caracteres requerida para la contraseña',
 	'config option name password_numbers' => 'Números en la contraseña',

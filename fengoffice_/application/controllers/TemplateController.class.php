@@ -477,16 +477,6 @@ class TemplateController extends ApplicationController {
 	}
 	
 	
-	function get_context(){
-		$id = get_id();
-		$template = COTemplates::findById($id);
-		$this->setTemplate('get_context');
-		if(array_var($_POST, 'members')){
-			$this->instantiate();
-		}
-		tpl_assign('cotemplate',$template);
-		tpl_assign('id',$id);
-	}
 	
 	function save_instantiated_parameters($template, $parameters, $parameterValues) {
 		$instantiation_id = config_option('last_template_instantiation_id') + 1;
@@ -750,9 +740,18 @@ class TemplateController extends ApplicationController {
 			foreach($parameters as $parameter){
 				$params[] = array('name' => $parameter->getName(), 'type' => $parameter->getType(), 'default_value' => $parameter->getDefaultValue());
 			}
+
+			$template = COTemplates::findById($id);
+			if (!$template instanceof COTemplate) {
+				flash_error(lang("template dnx"));
+				ajx_current("empty");
+				return;
+			}
+
 			tpl_assign('id', $id);
 			tpl_assign('member_id', $member_id);
 			tpl_assign('parameters', $params);
+			tpl_assign('template', $template);
 		}
 	}
 

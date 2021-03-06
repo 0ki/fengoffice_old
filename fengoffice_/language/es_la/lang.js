@@ -172,6 +172,8 @@ addLangs({
 	'no objects to display': 'No hay objetos para mostrar',
 	'ok': 'OK',
 	'cancel': 'Cancelar',
+	'select all': 'Seleccionar todos',
+	'select all desc': 'Seleccionar todos',
 	'add new contact': 'Agregar nueva persona',
 	'displaying contacts of': 'Mostrando persona {0} al {1} de {2}',
 	'no contacts to display': 'No hay personas para mostrar',

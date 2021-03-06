@@ -399,12 +399,7 @@ class ProjectTask extends BaseProjectTask {
 		$this->setCompletedOn(DateTimeValueLib::now());
 		$this->setCompletedById(logged_user()->getId());
 
-		if($options == "yes"){
-			foreach ($this->getAllSubTasks() as $subt) {
-				$subt->completeTask($options);
-			}
-		}
-
+		
 		if(user_config_option('close timeslot open')){
 			$timeslots = Timeslots::getOpenTimeslotsByObject($this->getId());
 			if ($timeslots){
@@ -493,13 +488,6 @@ class ProjectTask extends BaseProjectTask {
 			}
 		}
 		
-		/*
-		 * this is done in the controller
-		$task_list = $this->getParent();
-		if(($task_list instanceof ProjectTask) && $task_list->isCompleted()) {
-			$open_tasks = $task_list->getOpenSubTasks();
-			if(!empty($open_tasks)) $task_list->open();
-		} // if*/
 		
 		return $log_info;
 	} // openTask
@@ -697,7 +685,7 @@ class ProjectTask extends BaseProjectTask {
 		$task->setParentId($this->getId());
 		$task->save();
 
-		if($this->isCompleted()) $this->open();
+		if($this->isCompleted()) $this->openTask();
 	} // attachTask
 
 	/**
@@ -719,35 +707,7 @@ class ProjectTask extends BaseProjectTask {
 		}
 	} // detachTask
 
-	/**
-	 * Complete this task lists
-	 *
-	 * @access public
-	 * @param DateTimeValue $on Completed on
-	 * @param Contact $by Completed by
-	 * @return null
-	 */
-	function complete(DateTimeValue $on, $by) {
-		$by_id = $by instanceof Contact ? $by->getId() : 0;
-		$this->setCompletedOn($on);
-		$this->setCompletedById($by_id);
-		$this->save();
-		ApplicationLogs::createLog($this, ApplicationLogs::ACTION_CLOSE);
-	} // complete
 
-	/**
-	 * Open this list
-	 *
-	 * @access public
-	 * @param void
-	 * @return null
-	 */
-	function open() {
-		$this->setCompletedOn(NULL);
-		$this->setCompletedById(0);
-		$this->save();
-		ApplicationLogs::createLog($this, ApplicationLogs::ACTION_OPEN);
-	} // open
 
 	// ---------------------------------------------------
 	//  Related object

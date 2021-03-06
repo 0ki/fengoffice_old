@@ -294,7 +294,7 @@ class ApiController extends ApplicationController {
                 if ($task->canChangeStatus(logged_user())) {
                     try {
                         if (isset($request['action']) && $request['action'] == 'complete') {
-                            $task->complete(DateTimeValueLib::now(), logged_user());
+                            $task->completeTask();
                             $task->setPercentCompleted(100);
                             $task->save();
                         } else {

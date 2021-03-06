@@ -2079,18 +2079,21 @@ class MailController extends ApplicationController {
 				$mailAccount->save();
 				
 				
-				// process users
-				$account_users = Contacts::getAllUsers();
+				// save user permissions over this account
 				$user_access = array_var($_POST, 'user_access');
-				foreach ($account_users as $account_user) {
-					$user_id = $account_user->getId();
-					$access = array_var($user_access, $user_id);
-					if (!is_null($access) && $access != 'none' || $user_id == $mail_account_user->getId()) {
-						$account_user = new MailAccountContact();
-						$account_user->setAccountId($mailAccount->getId());
-						$account_user->setContactId($user_id);
-						$account_user->setCanEdit($access == 'write');
-						$account_user->save();
+				if (is_array($user_access) && count($user_access) > 0) {
+					// clean previous data
+					MailAccountContacts::instance()->deleteByAccount($mailAccount);
+					// foreach user access level submitted create a new MailAccountContact
+					foreach ($user_access as $user_id => $access) {
+						if ($access != 'none') {
+							$account_user = new MailAccountContact();
+							$account_user->setAccountId($mailAccount->getId());
+							$account_user->setContactId($user_id);
+							$account_user->setCanEdit($access == 'write');
+				
+							$account_user->save();
+						}
 					}
 				}
 				
@@ -2202,19 +2205,29 @@ class MailController extends ApplicationController {
 			return;
 		} // if
 
-		// get mail account users
-		$mailAccountUsers = MailAccountContacts::getByAccount($mailAccount);
-		$mau = array();
-		foreach ($mailAccountUsers as $au) {
-			$contact = $au->getContact();
-			if (!$contact instanceof Contact) continue;
+		
+		if(!array_var($_POST, 'submitted')) {
 			
-			$mau[$au->getContactId()] = array(
-				'name' => $contact->getObjectName(),
-				'can_edit' => $au->getCanEdit(),
-			);
+			// get mail account users
+			$mailAccountUsers = MailAccountContacts::getByAccount($mailAccount);
+			$mau = array();
+			foreach ($mailAccountUsers as $au) {
+				$contact = $au->getContact();
+				if (!$contact instanceof Contact) continue;
+					
+				$mau[$au->getContactId()] = array(
+						'name' => $contact->getObjectName(),
+						'can_edit' => $au->getCanEdit(),
+				);
+			}
+			tpl_assign('mailAccountUsers', $mau);
+			
+			// send current imap folders to form
+			if ($mailAccount->getIsImap()) {
+				$imap_folders = MailAccountImapFolders::getMailAccountImapFolders($mailAccount->getId());
+				tpl_assign('imap_folders', $imap_folders);
+			}
 		}
-		tpl_assign('mailAccountUsers', $mau);
 		
 		$is_admin = logged_user()->isAdministrator();
 		tpl_assign('is_admin', $is_admin);
@@ -2257,30 +2270,6 @@ class MailController extends ApplicationController {
 				$mailAccount_data['is_default'] = false;
 		}
 		
-		if ($mailAccount->getIsImap()) {
-			/*try {
-				$real_folders = MailUtilities::getImapFolders($mailAccount);
-				DB::beginWork();
-				foreach ($real_folders as $folder_name) {
-					if (!MailAccountImapFolders::findById(array('account_id' => $mailAccount->getId(), 'folder_name' => $folder_name))) {
-						$acc_folder = new MailAccountImapFolder();
-						$acc_folder->setAccountId($mailAccount->getId());
-						$acc_folder->setFolderName($folder_name);
-						$acc_folder->setCheckFolder($folder_name == 'INBOX');// By default only INBOX is checked
-					 
-						$acc_folder->save();
-					}
-				}
-				DB::commit();
-			} catch (Exception $e) {
-				DB::rollback();
-				flash_error($e->getMessage());
-			}*/
-			 
-			$imap_folders = MailAccountImapFolders::getMailAccountImapFolders($mailAccount->getId());
-			tpl_assign('imap_folders', $imap_folders);
-		}
-
 		tpl_assign('mailAccount', $mailAccount);
 		tpl_assign('mailAccount_data', $mailAccount_data);
 
@@ -2347,6 +2336,7 @@ class MailController extends ApplicationController {
 					  	}
 					}
 					
+					// default dimension members where new emails will be classified
 					$member_ids = json_decode(array_var($_POST, 'members'));
 					$member_ids_str = "";
 					foreach ($member_ids as $mid) {
@@ -2356,33 +2346,24 @@ class MailController extends ApplicationController {
 					
 					$mailAccount->save();
 					
-					// process users
-					
-					$account_users = Contacts::findAll();
+					// save user permissions over this account
 					$user_access = array_var($_POST, 'user_access');
-					foreach ($account_users as $account_user) {
-						$user_id = $account_user->getId();
-						$access = array_var($user_access, $user_id, 'none');
-						$account_user = MailAccountContacts::getByAccountAndContact($mailAccount, $account_user);
-						if ($mail_account_user instanceof Contact && ($access != 'none' || $user_id == $mail_account_user->getId())) {
-							if (!$account_user instanceof MailAccountContact) {
+					if (is_array($user_access) && count($user_access) > 0) {
+						// clean previous data
+						MailAccountContacts::instance()->deleteByAccount($mailAccount);
+						// foreach user access level submitted create a new MailAccountContact
+						foreach ($user_access as $user_id => $access) {
+							if ($access != 'none') {
 								$account_user = new MailAccountContact();
 								$account_user->setAccountId($mailAccount->getId());
 								$account_user->setContactId($user_id);
+								$account_user->setCanEdit($access == 'write');
+								
+								$account_user->save();
 							}
-							$account_user->setCanEdit($access == 'write');
-							$account_user->save();
-						} else if ($account_user instanceof MailAccountContact) {
-							$account_user->delete();
 						}
 					}
-					/*// delete any remaining ones
-					$account_users = MailAccountContacts::getByAccount($mailAccount);
-					foreach ($account_users as $account_user) {
-						if ($access = array_var($user_access, $account_user->getId(), 'none') == 'none') {
-							$account_user->delete();
-						}
-					}*/
+					
 					
 					evt_add("mail account edited", array(
 							"id" => $mailAccount->getId(),
@@ -2391,7 +2372,7 @@ class MailController extends ApplicationController {
 					));
 				}
 				
-				// personal settings
+				// if this account is marked as default for logged user then it has to be the only one with is_default=true
 				if (array_var($_POST, 'is_default')) {
 					$user_accounts = MailAccountContacts::getByContact(logged_user());
 					foreach ($user_accounts as $acc) {
@@ -2404,18 +2385,21 @@ class MailController extends ApplicationController {
 						}
 					}
 				}
+				
+				// loggued user signature and from name
 				$logged_user_settings = MailAccountContacts::getByAccountAndContact($mailAccount, logged_user());
 				if ($logged_user_settings instanceof MailAccountContact) { 
 					$logged_user_settings->setSignature(array_var($_POST, 'signature'));
 					$logged_user_settings->setSenderName(array_var($_POST, 'sender_name'));
 					$logged_user_settings->save();
 				}
+				
 				DB::commit();
 
 				flash_success(lang('success edit mail account', $mailAccount->getName()));
 				ajx_current("back");
 
-		  // Error...
+			// Error...
 			} catch(Exception $e) {
 				DB::rollback();
 				ajx_current("empty");
@@ -3386,11 +3370,13 @@ class MailController extends ApplicationController {
 			$conversation_list = user_config_option('show_emails_as_conversations') ? 1 : 0;
 			
 			$only_count_result = false;
+			$join_params = null;
 			
 			$extra_cond = " AND received_date > '".$date->toMySQL()."'";
 			
 			$result = $this->getEmails($attributes, $context, $start, $limit, $order, $dir, $join_params, $conversation_list,$only_count_result, $extra_cond);
 			$emails = $result->objects;
+			$total = $result->total;
 			
 			// Prepare response object
 			$object = $this->prepareObject($emails, $start, $limit, $total,$attributes);

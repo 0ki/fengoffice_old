@@ -328,6 +328,12 @@ div.checkbox-config-option {
 	cursor: move;
 }
 
+.custom-properties-admin.object-type .custom-property-list .cp-container input[disabled="disabled"] {
+	color: black;
+	border: 0;
+	background-color: transparent;
+}
+
 .custom-properties-admin.object-type .adminMainBlock .custom-property-list tr.header {
 	line-height: 20px;
 	background-color: #4f4f4f;
@@ -395,4 +401,24 @@ div.checkbox-config-option {
 }
 .custom-properties-admin .cp-admin-container.member-cps-container {
 	
+}
+
+
+
+.listing-admin table {
+	min-width: 600px;
+}
+
+.listing-admin .actions {
+	margin-top: 15px;
+}
+
+.listing-admin .adminMainBlock tr.header th {
+	line-height: 20px;
+	background-color: #4f4f4f;
+	color: #d1d1d1;
+}
+
+.listing-admin .adminMainBlock .alt {
+	background-color: #efefef;
 }
