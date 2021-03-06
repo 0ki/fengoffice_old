@@ -500,13 +500,14 @@
   	}
   	if (!$id) $id = $genid . $name . "Cmp";
   	$daterow = '';
-  	if ($display_date_info)
-  		$daterow = "<td style='padding-top:4px;font-size:80%'><span class='desc'>&nbsp;(" . date_format_tip($date_format) . ")</span></td>";
+ // 	if ($display_date_info)
+ // 		$daterow = "<td style='padding-top:4px;font-size:80%'><span class='desc'>&nbsp;(" . date_format_tip($date_format) . ")</span></td>";
   	$html = "<table><tr><td><span id='" . $genid . $name . "'></span></td>$daterow</tr></table>
 	<script>
 		var dtp" . gen_id() . " = new og.DateField({
 			renderTo:'" . $genid . $name . "',
 			name: '" . $name . "',
+			emptyText: '" . date_format_tip($date_format) . "',
 			id: '" . $id . "',".
 			(isset($tabindex) ? "tabIndex: '$tabindex'," : "").
 			"value: '" . $dateValue . "'});
@@ -539,6 +540,7 @@
 			renderTo:'" . $genid . $name . "',
 			name: '" . $name . "',
 			format: '" . $format . "',
+			emptyText: 'hh:mm',
 			width: 80,".
 			(isset($tabindex) ? "tabIndex: '$tabindex'," : "").
 			"value: '" . $value . "'});
@@ -659,20 +661,21 @@
    * @return string $darkerColor
    */
   function darkerHtmlColor($htmlColor, $percentage = 20) {
-  	if ($percentage > 100 || $percentage < 0) $percentage = 0;
-    if (substr($htmlColor, 0, 1) == '#') {
+  	if (substr($htmlColor, 0, 1) == '#') {
         $htmlColor = substr($htmlColor, 1);
     }
-    if (strlen($htmlColor)!=6) {
-        return;
+    if (strlen($htmlColor) != 6) {
+        return "#$htmlColor";
     }
     $darkerColor = '';
     $pieces = explode(' ', rtrim(chunk_split($htmlColor, 2, ' ')));
     foreach ($pieces as $piece) {
         # convert from base16 to base10, reduce the value then come back to base16
         $tmp = (int) (base_convert($piece, 16, 10));
-        $amount = (int) ($tmp * $percentage / 100); 
+        $amount = (int) ($tmp * $percentage / 100);
         $darkpiece = $tmp - $amount;
+        if ($darkpiece < 0) $darkpiece = 0;
+        if ($darkpiece > 255) $darkpiece = 255;
         $darkerColor .= sprintf("%02x", $darkpiece);
     }
     return '#'. $darkerColor;

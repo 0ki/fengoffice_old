@@ -3,11 +3,15 @@
 /**
  * Object class
  *
- * @author Diego Castiglioni <diego20@gmail.com>
+ * @author Diego Castiglioni <diego.castiglioni@fengoffice.com>
  */
 class Object extends BaseObject {
 	
 	private $object_type = null;
+	
+	function __destruct() {
+		if (isset($this->object_type)) $this->object_type = null;
+	}
 	
 	/**
 	 * Returns the object's type instance
@@ -35,6 +39,7 @@ class Object extends BaseObject {
 		}
 		$info = array(
 			'object_id' => $this->getId(),
+			'ot_id' => $this->getObjectTypeId(),
 			'name' => $this->getName(),
 			'type' => $this->getObjectTypeName(),
 			'icon' => $this->getType()->getIconClass(),

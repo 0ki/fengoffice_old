@@ -3,6 +3,7 @@ require_javascript('og/tasks/TasksTopToolbar.js');
 require_javascript('og/CalendarToolbar.js');
 require_javascript('og/CalendarFunctions.js');
 require_javascript('og/EventPopUp.js');
+require_javascript('og/CalendarPrint.js'); 
 
 /*
 	
@@ -76,12 +77,13 @@ foreach($companies as $company)
 	og.events_selected = 0;
 	og.eventSelected(0);
 	var ev_dropzone = new Ext.dd.DropZone('calendar', {ddGroup:'ev_dropzone'});
+        og.config.genid = '<?php echo $genid ?>';
 </script>
 
 <div id="cal_main_div" class="calendar" style="position:relative;width:100%;height:100%;overflow:hidden">
 <div id="calendarPanelTopToolbar" class="x-panel-tbar" style="width:100%;height:28px;display:block;background-color:#F0F0F0;"></div>
 <div id="calendarPanelSecondTopToolbar" class="x-panel-tbar" style="width:100%;height:28px;display:block;background-color:#F0F0F0;"></div>
-
+<div id="<?php echo $genid."view_calendar"?>">  
 <table style="width:100%;height:100%;">
 <tr>
 <td>
@@ -160,8 +162,8 @@ foreach($companies as $company)
 					<?php
 					$date_start = new DateTimeValue(mktime(0,0,0,$month-1,$firstday,$year)); 
 					$date_end = new DateTimeValue(mktime(0,0,0,$month+1,$lastday,$year)); 
-					//FIXME $milestones = ProjectMilestones::getRangeMilestonesByUser($date_start, $date_end, ($user_filter != -1 ? $user : null), $tags, active_project());
-					$tasks = ProjectTasks::getRangeTasksByUser($date_start, $date_end, ($user_filter != -1 ? $user : null), $tags, active_project());
+					$milestones = ProjectMilestones::getRangeMilestones($date_start, $date_end);
+					$tasks = ProjectTasks::getRangeTasksByUser($date_start, $date_end, ($user_filter != -1 ? $user : null));
 					// FIXME
 					$birthdays = array(); //Contacts::instance()->getRangeContactsByBirthday($date_start, $date_end);
 					
@@ -318,7 +320,7 @@ foreach($companies as $company)
 									foreach($result_evs as $event){
 										if($event instanceof ProjectEvent ){
 											$count++;
-											$subject =  clean($event->getSubject());
+											$subject =  clean($event->getObjectName());
 											$typeofevent = $event->getTypeId();
 											$eventid = $event->getId();
 											
@@ -343,10 +345,10 @@ foreach($companies as $company)
 												$tip_text = str_replace("\n", '<br>', $tip_text);													
 												if (strlen_utf($tip_text) > 200) $tip_text = substr_utf($tip_text, 0, strpos($tip_text, ' ', 200)) . ' ...';
 							
-									$bold = "bold";
-									if ($event instanceof Contact || $event->getIsRead(logged_user()->getId())){
-										$bold = "normal";
-									}
+												$bold = "bold";
+												if ($event instanceof Contact || $event->getIsRead(logged_user()->getId())){
+													$bold = "normal";
+												}
 
 								?>
 
@@ -386,7 +388,7 @@ foreach($companies as $company)
 										 			<?php
 										 			$tipbody = ($event->getTypeId() == 2 ? lang('CAL_FULL_DAY') : format_date($real_start, $pre_tf.$timeformat, 0) .' - '. format_date($real_duration, $pre_tf.$timeformat, 0)) . ($tip_text != '' ? '<br><br>' . $tip_text : '');
 										 			?>
-													addTip('m_ev_div_<?php echo $event->getId() . $id_suffix ?>', '<i>' + lang('event') + '</i> - ' + <?php echo json_encode(clean($event->getSubject())) ?>, <?php echo json_encode($tipbody);?>);
+													addTip('m_ev_div_<?php echo $event->getId() . $id_suffix ?>', '<span class="italic">' + lang('event') + '</span> - ' + <?php echo json_encode(clean($event->getObjectName())) ?>, <?php echo json_encode($tipbody);?>);
 													<?php $is_repetitive = $event->isRepetitive() ? 'true' : 'false'; ?>
 													<?php if (!logged_user()->isGuest()) { ?>
 													og.createMonthlyViewDrag('m_ev_div_<?php echo $event->getId() . $id_suffix ?>', '<?php echo $event->getId()?>', <?php echo $is_repetitive ?>, 'event', '<?php echo $event_start->format('Y-m-d H:i:s') ?>'); // Drag
@@ -409,7 +411,7 @@ foreach($companies as $company)
 												$count++;
 												if ($count <= $max_events_to_show){
 													$color = 'FFC0B3'; 
-													$subject = "&nbsp;" . clean($milestone->getObjectName())." - <i>Milestone</i>";
+													$subject = "&nbsp;" . clean($milestone->getObjectName())." - <span class='italic'>".lang('milestone')."</span>";
 													$cal_text = clean($milestone->getObjectName());
 													
 													$tip_text = str_replace("\r", '', (trim(clean($milestone->getDescription())) == '' ? '' : '<br><br>'. clean($milestone->getDescription())));
@@ -424,7 +426,7 @@ foreach($companies as $company)
 														</a>
 													</div>
 													<script>
-														addTip('m_ms_div_<?php echo $milestone->getId() ?>', '<i>' + lang('milestone') + '</i> - ' + <?php echo json_encode(clean($milestone->getTitle())) ?>, <?php echo json_encode($tip_text != '' ? $tip_text : '');?>);
+														addTip('m_ms_div_<?php echo $milestone->getId() ?>', '<span class="italic">' + lang('milestone') + '</span> - ' + <?php echo json_encode(clean($milestone->getTitle())) ?>, <?php echo json_encode($tip_text != '' ? $tip_text : '');?>);
 														<?php if (!logged_user()->isGuest()) { ?>
 														og.createMonthlyViewDrag('m_ms_div_<?php echo $milestone->getId() ?>', '<?php echo $milestone->getId()?>', false, 'milestone'); // Drag
 														<?php } ?>
@@ -461,10 +463,11 @@ foreach($companies as $company)
 													$img_url = image_url('/16x16/task_start.png');
 													$tip_pre = 'st_';
 												}
+												$tip_pre .= gen_id()."_";
 												$count++;
 												if ($count <= $max_events_to_show){
 													$color = 'B1BFAC'; 
-													$subject = clean($task->getObjectName()).'- <i>Task</i>';
+													$subject = clean($task->getObjectName()).'- <span class="italic">'.lang('task').'</span>';
 													$cal_text = clean($task->getObjectName());
 													
 													$tip_text = str_replace("\r", '', lang('assigned to') .': '. clean($task->getAssignedToName()) . (trim(clean($task->getText())) == '' ? '' : '<br><br>'. clean($task->getText())));
@@ -472,14 +475,14 @@ foreach($companies as $company)
 													if (strlen_utf($tip_text) > 200) $tip_text = substr_utf($tip_text, 0, strpos($tip_text, ' ', 200)) . ' ...';
 								?>
 								
-													<div id="m_ta_div_<?php echo $tip_pre.$task->getId()?>" class="event_block" style="border-left-color: #<?php echo $color?>;">
+													<div id="m_ta_div_<?php echo $tip_pre.$task->getId()?>" class="event_block" style="border: 1px solid #<?php echo $color?>; background-color:#D8EAD1">
 														<a href='<?php echo $task->getViewUrl()?>' class='internalLink' onclick="og.disableEventPropagation(event);return true;"  style="border-width:0px">
 															<img src="<?php echo $img_url ?>" style="vertical-align: middle;">
 														 	<span><?php echo $cal_text ?></span>
 														</a>
 													</div>
 													<script>
-														addTip('m_ta_div_<?php echo $tip_pre.$task->getId() ?>', '<i>' + '<?php echo $tip_title ?>' + '</i> - ' + <?php echo json_encode(clean($task->getTitle()))?>, <?php echo json_encode(trim($tip_text) != '' ? trim($tip_text) : '');?>);
+														addTip('m_ta_div_<?php echo $tip_pre.$task->getId() ?>', '<span class="italic">' + '<?php echo $tip_title ?>' + '</span> - ' + <?php echo json_encode(clean($task->getTitle()))?>, <?php echo json_encode(trim($tip_text) != '' ? trim($tip_text) : '');?>);
 														<?php if (!logged_user()->isGuest()) { ?>
 														og.createMonthlyViewDrag('m_ta_div_<?php echo $tip_pre.$task->getId() ?>', '<?php echo $task->getId()?>', false, 'task'); // Drag
 														<?php } ?>
@@ -499,7 +502,7 @@ foreach($companies as $company)
 												$count++;
 												if ($count <= $max_events_to_show){
 													$color = 'B1BFAC';
-													$subject = clean($contact->getObjectName()).' - <i>'.lang('birthday').'</i>';
+													$subject = clean($contact->getObjectName()).' - <span class="italic">'.lang('birthday').'</span>';
 								?>
 													<div id="m_bd_div_<?php echo $contact->getId()?>" class="event_block" style="border-left-color: #<?php echo $color?>;">
 														<a href='<?php echo $contact->getViewUrl()?>' class='internalLink' onclick="og.disableEventPropagation(event);return true;"  style="border-width:0px">
@@ -508,7 +511,7 @@ foreach($companies as $company)
 														</a>
 													</div>
 													<script>
-														addTip('m_bd_div_<?php echo $contact->getId() ?>', '<i>' + '<?php echo escape_single_quotes(lang('birthday')) ?>' + '</i> - ' + <?php echo json_encode(clean($contact->getObjectName()))?>, '');
+														addTip('m_bd_div_<?php echo $contact->getId() ?>', '<span class="italic">' + '<?php echo escape_single_quotes(lang('birthday')) ?>' + '</span> - ' + <?php echo json_encode(clean($contact->getObjectName()))?>, '');
 													</script>
 								<?php
 												}//if count
@@ -554,6 +557,7 @@ foreach($companies as $company)
 		</table>
 	</td>
 </tr></table>
+    </div>
 </div>
 
 <script>

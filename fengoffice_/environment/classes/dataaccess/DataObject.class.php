@@ -185,7 +185,11 @@
   	* @return boolean
   	*/
   	function columnExists($column_name) {
-  	  return in_array($column_name, $this->getColumns());
+  	  $columns = $this->getColumns();
+  	  $res = in_array($column_name, $columns);
+  	  $columns = null;
+  	  
+  	  return $res;
   	} // columnExists
   	
   	/**
@@ -640,8 +644,10 @@
   		$columns = array();
   		$values = array();
   		
+  		$this_columns = $this->getColumns();
+  		
   		// Loop fields
-  		foreach ($this->getColumns() as $column) {
+  		foreach ($this_columns as $column) {
   		  
   		  // If this field autoincrement?
   		  $auto_increment = $this->isAutoIncrementColumn($column);
@@ -670,6 +676,8 @@
   			
   		} // foreach
   		
+  		$this_columns = null;
+  		
   		// And put it all together
   		return sprintf("INSERT INTO %s (%s) VALUES (%s)", 
   		  $this->getTableName(true), 
@@ -694,8 +702,9 @@
   		// Check number of modified fields
   		if(!$this->isObjectModified()) return null;
   		
+  		$this_columns = $this->getColumns();
   		// Loop fields
-  		foreach ($this->getColumns() as $column) {
+  		foreach ($this_columns as $column) {
   			  
   			// Is this field modified?
   			if($this->isColumnModified($column)) {
@@ -703,6 +712,7 @@
   			} // if
   		  
   		} // foreach
+  		$this_columns = null;
   		
   		// Prepare update SQL
   		return sprintf("UPDATE %s SET %s WHERE %s", $this->getTableName(true), implode(', ', $columns), $this->manager()->getConditionsById( $this->getInitialPkValue() ));

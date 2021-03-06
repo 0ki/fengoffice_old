@@ -27,7 +27,6 @@ ogTasks.selectedMilestone = 0;
 ogTasksTask = function(){
 	this.id;
 	this.title;
-	this.workspaceIds;
 	this.createdOn;
 	this.createdBy;
 	this.status = 0;
@@ -52,6 +51,8 @@ ogTasksTask = function(){
 	this.members;
 	this.depCount;
 	this.memPath;
+	this.useDueTime = false;
+	this.useStartTime = false;
 	
 	this.createdByName;
 	this.assignedToName;
@@ -78,7 +79,6 @@ ogTasksTask.prototype.flatten = function(){
 ogTasksTask.prototype.setFromTdata = function(tdata){
 	this.id = tdata.id;
 	this.title = tdata.t;
-	this.workspaceIds = tdata.wsid;
 	this.createdOn = tdata.c;
 	this.createdBy = tdata.cid;
 		
@@ -106,6 +106,8 @@ ogTasksTask.prototype.setFromTdata = function(tdata){
 	if (tdata.estimatedTime) this.estimatedTime = tdata.estimatedTime ; else this.estimatedTime = '' ;
 	if (tdata.depCount) this.depCount = tdata.depCount; else this.depCount = null;
 	if (tdata.memPath) this.memPath = tdata.memPath; else this.memPath = [];
+	if (tdata.udt) this.useDueTime = tdata.udt;
+	if (tdata.ust) this.useStartTime = tdata.ust;
 }
 
 ogTasksMilestone = function(id, title, dueDate, totalTasks, completedTasks, isInternal, isUrgent){
@@ -414,24 +416,6 @@ ogTasks.groupTasks = function(displayCriteria, tasksContainer){
 			switch(displayCriteria.group_by){
 				case 'milestone': group = (task.milestoneId?(this.getMilestone(task.milestoneId)?task.milestoneId:null):null); break;
 				case 'priority' : group = (task.priority?task.priority:200); break;
-				case 'workspace' : 
-					var ids = task.workspaceIds.split(',');
-					if (ids && ids.length > 0)
-					{
-						for (var j = 0; j < ids.length; j++){
-							if (groups.indexOf(ids[j]) < 0){
-								groups[groups.length] = ids[j];
-								tasks[tasks.length] = [];
-							}	
-							if (!tasks[groups.indexOf(ids[j])])
-								 tasks[groups.indexOf(ids[j])] = [];
-							var tasksArray = tasks[groups.indexOf(ids[j])]; 
-							tasksArray[tasksArray.length]= task;
-						}
-					} else {
-						tasks[0][tasks[0].length] = task;
-					}
-					break;
 				case 'assigned_to' : group = (task.assignedToId?task.assignedToId:null); break;
 				case 'due_date' : group = (task.dueDate?this.getTimeDistance(task.dueDate):null); break;
 				case 'start_date' : group = (task.startDate?this.getTimeDistance(task.startDate):null); break;
@@ -476,13 +460,14 @@ ogTasks.groupTasks = function(displayCriteria, tasksContainer){
 		var bottomToolbar = Ext.getCmp('tasksPanelBottomToolbarObject');
 		var filters = bottomToolbar.getFilters();
 		
-		for(var i = 0; i < this.Milestones.length; i++)
+		for(var i = 0; i < this.Milestones.length; i++) {
 			if (groups.indexOf(this.Milestones[i].id) < 0){
 				if (filters.filter != 'milestone' || filters.fval == this.Milestones[i].id){
 					groups[groups.length] = this.Milestones[i].id;
 					tasks[tasks.length] = [];
 				}
 			}
+		}
 	}
 	var groupData = this.getGroupData(displayCriteria,groups,tasks);
 	return this.orderGroups(displayCriteria, groupData);
@@ -497,57 +482,78 @@ ogTasks.groupTasks = function(displayCriteria, tasksContainer){
 ogTasks.orderGroups = function(displayCriteria,groups){
 	//Take the unclassified tasks to the bottom
 	var unclassifiedGroup = groups[0];
-	for (var i = 1; i < groups.length; i++)
+	for (var i = 1; i < groups.length; i++) {
 		groups[i-1] = groups[i];
+	}
 	groups[groups.length - 1] = unclassifiedGroup;
 	
 	//Order the rest
 	switch(displayCriteria.group_by){
 		case 'created_by' :
 		case 'completed_by' :
-			for (var i = 0; i < groups.length - 2; i++)
-				for (var j = i+1; j < groups.length - 1; j++)
+			for (var i = 0; i < groups.length - 2; i++) {
+				for (var j = i+1; j < groups.length - 1; j++) {
 					if (groups[i].group_name.toUpperCase() > groups[j].group_name.toUpperCase()){
 						var aux = groups[i];
 						groups[i] = groups[j];
 						groups[j] = aux;
 					}
+				}
+			}
 			break;
 		case 'milestone':
-			for (var i = 0; i < groups.length-1; i++)
+			for (var i = 0; i < groups.length-1; i++) {
 				groups[i].duedate = this.getMilestone(groups[i].group_id).dueDate;
-			for (var i = 0; i < groups.length - 2; i++)
-				for (var j = i+1; j < groups.length - 1; j++)
+			}
+			for (var i = 0; i < groups.length - 2; i++) {
+				for (var j = i+1; j < groups.length - 1; j++) {
 					if (groups[i].duedate > groups[j].duedate){
 						var aux = groups[i];
 						groups[i] = groups[j];
 						groups[j] = aux;
 					}
+				}
+			}
 			break;
 		case 'assigned_to' :
 		case 'due_date' :
 		case 'start_date' :
 		case 'status' :
-			for (var i = 0; i < groups.length - 2; i++)
-				for (var j = i+1; j < groups.length - 1; j++)
+			for (var i = 0; i < groups.length - 2; i++) {
+				for (var j = i+1; j < groups.length - 1; j++) {
 					if (groups[i].group_id > groups[j].group_id){
 						var aux = groups[i];
 						groups[i] = groups[j];
 						groups[j] = aux;
 					}
+				}
+			}
 			break;
 		case 'created_on' :
 		case 'completed_on' :
 		case 'priority' :
-			for (var i = 0; i < groups.length - 2; i++)
-				for (var j = i+1; j < groups.length - 1; j++)
+			for (var i = 0; i < groups.length - 2; i++) {
+				for (var j = i+1; j < groups.length - 1; j++) {
 					if (groups[i].group_id < groups[j].group_id){
 						var aux = groups[i];
 						groups[i] = groups[j];
 						groups[j] = aux;
 					}
+				}
+			}
 			break;
 		default:
+			if (displayCriteria.group_by.indexOf('dimension_') == 0) {
+				for (var i = 0; i < groups.length - 2; i++) {
+					for (var j = i+1; j < groups.length - 1; j++) {
+						if (groups[i].group_name.toUpperCase() > groups[j].group_name.toUpperCase()){
+							var aux = groups[i];
+							groups[i] = groups[j];
+							groups[j] = aux;
+						}
+					}
+				}
+			}
 	}
 	return groups;
 }
@@ -559,9 +565,9 @@ ogTasks.orderTasks = function(displayCriteria, tasks){
 			var resolveByName = false;
 			switch(displayCriteria.order_by){
 				case 'priority' : 
-					if (tasks[i].priority < tasks[j].priority)
+					if (tasks[i].priority < tasks[j].priority) {
 						swap = true;
-					else {
+					} else {
 						if (tasks[i].priority == tasks[j].priority){
 							//take into account the due date
 							swap = (tasks[i].dueDate && tasks[j].dueDate && tasks[i].dueDate > tasks[j].dueDate) || (tasks[j].dueDate && !tasks[i].dueDate);
@@ -697,9 +703,10 @@ ogTasks.setAllCheckedValue = function(checked){
 
 ogTasks.getSelectedIds = function(){
 	var result = [];
-	for (var i = 0; i < this.Tasks.length; i++){
-		if (this.Tasks[i].isChecked)
+	for (var i = 0; i < this.Tasks.length; i++) {
+		if (this.Tasks[i].isChecked) {
 			result[result.length] = this.Tasks[i].id;
+		}
 	}
 	return result;
 }
@@ -711,57 +718,29 @@ ogTasks.setAllExpandedValue = function(expanded){
 }
 
 ogTasks.getUserCompanyName = function(assigned_to){
-	// FIXME: alvaro
 	var user = this.getUser(assigned_to);
-	if (user)
+	if (user) {
 		return user.name;
-	else {
+	} else {
 		user = this.getCompany(assigned_to);
-		if (user)
+		if (user) {
 			return user.name;
+		}
 	}
 	return "";
-	
-	
-	var split = assigned_to.split(':');
-	var name = '';
-	if (split[1] > 0){ //Look for user
-		var user = this.getUser(split[1]);
-		if (user)
-			name = user.name;
-	} else { //Look for company
-		if (split[0] > 0){
-			var company = this.getCompany(split[0]);
-			if (company)
-				name = company.name;
-		}
-	}
-	// If user was not found, look in all users array
-	if (name == '') {
-		if (split[1] > 0){ //Look for user
-			var user = this.getUser(split[1], true);
-			if (user)
-				name = user.name;
-		} else { //Look for company
-			if (split[0] > 0){
-				var company = this.getCompany(split[0]);
-				if (company)
-					name = company.name;
-			}
-		}
-	}
-	return name;
 }
 
 ogTasks.getTask = function(id){
-	for (var i = 0; i < this.Tasks.length; i++)
-		if (this.Tasks[i].id == id)
+	for (var i = 0; i < this.Tasks.length; i++) {
+		if (this.Tasks[i].id == id) {
 			return this.Tasks[i];
+		}
+	}
 	return null;
 }
 
 ogTasks.removeTask = function(id){
-	for (var i = 0; i < this.Tasks.length; i++)
+	for (var i = 0; i < this.Tasks.length; i++) {
 		if (this.Tasks[i].id == id){
 			if (this.Tasks[i].milestoneId > 0) {
 				var mstone = ogTasks.getMilestone(this.Tasks[i].milestoneId);
@@ -773,10 +752,11 @@ ogTasks.removeTask = function(id){
 			this.Tasks.splice(i,1);
 			return true;
 		}
+	}
 	return false;
 }
 ogTasks.redrawTask = function(id){
-	for (var i = 0; i < this.Tasks.length; i++)
+	for (var i = 0; i < this.Tasks.length; i++) {
 		if (this.Tasks[i].id == id){
 			if (this.Tasks[i].milestoneId > 0) {
 				var mstone = ogTasks.getMilestone(this.Tasks[i].milestoneId);
@@ -788,53 +768,68 @@ ogTasks.redrawTask = function(id){
 			this.Tasks.splice(i,1);
 			return true;
 		}
+	}
 	return false;
 }
 ogTasks.getMilestone = function(id){
-	for (var i = 0; i < this.Milestones.length; i++)
-		if (this.Milestones[i].id == id)
+	for (var i = 0; i < this.Milestones.length; i++) {
+		if (this.Milestones[i].id == id) {
 			return this.Milestones[i];
+		}
+	}
 	return null;
 }
 
 ogTasks.getUser = function(id, lookInAll){
 	if (lookInAll) {
-		for (var i = 0; i < this.AllUsers.length; i++)
-			if (this.AllUsers[i].id == id)
+		for (var i = 0; i < this.AllUsers.length; i++) {
+			if (this.AllUsers[i].id == id) {
 				return this.AllUsers[i];
+			}
+		}
 	} else {
-		for (var i = 0; i < this.Users.length; i++)
-			if (this.Users[i].id == id)
+		for (var i = 0; i < this.Users.length; i++) {
+			if (this.Users[i].id == id) {
 				return this.Users[i];
+			}
+		}
 	}
 	return null;
 }
 
 ogTasks.getCompany = function(id){
-	for (var i = 0; i < this.Companies.length; i++)
-		if (this.Companies[i].id == id)
+	for (var i = 0; i < this.Companies.length; i++) {
+		if (this.Companies[i].id == id) {
 			return this.Companies[i];
+		}
+	}
 	return null;
 }
 
 ogTasks.getGroup = function(id){
-	for (var i = 0; i < this.Groups.length; i++)
-		if (this.Groups[i].group_id == id)
+	for (var i = 0; i < this.Groups.length; i++) {
+		if (this.Groups[i].group_id == id) {
 			return this.Groups[i];
+		}
+	}
 	return null;
 }
 
 ogTasks.getObjectSubtype = function(id){
-	for (var i = 0; i < this.ObjectSubtypes.length; i++)
-		if (this.ObjectSubtypes[i].id == id)
+	for (var i = 0; i < this.ObjectSubtypes.length; i++) {
+		if (this.ObjectSubtypes[i].id == id) {
 			return this.ObjectSubtypes[i];
+		}
+	}
 	return null;
 }
 
 ogTasks.getDependencyCount = function(id){
-	for (var i = 0; i < this.DependencyCount.length; i++)
-		if (this.DependencyCount[i].id == id)
+	for (var i = 0; i < this.DependencyCount.length; i++) {
+		if (this.DependencyCount[i].id == id) {
 			return this.DependencyCount[i];
+		}
+	}
 	return null;
 }
 
@@ -938,8 +933,7 @@ ogTasks.mouseMovement = function(task_id, group_id, mouse_is_over){
 		
 		ogTaskEvents.showGroupHeader = group_id == ogTaskEvents.lastGroupId;
 	} else {
-		if (!task_id)
-		{
+		if (!task_id) {
 			ogTaskEvents.mouseOutTimeout = setTimeout('ogTasks.groupMouseOut("' + group_id + '")',20);
 		} else {
 			ogTaskEvents.mouseOutTimeout = setTimeout('ogTasks.taskMouseOut(' + task_id + ',"' + group_id + '")',20);
@@ -996,15 +990,18 @@ ogTasks.taskMouseOut = function(task_id, group_id){
 
 ogTasks.flattenTasks = function(tasks){
 	var result = [];
-	for (var i = 0; i < tasks.length; i++)
+	for (var i = 0; i < tasks.length; i++) {
 		result = result.concat(tasks[i].flatten());
+	}
 	return result;
 }
 
 ogTasks.existsSoloGroup = function(){
-	for (var i = 0; i < this.Groups.length; i++)
-		if (this.Groups[i].solo)
+	for (var i = 0; i < this.Groups.length; i++) {
+		if (this.Groups[i].solo) {
 			return true;
+		}
+	}
 	return false;
 }
 

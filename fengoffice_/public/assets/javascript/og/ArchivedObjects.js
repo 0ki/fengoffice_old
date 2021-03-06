@@ -19,7 +19,7 @@ og.ArchivedObjects = function() {
 				totalProperty: 'totalCount',
 				id: 'id',
 				fields: [
-					'name', 'object_id', 'type',
+					'name', 'object_id', 'type', 'ot_id',
 					'createdBy', 'createdById', 'dateCreated',
 					'updatedBy', 'updatedById',	'dateUpdated',
 					'archivedBy', 'archivedById', 'dateArchived',

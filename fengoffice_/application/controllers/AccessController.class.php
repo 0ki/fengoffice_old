@@ -663,6 +663,7 @@ class AccessController extends ApplicationController {
 	function reset_password() {
 		$tok = array_var($_GET,'t');
 		$uid = array_var($_GET,'uid');
+                $type_notifier = array_var($_GET,'type_notifier');
 		
 		if (!$tok || !$uid) {
 			flash_error(lang('invalid parameters'));
@@ -696,6 +697,8 @@ class AccessController extends ApplicationController {
 		}
 		tpl_assign('token', $token);
 		tpl_assign('user', $user);
+                tpl_assign('type_notifier', $type_notifier);
+                
 		$new_password = array_var($_POST, 'new_password');
 		if ($new_password) {
 			$repeat_password = array_var($_POST, 'repeat_password');

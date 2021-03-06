@@ -37,6 +37,7 @@ ogTasks.createPrintWindow = function(){
 	var disp_setting = "toolbar=yes,location=no,directories=yes,menubar=yes,scrollbars=yes,width=800, height=600, left=100, top=25";
 	var printWindow = window.open("","",disp_setting);
 	printWindow.document.open(); 
+	printWindow.document.write('<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml">');
 	printWindow.document.write('<html><head><title>' + lang('print') + '</title>'); 
 	printWindow.document.write('<LINK href="' + og.hostName + '/public/assets/themes/default/stylesheets/og/printTasks.css" rel="stylesheet" type="text/css">'); 
 	

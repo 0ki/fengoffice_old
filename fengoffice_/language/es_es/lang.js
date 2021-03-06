@@ -477,6 +477,7 @@ addLangs({
 	'none': 'Ninguno',
 	'new task time report': 'Nuevo reporte de horas de tarea',
 	'print': 'Imprimir',
+        'print calendar': 'Imprimir calendario',
 	'confirm delete timeslot': 'Está seguro que desea eliminar el tiempo de trabajo?',
 	'no items selected': 'No hay objetos seleccionados',
 	'error adding timeslot': 'Un error ocurrió al ingresar un tiempo de trabajo',

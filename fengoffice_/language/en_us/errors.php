@@ -13,7 +13,7 @@
     // General
     'invalid email address' => 'Email address format is not valid',
 	'error invalid recipients' => 'Invalid email addresses found in field "{0}": {1}',
-	'no context permissions to add' => 'You don\'t have permissions to add {0} in the selected context',
+	'no context permissions to add' => 'You don\'t have permissions to add {0} in {1}',
 
     // Company validation errors
     'company name required' => 'Company / organization name is required',

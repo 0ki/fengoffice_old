@@ -3,7 +3,7 @@
   /**
   * ContactConfigOption class
   *
-  * @author Diego Castiglioni <diego20@gmail.com>
+  * @author Diego Castiglioni <diego.castiglioni@fengoffice.com>
   */
   class ContactConfigOption extends BaseContactConfigOption {
     

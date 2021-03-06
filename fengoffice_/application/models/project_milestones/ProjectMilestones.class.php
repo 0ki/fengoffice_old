@@ -127,6 +127,26 @@ class ProjectMilestones extends BaseProjectMilestones {
 			ProjectTasks::copySubTasks($sub, $new, $as_template);
 		}
 	}
+	
+	
+	
+	function getRangeMilestones(DateTimeValue $date_start, DateTimeValue $date_end, $archived = false) {
+		
+		$from_date = new DateTimeValue ( $date_start->getTimestamp () );
+		$from_date = $from_date->beginningOfDay ();
+		$to_date = new DateTimeValue ( $date_end->getTimestamp () );
+		$to_date = $to_date->endOfDay ();
+		
+		$archived_cond = " AND `archived_on` ".($archived ? "<>" : "=")." 0";
+		
+		$conditions = DB::prepareString(' AND `is_template` = false AND `completed_on` = ? AND (`due_date` >= ? AND `due_date` < ?) ' . $archived_cond, array(EMPTY_DATETIME, $from_date, $to_date));
+
+		$result = self::instance()->listing(array(
+			"extra_conditions" => $conditions
+		));
+		
+		return $result->objects;
+	}
 
 } // ProjectMilestones
 

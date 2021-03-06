@@ -132,12 +132,15 @@
 			}
 			var container = document.getElementById(genid + 'dimension_object_fields');
 			var js = '';
-			var html = '<fieldset><legend>';
-			html += '<span class="og-task-expander toggle_expanded" style="padding-left:20px;" title="'+ lang('expand-collapse') +'" id="'+genid+'expander-memberfields" onclick="og.editMembers.expandCollapseDim(\''+genid+'dimension-memberfields\', false);">';
-			html += lang('member fields', obj_type_name) + '</span></legend>';
-			html += '<div id="'+genid+'dimension-memberfields">';
+			var html = '';
+			//html += '<fieldset>';
+			//html += '<legend>';
+			//html += '<span class="og-task-expander toggle_expanded" style="padding-left:20px;" title="'+ lang('expand-collapse') +'" id="'+genid+'expander-memberfields" onclick="og.editMembers.expandCollapseDim(\''+genid+'dimension-memberfields\', false);">';
+			//html += lang('member fields', obj_type_name) + '</span></legend>';
+			html += '<div id="'+genid+'dimension-memberfields" class="dimension-memberfields" >';
 			for (var i=0; i<fields.length; i++) {
 				var f = fields[i];
+				html += '<div class="member-field type-'+f.type.toLowerCase()+'">';
 				html += '<label for="'+ genid + 'dim_obj_' + f.col +'">'+ (f.col_lang ? f.col_lang : lang(f.col));
 				if (f.mandatory) html += '&nbsp;<span class="label_required">*</span>';
 				html += '</label>';
@@ -177,8 +180,10 @@
 						break;
 					default: break;
 				}
+				html += '</div>'
 			}
-			html += '</div></fieldset>';
+			html += '</div>' ;
+			//html += '</fieldset>';
 			
 			container.innerHTML = html;
 			eval(js);

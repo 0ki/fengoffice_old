@@ -16,16 +16,25 @@ class  CustomProperties extends  BaseCustomProperties {
 		return self::findAll(array(
 			'conditions' => array("`object_type` = ? AND `is_required` = ? AND `visible_by_default` = ?", $object_type, false, false),
 			'order' => 'property_order asc'
-		)); // findAll
+		));
 	}
 	
 	/**
 	 * Count custom properties that are not visilbe by default.
 	 * @param $object_type
-	 * @return unknown_type
+	 * @return integer
 	 */
 	static function countHiddenCustomPropertiesByObjectType($object_type_id) {
 		return self::count(array("`object_type_id` = ? AND `is_required` = ? AND `visible_by_default` = ?", $object_type_id, false, false));
+	}
+	
+	/**
+	 * Count custom properties that are visilbe by default.
+	 * @param $object_type
+	 * @return integer
+	 */
+	static function countVisibleCustomPropertiesByObjectType($object_type_id) {
+		return self::count(array("`object_type_id` = ? AND (`is_required` = ? OR `visible_by_default` = ?)", $object_type_id, true, true));
 	}
 
 	/**
@@ -36,17 +45,16 @@ class  CustomProperties extends  BaseCustomProperties {
 	 * 
 	 */
 	static function getAllCustomPropertiesByObjectType($object_type, $co_type = null) {
-		return array() ; //FIXME Pepe - adaptar al nuevo esquema
-		
 		if ($co_type) {
-			$cond = "`object_type` = '$object_type' AND `id` IN (".CustomPropertiesByCoType::instance()->getCustomPropertyIdsByCoTypeCSV($co_type).")";
+			$cond = array("`object_type_id` = ? AND `id` IN (?)", $object_type, CustomPropertiesByCoType::instance()->getCustomPropertyIdsByCoTypeCSV($co_type));
 		} else {
-			$cond = array("`object_type` = ?", $object_type);
+			$cond = array("`object_type_id` = ?", $object_type);
 		}
+		
 		return self::findAll(array(
 			'conditions' => $cond,
 			'order' => 'property_order asc'
-		)); // findAll
+		));
 	} //  getAllCustomPropertiesByObjectType
 	
 	
@@ -57,16 +65,11 @@ class  CustomProperties extends  BaseCustomProperties {
 	 * @return array
 	 */
 	static function getCustomPropertyIdsByObjectType($object_type) {
-		return array() ; //FIXME Pepe - adaptar al nuevo esquema
-		
-		
-		$rows = DB::executeAll("SELECT `id` FROM " . self::instance()->getTableName(true) . " WHERE `object_type` = '" . $object_type ."'");
-		$result = array();
-		if (is_array($rows) && (count($rows) > 0)){
-			foreach($rows as $row)
-				$result[] = $row['id'];
-		}
-		return $result;
+		return self::findAll(array(
+			'id' => true,
+			'conditions' => array("`object_type_id` = ?", $object_type),
+			'order' => 'property_order asc'
+		));
 	} //  getAllCustomPropertiesByObjectType
 	
 
@@ -78,9 +81,8 @@ class  CustomProperties extends  BaseCustomProperties {
 	 */
 	static function getCustomPropertyByName($object_type, $custom_property_name) {
 		return self::findOne(array(
-        'conditions' => array("`object_type` = ? and `name` = ? ",
-			$object_type, $property_name)
-		)); // findAll
+			'conditions' => array("`object_type_id` = ? and `name` = ? ", $object_type, $property_name)
+		));
 	} //  getCustomPropertyByName
 
 	/**
@@ -90,18 +92,16 @@ class  CustomProperties extends  BaseCustomProperties {
 	 * @return CustomProperty
 	 */
 	static function getCustomProperty($prop_id) {
-		return self::findOne(array(
-        'conditions' => array("`id` = ? ", $prop_id)
-		)); // findOne
+		return self::findOne(array( 'conditions' => array("`id` = ? ", $prop_id) ));
 	} //  getCustomProperty
 
 	
 	static function deleteAllByObjectType($object_type){
-		return self::delete("`object_type` = ?", $object_type);
+		return self::delete("`object_type_id` = " . DB::escape($object_type));
 	}
 
 	static function deleteByObjectTypeAndName($object_type, $name) {
-		return self::delete("`object_type` = ?", $object_type."' AND `name` = " . DB::escape($name));
+		return self::delete("`object_type_id` = " . DB::escape($object_type) . "' AND `name` = " . DB::escape($name));
 	}
 
 } // CustomProperties

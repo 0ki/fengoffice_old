@@ -1,15 +1,7 @@
-<?php
 
-  set_page_title($comment->isNew() ? lang('add comment'): '');
-  project_tabbed_navigation(PROJECT_TAB_OVERVIEW);
-  project_crumbs(array(
-    $comment->isNew() ? lang('add comment') : ''
-  )); // project_crumbs
-
-?>
-<div class="adminConfiguration" style="height:100%;background-color:white">
+<div class="adminConfiguration" style="height:100%;background-color:white;">
   <div class="adminHeader">
-  	<div class="adminTitle"><?php echo $comment->isNew() ? lang('add comment') : '' ?></div>
+  	<div class="adminTitle"><?php echo $comment->isNew() ? lang('add comment') : lang('edit comment') ?></div>
   </div>
   <div class="adminSeparator"></div>
   <div class="adminMainBlock">
@@ -19,17 +11,17 @@
 	  } else {
 	  	$form_action = $comment->getEditUrl();
 	  } ?>
-<form class="internalForm" action="<?php echo $form_action ?>" method="post">
+	<form class="internalForm" action="<?php echo $form_action ?>" method="post">
 
-<?php tpl_display(get_template_path('form_errors')) ?>
+		<?php tpl_display(get_template_path('form_errors')) ?>
 
-  <div class="formAddCommentText">
-    <?php echo label_tag(lang('text'), 'addCommentText', true) ?>
-    <?php echo textarea_field("comment[text]", array_var($comment_data, 'text'), array('class' => 'huge', 'id' => 'addCommentText')) ?>
+ 		<div class="formAddCommentText">
+			<?php echo label_tag(lang('text'), 'addCommentText', true) ?>
+			<?php echo textarea_field("comment[text]", array_var($comment_data, 'text'), array('class' => 'huge', 'id' => 'addCommentText')) ?>
+		</div>
+
+    	<?php echo submit_button($comment->isNew() ? lang('add comment') : lang('edit comment')) ?>
+	</form>
+
   </div>
-
-    <?php echo submit_button($comment->isNew() ? lang('add comment') : '') ?>
-</form>
-
-	</div>
 </div>

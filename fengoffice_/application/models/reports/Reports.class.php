@@ -197,7 +197,16 @@ class Reports extends BaseReports {
 				}
 			}
 		
-			$result = ContentDataObjects::getContentObjects(active_context(), $ot, $order_by_col, ($order_by_asc ? "ASC" : "DESC"), $allConditions);
+			if ($managerInstance) {
+				$result = $managerInstance->listing(array(
+					"order" => $order_by_col,
+					"order_dir" => ($order_by_asc ? "ASC" : "DESC"),
+					"extra_conditions" => $allConditions			
+				));
+			}else{
+				// TODO Performance Killer
+				$result = ContentDataObjects::getContentObjects(active_context(), $ot, $order_by_col, ($order_by_asc ? "ASC" : "DESC"), $allConditions);
+			}
 			$objects = $result->objects;
 			$totalResults = $result->total;
 
@@ -330,7 +339,7 @@ class Reports extends BaseReports {
 		for($i = 1; $i < $totalPages + 1; $i++){
 			$off = $limit * ($i - 1);
 			if(($i != $page + 1) && abs($i - 1 - $page) <= 2 ) $nav .= '<a class="internalLink" href="'.get_url('reporting', 'view_custom_report', array('id' => $report_id, 'offset' => $off, 'limit' => $limit)).$parameters.'">'.$i.'</a>&nbsp;&nbsp;';
-			else if($i == $page + 1) $nav .= '<b>'.$i.'</b>&nbsp;&nbsp;';
+			else if($i == $page + 1) $nav .= '<span class="bold">'.$i.'</span>&nbsp;&nbsp;';
 		}
 		if($page < $totalPages - 1){
 			$off = $offset + $limit;

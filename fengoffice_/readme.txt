@@ -1,5 +1,5 @@
 
-    About Feng Office 2.0.0 - Beta 2
+    About Feng Office 2.0.0 - Beta 4
     ================================
  
     Feng Office is a Collaboration Platform and Project Management System.
@@ -86,7 +86,43 @@
  
     Changelog
     =========
- 
+ 	
+ 	Since 2.0 Beta 3
+ 	----------------
+ 	
+ 	bugfix: Several changes in the permissions system
+ 	bugfix: Invalid sql queries fixed
+ 	bugfix: Issues with archived and trashed objects solved
+ 	bugfix: Issues with sharing table solved
+ 	bugfix: Improved IE7 and IE9 compatibility
+ 	bugfix: Several timeslots issues solved
+ 	bugfix: IMAP issue solved at Emails module
+ 	bugfix: Solved issue with templates
+ 	bugfix: Added missing tooltips at calendar 
+ 	bugfix: Issue when completing repetitive task solved
+ 	bugfix: Solved some issues with the Search engine
+ 	bugfix: Solved issue with timezone autodetection
+ 	buffix: Solved 'dimension dnx' error creating a workspace
+ 	usability: Permission control in member forms
+ 	usability: Disabling a user feature
+ 	usability: Resfresh overview panel after quick add
+ 	usability: Langs update/improvement
+ 	usability: Drag & Drop feature added 	
+ 	usability: Quick add task added, and improved
+ 	usability: Slight improvement with notifications
+ 	usability: Avoid double click at Search button (which caused performance issues)
+ 	usability: Permissions by group feature added
+ 	usability: Simple billing feature added
+ 	system: Security Fixes
+ 	system: Mail compatibility improved for different email clients 	 
+ 	system: Feng 2 API updated
+ 	system: General code cleanup
+ 	system: Widget Engine
+ 	system: Performance improvements in custom reports
+ 	system: Print calendar
+ 	system: Custom Properties
+
+
     Since 2.0 Beta 2
     ----------------
     bugfix: Fixed problem uncompressing files

@@ -264,13 +264,15 @@ class ReportingController extends ApplicationController {
 	function total_task_times_p(){
 		if (array_var($_GET, 'ws') !== null) {
 			$report_data = array_var($_SESSION, 'total_task_times_report_data', array());
+			if (array_var($_GET, 'type')) {
+				$report_data['timeslot_type'] = array_var($_GET, 'type');
+			}
 			$_SESSION['total_task_times_report_data'] = $report_data;
-			$this->redirectTo('reporting', 'total_task_times_p', array('type' => array_var($_GET, 'type', '')));
+			$this->redirectTo('reporting', 'total_task_times_p');
 		}
 
 		$users = Contacts::getAllUsers();
 
-		tpl_assign('type', array_var($_GET, 'type'));
 		tpl_assign('users', $users);
 		tpl_assign('has_billing', BillingCategories::count() > 0);
 	}

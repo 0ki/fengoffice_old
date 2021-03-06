@@ -76,9 +76,6 @@
 	}
 	
 	?>
-	<?php if (config_option("show_feed_links")) { ?>
-		<link rel="alternate" type="application/rss+xml" title="<?php echo clean(owner_company()->getName()) ?> RSS Feed" href="<?php echo logged_user()->getRecentActivitiesFeedUrl() ?>" />
-	<?php } ?>
 	<style>
 		#loading {
 		    font-size: 20px;
@@ -96,7 +93,7 @@
 <iframe name="_download" style="display:none"></iframe>
 
 <div id="loading">
-	<img src="<?php echo get_image_url("layout/loading.gif") ?>" width="32" height="32" style="margin-right:8px;" align="absmiddle"/><?php echo lang("loading") ?>...
+	<img src="<?php echo get_image_url("layout/loading.gif") ?>" width="32" height="32" style="margin-right:8px;vertical-align: middle;"/><?php echo lang("loading") ?>...
 </div>
 
 <div id="subWsExpander" onmouseover="clearTimeout(og.eventTimeouts['swst']);" onmouseout="og.eventTimeouts['swst'] = setTimeout('og.HideSubWsTooltip()', 2000);" style="display:none;top:10px;"></div>
@@ -124,7 +121,7 @@
 			<div id="searchbox">
 				<form name='search_form' class="internalForm" action="<?php echo ROOT_URL . '/index.php' ?>" method="get">
 					<table><tr><td>
-					<input name="search_for" placeholder="<?php echo lang('search') . "..."?>">
+					<input name="search_for" placeholder="<?php echo lang('search') . "..."?>" />
 					
 					</td>
 					<td id="searchboxSearch">
@@ -188,26 +185,27 @@
             */
             function createBrandColorsSheet ()
             {
-                var back = brand_colors[1];
-                var front = brand_colors[2];
-                var fontFace = brand_colors[3];
-                var fontTitle = brand_colors[4];               
-                var cssRules = '.x-accordion-hd, ul.x-tab-strip li {background: #' + front + '}';
-                cssRules += 'ul.x-tab-strip li {border-color: #' + front + '}';
-                cssRules += '#header, #userboxWrapper h2 a {background-color: #' + back + '}';
-                cssRules += '.x-accordion-hd, .x-tab-strip span.x-tab-strip-text {color: #' + fontFace + '}';
-                cssRules += 'ul.x-tab-strip li.x-tab-strip-active {background-color: #' + fontFace + ' !important}';
-                cssRules += 'ul.x-tab-strip li.x-tab-strip-active span.x-tab-strip-text {color: #' + front + ' !important}';
-                cssRules += '#logodiv h1, #userboxWrapper h2 a, div.og-loading {color: #' + fontTitle + '}';
+                var header_back = brand_colors[1];
+                var tabs_back = brand_colors[2];
+                var tabs_font = brand_colors[3];
+                var header_font = brand_colors[4];
+
+                var cssRules = '.x-accordion-hd, ul.x-tab-strip li {background-color: #' + tabs_back + '}';
+                cssRules += 'ul.x-tab-strip li {border-color: #' + tabs_back + '}';
+                cssRules += '#header, #userboxWrapper h2 a {background-color: #' + header_back + '}';
+                cssRules += '.x-accordion-hd, .x-tab-strip span.x-tab-strip-text {color: #' + tabs_font + '}';
+                cssRules += 'ul.x-tab-strip li.x-tab-strip-active {background-color: #' + tabs_font + ' !important}';
+                cssRules += 'ul.x-tab-strip li.x-tab-strip-active span.x-tab-strip-text {color: #' + tabs_back + ' !important}';
+                cssRules += '#logodiv h1, #userboxWrapper h2 a, div.og-loading {color: #' + header_font + '}';
 
                 var styleElement = document.createElement("style");
                 styleElement.type = "text/css";
-                if (styleElement.styleSheet) 
+                if (styleElement.styleSheet) {
                     styleElement.styleSheet.cssText = cssRules;
-                else 
+                } else {
                     styleElement.appendChild(document.createTextNode(cssRules));
-                
-                document.getElementsByTagName("head")[0].appendChild(styleElement);     
+                }
+                document.getElementsByTagName("head")[0].appendChild(styleElement);
             }
             
             /**
@@ -277,12 +275,15 @@ og.queryString = '<?php echo $_SERVER['QUERY_STRING'] ?>';
 og.initialURL = '<?php echo ROOT_URL ."/?".$_SERVER['QUERY_STRING'] ?>';
 <?php if (user_config_option("rememberGUIState")) { ?>
 og.initialGUIState = <?php echo json_encode(GUIController::getState()) ?>;
-<?php } ?>
-<?php if (user_config_option("autodetect_time_zone", null)) {
-$now = DateTimeValueLib::now(); ?>
-og.usertimezone = og.calculate_time_zone(new Date(<?php echo $now->getYear() ?>,<?php echo $now->getMonth() - 1 ?>,<?php echo $now->getDay() ?>,<?php echo $now->getHour() ?>,<?php echo $now->getMinute() ?>,<?php echo $now->getSecond() ?>));
-og.initialURL += '&utz=' + og.usertimezone;
-<?php } ?>
+<?php }
+ 
+if (user_config_option("autodetect_time_zone", null)) {
+	$now = DateTimeValueLib::now();
+?>
+	og.usertimezone = og.calculate_time_zone(new Date(<?php echo $now->getYear() ?>,<?php echo $now->getMonth() - 1 ?>,<?php echo $now->getDay() ?>,<?php echo $now->getHour() ?>,<?php echo $now->getMinute() ?>,<?php echo $now->getSecond() ?>));
+	og.openLink(og.getUrl('account', 'set_timezone', {'tz': og.usertimezone}), {'hideLoading': true});
+<?php 
+} ?>
 og.CurrentPagingToolbar = <?php echo defined('INFINITE_PAGING') && INFINITE_PAGING ? 'og.InfinitePagingToolbar' : 'og.PagingToolbar' ?>;
 og.loggedUser = {
 	id: <?php echo logged_user()->getId() ?>,
@@ -302,9 +303,9 @@ og.hasNewVersions = <?php
 ?>;
 og.config = {
 	'files_per_page': <?php echo json_encode(config_option('files_per_page', 10)) ?>,
-	'time_format_use_24': <?php echo json_encode(config_option('time_format_use_24', 0)) ?>,
 	'days_on_trash': <?php echo json_encode(config_option("days_on_trash", 0)) ?>,
 	'checkout_notification_dialog': <?php echo json_encode(config_option('checkout_notification_dialog', 0)) ?>,
+	'use_time_in_task_dates': <?php echo json_encode(config_option('use_time_in_task_dates')) ?>,
 	'enable_notes_module': <?php echo json_encode(module_enabled("messages")) ?>,
 	'enable_email_module': <?php echo json_encode(module_enabled("mails", defined('SHOW_MAILS_TAB') && SHOW_MAILS_TAB)) ?>,
 	'enable_contacts_module': <?php echo json_encode(module_enabled("contacts")) ?>,
@@ -317,10 +318,12 @@ og.config = {
 };
 og.preferences = {
 	'rememberGUIState': <?php echo user_config_option('rememberGUIState') ? '1' : '0' ?>,
+	'time_format_use_24': <?php echo json_encode(user_config_option('time_format_use_24')) ?>,
 	'show_unread_on_title': <?php echo user_config_option('show_unread_on_title') ? '1' : '0' ?>,
 	'email_polling': <?php echo json_encode(user_config_option('email_polling')) ?> ,
 	'email_check_acc_errors': <?php echo json_encode(user_config_option('mail_account_err_check_interval')) ?> ,
 	'date_format': <?php echo json_encode(user_config_option('date_format')) ?>,
+	'date_format_tip': <?php echo json_encode(date_format_tip(user_config_option('date_format'))) ?>,
 	'start_monday': <?php echo user_config_option('start_monday') ? '1' : '0' ?>,
 	'draft_autosave_timeout': <?php echo json_encode(user_config_option('draft_autosave_timeout')) ?>,
 	'drag_drop_prompt': <?php echo json_encode(user_config_option('drag_drop_prompt')) ?>,
@@ -333,7 +336,23 @@ og.systemSound = new Sound();
 
 var quickAdd = new og.QuickAdd({renderTo:'quickAdd'});
 //og.quickAdd = quickAdd ;
+
+og.searching = false ; 
 var searchbutton = new Ext.Button({renderTo:'searchboxButton', text: lang('search'), type:'submit', handler:function(){document.getElementById('searchButtonReal').click()} });
+searchbutton.on('click', function(){
+	og.searching = true ; 
+	this.disable();
+	setTimeout( 'if (og.searching) searchbutton.enable()',10000); // If not response enable it again
+});
+
+og.eventManager.addListener('ajax response', function(options){
+	if (og.searching) {
+		if (options && options.url && options.url.indexOf("c=search&a=search") != -1) {
+			og.searching = false ;
+			searchbutton.enable();
+		}
+	}
+});
 
 <?php if (!defined('DISABLE_JS_POLLING') || !DISABLE_JS_POLLING) { ?>
 setInterval(function() {
@@ -363,7 +382,7 @@ setInterval(function() {
 <?php } ?>
 og.lastSelectedRow = {messages:0, mails:0, contacts:0, documents:0, weblinks:0, overview:0, linkedobjs:0, archived:0};
 
-
+og.menuPanelCollapsed = false;
 
 og.dimensionPanels = [
 	<?php
@@ -403,7 +422,7 @@ og.dimensionPanels = [
 
 
 if (! og.dimensionPanels.length ){
-	alert("In order to continue, you need to create dimensions (directly from database).\nSorry about this,\n\n--- The Feng 2.0 Team ---");
+	alert("In order to continue, you need to create dimensions (directly from database).");
 }
 og.contextManager.construct();
 og.objPickerTypeFilters = [];
@@ -413,11 +432,9 @@ og.objPickerTypeFilters = [];
 		AND (plugin_id IS NULL OR plugin_id IN (SELECT distinct(id) FROM ".TABLE_PREFIX."plugins WHERE is_installed = 1 AND is_activated = 1 ))
 		AND `name` <> 'file revision' AND `id` NOT IN (
 			SELECT `object_type_id` FROM ".TabPanels::instance()->getTableName(true)." WHERE `enabled` = 0
-		) AND `id` IN (
-			SELECT `tp`.`object_type_id` FROM ".TabPanels::instance()->getTableName(true)." `tp` WHERE EXISTS (
-				SELECT `tpp`.`tab_panel_id` FROM ".TabPanelPermissions::instance()->getTableName(true)." `tpp` WHERE `tpp`.`permission_group_id` = $pg_id AND `tp`.`id` = `tpp`.`tab_panel_id`
-			)
-		) OR `type` = 'comment' OR `name` = 'milestone'"));
+		)  OR `type` = 'comment' OR `name` = 'milestone'"));
+	
+
 	
 	foreach ($obj_picker_type_filters as $type) {
 		if (! $type instanceof  ObjectType ) continue ;
@@ -453,6 +470,20 @@ og.objPickerTypeFilters = [];
 		echo $js_code;
 	} 
 ?>
+
+og.dimension_object_type_contents = [];
+<?php 
+	$dotcs = DimensionObjectTypeContents::findAll();
+	foreach ($dotcs as $dotc) { /* @var $dotc DimensionObjectTypeContent */?>
+		var dim = <?php echo $dotc->getDimensionId() ?>;
+		var dot = <?php echo $dotc->getDimensionObjectTypeId() ?>;
+		var cot = <?php echo $dotc->getContentObjectTypeId() ?>;
+		if (!og.dimension_object_type_contents[dim]) og.dimension_object_type_contents[dim] = [];
+		if (!og.dimension_object_type_contents[dim][dot]) og.dimension_object_type_contents[dim][dot] = [];
+		og.dimension_object_type_contents[dim][dot][cot] = {required:<?php echo $dotc->getIsRequired()?"1":"0"?>, multiple:<?php echo $dotc->getIsMultiple()?"1":"0"?>};
+<?php
+	} 
+?>
 </script>
 <?php include_once(Env::getLayoutPath("listeners"));?>
 
@@ -462,3 +493,6 @@ og.objPickerTypeFilters = [];
 	</div>
 </body>
 </html>
+
+<?php Hook::fire('page_rendered', null, $ret); ?>
+

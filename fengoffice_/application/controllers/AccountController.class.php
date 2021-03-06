@@ -116,17 +116,17 @@ class AccountController extends ApplicationController {
 
 				$user->setUserType(array_var($user_data,'type'));
 				$user->setTimezone(array_var($user_data,'timezone'));
+				$user->setDefaultBillingId(array_var($user_data,'default_billing_id'));
 				$user->setUpdatedOn(DateTimeValueLib::now());
 				
 				if (logged_user()->isAdministrator()){
-					if ($user->getId() != 2) { // System admin cannot change it's company (from Feng 2.0 onwards administrador has id = 2)
-						$user->setCompanyId(array_var($user_data,'company_id'));
-					}
-					/* TODO: check this function for Contacts before disabling this comment
-					$user->setDefaultBillingId(array_var($user_data,'default_billing_id'));*/
+					//if ($user->getId() != 2) { // System admin cannot change it's company (from Feng 2.0 onwards administrador has id = 2)
+					//	$user->setCompanyId(array_var($user_data,'company_id'));
+					//}
 					
 					$user->setUsername(array_var($user_data,'username'));
-					
+				} else {
+					$user->setCompanyId(array_var($user_data,'company_id'));
 				}
 				if(!isset($_POST['sys_perm'])){
 					$rol_permissions=SystemPermissions::getRolePermissions(array_var($user_data, 'type'));
@@ -159,10 +159,6 @@ class AccountController extends ApplicationController {
 				$object_controller = new ObjectController();
 			  	$object_controller->add_custom_properties($user);
 			  
-				if ($user->getId() != 2) { //System admin cannot change its own admin status
-					
-				}
-				
 				$ret = null;
 				Hook::fire('after_edit_profile', $user, $ret);
 				$pg_id = $user->getPermissionGroupId();
@@ -489,7 +485,36 @@ class AccountController extends ApplicationController {
 		
 	}
 	
-	
+	function disable() {
+		$user = Contacts::findById(get_id());
+		if (!($user instanceof Contact && $user->isUser())) {
+			flash_error(lang('user dnx'));
+			ajx_current("empty");
+			return;
+		}
+		
+		if (!$user->canDelete(logged_user())) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
+		
+		try {
+			DB::beginWork();
+			$user->disable(false);
+			ApplicationLogs::createLog($user, ApplicationLogs::ACTION_TRASH);
+			$ret = null ; 
+			Hook::fire("user_disabled", $user, $ret );
+			DB::commit();
+			flash_success('success disable user');
+			ajx_current("empty");
+			
+		} catch (Exception $e) {
+			flash_error($e->getMessage());
+			DB::rollback();
+			ajx_current("empty");
+		}
+	}
 	
 	
 	function delete_user() {
@@ -514,7 +539,12 @@ class AccountController extends ApplicationController {
 			Hook::fire("user_disabled", $user, $ret );
 			DB::commit();
 			flash_success('success delete user');
-			ajx_current("reload");
+			
+			if(array_var($_GET,'current')=="administration") {
+				ajx_current("reload");
+			}else{
+				ajx_current("empty");
+			}
 			
 		} catch (Exception $e) {
 			flash_error($e->getMessage());
@@ -553,6 +583,16 @@ class AccountController extends ApplicationController {
 			DB::rollback();
 			ajx_current("empty");
 		}
+	}
+	
+	
+	function set_timezone() {
+		$tz = array_var($_REQUEST, 'tz');
+		if ($tz != logged_user()->getTimezone()) {
+			logged_user()->setTimezone($tz);
+			logged_user()->save();
+		}
+		ajx_current("empty");
 	}
 
 } // AccountController

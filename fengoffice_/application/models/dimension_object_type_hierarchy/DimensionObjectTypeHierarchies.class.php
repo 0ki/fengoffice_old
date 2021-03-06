@@ -3,7 +3,7 @@
   /**
   * DimensionObjectTypeHierarchies
   *
-  * @author Diego Castiglioni <diego20@gmail.com>
+  * @author Diego Castiglioni <diego.castiglioni@fengoffice.com>
   */
   class DimensionObjectTypeHierarchies extends BaseDimensionObjectTypeHierarchies {
     

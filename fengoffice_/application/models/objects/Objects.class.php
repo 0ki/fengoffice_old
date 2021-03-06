@@ -3,7 +3,7 @@
   /**
   * Objects
   *
-  * @author Diego Castiglioni <diego20@gmail.com>
+  * @author Diego Castiglioni <diego.castiglioni@fengoffice.com>
   */
   class Objects extends BaseObjects {
 
@@ -15,6 +15,9 @@
     	$handler_class = $object_type->getHandlerClass();
     	
     	eval('$concrete_object = '.$handler_class.'::findById('.$object_id.');');
+    	
+    	$object_type = null;
+    	$object = null;
     	
     	return $concrete_object;
     }

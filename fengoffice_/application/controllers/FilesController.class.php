@@ -26,7 +26,10 @@ class FilesController extends ApplicationController {
 	} // __construct
 
 	function init() {
-		require_javascript("og/FileManager.js");
+		$js_manager_info = array('js_file' => "og/FileManager.js");
+		Hook::fire('change_js_manager', $this, $js_manager_info);
+		require_javascript(array_var($js_manager_info, 'js_file'), array_var($js_manager_info, 'plugin'));
+		
 		ajx_current("panel", "files", null, null, true);
 		ajx_replace(true);
 	}
@@ -357,9 +360,6 @@ class FilesController extends ApplicationController {
 					$file->setFilename(array_var($file_data, 'name'));
 					$file->setFromAttributes($file_data);
 					
-					if(!logged_user()->isMemberOfOwnerCompany()) {
-						//$file->setIsImportant(false);
-					} // if
 					$file->setIsVisible(true);
 				}
 				
@@ -462,12 +462,11 @@ class FilesController extends ApplicationController {
 					$file->setFilename(array_var($file_data, 'name'));
 					$file->setFromAttributes($file_data);
 					
-					if(!logged_user()->isMemberOfOwnerCompany()) {
-						$file->setIsImportant(false);
-					} // if
 					$file->setIsVisible(true);
 				
-				$file->save();
+					$file->save();
+					$file->subscribeUser(logged_user());
+					
 				if($file->getType() == ProjectFiles::TYPE_DOCUMENT){
 					// handle uploaded file
 					$upload_id = array_var($file_data, 'upload_id');
@@ -497,7 +496,7 @@ class FilesController extends ApplicationController {
 
 				//Add properties
 				if (!$skipSettings){
-					$object_controller->add_to_members($file, active_context_members());
+					$object_controller->add_to_members($file, active_context_members(false));
 				}
 				
 				DB::commit();
@@ -654,8 +653,10 @@ class FilesController extends ApplicationController {
 			} // try
 		} else  {
 			// new document
-			if (!ProjectFile::canAdd(logged_user(), active_context())) {
-				flash_error(lang('no context permissions to add',lang("documents")));
+			$notAllowedMember = '';
+			if (!ProjectFile::canAdd(logged_user(), active_context(),$notAllowedMember)) {
+				if (str_starts_with($notAllowedMember, '-- req dim --')) flash_error(lang('must choose at least one member of', str_replace_first('-- req dim --', '', $notAllowedMember, $in)));
+				else flash_error(lang('no context permissions to add',lang("documents"),$notAllowedMember));
 				ajx_current("empty");
 				return ;
 			} // if
@@ -791,8 +792,10 @@ class FilesController extends ApplicationController {
 			} // try
 		} else  {
 			// new presentation
-			if (!ProjectFile::canAdd(logged_user(), active_context())) {
-				flash_error(lang('no context permissions to add',lang("presentations")));
+			$notAllowedMember = '';
+			if (!ProjectFile::canAdd(logged_user(), active_context(), $notAllowedMember)) {
+				if (str_starts_with($notAllowedMember, '-- req dim --')) flash_error(lang('must choose at least one member of', str_replace_first('-- req dim --', '', $notAllowedMember, $in)));
+				else flash_error(lang('no context permissions to add',lang("presentations"),$notAllowedMember));
 				$this->redirectToReferer(get_url('files'));
 				return ;
 			} // if
@@ -1073,8 +1076,9 @@ class FilesController extends ApplicationController {
 			}
 		} else {
 			//new document
-			if (!ProjectFile::canAdd(logged_user(), active_context())) {
-				flash_error(lang('no context permissions to add', lang("documents")));
+			if (!ProjectFile::canAdd(logged_user(), active_context(), $notAllowedMember )) {
+				if (str_starts_with($notAllowedMember, '-- req dim --')) flash_error(lang('must choose at least one member of', str_replace_first('-- req dim --', '', $notAllowedMember, $in)));
+				else flash_error(lang('no context permissions to add', lang("documents"),$notAllowedMember));
 				ajx_current("empty");
 				return;
 			} // if
@@ -1169,8 +1173,10 @@ class FilesController extends ApplicationController {
 			}
 		} else {
 			//new presentation
-			if (!ProjectFile::canAdd(logged_user(), active_context())) {
-				flash_error(lang('no context permissions to add',lang("presentations")));
+			$notAllowedMember = '' ;
+			if (!ProjectFile::canAdd(logged_user(), active_context(), $notAllowedMember)) {
+				if (str_starts_with($notAllowedMember, '-- req dim --')) flash_error(lang('must choose at least one member of', str_replace_first('-- req dim --', '', $notAllowedMember, $in)));
+				else flash_error(lang('no context permissions to add',lang("presentations"), $notAllowedMember));
 				ajx_current("empty");
 				return;
 			} // if
@@ -1366,6 +1372,7 @@ class FilesController extends ApplicationController {
 					"id" => $o->getId(),
 					"ix" => $index++,
 					"object_id" => $o->getId(),
+					"ot_id" => $o->getObjectTypeId(),
 					"name" => $o->getObjectName(),
 					"type" => $o->getTypeString(),
 					"mimeType" => $o->getTypeString(),
@@ -1985,14 +1992,24 @@ class FilesController extends ApplicationController {
 				$tmp_dir = ROOT.'/tmp/'.rand().'/';
 				$zip->extractTo($tmp_dir);
 				$i=0;
-				$members = $file->getMemberIds();
-				while ($e_name = $zip->getNameIndex($i++)) {
-					$tmp_path = $tmp_dir.$e_name;
+				$members = $file->getMemberIds();				
+				while ($e_name = $zip->getNameIndex($i++)) {					
+					$tmp_path = $tmp_dir.$e_name;  
+										
+					//removes weird characters
+					$e_name = preg_match_all('/([\x09\x0a\x0d\x20-\x7e]'. // ASCII characters
+					'|[\xc2-\xdf][\x80-\xbf]'. // 2-byte (except overly longs)
+					'|\xe0[\xa0-\xbf][\x80-\xbf]'. // 3 byte (except overly longs)
+					'|[\xe1-\xec\xee\xef][\x80-\xbf]{2}'. // 3 byte (except overly longs)
+					'|\xed[\x80-\x9f][\x80-\xbf])+/', // 3 byte (except UTF-16 surrogates)
+					$e_name, $clean_pieces);					
+					$e_name = join('?', $clean_pieces[0]);
+										
 					if (!is_dir($tmp_path)) {
-						$this->upload_file(null, $e_name, $tmp_path, $members);
+						$this->upload_file(null, $e_name, $tmp_path, $workspaces);
 						$file_count++;
 					}
-				}
+				}			
 				$zip->close();
 				delete_dir($tmp_dir);
 			}

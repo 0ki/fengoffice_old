@@ -49,6 +49,9 @@ Ext.extend(og.MemberChooserTreeLoader , Ext.tree.TreeLoader, {
 		node.object_type_id = attr.object_type_id ;
 		node.allow_childs = attr.allow_childs ;
         
+		if (attr.actions){
+			node.actions = attr.actions ;
+		}
         
         return node ;            
         

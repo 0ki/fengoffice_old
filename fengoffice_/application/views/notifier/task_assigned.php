@@ -1,6 +1,10 @@
 <div style="font-family: Verdana, Arial, sans-serif; font-size: 12px;">
 	<a href="<?php echo str_replace('&amp;', '&', $task_assigned->getViewUrl()) ?>" style="font-size: 18px;"><?php echo lang('task assigned', $task_assigned->getTitle()) ?></a><br><br>
 	
+	<?php if ($task_assigned->getText()!='') {
+		echo lang('description') . ': ' . $task_assigned->getText();?>
+		<br><br>
+	<?php } ?>
 	
 	<?php if ($task_assigned->getMilestone() instanceof Milestone) {
 		echo lang('milestone') . ': ' . $task_assigned->getMilestone()->getName();?>

@@ -18,10 +18,9 @@ abstract class ContentDataObjects extends DataManager {
 	}
 	
 	function getObjectTypeId() {
-		if (is_null($this->object_type_name)) {
+		if (!$this instanceof ContentDataObjects || is_null($this->object_type_name)) {
 			return null;
-		}
-		
+		}		
 		if (is_null($this->object_type_id)) {
 			$ot = ObjectTypes::findOne(array("conditions" => "name = '".$this->object_type_name."'"));
 			if ($ot instanceof ObjectType) {
@@ -69,8 +68,7 @@ abstract class ContentDataObjects extends DataManager {
 	
 	
 	function sqlFields($all = true) {
-		$object_table = $this->getTableName();
-		$common_fields = array() ;		
+		$common_fields = array() ;
 		foreach ( Objects::getColumns() as $col ) {
 			$common_fields[] = "o.$col AS `$col`";
 		}
@@ -78,10 +76,12 @@ abstract class ContentDataObjects extends DataManager {
 			return $common_fields ;
 		}else{
 			$extra_fields = array();
-			foreach ( $this->getColumns() as $col ) {
+			$columns = $this->getColumns();
+			foreach ( $columns as $col ) {
 				if ($col != "id") 
 					$extra_fields[] = "m.$col AS `$col`";
-			}			
+			}
+			$columns = null;
 			$fields = array_merge($common_fields,$extra_fields);
 			return $fields ;
 		}
@@ -270,7 +270,9 @@ abstract class ContentDataObjects extends DataManager {
     * @return array
     */
     function loadRow($id) {
-        $columns =array_map('db_escape_field', array_merge (Objects::getColumns(), $this->getColumns() ) );
+        $ocols = Objects::getColumns();
+        $tcols = $this->getColumns();
+    	$columns = array_map('db_escape_field', array_merge ($ocols, $tcols ) );
     	$table_prefix = defined('FORCED_TABLE_PREFIX') && FORCED_TABLE_PREFIX ? FORCED_TABLE_PREFIX : TABLE_PREFIX;
     	
       	$sql = sprintf("
@@ -283,8 +285,13 @@ abstract class ContentDataObjects extends DataManager {
         	$this->getTableName(true), 
         	$this->getTableName(true),         	
         	$this->getConditionsById($id)
-      ); // sprintf
-      return DB::executeOne($sql);
+		); // sprintf
+		
+		$ocols = null;
+		$tcols = null;
+		$columns = null;
+		
+		return DB::executeOne($sql);
     } 
 	
 	
@@ -302,6 +309,7 @@ abstract class ContentDataObjects extends DataManager {
 				}
 				$arguments['conditions'] = $conditions;
 			}
+			$columns = null;
 		}
 	}
 
@@ -317,17 +325,20 @@ abstract class ContentDataObjects extends DataManager {
 	 * @author Ignacio Vazquez elpepe.uy at gmail.com
 	 * Fermormance FIX: getContentObjects replacement
 	 * @param array $args 
-	 *		order = null
-	 * 		order_dir = null
-	 * 		extra_conditions = null
-	 * 		join_params = null
+	 *		order = null  -  may be performance killer depending on the order criteria  
+	 * 		order_dir = null 
+	 * 		extra_conditions = null : extra sql 'inyection' - may be performance killer depending on the injected query  
+	 * 		join_params = null : extra join table
 	 * 		trashed = false 
 	 *	 	archived = false
 	 * 		start = 0 
 	 * 		limit = null	
+	 * 		ignore_context
+	 *		count_results : if true calc found rows else show 'many'	 
 	 *  	 
 	 */
 	public function listing($args = array()) {
+		
 		$result = new stdClass ;
 		$result->objects =array();
 		$result->total =array();
@@ -335,10 +346,16 @@ abstract class ContentDataObjects extends DataManager {
 		$SQL_BASE_JOIN = '';
 		$SQL_EXTRA_JOINS = '' ;
 		$SQL_TYPE_CONDITION = 'true' ;
-		$count_results = array_var($args, 'count_results', config_option('infinite_paging', true));
+		//$count_results = array_var($args, 'count_results', config_option('infinite_paging', !(bool)INFINITE_PAGING));
+		//$count_results = max(
+		//!config_option("infinite_paging",0), 
+		//	array_var($args, 'count_results',0)
+		//); 
+		$count_results = ! ( defined('INFINITE_PAGING') && INFINITE_PAGING ) ; 
 		$start = array_var($args,'start');
 		$limit = array_var($args,'limit');
-		
+		$member_ids = array_var($args, 'member_ids');
+		$ignore_context = array_var($args,'ignore_context');
 		if ($count_results) {
 			$SQL_FOUND_ROWS = "SQL_CALC_FOUND_ROWS";
 		}else{
@@ -357,14 +374,22 @@ abstract class ContentDataObjects extends DataManager {
 			$table_name = self::getTableName();
 			
 	    	// Extra Join statements
-	    	$SQL_BASE_JOIN = " INNER JOIN  $table_name e ON e.object_id = o.id ";
+	    	if ($this instanceof ContentDataObjects && $this->object_type_name == 'timeslot') {
+	    		// if object is a timeslot and is related to a content object => check for members of the related content object.
+	    		$SQL_BASE_JOIN = " INNER JOIN  $table_name e ON IF(e.rel_object_id > 0, e.rel_object_id, e.object_id) = o.id ";
+	    		$SQL_TYPE_CONDITION = "object_type_id = IF(e.rel_object_id > 0, (SELECT z.object_type_id FROM ".TABLE_PREFIX."objects z WHERE z.id = e.rel_object_id), $type_id)";
+	    	} else {
+	    		$SQL_BASE_JOIN = " INNER JOIN  $table_name e ON e.object_id = o.id ";
+	    		$SQL_TYPE_CONDITION = "object_type_id = $type_id";
+	    	}
 			$SQL_EXTRA_JOINS = self::prepareJoinConditions(array_var($args,'join_params'));
 			
-			$SQL_TYPE_CONDITION = "object_type_id = $type_id"; 
-			
 		}
-		
-		$members = active_context_members(false); // Context Members Ids
+		if (!$ignore_context && !$member_ids) {
+			$members = active_context_members(false); // Context Members Ids
+		}elseif ( count($member_ids) ) {
+			$members = $member_ids ;
+		}
 		$uid = logged_user()->getId() ;
 
 		// Order statement
@@ -372,14 +397,14 @@ abstract class ContentDataObjects extends DataManager {
 		
 		// Prepare Limit SQL 
 		if (array_var($args,'limit')>0){
-			$SQL_LIMIT = "LIMIT ".array_var($args,'start')." , ".array_var($args,'limit');
+			$SQL_LIMIT = "LIMIT ".array_var($args,'start',0)." , ".array_var($args,'limit');
 		}else{
 			$SQL_LIMIT = '' ;
 		}
 		
 		///alert_r("START:". microtime(1));	
 		$SQL_CONTEXT_CONDITION = " true ";
-		if (count($members)) {
+		if (!empty($members) && count($members)) {
 		
 			$object_ids = array ();
 			$members_sql = "
@@ -387,9 +412,11 @@ abstract class ContentDataObjects extends DataManager {
 				GROUP BY object_id
 				HAVING count(member_id) = ".count($members);
 			$db_result = DB::execute ( $members_sql );
-			$rows = $db_result->fetchAll ();
-			foreach ( $rows as $row ) {
-				$object_ids [$row ['object_id']] = $row ['object_id'];
+			$rows = $db_result->fetchAll();
+			if (is_array($rows)){
+				foreach ( $rows as $row ) {
+					$object_ids [$row ['object_id']] = $row ['object_id'];
+				}
 			}
 			if (count( $object_ids )) {
 				$object_ids = implode ( ",", $object_ids );
@@ -430,25 +457,27 @@ abstract class ContentDataObjects extends DataManager {
 			$SQL_ORDER 
 	    	$SQL_LIMIT";
 		
+
 		// Execute query and build the resultset
 	    $rows = DB::executeAll($sql);
-		foreach ($rows as $row) {
-			if ($handler_class) {
-	    		$phpCode = '$co = '.$handler_class.'::instance()->loadFromRow($row);';
-	    		eval($phpCode);
+	    if($rows && is_array($rows)) {
+			foreach ($rows as $row) {
+				if ($handler_class) {
+		    		$phpCode = '$co = '.$handler_class.'::instance()->loadFromRow($row);';
+		    		eval($phpCode);
+				}
+	    		if ( $co ) {
+	  				$result->objects[] = $co ;
+	    		}
+	    		
 			}
-    		if ( $co ) {
-  				$result->objects[] = $co ;
-    		}
-    		
-		}
-		
+	    }
 		if ($count_results) {
 			$total = DB::executeOne("SELECT FOUND_ROWS() as total");
 			$result->total = $total['total'];	
 		}else{
 			if  ( count($result->objects) == $limit ) {
-				$result->total = 100000;
+				$result->total = 10000000;
 			}else{
 				$result->total = $start + count($result->objects) ;
 			}

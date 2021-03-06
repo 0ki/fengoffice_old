@@ -3,7 +3,7 @@
   /**
   * PermissionGroups
   *
-  * @author Diego Castiglioni <diego20@gmail.com>
+  * @author Diego Castiglioni <diego.castiglioni@fengoffice.com>
   */
   class PermissionGroups extends BasePermissionGroups {
     
@@ -19,6 +19,11 @@
     
     function getGuestPermissionGroups() {
     	return self::findAll(array("conditions" => "parent_id IN (SELECT p.id FROM ".TABLE_PREFIX."permission_groups p WHERE p.name='GuestGroup')"));
+    }
+    
+    static function getNonRolePermissionGroups() {
+    	$roles = "'Administrator','Collaborator Customer','CollaboratorGroup','Executive','ExecutiveGroup','External Collaborator','Guest','Guest Customer','GuestGroup','Internal Collaborator','Manager','Non-Exec Director','Super Administrator'";
+		return self::findAll(array("conditions" => "`contact_id` = 0 AND `name` NOT IN ($roles)"));
     }
     
   } // PermissionGroups 

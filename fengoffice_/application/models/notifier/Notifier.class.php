@@ -117,8 +117,28 @@ class Notifier {
 				$properties['revision comment'] = $text;
 			}
 		}
+		
+		$attachments = array();
+		if (config_option('show images in document notifications') && $object instanceof ProjectFile && in_array($object->getTypeString(), ProjectFiles::$image_types)) {
+			if (FileRepository::getBackend() instanceof FileRepository_Backend_FileSystem) {
+				$file_path = FileRepository::getBackend()->getFilePath($object->getLastRevision()->getRepositoryId());
+			} else {
+				$file_path = ROOT . "/tmp/" . $object->getFilename();
+				$handle = fopen($file_path, 'wb');
+				fwrite($handle, $object->getLastRevision()->getFileContent(), $object->getLastRevision()->getFilesize());
+				fclose($handle);
+			}
+			$attachments[] = array(
+				'cid' => gen_id() . substr($senderemail, strpos($senderemail, '@')),
+				'path' => $file_path,
+				'type' => $object->getTypeString(),
+				'disposition' => 'inline',
+				'name' => $object->getFilename(),
+			);
+		}
 				
 		tpl_assign('object', $object);
+		tpl_assign('attachments', $attachments);
 		tpl_assign('properties', $properties);
 		tpl_assign('second_properties', $second_properties);
 		
@@ -140,7 +160,8 @@ class Notifier {
 					"to" => array(self::prepareEmailAddress($toemail, $user->getObjectName())),
 					"from" => self::prepareEmailAddress($senderemail, $sendername),
 					"subject" => $subject = lang("$notification notification $type", $name, $uid, $typename),
-					"body" => tpl_fetch(get_template_path('general', 'notifier'))
+					"body" => tpl_fetch(get_template_path('general', 'notifier')),
+					"attachments" => $attachments,
 				);
 			}
 		} 
@@ -208,6 +229,8 @@ class Notifier {
 		tpl_assign('user', $user);
 		tpl_assign('exp_days', $expiration_days);
 
+		$administrator = owner_company()->getCreatedBy();
+		
 		if (! $user instanceof Contact) return;
 		
 		$locale = $user->getLocale();
@@ -216,7 +239,7 @@ class Notifier {
 		if (!$toemail) continue;
 		self::queueEmail(
 			array(self::prepareEmailAddress($toemail, $user->getObjectName())),
-			self::prepareEmailAddress("noreply@fengoffice.com", "noreply@fengoffice.com"),
+			self::prepareEmailAddress($administrator instanceof Contact ? $administrator->getEmailAddress() : "noreply@fengoffice.com", $administrator instanceof Contact ? $administrator->getObjectName() : "noreply@fengoffice.com"),
 			lang('password expiration reminder'),
 			tpl_fetch(get_template_path('password_expiration_reminder', 'notifier'))
 		); // send
@@ -237,6 +260,33 @@ class Notifier {
 	static function newUserAccount(Contact $user, $raw_password) {
 		tpl_assign('new_account', $user);
 		tpl_assign('raw_password', $raw_password);
+                tpl_assign('type_notifier',"specify_pass");
+
+		$sender = $user->getCreatedBy() instanceof Contact ? $user->getCreatedBy() : owner_company()->getCreatedBy();
+		
+		$locale = $user->getLocale();
+		Localization::instance()->loadSettings($locale, ROOT . '/language');
+		$toemail = $user->getEmailAddress();
+		if (!$toemail) continue;
+		self::queueEmail(
+			array(self::prepareEmailAddress($toemail, $user->getObjectName())),
+			self::prepareEmailAddress($sender->getEmailAddress(), $sender->getObjectName()),
+			lang('your account created'),
+			tpl_fetch(get_template_path('new_account', 'notifier'))
+		); // send
+		
+		$locale = logged_user() instanceof Contact ? logged_user()->getLocale() : DEFAULT_LOCALIZATION;
+		Localization::instance()->loadSettings($locale, ROOT . '/language');
+	} // newUserAccount
+        
+        static function newUserAccountLinkPassword(Contact $user, $raw_password, $token = null) {
+		tpl_assign('new_account', $user);
+		tpl_assign('raw_password', $raw_password);
+                tpl_assign('type_notifier',"link_pass");
+                
+                //generate password                
+                $new_password = $user->resetPassword(true);
+		tpl_assign('token',$token);                
 
 		$sender = $user->getCreatedBy() instanceof Contact ? $user->getCreatedBy() : owner_company()->getCreatedBy();
 		
@@ -563,7 +613,7 @@ class Notifier {
 	 * @param string content-transfer-encoding,optional
 	 * @return bool successful
 	 */
-	static function sendEmail($to, $from, $subject, $body = false, $type = 'text/plain', $encoding = '8bit') {
+	static function sendEmail($to, $from, $subject, $body = false, $type = 'text/plain', $encoding = '8bit', $attachments = array()) {
 		$ret = false;
 		if (config_option('notification_from_address')) {
 			$from = config_option('notification_from_address');
@@ -615,7 +665,15 @@ class Notifier {
 		  ->setBody($body)
 		  ->setContentType($type)
 		;
-				
+		
+		foreach ($attachments as $a) {
+			$attach = Swift_Attachment::fromPath(array_var($a, 'path'), array_var($a, 'type'));
+			$attach->setDisposition(array_Var($a, 'disposition', 'attachment'));
+			if (array_var($a, 'cid')) $attach->setId(array_var($a, 'cid'));
+			if (array_var($a, 'name')) $attach->setFilename(array_var($a, 'name'));
+			$message->attach($attach);
+		}
+		
 		$message->setContentType($type);
 		$to = prepare_email_addresses(implode(",", $to));
 		foreach ($to as $address) {
@@ -626,7 +684,7 @@ class Notifier {
 		return $result;
 	} // sendEmail
 	
-	static function queueEmail($to, $from, $subject, $body = false, $type = 'text/html', $encoding = '8bit') {
+	static function queueEmail($to, $from, $subject, $body = false, $type = 'text/html', $encoding = '8bit', $attachments = array()) {
 		$cron = CronEvents::getByName('send_notifications_through_cron');
 		if ($cron instanceof CronEvent && $cron->getEnabled()) {
 			$qm = new QueuedEmail();
@@ -637,9 +695,10 @@ class Notifier {
 			$qm->setFrom($from);
 			$qm->setSubject($subject);
 			$qm->setBody($body);
+			if ($qm->columnExists('attachments')) $qm->setColumnValue('attachments', json_encode($attachments));
 			$qm->save();
 		} else {
-			self::sendEmail($to, $from, $subject, $body, $type, $encoding);
+			self::sendEmail($to, $from, $subject, $body, $type, $encoding, $attachments);
 		}
 	}
 	
@@ -651,7 +710,8 @@ class Notifier {
 				array_var($email, 'subject'),
 				array_var($email, 'body'),
 				array_var($email, 'type', 'text/html'),
-				array_var($email, 'encoding', '8bit')
+				array_var($email, 'encoding', '8bit'),
+				array_var($email, 'attachments')
 			);
 		}
 	}
@@ -701,6 +761,17 @@ class Notifier {
 				  ->setBody($body)
 				  ->setContentType('text/html')
 				;
+				
+				if ($email->columnExists('attachments')) {
+					$attachments = json_decode($email->getColumnValue('attachments'));
+					foreach ($attachments as $a) {
+						$attach = Swift_Attachment::fromPath($a->path, $a->type);
+						$attach->setDisposition($a->disposition);
+						if ($a->cid) $attach->setId($a->cid);
+						if ($a->name) $attach->setFilename($a->name);
+						$message->attach($attach);
+					}
+				}
 				
 				$to = prepare_email_addresses(implode(",", explode(";", $email->getTo())));
 				foreach ($to as $address) {

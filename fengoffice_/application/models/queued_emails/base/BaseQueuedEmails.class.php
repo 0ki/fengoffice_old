@@ -20,6 +20,7 @@ abstract class BaseQueuedEmails extends DataManager {
 		'from' => DATA_TYPE_STRING,
 		'subject' => DATA_TYPE_STRING,
 		'body' => DATA_TYPE_STRING,
+//		'attachments' => DATA_TYPE_STRING,
 		'timestamp' => DATA_TYPE_DATETIME,
 	);
 

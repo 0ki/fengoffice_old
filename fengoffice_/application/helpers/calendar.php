@@ -2,8 +2,40 @@
 
 function getEventLimits($event, $date, &$event_start, &$event_duration, &$end_modified) {
 	$end_modified = false;
-	$event_start = new DateTimeValue($event->getStart()->getTimestamp() + 3600 * logged_user()->getTimezone());
-	$event_duration = new DateTimeValue($event->getDuration()->getTimestamp() + 3600 * logged_user()->getTimezone());
+	if ($event instanceof ProjectEvent) {
+		$event_start = new DateTimeValue($event->getStart()->getTimestamp() + 3600 * logged_user()->getTimezone());
+		$event_duration = new DateTimeValue($event->getDuration()->getTimestamp() + 3600 * logged_user()->getTimezone());
+	
+	} else if ($event instanceof ProjectTask) {/* @var $event ProjectTask */
+		
+		$work_day_start = new DateTimeValue($date->getTimestamp());
+		$wsd = user_config_option('work_day_start_time');
+		$work_day_start->setHour(substr($wsd, 0, strpos($wsd, ':')));
+		$work_day_start->setMinute(substr($wsd, strpos($wsd, ':')+1));
+		
+		if ($event->getStartDate() instanceof DateTimeValue && $event->getStartDate()->getTimestamp() + 3600 * logged_user()->getTimezone() >= $work_day_start->getTimestamp()) {
+			$event_start = new DateTimeValue($event->getStartDate()->getTimestamp() + 3600 * logged_user()->getTimezone());
+		} else if (!$event->getStartDate() instanceof DateTimeValue && $event->getTimeEstimate() > 0 && $event->getDueDate() instanceof DateTimeValue) {
+			$event_start = new DateTimeValue($event->getDueDate()->getTimestamp() + 3600 * logged_user()->getTimezone());
+			$event_start->advance($event->getTimeEstimate() * -60);
+		} else {
+			$event_start = $work_day_start;
+		}
+		
+		$work_day_end = new DateTimeValue($date->getTimestamp());
+		$wed = user_config_option('work_day_end_time');
+		$work_day_end->setHour(substr($wed, 0, strpos($wed, ':')));
+		$work_day_end->setMinute(substr($wed, strpos($wed, ':')+1));
+		
+		if ($event->getDueDate() instanceof DateTimeValue && $event->getDueDate()->getTimestamp() + 3600 * logged_user()->getTimezone() <= $work_day_end->getTimestamp()) {
+			$event_duration = new DateTimeValue($event->getDueDate()->getTimestamp() + 3600 * logged_user()->getTimezone());
+		} else if (!$event->getDueDate() instanceof DateTimeValue && $event->getTimeEstimate() > 0 && $event->getStartDate() instanceof DateTimeValue) {
+			$event_duration = new DateTimeValue($event_start->getTimestamp());
+			$event_duration->advance($event->getTimeEstimate() * 60);
+		} else {
+			$event_duration = $work_day_end;
+		}
+	}
 	
 	$tomorrow = new DateTimeValue($date->getTimestamp());
 	$tomorrow->add('d', 1);
@@ -12,9 +44,9 @@ function getEventLimits($event, $date, &$event_start, &$event_duration, &$end_mo
 		$end_modified = true;
 	}
 	if ($event_start->getTimestamp() < $date->getTimestamp()) {
-		if (!$event->isRepetitive())
+		if (!$event->isRepetitive()) {
 			$event_start = new DateTimeValue($date->getTimestamp());
-		else {
+		} else {
 			$event_start->setDay($date->getDay());
 			$event_start->setMonth($date->getMonth());
 			$event_start->setYear($date->getYear());
@@ -141,16 +173,28 @@ function replicateRepetitiveTaskForCalendar(ProjectTask $task, $from_date, $to_d
 			if ($task->getRepeatBy() == 'start_date' && !($task->getStartDate() instanceof DateTimeValue)) return $new_task_array;
 			if ($task->getRepeatBy() == 'due_date' && !($task->getDueDate() instanceof DateTimeValue)) return $new_task_array;
 			
-			//$ref_date = new DateTimeValue( $task->getRepeatBy() == 'start_date' ? $task->getStartDate()->getTimestamp() : $task->getDueDate()->getTimestamp() );
-			if ($task->getRepeatBy() == 'start_date') $task->setStartDate(new DateTimeValue($ref_date->getTimestamp()));
-			else if ($task->getRepeatBy() == 'due_date') $task->setDueDate(new DateTimeValue($ref_date->getTimestamp()));
+			if ($task->getRepeatBy() == 'start_date') {
+				$diff = $ref_date->getTimestamp() - $task->getStartDate()->getTimestamp();
+				$task->setStartDate(new DateTimeValue($ref_date->getTimestamp()));
+				if ($task->getDueDate() instanceof DateTimeValue) {
+					$task->getDueDate()->advance($diff);
+				}
+			} else if ($task->getRepeatBy() == 'due_date') {
+				$diff = $ref_date->getTimestamp() - $task->getDueDate()->getTimestamp();
+				$task->setDueDate(new DateTimeValue($ref_date->getTimestamp()));
+				if ($task->getStartDate() instanceof DateTimeValue) {
+					$task->getStartDate()->advance($diff);
+				}
+			}
 			
 			$info = array(
-				'title' => $task->getTitle(),
+				'name' => $task->getObjectName(),
 				'text' => $task->getText(),
 				'due_date' => $task->getDueDate() instanceof DateTimeValue ? new DateTimeValue($task->getDueDate()->getTimestamp()) : null,
 				'start_date' => $task->getStartDate() instanceof DateTimeValue ? new DateTimeValue($task->getStartDate()->getTimestamp()) : null,
-				'assigned_to_user_id' => $task->getAssignedToContactId(),
+				'use_due_time' => $task->getUseDueTime(),
+				'use_start_time' => $task->getUseStartTime(),
+				'assigned_to_contact_id' => $task->getAssignedToContactId(),
 				'priority' => $task->getPriority(),
 				'state' => $task->getState(),
 				'milestone_id' => $task->getMilestoneId(),
@@ -172,7 +216,8 @@ function replicateRepetitiveTaskForCalendar(ProjectTask $task, $from_date, $to_d
 			if ($task->getDueDate() instanceof DateTimeValue ) {
 				$new_due_date = new DateTimeValue($task->getDueDate()->getTimestamp());
 			}
-			if ($task->getRepeatD() > 0) { 
+			
+			if ($task->getRepeatD() > 0) {
 				if ($new_st_date instanceof DateTimeValue)
 					$new_st_date = $new_st_date->add('d', $task->getRepeatD());
 				if ($new_due_date instanceof DateTimeValue)
@@ -193,6 +238,7 @@ function replicateRepetitiveTaskForCalendar(ProjectTask $task, $from_date, $to_d
 					$new_due_date = $new_due_date->add('y', $task->getRepeatY());
 				$ref_date->add('y', $task->getRepeatY());
 			}
+			
 			if ($new_st_date instanceof DateTimeValue) $new_task->setStartDate($new_st_date);
 			if ($new_due_date instanceof DateTimeValue) $new_task->setDueDate($new_due_date);
 			

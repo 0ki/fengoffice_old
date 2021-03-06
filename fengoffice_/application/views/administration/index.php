@@ -18,14 +18,14 @@ if (can_manage_security(logged_user())) {
 		'extra' => '<a class="internalLink coViewAction ico-add" href="' . owner_company()->getAddUserUrl() . '">' . lang('add user') . '</a>',
 	);
 } 
-/*if (can_manage_security(logged_user())) {
+if (can_manage_security(logged_user())) {
 	$icons[] = array(
 		'ico' => 'ico-large-group',
 		'url' => get_url('administration', 'groups'),
 		'name' => lang('groups'),
 		'extra' => '<a class="internalLink coViewAction ico-add" href="' . owner_company()->getAddGroupUrl() . '">' . lang('add group') . '</a>',
 	);
-}*/
+}
 /*FIXME if (can_manage_security(logged_user()) && Plugins::instance()->isActivePlugin('mail')) {
 	$icons[] = array(
 		'ico' => 'ico-large-email',
@@ -45,14 +45,14 @@ if (can_manage_templates(logged_user())) {
 }
 
 
-/*FIXME if (can_manage_security(logged_user())) {
+if (can_manage_billing(logged_user())) {
 	$icons[] = array(
 		'ico' => 'ico-large-billing',
 		'url' => get_url('billing', 'index'),
 		'name' => lang('billing'),
 		'extra' => '<a class="internalLink coViewAction ico-add" href="' . get_url('billing', 'add') . '">' . lang('add billing category') . '</a>',
 	);	
-}*/
+}
 
 if (can_manage_configuration(logged_user())) {
 	$icons[] = array(
@@ -61,12 +61,13 @@ if (can_manage_configuration(logged_user())) {
 		'name' => lang('organization data'),
 		'extra' => '',
 	);
-	/*FIXME FENG 2$icons[] = array(
+	$icons[] = array(
 		'ico' => 'ico-large-custom-properties',
 		'url' => get_url('administration', 'custom_properties'),
 		'name' => lang('custom properties'),
 		'extra' => '',
 	);
+	/*
 	$icons[] = array(
 		'ico' => 'ico-large-object-subtypes',
 		'url' => get_url('administration', 'object_subtypes'),
@@ -119,14 +120,16 @@ if (can_manage_dimension_members(logged_user())) {
 	);
 }
 
-/*if (can_manage_plugins(logged_user())) {
+
+if (defined("PLUGIN_MANAGER") && PLUGIN_MANAGER && can_manage_plugins(logged_user())) {
 	$icons[] = array(
 		'ico' => 'ico-large-plugins',
 		'url' => get_url('plugin', 'index'),
-		'name' => lang('plugins'),
+		'name' => lang('plugins'). ' (Alpha 1)',
 		'extra' => '',
 	);
-}*/
+}
+
 Hook::fire('render_administration_icons', null, $icons);
 if (count($icons > 0)) {}
 ?>
@@ -136,15 +139,7 @@ if (count($icons > 0)) {}
   </div>
   <div class="adminSeparator"></div>
   <div class="adminMainBlock">
-    <?php //FIXME FENG2 echo lang('welcome to administration info') ?>
-    <br/>
-    <?php 
-		$show_help_option = user_config_option('show_context_help'); 
-		if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_administration_context_help', true, logged_user()->getId()))) {?>
-		<div id="administrationPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
-			<?php render_context_help($this, 'chelp administrator panel','administration'); ?>
-		</div>
-	<?php }?>
+    
 <div style="width:100%;max-width:700px; text-align:center;position:relative">
 
 <?php

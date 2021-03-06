@@ -73,7 +73,25 @@ class MailController extends ApplicationController {
 			else $type = user_config_option('last_mail_format');
 			if (!$type) $type = 'plain';
 			$original_mail->setIsRead(logged_user()->getId(), true);
-			$re_body = $original_mail->getBodyHtml() != '' && $type == 'html' ? $original_mail->getBodyHtml() : $original_mail->getBodyPlain();
+			if ($original_mail->getBodyHtml() != '' && $type == 'html'){
+				if (!defined('SANDBOX_URL')) {
+					$re_body = purify_html($original_mail->getBodyHtml());
+				} else {					
+					$html_content = $original_mail->getBodyHtml();
+					if(substr_count($html_content, "<style>") != substr_count($html_content, "</style>") && substr_count($html_content, "/* Font Definitions */") >= 1) {
+						$p1 = strpos($html_content, "/* Font Definitions */", 0);
+						$html_content1 = substr($html_content, 0, $p1);
+						$p0 = strrpos($html_content1, "</style>");
+						$html_content = ($p0 >= 0 ? substr($html_content1, 0, $p0) : $html_content1) . substr($html_content, $p1);
+						
+						$re_body = str_replace_first("/* Font Definitions */","<style>", $html_content);
+					} else {
+						$re_body = $html_content;
+					}
+				}				
+			}else{
+				$re_body = $original_mail->getBodyPlain();
+			}
 			if ($type == 'html') {
 				$pre_quote = '<blockquote type="cite" style="padding-left:10px; border-left: 1px solid #987ADD;">';
 				$post_quote = "</blockquote>";
@@ -134,6 +152,10 @@ class MailController extends ApplicationController {
 				$cache_fname = gen_id();
 				file_put_contents(ROOT . "/tmp/$cache_fname", $re_body);
 				$re_body = lang("content too long not loaded");
+			}
+			
+			if (defined('SANDBOX_URL')) {
+				$re_body = str_replace('<!--', '<!-- ', $re_body);
 			}
 
 			$mail_data = array(
@@ -198,6 +220,42 @@ class MailController extends ApplicationController {
 		if (is_numeric($folder)) {
 			try {
 				DB::beginWork();
+                                if($folder == 4 || $folder == 0)
+                                {
+                                    if($folder == 0)
+                                    {
+                                        $spam_state = "no spam";
+                                    }   
+                                    else if($folder == 4)
+                                    {
+                                        $spam_state = "spam";
+                                    }
+                                    try {                                            
+                                            $spam_email = MailSpamFilters::getRow($email);                                            
+                                            if ($spam_email)
+                                            {
+                                                $spam_filter = MailSpamFilters::findById($spam_email[0]->getId());
+                                                $spam_filter->setSpamState($spam_state);
+                                                $spam_filter->save();
+                                            }
+                                            else
+                                            {
+                                                $spam_filter = new MailSpamFilter();
+                                                $spam_filter->setAccountId($email->getAccountId());
+                                                $spam_filter->setTextType('email_address');
+                                                $spam_filter->setText($email->getFrom());
+                                                $spam_filter->setSpamState($spam_state);
+                                                $spam_filter->save();
+                                            }
+                                             
+                                    }
+                                    catch(Exception $e) {
+                                            DB::rollback();
+                                            flash_error($e->getMessage());
+                                            ajx_current("empty");
+                                    }
+                                    
+                                }
 				$email->setState($folder);
 				$email->save();
 				DB::commit();
@@ -502,7 +560,7 @@ class MailController extends ApplicationController {
 					$str = "#att_ver 2\n";
 					foreach ($attachments as $att) {
 						$rep_id = $utils->saveContent($att['data']);
-						$str .= $att['name'] . "," . $att['type'] . "," . $rep_id . "\n";
+						$str .= $att['name'] . "|" . $att['type'] . "|" . $rep_id . "\n";
 					}
 
 					// save attachments, when mail is sent this file is deleted and full content is saved
@@ -515,7 +573,7 @@ class MailController extends ApplicationController {
 								$lines = explode("\n", $content);
 								foreach ($lines as $line) {
 									if (!str_starts_with($line, "#") && trim($line) !== "") {
-										$data = explode(",", $line);
+										$data = explode("|", $line);
 										if (isset($data[2]) && FileRepository::isInRepository($data[2])) FileRepository::deleteFile($data[2]);
 									}
 								}
@@ -643,9 +701,8 @@ class MailController extends ApplicationController {
 						}
 					}
 				}
-				
+				$mail->addToSharingTable();
 				DB::commit();
-
 				if (!$autosave) {
 					if ($isDraft) {
 						flash_success(lang('success save mail'));
@@ -708,7 +765,7 @@ class MailController extends ApplicationController {
 				$lines = explode("\n", $content);
 				foreach ($lines as $line) {
 					if (!str_starts_with($line, "#") && trim($line) !== "") {
-						$data = explode(",", $line);
+						$data = explode("|", $line);
 						if (FileRepository::getBackend() instanceof FileRepository_Backend_FileSystem ) {
 							$path = FileRepository::getBackend()->getFilePath($data[2]);
 						} else {
@@ -1080,7 +1137,8 @@ class MailController extends ApplicationController {
 		} else {
 			MailUtilities::parseMail($email->getContent(), $decoded, $parsedEmail, $warnings);
 			if (isset($parsedEmail['Attachments'])) $attachments = $parsedEmail['Attachments'];
-			foreach($attachments as &$attach) {
+			$to_remove = array();
+			foreach($attachments as $k => &$attach) {
 				if (array_var($parsedEmail, 'FileDisposition') == 'inline' && array_var($attach, 'Type') == 'html') $attach['hide'] = true;
 			 	$attach['size'] = format_filesize(strlen($attach["Data"]));
 			 	unset($attach['Data']);
@@ -1382,7 +1440,7 @@ class MailController extends ApplicationController {
 			return;
 		} 
 		MailUtilities::parseMail($email->getContent(), $decoded, $parsedEmail, $warnings);
-		if ($_POST['submit']){
+		if (array_var($_POST,'submit')){
 			try {
 				$ctrl = new ObjectController();
 				$create_task = array_var($classification_data, 'create_task') == 'checked';
@@ -1445,7 +1503,6 @@ class MailController extends ApplicationController {
 						$file->setFilename($fName);
 						$file->setIsVisible(true);
 						$file->setIsPrivate(false);
-						$file->setIsImportant(false);
 						$file->setCommentsEnabled(true);
 						$file->setAnonymousCommentsEnabled(false);
 						$file->setMailId($email->getId());
@@ -2156,8 +2213,26 @@ class MailController extends ApplicationController {
 			if ($original_mail->getBodyHtml() != '') $type = 'html';
 			else $type = user_config_option('last_mail_format');
 			if (!$type) $type = 'plain';
-			
-			$body = $original_mail->getBodyHtml() != '' && $type == 'html' ? $original_mail->getBodyHtml() : $original_mail->getBodyPlain();
+			if ($original_mail->getBodyHtml() != '' && $type == 'html'){
+				if (!defined('SANDBOX_URL')) {
+					$body = purify_html($original_mail->getBodyHtml());
+				} else {					
+					$html_content = $original_mail->getBodyHtml();
+					// prevent some outlook malformed tags
+					if(substr_count($html_content, "<style>") != substr_count($html_content, "</style>") && substr_count($html_content, "/* Font Definitions */") >= 1) {
+						$p1 = strpos($html_content, "/* Font Definitions */", 0);
+						$html_content1 = substr($html_content, 0, $p1);
+						$p0 = strrpos($html_content1, "</style>");
+						$html_content = ($p0 >= 0 ? substr($html_content1, 0, $p0) : $html_content1) . substr($html_content, $p1);
+						
+						$body = str_replace_first("/* Font Definitions */","<style>", $html_content);
+					} else {
+						$body = $html_content;
+					}
+				}				
+			}else{
+				$body = $original_mail->getBodyPlain();
+			}	
 			if ($type == 'html') {
 				$pre_quote = "<blockquote type='cite' style='padding-left:10px; border-left:1px solid #987ADD;'>";
 				$post_quote = "</blockquote>";
@@ -2212,6 +2287,10 @@ class MailController extends ApplicationController {
 					$attachs[] = "FwdMailAttach:$fName:$fileType:$fid";
 					file_put_contents(ROOT . "/tmp/" . logged_user()->getId() . "_" .$original_mail->getAccountId() . "_FwdMailAttach_$fid", $att['Data']);
 				}
+			}
+			
+			if (defined('SANDBOX_URL')) {
+				$fwd_body = str_replace('<!--', '<!-- ', $fwd_body);
 			}
 			
 			$mail_data = array(
@@ -2425,31 +2504,7 @@ class MailController extends ApplicationController {
 		
 		$result = MailContents::getEmails($account, $state, $read_filter, $classif_filter, $context, $start, $limit, $order_by, $dir);
 		
-		//if standing in "All" check if all workspaces related to the email have been archived.. and if so, dont show them
-		// TODO pepe 
-		/*		
-		if (active_project()== null ){			
-			$aux = array();
-			$wss = array();
-			foreach ($objects as $mail){
-				//Seba						
-				$check = WorkspaceObjects::getWorkspacesByObject('MailContents', $mail->getId());//, null, $wss);				
-				$archived = true;
-				foreach ($check as $wsobject){		
-					$ws = Projects::findById($wsobject->getId());
-					$wss["ws".$wsobject->getId()] = $ws;
-					if ($ws->getCompletedById() != '0') continue;					
-					$archived = false;						
-					break;														
-				}
-				
-				if (!$archived || $check == null){									
-					$aux[] = $mail;
-				}
-			}		
-			return $aux;		
-		}
-		*/
+
 		return $result;
 	}
 
@@ -2523,6 +2578,7 @@ class MailController extends ApplicationController {
 		    "id" => $msg->getId(),
 			"ix" => $i,
 			"object_id" => $msg->getId(),
+			"ot_id" => $msg->getObjectTypeId(),
 			"type" => 'email',
 			"hasAttachment" => $msg->getHasAttachments(),
 			"accountId" => $msg->getAccountId(),

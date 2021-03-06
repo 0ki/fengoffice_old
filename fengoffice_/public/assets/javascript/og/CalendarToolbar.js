@@ -70,6 +70,7 @@ og.getSelectedEventsCsv = function() {
 og.calendarOrderUsers = function(usersList){
 	for (var i = 0; i < usersList.length - 1; i++) {
 		for (var j = i+1; j < usersList.length; j++) {
+			if (!usersList[j][1]) continue;
 			if (usersList[i][1].toUpperCase() > usersList[j][1].toUpperCase()){
 				var aux = usersList[i];
 				usersList[i] = usersList[j];
@@ -272,9 +273,19 @@ og.CalendarTopToolbar = function(config) {
 		//this.add(topToolbarItems.tag);
 		this.add(topToolbarItems.archive);
 		this.add(topToolbarItems.del);		
-		this.addSeparator();
+		this.addSeparator();                
 	}
 	this.add(topToolbarItems.markAs);
+        this.addSeparator();     
+        this.add(new Ext.Action({
+                                text: lang('print'),
+                                tooltip: lang('print calendar'),
+                                iconCls: 'ico-print',
+                                handler: function() {
+                                        og.PrintCalendar.printCalendar(og.config['genid']);
+                                },
+                                scope: this
+                            }));
 	/* deshabilitada temporalmente
 	if (!og.loggedUser.isGuest) {
 		this.addSeparator();

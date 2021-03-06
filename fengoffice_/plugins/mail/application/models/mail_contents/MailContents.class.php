@@ -208,39 +208,52 @@ class MailContents extends BaseMailContents {
 	 * @return array
 	 */
 	function getEmails($account_id = null, $state = null, $read_filter = "", $classif_filter = "", $context = null, $start = null, $limit = null, $order_by = 'received_date', $dir = 'ASC', $archived = false) {
+		$mailTablePrefix = "e";
 		
+		$accountConditions = "";
 		// Check for accounts
+                $accountConditions = '';
 		if (isset($account_id) && $account_id > 0) { //Single account
-			$accountConditions = " AND m.account_id = " . DB::escape($account_id);
-		} else {
+			$accountConditions = " AND $mailTablePrefix.account_id = " . DB::escape($account_id);
+/*		} else {
 			// show emails from other accounts
 			$macs = MailAccountContacts::instance()->getByContact(logged_user());
 			$acc_ids = array();
 			foreach ($macs as $mac) $acc_ids[] = $mac->getAccountId();
 			if (count($acc_ids) == 0) $acc_ids[] = 0;
-			$accountConditions = " AND m.account_id IN (" . implode(",", $acc_ids) . ")";
+			$accountConditions = " AND $mailTablePrefix.account_id IN (" . implode(",", $acc_ids) . ")";
+*/
 		}
 					
 		// Check for unclassified emails
+                $classified = '';
 		if ($classif_filter != '' && $classif_filter != 'all') {
 			if ($classif_filter == 'unclassified') $classified = "AND NOT ";
-			else $classified = "AND ";			
+			else $classified = "AND ";
 			$classified .= "o.id IN (SELECT object_id FROM ".TABLE_PREFIX."object_members)";
 		} else {
-			$classified = "";
+			if (isset($account_id) && $account_id > 0) {
+				$acc_cond = "IN ($account_id)";
+			} else {
+				$macs = MailAccountContacts::instance()->getByContact(logged_user());
+				$acc_ids = array(0);
+				foreach ($macs as $mac) $acc_ids[] = $mac->getAccountId();
+				$acc_cond = "IN (".implode(",", $acc_ids).")";
+			}
+			$classified = "AND (e.account_id $acc_cond OR o.id IN (SELECT object_id FROM ".TABLE_PREFIX."object_members))";
 		}
 
 		// Check for draft, junk, etc. emails
 		if ($state == "draft") {
-			$stateConditions = " m.state = '2'";
+			$stateConditions = " $mailTablePrefix.state = '2'";
 		} else if ($state == "sent") {
-			$stateConditions = " m.state IN ('1','3','5')";
+			$stateConditions = " $mailTablePrefix.state IN ('1','3','5')";
 		} else if ($state == "received") {
-			$stateConditions = " m.state IN ('0','5')";
+			$stateConditions = " $mailTablePrefix.state IN ('0','5')";
 		} else if ($state == "junk") {
-			$stateConditions = " m.state = '4'";
+			$stateConditions = " $mailTablePrefix.state = '4'";
 		} else if ($state == "outbox") {
-			$stateConditions = " m.state >= 200";
+			$stateConditions = " $mailTablePrefix.state >= 200";
 		} else {
 			$stateConditions = "";
 		}
@@ -262,21 +275,35 @@ class MailContents extends BaseMailContents {
 			$subread = "";
 		}
 
-		$state_conv_cond_1 = $state != 'received' ? " $stateConditions AND " : " m.state <> '2' AND ";
-		$state_conv_cond_2 = $state != 'received' ? " AND (mc.state = '1' OR mc.state = '3' OR mc.state = '5') " : " AND mc.state <> '2' ";
 		
-		if (user_config_option('show_emails_as_conversations')) {
-			$archived_by_id = $archived ? "AND o.archived_by_id != 0" : "AND o.archived_by_id = 0";
-			$trashed_by_id = "AND o.trashed_by_id = 0";
-			$conversation_cond = "AND IF(m.conversation_id = 0, $stateConditions, $state_conv_cond_1 NOT EXISTS (SELECT * FROM ".TABLE_PREFIX."mail_contents mc WHERE m.conversation_id = mc.conversation_id AND m.account_id = mc.account_id AND m.received_date < mc.received_date $archived_by_id AND mc.is_deleted = 0 $trashed_by_id $subread $state_conv_cond_2))";
-			$box_cond = "AND IF(EXISTS(SELECT * FROM ".TABLE_PREFIX."mail_contents mc WHERE m.conversation_id = mc.conversation_id AND m.object_id <> o.id AND m.account_id = mc.account_id $archived_by_id AND mc.is_deleted = 0 $trashed_by_id AND $stateConditions), TRUE, $stateConditions)";
-		} else {
+		
+		// Conversations not allowed yet
+		//if (user_config_option('show_emails_as_conversations')) {
+		//	$state_conv_cond_1 = $state != 'received' ? " $stateConditions AND " : " m.state <> '2' AND ";
+		//	$state_conv_cond_2 = $state != 'received' ? " AND (mc.state = '1' OR mc.state = '3' OR mc.state = '5') " : " AND mc.state <> '2' ";
+		//	$archived_by_id = $archived ? "AND o.archived_by_id != 0" : "AND o.archived_by_id = 0";
+		//	$trashed_by_id = "AND o.trashed_by_id = 0";
+		//	$conversation_cond = "AND IF(m.conversation_id = 0, $stateConditions, $state_conv_cond_1 NOT EXISTS (SELECT * FROM ".TABLE_PREFIX."mail_contents mc WHERE m.conversation_id = mc.conversation_id AND m.account_id = mc.account_id AND m.received_date < mc.received_date $archived_by_id AND mc.is_deleted = 0 $trashed_by_id $subread $state_conv_cond_2))";
+		//	$box_cond = "AND IF(EXISTS(SELECT * FROM ".TABLE_PREFIX."mail_contents mc WHERE m.conversation_id = mc.conversation_id AND m.object_id <> o.id AND m.account_id = mc.account_id $archived_by_id AND mc.is_deleted = 0 $trashed_by_id AND $stateConditions), TRUE, $stateConditions)";
+		//} else {
 			$conversation_cond = "";
 			$box_cond = "AND $stateConditions";
-		}
+		//}
 
-		return self::findByContext(array('limit' => $limit, 'offset' => $start, 'order' => "$order_by $dir",
-			'extra_conditions' => "$accountConditions $classified $read $conversation_cond $box_cond"));
+		/*return self::findByContext(array('limit' => $limit, 'offset' => $start, 'order' => "$order_by $dir",
+			'extra_conditions' => "$accountConditions $classified $read $conversation_cond $box_cond")); */
+
+		return self::instance()->listing(array(
+			'limit' => $limit, 
+			'start' => $start, 
+			'order' => $order_by,
+			'order_dir' => $dir,
+			'extra_conditions' => "$accountConditions $classified $read $conversation_cond $box_cond",
+			'count_results' => false
+		));
+		
+		
+		
 	}
 	
 	function getByMessageId($message_id) {
@@ -367,6 +394,4 @@ class MailContents extends BaseMailContents {
 		return $result;
 	}
 
-} // MailContents
-
-?>
+}

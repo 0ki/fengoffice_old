@@ -1,11 +1,12 @@
 <?php
 require_javascript("og/CustomProperties.js");
-$cps = CustomProperties::getAllCustomPropertiesByObjectType($type, $co_type);
+
+$cps = CustomProperties::getAllCustomPropertiesByObjectType($_custom_properties_object->getObjectTypeId(), $co_type);
 $ti = 0;
-if (!isset($genid))
-	$genid = gen_id();
-if (!isset($startTi))
-	$startTi = 10000;
+
+if (!isset($genid)) $genid = gen_id();
+if (!isset($startTi)) $startTi = 10000;
+
 if(count($cps) > 0){
 	$print_table_functions = false;
 	foreach($cps as $customProp){
@@ -20,11 +21,11 @@ if(count($cps) > 0){
 			echo '<div style="margin-top:6px">';
 
 			if ($customProp->getType() == 'boolean')
-				echo checkbox_field($name, $default_value, array('tabindex' => $startTi + $ti, 'style' => 'margin-right:4px', 'id' => $genid . 'cp' . $customProp->getName()));
+				echo checkbox_field($name, $default_value, array('tabindex' => $startTi + $ti, 'style' => 'margin-right:4px', 'id' => $genid . 'cp' . $customProp->getId()));
 
-			echo label_tag(clean($customProp->getName()), $genid . 'cp' . $customProp->getName(), $customProp->getIsRequired(), array('style' => 'display:inline'), $customProp->getType() == 'boolean'?'':':');
+			echo label_tag(clean($customProp->getName()), $genid . 'cp' . $customProp->getId(), $customProp->getIsRequired(), array('style' => 'display:inline'), $customProp->getType() == 'boolean'?'':':');
 			if ($customProp->getDescription() != ''){
-				echo '<span class="desc" style="margin-left:10px">- ' . clean($customProp->getDescription()) . '</span>';
+				echo '<span class="desc"> - ' . clean($customProp->getDescription()) . '</span>';
 			}
 			echo '</div>';
 
@@ -39,6 +40,11 @@ if(count($cps) > 0){
 						$isMemo = $customProp->getType() == 'memo';
 						$count = 0;
 						$fieldValues = CustomPropertyValues::getCustomPropertyValues($_custom_properties_object->getId(), $customProp->getId());
+						if (!is_array($fieldValues) || count($fieldValues) == 0) {
+							$def_cp_value = new CustomPropertyValue();
+							$def_cp_value->setValue($default_value);
+							$fieldValues = array($def_cp_value);
+						}
 						foreach($fieldValues as $value){
 							$value = str_replace('|', ',', $value->getValue());
 							if($value != ''){
@@ -64,11 +70,11 @@ if(count($cps) > 0){
 						echo '</div>';
 						echo "</td></tr></table>";
 						$include_script = true;
-					}else{
+					} else {
 						if($customProp->getType() == 'memo'){
-							echo textarea_field($name, $default_value, array('tabindex' => $startTi + $ti, 'class' => 'short'));
+							echo textarea_field($name, $default_value, array('tabindex' => $startTi + $ti, 'class' => 'short', 'id' => $genid . 'cp' . $customProp->getId()));
 						}else{
-							echo text_field($name, $default_value, array('tabindex' => $startTi + $ti));
+							echo text_field($name, $default_value, array('tabindex' => $startTi + $ti, 'id' => $genid . 'cp' . $customProp->getId()));
 						}
 					}
 					break;
@@ -80,21 +86,26 @@ if(count($cps) > 0){
 						$name .= '[]';
 						$count = 0;
 						$fieldValues = CustomPropertyValues::getCustomPropertyValues($_custom_properties_object->getId(), $customProp->getId());
-						echo '<table id="table'.$genid.$customProp->getId().'"><tbody>';
+						if (!is_array($fieldValues) || count($fieldValues) == 0) {
+							$def_cp_value = new CustomPropertyValue();
+							$def_cp_value->setValue($default_value);
+							$fieldValues = array($def_cp_value);
+						}
+						echo '<table id="table'.$genid.$customProp->getId().'">';
 						foreach($fieldValues as $val){
 							$value = DateTimeValueLib::dateFromFormatAndString("Y-m-d H:i:s", $val->getValue());
 							echo '<tr><td style="width:150px;">';
-							echo pick_date_widget2($name, $value, null, $startTi + $ti);
+							echo pick_date_widget2($name, $value, null, $startTi + $ti, null, $genid . 'cp' . $customProp->getId());
 							echo '</td><td>';
 							echo '<a href="#" class="link-ico ico-delete" onclick="og.removeCPDateValue(\''.$genid.'\','.$customProp->getId().','.$count.')"></a>';
 							echo '</td></tr>';
 							$count++;
 						}
-						echo '</tbody></table>';
+						echo '</table>';
 						echo '&nbsp;<a href="#" class="link-ico ico-add" onclick="og.addCPDateValue(\''.$genid.'\','.$customProp->getId().')">'.lang('add value').'</a><br/>';
 					}else{
 						$value = DateTimeValueLib::dateFromFormatAndString("Y-m-d H:i:s", $default_value);
-						echo pick_date_widget2($name, $value, null, $startTi + $ti);
+						echo pick_date_widget2($name, $value, null, $startTi + $ti, null, $genid . 'cp' . $customProp->getId());
 					}
 					break;
 				case 'list':
@@ -119,9 +130,9 @@ if(count($cps) > 0){
 					}
 					if($customProp->getIsMultipleValues()){
 						$name .= '[]';
-						echo select_box($name, $options, array('tabindex' => $startTi + $ti, 'style' => 'min-width:140px',  'size' => $totalOptions, 'multiple' => 'multiple'));
+						echo select_box($name, $options, array('tabindex' => $startTi + $ti, 'style' => 'min-width:140px',  'size' => $totalOptions, 'multiple' => 'multiple', 'id' => $genid . 'cp' . $customProp->getId()));
 					}else{
-						echo select_box($name, $options, array('tabindex' => $startTi + $ti, 'style' => 'min-width:140px'));
+						echo select_box($name, $options, array('tabindex' => $startTi + $ti, 'style' => 'min-width:140px', 'id' => $genid . 'cp' . $customProp->getId()));
 					}
 					break;
 				case 'table':
@@ -134,6 +145,11 @@ if(count($cps) > 0){
 					$ti += 1000;
 					$html .= '</tr><tr>';
 					$values = CustomPropertyValues::getCustomPropertyValues($_custom_properties_object->getId(), $customProp->getId());
+					if (!is_array($values) || count($values) == 0) {
+						$def_cp_value = new CustomPropertyValue();
+						$def_cp_value->setValue($default_value);
+						$values = array($def_cp_value);
+					}
 					$rows = 0;
 					if (is_array($values) && count($values) > 0) {
 						foreach ($values as $val) {

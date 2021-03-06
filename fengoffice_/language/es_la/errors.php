@@ -85,7 +85,7 @@
 	//'must choose at least one member of' => 'Debe seleccionar al menos un miembro de las dimensiones requeridas.',
 	'must choose at least one member of' => 'Debe seleccionar al menos un miembro de {0}.',
 	'must choose at least one member' => 'Debe seleccionar al menos un miembro donde guardar el objeto.',
-	'no context permissions to add' => 'No puede agregar {0} en este contexto' ,
+	'no context permissions to add' => 'No puede agregar {0} en {1}' ,
 	'no permissions to add' => 'No puede agregar {0} en {1}' ,
 	'user has contact' => 'Ya hay una persona asiganda a este usuario',
 	'maximum number of users reached error' => 'El número máximo de usuarios ha sido alcanzado',

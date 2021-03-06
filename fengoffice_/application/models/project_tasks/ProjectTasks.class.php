@@ -102,8 +102,7 @@ class ProjectTasks extends BaseProjectTasks {
 	 * @param void
 	 * @return array
 	 */
-	function getRangeTasksByUser(DateTimeValue $date_start, DateTimeValue $date_end, $assignedUser, $tags = '', $project = null, $archived = false) {
-		//FIXME 
+	function getRangeTasksByUser(DateTimeValue $date_start, DateTimeValue $date_end, $assignedUser, $archived = false) {
 		
 		$from_date = new DateTimeValue ( $date_start->getTimestamp () );
 		$from_date = $from_date->beginningOfDay ();
@@ -121,11 +120,10 @@ class ProjectTasks extends BaseProjectTasks {
 		else
 			$archived_cond = " AND `archived_on` = 0";
 		
-		$conditions = DB::prepareString(' AND `is_template` = false AND `completed_on` = ? AND ((`due_date` >= ? AND `due_date` < ?) OR (`start_date` >= ? AND `start_date` < ?) OR ' . $rep_condition . ') ' . $archived_cond . $assignedFilter, array(EMPTY_DATETIME, $from_date, $to_date, $from_date, $to_date));
+		$conditions = DB::prepareString(' AND `is_template` = false AND `completed_on` = ? AND (IF(due_date>0,(`due_date` >= ? AND `due_date` < ?),false) OR IF(start_date>0,(`start_date` >= ? AND `start_date` < ?),false) OR ' . $rep_condition . ') ' . $archived_cond . $assignedFilter, array(EMPTY_DATETIME, $from_date, $to_date, $from_date, $to_date));
 
-		//$result = self::getContentObjects(active_context(), ObjectTypes::findById(ProjectTasks::instance()->getObjectTypeId()), null, null, $conditions);
 		$result = self::instance()->listing(array(
-			"extra_conditions" => $extra_conditions
+			"extra_conditions" => $conditions
 		));
 		
 		return $result->objects;
@@ -144,7 +142,6 @@ class ProjectTasks extends BaseProjectTasks {
 		$new = new ProjectTask ();
 		$new->setMilestoneId ( $task->getMilestoneId () );
 		$new->setParentId ( $task->getParentId () );
-		//$new->setTitle ( $task->getTitle () );
 		$new->setObjectName($task->getObjectName()) ;
 		$new->setAssignedToContactId ( $task->getAssignedToContactId () );
 		$new->setPriority ( $task->getPriority () );
@@ -184,32 +181,36 @@ class ProjectTasks extends BaseProjectTasks {
 		}
 	}
 	
-
-
-	static function getOverdueAndUpcomingObjects($limit = null) {
-		
-		
-		$today = DateTimeValueLib::now();
-		$next_week = $today->beginningOfDay()->add('d', 7);
-
-		$conditions = " AND is_template = 0 AND `e`.`completed_by_id` = 0 AND `e`.`due_date` > 0 AND `e`.`due_date` < " . DB::escape($next_week);
-		//$tasks_result = ProjectTasks::instance()->getContentObjects(active_context(), ObjectTypes::findById(ProjectTasks::instance()->getObjectTypeId()), array('due_date', 'priority'), "ASC", $conditions, null, false, false, 0, $limit);
-		//$tasks_result = self::findByContext(array("limit"=>$limit, "conditions"=>$conditions));
+	static function getUpcomingWithoutDate($limit = null ) {
+		$conditions = " AND is_template = 0 AND `e`.`completed_by_id` = 0 AND `e`.`due_date` = '0000-00-00 00:00:00' " ;
 		$tasks_result = self::instance()->listing(array(
+			"start"=> 0,
 			"limit"=>$limit, 
 			"extra_conditions"=>$conditions, 
 			"order"=>  array('due_date', 'priority') , 
 			"order_dir" => "ASC"
 		));
-		$tasks = $tasks_result->objects;
+		return $tasks_result->objects;
+	}
+
+
+	static function getOverdueAndUpcomingObjects($limit = null) {
 		
-		//$milestones_result = ProjectMilestones::instance()->getContentObjects(active_context(), ObjectTypes::findById(ProjectMilestones::instance()->getObjectTypeId()), array('due_date'), "ASC", $conditions, null, false, false, 0, $limit);
-		$milestones_result = self::instance()->listing(array(
+		$conditions = " AND is_template = 0 AND `e`.`completed_by_id` = 0 AND `e`.`due_date` > 0";
+		$tasks_result = self::instance()->listing(array(
 			"limit"=>$limit, 
 			"extra_conditions"=>$conditions, 
-			"order"=>  array('due_date' ) , 
-			"order_dir" => "ASC")
-		);
+			"order"=>  array('due_date', 'priority'), 
+			"order_dir" => "ASC"
+		));
+		$tasks = $tasks_result->objects;
+		
+		$milestones_result = ProjectMilestones::instance()->listing(array(
+			"limit"=>$limit, 
+			"extra_conditions"=>$conditions, 
+			"order"=>  array('due_date'), 
+			"order_dir" => "ASC"
+		));
 		$milestones = $milestones_result->objects;
 		
 		$ordered = array();

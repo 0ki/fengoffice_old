@@ -1,8 +1,13 @@
-<?php set_page_title(lang('reset password')) ?>
+<?php 
+        set_page_title(lang('reset password'))
+?>
 <form action="<?php echo get_url('access', 'reset_password', array('t' => $token, 'uid' => $user->getId())) ?>" method="post">
 
+
 <div id="reset_password_desc">
-	<?php echo lang('reset password form desc', $user->getUsername()) ?>
+        <?php             
+                echo lang('reset password form desc', $user->getUsername());
+        ?>
 </div>
 <div id="reset_password_new">
 	<?php echo label_tag(lang('new password'), 'new_password', true)?>
@@ -13,7 +18,11 @@
 	<?php echo password_field('repeat_password', '', array('id' => 'repeat_password')) ?>
 </div>
 <div id="reset_password_submit">
-	<button type="submit"><?php echo lang('reset password')?></button>
+	<button type="submit">
+        <?php 
+                echo lang('button reset password')
+        ?>        
+        </button>
 </div>
 </form>
 

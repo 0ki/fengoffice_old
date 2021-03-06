@@ -4,23 +4,7 @@
 	if(isset($user) && ($user instanceof Contact)) { 
 ?>
 <div class="card" style="padding:0px;">
-	<?php
-	$show_help_option = user_config_option('show_context_help'); 
-	if ($isUserAccount && ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_account_context_help', true, logged_user()->getId())))) {?>
-		<div style="padding-bottom:10px;">
-		<?php 
-			if($user->getId() == logged_user()->getId()){
-				$hd_key = 'chelp personal account';
-			}else{
-				$hd_key = 'chelp user account';
-				if (logged_user()->isAdministrator())
-					$hd_key .= ' admin';
-			}
-			render_context_help($this, $hd_key, 'account');
-		?>
-		</div>
-	<?php } ?>
-		
+
   <div class="cardIcon"><img src="<?php echo $user->getAvatarUrl() ?>" alt="<?php echo clean($user->getObjectName()) ?> avatar" /></div>
   <div class="cardData">
     
@@ -37,7 +21,7 @@
 	$genid = gen_id();
 	?>
 	<fieldset><legend class="toggle_expanded" onclick="og.toggle('<?php echo $genid ?>user_activity',this)"><?php echo lang('latest user activity') ?></legend>
-<div id="<?php echo $genid ?>user_activity"><table><col/><col style="padding-left:10px;"/><col style="padding-left:10px"/>
+		<div id="<?php echo $genid ?>user_activity"><table><col/><col style="padding-left:10px;"/><col style="padding-left:10px"/>
 		<?php foreach ($logs as $log) {
 			$log_object = $log->getObject();
 			if ($log_object instanceof ApplicationDataObject){?>

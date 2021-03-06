@@ -3,7 +3,7 @@
 /**
  * ObjectType class
  *
- * @author Diego Castiglioni <diego20@gmail.com>
+ * @author Diego Castiglioni <diego.castiglioni@fengoffice.com>
  */
 class ObjectType extends BaseObjectType {
 	
@@ -20,11 +20,14 @@ class ObjectType extends BaseObjectType {
 	
 	function getArrayInfo($columns = null) {
 		$info = array();
-		if (is_null($columns)) $columns = $this->getColumns();
+		if (is_null($columns)) {
+			$columns = $this->getColumns();
+			$was_null = true;
+		}
 		foreach ($columns as $col) {
 			$info[$col] = $this->getColumnValue($col);
 		}
-		
+		if (isset($was_null) && $was_null) $columns = null;
 		return $info;
 	}
 

@@ -151,7 +151,7 @@ class MailContent extends BaseMailContent {
 	}
 	
 	function delete($delete_db_record = true) {
-		$rows = DB::executeAll("SELECT count(`id`) as `c` FROM `".TABLE_PREFIX."mail_contents` WHERE `conversation_id` = " . DB::escape($this->getConversationId()));
+		$rows = DB::executeAll("SELECT count(`object_id`) as `c` FROM `".TABLE_PREFIX."mail_contents` WHERE `conversation_id` = " . DB::escape($this->getConversationId()));
 		if (is_array($rows) && count($rows) > 0) {
 			if ($rows[0]['c'] < 2) {
 				// if no other emails in conversation, delete conversation
@@ -206,11 +206,12 @@ class MailContent extends BaseMailContent {
 	 */
 	function getContent() {
 		if (FileRepository::isInRepository($this->getContentFileId())) {
-			return FileRepository::getFileContent($this->getContentFileId(), config_option('file_storage_adapter'));
+			return FileRepository::getFileContent($this->getContentFileId());
+			//return FileRepository::getFileContent($this->getContentFileId(), config_option('file_storage_adapter'));
 		} else if ($this->getMailData()->columnExists('content')) {
 			return $this->getMailData()->getContent();
 		}
-	} // getContent()
+	} 
 	
 
 
@@ -402,8 +403,16 @@ class MailContent extends BaseMailContent {
 	 * @return boolean
 	 */
 	function canView(Contact $user) {	
-		return can_read($user, $this->getMembers(), $this->manager()->getObjectTypeId());
-	} // canView
+		$account = $this->getAccount();
+		if ($account) {
+			return ( 
+				$account->getContactId() == logged_user()->getId() || 
+				can_read($user, $this->getMembers(), $this->manager()->getObjectTypeId())
+			);	
+		}else{
+			return false;
+		}
+	}
 
 
 	/**
@@ -413,7 +422,15 @@ class MailContent extends BaseMailContent {
 	 * @return boolean
 	 */
 	function canEdit(Contact $user) {	
-		return can_write($user, $this->getMembers(), $this->manager()->getObjectTypeId());
+		$account = $this->getAccount();
+		if ($account) {
+			return ( 
+				$account->getContactId() == logged_user()->getId() || 
+				can_write($user, $this->getMembers(), $this->manager()->getObjectTypeId())
+			);	
+		}else{
+			return false;
+		}
 	} 
 
 	/**
@@ -424,8 +441,8 @@ class MailContent extends BaseMailContent {
 	 * @param Project $project
 	 * @return booelean
 	 */
-	function canAdd(Contact $user, $context) {
-		return can_add($user, $context, $this->manager()->getObjectTypeId());
+	function canAdd(Contact $user, $context, &$notAllowedMember = '') {
+		return can_add($user, $context, $this->manager()->getObjectTypeId(), $notAllowedMember);
 	} // canAdd
 
 	/**
@@ -435,7 +452,15 @@ class MailContent extends BaseMailContent {
 	 * @return boolean
 	 */
 	function canDelete(Contact $user) {
-		return can_delete($user,$this->getMembers(), $this->manager()->getObjectTypeId());
+		$account = $this->getAccount();
+		if ($account) {
+			return ( 
+				$account->getContactId() == logged_user()->getId() || 
+				can_delete($user,$this->getMembers(), $this->manager()->getObjectTypeId())
+			);	
+		}else{
+			return false;
+		}
 	}
 
 	// ---------------------------------------------------
@@ -635,25 +660,16 @@ class MailContent extends BaseMailContent {
 	
 	
 	function getFromContact(){
-		$contacts = Contacts::findAll(array('conditions' => " email = '" . clean($this->getFrom()) . "' OR email2 = '" . clean($this->getFrom()) . "' OR email3 = '" . clean($this->getFrom()) . "' "));
+		$contacts = Contacts::findAll(array(
+			'conditions' => " jt.email_address = '".clean($this->getFrom())."'",
+			'join' => array(
+				'jt_table' => ContactEmails::instance()->getTableName(),
+				'jt_field' => 'contact_id',
+				'e_field' => 'object_id',
+			),
+		));
+		
 		if (is_array($contacts) && count($contacts) > 0){
-			$best_level = 4;
-			$best_contact = null;
-			if (count($contacts) > 1){
-				foreach ($contacts as $contact){
-					if ($best_level > 3 && $contact->getEmail3() == $this->getFrom()){
-						$best_level = 3;
-						$best_contact = $contact;
-					} else if ($best_level > 2 && $contact->getEmail2() == $this->getFrom()){
-						$best_level = 2;
-						$best_contact = $contact;
-					} else if ($best_level > 1 && $contact->getEmail() == $this->getFrom()){
-						$best_level = 1;
-						$best_contact = $contact;
-					}
-				}
-				return $best_contact;
-			}
 			return $contacts[0];
 		}
 		return null;
@@ -750,6 +766,28 @@ class MailContent extends BaseMailContent {
 	}
 	
 	
-	
+	/**
+	 * Override defaults. 
+	 * Also adds mail to sharing table if is not categorized. 
+	 * Only permissions for the account owner.  
+	 * 
+	 * @see ContentDataObject::addToSharingTable()
+	 */
+	function addToSharingTable() {	
+		parent::addToSharingTable();
+		$id = $this->getId();
+		
+		if(!$this->getAccount() instanceof MailAccount) return;
+		
+		$contactId = $this->getAccount()->getContactId();
+		$contact = Contacts::instance()->findById($contactId);
+		
+		if (!$contact instanceof Contact) return;
+		
+		$group_id = $contact->getPermissionGroupId();
+		if ($group_id) {
+			$sql = "INSERT INTO ".TABLE_PREFIX."sharing_table ( object_id, group_id ) VALUES ($id,$group_id) ON DUPLICATE KEY UPDATE group_id = group_id ";
+			DB::execute($sql);
+		}
+	}
 }
-?>

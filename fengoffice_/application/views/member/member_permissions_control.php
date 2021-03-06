@@ -26,15 +26,15 @@
 		  	<col align=left/><col align=center/>
 		  	<tr style="border-bottom:1px solid #888;margin-bottom:5px">
 		  	<td style="vertical-align:middle">
-		  		<span>
+		  		<span class="perm_all_checkbox_container">
 					<?php echo checkbox_field($genid . 'pAll', false, array('id' => $genid . 'pAll', 'onclick' => 'og.userPermissions.ogPermAllChecked("' . $genid . '", this.checked)')) ?>
 					<label style="font-weight:bold" for="<?php echo $genid ?>pAll" class="checkbox"><?php echo lang('All') ?></label>   
 		  		</span>
 		  	</td>
-		  	<td align=center style="padding:0 10px;width:100px;"><a href="#" class="internalLink" onclick="og.userPermissions.ogPermSetLevel('<?php echo $genid ?>', 3);return false;"><?php echo lang('read write and delete') ?></a></td>
-		  	<td align=center style="padding:0 10px;width:100px;"><a href="#" class="internalLink" onclick="og.userPermissions.ogPermSetLevel('<?php echo $genid ?>', 2);return false;"><?php echo lang('read and write') ?></a></td>
-		  	<td align=center style="padding:0 10px;width:100px;"><a href="#" class="internalLink" onclick="og.userPermissions.ogPermSetLevel('<?php echo $genid ?>', 1);return false;"><?php echo lang('read only') ?></a></td>
-		  	<td align=center style="padding:0 10px;width:100px;"><a href="#" class="internalLink" onclick="og.userPermissions.ogPermSetLevel('<?php echo $genid ?>', 0);return false;"><?php echo lang('none no bars') ?></a></td></tr>
+		  	<td align=center style="padding:0 10px;width:100px;"><a href="#" class="internalLink radio-title-3" onclick="og.userPermissions.ogPermSetLevel('<?php echo $genid ?>', 3);return false;"><?php echo lang('read write and delete') ?></a></td>
+		  	<td align=center style="padding:0 10px;width:100px;"><a href="#" class="internalLink radio-title-2" onclick="og.userPermissions.ogPermSetLevel('<?php echo $genid ?>', 2);return false;"><?php echo lang('read and write') ?></a></td>
+		  	<td align=center style="padding:0 10px;width:100px;"><a href="#" class="internalLink radio-title-1" onclick="og.userPermissions.ogPermSetLevel('<?php echo $genid ?>', 1);return false;"><?php echo lang('read only') ?></a></td>
+		  	<td align=center style="padding:0 10px;width:100px;"><a href="#" class="internalLink radio-title-0" onclick="og.userPermissions.ogPermSetLevel('<?php echo $genid ?>', 0);return false;"><?php echo lang('none no bars') ?></a></td></tr>
 		  	
 		<?php 
 			$row_cls = "";
@@ -45,10 +45,10 @@
 		?>
 		  	<tr class="<?php echo $row_cls?>">
 		  		<td style="padding-right:20px"><span id="<?php echo $genid.'obj_type_label'.$id_suffix?>"><?php echo lang($ot->getName()) ?></span></td>
-		  		<td align=center><?php echo radio_field($genid .'rg_'.$id_suffix, false, array('onchange' => 'og.userPermissions.ogPermValueChanged('. $change_parameters .')', 'value' => '3', 'style' => 'width:16px', 'id' => $genid . 'rg_3_'.$id_suffix)) ?></td>
-		  		<td align=center><?php echo radio_field($genid .'rg_'.$id_suffix, false, array('onchange' => 'og.userPermissions.ogPermValueChanged('. $change_parameters .')', 'value' => '2', 'style' => 'width:16px', 'id' => $genid . 'rg_2_'.$id_suffix)) ?></td>
-		  		<td align=center><?php echo radio_field($genid .'rg_'.$id_suffix, false, array('onchange' => 'og.userPermissions.ogPermValueChanged('. $change_parameters .')', 'value' => '1', 'style' => 'width:16px', 'id' => $genid . 'rg_1_'.$id_suffix)) ?></td>
-		  		<td align=center><?php echo radio_field($genid .'rg_'.$id_suffix, false, array('onchange' => 'og.userPermissions.ogPermValueChanged('. $change_parameters .')', 'value' => '0', 'style' => 'width:16px', 'id' => $genid . 'rg_0_'.$id_suffix)) ?></td>
+		  		<td align=center><?php echo radio_field($genid .'rg_'.$id_suffix, false, array('onchange' => 'og.userPermissions.ogPermValueChanged('. $change_parameters .')', 'value' => '3', 'style' => 'width:16px', 'id' => $genid . 'rg_3_'.$id_suffix, 'class' => "radio_3")) ?></td>
+		  		<td align=center><?php echo radio_field($genid .'rg_'.$id_suffix, false, array('onchange' => 'og.userPermissions.ogPermValueChanged('. $change_parameters .')', 'value' => '2', 'style' => 'width:16px', 'id' => $genid . 'rg_2_'.$id_suffix, 'class' => "radio_2")) ?></td>
+		  		<td align=center><?php echo radio_field($genid .'rg_'.$id_suffix, false, array('onchange' => 'og.userPermissions.ogPermValueChanged('. $change_parameters .')', 'value' => '1', 'style' => 'width:16px', 'id' => $genid . 'rg_1_'.$id_suffix, 'class' => "radio_1")) ?></td>
+		  		<td align=center><?php echo radio_field($genid .'rg_'.$id_suffix, false, array('onchange' => 'og.userPermissions.ogPermValueChanged('. $change_parameters .')', 'value' => '0', 'style' => 'width:16px', 'id' => $genid . 'rg_0_'.$id_suffix, 'class' => "radio_0")) ?></td>
 		    </tr>
 		<?php }?>
 		    
@@ -75,7 +75,8 @@ og.userPermissions.onUserSelect = function(genid, arguments) {
 	}
 	var pg_id = arguments['id'];
 	var name = arguments['n'];
-
+ 
+	og.showHideNonGuestPermissionOptions(arguments['isg']);
 	og.userPermissions.permissionInfo[genid].selectedPG = pg_id;
 	og.userPermissions.loadPGPermissions(genid, pg_id);
 

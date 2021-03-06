@@ -25,6 +25,10 @@ class DashboardController extends ApplicationController {
 		ajx_replace(true);
 	}
 	
+	
+	
+	
+	
 	/**
 	 * 
 	 * 
@@ -414,6 +418,76 @@ class DashboardController extends ApplicationController {
 	function my_tasks() {
 		tpl_assign('active_projects', logged_user()->getActiveProjects());
 	} // my_tasks
-} // DashboardController
+	
+	
+	
+	//*************** Main dashboard ***********************//
 
-?>
+	/**
+	 * @author Ignacio Vazquez
+	 */
+	function main_dashboard(){
+		ajx_set_no_toolbar(true);
+		
+		
+	}
+	
+	function load_widget () {
+		$this->setLayout('empty');
+		ajx_current('empty');
+		$this->setTemplate('empty');
+		$name = $_GET['name'];
+		if ($w = Widgets::instance()->findById($name) ){ /* @var $w Widget */
+			echo $w->execute();
+		}
+		exit;
+		//TODO Avoid exit : find the way to do that with the framework
+	}
+	
+} 
+
+
+
+/**
+ * @author pepe
+ */
+class DashboardTools {
+	
+	static $widgets = array(); 
+
+	static function renderSection($name) {
+		
+		$widgetsToRender = array();
+		
+		self::$widgets = Widgets::instance()->findAll(array(
+			//"conditions" => "default_section = '$name' ",
+			"order" => "default_order",
+			"order_dir" => "DESC",
+		
+		));
+		// If exists an instance of cw for this section, render the widgets with the options overriden
+		foreach (self::$widgets as $w) {
+			/* @var $w Widget */
+			
+			if 	($cw = ContactWidgets::instance()->findById(array(
+				'contact_id'=>logged_user()->getId(), 
+				'widget_name'=>$w->getName()))
+			){
+				if ( $cw->getSection() == $name ) {
+					$w->setOptions($cw->getOptions()); 
+					$w->setDefaultOrder($cw->getOrder());
+					$widgetsToRender[(int)$w->getDefaultOrder()] = $w ;
+				}
+			}elseif($w->getDefaultSection() == $name){
+				$widgetsToRender[(int)$w->getDefaultOrder()] = $w ;
+			}
+		}
+		
+		ksort($widgetsToRender);
+		
+		foreach ($widgetsToRender as $k=> $w) {
+			$w->execute();
+		}
+		
+	}
+}

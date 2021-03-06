@@ -494,3 +494,20 @@ og.userPermissions.ogPermPrepareSendData = function(genid){
 
 	return true;
 }
+
+
+og.showHideNonGuestPermissionOptions = function (guest_selected) {
+	if (guest_selected) {
+		$('.radio_3').hide();
+		$('.radio_2').hide();
+		$('.radio-title-3').hide();
+		$('.radio-title-2').hide();
+		$('.perm_all_checkbox_container').hide();
+	} else {
+		$('.radio_3').show();
+		$('.radio_2').show();
+		$('.radio-title-3').show();
+		$('.radio-title-2').show();
+		$('.perm_all_checkbox_container').show();
+	}
+}

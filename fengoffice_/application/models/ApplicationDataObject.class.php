@@ -93,6 +93,7 @@ abstract class ApplicationDataObject extends DataObject {
 						$columns_to_drop[] = $column_name;
 				}
 			}
+			$searchable_columns = null;
 		}
 		 
 		if (count($columns_to_drop) > 0){
@@ -117,9 +118,13 @@ abstract class ApplicationDataObject extends DataObject {
 						VALUES (".$searchable_object->getRelObjectId().",".$searchable_object->getColumnName().",".$content.")
 						ON DUPLICATE KEY UPDATE content = $content";
 					DB::execute($sql);
-				} 
+					$searchable_object = null;
+				}
+				$content = null;
 			} 
-		} 
+		}
+		
+		$columns_to_drop = null;
 		 
 	}
 
@@ -609,6 +614,7 @@ abstract class ApplicationDataObject extends DataObject {
 				$copy->setColumnValue($col, $this->getColumnValue($col));
 			}
 		}
+		$cols = null;
 		return $copy;
 	}
 	

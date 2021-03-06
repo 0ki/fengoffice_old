@@ -3,7 +3,7 @@
   /**
   * BaseDimension class
   *
-  * @author Diego Castiglioni <diego20@gmail.com>
+  * @author Diego Castiglioni <diego.castiglioni@fengoffice.com>
   */
   abstract class BaseDimension extends DataObject {
   

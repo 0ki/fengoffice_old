@@ -83,8 +83,10 @@ og.addCustomProperty = function(genid, property){
 		'<option value="memo"' + (property != null && property.type == 'memo' ? 'selected' : '') + '>' + lang('memo') + '</option>' +
 		'<option value="table"' + (property != null && property.type == 'table' ? 'selected' : '') + '>' + lang('table') + '</option>' +
 		'</select>';
+	
 	var style = 'style="width:auto;padding-right:10px;"';
 	var styleHidden = 'style="width:100px;padding-right:10px;display:none;"';
+	
 	var table = '<table onmouseover="og.enterCP(' + count + ')" onmouseout="og.leaveCP(' + count + ')"><tr>' +
 		'<td style="display:none;"><input id="custom_properties[' + count + '][id]" name="custom_properties[' + count + '][id]" type="hidden" value="{0}"/>' +
 		'<input id="custom_properties[' + count + '][deleted]" name="custom_properties[' + count + '][deleted]" type="hidden" value="0"/></td>' +
@@ -96,7 +98,9 @@ og.addCustomProperty = function(genid, property){
 		'</b>:<br/><input type="text" onchange="javascript:og.fieldValueChanged()" id="custom_properties[' + count + '][values]" name="custom_properties[' + count + '][values]" value="{2}"/></td>' +
 		'<td ' + style + '><b>' + lang('description') + 
 		'</b>:<br/><input type="text" onchange="javascript:og.fieldValueChanged()" id="custom_properties[' + count + '][description]" name="custom_properties[' + count + '][description]" value="{3}"/></td>' +
-		'</tr><tr><td ' + style + ' id="tdDefaultValueText' + count + '"><b>' + lang('default value') + 
+		'</tr>' +
+		
+		'<tr><td ' + style + ' id="tdDefaultValueText' + count + '"><b>' + lang('default value') + 
 		'</b>:<br/><input type="text" onchange="javascript:og.fieldValueChanged()" id="custom_properties[' + count + '][default_value]" name="custom_properties[' + count + '][default_value]" value="{4}"/></td>' +
 		'<td ' + styleHidden + ' id="tdDefaultValueCheck' + count + '"><b>' + lang('default value') + 
 		'</b>:<br/><input type="checkbox" class="checkbox" onchange="javascript:og.fieldValueChanged()" id="custom_properties[' + count + '][default_value_boolean]" name="custom_properties[' + count + '][default_value_boolean]" {4}/>&nbsp;' + lang('checked') + '</td>' +
@@ -156,9 +160,9 @@ og.addCustomProperty = function(genid, property){
 	cp.className = classname;
 	cp.innerHTML = table;
 	cpDiv.appendChild(cp);
-	if(property == null){ 
+	if(property == null) { 
   		cpModified = true;
-	}else{
+	} else {
   		if(property.type == 'boolean'){
   			document.getElementById('tdDefaultValueCheck' + count).style.display = '';
   			document.getElementById('tdDefaultValueText' + count).style.display = 'none';

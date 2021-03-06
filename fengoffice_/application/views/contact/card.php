@@ -8,7 +8,7 @@
                         <div class="picture">
                             <img src="<?php echo $contact->getPictureUrl() ?>" alt="<?php echo clean($contact->getObjectName()) ?>picture" />
                             <?php if ($contact->canEdit(logged_user())):?>
-                            	<a class="change-picture" href="<?php echo $contact->getUpdatePictureUrl() ?>">[<?php echo lang("edit")?>]</a>
+                            	<a class="change-picture" href="<?php echo $contact->getUpdatePictureUrl() ?>">[<?php echo lang("edit picture")?>]</a>
                             <?php endif;?>
                         </div>
                         <div class="basic-info">
@@ -16,7 +16,12 @@
                             <h2>
                                 <?php echo clean($contact->getObjectName()) ?>
                             </h2>
-                            <h3><?php echo clean($contact->getJobTitle()); echo ($company) ? '<span> | </span>' . $company->getObjectName() : '' ?></h3>
+                            <h3><?php
+                            	$jt = clean($contact->getJobTitle());
+                            	$cn = $company instanceof Contact && $company->getIsCompany() ? clean($company->getObjectName()) : '';
+                            	$sep = ($jt != '' && $cn != '') ? '<span> | </span>' : '';
+                            	echo $jt . $sep . $cn; 
+                            ?></h3>
                             
                             <h4 class="editable"><?php echo lang ('contact info') ?>
                                 <?php if ($contact->canEdit(logged_user())):?>
@@ -123,6 +128,7 @@
                     <div class="clear"></div>                    
 	                <?php Hook::fire('after_contact_view', $contact, $null); ?>
                 </div>
+                <?php if ( isset($show_person_activity) ): ?>
                 <div class="person-activity">
                     <h2><?php echo lang('related to') ?></h2>
                     <ul>
@@ -138,6 +144,7 @@
                     <?php endforeach ?>
                     </ul>
                 </div>
+                <?php endif ; ?>
             </div>
         </div>	
         <div class="right-column">

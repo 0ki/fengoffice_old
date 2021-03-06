@@ -60,7 +60,7 @@
     			<?php echo lang('modified by') ?>:
 			</span><br/><div style="padding-left:10px">
 			<?php 
-			if ($object->getUpdatedBy() instanceof Contact && $object->getCreatedBy()->isUser()){
+			if ($object->getUpdatedBy() instanceof Contact && $object->getUpdatedBy()->isUser()){
 					
 				if (logged_user()->getId() == $object->getUpdatedBy()->getId())
 					$username = lang('you');
@@ -84,7 +84,7 @@
 			</span><br/><div style="padding-left:10px">
 			<?php
 			$trash_user = Contacts::findById($object->getTrashedById());
-			if ($trash_user instanceof Contact && $object->getCreatedBy()->isUser()){
+			if ($trash_user instanceof Contact && $trash_user->isUser()){
 				if (logged_user()->getId() == $trash_user->getId())
 					$username = lang('you');
 				else
@@ -108,7 +108,7 @@
 			</span><br/><div style="padding-left:10px">
 			<?php
 			$archive_user = Contacts::findById($object->getArchivedById());
-			if ($archive_user instanceof Contact && $object->getCreatedBy()->isUser()) {
+			if ($archive_user instanceof Contact && $archive_user->isUser()) {
 				if (logged_user()->getId() == $archive_user->getId()) {
 					$username = lang('you');
 				} else {
@@ -144,7 +144,7 @@
 				</span><br/><div style="padding-left:10px">
 				<?php
 				$checkout_user = Contacts::findById($object->getCheckedOutById());
-				if ($checkout_user instanceof Contact && $object->getCreatedBy()->isUser()){
+				if ($checkout_user instanceof Contact && $checkout_user->isUser()){
 					if (logged_user()->getId() == $checkout_user->getId())
 						$username = lang('you');
 					else

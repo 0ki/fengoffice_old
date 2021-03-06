@@ -3,7 +3,7 @@
 /**
  * Contact class
  *
- * @author Carlos Palma <chonwil@gmail.com>, Diego Castiglioni <diego20@gmail.com>
+ * @author Carlos Palma <chonwil@gmail.com>, Diego Castiglioni <diego.castiglioni@fengoffice.com>
  */
 class Contact extends BaseContact {
 	
@@ -55,38 +55,55 @@ class Contact extends BaseContact {
 		return false;
 	}
 	
+	function hasReferences() {
+		$id = $this->getId();
+		// Check direct references
+		$references = Objects::findAll(array("id"=>true, "conditions" => "`created_by_id` = $id OR `updated_by_id` = $id OR `trashed_by_id` = $id OR `archived_by_id` = $id"));
+		if (count($references)){
+			return true ;
+		}
+		
+		//Check for objects in Person Member
+		$objects_in_person_member_count = 0;
+		if (Plugins::instance()->isActivePlugin('core_dimensions')) {
+			$persons_dim = Dimensions::findByCode('feng_persons');
+			$members = Members::findByObjectId($this->getId(), $persons_dim->getId());
+			$member_ids = array();
+			foreach ($members as $member) $member_ids[] = $member->getId();
+			$objects_in_person_member_count = ObjectMembers::count("`member_id` IN (".implode(",", $member_ids).") AND object_id <> $id ");
+		}
+		if ($objects_in_person_member_count > 0){
+			return true ;
+		}
+		
+		// Check form linked objects
+		$linked_obj_references_count = LinkedObjects::count("`created_by_id` = $id");
+		if ($linked_obj_references_count > 0){
+			return true;
+		}
+			
+		return false ;
+		
+		
+	}
+	
 	
 	/**
 	 * @abstract Sets the user disabled, if it has no references in the system it is physically deleted
 	 * @author Alvaro Torterola <alvaro.torterola@fengoffice.com>
 	 */
-	function disable() {
-		if (!$this->canDelete(logged_user())) return false;
+	function disable($deleteInactive = true) {
+		if (!$this->canDelete(logged_user())) {
+			return false;	
+		}
 		
 		if (parent::getUserType() != 0 && !$this->getDisabled()) {
-			
-			$id = $this->getId();
-			$references = Objects::findAll(array("conditions" => "`created_by_id` = $id OR `updated_by_id` = $id OR `trashed_by_id` = $id OR `archived_by_id` = $id"));
-			$linked_obj_references = LinkedObjects::findAll(array("conditions" => "`created_by_id` = $id"));
-			$objects_in_person_member = array();
-			if (Plugins::instance()->isActivePlugin('core_dimensions')) {
-				$persons_dim = Dimensions::findByCode('feng_persons');
-				$members = Members::findByObjectId($this->getId(), $persons_dim->getId());
-				$member_ids = array();
-				foreach ($members as $member) $member_ids[] = $member->getId();
-				$objects_in_person_member = ObjectMembers::findAll(array('conditions' => "`member_id` IN (".implode(",", $member_ids).")"));
-			}
-			
-			if (($references && is_array($references) && count($references) > 0) || count($objects_in_person_member) > 0 ||
-				($linked_obj_references && is_array($linked_obj_references) && count($linked_obj_references) > 0)) {
-				
+			if (!$deleteInactive || $this->hasReferences() ) {
 				$this->setDisabled(true);
-				$this->archive();
-				
+				$this->save();
 			} else {
 				$this->do_delete();
 			}
-			
 			return true;
 		}
 	}
@@ -265,7 +282,7 @@ class Contact extends BaseContact {
 	 * @return boolean
 	 */
 	function isOwnerCompany() {
-		return $this->getObjectId() == 1;
+		return $this->getObjectId() == owner_company()->getId();
 	} // isOwnerCompany
 
 	
@@ -552,7 +569,7 @@ class Contact extends BaseContact {
 	 */
 	function getUsersByCompany() {
 		if ($this->company_users == null) {
-			$this->company_users = Contacts::findAll(array('conditions' => '`user_type` <> 0 AND `company_id` = ' . $this->getId()));
+			$this->company_users = Contacts::findAll(array('conditions' => '`user_type` <> 0 AND `company_id` = ' . $this->getId(), 'order' => '`first_name` ASC, `surname` ASC'));
 		}
 		return $this->company_users;
 	} // getContactsByCompany
@@ -766,9 +783,14 @@ class Contact extends BaseContact {
 	 * @return boolean
 	 */
 	function delete() {
+		// dont delete owner company and account owner
+		if ($this->isOwnerCompany() || $this->isAccountOwner()) {
+			return false;
+		}
+		
 		if($this->isUser() && logged_user() instanceof Contact && !can_manage_security(logged_user())) {
 			return false;
-		} // if
+		}
 		$this->deletePicture();
 		
 		ContactEmails::clearByContact($this);	
@@ -829,8 +851,8 @@ class Contact extends BaseContact {
 	} // canView
 	
 	
-	function canAdd(Contact $user, $context){
-		return can_add($user, $context, Contacts::instance()->getObjectTypeId());
+	function canAdd(Contact $user, $context, &$notAllowedMember = ''){
+		return can_add($user, $context, Contacts::instance()->getObjectTypeId(), $notAllowedMember);
 	}
 
 	/**
@@ -889,6 +911,10 @@ class Contact extends BaseContact {
 	 * @return boolean
 	 */
 	function canDelete(Contact $user) {
+		// dont delete account owner
+		if ($this->isAccountOwner() || $this->isOwnerCompany()) {
+			return false;
+		}
 		if (parent::getUserType() != 0) {
 			return can_manage_configuration($user) && can_manage_security($user);
 		} else {
@@ -981,7 +1007,7 @@ class Contact extends BaseContact {
 		} else {
 			$archivedBy = lang ( "n/a" );
 		}
-		return array ("id" => $this->getObjectTypeName () . $this->getId (), "object_id" => $this->getId (), "name" => $this->getObjectName (), "type" => $this->getObjectTypeName (), "tags" => project_object_tags ( $this ), "createdBy" => $this->getCreatedByDisplayName (), // Users::findById($this->getCreatedBy())->getUsername(),
+		return array ("id" => $this->getObjectTypeName () . $this->getId (), "object_id" => $this->getId (), "ot_id" => $this->getObjectTypeId (), "name" => $this->getObjectName (), "type" => $this->getObjectTypeName (), "tags" => project_object_tags ( $this ), "createdBy" => $this->getCreatedByDisplayName (), // Users::findById($this->getCreatedBy())->getUsername(),
 "createdById" => $this->getCreatedById (), "dateCreated" => $this->getObjectCreationTime () instanceof DateTimeValue ? ($this->getObjectCreationTime ()->isToday () ? format_time ( $this->getObjectCreationTime () ) : format_datetime ( $this->getObjectCreationTime () )) : lang ( 'n/a' ), "updatedBy" => $updated_by_name, "updatedById" => $updated_by_id, "dateUpdated" => $updated_on, "wsIds" => $wsIds, "url" => $this->getObjectUrl (), "manager" => get_class ( $this->manager () ), "deletedById" => $this->getTrashedById (), "deletedBy" => $deletedBy, "dateDeleted" => $deletedOn, "archivedById" => $this->getArchivedById (), "archivedBy" => $archivedBy, "dateArchived" => $archivedOn );
 	}
 	
@@ -1018,6 +1044,7 @@ class Contact extends BaseContact {
      * @author pepe
      */
     function addEmail($value, $email_type, $isMain = false) {
+    	$value=trim($value);
     	$email = new ContactEmail() ;
     	$email->setEmailTypeId(EmailTypes::getEmailTypeId($email_type));
     	$email->setEmailAddress($value);
@@ -1129,10 +1156,7 @@ class Contact extends BaseContact {
     	return $pg->getName();
     }
     
-    /**
-     * @author pepe
-     * 
-     */
+
     function isGuest() {
     	if(preg_match('/Guest/', $this->getUserTypeName())){
     		return true;
@@ -1176,7 +1200,7 @@ class Contact extends BaseContact {
     
 	
     function getPictureUrl() {
-		return ($this->getPictureFile() != '' ? get_url('files', 'get_public_file', array('id' => $this->getPictureFile())): get_image_url('avatar.gif'));
+		return ($this->getPictureFile() != '' ? get_url('files', 'get_public_file', array('id' => $this->getPictureFile())): get_image_url('default-avatar.png'));
 	}
 	
 	
@@ -1256,7 +1280,7 @@ class Contact extends BaseContact {
 	 * @return string
 	 */
 	function getAddUserUrl() {
-		return get_url('contact', 'add', array('company_id' => $this->getId()));
+		return get_url('contact', 'add', array('company_id' => $this->getId(), 'is_user' => 1));
 	} // getAddUserUrl
 	
 	
@@ -1366,7 +1390,7 @@ class Contact extends BaseContact {
 	 * @return string
 	 */
 	function getAvatarUrl() {
-		return $this->hasAvatar() ? get_url('files', 'get_public_file', array('id' => $this->getPictureFile())): get_image_url('avatar.gif');
+		return $this->hasAvatar() ? get_url('files', 'get_public_file', array('id' => $this->getPictureFile())): get_image_url('default-avatar.png');
 	} // getAvatarUrl
 
 	
@@ -1507,7 +1531,7 @@ class Contact extends BaseContact {
 	 * @return string
 	 */
 	function getLogoUrl() {
-		return $this->hasLogo() ? get_url('files', 'get_public_file', array('id' => $this->getPictureFile())): get_image_url('avatar.gif');
+		return $this->hasLogo() ? get_url('files', 'get_public_file', array('id' => $this->getPictureFile())): get_image_url('default-avatar.png');
 	} // getLogoUrl
 	
 	/**
@@ -1712,7 +1736,11 @@ class Contact extends BaseContact {
 	 * @return string
 	 */
 	function getDeleteUrl() {
-		return get_url('contact', 'delete', $this->getId());
+		if ( $this->isUser()) {
+			return get_url('account', 'delete_user', $this->getId());
+		}else{
+			return get_url('contact', 'delete', $this->getId());
+		}
 	} // getDeleteUrl
 	
 	
@@ -1781,6 +1809,10 @@ class Contact extends BaseContact {
 		else if ($this->getObject()->getArchivedById() > 0) $class .= "-archived";
 		
 		return $class;
+	}
+	
+	function getDisableUrl() {
+		return get_url('account', 'disable', array("id"=>$this->getId()));
 	}
 
 }

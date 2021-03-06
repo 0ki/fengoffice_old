@@ -37,7 +37,8 @@
 		$max_level = 0;
 		
 		foreach ($objects as $object) {
-			$members = ObjectMembers::getMembersByObjectAndDimension($object->getId(), $dimension_id, "AND om.is_optimization = 0");
+			$object_id = $object instanceof Timeslot && $object->getColumnValue('rel_object_id') > 0 ? $object->getRelObjectId() : $object->getId();
+			$members = ObjectMembers::getMembersByObjectAndDimension($object_id, $dimension_id, "AND om.is_optimization = 0");
 			if (is_array($members) && count($members) > 0) {
 				$member = $members[0];
 				$all_parents = array_reverse($member->getAllParentMembersInHierarchy(true));

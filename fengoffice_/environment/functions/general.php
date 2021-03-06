@@ -111,11 +111,27 @@ function clean($str) {
  */
 function getDateValue($value = '', $default = EMPTY_DATETIME){
 	if ($value instanceof DateTimeValue) return $value;
-	if ($value != '') {
+	if ($value != '' && $value != date_format_tip(user_config_option('date_format'))) {
 		$date_format = user_config_option('date_format');
 		return DateTimeValueLib::dateFromFormatAndString($date_format, $value);
 	}	
 	return $default;
+}
+
+/**
+ * Returns an array separating hours and minutes
+ *
+ * @param string $value
+ * @return array
+ */
+function getTimeValue($value = ''){
+	if ($value == '' || $value == 'hh:mm') return null;
+	$values = explode(':', $value);
+	$h = array_var($values, 0);
+	$is_pm = str_ends_with(trim(strtoupper(array_var($values, 1))), "PM");
+	if ($is_pm) $h = ($h + 12) % 24;
+	$m = str_replace(array(' AM', ' PM', ' am', 'pm'), "", array_var($values, 1));
+	return array('hours' => $h, 'mins' => $m);
 }
 
 /**
@@ -540,17 +556,17 @@ function unescapeSLIM($encodedSLIM) {
 }
 
 function remove_css_and_scripts($html) {
-	$html = preg_replace('/<style[^>]*>.*<\/style>/i', '', $html);
-	$html = preg_replace('/<script[^>]*>.*(<\/script>|$)/i', '', $html);
+	$html = preg_replace('/<style[^>]*>.*<\/style[^>]*>/i', '', $html);
+	$html = preg_replace('/<script[^>]*>.*(<\/script[^>]*>|$)/i', '', $html);
 	return $html;
 }
 
 function remove_css($html) {
-	return preg_replace('/<style[^>]*>.*<\/style>/i', '', $html);
+	return preg_replace('/<style[^>]*>.*<\/style[^>]*>/i', '', $html);
 }
 
 function remove_scripts($html) {
-	return preg_replace('/<script[^>]*>.*(<\/script>|$)/i', '', $html);
+	return preg_replace('/<script[^>]*>.*(<\/script[^>]*>|$)/i', '', $html);
 }
 
 function remove_images_from_html($html) {

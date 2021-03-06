@@ -19,31 +19,38 @@ $genid = gen_id();
 
 <?php if ($task_list->getStartDate() instanceof DateTimeValue) { ?>
 	<?php if ($task_list->getStartDate()->getYear() > DateTimeValueLib::now()->getYear()) { ?> 
-	  <div class="startDate"><b><?php echo lang('start date') ?>: </b><?php echo format_date($task_list->getStartDate(), null, 0) ?></div>
+	  <div class="startDate"><span class="bold"><?php echo lang('start date') ?>: </span><?php echo format_datetime($task_list->getStartDate(), null, 0) ?></div>
 	<?php } else { ?> 
-	  <div class="startDate"><b><?php echo lang('start date') ?>: </b><?php echo format_descriptive_date($task_list->getStartDate(), 0) ?></div>
+	  <div class="startDate"><span class="bold"><?php echo lang('start date') ?>: </span>
+	  <?php 
+	  	echo format_descriptive_date($task_list->getStartDate(), 0);
+	  	if ($task_list->getUseStartTime()) {
+	  		echo ", " . format_time($task_list->getStartDate(), user_config_option('time_format_use_24') ? 'G:i' : 'g:i A');
+	  	}
+	  ?>
+	  </div>
 	<?php } // if ?>
 <?php } // if ?>
 
 <?php if ($task_list->getDueDate() instanceof DateTimeValue) { ?>
 	<?php if ($task_list->getDueDate()->getYear() > DateTimeValueLib::now()->getYear()) { ?> 
-	  <div class="dueDate"><b><?php echo lang('due date') ?>: </b><?php echo format_date($task_list->getDueDate(), null, 0) ?></div>
+	  <div class="dueDate"><span class="bold"><?php echo lang('due date') ?>: </span><?php echo format_datetime($task_list->getDueDate(), null, 0) ?></div>
 	<?php } else { ?> 
-	  <div class="dueDate"><b><?php echo lang('due date') ?>: </b><?php echo format_descriptive_date($task_list->getDueDate(), 0) ?></div>
-	<?php } // if ?>
-<?php } // if ?>
-		<?php 
-			$show_help_option = user_config_option('show_context_help');
-			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_list_task_context_help', true, logged_user()->getId()))) {?>
-					<div id="tasksCardContextHelp" class="contextHelpStyle">
-						<?php render_context_help($this, 'chelp task card','list_task'); ?>
-					</div>
-		<?php }?>
+	  <div class="dueDate"><span class="bold"><?php echo lang('due date') ?>: </span>
+	  <?php 
+	  	echo format_descriptive_date($task_list->getDueDate(), 0);
+	  	if ($task_list->getUseDueTime()) {
+	  		echo ", " . format_time($task_list->getDueDate(), user_config_option('time_format_use_24') ? 'G:i' : 'g:i A');
+	  	}
+	  ?>
+	  </div>
+	<?php } ?>
+<?php } ?>
 		
 <?php if ($task_list->getObjectSubtype() > 0) {
 		$subType = ProjectCoTypes::findById($task_list->getObjectSubtype());
 		if ($subType instanceOf ProjectCoType ) {
-			echo "<div><b>" . lang('object type') . ":</b> " . $subType->getName() . "</div>";
+			echo "<div><span class='bold'>" . lang('object type') . ":</span> " . $subType->getName() . "</div>";
 		}
 	  }
 ?>
@@ -107,19 +114,25 @@ if($showOpenSubtasksDiv) { ?>
           <?php echo textarea_field("task[text]", null, array('class' => 'short', 'id' => 'addTaskText' . $task_list->getId())) ?>
         </div>
         <div style="padding-top:4px">   
-	       <?php /*echo label_tag(lang('dates'))*/ ?>
-	       <table><tbody><tr><td style="padding-right: 10px">
-	       <?php echo label_tag(lang('start date')) ?>            
-	       </td><td>
-	      <?php echo pick_date_widget2('task_start_date', array_var($task_data, 'start_date'),$genid, 60) ?>
+	      <?php /*echo label_tag(lang('dates'))*/ ?>
+	      <table><tbody><tr><td style="padding-right: 10px">
+	      <?php echo label_tag(lang('start date')) ?>            
+	      </td><td>
+	      	<div style="float:left;"><?php echo pick_date_widget2('task_start_date', array_var($task_data, 'start_date'),$genid, 60) ?></div>
+	      	<?php if (config_option('use_time_in_task_dates')) { ?>
+	      	<div style="float:left;margin-left:10px;"><?php echo pick_time_widget2('task_start_time', array_var($task_data, 'start_date'), $genid, 65); ?></div>
+	      	<?php } ?>
 	      </td></tr><tr><td style="padding-right: 10px">
 	      <?php echo label_tag(lang('due date')) ?>
-	       </td><td>
-	      <?php echo pick_date_widget2('task_due_date', array_var($task_data, 'due_date'),$genid, 70) ?>
+	      </td><td>
+	      	<div style="float:left;"><?php echo pick_date_widget2('task_due_date', array_var($task_data, 'due_date'),$genid, 70) ?></div>
+	      	<?php if (config_option('use_time_in_task_dates')) { ?>
+	      	<div style="float:left;margin-left:10px;"><?php echo pick_time_widget2('task_due_time', array_var($task_data, 'due_date'), $genid, 65); ?></div>
+	      	<?php } ?>
 	      </td></tr><tr><td style="padding-right: 10px">
 	      	<label><?php echo lang('assign to') ?>:</label>
-	       </td><td>
-	       	<div class="taskListAddTaskAssignedTo">
+	      </td><td>
+	       	<div class="taskListAddTaskAssignedTo" style="margin-top:1px;">
 	      	<?php
 	      		echo assign_to_select_box('task[assigned_to_contact_id]', $task_list->getMembers(), $task_list->getAssignedToContactId());
 	      	?>

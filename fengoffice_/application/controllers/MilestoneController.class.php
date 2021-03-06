@@ -80,12 +80,14 @@ class MilestoneController extends ApplicationController {
 			return;
 		}
 		$this->setTemplate('add_milestone');
-
-		if(!ProjectMilestone::canAdd(logged_user(), active_context())) {
-			flash_error(lang('no context permissions to add',lang("milestones")));
+		
+		$notAllowedMember = '' ;
+		if(!ProjectMilestone::canAdd(logged_user(), active_context(), $notAllowedMember)) {
+			if (str_starts_with($notAllowedMember, '-- req dim --')) flash_error(lang('must choose at least one member of', str_replace_first('-- req dim --', '', $notAllowedMember, $in)));
+			else flash_error(lang('no context permissions to add',lang("milestones"),$notAllowedMember));
 			ajx_current("empty");
 			return;
-		} // if
+		} 
 
 		$milestone_data = array_var($_POST, 'milestone');
 		$now = DateTimeValueLib::now();
@@ -393,8 +395,10 @@ class MilestoneController extends ApplicationController {
 			return;
 		}
 		
-		if(!ProjectMilestone::canAdd(logged_user(), active_context())) {
-			flash_error(lang('no context permissions to add',lang("milestones")));
+		$notAllowedMember = '';
+		if(!ProjectMilestone::canAdd(logged_user(), active_context(), $notAllowedMember)) {
+			if (str_starts_with($notAllowedMember, '-- req dim --')) flash_error(lang('must choose at least one member of', str_replace_first('-- req dim --', '', $notAllowedMember, $in)));
+			else flash_error(lang('no context permissions to add',lang("milestones"), $notAllowedMember));
 			ajx_current("empty");
 			return;
 		} // if
@@ -433,9 +437,11 @@ class MilestoneController extends ApplicationController {
 			ajx_current("empty");
 			return;
 		}
-
-		if(!ProjectMilestone::canAdd(logged_user(), active_context())) {
-			flash_error(lang('no context permissions to add',lang("milestones")));
+		
+		$notAllowedMember = '';
+		if(!ProjectMilestone::canAdd(logged_user(), active_context(),$notAllowedMember)) {
+			if (str_starts_with($notAllowedMember, '-- req dim --')) flash_error(lang('must choose at least one member of', str_replace_first('-- req dim --', '', $notAllowedMember, $in)));
+			else flash_error(lang('no context permissions to add',lang("milestones"),$notAllowedMember));
 			ajx_current("empty");
 			return;
 		} // if

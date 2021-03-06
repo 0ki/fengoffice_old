@@ -1,21 +1,22 @@
 <?php
 	$permission_groups = array(); 
-	$groups = PermissionGroups::getNonPersonalSameLevelPermissionsGroups();
+	$groups = PermissionGroups::getNonPersonalSameLevelPermissionsGroups('id');
 	foreach($groups as $group){
     	$permission_groups[]=array($group->getId(),$group->getName());
     }
     $genid = gen_id();
     $jqid = "#$genid";
 ?>
-
-<style>
-	
-
-</style>
-
 <script>
 	$(function(){
-		
+                $("<?php echo $jqid ?>.access-data input.checkbox").click(function(){
+			if ($(this).is(":checked")) {
+				$("<?php echo $jqid ?>.access-data .user-data").slideDown();
+			} else {
+				$("<?php echo $jqid ?>.access-data .user-data").slideUp();
+			}
+		});
+		/*
 		function passwordError(message) {
 			$("<?php echo $jqid ?> .password input,<?php echo $jqid ?> .repeat input").addClass("field-error").val("");
 			$("<?php echo $jqid ?> .password input").addClass("field-error").focus().val('');
@@ -30,8 +31,12 @@
 		}	
 		
 		$("<?php echo $jqid ?>.access-data input.checkbox").click(function(){
-			$("<?php echo $jqid ?>.access-data .user-data").slideToggle();
-			$("<?php echo $jqid ?> .password input").focus();
+			if ($(this).is(":checked")) {
+				$("<?php echo $jqid ?>.access-data .user-data").slideDown();
+				$("<?php echo $jqid ?> .password input").focus();
+			} else {
+				$("<?php echo $jqid ?>.access-data .user-data").slideUp();
+			}
 		});
 
 
@@ -51,28 +56,29 @@
 				passwordOk();
 			}	
 		});
+                */
 	});
+
 </script>
 
 
 <div id = "<?php echo $genid ?>" class="access-data"> 
-	<label class="checkbox" ><?php echo lang("will this person use feng office?") ?></label><input class="checkbox" type="checkbox" name="contact[user][create-user]" ></input>
-	<div class="clear"></div>
-	
-	<div class="user-data" style="display: none">
-		<div class="field password">
-			<label><?php echo lang("password")?>:</label><input name="contact[user][password]" type="password"></input>
-		</div>
-		<div class="field repeat">
-			<label><?php echo lang("password again")?>:</label><input type="password" name="contact[user][password_a]"></input>
-		</div>
-		<div class="clear"></div>
-		<div class="field role">
-			<label><?php echo lang("user type")?>:</label>
-			  	<?php  echo simple_select_box('contact[user][type]', $permission_groups)?>
-		</div>
-	</div>
-	
+    <label class="checkbox" ><?php echo lang("will this person use feng office?") ?></label><input class="checkbox" type="checkbox" name="contact[user][create-user]" checked ></input>
+    <div class="clear"></div>
+
+    <div class="user-data">
+<!--            <div class="field password">
+                    <label><?php echo lang("password")?>:</label><input name="contact[user][password]" type="password"></input>
+            </div>
+            <div class="field repeat">
+                    <label><?php echo lang("password again")?>:</label><input type="password" name="contact[user][password_a]"></input>
+            </div>
+            <div class="clear"></div>-->
+            <div class="field role">
+                    <label><?php echo lang("user type")?>:</label>
+                            <?php  echo simple_select_box('contact[user][type]', $permission_groups,4)?>
+            </div>
+    </div>	
 </div>
 
 

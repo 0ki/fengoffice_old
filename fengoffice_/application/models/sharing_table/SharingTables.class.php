@@ -23,7 +23,7 @@ class SharingTables extends BaseSharingTables {
 			$rows[] = array( $gid, $objectId);
 		}
 		massiveInsert($table, $cols, $rows);
-		
+		$rows = null;
 	}
 	
 	/**
@@ -44,7 +44,8 @@ class SharingTables extends BaseSharingTables {
 		foreach ($objectIds as $oid) {
 			$rows[] = array($groupId, $oid );
 		}
-		massiveInsert($table, $cols, $rows, 10000);	
+		massiveInsert($table, $cols, $rows, 10000);
+		$rows = null;
 	}
 	
 

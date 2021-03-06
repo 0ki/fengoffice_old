@@ -100,22 +100,23 @@ class TimeslotController extends ApplicationController {
 		$timeslot->setContactId(logged_user()->getId());
 		$timeslot->setRelObjectId($object_id);
 		
-		/* FIXME: Billing */
-/*		$billing_category_id = logged_user()->getDefaultBillingId();
-		$project = $object->getProject();
-		$timeslot->setBillingId($billing_category_id);
-		$hourly_billing = $project->getBillingAmount($billing_category_id);
-		$timeslot->setHourlyBilling($hourly_billing);
-		$timeslot->setFixedBilling($hourly_billing * $hours);
-		$timeslot->setIsFixedBilling(false);
-*/
+		$billing_category_id = logged_user()->getDefaultBillingId();
+		$bc = BillingCategories::findById($billing_category_id);
+		if ($bc instanceof BillingCategory) {
+			$timeslot->setBillingId($billing_category_id);
+			$hourly_billing = $bc->getDefaultValue();
+			$timeslot->setHourlyBilling($hourly_billing);
+			$timeslot->setFixedBilling($hourly_billing * $hoursToAdd);
+			$timeslot->setIsFixedBilling(false);
+		}
+		
 		try{
 			DB::beginWork();
 			$timeslot->save();
-			
+		/*	dont add timeslots to members, members are taken from the related object
 			$object_controller = new ObjectController();
 			$object_controller->add_to_members($timeslot, $object->getMemberIds());
-			
+		*/	
 			ApplicationLogs::createLog($timeslot, ApplicationLogs::ACTION_OPEN);
 			DB::commit();
 				
@@ -389,18 +390,20 @@ class TimeslotController extends ApplicationController {
 				
 				$timeslot->setSubtract($subtract);
 				
-				/* FIXME Billing */
-			/*	$timeslot->setIsFixedBilling(array_var($timeslot_data,'is_fixed_billing',false));
-				$timeslot->setHourlyBilling(array_var($timeslot_data,'hourly_billing',0));
-				if ($timeslot->getIsFixedBilling()){
-					$timeslot->setFixedBilling(array_var($timeslot_data,'fixed_billing',0));
-				} else {
-					$timeslot->setFixedBilling($timeslot->getHourlyBilling() * $timeslot->getMinutes() / 60);
+				
+				if ($timeslot->getUser()->getDefaultBillingId()) {
+					$timeslot->setIsFixedBilling(array_var($timeslot_data,'is_fixed_billing',false));
+					$timeslot->setHourlyBilling(array_var($timeslot_data,'hourly_billing',0));
+					if ($timeslot->getIsFixedBilling()){
+						$timeslot->setFixedBilling(array_var($timeslot_data,'fixed_billing',0));
+					} else {
+						$timeslot->setFixedBilling($timeslot->getHourlyBilling() * $timeslot->getMinutes() / 60);
+					}
+					if ($timeslot->getBillingId() == 0 && ($timeslot->getHourlyBilling() > 0 || $timeslot->getFixedBilling() > 0)){
+						$timeslot->setBillingId($timeslot->getUser()->getDefaultBillingId());
+					}
 				}
-				if ($timeslot->getBillingId() == 0 && ($timeslot->getHourlyBilling() > 0 || $timeslot->getFixedBilling() > 0)){
-					$timeslot->setBillingId($timeslot->getUser()->getDefaultBillingId());
-				}
-				*/
+				
 				DB::beginWork();
 				$timeslot->save();
 				DB::commit();

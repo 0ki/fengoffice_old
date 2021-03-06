@@ -304,8 +304,10 @@ class EventController extends ApplicationController {
 			return;
 		}
 		
-		if(!(ProjectEvent::canAdd(logged_user(), active_context()))){	    	
-			flash_error(lang('no context permissions to add',lang("events")));
+		$notAllowedMember = '';
+		if(!(ProjectEvent::canAdd(logged_user(), active_context(),$notAllowedMember ))){	    	
+			if (str_starts_with($notAllowedMember, '-- req dim --')) flash_error(lang('must choose at least one member of', str_replace_first('-- req dim --', '', $notAllowedMember, $in)));
+			else flash_error(lang('no context permissions to add',lang("events"), $notAllowedMember));
 			ajx_current("empty");
 			return ;
 	    }
@@ -671,7 +673,7 @@ class EventController extends ApplicationController {
 			tpl_assign('event', $event);
 			tpl_assign('cal_action', 'view');	
 			tpl_assign('view', array_var($_GET, 'view', 'month'));	
-			ajx_extra_data(array("title" => $event->getSubject(), 'icon'=>'ico-calendar'));
+			ajx_extra_data(array("title" => $event->getObjectName(), 'icon'=>'ico-calendar'));
 			
 			ApplicationReadLogs::createLog($event, ApplicationReadLogs::ACTION_READ);
 	    } else {
@@ -1168,7 +1170,7 @@ class EventController extends ApplicationController {
 	    $ev_data = array (
 	    	'start' => $new_start->format(user_config_option('time_format_use_24') ? "G:i" : "g:i A"),
 	    	'end' => $new_duration->format(user_config_option('time_format_use_24') ? "G:i" : "g:i A"),
-	    	'' => clean($event->getSubject()),
+	    	'' => clean($event->getObjectName()),
 	    );
 	    return array("ev_data" => $ev_data);
 	}

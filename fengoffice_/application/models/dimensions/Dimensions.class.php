@@ -3,7 +3,7 @@
   /**
   * Dimensions
   *
-  * @author Diego Castiglioni <diego20@gmail.com>
+  * @author Diego Castiglioni <diego.castiglioni@fengoffice.com>
   */
   class Dimensions extends BaseDimensions {
     

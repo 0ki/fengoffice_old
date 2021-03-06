@@ -28,7 +28,22 @@ INSERT INTO `<?php echo $table_prefix ?>contact_config_categories` (`name`, `is_
 INSERT INTO `<?php echo $table_prefix ?>administration_tools` (`name`, `controller`, `action`, `order`) VALUES
  ('mass_mailer', 'administration', 'tool_mass_mailer', 2);
 
- INSERT INTO `<?php echo $table_prefix ?>dimension_object_type_contents` (`dimension_id`,`dimension_object_type_id`,`content_object_type_id`, `is_required`, `is_multiple`)
-   SELECT dimension_id, object_type_id, (SELECT id FROM <?php echo $table_prefix ?>object_types WHERE name = 'mail' ),0, 0 
-   FROM <?php echo $table_prefix ?>dimension_object_types WHERE dimension_id = (SELECT `id` FROM `<?php echo $table_prefix ?>dimensions` WHERE `code`='feng_users');
+INSERT INTO `<?php echo $table_prefix ?>dimension_object_type_contents` (`dimension_id`,`dimension_object_type_id`,`content_object_type_id`, `is_required`, `is_multiple`)
+   SELECT dimension_id, object_type_id, (SELECT id FROM <?php echo $table_prefix ?>object_types WHERE name = 'mail' ),0, 1 
+   FROM <?php echo $table_prefix ?>dimension_object_types ;
+   
+INSERT INTO `<?php echo $table_prefix ?>tab_panel_permissions` (permission_group_id, tab_panel_id)  (
+  SELECT id, 'mails-panel' FROM <?php echo $table_prefix ?>permission_groups
+  WHERE name IN ('Super Administrator','Administrator', 'Manager', 'Executive' ,'Account Owner')
+) ON DUPLICATE KEY UPDATE tab_panel_id = tab_panel_id ;
+
+UPDATE <?php echo $table_prefix ?>system_permissions SET can_add_mail_accounts = 1
+WHERE permission_group_id IN (
+  SELECT id FROM <?php echo $table_prefix ?>permission_groups
+  WHERE name IN ('Super Administrator','Administrator', 'Manager', 'Executive' ,'Account Owner')
+);
+
+
+
+
 

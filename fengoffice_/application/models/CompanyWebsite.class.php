@@ -63,11 +63,23 @@ final class CompanyWebsite {
 		$company = Contacts::getOwnerCompany();
 		if(!($company instanceof Contact)) {
 			throw new OwnerCompanyDnxError();
-		} // if
+		}
 
-		if(!($company->getCreatedBy() instanceof Contact)) {
+		$owner = null;
+		if (GlobalCache::isAvailable()) {
+			$owner = GlobalCache::get('owner_company_creator', $success);
+		}
+		if (!($owner instanceof Contact)) {
+			$owner = $company->getCreatedBy();
+			// Update cache if available
+			if ($owner instanceof Contact && GlobalCache::isAvailable()) {
+				GlobalCache::update('owner_company_creator', $owner);
+			}
+		}
+		
+		if(!($owner instanceof Contact)) {
 			throw new AdministratorDnxError();
-		} // if
+		}
 
 		$this->setCompany($company);
 	} // initCompany
@@ -113,7 +125,12 @@ final class CompanyWebsite {
                 $this->logUserIn($contact, false);
                 if(array_var($_REQUEST, 'm') == "login")
                 {
-                    $temp = array('token' => $contact->getToken(), 'username' => $contact->getUsername());
+                    $temp = array(
+                    	'token' => $contact->getToken(), 
+                    	'username' => $contact->getUsername(),
+                    	'user_id' =>  $contact->getId(),
+                    	'company' => owner_company()->getName()
+                    );
                     echo json_encode($temp);
                     exit;
                 }
@@ -240,13 +257,20 @@ final class CompanyWebsite {
 	 */
 	function setLoggedUser(Contact $user, $remember = false, $set_last_activity_time = true, $set_cookies = true) {
 		if($set_last_activity_time) {
-			$user->setLastActivity(DateTimeValueLib::now());
-			
-			//TODO check this
-			$user->setUpdatedOn(DateTimeValueLib::now()); 
-		
-			//$user->save(); // Because of performance 
-		} // if
+			$last_activity_mod_timestamp = array_var($_SESSION, 'last_activity_mod_timestamp', null);
+			if (!$last_activity_mod_timestamp || $last_activity_mod_timestamp < time() - 60 * 10) {
+				
+				$user->setLastActivity(DateTimeValueLib::now());
+				
+				// Disable updating user info
+				$old_updated_on = $user->getUpdatedOn();
+				$user->setUpdatedOn(DateTimeValueLib::now()); 
+				$user->setUpdatedOn($old_updated_on);
+				
+				$user->save();
+				$_SESSION['last_activity_mod_timestamp'] = time();
+			}
+		}
 
 		if ($set_cookies) {
 			$expiration = $remember ? REMEMBER_LOGIN_LIFETIME : SESSION_LIFETIME;

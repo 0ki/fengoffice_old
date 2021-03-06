@@ -23,7 +23,7 @@ if (!isset($name)) $name = 'permissions';
 	<div id="<?php echo $genid?>dimension<?php echo $dimension->getId()?>">
 	<table><tr><td>
   <?php	
-  		echo render_single_dimension_tree($dimension, $genid, null, array('all_members' => true));
+  		echo render_single_dimension_tree($dimension, $genid, null, array('all_members' => true, 'select_root' => true));
   ?>
   </td><td style="padding-left:20px">
   <div id="<?php echo $genid ?>member_permissions<?php echo $dimension->getId() ?>" style="display:none;">
@@ -37,10 +37,10 @@ if (!isset($name)) $name = 'permissions';
 			<?php echo checkbox_field($genid . $dimension->getId() . 'pAll', false, array('id' => $genid . $dimension->getId() .'pAll', 'onclick' => 'og.ogPermAllChecked("' . $genid . '", '. $dimension->getId() .', this.checked)')) ?> <label style="font-weight:bold" for="<?php echo $genid .$dimension->getId() ?>pAll" class="checkbox"><?php echo lang('All') ?></label>   
   		</span>
   	</td>
-  	<td align=center style="padding-left:10px;padding-right:10px;width:100px;"><a href="#" class="internalLink" onclick="og.ogPermSetLevel('<?php echo $genid ?>', '<?php echo $dimension->getId() ?>', 3);return false;"><?php echo lang('read write and delete') ?></a></td>
-  	<td align=center style="padding-left:10px;padding-right:10px;width:100px;"><a href="#" class="internalLink" onclick="og.ogPermSetLevel('<?php echo $genid ?>', '<?php echo $dimension->getId() ?>', 2);return false;"><?php echo lang('read and write') ?></a></td>
-  	<td align=center style="padding-left:10px;padding-right:10px;width:100px;"><a href="#" class="internalLink" onclick="og.ogPermSetLevel('<?php echo $genid ?>', '<?php echo $dimension->getId() ?>', 1);return false;"><?php echo lang('read only') ?></a></td>
-  	<td align=center style="padding-left:10px;padding-right:10px;width:100px;"><a href="#" class="internalLink" onclick="og.ogPermSetLevel('<?php echo $genid ?>', '<?php echo $dimension->getId() ?>', 0);return false;"><?php echo lang('none no bars') ?></a></td></tr>
+  	<td align=center style="padding-left:10px;padding-right:10px;width:100px;"><a href="#" class="internalLink radio-title-3" onclick="og.ogPermSetLevel('<?php echo $genid ?>', '<?php echo $dimension->getId() ?>', 3);return false;"><?php echo lang('read write and delete') ?></a></td>
+  	<td align=center style="padding-left:10px;padding-right:10px;width:100px;"><a href="#" class="internalLink radio-title-2" onclick="og.ogPermSetLevel('<?php echo $genid ?>', '<?php echo $dimension->getId() ?>', 2);return false;"><?php echo lang('read and write') ?></a></td>
+  	<td align=center style="padding-left:10px;padding-right:10px;width:100px;"><a href="#" class="internalLink radio-title-1" onclick="og.ogPermSetLevel('<?php echo $genid ?>', '<?php echo $dimension->getId() ?>', 1);return false;"><?php echo lang('read only') ?></a></td>
+  	<td align=center style="padding-left:10px;padding-right:10px;width:100px;"><a href="#" class="internalLink radio-title-0" onclick="og.ogPermSetLevel('<?php echo $genid ?>', '<?php echo $dimension->getId() ?>', 0);return false;"><?php echo lang('none no bars') ?></a></td></tr>
   	
 <?php 
 	$row_cls = "";

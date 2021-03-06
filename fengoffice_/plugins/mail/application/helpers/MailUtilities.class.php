@@ -2,10 +2,19 @@
 require_once 'Net/IMAP.php';
 require_once "Net/POP3.php";
 
+/**
+ * Constant defined to enable swift logger in case of errors when sending emails
+ * 0: no log, 1: log only errors, 2: log everything
+ */
+if (!defined('LOG_SWIFT')) {
+	define('LOG_SWIFT', 1);
+}
+
 class MailUtilities {
 
 	function getmails($accounts = null, &$err, &$succ, &$errAccounts, &$mailsReceived, $maxPerAccount = 0) {
 		Env::useHelper('permissions');
+		Env::useHelper('format');
 		if (is_null($accounts)) {
 			$accounts = MailAccounts::findAll();
 		}
@@ -184,9 +193,10 @@ class MailUtilities {
 			if (str_starts_with($uid, '<') && str_ends_with($uid, '>')) {
 				$uid = utf8_substr($uid, 1, utf8_strlen($uid, $encoding) - 2, $encoding);
 			}
-			if (MailContents::mailRecordExists($account->getId(), $uid, $imap_folder_name == '' ? null : $imap_folder_name)) {
-				return;
-			}
+		}
+		// do not save duplicate emails
+		if (MailContents::mailRecordExists($account->getId(), $uid, $imap_folder_name == '' ? null : $imap_folder_name)) {
+			return;
 		}
 		
 		if (!$from) {
@@ -208,13 +218,25 @@ class MailUtilities {
 			$same = MailContents::findOne(array('conditions' => "`account_id`=".$account->getId() . $id_condition, 'include_trashed' => true));
 			if ($same instanceof MailContent) return;
 		}
-				
-		if ($state == 0) {
-			if ($from == $account->getEmailAddress()) {
-				if (strpos($to_addresses, $from) !== FALSE) $state = 5; //Show in inbox and sent folders
-				else $state = 1; //Show only in sent folder
-			}
-		}
+		//if you are in the table spam
+                $spam_email = MailSpamFilters::getFrom($account->getId(),$from);
+                if($spam_email)
+                {
+                    $state = 0;
+                    if($spam_email[0]->getSpamState() == "spam")
+                    {
+                        $state = 4;
+                    }
+                }
+                else
+                {
+                    if ($state == 0) {
+                            if ($from == $account->getEmailAddress()) {
+                                    if (strpos($to_addresses, $from) !== FALSE) $state = 5; //Show in inbox and sent folders
+                                    else $state = 1; //Show only in sent folder
+                            }
+                    }
+                }
 		
 		$from_spam_junk_folder = strpos(strtolower($imap_folder_name), 'spam') !== FALSE 
 			|| strpos(strtolower($imap_folder_name), 'junk')  !== FALSE || strpos(strtolower($imap_folder_name), 'trash') !== FALSE;
@@ -321,6 +343,15 @@ class MailUtilities {
 		switch($type) {
 			case 'html':
 				$utf8_body = $enc_conv->convert($encoding, 'UTF-8', array_var($parsedMail, 'Data', ''));
+				//Solve bad syntax styles outlook if it exists
+				if(substr_count($utf8_body, "<style>") != substr_count($utf8_body, "</style>") && substr_count($utf8_body, "/* Font Definitions */") >= 1) {
+					$p1 = strpos($utf8_body, "/* Font Definitions */", 0);
+					$utf8_body1 = substr($utf8_body, 0, $p1);
+					$p0 = strrpos($utf8_body1, "</style>");
+					$html_content = ($p0 >= 0 ? substr($utf8_body1, 0, $p0) : $utf8_body1) . substr($utf8_body, $p1);
+					
+					$utf8_body = str_replace_first("/* Font Definitions */","<style>", $utf8_body);
+				}
 				if ($enc_conv->hasError()) $utf8_body = utf8_encode(array_var($parsedMail, 'Data', ''));
 				$utf8_body = utf8_safe($utf8_body);
 				$mail->setBodyHtml($utf8_body);
@@ -342,7 +373,7 @@ class MailUtilities {
 					$attachs = array_var($parsedMail, 'Attachments', array());
 					$attached_body = "";
 					foreach ($attachs as $k => $attach) {
-						if (array_var($attach, 'Type') == 'html') {
+						if (array_var($attach, 'Type') == 'html' || array_var($attach, 'Type') == 'text') {
 							$attached_body .= $enc_conv->convert(array_var($attach, 'Encoding'), 'UTF-8', array_var($attach, 'Data'));
 						}
 					}
@@ -367,7 +398,8 @@ class MailUtilities {
 				if ($alt['Type'] == 'html') {
 					$mail->setBodyHtml($body);
 				} else if ($alt['Type'] == 'text') {
-					$mail->setBodyPlain($body);
+					$plain = html_to_text(html_entity_decode($body, null, "UTF-8"));
+					$mail->setBodyPlain($plain);
 				}
 				// other alternative parts (like images) are not saved in database.
 			}
@@ -397,7 +429,7 @@ class MailUtilities {
 						$conv_original_subject = trim(substr($conv_original_subject, $pos+1));
 					}
 				}
-				if ($conv_mail instanceof MailContent && strpos(strtolower($mail->getSubject()), strtolower($conv_original_subject)) !== false) {
+				if ($conv_mail instanceof MailContent && $conv_original_subject != "" && strpos(strtolower($mail->getSubject()), strtolower($conv_original_subject)) !== false) {
 					$mail->setConversationId($conv_mail->getConversationId());
 					if (isset($other_conv_emails) && is_array($other_conv_emails)) {
 						foreach ($other_conv_emails as $ocm) {
@@ -440,11 +472,16 @@ class MailUtilities {
 					$ctrl->add_to_members($mail, array($member->getId()));
 			 	}
 			}
+			
+			// to apply email rules
+			Hook::fire('after_mail_download', $mail, $ret);
 		
 			$user = Contacts::findById($account->getContactId());
 			if ($user instanceof Contact) {
 				$mail->subscribeUser($user);
 			}
+			$mail->addToSharingTable();
+			
 		} catch(Exception $e) {
 			FileRepository::deleteFile($repository_id);
 			if (strpos($e->getMessage(), "Query failed with message 'Got a packet bigger than 'max_allowed_packet' bytes'") === false) {
@@ -497,10 +534,12 @@ class MailUtilities {
 		$mailsToGet = array();
 		$summary = $pop3->getListing();
 
+		$tmp_uids_to_get = array();
 		$uids = MailContents::getUidsFromAccount($account->getId());
 		foreach ($summary as $k => $info) {
-			if (!in_array($info['uidl'], $uids)) {
+			if (!in_array($info['uidl'], $uids) && !in_array($info['uidl'], $tmp_uids_to_get)) {
 				$mailsToGet[] = $k;
+				$tmp_uids_to_get[] = $info['uidl'];
 			}
 		}
 		
@@ -634,6 +673,15 @@ class MailUtilities {
 			}
 			
 			$mailer = Swift_Mailer::newInstance($mail_transport);
+			
+			// init Swift logger
+			if (defined('LOG_SWIFT') && LOG_SWIFT > 0) {
+				$swift_logger = new Swift_Plugins_Loggers_ArrayLogger();
+				$mailer->registerPlugin(new Swift_Plugins_LoggerPlugin($swift_logger));
+				$swift_logger_level = LOG_SWIFT; // 0: no log, 1: log only errors, 2: log everything
+			} else {
+				$swift_logger_level = 0;
+			}
 	
 			if (is_string($from)) {
 				$pos = strrpos($from, "<");
@@ -708,6 +756,12 @@ class MailUtilities {
 			//Send the message
 			$complete_mail = self::retrieve_original_mail_code($message);
 			$result = $mailer->send($message);
+			
+			if ($swift_logger_level >= 2 || ($swift_logger_level > 0 && !$result)) {
+				file_put_contents(CACHE_DIR."/swift_log.txt", "\n".gmdate("Y-m-d H:i:s")." DEBUG:\n" . $swift_logger->dump() . "----------------------------------------------------------------------------", FILE_APPEND);
+				$swift_logger->clear();
+			}
+			
 			return $result;
 			
 		} catch (Exception $e) {
@@ -751,7 +805,7 @@ class MailUtilities {
 		
 		// add text/plain alternative part
 		if ($type == 'text/html') {
-			$onlytext = html_to_text($body);
+			$onlytext = html_to_text(html_entity_decode($body, null, "UTF-8"));			
 			$message->addPart($onlytext, 'text/plain');
  		}
 	}
@@ -778,7 +832,6 @@ class MailUtilities {
 			$imap = new Net_IMAP($ret, "tcp://" . $account->getServer());
 		}
 		if (PEAR::isError($ret)) {
-			//Logger::log($ret->getMessage());
 			throw new Exception($ret->getMessage());
 		}
 		$ret = $imap->login($account->getEmail(), self::ENCRYPT_DECRYPT($account->getPassword()));
@@ -793,7 +846,6 @@ class MailUtilities {
 						if (!is_array($oldUids) || count($oldUids) == 0 || PEAR::isError($numMessages) || $numMessages == 0) {
 							$lastReceived = 0;
 							if (PEAR::isError($numMessages)) {
-								//Logger::log($numMessages->getMessage());
 								continue;
 							}
 						} else {

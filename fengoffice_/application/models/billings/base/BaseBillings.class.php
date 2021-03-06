@@ -4,9 +4,9 @@
   /**
   * Billings class
   *
-  * @author Diego Castiglioni <diego20@gmail.com>
+  * @author Diego Castiglioni <diego.castiglioni@fengoffice.com>
   */
-  abstract class BaseBillings extends ProjectDataObjects {
+  abstract class BaseBillings extends ContentDataObjects {
   
     /**
     * Column name => Column type map

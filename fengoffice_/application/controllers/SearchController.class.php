@@ -2,6 +2,12 @@
 class SearchController extends ApplicationController {
 	
 	/**
+	 * @var boolean
+	 */
+	var $showQueryTime = false ;
+	
+	
+	/**
 	 * Search string
 	 * @var unknown_type
 	 */
@@ -26,7 +32,7 @@ class SearchController extends ApplicationController {
 	 * Should be Greater than limit, because of PHP result filters
 	 * @var int
 	 */
-	var $limitTest = 100 ;
+	var $limitTest = 30 ;
 	 
 	/**
 	 * Max content size to show on results view
@@ -106,7 +112,8 @@ class SearchController extends ApplicationController {
 		// Build main SQL
 		$sql = "	
 			SELECT  distinct(so.rel_object_id) AS id
-			FROM ".TABLE_PREFIX."searchable_objects so 
+			FROM ".TABLE_PREFIX."searchable_objects so
+			INNER JOIN  ".TABLE_PREFIX."objects o ON o.id = so.rel_object_id 
 			WHERE
 				so.rel_object_id IN (
 			    SELECT object_id FROM ".TABLE_PREFIX."sharing_table WHERE group_id  IN (
@@ -114,8 +121,9 @@ class SearchController extends ApplicationController {
 			    )
 			 )
 			AND MATCH (so.content) AGAINST ('$search_string' IN BOOLEAN MODE)
+			ORDER by o.updated_on DESC
 			LIMIT $start, $limitTest ";
-
+		//
 		$db_search_results = array();
 		$timeBegin = time();
 		$res = DB::execute($sql);
@@ -142,14 +150,16 @@ class SearchController extends ApplicationController {
 		
 		// Extra data
 		$extra = new stdClass() ;
-		$extra->time = $timeEnd-$timeBegin ;
-		$extra->filteredResults = $filteredResults ;
+		if ($this->showQueryTime) {
+			$extra->time = $timeEnd-$timeBegin ;
+		}
+		//$extra->filteredResults = $filteredResults ;
 		
 		// Template asigns
 		tpl_assign('pagination', $this->pagination);
 		tpl_assign('search_string', $search_for);
 		tpl_assign('search_results', $search_results);
-		//tpl_assign('extra', $extra );
+		tpl_assign('extra', $extra );
 
 		//Ajax 
 		if (!$total){
@@ -222,8 +232,10 @@ class SearchController extends ApplicationController {
 			$search_result['title'] = $this->prepareTitle($obj->getObjectName());
 			$search_result['url'] = $obj->getViewUrl();
 			$search_result['created_by'] = $this->prepareCreatedBy($obj->getCreatedByDisplayName(), $obj->getCreatedById()) ;
+			$search_result['updated_by'] = $this->prepareCreatedBy($obj->getUpdatedByDisplayName(), $obj->getUpdatedById()) ;
 			$search_result['type'] = $obj->getObjectTypeName() ;
 			$search_result['created_on'] = friendly_date($obj->getCreatedOn()) ;
+			$search_result['updated_on'] = friendly_date($obj->getUpdatedOn()) ;
 			$search_result['content'] = $this->highlightResult($obj->getSummary(array(
 				"size" => $this->contentSize,
 				"near" => $this->search_for  

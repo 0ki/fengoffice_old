@@ -119,7 +119,7 @@ class ProjectEvents extends BaseProjectEvents {
 					AND
 					`repeat_wnum` + $week_of_first_day - 1 = WEEK('$start_date_str', 3) 
 					AND
-					MOD( PERIOD_DIFF(DATE_FORMAT(`start`, '%Y%m'), DATE_FORMAT('$start_date_str', '%Y%m')), `repeat_mjump`) = 0
+					MOD( ABS(PERIOD_DIFF(DATE_FORMAT(`start`, '%Y%m'), DATE_FORMAT('$start_date_str', '%Y%m'))), `repeat_mjump`) = 0
 				)
 			)";
 		
@@ -250,7 +250,7 @@ class ProjectEvents extends BaseProjectEvents {
 					AND
 					`repeat_wnum` + $week_of_first_day - 1 = WEEK('$start_date_str', 3) 
 					AND
-					MOD( PERIOD_DIFF(DATE_FORMAT(`start`, '%Y%m'), DATE_FORMAT('$start_date_str', '%Y%m')), `repeat_mjump`) = 0
+					MOD( ABS(PERIOD_DIFF(DATE_FORMAT(`start`, '%Y%m'), DATE_FORMAT('$start_date_str', '%Y%m'))), `repeat_mjump`) = 0					
 				)				
 			)
 			$invited

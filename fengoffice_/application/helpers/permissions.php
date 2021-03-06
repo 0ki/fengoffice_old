@@ -152,67 +152,38 @@
 	 * @param $object_type_id
 	 * @return boolean
 	 */
-	function can_add(Contact $user, $context, $object_type_id){
-		
+	function can_add(Contact $user, $context, $object_type_id, &$notAllowedMember = ''){
 		if ($user->isGuest()) return false;
+		$membersInContext  = 0 ;
 		$can_add = false;
-		
 		$required_dimensions_ids = DimensionObjectTypeContents::getRequiredDimensions($object_type_id);
 		$dimensions_in_context = array();
 		
-		if (!count($required_dimensions_ids)>0) $no_required_dimensions = true;
-		else $no_required_dimensions = false;
+		$no_required_dimensions = count($required_dimensions_ids) == 0; 
+		
 		foreach ($required_dimensions_ids as $id){
 			$dimensions_in_context[$id]= false;
 		}
 		
 		$contact_pg_ids = ContactPermissionGroups::getPermissionGroupIdsByContactCSV($user->getId(),false);
-		
 		foreach($context as $selection){
-			
 			$sel_dimension = $selection instanceof Dimension ? $selection : ($selection instanceof Member ? $selection->getDimension() : null);
 			if ($sel_dimension instanceof Dimension && $sel_dimension->getOptions(1) && isset($sel_dimension->getOptions(1)->hidden) && $sel_dimension->getOptions(1)->hidden ) continue;
-			
-			$can_add = false;
-			if ($selection instanceof Dimension){
-				$dimension_id = $selection->getId();
-				
-				$allowed = $no_required_dimensions ? $selection->canContainObject($object_type_id) : $selection->isRequired($object_type_id);
-				if ($allowed){
-					if (!$selection->getDefinesPermissions()){
-						if ($no_required_dimensions) return true;
-						$can_add = true;
-						$dimensions_in_context[$dimension_id]=true;
-					}
-					else {
-						if ($selection->hasAllowAllForContact($contact_pg_ids)){
-							if ($no_required_dimensions) return true;
-							$can_add = true;
-							$dimensions_in_context[$dimension_id]=true;
-						}
-						else if ($selection->hasCheckForContact($contact_pg_ids)){
-							$all_members = $selection->getAllMembers();
-							foreach($all_members as $m){
-								if (can_add_to_member($user, $m, $context, $object_type_id, false)){
-									if ($no_required_dimensions) return true;
-									$can_add = true;
-									$dimensions_in_context[$dimension_id]=true;
-									break;
-								}
-							}
-						}
-					}
-				}
-			}
-			else if ($selection instanceof Member){
+			//$can_add = false;
+			if ($selection instanceof Member){
+				$membersInContext++;
 				if (can_add_to_member($user, $selection, $context, $object_type_id)){
-					if ($no_required_dimensions) return true;
+					//if ($no_required_dimensions) return true;
 					$dimension_id = $selection->getDimensionId();
 					$can_add = true;
 					$dimensions_in_context[$dimension_id]=true;
+				}else{
+					$notAllowedMember = $selection->getName();
+					return false;
 				}
 			}
-			
+
+			// Revoke explicty permission
 			if ($can_add && !$no_required_dimensions){
 				foreach ($dimensions_in_context as $key=>$value){
 					$dim = Dimensions::findById($key);
@@ -221,9 +192,25 @@
 					}
 				}
 			}
-			
-			if ($can_add) return true;
 		}
+		
+		// All dimensions in 'all'.
+		// If The object has no required dimensions, and no dimensions are selected: CAN ADD = True
+		if ($no_required_dimensions && !$membersInContext ) {
+			$can_add = true ;
+		}
+		
+		// All dimensions in 'all'.
+		// if there are required dimensions and no members selected then show correct error message.
+		if (!$no_required_dimensions && !$membersInContext && !$can_add) {
+			$dim_names = array();
+			$required_dimensions = Dimensions::findAll(array('conditions' => 'id IN ('.implode(',',$required_dimensions_ids).')'));
+			foreach ($required_dimensions as $dim) {
+				$dim_names[] = $dim->getName();
+			}
+			$notAllowedMember = "-- req dim --".implode(",",$dim_names);
+		}
+		
 		return $can_add;
 	}
 	
@@ -329,12 +316,13 @@
 					}
 				}
 			}
+			
 			$allowed = true;
 			foreach($dimension_permissions as $perm){
 				if (!$perm) {
 					$allowed = false;	
-				}elseif ( $access_level == ACCESS_LEVEL_READ ) {
-					return true ; // Pepe Patch. TODO: Reimplement this algorithm ASAP ! 	
+				} else {
+					return true; // if user has permission in one of the object's members then can access = true 	
 				}
 			}			
 			if ($allowed && count($dimension_permissions)) {
@@ -349,8 +337,8 @@
 			$allowed_members = ContactMemberPermissions::getActiveContextPermissions($user, $object_type_id, $members, $member_ids, $write, $delete);
 			$count=0;
 			foreach($members as $m){
-				$count++;				
-				if (!in_array($m, $allowed_members)) return false;
+				$count++;
+				if (!in_array($m->getId(), $allowed_members)) return false;
 				else if ($count==count($members)) return true;
 			}
 		}
@@ -413,30 +401,33 @@
 						}
 					}
 				} else if (!$dim->deniesAllForContact($pg_id)) {
-					foreach ($members[$dim->getId()] as $mem) {
-						$member_permissions[$mem->getId()] = array();
-						$pgs = ContactMemberPermissions::findAll(array("conditions" => array("`permission_group_id` = ? AND `member_id` = ?", $pg_id, $mem->getId())));
-						if (is_array($pgs)) {
-							foreach ($pgs as $pg) {
-								$member_permissions[$mem->getId()][] = array(
-									'o' => $pg->getObjectTypeId(),
-									'w' => $pg->getCanWrite(),
-									'd' => $pg->getCanDelete(),
-									'r' => 1
-								);
+					if (isset($members[$dim->getId()])) {
+						foreach ($members[$dim->getId()] as $mem) {
+							$member_permissions[$mem->getId()] = array();
+							$pgs = ContactMemberPermissions::findAll(array("conditions" => array("`permission_group_id` = ? AND `member_id` = ?", $pg_id, $mem->getId())));
+							if (is_array($pgs)) {
+								foreach ($pgs as $pg) {
+									$member_permissions[$mem->getId()][] = array(
+										'o' => $pg->getObjectTypeId(),
+										'w' => $pg->getCanWrite(),
+										'd' => $pg->getCanDelete(),
+										'r' => 1
+									);
+								}
 							}
 						}
 					}
 				}
 				
-				foreach($members[$dim->getId()] as $member) {
-					$member_types[$member->getId()] = $member->getObjectTypeId();
+				if (isset($members[$dim->getId()])) {
+					foreach($members[$dim->getId()] as $member) {
+						$member_types[$member->getId()] = $member->getObjectTypeId();
+					}
 				}
 			}
 		}
 		
 		$all_object_types = ObjectTypes::findAll(array("conditions" => "`type` IN ('content_object', 'located') AND `name` <> 'file revision'"));
-		
 		return array(
 			'member_types' => $member_types,
 			'allowed_object_types_by_member_type' => $allowed_object_types_by_member_type,
@@ -613,8 +604,14 @@
 	
 	
 	
-	function permission_member_form_parameters($member) {
-		$dim = $member->getDimension();
+	function permission_member_form_parameters($member = null) {
+		
+		if ( $member ) {
+			$dim = $member->getDimension();
+		}elseif (array_var( $_REQUEST,'dim_id')) {
+			$dim = Dimensions::findById(array_var( $_REQUEST,'dim_id'));
+		}
+		
 		if (logged_user()->isMemberOfOwnerCompany()) {
 			$companies = Contacts::findAll(array("conditions" => "is_company = 1", 'order' => 'name'));
 		} else {
@@ -626,7 +623,7 @@
 		$dim_obj_types = $dim->getAllowedObjectTypeContents();
 		foreach ($dim_obj_types as $dim_obj_type) {
 			// To draw a row for each object type of the dimension
-			if (!array_key_exists($dim_obj_type->getContentObjectTypeId(), $allowed_object_types) && $dim_obj_type->getDimensionObjectTypeId() == $member->getObjectTypeId()) {
+			if ( !array_key_exists($dim_obj_type->getContentObjectTypeId(), $allowed_object_types) && (!$member || $dim_obj_type->getDimensionObjectTypeId() == $member->getObjectTypeId()) ) {
 				$allowed_object_types[$dim_obj_type->getContentObjectTypeId()] = ObjectTypes::findById($dim_obj_type->getContentObjectTypeId());
 				$allowed_object_types_json[] = $dim_obj_type->getContentObjectTypeId();
 			}
@@ -637,7 +634,13 @@
 			$users = $company->getUsersByCompany();
 			foreach ($users as $u) $permission_groups[] = $u->getPermissionGroupId();
 		}
-		$non_personal_groups = PermissionGroups::getNonPersonalPermissionGroups();
+		
+		$no_company_users = Contacts::getAllUsers("AND `company_id` = 0", true);
+		foreach ($no_company_users as $noc_user) {
+			$permission_groups[] = $noc_user->getPermissionGroupId();
+		}
+		
+		$non_personal_groups = PermissionGroups::getNonRolePermissionGroups();
 		foreach ($non_personal_groups as $group) {
 			$permission_groups[] = $group->getId();
 		}
@@ -646,26 +649,36 @@
 			if ($dim->hasAllowAllForContact($pg_id)) {
 				$member_permissions[$pg_id] = array();
 				foreach ($dim_obj_types as $dim_obj_type) {
-					if ($dim_obj_type->getDimensionObjectTypeId() == $member->getObjectTypeId()) {
+					if ($member && $dim_obj_type->getDimensionObjectTypeId() == $member->getObjectTypeId()) {
 						$member_permissions[$pg_id][] = array(
 							'o' => $dim_obj_type->getContentObjectTypeId(),
 							'w' => 1,
 							'd' => 1,
 							'r' => 1
 						);
+					}elseif(!$member){
+						// WHEN CREATING a new member dont allow any user 
+						$member_permissions[$pg_id][] = array(
+							'o' => $dim_obj_type->getContentObjectTypeId(),
+							'w' => 0,
+							'd' => 0,
+							'r' => 0
+						);
 					}
 				}
 			} else if (!$dim->deniesAllForContact($pg_id)) {
 				$member_permissions[$pg_id] = array();
-				$mpgs = ContactMemberPermissions::findAll(array("conditions" => array("`permission_group_id` = ? AND `member_id` = ?", $pg_id, $member->getId())));
-				if (is_array($mpgs)) {
-					foreach ($mpgs as $mpg) {
-						$member_permissions[$mpg->getPermissionGroupId()][] = array(
-							'o' => $mpg->getObjectTypeId(),
-							'w' => $mpg->getCanWrite() ? 1 : 0,
-							'd' => $mpg->getCanDelete() ? 1 : 0,
-							'r' => 1
-						);
+				if ($member) {
+					$mpgs = ContactMemberPermissions::findAll(array("conditions" => array("`permission_group_id` = ? AND `member_id` = ?", $pg_id, $member->getId())));
+					if (is_array($mpgs)) {
+						foreach ($mpgs as $mpg) {
+							$member_permissions[$mpg->getPermissionGroupId()][] = array(
+								'o' => $mpg->getObjectTypeId(),
+								'w' => $mpg->getCanWrite() ? 1 : 0,
+								'd' => $mpg->getCanDelete() ? 1 : 0,
+								'r' => 1
+							);
+						}
 					}
 				}
 			}

@@ -52,8 +52,8 @@
 	 * @param Project $project
 	 * @return booelean
 	 */
-	function canAdd(Contact $user, $context) {
-		return can_add($user, $context, $this->manager()->getObjectTypeId());
+	function canAdd(Contact $user, $context, &$notAllowedMember = '') {
+		return can_add($user, $context, $this->manager()->getObjectTypeId(), $notAllowedMember );
 	} // canAdd
 
 	/**

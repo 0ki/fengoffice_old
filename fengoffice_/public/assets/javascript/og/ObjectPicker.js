@@ -6,14 +6,14 @@ og.ObjectPicker = function(config) {
 		this.store = new Ext.data.Store({
         	proxy: new Ext.data.HttpProxy(new Ext.data.Connection({
 				method: 'GET',
-            	url: og.getUrl('object', 'list_objects', {ajax: true, include_comments:true})
+            	url: og.getUrl('object', 'list_objects', {ajax: true, include_comments:true, ignore_context: true })
         	})),
         	reader: new Ext.data.JsonReader({
             	root: 'objects',
             	totalProperty: 'totalCount',
             	id: 'id',
             	fields: [
-	                'name', 'object_id', 'type', 'icon', 'object_id', 'mimeType',
+	                'name', 'object_id', 'type', 'ot_id', 'icon', 'object_id', 'mimeType',
 	                'createdBy', 'createdById', 'dateCreated',
 					'updatedBy', 'updatedById', 'dateUpdated'
             	]

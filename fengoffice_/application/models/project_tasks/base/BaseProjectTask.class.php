@@ -631,6 +631,51 @@ abstract class BaseProjectTask extends ContentDataObject {
 	} // setPercentCompleted()
     
     
+	/**
+	 * Return value of 'use_due_time' field
+	 *
+	 * @access public
+	 * @param void
+	 * @return boolean
+	 */
+	function getUseDueTime() {
+		return $this->getColumnValue('use_due_time');
+	} // getUseDueTime()
+
+	/**
+	 * Set value of 'use_due_time' field
+	 *
+	 * @access public
+	 * @param boolean $value
+	 * @return boolean
+	 */
+	function setUseDueTime($value) {
+		return $this->setColumnValue('use_due_time', $value);
+	} // setUseDueTime()
+	
+	
+	/**
+	 * Return value of 'use_start_time' field
+	 *
+	 * @access public
+	 * @param void
+	 * @return boolean
+	 */
+	function getUseStartTime() {
+		return $this->getColumnValue('use_start_time');
+	} // getUseStartTime()
+
+	/**
+	 * Set value of 'use_start_time' field
+	 *
+	 * @access public
+	 * @param boolean $value
+	 * @return boolean
+	 */
+	function setUseStartTime($value) {
+		return $this->setColumnValue('use_start_time', $value);
+	} // setUseStartTime()
+	
     /**
 	 * Return manager instance
 	 *

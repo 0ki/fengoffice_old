@@ -5,7 +5,7 @@
 			<table style="width:535px"><tr><td>
 				<?php echo lang("cron events") ?>
 			</td><td style="text-align:right">
-				<?php echo submit_button(lang('save'), 's', array('style' => 'margin-top:0px;')) ?>&nbsp;<button type="reset"><?php echo lang('reset') ?></button>
+				<?php echo submit_button(lang('save'), 's', array('style' => 'margin-top:0px;')) ?>&nbsp;<button class="submit" type="reset"><?php echo lang('reset') ?></button>
 			</td></tr></table>
 		</div>
 	</div>
@@ -56,7 +56,7 @@
 	<?php } // foreach ?>
 	</tbody></table>
 
-	<?php echo submit_button(lang('save')) ?>&nbsp;<button type="reset"><?php echo lang('reset') ?></button>
+	<?php echo submit_button(lang('save')) ?>&nbsp;<button class="submit" type="reset"><?php echo lang('reset') ?></button>
 <?php } else { ?>
 	<p><?php echo lang('no cron events to display') ?></p>
 <?php } // if ?>

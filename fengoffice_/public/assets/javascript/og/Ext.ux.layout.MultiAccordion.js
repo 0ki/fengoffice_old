@@ -88,7 +88,6 @@ Ext.ux.layout.MultiAccordion = Ext.extend(Ext.layout.ContainerLayout, {
 
     
     renderItem : function(c){
-    	
 	        if(this.animate === false){
 	            c.animCollapse = false;
 	        }

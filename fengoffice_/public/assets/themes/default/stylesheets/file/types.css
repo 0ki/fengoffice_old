@@ -1,3 +1,8 @@
+
+.ico-folder {
+	background-image: url(../../extjs/images/default/tree/folder-open.gif) !important;
+}
+
 .ico-project, .ico-workspace {
 	background-image: url(../../images/16x16/workspace.png) !important;
 }
@@ -295,4 +300,7 @@
 }
 .ico-large-webfile {
 	background-image: url(../../images/48x48/types/webfile.png) !important;
+}
+
+
 }

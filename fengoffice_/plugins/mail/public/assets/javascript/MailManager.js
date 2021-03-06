@@ -15,7 +15,7 @@ og.MailManager = function() {
 	this.maxrowidx = 0;
 
 	var fields = [
-		'object_id', 'type', 'accountId', 'accountName', 'hasAttachment', 'subject', 'text', 'date',
+		'object_id', 'type', 'ot_id', 'accountId', 'accountName', 'hasAttachment', 'subject', 'text', 'date',
 		'memberIds', 'projectName', 'userId', 'userName', 'workspaceColors','isRead', 'from', 'memPath',
 		'from_email','isDraft','isSent','folder','to', 'ix', 'conv_total', 'conv_unread', 'conv_hasatt'
 	];
@@ -982,7 +982,6 @@ og.MailManager = function() {
 	if (!og.loggedUser.isGuest) {
 		top1.push(actions.newCO);
 		top1.push('-');
-		//top1.push(actions.tag);
 		top1.push(actions.archive);
 		top1.push(actions.del);		
 		top1.push('-');
@@ -994,28 +993,40 @@ og.MailManager = function() {
 		top1.push(actions.accounts);
 		top1.push(actions.sendOutbox);
 	}
+	if (og.additional_mails_top_toolbar_1_items) {
+		for ( i=0; i<og.additional_mails_top_toolbar_1_items.length; i++) {
+			top1.push(og.additional_mails_top_toolbar_1_items[i]);
+		}
+	}
 	
 	this.topTbar1 = new Ext.Toolbar({
 		style: 'border:0px none;',
 		items: top1
 	});
 	
+	var top2 = [
+		actions.select,
+		'-',
+		actions.inbox_email,
+		actions.sent_email,
+		actions.draft_email,
+		actions.junk_email,
+		actions.out_email,
+		'-',
+		lang('filter')+': ',
+		actions.viewReadUnread,
+		actions.viewByClassification,
+		actions.viewByAccount
+	];
+	if (og.additional_mails_top_toolbar_2_items) {
+		for ( i=0; i<og.additional_mails_top_toolbar_2_items.length; i++) {
+			top2.push(og.additional_mails_top_toolbar_2_items[i]);
+		}
+	}
+	
 	this.topTbar2 = new Ext.Toolbar({
 		style: 'border:0px none',
-		items: [
-			actions.select,
-			'-',
-			actions.inbox_email,
-			actions.sent_email,
-			actions.draft_email,
-			actions.junk_email,
-			actions.out_email,
-			'-',
-			lang('filter')+': ',
-			actions.viewReadUnread,
-			actions.viewByClassification,
-			actions.viewByAccount
-		]
+		items: top2
 	});
 		    
 	og.MailManager.superclass.constructor.call(this, {
@@ -1067,18 +1078,6 @@ og.MailManager = function() {
 		Ext.getCmp('draft_btn').toggle(dra);
 	}
 	
-	var tagevid = og.eventManager.addListener("tag changed", function(tag) {
-		if (!this.ownerCt) {
-			og.eventManager.removeListener(tagevid);
-			return;
-		}
-		if (this.ownerCt.ownerCt.active) {// ownerCt is MailManagerPanel, must ask his ownerCt to see if tab is active
-			this.needRefresh = false;
-			this.load({start:0});
-		} else {
-    		this.needRefresh = true;
-    	}
-	}, this);
 	
 	// Send emails in background
 	var send_ev = og.eventManager.addListener("must send mails", function(data) {

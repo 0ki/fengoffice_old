@@ -13,9 +13,10 @@
     * @param user
     * @return array
     */
-  	function getMailAccountsByUser(Contact $user)
-  	{
-  		$accounts = array();
+  	function getMailAccountsByUser(Contact $user){	
+  		return MailAccounts::findAll(array("conditions"=>"contact_id = ".logged_user()->getId()));
+  		
+  		/*$accounts = array();
   		$accountUsers = MailAccountContacts::getByContact($user);
   		foreach ($accountUsers as $au) {
   			$account = $au->getAccount();
@@ -23,7 +24,9 @@
   				$accounts[] = $account;
   			}
   		}
-  		return $accounts;
+  		return $accounts;*/
+  		
+  		
   	}
   } // MailAccounts 
 

@@ -21,7 +21,11 @@ foreach ($events as $event) {
 	$event->save();
 	$function = $event->getName();
 	try {
-		$function();
+		if (function_exists($function)) {
+			$function();
+		} else {
+			echo "Could not execute $function - function does not exists\n";
+		}
 	} catch (Error $e) {
 		echo $e->getMessage();
 	}

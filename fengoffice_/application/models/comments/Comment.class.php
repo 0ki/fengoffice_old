@@ -132,9 +132,9 @@ class Comment extends BaseComment {
 	} // canAdd
 
 	
-	function canAdd(Contact $user, $context){
+	function canAdd(Contact $user, $context, &$notAllowedMember = ''){
 		$object = $this->getRelObject();
-		return can_add($user, $context, $object->getObjectTypeId());
+		return can_add($user, $context, $object->getObjectTypeId(), $notAllowedMember );
 	}
 	
 	

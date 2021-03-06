@@ -33,7 +33,7 @@ og.pickObjectForTemplate = function(before) {
 		}
 	}, before, {
 		types: ['task','milestone'],
-		selected_type: 'task',
+		selected_type: 'task'
 //		context: og.contextManager.plainCheckedMembers(13)
 	});
 	

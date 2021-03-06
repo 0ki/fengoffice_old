@@ -3,12 +3,16 @@
 /**
  * Dimension class
  *
- * @author Diego Castiglioni <diego20@gmail.com>
+ * @author Diego Castiglioni <diego.castiglioni@fengoffice.com>
  */
 class Dimension extends BaseDimension {
 	
 	
 	function getAllMembers($only_ids = false, $order = null, $filter_deleted_objects = false ) {
+		$contactsType = ObjectTypes::instance()->findByName('person');
+		if ($contactsType) {
+			$contactsTypeId = $contactsType->getId();
+		}
 		
 		$parameters = array(
 			'conditions' => '`dimension_id` = ' . $this->getId(), 'id' => $only_ids
@@ -18,9 +22,12 @@ class Dimension extends BaseDimension {
 		}
 		
 		if ($filter_deleted_objects){
-			//$parameters['conditions'].= " AND object_id IN ( SELECT id FROM ".TABLE_PREFIX."objects WHERE archived_on = '0000-00-00 00:00:00' AND trashed_on = '0000-00-00 00:00:00' )" ; 			
-			//$parameters['conditions'].= " AND ( object_id = 0 OR object_id IN ( SELECT id FROM ".TABLE_PREFIX."objects WHERE archived_on = '0000-00-00 00:00:00' AND trashed_on = '0000-00-00 00:00:00' ))" ; 			
-			$parameters['conditions'].= " AND ( object_id = 0 OR EXISTS ( SELECT id FROM ".TABLE_PREFIX."objects WHERE id = object_id AND archived_on = '0000-00-00 00:00:00' AND trashed_on = '0000-00-00 00:00:00' ))" ; 			
+			$parameters['conditions'].= " AND ( object_id = 0 OR EXISTS ( SELECT id FROM ".TABLE_PREFIX."objects WHERE id = object_id AND archived_on = '0000-00-00 00:00:00' AND trashed_on = '0000-00-00 00:00:00' ))" ;
+			if (!empty($contactsTypeId)) {	
+				$parameters['conditions'].= " AND ( object_type_id <> $contactsTypeId OR EXISTS ( SELECT object_id FROM  ".TABLE_PREFIX."contacts c WHERE c.object_id = `".TABLE_PREFIX."members`.object_id AND c.disabled = 0 ))" ;
+			}
+			$parameters['order'] = 'parent_member_id';
+ 			
 		}
 		$members = Members::findAll($parameters);
   		return $members;

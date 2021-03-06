@@ -8,7 +8,7 @@
 <div class="adminClients">
   <div class="adminHeader">
   	<div class="adminTitle"><?php echo lang("permissions for user", clean($user->getObjectName())) ?></div>
-  	<span style="margin-left:30px;"><?php echo submit_button(lang('update permissions')); ?></span>
+  	<span style="margin-left:30px;"><?php echo submit_button(lang('update permissions'), 's', array('id' => $genid.'_submit_btn')); ?></span>
   </div>
   <div class="adminSeparator"></div>
   <div class="adminMainBlock">
@@ -44,18 +44,6 @@
 
 	  og.showHideNonGuestPermissionOptions(guest_selected);  
   };
-
-  og.showHideNonGuestPermissionOptions = function (guest_selected) {
-	  if (guest_selected) {
-		$('.radio_3').hide();
-		$('.radio_2').hide();
-		$('.perm_all_checkbox_container').hide();
-	  } else {
-		$('.radio_3').show();
-		$('.radio_2').show();
-		$('.perm_all_checkbox_container').show();
-	  }
-  }
 </script>
   
 <div>
@@ -91,8 +79,8 @@ echo submit_button(lang('update permissions'));
 </div>
 </div>
 </form>
-<?php if ($user->isGuest()) { ?>
 <script>
-//og.ogPermReadOnly('<?php echo $genid ?>', true);
+setTimeout(function() {
+	document.getElementById('<?php echo $genid.'_submit_btn'?>').focus();
+}, 500);
 </script>
-<?php } ?>

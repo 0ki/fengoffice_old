@@ -2,11 +2,11 @@
 
   
   /**
-  * ContactWebpages class
+  * BaseRoleObjectTypePermissions class
   *
-  * @author Sebastian Azar <seba.azar@gmail.com>
+  * @author Alvaro Torterola <alvarotm01@gmail.com>
   */
-  abstract class BaseContactWebpages extends DataManager {
+  abstract class BaseRoleObjectTypePermissions extends DataManager {
   
     /**
     * Column name => Column type map
@@ -15,19 +15,19 @@
     * @static
     */
     static private $columns = array(
-    	'id' => DATA_TYPE_INTEGER,
-    	'contact_id' => DATA_TYPE_INTEGER, 
-    	'web_type_id' => DATA_TYPE_INTEGER, 
-    	'URL' => DATA_TYPE_STRING
+    	'role_id' => DATA_TYPE_INTEGER,
+    	'object_type_id' => DATA_TYPE_INTEGER, 
+    	'can_write' => DATA_TYPE_BOOLEAN,
+    	'can_delete' => DATA_TYPE_BOOLEAN
     );
   
     /**
     * Construct
     *
-    * @return BaseContactWebpages 
+    * @return BaseRoleObjectTypePermissions 
     */
     function __construct() {
-      parent::__construct('ContactWebpage', 'contact_web_pages', true);
+      parent::__construct('RoleObjectTypePermission', 'role_object_type_permissions', true);
     } // __construct
     
     // -------------------------------------------------------
@@ -68,7 +68,7 @@
     * @return array or string
     */
     function getPkColumns() {
-      return 'id';
+      return array ('role_id', 'object_type_id');
     } // getPkColumns
     
     /**
@@ -79,7 +79,7 @@
     * @return string
     */
     function getAutoIncrementColumn() {
-      return 'id';
+      return null;
     } // getAutoIncrementColumn
     
     // -------------------------------------------------------
@@ -98,14 +98,14 @@
     *  - offset - limit offset, valid only if limit is present
     *  - limit
     * 
-    * @return one or ContactWebpages objects
+    * @return one or RoleObjectTypePermissions objects
     * @throws DBQueryError
     */
     function find($arguments = null) {
-      if(isset($this) && instance_of($this, 'ContactWebpages')) {
+      if(isset($this) && instance_of($this, 'RoleObjectTypePermissions')) {
         return parent::find($arguments);
       } else {
-        return ContactWebpages::instance()->find($arguments);
+        return RoleObjectTypePermissions::instance()->find($arguments);
       } // if
     } // find
     
@@ -114,13 +114,13 @@
     *
     * @access public
     * @param array $arguments
-    * @return one or ContactWebpages objects
+    * @return one or RoleObjectTypePermissions objects
     */
     function findAll($arguments = null) {
-      if(isset($this) && instance_of($this, 'ContactWebpages')) {
+      if(isset($this) && instance_of($this, 'RoleObjectTypePermissions')) {
         return parent::findAll($arguments);
       } else {
-        return ContactWebpages::instance()->findAll($arguments);
+        return RoleObjectTypePermissions::instance()->findAll($arguments);
       } // if
     } // findAll
     
@@ -129,13 +129,13 @@
     *
     * @access public
     * @param array $arguments
-    * @return ContactWebpage 
+    * @return RoleObjectTypePermission 
     */
     function findOne($arguments = null) {
-      if(isset($this) && instance_of($this, 'ContactWebpages')) {
+      if(isset($this) && instance_of($this, 'RoleObjectTypePermissions')) {
         return parent::findOne($arguments);
       } else {
-        return ContactWebpages::instance()->findOne($arguments);
+        return RoleObjectTypePermissions::instance()->findOne($arguments);
       } // if
     } // findOne
     
@@ -145,13 +145,13 @@
     * @access public
     * @param mixed $id
     * @param boolean $force_reload If true cache will be skipped and data will be loaded from database
-    * @return ContactWebpage 
+    * @return RoleObjectTypePermission 
     */
     function findById($id, $force_reload = false) {
-      if(isset($this) && instance_of($this, 'ContactWebpages')) {
+      if(isset($this) && instance_of($this, 'RoleObjectTypePermissions')) {
         return parent::findById($id, $force_reload);
       } else {
-        return ContactWebpages::instance()->findById($id, $force_reload);
+        return RoleObjectTypePermissions::instance()->findById($id, $force_reload);
       } // if
     } // findById
     
@@ -163,10 +163,10 @@
     * @return integer
     */
     function count($condition = null) {
-      if(isset($this) && instance_of($this, 'ContactWebpages')) {
+      if(isset($this) && instance_of($this, 'RoleObjectTypePermissions')) {
         return parent::count($condition);
       } else {
-        return ContactWebpages::instance()->count($condition);
+        return RoleObjectTypePermissions::instance()->count($condition);
       } // if
     } // count
     
@@ -178,10 +178,10 @@
     * @return boolean
     */
     function delete($condition = null) {
-      if(isset($this) && instance_of($this, 'ContactWebpages')) {
+      if(isset($this) && instance_of($this, 'RoleObjectTypePermissions')) {
         return parent::delete($condition);
       } else {
-        return ContactWebpages::instance()->delete($condition);
+        return RoleObjectTypePermissions::instance()->delete($condition);
       } // if
     } // delete
     
@@ -200,26 +200,26 @@
     * @return array
     */
     function paginate($arguments = null, $items_per_page = 10, $current_page = 1) {
-      if(isset($this) && instance_of($this, 'ContactWebpages')) {
+      if(isset($this) && instance_of($this, 'RoleObjectTypePermissions')) {
         return parent::paginate($arguments, $items_per_page, $current_page);
       } else {
-        return ContactWebpages::instance()->paginate($arguments, $items_per_page, $current_page);
+        return RoleObjectTypePermissions::instance()->paginate($arguments, $items_per_page, $current_page);
       } // if
     } // paginate
     
     /**
     * Return manager instance
     *
-    * @return ContactWebpages 
+    * @return RoleObjectTypePermissions 
     */
     function instance() {
       static $instance;
-      if(!instance_of($instance, 'ContactWebpages')) {
-        $instance = new ContactWebpages();
+      if(!instance_of($instance, 'RoleObjectTypePermissions')) {
+        $instance = new RoleObjectTypePermissions();
       } // if
       return $instance;
     } // instance
   
-  } // ContactWebpages 
+  } // BaseRoleObjectTypePermissions 
 
 ?>

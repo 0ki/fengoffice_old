@@ -12,20 +12,13 @@
   </div>
   <div class="adminSeparator"></div>
   <div class="adminMainBlock">
-  		<?php 
-			$show_help_option = user_config_option('show_context_help'); 
-			if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_member_context_help', true, logged_user()->getId())) {?>
-			<div id="membersPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
-				<?php render_context_help($this, 'chelp members page','member'); ?>
-			</div>
-		<?php }?>
   <?php
   		foreach ($users_by_company as $company_row){
   			$company = $company_row['details'];
 			$users = $company_row['users'];
 			tpl_assign('users', $users);
 			tpl_assign('company', $company);
-		?>
+	?>
 <div style='padding-bottom:20px;max-width:700px'>
 <div style="padding:10px;padding-bottom:13px;background-color:#D7E5F5">
 	<h1 style="font-size:140%;font-weight:bold"><a class="internalLink" href="<?php echo ($company instanceof Contact ? $company->getCardUrl() : "#") ?>"><?php echo ($company instanceof Contact ? clean($company->getObjectName()) : lang('without company')) ?></a></h1>

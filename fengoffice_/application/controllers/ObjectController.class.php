@@ -167,23 +167,11 @@ class ObjectController extends ApplicationController {
 		if (!count($member_ids) > 0){
 			$throw_error = true;
 			if (Plugins::instance()->isActivePlugin('core_dimensions')) {
-				$users_dim = Dimensions::findOne(array("conditions" => "`code` = 'feng_users'"));
 				$personal_member = Members::findById(logged_user()->getPersonalMemberId());
-				$throw_error = !$users_dim instanceof Dimension || !$personal_member instanceof Member;
-				if (!$throw_error) {
+				if ($personal_member instanceof Member) {
 					$member_ids[] = logged_user()->getPersonalMemberId();
 				}
 			}
-			/*if ($throw_error) {
-				$rdim_names = "";
-				foreach ($required_dimensions as $rdim) {
-					alert_r($rdim->getName());
-					$rdim_names .= ($rdim_names == "" ? "" : ", ") . $rdim->getName();
-				}
-				alert_r("#add_to_members:". count($required_dimension));
-				 
-				throw new Error(lang('must choose at least one member of', $rdim_names));
-			}*/
 		}
 		
 		$enteredMembers = array();
@@ -234,7 +222,7 @@ class ObjectController extends ApplicationController {
 		}
 		$obj_custom_properties = array_var($_POST, 'object_custom_properties');
 		
-		$customProps = CustomProperties::getAllCustomPropertiesByObjectType(get_class($object->manager()));
+		$customProps = CustomProperties::getAllCustomPropertiesByObjectType($object->getObjectTypeId());
 		//Sets all boolean custom properties to 0. If any boolean properties are returned, they are subsequently set to 1.
 		foreach($customProps as $cp){
 			if($cp->getType() == 'boolean'){
@@ -319,15 +307,15 @@ class ObjectController extends ApplicationController {
 					//Add to searchable objects
 					if ($object->isSearchable() && 
 						($custom_property->getType() == 'text' || $custom_property->getType() == 'list' || $custom_property->getType() == 'numeric')){
+						
 						$name = $custom_property->getName();
-						$searchable_object = SearchableObjects::findOne(array("conditions" => "`rel_object_manager` = '".get_class($object->manager())."' AND `rel_object_id` = ".$object->getId()." AND `column_name` = '$name'"));
+						$searchable_object = SearchableObjects::findOne(array("conditions" => "`rel_object_id` = ".$object->getId()." AND `column_name` = '$name'"));
 						if (!$searchable_object)
 							$searchable_object = new SearchableObject();
 						
 						if (is_array($value))
 							$value = implode(', ', $value);
 							
-						$searchable_object->setRelObjectManager(get_class($object->manager()));
 						$searchable_object->setRelObjectId($object->getId());
 						$searchable_object->setColumnName($name);
 						$searchable_object->setContent($value);
@@ -338,25 +326,6 @@ class ObjectController extends ApplicationController {
 			}
 		}
 
-		//Save the key - value pair custom properties (custom properties table)
-		$object->clearObjectProperties();
-		$names = array_var($_POST, 'custom_prop_names');
-		$values = array_var($_POST, 'custom_prop_values');
-		if (!is_array($names)) return;
-		for ($i=0; $i < count($names); $i++) {
-			$name = trim($names[$i]);
-			$value = trim($values[$i]);
-			if ($name != '' && $value != '') {
-				$property = new ObjectProperty();
-				$property->setObject($object);
-				$property->setPropertyName($name);
-				$property->setPropertyValue($value);
-				$property->save();
-				if ($object->isSearchable()) {
-					$object->addPropertyToSearchableObject($property);
-				}
-			}
-		}
 	}
 
 	function add_reminders($object) {
@@ -766,16 +735,21 @@ class ObjectController extends ApplicationController {
 		}
 	}
 
-	function list_objects() {
+	function list_objects() {	
 		//alert("debugging. remove this line");ajx_current('empty'); return array() ; //TODO remove this line
 		/* get query parameters */
 		$filesPerPage = config_option('files_per_page');
 		$start = array_var($_GET,'start') ? (integer)array_var($_GET,'start') : 0;
 		$limit = array_var($_GET,'limit') ? array_var($_GET,'limit') : $filesPerPage;
 		$order = array_var($_GET,'sort');
+		$ignore_context = (bool) array_var($_GET,'ignore_context');
 		
 		if ($order == "dateUpdated") {
 			$order = "updated_on";
+		}elseif ($order == "dateArchived") {
+			$order = "archived_on";
+		}elseif ($order == "dateDeleted") {
+			$order = "trashed_on";
 		}
 		
 		$orderdir = array_var($_GET,'dir');
@@ -787,7 +761,7 @@ class ObjectController extends ApplicationController {
 		if ($typeCSV) {
 			$types = explode(",", $typeCSV);
 		}
-		$name_filter = array_var($_GET, 'name');
+		$name_filter = mysql_escape_string( array_var($_GET, 'name') );
 		$linked_obj_filter = array_var($_GET, 'linkedobject');
 		$object_ids_filter = '';
 		if (!is_null($linked_obj_filter)) {
@@ -821,10 +795,13 @@ class ObjectController extends ApplicationController {
 			}
 		} else if (array_var($_GET, 'action') == 'delete_permanently') {
 			$ids = explode(',', array_var($_GET, 'objects'));
-			$result = Objects::getObjectsFromContext(active_context(), null, null, true, false, array('object_ids' => implode(",",$ids)));
 
 			
-			$objects = $result->objects;
+			//$result = Objects::getObjectsFromContext(active_context(), null, null, true, false, array('object_ids' => implode(",",$ids)));
+			
+			$objects = Objects::instance()->findAll(array("conditions"=>
+				"id IN (".implode(",",$ids).")")
+			);
 			
 			list($succ, $err) = $this->do_delete_objects($objects, true);
 			
@@ -879,7 +856,7 @@ class ObjectController extends ApplicationController {
 			foreach ($ids as $id) {
 				$split = explode(":", $id);
 				$type = $split[0];
-				if ($type == 'MailContents') {
+				if (Plugins::instance()->isActivePlugin('mail') && $type == 'MailContents') {
 					$email = MailContents::findById($split[1]);
 					if (isset($email) && !$email->isDeleted() && $email->canEdit(logged_user())){
 						if (MailController::do_unclassify($email)) $succ++;
@@ -925,20 +902,27 @@ class ObjectController extends ApplicationController {
 		
 		$context = active_context();
 
-		$obj_type_types = array('content_object');
+		$obj_type_types = array('content_object', 'dimension_object');
 		if (array_var($_GET, 'include_comments')) $obj_type_types[] = 'comment';
 		
+		$type_condition = "";
 		if ($types) {
 			$type_condition = " AND name IN ('".implode("','",$types) ."')";  
 		}
-		
 		
 		$res = DB::executeAll("SELECT id from ".TABLE_PREFIX."object_types WHERE type IN ('". implode("','",$obj_type_types)."') AND name <> 'file revision' $type_condition ");
 		$type_ids = array();
 		foreach ($res as $row){
 			$types_ids[] = $row['id'] ;
-		}	
+		}
+
+		Hook::fire('list_objects_type_ids', null, $types_ids);
 		$type_ids_csv = implode(',', $types_ids);
+		$extra_conditions = array() ;
+		$extra_conditions[] = "object_type_id in ($type_ids_csv)";
+		if ($name_filter) {
+			$extra_conditions[] = "name LIKE '%$name_filter%'" ;
+		}
 		
 		//$pagination = Objects::getObjects($context,$start,$limit,$order,$orderdir,$trashed,$archived, $filters,$start, $limit, $obj_type_types);
 		$pagination = ContentDataObjects::listing(array(
@@ -950,7 +934,8 @@ class ObjectController extends ApplicationController {
 			"archived" => $archived,
 			"types" => $types,
 			"count_results" => false,
-			"extra_conditions" => "AND object_type_id in ($type_ids_csv)"
+			"extra_conditions" => " AND ".implode(" AND ", $extra_conditions ),
+			"ignore_context" => $ignore_context
 		));
 		
 		$result = $pagination->objects; 
@@ -973,6 +958,8 @@ class ObjectController extends ApplicationController {
 					$info_elem['icon'] = 'ico-company';
 					$info_elem['type'] = 'company';
 				}
+			} else if ($instance instanceof ProjectFile) {
+				$info_elem['mimeType'] = $instance->getTypeString();
 			}
 			$info_elem['isRead'] = $instance->getIsRead(logged_user()->getId()) ;
 			$info_elem['manager'] = get_class($instance->manager()) ;
@@ -1023,10 +1010,11 @@ class ObjectController extends ApplicationController {
 				$obj = Objects::findObject($object->getId());
 				if ($obj instanceof ContentDataObject && $obj->canDelete(logged_user())) {
 					if ($permanent) {
-						if ($obj instanceof MailContent) {
+						if (Plugins::instance()->isActivePlugin('mail') && $obj instanceof MailContent) {
 							$obj->delete(false);
 						} else {
 							$obj->delete();
+							Members::delete(array("conditions"=>"object_id = ".$obj->getId()));
 						}
 						ApplicationLogs::createLog($obj, ApplicationLogs::ACTION_DELETE);
 						$succ++;
@@ -1086,10 +1074,12 @@ class ObjectController extends ApplicationController {
 					$obj = Objects::findObject($id);
 					if ($obj) {
 						$obj->setIsRead(logged_user()->getId(), $read);
-						if ($obj instanceof MailContent && $mark_conversation) {
-							$emails_in_conversation = MailContents::getMailsFromConversation($obj);
-							foreach ($emails_in_conversation as $email) {
-								$email->setIsRead(logged_user()->getId(), $read);
+						if (Plugins::instance()->isActivePlugin('mail')) {
+							if ($obj instanceof MailContent && $mark_conversation) {
+								$emails_in_conversation = MailContents::getMailsFromConversation($obj);
+								foreach ($emails_in_conversation as $email) {
+									$email->setIsRead(logged_user()->getId(), $read);
+								}
 							}
 						}
 					}
@@ -1507,6 +1497,13 @@ class ObjectController extends ApplicationController {
 
 	function popup_reminders() {
 		ajx_current("empty");
+		
+		// if no new popup reminders don't make useless queries
+		if (GlobalCache::isAvailable()) {
+			$check = GlobalCache::get('check_for_popup_reminders_'.logged_user()->getId(), $success);
+			if ($success && $check == 0) return;
+		}
+		
 		$reminders = ObjectReminders::getDueReminders("reminder_popup");
 		$popups = array();
 		foreach ($reminders as $reminder) {
@@ -1549,25 +1546,37 @@ class ObjectController extends ApplicationController {
 				'type' => 'reminder',
 				'sound' => 'info'
 				));
-				if ($reminder->getUserId() == 0) {
-					// reminder is for all subscribers, so change it for one reminder per user (except logged_user)
-					// otherwise if deleted it won't notify other subscribers and if not deleted it will keep notifying
-					// logged user
-					$subscribers = $object->getSubscribers();
-					foreach ($subscribers as $subscriber) {
-						if ($subscriber->getId() != logged_user()->getId()) {
-							$new = new ObjectReminder();
-							$new->setContext($reminder->getContext());
-							$new->setDate($reminder->getDate());
-							$new->setMinutesBefore($reminder->getMinutesBefore());
-							$new->setObject($object);
-							$new->setUser($subscriber);
-							$new->setType($reminder->getType());
-							$new->save();
-						}
+			if ($reminder->getUserId() == 0) {
+				// reminder is for all subscribers, so change it for one reminder per user (except logged_user)
+				// otherwise if deleted it won't notify other subscribers and if not deleted it will keep notifying
+				// logged user
+				$subscribers = $object->getSubscribers();
+				foreach ($subscribers as $subscriber) {
+					if ($subscriber->getId() != logged_user()->getId()) {
+						$new = new ObjectReminder();
+						$new->setContext($reminder->getContext());
+						$new->setDate($reminder->getDate());
+						$new->setMinutesBefore($reminder->getMinutesBefore());
+						$new->setObject($object);
+						$new->setUser($subscriber);
+						$new->setType($reminder->getType());
+						$new->save();
 					}
 				}
-				$reminder->delete();
+			}
+			$reminder->delete();
+		}
+		
+		// popup reminders already checked for logged user
+		if (GlobalCache::isAvailable()) {
+			$today_next_reminders = ObjectReminders::findAll(array(
+				'conditions' => array("`date` > ? AND `date` < ?", DateTimeValueLib::now(), DateTimeValueLib::now()->endOfDay()),
+				'limit' => config_option('cron reminder limit', 100)
+			));
+			
+			if (count($today_next_reminders) == 0) {
+				GlobalCache::update('check_for_popup_reminders_'.logged_user()->getId(), 0, 60*30);
+			}
 		}
 	}
 
@@ -1609,22 +1618,19 @@ class ObjectController extends ApplicationController {
 	}
 	
 	function re_render_custom_properties() {
-		$managerClass = array_var($_GET, 'manager');
-		eval('$manager = ' . $managerClass . "::instance();");
-		if (!$manager) {
-			ajx_current("empty");
-			return;
-		}
 		
-		$object = $manager->findById(array_var($_GET, 'id'));
+		$object = Objects::findObject(array_var($_GET, 'id'));
 		if (!$object) {
 			// if id == 0 object is new, then a dummy object is created to render the properties.
 			$object = new ProjectMessage();
 		}
 		
-		$html = render_object_custom_properties($object, $managerClass, array_var($_GET, 'req'), array_var($_GET, 'co_type'));
+		$html = render_object_custom_properties($object, array_var($_GET, 'req'), array_var($_GET, 'co_type'));
 		
-		$scripts = array(); $initag = "<script>"; $endtag = "</script>";
+		$scripts = array();
+		$initag = "<script>";
+		$endtag = "</script>";
+		
 		$pos = strpos($html, $initag);
 		while ($pos !== FALSE) {
 			$end_pos = strpos($html, $endtag, $pos);

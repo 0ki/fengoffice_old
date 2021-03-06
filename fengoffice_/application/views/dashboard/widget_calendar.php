@@ -30,8 +30,8 @@
 	
 	$date_start = new DateTimeValue(mktime(0, 0, 0, $currentmonth, $startday, $currentyear)); 
 	$date_end = new DateTimeValue(mktime(0, 0, 0, $currentmonth, $endday, $currentyear)); 
-	//FIXME $milestones = ProjectMilestones::getRangeMilestonesByUser($date_start, $date_end, $user_filter, $tags, active_project());
-	$tmp_tasks = ProjectTasks::getRangeTasksByUser($date_start, $date_end, $user_filter, $tags, active_project());
+	//FIXME $milestones = ProjectMilestones::getRangeMilestones($date_start, $date_end);
+	$tmp_tasks = ProjectTasks::getRangeTasksByUser($date_start, $date_end, $user_filter);
 	//FIXME
 	$birthdays = array();//Contacts::instance()->getRangeContactsByBirthday($date_start, $date_end);
 	

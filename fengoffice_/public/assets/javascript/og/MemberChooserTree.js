@@ -1,7 +1,11 @@
 og.MemberChooserTree = function(config) {
 	if (!config.allowedMemberTypes) 
 		config.allowedMemberTypes = '';
-
+	if (config.filterContentType) {
+		var objectTypeQuery = '&object_type_id='+config.objectTypeId;
+	}else{
+		var objectTypeQuery = '';
+	}
 	Ext.applyIf(config, {
 		isMultiple: false,
 		collapsible: true,
@@ -12,8 +16,7 @@ og.MemberChooserTree = function(config) {
 		reloadDimensions: [],
 		loader: new og.MemberChooserTreeLoader({
 			dataUrl: 'index.php?c=dimension&a=initial_list_dimension_members_tree&ajax=true&'+
-				'dimension_id='+config.dimensionId+
-				'&object_type_id='+config.objectTypeId+
+				'dimension_id='+config.dimensionId+objectTypeQuery+
 				'&checkboxes=true'+
 				(config.all_members ? '&all_members=true' : '')+
 				'&allowedMemberTypes='+Ext.encode(config.allowedMemberTypes)+

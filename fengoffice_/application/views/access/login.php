@@ -69,3 +69,7 @@
 	</div>    
 </form>
 
+<script>
+document.getElementById('loginUsername').focus();
+</script>
+

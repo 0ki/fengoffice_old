@@ -103,7 +103,7 @@ function select_users_or_groups($name = "", $selected = null, $id = null) {
 	$selectedCSV = "";
 	$json = array();
 	
-	$company_users = Contacts::getGroupedByCompany();
+	$company_users = Contacts::getGroupedByCompany(false);
 	foreach ($company_users as $company_row){
 		$company = $company_row['details'];
 		$users = $company_row['users'];
@@ -125,12 +125,13 @@ function select_users_or_groups($name = "", $selected = null, $id = null) {
 					'g' => $u->isGuest() ? 1 : 0,
 					'id' => $u->getPermissionGroupId(),
 					'n' => $u->getObjectName(),
+					'isg' => $u->isGuest()
 				);	
 			}
 		}
 	}
 	
-	$groups = PermissionGroups::getNonPersonalPermissionGroups();
+	$groups = PermissionGroups::getNonRolePermissionGroups();
 	foreach ($groups as $group) {
 		$json[] = array(
 			'p' => 'groups',
@@ -207,6 +208,46 @@ function allowed_users_to_assign($context = null) {
 	foreach ($contacts as $contact) { /* @var $contact Contact */
 		if ( TabPanelPermissions::instance()->count( array( "conditions" => "permission_group_id = ".$contact->getPermissionGroupId(). " AND tab_panel_id = 'tasks-panel' " ))){
 			$comp_array[$contact->getCompanyId()]['users'][] = array('id' => $contact->getId(), 'name' => $contact->getObjectName(), 'isCurrent' => $contact->getId() == logged_user()->getId());
+		}
+	}
+	return array_values($comp_array);
+}
+
+function allowed_users_to_assign_all($context = null) {
+	if ($context == null) {
+		$context = active_context();
+	}
+	
+	// only companies with users
+	$companies = Contacts::findAll(array(
+		"conditions" => "e.is_company = 1",
+		"join" => array(
+			"table" => Contacts::instance()->getTableName(),
+			"jt_field" => "object_id",
+			"j_sub_q" => "SELECT xx.object_id FROM ".Contacts::instance()->getTableName(true)." xx WHERE xx.is_company=0 AND xx.company_id = e.object_id LIMIT 1"
+		),
+		"order" => "name"
+	));
+
+	$comp_ids = array("0");
+	$comp_array = array("0" => array('id' => "0", 'name' => lang('without company'), 'users' => array() ));
+	
+	foreach ($companies as $company) {
+		$comp_ids[] = $company->getId();
+		$comp_array[$company->getId()] = array('id' => $company->getId(), 'name' => $company->getObjectName(), 'users' => array() );
+	}
+	
+	if(!can_manage_tasks(logged_user()) && can_task_assignee(logged_user())) {
+		$contacts = array(logged_user());
+	} else if (can_manage_tasks(logged_user())) {
+		$contacts = allowed_users_in_context(ProjectTasks::instance()->getObjectTypeId(), $context, ACCESS_LEVEL_READ, "AND `is_company`=0 AND `company_id` IN (".implode(",", $comp_ids).")");
+	} else {
+		$contacts = array();
+	}
+	
+	foreach ($contacts as $contact) { /* @var $contact Contact */
+		if ( TabPanelPermissions::instance()->count( array( "conditions" => "permission_group_id = ".$contact->getPermissionGroupId(). " AND tab_panel_id = 'tasks-panel' " ))){
+			$comp_array[]['users'][] = array('id' => $contact->getId(), 'name' => $contact->getObjectName(), 'isCurrent' => $contact->getId() == logged_user()->getId());
 		}
 	}
 	return array_values($comp_array);
@@ -375,10 +416,9 @@ function render_object_comments_for_print(ContentDataObject $object) {
  * @param ContentDataObject $object Show custom properties of this object
  * @return null
  */
-function render_object_custom_properties($object, $type, $required, $co_type=null) {
+function render_object_custom_properties($object, $required, $co_type=null) {
 	tpl_assign('_custom_properties_object', $object);
-	tpl_assign('required', $required);
-	tpl_assign('type', $type);
+	//tpl_assign('required', $required);
 	tpl_assign('co_type', $co_type);
 	return tpl_fetch(get_template_path('object_custom_properties', 'custom_properties'));
 } // render_object_custom_properties
@@ -889,7 +929,6 @@ function render_add_custom_properties(ContentDataObject $object) {
  * @return string
  */
 function render_custom_properties(ApplicationDataObject $object) {
-	if(!$object->isCommentable()) return '';
 	tpl_assign('__properties_object', $object);
 	return tpl_fetch(get_template_path('view', 'custom_properties'));
 }
@@ -954,7 +993,7 @@ function select_object_type($name, $types, $selected = null, $attributes = null)
  * @return null
  */ 
 function filter_assigned_to_select_box($list_name, $project = null, $selected = null, $attributes = null) {
-	$grouped_users = Contacts::getGroupedByCompany();
+	$grouped_users = Contacts::getGroupedByCompany(false);
 	$options = array(option_tag(lang('anyone'), '0:0'),option_tag(lang('unassigned'), '-1:-1', '-1:-1' == $selected ? array('selected' => 'selected') : null));
 	
 	if(is_array($grouped_users) && count($grouped_users)) {
@@ -1264,10 +1303,12 @@ function buildTree ($nodeList , $parentField = "parent", $childField = "children
 				$dimension_name = $dimension_info['dimension_name'];
 				if (!isset($id)) $id = gen_id();
 			?>
+			var select_root = <?php echo (array_var($options, 'select_root') ? '1' : '0') ?>;
 			var config = {
 				id: '<?php echo $component_id ?>-tree',
 				title: '<?php echo $dimension_name ?>',
 				dimensionId: <?php echo $dimension_id ?>,
+				filterContentType: '<?php echo array_var($options, 'filterContentType', 1)?>',		
 				collapsed: <?php echo array_var($options, 'collapsed') ? 'true' : 'false'?>,
 				collapsible: <?php echo array_var($options, 'collapsible') ? 'true' : 'false'?>,
 				all_members: <?php echo array_var($options, 'all_members') ? 'true' : 'false'?>,
@@ -1275,7 +1316,9 @@ function buildTree ($nodeList , $parentField = "parent", $childField = "children
 				isMultiple: '<?php echo array_var($dimension_info, 'is_multiple', 0) ?>',
 				selModel: <?php echo (array_var($dimension_info, 'is_multiple'))?
 					'new Ext.tree.MultiSelectionModel()':
-					'new Ext.tree.DefaultSelectionModel()'?>
+					'new Ext.tree.DefaultSelectionModel()'?>,
+				height: 270,
+				listeners: {'tree rendered': function (t) {if (select_root) t.root.select();}}
 			};
 
 			<?php if( isset ($options['allowedMemberTypes'])) : ?>
@@ -1287,7 +1330,6 @@ function buildTree ($nodeList , $parentField = "parent", $childField = "children
 			<?php endif; ?>
 
 			var tree = new og.MemberChooserTree ( config );
-			
 			memberChooserPanel.add(tree);
 			memberChooserPanel.doLayout();
 		</script>

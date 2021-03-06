@@ -15,7 +15,8 @@ App.modules.addTaskForm = {
     // Show this one
     Ext.getDom(list_details.add_task_link_id).style.display = 'none';
     Ext.getDom(list_details.task_form_id).style.display = 'block';
-    Ext.getDom(list_details.text_id).focus();
+    //Ext.getDom(list_details.text_id).focus();
+    document.getElementById("addTaskTitle" + task_list_id).focus();
     Ext.getDom(list_details.submit_id).accesskey = 's';
     
     // Hide all forms

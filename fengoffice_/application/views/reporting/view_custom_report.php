@@ -81,7 +81,7 @@
 	<?php if($to_print){ 	
 			echo clean($col);
 		  }else if($col != ''){ ?>
-		<a href="<?php echo get_url('reporting', 'view_custom_report', array('id' => $id, 'replace' => true, 'order_by' => $db_columns[$col], 'order_by_asc' => $asc ? 0 : 1)).$parameterURL; ?>"><?php echo clean($col) ?></a>
+		<a href="<?php echo get_url('reporting', 'view_custom_report', array('id' => $id, 'replace' => true, 'order_by' => array_var($db_columns,$col), 'order_by_asc' => $asc ? 0 : 1)).$parameterURL; ?>"><?php echo clean($col) ?></a>
 	<?php } ?>
 	</b>
 	<?php if(!$to_print && $sorted){ ?>

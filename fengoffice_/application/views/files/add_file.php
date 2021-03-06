@@ -15,8 +15,9 @@ $genid = gen_id();
 $object = $file;
 $comments_required = config_option('file_revision_comments_required');
 
-?>
+$visible_cps = CustomProperties::countVisibleCustomPropertiesByObjectType($object->getObjectTypeId()); 
 
+?>
 <form 
 	onsubmit=" return og.fileCheckSubmit('<?php echo $genid ?>') && og.handleMemberChooserSubmit('<?php echo $genid; ?>', <?php echo $file->manager()->getObjectTypeId() ?>);"
 	class="internalForm" style="height: 100%; background-color: white" id="<?php echo $genid ?>addfile" name="<?php echo $genid ?>addfile" action="<?php echo $submit_url ?>"  method="post"
@@ -49,13 +50,6 @@ $comments_required = config_option('file_revision_comments_required');
 <?php if ($enableUpload) {
 	if ($file->isNew()) {?>
 		<div id="<?php echo $genid ?>selectFileControlDiv">
-			<?php 
-				$show_help_option = user_config_option('show_context_help'); 
-				if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_file_context_help', true, logged_user()->getId()))) {?>
-				<div id="weblinkFileContextHelp" class="contextHelpStyle">
-					<?php render_context_help($this, 'chelp addfile', 'add_file'); ?>
-				</div>
-			<?php }?>
 			<label class="checkbox">
 	    	<?php echo radio_field($genid.'_rg', true, array('id' => $genid.'fileRadio', 'onchange' => 'og.addDocumentTypeChanged(0, "'.$genid.'")', 'value' => '0'))?>
 	    	<?php echo lang('file') ?>
@@ -105,8 +99,7 @@ $comments_required = config_option('file_revision_comments_required');
 	<div style="padding-top: 5px">
 	<a href="#" class="option"   onclick="og.toggleAndBolden('<?php echo $genid ?>add_file_select_context_div',this)"><?php echo lang('context') ?></a> 
 	- <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_file_description_div',this)"><?php echo lang('description') ?></a>
-	<?php
-	//FIXME FENG2 or REMOVE- <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid add_custom_properties_div',this)"><?php echo lang('custom properties') </a>?>
+	- <a href="#" class="option <?php echo $visible_cps>0 ? 'bold' : ''?>" onclick="og.toggleAndBolden('<?php echo $genid ?>add_custom_properties_div',this)"><?php echo lang('custom properties') ?></a>
 	- <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_subscribers_div',this)"><?php echo lang('object subscribers') ?></a>
 	<?php if($object->isNew() || $object->canLinkObject(logged_user())) { ?>
 		- <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_linked_objects_div',this)"><?php echo lang('linked objects') ?></a>
@@ -120,13 +113,7 @@ $comments_required = config_option('file_revision_comments_required');
 <div class="coInputSeparator"></div>
 
 <div class="coInputMainBlock">
-		<?php 
-			$show_help_option = user_config_option('show_context_help'); 
-			if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_upload_file_context_help', true, logged_user()->getId())) {?>
-			<div id="uploadFileContextHelp" class="contextHelpStyle">
-				<?php render_context_help($this, 'chelp upload file','upload_file'); ?>
-			</div>
-		<?php }?>
+
 <?php if ($enableUpload) { ?>
 
 	<?php if($file->isNew()) { //----------------------------------------------------ADD   ?>
@@ -250,42 +237,21 @@ $comments_required = config_option('file_revision_comments_required');
 
 	<div id="<?php echo $genid ?>add_file_description_div" style="display: none">
 		<fieldset>
-			<?php 
-			$show_help_option = user_config_option('show_context_help'); 
-						if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_upload_file_description_context_help', true, logged_user()->getId())) {?>
-			<div id="uploadFileContextHelp" class="contextHelpStyle">
-				<?php render_context_help($this, 'chelp upload file description','upload_file_description'); ?>
-			</div>
-		<?php }?>
 		<legend><?php echo lang('description') ?></legend>
 		<?php echo textarea_field('file[description]', array_var($file_data, 'description'), array('class' => '', 'id' => $genid.'fileFormDescription', 'tabindex' => '90')) ?>
 		</fieldset>
 	</div>
 
-	<div id="<?php echo $genid ?>add_custom_properties_div" style="display: none">
+	<div id="<?php echo $genid ?>add_custom_properties_div" style="<?php echo ($visible_cps > 0 ? "" : "display:none") ?>">
 		<fieldset>
-		<?php 
-			$show_help_option = user_config_option('show_context_help'); 
-						if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_upload_file_custom_properties_context_help', true, logged_user()->getId())) {?>
-			<div id="uploadFileContextHelp" class="contextHelpStyle">
-				<?php render_context_help($this, 'chelp upload file custom properties','upload_file_custom_properties'); ?>
-			</div>
-		<?php }?>
 			<legend><?php echo lang('custom properties') ?></legend>
-			<?php echo render_object_custom_properties($object, 'ProjectFiles', false) ?><br/><br/>
-      		<?php echo render_add_custom_properties($object); ?>
+			<?php echo render_object_custom_properties($object, false) ?>
+      		<?php //echo render_add_custom_properties($object); ?>
 		</fieldset>
 	</div>
 
 	<div id="<?php echo $genid ?>add_subscribers_div" style="display: none">
 		<fieldset>
-		<?php 
-			$show_help_option = user_config_option('show_context_help'); 
-					if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_upload_file_subscribers_context_help', true, logged_user()->getId())) {?>
-			<div id="uploadFileContextHelp" class="contextHelpStyle">
-				<?php render_context_help($this, 'chelp upload file subscribers','upload_file_subscribers'); ?>
-			</div>
-		<?php }?>
 			<legend><?php echo lang('object subscribers') ?></legend>
 			<div id="<?php echo $genid ?>add_subscribers_content">
 				<?php echo render_add_subscribers($object, $genid); ?>
@@ -293,33 +259,9 @@ $comments_required = config_option('file_revision_comments_required');
 		</fieldset>
 	</div>
 
-	<script>
-		/*var wsch = Ext.getCmp('<?php echo $genid ?>ws_ids');
-		wsch.on("wschecked", function(arguments) {
-			if (!this.getValue().trim()) return;
-			var uids = App.modules.addMessageForm.getCheckedUsers('<?php echo $genid ?>');
-			Ext.get('<?php echo $genid ?>add_subscribers_content').load({
-				url: og.getUrl('object', 'render_add_subscribers', {
-					workspaces: this.getValue(),
-					users: uids,
-					genid: '<?php echo $genid ?>',
-					object_type: '<?php echo get_class($object->manager()) ?>'
-				}),
-				scripts: true
-			});
-		}, wsch);*/
-	</script>
-
 	<?php if($object->isNew() || $object->canLinkObject(logged_user())) { ?>
 		<div style="display: none" id="<?php echo $genid ?>add_linked_objects_div">
 		<fieldset>
-			<?php 
-			$show_help_option = user_config_option('show_context_help'); 
-						if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_upload_file_linked_objects_context_help', true, logged_user()->getId())) {?>
-			<div id="uploadFileContextHelp" class="contextHelpStyle">
-				<?php render_context_help($this, 'chelp upload file linked objects','upload_file_linked_objects'); ?>
-			</div>
-		<?php }?>
 			<legend><?php echo lang('linked objects') ?></legend>
 			<?php echo render_object_link_form($object) ?>
 		</fieldset>
@@ -334,10 +276,7 @@ $comments_required = config_option('file_revision_comments_required');
 		</fieldset>
 		</div>
 	<?php } ?>
-	
-	<div>
-		<?php echo render_object_custom_properties($object, 'ProjectFiles', true) ?>
-	</div>
+
 	
 	<?php if ($file->getType() == ProjectFiles::TYPE_WEBLINK) { ?>
 	<div>
@@ -372,9 +311,14 @@ $comments_required = config_option('file_revision_comments_required');
 
 <script>
 	var memberChoosers = Ext.getCmp('<?php echo "$genid-member-chooser-panel-".$file->manager()->getObjectTypeId()?>').items;
+	var treeClicked = false;
 	if (memberChoosers) {
 		memberChoosers.each(function(item, index, length) {
 			item.on('all trees updated', function() {
+				// First User click
+				$(".member-chooser input.x-tree-node-cb").click(function(){
+					treeClicked = true;
+ 				});
 				var dimensionMembers = {};
 				memberChoosers.each(function(it, ix, l) {
 					dim_id = this.dimensionId;
@@ -386,15 +330,17 @@ $comments_required = config_option('file_revision_comments_required');
 				});
 	
 				var uids = App.modules.addMessageForm.getCheckedUsers('<?php echo $genid ?>');
-				Ext.get('<?php echo $genid ?>add_subscribers_content').load({
-					url: og.getUrl('object', 'render_add_subscribers', {
-						context: Ext.util.JSON.encode(dimensionMembers),
-						users: uids,
-						genid: '<?php echo $genid ?>',
-						otype: '<?php echo $file->manager()->getObjectTypeId()?>'
-					}),
-					scripts: true
-				});
+				if(treeClicked) {
+					Ext.get('<?php echo $genid ?>add_subscribers_content').load({
+						url: og.getUrl('object', 'render_add_subscribers', {
+							context: Ext.util.JSON.encode(dimensionMembers),
+							users: uids,
+							genid: '<?php echo $genid ?>',
+							otype: '<?php echo $file->manager()->getObjectTypeId()?>'
+						}),
+						scripts: true
+					});
+				}
 			});
 		});
 	}

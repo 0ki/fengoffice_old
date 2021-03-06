@@ -99,7 +99,7 @@ class PluginController extends ApplicationController {
 	 * @param array of string $pluginNames
 	 * TODO avoid using mysql functions - (copied from installer)
 	 */
-	private function executeInstaller($name) {
+	static function executeInstaller($name) {
 		
 		$table_prefix = TABLE_PREFIX;
 		tpl_assign('table_prefix', $table_prefix);

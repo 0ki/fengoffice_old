@@ -117,7 +117,10 @@ class Timeslots extends BaseTimeslots {
 		$join_params = null;
 		
 		$order_by[] = 'start_time';
-		$result = self::getContentObjects($context, ObjectTypes::findById(self::instance()->getObjectTypeId()), $order_by, null, $conditions, $join_params, null, null);
+		$result = self::instance()->listing(array(
+			'order' => $order_by,
+			'extra_conditions' => $conditions,
+		));
 		
 		return $result->objects;
 	}
@@ -129,8 +132,7 @@ class Timeslots extends BaseTimeslots {
 	 * @return unknown_type
 	 */
 	static function updateBillingValues(){
-		$timeslots = Timeslots::findAll(array('conditions' => '`end_time` > 0 AND billing_id = 0 AND is_fixed_billing = 0 AND (object_manager = \'ProjectTasks\' OR object_manager = \'Projects\')', 
-			'limit' => 500));
+		$timeslots = Timeslots::findAll(array('conditions' => '`end_time` > 0 AND billing_id = 0 AND is_fixed_billing = 0 AND (object_manager = \'ProjectTasks\' OR object_manager = \'Projects\')', 'limit' => 500));
 		
 		$users = Users::findAll();
 		$usArray = array();
@@ -220,7 +222,7 @@ class Timeslots extends BaseTimeslots {
 		$result = Timeslots::instance()->listing(array(
 			"order" => array('start_time', 'rel_object_id'),
 			"order_dir" => "DESC",
-		 	" AND rel_object_id = 0" . $user_sql,
+		 	"extra_conditions" => " AND rel_object_id = 0" . $user_sql,
 			"start" => $offset,
 			"limit" => $limit			
 		));

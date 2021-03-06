@@ -308,8 +308,8 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 	// ---------------------------------------------------
 
 	
-	function canAdd(Contact $user, $context){
-		return can_add($user, $context, ProjectFileRevisions::instance()->getObjectTypeId());
+	function canAdd(Contact $user, $context, &$notAllowedMember = ''){
+		return can_add($user, $context, ProjectFileRevisions::instance()->getObjectTypeId(), $notAllowedMember);
 	}
 	
 

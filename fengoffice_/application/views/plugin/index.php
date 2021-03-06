@@ -48,7 +48,7 @@
 						<p><?php echo $metadata['description'] ?></p>
 					</div>
 					<div class="active second plugin-version-author-uri">
-						Version <?php echo $metadata['version']?> | By <a title="Visit author homepage" href="<?php echo $metadata['author']['name']?>"> <?php echo $metadata['author']['name']?> </a> | <a title="Visit plugin site" href="http://dancameron.org/wordpress/">Visit plugin site</a>
+						Version <?php echo $metadata['version']?> | By <a title="Visit author homepage" href="<?php echo $metadata['author']['name']?>"> <?php echo $metadata['author']['name']?> </a> | <a title="Visit plugin site" href="#">Visit plugin site</a>
 					</div>
 				</td>
 				<td class="column-dependences">

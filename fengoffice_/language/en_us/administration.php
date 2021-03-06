@@ -93,7 +93,11 @@
   	'config option desc currency_code' => 'Currency symbol',
 	'config option name use_owner_company_logo_at_header' => 'Use Owner company\'s logo as application logo',
   	'config option desc use_owner_company_logo_at_header' => 'Put the Owner company\'s logo at the top right corner of the screen. Must refresh (F5) to apply the changes. Recommended size: 50x50 px.',
-  
+	'config option name use_time_in_task_dates' => 'Use time in task dates',
+	'config option desc use_time_in_task_dates' => 'Allow people to input due time and start time with due date and start date.',
+        'config option name untitled_notes' => 'Untitled notes',
+        'nota sin titulo' => 'Untitled note',
+
     // Mailing
     'config option name exchange_compatible' => 'Microsoft Exchange compatibility mode',
     'config option desc exchange_compatible' => 'If you are using Microsoft Exchange Server set this option to yes to avoid some known mailing problems.',
@@ -110,6 +114,8 @@
   	'config option name user_email_fetch_count' => 'Email fetch limit',
   	'config option desc user_email_fetch_count' => 'How many emails to fetch when a user clicks on the "Check mail accounts" button. Using a large value may cause timeout errors to the user. Use 0 for no limit. Note, this doesn\'t affect email fetching through cron.',
   	'config option name check_spam_in_subject' => 'Check spam in subject',
+	'config option name show images in document notifications' => 'Attach images in document notifications',
+	'config option desc show images in document notifications' => 'If the document is an image, it is attached in the content of the notification.',
   
   	// Passwords
   	'config option name min_password_length' => 'Minimum password length',
@@ -175,8 +181,9 @@
   	'user ws config option name my tasks is default view' => 'Tasks assigned to me is the default view',
   	'user ws config option desc my tasks is default view' => 'If no is selected, the default view of the task panel will show all tasks',
   	'user ws config option name show tasks in progress widget' => 'Show \'Tasks in progress\' widget',
-  	'user ws config option name can notify from quick add' => 'Task notification is checked by default',
-  	'user ws config option desc can notify from quick add' => 'The notification checkbox enables the option to notify assigned users after a task is added or updated',
+  
+  	'user ws config option name can notify from quick add' => 'Notify the assigned person to the task',
+  	'user ws config option desc can notify from quick add' => 'This option enables notifying assigned users after a task is added or updated',
 	'user ws config option name show_tasks_context_help' => 'Show context help for tasks',
   	'user ws config option desc show_tasks_context_help' => 'If enabled, a context help box will be displayed on the tasks panel',
  	'user ws config option name start_monday' => 'Start week on monday',
@@ -346,6 +353,8 @@
   	'user config option desc rememberGUIState' => 'This allows you to save the state of the graphical interface (size of panels, expanded/collapsed state, etc) for the next time that you log in. Warning: This feature is in BETA status.',
   	'user config option name work_day_start_time' => 'Work day start time',
   	'user config option desc work_day_start_time' => 'Specifies the time when work day starts.',
+  	'user config option name work_day_end_time' => 'Work day end time',
+  	'user config option desc work_day_end_time' => 'Specifies the time when work day ends.',
   	'user config option name time_format_use_24' => 'Use 24 hours format for time descriptions',
   	'user config option desc time_format_use_24' => 'If enabled time descriptions will be shown as \'hh:mm\' from 00:00 to 23:59, if not hours will go from 1 to 12 using AM or PM.',
   	'user config option name date_format' => 'Date format',
@@ -436,13 +445,14 @@
   
 	'add member' => 'Add member',
 	'add member to this dimension' => 'Add member to this dimension',
-  	'parent member' => 'Parent member',
+  	'parent member' => 'Child of',
   	'new member' => 'New member',
   	'member cannot be root' => 'Member of type \'{0}\' cannot be root of the dimension, a parent member must be selected.',
   	'permissions for member' => 'Permissions for member \'{0}\'',
 	'user selector permissions help' => 'Click on a group or user to modify the permissions',
-  
-  
+  	
+	'expand-collapse' => 'Expand/Collapse',
+
   	'dimensions' => 'Dimensions',
   	'organization data' => 'Organization Data',
   
@@ -458,6 +468,7 @@
   	'edit member' => 'Edit Member',
   	'associate' => 'Associate',
   	'hide vinculations' => 'Hide vinculations',
+  	'missing required associations' => "You have to select at least one property from the groups marked with *:\n{0}",
   
   	// System permissions
 	'can manage security' => 'Can manage security configuration (users, groups and permissions)',

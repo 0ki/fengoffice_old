@@ -17,8 +17,12 @@
 				$counter++;
 				$options = array();
 				if ($comment->canEdit(logged_user()) && !$__comments_object->isTrashed()) {
-					if ($comment->canLinkObject(logged_user()))
+					if ($comment->getCreatedById() == logged_user()->getId()) {
+						$options[] = '<a class="internalLink" href="' . $comment->getEditUrl() . '">' . lang('edit') . '</a>';
+					}
+					if ($comment->canLinkObject(logged_user())) {
 						$options[] = render_link_to_object($comment,lang('link objects'),true);
+					}
 				}
 				if ($comment->canDelete(logged_user()) && !$__comments_object->isTrashed()) $options[] = '<a class="internalLink" href="' . $comment->getDeleteUrl() . '" onclick="return confirm(\''.escape_single_quotes(lang('confirm move to trash')).'\')">' . lang('move to trash') . '</a>';
 ?>
@@ -30,11 +34,11 @@
 					<span><a class="internalLink" href="<?php echo $comment->getViewUrl() ?>" title="<?php echo lang('permalink') ?>">#<?php echo $counter ?></a>:
 					</span> <?php echo lang('comment posted on by', format_datetime($comment->getUpdatedOn()), $comment->getCreatedByCardUrl(), clean($comment->getCreatedByDisplayName())) ?>
 					</td>
-		<td style="text-align:right">
+					<td style="text-align:right">
 		<?php 		if(count($options)) { ?>
 					<div><?php echo implode(' | ', $options) ?></div>
 		<?php 		} // if ?>
-		</td></tr></table>
+					</td></tr></table>
 				</div>
 		<?php 	} else { ?>
 				<div class="commentHead"><span>

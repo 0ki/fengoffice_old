@@ -82,9 +82,9 @@ if (!$mailAccount->isNew()){
 			<a href="#" class="option" style="font-weight: bold" onclick="og.toggleAndBolden('<?php echo $genid ?>smtp_settings_div', this)"><?php echo lang('smtp settings') ?></a> - 
 		<?php } ?>
 		<a href="#" class="option" style="font-weight: bold" onclick="og.toggleAndBolden('<?php echo $genid ?>other_settings_div',this)"><?php echo lang('personal settings') ?></a>
-		<?php if ($logged_user_can_edit) { ?>
+		<?php /* if ($logged_user_can_edit) { ?>
 			- <a href="#" class="option" style="font-weight: normal" onclick="og.toggleAndBolden('<?php echo $genid ?>account_permissions_div',this)"><?php echo lang('mail account permissions') ?></a>
-		<?php } ?>
+		<?php } */?>
 	</div>
 </div>
 <div class="adminSeparator"></div>
@@ -358,7 +358,7 @@ if (!$mailAccount->isNew()){
 		</div>
 	</fieldset>
 	
-<?php if ($logged_user_can_edit) { ?>
+<?php /* if ($logged_user_can_edit) { ?>
 	<fieldset id="<?php echo $genid ?>account_permissions_div" style="display:none;">
 		<legend><?php echo lang('mail account permissions')?></legend>
 		<div class="desc"><?php echo lang('mail account permissions desc')?></div>
@@ -398,7 +398,7 @@ if (!$mailAccount->isNew()){
 			</div> <?php
 		} ?>
 	</fieldset>
-<?php } ?>
+<?php } */?>
 	
 <?php echo submit_button($mailAccount->isNew() ? lang('add mail account') : lang('save changes'), 's', array('tabindex'=>'1240')) ?>
 

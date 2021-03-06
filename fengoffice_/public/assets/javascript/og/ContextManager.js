@@ -4,7 +4,8 @@
 og.contextManager  = new function() {
 	
 	// Public Attributes
-
+	
+	this.currentDimension = 0 ;
 
 	/**
 	 * Member Chooser selected members gruped by dimension.

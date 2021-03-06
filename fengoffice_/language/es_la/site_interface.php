@@ -455,7 +455,7 @@
 	'late milestones and tasks for' => 'Hitos y tareas atrasadas de {0}',
 	'my tasks in progress' => 'Mis tareas activas',
 	'tasks in progress for' => 'Tareas activas de {0}',
-	'edit picture' => 'Editar imágen',
+	'edit picture' => 'Editar imagen',
 	'deleted by' => 'Eliminado por',
 	'time has to be greater than 0' => 'El tiempo tiene que ser mayor que 0',
 	'release notes' => 'Notas de la versión',
@@ -487,7 +487,7 @@
 	'new share notification company' => 'Organización \'{0}\' ha sido compartida',
 	'new share notification emailunclassified' => 'Correo \'{0}\' ha sido compartido',
 	'new share notification email' => 'Correo \'{0}\' ha sido compartido',
-	'billing' => 'Facturacion',
+	'billing' => 'Facturación',
 	'category' => 'Categoría',
 	'hourly rates' => 'Tarifas horarias',
 	'origin' => 'Origen',
@@ -538,9 +538,11 @@
 	'last language' => 'Anterior',
 	'reset password expired' => 'Ha expirado la solicitud para reestablecer su contraseña. Por favor genere una nueva haciendo clic en "{0}"',
 	'invalid parameters' => 'Parámetros inválidos',
-	'reset password' => 'Petición para reestablecer su contraseña de Feng Office',
+    
+	'reset password' => 'Nueva contraseña de Feng Office',
 	'reset password form desc' => '<b>{0}</b>, Por favor ingrese su nueva contraseña dos veces:',
-	'success reset password' => 'Su nueva contraseña ha sido guardada',
+	'success reset password' => 'Su nueva contraseña ha sido guardada',        
+    
 	'new account step1' => 'Paso 1: Cree el perfil de su organización',
 	'new account step1 info' => 'Para ingresar la información de su organización y miembros con los que trabaja haga clic en el vínculo "Administración" ubicado en el borde superior derecho de la página.',
 	'import contacts from vcard' => 'Importar contactos desde un archivo VCard',
@@ -585,4 +587,6 @@
 	'task dependency dnx' => 'La dependencia no existe',
 	'success remove task dependency' => 'Dependencia de tarea eliminada exitosamente',
 	'success add task dependency' => 'Dependencia de tarea agregada exitosamente',
+	'click to expand' => 'Clic para expandir',
+	'select member to add timeslots' => 'Para agregar tiempos de trabajo generales debe seleccionar al menos un item de: {0}',
 ); ?>

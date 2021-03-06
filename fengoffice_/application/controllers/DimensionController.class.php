@@ -4,7 +4,7 @@
  * Dimension controller
  *
  * @version 1.0
- * @author Diego Castiglioni <diego20@gmail.com>
+ * @author Diego Castiglioni <diego.castiglioni@fengoffice.com>
  */
 class DimensionController extends ApplicationController {
 
@@ -99,7 +99,7 @@ class DimensionController extends ApplicationController {
 			}
 			
 			$object_type = ObjectTypes::findById($object_type_id);
-			if ($object_type instanceof ObjectType) {
+			if ($object_type instanceof ObjectType && $object_type->getType() == 'dimension_object' ) {
 				eval('$ot_manager = '.$object_type->getHandlerClass().'::instance();');
 				if (isset($ot_manager)) {
 					eval('$item_object = new '.$ot_manager->getItemClass().'();');
@@ -132,11 +132,19 @@ class DimensionController extends ApplicationController {
 			$members = array();
 			foreach ($all_members as $m) {
 
-				if ($object_type_id!=null){
+				/* @var  $m Member */
+				if ($object_type_id != null){
 					$selectable = in_array($m->getObjectTypeId(), $allowed_object_type_ids) ? true : false;
 					if ($selectable && isset($item_object)) {
 						if (! $item_object->canAdd(logged_user(), array($m)) ) continue;
 					}
+					
+				}else{
+					$selectable = true ;
+				}
+				
+				if ( count($allowed_member_type_ids) && !in_array($m->getObjectTypeId(), $allowed_member_type_ids) ) {
+					continue;	
 				}
 				
 				$tempParent = $m->getParentMemberId();
@@ -174,6 +182,24 @@ class DimensionController extends ApplicationController {
 					"allow_childs" => $m->allowChilds()
 				
 				);
+				
+				
+				// Member Actions
+				if (can_manage_dimension_members(logged_user())){
+					if ($oid = $m->getObjectId() ) {
+						if ( $obj = Objects::instance()->findObject($oid) ){
+							$editUrl = $obj->getEditUrl();
+						}
+					}else{
+						$editUrl =  get_url('member', 'edit', array('id'=> $m->getId())) ;
+					}
+					$member['actions'] = array(array(
+						'url' => $editUrl,
+			  			'text' =>  '',
+			  			'iconCls' =>  'ico-edit'
+					));	
+				}
+				
 				$members[] = $member;
 			}
 			return $members ;
@@ -311,6 +337,30 @@ class DimensionController extends ApplicationController {
 						"allow_childs" => $m->allowChilds()
 										
 					);
+					
+					
+					if ($oid = $m->getObjectId() ) {
+						if ( $obj = Objects::instance()->findObject($m->getObjectId()) ){
+							$editUrl = $obj->getEditUrl();	
+						}
+					}
+					
+					// Member Actions
+					if (can_manage_dimension_members(logged_user())){
+						if ($oid = $m->getObjectId() ) {
+							if ( $obj = Objects::instance()->findObject($m->getObjectId()) ){
+								$editUrl = $obj->getEditUrl();
+							}
+						}else{
+							$editUrl =  get_url('member', 'edit', array('id'=> $m->getId())) ;
+						}
+						$member['actions'] = array(array(
+							'url' => $editUrl,
+				  			'text' =>  '',
+				  			'iconCls' =>  'ico-edit'
+						));	
+					}
+					
 					$members[] = $member;
 				}
 				return $members;
@@ -337,7 +387,6 @@ class DimensionController extends ApplicationController {
 		}	
 		$member_id  = array_var($_GET, 'member_id') ;
 		$memberList = $this->list_dimension_members($member_id, $dimension_id, $objectTypeId, $allowedMemberTypes);
-		
 		$tree = buildTree($memberList, "parent", "children", "id", "name", $checkedField) ;
 		ajx_current("empty");		
 		ajx_extra_data(array('dimension_members' => $tree ));			
@@ -356,6 +405,7 @@ class DimensionController extends ApplicationController {
 			$allowedMemberTypes = null ;
 		}		
 		$memberList = $this->initial_list_dimension_members($dimension_id, $objectTypeId, $allowedMemberTypes);
+		
 		$tree = buildTree($memberList,  "parent", "children", "id", "name", $checkedField) ;
 		ajx_current("empty");		
 		ajx_extra_data(array('dimension_members' => $tree ));	

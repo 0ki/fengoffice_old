@@ -3,7 +3,9 @@
 	require_javascript("og/Permissions.js");
 	$genid = gen_id();
 	$object = $user;
-  set_page_title($user->isNew() ? lang('add user') : lang('edit user'));
+	set_page_title($user->isNew() ? lang('add user') : lang('edit user'));
+	
+	$visible_cps = CustomProperties::countVisibleCustomPropertiesByObjectType($object->getObjectTypeId());
 ?>
 
 <form style="height:100%;background-color:white" class="internalForm" action="<?php echo get_url('contact', 'add_user', array('contact_id' => $user->getId())); ?>" onsubmit="javascript:og.ogPermPrepareSendData('<?php echo $genid ?>');return true;" method="post">
@@ -85,7 +87,7 @@
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_user_advanced', this)"><?php echo lang('advanced') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_user_permissions', this)"><?php echo lang('permissions') ?></a>
 		<?php if ($cps > 0) { ?>
-			- <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_custom_properties_div',this)"><?php echo lang('custom properties') ?></a>
+			- <a href="#" class="option <?php echo $visible_cps>0 ? 'bold' : ''?>" onclick="og.toggleAndBolden('<?php echo $genid ?>add_custom_properties_div',this)"><?php echo lang('custom properties') ?></a>
 		<?php } ?>
 		<?php foreach ($categories as $category) { ?>
 			- <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid . $category['name'] ?>', this)"><?php echo lang($category['name'])?></a>
@@ -179,10 +181,10 @@
 	<?php } //if ?>
 
 
-	<div id='<?php echo $genid ?>add_custom_properties_div' style="display:none">
+	<div id='<?php echo $genid ?>add_custom_properties_div' style="<?php echo ($visible_cps > 0 ? "" : "display:none") ?>">
 		<fieldset>
 			<legend><?php echo lang('custom properties') ?></legend>
-			<?php echo render_object_custom_properties($user, 'Users', false) ?>
+			<?php echo render_object_custom_properties($user, false) ?>
 		</fieldset>
 	</div>
 	
@@ -195,10 +197,7 @@
 	</div>
 	<?php } ?>
 	
-	<div>
-		<?php echo render_object_custom_properties($user, 'Users', true) ?>
-	</div>
-
+	
 	<div id="<?php echo $genid ?>add_user_permissions" style="display:none">
   <?php
   	tpl_assign('genid', $genid);

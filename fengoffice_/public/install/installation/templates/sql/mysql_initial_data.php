@@ -21,6 +21,7 @@ INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`
 	('system', 'min_chars_for_match', '3', 'IntegerConfigHandler', 1, 0, 'If search criteria len is less than this, then use always LIKE'),
 	('general', 'upgrade_last_check_datetime', '2006-09-02 13:46:47', 'DateTimeConfigHandler', 1, 0, 'Date and time of the last upgrade check'),
 	('general', 'upgrade_last_check_new_version', '0', 'BoolConfigHandler', 1, 0, 'True if system checked for the new version and found it. This value is used to hightligh upgrade tab in the administration'),
+	('general', 'use_time_in_task_dates', '1', 'BoolConfigHandler', 0, 0, ''),
 	('general', 'file_storage_adapter', 'fs', 'FileStorageConfigHandler', 0, 0, 'What storage adapter should be used? fs or mysql'),
 	('general', 'theme', 'default', 'ThemeConfigHandler', 0, 0, NULL),
 	('general', 'days_on_trash', '30', 'IntegerConfigHandler', 0, 0, 'Days before a file is deleted from trash. 0 = Not deleted'),
@@ -33,6 +34,7 @@ INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`
 	('mailing', 'smtp_username', '', 'StringConfigHandler', 0, 0, NULL),
 	('mailing', 'smtp_password', '', 'PasswordConfigHandler', 0, 0, NULL),
 	('mailing', 'smtp_secure_connection', 'no', 'SecureSmtpConnectionConfigHandler', 0, 0, 'Values: no, ssl, tls'),
+    ('mailing', 'show images in document notifications', '0', 'BoolConfigHandler', 0, 0, NULL),
     ('passwords', 'min_password_length', '0', 'IntegerConfigHandler', 0, '1', NULL),
     ('passwords', 'password_numbers', '0', 'IntegerConfigHandler', 0, '2', NULL),
 	('passwords', 'password_uppercase_characters', '0', 'IntegerConfigHandler', 0, '3', NULL),
@@ -50,7 +52,8 @@ INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`
 	('general', 'show_feed_links', '0', 'BoolConfigHandler', '0', '0', NULL),
 	('general', 'use_owner_company_logo_at_header', '0', 'BoolConfigHandler', '0', '0', NULL),
 	('general', 'ask_administration_autentification', 0, 'BoolConfigHandler', 0, 0, NULL),
-	('general', 'use tasks dependencies', 0, 'BoolConfigHandler', 0, 0, NULL);
+	('general', 'use tasks dependencies', 0, 'BoolConfigHandler', 0, 0, NULL),
+        ('general', 'untitled_notes', '0', 'BoolConfigHandler', '0', '0', NULL);
 	
 INSERT INTO `<?php echo $table_prefix ?>file_types` (`extension`, `icon`, `is_searchable`, `is_image`) VALUES
 	('zip', 'archive.png', 0, 0),
@@ -129,12 +132,13 @@ INSERT INTO `<?php echo $table_prefix ?>contact_config_options` (`category_name`
  ('task panel', 'task panel status', '1', 'IntegerConfigHandler', 1, 0, ''),
  ('task panel', 'task panel filter', 'assigned_to', 'StringConfigHandler', 1, 0, ''),
  ('task panel', 'task panel filter value', '0', 'UserCompanyConfigHandler', 1, 0, ''),
- ('task panel', 'noOfTasks', '8', 'IntegerConfigHandler', '0', '100', NULL),
+ ('task panel', 'noOfTasks', '15', 'IntegerConfigHandler', '0', '100', NULL),
  ('task panel', 'task_display_limit', '500', 'IntegerConfigHandler', '0', '200', NULL),
  ('general', 'localization', '', 'LocalizationConfigHandler', 0, 100, ''),
  ('general', 'search_engine', 'match', 'SearchEngineConfigHandler', 0, 700, ''),
  ('general', 'lastAccessedWorkspace', '0', 'IntegerConfigHandler', 1, 0, ''),
  ('general', 'work_day_start_time', '9:00', 'TimeConfigHandler', 0, 400, 'Work day start time'),
+ ('general', 'work_day_end_time', '18:00', 'TimeConfigHandler', 0, 410, 'Work day end time'),
  ('general', 'time_format_use_24', '0', 'BoolConfigHandler', 0, 500, 'Use 24 hours time format'),
  ('general', 'date_format', 'd/m/Y', 'DateFormatConfigHandler', 0, 600, 'Date objects will be displayed using this format.'),
  ('general', 'descriptive_date_format', 'l, j F', 'StringConfigHandler', 0, 700, 'Descriptive dates will be displayed using this format.'),
@@ -225,11 +229,11 @@ INSERT INTO `<?php echo $table_prefix ?>contact_config_options` (`category_name`
  ('general', 'show_context_help', 'until_close', 'ShowContextHelpConfigHandler', '0', '0', NULL),
  ('dashboard', 'show charts widget', '1', 'BoolConfigHandler', 0, 600, ''),
  ('dashboard', 'show dashboard info widget', '1', 'BoolConfigHandler', 0, 900, ''),
-  ('general', 'rememberGUIState', '1', 'RememberGUIConfigHandler', 0, 300, '');
+ ('general', 'rememberGUIState', '1', 'RememberGUIConfigHandler', 0, 300, '');
  
 
 INSERT INTO `<?php echo $table_prefix ?>object_types` (`id`,`name`,`handler_class`,`table_name`,`type`,`icon`,`plugin_id`) VALUES
- (1,'workspace', '', '', 'dimension_group', 'workspace', null),
+ (1,'workspace', 'Workspaces', 'workspaces', 'dimension_object', 'workspace', null),
  (2,'tag', '', '', 'dimension_group', 'tag', null),
  (3,'message', 'ProjectMessages', 'project_messages', 'content_object', 'message', null),
  (4,'weblink', 'ProjectWebpages', 'project_webpages', 'content_object', 'weblink', null),
@@ -279,7 +283,7 @@ INSERT INTO `<?php echo $table_prefix ?>tab_panels` (`id`,`title`,`icon_cls`,`re
  ('contacts-panel','contacts','ico-contacts',1,'contact','init','','',0,'system',7,0,16),
  ('documents-panel','documents','ico-documents',1,'files','init','','',1,'system',6,0,6),
  ('messages-panel','messages','ico-messages',1,'message','init','','',1,'system',5,0,3),
- ('overview-panel','overview','ico-overview',1,'dashboard','init_overview','','',1,'system',-100,0,0),
+ ('overview-panel','overview','ico-overview',1,'dashboard','main_dashboard','dashboard','main_dashboard',1,'system',-100,0,0),
  ('reporting-panel','reporting','ico-reporting',1,'reporting','index','','',1,'system',9,0,12),
  ('tasks-panel','tasks','ico-tasks',1,'task','new_list_tasks','','',1,'system',3,0,5),
  ('time-panel','time','ico-time-layout',1,'time','index','','',1,'system',8,0,0),
@@ -413,3 +417,48 @@ INSERT INTO `<?php echo $table_prefix ?>system_permissions` (`permission_group_i
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Guest Customer'),	0,	0,	0,	0,	0,		0,	0,	0,	0,	0,	0),
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Guest'),	0,	0,	0,	0,	0,		0,	0,	0,	0,	0,	0),
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Non-Exec Director'),	0,	0,	0,	0,	0,		0,	0,	0,	0,	0,	1);
+
+INSERT INTO `<?php echo $table_prefix ?>widgets` (`name`,`title`,`plugin_id`,`path`,`default_options`,`default_section`,`default_order`) VALUES 
+ ('overdue_upcoming','overdue and upcoming',0,'','','left',3),
+ ('people','people',0,'','','right',-1),
+ ('messages','notes',0,'','','right',1000),
+ ('documents','documents',0,'','','right',1100),
+ ('calendar','upcoming events milestones and tasks',0,'','','top',0) ;
+
+INSERT INTO <?php echo $table_prefix ?>role_object_type_permissions (role_id, object_type_id, can_delete, can_write)
+ SELECT p.id, o.id, 1, 1
+ FROM `<?php echo $table_prefix ?>object_types` o JOIN `<?php echo $table_prefix ?>permission_groups` p
+ WHERE o.`name` IN ('message','weblink','file','task','milestone','event','contact','mail','timeslot','report','comment')
+ AND p.`name` IN ('Super Administrator','Administrator','Manager','Executive');
+
+INSERT INTO <?php echo $table_prefix ?>role_object_type_permissions (role_id, object_type_id, can_delete, can_write)
+ SELECT p.id, o.id, 0, 1
+ FROM `<?php echo $table_prefix ?>object_types` o JOIN `<?php echo $table_prefix ?>permission_groups` p
+ WHERE o.`name` IN ('message','weblink','file','task','milestone','event','contact','timeslot','report','comment')
+ AND p.`name` IN ('Collaborator Customer');
+
+INSERT INTO <?php echo $table_prefix ?>role_object_type_permissions (role_id, object_type_id, can_delete, can_write)
+ SELECT p.id, o.id, 0, 1
+ FROM `<?php echo $table_prefix ?>object_types` o JOIN `<?php echo $table_prefix ?>permission_groups` p
+ WHERE o.`name` IN ('message','weblink','file','task','milestone','event','timeslot','comment')
+ AND p.`name` IN ('Internal Collaborator','External Collaborator');
+
+INSERT INTO <?php echo $table_prefix ?>role_object_type_permissions (role_id, object_type_id, can_delete, can_write)
+ SELECT p.id, o.id, 0, 0
+ FROM `<?php echo $table_prefix ?>object_types` o JOIN `<?php echo $table_prefix ?>permission_groups` p
+ WHERE o.`name` IN ('message','weblink','file','event','comment')
+ AND p.`name` IN ('Guest Customer');
+
+INSERT INTO <?php echo $table_prefix ?>role_object_type_permissions (role_id, object_type_id, can_delete, can_write)
+ SELECT p.id, o.id, 0, 0
+ FROM `<?php echo $table_prefix ?>object_types` o JOIN `<?php echo $table_prefix ?>permission_groups` p
+ WHERE o.`name` IN ('message','weblink','event','comment')
+ AND p.`name` IN ('Guest');
+
+INSERT INTO <?php echo $table_prefix ?>role_object_type_permissions (role_id, object_type_id, can_delete, can_write)
+ SELECT p.id, o.id, 0, 0
+ FROM `<?php echo $table_prefix ?>object_types` o JOIN `<?php echo $table_prefix ?>permission_groups` p
+ WHERE o.`name` IN ('message','weblink','file','task','milestone','event','contact','timeslot','report','comment')
+ AND p.`name` IN ('Non-Exec Director');
+
+UPDATE <?php echo $table_prefix ?>role_object_type_permissions SET can_write = 1 WHERE object_type_id = (SELECT id FROM <?php echo $table_prefix ?>object_types WHERE name='comment');

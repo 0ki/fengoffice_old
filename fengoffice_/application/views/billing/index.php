@@ -1,6 +1,6 @@
 <?php 
   set_page_title(lang('billing categories'));
-  $isBillingEnabled = isset($billing_categories) && is_array($billing_categories) && count($billing_categories);
+  $isBillingEnabled = can_manage_billing(logged_user()) && isset($billing_categories) && is_array($billing_categories) && count($billing_categories);
 ?>
 <div class="adminBilling" style="height:100%;background-color:white">
   <div class="adminHeader">
@@ -38,15 +38,11 @@ foreach($billing_categories as $billing) {
   </tr>
   <tr class="<?php echo $isAlt? 'altRow' : ''?>">
     <td style="padding:5px;padding-left:10px;padding-right:10px;" colspan=4>
-    <b><?php echo lang('users') ?>:</b>&nbsp;&nbsp;&nbsp;
+    <span class="bold"><?php echo lang('users') ?>:</span>&nbsp;&nbsp;&nbsp;
     <?php $billing_users = $billing->getCategoryUsers();
     	if ($billing_users && count($billing_users) > 0){ 
-    		$c = 0;
-    		foreach($billing_users as $b_user) {
-    			if ($c != 0)
-					echo ',&nbsp';
-				$c++;?>
-    			<a href="<?php echo $b_user->getCardUrl()?>" class="internalLink coViewAction ico-user"><?php echo clean($b_user->getObjectName()) ?></a>
+    		foreach($billing_users as $b_user) { ?>
+    			<a href="<?php echo $b_user->getCardUrl()?>" class="internalLink coViewAction ico-user"><?php echo clean($b_user->getObjectName()) ?></a>&nbsp;
     		<?php } ?>
     	<?php } else echo lang('none'); ?>
 	</td>
@@ -64,9 +60,11 @@ foreach($billing_categories as $billing) {
 <div style="margin-top:10px">
 	<a class="internalLink coViewAction ico-user" href="<?php echo get_url('billing', 'assign_users') ?>"><?php echo lang('assign billing categories to users') ?></a>
 </div>
+	<?php if (false) { //FIXME ?>
 <div style="margin-top:10px">
 	<a class="internalLink coViewAction ico-db" onclick="return confirm('<?php echo escape_single_quotes(lang('update unset billing values desc'))?>')" href="<?php echo get_url('billing', 'update_unset_billing_values') ?>"><?php echo lang('update unset billing values') ?></a>
 </div>
+	<?php } ?>
 <?php } ?>
 </div>
 </div>

@@ -39,9 +39,7 @@ if (isset($task_list) && $task_list instanceof ProjectTask) {
 			if ($task_list->isRepetitive()) {
 				add_page_action(lang('generate repetitition'), get_url("task", "generate_new_repetitive_instance", array("id" => $task_list->getId())), 'ico-recurrent', null, null, true);
 			} else {
-				/*FIXME Fix Copy tasks please!
 				add_page_action(lang('copy task'), get_url("task", "copy_task", array("id" => $task_list->getId())), 'ico-copy');
-				*/
 			}
 			if (can_manage_templates(logged_user())) {
 				add_page_action(lang('add to a template'), get_url("template", "add_to", array("manager" => 'ProjectTasks', "id" => $task_list->getId())), 'ico-template');

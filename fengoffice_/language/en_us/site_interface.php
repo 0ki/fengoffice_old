@@ -18,7 +18,7 @@ return array(
     'online users desc' => 'Users who were active in last 15 minutes:',
 
   	'charts' => 'Charts',
-    'contacts' => 'Persons',
+    'contacts' => 'People',
     'dashboard' => 'Dashboard',
     'administration' => 'Administration',
     'my account' => 'My account',
@@ -498,6 +498,7 @@ return array(
   'total time' => 'Total time',
   'include subworkspaces' => 'Include subworkspaces',
   'print' => 'Print',
+  'print calendar' => 'Print calendar',
   'this week' => 'This week',
   'last week' => 'Last week',
   'this month' => 'This month',
@@ -681,9 +682,10 @@ return array(
 
   'reset password expired' => 'Reset password request has expired. Please issue a new one by clicking on "{0}"',
   'invalid parameters' => 'Invalid parameters',
-  'reset password' => 'Request to change your Feng Office password',
+    
+  'reset password' => 'Feng Office new password',
   'reset password form desc' => '<b>{0}</b>, please enter your new password twice:',
-  'success reset password' => 'Your new password has been saved',
+  'success reset password' => 'Your new password has been saved',  
 
   'auto detect user timezone' => 'Auto-detect user timezone from browser',
   'confirm discard email' => 'Are you sure you wish to discard this email?',
@@ -723,7 +725,9 @@ return array(
 	'task dependency dnx' => 'The task dependency does not exists',
 	'success remove task dependency' => 'Task dependency has been successfully removed',
 	'success add task dependency' => 'Task dependency has been successfully added',
-
+	
+	'click to expand' => 'Click to expand',
+	'select member to add timeslots' => 'To add general time records you have to select at least one item of: {0}',
 ); // array
 
 ?>

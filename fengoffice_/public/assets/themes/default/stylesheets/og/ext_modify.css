@@ -60,7 +60,7 @@ ul.x-tab-strip li.x-tab-strip-active span.x-tab-strip-text
 }
 
 .x-tab-strip span.x-tab-strip-text{
- color: #fff;
+	color: #fff;
 }
 
 div#menu-panel div.x-panel
@@ -96,9 +96,7 @@ strong{font-weight:bold;}
 	padding-top:5px;
 }
 
-.og-content-panel .x-tree .x-panel-tbar .x-toolbar {
-	border-top: 1px solid #99BBE8;
-}
+
 
 
 .og-content-panel .x-panel-bbar .x-toolbar {
@@ -178,6 +176,8 @@ input.x-tree-node-cb {
 
 .x-tree-node .x-tree-selected {
     background-color: #EEEEEE;
+    border-left: 0 none;
+	border-right: 0 none;
 }
 
 div#menu-panel .x-panel-tbar-noheader .x-toolbar, div#menu-panel .x-panel-mc .x-panel-tbar .x-toolbar
@@ -202,4 +202,43 @@ div#menu-panel .x-panel-tbar-noheader .x-toolbar, div#menu-panel .x-panel-mc .x-
 
 .ext-strict .ext-safari .x-small-editor .x-form-text {
 	height: 18px!important;
+}
+
+
+#menu-panel .x-tree-node .feng-node-actions {
+    float: right;
+    position: relative ;
+    right:0 ;
+    top: 0 ;
+    margin-right: 5px;
+   
+    display: none ;
+}
+
+.ext-gecko #menu-panel .x-tree-node .feng-node-actions {
+	margin-top: -20px;  
+}
+
+.ext-safari #menu-panel .x-tree-node .feng-node-actions  {
+    /* margin-top: 0 ; */  
+}
+
+#menu-panel .x-tree-selected .feng-node-actions {
+	display:block ;
+}
+
+.x-tree-node .feng-node-actions a {
+    /*margin-top: -20px; */
+}
+
+
+.member-chooser-container .feng-node-actions {
+	display:none ;
+}
+
+.x-tree-node .feng-node-actions a {
+	/* padding: 8px ; */ 
+	width: 16px !important;
+	height: 18px !important;
+	display: block ;
 }

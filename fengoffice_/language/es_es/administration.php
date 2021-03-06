@@ -37,7 +37,9 @@
 	'config option desc currency_code' => 'Símbolo de la moneda',
 	'config option name use_owner_company_logo_at_header' => 'Utilizar el logo de la empresa propietaria como logo de la aplicación',
   	'config option desc use_owner_company_logo_at_header' => 'Coloca el logo de la empresa propietaria en la parte superior izquerda de la pantalla. Debe recargar (F5) para aplicar los cambios. Tamaño recomendado: 50x50 px.',
-	'config option name upgrade_check_enabled' => 'Habilitar comprobación de actualizaciones',
+	'config option name untitled_notes' => 'Notas sin título',
+        'nota sin titulo' => 'Nota sín titulo',
+        'config option name upgrade_check_enabled' => 'Habilitar comprobación de actualizaciones',
 	'config option desc upgrade_check_enabled' => 'Si escoge esta opción el sistema comprobará una vez al día si hay nuevas versiones disponibles de Feng Office',
 	'config option name exchange_compatible' => 'Modo compatibilidad con Microsoft Exchange',
 	'config option desc exchange_compatible' => 'Si utiliza el servidor Microsoft Exchange, elija esta opción para evitar algunos problemas conocidos de envío por correo electrónico.',
@@ -92,8 +94,8 @@
 	'user ws config option name my tasks is default view' => 'La vista por defecto muestra sólo las tareas asignadas a mi',
 	'user ws config option desc my tasks is default view' => 'Si se selecciona no, se mostrarán todas las tareas del área de trabajo y sus subáreas',
 	'user ws config option name show tasks in progress widget' => 'Mostrar widget de tareas en progreso',
-	'user ws config option name can notify from quick add' => 'Checkbox de notificación chequeado por defecto',
-	'user ws config option desc can notify from quick add' => 'El checkbox de notificación permite la opción de notificar a los usuarios asignados luego de añadir o modificar una tarea',
+	'user ws config option name can notify from quick add' => 'Notificar al asignado a la tarea',
+	'user ws config option desc can notify from quick add' => 'Esta opción permite notificar a los usuarios asignados a una tarea, luego de añadir o modificar una',
 	'user ws config option name date_format' => 'Formato de fecha',
 	'user ws config option desc date_format' => 'Formato en que se muestran las fechas. Códigos: d = Día (2 dígitos, con ceros), D = Nombre del día (tres letras), j = Día, l = Nombre del día completo, m = Mes (con ceros), M = Nombre del mes (tres letras), n = Mes, F = Nombre del mes completo, Y = Año (4 dígitos), y = Año (2 dígitos). Debe recargar la página para aplicar los cambios.',
 	'user ws config option name descriptive_date_format' => 'Formato de fecha descriptivo',
@@ -288,4 +290,6 @@
   	'font color' => 'Color de las Fuentes',
   	'title color' => 'Color del Título',
   	'save colors' => 'Guardar',
+	'expand-collapse' => 'Expandir/Colapsar',
+
 ); ?>

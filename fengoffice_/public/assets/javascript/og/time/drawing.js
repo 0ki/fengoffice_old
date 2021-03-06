@@ -55,7 +55,7 @@ ogTimeManager.orderTasks = function(){
 	var taskName = '';
 	//Draw the Assigned user
 	if (task.assignedToId){
-		taskName += '<b>' + og.clean(this.getUserCompanyName(task.assignedToId)) + '</b>:&nbsp;';
+		taskName += '<span class="bold">' + og.clean(this.getUserCompanyName(task.assignedToId)) + '</span>:&nbsp;';
 	}
 	//Draw the task name
 	taskName += og.clean(task.title);
@@ -163,6 +163,12 @@ ogTimeManager.insertRow = function(genid, timeslot, position){
 	cell = row.insertCell(pos++);
 	textNode = document.createTextNode(timeslot.userName);
 	cell.appendChild(textNode);
+	
+	cell = row.insertCell(pos++);
+	mem_path = "";
+	var mpath = Ext.util.JSON.decode(timeslot.memPath);
+	if (mpath) mem_path = og.getCrumbHtml(mpath);
+	cell.innerHTML = mem_path;
 	
 	cell = row.insertCell(pos++);
 	updatedInfo = '';

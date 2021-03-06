@@ -569,6 +569,7 @@ addLangs({
   	'no images match the specified filter': 'No images match the specified filter',
   	
   	'print' : 'Print',
+        'print calendar' : 'Print calendar',
   	
   	'no deleted objects message': 'There are no deleted {0} in \'{1}\'',
 	'no deleted objects with tag message': 'There are no deleted {0} tagged as \'{2}\' in \'{1}\'',
@@ -811,9 +812,9 @@ addLangs({
     'delete object subtype warning': 'If you delete this subtype it will be removed from all objects that have it set. Are you sure you want to delete this subtype?',
     'object subtype deleted': 'Subtype deleted. {0}',
     
-    'context': 'Context',
+    'context': 'Relations',
     'none selected': 'None selected',
-    'select context members': 'Select context members',
+    'select context members': 'Select related members',
     'member fields': 'Member fields',
     'must be numeric': '{0} must be numeric',
     'new member': 'New member',
@@ -836,5 +837,10 @@ addLangs({
   	'more info' : 'More Information',
   	'email already taken by' : 'Email already taken by {0}',
   	'passwords dont match' : 'Passwords don\'t match',
-  	'password value missing' : 'Password required'
+  	'password value missing' : 'Password required',
+  	'confirm disable user' : 'The User will be disabled. Continue?',
+  	'confirm delete user' : 'Are you sure that you want to delete this user account?',
+	'add sub task' : 'Add subtask',
+    'do you want to mantain the current associations of this obj with members of': 'Do you want to mantain the current associations of this object with {0}?'
+
 });

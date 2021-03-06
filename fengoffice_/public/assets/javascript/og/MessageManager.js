@@ -17,7 +17,7 @@ og.MessageManager = function() {
 				totalProperty: 'totalCount',
 				id: 'id',
 				fields: [
-					'object_id', 'type', 'name', 'text', 'date', 'is_today',
+					'object_id', 'type', 'ot_id', 'name', 'text', 'date', 'is_today',
 					'userId', 'userName', 'updaterId', 'updaterName', 'ix', 'isRead', 'memPath'
 				]
 			}),

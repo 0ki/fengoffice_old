@@ -7,12 +7,18 @@
   
 	$genid = gen_id();
  
+	add_page_action(lang('send mail'), "javascript:document.getElementById('sendMail').click();", "mail",null,null,true);
+	add_page_action(lang('save')." ".lang('draft'), "javascript:document.getElementById('saveMail').click();", "mail",null,null,true);
+	add_page_action(lang('discard'), "javascript:document.getElementById('discardMail').click();","mail",null,null,true);
+ 	
 	$type = array_var($mail_data, 'type', user_config_option('last_mail_format'));
 	if (!$type) $type = 'plain';
 	$object = $mail;
 	$draft_edit = array_var($mail_data, 'draft_edit', false);
 	$mail_to = isset($mail_to) ? $mail_to : array_var($mail_data, 'to');
 	if (!isset($link_to_objects)) $link_to_objects = null;
+	
+	$visible_cps = CustomProperties::countVisibleCustomPropertiesByObjectType($object->getObjectTypeId());
 ?>
 <input type="hidden" id="<?php echo $genid ?>signatures" />
 <script>
@@ -89,30 +95,24 @@ sig.actualHtmlSignature = '';
 
 <div class="mail" id="<?php echo $genid ?>mail_div" style="height:100%;">
 <div class="coInputHeader" id="<?php echo $genid ?>header_div">
-	<div class="coInputHeaderUpperRow">
-  		<div class="coInputTitle"><table style="width:535px"><tr><td>
-  			<?php echo lang('send mail') ?>
-  		</td><td>
-  			<input type="image" src="s.gif" style="width:1px;height:1px;border:0;background:transparent;cursor:default" /><!-- Opera and IE seem to use first submit button when pressing enter on a form field. If this button is not present the first submit button would be the "Send" button and so the email would be sent -->
-  		</td><td style="text-align:right">
+
+  	<div style="display: none;">
+  		<table><tr><td>
   			<?php echo submit_button(lang('send mail'), '', 
-  			array('style'=>'margin-top:0px;margin-left:10px','onclick'=>"og.setHfValue('$genid', 'isDraft', 'false');og.stopAutosave('$genid');"))?>
-  		</td>
-  		<td style="text-align:right">
+  			array('id'=>'sendMail','onclick'=>"og.setHfValue('$genid', 'isDraft', 'false');og.stopAutosave('$genid'); return og.attachmentConfirmationAdded('$genid');"))?>
+  		</td><td>
   			<?php echo submit_button(lang('save')." ".lang('draft'), '', 
-  			array('style'=>'margin-top:0px;margin-left:10px','onclick'=>"og.setHfValue('$genid', 'isDraft', 'true');og.stopAutosave('$genid');")) ?>
-  		</td>
-  		<td style="text-align:right">
+  			array('id'=>'saveMail','onclick'=>"og.setHfValue('$genid', 'isDraft', 'true');og.stopAutosave('$genid');")) ?>
+  		</td><td>
   			<?php
   			$strDisabled = "";//array_var($mail_data, 'id') == ''?'disabled':'';
   			echo submit_button(lang('discard'), '', 
-  			array('style'=>'margin-top:0px;margin-left:10px','onclick'=>"if (!confirm('" . escape_single_quotes(lang('confirm discard email')) . "')) return false; else {var p = og.getParentContentPanel(Ext.get('{$genid}form'));Ext.getCmp(p.id).setPreventClose(false);} og.setDiscard('$genid', true);og.stopAutosave('$genid');",$strDisabled=>'')) ?>
+  			array('id'=>'discardMail','onclick'=>"if (!confirm('" . escape_single_quotes(lang('confirm discard email')) . "')) return false; else {var p = og.getParentContentPanel(Ext.get('{$genid}form'));Ext.getCmp(p.id).setPreventClose(false);} og.setDiscard('$genid', true);og.stopAutosave('$genid');",$strDisabled=>'')) ?>
   		</td>
   		</tr></table>
-  		</div>
   	</div>
   
-	<div style="padding-top:10px;">
+	<div>
 		<table style="width:95%"><tr><td style="width: 60px;">
     	<label for='mailTo'><?php echo lang('mail to')?> <span class="label_required">*</span></label>
     	</td><td>
@@ -123,16 +123,20 @@ sig.actualHtmlSignature = '';
     	</td></tr></table>
 	</div>
   
- 	<div id="add_mail_CC" style="padding-top:2px;">
- 		<table style="width:95%"><tr><td style="width: 60px;">
-    	<label for="mailCC"><?php echo lang('mail CC')?> </label>
-    	</td><td>
-    	<?php echo autocomplete_textarea_field('mail[cc]', array_var($mail_data, 'cc'), $allEmails, 30, 
-    		array('class' => 'title', 'tabindex'=>'20', 'id' => $genid . 'mailCC' )); ?>
-    	<?php //echo autocomplete_emailfield('mail[cc]', array_var($mail_data, 'cc'), $allEmails, '', 
-    		//array('class' => 'title', 'tabindex'=>'20', 'id' => $genid . 'mailCC', 'style' => 'width:100%;', 'onchange' => "og.addContactsToAdd('$genid')"), false); ?>
-    	</td></tr></table>
- 	</div>
+ 	<?php if (substr_count(array_var($mail_data, 'cc'), '@') > 0){ ?>
+		<div id="add_mail_CC" style="padding-top:2px;display:block;">
+	<?php }else{ ?>
+	 	<div id="add_mail_CC" style="padding-top:2px;display:none;">
+	<?php }?>
+		<table style="width:95%"><tr><td style="width: 60px;">
+		<label for="mailCC"><?php echo lang('mail CC')?> </label>
+		</td><td>
+		<?php echo autocomplete_textarea_field('mail[cc]', array_var($mail_data, 'cc'), $allEmails, 30, 
+			array('class' => 'title', 'tabindex'=>'20', 'id' => $genid . 'mailCC' )); ?>
+		<?php //echo autocomplete_emailfield('mail[cc]', array_var($mail_data, 'cc'), $allEmails, '', 
+			//array('class' => 'title', 'tabindex'=>'20', 'id' => $genid . 'mailCC', 'style' => 'width:100%;', 'onchange' => "og.addContactsToAdd('$genid')"), false); ?>
+		</td></tr></table>
+	</div>
  	
  	<div id="add_mail_BCC" style="padding-top:2px;display:none;">
  		<table style="width:95%"><tr><td style="width: 60px;">
@@ -153,10 +157,6 @@ sig.actualHtmlSignature = '';
     		array('class' => 'title', 'tabindex'=>'0', 'id' => $genid . 'mailSubject', 'style' => 'width:100%;', 'autocomplete' => 'off')) ?>
     	</td></tr></table>
 	</div>
-		
-	<div>
-		<?php echo render_object_custom_properties($object, 'MailContents', true) ?>
-	</div>
 	
 	<?php $categories = array(); Hook::fire('object_edit_categories', $object, $categories); ?>
 	
@@ -164,6 +164,7 @@ sig.actualHtmlSignature = '';
 		<?php if (count($mail_accounts) > 1) { ?>
 		<a href="#" class="option" onclick="og.toggleAndBolden('add_mail_account', this);og.resizeMailDiv();"><?php echo lang('mail from') ?></a> - 
 		<?php } ?>
+		<a href="#" class="option" onclick="og.toggleAndBolden('add_mail_CC', this);og.resizeMailDiv();"><?php echo lang('mail CC') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('add_mail_BCC', this);og.resizeMailDiv();"><?php echo lang('mail BCC') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('add_mail_options', this);og.resizeMailDiv();"><?php echo lang('mail format options') ?></a> -
  		<a href="#" class="option" onclick="og.toggleAndBolden('add_mail_attachments', this);og.resizeMailDiv();"><?php echo lang('mail attachments') ?></a> -
@@ -241,11 +242,11 @@ sig.actualHtmlSignature = '';
 	</div>
 	<?php } ?>
 	
-	<?php if (false && count($cps) > 0) {  //FIXME FENG 2 - Custom Proerties ???????? ?>
-		<div id='<?php echo $genid ?>add_custom_properties_div' style="display:none">
+	<?php if (count($cps) > 0) { ?>
+		<div id="<?php echo $genid ?>add_custom_properties_div" style="<?php echo ($visible_cps > 0 ? "" : "display:none") ?>">
 			<fieldset>
 				<legend><?php echo lang('custom properties') ?></legend>
-				<?php echo render_object_custom_properties($object, 'MailContents', false) ?>
+				<?php echo render_object_custom_properties($object, false) ?>
 			</fieldset>
 		</div>	
 	<?php } ?>
@@ -400,4 +401,5 @@ if (og.preferences['draft_autosave_timeout'] > 0) {
 	}, og.preferences['draft_autosave_timeout'] * 1000);
 }
 if (!editor || !focus_editor) Ext.get('auto_complete_input_<?php echo $genid ?>mailTo').focus();
+og.resetClassButton('<?php echo $genid ?>');
 </script>

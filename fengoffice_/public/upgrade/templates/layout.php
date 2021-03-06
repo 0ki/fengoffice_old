@@ -64,8 +64,8 @@ if (count($scripts) > 0) {
           </tr>
         </table>
         <button type="submit" accesskey="s"><?php echo lang('upgrade')?> (Alt+S)</button>
+        <input type="hidden" name="submited" value="submited" />
       </div>
-      <input type="hidden" name="submited" value="submited" />
     </form>
 <?php } else { ?>
 	<div style="padding: 20px"><?php echo lang('already upgraded')?></div>
@@ -81,6 +81,22 @@ if (count($scripts) > 0) {
       </div>
 
 	<div class="back"><a href="../../"><?php echo lang('back to fengoffice')?></a></div>
+	
+<?php if (false && (version_compare($installed_version, '2.0.0.4') >= 0 || isset($install_inv_dw) && $install_inv_dw) && is_file(dirname(__FILE__)."/../install_inv_dw.php")) { ?>
+	<br />
+	<div><a href="install_inv_dw.php">Install Inventory Management and Document Workflow modules</a></div>	
+<?php } ?>
+
+<?php
+	if (isset($additional_steps) && is_array($additional_steps)) {
+	  foreach ($additional_steps as $step) {
+		if (!is_file($step['filename'])) continue; 
+?>
+	<div><a href="<?php echo $step['url']?>"><?php echo $step['name']?></a></div>
+<?php }
+	} 
+?>
+	
     <div id="footer">&copy; <?php echo date('Y') ?> <a href="<?php echo PRODUCT_URL?>"><?php echo PRODUCT_NAME?></a>. <?php echo lang('all rights reserved')?>.</div>
   </div>
 

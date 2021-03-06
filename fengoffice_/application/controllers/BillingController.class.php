@@ -132,7 +132,7 @@ class BillingController extends ApplicationController {
 			try {
 				DB::beginWork();
 				foreach ($users_data as $user_id => $user_billing){
-					$user = Users::findById($user_id);
+					$user = Contacts::findById($user_id);
 					if ($user_billing != $user->getDefaultBillingId()){
 						$user->setDefaultBillingId($user_billing);
 						$user->save();
@@ -148,7 +148,7 @@ class BillingController extends ApplicationController {
 			}
 		}
 		
-		tpl_assign('users_by_company', Users::getGroupedByCompany());
+		tpl_assign('users_by_company', Contacts::getGroupedByCompany(false));
 		tpl_assign('billing_categories', BillingCategories::findAll());
 	}
 	

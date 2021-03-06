@@ -827,8 +827,8 @@ function render_page_head() {
  * @param string $rel
  * @return string
  */
-function get_public_url($rel) {
-	$base = trim(PUBLIC_FOLDER) == '' ? with_slash(ROOT_URL) : with_slash(with_slash(ROOT_URL) . PUBLIC_FOLDER);
+function get_public_url($rel, $plugin = null) {
+	$base = trim(PUBLIC_FOLDER) == '' ? with_slash(ROOT_URL) : with_slash(with_slash(ROOT_URL) . ($plugin ? "plugins/$plugin/" : "") . PUBLIC_FOLDER);
 	return $base . $rel;
 } // get_public_url
 
@@ -928,7 +928,7 @@ function get_theme_url($file_name) {
  * @param string $file_name
  * @return string
  */
-function get_image_url($file_name) {
+function get_image_url($file_name, $plugin = null) {
 	static $theme = null;
 
 
@@ -942,7 +942,7 @@ function get_image_url($file_name) {
 	} // if
 
 	$prefix = get_assets_prefix();
-	return get_public_url("assets/{$prefix}themes/$theme/images/$file_name");
+	return get_public_url("assets/{$prefix}themes/$theme/images/$file_name", $plugin);
 } // get_image_url
 
 /**

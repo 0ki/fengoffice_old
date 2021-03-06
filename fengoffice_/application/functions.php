@@ -382,6 +382,26 @@ function active_context() {
 	return CompanyWebsite::instance()->getContext() ;
 }
 
+function current_dimension_id() {
+	return array_var($_REQUEST,'currentdimension');
+}
+
+function current_member(){
+	$did = current_dimension_id();
+	if ( $did == 0 ) {
+		return null ;
+	}else{ 
+		foreach (active_context() as $item){
+			if ($item instanceof Member) {
+				if ( $item->getDimensionId() == $did ) {
+					return $item->getId();
+				}
+			}
+		}
+	}
+	return null ;   
+}
+
 
 function context_type() {
 	foreach ( active_context() as $ctx ) {
@@ -399,31 +419,41 @@ function context_type() {
 function active_context_members($full = true ) {
 	
 	$ctxMembers  = array ();
-	foreach (active_context() as $ctx) {
-		if ( $ctx instanceof Member ) {
-			/* @var Dimension $ctx */
-			$ctxMembers[$ctx->getId()] = $ctx->getId() ;
-			if($full){
-				foreach ( Members::getSubmembers($ctx, 1) as $sub ) {
-					$ctxMembers[$sub->getId()] = $sub->getId() ;		
+	if (is_array(active_context())) {
+		foreach (active_context() as $ctx) {
+			if ( $ctx instanceof Member ) {
+				/* @var Dimension $ctx */
+				$ctxMembers[$ctx->getId()] = $ctx->getId() ;
+				if($full){
+					foreach ( Members::getSubmembers($ctx, 1) as $sub ) {
+						$ctxMembers[$sub->getId()] = $sub->getId() ;		
+					}
 				}
+				
 			}
 			
-		}
-		
-		if  ( $full && $ctx instanceof Dimension ) {
-			/// @var Dimension $ctx 
-			foreach ($ctx->getAllMembers() as $member) {
-				$ctxMembers[$member->getId()] = $member->getId() ;
-				foreach ( Members::getSubmembers($member, 1) as $sub ) {
-					$ctxMembers[$sub->getId()] = $sub->getId() ;
-				}
-			} 
+			if  ( $full && $ctx instanceof Dimension ) {
+				/// @var Dimension $ctx 
+				foreach ($ctx->getAllMembers() as $member) {
+					$ctxMembers[$member->getId()] = $member->getId() ;
+					foreach ( Members::getSubmembers($member, 1) as $sub ) {
+						$ctxMembers[$sub->getId()] = $sub->getId() ;
+					}
+				} 
+			}
 		}
 	}
 	return $ctxMembers ;
 }
 
+function get_context_from_array($ids){
+	$context = array();
+	foreach ($ids as $id) {
+		$member = Members::findById($id) ;
+		$context[] = $member;
+	}
+	return $context ;
+}
 
 /**
  * Return which is the upload hook
@@ -448,7 +478,18 @@ function upload_hook() {
  * @return mixed
  */
 function config_option($option, $default = null) {
-	return ConfigOptions::getOptionValue($option, $default);
+	// check the cache for the option value
+	if (GlobalCache::isAvailable()) {
+		$option_value = GlobalCache::get('config_option_'.$option, $success);
+		if ($success) return $option_value;
+	}
+	// value not found in cache
+	$option_value = ConfigOptions::getOptionValue($option, $default);
+	if (GlobalCache::isAvailable()) {
+		GlobalCache::update('config_option_'.$option, $option_value);
+	}
+	
+	return $option_value;
 } // config_option
 
 /**
@@ -462,9 +503,15 @@ function set_config_option($option_name, $value) {
 	$config_option = ConfigOptions::getByName($option_name);
 	if(!($config_option instanceof ConfigOption)) {
 		return false;
-	} // if
+	}
 
 	$config_option->setValue($value);
+	
+	// update cache if available
+	if (GlobalCache::isAvailable() && GlobalCache::key_exists('config_option_'.$option_name)) {
+		GlobalCache::update('config_option_'.$option_name, $value);
+	}
+	
 	return $config_option->save();
 } // set_config_option
 
@@ -482,13 +529,35 @@ function user_config_option($option, $default = null, $user_id = null) {
 		if (logged_user() instanceof Contact) {
 			$user_id = logged_user()->getId();
 		} else if (is_null($default)) {
-			return ContactConfigOptions::getDefaultOptionValue($option, $default);
+			$def_value = null;
+			// check the cache for the option default value
+			if (GlobalCache::isAvailable()) {
+				$def_value = GlobalCache::get('user_config_option_def_'.$option, $success);
+				if ($success) return $def_value;
+			}
+			// default value not found in cache
+			$def_value = ContactConfigOptions::getDefaultOptionValue($option, $default);
+			if (GlobalCache::isAvailable()) {
+				GlobalCache::update('user_config_option_def_'.$option, $def_value);
+			}
+			return $def_value;
 		} else {
 			return $default;
 		}
 	}
-	//return UserWsConfigOptions::getOptionValue($option, $user_id, $default);
-	return ContactConfigOptions::getOptionValue($option, $user_id, $default);
+	
+	// check the cache for the option value
+	if (GlobalCache::isAvailable()) {
+		$option_value = GlobalCache::get('user_config_option_'.$user_id.'_'.$option, $success);
+		if ($success) return $option_value;
+	}
+	// default value not found in cache
+	$option_value = ContactConfigOptions::getOptionValue($option, $user_id, $default);
+	if (GlobalCache::isAvailable()) {
+		GlobalCache::update('user_config_option_'.$user_id.'_'.$option, $option_value);
+	}
+	
+	return $option_value;
 } // user_config_option
 
 function user_has_config_option($option_name, $user_id = 0, $workspace_id = 0) {
@@ -538,8 +607,14 @@ function set_user_config_option($option_name, $value, $user_id = null ) {
 	$config_option = ContactConfigOptions::getByName($option_name);
 	if(!($config_option instanceof ContactConfigOption)) {
 		return false;
-	} // if
+	}
 	$config_option->setContactValue($value, $user_id);
+	
+	// update cache if available
+	if (GlobalCache::isAvailable() && GlobalCache::key_exists('user_config_option_'.$user_id.'_'.$option_name)) {
+		GlobalCache::update('user_config_option_'.$user_id.'_'.$option_name, $value);
+	}
+	
 	return $config_option->save();
 } // set_config_option
 
@@ -722,6 +797,7 @@ function create_user_from_email($email, $name, $type = 'guest', $send_notificati
 
 
 function create_user($user_data, $permissionsString) {
+    
 	// try to find contact by some properties 
 	$contact_id = array_var($user_data, "contact_id") ;
 	$contact =  Contacts::instance()->findById($contact_id) ; 
@@ -799,6 +875,7 @@ function create_user($user_data, $permissionsString) {
 		if ($contact->isAdminGroup()) {
 			// allow all un all dimensions if new user is admin
 			$dimensions = Dimensions::findAll();
+			$permissions = array();
 			foreach ($dimensions as $dimension) {
 				if ($dimension->getDefinesPermissions()) {
 					$cdp = ContactDimensionPermissions::findOne(array("conditions" => "`permission_group_id` = ".$contact->getPermissionGroupId()." AND `dimension_id` = ".$dimension->getId()));
@@ -813,12 +890,13 @@ function create_user($user_data, $permissionsString) {
 					// contact member permisssion entries
 					$members = $dimension->getAllMembers();
 					foreach ($members as $member) {
+						
 						$ots = DimensionObjectTypeContents::getContentObjectTypeIds($dimension->getId(), $member->getObjectTypeId());
 						$ots[]=$member->getObjectId();
 						foreach ($ots as $ot) {
-							$cmp = ContactMemberPermissions::findOne();
+							$cmp = ContactMemberPermissions::findOne(array("conditions" => "`permission_group_id` = ".$contact->getPermissionGroupId()." AND `member_id` = ".$member->getId()." AND `object_type_id` = $ot"));
 							if (!$cmp instanceof ContactMemberPermission) {
-								$cmp = new ContactMemberPermission(array("conditions" => "`permission_group_id` = ".$contact->getPermissionGroupId()." AND `member_id` = ".$member->getId()." AND `object_type_id` = $ot"));
+								$cmp = new ContactMemberPermission();
 								$cmp->setPermissionGroupId($contact->getPermissionGroupId());
 								$cmp->setMemberId($member->getId());
 								$cmp->setObjectTypeId($ot);
@@ -826,10 +904,25 @@ function create_user($user_data, $permissionsString) {
 							$cmp->setCanWrite(1);
 							$cmp->setCanDelete(1);
 							$cmp->save();
+							
+							// Add persmissions to sharing table
+							$perm = new stdClass();
+							$perm->m = $member->getId();
+							$perm->r= 1;
+							$perm->w= 1;
+							$perm->d= 1;
+							$perm->o= $ot;
+							$permissions[] = $perm ;
 						}
 					}
 				}
 			}
+			
+			if(count($permissions)){
+				$sharingTableController = new SharingTableController();
+				$sharingTableController->afterPermissionChanged($contact->getPermissionGroupId(), $permissions);
+			}
+			
 		}
 		
 	}
@@ -848,10 +941,9 @@ function create_user($user_data, $permissionsString) {
 			$_POST['mod_perm'][$pr]=1;
 		}
 	}
-	if (array_var($user_data, 'password_generator', 'random') == 'random') {
-		// Generate random password
-		$password = ContactPasswords::generateRandomPassword();
-	} else {
+        
+    $password = '';
+	if (array_var($user_data, 'password_generator') == 'specify') {
 		// Validate input
 		$password = array_var($user_data, 'password');
 		if (trim($password) == '') {
@@ -860,9 +952,10 @@ function create_user($user_data, $permissionsString) {
 		if ($password <> array_var($user_data, 'password_a')) {
 			throw new Error(lang('passwords dont match'));
 		} // if
-	} // if
-	
-	$contact->setPassword($password);
+                             
+	} // if        
+
+	$contact->setPassword($password);   
 	$contact->save();
 
 	$user_password = new ContactPassword();
@@ -871,7 +964,7 @@ function create_user($user_data, $permissionsString) {
 	$user_password->setPassword(cp_encrypt($password, $user_password->getPasswordDate()->getTimestamp()));
 	$user_password->password_temp = $password;
 	$user_password->save();
-	
+        
 	if (array_var($user_data, 'autodetect_time_zone', 1) == 1) {
 		set_user_config_option('autodetect_time_zone', 1, $contact->getId());
 	}
@@ -888,8 +981,20 @@ function create_user($user_data, $permissionsString) {
 	// Send notification
 	try {
 		if (array_var($user_data, 'send_email_notification') && $contact->getEmailAddress()) {
-			Notifier::newUserAccount($contact, $password);
-		} // if
+                    
+			if (array_var($user_data, 'password_generator', 'link') == 'link') {
+				// Generate link password
+				$user = Contacts::getByEmail(array_var($user_data, 'email'));
+				$token = sha1(gen_id() . (defined('SEED') ? SEED : ''));
+				$timestamp = time() + 60*60*24;
+				set_user_config_option('reset_password', $token . ";" . $timestamp, $user->getId());
+				Notifier::newUserAccountLinkPassword($contact, $password, $token);
+
+			} else {
+				Notifier::newUserAccount($contact, $password);
+			}
+			
+		}
 	} catch(Exception $e) {
 		Logger::log($e->getTraceAsString());
 	} // try
@@ -1039,7 +1144,9 @@ function massiveInsert($tableName, $cols,  $rows, $packageSize = 100 ) {
 		if (!DB::execute($sql)){
 			throw new DBQueryError($sql);
 		}
+		$sql = null;
 	}
+	$cols = null;
 } 
 
 
@@ -1167,3 +1274,14 @@ function feng_sort($array, $field = 'getName', $id = 'getId', $removeDuplicateId
 	ksort($index);
 	return $index; 
 }
+
+function controller_exists($name, $plugin_id) {
+	$class_filename = ucfirst($name)."Controller.class.php";
+	if ($plugin_id){
+		$plgName= Plugins::instance()->findById($plugin_id)->getName();
+		return file_exists(ROOT."/plugins/".$plgName."/application/controllers/".$class_filename);
+	}else{
+		return file_exists(ROOT."/application/controllers/".$class_filename);
+	}
+}
+

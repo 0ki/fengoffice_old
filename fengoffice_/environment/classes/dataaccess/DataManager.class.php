@@ -191,11 +191,14 @@
       $load_columns = array();
       
       // Loop...
-      foreach($this->getColumns() as $column) {
-        if(!$this->isLazyLoadColumn($column)) {
+      $columns = $this->getColumns();
+      foreach($columns as $column) {
+      //  if(!$this->isLazyLoadColumn($column)) {
           $load_columns[] = $escape_column_names ? DB::escapeField($column) : $column;
-        } // if
+      //  } // if
       } // foreach
+      
+      $columns = null;
       
       // Done...
       return $load_columns;
@@ -210,7 +213,11 @@
   	* @return boolean
   	*/
   	function columnExists($column_name) {
-  	  return in_array($column_name, $this->getColumns());
+  	  $columns = $this->getColumns();
+  	  $res = in_array($column_name, $columns);
+  	  $columns = null;
+  	  
+  	  return $res;
   	} // columnExists
     
     // ---------------------------------------------------
@@ -278,6 +285,7 @@
       	foreach ($rows as $row) {
       		$ids[] = $row['id'];
       	}
+      	$rows = null;
       	return $ids;
       }
       
@@ -455,11 +463,16 @@
     * @return array
     */
     function loadRow($id) {
+      $cols = $this->getLoadColumns(true);
+      $imploded = implode(', ', $cols);
       $sql = sprintf("SELECT %s FROM %s WHERE %s", 
-        implode(', ', $this->getLoadColumns(true)), 
+        $imploded, 
         $this->getTableName(true), 
         $this->getConditionsById($id)
       ); // sprintf
+      
+      $cols = null;
+      $imploded = null;
       
       return DB::executeOne($sql);
     } // loadRow

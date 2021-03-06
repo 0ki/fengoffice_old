@@ -30,7 +30,7 @@
 				old_line = Ext.get(pre+"currentHourLine");
 				if (old_line) old_line.remove();
 				
-				var title = date.format(og.config['time_format_use_24'] ? 'G:i' : 'g:i A');
+				var title = date.format(og.preferences['time_format_use_24'] == 1 ? 'G:i' : 'g:i A');
 				var new_top = cell.getTop(true) + cell.getHeight() * top / 100;
 				var cant_d = pre == 'w_' ? 7 : (pre == 'w5_' ? 5 : 1);
 				var html = '<div id="'+pre+'currentHourLine" title="'+title+'" style="height:2px; z-index:200; position:absolute; top:'+ new_top +'px; left:'+ (d*100/cant_d) +'%; border-top:2px solid #B95000; width:'+(100/cant_d)+'%; opacity:0.7; filter:alpha(opacity=70);"></div>';
@@ -226,7 +226,7 @@
 						break;
 					case 'task':
 						var d_to_change = (div_id.indexOf('_end_') != -1 ? 'due' : (div_id.indexOf('_st_') != -1  ? 'start' : 'both'));
-						og.openLink(og.getUrl('task', 'change_start_due_date', {id:ddata.id, year:ddata.year, month:ddata.month, day:ddata.day, tochange:d_to_change}), {});
+						og.openLink(og.getUrl('task', 'change_start_due_date', {id:ddata.id, year:ddata.year, month:ddata.month, day:ddata.day, hour:0, min:0, tochange:d_to_change}), {});
 						break;
 					default: break;
 				}
@@ -250,7 +250,7 @@
 						break;
 					case 'task':
 						var d_to_change = (div_id.indexOf('_end_') != -1  ? 'due' : (div_id.indexOf('_st_') != -1  ? 'start' : 'both'));
-						og.openLink(og.getUrl('task', 'change_start_due_date', {id:ddata.id, year:ddata.year, month:ddata.month, day:ddata.day, hour:-1, min:-1, tochange:d_to_change}), {});
+						og.openLink(og.getUrl('task', 'change_start_due_date', {id:ddata.id, year:ddata.year, month:ddata.month, day:ddata.day, tochange:d_to_change}), {});
 						break;
 					default: break;
 				}

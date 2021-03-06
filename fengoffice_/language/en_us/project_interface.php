@@ -80,7 +80,7 @@ return array(
 
     'all permissions' => 'All',
     'can manage messages' => 'Manage notes',
-    'can manage tasks' => 'Can manage tasks, including asigning tasks to others and completing others\' tasks',
+    'can manage tasks' => 'Can manage tasks, including assigning tasks to others and completing others\' tasks',
     'can manage milestones' => 'Manage milestones',
     'can upload files' => 'Upload files',
     'can manage files' => 'Manage files',
@@ -332,7 +332,7 @@ Subject:   {0}
 	'linked email tab' => 'Email',
 	'linked emailunclassified tab' => 'Unclassified Email',
 	'linked message tab' => 'Notes',
-	'linked contact tab' => 'Persons',
+	'linked contact tab' => 'People',
 	'linked comment tab' => 'Comments',
 	'linked webpage tab' => 'Web links',
 	'linked company tab' => 'Companies',

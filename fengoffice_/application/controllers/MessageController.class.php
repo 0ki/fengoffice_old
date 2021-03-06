@@ -229,6 +229,7 @@ class MessageController extends ApplicationController {
 					    "id" => $i,
 						"ix" => $i,
 						"object_id" => $msg->getId(),
+						"ot_id" => $msg->getObjectTypeId(),
 						"type" => $msg->getObjectTypeName(),
 						"name" => $msg->getObjectName(),
 						"text" => $text,
@@ -333,8 +334,10 @@ class MessageController extends ApplicationController {
 			return;
 		}
 		
-		if(!ProjectMessage::canAdd(logged_user(), active_context())) {
-			flash_error(lang('no context permissions to add',lang("messages")));
+		$notAllowedMember = '';
+		if(!ProjectMessage::canAdd(logged_user(), active_context(), $notAllowedMember )) {
+			if (str_starts_with($notAllowedMember, '-- req dim --')) flash_error(lang('must choose at least one member of', str_replace_first('-- req dim --', '', $notAllowedMember, $in)));
+			else flash_error(lang('no context permissions to add',lang("messages"),$notAllowedMember ));
 			ajx_current("empty");
 			return;
 		} // if
@@ -350,6 +353,13 @@ class MessageController extends ApplicationController {
 
 		if(is_array(array_var($_POST, 'message'))) {
 			try {
+				if(config_option('untitled_notes'))
+				{
+					if(!array_var($message_data, "name"))
+					{
+						$message_data["name"] = lang("nota sin titulo");
+					}
+				}
 				// Aliases 
 				
 				$message->setFromAttributes($message_data);
@@ -364,7 +374,7 @@ class MessageController extends ApplicationController {
 				$member_ids = json_decode(array_var($_POST, 'members'));
 				
 				$object_controller->add_to_members($message, $member_ids);
-			    $object_controller->link_to_new_object($message);
+				$object_controller->link_to_new_object($message);
 				$object_controller->add_subscribers($message);
 				$object_controller->add_custom_properties($message);
 				

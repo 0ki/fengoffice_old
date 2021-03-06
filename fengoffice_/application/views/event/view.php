@@ -47,7 +47,7 @@ if (isset($event) && $event instanceof ProjectEvent) {
     if(!is_numeric($id)) $error = lang('CAL_NO_EVENT_SELECTED');
 	// get user who submitted the event, subject, event description, etc.
     $username = clean($event->getCreatedByDisplayName());
-    $subject = clean($event->getSubject());
+    $subject = clean($event->getObjectName());
 	$alias = clean($event->getCreatedByDisplayName());
     $desc = escape_html_whitespace(convert_to_links(clean($event->getDescription())));
     $start_time = $event->getStart();
@@ -96,7 +96,7 @@ if (isset($event) && $event instanceof ProjectEvent) {
 
 <?php
 	
-	$title = format_descriptive_date($event->getStart()) . ' - ' . clean($event->getSubject());
+	$title = format_descriptive_date($event->getStart()) . ' - ' . clean($event->getObjectName());
 	$description = $event->getTypeId() == 2 ? lang('CAL_FULL_DAY') : lang('CAL_TIME').": $time" ;
   	tpl_assign('description', $description);
 

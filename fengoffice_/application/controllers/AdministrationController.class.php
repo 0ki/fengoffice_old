@@ -202,34 +202,38 @@ class AdministrationController extends ApplicationController {
 	 * @return null
 	 */
 	function custom_properties() {
-		if(!logged_user()->isAdminGroup()){
+		if(!can_manage_configuration(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
-		} // if
-		tpl_assign('object_types', array('<option value="" selected>'.lang('select one').'</option>',
-			'<option value="Companies">'.lang('company').'</option>',
-			'<option value="Contacts">'.lang('contact').'</option>',
-			/*FIXME '<option value="MailContents">'.lang('email type').'</option>',*/
-			'<option value="ProjectEvents">'.lang('events').'</option>', 
-			'<option value="ProjectFiles">'.lang('file').'</option>',
-			'<option value="ProjectMilestones">'.lang('milestone').'</option>',
-			'<option value="ProjectMessages">'.lang('message').'</option>',
-			'<option value="ProjectTasks">'.lang('task').'</option>',
-			'<option value="Users">'.lang('user').'</option>',
-			'<option value="ProjectWebPages">'.lang('webpage').'</option>',
-			/*FIXME '<option value="Projects">'.lang('workspace').'</option>', */
-		));
+		}
+		
+		$object_types = ObjectTypes::instance()->findAll(array("conditions" => "`type` = 'content_object' AND `name` <> 'file revision'", "order" => "name"));
+		$ordered_object_types = array();
+		foreach ($object_types as $ot) {
+			$ordered_object_types[$ot->getId()] = lang($ot->getName());
+		}
+		asort($ordered_object_types, SORT_STRING);
+		$select_options = array('<option value="" selected>'.lang('select one').'</option>');
+		foreach ($ordered_object_types as $k => $v) {
+			$select_options[] = '<option value="'.$k.'">'.$v.'</option>';
+		}
+		
+		tpl_assign('object_types', $select_options);
 		$custom_properties = array_var($_POST, 'custom_properties');
 		$obj_type_id = array_var($_POST, 'objectType');
 		if (is_array($custom_properties)) {
 			try {
 				DB::beginWork();
 				foreach ($custom_properties as $id => $data) {
-					$new_cp = new CustomProperty();
+					$new_cp = null;
 					if($data['id'] != ''){
 						$new_cp = CustomProperties::getCustomProperty($data['id']);
 					}
+					if ($new_cp == null) {
+						$new_cp = new CustomProperty();
+					}
+					
 					if($data['deleted'] == "1"){
 						$new_cp->delete();
 						continue;
@@ -300,7 +304,7 @@ class AdministrationController extends ApplicationController {
 			ajx_current("empty");
 			return;
 		}
-		$groups = PermissionGroups::findAll(array("conditions" => "`contact_id` = 0"));
+		$groups = PermissionGroups::getNonRolePermissionGroups();
 		$gr_lengths = array();
 		foreach ($groups as $gr) {
 			$count = ContactPermissionGroups::count("`permission_group_id` = ".$gr->getId());

@@ -9,6 +9,8 @@
 	if (config_option('use tasks dependencies')) {
 		require_javascript('og/tasks/task_dependencies.js');
 	}
+	
+	$visible_cps = CustomProperties::countVisibleCustomPropertiesByObjectType($task->getObjectTypeId());
 ?>
 
 <form id="<?php echo $genid ?>submit-edit-form" style='height:100%;background-color:white' class="add-task" action="<?php echo $task->isNew() ? get_url('task', 'add_task', array("copyId" => array_var($task_data, 'copyId'))) : $task->getEditListUrl() ?>" method="post" onsubmit="return App.modules.addTaskForm.checkSubmitAddTask('<?php echo $genid; ?>','<?php echo $task->manager()->getObjectTypeId()?>') && og.handleMemberChooserSubmit('<?php echo $genid; ?>', <?php echo $task->manager()->getObjectTypeId() ?>);">
@@ -37,9 +39,9 @@
 	
 	</div>
 	<div>
-		<?php echo label_tag(lang('name'), $genid . 'taskListFormName', true) ?>
+		<?php echo label_tag(lang('name'), $genid . 'taskListFormName', true ) ?>
     	<?php echo text_field('task[name]', array_var($task_data, 'name'), 
-    		array('class' => 'title', 'id' => $genid . 'taskListFormName', 'tabindex' => '1')) ?>
+    		array('class' => 'title', 'id' => $genid . 'taskListFormName', 'tabindex' => '1',"size"=>"255", "maxlength"=>"255")) ?>
     </div>
 	
 	<?php $categories = array(); Hook::fire('object_edit_categories', $task, $categories); ?>
@@ -49,7 +51,7 @@
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_more_div', this)" style="font-weight:bold" ><?php echo lang('task data') ?></a> -  
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>task_repeat_options_div',this)"><?php echo lang('repeating task') ?></a>  -
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_reminders_div',this)"><?php echo lang('object reminders') ?></a>  -
-		<?php //FIXME FENG2 or REMOVE <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid add_custom_properties_div', this)"><?php echo lang('custom properties') </a> -?>
+		<a href="#" class="option <?php echo $visible_cps>0 ? 'bold' : ''?>" onclick="og.toggleAndBolden('<?php echo $genid ?>add_custom_properties_div', this)"><?php echo lang('custom properties') ?></a> -
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_subscribers_div',this)"><?php echo lang('object subscribers') ?></a>
 		<?php if($task->isNew() || $task->canLinkObject(logged_user())) { ?> - 
 			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_linked_objects_div',this)"><?php echo lang('linked objects') ?></a>
@@ -64,26 +66,10 @@
 	<input id="<?php echo $genid?>updated-on-hidden" type="hidden" name="updatedon" value="<?php echo $task->isNew() ? '': $task->getUpdatedOn()->getTimestamp() ?>">
 	<input id="<?php echo $genid?>merge-changes-hidden" type="hidden" name="merge-changes" value="" >
 	<input id="<?php echo $genid?>genid" type="hidden" name="genid" value="<?php echo $genid ?>" >
-		<?php 
-			$show_help_option = user_config_option('show_context_help'); 
-			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_task_context_help', true, logged_user()->getId()))) {?>
-			<div id="tasksPanelContextHelp" class="contextHelpStyle">
-				<?php render_context_help($this, 'chelp add new task','add_task'); ?>
-			</div>
-		<?php }?>
-		
-
+	
 	<div id="<?php echo $genid ?>add_task_select_context_div" style="display:none">
 	<fieldset>
-	 	<?php 
-			$show_help_option = user_config_option('show_context_help'); 
-			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_task_workspace_context_help', true, logged_user()->getId()))) {?>
-			<div id="tasksPanelContextHelp" class="contextHelpStyle">
-				<?php render_context_help($this, 'chelp add new task workspace','add_task_workspace'); ?>
-			</div>
-		<?php }?>
 		<legend><?php echo lang('context')?></legend>
-		
 		<?php
 			if ($task->isNew()) {
 				render_dimension_trees($task->manager()->getObjectTypeId(), $genid, null, array('select_current_context' => true));
@@ -177,11 +163,18 @@
     	<table><tbody><tr><td style="padding-right: 10px">
     	<?php echo label_tag(lang('start date')) ?>
     	</td><td>
-		<?php echo pick_date_widget2('task_start_date', array_var($task_data, 'start_date'), $genid, 60, true, $genid.'start_date') ?>
+			<div style="float:left;"><?php echo pick_date_widget2('task_start_date', array_var($task_data, 'start_date'), $genid, 60, true, $genid.'start_date') ?></div>
+			<?php if (config_option('use_time_in_task_dates')) { ?>
+			<div style="float:left;margin-left:10px;"><?php echo pick_time_widget2('task_start_time', $task->getUseStartTime() ? array_var($task_data, 'start_date') : null, $genid, 65) ?></div>
+			<?php } ?>
 		</td></tr><tr><td style="padding-right: 10px">
 		<?php echo label_tag(lang('due date')) ?>
     	</td><td>
-		<?php echo pick_date_widget2('task_due_date', array_var($task_data, 'due_date'), $genid, 70, true, $genid.'due_date') ?>
+    		<div style="float:left;"><?php echo pick_date_widget2('task_due_date', array_var($task_data, 'due_date'), $genid, 70, true, $genid.'due_date'); ?></div>
+    		<?php if (config_option('use_time_in_task_dates')) { ?>
+    		<div style="float:left;margin-left:10px;"><?php echo pick_time_widget2('task_due_time', $task->getUseDueTime() ? array_var($task_data, 'due_date') : null, $genid, 75); ?></div>
+    		<?php } ?>
+    		<div class="clear"></div>
 		</td></tr></tbody></table>
 		</div>
 		
@@ -264,7 +257,7 @@
 		<?php $task_types = ProjectCoTypes::getObjectTypesByManager('ProjectTasks');
 			if (count($task_types) > 0) {
 				echo label_tag(lang('object type'));
-				echo select_object_type('task[object_subtype]', $task_types, array_var($task_data, 'object_subtype', config_option('default task co type')), array('tabindex' => '95', 'onchange' => "og.onChangeObjectCoType('$genid', 'ProjectTasks', ".($task->isNew() ? "0" : $task->getId()).", this.value)"));
+				echo select_object_type('task[object_subtype]', $task_types, array_var($task_data, 'object_subtype', config_option('default task co type')), array('tabindex' => '95', 'onchange' => "og.onChangeObjectCoType('$genid', '".$task->getObjectTypeId()."', ".($task->isNew() ? "0" : $task->getId()).", this.value)"));
 			}
 		?>
 		</div>
@@ -279,13 +272,6 @@
   	
 	<div id="<?php echo $genid ?>task_repeat_options_div" style="display:none">
 		<fieldset>
-		<?php 
-			$show_help_option = user_config_option('show_context_help'); 
-			if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_event_repeat_options_context_help', true, logged_user()->getId())) {?>
-			<div id="addEventPanelContextHelp" class="contextHelpStyle">
-				<?php render_context_help($this, 'chelp add event repeat options','add_event_repeat_options'); ?>
-			</div>
-		<?php }?>
 			<legend><?php echo lang('repeating task')?></legend>
 		<?php
 			$occ = array_var($task_data, 'occ'); 
@@ -366,13 +352,6 @@
   
 	<div id="<?php echo $genid ?>add_reminders_div" style="display:none">
 		<fieldset>
-		<?php 
-			$show_help_option = user_config_option('show_context_help'); 
-			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_task_reminders_context_help', true, logged_user()->getId()))) {?>
-			<div id="tasksPanelContextHelp" class="contextHelpStyle">
-				<?php render_context_help($this, 'chelp add new task reminders','add_task_reminders'); ?>
-			</div>
-		<?php }?>
 		<legend><?php echo lang('object reminders') ?></legend>
 		<label><?php echo lang("due date")?>:</label>
 		<div id="<?php echo $genid ?>add_reminders_content">
@@ -386,34 +365,20 @@
 		</fieldset>
 	</div>
 	
-	<div id='<?php echo $genid ?>add_custom_properties_div' style="display:none">
+	<div id="<?php echo $genid ?>add_custom_properties_div" style="<?php echo ($visible_cps > 0 ? "" : "display:none") ?>">
 	<fieldset>
-	<?php 
-			$show_help_option = user_config_option('show_context_help'); 
-			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_task_custom_properties_context_help', true, logged_user()->getId()))) {?>
-			<div id="tasksPanelContextHelp" class="contextHelpStyle">
-				<?php render_context_help($this, 'chelp add new task custom properties','add_task_custom_properties'); ?>
-			</div>
-		<?php }?>
-    <legend><?php echo lang('custom properties') ?></legend>
+		<legend><?php echo lang('custom properties') ?></legend>
     	<div id="<?php echo $genid ?>not_required_custom_properties_container">
 	    	<div id="<?php echo $genid ?>not_required_custom_properties">
-	      	<?php echo render_object_custom_properties($task, 'ProjectTasks', false, $co_type) ?><br/><br/>
-	      	</div><br />
+	      	<?php echo render_object_custom_properties($task, false, $co_type) ?>
+	      	</div>
 	    </div>
-      <?php echo render_add_custom_properties($task); ?>
+      <?php //echo render_add_custom_properties($task); ?>
   	</fieldset>
  	</div>
   
     <div id="<?php echo $genid ?>add_subscribers_div" style="display:none">
 		<fieldset>
-		<?php 
-			$show_help_option = user_config_option('show_context_help'); 
-			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_task_subscribers_context_help', true, logged_user()->getId()))) {?>
-			<div id="tasksPanelContextHelp" class="contextHelpStyle">
-				<?php render_context_help($this, 'chelp add new task subscribers','add_task_subscribers'); ?>
-			</div>
-		<?php }?>
 		<legend><?php echo lang('object subscribers') ?></legend>
 		<div id="<?php echo $genid ?>add_subscribers_content">
 			<?php echo render_add_subscribers($task, $genid); ?>
@@ -424,13 +389,6 @@
 	<?php if($task->isNew() || $task->canLinkObject(logged_user())) { ?>
 	<div style="display:none" id="<?php echo $genid ?>add_linked_objects_div">
 	<fieldset>
-		<?php 
-			$show_help_option = user_config_option('show_context_help'); 
-			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_task_linked_objects_context_help', true, logged_user()->getId()))) {?>
-			<div id="tasksPanelContextHelp" class="contextHelpStyle">
-				<?php render_context_help($this, 'chelp add new task linked object','add_task_linked_objects'); ?>
-			</div>
-		<?php }?>
 		<legend><?php echo lang('linked objects') ?></legend>
 		<?php
 			$pre_linked_objects = null;
@@ -453,7 +411,7 @@
    	
 	<div>
 		<?php echo label_tag(lang('description'), $genid . 'taskListFormDescription') ?>
-		<?php echo textarea_field('task[text]', array_var($task_data, 'text'), array('class' => 'long', 'rows'=> 3 , 'id' => $genid . 'taskListFormDescription', 'tabindex' => '140')) ?>
+		<?php echo textarea_field('task[text]', array_var($task_data, 'text'), array('class' => 'huge', 'id' => $genid . 'taskListFormDescription', 'tabindex' => '140')) ?>
 	</div>
 
 	<?php foreach ($categories as $category) { ?>
@@ -484,12 +442,7 @@
 		
 	</div>
 	
-	<div id="<?php echo $genid ?>required_custom_properties_container">
-		<div id="<?php echo $genid ?>required_custom_properties">
-			<?php tpl_assign('startTi', 15000) ?>
-			<?php echo render_object_custom_properties($task, 'ProjectTasks', true, $co_type) ?>
-		</div><br/>
-	</div>
+	
 	<?php echo input_field("task[is_template]", array_var($task_data, 'is_template', false), array("type" => "hidden", 'tabindex' => '160')); ?>
   <?php echo submit_button($task->isNew() ? (array_var($task_data, 'is_template', false) ? lang('save template') : lang('add task list')) : lang('save changes'), 's', array('tabindex' => '20000')) ?>
 </div>
@@ -498,7 +451,7 @@
 
 <script>
 
-	var assigned_user = '<?php echo array_var($task_data, 'assigned_to', 0) ?>';
+	var assigned_user = '<?php echo array_var($task_data, 'assigned_to_contact_id', 0) ?>';
 	var start = true;
 	
 	og.drawAssignedToSelectBox = function(companies, only_me) {
@@ -512,6 +465,7 @@
 			displayField:'text',
 	        typeAhead: true,
 	        mode: 'local',
+	        cls: 'assigned-to-combo',
 	        triggerAction: 'all',
 	        selectOnFocus:true,
 	        width:160,
@@ -606,10 +560,16 @@
 
 
 	var memberChoosers = Ext.getCmp('<?php echo "$genid-member-chooser-panel-".$task->manager()->getObjectTypeId()?>').items;
+	var treeClicked = false;
+	
 	if (memberChoosers) {
 		
 		memberChoosers.each(function(item, index, length) {
 			item.on('all trees updated', function() {
+				// First User click
+				$(".member-chooser input.x-tree-node-cb").click(function(){
+					treeClicked = true;
+ 				});
 				var dimensionMembers = {};
 				memberChoosers.each(function(it, ix, l) {
 					dim_id = this.dimensionId;
@@ -630,16 +590,18 @@
 				});
 
 				var uids = App.modules.addMessageForm.getCheckedUsers('<?php echo $genid ?>');
-				Ext.get('<?php echo $genid ?>add_subscribers_content').load({
-					url: og.getUrl('object', 'render_add_subscribers', {
-						context: Ext.util.JSON.encode(dimensionMembers),
-						users: uids,
-						genid: '<?php echo $genid ?>',
-						otype: '<?php echo $task->manager()->getObjectTypeId()?>'
-					}),
-					scripts: true
-				});
 
+				if(treeClicked) {
+					Ext.get('<?php echo $genid ?>add_subscribers_content').load({
+						url: og.getUrl('object', 'render_add_subscribers', {
+							context: Ext.util.JSON.encode(dimensionMembers),
+							users: uids,
+							genid: '<?php echo $genid ?>',
+							otype: '<?php echo $task->manager()->getObjectTypeId()?>'
+						}),
+						scripts: true
+					});
+				}
 				og.redrawUserLists(Ext.util.JSON.encode(dimensionMembers));
 
 			});

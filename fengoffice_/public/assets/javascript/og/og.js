@@ -183,6 +183,9 @@ og.dateselectchange = function(select, cls_selector) {
 og.timeslotTypeSelectChange = function(select, genid) {
 	document.getElementById(genid + 'gbspan').style.display = select.value > 0? 'none':'inline';
 	document.getElementById(genid + 'altgbspan').style.display = select.value > 0? 'inline':'none';
+	
+	document.getElementById(genid + 'task_ts_desc').style.display = select.value == 0 ? '' : 'none';
+	document.getElementById(genid + 'general_ts_desc').style.display = select.value == 1 ? '' : 'none';
 }
 
 og.switchToOverview = function(){
@@ -390,7 +393,11 @@ og.makeAjaxUrl = function(url, params) {
 	var ap = "";
 	if ( url.indexOf("context") < 0 && (params && !params.context) ) {
 		var ap = "context=" + og.contextManager.plainContext();
+		if ( url.indexOf("currentdimension") < 0 && !params.currentdimension)  {
+			ap += "&currentdimension=" + og.contextManager.currentDimension;
+		}	
 	}
+	
 	if (url.indexOf("ajax=true") < 0) {
 		var aj = "&ajax=true";
 	} else {
@@ -558,6 +565,7 @@ og.openLink = function(url, options) {
 		url: url,
 		params: options.post,
 		callback: function(options, success, response) {
+			og.eventManager.fireEvent('ajax response', options);
 			if (!options.options.hideLoading && !options.silent) {
 				og.hideLoading();
 			}
@@ -1335,10 +1343,8 @@ og.disableEventPropagation = function(event) {
 };
 
 og.showMoreActions = function(genid) {
-	var obj = document.getElementById('otherActions' + genid);
-	obj.style.display = 'block';
-	var moreOp = document.getElementById('moreOption' + genid);
-	moreOp.style.display = 'none';
+	$("#otherActions" + genid).slideToggle('slow');
+	$("#moreOption" + genid).hide();
 };
 
 og.loadEmailAccounts = function(type) {
@@ -1829,7 +1835,7 @@ og.onChangeObjectCoType = function(genid, manager, id, new_cotype) {
 			}
 		}}
 	);
-	og.openLink(og.getUrl('object', 're_render_custom_properties', {id:id, manager:manager, req:0, co_type:new_cotype}), 
+/*	og.openLink(og.getUrl('object', 're_render_custom_properties', {id:id, manager:manager, req:0, co_type:new_cotype}), 
 		{callback: function(success, data) {
 			if (success) {
 				var div = Ext.get(genid + 'not_required_custom_properties');
@@ -1842,6 +1848,7 @@ og.onChangeObjectCoType = function(genid, manager, id, new_cotype) {
 			}
 		}}
 	);
+*/
 };
 
 og.expandDocumentView = function() {
@@ -2180,11 +2187,12 @@ og.expandCollapseDimensionTree = function(tree, previous_exp, selection_id) {
 	}
 }
 
-og.checkEmailAddress = function(element) {
+og.checkEmailAddress = function(element,id_contact) {
+    
 	$(element).blur(function(){
 		var field = $(this);
 		// Ajax to ?c=contact&a=check_existing_email&email=admin@admin.com&ajax=true
-		var url = og.makeAjaxUrl(og.getUrl("contact", "check_existing_email", {email: field.val()}));
+		var url = og.makeAjaxUrl(og.getUrl("contact", "check_existing_email", {email: field.val(),id_contact:id_contact}));
 		og.loading();
 		$.getJSON(url, function(data) {						
 			$(".field-error-msg").remove();
@@ -2218,4 +2226,31 @@ og.selectDimensionTreeMember = function(data) {
 			}
 		}
 	}
+}
+
+
+og.loadWidget = function (name, callback ){
+	var url = og.getUrl('dashboard', 'load_widget', {name: name});
+	var params = {callback: callback} ;
+	og.openLink(url , params) ;
+	
+}
+
+og.quickAddTask = function (data, callback) {
+	var name = data.name ;
+	var due_date = data.due_date ;
+	var due_time = data.due_time ;
+	var assigned_to = data.assigned_to | 0;
+	
+	var ajaxOptions = {
+		post : {
+			'task[assigned_to_contact_id]': assigned_to ,
+			'task[name]': name,
+			'task[task_due_date]': due_date,
+			'task[task_due_time]': due_time
+		},
+		callback : callback 
+	};
+	var url = og.makeAjaxUrl(og.getUrl('task', 'quick_add_task', ajaxOptions));
+	og.openLink(url, ajaxOptions);
 }

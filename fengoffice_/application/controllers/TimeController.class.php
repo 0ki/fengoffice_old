@@ -176,16 +176,16 @@ class TimeController extends ApplicationController {
 				$timeslot_data['contact_id'] = logged_user()->getId();
 			$timeslot->setFromAttributes($timeslot_data);
 			
-			/* FIXME: Billing */
-/*			$user = Users::findById($timeslot_data['user_id']);
+			$user = Contacts::findById($timeslot_data['contact_id']);
 			$billing_category_id = $user->getDefaultBillingId();
-			$project = Projects::findById(array_var($timeslot_data,'project_id'));
-			$timeslot->setBillingId($billing_category_id);
-			$hourly_billing = $project->getBillingAmount($billing_category_id);
-			$timeslot->setHourlyBilling($hourly_billing);
-			$timeslot->setFixedBilling($hourly_billing * $hoursToAdd);
-			$timeslot->setIsFixedBilling(false);
-*/
+			$bc = BillingCategories::findById($billing_category_id);
+			if ($bc instanceof BillingCategory) {
+				$timeslot->setBillingId($billing_category_id);
+				$hourly_billing = $bc->getDefaultValue();
+				$timeslot->setHourlyBilling($hourly_billing);
+				$timeslot->setFixedBilling($hourly_billing * $hoursToAdd);
+				$timeslot->setIsFixedBilling(false);
+			}
 			DB::beginWork();
 			$timeslot->save();
 			
@@ -198,7 +198,7 @@ class TimeController extends ApplicationController {
 			$object_controller->add_to_members($timeslot, $member_ids);
 			DB::commit();
 			
-			$show_billing = false; //can_manage_security(logged_user()) && logged_user()->isAdministrator();
+			$show_billing = can_manage_billing(logged_user());
 			ajx_extra_data(array("timeslot" => $timeslot->getArrayInfo($show_billing)));
 		} catch(Exception $e) {
 			DB::rollback();
@@ -257,24 +257,35 @@ class TimeController extends ApplicationController {
 				
 			$timeslot->setFromAttributes($timeslot_data);
 			
-			/* FIXME: Billing */
-/*			$user = Users::findById($timeslot_data['user_id']);
+			$user = Contacts::findById($timeslot_data['contact_id']);
 			$billing_category_id = $user->getDefaultBillingId();
-			$project = Projects::findById(array_var($timeslot_data,'project_id'));
-			$timeslot->setBillingId($billing_category_id);
-			$hourly_billing = $project->getBillingAmount($billing_category_id);
-			$timeslot->setHourlyBilling($hourly_billing);
-			$timeslot->setFixedBilling($hourly_billing * $hoursToAdd);
-			$timeslot->setIsFixedBilling(false);
-*/
+			$bc = BillingCategories::findById($billing_category_id);
+			if ($bc instanceof BillingCategory) {
+				$timeslot->setBillingId($billing_category_id);
+				$hourly_billing = $bc->getDefaultValue();
+				$timeslot->setHourlyBilling($hourly_billing);
+				$timeslot->setFixedBilling($hourly_billing * $hoursToAdd);
+				$timeslot->setIsFixedBilling(false);
+			}
 			DB::beginWork();
 			$timeslot->save();
+
 			
-			$member_ids = array();
-			$context = active_context();
-			foreach ($context as $selection) {
-				if ($selection instanceof Member) $member_ids[] = $selection->getId();
+			$member_ids = json_decode(array_var($_POST, 'members', ''));
+			if ($member_ids && count($member_ids) ) {
+				ajx_add("time-panel", "reload");
+			}else{
+				foreach (active_context() as $dimension) {
+					$names[] = $dimension->getName();
+				} 
+	
+				flash_error(lang('select member to add timeslots', implode(", ", $names)));
+				
+				//flash_error(lang('must choose at least one member'));
+				DB::rollback();
+				return ;
 			}
+			
 			$object_controller = new ObjectController();
 			$object_controller->add_to_members($timeslot, $member_ids);
 			DB::commit();

@@ -91,10 +91,20 @@ og.MemberTree = function(config) {
 					ids.push(e.data.selections[i].data.object_id);
 				}
 				
-				og.openLink(og.getUrl('member', 'add_objects_to_member'),{
-					method: 'POST',
-					post: {objects: Ext.util.JSON.encode(ids), member: e.target.id, reload:1}
-				});
+				if (og.dimension_object_type_contents[config.dimensionId][e.target.object_type_id][e.data.selections[0].data.ot_id] &&
+						og.dimension_object_type_contents[config.dimensionId][e.target.object_type_id][e.data.selections[0].data.ot_id].multiple) {
+					
+					var rm_prev = confirm(lang('do you want to mantain the current associations of this obj with members of', config.title)) ? "0" : "1";
+					og.openLink(og.getUrl('member', 'add_objects_to_member'),{
+						method: 'POST',
+						post: {objects: Ext.util.JSON.encode(ids), member: e.target.id, reload:1, remove_prev:rm_prev}
+					});
+				} else {
+					og.openLink(og.getUrl('member', 'add_objects_to_member'),{
+						method: 'POST',
+						post: {objects: Ext.util.JSON.encode(ids), member: e.target.id, reload:1}
+					});
+				}
 
 			}
 			return false;
@@ -108,27 +118,12 @@ og.MemberTree = function(config) {
 	// ********** TREE EVENTS *********** //
 	this.on({
 		click: function(node, e){
-			
+			og.contextManager.currentDimension = self.dimensionId ;
 			og.eventManager.fireEvent("member tree node click", node);
 			var treeConf = node.attributes.loader.ownerTree.initialConfig ;
 			if  (node.getDepth() == 0 ){
-				
 				// Fire 'all' selection for other trees 
-				/*
-				var trees = this.ownerCt.items;
-				if ( trees){
-					trees.each( function (item, index, length){
-						if ( self.id != item.id  && (!item.hidden ||item.reloadHidden) ) {
-							item.pauseEvents  = true ;
-							item.getRootNode().select(node) ;
-							item.pauseEvents  = false ;
-							og.contextManager.cleanActiveMembers(item.dimensionId);
-							$('#'+item.id + " .member-quick-form-link").show();
-						}
-					});
-				}
-				*/
-				// Manage dashborad
+				// Manage dashboard
 				if ( treeConf.dimensionOptions.defaultAjax ){
 					var controller =  treeConf.dimensionOptions.defaultAjax.controller ;
 					var action =  treeConf.dimensionOptions.defaultAjax.action ;
@@ -138,7 +133,7 @@ og.MemberTree = function(config) {
 				}
 			}else{
 				// Member selection (not root)
-				if (node.object_id && node.options && node.options.defaultAjax && node.options.defaultAjax.controller && node.options.defaultAjax.action) {
+				if ( node.options && node.options.defaultAjax && node.options.defaultAjax.controller && node.options.defaultAjax.action) {
 					var reload = ( this.getSelectionModel() && this.getSelectionModel().getSelectedNode() && this.getSelectionModel().getSelectedNode().id  ==  node.id );
 					og.customDashboard( node.options.defaultAjax.controller, node.options.defaultAjax.action, {id: node.object_id}, reload);
 				}else{
@@ -350,6 +345,9 @@ Ext.extend(og.MemberTree, Ext.tree.TreePanel, {
 					selModel.suspendEvents();
 					selModel.select(node) ;
 					selModel.resumeEvents();
+				}else{
+					// If node not found in the new tree remove it from contextMAnager
+					og.contextManager.cleanActiveMembers(this.dimensionId);
 				}
 			} 
 		}

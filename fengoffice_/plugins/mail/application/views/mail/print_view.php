@@ -17,6 +17,11 @@
 			<?php echo MailUtilities::displayMultipleAddresses(clean($email->getCc()), true, false) ?>
 		</td></tr>		
 		<?php } ?>
+		<?php if ($email->getBcc() != '') { ?>
+		<tr><td style="font-weight: bold;"><?php echo lang('mail BCC') ?>:</td><td style="padding-left:10px;">
+			<?php echo MailUtilities::displayMultipleAddresses(clean($email->getBcc()), true, false) ?>
+		</td></tr>		
+		<?php } ?>	
 		<tr><td style="font-weight: bold;"><?php echo lang('subject') ?>:</td><td style="padding-left:10px;">
 			<?php echo $email->getSubject() ?>
 		</td></tr>

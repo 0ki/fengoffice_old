@@ -24,8 +24,8 @@
 	<?php if(is_array($users) && count($users)) { ?>
 		<div onclick="og.subscribeCompany(this)"  class="container-div company-name<?php echo $allChecked ? ' checked' : ''?>" onmouseout="og.rollOut(this,true)" onmouseover="og.rollOver(this)">
 		<?php $theCompany = Contacts::findById($companyId) ?>
-			<label for="<?php echo $genid ?>notifyCompany<?php echo $theCompany->getId() ?>" style="background: url('<?php echo $theCompany->getLogoUrl() ?>') no-repeat;">
-				<span class="ico-company link-ico"><?php echo clean($theCompany->getObjectName()) ?></span>
+			<label for="<?php echo $genid ?>notifyCompany<?php echo ($theCompany instanceof Contact ? $theCompany->getId() : "0") ?>" style="background: url('<?php echo ($theCompany instanceof Contact ? $theCompany->getPictureUrl() : "#") ?>') no-repeat;">
+				<span class="ico-company link-ico"><?php echo ($theCompany instanceof Contact ? clean($theCompany->getFirstName()) : lang('without company')) ?></span>
 			</label>
 		</div>
 		<div id="<?php echo $genid . $companyId ?>company_users" style="padding-left:10px;">
@@ -37,7 +37,7 @@
 					<label for="<?php echo $genid ?>notifyUser<?php echo $user->getId() ?>" style=" width: 120px; overflow:hidden; background:url('<?php echo $user->getAvatarUrl() ?>') no-repeat;">
 						<span class="ico-user link-ico"><?php echo clean($user->getObjectName()) ?></span>
 						<br>
-						<span style="color:#888888;font-size:90%;font-weight:normal;"> <?php echo $user->getEmail('user')->getEmailAddress()  ?> </span>
+						<span style="color:#888888;font-size:90%;font-weight:normal;"> <?php echo $user->getEmailAddress()  ?> </span>
 					</label>
 				</div>
 			

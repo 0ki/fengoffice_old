@@ -284,6 +284,20 @@
     } // addAction
     
     /**
+     * Remove a single action
+     * 
+     * @access public
+     * @param String $name
+     */
+    function removeAction($name) {
+    	foreach ($this->actions as $k => &$action) {
+    		if ($action->getName() == $name) {
+    			unset($this->actions[$k]);
+    		}
+    	}
+    }
+    
+    /**
     * Return single PageActions instance
     *
     * @access public

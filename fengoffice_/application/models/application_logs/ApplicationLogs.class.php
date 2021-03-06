@@ -70,8 +70,10 @@ class ApplicationLogs extends BaseApplicationLogs {
 		} else {
 			$log->setTakenById(0);
 		}
-		$log->setRelObjectId($object->getObjectId());
-		$log->setObjectName($object->getObjectName());
+		if ($object instanceof ContentDataObject) {
+			$log->setRelObjectId($object->getObjectId());
+			$log->setObjectName($object->getObjectName());
+		}
 		
 		$log->setAction($action);
 		$log->setIsPrivate($is_private);

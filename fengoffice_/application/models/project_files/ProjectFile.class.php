@@ -631,8 +631,8 @@ class ProjectFile extends BaseProjectFile {
 	//  Permissions
 	// ---------------------------------------------------
 
-	function canAdd(Contact $user, $context){
-		return can_add($user, $context, ProjectFiles::instance()->getObjectTypeId());
+	function canAdd(Contact $user, $context,&$notAllowedMember = ''){
+		return can_add($user, $context, ProjectFiles::instance()->getObjectTypeId(),$notAllowedMember);
 	}
 
 	

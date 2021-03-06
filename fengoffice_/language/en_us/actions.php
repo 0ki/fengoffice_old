@@ -220,7 +220,7 @@
   	'activate' => 'Activate',
   	'disabled' => 'Disabled',
   	
-  	'template context' => 'Choose the template\'s context',
+  	'template context' => 'Choose the template\'s location',
   ); // array
 
 ?>

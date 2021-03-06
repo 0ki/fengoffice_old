@@ -160,8 +160,8 @@ class ProjectEvent extends BaseProjectEvent {
 	} // canDownload
 	
 	
-	function canAdd(Contact $user, $context){
-		return can_add($user, $context, ProjectEvents::instance()->getObjectTypeId());
+	function canAdd(Contact $user, $context, &$notAllowedMember = ''){
+		return can_add($user, $context, ProjectEvents::instance()->getObjectTypeId(), $notAllowedMember);
 	}
 
 

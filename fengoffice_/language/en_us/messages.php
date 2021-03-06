@@ -734,10 +734,9 @@
   
   	'objects moved to member success' => 'The objects has been added to {0} successfully',
 	'object moved to member success' => 'The object has been added to {0} successfully',
-  	'vinculated to' => 'Vinculated to',
-  	'not vinculated' => 'Not vinculated',
   	'contact email is required to create user' => 'In order to create a user, the contact must have an email address. Please edit the contact and re-try',
   	'success delete member' => '{0} has been deleted',
+  	'disable' => 'Disable'
   ); // array
 
 ?>

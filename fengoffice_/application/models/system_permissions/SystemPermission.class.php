@@ -3,7 +3,7 @@
 /**
  * SystemPermission class
  *
- * @author Diego Castiglioni <diego20@gmail.com>
+ * @author Diego Castiglioni <diego.castiglioni@fengoffice.com>
  */
 class SystemPermission extends BaseSystemPermission {
 		
@@ -13,6 +13,7 @@ class SystemPermission extends BaseSystemPermission {
 			if (in_array($col, array('permission_group_id'))) continue;
 			$this->setColumnValue($col, $value);
 		}
+		$columns = null;
 	}
 	
 	function setPermission($value){

@@ -340,6 +340,7 @@ fieldset.collapsible.collapsed legend {
 
 div.layout-container {
     overflow: hidden ;
+	min-width: 900px;
 }
 
 div.left-column-wrapper {
@@ -348,19 +349,28 @@ div.left-column-wrapper {
 }
 
 div.right-column {
-    float:left ;
-    width: 240px ;
-    margin-left: -250px; /*Set left margin to -(RightColumnWidth) */
+    float: left;
+    margin-left: -470px;
     padding-left: 15px;
     padding-right: 15px;
+    width: 440px;
+}
+
+.contact div.right-column {
+    width: 240px ;
+    margin-left: -250px; /*Set left margin to -(RightColumnWidth) */
     width: 210px;
 }
 
 
 div.left-column {
-    padding-right: 10px ;
-    margin-right: 240px;  /*Set right margin to RightColumnWidth*/
+    margin-right: 470px;
     min-width: 200px;
+    padding-right: 10px;
+}
+
+.contact div.left-column {
+    margin-right: 240px;  /*Set right margin to RightColumnWidth*/
 }
 
 /* View styles */
@@ -497,5 +507,86 @@ div.layout-container.contact .right-column {
     box-shadow: 0 0 3px 0 #CCCCCC inset;
 }
 
-
 /** End Contact Fluid layotu */
+
+.left {
+	float: left;
+}
+
+
+/*----------------------------------------
+		Late tasks and milestones
+----------------------------------------*/
+.late-objects-widget {
+	float: left;
+	width: 100%;
+}
+
+.late-objects-widget .date-col {
+	width: 100px;
+}
+
+.late-objects-widget td {
+	padding: 2px;
+}
+
+.late-objects-widget td.db-ico {
+	vertical-align: middle;
+}
+
+.late-objects-widget td.date-col div{
+	padding: 2px 10px;
+	border-radius: 6px;
+	text-align: center;
+	margin-right: 5px ;
+}
+
+.late-objects-widget .widget-header {
+	color: white;
+	background: #DD4444;
+	border-color: #CC1111;
+}
+
+.late-objects-widget .widget-body div.right {
+	text-align: right;
+	margin: 5px 2px;
+}
+
+
+.late-objects-widget .widget-body .late-row {
+	background-color:#F6D4D5;
+	color: #F6464C; 
+}
+
+.late-objects-widget .widget-body .today-row {
+	background-color:#FFEB9C;
+	color: #E26900;
+}
+
+
+.late-objects-widget .widget-body .future-row {
+	background-color:#F5F5F5;
+	color: #333333;
+	/* border: 1px solid #AAAAAA;*/
+}
+
+
+.TMTimespanAddNew .context-switcher {
+	display: none ;	
+}
+
+.TMTimespanEdit .context-switcher {
+	disply:block;	 
+}
+
+.context-switcher .context-header label {
+	cursor: pointer ;	 
+	text-decoration: underline;	
+	color: #003562;
+	display: inline;
+}
+
+#timePanel .member-chooser-container .x-panel-body {
+	background: none ;
+}
+	

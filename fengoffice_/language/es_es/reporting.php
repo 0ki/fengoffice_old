@@ -1,7 +1,7 @@
 <?php return array(
 	'custom' => 'Personalizado',
 	'custom reports' => 'Reportes personalizados',
-	'no custom reports' => 'No hay reportes personalizados de tipo \'{0}\' en el contexto seleccionado',
+	'no custom reports' => 'No hay reportes personalizados de tipo \'{0}\' en la ubicación seleccionada',
 	'add custom report' => 'Añadir un reporte customizado',
 	'edit custom report' => 'Editar reporte personalizado',
 	'new custom report' => 'Nuevo reporte personalizado',

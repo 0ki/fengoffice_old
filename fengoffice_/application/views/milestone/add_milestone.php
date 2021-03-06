@@ -1,6 +1,7 @@
 <?php
   require_javascript('og/modules/addTaskForm.js'); 
   $genid = gen_id();
+  $visible_cps = CustomProperties::countVisibleCustomPropertiesByObjectType($milestone->getObjectTypeId());
 ?>
 <form class="add-milestone" style='height:100%;background-color:white' class="internalForm" action="<?php echo $milestone->isNew() ? get_url('milestone', 'add', array("copyId" => array_var($milestone_data, 'copyId'))) : $milestone->getEditUrl() ?>" method="post" onsubmit="return og.handleMemberChooserSubmit('<?php echo $genid; ?>', <?php echo $milestone->manager()->getObjectTypeId() ?>);">
 
@@ -38,7 +39,7 @@
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_milestone_description_div', this)"><?php echo lang('description') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_milestone_options_div', this)"><?php echo lang('options') ?></a> -
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_reminders_div',this)"><?php echo lang('object reminders') ?></a>  - 
-		<?php //FIXME FENG2 or REMOVE <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid add_custom_properties_div', this)"><?php echo lang('custom properties') </a> -?>
+		<a href="#" class="option <?php echo $visible_cps>0 ? 'bold' : ''?>" onclick="og.toggleAndBolden('<?php echo $genid ?>add_custom_properties_div', this)"><?php echo lang('custom properties') ?></a> -
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_subscribers_div',this)"><?php echo lang('object subscribers') ?></a>
 		<?php if($milestone->isNew() || $milestone->canLinkObject(logged_user())) { ?> - 
 			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_linked_objects_div',this)"><?php echo lang('linked objects') ?></a>
@@ -51,13 +52,6 @@
 <div class="coInputSeparator"></div>
 <div class="coInputMainBlock">
 	<input id="<?php echo $genid?>updated-on-hidden" type="hidden" name="updatedon" value="<?php echo $milestone->isNew() ? '' : $milestone->getUpdatedOn()->getTimestamp() ?>">
-		<?php 
-			$show_help_option = user_config_option('show_context_help'); 
-			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_milestone_context_help', true, logged_user()->getId()))) {?>
-			<div id="milestonePanelContextHelp" class="contextHelpStyle">
-				<?php render_context_help($this, 'chelp add milestone','add_milestone'); ?>
-			</div>
-		<?php }?>
 	
 	<?php if ($milestone->isNew() && isset($base_milestone) && $base_milestone instanceof ProjectMilestone && $base_milestone->getIsTemplate()) { ?>
 		<input type="hidden" name="milestone[from_template_id]" value="<?php echo $base_milestone->getId() ?>" />
@@ -65,14 +59,7 @@
 	
 	<div id="<?php echo $genid ?>add_milestone_select_context_div" style="display:none">
 	<fieldset>
-	<?php 
-			$show_help_option = user_config_option('show_context_help'); 
-			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_milestone_workspace_context_help', true, logged_user()->getId()))) {?>
-			<div id="milestonePanelContextHelp" class="contextHelpStyle">
-				<?php render_context_help($this, 'chelp add milestone workspace','add_milestone_workspace'); ?>
-			</div>
-		<?php }?>
-	<legend><?php echo lang('context') ?></legend>
+		<legend><?php echo lang('context') ?></legend>
 		<?php
 			if ($milestone->isNew()) {
 				render_dimension_trees($milestone->manager()->getObjectTypeId(), $genid, null, array('select_current_context' => true));
@@ -87,21 +74,14 @@
 	
 	<div id="<?php echo $genid ?>add_milestone_description_div" style="display:none">
 	<fieldset>
-		<?php 
-			$show_help_option = user_config_option('show_context_help'); 
-						if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_milestone_description_context_help', true, logged_user()->getId()))) {?>
-			<div id="milestonePanelContextHelp" class="contextHelpStyle">
-				<?php render_context_help($this, 'chelp add milestone description','add_milestone_description'); ?>
-			</div>
-		<?php }?>
-	<legend><?php echo lang('description') ?></legend>
+		<legend><?php echo lang('description') ?></legend>
 		<?php echo textarea_field('milestone[description]', array_var($milestone_data, 'description'), array('class' => 'long', 'id' => $genid . 'milestoneFormDesc', 'tabindex' => '20')) ?>
 	</fieldset>
 	</div>
   
 	<div id="<?php echo $genid ?>add_milestone_options_div" style="display:none">
 	<fieldset>
-	<legend><?php echo lang('options') ?></legend>
+		<legend><?php echo lang('options') ?></legend>
 		<div class="objectOption">
 		<div class="optionLabel"><?php echo label_tag(lang('urgent milestone'), $genid . 'milestoneFormIsUrgent') ?></div>
 		<div class="optionControl"><?php echo checkbox_field('milestone[is_urgent]', array_var($milestone_data, 'is_urgent', false), array('id' => $genid . 'milestoneFormIsUrgent', 'tabindex' => '45')) ?> </div>
@@ -111,13 +91,6 @@
 
 	<div id="<?php echo $genid ?>add_reminders_div" style="display:none">
 		<fieldset>
-		<?php 
-			$show_help_option = user_config_option('show_context_help'); 
-						if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_milestone_reminders_context_help', true, logged_user()->getId()))) {?>
-			<div id="milestonePanelContextHelp" class="contextHelpStyle">
-				<?php render_context_help($this, 'chelp add milestone reminders','add_milestone_reminders'); ?>
-			</div>
-		<?php }?>
 		<legend><?php echo lang('object reminders') ?></legend>
 		<label><?php echo lang("due date")?>:</label>
 		<div id="<?php echo $genid ?>add_reminders_content">
@@ -130,47 +103,26 @@
 		</fieldset>
 	</div>
 	
-	<div id='<?php echo $genid ?>add_custom_properties_div' style="display:none">
+	<div id="<?php echo $genid ?>add_custom_properties_div" style="<?php echo ($visible_cps > 0 ? "" : "display:none") ?>">
 	<fieldset>
-	<?php 
-			$show_help_option = user_config_option('show_context_help'); 
-			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_milestone_custom_properties_context_help', true, logged_user()->getId()))) {?>
-			<div id="milestonePanelContextHelp" class="contextHelpStyle">
-				<?php render_context_help($this, 'chelp add milestone custom properties','add_milestone_custom_properties'); ?>
-			</div>
-		<?php }?>
-	<legend><?php echo lang('custom properties') ?></legend>
-		<?php echo render_object_custom_properties($milestone, 'ProjectMilestones', false) ?><br/><br/>
-		<?php echo render_add_custom_properties($milestone); ?>
+		<legend><?php echo lang('custom properties') ?></legend>
+		<?php echo render_object_custom_properties($milestone, false) ?>
+		<?php //echo render_add_custom_properties($milestone); ?>
 	</fieldset>
 	</div>
 	
 	<div id="<?php echo $genid ?>add_subscribers_div" style="display:none">
 		<fieldset>
-		<?php 
-			$show_help_option = user_config_option('show_context_help'); 
-			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_milestone_subscribers_context_help', true, logged_user()->getId()))) {?>
-			<div id="milestonePanelContextHelp" class="contextHelpStyle">
-				<?php render_context_help($this, 'chelp add milestone subscribers','add_milestone_subscribers'); ?>
+			<legend><?php echo lang('object subscribers') ?></legend>
+			<div id="<?php echo $genid ?>add_subscribers_content">
+				<?php echo render_add_subscribers($milestone, $genid); ?>
 			</div>
-		<?php }?>
-		<legend><?php echo lang('object subscribers') ?></legend>
-		<div id="<?php echo $genid ?>add_subscribers_content">
-			<?php echo render_add_subscribers($milestone, $genid); ?>
-		</div>
 		</fieldset>
 	</div>
 	
 	<?php if($milestone->isNew() || $milestone->canLinkObject(logged_user())) { ?>
 	<div style="display:none" id="<?php echo $genid ?>add_linked_objects_div">
 	<fieldset>
-		<?php 
-			$show_help_option = user_config_option('show_context_help'); 
-			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_milestone_linked_object_context_help', true, logged_user()->getId()))) {?>
-			<div id="milestonePanelContextHelp" class="contextHelpStyle">
-				<?php render_context_help($this, 'chelp add milestone linked object','add_milestone_linked_object'); ?>
-			</div>
-		<?php }?>
 		<legend><?php echo lang('linked objects') ?></legend>
 		<?php echo render_object_link_form($milestone) ?>
 	</fieldset>	
@@ -193,10 +145,6 @@
 	</div>
 	<?php } ?>
 	
-	<div>
-		<?php echo render_object_custom_properties($milestone, 'ProjectMilestones', true) ?>
-	</div><br/>
-
 	<?php echo submit_button($milestone->isNew() ? (array_var($milestone_data, 'is_template', false) ? lang('save template') : lang('add milestone')) : lang('save changes'), 's', array('tabindex' => '20000')) ?>
 </div>
 </div>
@@ -204,9 +152,15 @@
 
 <script>
 	var memberChoosers = Ext.getCmp('<?php echo "$genid-member-chooser-panel-".$milestone->manager()->getObjectTypeId()?>').items;
+	var treeClicked = false;
+	
 	if (memberChoosers) {
 		memberChoosers.each(function(item, index, length) {
 			item.on('all trees updated', function() {
+				// First User click
+				$(".member-chooser input.x-tree-node-cb").click(function(){
+					treeClicked = true;
+ 				});
 				var dimensionMembers = {};
 				memberChoosers.each(function(it, ix, l) {
 					dim_id = this.dimensionId;
@@ -218,15 +172,18 @@
 				});
 	
 				var uids = App.modules.addMessageForm.getCheckedUsers('<?php echo $genid ?>');
-				Ext.get('<?php echo $genid ?>add_subscribers_content').load({
-					url: og.getUrl('object', 'render_add_subscribers', {
-						context: Ext.util.JSON.encode(dimensionMembers),
-						users: uids,
-						genid: '<?php echo $genid ?>',
-						otype: '<?php echo $milestone->manager()->getObjectTypeId()?>'
-					}),
-					scripts: true
-				});
+				if(treeClicked) {
+						
+					Ext.get('<?php echo $genid ?>add_subscribers_content').load({
+						url: og.getUrl('object', 'render_add_subscribers', {
+							context: Ext.util.JSON.encode(dimensionMembers),
+							users: uids,
+							genid: '<?php echo $genid ?>',
+							otype: '<?php echo $milestone->manager()->getObjectTypeId()?>'
+						}),
+						scripts: true
+					});
+				}
 
 				var combo = Ext.getCmp('<?php echo $genid ?>taskFormAssignedToCombo');
 				if (combo) {

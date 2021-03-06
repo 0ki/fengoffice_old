@@ -169,7 +169,9 @@ if (isset($file) && $file instanceof ProjectFile) {
 	} else {
 		tpl_assign('title', clean($file->getFilename()));
 	}
-	tpl_assign("content_template", array('file_details_content', 'files'));
+	$file_details_content_template_info = array('file_details_content', 'files');
+	Hook::fire('override_file_details_content', null, $file_details_content_template_info);
+	tpl_assign("content_template", $file_details_content_template_info);
 	tpl_assign('object', $file);
 
 	$this->includeTemplate(get_template_path('view', 'co'));

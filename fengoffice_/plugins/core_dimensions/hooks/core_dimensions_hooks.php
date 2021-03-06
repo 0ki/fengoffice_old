@@ -218,7 +218,7 @@ function core_dimensions_after_object_controller_trash($ids) {
 		$person_dim = Dimensions::findByCode('feng_persons');
 		if($person_dim instanceof Dimension) {
 			$ot = ObjectTypes::findOne(array('conditions' => "`id` IN (SELECT `o`.`object_type_id` FROM `".TABLE_PREFIX."objects` `o` WHERE `o`.`id` = ".DB::escape(array_var($_GET, 'object_id')).")"));
-			if ($ot->getName() == 'contact') {
+			if ($ot && $ot->getName() == 'contact') {
 				evt_add('select dimension member', array('dim_id' => $person_dim->getId(), 'node' => 'root'));
 				ajx_current("empty");
 				redirect_to(get_url('contact', 'init'));
@@ -293,6 +293,15 @@ function core_dim_add_new_contact_to_person_dimension($object) {
 		}else{
 			$object->addToMembers(array($member));
 			$object->addToSharingTable();
+		}
+		
+		// add permission to creator
+		if ($object->getCreatedBy() instanceof Contact) {
+			DB::execute("INSERT INTO `".TABLE_PREFIX."contact_member_permissions` (`permission_group_id`, `member_id`, `object_type_id`, `can_write`, `can_delete`)
+				 SELECT ".$object->getCreatedBy()->getPermissionGroupId().", ".$member->getId().", `ot`.`id`, 1, 1
+				 FROM `".TABLE_PREFIX."object_types` `ot` 
+				 WHERE `ot`.`type` IN ('content_object', 'comment')
+				 ON DUPLICATE KEY UPDATE `member_id`=`member_id`;");
 		}
 		
 		if ($reload_dimension) {

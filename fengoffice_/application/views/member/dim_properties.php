@@ -97,7 +97,7 @@ if(is_array($dimensions) && count($dimensions) > 0) {
 	<input type="hidden" name="save_properties" value="1" />
 <?php
 	}
-} else { ?>
+}/* else { ?>
 	<div class="desc"><?php echo lang('no associations can be set for this type of member in this dimension')?></div>
-<?php }
+<?php }*/
 ?>

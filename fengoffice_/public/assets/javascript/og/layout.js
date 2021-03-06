@@ -104,9 +104,10 @@ Ext.onReady(function(){
 				}
 			});
 			
+			
 			var viewport = new Ext.Viewport({
 				layout: 'border',
-				stateful: og.preferences['rememberGUIState'],
+				stateful: false ,// og.preferences['rememberGUIState'],
 				items: [
 				        new Ext.BoxComponent({
 				        	region: 'north',
@@ -118,6 +119,7 @@ Ext.onReady(function(){
 				        })
 				        ,{
 				        	region: 'west',
+
 				        	id: 'menu-panel',
 				        	split: true,
 				        	width: 242,
@@ -125,6 +127,7 @@ Ext.onReady(function(){
 				        	hideCollapseTool:true,
 				        	collapseMode:'mini',
 				        	collapsible:true ,
+				        	collapsed: og.menuPanelCollapsed, // This flag is set in layout.php
 				        	//autoWidth: true,
 				        	layout: 'multi-accordion',
 				        	layoutConfig: {
@@ -133,9 +136,12 @@ Ext.onReady(function(){
 				        		titleCollapse: true,
 				        		animate: true,
 				        		maxActiveItems: 3 ,
-				        		autoWidth: true
+				        		autoWidth: true,
+				        		collapsed: true,
+				        		expanded: false
 				        	},
-				        	stateful: og.preferences['rememberGUIState'],
+				        	stateful: false,
+				        	//stateful: og.preferences['rememberGUIState'],
 				        	items:  og.dimensionPanels  ,
 				        	bbar : [
 				        	    {	

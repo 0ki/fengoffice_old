@@ -3,7 +3,7 @@
 /**
  * Contacts class
  *
- * @author Carlos Palma <chonwil@gmail.com>, Diego Castiglioni <diego20@gmail.com>
+ * @author Carlos Palma <chonwil@gmail.com>, Diego Castiglioni <diego.castiglioni@fengoffice.com>
  */
 class Contacts extends BaseContacts {
 	
@@ -32,7 +32,7 @@ class Contacts extends BaseContacts {
 	
 	static function getAllUsers($extra_conditions = "", $include_disabled = false) {
 		if (!$include_disabled) $extra_conditions .= " AND `disabled` = 0";
-		return self::findAll(array("conditions" => "`user_type` <> 0 $extra_conditions"));
+		return self::findAll(array("conditions" => "`user_type` <> 0 $extra_conditions", "order" => "first_name ASC"));
 	}
 	
 	
@@ -42,8 +42,8 @@ class Contacts extends BaseContacts {
 	 * @param string $email
 	 * @return Contact
 	 */
-	static function getByEmail($email) {
-		$contact_email = ContactEmails::findOne(array('conditions' => array("`email_address` = ?", $email)));
+	static function getByEmail($email, $id_contact = 0) {
+		$contact_email = ContactEmails::findOne(array('conditions' => array("`email_address` = ? AND `contact_id` <> ?", $email, $id_contact)));
 		if (!is_null($contact_email))
 			return self::findById($contact_email->getContactId());
 		return null;
@@ -88,7 +88,7 @@ class Contacts extends BaseContacts {
 	 * @param void
 	 * @return array
 	 */
-	static function getGroupedByCompany() {
+	static function getGroupedByCompany($include_disabled = true) {
 		$companies = self::getCompaniesWithUsers();
 		if(!is_array($companies) || !count($companies)) {
 			//return null;
@@ -105,9 +105,11 @@ class Contacts extends BaseContacts {
 			}
 		}
 		
-		$no_company_users = Contacts::getAllUsers("AND `company_id` = 0", true);
-		$result[lang('without company')] = array('details' => null, 'users' => $no_company_users);
-
+		$no_company_users = Contacts::getAllUsers("AND `company_id` = 0", $include_disabled);
+		if (count($no_company_users) > 0) {
+			$result[lang('without company')] = array('details' => null, 'users' => $no_company_users);
+		}
+		
 		return count($result) ? $result : null;
 	} // getGroupedByCompany
 
@@ -213,7 +215,22 @@ class Contacts extends BaseContacts {
 	 * @return Company
 	 */
 	static function getOwnerCompany() {
-		return Contacts::findOne(array("conditions" => "is_company<>0 AND NOT EXISTS(SELECT x.object_id FROM ".TABLE_PREFIX."contacts x WHERE x.is_company<>0 AND x.object_id<object_id)"));
+		
+		$owner_company = null;
+		if (GlobalCache::isAvailable()) {
+			$owner_company = GlobalCache::get('owner_company', $success);
+			if ($success && $owner_company instanceof Contact) {
+				return $owner_company;
+			}
+		}
+		
+		$owner_company = Contacts::findOne(array("conditions" => "is_company<>0 AND NOT EXISTS(SELECT x.object_id FROM ".TABLE_PREFIX."contacts x WHERE x.is_company<>0 AND x.object_id<object_id)"));
+		
+		if (GlobalCache::isAvailable()) {
+			GlobalCache::update('owner_company', $owner_company);
+		}
+		
+		return $owner_company;
 	} // getOwnerCompany
 	
 	
@@ -236,6 +253,7 @@ class Contacts extends BaseContacts {
 	 * @param unknown_type $id
 	 */
 	static function validateUniqueEmail ($email, $id = null) {
+		$email = trim($email);
 		if ($id) {
 			$id_cond = " AND o.id <> $id ";
 		}else{
@@ -309,11 +327,11 @@ class Contacts extends BaseContacts {
 			$errors[] = lang("invalid webpage");			
 		}
 */		
-		if (trim($attributes['email']) && !self::validateUniqueEmail($attributes['email'], $id)){
+		if (trim($attributes['email']) && !self::validateUniqueEmail(trim($attributes['email']), $id)){
 			$errors[] = lang("email address must be unique");
 		}
 		
-		if (trim($attributes['email']) &&  !preg_match(EMAIL_FORMAT, $attributes['email'])) {
+		if (trim($attributes['email']) &&  !preg_match(EMAIL_FORMAT, trim($attributes['email']))) {
 			$errors[] = lang("invalid email");
 		}
 		if(is_array($errors) && count($errors)) {
@@ -334,7 +352,7 @@ class Contacts extends BaseContacts {
 			$errors[] = lang("email address must be unique");
 		}
 		
-		if (trim($attributes['email']) &&  !preg_match(EMAIL_FORMAT, $attributes['email'])) {
+		if (trim($attributes['email']) &&  !preg_match(EMAIL_FORMAT, trim($attributes['email']))) {
 			$errors[] = lang("invalid email");
 		}
 

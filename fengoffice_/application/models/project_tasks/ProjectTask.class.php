@@ -247,13 +247,18 @@ class ProjectTask extends BaseProjectTask {
 		
 		return floor(abs($due_date_start->getTimestamp() - $today->getTimestamp()) / 86400);
 	}
+	
+	
+	function getDescription() {
+		return $this->getText();
+	}
 
 	// ---------------------------------------------------
 	//  Permissions
 	// ---------------------------------------------------
 
-	function canAdd(Contact $user, $context){
-		return can_add($user, $context, ProjectTasks::instance()->getObjectTypeId());
+	function canAdd(Contact $user, $context, &$notAllowedMember = ''){
+		return can_add($user, $context, ProjectTasks::instance()->getObjectTypeId(), $notAllowedMember);
 	}
 	
 	
@@ -290,7 +295,7 @@ class ProjectTask extends BaseProjectTask {
 	 * @return boolean
 	 */
 	function canEdit(Contact $user) {
-		if(can_add($user, $this->getMembers(), $this->getObjectTypeId())) {
+		if(can_write($user, $this->getMembers(), $this->getObjectTypeId())) {
 			return true;
 		} // if
 		$task_list = $this->getParent();
@@ -465,7 +470,7 @@ class ProjectTask extends BaseProjectTask {
 		$new_task = new ProjectTask();
 				
 		$new_task->setParentId($this->getParentId());
-		$new_task->setTitle($this->getTitle());
+		$new_task->setObjectName($this->getObjectName());
 		$new_task->setText($this->getText());
 		$new_task->setAssignedToContactId($this->getAssignedToContactId());
 		$new_task->setAssignedOn($this->getAssignedOn());
@@ -489,10 +494,7 @@ class ProjectTask extends BaseProjectTask {
 		}
 		
 		$new_task->save();
-				
-		foreach (null as $ws) {
-			$new_task->addToWorkspace($ws);
-		}
+		
 		if (is_array($this->getAllLinkedObjects())) {
 			foreach ($this->getAllLinkedObjects() as $lo) {
 				$new_task->linkObject($lo);
@@ -531,6 +533,7 @@ class ProjectTask extends BaseProjectTask {
 			$_POST['subscribers']["user_" . $sub->getId()] = "checked";
 		}
 		$obj_controller = new ObjectController();
+		$obj_controller->add_to_members($new_task, $this->getMemberIds());
 		$obj_controller->add_subscribers($new_task);
 		
 		foreach($this->getCustomProperties() as $prop) {
@@ -1228,6 +1231,7 @@ class ProjectTask extends BaseProjectTask {
     	return array(
 				"id" => $this->getObjectTypeName() . $this->getId(),
 				"object_id" => $this->getId(),
+				"ot_id" => $this->getObjectTypeId(),
 				"name" => $this->getObjectName(),
 				"type" => $this->getObjectTypeName(),
 				"tags" => project_object_tags($this),
@@ -1287,6 +1291,7 @@ class ProjectTask extends BaseProjectTask {
 			'otype' => $this->getObjectSubtype(),
 			'percentCompleted' => $this->getPercentCompleted(),
 			'memPath' => json_encode($this->getMembersToDisplayPath()),
+			'description' => $this->getText()
 		);
 		
 		if ($this->isCompleted())
@@ -1295,28 +1300,33 @@ class ProjectTask extends BaseProjectTask {
 		if ($this->getParentId() > 0)
 			$result['pid'] = $this->getParentId();
 		
-		if ($this->getPriority() != 200)
-			$result['pr'] = $this->getPriority();
+		//if ($this->getPriority() != 200)
+		$result['pr'] = $this->getPriority();
 		
 		if ($this->getMilestoneId() > 0)
 			$result['mid'] = $this->getMilestoneId();
 			
 		if ($this->getAssignedToContactId() > 0)
 			$result['atid'] = $this->getAssignedToContactId();
+			$result['atName'] = $this->getAssignedToName();
 		
 		if ($this->getCompletedById() > 0){
 			$result['cbid'] = $this->getCompletedById();
 			$result['con'] = $this->getCompletedOn()->getTimestamp();
 		}
 			
-		if ($this->getDueDate() instanceof DateTimeValue)
-			$result['dd'] = $this->getDueDate()->getTimestamp();
-		if ($this->getStartDate() instanceof DateTimeValue)
-			$result['sd'] = $this->getStartDate()->getTimestamp();
+		if ($this->getDueDate() instanceof DateTimeValue) {
+			$result['dd'] = $this->getDueDate()->getTimestamp() + logged_user()->getTimezone() * 3600;
+			$result['udt'] = $this->getUseDueTime() ? 1 : 0;
+		}
+		if ($this->getStartDate() instanceof DateTimeValue) {
+			$result['sd'] = $this->getStartDate()->getTimestamp() + logged_user()->getTimezone() * 3600;
+			$result['ust'] = $this->getUseStartTime() ? 1 : 0;
+		}
 		
 		$time_estimate = $this->getTimeEstimate() ;
 		//$result['estimatedTime'] = $this->getTimeEstimate() ; 
-		$result['estimatedTime'] = DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($time_estimate * 60), 'hm', 60) ;
+		if ($time_estimate > 0) $result['estimatedTime'] = DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($time_estimate * 60), 'hm', 60) ;
 		
 		
 		$result['tz'] = logged_user()->getTimezone() * 3600;

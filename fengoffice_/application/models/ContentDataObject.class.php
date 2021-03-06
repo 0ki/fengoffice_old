@@ -5,7 +5,7 @@
  *
  *
  * @version 1.0
- * @author Diego Castiglioni <diego20@gmail.com>
+ * @author Diego Castiglioni <diego.castiglioni@fengoffice.com>
  */
 abstract class ContentDataObject extends ApplicationDataObject {
 	
@@ -25,7 +25,15 @@ abstract class ContentDataObject extends ApplicationDataObject {
 	var $summary_field = "name";
 	
 	function __construct() {
-		$this->object = new Object ();
+		$this->object = new Object();
+		$this->object->setObjectTypeId($this->manager()->getObjectTypeId());
+	}
+	
+	function __destruct() {
+		if (isset($this->object)) {
+			$this->object->__destruct();
+			$this->object = null;
+		}
 	}
 	
 	
@@ -224,11 +232,12 @@ abstract class ContentDataObject extends ApplicationDataObject {
 	 * @param void
 	 * @return Contact
 	 */
+	var $created_by = null;
 	function getCreatedBy() {
-		if(is_null($this->object->created_by)) {
-			if($this->object->columnExists('created_by_id')) $this->object->created_by = Contacts::findById($this->getCreatedById());
+		if(is_null($this->created_by)) {
+			if($this->object->columnExists('created_by_id')) $this->created_by = Contacts::findById($this->getCreatedById());
 		} //
-		return $this->object->created_by;
+		return $this->created_by;
 	} // getCreatedBy
 
 	
@@ -251,11 +260,12 @@ abstract class ContentDataObject extends ApplicationDataObject {
 	 * @param void
 	 * @return User
 	 */
+	var $updated_by = null;
 	function getUpdatedBy() {
-		if(is_null($this->object->updated_by)) {
-			if($this->object->columnExists('updated_by_id')) $this->object->updated_by = Contacts::findById($this->getUpdatedById());
+		if(is_null($this->updated_by)) {
+			if($this->object->columnExists('updated_by_id')) $this->updated_by = Contacts::findById($this->getUpdatedById());
 		} //
-		return $this->object->updated_by;
+		return $this->updated_by;
 	} // getUpdatedBy
 	
 	
@@ -315,11 +325,12 @@ abstract class ContentDataObject extends ApplicationDataObject {
 	 * @param void
 	 * @return User
 	 */
+	var $trashed_by = null;
 	function getTrashedBy() {
-		if(is_null($this->object->trashed_by)) {
-			if($this->object->columnExists('trashed_by_id')) $this->object->trashed_by = Contacts::findById($this->getTrashedById());
+		if(is_null($this->trashed_by)) {
+			if($this->object->columnExists('trashed_by_id')) $this->trashed_by = Contacts::findById($this->getTrashedById());
 		} //
-		return $this->object->trashed_by;
+		return $this->trashed_by;
 	} // getTrashedBy	
 	
 	
@@ -450,6 +461,22 @@ abstract class ContentDataObject extends ApplicationDataObject {
 		$this->object->setFromAttributes($attributes);
 	}
 	
+	function getAllAttributes() {
+		$attributes = array();
+		
+		$columns = $this->getColumns();
+		foreach ($columns as $column) {
+			$attributes[$column] = $this->getColumnValueType($column);
+		}
+		
+		$obj_columns = $this->object->getColumns();
+		foreach ($obj_columns as $obj_column) {
+			$attributes[$obj_column] = $this->getColumnValueType($obj_column);
+		}
+		
+		return $attributes;
+	}
+	
 	
 	/**
 	 * Load data from database row. Load content to the object reference
@@ -476,6 +503,7 @@ abstract class ContentDataObject extends ApplicationDataObject {
 			$this->object->setLoaded ( true );
 			$this->notModified ();
 			$this->object->notModified ();
+			$row = null;
 			return true;
 		}
 		return false;
@@ -601,7 +629,7 @@ abstract class ContentDataObject extends ApplicationDataObject {
 	 * @param array $context_members
 	 * @return boolean
 	 */
-	abstract function canAdd(Contact $user, $context);
+	abstract function canAdd(Contact $user, $context, &$notAlloweMember='');
 	
 	
 	/**
@@ -1158,6 +1186,10 @@ abstract class ContentDataObject extends ApplicationDataObject {
 	
 	
 	function trash($trashDate = null) {
+		// dont delete owner company and account owner
+		if ($this instanceof Contact && ($this->isOwnerCompany() || $this->isAccountOwner()) ){
+			return false;
+		}
 		if(!isset($trashDate))
 			$trashDate = DateTimeValueLib::now();
 		if ($this->getObject()->columnExists('trashed_on')) {
@@ -1268,8 +1300,10 @@ abstract class ContentDataObject extends ApplicationDataObject {
 	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
 	 */
 	function addToSharingTable() {
+		
 		$oid = $this->getId();
 		$tid = $this->getObjectTypeId() ;
+		$gids = array();
 		
 		$table_prefix = defined('FORCED_TABLE_PREFIX') && FORCED_TABLE_PREFIX ? FORCED_TABLE_PREFIX : TABLE_PREFIX;
 		
@@ -1281,7 +1315,7 @@ abstract class ContentDataObject extends ApplicationDataObject {
 				".$table_prefix."dimensions d ON d.id = m.dimension_id ";
 		
 		$sql_where = "
-			member_id IN ( SELECT member_id FROM ".$table_prefix."object_members WHERE object_id = $oid ) AND
+			member_id IN ( SELECT member_id FROM ".$table_prefix."object_members WHERE object_id = $oid AND is_optimization = 0) AND
 			cmp.object_type_id = $tid";
 		
 		$sql_fields = "dimension_id as did" ;
@@ -1297,11 +1331,12 @@ abstract class ContentDataObject extends ApplicationDataObject {
 				
 		//1. Find dimension that defines permission		
 		$res = DB::execute($sql);
-		$dids = array();
-		while ($row  = $res->fetchRow() ) {
-			$dids[$row['did']] = $row['did'] ;
+		$dids_tmp = array();
+		while ($row = $res->fetchRow() ) {
+			$dids_tmp[$row['did']] = $row['did'] ;
 		}
-		$dids = array_values($dids);
+		$dids = array_values($dids_tmp);
+		$dids_tmp = null;
 		
 		//2.1 If there are dimensions that defines permissions containing any of the object members
 		if ( count($dids) ){
@@ -1317,24 +1352,28 @@ abstract class ContentDataObject extends ApplicationDataObject {
 				  d.id IN (". implode(',',$dids).")";
 				  
 			$res = DB::execute($sql);
-			$gids = array();
+			$gids_tmp = array();
 			while ( $row = $res->fetchRow() ) {
-				$gids[$row['group_id']] = $row['group_id'];
+				$gids_tmp[$row['group_id']] = $row['group_id'];
 			}
-			$gids = array_values($gids);
+			$gids = array_values($gids_tmp);
+			$gids_tmp = null;
 		}else { 
-			// 2.2 No memeber dimensions defines permissions. 
-			// No esta en ninguna dimension que defina permisos, El objecto esta en algun lado
-			// => En todas las dimensiones en la que está no definen permisos => Busco todos los grupos
-			$groups  = PermissionGroups::instance()->findAll();
-			foreach ($groups as $group) {
-				/* @var $group PermissionGroup */
-				$gids[] = $group->getId();
+			if ( count($this->getMemberIds()) > 0 ) {
+				// 2.2 No memeber dimensions defines permissions. 
+				// No esta en ninguna dimension que defina permisos, El objecto esta en algun lado
+				// => En todas las dimensiones en la que está no definen permisos => Busco todos los grupos
+				$gids = PermissionGroups::instance()->findAll(array('id' => true));
+				
 			}
 		}
-		$stManager = SharingTables::instance();
-		$stManager->populateGroups($gids, $oid); 
-		 
+		
+		if(count($gids)) {
+			$stManager = SharingTables::instance();
+			$stManager->populateGroups($gids, $oid);
+			$gids = null;
+		} 
+		
 	}
 	
 	
@@ -1612,7 +1651,8 @@ abstract class ContentDataObject extends ApplicationDataObject {
 				$position = strpos($text,$near);
 				$spacesBefore = min(10, $position); // TODO: buscar la ultima palabra antes
 				if ($size && strlen($text) > $size ){
-					return substr($text , $position - $spacesBefore, $size)."...";
+					return utf8_safe(substr($text , $position - $spacesBefore, $size))."...";
+					
 				}else{
 					return $text ;
 				}

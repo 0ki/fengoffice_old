@@ -13,7 +13,7 @@
   <div class="adminMainBlock">
   
   <?php echo label_tag(lang('select object type'), 'objectTypeSel');?>
-  <?php echo select_box('objectTypeSel', $object_types, array('id' => 'objectTypeSel' ,'onchange' => 'og.objectTypeChanged("'.$genid.'")', 'style' => 'width:200px;')) ?>
+  <?php echo select_box('objectTypeSel', $object_types, array('id' => 'objectTypeSel' ,'onchange' => 'og.objectTypeChanged("'.$genid.'")', 'style' => 'width:250px;')) ?>
   <hr/>
   
   <form class="internalForm" style='height:100%;background-color:white' action="<?php echo get_url("administration", "custom_properties") ?>" method="post" onsubmit="return og.validateCustomProperties('<?php echo $genid ?>');">

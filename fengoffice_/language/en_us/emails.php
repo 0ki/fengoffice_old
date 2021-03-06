@@ -30,9 +30,11 @@ return array(
     'new comment posted' => 'New comment on "{0}" has been posted',
     'view new comment' => 'View that comment',
 
-    'user created your account' => '{0} created a new account for you',
-    'visit and login' => 'Visit {0} and login with',
-
+    'user created your account' => '{0} created a new Feng Office account for you',
+    'visit and login' => 'Please visit {0} and log in with',
+    'need to set up your new password' => 'You just need to set up your new password by following this link:',
+    'visit feel free to log in' => 'Please visit {0} and feel free to log in with your username {1} or with your email address {2}',
+    
     'milestone assigned' => 'Milestone "{0}" has been assigned to you',
 	'task assigned' => 'Task "{0}" has been assigned to you',
     'view assigned milestones' => 'View the milestone',

@@ -12,7 +12,7 @@ class PanelController extends ApplicationController {
 
 	private function loadPanels($options) {
 		if (! $this->panels) {
-			$pg_id = logged_user()->getPermissionGroupId();
+			$contact_pg_ids = ContactPermissionGroups::getPermissionGroupIdsByContactCSV(logged_user()->getId(),false);
 			$this->panels = array();
 			$sql = "
 				SELECT * FROM " . TABLE_PREFIX . "tab_panels 
@@ -22,7 +22,7 @@ class PanelController extends ApplicationController {
 						type = 'system' OR 
 						plugin_id IN (SELECT id FROM ".TABLE_PREFIX."plugins WHERE is_installed = 1 AND is_activated = 1) 
 					)
-					AND id IN (SELECT tab_panel_id FROM ".TABLE_PREFIX."tab_panel_permissions WHERE permission_group_id = $pg_id)
+					AND id IN (SELECT tab_panel_id FROM ".TABLE_PREFIX."tab_panel_permissions WHERE permission_group_id IN ($contact_pg_ids))
 				ORDER BY ordering ASC ";
 			
 			$res = DB::execute ( $sql );

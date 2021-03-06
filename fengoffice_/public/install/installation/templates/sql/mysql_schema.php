@@ -28,7 +28,7 @@ CREATE TABLE `<?php echo $table_prefix ?>dimensions` (
   `is_system` tinyint(1) unsigned NOT NULL default '0',
   `is_default` tinyint(1) unsigned NOT NULL default '0',
   `default_order` int(10) NOT NULL default '0',
-  `options` TEXT NOT NULL default '',
+  `options` TEXT NOT NULL,
   PRIMARY KEY  (`id`),
   UNIQUE KEY `code` (`code`) USING BTREE,
   KEY `by_name` (`name`),
@@ -98,7 +98,7 @@ CREATE TABLE `<?php echo $table_prefix ?>dimension_object_types` (
   `dimension_id` int(10) unsigned NOT NULL,
   `object_type_id` int(10) unsigned NOT NULL,
   `is_root` tinyint(1) unsigned NOT NULL default '0',
-  `options` TEXT NOT NULL default '',
+  `options` TEXT NOT NULL,
   PRIMARY KEY  (`dimension_id`,`object_type_id`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 
@@ -271,6 +271,7 @@ CREATE TABLE `<?php echo $table_prefix ?>contacts` (
   `last_activity` DATETIME <?php echo $default_collation ?>,
   `personal_member_id` int(10) unsigned,
   `disabled` tinyint(1) NOT NULL default 0,
+  `default_billing_id` int(10) NOT NULL default 0,
   PRIMARY KEY  (`object_id`),
   KEY `first_name` USING BTREE (`first_name`,`surname`),
   KEY `surname` USING BTREE (`surname`,`first_name`),
@@ -610,6 +611,8 @@ CREATE TABLE `<?php echo $table_prefix ?>project_tasks` (
   `repeat_by` varchar(15) collate utf8_unicode_ci NOT NULL default '',
   `object_subtype` int(10) unsigned NOT NULL default '0',
   `percent_completed` int(10) unsigned NOT NULL default '0',
+  `use_due_time` BOOLEAN default '0',
+  `use_start_time` BOOLEAN default '0',
   PRIMARY KEY  (`object_id`),
   KEY `parent_id` (`parent_id`),
   KEY `completed_on` (`completed_on`),
@@ -797,6 +800,7 @@ CREATE TABLE `<?php echo $table_prefix ?>queued_emails` (
   `from` text <?php echo $default_collation ?>,
   `subject` text <?php echo $default_collation ?>,
   `body` text <?php echo $default_collation ?>,
+  `attachments` text,
   `timestamp` datetime NOT NULL default '0000-00-00 00:00:00',
   PRIMARY KEY (`id`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
@@ -953,3 +957,42 @@ CREATE TABLE `<?php echo $table_prefix ?>project_task_dependencies` (
   `created_by_id` int(10) unsigned NOT NULL,
   PRIMARY KEY  (`previous_task_id`,`task_id`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
+
+CREATE TABLE  `<?php echo $table_prefix ?>widgets` (
+  `name` varchar(64) NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `plugin_id` int(10) unsigned NOT NULL,
+  `path` varchar(512) NOT NULL,
+  `default_options` text NOT NULL,
+  `default_section` varchar(64) NOT NULL,
+  `default_order` int(10) NOT NULL,
+  PRIMARY KEY (`name`)
+) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
+
+
+CREATE TABLE `<?php echo $table_prefix ?>contact_widgets` (
+  `widget_name` varchar(40) NOT NULL,
+  `contact_id` int(11) NOT NULL,
+  `section` varchar(40) NOT NULL,
+  `order` int(11) NOT NULL,
+  `options` varchar(255) NOT NULL,
+  PRIMARY KEY (`widget_name`,`contact_id`) USING BTREE
+) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
+
+
+CREATE TABLE `<?php echo $table_prefix ?>role_object_type_permissions` (
+  `role_id` INTEGER UNSIGNED NOT NULL,
+  `object_type_id` INTEGER UNSIGNED NOT NULL,
+  `can_delete` BOOLEAN NOT NULL,
+  `can_write` BOOLEAN NOT NULL,
+  PRIMARY KEY (`role_id`, `object_type_id`)
+) ENGINE = <?php echo $engine ?> <?php echo $default_charset ?>;
+
+CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>mail_spam_filters` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `account_id` int(10) unsigned NOT NULL,
+  `text_type` enum('email_address','subject') COLLATE utf8_unicode_ci NOT NULL,
+  `text` text COLLATE utf8_unicode_ci NOT NULL,
+  `spam_state` enum('no spam','spam') COLLATE utf8_unicode_ci NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE = <?php echo $engine ?> <?php echo $default_charset ?> ;

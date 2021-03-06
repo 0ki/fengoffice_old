@@ -10,7 +10,7 @@ return array(
  	'chelp comments widget' => 'This widget displays the latest comments for objects in the current workspace.',
  	'chelp dashboard info widget' => 'This widget displays information for the current workspace, including users with access, assigned contacts, etc...',
  	'chelp emails widget' => 'This widget displays the latest emails classified in the current workspace.',
- 	'chelp messages widget' => 'This widget shows the latest notes for the selected workspace.',
+ 	'chelp messages widget' => 'This widget shows the latest notes',
  	
  	'chelp active tasks panel' => 'All your active tasks are displayed below, regardless of the current workspace. This panel also offers the possibility to pause the task, continue it and set it as complete when finished.',
 	'chelp general timeslots panel' => 'This panel displays timeslots directly assigned to a workspace. ',

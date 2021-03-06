@@ -1,7 +1,7 @@
 .permissions-help {
 	margin-left: 30px;
 	margin-bottom: 5px;
-	color: #999999;
+	color: #666666;
 }
 
 .adminHeader {
@@ -194,3 +194,41 @@ input.disabled {
 	opacity: 0.6;
 	filter: alpha(opacity=0.6);
 }
+
+
+/** EDIT MEMBER FORM **/
+
+form.edit-member {
+	height:100%;
+	background-color:white;
+}
+
+form.edit-member .member-chooser {
+	margin: 0px;
+}
+
+form.edit-member label {
+	margin: 7px 0 3px;
+}
+
+form.edit-member .dimension-memberfields div.type-boolean {
+	vertical-align: middle;
+	margin: 5px 0 ;
+}
+
+form.edit-member .dimension-memberfields div.type-boolean label,
+form.edit-member .dimension-memberfields div.type-boolean input
+{
+	display:inline ;
+	margin-right: 5px;
+}
+
+form.edit-member .dimension-memberfields div.type-boolean input{
+	margin-top: 3px; 
+}
+
+
+
+
+
+/****/

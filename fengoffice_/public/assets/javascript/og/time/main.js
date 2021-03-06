@@ -21,9 +21,12 @@ ogTimeTimeslot = function(){
 	this.lastUpdatedBy;
 	this.hourlyBilling;
 	this.totalBilling;
+	this.memPath;
+	
 
 	this.description = '';
 	this.taskName;
+	this.otid;
 }
 
 ogTimeTimeslot.prototype.setFromTdata = function(tdata){
@@ -37,6 +40,8 @@ ogTimeTimeslot.prototype.setFromTdata = function(tdata){
 	this.lastUpdatedBy = tdata.lastupdatedby;
 	this.hourlyBilling = tdata.hourlybilling || 0;
 	this.totalBilling = tdata.totalbilling || 0;
+	this.memPath = tdata.memPath || [];
+	this.otid = tdata.otid;
 	
 	if (tdata.desc)	this.description = tdata.desc; else this.description = '';
 	if (tdata.tn)	this.taskName = tdata.tn; else this.taskName = null;
@@ -146,8 +151,14 @@ ogTimeManager.SubmitNewTimeslot = function(genid){
 	var parameters = this.GetNewTimeslotParameters(genid);
 	var isEdit = document.getElementById(this.genid + 'TMTimespanSubmitEdit').style.display == 'block';
 	var action = 'add_timeslot';
-	if (isEdit)
+	if (isEdit) {
+		og.handleMemberChooserSubmit(genid, 18); //TODO Hardcoded object type. Create a general object type map on somewhere
 		action = 'edit_timeslot';
+		var members = $("#"+genid+"members").val();
+		parameters.members=members ;
+	}
+	
+	
 
 	og.openLink(og.getUrl('time', action), {
 		method: 'POST',
@@ -225,6 +236,15 @@ ogTimeManager.EditTimeslot = function(timeslotId){
 			datePick.setValue(new Date(ts.date * 1000));
 		}
 		document.getElementById(this.genid + 'tsHours').focus();
+
+		var memberChoosers = Ext.getCmp(this.genid+"-member-chooser-panel-"+ts.otid).items;
+		
+		if (memberChoosers) {
+			memberChoosers.each(function(item, index, length) {
+				item.checkNodes(ts.memberIds);
+				
+			});
+		}	
 	}
 }
 

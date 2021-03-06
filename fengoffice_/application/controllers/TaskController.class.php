@@ -49,37 +49,33 @@ class TaskController extends ApplicationController {
 		$task_data = array_var($_POST, 'task');
 		$parent_id = array_var($task_data, 'parent_id', 0);
 		$parent = ProjectTasks::findById($parent_id);
-		/*FIXME
-		$project = Projects::findById(array_var($task_data, 'project_id', 0));
-		if (!$project instanceof Project) {
-			if ($parent instanceof ProjectTask){
-				$project = $parent->getProject();
-			} else {
-				$milestone_id = array_var($task_data,'milestone_id',null);
-				if($milestone_id){
-					$milestone = ProjectMilestones::findById($milestone_id);
-					if($milestone) $project =$milestone->getProject();
-				}
-				if(!$project instanceof Project) $project = active_or_personal_project();
-			}
-		}
-
-		if(!ProjectTask::canAdd(logged_user(), $project)) {
-			flash_error(lang('no access permissions'));
-			return;
-		} // if
-*/
+		
 		if (is_array($task_data)) {
 			$task_data['due_date'] = getDateValue(array_var($task_data, 'task_due_date'));
 			$task_data['start_date'] = getDateValue(array_var($task_data, 'task_start_date'));
 			
+			if ($task_data['due_date'] instanceof DateTimeValue) {
+				$duetime = getTimeValue(array_var($task_data, 'task_due_time'));
+				if (is_array($duetime)) {
+					$task_data['due_date']->setHour(array_var($duetime, 'hours'));
+					$task_data['due_date']->setMinute(array_var($duetime, 'mins'));
+				}
+				$task_data['due_date']->advance(logged_user()->getTimezone() * -3600);
+				$task_data['use_due_time'] = is_array($duetime);
+			}
+			if ($task_data['start_date'] instanceof DateTimeValue) {
+				$starttime = getTimeValue(array_var($task_data, 'task_start_time'));
+				if (is_array($starttime)) {
+					$task_data['start_date']->setHour(array_var($starttime, 'hours'));
+					$task_data['start_date']->setMinute(array_var($starttime, 'mins'));
+				}
+				$task_data['start_date']->advance(logged_user()->getTimezone() * -3600);
+				$task_data['use_start_time'] = is_array($starttime);
+			}
+			
 			$task_data['object_type_id'] = $task->getObjectTypeId();
 			
 			$task->setFromAttributes($task_data);
-			// Set assigned to
-			$assigned_to = array_var($task_data, 'assigned_to', 0);
-		
-			$task->setAssignedToContactId($assigned_to);
 				
 			if (array_var($task_data,'is_completed',false) == 'true'){
 				$task->setCompletedOn(DateTimeValueLib::now());
@@ -90,9 +86,12 @@ class TaskController extends ApplicationController {
 				DB::beginWork();
 				$task->save();
 				
-				//$member_ids = json_decode(array_var($task_data, 'members'));
+				$gb_member_id = array_var($task_data, 'member_id');
 				
-				$member_ids = active_context_members(false) ;
+				$member_ids = active_context_members(false);
+				if ($gb_member_id) {
+					$member_ids[] = $gb_member_id;
+				}
 				$object_controller = new ObjectController();
 				$object_controller->add_to_members($task, $member_ids);
 				
@@ -180,6 +179,26 @@ class TaskController extends ApplicationController {
 		if (is_array($task_data)) {
 			$task_data['due_date'] = getDateValue(array_var($task_data, 'task_due_date'));
 			$task_data['start_date'] = getDateValue(array_var($task_data, 'task_start_date'));
+			
+			if ($task_data['due_date'] instanceof DateTimeValue) {
+				$duetime = getTimeValue(array_var($task_data, 'task_due_time'));
+				if (is_array($duetime)) {
+					$task_data['due_date']->setHour(array_var($duetime, 'hours'));
+					$task_data['due_date']->setMinute(array_var($duetime, 'mins'));
+				}
+				$task_data['due_date']->advance(logged_user()->getTimezone() * -3600);
+				$task_data['use_due_time'] = is_array($duetime);
+			}
+			if ($task_data['start_date'] instanceof DateTimeValue) {
+				$starttime = getTimeValue(array_var($task_data, 'task_start_time'));
+				if (is_array($starttime)) {
+					$task_data['start_date']->setHour(array_var($starttime, 'hours'));
+					$task_data['start_date']->setMinute(array_var($starttime, 'mins'));
+				}
+				$task_data['start_date']->advance(logged_user()->getTimezone() * -3600);
+				$task_data['use_start_time'] = is_array($starttime);
+			}
+			
 			$old_milestone_id = $task->getMilestoneId();
 				
 			$task->setFromAttributes($task_data);
@@ -191,11 +210,61 @@ class TaskController extends ApplicationController {
 				DB::beginWork();
 				$task->save();
 				
+				$member_ids = array();
 				if (array_var($task_data, 'members')) {
 					$member_ids = json_decode(array_var($task_data, 'members'));
-					$object_controller = new ObjectController();
-					$object_controller->add_to_members($task, $member_ids);
 				}
+				
+				// drag & drop - also apply changes to subtasks
+				$tasks_to_update = $task->getAllSubTasks();
+				$tasks_to_update[] = $task;
+				
+				if ($rm_dim_id = array_var($task_data, 'remove_from_dimension')) {
+					$rm_dim = Dimensions::findById($rm_dim_id);
+					if ($rm_dim instanceof Dimension) {
+						$rm_member_ids = $rm_dim->getAllMembers(true);
+						foreach ($member_ids as $k => &$v) {
+							if (in_array($v, $rm_member_ids)) {
+								unset($member_ids[$k]);
+							}
+						}
+						
+						foreach ($tasks_to_update as &$t) {
+							ObjectMembers::delete("object_id = ".$t->getId()." AND member_id IN (".implode(',', $rm_member_ids).")");
+						}
+					}
+				}
+				
+				if (array_var($task_data, 'member_id')) {
+					$member_ids[] = array_var($task_data, 'member_id');
+				}
+				
+				foreach ($member_ids as $mid) {
+					foreach ($tasks_to_update as &$t) {
+						$om = ObjectMembers::findById(array('member_id' => $mid, 'object_id' => $t->getId()));
+						if (!$om instanceof ObjectMember) {
+							$om = new ObjectMember();
+							$om->setMemberId($mid);
+							$om->setObjectId($t->getId());
+							$om->save();
+							$member = Members::findById($mid);
+							if ($member instanceof Member) {
+								$parent_members = $member->getAllParentMembersInHierarchy(false);
+								foreach ($parent_members as $pm) {
+									$pom = ObjectMembers::findById(array('member_id' => $pm->getId(), 'object_id' => $t->getId()));
+									if (!$pom instanceof ObjectMember) {
+										$pom = new ObjectMember();
+										$pom->setMemberId($pm->getId());
+										$pom->setObjectId($t->getId());
+									}
+									$pom->setIsOptimization(1);
+									$pom->save();
+								}
+							}
+						}
+					}
+				}
+				
 				if (array_var($_GET, 'dont_mark_as_read') && !$is_read) {
 					$task->setIsRead(logged_user()->getId(), false);
 				}					
@@ -387,11 +456,11 @@ class TaskController extends ApplicationController {
 			set_user_config_option('task panel status', $status, logged_user()->getId());
 		}
 
-		$previous_filter = user_config_option('task panel filter','assigned_to');
+		$previous_filter = user_config_option('task panel filter', 'no_filter');
 		$filter = array_var($_GET, 'filter');
 		if (is_null($filter) || $filter == '') {
-			$filter = user_config_option('task panel filter', 'assigned_to');
-		} else if (user_config_option('task panel filter') != $filter) {
+			$filter = $previous_filter;
+		} else if ($previous_filter != $filter) {
 			set_user_config_option('task panel filter', $filter, logged_user()->getId());
 		}
 
@@ -409,9 +478,6 @@ class TaskController extends ApplicationController {
 		}
 		$isJson = array_var($_GET,'isJson',false);
 		if ($isJson) ajx_current("empty");
-
-		$project = active_project();
-		$tag = active_tag();
 
 		$template_condition = "`is_template` = 0 ";
 
@@ -598,11 +664,11 @@ class TaskController extends ApplicationController {
 				'filter' => $filter,
 				'status' => $status,
 				'showWorkspaces' => user_config_option('tasksShowWorkspaces',1),
-				'showTime' => user_config_option('tasksShowTime',0),
-				'showDates' => user_config_option('tasksShowDates',0),
+				'showTime' => user_config_option('tasksShowTime'),
+				'showDates' => user_config_option('tasksShowDates'),
 				'showTags' => user_config_option('tasksShowTags',0),
 				'showEmptyMilestones' => user_config_option('tasksShowEmptyMilestones',0),
-				'groupBy' => user_config_option('tasksGroupBy','milestone'),
+				'groupBy' => user_config_option('tasksGroupBy','nothing'),
 				'orderBy' => user_config_option('tasksOrderBy','priority'),
 				'defaultNotifyValue' => user_config_option('can notify from quick add')
 			));
@@ -678,9 +744,11 @@ class TaskController extends ApplicationController {
 			ajx_current("empty");
 			return;
 		}
-		
-		if(!ProjectTask::canAdd(logged_user(), active_context())) {
-			flash_error(lang('no context permissions to add',lang("tasks")));
+
+		$notAllowedMember = '' ;
+		if(!ProjectTask::canAdd(logged_user(), active_context(), $notAllowedMember)) {
+			if (str_starts_with($notAllowedMember, '-- req dim --')) flash_error(lang('must choose at least one member of', str_replace_first('-- req dim --', '', $notAllowedMember, $in)));
+			else flash_error(lang('no context permissions to add',lang("tasks"), $notAllowedMember));
 			ajx_current("empty");
 			return;
 		} // if
@@ -689,31 +757,50 @@ class TaskController extends ApplicationController {
 		$task = new ProjectTask();
 		$task_data = array_var($_POST, 'task');
 		if(!is_array($task_data)) {
+			$dd = getDateValue(array_var($_POST, 'task_due_date', ''));
+			if ($dd instanceof DateTimeValue) {
+				$duetime = getTimeValue(array_var($_POST, 'task_due_time'));
+				if (is_array($duetime)) {
+					$dd->setHour(array_var($duetime, 'hours'));
+					$dd->setMinute(array_var($duetime, 'mins'));
+				}
+				$task->setUseDueTime(is_array($duetime));
+			}
+			$sd = getDateValue(array_var($_POST, 'task_start_date', ''));
+			if ($sd instanceof DateTimeValue) {
+				$starttime = getTimeValue(array_var($_POST, 'task_start_time'));
+				if (is_array($starttime)) {
+					$sd->setHour(array_var($starttime, 'hours'));
+					$sd->setMinute(array_var($starttime, 'mins'));
+				}
+				$task->setUseStartTime(is_array($starttime));
+			}
 			$task_data = array(
 				'milestone_id' => array_var($_POST, 'milestone_id',0),
 				'project_id' => 1 ,
-				'title' => array_var($_POST, 'name', ''),
+				'name' => array_var($_POST, 'name', ''),
 				'assigned_to_contact_id' => array_var($_POST, 'assigned_to_contact_id', '0'),
 				'parent_id' => array_var($_POST, 'parent_id', 0),
 				'priority' => array_var($_POST, 'priority', ProjectTasks::PRIORITY_NORMAL),
 				'text' => array_var($_POST, 'text', ''),
-				'start_date' => getDateValue(array_var($_POST, 'task_start_date', '')),
-				'due_date' => getDateValue(array_var($_POST, 'task_due_date', '')),
+				'start_date' => $sd,
+				'due_date' => $dd,
 				'is_template' => array_var($_POST, "is_template", array_var($_GET, "is_template", false)),
 				'percent_completed' => array_var($_POST, "percent_completed", ''),
 				'object_subtype' => array_var($_POST, "object_subtype", config_option('default task co type')),
 				'send_notification' => array_var($_POST, 'notify') && array_var($_POST, 'notify') == 'true'
 			); // array
-			/*FIXME
-			$from_email = array_var($_GET, 'from_email');
-			$email = MailContents::findById($from_email);
-			if ($email instanceof MailContent) {
-				$task_data['title'] = $email->getSubject();
-				$task_data['text'] = lang('create task from email description', $email->getSubject(), $email->getFrom(), $email->getTextBody());
-				$task_data['tags'] = implode(", ", $email->getTagNames());
-				tpl_assign('from_email', $email);
+			
+			if (Plugins::instance()->isActivePlugin('mail')) {
+				$from_email = array_var($_GET, 'from_email');
+				$email = MailContents::findById($from_email);
+				if ($email instanceof MailContent) {
+					$task_data['name'] = $email->getSubject();
+					$task_data['text'] = lang('create task from email description', $email->getSubject(), $email->getFrom(), $email->getTextBody());
+					tpl_assign('from_email', $email);
+				}
 			}
-			*/
+			
 		} // if
 		
 		if (array_var($_GET, 'replace')) {
@@ -729,6 +816,26 @@ class TaskController extends ApplicationController {
 				
 			$task_data['due_date'] = getDateValue(array_var($_POST, 'task_due_date'));
 			$task_data['start_date'] = getDateValue(array_var($_POST, 'task_start_date'));
+			
+			if ($task_data['due_date'] instanceof DateTimeValue) {
+				$duetime = getTimeValue(array_var($_POST, 'task_due_time'));
+				if (is_array($duetime)) {
+					$task_data['due_date']->setHour(array_var($duetime, 'hours'));
+					$task_data['due_date']->setMinute(array_var($duetime, 'mins'));
+				}
+				$task_data['due_date']->advance(logged_user()->getTimezone() * -3600);
+				$task_data['use_due_time'] = is_array($duetime);
+			}
+			if ($task_data['start_date'] instanceof DateTimeValue) {
+				$starttime = getTimeValue(array_var($_POST, 'task_start_time'));
+				if (is_array($starttime)) {
+					$task_data['start_date']->setHour(array_var($starttime, 'hours'));
+					$task_data['start_date']->setMinute(array_var($starttime, 'mins'));
+				}
+				$task_data['start_date']->advance(logged_user()->getTimezone() * -3600);
+				$task_data['use_start_time'] = is_array($starttime);
+			}
+			
 			try {
 				$err_msg = $this->setRepeatOptions($task_data);
 				if ($err_msg) {
@@ -745,8 +852,7 @@ class TaskController extends ApplicationController {
 					ajx_current("empty");
 					return;
 				}
-				$totalMinutes = (array_var($task_data, 'time_estimate_hours',0) * 60) +
-						(array_var($task_data, 'time_estimate_minutes',0));
+				$totalMinutes = (array_var($task_data, 'time_estimate_hours',0) * 60) + (array_var($task_data, 'time_estimate_minutes',0));
 				$task->setTimeEstimate($totalMinutes);
 
 				$id = array_var($_GET, 'id', 0);
@@ -795,8 +901,18 @@ class TaskController extends ApplicationController {
 					}
 				}
 				
+				// if task is added from task view -> add subscribers
+				if (array_var($task_data, 'inputtype') == 'taskview') {
+					if (!isset($_POST['subscribers'])) $_POST['subscribers'] = array();
+					$_POST['subscribers']['user_'.logged_user()->getId()] = 'checked';
+					if ($task->getAssignedToContactId() > 0 && Contacts::instance()->findById( $task->getAssignedToContactId())->getUserType() ) {
+						$_POST['subscribers']['user_'.$task->getAssignedToContactId()] = 'checked';
+						
+					}
+				}
+				
 				// Add assigned user to the subscibers list
-				if (isset($_POST['subscribers']) && $task->getAssignedToContactId() > 0) {
+				if (isset($_POST['subscribers']) && $task->getAssignedToContactId() > 0  && Contacts::instance()->findById( $task->getAssignedToContactId()) ) {
 					$_POST['subscribers']['user_'.$task->getAssignedToContactId()] = 'checked';
 				}
 				
@@ -859,8 +975,10 @@ class TaskController extends ApplicationController {
 			return;
 		}
 		
-		if(!ProjectTask::canAdd(logged_user(), active_context())) {
-			flash_error(lang('no context permissions to add',lang("tasks")));
+		$notAllowedMember = '';
+		if(!ProjectTask::canAdd(logged_user(), active_context(),$notAllowedMember)) {
+			if (str_starts_with($notAllowedMember, '-- req dim --')) flash_error(lang('must choose at least one member of', str_replace_first('-- req dim --', '', $notAllowedMember, $in)));
+			else flash_error(lang('no context permissions to add',lang("tasks"), $notAllowedMember));
 			ajx_current("empty");
 			return;
 		} // if
@@ -872,21 +990,24 @@ class TaskController extends ApplicationController {
 			ajx_current("empty");
 			return;
 		}
+		$title = $task->getIsTemplate() ? $task->getObjectName() : lang("copy of", $task->getObjectName());
 		$task_data = array(
 			'milestone_id' => $task->getMilestoneId(),
-			'title' => $task->getIsTemplate() ? $task->getObjectName() : lang("copy of", $task->getObjectName()),
+			'title' => $title,
+			'name' => $title, //Alias for title
 			'assigned_to' => $task->getAssignedToContactId(),
 			'parent_id' => $task->getParentId(),
 			'priority' => $task->getPriority(),
 			'time_estimate' => $task->getTimeEstimate(),
 			'text' => $task->getText(),
 			'copyId' => $task->getId(),
+			'percent_completed' => $task->getPercentCompleted(),
 		); // array
 		if ($task->getStartDate() instanceof DateTimeValue) {
-			$task_data['start_date'] = $task->getStartDate()->getTimestamp();
+			$task_data['start_date'] = $task->getStartDate();
 		}
 		if ($task->getDueDate() instanceof DateTimeValue) {
-			$task_data['due_date'] = $task->getDueDate()->getTimestamp();
+			$task_data['due_date'] = $task->getDueDate();
 		}
 
 		$newtask = new ProjectTask();
@@ -928,15 +1049,17 @@ class TaskController extends ApplicationController {
 		$task_data = array_var($_POST, 'task');
 		if(!is_array($task_data)) {
 			$this->getRepeatOptions($task, $occ, $rsel1, $rsel2, $rsel3, $rnum, $rend, $rjump);
-				
+			
+			$dd = $task->getDueDate() instanceof DateTimeValue ? $task->getDueDate()->advance(logged_user()->getTimezone() * 3600, false) : null;
+			$sd = $task->getStartDate() instanceof DateTimeValue ? $task->getStartDate()->advance(logged_user()->getTimezone() * 3600, false) : null;
 			$task_data = array(
 				'name' => array_var($_POST, 'title', $task->getObjectName()),
 				'text' => $task->getText(),
 				'milestone_id' => array_var($_POST, 'milestone_id',$task->getMilestoneId()),
-				'due_date' => getDateValue(array_var($_POST, 'task_due_date'), $task->getDueDate()),
-				'start_date' => getDateValue(array_var($_POST, 'task_start_date', $task->getStartDate())),
+				'due_date' => getDateValue(array_var($_POST, 'task_due_date'), $dd),
+				'start_date' => getDateValue(array_var($_POST, 'task_start_date', $sd)),
 				'parent_id' => $task->getParentId(),
-				'assigned_to' => array_var($_POST, 'assigned_to', $task->getAssignedToContactId()),
+				'assigned_to_contact_id' => array_var($_POST, 'assigned_to_contact_id', $task->getAssignedToContactId()),
 				'priority' => array_var($_POST, 'priority', $task->getPriority()),
 				'send_notification' => array_var($_POST, 'notify') == 'true',
 				'time_estimate' => $task->getTimeEstimate(),
@@ -959,29 +1082,6 @@ class TaskController extends ApplicationController {
 
 		if(is_array(array_var($_POST, 'task'))) {
 			
-			//MANAGE CONCURRENCE WHILE EDITING
-			/* FIXME or REMOVEME
-			$upd = array_var($_POST, 'updatedon');
-			if ($upd && $task->getUpdatedOn()->getTimestamp() > $upd && !array_var($_POST,'merge-changes') == 'true')
-			{
-				ajx_current('empty');
-				evt_add("handle edit concurrence", array(
-					"updatedon" => $task->getUpdatedOn()->getTimestamp(),
-					"genid" => array_var($_POST,'genid')
-				));
-				return;
-			}
-			if (array_var($_POST,'merge-changes') == 'true'){					
-				$this->setTemplate('view');
-				$edited_task = ProjectTasks::findById($task->getId());
-				ajx_set_no_toolbar(true);
-				ajx_set_panel(lang ('tab name',array('name'=>$edited_task->getObjectName())));
-				tpl_assign('task_list', $edited_task);
-				ajx_extra_data(array("title" => $edited_task->getObjectName(), 'icon'=>'ico-task'));				
-				return;
-			}
-			*/
-			
 			$old_owner = $task->getAssignedTo();
 			if (array_var($task_data, 'parent_id') == $task->getId()) {
 				flash_error(lang("task own parent error"));
@@ -991,6 +1091,25 @@ class TaskController extends ApplicationController {
 			
 			$task_data['due_date'] = getDateValue(array_var($_POST, 'task_due_date'));
 			$task_data['start_date'] = getDateValue(array_var($_POST, 'task_start_date'));
+			
+			if ($task_data['due_date'] instanceof DateTimeValue) {
+				$duetime = getTimeValue(array_var($_POST, 'task_due_time'));
+				if (is_array($duetime)) {
+					$task_data['due_date']->setHour(array_var($duetime, 'hours'));
+					$task_data['due_date']->setMinute(array_var($duetime, 'mins'));
+				}
+				$task_data['due_date']->advance(logged_user()->getTimezone() * -3600);
+				$task_data['use_due_time'] = is_array($duetime);
+			}
+			if ($task_data['start_date'] instanceof DateTimeValue) {
+				$starttime = getTimeValue(array_var($_POST, 'task_start_time'));
+				if (is_array($starttime)) {
+					$task_data['start_date']->setHour(array_var($starttime, 'hours'));
+					$task_data['start_date']->setMinute(array_var($starttime, 'mins'));
+				}
+				$task_data['start_date']->advance(logged_user()->getTimezone() * -3600);
+				$task_data['use_start_time'] = is_array($starttime);
+			}
 				
 			try {
 				$err_msg = $this->setRepeatOptions($task_data);
@@ -1044,6 +1163,12 @@ class TaskController extends ApplicationController {
 					} else {
 						ProjectTaskDependencies::delete('task_id = '. $task->getId());
 					}
+				}
+				
+				// Add assigned user to the subscibers list
+				if ($task->getAssignedToContactId() > 0  && Contacts::instance()->findById( $task->getAssignedToContactId()) ) {
+					if (!isset($_POST['subscribers'])) $_POST['subscribers'] = array();
+					$_POST['subscribers']['user_'.$task->getAssignedToContactId()] = 'checked';
 				}
 
 				$object_controller = new ObjectController();
@@ -1406,8 +1531,10 @@ class TaskController extends ApplicationController {
 			return;
 		}
 		
-		if(!ProjectTask::canAdd(logged_user(), active_context())) {
-			flash_error(lang('no context permissions to add',lang("tasks")));
+		$notAllowedMember = '';
+		if(!ProjectTask::canAdd(logged_user(), active_context(), $notAllowedMember)) {
+			if (str_starts_with($notAllowedMember, '-- req dim --')) flash_error(lang('must choose at least one member of', str_replace_first('-- req dim --', '', $notAllowedMember, $in)));
+			else flash_error(lang('no context permissions to add',lang("tasks"), $notAllowedMember));
 			ajx_current("empty");
 			return;
 		} // if
@@ -1456,7 +1583,7 @@ class TaskController extends ApplicationController {
 		$context_plain = array_var($_GET, 'context');
 		$context = null;
 		if (!is_null($context_plain)) $context = build_context_array($context_plain);
-		$comp_array = allowed_users_to_assign($context);
+		$comp_array = allowed_users_to_assign_all($context);
 		$object = array(
 			"companies" => $comp_array
 		);
@@ -1480,14 +1607,26 @@ class TaskController extends ApplicationController {
 			$year = array_var($_GET, 'year', $task->getDueDate()->getYear());
 			$month = array_var($_GET, 'month', $task->getDueDate()->getMonth());
 			$day = array_var($_GET, 'day', $task->getDueDate()->getDay());
-			$new_date = new DateTimeValue(mktime(0, 0, 0, $month, $day, $year));
+			$hour = array_var($_GET, 'hour', $task->getDueDate()->getHour());
+			$minute = array_var($_GET, 'min', $task->getDueDate()->getMinute());
+			
+			$new_date = new DateTimeValue(mktime($hour, $minute, 0, $month, $day, $year));
+			if (isset($_GET['hour']) && isset($_GET['min'])) {
+				$new_date->advance(logged_user()->getTimezone() * -3600);
+			}
 			$task->setDueDate($new_date);
 		}
 		if (($tochange == 'both' || $tochange == 'start') && $task->getStartDate() instanceof DateTimeValue ) {
 			$year = array_var($_GET, 'year', $task->getStartDate()->getYear());
 			$month = array_var($_GET, 'month', $task->getStartDate()->getMonth());
 			$day = array_var($_GET, 'day', $task->getStartDate()->getDay());
-			$new_date = new DateTimeValue(mktime(0, 0, 0, $month, $day, $year));
+			$hour = array_var($_GET, 'hour', $task->getStartDate()->getHour());
+			$minute = array_var($_GET, 'min', $task->getStartDate()->getMinute());
+			
+			$new_date = new DateTimeValue(mktime($hour, $minute, 0, $month, $day, $year));
+			if (isset($_GET['hour']) && isset($_GET['min'])) {
+				$new_date->advance(logged_user()->getTimezone() * -3600);
+			}
 			$task->setStartDate($new_date);
 		}
 		

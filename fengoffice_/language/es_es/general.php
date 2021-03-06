@@ -2,7 +2,7 @@
 	'username' => 'Nombre de usuario',
 	'email or username' => 'Email o usuario',
 	'password' => 'Contraseña',
-	'password again' => 'Repita su contraseña',
+	'password again' => 'Repita su nueva contraseña',
 	'old password' => 'Contraseña anterior',
 	'new password' => 'Nueva contraseña',
 	'remember me' => 'Recordarme durante 14 días',

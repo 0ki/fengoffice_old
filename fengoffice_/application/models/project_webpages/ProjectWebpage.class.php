@@ -122,8 +122,8 @@ class ProjectWebpage extends BaseProjectWebpage {
 	//  Permissions
 	// ---------------------------------------------------
 
-	function canAdd(Contact $user, $context){
-		return can_add($user, $context, ProjectWebpages::instance()->getObjectTypeId());
+	function canAdd(Contact $user, $context, &$notAllowedMember = ''){
+		return can_add($user, $context, ProjectWebpages::instance()->getObjectTypeId(), $notAllowedMember);
 	}
 	
 

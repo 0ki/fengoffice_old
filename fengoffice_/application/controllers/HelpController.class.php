@@ -45,15 +45,6 @@ class HelpController extends ApplicationController {
 		}
 	}
 	
-	function enable_all_context_help(){
-		$context_help_options = UserWsConfigOptions::getOptionsByCategoryName('context help', true);
-		foreach($context_help_options as $option) {
-			set_user_config_option($option->getName(), true, logged_user()->getId());
-		}
-		ajx_current("empty");
-		flash_success(lang('success enable all context help'));
-	}
-	
 	function view_message(){
 		
 	}

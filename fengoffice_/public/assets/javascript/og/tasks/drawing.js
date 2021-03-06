@@ -178,7 +178,6 @@ var rx__TasksDrag = {
 		parameters["milestone_id"] = task.milestoneId;
 		parameters["priority"] = task.priority;
 		parameters["title"] = task.title;
-		parameters["project_id"] = task.workspaceIds;
 		
 		// add dates to parameters
 		if (task.dueDate) {
@@ -197,42 +196,11 @@ var rx__TasksDrag = {
 	quickEdit: function(task_id, parameters) {
 		// wrap
 		var params2 = [];
-		for (var i in parameters)
-			if (parameters[i] || parameters[i] === 0)
+		for (var i in parameters) {
+			if (parameters[i] || parameters[i] === 0) {
 				params2["task[" + i + "]"] = parameters[i];
-		/*alert('Updating (quick edit) #'+this.t+' with '+dump(params2));/**/
-		/*return params2;		*/
-		if (parameters['milestone_id'] > 0){
-			var milestone = ogTasks.getMilestone(parameters['milestone_id']);
-			var task = ogTasks.getTask(task_id);
-			
-			if (this.displayCriteria.group_by == 'milestone' && milestone.id != task.milestoneId){//Milestone changed
-				if (milestone.workspaceIds != task.workspaceIds)
-					if(!og.IsWorkspaceParentOf(milestone.workspaceIds, task.workspaceIds)){
-						if (!confirm(lang('task milestone workspace inconsistency')))
-							return;
-					}
-			}
-			
-			// Workspace changed -> milestone control, assigned control
-			if (this.displayCriteria.group_by == 'workspace' && milestone.workspaceIds != parameters['project_id']) { 
-				if (!og.IsWorkspaceParentOf(milestone.workspaceIds, parameters['project_id'])) {
-					if (!confirm(lang('task milestone does not belong to workspace'))) {
-						return;
-					} else {
-						params2["task[milestone_id]"] = 0;
-					}
-				}
-				/*if (!og.canAssignTask(parameters['project_id'], task.assignedToId)) {
-					if (!confirm(lang('task cant be assigned to current user'))) {
-						return;
-					} else {
-						params2["task[assigned_to_contact_id]"] = 0;
-					}
-				}*/
 			}
 		}
-
 		
 		parameters = params2;
 		var url = og.getUrl('task', 'quick_edit_task', {id:task_id, dont_mark_as_read:1});
@@ -246,8 +214,9 @@ var rx__TasksDrag = {
 					if (!task){
 						var task = new ogTasksTask();
 						task.setFromTdata(data.task);
-						if (data.task.s)
+						if (data.task.s) {
 							task.statusOnCreate = data.task.s;
+						}
 						task.isCreatedClientSide = true;
 						ogTasks.Tasks[ogTasks.Tasks.length] = task;
 						var parent = ogTasks.getTask(task.parentId);
@@ -273,8 +242,9 @@ var rx__TasksDrag = {
 					ogTasks.redrawGroups = true;
 					rx__TasksDrag.haveExtDD = {};
 				} else {
-					if (!data.errorMessage || data.errorMessage == '')
+					if (!data.errorMessage || data.errorMessage == '') {
 						og.err(lang("error adding task"));
+					}
 				}
 			},
 			scope: ogTasks
@@ -291,19 +261,20 @@ var rx__TasksDrag = {
 			if (task.parentId != 0) {
 				// however, the intention might be to un-attach the task from its parent (!)
 				this.p = 0;
-			}else
-				return;
+			} else return;
 		}
-		if (task.parentId == this.d && task.parentId) // is the task being dragged as a subtask o its own parent?
+		if (task.parentId == this.d && task.parentId) {// is the task being dragged as a subtask o its own parent?
 			return;
+		}
 
 		// check for unwanted cycles - #t cannot be a predecessor of #p 
-		var ti = this.p; var tiQ={};
+		var ti = this.p;
+		var tiQ = {};
 		while(ti!=0 && !tiQ[ti]) {
-			if(ti==this.t) return;
+			if(ti == this.t) return;
 			var tt = ogTasks.getTask(ti);
 			if(!tt) break;
-			tiQ[ti]=1; // loop protection - mark visited vertices
+			tiQ[ti] = 1; // loop protection - mark visited vertices
 			ti = tt.parentId;
 		}
 		
@@ -340,12 +311,12 @@ var rx__TasksDrag = {
 		parameters['apply_milestone_subtasks'] = "checked";
 	
 		var group = ogTasks.getGroup(this.d);
-		var group_not_empty = group && group.group_tasks && group.group_tasks.length>0;
+		var group_not_empty = group && group.group_tasks && group.group_tasks.length > 0;
 		
 		// change
 		switch (this.displayCriteria.group_by){
-			case 'milestone':	parameters["milestone_id"] = this.d!='unclassified'? ogTasks.getMilestone(this.d).id : 0; break;
-			case 'priority':	parameters["priority"] = this.d!='unclassified'? parseInt(this.d) : 200; /*100,200,300*/ break;
+			case 'milestone':	parameters["milestone_id"] = this.d != 'unclassified' ? ogTasks.getMilestone(this.d).id : 0; break;
+			case 'priority':	parameters["priority"] = this.d != 'unclassified' ? parseInt(this.d) : 200; /*100,200,300*/ break;
 			case 'assigned_to':	parameters["assigned_to_contact_id"] = this.d; break;
 			case 'due_date' : 	if(group_not_empty) parameters["task_due_date"] = group.group_tasks[0].dueDate; break;
 			case 'start_date' : if(group_not_empty) parameters["task_start_date"] = group.group_tasks[0].startDate; break;
@@ -355,8 +326,14 @@ var rx__TasksDrag = {
 			case 'status' : 	parameters["status"] = this.d; /* done previously, special request */ break;
 			case 'completed_by':parameters["completed_by"] = this.d; /* ? */ break;
 			case 'subtype':parameters["object_subtype"] = this.d; /* ? */ break;
-			case 'workspace':	parameters["project_id"] = this.d; /* ? */ break;
 			default:
+				if (this.displayCriteria.group_by.indexOf('dimension_') == 0) {
+					// Group by dimension
+					var dim_id = this.displayCriteria.group_by.replace('dimension_', '');
+					parameters['member_id'] = this.d;
+					parameters['remove_from_dimension'] = dim_id;
+				}
+				break;
 		}
 		
 		rx__TasksDrag.full_redraw = true;
@@ -426,7 +403,9 @@ ogTasks.draw = function(){
 	// *** <RX ***
 	rx__TasksDrag.displayCriteria = displayCriteria;
 	rx__TasksDrag.allowDrag = false;
-	if( displayCriteria.group_by=='milestone' || displayCriteria.group_by=='priority' || displayCriteria.group_by=='assigned_to' || displayCriteria.group_by=='status' || displayCriteria.group_by=='subtype') {
+	if( displayCriteria.group_by=='milestone' || displayCriteria.group_by=='priority' || displayCriteria.group_by=='assigned_to' 
+		|| displayCriteria.group_by=='status' || displayCriteria.group_by=='subtype' || displayCriteria.group_by.indexOf('dimension_') == 0) {
+		
 		rx__TasksDrag.allowDrag = true;
 	}
 	// *** /RX ***
@@ -442,10 +421,8 @@ ogTasks.draw = function(){
 	
 	// *** <RX ***
 	if(this.Groups.length==1 && this.Groups[0].group_tasks.length==0) { // there are no tasks to display
-		// FIXME: quick add task
 		sb.append('<div class="inner-message" style="text-align: center; color: gray; font-size: 14px;">'+lang('no tasks to display')+ '</div>'+
 		'<div id="rx__no_tasks_info" style="text-align: center; "><a href="#" class="internalLink ogTasksGroupAction ico-add" '+
-		//'onclick="og.openLink(og.getUrl(\'task\', \'add_task\'));"'+
 		'onClick="document.getElementById(\'rx__no_tasks_info\').style.display=\'none\'; document.getElementById(\'rx__hidden_group\').style.display=\'block\'; ogTasks.drawAddNewTaskForm(\'' + this.Groups[0].group_id + '\')" '+
 		'title="' + lang('add task') + '">' + (lang('add task')) + '</a>'+
 		'</div>');
@@ -667,15 +644,12 @@ ogTasks.expandCollapseAllTasksGroup = function(group_id) {
 		if (group.alltasks_collapsed) {
 			group.alltasks_collapsed = false;
 			if (expander) expander.className = 'og-task-expander toggle_expanded';
-			visibility = 'block';
 		} else {
 			group.alltasks_collapsed = true;
 			if (expander) expander.className = 'og-task-expander toggle_collapsed';
-			visibility = 'none';
 		}
 		
-		var tasks_container = document.getElementById("ogTasksPanelTaskRowsContainer" +  group.group_id);
-		if (tasks_container) tasks_container.style.display = visibility;
+		$("#ogTasksPanelTaskRowsContainer" +  group.group_id).slideToggle();
 	}
 }
 
@@ -686,9 +660,10 @@ ogTasks.drawAddTask = function(id_subtask, group_id, level){
 	var padding = (15 * (level + 1)) + 10;
 	return '<div class="ogTasksTaskRow" style="padding-left:' + padding + 'px">' + 
 	'</div>';
-/*	'<div class="ogTasksAddTask ico-add">' +
+	
+	/*return '<div class="ogTasksAddTask ico-add">' +
 	'<a href="#" class="internalLink"  onClick="ogTasks.drawAddNewTaskForm(\'' + group_id + '\', ' + id_subtask + ', ' + level + ')">' + ((id_subtask > 0)?lang('add subtask') : lang('add task')) + '</a>' +
-	'</div></div>';*/
+	'</div></div>'; */
 }
 
 
@@ -709,7 +684,7 @@ ogTasks.drawTask = function(task, drawOptions, displayCriteria, group_id, level)
 	if(rx__TasksDrag.allowDrag)
 		rx__drag_h = "<div id='RX__ogTasksPanelDrag" + tgId + "' class='RX__tasks_og-drag ogTasksIcon' title='"+lang('click to drag task')+"' onmouseover='rx__TasksDrag.prepareExt("+task.id+", \"" + group_id + "\",this.id)' onmousedown='rx__TasksDrag.onDragStart("+task.id+", \"" + group_id + "\",this.id); return false;'></div>";
 
-	var html = '<div style="padding-left:' + padding + 'px" id="' + containerName + '" class="RX__tasks_row" onmouseover="rx__TasksDrag.showHandle(\''+tgId+'\',1)"  onmouseout="rx__TasksDrag.showHandle(\''+tgId+'\',0)">' + rx__drag_h 
+	var html = '<div style="padding-left:' + padding + 'px" id="' + containerName + '" class="RX__tasks_row level-'+level+'" onmouseover="rx__TasksDrag.showHandle(\''+tgId+'\',1)"  onmouseout="rx__TasksDrag.showHandle(\''+tgId+'\',0)">' + rx__drag_h 
 		 + this.drawTaskRow(task, drawOptions, displayCriteria, group_id, level) + '</div>';
 	// **** /RX **** //
 	
@@ -736,12 +711,13 @@ ogTasks.drawTaskRow = function(task, drawOptions, displayCriteria, group_id, lev
 	
 	//Draw subtasks expander
 	if (task.subtasks.length > 0){
-		sb.append("<td width='16px' style='padding-top:3px'><div id='ogTasksPanelFixedExpander" + tgId + "' class='og-task-expander " + ((task.isExpanded)?'toggle_expanded':'toggle_collapsed') + "' onclick='ogTasks.toggleSubtasks(" + task.id +", \"" + group_id + "\")'></div></td>");
-	}else{
+		sb.append("<td style='padding-top:3px;width:16px;'><div id='ogTasksPanelFixedExpander" + tgId + "' class='og-task-expander " + ((task.isExpanded)?'toggle_expanded':'toggle_collapsed') + "' onclick='ogTasks.toggleSubtasks(" + task.id +", \"" + group_id + "\")'></div></td>");
+	} else {
 		// FIXME: quick add task
-		//sb.append("<td width='16px'><div id='ogTasksPanelExpander" + tgId + "' style='visibility:hidden' class='og-task-expander ico-add ogTasksIcon' onClick='ogTasks.drawAddNewTaskForm(\"" + group_id + "\", " + task.id + "," + level +")' title='" + lang('add subtask') + "'></div></td>");
-		sb.append("<td width='16px'></td>");
+		//sb.append("<td class='add-subtask-link-container'><div class='add-subtask-link'  id='ogTasksPanelExpander" + tgId + "' style='visibility:hidden' class='og-task-expander _____ico-add ogTasksIcon' onClick='ogTasks.drawAddNewTaskForm(\"" + group_id + "\", " + task.id + "," + level +")' title='" + lang('add subtask') + "'>"+lang('add sub task')+"</div></td>");
+		sb.append("<td style='width:20px;'>&nbsp;</td>");
 	}
+	
 
 	if (task.isRead){
 		sb.append("<td style=\"width:16px\" id=\"ogTasksPanelMarkasTd" + task.id + "\"><div title=\"" + lang('mark as unread') + "\" id=\"readunreadtask" + task.id + "\" class=\"db-ico ico-read\" onclick=\"ogTasks.readTask(" + task.id + ","+task.isRead+")\" /></td>");		
@@ -750,7 +726,7 @@ ogTasks.drawTaskRow = function(task, drawOptions, displayCriteria, group_id, lev
 	}
 	
 	//Center td
-	sb.append('<td align=left>');
+	sb.append('<td style="text-align:left;width:'+(drawOptions.show_dates ? '47' : '63')+'%;">');
 	
 	//Member Path
 	mem_path = "";
@@ -785,12 +761,16 @@ ogTasks.drawTaskRow = function(task, drawOptions, displayCriteria, group_id, lev
 	}
 	
 	// Draw percent completed bar
-	sb.append((Ext.isSafari ? '</td><td>':'') + ogTasks.buildTaskPercentCompletedBar(task) + (Ext.isSafari ? '</td><td>':''));
+	sb.append('</td><td style="width:85px;">' + ogTasks.buildTaskPercentCompletedBar(task) + '</td><td>');
 
 	sb.append('</td><td align=right><table style="height:100%"><tr>');
 	//Draw task actions
-	sb.append("<td><div id='ogTasksPanelTaskActions" + tgId + "' class='ogTaskActions'><table><tr>");
+	sb.append("<td class='nobr'><div id='ogTasksPanelTaskActions" + tgId + "' class='ogTaskActions'><table><tr>");
 	var renderTo = "ogTasksPanelTaskActions" + tgId + "Assign";
+	
+	// Add Subtask
+	sb.append("<td class='add-subtask-link-container'><div id='ogTasksPanelExpander" + tgId + "' style='visibility:hidden' class='add-subtask-link ico-add coViewAction' onClick='ogTasks.drawAddNewTaskForm(\"" + group_id + "\", " + task.id + "," + level +")' title='" + lang('add subtask') + "'>"+lang('add sub task')+"</div></td>");
+	
 	// FIXME: enable quick edit
 	//sb.append("<td style='padding-left:8px;'><a href='#' onclick='ogTasks.drawEditTaskForm(" + task.id + ", \"" + group_id + "\")'>");
 	sb.append("<td style='padding-left:8px;'><a href='#' onclick='ogTasks.goToCompleteEditForm(" + task.id + ")'>");
@@ -805,34 +785,34 @@ ogTasks.drawTaskRow = function(task, drawOptions, displayCriteria, group_id, lev
 	
 	//Draw dates
 	if (drawOptions.show_dates && (task.startDate || task.dueDate)){
-		sb.append('<td style="color:#888;font-size:10px;padding-left:6px;padding-right:3px">');
+		sb.append('<td style="color:#888;font-size:9px;padding-left:6px;padding-right:3px;width:150px;text-align:right;">');
 		if (task.estimatedTime){ 		
-			sb.append('<span class="estimated-time">'+ lang('estimated')+': '+task.estimatedTime +' | </span>'); 	
+			sb.append('<span class="estimated-time nobr">'+ lang('estimated')+': '+task.estimatedTime +'</span> '); 	
 		}
-		if (task.status == 1)
-			sb.append('<span style="text-decoration:line-through;">');
-		else
-			sb.append('<span>');
+		
+		sb.append('<span class="nobr"' + (task.status == 1 ? ' style="text-decoration:line-through;"' : '') + '>');
 		
 		if (task.startDate){
 			var date = new Date(task.startDate * 1000);
 			date = new Date(Date.parse(date.toUTCString().slice(0, -4)));
+			var hm_format = task.useStartTime ? (og.preferences['time_format_use_24'] == 1 ? ' - G:i' : ' - g:i A') : '';
 			var now = new Date();
-			var dateFormatted = date.getYear() != now.getYear() ? date.dateFormat('M j, Y'): date.dateFormat('M j');
+			var dateFormatted = date.getYear() != now.getYear() ? date.dateFormat('M j, Y' + hm_format): date.dateFormat('M j' + hm_format);
 			sb.append(lang('start') + ':&nbsp;' + dateFormatted);
 		}
-		if (task.startDate && task.dueDate)
-			sb.append('&nbsp;-&nbsp;');
+		if (task.startDate && task.dueDate) {
+			sb.append('&nbsp;|&nbsp;');
+		}
 		
 		if (task.dueDate){
 			var date = new Date((task.dueDate) * 1000);
 			date = new Date(Date.parse(date.toUTCString().slice(0, -4)));
+			var hm_format = task.useDueTime ? (og.preferences['time_format_use_24'] == 1 ? ' - G:i' : ' - g:i A') : '';
 			var now = new Date();
-			var dateFormatted = date.getYear() != now.getYear() ? date.dateFormat('M j, Y'): date.dateFormat('M j');
+			var dateFormatted = date.getYear() != now.getYear() ? date.dateFormat('M j, Y' + hm_format): date.dateFormat('M j' + hm_format);
 			var dueString = lang('due') + ':&nbsp;' + dateFormatted;
-			if (task.status == 0){
-				if (date < now)
-					dueString = '<span style="font-weight:bold;color:#F00">' + dueString + '</span>';
+			if (task.status == 0 && date < now) {
+				dueString = '<span style="font-weight:bold;color:#F00">' + dueString + '</span>';
 			}
 			sb.append(dueString);
 		}

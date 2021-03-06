@@ -2,9 +2,8 @@
 <div id="<?php echo $genid; ?>Search" class="search-container">
 	<div class="search-summary" >
 		<p class="results-for"><?php echo lang("search results for") ?>: <em>'<?php echo (isset ($search_string)) ? $search_string : '' ?>'</em> </p>
-		<?php if ( isset($extra) && $extra ):?>
-		<p>Search speed: <?php echo $extra->time ?>s</p>
-		<p>PHP Fitered: <?php echo $extra->filteredResults ?> results</p>
+		<?php if ( !empty($extra) && isset($extra->time) ):?>
+			<p>Search speed: <?php echo $extra->time ?>s</p>
 		<?php endif ;?>
 	</div>
 

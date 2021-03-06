@@ -65,7 +65,7 @@ class BillingCategory extends BaseBillingCategory {
 	 * @param User $user
 	 * @return boolean
 	 */
-	function canView(User $user) {
+	function canView(Contact $user) {
 		return can_read($user,$this);
 	} // canView
 
@@ -79,7 +79,7 @@ class BillingCategory extends BaseBillingCategory {
 	 * @param Project $project
 	 * @return boolean
 	 */
-	function canAdd(User $user, Project $project) {		
+	function canAdd(Contact $user, Project $project) {		
 		return can_add($user,$project,get_class(BillingCategories::instance()));
 	} // canAdd
 
@@ -90,7 +90,7 @@ class BillingCategory extends BaseBillingCategory {
 	 * @param User $user
 	 * @return boolean
 	 */
-	function canEdit(User $user) {
+	function canEdit(Contact $user) {
 		return can_write($user,$this);
 	} // canEdit
 
@@ -101,7 +101,7 @@ class BillingCategory extends BaseBillingCategory {
 	 * @param User $user
 	 * @return boolean
 	 */
-	function canDelete(User $user) {
+	function canDelete(Contact $user) {
 		return can_delete($user,$this);
 	} // canDelete
 
@@ -123,12 +123,6 @@ class BillingCategory extends BaseBillingCategory {
 
 
 	function delete(){
-		$workspace_billings = WorkspaceBillings::find(array('conditions' => 'billing_id = ' . $this->getId()));	
-		if ($workspace_billings){
-			foreach ($workspace_billings as $billing){
-				$billing->delete();
-			}
-		}
 		$users = $this->getCategoryUsers();
 		if ($users){
 			foreach ($users as $user){
@@ -140,7 +134,7 @@ class BillingCategory extends BaseBillingCategory {
 	}
 	
 	function getCategoryUsers() {
-		return Users::findAll(array('conditions' => 'default_billing_id = ' . $this->getId()));
+		return Contacts::findAll(array('conditions' => 'default_billing_id = ' . $this->getId()));
 	}
 	
 	// ---------------------------------------------------

@@ -1,5 +1,5 @@
 .coInputHeader {
-    padding: 10px 15px;
+    padding: 5px 15px;
 	/*border-bottom: 1px solid #99BBE8;*/
 	border-bottom: 1px solid #CCCCCC;
 	padding-bottom:5px;
@@ -67,4 +67,8 @@
 	padding: 5px 15px;
 	background-color:white;
 	text-align:left;
+}
+
+.custom-btn-wrapper .x-btn-left, .custom-btn-wrapper .x-btn-right, .custom-btn-wrapper .x-btn-center{
+	background: none  !important;
 }

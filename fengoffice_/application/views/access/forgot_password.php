@@ -11,7 +11,7 @@
 <?php } ?>
   <div id="forgotPasswordSubmit">
   <?php if (!isset($_GET['instructions_sent']) || !$_GET['instructions_sent']) { 
-  			echo submit_button(lang('email me my password'));
+  			echo submit_button(lang('change password'));
   		} ?>
   	<span>(<a class="internalLink" href="<?php echo get_url('access', 'login') ?>"><?php echo lang('login') ?></a>)</span>
   </div>

@@ -212,8 +212,8 @@ class ProjectMilestone extends BaseProjectMilestone {
 	//  Permissions
 	// ---------------------------------------------------
 
-	function canAdd(Contact $user, $context){
-		return can_add($user, $context, ProjectMilestones::instance()->getObjectTypeId());
+	function canAdd(Contact $user, $context, &$notAllowedMember = ''){
+		return can_add($user, $context, ProjectMilestones::instance()->getObjectTypeId(),$notAllowedMember);
 	}
 	
 	

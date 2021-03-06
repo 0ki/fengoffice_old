@@ -7,8 +7,8 @@
 			<p><?php echo $content?></p>
 		</div>
 		<div class="footer">
-			<span class="created_by"><?php echo $created_by ?></span> -
-			<span class="created_on"><?php echo $created_on ?></span> -
+			<span class="created_by"><?php echo $updated_by ?></span> -
+			<span class="updated_on"><?php echo $updated_on ?></span> -
 			<span class="type"><?php echo lang($type) ?></span> 
 		</div>
 	</div>

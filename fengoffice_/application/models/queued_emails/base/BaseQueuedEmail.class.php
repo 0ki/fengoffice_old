@@ -122,7 +122,29 @@ abstract class BaseQueuedEmail extends DataObject {
 	} // setBody()
 
 	/**
-	 * Return value of 'body' field
+	 * Return value of 'attachments' field
+	 *
+	 * @access public
+	 * @param void
+	 * @return string
+	 */
+	function getAttachments() {
+		return $this->getColumnValue('attachments');
+	} // getAttachments()
+
+	/**
+	 * Set value of 'attachments' field
+	 *
+	 * @access public
+	 * @param string $value
+	 * @return boolean
+	 */
+	function setAttachments($value) {
+		return $this->setColumnValue('attachments', $value);
+	} // setAttachments()
+
+	/**
+	 * Return value of 'timestamp' field
 	 *
 	 * @access public
 	 * @param void

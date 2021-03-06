@@ -24,13 +24,6 @@
 </div>
 <div class="coInputSeparator"></div>
 <div class="coInputMainBlock">
-	<?php 
-			$show_help_option = user_config_option('show_context_help'); 
-			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_print_report_context_help', true, logged_user()->getId()))) {?>
-			<div id="printReportPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
-				<?php render_context_help($this, 'chelp time panel print report','print_report'); ?>
-			</div>
-		<?php }?>
 	<div style="width:600px;padding-bottom:20px"><?php echo lang('task time report description') ?></div>
 
 	<table>
@@ -74,7 +67,10 @@
 					option_tag(lang('time timeslots'), 1, array_var($report_data, "timeslot_type") == '1' ? array('selected' => 'selected') : null),
 					option_tag(lang('all timeslots'), 2, array_var($report_data, "timeslot_type") == '2' ? array('selected' => 'selected') : null)
 				), array('onchange' => 'og.timeslotTypeSelectChange(this, \'' . $genid . '\')'));
-			?></td>
+			?>
+				<span id="<?php echo $genid?>task_ts_desc" class="desc" style="display:<?php echo  array_var($report_data, "timeslot_type") == '0' ? '' : 'none'?>"><?php echo lang('task timeslots report desc')?></span>
+				<span id="<?php echo $genid?>general_ts_desc" class="desc" style="display:<?php echo  array_var($report_data, "timeslot_type") == '1' ? '' : 'none'?>"><?php echo lang('general timeslots report desc')?></span>
+			</td>
 		</tr>
 		<tr style='height:30px;'>
 			<td><b><?php echo lang("user") ?>:&nbsp;</b></td>
@@ -153,7 +149,7 @@
 		</tr>
 		<?php } ?>
 		
-		<?php if ($has_billing) {?>
+		<?php if ($has_billing && can_manage_billing(logged_user())) {?>
 		<tr style='height:30px;'>
 			<td>&nbsp;</td>
 			<td align='left'>

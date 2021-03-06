@@ -272,8 +272,8 @@ class Timeslot extends BaseTimeslot {
 	 * @param array $context
 	 * @return boolean
 	 */
-	function canAdd(Contact $user, $context) {
-		return can_add($user, $context, Timeslots::instance()->getObjectTypeId());
+	function canAdd(Contact $user, $context, &$notAllowedMember = '') {
+		return can_add($user, $context, Timeslots::instance()->getObjectTypeId(), $notAllowedMember );
 	}
 
 	/**
@@ -397,7 +397,9 @@ class Timeslot extends BaseTimeslot {
 			'uid' => $this->getContactId(),
 			'uname' => $displayname,
 			'lastupdated' => $general_info['dateUpdated'],
-			'lastupdatedby' => $general_info['updatedBy']
+			'lastupdatedby' => $general_info['updatedBy'],
+			'memPath' => json_encode($this->getMembersToDisplayPath()),
+			'otid' => Timeslots::instance()->getObjectTypeId(),
 		);
 		if ($return_billing) {
 			$result['hourlybilling'] = $this->getHourlyBilling();
@@ -413,6 +415,34 @@ class Timeslot extends BaseTimeslot {
 		return $result;
 	}
 
+	
+	
+	
+	/**
+	 * Returns an array with the ids of the members that this object belongs to
+	 *
+	 */
+	function getMemberIds() {
+		
+		if (is_null($this->memberIds)) {
+			 $this->memberIds = ObjectMembers::getMemberIdsByObject($this->getRelObjectId() > 0 ? $this->getRelObjectId() : $this->getId());
+		}
+		return $this->memberIds ;
+		
+		//return ObjectMembers::getMemberIdsByObject($this->getId());
+	}
+	
+	
+	/**
+	 * Returns an array with the members that this object belongs to
+	 *
+	 */
+	function getMembers() {
+		if ( is_null($this->members) ) {
+			$this->members =  ObjectMembers::getMembersByObject($this->getRelObjectId() > 0 ? $this->getRelObjectId() : $this->getId());
+		}
+		return $this->members ;
+	}
 } // Timeslot
 
 ?>

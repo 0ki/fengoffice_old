@@ -191,7 +191,7 @@ og.addMailAttachment = function(container, obj) {
  	}
  	if (obj.manager == 'ProjectFiles' || obj.manager == 'MailContents') {
  	 	var id = Ext.id();
- 		name += "<input id=\"check" + id + "\" type=\"checkbox\" " + (og.attachContents ? 'checked="checked"' : '') + " style=\"margin-left: 30px; position: relative; top: 3px; width: 16px;\" name=\"attach_contents[" + count + "]\" />" +
+ 		name += "<input id=\"check" + id + "\" type=\"checkbox\" checked=\"checked\"  style=\"margin-left: 30px; position: relative; top: 3px; width: 16px;\" name=\"attach_contents[" + count + "]\" />" +
 		"<label for=\"check" + id + "\" style=\"display: inline; margin-left: 5px;\">" + lang("attach contents") + "</label>";
  	} else if (obj.manager == 'FwdMailAttach') {
  	 	name += "<input type=\"checkbox\" checked=\"checked\" style=\"margin-left: 30px; position: relative; top: 3px; width: 16px;\" disabled=\"disabled\" />" +
@@ -320,5 +320,15 @@ og.autoSaveDraft = function(genid) {
 og.stopAutosave = function(genid) {
 	var mb = Ext.getDom(genid + 'mailBody');
 	if (mb.autoSaveTOut) clearTimeout(mb.autoSaveTOut);
+}
+
+og.resetClassButton = function(genid) {
+	elem = Ext.DomQuery.select("button.mail");
+	for (var i = 0; i < elem.length; i++) {
+		var t = Ext.get(elem[i].parentNode.parentNode.parentNode.parentNode.parentNode);
+		t.removeClass("x-btn");
+		t.removeClass("x-btn-text-icon");	
+		t.addClass("custom-btn-wrapper");
+	}
 }
 // </autosave>

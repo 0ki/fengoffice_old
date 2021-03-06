@@ -40,9 +40,11 @@ class WebpageController extends ApplicationController {
 			return;
 		}
 		$this->setTemplate('add');
-
-		if(!ProjectWebpage::canAdd(logged_user(), active_context())) {
-			flash_error(lang('no context permissions to add',lang("webpages")));
+		
+		$notAllowedMember = '';
+		if(!ProjectWebpage::canAdd(logged_user(), active_context(), $notAllowedMember)) {
+			if (str_starts_with($notAllowedMember, '-- req dim --')) flash_error(lang('must choose at least one member of', str_replace_first('-- req dim --', '', $notAllowedMember, $in)));
+			else flash_error(lang('no context permissions to add',lang("webpages"), $notAllowedMember));
 			ajx_current("empty");
 			return;
 		} // if
@@ -321,6 +323,7 @@ class WebpageController extends ApplicationController {
 					"ix" => $index++,
 					"id" => $w->getId(),
 					"object_id" => $w->getObjectId(),
+					"ot_id" => $w->getObjectTypeId(),
 					"name" => $w->getObjectName(),
 					"description" => $w->getDescription(),
 					"url" => $w->getUrl(),

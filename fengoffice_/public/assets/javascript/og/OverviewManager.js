@@ -19,7 +19,7 @@ og.OverviewManager = function() {
 				totalProperty: 'totalCount',
 				id: 'id',
 				fields: [
-					'name', 'object_id', 'type', 'createdBy', 'createdById', 'dateCreated', 
+					'name', 'object_id', 'type', 'ot_id', 'createdBy', 'createdById', 'dateCreated', 
 					'updatedBy', 'updatedById', 'dateUpdated', 'icon', 'wsIds', 'manager', 'mimeType', 'url', 'ix', 'isRead', 'memPath'
 				]
 			}),
@@ -108,6 +108,10 @@ og.OverviewManager = function() {
 	function renderIcon(value, p, r) {
 		var classes = "db-ico ico-unknown " + r.data.icon;
 		if (r.data.mimeType) {
+			if (r.data.name.indexOf(".") >= 0) {
+				var extension = r.data.name.substring(r.data.name.indexOf(".") + 1);
+				classes += " ico-ext-" + extension;
+			}
 			var path = r.data.mimeType.replace(/\//ig, "-").split("-");
 			var acc = "";
 			for (var i=0; i < path.length; i++) {

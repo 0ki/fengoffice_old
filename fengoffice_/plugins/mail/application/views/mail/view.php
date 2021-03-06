@@ -93,7 +93,7 @@ if (isset($email)){
 	}
 </script>
 
-<?php if ($email instanceof MailContent) {?>
+<?php if (isset($email) && $email instanceof MailContent) {?>
 <div style="padding:7px">
 <div class="email">
 
@@ -103,6 +103,9 @@ if (isset($email)){
 	<tr><td>' . lang('to') . ':</td><td>' . MailUtilities::displayMultipleAddresses(clean($email->getTo())) . '</td></tr>';
 	if ($email->getCc() != '') {
 		$description .= '<tr><td>' . lang('mail CC') . ':</td><td>' . MailUtilities::displayMultipleAddresses(clean($email->getCc())) . '</td></tr>';
+	}
+	if ($email->getBcc() != '') {		
+		$description .= '<tr><td>' . lang('mail BCC') . ':</td><td>' . MailUtilities::displayMultipleAddresses(clean($email->getBcc())) . '</td></tr>';
 	}
 	$description .= '<tr><td>' . lang('date') . ':</td><td>' . format_datetime($email->getSentDate(), 'l, j F Y - '.$time_format, logged_user()->getTimezone()) . '</td></tr>';
 	
@@ -199,6 +202,15 @@ if (isset($email)){
 		if($email->getBodyHtml() != ''){
 			if (defined('SANDBOX_URL')) {
 				$html_content = $email->getBodyHtml();
+				// prevent some outlook malformed tags
+				if(substr_count($html_content, "<style>") != substr_count($html_content, "</style>") && substr_count($html_content, "/* Font Definitions */") >= 1) {
+					$p1 = strpos($html_content, "/* Font Definitions */", 0);
+					$html_content1 = substr($html_content, 0, $p1);
+					$p0 = strrpos($html_content1, "</style>");
+					$html_content = ($p0 >= 0 ? substr($html_content1, 0, $p0) : $html_content1) . substr($html_content, $p1);
+					
+					$html_content = str_replace_first("/* Font Definitions */","<style>",$html_content);
+				}
 			} else {
 				$html_content = purify_html($email->getBodyHtml());
 			}
@@ -221,7 +233,7 @@ if (isset($email)){
 			if (!is_dir(ROOT.'/tmp')) mkdir(ROOT.'/tmp');
 			
 			// HIDE QUOTED TEXT AND IMAGES IF APPLICABLE
-			$tmpfile = $email->getAccountId() . '_' . logged_user()->getId() . '_temp_mail_content.html';
+			$tmpfile = $email->getAccountId() . '_' . logged_user()->getId() ."_". $email->getId().'_temp_mail_content.html';
 			// FULL CONTENT
 			$tmppath = ROOT.'/tmp/'.$tmpfile;
 			$handle = fopen($tmppath, 'wb');
@@ -265,8 +277,8 @@ if (isset($email)){
 			}
 			if ($hide_quoted_text_in_emails && MailUtilities::hasQuotedBlocks($html_content)) {
 				$remove_quoted = true;
-			}
-			$pre = $email->getAccountId() . '_' . logged_user()->getId();
+			}			
+			$pre = $email->getAccountId() . '_' . logged_user()->getId() . '_' . $email->getId();
 			$user_token = defined('SANDBOX_URL') ? logged_user()->getTwistedToken() : '';
 			$content = "";
 			if ($remove_images) {

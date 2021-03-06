@@ -3,7 +3,7 @@
   /**
   * Members
   *
-  * @author Diego Castiglioni <diego20@gmail.com>
+  * @author Diego Castiglioni <diego.castiglioni@fengoffice.com>
   */
   class Members extends BaseMembers {
     
@@ -33,6 +33,20 @@
 			$conditions .= " AND dimension_id = $dimension_id "; 
 		}		
 		return self::findAll(array("conditions" => array($conditions) ));
+	}	
+	
+	/**
+	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
+	 * Find one members that have $id at 'object_id_column'
+	 * Also accepts as optional parameter dimension_id
+	 * @return Member
+	 */
+	static function findOneByObjectId($id, $dimension_id = null ) {
+		$allMembers= self::findByObjectId($id, $dimension_id);
+		if(count($allMembers)) {
+			return $allMembers[0];	
+		}
+		return null;
 	}	
 	
   } 

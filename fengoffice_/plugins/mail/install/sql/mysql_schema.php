@@ -27,7 +27,7 @@ CREATE TABLE  `<?php echo $table_prefix ?>mail_contents` (
   `conversation_id` int(10) unsigned NOT NULL default '0',
   `sync` int(1) NOT NULL default '0',
   PRIMARY KEY  (`object_id`),
-  KEY `account_id` (`account_id`),
+  KEY `account_id` (`account_id`, `uid`),
   KEY `sent_date` (`sent_date`),
   KEY `received_date` (`received_date`),
   KEY `uid` (`uid`),

@@ -481,7 +481,7 @@
 	'new share notification company' => 'Empresa \'{0}\' ha sido compartida',
 	'new share notification emailunclassified' => 'Correo \'{0}\' ha sido compartido',
 	'new share notification email' => 'Correo \'{0}\' ha sido compartido',
-	'billing' => 'Facturacion',
+	'billing' => 'Facturación',
 	'category' => 'CategorÃ­a',
 	'hourly rates' => 'Tarifas horarias',
 	'origin' => 'Origen',
@@ -532,9 +532,11 @@
 	'last language' => 'Anterior',
 	'reset password expired' => 'Ha expirado la solicitud para reestablecer su contraseÃ±a. Por favor genere una nueva pinchando en "{0}"',
 	'invalid parameters' => 'ParÃ¡metros invÃ¡lidos',
-	'reset password' => 'PeticiÃ³n para reestablecer su contraseÃ±a de Feng Office',
+    
+	'reset password' => 'Nueva contraseña de Feng Office',
 	'reset password form desc' => '<b>{0}</b>, Por favor ingrese su nueva contraseÃ±a dos veces:',
-	'success reset password' => 'Su nueva contraseÃ±a ha sido almacenada',
+	'success reset password' => 'Su nueva contraseÃ±a ha sido almacenada',        
+    
 	'new account step1' => 'Paso 1: Cree el perfil de su empresa',
 	'new account step1 info' => 'Para ingresar la informaciÃ³n de su empresa y miembros con los que trabaja pinche en el vÃ­nculo "AdministraciÃ³n" ubicado en el borde superior derecho de la pÃ¡gina.',
 	'import contacts from vcard' => 'Importar contactos desde un archivo VCard',

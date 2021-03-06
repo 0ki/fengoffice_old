@@ -643,8 +643,6 @@
 
 	'objects moved to member success' => 'Los objetos se han agregado a {0} exitosamente',
 	'object moved to member success' => 'El objeto se ha agregado a {0} exitosamente',
-	'vinculated to' => 'Vinculado a',
-  	'not vinculated' => 'No vinculado',
   	'contact email is required to create user' => 'Para crear un usuario, la persona debe tener una direccón de correo válida. Por favor edite la persona e intente nuevamente.',
 
 ); ?>

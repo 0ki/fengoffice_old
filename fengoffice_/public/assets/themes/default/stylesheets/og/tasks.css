@@ -11,7 +11,7 @@
 	padding-top: 10px;
 	margin-top: 10px;
 	padding-bottom:1px;
-	max-width:1000px;
+	max-width:1200px;
 }
 
 .ogTasksGroupHeaderName {
@@ -21,7 +21,8 @@
 }
 
 .ogTasksGroup {
-	max-width:1000px;
+	max-width:1200px;
+	border: 1px solid white;
 }
 
 .og-task-expander {
@@ -65,9 +66,12 @@
 }
 
 .ogTasksAddTaskForm{
-	background-color:#F3F4FF;
-	border:1px solid #DDD;
-	padding:7px;
+	border: 1px solid #DDD;
+	background-color: #F3F4FF;
+    border-radius: 8px 8px 8px 8px;
+    box-shadow: 0 0 7px 0 #CCCCCC inset;
+    margin: 5px 0;
+    padding: 15px;
 }
 
 .ogTasksIcon {
@@ -169,10 +173,6 @@
 	position: static;
 }
 
-.ogTasksGroup {
-	border: 1px solid white;
-}
-
 .estimated-time {
 	padding-left: 8px;
 }
@@ -208,4 +208,77 @@
 
 #ogTasksPanelATContext {
 	display:none !important;
+}
+
+
+
+/*
+.RX__tasks_row .add-subtask-link {
+	overflow: hidden ;
+	height: 16px;
+	overflow: hidden;
+	font-size: 9px ;
+	white-space: nowrap;
+	padding-left: 5px;
+	padding-right: 5px;
+	color: #0000FF;
+	cursor: pointer ;
+	
+}
+
+.RX__tasks_row.level-1 .add-subtask-link{
+	margin-right: -30px ; 
+}
+
+
+
+
+.ogTasksTaskTableSelected .add-subtask-link {
+	
+}
+*/
+
+ .add-subtask-link-container {
+ 	padding-left: 8px ;
+}
+
+ .add-subtask-link {
+ 	padding-top:0 ;
+ 	height: 16px;
+ 	color: #003562;
+ 	cursor: pointer ;
+}
+
+.empty-cell {
+	 display: none ;
+}
+
+
+.add-subtask-link-container {
+	display: none;
+}
+
+.ogTasksTaskTableSelected .add-subtask-link-container {
+	display: block;
+}
+
+input#ogTasksPanelATTitle {
+	width: 96%; 
+}
+
+#ogTasksPanelATDesc {
+	margin-right: 15px;
+}
+textarea#ogTasksPanelATDescCtl {
+	width: 100%; 
+	/*margin-right: 15px;*/
+	height: 75px !important;
+}
+
+
+div.new-task div.field.due td {
+	padding: 0px;
+}
+div.new-task div.field.assigned select {
+	height: 21px;
 }

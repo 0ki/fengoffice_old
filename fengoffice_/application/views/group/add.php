@@ -13,14 +13,14 @@
   		<div class="adminTitle"><table style="width:535px"><tr><td>
   			<?php echo $group->isNew() ? lang('new group') : lang('edit group') ?>
   		</td><td style="text-align:right">
-  			<?php echo submit_button($group->isNew() ? lang('add group') : lang('save changes'), '', array('style'=>'margin-top:0px;margin-left:10px')) ?>
+  			<?php echo submit_button($group->isNew() ? lang('add group') : lang('save changes'), '', array('style'=>'margin-top:0px;margin-left:10px','id'=>$genid.'submit_btn')) ?>
   		</td></tr></table>
   		</div>
   	</div>
   	
   <div>
     <?php echo label_tag(lang('name'), 'groupFormName', true) ?>
-    <?php echo text_field('group[name]', array_var($group_data, 'name'), array('class' => 'title', 'id' => 'groupFormName')) ?>
+    <?php echo text_field('group[name]', array_var($group_data, 'name'), array('class' => 'title', 'id' => $genid.'groupFormName')) ?>
   </div>
   
   </div>
@@ -41,3 +41,9 @@
 </div>
 </div>
 </form>
+<script>
+setTimeout(function() {
+	document.getElementById('<?php echo $genid.'submit_btn'?>').focus();
+	document.getElementById('<?php echo $genid.'groupFormName'?>').focus();
+}, 1000);
+</script>

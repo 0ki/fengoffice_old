@@ -38,7 +38,8 @@
 	 'last_activity' => DATA_TYPE_DATETIME,
      'last_visit' => DATA_TYPE_DATETIME,
 	 'personal_member_id' => DATA_TYPE_INTEGER,
-     'disabled' => DATA_TYPE_BOOLEAN
+     'disabled' => DATA_TYPE_BOOLEAN,
+     'default_billing_id' => DATA_TYPE_INTEGER
     );
   
     /**
@@ -113,7 +114,7 @@
       	'company_id', 'picture_file', 'timezone', 'user_id', 'avatar_file',
       	'brand_colors', 'contact_passwords_id', 'permission_group_id', 
       	'personal_member_id', 'salt', 'token', 'twister', 'comments',
-      	'is_active_user', 'user_type')
+      	'is_active_user', 'user_type', 'default_billing_id')
       );
     } // getSystemColumns
     

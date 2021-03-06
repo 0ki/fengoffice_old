@@ -106,6 +106,16 @@ function clear_tmp_folder($dir = null) {
 	}
 }
 
+
+function send_password_expiration_reminders(){
+	$password_expiration_notification = config_option('password_expiration_notification', 0);
+	if($password_expiration_notification > 0){
+		_log("Sending password expiration reminders...");
+		$count = ContactPasswords::sendPasswordExpirationReminders();
+		_log("$count password expiration reminders sent.");
+	}
+}
+
 function _log($message) {
 	echo date("Y-m-d H:i:s") . " - $message\n";
 }

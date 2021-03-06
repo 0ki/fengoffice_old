@@ -6,6 +6,14 @@ og.eventManager.addListener('reload member restrictions',
  	}
 );
 
+og.eventManager.addListener('reload tab panel', 
+ 	function (name){
+ 		if (name) {
+			Ext.getCmp(name).reload();
+  		}
+ 	}
+);
+
 og.eventManager.addListener('reload member properties', 
  	function (genid){
  		App.modules.addMemberForm.drawDimensionProperties(genid, document.getElementById(genid + 'dimension_id').value);
@@ -152,5 +160,10 @@ og.eventManager.addListener('logo changed',
 	function(option) {
 		window.location.href = '<?php echo ROOT_URL?>' ;
 	}
+);
+og.eventManager.addListener('expand menu panel',
+	function(option) {
+		Ext.getCmp('menu-panel').expand(true);
+	}		
 );
 </script>

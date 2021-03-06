@@ -89,5 +89,45 @@ Ext.grid.RowSelectionModel.override({
         view.on("rowupdated", this.onRowUpdated, this);
         view.on("rowremoved", this.onRemove, this);        
     }
-}); 
+});
+
+
+
+Ext.override(Ext.Element, {
+	getAttributeNS : function(ns, name){
+		
+		if (Ext.isIE) {
+			var ieVer = navigator.userAgent.match(/msie (\d+)/i);
+			ieVer = ieVer ? parseInt(ieVer[1], 10) : 0;
+		}
+		
+		if (!Ext.isIE || ieVer >= 9) {
+			var d = this.dom;
+		    return d.getAttributeNS(ns, name) || d.getAttribute(ns+":"+name) || d.getAttribute(name) || d[name];
+		} else {
+			var d = this.dom;
+		    var type = typeof d[ns+":"+name];
+		    if(type != 'undefined' && type != 'unknown'){
+		        return d[ns+":"+name];
+		    }
+		    return d[name];
+		}
+	}
+});
+
+
+// IE 9 does not implement function createContextualFragment for range objects
+if (Range && typeof Range.prototype.createContextualFragment == "undefined") {
+    Range.prototype.createContextualFragment = function (html) {
+        var doc = window.document;
+        var container = doc.createElement("div");
+        container.innerHTML = html;
+        var frag = doc.createDocumentFragment(), n;
+        while ((n = container.firstChild)) {
+            frag.appendChild(n);
+        }
+        return frag;
+    };
+}
+
 /**/

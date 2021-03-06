@@ -3,7 +3,7 @@
 /**
  * ContactConfigOptions
  *
- * @author Diego Castiglioni <diego20@gmail.com>
+ * @author Diego Castiglioni <diego.castiglioni@fengoffice.com>
  */
 class ContactConfigOptions extends BaseContactConfigOptions {
 
@@ -138,9 +138,18 @@ class ContactConfigOptions extends BaseContactConfigOptions {
 	 * @return ContactConfigOption
 	 */
 	static function getByName($name) {
-		return self::findOne(array(
-        'conditions' => array('`name` = ?', $name)
-		)); // if
+		if (GlobalCache::isAvailable()) {
+			$object = GlobalCache::get('user_copt_obj_'.$name, $success);
+			if ($success) return $object;
+		}
+		
+		$object = self::findOne(array('conditions' => array('`name` = ?', $name)));
+		
+		if (GlobalCache::isAvailable()) {
+			GlobalCache::update('user_copt_obj_'.$name, $object);
+		}
+		
+		return $object;
 	} // getByName
 
 } // ConfigOptions

@@ -20,15 +20,15 @@ class PropertyController extends ApplicationController {
 	}
 	
 	function get_custom_properties(){
-		$object_type = array_var($_GET, 'object_type', '');
-		if($object_type != ''){
+		$object_type = array_var($_GET, 'object_type');
+		if($object_type){
 			$cp = CustomProperties::getAllCustomPropertiesByObjectType($object_type);
 			$customProperties = array();
 			foreach($cp as $custom){
 				$prop = array();
 				$prop['id'] = $custom->getId();
 				$prop['name'] = $custom->getName();
-				$prop['object_type'] = $custom->getObjectType();
+				$prop['object_type'] = $custom->getObjectTypeId();
 				$prop['description'] = $custom->getDescription();
 				$prop['type'] = $custom->getType();
 				$prop['values'] = $custom->getValues();
@@ -36,7 +36,7 @@ class PropertyController extends ApplicationController {
 				$prop['required'] = $custom->getIsRequired();
 				$prop['multiple_values'] = $custom->getIsMultipleValues();
 				$prop['visible_by_default'] = $custom->getVisibleByDefault();
-				$prop['co_types'] = CustomPropertiesByCoType::instance()->getCoTypesIdsForCpCSV($custom->getId());
+				$prop['co_types'] = '';//CustomPropertiesByCoType::instance()->getCoTypesIdsForCpCSV($custom->getId());
 				$customProperties[] = $prop;
 			}
 			ajx_current("empty");

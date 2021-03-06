@@ -15,7 +15,6 @@ class  SharingTableController extends ApplicationController {
 	 * @throws Exception
 	 */
 	function afterPermissionChanged($group , $permissions) {
-		
 		// CHECK PARAMETERS
 		if(!count($permissions)){
 			return false;
@@ -23,7 +22,6 @@ class  SharingTableController extends ApplicationController {
 		if (!is_numeric($group) || !$group) {
 			throw new Error("Error filling sharing table. Invalid Paramenters for afterPermissionChanged method");
 		}
-		
 
 		// INIT LOCAL VARS
 		$stManager = SharingTables::instance();
@@ -31,32 +29,29 @@ class  SharingTableController extends ApplicationController {
 		$members = array();
 		$general_condition = '' ;
 		$read_condition = '' ;
-		$condition = '' ;
-		
+		$delete_condition = '' ;
+
 		// BUILD OBJECT_IDs SUB-QUERIES
 		$from = "FROM ".TABLE_PREFIX."object_members om INNER JOIN ".TABLE_PREFIX."objects o ON o.id = om.object_id";
-		$sql = "SELECT object_id $from WHERE ";
-		
 		foreach ($permissions as $permission) {
 			$memberId = $permission->m;
 			$objectTypeId = $permission->o;
-			$condition = " (  object_type_id = $objectTypeId AND om.member_id =  $memberId ) AND om.object_id NOT IN (
+			$delete_condition = " (  object_type_id = $objectTypeId AND om.member_id =  $memberId ) AND om.object_id NOT IN (
 				SELECT distinct(object_id) FROM ".TABLE_PREFIX."object_members om
 				INNER JOIN ".TABLE_PREFIX."contact_member_permissions cmp on om.member_id = cmp.member_id
 				WHERE permission_group_id = $group  AND  om.member_id <> $memberId AND is_optimization = 0 
-				
 			)" ;
+			$read_condition = " (  object_type_id = $objectTypeId AND om.member_id =  $memberId ) ";
 			// Falta chequear las dimensiones allowAll 
-			$general_conditions[] = $condition ;
+			$delete_conditions[] = $delete_condition ;
 			if ($permission->r) {
-				$read_conditions[] = $condition ; 
+				$read_conditions[] = $read_condition ; 
 			}
 		}
-		$sql .= implode(' OR ' , $general_conditions ) ;
 		
 		// DELETE THE AFFECTED OBJECTS FROM SHARING TABLE
-		$delete_condition = "object_id IN ($sql) AND group_id = $group " ;
-		$stManager->delete($delete_condition);
+		$stManager->delete("object_id IN (SELECT object_id $from WHERE  ".implode(' OR ' , $delete_conditions ).") AND group_id = $group ");
+		
 		// 2. POPULATE THE SHARING TABLE AGAIN WITH THE READ-PERMISSIONS (If there are)
 		if (count($read_conditions)) {
 			$st_new_rows = "

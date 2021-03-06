@@ -13,7 +13,7 @@
 ?>
 <table style="width:100%" id="<?php echo $genid ?>-co"><tr>
 <td>
-	<table style="width:100%;border-collapse:collapse;table-layout:fixed;">
+	<table style="width:100%;border-collapse:collapse;table-layout:fixed;min-width:600px;">
 		
 		<tr>
 			<td class="coViewIcon" colspan=2 rowspan=2>
@@ -62,7 +62,7 @@
 					if (isset($variables)) {
 						tpl_assign('variables', $variables);
 					}
-					$this->includeTemplate(get_template_path($content_template[0], $content_template[1]));
+					$this->includeTemplate(get_template_path($content_template[0], $content_template[1], array_var($content_template, 2)));
 				}
 				else if (isset($content)) echo $content;
 				?>
@@ -81,8 +81,9 @@
 			$more_content_templates = array();
 			Hook::fire("more_content_templates", $object, $more_content_templates);
 			foreach ($more_content_templates as $ct) {
+				tpl_assign('genid', $genid);
 				tpl_assign('object', $object);
-				$this->includeTemplate(get_template_path($ct[0], $ct[1]));
+				$this->includeTemplate(get_template_path($ct[0], $ct[1], array_var($ct, 2)));
 			}
 			
 			if ($object instanceof ContentDataObject)

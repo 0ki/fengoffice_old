@@ -89,6 +89,7 @@
 <script>
 og.noOfTasks = '<?php echo user_config_option('noOfTasks') ?>';
 og.config.use_tasks_dependencies = '<?php echo config_option('use tasks dependencies') ? "1" : "0" ?>';
+og.config.time_format_use_24 = '<?php echo user_config_option('time_format_use_24') ? ' - G:i' : ' - g:i A' ?>';
 </script>
 
 <div id="taskPanelHiddenFields">
@@ -110,13 +111,6 @@ og.config.use_tasks_dependencies = '<?php echo config_option('use tasks dependen
 	<div id="tasksPanelTopToolbar" class="x-panel-tbar" style="width:100%;height:30px;display:block;background-color:#F0F0F0;"></div>
 	<div id="tasksPanelBottomToolbar" class="x-panel-tbar" style="width:100%;height:30px;display:block;background-color:#F0F0F0;border-bottom:1px solid #CCC;"></div>
 	<div id="tasksPanelContent" style="background-color:white;padding:7px;padding-top:0px;overflow-y:scroll;position:relative;">
-		<?php
-			$show_help_option = user_config_option('show_context_help'); 
-			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_tasks_context_help', true, logged_user()->getId()))) {?>
-			<div class="tasksPanelContextHelp">
-				<?php render_context_help($this, 'chelp tasks list', 'tasks', 'tasks'); ?>
-			</div>
-		<?php }?>
 	<?php if (isset($displayTooManyTasks) && $displayTooManyTasks){ ?>
 	<div class="tasksPanelWarning ico-warning32" style="font-size:10px;color:#666;background-repeat:no-repeat;padding-left:40px;max-width:920px; margin:20px;border:1px solid #E3AD00;background-color:#FFF690;background-position:4px 4px;">
 		<div style="font-weight:bold;width:99%;text-align:center;padding:4px;color:#AF8300;"><?php echo lang('too many tasks to display', user_config_option('task_display_limit')) ?></div>
@@ -177,7 +171,7 @@ og.config.use_tasks_dependencies = '<?php echo config_option('use tasks dependen
 			subtypesHfId:'hfObjectSubtypes'
 			});
 	
-		og.defaultTaskType = <?php echo config_option('default task co type', '0') ?>;
+		og.defaultTaskType = '<?php echo config_option('default task co type') ?>';
 		
 		function resizeTasksPanel(e, id) {
 			var tpc = document.getElementById('tasksPanelContent');

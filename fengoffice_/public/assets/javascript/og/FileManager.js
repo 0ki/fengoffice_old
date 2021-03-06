@@ -10,7 +10,7 @@ og.FileManager = function() {
 	this.objectTypeId = 0;
 	
 	this.fields = [
-		'name', 'object_id', 'type', 'createdBy', 'createdById', 'size',
+		'name', 'object_id', 'type', 'ot_id', 'createdBy', 'createdById', 'size',
 		'dateCreated', 'dateCreated_today',
 		'updatedBy', 'updatedById',
 		'dateUpdated', 'dateUpdated_today',
@@ -406,6 +406,7 @@ og.FileManager = function() {
 	
 	actions = {
 		newCO: new Ext.Action({
+			id: 'file-manager-new-action',
 			text: lang('new'),
             tooltip: lang('create an object'),
             iconCls: 'ico-new',

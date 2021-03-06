@@ -21,3 +21,8 @@ div.user-box-actions {
 	width: 252px;
 	float: left ; 
 }
+
+input[type=checkbox] {
+	padding: 0;
+	border: 0px none;
+}

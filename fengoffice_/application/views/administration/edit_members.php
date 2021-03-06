@@ -34,9 +34,9 @@
 							</td><td>
 								<span style="float:right;visibility:hidden;font-weight:normal;" id="<?php echo $genid?>actions<?php echo $mem->getId()?>">
 									<a href="<?php echo get_url('member', 'edit', array('id' => $mem->getId()))?>" class="db-ico ico-edit" style="padding:4px 10px 0 16px;"><?php echo lang('edit')?></a>
-								<?php if ($dimension->getDefinesPermissions()) {?>	
+								<?php if ($dimension->getDefinesPermissions()) : ?>	
 									<a href="<?php echo get_url('member', 'edit_permissions', array('id' => $mem->getId()))?>" class="db-ico ico-permissions" style="padding:4px 10px 0 16px;"><?php echo lang('permissions')?></a>
-								<?php } ?>
+								<?php endif; ?>
 									<a href="<?php echo "javascript:if(confirm(lang('confirm delete permanently'))) og.openLink('" . get_url('member', 'delete', array('id' => $mem->getId(), 'dont_reload' => true)) ."', {callback: function(){Ext.get('abm-members-item-container-".$mem->getId()."').remove()}});"?>" 
 										class="db-ico ico-delete" style="padding:4px 0 0 16px;"><?php echo lang('delete')?></a>
 								</span>

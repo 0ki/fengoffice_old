@@ -382,6 +382,7 @@ class ContactController extends ApplicationController {
 		} else if ($attributes['viewType'] == 'companies') {
 			$extra_conditions = 'AND `is_company` = 1';
 		}
+		$extra_conditions.= " AND disabled = 0 " ;
 		
 		switch ($order){
 			case 'updatedOn':
@@ -431,11 +432,13 @@ class ContactController extends ApplicationController {
 			
 			foreach ( $content_objects->objects as $k => $contact ) { /* @var $contact Contact */
 				if (Plugins::instance()->isActivePlugin("core_dimensions")) {
-					$mid = array_var(Members::instance()->findByObjectId($contact->getId(), Dimensions::findByCode("feng_persons")->getId()),0)->getId();
-					if (! ContactMemberPermissions::instance()->contactCanReadMember(logged_user()->getPermissionGroupId(),$mid, logged_user())) {
-						//alert("pogid:".logged_user()->getPermissionGroupId() . " mid:". $mid . "se va a sacar del array");
-						unset($content_objects->objects[$k]);
-						$content_objects->total--;
+					$m = array_var(Members::instance()->findByObjectId($contact->getId(), Dimensions::findByCode("feng_persons")->getId()),0);
+					if ($m instanceof Member) {
+						$mid = $m->getId();
+						if (! ContactMemberPermissions::instance()->contactCanReadMember(logged_user()->getPermissionGroupId(),$mid, logged_user())) {
+							unset($content_objects->objects[$k]);
+							$content_objects->total--;
+						}
 					}
 				}
 			}
@@ -486,7 +489,7 @@ class ContactController extends ApplicationController {
 				}; // for
 				if ($err > 0) {
 					$resultCode = 2;
-					$resultMessage = lang("error delete objects", $err) . "<br />" . ($succ > 0 ? lang("success delete objects", $succ) : "");
+					$resultMessage = lang("error delete objects", $err) . ($succ > 0 ? lang("success delete objects", $succ) : "");
 				} else {
 					$resultMessage = lang("success delete objects", $succ);
 					if ($succ > 0) ObjectController::reloadPersonsDimension();
@@ -515,7 +518,7 @@ class ContactController extends ApplicationController {
 				}; // for
 				if ($err > 0) {
 					$resultCode = 2;
-					$resultMessage = lang("error archive objects", $err) . "<br />" . ($succ > 0 ? lang("success archive objects", $succ) : "");
+					$resultMessage = lang("error archive objects", $err) . ($succ > 0 ? lang("success archive objects", $succ) : "");
 				} else {
 					$resultMessage = lang("success archive objects", $succ);
 					if ($succ > 0) ObjectController::reloadPersonsDimension();
@@ -566,6 +569,7 @@ class ContactController extends ApplicationController {
 						"id" => $i,
 						"ix" => $i,
 						"object_id" => $c->getId(),
+						"ot_id" => $c->getObjectTypeId(),
 						"type" => 'contact',
 						"name" => $c->getReverseDisplayName(),
 						"email" => $c->getEmailAddress('personal',true),
@@ -573,7 +577,7 @@ class ContactController extends ApplicationController {
 						"companyName" => $companyName,
 						"website" => $c->getWebpage('personal') ? cleanUrl($c->getWebpageUrl('personal'), false) : '',
 						"jobTitle" => $c->getJobTitle(),
-				    	"department" => $c->getDepartment(),
+                        "department" => $c->getDepartment(),
 						"email2" => !is_null($personal_emails) && isset($personal_emails[0]) ? $personal_emails[0]->getEmailAddress() : '',
 						"email3" => !is_null($personal_emails) && isset($personal_emails[1]) ? $personal_emails[1]->getEmailAddress() : '',
 						"workWebsite" => $c->getWebpage('work') ? cleanUrl($c->getWebpageUrl('work'), false) : '',
@@ -602,17 +606,18 @@ class ContactController extends ApplicationController {
 						"id" => $i,
 						"ix" => $i,
 						"object_id" => $c->getId(),
+						"ot_id" => $c->getObjectTypeId(),
 						"type" => 'company',
 						'name' => $c->getObjectName(),
 						'email' => $c->getEmailAddress(),
 						'website' => $c->getWebpage('work') ? cleanUrl($c->getWebpageUrl('work'), false) : '',
 						'workPhone1' => $c->getPhone('work',true) ? cleanUrl($c->getPhoneNumber('work',true), false) : '',
-          				'workPhone2' => $c->getPhone('fax',true) ? cleanUrl($c->getPhoneNumber('fax',true), false) : '',
-          				'workAddress' => $w_address ? $c->getFullAddress($w_address) : '',
+                        'workPhone2' => $c->getPhone('fax',true) ? cleanUrl($c->getPhoneNumber('fax',true), false) : '',
+                        'workAddress' => $w_address ? $c->getFullAddress($w_address) : '',
 						"companyId" => $c->getId(),
 						"companyName" => $c->getObjectName(),
 						"jobTitle" => '',
-				    	"department" => lang('company'),
+                        "department" => lang('company'),
 						"email2" => '',
 						"email3" => '',
 						"workWebsite" => $c->getWebpage('work') ? cleanUrl($c->getWebpageUrl('work'), false) : '',
@@ -681,22 +686,20 @@ class ContactController extends ApplicationController {
 		if (array_var($_GET, 'include_comments')) $obj_type_types[] = 'comment';
 		/*
 		$pagination = Objects::getObjects($context, null, 1, null, null, false, false, null, null, null, $obj_type_types);
-		$result = $pagination->objects; */ // Performance Killer
+		$result = $pagination->objects; 
 		$total_items = $pagination->total ;
 		 
 		if(!$result) $result = array();
 
-		/* prepare response object */
 		$info = array();
 		
-		foreach ($result as $obj /* @var $obj Object */) {
+		foreach ($result as $obj  ) {
 			$info_elem =  $obj->getArrayInfo();
 			
 			$instance = Objects::instance()->findObject($info_elem['object_id']);
 			$info_elem['url'] = $instance->getViewUrl();
 			
-			/* @var $instance Contact  */
-			if ($instance instanceof  Contact /* @var $instance Contact  */ ) {
+			if ($instance instanceof  Contact ) {
 				if( $instance->isCompany() ) {
 					$info_elem['icon'] = 'ico-company';
 					$info_elem['type'] = 'company';
@@ -710,6 +713,7 @@ class ContactController extends ApplicationController {
 		}
         
         tpl_assign('feeds', $info);
+        */ // Performance Killer
         
 		ajx_extra_data(array("title" => $contact->getObjectName(), 'icon'=>'ico-contact'));
 		ajx_set_no_toolbar(true);
@@ -724,7 +728,21 @@ class ContactController extends ApplicationController {
 				add_page_action(lang('restore from trash'), "javascript:if(confirm(lang('confirm restore objects'))) og.openLink('" . $contact->getUntrashUrl() ."');", 'ico-restore',null, null, true);
 				add_page_action(lang('delete permanently'), "javascript:if(confirm(lang('confirm delete permanently'))) og.openLink('" . $contact->getDeletePermanentlyUrl() ."');", 'ico-delete',null, null, true);
 			} else {
-				add_page_action(lang('move to trash'), "javascript:if(confirm(lang('confirm move to trash'))) og.openLink('" . $contact->getTrashUrl() ."');", 'ico-trash',null, null, true);
+				if ($contact->getUserType() ) {
+					
+					if ($contact->hasReferences()) {
+						// user-contacts, dont send them to trash, disable them
+						add_page_action(lang('disable'), "javascript:if(confirm(lang('confirm disable user'))) og.openLink('" . $contact->getDisableUrl() ."',{callback:function(){og.customDashboard('contact','init',{},true)}});", 'ico-trash',null, null, true);
+					}else {
+						// user-contacts, dont send them to trash, disable them
+						add_page_action(lang('delete'), "javascript:if(confirm(lang('confirm delete user'))) og.openLink('" . $contact->getDeleteUrl() ."',{callback:function(){og.customDashboard('contact','init',{},true)}});", 'ico-trash',null, null, true);
+						add_page_action(lang('disable'), "javascript:if(confirm(lang('confirm disable user'))) og.openLink('" . $contact->getDisableUrl() ."',{callback:function(){og.customDashboard('contact','init',{},true)}});", 'ico-trash',null, null, true);
+
+					}
+				}else{
+					// Non user contacts, move them to trash
+					add_page_action(lang('move to trash'), "javascript:if(confirm(lang('confirm move to trash'))) og.openLink('" . $contact->getTrashUrl() ."');", 'ico-trash',null, null, true);
+				}
 			}
 		} // if
 		if (!$contact->isTrashed()) {
@@ -775,9 +793,11 @@ class ContactController extends ApplicationController {
 		}
 		$this->setTemplate('edit_contact');
 		//$this->setTemplate('add_contact');
-
-		if(!Contact::canAdd(logged_user(), active_context())) {
-			flash_error(lang('no context permissions to add',lang("contacts")));
+		
+		$notAllowedMember = '';
+		if(!Contact::canAdd(logged_user(), active_context(), $notAllowedMember)) {
+			if (str_starts_with($notAllowedMember, '-- req dim --')) flash_error(lang('must choose at least one member of', str_replace_first('-- req dim --', '', $notAllowedMember, $in)));
+			else flash_error(lang('no context permissions to add',lang("contacts")),$notAllowedMember);
 			ajx_current("empty");
 			return;
 		} // if
@@ -809,6 +829,8 @@ class ContactController extends ApplicationController {
 			ajx_current("empty");
 			try {
 				DB::beginWork();
+				$contact_data['email']= trim ($contact_data['email']);
+				
 				Contacts::validate($contact_data);
 				$newCompany = false;
 				if (array_var($contact_data, 'isNewCompany') == 'true' && is_array(array_var($_POST, 'company'))){
@@ -929,7 +951,8 @@ class ContactController extends ApplicationController {
 	function check_existing_email() {
 		ajx_current("empty");
 		$email = array_var($_REQUEST, 'email');
-		$contact = Contacts::getByEmail($email);
+                $id_contact = array_var($_REQUEST, 'id_contact');
+		$contact = Contacts::getByEmail($email,$id_contact);
 		if ($contact) {
 			ajx_extra_data(array("contact"=>array(
 				"name" => $contact->getName(),
@@ -1081,8 +1104,8 @@ class ContactController extends ApplicationController {
 			
 			try {
 				DB::beginWork();
+				$contact_data['email']= trim ($contact_data['email']);
 				Contacts::validate($contact_data, get_id());
-				
 				$newCompany = false;
 				if (array_var($contact_data, 'isNewCompany') == 'true' && is_array(array_var($_POST, 'company'))){
 					$company_data = array_var($_POST, 'company');
@@ -1091,8 +1114,8 @@ class ContactController extends ApplicationController {
 					
 					$company = new Contact();
 					$company->setFromAttributes($company_data);
-					$company->setIsCompany(true);	
-					$company->setObjectName();			
+					$company->setIsCompany(true);
+					$company->setObjectName();
 					$company->save();
 					
 					if($company_data['address'] != "")
@@ -1105,7 +1128,6 @@ class ContactController extends ApplicationController {
 					ApplicationLogs::createLog($company,ApplicationLogs::ACTION_ADD);
 					$newCompany = true;
 
-
 				}
 				
 				$contact_data['birthday'] = getDateValue($contact_data["birthday"]);
@@ -1113,9 +1135,9 @@ class ContactController extends ApplicationController {
 				
 				$contact->setFromAttributes($contact_data);
 				
-				if($newCompany)
+				if($newCompany) {
 					$contact->setCompanyId($company->getId());
-				
+				}
 						
 				//telephones
 			
@@ -2525,9 +2547,10 @@ class ContactController extends ApplicationController {
 			ajx_current("empty");
 			return;
 		}
-		
-		if(!Contact::canAdd(logged_user(),active_context())) {
-			flash_error(lang('no context permissions to add',lang("contacts")));
+		$notAllowedMember = '';				
+		if(!Contact::canAdd(logged_user(),active_context(),$notAllowedMember)) {
+			if (str_starts_with($notAllowedMember, '-- req dim --')) flash_error(lang('must choose at least one member of', str_replace_first('-- req dim --', '', $notAllowedMember, $in)));
+			else flash_error(lang('no context permissions to add',lang("contacts")),$notAllowedMember);
 			ajx_current("empty");
 			return;
 		} // if
@@ -2704,6 +2727,7 @@ class ContactController extends ApplicationController {
 			$city = "";
 			$state = "";
 			$zipcode = "";
+			$country = "";
 			if($address){
 				$street = $address->getStreet();
 				$city = $address->getCity();
@@ -2729,35 +2753,44 @@ class ContactController extends ApplicationController {
 		}
 	}
 	
-	
 	private function createUserFromContactForm ($user, $contactId, $email) {
 		$createUser = false ;
+                $createPass = false ; 
+                
 		if ( array_var ($user, 'create-user')) {
 			$createUser = true ;
-			$password =  array_var($user, 'password') ;
-			$password_a =  array_var($user, 'password_a') ;
+                        if ( array_var ($user, 'create-password')) {
+                            $createPass = true ;    
+                            $password =  array_var($user, 'password') ;
+                            $password_a =  array_var($user, 'password_a') ;                            
+                        }
 			$type =  array_var($user, 'type') ;
 			$username =  array_var($user, 'username') ;
 		}
-		if ($createUser){
-			
-			
-			$userData = array(
-				'contact_id' => $contactId,
-				'username' => $username,
-				'email' => $email,
-				'password' => $password,
-				'password_a' => $password_a,
-				'type' => $type,
-				'password_generator' => 'specify',
-				'send_email_notification' => true
-			);
+		if ($createUser){			                       
+        	if ($createPass){
+            	$userData = array(  'contact_id' => $contactId,
+                                    'username' => $username,
+                                    'email' => $email,
+                                    'password' => $password,
+                                    'password_a' => $password_a,
+                                    'type' => $type,
+                                    'password_generator' => 'specify',
+                                    'send_email_notification' => true);
+            }else{
+                $userData = array(	'contact_id' => $contactId,
+									'username' => $username,
+									'email' => $email,
+									'type' => $type,
+									'password_generator' => 'link',
+									'send_email_notification' => true);
+            }
 			$valid =  Contacts::validateUser($contactId);
 			create_user($userData, '');
 		}
 		
 	}
-	
+
 	/**
 	 * @author Ignacio Vazquez <elpepe.uy at gmail dot com>
 	 * Handle quick add submit
@@ -2801,7 +2834,7 @@ class ContactController extends ApplicationController {
 			return;
 		}
 		
-		$email  =  array_var(array_var($_POST, 'contact'),'email') ;
+		$email = trim(array_var(array_var($_POST, 'contact'),'email')) ;
 		$member = array_var($_POST, 'member');
 		$name = array_var($member, 'name');
 		$parentMemberId = array_var($member, 'parent_member_id');
@@ -2827,12 +2860,15 @@ class ContactController extends ApplicationController {
 		try {
 			DB::beginWork();
 			$contact->save();
-			if ($email) {
+			if ($email && is_valid_email($email)) {
 				if (!Contacts::validateUniqueEmail($email)) {
 					DB::rollback();
 					flash_error(lang("email address must be unique"));
 					return false;
 				}else{
+					if (!array_var (array_var(array_var($_POST, 'contact'),'user'), 'create-user')) {
+						$contact->addEmail($email, 'personal', true);
+					}
 					flash_success(lang("success add contact", $contact->getObjectName()));
 				}
 			}
@@ -2842,8 +2878,10 @@ class ContactController extends ApplicationController {
 			$user['username'] = str_replace(" ","",strtolower($name)) ;
 			$this->createUserFromContactForm($user, $contact->getId(), $email);
 			
+			// Reload contact again due to 'createUserFromContactForm' changes
+			Hook::fire("after_contact_quick_add", Contacts::instance()->findById($contact->getId()), $ret);
+			
 			DB::commit();
-			Hook::fire("after_contact_quick_add", $contact, $ret);
 			
 		}catch (Exception $e){
 			DB::rollback();

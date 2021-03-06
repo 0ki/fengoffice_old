@@ -8,7 +8,7 @@
 		$form_action = $company->getEditUrl();
 	}
 	$renderContext = has_context_to_render($company->manager()->getObjectTypeId());
-	
+	$visible_cps = CustomProperties::countVisibleCustomPropertiesByObjectType($object->getObjectTypeId());	
 ?>
 <form onsubmit="return og.handleMemberChooserSubmit('<?php echo $genid; ?>', <?php echo $company->manager()->getObjectTypeId() ?>);"style="height:100%;background-color:white" class="internalForm" action="<?php echo $form_action ?>" method="post">
 
@@ -36,7 +36,7 @@
 			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_company_select_context_div',this)"><?php echo lang('context') ?></a> -
 		<?php endif; ?>
 			<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('add_company_timezone',this)"><?php echo lang('timezone') ?></a> -
-		<?php //FIXME FENG2 or REMOVE <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid add_custom_properties_div',this)"><?php echo lang('custom properties') </a> -?>
+			<a href="#" class="option <?php echo $visible_cps>0 ? 'bold' : ''?>" onclick="og.toggleAndBolden('<?php echo $genid ?>add_custom_properties_div',this)"><?php echo lang('custom properties') ?></a> -
 			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_subscribers_div',this)"><?php echo lang('object subscribers') ?></a>
 		<?php if($object->isNew() || $object->canLinkObject(logged_user())) { ?> - 
 			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_linked_objects_div',this)"><?php echo lang('linked objects') ?></a>
@@ -48,13 +48,6 @@
   </div>
   <div class="adminSeparator"></div>
   <div class="adminMainBlock">
- 		 <?php 
-			$show_help_option = user_config_option('show_context_help'); 
-			if ($show_help_option == 'always' || ($show_help_option == 'until_close' )&& user_config_option('show_add_company_context_help', true, logged_user()->getId())) {?>
-			<div id="contactPanelContextHelp" class="contextHelpStyle">
-				<?php render_context_help($this, 'chelp add company','add_company'); ?>
-			</div>
-		<?php }?>
 	
 	<?php if ( $renderContext ) :?>
 		<div id="<?php echo $genid ?>add_company_select_context_div" style="display:none">
@@ -70,11 +63,11 @@
 		</div>
 	<?php endif ;?>	
 	
-	<div id='<?php echo $genid ?>add_custom_properties_div' style="display:none">
+	<div id='<?php echo $genid ?>add_custom_properties_div' style="<?php echo ($visible_cps > 0 ? "" : "display:none") ?>">
 		<fieldset>
 			<legend><?php echo lang('custom properties') ?></legend>
-			<?php echo render_object_custom_properties($object, 'Contacts', false) ?><br/><br/>
-			<?php echo render_add_custom_properties($object); ?>
+			<?php echo render_object_custom_properties($object, false) ?>
+			<?php //echo render_add_custom_properties($object); ?>
 		</fieldset>
 	</div>
 	
@@ -172,10 +165,7 @@
 		</tr>
 	</table>
 	
-	
-	<div>
-		<?php echo render_object_custom_properties($object, 'Companies', true) ?>
-	</div><br/>	
+
   
 <?php if(!$company->isNew() && $company->isOwnerCompany()) { ?>
   <?php echo submit_button(lang('save changes'), 's', array('tabindex' => '20000')) ?>

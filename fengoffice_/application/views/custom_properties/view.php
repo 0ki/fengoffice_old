@@ -9,7 +9,7 @@
 <table class="og-custom-properties">
 <?php 
 	$alt = true;
-	$cps = CustomProperties::getAllCustomPropertiesByObjectType(get_class($__properties_object->manager()));
+	$cps = CustomProperties::getAllCustomPropertiesByObjectType($__properties_object->getObjectTypeId());
 	foreach($cps as $customProp){ 
 		$cpv = CustomPropertyValues::getCustomPropertyValue($__properties_object->getId(), $customProp->getId());
 		if($cpv instanceof CustomPropertyValue && ($customProp->getIsRequired() || $cpv->getValue() != '')){

@@ -10,10 +10,8 @@ class Trash {
 			$objects = Objects::findAll(array("conditions" => array("`trashed_by_id` > 0 AND `trashed_on` < ?", $date), "limit" => 100));
 			
 			foreach ($objects as $object) {
-				$object_type = $object->getType();
-		    	$handler_class = $object_type->getHandlerClass();
 		    	
-		    	eval('$concrete_object = '.$handler_class.'::findById('.$object->getId().');');
+				$concrete_object = Objects::findObject($object->getId());
 		    	
 		    	if (!$concrete_object instanceof ContentDataObject) continue;
 		    	if ($concrete_object instanceof MailContent && $concrete_object->getIsDeleted() > 0) continue;

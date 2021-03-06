@@ -30,7 +30,7 @@ og.LinkedObjectManager = function(config) {
 				totalProperty: 'totalCount',
 				id: 'id',
 				fields: [
-					'name', 'object_id', 'type', 'tags', 
+					'name', 'object_id', 'type', 'ot_id', 'tags', 
 					'createdBy', 'createdById', 'dateCreated',
 					'updatedBy', 'updatedById',	'dateUpdated',
 					'icon', 'wsIds', 'manager', 'mimeType', 'url', 'ix', 'memPath'

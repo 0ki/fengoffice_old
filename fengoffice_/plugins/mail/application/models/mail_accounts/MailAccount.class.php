@@ -77,9 +77,10 @@ class MailAccount extends BaseMailAccount {
 		$maxUID = 0;
 		$sql = "SELECT `uid` FROM `" . MailContents::instance()->getTableName() .
 				"` WHERE `account_id` = ". $this->getId();
-		if (!is_null($folder)) 
+		if (!is_null($folder)) {
 			$sql .= " AND `imap_folder_name` = '$folder'";
-		$sql .= " AND id = (SELECT max(id) FROM `". MailContents::instance()->getTableName() .
+		}
+		$sql .= " AND object_id = (SELECT max(object_id) FROM `". MailContents::instance()->getTableName() .
 				"` WHERE `account_id` = ". $this->getId(). " AND `state` < 2)";
 		$rows = DB::executeAll($sql);
 		if (isset($rows)){
@@ -232,17 +233,16 @@ class MailAccount extends BaseMailAccount {
 		if ($deleteMails) {
 			session_commit();
 			
-			LinkedObjects::delete(array("(`object_id` IN (SELECT `id` FROM `".TABLE_PREFIX."mail_contents` WHERE `account_id` = " . DB::escape($this->getId()).") and `object_manager` = 'MailContents') 
-				or (`rel_object_id` IN (SELECT `id` FROM `".TABLE_PREFIX."mail_contents` WHERE `account_id` = " . DB::escape($this->getId()).") and `rel_object_manager` = 'MailContents')")); 
+			LinkedObjects::delete(array("(`object_id` IN (SELECT `id` FROM `".TABLE_PREFIX."mail_contents` WHERE `account_id` = " . DB::escape($this->getId()).")) 
+				or (`rel_object_id` IN (SELECT `id` FROM `".TABLE_PREFIX."mail_contents` WHERE `account_id` = " . DB::escape($this->getId())."))")); 
 			
-      		SearchableObjects::delete(array("`rel_object_manager` = 'MailContents' AND `rel_object_id` IN (SELECT `id` FROM `".TABLE_PREFIX."mail_contents` WHERE `account_id` = " . DB::escape($this->getId()).") "));
-			ReadObjects::delete("`rel_object_manager` = 'MailContents' AND `rel_object_id` IN (SELECT `id` FROM `".TABLE_PREFIX."mail_contents` WHERE `account_id` = " . DB::escape($this->getId()).") ");
+      		SearchableObjects::delete(array("`rel_object_id` IN (SELECT `id` FROM `".TABLE_PREFIX."mail_contents` WHERE `account_id` = " . DB::escape($this->getId()).") "));
+			ReadObjects::delete("`rel_object_id` IN (SELECT `id` FROM `".TABLE_PREFIX."mail_contents` WHERE `account_id` = " . DB::escape($this->getId()).") ");
 			
 			$account_emails = MailContents::findAll(array('conditions' => '`account_id` = ' . DB::escape($this->getId()), 'include_trashed' => true));
 			foreach ($account_emails as $email) {
 				$email->delete();
 			}
-			//MailContents::delete('`account_id` = ' . DB::escape($this->getId()));
 		}
 		if ($this->getIsImap()) {
 			MailAccountImapFolders::delete('account_id = ' . $this->getId());

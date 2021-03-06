@@ -105,9 +105,15 @@
 
 <script>
 	var memberChoosers = Ext.getCmp('<?php echo "$genid-member-chooser-panel-".$webpage->manager()->getObjectTypeId()?>').items;
+	var treeClicked = false;
+		
 	if (memberChoosers) {
 		memberChoosers.each(function(item, index, length) {
 			item.on('all trees updated', function() {
+				// First User click
+				$(".member-chooser input.x-tree-node-cb").click(function(){
+					treeClicked = true;
+ 				});
 				var dimensionMembers = {};
 				memberChoosers.each(function(it, ix, l) {
 					dim_id = this.dimensionId;
@@ -119,15 +125,17 @@
 				});
 	
 				var uids = App.modules.addMessageForm.getCheckedUsers('<?php echo $genid ?>');
-				Ext.get('<?php echo $genid ?>add_subscribers_content').load({
-					url: og.getUrl('object', 'render_add_subscribers', {
-						context: Ext.util.JSON.encode(dimensionMembers),
-						users: uids,
-						genid: '<?php echo $genid ?>',
-						otype: '<?php echo $webpage->manager()->getObjectTypeId()?>'
-					}),
-					scripts: true
-				});
+				if(treeClicked) {
+					Ext.get('<?php echo $genid ?>add_subscribers_content').load({
+						url: og.getUrl('object', 'render_add_subscribers', {
+							context: Ext.util.JSON.encode(dimensionMembers),
+							users: uids,
+							genid: '<?php echo $genid ?>',
+							otype: '<?php echo $webpage->manager()->getObjectTypeId()?>'
+						}),
+						scripts: true
+					});
+				}
 			});
 		});
 	}

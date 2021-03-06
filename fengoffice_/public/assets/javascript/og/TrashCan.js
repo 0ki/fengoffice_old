@@ -19,7 +19,7 @@ og.TrashCan = function() {
 				totalProperty: 'totalCount',
 				id: 'id',
 				fields: [
-					'name', 'object_id', 'type', 
+					'name', 'object_id', 'type', 'ot_id', 
 					'createdBy', 'createdById', 'dateCreated',
 					'updatedBy', 'updatedById',	'dateUpdated',
 					'deletedBy', 'deletedById',	'dateDeleted',

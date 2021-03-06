@@ -8,7 +8,7 @@
  */
 class ProjectMessage extends BaseProjectMessage {
 
-	protected $searchable_columns = array('text', 'name');
+	protected $searchable_columns = array('text');
 	
 	/**
 	 * @var string
@@ -77,8 +77,8 @@ class ProjectMessage extends BaseProjectMessage {
 	//  Permissions
 	// ---------------------------------------------------
 
-	function canAdd(Contact $user, $context){
-		return can_add($user, $context, ProjectMessages::instance()->getObjectTypeId());
+	function canAdd(Contact $user, $context, &$notAllowedMember = ''){
+		return can_add($user, $context, ProjectMessages::instance()->getObjectTypeId(),$notAllowedMember);
 	}
 	
 
@@ -221,5 +221,16 @@ class ProjectMessage extends BaseProjectMessage {
     	return parent::getObjectId();
     }
     
+    function getArrayInfo(){
+    
+    	return array(
+    		"id" => $this->getId(),
+    		"title" => $this->getName(),
+    		"cbid" => $this->getCreatedById(),
+    		"cbname" => $this->getCreatedByDisplayName(),
+    		"createdOn" => $this->getCreatedOn()->getTimestamp(),
+    		"text" => $this->getText(),
+    	);
+    }
     
 } // ProjectMessage

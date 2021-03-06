@@ -475,6 +475,7 @@ addLangs({
 	'none': 'Ninguno',
 	'new task time report': 'Nuevo reporte de horas de tarea',
 	'print': 'Imprimir',
+        'print calendar': 'Imprimir calendario',
 	'confirm delete timeslot': 'Está seguro que desea eliminar el tiempo de trabajo?',
 	'no items selected': 'No hay objetos seleccionados',
 	'error adding timeslot': 'Un error ocurrió al ingresar un tiempo de trabajo',
@@ -732,5 +733,11 @@ addLangs({
   	'more info' : 'Más Información',
   	'email already taken by' : 'Email ya usado por {0}',
   	'passwords dont match' : 'Las contraseñas no coinciden',
-  	'password value missing' : 'Debe ingresar una contraseña'
+  	'password value missing' : 'Debe ingresar una contraseña',
+  	'confirm disable user' : '¿Realmente quiere desactivar esta cuenta?',
+  	'confirm delete user' : '¿Realmente quiere eliminar esta cuenta?',
+	'add sub task' : 'Nueva subtarea',
+	'do you want to mantain the current associations of this obj with members of': '¿Desea mantener las actuales asociaciones de este objeto con {0}?'
+  	
+  	
 });

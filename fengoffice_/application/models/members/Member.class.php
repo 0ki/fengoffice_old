@@ -3,7 +3,7 @@
 /**
  * Member class
  *
- * @author Diego Castiglioni <diego20@gmail.com>
+ * @author Diego Castiglioni <diego.castiglioni@fengoffice.com>
  */
 class Member extends BaseMember {
 
@@ -231,9 +231,9 @@ class Member extends BaseMember {
 		}
 		if (!array_var($this->skip_validations, 'uniqueness of parent - name')) {
 			if ($this->getParentMemberId() == 0) {
-				if (!$this->validateUniquenessOf('name', 'dimension_id')) $errors[] = lang('member name already exists in dimension', $this->getName());
+				if (!$this->validateUniquenessOf('name', 'dimension_id', 'object_type_id')) $errors[] = lang('member name already exists in dimension', $this->getName());
 			} else {
-				if (!$this->validateUniquenessOf('name', 'parent_member_id')) $errors[] = lang('member name already exists', $this->getName());
+				if (!$this->validateUniquenessOf('name', 'parent_member_id', 'object_type_id' )) $errors[] = lang('member name already exists', $this->getName());
 			}
 		}
 	}
@@ -315,5 +315,14 @@ class Member extends BaseMember {
 	}
 
 	
-	
+	function getPath(){
+		$path='';
+		foreach(array_reverse($this->getAllParentMembersInHierarchy(false)) as $parent){
+			$path.= $parent->getName(). "/";
+		}
+		if ($path){
+			$path=substr($path, 0, -1);
+		}
+		return $path;
+	}
 }

@@ -164,6 +164,9 @@ if($event->isNew()) {
 } else {
 	$form_view_url = $event->getEditUrl()."&view=". array_var($_GET, 'view','month');
 } 
+
+$visible_cps = CustomProperties::countVisibleCustomPropertiesByObjectType($object->getObjectTypeId());
+
 ?>
 	<form id="<?php echo $genid ?>submit-edit-form" class="add-event" style="height:100%;background-color:white" class="internalForm" action="<?php echo $form_view_url; ?>" method="post" onsubmit="<?php echo $form_on_submit ?>">
 	<input type="hidden" id="event[pm]" name="event[pm]" value="<?php echo $pm?>">
@@ -196,7 +199,7 @@ if($event->isNew()) {
 		<a href='#' class='option' onclick="og.ToggleTrap('trap3', 'fs3');og.toggleAndBolden('<?php echo $genid ?>add_event_description_div', this)"><?php echo lang('description')?></a> - 
 		<a href='#' class='option' onclick="og.ToggleTrap('trap4', 'fs4');og.toggleAndBolden('<?php echo $genid ?>event_repeat_options_div', this)"><?php echo lang('CAL_REPEATING_EVENT')?></a> -
 		<a href='#' class='option' onclick="og.ToggleTrap('trap5', 'fs5');og.toggleAndBolden('<?php echo $genid ?>add_reminders_div', this)"><?php echo lang('object reminders')?></a> - 
-		<?php //FIXME FENG2 or REMOVE <a href='#' class='option' onclick="og.ToggleTrap('trap6', 'fs6');og.toggleAndBolden('<?php echo $genid add_custom_properties_div', this)"><?php echo lang('custom properties')</a> - ?>
+		<a href='#' class='option <?php echo $visible_cps>0 ? 'bold' : ''?>' onclick="og.ToggleTrap('trap6', 'fs6');og.toggleAndBolden('<?php echo $genid ?>add_custom_properties_div', this)"><?php echo lang('custom properties') ?></a> - 
 		<a href="#" class="option" onclick="og.ToggleTrap('trap7', 'fs7');og.toggleAndBolden('<?php echo $genid ?>add_subscribers_div',this)"><?php echo lang('object subscribers') ?></a> - 
 		<a href="#" class="option" onclick="og.ToggleTrap('trap8', 'fs8');og.toggleAndBolden('<?php echo $genid ?>add_linked_objects_div',this)"><?php echo lang('linked objects') ?></a> - 
 		<a href="#" class="option" onclick="og.ToggleTrap('trap9', 'fs9');og.toggleAndBolden('<?php echo $genid ?>add_event_invitation_div', this);"><?php echo lang('event invitations') ?></a>
@@ -211,45 +214,24 @@ if($event->isNew()) {
 			<input id="<?php echo $genid?>updated-on-hidden" type="hidden" name="updatedon" value="<?php echo $event->isNew() ? '' : $event->getUpdatedOn()->getTimestamp() ?>">
 			<input id="<?php echo $genid?>merge-changes-hidden" type="hidden" name="merge-changes" value="" >
 			<input id="<?php echo $genid?>genid" type="hidden" name="genid" value="<?php echo $genid ?>" >
-		<?php 
-			$show_help_option = user_config_option('show_context_help'); 
-			if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_event_context_help', true, logged_user()->getId())) {?>
-			<div id="addEventPanelContextHelp" class="contextHelpStyle">
-				<?php render_context_help($this, 'chelp add event','add_event'); ?>
-			</div>
-		<?php }?>
 		
 		<div id="<?php echo $genid ?>add_event_select_context_div" style="display:none" >
-		<fieldset>
-		<?php 
-			$show_help_option = user_config_option('show_context_help'); 
-			if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_event_workspace_context_help', true, logged_user()->getId())) {?>
-			<div id="addEventPanelContextHelp" class="contextHelpStyle">
-				<?php render_context_help($this, 'chelp add event workspace','add_event_workspace'); ?>
-			</div>
-		<?php }?>
-		<legend><?php echo lang('context') ?></legend>
-			<?php
-				if ($event->isNew()) {
-					render_dimension_trees($event->manager()->getObjectTypeId(), $genid, null, array('select_current_context' => true));
-				} else {
-					render_dimension_trees($event->manager()->getObjectTypeId(), $genid, $event->getMemberIds());
-				} 
-			?>
-		</fieldset>
+			<fieldset>
+				<legend><?php echo lang('context') ?></legend>
+				<?php
+					if ($event->isNew()) {
+						render_dimension_trees($event->manager()->getObjectTypeId(), $genid, null, array('select_current_context' => true));
+					} else {
+						render_dimension_trees($event->manager()->getObjectTypeId(), $genid, $event->getMemberIds());
+					} 
+				?>
+			</fieldset>
 		</div>
 		<div id="trap1"><fieldset id="fs1" style="height:0px;border:0px;padding:0px;display:none"><span style="color:#FFFFFF;"></span></fieldset></div>
 		
 		<div id="<?php echo $genid ?>add_event_description_div" style="display:none">
 			<fieldset>
-			<?php 
-			$show_help_option = user_config_option('show_context_help'); 
-			if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_event_description_context_help', true, logged_user()->getId())) {?>
-			<div id="addEventPanelContextHelp" class="contextHelpStyle">
-				<?php render_context_help($this, 'chelp add event description','add_event_description'); ?>
-			</div>
-		<?php }?>
-			<legend><?php echo lang('description')?></legend>
+				<legend><?php echo lang('description')?></legend>
 				<?php echo textarea_field('event[description]',array_var($event_data, 'description'), array('id' => 'descriptionFormText', 'tabindex' => '30'));?>
 			</fieldset>
 		</div>
@@ -265,14 +247,7 @@ if($event->isNew()) {
 		
 	<div id="<?php echo $genid ?>event_repeat_options_div" style="display:none">
 		<fieldset>
-			<?php 
-				$show_help_option = user_config_option('show_context_help'); 
-				if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_event_repeat_options_context_help', true, logged_user()->getId())) {?>
-				<div id="addEventPanelContextHelp" class="contextHelpStyle">
-					<?php render_context_help($this, 'chelp add event repeat options','add_event_repeat_options'); ?>
-				</div>
-			<?php }?>
-				<legend><?php echo lang('CAL_REPEATING_EVENT')?></legend>
+			<legend><?php echo lang('CAL_REPEATING_EVENT')?></legend>
 			<?php
 			// calculate what is visible given the repeating options
 			$hide = '';
@@ -371,13 +346,6 @@ if($event->isNew()) {
 
 	<div id="<?php echo $genid ?>add_reminders_div" style="display:none">
 	<fieldset>
-	<?php 
-			$show_help_option = user_config_option('show_context_help'); 
-			if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_event_reminders_context_help', true, logged_user()->getId())) {?>
-			<div id="addEventPanelContextHelp" class="contextHelpStyle">
-				<?php render_context_help($this, 'chelp add event reminders','add_event_reminders'); ?>
-			</div>
-		<?php }?>
 	<legend><?php echo lang('object reminders')?></legend>
 		<div id="<?php echo $genid ?>add_reminders_warning" class="desc" style="display:none;">
 			<?php echo lang('reminders will not apply to repeating events') ?>
@@ -387,31 +355,18 @@ if($event->isNew()) {
 	</div>
 	<div id="trap5"><fieldset id="fs5" style="height:0px;border:0px;padding:0px;display:none"><span style="color:#FFFFFF;"></span></fieldset></div>
 
-	<div id="<?php echo $genid ?>add_custom_properties_div" style="display:none">
+	
+	<div id="<?php echo $genid ?>add_custom_properties_div" style="<?php echo ($visible_cps > 0 ? "" : "display:none") ?>">
 	<fieldset>
-	<?php 
-			$show_help_option = user_config_option('show_context_help'); 
-			if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_event_custom_properties_context_help', true, logged_user()->getId())) {?>
-			<div id="addEventPanelContextHelp" class="contextHelpStyle">
-				<?php render_context_help($this, 'chelp add event custom properties','add_event_custom_properties'); ?>
-			</div>
-		<?php }?>
 	<legend><?php echo lang('custom properties')?></legend>
-		<?php echo render_object_custom_properties($object, 'ProjectEvents', false) ?><br/><br/>
-		<?php echo render_add_custom_properties($object);?>
+		<?php echo render_object_custom_properties($object, false) ?>
+		<?php //echo render_add_custom_properties($object);?>
 	</fieldset>
 	</div>
 	<div id="trap6"><fieldset id="fs6" style="height:0px;border:0px;padding:0px;display:none"><span style="color:#FFFFFF;"></span></fieldset></div>
 
 	<div id="<?php echo $genid ?>add_subscribers_div" style="display:none">
 		<fieldset>
-		<?php 
-			$show_help_option = user_config_option('show_context_help'); 
-			if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_event_subscribers_context_help', true, logged_user()->getId())) {?>
-			<div id="addEventPanelContextHelp" class="contextHelpStyle">
-				<?php render_context_help($this, 'chelp add event subscribers','add_event_subscribers'); ?>
-			</div>
-		<?php }?>
 		<legend><?php echo lang('object subscribers') ?></legend>
 		<div id="<?php echo $genid ?>add_subscribers_content">
 			<?php echo render_add_subscribers($object, $genid); ?>
@@ -423,13 +378,6 @@ if($event->isNew()) {
 
 	<div style="display:none" id="<?php echo $genid ?>add_linked_objects_div">
 	<fieldset>
-		<?php 
-			$show_help_option = user_config_option('show_context_help'); 
-			if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_event_linked_objects_context_help', true, logged_user()->getId())) {?>
-		<div id="addEventPanelContextHelp" class="contextHelpStyle">
-			<?php render_context_help($this, 'chelp add event linked objects','add_event_linked_objects'); ?>
-		</div>
-		<?php }?>
 		<legend><?php echo lang('linked objects') ?></legend>
 		<?php echo render_object_link_form($object) ?>
 	</fieldset>	
@@ -438,13 +386,6 @@ if($event->isNew()) {
 	
 	<div id="<?php echo $genid ?>add_event_invitation_div" style="display:none" class="og-add-subscribers">
 	<fieldset id="emailNotification">
-	<?php 
-			$show_help_option = user_config_option('show_context_help'); 
-			if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_event_invitation_context_help', true, logged_user()->getId())) {?>
-			<div id="addEventPanelContextHelp" class="contextHelpStyle">
-				<?php render_context_help($this, 'chelp add event invitation','add_event_invitation'); ?>
-			</div>
-		<?php }?>
 		<legend><?php echo lang('event invitations') ?></legend>
 		<?php // ComboBox for Assistance confirmation 
 			if (!$event->isNew()) {
@@ -565,11 +506,8 @@ if($event->isNew()) {
 	<input type="hidden" name="cal_origday" value="<?php echo $day?>">
 	<input type="hidden" name="cal_origmonth" value="<?php echo $month?>">
 	<input type="hidden" name="cal_origyear" value="<?php echo $year?>">
-	
-	<div>
-		<?php echo render_object_custom_properties($object, 'ProjectEvents', true) ?>
-	</div><br/>
-	
+
+
 	<?php echo submit_button($event->isNew() ? lang('add event') : lang('save changes'),'e',array('style'=>'margin-top:0px;margin-left:10px', 'tabindex' => 180, 'onclick' => (!$event->isNew() ? "javascript:if(!og.confirmEditRepEvent('".$event->getId()."',$is_repetitive)) return false;" : ''))); ?>
 	</div></div>
 </form>
@@ -647,9 +585,15 @@ Ext.getCmp(genid + 'event[start_value]Cmp').on({
 });
 
 var memberChoosers = Ext.getCmp('<?php echo "$genid-member-chooser-panel-".$event->manager()->getObjectTypeId()?>').items;
+var treeClicked = false;
+
 if (memberChoosers) {
 	memberChoosers.each(function(item, index, length) {
 		item.on('all trees updated', function() {
+			// First User click
+			$(".member-chooser input.x-tree-node-cb").click(function(){
+				treeClicked = true;
+			});
 			var dimensionMembers = {};
 			memberChoosers.each(function(it, ix, l) {
 				dim_id = this.dimensionId;
@@ -661,16 +605,17 @@ if (memberChoosers) {
 			});
 
 			var uids = App.modules.addMessageForm.getCheckedUsers('<?php echo $genid ?>');
-			Ext.get('<?php echo $genid ?>add_subscribers_content').load({
-				url: og.getUrl('object', 'render_add_subscribers', {
-					context: Ext.util.JSON.encode(dimensionMembers),
-					users: uids,
-					genid: '<?php echo $genid ?>',
-					otype: '<?php echo $event->manager()->getObjectTypeId()?>'
-				}),
-				scripts: true
-			});
-
+			if(treeClicked) {
+				Ext.get('<?php echo $genid ?>add_subscribers_content').load({
+					url: og.getUrl('object', 'render_add_subscribers', {
+						context: Ext.util.JSON.encode(dimensionMembers),
+						users: uids,
+						genid: '<?php echo $genid ?>',
+						otype: '<?php echo $event->manager()->getObjectTypeId()?>'
+					}),
+					scripts: true
+				});
+			}
 			og.redrawUserList(Ext.util.JSON.encode(dimensionMembers));
 		});
 	});
