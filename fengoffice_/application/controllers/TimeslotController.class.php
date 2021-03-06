@@ -117,19 +117,10 @@ class TimeslotController extends ApplicationController {
 			$object_controller->add_to_members($timeslot, $object->getMemberIds());
 		*/	
 			ApplicationLogs::createLog($timeslot, ApplicationLogs::ACTION_ADD);
-			                        
-			$task = ProjectTasks::findById($object_id);
-			if($task->getTimeEstimate() > 0){
-				$timeslots = $task->getTimeslots();
-				if (count($timeslots) == 1){
-					$task->setPercentCompleted(0);
-				}
-				$timeslot_percent = round(($hours * 100) / ($task->getTimeEstimate() / 60));
-				$total_percentComplete = $timeslot_percent + $task->getPercentCompleted();
-				if ($total_percentComplete < 0) $total_percentComplete = 0;
-				$task->setPercentCompleted($total_percentComplete);
-				$task->save();
 
+			$task = ProjectTasks::findById($object_id);
+			if($task instanceof ProjectTask) {
+				$task->calculatePercentComplete();
 				$this->notifier_work_estimate($task);
 			}
 			
@@ -346,7 +337,6 @@ class TimeslotController extends ApplicationController {
 		
 		if(is_array(array_var($_POST, 'timeslot'))) {
 			try {
-				$this->percent_complete_delete($timeslot);
 				
 				$timeslot->setContactId(array_var($timeslot_data, 'contact_id', logged_user()->getId()));
 				$timeslot->setDescription(array_var($timeslot_data, 'description'));
@@ -409,17 +399,12 @@ class TimeslotController extends ApplicationController {
 				DB::beginWork();
 				$timeslot->save();
 				
-				$timeslot_time = ($timeslot->getEndTime()->getTimestamp() - ($timeslot->getStartTime()->getTimestamp() + $timeslot->getSubtract())) / 3600;
 				$task = ProjectTasks::findById($timeslot->getRelObjectId());
-				if($task->getTimeEstimate() > 0){
-					$timeslot_percent = round(($timeslot_time * 100) / ($task->getTimeEstimate() / 60));
-					$total_percentComplete = $timeslot_percent + $task->getPercentCompleted();
-					if ($total_percentComplete < 0) $total_percentComplete = 0;
-					$task->setPercentCompleted($total_percentComplete);
-					$task->save();
+				if($task instanceof ProjectTask) {
+					$task->calculatePercentComplete();
 				}
-                                
-                                ApplicationLogs::createLog($timeslot, ApplicationLogs::ACTION_EDIT);
+
+				ApplicationLogs::createLog($timeslot, ApplicationLogs::ACTION_EDIT);
 				
 				$this->notifier_work_estimate($task);
 				
@@ -475,7 +460,9 @@ class TimeslotController extends ApplicationController {
 			$object->onDeleteTimeslot($timeslot);
 			DB::commit();
 			
-			$this->percent_complete_delete($timeslot_delete);
+			if ($object instanceof ProjectTask) {
+				$object->calculatePercentComplete();
+			}
 			
 			flash_success(lang('success delete timeslot'));
 			ajx_current("reload");
@@ -486,20 +473,6 @@ class TimeslotController extends ApplicationController {
 		}
 
 	} // delete
-
-	function percent_complete_delete($time_slot){
-		if (!$time_slot->getEndTime() instanceof DateTimeValue || !$time_slot->getStartTime() instanceof DateTimeValue) return;
-		
-		$timeslot_time = ($time_slot->getEndTime()->getTimestamp() - ($time_slot->getStartTime()->getTimestamp() + $time_slot->getSubtract())) / 3600;
-		$task = ProjectTasks::findById($time_slot->getRelObjectId());
-		if($task->getTimeEstimate() > 0){
-			$timeslot_percent = round(($timeslot_time * 100) / ($task->getTimeEstimate() / 60));
-			$total_percentComplete = $task->getPercentCompleted() - $timeslot_percent;
-			if ($total_percentComplete < 0) $total_percentComplete = 0;
-			$task->setPercentCompleted($total_percentComplete);
-			$task->save();
-		}
-	}
 
 	function notifier_work_estimate($task){
 		if($task->getPercentCompleted() > 100){

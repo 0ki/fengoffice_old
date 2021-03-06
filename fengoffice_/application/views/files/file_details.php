@@ -107,7 +107,7 @@ if (isset($file) && $file instanceof ProjectFile) {
 				add_page_action(lang('edit this file'), $file->getModifyUrl(), 'ico-edit', null, null, true);
 			}
 			
-			add_page_action(lang('update file'), $file->getEditUrl(), 'ico-properties',null,null,true);
+			add_page_action(lang('edit file properties'), $file->getEditUrl(), 'ico-properties',null,null,true);
 		}
 	}
 		

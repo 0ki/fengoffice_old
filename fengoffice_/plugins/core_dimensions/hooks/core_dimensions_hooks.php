@@ -209,7 +209,7 @@ function core_dimensions_after_save_member_permissions($member, &$ignored) {
 		$contacts = Contacts::findAll(array('conditions' => 'user_type > 0 && permission_group_id IN ('.implode(',', $permission_group_ids).')'));
 	}
 	// contacts
-	$contact_rows = DB::executeAll("SELECT DISTINCT om.object_id FROM fo_object_members om INNER JOIN fo_contacts c ON c.object_id=om.object_id 
+	$contact_rows = DB::executeAll("SELECT DISTINCT om.object_id FROM ".TABLE_PREFIX."object_members om INNER JOIN ".TABLE_PREFIX."contacts c ON c.object_id=om.object_id 
 		WHERE om.member_id='".$member->getId()."' AND c.user_type=0");
 	$no_user_ids = array();
 	if (is_array($contact_rows)) {

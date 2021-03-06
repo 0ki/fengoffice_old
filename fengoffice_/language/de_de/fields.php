@@ -245,4 +245,6 @@
 	'field ProjectTasks assigned_to_contact_id' => 'Zugewiesen an',
 	'field ProjectTasks object_subtype' => 'Objektuntertyp',
 	'field ProjectTasks percent_completed' => 'Prozent abgeschlossen',
+	'field Companies id' => 'ID',
+	'field Contacts id' => 'ID',
 ); ?>

@@ -142,7 +142,10 @@ class Member extends BaseMember {
 		else return false;
 	}
 	
-	function delete() {
+	function delete($check = true) {
+		if ($check && !$this->canBeDeleted($error_message)) {
+			throw new Exception($error_message);
+		}
 		// change parent of child nodes
 		$child_members = $this->getAllChildren();
 		if (is_array($child_members)) {
@@ -199,7 +202,7 @@ class Member extends BaseMember {
 	
 	
 	function canBeDeleted(&$error_message) {
-		if ($this->getObjectId() == owner_company()->getCreatedById()) {
+		if ($this->getObjectId() == owner_company()->getCreatedById() || $this->getObjectId() == owner_company()->getId()) {
 			$error_message = lang("cannot delete member is account owner");
 			return false;
 		}

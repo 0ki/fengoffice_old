@@ -280,4 +280,8 @@
 	'apply assignee to subtasks' => 'Добавить исполнителя к подзадачам',
 	'attachment from email' => 'Прикреплено к письму "{0}"',
 	'field workspace color' => 'Цвет проекта',
+	'completed subtasks' => 'Завершённые подзадачи',
+	'open subtasks' => 'Активные подзадачи',
+	'estimated time' => 'Расчётное время',
+	'estimated time desc' => 'Расчётная продолжительность задачи в часах.',
 ); ?>

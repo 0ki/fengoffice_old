@@ -30,4 +30,8 @@
 	'success enable all context help' => 'Contexto de ajuda reaberto com sucesso.',
 	'success enable context help' => 'Contexto de ajuda habilitado com sucesso.',
 	'success disable context help' => 'Contexto de ajuda desabilitado com sucesso.',
+	'how to purchase' => 'Como comprar',
+	'how to purchase desc' => 'Informações sobre nossos planos e diferentes benefícios',
+	'add ticket' => 'Adicionar um novo ticket de suporte',
+	'add ticket desc' => 'Para obter ajuda personalizada sobre Feng Office',
 ); ?>

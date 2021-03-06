@@ -242,7 +242,7 @@ og.config.use_milestones = <?php echo config_option('use_milestones') ? 'true' :
 			toolbar: [
 				['Font','FontSize','-','Bold','Italic','Underline', 'Blockquote','-',
 					'SpellChecker', 'Scayt','-',
-					'TextColor','BGColor','-',
+					'TextColor','BGColor','RemoveFormat','-',
 					'Link','Unlink','-',
 					'JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock'
 				]

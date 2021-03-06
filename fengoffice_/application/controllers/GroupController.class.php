@@ -75,6 +75,7 @@ class GroupController extends ApplicationController {
 			}
 			tpl_assign('module_permissions_info', $module_permissions_info);
 			tpl_assign('all_modules_info', $all_modules_info);
+			tpl_assign('system_permissions', new SystemPermission());
 			
 			// Member permissions
 			$parameters = permission_form_parameters(0);

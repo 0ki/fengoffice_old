@@ -299,6 +299,7 @@ class ReportingController extends ApplicationController {
 			CompanyWebsite::instance()->setContext($context);
 			$report_data = json_decode(str_replace("'",'"', $_REQUEST['parameters']), true);
 			tpl_assign('context', $context);
+			$this->setTemplate('total_task_times_csv');
 		} else {
 			$context = active_context();
 		}

@@ -496,7 +496,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
                         toolbar: [
 									['Font','FontSize','-','Bold','Italic','Underline', 'Blockquote','-',
 									 'SpellChecker', 'Scayt','-',
-									 'TextColor','BGColor','-',
+									 'TextColor','BGColor','RemoveFormat','-',
 									 'Link','Unlink','-',
 									 'JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock']
                                 ],

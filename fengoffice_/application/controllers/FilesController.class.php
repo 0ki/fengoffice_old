@@ -1380,13 +1380,17 @@ class FilesController extends ApplicationController {
 			"limit"=> $limit
 		));
 		
+		
+		$custom_properties = CustomProperties::getAllCustomPropertiesByObjectType(ProjectFiles::instance()->getObjectTypeId());
+		
 		// prepare response object 
 		$listing = array(
 			"totalCount" => $objects->total,
 			"start" => $start,
 			"objType" => ProjectFiles::instance()->getObjectTypeId(),
-			"files" => array()
+			"files" => array(),
 		);
+		
 		if (is_array($objects->objects)) {
 			$index = 0;
 			$ids = array();
@@ -1452,6 +1456,12 @@ class FilesController extends ApplicationController {
 					$values['isMP3'] = true;
 				}
 				Hook::fire('add_classification_value', $o, $values);
+				
+				foreach ($custom_properties as $cp) {
+					$cp_value = CustomPropertyValues::getCustomPropertyValue($o->getId(), $cp->getId());
+					$values['cp_'.$cp->getId()] = $cp_value instanceof CustomPropertyValue ? $cp_value->getValue() : '';
+				}
+				
 				$listing["files"][] = $values;
 			}
 			

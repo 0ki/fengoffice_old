@@ -159,4 +159,8 @@
 	'not spam' => 'Не спам',
 	'mark as unread' => 'Пометить как непрочитанное',
 	'register' => 'Регистрация',
+	'archived' => 'архивированный',
+	'activate' => 'Активировать',
+	'disabled' => 'Отключить',
+	'recent activities to show display' => 'Отобразить',
 ); ?>

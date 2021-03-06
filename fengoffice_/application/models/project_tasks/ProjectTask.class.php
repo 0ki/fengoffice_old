@@ -438,28 +438,7 @@ class ProjectTask extends BaseProjectTask {
 		$this->setCompletedById(0);
 		$this->save();
 
-		if($this->getTimeEstimate() > 0){
-			$timeslots = $this->getTimeslots();
-			if ($timeslots){
-				$total_percentComplete = 0;
-				$this->setPercentCompleted(0);
-				foreach ($timeslots as $timeslot){
-					if (!$timeslot->getEndTime() instanceof DateTimeValue || $timeslot->getStartTime() instanceof DateTimeValue) continue;
-					$timeslot_time = ($timeslot->getEndTime()->getTimestamp() - $timeslot->getStartTime()->getTimestamp()) / 3600;
-					$timeslot_percent = round(($timeslot_time * 100) / ($this->getTimeEstimate() / 60));
-					$total_percentComplete += $timeslot_percent;
-				}
-				if ($total_percentComplete < 0) $total_percentComplete = 0;
-				$this->setPercentCompleted($total_percentComplete);
-				$this->save();
-			}else{
-				$this->setPercentCompleted(0);
-				$this->save();
-			}
-		}else{
-			$this->setPercentCompleted(0);
-			$this->save();
-		}
+		$this->calculatePercentComplete();
 
 		$log_info = "";
 		if (config_option('use tasks dependencies')) {
@@ -1550,6 +1529,24 @@ class ProjectTask extends BaseProjectTask {
 				$subtask->apply_members_to_subtasks($member_ids, $recursive);
 			}
 		}
+	}
+
+
+	function calculatePercentComplete() {
+		if ($this->getTimeEstimate() > 0){
+			$all_timeslots = $this->getTimeslots();
+			$total_time = 0;
+			foreach ($all_timeslots as $ts) {
+				if (!$ts->getEndTime() instanceof DateTimeValue) continue;
+				$total_time += ($ts->getEndTime()->getTimestamp() - ($ts->getStartTime()->getTimestamp() + $ts->getSubtract())) / 3600;
+			}
+			$total_percentComplete = round(($total_time * 100) / ($this->getTimeEstimate() / 60));
+			if ($total_percentComplete < 0) $total_percentComplete = 0;
+		} else {
+			$total_percentComplete = 0;
+		}
+		$this->setPercentCompleted($total_percentComplete);
+		$this->save();
 	}
 	
 } // ProjectTask

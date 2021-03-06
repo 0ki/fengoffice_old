@@ -18,8 +18,14 @@ og.FileManager = function() {
 		'checkedOutByName', 'mimeType', 'isModifiable',
 		'modifyUrl', 'songInfo', 'ftype', 'url', 'ix','isRead', 'isMP3', 'memPath'
 	];
+	var cps = og.custom_properties_by_type['file'] ? og.custom_properties_by_type['file'] : [];
+	var cp_names = [];
+	for (i=0; i<cps.length; i++) {
+		cp_names.push('cp_' + cps[i].id);
+	}
+	this.fields = this.fields.concat(cp_names);
 
-	og.eventManager.fireEvent('hook_document_classification', this.fields);	
+	og.eventManager.fireEvent('hook_document_classification', this);
 	
 	if (!og.FileManager.store) {
 		og.FileManager.store = new Ext.data.Store({
@@ -31,7 +37,7 @@ og.FileManager = function() {
 				totalProperty: 'totalCount',
 				id: 'id',
 				objType: 'objType',
-				fields:this.fields 
+				fields: this.fields
 			}),
 			remoteSort: true,
 			listeners: {
@@ -297,7 +303,7 @@ og.FileManager = function() {
 			og.eventManager.fireEvent('hook_classification_enable', args);		
 	});
 
-	var cm = new Ext.grid.ColumnModel([
+	var cm_info = [
 		sm,{
 			id: 'draghandle',
 			header: '&nbsp;',
@@ -373,7 +379,20 @@ og.FileManager = function() {
 			width: 50,
 			renderer: renderActions,
 			sortable: false
-		}]);
+		}
+	];
+	
+	var cps = og.custom_properties_by_type['file'] ? og.custom_properties_by_type['file'] : [];
+	for (i=0; i<cps.length; i++) {
+		cm_info.push({
+			id: 'cp_' + cps[i].id,
+			header: cps[i].name,
+			dataIndex: 'cp_' + cps[i].id,
+			sortable: false,
+			renderer: og.clean
+		});
+	}
+	var cm = new Ext.grid.ColumnModel(cm_info);
 	cm.defaultSortable = false;
 
 	og.eventManager.fireEvent('hook_filemanager_columns', cm.config);

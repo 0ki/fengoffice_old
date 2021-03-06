@@ -20,7 +20,10 @@ class MailAccountContacts extends BaseMailAccountContacts {
 	}
 	
 	function getByAccountAndContact($account, $user) {
-		return MailAccountContacts::findOne(array('conditions' => array('`account_id` = ? AND `contact_id` = ?', $account->getId(), $user->getId())));
+		if ($account instanceof MailAccount && $user instanceof Contact) {
+			return MailAccountContacts::findOne(array('conditions' => array('`account_id` = ? AND `contact_id` = ?', $account->getId(), $user->getId())));
+		}
+		return null;
 	}
 	
 	function deleteByAccount($account) {

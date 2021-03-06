@@ -161,7 +161,7 @@
 	'show in project desc' => 'Mostrar no painel do projeto',
 	'show in parents' => 'Mostrar no principal',
 	'show in parents desc' => 'Mostrar no painel de descrição geral de cada projeto selecionado',
-	'reporting' => 'Informe',
+	'reporting' => 'Relatório',
 	'chart' => 'Gráfico',
 	'new chart' => 'Novo gráfico',
 	'add chart' => 'Criar gráfico',
@@ -279,4 +279,8 @@ Assunto:   {0}
 	'urgent priority' => 'Urgente',
 	'apply assignee to subtasks' => 'Aplicar designações para subtarefas',
 	'attachment from email' => 'Anexado ao e-mail "{0}"',
+	'completed subtasks' => 'Subtarefas concluídas',
+	'open subtasks' => 'Subtarefas pendentes',
+	'field workspace color' => 'Cor da Área de Trabalho',
+	'linked weblink tab' => 'Links Web',
 ); ?>

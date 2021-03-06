@@ -24,7 +24,11 @@ if($current_member){
             foreach ($acts['data'] as $k => $activity):
             $c++;
             $user = $acts['created_by'][$k];
-            $crumbOptions = json_encode($activity->getMembersToDisplayPath());
+            if ($activity instanceof Contact && $activity->isUser()) {
+            	$crumbOptions = "";
+            } else {
+            	$crumbOptions = json_encode($activity->getMembersToDisplayPath());
+            }
             $crumbJs = " og.getCrumbHtml($crumbOptions) ";
             $class = "";
             $style = "";

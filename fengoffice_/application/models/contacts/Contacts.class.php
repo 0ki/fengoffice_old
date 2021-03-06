@@ -56,13 +56,16 @@ class Contacts extends BaseContacts {
 	 * @return Contact
 	 */
 	static function getByEmailCheck($email, $id_contact = 0) {
+		if (is_null($email) || $email == '') return null;
+		
 		$contact_email = Contacts::findOne(array(
-                    'conditions' => array("`email_address` = ? AND `contact_id` <> ?", $email, $id_contact),
-                    'join' => array(
-                            'table' => ContactEmails::instance()->getTableName(),
-                            'jt_field' => 'contact_id',
-                            'e_field' => 'object_id',
-                    )));
+			'conditions' => array("`email_address` = ? AND `contact_id` <> ?", $email, $id_contact),
+			'join' => array(
+				'table' => ContactEmails::instance()->getTableName(),
+				'jt_field' => 'contact_id',
+				'e_field' => 'object_id',
+			)
+		));
 		if (!is_null($contact_email))
 			return self::findById($contact_email->getObjectId());
 		return null;

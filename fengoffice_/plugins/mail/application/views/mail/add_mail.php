@@ -49,12 +49,6 @@ sig.actualHtmlSignature = '';
 <?php 
 
 	tpl_display(get_template_path('form_errors'));
-	$usedEmail = array();
-    $allEmails = array();
-    foreach ($addresses as $addr) {
-		$allEmails[] = $addr;
-		$usedEmail[$addr] = true;
-	}
 	
     $acc_id = array_var($mail_data, 'account_id', (isset($default_account) ? $default_account : $mail_accounts[0]->getId()));
     $orig_textsignature = $orig_htmlsignature = "";
@@ -87,7 +81,7 @@ sig.actualHtmlSignature = '';
 </script>
 <?php } ?>
 
-<input type="hidden" id="<?php echo $genid ?>hf_mail_contacts" value="<?php echo implode(',',$allEmails) ?>" />
+<input type="hidden" id="<?php echo $genid ?>hf_mail_contacts" value="" />
 
 
 <div id="textarea_new"></div>
@@ -116,7 +110,7 @@ sig.actualHtmlSignature = '';
 		<table style="width:95%"><tr><td style="width: 60px;">
     	<label for='mailTo'><?php echo lang('mail to')?> <span class="label_required">*</span></label>
     	</td><td>
-    	<?php echo autocomplete_textarea_field('mail[to]', $mail_to, $allEmails, 30, 
+    	<?php echo autocomplete_textarea_field('mail[to]', $mail_to, array(), 30, 
     		array('class' => 'title', 'tabindex'=>'10', 'id' => $genid . 'mailTo' )); ?>
     	<?php //echo autocomplete_emailfield('mail[to]', $mail_to, $allEmails, '', 
     		//array('class' => 'title', 'tabindex'=>'10', 'id' => $genid . 'mailTo', 'style' => 'width:100%;', 'onchange' => "og.addContactsToAdd('$genid')"), false); ?>
@@ -127,7 +121,7 @@ sig.actualHtmlSignature = '';
 		<table style="width:95%"><tr><td style="width: 60px;">
 		<label for="mailCC"><?php echo lang('mail CC')?> </label>
 		</td><td>
-		<?php echo autocomplete_textarea_field('mail[cc]', array_var($mail_data, 'cc'), $allEmails, 30, 
+		<?php echo autocomplete_textarea_field('mail[cc]', array_var($mail_data, 'cc'), array(), 30, 
 			array('class' => 'title', 'tabindex'=>'20', 'id' => $genid . 'mailCC' )); ?>
 		<?php //echo autocomplete_emailfield('mail[cc]', array_var($mail_data, 'cc'), $allEmails, '', 
 			//array('class' => 'title', 'tabindex'=>'20', 'id' => $genid . 'mailCC', 'style' => 'width:100%;', 'onchange' => "og.addContactsToAdd('$genid')"), false); ?>
@@ -138,7 +132,7 @@ sig.actualHtmlSignature = '';
  		<table style="width:95%"><tr><td style="width: 60px;">
 	    <label for="mailBCC"><?php echo lang('mail BCC')?></label>
 	    </td><td>
-	    <?php echo autocomplete_textarea_field('mail[bcc]', array_var($mail_data, 'bcc'), $allEmails, 30, 
+	    <?php echo autocomplete_textarea_field('mail[bcc]', array_var($mail_data, 'bcc'), array(), 30, 
     		array('class' => 'title', 'tabindex'=>'30', 'id' => $genid . 'mailBCC' )); ?>
     	<?php //echo autocomplete_emailfield('mail[bcc]', array_var($mail_data, 'bcc'), $allEmails, '', 
     		//array('class' => 'title', 'tabindex'=>'30', 'id' => $genid . 'mailBCC', 'style' => 'width:100%;', 'onchange' => "og.addContactsToAdd('$genid')"), false); ?>
@@ -294,13 +288,14 @@ sig.actualHtmlSignature = '';
 	if (strlen($loc) > 2) $loc = substr($loc, 0, 2);
 ?>
 <script>
+var genid = '<?php echo $genid ?>';
 var focus_editor = false;
 <?php if ($mail_to != "") { ?>
 	focus_editor = true;
 <?php } ?>
-var h = document.getElementById("<?php echo $genid ?>ck_editor").offsetHeight;
+var h = document.getElementById(genid+"ck_editor").offsetHeight;
 try {
-var editor = CKEDITOR.replace('<?php echo $genid ?>ckeditor', {
+var editor = CKEDITOR.replace(genid+'ckeditor', {
 	height: (h-205) + 'px',
 	enterMode: CKEDITOR.ENTER_DIV,
 	shiftEnterMode: CKEDITOR.ENTER_P,
@@ -316,7 +311,7 @@ var editor = CKEDITOR.replace('<?php echo $genid ?>ckeditor', {
 		'Link','Unlink','-',
 		'Image','Table','HorizontalRule','Smiley','-',
 		'Font','FontSize','-',
-		'TextColor','BGColor']
+		'TextColor','BGColor','RemoveFormat']
 	],
 	skin: 'kama',
 	contentsCss: '<?php echo get_javascript_url("ckeditor/contents.css")."?rev=".product_version_revision()?>',
@@ -343,19 +338,18 @@ var editor = CKEDITOR.replace('<?php echo $genid ?>ckeditor', {
 	filebrowserImageUploadUrl : '<?php echo ROOT_URL ?>/public/assets/javascript/ckeditor/ck_upload_handler.php',
 	on: {
 		instanceReady: function(ev) {
-			og.adjustCkEditorArea('<?php echo $genid ?>', '', true);
-			var genid = '<?php echo $genid ?>';
-			var mb = Ext.getDom('<?php echo $genid ?>mailBody');
-			mb.oldMailBody = og.getMailBodyFromUI('<?php echo $genid ?>');
+			og.adjustCkEditorArea(genid, '', true);
+			var mb = Ext.getDom(genid + 'mailBody');
+			mb.oldMailBody = og.getMailBodyFromUI(genid);
 			ev.editor.resetDirty();
 			if (focus_editor) ev.editor.focus();
 		},
 		selectionChange: function(ev) {
-			var p = og.getParentContentPanel(Ext.get('<?php echo $genid ?>ckeditor'));
+			var p = og.getParentContentPanel(Ext.get(genid+'ckeditor'));
 			Ext.getCmp(p.id).setPreventClose(ev.editor.checkDirty());
 		},
 		key: function(ev) {
-			var p = og.getParentContentPanel(Ext.get('<?php echo $genid ?>ckeditor'));
+			var p = og.getParentContentPanel(Ext.get(genid+'ckeditor'));
 			Ext.getCmp(p.id).setPreventClose(ev.editor.checkDirty());
 		}
 	},
@@ -378,13 +372,13 @@ og.eventManager.addListener("email saved", function(obj) {
 }, null, {replace:true});
 
 og.resizeMailDiv = function() {
-	maindiv = document.getElementById('<?php echo $genid ?>main_div');
-	headerdiv = document.getElementById('<?php echo $genid ?>header_div');
+	maindiv = document.getElementById(genid+'main_div');
+	headerdiv = document.getElementById(genid+'header_div');
 	if (maindiv != null && headerdiv != null) {
 		var divHeight = maindiv.offsetHeight - headerdiv.offsetHeight - 30;
-		document.getElementById('<?php echo $genid ?>mail_div').style.height = divHeight + 'px';
+		document.getElementById(genid+'mail_div').style.height = divHeight + 'px';
 		
-		var parentTd = document.getElementById('cke_contents_<?php echo $genid ?>ckeditor');
+		var parentTd = document.getElementById('cke_contents_'+genid+'ckeditor');
 		if (parentTd) {
 			var iframe = parentTd.firstChild;
 			iframe.style.height = (divHeight - 35 ) + 'px';
@@ -395,18 +389,35 @@ og.resizeMailDiv = function() {
 setTimeout('og.resizeMailDiv()', 50);
 window.onresize = og.resizeMailDiv;
 
-if (Ext.getDom('<?php echo $genid ?>format_html') && !Ext.getDom('<?php echo $genid ?>format_html').checked) {
-	var mb = Ext.getDom('<?php echo $genid ?>mailBody');
-	mb.oldMailBody = og.getMailBodyFromUI('<?php echo $genid ?>');
+if (Ext.getDom(genid + 'format_html') && !Ext.getDom(genid + 'format_html').checked) {
+	var mb = Ext.getDom(genid + 'mailBody');
+	mb.oldMailBody = og.getMailBodyFromUI(genid);
 }
 if (og.preferences['draft_autosave_timeout'] > 0) {
-	var mb = Ext.getDom('<?php echo $genid ?>mailBody');
-	mb.genid = '<?php echo $genid ?>';
+	var mb = Ext.getDom(genid + 'mailBody');
+	mb.genid = genid;
 	mb.autoSaveTOut = setTimeout(function() {
-		var mb = Ext.getDom('<?php echo $genid ?>mailBody');
-		og.autoSaveDraft('<?php echo $genid ?>');
+		var mb = Ext.getDom(genid + 'mailBody');
+		og.autoSaveDraft(genid);
 	}, og.preferences['draft_autosave_timeout'] * 1000);
 }
-if (!editor || !focus_editor) Ext.get('auto_complete_input_<?php echo $genid ?>mailTo').focus();
-og.resetClassButton('<?php echo $genid ?>');
+if (!editor || !focus_editor) Ext.get('auto_complete_input_'+genid+'mailTo').focus();
+og.resetClassButton(genid);
+
+Ext.onReady(function() {
+	og.openLink(og.getUrl('mail', 'get_allowed_addresses'), {
+		callback: function(success, data) {
+			document.getElementById(genid + 'hf_mail_contacts').value = data.addresses;
+
+			var to = Ext.getCmp('auto_complete_input_' + genid + 'mailTo');
+			if (to) to.store = to.store.concat(data.addresses);
+			var cc = Ext.getCmp('auto_complete_input_' + genid + 'mailCC');
+			if (cc) cc.store = cc.store.concat(data.addresses);
+			var bcc = Ext.getCmp('auto_complete_input_' + genid + 'mailBCC');
+			if (bcc) bcc.store = bcc.store.concat(data.addresses);
+		}
+	});
+});
+
+
 </script>

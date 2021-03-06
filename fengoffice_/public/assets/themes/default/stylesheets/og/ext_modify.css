@@ -248,3 +248,8 @@ div#menu-panel .x-panel-tbar-noheader .x-toolbar, div#menu-panel .x-panel-mc .x-
 .x-panel-tbar-noheader .x-toolbar, .x-panel-mc .x-panel-tbar .x-toolbar {
 	border-top: 0px none;
 }
+
+/* Bugfix for datepickers in chrome */
+.x-menu-plain .x-color-palette, .x-menu-plain .x-date-picker {
+	width: 175px !important;
+}

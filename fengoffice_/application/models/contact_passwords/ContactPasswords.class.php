@@ -130,7 +130,7 @@ class ContactPasswords extends BaseContactPasswords {
 	static function validateMetacharacters($password){
 		$pass_metacharacters = config_option('password_metacharacters', 0);
 		$metachars = array();
-		preg_match_all('/[\\[|\\]|\\&|\\#|\\^|\\$|\\\|\\%|\\@|\\/|\\(|\\)|\\?|\\+|\\{|\\<|\\>|\\-|\\}|,|\\.|\\=|\\!|\\<|\\>|\\:|\\*]/', $password, $metachars);
+		preg_match_all('/[\\[|\\]|\\&|\\#|\\^|\\$|\\\|\\%|\\@|\\/|\\(|\\)|\\?|\\+|\\{|\\<|\\>|\\-|\\}|,|\\.|\\=|\\!|\\<|\\>|\\:|\\;|\\*]/', $password, $metachars);
 		$metachars_count = count($metachars[0]);
 		if($metachars_count < $pass_metacharacters){
 			return false;

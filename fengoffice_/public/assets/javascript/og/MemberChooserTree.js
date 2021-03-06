@@ -17,7 +17,7 @@ og.MemberChooserTree = function(config) {
 		loader: new og.MemberChooserTreeLoader({
 			dataUrl: 'index.php?c=dimension&a=initial_list_dimension_members_tree&ajax=true&'+
 				'dimension_id='+config.dimensionId+objectTypeQuery+
-				'&checkboxes=true'+
+				(config.checkBoxes ? '&checkboxes=true' : '')+
 				(config.all_members ? '&all_members=true' : '')+
 				'&allowedMemberTypes='+Ext.encode(config.allowedMemberTypes)+
 				'&avoid_session=1',
@@ -227,6 +227,8 @@ Ext.extend(og.MemberChooserTree, Ext.tree.TreePanel, {
 					return true;
 				}
 			}
+		} else {
+			if (!this.checkBoxes) this.getRootNode().select();
 		}
 		return true;
 	},

@@ -196,14 +196,14 @@ return array(
 
 	// Task fields
 	'field ProjectTasks id' => 'Id',
-	'field ProjectTasks text' => 'Text',
+	'field ProjectTasks text' => 'Description',
 	'field ProjectTasks completed_on' => 'Completed on', 
 	'field ProjectTasks due_date' => 'Due date',
 	'field ProjectTasks start_date' => 'Start date',
 	'field ProjectTasks created_on' => 'Created on',
 	'field ProjectTasks updated_on' => 'Updated on',
 	'field ProjectTasks order' => 'Order',
-	'field ProjectTasks title' => 'Title', 
+	'field ProjectTasks title' => 'Task Title', 
 	'field ProjectTasks started_on' => 'Started on',
 	'field ProjectTasks priority' => 'Priority', 
     'field ProjectTasks assigned_on' => 'Assigned on',

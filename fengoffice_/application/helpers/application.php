@@ -181,7 +181,7 @@ function allowed_users_to_assign($context = null) {
 	}
 	
 	// only companies with users
-	$companies = Contacts::findAll(array("conditions" => "is_company = 1 AND object_id IN (SELECT company_id FROM ".TABLE_PREFIX."contacts WHERE user_type>0 AND disabled=0)", "order" => "first_name ASC"));
+	$companies = Contacts::findAll(array("conditions" => "is_company = 1 AND object_id IN (SELECT company_id FROM ".TABLE_PREFIX."contacts WHERE user_type>0 AND disabled=0)", "order" => "first_name, surname"));
 
 	$comp_ids = array("0");
 	$comp_array = array("0" => array('id' => "0", 'name' => lang('without company'), 'users' => array() ));

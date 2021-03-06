@@ -1779,5 +1779,16 @@ class ObjectController extends ApplicationController {
             $event->setExtCalId($calendar->getId());
             $event->save();
         }
+
+	function get_cusotm_property_columns() {
+		$grouped = array();
+		$cp_rows = DB::executeAll("SELECT cp.id, cp.name as cp_name, ot.name as obj_type FROM ".TABLE_PREFIX."custom_properties cp INNER JOIN ".TABLE_PREFIX."object_types ot on ot.id=cp.object_type_id ORDER BY ot.name");
+		foreach ($cp_rows as $row) {
+			if (!isset($grouped[$row['obj_type']])) $grouped[$row['obj_type']] = array();
+			$grouped[$row['obj_type']][] = array('id' => $row['id'], 'name' => $row['cp_name']);
+		}
+		ajx_current("empty");
+		ajx_extra_data(array('properties' => $grouped));
+	}
+	
 }
-?>

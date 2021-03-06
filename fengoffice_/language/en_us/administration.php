@@ -102,7 +102,7 @@
     'config option name repeating_task' => 'Repeating task',
     'config option desc repeating_task' => 'Repeating tasks will be shown individually, and not as one single task',
     'config option name working_days' => 'Working days',
-    'config option desc working_days' => '',
+    'config option desc working_days' => 'Here you may select which are the working days of your company. This is useful for the calendar and repeating tasks.',
     'config option name wysiwyg_messages' => 'Description of messages with WYSIWYG',
     'config option desc wysiwyg_messages' => 'Enable this option so that you can write your notes description using rich text format.',
     'config option name wysiwyg_tasks' => 'Description of tasks with WYSIWYG',
@@ -168,8 +168,8 @@
     'module permissions' => 'Module Permissions',
     'module permission uncheck warning' => 'Module Permission Uncheck Warning',
 
-    'apply to all submembers' => 'Apply to all submembers',
-    'apply to all members' => 'Apply to all members',
+    'apply to all submembers' => 'Apply the permissions above to all submembers',
+    'apply to all members' => 'Apply the permissions to all members within the dimension',
   	
     'user ws config category name dashboard' => 'Dashboard options',
     'user ws config category name task panel' => 'Task options',

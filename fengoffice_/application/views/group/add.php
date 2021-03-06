@@ -1,4 +1,5 @@
 <?php
+	if (!$group instanceof PermissionGroup) $group = new PermissionGroup();
     set_page_title($group->isNew() ? lang('add group') : lang('edit group'));
     administration_tabbed_navigation(ADMINISTRATION_TAB_GROUPS);
     $genid = gen_id();

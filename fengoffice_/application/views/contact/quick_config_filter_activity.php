@@ -41,7 +41,7 @@
             <input class="yes_no" type="radio" name="filter[view_downloads]" value="0" <?php // echo $checked_view_downloads_no?>/>
             <label class="yes_no"><?php echo lang("no")?></label>-->
         </div>
-        <div class="action" style="float: left; width: 260px;">
+        <div class="action" style="float: left; width: 290px;">
             <div style="float: left;">
                 <input type="button" class="submit" value="<?php echo lang("apply everywhere")?>" id="apply_everywhere"/>
             </div>

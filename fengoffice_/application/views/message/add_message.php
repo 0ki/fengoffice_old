@@ -126,7 +126,7 @@
             	toolbar: [
 							['Font','FontSize','-','Bold','Italic','Underline', 'Blockquote','-',
 							 'SpellChecker', 'Scayt','-',
-							 'TextColor','BGColor','-',
+							 'TextColor','BGColor','RemoveFormat','-',
 							 'Link','Unlink','-',
 							 'JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock']
                           
@@ -137,7 +137,7 @@
                                 editor.resetDirty();
                         }
                     },
-                entities_additional : '#39,#336,#337,#368,#369'
+                    entities_additional : '#39,#336,#337,#368,#369,#124'
             });
 
             og.setDescription = function() {

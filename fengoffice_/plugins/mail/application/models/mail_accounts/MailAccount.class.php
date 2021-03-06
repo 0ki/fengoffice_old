@@ -179,6 +179,9 @@ class MailAccount extends BaseMailAccount {
 	 * @return boolean
 	 */
 	function canEdit(Contact $user) {
+		if (logged_user() instanceof Contact && logged_user()->isAdministrator()) {
+			return true;
+		}
 		return $this->canView($user);
 	}
 
@@ -190,6 +193,9 @@ class MailAccount extends BaseMailAccount {
 	 * @return boolean
 	 */
 	function canDelete(Contact $user) {
+		if (logged_user() instanceof Contact && logged_user()->isAdministrator()) {
+			return true;
+		}
 		$accountUser = MailAccountContacts::getByAccountAndContact($this, $user);
 		//return $accountUser instanceof MailAccountContact && $accountUser->getCanEdit() || can_manage_security(logged_user());
                 return $accountUser instanceof MailAccountContact && $accountUser->getCanEdit();
@@ -236,16 +242,18 @@ class MailAccount extends BaseMailAccount {
 		MailAccountContacts::deleteByAccount($this);
 		if ($deleteMails) {
 			session_commit();
+			ini_set('memory_limit', '1024M');
 			
-			LinkedObjects::delete(array("(`object_id` IN (SELECT `id` FROM `".TABLE_PREFIX."mail_contents` WHERE `account_id` = " . DB::escape($this->getId()).")) 
-				or (`rel_object_id` IN (SELECT `id` FROM `".TABLE_PREFIX."mail_contents` WHERE `account_id` = " . DB::escape($this->getId())."))")); 
+			LinkedObjects::delete(array("(`object_id` IN (SELECT `object_id` FROM `".TABLE_PREFIX."mail_contents` WHERE `account_id` = " . DB::escape($this->getId()).")) 
+				or (`rel_object_id` IN (SELECT `object_id` FROM `".TABLE_PREFIX."mail_contents` WHERE `account_id` = " . DB::escape($this->getId())."))")); 
 			
-      		SearchableObjects::delete(array("`rel_object_id` IN (SELECT `id` FROM `".TABLE_PREFIX."mail_contents` WHERE `account_id` = " . DB::escape($this->getId()).") "));
-			ReadObjects::delete("`rel_object_id` IN (SELECT `id` FROM `".TABLE_PREFIX."mail_contents` WHERE `account_id` = " . DB::escape($this->getId()).") ");
+      		SearchableObjects::delete(array("`rel_object_id` IN (SELECT `object_id` FROM `".TABLE_PREFIX."mail_contents` WHERE `account_id` = " . DB::escape($this->getId()).") "));
+			ReadObjects::delete("`rel_object_id` IN (SELECT `object_id` FROM `".TABLE_PREFIX."mail_contents` WHERE `account_id` = " . DB::escape($this->getId()).") ");
 			
-			$account_emails = MailContents::findAll(array('conditions' => '`account_id` = ' . DB::escape($this->getId()), 'include_trashed' => true));
-			foreach ($account_emails as $email) {
-				$email->delete();
+			$account_email_ids = MailContents::findAll(array('id' => true, 'conditions' => '`account_id` = ' . DB::escape($this->getId()), 'include_trashed' => true));
+			if (count($account_email_ids) > 0) {
+				MailDatas::delete('id IN ('.implode(',', $account_email_ids).')');
+				MailContents::delete('`account_id` = ' . DB::escape($this->getId()));
 			}
 		}
 		if ($this->getIsImap()) {
@@ -302,8 +310,10 @@ class MailAccount extends BaseMailAccount {
 			return $user_settings->getSenderName();
 		} else if ($this->getSenderName()) {
 			return $this->getSenderName();
-		} else {
+		} else if (logged_user() instanceof Contact) {
 			return logged_user()->getObjectName();
+		} else {
+			return "";
 		}
 	}
 	

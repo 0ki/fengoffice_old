@@ -1122,7 +1122,7 @@ Ext.extend(og.MailManager, Ext.grid.GridPanel, {
 		this.store.load({
 			params: Ext.apply(params, {
 				start: start,
-				limit: og.config['files_per_page']				
+				limit: og.config['files_per_page']
 			})
 		});
 		this.store.baseParams.action = "";

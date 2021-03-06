@@ -212,7 +212,7 @@
     'success delete chart' => 'Chart has been deleted',
     'success delete charts' => 'The selected charts have been deleted successfully',
   
-    'success delete contacts' => 'The selected persons have been deleted successfully',
+    'success delete contacts' => 'The selected people have been deleted successfully',
   
     'success classify email' => 'Email classified successfully',
     'success delete email' => 'Email has been deleted',
@@ -300,7 +300,7 @@
     'error delete file' => 'Failed to delete selected file',
     'error delete files' => 'Failed to delete {0} files',
     'error tag files' => 'Failed to tag {0} files',
-    'error tag contacts' => 'Failed to tag {0} persons',
+    'error tag contacts' => 'Failed to tag {0} people',
     'error delete file revision' => 'Failed to delete file revision',
     'error delete task list' => 'Failed to delete selected task',
     'error delete task' => 'Failed to delete selected task',
@@ -315,7 +315,7 @@
     'error delete event type' =>'Failed to delete event type',
     'error delete mail' => 'An error occurred while deleting this email',
     'error delete mail account' => 'An error occurred while deleting this email account',
-    'error delete contacts' => 'An error has occurred while deleting these persons',
+    'error delete contacts' => 'An error has occurred while deleting these people',
   	'error check mail' => 'Error checking account \'{0}\': {1}',
   	'error check out file' => 'Error while checking out file for exclusive use',
     'error checkin file' => 'Error while checking in file',
@@ -359,7 +359,7 @@
     'confirm delete file' => 'Are you sure that you want to delete this file?',
     'confirm delete revision' => 'Are you sure that you want to delete this revision?',
     'confirm reset form' => 'Are you sure that you want to reset this form?',
-    'confirm delete contacts' => 'Are you sure that you want to delete these persons?',
+    'confirm delete contacts' => 'Are you sure that you want to delete these people?',
 	'confirm delete group' => 'Are you sure that you want to delete this group?',
     
     // Errors...
@@ -587,7 +587,7 @@
     'log link contacts data' => '\'{0}\' linked to {1}',
     'log unlink contacts data' => '\'{0}\' unlinked from  {1}',
   
-  	'no contacts in company' => 'The company has no persons.',
+  	'no contacts in company' => 'The company has no people.',
   
   	'session expired error' => 'The session has expired. Please, refresh the page and login again.',
   	'admin cannot be removed from admin group' => 'First user cannot be deleted from Administrators group',
@@ -701,7 +701,7 @@
 
   	'success purging trash' => '{0} objects deleted.',
   	'success sending reminders' => '{0} reminders sent.',
-  	'failed to assign contact due to permissions' => 'You don\'t have permissions to write persons on these workspaces: {0}',
+  	'failed to assign contact due to permissions' => 'You don\'t have permissions to create or edit people on these workspaces: {0}',
   
   	'weblink dnx' => 'Requested weblink doesn\'t exist.',
   

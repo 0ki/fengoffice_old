@@ -122,4 +122,11 @@
 	'zip not supported' => 'ZIP não é suportado pelo servidor',
 	'no tag specified' => 'Nenhuma marca especificada',
 	'no mailAccount error' => 'Ação indisponível. Você não tem uma conta de e-mail acrescentada.',
+	'error invalid recipients' => 'E-mail inválido endereços encontrados no campo "{0}": {1}',
+	'no context permissions to add' => 'Você não tem permissões para adicionar {0} em {1}',
+	'error cannot assign task to user' => '{0} não pode designar tarefa para {1}.',
+	'content too long not loaded' => 'Conteúdo e-mail anterior é muito longo e não foi carregado, mas será enviado com este e-mail.',
+	'member name already exists in dimension' => 'Membro \'{0}\' já existe na dimensão selecionada.',
+	'must choose at least one member of' => 'Você deve escolher pelo menos um membro de {0}.',
+	'timeslot dnx' => 'Não existe Espaço de tempo',
 ); ?>

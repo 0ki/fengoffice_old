@@ -42,11 +42,23 @@
 	 * @return Member
 	 */
 	static function findOneByObjectId($id, $dimension_id = null ) {
-		$allMembers= self::findByObjectId($id, $dimension_id);
+		$allMembers = self::findByObjectId($id, $dimension_id);
 		if(count($allMembers)) {
 			return $allMembers[0];	
 		}
 		return null;
+	}
+	
+	static $members_cache = array();
+	static function getMemberById($id) {
+		$m = array_var(self::$members_cache, $id);
+		if (!$m instanceof Member) {
+			$m = Members::findById($id);
+			if ($m instanceof Member) {
+				self::$members_cache[$id] = $m;
+			}
+		}
+		return $m;
 	}
 
   } 

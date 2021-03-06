@@ -1,5 +1,5 @@
 
-	About Feng Office 2.2.3.1
+	About Feng Office 2.2.4-beta
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -101,6 +101,43 @@
 	
 	Changelog
 	=========
+	
+	Since 2.2.3.1
+	-------------
+	
+	bugfix: Cannot add user without password if complex passwords are enabled.
+	bugfix: Include ";" as metacharacter for complex password validations.
+	bugfix: Member name is username when adding a contact (editing contact fixes member).
+	bugfix: Change logo link does not work.
+	bugfix: Repetitive tasks fix.
+	bugfix: fo_ table prefix hardcoded one time.
+	bugfix: Calendar tasks display fixed.
+	bugfix: Always check if member can be deleted.
+	bugfix: Cannot delete mail account with mails.
+	bugfix: Add contact was checking if user has can_manage_security.
+	bugfix: Cannot select parent member using checkboxes.
+	bugfix: Error 500 in some notifications.
+	bugfix: New client/project from overview fixed.
+	bugfix: Breadcrumbs only show 2 members x dimension.
+	bugfix: Total tasks time reports csv export does not work.
+	bugfix: Fix en cálculo de porcentaje de avance de tareas.
+	bugfix: Forwarding or replying mails in German only prints "null".
+	bugfix: Function getCustomPropertyByName fixed.
+	bugfix: Activity widget popup wider to put all buttons in one line.
+	bugfix: Users in assign_to combo are not ordered.
+	bugfix: 1.7 -> 2.x upgrade does not create table mail_spam_filters.
+	bugfix: Tags are lost when dragging a task to another workspace.
+	
+	performance: Delete account emails performance and memory usage improvements.
+	
+	feature: Compose mail get contacts by ajax.
+	feature: Custom properties columns in documents tab.
+	feature: No breadcrumbs for users in activity widget.
+	feature: Ckeditor option added: remove html format.
+	
+	language: Deutch, Russian, Ukranian, Portuguese and Indonesian language updates.
+	language: Several language fixes.
+	
 	
 	Since 2.2.3.1-beta
 	------------------

@@ -768,7 +768,7 @@ class ContactController extends ApplicationController {
 		$this->setTemplate('edit_contact');
 		//$this->setTemplate('add_contact');
 		
-		if (array_var($_GET, 'is_user') || array_var(array_var($_POST, 'contact'),'user')) {
+		if (array_var($_GET, 'is_user') || array_var(array_var(array_var($_POST, 'contact'), 'user'), 'create-user')) {
 			if (!can_manage_security(logged_user())) {
 				flash_error(lang('no access permissions'));
 				ajx_current("empty");
@@ -827,8 +827,9 @@ class ContactController extends ApplicationController {
 					$company->setObjectName();
 					$company->save();
 					
-					if($company_data['address'] != "")
+					if($company_data['address'] != "") {
 						$company->addAddress($company_data['address'], $company_data['city'], $company_data['state'], $company_data['country'], $company_data['zipcode'], 'work', true);
+					}
 					if($company_data['phone_number'] != "") $company->addPhone($company_data['phone_number'], 'work', true);
 					if($company_data['fax_number'] != "") $company->addPhone($company_data['fax_number'], 'fax', true);
 					if($company_data['homepage'] != "") $company->addWebpage($company_data['homepage'], 'work');
@@ -840,19 +841,13 @@ class ContactController extends ApplicationController {
 				}
 
 				$contact_data['birthday'] = getDateValue($contact_data["birthday"]);
-				if(isset($contact_data['specify_username'])){
-					if($contact_data['user']['username'] != ""){
-						$contact_data['name'] = $contact_data['user']['username'];
-					}else{
-						$contact_data['name'] = $contact_data['first_name']." ".$contact_data['surname'];
-					}
-				}else{
-					$contact_data['name'] = $contact_data['first_name']." ".$contact_data['surname'];
-				}
+				$contact_data['name'] = $contact_data['first_name']." ".$contact_data['surname'];
+				
 				$contact->setFromAttributes($contact_data);
 
-				if($newCompany)
+				if($newCompany) {
 					$contact->setCompanyId($company->getId());
+				}
 				$contact->save();
 					
 				//Home form
@@ -943,37 +938,34 @@ class ContactController extends ApplicationController {
 		} // if
 	} // add
 
-	
+
 	function check_existing_email() {
 		ajx_current("empty");
 		$email = array_var($_REQUEST, 'email');
-                $id_contact = array_var($_REQUEST, 'id_contact');
+		$id_contact = array_var($_REQUEST, 'id_contact');
 		$contact = Contacts::getByEmailCheck($email,$id_contact);
-                
-                if($contact){
-                    if ($contact->getUserType() != 0) {
-                            ajx_extra_data(array(
-                                    "contact" => array(
-                                        "name" => $contact->getFirstName(),
-                                        "email" => $contact->getEmailAddress(),
-                                        "id" => $contact->getEmailAddress(),
-                                        "status" => true
-                            )));
-                    }else{
-                            ajx_extra_data(array(
-                                    "contact" => array(
-                                        "name" => $contact->getFirstName(),
-                                        "email" => $contact->getEmailAddress(),
-                                        "id" => $contact->getObjectId(),
-                                        "status" => false
-                            )));
-                    }
-                }else{
-                    ajx_extra_data(array(
-                            "contact" => array(
-                                "status" => false
-                    )));
-                }
+
+		if($contact){
+			if ($contact->getUserType() != 0) {
+				ajx_extra_data(array(
+					"contact" => array(
+					"name" => $contact->getFirstName(),
+					"email" => $contact->getEmailAddress(),
+					"id" => $contact->getEmailAddress(),
+					"status" => true
+				)));
+			}else{
+				ajx_extra_data(array(
+					"contact" => array(
+					"name" => $contact->getFirstName(),
+					"email" => $contact->getEmailAddress(),
+					"id" => $contact->getObjectId(),
+					"status" => false
+				)));
+			}
+		}else{
+			ajx_extra_data(array("contact" => array("status" => false)));
+		}
 	}
 	
 	

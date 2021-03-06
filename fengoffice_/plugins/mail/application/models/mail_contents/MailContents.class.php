@@ -224,6 +224,7 @@ class MailContents extends BaseMailContents {
 			
 			// permission conditions
 			$pgs = ContactPermissionGroups::getPermissionGroupIdsByContactCSV(logged_user()->getId());
+			if (trim($pgs == '')) $pgs = '0';
 			$perm_sql = "(SELECT count(*) FROM ".TABLE_PREFIX."sharing_table st WHERE st.object_id = $mailTablePrefix.object_id AND st.group_id IN ($pgs)) > 0";
 			
 			// show mails for all visible accounts and classified mails where logged_user has permissions

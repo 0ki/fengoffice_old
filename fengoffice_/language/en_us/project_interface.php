@@ -121,7 +121,7 @@ return array(
     'file revision title long' => '<b><a class="internalLink" href="{0}">{1}</a></b> on {2}',
     'file checkout info short' => '<span>Checked out on {0}</span>',
     'file checkout info long' => '<span>Checked out by </span> <a class="internalLink" href="{0}">{1}</a> <span> on {2}</span>',
-    'update file' => 'Edit file properties',
+    'update file' => 'Update file',
     'version file change' => 'Remember this change (old file will be saved for future reference)',
     'last revision' => 'Last revision',
     'revision comment' => 'Revision comment',

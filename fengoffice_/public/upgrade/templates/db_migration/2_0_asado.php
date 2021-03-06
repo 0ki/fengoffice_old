@@ -636,6 +636,15 @@ CREATE TABLE IF NOT EXISTS `fo_mail_conversations` (
  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS `fo_mail_spam_filters` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `account_id` int(10) unsigned NOT NULL,
+  `text_type` enum('email_address','subject') COLLATE utf8_unicode_ci NOT NULL,
+  `text` text COLLATE utf8_unicode_ci NOT NULL,
+  `spam_state` enum('no spam','spam') COLLATE utf8_unicode_ci NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
 
 INSERT INTO `fo_mail_accounts` (`id`, `contact_id`, `name`, `email`, `email_addr`, `password`, `server`, `is_imap`, `incoming_ssl`, `incoming_ssl_port`, `smtp_server`, `smtp_use_auth`, `smtp_username`, `smtp_password`, `smtp_port`, `del_from_server`, `outgoing_transport_type`, `last_checked`, `is_default`, `signature`, `sender_name`, `last_error_date`, `last_error_msg`, `sync_addr`, `sync_pass`, `sync_server`, `sync_ssl`, `sync_ssl_port`, `sync_folder`, `member_id`)
 SELECT `c`.`id`, (SELECT `id` FROM `fo_objects` WHERE `f1_id` = `c`.`user_id` AND `object_type_id` = (SELECT `ot`.`id` FROM `fo_object_types` `ot` WHERE `ot`.`name`='contact')), `c`.`name`, `c`.`email`, `c`.`email_addr`, `c`.`password`, `c`.`server`, `c`.`is_imap`, `c`.`incoming_ssl`, `c`.`incoming_ssl_port`, `c`.`smtp_server`, `c`.`smtp_use_auth`, `c`.`smtp_username`, `c`.`smtp_password`, `c`.`smtp_port`, `c`.`del_from_server`, `c`.`outgoing_transport_type`, `c`.`last_checked`, `c`.`is_default`, `c`.`signature`, `c`.`sender_name`, `c`.`last_error_date`, `c`.`last_error_msg`, `c`.`sync_addr`, `c`.`sync_pass`, `c`.`sync_server`, `c`.`sync_ssl`, `c`.`sync_ssl_port`, `c`.`sync_folder`, (SELECT `m`.`id` FROM `fo_members` `m` WHERE `m`.`ws_id` = `c`.`workspace` AND `m`.`dimension_id` = (SELECT `id` FROM `fo_dimensions` WHERE `code`='workspaces'))

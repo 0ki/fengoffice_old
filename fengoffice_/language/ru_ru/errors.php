@@ -120,4 +120,5 @@
 	'no context permissions to add' => 'У вас недостаточно прав на добавление {0} in {1}',
 	'content too long not loaded' => 'Предыдущее почтовое содержание слишком длинное и не было загружено, но будет отправлен в этом письме.',
 	'must choose at least one member of' => 'Вы должны выбрать хотя бы один из членов {0}.',
+	'error cannot assign task to user' => '{0} не может быть назначен(а) для {1}.',
 ); ?>

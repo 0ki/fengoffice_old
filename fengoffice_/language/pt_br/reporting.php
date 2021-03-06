@@ -31,4 +31,6 @@
 	'report pdf landscape' => 'Ladscape',
 	'report font size' => 'Tamanho da Fonte',
 	'columns' => 'Colunas',
+	'showing information for' => 'Mostrando informações para',
+	'show always' => 'Mostrar este relatório sempre (use o "relacionadas com" opções apenas para verificar as permissões e não para filtrar a lista de relatórios)',
 ); ?>

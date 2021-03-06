@@ -967,6 +967,7 @@ function create_user($user_data, $permissionsString) {
         
     $password = '';
 	if (array_var($user_data, 'password_generator') == 'specify') {
+		$perform_password_validation = true;
 		// Validate input
 		$password = array_var($user_data, 'password');
 		if (trim($password) == '') {
@@ -975,8 +976,10 @@ function create_user($user_data, $permissionsString) {
 		if ($password <> array_var($user_data, 'password_a')) {
 			throw new Error(lang('passwords dont match'));
 		} // if
-                             
-	} // if        
+	} else {
+		$user_data['password_generator'] = 'link';
+		$perform_password_validation = false;
+	}
 
 	$contact->setPassword($password);   
 	$contact->save();
@@ -986,6 +989,7 @@ function create_user($user_data, $permissionsString) {
 	$user_password->setPasswordDate(DateTimeValueLib::now());
 	$user_password->setPassword(cp_encrypt($password, $user_password->getPasswordDate()->getTimestamp()));
 	$user_password->password_temp = $password;
+	$user_password->perform_validation = $perform_password_validation;
 	$user_password->save();
         
 	if (array_var($user_data, 'autodetect_time_zone', 1) == 1) {

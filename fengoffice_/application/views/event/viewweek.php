@@ -205,11 +205,12 @@ if (!$max_events_to_show) $max_events_to_show = 3;
 					}
 				}
 			}
-			if (!$starts_this_week && $task->getStartDate() instanceof DateTimeValue) {
+			if (!$starts_this_week && $task->getDueDate() instanceof DateTimeValue) {
 				$due_date = new DateTimeValue($task->getDueDate()->getTimestamp() + logged_user()->getTimezone() * 3600);
 				$due_dow = $due_date->format('w') + (user_config_option("start_monday") ? -1 : 0);
 				for ($dow = 0; $dow < $due_dow; $dow++) {
-					if ($task->getStartDate() instanceof DateTimeValue) {
+					$dow_ts = mktime(0, 0, 0, $month, $startday + $dow, $year);
+					if ($task->getStartDate() instanceof DateTimeValue && $task->getStartDate()->getTimestamp() < $dow_ts) {
 						$results[$dow][$task->getId()] = $task;
 					}
 				}

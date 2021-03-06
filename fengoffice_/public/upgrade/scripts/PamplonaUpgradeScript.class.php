@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Pamplona upgrade script will upgrade FengOffice 2.1 to FengOffice 2.2.3.1
+ * Pamplona upgrade script will upgrade FengOffice 2.1 to FengOffice 2.2.4-beta
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -32,15 +32,15 @@ class PamplonaUpgradeScript extends ScriptUpgraderScript {
 	); // array
 
 	 /**
-	 * Construct the MollejaUpgradeScript
+	 * Construct the PamplonaUpgradeScript
 	 *
 	 * @param Output $output
-	 * @return MollejaUpgradeScript
+	 * @return PamplonaUpgradeScript
 	 */
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('2.1');
-		$this->setVersionTo('2.2.3.1');
+		$this->setVersionTo('2.2.4-beta');
 	} // __construct
 
 	function getCheckIsWritable() {

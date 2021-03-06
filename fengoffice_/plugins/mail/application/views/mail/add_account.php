@@ -378,7 +378,7 @@ if (strlen($loc) > 2) $loc = substr($loc, 0, 2);
 					                toolbar: [
 												[	'Source','-','Font','FontSize','-','Bold','Italic','Underline','-', 'SpellChecker', 'Scayt','-',
 													'Link','Unlink','-',
-													'TextColor','BGColor','-',
+													'TextColor','BGColor','RemoveFormat','-',
 													'JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock'
 												]
 											],

@@ -88,9 +88,9 @@ class MailController extends ApplicationController {
 					} else {
 						$re_body = $html_content;
 					}
-				}				
+				}
 			}else{
-				$re_body = ($type == 'html' ? htmlentities($original_mail->getBodyPlain()) : $original_mail->getBodyPlain());
+				$re_body = $original_mail->getBodyPlain();
 			}
 			if ($type == 'html') {
 				$pre_quote = '<blockquote type="cite" style="padding-left:10px; border-left: 1px solid #987ADD;">';
@@ -181,7 +181,6 @@ class MailController extends ApplicationController {
 		tpl_assign('mail', $mail);
 		tpl_assign('mail_data', $mail_data);
 		tpl_assign('mail_accounts', $mail_accounts);
-		tpl_assign('addresses',  $this->getAllowedAddresses() );
 		
 	}
 	
@@ -287,7 +286,6 @@ class MailController extends ApplicationController {
 		tpl_assign('mail', $mail);
 		tpl_assign('mail_data', $mail_data);
 		tpl_assign('mail_accounts', $mail_accounts);
-		tpl_assign('addresses',  $this->getAllowedAddresses() );
 		
 
 		// Form is submited
@@ -2238,8 +2236,8 @@ class MailController extends ApplicationController {
 					}
 				}				
 			}else{
-				$body = ($type == 'html' ? htmlentities($original_mail->getBodyPlain()) : $original_mail->getBodyPlain());
-			}	
+				$body = $original_mail->getBodyPlain();
+			}
 			if ($type == 'html') {
 				$pre_quote = "<blockquote type='cite' style='padding-left:10px; border-left:1px solid #987ADD;'>";
 				$post_quote = "</blockquote>";
@@ -2320,7 +2318,6 @@ class MailController extends ApplicationController {
 		tpl_assign('mail', $mail);
 		tpl_assign('mail_data', $mail_data);
 		tpl_assign('mail_accounts', $mail_accounts);
-		tpl_assign('addresses',  $this->getAllowedAddresses() );
 		
 	}//forward_mail
 
@@ -2398,7 +2395,6 @@ class MailController extends ApplicationController {
 		tpl_assign('mail', $original_mail);
 		tpl_assign('mail_data', $mail_data);
 		tpl_assign('mail_accounts', $mail_accounts);
-		tpl_assign('addresses',  $this->getAllowedAddresses() );
 		
 	}//edit_mail
 
@@ -2619,13 +2615,20 @@ class MailController extends ApplicationController {
 
 	private function getAllowedAddresses(){
 		$addresses = array();
-		foreach ($contacts = Contacts::instance()->getAllowedContacts() as $contact ) {
+		$contacts = Contacts::instance()->getAllowedContacts();
+		foreach ($contacts as $contact ) {
 			/* @var $contact Contact */
 			if ($addr = $contact->getEmailAddress()) {
 				$addresses[] =  $contact->getObjectName()." <".$addr.">";
 			}
 		}
-		return $addresses ; 
+		return $addresses;
+	}
+	
+	function get_allowed_addresses() {
+		$addresses = $this->getAllowedAddresses();
+		ajx_current("empty");
+		ajx_extra_data(array('addresses' => $addresses));
 	}
 	
 	/**

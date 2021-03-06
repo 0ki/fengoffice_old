@@ -2157,9 +2157,10 @@ og.flash2img = function() {
 }
 
 
-og.getCrumbHtml = function(dims) {
+og.getCrumbHtml = function(dims, draw_all_members) {
 	var html = '';
 	var dim_index = 0;
+	var max_members_per_dim = 2;
 	for (x in dims) {
 		if (isNaN(x)) continue;
 		
@@ -2182,22 +2183,32 @@ og.getCrumbHtml = function(dims) {
 		else if (total_texts < 5) max_len = 5;
 		else max_len = 4;
 		
+		breadcrumb_count = 0;
 		for (id in members) {
+			if (isNaN(id)) continue;
 			texts = all_texts[id];
-			if (title != "") title += '- ';
+			
+			if (texts.length > 0) {
+				breadcrumb_count++;
+			}
+			if (!draw_all_members && breadcrumb_count > max_members_per_dim) break;
+			
+			if (title != "" && breadcrumb_count <= max_members_per_dim) title += '- ';
 			var color = members[id]['c'];
 			var member_path_span = '<span class="member-path og-wsname-color-'+ color +'">';
 			var member_path_content = "";
 			
 			for (i=texts.length-1; i>=0; i--) {
-                                var text = texts[i].text;
-                                text = text.replace("&amp;","&");
+				var text = texts[i].text;
+				text = text.replace("&amp;","&");
 				if (i>0) {
 					str = text.length > max_len ? text.substring(0, max_len-3) + ".." : text;
 				} else {
 					str = text.length > 12 ? text.substring(0, 10) + ".." : text;
 				}
-				title += texts[i].text + (i>0 ? "/" : " ");
+				if (breadcrumb_count <= max_members_per_dim) {
+					title += texts[i].text + (i>0 ? "/" : " ");
+				}
 				
 				var onclick = "return false;";
 				if (og.additional_on_dimension_object_click[texts[i].ot]) {
@@ -2212,6 +2223,11 @@ og.getCrumbHtml = function(dims) {
 			
 			if (member_path_content != '') inner_html += member_path_span;
 		}
+		
+		if (members['total'] > max_members_per_dim) {
+			title += lang('and number more', (members['total'] - max_members_per_dim));
+		}
+		
 		if (inner_html != "") html += '<span class="member-path" title="'+title+'">' + inner_html + '</span>';
 		dim_index++;
 	}

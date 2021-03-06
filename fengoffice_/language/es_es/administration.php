@@ -169,6 +169,10 @@
 	'no objects in template' => 'No hay objetos en la plantilla',
 	'add to a template' => 'Agregar a plantilla',
 	'add an object to template' => 'Agregar un objeto a esta plantilla',
+	'apply to all submembers' => 'Aplicar los permisos a todos los hijos',
+	'apply to all submembers desc' => 'Aplica los permisos seleccionados a todos los sub miembros del miembro seleccionado',
+	'apply to all members' => 'Aplicar los permisos a toda la dimensión',
+	'apply to all members desc' => 'Aplica los permisos seleccionados a todos los miembros de la dimensión',
 	'you are adding object to template' => 'Está agregando {0} \'{1}\' a una plantilla. Elija una plantilla o cree una nueva.',
 	'success add object to template' => 'Objeto correctamente agregado a template',
 	'object type not supported' => 'Este tipo de objeto no está soportado para plantillas',
@@ -322,8 +326,8 @@
 	'expand-collapse' => 'Expandir/Colapsar',
         'members color' => 'Color de las Dimensiones',
     
-        'config option name working_days' => 'Días laborales',
-        'config option desc working_days' => '',
+    'config option name working_days' => 'Días laborales',
+    'config option desc working_days' => 'Aquí podrá seleccionar cuáles son los días laborales de su compañía, que le serán de utilidad en el calendario y con las tareas repetitivas.',
 
 	'user ws config option name attach_to_notification' => 'Adjuntar documento a las notificaciones',
 	'user ws config option desc attach_to_notification' => 'Cuando la opción está activa por defecto queda habilitada la opción de enviar el documento en cada una de sus notificaciones',

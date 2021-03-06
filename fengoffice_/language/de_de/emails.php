@@ -211,4 +211,12 @@
 	'deleted notification comment desc' => 'Der Kommentar zu \'{0}\' wurde von {1} in den Papierkorb verschoben.',
 	'invalid sync settings' => 'Ungültige Synchronisationseinstellungen. Es konnte keine Verbindung mit dem Server aufgebaut werden.',
 	'visit feel free to log in' => 'Bitte besuchen Sie {0} und melden sich mit Ihrem Benutzernamen {1} oder Ihrer E-Mailadresse {2} an.',
+	'new task assigned to you desc' => '{1} hat Ihnen Aufgabe zugeordnet:',
+	'new task assigned to you' => 'Sie sind Aufgabe {0] zugeordnet',
+	'user password reset ignore' => 'falls Sie keine Passwortrücksetzung beantragt haben ignorieren sie diese Mail',
+	'view timeslots' => 'Zeitfenster ansehen',
+	'new task work estimate to you desc' => 'folgende Aufgabe hat seinen Zeitraum überschritten',
+	'view object and comments' => 'ansehen von {0} und aller Kommentare',
+	'open notification task' => 'Aufgabe gestartet {0}',
+	'open notification task desc' => 'Aufgabe gestartet von {1}',
 ); ?>

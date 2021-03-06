@@ -97,7 +97,7 @@
 	'file revision title long' => '<b><a class="internalLink" href="{0}">{1}</a></b>, el {2}',
 	'file checkout info short' => '<span>Revisado el {0}</span>',
 	'file checkout info long' => '<span>Revisado por </span> <a class="internalLink" href="{0}">{1}</a> <span> el {2}</span>',
-	'update file' => 'Editar propiedades del archivo',
+	'update file' => 'Actualizar documento',
 	'version file change' => 'Recordar cambios (el archivo anterior será guardado como referencia)',
 	'last revision' => 'Última revisión',
 	'revision comment' => 'Comentario de la revisión',

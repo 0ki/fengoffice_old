@@ -155,28 +155,30 @@ class Notifier {
 		if ($object instanceof ProjectFile && $object->getType() == ProjectFiles::TYPE_DOCUMENT) {
                     $revision = $object->getLastRevision();
                     if (trim($revision->getComment())) {
-                            $text_comment = escape_html_whitespace("\n" . $revision->getComment());
+                    	$text_comment = escape_html_whitespace("\n" . $revision->getComment());
                     }
 		}
-                
-                //context
-                $contexts = array();
-                if($object->getMembersToDisplayPath()){
-                    $members = $object->getMembersToDisplayPath();
-                    foreach ($members as $key => $member){                        
-                        $dim = Dimensions::getDimensionById($key);
-                        if ($dim->getCode() == "customer_project"){
-                            foreach($members[$key] as $member){
-                                $obj_type = ObjectTypes::findById($member['ot']);
-                                $contexts[$dim->getCode()][$obj_type->getName()][]= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
-                            }
-                        }else{
-                            foreach($members[$key] as $member){
-                                $contexts[$dim->getCode()][]= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
-                            }
-                        }
-                    }
-                }
+
+		//context
+		$contexts = array();
+		if($object->getMembersToDisplayPath()){
+			$members = $object->getMembersToDisplayPath();
+			foreach ($members as $key => $member){
+				$dim = Dimensions::getDimensionById($key);
+				if ($dim->getCode() == "customer_project"){
+					foreach($members[$key] as $member){
+						$obj_type = ObjectTypes::findById($member['ot']);
+						if ($obj_type instanceof ObjectType) {
+							$contexts[$dim->getCode()][$obj_type->getName()][]= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
+						}
+					}
+				}else{
+					foreach($members[$key] as $member){
+						$contexts[$dim->getCode()][]= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
+					}
+				}
+			}
+		}
 		
 		$attachments = array();
                 try {
@@ -629,7 +631,9 @@ class Notifier {
 				if ($dim->getCode() == "customer_project"){
 					foreach($members[$key] as $member){
 						$obj_type = ObjectTypes::findById($member['ot']);
-						$contexts[$dim->getCode()][$obj_type->getName()][]= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
+						if ($obj_type instanceof ObjectType) {
+							$contexts[$dim->getCode()][$obj_type->getName()][]= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
+						}
 					}
 				}else{
 					foreach($members[$key] as $member){
@@ -961,7 +965,9 @@ class Notifier {
                         if ($dim->getCode() == "customer_project"){
                             foreach($members[$key] as $member){
                                 $obj_type = ObjectTypes::findById($member['ot']);
-                                $contexts[$dim->getCode()][$obj_type->getName()][]= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
+                                if ($obj_type instanceof ObjectType) {
+                                	$contexts[$dim->getCode()][$obj_type->getName()][]= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
+                                }
                             }
                         }else{
                             foreach($members[$key] as $member){
@@ -1070,8 +1076,8 @@ class Notifier {
                     }
                     tpl_assign('priority', array($priority,$priorityColor));
 		}
-                
-                //context
+		
+		//context
                 $contexts = array();
                 if($task->getMembersToDisplayPath()){
                     $members = $task->getMembersToDisplayPath();
@@ -1080,7 +1086,9 @@ class Notifier {
                         if ($dim->getCode() == "customer_project"){
                             foreach($members[$key] as $member){
                                 $obj_type = ObjectTypes::findById($member['ot']);
-                                $contexts[$dim->getCode()][$obj_type->getName()][]= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
+                                if ($obj_type instanceof ObjectType) {
+                                	$contexts[$dim->getCode()][$obj_type->getName()][]= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
+                                }
                             }
                         }else{
                             foreach($members[$key] as $member){

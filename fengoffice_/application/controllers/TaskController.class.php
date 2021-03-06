@@ -320,12 +320,18 @@ class TaskController extends ApplicationController {
 				$task->setTimeEstimate($totalMinutes);
 				$task->save();
 
-				$this->calculate_time_estimate($task, $task->getPercentCompleted());
-
+				$task->calculatePercentComplete();
+				
 				// get member ids
 				$member_ids = array();
 				if (array_var($task_data, 'members')) {
 					$member_ids = json_decode(array_var($task_data, 'members'));
+				}
+				
+				$remove_members_from_dim = array_var($task_data, 'remove_from_dimension');
+				$old_members = $task->getMembers();
+				foreach ($old_members as $old_mem) {
+					if ($old_mem->getDimensionId() != $remove_members_from_dim) $member_ids[] = $old_mem->getId();
 				}
 
 				// get member id when changing member via drag & drop
@@ -1469,7 +1475,7 @@ class TaskController extends ApplicationController {
 				DB::beginWork();
 				$task->save();
 
-				$this->calculate_time_estimate($task, array_var($task_data, "percent_completed"));
+				$task->calculatePercentComplete();
 
 				// dependencies
 				if (config_option('use tasks dependencies')) {
@@ -2395,30 +2401,6 @@ class TaskController extends ApplicationController {
                 }
             }
             return $date;
-        }
-        
-        function calculate_time_estimate($task,$percent){
-            $timeslots = $task->getTimeslots();
-            if ($timeslots && $task->getTimeEstimate() > 0){
-                    $total_percentComplete = 0;
-                    $task->setPercentCompleted($total_percentComplete);
-                    foreach ($timeslots as $timeslot){
-                        if($task->getTimeEstimate() != ""){
-                            if(!$timeslot->isOpen()){
-                                $timeslot_time = ($timeslot->getEndTime()->getTimestamp() - $timeslot->getStartTime()->getTimestamp()) / 3600;
-                                $timeslot_percent = round(($timeslot_time * 100) / ($task->getTimeEstimate() / 60));
-                                $total_percentComplete += $timeslot_percent;               
-                            } 
-                        }                                                         
-                    }
-                    if ($total_percentComplete < 0) $total_percentComplete = 0;
-                    $task->setPercentCompleted($total_percentComplete);
-                    $task->save();
-            }else{
-            	if ($percent < 0) $percent = 0;
-                $task->setPercentCompleted($percent);
-                $task->save();
-            }
         }
 
 } // TaskController

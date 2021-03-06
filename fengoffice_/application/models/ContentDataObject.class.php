@@ -1776,7 +1776,7 @@ abstract class ContentDataObject extends ApplicationDataObject {
 	}
 	
 	
-	function getMembersToDisplayPath($member_ids = null) {
+	function getMembersToDisplayPath($member_ids = null, $show_all_members = false) {
 		$members_info = array();
 		
 		if (is_null($member_ids)) {
@@ -1785,19 +1785,31 @@ abstract class ContentDataObject extends ApplicationDataObject {
 		$members = $this->manager()->getCachedMembersInfo($member_ids);
 
 		$dimension_options = array();
+		$member_count = array();
+		
+		$active_context_ids = active_context_members(false);
 
 		if(count($members) > 0){
 			foreach ($members as $mem) {
 				$options = Dimensions::getDimensionById($mem['dimension_id'])->getOptions(true);
 				if (isset($options->showInPaths) && $options->showInPaths) {
 					if (!isset($members_info[$mem['dimension_id']])) $members_info[$mem['dimension_id']] = array();
-					$members_info[$mem['dimension_id']][$mem['id']] = array(
-						'ot' => $mem['object_type_id'],
-						'c' => Members::findById($mem['id'])->getMemberColor(),//$mem->getMemberColor(),
-						'name' => $mem['name'],
-					);
+					
+					if (!$show_all_members && count($members_info[$mem['dimension_id']]) < 2 && !in_array($mem['id'], $active_context_ids)) {
+						$members_info[$mem['dimension_id']][$mem['id']] = array(
+							'ot' => $mem['object_type_id'],
+							'c' => Members::getMemberById($mem['id'])->getMemberColor(),
+							'name' => $mem['name'],
+						);
+					}
+					if (!isset($member_count[$mem['dimension_id']])) $member_count[$mem['dimension_id']] = 1;
+					else $member_count[$mem['dimension_id']]++;
 				}
 			}
+		}
+		
+		foreach ($member_count as $did => $cant) {
+			$members_info[$did]['total'] = $cant;
 		}
 		
 		return $members_info;

@@ -875,5 +875,6 @@ addLangs({
 	'complete task and subtask' : 'This task contains subtasks which are still pending.<br/>Would you like to complete them too?',
 	'option repetitive title popup' : 'This task is already completed. <br/>Do you wish to:',
 	'option repetitive only task' : 'Modify this task data?',
-	'option repetitive pending task' : 'Modify all task series? (Edit upcoming pending task)'
+	'option repetitive pending task' : 'Modify all task series? (Edit upcoming pending task)',
+	'and number more': 'and {0} more.'
 });

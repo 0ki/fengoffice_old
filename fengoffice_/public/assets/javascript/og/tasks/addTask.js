@@ -719,6 +719,19 @@ ogTasks.buildAssignedToComboStore = function(companies, only_me, groups) {
 				}
 			}
 		}
+		// sort user list
+		var me = usersStore.shift();
+		var dont_assign = usersStore.shift();
+		usersStore.sort(function(a, b){
+			var namea = a[1].toLowerCase();
+			var nameb = b[1].toLowerCase();
+			if (namea < nameb) return -1;
+			if (namea > nameb) return 1;
+			return 0;
+		});
+		usersStore.unshift(dont_assign);
+		usersStore.unshift(me);
+		
 		if (comp_array.length > 0) {
 			usersStore[cantU++] = ['0', '--'];
 		}

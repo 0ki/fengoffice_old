@@ -1,13 +1,18 @@
-/**
- *  QuickAdd
- *
- */
 og.QuickAdd = function(config) {
+	
+	if (!og.AdditionalQuickAddButtons) og.AdditionalQuickAddButtons = [];
 	
 	og.QuickAdd.superclass.constructor.call(this, Ext.applyIf(config || {}, {
 		text: lang('new'),
         tooltip: lang('create an object'),
         iconCls: 'ico-quick-add',
+        listeners: {
+			'render': function(button) {
+				for (i=0; i<og.AdditionalQuickAddButtons.length; i++) {
+					button.menu.add(og.AdditionalQuickAddButtons[i]);
+				}
+			}
+		},
 		menu: {
 			items: [
 				{id: 'quick-contact', text: lang('person'), iconCls: 'ico-contact', handler: function() {
@@ -53,19 +58,11 @@ og.QuickAdd = function(config) {
 				{id: 'quick-file', text: lang('upload file'), iconCls: 'ico-upload', handler: function() {
 					var url = og.getUrl('files', 'add_file');
 					og.openLink(url/*, {caller: 'documents-panel'}*/);
-				}, hidden: !og.config['enable_documents_module']},/*,
+				}, hidden: !og.config['enable_documents_module']}/*,
 				{id: 'quick-email', text: lang('email'), iconCls: 'ico-email', handler: function() {
 					var url = og.getUrl('mail', 'add_mail');
 					og.openLink(url);
 				}, hidden: !og.config['enable_email_module']}*/
-                                {id: 'quick-customer', text: lang('customer'), iconCls: 'ico-company', handler: function() {
-					var url = og.getUrl('customer', 'add');
-					og.openLink(url/*, {caller: 'crpm-panel'}*/);
-				}},
-				{id: 'quick-project', text: lang('project'), iconCls: 'ico-project', handler: function() {
-					var url = og.getUrl('project', 'add');
-					og.openLink(url/*, {caller: 'crpm-panel'}*/);
-				}}
 			]
 		}
 	}));

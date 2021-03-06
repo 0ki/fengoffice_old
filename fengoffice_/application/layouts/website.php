@@ -121,7 +121,7 @@ $use_owner_company_logo = owner_company()->hasLogo();
                     </div>
                     <div style="float: left;">
                         <?php if(!$use_owner_company_logo){?>
-                        <a style="color: #fff; font-size: 10px; padding-top:15px;" href="index.php?c=contact&a=edit_logo&id=<?php echo owner_company()->getObjectId(); ?>"><?php echo lang('change logo')?></a>
+                        <a id="change-logo-link" style="color: #fff; font-size: 10px; padding-top:15px;" href="index.php?c=contact&a=edit_logo&id=<?php echo owner_company()->getObjectId(); ?>"><?php echo lang('change logo')?></a>
                         <?php } ?>
                         <h1 style="padding-top:15px;"><?php echo clean(owner_company()->getObjectName()) ?></h1>
                     </div>
@@ -354,7 +354,7 @@ og.config = {
 	'checkout_notification_dialog': <?php echo json_encode(config_option('checkout_notification_dialog', 0)) ?>,
 	'use_time_in_task_dates': <?php echo json_encode(config_option('use_time_in_task_dates')) ?>,
 	'enable_notes_module': <?php echo json_encode(module_enabled("messages")) ?>,
-	'enable_email_module': <?php echo json_encode(module_enabled("mails", defined('SHOW_MAILS_TAB') && SHOW_MAILS_TAB)) ?>,
+	'enable_email_module': <?php echo json_encode(module_enabled("mails")) ?>,
 	'enable_contacts_module': <?php echo json_encode(module_enabled("contacts")) ?>,
 	'enable_calendar_module': <?php echo json_encode(module_enabled("calendar")) ?>,
 	'enable_documents_module': <?php echo json_encode(module_enabled("documents")) ?>,
@@ -513,6 +513,22 @@ og.dimension_object_type_contents = [];
 <?php
 	} 
 ?>
+
+document.getElementById("change-logo-link").onclick = function(e){
+	if(e && e.stopPropagation) {
+		e.stopPropagation();
+	} else {
+		e = window.event;
+		e.cancelBubble = true;
+	}
+}
+
+og.openLink(og.getUrl('object', 'get_cusotm_property_columns'), {
+	callback: function(success, data){
+		og.custom_properties_by_type = data.properties;
+	}
+});
+
 </script>
 <?php include_once(Env::getLayoutPath("listeners"));?>
 
