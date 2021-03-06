@@ -1,4 +1,14 @@
 <script>
+og.eventManager.addListener('reload company users', function(data){
+	og.openLink(og.getUrl('contact', 'reload_company_users', {company:data.company_id, context:og.contextManager.plainContext(), current:data.current}), {
+		preventPanelLoad:true,
+		callback: function(success, data) {
+			document.getElementById('companyUsers').innerHTML = data.current.data;
+			og.captureLinks('companyUsers', data.current);
+		}
+	});
+});
+
 og.eventManager.addListener('template object added',function(data){
 	og.redrawTemplateObjectsLists(data);
 });

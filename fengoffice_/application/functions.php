@@ -872,8 +872,10 @@ function create_user($user_data, $permissionsString) {
 		
 		$sp = new SystemPermission();
 		$rol_permissions=SystemPermissions::getRolePermissions(array_var($user_data, 'type'));
-		foreach($rol_permissions as $pr){
-			$sp->setPermission($pr);
+		if (is_array($rol_permissions)) {
+			foreach($rol_permissions as $pr){
+				$sp->setPermission($pr);
+			}
 		}
 		$sp->setPermissionGroupId($permission_group->getId());
 
@@ -967,8 +969,10 @@ function create_user($user_data, $permissionsString) {
 	if(!isset($_POST['sys_perm'])){
 		$rol_permissions=SystemPermissions::getRolePermissions(array_var($user_data, 'type'));
 		$_POST['sys_perm']=array();
-		foreach($rol_permissions as $pr){
-			$_POST['sys_perm'][$pr]=1;
+		if (is_array($rol_permissions)) {
+			foreach($rol_permissions as $pr){
+				$_POST['sys_perm'][$pr]=1;
+			}
 		}
 		
 	}

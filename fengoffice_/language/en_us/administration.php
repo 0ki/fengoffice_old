@@ -253,6 +253,9 @@
 	'user config option name access_member_after_add_remember' => 'Remember to access member or not when member is created',
 	'user config option desc access_member_after_add_remember' => 'Enabling this option allows you to skip the question about what to do after creating a workspace, client, etc.',
 
+  	'user config option name breadrcrumb_member_count' => 'Amount of breadcrumbs to display',
+  	'config option name updateOnLinkedObjects' => 'Change update date of an object when linking to another',
+  		
     'user config option name show_object_direct_url'=> 'Show direct object urls',
     'user config option desc show_object_direct_url'=> 'If enabled, a direct URL to the object will be displayed on it\'s overview',  
 

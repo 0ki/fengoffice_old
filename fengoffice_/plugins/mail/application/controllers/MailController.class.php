@@ -1604,7 +1604,7 @@ class MailController extends ApplicationController {
 							"size" => filesize($tempFileName)
 						);
 
-						if ($fileIsNew) {
+						if ($fileIsNew || (!($file->getLastRevision() instanceof ProjectFileRevision))) {
 							$revision = $file->handleUploadedFile($fileToSave, true, lang('attachment from email', $email->getSubject())); // handle uploaded file
 							$revision->setCreatedById($account_owner->getId());
 							$revision->save();
@@ -2823,8 +2823,8 @@ class MailController extends ApplicationController {
 					}; // switch
 				}; // for
 				break;
-			case "move": //clasify
-
+			/*case "move": //clasify
+				
 				$wsid = $attributes["moveTo"];
 				$destination = Projects::findById($wsid);
 		
@@ -2870,7 +2870,7 @@ class MailController extends ApplicationController {
 					$resultMessage = lang("success move objects", $count);
 					$resultCode = 0;
 				}
-				break;
+				break;*/
 				
 			case "checkmail":
 				$resultCheck = MailController::checkmail();
@@ -3168,7 +3168,6 @@ class MailController extends ApplicationController {
                     }                                             
             }
             catch(Exception $e) {
-                    DB::rollback();
                     flash_error($e->getMessage());
                     ajx_current("empty");
             }

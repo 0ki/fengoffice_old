@@ -3385,4 +3385,14 @@ class ContactController extends ApplicationController {
 		echo json_encode($data);
 		ajx_current("empty");
 	}
+	
+	
+	function reload_company_users() {
+		
+		$company = Contacts::findById(array_var($_REQUEST, 'company'));
+		tpl_assign('users', $company->getUsersByCompany());
+  		
+  		$this->setTemplate(get_template_path('list_users', 'administration'));
+  		
+	}
 } 

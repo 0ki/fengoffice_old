@@ -382,8 +382,8 @@ class ProjectFile extends BaseProjectFile {
 			$file_type = FileTypes::getByExtension($extension);
 			if($file_type instanceof Filetype) {
                                 if(!$file_type->getIsAllow()){
-                                    DB::rollback();
                                     flash_error(lang('file extension no allow'));
+                                    return;
                                 }else{
                                     $revision->setFileTypeId($file_type->getId());
                                 }

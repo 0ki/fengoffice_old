@@ -311,7 +311,7 @@ class Reports extends BaseReports {
 							if ($cp->getType() == 'numeric') {
 								$current_condition .= ' AND cpv.value '.$condCp->getCondition().' '.DB::escape($value);
 							}else if ($cp->getType() == 'boolean') {
-								$current_condition .= ' AND cpv.value '.$condCp->getCondition().' '.$value;
+								$current_condition .= ' AND cpv.value '.$condCp->getCondition().' '.($value ? '1' : '0');
 								if (!$value) {
 									$current_condition .= ') OR o.id NOT IN (SELECT object_id as id FROM '.TABLE_PREFIX.'custom_property_values cpv2 WHERE cpv2.object_id=o.id AND cpv2.value=1 AND cpv2.custom_property_id = '.$condCp->getCustomPropertyId();
 								}

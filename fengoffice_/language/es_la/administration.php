@@ -189,7 +189,8 @@
 
 	'user config option name updateOnLinkedObjects' => 'Actualiza los objetos que son vinculados:',
 	'user config option desc updateOnLinkedObjects' => 'Si esta opción esta habilitada, cuando se vincule o desvincule un objeto con otro, ambos actualizaran sus fechas de molificación.',
-		
+	'user config option name breadrcrumb_member_count' => 'Cantidad de rutas a mostrar',
+	'config option name updateOnLinkedObjects' => 'Cambiar fecha de actualización de un objeto al vincularlo con otro',
 		
 	'config option name let_users_create_objects_in_root' => 'Permitir crear objetos sin clasificarlos',
 

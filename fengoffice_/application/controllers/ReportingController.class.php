@@ -343,7 +343,7 @@ class ReportingController extends ApplicationController {
 					if ($cp->getType() == 'numeric') {
 						$current_condition .= ' AND cpv.value '.$cond['condition'].' '.DB::escape($value);
 					}else if ($cp->getType() == 'boolean') {
-						$current_condition .= ' AND cpv.value '.$cond['condition'].' '.$value;
+						$current_condition .= ' AND cpv.value '.$cond['condition'].' '.($value ? '1' : '0');
 						if (!$value) {
 							$current_condition .= ') OR o.id NOT IN (SELECT object_id as id FROM '.TABLE_PREFIX.'custom_property_values cpv2 WHERE cpv2.object_id=o.id AND cpv2.value=1 AND cpv2.custom_property_id = '.$cp->getId();
 						}
@@ -519,7 +519,7 @@ class ReportingController extends ApplicationController {
 								
 								$condValue = array_key_exists('value', $condition) ? $condition['value'] : '';
 								if($condition['field_type'] == 'boolean'){
-									$newCondition->setValue(array_key_exists('value', $condition));
+									$newCondition->setValue(array_key_exists('value', $condition) ? '1' : '0');
 								}else if($condition['field_type'] == 'date'){
 									if ($condValue != '') {
 										$dtFromWidget = DateTimeValueLib::dateFromFormatAndString(user_config_option('date_format'), $condValue);
@@ -637,7 +637,7 @@ class ReportingController extends ApplicationController {
 					$newCondition->setFieldName($condition['field_name']);
 					$newCondition->setCondition($condition['condition']);
 					if($condition['field_type'] == 'boolean'){
-						$newCondition->setValue(isset($condition['value']) && $condition['value']);
+						$newCondition->setValue(isset($condition['value']) && $condition['value'] ? '1' : '0');
 					}else if($condition['field_type'] == 'date'){
 						if (array_var($condition, 'value') == '') $newCondition->setValue('');
 						else {

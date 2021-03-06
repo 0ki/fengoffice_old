@@ -1229,10 +1229,10 @@ class MemberController extends ApplicationController {
 		}
 		
 		try {
-		
+			DB::beginWork();
 		  if ($mem_id) {
 		  	
-			DB::beginWork();
+			
 			$member = Members::findById($mem_id);
 			
 			$objects = array();
@@ -1292,19 +1292,18 @@ class MemberController extends ApplicationController {
 			
 			Hook::fire('after_dragdrop_classify', $objects, $member);
 			
-			DB::commit();
+			$display_name = $member->getName();
+			$lang_key = count($ids)>1 ? 'objects moved to member success' : 'object moved to member success';
+			$log_datas = array();
+			$actions = array();
 			
 			// add to application logs
-			foreach ($objects as $object) {
-				$action = array_var($from, $obj->getId()) ? ApplicationLogs::ACTION_MOVE : ApplicationLogs::ACTION_COPY;
-				$log_data = (array_var($from, $obj->getId()) ? "from:" . array_var($from, $obj->getId()) . ";" : "") . "to:" . $member->getId();
-				ApplicationLogs::instance()->createLog($object, $action, false, true, true, $log_data);
+			foreach ($objects as $obj) {
+				$actions[$obj->getId()] = array_var($from, $obj->getId()) ? ApplicationLogs::ACTION_MOVE : ApplicationLogs::ACTION_COPY;
+				$log_datas[$obj->getId()] = (array_var($from, $obj->getId()) ? "from:" . array_var($from, $obj->getId()) . ";" : "") . "to:" . $member->getId();
 			}
 			
-			$lang_key = count($ids)>1 ? 'objects moved to member success' : 'object moved to member success';
-			flash_success(lang($lang_key, $member->getName()));
-			if (array_var($_POST, 'reload')) ajx_current('reload');
-			else ajx_current('empty');
+			
 			
 		  } else {
 			if ($dim_id = array_var($_POST, 'dimension')) {
@@ -1328,20 +1327,28 @@ class MemberController extends ApplicationController {
 					$objects[] = $obj;
 				}
 				
-				DB::commit();
+				$display_name = $dimension->getName();
+				$lang_key = count($ids)>1 ? 'objects removed from' : 'object removed from';
+				$log_datas = array();
+				$actions = array();
 				
 				// add to application logs
-				foreach ($objects as $object) {
-					$action = array_var($from, $obj->getId()) ? ApplicationLogs::ACTION_MOVE : ApplicationLogs::ACTION_COPY;
-					$log_data = (array_var($from, $obj->getId()) ? "from:" . array_var($from, $obj->getId()) . ";" : "");
-					ApplicationLogs::instance()->createLog($object, $action, false, true, true, $log_data);
+				foreach ($objects as $obj) {
+					$actions[$obj->getId()] = array_var($from, $obj->getId()) ? ApplicationLogs::ACTION_MOVE : ApplicationLogs::ACTION_COPY;
+					$log_datas[$obj->getId()] = (array_var($from, $obj->getId()) ? "from:" . array_var($from, $obj->getId()) . ";" : "");
 				}
-				$lang_key = count($ids)>1 ? 'objects removed from' : 'object removed from';
-				flash_success(lang($lang_key, $dimension->getName()));
-				if (array_var($_POST, 'reload')) ajx_current('reload');
-				else ajx_current('empty');
 			}
 		  }
+		  
+		  DB::commit();
+		  
+		  foreach ($objects as $object) {
+		  	ApplicationLogs::instance()->createLog($object, $actions[$object->getId()], false, true, true, $log_datas[$object->getId()]);
+		  }
+		  
+		  flash_success(lang($lang_key, $display_name));
+		  if (array_var($_POST, 'reload')) ajx_current('reload');
+		  else ajx_current('empty');
 		
 		} catch (Exception $e) {
 			DB::rollback();

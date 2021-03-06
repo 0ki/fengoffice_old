@@ -198,6 +198,10 @@ class TimeslotController extends ApplicationController {
 			else
 				$timeslot->save();
 			
+			if($object instanceof ProjectTask) {
+				$object->calculatePercentComplete();				
+			}
+			
 			DB::commit();
 			ApplicationLogs::createLog($timeslot, ApplicationLogs::ACTION_CLOSE);
 				

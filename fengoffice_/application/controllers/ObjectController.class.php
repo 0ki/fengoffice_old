@@ -1013,7 +1013,7 @@ class ObjectController extends ApplicationController {
 		$template_object_names = "";
 		$template_extra_condition = "true";
 		
-		if(in_array("template_task", $filters['types']) || in_array("template_milestone", $filters['types'])){
+		if(in_array("template_task", array_var($filters, 'types', array())) || in_array("template_milestone", array_var($filters, 'types', array()))){
 			$tmpl_task = TemplateTasks::findById(intval($id_no_select));
 			if($tmpl_task instanceof TemplateTask){
 				$template_extra_condition = "o.id IN (SELECT object_id from ".TABLE_PREFIX."template_tasks WHERE `template_id` =".$tmpl_task->getTemplateId().")";

@@ -324,8 +324,29 @@ class ApplicationLog extends BaseApplicationLog {
 			$object_type = ObjectTypes::findById($object->getObjectTypeId());
 			$type = $object_type->getName();
 			$object_url = "";
-			$object_link =  '<a style="font-weight:bold" href="' . $object_url . '">&nbsp;'.
-				'<span style="padding: 1px 0 3px 18px;" class="db-ico ico-unknown ico-' . $type . $icon_class . '"/>'.clean($this->getObjectName()).'</a>';
+			
+			$onclick = "";
+			switch ($type)
+			{
+				case "folder":
+					$onclick = "og.crpm.onFolderClick(".$object->getId().");";
+					break;
+				case "project":
+					$onclick = "og.projects.onProjectClick(".$object->getId().");";
+					break;
+				case "customer":
+					$onclick = "og.customers.onCustomerClick(".$object->getId().");";
+					break;
+				case "workspace":
+					$onclick = "og.workspaces.onWorkspaceClick(".$object->getId().");";
+					break;
+				default:
+					$onclick = "";
+			}
+			
+			$object_link =  '<a class="internalLink" href="javascript:void(0);" onclick="'.$onclick.'">&nbsp;'.
+					'<span style="padding: 1px 0 3px 18px;" class="db-ico ico-unknown ico-' . $type . $icon_class . '"/>'.clean($this->getObjectName()).'</a>';
+			
 			return lang('activity ' . $this->getAction(), lang('the '.$type," "), $userName , $object_link);
 		} else {
 			$object_link = clean($this->getObjectName()).'&nbsp;'.lang('object is deleted');
@@ -413,6 +434,65 @@ class ApplicationLog extends BaseApplicationLog {
 			case ApplicationLogs::ACTION_LOGOUT :
 				return lang('activity ' . $this->getAction(), $userName);
 			case ApplicationLogs::ACTION_MOVE :
+				$from_to = explode(";", $this->getLogData());
+				$to = "";
+				$from = "";
+				if (is_array($from_to) && count($from_to) > 0) {
+					foreach($from_to as $fr_to){
+						if(strpos($fr_to, 'from:') !== FALSE){
+							$from = $fr_to;
+						}elseif (strpos($fr_to, 'to:') !== FALSE){
+							$to = $fr_to;
+						}						
+					}
+				}
+				
+				//to
+				$to_str = "";
+				$to_str_member = "";
+				$members_ids_csv = str_replace("to:", "", $to);
+				$mem_ids = explode(",", $members_ids_csv);
+				if (is_array($mem_ids) && count($mem_ids) > 0) {
+					foreach($mem_ids as $mem_id){
+						$member = Members::findById($mem_id);
+						if($member){
+							$to_str_member .= $member->getName() . ", ";
+						}
+					}
+					if($to_str_member != ""){
+						$to_str_member = substr($to_str_member , 0, -2);
+						$to_str .= $to_str_member;
+					}
+				}
+				
+				//from
+				$from_str = "";
+				$from_str_member = "";
+				$members_ids_csv_from = str_replace("from:", "", $from);
+				$mem_ids_from = explode(",", $members_ids_csv_from);
+				
+				if (is_array($mem_ids_from) && count($mem_ids_from) > 0) {
+					foreach($mem_ids_from as $mem_id){
+						$member = Members::findById($mem_id);
+						if($member){
+							$from_str_member .= $member->getName() . ", ";
+						}
+					}
+					if($from_str_member != ""){
+						$from_str_member = substr($from_str_member , 0, -2);
+						$from_str .= $from_str_member;
+					}
+				}
+				
+				if($object instanceof ContentDataObject){
+					if ($to_str != "") {
+						return lang('activity ' . $this->getAction() . ' from to', lang('the '.$object->getObjectTypeName()), $userName, $object_link, $from_str,$to_str);
+					}
+				}else{
+					if ($to_str != "") {
+						return lang('activity ' . $this->getAction() . ' from to', lang('the '.$this->getRelObjectManager()), $userName, $object_link, $from_str,$to_str);
+					}
+				}
 			case ApplicationLogs::ACTION_COPY :				
 				$to_str = "";
 				$to_str_member = "";

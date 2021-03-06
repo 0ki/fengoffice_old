@@ -500,7 +500,8 @@ Ext.extend(og.OverviewManager, Ext.grid.GridPanel, {
 	load: function(params) {
 		if (!params) params = {};
 		if (typeof params.start == 'undefined') {
-			var start = (this.getBottomToolbar().getPageData().activePage - 1) * og.config['files_per_page'];
+			//var start = (this.getBottomToolbar().getPageData().activePage - 1) * og.config['files_per_page'];
+			var start = 0;
 		} else {
 			var start = 0;
 		}

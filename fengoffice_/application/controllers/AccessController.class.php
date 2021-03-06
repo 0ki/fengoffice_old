@@ -212,7 +212,7 @@ class AccessController extends ApplicationController {
 					$usu->save();
 				}
 			}
-			$this->redirectTo('dashboard', 'init_overview');
+			$this->redirectTo('dashboard', 'main_dashboard');
 		} else {
 			if (!(logged_user() instanceof Contact && logged_user()->isUser())) {
 				$this->redirectTo('access', 'login');

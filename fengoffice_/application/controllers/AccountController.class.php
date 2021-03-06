@@ -488,6 +488,7 @@ class AccountController extends ApplicationController {
 			if(array_var($_GET,'current')=="administration") {
 				ajx_current("reload");
 			}else{
+				evt_add("reload company users", array('company_id' => $user->getCompanyId()));
 				ajx_current("empty");
 			}
 			

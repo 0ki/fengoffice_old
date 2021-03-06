@@ -1,6 +1,6 @@
 <?php 
 require_javascript('og/modules/linkToObjectForm.js');
-if (!$genid) $genid = gen_id();
+if (!isset($genid)) $genid = gen_id();
 ?>
 <a id="<?php echo $genid ?>before" href="#" onclick="App.modules.linkToObjectForm.pickObject(this)"><?php echo lang('link object') ?></a>
 

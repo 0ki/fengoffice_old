@@ -1,5 +1,5 @@
 
-	About Feng Office 2.5-beta
+	About Feng Office 2.5-rc
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -101,6 +101,15 @@
 	
 	Changelog
 	=========
+	
+	Since 2.5-beta
+	----------------
+	
+	bugfix: if a file doesn't have a revision, when classifying an email create one.
+    bugfix: when adding a timeslot by clock on tasks, task progress bar was not updated correctly.
+    bugfix: fixed custom reports using boolean conditions in false.
+    bugfix: problems with paging on the overview list.
+    bugfix: on activity widget, when clicking on a member, change dimension.
 	
 	Since 2.4.0.6
 	----------------
