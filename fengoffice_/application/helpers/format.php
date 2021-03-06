@@ -326,7 +326,11 @@ function date_format_tip($format) {
 		foreach ($cp_vals as $cp_val) {
 			if ($cp->getType() == 'contact' && $cp_val instanceof CustomPropertyValue) {
 				$cp_contact = Contacts::findById($cp_val->getValue());
-				$cp_val->setValue($cp_contact->getObjectName());
+				if ($cp_contact instanceof Contact) {
+					$cp_val->setValue($cp_contact->getObjectName());
+				} else {
+					$cp_val->setValue("");
+				}
 			}
 			
 			if ($cp->getType() == 'date' && $cp_val instanceof CustomPropertyValue) {

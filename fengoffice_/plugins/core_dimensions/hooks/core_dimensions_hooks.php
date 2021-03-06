@@ -430,7 +430,11 @@ function core_dimensions_after_object_delete_permanently($object_ids) {
 	$person_dim = Dimensions::findByCode('feng_persons');
 	$members = Members::findAll(array('conditions' => "`object_id` IN (".implode(",",$object_ids).") AND `dimension_id` = " . $person_dim->getId()));
 	foreach ($members as $mem) {
-		$mem->delete();
+		$obj = Objects::findObject($mem->getObjectId());
+		// ensure that the associated object no longer exists before deleting the member
+		if (!$object instanceof ContentDataObject) {
+			$mem->delete();
+		}
 	}
 }
 

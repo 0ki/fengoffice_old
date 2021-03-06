@@ -1116,7 +1116,7 @@ class Contact extends BaseContact {
 	function canEdit(Contact $user) {
 		if ($this->isUser()) {
 			// a contact that has a user assigned to it can be modified by anybody that can manage security (this is: users and permissions) or the user himself.
-			return can_manage_security ($user) && $this->getUserType() > $user->getUserType() || $this->getObjectId () == $user->getObjectId ();
+			return can_manage_security($user) && ($this->getUserType() > $user->getUserType() || $user->isAdministrator()) || $this->getObjectId() == $user->getObjectId();
 		} 
 		if ($this->isOwnerCompany()) return can_manage_configuration($user);
 		return can_manage_contacts($user) || can_write ($user, $this->getMembers(), $this->getObjectTypeId());

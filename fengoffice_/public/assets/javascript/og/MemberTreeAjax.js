@@ -364,7 +364,16 @@ Ext.extend(og.MemberTreeAjax, Ext.tree.TreePanel, {
 	init: function ( callback  ) {
 		new Ext.tree.TreeSorter(this, {
 		    dir: "asc",
-		    property: "text"		   
+		    property: "text",
+		    sortType: function(node) {
+		    	// if node is the "view more" node, it must be the last one 
+		    	if (isNaN(node.id) && node.id.indexOf('view_more_') == 0) {
+		    		var last_char = String.fromCharCode(126);
+		    		// let text start with last char in order to set this node as the last one
+		    		return last_char + last_char + last_char + node.text;
+		    	}
+		    	return node.text;
+		    }
 		});
 		
 		switch (this.expandMode) {

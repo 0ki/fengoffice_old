@@ -3550,7 +3550,7 @@ og.addViewMoreNode = function(pnode, tree_id, callback) {
 	
 	var view_more_node = tree.loader.createNode({
 		id: 'view_more_' + pnode.id,
-		text: "[ " + og.clean(lang('view more') + " ... ]"),
+		text: og.clean(lang('view more') + " ..."),
 		iconCls: 'ico-view-more',
 		cls: 'view-more-node',
 		parent: pnode.id,
@@ -3575,7 +3575,6 @@ og.addViewMoreNode = function(pnode, tree_id, callback) {
 		var old_view_more = tree.getNodeById('view_more_' + pnode.id);
 		if (!old_view_more) {
 			if (pnode) pnode.appendChild(view_more_node);
-			//view_more_node.setText(og.clean(lang('view more')+" ..."));
 		}
 		
 		
@@ -3593,10 +3592,15 @@ og.ajaxMemberTreeViewMoreCallbackRoot = function(tree) {
 	}
 	
 	og.initialMemberTreeAjaxLoad(tree, tree.limit, tree.last_offset);
-	
-	if(!tree.body.hasClass("have-focus")) {
-		$("#" + tree.id + '-textfilter').focus();
-	}
+
+	// ensure tree is visible
+	var tree_id = tree.id;
+	setTimeout(function() {
+		if ($("#" + tree.body.id).css('display') == 'none') {
+			var t = Ext.getCmp(tree_id);
+			$("#" + t.body.id).show();
+		}
+	}, 100);
 }
 
 og.ajaxMemberTreeViewMoreCallback = function(tree, pnode) {
@@ -3611,9 +3615,14 @@ og.ajaxMemberTreeViewMoreCallback = function(tree, pnode) {
 	
 	og.memberTreeAjaxLoad(tree, pnode, tree.limit, tree.last_offset);
 	
-	if(!tree.body.hasClass("have-focus")) {
-		$("#" + tree.id + '-textfilter').focus();
-	}
+	// ensure tree is visible
+	var tree_id = tree.id;
+	setTimeout(function() {
+		if ($("#" + tree.body.id).css('display') == 'none') {
+			var t = Ext.getCmp(tree_id);
+			$("#" + t.body.id).show();
+		}
+	}, 100);
 }
 
 og.treeLoaderViewMoreCallback = function(tree, pnode) {

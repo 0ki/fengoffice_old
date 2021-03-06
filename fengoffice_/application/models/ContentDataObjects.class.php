@@ -1181,6 +1181,22 @@ abstract class ContentDataObjects extends DataManager {
 				// No esta en ninguna dimension que defina permisos, El objecto esta en algun lado
 				// => En todas las dimensiones en la que está no definen permisos => Busco todos los grupos
 				$gids = PermissionGroups::instance()->findAll(array('id' => true));
+			} else {
+
+				// if this object is an email and it is unclassified => add to sharing table the permission groups of the users that have permissions in the email's account
+				if (Plugins::instance()->isActivePlugin('mail')) {
+					$mail_ot = ObjectTypes::instance()->findByName('mail');
+					if ($mail_ot instanceof ObjectType && $tid == $mail_ot->getId()) {
+						$gids = array_flat(DB::executeAll("
+							SELECT cpg.permission_group_id
+							FROM ".TABLE_PREFIX."contact_permission_groups cpg
+							INNER JOIN ".TABLE_PREFIX."contacts c ON c.permission_group_id=cpg.permission_group_id
+							WHERE cpg.contact_id IN (
+							  SELECT mac.contact_id FROM ".TABLE_PREFIX."mail_account_contacts mac WHERE mac.account_id = (SELECT mc.account_id FROM ".TABLE_PREFIX."mail_contents mc WHERE mc.object_id=$oid)
+							);
+						"));
+					}
+				}
 			}
 		}
 	

@@ -1,5 +1,5 @@
 
-	About Feng Office 3.2.3-beta
+	About Feng Office 3.2.3-rc
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -105,6 +105,19 @@
 	Changelog
 	=========
 	
+	Since 3.2.3-beta
+	----------------
+	bugfix: fixed addToSharingTable when called from rebuild_sharing_table.php
+	bugfix: unclassified emails are not added to sharing table.
+	bugfix: group totals on tasks list.
+	bugfix: new mail old view from contact list.
+	bugfix: blocking file for uploading new revision.
+	bugfix: when instantiating template from email, assigned users should be filtered using email's members
+			-ensure that member template tasks are classified in the recently created member.
+			-when viewing mails, container must be bigger before the resize
+	bugfix: view more french.
+
+	
 	Since 3.2.2
 	----------------
 	bugfix: object prefix is not deleted after deleting object.
@@ -124,6 +137,7 @@
 	bugfix: when modifying/trashing several tasks don't make all client/project calculations foreach task, do it once after all modifications
 	bugfix: calculate percent completed on tasks.
 	bugfix: group totals on tasks list.
+	bugfix: Superadmin cannot edit other superadmins.
 	
 	feature: generate template from mail - edit email fields - link mail to generated tasks.
 	feature: calendar new event view when clicking on the calendar.
