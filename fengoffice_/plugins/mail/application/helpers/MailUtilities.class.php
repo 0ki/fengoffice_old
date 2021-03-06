@@ -182,7 +182,7 @@ class MailUtilities {
 		return $res;
 	}
 	
-	function SaveMail(&$content, MailAccount $account, $uidl, $state = 0, $imap_folder_name = '', $read = null) {
+	function SaveMail(&$content, MailAccount $account, $uidl, $state = 0, $imap_folder_name = '', $read = null, &$received_count) {
 		
 		try {
 			
@@ -521,6 +521,10 @@ class MailUtilities {
 			if(!is_null($read)){
 				$mail->setIsRead($account->getContactId(), $read);
 			}
+			
+			// increase received count
+			$received_count++;
+			
 			// to apply email rules
 			$null = null;
 			Hook::fire('after_mail_download', $mail, $null);
@@ -618,8 +622,8 @@ class MailUtilities {
 			if ($content != '') {
 				$uid = $summary[$idx]['uidl'];
 				try {
-					$stop_checking = self::SaveMail($content, $account, $uid);
-					$received++;
+					$stop_checking = self::SaveMail($content, $account, $uid, 0, '', null, $received);
+					//$received++;
 					if ($stop_checking) break;
 				} catch (Exception $e) {
 					$mail_file = ROOT."/tmp/unsaved_mail_".$uid.".eml";
@@ -1080,9 +1084,9 @@ class MailUtilities {
 									
 									if ($content != '') {
 										try {
-											$stop_checking = self::SaveMail($content, $account, $summary[0]['UID'], $state, $box->getFolderName(), $read);
+											$stop_checking = self::SaveMail($content, $account, $summary[0]['UID'], $state, $box->getFolderName(), $read, $received);
 											if ($stop_checking) break;
-											$received++;
+											//$received++;
 										} catch (Exception $e) {
 											$mail_file = ROOT."/tmp/unsaved_mail_".$summary[0]['UID'].".eml";
 											$res = file_put_contents($mail_file, $content);

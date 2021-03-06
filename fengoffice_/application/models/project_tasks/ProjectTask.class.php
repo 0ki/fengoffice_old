@@ -1287,7 +1287,7 @@ class ProjectTask extends BaseProjectTask {
 			DB::execute($sql);
 		}
 		
-		$old_parent_id = $old_me->getParentId();
+		$old_parent_id = $old_me instanceof ProjectTask ? $old_me->getParentId() : 0;
 		if ($this->isNew() || $old_parent_id != $new_parent_id) {
 			//update Depth And Parents Path for subtasks
 			$subtasks = $this->getSubTasks();

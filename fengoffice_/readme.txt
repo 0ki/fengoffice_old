@@ -1,5 +1,5 @@
 
-	About Feng Office 3.1.4.1
+	About Feng Office 3.1.4.3
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -104,6 +104,15 @@
 	
 	Changelog
 	=========
+	
+	Since 3.1.4.2
+	----------------
+	bugfix: email download count fixed.
+	bugfix: error when creating tasks.
+	
+	Since 3.1.4.1
+	----------------	
+	bugfix: contact export to csv.
 	
 	Since 3.1.4
 	----------------

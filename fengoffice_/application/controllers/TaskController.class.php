@@ -3065,6 +3065,7 @@ class TaskController extends ApplicationController {
 				if (!is_array($member_ids) || count($member_ids) == 0) $member_ids = array(0);
 				$members = Members::findAll(array('conditions' => "id IN (".implode(',', $member_ids).")"));
 				$task->apply_members_to_subtasks($members, true);
+				file_put_contents(ROOT.'/cache/lala.txt', "\n".date('H:i:s')."\tACA 9", FILE_APPEND);
 
 				// apply values to subtasks
 				$assigned_to = $task->getAssignedToContactId();

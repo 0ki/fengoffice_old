@@ -2153,22 +2153,16 @@ class ContactController extends ApplicationController {
 			
 			// export the same type of contact objects that are enabled in the contacts tab.
 			$extra_conditions = "";
-			if(!user_config_option("viewCompaniesChecked")){
+			if(array_var($_SESSION, 'import_type', 'contact') == 'contact'){
 				$extra_conditions = '  `is_company` = 0 ';
-			}
-			if(!user_config_option("viewContactsChecked")){
-				if(user_config_option("viewCompaniesChecked")){
-					$extra_conditions = '  `is_company` = 1 ';
-					if(user_config_option("viewUsersChecked")){
-						$extra_conditions = '  (`is_company` = 1  OR `user_type` != 0) ';
-					}
-				}else{
-					$extra_conditions.= ($extra_conditions=="" ? "" : " AND") . ' `user_type` != 0  ';
+				
+				if(!user_config_option("viewContactsChecked")){
+					$extra_conditions .= ' AND  `user_type` != 0 ';
 				}
-			}
-			if(!user_config_option("viewUsersChecked")){
-				$extra_conditions.= ($extra_conditions=="" ? "" : " AND") . ' `user_type` < 1 ';
-			}
+				if(!user_config_option("viewUsersChecked")){
+					$extra_conditions.= ' AND `user_type` < 1 ';
+				}
+			}			
 			// --
 			
 			$filename = rand().'.tmp';
@@ -2179,16 +2173,32 @@ class ContactController extends ApplicationController {
 			if (!$export_all) {
 				$ids_sql = ($ids)? " AND id IN (".$ids.") " : "";
 			}
+			
+			$members = active_context_members(false);
+			$context_condition = "";
+			if(count($members) > 0){
+				$context_condition = " AND (EXISTS
+					(SELECT om.object_id
+						FROM  ".TABLE_PREFIX."object_members om
+						WHERE	om.member_id IN (" . implode ( ',', $members ) . ") AND e.object_id = om.object_id
+						GROUP BY object_id
+						HAVING count(member_id) = ".count($members)."
+					)
+				)";
+			}
+			
 			if (array_var($_SESSION, 'import_type', 'contact') == 'contact') {
-				$conditions .= ($conditions == "" ? "" : " AND ") . "`archived_by_id` = 0" . ($conditions ? " AND $conditions" : "");
+				$conditions .= " AND `archived_by_id` = 0 ";
 				$conditions .= $ids_sql;
+				$conditions .= $context_condition;
 				$contacts = Contacts::instance()->getAllowedContacts($conditions);
-				foreach ($contacts as $contact) {
+				foreach ($contacts as $contact) {					
 					fwrite($handle, $this->build_csv_from_contact($contact, $checked_fields, $delimiter) . "\n");
 				}
 			}else{
 				$conditions .= ($conditions == "" ? "" : " AND ") . "`archived_by_id` = 0" . ($conditions ? " AND $conditions" : "");
 				$conditions .=$ids_sql;
+				$conditions .= $context_condition;
 				$companies = Contacts::getVisibleCompanies(logged_user(), $conditions);
 				foreach ($companies as $company) {
 					fwrite($handle, $this->build_csv_from_company($company, $checked_fields, $delimiter) . "\n");
