@@ -243,6 +243,12 @@ og.ObjectPicker = function(config) {
 				filter: 'type'
 			}, {iconCls: 'ico-contacts'});
 			this.addFilter({
+				id: 'companies',
+				name: lang('companies'),
+				type: 'Companies',
+				filter: 'type'
+			}, {iconCls: 'ico-companies'});
+			this.addFilter({
 				id: 'documents',
 				name: lang('documents'),
 				type: 'Documents',
@@ -374,7 +380,7 @@ og.ObjectPicker = function(config) {
 						region: 'south',
 						autoScroll: true,
 						split: true,
-						height: 120,
+						height: 115,
 						listeners: {
 							tagselect: {
 								fn: function(tag) {

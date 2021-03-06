@@ -53,6 +53,20 @@ $year =  array_var($event_data, 'year');
 			}
 		}
 		
+		function toggleDiv(div_id){
+			/*obj = document.getElementById('row_time');
+			if(obj.style.visibility == "hidden"){
+				obj.style.visibility = "visible";
+			}else{
+				obj.style.visibility = "hidden";
+			}*/
+			var theDiv = document.getElementById(div_id);
+			dis = !theDiv.disabled;
+		    var theFields = theDiv.getElementsByTagName('select');
+		    for (var i=0; i < theFields.length;i++) theFields[i].disabled=dis;
+		    theDiv.disabled=dis
+		}
+		
 		
 		var allTags = [<?php
 			$coma = false;
@@ -318,46 +332,63 @@ $year =  array_var($event_data, 'year');
 			<?php echo pick_date_widget('event[start]',$event->getStart() , date("Y") - 10 , date("Y") + 10);?>
 		</td>
 	</tr>
-	<tr>
-		<td align="right" style="padding-right:6px;padding-bottom:4px;padding-top:2px"><?php echo lang('CAL_TIME') ?></td>
+	<tr style="padding-bottom:4px">
+		<td align="right" style="padding-right:6px;padding-bottom:4px;padding-top:2px">
+			<?php echo lang('CAL_TIME') ?>
+		</td>
 		<td align='left'>
+			
+			
+			<span id='row_time'>
+			
 			<select name="event[hour]" size="1">
-		<?php
-		if(!cal_option("hours_24")) {
-			for($i = 1; $i <= 12; $i++) {
-
-				echo '<option value="' . $i % 12 . '"';
-				if(array_var($event_data, 'hour') == $i) echo ' selected="selected"';
-				echo ">$i</option>\n";
-			}
-		}else{
-			for($i = 0; $i < 24; $i++) {
-				echo "<option value=\"$i\"";
-				if(array_var($event_data, 'hour') == $i) echo ' selected="selected"';
-				echo ">$i</option>\n";
-			}
-		}
-		?>
-			</select> <b>:</b> <select name="event[minute]" size="1">
-		<?php
-		$minute = array_var($event_data, 'minute');
-		for($i = 0; $i < 60; $i = $i + 15) {
-			echo "<option value='$i'";
-			if($minute >= $i && $i > $minute - 15) echo ' selected="selected"';
-			echo sprintf(">%02d</option>\n", $i);
-		}
-		?>
-			</select> <?php
-		// print out the PM/AM option (only if using 12-hour clock)
-		if(!cal_option("hours_24")) {
-			echo '<select name="event[pm]" size="1"><option value="0"';
-			if(array_var($event_data, 'pm'))echo ' selected="selected"';
-			echo '>AM</option><option value="1"';
-			if(array_var($event_data, 'pm')) echo ' selected="selected"';
-			echo ">PM</option></select>\n";
-		}
-		?></td>
+				<?php
+				if(!cal_option("hours_24")) {
+					for($i = 1; $i <= 12; $i++) {
+						echo '<option value="' . $i % 12 . '"';
+						if(array_var($event_data, 'hour') == $i) echo ' selected="selected"';
+						echo ">$i</option>\n";
+					}
+				}else{
+					for($i = 0; $i < 24; $i++) {
+						echo "<option value=\"$i\"";
+						if(array_var($event_data, 'hour') == $i) echo ' selected="selected"';
+						echo ">$i</option>\n";
+					}
+				}
+				?>
+					</select> <b>:</b> <select name="event[minute]" size="1">
+				<?php
+				$minute = array_var($event_data, 'minute');
+				for($i = 0; $i < 60; $i = $i + 15) {
+					echo "<option value='$i'";
+					if($minute >= $i && $i > $minute - 15) echo ' selected="selected"';
+					echo sprintf(">%02d</option>\n", $i);
+				}
+				?>
+					</select> <?php
+				// print out the PM/AM option (only if using 12-hour clock)
+				if(!cal_option("hours_24")) {
+					echo '<select name="event[pm]" size="1"><option value="0"';
+					if(array_var($event_data, 'pm'))echo ' selected="selected"';
+					echo '>AM</option><option value="1"';
+					if(array_var($event_data, 'pm')) echo ' selected="selected"';
+					echo ">PM</option></select>\n";
+				}
+				?>
+			</span>
+		</td>
 	</tr>
+	<tr style="padding-bottom:4px">
+		<td align="right" style="padding-right:6px;padding-bottom:4px;padding-top:2px">&nbsp;</td>
+		<td align='left'>
+			<?php
+			echo checkbox_field('event[type_id]',array_var($event_data, 'typeofevent') == 2, array('id' => 'format_html','value' => '2', 'onchange'=>"toggleDiv('row_time')"));
+			echo lang('CAL_FULL_DAY');
+			?>
+		</td>
+	</tr>
+	
 	<!--   begin printing the duration options-->
 	<tr>
 		<td align="right" style="padding-right:6px;padding-bottom:4px;padding-top:2px"><?php echo lang('CAL_DURATION') ?></td>
@@ -380,21 +411,13 @@ $year =  array_var($event_data, 'year');
 				echo sprintf(">%02d</option>\n", $i);
 			}
 			?>
-		</select> <?php echo lang('CAL_MINUTES') ?></td>
+		</select> 
+		
+		</td>
 	</tr>
 
 	<!--   print extra time options-->
-	<tr>
-		<td align="right" style="padding-right:6px;padding-bottom:4px;padding-top:2px"><?php echo lang('CAL_MORE_TIME_OPTIONS')?></td>
-		<td align="left"><select name="event[type_id]" size="1">
-			<option value="1"
-			<?php if(array_var($event_data, 'typeofevent') == 1) echo ' selected="selected"'?>></option>
-			<option value="2"
-			<?php if(array_var($event_data, 'typeofevent') == 2) echo ' selected="selected"'?>><?php echo lang('CAL_FULL_DAY')?></option>
-			<option value="3"
-			<?php if(array_var($event_data, 'typeofevent') == 3) echo ' selected="selected"'?>><?php echo lang('CAL_UNKNOWN_TIME')?></option>
-		</select></td>
-	</tr>
+	
 </table>
 </fieldset>
 </div>
@@ -410,4 +433,6 @@ $year =  array_var($event_data, 'year');
 </form>
 <script type="text/javascript">
 	Ext.get('eventSubject').focus();
+	
+	<?php if (array_var($event_data, 'typeofevent') == 2) echo "toggleDiv('row_time')";?>
 </script>

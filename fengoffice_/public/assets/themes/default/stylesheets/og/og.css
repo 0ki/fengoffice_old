@@ -107,6 +107,9 @@
 .ico-email_menu {
 	background-image: url(../../images/16x16/messages.png) !important;
 }
+.ico-empty {
+	background-image: url(../../images/s.gif) !important;
+}
 .ico-event {
 	background-image: url(../../images/16x16/calendar.png) !important;
 }

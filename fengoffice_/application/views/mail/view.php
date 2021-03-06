@@ -18,7 +18,7 @@
 
 	<?php $description = '<div class="coInfo">
 	<table>
-	<tr><td style="width:100px">' . lang('from') . ':</td><td>' . clean(MailUtilities::displayMultipleAddresses($email->getFrom())) . '</td></tr>
+	<tr><td style="width:100px">' . lang('from') . ':</td><td>' . clean($email->getFromName()) . '</td></tr>
 	<tr><td>' . lang('to') . ':</td><td>' . clean(MailUtilities::displayMultipleAddresses($email->getTo())) . '</td></tr>
 	<tr><td>' . lang('date') . ':</td><td>' . $email->getSentDate()->format('D, d M Y H:i:s') . '</td></tr>';
 	

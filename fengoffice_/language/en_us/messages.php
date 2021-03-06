@@ -293,6 +293,7 @@
     'error checkin file' => 'Error while checking in file',
     'error classifying attachment cant open file' => 'Error classifying attachment: can\'t open file',
   	'error contact added but not assigned' => 'The contact \'{0}\' was added but not assigned successfully to project \'{1}\' due to access permissions',
+  	'error cannot set workspace as parent' => 'Cannot set workspace \'{0}\' as parent, too many workspace levels',
   
     
     // Access or data errors

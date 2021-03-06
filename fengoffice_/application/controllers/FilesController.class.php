@@ -377,6 +377,7 @@ class FilesController extends ApplicationController {
 			if (!ProjectFile::canAdd(logged_user(), active_or_personal_project())) {
 				flash_error(lang('no access permissions'));
 				ajx_current("empty");
+				return ;
 			} // if
 
 			// prepare the file object
@@ -485,6 +486,7 @@ class FilesController extends ApplicationController {
 			if (!ProjectFile::canAdd(logged_user(), active_or_personal_project())) {
 				flash_error(lang('no access permissions'));
 				$this->redirectToReferer(get_url('files'));
+				return ;
 			} // if
 
 			// prepare the file object
@@ -599,6 +601,7 @@ class FilesController extends ApplicationController {
 			if(!ProjectFile::canAdd(logged_user(), active_or_personal_project())) {
 				flash_error(lang('no access permissions'));
 				$this->redirectToReferer(get_url('files'));
+				return ;
 			} // if
 
 			// create the file object
@@ -944,12 +947,12 @@ class FilesController extends ApplicationController {
 			}
 		} else {
 			$objects = null;
-			$pagination = 0 ;
+			$pagination = null ;
 		} // if
 
 		/* prepare response object */
 		$listing = array(
-			"totalCount" => ($pagination != 0? $pagination->getTotalItems() : 0),
+			"totalCount" => ($pagination ? $pagination->getTotalItems() : 0),
 			"start" => $start,
 			"files" => array()
 		);

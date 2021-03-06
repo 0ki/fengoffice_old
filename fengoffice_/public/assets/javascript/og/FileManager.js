@@ -426,8 +426,7 @@ Ext.extend(og.FileManager, Ext.grid.GridPanel, {
 			params: Ext.applyIf(params, {
 				start: start,
 				limit: og.pageSize
-			}),
-			
+			})
 		});
 		this.needRefresh = false;
 	},

@@ -120,43 +120,51 @@ function setDiscard(val){
     <?php echo text_field('mail[to]', array_var($mail_data, 'to'), 
     	array('class' => 'title', 'tabindex'=>'1', 'id' => 'mailTo')) ?>
   </div>
+  
+ 	<div id="add_mail_CC" <?php  array_var($mail_data, 'cc')==''? print('style="display:none;"'):print('')?> >
+    	<label for="mailCC"><?php echo lang('mail CC')?> </label>
+    	<?php echo text_field('mail[CC]', array_var($mail_data, 'cc'), 
+    	array('class' => 'title', 'id' => 'mailCC', 'tabindex'=>'2')) ?>
+ 	</div>
+ 	
+ 	
+ 	<div id="add_mail_BCC" style="display:none;">
+	    <label for="mailBCC"><?php echo lang('mail BCC')?></label>
+	    <?php echo text_field('mail[BCC]', array_var($mail_data, 'BCC'), 
+	    array('class' => 'title','id' => 'mailBCC', 'tabindex'=>'3')) ?>
+	</div>
+ 	
+ 	
+   
+   
   <div>
     <label for='mailSubject'><?php echo lang('mail subject')?> 
     </label>
     <?php echo text_field('mail[subject]', array_var($mail_data, 'subject'), 
-    	array('class' => 'title', 'tabindex'=>'1', 'id' => 'mailSubject')) ?>
+    	array('class' => 'title', 'tabindex'=>'4', 'id' => 'mailSubject')) ?>
   </div>
   <div style="padding-top:5px">
-	<?php if (isset ($projects) && count($projects) > 0) { ?>
-		<a href="#" class="option" onclick="og.toggleAndBolden('add_mail_body', this)"><?php echo lang('Body') ?></a> - 
-	<?php } ?>
+	
 	<a href="#" class="option" onclick="og.toggleAndBolden('add_mail_account', this)"><?php echo lang('mail account') ?></a> - 
 	<a href="#" class="option" onclick="og.toggleAndBolden('add_mail_CC', this)"><?php echo lang('mail CC') ?></a> - 
-	<a href="#" class="option" onclick="og.toggleAndBolden('add_mail_BCC', this)"><?php echo lang('mail BCC') ?></a>	- 
+	<a href="#" class="option" onclick="og.toggleAndBolden('add_mail_BCC', this)"><?php echo lang('mail BCC') ?></a> - 
 	<a href="#" class="option" onclick="og.toggleAndBolden('add_mail_options', this)"><?php echo lang('mail options') ?></a>	
   </div>
-  </div>
+</div>
 <div class="coInputSeparator"></div>
+
+<!--
 <div class="coInputMainBlock">
+-->
   <div id="add_mail_account" style="display:none;">
     <label for="mailAccount"><?php echo lang('mail account')?> 
     <span class="desc"><?php echo lang('mail account desc') ?></span></label>
     <?php echo render_select_mail_account('mail[account_id]',  $mail_accounts, '1',
     array('id' => 'mailAccount', 'tabindex'=>'3')) ?>
   </div>
-  <div id="add_mail_CC" <?php  array_var($mail_data, 'cc')==''? print('style="display:none;'):print('')?> >
-    <label for="mailCC"><?php echo lang('mail CC')?> <span class="label_required"></span>
-    <span class="desc"><?php echo lang('mail CC desc') ?></span></label>
-    <?php echo text_field('mail[CC]', array_var($mail_data, 'cc'), 
-    array('class' => 'title', 'id' => 'mailCC', 'tabindex'=>'3')) ?>
-  </div>
+ 
 
-  <div id="add_mail_BCC" style="display:none;">
-    <label for="mailBCC"><?php echo lang('mail BCC')?> <span class="label_required"></span>
-    <span class="desc"><?php echo lang('mail BCC desc') ?></span></label>
-    <?php echo text_field('mail[BCC]', array_var($mail_data, 'BCC'), 
-    array('id' => 'mailBCC', 'tabindex'=>'3')) ?>
-  </div>
+  
   
   <div id="add_mail_options" style="display:none;">
     <label><?php echo lang('mail options')?></label>
@@ -164,19 +172,18 @@ function setDiscard(val){
     <label><?php echo radio_field('mail[format]',$type=='plain', array('id' => 'format_plain','value' => 'plain', 'tabindex'=>'5', 'onchange'=>"alertFormat('$instanceName','plain')"))." ".lang('format plain')  ?></label>
   </div>
   
-  <div id="add_mail_body">
-    <label for="mailBody"><?php echo lang('mail body')?> <span class="label_required"></span>
+     
     <?php 
     $display=($type=='html')?'none':'block';
     $display_fck=($type=='html')?'block':'none';
     echo textarea_field('plain_body', array_var($mail_data, 'body'), 
     array('id' => 'mailBody', 'tabindex'=>'2','style'=>"display:".$display.";")) ?>
-    </label>
-    <div id="fck_editor" style="display:<?php echo $display_fck ?>; width:90%">
+    
+    <div id="fck_editor" style="display:<?php echo $display_fck ?>; width:100%; padding:0px; margin:0px">
 		<?php
 			$oFCKeditor = new FCKeditor($instanceName);
 			$oFCKeditor->BasePath = 'public/assets/javascript/fckeditor/';
-			$oFCKeditor->Width = '95%';
+			$oFCKeditor->Width = '100%';
 			$oFCKeditor->Height = '100%';
 			$oFCKeditor->Config['SkinPath'] = get_theme_url('fckeditor/');
 			$oFCKeditor->Value = nl2br(array_var($mail_data, 'body'));
@@ -184,11 +191,11 @@ function setDiscard(val){
 			$oFCKeditor->Create();
 		?>
 	</div>
-  </div>
-  <?php echo submit_button( lang('send mail') , 's', array('tabindex'=>'5','onclick'=>"setDraft(false)")) ?>
+<!-- 
+	</div>
+-->	
+</div>
 
-</div>
-</div>
 </form>
 
 <script>

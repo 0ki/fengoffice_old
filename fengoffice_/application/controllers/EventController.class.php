@@ -116,6 +116,7 @@ class EventController extends ApplicationController {
        		$hour = array_var($event_data, 'hour')==0?12:array_var($event_data, 'hour');
        		$minute = array_var($event_data, 'minute');       		
 			if(array_var($event_data, 'pm') == 1) $hour += 12;
+			if (array_var($event_data, 'type_id') == 2 && $hour==24) $hour=23;
 			// make sure the date is actually valid
 			$redotime = mktime(0,0,1,$month, $day, $year);
 			$day = date("d",$redotime);
@@ -233,6 +234,7 @@ class EventController extends ApplicationController {
 		$event->setStart(DateTimeValueLib::make(12,0,0,$month,$day,$year));		
 		$event->setDuration(DateTimeValueLib::make(13,0,0,$month,$day,$year));
 		
+		
 		if(!is_array($event_data)) {
 			// if data sent from quickadd popup (via get) we se it, else default
 			$hour = isset($_GET['hour'])?$_GET['hour']:date('i');
@@ -262,6 +264,7 @@ class EventController extends ApplicationController {
 		if (is_array(array_var($_POST, 'event'))) {
 			try {
 				$data = $this->getData($event_data);
+				
 				// run the query to set the event data 
 				$projId = array_var($event_data,'project_id');      
 				if($projId != '') {
@@ -272,7 +275,6 @@ class EventController extends ApplicationController {
 				}
 	        	$event->setProjectId($project->getId());
 			    $event->setFromAttributes($data); 
-			    
 			    
 			    if(!logged_user()->isMemberOfOwnerCompany()) $event->setIsPrivate(false);  
 		
@@ -572,7 +574,7 @@ class EventController extends ApplicationController {
  *   copyright            : (C) 2001 The phpBB Group
  *   email                : support@phpbb.com
  *
- *   $Id: EventController.class.php,v 1.43 2008/09/29 19:29:54 msaiz Exp $
+ *   $Id: EventController.class.php,v 1.44 2008/10/02 22:33:30 nicomede Exp $
  *
  ***************************************************************************/
 

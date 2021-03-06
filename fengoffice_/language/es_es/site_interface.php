@@ -297,6 +297,7 @@
   'today at' => 'Hoy, a las {0}',
   'created by on' => 'Creado por <a class="internalLink" href="{0}">{1}</a> el {2}',
   'modified by on' => 'Modificado por <a class="internalLink" href="{0}">{1}</a> el {2}',
+  'modified by on short' => '<a class="internalLink" href="{0}">{1}</a>, {2}',
   'created by on short' => '<a class="internalLink" href="{0}">{1}</a>, {2}',
   'time used in search' => 'La busqueda fue realizada en {0} segundos',
   'more results' => 'Hay otros {0} resultados...',
@@ -354,6 +355,7 @@
   'end time' => 'Hora de fin',
   
   'tasks in progress' => 'Tareas en progreso',
+  'upcoming events milestones and tasks' => 'Próximos eventos, hitos y tareas',
   
   'undo checkout' => 'Deshacer bloqueo de archivo',
   

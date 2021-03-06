@@ -35,6 +35,34 @@ class ProjectUser extends BaseProjectUser {
 		$this->setCanAssignToOwners($value);
 		$this->setCanAssignToOther($value);
 	 } // setAllPermissions
+	 
+	 function setRadioPermissions($radio_array){
+	 	$this->setCanReadMessages($radio_array[0]>=1);
+		$this->setCanReadTasks($radio_array[1]>=1);
+		$this->setCanReadMilestones($radio_array[2]>=1);
+		$this->setCanReadMails($radio_array[3]>=1);
+		$this->setCanReadComments($radio_array[4]>=1);
+		$this->setCanReadContacts($radio_array[5]>=1);
+		$this->setCanReadWeblinks($radio_array[6]>=1);
+		$this->setCanReadFiles($radio_array[7]>=1);
+		$this->setCanReadEvents($radio_array[8]>=1);
+		
+		$this->setCanWriteMessages($radio_array[0] == 2);
+		$this->setCanWriteTasks($radio_array[1] == 2);
+		$this->setCanWriteMilestones($radio_array[2] == 2);
+		$this->setCanWriteMails($radio_array[3] == 2);
+		$this->setCanWriteComments($radio_array[4] == 2);
+		$this->setCanWriteContacts($radio_array[5] == 2);
+		$this->setCanWriteWeblinks($radio_array[6] == 2);
+		$this->setCanWriteFiles($radio_array[7] == 2);
+		$this->setCanWriteEvents($radio_array[8] == 2);
+	 }
+	 
+	 function setCheckboxPermissions($checkbox_array){
+	 	$this->setCanAssignToOwners($checkbox_array[0] == 1);
+		$this->setCanAssignToOther($checkbox_array[1] == 1);
+	 }
+	 
 } // ProjectUser
 
 ?>

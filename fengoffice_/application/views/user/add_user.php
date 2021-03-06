@@ -1,8 +1,9 @@
 <?php
+	$genid=gen_id();
   set_page_title($user->isNew() ? lang('add user') : lang('edit user'));
 ?>
 <script type="text/javascript" src="<?php echo get_javascript_url('modules/addUserForm.js') ?>"></script>
-<form style="height:100%;background-color:white" class="internalForm" action="<?php echo $company->getAddUserUrl() ?>" method="post">
+<form style="height:100%;background-color:white" class="internalForm" action="<?php echo $company->getAddUserUrl() ?>" onsubmit="javascript:ogPermPrepareSendData('<?php echo $genid ?>');return true;" method="post">
 
 <div class="adminAddUser">
   <div class="adminHeader">
@@ -79,6 +80,7 @@
   </script>
 <?php } // if ?>
 
+
 <?php if($company->isOwner()) { ?>
   <div class="formBlock">
     <div>
@@ -106,59 +108,18 @@
     <?php echo yes_no_widget('user[create_contact]', 'createContact', array($user_data, 'create_contact'), lang('yes'), lang('no')) ?>
     <br /><span class="desc"><?php echo lang('create contact from user desc') ?></span>
   </div>
+  <br/>
   
-<?php if(isset($projects) && is_array($projects) && count($projects)) { ?>
-  <fieldset>
-    <legend><?php echo lang('permissions') ?></legend>
-
-<?php
-  $quoted_permissions = array();
-  foreach($permissions as $permission_id => $permission_text) {
-    $quoted_permissions[] = "'$permission_id'";
-  } // foreach
+<fieldset>
+	<legend><?php echo lang('permissions') ?></legend>
+<?php 
+	tpl_assign('genid', $genid);
+	$this->includeTemplate(get_template_path('user_permissions_control', 'account'));
 ?>
-    <script type="text/javascript" src="<?php echo get_javascript_url('modules/updateUserPermissions.js') ?>"></script>
-    <script type="text/javascript">
-      App.modules.updateUserPermissions.project_permissions = new Array(<?php echo implode(', ', $quoted_permissions) ?>);
-    </script>
-    
-    <div id="userPermissions">
-      <div id="userProjects">
-<?php foreach($projects as $project) { ?>
-        <table class="blank">
-          <tr>
-            <td class="projectName">
-              <?php echo checkbox_field('user[project_permissions_' . $project->getId() . ']', array_var($user_data, 'project_permissions_' . $project->getId()), array('id' => 'projectPermissions' . $project->getId(), 'onclick' => 'App.modules.updateUserPermissions.projectCheckboxClick(' . $project->getId() . ')')) ?> 
-<?php if($project->isCompleted()) { ?>
-              <label for="projectPermissions<?php echo $project->getId() ?>" class="checkbox"><del class="help" title="<?php echo lang('project completed on by', format_date($project->getCompletedOn()), $project->getCompletedByDisplayName()) ?>"><?php echo clean($project->getName()) ?></del></label>
-<?php } else { ?>
-              <label for="projectPermissions<?php echo $project->getId() ?>" class="checkbox"><?php echo clean($project->getName()) ?></label>
+</fieldset>
+
 <?php } // if ?>
-            </td>
-            <td class="permissionsList">
-<?php if(array_var($user_data, 'project_permissions_' . $project->getId())) { ?>
-              <div id="projectPermissionsBlock<?php echo $project->getId() ?>">
-<?php } else { ?>
-              <div id="projectPermissionsBlock<?php echo $project->getId() ?>" style="display: none">
-<?php } // if ?>
-                <div class="projectPermission">
-                  <?php echo checkbox_field('user[project_permissions_' . $project->getId() . '_all]', array_var($user_data, 'project_permissions_' . $project->getId()), array('id' => 'projectPermissions' . $project->getId() . 'All', 'onclick' => 'App.modules.updateUserPermissions.projectAllCheckboxClick(' . $project->getId() . ')')) ?> <label for="projectPermissions<?php echo $project->getId() ?>All" class="checkbox"><?php echo lang('all') ?></label>
-                </div>
-<?php foreach($permissions as $permission_name => $permission_text) { ?>
-                <div class="projectPermission">
-                  <?php echo checkbox_field('user[project_permission_' . $project->getId() . '_' . $permission_name . ']', array_var($user_data, 'project_permission_' . $project->getId() . '_' . $permission_name), array('id' => 'projectPermission' . $project->getId() . $permission_name, 'onclick' => 'App.modules.updateUserPermissions.projectPermissionCheckboxClick(' . $project->getId() . ')')) ?> <label for="projectPermission<?php echo $project->getId() . $permission_name ?>" class="checkbox normal"><?php echo clean($permission_text) ?></label>
-                </div>
-<?php } // foreach ?>
-              </div>
-            </td>
-          </tr>
-        </table>
-<?php } // foreach ?>
-      </div>
-    </div>
-  </fieldset>
-<?php } // if ?>
-<?php } // if ?>
+
 
   <?php 
   echo input_field('user[contact_id]',array_var($user_data, 'contact_id',''),array('type' => 'hidden'));

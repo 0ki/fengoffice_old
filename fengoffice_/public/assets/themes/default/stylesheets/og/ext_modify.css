@@ -32,6 +32,11 @@ strong{font-weight:bold;}
 	padding-top:5px;
 }
 
+.og-content-panel .x-tree .x-panel-tbar .x-toolbar {
+	border-top: 1px solid #99BBE8;
+}
+
+
 .og-content-panel .x-panel-bbar .x-toolbar {
 	background: transparent;
 	border-top: 0px none;
@@ -42,4 +47,15 @@ strong{font-weight:bold;}
 	padding-top:1px;
 	padding-bottom:1px;
 	height:15px;
+}
+
+/* Sets the width of a checkbox to 16 in a checkbox tree*/
+input.x-tree-node-cb {
+	width:16px;
+	margin-top:1px;
+}
+.ico-none {
+	background-image: url(../../images/s.gif) !important;
+	width:1px;
+	height:1px;
 }

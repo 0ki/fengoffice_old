@@ -36,7 +36,7 @@
 		
 		tpl_assign("image",$image);
 	}
-	
+	$description = "";
 	$company = $contact->getCompany();
 	if ($company instanceof Company)
 		$description = '<a class="internalLink coViewAction ico-company" href="' . $company->getCardUrl() . '">' . clean($company->getName()) . '</a>';

@@ -4,7 +4,7 @@
  * User account controller with all the parts related to it (profile update, private messages etc)
  *
  * @version 1.0
- * @author Ilija Studen <ilija.studen@gmail.com>
+ * @author Ilija Studen <ilija.studen@gmail.com>, Marcos Saiz <marcos.saiz@opengoo.org>
  */
 class AccountController extends ApplicationController {
 
@@ -42,7 +42,8 @@ class AccountController extends ApplicationController {
 	} // index
 
 	/**
-	 * Edit logged user profile
+	 * Edit logged user profile. 
+	 * Called with different POST format from "administration/users/edit user profile " and from "profile/edit my profile" 
 	 *
 	 * @access public
 	 * @param void
@@ -95,9 +96,10 @@ class AccountController extends ApplicationController {
 		tpl_assign('user_data', $user_data);
 
 		if(is_array(array_var($_POST, 'user'))) {
-			if(!(Companies::findById(array_var($user_data,'company_id')) instanceof Company )){
+			if(array_var($user_data,'company_id') && !(Companies::findById(array_var($user_data,'company_id')) instanceof Company )){
 				ajx_current("empty");
 				flash_error(lang("company dnx"));
+				return ;
 			}
 			try {
 				DB::beginWork();
@@ -253,7 +255,33 @@ class AccountController extends ApplicationController {
 		if(array_var($_POST, 'submitted') == 'submitted') {
 			try{
 				DB::beginWork();
-				foreach($projects as $project) {
+				
+				$permissionsString = array_var($_POST,'permissions');
+				if ($permissionsString && $permissionsString != ''){
+					$permissions = json_decode($permissionsString);
+				}
+			  	if(is_array($permissions)) {
+			  		//Clear old modified permissions
+			  		$ids = array();
+			  		foreach($permissions as $perm){
+			  			$ids[] = $perm->wsid;
+			  		}
+			  		ProjectUsers::clearByUser($user,implode(',',$ids));
+			  		
+			  		//Add new permissions
+			  		//TODO - Make batch update of these permissions
+			  		foreach($permissions as $perm){
+			  			$relation = new ProjectUser();
+				  		$relation->setProjectId($perm->wsid);
+				  		$relation->setUserId($user->getId());
+			  			
+				  		$relation->setCheckboxPermissions($perm->pc);
+				  		$relation->setRadioPermissions($perm->pr);
+				  		$relation->save();
+			  		}
+				  } // if
+				
+				/*foreach($projects as $project) {
 					$relation = ProjectUsers::findById(array(
 	            		'project_id' => $project->getId(),
 	            		'user_id' => $user->getId(),
@@ -280,7 +308,7 @@ class AccountController extends ApplicationController {
 							$relation->delete();
 						} // if
 					} // if
-				} // if
+				} // if*/
 				
 				$user->setCanEditCompanyData(false);
 				$user->setCanManageSecurity(false);

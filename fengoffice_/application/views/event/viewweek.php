@@ -5,212 +5,7 @@ $month = isset($_GET['month'])?$_GET['month']:$_SESSION['cal_month'];
 $day = isset($_GET['day'])?$_GET['day']:$_SESSION['cal_day'];
 $tags = active_tag();	
 ?>
-<style type="text/css">
-.rhead {
-	background: #E8EEF7 none repeat scroll 0%;
-	border-top:1px solid #DDDDDD;
-	left:0pt;
-	width: 100%;
-}
-.rheadtext {
-	color:#446688;
-	padding-right:4px;
-	text-align:right;
-}
-div.grid {
-	background:#FFFFFF none repeat scroll 0%;
-	cursor:default;
-	position:relative;
-}
-
-.grid_bg {
-	position:absolute; top:25; left:0; width:100%;border:2px;
-	background-image: url(public/assets/themes/default/images/Calendar_BG.gif);	
-	background-repeat: repeat;
-	background-color:#ffffff;
-	height:1024px;
-}
-
-.colheadersmiddle {
-	margin-left:40px;
-	margin-right:16px;
-}
-.chead {
-	text-align:center;
-	position:absolute;
-}
-.cheadToday {
-	background:#455678 none repeat scroll 0% 0%;
-	border-color:#6786A7 rgb(170, 204, 238) rgb(170, 204, 238) rgb(103, 134, 167);
-	border-style:solid;
-	border-width:1px;
-	font-weight:bold;
-	color: #fff;
-}
-.allDayCell {
-	border-left:3px double #DDDDDD !important;
-	position:absolute;
-	width:3px;
-}
-
-
-div.inset {
-	border-color:#A2BBDD rgb(255, 255, 255) rgb(255, 255, 255) rgb(162, 187, 221);
-	border-style:solid;
-	border-width:1px;
-}
-
-.chip {
-	cursor:default;
-	font-size:85%;
-	overflow:hidden;
-}
-.chip .chipbody {
-	color:#FFFFFF;
-	overflow:hidden;
-	position:relative;
-	width:100%;
-}
-.t1 {
-	font-size:1px;
-	height:1px;
-	line-height:1px;
-	margin-top:0pt;
-	margin-bottom:0pt;
-	margin-left:2px;
-	margin-right:2px;
-}
-.t2 {
-	font-size:1px;
-	height:1px;
-	line-height:1px;
-	margin-top:0pt;
-	margin-bottom:0pt;
-	margin-left:1px;
-	margin-right:1px;
-}
-.t3 {
-	border-width:0pt;
-	font-size:1px;
-	height:1px;
-	line-height:1px;
-	margin:0pt 1px;
-}
-
-.chip .b2 {
-	border-style:solid;
-	border-width:0pt 1px;
-	margin-top:0pt;
-	margin-bottom:0pt;
-	margin-left:1px;
-	margin-right:1px;
-}
-
-.chip .b1 {
-	margin-top:0pt;
-	margin-bottom:0pt;
-	margin-left:2px;
-	margin-right:2px;
-}
-.chip .b1, .chip .b2 {
-	font-size:1px;
-	height:1px;
-	line-height:1px;
-}
-
-#allDayGrid {	
-	background:#E8EEF7 none repeat scroll 0% 0%;
-	margin-bottom:5px;
-	margin-right:16px;
-	margin-left:40px;
-}
-#eventowner, #decowner {
-	height:100%;
-	left:0pt;
-	position:absolute;
-	top:0pt;
-	width:100%;
-}
-#gridcontainercell {
-	position:relative !important;
-}
-#eventowner, #decowner {
-	height:100%;
-	left:0pt;
-	position:absolute;
-	top:0pt;
-	width:100%;
-}
-#gridcontainer {
-	border-bottom:1px solid #FFFFFF;
-	border-left:1px solid #A2BBDD;
-	border-top:1px solid #A2BBDD;
-	height:100%;
-	overflow: scroll;
-	overflow-x:hidden;
-	overflow-y:scroll;
-	position:relative;
-	dispaly:block;
-}
-
-#colheaders {
-	height:2.5ex;
-	position:relative;
-}
-#calowner {
-	display:block;
-	height:100%;
-	width:100%;
-}
-.chip dl {
-	border-style:solid;
-	border-width:0pt 1px;
-	margin:0pt;
-	overflow:hidden;
-	position:relative;
-	color: #fff !important;
-}
-
-.eventheadlabel {
-	color: #ffffff !important;
-	white-space: nowrap;
-	font-weight: 700;
-}
-
-.hrule {
-	left:0pt;
-	position:absolute;
-	width:100%;
-}
-
-.hruleeven {
-	border-top:1px solid #DDDDDD!important;
-}
-.hruleodd {
-	border-top:1px dotted #DDDDDD!important;
-}
-
-.adc {
-	-moz-user-select:none;
-	color:#FFFFFF;
-	font-family:Verdana,Sans-serif;
-	font-size:85%;
-	font-size-adjust:none;
-	font-stretch:normal;
-	font-style:normal;
-	font-variant:normal;
-	font-weight:normal;
-	line-height:1.2em;
-	overflow:hidden;
-	position:absolute;
-	text-align:left;
-	width:100%;
-}
-
-.noleft {
-	padding-left:3px;
-}
-</style>
+<?php echo stylesheet_tag('event/week.css') ?>
 <?php
 	$startday = date("d",mktime(0,0,0,$month,$day,$year)) - (date("N", mktime(0,0,0,$month,$day,$year)) %7);//inicio de la semana
 	$endday = $startday +7;//fin de la semana
@@ -241,7 +36,7 @@ div.inset {
 		if($day_of_month <= $lastday AND $day_of_month >= 1){ 								
 			$w = $day_of_month;
 		}elseif($day_of_month < 1){								
-			$day_tmp = 0;
+			$w = $day_of_month;
 		}else{
 			if($day_of_month==$lastday+1){
 				$month++;
@@ -253,7 +48,8 @@ div.inset {
 			$w = $day_of_month - $lastday;
 		}	
 		
-		$day_tmp = is_numeric($w) ? $w : 0;
+		$day_tmp = (isset($w) && is_numeric($w)) ? $w : 0;
+	
 		$dates[$day_of_week] = new DateTimeValue(mktime(0,0,0,$month,$day_tmp,$year)); 
 		
 		$today_style[$day_of_week] = '';
@@ -284,7 +80,7 @@ div.inset {
 				}			
 			}
 		}
-		$allday_events_count[$day_of_week]=count($alldayevents[$day_of_week]);
+		$allday_events_count[$day_of_week]=  count(array_var($alldayevents,$day_of_week,array()));
 	}
 	
 	$max_events = max($allday_events_count)==0?1:max($allday_events_count);
@@ -377,7 +173,7 @@ div.inset {
 							<div id="alldayeventowner" style="width: <?php echo $width_percent ?>%;position:absolute;left: <?php echo $width ?>%; top: 12px;height: <?php echo $alldaygridHeight ?>px;" onclick="og.EventPopUp.show(null, {day:'<?php echo $dates[$day_of_week]->getDay() ?>',	month:'<?php echo $dates[$day_of_week]->getMonth()?>',year:'<?php echo $dates[$day_of_week]->getYear()?>',view:'week',type_id:2,title:'<?php echo date("l, F j",  mktime(0, 0, 0, $dates[$day_of_week]->getMonth(), $dates[$day_of_week]->getDay(), $dates[$day_of_week]->getYear()))?>'},'');">
 								<?php	
 									$top=5;
-									if(is_array($alldayevents[$day_of_week])){
+									if(is_array(array_var($alldayevents,$day_of_week))){
 										foreach ($alldayevents[$day_of_week] as $event){	
 										
 											if ($event instanceof ProjectMilestone ){									
@@ -637,6 +433,7 @@ onclick="og.EventPopUp.show(null, {day:'<?php echo $date->getDay() ?>',	month:'<
 		    } 
 		});		
 		document.getElementById('curr_hour').scrollIntoView(true);
+		//Ext.getCmp('calendar-tb').setActiveDate({day:'<?php echo $day ?>',	month:'<?php echo $month?>',year:'<?php echo $year ?>'});	
 	})
 	
 	//jQuery("#grid").click(function(e){ var x = e.pageX - this.offsetLeft; var y = e.pageY - this.offsetTop; alert(x +', '+ y); }); 

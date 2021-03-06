@@ -442,7 +442,8 @@ og.TaskItem.prototype = {
 			this.subtasks["id_" + tasks[i].id] = task;
 		}
 		this.doms.subtasks.appendChild(this.doms.newTaskDiv);
-		og.showWsPaths();
+		if (tasks.length > 0)
+			og.showWsPaths();
 	},
 	
 	checkTask: function() {

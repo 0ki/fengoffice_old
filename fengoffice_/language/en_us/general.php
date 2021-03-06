@@ -165,6 +165,12 @@
   	'task report' => 'Task Report',
   	'priority' => 'Priority',
   	'anybody' => 'Anybody',
+  
+  	'read and write' => 'Read &amp; Write',
+  	'read only' => 'Read only',
+  	'none no bars' => 'None',
+  	'apply to all subworkspaces' => 'Apply these permissions to all subworkspaces',
+  	'weblinks' => 'Web links'
 
   ); // array
 

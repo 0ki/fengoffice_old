@@ -483,7 +483,7 @@ class TaskController extends ApplicationController {
 				} else {
 					flash_success(lang('success add task list', $task->getTitle()));
 				}
-				ajx_current("reload");
+				ajx_current("back");
 
 			} catch(Exception $e) {
 				DB::rollback();

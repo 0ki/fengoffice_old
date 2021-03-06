@@ -308,5 +308,7 @@ _lang = {
 	'enter a new name for the tag': 'Ingrese un nuevo nombre para la etiqueta',
 	'inbox':'Recibidos',
 	'sent':'Enviados',
-	'unread': 'No Leidos'
+	'unread': 'No Leidos',
+	
+	'more options': 'More options'
 }

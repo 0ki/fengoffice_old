@@ -414,7 +414,7 @@ class MessageController extends ApplicationController {
     			if($id && $manager){
     				$msg=get_object_by_manager_and_id($id,$manager);  
 					
-					if ($msg instanceof MailContent){
+					if ($msg instanceof MailContent){/* @var $msg MailContent */
 						$text = $msg->getBodyPlain();
 						if (strlen($text) > 300)
 							$text = substr($text,0,300) . "...";
@@ -425,6 +425,7 @@ class MessageController extends ApplicationController {
 							"hasAttachment" => $msg->getHasAttachments(),
 							"accountId" => $msg->getAccountId(),
 							"accountName" => $msg->getAccount()->getName(),
+							"projectId" => $msg->getProjectId(),							
 							"title" => $msg->getSubject(),
 							"text" => $text,
 							"date" => $msg->getSentDate()->getTimestamp(),
@@ -799,6 +800,7 @@ class MessageController extends ApplicationController {
 		if(!$message->canView(logged_user())) {
 			flash_error(lang('no access permissions'));
 			$this->redirectTo('message');
+			return ;
 		} // if
 
 		if($message->subscribeUser(logged_user())) {

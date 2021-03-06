@@ -154,7 +154,7 @@
         PRIMARY KEY  (`id`)
       ) ENGINE=InnoDB $default_charset;";
       
-      if(@mysql_query($test_table_sql, $this->database_connection)) {
+      if($this->executeMultipleQueries($test_table_sql, $total_queries, $executed_queries, $this->database_connection)) {
         $this->printMessage('Test query has been executed. Its safe to proceed with database migration.');
         @mysql_query("DROP TABLE `$test_table_name`", $this->database_connection);
       } else {
@@ -179,7 +179,12 @@
         return false;
       } // if
       
-      $this->upgradeParentIds($this->database_connection);
+      if ($this->upgradeParentIds($this->database_connection)){
+        $this->printMessage("Parent workspace ID information upgraded correctly");
+      } else {
+        $this->printMessage('Failed to execute DB schema transformations. MySQL said: ' . mysql_error(), true);
+        return false;
+      } // if
       
       $total_queries = 0;
       $executed_queries = 0;
@@ -221,7 +226,7 @@
       
       	$total_queries = 0;
       	$executed_queries = 0;
-    	$this->executeMultipleQueries($finalSql, $total_queries, $executed_queries, $connection);
+    	return $this->executeMultipleQueries($finalSql, $total_queries, $executed_queries, $connection);
     	
     	//$this->printMessage($finalSql);
     }

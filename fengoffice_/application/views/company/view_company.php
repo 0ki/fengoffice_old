@@ -2,7 +2,7 @@
   if(User::canAdd(logged_user(), $company)) {
     add_page_action(lang('add user'), $company->getAddUserUrl(), 'ico-add');
   } // if
-  if(Contact::canAdd(logged_user())) {
+  if(Contact::canAdd(logged_user(),active_or_personal_project())) {
     add_page_action(lang('add contact'), $company->getAddContactUrl(), 'ico-add');
   } // if
   if($company->canEdit(logged_user())) {

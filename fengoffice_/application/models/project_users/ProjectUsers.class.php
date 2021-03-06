@@ -117,8 +117,11 @@
     * @param User $user
     * @return boolean
     */
-    static function clearByUser(User $user) {
-      return self::delete(array('`user_id` = ?', $user->getId()));
+    static function clearByUser(User $user, $ids = null) {
+    	$ids_condition = "";
+    	if (!is_null($ids) && $ids != '')
+    		$ids_condition = " and `project_id` in (" . $ids . ")";
+      	return self::delete(array('`user_id` = ?' . $ids_condition, $user->getId()));
     } // clearByUser
     
     /**
@@ -184,6 +187,7 @@
 			self::CAN_ASSIGN_TO_OTHER  => lang('can assign to other'),
       ); // array
     } // getNameTextArray
+    
     
   } // ProjectUsers 
 

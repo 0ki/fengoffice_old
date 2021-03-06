@@ -107,6 +107,6 @@
 	"CAL_HOURS" => "Horas", // (view event, submit event)
 	"CAL_HOUR" => "Hora", // (view event, submit event)
 	"CAL_ANONYMOUS" => "Anónimo", // (view event, view date, submit event)
-
+	"CAL_SELECT_TIME" => "Selecctione tiempo de inicio"
   ); // array
 ?>

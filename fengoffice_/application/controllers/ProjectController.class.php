@@ -288,6 +288,7 @@ class ProjectController extends ApplicationController {
 			try {
 				DB::beginWork();
 				$project->save(); //Save to get the id, then update the project path info
+				
 				if (array_var($project_data, 'parent_id') != $project->getParentId()){
 					$parent = Projects::findById(array_var($project_data, 'parent_id'));
 					if ($parent){

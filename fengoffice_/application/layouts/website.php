@@ -14,6 +14,8 @@
 			'app.js',
 			'og/og.js',
 			'og/WorkspaceChooser.js',
+			'og/WorkspaceChooserv2.js',
+			'og/Permissions.js',
 			'og/WorkspaceUtils.js',
 			'og/MessageManager.js',
 			'og/WebpageManager.js',
@@ -36,6 +38,7 @@
 			'og/HelpPanel.js',
 			'og/layout.js',
 			'og/EventPopUp.js',
+			//'og/CalendarToolbar.js',
 			'modules/addTaskForm.js',
 			'modules/addMessageForm.js',
 			'modules/addContactForm.js',
@@ -65,7 +68,9 @@
 			'jquery/jquery.dimensions.js',
 			'jquery/jquery.hoverIntent.js',
 			'jquery/jquery.cluetip.js',
-			'jquery/jquery-ui.min.js'
+			'jquery/jquery-ui.min.js',
+			with_slash(ROOT_URL).'/language/'.Localization::instance()->getLocale().'/ui.datepicker-'.Localization::instance()->getLocale().'.js'
+			 
 		);
 	
 	

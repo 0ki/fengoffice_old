@@ -259,6 +259,10 @@ Ext.extend(og.WebpageManager, Ext.grid.GridPanel, {
 		} else {
 			var start = 0;
 		}
+		Ext.apply(this.store.baseParams, {
+			tag: Ext.getCmp('tag-panel').getSelectedTag().name,
+			active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id
+		});
 		this.store.load({
 			params: Ext.apply(params, {
 				start: 0,

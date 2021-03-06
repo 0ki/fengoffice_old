@@ -35,7 +35,6 @@
 		<?php if(logged_user()->isAdministrator()) { ?>
 			<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('<?php echo $genid ?>update_profile_administrator_options',this)"><?php echo lang('administrator options') ?></a> - 
 		<?php } // if ?>
-		<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('<?php echo $genid ?>update_profile_phone_numbers',this)"><?php echo lang('phone numbers') ?></a> - 
 		<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('<?php echo $genid ?>update_profile_timezone',this)"><?php echo lang('timezone') ?></a>
 	</div>
   
@@ -92,35 +91,7 @@
   </div>
 <?php } // if ?>
 
-
-  
-  <div id="<?php echo $genid ?>update_profile_phone_numbers" style="display:none">
-  <fieldset>
-    <legend><?php echo lang('phone numbers') ?></legend>
-    
-    <div>
-      <?php echo label_tag(lang('office phone number'), 'profileFormOfficeNumber') ?>
-      <?php echo text_field('user[office_number]', array_var($user_data, 'office_number'), array('id' => 'profileFormOfficeNumber')) ?>
-    </div>
-    
-    <div>
-      <?php echo label_tag(lang('fax number'), 'profileFormFaxNumber') ?>
-      <?php echo text_field('user[fax_number]', array_var($user_data, 'fax_number'), array('id' => 'profileFormFaxNumber')) ?>
-    </div>
-    
-    <div>
-      <?php echo label_tag(lang('mobile phone number'), 'profileFormMobileNumber') ?>
-      <?php echo text_field('user[mobile_number]', array_var($user_data, 'mobile_number'), array('id' => 'profileFormMobileNumber')) ?>
-    </div>
-    
-    <div>
-      <?php echo label_tag(lang('home phone number'), 'profileFormHomeNumber') ?>
-      <?php echo text_field('user[home_number]', array_var($user_data, 'home_number'), array('id' => 'profileFormHomeNumber')) ?>
-    </div>
-    
-  </fieldset>
-  </div>
-    
+   
   <div id="<?php echo $genid ?>update_profile_timezone" style="display:none">
   <fieldset>
   	<legend><?php echo lang('timezone')?></legend>

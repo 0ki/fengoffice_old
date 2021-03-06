@@ -1,12 +1,12 @@
+<?php $genid = gen_id() ?>
 
-<div style="padding:7px">
+
+<div id="<?php echo $genid ?>-db" style="padding:7px">
 <div class="dashboard">
 
 <div class="dashWorkspace">
 <span class="name">
 <?php 
-	$genid = gen_id();
-
 if(active_project() instanceof Project) 
 	echo active_project()->getName();
 else 
@@ -89,7 +89,7 @@ else
 <div class="dashCalendar">
 <table style="width:100%">
 	<col width=12/><col /><col width=12/><tr>
-	<td colspan=2 rowspan=2 class="dashHeader"><div class="dashTitle">Upcoming events, milestones and tasks</div></td>
+	<td colspan=2 rowspan=2 class="dashHeader"><div class="dashTitle"><?php echo lang('upcoming events milestones and tasks')?></div></td>
 	<td class="coViewTopRight"></td></tr>
 	<tr><td class="coViewRight" rowspan=2 colspan=2 ></td></tr>
 	
@@ -162,8 +162,7 @@ else
 	else $firstday = (date("w", mktime(0,0,0,$currentmonth,1,$currentyear))) % 7; // Numeric representation of day of week.
 	$lastday = date("t", mktime(0,0,0,$currentmonth,1,$currentyear)); // # of days in the month
 	
-	
-	$output .= "<table id=\"calendar\" border='0' style='width:100%;margin-right:5px;border-collapse:collapse' cellspacing='1' cellpadding='0'>\n";
+	$output .= "<table id=\"calendar\" border='0' style='width:100%;border-collapse:collapse' cellspacing='1' cellpadding='0'>\n";
 	$day = date("d");
 	$month = date("m");
 	$year = date("Y");
@@ -184,7 +183,7 @@ else
 					<th width="12.5%">' . lang('saturday short') . '</th>';
 					
 					if(cal_option("start_monday")) {
-						$output .= '<th width="15%">' . lang('sunday short') . '</th>';
+						$output .= '<th width="12.5%">' . lang('sunday short') . '</th>';
 					}
 					$output .= '</tr>';
 	for ($week_index = 0;$week_index<1; $week_index++) {
@@ -394,9 +393,9 @@ else
 echo $output . '</table>';
   ?>
   		</td></tr>
-		<tr><td class="coViewBottomLeft"></td>
-		<td class="coViewBottom"></td>
-		<td class="coViewBottomRight"></td></tr>
+		<tr><td class="coViewBottomLeft" style="width:3%"></td>
+		<td class="coViewBottom" style="width:96%"></td>
+		<td class="coViewBottomRight" style="width:3%"></td></tr>
 	</table>
 <?php } //if(user_config_option('show calendar')) ?>
 </div>
@@ -652,7 +651,7 @@ echo $output . '</table>';
 <?php if ($hasUnreadEmails) { ?>
 <div class="dashUnreadEmails">
 <table style="width:100%">
-	<col width=12/><col/><col width=12/><tr>
+	<col width=12/><col width=85%/><col width=12/><tr>
 	<td colspan=2 rowspan=2 class="dashHeader"><div class="dashTitle"><?php echo lang('unread emails') ?></div></td>
 	<td class="coViewTopRight"></td></tr>
 	<tr><td class="coViewRight" rowspan=2></td></tr>
@@ -660,21 +659,24 @@ echo $output . '</table>';
 		<tr><td class="coViewBody" colspan=2>
 		<table id="dashTableEmails" style="width:100%">
 		<?php $c = 0;
-			foreach ($unread_emails as $email){ $c++;?>
-			<tr class="<?php echo $c % 2 == 1? '':'dashAltRow'; echo ' ' . ($c > 5? 'dashSMUC':''); ?>" style="<?php echo $c > 5? 'display:none':'' ?>">
-			<td class="db-ico ico-email"></td>
-			<td style="padding-left:5px">
-			<?php 
-				/*$mws = $email->getWorkspaces(logged_user()->getActiveProjectIdsCSV());
-				$projectLinks = array();
-				foreach ($mws as $ws) {
-					$projectLinks[] = '<span class="project-replace">' . $ws->getId() . '</span>';
-				}
-				echo implode('&nbsp;',$projectLinks);  //Commented as unread emails are not yet assignable to workspaces*/?>
-			<a class="internalLink" style="font-weight:bold" href="<?php echo get_url('mail','view', array('id' => $email->getId()))?>"
-				title="">
-			<?php echo clean($email->getSubject()) ?>
-			</a><br/><table width="100%" style="color:#888"><tr><td><?php echo clean($email->getFrom())?></td><td align=right><?php echo $email->getSentDate()->isToday() ? format_time($email->getSentDate()) : format_date($email->getSentDate())?></td></tr></table></td></tr>
+			foreach ($unread_emails as $email){ 
+				if (!$email->getIsDeleted()) {
+					$c++;?>
+					<tr class="<?php echo $c % 2 == 1? '':'dashAltRow'; echo ' ' . ($c > 5? 'dashSMUC':''); ?>" style="<?php echo $c > 5? 'display:none':'' ?>">
+					<td class="db-ico ico-email"></td>
+					<td style="padding-left:5px">
+					<?php 
+						/*$mws = $email->getWorkspaces(logged_user()->getActiveProjectIdsCSV());
+						$projectLinks = array();
+						foreach ($mws as $ws) {
+							$projectLinks[] = '<span class="project-replace">' . $ws->getId() . '</span>';
+						}
+						echo implode('&nbsp;',$projectLinks);  //Commented as unread emails are not yet assignable to workspaces*/?>
+					<a class="internalLink" style="font-weight:bold" href="<?php echo get_url('mail','view', array('id' => $email->getId()))?>"
+						title="">
+					<?php echo clean($email->getSubject()) ?>
+					</a><br/><table width="100%" style="color:#888"><tr><td><?php echo clean($email->getFrom())?></td><td align=right><?php echo $email->getSentDate()->isToday() ? format_time($email->getSentDate()) : format_date($email->getSentDate())?></td></tr></table></td></tr>
+			<?php } // if?>
 		<?php } // foreach?>
 			<?php if ($c >= 10) {?>
 				<tr class="dashSMUC" style="display:none"><td></td>
@@ -690,7 +692,7 @@ echo $output . '</table>';
 		</td></tr>
 
 		<tr><td class="coViewBottomLeft"></td>
-		<td class="coViewBottom"></td>
+		<td class="coViewBottom" style="width:90%"></td>
 		<td class="coViewBottomRight"></td></tr>
 	</table>
 </div>
@@ -699,7 +701,7 @@ echo $output . '</table>';
 <?php if ($hasMessages) { ?>
 <div class="dashMessages">
 <table style="width:100%">
-	<col width=12/><col/><col width=12/><tr>
+	<col width=12/><col /><col width=12/><tr>
 	<td colspan=2 rowspan=2 class="dashHeader"><div class="dashTitle"><?php echo lang('messages') ?></div></td>
 	<td class="coViewTopRight"></td></tr>
 	<tr><td class="coViewRight" rowspan=2></td></tr>
@@ -737,7 +739,7 @@ echo $output . '</table>';
 		</td></tr>
 
 		<tr><td class="coViewBottomLeft"></td>
-		<td class="coViewBottom"></td>
+		<td class="coViewBottom" style="width:90%"></td>
 		<td class="coViewBottomRight"></td></tr>
 	</table>
 </div>
@@ -784,7 +786,7 @@ echo $output . '</table>';
 <?php if ($hasDocuments) { ?>
 <div class="dashDocuments">
 <table style="width:100%">
-	<col width=12/><col /><col width=12/><tr>
+	<col width=12/><col/><col width=12/><tr>
 	<td colspan=2 rowspan=2 class="dashHeader"><div class="dashTitle"><?php echo lang('documents') ?></div></td>
 	<td class="coViewTopRight"></td></tr>
 	<tr><td class="coViewRight" rowspan=2></td></tr>
@@ -826,7 +828,7 @@ echo $output . '</table>';
 		</td></tr>
 
 		<tr><td class="coViewBottomLeft"></td>
-		<td class="coViewBottom"></td>
+		<td class="coViewBottom" style="width:90%"></td>
 		<td class="coViewBottomRight"></td></tr>
 	</table>
 </div>
@@ -838,5 +840,5 @@ echo $output . '</table>';
 </div>
 </div>
 <script type="text/javascript">
-og.showWsPaths();
+og.showWsPaths('<?php echo $genid ?>-db');
 </script>

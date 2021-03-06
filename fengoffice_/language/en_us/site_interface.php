@@ -357,6 +357,7 @@
   'end time' => 'End time',
   
   'tasks in progress' => 'Tasks in progress',
+  'upcoming events milestones and tasks' => 'Upcoming events, milestones and tasks',
   
   'undo checkout' => 'Undo file checkout',
   

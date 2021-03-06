@@ -36,6 +36,7 @@ class ConfigController extends ApplicationController {
 		if(!can_manage_configuration(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
+			return ;
 		} // if
 		$category = ConfigCategories::findById(get_id());
 		if(!($category instanceof ConfigCategory)) {

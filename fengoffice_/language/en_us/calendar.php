@@ -106,7 +106,10 @@
 	"CAL_TIME" => "Time", // (view date, submit event)
 	"CAL_HOURS" => "Hours", // (view event, submit event)
 	"CAL_HOUR" => "Hour", // (view event, submit event)
-	"CAL_ANONYMOUS" => "Anonymous", // (view event, view date, submit event)
+	"CAL_ANONYMOUS" => "Anonymous", // (view event, view date, submit event),
+	
+	
+	"CAL_SELECT_TIME" => "Select Starting Time"
 
   ); // array
 ?>

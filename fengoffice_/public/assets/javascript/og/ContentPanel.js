@@ -22,6 +22,7 @@ og.ContentPanel = function(config) {
 		}]
 	});
 	
+	
 	og.ContentPanel.superclass.constructor.call(this, config);
 	
 	this.history = [];
@@ -49,6 +50,25 @@ og.ContentPanel = function(config) {
 				});
 			}
 		});
+	}, this);
+	
+	this.on('hide', function() {  
+		/*if (this.id == 'calendar-panel'){
+			var tb = Ext.getCmp('calendar-tb');
+			tb.hide();
+		}*/
+	}, this);
+	
+	this.on('show', function() {  
+		/*if (this.id == 'calendar-panel'){
+			var tb = Ext.getCmp('calendar-tb');
+			if (tb == null){
+				cp = Ext.getCmp('tabs-panel');
+				var tb = new og.CalendarToolbar();				
+			}
+			cp.syncSize();
+			tb.show();
+		}*/
 	}, this);
 };
 

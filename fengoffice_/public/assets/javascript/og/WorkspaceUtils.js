@@ -9,7 +9,7 @@ og.showWsPaths = function(containerItemName){
 	if (container == null)		//Container name null or container not found
 		container = document;
 	
-	list = container.getElementsByTagName('span');
+	var list = container.getElementsByTagName('span');
 	for(var i = 0; i < list.length; i++)
 		if (list[i].className == 'project-replace'){
 			list[i].className = '';
@@ -127,6 +127,8 @@ og.updateWsCrumbs = function(newWs) {
 	var tree = Ext.getCmp('workspaces-tree');
 	while (newWs.id != 0){
 		var actNode = tree.tree.getNodeById('ws' + newWs.id);
+		if (!actNode)
+			break;
 		if (first){
 			first = false;
 			html = '<div id="curWsDiv" style="font-size:150%;display:inline;"><a href="#" style="display:inline;line-height:28px" onmouseover="og.expandSubWsCrumbs(' + actNode.ws.id + ')">' + actNode.text + '</a></div>' + html;
@@ -151,7 +153,6 @@ og.updateWsCrumbs = function(newWs) {
 og.updateWsCrumbsTag = function(newTag) {
 	var html = '';
 	if (newTag.name != "") {
-		//html = '<div class="wsTagCrumbsElement" onmouseover="document.getElementById(\'wsTagCloseDiv\').style.display=\'block\'" onmouseout="document.getElementById(\'wsTagCloseDiv\').style.display=\'none\'"><table><tr><td>' + newTag.name + '</td><td style="padding-left:3px"><a href="#" onclick="return false" title="' + lang('close this tag') + '"><div id="wsTagCloseDiv" class="wsTagCloseDiv" onclick="Ext.getCmp(\'tag-panel\').select(0)"></div></a></td></tr></table></div>';
 		html = '<div class="wsTagCrumbsElement" onmouseover="document.getElementById(\'wsTagCloseDiv\').style.display=\'block\'" onmouseout="document.getElementById(\'wsTagCloseDiv\').style.display=\'none\'">' + newTag.name + '<div id="wsTagCloseDiv" class="wsTagCloseDiv" title="' + lang('close this tag') + '" onclick="Ext.getCmp(\'tag-panel\').select(0)"></div></div>';
 	}
 	

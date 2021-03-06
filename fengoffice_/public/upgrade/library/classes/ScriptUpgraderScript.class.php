@@ -105,7 +105,7 @@
       $total_queries = count($queries);
       foreach($queries as $query) {
         if(trim($query)) {
-          if(@mysql_query(trim($query), $connection)) {
+          if(mysql_query(trim($query), $connection)) {
             $executed_queries++;
           } else {
             return false;

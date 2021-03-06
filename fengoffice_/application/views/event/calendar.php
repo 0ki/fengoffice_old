@@ -29,12 +29,11 @@ if(cal_option("start_monday")) $firstday = (date("w", mktime(0,0,0,$month,1,$yea
 else $firstday = (date("w", mktime(0,0,0,$month,1,$year))) % 7;
 $lastday = date("t", mktime(0,0,0,$month,1,$year));
 	
+
 ?>
 
 
 <script type="text/javascript">
-	
-
 
 function cancel (evt) {//cancel clic event bubbling. used to cancel opening a New Event window when clicking an object
   	var e=(evt)?evt:window.event;
@@ -56,6 +55,9 @@ function hide_tooltip(elem){
 function disable_overlib(){
 	ob = false;
 }
+
+
+
 </script>
 <div style="padding:7px">
 <div class="calendar">
@@ -187,6 +189,7 @@ function disable_overlib(){
 							}
 														
 					?>	
+							
 							
 								<div style='z-index:0; height:100%;cursor:pointer' onclick="og.EventPopUp.show(null, {day:'<?php echo $dtv->getDay() ?>',	month:'<?php echo $dtv->getMonth()?>',year:'<?php echo $dtv->getYear()?>',type_id:2,hour:'0',minute:'0',title:'<?php echo date("l, F j",  mktime(0, 0, 0, $dtv->getMonth(), $dtv->getDay(), $dtv->getYear()))?>'},'');" >
 									<div class='<?php echo $daytitle ?>' style='text-align:right'>
@@ -417,8 +420,7 @@ function disable_overlib(){
 			<td class="coViewBottom"></td>
 			<td class="coViewBottomRight"></td></tr>
 		</table>
-
-	</td>
+	
 </tr></table>
 </div>
 </div>
@@ -426,13 +428,19 @@ function disable_overlib(){
 	jQuery.noConflict();//YUI redefines $, so we need to set jQuery to non-conflict mode	
 	
 	jQuery(document).ready(function() {
+		jQuery.datepicker.setDefaults(jQuery.datepicker.regional['<?php echo DEFAULT_LOCALIZATION?>']);
 		jQuery("#datepicker").datepicker({ 
 			defaultDate: new Date(<?php echo $year?>, <?php echo $month - 2?>, <?php echo $day?>),
 		    onSelect: function(date) { 
 		    	var s = date.split("/");
 		    	og.openLink(og.getUrl('event', 'viewdate', {day:s[1] , month:s[0], year: s[2]}), null);
 		    } 
-		});		
+		});	
+		
+			
+		//Ext.getCmp('calendar-tb').setActiveDate({day:'<?php echo $day ?>',	month:'<?php echo $month?>',year:'<?php echo $year ?>'});							
+		//Ext.getCmp('calendar-tb').setExtraData({currView:'month'});							
+
 	})
 	jQuery('span.task_hover_details').cluetip({		
 	    splitTitle: '|', // use the invoking element's title attribute to populate the clueTip...

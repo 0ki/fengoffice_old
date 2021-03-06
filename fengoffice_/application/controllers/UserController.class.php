@@ -83,12 +83,10 @@ class UserController extends ApplicationController {
 			}
 		} // if
 
-		$projects = $company->getProjects();
 		$permissions = ProjectUsers::getNameTextArray();
 
 		tpl_assign('user', $user);
 		tpl_assign('company', $company);
-		tpl_assign('projects', $projects);
 		tpl_assign('permissions', $permissions);
 		tpl_assign('user_data', $user_data);
 
@@ -139,11 +137,11 @@ class UserController extends ApplicationController {
 				$project->setDescription(lang('files'));
 				$project->setCreatedById($user->getId());
 
+				$project->save(); //Save to set an ID number
+				$project->setP1($project->getId()); //Set ID number to the first project
 				$project->save();
 				
 				$new_project = $project;
-
-
 				$user->setPersonalProjectId($project->getId());
 				$user->save();
 
@@ -158,23 +156,21 @@ class UserController extends ApplicationController {
 				$project_user->save();
 				/* end personal project */
 
-			  	if(is_array($projects)) {
-				  	foreach($projects as $project) {
-				  		if(array_var($user_data, 'project_permissions_' . $project->getId()) == 'checked') {
-				  			$relation = new ProjectUser();
-				  			$relation->setProjectId($project->getId());
-				  			$relation->setUserId($user->getId());
-		
-				  			foreach($permissions as $permission => $permission_text) {
-				  				$permission_value = array_var($user_data, 'project_permission_' . $project->getId() . '_' . $permission) == 'checked';
-		
-				  				$setter = 'set' . Inflector::camelize($permission);
-				  				$relation->$setter($permission_value);
-				  			} // foreach
-		
-				  			$relation->save();
-				  		} // if
-				  	} // forech
+			  	//TODO - Make batch update of these permissions
+				$permissionsString = array_var($_POST,'permissions');
+				if ($permissionsString && $permissionsString != ''){
+					$permissions = json_decode($permissionsString);
+				}
+			  	if(is_array($permissions)) {
+			  		foreach($permissions as $perm){
+			  			$relation = new ProjectUser();
+				  		$relation->setProjectId($perm->wsid);
+				  		$relation->setUserId($user->getId());
+			  			
+				  		$relation->setCheckboxPermissions($perm->pc);
+				  		$relation->setRadioPermissions($perm->pr);
+				  		$relation->save();
+			  		}
 				  } // if
 		
 				  // update contact info if user was created from a contact

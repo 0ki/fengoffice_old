@@ -59,7 +59,7 @@ Ext.onReady(function(){
 				},
 				initialContent: {
 					type: "url",
-					data: ""//og.initialURL
+					data: og.initialURL
 				}
 			}),
 			new og.ContentPanel({

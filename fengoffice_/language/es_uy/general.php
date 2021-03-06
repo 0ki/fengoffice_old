@@ -163,6 +163,12 @@
   	'task report' => 'Reporte de tareas',
   	'priority' => 'Prioridad',
   	'anybody' => 'Todos',
+  
+  	'read and write' => 'Lectura y Escritura',
+  	'read only' => 'Sólo lectura',
+  	'none no bars' => 'Ninguno',
+  	'apply to all subworkspaces' => 'Aplicar permisos a todos los subespacios',
+  	'weblinks' => 'Páginas Web'
   ); // array
 
 ?>

@@ -31,6 +31,7 @@ class GroupController extends ApplicationController {
 		if(!can_manage_security(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
+			return ;
 		} // if
 
 		$group = Groups::findById(get_id());
@@ -53,6 +54,7 @@ class GroupController extends ApplicationController {
 		if(!can_manage_security(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
+			return ;
 		} // if
 
 		$group = new Group();
@@ -98,6 +100,7 @@ class GroupController extends ApplicationController {
 		if(!can_manage_security(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
+			return ;
 		} // if
 
 		$group = Groups::findById(get_id());
@@ -187,6 +190,7 @@ class GroupController extends ApplicationController {
 		if(!($group instanceof Group)) {
 			flash_error(lang('group dnx'));
 			ajx_current("empty");
+			return ;
 		} // if
 
 		try {

@@ -132,13 +132,13 @@ og.MessageManager = function() {
 	
 	
 	function renderIcon(value, p, r) {
-		if (value == "email")
+		if (value == "email"){
 			if (r.data.projectId > 0)
 				return String.format('<div class="db-ico ico-email"></div>');
 			else
 				return String.format('<a href="#" onclick="og.openLink(\'{0}\')" title={1}><div class="db-ico ico-classify"></div></a>'
 						, og.getUrl('mail', 'classify', {id: r.data.object_id}), lang('classify'));
-		else
+		} else
 			return String.format('<div class="db-ico ico-message"></div>');
 	}
 

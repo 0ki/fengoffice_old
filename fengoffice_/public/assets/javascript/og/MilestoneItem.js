@@ -397,7 +397,7 @@ og.MilestoneItem.prototype = {
 	
 	loadSubTasks: function(tasks) {
 		og.TaskItem.prototype.loadSubTasks.call(this, tasks);
-		og.showWsPaths();
+		//og.showWsPaths();
 	},
 	
 	checkMilestone: function() {

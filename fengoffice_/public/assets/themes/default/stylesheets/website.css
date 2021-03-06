@@ -1,3 +1,5 @@
+@import '../jquery/jquery.cluetip.css';
+@import '../jquery/ui.datepicker.css';
 @import 'general/rewrites.css';
 @import '../extjs/css/ext-all.css';
 @import 'og/ext_modify.css';
@@ -34,12 +36,11 @@
 @import 'project/permissions.css';
 @import 'project/project_log.css';
 @import 'project/reorder_tasks.css';
-@import 'project/search_results.css';
+/*@import 'project/search_results.css';*/
 /*@import 'project/spreadsheet.css';*/
 /*@import 'project/spreadsheet_grey.css';*/
 @import 'project/task_list.css';
-@import url("../jquery/jquery.cluetip.css");
-@import url("../jquery/ui.datepicker.css");
+
 
 select.select_milestone, select.select_task_list, select.select_message {
   width: 250px;

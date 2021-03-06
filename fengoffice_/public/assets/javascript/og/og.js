@@ -465,6 +465,7 @@ og.openLink = function(url, options) {
 	}
 	url = og.makeAjaxUrl(url, params);
 	if (!options.post) options.post = " ";
+	
 	Ext.Ajax.request({
 		url: url,
 		method: 'POST',
@@ -585,7 +586,8 @@ og.processResponse = function(data, options) {
 				if (p) {
 					var tp = p.ownerCt;
 					if (tp.setActiveTab) {
-						tp.setActiveTab(p);
+						if(!(p.initialConfig.refreshOnWorkspaceChange) && !(p.initialConfig.refreshOnTagChange))
+							tp.setActiveTab(p);
 					}
 					p.load(data.current);
 				} else {
