@@ -52,7 +52,7 @@ return array(
 		'click here to add a new' => 'Click here to add a new {0}',
 		'add your first' => 'Add your first {0}',
 		'there are x users more' => 'There are {0} more users.',
-		'faqs' => 'Frequently asqued questions',
+		'faqs' => 'Frequently asked questions',
 		'subscribe' => 'Subscribe',
 		'liquid office' => 'Liquid Office',
 

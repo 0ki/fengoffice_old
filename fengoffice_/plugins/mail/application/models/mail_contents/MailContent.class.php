@@ -161,7 +161,8 @@ class MailContent extends BaseMailContent {
 		if ($delete_db_record) {
 			return parent::delete();
 		} else {
-			return $this->mark_as_deleted();
+			$this->mark_as_deleted();
+			return $this->getObject()->delete();
 		}
 	}
 	

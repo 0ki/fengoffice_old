@@ -448,6 +448,7 @@ addLangs({
 	'resume_work': 'Retomar el trabajo sobre esta tarea',
 	'close work': 'Finalizar trabajo',
 	'time worked': 'Tiempo trabajado',
+	'total time' : 'Tiempo total',
 	'hours': 'horas',
 	'complete this task': 'Completar esta tarea',
 	'reopen this task': 'Reabrir esta tarea',

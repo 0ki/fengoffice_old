@@ -467,6 +467,16 @@ class AccountController extends ApplicationController {
 		
 	}
 	
+	function get_user_preference(){
+		ajx_current("empty");
+		$option_name = array_var($_REQUEST,'name');
+		$option_value = "";
+		if($option_name != ''){
+			$option_value = user_config_option($option_name);
+		}
+		ajx_extra_data(array('opt_val' => $option_value));
+	}
+	
 	function disable() {
 		ajx_set_panel(array_var($_REQUEST, "current"));
 		$user = Contacts::findById(get_id());

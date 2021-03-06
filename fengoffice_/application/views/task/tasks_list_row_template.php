@@ -158,11 +158,13 @@
           {{/if}}
           </div>
         {{else}}
+		  {{#if can_add_timeslots}}
           <div class='task-row-obj'>
             <a class="internalLink" href="#" onclick="ogTasks.executeAction('start_work',[{{task.id}}])">
               <div title="{{lang 'start_work'}}" class="ogTasksTimeClock ico-time task-action-icon"></div>
             </a>
           </div>
+		  {{/if}}
         {{/if}}
 
         {{#if show_working_on_users}}
@@ -176,14 +178,16 @@
     </div>
     {{/if}}    
 
+	{{#if show_actions_popover_button}}
     <div class='task-actions-container'>
       <div class='task-actions'>
-        <button id="tasksActionsBtn{{tgId}}" type="button" class="tasksActionsBtn tasksBtn" data-templateid="tasksActionsTemplate{{tgId}}" data-container="body" data-toggle="popover" data-placement="left" data-trigger="focus" >
+        <button id="tasksActionsBtn{{tgId}}" type="button" class="tasksActionsBtn tasksBtn" data-templateid="tasksActionsTemplate{{tgId}}" data-container="body" data-toggle="popover" data-placement="left" data-trigger="{{action_trigger}}" >
               {{lang 'actions'}}<span class="caret"></span>
         </button>
       </div>      
     </div>    
-    
+    {{/if}}
+
     {{!-- actions popover template--}}
     <div id='tasksActionsTemplate{{tgId}}' style="display: none;">
       <div class='popover'>

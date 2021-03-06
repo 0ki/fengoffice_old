@@ -2,6 +2,10 @@
 	require_javascript('og/modules/addTaskForm.js');
 	require_javascript("og/ObjectPicker.js");
 	
+	if (!$task instanceof ProjectTask && !$task instanceof TemplateTask) {
+		$task = new ProjectTask();
+	}
+	
 	$object = $task;
 	$genid = gen_id();
 	

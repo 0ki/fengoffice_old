@@ -184,6 +184,8 @@ class GroupController extends ApplicationController {
 			tpl_assign('pg_id', $group->getId());
 			tpl_assign('group', $group);
 			tpl_assign('group_data', array('name' => $group->getName()));
+			
+			add_page_action(lang('delete'), "javascript:if(confirm(lang('confirm delete group'))) og.openLink('" . $group->getDeleteUrl() ."');", 'ico-trash', null, null, true);
 		} else {
 			try {
 				$group->setFromAttributes($group_data);
@@ -274,7 +276,7 @@ class GroupController extends ApplicationController {
 			DB::commit();
 
 			flash_success(lang('success delete group', $group->getName()));
-			ajx_current("reload");
+			ajx_current("back");
 		} catch(Exception $e) {
 			DB::rollback();
 			flash_error(lang('error delete group'));

@@ -122,3 +122,32 @@ function render_single_member_selector(Dimension $dimension, $genid = null, $sel
 	// Render view
 	include get_template_path("components/multiple_dimension_selector", "dimension");
 }
+
+function update_all_childs_depths($member, $old_parent_id) {
+	//CHILDS
+	//Get all member childs recursive
+	$childs = get_all_children_sorted($member->getArrayInfo());
+	if(count($childs) == 0){
+		return;
+	}
+	
+	$childs_ids = array();
+	foreach ($childs as $child) {
+		$childs_ids[] = $child['id'];
+	}
+	$m_depth = $member->getDepth();
+
+	if($old_parent_id > 0){
+		$old_parent_member = Members::findById($old_parent_id);
+		$old_member_depth = $old_parent_member->getDepth() + 1;
+	}else{
+		$old_member_depth = 1;
+	}
+
+	$depth_diff = $m_depth - $old_member_depth;
+
+	$childs_ids_string = implode(',', $childs_ids);
+	$update_depth_sql = "UPDATE ".TABLE_PREFIX."members SET `depth` = `depth` + $depth_diff WHERE id IN($childs_ids_string);";
+	DB::execute($update_depth_sql);
+}
+

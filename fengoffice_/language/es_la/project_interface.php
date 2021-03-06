@@ -44,7 +44,7 @@
 	'project started on' => 'Comenzado el',
 	'send milestone assigned to notification' => 'Enviar notificación al usuario asignado vía mail',
 	'send task assigned to notification' => 'Enviar notificación al usuario asignado vía mail',
-	'send email notification' => 'Eniviar notificación vía mail',
+	'send email notification' => 'Enviar notificación vía mail',
 	'edit company data' => '<a class="internalLink" href="{0}">Edit</a> Datos de la organización',
 	'company users involved in project' => '{0} usuarios relacionados en {1}',
 	'companies involved in project' => 'Organizaciones relacionadas',

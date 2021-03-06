@@ -304,7 +304,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 				} ?>
 				
 				<a class="coViewAction ico-add" id="<?php echo $genid?>previous_before" href="#"  
-					onclick="og.pickPreviousTemplateTask(this, '<?php echo $genid?>', '<?php echo $task->getId()?>')"><?php echo lang('add previous task') ?></a>
+					onclick="og.pickPreviousTemplateTask(this, '<?php echo $genid?>', '<?php echo $task->getId()?>','<?php echo $template_id?>')"><?php echo lang('add previous task') ?></a>
 				
 			</div>
 		

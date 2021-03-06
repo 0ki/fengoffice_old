@@ -13,6 +13,10 @@ define('LIBRARY_PATH',     ROOT . '/library');
 define('CACHE_DIR',        ROOT . '/cache');
 define('THEMES_DIR',       ROOT . '/public/assets/themes');
 
+if(!defined('PUBLIC_FOLDER')) {
+	define('PUBLIC_FOLDER', 'public'); // this file can be included through public/index.php
+} // if
+
 set_include_path(ROOT . PATH_SEPARATOR . APPLICATION_PATH . PATH_SEPARATOR . get_include_path());
 set_include_path(LIBRARY_PATH . "/zend" . PATH_SEPARATOR . get_include_path());
 set_include_path(LIBRARY_PATH . "/ezcomponents" . PATH_SEPARATOR . get_include_path());

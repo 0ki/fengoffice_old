@@ -62,6 +62,8 @@ INSERT INTO `fo_dimensions` (`code`, `name`, `is_root`, `is_manageable`, `allows
  ('tags', 'Tags', 1, 1, 0, 0, 1, '{"quickAdd":true,"showInPaths":true}'),
  ('feng_persons', 'People', 1, 0, 0, 1, 1,'{"useLangs":true,"defaultAjax":{"controller":"contact", "action": "init"},"quickAdd":{"formAction":"?c=contact&a=quick_add"}}');
 
+UPDATE `fo_config_options` SET value='1,2' WHERE name='enabled_dimensions';
+
 INSERT INTO `fo_dimension_object_type_hierarchies` (`dimension_id`, `parent_object_type_id`, `child_object_type_id`) VALUES
  ((SELECT id FROM fo_dimensions WHERE code='workspaces'), (SELECT id FROM fo_object_types WHERE name='workspace'), (SELECT id FROM fo_object_types WHERE name='workspace')),
  ((SELECT id FROM fo_dimensions WHERE code='feng_persons'), (SELECT id FROM fo_object_types WHERE name='company'), (SELECT id FROM fo_object_types WHERE name='person')),

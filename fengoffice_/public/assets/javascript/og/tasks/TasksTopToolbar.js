@@ -275,6 +275,7 @@ og.TasksTopToolbar = function(config) {
 				}
 			},
 			time: {
+				hidden: (typeof(ogTasks.userPreferences.showTime) == "undefined"),
 		        text: lang('time'),
 				checked: (ogTasks.userPreferences.showTime == 1),
 				checkHandler: function() {

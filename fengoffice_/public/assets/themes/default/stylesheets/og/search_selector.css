@@ -31,6 +31,12 @@
 	margin-left: 0px;
 }
 
+.single_current_selected .empty-text {
+	font-size:13px;
+	margin:1px 5px;
+	display: none;
+}
+
 .search-selector-more{
 	color: #003562;
 	text-align: center;

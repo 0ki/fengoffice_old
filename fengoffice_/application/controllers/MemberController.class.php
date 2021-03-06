@@ -662,12 +662,10 @@ class MemberController extends ApplicationController {
 				
 			} else {
 				
-				// if parent changed rebuild object_members for every object in this member
-				// if possible this function will execute the rebuild in background
+				// if parent changed 
 				if ($old_parent != $member->getParentMemberId()) {
-					
-			//		member_parent_changed_refresh_object_permisssions($member, $old_parent, logged_user());
-					
+					Env::useHelper('dimension');
+					update_all_childs_depths($member, $old_parent);
 				}
 			}
 			
@@ -1262,7 +1260,7 @@ class MemberController extends ApplicationController {
 			
 			Hook::fire('member_quick_add_urls', array('dimension' => $dimension, 'object_types' => $object_types, 'parent_member' => $parent_member), $urls);
 			
-			if (count($editUrls) > 1) {
+			if (count($urls) > 1) {
 				ajx_extra_data(array('draw_menu' => 1, 'urls' => $urls));
 			} else {
 				ajx_extra_data(array('urls' => $urls));

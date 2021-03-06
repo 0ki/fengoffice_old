@@ -1983,7 +1983,7 @@ function associate_member_to_status_member($project_member, $old_project_status,
 			}
 
 			// add objects to new project_type member
-			if ($status_member_id > 0) {
+			if (is_numeric($status_member_id) && $status_member_id > 0) {
 				$member_to_add = Members::findById($status_member_id);
 				foreach ($object_members as $om) {
 					ObjectMembers::addObjectToMembers($om->getObjectId(), array($member_to_add));

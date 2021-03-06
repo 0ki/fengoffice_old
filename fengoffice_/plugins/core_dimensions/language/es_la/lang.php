@@ -11,4 +11,7 @@
 	'apply to all members' => 'Aplicar los permisos seleccionados en todos los {0}',
 	'apply to all submembers desc' => '',
 	'apply to all members desc' => '',
+	
+	'and' => 'y',
+	'Any' => 'Cualquiera',
 );

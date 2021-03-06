@@ -13,4 +13,7 @@
 	'apply to all submembers desc' => '',
 	'apply to all members desc' => '',
 	'do you want to add default permissions in member for users' => 'Do you want to add default permissions to \'{1}\' in \'{0}\'?',
+	
+	'and' => 'and',
+	'Any' => 'Any',
 );

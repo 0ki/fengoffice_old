@@ -1,5 +1,5 @@
 
-	About Feng Office 3.1.2
+	About Feng Office 3.1.2.2
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -104,6 +104,28 @@
 	
 	Changelog
 	=========
+	
+	Since 3.1.2.1
+	----------------
+	bugfix: Users without permissions to add timeslots can add timeslots if the task is assigned to him/her.
+	bugfix: In tasks list, in show menu, user has no time permissions but time option is shown, and are also shown the time links in task row.
+	bugfix: In tasks list, if action popover button has no actions, it is shown with an empty menu.
+	bugfix: on template tasks add dependant task not working.
+	bugfix: after edit member update all childs depths.
+	bugfix: when deleting emails the register in objects table was not deleted.
+	bugfix: document level filter is not set with its current value when logging in.
+	
+	feature: in single member selector when no member is selected show root node's text.
+	feature: upgrade by console - no need to pass the version from and version to parameters.
+	
+	
+	Since 3.1.2
+	----------------
+	bugfix: When checking mail, check for spam level in headers improved.
+	bugfix: Error when adding tasks.
+	bugfix: Cannot delete user group.
+	bugfix: Feng1 to Feng3 upgrade script does not fill the "enabled_dimensions" config option.
+	
 	
 	Since 3.1.1
 	----------------

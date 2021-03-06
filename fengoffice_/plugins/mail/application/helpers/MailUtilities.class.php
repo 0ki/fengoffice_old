@@ -243,7 +243,16 @@ class MailUtilities {
 			$user_id = logged_user() instanceof Contact ? logged_user()->getId() : $account->getContactId();
 			$max_spam_level = user_config_option('max_spam_level', null, $user_id);
 			if ($max_spam_level < 0) $max_spam_level = 0;
-			$mail_spam_level = strlen(trim( array_var($decoded[0]['Headers'], 'x-spam-level:', '') ));
+			
+			$spam_level_header = 'x-spam-level:';
+			foreach ($decoded[0]['Headers'] as $hdr_name => $hdrval) {
+				if (strpos(strtolower($hdr_name), "spamscore") !== false || strpos(strtolower($hdr_name), "x-spam-level")) {
+					$spam_level_header = $hdr_name;
+					break;
+				}
+			}
+			$mail_spam_level = strlen(trim( array_var($decoded[0]['Headers'], $spam_level_header, '') ));
+			
 			// if max_spam_level >= 10 then nothing goes to junk folder
 			$spam_in_subject = false;
 			if (config_option('check_spam_in_subject')) {
@@ -252,19 +261,21 @@ class MailUtilities {
 			if (($max_spam_level < 10 && ($mail_spam_level > $max_spam_level || $from_spam_junk_folder)) || $spam_in_subject) {
 				$state = 4; // send to Junk folder
 			}
-	                
+			
 			//if you are in the table spam MailSpamFilters
-			$spam_email = MailSpamFilters::getFrom($account->getId(),$from);
-			if($spam_email) {
-				$state = 0;
-				if($spam_email[0]->getSpamState() == "spam") {
-					$state = 4;
-				}
-			} else {
-				if ($state == 0) {
-					if (strtolower($from) == strtolower($account->getEmailAddress())) {
-						if (strpos($to_addresses, $from) !== FALSE) $state = 5; //Show in inbox and sent folders
-						else $state = 1; //Show only in sent folder
+			if ($state != 4) {
+				$spam_email = MailSpamFilters::getFrom($account->getId(),$from);
+				if($spam_email) {
+					$state = 0;
+					if($spam_email[0]->getSpamState() == "spam") {
+						$state = 4;
+					}
+				} else {
+					if ($state == 0) {
+						if (strtolower($from) == strtolower($account->getEmailAddress())) {
+							if (strpos($to_addresses, $from) !== FALSE) $state = 5; //Show in inbox and sent folders
+							else $state = 1; //Show only in sent folder
+						}
 					}
 				}
 			}

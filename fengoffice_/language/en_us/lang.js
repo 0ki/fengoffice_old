@@ -476,6 +476,7 @@ addLangs({
 	'task name': 'Task name',
 	'show': 'Show',
 	'time': 'Time',
+	'total time' : 'Total time',
     'estimated times': 'Estimated times',
     'estimated time': 'Estimated time',
     'pending time': 'Pending time',
@@ -953,7 +954,7 @@ addLangs({
 	'more-panel': 'Settings',
 	'select user group': 'Select user group',
 	'at least one dimension must be selected': 'At least one dimension must be selected.',
-	
+	'confirm delete group': 'Are you sure you want to delete this group?',
 	'push' : 'Push',
 	'move tasks forward' : 'Move tasks forward'
 });

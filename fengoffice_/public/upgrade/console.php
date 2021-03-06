@@ -10,16 +10,25 @@ if(!isset($argv) || !is_array($argv)) {
 	die('There is no input arguments');
 } // if
 
-$from_version = array_var($argv, 1);
-$to_version = array_var($argv, 2);
+if (count($argv) == 1) {
+	if (!file_exists(ROOT."/config/installed_version.php")) {
+		die('File does not exists: config/installed_version.php');
+	}
+	$from_version = include ROOT."/config/installed_version.php";
+	$to_version = include ROOT."/version.php";
 
-if(trim($from_version) == '') {
-	die('First argument (current version) is required');
-} // if
-
-if(trim($to_version) == '') {
-	die('Second argument (to version) is required');
-} // if
+} else { // version number received in parameters
+	$from_version = array_var($argv, 1);
+	$to_version = array_var($argv, 2);
+	
+	if(trim($from_version) == '') {
+		die('First argument (current version) is required');
+	} // if
+	
+	if(trim($to_version) == '') {
+		die('Second argument (to version) is required');
+	} // if
+}
 
 // Construct the upgrader and load the scripts
 $upgrader = new ScriptUpgrader(new Output_Console(), 'Upgrade Feng Office', 'Upgrade your Feng Office installation');

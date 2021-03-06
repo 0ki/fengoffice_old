@@ -532,6 +532,12 @@ class ProjectTasks extends BaseProjectTasks {
 			$result['repetitive'] = 1;
 		}
 		
+		$tmp_members = array();
+		if (count($member_ids) > 0) {
+			$tmp_members = Members::findAll(array("conditions" => "id IN (".implode(',', $member_ids).")"));
+		}
+		$result['can_add_timeslots'] = can_add_timeslots(logged_user(), $tmp_members);
+		
 		return $result;
 	}
 	

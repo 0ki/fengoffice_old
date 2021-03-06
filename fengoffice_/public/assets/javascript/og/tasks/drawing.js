@@ -977,8 +977,6 @@ ogTasks.reDrawTask = function(task) {
 		group_id = group_id.replace(remove, "");
 		
 		var html = ogTasks.drawTask(task, drawOptions, displayCriteria, group_id, 1, null,true);
-		console.log("replaceWith");
-		console.log(task);
 		$("#ogTasksPanelTask" + task.id + "G"+group_id).replaceWith(html);
 		//init action btns
 		var btns = $("#ogTasksPanelTask" + task.id + "G"+group_id +" .tasksActionsBtn").toArray();
@@ -1115,13 +1113,15 @@ ogTasks.drawTaskRow = function(task, drawOptions, displayCriteria, group_id, lev
 	
 	//task actions
 	var taskActions = new Array();
-	taskActions.push({
-		act_collapsed: true,
-		act_onclick: "ogTasks.AddWorkTime", 
-		act_onclick_param: [{param_val: task.id}],
-		act_text: lang('add work'), 
-		act_class: "ico-time-s coViewAction"
-	});	
+	if (drawOptions.show_time && task.canAddTimeslots) {
+		taskActions.push({
+			act_collapsed: true,
+			act_onclick: "ogTasks.AddWorkTime", 
+			act_onclick_param: [{param_val: task.id}],
+			act_text: lang('add work'), 
+			act_class: "ico-time-s coViewAction"
+		});	
+	}
 	taskActions.push({
 		act_collapsed: !drawOptions.show_quick_add_sub_tasks,
 		act_onclick: "ogTasks.drawAddNewTaskForm", 
@@ -1162,12 +1162,17 @@ ogTasks.drawTaskRow = function(task, drawOptions, displayCriteria, group_id, lev
 	    }
 	}
 	
+	var collapsed_actions = 0;
 	var show_quick_actions_container = false;
 	for(var i = taskActions.length; i > 0; i--){
 		if(!taskActions[i-1].act_collapsed){
 			show_quick_actions_container = true;
+	    } else {
+	    	collapsed_actions++;
 	    }
 	}
+	
+	var show_actions_popover_button = collapsed_actions > 0;
 		
 	var row_total_cols = [];
 	for (var key in ogTasks.TotalCols){
@@ -1187,12 +1192,21 @@ ogTasks.drawTaskRow = function(task, drawOptions, displayCriteria, group_id, lev
 		ogTasks.task_list_row_template = template;		
 	}
 	
+	var action_trigger = "focus";
+	var is_safari = navigator.userAgent.indexOf("Safari") > -1;
+	var is_safari_vendor = navigator.vendor.indexOf("Apple") > -1;
+	if(is_safari && is_safari_vendor){
+		action_trigger = "click";
+	}
 	
 	//template data
 	var data = {
 			task: task,
 			task_actions: taskActions,
+			action_trigger: action_trigger,
 			show_quick_actions_container: show_quick_actions_container,
+			show_actions_popover_button: show_actions_popover_button,
+			can_add_timeslots: task.canAddTimeslots,
 			genid: og.genid,
 			start_date : start_date,
 			due_date : due_date,

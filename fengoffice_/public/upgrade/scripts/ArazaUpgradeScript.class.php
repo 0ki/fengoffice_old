@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Araza upgrade script will upgrade FengOffice 3.1 to FengOffice 3.1.2
+ * Araza upgrade script will upgrade FengOffice 3.1 to FengOffice 3.1.2.2
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -39,7 +39,7 @@ class ArazaUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('3.1');
-		$this->setVersionTo('3.1.2');
+		$this->setVersionTo('3.1.2.2');
 	} // __construct
 
 	function getCheckIsWritable() {

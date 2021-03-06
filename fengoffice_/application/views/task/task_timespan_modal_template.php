@@ -22,11 +22,11 @@
 		</div>
 
 		<div style="float:left;margin-left:10px;">
-			<label for="closeTimeslotTotalTime">Total time:</label>	<div style="float:left;">
-				<span>Hours:&nbsp;</span>
+			<label for="closeTimeslotTotalTime">{{lang 'total time'}}:</label>	<div style="float:left;">
+				<span>{{lang 'hours'}}:&nbsp;</span>
 				<input type="text" value="" name="timeslot[hours]" tabindex="80" style="width:30px">	</div>
 			<div style="float:left;margin-left:10px;">
-				<span>Minutes:&nbsp;</span>
+				<span>{{lang 'minutes'}}:&nbsp;</span>
 				<select tabindex="85" size="1" name="timeslot[minutes]" class="TMTimespanRealSelector">
 				{{#each minutes}}
 		  			<option value="{{minute}}">{{minute}}</option>

@@ -25,7 +25,9 @@ if(array_var($options, 'is_multiple', true)){
 }
 
 $opts["is_multiple"]= $is_multiple;
-
+if (trim(array_var($options, 'root_lang')) != "") {
+	$opts["root_lang"] = array_var($options, 'root_lang');
+}
 
 ?>
 		
@@ -89,6 +91,8 @@ $("#<?php echo $genid; ?>selected-members-dim<?php echo $dimension_id?>").append
 										
 	    <?php 
 				}			
+			} else { 
+		?>$("#<?php echo $genid?>-member-chooser-panel-<?php echo $dimension_id?>-tree-current-selected .empty-text").show();<?php
 			}
 	    ?> 
 </script>

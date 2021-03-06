@@ -113,11 +113,17 @@ og.MemberTreeAjax = function(config) {
 				eval(this.selectFunction + '(' + params + ')');
 				if(this.selectFunction == ""){
 					member_selector.add_relation(node.attributes.dimension_id, this.genid, node.attributes.id);
-				}				
+				}
+				if (node.getOwnerTree()) {
+					$("#"+ node.getOwnerTree().id +"-current-selected .empty-text").hide();
+				}
 			}else{ 
 				//root
 				var params = '"' + this.genid +'",'+ this.dimensionId +','+ 0;
 				eval(this.selectFunction + '(' + params + ')');
+				if(!this.isMultiple && node.getOwnerTree()){
+					$("#"+ node.getOwnerTree().id +"-current-selected .empty-text").show();
+				}
 			}
 			
 			
@@ -136,7 +142,7 @@ og.MemberTreeAjax = function(config) {
 			if(!this.isMultiple){
 				$("#" + tree.id + '-textfilter').hide();				
 				$("#" + tree.id + '-textfilter').closest('.x-panel-tbar').attr("tabindex", -1);
-				$("#" + tree.id + '-textfilter').parent().append( "<div id='"+ tree.id +"-current-selected' class='single_current_selected ico-search-m'></div>" );
+				$("#" + tree.id + '-textfilter').parent().append( "<div id='"+ tree.id +"-current-selected' class='single_current_selected ico-search-m'><div class='empty-text'>"+tree.getRootNode().text+"</div></div>" );
 				
 				$("#" + tree.id + '-textfilter').closest('.x-panel-tbar').focusin(function() {
 					setTimeout(function(){
@@ -231,15 +237,19 @@ og.MemberTreeAjax = function(config) {
 			
 	// **************** TREE INIT **************** //
 	this.initialized = false;
+	var root_lang = lang('none');
+	if (config.root_lang) {
+		root_lang = config.root_lang;
+	}
 	var root = new Ext.tree.TreeNode({
-		text: lang('none'),
+		text: root_lang,
 		expandable: true,
 		hidden: true,
     	id:0,
     	href: "#",
     	iconCls : 'ico-folder',
     	cls: 'root'
-		});
+	});
 
 	this.setRootNode(root);
 };

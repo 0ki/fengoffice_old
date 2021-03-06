@@ -302,9 +302,6 @@ class ProjectTask extends BaseProjectTask {
 		return $task_list instanceof ProjectTask ? $task_list->canEdit($user, $this->getMembers()) : false;
 	} // canEdit
 	
-	function canAddTimeslot($user) {
-		return $this->canChangeStatus($user) || can_manage_time($user) || can_access_pgids($user->getPermissionGroupIds(), $this->getMembers(), Timeslots::instance()->getObjectTypeId(), ACCESS_LEVEL_WRITE);
-	}
 	
 	/**
 	 * Check if specific user can change task status

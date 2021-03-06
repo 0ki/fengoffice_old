@@ -1520,6 +1520,10 @@ function buildTree ($nodeList , $parentField = "parent", $childField = "children
 				listeners: {'tree rendered': function (t) {if (select_root) t.root.select();}}
 			};
 
+			<?php if( isset ($options['root_lang'])) : ?>
+				config.root_lang = <?php echo json_encode($options['root_lang']) ?>;
+			<?php endif; ?>
+			
 			<?php if( isset ($options['allowedMemberTypes'])) : ?>
 				config.allowedMemberTypes = <?php echo json_encode($options['allowedMemberTypes']) ?>;
 			<?php endif; ?>
