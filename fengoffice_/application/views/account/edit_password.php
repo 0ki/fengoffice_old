@@ -1,15 +1,3 @@
-<?php 
-  
-  if($user->canUpdateProfile(logged_user())) {
-	add_page_action(lang('update profile'), $user->getEditProfileUrl(), 'ico-edit');
-	add_page_action(lang('update avatar'), $user->getUpdateAvatarUrl(), 'ico-picture');
-  } // if
-  
-  if($user->canUpdatePermissions(logged_user())) {
-  	add_page_action(lang('permissions'), $user->getUpdatePermissionsUrl(), 'ico-permissions');
-  } // if
-
-?>
 
 <div class="adminConfiguration" style="height:100%;background-color:white">
   <div class="adminHeader">

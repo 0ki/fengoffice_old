@@ -111,7 +111,7 @@ class AccountController extends ApplicationController {
 				$user->setEmail(array_var($user_data,'email'));
 				$user->setTimezone(array_var($user_data,'timezone'));
 				$user->setTitle(array_var($user_data,'title'));
-				
+				$user->setUpdatedOn(DateTimeValueLib::now());
 				if (logged_user()->isAdministrator()){
 					$user->setCompanyId(array_var($user_data,'company_id'));
 					$user->setDefaultBillingId(array_var($user_data,'default_billing_id'));
@@ -195,6 +195,7 @@ class AccountController extends ApplicationController {
 				$user_password->save();
 
 				$user->setPassword($new_password);
+				$user->setUpdatedOn(DateTimeValueLib::now());
 				$user->save();
 				
 				if ($user->getId() == logged_user()->getId()) {
@@ -312,6 +313,7 @@ class AccountController extends ApplicationController {
 				$user->setCanManageTemplates(false);
 				$user->setCanManageReports(false);
 				$user->setFromAttributes($user_data);
+				$user->setUpdatedOn(DateTimeValueLib::now());
 				$user->save();
 				DB::commit();
 	
@@ -371,6 +373,7 @@ class AccountController extends ApplicationController {
 				$old_file = $user->getAvatarPath();
 				DB::beginWork();
 
+				$user->setUpdatedOn(DateTimeValueLib::now());
 				if(!$user->setAvatar($avatar['tmp_name'], $max_width, $max_height)) {
 					throw new InvalidUploadError($avatar, lang('error edit avatar'));
 				} // if
@@ -426,6 +429,7 @@ class AccountController extends ApplicationController {
 
 		try {
 			DB::beginWork();
+			$user->setUpdatedOn(DateTimeValueLib::now());
 			$user->deleteAvatar();
 			$user->save();
 			ApplicationLogs::createLog($user, null, ApplicationLogs::ACTION_EDIT);

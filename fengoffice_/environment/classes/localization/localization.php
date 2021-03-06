@@ -13,9 +13,23 @@ function lang($name) {
 	$args = func_get_args();
 	if(is_array($args)) array_shift($args);
 
-	// Get value and if we have NULL done!
+	return langA($name, $args);
+
+} // lang
+
+function langA($name, $args) {
+	static $base = null;
 	$value = Localization::instance()->lang($name);
-	if(is_null($value)) return $value;
+	if (is_null($value)) {
+		if (!Env::isDebugging()) {
+			if (!$base instanceof Localization) {
+				$base = new Localization();
+				$base->loadSettings("en_us", ROOT . "/language");
+			}
+			$value = $base->lang($name);
+		}
+		if (is_null($value)) return "Missing lang: $name";
+	}
 
 	// We have args? Replace all {x} with arguments
 	if(is_array($args) && count($args)) {
@@ -28,7 +42,5 @@ function lang($name) {
 
 	// Done here...
 	return $value;
-
-} // lang
-
+}
 ?>

@@ -481,7 +481,7 @@ Ext.extend(og.WorkspaceTree, Ext.tree.TreePanel, {
 				node.expand();
 				var c = node.firstChild;
 				while (c) {
-					c.expand();
+					expandAll(c);
 					c = c.nextSibling;
 				}
 			}

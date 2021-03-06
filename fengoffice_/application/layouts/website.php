@@ -55,12 +55,20 @@
 <!-- header -->
 <div id="header">
 	<div id="headerContent">
-	    <table><tr><td style="width:60px">
-		<div id="logodiv"></div></td><td>
-		<div id="wsCrumbsWrapper"><table><tr><td><div id="wsCrumbsDiv"><div style="font-size:150%;display:inline;">
-		<a href="#" style="display:inline;line-height:28px" onmouseover="og.expandSubWsCrumbs(0)"><?php echo lang('all') ?></a></div></div></td>
-		<td><div id="wsTagCrumbs"></div></td></tr></table>
-		</div>
+	    <table class="headerLogoAndWorkspace"><tr><td style="width:60px">
+			<div id="logodiv"></div>
+		</td><td>
+			<div id="wsCrumbsWrapper">
+				<table><tr><td>
+					<div id="wsCrumbsDiv">
+						<div style="font-size:150%;display:inline;">
+							<a href="#" style="display:inline;line-height:28px" onmouseover="og.expandSubWsCrumbs(0)"><?php echo lang('all') ?></a>
+						</div>
+					</div>
+				</td><td>
+					<div id="wsTagCrumbs"></div>
+				</td></tr></table>
+			</div>
 		</td></tr></table>
 		<div id="userboxWrapper"><?php echo render_user_box(logged_user()) ?></div>
 		<div id="searchbox">
@@ -81,7 +89,7 @@
 				<input type="hidden" id="hfVars" name="vars" value="dashboard" />
 			</form>
 		</div>
-		<?php // echo render_system_notices(logged_user()) ?>
+		<?php Hook::fire('render_page_header', null, $ret) ?>
 	</div>
 </div>
 <!-- /header -->

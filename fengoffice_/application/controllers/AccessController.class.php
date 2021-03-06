@@ -31,7 +31,25 @@ class AccessController extends ApplicationController {
 		$this->addHelper('form');
 
 		if(function_exists('logged_user') && (logged_user() instanceof User)) {
-			$this->redirectTo('dashboard');
+			$ref_controller = null;
+			$ref_action = null;
+			$ref_params = array();
+			foreach($_GET as $k => $v) {
+				if(str_starts_with($k, 'ref_')) {
+					$ref_var_name = trim(substr($k, 4, strlen($k)));
+					switch ($ref_var_name) {
+						case 'c':
+							$ref_controller = $v;
+							break;
+						case 'a':
+							$ref_action = $v;
+							break;
+						default:
+							$ref_params[$ref_var_name] = $v;
+					} // switch
+				} // if
+			} // if
+			$this->redirectTo($ref_controller, $ref_action, $ref_params);
 		} // if
 
 		$login_data = array_var($_POST, 'login');

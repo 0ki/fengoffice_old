@@ -109,7 +109,7 @@ class Timeslots extends BaseTimeslots {
 		if ($start_date)
 			$commonConditions .= DB::prepareString(' and `start_time` >= ? ', array($start_date));
 		if ($end_date)
-			$commonConditions .= DB::prepareString(' and `end_time` < ? ', array($end_date));
+			$commonConditions .= DB::prepareString(' and `end_time` <> 0 and `end_time` < ? ', array($end_date));
 			
 		//User condition
 		$commonConditions .= $user? ' and `user_id` = '. $user->getId() : '';
@@ -185,7 +185,7 @@ class Timeslots extends BaseTimeslots {
 		$sql .= " `start_time`";
 		if ($limit > 0 && $offset > 0)
 			$sql .= " LIMIT $offset, $limit";
-		
+
 		$timeslots = array();
 		$rows = DB::executeAll($sql);
 		if(is_array($rows)) {

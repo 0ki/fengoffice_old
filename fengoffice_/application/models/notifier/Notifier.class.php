@@ -32,19 +32,13 @@ class Notifier {
 		$subscribers = $object->getSubscribers();
 		if (!is_array($subscribers) || count($subscribers) == 0) return;
 		if ($action == ApplicationLogs::ACTION_ADD) {
-			if ($object instanceof ProjectMessage) {
-				self::messageNotification($object, $subscribers, 'new');
-			} else if ($object instanceof Comment) {
+			if ($object instanceof Comment) {
 				self::newObjectComment($object);
 			} else {
 				self::objectNotification($object, $subscribers, $object->getCreatedBy(), 'new');
 			}
 		} else if ($action == ApplicationLogs::ACTION_EDIT) {
-			if ($object instanceof ProjectMessage) {
-				self::messageNotification($object, $subscribers, 'modified');
-			} else {
-				self::objectNotification($object, $subscribers, $object->getUpdatedBy(), 'modified');
-			}
+			self::objectNotification($object, $subscribers, $object->getUpdatedBy(), 'modified');
 		} else if ($action == ApplicationLogs::ACTION_TRASH) {
 			self::objectNotification($object, $subscribers, Users::findById($object->getTrashedById()), 'deleted');
 		} else if ($action == ApplicationLogs::ACTION_CLOSE) {
@@ -55,7 +49,7 @@ class Notifier {
 		self::objectNotification($object, $people, logged_user(), 'share');
 	}
 	
-	static function objectNotification($object, $people, $sender, $notification, $description = null, $properties = array()) {
+	static function objectNotification($object, $people, $sender, $notification, $description = null, $descArgs = null, $properties = array()) {
 		if(!is_array($people) || !count($people) || !$sender instanceof User) {
 			return; // nothing here...
 		} // if
@@ -63,16 +57,32 @@ class Notifier {
 		$type = $object->getObjectTypeName();
 		$typename = lang($object->getObjectTypeName());
 		$uid = $object->getUniqueObjectId();
-		$name = $object->getObjectName();
+		$name = $object instanceof Comment ? $object->getObject()->getObjectName() : $object->getObjectName();
 		if (!isset($description)) {
-			$description = lang("$notification notification $type desc", $object->getObjectName(), $sender->getDisplayName());
+			$description = "$notification notification $type desc";
+			$descArgs = array($object->getObjectName(), $sender->getDisplayName());
 		}
-		
-		$properties['unique id'] = $uid;
+		if (!isset($descArgs)) {
+			$descArgs = array();
+		}
+		if ($object->columnExists('text')) {
+			$text = "\r\n" . $object->getColumnValue('text');
+			$text = str_replace("\r\n", "\n", $text);
+			$text = str_replace("\r", "\n", $text);
+			$text = str_replace("\n", "\r\n>", $text);
+			$properties['text'] = $text;
+		}
 		$properties['view '.$type] = str_replace('&amp;', '&', $object->getViewUrl());
+		$properties['unique id'] = $uid;
+		if ($object->columnExists('description')) {
+			$text = "\r\n" . $object->getColumnValue('description');
+			$text = str_replace("\r\n", "\n", $text);
+			$text = str_replace("\r", "\n", $text);
+			$text = str_replace("\n", "\r\n>", $text);
+			$properties['description'] = $text;
+		}
 				
 		tpl_assign('object', $object);
-		tpl_assign('description', $description);
 		tpl_assign('properties', $properties);
 		
 		$emails = array();
@@ -84,6 +94,7 @@ class Notifier {
 				$workspaces = implode(", ", $object->getUserWorkspacePaths($user));
 				$properties['workspace'] = $workspaces;
 				tpl_assign('properties', $properties);
+				tpl_assign('description', langA($description, $descArgs));
 				$from = self::prepareEmailAddress($sender->getEmail(), $sender->getDisplayName());
 				$emails[] = array(
 					"to" => array(self::prepareEmailAddress($user->getEmail(), $user->getDisplayName())),
@@ -97,26 +108,7 @@ class Notifier {
 		Localization::instance()->loadSettings($locale, ROOT . '/language');
 		self::queueEmails($emails);
 	}
-	
-	/**
-	 * Send new message notification to the list of users ($people)
-	 *
-	 * @param ProjectMessage $message New message
-	 * @param array $people
-	 * @return boolean
-	 * @throws NotifierConnectionError
-	 */
-	static function messageNotification(ProjectMessage $message, $people, $type) {
-		$text = "\r\n" . $message->getText();
-		$text = str_replace("\r\n", "\n", $text);
-		$text = str_replace("\r", "\n", $text);
-		$text = str_replace("\n", "\r\n>", $text);
-		$properties = array(
-			'text' => $text
-		);
-		self::objectNotification($message, $people, $message->getCreatedBy(), $type, null, $properties);
-	} // newMessage
-	
+		
 	/**
 	 * Send new comment notification to message subscribers
 	 *
@@ -126,14 +118,6 @@ class Notifier {
 	 */
 	static function newObjectComment(Comment $comment, $all_subscribers) {
 		$object = $comment->getObject();
-		$description = lang('new comment posted', $object->getObjectName());
-		$text = "\r\n" . $comment->getText();
-		$text = str_replace("\r\n", "\n", $text);
-		$text = str_replace("\r", "\n", $text);
-		$text = str_replace("\n", "\r\n>", $text);
-		$properties = array(
-			'text' => $text
-		);
 		$subscribers = array();
 		foreach($all_subscribers as $subscriber) {
 			if ($comment->isPrivate()) {
@@ -144,7 +128,7 @@ class Notifier {
 				$subscribers[] = $subscriber;
 			} // of
 		} // foreach
-		self::objectNotification($comment, $subscribers, $comment->getCreatedBy(), 'new', $description, $properties);
+		self::objectNotification($comment, $subscribers, $comment->getCreatedBy(), 'new', "new comment posted", array($object->getObjectName()), $properties);
 	} // newObjectComment
 	
 	/**
@@ -254,9 +238,8 @@ class Notifier {
 			$people = array($reminder->getUser());
 		}
 		Env::useHelper("format");
-		$description = lang("$context $type reminder desc", $object->getObjectName(), $date->format("Y/m/d H:i:s"));
 
-		self::objectNotification($object, $people, $object->getCreatedBy(), "$context reminder", $description);
+		self::objectNotification($object, $people, $object->getCreatedBy(), "$context reminder", "$context $type reminder desc", array($object->getObjectName(), $date->format("Y/m/d H:i:s")));
 	} // taskDue
 	
 	/**

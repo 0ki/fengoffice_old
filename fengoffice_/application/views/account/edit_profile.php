@@ -1,17 +1,8 @@
 <?php
 	$object = $user;
     set_page_title(lang('update profile'));
-  
-  if($user->canUpdateProfile(logged_user())) {
-	add_page_action(lang('update avatar'), $user->getUpdateAvatarUrl(), 'ico-picture');
-	add_page_action(lang('change password'),$user->getEditPasswordUrl(), 'ico-password');
-  } // if
-  
-  if($user->canUpdatePermissions(logged_user())) {
-  	add_page_action(lang('permissions'), $user->getUpdatePermissionsUrl(), 'ico-permissions');
-  } // if
 
-  $genid = gen_id();
+	$genid = gen_id();
 ?>
 <form style="height:100%;background-color:white" class="internalForm" action="<?php echo $user->getEditProfileUrl($redirect_to) ?>" method="post">
 

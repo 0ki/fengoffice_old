@@ -164,7 +164,11 @@ class Reports extends BaseReports {
 							$value = $dtValue->format('Y-m-d');
 						}
 						if($condField->getCondition() != '%'){
-							$sql .= '`'.$condField->getFieldName().'` '.$condField->getCondition().' \''.mysql_real_escape_string($value).'\'';
+						if ($col_type == DATA_TYPE_INTEGER || $col_type == DATA_TYPE_FLOAT) {
+								$sql .= '`'.$condField->getFieldName().'` '.$condField->getCondition().' '.mysql_real_escape_string($value);
+							}else{
+								$sql .= '`'.$condField->getFieldName().'` '.$condField->getCondition().' \''.mysql_real_escape_string($value).'\'';
+							}
 						}else{
 							$sql .= '`'.$condField->getFieldName().'` like "%'.mysql_real_escape_string($value).'"';
 						}
@@ -200,7 +204,11 @@ class Reports extends BaseReports {
 							$value = $dtValue->format('Y-m-d H:i:s');
 						}
 						if($condCp->getCondition() != '%'){
-							$sql .= ' AND cpv.value '.$condCp->getCondition().' "'.mysql_real_escape_string($value).'"';
+						if ($cp->getType() == 'numeric') {
+								$sql .= ' AND cpv.value '.$condCp->getCondition().' '.mysql_real_escape_string($value);
+							}else{
+								$sql .= ' AND cpv.value '.$condCp->getCondition().' "'.mysql_real_escape_string($value).'"';
+							}
 						}else{
 							$sql .= ' AND cpv.value like "%'.mysql_real_escape_string($value).'"';
 						}
@@ -254,7 +262,11 @@ class Reports extends BaseReports {
 				$selectFROM .= ' LEFT OUTER JOIN '.TABLE_PREFIX.'custom_property_values cpv'.$id.' ON (t.id = cpv'.$id.'.object_id AND cpv'.$id.'.custom_property_id = '.$colCp .'))';
 				$first = false;
 				if($report->getOrderBy() == $colCp){
-					$order_by = 'ORDER BY cpv'.$id.'.value';
+					if($cp->getType() == 'date'){
+						$order_by = 'ORDER BY STR_TO_DATE(cpv'.$id.'.value, "%Y-%m-%d %H:%i:%s") '.($report->getIsOrderByAsc() ? 'asc' : 'desc');
+					}else{
+						$order_by = 'ORDER BY cpv'.$id.'.value '.($report->getIsOrderByAsc() ? 'asc' : 'desc');
+					}
 				}
 			}
 			if($order_by == '') {
@@ -264,7 +276,11 @@ class Reports extends BaseReports {
 					$selectFROM .= ' LEFT OUTER JOIN '.TABLE_PREFIX.'custom_property_values cpv'.$id.' ON (t.id = cpv'.$id.'.object_id AND cpv'.$id.'.custom_property_id = '.$id . '))';
 					$order_by = 'ORDER BY '.$report->getOrderBy();
 				}else{
-					$order_by = 'ORDER BY t.'.$report->getOrderBy();
+					if($object->getColumnType($report->getOrderBy()) == 'date'){
+						$order_by = 'ORDER BY STR_TO_DATE(t.'.$report->getOrderBy().', "%Y-%m-%d %H:%i:%s") '.($report->getIsOrderByAsc() ? 'asc' : 'desc');
+					}else{
+						$order_by = 'ORDER BY t.'.$report->getOrderBy().' '.($report->getIsOrderByAsc() ? 'asc' : 'desc');
+					}
 				}
 			}
 			$sql = 'SELECT '.$selectCols.' FROM ('.$openPar.$selectFROM.') '.$selectWHERE.' '.$order_by;

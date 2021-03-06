@@ -92,7 +92,6 @@ class Localization {
 	 * @return string
 	 */
 	function lang($name, $default = null) {
-		if(is_null($default)) $default = "Missing lang: $name";
 		return $this->langs->get($name, $default);
 	} // lang
 	

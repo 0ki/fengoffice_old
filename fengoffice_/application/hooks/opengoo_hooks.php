@@ -8,6 +8,10 @@ Hook::register("opengoo");
  *  		Object that is being viewed.
  *   	- &$unused
  *   
+ * - render_page_header: Called when drawing the page header.
+ *  	- $unused
+ *   	- &$unused
+ *   
  * - render_object_properties: Called when drawing properties for an object's view. Echo the HTML to be drawn.
  *  	- $object : ProjectDataObject,
  *  		Object that is being viewed.

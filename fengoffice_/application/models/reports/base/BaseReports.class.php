@@ -18,7 +18,8 @@
     	'name' => DATA_TYPE_STRING,
     	'description' => DATA_TYPE_STRING,
     	'object_type' => DATA_TYPE_STRING,
-    	'order_by' => DATA_TYPE_STRING
+    	'order_by' => DATA_TYPE_STRING,
+    	'is_order_by_asc' => DATA_TYPE_BOOLEAN
     );
   
     /**

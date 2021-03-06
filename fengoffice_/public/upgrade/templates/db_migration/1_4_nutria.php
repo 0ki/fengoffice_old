@@ -234,6 +234,7 @@ ALTER TABLE `<?php echo $table_prefix ?>custom_properties` ADD COLUMN `visible_b
 
 ALTER TABLE `<?php echo $table_prefix ?>custom_property_values` MODIFY COLUMN `value` text <?php echo $default_collation ?> NOT NULL;
 
+ALTER TABLE `<?php echo $table_prefix ?>reports` ADD COLUMN `is_order_by_asc` TINYINT(1) <?php echo $default_collation ?> NOT NULL DEFAULT 1;
 -- larger contact fields
 ALTER TABLE `<?php echo $table_prefix ?>contacts` MODIFY COLUMN `firstname` varchar(50) <?php echo $default_collation ?> default NULL;
 ALTER TABLE `<?php echo $table_prefix ?>contacts` MODIFY COLUMN `lastname` varchar(50) <?php echo $default_collation ?> default NULL;

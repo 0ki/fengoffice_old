@@ -21,6 +21,9 @@
   	'field' => 'Field',
   	'condition' => 'Condition',
   	'ends with' => 'ends with',
+  	'select unselect all' => 'Select/Unselect all',
+  	'ascending' => 'Ascending',
+  	'descending' => 'Descending',
   );
   
 ?>

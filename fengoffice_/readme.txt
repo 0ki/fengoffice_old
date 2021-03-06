@@ -1,6 +1,6 @@
 
-    About OpenGoo 1.4 beta 2
-    ========================
+    About OpenGoo 1.4 RC
+    ====================
 
     OpenGoo is a free and open source WebOffice, project management and collaboration
     tool, licensed under the Affero GPL 3 license.
@@ -61,11 +61,11 @@
     ====================
     
     1. Backup you current installation (important!)
-    2. Download OpenGoo 1.4 beta 2 - http://www.opengoo.org/
+    2. Download OpenGoo 1.4 RC - http://www.opengoo.org/
     3. Unpack into your OpenGoo installation, overwriting your previous files and folders,
     	but keeping your config, upload and public/files folders.
     5. Go to <your_opengoo>/public/upgrade in your browser and choose to upgrade
-    	from your current version to 1.4 beta 2
+    	from your current version to 1.4 RC
     6. Refresh your browser or clear its cache to load new javascript, css and images.   
 
     
@@ -86,6 +86,26 @@
 
 	Changelog
 	=========
+
+	Since 1.4 beta 2
+	----------------
+	
+	- bugfix: Login url doesn't redirect correctly when already logged in
+	- bugfix: Note modified notification sends wrong modifier
+	- bugfix: Dates on time report
+	- bugfix: Missing lang new notification comment
+	- bugfix: Repeating events were not being shown correctly if not using GMT timezone
+	- bugfix: Email filter wasn't being kept when changing workspace
+	- bugfix: Some text on notifications was not on the user's locale
+	- bugfix: Tag control had wrong width
+	- bugfix: Workspace tree nodes not expanded correclty when filtering in Chrome
+	- bugfix: When deleting an email account while filtering by that account an error is shown
+	- bugfix: Autocomplete on emails didn't check for permissions
+
+	- usability: Object description added to notifications
+	- usability: A maximum of two error messages are now displayed on the GUI simultaneously
+	- usability: Don't show the Custom Porperty ctageory for users if there are none defined
+	- usability: When a translation isn't found, and when not debugging, show the english text 
 
 	Since 1.4 beta
 	--------------

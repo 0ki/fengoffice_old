@@ -246,6 +246,10 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 		$mimeType = str_replace("/", "-", $this->getTypeString());
 		$theme = config_option("theme", DEFAULT_THEME);
 		$base = ROOT . "/" . PUBLIC_FOLDER . "/assets/themes/$theme/images/48x48/types/";
+		$extension = get_file_extension($this->getFile()->getFilename());
+		if (is_file($base . $extension . ".png")) {
+			$image = $extension . ".png";
+		}
 		$temp = $mimeType;
 		$x = 0;
 		while (true) {

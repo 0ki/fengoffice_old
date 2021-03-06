@@ -1023,6 +1023,7 @@ CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>reports` (
   `description` varchar(255) <?php echo $default_collation ?> NOT NULL,
   `object_type` varchar(255) <?php echo $default_collation ?> NOT NULL,
   `order_by` varchar(255) <?php echo $default_collation ?> NOT NULL,
+  `is_order_by_asc` tinyint(1) <?php echo $default_collation ?> NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 

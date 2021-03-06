@@ -11,18 +11,7 @@ og.MailManager = function() {
 	this.doNotRemove = true;
 	this.needRefresh = false;
 	showLoading = true;
-/*	
-	// Check mails every 15 mminutes
-	checkMail = function() {
-		showLoading = false;
-		og.showOtherMessage(lang('checking email accounts'));		
-		og.openLink(og.getUrl('mail', 'checkmail'), {callback:og.hideOtherMessage, hideLoading:true});
-		og.MailManager.store.load();
-		showLoading = true;
-		setTimeout("checkMail()", 15*60*1000); //15 min
-	}
-	setTimeout("checkMail()", 5*1000);
-*/	
+
 	if (!og.MailManager.store) {
 		og.MailManager.store = new Ext.data.Store({
 			proxy: new og.GooProxy({
@@ -803,7 +792,6 @@ og.MailManager = function() {
 	}
 	
 	var tagevid = og.eventManager.addListener("tag changed", function(tag) {
-		this.resetVars();
 		if (!this.ownerCt) {
 			og.eventManager.removeListener(tagevid);
 			return;

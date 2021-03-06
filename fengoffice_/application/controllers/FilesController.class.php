@@ -316,6 +316,16 @@ class FilesController extends ApplicationController {
 				if ($upload_option && $upload_option != -1){
 					$skipSettings = true;
 					$file = ProjectFiles::findById($upload_option);
+					$old_subs = $file->getSubscribers();
+					
+					// Mantain old subscribers
+					foreach($old_subs as $user) {
+						$value = "user_" . $user->getId();
+						if (is_array($_POST['subscribers'])) {
+							if (array_var($_POST['subscribers'], $value, null) != 'checked')
+								$_POST['subscribers'][$value] = 'checked';
+						}
+					}
 					
 					if ($file->isCheckedOut()){
 						if (!$file->canCheckin(logged_user())){

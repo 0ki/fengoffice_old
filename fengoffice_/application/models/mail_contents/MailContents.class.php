@@ -23,7 +23,28 @@
 	private static function getWorkspaceString(){
 		return '`id` IN (SELECT `object_id` FROM `'.TABLE_PREFIX.'workspace_objects` WHERE `object_manager` = \'MailContents\' AND `workspace_id` = ?)';
 	}
-    
+	
+	function delete($condition) {
+		if(isset($this) && instance_of($this, 'MailContents')) {
+			if (FileRepository::getBackend() instanceof FileRepository_Backend_FileSystem) {
+				// Delete contents from filesystem
+				$sql = "SELECT `content_file_id` FROM ".self::instance()->getTableName(true)." WHERE $condition";
+	      		$rows = DB::executeAll($sql);
+				
+	      		if (is_array($rows)) {
+	      			foreach ($rows as $row) {
+						if (isset($row['content_file_id']) && $row['content_file_id'] != '') {
+							FileRepository::deleteFile($row['content_file_id']);
+						}
+					}
+	      		}
+			}
+			return true;//parent::delete($condition);
+		} else {
+			return MailContents::instance()->delete($condition);
+		}
+	}
+
   } // MailContents 
 
 ?>

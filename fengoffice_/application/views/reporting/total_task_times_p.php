@@ -53,10 +53,8 @@
 			if (array_var($report_data, "date_type") == 6) {
 				//echo var_dump($_SESSION); die();
 				$style = "";
-				$startval = explode('/', array_var($report_data, 'start_value'));
-		       	$st = DateTimeValueLib::make(0, 0, 0, $startval[0], $startval[1], $startval[2]);
-		       	$end = explode('/', array_var($report_data, 'end_value'));
-		       	$et = DateTimeValueLib::make(23,59,59, $end[0], $end[1], $end[2]);
+		       	$st = DateTimeValueLib::dateFromFormatAndString(user_config_option('date_format', 'd/m/Y'), array_var($report_data, 'start_value'));
+		       	$et = DateTimeValueLib::dateFromFormatAndString(user_config_option('date_format', 'd/m/Y'), array_var($report_data, 'end_value'));
 			} else {
 				$style = 'display:none';
 				$st = DateTimeValueLib::now();

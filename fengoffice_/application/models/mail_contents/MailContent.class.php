@@ -87,6 +87,14 @@ class MailContent extends BaseMailContent {
 		} // if
 	} // validate
 
+	function delete(){
+		if (FileRepository::getBackend() instanceof FileRepository_Backend_FileSystem) {
+			if ($this->getContentFileId() != '') {
+				FileRepository::deleteFile($this->getContentFileId());
+			}
+		}
+		return parent::delete();
+	}
 
 	function deleteContents()
 	{

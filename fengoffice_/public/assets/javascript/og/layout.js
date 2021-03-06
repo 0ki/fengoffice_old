@@ -233,7 +233,7 @@ Ext.onReady(function(){
 				region: 'south',
 				el: 'footer'
 			}),
-			helpPanel = new og.HelpPanel({
+			/*helpPanel = new og.HelpPanel({
 				region: 'east',
 				collapsible: true,
 				collapsed: true,
@@ -244,7 +244,7 @@ Ext.onReady(function(){
 				id: 'help-panel',
 				title: lang('help'),
 				iconCls: 'ico-help'
-			 }),
+			 }),*/
 			 {
 				region: 'west',
 				id: 'menu-panel',

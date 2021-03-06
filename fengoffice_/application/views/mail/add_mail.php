@@ -102,7 +102,7 @@ function setDiscard(val){
 <?php 
 
 	tpl_display(get_template_path('form_errors'));
-	$contacts = Contacts::getAll();
+	$contacts = Contacts::instance()->getAllowedContacts();
     $allEmails = array();
     foreach ($contacts as $contact) {
     	if (trim($contact->getEmail()) != "") {

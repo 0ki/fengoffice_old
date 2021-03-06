@@ -41,7 +41,7 @@ foreach ($object_types as $type) {
 ?>
 <?php $strDisabled = count($options) > 1 ? '' : 'disabled'; 
 echo select_box('objectTypeSel', $options,
-array('id' => 'objectTypeSel' ,'onchange' => 'og.reportObjectTypeChanged("'.$genid.'", "", "")', 'style' => 'width:200px;', $strDisabled => '')) ?>
+array('id' => 'objectTypeSel' ,'onchange' => 'og.reportObjectTypeChanged("'.$genid.'", "", 1, "")', 'style' => 'width:200px;', $strDisabled => '')) ?>
 
 </div>
 </div>
@@ -56,9 +56,13 @@ array('id' => 'objectTypeSel' ,'onchange' => 'og.reportObjectTypeChanged("'.$gen
 <fieldset><legend><?php echo lang('columns and order') ?></legend>
 <div><?php echo label_tag(lang('order by'), $genid . 'reportFormOrderBy', true, array('id' => 'orderByLbl', 'style' => 'display:none;')) ?>
 <?php echo select_box('report[order_by]', array(),
-array('id' => 'report[order_by]', 'style' => 'width:200px;display:none;')) ?>
+array('id' => 'report[order_by]', 'style' => 'width:200px;display:none;'));
+$asc = option_tag(lang('ascending'), 'asc');
+$desc = option_tag(lang('descending'), 'desc');
+echo select_box('report[order_by_asc]', array($asc, $desc),
+array('id' => 'report[order_by_asc]', 'style' => 'width:200px;display:none;')) ?>
 <br /><br />
-<a href="#" onclick="og.toggleColumnSelection()"><?php echo 'Select/Unselect all'?></a>
+<a href="#" onclick="og.toggleColumnSelection()"><?php echo lang('select unselect all')?></a>
 <div id="columnList">
 	<table>
 		<tr>
@@ -78,9 +82,9 @@ array('id' => 'report[order_by]', 'style' => 'width:200px;display:none;')) ?>
 
 <script>
 	og.loadReportingFlags();
-	og.reportObjectTypeChanged("<?php echo $genid ?>", "", "");
+	og.reportObjectTypeChanged("<?php echo $genid ?>", "", 1, "");
 	<?php if(isset($conditions)){ ?>
-		og.reportObjectTypeChanged('<?php echo $genid?>', '<?php echo array_var($report_data, 'order_by') ?>', '<?php echo (isset($columns) ? implode(',', $columns) : '') ?>');
+		og.reportObjectTypeChanged('<?php echo $genid?>', '<?php echo array_var($report_data, 'order_by') ?>', '<?php echo array_var($report_data, 'order_by_asc') ?>', '<?php echo (isset($columns) ? implode(',', $columns) : '') ?>');
 		<?php foreach($conditions as $condition){ ?>		
 			og.addCondition('<?php echo $genid?>',<?php echo $condition->getId() ?>, <?php echo $condition->getCustomPropertyId() ?> , '<?php echo $condition->getFieldName() ?>', '<?php echo $condition->getCondition() ?>', '<?php echo $condition->getValue() ?>', '<?php echo $condition->getIsParametrizable() ?>');		
 		<?php }//foreach ?>

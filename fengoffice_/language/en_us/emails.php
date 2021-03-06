@@ -133,6 +133,8 @@ return array(
 	'new notification webpage desc' => 'A new web link entitled \'{0}\' has been added by {1}',
 	'new notification milestone' => 'New milestone \'{0}\'',
 	'new notification milestone desc' => 'A new milestone entitled \'{0}\' has been added by {1}',
+	'new notification comment' => 'New comment on \'{0}\'',
+	'new notification comment desc' => 'A new comment on \'{0}\' has been added by {1}.',
 
 	'modified notification task' => 'Task \'{0}\' has been modified',
 	'modified notification task desc' => 'Task \'{0}\' has been modified by {1}.',

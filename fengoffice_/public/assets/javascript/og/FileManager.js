@@ -66,6 +66,10 @@ og.FileManager = function() {
 
 	function renderIcon(value, p, r) {
 		var classes = "db-ico ico-unknown ico-" + r.data.type;
+		if (r.data.name.indexOf(".") >= 0) {
+			var extension = r.data.name.substring(r.data.name.indexOf(".") + 1);
+			classes += " ico-ext-" + extension;
+		}
 		if (r.data.ftype == 1){
 			classes += ' ico-webfile';
 		}

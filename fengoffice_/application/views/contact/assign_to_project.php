@@ -1,11 +1,6 @@
 <?php
   set_page_title(lang('assign to project'));
   
-  if($contact->canEdit(logged_user())) {
-	add_page_action(lang('edit picture'), $contact->getUpdatePictureUrl(), 'ico-picture');
-    add_page_action(lang('edit contact'), $contact->getEditUrl(), 'ico-edit');
-  } // if
-
   $genid = gen_id();
 ?>
 <form style='height:100%;background-color:white' class="internalForm" action="<?php echo $contact->getAssignToProjectUrl($contact->getCardUrl()) ?>" method="post" enctype="multipart/form-data">

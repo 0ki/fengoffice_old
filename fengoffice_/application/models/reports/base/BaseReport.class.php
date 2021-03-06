@@ -122,6 +122,28 @@
     function setOrderBy($value) {
       return $this->setColumnValue('order_by', $value);
     } // setOrderBy() 
+    
+    /**
+    * Return value of 'is_order_by_asc' field
+    *
+    * @access public
+    * @param void
+    * @return boolean 
+    */
+    function getIsOrderByAsc() {
+      return $this->getColumnValue('is_order_by_asc');
+    } // getIsOrderByAsc()
+    
+    /**
+    * Set value of 'is_order_by_asc' field
+    *
+    * @access public   
+    * @param string $value
+    * @return boolean
+    */
+    function setIsOrderByAsc($value) {
+      return $this->setColumnValue('is_order_by_asc', $value);
+    } // setIsOrderByAsc() 
    
     /**
     * Return manager instance

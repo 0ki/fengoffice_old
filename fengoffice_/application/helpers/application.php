@@ -1021,7 +1021,7 @@ function autocomplete_textfield($name, $value, $options, $emptyText, $attributes
 	$id = array_var($attributes, "id", gen_id());
 	$attributes["id"] = $id;
 
-	$html = text_field($name, $value, $attributes) . '
+	$html = '<div class="og-csvcombo-container">' . text_field($name, $value, $attributes) . '</div>
 		<script type="text/javascript">
 		new og.CSVCombo({
 			store: new Ext.data.SimpleStore({
@@ -1070,7 +1070,7 @@ function autocomplete_emailfield($name, $value, $options, $emptyText, $attribute
 	$id = array_var($attributes, "id", gen_id());
 	$attributes["id"] = $id;
 
-	$html = text_field($name, $value, $attributes) . '
+	$html = '<div class="og-csvcombo-container">' . text_field($name, $value, $attributes) . '</div>
 		<script type="text/javascript">
 		new og.EmailCombo({
 			store: new Ext.data.SimpleStore({
@@ -1099,7 +1099,7 @@ function autocomplete_tags_field($name, $value, $id = null, $tabindex = null) {
 	if (isset($tabindex)) $attributes['tabindex'] = $tabindex;
 
 	if (trim($value) != "") $value .= ", ";
-	$html = text_field($name, $value, $attributes) . '
+	$html = '<div class="og-csvcombo-container">' . text_field($name, $value, $attributes) . '</div>
 		<script type="text/javascript">
 		var tags = Ext.getCmp("tag-panel").getTags();
 		var arr = [];

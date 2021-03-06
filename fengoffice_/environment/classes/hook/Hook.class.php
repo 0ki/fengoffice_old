@@ -18,7 +18,7 @@ class Hook {
 	static function init() {
 		$handle = opendir(ROOT . "/application/hooks");
 		while ($file = readdir($handle)) {
-			if (is_file(ROOT . "/application/hooks/$file")) {
+			if (is_file(ROOT . "/application/hooks/$file") && substr($file, -4) == '.php') {
 				include_once ROOT . "/application/hooks/$file";
 			}
 		}

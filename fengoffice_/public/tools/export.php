@@ -25,7 +25,7 @@ if (file_exists($dir)) {
 	mkdir($dir, 0777, true);
 }
 
-if (!FileRepository::getBackend() instanceof FileRepository_Backend_FileSystem) {
+if (FileRepository::getBackend() instanceof FileRepository_Backend_FileSystem) {
 	$files = ProjectFiles::findAll();
 	foreach ($files as $file) {
 		$filename = $file->getFilename();

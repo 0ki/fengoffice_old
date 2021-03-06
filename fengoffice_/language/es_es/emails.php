@@ -91,6 +91,8 @@
 	'new notification webpage desc' => 'Un nuevo enlace web \'{0}\' ha sido agregado por {1}',
 	'new notification milestone' => 'Nuevo hito \'{0}\'',
 	'new notification milestone desc' => 'Un nuevo hito titulado \'{0}\' ha sido agregado {1}',
+	'new notification comment' => 'Nuevo comentario en \'{0}\'',
+	'new notification comment desc' => 'Un nuevo comentario en \'{0}\' ha sido agregado por {1}.',
 	'modified notification task' => 'Tarea \'{0}\' ha sido modificada',
 	'modified notification task desc' => 'Tarea \'{0}\' ha sido modificada por {1}.',
 	'modified notification event' => 'Evento \'{0}\' ha sido modificado',

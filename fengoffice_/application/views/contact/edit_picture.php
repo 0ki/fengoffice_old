@@ -1,11 +1,5 @@
 <?php
   set_page_title(lang('edit picture'));
-  
-  if($contact->canEdit(logged_user())) {
-    add_page_action(lang('edit contact'), $contact->getEditUrl(), 'ico-edit');
-	add_page_action(lang('assign to project'), $contact->getAssignToProjectUrl(), 'ico-workspace');
-  } // if
-
 ?>
 
 <form style='height:100%;background-color:white' action="<?php echo $contact->getUpdatePictureUrl($redirect_to) ?>" method="post" enctype="multipart/form-data" onsubmit="og.submit(this, {callback:{type:'back'}})">

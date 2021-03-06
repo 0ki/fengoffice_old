@@ -38,8 +38,11 @@
    	<a href="<?php echo get_url("company", "add_client") ?>" target="company" class="internalLink coViewAction ico-add" title="<?php echo lang('add a new company')?>"><?php echo lang('add company') . '...' ?></a></div>
 
   	<?php $categories = array(); Hook::fire('object_add_categories', $object, $categories); ?>
-  	
-	<br/><a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_custom_properties_div',this)"><?php echo lang('custom properties') ?></a>
+  	<?php $cps = CustomProperties::getAllCustomPropertiesByObjectType('Users'); ?>
+  	<br/>
+  	<?php if (count($cps) > 0) { ?>
+		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_custom_properties_div',this)"><?php echo lang('custom properties') ?></a>
+	<?php } ?>
 	<?php foreach ($categories as $category) { ?>
 		- <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid . $category['name'] ?>', this)"><?php echo lang($category['name'])?></a>
 	<?php } ?>

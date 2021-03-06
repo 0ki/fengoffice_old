@@ -28,8 +28,8 @@
     * @throws FileDnxError if $template file does not exists
     */
     protected function setHelp($template) {
-    	$content = array("type" => "html", "data" => load_help($template), "template" => $template);    	
-        ajx_extra_data(array('help_content' => $content));
+    	/*$content = array("type" => "html", "data" => load_help($template), "template" => $template);    	
+        ajx_extra_data(array('help_content' => $content));*/
     } // setHelp
   
   } // ApplicationController

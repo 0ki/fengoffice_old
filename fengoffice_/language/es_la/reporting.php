@@ -17,4 +17,7 @@
 	'ends with' => 'Termina en',
 	'field' => 'Campo',
 	'condition' => 'Condición',
+	'select unselect all' => 'Seleccionar/Deseleccionar todas',
+  	'ascending' => 'Ascendente',
+  	'descending' => 'Descendente'
 ); ?>

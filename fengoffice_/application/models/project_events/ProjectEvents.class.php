@@ -75,7 +75,7 @@ class ProjectEvents extends BaseProjectEvents {
 					AND
 					(
 						(
-							MOD( DATEDIFF(DATE(`start`), '$start_date_str') ,repeat_d) = 0
+							MOD( DATEDIFF(ADDDATE(`start`, INTERVAL ".logged_user()->getTimezone()." HOUR), '$year-$month-$day') ,repeat_d) = 0
 							AND
 							(
 								ADDDATE(DATE(`start`), INTERVAL ((repeat_num-1)*repeat_d) DAY) >= '$start_date_str' 
@@ -89,7 +89,7 @@ class ProjectEvents extends BaseProjectEvents {
 						(
 							MOD( PERIOD_DIFF(DATE_FORMAT(`start`,'%Y%m'),DATE_FORMAT('$start_date_str','%Y%m')) ,repeat_m) = 0
 							AND 
-							`start` >= '$start_date_str' AND `start` < ADDDATE('$start_date_str', INTERVAL 1 DAY)
+							`start` <= '$start_date_str' AND DAY(`start`) = $day 
 							AND
 							(
 								ADDDATE(DATE(`start`), INTERVAL ((repeat_num-1)*repeat_m) MONTH) >= '$start_date_str' 
@@ -103,9 +103,7 @@ class ProjectEvents extends BaseProjectEvents {
 						(
 							MOD( (YEAR(DATE(`start`))-YEAR('$start_date_str')) ,repeat_y) = 0
 							AND 
-							`start` >= '$start_date_str' AND `start` < ADDDATE('$start_date_str', INTERVAL 1 MONTH)
-							AND 
-							`start` >= '$start_date_str' AND `start` < ADDDATE('$start_date_str', INTERVAL 1 DAY) 
+							`start` <= '$start_date_str' AND DAY(`start`) = $day AND MONTH(`start`) = $month 
 							AND
 							(
 								ADDDATE(DATE(`start`), INTERVAL ((repeat_num-1)*repeat_y) YEAR) >= '$start_date_str' 

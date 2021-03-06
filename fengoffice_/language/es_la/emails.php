@@ -176,6 +176,9 @@ return array(
 	'mail attachments' => 'Adjuntos',
 	'select attachment' => 'Seleccionar y subir el adjunto',
 	'attach from workspace' => 'Seleccionar adjunto del área de trabajo',
+	'new notification comment' => 'Nuevo comentario en \'{0}\'',
+    'new notification comment desc' => 'Un nuevo comentario en \'{0}\' fue agregado por {1}.',
+
 
 ); // array
 ?>

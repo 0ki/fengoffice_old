@@ -1158,11 +1158,11 @@ class MailController extends ApplicationController {
 		$accountConditions = "";
 		$singleAccount = false;
 		if (isset($attributes["accountId"]) && $attributes["accountId"] > 0){ //Single account
-			$singleAccount = true;
-			$accounts = array();
 			$acc = MailAccounts::findById($attributes["accountId"]);
-			if ($acc->canView(logged_user()))
-			$accounts[] = $acc;
+			if ($acc && $acc->canView(logged_user())) {
+				$singleAccount = true;
+				$accounts = array($acc);
+			}
 		}
 		else																// All user accounts
 		$accounts = MailAccounts::findAll(array(

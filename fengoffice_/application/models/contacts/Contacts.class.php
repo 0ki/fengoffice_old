@@ -19,6 +19,26 @@ class Contacts extends BaseContacts {
 	} // getAll
 
 	/**
+	 * Returns an array containing only the contacts that logged_user can read.
+	 *
+	 * @return array
+	 */
+	function getAllowedContacts() {
+		$permissions = permissions_sql_for_listings(Contacts::instance(), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`co`');
+		$sql = "SELECT * FROM ". $this->getTableName(true) ." `co` WHERE $permissions";
+		
+		$objects = array();
+		$rows = DB::executeAll($sql);
+		if (isset($rows)) {
+			foreach($rows as $row) {
+				$object = $this->loadFromRow($row);
+				if(instance_of($object, $this->getItemClass())) $objects[] = $object;
+			} // foreach
+		}
+		return $objects;
+	}
+	
+	/**
 	 * Return Contact object by email
 	 *
 	 * @param string $email

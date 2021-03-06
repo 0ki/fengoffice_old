@@ -19,7 +19,7 @@ og.leaveCondition = function(id) {
 	Ext.get('delete' + id).setVisible(false);
 };
 
-og.reportObjectTypeChanged = function(genid, order_by, cols){
+og.reportObjectTypeChanged = function(genid, order_by, order_by_asc, cols){
 	var objectTypeSel = document.getElementById('objectTypeSel');
 	if(modified){
 		if(!confirm(lang('confirm discard changes'))){
@@ -49,6 +49,12 @@ og.reportObjectTypeChanged = function(genid, order_by, cols){
 					if(data.fields.length > 0){
 						var options = {}; 
 						var orderByOptions = document.getElementById('report[order_by]').options;
+						if(order_by_asc){
+							document.getElementById('report[order_by_asc]').options[0].selected = 'selected';
+						}else{
+							document.getElementById('report[order_by_asc]').options[1].selected = 'selected';
+						}
+						
 						var fields = '';							
 						var CPs = '';
 						for(var i=0; i < data.fields.length; i++){
@@ -63,18 +69,20 @@ og.reportObjectTypeChanged = function(genid, order_by, cols){
 								}
 							}
 							if(og.isReportFieldNumeric(field.id)){
-								CPs += '<br/><input style="width:auto;margin: 0 5px 0 35px;" type="checkbox" name="columns['+i+']" id="columns['+i+']" value="' + field.id + '" ' + checked + ' />&nbsp;<label for="columns['+i+']" style="display:inline;">' + og.clean(field.name) + '</label>';
+								CPs += '<br/><input style="width:auto;margin: 0 5px 0 35px;" type="checkbox" name="columns[]" id="columns[]" value="' + field.id + '" ' + checked + ' />&nbsp;<label for="columns['+i+']" style="display:inline;">' + og.clean(field.name) + '</label>';
 							}else{
-								fields += '<br/><input style="width:auto;margin: 0 5px 0 35px;" type="checkbox" name="columns['+i+']" id="columns['+i+']" value="' + field.id + '" ' + checked + ' />&nbsp;<label for="columns['+i+']" style="display:inline;">' + og.clean(field.name) + '</label>';
+								fields += '<br/><input style="width:auto;margin: 0 5px 0 35px;" type="checkbox" name="columns[]" id="columns[]" value="' + field.id + '" ' + checked + ' />&nbsp;<label for="columns['+i+']" style="display:inline;">' + og.clean(field.name) + '</label>';
 							} 		
 						}
 						orderByOptions.length = i;
 						document.getElementById('report[order_by]').style.display = '';
+						document.getElementById('report[order_by_asc]').style.display = '';
 						document.getElementById('orderByLbl').style.display = '';
 						columnFields.innerHTML = fields;
 						columnCPs.innerHTML = CPs;
 					}else{
 						document.getElementById('report[order_by]').style.display = 'none';
+						document.getElementById('report[order_by_asc]').style.display = 'none';
 						document.getElementById('orderByLbl').style.display = 'none';
 						columnFields.innerHTML = '';
 						columnCPs.innerHTML = '';
@@ -261,8 +269,8 @@ og.fieldChanged = function(id, condition, value){
 					if (success) {
 						var externalValueField = '<b>' + lang('value') + '</b>:<br/><select class="reportConditionDD" id="conditions[' + id + '][value]" name="conditions[' + id + '][value]">';
 						for(var j=0; j < data.values.length; j++){
-							var value = data.values[j];
-							externalValueField += '<option value="' + value.id + '" ' + (value.id == value ? "selected" : "") + '>' + value.name + '</option>';
+							var extValue = data.values[j];
+							externalValueField += '<option value="' + extValue.id + '" ' + (extValue.id == value ? "selected" : "") + '>' + extValue.name + '</option>';
 						}
 						externalValueField += '</select>' + type_and_name; 
 						document.getElementById('tdValue' + id).innerHTML = externalValueField;

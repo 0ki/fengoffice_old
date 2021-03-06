@@ -437,6 +437,7 @@ class ReportingController extends ApplicationController {
 				$newReport->setDescription($report_data['description']);
 				$newReport->setObjectType($report_data['object_type']);
 				$newReport->setOrderBy($report_data['order_by']);
+				$newReport->setIsOrderByAsc($report_data['order_by_asc'] == 'asc');
 				try{
 					DB::beginWork();
 					$newReport->save();
@@ -530,6 +531,7 @@ class ReportingController extends ApplicationController {
 				$report->setDescription($report_data['description']);
 				$report->setObjectType($report_data['object_type']);
 				$report->setOrderBy($report_data['order_by']);
+				$report->setIsOrderByAsc($report_data['order_by_asc'] == 'asc');
 				$report->save();
 				$conditions = array_var($_POST, 'conditions');
 				if (!is_array($conditions))
@@ -591,7 +593,8 @@ class ReportingController extends ApplicationController {
 					'name' => $report->getName(),
 					'description' => $report->getDescription(),
 					'object_type' => $report->getObjectType(),
-					'order_by' => $report->getOrderBy()
+					'order_by' => $report->getOrderBy(),
+					'order_by_asc' => $report->getIsOrderByAsc()
 				);
 				tpl_assign('report_data', $report_data);
 				$conditions = ReportConditions::getAllReportConditions($report_id);
@@ -764,7 +767,9 @@ class ReportingController extends ApplicationController {
 			$customProperties = CustomProperties::getAllCustomPropertiesByObjectType($object_type);
 			$objectFields = array();
 			foreach($customProperties as $cp){
-				$fields[] = array('id' => $cp->getId(), 'name' => $cp->getName(), 'type' => $cp->getType(), 'values' => $cp->getValues());
+				if(!$cp->getIsMultipleValues()){
+					$fields[] = array('id' => $cp->getId(), 'name' => $cp->getName(), 'type' => $cp->getType(), 'values' => $cp->getValues());
+				}
 			}
 			eval('$managerInstance = ' . $object_type . "::instance();");
 			$objectColumns = $managerInstance->getColumns();

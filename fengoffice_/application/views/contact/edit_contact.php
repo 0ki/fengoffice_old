@@ -2,13 +2,6 @@
 	require_javascript("modules/addContactForm.js");
 	$genid = gen_id();
 	$object = $contact;
-if (!$contact->isNew())
-{
-	if($contact->canEdit(logged_user())) {
-		add_page_action(lang('edit picture'), $contact->getUpdatePictureUrl(), 'ico-picture');
-		add_page_action(lang('assign to project'), $contact->getAssignToProjectUrl(), 'ico-workspace');
-	} //if
-} // if
 ?>
 
 <form style='height:100%;background-color:white' class="internalForm" action="<?php echo $contact->isNew() ? $contact->getAddUrl() : $contact->getEditUrl() ?>" method="post">

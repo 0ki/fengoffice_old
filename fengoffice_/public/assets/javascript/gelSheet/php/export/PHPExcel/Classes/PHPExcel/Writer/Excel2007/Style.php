@@ -309,7 +309,7 @@ class PHPExcel_Writer_Excel2007_Style extends PHPExcel_Writer_Excel2007_WriterPa
 
 			// Foreground color
 			$objWriter->startElement('color');
-			$objWriter->writeAttribute('rgb', $pFont->getColor()->getARGB());
+			//$objWriter->writeAttribute('rgb', $pFont->getColor()->getARGB());
 			$objWriter->endElement();
 
 		$objWriter->endElement();

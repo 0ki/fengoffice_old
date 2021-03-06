@@ -1,13 +1,8 @@
 <?php
 	require_javascript("og/Permissions.js");
 	$genid = gen_id();
-  set_page_title(lang('update permissions'));
-  
-  if($user->canUpdateProfile(logged_user())) {
-	add_page_action(lang('update profile'), $user->getEditProfileUrl(), 'ico-edit');
-	add_page_action(lang('update avatar'), $user->getUpdateAvatarUrl(), 'ico-picture');
-	add_page_action(lang('change password'),$user->getEditPasswordUrl(), 'ico-password');
-  } // if
+	
+	set_page_title(lang('update permissions'));
 ?>
 <form style="height:100%;background-color:white" action="<?php echo get_url("account", "update_permissions", array("id" => $user->getId())) ?>" class="internalForm" onsubmit="javascript:og.ogPermPrepareSendData('<?php echo $genid ?>');return true;" method="POST">
 <div class="adminClients">

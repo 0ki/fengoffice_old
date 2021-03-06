@@ -88,6 +88,11 @@ og.startClock = function(clockId, startSeconds){
 };
 
 og.err = function(text) {
+	var errors = Ext.query("div.err");
+	var maxErrors = 2;
+	for (var i=0; i < errors.length - maxErrors + 1; i++) {
+		Ext.fly(errors[i]).remove();
+	}
 	og.msg(lang("error"), text, 0, "err");
 };
 
@@ -493,7 +498,7 @@ og.openLink = function(url, options) {
 					if (options.onError) options.onError.call(options.scope || this, data || response.responseText, options.options);
 				}
 			} else {
-				if (!options.options.hideErrors) {
+				if (!options.options.hideErrors && response.status > 0) {
 					og.err(lang("http error", response.status, response.statusText));
 				}
 				if (options.postProcess) options.postProcess.call(options.scope || this, false, data || response.responseText, options.options);

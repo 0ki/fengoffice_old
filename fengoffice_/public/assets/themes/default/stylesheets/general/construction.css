@@ -18,7 +18,9 @@
 	margin: 0 auto;
 	text-align: left;
 }
-
+.headerLogoAndWorkspace {
+	float: left;
+}
 #systemNoticesWrapper {
 	background: red;
 	color: white;
