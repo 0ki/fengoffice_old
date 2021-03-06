@@ -99,7 +99,7 @@
   	'new account step1 info' => 'To enter your company data and the members you work with click on the Administration link located at the top right of the page.',
   
   	'new account step1 owner' => 'Step 1: Create your own company profile',
-    'new account step1 owner info' => 'To enter your company data and the members you work with click on the Administration link located the the top right of the page.',
+    'new account step1 owner info' => 'To enter your company data and the members you work with click on the Administration link located at the top right of the page.',
   
   	'new account step update account' => 'Step {0}: Update your personal account ',
     'new account step update account info' => 'Update your personal information and change your password by clicking the Account link at the top right of the page.',

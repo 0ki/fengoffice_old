@@ -1,6 +1,6 @@
 
-    About OpenGoo 1.4
-    =================
+    About OpenGoo 1.4.1
+    ===================
 
     OpenGoo is a free and open source WebOffice, project management and collaboration
     tool, licensed under the Affero GPL 3 license.
@@ -61,11 +61,11 @@
     ====================
     
     1. Backup you current installation (important!)
-    2. Download OpenGoo 1.4 - http://www.opengoo.org/
+    2. Download OpenGoo 1.4.1 - http://www.opengoo.org/
     3. Unpack into your OpenGoo installation, overwriting your previous files and folders,
     	but keeping your config, upload and public/files folders.
     5. Go to <your_opengoo>/public/upgrade in your browser and choose to upgrade
-    	from your current version to 1.4
+    	from your current version to 1.4.1
     6. Refresh your browser or clear its cache to load new javascript, css and images.   
 
     
@@ -86,6 +86,21 @@
 
 	Changelog
 	=========
+
+	Since 1.4
+	---------
+	
+	- usability: Dim dates on calendar's monthly view which belong to another month.
+	
+	- bugfix: Date pickers ignored the start monday setting.
+	- bugfix: Week number on weekly view was always the same.
+	- bugfix: No error was displayed if adding a document with no comments even if file revision comments were required.
+	- bugfix: Non admin user with write permissions for Contacts on a workspace couldn't edit contacts of that workspace without the can manage contacts permission.
+	- bugfix: Removed repeated SEED constant definitions in config.php
+	- bugfix: No notification was being sent to people invited to an event.
+	- bugfix: Workspace comment permissions were not working properly on object views.
+	- bugfix: Object picker sometimes ordered only the loaded data and not all of the data in the server.
+	- bugfix: Translate tool didn't recognize javascript translation keys enclosed with double quotes. Now comboboxes are ordered alphabetically.
 
 	Since 1.4 RC
 	------------

@@ -184,7 +184,7 @@
 	'field Projects completed_on' => 'Abgeschlossen am',
 	'field Projects created_on' => 'Erstellt am',
 	'field Projects updated_on' => 'Aktualisiert am',
-	'field Projects created_on_id' => 'Erstellt von',
-	'field Projects updated_on_id' => 'Aktualisiert von',
+	'field Projects created_by_id' => 'Erstellt von',
+	'field Projects updated_by_id' => 'Aktualisiert von',
 	'field Projects completed_by_id' => 'Abgeschlossen von',
 ); ?>

@@ -356,8 +356,10 @@ between the cells of the main calendar.  */
 
 #calendar div.extralink{
 	width: 100%;
-	background-color: #FFF;/*#A9BCD5;  D1DCEE; /* #A2A9BB; */
+	background-color: #ECEFF7; /*#FFF;/*#A9BCD5;  D1DCEE; /* #A2A9BB; */
 	padding-right: 3px;
+	opacity: 0.5;
+	filter: alpha(opacity = 50);
 }
 
 #calendar div.extraweekendlink{

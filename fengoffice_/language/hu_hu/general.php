@@ -161,7 +161,7 @@
 	'apply to all subworkspaces' => 'Alkalmazd ezeket a jogosultságokat az alprojektekre is',
 	'weblinks' => 'Honlap cím',
 	'add work' => 'Munka hozzáadása',
-	'date format' => 'Y/m/d',
-	'date format description' => '(yyyy/mm/dd)',
+	'date format' => 'd/m/Y',
+	'date format description' => '(dd/mm/yyyy)',
 	'confirm move to trash' => 'Biztosan a kukába dobod a kiválasztott elemeket?',
 ); ?>

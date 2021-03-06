@@ -18,7 +18,7 @@ Hook::init();
 include_once APPLICATION_PATH . '/functions.php';
 try {
 	CompanyWebsite::init();
-	if (!defined('PREVENT_UPGRADE_CHECK') || !PREVENT_UPGRADE_CHECK) {
+	if (defined('FORCE_UPGRADE_CHECK') && FORCE_UPGRADE_CHECK) {
 		// if two days since last upgrade check => check for upgrades
 		$lastUpgradeCheck = config_option('upgrade_last_check_datetime', 0);
 		if ($lastUpgradeCheck instanceof DateTimeValue) $lastUpgradeCheck = $lastUpgradeCheck->getTimestamp();

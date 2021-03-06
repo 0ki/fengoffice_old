@@ -37,7 +37,8 @@ Ext.extend(og.DateField, Ext.form.DateField,{
             format : this.format,
             showToday : this.showToday,
             minText : String.format(this.minText, this.formatDate(this.minValue)),
-            maxText : String.format(this.maxText, this.formatDate(this.maxValue))
+            maxText : String.format(this.maxText, this.formatDate(this.maxValue)),
+            startDay: og.calendar_start_day
         });
         this.menu.on(Ext.apply({}, this.menuListeners, {
             scope:this

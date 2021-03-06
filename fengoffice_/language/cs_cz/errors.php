@@ -5,7 +5,6 @@
   *
   * @version 1.0
   * @author Ilija Studen <ilija.studen@gmail.com>
-  * @czech translation Ludek Smolik <lu@wo.cz>
   */
 
   // Return langs
@@ -30,6 +29,16 @@
     'invalid old password' => 'Staré heslo není správné',
     'users must belong to a company' => 'Aby bylo možné vytvořit uživatele, kontakt musí náležet ke společnosti',
     'contact linked to user' => 'Kontakt je spojen s uživatelem {0}',
+  
+  	// Password validation errors
+  	'password invalid min length' => 'Password length must be at least {0} characters',
+  	'password invalid numbers' => 'Password must have at least {0} numerical characters',
+  	'password invalid uppercase' => 'Password must have at least {0} uppercase characters',
+  	'password invalid metacharacters' => 'Password must have at least {0} metacharacters',
+  	'password exists history' => 'Password was used on one of last ten passwords',
+  	'password invalid difference' => 'Password must differ in at least 3 characters with last 10 passwords',
+  	'password expired' => 'Your password has expired',
+  	'password invalid' => 'Your password is no longer valid',
     
     // Avatar
     'invalid upload type' => 'Neplatný typ souboru. Podporované typy jsou {0}',
@@ -96,11 +105,13 @@
     // Validate add / edit file form
     'folder id required' => 'Prosím vyberte adresář',
     'filename required' => 'Název souboru je vyžadován',
+  	'weblink required' => 'Weblink url is required',
     
     // File revisions (internal)
     'file revision file_id required' => 'Revize musí být připojena k souboru',
     'file revision filename required' => 'Je vyžadkován název souboru',
     'file revision type_string required' => 'Neznámý typ souboru',
+    'file revision comment required' => 'Revision comment required',
     
     // Test mail settings
     'test mail recipient required' => 'Adresa příjemce je vyžadována',
@@ -117,6 +128,8 @@
   	'mail account id required' => 'Je vyžadováno Id účtu',
   	'mail account server required' => 'Server je vyžadován',
   	'mail account password required' => 'Heslo je vyžadováno',	
+	'send mail error' => 'Error while sending mail. Possibly wrong SMTP settings.',
+    'email address already exists' => 'That email address is already in use.',
   
   	'session expired error' => 'Sezení vypršelo díky neaktivitě uživatele. Prosím, přihlaste se znovu',
   	'unimplemented type' => 'Neimplementovaný typ',
@@ -136,11 +149,30 @@
     'maximum number of users reached error' => 'Byl dosažen maximální počet uživatelů',
 	'maximum number of users exceeded error' => 'Maximální počet uživatelů byl překročen. Aplikace nebude pracovat, dokud nebude tento problém vyřešen.',
 	'maximum disk space reached' => 'Your disk quota is full. Please delete some object before trying to add new ones, or contact support to enable more users.',
-	'error db backup' => 'Při vytváření zálohy databáze se vyskytla chyba. Zkontrolujte příkaz MYSQLDUMP_COMMAND.',
-	'error create backup folder' => 'Chyba při vytváření záložního adresáře. Nemohu dokončit zálohu',
-	'error delete backup' => 'Chyba při mazání zálohy databáze,',
-	'success delete backup' => 'Záloha byla smazána',
-    'name must be unique' => 'Litujeme, ale vybaný název je již používán',
+	'error db backup' => 'Error while creating database backup: {0}',
+  	'backup command failed' => 'Backup command failed. Check MYSQLDUMP_COMMAND constant.',
+  	'success db backup' => 'Backup created successfully.',
+	'error create backup folder' => 'Error while creating backup folder. Cannot complete backup',
+	'error delete backup' => 'Error while deleting database backup,',
+	'success delete backup' => 'Backup was deleted',
+    'name must be unique' => 'Sorry, but selected name is already taken',
+  	'not implemented' => 'Not implemented',
+  	'return code' => 'Return code: {0}',
+  	'task filter criteria not recognised' => 'Task filter criteria \'{0}\' not recognised',
+  	'mail account dnx' => 'Mail account doesn\'t exist',
+    'error document checked out by another user' => 'The document was checked out by another user.',
+  	//Custom properties
+  	'custom property value required' => '{0} is required',
+  	'value must be numeric' => 'Value(s) must be numeric for {0}',
+  
+  	//Reports
+  	'report name required' => 'Report name is required',
+  	'report object type required' => 'Report object type is required',
+
+  	'error assign task user dnx' => 'Trying to assign to an inexistent user',
+	'error assign task permissions user' => 'You don\'t have permissions to assign a task to that user',
+	'error assign task company dnx' => 'Trying to assign to an inexistent company',
+	'error assign task permissions company' => 'You don\'t have permissions to assign a task to that company',
    ); // array
 
 ?>

@@ -15,8 +15,10 @@
 	'chelp personal account' => 'Esta es su cuenta personal.<br/>En esta vista puedes actualizar tu perfil e imagen ,cambiar tu contraseña y editar tus preferencias personales.',
 	'chelp user account' => 'Esta es una cuenta de usuario.',
 	'chelp user account admin' => 'Siendo administrador, puedes actualizar el perfil e imagen del usuario, cambiar su contraseña y editar sus preferencias a través de esta vista.',
-	
-	'chelp addfile' => 'Elija "Archivo" para cargar un archivo, o "Enlace Web" para agregar un archivo como una referencia a otro archivo que no está físicamente almacenado en su servidor.',
+	'chelp addfile' => 'Usted tiene la opción de cargar un archivo o un enlace web.<br/>
+						<b> Cargar archivo:</b> Le permite subir cualquier tipo de archivo de su disco local.<br/>
+						<b> Cargar enlace web:</b> Le permite introducir una dirección web.<br/>',
+
 	'remove context help' => 'Quitar este mensaje de ayuda',
 	'chelp reporting panel' => 'Este es el panel de reportes. Aquí puede ejecutar reportes que involucren cualquiera de los tipos de objeto listados a la izquierda.',
 	'chelp reporting panel manage' => 'Este es el panel de reportes. Aquí puede ejecutar reportes que involucren cualquiera de los tipos de objeto listados a la izquierda.<br/>Dado que tiene permiso para administrar reportes puede crear y administrar reportes personalizados para cada tipo de objeto.',

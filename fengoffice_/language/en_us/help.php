@@ -23,7 +23,9 @@ return array(
 	'chelp reporting panel manage' => '<b>Welcome to the Reports panel</b><br/>You can customize reports from the different objects located in the left panel.<br/>As you also have report management privileges, you can create and manage custom reports for each object type.',
 	'chelp reporting panel manage admin' => '<b>Welcome to the Reports panel</b><br/>You can customize reports from the different objects located in the left panel.<br/>As you also have report management privileges, you can create and manage custom reports for each object type. These privileges are set for each user in the user permissions section.',
 
-	'chelp addfile' => 'Choose "File" to upload a file, or "Weblink" to add a file as a reference to another file that is not physically stored in your server.',
+	'chelp addfile' => 'You are given the option to upload a file or a web link.<br/>
+						<b> File:</b> Allows you to search and upload any document from you local hard drive.<br/>
+						<b> Web link:</b> Allows you to introduce the url of a web site you want to make reference to.<br/>',
 
  	'remove context help' => 'Remove this help message',
 

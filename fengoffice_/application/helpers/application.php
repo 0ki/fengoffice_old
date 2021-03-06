@@ -731,7 +731,7 @@ function project_object_tags(ApplicationDataObject $object) {
  * @return null
  */
 function render_object_comments(ProjectDataObject $object) {
-	if(!$object->isCommentable()) return '';
+	if(!$object->isCommentable() || !$object->canReadComments(logged_user())) return '';
 	tpl_assign('__comments_object', $object);
 	return tpl_fetch(get_template_path('object_comments', 'comment'));
 } // render_object_comments

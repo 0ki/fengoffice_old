@@ -12,7 +12,7 @@
 	if (user_config_option("start_monday")) {
 		$startday = date("j") - date("N") + 1; // beginning of the week, monday
 	} else {
-		$startday = date("j") - date("N"); // beginning of the week, sunday
+		$startday = date("j") - date("w"); // beginning of the week, sunday
 	}
 	$endday = $startday + 7;
 	$today = DateTimeValueLib::now()->add('h', logged_user()->getTimezone());
@@ -131,7 +131,7 @@
 			$output .= "><div style='z-index:0; min-height:100px; height:100%;cursor:pointer' onclick=\"og.EventPopUp.show(null, {caller:'overview-panel', day:'".$dtv->getDay()."', month:'".$dtv->getMonth()."', year:'".$dtv->getYear()."', type_id:1, hour:'9', minute:'0', durationhour:1, durationmin:0, start_value: '$start_value', start_time:'9:00', title:'".format_datetime($dtv, 'l, j F', logged_user()->getTimezone()) ."', view: 'week', title: '$popupTitle', time_format: '$timeformat', hide_calendar_toolbar: 0},'');\") >
 			<div class='$daytitle' style='text-align:right'>";
 			//if($day_of_month >= 1){
-				$output .= "<a class='internalLink' href=\"$p\" onclick=\"event.stopPropagation();\"  style='color:#5B5B5B' >$w</a>";				
+				$output .= "<a class='internalLink' href=\"$p\" onclick=\"og.disableEventPropagation(event);\"  style='color:#5B5B5B' >$w</a>";				
 				// only display this link if the user has permission to add an event
 				if(!active_project() || ProjectEvent::canAdd(logged_user(),active_project())){
 					// if single digit, add a zero
@@ -174,7 +174,7 @@
 								$output .= "<div class='event_block'   style='z-index:1000;'>";
 								if($subject=="") $subject = "[".lang('CAL_NO_SUBJECT')."]";
 								$output .= "<span id='o_ev_div_" . $event->getId() . "'>";			
-								$output .= "<a style='vertical-align:bottom;' href='".cal_getlink("index.php?action=viewevent&amp;id=".$event->getId())."' class='internalLink' onclick=\"event.stopPropagation();\" >";
+								$output .= "<a style='vertical-align:bottom;' href='".cal_getlink("index.php?action=viewevent&amp;id=".$event->getId())."' class='internalLink' onclick=\"og.disableEventPropagation(event);\" >";
 								$output .= "<img src=" . image_url('/16x16/calendar.png') . " align='absmiddle'>";
 								$output .= $subject."</a>";
 								$output .= '</span>';
@@ -199,7 +199,7 @@
 									$cal_text = clean($milestone->getName());
 									$output .= '<div class="event_block">';
 									$output .= "<span id='o_ms_div_" . $milestone->getId() . "'>";
-									$output .= "<a style='vertical-align:bottom;' href='".$milestone->getViewUrl()."' class='internalLink' onclick=\"event.stopPropagation();\" >";
+									$output .= "<a style='vertical-align:bottom;' href='".$milestone->getViewUrl()."' class='internalLink' onclick=\"og.disableEventPropagation(event);\" >";
 									$output .= "<img src=" . image_url('/16x16/milestone.png') . " align='absmiddle'>";
 									$output .= $cal_text."</a>";
 									$output .= '</span>';
@@ -229,7 +229,7 @@
 									
 									$output .= '<div class="event_block">';
 									$output .= "<span id='o_ta_div_" . $task->getId() . "'>";
-									$output .= "<a style='vertical-align:bottom;' href='".$task->getViewUrl()."' class='internalLink' onclick=\"event.stopPropagation();\" >";
+									$output .= "<a style='vertical-align:bottom;' href='".$task->getViewUrl()."' class='internalLink' onclick=\"og.disableEventPropagation(event);\" >";
 									$output .= "<img src=" . image_url('/16x16/tasks.png') . " align='absmiddle'>";
 									$output .= $cal_text."</a>";
 									$output .= '</span>';
@@ -248,7 +248,7 @@
 						}//endif task
 					} // end foreach event writing loop
 					if ($count > 3) {
-						$output .= '<div style="witdh:100%;text-align:center;font-size:9px" ><a href="'.$p.'" class="internalLink"  onclick="event.stopPropagation();nd();">'.($count-3) . ' ' . lang('more') .'</a></div>';
+						$output .= '<div style="witdh:100%;text-align:center;font-size:9px" ><a href="'.$p.'" class="internalLink"  onclick="og.disableEventPropagation(event);nd();">'.($count-3) . ' ' . lang('more') .'</a></div>';
 					}
 				}
 				

@@ -163,7 +163,7 @@
 	'user ws config option name show_tasks_context_help' => 'Show context help for tasks',
   	'user ws config option desc show_tasks_context_help' => 'If enabled, a context help box will be displayed on the tasks panel',
  	'user ws config option name start_monday' => 'Start week on monday',
-	'user ws config option desc start_monday' => 'Will show the calendar starting weeks on monday',
+	'user ws config option desc start_monday' => 'Will show the calendar starting weeks on monday (must refresh to apply changes)',
   	'user ws config option name show_week_numbers' => 'Show week numbers',
 	'user ws config option desc show_week_numbers' => 'Shows the week numbers on the monthly and weekly views.',
   

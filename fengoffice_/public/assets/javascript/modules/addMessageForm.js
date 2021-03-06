@@ -72,17 +72,20 @@ App.modules.addMessageForm = {
    * @param integer company_id Company ID
    */
   getCheckedUsers: function(genid) {
-  	var cos = Ext.getDom(genid + 'notify_companies').notify_companies;
   	var ids = "";
-  	for (var k in cos) {
-  		var company_details = cos[k];
-  		if(!company_details) continue;
-  		for(var i=0; i < company_details.users.length; i++) {
-      		if (Ext.getDom(genid + company_details.users[i].checkbox_id).checked) {
-      			if (ids != "") ids += ",";
-      			ids += company_details.users[i].id;
-      		}
-    	}
+  	var notcomp = Ext.getDom(genid + 'notify_companies');
+  	if (notcomp) {
+	  	var cos = notcomp.notify_companies;
+	  	for (var k in cos) {
+	  		var company_details = cos[k];
+	  		if(!company_details) continue;
+	  		for(var i=0; i < company_details.users.length; i++) {
+	      		if (Ext.getDom(genid + company_details.users[i].checkbox_id).checked) {
+	      			if (ids != "") ids += ",";
+	      			ids += company_details.users[i].id;
+	      		}
+	    	}
+	  	}
   	}
     return ids;
   } // emailNotifyClickCompany

@@ -40,7 +40,11 @@ og.msg =  function(title, text, timeout, classname, sound) {
 	this.msgCt.alignTo(document, 't-t');
 	var m = Ext.DomHelper.append(this.msgCt, {html:String.format(box, title, text.replace(/([^>]?)\n/g, '$1<br/>\n'))}, true);
 	Ext.get(m).on('click', function() {
-		this.remove();
+		if (timeout > 0) {
+			this.setStyle('display', 'none');
+		} else {
+			this.remove();
+		}
 	});
 	if (timeout > 0) {
 		m.slideIn('t').pause(timeout).ghost("t", {remove:true});
@@ -1180,5 +1184,13 @@ og.FileIsZip = function(mimetype, name) {
 	var extension = ix >= 0 ? name.substring(ix + 1) : "";
 	return (mimetype == 'application/zip' || mimetype == 'application/x-zip-compressed' || 
 			(mimetype == 'application/x-compressed' && extension == 'zip'));
+};
+
+og.disableEventPropagation = function(event) { 
+	if (Ext.isIE) { 
+		window.event.cancelBubble = true; 
+	} else {
+		event.stopPropagation();
+	}
 };
 

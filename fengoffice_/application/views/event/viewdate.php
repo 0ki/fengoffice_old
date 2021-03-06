@@ -105,10 +105,10 @@ $date_format = user_config_option('date_format', 'd/m/Y');
 					 	 ?>
 					 	<a class="iCalSubscribe" id="ical_link" style="float:right;" href="<?php echo ROOT_URL ."/index.php?c=feed&a=ical_export&n=$export_name&cal=$export_ws&t=".$user->getToken()."&isw=1" ?>" 
 					 		title="<?php echo lang('copy this url in your calendar client software')?>"
-					 		onclick="javascript:Ext.Msg.show({
-												   	title: '<?php echo escape_single_quotes(lang('import events from third party software')) ?>',
-												   	msg: '<?php echo escape_single_quotes(lang('copy this url in your calendar client software')) ."<br><br><br>"?>'+document.getElementById('ical_link').href,
-										   			icon: Ext.MessageBox.INFO });"></a>
+					 		onclick="Ext.Msg.show({
+									  	title: '<?php echo escape_single_quotes(lang('import events from third party software')) ?>',
+									   	msg: '<?php echo escape_single_quotes(lang('copy this url in your calendar client software')) ."<br><br><br>"?>'+document.getElementById('ical_link').href,
+										icon: Ext.MessageBox.INFO }); return false;"></a>
 					<?php } ?>
 					 </td></tr></table>	
 				</div>
@@ -123,7 +123,7 @@ $date_format = user_config_option('date_format', 'd/m/Y');
 					onclick="showEventPopup(<?php echo $dtv->getDay() ?>, <?php echo $dtv->getMonth()?>, <?php echo $dtv->getYear()?>, -1, -1, <?php echo ($use_24_hours ? 'true' : 'false'); ?>,'<?php echo $dtv->format($date_format) ?>');" >
 					
 					<div id="allDay0" class="allDayCell" style="left: 0px; height: <?php echo $alldaygridHeight ?>px;border-left:3px double #DDDDDD !important; position:absolute;width:3px;"></div>
-					<div id="alldayeventowner" onclick="event.stopPropagation() ">
+					<div id="alldayeventowner" onclick="og.disableEventPropagation(event) ">
 						<?php	
 							$top=0;
 							foreach ($alldayevents as $event){	
@@ -166,7 +166,7 @@ $date_format = user_config_option('date_format', 'd/m/Y');
 							<div class="noleft <?php echo  $ws_class?>" style="<?php echo  $ws_style?>; border-left:1px solid; border-right:1px solid; border-color:<?php echo $border_color ?>">							
 								<div class="" style="overflow: hidden; padding-bottom: 1px;">
 								
-									<nobr style="display: block; text-decoration: none;"><a href='<?php echo $event->getViewUrl()?>' class='internalLink' onclick="event.stopPropagation();"><img src="<?php echo $img_url?>" align='absmiddle' border='0'> <span style="color:<?php echo $txt_color ?>!important"><?php echo $subject ?></span> </a></nobr>
+									<nobr style="display: block; text-decoration: none;"><a href='<?php echo $event->getViewUrl()?>' class='internalLink' onclick="og.disableEventPropagation(event);"><img src="<?php echo $img_url?>" align='absmiddle' border='0'> <span style="color:<?php echo $txt_color ?>!important"><?php echo $subject ?></span> </a></nobr>
 								
 								</div>
 							</div>
@@ -235,7 +235,7 @@ $date_format = user_config_option('date_format', 'd/m/Y');
 												}
 											?>
 											
-											<div id="eventowner" style="z-index: 102;" onclick="event.stopPropagation() ">
+											<div id="eventowner" style="z-index: 102;" onclick="og.disableEventPropagation(event) ">
 										<?php	
 											$cells = array();
 											for ($i = 0; $i < 24; $i++) {
@@ -381,14 +381,14 @@ $date_format = user_config_option('date_format', 'd/m/Y');
 													addTip('d_ev_div_' + <?php echo $event->getId() ?>, <?php echo json_encode(clean($event->getSubject())) ?>, <?php echo json_encode($tipBody); ?>);
 												</script>
 												
-												<div id="d_ev_div_<?php echo $event->getId()?>" class="chip" style="position: absolute; top: <?php echo $top?>px; left: <?php echo $left?>%; width: <?php echo $width?>%;z-index:120;"  onclick="event.stopPropagation()">
+												<div id="d_ev_div_<?php echo $event->getId()?>" class="chip" style="position: absolute; top: <?php echo $top?>px; left: <?php echo $left?>%; width: <?php echo $width?>%;z-index:120;"  onclick="og.disableEventPropagation(event)">
 													<div class="t1 <?php echo $ws_class ?>" style="<?php echo $ws_style ?>;margin:0px 2px 0px 2px;height:0px; border-bottom:1px solid;border-color:<?php echo $border_color ?>"></div>
 													<div class="t2 <?php echo $ws_class ?>" style="<?php echo $ws_style ?>;margin:0px 1px 0px 1px;height:1px; border-left:1px solid;border-right:1px solid;border-color:<?php echo $border_color ?>"></div>
 													<div class="chipbody edit og-wsname-color-<?php echo  $ws_color?>">
 														<dl class="<?php echo  $ws_class?>" style="height: <?php echo $height ?>px;<?php echo  $ws_style?>;border-left:1px solid;border-right:1px solid;border-color:<?php echo $border_color ?>"  onclick="og.openLink(og.getUrl('event', 'viewevent', {view:'day', id:<?php echo $event->getId()?>, user_id:<?php echo $user_filter?>}, null));">
 															<dt class="<?php echo  $ws_class?>" style="<?php echo  $ws_style?>;">
 																<table width="100%"><tr><td>
-																	<a href='<?php echo $event->getViewUrl()."&amp;view=day&amp;user_id=".$user_filter ?>' class='internalLink' onclick="event.stopPropagation();" >
+																	<a href='<?php echo $event->getViewUrl()."&amp;view=day&amp;user_id=".$user_filter ?>' class='internalLink' onclick="og.disableEventPropagation(event);" >
 																	<span class="eventheadlabel" style="color:<?php echo $txt_color?>!important;padding-left:5px;"><?php echo "$start_time - $end_time"; ?></span>
 																	</a>
 																	<?php
@@ -419,7 +419,7 @@ $date_format = user_config_option('date_format', 'd/m/Y');
 															if ($ev_duration['hours'] > 0) { ?>
 															<dd>
 																<div>
-																	<a href='<?php echo $event->getViewUrl()."&amp;view=day&amp;user_id=".$user_filter ?>' onclick="event.stopPropagation();" class='internalLink' ><span style="color:<?php echo $txt_color?>!important;padding-left:5px;"><?php echo $subject?></span></a>
+																	<a href='<?php echo $event->getViewUrl()."&amp;view=day&amp;user_id=".$user_filter ?>' onclick="og.disableEventPropagation(event);" class='internalLink' ><span style="color:<?php echo $txt_color?>!important;padding-left:5px;"><?php echo $subject?></span></a>
 																</div>
 															</dd>
 															<?php } //if ?>

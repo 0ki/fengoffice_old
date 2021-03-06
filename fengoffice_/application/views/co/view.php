@@ -241,28 +241,35 @@
 		<?php } // if ?>
 		
 		<?php
-		if ($object instanceof ProjectFile && $object->isCheckedOut()) { ?>
-    		<span style="color:#333333;font-weight:bolder;">
-    			<?php echo lang('checked out by') ?>:
+		if ($object instanceof ProjectFile) { ?>
+			<span style="color:#333333;font-weight:bolder;">
+    			<?php echo lang('mime type') ?>:
 			</span><br/><div style="padding-left:10px">
-			<?php
-			$checkout_user = Users::findById($object->getCheckedOutById());
-			if ($checkout_user instanceof User){
-				if (logged_user()->getId() == $checkout_user->getId())
-					$username = lang('you');
-				else
-					$username = clean($checkout_user->getDisplayName());
-
-				if ($object->getCheckedOutOn()->isToday()){
-					$datetime = format_time($object->getCheckedOutOn());
-					echo lang('user date today at', $checkout_user->getCardUrl(), $username, $datetime, clean($checkout_user->getDisplayName()));
-				} else {
-					$datetime = format_datetime($object->getCheckedOutOn(), $date_format, logged_user()->getTimezone());
-					echo lang('user date', $checkout_user->getCardUrl(), $username, $datetime, clean($checkout_user->getDisplayName()));
+				<?php echo $object->getLastRevision()->getTypeString(); ?>
+			</div>
+		<?php if ($object->isCheckedOut()) { ?>
+	    		<span style="color:#333333;font-weight:bolder;">
+	    			<?php echo lang('checked out by') ?>:
+				</span><br/><div style="padding-left:10px">
+				<?php
+				$checkout_user = Users::findById($object->getCheckedOutById());
+				if ($checkout_user instanceof User){
+					if (logged_user()->getId() == $checkout_user->getId())
+						$username = lang('you');
+					else
+						$username = clean($checkout_user->getDisplayName());
+	
+					if ($object->getCheckedOutOn()->isToday()){
+						$datetime = format_time($object->getCheckedOutOn());
+						echo lang('user date today at', $checkout_user->getCardUrl(), $username, $datetime, clean($checkout_user->getDisplayName()));
+					} else {
+						$datetime = format_datetime($object->getCheckedOutOn(), $date_format, logged_user()->getTimezone());
+						echo lang('user date', $checkout_user->getCardUrl(), $username, $datetime, clean($checkout_user->getDisplayName()));
+					}
 				}
-			}
 			 ?></div>
-		<?php } // if ?>
+		<?php }
+			} // if ?>
 	</div>
 	
 	<?php Hook::fire("render_object_properties", $object, $ret = 0);?>

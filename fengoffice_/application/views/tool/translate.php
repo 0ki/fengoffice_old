@@ -90,7 +90,7 @@ if (!isset($to)) $to = ""; ?>
 
 <p>This tool allows you to translate OpenGoo to a locale other than en_us. Your webserver needs permissions to write on the 'language' folder.</p> <?php
 
-$handle = opendir(LANG_DIR); ?>
+?>
 <table class="filters"><tbody>
 <tr><td>
 	<label>Choose a locale:</label>
@@ -118,14 +118,12 @@ $handle = opendir(LANG_DIR); ?>
 		<select onchange="localeChosen.call(this.parentNode)">
 			<option value="" <?php if ($to == "") echo ' selected="selected"' ?>>-- Choose a locale --</option> <?php
 			$exists = false;
-			while (false !== ($f = readdir($handle))) {
-				if ($f != "." && $f != ".." && $f != "CVS" && $f != "en_us" && is_dir(LANG_DIR . "/" . $f)) { ?>
-					<option value="<?php echo $f?>"<?php if($to == $f) echo ' selected="selected"' ?>>
-						<?php echo $f ?>
-					</option> <?php
-					if ($f == $to) {
-						$exists = true;
-					}
+			foreach ($languages as $language) { ?>
+				<option value="<?php echo $language?>"<?php if($to == $language) echo ' selected="selected"' ?>>
+					<?php echo $language ?>
+				</option> <?php
+				if ($language == $to) {
+					$exists = true;
 				}
 			}
 			if ($to != "" && !$exists) { ?>
@@ -138,8 +136,6 @@ $handle = opendir(LANG_DIR); ?>
 	</form> <br />
 </td><?php
 
-closedir($handle);
-
 if ($to != "") { 
 	// load translation files
 	$locales[$from] = array();
@@ -149,13 +145,9 @@ if ($to != "") {
 		locales['<?php echo $to ?>'] = {};
 		base = '<?php echo $from ?>';
 	</script> <?php
-	$handle = opendir(LANG_DIR . "/" . $from);
-	while (false !== ($file = readdir($handle))) {
-		if ($file != "." && $file != ".." && $file != "CVS") {
-			$locales[$from][$file] = array();
-		}
+	foreach ($from_files as $file) {
+		$locales[$from][$file] = array();
 	}
-	closedir($handle);
 	// finished loading translation files
 
 	$file = $_GET["file"];

@@ -345,7 +345,7 @@ class EventController extends ApplicationController {
             				$users_to_inv[] = Users::findById(array('id' => $us));
             			}
             		}
-            		Notifier::notifEvent($event, $users_to_inv, 'new');
+            		Notifier::notifEvent($event, $users_to_inv, 'new', logged_user());
 		        }
 		        
 			    $object_controller = new ObjectController();
@@ -399,7 +399,7 @@ class EventController extends ApplicationController {
 				if ($invs->getUserId() != logged_user()->getId()) 
 					$notifications[] = Users::findById(array('id' => $invs->getUserId()));
 			}
-			Notifier::notifEvent($event, $notifications, 'deleted');
+			Notifier::notifEvent($event, $notifications, 'deleted', logged_user());
 			
 			DB::beginWork();
 			// delete event
@@ -659,7 +659,7 @@ class EventController extends ApplicationController {
 				if (isset($data['confirmAttendance'])) {
 	            	$this->change_invitation_state($data['confirmAttendance'], $event->getId(), $user_filter);
 	            }
-			    
+
 	            if (isset($data['send_notification']) && $data['send_notification']) {
 					$users_to_inv = array();
             		foreach ($data['users_to_invite'] as $us => $v) {
@@ -667,7 +667,7 @@ class EventController extends ApplicationController {
             				$users_to_inv[] = Users::findById(array('id' => $us));
             			}
             		}
-            		Notifier::notifEvent($event, $users_to_inv, 'modified');
+            		Notifier::notifEvent($event, $users_to_inv, 'modified', logged_user());
 	            }
 				    
 			    if(!logged_user()->isMemberOfOwnerCompany()) $event->setIsPrivate(false);  				
@@ -897,7 +897,7 @@ class EventController extends ApplicationController {
  *   copyright            : (C) 2001 The phpBB Group
  *   email                : support@phpbb.com
  *
- *   $Id: EventController.class.php,v 1.85.2.1 2009/05/18 17:49:16 alvarotm01 Exp $
+ *   $Id: EventController.class.php,v 1.85.2.2 2009/05/25 17:13:26 alvarotm01 Exp $
  *
  ***************************************************************************/
 

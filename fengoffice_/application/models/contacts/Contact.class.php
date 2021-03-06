@@ -672,7 +672,11 @@ class Contact extends BaseContact {
      * @return booelean
      */
     function canAdd(User $user, Project $project) {
-		return can_manage_contacts($user, true);
+    	if ($project instanceof Project) { 
+    		return can_manage_contacts($user, true) || $user->getProjectPermission($project, ProjectUsers::CAN_WRITE_CONTACTS);
+    	} else {
+			return can_manage_contacts($user, true);
+    	}
     } // canAdd
     
     /**
@@ -685,10 +689,10 @@ class Contact extends BaseContact {
     function canEdit(User $user) {
     	if($this->getUserId()){
     		// a contact that has a user assigned to it can be modified by anybody that can manage security (this is: users and permissions) or the user himself.
-    		return can_manage_contacts($user, true) || can_manage_security($user) || $this->getUserId() == $user->getId();
+    		return can_manage_contacts($user, true) || can_manage_security($user) || $this->getUserId() == $user->getId() || $this->canWriteByRoles($user);
     	}
 		else 
-			return can_manage_contacts($user, true);
+			return can_manage_contacts($user, true) || $this->canWriteByRoles($user);
     } // canEdit
     
     /**
@@ -699,7 +703,7 @@ class Contact extends BaseContact {
     * @return boolean
     */
     function canDelete(User $user) {
-		return can_manage_contacts($user, true);
+		return can_manage_contacts($user, true) || $this->canWriteByRoles($user);
     } // canDelete
     
     function canLinkObject(User $user){
@@ -727,6 +731,7 @@ class Contact extends BaseContact {
     */
     function getRoles()
     {
+    	if ($this->getId() == '') return array();
     	return ProjectContacts::getRolesByContact($this);
     }
     
@@ -742,6 +747,19 @@ class Contact extends BaseContact {
     		return null;
     	}
     	return ProjectContacts::getRole($this,$project);
+    }
+    
+    function canWriteByRoles(User $user){
+    	$roles = $this->getRoles();
+    	if (is_array($roles)) {
+    		foreach ($roles as $pc) {
+    			$p = $pc->getProject();
+    			if ($user->getProjectPermission($p, ProjectUsers::CAN_WRITE_CONTACTS)) {
+    				return true;
+    			}
+    		}
+    	}
+    	return false;
     }
 
 	// ---------------------------------------------------

@@ -57,7 +57,7 @@
     'country hr' => 'Croatia',
     'country cu' => 'Cuba',
     'country cy' => 'Cyprus',
-    'country cz' => 'Česká republika',
+    'country cz' => 'Czech Republic',
     'country dk' => 'Denmark',
     'country dj' => 'Djibouti',
     'country dm' => 'Dominica',

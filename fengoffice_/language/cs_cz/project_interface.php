@@ -75,10 +75,10 @@ return array(
     'upload and link' => 'Nahrát nový soubor a připojit ho k objektu',
     'file permissions description' => 'Vybrerte uživatele z Komba nebo napište jejich název do textového pole. Pak stiskněte "Přidat uživatele" pro jeho zobrazení v mřížce. <br>Když ho uvidíte, vyberte odpovídající práva v mřížce.<br>Všiměte si: Pole Kombo zobrazí pouze uživatele se kteří současně sdílí soubory.',
 
-    'subscribers desc' => 'Přihlášení odběratelé budou dostávat e-mailové potvrzení kdykoli někdo (kromě nich samotných) odešle komentář k tomuto objektu',
+   'subscribers desc' => 'Přihlášení odběratelé budou dostávat e-mailové potvrzení kdykoli někdo (kromě nich samotných) odešle komentář k tomuto objektu',
     'admins can post comments on locked objects desc' => '<strong>Komentáře jsou uzamčeny</strong>, ale Vy jako správce stále máte práva k odesílání komentářů. Všiměte si: Pokud očekáváte odpověď od vašich klientů, a non-admin uživatelů musíte odemknout komentáře k tomuto objektu <i>(nastavte volbu "Zapnnout komentáře" na "Ano")</i>.',
 
-    'all permissions' => 'Všechna oprávnění',
+   'all permissions' => 'Všechna oprávnění',
     'can manage messages' => 'Spravovat poznámky',
     'can manage tasks' => 'Spravovat úkoly ',
     'can manage milestones' => 'Spravovat milníky',
@@ -89,7 +89,7 @@ return array(
     'can manage properties'  => 'Spravovat vlastnosti',
     'can manage events'  => 'Spravovat události',
 
-    'add by' => 'přidal(a)',
+  'add by' => 'přidal(a)',
     'edit by' => 'aktualizoval(a)',
     'delete by' => 'smazal(a)',
     'close by' => 'uzavřel(a)',
@@ -101,7 +101,7 @@ return array(
     'project status' => 'Stav projektu',
     'show project desciption in overview' => 'Ukázat popis projektu na stránce přehledu pracovní plochy?',
 
-    'new file' => 'Nový soubor',
+   'new file' => 'Nový soubor',
     'existing file' => 'Existující soubor',
     'replace file description' => 'Můžete nahradit existující soubor zadáním nového. Pokud ho nechcete nahradit jednoduše nechte toto pole prázdné.',
     'download history' => 'Stáhnout historii',
@@ -123,6 +123,7 @@ return array(
     'version file change' => 'Zapomatovat si tuto změnu (starý soubor bude uložen pro reference)',
     'last revision' => 'Poslední revize',
     'revision comment' => 'Revize komentáře',
+    'edit revision comment' => 'Změnit komentář revize',
     'initial versions' => '-- Původní verze --',
     'file details' => 'Detaily souboru',
     'view file details' => 'Zobrazit detaily souboru',
@@ -263,6 +264,12 @@ return array(
 
 	'cannot change parent workspace' => 'Nemáte dostatečná přístupová práva pro změnu této rodičovské pracovní plochy',
 	'cannot change parent workspace description' => 'Tato pracovní plocha může patřit k pracovní ploše ke které nemáte přístup.',
+
+	'copy of file' => 'Copy of {0}',
+	'add subscribers desc' => 'Subscribe selected people to this object. Subscribed users will receive notifications about changes made to this object.',
+	'add custom property' => 'Add a custom property',
+	'fetch imap folders' => 'Fetch IMAP folders',
+	'no reports found' => 'No reports found for {0}',
 ); // array
 
 ?>

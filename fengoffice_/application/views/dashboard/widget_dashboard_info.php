@@ -11,7 +11,6 @@
 
 
 	$project = active_project();
-	if (can_manage_contacts(logged_user())){
 		$contacts = ProjectContacts::getContactsByProject($project);
 		if (count($contacts) > 0){
 			?><div class='endSeparatorDiv'>
@@ -23,11 +22,13 @@
 				if ($c != 0)
 					echo '<br/>';
 				$c++;
+				if ($contact->canView(logged_user())) {
 				?><span><a href="<?php echo $contact->getCardUrl()?>" class="internalLink coViewAction ico-contact"><?php echo $contact->getDisplayName() ?></a> - <span class="desc"><?php echo $contact->getRole(active_project())->getRole() ?></span></span><?php
+				}
 			}
 			?></div>
 			</div>
-<?php }}
+<?php }
 
 	if (logged_user()->isMemberOfOwnerCompany()){
 		$users = $project->getUsers(false); 

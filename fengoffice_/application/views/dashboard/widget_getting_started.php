@@ -84,7 +84,7 @@
 <a class='internalLink dashboard-link' href='<?php echo get_url('reporting', 'index')?> ' ><?php echo lang('reporting')?></a>&nbsp;&nbsp;
 */?>
 
-<?php Hook::fire('render_getting_started', $null, $ret)?>
+<?php Hook::fire('render_getting_started', null, $ret)?>
 
 <br/><br/><p><a class='internalLink' href='<?php echo get_url('config', 'remove_getting_started_widget')?> ' ><?php echo lang('remove this widget')?></a></p>
 	

@@ -6,6 +6,7 @@ var tbar_datemenu = new Ext.menu.DateMenu({
     	changeView(cal_actual_view, date.format('d'), date.format('n'), date.format('Y'), actual_user_filter, actual_status_filter);
     },
     format: og.date_format,
+    startDay: og.calendar_start_day,
 	altFormats: lang('date format alternatives')
 });
 og.calToolbarDateMenu = tbar_datemenu;

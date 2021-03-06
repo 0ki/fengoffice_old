@@ -121,7 +121,7 @@
 	'user ws config option name task panel filter' => 'Filtrar por',
 	'user ws config option name task panel filter value' => 'Valor del filtro',
 	'user ws config option name start_monday' => 'Empezar la semana desde el Lunes',
-	'user ws config option desc start_monday' => 'Las vistas del calendario mostrarán el lunes como primer día de la semana',
+	'user ws config option desc start_monday' => 'Las vistas del calendario mostrarán el lunes como primer día de la semana (debe actualizar la página para aplicar los cambios)',
 	'user ws config option name show_week_numbers' => 'Mostrar los números de semana',
 	'user ws config option desc show_week_numbers' => 'Muestra los números de semana en la vista mensual y semanal.',
 	'config option name days_on_trash' => 'Días en la papelera',

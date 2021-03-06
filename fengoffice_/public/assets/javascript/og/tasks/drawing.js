@@ -16,7 +16,9 @@ startDrag: function(x, y) {
 	var dragEl = Ext.get(this.getDragEl());
 	var el = Ext.get(this.getEl());
 	
-	dragEl.applyStyles({border:'1px solid gray;','border-width':'1px 1px 1px 6px','width':'auto','height':'auto','cursor':'move'});
+	if (!Ext.isIE) {
+		dragEl.applyStyles({border:'1px solid gray;','border-width':'1px 1px 1px 6px','width':'auto','height':'auto','cursor':'move'});
+	}
 	var task = ogTasks.getTask(this.config.dragData.i_t);
 	dragEl.update(/*el.up('table').dom.innerText*/ task.title);
 	dragEl.addClass(el.dom.className + ' RX__tasks_dd-proxy'); 
@@ -63,13 +65,15 @@ endDrag: function() {
 	this.lastGroupTargetId = null;
 	
 	var doProcess = false;
-	if(targetId.indexOf(rx__TasksDrag.idGroup)>=0) /* group */ {
-		doProcess = true;
-		rx__TasksDrag.p = false;
-	}else if(targetId.indexOf(rx__TasksDrag.idTask)>=0) /* task */ {
-		doProcess = true;
-	}else{
-		//XXX: mark wrong target
+	if (targetId) {
+		if(targetId.indexOf(rx__TasksDrag.idGroup)>=0) /* group */ {
+			doProcess = true;
+			rx__TasksDrag.p = false;
+		}else if(targetId.indexOf(rx__TasksDrag.idTask)>=0) /* task */ {
+			doProcess = true;
+		}else{
+			//XXX: mark wrong target
+		}
 	}
 	
 	if(doProcess) {

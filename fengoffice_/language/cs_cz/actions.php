@@ -40,17 +40,17 @@
     'mark project as active' => 'Označit projekt jako aktivní',
     
     // Workspace
-    'add workspace' => 'Přidat nový projekt',
-    'edit workspace' => 'Upravit projekt',
-    'delete workspace' => 'Smazat projekt',
-    'mark workspace as finished' => 'Označit projekt jako ukončený',
-    'mark workspace as active' => 'Označit projekt jako aktivní',
+    'add workspace' => 'Přidat pracovní plochu',
+    'edit workspace' => 'Změnit pracovní plochu',
+    'delete workspace' => 'Smazat pracovní plochu',
+    'mark workspace as finished' => 'Označit pracovní plochy jako uzavřené',
+    'mark workspace as active' => 'Označit pracovní plochy jako aktivní',
     
     // Messages
     'add message' => 'Přidat poznámku',
     'add new message' => 'Přidat novou poznámku',
     'edit message' => 'Upravit poznámku',
-    'delete message' => 'Smaszat poznámku',
+    'delete message' => 'Smazat poznámku',
     'view message' => 'Zobrazit poznámku',
     'update message options' => 'Aktualizovat volby',
     'subscribe to object' => 'Přihlásit',
@@ -102,7 +102,7 @@
     'can edit company data' => 'Může upravovat data',
     'can manage security' => 'Může spravovat bezpečnost',
     'can manage workspaces' => 'Může spravovat projekty',
-    'can manage configuration' => 'může upravovat konfiguraci',
+    'can manage configuration' => 'Může upravovat konfiguraci',
     'can manage contacts' => 'Může upravovat kontakty',
     'group users' => 'Skupina uživatelů',
     
@@ -178,6 +178,8 @@
     'unlink' => 'Rozpojit',
     'unlink object' => 'Rozpojit objekt',
     'unlink objects' => 'Rozpojit objekty',
+	'extract' => 'extrahovat',
+  	'add files to zip' => 'Přidat soubory do archívu ZIP',
   	
     // Tags
     'delete tag'  => 'Smazat štítek',
@@ -187,17 +189,19 @@
     'edit permissions' => 'Upravit oprávnění',
     'edit permissions explanation'  => 'Zaškrtněte políčko pro udělení přístupu k nedávno vytvořenému projektu.',
   
-  	'save as new revision' => 'Uložit jako novou revizi',
-	'save as' => 'Přejmenovat',
-	'details' => 'Podrobnosti',
+  	'save as new revision' => 'Save as new revision',
+	'save as' => 'Rename',
+	'details' => 'Details',
 	'view history for' => 'Zobrazit historii',
-	'view history' => 'Zobrazit historii',    
+	'view history' => 'Zobrazit historii',   
 	'edit preferences' => 'Upravit předvolby',
 	'view milestone' => 'Zobrazit milníky',
   	'custom properties' => 'Uživatelské možnosti',
   	'move to trash' => 'Přesunout do koše',
   	'restore from trash' => 'Obnovit z koše',
   	'delete permanently' => 'Trvale odstranit',
+  	'copy file' => 'Kopírovat soubor',
+  	'open weblink' => 'Otevřít odkaz',
   ); // array
 
 ?>

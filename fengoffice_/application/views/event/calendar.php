@@ -63,17 +63,6 @@ foreach($companies as $company)
 	<input type="hidden" id="hfCalUserPreferences" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($userPreferences)))) ?>"/>
 </div>
 
-<script type="text/javascript">
-function cancel (evt) {//cancel clic event bubbling. used to cancel opening a New Event window when clicking an object
-  	var e=(evt)?evt:window.event;
-    if (window.event) {
-        e.cancelBubble=true;
-    } else {
-        e.stopPropagation();
-    }
-    return true;
-}
-</script>
 <div id="cal_main_div" class="calendar" style="position:relative;width:100%;height:100%;overflow:hidden">
 <div id="calendarPanelTopToolbar" class="x-panel-tbar" style="width:100%;height:30px;display:block;background-color:#F0F0F0;"></div>
 
@@ -96,10 +85,10 @@ function cancel (evt) {//cancel clic event bubbling. used to cancel opening a Ne
 					 	 ?>
 					 	<a class="iCalSubscribe" id="ical_link" style="float:right;" href="<?php echo ROOT_URL ."/index.php?c=feed&a=ical_export&n=$export_name&cal=$export_ws&t=".$user->getToken()."&isw=1" ?>" 
 					 		title="<?php echo lang('copy this url in your calendar client software')?>"
-					 		onclick="javascript:Ext.Msg.show({
-												   	title: '<?php echo escape_single_quotes(lang('import events from third party software')) ?>',
-												   	msg: '<?php echo escape_single_quotes(lang('copy this url in your calendar client software')) ."<br><br><br>"?>'+document.getElementById('ical_link').href,
-										   			icon: Ext.MessageBox.INFO });"></a>
+					 		onclick="Ext.Msg.show({
+									   	title: '<?php echo escape_single_quotes(lang('import events from third party software')) ?>',
+									   	msg: '<?php echo escape_single_quotes(lang('copy this url in your calendar client software')) ."<br><br><br>"?>'+document.getElementById('ical_link').href,
+							   			icon: Ext.MessageBox.INFO }); return false;"></a>
 					<?php } ?>
 					 </td></tr></table>
 				</div>
@@ -131,7 +120,7 @@ function cancel (evt) {//cancel clic event bubbling. used to cancel opening a Ne
 			<td class="coViewBody" style="padding:0px;width:100%;height:100%;" colspan=1>
 				<div id="gridcontainer" style="position:relative; overflow-x:hidden; overflow-y:scroll;padding-bottom:0px;width:100%;height:100%;">
 				
-				<table id="calendar" border='0' cellspacing='0' cellpadding='0' width="100%" height="100%">
+				<table id="calendar" cellspacing='0' cellpadding='0' width="100%" height="100%" style="border: 1px solid #777;">
 				
 				<tr id="guide_row" style="display:none">
 					<?php if(user_config_option("show_week_numbers")) { ?>
@@ -193,6 +182,7 @@ function cancel (evt) {//cancel clic event bubbling. used to cancel opening a Ne
 								}
 							}
 							$date_tmp = DateTimeValueLib::make(0, 0, 0, $month_aux, $day_of_month, $year_aux);
+							$extra_style = '';
 							// see what type of day it is
 							if($currentyear == $date_tmp->getYear() && $currentmonth == $date_tmp->getMonth() && $currentday == $date_tmp->getDay()){
 								$daytitle = 'todaylink';
@@ -202,15 +192,17 @@ function cancel (evt) {//cancel clic event bubbling. used to cancel opening a Ne
 								$daytype = "selectedday";
 							} else if($day_of_month > $lastday OR $day_of_month < 1){
 								if ($daytype == "weekend")
-								$daytitle = 'extraweekendlink';
+									$daytitle = 'extraweekendlink';
 								else
-								$daytitle = 'extralink';
-							} else
+									$daytitle = 'extralink';
+								$extra_style = 'opacity:0.5; filter: alpha(opacity = 50);';
+							} else {
 								$daytitle = 'daylink';
+							}
 							// writes the cell info (color changes) and day of the month in the cell.
 							
 					?>
-							<td valign="top" class="<?php echo $daytype?>" >
+							<td valign="top" class="<?php echo $daytype?>" style="<?php echo ($extra_style != '' ? 'background-color:#EEE;border-color:#BBB;border-style: dotted;' : '')?>">
 					<?php
 						
 							if($day_of_month <= $lastday AND $day_of_month >= 1){ 
@@ -241,10 +233,9 @@ function cancel (evt) {//cancel clic event bubbling. used to cancel opening a Ne
 							$start_value = $dtv->format(user_config_option('date_format', 'd/m/Y'));
 														
 					?>	
-						 		<div style='z-index:0; min-height:90px; height:100%; cursor:pointer;' onclick="showMonthEventPopup('<?php echo $dtv->getDay() ?>','<?php echo $dtv->getMonth()?>','<?php echo $dtv->getYear()?>','<?php echo $start_value ?>');" >
-						 			<div class='<?php echo $daytitle?>' style='text-align:right'>
-							
-							 		<a class='internalLink' href="<?php echo $p ?>" onclick="cancel(event);return true;"  style='color:#5B5B5B' ><?php echo $w?></a>				
+						 		<div style='z-index:0; min-height:90px; height:100%; cursor:pointer;<?php echo $extra_style ?>' onclick="showMonthEventPopup('<?php echo $dtv->getDay() ?>','<?php echo $dtv->getMonth()?>','<?php echo $dtv->getYear()?>','<?php echo $start_value ?>');" >
+						 			<div class='<?php echo $daytitle?>' style='text-align:right;'>
+							 		<a class='internalLink' href="<?php echo $p ?>" onclick="og.disableEventPropagation(event);return true;"  style='color:#5B5B5B' ><?php echo $w?></a>				
 					<?php
 							// only display this link if the user has permission to add an event
 							if(!active_project() || ProjectEvent::canAdd(logged_user(), active_project())){
@@ -297,12 +288,13 @@ function cancel (evt) {//cancel clic event bubbling. used to cancel opening a Ne
 												$tip_text = str_replace("\n", '<br>', $tip_text);													
 												if (strlen_utf($tip_text) > 200) $tip_text = substr_utf($tip_text, 0, strpos($tip_text, ' ', 200)) . ' ...';
 								?>
-												<div id="m_ev_div_<?php echo $event->getId()?>" class="<?php echo "og-wsname-color-$ws_color" ?>" style="margin: 1px;padding-left:1px;padding-bottom:0px;">
-													<table style="width:100%;"><tr><td>
-													<nobr><a href='<?php echo cal_getlink("index.php?action=viewevent&amp;id=".$event->getId()."&amp;user_id=".$user_filter)?>' class='internalLink' onclick="cancel(event); return true;" <?php echo "style='color:$txt_color;'" ?>>
-															<img src="<?php echo image_url('/16x16/calendar.png')?>" style="vertical-align: middle;border-width: 0px;">
-														<?php echo (strlen_utf($subject) < 15 ? $subject : substr_utf($subject, 0, 14).'...')?>
-													</a></nobr>
+												<div id="m_ev_div_<?php echo $event->getId()?>" class="<?php echo "og-wsname-color-$ws_color" ?>" style="margin: 1px;padding-left:1px;padding-bottom:0px;<?php echo $extra_style ?>">
+												<div style="border: 1px solid;border-color:<?php echo $border_color ?>;">
+													<table style="width:100%;" class="<?php echo "og-wsname-color-$ws_color" ?>"><tr><td>
+													<a href='<?php echo cal_getlink("index.php?action=viewevent&amp;id=".$event->getId()."&amp;user_id=".$user_filter)?>' class='internalLink' onclick="og.disableEventPropagation(event); return true;" <?php echo "style='color:$txt_color;'" ?>>
+														<img src="<?php echo image_url('/16x16/calendar.png')?>" style="vertical-align: middle;border-width: 0px;">
+														<span><?php echo (strlen_utf($subject) < 15 ? $subject : substr_utf($subject, 0, 14).'...')?></span>
+													</a>
 													</td><td align="right">
 														<div align="right" style="padding-right:1px;">
 														<?php
@@ -325,6 +317,7 @@ function cancel (evt) {//cancel clic event bubbling. used to cancel opening a Ne
 														} // if ?>
 														</div>
 													</td></tr></table>
+											 	</div>
 											 	</div>
 										 		<script type="text/javascript">
 										 			<?php
@@ -355,7 +348,7 @@ function cancel (evt) {//cancel clic event bubbling. used to cancel opening a Ne
 													
 								?>
 													<div id="m_ms_div_<?php echo $milestone->getId()?>" class="event_block" style="border-left-color: #<?php echo $color?>;">
-														<nobr><a href='<?php echo $milestone->getViewUrl()?>' class="internalLink" onclick="cancel(event);return true;" >
+														<nobr><a href='<?php echo $milestone->getViewUrl()?>' class="internalLink" onclick="og.disableEventPropagation(event);return true;" >
 																<img src="<?php echo image_url('/16x16/milestone.png')?>" style="vertical-align: middle;border-width: 0px;">
 															<?php echo $cal_text ?>
 														</a></nobr>
@@ -389,7 +382,7 @@ function cancel (evt) {//cancel clic event bubbling. used to cancel opening a Ne
 								?>
 								
 													<div id="m_ta_div_<?php echo $task->getId()?>" class="event_block" style="border-left-color: #<?php echo $color?>;">
-														<nobr><a href='<?php echo $task->getViewUrl()?>' class='internalLink' onclick="cancel(event);return true;"  style="border-width:0px">
+														<nobr><a href='<?php echo $task->getViewUrl()?>' class='internalLink' onclick="og.disableEventPropagation(event);return true;"  style="border-width:0px">
 																	<img src="<?php echo image_url('/16x16/tasks.png')?>" style="vertical-align: middle;">
 														 		<?php echo $cal_text ?>
 														</a></nobr>
@@ -408,7 +401,7 @@ function cancel (evt) {//cancel clic event bubbling. used to cancel opening a Ne
 									if ($count > 3) {
 								?>
 									
-										<div style="witdh:100%;text-align:center;font-size:9px" ><a href="<?php echo $p?>" class="internalLink"  onclick="cancel(event);return true;"><?php echo ($count-3) . ' ' . lang('more');?> </a></div>
+										<div style="witdh:100%;text-align:center;font-size:9px" ><a href="<?php echo $p?>" class="internalLink"  onclick="og.disableEventPropagation(event);return true;"><?php echo ($count-3) . ' ' . lang('more');?> </a></div>
 								<?php
 									}
 								}

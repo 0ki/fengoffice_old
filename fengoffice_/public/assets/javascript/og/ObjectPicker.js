@@ -19,15 +19,8 @@ og.ObjectPicker = function(config) {
 					'icon', 'project', 'projectId', 'manager', 'object_id', 'mimeType'
             	]
         	}),
-        	remoteSort: true,
-			listeners: {
-				'load': function() {
-					if (this.getTotalCount() <= og.pageSize) {
-						this.remoteSort = false;
-					}
-				}
-			}
-    	});
+        	remoteSort: true
+        });
     	this.store.setDefaultSort('name', 'asc');
 
 		function renderIcon(value, p, r) {

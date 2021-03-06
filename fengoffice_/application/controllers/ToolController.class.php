@@ -165,9 +165,36 @@ class ToolController extends ApplicationController {
 			fclose($f);
 		}
 		
+		$from = array_var($_GET, 'from', 'en_us');
+		$to = array_var($_GET, 'to', '');
+		
+		// load languages
+		$languages = array();
+		$handle = opendir(LANG_DIR);
+		while (false !== ($f = readdir($handle))) {
+			if ($f != "." && $f != ".." && $f != "CVS" && $f != $from && is_dir(LANG_DIR . "/" . $f)) {
+				$languages[] = $f;
+			}
+		}
+		sort($languages);
+		
+		if ($to != "") {
+			// load from files
+			$from_files = array();
+			$handle = opendir(LANG_DIR . "/" . $from);
+			while (false !== ($file = readdir($handle))) {
+				if (is_file(LANG_DIR . "/" . $from . "/" . $file)) {
+					$from_files[] = $file;
+				}
+			}
+			sort($from_files);
+			tpl_assign('from_files', $from_files);
+		}
+		
 		tpl_assign('added', $added);
-		tpl_assign('from', array_var($_GET, 'from'));
-		tpl_assign('to', array_var($_GET, 'to'));
+		tpl_assign('from', $from);
+		tpl_assign('to', $to);
+		tpl_assign('languages', $languages);
 	}
 	
 } // TimeController
@@ -196,7 +223,7 @@ function loadFileTranslations($locale, $file) {
 		$contents = preg_replace("/.*addLangs\s*\(\s*\{\s*/s", "", $contents);
 		$contents = preg_replace("/\s*\}\s*\)\s*;\s*$/", "", $contents);
 		$matches = array();
-		preg_match_all("/\s*'(.*)'\s*:\s*'(.*[^\\\\])'\s*,?/", $contents, $matches, PREG_SET_ORDER);
+		preg_match_all("/\s*['\"](.*)['\"]\s*:\s*['\"](.*[^\\\\])['\"]\s*,?/", $contents, $matches, PREG_SET_ORDER);
 		$lang = array();
 		foreach ($matches as $match) {
 			$lang[$match[1]] = $match[2];

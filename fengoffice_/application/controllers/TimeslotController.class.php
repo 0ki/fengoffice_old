@@ -160,11 +160,13 @@ class TimeslotController extends ApplicationController {
 		/* Billing */
 		$billing_category_id = logged_user()->getDefaultBillingId();
 		$project = $object->getProject();
-		$timeslot->setBillingId($billing_category_id);
-		$hourly_billing = $project->getBillingAmount($billing_category_id);
-		$timeslot->setHourlyBilling($hourly_billing);
-		$timeslot->setFixedBilling($hourly_billing * $timeslot->getMinutes() / 60);
-		$timeslot->setIsFixedBilling(false);
+		if ($billing_category_id) {
+			$timeslot->setBillingId($billing_category_id);
+			$hourly_billing = $project->getBillingAmount($billing_category_id);
+			$timeslot->setHourlyBilling($hourly_billing);
+			$timeslot->setFixedBilling($hourly_billing * $timeslot->getMinutes() / 60);
+			$timeslot->setIsFixedBilling(false);
+		}
 		
 		try{
 			DB::beginWork();

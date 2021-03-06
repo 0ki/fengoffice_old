@@ -109,7 +109,7 @@ return array(
     'modified notification task' => 'Tarea \'{0}\' ha sido modificada',
     'modified notification task desc' => 'Tarea \'{0}\' ha sido modificada por {1}.',
     'modified notification event' => 'Evento \'{0}\' ha sido modificado',
-    'modified notification event desc' => 'Tarea \'{0}\' ha sido modificada por {1}.',
+    'modified notification event desc' => 'Evento \'{0}\' ha sido modificada por {1}.',
     'modified notification company' => 'Compañía \'{0}\' ha sido modificada',
     'modified notification company desc' => 'Compañía \'{0}\' ha sido modificada por {1}.',
     'modified notification contact' => 'Contacto \'{0}\' ha sido modificado',

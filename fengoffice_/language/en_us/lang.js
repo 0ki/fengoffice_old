@@ -125,6 +125,7 @@ addLangs({
 	'success': 'Success',
 	'unexpected server response': 'Unexpected server response',
 	'new tab': 'New Tab',
+	'file revision comments required': 'File revision comments are mandatory',
 	
 	/* dashboard */
 	'dashboard': 'Dashboard',

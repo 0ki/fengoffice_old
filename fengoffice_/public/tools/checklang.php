@@ -75,7 +75,7 @@ if (isset($a) && isset($b)) {
 				echo "<script>";
 				echo "locale = '$l';";
 				echo "file = '$file';";
-				echo "try {";
+				echo "try {//";
 				include LANG_DIR . "/" . $l . "/" . $file;
 				echo "} catch (e) {
 					document.write('<span class=\"error\">There was an error loading file $file: \"' + e.message + '\"</span>');

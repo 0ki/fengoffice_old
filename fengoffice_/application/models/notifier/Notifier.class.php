@@ -250,13 +250,15 @@ class Notifier {
 	 * @return boolean
 	 * @throws NotifierConnectionError
 	 */
-	static function notifEvent(ProjectEvent $object, $people, $type) {
+	static function notifEvent(ProjectEvent $object, $people, $notification, $sender) {
 		if(!is_array($people) || !count($people) || !$sender instanceof User) {
 			return; // nothing here...
 		} // if
 
 		$uid = $object->getUniqueObjectId();
 		$name = $object->getObjectName();
+		$type = $object->getObjectTypeName();
+		$typename = lang($object->getObjectTypeName());
 		$description = lang("$notification notification event desc", $object->getObjectName(), $sender->getDisplayName());
 		
 		$properties['unique id'] = $uid;
@@ -490,7 +492,7 @@ class Notifier {
 				array_var($email, 'subject'),
 				array_var($email, 'body'),
 				array_var($email, 'type', 'text/plain'),
-				array_var($email, 'to', '8bit')
+				array_var($email, 'encoding', '8bit')
 			);
 		}
 	}

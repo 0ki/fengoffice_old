@@ -18,11 +18,8 @@ return array(
 	'field Companies homepage' => 'Homepage',
 	'field Companies created_on' => 'Created on',
 	'field Companies updated_on' => 'Updated on',
-	'field Companies created_by_id' => 'Created by',
-	'field Companies updated_by_id' => 'Updated by',
 
 	// Contact fields
-	'field Contacts company_id' => 'Company',
 	'field Contacts firstname' => 'First name',
 	'field Contacts lastname' => 'Last name',
 	'field Contacts email' => 'Email address',
@@ -68,8 +65,6 @@ return array(
 	'field Contacts notes' => 'Notes',
 	'field Contacts created_on' => 'Created on',
 	'field Contacts updated_on' => 'Updated on',
-	'field Contacts created_by_id' => 'Created by',
-	'field Contacts updated_by_id' => 'Updated by',
 
 	// Email fields
     'field MailContents from' => 'From',
@@ -89,8 +84,6 @@ return array(
 	'field MailContents imap_folder_name' => 'IMAP Folder name',
 	'field MailContents account_email' => 'Account email',
 	'field MailContents created_on' => 'Created on',
-	'field MailContents created_by_id' => 'Created by',
-	'field MailContents updated_by_id' => 'Updated by',
 
 	// Event fields
     'field ProjectEvents duration' => 'Duration',
@@ -107,8 +100,6 @@ return array(
     'field ProjectEvents repeat_h' => 'Repeat hour',
 	'field ProjectEvents created_on' => 'Created on',
 	'field ProjectEvents updated_on' => 'Updated on',
-	'field ProjectEvents created_by_id' => 'Created by',
-	'field ProjectEvents updated_by_id' => 'Updated by',
 
 	// File fields
 	'field ProjectFiles filename' => 'Filename', 
@@ -123,8 +114,6 @@ return array(
 	'field ProjectFiles created_on' => 'Created on',
 	'field ProjectFiles updated_on' => 'Updated on',
 	'field ProjectFiles checked_out_on' => 'Checked out on',
-	'field ProjectFiles created_by_id' => 'Created by',
-	'field ProjectFiles updated_by_id' => 'Updated by',
 
 	// Milestone fields
     'field ProjectMilestones name' => 'Name',
@@ -134,10 +123,6 @@ return array(
 	'field ProjectMilestones is_template' => 'Is template',
 	'field ProjectMilestones created_on' => 'Created on',
 	'field ProjectMilestones updated_on' => 'Updated on',
-	'field ProjectMilestones created_by_id' => 'Created by',
-	'field ProjectMilestones updated_by_id' => 'Updated by',
-	'field ProjectMilestones assigned_to_company_id' => 'Assigned to company',		
-	'field ProjectMilestones assigned_to_user_id' => 'Assigned to user',
 
 	// Message fields
 	'field ProjectMessages title' => 'Title', 
@@ -148,9 +133,6 @@ return array(
     'field ProjectMessages anonymous_comments_enabled' => 'Anonymous comments enabled', 
 	'field ProjectMessages created_on' => 'Created on',
 	'field ProjectMessages updated_on' => 'Updated on',
-	'field ProjectMessages created_by_id' => 'Created by',
-	'field ProjectMessages updated_by_id' => 'Updated by',
-	'field ProjectMessages milestone_id' => 'Milestone',
 
 	// Task fields
 	'field ProjectTasks text' => 'Text',
@@ -166,12 +148,6 @@ return array(
     'field ProjectTasks assigned_on' => 'Assigned on',
 	'field ProjectTasks time_estimate' => 'Time estimate',
 	'field ProjectTasks is_template' => 'Is template',
-	'field ProjectTasks created_by_id' => 'Created by',
-	'field ProjectTasks updated_by_id' => 'Updated by',
-	'field ProjectTasks milestone_id' => 'Milestone',
-	'field ProjectTasks assigned_to_company_id' => 'Assigned to company',		
-	'field ProjectTasks assigned_to_user_id' => 'Assigned to user',
-	'field ProjectTasks completed_by_id' => 'Completed by',
 
 	// User fields
     'field Users username' => 'Username', 
@@ -191,9 +167,6 @@ return array(
     'field Users can_manage_contacts' => 'Can manage contacts',
     'field Users can_manage_templates' => 'Can manage templates',
 	'field Users can_manage_reports'=> 'Can manage reports',
-	'field Users created_by_id' => 'Created by',
-	'field Users updated_by_id' => 'Updated by',
-	'field Users company_id' => 'Company',
 
 	// Webpage fields
     'field ProjectWebpages url' => 'Url', 
@@ -201,8 +174,6 @@ return array(
     'field ProjectWebpages description' => 'Description', 
     'field ProjectWebpages created_on' => 'Created on',
     'field ProjectWebpages updated_on' => 'Updated on',
-	'field ProjectWebpages created_by_id' => 'Created by',
-	'field ProjectWebpages updated_by_id' => 'Updated by',
 
 	// Project fields
 	'field Projects name' => 'Name', 
@@ -210,10 +181,7 @@ return array(
     'field Projects show_description_in_overview' => 'Show description in overview', 
     'field Projects completed_on' => 'Completed on', 
     'field Projects created_on' => 'Created on', 
-    'field Projects updated_on' => 'Updated on',
-	'field Projects created_by_id' => 'Created by', 
-    'field Projects updated_by_id' => 'Updated by',
-	'field Projects completed_by_id' => 'Completed by'  
+    'field Projects updated_on' => 'Updated on' 
 );
 
 ?>

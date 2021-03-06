@@ -300,6 +300,13 @@ og.showAddDocumentDialog = function(genid){
 			form.ready = true;
 			form.onsubmit();
 		}
+		if (commentsRequired && form['file[comment]'].value == '') {
+			Ext.Msg.show({
+			   	title: lang('error'),
+			   	msg: lang('file revision comments required'),
+	   			icon: Ext.MessageBox.ERROR 
+	   		});
+		}
 	};
 
 	og.ExtendedDialog.show(config);

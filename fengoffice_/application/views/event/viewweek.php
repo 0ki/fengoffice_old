@@ -45,7 +45,6 @@ $tags = active_tag();
 	$currentday = $today->format("j");
 	$currentmonth = $today->format("n");
 	$currentyear = $today->format("Y");
-	$weeknumber = $today->format("W");
 	
 	$lastday = date("t", mktime(0, 0, 0, $month, 1, $year)); // # of days in the month
 	
@@ -90,9 +89,9 @@ $tags = active_tag();
 
 		$today_style[$day_of_week] = '';
 		if($currentyear == $dates[$day_of_week]->getYear() && $currentmonth == $dates[$day_of_week]->getMonth() && $currentday == $dates[$day_of_week]->getday()) { // Today
-			$today_style[$day_of_week] = 'background-color:#FFFFCC;';
+			$today_style[$day_of_week] = 'background-color:#FFFF88;opacity:0.4;filter: alpha(opacity = 40);z-index=0;';
 		} else if($year == $year_aux && $month == $month_aux && $day == $day_of_month) { // Selected day
-			$today_style[$day_of_week] = 'background-color:#F5FFFF;';
+			$today_style[$day_of_week] = 'background-color:#E4EEEE;opacity:0.4;filter: alpha(opacity = 40);z-index=0;';
 		}
 
 		
@@ -141,7 +140,7 @@ $tags = active_tag();
 
 <div class="calendar" style="padding:0px;height:100%;overflow:hidden;" id="cal_main_div" onmouseup="clearPaintedCells();">
 <div id="calendarPanelTopToolbar" class="x-panel-tbar" style="width:100%;height:30px;display:block;background-color:#F0F0F0;"></div>
-	
+
 <table style="width:100%;height:100%;">
 <tr>
 <td>
@@ -152,6 +151,7 @@ $tags = active_tag();
 		<table style="width:100%"><tr><td>
 			<span id="chead0">
 			<?php if (user_config_option("show_week_numbers")) {
+				$weeknumber = date("W", mktime(0, 0, 0, $month, $startday, $year));
 				echo lang("week number x", $weeknumber) . " - "; 
 			}?>
 			<?php echo date($date_format, mktime(0, 0, 0, $month, $startday, $year)) ." - ". date($date_format, mktime(0, 0, 0, $month, $endday-1, $year))
@@ -166,10 +166,10 @@ $tags = active_tag();
 			 	 ?>
 			 	<a class="iCalSubscribe" id="ical_link" style="float:right;" href="<?php echo ROOT_URL ."/index.php?c=feed&a=ical_export&n=$export_name&cal=$export_ws&t=".$user->getToken()."&isw=1" ?>" 
 			 		title="<?php echo lang('copy this url in your calendar client software')?>"
-			 		onclick="javascript:Ext.Msg.show({
-										   	title: '<?php echo escape_single_quotes(lang('import events from third party software')) ?>',
-										   	msg: '<?php echo escape_single_quotes(lang('copy this url in your calendar client software')) ."<br><br><br>"?>'+document.getElementById('ical_link').href,
-								   			icon: Ext.MessageBox.INFO });"></a>
+			 		onclick="Ext.Msg.show({
+								title: '<?php echo escape_single_quotes(lang('import events from third party software')) ?>',
+								msg: '<?php echo escape_single_quotes(lang('copy this url in your calendar client software')) ."<br><br><br>"?>'+document.getElementById('ical_link').href,
+								icon: Ext.MessageBox.INFO }); return false;"></a>
 			<?php } ?>
 		 </td></tr></table>	
 	</div>		
@@ -242,7 +242,7 @@ $tags = active_tag();
 		?>
 				<div class="chead cheadNotToday" style="width: <?php echo $width_percent ?>%; left: <?php echo $width ?>%;text-align:center;position:absolute;top:0%;">
 					<span id="chead<?php echo $day_of_week ?>">
-						<a class="internalLink" href="<?php echo $p; ?>"  onclick="event.stopPropagation() "><?php $dtime = mktime(0, 0, 0, $dtv_temp->getMonth(), $dtv_temp->getDay(), $dtv_temp->getYear()); echo lang(strtolower(date("l", $dtime)) . ' short') . date(' '. $format_d_m, $dtime); ?></a>
+						<a class="internalLink" href="<?php echo $p; ?>"  onclick="og.disableEventPropagation(event) "><?php $dtime = mktime(0, 0, 0, $dtv_temp->getMonth(), $dtv_temp->getDay(), $dtv_temp->getYear()); echo lang(strtolower(date("l", $dtime)) . ' short') . date(' '. $format_d_m, $dtime); ?></a>
 					</span>
 				</div>
 				<div id="allDay<?php echo $day_of_week ?>" class="allDayCell" style="left: <?php echo $width ?>%; height: <?php echo $alldaygridHeight ?>px;border-left:3px double #DDDDDD !important; position:absolute;width:3px;z-index:110;background:#E8EEF7;top:0%;"></div>
@@ -292,7 +292,7 @@ $tags = active_tag();
 						<div class="t3 <?php echo  $ws_class?>" style="<?php echo  $ws_style?>;margin:0px 1px 0px 1px;height:0px; border-bottom:1px solid; border-color:<?php echo $border_color ?>"></div>
 						<div class="noleft <?php echo  $ws_class?>" style="<?php echo  $ws_style?>;border-left:1px solid; border-right:1px solid; border-color:<?php echo $border_color ?>">							
 							<div class="" style="overflow: hidden; padding-bottom: 1px;">
-								<nobr style="display: block; text-decoration: none;"><a href='<?php echo $event->getViewUrl()."&amp;view=week"?>' class='internalLink'" onclick="event.stopPropagation();"><img src="<?php echo $img_url?>" align='absmiddle' border='0'> <span style="color:<?php echo $txt_color ?>!important"><?php echo $subject ?></span> </a></nobr>										
+								<nobr style="display: block; text-decoration: none;"><a href='<?php echo $event->getViewUrl()."&amp;view=week"?>' class='internalLink'" onclick="og.disableEventPropagation(event);"><img src="<?php echo $img_url?>" align='absmiddle' border='0'> <span style="color:<?php echo $txt_color ?>!important"><?php echo $subject ?></span> </a></nobr>										
 							</div>
 						</div>
 						<div class="t3 <?php echo  $ws_class;?>" style="<?php echo  $ws_style?>;margin:0px 1px 0px 1px;height:0px; border-top:1px solid; border-color:<?php echo $border_color ?>"></div>
@@ -376,7 +376,7 @@ onmouseup="showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMo
 <?php								} ?>
 									
 									<div id="vd<?php echo $day_of_week ?>" style="left: <?php echo $left ?>%; height: <?php echo (PX_HEIGHT)*24 ?>px;border-left:3px double #DDDDDD !important; position:absolute;width:3px;z-index:110;"></div>
-									<div id="eventowner" style="z-index: 120;" onclick="event.stopPropagation() ">
+									<div id="eventowner" style="z-index: 120;" onclick="og.disableEventPropagation(event) ">
 <?php
 										$cells = array();
 										for ($i = 0; $i < 24; $i++) {
@@ -523,7 +523,7 @@ onmouseup="showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMo
 												addTip('w_ev_div_' + <?php echo $event->getId() ?>, <?php echo json_encode(clean($event->getSubject())) ?>, <?php echo json_encode($tipBody);?>);
 											</script>
 											
-						<div id="w_ev_div_<?php echo $event->getId()?>" class="chip" style="position: absolute; top: <?php echo $top?>px; left: <?php echo $left?>%; width: <?php echo $width?>%;z-index:120;"  onclick="event.stopPropagation()" onmouseup="clearPaintedCells()">
+						<div id="w_ev_div_<?php echo $event->getId()?>" class="chip" style="position: absolute; top: <?php echo $top?>px; left: <?php echo $left?>%; width: <?php echo $width?>%;z-index:120;"  onclick="og.disableEventPropagation(event)" onmouseup="clearPaintedCells()">
 						<div class="t1 <?php echo $ws_class ?>" style="<?php echo $ws_style ?>;margin:0px 2px 0px 2px;height:0px; border-bottom:1px solid;border-color:<?php echo $border_color ?>"></div>
 						<div class="t2 <?php echo $ws_class ?>" style="<?php echo $ws_style ?>;margin:0px 1px 0px 1px;height:1px; border-left:1px solid;border-right:1px solid;border-color:<?php echo $border_color ?>"></div>
 						<div class="chipbody edit og-wsname-color-<?php echo $ws_color?>">
@@ -532,7 +532,7 @@ onmouseup="showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMo
 							<table width="100%"><tr><td>
 								<a 
 								href='<?php echo cal_getlink("index.php?action=viewevent&amp;view=week&amp;id=".$event->getId())."&amp;user_id=".$user_filter;?>'
-								onclick="event.stopPropagation();"
+								onclick="og.disableEventPropagation(event);"
 								class='internalLink'><div style="color:<?php echo $txt_color?>!important;padding-left:5px;font-size:93%;"><?php echo "$start_time"?></div></a>
 							</td><td align="right">
 								<dd><div align="right" style="padding-right:4px;<?php echo ($ev_duration['hours'] == 0 ? 'height:'.$height.'px;' : '') ?>">
@@ -563,7 +563,7 @@ onmouseup="showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMo
 							<dd>
 							<div><a
 								href='<?php echo cal_getlink("index.php?action=viewevent&amp;view=week&amp;id=".$event->getId())."&amp;user_id=".$user_filter;?>'
-								onclick="event.stopPropagation();"
+								onclick="og.disableEventPropagation(event);"
 								class='internalLink'><div style="color:<?php echo $txt_color?>!important;padding-left:5px;font-size:93%;"><?php echo $subject;?></div></a>
 							</div>
 							</dd>

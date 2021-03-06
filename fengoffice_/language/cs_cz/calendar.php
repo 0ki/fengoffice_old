@@ -128,6 +128,9 @@
 	'calendar of' => '{0}\ kalendářů',
 	'all users' => 'Všichni uživatelé',
   	'error delete event' => 'Při mazání události se vyskytla chyba',  
+  	'event invitation response' => 'Event invitation response',
+  	'user will attend to event' => '{0} will attend to this event.',
+  	'user will not attend to event' => '{0} will not attend to this event',  
   
 	"days" => "dny",
 	"weeks" => "týdny",
@@ -141,6 +144,23 @@
 	'duration must be at least 15 minutes' => 'Délka musí být alespoň 15 minut',
   
 	'event dnx' => 'Požadovaná událost neexistuje',
-	'view date title' => 'l, d/m/Y',  
+	'no subject' => 'Žádný předmět',
+	'success import events' => '{0} events were imported.',
+	'no events to import' => 'There are no events for import',
+	'import events from file' => 'Event import from file',
+	'file should be in icalendar format' => 'File should be in iCalendar format',
+	'export calendar' => 'Export kalendáře',
+	'range of events' => 'Event range',
+	'from date' => 'Od',
+	'to date' => 'Do',
+	'success export calendar' => '{0} Events were exported.',
+	'calendar name desc' => 'Name for the calendar to export',
+	'calendar will be exported in icalendar format' => 'Calendar will be exported in iCalendar format.',
+	'view date title' => 'l, m/d/Y',
+
+  	'copy this url in your calendar client software' => 'Copy this url in your calendar client software, in order to import events from this calendar',
+	'import events from third party software' => 'Import events from third party software',
+	'subws' => 'Sub Ws.',
+	'check to include sub ws' => 'Check this to include sub workspaces in the url',
   ); // array
 ?>

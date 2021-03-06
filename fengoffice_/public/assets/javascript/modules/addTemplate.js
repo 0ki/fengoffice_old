@@ -74,8 +74,8 @@ og.templateObjectMouseOut = function() {
 	}
 };
 
-og.templateConfirmSubmit = function() {
-	var div = document.getElementById("<?php echo $genid ?>add_template_objects_div");
+og.templateConfirmSubmit = function(genid) {
+	var div = document.getElementById(genid + "add_template_objects_div");
 	var count = div.getElementsByTagName('input').length;
 	if (count == 0) {
 		return confirm(lang('confirm template with no objects'));

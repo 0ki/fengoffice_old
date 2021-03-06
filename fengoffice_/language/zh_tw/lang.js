@@ -1,7 +1,7 @@
 locale = 'zh_tw';
 addLangs({
- "check in": "<b>存入</b>",
- "cannot check in": "無法存入",
+ 'check in': '<b>存入</b>',
+ 'cannot check in': '無法存入',
  "add as new revision to": "儲存為新版本到",
  "error loading content": "載入內容錯誤，請稍後重試。\\n假如此問題仍舊沒有改善，請聯繫網站管理員。",
  "projects": "工作區",
@@ -495,5 +495,6 @@ addLangs({
  "calendar import - export": "行事曆匯入與匯出",
  "view weblink": "檢視網頁連結",
  "print all groups": "列印",
- "print this group": "列印"
+ "print this group": "列印",
+ 'new version notification title': 'New version'
 });

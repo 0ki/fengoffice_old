@@ -557,5 +557,6 @@ addLangs({
 	'milestones': 'Hitos',
 	'no subject': 'Sin asunto',
 	'add value': 'Agregar valor',
+	'file revision comments required': 'Debe ingresar un comentario de la revisión',
 	'value is already in the list': 'El valor ya se encuentra en la lista'
 });

@@ -358,6 +358,21 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 	 * @throws InvalidInstanceError if $user is not instance of User or AnonymousUser
 	 */
 	function canComment($user) {
+		return self::checkCommentsPermissions($user, ProjectUsers::CAN_WRITE_COMMENTS);
+	} // canComment
+	
+	/**
+	 * Check if specific user can read comments of this object
+	 *
+	 * @param User $user
+	 * @return boolean
+	 * @throws InvalidInstanceError if $user is not instance of User or AnonymousUser
+	 */
+	function canReadComments($user) {
+		return self::checkCommentsPermissions($user, ProjectUsers::CAN_READ_COMMENTS);
+	} // canReadComments
+	
+	private function checkCommentsPermissions($user, $accesLevel) {
 		if(!$this->isCommentable()) return false;
 
 		if(!($user instanceof User) && !($user instanceof AnonymousUser)) {
@@ -370,7 +385,9 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 			$ws = $this->getWorkspaces();
 			$can = false;
 			foreach ($ws as $w) {
-				if($user->isProjectUser($w)) $can = true;
+				if($user->isProjectUser($w) && $user->getProjectPermission($w, $accesLevel)) {
+					$can = true;
+				}
 			}
 			if (!$can) return false;
 		} // if
@@ -380,7 +397,7 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 			if($this->columnExists('anonymous_comments_enabled') && !$this->getAnonymousCommentsEnabled()) return false;
 		} // if
 		return true;
-	} // canComment
+	}
 
 	/**
 	 * Check if specific user can add a timeslot on this object

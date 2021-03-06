@@ -153,7 +153,7 @@
 	'success export calendar' => '{0} esemény exportálva.',
 	'calendar name desc' => 'Az exportálandó naptár neve',
 	'calendar will be exported in icalendar format' => 'A naptár iCalendar formátumban lesz exportálva.',
-	'view date title' => 'l, m/d/Y',  
+	'view date title' => 'l, d/m/Y',  
   ); // array
 ?>
 

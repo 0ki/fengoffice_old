@@ -191,7 +191,7 @@
 	'field Users company_id' => 'Compañía',
 	'field ProjectWebpages created_by_id' => 'Creado por',
 	'field ProjectWebpages updated_by_id' => 'Actualizado por',
-	'field Projects created_on_id' => 'Creado por',
-	'field Projects updated_on_id' => 'Actualizado por',
+	'field Projects created_by_id' => 'Creado por',
+	'field Projects updated_by_id' => 'Actualizado por',
 	'field Projects completed_by_id' => 'Completado por',
 ); ?>

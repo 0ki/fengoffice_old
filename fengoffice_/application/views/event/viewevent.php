@@ -122,7 +122,7 @@ if (isset($event) && $event instanceof ProjectEvent) {
 
 	$otherInvitationsTable = '';
 	if (!$event->isNew()) {
-		$otherInvitations = EventInvitations::findAll(array ('conditions' => 'event_id = ' . $event->getId() . ' AND user_id <> ' . logged_user()->getId()));
+		$otherInvitations = EventInvitations::findAll(array ('conditions' => 'event_id = ' . $event->getId()));
 		if (isset($otherInvitations) && is_array($otherInvitations)) {
 			$otherInvitationsTable .= '<div class="coInputMainBlock adminMainBlock" style="width:70%;">';
 			$otherInvitationsTable .= '<table style="width:100%;"><col width="50%" /><col width="50%" />';

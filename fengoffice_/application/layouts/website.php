@@ -131,7 +131,7 @@ og.loggedUser = {
 	isAdmin: <?php echo logged_user()->isAdministrator() ? 'true' : 'false' ?>
 };
 og.hasNewVersions = <?php
-	if (config_option('upgrade_last_check_new_version', false)) {
+	if (config_option('upgrade_last_check_new_version', false) && logged_user()->isAdministrator()) {
 		echo json_encode(lang('new OpenGoo version available', "#", "og.openLink(og.getUrl('administration', 'upgrade'))"));
 	} else {
 		echo "false";
@@ -163,6 +163,7 @@ setInterval(function() {
 }, 60000);
 
 og.date_format = '<?php echo user_config_option('date_format', 'd/m/Y') ?>';
+og.calendar_start_day = <?php echo user_config_option('start_monday') ? '1' : '0' ?>;
 
 </script>
 <?php include_once(Env::getLayoutPath("listeners"));?>

@@ -76,6 +76,7 @@ addLangs({
 	'edit workspace': 'Kiválasztott projekt szerkesztése',
 	'Cég': 'Cég',
 	'Cégek': 'Cégek',
+	'email': 'E-mail',
 	'checkin': 'Bejelentés',
 	'checkout': 'Kijelentés',
 	'checked out by': 'Bejelentette {0}',
@@ -165,7 +166,6 @@ addLangs({
 	/* contact manager*/
 	'company': 'Cég',
 	'email': 'Email',
-	'email tab': 'Email (BETA)',
 	'add new contact': 'Új ügyfél hozzáadása',
 	'displaying contacts of': 'Ügyfelek listája {0} tól {1} ig {2} ból',
 	'no contacts to display': 'Nincs ilyen ügyfél',
@@ -485,7 +485,7 @@ addLangs({
    	'login dialog desc': 'A kapcsolat ideje lejárt inaktivitás miatt. Lépj be újra!',
    	'user not found' : 'Nincs ilyen felhasználó (id:{0})',
   
-  	'date format' : 'm/d/Y',
+  	'date format' : 'd/m/Y',
   	'date format alternatives' : 'm/d/y|n/j/Y|n/j/y|m/j/y|n/d/y|m/j/Y|n/d/Y',
 	'warning start date greater than due date': 'Figyelem! A kezdő időpont később van a vég időpontnál',
   	
@@ -503,7 +503,7 @@ addLangs({
   	'save changes' : 'Változások mentése',
   	'no filter' : 'Nincs szűrő',
   	'nothing (groups)' : 'Senkik',
-  	'none' : 'Nem',
+  	'none' : 'Összes',
   	'new task time report': 'Új időtartam jelentés',
   	'no images match the specified filter': 'Egyik kép sem felel meg a szűrőnek',
   	
@@ -551,10 +551,10 @@ addLangs({
     
     'reminder_popup': 'Felugró üzenet',
     'reminder_email': 'E-mail',
-    'minutes': 'percek',
-    'weeks': 'hetek',
-    'days': 'napok',
-    'before': 'előtt',
+    'minutes': 'perc',
+    'weeks': 'hét',
+    'days': 'nap',
+    'before': 'előtte',
     'remove object reminder': 'Elmékezetető törlése',
     'apply to subscribers': 'Minden feliratkozottra alkalmazni',
     

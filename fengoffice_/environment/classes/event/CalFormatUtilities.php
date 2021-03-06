@@ -100,10 +100,14 @@ class CalFormatUtilities {
 			if ($event->getTypeId() == 2) $ical_info .= "DTEND;VALUE=DATE:" . $startNext->format('Ymd') ."\r\n";
 			else $ical_info .= "DTEND:" . $event_duration->format('Ymd') ."T". $event_duration->format('His') ."\r\n";
 
+			$uid = $event->getId() . "@";
+			$url = str_replace('http://', '', ROOT_URL);
+			$uid .= str_replace('www.', '', $url);
+			
 			$description = str_replace(chr(13).chr(10),"  ", $event->getDescription());
 			$ical_info .= "DESCRIPTION:$description\r\n";
             $ical_info .= "SUMMARY:" . $event->getSubject() . "\r\n";
-		    $ical_info .= "UID:og_".$event->getCreatedOn()->format('YmdHis') . $event->getId() . "\r\n";
+            $ical_info .= "UID:$uid\r\n";
 		    $ical_info .= "SEQUENCE:0\r\n";
 		    $ical_info .= "DTSTAMP:".$event->getCreatedOn()->format('Ymd').'T'.$event->getCreatedOn()->format('His')."\r\n";
 			
@@ -121,26 +125,26 @@ class CalFormatUtilities {
 				if ($event->getRepeatD() > 0) {
 					if ($event->getRepeatD() % 7 == 0) {
 						$freq = "FREQ=WEEKLY;";
-						$interval = "INTERVAL=".($event->getRepeatD() / 7).";";
+						$interval = "INTERVAL=".($event->getRepeatD() / 7);
 					} else {
 						$freq = "FREQ=DAILY;";
-						$interval = "INTERVAL=".$event->getRepeatD().";";
+						$interval = "INTERVAL=".$event->getRepeatD();
 					}
 				} else if ($event->getRepeatM() > 0) {
 					$freq = "FREQ=MONTHLY;";
-					$interval = "INTERVAL=".$event->getRepeatM().";";
+					$interval = "INTERVAL=".$event->getRepeatM();
 				} else if ($event->getRepeatY() > 0) {
 					$freq = "FREQ=YEARLY;";
-					$interval = "INTERVAL=".$event->getRepeatY().";";
+					$interval = "INTERVAL=".$event->getRepeatY();
 				} else {
 					$rrule_ok = false;
 				}
 				$until = '';
 				$count = '';
-				if (!$event->getRepeatForever() && $event->getRepeatNum() > 0) $count = "COUNT=".$event->getRepeatNum().";";
-				else if (!$event->getRepeatForever() && $event->getRepeatEnd()) $until = "UNTIL=".$event->getRepeatEnd()->format('Ymd').'T'.$event->getRepeatEnd()->format('His').";";
+				if (!$event->getRepeatForever() && $event->getRepeatNum() > 0) $count = ";COUNT=".$event->getRepeatNum();
+				else if (!$event->getRepeatForever() && $event->getRepeatEnd()) $until = ";UNTIL=".$event->getRepeatEnd()->format('Ymd').'T'.$event->getRepeatEnd()->format('His');
 				
-				if ($rrule_ok) $rrule = "RRULE:$freq$interval$count$until\r\n"; 
+				if ($rrule_ok) $rrule = "RRULE:$freq$interval$count$until\r\n";
 			}
 		    $ical_info .= $rrule;
 		    

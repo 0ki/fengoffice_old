@@ -5,7 +5,6 @@
   *
   * @version 1.0
   * @author Ilija Studen <ilija.studen@gmail.com>
-  * @czech translation Ludek Smolik <ludek.smolik@gmail.com>
   */
   
   // Return langs
@@ -25,8 +24,8 @@
     'my account' => 'Můj účet',
     'my documents' => 'Moje dokumenty',
 	'documents' => 'Dokumenty',
-    'my projects' => 'Moje projekty',
-    'my projects archive desc' => 'Seznam uzavřených (archivních) pracovních ploch. Všechny akce pro tyto projekty jsou uzamčené, ale plochy můžete stále prohlížet.',
+    'my projects' => 'Moje pracovní plochy',
+    'my projects archive desc' => 'Seznam uzavřených (archivních) pracovních ploch. Všechny akce pro tyto pracovní plochy jsou uzamčené, ale plochy můžete stále prohlížet.',
     
     'company online' => 'Společnost online',
     
@@ -94,15 +93,21 @@
     // Dashboard
     'welcome to new account' => 'Vítejte ve Vašem nově vytvořeném účtu',
     'welcome to new account info' => '{0}, vítejte ve Vašem novém účtu. Od nynějška bude vždy dostupný na {1} (můžete si uložit tento odkaz do záložek). Můžete pokračovat následujícími jednoduchými kroky:',
-    'new account step1' => 'Krok 1: Aktualizovat iformace o Vaší společnosti',
-    'new account step1 info' => '<a class="internalLink" href="{0}">Nastavte podrobnosti o Vaší společnosti </a> jako je telefonní a faxové číslo, adresa, e-mail, domovská webová stránka atd.',
-    'new account step2' => 'Krok 2: Přidat členy týmu',
-    'new account step2 info' => 'Můžete vytvořit <a class="internalLink" href="{0}">uživatelské pčty </a> pro všechny členy Vašeho týmu (neomezený počet). Každý člen obdrží vlastní uživatelské jméno a heslo pro přístup do systému',
-    'new account step3' => 'Krok 3: Přidat klientské společnosti a jejich členy',
-    'new account step3 info' => 'Nyní je čas <a class="internalLink" href="{0}">definovat klientské společnosti</a> (neomezený počet). Jakmile budete hotivi, můžete přidat jejich členy nebo to ponechat na vedoucích jejich týmů. Tito členové jsou podobní jako členové Vaší společnosti s vyjímkou toho, že mají limitovaný přistup k obsahu a funkcím (můžete nastavit co mohou dělat podle projektu a člena)',
-    'new account step4' => 'Krok 4: Začít s projektem',
-    'new account step4 info' => 'Definování <a class="internalLink" href="{0}">nové projekty je </a> je skutečně snadné: Nastavte název a popis (volitelné) a klikněte na odevzdat. Potom můžete nastavit oprávnění pro členy Vašeho týmu a klienty.',
-    
+    'new account step1 owner' => 'Step 1: Update your company info',
+    'new account step1 owner info' => '<a class="internalLink" href="{0}">Set your company details</a> such as phone and fax number, address, email, homepage etc',
+   	'new account step add members' => 'Step {0}: Add team members',
+    'new account step add members info' => 'You can <a class="internalLink" href="{0}">create user accounts</a> for all members of your team. Every member will get their username and password which they can use to access the system',
+    'new account step start workspace' => 'Step {0}: Start a workspace',
+    'new account step start workspace info' => 'Defining a <a class="internalLink" href="{0}">new workspace</a> is really easy: set a name and description (optional) and click submit. After that you can set permissions for your team members and clients.',
+  	'new account step configuration' => 'Step {0}: Configuration',
+  	'new account step configuration info' => '<a class="internalLink" href="{0}">Manage</a> opengoo general settings, mailing configuration, enable/disable modules, among other options',
+	'new account step profile' => 'Step {0}: Update profile',
+  	'new account step profile info' => 'Update your <a class="internalLink" href="{0}">user profile</a>',
+  	'new account step preferences' => 'Step {0}: Update user preferences',
+  	'new account step preferences info' => 'Update your <a class="internalLink" href="{0}">user preferences</a> such as general preferences, dashboard options and task options',
+  	'new account step actions' => 'Step {0}: Actions',
+  	'getting started' => 'Getting Started',
+  	
     // Application log
     'application log details column name' => 'Detaily',
     'application log project column name' => 'Projekt',
@@ -182,7 +187,7 @@
     'role in project' => 'Role na pracovní ploše \'{0}\'',
     'all contacts' => 'Všechny kontakty',
     'project contacts' => 'Kontakty v {0}', 
-    'select' => 'Select',
+    'select' => 'Vybrat',
   
  	// Contact import
  	'import contacts from csv' => 'Import kontaktů ze souboru .csv',
@@ -199,7 +204,21 @@
 	'contacts import fail' => 'Import kontaktů selhal.',
 	'contacts import fail help' => 'Import může selhat kvůli již existujícím datům v databázi (jako jsou e-mail, adresa atd.).',
 	'import fail reason' => 'Důvod selhání importu',
-  
+	'select a file in order to load its data' => 'Select a csv file in order to load its data for import',
+
+  	// Contact export
+  	'export contacts to csv' => 'Export contacts to .csv file',
+	'export' => 'Export',
+	'fields to export' => 'Information to export',
+	'success export contacts' => 'Contacts successfully exported',
+
+	// Company import/export
+	'import companies from csv' => 'Import companies from .csv file',
+	'company fields' => 'Company Fields',
+	'companies succesfully imported' => 'Companies succesfully imported',
+	'companies import fail' => 'Import failed for companies',
+	'export companies to csv' => 'Export companies to .csv file',
+	'success export companies' => 'Companies succesfully exported',
   
   //Webpages
   'add webpage' => 'Přidat webový odkaz',
@@ -240,21 +259,27 @@
   'classify' => 'Setřídit',
   'classify email' => 'Třídit e-maily',
   'classify email subject' => 'Třídit e-mail: \'{0}\'',
+  'unclassify' => 'Neklasifikováno',
   'add attachments to project' => 'Připojit přílohu k pracovní ploše',
   'project emails' => '{0} e-mailů',
   'edit email account' => 'Upravit {0}',
   'no emails in this project' => 'Pro tento projekt nejsou žádné e-maily.',
-  'mail content' => 'E-mail',
+  'mail content' => 'Email',
   'mail account name description' => 'Název používaný pro identifikací tohoto účtu (např. \'Domácí mailový účet\')',
   'mail account id description' => 'Uživatelský název účtu nebo ID používané pro připojení k serveru (např. \'john@mailserver.com\')',
   'mail account password description' => 'Heslo vyžadované pro připojení k účtu',
   'mail account server description' => 'Adresa mailového serveru (např. \'pop3.mailserver.com\')',
+  'folders to check' => 'Zkontrolovat složky',
+  'after' => 'Poté',
+  'delete mails from server' => 'Smazat maily ze serveru',
+  'mail account delete mails from server description' => 'Enable this option in order to delete mails from server after desired time.',
   
   //Checkout
-  'checkout file' => 'Výstupní kontrolní soubor',
-  'checkin file' => 'Vstupní kontrolní soubor',
+  'checkout file' => 'Uzamknout soubor',
+  'checkin file' => 'Revize souboru',
   
   'new filename' => 'Nový název souboru',
+  'new weblink' => 'Nový odka',
   'add as revision' => 'Přidat jako revizi',
   'duplicate filename' => 'Zdvojený název souboru',
   'filename exists' => 'Soubory s uvedeným názvem již existují. Můžete zvolit jiný název souboru nebo vybrat mezi následujícími možnostmi',
@@ -311,9 +336,10 @@
   'created by' => 'Vytvořil',
   'modified by' => 'Upravil',
   'deleted by' => 'Smazal',
-  'user date' => '<a class="internalLink" href="{0}" title="Zobrazit {3}\ profil">{1}</a>, on {2}',
-  'user date today at' => '<a class="internalLink" href="{0}" title="Zobrazit {3}\ profil">{1}</a>, dnes v {2}',
-  'today at' => 'Dnes v {0}',
+  'checked out by' => 'Checked out by',
+  'user date' => '<a class="internalLink" href="{0}" title="View {3}\'s profile">{1}</a>, on {2}',
+  'user date today at' => '<a class="internalLink" href="{0}" title="View {3}\'s profile">{1}</a>, today at {2}',
+  'today at' => 'Today, at {0}',
   'created by on' => 'Vytvořil <a class="internalLink" href="{0}">{1}</a> na {2}',
   'modified by on' => 'Upravil <a class="internalLink" href="{0}">{1}</a> na {2}',
   'created by on short' => '<a class="internalLink" href="{0}">{1}</a>, {2}',
@@ -446,7 +472,7 @@
   'mobile' => 'Mobil',
   'pager' => 'Pager',
   
-  'roles' => 'Rolee',  
+  'roles' => 'Role',  
   'last updated by on' => '{0}, na {1}',
   'updated' => 'Aktualizováno',
   'group by' => 'Seskupeno od',
@@ -490,10 +516,89 @@
   'my tasks in progress' => 'Moje úkoly ve vývoji',
   'tasks in progress for' => 'Úkoly ve vývoji do {0}',
   
-  'time has to be greater than 0' => 'Čas musí být větší než 0',
+  'time has to be greater than 0' => 'Time has to be greater than 0',
   
+  'release notes' => 'Release notes',
+  
+  'remember last' => 'Remember last',
   'auto' => 'Auto',
-'print all groups' => 'Tisk',  
+  'print all groups' => 'Print all groups',
+  'shared with' => 'Shared with',
+  
+  
+  // Object Sharing
+  'share object desc' => 'An email will be sent inviting each person to view this object',
+  'share with' => 'Share with',
+  'allow people edit object' => 'Allow people to edit object',
+  'must specify recipients' => 'You must spacify at least one email',
+  'share' => 'Share',
+  'share this' => 'Share this',
+  'success sharing object' => 'Object shared successfully',
+  'actually sharing with' => 'Actually sharing with',
+  
+  'share notification message desc' => '{1} invited you to view/edit this note: {0}',
+  'share notification event desc' => '{1} invited you to view/edit this event: {0}',
+  'share notification task desc' => '{1} invited you to view/edit this task: {0}',
+  'share notification document desc' => '{1} invited you to view/edit this document: {0}',
+  'share notification contact desc' => '{1} invited you to view/edit this contact: {0}',
+  'share notification company desc' => '{1} invited you to view/edit this company: {0}',
+  'share notification emailunclassified desc' => '{1} invited you to view/edit this email: {0}',
+  'share notification email desc' => '{1} invited you to view/edit this email: {0}',
+  'share notification file desc' => '{1} invited you to view/edit this file: {0}',
+  'share notification milestone desc' => '{1} invited you to view/edit this milestone: {0}',
+  'share notification weblink desc' => '{1} invited you to view/edit this web link: {0}',
+  
+  'new share notification message' => 'Note \'{0}\' has been shared',
+  'new share notification event' => 'Event \'{0}\' has been shared',
+  'new share notification task' => 'Task \'{0}\' has been shared',
+  'new share notification document' => 'Document \'{0}\' has been shared',
+  'new share notification contact' => 'Contact \'{0}\' has been shared',
+  'new share notification company' => 'Company \'{0}\' has been shared',
+  'new share notification emailunclassified' => 'Email \'{0}\' has been shared',
+  'new share notification email' => 'Email \'{0}\' has been shared',
+  'new share notification file' => 'File \'{0}\' has been shared',
+  'new share notification milestone' => 'Milestone \'{0}\' has been shared',
+  'new share notification weblink' => 'Web link \'{0}\' has been shared',
+  
+  'billing' => 'Billing',
+  'category' => 'Kategorie',
+  'hourly rates' => 'Hourly rates',
+  'origin' => 'Origin',
+  'default hourly rates' => 'Default hourly rates',
+  'add billing category' => 'Add billing category',
+  'new billing category' => 'New billing category',
+  'edit billing category' => 'Edit billing category',
+  'report name' => 'Report display name',
+  'billing categories' => 'Billing categories',
+  'billing category' => 'Billing category',
+  'select billing category' => '-- Select billing category --',
+  'billing amount' => 'Amount',
+  'hourly billing' => 'Hourly billing',
+  'fixed billing' => 'Fixed billing',
+  'show billing information' => 'Show billing information',
+  'no billing categories' => 'There are no billing categories.',
+  'no billing categories desc' => 'If you wish to enable billing support for timeslots and time reports, please add a new billing category.',
+  'billing support is enabled' => 'Billing support is enabled',
+  'BillingCategory default_value required' => 'A default hourly rate is required for this billing category',
+  'defined in a parent workspace' => 'Defined in a parent workspace',
+  'defined in the current workspace' => 'Defined in the current workspace',
+  'total billing by user' => 'Total billing by user',
+  'assign billing categories to users' => 'Assign billing categories to users',
+  'new version notification title' => 'New version',
+  
+  'workspace contacts' => 'Contacts',
+  'search contact' => 'Search contact',
+  'add new contact' => 'Add new contact',
+  'no contacts to display' => 'No contacts to display',
+  'workspace info' => 'Workspace information',
+  'workspace description' => 'Workspace description for \'{0}\'',
+  'show all amount' => 'Show all ({0})',
+  'searching' => 'Searching',
+  
+  'weblink' => 'Weblink',
+  
+  'add value' => 'Přidat hodnotu',
+  'remove value' => 'Odstranit hodnotu'
   ); // array
 
 ?>

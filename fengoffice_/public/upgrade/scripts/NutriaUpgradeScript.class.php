@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Nutria upgrade script will upgrade OpenGoo 1.3.1 to OpenGoo 1.4
+ * Nutria upgrade script will upgrade OpenGoo 1.3.1 to OpenGoo 1.4.1
  *
  * @package ScriptUpgrader.scripts
  * @version 1.4
@@ -41,7 +41,7 @@ class NutriaUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('1.3.1');
-		$this->setVersionTo('1.4');
+		$this->setVersionTo('1.4.1');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -307,6 +307,7 @@ class NutriaUpgradeScript extends ScriptUpgraderScript {
 				 ON DUPLICATE KEY UPDATE id=id;
 				UPDATE `".TABLE_PREFIX."user_ws_config_options`
 					SET `is_system` = 1, `category_name` = 'context help' WHERE `name` = 'show_tasks_context_help';
+				DELETE FROM `".TABLE_PREFIX."config_options` where name='upgrade_check_enabled';
 				";
 			}
 		}
@@ -325,10 +326,34 @@ class NutriaUpgradeScript extends ScriptUpgraderScript {
 		$config_file = INSTALLATION_PATH . '/config/config.php';
 		$config_lines = file($config_file);
 		$new_config = array();
+		// Check SEED definition existence
+		$add_seed = true;
+		foreach($config_lines as $line){
+			if (str_starts_with(trim($line), "define('SEED'")) {
+				$add_seed = false;
+				break;
+			}
+		}
 		foreach($config_lines as $line){
 			$new_config[] = $line;
-			if(trim($line) == "<?php"){
+			if($add_seed && trim($line) == "<?php"){
 				$new_config[] = "  define('SEED', '".DB_USER.DB_PASS.rand(0,10000000000)."');\n";
+			}
+		} 
+		if (!$add_seed) { //remove repeated SEED definitions
+			$i = 0;
+			$lines_to_remove = array();
+			while ($i < count($config_lines)) {
+				$line = $new_config[$i];
+				if (str_starts_with(trim($line), "define('SEED'")) {
+					$lines_to_remove[] = $i;
+				}
+				$i++;
+			}
+			// remove SEED lines except the last one
+			unset($lines_to_remove[count($lines_to_remove) - 1]);
+			foreach($lines_to_remove as $index) {
+				$new_config[$index] = '';
 			}
 		}
 		$new_content = join('', $new_config);

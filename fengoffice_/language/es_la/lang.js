@@ -557,5 +557,6 @@ addLangs({
 	'checkout and download': 'Bloquear y descargar',
 	'download only': 'Sólo descargar',
 	'checkout recommendation': '¿Planea editar este documento? De ser así se recomienda que bloquee el documento al descargarlo.',
+	'file revision comments required': 'Debe ingresar un comentario de la revisión',
 	'value is already in the list': 'El valor ya está en la lista'
 });

@@ -538,7 +538,7 @@ class ContactController extends ApplicationController {
 		}
 		$this->setTemplate('edit_contact');
 
-		if(!Contact::canAdd(logged_user(),active_or_personal_project())) {
+		if(!Contact::canAdd(logged_user(),active_project())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
@@ -584,8 +584,16 @@ class ContactController extends ApplicationController {
 				if($newCompany)
 					$contact->setCompanyId($company->getId());
 				$contact->setIsPrivate(false);
+
+				//link it!
+			    $object_controller = new ObjectController();
+			    $object_controller->link_to_new_object($contact);								
+				
 				$contact->save();
 				$contact->setTagsFromCSV(array_var($contact_data, 'tags'));
+				
+				$object_controller->add_subscribers($contact);
+				$object_controller->add_custom_properties($contact);
 				
 				foreach($im_types as $im_type) {
 					$value = trim(array_var($contact_data, 'im_' . $im_type->getId()));
@@ -602,19 +610,6 @@ class ContactController extends ApplicationController {
 					} // if
 				} // foreach
 				
-				//link it!
-			    $object_controller = new ObjectController();
-			    $object_controller->link_to_new_object($contact);
-				$object_controller->add_subscribers($contact);
-				$object_controller->add_custom_properties($contact);
-
-				ApplicationLogs::createLog($contact, null, ApplicationLogs::ACTION_ADD);
-				
-				DB::commit();
-
-				flash_success(lang('success add contact', $contact->getDisplayName()));
-				ajx_current("back");
-
 				if(active_project() instanceof Project)
 				{
 					if(!ProjectContact::canAdd(logged_user(), active_project())) {
@@ -631,9 +626,14 @@ class ContactController extends ApplicationController {
 					DB::beginWork();
 					$pc->save();
 					DB::commit();
-//					ApplicationLogs::createLog($contact, $contact->getWorkspaces(), ApplicationLogs::ACTION_ADD);
-
 				}
+
+				ApplicationLogs::createLog($contact, null, ApplicationLogs::ACTION_ADD);
+				
+				DB::commit();
+
+				flash_success(lang('success add contact', $contact->getDisplayName()));
+				ajx_current("back");
 
 				// Error...
 			} catch(Exception $e) {
