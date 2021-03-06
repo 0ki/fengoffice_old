@@ -280,6 +280,9 @@ class ApplicationLogs extends BaseApplicationLogs {
 				WHERE $permissions_condition AND $extra_conditions";
 		if ($members_sql != "") {
 			$sql .= " AND $members_sql";
+			
+			//do not display users logs
+			$sql .= " AND NOT EXISTS(SELECT con.object_id FROM ".TABLE_PREFIX."contacts con WHERE con.object_id=rel_object_id AND user_type > 0)";
 		}
 		$sql .= " ORDER BY created_on DESC LIMIT 100";
 		$id_rows = array_flat(DB::executeAll($sql));

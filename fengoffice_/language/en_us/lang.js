@@ -951,5 +951,8 @@ addLangs({
 	'click here': 'Click here',
 	'more-panel': 'Settings',
 	'select user group': 'Select user group',
-	'at least one dimension must be selected': 'At least one dimension must be selected.'
+	'at least one dimension must be selected': 'At least one dimension must be selected.',
+	
+	'push' : 'Push',
+	'move tasks forward' : 'Move tasks forward'
 });

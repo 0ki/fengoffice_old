@@ -1493,3 +1493,4 @@ ogTasks.newTaskGroupTotals = function(format_group_totals) {
 	return html;
 		
 }
+

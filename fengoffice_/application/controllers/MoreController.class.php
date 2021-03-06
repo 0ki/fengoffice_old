@@ -88,6 +88,19 @@ class MoreController extends ApplicationController {
 			);
 			$other_modules[] = $gantt_info;
 		}
+		
+		// member_custom_properties
+		$member_custom_properties_plugin = Plugins::instance()->findOne(array('conditions' => "name='member_custom_properties'"));
+		if ($member_custom_properties_plugin instanceof Plugin) {
+			$member_custom_properties_plugin = array(
+					'id' => 'member_custom_properties',
+					'name' => lang('member_custom_properties'),
+					'enabled' => $member_custom_properties_plugin->isActive(),
+					'ico' => 'ico-large-custom-properties',
+					'hint' => str_replace("'", "\'", ""),
+			);
+			$other_modules[] = $member_custom_properties_plugin;
+		}
 
 		
 		

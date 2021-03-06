@@ -77,6 +77,9 @@
 	/*background-image: url(../../images/16x16/2arrowright.png) !important;*/
 	background-image: url(../../images/icons-feng-3/16x16/2arrowright.png) !important;
 }
+.ico-2arrowrightsmall {
+	background-image: url(../../images/icons-feng-3/16x16/2arrowrightsmall.png) !important;
+}
 .ico-arrowup {
 	background-image: url(../../images/icons-feng-3/16x16/arrowup.png) !important;
 }

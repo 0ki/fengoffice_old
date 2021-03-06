@@ -259,7 +259,7 @@ class ObjectController extends ApplicationController {
 			return;
 		}
 		
-		$object->removeFromMembers($user, $enteredMembers);
+		$removedMemebersIds = $object->removeFromMembers($user, $enteredMembers);
 		/* @var $object ContentDataObject */
 		$validMembers = $check_allowed_members ? $object->getAllowedMembersToAdd($user,$enteredMembers) : $enteredMembers;
 
@@ -280,6 +280,8 @@ class ObjectController extends ApplicationController {
 		
 		Hook::fire ('after_add_to_members', $object, $validMembers);
 		
+		Hook::fire ('after_remove_members_from_object', $object, $removedMemebersIds);
+				
 		$object->addToSharingTable();
 		
 		// add timeslots to members
@@ -296,6 +298,12 @@ class ObjectController extends ApplicationController {
 					}
 				}
 			}
+		}
+		
+		//add to the object instance the members only if members value of the object is not null 
+		//because in that case when we ask for the members of the object we load them from db
+		if ( !is_null($object->members) ) {
+			$object->members = $validMembers;
 		}
 		
 		return $validMembers;

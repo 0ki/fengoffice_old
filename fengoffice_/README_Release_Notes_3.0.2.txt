@@ -1,5 +1,5 @@
 
-	About Feng Office 3.0.1
+	About Feng Office 3.0.2
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -105,6 +105,16 @@
 	Changelog
 	=========
 	
+	
+	Since 3.0.1
+	----------------
+	bugfix: after removing a member from a task, refresh member status.
+	bugfix: after ading a task, refresh member status.
+	bugfix: after editing status formulas, refresh all members statuses.
+	bugfix: add billing view.
+	bugfix: performance problem displaying contacts birthday
+	
+	feature: push tasks dates.
 	
 	Since 3.0
 	----------------

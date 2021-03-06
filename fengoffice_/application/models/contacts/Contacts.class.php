@@ -25,11 +25,11 @@ class Contacts extends BaseContacts {
 		
 		$conditions = $extra_conds ? $extra_conds : "";
 		if (!$can_manage_contacts) {
-			$conditions .= ($extra_conds ? " AND " : "") . "e.user_type>0 OR e.object_id IN (
+			$conditions .= ($extra_conds ? " AND " : "") . "(e.user_type>0 AND e.object_id IN (
 				SELECT st.object_id FROM ".TABLE_PREFIX."sharing_table st WHERE st.group_id IN (
 					SELECT pg.permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups pg WHERE pg.contact_id = ".logged_user()->getId()."
 				)
-			)";
+			))";
 		}
 		
 		$contacts = Contacts::instance()->findAll(array('conditions' => $conditions));
@@ -325,8 +325,7 @@ class Contacts extends BaseContacts {
 			WHERE 
 				o.archived_by_id = 0 AND 
 				o.trashed_by_id = 0 AND 
-				ce.email_address = '$email' AND
-                                c.user_type <> 0
+				ce.email_address = '$email'                               
 				$id_cond
 				LIMIT 1 ";
 		

@@ -44,6 +44,7 @@
   				$member_ids = $members_to_remove;
   			}
   			
+  			$memebers_deleted_ids = array();
   			foreach($member_ids as $id){
 				
 				$member = Members::findById($id);
@@ -57,6 +58,7 @@
 					$om = self::findById(array('object_id' => $object->getId(), 'member_id' => $id));
 					if ($om instanceof ObjectMember) {
 						$om->delete();
+						$memebers_deleted_ids[] = $id;
 					}
 					
 					$stop = false;
@@ -71,6 +73,8 @@
 					}
 				}
 			}
+			
+			return $memebers_deleted_ids;
   		}
   		
   		

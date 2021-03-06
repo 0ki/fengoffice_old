@@ -840,5 +840,8 @@ addLangs({
 	
 	'birthdays': 'Cumpleaños',
 	'email address': 'Correo',
-	'home': 'Inicio'
+	'home': 'Inicio',
+	
+	'push' : 'Mover',
+	'move tasks forward' : 'Mover las tareas hacia adelante'
 });

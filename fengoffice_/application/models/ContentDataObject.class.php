@@ -1521,7 +1521,7 @@ abstract class ContentDataObject extends ApplicationDataObject {
 	
 	
 	function removeFromMembers(Contact $user, $members_array){
-		ObjectMembers::removeObjectFromMembers($this,$user, $members_array);
+		return ObjectMembers::removeObjectFromMembers($this,$user, $members_array);
 	}
 	
 	

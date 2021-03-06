@@ -83,6 +83,17 @@
 		include $template;
 	}
 	
+	// Include plguin specif templates
+	foreach (Plugins::instance()->getActive() as $p) {		
+		$templates_file =	PLUGIN_PATH ."/".$p->getSystemName()."/application/views/html_templates.php" ;
+		if (is_file($templates_file)) {
+			$plugins_html_templates = include $templates_file;
+			foreach ($plugins_html_templates as $pl_template) {
+				include PLUGIN_PATH ."/".$p->getSystemName()."/application/views/".$pl_template;
+			}
+		}
+	}
+	
 	// Include plguin specif js
 	foreach (Plugins::instance()->getActive() as $p) {
 		/* @var $p Plugin */

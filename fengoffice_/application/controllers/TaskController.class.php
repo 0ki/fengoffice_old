@@ -190,7 +190,10 @@ class TaskController extends ApplicationController {
 				
 				// subscribe
 				$task->subscribeUser(logged_user());
-                                
+
+				//for calculate member status we save de task again after the object have the members
+				$task->save();
+				
 				DB::commit();
 				$isSailent = true;
 				// notify asignee
@@ -468,6 +471,9 @@ class TaskController extends ApplicationController {
 					$this->repetitive_tasks_related($task, "edit", $type_related, $task_data);
 				}
 
+				//for calculate member status we save de task again after the object have the members
+				$task->save();
+				
 				DB::commit();
 				
 				// notify asignee
@@ -693,6 +699,37 @@ class TaskController extends ApplicationController {
 					case 'resume_work':
 						if ($task->canEdit(logged_user())){
 							$task->resumeTimeslots(logged_user());
+							$tasksToReturn[] = $task->getArrayInfo();
+							$showSuccessMessage = false;
+						}
+						break;
+					case 'push_tasks_dates':
+						if ($task->canEdit(logged_user())){
+							$time_push = 0;
+							$time = array_var($_POST, 'time');
+							
+							if(isset($time["days"]) && (int)$time["days"] > 0){
+								$time_push = (int)$time["days"] * 24;
+							}
+							
+							if (config_option('use_time_in_task_dates')) {
+								if(isset($time["hours"]) && (int)$time["hours"] > 0){
+									$time_push += (int)$time["hours"];
+								}
+							}
+														
+							if($time_push > 0){								
+								$dd = $task->getDueDate() instanceof DateTimeValue ? $task->getDueDate() : null;
+								$sd = $task->getStartDate() instanceof DateTimeValue ? $task->getStartDate()->advance(logged_user()->getTimezone() * 3600, false) : null;
+									
+								if($dd){
+									$task->setDueDate($dd->advance($time_push * 3600, false));
+								}
+								if($sd){
+									$task->setStartDate($sd->advance($time_push * 3600, false));
+								}
+							}
+							$task->save();
 							$tasksToReturn[] = $task->getArrayInfo();
 							$showSuccessMessage = false;
 						}
@@ -1467,6 +1504,10 @@ class TaskController extends ApplicationController {
 					Hook::fire('save_subtasks', $task, $subtasks);
 				}
 				
+
+				//for calculate member status we save de task again after the object have the members
+				$task->save();
+				
 				DB::commit();
 				
 				// save subtasks added in 'subtasks' tab
@@ -2140,6 +2181,9 @@ class TaskController extends ApplicationController {
 						Hook::fire('edit_subtasks', $task, $null);
 					}
 				}
+				
+				//for calculate member status we save de task again after the object have the members
+				$task->save();
 
 				DB::commit();
 				

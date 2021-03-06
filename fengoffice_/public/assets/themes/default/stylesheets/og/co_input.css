@@ -103,6 +103,10 @@
 	/*padding: 15px 0 0;*/
 }
 
+.billing .coInputMainBlock label {
+	float: none;
+}
+
 .task-data .left-section, .task-data .right-section {
 	float: left;
 }

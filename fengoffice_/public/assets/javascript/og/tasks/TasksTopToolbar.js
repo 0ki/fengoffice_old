@@ -253,7 +253,7 @@ og.TasksTopToolbar = function(config) {
     //Add stuff to the toolbar
 	if (!og.loggedUser.isGuest) {
 		this.add(butt);
-		this.addSeparator();
+		this.addSeparator();		
 		this.add(actions.complete);
 		this.add(actions.archive);
 		this.add(actions.del);		
@@ -542,7 +542,7 @@ Ext.extend(og.TasksTopToolbar, Ext.Toolbar, {
 			this.markactions.markAsRead.disable();
 			this.markactions.markAsUnread.disable();
 		} else {
-			this.actions.del.enable();
+			this.actions.del.enable();			
 			this.actions.archive.enable();
 			if (allUnread) {
 				this.markactions.markAsUnread.disable();
@@ -561,6 +561,8 @@ Ext.extend(og.TasksTopToolbar, Ext.Toolbar, {
 			}
 				
 		}
+		
+		og.eventManager.fireEvent('task list updateCheckedStatus', {checked:checked});
 		
 	}
 });
