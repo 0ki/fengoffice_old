@@ -1,6 +1,6 @@
 <div class="dimension-selector-container <?php  if ($horizontal) echo "dimension-selector-container-horizontal";?>">
-<?php if (!isset($hide_label) || !$hide_label) : ?>
-	<label style="margin-right: 10px; min-width: 0px;font-size: 100%; <?php  if (!$horizontal) echo "float:left;";?>"><?php echo (isset($label) && $label != '' ? $label : $dimension_name) ?>:</label>
+<?php if (!isset($hide_label) || !$hide_label) : /*margin-right: 10px; min-width: 0px;*/?>
+	<label style="font-size: 100%; <?php  if (!$horizontal) echo "float:left;";?>"><?php echo (isset($label) && $label != '' ? $label : $dimension_name) ?>:</label>
 <?php endif;
 
 $container_width = 385;

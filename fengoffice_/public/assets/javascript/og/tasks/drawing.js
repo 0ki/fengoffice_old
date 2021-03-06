@@ -479,6 +479,7 @@ ogTasks.draw = function(){
 	}
 	
 	
+	$("#tasksPanel").parent().css('overflow', 'hidden');
 	
 	//fire event
 	og.eventManager.fireEvent('after ogTasks.Groups list completely loaded', null);

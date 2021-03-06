@@ -573,8 +573,32 @@ og.showPermissionsPopup = function(genid, dim_id, mem_id, name, set_default_perm
 			if (set_default_permissions) {
 				og.setDefaultPermissionsForMember(genid, dim_id, mem_id, role_id);
 			}
+			
+			// show only the possible radio buttons for permissions (depending on role)
+			og.showHidePermissionsRadioButtonsByRole(genid, dim_id, role_id);
 		}
 	});
+}
+
+og.showHidePermissionsRadioButtonsByRole = function(genid, dim_id, role_id) {
+	var max_perms = og.defaultRoleObjectTypePermissions[role_id];
+	
+	var object_types = [];
+	var ot_radios = $("#"+genid+"member_permissions"+dim_id+" input.radio_3");
+	for (var j=0; j<ot_radios.length; j++) {
+		var ot = ot_radios[j].id.substring(ot_radios[j].id.lastIndexOf('_')+1);
+		object_types.push(ot);
+	}
+		
+	for (var i=0; i<object_types.length; i++) {
+		var ot = object_types[i];
+		
+		if (max_perms[ot] && max_perms[ot].can_delete) $("#" + genid + "rg_3_" + dim_id + '_' + ot).show();
+		else $("#" + genid + "rg_3_" + dim_id + '_' + ot).hide();
+		
+		if (max_perms[ot] && max_perms[ot].can_write) $("#" + genid + "rg_2_" + dim_id + '_' + ot).show();
+		else $("#" + genid + "rg_2_" + dim_id + '_' + ot).hide();
+	}
 }
 
 og.afterChangingPermissions = function(genid) {
@@ -1074,6 +1098,13 @@ og.afterUserTypeChange = function(genid, type) {
 			  guest_selected = true;
 			  break;
 		  }
+	  }
+	  
+	  var executive_selected = og.executive_permission_group_ids.indexOf(type) >= 0;
+	  if (executive_selected) {
+		  $("#"+genid+"_root_permissions").show();
+	  } else {
+		  $("#"+genid+"_root_permissions").hide();
 	  }
 
 	  og.showHideNonGuestPermissionOptions(guest_selected);

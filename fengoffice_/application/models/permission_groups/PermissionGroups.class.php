@@ -25,6 +25,14 @@
     	return self::findAll(array("conditions" => "parent_id IN (SELECT p.id FROM ".TABLE_PREFIX."permission_groups p WHERE p.name='GuestGroup')"));
     }
     
+    function getCollaboratorPermissionGroups() {
+    	return self::findAll(array("conditions" => "parent_id IN (SELECT p.id FROM ".TABLE_PREFIX."permission_groups p WHERE p.name='CollaboratorGroup')"));
+    }
+    
+    function getExecutivePermissionGroups() {
+    	return self::findAll(array("conditions" => "parent_id IN (SELECT p.id FROM ".TABLE_PREFIX."permission_groups p WHERE p.name='ExecutiveGroup')"));
+    }
+    
     static function getNonRolePermissionGroups() {
 		$order = '`name` ASC';
         return self::findAll(array("conditions" => "`type` = 'user_groups'",  "order" => $order));

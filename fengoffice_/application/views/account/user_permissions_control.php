@@ -149,6 +149,11 @@ og.permissionDimensions.push(<?php echo $dimension->getId() ?>);
 
 
 $(function(){
+
+	<?php if (isset($user_type) && $user_type > 0) { ?>
+	og.showHidePermissionsRadioButtonsByRole('<?php echo $genid?>', '<?php echo $dimension->getId() ?>', '<?php echo $user_type?>');
+	<?php } ?>
+	
 	var with_perm_tree = Ext.getCmp('<?php echo $genid . '_with_permissions_' . $dimension->getId() . '-tree'?>');
 	if (with_perm_tree) {
 		with_perm_tree.addClass('with-permissions-tree');

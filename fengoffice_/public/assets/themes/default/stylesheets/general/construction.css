@@ -88,6 +88,7 @@
 	background-repeat: no-repeat;
 	height: 55px;
 	margin-left: 15px;
+	cursor: pointer;
 }
 
 #logodiv img, #logodiv a, #logodiv h1, #logodiv div

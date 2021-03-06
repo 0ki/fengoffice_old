@@ -51,7 +51,7 @@ if($current_member instanceof Member){
 						</div>
 					</td><td>
 						<div style="float: left; margin-top:10px; margin-left: 10px;width: 100%;" class="activity-info">
-							<div><?php echo $acts['act_data'][$k] ?><div class="activity-breadcrumb-container"><span class="breadcrumb"></div></span></div>
+							<div><?php echo $acts['act_data'][$k] ?><div class="activity-breadcrumb-container" style="margin-top:4px;"><span class="breadcrumb"></div></span></div>
 							<script>
                         	
                         	var crumbHtml  =  <?php echo $crumbJs?>;

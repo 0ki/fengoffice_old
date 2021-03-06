@@ -112,7 +112,7 @@ Hook::fire('object_edit_categories', $object, $categories);
 	<?php if ($file->isNew()) { ?>
 	<div id="<?php echo $genid ?>addFileFilename" style="<?php echo $file->isNew()? 'display:none' : '' ?>">
 		<div class="coInputHeaderUpperRow" id="<?php echo $genid?>_chfilename_label">
-			<div class="coInputTitle" style="margin-top: 2px;"><?php echo lang('filename') ?></div>
+			<div class="coInputTitle" style="margin-top: -1px;"><?php echo lang('filename') ?></div>
 		</div>
 		<div class="coInputName">
 	      	<?php
@@ -476,6 +476,8 @@ Hook::fire('object_edit_categories', $object, $categories);
         	<?php if ($file->isNew()) { ?>
             var w = $(".simplemodal-data .coInputHeader .coInputName input.title").width();
         	$(".simplemodal-data .coInputHeader .coInputName input.title").css('width', (2*w)+'px');
+        	$(".simplemodal-data .coInputHeader .coInputName").css('width', (2*w + 10)+'px');
+        	
         	<?php } ?>
 
         	var wl1 = $("#<?php echo $genid?>_title_label .coInputTitle").width();
@@ -485,5 +487,6 @@ Hook::fire('object_edit_categories', $object, $categories);
         	$("#<?php echo $genid?>_chfilename_label .coInputTitle").css('width', wl3+'px');
         	
         	$(".simplemodal-data .coInputHeader .coInputName").css('white-space', 'nowrap');
+
         }, 500);
 </script>

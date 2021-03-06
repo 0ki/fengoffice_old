@@ -5,6 +5,11 @@
  	min-height: 20px;
 }
 
+#templateConteiner .coInputMainBlock label {
+	float: none;
+	min-width: 0px;
+}
+
 .template-add-template-object {
 	position: relative;
 	background-repeat: no-repeat;

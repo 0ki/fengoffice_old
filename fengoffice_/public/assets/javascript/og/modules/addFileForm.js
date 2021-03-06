@@ -85,6 +85,7 @@ og.doFileUpload = function(genid, config) {
 	var fileInput = document.getElementById(genid + 'fileFormFile');
 	var fileParent = fileInput.parentNode;
 	fileParent.removeChild(fileInput);
+	fileParent.innerHTML = '&nbsp;';
 	var form = document.createElement('form');
 	form.method = 'post';
 	form.enctype = 'multipart/form-data';
@@ -97,6 +98,7 @@ og.doFileUpload = function(genid, config) {
 	og.submit(form, {
 		callback: function() {
 			form.removeChild(fileInput);
+			fileParent.innerHTML = '';
 			fileParent.appendChild(fileInput);
 			document.body.removeChild(form);
 			if (typeof config.callback == 'function') {

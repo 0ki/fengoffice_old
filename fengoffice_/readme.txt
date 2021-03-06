@@ -1,5 +1,5 @@
 
-	About Feng Office 3.0-rc
+	About Feng Office 3.0-rc2
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -104,6 +104,15 @@
 	
 	Changelog
 	=========
+	
+	Since 3.0-rc
+	----------------
+	bugfix: Enabled_dimensions where not inserted correctly by plugins installation.
+	bugfix: When uploading a file, blue button moves left and then returns to its original place.
+	bugfix: Logo is not clickable.
+	bugfix: When modal form is rendered and controller sends an error, screen is masked anyways.
+	bugfix: Don't show radio buttons to delete/write if role cannot delete or write (e.g.: collaboratos cannot delete som object types).
+	bugifx: Collaborators and guests should not have root permissions.
 	
 	Since 3.0-beta
 	----------------

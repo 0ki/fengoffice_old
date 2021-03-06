@@ -2863,6 +2863,8 @@ og.render_modal_form = function(genid, options) {
 	og.openLink(og.getUrl(options.c, options.a, parameters), {
 		preventPanelLoad: true,
 		callback: function(success, data) {
+			
+			if (!success) return;
 
 			var id = genid + (options.id ? options.id : '');
 			var div = document.createElement('div');

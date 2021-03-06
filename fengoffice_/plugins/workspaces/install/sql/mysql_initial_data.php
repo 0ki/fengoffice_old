@@ -36,7 +36,7 @@ UPDATE `<?php echo $table_prefix ?>contact_config_options`
  WHERE name='root_dimensions';
 
 UPDATE `<?php echo $table_prefix ?>config_options` 
- SET value = concat(value,',', (SELECT `id` FROM `<?php echo $table_prefix ?>dimensions` WHERE `code`='workspaces')) 
+ SET value = concat(`<?php echo $table_prefix ?>config_options`.`value`,',', (SELECT `id` FROM `<?php echo $table_prefix ?>dimensions` WHERE `code`='workspaces')) 
  WHERE name='enabled_dimensions';
 
 

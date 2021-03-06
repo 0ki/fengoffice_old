@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Mondongo upgrade script will upgrade FengOffice 2.7.1.1 to FengOffice 3.0-rc
+ * Mondongo upgrade script will upgrade FengOffice 2.7.1.1 to FengOffice 3.0-rc2
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -40,7 +40,7 @@ class MondongoUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('2.7.1.1');
-		$this->setVersionTo('3.0-rc');
+		$this->setVersionTo('3.0-rc2');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -104,6 +104,12 @@ class MondongoUpgradeScript extends ScriptUpgraderScript {
 		
 		// Set upgrade queries	
 		if (version_compare($installed_version, '3.0-beta') < 0) {
+			
+			if (!$this->checkColumnExists($t_prefix . "system_permissions", "can_manage_contacts", $this->database_connection)) {
+				$upgrade_script .= "
+					ALTER TABLE `".$t_prefix."system_permissions` ADD COLUMN `can_manage_contacts` BOOLEAN NOT NULL DEFAULT 0;
+				";
+			}
 			
 			$upgrade_script .= "
 				INSERT INTO ".$t_prefix."tab_panels (id,title,icon_cls,default_controller,default_action,type,ordering) VALUES
@@ -211,6 +217,9 @@ class MondongoUpgradeScript extends ScriptUpgraderScript {
 					role_id IN (SELECT id FROM ".$t_prefix."permission_groups WHERE type='roles' AND name IN ('Internal Collaborator','External Collaborator','Collaborator Customer'));
 			";
 		}
+		
+		
+		
 		
 		// Execute all queries
 		if(!$this->executeMultipleQueries($upgrade_script, $total_queries, $executed_queries, $this->database_connection)) {

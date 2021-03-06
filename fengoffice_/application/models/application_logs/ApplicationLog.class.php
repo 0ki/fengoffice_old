@@ -172,7 +172,7 @@ class ApplicationLog extends BaseApplicationLog {
 			}
 			
 			$object_link = '<a style="font-weight:bold" href="' . $object->getObjectUrl() . '">&nbsp;'.
-			'<span style="padding: 1px 0 3px 18px;" class="db-ico ico-unknown ico-' . $type . $icon_class . '"/>'.clean($object->getObjectName()).'</a>';
+			'<span style="padding: 2px 0 3px 24px;" class="link-ico ico-unknown ico-' . $type . $icon_class . '"/>'.clean($object->getObjectName()).'</a>';
 		} else{
 			$object_link = clean($this->getObjectName()).'&nbsp;'.lang('object is deleted');
 		}	
@@ -317,7 +317,7 @@ class ApplicationLog extends BaseApplicationLog {
 			}
 			if (($type != 'Time') || ($type == 'Time' && $object->getRelObjectId() != 0)){
 				$object_link = '<br /><a style="font-weight:bold" href="' . $object->getObjectUrl() . '">'.
-				'<span style="padding: 1px 0 3px 18px;" class="db-ico ico-unknown ico-' . $type . $icon_class . '"/>'.clean($object->getObjectName()).'</a>';
+				'<span style="padding: 2px 0 3px 24px;" class="link-ico ico-unknown ico-' . $type . $icon_class . '"/>'.clean($object->getObjectName()).'</a>';
 			} else {
 				//if it is a general timeslot
 				$object_link = '<span style="padding: 1px 0 3px 18px; font-weight:bold;" class="db-ico ico-unknown ico-' . $type . $icon_class . '"/>'.clean($object->getObjectName());

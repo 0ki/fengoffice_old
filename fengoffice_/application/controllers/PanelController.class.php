@@ -19,7 +19,7 @@ class PanelController extends ApplicationController {
 				WHERE 
 					enabled = 1 AND					
 					( 	
-						type = 'system' OR 
+						plugin_id IS NULL OR plugin_id=0 OR
 						plugin_id IN (SELECT id FROM ".TABLE_PREFIX."plugins WHERE is_installed = 1 AND is_activated = 1) 
 					)
 					AND id IN (SELECT tab_panel_id FROM ".TABLE_PREFIX."tab_panel_permissions WHERE permission_group_id IN ($contact_pg_ids))

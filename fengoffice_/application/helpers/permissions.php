@@ -825,7 +825,8 @@
 					$system_permissions->save();
 					
 					//object type root permissions
-					if ($rp_genid) {
+					$can_have_root_permissions = in_array($user_type_name, array('Super Administrator','Administrator','Manager','Executive'));
+					if ($rp_genid && $can_have_root_permissions) {
 						ContactMemberPermissions::delete("permission_group_id = $pg_id AND member_id = 0");
 						foreach ($rp_permissions_data as $name => $value) {
 							if (str_starts_with($name, $rp_genid . 'rg_root_')) {
@@ -848,6 +849,9 @@
 								$root_perm_cmp->save();
 							}
 						}
+					}
+					if (!$can_have_root_permissions) {
+						ContactMemberPermissions::delete("permission_group_id = $pg_id AND member_id = 0");
 					}
 					
 				} catch (Exception $e) {

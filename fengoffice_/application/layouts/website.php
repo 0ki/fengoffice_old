@@ -117,7 +117,7 @@ $show_owner_company_name_header = config_option("show_owner_company_name_header"
 	<div id="headerContent">
 	  <table style="width:100%;"><tr><td id="left-header-cell">
 		<div style="float: left;" class="header-content-left">
-			<div id="logodiv">
+			<div id="logodiv" onclick="og.Breadcrumbs.resetSelection();">
 				<div style="height: 55px;" id="logo_company_margin_top">
 					<img src="<?php echo ($use_owner_company_logo) ? owner_company()->getPictureUrl() : get_product_logo_url() ?>" name="img_company_margin" id="img_company_margin" style="display: none;"/>
 					<script>
@@ -334,7 +334,7 @@ echo "og.userRolesPermissions =".json_encode($rolePermissions).";";
 $maxRolePermissions = MaxSystemPermissions::getAllMaxRolesPermissions();
 echo "og.userMaxRolesPermissions =".json_encode($maxRolePermissions).";";
 
-//echo "og.defaultRoleObjectTypePermissions = ".json_encode(RoleObjectTypePermissions::getAllRoleObjectTypePermissionsInfo());
+echo "og.defaultRoleObjectTypePermissions = ".json_encode(RoleObjectTypePermissions::getAllRoleObjectTypePermissionsInfo());
 ?>
 
 <?php 
@@ -344,6 +344,11 @@ $guest_groups = PermissionGroups::instance()->getGuestPermissionGroups();
 echo "og.guest_permission_group_ids = [];";
 foreach ($guest_groups as $gg) {
 	echo "og.guest_permission_group_ids.push(".$gg->getId().");";
+}
+$executive_groups = PermissionGroups::instance()->getExecutivePermissionGroups();
+echo "og.executive_permission_group_ids = [];";
+foreach ($executive_groups as $eg) {
+	echo "og.executive_permission_group_ids.push(".$eg->getId().");";
 }
 ?>
 

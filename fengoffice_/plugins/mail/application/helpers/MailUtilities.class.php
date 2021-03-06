@@ -977,7 +977,7 @@ class MailUtilities {
 							if (PEAR::isError($summary)) {
 								Logger::log($summary->getMessage());
 							} else {
-								if (!in_array($summary[0]['UID'], $uids, true)) {
+								if ($summary[0]['UID'] && !in_array($summary[0]['UID'], $uids, true)) {
 									if ($imap->isDraft($index)) $state = 2;
 									else $state = 0;
 									
@@ -990,6 +990,7 @@ class MailUtilities {
 										continue;
 									}
 									$content = array_var($messages, $index, '');
+									
 									if ($content != '') {
 										try {
 											$stop_checking = self::SaveMail($content, $account, $summary[0]['UID'], $state, $box->getFolderName(), $read);

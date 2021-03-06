@@ -40,7 +40,12 @@
 og.genid = '<?php echo $genid?>';
 og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Plugins::instance()->isActivePlugin('crpm') ? '1' : '0' ?>';
 </script>
-
+<style>
+.task .coInputMainBlock .dimension-selector-container label {
+	margin-right: 10px;
+	min-width: 0px;
+}
+</style>
 <form id="<?php echo $genid ?>submit-edit-form" class="add-task" action="<?php echo $form_url ?>" method="post" onsubmit="<?php echo $on_submit?>">
 
 <div class="task">
