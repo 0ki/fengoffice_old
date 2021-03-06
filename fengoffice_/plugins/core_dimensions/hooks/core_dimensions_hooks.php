@@ -490,14 +490,6 @@ function core_dim_add_new_contact_to_person_dimension($object) {
 		
 		// NEW! Add contact to its own member to be searchable
 		if (logged_user() instanceof Contact ){
-			if (!(isset($_REQUEST['contact']['user']) && array_var($_REQUEST['contact']['user'], 'type') > 0)) {
-				$ctrl = new ObjectController();
-				$ctrl->add_to_members($object, array($member->getId()));
-			} else {
-				$object->addToMembers(array($member));
-				$object->addToSharingTable();
-			}
-		}else{
 			$object->addToMembers(array($member));
 			$object->addToSharingTable();
 		}

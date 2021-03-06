@@ -851,7 +851,7 @@ class ObjectController extends ApplicationController {
 		if ($typeCSV) {
 			$types = explode(",", $typeCSV);
 		}
-		$name_filter = mysql_escape_string( array_var($_GET, 'name') );
+		$name_filter = mysql_real_escape_string( array_var($_GET, 'name') );
 		$linked_obj_filter = array_var($_GET, 'linkedobject');
 		$object_ids_filter = '';
 		$show_all_linked_objects = false;

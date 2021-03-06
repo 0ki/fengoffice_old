@@ -21,7 +21,7 @@ class RoleObjectTypePermissions extends BaseRoleObjectTypePermissions {
 			
 			$shtab_permissions = array();
 			$new_permissions = array();
-			$role_permissions = self::findAll(array('conditions' => 'role_id = '.$role_id));
+			$role_permissions = self::findAll(array('conditions' => "role_id = '$role_id'"));
 			foreach ($role_permissions as $role_perm) {
 				if ($member->canContainObject($role_perm->getObjectTypeId())) {
 					$cmp = new ContactMemberPermission();
@@ -79,7 +79,7 @@ class RoleObjectTypePermissions extends BaseRoleObjectTypePermissions {
 			
 			$shtab_permissions = array();
 			$new_permissions = array();
-			$role_permissions = self::findAll(array('conditions' => 'role_id = '.$role_id));
+			$role_permissions = self::findAll(array('conditions' => "role_id = '$role_id'"));
 			$members = Members::findAll(array('conditions' => 'dimension_id = '.$dimension_id));
 			
 			foreach ($members as $member) {

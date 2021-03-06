@@ -185,7 +185,8 @@
 	'config option name updateOnLinkedObjects' => 'Actualiza los objetos que son vinculados:',
 	'config option desc updateOnLinkedObjects' => 'Si esta opción esta habilitada, cuando se vincule o desvincule un objeto con otro, ambos actualizaran sus fechas de molificación.',
 		
-		
+	'config option name let_users_create_objects_in_root' => 'Permitir crear objetos sin clasificarlos',
+
     'config option name days_on_trash' => 'Días en la papelera',
 	'config option desc days_on_trash' => 'Cuántos días se mantiene un objeto en la papelera antes de ser borrado automáticamente. Si es cero, los objetos no ser borrar automaticamente.',
 	'templates' => 'Plantillas',

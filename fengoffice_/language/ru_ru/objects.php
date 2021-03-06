@@ -135,5 +135,5 @@
 	'the mail' => 'Email',
 	'the weblink' => 'web-ссылка',
 	'the timeslot' => 'Временной интервал',
-	'activity made ​​several changes' => '{1} Внесено несколько изменений {0} {2}',
+	'activity made several changes' => '{1} Внесено несколько изменений {0} {2}',
 ); ?>

@@ -138,7 +138,7 @@ CREATE TABLE `<?php echo $table_prefix ?>object_types` (
   `name` varchar(50) <?php echo $default_collation ?> NOT NULL default '',
   `handler_class` varchar(50) <?php echo $default_collation ?> NOT NULL default '',
   `table_name` varchar(50) <?php echo $default_collation ?> NOT NULL default '',
-  `type` enum('content_object','dimension_object','dimension_group', 'located', 'comment') <?php echo $default_collation ?> default NULL,
+  `type` enum('content_object','dimension_object','dimension_group', 'located', 'comment', '') <?php echo $default_collation ?> default NULL,
   `icon` varchar(50) <?php echo $default_collation ?> NOT NULL default '',
   `plugin_id` int(10) unsigned,
   PRIMARY KEY  (`id`),
@@ -187,7 +187,7 @@ CREATE TABLE `<?php echo $table_prefix ?>permission_groups` (
   `is_context` tinyint(1) unsigned NOT NULL default '0',
   `plugin_id` int(10) unsigned,
   `parent_id` int(10) unsigned NOT NULL default '0',
-  `type` ENUM(  'roles',  'permission_groups',  'user_groups' ) NULL,
+  `type` ENUM( 'roles', 'permission_groups', 'user_groups') NULL,
   PRIMARY KEY  (`id`), 
   UNIQUE KEY `name` (`name`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
@@ -982,7 +982,7 @@ CREATE TABLE `<?php echo $table_prefix ?>project_task_dependencies` (
 CREATE TABLE  `<?php echo $table_prefix ?>widgets` (
   `name` varchar(64) NOT NULL,
   `title` varchar(255) NOT NULL,
-  `plugin_id` int(10) unsigned NOT NULL,
+  `plugin_id` int(10) unsigned NOT NULL DEFAULT 0,
   `path` varchar(512) NOT NULL,
   `default_options` text NOT NULL,
   `default_section` varchar(64) NOT NULL,

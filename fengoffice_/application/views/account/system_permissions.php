@@ -52,7 +52,7 @@
 		<?php endif; ?>
 	
 
-<?php if (config_option('let_users_create_objects_in_root') && ($user->isAdminGroup() || $user->isExecutive() || $user->isManager())) { ?>
+<?php if (config_option('let_users_create_objects_in_root') && ($user instanceof Contact && ($user->isAdminGroup() || $user->isExecutive() || $user->isManager())) ){ ?>
   <hr style="margin:15px 0; border-color:#eee;"/>
   <h1 onclick="og.toggle('<?php echo $genid ?>root_permissions')" style="cursor:pointer;"><?php echo lang('permissions for unclassified objects');?></h1>
   <div id="<?php echo $genid ?>root_permissions">
@@ -64,12 +64,13 @@
   	<td align=center style="padding-left:10px;padding-right:10px;width:120px;"><a href="#" class="internalLink radio-title-0" onclick="og.ogRootPermSetLevel('<?php echo $genid ?>', 0);return false;"><?php echo lang('none no bars') ?></a></td>
   </tr>
 <?php 
-	$all_object_types = ObjectTypes::instance()->findAll(array('conditions' => "type IN ('content_object', 'located') AND type NOT IN ('comment') AND name <> 'file_revision' AND 
+	$all_object_types = ObjectTypes::instance()->findAll(array('conditions' => "type IN ('content_object', 'located') AND type NOT IN ('comment') AND name <> 'file revision' AND 
 		(plugin_id IS NULL OR plugin_id = 0 OR plugin_id IN (SELECT id FROM ".TABLE_PREFIX."plugins WHERE is_activated > 0 AND is_installed > 0))"));
 	$row_cls = "";
 	$root_object_types = array();
 	$root_permissions = $permission_parameters['root_permissions'];
 	foreach ($all_object_types as $ot) {
+		if ($ot->getName() == 'mail' || $ot->getName() == 'template') continue;
 		$row_cls = $row_cls == "" ? "altRow" : "";
 		$id_suffix = "root_" . $ot->getId();
 		$root_object_types[] = $ot->getId();

@@ -204,10 +204,15 @@
 		// All dimensions in 'all'.
 		// If The object has no required dimensions, and no dimensions are selected: check for contact_member_permissions with member_id=0
 		if ($no_required_dimensions && $membersInContext == 0) {
-			$can_add = false;
-			if (config_option('let_users_create_objects_in_root') && $contact_pg_ids != '' && ($user->isAdminGroup() || $user->isExecutive() || $user->isManager())) {
-				$cmp = ContactMemberPermissions::findOne(array('conditions' => 'member_id=0 AND object_type_id='.$object_type_id.' AND permission_group_id IN ('.$contact_pg_ids.')'));
-				$can_add = $cmp instanceof ContactMemberPermission && $cmp->getCanWrite();
+			$mailot = ObjectTypes::findByName('mail');
+			if ($mailot->getId() == $object_type_id) {
+				$can_add = true;
+			} else {
+				$can_add = false;
+				if (config_option('let_users_create_objects_in_root') && $contact_pg_ids != '' && ($user->isAdminGroup() || $user->isExecutive() || $user->isManager())) {
+					$cmp = ContactMemberPermissions::findOne(array('conditions' => 'member_id=0 AND object_type_id='.$object_type_id.' AND permission_group_id IN ('.$contact_pg_ids.')'));
+					$can_add = $cmp instanceof ContactMemberPermission && $cmp->getCanWrite();
+				}
 			}
 		}
 		
@@ -547,16 +552,18 @@
 				}
 				
 				if ($dim->hasAllowAllForContact($pg_id)) {
-					foreach ($members[$dim->getId()] as $mem) {
-						$member_permissions[$mem->getId()] = array();
-						foreach ($dim_obj_types as $dim_obj_type) {
-							if ($dim_obj_type->getDimensionObjectTypeId() == $mem->getObjectTypeId()) {
-								$member_permissions[$mem->getId()][] = array(
-									'o' => $dim_obj_type->getContentObjectTypeId(),
-									'w' => 1,
-									'd' => 1,
-									'r' => 1
-								);
+					if (isset($members[$dim->getId()])) {
+						foreach ($members[$dim->getId()] as $mem) {
+							$member_permissions[$mem->getId()] = array();
+							foreach ($dim_obj_types as $dim_obj_type) {
+								if ($dim_obj_type->getDimensionObjectTypeId() == $mem->getObjectTypeId()) {
+									$member_permissions[$mem->getId()][] = array(
+										'o' => $dim_obj_type->getContentObjectTypeId(),
+										'w' => 1,
+										'd' => 1,
+										'r' => 1
+									);
+								}
 							}
 						}
 					}

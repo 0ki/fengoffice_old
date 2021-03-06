@@ -606,6 +606,15 @@ class AccessController extends ApplicationController {
 				$sp->setAllPermissions(true);
 				$sp->save();
 				
+				// root permissions
+				DB::executeAll("
+				INSERT INTO ".TABLE_PREFIX."contact_member_permissions (permission_group_id, member_id, object_type_id, can_delete, can_write)
+				  SELECT ".$administrator->getPermissionGroupId().", 0, rtp.object_type_id, rtp.can_delete, rtp.can_write FROM ".TABLE_PREFIX."role_object_type_permissions rtp 
+				  WHERE rtp.object_type_id NOT IN (SELECT id FROM ".TABLE_PREFIX."object_types WHERE name IN ('mail','template','file_revision')) AND rtp.role_id in (
+				    SELECT pg.id FROM ".TABLE_PREFIX."permission_groups pg WHERE pg.type='roles' AND pg.name IN ('Super Administrator','Administrator','Manager','Executive')
+				  )
+				ON DUPLICATE KEY UPDATE member_id=0;");
+				
 				Hook::fire('after_user_add', $administrator, $null);
 				
 				DB::commit();

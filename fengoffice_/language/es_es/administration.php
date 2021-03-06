@@ -85,6 +85,7 @@
 	'config option desc use_milestones' => 'Habilitando esta opción se podrán crear hitos y asociar tareas a los mismos.',
 	'config option name show_tab_icons' => 'Mostrar íconos de pestañas',
 	'config option desc show_tab_icons' => 'Habilitando esta opción se podrá ver el ícono de cada pestaña.',
+	'config option name let_users_create_objects_in_root' => 'Permitir crear objetos sin clasificarlos',
 	'user config option name access_member_after_add' => 'Acceder al nuevo miembro luego de su creación.',
 	'user config option desc access_member_after_add' => 'Si habilita esta opción, luego de haber creado un espacio de trabajo, cliente, etc; el mismo será seleccionado en el panel de la izquierda (Esta opción solo se aplica si está habilitada la opción "Recordar si acceder a un miembro al crearlo").',
 	'user config option name access_member_after_add_remember' => 'Recordar si acceder a un miembro al crearlo',

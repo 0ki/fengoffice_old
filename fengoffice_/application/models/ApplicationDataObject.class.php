@@ -302,7 +302,13 @@ abstract class ApplicationDataObject extends DataObject {
 	 * @return integer
 	 */
 	function getObjectId() {
-		return $this->columnExists('id') ? $this->getId() : null;
+		if ($this->columnExists('id')) {
+			return $this->getColumnValue('id');
+		} else if ($this->columnExists('object_id')) {
+			return $this->getColumnValue('object_id');
+		} else {
+			return null;
+		}
 	} // getObjectId
 
 	/**

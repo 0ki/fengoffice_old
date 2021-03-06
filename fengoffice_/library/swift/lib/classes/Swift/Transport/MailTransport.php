@@ -130,7 +130,7 @@ class Swift_Transport_MailTransport implements Swift_Transport
     $toHeader = $message->getHeaders()->get('To');
     $subjectHeader = $message->getHeaders()->get('Subject');
     
-    $to = $toHeader->getFieldBody();
+    $to = is_null($toHeader) ? '' : $toHeader->getFieldBody();
     $subject = $subjectHeader->getFieldBody();
     
     $reversePath = $this->_getReversePath($message);
@@ -141,7 +141,7 @@ class Swift_Transport_MailTransport implements Swift_Transport
     
     $messageStr = $message->toString();
     
-    $message->getHeaders()->set($toHeader);
+    if (!is_null($toHeader)) $message->getHeaders()->set($toHeader);
     $message->getHeaders()->set($subjectHeader);
     
     //Separate headers from body

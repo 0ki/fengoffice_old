@@ -1,4 +1,5 @@
 <div class="page plugin-manager">
+	<div style="display:none" class="error"></div>
 	<h1 class="title">Plugin Manager</h1> 
 	<table  class="plugin-list">
 		<thead>
@@ -44,8 +45,6 @@
 						<span class="install" style="<?php if ($plugin->isInstalled()) echo "display:none";  ?>">
 							<a class="install-button" title="Install this plugin" href="#">Install</a> | 
 						</span><span class="edit"></span>
-						
-
 						
 					</div>
 				</td>			
@@ -100,9 +99,6 @@
 		<p>If you want to reload now click <a href="#" onclick="window.location.href='<?php echo ROOT_URL ?>'">  here. </a></p>
 	</div>
 	
-	<div style="display:none " class="error">
-	
-	</div>
 </div>
 
 <script>

@@ -150,7 +150,7 @@
 	'the timeslot' => 'przedział czasowy',
 	'activity checkout' => '{1} odłączył {0} {2}',
 	'activity checkin' => '{1} przydzielił {0} {2}',
-	'activity made ​​several changes' => '{1} zmienił {0} {2}',
+	'activity made several changes' => '{1} zmienił {0} {2}',
 	'log read task' => 'Użytkownik ten uzyskał dostęp do zadania',
 	'log read message' => 'Użytkownik ten uzyskał dostęp do notatki',
 	'log read file' => 'Użytkownik ten uzyskał dostęp do dokumentu',

@@ -150,7 +150,7 @@
 	'the mail' => 'o email',
 	'the weblink' => 'o link web',
 	'the timeslot' => 'o intervalo de tempo',
-	'activity made ​​several changes' => '{1} fez várias mudanças em {0} {2}',
+	'activity made several changes' => '{1} fez várias mudanças em {0} {2}',
 	'log read task' => 'O usuário acessou a tarefa',
 	'log read message' => 'O usuário acessou a nota',
 	'log read file' => 'O usuário acessou o documento',

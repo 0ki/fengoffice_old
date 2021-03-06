@@ -131,16 +131,16 @@ class SearchController extends ApplicationController {
 		if (!$useLike){
 			// Prepare MATCH AGAINST string
 			foreach ($search_pieces as $word ) {
-				if (( strpos($word, "@") || strpos($word, ".") || strpos($word, ",")) === false ) {
+				/*if (( strpos($word, "@") || strpos($word, ".") || strpos($word, ",")) === false ) {
 					// STRING Dont containt special characheters that mysql use as separator. Noramal  flow 
 					if ($this->wildCardSearch) {
 						$word.="*";
 					}
 				}else{
 					$word =  str_replace($this->mysqlWordSeparator, " +", $word) ;
-				}
+				}*/
 				if ( !str_starts_with($word, " ") ) {
-					$word = " +".$word;
+					$word = " +".'"'.$word.'"';
 				}
 				$search_string .= mysql_real_escape_string( $word ). " ";
 			}

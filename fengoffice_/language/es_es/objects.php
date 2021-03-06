@@ -151,7 +151,7 @@
 	'activity download' => '{1} descargó {0} {2}',
 	'activity checkout' => "{1} ha bloqueado {0} {2}",
         'activity checkin' => "{1} ha actualizado {0} {2}",
-        'activity made ​​several changes' => "{1} ha realizado varios cambios en {0} {2}",
+		'activity made several changes' => "{1} ha realizado varios cambios en {0} {2}",        
 	'log read task' => 'El usuario ha accedido a la tarea',
         'log read message' => 'El usuario ha accedido a la nota',
         'log read file' => 'El usuario ha accedido al documento',

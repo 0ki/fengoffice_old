@@ -497,8 +497,10 @@ class TaskController extends ApplicationController {
 		$data = array();
 		if (is_array($ids) && count($ids) > 0) {
 			$rows = DB::executeAll("SELECT object_id, `text` FROM ".TABLE_PREFIX."project_tasks WHERE object_id IN (".implode(',',$ids).")");
-			foreach ($rows as $row) {
-				$data['t'.$row['object_id']] = $row['text'];
+			if(is_array($rows)){
+				foreach ($rows as $row) {
+					$data['t'.$row['object_id']] = $row['text'];
+				}
 			}
 		}
 		ajx_extra_data(array('descriptions' => $data));

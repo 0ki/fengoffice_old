@@ -196,6 +196,14 @@ static function executeInstaller($name) {
 				$pluginInfo ['id'] = $id;
 			}
 			
+			if (isset($pluginInfo['dependences']) && is_array($pluginInfo['dependences'])) {
+				foreach ($pluginInfo['dependences'] as $dep_plugin_name) {
+					if (!Plugins::instance()->isActivePlugin($dep_plugin_name)) {
+						throw new Exception("To install this plugin you need to install '$dep_plugin_name' first.");
+					}
+				}
+			}
+			
 			//2. IF Plugin defines types, INSERT INTO ITS TABLE
 			if (count ( array_var ( $pluginInfo, 'types' ) )) {
 				foreach ( $pluginInfo ['types'] as $k => $type ) {

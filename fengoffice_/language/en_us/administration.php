@@ -167,7 +167,10 @@
 	'config option desc use_object_properties' => 'Enabling this option will allow you to define custom (key - value) properties for every object.',
 	'config option name automatic_crpm_status_calculation' => 'Clients & Project automatic status',
   	'config option desc automatic_crpm_status_calculation' => 'When enabled, you will be able to set up the formulas for the Clients & Project different status so that they are calculated automatically',
-    'group users' => 'Group users',
+    
+  	'config option name let_users_create_objects_in_root' => 'Let users create objects without classifying them',
+  	
+  	'group users' => 'Group users',
     'timeslot' => 'Time',
     'module permissions' => 'Module Permissions',
     'module permission uncheck warning' => 'Module Permission Uncheck Warning',

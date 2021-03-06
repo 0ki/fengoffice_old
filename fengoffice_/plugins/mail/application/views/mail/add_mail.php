@@ -93,7 +93,7 @@ sig.actualHtmlSignature = '';
   	<div style="display: none;">
   		<table><tr><td>
   			<?php echo submit_button(lang('send mail'), '', 
-  			array('id'=>'sendMail','onclick'=>"og.setHfValue('$genid', 'isDraft', 'false');og.stopAutosave('$genid'); return og.attachmentConfirmationAdded('$genid');"))?>
+  			array('id'=>'sendMail','onclick'=>"og.setHfValue('$genid', 'isDraft', 'false');og.stopAutosave('$genid');"))?>
   		</td><td>
   			<?php echo submit_button(lang('save')." ".lang('draft'), '', 
   			array('id'=>'saveMail','onclick'=>"og.setHfValue('$genid', 'isDraft', 'true');og.stopAutosave('$genid');")) ?>

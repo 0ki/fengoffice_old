@@ -507,7 +507,6 @@ ogTasks.groupTasks = function(displayCriteria, tasksContainer){
 			case 'priority' : cond1 = task.priority; cond2 = parent.priority; break;
 			case 'assigned_to' : cond1 = task.assignedToId; cond2 = parent.assignedToId; break;
 			case 'created_by' : cond1 = task.createdBy; cond2 = parent.createdBy; break;
-			case 'milestone' : cond1 = task.milestoneId; cond2 = parent.milestoneId; break;
 			case 'status' : cond1 = task.status; cond2 = parent.status; break;
 			case 'completed_by' : cond1 = task.completedById; cond2 = parent.completedById; break;
 			default:

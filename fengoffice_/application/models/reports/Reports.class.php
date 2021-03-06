@@ -230,6 +230,14 @@ class Reports extends BaseReports {
 			if ($order_by_col == '') {
 				$order_by_col = $report->getOrderBy();
 			}
+			if($order_by_col == 'email_address'){
+				$order = 'IF(ISNULL(jt.value),1,0),jt.value';
+				$join_params['join_type'] = "LEFT ";
+				$join_params['table'] = "fo_contact_emails";
+				$join_params['jt_field'] = "contact_id";
+				$join_params['e_field'] = "object_id";
+				$select_columns = array("DISTINCT o.*", "e.*");
+			}
 			if (in_array($order_by_col, self::$external_columns)) {
 				$original_order_by_col = $order_by_col;
 				$order_by_col = 'name_order';

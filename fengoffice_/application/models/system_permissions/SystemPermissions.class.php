@@ -42,7 +42,7 @@
   		}
   		
   		function roleHasSystemPermission($role_id,$system_permission){
-  			$permission = self::findOne(array('conditions' => "`$system_permission` = 1 AND `permission_group_id` = $role_id"));
+  			$permission = self::findOne(array('conditions' => "`$system_permission` = 1 AND `permission_group_id` = '$role_id'"));
   			if (!is_null($permission)) return true;
 			return false;
   		}

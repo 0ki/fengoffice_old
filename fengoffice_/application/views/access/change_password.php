@@ -1,9 +1,33 @@
-<?php set_page_title(lang('change password')) ?>
+<?php 
+set_page_title(lang('change password'));
+add_javascript_to_page('jquery/jquery.js');
+
+$css = array();
+Hook::fire('overwrite_login_css', null, $css);
+foreach ($css as $c) {
+	echo stylesheet_tag($c);
+}
+?>
+
+<div class="header-container">
+	<div class="header">
+	<?php if (Plugins::instance()->isActivePlugin('custom_login')) {
+			echo_custom_logo_url();
+		  } else { ?>
+		<a class="logo" href="http://www.fengoffice.com"></a>
+	<?php } ?>
+	</div>
+</div>
+<div class="login-body">
+
 <form action="<?php echo get_url('access', 'change_password', array('id' => $user_id)) ?>" method="post">
+
+<div class="form-container">
+<h2><?php echo lang('change password') ?></h2>
 
 <div style="color:red;">
 <?php echo $reason ?>
-</div><br/>
+</div>
 
 <?php tpl_display(get_template_path('form_errors')) ?>
 
@@ -24,10 +48,10 @@
     <label for="repeatPassword"><?php echo lang('password again') ?>:</label>
     <?php echo password_field('changePassword[repeatPassword]', null, array('id' => 'repeatPassword', 'class' => 'medium')) ?>
   </div>
-  <div class="clean"></div>
+  <div style="clear:both;"></div>
  
-  <div id="loginSubmit"><?php echo submit_button(lang('change')) ?></div>
   <br/>
+  <div id="loginSubmit"><?php echo submit_button(lang('change')) ?></div>
   
   <?php 
   	$min_pass_length = config_option('min_password_length', 0);	
@@ -39,5 +63,15 @@
 	$pass_metacharacters = config_option('password_metacharacters', 0);		
 	if($pass_metacharacters) echo '*'.lang('password invalid metacharacters', $pass_metacharacters).'<br/>';
   ?>
- 
+
 </form>
+
+
+</div>
+
+</div>
+<div class="login-footer">
+	<div class="powered-by">
+		<?php echo lang('footer powered', 'http://www.fengoffice.com/', clean(product_name())) . ' - ' . lang('version') . ' ' . product_version();?>
+	</div>
+</div>

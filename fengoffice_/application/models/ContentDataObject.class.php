@@ -1093,7 +1093,8 @@ abstract class ContentDataObject extends ApplicationDataObject {
 			if ($this->getIsRead($contact_id)) {
 				return; // object is already marked as read
 			}
-			DB::execute("INSERT INTO ".TABLE_PREFIX."read_objects (rel_object_id, contact_id, is_read, created_on) VALUES (?, ?, 1, NOW()) ON DUPLICATE KEY UPDATE is_read=1", $this->getId(), $contact_id);
+			$now = DateTimeValueLib::now();
+			DB::execute("INSERT INTO ".TABLE_PREFIX."read_objects (rel_object_id, contact_id, is_read, created_on) VALUES (?, ?, 1, ?) ON DUPLICATE KEY UPDATE is_read=1", $this->getId(), $contact_id, $now);
 			$this->is_read[$contact_id] = true;
 		} else {
 			ReadObjects::delete('rel_object_id = ' . $this->getId() . ' AND contact_id = ' . $contact_id);
@@ -1476,7 +1477,7 @@ abstract class ContentDataObject extends ApplicationDataObject {
 						
 						// If an user has permissions in one dim using a group and in other dim using his personal permissions then add to sharing table its personal permission group
 						$pg_ids = array_unique(array_flat($original_mandatory_dim_allowed_pgs));
-						$pgs_data = DB::executeAll("SELECT * FROM ".TABLE_PREFIX."permission_groups WHERE id IN (".implode(',',$pg_ids).")");
+						
 						$contact_pgs = array();
 						$contact_pg_rows = DB::executeAll("SELECT * FROM ".TABLE_PREFIX."contact_permission_groups WHERE permission_group_id IN (".implode(',',$pg_ids).") ORDER BY permission_group_id");
 						foreach ($contact_pg_rows as $cpgr) {

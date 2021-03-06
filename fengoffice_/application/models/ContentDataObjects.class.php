@@ -368,7 +368,10 @@ abstract class ContentDataObjects extends DataManager {
 		$extra_member_ids =  array_var($args,'extra_member_ids');
 		$ignore_context = array_var($args,'ignore_context');
 		$include_deleted = (bool) array_var($args,'include_deleted');
-		$select_columns = array_var($args, 'select_columns', array('*'));
+		$select_columns = array_var($args, 'select_columns');
+		if (empty($select_columns)) {
+			$select_columns = array('*');
+		}
 		
 		if ($count_results) {
 			$SQL_FOUND_ROWS = "SQL_CALC_FOUND_ROWS";

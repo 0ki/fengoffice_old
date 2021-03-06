@@ -1,5 +1,5 @@
 
-	About Feng Office 2.3.2-beta
+	About Feng Office 2.3.2-rc
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -101,6 +101,24 @@
 	
 	Changelog
 	=========
+	
+	Since 2.3.2-beta
+	----------------
+	
+	bugfix: Archiving a submember does not archive its objects.
+	bugfix: Error 500 when adding group.
+	bugfix: Installer fixes.
+	bugfix: Modified the insert in read objects for emails.
+	bugfix: Minor bugfixes in document listing.
+	bugfix: Sql error when $selected_columns ins an empty array in ContentDataObjects::listing() function
+	bugfix: root permissions not set when installing new feng office.
+	bugfix: Person report fixed when displaying email field.
+	bugfix: contacts are always created when sending mails.
+	bugfix: Tasks list milestone grouping fixed.
+	
+	preformance: Search query improved.
+	performance: Insert/delete into sharing table 500 objects x query when saving user permissions.
+	
 	
 	Since 2.3.1
 	----------------

@@ -465,8 +465,10 @@ class MailUtilities {
 			}
 			
 			if (count($member_ids) > 0) {
-				$ctrl = new ObjectController();
-				$ctrl->add_to_members($mail, $member_ids, $account_owner);
+				$members = Members::instance()->findAll(array('conditions' => 'id IN ('.implode(',', $member_ids).')'));
+				$mail->addToMembers($members, true);
+			/*	$ctrl = new ObjectController();
+				$ctrl->add_to_members($mail, $member_ids, $account_owner);*/
 				$mail_controller = new MailController();
 				$mail_controller->do_classify_mail($mail, $member_ids);
 			}

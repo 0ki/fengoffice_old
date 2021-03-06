@@ -68,7 +68,9 @@ class MailController extends ApplicationController {
 			if ($original_mail->getBodyHtml() != '') $type = 'html';
 			else $type = user_config_option('last_mail_format');
 			if (!$type) $type = 'plain';
-			$original_mail->setIsRead(logged_user()->getId(), true);
+			if(!$original_mail->getIsRead(logged_user()->getId())){
+				$original_mail->setIsRead(logged_user()->getId(), true);
+			}
 			if ($original_mail->getBodyHtml() != '' && $type == 'html'){
 				if (!defined('SANDBOX_URL')) {
 					$re_body = purify_html($original_mail->getBodyHtml());
@@ -483,19 +485,27 @@ class MailController extends ApplicationController {
 			if ($body == '') $body.=' ';
 
 			try {
-				if (count($linked_attachments)) {
-					$linked_users = array();
+				$linked_users = array();
+				
+				//create contacts from recipients of email 
+				if (user_config_option('create_contacts_from_email_recipients') && can_manage_contacts(logged_user())) {
 					foreach ($to as $to_user) {
 						$linked_user = Contacts::getByEmail($to_user[1]);
 						if (!$linked_user instanceof Contact) {
 							try {
-								$linked_user = create_user_from_email($to_user[1], $to_user[0]);
+								DB::beginWork();
+								$linked_user = create_user_from_email($to_user[1], $to_user[0], null, false);
+								DB::commit();
 							} catch (Exception $e) {
-								//Logger::log($e->getMessage());
+								Logger::log($e->getMessage());
+								DB::rollback();
 							}
 						}
 						if ($linked_user instanceof Contact) $linked_users[] = $linked_user;
 					}
+				}
+				
+				if (count($linked_attachments)) {
 					$linked_atts = $type == 'text/html' ? '<div style="font-family:arial;"><br><br><br><span style="font-size:12pt;font-weight:bold;color:#777">'.lang('linked attachments').'</span><ul>' : "\n\n\n-----------------------------------------\n".lang('linked attachments')."\n\n";
 					foreach ($linked_attachments as $att) {
 						$linked_atts .= $type == 'text/html' ? '<li><a href="'.$att['data'].'">' . $att['name'] . ' (' . $att['type'] . ')</a></li>' : $att['name'] . ' (' . $att['type'] . '): ' . $att['data'] . "\n";
@@ -594,7 +604,7 @@ class MailController extends ApplicationController {
 				$mail->setFromName(logged_user()->getObjectName());
 
 				$mail->save();
-				$mail->setIsRead(logged_user()->getId(), true);
+				//$mail->setIsRead(logged_user()->getId(), true);
 				
 				
 				// autoclassify sent email
@@ -613,7 +623,10 @@ class MailController extends ApplicationController {
 				
 				$object_controller = new ObjectController();
 				if (count($member_ids) > 0) {
-					$object_controller->add_to_members($mail, $member_ids);
+					//$object_controller->add_to_members($mail, $member_ids);
+					$members = Members::instance()->findAll(array('conditions' => 'id IN ('.implode(',', $member_ids).')'));
+					$mail->addToMembers($members, true);
+					$mail->addToSharingTable();
 				}
 				$object_controller->link_to_new_object($mail);
 				$object_controller->add_subscribers($mail);
@@ -632,7 +645,7 @@ class MailController extends ApplicationController {
 				
 				ApplicationLogs::createLog($mail,  ApplicationLogs::ACTION_ADD);
 				
-				if (user_config_option('create_contacts_from_email_recipients') && can_manage_contacts(logged_user())) {
+				/*if (user_config_option('create_contacts_from_email_recipients') && can_manage_contacts(logged_user())) {
 					// automatically create contacts
 					foreach ($to as $recipient) {
 						$recipient_name = trim($recipient[0]);
@@ -656,9 +669,12 @@ class MailController extends ApplicationController {
 							}
 						}
 					}
-				}
+				}*/
 				$mail->addToSharingTable();
 				DB::commit();
+				
+				$mail->setIsRead(logged_user()->getId(), true);
+				
 				if (!$autosave) {
 					if ($isDraft) {
 						flash_success(lang('success save mail'));
@@ -1138,9 +1154,10 @@ class MailController extends ApplicationController {
 		if (array_var($_GET, 'replace')) {
 			ajx_replace(true);
 		}
-
-		$email->setIsRead(logged_user()->getId(), true);
-		
+				
+		if(!$email->getIsRead(logged_user()->getId())){
+			$email->setIsRead(logged_user()->getId(), true);
+		}
 		ApplicationReadLogs::createLog($email, null , ApplicationReadLogs::ACTION_READ);
 	}
 	
@@ -2247,7 +2264,9 @@ class MailController extends ApplicationController {
 
 		if(!is_array($mail_data)) {
 			$fwd_subject = str_starts_with(strtolower($original_mail->getSubject()),'fwd:') ? $original_mail->getSubject() : 'Fwd: ' . $original_mail->getSubject();
-			$original_mail->setIsRead(logged_user()->getId(), true);
+			if(!$original_mail->getIsRead(logged_user()->getId())){
+				$original_mail->setIsRead(logged_user()->getId(), true);
+			}
 			if ($original_mail->getBodyHtml() != '') $type = 'html';
 			else $type = user_config_option('last_mail_format');
 			if (!$type) $type = 'plain';

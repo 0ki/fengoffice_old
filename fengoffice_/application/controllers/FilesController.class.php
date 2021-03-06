@@ -1349,6 +1349,7 @@ class FilesController extends ApplicationController {
 		
 		Hook::fire('classify_action', null, $ret);		
 		$join_params = null;
+		$select_columns = null;
 		if (strpos($order, 'p_') == 1 ){
 			$cpId = substr($order, 3);
 			$order = 'customProp';
@@ -1371,10 +1372,8 @@ class FilesController extends ApplicationController {
 			$join_params['jt_field'] = "object_id";
 			$join_params['e_field'] = "object_id";
 			$join_params['on_extra'] = "AND custom_property_id = ".$cpId;
-			$extra_conditions.= " AND ( custom_property_id = ".$cpId. " OR custom_property_id IS NULL)";
-			$select_columns[0] = "DISTINCT o.*";
-			$select_columns[1] = "e.*";
-			
+			$extra_conditions .= " AND ( custom_property_id = ".$cpId. " OR custom_property_id IS NULL)";
+			$select_columns = array("DISTINCT o.*", "e.*");
 		} else {
 			$order = '`name`';
 		} // if

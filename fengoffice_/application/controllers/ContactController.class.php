@@ -345,7 +345,7 @@ class ContactController extends ApplicationController {
 			$role_id = $user->getUserType();
 			
 			//get the permissions for the user type
-			$rows = DB::executeAll("SELECT object_type_id, can_delete, can_write FROM ".TABLE_PREFIX."role_object_type_permissions WHERE role_id = $role_id");
+			$rows = DB::executeAll("SELECT object_type_id, can_delete, can_write FROM ".TABLE_PREFIX."role_object_type_permissions WHERE role_id = '$role_id'");
 			$rol_permissions = $rows;
 			
 			//get the permissions group for the contact

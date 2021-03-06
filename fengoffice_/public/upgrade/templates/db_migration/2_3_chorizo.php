@@ -80,7 +80,7 @@ ON DUPLICATE KEY UPDATE member_id=0;
 INSERT INTO <?php echo $table_prefix ?>sharing_table (group_id, object_id)
 SELECT cmp.permission_group_id, o.id FROM <?php echo $table_prefix ?>objects o
 INNER JOIN <?php echo $table_prefix ?>contact_member_permissions cmp ON cmp.object_type_id=o.object_type_id AND cmp.member_id=0
-WHERE o.object_type_id IN (SELECT ot.id FROM <?php echo $table_prefix ?>object_types ot WHERE ot.type IN ('content_object','comment','located'))
+WHERE o.object_type_id IN (SELECT ot.id FROM <?php echo $table_prefix ?>object_types ot WHERE ot.name != 'mail' AND ot.type IN ('content_object','comment','located'))
 AND NOT EXISTS (
   SELECT om.object_id FROM <?php echo $table_prefix ?>object_members om
   WHERE om.object_id=o.id
@@ -88,3 +88,5 @@ AND NOT EXISTS (
     SELECT m.id FROM <?php echo $table_prefix ?>members m WHERE m.dimension_id IN (SELECT d.id FROM <?php echo $table_prefix ?>dimensions d WHERE d.defines_permissions=1 AND d.is_manageable=1)
   )
 );
+
+ALTER TABLE `<?php echo $table_prefix ?>object_types` DROP INDEX `name`, ADD UNIQUE INDEX `name` USING BTREE(`name`);

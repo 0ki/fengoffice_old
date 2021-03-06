@@ -437,7 +437,7 @@ class Member extends BaseMember {
 			$sql = "SELECT om.object_id FROM ".TABLE_PREFIX."object_members om INNER JOIN ".TABLE_PREFIX."objects o ON o.id=om.object_id  
 					WHERE om.member_id=".$this->getId()." AND o.archived_by_id=0 AND NOT EXISTS (
 					  SELECT member_id FROM ".TABLE_PREFIX."object_members om2 INNER JOIN ".TABLE_PREFIX."members m2 ON m2.id=om2.member_id
-					  WHERE m2.archived_by_id=0 AND om2.object_id=om.object_id AND om2.member_id<>om.member_id".$person_dim_cond."
+					  WHERE om2.is_optimization=0 AND m2.archived_by_id=0 AND om2.object_id=om.object_id AND om2.member_id<>om.member_id".$person_dim_cond."
 					);";
 			$object_ids = DB::executeAll($sql);
 			$count = 0;

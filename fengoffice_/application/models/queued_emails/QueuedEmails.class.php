@@ -15,16 +15,10 @@ class QueuedEmails extends BaseQueuedEmails {
 	static function getQueuedEmails($date = null) {
 		if ($date instanceof DateTimeValue) {
 			$emails = self::findAll(array(
-				'conditions' => array(
-					'`timestamp` >= ?',
-					$date
-				),
-                                'order' => '`timestamp` ASC'
+				'conditions' => array('`timestamp` >= ?', $date),
+				'order' => '`timestamp` ASC'
 			));
-			self::delete(array(
-				'`timestamp` < ?',
-				$date
-			));
+			self::delete(array('`timestamp` < ?', $date));
 		} else {
 			$emails = self::findAll();
 		}

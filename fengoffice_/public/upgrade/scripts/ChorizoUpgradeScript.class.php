@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Chorizo upgrade script will upgrade FengOffice 2.2.4.1 to FengOffice 2.3.2-beta
+ * Chorizo upgrade script will upgrade FengOffice 2.2.4.1 to FengOffice 2.3.2-rc
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -40,7 +40,7 @@ class ChorizoUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('2.2.4.1');
-		$this->setVersionTo('2.3.2-beta');
+		$this->setVersionTo('2.3.2-rc');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -212,7 +212,7 @@ class ChorizoUpgradeScript extends ScriptUpgraderScript {
 				INSERT INTO ".$t_prefix."contact_member_permissions (permission_group_id, member_id, object_type_id, can_delete, can_write)
 				  SELECT c.permission_group_id, 0, rtp.object_type_id, rtp.can_delete, rtp.can_write FROM ".$t_prefix."role_object_type_permissions rtp 
 				  INNER JOIN ".$t_prefix."contacts c ON c.user_type=rtp.role_id
-				  WHERE rtp.role_id in (
+				  WHERE rtp.object_type_id NOT IN (SELECT id FROM ".$t_prefix."object_types WHERE name IN ('mail','template','file_revision')) AND rtp.role_id in (
 				    SELECT pg.id FROM ".$t_prefix."permission_groups pg WHERE pg.type='roles' AND pg.name IN ('Super Administrator','Administrator','Manager','Executive')
 				  )
 				ON DUPLICATE KEY UPDATE member_id=0;
@@ -220,7 +220,7 @@ class ChorizoUpgradeScript extends ScriptUpgraderScript {
 				INSERT INTO ".$t_prefix."sharing_table (group_id, object_id)
 				SELECT cmp.permission_group_id, o.id FROM ".$t_prefix."objects o
 				INNER JOIN ".$t_prefix."contact_member_permissions cmp ON cmp.object_type_id=o.object_type_id AND cmp.member_id=0
-				WHERE o.object_type_id IN (SELECT ot.id FROM ".$t_prefix."object_types ot WHERE ot.type IN ('content_object','comment','located'))
+				WHERE o.object_type_id IN (SELECT ot.id FROM ".$t_prefix."object_types ot WHERE ot.name!='mail' and ot.type IN ('content_object','comment','located'))
 				AND NOT EXISTS (
 				  SELECT om.object_id FROM ".$t_prefix."object_members om
 				  WHERE om.object_id=o.id
@@ -230,6 +230,14 @@ class ChorizoUpgradeScript extends ScriptUpgraderScript {
 				);
 			";
 		}
+		
+		if (version_compare($installed_version, '2.3.2-rc') < 0) {
+			$upgrade_script .= "
+				ALTER TABLE `".$t_prefix."object_types` DROP INDEX `name`,
+				 ADD UNIQUE INDEX `name` USING BTREE(`name`);
+			";
+		}
+		
 		
 		if($this->executeMultipleQueries($upgrade_script, $total_queries, $executed_queries, $this->database_connection)) {
 			$this->printMessage("Database schema transformations executed (total queries: $total_queries)");
